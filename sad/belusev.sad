@@ -42,7 +42,7 @@ B1=B0+kl/l*Brho/lq*Max[aq,ar*Sqrt[emitx*betax]];
 
 eq=((B1==Bmax)/.data)
 
-ls=With[{eq},FindRoot[eq,{l,1}]]
+ls=With[{eq},FindRoot[eq,{l,1},D->False]]
 
 CELL=ExtractBeamLine[];
 CELL101=101*CELL;
@@ -51,7 +51,7 @@ norfsw;cell;noradcod;nocod;
 
 rademitp[p_]:=Module[{},
   MOMENTUM=p;
-  ls=With[{eq},FindRoot[eq,{l,1}]];
+  `ls=With[{eq},FindRoot[eq,{l,1},D->False]];
   rademit[l/.ls]];
 
 rademit[lb_]:=Module[{},

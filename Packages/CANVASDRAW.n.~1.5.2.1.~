@@ -1,0 +1,68 @@
+(* CANVASDRAW 10/21/2011 K. Oide *)
+
+TkWait;
+
+FFSCanvasDraw=Class[{},{},{},
+
+  Draw[]:=If[$DisplayFunction===TopDrawer,
+    1,
+    Module[{w,r1,r2,list,w1,opt},
+      w=Read[-1,Word,ReadNewRecord->False];
+      If[(r1=LINE["POSITION",ToUpperCase[w]])==={},
+        r1=1;
+        r2=LINE["LENGTH"],
+        w=Read[-1,Word,ReadNewRecord->False];
+        If[(r2=LINE["POSITION",ToUpperCase[w]])==={},
+          r2=LINE["LENGTH"],
+          w=Read[-1,Word,ReadNewRecord->False]]];
+      w=ToUpperCase[w];
+      w1="&";
+      list=Table[
+        If[w1<=>"&",Break[]];
+        Table[
+          {w1,w}=SeparateAmpsnd[w];
+          Switch[w1,
+            "",
+            If[w=="",w=ToUpperCase[Read[-1,Word,ReadNewRecord->False]];
+              If[w=="",w1=";";Break[]]];Null[],
+            "&",
+            Break[],
+            ";",
+            Break[],
+            _,
+            If[Twiss$Label[ToUpperCase[w1]]==="",
+              w=w1;
+              Break[],
+              ToUpperCase[w1]]],
+          {Infinity}],
+        {Infinity}];
+      opt=If[w1<=>";",
+        Which[w==="LAT"||w==="LATTICE",
+          Lattice->True,
+          LINE["POSITION",ToUpperCase[w]]<=>{},
+          {{Lattice->True,Names->w},w=""}[[1]],
+          True,
+          Lattice->False],
+        Lattice->False];
+      opt=Flatten[{Region->{r1,r2},opt,GridLines->{None,Automatic},InfoLabel->True}];
+      OpticsPlot[list,Null@@opt,PlotLabel->TITLE];
+      Update[];
+      If[w1==";","",w]]];      
+        
+
+  SeparateAmpsnd[w_]:=Module[{p=StringPosition[w,"&"]/.{}->{{Infinity,Infinity}},
+    q=StringPosition[w,";"]/.{}->{{Infinity,Infinity}}},
+    p=Min[p[[1,1]],q[[1,1]]];
+    Switch[p,
+      1,
+      {w[1],w[2,-1]},
+      Infinity,
+      {w,""},
+      _,
+      {w[1,p-1],w[p,-1]}]];
+
+  ];
+
+FFS$CD=FFSCanvasDraw[];
+OpticsPlot;
+CANVASDRAW=FFS$CD@Draw;

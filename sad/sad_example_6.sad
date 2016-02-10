@@ -73,9 +73,9 @@ fit nx 0.375 ny 0.125;
 free q*;
 go;
 
-!QF ROTATE 0*Degree;
-!fix *;
-!rej *;
+QF ROTATE 10*Degree;
+fix *;
+rej *;
 save;
 
 eps=1e-6;
@@ -103,9 +103,10 @@ dm[]:=(
   m1=mpm;
   {(m1-m0),r01-r00,ab01-ab00,e01-e00,pe01-pe00,d01-d00}/2/eps);
 
-!Print[dm[]]
-!FFS["fit "//pm//" ey "//Twiss["EY",pm]+0.0001//";free "//vn//"  "//key]; go
+Print[dm[]]
+FFS["fit "//pm//" ey "//Twiss["EY",pm]+0.0001//";free "//vn//"  "//key]; go
 
+end
 
 !ElementValues:={"K1"["QD"]:>-"K1"["QF"]};
 

@@ -1,4 +1,4 @@
-/* tfDefFunc_.c generated at 2015-09-02 21:12:31 +0900 */
+/* tfDefFunc_.c generated at 2015-08-29 01:27:29 +0900 */
 extern int init_framework_FuncTBL(void);
 extern int init_framework_DynlMI(void);
 extern int init_framework_Feature(void);

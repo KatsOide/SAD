@@ -1,1 +1,0 @@
-../../../../../contrib/tcl8.5.15/library/http1.0/pkgIndex.tcl

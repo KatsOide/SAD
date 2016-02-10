@@ -1,1 +1,0 @@
-../../../../../contrib/tcl8.5.15/library/msgs/es_ve.msg

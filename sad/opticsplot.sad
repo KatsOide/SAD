@@ -71,7 +71,10 @@ MOMENTUM= 5 GEV; ON ECHO;OFF EMIT CTIME RAD RFSW ;
  APERT A1=(DX1=0.001 DY1=0.001 DX1=-0.001 DY1=-0.001 JDPX=0.001 JDPY=0.001)
  ;
  FFS USE=TESTLINE;
+  sorg;
+  org p1.1 0 0 0 0 0 0;
   cell cal;
+
 
   OpticsPlot[{{"BX","BY"},{"EX","EY"},{"R1","R4"},{"R2"},{"R3"},{"DX","DY"}}];
   Update[];

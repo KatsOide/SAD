@@ -406,9 +406,9 @@ configure:5403: gcc-mp-4.8 -Wall -std=gnu11 -m64  -o conftest  -DTCL_NO_STACK_CH
 conftest.c:46:6: warning: conflicting types for built-in function 'sin' [enabled by default]
  char sin ();
       ^
-/tmp/cclJGhue.o: In function `main':
+/tmp/ccPZoM2n.o: In function `main':
 conftest.c:(.text+0xd): undefined reference to `sin'
-/tmp/cclJGhue.o:(.data+0x0): undefined reference to `sin'
+/tmp/ccPZoM2n.o:(.data+0x0): undefined reference to `sin'
 collect2: error: ld returned 1 exit status
 configure:5409: $? = 1
 configure: failed program was:
@@ -1094,7 +1094,7 @@ configure:10426: $? = 0
 configure:10438: result: yes
 configure:10450: checking for getwd
 configure:10507: gcc-mp-4.8 -Wall -std=gnu11 -m64  -o conftest  -DTCL_NO_STACK_CHECK -DTCL_NO_STACK_CHECK -pipe -m64   -Wl,--export-dynamic  conftest.c  >&5
-/tmp/ccp48DEV.o: In function `main':
+/tmp/ccvCpCg9.o: In function `main':
 conftest.c:(.text+0xd): warning: the `getwd' function is dangerous and should not be used.
 configure:10513: $? = 0
 configure:10517: test -z 

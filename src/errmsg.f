@@ -9,7 +9,7 @@ c
       integer*4 lene,lst,ln
       character*(MAXLLEN) cwork
       character*(*) astr
-      parameter (astr=' ??? ')
+      parameter (astr=' *** ')
 c     
 c      print *,"errmsg",rtn(:8)
 c

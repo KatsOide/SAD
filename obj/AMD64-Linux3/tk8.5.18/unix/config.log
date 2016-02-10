@@ -1210,7 +1210,7 @@ configure: failed program was:
 configure:8472: result: no
 configure:8481: checking for XScreenSaverQueryInfo
 configure:8481: gcc-mp-4.8 -Wall -std=gnu11 -m64  -o conftest  -DTCL_NO_STACK_CHECK -DTCL_NO_STACK_CHECK -pipe -m64    -Wl,--export-dynamic  conftest.c  -L/usr/X11R6/lib -lX11 >&5
-/tmp/ccLsPNdS.o: In function `main':
+/tmp/cc2nBuvM.o: In function `main':
 conftest.c:(.text+0xa): undefined reference to `XScreenSaverQueryInfo'
 collect2: error: ld returned 1 exit status
 configure:8481: $? = 1

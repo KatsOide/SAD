@@ -1,7 +1,7 @@
 #!/bin/sh
 # WARNING: This file was auto-generated. Do not edit!
-CC='gcc -Wall -std=gnu11 -m64 -I. -g -O1'
-LD='gcc -Wall -std=gnu11 -m64 '
+CC='gcc-mp-4.8 -Wall -std=gnu11 -m64 -I. -g -O1'
+LD='gcc-mp-4.8 -Wall -std=gnu11 -m64 '
 echo 'main="$1"; shift'
 echo 'rm -f "$main"'
 echo 'ar cr "$main" ${1+"$@"}'

@@ -73,7 +73,7 @@ fit nx 0.375 ny 0.125;
 free q*;
 go;
 
-QF ROTATE 10*Degree;
+QF ROTATE 0*Degree;
 fix *;
 rej *;
 save;
@@ -81,20 +81,20 @@ save;
 eps=1e-6;
 
 pm="QD+1";
-vn="QD";
-key="K1";
+var="QD";
+key="ROTATE";
 mpm:=TransferMatrix["^^^",pm].TransferMatrix[pm,"$$$"]
 cal;save;
 
 dm[]:=(
-  Element[key,vn]=Element[key,vn]-eps;FFS["cal"];
+  Element[key,var]=Element[key,var]-eps;FFS["cal"];
   ab00=Twiss[{"AX","BX","NX","AY","BY","NY"},pm];
   d00=Twiss[{"DX","DPX","DY","DPY"},pm];
   e00=Twiss[{"EX","EPX","EY","EPY"},pm];
   pe00=Twiss[{"PEX","PEPX","PEY","PEPY"},pm];
   r00=Twiss[{"R1","R2","R3","R4","DETR"},pm];
   m0=mpm;
-  Element[key,vn]=Element[key,vn]+2*eps;FFS["cal"];
+  Element[key,var]=Element[key,var]+2*eps;FFS["cal"];
   ab01=Twiss[{"AX","BX","NX","AY","BY","NY"},pm];
   d01=Twiss[{"DX","DPX","DY","DPY"},pm];
   e01=Twiss[{"EX","EPX","EY","EPY"},pm];
@@ -104,7 +104,7 @@ dm[]:=(
   {(m1-m0),r01-r00,ab01-ab00,e01-e00,pe01-pe00,d01-d00}/2/eps);
 
 Print[dm[]]
-FFS["fit "//pm//" ey "//Twiss["EY",pm]+0.0001//";free "//vn//"  "//key]; go
+FFS["fit "//pm//" ey "//Twiss["EY",pm]+0.0001//";free "//var//"  "//key]; go
 
 end
 

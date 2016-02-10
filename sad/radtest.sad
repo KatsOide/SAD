@@ -865,7 +865,7 @@ go
 
 end
 
-
+rad radcod radtaper codplot;
 z0={1,Table[{0},{7}]};
 z0[[2,7,1]]=1;
 z=z0;
@@ -882,3 +882,4 @@ PlotOrbIP[z0_,n_,fr_:"IP-200",to_:"IP+200"]:=Module[{z=z0,zt},
   ListPlot[Thread[{zt[[1]],zt[[2,,2,3,1]]}],FrameLabel->{"s (m)","`fD`ny (m)"}];
   Update[];
   zt];
+

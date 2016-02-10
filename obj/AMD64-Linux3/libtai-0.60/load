@@ -1,4 +1,4 @@
 #!/bin/sh
 # WARNING: This file was auto-generated. Do not edit!
 main="$1"; shift
-exec gcc -Wall -std=gnu11 -m64  -o "$main" "$main".o ${1+"$@"}
+exec gcc-mp-4.8 -Wall -std=gnu11 -m64  -o "$main" "$main".o ${1+"$@"}

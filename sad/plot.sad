@@ -5,9 +5,9 @@ FFS;
  ax=-1;
  x0=Sqrt[2 Jx bx];
 
- g1=Plot[ Sqrt[2 Jx/bx-(x/bx)^2]-ax/bx x,{x,-x0,x0},DisplayFunction->Identity];
+ g1=Plot[ Sqrt[2 Jx/bx-(x/bx)^2]-ax/bx x,{x,-x0,x0},DisplayFunction->Identity,Legend->"a"];
  g2=Plot[-Sqrt[2 Jx/bx-(x/bx)^2]-ax/bx x,{x,-x0,x0},DisplayFunction->Identity];
- Show[{g1,g2},GridLines->{{Automatic,Axis[0.005]},Automatic}];
+ Show[{g1,g2}];
  Update[];
 end
 

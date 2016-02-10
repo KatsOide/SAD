@@ -32,8 +32,8 @@ const buildinfo_t buildinfo_db[] = {
   {"Target:SAD_SHARE_ROOT",	_STR, 0, "/Users/oide/SAD/oldsad//share"},
   {"Target:SAD_PKG_ROOT",	_STR, 0, "/Users/oide/SAD/oldsad//share/Packages"},
   {"Target:SAD_MOD_ROOT",	_STR, 0, "/Users/oide/SAD/oldsad//share/Extension"},
-  {"Built:Location",	_STR, 0, "oide@pb-d-128-141-169-119.cern.ch:/Users/oide/SAD/oldsad/obj/i386-Darwin15"},
-  {"Built:Date",	_STR, 0, "2016-02-10 04:39:01 +0100"},
+  {"Built:Location",	_STR, 0, "oide@b-2021.home:/Users/oide/SAD/oldsad/obj/i386-Darwin15"},
+  {"Built:Date",	_STR, 0, "2016-02-08 07:03:47 +0100"},
   {NULL,	_NOP, 0, NULL}};
 
 /* End of File */

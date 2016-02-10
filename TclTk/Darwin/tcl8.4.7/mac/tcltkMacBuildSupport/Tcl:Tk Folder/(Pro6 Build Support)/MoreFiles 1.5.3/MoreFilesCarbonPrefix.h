@@ -1,1 +1,0 @@
-#define TARGET_API_MAC_CARBON 1#if __ide_target("Debug Carbon DLL") || __ide_target("Opt Carbon DLL")	#include <UseCarbonDLLPrefix.h>#endif

@@ -1,1 +1,0 @@
-../../../../../contrib/tk8.5.15/xlib/X11/keysym.h

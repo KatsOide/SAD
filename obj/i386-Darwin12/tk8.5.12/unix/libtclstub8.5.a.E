@@ -1,7 +1,0 @@
-_TclTomMathInitializeStubs
-_Tcl_InitStubs
-_tclIntPlatStubsPtr
-_tclIntStubsPtr
-_tclPlatStubsPtr
-_tclStubsPtr
-_tclTomMathStubsPtr

@@ -85,8 +85,8 @@ Alternatives[]
    Clear[a,x];
    D[Sin[x],x]
 TracePrint[
-   a:=FindRoot[(Print[x];Sin[x]+0.99)==0,{x,Pi,{-0.1,5}}]];
-   a
+   a:=FindRoot[(Sin[x]+0.99)==0,{x,Pi,{-0.1,5}}]];
+   TracePrint[a];
 end
 
    Sin[x]/.a
@@ -98,7 +98,7 @@ end
      FindRoot[{(Print[{x,y}];Sin[x])==Cos[y],Sin[y]==0.5},{x,0},{y,0}]
   a:=FindRoot[x^2+y^2+0.1==0,{x,0.9},{y,0.1}]
   a
-end
+
 
 !
 !    RADLIGHT
@@ -289,7 +289,6 @@ Transpose[a]
    a={-1.,-1.,-1.,-1.,-1.,1.,1.,1.,1.,1.};
    Fourier[a]
    MinMax[Abs[InverseFourier[Fourier[a]]-a]]
-
 
 
 !

@@ -1,1 +1,0 @@
-../../../../../contrib/tk8.5.18/library/demos/image2.tcl

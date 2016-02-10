@@ -1,1 +1,0 @@
-../../../../../contrib/tcl8.5.15/library/tcltest/pkgIndex.tcl
