@@ -1,1 +1,0 @@
-gcc -Wall -std=gnu11 -m64  -I. -g -O1

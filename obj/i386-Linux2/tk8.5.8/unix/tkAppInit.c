@@ -1,1 +1,0 @@
-/home/oide/SAD/oldsad/contrib/tk8.5.8/unix/tkAppInit.c

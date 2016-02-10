@@ -1,1 +1,0 @@
-../../../../contrib/tcl8.5.18/tools/man2html1.tcl
