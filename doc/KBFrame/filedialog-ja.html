@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="ja-JP">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-2022-JP">
+<TITLE>KBFrame File Dialog</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<A NAME="top" HREF="index-ja.html">目次</A>
+<A HREF=messagebox-ja.html>メッセージボックス</A>
+<A HREF=emmeas-ja.html>例 emittance測定値計算用パネル</A>
+
+<HR><DIV ALIGN="CENTER"><H2>ファイル選択用ダイアログボックス</H2></DIV><HR>
+
+<P>KBFOpenDialogとKBFSaveDialogは、ファイル名を選択・指定するために使用
+します。どちらも第一引数が初期ディレクトリの絶対パス、
+第二引数はリストボックスに表示するファイル名にかけるフィルタです。
+返り値は、Cancelボタンが押された時はNull、それ以外はファイル名が
+絶対パスで返ります。</P>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["FileDialogExample", f, Title-&gt;"File Dialog Example"];
+bo = Button[f,Text-&gt;"Open",Command:&gt;of[]];
+bs = Button[f,Text-&gt;"Save",Command:&gt;sf[]];
+of[] := (
+  fn = KBFOpenDialog["/","*"];
+  If [fn &lt;=&gt; Null, Print["Open file is "//fn]];
+);
+sf[] := (
+  fn = KBFSaveDialog["/","*"];
+  If [fn &lt;=&gt; Null, Print["Save file is "//fn]];
+);
+TkWait[];
+</CODE></PRE>
+
+<P><IMG SRC="fileopen.gif" WIDTH=531 HEIGHT=319
+ ALT="File Open Dialog Example"></P>
+
+<P><IMG SRC="filesave.gif" WIDTH=531 HEIGHT=319
+ ALT="File Save Dialog Example"></P>
+
+<P><A HREF="#top">top</A></P>
+
+<HR><ADDRESS>このページに関する御意見・質問は
+<A HREF="mailto:samo.stanic@kek.jp">Samo Stanic</A>
+まで.</ADDRESS>
+</BODY>
+</HTML>

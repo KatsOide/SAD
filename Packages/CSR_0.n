@@ -1,0 +1,904 @@
+(* CSR.n 11/3/2010 *)
+
+SetAttributes[{PipePlot},Constant];
+
+CSR=Class[{},{},
+  {mxmax=1601,mxmin=25,ID=0,
+    MeshRatio={4,1},BunchLength=0.0003,BendingRadius=10,Enorm,
+    PipeWidth=0.1,PipeHeight=0.1,rho0,sigz,omax,omin,
+    NParallel=8,npara,nrun,Nk=32,
+    pipe,dx,dy,cent,mx,my,PipeFun=(0.05&),Center=Null,zspan=0.02,
+    es0r,es0i,les,
+    svdeps=1e-4,eigeps=1e-4,
+    Null8=Table[Null,{8}],
+    Null4=Table[Null,{4}],
+    sigx=0.0001,Er0,MaxMeshSize=0.01,Threshold=1e-4,
+    Ezr,Ezi,ZLr,ZLi,CSRDataCache,Resistive=True,
+    MaxWaveNumRatio=3.5,
+    Wnorm=1e-12/(2*Pi*SIEpsilon0),
+    Z0=Sqrt[SIMu0/SIEpsilon0],
+    OYInfo,
+    Cond=5.8e7, (* annealed copper *)
+    TiNCond=1.4e6,
+    TiNThick=2e-7
+    },
+  
+  Constructor[]:=(
+    npara=NParallel;
+    nrun=OpenShared[16];
+    Shared[nrun]=0;
+    If[Center===Null,Center=PipeWidth/2];
+    sigz=BunchLength;
+    omax=MaxWaveNumRatio/sigz;
+    omin=0;
+    rho0=BendingRadius;
+    Enorm[r_]:=2*ElectronRadius*ElectronMass/(Sqrt[2Pi](3r^2sigz^4)^(1/3))*(2Pi*SIEpsilon0/ElectronCharge);
+    mx=my=100;
+    If[RealQ[MeshRatio],MeshRatio={MeshRatio,MeshRatio}];
+    MakePipe[];
+    PipeHeight=PipeFun[0]*2;
+    );
+
+  SkinDepth[k_,cond_:Cond]:=Sqrt[2/SIMu0/cond/k/SpeedOfLight];
+
+  EffectiveSkinDepth[k_]:=Module[{d2=SkinDepth[k],d1=SkinDepth[k,TiNCond],x},
+    x=TiNThick/d1;
+    (2 (d2 Cosh[x] + d1 Sinh[x]) ((-d1^2 + d2^2) Cos[x] + d1^2 Cosh[x] + 
+      d1 d2 Sinh[x]))/((-d1^2 + d2^2) Cos[2 x] + (d1^2 + d2^2) Cosh[
+        2 x] + 2 d1 d2 Sinh[2 x])];
+
+  EffectiveCond[k_]:=2/SIMu0/k/SpeedOfLight/EffectiveSkinDepth[k]^2;
+
+  PathDifference[rho_,d_]:=Module[{theta=ArcTan[Sqrt[(2 rho+d)d]/rho],ds},
+    ds=rho*{2,3}*(theta^3/3);
+    Thread[{ds,2*Pi/ds}]];
+
+  MakePipe[init_:True]:=Module[{n},
+    If[init,
+      InitCSRDataCache[]];
+    dx=PipeWidth/mx;
+    dy=dx*mx/my;
+    pipe=Table[
+      x=(i-0.5)*dx-Center;
+      If[(n=PipeFun[x]/dy-0.5) < 1,
+        0,
+        Max[2,Round[n]]],
+      {i,mx}];
+    cent=If[Center>PipeWidth/2,
+      mx-Round[(PipeWidth-Center)/dx]+1,
+      Round[Center/dx]]];
+
+  VariableMesh[omega_,rho_]:=Module[{dlim=Restrict[(Abs[rho]/omega^2)^(1/3)/MeshRatio,0,MaxMeshSize]},
+    Restrict[Round[(PipeWidth/dlim)/2]*2,mxmin,mxmax]];
+
+  ComplexEig[ev_,label_]:=Module[{p=Position[ev,_Complex,1,1]},
+    If[p<=>{},
+      Print[ID//": "//label," ",ev[[p[[1,1]]]]];True,
+      False]];
+
+  DEig[a_,ta_,b_,c_,d_]:=(LinearSolveReal[a,Transpose[b.c],svdeps]/d).ta;
+
+  InitCSRDataCache[]:=(
+    Clear[CSRDataCahce];
+    CSRDataCache[omega_,0]:=Module[{ev1,u1,ev2,u2,tu1,tu2,da11,da22,
+      u1,u2,bf=BoundaryFudge,ev,evm,
+      dev1,dev2,w1,w2,delta=EffectiveSkinDepth[omega]},
+      CSRDataCache[omega,0]=(
+        Module[{
+          a22=CSRMatrix[pipe,{dx,dy},omega,0,cent,22]},
+          {ev2,u2}=Eigensystem[a22];
+          If[ComplexEig[ev2,"Complex as22 "],
+            Return[Null8]]];
+        Module[{
+          a11=CSRMatrix[pipe,{dx,dy},omega,0,cent,21]},
+          {ev1,u1}=Eigensystem[a11];
+          If[ComplexEig[ev1,"Complex as11 "],
+            Return[Null8]]];
+        tu1=Transpose[u1];
+        tu2=Transpose[u2];
+        If[Resistive,
+          Module[{
+            da11=CSRMatrix[pipe,{dx,dy},omega,0,cent,11],
+            tu1i=Inverse[tu1]},
+            dev1=MapThread[Dot,{tu1i,Transpose[da11.tu1]}]*(delta/2/omega)];
+          Module[{
+            da22=CSRMatrix[pipe,{dx,dy},omega,0,cent,12],
+            tu2i=Inverse[tu2]},
+            dev2=MapThread[Dot,{tu2i,Transpose[da22.tu2]}]*(delta/2/omega)],
+          dev1=dev2=0*ev1];
+        ev={ev1,ev2}={ev1,ev2}/(2omega);
+        evm=(Min[Max[Abs[ev]],4*Sqrt[2]*omega]*eigeps)^2;
+!        {w1,w2}=Exp[-((Abs[ev])/(2omega))^2/8]*(ev^2/(ev^2+evm^2));
+        w1=Table[1,{Length[ev1]}];
+        w2=Table[1,{Length[ev2]}];
+        {ev1,ev2,dev1,dev2,tu1,tu2,u1,u2})];
+
+    CSRDataCache[omega_,rho_]:=Module[{or=omega*rho,
+      ev,u,w,evm,
+      rx,r,ac,sig1,sig2,sigv1,sigv2},
+      CSRDataCache[omega,rho]=(
+        Module[{a=Module[{
+          a11=CSRMatrix[pipe,{dx,dy},omega,rho,cent,1],
+          a22=CSRMatrix[pipe,{dx,dy},omega,rho,cent,2],
+          a12=CSRMatrix[pipe,{dx,dy},omega,rho,cent,3],
+          a21=CSRMatrix[pipe,{dx,dy},omega,rho,cent,4]},
+          les=Length[a11];
+          Join[MapThread[Join,{a11,a12}],MapThread[Join,{a21,a22}]]]},
+          {ev00,u00}={ev,u}=Eigensystem[a]];
+        If[ComplexEig[ev,"Complex a "],Return[Null4]];
+        Er0=CSRInit[{{dx,dy},cent,rho,pipe}];
+        rx=(Range[mx]-cent)*dx;
+        r=rx+rho;
+        ac=0.5/(or^2-1)/rho;
+        sig1=ac*   ((omega^2*(r^2+rho^2)-1)*Er0[[1]]+r*Er0[[2]]);
+        sig2=ac*or*((omega^2*rx*(r+rho)+1) *Er0[[1]]+r*Er0[[2]]);
+        sigv1=CSRConvert[sig1,pipe,1];
+        sigv2=CSRConvert[sig2,pipe];
+        ev*=ac*or;
+!        evm=(Min[Max[Abs[ev]],4*Sqrt[2]*omega]*eigeps)^2;
+!        w=Exp[-((Abs[ev])/(2omega))^2/8]*(ev^2/(ev^2+evm^2));
+!        w=Table[1,{Length[ev]}];
+        {ev,Transpose[u],u,Join[sigv1,sigv2]})];
+
+(*
+    CSRDataCache[omega_,rho_]:=Module[{or=omega*rho,ev0,
+      ev11,ev22,tu11,tu22,du12,du21,u11,u22,mae,
+      rx,r,ac,sig1,sig2,sigv1,sigv2,ev,w1,w2},
+      CSRDataCache[omega,rho]=(
+        Module[{
+          a22=CSRMatrix[pipe,{dx,dy},omega,rho,cent,2]},
+          {ev22,u22}=Eigensystem[a22]];
+        If[ComplexEig[ev22,"Complex a22 "],Return[Null12]];
+        Module[{
+          a11=CSRMatrix[pipe,{dx,dy},omega,rho,cent,1]},
+          {ev11,u11}=Eigensystem[a11]];
+        If[ComplexEig[ev11,"Complex a11 "],Return[Null12]];
+        Module[{ae=Outer[Plus,ev22,-ev11]},
+          If[mae=MinMax[Abs[ae]];
+            mae[[1]]<4*mae[[2]]/Length[ev11]/or,
+            Print[ID,": Degenerated eigenvalue: ",mae]];
+          tu11=Transpose[u11];
+          tu22=Transpose[u22];
+          Module[{
+            a12=CSRMatrix[pipe,{dx,dy},omega,rho,cent,3]},
+            du12=DEig[tu11,u11,a12,tu22,ae]];
+          Module[{
+            a21=CSRMatrix[pipe,{dx,dy},omega,rho,cent,4]},
+            du21=DEig[tu22,u22,a21,tu11,-Transpose[ae]]]];
+        Er0=CSRInit[{{dx,dy},cent,rho,sigx,pipe}];
+        rx=(Range[mx]-cent)*dx;
+        r=rx+rho;
+        ac=0.5/(or^2-1)/rho;
+        sig1=ac*   ((omega^2*(r^2+rho^2)-1)*Er0[[1]]+r*Er0[[2]]);
+        sig2=ac*or*((omega^2*rx*(r+rho)+1) *Er0[[1]]+r*Er0[[2]]);
+        sigv1=CSRConvert[sig1,pipe];
+        sigv2=CSRConvert[sig2,pipe];
+        ev11*=ac*or;
+        ev22*=ac*or;
+        w1=Exp[-((Abs[ev11])/(2omega))^2/8];
+        w2=Exp[-((Abs[ev22])/(2omega))^2/8];
+        {ev11,ev22,tu11,tu22,u11,u22,du12,du21,sigv1,sigv2,w1,w2})]
+*)
+    );
+
+  CSRData[omega_,0,sigvi_:Null]:=Module[{
+    ndim,
+    sigvir1,sigvir2,sigvii1,sigvii2,
+    sigvibr1,sigvibr2,sigvibi1,sigvibi2,
+    {ev1,ev2,dev1,dev2,tu1,tu2,u1,u2}=CSRDataCache[omega,0]},
+    If[ev1===Null,Return[
+      If[sigvi===Null,
+        {Null,Null,Null,Null},
+        {Null,Null,Null,Null,Null}]]];
+    If[sigvi===Null,
+      {{ev1,ev2},{dev1,dev2},{tu1,tu2},Null},
+      n1=Length[ev1];
+      n2=Length[ev2];
+      {sigvir1,sigvir2}={Take[sigvi[[1]],n1],Take[sigvi[[1]],-n2]};
+      {sigvii1,sigvii2}={Take[sigvi[[2]],n1],Take[sigvi[[2]],-n2]};
+      {sigvibr1,sigvibi1}=LinearSolveReal[tu1,{sigvir1,sigvii1},svdeps];
+      {sigvibr2,sigvibi2}=LinearSolveReal[tu2,{sigvir2,sigvii2},svdeps];
+      {{ev1,ev2},{dev1,dev2},{u1,u2},{sigvibr1,sigvibr2},{sigvibi1,sigvibi2}}]];
+
+  CSRData[omega_,rho_,sigvi_:Null]:=Module[{
+    or=omega*rho,
+    a,
+    {ev,tu,u,sigv}=CSRDataCache[omega,rho]},
+    If[ev===Null,
+      Return[{Null,Null,Null}]];
+    If[sigvi===Null,
+      a=LinearSolveReal[tu,sigv,svdeps];
+      {ev,u,a},
+      a=LinearSolveReal[tu,Prepend[sigvi,sigv],svdeps];
+      {ev,u,a}]];
+
+  Tweak[tw_,tw1_]:=If[tw>1,
+          1/tw,
+          tw1/tw];
+
+  StandardKList[]:=(omax=MaxWaveNumRatio/sigz;omin=0;Table[(i/Nk)^(4/3)*omax,{i,Nk}]);
+
+  Ez[omega_,rho_,s_]:=Module[{o1=omega,tw1=1.01,tw=1,e,de,
+    ndim,ev=Null,wvb,tu,dtu,w,sinwib,coswib,er,ei,ephir,ephii},
+    While[ev===Null,
+      {mx,my}=VariableMesh[o1,rho];
+      Print[{o1,mx,my}];
+      MakePipe[];
+      {ev,tu,dtu,wvb}=CSRData[o1,rho];
+      If[ev===Null,
+        o1=omega*(tw=Tweak[tw,tw1]);Print[ID//": Tweak K ",{omega,o1}]]];
+    e=(
+      w=#*s;
+      sinwib=(-Sin[w]/#)*#4;
+      coswib=(-2*Sin[w/2]^2/#)*#4;
+      {#2 .sinwib,#2 .coswib})&[ev,tu,wvb];
+    {er,ei}=e;
+    ndim=Length[tu[[1]]]/2;
+    ephir=CSRConvert[Take[er,ndim],pipe];
+    ephii=CSRConvert[Take[ei,ndim],pipe];
+    {o1,(9*ephir[[cent,1]]-ephir[[cent,2]])/8,
+      (9*ephii[[cent,1]]-ephii[[cent,2]])/8}];
+
+  MakeEz[s0_]:=Module[{x,i,
+    olist=StandardKList[],ephizlist,ephizrlist,ephizilist,x},
+    If[Nk>npara,
+      olist=Flatten[MapAt[Reverse,Partition[olist,npara],Table[{i},{i,2,Nk/npara,2}]]]];
+    ephizlist=Sort[
+      Parallelize[(Print["Starting ",#];
+        x=Ez[olist[#],BendingRadius,s0];
+        Print["Finished ",#," ",x];x)&,
+        Length[olist],128,npara]];
+    ephizrlist=ephizlist[[,{1,2}]];
+    ephizilist=ephizlist[[,{1,3}]];
+    ephizrlist=Join[ ({-1,1}*#&/@Reverse[ephizrlist]),{{0,0}},ephizrlist];
+    ephizilist=Join[-Reverse[ephizilist],{{0,0}},ephizilist];
+    Ezr=Spline[ephizrlist];
+    Ezi=Spline[ephizilist]];
+
+  Ez[z_,sz_:sigz]:=(1/Pi/Enorm[BendingRadius]*
+    NIntegrate[Exp[-(x*sz)^2/2]*(Ezr[x]*Cos[x*z]-Ezi[x]*Sin[x*z]),{x,omin,omax},AccuracyGoal->0.0001]);
+
+  MakeZL[l_,k1_,k2_,n_]:=(Nk=n;MakeZL[l,k1,k2]);
+  MakeZL[l_,k1_,k2_]:=MakeZL[l,(Range[Nk]-1)*(k2-k1)/(Nk-1)+k1];
+
+  MakeZL[l_,ol_:StandardKList[]]:=Module[{x,i,lo=Length[ol],m,n,t,jb,ol1,k,
+    olist=Reverse[ol],zllist,zlrlist,zlilist,x},
+    {omin,omax}=MinMax[ol];
+    zllist=Sort[
+      m=Max[Floor[lo/NParallel/2],1];
+      n=Floor[lo/m]+1;
+      t=Table[
+        jb=k*n;
+        If[jb>=lo,Break[]];
+        ol1=Take[olist,{jb+1,Min[(k+1)*n,lo]}];
+        Parallelize[(
+          ID=#+jb;
+          Sleep[#-0.99];
+          x=ZL[ol1[[#]],l];
+          Shared[nrun]=Max[0,Shared[nrun]-1];
+          Print["Finished ",ID," ",x];x)&,
+          Length[ol1],128,Length[ol1]],
+        {k,0,m-1}];
+      Partition[Flatten[t],3]];
+    zllist=DeleteCases[zllist,{_,NaN,_}|{_,_,NaN},1];
+    zlrlist=zllist[[,{1,2}]];
+    zlilist=zllist[[,{1,3}]];
+    zlrlist=Join[ ({-1,1}*#&/@Reverse[zlrlist]),{{0,0}},zlrlist];
+    zlilist=Join[-Reverse[zlilist],{{0,0}},zlilist];
+    ZLr=Spline[zlrlist];
+    ZLi=Spline[zlilist]];
+
+  MakeResZL[a_:(PipeWidth/2)]:=Module[{olist=StandardKList[],zlrlist,zlilist,zllist},
+    zllist=((-1e-12*SpeedOfLight*Z0/2/Pi/a)/((1+I)*Sqrt[EffectiveCond[#]*Z0/2/#]-I*a*#))&/@olist;
+    zlrlist=Re[zllist];
+    zlilist=Im[zllist];
+    zlrlist=Thread[{olist,zlrlist}];
+    zlilist=Thread[{olist,zlilist}];
+    zlrlist=Join[ ({-1,1}*#&/@Reverse[zlrlist]),{{0,0}},zlrlist];
+    zlilist=Join[-Reverse[zlilist],{{0,0}},zlilist];
+    ZLr=Spline[zlrlist];
+    ZLi=Spline[zlilist]];
+
+  ReadWake[f_,fact_:1]:=Module[{fn=OpenRead[f],d,zc,n,dz1,pos,wl,zl,zx,zr,zi,n1,sigzc,unit,s,opt,fs,c,k},
+    While[Head[unit]<=>Real,
+      s=ReadString[fn];
+      k=0;
+      While[s[++k]===" ",];
+      If[StringPosition["{0123456789.+-",s[k],1]<=>{},
+        fs=StringToStream[s];
+        Check[
+          opt=Read[fs];
+          Switch[Head[opt],
+            Real,
+            zc=opt;
+            {sigzc,unit}=Read[fs,{Real,Real,Real}];
+            unit=1/unit,
+            List,
+            {zc,sigzc,unit}={CenterOfBunch,WakeBunchLength,Unit}/.opt;
+            unit=Switch[unit,
+              "V/pC",1e12,
+              "V/nC",1e9,
+              "V/C",1,
+              _Real,unit];
+            ],];
+        Print[{s,k,Head[opt],unit}];
+        Close[fs]]
+      ];
+    unit=fact*1e-12*unit;
+    d=Table[{z,w}=Read[fn,{Real,Real}];
+      If[z===EndOfFile,Close[fn];Break[]];
+      {z-zc,w*unit},{Infinity}];
+    dz1=(d[[-1,1]]-d[[1,1]])/(Length[d]-1);
+    n1=Floor[zspan/dz1];
+    If[Mod[n1+Length[d],2],n1++];
+    d=Join[Thread[{Range[-n1,-1]*dz1+d[[1,1]],Table[0,{n1}]}],d];
+    pos=Position[d,_?((#[[1]]>=-dz1/2)&),1,1][[1,1]];
+    wl=Reverse[RotateLeft[d[[,2]],pos-1]];
+    n=Length[wl];
+    zl=InverseFourier[wl]*Sqrt[n]*dz1;
+    zx=Range[-n/2,n/2-1]*2*Pi/dz1/n;
+    zr=Thread[{zx,RotateRight[Re[zl],n/2]}];
+    zi=Thread[{zx,RotateRight[Im[zl],n/2]}];
+    ZLr=Spline[zr];
+    ZLi=Spline[zi]];
+
+  WriteZL[file_,opt___]:=Module[{f=OpenWrite[file]},
+    Write[f,Override[{opt,"BunchLength"->sigz,"ZL"->{ZLr,ZLi}}]];
+    Close[f]];
+
+  WL[z_,sz_:sigz]:=(1/Pi*
+    NIntegrate[Exp[-(x*sz)^2/2]*(ZLr[x]*Cos[x*z]-ZLi[x]*Sin[x*z]),{x,0,omax},AccuracyGoal->0.0001]);
+
+  ZThre[acoulomb_,r56_,sigdp_]:=
+    Sqrt[Pi/2]*(MOMENTUM/ElectronMass)*Z0/ElectronRadius/(acoulomb/ElectronCharge)*Abs[r56]*sigdp^2*SpeedOfLight;
+
+  ZL[omega_,l_]:=Module[{init=True,dzr,dzi,zr,zi,rho,s,ev=Null,tu,dtu,
+    wvb,wvbir,wvbii,o1=omega,e,de,start=True,
+    cosw,sinw,coswi,sinwi,rhom,ndim,w,coswii,xsinw,e2r,e2i,r2,a,b,damp,coswe,damph,
+    tw=1,tw1=1.01,tw2=1.02,w2,evth,mem},
+    While[ev===Null,
+      zr=zi=0;
+      init=True;
+      Do[
+        {rho,s}=l[[i]];
+        If[rho===0,
+          {ev,dev,tu,wvbir,wvbii}=CSRData[o1,0,{er,ei}];
+          If[ev===Null || Min[Abs[ev]]==0,
+            ev=Null;
+            o1=omega*(tw=Tweak[tw,tw2]);Print[ID//": Tweak K (1) ",{i,omega,o1}];Break[]];
+          evth=(Max[Abs[ev]]*Threshold)^2;
+          {er,ei,dzr,dzi}=MapThread[Join,
+            MapThread[
+              (w=#*s;
+                r2=Restrict[#^2+#2^2,evth,Infinity];
+                a=#/r2;b=#2/r2;
+                If[s==0,
+                  cosw=sinw=0;
+                  coswi=-b;
+                  sinwi=-a,
+                  damp=Exp[-s*#2];
+                  cosw  = damp*Cos[w];
+                  sinw  = damp*Sin[w];
+                  coswe = 1-cosw;
+                  coswi =-(a*sinw+b*coswe);
+                  sinwi =-(a*coswe-b*sinw)];
+                {
+                  cosw*#4  -sinw*#5,
+                  sinw*#4  +cosw*#5,
+                  -coswi*#4+sinwi*#5,
+                  -sinwi*#4-coswi*#5}.#3)&,
+              {ev,dev,tu,wvbir,wvbii}]];
+          {zr,zi}+={dzr,dzi},
+
+          If[init,
+            rhom=Min[Abs[Select[l[[,1]],#<>0&]]];
+            {mx,my}=VariableMesh[o1,rhom];
+            MakePipe[];
+            mem=(Plus@@pipe)^2*3*8+5e8;
+            If[start,
+              Wait[mem];
+              start=False];
+            {ev,tu,wvb}=CSRData[o1,rho],
+            {ev,tu,wvb}=CSRData[o1,rho,{er,ei}]];
+          If[ev===Null || Min[Abs[ev]]==0,
+            o1=omega*(tw=Tweak[tw,tw1]);Print[ID//": Tweak K (2) ",{i,omega,o1}];Break[]];
+          e=(
+            w=#*s;
+            cosw  = Cos[w];
+            sinw  = Sin[w];
+            coswi =-sinw/#;
+            sinwi =-2*Sin[w/2]^2/#;
+            coswii= sinwi/#;
+            xsinw =-XSin[w]/#^2;
+            du=
+              If[init,
+                {coswi*#3, sinwi*#3, coswii*#3,xsinw*#3},
+                {cosw*#3[[2]] -sinw*#3[[3]] +coswi*#3[[1]],
+                  sinw*#3[[2]] +cosw*#3[[3]] +sinwi*#3[[1]],
+                  -coswi*#3[[2]]+sinwi*#3[[3]]+coswii*#3[[1]],
+                  -sinwi*#3[[2]]-coswi*#3[[3]]+ xsinw*#3[[1]]}];
+            du. #2)&[ev,tu,wvb];
+          {er,ei,dzr,dzi}=e;
+          {zr,zi}+={dzr,dzi}];
+(*        If[Plus@@(zr+zi)===NaN,
+          ev=Null;
+          o1=omega*(tw=Tweak[tw,tw1]);Print[ID//": Tweak K (3) ",{i,omega,o1}];Break[]]; *)
+        init=False,
+        {i,Length[l]}]];
+    e2r=CSRConvert[Take[zr,les],pipe];
+    e2i=CSRConvert[Take[zi,les],pipe];
+    {o1,
+      (9*e2r[[cent,1]]-e2r[[cent,2]]+9*e2r[[cent+1,1]]-e2r[[cent+1,2]]
+        )/16*Wnorm,
+      (9*e2i[[cent,1]]-e2i[[cent,2]]+9*e2i[[cent+1,1]]-e2i[[cent+1,2]]
+        )/16*Wnorm
+      }];
+
+  Wait[mem_]:=Module[{frm=0,int=10},
+    Do[
+      If[Shared[nrun] < npara && mem < (frm=FreeMem[]),
+        If[mem < frm/5,
+          Break[]];
+        Sleep[5];
+        If[Shared[nrun] < npara && mem < (frm=FreeMem[]),
+          If[mem < frm/2.5,
+            Break[]];
+          Sleep[5+5*Random[]];
+          If[Shared[nrun] < npara && mem < (frm=FreeMem[]),
+            Break[]]]];
+      If[Mod[i,int]==1,
+        int*=2;
+        Print[If[int>20,"Still w","W"]//"aiting ",ID,
+          If[Shared[nrun] >= npara,
+            " for CPU, running: "//Shared[nrun],
+            " for memory needed: "//Round[mem/2^20]//
+            "M,  Free: "//Floor[frm/2^20],"M"]]];
+      Sleep[10+10*Random[]],
+      {i,Infinity}];
+    ++Shared[nrun];
+    Print["Started ",ID,", obtaining memory needed: ",Round[mem/2^20],
+      "M,  Free: ",Floor[frm/2^20],"M"]
+    ];
+
+  With[{def={Literal[BunchLength]:>sigz,Literal[PipePlot]:>True,Label->True}},
+    WLPlot[min_,max_,opt___]:=Module[{gr,z,label,gp,
+      {sz,pp,lp}={Literal[BunchLength],Literal[PipePlot],Label}/.{opt}/.def},
+      StandardForm[$FORM="C10.5";
+        label=If[lp,
+          "Pipe height = "//PipeHeight*1000//" mm,  "//
+            "Pipe width = "//PipeWidth*1000//" mm,\n"//
+              "TiN thickness = "//TiNThick*1e6//" `fm`nm,  "//
+                "TiN Cond. = "//TiNCond/1e6//" (`fmW`nm)`u-1`n,\n"//
+              "Maximum k = "//MaxWaveNumRatio//" /`fs`n`dz`n,  "//
+                "# of k = "//Nk//",  "//
+                  "Mesh Ratio = "//MeshRatio//",  "//
+                    "`fs`n`dz`n = "//BunchLength*1000//" mm",
+          ""]];
+      gr=Plot[WL[z,sz],{z,min,max},
+        opt,
+        PlotPoints->Nk*4,
+        GridLines->{Automatic,Automatic},
+        DisplayFunction->Identity,
+        FrameLabel->{"z (m)","W`dL`n (V/pC)",label,""}];
+      If[pp,
+        gp=PipePlot[DisplayFunction->Identity,Thickness->2];
+        gr={Graphics[Rectangle[{0,0},{1,1},gr]],
+          Graphics[Rectangle[{0.7,0.1},{0.95,0.35},gp]]}];
+      Show[gr,opt];
+      Update[];
+      gr];
+
+  ZLPlot[opt___]:=Module[{gr,x,label,gp,
+      {sz,pp,lp}={Literal[BunchLength],Literal[PipePlot],Label}/.{opt}/.def},
+    label=StandardForm[$FORM="C10.5";
+      If[lp,
+        "Pipe height = "//PipeHeight*1000//" mm,  "//
+          "Pipe width = "//PipeWidth*1000//" mm,\n"//
+            "TiN thickness = "//TiNThick*1e6//" `fm`nm,  "//
+              "TiN Cond. = "//TiNCond/1e6//" (`fmW`nm)`u-1`n,\n"//
+                "Maximum k = "//MaxWaveNumRatio//" /`fs`n`dz`n,  "//
+                  "# of k = "//Nk//",  "//
+                    "Mesh Ratio = "//MeshRatio//",  "//
+                      "`fs`n`dz`n = "//BunchLength*1000//" mm",
+        ""]];
+    gr=Plot[{ZLr[x]/SpeedOfLight*1e12,ZLi[x]/SpeedOfLight*1e12},{x,If[omin<omax/10,0,omin],omax},
+      DisplayFunction->Identity,
+      opt,
+      PlotLabel->label,
+      PlotPoints->Nk*8,
+      GridLines->{Automatic,Automatic},
+      FrameLabel->{"k (1/m)","Z`dL`n (`fW`n)"}];
+    If[pp,
+      gp=PipePlot[DisplayFunction->Identity,Thickness->2];
+      gr={Graphics[Rectangle[{0,0},{1,1},gr]],
+        Graphics[Rectangle[{0.05,0.1},{0.3,0.35},gp]]}];
+    Show[gr,opt];
+    Update[];
+    gr]
+    ];
+
+  With[{def={Literal[BunchLength]:>sigz,Label->" "}},
+    WLPrint[fn_,s1_,s2_,ds_,opt___]:=Module[{s,label,sz,f=OpenWrite[fn]},
+      {sz,label}={Literal[BunchLength],Label}/.{opt}/.def;
+      Write[f,"!  ",label];
+      Write[f,"!      s (m)             WL (V/pC)"];
+      StandardForm[$FORM="15.7";
+        Do[
+          Write[f,s,"  ",WL[-s,sz]],
+          {s,s1,s2,ds}]];
+      Close[f]
+      ]];
+
+  EzPlot[min_,max_,sz_:sigz]:=(Plot[Ez[z,sz],{z,min,max},GridLines->{Automatic,Automatic},
+    FrameLabel->{"z (m)","E`dz`n/E`d0`n"}];Update[]);
+
+  Er0Plot[]:=Module[{g1,g2,gr},
+    g1=ListContourPlot[Er0[[1]],AspectRatio->1,
+      Contours->20,
+      DisplayFunction->Identity];
+    g2=ListContourPlot[Er0[[2]],AspectRatio->1,
+      Contours->10,
+      DisplayFunction->Identity];
+    Show[gr=
+      Graphics[{Rectangle[{0,0},{1,0.5},g1],Rectangle[{0,0.5},{1,1},g2]}]];Update[];
+    gr
+    ];
+
+  With[{np=1000},
+    PipePlot[opt___]:=Module[{p,l,gr,x=(Range[np]-1)/np*PipeWidth-Center,ph},
+      p=Thread[{x,PipeFun/@x}*1000];
+      ph=Max[p[[,2]]];
+      l=Join[p,{{p[[-1,1]],0},{p[[1,1]],0},p[[1]]}];
+      gr=ListPlot[l,opt,Plot->False,PlotJoined->True,Thickness->3,
+        PlotColor->"black",
+        PlotRange->{{-Center*1.1*1000,(PipeWidth-Center)*1.1*1000},
+          {-ph*0.1,ph*1.1}},
+        GridLines->{Automatic,Automatic},
+        FrameLabel->{"x (mm)","y (mm)"},
+        AspectRatio->PipeWidth*1000/ph];
+      Update[];
+      gr
+      ]];
+
+  FreeMem[]:=Module[{f,w,w0,free=0,inac=0,
+    cmd="!top "//Switch[Environment["OSTYPE"],
+      "darwin","-l 1 -n 1",
+      "FreeBSD","-b",
+      "linux","-b -n 1"]//
+        "|grep Mem:"},
+    f=OpenRead[cmd];
+    If[f===$Failed,Return[0]];
+    w0="0";
+    Check[
+      Block[{G=2^30,M=2^20,K=2^10,g=2^30,m=2^20,k=2^10},
+        Do[w=Read[f,Word];
+          If[w===EndOfFile,Break[]];
+          Switch[ToLowerCase[w][1,4],
+            "inac"|"buff",
+            inac=ToExpression[w0],
+            "free",
+            free=ToExpression[w0]];
+          w0=w,
+          {100}]],];
+    Close[f];
+    free+inac/2];
+
+  ];
+
+CSRStability=Class[{CSR},{},
+  {sige,sigz,nus,damp,r56,r65,ndiv,
+    zspan=12,nr=512,dz,rho,Zl,enh=1,Division=4,OYInfo,
+    BunchLength,MomentumSpread,DampingRate,SynchrotronTune,Meshes,MeshSize=0.0003},
+
+  Constructor[]:=Module[{mus},
+    sige=MomentumSpread;
+    sigz=BunchLength;
+    damp=DampingRate; (* positive means damping *)
+    nus=SynchrotronTune; (* negative for positive alpha *)
+    mus=2*Pi*nus;
+    r56=2*Sin[mus]/(1+Cos[mus])*sigz/sige;
+    r65=-4*Sin[mus/2]^2/r56;
+    dz=MeshSize;
+    nr=Meshes;
+    zspan=dz/sigz*(nr/2);
+    ndiv=Division];
+
+  GetZL[file_,fact_,sigzc_:0]:=Module[{zldata=Get[file],dk,kmax,n,zl,k,zlr,zli,
+    sigzp},
+    {sigzp,{zlr,zli}}={"BunchLength","ZL"}/.zldata;
+    dk=2*Pi/dz/nr;
+    kmax=zlr[[1,1,-1]];
+    zl=Flatten[Table[ak=dk*k;km=Min[ak,kmax];{zlr[km],zli[km]}*
+      Min[Exp[(ak*sigzp)^2/2],enh]*Exp[-(ak*dz)^2/12-(ak*sigzc)^2/2],{k,0,nr/2-1}]];
+    zl[[2]]=(
+      k=nr/2;
+      ak=dk*k;km=Min[ak,kmax];zlr[km]*Min[enh,Exp[(ak*sigzp)^2/2]]*Exp[-(ak*dz)^2/12-(ak*sigzc)^2/2]);
+    fact*zl];
+
+  GetTag[f_]:=Module[{p,b,e},
+    p=StringPosition[f,"/"];
+    b=If[p==={},
+      1,
+      p[[-1,1]]+1];
+    p=StringPosition[f,"."];
+    e=Which[
+      p==={},
+      -1,
+      p[[-1,1]]>b,
+      p[[-1,1]]-1,
+      True,
+      -1];
+    f[b,e]];
+
+  With[{def={WakeBunchLength->0,Plot->True}},
+    SetupZL[files_,opt___]:=Module[{f=Select[files,#[[2]]<>0&],
+      zs,kl,zr,zi,gr,gl,pc,da,dzl,wbl,plot},
+      {wbl,plot}={WakeBunchLength,Plot}/.{opt}/.def;
+      enh=1;
+      zs=0;
+      gl={};
+      kl=Range[-nr/2,nr/2-1]/nr*2*Pi/dz;
+      omax=kl[[-1]];
+      If[plot,
+        pc={"black","red","dark slate blue","violet red","forest green",
+          "goldenrod","cyan4"};
+        da={{1},{0.4,0.08},{0.2,.04},{0.1,0.02},{0.2, 0.02, 0.04, 0.02}};
+        While[Length[pc]<Length[f],pc=Join[pc,pc]];
+        While[Length[da]<Length[f],da=Join[da,da]];
+        pc=Take[pc,Length[f]];
+        da=Take[da,Length[f]]];
+      MapThread[(
+        zs+=(dzl=GetZL[#[[1]],#[[2]],wbl]);
+        If[plot,
+          SetZl[dzl,kl];
+          gr=WLPlot[-sigz*2,sigz*2,Literal[BunchLength]->wbl,
+            Literal[PipePlot]->False,Label->False,Legend->GetTag[#[[1]]],
+            Thickness->2,
+            PlotColor->#2,Dashing->#3
+            ];
+          AppendTo[gl,gr]])&,{f,pc,da}];
+      SetZl[zs,kl];
+      Zl=zs;
+      If[plot,
+        Show[gl];Update[]]]];
+
+  SetZl[z_,kl_]:=Module[{
+    {zr,zi}=Thread[Partition[z,2]]},
+    zr=Join[Reverse[RotateLeft[zr,1]],zr];
+    zr[[1]]=zi[[1]];
+    zi[[1]]=0;
+    zi=Join[-Reverse[RotateLeft[zi,1]],zi];
+    ZLr=Spline[Thread[{kl,zr}]];
+    ZLi=Spline[Thread[{kl,zi}]]];
+
+  RhoStat[r_]:=Module[{
+    sr=Plus@@r,
+    z=Range[Length[r]]*dz,zr,zc,zzr},
+    zr=Plus@@(r*z);
+    zc=zr/sr;
+    zzr=Sqrt[(Plus@@((z-zc)^2*r))/sr];
+    {sr,zc,zzr}];
+
+  GenerateZ[np_]:=Module[
+    {l=Length[rho],z,zl,n=0,rhosp,a,ran,eps=1e-5,rhoi,rhoisp},
+    z=Range[l];
+    rhosp=Spline[Thread[{z,rho/Max[rho]}]];
+    rhoi=Table[Integrate[rhosp[x],{x,1,y}],{y,1,l}];
+    rhoi=Thread[{(rhoi-rhoi[[1]])/(rhoi[[-1]]-rhoi[[1]]),z}];
+    rhoi=Select[rhoi,1-eps>#[[1]]>eps&];
+    rhoisp=Spline[rhoi];
+    z=(rhoisp[Random[np]*(1-eps)+eps]-1)*dz;
+    (z-=(Plus@@z)/np)];
+
+  InitializeParticles[np_,aw_,h_:True]:=(
+    {If[h,
+      Catch[Check[rho=CSRHaissin[Zl,{dz,aw,r65,sigz}],
+        Throw[sigz*GaussRandom[np]]];
+        GenerateZ[np]],
+      sigz*GaussRandom[np]],
+      sige*GaussRandom[np]});
+
+  TrackLabel[aw_,np_]:=
+    StandardForm[$FORM="C10.5";
+      "Pipe height = "//PipeHeight*1000//" mm,  "//
+        "Pipe width = "//PipeWidth*1000//" mm,\n"//
+        "Particles / bunch = "//aw*MOMENTUM*1e-12/ElectronCharge//",  "//
+        "`fs`dd0`n = "//sige*100//"%,  "//
+          "`fs`n`dz0`n = "//BunchLength*1000//" mm,\n"//
+            "`fn`n`dz`n = "//nus//",  "//
+          "R56 = "//r56//" m, "//
+            "R65 = "//r65//" /m, \n"//
+              "Damping / turn = "//damp//",  "//
+                "Macro Particles = "//np//",\n"//
+                "Wake division / turn = "//ndiv//",  "//
+                "Bin = "//dz*1000//" mm x "//nr];
+
+  Track[aw_,z_,dp_,nt_,ntplot_]:=Module[{r,resz={},resdp={},g1,g2,gr,
+    label=TrackLabel[aw,Length[z]]},
+    Do[
+      r=CSRTrack[z,dp,Zl,{dz,ndiv,aw,r56,r65,damp,sige},ntplot];
+      r=Thread[Partition[r,2]];
+      resz=Join[resz,r[[1]]/sigz];
+      resdp=Join[resdp,r[[2]]/sige];
+      (*  ListPlot[Thread[{z,dp}],
+      PlotRange->{{-6*sigz,6*sigz},{-6*sige,6*sige}},
+      AspectRatio->1
+        ];Update[],*)
+      With[{opt={DisplayFunction->Identity,GridLines->{Automatic,Automatic}}},
+        g1=ListPlot[resz,Null@@opt,
+          FrameLabel->{"Turns","`fs`n`dz`n / `fs`n`dz0`n"}];
+        g2=ListPlot[resdp,Null@@opt,
+          FrameTicks->{Ticks,Both,Ticks,Ticks},
+          FrameLabel->{"","`fs`dd`n / `fs`dd`n`d0`n",label,""}]];
+      Show[gr=
+        Graphics[{Rectangle[{0,0},{1,0.5},g1],Rectangle[{0,0.5},{1,1},g2]}]];Update[];
+      If[resz[[-1]]==0,Break[]],
+      {nt/ntplot}]];
+
+  ScanTrack[awl_,np_,{t1_,t2_}]:=Module[{r,z1,dp1,resz,resdp,avez,avedp,l,data,gz,gdp,label},
+    label=TrackLabel[MinMax[awl[[,1]]],np];
+    data=Parallelize[
+      ({z1,dp1}=InitializeParticles[np,awl[[#,1]]]*awl[[#,2]];
+      r=CSRTrack[z1,dp1,Zl,{dz,ndiv,awl[[#,1]],r56,r65,damp,sige},t1-1];
+      r=CSRTrack[z1,dp1,Zl,{dz,ndiv,awl[[#,1]],r56,r65,damp,sige},t2-t1+1];
+      r=Thread[Partition[r,2]];
+      resz=r[[1]]/sigz;
+      resdp=r[[2]]/sige;
+      l=Length[resz];
+      {awl[[#,1]]*MOMENTUM*1e-12/ElectronCharge/1e10,
+        avez=(Plus@@resz)/l,
+        Sqrt[(Plus@@((resz-avez)^2))/l],
+        avedp=(Plus@@resdp)/l,
+        Sqrt[(Plus@@((resdp-avedp)^2))/l]})&,Length[awl],256,npara];
+    gz=ListPlot[data[[,{1,2,3}]],DisplayFunction->Identity,
+      GridLines->{Automatic,Automatic},
+      PlotJoined->True,Thickness->2,PlotColor->"dark slate blue"];
+    gdp=ListPlot[data[[,{1,4,5}]],DisplayFunction->Identity,
+      PlotJoined->True,Thickness->2,PlotColor->"tomato",Dashing->{0.3,0.05}];
+    Show[gz,gdp,FrameLabel->{"Particles / bunch (10`u10`n)",
+      "`fs`n`dz`n / `fs`n`dz0`n,    `fs`dd`n / `fs`dd`n`d0`n",label}];
+    Update[]];
+
+  ScanBL[aw_,sigzl_,np_,{t1_,t2_}]:=Module[{r,z1,dp1,resz,resdp,avez,avedp,l,data,gz,gdp,label},
+    label=TrackLabel[aw,np];
+    data=Parallelize[(
+      {BunchLength,SynchrotronTune,inf}=sigzl[[#]];
+      Constructor[];
+      {z1,dp1}=InitializeParticles[np,aw]*inf;
+      r=CSRTrack[z1,dp1,Zl,{dz,ndiv,aw,r56,r65,damp,sige},t1-1];
+      r=CSRTrack[z1,dp1,Zl,{dz,ndiv,aw,r56,r65,damp,sige},t2-t1+1];
+      r=Thread[Partition[r,2]];
+      resz=r[[1]]*1000;
+      resdp=r[[2]]/sige;
+      l=Length[resz];
+      {BunchLength*1000,
+        avez=(Plus@@resz)/l,
+        Sqrt[(Plus@@((resz-avez)^2))/l],
+        avedp=(Plus@@resdp)/l,
+        Sqrt[(Plus@@((resdp-avedp)^2))/l]})&,Length[sigzl],256,npara];
+    gz=ListPlot[data[[,{1,2,3}]],DisplayFunction->Identity,
+      GridLines->{Automatic,Automatic},
+      FrameTicks->{True,True,True,False},
+      Legend->"`fs`n`dz",
+      FrameLabel->{"`fs`n`dz0`n (mm)",
+      "`fs`n`dz`n (mm)",label,
+      "`fs`dd`n / `fs`dd`n`d0`n"},
+      PlotJoined->True,Thickness->2,PlotColor->"dark slate blue"];
+    gdp=ListPlot[data[[,{1,4,5}]],DisplayFunction->Identity,
+      Legend->"`fs`dd`n/`fs`dd`n`d0",
+      FrameTicks->{False,False,False,True},
+      PlotJoined->True,Thickness->2,PlotColor->"tomato",Dashing->{0.3,0.05}];
+    Show[Graphics[{Rectangle[{0,0},{1,1},gz],Rectangle[{0,0},{1,1},gdp]}]];
+    Update[]];
+
+  With[{def=Reduction->10},
+    TrackAnimate[aw_,z_,dp_,{nt1_,nt2_},dir_,opt___]:=Module[{r,resz={},resdp={},red,nred,
+      cid=Null,cmd,c1,crop,
+      label=TrackLabel[aw,Length[z]]},
+      red=Reduction/.{opt}/.def;
+      nred=Length[z]/red;
+      If[nt1>1,
+        r=CSRTrack[z,dp,Zl,{dz,ndiv,aw,r56,r65,damp,sige},nt1-1]];
+      StandardForm[
+        Do[
+          r=CSRTrack[z,dp,Zl,{dz,ndiv,aw,r56,r65,damp,sige},1];
+          r=Thread[Partition[r,2]];
+          ListPlot[Take[Thread[{z/BunchLength,dp/MomentumSpread}],nred],
+            PlotRange->{{-6,6},{-6,6}},
+            FrameLabel->{"z /`fs`n`dz0","`fd`n /`fs`dd`n`d0`n","Turn #"//k//"         "//label},
+            GridLines->{Automatic,Automatic},
+            AspectRatio->1
+            ];Update[];
+          If[cid===Null,
+            cid=WidgetInfo[The$Canvas,ID];
+            c1=Floor[(The$CanvasObject@Canvas$Scale*The$CanvasObject@Canvas$PlotRange+The$CanvasObject@Canvas$Offset)];
+            crop=(c1[[1,2]]-c1[[1,1]]+160)//"x"//(c1[[2,1]]-c1[[2,2]]+120)//"+"//
+              (c1[[1,1]]-80)//"+"//(c1[[2,2]]-60);
+            cmd="import -silent -window "//cid//" -format -jpeg -trim +repage "//
+              " -resize 640 "//dir//"/TA";
+            System["mkdir "//dir]];
+          System[cmd//k//".jpg"],
+          {k,nt1,nt2}];
+        ];
+    ]];
+
+  With[{def={Range->4,BLFactor->1}},
+    OYStability[aw_,nj_,nphi_,opt___]:=Module[{oym,ev,u,gr,zsp,fact},
+      {zsp,fact}={Range,BLFactor}/.{opt}/.def;
+      If[~RealQ[fact],Return[]];
+      Check[rho=CSRHaissin[Zl,{dz,aw,r65,sigz*fact}],Message[CSR::nohaissin];Return[]];
+      OYInfo=CSRSetupOY[rho,Zl,{dz,nj,nphi,aw,r56,r65,zsp}];
+      oym=CSROYMatrix[OYInfo,{dz,aw,nus,sigz*fact,sige*fact}];
+      {ev,u}=Eigensystem[oym];
+      ev=Sqrt[ev];
+      gr=Max[Abs[Im[ev]]-damp*Restrict[Abs[Re[ev]/(2Pi nus)],1,Infinity]];
+      StandardForm[$FORM="10.5";Print["OYS factor, growth: ",fact,"  ",gr]];
+      {gr<0,gr,ev,u}]];
+
+  OYSF[aw_,nj_,nphi_,f_Real]:=OYStability[aw,nj,nphi,BLFactor->f];
+
+  GuessOYStability[aw_,nj_,nphi_,fini_:1]:=Module[{f,fact,r},
+    r=OYStability[aw,nj,nphi];
+    Which[r===Null,Return[{0,0}],
+      r[[1]]==1,{RhoStat[rho][[-1]]/sigz,1},
+      True,
+      fact=f/.FindRoot[OYSF[aw,nj,nphi,f][[2]]==0,{f,fini,{1,4}},
+        MaxIterations->20,
+        D->False,AccuracyGoal->Abs[damp/10]];
+      {RhoStat[rho][[-1]]/sigz,fact}]];
+
+  GuessOYStability1[aw_,nj_,nphi_]:=Module[{f0,f1,f,r0,r1,r,delta=0.01},
+    r=OYStability[aw,nj,nphi];
+    Which[r===Null,Return[{0,0}],
+      r[[1]]==1,{RhoStat[rho][[-1]]/sigz,1},
+      True,
+      r0=r[[2]];
+      f0=1;
+      f1=f0*(1+delta);
+      Do[
+        r1=OYSF[aw,nj,nphi,f1][[2]];
+        If[r1<=damp/10,
+          f=f1-r1/(r1-r0)*(f1-f0);
+          r=OYSF[aw,nj,nphi,f];
+          Return[{RhoStat[rho][[-1]]/sigz,f}]];        
+        If[r1>r0,
+          delta=Min[delta*2,0.04];
+          f1*=1+delta,
+          f=Min[(f1-(r1/r0)^2*f0)/(1-(r1/r0)^2),f1*1.05];
+          f0=f1;
+          f1=f;
+          r0=r1],
+        {10}];
+      Return[{RhoStat[rho][[-1]]/sigz,f1}]]];
+
+  OYScan[aw_,n_,nj_,nphi_]:=Module[{l,gz,gdp,label,r,fini=1.01,ax},
+    l=Parallelize[(
+      r=GuessOYStability1[ax=aw/n*(#-1),nj,nphi];
+      Prepend[r,ax*MOMENTUM*1e-12/ElectronCharge/1e10])&,n+1,256,npara];
+    label=OYLabel[nj,nphi];
+    gz=ListPlot[l[[,{1,2}]],DisplayFunction->Identity,
+      GridLines->{Automatic,Automatic},
+      PlotJoined->True,Thickness->2,PlotColor->"dark slate blue"];
+    gdp=ListPlot[l[[,{1,3}]],DisplayFunction->Identity,
+      PlotJoined->True,Thickness->2,PlotColor->"tomato",Dashing->{0.3,0.05}];
+    Show[gz,gdp,FrameLabel->{"Particles / bunch (10`u10`n)",
+      "`fs`n`dz`n / `fs`n`dz0`n,    `fs`dd`n / `fs`dd`n`d0`n",label}];
+    Update[];
+    l];
+
+  OYLabel[nj_,nphi_]:=
+    StandardForm[$FORM="C10.5";
+      "Pipe height = "//PipeHeight*1000//" mm,  "//
+        "Pipe width = "//PipeWidth*1000//" mm,\n"//
+        "`fs`dd0`n = "//sige*100//"%,  "//
+          "`fs`n`dz0`n = "//BunchLength*1000//" mm,\n"//
+          "R56 = "//r56//" m, "//
+            "R65 = "//r65//" /m, \n"//
+              "Damping / turn = "//damp//",\n"//
+                "J Meshes = "//nj//",  "//
+                "Phi modes  = "//nphi//",  Z Meshes = "//nr];
+
+
+  ];
+
+CSR::nohaissin="No Haissinski solution found";

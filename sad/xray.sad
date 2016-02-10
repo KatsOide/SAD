@@ -1,0 +1,21 @@
+FFS;
+
+  data={rho->100,u->20e3,np->1e13,theta->10e-3};
+
+  uc=(3/2 gamma^3 ElectronRadius/FineStructureConstant/rho*ElectronMass);
+  ngamma=(5/2/Sqrt[3] gamma*FineStructureConstant theta);
+  b=gamma*ElectronMass/SpeedOfLight/rho;
+  ne=np/ngamma;
+
+  gs=With[{eq=(uc==u)/.data},
+    FindRoot[eq,{gamma,1e4}]];
+
+  {ne/1e10,gamma*ElectronMass/1e9,b}/.gs/.data
+
+end
+
+
+
+
+
+

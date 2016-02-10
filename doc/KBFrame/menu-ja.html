@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="ja-JP">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-2022-JP">
+<TITLE>KBFrame メニューの作成</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<A NAME="top" HREF="index-ja.html">目次</A>
+<A HREF=about-ja.html>About... MessageBox</A>
+<A HREF=progbar-ja.html>Progress Bar</A>
+
+<HR><DIV ALIGN="CENTER"><H2>メニューの作成</H2></DIV><HR>
+
+<P>メニューバーに新しくMenuButton[]を作るには、</P>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["MenuEx", f, Title-&gt;"Menu Example"];
+mb = <A HREF="manual.html#KBFAddMenuButton">KBFAddMenuButton</A>[w, Text-&gt;"Test"];
+m = Menu[mb,Add-&gt;{
+      Button[Text-&gt;"Action 1", Command:&gt;Print["1"]],
+      Button[Text-&gt;"Action 2", Command:&gt;Print["2"]]}];
+TkWait[];
+</CODE></PRE>
+
+<P>のようにします。KBFAddMenuButtonの書式は、親としてKBFrameを指定する
+以外は通常のMenuButton[]と同じです。
+一旦MenuButton[]が出来ると、それに付随するMenu[]は普通に作れます。
+新しいMenuButton[]の位置は、EditメニューとWindowメニューの間です。</P>
+
+<P><IMG SRC="menu1.gif" WIDTH=412 HEIGHT=366 ALT="User define menu"></P>
+
+<P><A HREF="#top">top</A></P>
+
+<HR>
+<ADDRESS>このページに関する御意見・質問は
+<A HREF="mailto:samo.stanic@kek.jp">Samo Stanic</A>
+まで.</ADDRESS>
+</BODY>
+</HTML>

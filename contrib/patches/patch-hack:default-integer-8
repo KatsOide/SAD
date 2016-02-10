@@ -1,0 +1,123 @@
+Index: src/tfloor.f
+===================================================================
+--- src/tfloor.f	(revision 564)
++++ src/tfloor.f	(working copy)
+@@ -747,7 +747,7 @@
+         iseed=0
+         vx=tgauss()
+         iseed=vstk(ivstkoffset+isp)
+-        iseed=sign((abs(iseed)/2)*2+1,iseed)
++        iseed=sign((abs(iseed)/2)*2+1,int(iseed))
+         vx=iseed
+       elseif(it .eq. ntfoper .and. itastk(2,isp) .eq. 0)then
+         vx=iseed
+Index: src/rslvin.f
+===================================================================
+--- src/rslvin.f	(revision 564)
++++ src/rslvin.f	(working copy)
+@@ -2,7 +2,7 @@
+       integer idx
+       include 'inc/MACCBK.inc'
+       include 'inc/MACCODE.inc'
+-      integer llen,lpt,lptnew,lptold,inc,direct,hsrchz
++      integer*4 llen,lpt,lptnew,lptold,i,i0,inc,direct,hsrchz
+       integer STACSZ
+       parameter (STACSZ=400)
+       integer istack(STACSZ),pstack
+Index: src/inc/MACCBK.inc
+===================================================================
+--- src/inc/MACCBK.inc	(revision 564)
++++ src/inc/MACCBK.inc	(working copy)
+@@ -15,8 +15,9 @@
+ c
+       include 'inc/MACMAX.inc'
+ c     define `RBASE': base index number in pfalloc.f
+-      integer*4 RBASE
++      integer*8 RBASE
+       parameter (RBASE=1513*1024)
++c      parameter (RBASE=-5465*1073741824)
+       integer*4 ilistroot,ilistdummy(LILISTDUMMY)
+       real*8 rlist
+       integer*4 ilist(2,RBASE:RBASE)
+Index: src/temit.f
+===================================================================
+--- src/temit.f	(revision 564)
++++ src/temit.f	(working copy)
+@@ -9,8 +9,9 @@
+       real*8 resib,conv
+       parameter (npara=59)
+       parameter (itmax=30,resib=3.d-6,conv=1.d-12)
+-      integer*4 latt(2,nlat),lfni,lfno,ndim,ia,it,i,j,k,
+-     $     k1,k2,k3,iii,m,n,italoc,iari,itfm2l,
++      integer i,j,m,n
++      integer*4 latt(2,nlat),lfni,lfno,ndim,ia,it,k,
++     $     k1,k2,k3,iii,italoc,iari,itfm2l,
+      $     iacodx,l,iabeam,iaemit,iatrans,itfcopy1,iabmi
+       real*8 trans(6,12),cod(6),beam(21),emx0,emy0,emz0,dl,
+      $     heff,orf,phirf,alphap,omegaz,bh,so,s,
+Index: src/tffsa.f
+===================================================================
+--- src/tffsa.f	(revision 564)
++++ src/tffsa.f	(working copy)
+@@ -535,7 +535,7 @@
+         do k=1,nfc
+           if(kfit(k) .le. mfit)then
+             if(abs(mfitp(k)) .gt. 2)then
+-              mfitp(k)=sign(abs(nfp)+1,mfitp(k))
++              mfitp(k)=sign(abs(nfp)+1,int(mfitp(k)))
+             endif
+           endif
+         enddo
+Index: src/tfinitn.f
+===================================================================
+--- src/tfinitn.f	(revision 564)
++++ src/tfinitn.f	(working copy)
+@@ -457,7 +457,7 @@
+       endif
+       isp0=isp
+       do i=1,narg
+-        call getarg(i,arg)
++        call getarg(int(i),arg)
+         l=lnblnk(arg)
+         isp=isp+1
+         itastk(1,isp)=ntfstring
+Index: src/tfbeam.f
+===================================================================
+--- src/tfbeam.f	(revision 564)
++++ src/tfbeam.f	(working copy)
+@@ -2,7 +2,8 @@
+       subroutine tfbeam(twiss,gammab,k,theta,beam)
+       implicit none
+       include 'inc/TFMACRO1.inc'
+-      integer*4 k,ip,i,m,n,ia
++      integer*4 k,ip,i,ia
++      integer m,n
+       real*8 twiss(nlat*(2*ndim+1),ntwissfun),gammab(nlat)
+       real*8 trans(4,5),trans1(6,12),cod(6),beam(21)
+       real*8 theta,r,pfi,emxi,emyi
+Index: src/expln.f
+===================================================================
+--- src/expln.f	(revision 564)
++++ src/expln.f	(working copy)
+@@ -93,7 +93,7 @@
+          call errmsg('expnln',
+      &        'warnig:unable to expand line',0,0)
+       else
+-         orientation=direct*isign(1,ilist(1,idx+i))
++         orientation=direct*isign(1,int(ilist(1,idx+i)))
+          do 1300 j=1,abs(ilist(1,idx+i))
+             llen=llen+1
+             if(llen .ge. blksz) then
+Index: src/pgrmat.f
+===================================================================
+--- src/pgrmat.f	(revision 564)
++++ src/pgrmat.f	(working copy)
+@@ -242,7 +242,7 @@
+           if( entrance )then
+             sg=-1.d0
+           else
+-            sg=sign(1,im-js)
++            sg=sign(1,int(im-js))
+           endif
+           if( normalmode )then
+             if( angle )then

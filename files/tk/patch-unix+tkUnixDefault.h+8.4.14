@@ -1,0 +1,13 @@
+diff -dur unix/tkUnixDefault.h.orig unix/tkUnixDefault.h
+--- unix/tkUnixDefault.h.orig	Thu Mar 30 01:27:30 2006
++++ unix/tkUnixDefault.h	Thu Feb 22 22:29:06 2007
+@@ -59,6 +59,9 @@
+ #define DEF_BUTTON_FG			BLACK
+ #define DEF_CHKRAD_FG			DEF_BUTTON_FG
+ #define DEF_BUTTON_FONT			"Helvetica -12 bold"
++#define DEF_BUTTON_ALTFONT		"symbol 14"
++#define DEF_BUTTON_SCRFONT		"helvetica 8 bold"
++#define DEF_BUTTON_ALTSCRFONT	"symbol 10"
+ #define DEF_BUTTON_HEIGHT		"0"
+ #define DEF_BUTTON_HIGHLIGHT_BG_COLOR	DEF_BUTTON_BG_COLOR
+ #define DEF_BUTTON_HIGHLIGHT_BG_MONO	DEF_BUTTON_BG_MONO

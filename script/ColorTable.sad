@@ -1,0 +1,51 @@
+!
+! Color Table for X11
+!
+
+FFS;
+
+ColorTable=Class[{},
+  { rgb$db = {
+    "/usr/local/lib/X11/rgb.txt",
+    "/usr/X11R6/lib/X11/rgb.txt",
+    "/usr/X11/share/X11/rgb.txt",
+    "/usr/lib/X11/rgb.txt",
+    Null[]}
+    },
+  { CTable, w, f, cf, tx},
+
+  Constructor[] := StandardForm[
+    InitializeCTable[];
+    w = KBMainFrame["ColorTable", f];
+    cf = KBFComponentFrame[f, Add->{
+      KBFTextEditor[WidgetVariable:>tx,
+	WidgetOption->{Width->30,Height->20}],
+      Null[]}];
+    Do[(
+      tx[Insert] = {{i, 0}, "               ", "t"//i};
+      tx[Insert] = {{i, -1}, "       "//CTable[[i, 1]]//"\n"};
+      tx[Tag$Configure] = {"t"//i, Background->CTable[[i,1]]};
+      ), {i, Length[CTable]}];
+    ];
+
+  InitializeCTable[] := Module[{fp, color, r, g, b},
+    Scan[If[FileQ[#] && RealQ[fp = OpenRead[#]], Break[]]&, rgb$db];
+    If[Not[ReadQ[fp]], CTable = {}; Return[]];
+
+    ReadString[fp]; (* Skip first comment line *)
+    CTable = Sort[Table[
+      If[Check[{r, g, b, color} = Read[fp, {Real, Real, Real, String}];
+	r === EndOfFile, True], Break[],
+	{StringTrim[color], Hold@@{r, g, b}}], {Infinity}]];
+    Close[fp];
+    ];
+
+  ];
+
+ct = ColorTable[];
+
+TkWait[];
+
+end
+
+

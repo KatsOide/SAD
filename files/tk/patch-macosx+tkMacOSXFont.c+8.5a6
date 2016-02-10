@@ -1,0 +1,24 @@
+--- macosx/tkMacOSXFont.c.orig	Fri Apr 13 23:50:55 2007
++++ macosx/tkMacOSXFont.c	Fri Apr 20 17:39:00 2007
+@@ -229,10 +229,21 @@
+  *-------------------------------------------------------------------------
+  */
+ 
++#ifndef TCL_CFGVAL_ENCODING
++#define TCL_CFGVAL_ENCODING "ascii"
++#endif
++
+ void
+ TkpFontPkgInit(
+     TkMainInfo *mainPtr)	/* The application being created. */
+ {
++    static Tcl_Config cfg[] = {
++	{ "fontsystem", "aqua" },
++	{ 0,0 }
++    };
++
++    Tcl_RegisterConfig(mainPtr->interp, "tk", cfg, TCL_CFGVAL_ENCODING);
++
+     InitFontFamilies();
+ 
+ #if TK_MAC_COALESCE_LINE

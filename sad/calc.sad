@@ -1,0 +1,13 @@
+FFS;
+
+w=KBMainFrame["aaa",f];
+c=Canvas[f,Width->600,Height->400];
+
+c[Create$Text]={100,100,Text->"`fb`n`o`dx`h`u1/2`n"}
+
+Update[]
+
+end
+
+
+

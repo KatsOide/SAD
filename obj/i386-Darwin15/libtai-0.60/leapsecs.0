@@ -1,0 +1,58 @@
+leapsecs(3)                Library Functions Manual                leapsecs(3)
+
+
+
+[1mNAME[0m
+       leapsecs - handle UTC leap seconds
+
+[1mSYNTAX[0m
+       [1m#include <leapsecs.h>[0m
+
+       int [1mleapsecs_sub[22m(&[4mt[24m);
+       void [1mleapsecs_add[22m(&[4mt[24m,[4mhit[24m);
+
+       int [1mleapsecs_read[22m();
+       int [1mleapsecs_init[22m();
+
+       struct tai [4mt[24m;
+       int [4mhit[24m;
+
+[1mDESCRIPTION[0m
+       [1mleapsecs_sub  [22mchanges  a seconds-since-epoch count into a non-leap-sec-
+       onds-since-epoch count.  It interprets [4mt[24m as a  TAI64  label,  subtracts
+       from  [4mt[24m  the  number of leap seconds that have occurred before or at [4mt[24m,
+       and places the result back into [4mt[24m.
+
+       [1mleapsecs_sub [22mreturns 1 if [4mt[24m was a leap second, 0 otherwise.
+
+       [1mleapsecs_add [22mreverses the effect of [1mleapsecs_sub[22m.  [4mhit[24m must be 1 for  a
+       leap second, 0 otherwise.
+
+[1mLEAP-SECOND TABLE[0m
+       The  current  implementation  of  [1mleapsecs_sub  [22mand [1mleapsecs_add [22muses a
+       leap-second table read from disk.
+
+       [1mleapsecs_read [22mreads  the  leap-second  table  from  [1m/leapsecs.dat[22m.   It
+       returns  0  on  success, -1 on error.  If [1m/leapsecs.dat [22mdoes not exist,
+       [1mleapsecs_read [22mtreats it as an empty file.
+
+       [1mleapsecs_init [22mis a one-time version of [1mleapsecs_read[22m.  Initially it  is
+       the  same  as  [1mleapsecs_read[22m;  however,  once  [1mleapsecs_read [22mreturns 0,
+       [1mleapsecs_init [22mwill always return 0 without calling [1mleapsecs_read [22magain.
+
+       [1mleapsecs_add  [22mand  [1mleapsecs_sub  [22mcall   [1mleapsecs_init[22m.    [1mWARNING:   [22mIf
+       [1mleapsecs_init  [22mreturns failure, [1mleapsecs_add [22mand [1mleapsecs_sub [22mwill pro-
+       ceed without a leap-second table.  For reliability, all programs should
+       call [1mleapsecs_init [22mat startup and check for errors.
+
+       [1mWARNING:  [22mNew  entries are added to the leap-second table on disk every
+       12 to 18 months.  [1mleapsecs_read [22mmay be called  repeatedly.   It  leaves
+       the  old  table alone on error.  For reliability, all long-running pro-
+       grams should call [1mleapsecs_read [22mat least once every month.
+
+[1mSEE ALSO[0m
+       tai(3)
+
+
+
+                                                                   leapsecs(3)

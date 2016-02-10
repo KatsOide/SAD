@@ -1,0 +1,63 @@
+#!/bin/sh
+
+usage () {
+    local basename
+    basename="`basename $0`"
+
+    echo "usage: ${basename} [-pre|-post]" 2>&1
+    echo "usage: ${basename} -int <key> <integer value>" 2>&1
+    echo "usage: ${basename} -str <key> <string literal>" 2>&1
+    exit 1
+}
+
+while [ $# -gt 0 ]; do
+    case $1 in
+	-pre)
+	    cat <<EOF
+#define _BUILDINFO_C_
+#include <buildinfo.h>
+#include <stdlib.h>
+
+const buildinfo_t buildinfo_db[] = {
+EOF
+	    ;;
+
+	-post)
+	    cat <<EOF
+  {NULL,	_NOP, 0, NULL}};
+
+/* End of File */
+EOF
+	    ;;
+
+	-int)
+	    [ $# -lt 3 ] && usage
+	    key="$2"
+	    value=`echo $3 | sed -e 's/^[^0-9]*//' -e 's/[^0-9a-fA-F]*$//'`
+	    echo ${value} | grep -E '^([1-9][0-9]*|0[xX][0-9a-fA-F]+|0[0-7]*)$' >/dev/null || usage
+	    cat <<EOF
+  {"${key}",	_INT, ${value}, NULL},
+EOF
+		shift 2
+	    ;;
+
+	-str)
+	    [ $# -lt 3 ] && usage
+	    key="$2"
+	    value=`printf %s "$3" | sed -e 's/"/\\\\"/g' -e 's/	/\\\\t/g'`
+	    cat <<EOF
+  {"${key}",	_STR, 0, "${value}"},
+EOF
+	    shift 2
+	    ;;
+
+	*)
+	    usage
+	    ;;
+    esac
+    shift
+done
+
+exit 0
+
+# End of File

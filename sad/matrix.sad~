@@ -1,0 +1,8 @@
+FFS;
+
+(Matrix[l_,x_]+Matrix[l_,y])^:=Matrix[l,x+y];
+(Matrix[l_,x_]*Matrix[l_,y])^:=Matrix[l,x*y];
+(Matrix[l_,x_]*Matrix[l_,y])^:=Matrix[l,x*y];
+
+
+

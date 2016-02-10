@@ -1,0 +1,6 @@
+FFS;
+
+data=Table[GaussianCoulombFitted[x,y,1,0.1][[2]],{x,0,5,0.2},{y,0,0.5,0.02}];
+ListContourPlot[-data];Update[];
+
+end

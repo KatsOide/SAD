@@ -1,0 +1,290 @@
+KBFTabFrame = Class[{},{},
+  {c,f,tl={},fl={},nt=0,cw,ch,bg,bgv,bm=5,lm,rm=5,tm,bmi=5,lmi=5,rmi=5,tmi=5,
+	wmax=1,hmax=1,nc,pnc,ccx=100,ccy=100,tbm=7,tlm=10,trm=8,ttm=7,tx,ty=18,
+	cdk,clt,cshd,fe,cl={},dsc,exp,stat,cadk,aftcfgid,block,fanch,side,tw,trmx,
+	dfil=5},
+
+  Constructor[p$_] := Module[{r,s},
+	Update[IdleTasks];
+	{s,r} = SwitchCases[Override[Options],{Rule[Side,_],_}];
+	side = If [s<=>{},s[[1,2]],"top"];
+	Switch[side
+	,"left",
+	  {tm,lm} = {5,30};
+	  {tx,ty} = {5,tm+ttm};
+	  tw = 50;
+	  trmx = 50;
+	,_,
+	  {tm,lm} = {30,5};
+	  {tx,ty} = {lm+5,18};
+	];
+	pnc = Null;
+	block = False;
+	bg = p$[CGet[Background]];
+	bgv = ToExpression["{"//StringReplace[WidgetInfo[p$,RGB,bg]," "->","]//"}"]/65536;
+	bg = Apply[RGBColor,bgv];
+	cdk = Apply[RGBColor,bgv*0.85];
+!	cadk = Apply[RGBColor,bgv*0.92];
+	cadk = KBF$ABG;
+!	clt = Apply[RGBColor,(bgv+{1,1,1})/2.];
+	clt = "#FFFFFF";
+	cshd = Apply[RGBColor,bgv*0.6];
+	c = Canvas[p$,BG->bg,HighlightThickness->0,Null@@r];
+	f = Frame[c,BG->bg,BD->1,Relief->"raised"];
+	c[Create$Window] = {lm,tm,Window->f,Anchor->"nw",Tags->"cover"};
+	aftcfgid = Null;
+	TFConfigFrame[];
+  ];
+
+  AddTab[s$_String,f$_,opts$___] := Module[
+	{tag,tagtext,tb,ntx,x1,y1,x2,y2,x3,y3,x4,y4,x5,y5,com,dscom,ex,ipx,anch,other,
+	  tmptlm,tmptrm,textcoord,nty,anch,bbox,cdt,fewh,fewc,bdc},
+
+	{com,dscom,ex,ipx,anch,other}=SwitchCases[{opts$},{RuleDelayed[Command,_],RuleDelayed[DeselectCommand,_],Rule[Expand,_],Rule[IPadX,_],Rule[Anchor,_],_}];
+	nt++;
+	f$ = Frame[c,Null@@(other/.((Background->x_)->(BG->x))),BG->bg];
+	f[Background] = f$[Background];
+	If [anch<=>{},
+	  fanch[nt] = anch[[1,2]];
+	,!Else
+	  fanch[nt] = "center";
+	];
+	c[Create$Window] = {ccx,ccy,Window->f$,Anchor->fanch[nt],Tags->"frame"//nt};
+	AppendTo[tl,s$];
+	AppendTo[fl,f$];
+	AppendTo[cl,If[com<=>{}, Extract[com,{1,2},Hold],Null]];
+	dsc[nt] = If[dscom<=>{}, Extract[dscom,{1,2},Hold],Null];
+	exp[nt] = Expand/.ex/.(Expand->False);
+	If [exp[nt], Tcl["pack propagate "//TkPathName[f$]//" 0"]];
+	Switch[side
+	,"left",
+	  tmpttm = ttm;
+	  tmptbm = tbm;
+	  textcoord = {tx+tlm,ty+ttm};
+	  anch = "nw";
+	,_,
+	  If [ipx<=>{},
+		tmptlm = tmptrm = ipx[[1,2]];
+	  ,!Else
+		tmptlm = tlm;
+		tmptrm = trm;
+	  ];
+	  textcoord = {tx+tmptlm,ty};
+	  anch = "w";
+	];
+	stat[nt] = True;
+	tagtext = "tabtext"//nt;
+	c[Create$Text] = Join[textcoord,{Text->s$,Anchor->anch,
+   Font->TextFont["helvetica",12,"bold"],Tags->tagtext}];
+	c[ItemConfigure] = {"tabbg"//nc,Fill->cdk};
+	c[ItemConfigure] = {"tabrelfa"//nc,Fill->cshd};
+	c[ItemConfigure] = {"tabrelfb"//nc,Fill->clt};
+	bbox = c[BBox[tagtext]];
+	Switch[side
+	,"left",
+	  If [bbox[[3]]+trm>lm,
+		lm = bbox[[3]]+trm;
+		c[Coords] = {"cover",lm,tm};
+		Do[
+		  cdt = c[Coords["tabbg"//i]];
+		  cdt[[7]] = lm;
+		  cdt[[9]] = lm;
+		  c[Coords] = Prepend[cdt,"tabbg"//i];
+		  cdt = c[Coords["tabrelfa"//i]];
+		  cdt[[7]] = lm;
+		  c[Coords] = Prepend[cdt,"tabrelfa"//i];
+		  cdt = c[Coords["tabrelfb"//i]];
+		  cdt[[3]] = lm;
+		  c[Coords] = Prepend[cdt,"tabrelfb"//i];
+		  c[Coords] = {"fe"//i,lm,c[Coords["fe"//i]][[2]]};
+		,{i,nt-1}];
+	  ];
+	  nty = bbox[[4]]+tmptbm;
+	  {x1,y1,x2,y2,x3,y3,x4,y4,x5,y5} = {tx,nty,tx,ty+dfil,tx+dfil,ty,lm,ty,lm,nty};
+	  fewh = {Width->1,Height->nty-ty};
+	  fewc = {lm,ty};
+	  bdc = {tx,nty-1,lm,nty-1};
+	,_,
+	  ntx = bbox[[3]]+tmptrm;
+	  {x1,y1,x2,y2,x3,y3,x4,y4,x5,y5} = {tx,tm,tx,5+dfil,tx+dfil,5,ntx,5,ntx,tm};
+	  fewh = {Width->ntx-tx,Height->1};
+	  fewc = {tx,tm};
+	  bdc = {x4-1,y4,x5-1,y5};
+	];
+	c[Create$Polygon] = {x1,y1,x2,y2,x3,y3,x4,y4,x5,y5,Fill->bg,Tags->"tabbg"//nt};
+	With[{nt,tgbg=(Tags->"tabbg"//nt),tgt=Tags->tagtext},
+	  Bind[f$,"<Configure>",TFConfigCB[nt]];
+	  Bind[c,"<ButtonRelease>",SelectTab[nt],tgbg];
+	  Bind[c,"<ButtonRelease>",SelectTab[nt],tgt];
+	  Bind[c,"<Enter>",TabEnter[nt],tgbg];
+	  Bind[c,"<Leave>",TabLeave[nt],tgbg];
+	  Bind[c,"<Enter>",TabEnter[nt],tgt];
+	  Bind[c,"<Leave>",TabLeave[nt],tgt];
+	];
+	c[Create$Line] = {x1,y1,x2,y2,x3,y3,x4,y4,Fill->clt,Tags->"tabrelfa"//nt};
+	c[Create$Line] = Join[bdc,{Fill->cshd,Tags->"tabrelfb"//nt}];
+	fe[nt] = Frame[c,Null@@fewh,BD->0,BG->bg];
+	With[{f=fe[nt]}, Bind[f,"<Map>", RestackFrame[nt]]];
+	c[Create$Window] = Join[fewc,{Window->fe[nt],Anchor->"nw",Tags->"fe"//nt}];
+	c[Raise] = tagtext;
+	fe[nc][Lower];
+	nc = nt;
+	Switch[side
+	,"left",
+	  ty = nty;
+	,_,
+	  tx = ntx;
+	];
+	Return[nt];
+  ];
+
+  RestackFrame[n$_] := (
+	With[{n$}, Bind[fe[n$],"<Map>",]];
+	If [n$<=>nc, fe[n$][Lower]];
+  );
+
+  GetSelection[] := nc;
+
+  TabEnter[n$_] := (
+	If [n$<=>nc&&stat[n$], c[ItemConfigure] = {"tabbg"//n$,Fill->cadk}];
+  );
+  TabLeave[n$_] := (
+	If [n$<=>nc&&stat[n$], c[ItemConfigure] = {"tabbg"//n$,Fill->cdk}];
+  );
+
+  TFConfigFrame[] := (
+	cw = lm+lmi+wmax+rmi+rm;
+	ch = tm+tmi+hmax+bmi+bm;
+	ccx = lm+lmi+wmax/2;
+	ccy = tm+tmi+hmax/2;
+	c[Width] = cw;
+	c[Height] = ch;
+	f[Width] = lmi+wmax+rmi;
+	f[Height] = tmi+hmax+bmi;
+	Do[
+	  Switch [fanch[i]
+	  ,"center",
+		c[Coords] = {"frame"//i,ccx,ccy};
+	  ,"n",
+		c[Coords] = {"frame"//i,ccx,tm+tmi};
+	  ];
+	,{i,nt}];
+  );
+
+  TFConfig[] := Module[{w,h,we,he},
+	aftcfgid = Null;
+	w = Max[Append[Map[WidgetInfo[#,Width]&,fl],tx]];
+	h = Max[Map[WidgetInfo[#,Height]&,fl]];
+	If [w<=>wmax||h<=>hmax,
+	  {wmax,hmax} = {w,h};
+	  TFConfigFrame[];
+	];
+	Do[If [exp[i],With[{f=fl[[i]]},
+	  {we,he}=WidgetInfo[f,{Width,Height}];
+	  If [{we,he}<=>{wmax,hmax}, f[Width]=wmax;f[Height]=hmax];
+    ]],{i,nt}];
+	! necessary before mapping of the windows
+	f[Raise];
+	fl[[nc]][Raise];
+	fe[nc][Raise];
+  ];
+
+  TFConfigCB[n$_] := (
+	If [aftcfgid<=>Null, AfterCancel[aftcfgid]];
+	aftcfgid = After[0.001, TFConfig[]];
+  );
+
+  SelectTab$[n$_] := ( (* SelectTab for internal use *)
+    c[ItemConfigure] = {"tabbg"//nc,Fill->cdk};
+    c[ItemConfigure] = {"tabbg"//n$,Fill->bg};
+    c[ItemConfigure] = {"tabrelfa"//nc,Fill->cshd};
+    c[ItemConfigure] = {"tabrelfb"//nc,Fill->clt};
+    c[ItemConfigure] = {"tabrelfa"//n$,Fill->clt};
+    c[ItemConfigure] = {"tabrelfb"//n$,Fill->cshd};
+    fe[nc][Lower];
+    fe[n$][Raise];
+    fl[[nc]][Lower];
+    fl[[n$]][Raise];
+    f[Background] = fl[[n$]][Background];
+    nc = n$;
+    ReleaseHold[cl[[n$]]]);
+
+  SelectTab[n$_] := (
+    If [block||(n$===nc)||(stat[n$]===False), Return[]];
+    ReleaseHold[dsc[nc]];
+    pnc = nc; SelectTab$[n$]);
+
+  DisableTab[n$_] := (
+	c[ItemConfigure] = {"tabtext"//n$,Fill->cshd};
+	stat[n$] = False;
+	If [n$===nc, SelectTab[If [pnc<=>Null, pnc, If [nc===nt, nt-1, nc+1]]]];
+  );
+  EnableTab[n$_] := (
+	c[ItemConfigure] = {"tabtext"//n$,Fill->"black"};
+	stat[n$] = True;
+  );
+!  DeleteTab[]
+];
+
+KBFToggleFrame = Class[{},{},{f,ft,ff,fr,c,tl,coords,sc,bst},
+  Constructor[p$_,f$_] := Module[{txt,ini,bg,rest},
+	sc = 7;
+	{txt,ini,bg,rest}=SwitchCases[Options,{Rule[Text,_],Rule[InitialState,_],Rule[BG|Background,_],_}];
+	bst = If [ini<=>{}, ini[[1,2]], 0];
+	f = Frame[p$,Fill->"x",Null@@bg];
+	ft = Frame[f,Anchor->"w",Fill->"x",Null@@bg];
+	c = Canvas[ft,Width->sc*2+4,Height->sc*2+4,Side->"left",HighlightThickness->0,Null@@bg];
+	CreateArrow[];
+	If[txt<=>{}, tl = TextLabel[ft,Side->"left",txt,Null@@bg]];
+	fr = Frame[ft,Side->"right",PadX->5,Fill->"x",Expand->True,Height->2,BD->3,Relief->"sunken",Null@@bg];
+	ff = f$;
+	f$ = Frame[f,Null@@bg,rest];
+	If [bst===0, f$[Forget]];
+	If[txt<=>{}, Bind[tl,"<Button>",ChangeState[]]];
+	Bind[c,"<Button>",ChangeState[]];
+  ];
+
+  CreateArrow[] := Module[{x,y,sc2},
+	x = sc+2;
+	y = sc+2;
+	sc2 = Floor[sc/2];
+	coords[0] = {
+	  {x-sc2,y+sc,x+sc-sc2,y,x-sc2,y-sc}, {x-sc2+1,y+sc-2,x-sc2+1,y-sc+3},
+	  {x-sc2+2,y+sc-3,x+sc-sc2-1,y}, {x-sc2+1,y+sc,x+sc-sc2,y+1}
+	};
+	coords[1] = {
+	  {x-sc,y-sc2,x+sc,y-sc2,x,y+sc-sc2}, {x-sc+2,y-sc2+1,x+sc-3,y-sc2+1},
+	  {x+sc-3,y-sc2+2,x,y+sc-sc2-1}, {x+sc,y-sc2+1,x+1,y+sc-sc2}
+	};
+	
+	c[Create$Polygon] = Join[coords[bst][[1]],{Fill->"#BBF",Outline->"#000"}];
+	c[Create$Line] = Join[coords[bst][[2]],{Fill->"#DDF"}];
+	c[Create$Line] = Join[coords[bst][[3]],{Fill->"#55B"}];
+	c[Create$Line] = Join[coords[bst][[4]],{Fill->"#888"}];
+  ];
+
+  ChangeState[] := (
+	If [bst===0,
+	  bst = 1;
+	  ff[Pack];
+	,!Else
+	  bst = 0;
+	  If [CheckFocus[ff,ff[Focus$DisplayOf]],
+		ff[Focus];
+	  ];
+	  ff[Forget];
+	];
+	Do[c[Coords]=Prepend[coords[bst][[i]],i],{i,4}];
+  );
+
+  CheckFocus[p$_,a$_] := Function[w$,
+	If [w$===Null, Return[False]];
+	If [p$===w$,
+	  Return[True];
+	,!Else
+	  Return[CheckFocus[p$,w$]];
+	];
+  ][WidgetInfo[a$,Parent]];
+];
+
+Protect[KBFTabFrame,KBFToggleFrame];

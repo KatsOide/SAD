@@ -1,0 +1,116 @@
+! FileSystem Functions
+
+! Mathematica Compatible Function
+
+! Helper Function
+$EscapePath[path_String] := With[{replace = Map[(#->"\\"//#)&,
+  Characters[StringJoin[" ", "\\" , ";", "\"'", "(){}", "$", "><|&", "*?"]]]},
+  StringJoin@@(Characters[path]/.replace)];
+
+$FileOperation[op_String, files__String] := Module[{cmd},
+  cmd = Prepend[Map[$EscapePath, {files}], op];
+  cmd = StringJoin@@(
+    Drop[Flatten[Thread[{cmd, Table[" ", {i, Length[cmd]}]}]], -1]);
+!!  Print["System: [", cmd, "]"]; Return[$Failed]; (* for Debug *)
+  If[0 <=> System[cmd], $Failed, RealPath[Last[{files}]]]];
+
+Protect[$EscapePath, $FileOperation];
+
+! Name Space Operator
+FileNames[] := Module[{fp, ret, tmp1, tmp2},
+  fp = OpenRead["!ls -d 2>/dev/null"];
+  If[fp === $Failed, {},
+    tmp1 = Table[Check[Read[fp, String], EndOfFile], {i, 1000}];
+    tmp2 = Select[tmp1, # <=> EndOfFile&];
+    ret = tmp2;
+    While[Length[tmp1] === Length[tmp2],
+      tmp1 = Table[Check[Read[fp, String], EndOfFile], {i, 1000}];
+      tmp2 = Select[tmp1, # <=> EndOfFile&];
+      ret = Join[ret, tmp2]];
+    ret]];
+FileNames[form_String] := Select[FileNames[], StringMatchQ[#, form]&];
+FileNames[{forms___String}] := With[{list = FileNames[]},
+  Map[With[{form = #}, Select[list, StringMatchQ[#, form]&]]&, {forms}]];
+
+DirectoryName[dir_String, n_Real] := Module[{dir$ = dir},
+  Do[dir$ = DirectoryName[dir$], {i, n}]; dir$];
+DirectoryName[dir_String] := With[{pos = StringPosition[dir[1,-2], "/"]},
+  If[pos === {}, "", dir[1, pos[[-1, 2]]]]];
+
+ToFileName[dir_String, file_String] := ToFileName[{dir}, file];
+ToFileName[{dirs__String}, file_String] := StringJoin[ToFileName[{dirs}],
+  If[file[1] === "/", file[2,-1], file]];
+ToFileName[{dirs__String}] := Module[{path, tmp},
+  path = Select[Map[
+    #[If[#[1] === "/", 2, 1], If[#[-1] === "/", -2, -1]]&, {dirs}], # <=> ""&];
+
+  If[tmp = Select[{dirs}, # <=> ""&, 1]; tmp === {}, "",
+    If[First[tmp][1] === "/", "/", ""]]//StringJoin@@Drop[Flatten[
+      Thread[{path, Table["/", {i, Length[path]}]}]], -1]
+  //If[Length[path] > 0, "/", ""]];
+
+Protect[FileNames, DirectoryName, ToFileName];
+
+! Directory Operator
+$HomeDirectory := Environment$["HOME"];
+CreateDirectory[path_String] := If[0 <=>
+  System["mkdir "//$EscapePath[path]//" 2>/dev/null"], $Failed, path];
+DeleteDirectory[path_String, opt___Rule] := If[$Failed <=> $FileOperation[
+  If[True === DeleteContents/.Override[opt, DeleteContents->False],
+    "rm -r", "rmdir"], path], Null, $Failed];
+RenameDirectory[src_String, dst_String] :=
+  If[Not[DirectoryQ[src]] || DirectoryQ[dst], $Failed,
+    $FileOperation["mv", src, dst]];
+CopyDirectory[src_String, dst_String] :=
+  If[Not[DirectoryQ[src]] || DirectoryQ[dst], $Failed,
+    $FileOperation["cp -pR", src, dst]];
+
+SetAttrubutes[{$HomeDirectory}, Constant];
+Protect[CreateDirectory, DeleteDirectory, RenameDirectory, CopyDirectory];
+
+! File Operator
+CopyFile[src_String, dst_String] := If[Not[FileQ[src]]
+  || RealQ[FromFileDate[dst]], $Failed, $FileOperation["cp -p", src, dst]];
+RenameFile[src_String, dst_String] := If[Not[FileQ[src]]
+  || RealQ[FromFileDate[dst]], $Failed, $FileOperation["mv", src, dst]];
+DeleteFile[file_String] := If[
+  $Failed <=> $FileOperation["rm", file], Null, $Failed];
+DeleteFile[{files__String}] := If[
+  $Failed <=> $FileOperation["rm", files], Null, $Failed];
+
+SetFileDate[path_String,
+  {CCYY_Real, MM_Real, DD_Real, hh_Real, mm_Real, SS_Real}] := With[{
+    date = DateString[{CCYY, MM, DD, hh, mm, SS}]},
+    If[Not[RealQ[FromFileDate[path]]], $Failed, If[0 <=>
+      System["touch -m -t "//date[7,10]//date[1,2]//date[4,5]
+	//date[12,13]//date[15,16]//"."//date[18,19]//" "
+	  //$EscapePath[path]//" 2>/dev/null"], $Failed, Null]]];
+
+Protect[CopyFile, RenameFile, DeleteFile, SetFileDate];
+
+! File Stat
+FileDate[path_String] := With[{t = FromFileDate[path]},
+  If[RealQ[t], ToDate[t], $Failed]];
+
+FileType[path_String] := If[RealQ[FromFileDate[path]//"/"], Directory,
+  If[RealQ[FromFileDate[path]], File, None]];
+
+FileByteCount[path_String] := Module[{fp, tmp},
+  If[Not[FileQ[path]], $Failed,
+    fp = OpenRead["!wc -l "//$EscapePath[path]//" 2>/dev/null"];
+    If[fp === $Failed, $Failed,
+      tmp = Check[Read[fp, Real], $Failed]; Close[fp]; tmp]]];
+
+Protect[FileDate, FileType, FileByteCount];
+
+! SAD Extension Function
+DirectoryQ[_] := False;
+FileQ[_] := False;
+DirectoryQ[path__] := DirectoryQ/@{path};
+FileQ[path__] := FileQ/@{path};
+DirectoryQ[path_String] := With[{$path = RealPath[path]}, And[StringQ[$path], RealQ[FromFileDate[$path//"/"]]]];
+FileQ[path_String] := With[{$path = RealPath[path]}, And[StringQ[$path], RealQ[FromFileDate[$path]], Not[RealQ[FromFileDate[$path//"/"]]]]];
+
+Protect[FileQ, DirectoryQ];
+
+! End of File

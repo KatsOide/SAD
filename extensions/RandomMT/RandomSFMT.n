@@ -1,0 +1,31 @@
+! Easy SFMT plugin loader
+
+Library@Require["Random/SAD"];
+Library@Require["Random/MT19937"];
+Library@Require["Random/SFMT"];
+
+If[Not[BoundQ[ListRandomMT]],
+  ListRandomMT      := ListRandom;
+  SeedRandomMT      := SeedRandom;
+  RandomMT          := Random;
+  ParabolaRandomMT  := ParabolaRandom;
+  GaussRandomMT     := GaussRandom;
+  UniformRandomMT   := UniformRandom;
+  UniformRandomMT0  := UniformRandom0;
+  UniformRandomMT1  := UniformRandom1;
+  UniformRandomMT01 := UniformRandom01;
+  ];
+
+If[BoundQ[ListRandomMT], StandardForm[With[{l = ListRandomMT[]},
+  Which[
+    Position[l, "MT19937/53bit"] <=> {}, SeedRandomMT["MT19937/53bit"],
+    Position[l, "MT19937/32bit"] <=> {}, SeedRandomMT["MT19937/32bit"]];
+  Scan[With[{mod53 = "SFMT"//#//"/53bit", mod32 = "SFMT"//#//"/32bit"},
+    Which[
+      Position[l, mod53] <=> {}, SeedRandomMT[mod53]; Break[],
+      Position[l, mod32] <=> {}, SeedRandomMT[mod32]; Break[]]]&,
+    Reverse[
+      {607, 1279, 2281, 4253, 11213, 19937, 44497, 86243, 132049, 216091}
+      ]]]]];
+
+! End of File

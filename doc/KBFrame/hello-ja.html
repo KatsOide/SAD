@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="ja-JP">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-2022-JP">
+<TITLE>KBFrame Hello, World</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<A NAME="top" HREF="index-ja.html">目次</A>
+<A HREF="hajime-ja.html">始めに</A> 
+<A HREF="subframe-ja.html">複数のウインドウ</A>
+
+<HR><DIV ALIGN="CENTER"><H2>Hello, World!</H2></DIV><HR>
+
+<P><A HREF="http://www-acc-theory.kek.jp/SAD/SADTkinter.pdf">SAD/Tkinter</A>
+のマニュアルに載っている最初の例</P>
+
+<PRE><CODE>
+FFS;
+w = Window[];
+b = Button[w,
+      Text -&gt; "Hello",
+      Command :&gt; Print["Hello, World!"]];
+TkWait[];
+</CODE></PRE>
+
+<P><IMG SRC="hello1.gif" WIDTH=69 HEIGHT=58 ALT="Hello World by Tkinter"></P>
+<P>をKBFrameを使って書くと、</P>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["Hello", f, Title-&gt;"Hello, World!"];
+b = Button[f,
+      Text -&gt; "Hello",
+      Command :&gt; Print["Hello, World!"]];
+TkWait[];
+</CODE></PRE>
+
+<P>となります。その結果は</P>
+<P><IMG SRC="hello2.gif" WIDTH=353 HEIGHT=98 ALT="Hello World by KBFrame"></P>
+<P>このようになります。この例ではメニューバーがこれ以上横方向に縮めないため、
+Buttonの両端にスペースが空いてしまいます。これからわかるように、KBMainFrameの
+第2引数の変数名でFrameが作られ、このFrameを親として様々な部品を並べて
+いくことになります。</P>
+
+<A HREF="#top">top</A>
+
+<HR><ADDRESS>このページに関する御意見・質問は
+<A HREF="mailto:samo.stanic@kek.jp">Samo Stanic</A>
+まで.</ADDRESS>
+</BODY>
+</HTML>

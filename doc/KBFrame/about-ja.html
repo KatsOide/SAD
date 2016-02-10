@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="ja-JP">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-2022-JP">
+<TITLE>KBFrame About... MessageBox</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<A NAME="top" HREF="index-ja.html">目次</A>
+<A HREF="subframe-ja.html">複数のウインドウ</A>
+<A HREF="menu-ja.html">メニューの作成</A>
+
+<HR><DIV ALIGN="CENTER"><H2>About MessageBox</H2></DIV><HR>
+
+<P>アプリケーションに作者のメッセージを表示させたい時は、まずw[AboutMessage]
+で表示する文字列を指定します。</P>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["AboutExample", f, Title-&gt;"About Example"];
+w[AboutMessage] = "About Example Ver. 1.0a\nAuthor T. Yamada";
+TkWait[];
+</CODE></PRE>
+
+<P>このメッセージを表示するには、
+<IMG SRC="KEKBlogo4.gif" WIDTH=18 HEIGHT=14 ALT="Belle Mark">またはHelpメニューの
+"About XXXXXX..."を選んで下さい。</P>
+
+<P><IMG SRC="about1.gif" WIDTH=430 HEIGHT=384 ALT="Belle Menu"></P>
+
+<P>現れるMessageBoxには、指定した文字列の他にそのアプリケーションが走っている
+Host、User名、CPU時間が表示されます。</P>
+
+<P><IMG SRC="about2.gif" WIDTH=241 HEIGHT=216 ALT="About MessageBox"></P>
+
+<P><A HREF="#top">top</A></P>
+
+<HR><ADDRESS>このページに関する御意見・質問は
+<A HREF="mailto:samo.stanic@kek.jp">Samo Stanic</A>
+まで.</ADDRESS>
+</BODY>
+</HTML>

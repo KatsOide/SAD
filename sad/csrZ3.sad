@@ -1,0 +1,373 @@
+STACKSIZ=STACKSIZ*10;
+FFS;
+
+csrdummy=CSR[];
+
+SKEKBAC[x_,r_,r1_,h_,w1_,w2_]:=Module[{theta=ArcSin[(h+r1)/(r+r1)],x1,x2,c},
+  c=Cos[theta];
+  Which[
+    x< (x1=-(r+r1)*c), h,
+    x< (x2=x1+r1*c),   t=ArcSin[(x-x1)/r1];h+2*r1*Sin[t/2]^2,
+    x< -x2,            Sqrt[r^2-x^2],
+    x< -x1,            t=ArcSin[(-x1-x)/r1];h+2*r1*Sin[t/2]^2,
+    True,              h]];
+
+Nomega=32;
+MR=9;
+NP=8;
+MWNR=3.5;
+
+With[{
+  sigz=0.0003,
+  rac=0.045,
+  rac1=0.015,
+  hac=0.0075,
+  w1=-0.072,
+  w2=0.112},
+  With[{wid=w2-w1},
+
+    csr45=CSR[NParallel->NP,Nk->Nomega,MeshRatio->MR,
+      BunchLength->sigz,
+      MaxMeshSize->hac/2,
+      MaxWaveNumRatio->MWNR,
+      Center->-w1,PipeWidth->wid,
+      PipeFun->(SKEKBAC[#,rac,rac1,hac,w1,w2]&)]]];
+
+With[{
+  sigz=0.0005,
+  rac=0.017},
+  With[{wid=w2-w1},
+
+    csrdrb1=CSR[NParallel->NP,Nk->Nomega,MeshRatio->MR,
+      BunchLength->sigz,
+      MaxMeshSize->rac/10,
+      MaxWaveNumRatio->MWNR,
+      Center->rac*1,
+      PipeWidth->rac*2,
+!      PipeFun->(Sqrt[Max[0,rac^2-#^2]]&)
+      PipeFun->(rac&)
+      ]]];
+
+
+With[{
+  sigz=0.0003,
+  rac=0.020},
+  With[{wid=w2-w1},
+
+    csrkekb=CSR[NParallel->NP,Nk->Nomega,MeshRatio->MR,
+      BunchLength->sigz,
+      MaxMeshSize->rac/10,
+      MaxWaveNumRatio->MWNR,
+      Center->rac*3.75,
+      PipeWidth->rac*7.5,
+!      PipeFun->(Sqrt[Max[0,rac^2-#^2]]&)
+      PipeFun->(rac&)
+      ]]];
+
+
+w=KBMainFrame["aaa1",f];
+c=Canvas[f,Width->1024,Height->768,BG->"white"];
+Canvas$Widget=c;
+
+With[{
+  sigz=0.0003,
+  rac=0.045,
+  rac1=0.015,
+  hac=0.0075,
+  w1=-0.072,
+  w2=0.112},
+  With[{wid=w2-w1},
+
+    csr45c=CSR[NParallel->NP,Nk->Nomega,MeshRatio->MR,
+      BunchLength->sigz,
+      MaxMeshSize->rac/5,
+      MaxWaveNumRatio->MWNR,
+      Center->rac,PipeWidth->rac*2,
+      PipeFun->(Sqrt[Max[0,rac^2-#^2]]&)]]];
+
+csrkekb@PipePlot[];
+
+With[{
+  sigz=0.0003,
+  rac=0.025,
+  rac1=0.010,
+  hac=0.0075,
+  w1=-0.072,
+  w2=0.112},
+  With[{wid=w2-w1},
+
+    csr25=CSR[NParallel->NP,Nk->Nomega,MeshRatio->MR,
+      BunchLength->sigz,
+      MaxMeshSize->hac/2,
+      MaxWaveNumRatio->MWNR,
+      Center->-w1,PipeWidth->wid,
+      PipeFun->(SKEKBAC[#,rac,rac1,hac,w1,w2]&)]]];
+
+(*
+  g1=csr45@PipePlot[];
+  g2=csr25@PipePlot[Dashing->{0.5,0.2}];
+  Show[g1,g2,PlotRange->{-2,50}];
+*)
+
+
+With[{
+  sigz=0.0003,
+  rac=0.035,
+  rac1=0.010,
+  hac=0.0075,
+  w1=-0.072,
+  w2=0.112},
+  With[{wid=w2-w1},
+
+    csr35=CSR[NParallel->NP,Nk->Nomega,MeshRatio->MR,
+      BunchLength->sigz,
+      MaxMeshSize->hac/2,
+      MaxWaveNumRatio->MWNR,
+      Center->-w1,PipeWidth->wid,
+      PipeFun->(SKEKBAC[#,rac,rac1,hac,w1,w2]&)]]];
+
+With[{
+  sigz=0.0003,
+  rac=0.045,
+  rac1=0.015,
+  hac=0.0075,
+  w1=-0.112,
+  w2=0.112},
+  With[{wid=w2-w1},
+
+    csrwig45=CSR[NParallel->NP,Nk->Nomega,MeshRatio->MR,
+      BunchLength->sigz,
+      MaxMeshSize->hac/2,
+      MaxWaveNumRatio->MWNR,
+      Center->-w1,PipeWidth->wid,
+      PipeFun->(SKEKBAC[#,rac,rac1,hac,w1,w2]&)]]];
+
+With[{
+  sigz=0.0003,
+  rac=0.025,
+  rac1=0.010,
+  hac=0.0075,
+  w1=-0.112,
+  w2=0.112},
+  With[{wid=w2-w1},
+
+    csrwig25=CSR[NParallel->NP,Nk->Nomega,MeshRatio->MR,
+      BunchLength->sigz,
+      MaxMeshSize->hac/2,
+      MaxWaveNumRatio->MWNR,
+      Center->-w1,PipeWidth->wid,
+      PipeFun->(SKEKBAC[#,rac,rac1,hac,w1,w2]&)]]];
+
+With[{
+  sigz=0.0003,
+  rac=0.035,
+  rac1=0.012,
+  hac=0.0075,
+  w1=-0.112,
+  w2=0.112},
+  With[{wid=w2-w1},
+
+    csrwig35=CSR[NParallel->NP,Nk->Nomega,MeshRatio->MR,
+      BunchLength->sigz,
+      MaxMeshSize->hac/2,
+      MaxWaveNumRatio->MWNR,
+      Center->-w1,PipeWidth->wid,
+      PipeFun->(SKEKBAC[#,rac,rac1,hac,w1,w2]&)]]];
+
+
+With[{
+  sigz=0.0003,
+  rac=0.047,
+  w1=-0.047,
+  w2=0.047},
+  With[{wid=w2-w1},
+
+    csrrec47=CSR[NParallel->NP,Nk->Nomega,MeshRatio->MR,
+      BunchLength->sigz,
+      MaxMeshSize->0.01,
+      MaxWaveNumRatio->MWNR,
+      Center->-w1,PipeWidth->wid,
+      PipeFun->(rac&)]]];
+
+With[{
+  sigz=0.0003,
+  rac=0.025,
+  w1=-0.025,
+  w2=0.025},
+  With[{wid=w2-w1},
+
+    csrrec25=CSR[NParallel->NP,Nk->Nomega,MeshRatio->MR,
+      BunchLength->sigz,
+      MaxMeshSize->0.01,
+      MaxWaveNumRatio->MWNR,
+      Center->-w1,PipeWidth->wid,
+      PipeFun->(rac&)]]];
+
+With[{
+  sigz=0.0003,
+  rac=0.020,
+  w1=-0.020,
+  w2=0.020},
+  With[{wid=w2-w1},
+
+    csrrec20=CSR[NParallel->NP,Nk->Nomega,MeshRatio->MR,
+      BunchLength->sigz,
+      MaxMeshSize->0.01,
+      MaxWaveNumRatio->MWNR,
+      Center->-w1,PipeWidth->wid,
+      PipeFun->(rac&)]]];
+
+
+With[{
+  r=0.025},
+  With[{wid=2*r},
+
+    csrround=CSR[NParallel->NP,Nk->Nomega,MeshRatio->MR,
+      Center->r,PipeWidth->wid,
+      PipeFun->(Sqrt[r^2-#^2]&)]]];
+
+(*
+resw=CSR[Nk->Nomega,
+  PipeWidth->0.07,
+  PipeFun->(Sqrt[(This@PipeWidth/2)^2-#^2]&)];
+resw@MakeResZL[];
+resw@WLPlot[-0.01,0.01];
+
+resw@WriteZL["/users/oide/KEKB/CSR/RW035-TiN.dat","Comment"->"Resistive Wall per meter , r = 0.035 m, TiN 0.2 micron"]
+end
+*)
+
+(*
+csrr=CSR[NParallel->8,Nk->32,MeshRatio->5,
+  BendingRadius->10,
+  Center->0.05,PipeWidth->0.1,
+  PipeFun->(0.05&)];
+
+lpiper={{10,1},{0.0}};
+*)
+
+(*
+csrr@MakeEz[1];
+csrr@EzPlot[-0.01,0.01];
+
+end
+
+csrr@MakeZL[lpiper];
+csrr@WLPlot[-0.01,0.01];
+
+end
+*)
+(*
+csr@MakeEz[0.8];
+csr@EzPlot[-0.01,0.01];
+*)
+
+lb2p=.89041;
+rhob2p=lb2p/0.0560998688141;
+ldrift=0;
+rhob4p=rhob2p*4;
+lb4p=lb2p*4;
+
+lbw=0.3462;
+rhobw=lbw/0.02236;
+ldbw1=0.1538;
+ldbw2=0.2538;
+
+(*
+csr45@BendingRadius=rhob2p;
+csr45@MakeEz[lb2p];
+csr45@EzPlot[-0.01,0.01];
+
+end
+*)
+
+lpipe={{rhob2p,lb2p},{0,ldrift}};
+
+lpipec={{rhob2p,lb2p},{0,0.5},{rhob2p,lb2p},{0,ldrift}};
+
+lpiped={{rhob2p,lb2p},{0,3000}};
+lpipe1={{rhob2p,lb2p},{0,6},{rhob2p,lb2p},{0,ldrift}};
+lpipe4={{rhob4p,lb4p},{0,ldrift}};
+lpipex[f_]:={{rhob2p*f,lb2p*f},{0,0}};
+lpipedrb1={{2.43623,0.67433},{0,0}};
+
+lpipew1=Get["/users/oide/KEKB/CSR/wigglist.sad"];
+
+PathDiff[rho_,w_]:=Module[{r=Sqrt[2 rho w]},
+ { 2*(r-rho*ArcSin[r/rho]),2*ArcSin[r/rho]}];
+
+csrkekb@Nk=32;
+
+wlp[x_]:=(
+  lpipekekb={{16.3,x}};
+  csrkekb@MakeZL[lpipekekb];
+  csrkekb@WLPlot[-0.04,0.04]);
+
+csrkekb@Ez[3/3e-4,16.3,0.8];ListContourPlot[csrkekb@es0r];Update[]
+
+end
+
+wlp[4];
+end
+
+csrkekb@MakeEz[4];
+csrkekb@EzPlot[-0.01,0.01];
+
+end
+
+
+
+end
+
+TkWait[]
+
+csrkekb@ZLPlot[];
+
+TkWait[]
+
+end
+
+csrwig35@MakeZL[lpipew1];
+csrwig35@WLPlot[-0.01,0.01];
+csrwig35@WriteZL["/users/oide/KEKB/CSR/WIG035.dat","Comment"->"SuperLER wiggler rac = 35 mm, 152 poles"];
+
+end
+
+csrwig25@MakeZL[lpipew1];
+csrwig25@WLPlot[-0.01,0.01];
+csrwig25@WriteZL["/users/oide/KEKB/CSR/WIG025.dat","Comment"->"SuperLER wiggler rac = 25 mm, 152 poles"];
+
+end
+
+csrwig45@MakeZL[lpipew1];
+csrwig45@WLPlot[-0.01,0.01];
+csrwig45@WriteZL["/users/oide/KEKB/CSR/WIG045.dat","Comment"->"SuperLER wiggler rac = 45 mm, 152 poles"];
+
+end
+
+csrrec20@MakeZL[lpipe];
+csrrec20@WLPlot[-0.01,0.01];
+csrrec20@WriteZL["/users/oide/KEKB/CSR/REC020.dat","Comment"->"SuperLER RECT h = w = 0.040 m"];
+
+end
+
+csr45@MakeZL[lpipe1];
+csr45@WLPlot[-0.01,0.01];
+
+end
+
+!csr@WriteZL["/users/oide/KEKB/CSR/AC045.dat","Comment"->"SuperLER AC r = 0.045 m"];
+
+
+!csr2@WriteZL["/users/oide/KEKB/CSR/AC035.dat","Comment"->"SuperLER AC r = 0.035 m, B2P"];
+!csr1@WriteZL["/users/oide/KEKB/CSR/AC025-B4P.dat","Comment"->"SuperLER AC r = 0.025 m, B4P"];
+
+!csr1@WriteZL["/users/oide/KEKB/CSR/AC025.dat","Comment"->"SuperLER AC r = 0.025 m, B2P"];
+
+!csr@WriteZL["/users/oide/KEKB/CSR/AC045-Pair.dat","Comment"->"SuperLER AC r = 0.045 m, B2P Pair"];
+!csr@WriteZL["/users/oide/KEKB/CSR/AC045-B4P.dat","Comment"->"SuperLER AC r = 0.045 m, B4P"];
+
+!csr@WriteZL["/users/oide/KEKB/CSR/AC045.dat","Comment"->"SuperLER AC r = 0.045 m"];
+!csr@WriteZL["/users/oide/KEKB/CSR/AC045-150.dat","Comment"->"SuperLER AC r = 0.045 m"];
+
+end

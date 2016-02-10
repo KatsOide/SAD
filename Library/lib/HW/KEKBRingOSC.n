@@ -1,0 +1,109 @@
+!
+! Ring Master Oscillator Control Library for KEKB
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: KEKBRingOSC.n,v 1.9 2009/04/13 18:15:10 amorita Exp $
+! Style:      Class Library
+! Require:    Initialized Tkinter
+!             Prog/DebugLog.n
+!
+Library@Require["Prog/DebugLog"];
+
+! <<< KEKBRingOSC class >>>
+KEKBRingOSC=Class[{DebugLog},
+  {
+!    BaseFrequency = 508.885817692e6, (* until 2008-04-14 *)
+    BaseFrequency = 508.885834515e6, (* 2008-04-14 or later *)
+    FrequencyTolerance = 0.4,
+    MinimumStep = 0.5
+    },
+  { SimulationMode = False,
+    OriginFrequency = 0,
+    caFreqCounter, DiffFrequency, DiffFrequency$Stamp,
+    caFreqDiffSet
+    },
+
+  Constructor[] := Module[{freq, retry = 5, timeout = 10},
+    DebugLog`Constructor["KEKBRingOSC"];
+    If[SimulationMode, Return[]];
+
+    DiffFrequency = Undefined; DiffFrequency$Stamp = FromDate[] - 100;
+    caFreqCounter = CaMonitor["RF_MO:RB:FREQ",
+      ValueCommand:>If[RealQ[caFreqCounter@Value[]],
+	DiffFrequency$Stamp = caFreqCounter@TimeStamp[];
+	DiffFrequency = caFreqCounter@Value[] - BaseFrequency]];
+    caFreqDiffSet = CaMonitor["RF_MO:REFERENCE:DIFF_SET"];
+
+    If[Not[UpdateOrigin[]],
+      Table[Write[6, ""]; Pause[0.2], {5}];
+      Debug[PANIC, "Constructor", "Initialization Failed!"]];
+    ];
+
+  Lock[] := If[Not[SimulationMode],
+    Debug[INFO, "Lock", "Lock[] method is not implemented!"]];
+
+  Unlock[] := If[Not[SimulationMode],
+    (* Commented out *)];
+
+  OriginQ[] := (Abs[GetFrequency[] - OriginFrequency] < FrequencyTolerance);
+
+  UpdateOrigin[] := Module[{set, get, retry = 5, timeout = 10},
+    If[SimulationMode, OriginFrequency = 0; Return[True]];
+
+    While[get = GetFrequency[True];
+      retry > 0 && Not[RealQ[get]], retry -= 1];
+    While[set = caFreqDiffSet@Value[]; timeout > 0 && Not[RealQ[set]],
+      TkSense[10e-3]; timeout -= 10e-3];
+
+    If[Not[RealQ[get] && RealQ[set]], Debug[ERROR, "UpdateOrigin",
+      "Can't read frequency counter or SetDiff value"];
+      Return[False]];
+
+    OriginFrequency = If[Abs[set - get] < FrequencyTolerance, set, get];
+
+    StandardForm[$FORM = "F8.2"; Debug[INFO, "UpdateOrigin", 
+      "Set/Get Frequency = ", set, "/", get]];
+    True];
+
+  GetFrequency[pend_Real:False] := Module[{after, timeout = 10,
+    last = DiffFrequency$Stamp},
+    If[SimulationMode, Return[OriginFrequency]];
+
+    If[pend,
+      While[Not[DiffFrequency$Stamp > last] && timeout > 0,
+	after = After[10e-3, TkReturn[]]; TkWait[]; AfterCancel[after];
+	timeout -= 10e-3]];
+
+    If[RealQ[DiffFrequency], DiffFrequency, Undefined]];
+
+  SetFrequency[freq_Real:Null, op___Rule] := Module[{target,
+    now, ftbl, step, tol, retry},
+    If[SimulationMode, Return[True]];
+
+    target = If[RealQ[freq], freq, OriginFrequency];
+    {step, tol, retry} = {Step, Tolerance, Retry}/.Override[op,
+      {Step->50, Tolerance->FrequencyTolerance, Retry->5}];
+    If[Not[RealQ[step]] || step < MinimumStep, step = MinimumStep];
+    If[Not[RealQ[tol]] || tol < FrequencyTolerance, tol = FrequencyTolerance];
+    If[Not[RealQ[retry]] || retry < 1, retry = 0];
+
+    now = GetFrequency[];
+    If[Abs[target - now] =< step, ftbl = {target},
+      ftbl = Table[f, {f, now, target, If[target > now, step, -step]}];
+      ftbl = Rest[If[Abs[target - Last[ftbl]] > tol,
+	Join[Drop[ftbl, -1], {(ftbl[[-2]] + target) / 2, target}],
+	Append[Drop[ftbl, -1], target]]]];
+
+    retry *= Length[ftbl];
+    Scan[(target = #;
+      caFreqDiffSet@Put[target];
+      While[Abs[target - GetFrequency[True]] > tol,
+	If[retry < 1, Return[False]];
+	caFreqDiffSet@Put[target]; retry -= 1])&, ftbl];
+
+    True];
+
+  ];
+! >>> KEKBRingOSC class <<<
+
+! End of File

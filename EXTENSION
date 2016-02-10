@@ -1,0 +1,187 @@
+Guide for new feature and extension came from amorita branch
+SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Extension
+
+* Dynamic Shared Object Loading Feature
+ o DynamicLink[fname_String, openmode___]
+    Link shared object.
+    Return id_Real if succeed and return $Failed if failed.
+
+    `openmode' option values
+   DYNL$LAZY:	Each external function reference is resolved
+		when the function is first called.
+
+   DYNL$NOW:	All external function references are bound immediately
+		by DynamicLink[].
+
+   DYNL$GLOBAL:	Symbols from this shared object and its directed acyclic
+		graph (DAG) of needed objects will be available for
+		resolving undefined references from all other shared objects.
+   DYNL$LOCAL:	Symbols in this shared object and its DAG of needed objects
+		will be available for resolving undefined references only
+		from other objects in the same DAG.  This is the default,
+		but it may be specified explicitly with this flag.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/DynamicLink
+
+ o DynamicUnlink[id_Real]
+    Unlink shared object.
+    Return True if succeed and return False if failed.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/DynamicLink
+
+ o DynamicCall[id_Real, symbol_String, argv___]
+    Call Function symbol `symbol' in shared object handled by `id'
+    as (isp1,itx,iax,vx,irtc) style SADScript interpreter function
+    with `argv' SADScript stack.
+    If prototype called function is (*)(void), DynamicCall returns Null.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/DynamicLink
+
+* Network Host Entry Query
+ o GetHostAddrByName[host_String]
+    Get network address list of network hostname(host)
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/GetHostAddrByName
+
+ o GetHostNameByAddr[addr_String]
+    Get network hostname of network address(addr)
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/GetHostAddrByName
+
+ o GetHostByAddr[addr_String] := GetHostNameByAddr[addr];
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/GetHostAddrByName
+
+* Unix Path Handling
+ o ExpandTilde[path_String]
+    Resolve first `~' character of path.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/ExpandTilde
+
+ o RealPath[path_String]
+    Resolve first `~' character of path, all symbolic links,
+    extra ``/'' characters and references to /./ and /../ in path.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/RealPath
+
+ o MkSecureTemp[]
+    Make a temporary file without racing and returns the path
+    to the created temporary file.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/MkSecureTemp
+
+* Inter process communication
+ o Pipe[]
+    Create a pipe object for IPC.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/Pipe
+
+* Stream handling
+ o SetLUN2FD[lun_Real, fd_Real]
+    Connect the stream given by the logical unit number(lun)
+    to file descriptor(fd).
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/SetLUN2FD
+
+* Process Control
+ o BidirectionalPipe[file_String, {argv___String}, options___Rule|RuleDelayed]
+    Invoke piped child process pointer by file
+    with given argument(argv).
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/BidirectionalPipe
+
+ o ReExec[]
+    Re-execute current SAD interpreter
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/ReExec
+
+ o Execve[path_String, {argv___String}, envlist_List, options___Rule]
+    Replace current process by invoking new program located by path
+    with given argument(argv) and environments(envlist).
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/Execve
+
+ o Execvpe[file_String, {argv___String}, envlist_List, options___Rule]
+    Replace current process by invoking new program pointed by file
+    with given argument(argv) and environments(envlist).
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/Exec
+
+ o Execvp[file_String, {argv___String}, options___Rule]
+    Replace current process by invoking new program pointed by file
+    with given argument(argv).
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/Exec
+
+ o Kill[pid_Real, sig_Real]
+    Send the signal given by sig to pid, a process or a group of processes.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/Kill
+
+ o Wait4[]
+    Provide a more general interface for programs that need to wait
+    for certain child processes, that need resource utilization
+    statistics accumulated by child processes, or that require options.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/Wait4
+
+ o Exit[status_Real]
+    Perform normal program termination and return status
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/Exit
+
+ o SigPending[]
+    Get pending signals
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/SigPending
+
+ o SigSuspend[signals___]
+    Atomically release blocked signals and wait for intrrupt
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/SigSuspend
+
+ o SigProcMask[act:Set|Block|UnBlock, signals___]
+    Manipulate current signal mask
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/SigProcMask
+
+ o SigAction[signo_Real, options___]
+    Manipulate signal handler
+   SigAction$[sinal_Real, Action->Ignore|Default|_Real|"0xXXXXXXX",
+	      Mask->{signals___Real}|AllSignals, Flag->{flags___Real}];
+
+ o GetPID[],GetPPIDD[],GetUID[],GETEUID[],GetGID[],GetEGID[]
+    Get PID,PPID,UID,EUID,GID and EGID of process.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/GetPID
+
+ o Environments[]
+    Get all environment variables as a list form; {"name=val", ...}.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/Environments
+
+ o GetEnv[name_String]
+    Get the environment variable `name'.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/Environments
+
+ o SetEnv[name_String, val_String]
+    Set the given string `val' to the environment variable `name'.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/Environments
+
+ o UnsetEnv[name_String]
+    Destruct the environment variable `name'.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/Environments
+
+* Pseudo random number generator
+ o ListRandom[]
+    Get available PRNG plugin names.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/ListRandom
+
+ o SeedRandom[]
+    Get or set PRNG internal state.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/SeedRandom
+
+ o Random[](Uniform/Gauss/ParabolaRandom)
+    Generate pseudo random numbers.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/Random
+
+* Symbol manipulation
+ o BoundQ[sym_Symbol], FBoundQ[sym_Symbol]
+    Query that the given symbol sym is bound or not.
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/BoundQ
+
+* Information
+ o BuildInfo[]
+    Query build/configuration information
+  SEE ALSO:	http://jyurai.ddo.jp/~amroita/SAD/?Core/BuildInfo
+
+ o FeatureQ[]
+    Query feature version
+  SEE ALSO:	http://jyurai.ddo.jp/~amroita/SAD/?Core/FeatureQ
+
+* Variabls
+ o FFS$InterruptMask
+    Tkinter event mask for internal Update[] call
+  SEE ALSO:	http://jyurai.ddo.jp/~amorita/SAD/?Core/FFS$InterruptMask
+
+ o $MessageLast
+    Last message
+  SEE ALSO:	http://jyurai.ddo.jp/~amroita/SAD/?Core/$MessageLast
+
+# End of File

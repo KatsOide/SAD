@@ -1,0 +1,12 @@
+FFS;
+
+w=Window[];
+Tk$Echo=1;
+RadioButton[Text->"New Time Range",Value->0,Variable:>tid$957,Command:>(tr$change$957["Text"];)]/.Text->Label
+end
+
+rb=RadioButton[w,Text->"abc"];
+Update[];
+
+end
+

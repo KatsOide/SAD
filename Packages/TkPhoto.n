@@ -1,0 +1,62 @@
+! TkPhoto function family
+
+BeginPackages[TkPhoto`];
+
+Begin[TkPhoto`];
+
+SetAttributes[{GrayScale, PseudoColor, FullColor}, Constant];
+
+TkPhoto$GCD[x$_Real, y$_Real, eps_Real] := Module[{min, max},
+  {min, max} = MinMax[{x$, y$}];
+  While[True,
+    {max, min} = {min, Mod[max, min]};
+    If[Abs[min] < eps, Return[max]]]];
+
+TkPhotoPutBlock[ImgName_, ImgData_List, x_Real, y_Real, w$_Real, h$_Real,
+  op:((_Rule|_RuleDelayed)...)] := Module[{w = Floor[w$], h = Floor[h$],
+    opt = Override[op, {Visual->GrayScale, Scale->{1, 1}}],
+    eps = 1e-2, scale},
+
+    scale = Scale/.opt;
+    scale = Switch[Length[scale],
+      0, If[RealQ[scale] && scale > 0, {scale, scale}, {1, 1}],
+      1, {First[scale], First[scale]},
+      _, Take[scale, 2]];
+    scale = Map[With[{sc = #}, Switch[Length[sc],
+      0, If[Not[RealQ[sc] && sc > 0], {1, 1},
+	{sc, 1} / TkPhoto$GCD[sc, 1, eps]],
+      1, If[Not[RealQ[First[sc]] && First[sc] > 0], {1, 1},
+	{First[sc], 1} / TkPhoto$GCD[First[sc], 1, eps]],
+      _, Take[sc, 2]]]&, scale];
+
+    If[SameQ@@First[scale] && SameQ@@Second[scale],
+      Switch[Visual/.opt,
+	GrayScale,   TkPhotoPutBlock$[ImgName, ImgData, 0, x, y, w, h],
+	PseudoColor, TkPhotoPutBlock$[ImgName, ImgData, 1, x, y, w, h],
+	FullColor, Switch[Dimensions[ImgData],
+	  {w*h, 3}, TkPhotoPutBlock$[ImgName, Flatten[ImgData], 3, x, y, w, h],
+	  {3, w*h}, TkPhotoPutBlock$[ImgName, Flatten[ImgData], 2, x, y, w, h],
+	  _, Message[TkPhoto::BrokenImgData]],
+	_, Message[TkPhoto::UnknownVisual]],
+      Switch[Visual/.opt,
+	GrayScale,   TkPhotoPutBlock$[ImgName, ImgData, 0, x, y, w, h,
+	  Null@@Flatten[Thread[scale]]],
+	PseudoColor, TkPhotoPutBlock$[ImgName, ImgData, 1, x, y, w, h,
+	  Null@@Flatten[Thread[scale]]],
+	FullColor, Switch[Dimensions[ImgData],
+	  {w*h, 3}, TkPhotoPutBlock$[ImgName, Flatten[ImgData], 3,
+	    x, y, w, h, Null@@Flatten[Thread[scale]]],
+	  {3, w*h}, TkPhotoPutBlock$[ImgName, Flatten[ImgData], 2,
+	    x, y, w, h, Null@@Flatten[Thread[scale]]],
+	  _, Message[TkPhoto::BrokenImgData]],
+	_, Message[TkPhoto::UnknownVisual]]]];
+
+TkPhoto::BrokenImgData = "Image data is broken";
+TkPhoto::UnknownVisual = "Unkown visual type";
+
+Protect[TkPhoto$GCD, TkPhotoPutBlock];
+
+End[];
+
+EndPackage[];
+! End of File

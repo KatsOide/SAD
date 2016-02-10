@@ -1,0 +1,176 @@
+!
+! SAD File I/O Test & Performance Benchmark
+!
+FFS;
+
+(* Benchmark parameter *)
+TestVectorLength = 1024 * 1024;		! Test Vector Length
+N = 100;				! Maximum Test Iteration
+LimitTime = 120;			! Maximum Test Time
+
+(* Generate Test Vector *)
+With[{OriginSeed = SeedRandom[]},
+  SeedRandom[{"SAD", 17}];
+  TestVector = Floor[256 * Random[TestVectorLength]];
+  SeedRandom[OriginSeed]];
+
+With[{tOrigin = ToDate$[0], tBoot = Date$[Tick->0]},
+  RealTimeUsed[] := FromDate[tOrigin + (Date$[Tick->0] - tBoot)]];
+
+GetTime[] := {TimeUsed[], RealTimeUsed[]};
+
+Report[tbl_List, unit_String:"byte"] := Module[{len = Length[tbl],
+  min, max, avg, sigma, format, scale},
+
+  min = MapThread[Min, tbl];
+  max = MapThread[Max, tbl];
+  avg = Plus@@tbl / len;
+  sigma = Sqrt[Plus@@(((# - avg)^2)&/@tbl) / (len - 1)];
+
+  (* Convert per byte *)
+  min   /= TestVectorLength;
+  max   /= TestVectorLength;
+  avg   /= TestVectorLength;
+  sigma /= TestVectorLength;
+
+  (* Scaling *)
+  scale = 1e9;
+  min   *= scale;
+  max   *= scale;
+  avg   *= scale;
+  sigma *= scale;
+
+  format[prefix_, i_] := StandardForm[$FORM="F7.1";
+    Print[prefix, ": min=",min[[i]],
+      " avg=",avg[[i]]," max=",max[[i]]," sigma=",sigma[[i]],
+      " nsec/", unit];
+    ];
+
+  Print["Number of Samples:  ", len];
+  format["User Time", 1];
+  format["Real Time", 2];
+  ];
+
+BinaryReadBenchmark[] := Module[{temp, fp, d, tStart, i, t0, dt},
+  temp = MkSecureTemp[]; If[temp === $Failed, Return[$Failed]];
+
+  (* Create Test File *)
+  fp = OpenWrite[temp]; If[temp === $Failed, Return[$Failed]];
+  WriteString[fp, FromCharacterCode[TestVector]];
+  Close[fp];
+
+  tStart = FromDate[];
+  tbl = Table[(
+    If[i > 3 && (FromDate[] - tStart) > LimitTime, Break[]];
+    fp = OpenRead[temp];
+    If[fp === $Failed, Null[],
+      t0 = GetTime[];
+      d  = Read[fp, {TestVectorLength*Byte}];
+      dt = GetTime[] - t0;
+      Close[fp];
+      dt]), {i, N}];
+
+  System["rm -f "//temp];
+
+  Print["\nBinaray Read Benchmark"];
+  Report[tbl, "byte"];
+  If[d <=> TestVector,
+    Print["  Read/Write compare is failed!"];
+    Print["  Mismatched entries... ", Select[
+      Thread[{Range[TestVectorLength], d, TestVector}],
+      #[[2]] <=> #[[3]]&, 10]]];
+
+  True];
+
+RealListReadBenchmark[] := Module[{temp, fp, d, tStart, i, t0, dt},
+  temp = MkSecureTemp[]; If[temp === $Failed, Return[$Failed]];
+
+  (* Create Test File *)
+  fp = OpenWrite[temp]; If[temp === $Failed, Return[$Failed]];
+  Write[fp, TestVector];
+  Close[fp];
+
+  tStart = FromDate[];
+  tbl = Table[(
+    If[i > 3 && (FromDate[] - tStart) > LimitTime, Break[]];
+    fp = OpenRead[temp];
+    If[fp === $Failed, Null[],
+      t0 = GetTime[];
+      d  = Read[fp];
+      dt = GetTime[] - t0;
+      Close[fp];
+      dt]), {i, N}];
+
+  System["rm -f "//temp];
+
+  Print["\nRealList Read Benchmark"];
+  Report[tbl, "atom"];
+  If[d <=> TestVector,
+    Print["  Read/Write compare is failed!"];
+    Print["  Mismatched entries... ", Select[
+      Thread[{Range[TestVectorLength], TestVector, d}],
+      #[[2]] <=> #[[3]]&, 10]]];
+
+
+  True];
+
+BinaryWriteBenchmark[] := Module[{temp, fp, d, tStart, i, t0, dt},
+  temp = MkSecureTemp[]; If[temp === $Failed, Return[$Failed]];
+
+  d = FromCharacterCode[TestVector];
+  tStart = FromDate[];
+  tbl = Table[(
+    If[i > 3 && (FromDate[] - tStart) > LimitTime, Break[]];
+    fp = OpenWrite[temp];
+    If[fp === $Failed, Null[],
+      t0 = GetTime[];
+      WriteString[fp, d];
+      dt = GetTime[] - t0;
+      Close[fp];
+      System["cp /dev/null "//temp];
+      dt]), {i, N}];
+
+  System["rm -f "//temp];
+
+  Print["\nBinaray Write Benchmark"];
+  Report[tbl, "byte"];
+
+  True];
+
+RealListWriteBenchmark[] := Module[{temp, fp, d, tStart, i, t0, dt},
+  temp = MkSecureTemp[]; If[temp === $Failed, Return[$Failed]];
+
+  d = TestVector;
+  tStart = FromDate[];
+  tbl = Table[(
+    If[i > 3 && (FromDate[] - tStart) > LimitTime, Break[]];
+    fp = OpenWrite[temp];
+    If[fp === $Failed, Null[],
+      t0 = GetTime[];
+      Write[fp, d];
+      dt = GetTime[] - t0;
+      Close[fp];
+      System["cp /dev/null "//temp];
+      dt]), {i, N}];
+
+  System["rm -f "//temp];
+
+  Print["\nRealList Write Benchmark"];
+  Report[tbl, "atom"];
+
+  True];
+
+Benchmark[] := (
+  Print["\nSAD I/O Benchmark"];
+  Print["Test Vector Length: ", TestVectorLength];
+
+  RealListWriteBenchmark[];
+  BinaryWriteBenchmark[];
+
+  RealListReadBenchmark[];
+  BinaryReadBenchmark[];
+  );
+
+Benchmark[]; Exit[0];
+
+! End of File

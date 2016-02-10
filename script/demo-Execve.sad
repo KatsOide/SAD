@@ -1,0 +1,17 @@
+! Demo code for Execve[] function
+!
+! Replace current SAD process by /usr/bin/printenv command
+! without arguments with two environment variable(TEST, PATH).
+!
+! Caution: Print[] function never execute, because Execve[] function
+!          never retern except system call failure.
+!
+
+FFS;
+
+Print[Execve["/usr/bin/printenv", {"printenv"}, {
+  "TEST=test",
+  "PATH=/bin:/usr/bin",
+  Null[]}]];
+
+! End of File

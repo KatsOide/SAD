@@ -1,0 +1,76 @@
+taia(3)                    Library Functions Manual                    taia(3)
+
+
+
+[1mNAME[0m
+       taia - manipulate times with 1-attosecond precision
+
+[1mSYNTAX[0m
+       [1m#include <taia.h>[0m
+
+       double [1mtaia_approx[22m(&[4mt[24m);
+       double [1mtaia_frac[22m(&[4mt[24m);
+       void [1mtaia_tai[22m(&[4mt[24m,&[4msec[24m);
+
+       int [1mtaia_less[22m(&[4ma[24m,&[4mb[24m);
+       void [1mtaia_add[22m(&[4mt[24m,&[4ma[24m,&[4mb[24m);
+       void [1mtaia_sub[22m(&[4mt[24m,&[4ma[24m,&[4mb[24m);
+       void [1mtaia_half[22m(&[4mt[24m,&[4ma[24m);
+
+       unsigned int [1mtaia_fmtfrac[22m([4ms[24m,&[4mt[24m);
+
+       struct taia [4mt[24m;
+       struct taia [4ma[24m;
+       struct taia [4mb[24m;
+       struct tai [4msec[24m;
+       char *[4ms[24m;
+
+[1mDESCRIPTION[0m
+       A  [1mstruct  taia  [22mstores  an  integer between 0 inclusive and 2^64x10^18
+       exclusive.  The format of [1mstruct taia [22mis designed to  speed  up  common
+       operations; applications should not look inside [1mstruct taia[22m.
+
+       A [1mstruct taia [22mvariable is commonly used to store a TAI64NA label.  Each
+       TAI64NA  label  refers  to   one   attosecond   of   real   time;   see
+       [1mhttp://pobox.com/~djb/proto/tai64.txt  [22mfor more information.  The inte-
+       ger in the [1mstruct taia [22mis 10^18 times the second count, plus 10^9 times
+       the nanosecond count, plus the attosecond count.
+
+       A  [1mstruct taia [22mvariable may also be used to store the numerical differ-
+       ence between two TAI64NA labels.
+
+[1mARITHMETIC[0m
+       [1mtaia_approx [22mreturns a double-precision approximation to  [4mt[24m/10^18.   The
+       result of [1mtaia_approx [22mis always nonnegative.
+
+       [1mtaia_tai [22mplaces into [4msec[24m the integer part of [4mt[24m/10^18.
+
+       [1mtaia_frac [22mreturns a double-precision approximation to the fraction part
+       of [4mt[24m/10^18.  The result of [1mtaia_frac [22mis always nonnegative.
+
+       [1mtaia_less [22mreturns 1 if [4ma[24m is smaller than [4mb[24m, 0 otherwise.
+
+       [1mtaia_add [22madds [4ma[24m and [4mb[24m modulo 2^64x10^18 and puts  the  result  into  [4mt[24m.
+       The inputs and outputs may overlap.
+
+       [1mtaia_sub  [22msubtracts [4mb[24m from [4ma[24m modulo 2^64x10^18 and puts the result into
+       [4mt[24m.  The inputs and outputs may overlap.
+
+       [1mtaia_half [22mdivides [4ma[24m by 2, rounding down, and puts the  result  into  [4mt[24m.
+       The input and output may overlap.
+
+[1mFORMATTING[0m
+       [1mtaia_fmtfrac [22mprints the remainder of [4mt[24m/10^18, padded to exactly 18 dig-
+       its, into the character  buffer  [4ms[24m,  without  a  terminating  NUL.   It
+       returns  18,  the  number  of  characters written.  [4ms[24m may be zero; then
+       [1mtaia_fmtfrac [22mreturns 18 without printing anything.
+
+       The macro [1mTAIA_FMTFRAC [22mis defined as 19; this is enough space  for  the
+       output of [1mtaia_fmtfrac [22mand a terminating NUL.
+
+[1mSEE ALSO[0m
+       taia_now(3), taia_pack(3), tai(3)
+
+
+
+                                                                       taia(3)

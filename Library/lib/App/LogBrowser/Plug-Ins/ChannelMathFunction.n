@@ -1,0 +1,286 @@
+!
+! LogBrowser Channel$MathFunction Plugin Class
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: ChannelMathFunction.n,v 1.9 2005/08/23 03:46:30 amorita Exp $
+! Style:      Plugin Class Library
+! Require:    Prog/QFunctions.n
+!             App/LogBrowser/Plug-Ins/MathFormula.n
+!
+Library@Require["Prog/QFunctions"];
+Library@Require["App/LogBrowser/Plug-Ins/MathFormula"];
+
+! <<< LogBrowser Channel$MathFunction plugin class >>>
+Channel$MathFunction=Class[{Channel},
+  { ModuleFile = "LogBrowser/Plug-Ins/ChannelMathFunction.n",
+    ModuleClassName = "Channel$MathFunction",
+    RevisionID = "$Revision: 1.9 $"[12, -3],
+    ChannelCategory = "Mathematical Record", ChannelType = "Function",
+    defProperty
+    },
+  { FormulaSrc, ChannelReference, CompiledFunction
+    },
+
+  Destructor[] := (Channel`Destructor[]);
+
+  Constructor[formula_String] := Module[{},
+    Channel`Constructor[];
+
+    If[Not[BoundQ[defProperty]], defProperty = Override[
+      Channel`defProperty]];
+
+    With[{comp = CompileFormula[formula]},
+      If[First[comp] <=> True, Debug[PANIC, "Constructor",
+	"Formula compiling error"]];
+      FormulaSrc = formula;
+      ReplaceCite[Select[comp[[2]], RealQ]];
+      ChannelReference = comp[[2]];
+      CompiledFunction = comp[[3,1,2]];
+      ];
+
+    SetInstDefProperty["URL":>ChannelType//"://"//FormulaSrc,
+      "SystemLabel":>DefaultLabel[],
+      "TimeRange":>DefaultTimeRange[],
+      "Discriminator":>DefaultDiscriminator[],
+      Null[]];
+    RegisterNotifyProperty["List", {"URL"}];
+    RegisterNotifyProperty["Information", {"URL"}];
+
+    Notify["Channel:Construct", "URL"->ChannelType//"://"//FormulaSrc];
+    SetProperty@@Select[Options, StringQ[#[[1]]]&]];
+
+  (* Local default functions... *)
+  DefaultLabel[] := StringReplace[FormulaSrc, "\n"->" "];
+
+  DefaultTimeRange[] := With[{ch = Channel$Object},
+    {Max[#1], Min[#2]}&@@Thread[Append[
+      Map[ch[#]@ExtractProperty["TimeRange"]&, Channel$Cite], {-INF, INF}]]];
+
+  CompileFormula[formula_String, opt___Rule] := Module[{check,
+    lex, syntax, chList},
+    check = (Check/.Override[opt, Check->False]) === True;
+
+    (* Lexical Analyse *)
+    lex = MathFormula@LexicalAnalyze[formula];
+    If[First[lex] === $Failed, Return[If[check, False, lex]]];
+
+    (* Syntax Analyse *)
+    syntax = MathFormula@SyntaxAnalyze[lex[[2]], {}];
+    If[First[syntax] === $Failed, Return[If[check, False, syntax]]];
+    If[Length[syntax[[3]]] < 1, Return[If[check, False,
+      {$Failed, "Syntax Error: no term"}]]];
+    If[Length[syntax[[3]]] > 1, Return[If[check, False,
+      {$Failed, "Syntax Error: Too many terms"}]]];
+    If[syntax[[3,1,1]] <=> "Function", Return[If[check, False,
+      {$Failed, "Syntax Error: formula must be function"}]]];
+
+    (* Mapping channel object ID *)
+    With[{cmap = Mapping/.Override[opt, Mapping->Channel$Map]},
+      chList = Map[If[RealQ[#], cmap[#], #]&, syntax[[2]]]];
+    If[Position[chList, Undefined] <=> {}, Return[If[check, False,
+      {$Failed, StandardForm[StringJoin["Syntax Error: Channel[",
+	Null@@Rest[Flatten[Thread[{",",
+	  Take[syntax[[2]], Flatten[Position[chList, Undefined]]]}]]],
+	"] is not exist"]]}]]];
+    If[Not[ValidCiteQ[Select[chList, RealQ]]], Return[If[check, False,
+      {$Failed, "Syntax Error: Channel reference loops is detected"}]]];
+
+    If[check, True, {True, chList, syntax[[3]]}]];
+
+  (* Channel Plugin API functions *)
+  (* Override Property functions *)
+  SetProperty[prop:((Rule[_String, _]|RuleDelayed[_String, _])...)] := Module[{
+    rem, url, formula, comp},
+    {url, rem} = SwitchCases[{prop}, {
+      Rule["URL", _]|RuleDelayed["URL", _],
+      _}];
+
+    If[Length[url] > 0, url = url[[1,2]]; If[ValidURLMethodQ[url],
+      formula = StripURLMethod[url];
+      If[comp = CompileFormula[formula]; First[comp] === True,
+	FormulaSrc = formula;
+	ReplaceCite[Select[comp[[2]], RealQ]];
+	ChannelReference = comp[[2]];
+	CompiledFunction = comp[[3,-1,2]];
+	Notify["Channel:Property:Set", "URL"->ChannelType//"://"//FormulaSrc],
+	Debug[ERROR, "SetProperty",
+	  "Invalid math function formula[", formula, "] is requested"]],
+      AppendTo[rem, "URL"->url]]];
+
+    Channel`SetProperty@@rem];
+
+  (* Information API family *)
+  Information["Provide"] := {"Type", "Source"};
+
+  Information["Source"] := StringJoin[ChannelType, "://",
+    StringReplace[FormulaSrc, "\n"->" "]];
+
+  (* Retrieve* API family *)
+  RetrieveQueue[cbuf_] := With[{ch = Channel$Object},
+    Scan[ch[#]@RetrieveQueue[cbuf]&, Channel$Cite];
+    cbuf@retrieveoption[cID] = Property["TimeRange", "Discriminator"];
+    With[{range = "TimeRange"/.cbuf@retrieveoption[cID]},
+      cbuf@request[cID] = {Channel$Cite,
+	ChannelReference, (* Expand TimeRange macro variable *)
+	CompiledFunction/.{"Begin"->range[[1]], "End"->range[[2]]}}];
+    cbuf@Activate[cID]];
+
+  RetrievePoll[cbuf_] := With[{ch = Channel$Object},
+    Min[1, Map[ch[#]@RetrievePoll[cbuf]&, First[cbuf@request[cID]]]]];
+
+  RetrieveUpdate[cbuf_, timestamp_Real] := Module[{msec}, With[{
+    ch = Channel$Object,
+    range = "TimeRange"/.cbuf@retrieveoption[cID],
+    disc = "Discriminator"/.cbuf@retrieveoption[cID]},
+    Scan[ch[#]@RetrieveUpdate[cbuf, timestamp]&, First[cbuf@request[cID]]];
+
+    msec = TimeUsed[];
+    ChannelEngine@ApplyFunction1[cbuf, cID, Null@@Rest[cbuf@request[cID]]];
+    Debug[DEBUG, "RetrieveUpdate", "Accumulated CPU time of ",
+      "ApplyFunction1: ", 1e3 * (TimeUsed[] - msec), "msec"];
+
+    If[FunctionQ[disc],
+      msec = TimeUsed[];
+      cbuf@Copy[-cID, cID]; ChannelEngine@ApplyFilter1[cbuf, cID, -cID, disc];
+      Debug[DEBUG, "RetrieveUpdate", "Accumulated CPU time of ",
+	"Discrimination: ", 1e3 * (TimeUsed[] - msec), "msec"]];
+    ]];
+
+  (* Interface bottom half API family *)
+  Interface["Provide"] := Join[{
+    "Channel:Create", "Channel:Create:Panel",
+    Null[]}, Channel`Interface["Provide"]];
+
+  Interface["PopupMenu:Provide"] := Join[{
+    "Edit/MathFunction", "Edit/Discriminator",
+    Null[]}, Channel`Interface["PopupMenu:Provide"]];
+
+  Interface["Channel:Create", opt:((_Rule|_RuleDelayed)...)] := Module[{rem,
+    url, formula},
+    {url, rem} = SwitchCases[Override[opt],
+      {Rule["URL", _]|RuleDelayed["URL", _], _}];
+
+    If[Length[url] > 0, url = url[[1, 2]];
+      If[ValidURLMethodQ[url]
+        && (formula = StripURLMethod[url]; CompileFormula[formula, Check->True,
+	  Null@@({opt}/.Literal[Channel$Map]->Mapping)]),
+        Channel$MathFunction[formula, Null@@rem],
+        Debug[ERROR, "Interface[Channel:Create]",
+          "Invalid formula[", formula, "] is requested"]; $Failed],
+      Debug[ERROR, "Interface[Channel:Create]",
+        "\"URL\" property MUST be specified for creating Channel"];
+      $Failed]];
+
+  (* Interface[PopupMenu] *)
+  Interface["PopupMenu:Template:Edit/MathFunction", {cid__}, Variable:>v_] := With[{
+    ids = {cid}, ch = Channel$Object, mch = Channel$Object[First[{cid}]]},
+    {1000, (* Preference *)
+      If[Length[{cid}] > 1, Null[], Null[
+	Cascade[Text->"Edit", Add->{
+	  Button[Text->"Math Function",
+	    Command:>Interface["Dialog:MathFunction", ids]],
+	  Separator[]}],
+	Separator[]]]}];
+
+  (* Interface[Dialog] *)
+  Interface["Dialog:MathFunction", {ids__Real}] := Module[{w, f, cf, entry, r,
+    formula0, formula, comp,
+    cid = First[{ids}]},
+    If[Length[{ids}] > 1, KBFMessageBox[
+      "Can't edit multiple math function formula at once",
+      Title->"Too Many Channel Select Error", Bitmap->"info"]; Return[False]];
+
+    formula0 = Channel@Channel$Object[cid]@FormulaSrc; formula = formula0;
+
+    w = KBDialogFrame["Dialog:MathFunction", f,
+      Title->"Edit Math Function Formula"];
+    w[State] = "withdraw"; (* Hide dialog window under construction... *)
+    cf = KBFComponentFrame[f, Add->{
+      KBFTextEditor[Variable:>formula, WidgetVariable:>entry,
+	WidgetOption->{Width->40, Hight->10}],
+      KBFHook[Command:>(entry[Focus$Set])],
+      KBFFrame[Add->{
+	KBFButton[Text->"Reset", WidgetOption->{Width->8}, NextColumn->True,
+	  Command:>(formula = formula0)],
+	KBFButton[Text->"OK", WidgetOption->{Width->8}, NextColumn->True,
+	  Command:>(TkReturn[True])],
+	KBFButton[Text->"Close", WidgetOption->{Width->8}, NextColumn->True,
+	  Command:>(TkReturn[False])],
+	}],
+      }];
+    w[Close] := TkReturn[False]; (* Bind Close event as Cancel Button *)
+
+    (* Waiting construction of complex widget: KBFTabFrame *)
+    Do[(Pause[0.01]; Update[TimerTasks]; (* Invoke After[] events *)
+      Update[IdleTasks]), {loop, 5}];
+    w[State] = "normal"; (* Show dialog window *)
+
+    While[True,
+      If[r = TkWait[]; Not[r], Break[]];
+      comp = Channel@Channel$Object[cid]@CompileFormula[formula];
+      If[r = (First[comp] <=> $Failed); r, Break[],
+	Switch[KBFMessageBox[comp[[2]],
+	  Title->"Formula Compiling Error",
+	  Items->{"ReEdit", "Cancel"}, Bitmap->"error"],
+	  2, Break[], (* Cancel Editing *)
+	  _, (* Nothing TODO *)]];
+      ];
+    If[Length[{ids}] == 1 && formula0 === formula, r = False];
+
+    If[r, (
+      Scan[Channel@Channel$Object[#]@SetProperty[
+	"URL"->"Function://"//formula]&, {ids}];
+      )];
+
+    w[State] = "withdraw"; cf =.; w[Close] := None; w[Close]; r];
+
+  Interface["Channel:Create:Panel", clObj_, stat$_:{}] := Module[{stat,
+    formula, comp, def = {"Formula"->""},
+    w, f, cf, entry},
+
+    stat = Override[Select[stat$, RuleQ], def];
+
+    formula = "Formula"/.stat;
+    w = KBDialogFrame["Channel:Create:Panel", f,
+      Title->"Math Function Channel Creator"];
+    w[State] = "withdraw"; (* Hide dialog window under construction... *)
+    cf = KBFComponentFrame[f, Add->{
+      KBFTextEditor[Variable:>formula, WidgetVariable:>entry,
+	WidgetOption->{Width->40, Hight->10}],
+      KBFHook[Command:>(entry[Focus$Set])],
+      KBFFrame[Add->{
+	KBFButton[Text->"Clear", WidgetOption->{Width->8}, NextColumn->True,
+	  Command:>(formula = "")],
+	KBFButton[Text->"Add", WidgetOption->{Width->8}, NextColumn->True,
+	  Command:>(comp = CompileFormula[formula, Mapping->clObj@CL$Channel];
+	    If[First[comp] === True,
+	      clObj@AddChannel["URL"->ChannelType//"://"//formula,
+		"ShowLegend"->True],
+	      KBFMessageBox[comp[[2]],
+		Title->"Formula Compiling Error",
+		Bitmap->"error"]])],
+	KBFButton[Text->"Close", WidgetOption->{Width->8}, NextColumn->True,
+	  Command:>(TkReturn[0])],
+	}],
+      }];
+    w[Close] := TkReturn[0]; (* Bind Close event as Cancel Button *)
+
+    (* Waiting construction of complex widget: KBFTabFrame *)
+    Do[(Pause[0.01]; Update[TimerTasks]; (* Invoke After[] events *)
+      Update[IdleTasks]), {loop, 5}];
+    w[State] = "normal"; (* Show dialog window *)
+
+    r = TkWait[]; w[State] = "withdraw";
+
+    stat = {"Formula"->formula};
+
+    cf =.; w[Close] := None; w[Close];
+
+    stat];
+
+  ];
+! >>> LogBrowser Channel$MathFunction plugin class <<<
+
+LogBrowser@RegisterModule["Plugin", Channel$MathFunction];
+
+! End of File

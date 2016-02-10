@@ -1,0 +1,254 @@
+SI$StartInspect[id_:Null] := (
+  Print["Starting Inspecting Facility of SAD...."];
+  SI$ID=id;
+  SI$Mode=SI$Step;
+  SI$BPList={};
+!  SI$WatchList={};
+  SI$Stop=True;
+);
+
+SI$StopInspect[] := Module[{d},
+  Print["Stopping Inspecting Facility of SAD...."];
+  d = Map[Hold,Definition[SI$OriginalDef],{2}][[1]];
+  Map[ReleaseHold,d[[,1,2]]];
+  Clear[SI$OriginalDef];
+  SI$OriginalDef[_] = Null;
+];
+
+Send$RData[_] = "";
+Recieve$DirectConnection[app_] := Module[{nb,n,p,ll=0,ns$,sc,ns},
+  n = Send$Stream[app];
+  nb = SelectUnit[n[[1]],0];!Print[{n,nb}];
+  If [(nb>0)&&(Head[ns=Read[n,{nb*Byte}]]===List),
+    ns$ = FromCharacterCode[ns];
+    Send$RData[app] = Send$RData[app]//ns$;
+!Print[{Send$RData[app][-20,-1]}];
+    If [(p=StringPosition[Send$RData[app],"\n"])<=>{},
+!Print[{"p",p}];
+      Scan[(!Print[{Send$RData[app][#[[1]]-10,#[[1]]+10]}];
+        sc = Send$RData[app][1,#[[1]]-ll-1];
+!Print[{"rd1",sc,Send$RData[app]}];
+        Send$RData[app] = Send$RData[app][#[[1]]-ll+1,-1];
+!Print[{"rd2",sc,Send$RData[app]}];
+!        l = StringLength[sc]+1;
+        ll += StringLength[sc]+1;
+        Process$ReceivedData[sc];
+      )&,p];
+    ];
+  ,!Else
+    SI$NotifyDisconnect[app];
+    Send$PropertyConnection[app];
+  ];
+];
+
+Process$ReceivedData[d_] := Module[{n$,r$,cbf$},
+!Print[d];
+  Switch[d[1]
+  ,"c",!Print[d[2,-1]];
+    ToExpression[d[2,-1]];
+  ,"r",
+!Print[{StringLength[d],d[2,10],d[-10,-1]}];
+    r$ = ToExpression[d[2,-1]];
+    If [(n$=Position[Com$List,{r$[[1]],_}])<=>{},
+      cbf$=Com$List[[n$[[1,1]],2]];
+      Com$List = Delete[Com$List,n$[[1]]];
+      Com$Result = r$[[2]];
+      cbf$[[1]];
+    ];
+  ];
+];
+
+Send$DirectConnection[app_] := Send$DirectConnection[app,"",0];
+Send$DirectConnection[app_,host_,port_] := Module[{ns,n},!Print[{app,host,port}];
+  If [port>0,
+    If [(n=TCPOpen[host,port])===$Failed,
+      Print["Direct connection failed !"];Return[]];
+  ,!Else
+    ns = TCPOpen[0];
+    With[{com="Send$DirectConnection[\""//ApplicationName[]//"\",\""//HostName[]//"\","//ns[[2]]//"]"},!Print[com];
+      Send[app,com]];
+!Print["accepting"];
+    n = TCPAccept[ns[[1]]];!Print["accept!"];
+!    Close[ns];
+!    TkCreateFileHandler[n[[1]], "Recieve$DirectConnection2["//app//","//n[[2]]//"]"];
+  ];
+  Send$Stream[app] = n;!Print[{app,n,Send$Stream[app]}];
+  TkCreateFileHandler[n[[1]], "Recieve$DirectConnection[\""//app//"\"]"];
+];
+
+Send$PropertyConnection[app_,b_:True] := (
+!Print[{"prop",app,ApplicationName[],Send$Stream[app]}];
+  If [b&&MemberQ[AppNames[],app],
+    With[{com="Send$PropertyConnection[\""//ApplicationName[]//"\",False]"},
+      Send[app,com]]];
+  TkDeleteFileHandler[Send$Stream[app][[1]]];
+  Close[Send$Stream[app][[1]]];Close[Send$Stream[app][[2]]];
+  Send$Stream[app] =.;
+  Send$RData[app] =.;
+!  Print["closed"];
+);
+
+SI$CERepl[l_, arg___] := (
+  SI$Count = 0;
+  Scan[(
+    If [Append[l,++SI$Count]===SI$BPT,SI$Break[]];
+    SI$Res=#;
+  )&,{arg}];
+  If [Append[l,++SI$Count]===SI$BPT,SI$Break[]];
+  SI$Res
+);
+
+SI$ToString[e_] := ToString[e,HoldForm];
+
+SetAttributes[{SI$CERepl,SI$ToString},HoldAll];
+
+
+SI$DecomposeFunction[sn_,dn_] := Module[{d,ds,p,pt,e,et,l={}},
+!Print["si$decomp"];
+  If [SI$OriginalDef[dn]===Null,
+    d = ToExpression["Definition["//sn//"]"];
+    ds = Map[SI$ToString,d,{3}][[1,,1]];
+    e = Extract[d,{1,Position[ds,dn][[1,1]]},Hold];
+  ,!Else
+    e = SI$OriginalDef[dn];
+  ];
+  p = Map[Take[#,{1,-2}]&,Position[e,CompoundExpression]];
+  If [p==={}, With[{e},Return[{{{},{Extract[e,{1},SI$ToString]}}}]]];
+  et = e/.(CompoundExpression->Hold);
+  Scan[(
+    pt = #;
+    AppendTo[l, Apply[List,Extract[et,pt,Map[SI$ToString,#]&]]];
+    et = ReplacePart[et,Apply[SI$Expr,pt],pt];
+  )&,Reverse[p]];
+  PrependTo[p,{}];
+  AppendTo[l,{Extract[et,{1},SI$ToString]}];!Print[l];
+  Thread[{p,Reverse[l]}]
+];
+
+SI$MakeDefList[d_] := Module[{lhsl,dh,rl},
+  lhsl = Apply[List,Map[Hold,d,{3}],{2}][[1]];
+  lhsl = Map[(StringLength[ToString[#[[1]]]]-6)&,lhsl];!Print[lhsl];
+  dh = Map[Hold,d,{2}][[1]];
+  dh = Map[(ToString[#][7,-3])&,dh];
+  rl = Apply[({#1[1,#2],#1[#2+1,-1]})&,Thread[{dh,lhsl}],{1}];
+  rl
+];
+
+SI$MakeDefList[sn_String,b_] := Module[{d,lhsl,dh,rl},
+  If [b,
+    d = ToExpression["Definition["//sn//"]"];!Print[d];
+  ,!Else
+    With[{sns=Extract[ToExpression[sn],{1},Unevaluated$]},
+      If [Head[Unevaluated[sns]]===Symbol,
+        d = Definition[sns];
+      ,!Else
+        With[{snss=Head[Unevaluated[sns]]}, d = Definition[snss]];
+      ];
+    ];
+  ];
+  lhsl = Apply[List,Map[Hold,d,{3}],{2}][[1]];
+  lhsl = Map[(StringLength[ToString[#[[1]]]]-6)&,lhsl];!Print[lhsl];
+  dh = Map[Hold,d,{2}][[1]];
+  dh = Map[(ToString[#][7,-3])&,dh];
+!  dh = Map[SI$ToString,d];
+  rl = Apply[({#1[1,#2],#1[#2+1,-1]})&,Thread[{dh,lhsl}],{1}];
+  If [b, rl, Select[rl,MatchQ[#,{sn,_}]&]]
+];
+
+SI$Stop=True;
+SI$BPList={};
+SI$ClearBPListOf[cf_]:=(SI$BPList=DeleteCases[SI$BPList,{cf,_}]);
+SI$AddBP[ad_] := AppendTo[SI$BPList,ad];
+SI$DeleteBP[ad_] := (SI$BPList = DeleteCases[SI$BPList,ad]);
+SI$BP$[e_,ad_,opts___] := Module[{n,nb},
+!Print["!"];
+  If [SI$Mode===SI$Step||MemberQ[SI$BPList,ad],
+!Print["bp at ",ad];
+    SI$Stop = True;
+    n = Send$Stream[SI$ID];
+    With[{ad},Send[SI$ID,SI$BPStop[ad]]];
+    While[SI$Stop,
+      If [(nb=SelectUnit[n[[1]],1000000])>0,
+        Recieve$DirectConnection[SI$ID];
+      ,!Else
+        Print["connection closed"];
+        SI$Stop = False;
+      ];
+    ];
+    With[{r$=ToString[e]},Send[SI$ID,SI$BPResult[r$]]];
+!    SI$Stop = True;
+  ];
+];
+SetAttributes[SI$BP$,HoldFirst];
+
+SI$BPStop[ad_] := Print["break at "//ToString[ad]];
+
+SI$BPResult[r_] := Print["result "//r];
+
+SI$OriginalDef[_] = Null;
+SI$MarkFunction[sym_,func_] := Module[{d,ds,e,el,p,i},
+!Print[func//" marked !"];Print[{"sym",sym}];
+  d = ToExpression["Definition["//sym//"]"];
+  ds = Map[SI$ToString,d,{3}][[1,,1]];
+  e = Extract[d,{1,Position[ds,func][[1,1]]},Hold];
+  SI$OriginalDef[func] = e;
+  p = Map[Take[#,{1,-2}]&,Position[e,CompoundExpression]];
+  el = e/.(CompoundExpression->List);
+  If [p<=>{},
+    p = Map[(Table[Append[#,i],
+      {i,Length[Map[Hold,Extract[el,#,Hold],{2}][[1]]]}])&,p];
+    p = Reverse[Flatten[p,1]];
+    el = e;
+    Scan[(el=With[{ad={func,#}},MapAt[Function[{e$},Unevaluated$[Praceprint[SI$BP[If[SI$Mode===SI$Step||MemberQ[SI$BPList,ad],SI$Stop=True;SI$NotifyBP[ad];While[SI$Stop,ToExpression[SI$GetBPCommand[]]]];e$]]]],el,#]])&,p];
+    If [Extract[e,{1,2,0},Hold]<=>Hold[CompoundExpression],
+      With[{ad={func,{}}},el=MapAt[Function[{e$},Unevaluated$[SI$BP[If[SI$Mode===SI$Step||MemberQ[SI$BPList,ad],SI$Stop=True;SI$NotifyBP[ad];While[SI$Stop,ToExpression[SI$GetBPCommand[]]]];];e$]],el,{1,2}]];
+    ];
+    ReleaseHold[el];
+  ];
+];
+
+SI$NotifyBP[ad_] := With[{ad},Send[SI$ID,SI$BPStop[ad]]];
+SI$BP[r_] := 
+  If [SI$Stop===False,
+    With[{r$=ToString[r]},Send[SI$ID,SI$BPResult[r$]]];
+    SI$Stop = True;
+  ];
+SI$GetBPCommand[] := Module[{nb,n,p,ll=0,ns,sc,r$,n$,cbf$},
+!Print["getbpcom"];
+  n = Send$Stream[SI$ID];
+  nb = SelectUnit[n[[1]],1000000];
+  If [nb > 0,
+    ns = FromCharacterCode[Read[n,{nb*Byte}]];
+    Send$RData[SI$ID] = Send$RData[SI$ID]//ns;
+    If [(p=StringPosition[Send$RData[SI$ID],"\n"])<=>{},
+      Scan[(
+        sc = Send$RData[SI$ID][1,#[[1]]-ll-1];
+        Send$RData[SI$ID] = Send$RData[SI$ID][#[[1]]-ll+1,-1];
+        ll += StringLength[sc]+1;
+        Switch[sc[1]
+        ,"c",
+          Return[sc[2,-1]];
+        ,"r",
+          r$ = ToExpression[sc[2,-1]];
+          If [(n$=Position[Com$List,{r$[[1]],_}])<=>{},
+            cbf$=Com$List[[n$[[1,1]],2]];
+            Com$List = Delete[Com$List,n$[[1]]];
+            Com$Result = r$[[2]];
+            cbf$[[1]];
+          ];
+        ];
+      )&,p];
+    ];
+  ,!Else
+    Send$PropertyConnection[SI$ID];
+  ];
+];
+
+SI$UnMarkFunction[func_] := (
+  ReleaseHold[SI$OriginalDef[func]];
+  SI$OriginalDef[func]=.;
+);
+
+SI$Insert[a_,v_,n_]:=MapAt[(Null[v,With[{o=Unevaluated[#]},Unevaluated$[o]]]&),a,n];
+
+!SI$AddWatch[s_] := AppendTo[SI$WatchList,s];

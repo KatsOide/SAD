@@ -1,0 +1,8 @@
+FFS;
+
+w=Window[];
+rb=RadioButton[w,Text->"abc"];
+Update[];
+
+end
+

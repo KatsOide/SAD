@@ -1,0 +1,12 @@
+diff -dur generic/tkWindow.c.orig generic/tkWindow.c
+--- generic/tkWindow.c.orig	Tue Sep 26 02:27:57 2006
++++ generic/tkWindow.c	Thu Feb 22 22:29:06 2007
+@@ -85,7 +85,7 @@
+     0,				/* border_pixel */
+     NorthWestGravity,		/* bit_gravity */
+     NorthWestGravity,		/* win_gravity */
+-    NotUseful,			/* backing_store */
++    WhenMapped,			/* backing_store */
+     (unsigned) ~0,		/* backing_planes */
+     0,				/* backing_pixel */
+     False,			/* save_under */

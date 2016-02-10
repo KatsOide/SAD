@@ -1,0 +1,37 @@
+
+LifeTrack=Class[{},{IP={1},nip},
+  {CalculateEmittance=True,Separations={{0,0,0,0,0,0}},
+    DampingRate,GammaWeak:=ToExpression["MOMENTUM/MASS"],
+    Apertures={1,1,1},sep,emit,ParticlesStrong:={ToExpression["PBUNCH"]},
+    EmittanceStrong=Null,EmittanceWeak,BeamMatrixStrong=Null,BeamMatrixWeak,
+    OrbitWeak,OutputFile="",Comment=""},
+
+  Constructor[]:=Module[{},
+    IP=LINE["POSITION",IP];
+    nip=Length[IP];
+    sep=Take[Flatten[
+      Table[Separations,{Ceiling[nip/Length[Separations]]}],1],nip];
+    ParticlesStrong=If[RealQ[ParticlesStrong],
+      Table[ParticlesStrong,{nip}],
+      Take[Flatten[
+        Table[ParticlesStrong,{Ceiling[nip/Length[ParticlesStrong]]}]],nip]];
+    If[CalculateEmittance,
+      FFS["CODPLOT COD"];
+      emit=Emittance[];
+      {EmittanceWeak,DampingRate}={Emittances,Literal[DampingRate]}/.emit;
+      BeamMatrixWeak=LINE["SIZE",IP];
+      OrbitWeak=Thread[LINE[{"DX","DPX","DY","DPY","DZ","DDP"},IP]];
+      If[EmittanceStrong===Null,
+        EmittanceStrong=EmittanceWeak];
+      If[BeamMatrixStrong===Null,
+        BeamMatrixStrong=BeamMatrixWeak];
+      ]];
+
+  Track[]:=Module[{},
+    SAD$LifeTrack[EmittanceStrong,Flatten[BeamMatrixStrong],
+      EmittanceWeak,Flatten[BeamMatrixWeak],
+      Flatten[OrbitWeak],Flatten[sep],DampingRate,Apertures,
+      ParticlesStrong,nip,GammaWeak,OutputFile,Comment]
+      ]
+
+  ];

@@ -1,0 +1,6 @@
+FFS;
+
+  a=DateString[]//DateString[]
+  StringJoin@@{a,a}
+
+end

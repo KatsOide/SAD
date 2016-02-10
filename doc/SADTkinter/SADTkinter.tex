@@ -1,0 +1,5351 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{makeidx}
+\usepackage{times}
+\usepackage{amsmath}
+\usepackage[dvips]{graphicx}
+
+\makeindex
+
+\textwidth 16 cm
+\textheight 23.5 cm
+\topmargin -1.5 cm
+\oddsidemargin 0cm
+\evensidemargin 0cm
+%\pagestyle{empty}
+%\baselineskip 1em		% 1.5 spaced
+%\belowcaptionskip -18pt
+\renewcommand{\baselinestretch}{0.97}
+\setlength\leftmargini {1em}
+\DeclareOldFontCommand{\gt}{\normalfont\gtfamily}{\mathgt}
+%
+\newcommand{\rt}{\rightarrow}
+\newcommand{\etal}{\it et al.\rm}
+\newcommand{\eg}{{\it e.g.}}
+\newcommand{\beq}{\begin{equation}}
+\newcommand{\eeq}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+\newcommand{\bce}{\begin{center}}
+\newcommand{\ece}{\end{center}}
+\newcommand{\bit}{\begin{itemize}}
+\newcommand{\eit}{\end{itemize}}
+\newcommand{\bvb}{\begin{verbatim}}
+\newcommand{\evb}{\end{verbatim}}
+\newcommand{\bqt}{\begin{quotation}}
+\newcommand{\eqt}{\end{quotation}}
+\newcommand{\ie}{{\it i.e.}}
+%
+\renewcommand\refname{\bce REFERENCES \ece}
+\renewcommand\figurename{{\bf {\small 図}}}
+\renewcommand\tablename{{\bf {\small 表}}}
+\renewcommand\indexname{{\bf 索引}}
+\renewcommand\contentsname{{\bf 目次}}
+
+\def\cap#1{\bqt\caption{#1}\eqt}
+\def\rref#1{{\rm\ref{#1}}}
+\def\itf{{\it f}}
+\def\itm{{\it m}}
+\def\itn{{\it n}}
+\def\iti{{\it i}}
+\def\ity{{\it y}}
+\def\itx{{\it x}}
+\def\itc{{\it c}}
+\def\ita{{\it a}}
+\def\itb{{\it b}}
+\def\rma{{\rm a}}
+\def\rmb{{\rm b}}
+\def\idtt#1{{\tt#1}\index{#1@{\tt #1}}}
+\def\idxt#1{\index{#1@{\tt#1}}}
+\def\yomi#1{}
+\def\eqr#1{(\ref{#1})}
+\def\Del{{\scriptstyle \Delta}}
+\def\gsim{\raise .5ex\hbox{$\mkern 5mu>$}\lower.5ex\hbox{$\mkern
+-14mu\sim\mkern 5mu$}}
+\def\lsim{\raise .5ex\hbox{$\mkern 5mu<$}\lower.5ex\hbox{$\mkern
+-14mu\sim\mkern 5mu$}}
+\def\nn{\nonumber \\}
+\def\ct#1{ {\tt #1} }
+\def\chap#1{\bce
+\section{#1}
+\ece
+\vskip 12pt}
+\def\subchap#1{\subsection{#1}}
+\def\subsubchap#1{\subsubsection{#1}}
+
+%
+%\pagestyle{empty}
+\begin{document}
+\title{
+\begin{figure}[hhh]
+ \includegraphics[height=35mm]{figures/DRAFT.eps}
+\end{figure}\noindent
+\vspace{-24pt}
+{\bf SAD/Tkinter の使い方}}
+\author{\\ 生出勝宣 \\
+{\small {\it  KEK, Oho, Tsukuba, Ibaraki 305, Japan}}\\
+{\small oide@acsad1.kek.jp} }
+\date{1997 年 11 月 5 日\\
+(SAD1.0.5.6b に対応)}
+%\pagestyle{empty}
+%\renewcommand{\thepage}{}
+\maketitle
+\bigskip
+
+\bqt
+SAD は加速器の設計コードとして1986年からKEKで開発され現在に至っています (その概要はホームページ \verb1http://www-acc-theory.kek.jp/1\-SAD/\-\verb1sad.html1 を参照)。最近では EPICS チャネル・アクセスや Python/\-Tkinter、Tcl/Tk インタープリータなどが組み込まれ、SADScript インタープリータ言語とあわせて、単に加速器の設計やシミュレーションに限らず、汎用のシステムとして利用可能なものになりつつあります。SAD/Tkinter は SAD/FFS/SADScript インタープリータから、Xウインドウのアプリケーションを書く道具、Tk tool kitを使うためのライブラリです。
+
+このマニュアルに書かれている内容、SAD のプログラム及びライブラリは、今後予告なく随時改編されます。このマニュアルの最新版は上記のホームページからいつでもダウンロードできます。
+
+なお、このマニュアルは SAD/Tkinter のすべてをカヴァーできていません。その理由は筆者自身がその全機能を経験・把握していないためです。そこで読者の皆様にはBrent Welch:{\it Practical Programming in Tcl and Tk}, 1995, {\it for Tcl7.4 and Tk4.0} を併読されることをお願いします。このマニュアルに説明がなくても、Tcl/Tk に備わっている機能は必ず利用可能です。
+
+\eqt
+
+\clearpage
+\tableofcontents
+
+\parskip 6pt
+\clearpage
+\chap{SADを起動するまで}
+\subchap{SAD計算機のアカウントを取得する。}
+SAD は主として KEK の SAD 計算機上で開発・運用されています。他の若干のシステムにも移植されていますが、ここでは SAD 計算機上のものを前提に話をすすめます。
+
+KEK で加速器関係の仕事をする方は原則的に SAD 計算機のアカウントを取得できます。その方法は巻末のシステム管理者からのメッセージにしたがってください。
+
+KEK の外部、あるいは国外から利用する場合はシステム管理者に相談してください。
+
+SAD 計算機の主力は現在 acsad2.kek.jp (400MHz, 4CPU, 500MB) および acsad3.kek.jp (300MHz, 6CPU, 1GB) の DEC UNIX サーヴァです。
+
+SAD の利用者には SAD のアップデート情報が電子メールで送付されます。希望者はoide@acsad1.kek.jpに連絡してください。
+
+\subchap{SADのプログラムの編集及び起動\idxt{gs}}
+SAD 計算機にはXサーヴァから、あるいは telnet ターミナルからログインします。Xのアプリケーションのためには当然Xサーヴァが必要です。ちなみに筆者は通常 Macintosh 上の eXodus をXサーヴァとして使っていますが、SAD/Tkinter にはサーヴァに依存する部分はありません。 UNIX に対してSAD のために特別の環境設定をする必要はありません。
+
+SAD のプログラムは単なるアスキーファイルであるのでどんなエディタでも作成できます。作成された入力ファイルを用いて SAD を起動するコマンド\index{command@コマンド!sadwokidousuru@SAD を起動する--}は
+{\tt\begin{verbatim}
+  /SAD/bin/gs 入力ファイル
+\end{verbatim}}\noindent
+です。{\tt /SAD/bin} をサーチpath に含めておけば単に
+{\tt \begin{verbatim}
+  gs 入力ファイル
+\end{verbatim}}\noindent
+{\tt 
+でも起動できます。ただし、/SAD/bin が/bin、/usr/bin、/usr/local/bin などより上位に指定されていないと、別の gs が動いてしまうことがあります。その場合には
+{\tt \begin{verbatim}
+  which gs
+\end{verbatim}}\noindent
+で gs がどの gs であるかを確かめることができます。
+
+\bqt
+{\small 筆者はエディタに {\rm emacs} を使っていて、{\tt sad-mode} という {\rm emacs lisp} によるSAD 用のマクロも用いています。このマクロは自分のホーム・ディレクトリに{\tt /users/oide/.emacs} というファイルをコピーすれば使用可能になります。これにより例えば編集中のバッファをセーヴせずに {\rm SAD} の入力ファイルとする、あるいは {\rm SAD} の書式を自動的に整列するなどの機能が付加されます。しかし、これらは {\rm SAD} の実行の必要条件ではありませんし、{\rm UNIX} や {\rm emacs} の正統的なユーザにはかえって邪魔になるかもしれません。またこのマクロは一部サーヴァのキー配列に依存する機能があるため、どこでも無条件で使えるわけではありません。}
+\eqt
+}
+
+\clearpage
+\chap{Hello, World!}
+ここでは SAD/Tkinter で書いた ``Hello, World!" をその最も単純なアプリケーションとして紹介します。このプログラムは(1) Xウインドウに {\tt "Hello"} というボタンを表示し、(2) そのボタンをクリックするとターミナル (標準出力) に {\tt "Hello, World!"} と出力する、というきわめて単純なものです。それは、SAD/Tkinter では、
+{\tt\begin{verbatim}
+FFS;
+  w = Window[];
+  b = Button[w,
+    Text -> "Hello",
+    Command :> Print["Hello, World!"]];
+  TkWait[];
+\end{verbatim}}\noindent
+となります。
+
+\subchap{\idtt{FFS}}
+まず、第 $1$ 行の {\tt FFS;} は SAD の中の {\tt FFS} というサブシステムを起動することを指示しています。{\tt FFS} が実際何であるかは後述するとして、ここでは SAD/Tkinter はすべてこの {\tt FFS} の中で実行されるものとして理解してください。
+
+\subchap{部品の定義\label{widgetdef}\idxt{Window}\index{buhin@部品!noteigi@--の定義}}
+第 $2$ 行
+{\tt\begin{verbatim}
+  w = Window[];
+\end{verbatim}}\noindent
+はある新しい {\tt Window} という部品 (widget と呼ばれる) を定義しています。{\tt Window} は Xサーヴァの画面上に通常は枠を伴って表示され、その中に各種の部品を詰めることができます。この例では左辺のシンボル {\tt w} \index{symbol@シンボル}にこの新しい {\tt Window} が割り当てられます。
+
+\bqt
+{\small
+ちなみに SADScript では大文字と小文字は区別されます。また、システムに備え付けられた関数は単語の区切りの頭文字が大文字になり、他は小文字になります。例えば {\tt ListPlot, LinearSolve} などがそれです。ユーザはシステムが定義していなければシンボルとして何文字でも使えます。
+
+ひとつのシンボル、数値、演算子の途中に空白や改行をいれることはできません。文字列はその行の最後に {\tt $\backslash$} をおけば、改行して書くことができます。 この場合改行文字はデータの中には含まれません。 データの中に改行文字そのものをいれる場合は {\tt $\backslash$n} を入力します (\idtt{stringinput} 参照)。 これ以外の場所には自由に改行や空白を入れられます。
+
+従って SADScript の書式はきわめて自由です。その結果、出来上がったプログラムの見やすさはかなり書き方に依存してしまいます。なお実行速度は書式とは関係ありません。}
+
+{\small
+ところでこの行の最後にあるセミコロンは二つ以上の式を互いに連結してひとつの式をつくる演算子です(\rref{compoundexpression} 参照)。セミコロンを省いた場合、もしその行の最後で式が完結しているとみなされるならば、その式はそこで評価され、その結果が端末に({\tt Out[n]:= }の形で)出力されます\idtt{Out}。 (なお、この結果は再利用できます。\rref{out} 参照)。したがって、そのような出力が必要なければセミコロンをつけるべきです。ある式がセミコロンで終わってその後ろに何も書かれていないときにはセミコロンの後には特殊なシンボル {\tt Null} があるとみなされます。{\tt Null} の出力は何もないので上のような事情になるわけです。}
+\eqt
+
+右辺の{\tt Window[]}の記号{\tt []}は関数の引用を表わしています。この中には以下に見るように必要な引数をいれることができます。
+
+\subchap{部品の作成、属性の指定\index{buhin@部品}\index{buhin@部品!nozokusei@--の属性}}
+次に第3,4,5行
+{\tt\begin{verbatim}
+  b = Button[w,
+    Text -> "Hello",
+    Command :> Print["Hello, World!"]];
+\end{verbatim}}\noindent
+は {\tt Window  w}にいれる部品として {\tt Button b} を定義しています。まず第 3 行にあるように、最初の引き数 {\tt w} はこの {\tt Button} が前に定義した {\tt Window w}の子供であることを指示しています。ある部品はこのように直接 {\tt Window} の子供\index{kodomo@子供}となることもできますし、また他の部品、例えば {\tt Frame} の子供にして間接的にある {\tt Window} に表示させることもできます。
+
+{\tt 
+次の引数 Text -> "Hello" はこの Button の表面に "Hello"という文字を表示することを指示しています。記号 -> の意味は後述します。このようにある文字列は二重引用符で囲みます。引き数と引き数の区切りはカンマで表わします。
+
+この例にあるように、ある部品の属性の設定を伴う定義は\index{oya@親}
+{\tt \begin{verbatim}
+  シンボル = 部品[親, 属性 -> 値, ...];
+\end{verbatim}}\noindent
+という形をとります。属性は同時に何種類も指定して構いません。また、属性は部品を定義した後に
+{\tt\begin{verbatim}
+  シンボル[属性] = 値;
+\end{verbatim}}\noindent
+のように再指定することもできます。例えば上の例では{\tt
+\begin{verbatim}
+  b = Button[w, Command :> Print["Hello, World!"]];
+  b[Text] = "Hello";
+\end{verbatim}}\noindent
+としても結果は同じです。しかし、順番を逆にして{\tt
+\begin{verbatim}
+  b[Text] = "Hello";                                  (ア)
+  b = Button[w, Command :> Print["Hello, World!"]];
+\end{verbatim}\noindent
+としたのでは結果は全然違い、このボタンにはなにも表示されません。これは、(ア) の時点では b はまだButton ではないため、b[Text] = .. に Button の属性を指定するという作用がないからです。
+}
+
+\subchap{コマンドの結合\idxt{Command}\index{command@コマンド!noketsugou@--の結合}}
+さてその次の引き数
+{\tt\begin{verbatim}
+    Command :> Print["Hello, World!"]
+\end{verbatim}}\noindent
+はこのボタン {\tt b} がクリックされたときに実行する SAD のコマンドを指定しています。これも構文上は上述の {\tt 属性 -> 値} という形に似ていますが、記号 {\tt ->} の代わりに {\tt :>} が用いられています。{\tt :>} は {\tt ->} と同等ですが、違いはその右辺の式、今の場合は {\tt Print["Hello, World!"]}が直には評価されず、与えた式のまま関数に渡されるという点にあります。もし、{\tt :>} の代わりに {\tt ->} を使いますと、この場合にはこのボタンを定義した時点で {\tt Print["Hello, World!"]} が実行され端末に {\tt Hello, World!} と出力されてしまい、またボタンのほうには {\tt Print} の返す値 {\tt Null}  が割り当てられてしまいます。このような事態をさけるため {\tt :>} が使われます。このような演算子は遅延演算子とよばれ、SAD では随所で用いられます。
+
+また、{\tt Command} のような遅延定義を必要とする属性を再定義するには
+{\tt\begin{verbatim}
+  シンボル[属性] := 値;
+\end{verbatim}}\noindent
+のように演算子 {\tt :=} を {\tt =} の代わりに用います (\rref{setdelayed} を参照)。
+
+このように、{\tt Command} には SAD の任意の式 (プログラム) を結び付けることができますから、ボタンに対して任意の機能を与えることができます。
+
+\subchap{Tkの実行、\idtt{TkWait}\label{tkexec}}
+{\tt
+さて、このように定義してきた二つの部品 Window と Button は、画面上には現われていてもまだ何も動作することはできません。それは次の
+{\tt\begin{verbatim}
+  TkWait[];
+\end{verbatim}}\noindent
+という関数が評価されてはじめて実行されます。{\tt TkWait[]} は画面上に図~\rref{hello}のウインドウを表示して、イヴェント (例えばマウスクリック) 待ちの状態にはいります。そこでこのボタンをクリックする毎に端末には
+{\tt\begin{verbatim}
+  Hello, World!
+\end{verbatim}}\noindent
+と表示されます。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=30mm]{figures/Hello.eps}
+ \cap{Hello, World!\label{hello}}
+\end{figure}
+
+これでこの章の目的の {\rm ``Hello, World!"} は完成しました。\pagebreak
+
+{\tt TkWait[]} という関数は \idtt{TkReturn} という関数が実行されるまで無限に待ちつづけ、その間ボタンのクリックへの反応などの必要な動作を行います (\rref{tkwait} 参照)。関数 {\tt TkReturn} が呼ばれれば、その引き数を値として返しつつ {\tt TkWait[]} は実行を終えます。現在の {\rm Tkinter} はこの{\tt TkReturn} を発行する、図~\rref{returntosad} のような特別のボタンを画面の左上に必ず表示します。このボタンはクリックされると {\tt TkReturn["ReturnToSAD"]} というコマンドを実行します。また、このボタンのあるウインドウの左上の四角をクリックすると SAD が即座に停止します。ただしこのボタンはデバッグの時以外はあまり有用でないため、将来は標準でなくなる可能性が高いと思われます。
+
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=20mm]{figures/ReturnToSAD.eps}
+ \cap{{\tt ReturnToSAD} のボタン。ウインドウタイトルにあるのは SAD のプロセス番号。\label{returntosad}}
+\end{figure}\noindent
+
+}
+
+\clearpage
+\chap{梱包 pack\index{kompou@梱包}\index{pack}}
+ひとつの {\tt Window} の中に複数の部品を詰め込む場合、SAD/Tkinter ではそれらの部品の並び方は梱包者 packer が決定します。それぞれの部品はこの packer に梱包の際の各種の指示を与えることができます。
+
+\subchap{梱包の方向、\idtt{Side}\index{kompou@梱包!nohoukou@--の方向}}
+梱包の指示の内で最も基本的なものは、その部品がウインドウの4つの辺のどれに向かって詰め込まれるか、その方向を指定するものです。この方向は属性 {\tt Side} によって与えられます。例えば、
+{\tt
+\begin{verbatim}
+  w = Window[];
+  a = Button[w, Text -> "1 TOP",    Side -> "top"   ];
+  b = Button[w, Text -> "2 LEFT",   Side -> "left"  ];
+  c = Button[w, Text -> "3 RIGHT",  Side -> "right" ];
+  d = Button[w, Text -> "4 BOTTOM", Side -> "bottom"];
+\end{verbatim}}\noindent
+とすれば、{\tt a, b, c, d} 4つのボタンが図~\rref{side} の左上のようにアレンジされます。また、これらを作成する順番\index{kompou@梱包!nojumban@--の順番}を変えると、ボタンは次図のようにさまざまな様式で配置されます。この図で、ボタンの番号は作成順、文字は{\tt Side} の方向を表わします。このように、{\tt Side} の与え方及び作成の順番により、梱包の結果は変わってきます。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=90mm]{figures/pack.eps}
+ \cap{梱包の結果は {\tt Side} パラメータと作成の順番できまる。\label{side}}
+ \vspace{-24pt}
+\end{figure}
+
+\subchap{部品の周りのすき間 \idtt{PadX}, \idtt{PadY}\index{sukima@すき間}}
+梱包に際して、各部品のまわりにすき間を持たせたい場合があります。属性 {\tt PadX} 及び {\tt PadY} によって、それぞれ水平、垂直両方向のすき間を指定できます。この場合単位はピクセルですが、センチメートルやインチでの指定も可能です(後述)。例えば
+{\tt
+\begin{verbatim}
+  w = Window[];
+  a = Button[w, Text -> "1 TOP",    Side -> "top",
+    PadX -> 20, PadY->10];
+  b = Button[w, Text -> "2 LEFT",   Side -> "left",
+    PadX -> 20, PadY->10];
+  c = Button[w, Text -> "3 RIGHT",  Side -> "right",
+    PadX -> 20, PadY->10];
+  d = Button[w, Text -> "4 BOTTOM", Side -> "bottom",
+    PadX -> 20, PadY->10];
+\end{verbatim}}\noindent
+とすると、図~\rref{padxy}のような結果が得られます。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=40mm]{figures/Pad.eps}
+ \cap{部品の周りのすき間は {\tt PadX, PadY} で確保する。\label{padxy}}
+\end{figure}
+
+\subchap{部品の内部のすき間 \idtt{IPadX}, \idtt{IPadY}\index{sukima@すき間!naibuno@内部の--}}
+場合によっては、各部品の内部にすき間を持たせたい場合もあります。属性 {\tt IPadX} 及び {\tt IPadY} によって、それぞれ水平、垂直両方向の部品内部のすき間を指定できます。
+{\tt\begin{verbatim}
+   w = Window[];
+   a = Button[w, Text -> "1 TOP",    Side -> "top",
+     PadX -> 20, PadY->10];
+   b = Button[w, Text -> "2 LEFT",   Side -> "left",
+     IPadX -> 20, IPadY->10];
+   c = Button[w, Text -> "3 RIGHT",  Side -> "right",
+     PadX -> 20, PadY->10];
+   d = Button[w, Text -> "4 BOTTOM", Side -> "bottom",
+     PadX -> 20, PadY->10];
+\end{verbatim}}\noindent
+の結果は図~\rref{ipadxy} になります。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=45mm]{figures/IPad.eps}
+ \cap{部品内部のすき間は {\tt IPadX}, {\tt IPadY} 及び {\tt TextPadX}, {\tt TextPadY} で確保する。\label{ipadxy}}
+\end{figure}
+
+\pagebreak
+なお、{\tt Button} などのいくつかの部品には \idtt{TextPadX}, \idtt{TextPadY} という属性もあり、表示文字の周囲\index{sukima@すき間!hyoujimojinoshuuino@表示文字の周囲の}にさらにすき間を確保することができます。
+
+\subchap{梱包のすき間の膨張 \idtt{Expand}\index{sukima@すき間!nobouchou@--への部品の膨張}}
+{\tt
+今、例えばウインドウの大きさが変更されるなどの原因で、ある部品の周りに余分なすき間が発生したとします。もし、その部品に Expand -> True という属性が指定してあると、その部品は周りのすき間を自分の梱包のすき間とします。次の例は Button の場合の Expand の効果を示すためのもので、図~\rref{expand} のような結果になります。
+{\tt\begin{verbatim}
+  w1 = Window[MinSize -> {200, 200}];
+  b1 = Button[w1, Expand -> True,
+    Text -> "Expand -> True"];
+  b2 = Button[w1, Expand -> True,
+    Text -> "Expand -> True"];
+  w2 = Window[MinSize -> {200, 200}];
+  b3 = Button[w2, Expand -> False,
+    Text -> "Expand -> False"];
+  b4 = Button[w2, Expand -> False,
+    Text -> "Expand -> False"];
+\end{verbatim}}\noindent
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=40mm]{figures/Expand.eps}
+ \cap{{\tt Expand} の効果。\label{expand}}
+\end{figure}
+}
+
+\pagebreak
+\subchap{梱包のすき間の充填 \idtt{Fill}\index{sukima@すき間!nojuutenn@--の充填}}
+{\tt
+Fill は Expand -> True などによって与えられた自分の梱包のすき間を自分の表示域として取り込むための属性です。これには Fill -> "x", Fill -> "y", Fill -> "both" の方向の指定が可能です。
+次の例は Button の場合の Fill の効果を示すためのもので、図~\rref{fill} のような結果になります。
+{\tt\begin{verbatim}
+  w1 = Window[MinSize -> {250, 200}];
+  b1 = Button[w1, Expand -> True,
+    Fill -> "x",
+    Text -> "Expand -> True, Fill ->\"x\""];
+  b2 = Button[w1, Expand -> True,
+    Fill -> "y",
+    Text -> "Expand -> True, Fill ->\"y\""];
+  b3 = Button[w1, Expand -> True,
+    Fill -> "both",
+    Text -> "Expand -> True, FIll ->\"both\""];
+\end{verbatim}}\noindent
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=45mm]{figures/Fill.eps}
+ \cap{{\tt Fill} の効果。\label{fill}}
+\end{figure}
+}
+
+\pagebreak
+\subchap{梱包の際の部品の表示域の基準点 \idtt{Anchor}\index{buhin@部品!nohyoujiikinokijunten@--の表示域の基準点}}
+{\tt 
+Anchor は Expand -> True などによって与えられた自分の梱包のすき間よりも自分の表示域が狭い場合、そのすき間の中のどこに表示域を設定するかを指定します。Anchor は "n", "ne", "e",　"se", "s", "sw", "w", "nw", "c" の内の一つの値をとります。"c" は "center" と書いても構いません。
+Anchor の効果を図~\rref{anchor} に示します。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=70mm]{figures/Anchor.eps}
+ \cap{{\tt Anchor} の効果。\label{anchor}}
+\end{figure}
+}
+
+また、Button などのいくつかの部品には属性 \idtt{TextAnchor} が指定でき、それにより表示テキストを部品の中のどちら側に表示するかを指定できます。TextAnchor のパラメータは Anchor と同じです。
+
+\clearpage
+\chap{SAD/Tkinter の部品の操作}
+
+この章では SAD/Tkinter に備え付けられている各種の部品にある程度共通する操作の概要を紹介します。現在までに組み込まれている部品は次の表のとおりです。
+\begin{table}[bht]
+\bce
+\cap{SAD/Tkinter の部品。}
+\ece
+\begin{center}
+{\small
+\begin{tabular}{llll}
+\hline  \hline
+ 部品  & 機能 & コマンド & 結合変数 \\ \hline
+{\tt Window} & 各種部品を収容するウインドウ　& & \\
+{\tt Frame} & 各種部品を収容する枠 & & \\
+{\tt Button} & 単純なボタン & {\tt Command} & {\tt TextVariable} \\
+{\tt CheckButton} & ON/OFFのチェックマーク付ボタン & {\tt Command} & \parbox{3cm}{\tt \ \\ Variable TextVariable\\} \\
+{\tt RadioButton} & 他者択一型のボタン & {\tt Command} & \parbox{3cm}{\tt 
+\ \\ Variable TextVariable\\} \\
+{\tt TextLabel} & 複数行のテキスト・ラベル & & {\tt TextVariable} \\
+{\tt TextMessage} & フォーマット可能なテキスト & & {\tt TextVariable} \\
+{\tt Entry} & 文字列の入力枠 & & {\tt TextVariable} \\
+{\tt ListBox} & 複数行の文字列からなる選択箱 & & \\
+{\tt ScrollBar} & スクロール・バー & & \\
+{\tt Menu} & プルダウン・メニュー & {\tt PostCommand} & \\
+{\tt MenuButton} & {\tt Menu} を割り付けるためのボタン & & \\
+{\tt Scale} & スライド・スケール & {\tt Command } & {\tt Variable} \\
+{\tt Canvas} & グラフィック出力用の画面 & & \\
+{\tt TextEditor} & 様々な修飾が可能なテキスト入出力 & & \\
+{\tt OptionMenu} & いくつかの選択枝から項目を選ぶ & & \\
+\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+
+\subchap{結合変数\index{ketsugou@結合!hensuu@--変数}\index{symbol@シンボル}}
+表1にある、{\tt Button, CheckButton, RadioButton, TextLabel, TextMessage, Entry, Scale} などの部品には、あるシンボルを結合変数として割り付けることができます。例えば、いまあるボタン {\tt d} を
+{\tt
+\begin{verbatim}
+   w = Window[];
+   d = Button[w, Width -> 20, TextVariable :> date];
+   update := After[1, date = DateString; update];
+   update;
+\end{verbatim}}\noindent
+のように定義したとします。ここで {\tt Width -> 20} はボタンの幅を20文字分確保することを指示しています。
+
+{\tt TextVariable :> date} が問題の結合変数の指定です。このボタンには {\tt Text} によるボタンの上に書くテキストの指示はなく、代わりにシンボル {\tt date} が割り当てられています。つまり、以後シンボル {\tt date} に何らかの値 (文字列) が割り当てられると、その値がこのボタンの表面に表示されることになります。実際、この例では第3行でシンボル {\tt update} に式 {\tt After[1, date = DateString; update]} を割り当てています。\idtt{After} は SAD/Tkinter の備え付けの関数で、その第1引き数の時間だけ(単位: 秒)だけ経過した後に第2 引き数の式の実行を予約するというものです。したがって、{\tt update} が一度呼ばれると、その第2 引き数にはまた {\tt update} が含まれていますから、結局 {\tt update} はほぼ 1秒 に１回 ずつ繰り返し実行されます。シンボル {\tt DateString} は SAD に備え付けの関数で、その時の時刻を文字列で返します。こうしてシンボル {\tt date} には時刻の文字列が毎秒設定され、ボタン {\tt d} の表示も毎秒更新されます。
+
+結合変数はまた {\tt Entry} (\rref{entry})のように、部品の側から入力したデータをプログラムの中で利用する場合にも有効です。
+
+\subchap{イヴェントと部品の結合\idxt{\$Event}\index{event@イヴェント}\index{event@イヴェント!noketsugou@--結合}\label{bind}}
+それぞれの部品にはXサーヴァで与えられる、マウス・クリックやキーボード入力などの多彩な動作 event にいかに反応するかを指定することができます。前述の、ボタンに対する {\tt Command} の指定もそれの特殊な例ですが、より一般的には関数 \idtt{Bind} を用いることでどのようなイヴェントにも対応できます。{\tt Bind} は
+{\tt\begin{verbatim}
+  Bind[部品, イヴェント, 動作];
+\end{verbatim}}\noindent
+という書式で使います。例えば、
+{\tt\begin{verbatim}
+   w = Window[];
+   d = Button[w, Text -> "Event"];
+   Bind[d, "<Enter>", Print[$Event]];
+\end{verbatim}}\noindent
+としますと、マウス・カーソルがボタン {\tt d} の上に来たときに端末に {\tt \$Event} の内容が
+{\tt\begin{verbatim}
+{(Widget:>d),(Tag->""),(Type->"<Enter>"),(X->53),(Y->28),
+ (XRoot->769),(YRoot->722),(Height->0),(Width->0),
+ (Char->"??"),(KeySym->"??"),(SendEvent->0),(KeyCode->0),
+ (State->0),(KeySymNum->0),(Time->15202658)}
+\end{verbatim}}\noindent
+のように出力されます。{\tt \$Event} はあるイヴェントが発生する度にそのイヴェントの情報が自動的に割り当てられるシンボルです。{\tt \$Event} は実際には \rref{replace} 節にある式の置換を行うための規則のリスト (\rref{list} 章を参照) の形をしています。表~\rref{eventsymbol} に {\tt \$Event} に現われるシンボルの意味を掲げます。
+\begin{table}[hhh]
+\vspace{-6pt}
+\bce
+\cap{{\tt \$Event} に現われるシンボル。\label{eventsymbol}}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{lcl}
+\hline  \hline
+シンボル  & 値 & 意味\\ \hline
+\idtt{Widget} & シンボル & イヴェントを発生した部品\\
+\idtt{Tag} & \parbox{3.5 cm}{\bce アイテム番号を表わす文字列またはタグ\ece}& イヴェントを発生したアイテム\\
+\idtt{Type} & イヴェントの型名 & 発生したイヴェントの型名\\
+\idtt{X}, \idtt{Y} & 数値(ピクセル) & マウスカーソルの部品内での位置\\
+\idtt{RootX}, \idtt{RootY} & 数値(ピクセル) & マウスカーソルのルートウインドウ内での位置\\
+\idtt{Height}, \idtt{Width} & 数値(ピクセル) & 部品の大きさ\\
+\idtt{Char} & 文字 & 押されたキー\\
+\idtt{KeySym} & 文字列 & 押されたキーを表す\\
+\idtt{KeySymNum} & 数値 & \\
+\idtt{KeyCode} & 数値 & 押されたキーのコード\\
+\idtt{Time}  & 数値 {\rm (msec)} & 押された時刻、午前0時 = 0\\
+\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+イヴェントの表現は一般には
+{\tt\begin{verbatim}
+  "<修飾子 - 修飾子 - 型 - 詳細>"
+\end{verbatim}}\noindent
+とされています。イヴェントの型には表~\rref{eventtypes} のようなものがあります。
+\begin{table}[hhh]
+\bce
+\cap{イヴェントの型。\idxt{ButtonPress}\idxt{Button}\label{eventtypes}}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{ll}
+\hline  \hline
+ 型  & 動作 \\ \hline
+{\tt Button, ButtonPress} & マウス・ボタンの押し下げ\\
+\idtt{ButtonRelease} & マウス・ボタンの解放\\
+\idtt{Enter} & マウス・カーソルが部品の内にはいる \\
+\idtt{Leave} & マウス・カーソルが部品の外に出る\\
+\idtt{Motion} & マウス・カーソルが部品の中で動く\\
+\idtt{Key}, \idtt{KeyPress} & キーの押し下げ \\
+\idtt{KeyRelease} & キーの解放 \\
+\idtt{Configure} & Window の 位置、大きさなどの属性の変更 \\
+\idtt{Destroy} & Window が 消去された\\
+\idtt{Expose} & Window が 露出した\\
+\idtt{FocusIn} & Window に焦点があった\\
+\idtt{FocusOut} & Window から焦点が外れた\\
+\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+\pagebreak
+{\tt Key, KeyRelease} などにはキーの種類が詳細として付加されます。例えば、
+{\tt\begin{verbatim}
+  "<Key-a>"
+  "<a>"
+  "a"
+\end{verbatim}}\noindent
+などはどれもキー {\tt a} の押し下げを表わしています。また
+{\tt\begin{verbatim}
+  Return, Escape, Up, Down, Left, Right
+\end{verbatim}}\noindent
+等々の \idtt{KeySym} も使うことができます。
+
+イヴェントにはいくつかの修飾子\index{shuushokushi@修飾子}をつけることができます。それらはキーボードの修飾キーに対応したものや、ダブル・クリックなどを表わすためのものです。
+\begin{table}[bht]
+\vspace{-6pt}
+\bce
+\cap{イヴェント修飾子。}
+\ece
+\begin{center}
+{\small
+\begin{tabular}{ll}
+\hline  \hline 修飾子  & 動作 \\ \hline
+\idtt{Control} & コントロール・キー \\
+\idtt{Shift} & シフト・キー \\
+\idtt{Lock} & シフト・ロック・キー \\
+\idtt{Meta, M} & メタキー\\
+\idtt{Alt} & {\tt Alt} キー\\
+{\tt Button1 -- Button3 } & マウス・ボタン1--3 \\
+\idtt{Double} & ダブル・クリック \\
+\idtt{Triple} & トリプル・クリック \\
+
+\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+
+{\tt
+イヴェントのうち、キーの押し下げに関するイヴェントは焦点 {\rm focus}\index{focus}\index{shouten@焦点} の合っている部品のみが反応することができます。部品によっては Entry (\rref{entry} 参照) のようにその上でマウスクリックすることにより自動的に焦点が合う部品もありますが、そうでなければ自分で焦点を合わせなければなりません。ある部品に焦点を合わせるには、
+{\tt\begin{verbatim}
+  部品シンボル[Focus$Set]
+\end{verbatim}}\noindent
+と、また、焦点を外すには
+{\tt\begin{verbatim}
+  部品シンボル[Focus$None]
+\end{verbatim}}\noindent
+とします。
+
+\subsubchap{イヴェントの結合の解除\index{event@イヴェント!noketsugounokaijo@--結合の解除}}
+イヴェントの結合を解除したい場合には、
+{\tt\begin{verbatim}
+  Bind[部品, イヴェント]       または
+  Bind[部品, イヴェント, ]       または
+  Bind[部品, イヴェント, Null]
+\end{verbatim}}\noindent
+とします。
+}
+
+\subchap{部品の操作\index{symbol@シンボル!buhinsymbol@部品--}}
+前にも述べた通り、ある部品は
+{\tt\begin{verbatim}
+  シンボル = 部品[親, 属性 -> 値, ...];
+\end{verbatim}}\noindent
+という形で最初につくられます。{\tt 属性 -> 値} の部分は {\tt 属性 :> 値} という形をとる場合もあります。以下、このように定義されたシンボルを「部品シンボル」と呼ぶことにします。ここで、親の部品を省略することも可能です。その場合は、図~\rref{returntosad} の {\tt ReturnToSAD} のボタンが表示されている {\tt Window} が親の部品とみなされます。
+
+\bqt{\small\noindent 同じ属性を重複して指定した場合は、先に書いたものだけが用いられます。また、その部品に定義されていない属性を指定した場合は無視されます。}\eqt
+
+また、シンボルとしては単純なシンボルのほかに例えば {\tt a[1], a[1, 2, 3]} などのような引き数付のシンボルでも構いません。このような引き数付のシンボルは多数の部品を機械的に生成する場合に便利です。
+
+なお、上記のように生成された部品シンボルには
+{\tt\begin{verbatim}
+  Widget[シンボル、部品[親, 属性 -> 値, ...]];
+\end{verbatim}}\noindent
+という値が割り当てられます。従って、ある部品シンボルの頭部 (\rref{expression}、{\rref{head} 参照) は常に Widget になります。
+
+
+属性によっては、複数の値を要求するものもあります。その場合には値としてリスト (\rref{list} 章を参照)
+{\tt\begin{verbatim}
+  {値1, 値2, ... }
+\end{verbatim}}\noindent
+が用いられます。
+
+ある部品が生成された後は、
+{\tt\begin{verbatim}
+  部品シンボル[属性] =  値;　または
+  部品シンボル[属性] := 値;
+\end{verbatim}}\noindent
+のようにして個別にその属性を変更することができます(個々の部品が具体的にどういう属性をもっているかは後述されます)。値がリストになることもあります。また、属性によっては、全然値を必要としないものもあります。その場合は単に
+{\tt\begin{verbatim}
+  部品シンボル[属性];
+\end{verbatim}}\noindent
+と書きます。また、ある種の属性はその値を返すことできます。その場合は例えば
+{\tt\begin{verbatim}
+  a = 部品シンボル[属性];
+\end{verbatim}}\noindent
+の様に使います。さらに、ある種の属性の場合には引き数を要求しながら値も返すというものがあり、その場合は
+{\tt\begin{verbatim}
+  a = 部品シンボル[属性[引き数1, ...]];
+\end{verbatim}}\noindent
+とします。同一の属性でも書き方によって、値の設定、読み出しの両方を使い分けることができます。
+
+\pagebreak
+また、一度に多数の属性を後から設定するには関数 \idtt{Configure} により
+{\tt\begin{verbatim}
+  Configure[部品シンボル, 属性 -> 値, ...];
+\end{verbatim}}\noindent
+のようにします。
+
+部品は一般にはその属性が設定されてもその瞬間には表示を変えません。そのためには、
+\idtt{Update}、\idtt{TkSense}、\idtt{TkWait} など (\rref{widgetcontrol} 参照) が呼ばれなければなりません。{\tt TkWait} 実行中は部品の表示は定期的に更新されます。また {\tt Update[]} は、それまでに定義したすべての部品を更新します。
+
+\subchap{部品の親子関係}
+{\tt
+部品の親子関係はその製作時の指定で決まります。子供が親を指定する場合、親は既に必ず部品として製作されていなければなりません。しかし、子供が必ずしも親の部品の内側に描かれる必要はありません。
+例えば、Window を自分より小さな Button の子供とすることもできます。
+}
+
+\subchap{各部品に共通な属性\index{buhin@部品!nikyoutsuunazokuse@--に共通な属性}\index{zokusui@属性!buhinnikyoutsuuna@部品に共通な--}}
+さて、各部品にはいくつかの共通する属性があります。それらを表~\rref{widgetcommonattrib} に列挙しておきます。このなかで、梱包関係の属性、{\tt Anchor, Expand, Fill, IPadX, IPadY, PadX, PadY, Side} は Window には適用されません。
+\pagebreak
+\begin{table}[hhh]
+\bce
+\cap{各部品に共通な属性。\label{widgetcommonattrib}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lcl}
+\hline  \hline 属性 & 値(単位) & 機能 \\ \hline
+\idtt{Focus\$None} & なし & その部品の焦点を外す。\\
+\idtt{Focus\$Set} & なし & その部品に焦点を合わせる。\\
+\idtt{Lower} & なし & その部品のウインドウを背景にさげる。\\
+\idtt{Raise} & なし & その部品のウインドウを最全面にあげる。\\
+\hline
+\idtt{Anchor} & \parbox{4 cm}{\bce"n", "ne", "e", "se", "s",
+ "sw", "w", "nw", "center"\ece} &
+梱包の際の部品の起点。\\
+\idtt{Expand} & {\tt True, False} & 梱包の際の周辺のすき間の拡張。\\
+\idtt{Fill} & {\tt "x", "y", "both", "none"} & 梱包の際の周辺のすき間の充填。\\
+\idtt{IPadX}, \idtt{IPadY} & ピクセル & 梱包の際の部品の内部のすき間。\\
+\idtt{PadX}, \idtt{PadY} & ピクセル & 梱包の際の部品の周辺のすき間。\\
+\idtt{Side} & \parbox{4cm}{\bce "top", "bottom",\\ "left", "right"\ece} & 梱包の向き。\\
+\idtt{TextAnchor} & \parbox{4 cm}{\bce"n", "ne", "e", "se", "s",
+ "sw", "w", "nw", "center"\ece} & 表示テキストの配置起点\\
+\idtt{TextPadX}, \idtt{TextPadY} & ピクセル & 表示テキストの回りのすき間。\\
+\hline
+\idtt{Background} & 色名称または{\tt "\#RRGGBB"} & 背景色\\
+\idtt{BG}  & 〃　& {\tt Background} の略称 \\
+{\tt BorderWidth}\index{BorderWidth(BD)@{\tt BorderWidth(BD)}} & ピクセルまたは単位付文字列 & 境界(立体表示される)の幅\\
+\idtt{BD} & 〃 & {\tt BorderWidth} 略称\\
+\idtt{Cursor} & 形状文字列(図\rref{cursor})& マウス・カーソルの形状\\
+\idtt{Height} & ピクセルまたは単位付文字列 & 部品の高さ\\
+\idtt{HighlightColor} & 色名称または{\tt RGBColor[r,g,b]} & 焦点が合った時の背景色\\
+\idtt{Relief} & \parbox{4 cm}{\bce "flat", "groove", "raised",
+	"ridge", "sunken"\ece}& 枠の立体形状\\
+\idtt{Width} & \parbox{4cm}{\bce ピクセル、文字数、または単位付文字列\ece} & 部品の幅\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+
+\clearpage
+表~\rref{widgetcommonattrib} で「単位付文字列」とは、例えば 1 cm を{\tt "1c"}、1 inch を {\tt "1i"}などと表わすものです。
+
+各属性の単位やデフォルト値は部品の種類によって異なります。以後、各部品の中で標準と異なるばあいにはそのつど示します。
+
+\subsubchap{部品の枠の立体形状\index{rittaikeijou@立体形状}}
+属性 Relief で指定する、部品の枠の各種の立体形状\index{rittaikeijou@立体形状}を図~\rref{relief} に示します。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=25mm]{figures/Relief.eps}
+ \cap{部品の枠の立体形状。{\tt Relief -> 形状} で指定する。\label{relief}}
+\end{figure}
+
+\subsubchap{フォント\label{font}\index{font}\index{font@フォント}}
+\idtt{Font} 属性により、文字のフォントを指定する場合は、例えば、
+{\tt\begin{verbatim}
+  Font -> TextFont["times","italic","bold",12]
+\end{verbatim}}\noindent
+の様に指定します。ただし、どのフォントが使用可能かはXサーヴァに依存します。
+
+\subsubchap{色\index{color}\index{iro@色}\label{color}}
+\idtt{Background} 属性などで、色を指定する場合は、
+{\tt\begin{verbatim}
+  Background -> "red"　　　　　　　　　または
+  Background -> RGBColor[1, 0, 0]　　　または
+  Background -> "#FF0000"
+\end{verbatim}}\noindent
+などとします。ここでどのような色名称が使えるかはXサーヴァに依存します。また、RGB指定は{\tt "\#RRGGBB"} のように16進表記の文字列を使うか、\idtt{RGBColor}[赤, 緑, 青]とします。ここで赤, 緑, 青は 0 がら 1 までの実数です。
+
+\subsubchap{マウスカーソルの形状\index{cursor}\index{cursor@カーソル}}
+{\tt
+ある部品にマウスカーソルが入ったときのカーソルの形状は属性 \idtt{Cursor} を使って、
+{\tt\begin{verbatim}
+  Cursor -> "カーソル名"                 または
+  Cursor -> "カーソル名 文字色"          または
+  Cursor -> "カーソル名 文字色 背景色"
+\end{verbatim}}\noindent
+のように指定することができます。ここでカーソル名称としては図~\rref{cursor} にある備え付けの物のほかに、"@ファイル名" と書けばファイルからもロードできます。
+\begin{figure}[hbp]
+ \centering
+ \includegraphics[height=160mm]{figures/Cursorbuiltin.eps}
+ \cap{備え付けのマウスカーソル。\label{cursor}}
+ \vspace{-24pt}
+\end{figure}
+}
+
+\pagebreak
+\subsubchap{ビットマップ\label{bitmap}\index{bitmap@ビットマップ}\index{bitmap}}
+いくつかの部品ではビットマップによる塗りつぶしが可能です。ビットマップには備え付けのものとユーザが作製してファイルに保存されているものの2種類があります。この内、備え付けのものは図~\rref{builtinbitmap} にある8種類です。ビットマップの指定は文字列で、備え付けのものはその名称で、ファイルのものは {\tt "@ファイル名"} の様に書きます。なお、ビットマップは Unix の bitmap コマンドで簡単に作製できます。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=30mm]{figures/Bitmapbuiltin.eps}
+ \cap{備え付けのビットマップ。\label{builtinbitmap}}
+\end{figure}
+
+\subchap{部品の情報の獲得\index{buhin@部品!nojouhou@--の情報}}
+{\tt
+作成された各々の部品については\idtt{WidgetInformation}という関数を用いて各種の情報をうることができます。これは
+{\tt\begin{verbatim}
+  a = WidgetInformation[部品シンボル, 属性];　または
+  a = WidgetInformation[部品シンボル, 属性, id];
+\end{verbatim}}\noindent
+のように書きます。指定可能な属性は表~\rref{widgetinfo} に掲げます。
+\begin{table}[htbp]
+\bce
+\cap{{\tt WidgetInformation} の属性。\label{widgetinfo}}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{ll}
+\hline  \hline 属性 & 機能 \\ \hline
+\idtt{Geometry} & その部品のサイズおよび位置(ピクセル)、{\tt "WWWxHHH+dX+dY"}\\
+\idtt{Height} & その部品の高さ(ピクセル)\\
+\idtt{Width} & その部品の幅(ピクセル)\\
+\idtt{X}, \idtt{Y} & その部品のウインドウ内の水平、垂直位置(ピクセル)\\
+\idtt{RootX}, \idtt{RootY} & その部品のスクリーン内の水平、垂直位置(ピクセル)\\
+\idtt{Screen} & その部品の表示スクリーン({\tt DISPLAY} 変数)\\
+\idtt{ScreenDepth} & その部品の表示スクリーンのビット数\\
+\idtt{ScreenHeight}, \idtt{ScreenWidth} & その部品の表示スクリーンの高さ及び幅(ピクセル)\\
+\idtt{ReqHeight}, \idtt{ReqWidth} & その部品のウインドウに必要な最小高さ、幅\\
+\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+
+また、属性をリスト (\rref{list} 章参照) にして
+{\tt\begin{verbatim}
+  a = WidgetInformation[部品シンボル, {属性1, 属性2, ...}];
+\end{verbatim}}\noindent
+の様にすると結果が属性1, 属性2, ... に対応するリストとして返されます。例えば、
+{\tt\begin{verbatim}
+   w = Window[];
+   WidgetInformation[w, {ScreenWidth, ScreenHeight}]
+Out[1]:= {2304,1720}
+\end{verbatim}}\noindent
+のような具合です。
+
+{\tt
+\subsubchap{\idtt{FromGeometry}}
+\bit
+\item 表~\rref{widgetinfo} で属性 Geometry は "幅x高さ+$x$位置+$y$位置" という特殊なフォーマットで値 (ピクセル) を返しますが、関数 FromGeometry を使うことにより、\{幅, 高さ, $x$位置, $y$位置\} という数値リストに変換することができます。逆関数は ToGeometry です。
+\item 位置はその部品の親の左上隅から右下に測ります。親が指定されていない部品はスクリーン上の位置が返されます。
+\eit
+
+\subsubchap{\idtt{WidgetGeometry}}
+\bit
+\item WidgetGeometry[部品]　はその部品の \{幅, 高さ, $x$位置, $y$位置\} というリストを返します。単位はピクセルです。
+\item WidgetGeometry[部品]　は FromGeometry[WidgetInformation[部品, Geometry]] と同値です。
+\eit
+
+\subsubchap{\idtt{ToGeometry}\label{togeometry}}
+\bit
+\item ToGeometry[\{幅, 高さ, $x$位置, $y$位置\}]　は Geometry フォーマットの文字列\\ "幅x高さ+$x$位置+$y$位置" を返します。
+\item $x$, $y$ は左上隅から右下に測ります。もし負の数が指定されると右下隅から測られます。
+\item ToGeometry[\{幅, 高さ\}]　は "幅x高さ" を返します。
+\item ToGeometry[\{ , , $x$位置, $y$位置\}]　は "$x$位置+$y$位置" を返します。
+\eit
+}
+
+\pagebreak
+\subchap{部品の消去\index{buhin@部品!noshoukyo@--の消去}\label{deletewidget}}
+{\tt
+プログラムの終了、切り替えなどですでに製作した部品を必要としなくなった場合には、必ず
+{\tt\begin{verbatim}
+  DeleteWidget[部品シンボル1, 部品シンボル2, ... ];
+\end{verbatim}}\noindent
+のように、関数 \idtt{DeleteWidget} により、不要な部品を消去してください。また、
+{\tt\begin{verbatim}
+  部品シンボル1 =.
+\end{verbatim}}\noindent
+は DeleteWidget[部品シンボル1] と同様の働きをします。
+
+\bit
+\item DeleteWidget は親に対して行えば、{\gt その親に属する子供も全て消去}されます。
+\item \idtt{DeleteAllWidgets}[] は全ての部品を消去します。
+\item DeleteWidget[a] で a 自身が部品でない場合には、a[...] の形のシンボルに割り当てられている部品を{\gt 全て}消去します。
+\eit
+
+ある部品に結合した結合変数は、その変数を最初に結合した部品を消去した時に自動的に消去されます。また、結合変数は
+{\tt\begin{verbatim}
+  DeleteVariable[変数1, 変数2, ... ];
+\end{verbatim}}\noindent
+のように、\idtt{DeleteVariable} を使って消去することもできます。
+}
+
+\subchap{SAD/Tkinter の制御\label{widgetcontrol}}
+{\tt
+前にも述べましたが、SAD/Tkinter の部品はただ定義しただけでは表示も何もされません。表示、更新、イヴェントへの反応などは通常、関数 TkWait[], TkSense[]、あるいは Update[] が呼ばれたときにだけ起こります。
+
+\subsubchap{\idtt{TkWait}、\idtt{TkReturn}\label{tkwait}}
+\bit
+\item TkWait[]　はそれまでの部品の定義に基づき、全ての部品を製作・更新し、イヴェント待ちの状態になります。 イヴェントが発生すれば各部品の定義に応じた動作が起こされます。
+\item 結合されたコマンドのなかで TkReturn[式$1$] が実行されると、TkWait は中断され、式$1$ の値が TkWait[] の結果として返されます。
+\item ボタン \idtt{ReturnToSAD} (\rref{returntosad} 参照) は TkReturn["ReturnToSAD"] を実行します。
+\item TkWait[]　はイヴェントに結び付けられたコマンドの中で何重にも呼ぶことができます。これはダイアログ・ボックスなどでユーザーの応答を待つときなどに使うことができます。
+\eit
+
+\subsubchap{\idtt{TkSense}\label{TkSense}}
+\bit
+\item TkSense[秒]　は指定された秒数だけ TkWait[] の動作をし、その間に TkReturn[式$2$] が実行されると 式$2$ の結果を直ちに返します。そうでなければ指定時間の後に Null を返します。
+\item TkSense[]　は TkSense[0.3] と同値です。
+\eit
+
+\subsubchap{\idtt{Update}}
+\bit
+\item Update[]　はそれまでの部品の定義に基づき、全ての部品を製作・更新します。
+\eit
+
+\subsubchap{\idtt{WaitExpression}}
+\bit
+\item WaitExpression[式$1$]　は 式$1$ の値が変化するまで TkWait[] の動作をしつづけます。その間に TkReturn[式$2$] が実行されると 式$2$ の結果を直ちに返します。
+\eit
+
+\subsubchap{\idtt{After}}
+\bit
+\item After[秒, 式$1$]　は指定された秒数だけ経過した後に 式$1$ を評価することを予約します。
+\item After は TkWait や TkSense が呼ばれた時に式$1$ の実行に移ります。
+\eit
+
+\subsubchap{\idtt{Bell}}
+\bit
+\item Bell[]　は X サーヴァのベルを $1$ 回鳴らします。
+\eit
+}
+
+\clearpage
+\chap{SAD/Tkinter の各種部品}
+\subchap{\idtt{Window}}
+{\tt Window} は他の部品とは違い、例えば梱包の属性を持たないなど、特異性があります。したがって、これを部品とはしないという考えもあります。
+\begin{table}[bht]
+\bce
+\cap{{\tt Window} の属性。\label{windowattrib}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lcl}
+\hline  \hline 属性 & 入出力値(単位) & 機能 \\ \hline
+\idtt{Deiconify} & なし & アイコン状態・隠れ状態から復帰\\
+\idtt{Iconify} & なし  & アイコン状態にする\\
+\idtt{Geometry} & "WWWxHHH+dX+dY" (ピクセル) & サイズおよび位置\\
+\idtt{MaxSize} & \{$H$, $W$\} (ピクセル) & 最大拡大可能サイズ\\
+\idtt{MinSize} & \{$H$, $W$\} (ピクセル) & 最小縮小可能サイズ\\
+\idtt{OverrideRedirect} & {\tt True, False} & {\tt True}の時、枠なしのウインドウ\\
+%{\tt PositionFrom & {\tt 部品, \{$dX$, $dY$\}(ピクセル)}  & 他の部品から位置を決める\\
+\idtt{State} & \parbox{5 cm}{\bce "normal", "iconic", "withdrawn"\ece} & ウインドウの状態\\
+\idtt{Title} & 文字列 & タイトルバーに書く文字列\\
+\idtt{Withdraw} & なし & ウインドウを隠す\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+
+{\tt
+表~\rref{windowattrib} で属性 Geometry は "幅x高さ+$x$位置+$y$位置" という特殊なフォーマットの文字列を要求しますが、関数 \idtt{ToGeometry}(\rref{togeometry} 参照) を使えば \{幅, 高さ, $x$位置, $y$位置\} から "幅x高さ+$x$位置+$y$位置" への変換ができます。
+
+Window にはこれ以外にも特殊な操作が可能です。そのひとつは \idtt{AdjustWindowGeometry} で、Window のサイズを中に梱包された部品の表示に最低必要な大きさに変更するものです。用法:
+{\tt
+\begin{verbatim}
+  AdjustWindowGeometry[Windowシンボル];
+\end{verbatim}}\noindent
+}
+
+\subchap{\idtt{Frame}}
+{\tt Frame} は {\tt Window} の中の様々な部品を整列させて収容する枠です。また、この枠の立体的な表示や枠および背景の着色などもできます。例えば
+{\tt\small \begin{verbatim}
+  w = Window[];
+  f1 =  Frame[w, Relief -> "raised",
+    Side -> "left", BorderWidth -> 5];
+  b11 = Button[f1, Text -> "Frames",
+    Side -> "top", PadX -> 20, PadY -> 10];
+  b12 = Button[f1, Text -> "are used",
+    Side -> "top", PadX -> 20, PadY -> 10];
+  b13 = Button[f1, Text -> "to align",
+    Side -> "top", PadX -> 20, PadY -> 10];
+
+  f2 =  Frame[w, Relief -> "ridge",
+    Side -> "left", BorderWidth -> 5];
+  b21 = Button[f2, Text -> "widgets",
+    Side -> "top", PadX -> 20, PadY -> 10];
+  b22 = Button[f2, Text -> "in a window.",
+    Side -> "top", PadX -> 20, PadY -> 10];
+
+  f3 =  Frame[f2, Relief -> "sunken",  
+    Side -> "top", BorderWidth -> 5, 
+      PadX -> 10, PadY -> 10];
+  b31 = Button[f3, Text -> "Frames",
+    Side -> "left", PadX -> 20, PadY -> 10];
+  b32 = Button[f3, Text -> "can be nested.",
+    Side -> "left", PadX -> 20, PadY -> 10];
+\end{verbatim}}\noindent
+のようにしますと、図~\rref{frame} のような結果になります。この場合枠の形状は {\tt Relief} と {\tt BorderWidth} で決まりますが、デフォルトでは{\tt BorderWidth -> 0} なので {\tt Relief} だけでは何も効果はありません。{\tt Frame} はいくらでも重ねられます。
+
+\begin{figure}[htb]
+ \centering
+ \includegraphics[height=75mm]{figures/Frame.eps}
+ \cap{{\tt Frame} の用例。\label{frame}}
+\end{figure}
+\clearpage
+
+\subchap{{\tt Button}}
+{\tt Button} の属性を次の表に列挙します。
+\begin{table}[htbp]
+\bce
+\cap{{\tt Button} の属性。\label{buttonattrib}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline  \hline 属性 & 入出力値(単位) & デフォルト & 機能 \\ \hline
+\idtt{ActiveBackground} & 色 & & マウスカーソルが上にあるときの背景色 \\
+\idtt{ActiveForeground} & 色 & & マウスカーソルが上にあるときの文字色\\
+\idtt{Bitmap} & & & 表面にbitmapを表示\\
+\idtt{Command} & 式 & & ボタン押下時に実行する式\\
+\idtt{DisabledForeground} & 色 & & \\
+\idtt{Foreground} & 色 & {\tt "black"} & 文字色\\
+\idtt{FG} & 〃 & 〃 & {\tt Foreground} の略称\\
+\idtt{Font} & フォント & & 文字フォント\\
+\idtt{Text} & 文字列 & & ボタン表面の表示文字列\\
+\idtt{TextVariable} & シンボル & & \parbox{4 cm}{\bce
+ボタン表面の表示文字列を割り当てるシンボル\ece}\\
+\idtt{BorderWidth(BD)} & ピクセル & 2 & 境界(立体表示される)の幅\\
+\idtt{Width} & 文字数 & & ボタンの幅\\
+\idtt{Relief} & \parbox{3 cm}{\bce"flat", "groove", "raised",
+	"ridge", "sunken"\ece}& {\tt "raised"} & 枠の立体形状\\
+\idtt{TextAnchor} &  \parbox{4 cm}{\bce "c", "n", "ne", "e", "se", "s",
+ "sw", "w", "nw", "center"\ece} & "c" & 表示テキストを揃える方向\\
+\idtt{TextPadX} & ピクセル & 9 & 表示テキストの左右のすき間\\
+\idtt{TextPadY} & ピクセル & 3 & 表示テキストの上下のすき間\\
+\idtt{Flash} & なし & なし & ボタンを一瞬点滅\\
+\idtt{Invoke} & なし & なし & 割り当てられた {\tt Command} を実行\\
+
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+\clearpage
+
+\subchap{\idtt{CheckButton}}
+{\tt CheckButton}はON/OFFを表わすチェックマーク付のボタンです。これは {\tt Variable -> シンボル} で与えられたシンボル(結合変数)に{\tt\idtt{OnValue} -> 値} で決められた値が割り当てられると、チェックマークが点灯するようになっています。それ以外の場合には、たとえその値が {\tt\idtt{OffValue} -> 値} で決めた値でなくても、チェックマークは消灯します。また、結合変数を評価すると、その時点のボタンの状態に応じて{\tt OnValue -> 値} または {\tt OffValue -> 値} で設定された値を返します。また、複数の {\tt CheckButton} が一つの変数を共有する場合は、その評価は最初に定義した {\tt CheckButton} の状態を返しますが、その変数への値の設定はすべての {\tt CheckButton} に反映されます。例図は
+{\tt\small \begin{verbatim}
+  w = Window[];
+  b1 = CheckButton[w, Text -> "Linac/BT OK", 
+    Variable :> linac];
+  b2 = CheckButton[w, Text -> "LER OK", 
+    Variable :> ler];
+  b3 = CheckButton[w, Text -> "HER OK", 
+    Variable :> her];
+  b4 = CheckButton[w, Text -> "Belle OK", 
+    Variable :> belle];
+  linac = 1;
+  ler = 0;
+  her = 1;
+  belle = 1;
+\end{verbatim}}\noindent
+により作成しました。
+
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=30mm]{figures/CheckButton.eps}
+ \cap{{\tt CheckButton} の用例。}
+\end{figure}
+
+\begin{table}[htbp]
+\bce
+\cap{{\tt CheckButton} の属性。}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{lccl}
+\hline  \hline 属性 & 入出力値(単位) & デフォルト & 機能 \\ \hline
+\idtt{ActiveBackground} & 色 & & マウスカーソルが上にあるときの背景色 \\
+\idtt{ActiveForeground} & 色 & & マウスカーソルが上にあるときの文字色\\
+\idtt{Bitmap} & & & ボタン表面にbitmapを表示\\
+\idtt{Command} & 式 & & ボタン押下時に実行する式\\
+\idtt{DisabledForeground} & 色 & & \\
+\idtt{Foreground(FG)} & 色 & {\tt "black"} & 文字色\\
+\idtt{Font} & フォント & & 文字フォント\\
+\idtt{Text} & 文字列 & & ボタン表面の表示文字列\\
+\idtt{TextVariable} & シンボル & & \parbox{4 cm}{\ \\
+ボタン表面の表示文字列を割り当てるシンボル\\}\\
+\idtt{BorderWidth(BD)} & ピクセル & 2  & 境界(立体表示される)の幅\\
+\idtt{Width} & 文字数 & & ボタンの幅\\
+\idtt{Relief} & \parbox{3 cm}{\bce"flat", "groove", "raised",
+	"ridge", "sunken"\ece}& {\tt "flat"} & 枠の立体形状\\
+\idtt{Variable} & シンボル & & 結合変数\\
+\idtt{OffValue} & 数値 & 0 & ボタンが OFF の時に返す値\\
+\idtt{OnValue} & 数値 & 1 & ボタンを ON に設定する値\\
+\idtt{TextAnchor} &  \parbox{4 cm}{\bce "c", "n", "ne", "e", "se", "s",
+ "sw", "w", "nw", "center"\ece} & "c" & 表示テキストを揃える方向\\
+\idtt{TextPadX} & ピクセル & 9 & 表示テキストの左右のすき間\\
+\idtt{TextPadY} & ピクセル & 3 & 表示テキストの上下のすき間\\
+\idtt{Flash} & なし & なし & ボタンを一瞬点滅\\
+\idtt{Invoke} & なし & なし & 割り当てられた {\tt Command} を実行\\
+\idtt{Deselect}  & なし & なし & ボタンを OFF にする\\
+\idtt{Select}  & なし & なし & ボタンを ON にする\\
+\idtt{Toggle} & なし & なし & ボタンの状態を反転する\\
+
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-24pt}
+\end{table}
+
+\clearpage
+\subchap{\idtt{RadioButton}}
+{\tt RadioButton} は他者択一型の選択を行うためのマーク付のボタンです。これは {\tt Variable -> シンボル} で与えられたシンボル(結合変数)に値が割り当てられると、その値が{\tt Value -> 値} で決められた値に一致する {\tt RadioButton} のマークが点灯するようになっています。それ以外の場合にはマークは消灯します。また、結合変数を評価すると、その時点のボタンの状態に応じて値を返します。例図は
+{\tt\small \begin{verbatim}
+  w = Window[];
+  b1 = RadioButton[w, Text -> "2 ns spacing", 
+    Variable :> sb, Value -> 2];
+  b2 = RadioButton[w, Text -> "4 ns spacing", 
+    Variable :> sb, Value -> 4];
+  b3 = RadioButton[w, Text -> "6 ns spacing", 
+    Variable :> sb, Value -> 6];
+  sb = 2;
+\end{verbatim}}\noindent
+で作成しました。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=30mm]{figures/RadioButton.eps}
+ \cap{{\tt RadioButton} の用例。}
+\end{figure}
+
+\begin{table}[htbp]
+\bce
+\cap{{\tt RadioButton} の属性。}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{lccl}
+\hline  \hline 属性 & 入出力値(単位) & デフォルト & 機能 \\ \hline
+\idtt{ActiveBackground} & 色 & & マウスカーソルが上にあるときの背景色 \\
+\idtt{ActiveForeground} & 色 & & マウスカーソルが上にあるときの文字色\\
+\idtt{Bitmap} & & & ボタン表面にbitmapを表示\\
+\idtt{Command} & 式 & & ボタン押下時に実行する式\\
+\idtt{DisabledForeground} & 色 & & \\
+\idtt{Foreground(FG)} & 色 & {\tt "black"} & 文字色\\
+\idtt{Font} & フォント & & 文字フォント\\
+\idtt{Text} & 文字列 & & ボタン表面の表示文字列\\
+\idtt{TextVariable} & シンボル & & \parbox{4 cm}{\ \\
+ボタン表面の表示文字列を割り当てるシンボル\\}\\
+\idtt{BorderWidth(BD)} & ピクセル & 2  & 境界(立体表示される)の幅\\
+\idtt{Width} & 文字数 & & ボタンの幅\\
+\idtt{Relief} & \parbox{4 cm}{\bce"flat", "groove", "raised",
+	"ridge", "sunken"\ece}& {\tt "flat"} & 枠の立体形状\\
+\idtt{Variable} & シンボル & & 結合変数\\
+\idtt{Value} & 数値 &   & ボタンを ON にする値\\
+\idtt{TextAnchor} &  \parbox{4 cm}{\bce "c", "n", "ne", "e", "se", "s",
+ "sw", "w", "nw", "center"\ece} & "c" & 表示テキストを揃える方向\\
+\idtt{TextPadX} & ピクセル & 9 & 表示テキストの左右のすき間\\
+\idtt{TextPadY} & ピクセル & 3 & 表示テキストの上下のすき間\\
+\idtt{Flash} & なし & なし & ボタンを一瞬点滅\\
+\idtt{Invoke} & なし & なし & 割り当てられた {\tt Command} を実行\\
+\idtt{Deselect}  & なし & なし & ボタンを OFF にする\\
+\idtt{Select}  & なし & なし & ボタンを ON にする\\
+
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+\clearpage
+
+\subchap{\idtt{TextLabel}}
+{\tt TextLabel}は$1$行または複数行の文字列を表示するラベルです。その内容は {\tt Text -> 文字列} か或いは {\tt TextVariable -> シンボル} で指定します。後者の場合にはその結合変数の内容が文字列に変換され表示されます。また、文字列の中に {\tt "\verb1\1n"} があればそこで改行します。
+
+\begin{table}[htbp]
+\bce
+\cap{{\tt TextLabel} の属性。}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{lccl}
+\hline  \hline 属性 & 入出力値(単位) & デフォルト & 機能 \\ \hline
+\idtt{Bitmap} & & & bitmapを表示\\
+\idtt{Foreground(FG)} & 色 & {\tt "black"} & 文字色\\
+\idtt{Font} & フォント & & 文字フォント\\
+\idtt{Justify} & \parbox{3 cm}{\bce"left", "center", "right"\ece} & {\tt "center"} &
+行内の語の整列\\
+\idtt{Text} & 文字列 & & 表示文字列\\
+\idtt{TextVariable} & シンボル & & \parbox{4 cm}{\ \\
+表示文字列を割り当てるシンボル\\}\\
+\idtt{BorderWidth(BD)} & ピクセル & 2  & 境界(立体表示される)の幅\\
+\idtt{Width} & 文字数 & & 表示の幅\\
+\idtt{Relief} & \parbox{4 cm}{\bce"flat", "groove", "raised",
+	"ridge", "sunken"\ece} & "flat" & 枠の立体形状\\
+\idtt{TextAnchor} &  \parbox{4 cm}{\bce "c", "n", "ne", "e", "se", "s",
+ "sw", "w", "nw", "center"\ece} & "c" & 表示テキストを揃える方向\\
+\idtt{TextPadX} & ピクセル & 1 & 表示テキストの左右のすき間\\
+\idtt{TextPadY} & ピクセル & 1 & 表示テキストの上下のすき間\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=30mm]{figures/TextLabel.eps}
+ \cap{{\tt TextLabel} の用例。}
+\end{figure}
+
+\pagebreak
+\subchap{\idtt{TextMessage}}
+{\tt TextMessage}は長い文字列を決められた幅でフォーマットしながら表示します。その内容は {\tt Text -> 文字列} か或いは {\tt TextVariable -> シンボル} で指定します。後者の場合にはその結合変数の内容が文字列に変換され表示されます。
+\begin{table}[htbp]
+\bce
+\cap{{\tt TextMessage} の属性。}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{lccl}
+\hline  \hline 属性 & 入出力値(単位) & デフォルト & 機能 \\ \hline
+\idtt{Aspect} & \% & 150 & 幅/高さ\\
+\idtt{Foreground(FG)} & 色 & {\tt "black"} & 文字色\\
+\idtt{Font} & フォント & & 文字フォント\\
+\idtt{Justify} & \parbox{3 cm}{\bce"left", "center", "right"\ece} & {\tt "left"} &
+行内の語の整列\\
+\idtt{Text} & 文字列 & & 表示文字列\\
+\idtt{TextVariable} & シンボル & & \parbox{4 cm}{\ \\
+表示文字列を割り当てるシンボル\\}\\
+\idtt{BorderWidth(BD)} & ピクセル & 2  & 境界(立体表示される)の幅\\
+\idtt{Width} & ピクセル & 116 & 表示の幅\\
+\idtt{Relief} & \parbox{4 cm}{\bce"flat", "groove", "raised",
+	"ridge", "sunken"\ece}& {\tt "flat"} & 枠の立体形状\\
+\idtt{TextAnchor} &  \parbox{4 cm}{\bce "c", "n", "ne", "e", "se", "s",
+ "sw", "w", "nw", "center"\ece} & "c" & 表示テキストを揃える方向\\
+\idtt{TextPadX} & ピクセル & 1 & 表示テキストの左右のすき間\\
+\idtt{TextPadY} & ピクセル & 1 & 表示テキストの上下のすき間\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-48pt}
+\end{table}
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=30mm]{figures/TextMessage.eps}
+ \cap{{\tt TextMessage} の用例。}
+\end{figure}
+
+\clearpage
+\subchap{\idtt{Entry}\label{entry}}
+{\tt Entry}は文字列をキーボードから入力するための枠です。{\tt TextVariable} であるシンボルを結合変数に指定することにより、入力された文字列は即座に利用できます。
+
+\begin{table}[htbp]
+\bce
+\cap{{\tt Entry} の属性。}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{lccl}
+\hline  \hline 属性 & 入出力値(単位) & デフォルト & 機能 \\ \hline
+\idtt{ExportSelection} & {\tt True, False} & {\tt True} & 選択範囲を X に伝達\\
+\idtt{Foreground(FG)} & 色 & {\tt "black"} & 文字色\\
+\idtt{Font} & フォント & & 文字フォント\\
+\idtt{InsertBackground} & 色 & {\tt "black"} & 挿入カーソルの色\\
+\idtt{InsertOffTime} & msec &  & 挿入カーソルの消灯時間\\
+\idtt{InsertOnTime} & msec &  & 挿入カーソルの点灯時間\\
+\idtt{InsertWidth} & ピクセル & 2 & 挿入カーソルの幅\\
+\idtt{SelectBackground} & 色 & {\tt "green"} & 選択範囲の背景色\\
+\idtt{SelectForeground} & 色 & {\tt "black"} & 選択範囲の文字色\\
+\idtt{SelectBorderWidth} & ピクセル & 1 & 選択範囲の境界幅\\
+\idtt{ShowText} & 文字 & {\tt ""} & 内容の代わりに表示する文字\\
+\idtt{State} & \parbox{3cm}{\bce"disabled", "normal"\ece} & {\tt "normal"} &
+disabled = 読み出し専用\\
+\idtt{XScrollCommand} & コマンド &  &  \parbox{4 cm}{\ \\横方向のスクロールバーの割り当て\\}\\
+\idtt{Justify} & \parbox{3 cm}{\bce"left", "center", "right"\ece} & {\tt "left"} &
+行内の語の整列\\
+\idtt{TextVariable} & シンボル & & \parbox{4 cm}{\ \\
+入力文字列を割り当てるシンボル\\}\\
+\idtt{BorderWidth(BD)} & ピクセル & 2 & 境界(立体表示される)の幅\\
+\idtt{Width} & 文字数 & 20 & 表示の幅\\
+\idtt{Relief} & \parbox{3 cm}{\bce"flat", "groove", "raised",
+	"ridge", "sunken"\ece}& {\tt "sunken"} & 枠の立体形状\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+\clearpage
+
+{\tt Entry}には表13のような数々の入力編集機能が組み込まれています。
+\begin{table}[hbtp]
+\bce
+\cap{{\tt Entry} の入力編集機能。}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{ll}
+\hline  \hline イヴェント &  機能 \\ \hline
+{\tt "<Button-1>"} & 挿入点を指定\\
+{\tt "<Control-Button-1>"} & 選択範囲を保存して挿入点を指定\\
+{\tt "<B1-Motion>"} & 選択範囲をドラッグで指定\\
+{\tt "<Shift-B1-Motion>"} & 選択範囲の境界をドラッグで変更\\
+{\tt "<Double-Button-1>"} & 1語を選択\\
+\parbox{6 cm}{\ \\{\tt "<Triple-Button-1>" "<Control-slash>"}\\} & 全体を選択\\
+{\tt "<Button-2>"} &  挿入点に貼り込む\\
+{\tt "<B2-Motion>" } & 横スクロール\\
+{\tt "<Left>" "<Control-b>"} & カーソルを1文字左\\
+{\tt "<Shift-Left>" }& カーソルを1文字左、選択範囲を拡張\\
+{\tt "<Control-Left>"　"<Meta-b>" }& カーソルを1語左\\
+{\tt "<Control-Shift-Left>" }& カーソルを1語左、選択範囲を拡張\\
+{\tt "<Right>" "<Control-f>" } & カーソルを1文字右\\
+{\tt "<Shift-Right>" } & カーソルを1文字右、選択範囲を拡張\\
+{\tt "<Control-Right>"　"<Meta-f>" }& カーソルを1語右\\
+{\tt "<Control-Shift-Right>" }& カーソルを1語右、選択範囲を拡張\\
+{\tt "<Home>" "<Control-a>" }& カーソルを {\tt Entry} の開始点に\\
+{\tt "<Shift-Home>" }& カーソルを {\tt Entry} の開始点に、選択範囲を拡張\\
+{\tt "<End>" "<Control-e>" }& カーソルを {\tt Entry} の終点に\\
+{\tt "<Shift-End>" }& カーソルを {\tt Entry} の終点に、選択範囲を拡張\\
+{\tt "<Select>" "<Control-Space>"} & (選択範囲を挿入点に合わせる) \\
+\parbox{5cm}{\ \\{\tt "<Shift-Select>" "<Control-Shift-Space>"}\\} & 選択範囲を挿入点に合わせる\\
+{\tt "<Control-backslash>" }& 全体を消去\\
+{\tt "<Delete>" } & 左1文字または選択範囲を削除\\
+{\tt "<Backspace>" "<Control-h>" } & 左1文字を削除\\
+{\tt "<Control-d>" } & 右1文字を削除\\
+{\tt "<Control-w>" } & 左1語を削除\\
+{\tt "<Meta-d>" } & 右1語を削除\\
+{\tt "<Condrol-k>" } & 終端まで削除\\
+{\tt "<Control-x>" } & 選択範囲を削除\\
+{\tt "<Control-t>" } & 文字の並び変え\\
+
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-48pt}
+\end{table}
+\clearpage
+
+{\tt Entry}には様々な操作を加えることができます。
+
+次の例は {\tt Entry} の最も簡単な用例で、その結果は図 \rref{entryexample} の様になります。
+{\tt\small \begin{verbatim}
+  w = Window[];
+  f1 = Frame[w];
+  t1 = TextLabel[f1, Text -> "Username: ",
+    Side -> "left", PadX -> 10, PadY -> 10];
+  e1 = Entry[f1, TextVariable :> user,
+    Side -> "left", PadX -> 5];
+
+  f2 = Frame[w];
+  t2 = TextLabel[f2, Text -> "Password: ",
+    Side->"left", PadX -> 10, PadY -> 10];
+  e2 = Entry[f2, TextVariable :> pwd,
+    Side -> "left", PadX -> 5,
+    ShowText -> "*"];
+\end{verbatim}}\noindent
+
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[height=30mm]{figures/Entry.eps}
+ \cap{{\tt Entry} の用例。\label{entryexample}}
+\end{figure}
+\pagebreak
+
+\subchap{\idtt{Scale}}
+{\tt Scale} は槽 trough とその上をすべるスライダーとからなりたっています。槽はある量の可変範囲を、またスライダーはその現在値を表わします。{\tt Scale} に結合変数を結び付けておけば、それを通してスライダーの読み出し、設定がともに可能になります。
+
+次の例は {\tt Scale} の最も簡単な使用例です。
+{\tt\small \begin{verbatim}
+  w = Window[];
+  s = Scale[w, 
+    From -> -10, 
+    To   ->  10,
+    Length -> 200,
+    Orient -> "horizontal",
+    Variable :> v,
+    Command :> Print[{$Arg, v}]];
+\end{verbatim}}\noindent
+ここで \idtt{From} と \idtt{To} はそれぞれ可変範囲の下限と上限を与えます。また、\idtt{Length} と \idtt{Orient} は {\tt Scale} 全体の長さと向きを指定します。この場合の結合変数は {\tt v} で、それはまた、\idtt{Command} のなかでも引用されています。{\tt Command} はスライダーの位置に変化があった場合に実行される式を指定します。また、\idtt{\$Arg} はこのコマンドが実行される時にスライダーの値として渡されるもので、{\tt v} と同じ値を持っています。この例は図 \rref{scaleexample}のような結果をもたらします。この例ではスライダーが動かされる度に端末に {\tt \{-3,-3\}}のようにスライダーの示す値が印刷されます。
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[height=25mm]{figures/Scale.eps}
+ \cap{{\tt Scale} の用例。\label{scaleexample}}
+\end{figure}
+
+{\tt Scale} にはまた、表~\rref{scaleattrib} のような属性があります。
+\begin{table}[htbp]
+\bce
+\cap{{\tt Scale} の属性。\label{scaleattrib}}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{lccl}
+\hline  \hline 属性 & 入出力値(単位) & デフォルト & 機能 \\ \hline
+\idtt{BigIncrement} & 数値 & & 大ステップの大きさ\\
+\idtt{Command} & コマンド & & スライダーが変化した際に実行\\
+\idtt{Digits} & 正整数 & & 値の有効桁\\
+\idtt{Foreground(FG)} & 色 & {\tt "black"} & 文字色\\
+\idtt{Font} & フォント & & ラベル用フォント\\
+\idtt{From} & 数値 & & 下限値\\
+\idtt{To} & 数値 & & 上限値\\
+\idtt{Label} & 文字列 & & ラベル文字列\\
+\idtt{Length} & ピクセル & 100 & 槽の長さ\\
+\idtt{Orient} & \parbox{3cm}{\bce "horizontal" "vertical"\ece}&{\tt "vertical"}&
+槽の向き\\
+\idtt{Resolution} & 数値 & & 結果はこの値の整数倍\\
+\idtt{ShowValue} & {\tt True, False} & {\tt True} & 値の表示\\
+\idtt{SliderLength} & ピクセル & & スライダーの長さ\\
+\idtt{State} &  \parbox{3cm}{\bce "normal" "active" "disabled"\ece} &  & \\
+\idtt{TickInterval} & 数値 & 0 & ティックの間隔、0でティックなし\\
+\idtt{TroughColor} & 色 & & 槽の色\\
+\idtt{Variable} & シンボル & & 結合変数\\
+\idtt{BorderWidth(BD)} & ピクセル & 2 & テキストの境界の幅\\
+\idtt{Width}  & ピクセル & 15 & 槽の太さ\\
+\idtt{Relief} & \parbox{3 cm}{\bce "flat", "groove", "raised",
+	"ridge", "sunken"\ece}& {\tt "flat"} & 枠の立体形状\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+\clearpage
+
+{\tt Scale} には次の表に示すいくつかの入力機能が用意されています。
+\begin{table}[hbtp]
+\bce
+\cap{{\tt Scale} の入力機能。}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{ll}
+\hline  \hline イヴェント &  機能 \\ \hline
+{\tt "<Button-1>"} & 槽をクリックするとスライダーが1ステップ進む\\
+{\tt "<Control-Button-1>"} & スライダーが端まで進む\\
+{\tt "<Right>" "<Up>" } & スライダーが1ステップ増加\\
+{\tt "<Control-Right>" "<Control-Up>" } & スライダーが1大ステップ増加\\
+{\tt "<Left>" "<Down>" } & スライダーが1ステップ減少\\
+{\tt "<Control-Left>" "<Control-Down>" } & スライダーが1大ステップ減少\\
+{\tt "<Home>" } & スライダーが最上端或いは最左端に移動\\
+{\tt "<End>" } & スライダーが最下端或いは最右端に移動\\
+
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-24pt}
+\end{table}
+
+
+\subchap{\idtt{ScrollBar}}
+{\tt ScrollBar} は他の部品、{\tt Entry, ListBox, TextEditor, Canvas} などと一緒に使われ、スクロール・バーの役目を果たします。{\tt ScrollBar} と他の部品との結合法はきわめて単純で、以下のようにします。
+{\tt\small \begin{verbatim}
+  physicists = 
+    {"Copernicus", "Galileo Galilei", "Kepler",
+      "Hooke", "Newton", "Euler", "Lagrange",
+      "Gauss", "Faraday", "Maxwell", "Boltzmann",
+      "Lorentz", "Einstein", "Bohr", "Heisenberg",
+      "Schrodinger", "Pauli", "Dirac", "Fermi"};
+
+  w = Window[];
+  sb = ScrollBar[w, Orient -> "vertical", 
+    Side -> "right", Fill->"y"];
+  lb = ListBox[w, YScrollCommand :> sb[Set], 
+    Insert -> {"end", physicists},
+    Side -> "right"];
+\end{verbatim}}\noindent
+このように、(1){\tt ScrollBar} を先に定義する。(2)結び付けたい部品の中で
+{\tt\small \begin{verbatim}
+  スクロールコマンド :> スクロールバーシンボル[Set]
+\end{verbatim}}\noindent
+とすればOKです。この場合、スクロールコマンドは {\tt YScrollCommand}、スクロールバーシンボルは {\tt sb} です。定義する順序を逆にしてはいけません。なお、{\tt ListBox} については後述します。
+
+ちなみにこの例は次のような結果になります。
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[height=50mm]{figures/ListBox.eps}
+ \cap{{\tt ScrollBar} の用例。\label{scrollbarexample}}
+\end{figure}
+
+{\tt ScrollBar} の入力機能と属性を表 \rref{scrollbarinput}・\rref{scrollbarattrib} にまとめておきます。
+\begin{table}[hbtp]
+\bce
+\cap{{\tt ScrollBar} の入力機能。\label{scrollbarinput}}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{ll}
+\hline  \hline イヴェント &  機能 \\ \hline
+{\tt "<Button-1>" "<Button-2>"} & 矢のクリックでスライダーが1ステップ進む\\
+{\tt "<B1-Motion>" "<B2-Motion>"} & スライダーのドラッグ\\
+{\tt "<Control-Button-1>" "<Control-Button-2>"} & スライダーを端まで動かす\\
+{\tt "<Up>" "<Down>"} & $1$行のスクロール\\
+{\tt "<Control-Up>" "<Control-Down>"} & 1画面の上下スクロール\\
+{\tt "<Left>" "<Right>"} & 1単位の左右スクロール\\
+{\tt "<Control-Left>" "<Control-Right>"} & 1画面の左右スクロール\\
+{\tt "<Home>" } & スライダーが最上端或いは最左端に移動\\
+{\tt "<End>" } & スライダーが最下端或いは最右端に移動\\
+
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+\begin{table}[htbp]
+\bce
+\cap{{\tt ScrollBar} の属性。\label{scrollbarattrib}}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{lccl}
+\hline  \hline 属性 & 入出力値(単位) & デフォルト & 機能 \\ \hline
+\idtt{Command} & コマンド & (自動設定) & スライダーが変化した際に実行\\
+\idtt{Jump} & {\tt True, False} & {\tt False} & {\tt True}:ジャンプ・スクロール\\
+\idtt{Orient} & \parbox{3cm}{\bce"horizontal" "vertical"\ece}&{\tt "vertical"}&
+槽の向き\\
+\idtt{TroughColor} & 色 & & 槽の色\\
+\idtt{BorderWidth(BD)} & ピクセル & 2 & 境界の幅\\
+\idtt{Width} & ピクセル & 　 & 槽の幅\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+
+\subchap{\idtt{ListBox}}
+{\tt ListBox} は文字列の集合から一つまたは複数の要素を選び出すための道具です。基本的な動作は {\tt ListBox} 作成時に文字列の集合を渡し、選択の完了後に選ばれた項目を受け取るというものです。選択は属性 \idtt{SelectMode} の設定によって単数にも複数にもできます。また、文字列の集合を随時挿入・削除するなど細かい動作も可能です。
+
+SAD では要素の集合体はリスト (\rref{list} 章を参照) で表わされます。リストは全体を {\tt \{ と \}} で囲まれ、要素の間を {\tt ,} で区切って表現します。図 \rref{scrollbarexample} の例では、
+{\tt\small \begin{verbatim}
+  physicists = 
+    {"Copernicus", "Galileo Galilei", "Kepler",
+      "Hooke", "Newton", "Euler", "Lagrange",
+      "Gauss", "Faraday", "Maxwell", "Boltzmann",
+      "Lorentz", "Einstein", "Bohr", "Heisenberg",
+      "Schrodinger", "Pauli", "Dirac", "Fermi"};
+\end{verbatim}}\noindent
+のように、シンボル {\tt physicists} に右辺の文字列を要素とするリストを割り当てています。さて、{\tt ListBox} に対しては属性 \idtt{Insert} を用いて、
+{\tt\small \begin{verbatim}
+  lb = ListBox[w, YScrollCommand :> sb[Set], 
+    Insert -> {"end", physicists},
+    Side -> "right"];
+\end{verbatim}}\noindent
+のようにリスト {\tt physicists} を伝達しています。この例ではリストを一旦シンボル {\tt physicists} に割り当てていますが、もちろん
+{\tt\small \begin{verbatim}
+  lb = ListBox[w, YScrollCommand :> sb[Set], 
+    Insert -> {"end", 
+      {"Copernicus", "Galileo Galilei", "Kepler",
+        "Hooke", "Newton", "Euler", "Lagrange",
+        "Gauss", "Faraday", "Maxwell", "Boltzmann",
+        "Lorentz", "Einstein", "Bohr", "Heisenberg",
+        "Schrodinger", "Pauli", "Dirac", "Fermi"}},
+    Side -> "right"];
+\end{verbatim}}\noindent
+のように直接書き込んでもかまいません。
+
+{\tt
+さて、Insert の最初の引き数の {\tt "end"} は文字列の挿入点を全体の最後にするという意味です。ListBox ではこのような行の指定は表~\rref{listboxindex} にある何れかの方法で行うことができます。
+例えば、先頭から挿入する場合には 0 を指定します。\pagebreak
+}
+\begin{table}[hbtp]
+\bce
+\cap{{\tt ListBox} の行の指定方法。\label{listboxindex}}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{ll}
+\hline  \hline 値 & 意味 \\ \hline
+数値 \itn & 最初から \itn 行目、先頭 = $1$\\
+"active" & 活性化された行\\
+"anchor" & Anchor 指定された行\\
+"end" & 最終行\\
+"@\itx, \ity" & 座標が (\itx, \ity) に最も近い行\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+
+{\tt ListBox} には4つの選択モード \idtt{SelectMode}\index{sentakumode@選択モード}\index{mode@モード!sentaku@選択--}、{\tt "browse", "single", "extended", "multiple"} があります。このうち前2者が単数項目の選択、後2者が複数項目の選択です。それぞれのモードでは入力のイヴェントの結合に若干の差異があります。筆者は、通常はこのように4つものモードを使い分ける必要はなく、単に {\tt "browse" と "extended"} の2者で充分ではないかと思います。ここではとりあえずこの2者の入力機能を説明し、他は参考文献を参照していただくことにします。
+
+\subsubchap{{\tt "browse"} モード}
+{\tt "browse"} モードはデフォルトの選択モードです。ここでは選択される項目は一つに限られています。
+\begin{table}[hbtp]
+\bce
+\cap{{\tt "browse"} モードの入力機能。}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{ll}
+\hline  \hline イヴェント &  機能 \\ \hline
+{\tt "<Button-1>"} & クリックした項目を選択・活性化\\
+{\tt "<B1-Motion>"} & ドラッグで選択項目が移動\\
+{\tt "<Shift-Button-1>"} & クリックした項目を活性化、非選択\\
+{\tt "<Up>" "<Down>"} & 活性化項目を$1$行上下\\
+{\tt "<Control-Home>"} & 最初の行を選択・活性化\\
+{\tt "<Control-End>"} & 最後の行を選択・活性化\\
+{\tt "<Left>" "<Right>"} & $1$単位の左右スクロール\\
+{\tt "<space>" "<Select>" "<Control-slash>"} & 活性化した行を選択\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-24pt}
+\end{table}
+
+\subsubchap{{\tt "extended"} モード}
+{\tt "extended"} モードでは任意の複数の項目を選択できます。
+\begin{table}[hbtp]
+\bce
+\cap{{\tt "extended"} モードの入力機能。}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{ll}
+\hline  \hline イヴェント &  機能 \\ \hline
+{\tt "<Button-1>"} & クリックした項目を選択、選択の起点にする\\
+{\tt "<B1-Motion>"} & 起点からドラッグした範囲を選択\\
+{\tt "<Button-Release-1>"} & その項目を活性化\\
+{\tt "<Shift-Button-1>"} & 起点からクリックした項目までの範囲を選択\\
+{\tt "<Shift-B1-Motion>"} & 起点からドラッグした範囲を連続的に選択\\
+{\tt "<Control-Button-1>"} & クリックした項目の選択を反転、起点にする\\
+{\tt "<Shift-B1-Motion>"} & 起点からドラッグした範囲を起点と同じ状態にする\\
+{\tt "<Up>" "<Down>"} & 活性化項目を$1$行上下、起点にする\\
+{\tt "<Shift-Up>" "<Shift-Down>"} & 活性化項目から選択範囲を拡大する\\
+{\tt "<Control-Home>"} & 最初の行を選択・活性化\\
+{\tt "<Control-Shift-Home>"} & 最初の行までの範囲を選択・活性化\\
+{\tt "<Control-End>"} & 最後の行を選択・活性化\\
+{\tt "<Control-Shift-End>"} & 最後の行までの範囲を選択・活性化\\
+{\tt "<Left>" "<Right>"} & 1単位の左右スクロール\\
+{\tt "<space>" "<Select>" } & 活性化した行を選択\\
+{\tt "<Control-slash>"} & 全体を選択\\
+{\tt "<Control-backslash>"} & 選択を解除\\
+{\tt "<Escape>" } & 直前の選択動作をキャンセル\\
+
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-24pt}
+\end{table}
+
+\pagebreak
+\subsubchap{選択項目のとりだし}
+選択が行われた後に選択された項目を取り出すには
+{\tt\small \begin{verbatim}
+  a = リストボックスシンボル[Selection];
+\end{verbatim}}\noindent
+とすれば選択項目の番号がリストになって返されます。選択項目が単数の場合でも答えは必ずリストです。番号は最初の項目が 1 です。また、選択された文字列を取り出したいときには
+{\tt\small \begin{verbatim}
+  a = リストボックスシンボル[GetText[Selection]];
+\end{verbatim}}\noindent
+とすれば、選択された文字列がやはりリストで返ります。また、選択の有無にかかわらず、
+{\tt\small \begin{verbatim}
+  a = リストボックスシンボル[GetText[番号]];
+\end{verbatim}}\noindent
+とすれば、その番号の文字列が返ります。
+
+\subsubchap{{\tt ListBox} の属性}
+{\tt ListBox の属性を表~\rref{listboxattrib} に示します。ここで行の指定は表~\rref{listboxindex} によって行います。}
+
+\begin{table}[htbp]
+\bce
+\cap{{\tt ListBox} の属性。\label{listboxattrib}}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{lccl}
+\hline  \hline 属性 & 入出力値(単位) & デフォルト & 機能 \\ \hline
+\idtt{BorderWidth(BD)} & ピクセル & 2 & 境界(立体表示される)の幅\\
+\idtt{Delete} & \parbox{3cm}{\bce 行$1$ または\\ \{行$1$, 行$2$\}\ece} & & \parbox{5cm}{行$1$ または行$1$ から行$2$ までを削除}\\
+\idtt{ExportSelection} & {\tt True, False} & {\tt True} & 選択範囲を X に伝達\\
+\idtt{Foreground(FG)} & 色 & {\tt "black"} & 文字色\\
+\idtt{Font} & フォント & & 文字フォント\\
+\idtt{Height} & 行数 & 　 & 表示の行数\\
+\idtt{Relief} & \parbox{3 cm}{\bce"flat", "groove", "raised",
+	"ridge", "sunken"\ece}& {\tt "sunken"} & 枠の立体形状\\
+\idtt{See} & 行 & & 指定した行を表示範囲に移す\\
+\idtt{SelectBackground} & 色 & {\tt "green"} & 選択範囲の背景色\\
+\idtt{SelectBorderWidth} & ピクセル & 1 & 選択範囲の境界幅\\
+\idtt{SelectForeground} & 色 & {\tt "black"} & 選択範囲の文字色\\
+\idtt{SelectMode} & \parbox{3cm}{\bce "browse" "single" "extended" "multiple"\ece} &
+{\tt "browse"} & 選択モード\\
+\idtt{Select\$Clear} & \parbox{3cm}{\bce 行$1$ または\\ \{行$1$, 行$2$\}\ece} & &
+\parbox{5cm}{行$1$ または 行$1$ から行$2$ の選択を解除}\\
+\idtt{Select\$Set} & \parbox{3cm}{\bce 行$1$ または\\ \{行$1$, 行$2$\}\ece} & &
+\parbox{5cm}{行$1$ または 行$1$ から行$2$ を選択}\\
+\idtt{SetGrid} & {\tt True, False} & {\tt False} & \parbox{5cm}{\ \\{\tt True} のときサイズの変更に制限\\}\\
+\idtt{Width} & 文字数 & 　 & 表示の幅\\
+\idtt{XScrollCommand} & コマンド &  & 横方向のスクロールバーの割り当て\\
+\idtt{XView} & 文字位置 & & 横方向の表示位置 \\
+\idtt{YScrollCommand} & コマンド &  & 縦方向のスクロールバーの割り当て\\
+\idtt{YView} & 行数 & & 縦方向の表示位置\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-24pt}
+\end{table}
+
+\clearpage
+
+\subchap{\idtt{Menu} と \idtt{MenuButton}}
+{\tt Menu} はそのなかにいくつかの menu entry とよばれる部品を貼る枠です。貼れるものは {\tt Button, CheckButton, RadioButton, Separator, と Cascade} です。このうち、3種類のボタンはこれまで登場した3種類の単独のボタンとほぼ同様の動作をします。\idtt{Separator} は部品と部品の間の区切りのための部品です。\idtt{Cascade} は多段式の {\tt Menu} の連鎖をつくるための部品です。
+
+{\tt MenuButton} はそこに {\tt Menu} を割り当てることにより、{\tt MenuButton}を押したときにだけ現われるプルダウン・メニューを実現します。{\tt MenuButton} には {\tt Button} と同じ属性 (表~\rref{buttonattrib} 参照) が備わっています。
+
+次の例は {\tt MenuButton mb に Menu mn} を割り当て、しかる後に {\tt mn} に各種の部品を追加しています。また、{\tt mn} に {\tt Cascade} される {\tt Menu mn1}
+は {\tt Cascade} が {\tt mn} に追加される前に定義しておきます。つまり、{\tt mn, mn1, Cascade} の順に定義しないとうまく動作しません。これは自分が親または子として参照する部品は自分より先に定義されていなければならないという事情によります。
+{\tt\small \begin{verbatim}
+  w = Window[];
+  mb = MenuButton[w, Text -> "MENU"];
+  mn = Menu[mb, TearOff -> True];
+  mn1 = Menu[mn, TearOff -> True,
+    Add -> {
+      RadioButton[Text -> "Rare",
+        Value -> 1, Variable :> cook],
+      RadioButton[Text -> "Medium",
+        Value -> 2, Variable :> cook],
+      RadioButton[Text -> "Well-done",
+        Value -> 3, Variable :> cook]}];
+  mn[Add] = {
+    Button[Text -> "Salad"],
+    Separator[],
+    Cascade[Text -> "Steak", Menu -> mn1],
+    Button[Text -> "Fish"],
+    Separator[],
+    CheckButton[Text -> "Dessert", Variable :> dessert]};
+  cook = 1;
+  dessert = 1;
+\end{verbatim}}\noindent
+
+\pagebreak
+この例は図~\rref{menuexample} のような結果になります。
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[height=60mm]{figures/Menu.eps}
+ \cap{{\tt Menu と MenuButton} の用例。\label{menuexample}}
+\end{figure}
+
+\clearpage
+\subsubchap{{\tt Menu} の属性}
+{\tt Menu} の属性を表~\rref{menuattrib} に示します。
+\begin{table}[htbp]
+\bce
+\cap{{\tt Menu} の属性。\label{menuattrib}}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{lccl}
+\hline  \hline 属性 & 入出力値(単位) & デフォルト & 機能 \\ \hline
+\idtt{BorderWidth(BD)} & ピクセル & 2 & 境界(立体表示される)の幅\\
+\idtt{Delete} & \parbox{3cm}{\bce 部品番号$1$\\ \{部品番号$1$, 部品番号$2$\}\ece} & &
+\parbox{5cm}{部品番号$1$、或いは部品番号$1$ から部品番号$2$ までの部品を削除する}\\
+\idtt{DisabledForeground} & 色 &   & \parbox{5cm}{\ \\{\tt disabled} 状態の部品の文字色\\}\\
+\idtt{EntryConfigure} & \parbox{3cm}{\{部品番号, 属性 -> 値, ...\}} & &
+\parbox{5cm}{部品番号の部品の属性を変更する}\\
+\idtt{Font} & フォント & & 文字フォント\\
+\idtt{Foreground(FG)} & 色 & {\tt "black"} & 文字色\\
+\idtt{Invoke} & 部品番号 & & \parbox{5cm}{\ \\部品番号の部品に割り当てられたコマンドを実行する\\}\\
+\idtt{PostCommand} & コマンド & & \parbox{5cm}{\ \\{\tt Menu} が現われる直前に実行する式\\}\\
+\idtt{SelectColor} & 色 & {\tt "red"} & \parbox{5cm}{\ \\{\tt Check, Radio} のセレクタの色\\}\\
+\idtt{TearOff} & True, False & False & \parbox{5cm}{\ \\True の時 TearOff 部品を付加し、メニューをボタンから剥離・移動可能にする}\\
+\idtt{YPosition} & 部品番号 & & \parbox{5cm}{\ \\部品番号の部品のスクリーン上の位置を返す\\ }\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-24pt}
+\end{table}
+
+{\tt
+　表~\rref{menuattrib} で、「部品番号」とは Menu に貼られた各部品を識別する番号で {\gt 1 から}始まります。また、"active" (今、マウスカーソルの置かれているもの)、"last" (最後の部品)、"@$y$ 座標" ($y$ 座標にある部品) という指定も可能です。
+
+\subsubchap{\idtt{TearOff}}
+表~\rref{menuattrib} の中で TearOff という属性を True (デフォルトは False) にすると図~\rref{menuexample} にある様に各メニューの最上部に破線が付加されます。この破線も一種の部品で、これを選ぶと
+その Menu が MenuButton から独立したひとつの Window になります。これはあるメニューを持続的に使用する場合大変便利です。TearOff が True の場合は TearOff が部品番号 1 となり、他の部品は番号 2 から始まります。
+}
+
+\pagebreak
+\subsubchap{{\tt Menu} に貼られる部品の属性}
+{\tt Menu} に貼られる部品は対応する単独部品の属性の一部を持っています。次にそれらを示します。
+\begin{table}[htbp]
+\bce
+\cap{{\tt Menu} に貼られる部品の属性。}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{lccl}
+\hline  \hline 属性 & 入出力値(単位) & デフォルト & 機能 \\ \hline
+\idtt{ActiveBackground} & 色 & & マウスカーソルが上にあるときの背景色 \\
+\idtt{ActiveForeground} & 色 & & マウスカーソルが上にあるときの文字色\\
+\idtt{Accelerator} & & & \\
+\idtt{Bitmap} & & & ボタン表面にbitmapを表示\\
+\idtt{Command} & 式 & & 選択時に実行する式\\
+\idtt{Font} & フォント & & 文字フォント\\
+\idtt{Foreground(FG)} & 色 & {\tt "black"} & 文字色\\
+\idtt{Justify} & \parbox{3cm}{\bce "center" "left" "right"\ece} & {\tt "center"} & テキストの整列\\
+\idtt{OffValue} & 数値 &   & {\tt Checkbutton} がOFFの時の値\\
+\idtt{OnValue} & 数値 &   & {\tt Checkbutton} をONにする値\\
+\idtt{SelectColor} & 色 & {\tt "red"} & チェックマークの色\\
+\idtt{State} & \parbox{3cm}{\bce "normal" "active" "disabled"\ece} & {\tt "normal"} & エントリーの状態\\
+\idtt{Text} & 文字列 & & ボタン表面の表示文字列\\
+\idtt{Underline} & 数値 & & \parbox{5cm}{下線を付ける文字の位置、0 が最初の文字}\\
+\idtt{Value} & 数値 &   & {\tt RadioButton} をONにする値\\
+\idtt{Variable} & シンボル & & 結合変数\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+
+\subsubchap{\idtt{Underline}}
+{\tt
+Menu に貼られる部品に属性 Underline -> 文字位置 を指定すると、その位置 (0 を最初の文字とする) の文字に下線が付加されます。そしてメニューが表示されている状態でその文字のキーを打つと、その部品のコマンドが実行されます。また、<space> 及び <Return> キーを打つと、現在選ばれている部品のコマンドが実行されます。さらに <escape> キーはメニューの表示を消します。
+}
+
+\clearpage
+\subchap{\idtt{OptionMenu}}
+{\tt
+OptionMenu はいくつかのメニュー項目の中から一つを選択し、選択されたものの名称をボタン表面に表示するという機能を一度に実現します。次の例
+{\tt\small \begin{verbatim}
+  w = Window[];
+  om = OptionMenu[w, TextVariable -> africananimal,
+    Items -> {"lion", "giraffe", "zebra",
+      "hippopotamus", "rhinoceros"}];
+  africananimal = "giraffe";
+\end{verbatim}}\noindent
+は Items で指定した文字列のリスト (\rref{list} 章を参照) の中の一項目が TextVariable で指定した結合変数、africananimal に割り当てられます。そしてその変数の値がボタン表面に図~\rref{optionmenu}{\rm(A)} のように表示されます。また、マウスで選択する際にはメニューが現在の設定値を中心に図~\rref{optionmenu}{\rm(B)}のように展開されます。
+
+OptionMenu には MenuButton と同様に、Menu を貼り付けることもできます。また、OptionMenu の属性は Items 以外は Button と同じです (表~\rref{buttonattrib} 参照)。
+
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[height=50mm]{figures/OptionMenu.eps}
+ \cap{{\tt OptionMenu} の用例。\label{optionmenu}}
+\end{figure}
+}
+
+\subchap{その他の部品}
+SAD には上記の他に {\tt Canvas や TextEditor} などの、より複雑な部品が存在します。ここではまず SAD 言語の構成要素と文法について先に解説し、その後に残りの部品についての説明をつづけたいと思います。
+
+\clearpage
+\chap{SAD の構成要素}
+\subchap{原子}
+SAD の最も基本的な構成要素(原子 Atom)には次のものがあります。
+\bit
+\item 実数。浮動小数点8バイト長。
+\item 文字列。1文字1バイトで任意長。
+\item シンボル。英字、\$、数字からなる任意長の名前。数字で開始してはいけない。大小文字は区別される。
+\item パターン。他の要素との照合をはかるための要素。
+\eit
+
+これらの原子は次のように入力されます。
+\subsubchap{実数の入力表記\index{jissuu@実数}}
+通常の表記法のほかに、FORTRANやCのように{\tt E あるいは e}で 10 の冪乗を表わすことができます。なお、複素数\index{fukusosuu@複素数}は原子ではなく、{\tt 2 + 3 * I} などのように虚数単位をあらわすシンボル \idtt{I} を用いた式で表わします。また、現在の仕様では実数と整数の区別はなく、演算の結果はすべて実数になるので丸め誤差に注意しなければなりません。
+
+\subsubchap{文字列の入力方法\index{mojiretsu@文字列!nonyuuryoku@--の入力}\label{stringinput}}
+{\tt
+文字列は""で囲みます。
+{\tt$\backslash$}\index{\\@{\tt $\backslash$}} を使うと特殊な入力が可能です。
+\begin{table}[htbp]
+\bce
+\cap{$\backslash$による特殊な入力。}
+\ece
+\begin{center}
+{\small\tt
+\begin{tabular}{ll}
+\hline  \hline
+$\backslash$e & {\rm escape}\\
+$\backslash$n & 改行\\
+$\backslash$r & {\rm return}\\
+$\backslash$t & {\rm tab}\\
+$\backslash\backslash$ & {\rm backslash}\\
+$\backslash$\itn\itn\itn & {\rm ASCII}コードが $8$ 進数で \itn\itn\itn\ の文字\\
+$\backslash$その他の文字 & その他の文字 \\
+行末の$\backslash$ & 次の行に続く、改行文字は含まれない\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+}
+
+\pagebreak
+\subchap{複合要素、式\index{shiki@式}\label{expression}}
+SAD には要素の複合体である複合要素、あるいは式と呼ばれるものがあります。式は、一般には
+{\tt\small \begin{verbatim}
+要素0[要素1, 要素2, ...]
+\end{verbatim}}\noindent
+のような格好をしています。要素の数はいくつでもかまいません。各要素は原子でもよいし、別の式でもかまいません。例えば {\tt a[b,~...][c,~...]...[d,~...]} の様な形も式のひとつです。また、要素0をこの式の頭部 head \index{toubu@頭部}と呼びます。
+
+\subsubchap{演算子による式の表記\index{enzanshi@演算子}}
+上のような式のままでも既に SAD の言語構造はすべて表現可能で、実際内部の処理はそうなっています。これが SAD もそれに属するところの「関数構文言語」の特徴です。つまり、この言語にはこれ以上特別な構文は存在しないという利点があります。例えば {\it Mathematica} や emacs-lisp など幅広く利用されている言語の中にも関数構文言語は存在します。
+
+しかし、上の格好のままでは単純な数式を書くのにも伝統的な表記法からはかけ離れてしまい、読み書きが難しくなります。そこで SAD では上の 要素0 が特別なシンポルの場合に伝統的な演算子による表記が可能になっています。例えば
+{\tt\small \begin{verbatim}
+　a + b * c　は　Plus[a, Times[b, c]]
+\end{verbatim}}\noindent
+と同値です。ここで問題になるのは演算子の優先順位\index{enzanshi@演算子!noyuusenjuni@--の優先順位}です。表\ref{ope1}、\ref{ope2}は SAD で使われる演算子とその優先順位を示しています。この表で上にくるものほど優先的に評価されます。横線で区切られた範囲のものは同一の優先度をもち、その場合は式の左側から演算されます。
+\begin{table}[htbp]
+\bce
+\cap{演算子とその優先順位。\label{ope1}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{llll}
+\hline  \hline 演算子 & 全表現 & グループ化  \\ \hline
+{\tt () } & & \\ \hline
+{\tt \#シンボル　} & Slot[シンボル] &  \\ \hline
+{\tt \%正整数 } & Out[正整数] &  \\ \hline
+{\tt \_} を含むシンボル  & &  \\ \hline
+式$1$ :: 式$2$ & MessageName[式$1$, 式$2$] & \\ \hline
+式$1$ ? 式$2$ &  PatternTest[式$1$, 式$2$] &  \\ \hline
+式$1$ @ 式$2$ & Member[式$1$, 式$2$] & (式$1$ @ 式$2$) @ 式$3$ \\ \hline
+{\tt \{式$1$, 式$2$, ... \}} & List[式$1$, 式$2$, ... ] &  \\
+{\tt 式$1$[式$2$, ... ]} & 式$1$[式$2$, ... ] & (式$1$[式$2$])[式$3$] \\
+{\tt 式$1$[[式$2$, ... ]]} & Part[式$1$, 式$2$, ... ] & (式$1$[[式$2$]])[[式$3$]] \\ \hline
+式++ & Increment[式] &  \\
+式-- & Decrement[式] &  \\
+++式 & Increment[Null, 式] &  \\
+--式 & Decrement[Null, 式] &  \\ \hline
+式$1$ /@ 式$2$ & Map[式$1$, 式$2$] & 式$1$ /@ (式$2$ /@ 式$3$) \\
+式$1$ //@ 式$2$ & MapAll[式$1$, 式$2$] &  式$1$ //@ (式$2$ //@ 式$3$) \\
+式$1$ @@ 式$2$ & Apply[式$1$, 式$2$] &  式$1$ @@ (式$2$ @@ 式$3$) \\ \hline
+式$1$ // 式$2$ // 式$3$ & StringJoin[式$1$, 式$2$, 式$3$] & \\ \hline
+式$1$ . 式$2$ . 式$3$ & Dot[式$1$, 式$2$, 式$3$] & \\ \hline
+式$1$ \verb1^1 式$2$ & Power[式$1$, 式$2$] & 式$1$ \verb1^1 (式$2$ \verb1^1 式$3$) \\ \hline
+-式 & Times[-1, 式] & \\
++式 & 式 & \\ \hline
+式$1$ / 式$2$ & 式$1$ * 式$2$ \verb1^1-1 & \\ \hline
+式$1$ * 式$2$ * 式$3$ & Times[式$1$, 式$2$, 式$3$] & \\
+(式$1$   式$2$   式$3$) & Times[式$1$, 式$2$, 式$3$] &  \\ \hline
+式$1$ + 式$2$ + 式$3$ & Plus[式$1$, 式$2$, 式$3$] &  \\
+式$1$ - 式$2$ & 式$1$ + (-1 * 式$2$) & \\ \hline
+式$1$ == 式$2$ & Equal[式$1$, 式$2$] & \\ 
+式$1$ <> 式$2$ & Unequal[式$1$, 式$2$] &  \\ 
+式$1$ >< 式$2$ & Unequal[式$1$, 式$2$] &  \\ 
+式$1$ > 式$2$ & Greater[式$1$, 式$2$] &  \\ 
+式$1$ >= 式$2$ & GreaterEqual[式$1$, 式$2$] &  \\
+式$1$ => 式$2$ & GreaterEqual[式$1$, 式$2$] &  \\
+式$1$ < 式$2$ & Less[式$1$, 式$2$] & \\
+式$1$ <= 式$2$ & LessEqual[式$1$, 式$2$] & \\
+式$1$ =< 式$2$ & LessEqual[式$1$, 式$2$] & \\ \hline
+式$1$ === 式$2$ & SameQ[式$1$, 式$2$] & \\
+式$1$ <=> 式$2$ & UnsameQ[式$1$, 式$2$] & \\ 
+\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+\begin{table}[htbp]
+\bce
+\cap{演算子とその優先順位(続き)。\label{ope2}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{llll}
+\hline 演算子 & 全表現 & グループ化  \\ \hline
+\verb1~1 式 & Not[式] & \\ \hline
+式$1$ \&\& 式$2$ \&\& 式$3$ & And[式$1$, 式$2$, 式$3$] & \\ \hline
+式$1$ || 式$2$ || 式$3$ & Or[式$1$, 式$2$, 式$3$] & \\ \hline
+式 .. & Repeated[式] & \\
+式 ... & RepeatedNull[式] & \\ \hline
+式$1$ | 式$2$ | 式$3$ & Alternatives[式$1$, 式$2$, 式$3$] & \\ \hline
+シンボル$1$:式 & Pattern[シンボル$1$, 式] & \\ \hline
+式$1$ -> 式$2$ & Rule[式$1$, 式$2$] & 式$1$ -> (式$2$ -> 式$3$)\\
+式$1$ :> 式$2$ & RuleDelayed[式$1$, 式$2$] & 式$1$ :> (式$2$ :> 式$3$)\\ \hline
+式$1$ \verb1/.1 式$2$ & ReplaceAll[式$1$, 式$2$] & \\ 
+式$1$ /\verb1/.1 式$2$ & ReplaceRepeated[式$1$, 式$2$] & \\ \hline
+式$1$ += 式$2$ & AddTo[式$1$, 式$2$] & \\ 
+式$1$ -= 式$2$ & SubtractFrom[式$1$, 式$2$] & \\ 
+式$1$ *= 式$2$ & TimesBy[式$1$, 式$2$] & \\ 
+式$1$ /= 式$2$ & DivideBy[式$1$, 式$2$] & \\ \hline
+式 \& & Function[式] & \\ \hline
+シンボル$1$/: 式$1$ & TagSet[シンボル$1$, 式$1$] & \\ \hline
+式$1$ = 式$2$ & Set[式$1$, 式$2$] & 式$1$ = (式$2$ = 式$3$) \\ 
+式$1$ := 式$2$ & SetDelayed[式$1$, 式$2$] & \\ 
+式$1$ \verb1^1= 式$2$ & UpSet[式$1$, 式$2$] & \\ 
+式$1$ \verb1^1:= 式$2$ & UpSetDelayed[式$1$, 式$2$] & \\ 
+式 =. & Unset[式] & \\ \hline
+式$1$ ; 式$2$ ; 式$3$ & CompoundExpression[式$1$, 式$2$, 式$3$] & \\ 
+式$1$ ; 式$2$ ;   & CompoundExpression[式$1$, 式$2$, Null] & \\ 
+
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+
+\pagebreak
+\subsubchap{特別な演算子の用法\index{enzanshi@演算子!tokubetsuna@特別な--}}
+{\tt
+シンボルの間、或いは式の間の空白は、前の式が完結しないうちは、{\tt Times (*)}とみなされます。
+
+連続した関係演算子で結ばれた式、例えば {\tt a <= b < c} などは {\tt Inequality[a, LessEqual, b, Less, c]} と変換されます。これにより中央の式が重複して評価されるのが防がれます。ここで、関係演算子とは、Equal(==), Unequal(<>), Less(<), LessEqual(<=), Greater(>), GreaterEqual(>=), SameQ(===), 及び UnsameQ(<=>) です。
+}
+
+\subsubchap{頭部 head の取り出し\index{toubu@頭部}\label{head}}
+ある式 の頭部は \idtt{Head} という関数によって取り出します。{\tt f[x,~y,~...] } の頭部は {\tt f} です。また、原子についても {\tt Head} は次のような値を返します。
+{\tt\small \begin{verbatim}
+   Head[f[x, y]]
+Out[1]:= f
+   Head[1]
+Out[2]:= Real
+   Head["abc"]
+Out[3]:= String
+   Head[abc]
+Out[4]:= Symbol
+   Head[abc_]
+Out[5]:= Pattern
+\end{verbatim}}\noindent
+ちなみに複素数の頭部は \idtt{Complex} です。
+
+ある式の持つ意味はほとんどの場合その頭部によって決まります。式はある場合には関数の引用であり、評価されると何かの作用を起こしつつ、形の違う式を結果として返します。また、別の場合にはある種のデータの集合体とみなされ、そのような場合には評価されても形は変わりません。
+
+\subsubchap{式の部分の取り出し\idxt{Part}\index{shiki@式!nobubunnotoridashi@--の部分の取り出し}}
+{\tt
+\bit
+\item ある式の部分は Part という関数で取り出すことができます。ある式fの \itn$1$ 番目の要素は f[[\itn$1$]]で取り出します。取り出した式の更に \itn$2$ 番目の要素は f[[\itn$1$,~\itn$2$]] で取り出します。この場合 Part[f,~\itn$1$,~\itn$2$,~...~] と f[[\itn$1$,~\itn$2$,~...~]] は同値です。また、f[[\itn$1$]][[\itn$2$]] と f[[\itn$1$,~\itn$2$]] は同値です。
+\item インデクス \itn$1$, \itn$2$, ... は 0 が頭部、1 が最初の要素、となっており、負の場合は最後の要素から逆に数えた順になります。
+\eit
+
+関数 Part にはもう少し特殊な使い方がありますが、それはリストの項 \rref{list} で説明します。
+}
+
+\pagebreak
+\subchap{シンボル\index{symbol@シンボル}}
+シンボルは SAD のなかではある原子、式、或いは関数を割り当てるために用います。シンボルは何も割り当てがない場合にはシンボルそれ自身が割り当てられていると考えられます。したがって、割り当てなしでいきなり使うこともできます。
+
+一度 On[\idtt{General::newsym}] としておけば、以後、新しいシンボルの生成を検出することができます (\rref{on} 参照) 。
+
+いくつかのシンボルにはシステムが前もって定義を与えています。例えば、組込みの関数がそれです。このようなシンボルはその名前を構成する各語の先頭が大文字、他が小文字で表記されています。
+
+\subsubchap{\idtt{Set}}
+{\tt
+シンボルに値を割り当てるには関数 Set (演算子 =) を用います。
+\bit
+\item シンボル$1$ = 式$1$ は式$1$を評価した値をシンボル$1$ に割り当てます。
+\item 式 (シンボル$1$ = 式$1$) 自身は式$1$ の値を返します。
+\item シンボル$1$ = シンボル$2$ = ... = 式$1$ は式$1$ を $1$度だけ評価し、その結果をシンボル$1$, シンボル$2$, ... に割り当てます。
+\item \{シンボル$1$, シンボル$2$, ... \} = \{式$1$, 式$2$, ... \} はシンボル$1$に式$1$の値、シンボル$2$ に式$2$ の値、... を割り当てます。この場合シンボルの数と式の数は一致しなければなりません。
+\eit
+このほか、後述のように、Set はリストの要素への値の割り当てや関数の定義にも用いられます。
+}
+
+\subsubchap{\idtt{SetDelayed}\label{setdelayed}}
+{\tt
+\bit
+\item シンボル$1$ := 式$1$ は 式$1$ を評価せず、そのままの形で、シンボル$1$に割り当てます。
+\item 右辺を評価しないという点以外は SetDelayed と Set は同一です。
+\item 右辺を部分的に評価するには後述の With を用います。
+\eit
+}
+
+\subsubchap{{\tt AddTo, SubtractFrom, TimesBy, DivideBy,\\ AppendTo, PrependTo}}
+SAD にはシンボルの現在の値にある演算をして、またその結果を同じシンボルに再び割り当てるという関数(演算子)があります。表~\rref{tofunctions} にそれらを列挙します。
+\begin{table}[htbp]
+\bce
+\cap{シンボルの再割り当てを行う関数。\label{tofunctions}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{llll}
+\hline\hline 関数 & 演算子表記 & 等価な式  \\ \hline
+\idtt{AddTo} & シンボル += 式 & シンボル = シンボル + 式 \\
+\idtt{SubtractFrom} & シンボル -= 式 & シンボル = シンボル - 式 \\
+\idtt{TimesBy} & シンボル *= 式 & シンボル = シンボル * 式 \\
+\idtt{DivideBy} & シンボル /= 式 & シンボル = シンボル / 式 \\
+\idtt{AppendTo} &   & シンボル = Append[シンボル, 式] \\
+\idtt{PrependTo} &   & シンボル = Prepend[シンボル, 式] \\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+
+\pagebreak
+\subsubchap{特別な定数シンボル\index{symbol@シンボル!tokubetsunateisuu@特別な定数--}\index{teisuusymbol@定数シンボル}}
+表~\rref{constants} のシンボル達はシステムがあらかじめ定数値を割り当てているものです。これらのシンボルには属性 Constant が与えられており (\rref{ssetattributes} 参照)、入力時に直ちに評価されます。
+\begin{table}[htbp]
+\bce
+\cap{特別な定数シンボル。\label{constants}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{llll}
+\hline\hline シンボル & 値 \\ \hline
+\idtt{True} & 1 \\
+\idtt{False} & 0 \\
+\idtt{Pi} & 2 * ArcSin[1] \\
+\idtt{I} & Complex[0, 1] \\
+\idtt{GoldenRatio} & (1 + Sqrt[2]) / 5 \\
+\idtt{Degree} & Pi / 180\\
+\idtt{SpeedOfLight} & 299792458 \\
+\idtt{Infinity} &  (INF) \\
+\idtt{INF}      & (INF) \\
+\idtt{NaN}     & (NaN)\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+
+\subsubchap{シンボルへの値の割り当ての解除\index{symbol@シンボル!henowariatenokaijo@への割り当ての解除}}
+{\tt
+あるシンボルに対する値の割り当てを解除したい場合は \rref{SADdiag} にある Clear や Unset (=.) を用います。
+}
+
+
+\subchap{式の評価}
+{\tt
+{\rm SAD} は式を次の様に評価します。
+\bit
+\item その要素がすべて定数と演算子から成り立っている部分式は入力した時点で評価されます。
+\item それ以外の式はその式の入力が完結した時点で評価されます。
+\item 関数の引き数はその関数の引き数の属性 (\rref{argattrib} 参照) にしたがって評価されます。
+\eit
+}
+
+\clearpage
+\chap{リスト\index{list@リスト}\label{list}}
+{\tt
+リストは式或いはデータの集合を表わすものとして、{\rm SAD} ではきわめて頻繁に用いられます。リストは全体を {\tt \{\}} で囲み、要素間を {\tt ,} で区切って表わします。もちろんリストの要素は何であっても構いませんのでリストの中に何重にもリストを重ねることができます。また、リストとはその頭部がシンボル \idtt{List} であるような式にすぎません。つまり、\{1,~2,~3\} と List[1,~2,~3]は同値です。従って、リストに対して作用できる関数は、多くの場合、頭部が List でない一般の式に対しても作用できます。
+}
+
+\subchap{リストの演算}
+算術演算はリストの各要素に対して並列的に実行され、結果はまたリストです。この場合両被演算項がリストの場合は、両方の長さが一致していなければなりません。次の例の最後の行はこの条件を満たさなかったので、演算が行なわれていません。
+{\tt\small \begin{verbatim}
+   {1, 2, 3} * 2
+Out[1]:= {2,4,6}
+   {1, 2, 3} + {4, 5, 6}
+Out[2]:= {5,7,9}
+   {1, 2, 3} + {{4, 5}, {6, 7}, {8, 9}}
+Out[3]:= {{5,6},{8,9},{11,12}}
+   {1, 2, 3} + {4, 5, 6, 7}
+Out[4]:= ({1,2,3}+{4,5,6,7})
+\end{verbatim}}\noindent
+
+また、多くの数学関数はリストに作用すると、その各要素に並列に作用し、結果をリストにして返します。
+
+以上のような特性は多数のデータを取り扱うときにはきわめて重要で、できるだけリスト全体に対して演算や関数の作用を行うようプログラムすることにより、実行速度の向上させることができます。
+
+\bqt{\small このようなプログラミングの方向は、一言でいえば「できるだけ添え字を使わない」ということで表わされます。この方法は、ある程度までは、プログラムを簡略にし読み易くするという効果も伴います。しかし、ある点を越えると読み易さと実行効率が相反するようになり、そのどこでバランスをとるかは簡単には答えられない問題です。}
+\eqt
+
+リストはまた、ヴェクトル、行列、テンソルを表現するものともみなされます。
+
+
+\pagebreak
+\subchap{リストの生成}
+{\tt
+リストは各要素を直接指定して生成しますが、ある種の規則からも作り出すこともできます。
+
+\subsubchap{\idtt{Table}、反復指定子\label{tableiter}}
+Table は与えられた数の要素をもつリストを生成します。
+\bit
+\item Table[式$1$, \{数$1$\}] は式$1$ を数$1$ 回評価した値からなるリスト、
+\item Table[式$1$, \{\iti, 数$1$\}] はシンボル\iti\ を$1$から数$1$ まで$1$ずつ増加させながら、式$1$ を評価した値からなるリスト、
+\item Table[式$1$, \{\iti, 数$1$, 数$2$\}] はシンボル\iti\ を 数$1$ から 数$2$ まで1ずつ増加させながら、式$1$ を評価した値からなるリスト、
+\item Table[式$1$, \{\iti, 数$1$, 数$2$, 数$3$\}] はシンボル\iti\ を 数$1$ から 数$2$ まで 数$3$ ずつ足しながら、式$1$ を評価した値からなるリスト、
+\eit
+を返します。この場合、シンボル\iti\ はこの Table の中だけで意味をもちます。もちろん、上で数$1$ などと書いたところは、ある実数を与える式、という意味で、定数である必要はありません。ただし、これらの値は反復が始まる時点で評価され、反復の途中で変更しても反復の回数には影響しません。
+
+上で使われた \{\iti, 数$1$, 数$2$, 数$3$\} の様な指定の仕方は反復指定子 iterator と呼ばれ、他の Do, Sum, Product などでも使われます。また、Table[式$1$,~反復指定子$1$,~... ,~反復指定子$n$] は\\ Table[Table[式$1$,~反復指定子$n$],~反復指定子$1$,~...~,~反復指定子$n-1$] と同値でn次元のテンソルを表わします。この場合後に書いた反復指定子ほど速く変化します。
+
+\subsubchap{\idtt{Range}}
+\bit 
+\item Range[数$1$] は $1$ から 数$1$ までの 増分$1$ のリストを返します。
+\item Range[数$1$, 数$2$] は数$1$ から 数$2$ までの 増分$1$ のリストを返します。
+\item Range[数$1$, 数$2$, 数$3$] は数$1$ から 数$2$ までの増分 数$3$ のリストを返します。
+\eit
+
+\subsubchap{\idtt{IdentityMatrix}}
+\bit
+\item IdentityMatrix[\itn]　は \itn 行 \itn 列の単位行列\index{gyouretsu@行列!tani@単位--}を返します。
+\eit
+
+\subsubchap{\idtt{DiagonalMatrix}}
+\bit
+\item DiagonalMatrix[リスト$1$] はリスト$1$ の各要素を対角成分とする正方行列を返します。
+\eit
+
+\subchap{リストの操作}
+以下の諸関数はリストの頭部が List でなくても成り立ちます。多くの場合、全体の頭部と部分リストの頭部の一致が必要です。例えば、Dimensions[~a[~a[1,~2,~3],~a[4,~5,~6]~]~] は \{2,~3\} ですが、\\ Dimensions[~a[~\{1,~2,~3\},~a[4,~5,~6]~]~] は \{2\} です。
+
+\subsubchap{\idtt{Length}}
+\bit
+\item Length[リスト$1$] はリスト$1$ の要素の個数を返します。
+\item Length[原子] は 0 です。
+\eit
+
+\subsubchap{\idtt{Dimensions}}
+\bit
+\item Dimensions[リスト$1$] はリスト$1$ をテンソルとみなして、その各次元の要素数をリストにしてかえします。Dimensions[\{\{1,~2,~3\}, \{4,~5,~6\}\}] $\Rightarrow$ \{2,~3\}。したがって、各要素の要素数が揃っていないようなリストは次元が浅くなります。例えば、Dimensions[\{\{1,~2,~3\},~\{4,~5\}\}] $\Rightarrow$ \{2\}。
+\item Dimensions[原子] は \{\} です。
+\eit
+
+\subsubchap{\idtt{Depth}}
+\bit
+\item Depth[リスト$1$] はリスト$1$ の最大階数$+1$、つまり最大何重の部分リスト(子リスト)から成り立っているか $+1$、を返します。Depth[\{1,~2,~3\}] $\Rightarrow$ 2。Depth[\{1,~\{\{2,~3\},~4\},~5\}] $\Rightarrow$ 4。
+\item Depth[原子] は1です。
+\item 頭部の一致は無視されます。Depth[{1,~a[2,~3]}] $\Rightarrow$ 3。
+\eit
+
+\subsubchap{\idtt{Level}, 階数指定子\label{level}}
+\bit 
+\item Level[リスト$1$, 階数$1$] はリスト$1$ の $1$階から階数$1$ までの間に含まれるすべての要素をリストにして返します。
+\item Level[\{1,~2,~\{\{3,~4\},~5\},~2] $\Rightarrow$ \{1,~2,~\{3,~4\},~5,~\{\{3,~4\},~5\}\}。
+\item 階数$1$ が負の場合はリスト$1$ の $1$階から各々の枝の(最上階 $+$ 階数$1 +1$)階までのすべての要素のリストを返します。「負の階数」の意味は以下の場合も同様です。
+\item Level[\{1,~2,~\{\{3,~4\},~5\},~-1]\\ $\Rightarrow$ \{1,~2,~3,~4,~\{3,~4\},~5,~\{\{3,~4\},~5\}\}。
+\item Level[リスト$1$, \{階数$1$\}] はリスト$1$の(階数$1$)階の要素のリストを返します。
+\item Level[リスト$1$, \{階数$1$, 階数$2$\}] はリスト$1$の(階数$1$)階から(階数$2$)階までの要素のリストを返します。
+\item 頭部の一致は無視されます。
+\item 階数$0$ はリスト全体を指します。
+\eit
+上の Level の第 $2$ 引き数のようにリストあるいは式の階数の範囲を指定する方法は階数指定子とよばれ、Map, Apply, Position, Count, Cases, DeleteCases, MapIndexed, Scan に共通です。
+
+\subsubchap{\idtt{Take}、要素指定子\rma\ \label{take}}
+\bit
+\item Take[リスト$1$, \itn$1$] はリスト$1$ の $1$ 番目から \itn$1$ 番目の要素をリストにして返します。
+\item \itn$1$ が負の場合は Take[リスト$1$,~\itn$1$] はリスト$1$ の(全長$+$\itn$1+1$) 番目の要素から最後の要素をリストにして返します。-1 が最後の要素です。
+\item Take[リスト$1$, \{\itn$1$, \itn$2$\}] はリスト$1$ の \itn$1$ から \itn$2$ までの要素をリストにして返します。
+\item Take[リスト$1$, \{\itn$1$\}] はリスト$1$ の \itn$1$ 番目の要素だけをリストにして返します。
+\item 要素指定子を 0 にしても、頭部を意味することはありません。
+\eit
+いずれの場合も結果の頭部はリスト$1$ の頭部と同じになります。上のような要素および要素の範囲の指定 (要素指定子\rma\ ) は Drop などに共通です。
+
+\subsubchap{\idtt{Drop}}
+\bit
+\item Drop[リスト$1$, 要素指定子\rma\ $1$] はリスト$1$ から要素指定子\rma\ $1$ で指定した要素を取り除いたリストを返します。この場合頭部はリスト$1$ の頭部と同じになります。
+\item 要素指定子\rma\  は Take \rref{take} を参照してください。
+\eit
+
+\subsubchap{\idtt{First}}
+\bit 
+\item
+First[リスト$1$] はリスト$1$の最初の要素を返します。
+\eit
+
+\subsubchap{\idtt{Last}}
+\bit 
+\item
+Last[リスト$1$] はリスト$1$の最後の要素を返します。
+\eit
+
+\subsubchap{\idtt{Rest}}
+\bit 
+\item
+Rest[リスト$1$] はリスト$1$の最初の要素を取り除いた残りをリストにして返します。この場合頭部はリスト$1$の頭部と同じになります。
+\eit
+
+\subsubchap{\idtt{Reverse}}
+\bit
+\item Reverse[リスト$1$] はリスト$1$の要素を全て逆に並び変えたリストを返します。
+\eit
+
+
+\subsubchap{\idtt{Append}}
+\bit
+\item Append[リスト$1$, 要素$1$] はリスト$1$の最後尾に要素$1$を追加したリストを返します。
+\eit
+
+\subsubchap{\idtt{Prepend}}
+\bit
+\item Prepend[リスト$1$, 要素$1$] はリスト$1$の先頭に要素$1$を追加したリストを返します。
+\eit
+
+\subsubchap{\idtt{Join}}
+\bit
+\item Join[リスト$1$, リスト$2$] はリスト$1$とリスト$2$の両方の要素をこの順に結合したリストを返します。この場合両方の頭部は揃っていなければならず、結果の頭部も同じになります。
+\eit
+
+\subsubchap{\idtt{Flatten}}
+\bit
+\item Flatten[リスト$1$] はリスト$1$の全ての階数の全ての要素を第$1$階に平坦に並べたリストをかえします。Flatten[\{1,~2,~\{\{3,~4\},~5\}\}] $\Rightarrow$ \{1,~2,~3,~4,~5\}。この場合頭部の一致が必要です。Flatten[\{1,~2,~\{a[3,~4],~5\}\}] $\Rightarrow$ \{1,~2,~a[3,~4],~5\}。
+\item Flatten[リスト$1$, 階数$1$] は$1$階から階数$1$までを平坦にします。
+\item Flatten[リスト$1$, 階数$1$, 頭部$1$] は、$1$階から階数$1$までで且つ頭部が頭部$1$であるもののみを平坦にします。
+\eit
+
+\subsubchap{\idtt{Thread}}
+\bit
+\item Thread[\{リスト$1$,~リスト$2$,~...\}] はリスト$1$, リスト$2$, ... のそれぞれの第 \itn 要素からなるリスト達のリストを返します。
+\item Thread[\{\{1,~2,~3\},~\{4,~5,~6\}\}] $\Rightarrow$ \{\{1,~4\},~\{2,~5\},~\{3,~6\}\}。
+\item 頭部の一致が必要です。
+\item リスト$1$, リスト$2$, ... の中に最初のリストと長さが違うもの、頭部が違うもの、リストでないものが含まれる場合はその要素は結果のどのリストにも共通して含まれることになります。Thread[\{\{1,~2,~3\},~7,~\{4,~5,~6\}\}] $\Rightarrow$ \{\{1,~7,~4\},~\{2,~7,~5\},~\{3,~7,~6\}\}。
+\item 長方形のリストに対しては Thread と Transpose は同一の結果を返します。
+\eit
+
+\pagebreak
+\subsubchap{\idtt{Partition}}
+\bit
+\item Partition[リスト$1$, \itn]　はリスト$1$ の要素を頭から \itn\ 個ずつ分配したリスト達のリストを返します。
+\item リスト$1$ の長さが \itn\ の倍数でない時には余りの要素は捨てられます。
+\item Partition[\{1, 2, 3, 4, 5\}, 2] $\Rightarrow$ \{\{1,~2\},~\{3,~4\}\}。
+\item Partition[リスト$1$, \itn, \itm]　はリスト$1$ の要素を頭から \itm\ 個おきに、重複を許して \itn\ 個ずつ分配したリスト達のリストを返します。
+\item Partition[\{1, 2, 3, 4, 5, 6, 7\}, 3, 2] $\Rightarrow$\\ \{\{1,~2,~3\},~\{3,~4,~5\},~\{5,~6,~7\}\}。
+\item Partition[リスト$1$, \itn] は Partition[リスト$1$, \itn, \itn] と同値です。
+\eit
+
+\subsubchap{\idtt{Sort}\label{sort}}
+\bit
+\item Sort[リスト$1$]　はリスト$1$ の各要素を標準的な順序\index{junjo@順序!hyoujuntekina@標準的な--} (表 \rref{sortorder} 参照) にしたがって並べ替えたリストを返します。
+\item Sort[\{4, 2, 1, 3\}] $\Rightarrow$ \{1,~2,~3,~4\}。
+\item Sort[リスト$1$, テスト$1$]　は並べ替えを2変数関数 テスト$1$ に従って行います。テスト$1$ は True または False を返します。そのような関数の定義の仕方は \rref{functiondef} 関数の定義 を参照してください。
+\item Sort[\{4, 2, 1, 3\}, Greater] $\Rightarrow$ \{4,~3,~2,~1\}。
+\eit
+
+\begin{table}[htbp]
+\bce
+\cap{標準的な順序。型の違うものはこの表の上から順に並ぶ。\label{sortorder}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{ll}
+\hline\hline 式の型 & 型のなかでの順序 \\ \hline
+実数 & 小さいものから大きいものへ。 \\
+文字列 & \parbox{8 cm}{\ \\最初の異なる文字の順に並べる。各文字はまず「無」が先頭で、次にアルファベットでないものが {\rm ASCII} コードの順に並び、最後にアルファベットが aAbBcC...zZ のように並ぶ。\\}\\
+シンボル　及び　パターン原子 & 名前を表わす文字列の順序 \\
+リスト &  \parbox{8 cm}{\ \\要素数の少ないものから。要素数が同じ場合頭部の順。頭部が同じ場合は第一要素の順、以下同様。\\}\\
+
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+
+
+\subsubchap{\idtt{Union}}
+\bit
+\item Union[リスト$1$, リスト$2$, ...]　はリスト$1$, リスト$2$, ... のいずれかに含まれる要素達を重複せず集め、標準的な順序 (表 \rref{sortorder} 参照) に従って並べ変えたリストを返します。
+\item Union[\{3, -1, "c"\}, \{"c", 3, 3\}, \{1, "a"\}] $\Rightarrow$ \{-1,~1,~3,~"a",~"c"\}。
+\item Union[リスト$1$]　はリスト$1$ の中の要素達を重複せず、標準的な順序に従って並べ変えたリストを返します。
+\eit
+
+\subsubchap{\idtt{Intersection}}
+\bit
+\item Intersection[リスト$1$, リスト$2$, ...]　はリスト$1$, リスト$2$, ... のいずれにも含まれる要素達を、標準的な順序 (表 \rref{sortorder} 参照) に従って並べ変えたリストを返します。
+\item Intersection[\{3, 1, -2\}, \{1, "a"\}, \{1, 1\}] $\Rightarrow$ \{1\}。
+\eit
+
+\subsubchap{\idtt{Complement}}
+\bit
+\item Complement[リスト$0$, リスト$1$, リスト$2$, ...]　はリスト$0$ の要素で、リスト$1$, リスト$2$, ... のいずれの要素でもないもの達を集め、標準的な順序 (表 \rref{sortorder} 参照) に従って並べ変えたリストを返します。
+\item Complement[\{3, 2, 1, 3, 0\}, \{2, 1\}, \{4, 1\}] $\Rightarrow$ \{0,~3\}。
+\eit
+}
+
+
+\subchap{リストの要素に作用する関数}
+{\tt 
+\subsubchap{\idtt{Part}, \idtt{[[]]}}
+リストの個々の要素の取り出しは、リストもひとつの式ですから、式の要素の取り出しを行う関数 Part (演算子 [[]])で出来ます。
+\bit
+\item リストfの \itn$1$ 番目の要素は f[[\itn$1$]]で取り出します。取り出したリストまたは式の更に\itn$2$ 番目の要素は f[[\itn$1$,~\itn$2$]] で取り出します。この場合 Part[f,~\itn$1$,~\itn$2$,~...~] と f[[\itn$1$,~\itn$2$,~...~]] は同値です。また、f[[\itn$1$]][[\itn$2$]] と f[[\itn$1$,~\itn$2$]] は同値です。
+\item インデクス \itn$1$, \itn$2$, ... は0が頭部、1が最初の要素、となっており、負の場合は最後の要素から逆に数えた順になります。
+\item Partでは頭部の一致は必要ありません。
+\item f[[\{\itn$1$1,~\itn$1$2,~..\},~\itn$2$,~]]は第 $1$ インデクスが \itn$1$1, \itn$1$2, ...で、第 $2$ インデクスが\itn$2$ 以下で指定される要素になるような要素達のリストを返します。\{\{1,~2\},~\{3,~4\},~\{5,~6\},~\{7,~8\}\}[[\{2,~4\},~2]] $\Rightarrow$ \{4,~8\}。
+\item あるインデクスが省略または Null にされると、そのインデクスが 1 から要素数までの全ての値に対して、ほかのインデクスが指定の値になるようなリストを返します。\{\{1,~2\},~\{3,~4\},~\{5,~6\},~\{7,~8\}\}[[,~2]] $\Rightarrow$ \{2,~4,~6,~8\}。
+\eit
+
+\subsubchap{\idtt{Insert}, 要素指定子\rmb\ \label{insert}\index{yousoshiteishi@要素指定子}}
+\bit
+\item Insert[リスト$1$, 新要素$1$, \itn$1$] はリスト$1$ の \itn$1$ 番目の位置に 新要素$1$ を挿入したリストを返します。
+\item Insert[リスト$1$, 新要素$1$, \{\itn$1$,~\itn$2$, ... \}] はリスト$1$の  \{\itn$1$,~\itn$2$,~...\} の位置 (リスト$1$[[\itn$1$,~\itn$2$, ...]]) に 新要素$1$ を挿入したリストを返します。
+\item Insert[リスト$1$, 新要素$1$,~\{\{\itn$1$, ...\},~\{\itn$2$, ... \}\}] はリスト$1$ の 幾つかの位置達に 新要素$1$ を挿入したリストを返します。
+\eit
+上のような要素の位置の指定法(要素指定子\rmb)は Take の場合とは異なっています。これは、Delete, Extract, FlattenAt, MapAt等で用いられます。
+
+\subsubchap{\idtt{Delete}}
+\bit
+\item Delete[リスト$1$, 要素指定子\rmb$1$] はリスト$1$の要素指定子\rmb$1$ (Insert \rref{insert} を参照) で指定される要素を取り除いたリストを返します。
+\eit
+
+\subsubchap{\idtt{ReplacePart}}
+\bit
+\item ReplacePart[リスト$1$, 新要素$1$, 要素指定子\rmb$1$] はリスト$1$ の要素指定子\rmb$1$ (Insert \rref{insert} を参照) で指定される位置達に 新要素$1$ を代入したリストを返します。すなわち:
+\item ReplacePart[リスト$1$, 新要素$1$, \itn$1$] は リスト$1$ の \itn$1$ の位置に 新要素$1$ を代入したリストを返します。
+\item ReplacePart[リスト$1$, 新要素$1$, \{\itn$1$,~\itn$2$, ... \}] は リスト$1$ の \{\itn$1$,~\itn$2$,~...\}の位置(リスト$1$[[\itn$1$,~\itn$2$, ...]]) に 新要素$1$ を代入したリストを返します。
+\item ReplacePart[リスト$1$, 新要素$1$,~\{\{\itn$1$, ...\},~\{\itn$2$, ... \}\}] は リスト$1 $の 幾つかの位置達に 新要素$1$ を代入したリストを返します。
+\eit
+
+例えば ReplacePart[a, new, ...]としたときに、ReplacePart という語感からは、元のリスト a の一部も変更されるかのような感じを受けますが、そうではありません。ReplacePart は一部を置き換えた結果のリストを返すだけなので、もし元のリストも変更したければその結果をシンボル a に再度 Set するか、以下に述べる様に Set の左辺に Part を用いる必要があります。
+
+\subsubchap{\idtt{Extract}\label{extract}}
+\bit
+\item Extract[リスト$1$, 要素指定子\rmb$1$] は リスト$1$ の要素指定子\rmb$1$ (Insert \rref{insert} を参照) で指定される要素達を返します。
+\item Extract[リスト$1$, 要素指定子\rmb$1$, 関数$1$] は リスト$1$ (式でもよい) の要素指定子\rmb$1$  (Insert \rref{insert} を参照) で指定される要素達に{\gt それを評価せずに 関数$1$ を適用した結果達}を返します。
+\item Extract[Hold[\{Sin[1],~Cos[1]\}],~\{1,~2\},~Hold] $\Rightarrow$ Hold[Cos[1]]\\(Hold\ \rref{hold} を参照)。
+\eit
+
+\subsubchap{\idtt{FlattenAt}}
+\bit
+\item FlattenAt[リスト$1$, 要素指定子\rmb$1$] はリスト$1$ の 要素指定子\rmb$1$ (Insert \rref{insert} を参照) で指定される要素のすぐ下に属する要素達を表に取り出して同列にならべたリストを返します。
+\item FlattenAt[\{1, \{2, \{3, 4\}\}, 5\}, \{2\}] $\Rightarrow$ \{1, 2, \{3, 4\}, 5\}。
+\item 上の例のように、表に出るのはその要素の直下のもの、2 と \{3, 4\} だけで、更に深いもの、3 や 4は表には出ません。
+\item 頭部の一致は必要ありません。
+\item FlattenAt[\{1, a[2, \{3, 4\}], b[5]\}, \{\{2\}, \{3\}\}] $\Rightarrow$ \{1,~2,~\{3,~4\},~5\}。
+\eit
+
+
+}
+
+\subchap{リストの要素の値の設定}
+{\tt 
+いまあるシンボル a にリスト(あるいは式) が割り当てられているとき、
+演算子 Part を Set、SetDelayed の式の左辺に用いて
+{\tt\small\begin{verbatim}
+   a[[n1, n2, ...]] = 式1
+\end{verbatim}}\noindent
+のようにすると、シンボル a に割り当てられたリスト(式) の n1, n2, ... 番目の要素が右辺の値に置き換わります。これはあたかも他の言語における配列への代入に似ています。
+
+この方法と上述の ReplacePart とを混同しないように注意してください。
+}
+
+\clearpage
+
+\chap{関数の定義\label{functiondef}\index{kansuu@関数}\index{kansuu@関数!noteigi@--の定義}}
+{\tt
+{\rm SAD} では必要な関数を随時定義して使うことができます。最も単純な例として、今、
+{\tt\small\begin{verbatim}
+   f[x_] := x^2;
+
+の様に定義すれば、
+
+   f[4]    　　　　　:fはその引き数を2乗する。
+Out[1]:= 16
+   f[1 + a]　　　　　:引き数は式でもよい。　　　　
+Out[2]:= ((1+a)^2)
+   f[3x + x^2]
+Out[3]:= (((3 x)+(x^2))^2)
+\end{verbatim}}\noindent
+となります。ここで、上の定義式の左辺の x\_ につけるアンダースコア(\_)はきわめて重要な意味を持っています。シンボル$1$\_ という記号は、{\rm SAD} では、「シンボル$1$という名前を持ったパターン原子」とみなされます。もしアンダースコアを書き落とすと、
+{\tt\small \begin{verbatim}
+   f[x] := x^2;      :左辺の引き数に_がない。
+
+   f[4]
+Out[1]:= f[4]　　　　:fはもはや2乗の関数ではない。
+   f[x]
+Out[2]:= (x^2)　　　 :それでも引き数が x ならば右辺の値になる。
+\end{verbatim}}\noindent
+のように、全然違った結果になります。実は後者のような書き方もエラーではなく、有用な場合があります。
+}
+
+\subchap{引き数の置換\index{hikisuu@引き数!nochikan@--の置換}\index{chikan@置換!hikisuuno@引き数の--}}
+{\tt
+x\_ というパターン\index{pattern@パターン}は、関数の評価に際して、
+\bit
+\item[{\rm (1)}] 任意の形の引き数に照合する。
+\item[{\rm (2)}] 右辺の定義式のなかに現われる同じ名前のシンボル(x)を、全て引き数の値に置き換え、その後に右辺を評価する。
+\eit
+という動作をします。従って、右辺の x が右辺の評価の際に何であるかはその関数が呼ばれた時に決まります。上の第2項の右辺のシンボルの置き換えでは、右辺にあからさまに現われているシンボルだけを置き換えます。つまり、右辺の式の評価の結果、同じ名前のシンボルが登場してもそれはもはや引き数とは関係ありません。例えば、\pagebreak
+{\tt\small \begin{verbatim}
+   a := x^3;
+   f[x_] := x^2 + a;
+  
+   f[4]
+Out[1]:= (16+(x^3))
+\end{verbatim}}\noindent
+の様に、f[4]はまず、右辺の x を引き数 4 で 4\verb1^12 + a と置き換えてからその評価にかかります。シンボル a を評価すると同じ名前のシンボル x に出会いますが、これはもはや引き数の値とは関係がありません。もちろん、
+{\tt\small \begin{verbatim}
+   f[x_] := (a := x^3; x^2 + a);
+  
+   f[4]
+Out[1]:= 80
+\end{verbatim}}\noindent
+とすれば、今度は右辺の a の定義の中に x があらわに書かれているのでそれは引き数に置換されています。ちなみに、上で a := x\verb1^13 のように a の定義が SetDelayed で書かれているので、a を定義した時点では a の右辺は評価されません。にもかかわらず、a の定義は、この場合、x\verb1^13 ではなく、4\verb1^13 になっています。つまり、引き数の置換はあくまで置き換えであって、評価ではないということです。置き換えは右辺のなかの全ての場所で同時に起こり、それを阻止することはできません。
+}
+
+\subchap{引き数の違いによる同一シンボルへの複数の関数定義}
+SADでは関数の定義に際して、その引き数の形態を選ぶことにより、同一のシンボルに対して異なった定義を与えることができます。最も簡単な例として、
+{\tt\small \begin{verbatim}
+   f[x_] := Sin[x] / x;
+   f[0] = 1;
+\end{verbatim}}\noindent
+{\tt と関数 f を定義したとします。もし第$1$行だけだとすると、引き数が 0 の時に$0/0$となり、実行エラーを生じます。そこで第$2$行のように引き数の特殊な値に対する定義を書き加えるだけで、引き数が 0 の時には第$2$行の定義が実行され、エラーを防止できます。{\rm SAD} はある関数を評価する場合、その引き数が関数の定義の引き数のパターンと照合し、照合すればその定義を実行します。この場合、より特殊な定義から順に照合します。従って、上の例では引き数 0 はどちらのパターンにも照合しますが、第$2$行の方が第$1$行よりも特殊なので第$2$行が優先的に照合され、実行されることになります。
+
+もちろん上のような単純な場合は定義を一つにして、右辺の中に条件判断を設けても同じ結果を得ることができます。しかし、一般にはパターンの違いにより定義を区別するほうが記述が簡素になり、実行の効率も向上します。また、以下に見るように、引き数の個数の違いや式の形態などもパターンによれば簡単に区別できます。
+
+\subchap{関数の定義の解除\index{kansuu@関数!noteiginokaijo@--の定義の解除}}
+あるシンボルに対する関数の定義を解除したい場合は \rref{SADdiag} にある Clear や Unset (=.) を用います。
+
+}
+\subchap{パターンの変種\index{pattern@パターン!nohenshu@--の変種}}
+以下に「パターン式」というのは、パターンを含んでいるかもしれない式を指します。パターンでない一般の式は自分自身と同じものだけに照合します。
+
+{\tt
+\subsubchap{一つまたはそれ以上の個数の系列への照合}
+x\_\_ というパターンは、関数の評価に際して、
+\bit
+\item[(1)] 一つまたはそれ以上の任意の個数の任意の引き数の系列に照合します。
+\item[(2)] 右辺の定義式のなかに現われる同じ名前のシンボル(x)を、全て引き数の系列に置き換え、その後に右辺を評価する。
+\eit
+という動作をします。ここで「系列」Sequence とは特殊なリストで、他のリストあるいは式の中に入ると、その要素がそのまま親のリストの要素になる、という性質をもっています。例えば、
+{\tt\small \begin{verbatim}
+   f[x__] := {x};
+\end{verbatim}}\noindent
+と関数 f を定義すると、f[1] は \{1\}、f[1,~2,~3] は \{1,~2,~3\} 等々を返します。
+
+照合に際しては最初のパターンから、系列の長さ$1$の場合から順に試されます。例えば、
+{\tt\small \begin{verbatim}
+   f[x__,y__] := {{x}, {y}};
+   f[1, 2, 3]
+Out[1]:= {{1},{2,3}}
+\end{verbatim}}\noindent
+の様に照合します。
+
+\subsubchap{ゼロまたはそれ以上の個数の系列への照合}
+x\_\_\_ というパターンは、関数の評価に際して、
+\bit
+\item[(1)] ゼロまたはそれ以上の任意の個数の任意の引き数の系列に照合します。
+\item[(2)] 右辺の定義式のなかに現われる同じ名前のシンボル(x)を、全て引き数の系列に置き換え、その後に右辺を評価する。
+\eit
+という動作をします。ただし、照合に際しては最初のパターンから、系列の長さ$0$の場合から順に試されます。例えば、
+{\tt\small \begin{verbatim}
+   f[x___,y___] := {{x}, {y}};
+   f[1, 2, 3]
+Out[1]:= {{},{1,2,3}}
+\end{verbatim}}\noindent
+の様に照合します。
+
+\subsubchap{シンボルのないパターン}
+\bit
+\item
+\_・\_\_・\_\_\_ というパターンは照合の性質はそれぞれ上に述べたものと同じですが、右辺の評価の際には何らの置き換えも起しません。これらは引き数の形態のみを判定する場合には有用です。
+\eit
+
+\subsubchap{頭部を指定するパターン}
+\bit
+\item シンボル$1$\_頭部$1$　というパターンは頭部が 頭部$1$ の引き数に対してだけ照合します。
+\item 頭部$1$としては、現在はシンボルだけが指定可能です。
+\eit
+例えば、x\_Real は実数に対してだけ照合します。
+
+\subsubchap{式に対しての照合}
+x :\ パターン式$1$　は関数の評価に際して、
+\bit
+\item[(1)] パターン式$1$ に照合する引き数に対してだけ照合する。
+\item[(2)] 右辺の定義式のなかに現われる同じ名前のシンボル (x) を、全て引き数に置き換え、また、パターン式$1$ の中に含まれるパターン達についても同様の置き換えを行う。その後に右辺を評価する。
+\item 例:
+{\tt\small \begin{verbatim}
+   f[p : a|b|c] := Print[p];
+\end{verbatim}}\noindent
+は引き数が a, b, c のいずれかである場合にだけそれを Print します。
+\item パターン式$1$ は 照合の前には評価されません。例えば、
+{\tt\small \begin{verbatim}
+   Clear[a,f];
+   f[p : a] := Print[p];     (ア)
+   a = 1;                    (イ)
+   f[1]                      (ウ)
+Out[4]:= f[1]
+\end{verbatim}}\noindent
+のように、(ア) の時点では a には値がないため、この関数の引き数はシンボル a に対してだけ照合します。従って、(イ) で a に後から値が設定されても、 (ウ) のように、その新しい値には照合しません。
+\eit
+
+\subsubchap{\idtt{PatternTest}}
+\bit
+\item パターン式$1$~?~テスト$1$ という式はまず、引き数がパターン式$1$ に照合するかどうかを調べます。もし照合すれば、式
+{\tt\small \begin{verbatim}
+   テスト1[照合した値]
+\end{verbatim}}\noindent
+を評価し、その結果が True (0でない実数)ならば、元の引き数が パターン式$1$~?~テスト1 に照合したと判定します。
+\eit
+ここでテスト1としては、通常、次章に述べる純関数を使用します。
+
+\subsubchap{\idtt{Alternatives}}
+\bit
+\item パターン式$1$~|~パターン式$2$~|~...　はパターン式$1$, パターン式$2$, ... のいずれかに照合するパターンです。
+\eit
+
+\subsubchap{\idtt{Repeated}, \idtt{..}}
+\bit
+\item パターン式$1$ ..　はそのいずれの要素もパターン式$1$ に照合する一つまたはそれ以上の任意の個数の引き数の系列に照合するパターンです。
+\eit
+
+\subsubchap{\idtt{RepeatedNull}, \idtt{...}}
+\bit
+\item パターン式$1$ ...　はそのいずれの要素もパターン式$1$ に照合するゼロまたはそれ以上の任意の個数の引き数の系列に照合するパターンです。
+\eit
+
+\subsubchap{照合しないときの値の指定}
+\bit
+\item パターン式$1$ :\ 式$2$　は引き数がパターン式$1$ に照合しないとき、パターン式$1$ に式$2$ の値を与え、照合させるパターンです。これはパターンに引き数が省略された時のデフォルト値を与えるひとつの方法です。
+\eit
+\bqt この表記法と上述の「式に対する照合」の表記法は同じ形式なので混乱のもとになっています。この場合「パターン式$1$」の部分がシンボルの場合にのみ「式に対する照合」と解釈されます。
+\eqt
+
+
+\subsubchap{パターンを含む式}
+一般にパターン式(パターンを含む式)のなかには同じシンボルを持つパターンを含めても構いません。その場合は、同一のシンボルは同一の対象に照合しなければならないという条件があります。例えば、f[1,~2] はf[x\_,~y\_] には照合しますが、f[x\_,~x\_]には照合しません。
+}
+
+\subchap{引き数の評価\label{argattrib}\index{hikisuu@引き数!nohyouka@--の評価}}
+{\tt 
+さて、多くの関数ではその引き数は関数の定義との照合に先立って評価されます。しかし、例えば関数 Set の左辺、SetDelayed の両辺、Table の各引き数のように引き数を評価せず、そのままの形で関数に渡さなければならない場合も生じます。このような引き数の評価の属性は SetAttributes で指定することができます。
+
+また、関数 Evaluate, Unevaluated (\rref{evaluate}、\rref{unevaluated}) により、個々の場合の評価の有無を指定することもできます。
+
+\subsubchap{\idtt{SetAttributes}\label{setattributes}}
+\bit
+\item SetAttributes[シンボル$1$, \idtt{HoldAll}]　は シンボル$1$ の全ての引き数を評価しないように指定します。
+\item SetAttributes[シンボル$1$, \idtt{HoldFirst}]　は シンボル$1$ の最初の引き数だけを評価しないように指定します。
+\item SetAttributes[シンボル$1$, \idtt{HoldRest}]　は シンボル$1$ の $2$ 番目以後の引き数を評価しないように指定します。
+\item SetAttributes[シンボル$1$, \idtt{HoldNone}]　は シンボル$1$ のすべての引き数を評価するように指定します。
+\item SetAttributes[シンボル$1$, \idtt{Constant}]　は シンボル$1$ を定数とみなし、それが入力された時点で直ちに評価されます。
+\item SetAttributes[\{シンボル$1$, シンボル$2$, ...\}, 属性$1$] はシンボル$1$, シンボル$2$, ...に属性$1$ を与えます。
+\item SetAttributes[シンボル$1$, \{属性$1$, 属性$2$, ...\}] はシンボル$1$に属性$1$, 属性$2$, ... を与えます。
+\eit
+
+\subsubchap{\idtt{Null}}
+ある関数を引用するときに \itf\ [... ,, ...] の様にカンマの間に何も書かない場合は、そこにシンボル Null があるとみなされます。
+}
+
+\subchap{上方値\label{upvalue}\index{jouhouchi@上方値}}
+{\tt
+さて、これまで述べてきたシンボルへの関数の定義の割り当てはあくまでそのシンボルが関数の頭部になるようなものに限られていました。これに対して関数を割り当てられるシンボルが別の式の引き数に書かれているような関数の定義の仕方があります。例えば今、演算子 UpSetDelayed (\verb1^1:=) により、
+{\tt\small\begin{verbatim}
+  (seed = x_) ^:= SeedRandom[x];
+\end{verbatim}}
+とすると、以後、seed = \itn\ という式は SeedRandom[\itn] を実行することになります (SeedRandom は \rref{seedrandom} 参照)。ここで、UpSetDelayed の左辺の頭部は Set ですから、シンボル seed はその第一引き数に現われています。このような引き数のシンボルに対する関数の割り当てを上方値 {\rm upvalue} の割り当てと呼び、きわめて応用範囲の広いものです。(これに対して通常の関数の定義を下方値 {\rm downvalue} を呼びます。
+
+上方値の定義の解除は Clear \rref{clear}　または TagSet \rref{tagset} により行います。
+
+\subsubchap{\idtt{UpSet}}
+\bit
+\item 頭部$0$[引き数$1$, 引き数$2$, ...] \verb1^1= 右辺　は 引き数$1$, 引き数$2$, ...がシンボルであるか、頭部がシンボルである式の場合に、それらのシンボル{\gt 全て}に対して右辺を評価した値を上方値として割り当てます。
+\item 引き数がシンボル[ ... ][ ... ] ... [ ... ] のような形でもそのシンボルに上方値を割り当てます。
+\item 引き数に現われるシンボルのひとつにだけ上方値を与えるには Tagset (\rref{tagset}) を用います。
+\item 左辺の第 $2$ 階以上に書かれたシンボルに対しては割り当てが行われません。
+\item シンボルが Protect により保護されている場合には割り当てが行われません。
+\item 頭部$0$ はどのようなパターン式でも構いません。
+\eit
+
+\subsubchap{\idtt{UpSetDelayed}}
+\bit
+\item 頭部$0$[引き数$1$, 引き数$2$, ...] \verb1^1:= 右辺　は 引き数$1$, 引き数$2$, ...がシンボルであるか、頭部がシンボルである式の場合に、それらのシンボル全てに対して右辺を評価せず、そのままの形で上方値として割り当てます。
+\item 引き数がシンボル[ ... ][ ... ] ... [ ... ] のような形でもそのシンボルに上方値を割り当てます。
+\item 引き数に現われるシンボルのひとつにだけ上方値を与えるには Tagset (\rref{tagset}) を用います。
+\item 左辺の第 $2$ 階以上に書かれたシンボルに対しては割り当てが行われません。
+\item シンボルが Protect により保護されている場合には割り当てが行われません。
+\item 頭部$0$ はどのようなパターン式でも構いません。
+\eit
+
+\subsubchap{\idtt{TagSet}, \idtt{/:}\label{tagset}}
+\bit
+\item シンボル$1$/: 式$1$ = 式$2$　はシンボル$1$ に対してだけ 式$1$ = 式$2$ または 式$1$ \verb1^1= 式$2$ を 実行します。
+\item 例えば、c/: a[b, c, d] = e は c に対してだけ上方値の定義 a[b, c, d] \verb1^1= e を与え、シンボル b, d については何も定義しません。
+\item シンボル$1$/: 式$1$ := 式$2$　はシンボル$1$ に対してだけ 式$1$ := 式$2$ または 式$1$ \verb1^1:= 式$2$ を 実行します。
+\item シンボル$1$/: 式$1$ :=.　はシンボル$1$ に与えられた、式$1$ の定義を解除します。
+\eit
+
+}
+
+
+\subchap{式の置換\label{replace}\index{chikan@置換!shikino@式の--}}
+{\tt
+{\rm SAD} ではある式の一部を別の式に置き換えることができます。このような置換は、すでに関数の評価の際に引き数のパターンに対して実行されていることをみました。置換は ReplaceAll (演算子 \verb1/.1) を用いて、どのような式に対しても実行できます。
+
+\subsubchap{\idtt{ReplaceAll}, \idtt{/.}}
+式$0$ \verb1 /. 1 パターン式$1$ \verb1->1 式$1$　は
+\bit
+\item 式$0$ の値の各部分 (頭部を除く) の中にパターン式$1$に照合するものがあれば、それを式$1$ の値に置き換える。
+\item 式$1$ の中に、パターン式$1$ に含まれるパターンに一致するシンボルがさらにあれば、それらを式$0$ の照合された値に置き換える。
+\eit
+という作用をします。例: \{a,~b\}~/.~x\_~->~x~+~1 $\Rightarrow$ \{a~+~1,~b~+~1\}。
+
+演算子 \verb1/.1 の右辺には規則を与えます。規則とは、頭部が Rule (\verb1->1) または RuleDelayed (\verb1:>1) の式、あるいは{\gt そのような式達から成るリスト}です。
+
+\subsubchap{\idtt{Rule}}
+\bit
+\item パターン式$1$ \verb1->1 式$1$ は置換の規則を与えます。この場合両辺ともまえもって評価されます。
+\eit
+
+\subsubchap{\idtt{RuleDelayed}}
+\bit
+\item パターン式$1$ \verb1:>1 式$1$ は置換の規則を与えます。この場合左辺はまえもって評価されますが、右辺は置換が行われた後に評価されます。
+\eit
+
+規則で左辺を評価しない簡単な方法はいまのところありませんが必要に応じて導入します。
+
+\subsubchap{\idtt{ReplaceRepeated}, \idtt{//.}}
+式$0$ /\verb1/.1 規則1　は置換が行われる限り、規則1による置換を続行します。
+
+\subsubchap{\idtt{With}\label{with}}
+With はある式の一部を別の式で置き換えた後にその式を評価します。
+\bit
+\item With[\{式$1$, ...\}、式$0$]　は 式$0$ の中の式$1$ に照合する部分を、式$1$ を評価した値で置き換えた後、式$0$ を評価します。式$1$ は照合の前には評価されません。
+\item With[\{式$1$ = 式$2$, ...\}、式$0$]　は 式$0$ の中の 式$1$ に照合する部分を、式$2$を評価した値で置き換えた後、式$0$を評価します。式$1$ は照合の前には評価されません。
+\item With[\{式$1$ := 式$2$, ...\}、式$0$]　は 式$0$ の中の 式$1$ に照合する部分を、式$2$ で置き換えた後、式$0$ を評価します。式$1$ は照合の前には評価されません。式$2$ は置換の前には評価されません。
+\eit
+例えば、SetDelayed や RuleDelayed の右辺のように普通は評価されない式でも、With を使えばその一部だけを評価することができます。また、With は複雑な式を見やすくするためにも有効です。更に、式の中で定数になる部分をあらかじめ評価しておくことにより、実行の効率を向上させることもできます。
+
+With は後に述べる Module や Block に構造が似ていますが、機能はまったく違います。後者達が局所的なシンボルを生成するのに対して、With はそのような作用はしません。例えば、上の式$1$に現われるシンボルは照合の時に使われるだけで、式$0$ の評価の時には 式$1$ そのものは既に置換されています。
+}
+
+\subchap{シンボルの視野\index{scope}\index{symbol@シンボル!@--の視野}\index{shiya@視野}\label{localsymbol}}
+{\tt
+関数の定義では、多くの場合その関数の内部だけで使用するシンボルが必要になります。そのようなシンボルを局所シンボル\index{symbol@シンボル!kyokusho@局所--}と呼びます。局所シンボルは通常関数 Module で定義します。Module には二つの引き数があり、Module[\{局所シンボル$1$,~...\},~式$1$] の様に用います。第一の引き数は局所シンボルのリストです。これにより、式$1$ の中に現われる同じ名前のシンボルは全てこの局所シンボルであるとみなされ評価されます。Module はそのように式$1$を評価しその結果を返します。例えば、
+{\tt\small \begin{verbatim}
+   a := b;        (ア)
+   Module[{b},    (イ)
+     b = c;       (ウ)
+     a + b        (エ)
+   ]
+\end{verbatim}}\noindent
+としますと、(ア)は Module の外で単にシンボル a にシンボル b を割り当てています。ここで SetDelayed が用いられているため、右辺のシンボル b はまだ評価されていません。(イ)は この Module の中だけで有効な局所シンボル b を定義しています。(ウ)と(エ)がこの Module の第二引き数にあたります。まず、(ウ)では局所シンボル b に別のシンボル c を割り当てています。次に(エ)ではシンボル a と局所シンボル b の和を求めてそれをこの Module の結果にしようとしていますが、その結果は b + c になり、c + c ではありません。シンボル a にはシンボル b が評価されずに割り当てられており、シンボル b が評価されると一見シンボル c になりそうに思えますが、実は{\gt Module の外で書かれたシンボルと Module の内側で定義された局所シンボルは全く別のものである}という規則があるので、上のような結果になります。
+
+局所シンボルは Module の実行が終わると、それへの値の割り当ては全て解除されます。
+
+\subsubchap{\idtt{Module}}
+\bit
+\item Module[\{局所シンボル$1$, ...\}, 式$0$]　はこの Module の中だけで有効な局所シンボル$1$, ...を定義してから、式$0$を評価しその結果を返します。
+\item Module[\{局所シンボル$1$ = 値$1$, ...\}, 式$0$]　は 局所シンボル$1$ を定義し、且つその初期値として 値$1$ を割り当てから 式$0$ を評価します。
+\item Module[\{\{局所シンボル$1$, ...\} = \{値$1$, ...\}, ...\}, 式$0$]　のように局所シンボル$1$, ... への初期値の割り当てをリスト形式で行うこともできます。
+\eit
+
+\subsubchap{\idtt{Block}}
+関数 Block は局所シンボルは定義せず、大域的シンボルの{\gt 値だけ}を局所的に設定・変更するのに用います。宣言された大域シンボルの値は Block の終了とともに元に戻ります。
+\bit
+\item Block[\{大域シンボル$1$, ...\}, 式$0$]　は局所的に使用する大域シンボル$1$, ...を宣言してから、式$0$を評価しその結果を返します。
+\item Block[\{大域シンボル$1$ = 値$1$, ...\}, 式$0$]　は局所的に使用する大域シンボル$1$ を宣言し、且つその初期値として値$1$を割り当てから式$0$を評価します。
+\item Block[\{\{大域シンボル$1$, ...\} = \{値$1$, ...\}, ...\}, 式$0$]　のように局所的に使用する大域シンボル$1$, ... への初期値の割り当てをリスト形式で行うこともできます。
+\eit
+
+\subsubchap{局所シンボルの表示\index{symbol@シンボル!kyokushonohyouji@局所--の表示}}
+\bit
+\item 局所シンボル自身が ToString や Print などで文字列に変換される場合は シンボル名\$\itn\itn\itn のようにシンボル名の後ろに文脈番号がつけられます。この文脈番号は Module が呼ばれる度に 1 ずつ増加します。
+\eit
+}
+\subchap{関数ライブラリ}
+{\tt
+ユーザーは関数の定義をファイルに書くことによりライブラリを構築できます。そのようなファイルは単に {\rm SAD} の入力ファイルと同じ書式で書けばよいのです。ただし、複数の式を並べる場合には、各々の式はセミコロン (CompoundExpression \rref{compoundexpression} 参照) で区切らなければなりません。さもないと、式と式の間に演算子 Times があるとみなされます。
+
+ライブラリのロードには Get (\rref{get}) か AutoLoad (\rref{autoload}) を用います。
+}
+\clearpage
+\chap{構造的演算\label{struct}}
+\subchap{純関数}
+{\tt
+さて、これまであるシンボル f に対して関数 f[...] を定義する方法を述べてきましたが、{\rm SAD} にはこのようなシンボル f を使わなくても定義できる関数の形式があります。これを純関数 {\rm pure function} と呼びます。純関数は構造的演算に際して多用されます。
+
+\subsubchap{{\tt 純関数$1$\index{junkansuu@純関数}, 演算子 \idtt{\&} と \idtt{Slot}}}
+\bit
+\item (式$1$)\&　は純関数を表わします。式$1$は Slot (\#, \#\itn, \#\#, \#\#\itn) を含む式です。純関数の引き数はこの Slot を通して受け渡されます。
+\item (式$1$)\&[引き数$1$, 引き数$2$, ..]　は純関数を引き数$1$, ...に対して適用します。式$1$が、その引き数をこの Slot を通して受け渡されつつ評価され、その結果が返されます。
+\item \# は引き数$1$を表わします。
+\item \#\itn 　は引き数\itn を表わします。
+\item \#\#　は引き数全体の系列を表わします。
+\item \#\#\itn 　は引き数\itn 以降の系列を表わします。
+\eit
+例えば、(Sin[\#] / Cos[\#2])\&[a, b] $\Rightarrow$ Sin[a] / Cos[b] など。
+
+純関数それ自身は評価されても形を変えません。
+
+純関数の中で純関数を含む式を多重に使用することは可能です。ただし、その場合、Slot と引き数の対応がわかりにくくなることが避け難いので、なるべくならば With により純関数に名前をつけるなどの工夫が望ましいでしょう。また、場合によっては Slot ではどうしても引き数の対応ができない場合も発生します。
+
+\subsubchap{純関数$2$ \idtt{Function}\index{junkansuu@純関数}\label{function2}}
+純関数の多重使用により、Slot による対応が不可能なときには Function を用いて Slot によらない引き数の対応をおこなう純関数を定義できます。
+\bit
+\item Function[\{シンボル$1$, ...\}, 式$1$]　は純関数で、その引き数はシンボル$1$, ...に対応します。式$1$はシンボル$1$, ...を含む式で、純関数の胴体です。
+\item Function[\{x, y\}, Sin[x] / Cos[y]][a, b] $\Rightarrow$ Sin[a] / Cos[b]。
+\item 引き数のシンボルは純関数の胴体に露に書かれたもののみが対応する値に置き換わります。
+\eit
+
+\subchap{構造的演算とは}
+{\rm SAD} では個々の原子、リストの要素に対しては勿論様々な演算が可能ですが、それ以上にあるリストや式の全体に対して一度に演算をすることができます。例えば、算術演算はリストに対してはその要素に並列に作用することは既に述べました。実は一般の関数に対してもそのような演算が可能です。ここではリストや式の全体に作用させる演算を「構造的演算」と呼ぶことにします。構造的演算の代表的なものが Map (演算子 /@)と Apply (演算子 @@) です。これらは {\rm SAD} ではきわめて多用されるため、特別な演算子まで与えられています。
+
+いま、ある2階のリスト l があるとして、その各要素の長さを要素とするリストを造りたいとしましょう。この問題は \idtt{Map}(/@) を使えば、
+{\tt\small \begin{verbatim}
+   Length /@ l
+\end{verbatim}}\noindent
+だけで書くことが出来ます。一般にある関数 \itf\ に対して、\itf\ /@ \{\ita$_1$,~\ita$_2$,~...\} は \{\itf[\ita$_1$],~\itf[\ita$_2$],~...\} を実行します。
+
+次に、数値を要素とするあるリスト l に対して、その合計、平均値、$2$ 乗平均値を求めたいとします。これらは Apply(@@) を使って、それぞれ
+{\tt\small \begin{verbatim}
+   Plus @@ l
+   Plus @@ l / Length[l]
+   Plus @@ (l^2) / Length[l]
+\end{verbatim}}\noindent
+と書かれます。一般にある関数 \itf\ に対して、\itf\ @@ \{a$_1$,~a$_2$,~...\} は \itf[a$_1$,~a$_2$,~...] を実行します。
+
+この様に、構造的演算により、複雑な演算をきわめて簡潔に書くことが出来ます。構造的演算は単に簡潔さだけでなく、実行速度の向上にも寄与します。しかし、構造的演算を一つの式の中で幾重にも重ねますと、プログラムの可読性は低下してしまいますので注意してください。
+
+\subchap{様々な構造的演算}
+以下において演算の作用するリストは必ずしも頭部が List である必要はありません。
+
+これらの内、Map, MapAll, MapIndexed, Apply, Scan, Cases, DeleteCases に対しては、階数指定子 (Level \rref{level} を参照) により演算の範囲を指定できます。
+
+\subsubchap{\idtt{Map}, \idtt{/@}}
+\bit
+\item \itf\ /@ リスト$1$　はリスト$1$ の各要素に関数 \itf\ を作用させます。
+\item Map[\itf, リスト$1$, 階数指定子$1$]　はリスト$1$の階数指定子$1$ (Level \rref{level} を参照) で指定される階の各要素に関数 \itf\ を作用させます。
+\item \itf\ /@ リスト$1$ と Map[\itf, リスト$1$] は Map[\itf, リスト$1$, \{1\}] と同値です。
+\eit
+
+\subsubchap{\idtt{MapAll}, \idtt{//@}}
+\bit
+\item \itf\ //@ リスト$1$　はリスト$1$ のすべての階 ($0$ 階を含む) の全要素に関数 \itf\ を作用させます。
+\item \itf\ //@ リスト$1$　はMap[\itf,~リスト$1$,~\{0,~Infinity\}] と同値です。
+\item 結果の頭部はもとの式の頭部になります。
+\item MapAll[\itf, リスト$1$, Heads -> True]　はリスト$1$のすべての階の全要素と頭部に関数 \itf\ を作用させます。
+\eit
+
+\subsubchap{\idtt{MapIndexed}}
+\bit
+\item MapIndexed[\itf, リスト$1$]　はリスト$1$ の各要素に関数 \itf\ を作用させますが、そのときその要素のリスト$1$のなかでの位置を第二引き数として \itf\ に渡します。
+\item MapIndexed[\itf, リスト$1$, 階数指定子$1$]　はリスト$1$ の階数指定子$1$ (Level \rref{level} を参照) で指定される階の各要素に関数 \itf\ を作用させますが、その要素のリスト$1$ のなかでの位置を第二引き数として \itf\ に渡します。
+\eit
+
+\subsubchap{\idtt{Apply}, \idtt{@@}}
+\bit
+\item \itf\ @@ リスト$1$　はリスト$1$ の全要素からなる系列を引き数として関数 \itf\ を評価します。
+\item Apply[\itf, リスト$1$, 階数指定子$1$]　はリスト$1$の階数指定子$1$ (Level \rref{level} を参照) で指定される階の全要素からなる系列を引き数として関数 \itf\ を評価します。
+\item \itf\ @@ リスト$1$ と Apply[\itf,~リスト$1$]　は Apply[\itf,~リスト$1$,~\{0\}] と同値です。
+\item 結果の頭部は、その階に Apply が作用していなければ、もとの式の頭部が保存されます。例えば、Apply[f,~g[h[1,~2],~h[3,~4]],~\{1\}] $\Rightarrow$ g[f[1,~2],~f[3,~4]]。
+\eit
+
+\subsubchap{\idtt{Scan}}
+\bit
+\item Scan[関数$1$, リスト$1$] は関数$1$をリスト$1$の$1$階の各要素に適用します。最期に Null を返します。
+\item Scan[関数$1$, リスト$1$, 階数指定子$1$] は関数$1$をリスト$1$の、階数指定子$1$ (Level \rref{level} を参照) で指定される各要素に適用します。最後にNullを返します。
+\item Scan[関数$1$, リスト$1$] は Do[関数$1$[~リスト$1$[[i]]~], \{i,~Length[リスト$1$]\}]と同じ結果になりますが、一般に速度が速く効率的です。(「添字はできるだけ避けよ。」）
+\eit
+
+\subsubchap{\idtt{Position}}
+\bit
+\item Position[式$1$, パターン式$1$]　は式$1$の全部分式の中でパターン式$1$に照合するものの位置達をリストにして返します。
+\item Position[式$1$, パターン式$1$, 階数指定子$1$]　は階数指定子$1$ (Level \rref{level} を参照) で指定される階数の、パターン式$1$に照合する部分式の位置達を返します。
+\item Position[式$1$, パターン式$1$, 階数指定子$1$, \itn$1$]　は階数指定子$1$で指定される階数の、パターン式$1$に照合する部分式の位置達の内の最初の \itn$1$ 個を返します。
+\eit
+
+\subsubchap{\idtt{Count}}
+\bit
+\item Count[式$1$, パターン式$1$]　は式$1$の全部分式の中でパターン式$1$に照合するものの個数を返します。
+\item Count[式$1$, パターン式$1$, 階数指定子$1$]　は階数指定子$1$ (Level \rref{level} を参照) で指定される階数の、パターン式$1$に照合する部分式の個数を返します。
+\item Count[式$1$, パターン式$1$, 階数指定子$1$, \itn$1$]　は階数指定子$1$で指定される階数の、パターン式$1$に照合する部分式の位置達の内の最初の \itn$1$ 個の部分式の個数を返します。
+\eit
+
+
+\subsubchap{\idtt{Cases}}
+\bit
+\item Cases[リスト$1$, パターン式$1$]　はリスト$1$ の要素の中でパターン式$1$ に照合するもの達をリストにして返します。
+\item Cases[リスト$1$, パターン式$1$, 階数指定子$1$]　は階数指定子$1$ (Level \rref{level} 参照) で指定される階数の、パターン式$1$に照合する部分式達を返します。
+\item Cases[リスト$1$, パターン式$1$, 階数指定子$1$, \itn$1$]　は階数指定子$1$ で指定される階数の、パターン式$1$に照合する部分式達の内の最初の \itn$1$ 個を返します。
+\item 上記のパターン式$1$を パターン式$1$ -> 変更値$1$のように書くと、結果に対してこの規則による置換が行われます。
+\eit
+
+\subsubchap{\idtt{DeleteCases}}
+\bit
+\item DeleteCases[リスト$1$, パターン式$1$]　はリスト$1$ の要素の中でパターン式$1$ に照合するもの達を除いたリストを返します。
+\item DeleteCases[リスト$1$, パターン式$1$, 階数指定子$1$]　は階数指定子$1$ (Level \rref{level} を参照) で指定される階数の、パターン式$1$ に照合する部分式達を除いたリストを返します。
+\eit
+
+\subsubchap{\idtt{MapAt}}
+\bit
+\item MapAt[関数$1$, リスト$1$, \itn$1$] はリスト$1$の\itn$1$ 番目の位置に関数$1$ を適用し、その結果に置き換えたリストを返します。
+\item MapAt[関数$1$, リスト$1$, \{\itn$1$,~\itn$2$, ... \}] はリスト$1$の \{\itn$1$,~\itn$2$,~...\} の位置 (リスト$1$[[\itn$1$,~\itn$2$, ...]]) に関数$1$ を適用し、その結果に置き換えたリストを返します。
+\item MapAt[関数$1$, リスト$1$,~\{\{\itn$1$, ...\},~\{\itn$2$, ... \}\}] はリスト$1$ の幾つかの位置達に関数$1$ を適用し、その結果に置き換えたリストを返します。
+\eit
+
+\subsubchap{\idtt{MapThread}}
+\bit
+\item MapThread[\itf, \{\{\ita$_1$, \ita$_2$, ...\},\{\itb$_1$, \itb$_2$, ...\}, ...\}]　は \{f[\ita$_1$, \ita$_2$, ...], f[\itb$_1$, \itb$_2$, ...], ...\} を返します。
+\item MapThread[関数$1$, \{式$1$, 式$2$, ...\}, 階数指定子$1$]　は階数指定子$1$ で指定される式$1$, 式$2$, ... の部分式達に関数$1$ を適用します。
+\eit
+
+\subsubchap{\idtt{Nest}}
+\bit
+\item Nest[関数$1$, 式$1$, \itn]　は式$1$ に関数$1$ を \itn 回適用した結果を返します。
+\item Nest[\itf, x, 3] $\Rightarrow$ f[f[f[3]]] 。
+\eit
+
+
+
+\subsubchap{\idtt{Select}}
+\bit
+\item Select[リスト$1$, 関数$1$]　はリスト$1$の各要素に関数$1$を適用し、その結果が True (非0) になるもの達から成るリストを返します。
+\item Select[リスト$1$, 関数$1$, \itn$1$]　はリスト$1$の各要素に関数$1$を適用し、その結果が True (非0) になるもの達の内、最初の \itn$1$ 個から成るリストを返します。
+\eit
+
+\subsubchap{\idtt{SwitchCases}}
+\bit
+\item SwitchCases[リスト$1$, \{パターン式$1$, パターン式$2$, ...\}]　はリスト$1$の各要素をパターン式$1$, パターン式$2$, ...に照合するものに分類したリストを返します。
+\item SwitchCases[\{1, "a", x, 4\}, \{\_Real, \_String\}] $\Rightarrow$ \{\{1,~4\},~\{"a"\}\}。
+\item もしどれにも分類されないものも結果に必要な場合はパターン式のリストの最後に\_を加えれば済みます。
+\eit
+
+\subsubchap{\idtt{SelectCases}}
+\bit
+\item SelectCases[リスト$1$, \{関数$1$, 関数$2$, ...\}]　はリスト$1$の各要素を、関数$1$, 関数$2$, ...を適用した結果が True (非0) になるものに分類したリストを返します。
+\item SelectCases[\{1, 2, 3, 4\}, \{(\#<2)\&, (\#>=3)\&\}] $\Rightarrow$ \{\{1\},~\{3,~4\}\}。
+\item もしどれにも分類されないものも結果に必要な場合は関数のリストの最後に True\& を加えれば済みます。
+\eit
+
+}
+
+\clearpage
+\chap{プログラミング\index{programming@プログラミング}}
+{\rm SAD} では条件判断やループといったプログラムの流れの制御も関数によって行います。
+
+\subchap{式の連結\index{shiki@式!norenketsu@--の連結}}
+{\tt
+\subsubchap{\idtt{CompoundExpression}\label{compoundexpression}}
+\bit
+\item 式$1$; 式$2$; ... ; 式n は式$1$から式nをこの順に評価し、最後の式の結果を返します。
+\item 式$1$; 式$2$; ... ; 式n; は式$1$から式nをこの順に評価し、Null を返します。
+TracePrint \rref{traceprint} の中では各式が評価の前にそのまま印刷されます。
+\eit
+
+\subsubchap{\idtt{Goto} と \idtt{Label}}
+{\rm SAD} には実際にはあまり使われませんが Goto もあります。
+\bit
+\item Goto[ラベル1] はその Goto と同一またはそれより下の階の CompoundExpression に含まれる Label[ラベル1の値]のところまで制御を移します。ここでラベル1は任意の式でよい。Label 自身はなにもせず、自分自身の式を返します。
+\eit
+}
+
+\subchap{条件式}
+{\tt 
+{\rm SAD} の条件演算子、論理演算子は実数値0を偽、0でない実数を真とします。0以外の実数はどれも真なのですが、実際の演算では真の場合には実数値$1$が返されます。論理式の結果はこのように実数ですから、他の算術式の中に混ぜても構いません。また、システムでは True, False の二つのシンボルを用意していますが、これらは単にそれぞれ実数$1$と0と同値です。また、条件判断を要求される場合に普通の算術式を書いてもかまいません。
+
+条件演算子の中で、SameQ(===) と UnsameQ(<=>)以外のものは真または偽以外の値、すなわち条件式そのものをかえすことがあります。例えば、条件式 a~==~1 で、もし a に何も値が割り当てられていないときは、この条件式の結果は真でも偽でもなく、じつはこの式　a~==~1 そのものです。また、a に実数値以外の値が割り当てられているときも (aの値)~==~1 のような式が返されます。(このようになるひとつの理由は、a~==~1 の様な条件式は、いくつかの関数の中で方程式としての意味を持つからです)。これに対して、演算子 SameQ(===) と UnsameQ(<=>) は必ず真または偽の結果を返します。
+
+\subsubchap{\idtt{SameQ}, \idtt{===}}
+\bit
+\item 式$1$ === 式$2$　は両辺の結果が {\rm SAD} の要素として同一の値(式)のとき True(1)、それ以外は False(0) を返します。
+\eit
+
+\subsubchap{\idtt{UnsameQ}, \idtt{<=>}}
+\bit
+\item 式$1$ <=> 式$2$　は両辺の結果が {\rm SAD} の要素として同一の値(式)でない時 True(1)、それ以外は False(0) を返します。
+\eit
+
+\subsubchap{\idtt{MatchQ}}
+\bit
+\item MatchQ[式$1$, パターン式$1$]　は 式$1$ が パターン式$1$ に照合するとき True(1)、照合しないとき False(0) を返します。
+\eit
+
+\subsubchap{\idtt{MemberQ}}
+\bit
+\item MemberQ[式$1$, パターン式$1$]　は 式$1$ の全ての部分式の中に パターン式$1$ に照合するものが存在するとき True(1)、照合しないとき False(0) を返します。
+\item MemberQ[式$1$, パターン式$1$、階数指定子$1$]　は 式$1$ の階数指定子$1$ (Level \rref{level} を参照) で指定される階数の部分式の中に パターン式$1$ に照合するものが存在するとき True(1)、照合しないとき False(0) を返します。
+\eit
+
+\subsubchap{\idtt{FreeQ}}
+\bit
+\item FreeQ[式$1$, パターン式$1$]　は 式$1$ の全ての部分式の中に パターン式$1$ に照合するものがひとつも存在しないとき True(1)、ひとつでも照合するとき False(0) を返します。
+\item FreeQ[式$1$, パターン式$1$、階数指定子$1$]　は 式$1$ の階数指定子$1$ (Level \rref{level} を参照) で指定される階数の部分式の中に パターン式$1$ に照合するものがひとつも存在しないとき True(1)、ひとつでも照合するとき False(0) を返します。
+\eit
+
+
+
+\subsubchap{\idtt{VectorQ}}
+\bit
+\item VectorQ[式$1$]　は式$1$ の値が一階 のリストの時 True(1) になり、それ以外は False(0) になります。
+\item VectorQ[式$1$, テスト$1$]　は式$1$ の値が、その要素がすべて関数 テスト$1$ を作用させた時真 (非0) の場合 True(1) になり、それ以外は False(0) になります。
+\eit
+
+\subsubchap{\idtt{MatrixQ}}
+\bit
+\item MatrixQ[式$1$]　は式$1$ の値が行列の時 True(1) になり、それ以外は False(0) になります。
+\item MatrixQ[式$1$, テスト$1$]　は式$1$ の値が行列で、その各要素がすべて関数 テスト$1$ を作用させた時真 (非0) の場合 True(1) になり、それ以外は False(0) になります。
+\eit
+
+
+
+\subsubchap{\idtt{ComplexQ}}
+\bit
+\item ComplexQ[式$1$]　は式$1$ の値が実数でない複素数、あるいは、少なくともひとつの要素がそのような数であるリストの時 True(1) になり、それ以外は False(0) になります。
+\eit
+
+}
+
+\subchap{条件判断}
+{\tt
+\subsubchap{\idtt{If}}
+\bit
+\item If[式$1$, 真$1$] は 式$1$ を評価し、その結果が True ならば式 真$1$ を評価しその結果を返します。そうでなければ Null を返します。
+\item If[式$1$, 真$1$, 偽$1$] は 式$1$ を評価し、その結果が True ならば式 真$1$ を、偽ならば式 偽$1$ を評価しその結果を返します。どちらでもなければ Null を返します。
+\item If[式$1$, 真$1$, 偽$1$, 他$1$] は式$1$を評価し、その結果が True ならば式 真$1$ を、偽ならば式 偽$1$ を、どちらでもなければ式 他$1$ を評価しその結果を返します。
+\eit
+
+\subsubchap{\idtt{Or}, \idtt{||}}
+\bit
+\item 式$1$ || 式$2$ || ... は論理和ですが、その結果が真になるまで、式$1$、式$2$、...を評価し続けます。真になれば残りの式はそれ以上評価されず、True(1) が返されます。したがって、実質的な条件判断としても利用できます。
+\eit
+
+\subsubchap{\idtt{And}, \idtt{\&\&}}
+\bit
+\item 式$1$ \&\& 式$2$ \&\& ... は論理積ですが、その結果が偽になるまで、式$1$、式$2$、...を評価し続けます。偽になれば残りの式はそれ以上評価されず、False(0) が返されます。したがって、実質的な条件判断としても利用できます。
+\eit
+
+\subsubchap{\idtt{Not}, \idtt{\~\ }}
+\bit
+\item \verb1~1式$1$　は論理否定で、式$1$ を評価し、その結果が 0 以外の実数ならば False(0)、0 ならば True(1)、それ以外は \verb1~1式$1$ の式そのものを返します。
+\eit
+
+\subsubchap{\idtt{Switch}}
+\bit
+\item
+Switch[式$0$, パターン$1$, 式$1$, パターン$2$, 式$2$, ... ] はまず 式$0$ を評価し、その結果がパターン$1$に照合すれば 式$1$ を評価し値を返します。そうでなければパターン$2$, ... と照合されるまで進みます。もしどのパターンとも照合しなければ Switch の式そのものが返ります。
+\item もしどれとも照合しないときに 式a を評価したければ、引き数の最後に \_, 式a と書けば実行できます。
+\eit
+
+\subsubchap{\idtt{Which}}
+\bit
+\item
+Which[条件$1$, 式$1$, 条件$2$, 式$2$, ... ] は 条件$1$ を評価し真になれば式$1$を評価し値を返します。そうでなければ 条件$2$, ... と真になるまで進みます。もしどの条件も真でなければ Which の式そのものが返ります。
+\item もしどれも真でないときに式a を評価したければ、引き数の最後に True, 式a と書けば実行できます。
+\eit
+}
+
+\subchap{ループ\index{loop@ループ}}
+{\tt
+\subsubchap{\idtt{Do}}
+\bit
+\item Do[式$1$, 反復指定子] は反復指定子 (\rref{tableiter} を参照) で指定された回数だけ 式$1$ を評価し、最期に Null を返します。
+\item 途中で Break[] が呼ばれると反復は中断します。
+\item 途中で Continue[] が呼ばれると式$1$の評価は中断しますが、反復は続きます。
+\eit
+
+\subsubchap{\idtt{While}}
+\bit
+\item While[条件式$1$, 式$2$] は 条件式$1$ を毎回評価し、結果が真(非0)である限り 式$2$ を評価しつづけます。最期に Null を返します。
+\item 途中で Break[] が呼ばれると反復は中断します。
+\eit
+
+\subsubchap{\idtt{For}}
+\bit
+\item For[開始$1$, 条件$1$, 増分$1$, 式$1$] はまず、開始$1$ を評価します。次ぎに条件1が真である限り、式$1$ と増分$1$ をこの順に評価します。
+\item 途中で Break[] が呼ばれると反復は中断します。
+\eit
+
+\subsubchap{\idtt{Scan}}
+\bit
+\item Scan[関数$1$, リスト$1$] は 関数$1$ を リスト$1$ の$1$階の各要素に適用します。最期に Null を返します。
+\item Scan[関数$1$, リスト$1$, 階数指定子$1$] は 関数$1$ をリスト$1$の、階数指定子$1$ (Level \rref{level} を参照) で指定される各要素に適用します。最後に Null を返します。
+\item Scan[関数$1$, リスト$1$] は Do[関数$1$[~リスト$1$[[i]]~], \{i,~Length[リスト$1$]\}] と同じ結果になりますが、一般に速度が速く効率的です。(「添字はできるだけ避けよ。」）
+\eit
+
+\subsubchap{\idtt{Sum}}
+\bit
+\item Sum[式$1$, 反復指定子] は反復指定子 (Table {\rm \ref{tableiter}} を参照)で指定された回数だけ式$1$を評価し、それらの結果の合計を返します。
+\eit
+
+\subsubchap{\idtt{Product}}
+\bit
+\item Product[式$1$, 反復指定子] は反復指定子 (Table {\rm \ref{tableiter}} を参照)で指定された回数だけ式$1$を評価し、それらの結果の積を返します。
+\eit
+
+}
+
+\subchap{プログラムの中断、例外処理}
+{\tt
+\subsubchap{\idtt{Break}}
+\bit
+\item Break[] はDo, While, For の実行を中断し、それらの次の式に制御を移します。
+\eit
+
+\subsubchap{\idtt{Continue}}
+\bit
+\item Continue[] は Do のその回の実行を中断しますが、反復は継続します。
+\eit
+
+\subsubchap{\idtt{Return}}
+\bit
+\item Return[式$1$] は関数の実行を中断し、式$1$の値をその関数の値として返します。
+\eit
+
+\subsubchap{\idtt{Exit}}
+\bit
+\item Exit[] は {\rm SAD} を終了させます。
+\eit
+
+\subsubchap{\idtt{Throw}}
+\bit
+\item Throw[式$1$] は Catch の中で用いられ、プログラムの実行を中断し、式$1$の値を Catch の値として返します。
+\eit
+
+\subsubchap{\idtt{Catch}}
+\bit
+\item Catch[式$1$] は式$1$を評価し、その値を返します。途中で Throw[式$2$] が呼ばれると、プログラムはそこで中断し、式$2$の値を返します。
+\eit
+
+}
+
+\subchap{式の評価の制御}
+{\tt
+\subsubchap{\idtt{Hold}\label{hold}}
+\bit
+\item Hold[式$1$]　は式$1$を評価せず、Hold[式$1$] の形のままの式を結果として返します。
+\item Hold[Sin[1]] $\Rightarrow$ Hold[Sin[1]]。
+\item 式$1$の一部を評価するには With \rref{with} を使います。
+\item ある式の一部を 評価せずに取り出すには Extract \rref{extract} と Hold を組み合わせて使います。
+\item Extract[Hold[\{Sin[1],~Cos[1]\}],~\{1,~2\},~Hold] $\Rightarrow$ Hold[Cos[1]]。
+\eit
+ 
+\subsubchap{\idtt{ReleaseHold}}
+\bit
+\item ReleaseHold[Hold[式$1$]]　は式$1$ を評価し、その結果を返します。
+\item ReleaseHold[ Hold[Sqrt[4]] ] $\Rightarrow$ 2。
+\item 引き数が上の様に頭部に Hold を持たない場合、ReleaseHold[式$1$] は式$1$ を評価し、その結果を返します。
+\item ReleaseHold[ \{Hold[Sqrt[4]]\} ] $\Rightarrow$ \{Hold[Sqrt[4]]\}。
+\eit
+
+\subsubchap{\idtt{Evaluate}\label{evaluate}}
+\bit
+\item \itf\ [..., Evaluate[式$1$], ...]　は関数 \itf\ の引き数の評価の有無の指定にかかわらず、式$1$ を評価した値を関数\itf\ に渡します。
+\item Hold[ Evaluate[Sqrt[4]] ] $\Rightarrow$ Hold[2]。
+\item 上の形のように関数の引き数の頭部以外に Evaluate が現われる場合は Evaluate[式$1$] はそれが{\gt もし評価されれば}式$1$ を評価した値を返します。
+\item Evaluate[Sqrt[4]] $\Rightarrow$ 2。
+\item Hold[ \{Evaluate[Sqrt[4]]\} ] $\Rightarrow$ Hold[ \{Evaluate[Sqrt[4]]\} ]。
+\item 式$1$の一部を評価するには With \rref{with} を使います。
+\eit 
+
+\subsubchap{\idtt{Unevaluated}\label{unevaluated}}
+\bit
+\item \itf\ [..., Unevaluated[式$1$], ...]　は関数 \itf\ の引き数の評価の有無の指定にかかわらず、式$1$ を評価せずそのままの形で関数 \itf\ に渡します。
+\eit
+}
+
+\subchap{シンボルの設定、診断\label{SADdiag}}
+{\tt
+\subsubchap{\idtt{Clear}\label{clear}}
+\bit
+\item Clear[シンボル$1$, シンボル$2$, ...]　はシンボル$1$, シンボル$2$, ... に割り当てられている全ての値及び関数の定義を解除します。
+\item Clear[シンボル$1$[引き数$1$, ...], ...]　はシンボル$1$ に割り当てられている上方値 \rref{upvalue} のうち、シンボル$1$[引き数$1$, ...] の形を含むものを解除します。
+\eit
+
+\subsubchap{\idtt{Unset}, \idtt{=.}}
+\bit
+\item シンボル$1$ =.　はシンボル$1$ に割り当てられている全ての値及び関数の定義を解除します。
+\item シンボル$1$[引き数$1$, ...] =.　はシンボル$1$[引き数$1$, ...] に割り当てられている関数の定義だけを解除します。
+\item 上方値 (\rref{upvalue} 参照) は TagSet (\rref{tagset} 参照) と Unset を併用して解除します。例: c/:~a[b,~c,~d]~=. 。
+\item 部品シンボルに対しては 部品シンボル$1$ =. は DeleteWidget[部品シンボル$1$] と同じ働きをします。
+\eit
+
+\subsubchap{\idtt{Names}}
+\bit
+\item Names[文字列パターン$1$]　はその名前が文字列パターン$1$ (\rref{wildcard} 文字列の照合を参照) に照合する、既に定義されたシンボル名達をリストにして返します。
+\item Names["Arc*"] $\Rightarrow$ \\\{"ArcTanh",~"ArcCosh",~"ArcSinh",~"ArcTan",~"ArcCos",~"ArcSin"\}。
+\eit
+
+
+\subsubchap{\idtt{Protect}}
+\bit
+\item Protect[シンボル$1$, シンボル$2$, ...]　はこれ以後の シンボル$1$, シンボル$2$, ... への値や関数の割り当てを禁止します。
+\item 局所シンボル (\rref{localsymbol}) は Protect できません。
+\item システムが用意する関数やシンボルは Protect されています。
+\eit
+
+\subsubchap{\idtt{Unprotect}}
+\bit
+\item Unprotect[シンボル$1$, シンボル$2$, ...]　はこれ以後の シンボル$1$, シンボル$2$, ... への値や関数の割り当てを許可します。
+\eit
+
+\subsubchap{\idtt{AutoLoad}\label{autoload}}
+必要に応じてある関数ライブラリをロードするには AutoLoad を使います。
+\bit
+\item AutoLoad[シンボル$1$, シンボル$2$, ..., ファイル$1$]　は シンボル$1$, シンボル$2$, ... が次に評価される時に ファイル$1$ の内容が評価されるという仮の定義をします。
+\item ファイル$1$ には シンボル$1$, シンボル$2$, ... の真の定義を書いておきます。
+\eit
+
+\subsubchap{\idtt{Order}}
+\bit
+\item Order[式$1$, 式$2$]　は 式$1$ の値が 式$2$ の値に対して標準的な順序 (表 ~\rref{sortorder} を参照) で前の時 1、等しい時 0、後ろの時 -1 になります。
+\eit
+
+}
+
+\subchap{メッセージ\index{message@メッセージ}とエラー処理}
+{\tt
+{\rm SAD} は関数の実行中にエラーが発生するとそれに対応するメッセージを生成します。そしてその関数の実行は中断され、関数の結果はその関数を呼び出した形そのものになります。その時点でメッセージは端末に出力されますが、関数 Off により出力を抑制することもできます。また、メッセージの重要度に応じて、その後のプログラムの実行は中断または継続されます。また、メッセージの発生は関数 Check により検出することができます。
+
+次の例
+{\tt\small \begin{verbatim}
+  Log[1, 2, 3] + Sin[1, 2]
+???General::narg:  Number of arguments is expected 1 or 2 in Log[1,2,3]
+???General::narg:  Number of arguments is expected 1 in Sin[1,2]
+Out[4]:= (Log[1,2,3]+Sin[1,2])
+\end{verbatim}}\noindent
+はこのようなメッセージが発生した例です。ここで General::narg がこのメッセージを識別する式です。この例では まず Log[1, 2, 3] でエラーが発生していますが、そのまま実行が継続され次の Sin[1, 2] を実行し、そこでまた同じメッセージを生成しています。これらは同じメッセージでありながら末尾が異なっています。実はこの General::narg というメッセージは
+{\tt\small \begin{verbatim}
+   General::narg
+Out[5]:= "Number of arguments is expected `1`"
+\end{verbatim}}\noindent
+というもので、この中の `1` には別の文字列が代入されるようになっています。また、行頭の ??? と行末の in ... 以降はシステムが付加するものです。
+
+ユーザーはまた、自分のプログラムのなかで随時メッセージを発行することができます。そのようなメッセージの登録は関数 MessageName(演算子 ::) で行います。
+
+\pagebreak
+\subsubchap{\idtt{MessageName}, \idtt{::}}
+\bit
+\item シンボル$1$::タグ$1$　はシンボル$1$ とタグ$1$ で識別される、登録されたメッセージを返します。
+\item シンボル$1$::タグ$1$　のメッセージが未登録の場合は General::タグ$1$ のメッセージが返されます。
+\item シンボル$1$::タグ$1$ = メッセージ$1$　はシンボル$1$ とタグ$1$ で識別されるメッセージ$1$ を登録します。シンボル$1$ とタグ$1$ は任意の式で構いませんが通常はシンボルが用いられます。なお、シンボル$1$ とタグ$1$は評価されずそのままの形で用いられます。
+\item Print[Definition[MessageName]]　により登録されているメッセージをすべて端末に表示できます。
+\eit
+
+\subsubchap{\idtt{Off}}
+\bit
+\item Off[シンボル$1$::タグ$1$]　はメッセージ シンボル$1$::タグ$1$ の出力を以後停止します。
+\item Off されたメッセージは Check で検出できません。
+\eit
+
+\subsubchap{\idtt{On}\label{on}}
+\bit
+\item On[シンボル$1$::タグ$1$]　はメッセージ シンボル$1$::タグ$1$ の出力を以後可能にします。
+\item On[\idtt{General::newsym}]　とすると、以後新しい名前のシンボルが生成される度にメッセージ General::newsym が出力されます。これはシンボルの書き誤りなどを検出する場合の助けになります。
+\eit
+
+\subsubchap{\idtt{\$MessageList}}
+\bit
+\item シンボル \$MessageList にはその入力行の実行中にそれまでに発生したメッセージの識別子のリストが割り当てられます。各識別子には Hold が被されています。
+\eit
+
+\subsubchap{\idtt{MessageList}}
+\bit
+\item MessageList[\itn] は出力行\itn の実行中に発生したメッセージの識別子のリストを返します。各識別子には Hold が被されています。
+\item 次の出力行の番号はシンボル \idtt{\$Line} に割り当てられています。Out \rref{out} 参照。
+\eit
+
+\pagebreak
+\subsubchap{\idtt{Check}}
+\bit
+\item Check[式$1$, 式$2$]　は 式$1$ を評価し、その途中でメッセージが発生した場合、式$2$ を評価してその値を返します。エラーが発生しない場合は式$1$ を評価した値を返します。
+\item Check[式$1$, 式$2$, シンボル$1$::タグ$1$, ...]　はシンボル$1$::タグ$1$, ... で識別されるメッセージが発生した場合だけ 式$2$ を評価します。
+\item Off されたメッセージには Check は反応しません。
+\eit
+
+\subsubchap{\idtt{Message}}
+\bit
+\item Message[シンボル$1$::タグ$1$]　はシンボル$1$::タグ$1$ で識別されるメッセージを生成します。
+\item Message[シンボル$1$::タグ$1$, 文字列$1$, ...]　はシンボル$1$::タグ$1$ の中の `1`, ...　という文字列を文字列$1$, ...に置き換えたものを表示メッセージとして生成します。
+\eit
+
+\subchap{デバッグの方法}
+{\tt
+{\rm SAD} の現状ではデバッグの道具はあまり充実していません。原始的な方法としては
+\bit
+\item TracePrint[式$1$]　により、エラーの発生箇所を特定する。
+\item Print[式$1$] あるいは Print[Definition[式$1$]] などを要所要所に挿入する。
+\item On[\idtt{General::newsym}]　により新しいシンボルの生成を検出する (\rref{on} 参照) 。
+\item プログラムの最上位レヴェルにシンボル end を挿入する。
+\eit
+などが考えられます。
+
+しばしば発生する誤りは
+\bit
+\item 大文字と小文字の書き誤り。
+\item セミコロンの書き忘れ。
+\item セミコロンとカンマの書き誤り。
+\item 関数の引き数の型、個数の違い。
+\eit
+などです。関数の用法が未定義の場合、いくつかの関数はその呼ばれた式そのものを結果として返すだけでメッセージを発生しないことに注意する必要があります。
+
+\subsubchap{\idtt{TracePrint}\label{traceprint}}
+\bit
+\item TracePrint[式$1$]　は CompoundExpression (;) のそれぞれの式を、その実行の直前に端末に表示します。
+\eit
+
+\subsubchap{\idtt{Definition}}
+\bit
+\item Definition[シンボル$1$]　はシンボル$1$ に割り当てられている定義式を返します。
+\eit
+
+\subsubchap{\idtt{Out}、\idtt{\%}\label{out}}
+\bit
+\item Out[\itn]　は端末に Out[\itn] := ... と既に出力された、\itn\ 番目の評価結果を再評価して返します。
+\item \% は最後の評価結果を返します。
+\item \%\itn　は Out[\itn] と同値です。
+\item 最後の評価結果の番号はシンボル \idtt{\$Line} に割り当てられています。この番号を自分でリセットすることもできますが、その場合、新しい \$Line 以前の Out[\itn] の値は失われます。
+\item \$Line は式の評価が完結する度に 1 ずつ増加します。式の評価結果が Null のときは \$Line は更新しません。
+\eit
+
+\subsubchap{シンボル \idtt{end}}
+入力プログラムの最上位の式と式の切れ目にシンボル end を挿入しておくと、{\rm SAD} はそこで実行を中断し、端末からの入力待ち状態になります。そこでシンボルの状態などを対話式に確認することができます。実行を再開するには in 77 と入力します。
+
+\subsubchap{\idtt{MemoryCheck}}
+\bit
+\item MemoryCheck[]　はその時点のメモリーの使用状況を返します。また、システムのバグのためにメモリーが破壊されているかどうかをチェックし、もし破壊されていればメッセージを出力します。
+\item もしメッセージが出力された場合は筆者までレポートをお願いします。
+\eit
+
+\subsubchap{\idtt{STACKSIZ}}
+\bit
+\item STACKSIZ は {\rm SADScript} インタープリータの実行に必要なスタックの大きさを指定するシンボルです。
+\item 最初の FFS セッションが{\gt 始まる前}に STACKSIZ = \itn; と指定することにより、以後のスタックの大きさを変えることができます。デフォルトは STACKSIZ = 200000 です。
+\item FFS セッションが開始された後は STACKSIZ を変更しても効果はありません。
+\eit
+
+\subchap{システムとの相互作用}
+\subsubchap{\idtt{System}}
+\bit
+\item System[コマンド文字列]　はコマンド文字列であらわされるシステムのコマンド\index{command@コマンド!systemno@システムの--}を実行します。
+\item コマンドの実行結果を読みたい場合は OpenRead (\rref{openread} 参照) を用います。
+\eit
+
+\subsubchap{\idtt{Environment}}
+\bit
+\item Environment[環境変数文字列]　は環境変数文字列で表わされる環境変数\index{kankyouhensuu@環境変数}の値を文字列で返します。
+\item \idtt{GetEnv} と Environment は同値です。
+\eit
+
+\subsubchap{\idtt{Directory}}
+\bit
+\item Directory[] は現在作業中のディレクトリ名を返します。
+\eit
+
+\subsubchap{\idtt{SetDirectory}}
+\bit
+\item SetDirectory[ディレクトリ名$1$]　は作業ディレクトリをディレクトリ名$1$ に設定し、その完全名称を返します。
+\eit
+
+\subsubchap{\idtt{HomeDirectory}}
+\bit
+\item HomeDirectory[]　はホーム・ヂレクトリ名を返します。
+\eit
+
+\subsubchap{\idtt{GetPID}}
+\bit
+\item GetPID[]　は {\rm SAD} のプロセス{\rm ID} 番号を返します。
+\eit
+
+\subsubchap{\idtt{GetUID}}
+\bit
+\item GetUID[]　は {\rm SAD} のユーザ{\rm ID} 番号を返します。
+\eit
+
+\subsubchap{\idtt{GetGID}}
+\bit
+\item GetGID[]　は {\rm SAD} のグループ{\rm ID} 番号を返します。
+\eit
+
+\pagebreak
+\subchap{プロセス制御}
+\subsubchap{\idtt{Pause}}
+\bit
+\item Pause[秒]　は指定された秒数だけプログラムの実行を休止します。
+\item 1 秒以下の指定も可能です。
+\item \idtt{Sleep} と Pause は同値です。
+\eit
+
+\subsubchap{\idtt{Fork}}
+\bit
+\item Fork[]　は実行中のプロセスのコピーを作り、サブプロセスとして実行します。
+\item Fork[]　は親のプロセスには子のプロセスのプロセス番号を返し、子のプロセスには 0 を返します。
+\eit
+
+\subsubchap{\idtt{Wait}}
+\bit
+\item Wait[]　はサブプロセスの実行終了を待ちます。
+\item Wait[]　は \{サブプロセス番号, 終了コード\} というリストを返します。サブプロセスが正常終了したときは終了コードは 0 です。
+\eit
+
+\subchap{その他の関数}
+\subsubchap{\idtt{Date}}
+\bit
+\item Date[]　はその時点の時刻を \{年, 月, 日, 時, 分, 秒\} のリストで返します。
+\eit
+
+\subsubchap{\idtt{Day}}
+\bit
+\item Day[]　はその時点の曜日名を返します。
+\item Day[\{年, 月, 日\}]　はその日付の曜日名を返します。
+\item Day[\{年, 月, 日, 時, 分, 秒\}]　はその日付の曜日名を返します。
+\eit
+
+\subsubchap{\idtt{FromDate}}
+\bit
+\item FromDate[\{年, 月, 日, 時, 分, 秒\}]　はリスト表示の時刻の、$1900$ 年 $1$ 月 $1$ 日 $0$ 時 $0$ 分 $0$ 秒から計った経過時間を秒単位の数値で返します。
+\eit
+
+\subsubchap{\idtt{ToDate}}
+\bit
+\item ToDate[秒]　は$1900$ 年 $1$ 月 $1$ 日 $0$ 時 $0$ 分 $0$ 秒から計った秒単位の経過時間を\{年,~月,~日,~時,~分,~秒\}のリストに直して返します。
+\eit
+
+\subsubchap{\idtt{DateString}}
+\bit
+\item DateString　は呼ばれたときの時刻を文字列にして返します。
+\eit
+
+\subsubchap{\idtt{TimeUsed}}
+\bit
+\item TimeUsed[]　はその {\rm SAD セッションが消費した CPU} 時間を秒単位で返します。
+\eit
+
+\subsubchap{\idtt{Timing}}
+\bit
+\item Timing[式$1$]　は 式$1$ を評価し、\{式$1$の結果,~消費した {\rm CPU} 時間 (秒)\} というリストを返します。
+\eit
+
+}
+
+\clearpage
+\chap{数値関数}
+{\tt
+\subchap{初等関数\index{kansuu@関数!shotou@初等--}}
+{\rm SAD} には以下の初等関数が備わっています。これらは原則として複素数にも適用できます。また、これらの関数はリストに対してはその要素に並列に作用します。
+
+\bit
+\item ArcCos ArcCosh ArcSin ArcSinh ArcTan ArcTanh Cos Cosh Exp Log\\
+ Sin Sinh Sqrt Tan Tanh。
+\eit
+
+\subsubchap{\idtt{Log}}
+\bit
+\item Log[$z$] は $z$ の自然対数。
+\item Log[$a$, $z$] は $z$ の底 $a$ の対数、$= \log_a z$。
+\eit
+
+\subsubchap{\idtt{ArcTan}}
+\bit
+\item ArcTan[$z$] = $\tan^{-1}z$。
+\item ArcTan[x, y] = $\arg(x+iy)$、$\pm \pi$ の間の値をとる。
+\eit
+
+\subchap{特殊関数\index{kansuu@関数!tokushu@特殊--}}
+現在までに備えられている特殊関数は以下の通りです。ご覧の通りあまり豊富ではありませんが、実際の要求に応じて整備します。これらは原則として複素数にも適用可能ですが、実数のみに限定されるものもあります。もし、複素数引き数が必要な場合は要求され次第対処します。以下で引き数が $u, v, w, z, \nu$ で表わされているのものは複素数を受け付けます。また、これらの関数はリストに対してはその要素に並列に作用します。
+
+\subsubchap{\idtt{BesselI}}
+\bit
+\item BesselI[$\nu$, $z$] = $I_\nu(z)$ 。
+\eit
+
+\subsubchap{\idtt{BesselJ}}
+\bit
+\item BesselJ[$\nu$, $z$] = $J_\nu(z)$ 。
+\eit
+
+\subsubchap{\idtt{BesselK}}
+\bit
+\item BesselK[$\nu$, $z$] = $K_\nu(z)$ 。
+\eit
+
+\subsubchap{\idtt{BesselY}}
+\bit
+\item BesselY[$\nu$, $z$] = $Y_\nu(z)$ 。
+\eit
+
+\subsubchap{\idtt{Gamma}}
+\bit
+\item Gamma[$z$]:
+$$
+\Gamma(z) = \int^\infty_0t^{z-1}e^{-t}dt\mbox{。}
+$$
+\item Gamma[$a$, $x$]:
+$$
+\Gamma(a,x) = \int^\infty_xt^{a-1}e^{-t}dt\mbox{。}
+$$
+\eit
+
+\subsubchap{\idtt{Factorial}}
+\bit
+\item Factorial[$z$] は Gamma[$z$ + 1] と同値です。
+\eit
+
+\subsubchap{\idtt{LogGamma}}
+\bit
+\item LogGamma[$z$] は定義は Log[Gamma[$z$]] と同値ですが、計算上、Gamma[$z$] のオーヴァーフローを避けることができます。
+\eit
+
+\subsubchap{\idtt{LogGamma1}}
+\bit
+\item LogGamma1[$z$] は定義は Log[Gamma[$z$ + 1]] と同値ですが、計算上、Gamma[$z$ + 1] のオーヴァーフローを避けることができます。
+\eit
+
+\subsubchap{\idtt{GammaRegularizedQ}}
+\bit
+\item GammaRegularizedQ[$a$, $x$]:
+$$
+Q(a,x) = {\Gamma(a,x)\over\Gamma(a)}\mbox{。}
+$$
+\eit
+
+\subsubchap{\idtt{GammaRegularized}}
+\bit
+\item GammaRegularized[$a$, $x$] は GammaRegularizedQ[$a$, $x$] と同値です。
+\eit
+
+\subsubchap{\idtt{GammaRegularizedP}}
+\bit
+\item GammaRegularizedP[$a$, $x$]:
+$$
+P(a,x) = 1- Q(a,x) = 1-{\Gamma(a,x)\over\Gamma(a)}\mbox{。}
+$$
+\eit
+
+\subsubchap{\idtt{Erf}}
+\bit
+\item Erf[$z$]:
+$$
+{\rm erf}(z) = {2\over\sqrt\pi}\int^z_0e^{-t^2}dt\mbox{。}
+$$
+\eit
+
+\subsubchap{\idtt{Erfc}}
+\bit
+\item Erfc[$z$]:
+$$
+{\rm erfc}(z) = 1-{\rm erf}(z)\mbox{。}
+$$
+\eit
+
+\subchap{数値関数\index{kansuu@関数!suuchi@数値--}}
+{\rm SAD} には以下の数値関数が備わっていいます。
+
+\bit
+\item Abs Ceiling Floor Max Min Mod Round Sign。
+\eit
+
+この内、Abs, Ceiling, Floor, Round, Signはリストに対してはその要素に並列に作用します。
+
+\subchap{複素数演算\index{fukusosuu@複素数}\index{kansuu@関数!fukusosuu@複素数--}}
+\bit
+\item Complex ComplexQ Conjugate Im Re。
+\eit
+
+\subsubchap{\idtt{Complex}}
+\bit
+\item Complex[x, y]　は複素数 x + y * I を表わします。ここで x、y は複素数でも構いません。
+\item シンボル I は Complex[0, 1] と同値です。
+\eit
+
+
+\subsubchap{\idtt{ComplexQ}}
+\bit
+\item ComplexQ[式$1$]　は式$1$ の値が実数でない複素数、あるいは、少なくともひとつの要素がそのような数であるリストの時 True(1) になり、それ以外は False(0) になります。
+\eit
+
+\pagebreak
+\subchap{フーリエ変換}
+\subsubchap{\idtt{Fourier}}
+\bit
+\item Fourier[リスト$1$]　は複素数から成る リスト$1$$ = \{x_1, x_2, ...\}$ の高速フーリエ変換
+$$
+  \tilde{x}_m = {1\over \sqrt{N}}\sum^{N-1}_{k=0} x_k \exp\left({2\pi ikm\over N}\right)
+$$
+を求め、結果を複素数のリストにして返します。ここで $N$ はリスト$1$ の長さです。$N$ が 2の冪乗でないときには、2の冪乗になるまで後ろに 0 を補ってから変換します。
+\eit
+
+\subsubchap{\idtt{InverseFourier}}
+\bit
+\item Fourier[リスト$1$]　は複素数から成る リスト$1$$ = \{x_1, x_2, ...\}$ の高速フーリエ逆変換
+$$
+  \tilde{x}_m = {1\over \sqrt{N}}\sum^{N-1}_{k=0} x_k \exp\left(-{2\pi ikm\over N}\right)
+$$
+を求め、結果を複素数のリストにして返します。ここで $N$ はリスト$1$ の長さです。$N$ が 2の冪乗でないときには、2の冪乗になるまで後ろに 0 を補ってから変換します。
+\eit
+
+\subchap{行列演算\index{gyouretsu@行列}}
+以下でヴェクトルは{\rm 1} 階の、行列は{\rm 2} 階のリストで表現されます。この場合行列は行ヴェクトルのリストであるとみなします。{\rm SAD} には以下の行列演算の関数が備わっています。
+
+\bit
+\item Det Dot Eigensystem IdentityMatrix Inner LinearSolve Outer\\ SingularValues Transpose。
+\eit
+
+\subsubchap{\idtt{Dot}, \idtt{.}}
+\bit
+\item 行列1 . 行列2　は二つの行列の積を返します。
+\eit
+
+\subsubchap{\idtt{Transpose}}
+\bit
+\item Transpose[行列1]　は行列1 の転置行列を返します。
+\eit
+
+\subsubchap{\idtt{LinearSolve}}
+\bit
+\item LinearSolve[行列1, ヴェクトル1]　は方程式　行列1 . 解 == ヴェクトル1　の {\rm singular value decomposition} による解を求めます。行列1は正方形である必要はありません。
+\item 線形回帰は LinearSolve で簡単に求めることができます。
+\item LinearSolve[行列1, ヴェクトル1, Tolerance -> $\varepsilon$]　は {\rm singular value decomposition} のしきい値を$\varepsilon$に設定して解を求めます。\idtt{Tolerance} のデフォルト値は $10^{-18}$ です。
+\eit
+
+\subsubchap{\idtt{SingularValues}}
+\bit
+\item SingularValues[行列1]　は行列1の {\rm singular value decomposition} を求めます。
+\item SingularValues[行列1]　はリスト \{u,~w,~v\} を返しますが、行列1の実効的逆行列は Transpose[v]~.~DiagonalMatrix[w]~.~u で表わされます。つまり、ヴェクトル w は {\rm singular values} の実効的逆数のリストです。
+\item SingularValues[行列1, Tolerance -> $\varepsilon$]　は {\rm singular value decomposition} のしきい値を$\varepsilon$に設定します。Tolerance のデフォルト値は $10^{-18}$ です。
+\eit
+ここで「実効的逆数」とは、ある {\rm singular value} を$w_i$、最大の {\rm singular value} を $w_{\rm max}$ とした時、$w_i/(\varepsilon^2w_{\rm max}^2+w_i^2)$ で表わされる量です。
+
+\subsubchap{\idtt{Eigensystem}}
+\bit 
+\item Eigensystem[行列1]　は正方行列 行列1 に対して、\{固有値達,~右固有ヴェクトル達\} というリストを返します。
+\eit
+
+\subsubchap{\idtt{Inner}}
+\bit
+\item Inner[積$1$, リスト$1$, リスト$2$, 和$1$]　はリスト$1$とリスト$2$の一般化された内積を返します。ここで積$1$ と 和$1$ はそれぞれ積と和の役割を果たす関数です。
+\eit
+
+\subsubchap{\idtt{Outer}}
+\bit
+\item Outer[積$1$, リスト$1$, リスト$2$, ...]　はリスト$1$, リスト$2$, ...の一般化された外積を返します。ここで積$1$ は積の役割を果たす関数です。
+\item リスト$1$, リスト$2$, ... の頭部は List でなくても構いませんが、頭部の一致は必要です。
+\eit
+
+
+\subchap{擬似乱数}
+\subsubchap{\idtt{Random}}
+\bit
+\item Random[]　は0と1の間の一様擬似乱数を返します。
+\item Random[\itn]　は0と1の間の\itn 個の一様擬似乱数達をリストにして返します。
+\item Random[\itn$1$, \itn$2$, ...]　は0と1の間の一様擬似乱数達を、各階数の要素数が\itn$1$, \itn$2$, ... になるテンソルにして返します。後のインデクスほど速く動きます。
+\eit
+
+\subsubchap{\idtt{GaussRandom}\label{gaussrandom}}
+\bit
+\item GaussRandom[]　は平均値0、分散1の正規擬似乱数を返します。
+\item GaussRandom[\itn]　は平均値0、分散1の\itn 個の正規擬似乱数達をリストにして返します。
+\item GaussRandom[\itn$1$, \itn$2$, ...]　は平均値$0$、分散$1$の正規擬似乱数達を、各階数の要素数が\itn$1$, \itn$2$, ... になるテンソルにして返します。後のインデクスほど速く動きます。
+\item 絶対値がシンボル GCUT の値を上回るものは排除されます。GCUT の初期値は $10^{35}$ です。
+\eit
+
+\subsubchap{\idtt{SeedRandom}\label{seedrandom}}
+\bit
+\item SeedRandom[]　はその時点の擬似乱数の種の値を返します。
+\item SeedRandom[奇数$1$]　は擬似乱数の種を 奇数$1$ に設定します。奇数$1$ の絶対値は$2^{31}$を越えません。
+\eit
+
+\subchap{方程式の近似解}
+\subsubchap{\idtt{FindRoot}}
+\bit
+\item FindRoot[式$1$ == 式$2$, \{未知数$1$, 初期値$1$\}, \{未知数$2$,~初期値$2$\}, ..., オプション] は方程式 式$1$ == 式$2$ の近似解を 未知数$1$、未知数$2$, ... を未知数として求めます。未知数$1$, ... はシンボルで、 式$1$ == 式$2$ の中にあからさまに現われなければなりません。
+\item 未知数$1$、未知数$2$, ... の初期値は 初期値$1$ ... で指定されます。
+\item FindRoot は結果を \{未知数$1$ -> 解$1$, ... \} というリストで返します。
+\item FindRoot[x == Cos[x], \{x, 0\}] $\Rightarrow$ \{x -> .739085133215161\}。
+\item FindRoot[\{式$11$ == 式$12$, 式$21$ == 式$22$\, ... \}, \{未知数$1$, 初期値$1$\},\\
+\{未知数$2$,~初期値$2$\}, ..., オプション]　は連立方程式の近似解を求めます。
+\item 各未知数の指定を \{未知数, 初期値, \{下限値, 上限値\}\}のようにすると、未知数の検索範囲を制限することができます。
+\item FindRoot はニュートン法を基本に解を探します。
+\item 解が存在しない場合は残差の$2$乗和の極小値を解として返します。
+\item FindRoot には表 \rref{findrootoptions} のオプションがあります。
+\eit
+\begin{table}[htbp]
+\bce
+\cap{\idtt{FindRoot} のオプション。\label{findrootoptions}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline\hline オプション & 値 & デフォルト値 & 効果  \\ \hline
+\idtt{AccuracyGoal} & 数値 & $10^{-20}$ & $2$乗残差の両辺の$2$乗の最大値に対する相対精度\\
+\idtt{MaxIterations} & 数値 & $50$ & 探査中に方程式を評価する最大回数\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+
+
+
+\subchap{非線形回帰}
+\subsubchap{\idtt{Fit}\label{fit}}
+\bit
+\item Fit[リスト$1$, 式$0$, シンボル$0$, \{パラメータ$1$, 初期値\}, ... , オプション]　はリスト$1$ で表わされるデータ点に対して、パラメータ$1$, ... を動かして式$0$ の $\chi^2${\rm -Fit} を求めます。
+\item 式$0$ はシンボル$0$, パラメータ$1$, ... を{\gt あらわに含む式}です。Fit の二番目以降の引き数は前もって評価されないため、そのような「あらわに含む式」を得るためにここに Evaluate[式$00$] と書かねばならないことがあります (Evaluate \rref{evaluate} 参照)。ここで 式$00$ は 式$0$ を結果としてもたらす式です。
+\item 各パラメータを \{パラメータ, 初期値, \{下限値, 上限値\}\} とするとそのパラメータの検索範囲を制限することができます。
+\item リスト$1$ は \{\{\itx1, \ity1, $\delta$\ity1\}, \{\itx2, \ity2, $\delta$\ity2\}, ...\} という構造です。三番目の数値はエラーバーの大きさで、$\chi^2$ の重みとなります。
+\item 各データ点の三番目の数値は指定する場合は全てのデータ点に対して指定しなければなりません。
+\item 各データ点の三番目の数値がない場合は各点の重みは均等になり、エラーバーの大きさは $\chi^2$ が Fit の結果に一致するように決まるものとします。
+\item リスト$1$ のデータの構造は ListPlot \rref{listplot} と共通です。
+\item FitPlot \rref{fitplot} により結果をグラフ表示できます。
+\item Fit は　シンボル -> 値 という規則のリストを結果として返します。ここでシンボルの意味は表~\rref{fitsymbol} に示します。
+\begin{table}[htbp]
+\bce
+\cap{{\tt Fit} の結果を表わすシンボル。ここで $n$、$m$ はそれぞれデータ点、パラメータの数を表わします。\label{fitsymbol}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lcl}
+\hline\hline シンボル & 値 & 意味  \\ \hline
+パラメータ$1$, ... & 実数値 & 各パラメータの最適値\\
+\idtt{ChiSquare}  & 実数値 & ${\displaystyle \chi^2=\sum_i^n {\left(f(x_i)-y_i\right)^2\over\sigma_i^2}}$\\
+\idtt{GoodnessOfFit} & 実数値 & ${\displaystyle\Gamma\left({n-m\over2}, {\chi^2\over2}\right)/\Gamma\left({n-m\over2}\right)}$\\
+\idtt{ConfidenceInterval} & 要素数 $m$ のリスト & パラメータ$1$, ... の推定域\\
+\idtt{CovarianceMatrix} & $m\times m$ 行列 & 共分散行列\\
+
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+\item オプション \idtt{MaxIterations} で探査中の 式$0$ の評価の回数の上限を指定できます (デフォルト: 40)。
+\eit
+
+
+
+\subchap{関数の最小化}
+}
+
+\clearpage
+\chap{文字列の処理}
+{\tt
+\subchap{部分文字列の取り出し}
+\bit
+\item 文字列$1$[\itn]　は文字列$1$ の\itn 番目の文字を返します。
+\item \itn が負のときは、文字列$1$[\itn]　は文字列$1$ の最後から -\itn 番目の文字を返します。
+\item 文字列$1$[\itn$1$, \itn$2$]　は文字列$1$ の\itn 番目の文字から、\itn$2$ 番目の文字までを含む部分文字列を返します。\itn$1$、\itn$2$ 共に負でも構いません。
+\eit
+
+\subchap{文字列への変換}
+{\rm SAD} の原子や式はすべて文字列に変換することができます。一部の関数、Print, Write, StringJoin 等の引き数は自動的に文字列に変換されます。
+
+\subsubchap{\idtt{ToString}}
+\bit
+\item ToString[式$1$]　は式$1$を表現する文字列を返します。
+\item ToString[式$1$, FormatType -> InputForm]　は式$1$が文字列の時、それを入力形式に変換します。入力形式とは、それをPrint, Write などで出力したものをそのまま入力すると元の文字列になるような形式です。
+\item 式$1$に含まれる実数値は \$FORM の値に従って変換されます。
+\eit
+
+\subsubchap{\idtt{\$FORM}}
+\$FORM は実数値を文字列に変換する際のフォーマットを指定するシンボルです。この値は一度指定するとその値は保存されます。\$FORM には文字列を与えます。
+\bit
+\item \$FORM = "桁数$1$.少数部$1$"　は変換の全桁数を桁数$1$、少数部の長さを 少数部$1$ で指定します。もし変換する数が指定の範囲内で表現しきれない時は自動的に指数表示に切り替わります。
+\item \$FORM = "F桁数$1$.少数部$1$"　は変換の全桁数を桁数$1$、少数部の長さを 少数部$1$ で指定します。もし変換する数が指定の範囲内で表現しきれない時は桁数の長さだけ "*" が表示されます。
+\item \$FORM = "S桁数$1$.少数部$1$"　は変換の全桁数を桁数$1$、少数部の長さを 少数部$1$ で指定します。もし変換する数が指定の範囲内で表現しきれない時は自動的に指数表示に切り替わります。先導する空白は削除され、また終端部の 0 は削除されます。
+\item \$FORM = "M桁数$1$.少数部$1$"　は変換の全桁数を桁数$1$、少数部の長さを 少数部$1$ で指定します。もし変換する数が指定の範囲内で表現しきれない時は自動的に指数表示に切り替わります。先導する空白は削除され、また終端部の 0 は削除されます。指数部の表示は "E" でなく " 10\verb1^1" になります。
+\item \$FORM = ""　は標準のフォーマット ("S18.15") です。
+\eit
+
+\subsubchap{\idtt{PageWidth}}
+PageWidth は出力ファイルの Record の長さを指定します。その初期値は 131 または 端末の表示幅 - 1 の内小さい方です。PageWidth を越える出力は自動的に改行が挿入されます。
+
+\subsubchap{\idtt{StandardForm}}
+\bit
+\item StandardForm[式$1$]　は \$FORM = ""; PageWidth = 2147483647 に設定してから 式$1$ を評価し、その結果を返します。また実行後に \$FORM 及び PageWidth の値を以前の値に戻します。
+\item StandardForm[\$FORM = フォーマット$1$; 式$1$]　とすれば局所的に \$FORM を フォーマット$1$ に設定できます。
+\eit
+
+\subsubchap{idtt{BaseForm}}
+\bit
+\item BaseForm[式$1$, 式$2$, ..., 底$1$]　は、式$1$, 式$2$, ... を文字列に変換し、それを連結した文字列を返します。その際、数値はすべて 底$1$ を底とする表記にします。底$1$ の範囲は $2$ から $36$ までです。
+\item 数値は任意の値が可能ですが無限少数は有限桁までしか求めません。
+\item BaseForm[10.25,16] $\Rightarrow$ "a.4" 。
+\eit
+
+\subsubchap{\idtt{SymbolName}}
+\bit
+\item SymbolName[シンボル$1$]　はシンボル$1$ の文字列表現を返します。これは ToString[シンボル$1$] と同値です。
+\eit
+
+\subchap{文字列の結合}
+\subsubchap{\idtt{StringJoin}, \idtt{//}}
+\bit
+\item 文字列$1$ // 文字列$2$ // ...　は 文字列$1$, 文字列$2$, .. をこの順に結合した文字列を返します。
+\item 式$1$ // 式$2$ // ...　は 式$1$, 式$2$, .. をこの順に文字列に変換した結果の文字列を結合した文字列を返します。
+\eit
+
+\subchap{文字列の比較}
+\subsubchap{\idtt{Equal}, \idtt{==}}
+\bit 
+\item 文字列$1$ == 文字列$2$　は文字列$1$ と文字列$2$ が等しいとき True(1)、等しくないとき False(0) を返します。両辺の型が異なるときはこの式そのものを返します。
+\eit
+
+\subsubchap{\idtt{Unequal}, \idtt{<>}}
+\bit 
+\item 文字列$1$ <> 文字列$2$　は 文字列$1$ と 文字列$2$ が異なるとき True(1)、等しいとき False(0) を返します。両辺の型が異なるときはこの式そのものを返します。
+\eit
+
+\subchap{文字列の照合\label{wildcard}}
+StringMatchQ などいくつかの関数ではワイルドカードによる文字列の照合が可能です。これはあくまでも文字列としての照合であり、すでに述べたパターンによる照合とは全く別のものです。
+\subsubchap{ワイルドカード}
+\bit
+\item "*"　はゼロまたはそれ以上の任意の長さの任意の文字列に照合します。
+\item "\%"　は任意の1文字に照合します。
+\item "\{...\}"　はそれに囲まれた文字達の内に含まれる任意の1文字に照合します。
+\item "\{\verb1^1...\}"　はそれに囲まれた文字達の内に含まれない任意の1文字に照合します。
+\item "...|...|..."　は"|"で区切られた部分のうちの少なくともひとつに照合します。
+\eit
+
+\subsubchap{\idtt{StringMatchQ}}
+\bit
+\item StringMatchQ[文字列$1$, 文字列パターン$1$]　は 文字列$1$ が文字列パターン$1$ に照合するとき True(1)、照合しないとき False(0) を返します。
+\item StringMatchQ["aabcdee",~"a*e"] $\Rightarrow$ True。
+\eit
+
+\subchap{文字列の演算}
+\subsubchap{\idtt{StringLength}}
+\bit
+\item StringLength[文字列$1$]　は文字列$1$ の文字数を返します。
+\eit
+
+\subsubchap{\idtt{StringPosition}}
+\bit
+\item StringPosition[文字列$0$, 文字列$1$]　は文字列$0$ に含まれる部分文字列 文字列$1$の位置達を\{\{始点$1$,~終点$1$\},~\{始点$2$,~終点$2$\}\} の様にリストにして返します。StringPosition["abccddcce","cc"] $\Rightarrow$ \{\{3,~4\},~\{7,~8\}\}。
+\item 位置達は互いに重なることがあります。
+\item StringPosition[文字列$0$, 文字列$1$, \itn]　は最初の\itn\ 個の位置達だけを返します。
+\item StringPosition[文字列$0$, \{文字列$1$, 文字列$2$, ...\}]　は文字列$1$, 文字列$2$, ...の全ての位置達を返します。
+\eit
+
+\subsubchap{\idtt{StringInsert}}
+\bit
+\item StringInsert[文字列$0$, 文字列$1$, \itn]　は文字列$0$ の位置\itn\ (負でもよい)に文字列$1$ を挿入した文字列を返します。
+\eit
+
+\subsubchap{\idtt{StringDrop}}
+\bit
+\item StringDrop[文字列$1$, \itn]　は 文字列$1$ の最初の\itn\ 文字を除いた文字列を返します。
+\item StringDrop[文字列$1$, -\itn]　は 文字列$1$ の最後の\itn\ 文字を除いた文字列を返します。
+\item StringDrop[文字列$1$, \{\itn\}]　は 文字列$1$ の\itn\ 番目の文字を除いた文字列を返します。
+\item StringDrop[文字列$1$, \{\itn$1$, \itn$2$\}]　は文字列$1$ の \itn$1$ から \itn$2$ までの文字を除いた文字列を返します。
+\eit
+
+\subsubchap{\idtt{StringFill}}
+\bit
+\item StringFill[文字列$1$, 文字列$2$, \itn]　は 文字列$1$ の後ろに 文字列$2$ を繰り返し補って、長さ \itn\ の文字列を作ります。
+\item 文字列$1$ が \itn\ よりも短いときは \itn\ 文字までに切り捨てられます。
+\item StringFill["abc", "def", 10] $\Rightarrow$ "abcdefdefd"。
+\eit
+
+\subsubchap{\idtt{ToCharacterCode}}
+\bit
+\item ToCharacterCode[文字列$1$]　は文字列$1$のそれぞれの文字の {\rm ASCII} コードをリストにして返します。
+\item  ToCharacterCode["Hello!"] $\Rightarrow$  \{72,~101,~108,~108,~111,~33\}。
+\eit
+
+\subsubchap{\idtt{FromCharacterCode}}
+\bit
+\item FromCharacterCode[リスト$1$]　は {\rm ASCII} コードから成るリスト$1$ のそれぞれに対応する文字から成る文字列を返します。
+\item  FromCharacterCode[\{72,~101,~108,~108,~111,~33\}] $\Rightarrow$ "Hello!"。
+\eit
+
+\subsubchap{\idtt{Characters}}
+\bit
+\item Characters[文字列$1$]　は文字列$1$に含まれる各文字から成るリストを返します。
+\item Characters["A string."]\\ $\Rightarrow$ \{"A",~"~",~"s",~"t",~"r",~"i",~"n",~"g",~"."\}
+\eit
+
+\subsubchap{\idtt{ToUpperCase}}
+\bit
+\item ToUpperCase[文字列$1$]　は文字列$1$ に含まれる英小文字を全て英大文字に変換した文字列を返します。
+\eit
+
+\subsubchap{\idtt{ToLowerCase}}
+\bit
+\item ToLowerCase[文字列$1$]　は文字列$1$ に含まれる英大文字を全て英小文字に変換した文字列を返します。
+\eit
+
+\subchap{文字列の式としての評価}
+\subsubchap{\idtt{ToExpression}}
+\bit
+\item ToExpression[文字列$1$]　は文字列$1$が表現する任意の式を評価し、その結果を返します。
+\item ToExpression["Sqrt[2I]"] $\Rightarrow$ 1 + I。
+\eit
+
+\subsubchap{\idtt{Symbol}}
+\bit
+\item Symbol[文字列$1$]　は文字列$1$をその名前とするシンボルを作り、それを評価します。
+\eit
+}
+
+\clearpage
+\chap{入出力}
+{\tt
+{\rm SAD} ではファイル入出力は原則としてチャネルを通して行われます。 チャネルはOpenRead, OpenWrite, OpenAppend などによりファイルと結び付けられています。また、\$Input、\$Output などにより、そのときの入出力の流れをチャネルとして使用することもできます。このほかにパイプもチャネルとして利用できます。
+
+
+\subchap{ファイル入力}
+基本的なファイル入力は次のように行われます。
+{\tt\small\begin{verbatim}
+　a = OpenRead["test.dat"];    (ア)
+  ...
+  x = Read[a, Real];           (イ)
+  ...
+  Close[a];                    (ウ)
+\end{verbatim}}\noindent
+まず、(ア) のように、入力したいファイル名(文字列)を OpenRead に入れることにより、ある入力チャネルを開きます。そのチャネル番号はシンボル a に割り当てられます。次に(イ)のように、チャネル a を用いて必要な入力動作を繰り返します。作業が終了したら、(ウ)のように、Close でそのチャネルを解放します。
+
+入力ファイルはいくつかの \idtt{Record} から成り立っているとみなします。Record は改行文字 ("$\backslash$n")で区切られた任意の長さの文字列です。改行文字自身は Record には含まれません。また、Record の区切りの文字を変更することもできません。
+
+\subsubchap{\idtt{OpenRead}\label{openread}}
+\bit
+\item OpenRead[ファイル名$1$]　はファイル名$1$ (文字列) で表わされるファイルに対して入力チャネルを開き、そのチャネル番号を返します。
+\item OpenRead["!コマンド$1$"]　はシステムのコマンド\index{command@コマンド!systemno@システムの--}である コマンド$1$ を実行し、その出力結果に対して入力チャネルを開き、そのチャネル番号を返します。例: OpenRead["!ls -l"]。
+\item 何らかのエラーが発生した場合は OpenRead は番号ではなく、シンボル \$Failed を返します。
+\eit
+
+\subsubchap{\idtt{Read}}
+関数 Read は
+{\tt\small\begin{verbatim}
+  Read[チャネル1, 対象1, オプション1, ...]
+\end{verbatim}}\noindent
+のように用います。ここでチャネル1 は OpenRead で開いたチャネル番号、または \idtt{\$Input} です。\$Input はその時点の入力の流れを表わします。
+
+Read の二番目の引き数は読み込まれる対象の指定をします。それぞれの対象には三番目以降の引き数で指定可能なオプションがあります。オプションは シンボル -> 値 の様な規則で表わします。オプションの作用は表~\rref{readopt} に示します。オプション省略時は表のデフォルト値に設定されます。
+
+Read の二番目の引き数に対象達のリストを指定すると、Read はそのリストにしたがって
+ファイルから次々と対応する対象達を読み込み、結果を指定と同型のリストにして返します。また、この対象リストの階数は任意です。
+
+Read に際してファイルが終端に達した場合、Read はシンボル EndOfFile を返します。
+
+\bit
+\item Read[チャネル$1$]　はチャネル$1$ から式を読み込み、それを評価した結果を返します。この場合、ひとつの Record で式が完結しない場合、完結するまで読み進みます。
+\item Read[チャネル$1$, Word, オプション$1$, ..]　はチャネル$1$ から $1$語を読み込み、それを返します。
+\item Read[チャネル$1$, Real, オプション$1$, ..]　はチャネル$1$ から $1$語を読み込み、それを式として評価した値を返します。
+\item Read[チャネル$1$, Expression, オプション$1$, ..]　はチャネル$1$ から $1$語を読み込み、それを式として評価した結果を返します。
+\item Read[チャネル$1$, Character, オプション$1$, ..]　はチャネル$1$ から1文字を読み込み、それを返します。
+\item Read[チャネル$1$, String, オプション$1$, ..]　はチャネル$1$ からその Record の終端までを読み込み、それを文字列として返します。
+\eit
+
+\begin{table}[htbp]
+\bce
+\cap{{\tt Read} のオプション。\label{readopt}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lcl}
+\hline\hline オプション & デフォルト値 & 作用 \\ \hline
+\idtt{WordSeparators} & " ,$\backslash$t" & 語の区切りを表わす文字達 \\
+\idtt{NullWords} & False & \parbox{8.5 cm}{\ \\Trueの時, 語の区切り字が連続したところに語 "" があるとみなす。\\}\\
+\idtt{ReadNewRecord} & True & False の時、次の Record を読まず、語 "" を返す。\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-18pt}
+\end{table}
+
+\subsubchap{\idtt{Skip}}
+\bit
+\item Skip[チャネル$1$, 対象$1$, \itn, オプション$1$, ...] は Read[チャネル$1$,~対象$1$,~オプション$1$,~...]を \itn 回繰り返し、その最後の結果を返します。
+\item Skip[チャネル$1$, 対象$1$] は Read[チャネル$1$,~対象$1$]と同値です。
+\eit
+
+\subsubchap{\idtt{Close}}
+\bit
+\item Close[チャネル$1$]　はチャネル$1$ を解放します。
+\eit
+
+\subsubchap{\idtt{Get}\label{get}}
+\bit
+\item Get[ファイル名$1$]　はファイル名$1$ (文字列) に書かれた式達を次々に評価し、その最後の結果を返します。
+\item Get に対しては OpenRead, Close は必要ありません。
+\item 関数ライブラリのロードには Get を使います。
+\item AutoLoad (\rref{autoload}) を使えば、必要な場合だけ関数をロードすることができます。
+\eit
+
+\subchap{ファイル出力}
+基本的なファイル出力は次のように行われます。
+{\tt\small\begin{verbatim}
+　a = OpenWrite["test.dat"];    (ア)
+  ...
+  Write[a, x, y, ...];           (イ)
+  ...
+  Close[a];                    (ウ)
+\end{verbatim}}\noindent
+まず、(ア)のように、出力したいファイル名(文字列)を OpenWrite に入れることにより、ある出力チャネルを開きます。そのチャネル番号はシンボル a に割り当てられます。次に(イ)のように、チャネル a を用いて必要な出力動作を繰り返します。作業が終了したら、(ウ)のように、Close でそのチャネルを解放します。
+
+出力チャネルは OpenWrite の他に、OpenAppend でも開くことができます。この場合ファイルはその終端から書き込まれます。
+
+出力ファイルの Record の長さは シンボル {\idtt PageWidth} で決まります。PageWidth の初期値は 131 または端末の表示幅 - 1 の小さいほうです。PageWidth を越える出力は自動的に改行されます。
+
+\subsubchap{\idtt{OpenWrite}}
+\bit
+\item OpenWrite[ファイル名$1$]　はファイル名$1$ (文字列) で表わされるファイルに対して出力チャネルを開き、そのチャネル番号を返します。ファイルはその先頭から書き込まれます。
+\item 何らかのエラーが発生した場合は OpenWrite は番号ではなく、シンボル \$Failed を返します。
+\eit
+
+\subsubchap{\idtt{OpenAppend}}
+\bit
+\item OpenAppend[ファイル名$1$]　は ファイル名$1$ (文字列) で表わされるファイルに対して出力チャネルを開き、そのチャネル番号を返します。ファイルはその終端から書き込まれます。
+\item 何らかのエラーが発生した場合は OpenWrite は番号ではなく、シンボル \$Failed を返します。
+\eit
+
+\subsubchap{\idtt{Write}}
+\bit
+\item Write[チャネル$1$, 式$1$, 式$2$, ...]　は チャネル$1$ に対して、式$1$ を評価し、その結果を文字列に変換した結果を出力します。この動作を 式$2$ 以降にも行い、最後に改行文字を出力します。
+\item 式と式の間には区切り字はなにも入りません。
+\item 数値の文字列への変換は \$FORM の値に従います。途中で \$FORM を変更したいときには Write[...,~\$FORM~=~フォーマット$1$;~式$1$,~...]　のようにすれば式$1$ 以降の \$FORM がフォーマット$1$ に変更されます。元のフォーマットを保存したいときには StandardForm などを利用します。
+\item チャネル$1$としては OpenWrite, OpenAppend で開いたチャネル番号、または \idtt{\$Output} が指定できます。\$Output はその時点の出力の流れを表わします。
+\eit
+
+\subsubchap{\idtt{Print}}
+\bit
+\item Print[式$1$, 式$2$, ...]　はその時点での出力の流れ \$Output に対して、式$1$ を評価し、その結果を文字列に変換した結果を出力します。この動作を 式$2$ 以降にも行い、最後に改行文字を出力します。
+\item 式と式の間には区切り字はなにも入りません。
+\item 数値の文字列への変換は \$FORM の値に従います。途中で \$FORM を変更したいときには Print[...,~\$FORM~=~フォーマット$1$;~式$1$,~...]　のようにすれば式$1$ 以降の \$FORM がフォーマット$1$ に変更されます。元のフォーマットを保存したいときには StandardForm などを利用します。
+\eit
+
+\subsubchap{\idtt{WriteString}}
+\bit
+\item WriteString[チャネル$1$, 式$1$, 式$2$, ...]　はチャネル$1$ に対して、式$1$ を評価し、その結果を文字列に変換した結果を出力します。この動作を 式$2$ 以降にも行います。最後に改行文字は出力しません。
+\item 式と式の間には区切り字はなにも入りません。
+\item 数値の文字列への変換は \$FORM の値に従います。途中で \$FORM を変更したいときには WriteString[...,~\$FORM~=~フォーマット$1$;~式$1$,~...]　のようにすれば式$1$ 以降の \$FORM がフォーマット$1$ に変更されます。元のフォーマットを保存したいときには StandardForm などを利用します。
+\item チャネル$1$としては OpenWrite, OpenAppend で開いたチャネル番号、または \$Output が指定できます。\$Output はその時点の出力の流れを表わします。
+\eit
+
+\subsubchap{\idtt{Close}}
+\bit
+\item Close[チャネル$1$]　はチャネル$1$ を解放します。
+\eit
+}
+
+\clearpage
+\chap{グラフィックス}
+{\tt
+\subchap{グラフィックスの例}
+次の例は、SAD/Tkinter による最も簡単なグラフィックスの例題です。
+{\tt\small\begin{verbatim}
+FFS;
+
+  w = Window[];                                     (ア)
+  c = Canvas[w, Height -> 400, Width -> 600];       (イ)
+  $DisplayFunction = CanvasDrawer;                  (ウ)
+  Canvas$Widget = c;                                (エ)
+
+  data = Table[{x, Sin[x] + 0.1 * GaussRandom[]},
+    {x, -Pi, Pi, Pi/10}];                           (オ)
+  ListPlot[data];                                   (カ)
+  TkWait[];                                         (キ)
+\end{verbatim}}\noindent
+この例は次の図のようにWindow w (の中の Canvas c) にグラフを表示します。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=95mm]{figures/listplot.eps}
+ \cap{\idtt{ListPlot} による簡単なグラフの例。\label{plotexample}}
+\end{figure}
+
+上の例で、まず、(ア)、(キ) については通常の {\rm Tkinter} の操作ですので、それぞれ \rref{widgetdef}、\rref{tkexec} を参照してください。
+
+(イ) は Tkinter の部品 \idtt{Canvas} を Window w の中につくります。またそのサイズを幅 600 ピクセル、高さ 400 ピクセルに指定しています。
+
+(ウ) は以下で用いられるグラフィックスの出力関数を指定しています (\rref{displayfunction} 参照)。
+
+(エ) はグラフィックスの出力先になる Canvas部品 c を指定しています。
+
+(オ) はこれから表示するグラフのためのデータを作っています。データは \{\{\itx1,~\ity1\}, \{\itx2,~\ity2\}, ...\} のような形をしています。この例は {\rm sine} 曲線に正規擬似乱数を乗せたものです。Table \rref{tableiter}、GaussRandom \rref{gaussrandom} 参照。
+
+(カ) は (オ) で作った data からグラフを出力します。{\rm SAD} ではグラフィックスは ListPlot、Plot、FitPlot 等により生成されるオブジェクト、頭部 \idtt{Graphics} を持った式で表わされます。このオブジェクトは ListPlot、Plot、FitPlot や Show により出力されます。これらの関数は生成した Graphics オブジェクトを結果として返します。
+
+この例のように、グラフの位置、範囲等々はなにも指定しなくても自動的に調節されますが、オプションを指定することにより自由に変更することができます。
+
+グラフィックスの出力関数として TopDrawer を選ぶ (デフォルト) 場合は、(ア)--(エ)、及び (キ) の操作は不要です。
+
+
+\subchap{グラフィックスの出力関数\label{displayfunction}}
+出力関数はオプション \idtt{DisplayFunction} で指定されます。DisplayFunction の デフォルト値は \idtt{\$DisplayFunction} であり、\$DisplayFunction には前もって \idtt{TopDrawer} が割り当てられています。
+
+出力関数はこのほかに前の例にあるように、 \idtt{CanvasDrawer} が選べます。CanvasDrawer は {\rm SAD/Tkinter} の部品のひとつである Canvas に出力を行います。
+
+出力されるグラフィックスは TopDrawer、CanvasDrawer でできるだけ同じになるように調整されていますが、機能の違いにより、また実装がおくれているために不完全な部分が多々あります。必要に応じて整備していくつもりです。
+
+TopDrawer、CanvasDrawer 以外の出力関数が指定される (例えば DisplayFunction -> \idtt{Identity}) と、グラフィックスはどこにも出力されません。これは ListPlot などに Graphics オブジェクトだけを生成させるために用いられます。
+
+\subchap{グラフの作成}
+{\rm SAD} には現在、表 \rref{plots} にあるグラフ作成のための関数が備わっています。
+\begin{table}[htbp]
+\bce
+\cap{グラフ作成のための関数。\label{plots}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{ll}
+\hline\hline 関数 & 作成するグラフ  \\ \hline
+ListPlot & 数値データのプロット\\
+Plot & 関数のグラフのプロット \\
+ColumnPlot & 棒グラフ \\
+\idtt{OpticsPlot} & ビームラインに沿ったデータ、ビーム光学系のプロット\\
+FitPlot & 非線形回帰のグラフのプロット \\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+いずれの関数も引き数としてオプションが指定できます。これらのオプションの多くはいずれの関数にも共通です。オプションは オプションシンボル -> 値 という形をとります。表~\rref{plotoptions} にこれらのオプションを掲げます。また、これらの他にもそれぞれの関数に固有のオプションがありますが、それらは各関数の項で説明します。
+
+\begin{table}[htbp]
+\bce
+\cap{グラフ作成関数のオプション。\label{plotoptions}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline\hline オプション & 値 & デフォルト値 & 効果  \\ \hline
+\idtt{AspectRatio} & 実数値 & GoldenRatio & 横/縦比\\
+\idtt{DisplayFunction} & 出力関数 & TopDrawer & グラフィック出力関数\\
+\idtt{Epilog} & \parbox{3cm}{\bce グラフィックス\\原子のリスト\ece} & \{\} & グラフ出力後に描く図形\\
+\idtt{ErrorBarTickSize} & 実数値 & 1 & エラーバーの鍵の相対長\\
+\idtt{Frame} & True, False & True & グラフの外枠の表示 \\
+\idtt{FrameLabel} & \{下,左,上,右\} & \{"","","",""\} & 座標軸のラベル文字列\\
+\idtt{Initialize} & True, False & True & 座標系等の初期化の有無\\
+\idtt{Plot} & True, False & \parbox{3.3cm}{\bce ListPlot: True\\Plot: False\ece} & データ点のマーカ表示\\
+\idtt{PlotColor} & 色 & "black" & グラフの線の色\\
+\idtt{PlotJoined} & True, False &  \parbox{3.3cm}{\bce ListPlot: False\\Plot: True\ece} & データ点を線で結ぶか否か\\
+\idtt{PlotLabel} & 文字列 & "" & グラフ全体につけるラベル\\
+\idtt{PlotRange} & \parbox{3cm}{\bce y軸の範囲または\\\{x範囲, y範囲\}\ece} & \parbox{3cm}{\bce \{Automatic,\\Automatic\}\ece} & プロットするデータの領域\\
+\idtt{PlotRegion} & \parbox{3cm}{\bce \{\{xmin, xmax\},\\\{ymin, ymax\}\}\ece} & \{\{0,1\},\{0,1\}\} & 
+プロットの相対位置\\
+\idtt{PointSize} &  実数値 & 1 & マーカの大きさの相対比\\
+\idtt{PointColor} & 色 & "green" & マーカの内部色\\
+\idtt{Prolog} & \parbox{3cm}{\bce グラフィックス\\原子のリスト\ece} & \{\} & グラフ出力前に描く図形\\
+\idtt{Scale} & \parbox{3cm}{\bce \{{\rm xscale, yscale}\}\ece} & \{Linear, Linear\} &
+\idtt{Linear} または \idtt{Log} を選ぶ\\ 
+\idtt{Tags} & True False & False & \parbox{4.7cm}{Canvas\$ID にアイテム番号\\を記録\\}\\
+\idtt{Background} & 色 & "\#ffffd0" & グラフの枠内の色\\
+
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+以下、ListPlot を例にとってそれらのオプションを説明します。
+
+\subsubchap{プロットするデータの範囲、\idtt{PlotRange}}
+プロットするデータの範囲は通常データ自身から自動的に設定されますが、オプション PlotRange により調節可能です。シンボル Automatic は自動設定値を用いることを指示します。
+\bit 
+\item PlotRange -> \{ymin, ymax\}　は $y$ 軸の範囲を下限 ymin と上限 ymax に指定します。
+\item PlotRange -> \{ymin, Automatic\}　は $y$ 軸の範囲を下限 ymin に、上限は自動設定値に指定します。
+\item PlotRange -> \{\{xmin, xmax\}, \{ymin, ymax\}\}　は $x$ 軸の範囲を下限 xmin と上限 xmax に指定し、$y$ 軸の範囲を下限 ymin と上限 ymax に指定します。
+\item PlotRange -> \{\{xmin, xmax\}, Automatic\}　は $x$ 軸の範囲を下限 xmin と上限 xmax に指定し、$y$ 軸の範囲を自動設定値に指定します。
+\item 図 \rref{plotexample} の例で ListPlot[data, PlotRange -> \{\{-10, 10\}, \{-2, 3\}\}]　とすると図~\rref{plotrangefig}の様になります。
+\eit
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=55mm]{figures/PlotRange.eps}
+ \cap{{\tt PlotRange} による表示するデータの範囲の指定。\label{plotrangefig}}
+\end{figure}
+
+\pagebreak
+\subsubchap{プロットの Canvas の中での位置の指定、\idtt{PlotRegion}}
+プロットは通常指定された Canvas 画面から自動的にその位置及び大きさが決まりますが、PlotRegion により
+自由な位置、大きさに変更できます。
+\bit
+\item 自動的に決まる位置の範囲を\{\{0, 1\}, \{0, 1\}\}として、
+PlotRegion~->~\{\{$x$下限,~$x$上限\},~\{$y$下限,~$y$上限\}\} のように自動値に対する相対値で指定します。
+\item 図 \rref{plotexample} の例で ListPlot[data, PlotRegion -> \{\{0, 0.5\}, \{0.5, 1\}\}]　とすると図~\rref{plotregionfig} の様になります。
+\eit
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=95mm]{figures/PlotRegion.eps}
+ \cap{{\tt PlotRegion} による表示位置の指定。\label{plotregionfig}}
+\end{figure}
+
+\subsubchap{横/縦比、\idtt{AspectRatio}}
+\bit
+\item AspectRatio -> 数値　により、プロットの横/縦比を指定できます。
+\item 図 \rref{plotexample} の例で ListPlot[data, AspectRatio->1]　とすると図 \rref{aspect} の様になります。
+\eit
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=55mm]{figures/AspectRatio.eps}
+ \cap{\idtt{AspectRatio} によるプロットの横/縦比の指定。\label{aspect}}
+\end{figure}
+
+\pagebreak
+
+\subsubchap{グラフの外枠及び目盛の有無、\idtt{Frame}}
+
+\subsubchap{グラフの外枠につけるラベル、\idtt{FrameLabel}}
+\bit
+\item FrameLabel -> \{下ラベル文字列、左ラベル文字列\}　により、各々の軸にラベルをつけられます。
+\item 図 \rref{plotexample} の例で ListPlot[data, FrameLabel -> \{"Bottom", "Left"\}]　とすると図 \rref{framelabel} の様になります。
+\eit
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=65mm]{figures/FrameLabel.eps}
+ \cap{\idtt{FrameLabel} による枠のラベルの指定。\label{framelabel}}
+\end{figure}
+
+\pagebreak
+\subsubchap{グラフ全体のラベル、\idtt{PlotLabel}}
+\bit
+\item PlotLabel -> 文字列により、プロット全体にラベルをつけられます。
+\item 図 \rref{plotexample} の例で ListPlot[data, PlotLabel -> "PlotLabel"]　とすると図 \rref{plotlabel}の様になります。
+\eit
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=65mm]{figures/PlotLabel.eps}
+ \cap{\idtt{PlotLabel} による全体のラベルの指定。\label{plotlabel}}
+\end{figure}
+
+\subsubchap{プロットの前後での図形の書き込み、\idtt{Prolog} と \idtt{Epilog}}
+\bit
+\item Prolog -> グラフィックス原子のリスト　により、プロットの前に別の図形達を書き込むことができます。
+\item Epilog -> グラフィックス原子のリスト　により、プロットの後に別の図形達を書き込むことができます。
+\item 図 \rref{plotexample} の例で ListPlot[data, Prolog~->~\{Rectangle[\{-1,~-0.5\},~\{1,~0.5\}, FillColor~->~"gray"]\} ]　とすると図~\rref{prolog}の様になります (\idtt{Rectangle} は後述 (\rref{graphicsprimitive}) のグラフィックス原子のひとつで、長方形を描きます)。
+\eit
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=55mm]{figures/Prolog.eps}
+ \cap{{\tt Prolog} でプロットの前に図形を書き込める。\label{prolog}}
+\end{figure}
+
+\pagebreak
+\subsubchap{データ点を線で結ぶ、\idtt{PlotJoined} 及びデータ点の表示、\idtt{Plot}}
+\bit
+\item PlotJoined -> True　により、データ点を線で結ぶことができます。
+\item 結ぶ線の色は PlotColor で指定できます。また、データ点のマーカの表示は Plot で入切できます。
+\item 図 \rref{plotexample} の例で ListPlot[data, PlotJoined -> True]　とすると図 \rref{plotjoined}の様になります。
+\item 図 \rref{plotexample} の例で ListPlot[data,~PlotJoined~->~True,~Plot~->~False]　とすると図 \rref{plotfalse} の様になります。
+\eit
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=55mm]{figures/PlotJoined.eps}
+ \cap{{\tt PlotJoined -> True} でデータ点を線で結ぶ。\label{plotjoined}}
+\end{figure}
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=55mm]{figures/PlotFalse.eps}
+ \cap{{\tt Plot -> False} でデータ点のマーカを消せる。\label{plotfalse}}
+\end{figure}
+
+\pagebreak
+\subsubchap{マーカの大きさと色、\idtt{PointSize}、\idtt{PointColor}}
+\bit
+\item PointSize -> 数値　でマーカの大きさを指定することができます。この場合標準値を 1 とし、そこからの倍率で大きさを表わします。
+\item PointColor -> 色　でマーカの内部の色を指定できます。色の指定は \rref{color} を見てください。
+\item 図 \rref{plotexample} の例で ListPlot[data, PointSize -> 3, PointColor -> "White"]　とすると図 \rref{pointsizecolor} の様になります。
+\eit
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=55mm]{figures/PointSizeColor.eps}
+ \cap{{\tt PointSize}、{\tt PointColor} によるデータ点のマーカの大きさと内部色の指定。\label{pointsizecolor}}
+\end{figure}
+
+\pagebreak
+\subsubchap{対数グラフ、\idtt{Scale}}
+\bit
+\item Scale -> \{スケール$x$, スケール$y$\}　で $x$ および $y$ 軸のスケールをそれぞれ \idtt{Linear} または {\idtt Log} に指定できます。
+\item Scale -> スケール$y$　は Scale -> {Linear, スケール$y$} に同値です。
+\item 次の例は図~\rref{logscale} を作ります。
+{\tt\small\begin{verbatim}
+  x = Range[0, 5, 0.5];
+  data=Thread[{x, Exp[-x^2 / 2] / Sqrt[2 Pi]}];
+  ListPlot[data, Scale -> {Linear, Log}];
+\end{verbatim}}\noindent
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=55mm]{figures/LogScale.eps}
+ \cap{{\tt Scale -> \{Linear, Log\}} ({\tt Scale -> Log} でもよい) による片対数グラフ。\label{logscale}}
+\end{figure}
+
+\eit
+
+\subsubchap{\idtt{ListPlot}、及びエラーバーの表示\label{listplot}}
+{\tt
+ListPlot[リスト$1$, オプション$1$, ...]　は上述のように数値データのリスト、リスト$1$ からグラフを作ります。
+\bit
+\item リスト$1$ は \{\{\itx$1$, \ity$1$\}, \{\itx$2$,~\ity$2$\}, ...\} の形で各データ点を表わします。
+\item リスト$1$ が $1$ 次元のデータ \{\ity$1$, \ity$2$, ...\} のときは $x$ 軸は $1$, $2$, ... が対応するものとみなします。
+\item リスト$1$ が \{\{\itx$1$, \ity$1$、$\delta$\ity1\}, ...\} の様に各々が $3$ 個の数値から成り立っている場合は、$3$ 番目の数値は $y$ 方向のエラーバーの長さを表わします。
+リスト$1$ が \{\{\itx$1$, \ity$1$、$\delta$\itx$1$, $\delta$\ity$1$\}, ...\} の様に各々が $4$ 個の数値から成り立っている場合は、$3$ 番目の数値は $x$ 方向、$4$ 番目の数値はy 方向のそれぞれのエラーバーの長さを表わします。
+\item エラーバーの鍵の長さはオプション \idtt{ErrorBarTickSize} で指定できます。
+\item いずれの場合も、リスト$1$ は長方形、即ち各要素が同じ形をしていなければなりません。
+\pagebreak
+\item 次の例は図 \rref{plotexample} の例に加えて、各点 $y$ 方向 $0.1$ のエラーバーを付加し、ListPlotで表示したものです。結果は図~\rref{errorbary} になります。
+{\tt\small\begin{verbatim}
+  data1 = Append[#, 0.1]& /@ data;
+  ListPlot[data1];
+\end{verbatim}}\noindent
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=50mm]{figures/ErrorBarY.eps}
+ \cap{{\tt ListPlot} によるエラーバーの表示。\label{errorbary}}
+\end{figure}
+\item 次の例は図 \rref{plotexample} の例に加えて、各点 $x$ 方向 $0.2$、$y$ 方向 $0.1$ のエラーバーを付加し、ListPlotで表示したものです。この例ではさらに鍵の長さを $0$ にしています。結果は図~\rref{errorbarxy} になります。
+{\tt\small\begin{verbatim}
+  data2 = Join[#, {0.2, 0.1}]& /@ data;
+  ListPlot[data1, ErrorBarTickSize -> 0];
+\end{verbatim}}\noindent
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=50mm]{figures/ErrorBarXY.eps}
+ \cap{{\tt ListPlot} による両方向のエラーバーの表示。{\tt ErrorBarTickSize -> 0} としています。\label{errorbarxy}}
+\end{figure}
+\eit
+
+\pagebreak
+\subchap{\idtt{Plot}}
+Plot は 1変数の関数のプロットを作ります。例えば、単純に次のようにすると図~\rref{plot} のようなプロットになります。
+{\tt\small\begin{verbatim}
+  Plot[Sin[x], {x, -Pi, Pi}];
+\end{verbatim}}\noindent
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=50mm]{figures/Plot.eps}
+ \cap{{\tt Plot} による関数 {\tt Sin[x]} の表示。\label{plot}}
+ \vspace{-24pt}
+\end{figure}
+
+また、
+{\tt\small\begin{verbatim}
+  Plot[{Sin[x], Cos[x]}, {x, -Pi, Pi}];
+\end{verbatim}}\noindent
+のように第一引き数を複数の式のリストとすると図~\rref{plot2} のようなプロットになります。この場合、各式の表示色は \{"black", "red", "blue", "green", "grey", "magenta", "cyan"\} の順に循環的に選択されますが、オプション PlotColor -> 色リスト を指定することにより自由に設定することができます。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=55mm]{figures/Plot2.eps}
+ \cap{{\tt Plot} による複数の関数 {\tt Sin[x], Cos[x]} の同時表示。{\tt Cos[x]} の表示色は {\tt "red"} です。\label{plot2}}
+\end{figure}
+
+
+\pagebreak
+Plot の構文は以下の通りです。
+\bit
+\item Plot[式$1$, \{シンボル$1$, 下限値, 上限値\}, オプション, ...] または\\ Plot[\{式$1$,~式$2$,~...\}, \{シンボル$1$,~下限値,~上限値\}, オプション, ...]。
+\item ここで 式$1$, 式$2$, ... は「独立変数」シンボル$1$ をあらわに含む式です。
+\eit
+
+\subsubchap{{\tt Plot} のオプション}
+Plot には表~\rref{plotoptions} のオプションに加えて、
+表~\rref{plotpropoptions} にある Plot に固有のオプションも指定できます。
+\begin{table}[htbp]
+\bce
+\cap{{\tt Plot} に固有のオプション。\label{plotpropoptions}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline\hline オプション & 値 & デフォルト値 & 効果  \\ \hline
+\idtt{MaxBend} & 実数値 & 0.04 & 各線分の曲がり角の最大値\\
+\idtt{PlotDivision} & 実数値 & 250 & 表示区間の最大分割数\\
+\idtt{PlotPoints} & 実数値 & 25 & 分割点の点数の初期値\\
+\idtt{PlotColor} & 色または色リスト & \parbox{4cm}{\bce \{"black", "red", "blue", "green", "gray", "magenta", "cyan", "yellow"\}\ece} & プロット線達の表示色\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\vspace{-24pt}
+\end{table}
+
+\subchap{\idtt{ColumnPlot} による棒グラフの作成}
+\bit
+\item ColumnPlot[データ$1$, オプション, ...]　は棒グラフを作成します。
+\item データ$1$ が $1$ 次元のリストの場合、単純な棒グラフを作成します。
+\item ColumnPlot[{1, 4, 9, 16, 25, 16, 9, 4, 1}] $\Rightarrow$ 図~\rref{columnplot1}。
+
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=55mm]{figures/ColumnPlot1.eps}
+ \cap{1次元のリストによる {\tt ColumnPlot}。\label{columnplot1}}
+\end{figure}
+\pagebreak
+\item データ$1$ が $2$ 次元のリストの場合、一つの枠に複数の棒をまとめた棒グラフを作成します。
+この場合、データ$1$ は長方形でなければなりません。
+\item ColumnPlot[\{\{1, 3\}, \{4, 5\}, \{9, 7\}, \{16, 9\}, \{25, 11\}\}] $\Rightarrow$ 図~\rref{columnplot2}。
+\item 各棒はオプション FillColor の値に従って色分けされます。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=55mm]{figures/ColumnPlot2.eps}
+ \cap{2次元のリストによる {\tt ColumnPlot}。\label{columnplot2}}
+\end{figure}
+\item データ$1$ が $3$ 次元の場合、第3階のデータは累積され棒を積み上げて表示されます。
+\item ColumnPlot[\{\{\{1, 5, 9\}, \{2, 5, 7\}\}, \{\{3, 3, 3\}, \{4, 3, 2\}\}, 
+\{\{9,~2,~1\},~\{6, 5, 4\}\}\}] $\Rightarrow$ 図~\rref{columnplot3}。
+\item 積み上げはオプション MeshStyle の値に従って、充填パターンを変えて表示されます。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=55mm]{figures/ColumnPlot3.eps}
+ \cap{3次元のリストによる {\tt ColumnPlot}。\label{columnplot3}}
+\end{figure}
+\eit
+
+\pagebreak
+\subsubchap{{\tt ColumnPlot} のオプション}
+ColumnPlot には表~\rref{plotoptions} のオプションに加えて、
+表~\rref{columnplotpropoptions} にある ColumnPlot に固有のオプションも指定できます。
+\begin{table}[htbp]
+\bce
+\cap{{\tt ColumnPlot} に固有のオプション。\label{columnplotpropoptions}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline\hline オプション & 値 & デフォルト値 & 効果  \\ \hline
+\idtt{ColumnOffset} & 数値 & 0.15 & 棒と枠のすき間の比率\\
+\idtt{FillColor} & 色または色リスト & \parbox{4cm}{\bce \{"black", "red", "blue", "green", "gray", "magenta", "cyan", "yellow"\}\ece} & 棒達の表示色\\
+\idtt{MeshStyle} & \parbox{3 cm}{\bce ビットマップまたはそのリスト\ece} & \parbox{4cm}{\bce\{Null, "gray25", "gray50"\}\ece} & \parbox{4.8cm}{積み上げの表示のための充填パターン。Nullは 100\% 塗る。}\\
+\idtt{Orientation} & \parbox{3 cm}{\bce Horozontal, Vertical\ece} & Vertical & 棒の方向\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+\pagebreak
+\subchap{グラフの合成, \idtt{Show}}
+ListPlot や Plot で作成したグラフは合成してひとつのグラフとして表示することができます。次の例
+{\tt\small\begin{verbatim}
+  g1 = ListPlot[data, DisplayFunction -> Identity];
+  g2 = Plot[Sin[x], {x, 0, 2Pi}, DisplayFunction -> Identity];
+  Show[g1, g2];
+\end{verbatim}}\noindent
+は図~\rref{show} のようなグラフを作ります。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=55mm]{figures/Show.eps}
+ \cap{複数のグラフの合成。\label{show}}
+\end{figure}
+ここで、ListPlot 及び Plot には DisplayFunction~-> Identity というオプションをつけておきます。これは、各々の関数の段階ではプロットを実行せず、結果のグラフィックス・オブジェクトをそれぞれシンボル g1, g2 に割り当てるだけにする為です。そして、最後の Show ではじめてプロットを実行します。図~\rref{show} で軸の範囲が g1, g2 の両方を包む様に設定されることに注意してください。
+
+\bit
+\item Show[グラフィックス$1$, グラフィックス$2$, ... , オプション$1$, ...]　はいくつかのグラフィックスを合成してひとつのプロットを作ります。ここで グラフィックス$1$, ... は Graphics オブジェクトまたはそれらのリストです。
+\item 各グラフィックスのオプションのなかで択一しなければならない場合は、最初のグラフィックスのものがえらばれます。
+\item Show のオプションは各グラフィックスのオプションに優先します。
+\item グラフの範囲は全グラフィックスを包むように自動設定されますが、PlotRange を Show に対して指定すれば自由に設定できます。
+\eit
+
+\pagebreak
+\subchap{グラフの表示位置の設定\label{rect}}
+Canvas の中でのあるグラフの表示位置は通常はその Canvas の大きさから自動的に決められます。しかし、関数 Rectangle を使えばその位置を自由に設定でき、またひとつの Canvas に複数のグラフを表示することもできます。例えば、
+{\tt\small\begin{verbatim}
+  g1 = ListPlot[data, DisplayFunction -> Identity];
+  g2 = Plot[Sin[x], {x, -Pi, Pi}, DisplayFunction -> Identity];
+  Show[Graphics[ {
+    Rectangle[{0, 0},   {1, 0.5}, g1],
+    Rectangle[{0, 0.5}, {1, 1},   g2]} ]];
+\end{verbatim}}\noindent
+は図~\rref{rectfig} のようなグラフを作ります。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=55mm]{figures/Rect.eps}
+ \cap{\idtt{Rectangle} によるグラフの表示位置の設定。\label{rectfig}}
+\end{figure}
+ここで Rectangle 自身は Graphics オブジェクトではなくグラフィックス原子なので、Show に渡すためには (複数の場合はリストにして) Graphics をかぶせなければなりません。
+
+\bit
+\item Rectangle[\{$x$下限, $y$下限\}, \{$x$上限, $y$上限\}, グラフィックス$1$]　は\{$x$下限, $y$下限\}, \{$x$上限, $y$上限\}　で指定される長方形の内部に グラフィックス$1$ を描くグラフィックス原子です。
+\item 標準のグラフの位置は \{0, 0\}, \{1, 1\} で、Rectangle のパラメータはそれを基準に相対値で表わします。
+\item Rectangle の第三引き数がグラフィックスでない場合は Rectangle は長方形のグラフィックス原子を表わします (\rref{rectangle} 参照)。
+\eit
+
+
+\pagebreak
+\subchap{\idtt{FitPlot}\label{fitplot}}
+FitPlot は非線形回帰関数 Fit(\rref{fit} 参照) と ListPlot, Plot を組み合わせたものです。
+\bit
+\item FitPlot[リスト$1$, 式$0$, シンボル$0$, \{パラメータ$1$, 初期値\}, ... , オプション]　はリスト$1$ で表わされるデータ点に対して、パラメータ$1$, ... を動かして式$0$ の $\chi^2${\rm -Fit} を求め、その結果をプロットします。
+\item 式$0$ はシンボル$0$, パラメータ$1$, ... を{\gt あらわに含む式}です。FitPlot の二番目以降の引き数は前もって評価されないため、そのような「あらわに含む式」を得るためにここに Evaluate[式$00$] と書かねばならないことがあります (Evaluate \rref{evaluate} 参照)。ここで 式$00$ は 式$0$ を結果としてもたらす式です。
+\item 各パラメータを \{パラメータ, 初期値, \{下限値, 上限値\}\} とするとそのパラメータの検索範囲を制限することができます。
+\item リスト$1$ のデータの構造は ListPlot と共通です。エラーバーがある場合はそれが $\chi^2$ の重みとなります。エラーバーがない場合は重みは均等になります。
+\item FitPlot は \{Fit の結果、Graphics オブジェクト\} というリストを結果として返します。
+\item 次の例は図~\rref{errorbary} の例に対し FitPlot を用いて{\rm sine} 曲線による $\chi^2${\rm -Fit} を求め、その結果をプロットしたものです (図~\rref{fitplotfig})。
+{\tt\small\begin{verbatim}
+  data1 = Append[#, 0.1]& /@ data;
+  FitPlot[data1, e Sin[f x + g], x, {e, 1}, {f, 1}, {g, 0}];
+\end{verbatim}}\noindent
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=80mm]{figures/FitPlot.eps}
+ \cap{{\tt FitPlot の例。{\rm Fit} の式は e*Sin[f x + g]、独立変数は x、パラメータはe, f, g です}。\label{fitplotfig}}
+ \vspace{-36pt}
+\end{figure}
+\eit
+
+\pagebreak
+\subchap{グラフィックス原子\label{graphicsprimitive}\index{graphics@グラフィックス!genshi@--原子}}
+グラフィックス原子は {\rm SAD} のグラフィックスを構成する基本的な要素です。グラフィックス原子は シンボル Graphics を被せられることにより Graphics オブジェクトとなり、Show によりプロットされるものになります。ListPlot や Plot の返すものもこのような Graphics オブジェクトに他なりません。
+
+現在のところ、Point, Line, Text, Rectangle がこのようなグラフィックス原子として定義されています。各原子はオプション指定により様々な属性をもつことができます。このようなオプションも必要に応じて充実させるつもりです。
+
+\subsubchap{\idtt{Point}}
+\bit
+\item Point[リスト$1$, オプション$1$, ...]　はデータ点を表わすリスト$1$の各点のマーカを表わします。
+\item リスト$1$ の形式は ListPlot \rref{listplot} と同じです。したがって、エラーバーを伴うことがあります。
+\item オプションは表~\rref{pointoptions} に示されます。
+\eit
+\begin{table}[htbp]
+\bce
+\cap{{\tt Point} のオプション。\label{pointoptions}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline\hline オプション & 値 & デフォルト値 & 効果  \\ \hline
+\idtt{ErrorBarTickSize} & 実数値 & 1 & エラーバーの鍵の相対長\\
+\idtt{PointSize} &  実数値 & 1 & マーカの大きさの相対比\\
+\idtt{PointColor} & 色 & "green" & マーカの内部色\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+\pagebreak
+\subsubchap{\idtt{Line}}
+\bit
+\item Line[リスト$1$, オプション$1$, ...]　はデータ点を表わす リスト$1$ の各点を結ぶ線を表わします。
+\item リスト$1$ の形式は ListPlot \rref{listplot} と同じです。したがって、データ点の各点にエラーバーを伴うことがあります。
+\item オプションは表~\rref{lineoptions} に示されます。
+\eit
+\begin{table}[htbp]
+\bce
+\cap{{\tt Line} のオプション。\label{lineoptions}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline\hline オプション & 値 & デフォルト値 & 効果  \\ \hline
+\idtt{ErrorBarTickSize} & 実数値 & 1 & エラーバーの鍵の相対長\\
+\idtt{Plot} & True, False & False & データ点のマーカ表示\\
+\idtt{PlotJoined} & True, False & True & データ点を線で結ぶか否か\\
+\idtt{PlotColor} & 色 & "black" & グラフの線の色\\
+\idtt{PointSize} &  実数値 & 1 & マーカの大きさの相対比\\
+\idtt{PointColor} & 色 & "green" & マーカの内部色\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+\subsubchap{\idtt{Rectangle}\label{rectangle}}
+\bit
+\item Rectangle[\{\itx1, \ity1\}, \{\itx2, \ity2\}, オプション$1$, ...]　はデータ点 \{\itx1, \ity1\}, \{\itx2, \ity2\} で決まる長方形を表わします。
+\item Rectangle[\{\itx1, \ity1\}, \{\itx2, \ity2\}, Graphics[ ... ]]　は長方形の中に別のグラフィックスを描いたものを表わします (\rref{rect} 参照)。
+\item オプションは表~\rref{rectoptions} に示されます。
+\eit
+\begin{table}[htbp]
+\bce
+\cap{{\tt Rectangle} のオプション。\label{rectoptions}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline\hline オプション & 値 & デフォルト値 & 効果  \\ \hline
+\idtt{FillColor} & 色 & Null & 内部の色、Null の時は枠だけを描く\\
+\idtt{MeshStyle} & ビットマップ & Null & \parbox{7cm}{内部を塗るパターン、Null のときは完全に塗る}\\
+\idtt{PlotColor} & 色 & "black" & 枠の色\\
+\idtt{Tags} & 文字列 &  & 付加するタグ(\rref{tags} 参照)\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+\pagebreak
+\subsubchap{\idtt{Text}}
+\bit
+\item Text[\{文字列$1$, \{\itx, \ity\}\}, オプション$1$, ...]　は位置 \{\itx, \ity\} に表示する文字列を表わします。
+\item 座標 \{\itx, \ity\} は Canvas の左下隅を \{0, 0\} とし、右上が正方向にとる \idtt{CanvasDrawer}、\idtt{TopDrawer} に固有の座標です。また、通常は グラフの左下が \{2.4, 1.8\} になります。
+\item 座標として \{\idtt{Scaled}[\itx], Scaled[\ity]\} の様に指定すると、データ点から決まる座標になります。
+\item オプションは表~\rref{textoptions} に示されます。
+\eit
+\begin{table}[htbp]
+\bce
+\cap{{\tt Text} のオプション。\label{textoptions}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline\hline オプション & 値 & デフォルト値 & 効果\\ \hline
+\idtt{PlotColor} & 色 & "black" & テキストの色\\
+\idtt{Tags} & 文字列 &  & 付加するタグ(\rref{tags} 参照)\\
+\idtt{TextAlign} & \parbox{3cm}{\bce "left", "center", "right"\ece} & "left" & テキストの基準位置\\
+\idtt{TextFont} & フォント & \$DefaultFont & フォント (\rref{font} 参照)\\
+\idtt{TextSize} & 実数値 & 1 & 大きさ、標準サイズに対する相対比\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+}
+
+\clearpage
+\chap{\idtt{Canvas}\label{canvas}}
+{\tt 
+前章で見た様に、Canvas は ListPlot などのプロットを表示する領域として用いられます。単なるグラフの表示ならば、ListPlot などを使うだけで充分なのですが、場合によっては Canvas に対して直接作用を及ぼす必要が生じます。例えば、描かれた図形の一部をクリックして何かある動作を行ったり、図形の移動や属性の変更を行うなどの仕事です。ここでは簡単な例をもとにこのような Canvas 特有の操作について説明します。
+
+\subchap{{\tt Canvas} のアイテム\index{item@アイテム}\index{item}}
+Canvas に描かれる部品はいくつかのアイテム item に分類されます。表~\rref{canvasitem} はそれらのアイテムの一覧です。
+
+\begin{table}[htbp]
+\bce
+\cap{{\tt Canvas} のアイテム。\label{canvasitem}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{ll}
+\hline\hline アイテム & 描かれる図形\\ \hline
+\idtt{Arc} & 扇形、弦、弓形\\
+\idtt{Bitmap} & ビットマップ\\
+\idtt{Image} & イメージ\\
+\idtt{Line} & 線分\\
+\idtt{Oval} & 楕円\\
+\idtt{Polygon} & 多角形\\
+\idtt{Rectangle} & 長方形\\
+\idtt{Text} & 文字列\\
+\idtt{Window} & 他の部品をはめ込む枠\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+}
+
+これらのアイテムは Canvas 上に例えば次のように作成されます。
+{\tt\small\begin{verbatim}
+FFS;
+
+  w = Window[];
+  c = Canvas[w, Width -> 300, Height -> 300];
+
+  c[Create$Rectangle] = {50, 50, 250, 250,
+    Tags -> "rectarc rectoval"}};
+  c[Create$Oval] = {50, 50, 250, 250,
+    Fill -> "blue", Stipple -> "gray25",
+    Tags -> "rectoval"};
+  c[Create$Arc] = {50, 50, 250, 250, 
+    Style -> "pieslice", Fill -> "red", 
+    Start -> 60, Extent -> 90,
+    Tags -> "rectarc"};
+
+  TkWait[];
+\end{verbatim}}\noindent
+この例では Rectangle, Oval, Arc の3つのアイテムを図~\rref{canvasexample} のように描きます。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=95mm]{figures/CanvasExample.eps}
+ \cap{{\tt Canvas} の例。座標は図のように与えられます。\label{canvasexample}}
+\end{figure}
+
+\vskip 24pt\noindent
+このように、Canvas にあるアイテムを追加するには
+{\tt\small\begin{verbatim}
+  Canvasシンボル[Create$アイテム] = {パラメータ1, ..., パラメータn,
+    属性1 -> 値1, 属性2 -> 値2, ...}
+\end{verbatim}}\noindent
+のように書きます。ここで パラメータ1, ..., パラメータn, は一組またはそれ以上の座標です。これらは別々に書いても、リストにまとめても構いません。上の例では Create\$Rectangle の $4$ 個の引き数がこのパラメータに当たります。次に属性の指定を必要に応じて行います。
+パラメータ達は必ず属性の指定よりも先に書かなければなりません。
+
+\subsubchap{Canvas の座標}
+Canvas では座標の指定は Window の座標の指定と同様に左上隅を (0, 0) とし、右下に増加する座標で、単位はピクセルです。この座標と、CanvasDrawer の座標とは別のものなので、混同しないようにしてください。
+
+\subsubchap{アイテム番号\index{item@アイテム!bangou@--番号}}
+ひとつの Canvas に対して、製作された各アイテムには製作順に{\gt アイテム番号}が自動的につけられます。この番号は $1$ から順に $1$ ずつ増加します。途中で Delete などの操作でアイテムが消去されても、同じ番号が再利用されることはありません。この番号は後に各アイテムに対して様々な操作を及ぼすときに使われます。
+
+\subsubchap{\idtt{Tags}\label{tags}}
+Canvas のアイテムには Tags という属性があり、各アイテムをグループに分けて、名称を付けることができます。これにより後でグループ毎に様々な操作を与えることが容易にできます。名称は空白、\{\}、\(\) などを含まない任意の文字列です。
+
+ひとつのアイテムが複数のグループに所属することも可能です。例えば上の例では、Rectangle には "rectarc" と "rectoval" の二つのグループが指定されています (書き方が多少妙ですがこうしてください)。
+
+例えば、上の例でさらに
+{\tt\small\begin{verbatim}
+  c[Move] = {"rectoval", 30, -20};
+  c[Update];
+\end{verbatim}}\noindent
+などとしますと、図~\rref{canvasmovetag} のような結果になります。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=75mm]{figures/CanvasTags.eps}
+ \cap{{\tt Tags} でグループ化したアイテム達の移動。{\tt Rectangle} と {\tt Oval} を含む グループ ({\tt "rectoval"}) が {\tt (30, -20)} だけ移動しました。\label{canvasmovetag}}
+\end{figure}
+
+\subsubchap{\idtt{Arc}}
+Arc は扇形、弓形、弧を描きます。\idtt{Create\$Arc} はその Arc の弧を一部とする惰円の外接長方形の二つの対角頂点の座標を最初の $4$ つのパラメータとします。
+
+表~\rref{arcattrib} にその属性を掲げます。\pagebreak
+\begin{table}[hhhh]
+\bce
+\cap{{\tt Arc} の属性。\label{arcattrib}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline\hline 属性 & 値 & デフォルト & 効果\\ \hline
+\idtt{Extent} & 角度(度) & 360 & 弧の反時計方向の開き角\\
+\idtt{Fill} & 色 & 無指定 & 内部色\\
+\idtt{Outline} & 色 & "black" & 輪郭線の色\\
+\idtt{Start} & 角度(度) & 0 & 弧の開始角、反時計方向に計る\\
+\idtt{Stipple} & ビットマップ & & 塗りつぶしのビットマップ\\
+\idtt{Style} & \parbox{3cm}{\bce "pieslice", "chord", "arc"\ece} & "pieslice" & それぞれ扇形、弓形、弧の選択\\
+\idtt{Tags} & 文字列 &  & そのアイテムにつけるタグ達\\
+\idtt{Width} & 数値(ピクセル) & 1 & 輪郭線の幅\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+また、次の例は 図~\rref{arcexample} の様な結果になります。
+{\tt\small\begin{verbatim}
+  w = Window[];
+  c = Canvas[w, Width -> 380, Height -> 140];
+  styles = {"pieslice", "chord", "arc"};
+  x = 20;
+  Scan[
+    (c[Create$Arc] = {x, 20, x + 80, 100,
+      Style -> #, Fill -> "red",
+      Start -> -30, Extent -> -120};
+     c[Create$Text] = {x + 40, 120, 
+       Text -> #};
+     x += 120)&,
+    styles];
+\end{verbatim}}\noindent
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=40mm]{figures/Arc.eps}
+ \cap{{\tt Arc} の 3 種の {\tt Style}。\label{arcexample}}
+\end{figure}
+
+\subsubchap{\idtt{Bitmap}}
+Bitmap は Canvas 上にビットマップ (\rref{bitmap} 参照) を表示します。\idtt{Create\$Bitmap} は位置をを指定するひと組の座標をパラメータとします。また、その座標と Bitmap との相対位置は属性 Anchor で指定します。Bitmap の属性は表~\rref{bitmapattrib} に掲げます。また、次の例は \rref{bitmap} 節の図~\rref{builtinbitmap} を作ります。
+{\tt\small\begin{verbatim}
+  w = Window[];
+  c = Canvas[w, Width -> 600, Height -> 100];
+  bitmap = {"error", "gray25", "gray50", "hourglass",
+    "info", "questhead", "question", "warning"};
+  x = 50;
+  Scan[(
+    c[Create$Bitmap]={x, 40, Bitmap -> #};
+    c[Create$Text]={x, 70, Text -> "\""//#//"\""};
+    x += 70)&,
+    bitmap];
+\end{verbatim}}\noindent
+\begin{table}[hhhh]
+\bce
+\cap{{\tt Bitmap} の属性。\label{bitmapattrib}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline\hline 属性 & 値 & デフォルト & 効果\\ \hline
+\idtt{Anchor} & \parbox{3 cm}{\bce "c" "n" "ne" "e" "se" "s" "sw" "w" "nw"\ece} & "c" & 座標との相対位置\\
+\idtt{Background} & 色 & 無指定 & 背景色\\
+\idtt{Bitmap} & ビットマップ & & ビットマップ (文字列または "@ファイル名")\\
+\idtt{Foreground} & 色 & "black" & 前景色\\
+\idtt{Tags} & 文字列 &  & そのアイテムにつけるタグ達\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+\pagebreak
+\subsubchap{\idtt{Image}}
+\begin{table}[hhhh]
+\bce
+\cap{{\tt Image} の属性。\label{imageattrib}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline\hline 属性 & 値 & デフォルト & 効果\\ \hline
+\idtt{Anchor} & \parbox{3 cm}{\bce "c" "n" "ne" "e" "se" "s" "sw" "w" "nw"\ece} & "c" & 座標との相対位置\\
+\idtt{Image} & イメージ & & イメージ\\
+\idtt{Tags} & 文字列 &  & そのアイテムにつけるタグ達\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+\subsubchap{\idtt{Line}}
+Line は折線を描きます。\idtt{Create\$Line} のパラメータは座標を$x_1, y_1, x_2, y_2$, ... と順に並べたものです。属性 Smooth が True のときは各点はスプライン曲線で結ばれ、False のときは直線で結ばれます。属性 CapStyle と JoinStyle は線分の端部と接合部の形状を指定します (図~\rref{lineexample} 参照) 。Line の属性は表~\rref{lineattrib} に掲げます。また、次の例は 図~\rref{lineexample} を作ります。
+{\tt\small\begin{verbatim}
+   w = Window[];
+   c = Canvas[w, Width -> 640, Height -> 270];
+   options = {
+     CapStyle -> "butt",
+     CapStyle -> "projecting",
+     CapStyle -> "round",
+     JoinStyle -> "bevel",
+     JoinStyle -> "miter",
+     JoinStyle -> "round"};
+   {x, y} = {20, 90};
+   Scan[(
+     c[Create$Line] = {x, y, x + 110, y - 60, x + 180, y,
+       Width -> 20, #};
+     c[Create$Text] = {x + 90, y + 20,
+       Text -> #[[1]]//" -> \""//#[[2]]//"\""};
+     x += 210;
+     If[x > 500, x = 20; y += 120])&,
+     options];
+\end{verbatim}}\noindent
+\begin{table}[hhhh]
+\bce
+\cap{{\tt Line} の属性。\label{lineattrib}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline\hline 属性 & 値 & デフォルト & 効果\\ \hline
+\idtt{Arrow} & \parbox{3 cm}{\bce "none" "first" "last" "both"\ece} & "none" & 矢頭の有無\\
+\idtt{ArrowShape} & \parbox{3 cm}{\bce \{接続部長,\\全長, 全幅\}\ece} &   & 矢頭の形状(ピクセル)\\
+\idtt{CapStyle} & \parbox{3cm}{\bce "butt" "projecting" "round"\ece} & "butt" & 端部の形状\\
+\idtt{Fill} & 色 & "black" & 線の色\\
+\idtt{JoinStyle} & \parbox{3cm}{\bce "bevel" "miter" "round"\ece} & "round" & 接合部の形状\\
+\idtt{Smooth} & True False & False & True: スプライン、False: 折線\\
+\idtt{SplineSteps} & 数値 & & スプラインの線分数\\
+\idtt{Stipple} & ビットマップ & & 塗りつぶしのビットマップ\\
+\idtt{Tags} & 文字列 &  & そのアイテムにつけるタグ達\\
+\idtt{Width} & 数値(ピクセル) & 1 & 線の幅\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=70mm]{figures/LineExample.eps}
+ \cap{{\tt Line} の {\tt CapStyle} と {\tt JoinStyle} 属性。\label{lineexample}}
+\end{figure}
+\clearpage
+
+\subsubchap{\idtt{Oval}}
+Oval は楕円を描きます。\idtt{Create\$Oval} はその惰円の外接長方形の二つの対角頂点の座標を最初の $4$ つのパラメータとします。
+
+\begin{table}[hhhh]
+\bce
+\cap{{\tt Oval} の属性。\label{ovalattrib}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline\hline 属性 & 値 & デフォルト & 効果\\ \hline
+\idtt{Fill} & 色 & 無指定 & 内部色\\
+\idtt{Outline} & 色 & "black" & 輪郭線の色\\
+\idtt{Stipple} & ビットマップ & & 塗りつぶしのビットマップ\\
+\idtt{Tags} & 文字列 &  & そのアイテムにつけるタグ達\\
+\idtt{Width} & 数値(ピクセル) & 1 & 輪郭線の幅\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+
+\subsubchap{\idtt{Polygon}}
+Polygon は閉じた他辺形を描きます。ただし、外形線はなく、全体が一体として扱われます。\idtt{Create\$Polygon} のパラメータは頂点の座標を$x_1, y_1, x_2, y_2$, ... と順に並べたものです。属性 Smooth が True のときは頂点はスプライン曲線で結ばれ、False のときは直線で結ばれます。
+表~\rref{polygonattrib} に属性を掲げます。次の例は図~\rref{polygonexample} に成ります。
+{\tt\small\begin{verbatim}
+  w = Window[];
+  c = Canvas[w, Width -> 600, Height -> 160];
+  param := {x, y, x + 40, y - 40, 
+    x + 80, y, x + 120, y + 40, 
+    x + 160, y, x + 120, y - 40,
+    x + 80, y, x + 40, y + 40};
+  {x, y} = {20, 60};
+  c[Create$Polygon] = {param, Smooth -> False};
+  c[Create$Text] = {x + 80, y + 60,
+    Text -> "Smooth -> False"};
+  {x, y} = {200, 60};
+  c[Create$Polygon] = {param, Smooth -> True};
+  c[Create$Text] = {x + 80, y + 60,
+    Text -> "Smooth -> True"};
+  {x, y} = {380, 60};
+  c[Create$Polygon] = {param, Smooth -> True,
+    SplineSteps -> 3};
+  c[Create$Text] = {x + 80, y + 60,
+    Text -> "Smooth -> True"};
+  c[Create$Text] = {x + 80, y + 76,
+    Text -> "SplineSteps -> 3"};
+\end{verbatim}}\noindent
+\begin{table}[hhhh]
+\bce
+\cap{{\tt Polygon} の属性。\label{polygonattrib}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline\hline 属性 & 値 & デフォルト & 効果\\ \hline
+\idtt{Fill} & 色 & "black" & 全体色\\
+\idtt{Smooth} & True False & False & True: スプライン、False: 折線\\
+\idtt{SplineSteps} & 数値 & & スプラインの線分数\\
+\idtt{Stipple} & ビットマップ & & 塗りつぶしのビットマップ\\
+\idtt{Tags} & 文字列 &  & そのアイテムにつけるタグ達\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=45mm]{figures/Polygon.eps}
+ \cap{{\tt Polygon} の例。{\tt Smooth -> True} により、スプラインが用いられる。\label{polygonexample}}
+\end{figure}
+
+\subsubchap{\idtt{Rectangle}}
+Rectangle は傾きのない長方形です。\idtt{Create\$Rectangle} はその二つの対角頂点の座標をパラメータとします。
+\begin{table}[hhhh]
+\bce
+\cap{{\tt Rectangle} の属性。\label{rectangleattrib}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline\hline 属性 & 値 & デフォルト & 効果\\ \hline
+\idtt{Fill} & 色 & 無指定 & 内部色\\
+\idtt{Outline} & 色 & "black" & 輪郭線の色\\
+\idtt{Stipple} & ビットマップ & & 塗りつぶしのビットマップ\\
+\idtt{Tags} & 文字列 &  & そのアイテムにつけるタグ達\\
+\idtt{Width} & 数値(ピクセル) & 1 & 輪郭線の幅\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+\pagebreak
+\subsubchap{\idtt{Text}}
+Text は文字列を表示します。また Entry 部品のようにそれを編集することもできますが、その説明は省きます。\idtt{Create\$Text} は位置を指定するひと組の座標をパラメータとします。また、その座標と Text との相対位置は属性 Anchor と Justify で指定します。Text の属性は表~\rref{textattrib} に掲げます。
+\begin{table}[hhhh]
+\bce
+\cap{{\tt Text} の属性。\label{textattrib}}
+\ece
+\begin{center}
+{\small \tt
+\begin{tabular}{lccl}
+\hline\hline 属性 & 値 & デフォルト & 効果\\ \hline
+\idtt{Anchor} & \parbox{3 cm}{\bce "c" "n" "ne" "e" "se" "s" "sw" "w" "nw"\ece} & "c" & 座標との相対位置\\
+\idtt{Fill} & 色 & "black" & 文字の色\\
+\idtt{Font} & フォント & & フォント\\
+\idtt{Justify} & \parbox{3cm}{\bce "left" "right" "center"\ece} & "left" & 文字の揃え方\\
+\idtt{Stipple} & ビットマップ & & 塗りつぶしのビットマップ\\
+\idtt{Tags} & 文字列 &  & そのアイテムにつけるタグ達\\
+\idtt{Text} & 文字列 & "" & 表示文字列\\
+\hline\hline
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+\subsubchap{\idtt{Window}}
+Window は Canvas の上に他の任意の {\rm Tkinter} の部品を貼るのに用います。\idtt{Create\$Window} は貼り付ける部品の位置を指定するひと組の座標をパラメータとし、属性 Window で部品を指定します。例えば次のようにすると、図~\rref{canvaswindow} の様な結果が得られます。
+{\tt\small\begin{verbatim}
+  w = Window[];
+  c = Canvas[w, Height -> 300, Width -> 400];
+  $DisplayFunction = CanvasDrawer;
+  Canvas$Widget = c;
+  Plot[Sin[x], {x, -Pi, Pi}];
+  b = Button[c, Text -> "Button on Canvas"];
+  c[Create$Window] = {150, 100, Window -> b};
+\end{verbatim}}\noindent
+
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=70mm]{figures/CanvasWindow.eps}
+ \cap{{\tt Canvas} の中の {\tt Window} の例。\label{canvaswindow}}
+\end{figure}
+
+私がこれまで試した限りでは、上に貼る Frame などを透明にすることはできないようです。
+
+\pagebreak
+\subchap{アイテムの操作}
+Canvas 上に製作されたアイテムに対しては後から様々な操作を及ぼすことができます。
+以下の説明で \itc\ はある Canvas 部品を表わすものとします。
+
+\subsubchap{属性の変更および調査、\idtt{ItemConfigure}}
+\bit
+\item \itc[ItemConfigure] = \{タグまたはアイテム番号, 属性 -> 値, ...\}　はアイテム番号で指定されるアイテム、またはタグで指定されるアイテム達の属性を変更します。また、アイテムの「上下」とはその時点の表示の重なり具合が前面にあるものを上とします。後から製作されたアイテムほど上に来ますが、変更可能です。
+\item \itc[ItemConfigure[アイテム番号, 属性]]　はアイテム番号で指定されるアイテムの属性の設定値を返します。
+\eit
+
+\subsubchap{タグの付加、\idtt{AddTag}}
+\bit
+\item \itc[\idtt{AddTag\$Above}] = \{タグ$1$, タグ$2$またはアイテム番号$2$\}　はアイテム番号$2$ で指定されるアイテム、またはタグ$2$ で指定されるものの内の最前面のアイテムの{\gt 直上のアイテム}に タグ$1$ を付加します。
+\item \itc[\idtt{AddTag\$All}] = タグ$1$　はそれまでに製作されたすべてのアイテム達に タグ$1$ を付加します。
+\item \itc[\idtt{AddTag\$Below}] = \{タグ$1$, タグ$2$またはアイテム番号$2$\}　はアイテム番号$2$ で指定されるアイテム、またはタグ$2$ で指定されるものの内の最後面のアイテムの{\gt 直下のアイテム}に タグ$1$ を付加します。
+\item \itc[\idtt{AddTag\$Closest}] = \{タグ$1$, \itx, \ity\}　は位置 (\itx\, \ity) に最も近いアイテム達の内の最前面のアイテムに タグ$1$ を付加します。
+\item \itc[\idtt{AddTag\$Enclosed}] = \{タグ$1$, \itx$1$, \ity$1$, \itx$2$, \ity$2$\}　は指定される長方形に{\gt 完全に含まれる}アイテム達に タグ$1$ を付加します。
+\item \itc[\idtt{AddTag\$WithTag}] = \{タグ$1$, タグ$2$またはアイテム番号$2$\}　はアイテム番号$2$ で指定されるアイテム、またはタグ$2$ で指定されるアイテム達に タグ$1$ を付加します。
+\eit
+
+\subsubchap{アイテムの移動、\idtt{Move}}
+\bit
+\item \itc[Move] = \{タグまたはアイテム番号, $\Delta x$, $\Delta y$\}　はアイテム番号で指定されるアイテム、またはタグで指定されるアイテム達を ($\Delta x$, $\Delta y$) だけ移動させます。
+\eit
+
+\subsubchap{位置の変更および調査、\idtt{Coords}}
+\bit
+\item \itc[Coords] = \{アイテム番号, \itx$1$, \ity$1$, ...\}　はアイテム番号で指定されるアイテムの位置を \itx$1$, \ity$1$, ...に変更します。
+\item \itc[Coords[アイテム番号]]　はアイテム番号で指定されるアイテムの位置を返します。
+\eit
+
+\subsubchap{アイテムの消去、\idtt{Delete}}
+\bit
+\item \itc[Delete] = \{タグ$1$またはアイテム番号$1$, ...\}　はタグ$1$またはアイテム番号$1$, ... で指定されるアイテム達を消去します。
+\eit
+
+\subsubchap{アイテムの表示面の重なりの移動}
+\bit
+\item \itc[\idtt{Lower}] = タグまたはアイテム番号　はアイテム番号で指定されるアイテム、またはタグで指定されるアイテム達を表示の最後面に移動します。
+\item \itc[Lower] = \{タグ$1$ またはアイテム番号$1$, タグ$2$ またはアイテム番号$2$\}　はアイテム番号$1$ で指定されるアイテム、またはタグ$1$ で指定されるアイテム達を、タグ$2$ またはアイテム番号$2$ のアイテムの直下の表示面に移動します。
+\item \itc[\idtt{Raise}] = タグまたはアイテム番号　はアイテム番号で指定されるアイテム、またはタグで指定されるアイテム達を表示の最前面に移動します。
+\item \itc[Raise] = \{タグ$1$ またはアイテム番号$1$, タグ$2 $またはアイテム番号$2$\}　はアイテム番号$1$ で指定されるアイテム、またはタグ$1$で指定されるアイテム達を、タグ$2$ またはアイテム番号$2$ のアイテムの直上の表示面に移動します。
+\eit
+
+
+\subsubchap{タグの解除、\idtt{Dtag}}
+\bit
+\item \itc[DTag] = タグ$1$　は タグ$1$ へのアイテムの割り当てを解除します。
+\item \itc[DTag] = \{タグ$1$, タグ$2$\} はタグ$1$で指定されるアイテム達へのタグ$2$の割り当てを解除します。
+\eit
+
+\subsubchap{タグの調査、\idtt{GetTags}}
+\bit
+\item \itc[GetTags[タグまたはアイテム番号]]　はアイテム番号で指定されるアイテム、またはタグで指定されるものの中の最初のアイテムに付加されているタグ達をリストにして返します。
+\eit
+
+\subchap{アイテムへのイヴェントの結合\label{itembind}\index{event@イヴェント}\index{event}
+\index{event@イヴェント!noitemhenoketsugou@--のアイテムへの結合}
+\index{item@アイテム!noeventhenoketsugou@--のイヴェントへの結合}}
+Canvas の各アイテム、あるいはタグのつけられた各グループには \idtt{Bind} により、それぞれ独立にイヴェントを結合することができます。その方法は、例えば
+{\tt\small\begin{verbatim}
+  c = Canvas[ ... ];
+  c[Create$Oval] = { ... , Tags -> "a"};
+  Bind[c, "Button-1", Print["OK"], Tags -> "a"];
+\end{verbatim}}\noindent
+の様に Bind にオプション \idtt{Tags} -> ({\gt タグまたはアイテム番号、あるいはそれらのリスト}) を加えるだけで、あとは通常の部品に対する結合 (\rref{bind} 参照) と全く同様です。また、変数 \idtt{\$Event} にイヴェントを発生したアイテムの番号あるいはタグが返されます。
+
+\subchap{プロット関数で製作したグラフでのアイテムの操作}
+\subsubchap{\idtt{Canvas\$ID} によるアイテム番号\index{item@アイテム!bangou@--番号}の記録}
+\idtt{ListPlot} や \idtt{Plot} などのプロット関数も Canvas のアイテムの組み合わせでグラフを表現します。したがって、それらのアイテム番号が知られれば、個々のアイテムに対して上記の各種の操作を加えることができます。ListPlot が製作したアイテムの番号は、オプション \idtt{Tags} -> True により、その都度シンボル Canvas\$ID に記録されるようになっています。例えば、
+{\tt\small\begin{verbatim}
+  w = Window[];
+  c = Canvas[w, Width -> 600, Height -> 400];
+  $DisplayFunction = CanvasDrawer;
+  Canvas$Widget = c;
+
+  data = {{1, 2, 0.5}, {2, 3, 2},
+    {3, 5, 0.5}, {4, 2, 0.5}, {5, -2, 0.5}};
+  ListPlot[data, Tags -> True,
+    Plot -> True, PlotJoined -> True, 
+    PointSize -> 2];
+  Print[Canvas$ID];
+\end{verbatim}}\noindent
+と $5$点のエラーバー付のデータを図~\rref{idplot} のようにプロットしたとします。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=60mm]{figures/idplot.eps}
+ \cap{{\tt ListPlot でプロットしたグラフのアイテム番号。{\tt Tags -> True} により、{\tt Canvas\$ID} にアイテム番号が記録されます。この場合、グラフの線には 番号 17、データ点のマーカには番号 18{\rm--}22、エラーバーには番号 23{\rm--}27 が割り当てられます。{\tt Canvas\$ID} の値は \{\{17,~27\}\} になります。(図上の番号は説明のためのもので、実際には表示されません。)}\label{idplot}}
+\end{figure}
+
+こうすると、このリストプロットの直後では Canvas\$IDの値は \{\{17,~27\}\} になります。そして、実際にはグラフの線には 番号 17、データ点のマーカには番号 18{\rm--}22、エラーバーには番号 23{\rm--}27 が順に割り振られます。つまり、Canvas\$ID は
+{\tt\small\begin{verbatim}
+  {{開始1, 終了1}, {開始2, 終了2}, ...}
+\end{verbatim}}\noindent
+という形式で表わされています。それぞれの要素リストは描かれるグラフィックス原子 　(\rref{graphicsprimitive} 参照)\index{graphics@グラフィックス!genshi@--原子} に対応します。この場合 16 以前のアイテム番号には座標軸や目盛などアイテムが割り当てられていますが、それらの数はグラフの条件に左右されるので、どれが何であるとは簡単には言えません。Canvas\$ID の返すものは常にデータ、あるいは直接 Epilog などで書き込みを支持されたグラフィックス原子に対応するアイテムの番号だけです。また、アイテムは、グラフの線、マーカ、エラーバーの順に並び、アイテム番号はデータの順に並びます。エラーバーは両方向にあっても常にひとつのアイテムです。したがってアイテム番号とデータ点の対応は一意的です。PlotRange により表示されるデータ点が制限される場合でも、アイテムは必ず製作され、アイテム番号も付加されます。ただし、グラフの線は破線などの場合にはひとつのアイテムにはなりません。
+
+\idtt{Show} により複数のプロットを同時に表示するような場合にも Canvas\$ID にはプロット毎、あるいはグラフィックス原子毎に アイテム番号が \{開始, 終了\} というリストで記録されます。
+
+Canvas\$ID の値は ListPlot などのオプション \idtt{Initialize} が True のとき (デフォルト) \{\} にリセットされます。そうでない時にはそれまでの Canvas\$ID に次々に追加されていきます。
+
+\pagebreak
+\subsubchap{\idtt{Bind} によるアイテムへのイヴェントの結合\index{event@イヴェント}\index{event}
+\index{event@イヴェント!noitemhenoketsugou@--のアイテムへの結合}
+\index{item@アイテム!noeventhenoketsugou@--のイヴェントへの結合}}
+以上の方法で各アイテムのアイテム番号がわかりましたから、今度はそれを使って各アイテムにイヴェントを結び付けてみましょう。これは基本的には \rref{itembind} で説明したことの応用です。まず、上の例に加えて、
+{\tt\small\begin{verbatim}
+  ld = Length[data];
+  markers = Canvas$ID[[1, 1]] + Range[ld];
+  Bind[c, "<Button-1>", cmd, Tags -> markers];
+\end{verbatim}}\noindent
+とすると、markers にはマーカ達のアイテム番号がリストになって入ります。この場合は \{18,~19,~20, ~21,~22\} になります。次に、Bind で Tags -> markers と指定することにより、各マーカはイヴェント "<Button-1>" (マウスボタン$1$ の押し下げ) が発生する度に式 cmd を評価実行することに割り当てられました。そこで、例えば
+{\tt\small\begin{verbatim}
+   (switch[#] = True)& /@ markers;                    (ア)
+   markcolor[True] = "green";                         (イ)
+   markcolor[False] = "red";                          (ウ)
+   errorbarcolor[True] = "black";                     (エ)
+   errorbarcolor[False] = "gray";                     (オ)
+
+   cmd := Module[{id = ToExpression[Tag /. $Event]},  (カ)
+     switch[id] = ~switch[id];                        (キ)
+     c[ItemConfigure] = {id,
+       Fill -> markcolor[switch[id]]};                (ク)
+     c[ItemConfigure] = {id + ld,
+       Fill -> errorbarcolor[switch[id]]}];           (ケ)
+\end{verbatim}}\noindent
+とすると、各マーカをクリックする度に図~\rref{markertoggle} の様にそのマーカとエラーバーの色をトグルすることができます。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=60mm]{figures/Toggle.eps}
+ \cap{マーカをクリックするとそのマーカとエラーバーの色がトグルする。\label{markertoggle}}
+\end{figure}
+ここでまず、(ア）はシンボル switch をマーカの状態を保持する関数として定義しています。(イ) から (オ) はそれぞれの状態に対応する色の定義です。(カ) から (ケ) がシンボル cmd の定義ですが、まず (カ) では局所シンボル id にシンボル Tag の \idtt{\$Event} を用いた置換により、クリックされたアイテムのアイテム番号を取り出しています。\$Event はこの場合
+{\tt\small\begin{verbatim}
+{(Widget:>c),(Tag->"20"),(Type->"<Button>"),(X->291),(Y->124),(XRoot->693),
+ (YRoot->542),(Height->0),(Width->0),(Char->"??"),(KeySym->"??"),
+ (SendEvent->0),(KeyCode->1),(State->0),(KeySymNum->1),(Time->6784003)}
+\end{verbatim}}\noindent
+の様な規則のリストです。\$Event は大域的なシンボルですが、イヴェントが発生し結合されたコマンドが呼ばれる度に値が局所的に設定されます (\rm\ref{localsymbol} 節参照)。\$Event に含まれるシンボルについては表~\rref{eventsymbol} を参照してください。
+
+(キ)は switch のトグルです。(ク)、(ケ) は番号 id のマーカ及び番号 id + ld のエラーバーの色を設定し直しています。こうして、アイテムとイヴェントを結合する基本的な動作は確認されました。
+
+}
+
+\clearpage
+\chap{部品の合成\index{buhin@部品!nogousei@--の合成}}
+{\tt
+{\rm SAD/Tkinter} では、ユーザーがこれまで説明してきたようなシステムに備え付けの部品を組み合わせて新しい部品を定義して備え付けの部品と似たように使うことができます。
+
+\subchap{\idtt{LabeledEntry}}
+いま、単純な例として、TextLabel と Entry を組み合わせた LebeledEntry という部品を定義したいとします。この部品はある Frame のなかの左側に TextLabel を、その右に Entry を並べるだけのものです。そのひとつの方法は、例えば
+{\tt\small\begin{verbatim}
+  (a_ = LabeledEntry[w_, opt___]) ^:= (                   (ア)
+    DeleteWidget[a];                                      (イ)            
+    Clear[a];                                             (ウ) 
+    a[Frame] = Frame[w, opt];                             (エ)
+    a[Label] = TextLabel[a[Frame], Side -> "left", opt];  (オ)
+    a[Entry] = Entry[a[Frame], Side -> "left", opt];      (カ)
+
+    a[b_] := (
+      a[Frame][b];                                        (キ) 
+      a[Label][b];                                        (ク) 
+      a[Entry][b]);                                       (ケ) 
+
+    (a[b_] = c_) ^:= (
+      a[Frame][b] = c;                                    (コ) 
+      a[Label][b] = c;                                    (サ) 
+      a[Entry][b] = c);                                   (シ) 
+
+    (a[b_] := c_) ^:= (
+      a[Frame][b] := c;                                   (ス) 
+      a[Label][b] := c;                                   (セ) 
+      a[Entry][b] := c);                                  (ソ) 
+    );
+\end{verbatim}}\noindent
+のようなものになるでしょう。ここで、まず、(ア）は、この LabeledEntry という新しい部品が普通の部品と同様に
+{\tt\small\begin{verbatim}
+  シンボル = LabeledEntry[親, オプション, ...]
+\end{verbatim}}\noindent
+のような形で定義するために上方値\index{jouhouchi@上方値} (\rref{upvalue} 参照) を用いています。
+
+(イ) と (ウ) はシンボル a などにそれまでに割り当てられているかもしれない部品や値の割り当てを解除しています。
+
+この LabeledEntry という部品は Frame, TextLabel, Entry という $3$ つの従属部品から成り立っていますが、それらの従属部品の定義が (エ)--(カ) です。左辺の形はそれらが従属部品であることにふさわしい書き方ではないでしょうか。ここで、オプション opt は $3$ つの従属部品に共通にあたえられています。つまり、この $3$ 種の{\gt いずれにも同じ属性}が指定されます。例えば、Background という属性は$3$ つに共通ですからどれにも当てはまります。しかし、例えば Text という属性は TextLabel にしかありませんから TextLabel だけに適用され、ほかの部品では無視されます。また、Side という属性は (オ) (カ)　 の様に TextLabel と Entry では先に書いた Side -> "left" が優先されるため、Frame に対してだけ有効となります。もし、属性を個別に設定したければ、例えば
+{\tt\small\begin{verbatim}
+  シンボル[Entry][属性] = 値 
+\end{verbatim}}\noindent
+のようにすればよいのです。
+
+さて、(キ) から (ソ) まではこの LabeledEntry 全体に対して共通の操作、属性の変更を普通の部品と同様の形式で行えるようにするためのいくつかの定義です。
+
+この LabeledEntry を使って、例えば
+{\tt\small\begin{verbatim}
+  w = Window[];
+  le1 = LabeledEntry[w,
+    Text -> "username: ",Side->"top"];
+  le2 = LabeledEntry[w,
+    Text -> "password: ",Side->"top", ShowText -> "*"];
+\end{verbatim}}\noindent
+とすると図~\rref{labeledentry} のようなパネルが作られます。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=30mm]{figures/LabeledEntry.eps}
+ \cap{合成された部品 LabeledEntry の例。\label{labeledentry}}
+\end{figure}
+
+なお、このLabeledEntry で作られた部品全体を DeleteWidget (\rref{deletewidget} 参照) で消去することもできます。
+
+\bigskip
+
+以上のように、LabeledEntry のような簡単な場合には部品の合成はほぼうまくいきます。さらに複雑な場合にどの程度のものが可能であるかは未知数ですが挑戦してみてください。
+}
+
+\clearpage
+\chap{例題}
+{\tt
+\subchap{\idtt{SimpleDialog}}
+以下に示す SimpleDialog は、多くのプログラムで多用される、操作者との単純な応答を行うパネルです。まず、その定義は、
+{\tt\small\begin{verbatim}
+SimpleDialog[message_, texts_]:=Module[
+   {w, tl, fr, i, b, l = Length[texts], r}, (ア) 局所シンボルの定義
+   w = Window[];
+   tl = TextLabel[w, Text -> message,
+     PadX -> 20, PadY -> 10];               (イ) 引き数 message の表示
+   fr = Frame[w];                           (ウ) ボタンを並べる Frame
+   i = 1;
+   Scan[(                                   (エ) Do を用いてもよい。
+     With[{m = #},                          (オ) # は texts の各要素
+       b[i] = Button[fr, Text -> m,         (カ) 各ボタン b[i] の定義
+         Command :> TkReturn[m],            (キ) コマンドの設定
+         BD -> 4, PadX -> 10, PadY -> 10,
+         Side -> "left", Relief -> "ridge"]];
+     i++)&,
+     texts];
+   b[l][Relief] = "raised";                 (ク) l は texts の長さ
+   Bind[b[l], "<Key-Return>",               (ケ) 最後のボタンをデフォルト
+     TkReturn[texts[l]]];                        (Rreturn キーで反応)
+   b[l][Focus$Set];                         (コ) キー応答のための焦点
+   r = TkWait[];                            (サ) 応答待ち
+   w =.;                                    (シ) この Window を削除
+   Update[];                                (ス) 表示を更新
+   r];                                      (セ) 押されたキーラヴェルを返す
+\end{verbatim}}\noindent
+です。この使い方は
+{\tt\small\begin{verbatim}
+  シンボル = SimpleDialog[メッセージ, ボタンリスト]
+\end{verbatim}}\noindent
+のようにします。ここでメッセージは文字列、ボタンリストはボタンの表面に書く文字列のリストです。
+例えば、
+{\tt\small\begin{verbatim}
+   result = SimpleDialog[
+     "Do you want to save?",
+     {"Cancel", "Don't save", "Save"}];
+\end{verbatim}}\noindent
+の様にすると、図~\rref{simpledialog} のような Window が現われます。ここでいずれかのボタンをクリックすると、その名称が返され、シンボル result に割り当てられます。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=30mm]{figures/SimpleDialog.eps}
+ \cap{{\tt SimpleDialog} の例。\label{simpledialog}}
+\end{figure}
+また、最後のボタン (この例では "Save") はデフォルトとして (ケ)(コ) により Return キーを押しても
+クリックと同じ結果になるように設定されています。
+
+SimpleDialog は Module を利用した関数で、作られるウインドウ及び内部の部品はすべて (ア) で定義した局所シンボルに割り当てられ、実行後には (シ)(ス) によりすべて消去されるようになっています。
+
+作成されるボタンの数は制限ありません。内部では (エ) の Scan により、ボタンは b[i] に割り当てられています。(オ) で With が用いられていますが、それは (キ) のコマンドの TkReturn[m] の m の値を前もって決めたいためです。With により、m は 値 \#、即ち texts の各要素になるわけですが、ここを Command~:>~TkReturn[\#] と書きますと、:> の右辺が評価されないため、\# がそのまま残ってしまい、後で TkReturn[\#] としても \# が未定義になってしまいます。
+
+(サ) では TkWait[] により応答を待ちます。この SimpleDialog 自身が別のボタンの応答コマンドとして使用される場合などでは、TkWait[] が幾重にも重なりますが、それは構いません。
+
+\subchap{グラフの大きさをウインドウの大きさに追従させる}
+実際のアプリケーションではグラフを描くウインドウの大きさを操作者が必要に応じて変更したくなる場合が多々あります。次の例はこのような場合にそのウインドウの中に描かれたグラフを、そのウインドウの大きさに応じて再描画するものです。
+{\tt\small\begin{verbatim}
+FFS;
+  $DisplayFunction = CanvasDrawer;
+  w = Window[];
+  c1 = Canvas[w, Height -> 100, Width -> 150,
+    Side -> "left", 
+    Expand -> True, Fill -> "both"];           (ア)
+  c2 = Canvas[w, Height -> 100, Width -> 150, 
+    Side -> "left", 
+    Expand -> True, Fill -> "both"];           (イ)
+  pl:=(
+    Canvas$Widget = c1;
+    Plot[Sin[x],{x,-Pi,Pi}];
+    Canvas$Widget = c2;
+    Plot[Cos[x],{x,-Pi,Pi}]);                  (ウ)
+  pl;
+  Bind[w, "<Configure>", pl];                  (エ)
+  TkWait[];
+\end{verbatim}}\noindent
+この例は (ア)(イ) で作った左右に並ぶ二つの Canvas c1, c2 に、(ウ) のコマンド pl でそれぞれにグラフを出力します。ここで、Canvas の属性に \idtt{Expand} -> True, \idtt{Fill} -> "both" と指定することにより、ウインドウの伸縮に Canvas が追随して変化することを保証します。そして、(エ) でコマンド pl とウインドウの属性の変更に伴うイヴェント"<Configure>" を結合することにより、ウインドウの伸縮の度に再描画してグラフの大きさを追従させることができます。(ただし、その場合、各 Canvas は最初に指定したサイズを最小サイズとして保持しようとするため、あまりウインドウが小さくなると、二つのグラフの大きさが不均等になります。)　
+
+この例を 図~\rref{plotreconfigure} に示します。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=95mm]{figures/Reconfigure.eps}
+ \cap{イヴェント {\tt "<Configure>"} によりウインドウのサイズの変更にグラフの大きさを追従させることができる。(A) 初期状態。(B) マウスによりウインドウを拡大した例。\label{plotreconfigure}}
+\end{figure}
+
+\subchap{グラフのズーミング}
+さて、次の例は、Plot で書いたグラフ上でドラッグした領域を拡大してプロットしなおすという、世の中によくある機能を実現したものです。
+{\tt\small\begin{verbatim}
+FFS;
+
+  StartSelect := Module[                                     (ア)
+    {{x, y, c} = {X, Y, Widget}/.$Event},
+    With[{c},
+      c[Create$Line]={x, y, x, y, 
+        Fill -> "blue", Stipple -> "gray50",
+        Tags -> "selection"}];
+    Bind[c, "<Motion>", DragSelect];              　　       (イ)
+    Bind[c, "<ButtonRelease-1>", RedrawSelect];              (ウ)　　 
+    selstart=selend={x,y}];                                  (エ)
+
+  DragSelect := Module[                                      (オ)
+    {{x, y, c} = {X, Y, Widget}/.$Event},
+    With[{c, x0 = selstart[[1]], y0 = selstart[[2]]},
+      c[Delete] = "selection";
+      c[Create$Line] = {x0, y0, x, y0, x, y, x0, y, x0, y0,
+        Fill -> "blue", Stipple -> "gray50",
+        Tags -> "selection"};                                (カ)
+      selend = {x,y}]];
+
+  RedrawSelect := Module[                                    (キ)
+    {c = Widget/.$Event},
+    c[Delete] = "selection";
+    If[selstart <> selend,
+      z0 = (selstart - Canvas$Offset) / Canvas$Scale;
+      z1 = (selend   - Canvas$Offset) / Canvas$Scale;
+      pl[z0, z1]];
+    Bind[c, "<Motion>"];                                     (ク)
+    Bind[c, "<ButtonRelease-1>"]];                           (ケ)
+
+  pl[z0_,z1_] :=                                             (コ)
+    Plot[f[x], 
+      {x, Min[z0[[1]], z1[[1]]], Max[z0[[1]], z1[[1]]]},
+      PlotRange -> 
+        {Min[z0[[2]], z1[[2]]], Max[z0[[2]], z1[[2]]]}];
+  plinit := pl[{-1, -1.2}, {1, 1.2}];
+
+  w = Window[];
+  c = Canvas[w, Width -> 600, Height -> 400];
+  $DisplayFunction = CanvasDrawer;
+  Canvas$Widget = c;
+
+  f[0] = 0;
+  f[x_] := Sin[1/x];
+
+  plinit;
+  Bind[c, "<Button-1>", StartSelect];                         (サ)
+  Bind[c, "<M-Button-1>", plinit];                            (シ)
+
+  TkWait[];
+\end{verbatim}}\noindent
+この例はまず初期状態では図~\rref{drag}{\rm (A)} のようなプロットをつくります。そこで図のようにマウスボタン$1$ を押しながら長方形をドラッグし、ボタンを離すと{\rm (B)} のように選択部分が $x$、$y$ 共に拡大されて再プロットされます。
+\begin{figure}[hhh]
+ \centering
+ \includegraphics[height=130mm]{figures/Drag.eps}
+ \cap{(A) マウスでドラッグした範囲を (B) 拡大して表示する。\label{drag}}
+\end{figure}
+
+この選択、拡大の動作は 3 つのイヴェントによって行われます。まず、ボタンの押し下げで、これは (ア) のStartSelect を呼びます。StartSelect はその中で (イ)(ウ) にあるように、マウスカーソルの移動とボタンの解放を DragSelect と RedrawSelect に結合します。そして (エ) で選択範囲の起点を記録します。次に DragSelect はその時点の選択範囲を四辺形で書き直します。その四辺形にはタグ "selection" がつけられています。最後に RedrawSelect は選択範囲を確定させ、Canvas 座標を Plot のデータ座標に換算して再プロットします。また、(ク)(ケ) のように、移動とボタンの解放のふたつのイヴェントへの結合を解除しています。このようにして、図~\rref{drag}{\rm (B)} にあるような拡大図が得られます。
+
+また、この例では (シ) で メタ-ボタン1 のイヴェントにより、プロットを初期状態に戻すようにしてあります。
+
+}
+\clearpage
+\bce
+\Large 謝辞
+\ece
+\bigskip
+
+SAD/Tkinter の開発にあたっては山本 昇 (Python/Tkinter の導入)・赤坂展昌 (部品の開発) 両氏のご助力を、また、このマニュアルの編集においては小磯晴代氏のご協力を頂きましたことを深く感謝いたします。
+
+\clearpage
+{\rm
+\printindex
+}
+\clearpage
+\bce
+{\large SAD 計算機へのユーザー登録手続きについて\\
+−システム管理者より−} \ece
+
+{\tt\begin{verbatim}
+1. "SAD計算機登録申込書" を入手する。
+
+"SAD計算機登録申込書" は アップルトークネットワーク上の"II TR Users 2, ACC 
+MacII Server in Accelerator"から入手できます。Guestでサーバに接続した後、
+"SAD計算機"フォルダーの中にある"SAD計算機登録申込書"を御自分のディスクに
+コピーしてください。
+
+２. "SAD計算機登録申込書" に必要な情報を記入する。
+
+３. 記入した"SAD計算機登録申込書"のファイル名を申請者の名前に変更する。
+
+４. 記入済み、名前変更済みの登録申込書を提出する。
+
+登録申込書を管理者までお届けください。"SAD計算機"フォルダー中の
+"登録申込用紙投入箱"フォルダーに記入済みの申込書をコピーしていただければ
+結構です。
+
+5.SAD計算機管理者にユーザー登録したい旨連絡する。
+
+登録申込書を"登録申込用紙投入箱"フォルダーにコピーした後、e-mail等の方法で
+管理者までお知らせください。管理者は連絡があったときにしかこのフォルダーを
+チェックしません。現在の管理者は、
+
+三増俊広（mimashi@kekvax.kek.jp)
+
+山本昇（yamamoto@kekvax.kek.jp)
+
+の両名です。
+
+6.所外の利用者の方に。
+	KEK所員以外の方には計算機使用について誓約書を出していただいています。
+"SAD計算機"フォルダー内の誓約書を良くお読みの上、自署された誓約書を管理者
+までご提出下さい。
+\end{verbatim}\noindent
+
+\clearpage
+\begin{verbatim}
+　　　　　　　　　　　　　SAD計算機アカウント取得申込書
+
+申込日：
+
+名前：
+
+所属：
+
+職名：
+
+連絡先住所（KEK以外の場合）：
+
+居室番号：　　　　　　　　　　　　　email address: 
+
+内線：　　　　　　　　　　　　　　　ポケットベル：
+
+希望するUser name :
+
+初期Password 	:  
+
+このパスワードは初期値として使われます。アカウント取得後直ちに他の
+パスワードに変更してください。
+
+使用したいShell：
+
+KEK内UNIXユーザID番号(uid)：
+
+KEK内UNIXグループID番号(gid):
+
+その他：　
+
+---------------------------------------------------------------------------
+システム管理者記録用
+Disk Quota:
+	/users
+	/users1
+	/scratch1
+
+other group:
+\end{verbatim}}
+
+\end{document}
+\end
+
+

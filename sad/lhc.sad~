@@ -1,0 +1,7 @@
+FFS;
+
+ E0=4e12;
+ gamma=(E0/ProtonMass+1);
+ beta=Sqrt[1-1/gamma^2]
+
+

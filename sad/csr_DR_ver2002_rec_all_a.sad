@@ -1,0 +1,159 @@
+STACKSIZ=STACKSIZ*10;
+FFS;
+
+csrdummy=CSR[];
+
+SKEKBAC[x_,h_,w1_,w2_]:=Module[{x1},
+  Which[
+    x< (x1=-h),                  h,
+    x< -x1,                      h,
+    True,                        h]];
+
+Nomega=32;
+MR={1,1};
+NP=22;
+MWNR=3.5;
+
+With[{
+  sigz=0.0005,
+  hrec=0.017,
+  w1=-0.017,
+  w2=0.017},
+  With[{wid=w2-w1},
+
+    csr45=CSR[NParallel->NP,Nk->Nomega,MeshRatio->MR,
+      BunchLength->sigz,
+      MaxMeshSize->hrec/2,
+      MaxWaveNumRatio->MWNR,
+      Center->-w1,PipeWidth->wid,
+      PipeFun->(SKEKBAC[#,hrec,w1,w2]&),
+      TiNThick->0]]];
+
+csr45@PipePlot[];
+!TkWait[];
+
+!B1
+lb1p=0.7424811724100523;
+angb1p=0.276792304281;
+rhob1p=lb1p/angb1p;
+
+!B2
+lb2p=0.287654039;
+angb2p=0.0968773064984;
+rhob2p=lb2p/angb2p;
+
+!B3
+lb3p=0.3920845164;
+angb3p=0.124603294562;
+rhob3p=lb3p/angb3p;
+
+!B4
+lb4p=0.4793512530;
+angb4p=0.152189009719;
+rhob4p=lb4p/angb4p;
+
+lfree=0.927;
+
+lpipe={             {rhob4p,lb4p},
+       {0,1.7974},  {-rhob2p,lb2p},
+       {0,0.99810}, {rhob4p,lb4p},
+       {0,0.99810}, {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,0.928},   {rhob1p,lb1p},
+       {0,0.928},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,0.928},   {-rhob2p,lb2p},
+       {0,0.928},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,1.042},   {rhob3p,lb3p},
+       {0,1.042},   {-rhob2p,lb2p},
+       {0,1.041},   {rhob3p,lb3p},
+       {0,12.093},  {rhob4p,lb4p},
+       {0,1.797},   {-rhob2p,lb2p},
+       {0,0.998},   {rhob4p,lb4p},
+       {0,0.998},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,lfree},   {rhob1p,lb1p},
+       {0,lfree},   {-rhob2p,lb2p},
+       {0,1.042},   {rhob3p,lb3p},
+       {0,1.042},   {-rhob2p,lb2p},
+       {0,1.042},   {rhob3p,lb3p},
+       {0,0}};
+lpipe={{rhob1p,1}};
+!csr45@MakeZL[lpipe,668.931511616552,700,2];
+
+csr45@Debug=True;
+!csr45@Resistive=True;
+csr45@MakeZL[lpipe,1.71,1.71];
+!csr45@MakeZL[lpipe];
+csr45@ZLPlot[];
+
+end
+
+csr45@WLPlot[-0.02,0.02];
+
+end
+
+!csr45@WriteZL["/users/hitomi/sad/CSR/dat/csr_DR_ver2002_rect_2-mx2my2.dat","Comment"->"SuperLER wiggler rac = 35 mm, 152 poles","BunchLength"->0];
+TkWait[];
+
+end
+
+
+
+
+

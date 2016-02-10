@@ -1,0 +1,40 @@
+--- unix/configure.orig	2014-08-22 23:05:37.000000000 +0900
++++ unix/configure	2014-09-03 11:39:05.088822722 +0900
+@@ -4845,7 +4845,7 @@
+     # is disabled by the user. [Bug 1016796]
+     LDFLAGS_ARCH=""
+     UNSHARED_LIB_SUFFIX=""
+-    TCL_TRIM_DOTS='`echo ${VERSION} | tr -d .`'
++    TCL_TRIM_DOTS=`echo ${VERSION} | tr -d .`
+     ECHO_VERSION='`echo ${VERSION}`'
+     TCL_LIB_VERSIONS_OK=ok
+     CFLAGS_DEBUG=-g
+@@ -5826,10 +5826,10 @@
+ 	    # NetBSD has ELF and can use 'cc -shared' to build shared libs
+ 	    SHLIB_CFLAGS="-fPIC"
+ 	    SHLIB_LD='${CC} -shared ${SHLIB_CFLAGS}'
++	    TCL_SHLIB_LD_EXTRAS="-Wl,-soname,\$@"
+ 	    SHLIB_SUFFIX=".so"
+ 	    DL_OBJS="tclLoadDl.o"
+ 	    DL_LIBS=""
+-	    LDFLAGS="$LDFLAGS -export-dynamic"
+ 	    if test $doRpath = yes; then
+ 
+ 		CC_SEARCH_FLAGS='-Wl,-rpath,${LIB_RUNTIME_DIR}'
+@@ -5871,7 +5871,7 @@
+ fi
+ 
+ 	    case $system in
+-	    FreeBSD-3.*)
++	    FreeBSD-*)
+ 		# Version numbers are dot-stripped by system policy.
+ 		TCL_TRIM_DOTS=`echo ${VERSION} | tr -d .`
+ 		UNSHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}.a'
+@@ -11464,7 +11464,6 @@
+     echo "$LDFLAGS " | grep -q -- '-prebind ' && TK_SHLIB_LD_EXTRAS="${TK_SHLIB_LD_EXTRAS}"' -seg1addr 0xb000000'
+     TK_SHLIB_LD_EXTRAS="${TK_SHLIB_LD_EXTRAS}"' -sectcreate __TEXT __info_plist Tk-Info.plist'
+     EXTRA_WISH_LIBS='-sectcreate __TEXT __info_plist Wish-Info.plist'
+-    EXTRA_APP_CC_SWITCHES="${EXTRA_APP_CC_SWITCHES}"' -mdynamic-no-pic'
+                         ac_config_files="$ac_config_files Tk-Info.plist:../macosx/Tk-Info.plist.in Wish-Info.plist:../macosx/Wish-Info.plist.in"
+ 
+     for l in ${LOCALES}; do CFBUNDLELOCALIZATIONS="${CFBUNDLELOCALIZATIONS}<string>$l</string>"; done

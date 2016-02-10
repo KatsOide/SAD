@@ -1,0 +1,65 @@
+!
+! Tkinter Benchmark
+!
+FFS;
+
+N = 100;
+
+With[{tOrigin = ToDate$[0], tBoot = Date$[Tick->0]},
+  RealTimeUsed[] := FromDate[tOrigin + (Date$[Tick->0] - tBoot)]];
+
+Benchmark[] := With[{t0, dt, s0 = SeedRandom[]},
+  t0 = {TimeUsed[], RealTimeUsed[]};
+  w = KBMainFrame["TkBenchmark", f];
+  c = Canvas[f, Width->600, Height->400];
+  Canvas$Widget = c;
+  Update[];
+  dt = ({TimeUsed[], RealTimeUsed[]} - t0) * 1000;
+  ListPlot;
+  Print["\nCreate Canvas Widget & Update..."];
+  Print["  Mem Check: ", MemoryCheck[]];
+  StandardForm[$FORM = "F10.3";
+    Print["  Real Time: ", dt[[2]], "msec"];
+    Print["  CPU  Time: ", dt[[1]], "msec"];
+    ];
+
+  Print["ListPlot[] without DisplayFunction"];
+  t0 = {TimeUsed[], RealTimeUsed[]};
+  Do[ListPlot[Random[1000, 2], PlotJoined->True, DisplayFunction->Null], {N}];
+  dt = ({TimeUsed[], RealTimeUsed[]} - t0) / N * 1000;
+  Update[];
+  SeedRandom[s0];
+  Print["  Mem Check: ", MemoryCheck[]];
+  StandardForm[$FORM = "F10.3";
+    Print["  Real Time: ", dt[[2]], "msec/ListPlot[]"];
+    Print["  CPU  Time: ", dt[[1]], "msec/ListPlot[]"];
+    ];
+
+  Print["ListPlot[] without Update[]"];
+  t0 = {TimeUsed[], RealTimeUsed[]};
+  Do[ListPlot[Random[1000, 2], PlotJoined->True], {N}];
+  dt = ({TimeUsed[], RealTimeUsed[]} - t0) / N * 1000;
+  Update[];
+  SeedRandom[s0];
+  Print["  Mem Check: ", MemoryCheck[]];
+  StandardForm[$FORM = "F10.3";
+    Print["  Real Time: ", dt[[2]], "msec/ListPlot[]"];
+    Print["  CPU  Time: ", dt[[1]], "msec/ListPlot[]"];
+    ];
+
+  Print["ListPlot[] with Update[]"];
+  t0 = {TimeUsed[], RealTimeUsed[]};
+  Do[ListPlot[Random[1000, 2], PlotJoined->True]; Update[], {N}];
+  dt = ({TimeUsed[], RealTimeUsed[]} - t0) / N * 1000;
+  SeedRandom[s0];
+  Print["  Mem Check: ", MemoryCheck[]];
+  StandardForm[$FORM = "F10.3";
+    Print["  Real Time: ", dt[[2]], "msec/ListPlot[]"];
+    Print["  CPU  Time: ", dt[[1]], "msec/ListPlot[]"];
+    ];
+
+  ];
+
+Benchmark[]; Exit[0];
+
+! End of File

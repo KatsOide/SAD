@@ -1,0 +1,100 @@
+#!/bin/sh
+
+if which mktemp >/dev/null 2>&1; then
+    temp_dir=`mktemp -q -d /tmp/hostendianXXXXXXXXXXXX`
+    if [ $? -ne 0 ]; then
+	echo "UNKNOWN"
+	exit 1
+    fi
+    prev_dir=`pwd`
+    cd ${temp_dir}
+else
+    temp_dir=
+fi
+
+terminate () {
+    if [ "x${temp_dir}" != x ]; then
+	cd ${prev_dir}
+	rm -fr ${temp_dir}
+    else
+	rm -f ${endian_test}${suffix}
+	rm -f ${endian_test_source}
+    fi
+    exit $1
+}
+
+endian_test=endian_test
+cc_list="cc gcc"
+
+endian_test_source=${endian_test}.c
+
+cat >${endian_test_source}<<EOF
+#include <stdlib.h>
+
+int main() {
+  unsigned long seed = 0x01020304L;
+  unsigned char *pt  = (unsigned char *)&seed;
+
+  if (0x04 == pt[0] && 0x03 == pt[1] && 0x02 == pt[2] && 0x01 == pt[3]) {
+    printf("LE\n");
+    exit(0);
+  }
+  if (0x01 == pt[0] && 0x02 == pt[1] && 0x03 == pt[2] && 0x04 == pt[3]) {
+    printf("BE\n");
+    exit(0);
+  }
+  exit(1);
+}
+EOF
+
+check_endian () {
+checking=
+
+rm -f ${endian_test}${suffix}
+"$1" -o ${endian_test} ${endian_test_source} >/dev/null 2>&1
+
+if [ $? -eq 0 -a -x ${endian_test}${suffix} ]; then
+    ./${endian_test}
+    if [ $? -eq 0 ]; then
+	checking=success
+    else
+	checking=failed
+    fi
+fi
+
+case ${checking} in
+    success)
+	return 0
+	;;
+    *)
+	return 1
+	;;
+esac
+}
+
+for cc in ${cc_list}; do
+    path_rest="${PATH}:"
+    while [ -n "${path_rest}" ]; do
+	path="${path_rest%%:*}"
+	path_rest="${path_rest#*:}"
+
+	CC=
+	suffix=
+	if [ -x "${path}/${cc}.exe" ]; then
+	    suffix=.exe
+	    CC="${path}/${cc}"
+	elif [ -x "${path}/${cc}" ]; then
+	    CC="${path}/${cc}"
+	fi
+	if [ "x${CC}" != x ]; then
+	    if check_endian "${CC}"; then
+		terminate 0
+	    fi
+	fi
+    done
+done
+
+echo "UNKNOWN"
+terminate 1
+
+# End of File

@@ -1,0 +1,78 @@
+***************
+*** 24,29 ****
+  # define TCL_STORAGE_CLASS DLLEXPORT
+  #endif
+  
+  /*
+   * Legal values for the "compound" field of TkButton records.
+   */
+--- 24,33 ----
+  # define TCL_STORAGE_CLASS DLLEXPORT
+  #endif
+  
++ #define DEF_BUTTON_ALTFONT "-adobe-symbol-medium-r-normal--*-140-*-*-*-*-*-*"
++ #define DEF_BUTTON_SCRFONT "-adobe-helvetica-bold-r-normal--*-80-*-*-*-*-*-*"
++ #define DEF_BUTTON_ALTSCRFONT "-adobe-symbol-medium-r-normal--*-100-*-*-*-*-*-*"
++ 
+  /*
+   * Legal values for the "compound" field of TkButton records.
+   */
+***************
+*** 145,150 ****
+  				 * room for borders. */
+      Tk_Font tkfont;		/* Value of -font option: specifies font
+  				 * to use for display text. */
+      XColor *normalFg;		/* Value of -font option: specifies foreground
+  				 * color in normal mode. */
+      XColor *activeFg;		/* Value of -activeforeground option:
+--- 149,155 ----
+  				 * room for borders. */
+      Tk_Font tkfont;		/* Value of -font option: specifies font
+  				 * to use for display text. */
++     Tk_Font tkaltfont, tkscriptfont, tkaltscriptfont;
+      XColor *normalFg;		/* Value of -font option: specifies foreground
+  				 * color in normal mode. */
+      XColor *activeFg;		/* Value of -activeforeground option:
+***************
+*** 157,166 ****
+      GC normalTextGC;		/* GC for drawing text in normal mode.  Also
+  				 * used to copy from off-screen pixmap onto
+  				 * screen. */
+      GC activeTextGC;		/* GC for drawing text in active mode (NULL
+  				 * means use normalTextGC). */
+      GC disabledGC;		/* Used to produce disabled effect for text
+  				 * and check/radio marks. */
+      GC stippleGC;		/* Used to produce disabled stipple effect
+  				 * for images when disabled. */
+      Pixmap gray;		/* Pixmap for displaying disabled text if
+--- 162,174 ----
+      GC normalTextGC;		/* GC for drawing text in normal mode.  Also
+  				 * used to copy from off-screen pixmap onto
+  				 * screen. */
++     GC normalAltTextGC, normalScriptTextGC, normalAltScriptTextGC;
+      GC activeTextGC;		/* GC for drawing text in active mode (NULL
+  				 * means use normalTextGC). */
++     GC activeAltTextGC, activeScriptTextGC, activeAltScriptTextGC;
+      GC disabledGC;		/* Used to produce disabled effect for text
+  				 * and check/radio marks. */
++     GC disabledAltGC, disabledScriptGC, disabledAltScriptGC;
+      GC stippleGC;		/* Used to produce disabled stipple effect
+  				 * for images when disabled. */
+      Pixmap gray;		/* Pixmap for displaying disabled text if
+***************
+*** 253,258 ****
+  				 * invocataions of the button command. */
+      int flags;			/* Various flags;  see below for
+  				 * definitions. */
+  } TkButton;
+  
+  /*
+--- 261,268 ----
+  				 * invocataions of the button command. */
+      int flags;			/* Various flags;  see below for
+  				 * definitions. */
++     int rotation;
++     int bspecial;
+  } TkButton;
+  
+  /*

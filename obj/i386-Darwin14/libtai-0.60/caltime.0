@@ -1,0 +1,44 @@
+caltime(3)                                                          caltime(3)
+
+
+
+NNAAMMEE
+       caltime - calendar dates and times
+
+SSYYNNTTAAXX
+       ##iinncclluuddee <<ccaallttiimmee..hh>>
+
+       unsigned int ccaallttiimmee__ffmmtt(_s,&_c_t);
+       unsigned int ccaallttiimmee__ssccaann(_s,&_c_t);
+
+       struct caltime _c_t;
+       char *_s;
+
+DDEESSCCRRIIPPTTIIOONN
+       A  ssttrruucctt  ccaallttiimmee  value is a calendar date and time with an offset in
+       minutes from UTC.  It has five components:  ddaattee  (a  ssttrruucctt  ccaallddaattee),
+       hhoouurr   (0...23),   mmiinnuuttee   (0...59),   sseeccoonndd   (0...60),  and  ooffffsseett
+       (-5999...5999).
+
+       For example, a leap second occurred on 30 June 1997  at  23:59:60  UTC.
+       The local time in New York was 30 June 1997 19:59:60 -0400.  This local
+       time is represented inside a ssttrruucctt ccaallttiimmee with ddaattee containing  1997,
+       6, 30; hhoouurr 19; mmiinnuuttee 59; sseeccoonndd 60; and ooffffsseett -240 (4 hours).
+
+FFOORRMMAATTTTIINNGG
+       ccaallttiimmee__ffmmtt prints _c_t in ISO style (yyyy-mm-dd hh:mm:ss +oooo) into the
+       character buffer _s, without a terminating NUL.  It returns  the  number
+       of  characters  printed.   _s  may be zero; then ccaallttiimmee__ffmmtt returns the
+       number of characters that would have been printed.
+
+       ccaallttiimmee__ssccaann reads a calendar date, time, and offset in ISO style  from
+       the  beginning  of  the  character  buffer _s and puts them into _c_t.  It
+       returns the number of characters read.  If _s does  not  start  with  an
+       ISO-style date and time (including offset), ccaallttiimmee__ssccaann returns 0.
+
+SSEEEE AALLSSOO
+       caltime_tai(3), caldate(3), tai(3)
+
+
+
+                                                                    caltime(3)

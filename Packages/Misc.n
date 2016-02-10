@@ -1,0 +1,39 @@
+(* Misc.n 9/16/2002 *)
+
+With[{def={Threshold->1e-12,AbsoluteThreshold->1e-20}},
+  NearlySameQ[a_,b_]:=$NearlySameQ[Unevaluated$[a],Unevaluated$[b],1e-12,1e-20];
+  NearlySameQ[a_,b_,opt___]:=$NearlySameQ[Unevaluated$[a],Unevaluated$[b],
+    Threshold/.{opt}/.def,AbsoluteThreshold/.{opt}/.def]];
+
+FixedPoint[f_,e_,n_Real,opt___]:=FixedPoint$[f,e,n,opt];
+FixedPoint[f_,e_,opt___]:=FixedPoint$[f,e,Infinity,opt];
+FixedPointList[f_,e_,opt___]:=FixedPointList$[f,e,Infinity,opt];
+FixedPointList[f_,e_,n_Real,opt___]:=FixedPointList$[f,e,n,opt];
+With[{def={SameTest->NearlySameQ}},
+  FixedPointList$[f_,e_,n_,opt___]:=Module[{s=SameTest/.{opt}/.def,e0=e,e1},
+    If[s===NearlySameQ,
+      Table[If[NearlySameQ[e1,e0,opt],Break[]];e1=e0;e0=f[e0],{n}],
+      Table[If[s[e1,e0,opt],Break[]];e1=e0;e0=f[e0],{n}]]];
+  FixedPoint$[f_,e_,n_,opt___]:=Module[{s=SameTest/.{opt}/.def,e0=e,e1},
+    If[s===NearlySameQ,
+      Table[e1=f[e0];If[NearlySameQ[e1,e0,opt],Break[]];e0=e1,{n}],
+      Table[e1=f[e0];If[s[e1,e0],Break[]];e0=e1,{n}]];
+    e1]];
+
+SetAttributes[{NearlySameQ,FixedPoint,AbsoluteThreshold,FixedPoinstList,
+  FixdPoinstList$,FixedPoint$},Constant];
+
+FunctionDefinition[f_[arg___]]:=
+  Module[{d=Map[Hold,?f,{2}][[1]],downval,def},
+    downval=Cases[d,Hold[_:=_]];
+    def=Null;
+    Scan[
+      If[MatchQ[Hold[f[arg]],Extract[#,{1,1},Hold]],
+        def=#;Break[]]&,downval];
+    If[def<=>Null,
+      {Extract[def,{1,1},Hold],
+        Extract[def,{1,2},Hold],
+        Hold[f[arg]]/.(Extract[def,{1,1},Hold]->Extract[def,{1,2},Hold])},
+      Null]];
+
+SetAttributes[FunctionDefinition,HoldAll];

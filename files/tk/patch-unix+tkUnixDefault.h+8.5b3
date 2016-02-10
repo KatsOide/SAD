@@ -1,0 +1,12 @@
+--- unix/tkUnixDefault.h.orig	2007-10-30 02:57:35.000000000 +0100
++++ unix/tkUnixDefault.h	2007-11-15 12:16:52.000000000 +0100
+@@ -60,6 +60,9 @@
+ #define DEF_BUTTON_FG			BLACK
+ #define DEF_CHKRAD_FG			DEF_BUTTON_FG
+ #define DEF_BUTTON_FONT			"TkDefaultFont"
++#define DEF_BUTTON_ALTFONT		"TkDefaultAltFont"
++#define DEF_BUTTON_SCRFONT		"TkDefaultScriptFont"
++#define DEF_BUTTON_ALTSCRFONT		"TkDefaultAltScriptFont"
+ #define DEF_BUTTON_HEIGHT		"0"
+ #define DEF_BUTTON_HIGHLIGHT_BG_COLOR	DEF_BUTTON_BG_COLOR
+ #define DEF_BUTTON_HIGHLIGHT_BG_MONO	DEF_BUTTON_BG_MONO

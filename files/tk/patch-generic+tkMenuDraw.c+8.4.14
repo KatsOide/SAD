@@ -1,0 +1,22 @@
+diff -dur generic/tkMenuDraw.c.orig generic/tkMenuDraw.c
+--- generic/tkMenuDraw.c.orig	Wed Nov 12 09:04:31 2003
++++ generic/tkMenuDraw.c	Thu Feb 22 22:29:06 2007
+@@ -14,6 +14,8 @@
+ 
+ #include "tkMenu.h"
+ 
++int bKBMenuRestack=0;
++
+ /*
+  * Forward declarations for procedures defined later in this file:
+  */
+@@ -925,7 +927,9 @@
+     if (!Tk_IsMapped(menuPtr->tkwin)) {
+ 	Tk_MapWindow(menuPtr->tkwin);
+     }
++    bKBMenuRestack = 1;
+     TkWmRestackToplevel((TkWindow *) menuPtr->tkwin, Above, NULL);
++    bKBMenuRestack = 0;
+     return TCL_OK;
+ }
+ 

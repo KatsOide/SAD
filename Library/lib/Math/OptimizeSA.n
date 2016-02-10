@@ -1,0 +1,672 @@
+!
+! Function Optimizer based on Simulated Annealing Method
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: OptimizeSA.n,v 1.17 2009/01/30 03:16:39 amorita Exp $
+! Style:      Class Library
+! Require:    Prog/QFunctions.n
+!             RandomMT
+!
+Library@Require["Prog/QFunctions", "RandomMT"];
+
+! <<< OptimizeSA$Common >>>
+OptimizeSA$Common=Class[{}, (* Common library for SA method *)
+  { SeedRandom, Random, GaussRandom
+    },
+  {
+    },
+
+  (* Setup random number generator *)
+  Initialize$RandomNumberGenerator[] := Which[
+    FBoundQ[RandomMT], ( (* Generator based on Mersenne Twister *)
+      SeedRandom  = Literal[SeedRandomMT];
+      GaussRandom = Literal[GaussRandomMT];
+      Random      = Literal[RandomMT]),
+
+    True, ( (* SAD internal generator *)
+      SeedRandom  = Literal[SeedRandom];
+      GaussRandom = Literal[GaussRandom];
+      Random       = Literal[Random])];
+
+  (*--- Standard test target functions for simulated annealing ---*)
+  (* Rastrigin function[x_min = 0, f_min = 0] *)
+  Rastrigin[x__Real] := With[{N = Length[{x}], A = 10},
+    A * N + Plus@@({x}^2 - A * Cos[2 * Pi * {x}])];
+
+  (* Griewangk function[x_min = 0, f_min = 0] *)
+  Griewangk[x__Real] := With[{N = Length[{x}], W = 200},
+    Plus@@(({x} / W)^2) + 1 - Times@@Cos[{x} / Sqrt[Range[N]]]];
+
+  (*--- Neighborhood generator ---*)
+  Neighborhood[_, argv___] := Neighborhood["Flat", argv];
+
+  (* Flat neighborhood *)
+  Neighborhood["Flat", x0_, scale_, range_] := Module[{trial = 10,
+    N = Length[x0], x},
+    While[x = x0 + scale * 2 * (Random[N] - 0.5);
+      Not[And@@MapThread[#2[[1]] =< # =< #2[[2]]&, {x, range}]],
+      If[--trial < 0, Break[]]];
+    If[trial < 0,
+      x = MapThread[Min[#2[[2]], Max[#2[[1]], #]]&, {x, range}]];
+    x];
+
+  (*--- Core tools for simulated annealing method ---*)
+  (* Metropolis rule *)
+  Metropolis[dE_Real, T_Real] := Or[dE < 0, Random[] < Exp[-dE / T]];
+
+  (* Neighborhood range scaling function based on acceptance probability *)
+  g[p_Real] := With[{c = 2},
+    Which[
+      p > 0.6, (1 + c * (p - 0.6) / 0.4),
+      p < 0.4, (1 + c * (0.4 - p) / 0.4)^-1,
+      True, 1]];
+
+  (*--- Option decoder ---*)
+  (* for target function and design parameter *)
+  DecodeTargetFunction[op___] := Module[{f},
+    {f} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[TargetFunction, _]}];
+
+    If[Length[f] > 0, f[[1,2]], Rastrigin]];
+
+  DecodeTargetFunctionValue[op___] := Module[{x0, f, val},
+    {x0, f, val} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[InitialParameter, _],
+	(Rule|RuleDelayed)[TargetFunction, _],
+	(Rule|RuleDelayed)[TargetFunctionValue, _Real]}];
+    x0 = If[Length[x0] > 0, x0[[1,2]], Null];
+    val = If[Length[val] > 0, val[[1,2]], Null];
+
+    If[Length[x0] < 1, Return[INF]];
+    If[RealQ[val], val,
+      If[Length[f] > 0, Check[TargetFunction@@x0/.f, INF], INF]]];
+
+  DecodeParameterRange[op___] := Module[{x0, range, N, w = 1},
+    {x0, range} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[InitialParameter, _],
+	(Rule|RuleDelayed)[ParameterRange, _]}];
+    x0 = If[Length[x0] > 0, x0[[1,2]], Null]; N = Length[x0];
+    range = If[Length[range] > 0, range[[1,2]], Null];
+
+    If[N < 1, Return[$Failed]];
+
+    range = Switch[Dimensions[range],
+      {2},    Sort/@Table[range, {i, N}],
+      {_, 2}, Sort/@Take[Join[range, Table[Last[range], {i, N}]], N],
+      _,      Map[{# - w, # + w}&, x0]];
+
+    range];
+
+  (* for neighborhood generation *)
+  DecodeNeighborhoodMethod[op___] := Module[{method},
+    {method} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[NeighborhoodMethod, _String]}];
+    If[Length[method] > 0, method[[1,2]], "Flat"]];
+
+  DecodeNeighborhoodScale[op___] := Module[{scale},
+    {scale} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[NeighborhoodScale, _Real]}];
+    If[Length[scale] > 0, Abs[scale[[1,2]]], 1]];
+
+  DecodeNeighborhoodResolution[op___] := Module[{resolution},
+    {resolution} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[NeighborhoodResolution, _Real]}];
+    If[Length[resolution] > 0, Abs[resolution[[1,2]]], 1e-7]];
+
+  DecodeNeighborhoodScalingInterval[op___] := Module[{N},
+    {N} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[NeighborhoodScalingInterval, _Real]}];
+    If[Length[N] > 0, Max[0, Floor[N[[1,2]]]], 0]];
+
+  (* for annealing environment *)
+  DecodeTemperature[op___] := First[DecodeTemperatureRange[op]];
+  DecodeTemperatureRange[op___] := Module[{eps, T},
+    {eps, T} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[TemperatureEpsilon|Tepsilon, _Real],
+	(Rule|RuleDelayed)[Temperature, _Real|{__Real}]}];
+    eps = If[Length[eps] > 0, Abs[eps[[1,2]]], 0]; If[eps == 0, eps = 1e-18];
+    T = If[Length[T] > 0, T[[1,2]], 1];
+    Switch[Length[T],
+      0, T = Max[eps, T];        {T, T},
+      1, T = Max[eps, First[T]]; {T, T},
+      _, Max[eps, #]&/@Take[T, 2]]];
+
+  DecodeMarkovChainLength[op___] := Module[{L},
+    {L} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[MarkovChainLength
+	|LengthOfMarkovChain|MarkovChains|NumberOfAnnealing, _Real]}];
+    If[Length[L] > 0, Max[1, Floor[L[[1,2]]]], 1]];
+
+  DecodeCoolingSteps[op___] := Module[{N},
+    {N} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[CoolingSteps|NumberOfCoolingStep, _Real]}];
+    If[Length[N] > 0, Max[2, Floor[N[[1,2]]]], 2]];
+
+  (* for parallel environment *)
+  DecodeNumberOfTemperature[op___] := Module[{N},
+    {N} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[NumberOfTemperature, _Real]}];
+    If[Length[N] > 0, Max[2, Floor[N[[1,2]]]], 2]];
+
+  DecodeNumberOfExchange[op___] := Module[{N},
+    {N} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[NumberOfExchange|Exchanges, _Real]}];
+    If[Length[N] > 0, Max[2, Floor[N[[1,2]]]], 2]];
+
+  DecodeParallelState[op___] := Module[{state},
+    {state} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[ParallelState, _List]}];
+    If[Length[state] > 0, state[[1,2]], {}]];
+
+  DecodeSeedRandom[op___] := Module[{seed},
+    {seed} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[Literal[SeedRandom], _]}];
+    If[Length[seed] > 0, seed[[1,2]], SeedRandom[]]];
+
+  (* for diagnostics *)
+  DecodeTrackingCommand[op___] := Module[{cmd},
+    {cmd} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[TrackingCommand, _]}];
+    If[Length[cmd] > 0, Take[cmd, 1], {}]];
+
+  DecodeTemperatureTrack[op___] := Module[{track},
+    {track} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[TemperatureTrack, _List]}];
+    If[Length[track] > 0, track[[1,2]], {}]];
+
+  DecodeTotalTimeUsed[op___] := Module[{t},
+    {t} = SwitchCases[Override[Flatten[{op}]],
+      { (Rule|RuleDelayed)[TotalTimeUsed, _Real]}];
+    If[Length[t] > 0, t[[1,2]], 0]];
+
+  ];
+! >>> OptimizeSA$Common <<<
+OptimizeSA$Common@Initialize$RandomNumberGenerator[];
+
+! <<< OptimizeSA$Engine >>>
+OptimizeSA$Engine=Class[{OptimizeSA$Common}, (* SA engine class *)
+  {
+    def$Annealing = {
+      MarkovChainLength->100, Temperature->1,
+      TemperatureEpsilon->1e-8,
+      Null[]}
+    },
+  { configuration,
+    useAdaptiveNeighborhood, acceptProbability,
+    x0, e0, func, range, scale,
+    Nmethod, Nresol, Nscale, Ninterval,
+    T, Lmarkov},
+
+  Constructor[] := (
+    ResetConfig[]; Config@@Options);
+
+  (* Linkage API for parallel node module *)
+  UpdateCondition[{{x$__Real}, e$_, Nscale$_Real, p$_Real}] := (
+    x0 = {x$}; e0 = e$; Nscale = Nscale$; acceptProbability = p$);
+
+  (* Frontend API *)
+  ResetConfig[] := (configuration = {};
+    useAdaptiveNeighborhood = False;
+    acceptProbability = 0);
+
+  Config[op:((_Rule|_RuleDelayed)...)] := Module[{opt, initParam},
+    opt = Override[op, configuration, def$Annealing];
+
+    {initParam} = SwitchCases[opt, {(Rule|RuleDelayed)[InitialParameter, _]}];
+
+    (* Initialize target function *)
+    func  = DecodeTargetFunction[opt];
+    If[Length[initParam] > 0,
+      x0    = InitialParameter/.opt;
+      e0    = DecodeTargetFunctionValue[opt];
+      range = DecodeParameterRange[opt];
+      scale = Map[(#[[2]] - #[[1]]) / 2&, range]];
+
+    (* Initialize neighborhood scaling parameter *)
+    Nmethod   = DecodeNeighborhoodMethod[opt];
+    Nresol    = DecodeNeighborhoodResolution[opt];
+    Nscale    = DecodeNeighborhoodScale[opt];
+    Ninterval = DecodeNeighborhoodScalingInterval[opt];
+
+    (* Initialize annealing schedule *)
+    T = DecodeTemperature[opt];
+    Lmarkov = DecodeMarkovChainLength[opt];
+
+    (* In the case of scaling interval is longer than markov chain length *)
+    If[Ninterval > Lmarkov, Ninterval = If[Lmarkov > 6, Lmarkov, 0]];
+    useAdaptiveNeighborhood = (Ninterval > 0);
+
+    acceptProbability = 0;
+
+    configuration = Override[
+      TargetFunction:>func,
+      If[Length[initParam] < 1, Null[], Null[
+	InitialParameter:>x0,
+	TargetFunctionValue:>e0,
+	ParameterRange:>range]],
+
+      NeighborhoodMethod:>Nmethod,
+      NeighborhoodResolution:>Nresol, NeighborhoodScale:>Nscale,
+      NeighborhoodScalingInterval:>Ninterval,
+
+      Temperature:>T, MarkovChains:>Lmarkov,
+
+      configuration]];
+
+  InitialCondition[] := {x0, e0, Nscale, acceptProbability};
+
+  TrackingInformation[] := {x0,
+    TargetFunctionValue->e0, NeighborhoodScale->Nscale,
+    SuccessProbability->acceptProbability,
+    FinalTemperature->T,
+    Null[]};
+
+  (* Standard simulated annealing algorism with adaptive neighborhood *)
+  Annealing[{x$__Real}, e$_, Nscale$_Real, _, T$_Real] := Module[{x, e,
+    success, newNscale, successRescale, trialRescale},
+
+    x0 = {x$}; e0 = If[RealQ[e$], e$, func@@x0];
+    Nscale = Nscale$; T = T$;
+
+    success = 0;
+    successRescale = success; trialRescale = Ninterval;
+    Do[(
+      x = Neighborhood[Nmethod, x0, Nscale * scale, range]; e = func@@x;
+      If[Metropolis[e - e0, T],
+	success += 1; e0 = e; x0 = x];
+
+      (* Adaptive neighborhood *)
+      If[useAdaptiveNeighborhood && trial >= trialRescale,
+	newNscale = Nscale * g[(success - successRescale) / Ninterval];
+	If[newNscale < Nresol, newNscale = Sqrt[newNscale * Nresol]];
+	If[newNscale > 1, newNscale = Sqrt[newNscale]];
+	Nscale = newNscale;
+	successRescale = success; trialRescale = trial + Ninterval];
+      ), {trial, 1, Lmarkov}];
+
+    acceptProbability = If[Lmarkov > 0, success / Lmarkov, 0];
+    {x0, e0, Nscale, acceptProbability}];
+  ];
+! >>> OptimizeSA$Engine <<<
+
+! <<< OptimizeSA$Node >>>
+OptimizeSA$Node=Class[{}, (**)
+  { SizeOfReal = 8, CmdRegSize = 32,
+    AnnealingMsgSize = 128 + 16
+    },
+  { pid = Null, engine, cmdReg, msgReg, msgRegSize
+    },
+
+  Destructor[] := (
+    If[Not[Kill[1]], ForceKill[]];
+    If[RealQ[cmdReg], CloseShared[cmdReg]];
+    If[RealQ[msgReg], CloseShared[msgReg]];
+    engine =.);
+
+  Constructor[] := (
+    engine = OptimizeSA$Engine[Null@@Options]);
+
+  (* Process control *)
+  Kill[timeout_Real:0] := If[Not[ServerQ[]], True,
+    If[Not[WaitIdle[timeout]], Return[False]];
+    Shared[cmdReg] = "Kill"; WaitAccept["Kill", timeout];
+    If[Shared[cmdReg] <=> "Done:Kill", Return[False]];
+    pid = Null; Shared[cmdReg] = "";
+    Check[Wait[], $Failed]; True];
+
+  ForceKill[] := If[ServerQ[],
+    If[StandardForm[Get["!ps -p "//pid//" | wc -l"]] > 1,
+      StandardForm[System["kill "//pid]];
+      Check[Wait[], $Failed]];
+    pid = Null; Shared[cmdReg] = ""];
+
+  NodeFork[] := Module[{N, MaxMsgSize},
+    N = Length[First[engine@InitialCondition[]]]; (* Dimension of parameter *)
+    MaxMsgSize = Max[ (* Maximum message size *)
+      AnnealingMsgSize + SizeOfReal * N,
+      SharedSize[engine@SeedRandom[]],
+      0];
+
+    If[Not[RealQ[cmdReg]], cmdReg = OpenShared[CmdRegSize]];
+    If[Not[RealQ[msgReg] && msgRegSize >= MaxMsgSize],
+      If[RealQ[msgReg], CloseShared[msgReg]];
+      msgRegSize = MaxMsgSize; msgReg = OpenShared[msgRegSize]];
+
+    If[RealQ[cmdReg] && RealQ[msgReg],
+      Shared[cmdReg] = ""; Shared[msgReg] = Null; Fork[], -1]];
+
+  RequireNode[] := If[HasChildQ[], ServerQ[], Switch[pid = NodeFork[]; pid,
+    -1, pid = Null; $Failed,
+    0, FFS$InterruptMask = 7; $FORM = ""; NodeServer[],
+    _, True]];
+
+  Pause[seconds_Real] := If[seconds > 0, If[TkinterQ[] && ServerQ[],
+    Module[{dt = 10e-3, count},
+      count = Ceiling[seconds / dt]; dt = seconds / count;
+      Do[(Literal[Pause][dt]; Update[TkTasks]), {i, count}]],
+    Literal[Pause][seconds]]];
+
+  (* Q functions *)
+  ProcessQ[id_Real] := StandardForm[Get["!ps -p "//pid//" | wc -l"] > 1];
+
+  HasChildQ[] := RealQ[pid];
+
+  ServerQ[] := RealQ[pid] && pid > 0;
+
+  NodeQ[] := RealQ[pid] && pid == 0;
+
+  ReadyQ[] := ServerQ[] && "Ready" === Shared[cmdReg];
+
+  IdleQ[] := ServerQ[] && With[{status = Shared[cmdReg]},
+    Switch[status,
+      "Ready", True,
+      _String, status[1,5] === "Done:",
+      _, False]];
+
+  (* Process wait method *)
+  WaitAccept[cmd_String, timeout$_Real:0] := With[{dt = 10e-3},
+    If[ServerQ[], Module[{timeout = timeout$}, If[timeout > 0,
+      While[timeout > 0 && Shared[cmdReg] === cmd, timeout -= dt; Pause[dt]],
+      While[Shared[cmdReg] === cmd, Pause[dt]]];
+      Shared[cmdReg] <=> cmd], False]];
+
+  WaitReady[timeout$_Real:0] := With[{dt = 10e-3},
+    If[ServerQ[], Module[{timeout = timeout$}, If[timeout > 0,
+      While[timeout > 0 && Not[ReadyQ[]], timeout -= dt; Pause[dt]],
+      While[Not[ReadyQ[]], Pause[dt]]];
+      ReadyQ[]], False]];
+
+  WaitIdle[timeout$_Real:0] := With[{dt = 10e-3},
+    If[ServerQ[], Module[{timeout = timeout$}, If[timeout >0,
+      While[timeout > 0 && Not[IdleQ[]], timeout -= dt; Pause[dt]],
+      While[Not[IdleQ[]], Pause[dt]]];
+      IdleQ[]], True]];
+
+  WaitCommandPhase[timeout_Real:0] := And[WaitIdle[timeout],
+    WaitReady[10e-3] || (Shared[cmdReg] = "Reset"; WaitReady[100e-3])];
+
+  (* Node server loop *)
+  NodeServer[] := Module[{cmd, msg, next = "Ready", t0 = TimeUsed[]}, While[True,
+    Shared[cmdReg] = next;
+    While[cmd = Shared[cmdReg]; (* Receive command *)
+      cmd === "Ready" || cmd[1,5] === "Done:" , Pause[10e-3]];
+    msg = Shared[msgReg]; (* Receive message *)
+!StandardForm[Print["Node[", GetPID[], "] Receive: ", cmd, "[", msg, "]"]];
+    Switch[cmd,
+      "Annealing", (
+	Shared[cmdReg] = "Busy:"//cmd; next = "Done:"//cmd;
+	msg = engine@Annealing[Null@@msg];
+	Shared[msgReg] = msg),
+
+      "SeedRandom", (
+	Shared[cmdReg] = "Busy:"//cmd; next = "Done:"//cmd;
+	engine@SeedRandom[msg]; msg = engine@SeedRandom[];
+	Shared[msgReg] = msg),
+
+      "SeedRandomQ", (
+	Shared[cmdReg] = "Busy:"//cmd; next = "Done:"//cmd;
+	msg = engine@SeedRandom[];
+	Shared[msgReg] = msg),
+
+      "TotalCPUTimeQ", (
+	Shared[cmdReg] = "Busy:"//cmd; next = "Done:"//cmd;
+	msg = TimeUsed[] - t0;
+	Shared[msgReg] = msg),
+
+      "Reset", next = "Ready",
+
+      "Kill", Shared[msgReg] = Null; Shared[cmdReg] = "Done:"//cmd; Exit[],
+
+      _, (* Nothing TODO *)]]];
+
+  ReceiveAnnealing[timeout_Real:0] := If[ServerQ[]
+    && Shared[cmdReg][-9,-1] === "Annealing",
+    If[WaitIdle[timeout] && Shared[cmdReg] === "Done:Annealing",
+      engine@UpdateCondition[Shared[msgReg]];
+      Shared[cmdReg] = "Reset"; True, False], True];
+
+  (* Linkage API for parallel SA scheduler *)
+  UpdateCondition[argv__] := engine@UpdateCondition[argv];
+
+  (* Frontend API *)
+  ResetConfig[] := (If[Not[Kill[1]], ForceKill[]]; engine@ResetConfig[]);
+
+  Config[op:((_Rule|_RuleDelayed)...)] := (If[Not[Kill[1]], ForceKill[]];
+    engine@Config[op]);
+
+  InitialCondition[timeout_Real:0] := (
+    ReceiveAnnealing[timeout];
+    engine@InitialCondition[]);
+
+  TrackingInformation[timeout_Real:0] := (
+    ReceiveAnnealing[timeout];
+    engine@TrackingInformation[]);
+
+  Annealing[{x$__Real}, e$_, Nscale$_Real, _, T$_Real] := Module[{status},
+    If[RequireNode[] <=> True, Return[$Failed]];
+    If[WaitCommandPhase[100],
+      Shared[msgReg] = {{x$}, e$, Nscale$, 0, T$};
+      Shared[cmdReg] = "Annealing";
+      WaitAccept["Annealing", 10e-3],
+      $Failed]];
+
+  SeedRandom[] := Module[{msg},
+    If[RequireNode[] <=> True, Return[$Failed]];
+    If[WaitCommandPhase[100],
+      Shared[cmdReg] = "SeedRandomQ";
+      If[WaitIdle[1] && Shared[cmdReg] === "Done:SeedRandomQ",
+	msg = Shared[msgReg]; Shared[cmdReg] = "Reset"; msg,
+	$Failed], $Failed]];
+
+  SeedRandom[argv_] := Module[{msg},
+    If[RequireNode[] <=> True, Return[$Failed]];
+    If[WaitCommandPhase[100],
+      Shared[msgReg] = argv;
+      Shared[cmdReg] = "SeedRandom";
+      If[WaitIdle[1] && Shared[cmdReg] === "Done:SeedRandom",
+	msg = Shared[msgReg]; Shared[cmdReg] = "Reset"; msg,
+	$Failed], $Failed]];
+
+  TotalCPUTime[] := Module[{msg},
+    If[RequireNode[] <=> True, Return[$Failed]];
+    If[WaitCommandPhase[100],
+      Shared[cmdReg] = "TotalCPUTimeQ";
+      If[WaitIdle[1] && Shared[cmdReg] === "Done:TotalCPUTimeQ",
+	msg = Shared[msgReg]; Shared[cmdReg] = "Reset"; msg,
+	$Failed], $Failed]];
+
+  ];
+! >>> OptimizeSA$Node <<<
+
+! <<< OptimizeSA$Core >>>
+OptimizeSA$Core=Class[{OptimizeSA$Common}, (* Core library for SA method *)
+  {
+    def$Annealing = {
+      MarkovChainLength->100, Temperature->1,
+      TemperatureEpsilon->1e-8,
+      Null[]}
+    },
+  {
+    },
+
+  (* Standard simulated annealing algorism with adaptive neighborhood *)
+  Annealing[{x$__Real}, op:((_Rule|_RuleDelayed)...)] := Module[{opt,
+    useAdaptiveNeighborhood,
+    x0, e0, func, range, scale,
+    Nmethod, Nresol, Nscale, Ninterval,
+    T, Lmarkov,
+    x, e, success,
+    newNscale, successRescale, trialRescale},
+
+    x0 = {x$};
+    opt = Override[InitialParameter->x0, op, def$Annealing];
+
+    (* Initialize target function *)
+    func  = DecodeTargetFunction[opt];
+    e0    = DecodeTargetFunctionValue[opt];
+    range = DecodeParameterRange[opt];
+    scale = Map[(#[[2]] - #[[1]]) / 2&, range];
+
+    (* Initialize neighborhood scaling parameter *)
+    Nmethod   = DecodeNeighborhoodMethod[opt];
+    Nresol    = DecodeNeighborhoodResolution[opt];
+    Nscale    = DecodeNeighborhoodScale[opt];
+    Ninterval = DecodeNeighborhoodScalingInterval[opt];
+    (* Initialize annealing schedule *)
+    T = DecodeTemperature[opt];
+    Lmarkov = DecodeMarkovChainLength[opt];
+
+    (* In the case of scaling interval is longer than markov chain length *)
+    If[Ninterval > Lmarkov, Ninterval = If[Lmarkov > 6, Lmarkov, 0]];
+    useAdaptiveNeighborhood = (Ninterval > 0);
+    
+    success = 0;
+    successRescale = success; trialRescale = Ninterval;
+    Do[(
+      x = Neighborhood[Nmethod, x0, Nscale * scale, range]; e = func@@x;
+      If[Metropolis[e - e0, T],
+	success += 1; e0 = e; x0 = x];
+
+      (* Adaptive neighborhood *)
+      If[useAdaptiveNeighborhood && trial >= trialRescale,
+	newNscale = Nscale * g[(success - successRescale) / Ninterval];
+	If[newNscale < Nresol, newNscale = Sqrt[newNscale * Nresol]];
+	If[newNscale > 1, newNscale = Sqrt[newNscale]];
+	Nscale = newNscale;
+	successRescale = success; trialRescale = trial + Ninterval];
+      ), {trial, 1, Lmarkov}];
+
+    {x0, TargetFunctionValue->e0, NeighborhoodScale->Nscale,
+      SuccessProbability->If[Lmarkov > 0, success / Lmarkov, 0],
+      FinalTemperature->T,
+      Null[]}];
+  ];
+! >>> OptimizeSA$Core <<<
+
+! <<< OptimizeSA$AN >>>
+OptimizeSA$AN=Class[{OptimizeSA$Common}, (* SA with AN *)
+  {
+    def$Annealing = {
+      NeighborhoodScalingInterval->7, CoolingSteps->100,
+      Null[]}
+    },
+  {
+    },
+
+  Annealing[{x$__Real}, op:((_Rule|_RuleDelayed)...)] := Module[{opt,
+    Tbegin, Tend, Nstep, tracking,
+    engine, sa, probability, info, Ttrace},
+
+    opt = Override[InitialParameter->{x$}, op, def$Annealing];
+    engine = OptimizeSA$Engine[Null@@opt];
+
+    {Tbegin, Tend} = DecodeTemperatureRange[opt];
+    Nstep = DecodeCoolingSteps[opt];
+    tracking = DecodeTrackingCommand[opt];
+
+    {Tbegin, Tend} = Log/@{Tbegin, Tend};
+    probability = 0;
+    sa = engine@InitialCondition[];
+    Ttrace = Table[With[{T = Exp[If[Nstep < 1, Tend,
+      Tend * i / Nstep + Tbegin * (1 - i / Nstep)]]},
+      sa = engine@Annealing[Null@@sa, T];
+      info = engine@TrackingInformation[];
+      probability += SuccessProbability/.Rest[info];
+      TrackingCommand@@info/.tracking;
+      T], {i, 0, Nstep}];
+
+    {First[info], Null@@Override[
+      SuccessProbability->probability / (Nstep + 1),
+      TemperatureTrack->Join[DecodeTemperatureTrack[opt], Ttrace],
+      Rest[info]]}];
+  ];
+! >>> OptimizeSA$AN <<<
+
+! <<< OptimizeSA$TPAN >>>
+OptimizeSA$TPAN=Class[{OptimizeSA$Common}, (* TPSA with AN *)
+  {
+    def$Annealing = {
+      NumberOfTemperature->8, NumberOfExchange->50,
+      NeighborhoodScalingInterval->7,
+      Null[]}
+    },
+  {
+    },
+
+  Annealing[{x$__Real}, op:((_Rule|_RuleDelayed)...)] := Module[{opt,
+    Tmax, Tmin, TmaxL, TminL, Ntemp, Nstep, scale, tracking, state, Ttrace0,
+    Temp, node, sa, id, Ttrace, swap, probability, info, time,
+    i, l},
+
+    opt = Override[InitialParameter->{x$}, op, def$Annealing];
+
+    {Tmax, Tmin} = DecodeTemperatureRange[opt];
+    Ntemp = Max[1, DecodeNumberOfTemperature[opt] - 1];
+    Nstep = DecodeNumberOfExchange[opt];
+    scale = DecodeNeighborhoodScale[opt];
+
+    tracking = DecodeTrackingCommand[opt];
+
+    (* Decoding previous parallel node state *)
+    ScanThread[(state[#] = #2)&,
+      {Range[0, Ntemp], Take[Join[DecodeParallelState[opt],
+	Table[{}, {i, 0, Ntemp}]], Ntemp + 1]}];
+
+    {TmaxL, TminL} = Log/@{Tmax, Tmin};
+    Do[With[{T = Exp[TmaxL * i / Ntemp + TminL * (1 - i / Ntemp)], i},
+      Temp[i] = T; Ttrace[i] = {}; id[i] = i;
+      Ttrace0[i] = DecodeTemperatureTrack[state[i]];
+      node[i] = OptimizeSA$Node[Temperature->Temp[i], Null@@state[i],
+	NeighborhoodScale->(scale * Sqrt[T / Tmax]), Null@@opt];
+      node[i]@SeedRandom[DecodeSeedRandom[state[i],
+	SeedRandom->Mod[GetPID[] + FromDate[] * i, 2^32]]];
+      sa[i] = node[i]@InitialCondition[];
+      ], {i, 0, Ntemp}];
+
+    probability = 0;
+    Table[With[{l},
+Print["Iteration ",l];
+      Do[With[{i}, (* Start parallel annealing *)
+Print["Debug: ",StandardForm["Node["//i//" - "//id[i]//"] = "],Reverse[Append[Take[sa[i],3],Temp[i]]]];
+	node[i]@Annealing[Null@@sa[i], Temp[i]];
+	AppendTo[Ttrace[id[i]], Temp[i]]], {i, 0, Ntemp}];
+
+      (* Waiting node ... *)
+      While[Not[And@@Table[node[i]@WaitIdle[10e-3], {i, 0, Ntemp}]], (* *)];
+
+      Do[With[{i}, (* Update node parameter block *)
+	sa[i] = node[i]@InitialCondition[]], {i, 0, Ntemp}];
+
+      (* Exchang node temperature by Metropolis rule *)
+      Do[With[{i1 = i, i2 = i + 1, sa1 = sa[i], sa2 = sa[i + 1]},
+	If[Metropolis[(sa1[[2]] - sa2[[2]]) * (Temp[i1] - Temp[i2]),
+	  Temp[i1] * Temp[i2]],
+	  (* swap solution & tracking id, but keep neighborhood scale *)
+	  swap = {sa2, sa1}; swap[[1,3]] = sa1[[3]]; swap[[2,3]] = sa2[[3]];
+	  {sa[i1], sa[i2]} = swap;
+	  swap = id[i1]; id[i1] = id[i2]; id[i2] = swap]],
+	{i, If[EvenQ[l], 0, 1], Ntemp - 1, 2}];
+
+      (* Inform Tmin node... *)
+      node[0]@UpdateCondition[sa[0]]; (* Force update exchanged node *)
+      info = node[0]@TrackingInformation[];
+      probability += SuccessProbability/.Rest[info];
+      TrackingCommand@@info/.tracking;
+      T], {l, 1, Nstep}];
+
+    time = Plus@@Table[node[i]@TotalCPUTime[], {i, 0, Ntemp}];
+
+    {First[info], Null@@Override[
+      SuccessProbability->probability / (Nstep + 1), Rest[info],
+      TimeUsed->time, TotalTimeUsed->DecodeTotalTimeUsed[opt] + time,
+      TemperatureTrack->Join[DecodeTemperatureTrack[opt], Ttrace[id[0]]],
+      ParallelState->Table[With[{track = node[i]@TrackingInformation[]},
+	Override[InitialParameter->First[track],
+	  TemperatureTrack->Join[Ttrace0[id[i]], Ttrace[id[i]]],
+	  Literal[SeedRandom]->node[i]@SeedRandom[],
+	  Rest[track]]], {i, 0, Ntemp}],
+      op]}];
+  ];
+! >>> OptimizeSA$TPAN <<<
+
+! End of File

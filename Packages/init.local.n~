@@ -1,0 +1,22 @@
+(* Please localize this file as you like. *)
+
+Environment@@[{
+  {"UNIX95",""},
+  {"TCL_LIBRARY",""},
+  {"TK_LIBRARY",""},
+  {"KBFRAMEDIR","/Users/oide/SAD/oldsad/KBFrame"},
+  {"PYTHONPATH","/Users/oide/SAD/oldsad/Packages/"}
+  },{1}];
+
+DocumentsDirectory="/Users/oide/SAD/oldsad/Documents/";
+ExamplesDirectory="/Users/oide/SAD/oldsad/script/";
+
+With[{fontsystem = "Xft"},
+  If[StringQ[fontsystem] && StringLength[fontsystem] > 0,
+    $FontSystem=fontsystem]];
+
+With[{path = "/Users/oide/SAD/oldsad//share/Extension", path0 = Environment["SAD_LIBRARY"]},
+  If[StringQ[path] && StringLength[path] > 1,
+    Environment["SAD_LIBRARY"] = If[path0 === "", path, path//":"//path0]]];
+
+! End of File

@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="ja-JP">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-2022-JP">
+<TITLE>kblogrd</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<HR><DIV ALIGN="CENTER"><H2>kblogrd 使用法 （暫定版）</H2></DIV><HR>
+
+<P><STRONG>注意:</STRONG>このコマンドは完成にはまだ程遠い状態です。
+以下の記述に従って使用しても期待した結果を出力しない場合があります。
+また、検索に非常に時間がかかる場合もあります。
+現在acsad2またはacsad3の上で利用可能です。</P>
+
+<H2>形式</H2>
+
+<P>kblogrdによって、/vdata2/KEKBLog/の下にあるロギングデータを
+読むことができます。</P>
+
+<PRE><CODE>
+/usr/local/bin/kblogrd [-r EPICSレコード名[,EPICSレコード名]...] 
+                       [-t 開始時間[-[終了時間][d時間間隔]]]
+                       [-f 出力形式] ログデータファイル
+</CODE></PRE>
+
+<H3>レコード名指定オプション -r</H3>
+<P>出力したいEPICSレコード名を','で区切って指定します。
+レコード名の最後に'-'をつけると、そのレコード名は正規表現と解釈され、
+複数のレコード名を指定できます。</P>
+
+<H3>時刻指定オプション -t</H3>
+<P>時間は、yyyymmddhhmmssの形式で指定します。hh,mm,ssは00の場合に限り右から
+省略することができます。</P>
+<UL>
+<LI>時刻指定オプションがないときには、最新のログファイルの内容から出力します。
+<LI>'開始時間'のみを指定すると、その時刻の値のリストを出力します。
+<LI>'開始時間-'の形式は、開始時間から現在迄を表します。
+<LI>'開始時間-終了時間'は、その時間の間の値を出力します。
+</UL>
+<P>'d時間間隔'は、値を出力する時間間隔を指定します。
+その間のレコードの値は無視されます。</P>
+
+<H3>出力形式オプション -f</H3>
+<P>出力形式には'free'、'sad'、'kaleida'の3種類があります。
+省略時にはfreeになります。</P>
+
+<H3>何がいつロギングされているか</H3>
+<P>どのEPICSレコードがロギングされているかは、/vdata2/KEKBLog/の
+サブディレクトリにある'.lcf'で終るファイルを見ればわかります。
+殆どのものはグループ別のサブディレクトリに分類されています。
+例としてQCSLのLERの水平方向BPMの読みを見たい時には、
+/vdata2/KEKBLog/BM/BPM.lcfの
+中にBMLBPM:D01_QCSLP:XPOSという行が存在するので、</P>
+
+<PRE><CODE>
+/usr/local/bin/kblogrd -r BMLBPM:D01_QCSLP:XPOS BM/BPM
+</CODE></PRE>
+
+<P>というコマンドで値を見ることができます。BPM.lcfファイルと同じディレクトリに
+はBPM_yyyymmddhhmmss.log1及びBPM_yyyymmddhhmmss.log2という名前のファイルが
+(複数)存在します。このファイル名のyyyymmddhhmmssはそのファイルにログが書き
+始められた時刻です。このファイルの最後のデータが書かれた時刻はファイルの
+最終更新時刻で見て下さい。ロギングは連続的に行われているわけではなく、
+様々な理由により空白が存在します。空白の取り扱いは時間の指定法や出力形式に
+より違っているので注意して下さい。</P>
+
+<H2>Example</H2>
+
+<UL>
+<LI>両リングのDCCT電流値
+<PRE><CODE>
+    kblogrd -r BM_DCCT:HCUR,BM_DCCT:LCUR -t 1999020412-199902241530d10 BM/DCCT
+ or
+    kblogrd -r '^BM_DCCT:[HL]CUR$-' -t 1999020412-199902241530d10 BM/DCCT
+</CODE></PRE>
+</UL>
+
+<HR><ADDRESS>このページに関する御意見・質問は
+<A HREF="mailto:samo.stanic@kek.jp">Samo Stanic</A>
+まで.</ADDRESS>
+</BODY>
+</HTML>

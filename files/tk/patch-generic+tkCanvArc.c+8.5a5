@@ -1,0 +1,53 @@
+--- generic/tkCanvArc.c.orig	Sat Nov  5 08:41:34 2005
++++ generic/tkCanvArc.c	Fri Feb 23 13:45:08 2007
+@@ -266,6 +266,40 @@
+  *
+  *--------------------------------------------------------------
+  */
++static int
++KBCreateArc(
++    Tcl_Interp *interp,		/* Interpreter for error reporting. */
++    Tk_Canvas canvas,		/* Canvas to hold new item. */
++    Tk_Item *itemPtr,		/* Record to hold new item; header has been
++				 * initialized by caller. */
++    int objc,			/* Number of arguments in objv. */
++    Tcl_Obj *CONST objv[])	/* Arguments describing arc. */
++{
++    ArcItem *arcPtr = (ArcItem *) itemPtr;
++    int i;
++    int nn;
++    double *bb;
++
++    objc = -objc;
++    nn = *((int *)objv[objc-2]);
++    bb = (double *)objv[objc-1];
++    objc -= 2;
++
++    /*
++     * Process the arguments to fill in the item record.
++     */
++
++    for (i=0; i<4; i++)
++	arcPtr->bbox[i] = bb[i];
++    ComputeArcBbox(canvas, arcPtr);
++    if (ConfigureArc(interp, canvas, itemPtr, objc, objv, 0) == TCL_OK) {
++	return TCL_OK;
++    }
++    /*error:*/
++    DeleteArc(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
++    return TCL_ERROR;
++}
++
+ 
+ static int
+ CreateArc(
+@@ -304,6 +338,9 @@
+     arcPtr->disabledFillStipple = None;
+     arcPtr->style = PIESLICE_STYLE;
+     arcPtr->fillGC = None;
++
++    if (objc<0)
++	return KBCreateArc(interp, canvas, itemPtr, objc, objv);
+ 
+     /*
+      * Process the arguments to fill in the item record.

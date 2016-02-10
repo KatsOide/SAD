@@ -1,0 +1,58 @@
+--- unix/configure.orig	2011-06-24 03:37:15.000000000 +0900
++++ unix/configure	2012-09-18 16:22:59.084374948 +0900
+@@ -4844,7 +4844,7 @@
+     # is disabled by the user. [Bug 1016796]
+     LDFLAGS_ARCH=""
+     UNSHARED_LIB_SUFFIX=""
+-    TCL_TRIM_DOTS='`echo ${VERSION} | tr -d .`'
++    TCL_TRIM_DOTS=`echo ${VERSION} | tr -d .`
+     ECHO_VERSION='`echo ${VERSION}`'
+     TCL_LIB_VERSIONS_OK=ok
+     CFLAGS_DEBUG=-g
+@@ -5851,10 +5851,10 @@
+ 	    # NetBSD 2.* has ELF and can use 'cc -shared' to build shared libs
+ 	    SHLIB_CFLAGS="-fPIC"
+ 	    SHLIB_LD='${CC} -shared ${SHLIB_CFLAGS}'
++	    TCL_SHLIB_LD_EXTRAS="-Wl,-soname,\$@"
+ 	    SHLIB_SUFFIX=".so"
+ 	    DL_OBJS="tclLoadDl.o"
+ 	    DL_LIBS=""
+-	    LDFLAGS="$LDFLAGS -export-dynamic"
+ 	    if test $doRpath = yes; then
+ 
+ 		CC_SEARCH_FLAGS='-Wl,-rpath,${LIB_RUNTIME_DIR}'
+@@ -5871,7 +5871,7 @@
+ fi
+ 
+ 	    case $system in
+-	    FreeBSD-3.*)
++	    FreeBSD-*)
+ 	    	# FreeBSD-3 doesn't handle version numbers with dots.
+ 	    	UNSHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}.a'
+ 	    	SHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}.so'
+@@ -5883,7 +5883,7 @@
+ 	    # This configuration from FreeBSD Ports.
+ 	    SHLIB_CFLAGS="-fPIC"
+ 	    SHLIB_LD="${CC} -shared"
+-	    TCL_SHLIB_LD_EXTRAS="-soname \$@"
++	    TCL_SHLIB_LD_EXTRAS="-Wl,-soname,\$@"
+ 	    SHLIB_SUFFIX=".so"
+ 	    DL_OBJS="tclLoadDl.o"
+ 	    DL_LIBS=""
+@@ -5905,7 +5905,7 @@
+ 	    # Version numbers are dot-stripped by system policy.
+ 	    TCL_TRIM_DOTS=`echo ${VERSION} | tr -d .`
+ 	    UNSHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}.a'
+-	    SHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}\$\{DBGX\}.so.1'
++	    SHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}\$\{DBGX\}.so'
+ 	    TCL_LIB_VERSIONS_OK=nodots
+ 	    ;;
+ 	Darwin-*)
+@@ -11171,7 +11171,6 @@
+     echo "$LDFLAGS " | grep -q -- '-prebind ' && TK_SHLIB_LD_EXTRAS="${TK_SHLIB_LD_EXTRAS}"' -seg1addr 0xb000000'
+     TK_SHLIB_LD_EXTRAS="${TK_SHLIB_LD_EXTRAS}"' -sectcreate __TEXT __info_plist Tk-Info.plist'
+     EXTRA_WISH_LIBS='-sectcreate __TEXT __info_plist Wish-Info.plist'
+-    EXTRA_APP_CC_SWITCHES="${EXTRA_APP_CC_SWITCHES}"' -mdynamic-no-pic'
+                         ac_config_files="$ac_config_files Tk-Info.plist:../macosx/Tk-Info.plist.in Wish-Info.plist:../macosx/Wish-Info.plist.in"
+ 
+     for l in ${LOCALES}; do CFBUNDLELOCALIZATIONS="${CFBUNDLELOCALIZATIONS}<string>$l</string>"; done

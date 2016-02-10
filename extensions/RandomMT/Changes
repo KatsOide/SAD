@@ -1,0 +1,662 @@
+2008/04/22:
+  Fix ParabolaRandomMT definition
+	RandomMT.n
+	RandomSFMT.n
+
+  Update document for RandomMT-Rev.19
+	README.ja
+
+2008/03/27 12:10:02 +0100:
+  Update document for RandomMT-Rev.18
+	README.ja
+
+2008/03/27 12:03:48 +0100:
+  Remove dependency to Random/Framework sub-modules
+	RandomMT.n
+	RandomSFMT.n
+
+2008/03/27 11:23:47 +0100:
+  Remove Framework sub-modules
+   - This module is already integrated into SAD Core.
+     tfRandom_.c frontend is maintained at /trunk/src/tfRandom_.c
+	Framework/			(remove)
+
+2008/03/26 10:59:23 +0100:
+  Append obj into svn:ignore
+	./
+
+2008/03/26 10:57:36 +0100:
+  Remove unused Compatible directory
+	Compatible/			(remove)
+
+2008/03/26 10:54:16 +0100:
+  Change directory structure
+   - Move Random*.n files from Compatible to top
+   - Update top directory Makefile
+    * Move Compatible/Makefile to top
+      by svn merge Makefile@1607 Compatible/Makefile@1607 Makefile
+    * Add SUB_MODULES variables for Plugins/*
+	Makefile			(modify ./Compatible/Makefile)
+	RandomMT.n			(move ./Compatible/RandomMT.n)
+	RandomSFMT.n			(move ./Compatible/RandomSFMT.n)
+	Compatible/RandomMT.n		(remove)
+	Compatible/RandomSFMT.n		(remove)
+
+2008/03/26 10:48:01 +0100:
+  Synchronize style to /trunk/mk/Makefile.module.in
+	Compatible/Makefile
+
+2008/01/25 12:33:47 +0100:
+  Apply template fix at rev.1310
+	Compatible/Makefile
+	Framework/Makefile
+	Plugins/MT19937/Makefile
+	Plugins/SAD/Makefile
+	Plugins/SFMT/Makefile
+
+2008/01/18 13:47:04 +0100:
+  Update document for RandomMT-Rev.17
+	README.ja
+
+2008/01/18 11:48:01 +0100:
+  Disable Random/Framework.so build
+	Makefile
+	README.ja
+
+2008/01/17 16:41:15 +0100:
+  Disable Random/Framework loading if Random/API version 1.000 is provided
+	Compatible/RandomMT.n
+	Compatible/RandomSFMT.n
+
+2008/01/17 16:32:14 +0100:
+  Disable benchmark for `SAD Core' in the case that ListRandom is defined
+	test-speed.sad
+
+2008/01/17 16:26:30 +0100:
+  Fix typo
+	Compatible/RandomMT.n
+	Compatible/RandomSFMT.n
+
+2008/01/17 14:43:12 +0100:
+  Remove unused dependency information from Makefile
+  Remove EXPORT_UNIFORM_RANDOM_API control flag
+	Framework/Makefile
+	Framework/tfRandom_.c
+
+2008/01/17 11:39:18 +0100:
+  Bump minor version for override integrated Random/SAD plugin
+	Plugins/SAD/driver.c
+
+2008/01/17 11:34:57 +0100:
+  Replace macro DRIVER_MAJOR/MINOR_VERSION to DRIVER_VER_MAJOR/MINOR
+  Replace plugin version field by using FEATURE_VERSION() macro
+	Plugins/Common/mtdriver.c
+	Plugins/MT19937/driver.c
+	Plugins/SAD/driver.c
+	Plugins/SFMT/driver.c
+
+2008/01/16 11:43:13 +0100:
+  Add Random/Framework version check
+  Provide plugin feature version
+  Add code for importing plugin into SAD core  
+  Fix MEXP macro expansion inc SFMT/driver.c
+  Regenerate dependency
+	Plugins/MT19937/.depend
+	Plugins/MT19937/Makefile
+	Plugins/MT19937/driver.c
+	Plugins/SAD/.depend
+	Plugins/SAD/Makefile
+	Plugins/SAD/driver.c
+	Plugins/SFMT/.depend
+	Plugins/SFMT/Makefile
+	Plugins/SFMT/driver.c
+
+2008/01/15 14:31:57 +0100:
+  Fix SAD/core version dependency information
+	README.ja
+
+2008/01/15 14:31:05 +0100:
+  Update document for RandomMT-Rev.16
+	README.ja
+
+2008/01/15 14:24:26 +0100:
+  Remove unused files
+	Framework/Framework.n		(remove)
+	Framework/random_driver.c	(remove)
+	Framework/random_driver.h	(remove)
+
+2008/01/15 14:19:40 +0100:
+  Fix makefile style
+	Framework/Makefile
+
+2008/01/15 14:15:32 +0100:
+  Regenerate dependency & ignore list
+	Plugins/MT19937/
+	Plugins/MT19937/.depend
+	Plugins/SAD/
+	Plugins/SAD/.depend
+	Plugins/SFMT/
+	Plugins/SFMT/.depend
+
+2008/01/15 14:14:18 +0100:
+  Switch ../../Framework reference to framework reference by using USE_FRAMEWORK
+	Plugins/MT19937/Makefile
+	Plugins/SAD/Makefile
+	Plugins/SFMT/Makefile
+
+2008/01/15 14:02:44 +0100:
+  Regenerate dependency & ignore list
+	Framework/
+	Framework/.depend
+
+2008/01/15 14:00:33 +0100:
+  Switch to random_driver framework version 1.6 in SAD/core
+   - Unlink random_driver.o from Random/Framework.so
+   - Remove Random/Framework.n
+	Framework/Makefile
+	Framework/tfRandom_.c
+
+2008/01/13 15:29:14 +0100:
+  Update for plugin ABI version 1.5
+	README.ja
+
+2008/01/13 15:27:51 +0100:
+  Follow plugin ABI version 1.5
+	Plugins/Common/mtdriver.c
+	Plugins/SAD/driver.c
+
+2008/01/13 15:20:14 +0100:
+  Introduce feature_* API via USE_FRAMEWORK
+  Support Gaussian distribution without GCUT
+  Bump plugin ABI version 1.5
+	Framework/Makefile
+	Framework/random_driver.c
+	Framework/random_driver.h
+	Framework/tfRandom_.c
+
+2007/12/20 17:42:05 +0100:
+  Update documents for snapshot release
+	README.ja
+
+2007/12/13 09:22:41 +0100:
+  Fix syntax warning in ISO C99
+	Framework/tfRandom_.c
+
+2007/12/13 09:21:54 +0100:
+  Fix syntax warning in ISO C99
+	Plugins/Common/mtdriver.c
+
+2007/12/09 15:00:49 +0100:
+  Maintain ignore list
+	Compatible/
+
+2007/12/09 12:01:35 +0100:
+  Update documents
+	README.ja
+
+2007/12/09 11:58:49 +0100:
+  Replace SRCDIR to TOPDIR
+  Store SFMT-src-1.3.3.tar.gz into $(SOURCE_ARCHIVE_DIR)
+  Update .depend
+	Plugins/SFMT/Makefile
+	Plugins/SFMT/.cvsignore
+	Plugins/SFMT/.depend
+
+2007/12/09 11:56:53 +0100:
+  Replace SRCDIR to TOPDIR
+  Store mt19937ar.c into $(SOURCE_ARCHIVE_DIR)
+	Plugins/MT19937/Makefile
+	Plugins/MT19937/.cvsignore
+
+2007/12/08 11:00:34 +0100:
+  Update document
+	README.ja
+
+2007/12/08 10:51:21 +0100:
+  Remove dependency from Makefile
+	Plugins/MT19937/Makefile
+	Plugins/SAD/Makefile
+	Plugins/SFMT/Makefile
+
+2007/12/08 08:50:54 +0100:
+  Add depend target
+	Makefile
+
+  Remove DISTCLEAN_FILES
+  Fixup MOSTLYCLEAN_FILES/DIRS usage
+	Plugins/SFMT/Makefile
+	Plugins/MT19937/Makefile
+
+  Add .depend file
+	Framework/.depend		(new)
+	Plugins/SAD/.depend		(new)
+	Plugins/SFMT/.depend		(new)
+	Plugins/MT19937/.depend		(new)
+
+2007/12/07 09:16:38 +0100:
+  Fix SADSRCDIR relative path
+	Makefile
+
+2007/11/28 10:41:56 +0100:
+  Update documents
+	README.ja
+
+2007/11/28 10:36:54 +0100:
+  Fix many compiler warnings
+	Framework/random_driver.c
+	Framework/tfRandom_.c
+	Plugins/Common/mtdriver.c
+	Plugins/SAD/driver.c
+
+2007/11/14 10:21:27 +0100:
+  Fix date field
+	README.ja
+
+2007/11/13 15:37:26 +0100:
+  Update document for ABI version 1.2
+	README.ja
+
+2007/11/13 15:35:58 +0100:
+  Bump Random Plugin ABI version 1.2
+	Framework/random_driver.h
+
+2007/11/13 15:30:13 +0100:
+  Fix ABI version match condition
+	Framework/random_driver.c
+
+2007/11/12 09:22:30 +0100:
+  Add check for uniform [0,1) and gauss distribution
+	Framework/random_driver.c
+
+2007/11/10 13:54:00 +0100:
+  Update document for ABI verison 1.1
+	README.ja
+
+2007/11/10 13:52:14 +0100:
+  Followup ABI verison 1.1
+	Plugins/Common/mtdriver.c
+	Plugins/MT19937/driver.c
+	Plugins/SAD/driver.c
+	Plugins/SFMT/driver.c
+
+2007/11/10 13:51:16 +0100:
+  Support ListRandom[] === {} case
+	test-speed.sad
+
+2007/11/10 13:50:16 +0100:
+  Introduce abi/sequence/is_supported field to randomm_plugin_t
+  Support sequence field in random_select() API
+  Introduce random_sequence() API to query sequence field
+  Inrtoduce random_check_mode() API to query support status of generation mode
+  Add void* argument in random_scan_plugin_list() API
+  Introduce abi version and functionality checking in random_register() API
+  Bump Random Plugin Framework ABI version to 1.1
+  Improve SeedRandom[] API compatibility
+  Support sequence field in ListRandom[] API
+	Framework/random_driver.c
+	Framework/random_driver.h
+	Framework/tfRandom_.c
+
+2007/11/09 18:46:25 +0100:
+  Reimplement SeedRandom API to return internal state every time
+	Framework/tfRandom_.c
+
+2007/11/09 18:36:25 +0100:
+  Add seed normalizer for SAD PRN-Generator Plugin
+	Plugins/SAD/driver.c
+
+2007/11/09 16:13:45 +0100:
+  Refactoring local namespace
+	Framework/tfRandom_.c
+
+2007/11/09 16:05:43 +0100:
+  Add Random -> RandomMT compatible symbol definition
+	Compatible/RandomMT.n
+	Compatible/RandomSFMT.n
+
+2007/11/09 15:13:15 +0100:
+  Remove needless tailing spaces
+	Framework/Framework.n
+
+2007/11/08 09:52:02 +0100:
+  Implement transformation base PalaboraRandom[](Default OFF)
+   Slower than previous ParaboraRandom[], because of using sin() and asin().
+	Plugins/Common/mtdriver.c
+	Plugins/MT19937/Makefile
+	Plugins/SAD/Makefile
+	Plugins/SAD/driver.c
+	Plugins/SFMT/Makefile
+
+2007/11/03 11:52:40 +0100:
+  Update document
+	README.ja
+
+2007/11/03 11:33:16 +0100:
+  Refactoring(Reduce internal state)
+	Plugins/Common/mtdriver.c
+	Plugins/SAD/driver.c
+
+2007/11/03 11:30:25 +0100:
+  Append RandomSFMT.n esay loader script
+	Compatible/Makefile
+	Compatible/RandomSFMT.n
+
+2007/11/03 11:25:28 +0100:
+  Include stdint.h for int*_t/uint*_t
+	Framework/random_driver.h
+
+2007/11/02 16:57:31 +0100:
+  Update document
+	README.ja
+
+2007/11/02 16:50:50 +0100:
+  Enable inline optimize of genrand_uint32
+	Plugins/SFMT/driver.c
+
+2007/11/02 16:48:07 +0100:
+  Add macro for inline optimize of genrand_uint32
+	Plugins/SFMT/driver.c
+
+2007/11/02 16:02:58 +0100:
+  Add speed test script
+	test-speed.sad			(new)
+
+2007/11/02 15:56:32 +0100:
+  Fix variable type
+	Framework/tfRandom_.c
+
+2007/11/02 13:56:45 +0100:
+  Add random_set_gcut() API
+  Replace GCUT magic number to RANDOM_GCUT_MIN
+	Framework/random_driver.c
+	Framework/random_driver.h
+	Framework/tfRandom_.c
+
+2007/11/02 13:47:27 +0100:
+  Append SFMT*.so loader script SFMT.n
+	Compatible/RandomMT.n
+	Plugins/SFMT/Makefile
+	Plugins/SFMT/SFMT.n		(new)
+
+2007/11/02 13:02:59 +0100:
+  Update document
+	README.ja
+
+2007/11/02 13:00:17 +0100:
+  Fix timing of default SFMT_MEXP definition
+	Plugins/SFMT/Makefile
+
+2007/11/02 12:18:27 +0100:
+  Fix driver_$(SFMT_MEXP).o target
+	Plugins/SFMT/Makefile
+
+2007/11/02 12:14:44 +0100:
+  Refactoring
+	Plugins/SAD/driver.c
+
+2007/11/02 12:13:07 +0100:
+  Fix proto-type miss-matching
+	Plugins/MT19937/driver.c
+
+2007/11/02 12:10:51 +0100:
+  Introduce PLUGIN_HEADER_MAGIC into STATE_HEADER_MAGIC
+	Plugins/Common/mtdriver.c
+	Plugins/MT19937/driver.c
+	Plugins/SFMT/driver.c
+
+2007/11/02 12:04:37 +0100:
+  Update documents
+	README.ja
+
+2007/11/02 12:03:01 +0100:
+  Add random_scan_plugin_list() instead of exporting random_plugin_list
+  Hide random_plugin_list
+	Framework/random_driver.h
+	Framework/random_driver.c
+	Framework/tfRandom_.c
+
+2007/11/02 11:38:13 +0100:
+  Support random_gauss_cut variable in 32bit resolution version
+	Plugins/Common/mtdriver.c
+
+2007/11/02 11:31:54 +0100:
+  Refactoring
+	Plugins/SAD/driver.c
+
+2007/11/02 11:31:13 +0100:
+  Support random_gauss_cut
+	Plugins/Common/mtdriver.c
+
+2007/11/02 11:26:42 +0100:
+  Activate SAD plugin
+	Makefile
+	Compatible/RandomMT.n
+
+2007/11/02 11:24:44 +0100:
+  Add SAD internal random number generator plugin
+	Plugins/SAD/			(mkdir)
+	Plugins/SAD/.cvsignore		(modify: ../SFMT/.cvsignore)
+	Plugins/SAD/Makefile		(modify: ../SFMT/Makefile)
+	Plugins/SAD/driver.c		(modify: ../SFMT/driver.c)
+
+2007/11/02 11:21:00 +0100:
+  Follow plugin API change
+	Plugins/MT19937/driver.c
+	Plugins/SFMT/driver.c
+
+2007/11/02 11:16:26 +0100:
+  Change plugin API(Add uint32/uint64 generation API)
+  Support GCUT variable
+	Framework/random_driver.c
+	Framework/random_driver.h
+	Framework/tfRandom_.c
+
+2007/11/02 11:06:17 +0100:
+  Raname make variable MEXP to SFMT_MEXP
+	Plugins/SFMT/Makefile
+
+2007/11/02 11:03:14 +0100:
+  Split common part of driver.c to Common/mtdriver.c
+	Plugins/Common/mtdriver.c	(modify: ../MT19937/driver.c)
+	Plugins/MT19937/Makefile
+	Plugins/MT19937/driver.c
+	Plugins/SFMT/Makefile
+	Plugins/SFMT/driver.c
+
+2007/11/02 10:44:42 +0100:
+  Refactoring
+	Plugins/MT19937/driver.c
+	Plugins/SFMT/driver.c
+
+2007/11/01 13:20:22 +0100:
+  Update document
+	README.ja
+
+2007/11/01 13:15:40 +0100:
+  Split driver.o by MEXP variable
+	Plugins/SFMT/Makefile
+
+2007/11/01 13:07:32 +0100:
+  Add USE_SSE2/ALTIVEC compile switch
+	Plugins/SFMT/Makefile
+
+2007/11/01 12:55:09 +0100:
+  Activate SFMT plugin
+	README.ja
+	Makefile
+	Compatible/RandomMT.n
+
+2007/11/01 12:53:49 +0100:
+  Import SFMT plugin
+	Plugins/SFMT/.cvsignore
+	Plugins/SFMT/Makefile
+	Plugins/SFMT/driver.c
+
+2007/11/01 12:51:21 +0100:
+  Copy MT19937 plugin as SFMT plugin base code
+	Plugins/SFMT			(copy: Plugins/MT19937)
+
+2007/11/01 12:17:02 +0100:
+  Refactoring portable buffer type(unsigned long -> uint32_t)
+	Framework/random_driver.c
+	Framework/random_driver.h
+	Framework/tfRandom_.c
+	Plugins/MT19937/driver.c
+
+2007/11/01 11:38:49 +0100:
+  Refactoring
+	Plugins/MT19937/Makefile
+
+2007/11/01 11:30:30 +0100:
+  Refactoring
+	Plugins/MT19937/Makefile
+
+2007/11/01 11:21:26 +0100:
+  Rename MT19937 driver code
+	Plugins/MT19937/Makefile
+	Plugins/MT19937/driver.c	(move: Plugins/MT19937/mtdriver_.c)
+	Plugins/MT19937/mtdriver_.c	(remove)
+
+2007/11/01 11:03:36 +0100:
+  Remove unused ifdef
+	Plugins/MT19937/mtdriver_.c
+
+2007/11/01 10:58:33 +0100:
+  Remove cloned framework/plugin codes
+	Makefile
+	README.ja
+	.cvsignore			(remove)
+	random_driver.c			(remove)
+	random_driver.h			(remove)
+	tfRandom_.c			(remove)
+	mtdriver_.c			(remove)
+
+2007/11/01 10:44:44 +0100:
+  Split RandomMT module into Framework and Plugin part
+	Compatible/			(mkdir)
+	Compatible/.cvsignore		(modify: ../.cvsignore)
+	Compatible/Makefile		(modify: ../Makefile)
+	Compatible/RandomMT.n		(new)
+	Framework/			(mkdir)
+	Framework/.cvsignore		(modify: ../.cvsignore)
+	Framework/Makefile		(modify: ../Makefile)
+	Framework/Framework.n		(new)
+	Framework/random_driver.c	(modify: ../random_driver.c)
+	Framework/random_driver.h	(modify: ../random_driver.h)
+	Framework/tfRandom_.c		(modify: ../tfRandom_.c)
+	Plugins				(mkdir)
+	Plugins/MT19937			(mkdir)
+	Plugins/MT19937/.cvsignore	(modify: ../.cvsignore)
+	Plugins/MT19937/Makefile	(modify: ../Makefile)
+	Plugins/MT19937/mtdriver_.c	(modify: ../mtdriver_.c)
+
+2007/10/31 17:48:38 +0100:
+  Fix ifdef switches
+	Makefile
+	tfRandom_.c
+
+2007/10/31 17:32:44 +0100:
+  Update doccument & comment
+	README.ja
+	mtdriver_.c
+
+2007/10/31 17:29:22 +0100:
+  Update svn:ignore property
+	./
+	.cvsignore
+
+2007/10/31 17:25:51 +0100:
+  Fix dependency
+  Remove unused extension module wrapper
+	Makefile
+	dldeffun.f	(remove)
+
+2007/10/31 17:23:57 +0100:
+  Remove unused Fortran API backend(replaced with Random Plugin Framework)
+	Makefile
+	mtdriver_.c
+	mtdriver.f	(remove)
+	mtdriver53.f	(remove)
+
+2007/10/31 17:17:24 +0100:
+  Fix header including
+	random_driver.c
+	tfRandom_.c
+
+2007/10/31 17:04:53 +0100:
+  Change generate plugin API's return value
+	mtdriver_.c
+	random_driver.h
+
+2007/10/31 17:00:06 +0100:
+  Fixup internal state initialization
+	mtdriver_.c
+
+2007/10/31 16:17:10 +0100:
+  Remove debug code
+  Add auto plugin setup at first registration
+	random_driver.c
+
+2007/10/31 16:16:04 +0100:
+  Fixup plugin definition
+	mtdriver_.c
+
+2007/10/31 16:03:13 +0100:
+  Fixup MT19937 driver for random plugin framework
+  Reimplement SAD Random backend API by using random plugin framework codes.
+	mtdriver_.c
+
+2007/10/31 15:57:53 +0100:
+  Implement Random[] API into Random plugin framework
+	random_driver.c
+	random_driver.h
+	tfRandom_.c
+
+2006/12/22 16:08:26 +0900:
+  Add random framework(under developing) member
+	random_driver.c		(new)
+	random_driver.h		(new)
+	tfRandom_.c		(new)
+
+2006/11/28 14:59:02 +0900:
+  Add dump/restore of Box-Muller Gauss generator internal state
+  Change SeedRandom[] API I/O format
+	mtdriver_.c
+
+2006/11/17 15:13:44 +0900:
+  Reimplement ParabolaRandom[] API by native code
+	dldeffun.f
+	mtdriver.f
+	mtdriver_.c
+	RandomMT.n.in			(remove)
+	Makefile
+	.cvsignore
+	README.ja
+
+2006/11/16 15:22:17 +0900:
+  Implement ParabolaRandom[] API
+	Makefile
+	README.ja
+	RandomMT.n.in		(new)
+
+2005/12/31 21:53:28 +0900:
+  Remove debug line
+       Makefile
+
+2005/10/13 19:39:16 +0900:
+  Fix to use framework variable to obtain fetch method
+	Makefile
+
+2005/03/31 10:29:28 +0900:
+  Import RandomMT(Random Number Generator based on Mersenne Twister) Extension
+  from :ext:jyurai.ddo.jp:/CVSrepository/AccLab/SAD/KCG/extension/RandomMT
+	./			(mkdir)
+	.cvsignore		(import)
+	Makefile		(import)
+	README.ja		(import)
+	dldeffun.f		(import)
+	mtdriver.f		(import)
+	mtdriver53.f		(import)
+	mtdriver_.c		(import)
+
+# End of File

@@ -1,0 +1,17 @@
+***************
+*** 20,25 ****
+  #include "tkUnixInt.h"
+  #include <errno.h>
+  
+  /*
+   * A data structure of the following type holds information for
+   * each window manager protocol (such as WM_DELETE_WINDOW) for
+--- 20,27 ----
+  #include "tkUnixInt.h"
+  #include <errno.h>
+  
++ extern int bKBMenuRestack;
++ 
+  /*
+   * A data structure of the following type holds information for
+   * each window manager protocol (such as WM_DELETE_WINDOW) for

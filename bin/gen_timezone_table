@@ -1,0 +1,62 @@
+#!/bin/sh
+
+zones=`find /usr/share/zoneinfo -type f | sed -e 's@/usr/share/zoneinfo/@@'`
+
+put_zone () {
+    local zone _offset offset max_length n_sp n gap
+
+    zone="$1"
+    _offset="$2"
+    offset="$3"
+    max_length=$(($5 + $4 + 4))
+    n_sp=$5
+
+    n=$((${n_sp} + 4 + `printf %s "${zone}" | wc -c`))
+
+    gap="	"
+    while [ ${n} -le ${max_len} ]; do
+	gap="${gap}	"
+	n=$((${n} + 8))
+    done
+
+    echo "${sp1}{\"${zone}\",${gap}${_offset}},	/* ${offset} */"
+}
+
+
+dumpzone () {
+    local zone offset alias _sign _hour _min _offset _len max_len n_sp
+
+    n_sp=`printf %s "sp1" | wc -c`
+
+    max_len=0
+    for zone in ${zones}; do
+	_len=`printf %s "${zone}" | wc -c`
+	if [ ${_len} -gt ${max_len} ]; then
+	    max_len=${_len}
+	fi
+    done
+
+    for zone in ${zones}; do
+	case ${zone} in
+	    posixrules|zone.tab|Factory) ;;
+	    *)
+		offset=`env TZ=${zone} date +%z 2>/dev/null`
+		alias=`env TZ=${zone} date +%Z 2>/dev/null`
+		_sign=`echo ${offset} | sed -e 's/^\(.\)\(..\)\(..\)/\1/'`
+		_hour=`echo ${offset} | sed -e 's/^\(.\)\(..\)\(..\)/\2/'`
+		_min=`echo ${offset} | sed -e 's/^\(.\)\(..\)\(..\)/\3/'`
+		_offset="${_sign}$(( ${_hour} * 60 + ${_min} ))"
+		put_zone "${zone}"  "${_offset}" "${offset}" ${max_len} ${n_sp}
+		put_zone "${alias}" "${_offset}" "${offset}" ${max_len} ${n_sp}
+		;;
+	esac
+    done
+}
+
+sp0="  "
+sp1="    "
+echo "${sp0}static const sad_timezone_t sad_timezone_list[] = {"
+dumpzone | sort -u | sort -g -k 4,4
+echo "${sp1}{NULL,	0}};"
+
+# End of File

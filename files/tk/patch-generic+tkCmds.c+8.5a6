@@ -1,0 +1,44 @@
+--- generic/tkCmds.c.orig	Fri Jan 19 08:56:20 2007
++++ generic/tkCmds.c	Wed Feb 28 19:12:03 2007
+@@ -1080,21 +1080,31 @@
+     int objc,			/* Number of arguments. */
+     Tcl_Obj *const objv[])	/* Argument objects. */
+ {
+-    static const char *updateOptions[] = {"idletasks", NULL};
++    static const char *updateOptions[] = {"windowtasks", "filetasks", "timertasks", "idletasks", NULL};
+     int flags, index;
+     TkDisplay *dispPtr;
++    int i;
+ 
+-    if (objc == 1) {
+-	flags = TCL_DONT_WAIT;
+-    } else if (objc == 2) {
+-	if (Tcl_GetIndexFromObj(interp, objv[1], updateOptions, "option", 0,
+-		&index) != TCL_OK) {
++    flags = TCL_DONT_WAIT;
++    for (i=1; i<objc; i++) {
++ 	if (Tcl_GetIndexFromObj(interp, objv[i], updateOptions, "option",
++ 		0, &index) != TCL_OK) {
+ 	    return TCL_ERROR;
+ 	}
+-	flags = TCL_IDLE_EVENTS;
+-    } else {
+-	Tcl_WrongNumArgs(interp, 1, objv, "?idletasks?");
+-	return TCL_ERROR;
++ 	switch(index) {
++ 	case 0:
++	    flags |= TCL_WINDOW_EVENTS;
++	    break;
++ 	case 1:
++	    flags |= TCL_FILE_EVENTS;
++	    break;
++ 	case 2:
++	    flags |= TCL_TIMER_EVENTS;
++	    break;
++ 	case 3:
++	    flags |= TCL_IDLE_EVENTS;
++	    break;
++	}
+     }
+ 
+     /*

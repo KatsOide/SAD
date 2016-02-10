@@ -1,0 +1,23 @@
+FFS;
+
+ d1=GaussRandom[30];
+ d2=GaussRandom[30]*3;
+
+ {d3,d4}=10^{d1,d2};
+
+ g1=ListPlot[d1,FrameTicks->{True,True,True,None},DisplayFunction->Identity,Background->False,Scale->Linear]; 
+ g2=ListPlot[d2,FrameTicks->{None,None,None,True},PointColor->"tomato",DisplayFunction->Identity,Scale->Linear]; 
+ g3=ListPlot[d3,FrameTicks->{True,True,True,None},DisplayFunction->Identity,Background->False,Scale->Log]; 
+ g4=ListPlot[d4,FrameTicks->{None,None,None,True},PointColor->"tomato",DisplayFunction->Identity,Scale->Log]; 
+
+ Show[Graphics[{
+   Rectangle[{0,0},{1,0.5},g1],Rectangle[{0,0},{1,0.5},g2],
+   Rectangle[{0,0.5},{1,1},g3],Rectangle[{0,0.5},{1,1},g4]
+   }]];
+
+ co=The$CanvasObject;
+ TkWait[];
+
+end
+
+

@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="en-US">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=US-ASCII">
+<TITLE>CaMonitor Manual</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<DIV ALIGN="CENTER"><H2>CaMonitor Manual</H2></DIV>
+
+<HR>
+
+<UL>
+<LI><A HREF="#CaMonitor">CaMonitor</A>
+</UL>
+
+<HR>
+
+<H3><A NAME="CaMonitor">CaMonitor</A></H3>
+<H4>Usage:</H4>
+
+<PRE><CODE>
+r = CaMonitor[rn,options]
+</CODE></PRE>
+
+<H4>Where:</H4>
+<UL>
+<LI><EM>rn</EM> is EPICS record name.
+<LI><EM>options</EM> includes <EM>ValueCommand</EM>, <EM>ConStatCommand</EM>, 
+<EM>InitialValue</EM> and <EM>AlarmOnly</EM>.
+</UL>
+
+<H4>Description:</H4>
+<P><EM>CaMonitor</EM> opens a EPICS record and set a monitor event to 
+that record. When the value or alarm state of <EM>rn</EM> is changed, 
+the function specified by <EM>ValueCommand</EM> is executed. 
+Its value and alarm severity can be retrieved by <EM>r@Value[]</EM> and 
+<EM>r@Severity[]</EM>, respectively. If <EM>ValueCommand</EM> is not 
+specified, the value of the record will never be available. 
+If <EM>AlarmOnly</EM> option is set to True, the value change is not 
+reported unless the change of alarm state is not associated. 
+<EM>ConStatCommand</EM> option specifies the function called when the 
+connection state changes. If it is connected, <EM>r@ConStat[]</EM> is 
+<EM>CaMonitor@CS$Conn</EM>. </P>
+
+<P><EM>r@Start[]</EM> starts the monitor and <EM>r@Stop[]</EM> 
+stops the monitor. <EM>r=.</EM> closes the connection and clears 
+<EM>r</EM>.</P>
+
+<H4>Methods:</H4>
+
+<H5>ConStat[]</H5>
+<P>Returns the channel access connection state. Possible values are:</P>
+<TABLE BORDER=3 SUMMARY="Return code">
+<TR><TD>CaMonitor@CS$NeverConn</TD><TD>not connected yet</TD></TR>
+<TR><TD>CaMonitor@CS$PrevConn</TD><TD>previously connected, but not now</TD></TR>
+<TR><TD>CaMonitor@CS$Conn</TD><TD>connected</TD></TR>
+<TR><TD>CaMonitor@CS$Closed</TD><TD>channel already closed</TD></TR>
+</TABLE>
+
+<H5>FlushIO[] (class method)</H5>
+Sends all the Put, Start and Stop requests to the network.
+
+<H5>Name[]</H5>
+Returns the record name.
+
+<H5>NewName[n]</H5>
+Changes the EPICS record associated with this instance to the one 
+with the name <EM>n</EM>.
+
+<H5>Put[v]</H5>
+Writes the value <EM>v</EM> to the record. This request is not sent 
+until one of TkWait[], TkSense[] or CaMonitor@FlushIO[] is executed.
+
+<H5>Severity[]</H5>
+Returns the severity of the record. Possible values are:
+<UL>
+<LI>CaMonitor@DB$NoAlarm
+<LI>CaMonitor@DB$MinorAlarm
+<LI>CaMonitor@DB$MajorAlarm
+<LI>CaMonitor@DB$InvalidAlarm
+</UL>
+
+<H5>Start[]</H5>
+Starts the monitor of the record. The monitor automatically starts 
+itself, so you don't need to invoke Start[] when an instance of 
+CaMonitor is created. If you don't want to it to start automatically, 
+you should specify <EM>Autostart</EM> option to False.
+This request is not sent 
+until one of TkWait[], TkSense[] or CaMonitor@FlushIO[] is executed.
+
+
+<H5>Stop[]</H5>
+Stops the monitor of the record. This request is not sent 
+until one of TkWait[], TkSense[] or CaMonitor@FlushIO[] is executed.
+
+
+<H5>Value[]</H5>
+Returns the value of the record.
+
+<H4>Example:</H4>
+
+<PRE><CODE>
+er = CaMonitor["LIiKLY:KL_A1:HVSW",ValueCommand:&gt;StateChanged["a1"]];
+</CODE></PRE>
+
+
+<HR><ADDRESS>Send feedback to:
+<A HREF="mailto:samo.stanic@kek.jp">Samo Stanic</A>
+.</ADDRESS>
+</BODY>
+</HTML>

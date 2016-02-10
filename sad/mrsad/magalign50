@@ -1,0 +1,56 @@
+! Alignment errors
+GCUT=2;
+
+SeedRandom[1111];
+DELX R 0.05E-3 BMN%%%%%A ;
+SeedRandom[1111];
+DELX R 0.05E-3 BMN%%%%%B ;
+
+SeedRandom[1121];
+DELY R 0.05E-3 BMN%%%%%A ;
+SeedRandom[1121];
+DELY R 0.05E-3 BMN%%%%%B;
+
+SeedRandom[1131];
+DTHETA R 0.05E-3 BMN%%%%%A ;
+SeedRandom[1131];
+DTHETA R 0.05E-3 BMN%%%%%B ;
+
+!FFS["TYPE BMN%%%%%A ;",26];
+!FFS["TYPE BMN%%%%%B ;",26];
+
+SeedRandom[1141];
+DELX R 0.05E-3 Q%%%%%%%A ;
+SeedRandom[1141];
+DELX R 0.05E-3 Q%%%%%%%B ;
+
+SeedRandom[1151];
+DELY R 0.05E-3 Q%%%%%%%A ;
+SeedRandom[1151];
+DELY R 0.05E-3 Q%%%%%%%B ;
+
+SeedRandom[1161];
+DTHETA R 0.05E-3 Q%%%%%%%A ;
+SeedRandom[1161];
+DTHETA R 0.05E-3 Q%%%%%%%B ;
+
+!FFS["TYPE Q%%%%%%%A ;",26];
+!FFS["TYPE Q%%%%%%%B ;",26];
+
+SeedRandom[1171];
+DELX R 0.05E-3 S%%%%%%%A ;
+SeedRandom[1171];
+DELX R 0.05E-3 S%%%%%%%B ;
+
+SeedRandom[1181];
+DELY R 0.05E-3 S%%%%%%%A ;
+SeedRandom[1181];
+DELY R 0.05E-3 S%%%%%%%B ;
+
+SeedRandom[1191];
+DTHETA R 0.05E-3 S%%%%%%%A ;
+SeedRandom[1191];
+DTHETA R 0.05E-3 S%%%%%%%B ;
+
+!FFS["TYPE S%%%%%%%A ;",26];
+!FFS["TYPE S%%%%%%%B ;",26];

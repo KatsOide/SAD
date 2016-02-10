@@ -1,0 +1,55 @@
+(* LDSolve 6/22/1999 *)
+
+BeginPackages[LDSolve`];
+
+Begin[LDSolve`];
+
+LDSolve[a_,b_,u0_,{s_,s0_,s1_,ds0_},opt___]:=Module[{
+  {eps,res}={`AccuracyGoal,`Result}/.{opt}/.{`AccuracyGoal->1e-4,
+    `Result->`All},
+  r=Range[s0,s1,ds0],
+  w0=Plus@@Abs[u0],
+  ds=ds0,ar,d=Infinity,ini=True,
+  wfinal,dsa,e,u,w,m=Length[a]},
+  While[d>eps,
+    If[ini,
+      ini=False;
+      ar=EigenDecomp[a/.{s->#}]&/@r;
+      wfinal=u0,
+      {r,ar}=DivideRange[r,ar,a,s];
+      ds/=2];
+    dsa=ds*Table[1,{Length[ar]}];
+    dsa[[1]]/=2;
+    dsa[[-1]]/=2;
+    e=MapThread[ExpMatrix,{ar,dsa}];
+    u=u0;
+    rb=r+ds/2;
+    w=MapThread[(u=((#1).u)+ds*(b/.s->#2))&,{e,rb}];
+    w[[-1]]-=ds*(b/.s->Last[rb]);
+    d=Plus@@Abs[Last[w]-wfinal]/Max[Plus@@Abs[wfinal],w0];
+    wfinal=Last[w]
+    ];
+  If[res===`All,
+    Spline[Thread[{Append[Prepend[Drop[rb,-1],s0],s1],Prepend[w,u0]}]],
+    Spline[Thread[{Append[Prepend[Drop[rb,-1],s0],s1],
+      Prepend[w,u0][[,res]]}]]]];
+
+DivideRange[r_,ar_,a_,s_]:=Module[{r1=Drop[r,-1],rc,ac},
+  rc=(r1+Drop[r,1])/2;
+  ac=EigenDecomp[a/.{s->#}]&/@rc;
+  {Flatten[{Thread[{r1,rc}],Last[r]}],
+    Append[Flatten[Thread[{Drop[ar,-1],ac}],1],Last[ar]]}];
+
+EigenDecomp[a_]:=Module[{{v,u}=Eigensystem[a]},
+  u=Transpose[u];
+  {u,v,Inverse[u],~ComplexQ[a]}];
+  
+ExpMatrix[{uinv_,v_,u_,re_},ds_]:=If[re,
+  Re[uinv.DiagonalMatrix[Exp[v*ds]].u],
+  uinv.DiagonalMatrix[Exp[v*ds]].u];
+
+Protect[LDSolve,DivideRange,EigenDecomp,ExpMatrix];
+
+End[];
+
+EndPackage[];

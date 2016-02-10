@@ -1,0 +1,12 @@
+diff -dur macosx/tkMacOSXSubwindows.c.orig macosx/tkMacOSXSubwindows.c
+--- macosx/tkMacOSXSubwindows.c.orig	Mon Jul 24 13:45:03 2006
++++ macosx/tkMacOSXSubwindows.c	Thu Feb 22 22:29:06 2007
+@@ -710,7 +710,7 @@
+     }
+ }
+ 
+-#if 0
++#if 1
+ /*
+  *----------------------------------------------------------------------
+  *

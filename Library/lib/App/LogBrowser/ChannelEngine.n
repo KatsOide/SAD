@@ -1,0 +1,438 @@
+!
+! LogBrowser ChannelEngine Mix-In Class
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: ChannelEngine.n,v 1.13 2006/07/13 01:07:00 amorita Exp $
+! Style:      Mix-In Class Library
+! Require:    Prog/QFunctions.n
+!
+Library@Require["Prog/QFunctions"];
+
+! <<< LogBrowser ChannelEngine class >>>
+ChannelEngine=Class[{},
+  { ModuleFile = "LogBrowser/ChannelEngine.n",
+    ModuleClassName = "ChannelEngine",
+    RevisionID = "$Revision: 1.13 $"[12, -3]
+    },
+  {
+    },
+
+  (* ChannelBuffer Filter Function *)
+  Correlation[cbuf_, out_Real, in_List] := Module[{
+    Ntbl, tid, regions, region, skip,
+    source, timestamp, current, prev, filled
+
+    },
+
+    (* Check buffer timestamp and skip correlation *)
+    timestamp = Max[cbuf@updatestamp[#]&/@in];
+    If[cbuf@updatestamp[out] >= timestamp, Return[]];
+
+    (* Initialize index valiables *)
+    timestamp = 0; current[_] := Undefined;
+    skip = False; Ntbl = -1;
+    Scan[With[{id = #},
+      tid[id] = -Length[cbuf@buffer[id]];
+      Ntbl += (Length[cbuf@buffer[id]] + 1)]&, in];
+
+    cbuf@buffer[out] =.; (* Release buffer before correlation *)
+    cbuf@buffer[out] = Table[( (* Return correlated chunks *)
+
+    While[True, (* Skipping invalid chunks *)
+      Scan[With[{id = #}, (* Find filled time chenk *)
+	While[tid[id] < 0 && Not[RuleQ[cbuf@buffer[id][[tid[id]]]]],
+	  current[id] = Undefined; tid[id] += 1]]&, in];
+
+      (* End of valid data? *)
+      If[Not[Max[tid/@in] < 0], skip = True; Break[]];
+
+      (* Check overlapping *)
+      regions= Map[With[{id = #},
+	Append[cbuf@buffer[id][[tid[id], 1]], id]]&, in];
+
+      If[Max[regions[[,1]]] < Min[regions[[,2]]], Break[]];
+
+      With[{low = Max[regions[[,1]]]}, Scan[With[{id = #[[3]]},
+	current[id] = Undefined; tid[id] += 1]&,
+	Select[regions, #[[2]] =< low&]]];
+      ];
+
+    If[skip, Null[], filled = False;
+      region = {Max[regions[[,1]]], Min[regions[[,2]]]};
+
+      source = Append[Sort[Join@@Map[With[{id = #},
+	Map[{#[[1]], id, #[[2]]}&, Select[cbuf@buffer[id][[tid[id], 2]],
+	  (region[[1]] =< #[[1]] < region[[2]])&]]]&, in], #1[[1]] < #2[[1]]&],
+	{region[2], -1, 0}];
+
+      Scan[With[{id = #[[3]]}, tid[id] += 1]&,
+	Select[regions, #[[2]] === region[[2]]&]];
+      region->Map[With[{t = #[[1]], offset = #[[2]], val = #[[3]]}, If[filled,
+	If[timestamp === t, current[offset] = val; Null[],
+	  prev = current/@in; timestamp = t; current[offset] = val; prev],
+	timestamp = t; current[offset] = val; filled = RealListQ[current/@in];
+	Null[]]]&, source]]), {i, Ntbl}];
+
+    With[{stamps = Select[cbuf@updatestamp[#]&/@in, # < INF&]},
+      cbuf@updatestamp[out] = If[stamps <=> {}, Max[stamps], INF]];
+    ];
+
+  ApplyFunction1[cbuf_, out_Real, in_List, func0_] := Module[{
+    func, func$, pos,
+    Ntbl, tid, regions, region, skip,
+    source, buffer, timestamp, current, filled, eval},
+
+    (* Wrap function *)
+    {func, func$} = StandardForm[With[{s = ToString[func0][2,-2]}, Which[
+      s[-1] === "&", ToExpression/@{ (* Slot Form *)
+	StringJoin["{#, Check[", s[1,-2], ", NaN]}&"],
+	StringJoin["{#, ", s[1,-2], "}&"]},
+
+      pos = StringPosition[s, "}&"];
+      s[1] === "{" && pos <=> {}, With[{ (* Function Form *)
+	body = s[pos[[1,2]]+1,-1], argv = s[2,pos[[1,1]]-1]},
+	pos = StringPosition[argv, ","];
+	pos = If[pos <=> {}, pos[[1,1]]-1, -1];
+	ToExpression/@{
+	  StringJoin["{", argv, "}&{", argv[1, pos], ", Check[", body, ", NaN]}"],
+	  StringJoin["{", argv, "}&{", argv[1, pos], ", ", body, "}"]}],
+
+      True, { (* otherwise *)
+	{#, Check[func0[##], NaN]}&,
+	{#, func0[##]}&}]]];
+
+    (* Check buffer timestamp and skip correlation *)
+    timestamp = Max[cbuf@updatestamp[#]&/@in];
+    If[cbuf@updatestamp[out] >= timestamp, Return[]];
+
+    (* Initialize index valiables *)
+    timestamp = 0; current[_] := Undefined;
+    skip = False; Ntbl = -1;
+    Scan[With[{id = #},
+      tid[id] = -Length[cbuf@buffer[id]];
+      Ntbl += (Length[cbuf@buffer[id]] + 1)]&, in];
+
+    cbuf@buffer[out] =.; (* Release buffer before correlation *)
+    cbuf@buffer[out] = Table[( (* Return correlated chunks *)
+
+    While[True, (* Skipping invalid chunks *)
+      Scan[With[{id = #}, (* Find filled time chenk *)
+	While[tid[id] < 0 && Not[RuleQ[cbuf@buffer[id][[tid[id]]]]],
+	  current[id] = Undefined; tid[id] += 1]]&, in];
+
+      (* End of valid data? *)
+      If[Not[Max[tid/@in] < 0], skip = True; Break[]];
+
+      (* Check overlapping *)
+      regions= Map[With[{id = #},
+	Append[cbuf@buffer[id][[tid[id], 1]], id]]&, in];
+
+      If[Max[regions[[,1]]] < Min[regions[[,2]]], Break[]];
+
+      With[{low = Max[regions[[,1]]]}, Scan[With[{id = #[[3]]},
+	current[id] = Undefined; tid[id] += 1]&,
+	Select[regions, #[[2]] =< low&]]];
+      ];
+
+    If[skip, Null[], filled = False;
+      region = {Max[regions[[,1]]], Min[regions[[,2]]]};
+
+      source = Append[Sort[Join@@Map[With[{id = #},
+	Map[{#[[1]], id, #[[2]]}&, Select[cbuf@buffer[id][[tid[id], 2]],
+	  (region[[1]] =< #[[1]] < region[[2]])&]]]&, in], #1[[1]] < #2[[1]]&],
+	{region[2], -1, 0}];
+
+      Scan[With[{id = #[[3]]}, tid[id] += 1]&,
+	Select[regions, #[[2]] === region[[2]]&]];
+
+      buffer = Map[With[{t = #[[1]], offset = #[[2]], val = #[[3]]}, If[filled,
+	If[timestamp === t, current[offset] = val; Null[],
+	  eval = Prepend[current/@in, timestamp];
+	  timestamp = t; current[offset] = val; eval],
+	timestamp = t; current[offset] = val; filled = RealListQ[current/@in];
+	Null[]]]&, source];
+      region->Check[
+	MapThread[func$, Thread[buffer]],
+	MapThread[func, Thread[buffer]]]
+      ]), {i, Ntbl}];
+
+    With[{stamps = Select[cbuf@updatestamp[#]&/@in, # < INF&]},
+      cbuf@updatestamp[out] = If[stamps <=> {}, Max[stamps], INF]];
+    ];
+
+  ApplyFilter1[cbuf_, out_Real, in_Real, filter_] := (
+    cbuf@buffer[out] = Map[filter, cbuf@buffer[in]];
+    cbuf@updatestamp[out] = cbuf@updatestamp[in]);
+
+  Discrimination[cbuf_, out_Real, in_Real, passQ_] := (
+    cbuf@buffer[out] = Map[Discriminator[#, passQ]&, cbuf@buffer[in]];
+    cbuf@updatestamp[out] = cbuf@updatestamp[in]);
+
+  FilterFunction["Sum", cbuf_, out_Real, in_Real, ___] := Module[{
+    endregion, skip, prevT, prevVal, current},
+
+    If[cbuf@updatestamp[out] >= cbuf@updatestamp[in], Return[]];
+
+    If[Length[cbuf@buffer[in]] < 1,
+      cbuf@buffer[out] =.; cbuf@buffer[out] = {}; Return[]];
+
+    With[{chunk = cbuf@buffer[in][[1]]},
+      If[Not[RuleQ[chunk]],
+	cbuf@buffer[out] =.; cbuf@buffer[out] = {}; Return[]];
+      endregion =  chunk[[1,1]]];
+    skip = False; prevT = Undefined; prevVal = Undefined; current = 0;
+    cbuf@buffer[out] =.;
+    cbuf@buffer[out] = Map[With[{bodyQ = RuleQ[#],
+      region = If[RuleQ[#], #[[1]], #], body = If[RuleQ[#], #[[2]], {}]},
+      Which[
+	skip,					region,
+	Not[bodyQ],		 skip = True;	region,
+	endregion < region[[1]], skip = True;	region,
+
+	True, endregion = region[[2]];
+	region->(With[{t = #[[1]], val = #[[2]], PrevQ = RealQ[prevT]}, If[skip, Null[],
+	  current = Check[current + val, NaN];
+	  {prevT, prevVal} = {t, val};
+	  If[RealQ[current], {t, current}, skip = True; Null[]]]]&/@body)
+	]]&, cbuf@buffer[in]];
+
+    cbuf@updatestamp[out] = cbuf@updatestamp[in]];
+
+  FilterFunction["Difference", cbuf_, out_Real, in_Real, ___] := Module[{
+    endregion, skip, prevT, prevVal, current},
+
+    If[cbuf@updatestamp[out] >= cbuf@updatestamp[in], Return[]];
+
+    If[Length[cbuf@buffer[in]] < 1,
+      cbuf@buffer[out] =.; cbuf@buffer[out] = {}; Return[]];
+
+    With[{chunk = cbuf@buffer[in][[1]]},
+      If[Not[RuleQ[chunk]],
+	cbuf@buffer[out] =.; cbuf@buffer[out] = {}; Return[]];
+      endregion =  chunk[[1,1]]];
+    skip = False; prevT = Undefined; prevVal = Undefined; current = 0;
+    cbuf@buffer[out] =.;
+    cbuf@buffer[out] = Map[With[{bodyQ = RuleQ[#],
+      region = If[RuleQ[#], #[[1]], #], body = If[RuleQ[#], #[[2]], {}]},
+      Which[
+	skip,					region,
+	Not[bodyQ],		 skip = True;	region,
+	endregion < region[[1]], skip = True;	region,
+
+	True, endregion = region[[2]];
+	region->(With[{t = #[[1]], val = #[[2]], PrevQ = RealQ[prevT]}, If[skip, Null[],
+	  If[PrevQ,
+	    current = Check[val - prevVal, NaN]];
+	  {prevT, prevVal} = {t, val};
+	  If[RealQ[current], If[PrevQ, {t, current}, Null[]],
+	    skip = True; Null[]]]]&/@body)
+	]]&, cbuf@buffer[in]];
+
+    cbuf@updatestamp[out] = cbuf@updatestamp[in]];
+
+  FilterFunction["Integral0", cbuf_, out_Real, in_Real, sc_Real] := Module[{
+    endregion, skip, prevT, prevVal, current},
+
+    If[cbuf@updatestamp[out] >= cbuf@updatestamp[in], Return[]];
+
+    If[Length[cbuf@buffer[in]] < 1,
+      cbuf@buffer[out] =.; cbuf@buffer[out] = {}; Return[]];
+
+    With[{chunk = cbuf@buffer[in][[1]]},
+      If[Not[RuleQ[chunk]],
+	cbuf@buffer[out] =.; cbuf@buffer[out] = {}; Return[]];
+      endregion =  chunk[[1,1]]];
+    skip = False; prevT = Undefined; prevVal = Undefined; current = 0;
+    cbuf@buffer[out] =.;
+    cbuf@buffer[out] = Map[With[{bodyQ = RuleQ[#],
+      region = If[RuleQ[#], #[[1]], #], body = If[RuleQ[#], #[[2]], {}]},
+      Which[
+	skip,					region,
+	Not[bodyQ],		 skip = True;	region,
+	endregion < region[[1]], skip = True;	region,
+
+	True, endregion = region[[2]];
+	region->(With[{t = #[[1]], val = #[[2]], PrevQ = RealQ[prevT]}, If[skip, Null[],
+	  If[PrevQ,
+	    current = Check[current + prevVal * (t - prevT), NaN]];
+	  {prevT, prevVal} = {t, val};
+	  If[RealQ[current], {t, sc * current}, skip = True; Null[]]]]&/@body)
+	]]&, cbuf@buffer[in]];
+
+    cbuf@updatestamp[out] = cbuf@updatestamp[in]];
+
+  FilterFunction["Integral1", cbuf_, out_Real, in_Real, sc_Real] := Module[{
+    endregion, skip, prevT, prevVal, current},
+
+    If[cbuf@updatestamp[out] >= cbuf@updatestamp[in], Return[]];
+
+    If[Length[cbuf@buffer[in]] < 1,
+      cbuf@buffer[out] =.; cbuf@buffer[out] = {}; Return[]];
+
+    With[{chunk = cbuf@buffer[in][[1]]},
+      If[Not[RuleQ[chunk]],
+	cbuf@buffer[out] =.; cbuf@buffer[out] = {}; Return[]];
+      endregion =  chunk[[1,1]]];
+    skip = False; prevT = Undefined; prevVal = Undefined; current = 0;
+    cbuf@buffer[out] =.;
+    cbuf@buffer[out] = Map[With[{bodyQ = RuleQ[#],
+      region = If[RuleQ[#], #[[1]], #], body = If[RuleQ[#], #[[2]], {}]},
+      Which[
+	skip,					region,
+	Not[bodyQ],		 skip = True;	region,
+	endregion < region[[1]], skip = True;	region,
+
+	True, endregion = region[[2]];
+	region->(With[{t = #[[1]], val = #[[2]], PrevQ = RealQ[prevT]}, If[skip, Null[],
+	  If[PrevQ,
+	    current = Check[current + (val + prevVal) * (t - prevT) / 2, NaN]];
+	  {prevT, prevVal} = {t, val};
+	  If[RealQ[current], {t, sc * current}, skip = True; Null[]]]]&/@body)
+	]]&, cbuf@buffer[in]];
+
+    cbuf@updatestamp[out] = cbuf@updatestamp[in]];
+
+  FilterFunction["Differential", cbuf_, out_Real, in_Real, sc_Real] := Module[{
+    endregion, skip, prevT, prevVal, current},
+
+    If[cbuf@updatestamp[out] >= cbuf@updatestamp[in], Return[]];
+
+    If[Length[cbuf@buffer[in]] < 1,
+      cbuf@buffer[out] =.; cbuf@buffer[out] = {}; Return[]];
+
+    With[{chunk = cbuf@buffer[in][[1]]},
+      If[Not[RuleQ[chunk]],
+	cbuf@buffer[out] =.; cbuf@buffer[out] = {}; Return[]];
+      endregion =  chunk[[1,1]]];
+    skip = False; prevT = Undefined; prevVal = Undefined; current = 0;
+    cbuf@buffer[out] =.;
+    cbuf@buffer[out] = Map[With[{bodyQ = RuleQ[#],
+      region = If[RuleQ[#], #[[1]], #], body = If[RuleQ[#], #[[2]], {}]},
+      Which[
+	skip,					region,
+	Not[bodyQ],		 skip = True;	region,
+	endregion < region[[1]], skip = True;	region,
+
+	True, endregion = region[[2]];
+	region->(With[{t = #[[1]], val = #[[2]], PrevQ = RealQ[prevT]}, If[skip, Null[],
+	  If[PrevQ,
+	    current = Check[(val - prevVal) / (t - prevT), NaN]];
+	  {prevT, prevVal} = {t, val};
+	  If[RealQ[current], If[PrevQ, {t, sc * current}, Null[]],
+	    skip = True; Null[]]]]&/@body)
+	]]&, cbuf@buffer[in]];
+
+    cbuf@updatestamp[out] = cbuf@updatestamp[in]];
+
+  FilterFunction["LPF", cbuf_, out_Real, in_Real, sc_Real] := Module[{
+    endregion, skip, prevT, prevVal, current},
+
+    If[cbuf@updatestamp[out] >= cbuf@updatestamp[in], Return[]];
+
+    If[Length[cbuf@buffer[in]] < 1,
+      cbuf@buffer[out] =.; cbuf@buffer[out] = {}; Return[]];
+
+    With[{chunk = cbuf@buffer[in][[1]]},
+      If[Not[RuleQ[chunk]],
+	cbuf@buffer[out] =.; cbuf@buffer[out] = {}; Return[]];
+      endregion =  chunk[[1,1]]];
+    skip = False; prevT = Undefined; prevVal = Undefined; current = 0;
+    cbuf@buffer[out] =.;
+    cbuf@buffer[out] = Map[With[{bodyQ = RuleQ[#],
+      region = If[RuleQ[#], #[[1]], #], body = If[RuleQ[#], #[[2]], {}]},
+      Which[
+	skip,					region,
+	Not[bodyQ],		 skip = True;	region,
+	endregion < region[[1]], skip = True;	region,
+
+	True, endregion = region[[2]];
+	region->(With[{t = #[[1]], val = #[[2]], PrevQ = RealQ[prevT]}, If[skip, Null[],
+	  If[PrevQ,
+	    current = Check[prevVal
+	      + (current - prevVal) * Exp[-(t - prevT) * sc], NaN],
+	    current = val];
+	  {prevT, prevVal} = {t, val};
+	  If[RealQ[current], {t, current}, skip = True; Null[]]]]&/@body)
+	]]&, cbuf@buffer[in]];
+
+    cbuf@updatestamp[out] = cbuf@updatestamp[in]];
+
+  FilterFunction["HPF", cbuf_, out_Real, in_Real, sc_Real] := Module[{
+    endregion, skip, prevT, prevVal, current},
+
+    If[cbuf@updatestamp[out] >= cbuf@updatestamp[in], Return[]];
+
+    If[Length[cbuf@buffer[in]] < 1,
+      cbuf@buffer[out] =.; cbuf@buffer[out] = {}; Return[]];
+
+    With[{chunk = cbuf@buffer[in][[1]]},
+      If[Not[RuleQ[chunk]],
+	cbuf@buffer[out] =.; cbuf@buffer[out] = {}; Return[]];
+      endregion =  chunk[[1,1]]];
+    skip = False; prevT = Undefined; prevVal = Undefined; current = 0;
+    cbuf@buffer[out] =.;
+    cbuf@buffer[out] = Map[With[{bodyQ = RuleQ[#],
+      region = If[RuleQ[#], #[[1]], #], body = If[RuleQ[#], #[[2]], {}]},
+      Which[
+	skip,					region,
+	Not[bodyQ],		 skip = True;	region,
+	endregion < region[[1]], skip = True;	region,
+
+	True, endregion = region[[2]];
+	region->(With[{t = #[[1]], val = #[[2]], PrevQ = RealQ[prevT]}, If[skip, Null[],
+	  If[PrevQ,
+	    current = Check[prevVal
+	      + (current - prevVal) * Exp[-(t - prevT) * sc], NaN],
+	    current = val];
+	  {prevT, prevVal} = {t, val};
+	  If[RealQ[current], {t, val - current}, skip = True; Null[]]]]&/@body)
+	]]&, cbuf@buffer[in]];
+
+    cbuf@updatestamp[out] = cbuf@updatestamp[in]];
+
+  (* Core Function *)
+  (* Discriminate KEKBLog chunk formated entry: {f,t}|{f,t}->{body} *)
+  (* without discriminated timerange chunk *)
+  Discriminator[d_, passQ_] := Module[{range, chunk, len, pos, edge = 1},
+    If[Not[RuleQ[d]], Return[d]];
+    range = First[d]; chunk = Second[d]; len = Length[chunk];
+    pos = Flatten[Position[passQ/@chunk, True]];
+    If[Length[pos] == len, Return[d]];
+    If[Length[pos] < 1, Return[range]];
+
+    pos = Partition[Take[Flatten[Select[
+      Thread[{Prepend[pos, -1], Append[pos, -1]}],
+      #[[2]] - #[[1]] <> 1&]], {2,-2}], 2];
+
+    Null@@Map[With[{begin = #[[1]], end = #[[2]]}, edge = end + 1;
+      { If[begin == 1, range[[1]], chunk[[begin,1]]],
+	If[end == len, range[[2]], chunk[[edge,1]]]}->
+	  Take[chunk, {begin, end}]]&, pos]];
+
+  (* Discriminate KEKBLog chunk formated entry: {f,t}|{f,t}->{body} *)
+  (* containing discriminated timerange chunk as unfilled chunk *)
+  FullDiscriminator[d_, passQ_] := Module[{range, chunk, len, pos, edge = 1},
+    If[Not[RuleQ[d]], Return[d]];
+    range = First[d]; chunk = Second[d]; len = Length[chunk];
+    pos = Flatten[Position[passQ/@chunk, True]];
+    If[Length[pos] == len, Return[d]];
+    If[Length[pos] < 1, Return[range]];
+
+    pos = Partition[Take[Flatten[Select[
+      Thread[{Prepend[pos, -1], Append[pos, -1]}],
+      #[[2]] - #[[1]] <> 1&]], {2,-2}], 2];
+
+    Null@@Join[Map[With[{begin = #[[1]], end = #[[2]]},
+      Null[If[edge < begin, {If[edge == 1, range[[1]], chunk[[edge,1]]],
+	chunk[[begin,1]]}, Null[]], edge = end + 1;
+      { If[begin == 1, range[[1]], chunk[[begin,1]]],
+	If[end == len, range[[2]], chunk[[edge,1]]]}->
+	  Take[chunk, {begin, end}]]]&, pos],
+      {If[edge > end, Null[], {chunk[[edge,1]], range[[2]]}]}]];
+
+];
+! >>> LogBrowser ChannelEngine class <<<
+
+LogBrowser@RegisterModule["System", ChannelEngine];
+
+! End of File

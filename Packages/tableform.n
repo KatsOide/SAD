@@ -1,0 +1,14 @@
+TableForm[$x_] := Module[{x, nc, lc, l, spacing, lc$min = 7, lc$max = 17},
+  x = Switch[Length[Dimensions[$x]],
+    0, {{$x}},
+    1, {$x},
+    _, $x];
+
+  nc = Max[Length/@x];
+  lc = Restrict[Floor[(PageWidth - 1) / nc], lc$min, lc$max];
+  l  = lc * nc;
+
+  spacing = StringFill["", " ", lc$max];
+  StandardForm[$FORM = StringJoin["S", lc - 1, ".", lc - 5];
+    StringJoin@@((StringJoin@@(StringJoin[" ", #, spacing][1, lc]&)/@#)//"\n"&)/@x]];
+

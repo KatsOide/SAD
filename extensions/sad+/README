@@ -1,0 +1,52 @@
+SAD+(Ohmi's Differential Algebra Package)
+
+Contents:
+* SAD+ DA Engine Driver Library for SAD
+	TaylorMap.n
+
+* SAD+ DA Engine source code
+	src/*.cc include/*.h
+
+* SAD+ DA Engine Makefile written by Ohmi
+	src/Makefile
+
+* SAD+ DA Engine Makefile based on SAD amorita branch module-framework
+  (Required amorita branch revision 1094)
+	Makefile
+
+Description:
+TaylorMap.n library provides global namescope function:
+TaylorMap[begin:(_Real|_String), end:(_Real|_String), Options___Rule].
+TaylorMap[] function generate Taylor map of beamline from `begin' to `end'
+by using external differential algebra engine.
+
+* Acceptable Beam Line Elements
+  Translate:	DRIFT, BEND, QUAD, SEXT, OCT, CAVI, BEAMBEAM
+  Convert:	MULT(K1 only)
+  Discard:	MONI, MARK(Zero length element)
+  Discard:	TCAVI, SOL, MAP(Not implemented on SAD+ engine)
+
+* Acceptable Options
+  Order:	Maximum order of Taylor series[Default: 1]
+  Revolution:	Revolution number of expanded beamline[Default: 0]
+
+* Return Values
+  If successful, TaylorMap[] returns a List of Taylor map with the following
+  coordinate order: x, Px, y, Py, z, Pz. Taylor map is a List of Taylor terms.
+  Taylor term is a List constructed by a coefficient and order numbers of
+  coordinate variable: {coefficient, n_x, n_Px, n_y, n_Py, n_z, n_Pz}
+  It returns `$Failed' symbol on failure.
+
+Bugs:
+* Generated Taylor map MIGHT be broken in the case that
+  either `begin' or `end' pointed the MARKer type element.
+* SOL, MAP, TCAVI type element is not implemented on SAD+ endine 
+* MULT type element is converted as Quadrupole element
+  (Skew and higher order term is discarded)
+
+History:
+2005/01/31	First release
+2006/02/01	Support MULT, SOL, MAP, TCAVI element(Incomplete translation)
+2007/12/09	Follow module build framework changes
+
+# End of File

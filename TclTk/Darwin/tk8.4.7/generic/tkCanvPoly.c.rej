@@ -1,0 +1,118 @@
+***************
+*** 253,258 ****
+   *
+   *--------------------------------------------------------------
+   */
+  
+  static int
+  CreatePolygon(interp, canvas, itemPtr, objc, objv)
+--- 253,261 ----
+   *
+   *--------------------------------------------------------------
+   */
++ static int		KBCreatePolygon _ANSI_ARGS_((Tcl_Interp *interp,
++ 			    Tk_Canvas canvas, struct Tk_Item *itemPtr,
++ 			    int objc, Tcl_Obj *CONST objv[]));
+  
+  static int
+  CreatePolygon(interp, canvas, itemPtr, objc, objv)
+***************
+*** 294,299 ****
+      polyPtr->splineSteps = 12;
+      polyPtr->autoClosed = 0;
+  
+      /*
+       * Count the number of points and then parse them into a point
+       * array.  Leading arguments are assumed to be points if they
+--- 297,305 ----
+      polyPtr->splineSteps = 12;
+      polyPtr->autoClosed = 0;
+  
++     if (objc<0)
++  	return KBCreatePolygon(interp, canvas, itemPtr, objc, objv);
++ 
+      /*
+       * Count the number of points and then parse them into a point
+       * array.  Leading arguments are assumed to be points if they
+***************
+*** 311,316 ****
+      }
+  
+      if (ConfigurePolygon(interp, canvas, itemPtr, objc-i, objv+i, 0)
+  	    == TCL_OK) {
+  	return TCL_OK;
+      }
+--- 317,389 ----
+      }
+  
+      if (ConfigurePolygon(interp, canvas, itemPtr, objc-i, objv+i, 0)
++ 	    == TCL_OK) {
++ 	return TCL_OK;
++     }
++ 
++     error:
++     DeletePolygon(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
++     return TCL_ERROR;
++ }
++ 
++ static int
++ KBCreatePolygon(interp, canvas, itemPtr, objc, objv)
++     Tcl_Interp *interp;			/* Interpreter for error reporting. */
++     Tk_Canvas canvas;			/* Canvas to hold new item. */
++     Tk_Item *itemPtr;			/* Record to hold new item;  header
++ 					 * has been initialized by caller. */
++     int objc;				/* Number of arguments in objv. */
++     Tcl_Obj *CONST objv[];		/* Arguments describing polygon. */
++ {
++     PolygonItem *polyPtr = (PolygonItem *) itemPtr;
++     int i, numPoints;
++     int nn;
++     double *bb;
++ 
++     objc = -objc;
++     nn = *((int *)objv[objc-2]);
++     bb = (double *)objv[objc-1];
++     objc -= 2;
++ 
++     /*
++      * Count the number of points and then parse them into a point
++      * array.  Leading arguments are assumed to be points if they
++      * start with a digit or a minus sign followed by a digit.
++      */
++ 
++     /* from PolygonCoords */
++     if (nn & 1) {
++ 	char buf[64 + TCL_INTEGER_SPACE];
++ 	sprintf(buf, "wrong # coordinates: expected an even number, got %d",
++ 		nn);
++ 	Tcl_SetResult(interp, buf, TCL_VOLATILE);
++ 	goto error;
++     } else {
++ 	numPoints = nn/2;
++ 	if (polyPtr->pointsAllocated <= numPoints) {
++ 	    if (polyPtr->coordPtr != NULL) {
++ 		ckfree((char *) polyPtr->coordPtr);
++ 	    }
++ 	    polyPtr->coordPtr = (double *) ckalloc((unsigned)
++ 		    (sizeof(double) * (nn+2)));
++ 	    polyPtr->pointsAllocated = numPoints+1;
++ 	}
++ 	for (i = nn-1; i >= 0; i--) {
++ 	    polyPtr->coordPtr[i] = bb[i];
++ 	}
++ 	polyPtr->numPoints = numPoints;
++ 	polyPtr->autoClosed = 0;
++ 	if (nn>2 && ((polyPtr->coordPtr[nn-2] != polyPtr->coordPtr[0])
++ 		|| (polyPtr->coordPtr[nn-1] != polyPtr->coordPtr[1]))) {
++ 	    polyPtr->autoClosed = 1;
++ 	    polyPtr->numPoints++;
++ 	    polyPtr->coordPtr[nn] = polyPtr->coordPtr[0];
++ 	    polyPtr->coordPtr[nn+1] = polyPtr->coordPtr[1];
++ 	}
++ 	ComputePolygonBbox(canvas, polyPtr);
++     }
++ 
++     if (ConfigurePolygon(interp, canvas, itemPtr, objc, objv, 0)
+  	    == TCL_OK) {
+  	return TCL_OK;
+      }

@@ -1,0 +1,10 @@
+FFS;
+
+l = Table[
+   Exp[-(x^2 + y^2)/2]/2/Pi, {x, -3, 3, 0.5}, {y, -3, 3, 0.5}];
+
+ListContourPlot[l]
+end
+
+ListContourPlot[l, ColorFunctionScaling -> False]
+end

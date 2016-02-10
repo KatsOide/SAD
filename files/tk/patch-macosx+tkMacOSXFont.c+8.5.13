@@ -1,0 +1,31 @@
+--- macosx/tkMacOSXFont.c.orig	2012-11-07 00:08:31.000000000 +0900
++++ macosx/tkMacOSXFont.c	2012-12-04 10:54:15.860746328 +0900
+@@ -348,10 +348,18 @@
+  *-------------------------------------------------------------------------
+  */
+ 
++#ifndef TCL_CFGVAL_ENCODING
++#define TCL_CFGVAL_ENCODING "ascii"
++#endif
++
+ void
+ TkpFontPkgInit(
+     TkMainInfo *mainPtr)	/* The application being created. */
+ {
++    static Tcl_Config cfg[] = {
++	{ "fontsystem", "aqua" },
++	{ 0,0 }
++    };
+     Tcl_Interp *interp = mainPtr->interp;
+     Tk_Window tkwin = (Tk_Window) mainPtr->winPtr;
+     const struct SystemFontMapEntry *systemFont = systemFontMap;
+@@ -360,6 +368,9 @@
+     NSMutableCharacterSet *cs;
+     NSAutoreleasePool *pool = [NSAutoreleasePool new];
+ 
++ 
++    Tcl_RegisterConfig(mainPtr->interp, "tk", cfg, TCL_CFGVAL_ENCODING);
++
+     /* force this for now */
+     if (!mainPtr->winPtr->mainPtr) {
+ 	mainPtr->winPtr->mainPtr = mainPtr;

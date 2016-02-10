@@ -1,0 +1,153 @@
+! === Begin ProcessStatus Definition ====
+! *** Library for getting Process Status Informations
+! ***
+! *** CAUTION: This library depends on `ps' command output.
+! ***          In the environment which has poor ps command,
+! ***          library sets return code `Unsupported'.
+! ***
+! *** Prototype:
+! *** ProcessStatus[entry_String, modifier_:Null]
+
+(* Create const Symbol *)
+ProcessStatus$OSType=Null;
+
+Protect[Unsupported];
+Protect[ProcessStatus$OSType];
+
+(* Create aliases *)
+ProcessStatus[entries_List, modifier_:Null] := With[{len=Length[entries]},
+  If[Head[modifier]<=>List,
+    Map[ProcessStatus[#, modifier]&, entries],
+    Map[ProcessStatus[#[[1]], #[[2]]]&, Thread[{entries,
+      Take[Join[modifier, Table[Null, {i, len}]], {1, len}]}]]]];
+
+(* Main routine *)
+ProcessStatus[entry_String, modifier_:Null] := Module[{pid, ostype,
+  cmdprefix, psopt, decoder, ifs, res},
+  pid=GetPID[];
+  ostype=ProcessStatus$GetOSType[];
+
+  {psopt, decoder}=Switch[{ostype, entry, Head[modifier], modifier},
+    (* *** Cygwin's ps command can not get UNIX like infomation *** *)
+    {"CYGWIN", _, _, _ },
+    {Unsupported, Null},
+
+    (* *** definition for normally UNIX like systems *** *)
+    {_, "ruser", _, _}, (* real uid's user name *)
+    {"ruser", Null},
+
+    {_, "user", _, _},  (* effective uid's user name *)
+    {"user", Null},
+
+    {_, "pcpu", _, _},  (* %CPU usage *)
+    {"pcpu", Check[ToExpression[#], $Failed]&},
+
+    {_, "nice", _, _},  (* nice value *)
+    {"nice", Check[ToExpression[#], $Failed]&},
+
+
+    {_, "ressize", Symbol, String}, (* resident set size *)
+    {"rss", Check[ProcessStatus$MemorySizeToString[
+      ProcessStatus$DecodeMemorySize[#]], $Failed]&},
+
+    {_, "vmsize", Symbol, String}, (* vertual memory size *)
+    {"vsz", Check[ProcessStatus$MemorySizeToString[
+      ProcessStatus$DecodeMemorySize[#]], $Failed]&},
+
+    {_, "ressize", String, _}, (* resident set size *)
+    {"rss", Check[ProcessStatus$MemorySizeToString[
+      ProcessStatus$DecodeMemorySize[#], modifier], $Failed]&},
+
+    {_, "vmsize", String, _}, (* vertual memory size *)
+    {"vsz", Check[ProcessStatus$MemorySizeToString[
+      ProcessStatus$DecodeMemorySize[#], modifier], $Failed]&},
+
+    {_, "ressize", _, _}, (* resident set size *)
+    {"rss", Check[ProcessStatus$DecodeMemorySize[#], $Failed]&},
+
+    {_, "vmsize", _, _}, (* vertual memory size *)
+    {"vsz", Check[ProcessStatus$DecodeMemorySize[#], $Failed]&},
+
+    _, (* otherwise Unsupported *)
+    {Unsupported, Null}];
+
+  If[psopt===Unsupported, Return[Unsupported]];
+
+  cmdprefix=Switch[ostype,
+    "HP-UX", "/usr/bin/env UNIX95=1",
+
+    _, ""];
+
+  (* run ps command *)
+  With[{ifs=OpenRead["!"//cmdprefix
+    //" ps -p "//StandardForm[$FORM="S10.0"; ToString[pid]]//" -o "//psopt
+    //" | sed -e 's@^[ \t]*@@' -e 's@[ \t]*$@@'"]},
+    If[ifs===$Failed, Return[$Failed],
+      Read[ifs, String]; (* Dummy read for ps header line *)
+      res=Read[ifs, String];
+      Close[ifs]];
+    ];
+
+  If[res===EndOfFile, Return[Unsupported]];
+
+  If[Head[decoder]===Function, res=decoder[res]];
+
+  Return[res];
+  ];
+
+(* Helper for guess OS type *)
+ProcessStatus$GetOSType[] := Module[{ostype},
+  If[ProcessStatus$OSType===Null,
+    With[{ifs=OpenRead["!uname -s"]},
+      If[ifs===$Failed, Return["Unkown"],
+	ostype=Read[ifs, Word];
+	Close[ifs]]];
+    If[ostype===EndOfFile, Return["Unkown"]];
+
+    If[ostype[1,6]==="CYGWIN", ostype="CYGWIN"];
+
+    Unprotect[ProcessStatus$OSType];
+    ProcessStatus$OSType=ostype;
+    Protect[ProcessStatus$OSType];
+    ];
+  Return[ProcessStatus$OSType];
+  ];
+
+ProcessStatus$DecodeMemorySize[str_String] := 
+  Switch[str[-1],
+    "."|"0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9",
+    ToExpression[str],
+
+    "k",
+    ToExpression[str[1,-2]],
+
+    "M",
+    ToExpression[str[1,-2]] * 1024,
+
+    "G",
+    ToExpression[str[1,-2]] * 1024 * 1024,
+
+    "P",
+    ToExpression[str[1,-2]] * 1024 * 1024 * 1024,
+
+    _, INF];
+
+ProcessStatus$MemorySizeToString[size_Real, mod_String:""] := Module[{sz},
+  StandardForm[
+    $FORM="S10.0";
+
+    $FORM=Switch[mod[1],
+      "S", "S"//If[RealQ[#], ToString[#]//".1", "6.1"]&
+	[Check[ToExpression[mod[2,-1]]-1, $Failed]],
+      "F", "F"//If[RealQ[#], ToString[#]//".1", "6.1"]&
+	[Check[ToExpression[mod[2,-1]]-1, $Failed]],
+      _, "S6.1"];
+
+    sz=Round[size*10]/10;
+    Scan[With[{sym=#}, If[sz =< 1.5 * 1024,
+      Return[ToString[sz]//sym],
+      sz=Round[sz/102.4]/10]]&, {"k", "M", "G", "P"}];
+    Return[ToString[sz]//"E"]
+    ];
+  ];
+! === End ProcessStatus Definition ====

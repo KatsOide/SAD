@@ -1,0 +1,370 @@
+
+MakeBump[bumprep_,str_,opt_,options___]:=Module[
+{op,bumpR,a,b,c,x,def={SetSteer->True,Calc->True,Condition->{},Epsilon->1e-4},
+ syno={EPS->Epsilon}},
+op=Join[{options},def]/.syno;
+If[Head[bumprep]===Symbol && MatchQ[bumprep[Constraint],_List],
+  bumpR={bumprep[Constraint],Flatten[Position[str[[1]],#]&/@bumprep[Steers][[1]]]}
+!  bumpR=CanonicalBumpRep[bumprep,str]
+];
+{a,b}=BumpConditionMatrix[bumpR,str,opt];
+c=Condition/.op; 
+If[~SameQ[c,{}],
+  If[~VectorQ[c[[-1]],NumberQ],
+      c=MakeConditionMatrix[If[NumberQ[c[[-1]]],{c},c],str[[1]]]
+    ]
+  ];
+x=If[c=={},
+    LinearSolve[a,b,Threshold->Epsilon/.op],
+    LinearSolveConditioned[a,b,Epsilon/.op,0,True,c[[1]],c[[2]]]
+  ];
+If[ SetSteer/.op, AddSteerStrength[x,str[[,bumpR[[2]]]]] ];
+If[Calc/.op, 
+  If[FLAG["SIMULATE"], 
+    !CalculateOptics[1,LINE["length"],opt[[1,1]],FLAG["CELL"],2]
+     FFS["cal"]
+    ]
+  ];
+{x,bumpR[[2]]}
+];
+
+(a_=Bump[str_,opt___])^:=Module[
+  {op,condition,range,center,plane,n,c={},hv,index={},d,
+    def={Condition->Null,Range->Null,Center->Null,Plane->Automatic,NumberOfSteers->6,WhatClosed->Null}},
+  op=Join[{opt},def];
+  condition=Condition/.op;
+  range=Range/.op;
+  center=Center/.op;
+  plane=Plane/.op;
+  n=NumberOfSteers/.op;
+  Clear[a];
+! If[MatchQ[condition,{_List,_,_,_}],  ! old-style
+!   c=condition[[1]];
+!   center=condition[[2]];
+!   plane=condition[[3]];
+!   n=condition[[4]]
+! , If[MatchQ[condition,_List],c=condition]
+! ];
+  If[MatchQ[condition,_List],c=condition];
+  c=If[c==={},c,If[VectorQ[c],{c},c]];
+  If[plane===Automatic && UnsameQ[c,{}],
+    hv=If[MemberQ[c[[,2]],"X"],"H",""]//If[MemberQ[c[[,2]],"Y"],"V",""],
+    If[UnsameQ[plane,Null],
+      hv=Switch[plane,"X","H","Y","V",_,plane],
+      Message[Bump::cond];Return[{}]
+    ]
+  ];
+  If[UnsameQ[range,Null],
+    index=SteerForClosedBump[range,str];
+    c=Join[c,
+      Map[{LINE["name",range[[2]]],#,0}&,Flatten[Characters[hv]/.{"H"->{"X","PX"},"V"->{"Y","PY"}}]]
+      ],
+    index=Range[Length[str[[1]]]]
+  ];
+  If[UnsameQ[n,Null],
+    If[UnsameQ[center,Null],
+      d=Map[ClosedBumpCondition[center,#,n,str]&,Characters[hv]/.{"H"->"X","V"->"Y"}];
+      If[Flatten[d[[,2]]]=={},  index=Range[Length[str[[1]]]] ];
+      c=Join[c,Flatten[d[[,1,2]],1]];
+      index=Union[Join[index,Flatten[d[[,2]]]]]
+    ]
+  ];
+  a[Constraint]=c;
+  a[Steers]=str[[,index]];
+];
+  
+
+! CanonicalBumpRep[bumpspec_,str_]:=Module[
+! {close},
+! If[VectorQ[bumpspec[-1],NumberQ],
+!   bumpspec,
+!   If[NumberQ[bumpspec[-1]] && ( VectorQ[bumpspec[1]] || MatrixQ[bumpspec[1]] ) ,
+!     close=ClosedBumpCondition[LINE['POSITION',bumpspec[-3]],bumpspec[-2],bumpspec[-1],str];
+!     {If[MatrixQ[bumpspec[1]],
+!            Join[close[1,2],bumpspec[1]],     ! <--- condition at 'end' position only
+!            Append[close[1,2],bumpspec[1]]], close[2]} ,
+!     {If[VectorQ[bumpspec],{bumpspec},bumpspec],Range[Length[str[1]]]}
+!     ]
+!   ]
+! ];
+
+
+BumpConditionMatrix[{clist_,index_},str_,opt_]:=Module[{n},
+n=Length[clist];
+{Table[
+  ResponseMatrixG[LINE["position",clist[[i,1]]],str[[,index]],opt,FLAG["CELL"],clist[[i,2]]],
+  {i,n}] ,
+ Table[clist[[i,3]],{i,n}]}
+];
+
+ClosedBumpCondition[target_,hv_,nsb_,str_]:=Module[
+{index,istr,slav,nsbc=6,couple,ileft,iright,cf,ci,vh},
+istr=str[[1]];slav=str[[2]];
+index=SteerForClosedBump[target,hv,nsb,str,nsbc];
+If[index==={{},{},{}},Return[{{{},{}},{}}]];
+couple=index[[3]]<=>{};
+{ileft,iright}=index[[{1,2},-1]];
+If[couple,
+  If[ ~BelongToSection[ istr[[ index[[3,-1]] ]], istr[[ index[[{1,2},-1]] ]] ],
+    iright=index[[3,-1]] ];
+  If[ ~BelongToSection[ istr[[ index[[3,1]] ]], istr[[ index[[{1,2},-1]] ]] ],
+    ileft=index[[3,1]] ]
+  ];
+cf={LINE["name",slav[[iright]]+1],#,0}&/@{hv,"P"//hv};
+ci={LINE["name",istr[[ileft]]],#,0}&/@{hv,"P"//hv};
+If[couple,
+   vh=If[hv=="X","Y","X"];
+   cf=Join[cf,{LINE["name",slav[[iright]]+1],#,0}&/@{vh,"P"//vh}];
+   ci=Join[ci,{LINE["name",istr[[ileft]]],#,0}&/@{vh,"P"//vh}]
+  ];
+{{ci,cf},Flatten[index]}
+];
+
+SteerForClosedBump[range_,str_]:=Module[{st},
+  st=Select[str[[1]],BelongToSection[#,LINE["position",range]]&];
+  Flatten[Position[str[[1]],#]&/@st]
+];
+
+SteerForClosedBump[target_,hv_,nsb_,str_,nsbc:6]:=Module[
+{istr,hstr,nstr,hori,nleft,nright,last,it,over,j,llist={},rlist={},clist={}},
+istr=str[[1]]; nstr=Length[istr]; hstr=str[[3]];
+If[VectorQ[nsb],  {nleft,nright}=nsb, nleft=Floor[nsb/2]; nright=nsb-nleft];
+hori=hv[-1]=="X";
+last=nstr;
+it=LINE["position",target];
+over=~FLAG["RING"];
+While[Length[llist]<nleft,
+  j=SearchSteer[it,istr,hstr,hori,nleft,True,last];
+  If[j===Null,
+    If[over,
+      If[Length/@{llist,rlist}<>{nleft,nright},
+        Message[Bump::noste,target,hv,nsb];Return[{{},{},{}}],
+        Return[{llist,rlist,clist}] ] ];
+    over=1;
+    it=LINE["length"];
+    last=nstr
+  , AppendTo[llist,j];
+    last=If[FLAG["RING"],
+            If[j==1,it=LINE["length"];over=1;nstr,j-1],
+            j-1 ]
+  ]
+];
+last=If[llist[[1]]===Null,1,llist[[1]]+1];
+it=LINE["position",target];
+over=~FLAG["RING"];
+While[Length[rlist]<nright,
+  j=SearchSteer[it,istr,hstr,hori,nright,False,last];
+  If[j===Null,
+    If[over,
+      If[Length@@{llist,rlist}<>{nleft,nright},
+        Message[Bump::noste,target,hv,nsb];Return[{{},{},{}}],
+        Return[{llist,rlist,clist}] ] ];
+    over=1;
+    it=1;
+    last=1
+  , rlist=Append[rlist,j];
+    last=If[FLAG["RING"],
+            If[j==nstr,it=1;over=1;1,j+1],
+            j+1 ]
+  ]
+];
+If[StringLength[hv]==1,
+  If[ CoupledLineQ[ istr[[llist[[nleft]]]], istr[[rlist[[nright]]]] ],
+    clist=If[hori,
+            SteerForClosedBump[target,hv//"Y",nsbc,str],
+            SteerForClosedBump[target,hv//"X",nsbc,str]]
+    ]
+  ];
+{llist,rlist,Flatten[clist]}
+];
+
+SearchSteer[target_,istr_,hstr_,horizontal_,n_,left_,last_]:=Module[{},
+If[left,
+  Do[If[istr[[i]]<target && hstr[[i]]==horizontal, Return[i]],{i,last,1,-1}],
+  Do[If[istr[[i]]>=target && hstr[[i]]==horizontal, Return[i]],{i,last,Length[istr],1}]
+  ]
+];
+
+BelongToSection[t_,{from_,to_}]:=
+If[from<to,
+  from<=t && t<to,
+  from<=t ||  t<to];
+
+CoupledLineQ[from_,to_]:=Module[{},
+If[from<=to,
+  Catch[Do[ If[
+        Switch[ LINE["TYPE",i],
+          1,0,2,Element["ROTATE",LINE["ELEMENT",i]]*Element["K0",LINE["ELEMENT",i]],
+          4,Element["ROTATE",LINE["ELEMENT",i]]*Element["K1",LINE["ELEMENT",i]],
+          6,Element["ROTATE",LINE["ELEMENT",i]]*Element["K2",LINE["ELEMENT",i]],
+          20,Element["BZ",LINE["ELEMENT",i]],_,0
+        ]<>0,Throw[1]
+      ], {i,from,to}
+  ]]===1,
+  If[FLAG["RING"],CoupledLineQ[from,LINE["LENGTH"]] || CoupledLineQ[1,to],
+    CoupledLineQ[to,from]
+  ]
+]
+];
+
+! MakeBumpCond[b_,str_]:=Module[{op,def={ExtraCondition->{}},c={},ec,nec,pf,pi,cf,ci={}},
+!   op=Join[If[Length[b]>=8,{b[8]},{}],def];
+!   Do[If[~SameQ[b[i],Null],c=Append[c,{b[2],Switch[i,4,b[1],5,"P"//b[1],6,"E"//b[1],7,"EP"//b[1]],b[i]}]],{i,4,7}];
+!   If[~SameQ[(ExtraCondition/.op),{}],
+!     Print[ExtraCondition/.op];
+!     ec=ExtraCondition/.op;If[~VectorQ[ec],ec={ec}]; nec=Length[ec];
+!     pf=ClosedBumpCondition[LINE['POSITION',b[2]],b[1],b[3],str][1,2,1,1]; ! <--- extra condition at 'end' position
+!     pi=ClosedBumpCondition[LINE['POSITION',b[2]],b[1],b[3],str][1,1,1,1]; ! <--- extra condition at 'start' position
+!     cf=Flatten[Table[{{pf,ec[i],0},{pf,CanonicalPartner[ec[i]],0}},{i,nec}],1];
+!     Do[ If[ec[i,1]=="E", ci=Append[ci,{{pi,ec[i],0},{pi,CanonicalPartner[ec[i]],0}}]], {i,Length[ec]} ];
+!     ci=Flatten[ci,1];
+!     {Join[c,cf,ci],b[2],b[1],b[3]}
+!   , {c,b[2],b[1],b[3]}]
+! ];
+
+CorrectOrbitBump[orbitkind_,bumpset_,bpm_,str_,opt_,options___]:=
+ Module[
+  {orb,weigh,kind,nbpm,p,pt,ww,w={},b={},a,c,c1,tt,vx,r,o={2,2,5,5,2,2,5,5},
+   solv,nx,x,s0,co0,co,s1,
+   def={Orbit->{},SetSteer->True,Calc->True,Solver->"LeastSquare",
+       Condition->{},Weight->{},AppendEq->{},ExpectedOrbit->False,
+       ZeroSum->False,TotalKick->{Null,Null},TotalDZ->Null,DN->{Null,Null},
+       Tune->{0,0},Epsilon->1e-8},
+   syno={EPS->Epsilon}, op },
+  op=Join[{options},def]/.syno;
+  orb=Orbit/.op; If[~SameQ[orb,{}]&&VectorQ[orb],orb={orb}];
+  weigh=Weight/.op;
+  kind=If[VectorQ[orbitkind],Union[orbitkind],{orbitkind}];
+
+  nbpm=Length[bpm[[1]]];
+ !.. find weight and orbit
+  Do[p=Part[Position[{"X","PX","Y","PY","EX","EPX","EY","EPY"},kind[i]],1,1];
+    pt=If[p<5,"D"//kind[[i]],kind[[i]]];
+    ww=Sqrt[ Optik[opt,1,bpm[[1]],o[[p]]] ];
+    If[UnsameQ[weigh,{}],ww=ww*weigh];
+    w=Append[w,ww];
+    b=Append[b,
+       If[orb=={}
+       , If[p==1 || p==3
+         , If[bpm[3,(1+p)/2]==0
+           , Twiss[pt,bpm[[1]]]-LINE[pt,bpm[[4]]]-bpm[[2,(1+p)/2]]
+           , Twiss[pt,bpm[[1]]]-LINE[pt,bpm[[4]]]-bpm[[2,(1+p)/2]]
+                +bpm[[3,(1+p)/2]]*Table[GaussRandom[],{nbpm}]
+           ]
+         , Twiss[pt,bpm[[1]]]
+         ]
+       , orb[[i]]
+       ]
+      ]
+    , {i,Length[kind]}];
+  w=Flatten[w,1];
+  b=Flatten[b,1];
+
+ !.. response matrix of bump
+  co0=Twiss[{"dx","dy","ex","ey"}];
+  {a,vx,r}=ResponseMatrixToBump[kind,bpm,bumpset,str,opt];
+  Twiss["dx","set",co0[[1]]];Twiss["dy","set",co0[[2]]];Twiss["ex","set",co0[[3]]];Twiss["ey","set",co0[[4]]];
+
+ !.. constraint on steers.
+  c=SteerConditions[str,opt,op];
+
+ !  ~~~ convert c to constraint on bump variables..
+  If[c<=>{},
+    c1=c[[1]];
+    c1=Table[ vx[[j,1]].c1[[i,vx[[j,2]]]], {i,Length[c1]}, {j,Length[vx]} ]
+  ];
+
+ !.. solve
+  a=MapThread[Times[#1,#2]&,{w,a}];
+  b=b*w;
+
+  solv=Solver/.op;
+  nx=If[solv==="LeastSquare",0,If[VectorQ[solv] && solv[[1]]=="Micado",solv[[2]],Length[str[[1]]] ]];
+  If[c=={},
+    x=LinearSolveConditioned[a,b,Epsilon/.op,nx,True],
+    x=LinearSolveConditioned[a,b,Epsilon/.op,nx,True,c1,c[[2]]] ];
+
+ !.. map bump onto steers
+  s0=ResetSteers[];
+  co=Twiss[{"dx","dy","ex","ey"},bpm[[1]]];
+  Do[
+    AddSteerStrength[ -x[[i]]*vx[[i,1]], str[[,vx[[i,2]]]] ]
+  , {i,Length[x]}
+  ];
+  
+ !.. calc resultant orbit
+  s1=LINE["k0",str[[1]]];
+  If[ExpectedOrbit/.op,
+    FFS["cal"];
+    MapThread[(Twiss["dx",#1]=Twiss["dx",#1]+#2)&,{bpm[[1]],co[[1]]}];
+    MapThread[(Twiss["dy",#1]=Twiss["dy",#1]+#2)&,{bpm[[1]],co[[2]]}];
+    MapThread[(Twiss["ex",#1]=Twiss["ex",#1]+#2)&,{bpm[[1]],co[[3]]}];
+    MapThread[(Twiss["ey",#1]=Twiss["ey",#1]+#2)&,{bpm[[1]],co[[4]]}]
+  ];
+  RecoverSteers[s0];
+  AddSteerStrength[s1,str];
+  If[(Calc/.op)&&~(ExpectedOrbit/.op)&&FLAG["SIMULATE"], 
+    FFS["cal"];
+    If[FLAG["CELL"],
+      If[ ~Equal[Drop[ CalculateOptics[1,LINE["LENGTH"],Twiss["*",1],FLAG["CELL"],2][[2]], -1],{1,1}],
+        Message[Corr::unstable] ]  ]
+  ];
+  
+ !.. return steer strength and bump height
+  {-s1,MultiPartition[ -x*r, SlotNumberBump/@If[MatchQ[bumpset,_List],bumpset,{bumpset}] ]}
+  ];
+
+ ResponseMatrixToBump[kind_,bpm_,bumpset_,str_,opt_]:=Module[
+  {bumps,s0,r={},x0,n,dv,b,xt,at,x1,bh,x={},a={},na,maxheight=1e-4,vinc=1e-4},
+  bumps=If[MatchQ[bumpset,_List],bumpset,{bumpset}];
+  na=Length[bpm[1]]*Max[1,Length[kind]];
+  a=Table[{},{na}];
+  s0=ResetSteers[];
+  FFS["cal"];
+  x0=Twiss[{"dx","dy"}];
+  Do[
+    n=SlotNumberBump[bumps[[i]]];
+    dv=DiagonalMatrix[Table[vinc,{n}]];
+    Do[
+      b=Apply[bumps[[i]],dv[[j]]];
+      xt=MakeBump[ b, str, opt, Calc->False ];
+      FFS["cal"];
+      x1=Twiss[{"dx","dy"}]-x0;
+      bh=Max[Max[x1[[1]]],-Min[x1[[1]]],Max[x1[[2]]],-Min[x1[[2]]]];
+      AppendTo[r,maxheight/Abs[bh]];
+      ResetSteers[];
+      xt={xt[[1]]*r[[-1]],xt[[2]]};
+      x=Append[x,xt];
+
+      at=ResponseMatrixG[bpm[[1]],str[[,xt[[2]]]],opt,FLAG["CELL"],kind];
+      at=Map[Dot[#,xt[[1]]]&,at];
+      a=MapThread[Append,{a,at}]
+    , {j,Length[dv]}
+    ]
+  , {i,Length[bumps]}
+  ];
+  RecoverSteers[s0];
+  {a, x, r*vinc}
+ ];
+
+! -- find slot number of function --
+
+SlotNumberBump[f_]:=(
+(* get slot number of function f.
+   Definition of f is given as
+     Bump[..#1,..#2,..]& 
+  or Function[{x,y},Bump[..x,..y,..]]
+  or f[x_]:=Bump[..,x,..] *)
+
+  Off[General::slot,General::narg];
+  n=0;While[Head[Apply[f,Table[0,{n}]]]<=>Bump,n++];
+  On[General::slot,General::narg];
+  n)
+
+MultiPartition[a_List,p_List]:=Module[{b={}},Fold[(AppendTo[b,Take[#1,#2]];Drop[#1,#2])&,a,p];b];
+
+Bump::cond="Condition is null && Plane is not specified";
+Bump::noste="Insufficient steers: Center->`1`, Plane->`2`, NumberOfSteers->`3`";
+
+Protect[MakeBump,Bump,BumpConditionMatrix,ClosedBumpCondition,SteerForClosedBump,SearchSteer,BelongToSection,
+CoupledLineQ,CorrectOrbitBump,ResponseMatrixToBump,SlotNumberBump]

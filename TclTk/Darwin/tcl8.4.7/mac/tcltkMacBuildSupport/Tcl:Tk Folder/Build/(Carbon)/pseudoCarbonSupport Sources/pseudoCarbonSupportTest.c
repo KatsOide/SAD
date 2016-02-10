@@ -1,0 +1,1 @@
+#include <stdio.h>int main(void) {	OSErr err;	unsigned char testpstr[10] ="\pTest";		printf("main\n");	p2cstr(testpstr);	printf("p2cstr Test: %s\n", (char *)testpstr);	printf("done\n");}

@@ -1,0 +1,37 @@
+NISTACK = Class[{},
+  {
+    },
+  { Stack
+    },
+
+  Constructor[] := (Stack = {});
+
+  (* PRNG internal state access *)
+  GetSeed[]   := SeedRandom[];
+
+  SetSeed[s_] := SeedRandom[s];
+
+  (* Stack operations *)
+  Depth[] := Length[Stack];
+
+  Push[] := AppendTo[Stack, GetSeed[]];
+
+  Pop[] := If[Depth[] < 1, Print["?No data in Nistack"],
+    With[{s = Last[Stack]}, SetSeed[s]; Stack = Drop[Stack,-1]]];
+
+  Discard[] := If[Depth[] < 1, Print["?No data in Nistack"],
+    Stack = Drop[Stack,-1]];
+
+  Peek[i_Real:0] := If[Depth[] < 1, Print["?No data in Nistack"],
+    With[{j = Round[Depth[]-i]}, If[1 =< j && j =< Depth[], SetSeed[Stack[[j]]],
+      Print["?Invalid argument for Nistack"]]]];
+
+  Exchange[] := If[Depth[] < 1, Print["?No data in Nistack"],
+    With[{s = Last[Stack]}, Stack[[-1]] = GetSeed[]; SetSeed[s]]];
+
+  ];
+
+NISTACK$OBJ = NISTACK[];
+NISTACK$FIXSEED = NISTACK[];
+
+! End of File

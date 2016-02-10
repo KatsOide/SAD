@@ -1,0 +1,58 @@
+#!/bin/sh
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+	-n)
+	    cmd=echo
+	    ;;
+	--)
+	    break
+	    ;;
+
+	-*)
+	    ;;
+
+	*)
+	    break
+	    ;;
+    esac
+    shift
+done
+
+if [ $# -lt 2 ]; then
+    echo "usage: `basename $0` [-n] repository_directory set_files..." 2>&1
+    exit 1
+fi
+
+target="$1"
+shift
+
+while [ $# -gt 0 ]; do
+    patch_ver=
+    case $1 in
+	*set-*)
+	    patch_set="$1"
+	    patch_ver=${1##*set-}
+	    ;;
+    esac
+    if [ "x${patch_ver}" != "x" -a -d ${target}/ ]; then
+	echo "Expanding patch files of ${patch_set} into ${target}${patch_ver}"
+	patches=`cat ${patch_set} | grep -v ^#`
+	${cmd} mkdir -p ${target}${patch_ver}
+	for file in ${patches}; do
+	    full="${file}"
+	    base="${file%%@*}"
+	    ver="${file##*@}"
+	    if [ ! -r "${target}${patch_ver}/${base}" ]; then
+		if [ -r "${target}/${full}" ]; then
+		    ${cmd} cp "${target}/${full}" "${target}${patch_ver}/${base}"
+		else
+		    echo "#Patch[${full}] for ${target}${patch_ver} is not found"
+		fi
+	    fi
+	done
+    fi
+    shift
+done
+
+# End of File

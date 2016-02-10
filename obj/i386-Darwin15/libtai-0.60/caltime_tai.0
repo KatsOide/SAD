@@ -1,0 +1,43 @@
+caltime(3)                 Library Functions Manual                 caltime(3)
+
+
+
+[1mNAME[0m
+       caltime_tai - convert calendar dates and times
+
+[1mSYNTAX[0m
+       [1m#include <caltime.h>[0m
+       [1m#include <tai.h>[0m
+
+       void [1mcaltime_tai[22m(&[4mct[24m,&[4mt[24m);
+       void [1mcaltime_utc[22m(&[4mct[24m,&[4mt[24m,&[4mweekday[24m,&[4myearday[24m);
+
+       struct caltime [4mct[24m;
+       struct tai [4mt[24m;
+       int *[4mweekday[24m;
+       int *[4myearday[24m;
+
+[1mDESCRIPTION[0m
+       [1mcaltime_tai  [22mreads  a  date, time, and UTC offset from [4mct[24m.  It puts the
+       corresponding TAI64 label into [4mt[24m.
+
+       [1mcaltime_utc [22mreads a TAI64 label from [4mt[24m.  It puts the corresponding date
+       and time into [4mct[24m, with UTC offset 0.
+
+       [1mcaltime_utc  [22mfills in [4mweekday[24m and [4myearday[24m the same way as [1mcaldate_from-[0m
+       [1mmjd[22m.
+
+[1mLIMITATIONS[0m
+       The sequence of TAI64 labels has been determined for the next few  hun-
+       dred  billion years.  The same is not true, however, for calendar dates
+       and times.  New leap seconds are added every year or two, as  discussed
+       in  [1mleapsecs[22m(3);  and the Gregorian calendar will change in a few thou-
+       sand years, as discussed  in  [1mcaldate_mjd[22m(3).   This  means  that  [1mcal-[0m
+       [1mtime_tai [22mand [1mcaltime_utc [22mare not useful for dates far in the future.
+
+[1mSEE ALSO[0m
+       caldate_mjd(3), caltime(3), tai(3), leapsecs(3)
+
+
+
+                                                                    caltime(3)

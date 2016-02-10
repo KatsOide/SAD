@@ -1,0 +1,10 @@
+FFS;
+
+ Range[2^31];
+ Do[Print[m];Range[2^m],{m,0,63}]
+
+end
+
+
+
+

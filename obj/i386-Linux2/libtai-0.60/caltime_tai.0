@@ -1,0 +1,43 @@
+caltime(3)                                                          caltime(3)
+
+
+
+NNAAMMEE
+       caltime_tai - convert calendar dates and times
+
+SSYYNNTTAAXX
+       ##iinncclluuddee <<ccaallttiimmee..hh>>
+       ##iinncclluuddee <<ttaaii..hh>>
+
+       void ccaallttiimmee__ttaaii(&_c_t,&_t);
+       void ccaallttiimmee__uuttcc(&_c_t,&_t,&_w_e_e_k_d_a_y,&_y_e_a_r_d_a_y);
+
+       struct caltime _c_t;
+       struct tai _t;
+       int *_w_e_e_k_d_a_y;
+       int *_y_e_a_r_d_a_y;
+
+DDEESSCCRRIIPPTTIIOONN
+       ccaallttiimmee__ttaaii  reads  a  date, time, and UTC offset from _c_t.  It puts the
+       corresponding TAI64 label into _t.
+
+       ccaallttiimmee__uuttcc reads a TAI64 label from _t.  It puts the corresponding date
+       and time into _c_t, with UTC offset 0.
+
+       ccaallttiimmee__uuttcc  fills in _w_e_e_k_d_a_y and _y_e_a_r_d_a_y the same way as ccaallddaattee__ffrroomm‐‐
+       mmjjdd.
+
+LLIIMMIITTAATTIIOONNSS
+       The sequence of TAI64 labels has been determined for the next few  hun‐
+       dred  billion years.  The same is not true, however, for calendar dates
+       and times.  New leap seconds are added every year or two, as  discussed
+       in  lleeaappsseeccss(3);  and the Gregorian calendar will change in a few thou‐
+       sand years, as discussed  in  ccaallddaattee__mmjjdd(3).   This  means  that  ccaall‐‐
+       ttiimmee__ttaaii and ccaallttiimmee__uuttcc are not useful for dates far in the future.
+
+SSEEEE AALLSSOO
+       caldate_mjd(3), caltime(3), tai(3), leapsecs(3)
+
+
+
+                                                                    caltime(3)

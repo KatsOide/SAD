@@ -1,0 +1,14 @@
+(* Please localize this file as you like. *)
+
+Environment@@[{
+  {"UNIX95",""},
+  {"TCL_LIBRARY",""},
+  {"TK_LIBRARY",""},
+  {"KBFRAMEDIR","xSAD_SHARE_ROOT/KBFrame"},
+  {"PYTHONPATH","xSAD_SHARE_ROOT/Packages/"}
+  },{1}];
+
+DocumentsDirectory="xSADROOT/Documents/";
+ExamplesDirectory="xSADROOT/xScriptDirectory/";
+
+! End of File

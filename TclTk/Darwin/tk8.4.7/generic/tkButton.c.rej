@@ -1,0 +1,465 @@
+***************
+*** 97,102 ****
+  	(char *) NULL, 0, -1, 0, (ClientData) "-foreground", 0},
+      {TK_OPTION_FONT, "-font", "font", "Font",
+  	DEF_BUTTON_FONT, -1, Tk_Offset(TkButton, tkfont), 0, 0, 0},
+      {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
+  	DEF_BUTTON_FG, -1, Tk_Offset(TkButton, normalFg), 0, 0, 0},
+      {TK_OPTION_STRING, "-height", "height", "Height",
+--- 97,108 ----
+  	(char *) NULL, 0, -1, 0, (ClientData) "-foreground", 0},
+      {TK_OPTION_FONT, "-font", "font", "Font",
+  	DEF_BUTTON_FONT, -1, Tk_Offset(TkButton, tkfont), 0, 0, 0},
++     {TK_OPTION_FONT, "-altfont", "altfont", "Font",
++ 	DEF_BUTTON_ALTFONT, -1, Tk_Offset(TkButton, tkaltfont), 0, 0, 0},
++     {TK_OPTION_FONT, "-scriptfont", "scriptfont", "Font",
++ 	DEF_BUTTON_SCRFONT, -1, Tk_Offset(TkButton, tkscriptfont), 0, 0, 0},
++     {TK_OPTION_FONT, "-altscriptfont", "altscriptfont", "Font",
++ 	DEF_BUTTON_ALTSCRFONT, -1, Tk_Offset(TkButton, tkaltscriptfont), 0, 0, 0},
+      {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
+  	DEF_BUTTON_FG, -1, Tk_Offset(TkButton, normalFg), 0, 0, 0},
+      {TK_OPTION_STRING, "-height", "height", "Height",
+***************
+*** 125,130 ****
+  	Tk_Offset(TkButton, padY), 0, 0, 0},
+      {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
+  	DEF_LABCHKRAD_RELIEF, -1, Tk_Offset(TkButton, relief), 0, 0, 0},
+      {TK_OPTION_STRING_TABLE, "-state", "state", "State",
+  	DEF_BUTTON_STATE, -1, Tk_Offset(TkButton, state),
+  	0, (ClientData) stateStrings, 0},
+--- 131,138 ----
+  	Tk_Offset(TkButton, padY), 0, 0, 0},
+      {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
+  	DEF_LABCHKRAD_RELIEF, -1, Tk_Offset(TkButton, relief), 0, 0, 0},
++     {TK_OPTION_INT, "-rotation", "rotation", "Rotation",
++ 	"0", -1, Tk_Offset(TkButton, rotation), 0, 0, 0},
+      {TK_OPTION_STRING_TABLE, "-state", "state", "State",
+  	DEF_BUTTON_STATE, -1, Tk_Offset(TkButton, state),
+  	0, (ClientData) stateStrings, 0},
+***************
+*** 189,194 ****
+  	(char *) NULL, 0, -1, 0, (ClientData) "-foreground", 0},
+      {TK_OPTION_FONT, "-font", "font", "Font",
+  	DEF_BUTTON_FONT, -1, Tk_Offset(TkButton, tkfont), 0, 0, 0},
+      {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
+  	DEF_BUTTON_FG, -1, Tk_Offset(TkButton, normalFg), 0, 0, 0},
+      {TK_OPTION_STRING, "-height", "height", "Height",
+--- 197,208 ----
+  	(char *) NULL, 0, -1, 0, (ClientData) "-foreground", 0},
+      {TK_OPTION_FONT, "-font", "font", "Font",
+  	DEF_BUTTON_FONT, -1, Tk_Offset(TkButton, tkfont), 0, 0, 0},
++     {TK_OPTION_FONT, "-altfont", "altfont", "Font",
++ 	DEF_BUTTON_ALTFONT, -1, Tk_Offset(TkButton, tkaltfont), 0, 0, 0},
++     {TK_OPTION_FONT, "-scriptfont", "scriptfont", "Font",
++ 	DEF_BUTTON_SCRFONT, -1, Tk_Offset(TkButton, tkscriptfont), 0, 0, 0},
++     {TK_OPTION_FONT, "-altscriptfont", "altscriptfont", "Font",
++ 	DEF_BUTTON_ALTSCRFONT, -1, Tk_Offset(TkButton, tkaltscriptfont), 0, 0, 0},
+      {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
+  	DEF_BUTTON_FG, -1, Tk_Offset(TkButton, normalFg), 0, 0, 0},
+      {TK_OPTION_STRING, "-height", "height", "Height",
+***************
+*** 227,232 ****
+      {TK_OPTION_INT, "-repeatinterval", "repeatInterval", "RepeatInterval",
+  	 DEF_BUTTON_REPEAT_INTERVAL, -1, Tk_Offset(TkButton, repeatInterval),
+  	 0, 0, 0},
+      {TK_OPTION_STRING_TABLE, "-state", "state", "State",
+  	DEF_BUTTON_STATE, -1, Tk_Offset(TkButton, state),
+  	0, (ClientData) stateStrings, 0},
+--- 241,248 ----
+      {TK_OPTION_INT, "-repeatinterval", "repeatInterval", "RepeatInterval",
+  	 DEF_BUTTON_REPEAT_INTERVAL, -1, Tk_Offset(TkButton, repeatInterval),
+  	 0, 0, 0},
++     {TK_OPTION_INT, "-rotation", "rotation", "Rotation",
++ 	"0", -1, Tk_Offset(TkButton, rotation), 0, 0, 0},
+      {TK_OPTION_STRING_TABLE, "-state", "state", "State",
+  	DEF_BUTTON_STATE, -1, Tk_Offset(TkButton, state),
+  	0, (ClientData) stateStrings, 0},
+***************
+*** 288,293 ****
+  	(char *) NULL, 0, -1, 0, (ClientData) "-foreground", 0},
+      {TK_OPTION_FONT, "-font", "font", "Font",
+  	DEF_BUTTON_FONT, -1, Tk_Offset(TkButton, tkfont), 0, 0, 0},
+      {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
+  	DEF_CHKRAD_FG, -1, Tk_Offset(TkButton, normalFg), 0, 0, 0},
+      {TK_OPTION_STRING, "-height", "height", "Height",
+--- 304,315 ----
+  	(char *) NULL, 0, -1, 0, (ClientData) "-foreground", 0},
+      {TK_OPTION_FONT, "-font", "font", "Font",
+  	DEF_BUTTON_FONT, -1, Tk_Offset(TkButton, tkfont), 0, 0, 0},
++     {TK_OPTION_FONT, "-altfont", "altfont", "Font",
++ 	DEF_BUTTON_ALTFONT, -1, Tk_Offset(TkButton, tkaltfont), 0, 0, 0},
++     {TK_OPTION_FONT, "-scriptfont", "scriptfont", "Font",
++ 	DEF_BUTTON_SCRFONT, -1, Tk_Offset(TkButton, tkscriptfont), 0, 0, 0},
++     {TK_OPTION_FONT, "-altscriptfont", "altscriptfont", "Font",
++ 	DEF_BUTTON_ALTSCRFONT, -1, Tk_Offset(TkButton, tkaltscriptfont), 0, 0, 0},
+      {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
+  	DEF_CHKRAD_FG, -1, Tk_Offset(TkButton, normalFg), 0, 0, 0},
+      {TK_OPTION_STRING, "-height", "height", "Height",
+***************
+*** 327,332 ****
+  	Tk_Offset(TkButton, padY), 0, 0, 0},
+      {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
+  	DEF_LABCHKRAD_RELIEF, -1, Tk_Offset(TkButton, relief), 0, 0, 0},
+      {TK_OPTION_BORDER, "-selectcolor", "selectColor", "Background",
+  	DEF_BUTTON_SELECT_COLOR, -1, Tk_Offset(TkButton, selectBorder),
+  	TK_OPTION_NULL_OK, (ClientData) DEF_BUTTON_SELECT_MONO, 0},
+--- 349,356 ----
+  	Tk_Offset(TkButton, padY), 0, 0, 0},
+      {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
+  	DEF_LABCHKRAD_RELIEF, -1, Tk_Offset(TkButton, relief), 0, 0, 0},
++     {TK_OPTION_INT, "-rotation", "rotation", "Rotation",
++ 	"0", -1, Tk_Offset(TkButton, rotation), 0, 0, 0},
+      {TK_OPTION_BORDER, "-selectcolor", "selectColor", "Background",
+  	DEF_BUTTON_SELECT_COLOR, -1, Tk_Offset(TkButton, selectBorder),
+  	TK_OPTION_NULL_OK, (ClientData) DEF_BUTTON_SELECT_MONO, 0},
+***************
+*** 397,402 ****
+  	(char *) NULL, 0, -1, 0, (ClientData) "-foreground", 0},
+      {TK_OPTION_FONT, "-font", "font", "Font",
+  	DEF_BUTTON_FONT, -1, Tk_Offset(TkButton, tkfont), 0, 0, 0},
+      {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
+  	DEF_CHKRAD_FG, -1, Tk_Offset(TkButton, normalFg), 0, 0, 0},
+      {TK_OPTION_STRING, "-height", "height", "Height",
+--- 421,432 ----
+  	(char *) NULL, 0, -1, 0, (ClientData) "-foreground", 0},
+      {TK_OPTION_FONT, "-font", "font", "Font",
+  	DEF_BUTTON_FONT, -1, Tk_Offset(TkButton, tkfont), 0, 0, 0},
++     {TK_OPTION_FONT, "-altfont", "altfont", "Font",
++ 	DEF_BUTTON_ALTFONT, -1, Tk_Offset(TkButton, tkaltfont), 0, 0, 0},
++     {TK_OPTION_FONT, "-scriptfont", "scriptfont", "Font",
++ 	DEF_BUTTON_SCRFONT, -1, Tk_Offset(TkButton, tkscriptfont), 0, 0, 0},
++     {TK_OPTION_FONT, "-altscriptfont", "altscriptfont", "Font",
++ 	DEF_BUTTON_ALTSCRFONT, -1, Tk_Offset(TkButton, tkaltscriptfont), 0, 0, 0},
+      {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
+  	DEF_CHKRAD_FG, -1, Tk_Offset(TkButton, normalFg), 0, 0, 0},
+      {TK_OPTION_STRING, "-height", "height", "Height",
+***************
+*** 433,438 ****
+  	Tk_Offset(TkButton, padY), 0, 0, 0},
+      {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
+  	DEF_LABCHKRAD_RELIEF, -1, Tk_Offset(TkButton, relief), 0, 0, 0},
+      {TK_OPTION_BORDER, "-selectcolor", "selectColor", "Background",
+  	DEF_BUTTON_SELECT_COLOR, -1, Tk_Offset(TkButton, selectBorder),
+  	TK_OPTION_NULL_OK, (ClientData) DEF_BUTTON_SELECT_MONO, 0},
+--- 463,470 ----
+  	Tk_Offset(TkButton, padY), 0, 0, 0},
+      {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
+  	DEF_LABCHKRAD_RELIEF, -1, Tk_Offset(TkButton, relief), 0, 0, 0},
++     {TK_OPTION_INT, "-rotation", "rotation", "Rotation",
++ 	"0", -1, Tk_Offset(TkButton, rotation), 0, 0, 0},
+      {TK_OPTION_BORDER, "-selectcolor", "selectColor", "Background",
+  	DEF_BUTTON_SELECT_COLOR, -1, Tk_Offset(TkButton, selectBorder),
+  	TK_OPTION_NULL_OK, (ClientData) DEF_BUTTON_SELECT_MONO, 0},
+***************
+*** 693,704 ****
+      butPtr->highlightColorPtr = NULL;
+      butPtr->inset = 0;
+      butPtr->tkfont = NULL;
+      butPtr->normalFg = NULL;
+      butPtr->activeFg = NULL;
+      butPtr->disabledFg = NULL;
+      butPtr->normalTextGC = None;
+      butPtr->activeTextGC = None;
+      butPtr->disabledGC = None;
+      butPtr->stippleGC = None;
+      butPtr->gray = None;
+      butPtr->copyGC = None;
+--- 725,748 ----
+      butPtr->highlightColorPtr = NULL;
+      butPtr->inset = 0;
+      butPtr->tkfont = NULL;
++     butPtr->tkaltfont = NULL;
++     butPtr->tkscriptfont = NULL;
++     butPtr->tkaltscriptfont = NULL;
+      butPtr->normalFg = NULL;
+      butPtr->activeFg = NULL;
+      butPtr->disabledFg = NULL;
+      butPtr->normalTextGC = None;
++     butPtr->normalAltTextGC = None;
++     butPtr->normalScriptTextGC = None;
++     butPtr->normalAltScriptTextGC = None;
+      butPtr->activeTextGC = None;
++     butPtr->activeAltTextGC = None;
++     butPtr->activeScriptTextGC = None;
++     butPtr->activeAltScriptTextGC = None;
+      butPtr->disabledGC = None;
++     butPtr->disabledAltGC = None;
++     butPtr->disabledScriptGC = None;
++     butPtr->disabledAltScriptGC = None;
+      butPtr->stippleGC = None;
+      butPtr->gray = None;
+      butPtr->copyGC = None;
+***************
+*** 729,734 ****
+      butPtr->takeFocusPtr = NULL;
+      butPtr->commandPtr = NULL;
+      butPtr->flags = 0;
+  
+      Tk_CreateEventHandler(butPtr->tkwin,
+  	    ExposureMask|StructureNotifyMask|FocusChangeMask,
+--- 773,780 ----
+      butPtr->takeFocusPtr = NULL;
+      butPtr->commandPtr = NULL;
+      butPtr->flags = 0;
++     butPtr->rotation = 0;
++     butPtr->bspecial = 0;
+  
+      Tk_CreateEventHandler(butPtr->tkwin,
+  	    ExposureMask|StructureNotifyMask|FocusChangeMask,
+***************
+*** 975,986 ****
+      if (butPtr->normalTextGC != None) {
+  	Tk_FreeGC(butPtr->display, butPtr->normalTextGC);
+      }
+      if (butPtr->activeTextGC != None) {
+  	Tk_FreeGC(butPtr->display, butPtr->activeTextGC);
+      }
+      if (butPtr->disabledGC != None) {
+  	Tk_FreeGC(butPtr->display, butPtr->disabledGC);
+      }
+      if (butPtr->stippleGC != None) {
+  	Tk_FreeGC(butPtr->display, butPtr->stippleGC);
+      }
+--- 1021,1059 ----
+      if (butPtr->normalTextGC != None) {
+  	Tk_FreeGC(butPtr->display, butPtr->normalTextGC);
+      }
++     if (butPtr->normalAltTextGC != None) {
++ 	Tk_FreeGC(butPtr->display, butPtr->normalAltTextGC);
++     }
++     if (butPtr->normalScriptTextGC != None) {
++ 	Tk_FreeGC(butPtr->display, butPtr->normalScriptTextGC);
++     }
++     if (butPtr->normalAltScriptTextGC != None) {
++ 	Tk_FreeGC(butPtr->display, butPtr->normalAltScriptTextGC);
++     }
+      if (butPtr->activeTextGC != None) {
+  	Tk_FreeGC(butPtr->display, butPtr->activeTextGC);
+      }
++     if (butPtr->activeAltTextGC != None) {
++ 	Tk_FreeGC(butPtr->display, butPtr->activeAltTextGC);
++     }
++     if (butPtr->activeScriptTextGC != None) {
++ 	Tk_FreeGC(butPtr->display, butPtr->activeScriptTextGC);
++     }
++     if (butPtr->activeAltScriptTextGC != None) {
++ 	Tk_FreeGC(butPtr->display, butPtr->activeAltScriptTextGC);
++     }
+      if (butPtr->disabledGC != None) {
+  	Tk_FreeGC(butPtr->display, butPtr->disabledGC);
+      }
++     if (butPtr->disabledAltGC != None) {
++ 	Tk_FreeGC(butPtr->display, butPtr->disabledAltGC);
++     }
++     if (butPtr->disabledScriptGC != None) {
++ 	Tk_FreeGC(butPtr->display, butPtr->disabledScriptGC);
++     }
++     if (butPtr->disabledAltScriptGC != None) {
++ 	Tk_FreeGC(butPtr->display, butPtr->disabledAltScriptGC);
++     }
+      if (butPtr->stippleGC != None) {
+  	Tk_FreeGC(butPtr->display, butPtr->stippleGC);
+      }
+***************
+*** 1305,1310 ****
+      GC newGC;
+      unsigned long mask;
+      TkButton *butPtr;
+  
+      butPtr = (TkButton *) instanceData;
+  
+--- 1378,1385 ----
+      GC newGC;
+      unsigned long mask;
+      TkButton *butPtr;
++     int balt,bscr;
++     char *text;
+  
+      butPtr = (TkButton *) instanceData;
+  
+***************
+*** 1312,1317 ****
+       * Recompute GCs.
+       */
+  
+      gcValues.font = Tk_FontId(butPtr->tkfont);
+      gcValues.foreground = butPtr->normalFg->pixel;
+      gcValues.background = Tk_3DBorderColor(butPtr->normalBorder)->pixel;
+--- 1387,1407 ----
+       * Recompute GCs.
+       */
+  
++     balt = 0;
++     bscr = 0;
++     /*printf("text: [%s]\n",butPtr->text);*/
++     if (butPtr->textPtr!=NULL) {
++ 	text = Tcl_GetString(butPtr->textPtr);
++ 	if (*text!=0) {
++ 	    if (strstr(text,"`f")!=NULL)
++ 		balt = 1;
++ 	    if ((strstr(text,"`u")!=NULL)||(strstr(text,"`d")!=NULL))
++ 		bscr = 1;
++ 	}
++     }
++     butPtr->bspecial = balt || bscr;
++     /*printf("bspecial set to %d\n", butPtr->bspecial);*/
++ 
+      gcValues.font = Tk_FontId(butPtr->tkfont);
+      gcValues.foreground = butPtr->normalFg->pixel;
+      gcValues.background = Tk_3DBorderColor(butPtr->normalBorder)->pixel;
+***************
+*** 1330,1336 ****
+      }
+      butPtr->normalTextGC = newGC;
+  
+      if (butPtr->activeFg != NULL) {
+  	gcValues.foreground = butPtr->activeFg->pixel;
+  	gcValues.background = Tk_3DBorderColor(butPtr->activeBorder)->pixel;
+  	mask = GCForeground | GCBackground | GCFont;
+--- 1420,1463 ----
+      }
+      butPtr->normalTextGC = newGC;
+  
++     if (butPtr->normalAltTextGC != None) {
++ 	Tk_FreeGC(butPtr->display, butPtr->normalAltTextGC);
++     }
++     if (balt) {
++ 	gcValues.font = Tk_FontId(butPtr->tkaltfont);
++ 	newGC = Tk_GetGC(butPtr->tkwin,
++ 			 GCForeground|GCBackground|GCFont, &gcValues);
++ 	butPtr->normalAltTextGC = newGC;
++     } else {
++ 	butPtr->normalAltTextGC = None;
++     }
++ 
++     if (butPtr->normalScriptTextGC != None) {
++ 	Tk_FreeGC(butPtr->display, butPtr->normalScriptTextGC);
++     }
++     if (bscr) {
++ 	gcValues.font = Tk_FontId(butPtr->tkscriptfont);
++ 	newGC = Tk_GetGC(butPtr->tkwin,
++ 			 GCForeground|GCBackground|GCFont, &gcValues);
++ 	butPtr->normalScriptTextGC = newGC;
++     } else {
++ 	butPtr->normalScriptTextGC = None;
++     }
++ 
++     if (butPtr->normalAltScriptTextGC != None) {
++ 	Tk_FreeGC(butPtr->display, butPtr->normalAltScriptTextGC);
++     }
++     if (balt && bscr) {
++ 	gcValues.font = Tk_FontId(butPtr->tkaltscriptfont);
++ 	newGC = Tk_GetGC(butPtr->tkwin,
++ 			 GCForeground|GCBackground|GCFont, &gcValues);
++ 	butPtr->normalAltScriptTextGC = newGC;
++     } else {
++ 	butPtr->normalAltScriptTextGC = None;
++     }
++ 
+      if (butPtr->activeFg != NULL) {
++ 	gcValues.font = Tk_FontId(butPtr->tkfont);
+  	gcValues.foreground = butPtr->activeFg->pixel;
+  	gcValues.background = Tk_3DBorderColor(butPtr->activeBorder)->pixel;
+  	mask = GCForeground | GCBackground | GCFont;
+***************
+*** 1339,1344 ****
+  	    Tk_FreeGC(butPtr->display, butPtr->activeTextGC);
+  	}
+  	butPtr->activeTextGC = newGC;
+      }
+  
+      gcValues.background = Tk_3DBorderColor(butPtr->normalBorder)->pixel;
+--- 1466,1507 ----
+  	    Tk_FreeGC(butPtr->display, butPtr->activeTextGC);
+  	}
+  	butPtr->activeTextGC = newGC;
++ 
++ 	if (butPtr->activeAltTextGC != None) {
++ 	    Tk_FreeGC(butPtr->display, butPtr->activeAltTextGC);
++ 	}
++ 	if (balt) {
++ 	    gcValues.font = Tk_FontId(butPtr->tkaltfont);
++ 	    newGC = Tk_GetGC(butPtr->tkwin,
++ 			     GCForeground|GCBackground|GCFont, &gcValues);
++ 	    butPtr->activeAltTextGC = newGC;
++ 	} else {
++ 	    butPtr->activeAltTextGC = None;
++ 	}
++ 
++ 	if (butPtr->activeScriptTextGC != None) {
++ 	    Tk_FreeGC(butPtr->display, butPtr->activeScriptTextGC);
++ 	}
++ 	if (bscr) {
++ 	    gcValues.font = Tk_FontId(butPtr->tkscriptfont);
++ 	    newGC = Tk_GetGC(butPtr->tkwin,
++ 			     GCForeground|GCBackground|GCFont, &gcValues);
++ 	    butPtr->activeScriptTextGC = newGC;
++ 	} else {
++ 	    butPtr->activeScriptTextGC = None;
++ 	}
++ 
++ 	if (butPtr->activeAltScriptTextGC != None) {
++ 	    Tk_FreeGC(butPtr->display, butPtr->activeAltScriptTextGC);
++ 	}
++ 	if (balt && bscr) {
++ 	    gcValues.font = Tk_FontId(butPtr->tkaltscriptfont);
++ 	    newGC = Tk_GetGC(butPtr->tkwin,
++ 			     GCForeground|GCBackground|GCFont, &gcValues);
++ 	    butPtr->activeAltScriptTextGC = newGC;
++ 	} else {
++ 	    butPtr->activeAltScriptTextGC = None;
++ 	}
+      }
+  
+      gcValues.background = Tk_3DBorderColor(butPtr->normalBorder)->pixel;
+***************
+*** 1377,1382 ****
+  	Tk_FreeGC(butPtr->display, butPtr->disabledGC);
+      }
+      butPtr->disabledGC = newGC;
+  
+      if (butPtr->copyGC == None) {
+  	butPtr->copyGC = Tk_GetGC(butPtr->tkwin, 0, &gcValues);
+--- 1540,1581 ----
+  	Tk_FreeGC(butPtr->display, butPtr->disabledGC);
+      }
+      butPtr->disabledGC = newGC;
++ 
++     if (butPtr->disabledAltGC != None) {
++ 	Tk_FreeGC(butPtr->display, butPtr->disabledAltGC);
++     }
++     if (balt) {
++ 	gcValues.font = Tk_FontId(butPtr->tkaltfont);
++ 	newGC = Tk_GetGC(butPtr->tkwin,
++ 			 GCForeground|GCBackground|GCFont, &gcValues);
++ 	butPtr->disabledAltGC = newGC;
++     } else {
++ 	butPtr->disabledAltGC = None;
++     }
++ 
++     if (butPtr->disabledScriptGC != None) {
++ 	Tk_FreeGC(butPtr->display, butPtr->disabledScriptGC);
++     }
++     if (bscr) {
++ 	gcValues.font = Tk_FontId(butPtr->tkscriptfont);
++ 	newGC = Tk_GetGC(butPtr->tkwin,
++ 			 GCForeground|GCBackground|GCFont, &gcValues);
++ 	butPtr->disabledScriptGC = newGC;
++     } else {
++ 	butPtr->disabledScriptGC = None;
++     }
++ 
++     if (butPtr->disabledAltScriptGC != None) {
++ 	Tk_FreeGC(butPtr->display, butPtr->disabledAltScriptGC);
++     }
++     if (balt && bscr) {
++ 	gcValues.font = Tk_FontId(butPtr->tkaltscriptfont);
++ 	newGC = Tk_GetGC(butPtr->tkwin,
++ 			 GCForeground|GCBackground|GCFont, &gcValues);
++ 	butPtr->disabledAltScriptGC = newGC;
++     } else {
++ 	butPtr->disabledAltScriptGC = None;
++     }
+  
+      if (butPtr->copyGC == None) {
+  	butPtr->copyGC = Tk_GetGC(butPtr->tkwin, 0, &gcValues);

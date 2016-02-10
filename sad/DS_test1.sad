@@ -1,0 +1,42 @@
+on echo;off ctime;
+
+MOMENTUM = 1 GeV;
+
+mark ip = (betax = 10 betay = 10);
+quad q = (l = 1. k1 = 0.1);
+
+line cell = (ip, q);
+
+FFS use =  cell;
+
+INS;
+
+calc;
+
+matrix;
+
+With[{e = Emittance[Matrix->True]},
+   $tms = TransferMatrices/.e;
+   tms[i_Real] := $tms[[i+1]].SymplecticInverse[$tms[[i]]];
+   cod = ClosedOrbit/.e;
+   ];
+ PutCOD[i_Real] := Print[cod[[i]]];
+ PutMap[i_Real] := Print[TableForm[tms[i]]];
+ PutCOD[2];
+ PutMap[1];
+ PutMap[2];
+
+end
+ 
+ e = Emittance[Matrix->True];
+ 
+Print[TransferMatrices/.e];
+
+coords={1,{{0.d0},{0.d0},{0.d0},{0.d0},{0.d0},{0.d0},{1}}};
+ Print[coords];
+ coords=TrackParticles[coords,1];
+ Print[coords];
+
+end
+
+abort;

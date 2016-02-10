@@ -1,0 +1,32 @@
+! Demo code for Pipe[] function
+!
+! Create pipe and fork child process.
+! Child process write number 1 to 10 into pipe.
+! Parent process read pipe and write results until detect EndOfFile.
+!
+! Caution: Don't forget to close unused descriptor!
+!          In order to detect EndOfFile from output side of pipe,
+!          all descriptors of input side of pipe MUST be closed.
+!
+
+FFS;
+
+{in, out} = Pipe[];
+
+With[{pid = Fork[]}, Switch[pid,
+ -1, Print["Fork system call is failed!"]; Exit[],
+
+  0, ( (* Child *)
+    Close[in];	(* Close unused descriptor *)
+    Table[Write[out, i]; Flush[out], {i, 10}];
+    Close[out]; Print["exit"]; Exit[0]),
+
+  _, ( (* Parent *)
+    Close[out];	(* Close unused descriptor *)
+    Table[With[{s = Read[in]}, If[s === EndOfFile, Break[]];
+      Print[Head[s],"[",s,"]"]], {i, 100}];
+    )]];
+
+Exit[];
+
+! End of File

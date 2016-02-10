@@ -1,0 +1,252 @@
+! SADScript Library Loader
+Library=Class[{},
+  { Library$Initialized = False, Library$Arch,
+    Library$Suffix, Library$Flags, Library$Method, (* Loader table *)
+    Library$Path, Library$Hook, Library$Loaded, (* Run-time database *)
+    AutoLoad$, (* Internal Class function API *)
+    Path, AutoLoad, AutoLoadSet (* Class function API *)
+    },
+  {
+    },
+
+  Initialize[] := If[Not[Library$Initialized], Library$Initialized = True;
+    (* Setup class function API *)
+    Off[General::unprotconst];
+    Unprotect[AutoLoad$, Path, AutoLoad, AutoLoadSet];
+    On[General::unprotconst];
+    Path := GetPath[]; (Path = path_) ^:= SetPath[path];
+    AutoLoad$[symbol$__, module$_String, set_Real:True] := Module[{
+      module, suffix, symbol},
+      {module, suffix} = NormalizeModule$[module$];
+      If[Not[Library$Loadable[suffix]],
+	Print["Unloadable type module[", module$, "]"];	Return[$Failed]];
+      symbol = List@@Hold/@Hold[symbol$];
+      With[{privSymbol = List@@Hold/@Library$Hook[module, suffix]},
+	(* Update AutoLoad Hook *)
+	Library$Hook[module, suffix] = Unevaluated$@@[Hold@@Union[
+	  Flatten[{symbol, privSymbol}]], {1}];
+	(* Unprotect override symbol *)
+	With[{sym = Intersection[symbol, privSymbol]}, If[Length[sym] > 0,
+	  Unprotect@@Unevaluated$@@[Hold@@sym, {1}];
+	  Scan[With[{s = Extract[#, {1}, Unevaluated$]},
+	    If[set,
+	      s/:(s  = val_) =.;
+	      s/:(s := val_) =.];
+	    s =.]&, sym]]];
+	];
+
+      Scan[With[{s = Extract[#, {1}, Unevaluated$]},
+	s := (Require[module$]; s);
+	If[set,
+	  (s  = val_) ^:= (Require[module$]; s  = val);
+	  (s := val_) ^:= (Require[module$]; s := val)]]&, symbol];
+      Protect@@Unevaluated$@@[Hold@@symbol, {1}]];
+
+    AutoLoad[sym__, module_String]    := AutoLoad$[sym, module, False];
+    AutoLoadSet[sym__, module_String] := AutoLoad$[sym, module, True];
+
+    Scan[SetAttributes[#, {HoldAll, Constant}]&,
+      {AutoLoad$, AutoLoad, AutoLoadSet}];
+    Protect[AutoLoad$, Path, AutoLoad, AutoLoadSet];
+
+    (* Setup suffix/loader table *)
+    Library$Hook[_, _] := Hold[];
+    Library$Loaded = {};
+    Unprotect[Library$Suffix, Library$Flags, Library$Method];
+    Clear[Library$Suffix, Library$Flags, Library$Method];
+    Library$Suffix = {}; Library$Flags[_] := {False, True};
+    Library$Method[_, fn_] := (Check[True, True]; Get[fn]; True);
+    Scan[With[{suffixes = #[[1]], archDep = #[[2, 1]], method = #[[2, 2]]},
+      Scan[With[{suffix = #},
+	AppendTo[Library$Suffix, suffix];
+	If[archDep || method === Null,
+	  Library$Flags[suffix] = {archDep, method <=> Null}];
+	If[method <=> Null,
+	  Library$Method[suffix, fn_] := (method[fn] === True),
+	  Library$Method[suffix, fn_] := False];
+	]&, suffixes]]&, {
+
+   {".n"}->{False, Module[{path = #}, (* SADScript Library *)
+     Check[True, True]; (* Dummy Check for trap errata work-around*)
+     Get[path]; True]&},
+
+   If[Not[FBoundQ[DynamicLink]], Null[],
+     {".so"}->{True, Module[{id, path = #}, (* SAD Extension Module *)
+       id = DynamicLink[path];
+       If[id === $Failed, False, DynamicCall[id, "dldeffun_", id]; True]]&}],
+
+   {".exe"}->{True, Null}, (* SAD External Engine *)
+
+	  Null[]}]; Protect[Library$Suffix, Library$Flags, Library$Method];
+
+    Unprotect[Library$Arch];
+    Library$Arch = $MachineArch;
+    Protect[Library$Arch];
+
+    (* Decode environment variables *)
+    Library$Path = With[{path = Environment["SAD_LIBRARY"]},
+      Select[Map[path[#[[1]] + 1, #[[2]] - 1]&,
+	Partition[Flatten[{0, StringPosition[path, ":"], 0}], 2]],
+	StringLength[#] > 0&]];
+
+    (* Prepend Target:SAD_MOD_ROOT into module search path if exists *)
+    With[{root = BuildInfo["Target:SAD_MOD_ROOT"]},
+      If[StringQ[root] && StringLength[root] > 0, PrependPath[root]]];
+
+    ];
+
+  (* Public API *)
+  GetPath[] := Library$Path;
+  SetPath[List[path___String]] := SetPath[path];
+  SetPath[path___String] := (Library$Path = {path});
+
+  AppendPath[path__String]  := SetPath[Join[Library$Path, {path}]];
+  PrependPath[path__String] := SetPath[Join[{path}, Library$Path]];
+
+  FindDirectory[module_String] := With[{found = FindObject$[module, Directory]},
+    If[found === $Failed, $Failed, Second[found]]];
+
+  FindModule[module_String] := With[{found = FindObject$[module]},
+    If[found === $Failed, $Failed, Second[found]]];
+
+  FindPrefix[module_String] := With[{path = FindModule[module]},
+    If[path === $Failed, $Failed,
+      With[{pos = StringPosition[path, "/"]}, If[pos === {}, ".",
+	If[pos[[-1, 1]] > 1, path[1, pos[[-1, 1]] - 1], "/"]]]]];
+
+  Require[modules__String] := And@@Map[Require$, {modules}];
+
+  (* Internal loader API *)
+  Library$ArchDep[suffix_String] := First[Library$Flags[suffix]];
+  Library$Loadable[suffix_String] := Second[Library$Flags[suffix]];
+
+  Require$[module$_String] := Module[{module, suffix, found, path, symbol},
+    {module, suffix} = NormalizeModule$[module$];
+    found = FindObject$[module$, Get];
+    If[found <=> $Failed, path = RealPath[Second[found]],
+      Print["No such loadable library[", module$, "]"];
+      (* Release AutoLoad Hook for un-found module *)
+      With[{sym = Library$Hook[module, suffix]}, If[Length[sym] > 0,
+	Unprotect@@sym; Clear@@sym;
+	Print["Release autoload hook: ", ToString[sym][6, -2]];
+	Library$Hook[module, suffix] =.]];
+      Return[False]];
+
+    (* Checking AutoLoad Hook *)
+    suffix = With[{found$module = FindObject$[module, Get]},
+      If[found$module <=> $Failed && RealPath[Second[found$module]] === path,
+	{"", First[found]}, {First[found]}]];
+    symbol = Library$Hook[module, #]&/@suffix;
+    If[Or@@(Length[#] > 0&)/@symbol,
+      symbol = Flatten[Map[List@@Hold/@#&, symbol]];
+      symbol = Unevaluated$@@[Hold@@symbol, {1}];
+      Unprotect@@symbol; Clear@@symbol; (* Clear symbols *)
+      Scan[Library$Hook[module, #] =.&, suffix]; (* Clear AutoLoad Hook *)
+      ];
+
+    Which[
+      Select[Library$Loaded, path === #[[1]]&, 1] <=> {}, ( (* already loaded *)
+	True),
+
+      Library$Method[First[found], path], (		    (* Load succeeded *)
+	AppendTo[Library$Loaded, {path, module$}];
+	Print["Library[", module$, "] from ", path, " is loaded."];
+	True),
+
+      True, (						    (* Load failed *)
+	Print["Loading library[", module$, "] from ", path, " is failed."];
+	False)]];
+
+  (* Internal Path API *)
+  AbovePath$[path_String] := NormalizePath$[path//"/.."];
+
+  NormalizePath$[path$_String] := Module[{absolute, tail, path, elements},
+    (* Normalize /./ and // *)
+    path = "";
+    Scan[With[{new = #},
+      Switch[new,
+	"/", Which[
+	  path[-1] === "/", (* Nothing to do *),
+	  path[-2,-1] === "/.", path = path[1, -2],
+	  True, path = StringJoin[path, new]],
+	_, path = StringJoin[path, new]]]&, Characters[path$]];
+
+    (* Check absolute path *)
+    If[absolute = (path[1] === "/"); absolute, path = path[2, -1]];
+
+    (* Remove tail / *)
+    tail = (path[-1] === "/"); While[path[-1] === "/", path = path[1, -2]];
+
+    (* Extract path element *)
+    elements = Map[path[#[[1]] + 1, #[[2]] - 1]&,
+      Partition[Flatten[Join[{0}, StringPosition[path, "/"], {0}]], 2]];
+
+    (* Remove /../ *)
+    path = {};
+    Scan[With[{element = #},
+      If[element === ".." && Length[path] > 0 && Last[path] <=> "..",
+	path = Drop[path, -1], AppendTo[path, element]]]&, elements];
+    
+    (* Remove head /../ in absolute path case *)
+    If[absolute,
+      While[Length[path] > 0 && First[path] === "..",
+	path = Drop[path, 1]]];
+
+    (* Reconstruct path *)
+    path = StringJoin@@Drop[Flatten[Thread[{path, "/"}]], -1];
+    If[absolute, path = StringJoin["/", path]];
+    If[tail && path[-1] <=> "/", path = StringJoin[path, "/"]];
+    path];
+
+  NormalizeModule$[module$_String] := Module[{obj = NormalizePath$[module$],
+    suffix = ""},
+    Scan[With[{suf = #, len = StringLength[#]},
+      If[obj[-len, -1] === suf,
+	obj = obj[1, -len - 1]; suffix = suf; Break[]]]&, Library$Suffix];
+    {obj, suffix}];
+
+  (* Internal Search API *)
+  FindObject$[obj$_String, mode_Symbol:Null] := Module[{existQ, libPath,
+    prefix, obj, suffix, suffixes},
+
+    (* Decide search path *)
+    obj = NormalizePath$[obj$]; libPath = Library$Path;
+    Which[
+      obj[1] === "/", libPath = {"/"}; obj = obj[2, -1],
+      obj$[1, 2] === "./", libPath = {Directory[]},
+      obj[1, 3] === "../", Return[$Failed],
+      True, (* Nothing to do *)];
+
+    (* Split object prefix *)
+    prefix = "";
+    With[{pos = StringPosition[obj, "/"]},
+      If[Length[pos] > 0,
+	prefix = obj[1, pos[[-1, 1]]];
+	obj = obj[pos[[-1, 2]] + 1, -1]]];
+
+    (* Check object suffix *)
+    If[mode === Directory, suffix = {""}; existQ = DirectoryQ,
+      suffix = {}; existQ = FileQ;
+      suffixes = If[mode === Get,
+	Select[Library$Suffix, Library$Loadable[#]&], Library$Suffix];
+      Scan[With[{suf = #, len = StringLength[#]},
+	If[obj[-len, -1] === suf,
+	  obj = obj[1, -len - 1]; suffix = {suf}; Break[]]]&, suffixes];
+      If[Length[suffix] < 1, suffix = Prepend[suffixes, ""]]];
+
+    (* Scan library *)
+    Scan[With[{suf = #}, Scan[With[{dir = #}, Scan[If[existQ[#],
+      Return[{suf, #}]]&, If[Library$ArchDep[suf] && Library$Arch <=> "", {
+	StringJoin[dir, "/", Library$Arch, "/", prefix, obj, suf],
+	StringJoin[dir, "/", prefix, Library$Arch, "/", obj, suf],
+	StringJoin[dir, "/", prefix, obj, suf],
+	Null[]}, {StringJoin[dir, "/", prefix, obj, suf]}]];
+      ]&, libPath]]&, suffix];
+
+    $Failed];
+
+  ];
+
+Library@Initialize[];
+
+! End of File

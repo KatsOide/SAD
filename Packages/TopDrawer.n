@@ -1,0 +1,208 @@
+(* TopDrawer 10/12/1998 *)
+
+SetAttributes[{Detach},Constant];
+
+TopDrawer[opt_,list_,init_,w_,rect_,out_,ini_]:=Module[
+  {scr,fl,pl,ft,ws,det,form0=$FORM},
+  $FORM='12.9';
+  If[ini && w,
+    TopDrawer$PlotRegion=PlotRegion/.opt;
+    Write[9,"NEWFRAME;SET CARD 80;SET FONT DUPLEX"]];
+  If[w,
+    ws=Sqrt[TopDrawerWindow[(AspectRatio/.opt/.Automatic->GoldenRatio),rect,
+      TopDrawer$PlotRegion]];
+    scr=Thread[{Scale,PlotRange,DataRange,{"X","Y"}}/.opt];
+    Scan[
+      If[#[[1]]===Log,
+        Write[9,"SET SCALE ",#[[4]]," LOGARITHMIC\n",
+          "SET LIMIT ",#[[4]],
+          If[#[[2,1]]===Automatic,
+            Exp[ Log[Max[1e-37,
+              #[[3,1]]]]*1.1-Log[Max[1e-37,#[[3,2]]]]*.1],
+            #[[2,1]]],
+          If[#[[2,2]]===Automatic,
+            Exp[ Log[Max[1e-37,
+              #[[3,2]]]]*1.1-Log[Max[1e-37,#[[3,1]]]]*.1],
+            #[[2,2]]]],
+        Write[9,"SET SCALE ",#[[4]]," LINEAR\n",
+          "SET LIMIT ",#[[4]],
+          If[#[[2,1]]===Automatic,#[[3,1]]*1.1-#[[3,2]]*.1,#[[2,1]]],
+          If[#[[2,2]]===Automatic,#[[3,2]]*1.1-#[[3,1]]*.1,#[[2,2]]]]]&,scr];
+    fl=Join[FrameLabel/.opt/.FrameLabel->{},{"","","",""}][{1,2,3,4}];
+    fl=Thread[{fl,{"BOTTOM","LEFT CENTER",
+      "TOP","RIGHT"}}];
+    Scan[If[#[[1]]<=>"" && #[[1]]<=>{"",""},
+      TopDrawerTitle[#[[1]],-2.2*ws,#[[2]]]]&,fl];
+    pl=PlotLabel/.opt/.PlotLabel->"";
+    If[pl<=>"" && pl <=>{"",""},
+      TopDrawerTitle[pl,-3,"7.4 9.3 CENTER"]];
+    ft=FrameTicks/.opt/.FrameTicks->{Max[ws,0.3],Max[ws,0.3]}/.
+      Automatic|True->Max[ws,0.3];
+    ft=Take[Flatten[{ft,ft,ft,ft}],4];
+    TopDrawerTicks[ft];
+    ts=TickSize/.opt/.TickSize->Max[0.1,ws]/.Automatic->Max[0.1,ws];
+    If[ts<>0,
+      Write[9,"SET TICKS SIZE ",ts*0.1," ON"],
+      Write[9,"SET TICKS OFF"]];
+    If[~(Frame/.opt/.Frame->True),
+      Write[9,"SET OUTLINE ALL OFF;SET TICK ALL OFF;SET LABEL ALL OFF"]]
+    ];
+  If[Head[list]===List,
+    Scan[TopDrawerPrimitive,list],
+    TopDrawerPrimitive[list]];
+  If[out && ini,
+    det=If[Detach/.opt/.Detach->False,"&","",""];
+    If[GetEnv["DISPLAY"]<>"",
+      Close[9];
+      If[GetEnv["HOSTTYPE"]=="alpha" || GetEnv["OSTYPE"]=="linux" ||
+        GetEnv["OSTYPE"]=="mklinux" ||
+        GetEnv["OSTYPE"]=="darwin",
+        System["tdr -v X \"fort.9\" "//det],
+        System["tdr -v X \"ftn09\" "//det]],
+      Flush[9]]];
+  $FORM=form0;
+  0
+  ];
+
+TopDrawerTicks[ft_]:=Scan[
+  Switch[#[[1]],
+    Automatic,
+    Write[9,"SET LABELS ",#[[2]]," ON"],
+    False,
+    Write[9,"SET LABELS ",#[[2]]," OFF"],
+    _Real,
+    Write[9,"SET LABELS SIZE ",-1.8*#[[1]],"; SET LABELS ",#[[2]]," ON"],
+    _,
+    Write[9,"SET LABELS ",#[[2]]," OFF"]]&,
+  Thread[{Take[ft,2],{"BOTTOM","LEFT"}}]];
+
+TopDrawerTitle[t_List,size_,p_]:=(
+  Write[9,"TITLE ",p," SIZE ",size,
+    " SPACE= ",TopDrawerTitleLength[t],
+    " ''\nMORE '",t[[1]],"'"];
+  Write[9,"CASE '",t[[2]],"'"]);
+
+TopDrawerTitle[t_,size_,p_]:=
+  Write[9,"TITLE ",p," SIZE ",size," ''\nMORE '",t,"'"];
+
+TopDrawerTitleLength[t_]:=Module[{l,base=0.85},
+  If[Head[t]<=>List,
+    StringLength[t],
+    l=0;
+    Do[
+      l+=Switch[t[[2]][i],
+        "U"|"D",
+        0,
+        "L",
+        base*0.8,
+        "X",
+        If[t[[1]][i]==="1",base=Min[1,base/0.7],base=base*0.7];0,
+        "M",
+        base*0.8,
+        _,
+        base],{i,1,StringLength[t[[2]]]}];l]];
+        
+TopDrawerWindow[ar_,rect_,pr_]:=Module[
+  {{wx1,wx2}=9.6*pr[[1]]+2.4,wxc,dwx,dwy,
+    {wy1,wy2}=9.6/GoldenRatio*pr[[2]]+1.8,wyc},
+  {wxc,wyc}={wx1+wx2,wy1+wy2}/2;
+  dwx=wx2-wx1;dwy=wy2-wy1;
+  If[rect<=>Automatic,
+    wx2=wx1+rect[[2,1]]*dwx;
+    wx1+=rect[[1,1]]*dwx;
+    wy2=wy1+rect[[2,2]]*dwy;
+    wy1+=rect[[1,2]]*dwy,
+    If[ar<GoldenRatio,
+      wx1=wxc-(wy2-wy1)*ar/2;wx2=wxc+(wy2-wy1)*ar/2,
+      wy1=wyc-(wx2-wx1)/ar/2;wy2=wyc+(wx2-wx1)/ar/2]];
+  Write[9,"SET WINDOW X ",wx1,wx2];
+  Write[9,"SET WINDOW Y ",wy1,wy2];
+  Sqrt[Abs[(wx2-wx1)*(wy2-wy1)/9.6^2*GoldenRatio]]];
+
+TopDrawerPrimitive[Text[body_,opt___]]:=Module[
+  {def={TextSize->1,TextRotate->0,TextAlign->"",
+    TextPosition->"",TextCases->"",PlotColor->"Black"},
+    size,rot,al,pos,ca,pc,x,y},
+  {size,rot,al,pos,ca,pc}=
+  {TextSize,TextRotate,TextAlign,TextPosition,
+    TextCases,PlotColor}/.{opt}/.def;
+  Write[9,"SET COLOR ",ToUpperCase[pc]];
+  Switch[body[[2,1]],
+    Scaled[_],
+    x=body[[2,1,1]];xs="XDATA",
+    WindowScaled[_],
+    x=body[[2,1,1]];xs="",
+    _,
+    x=body[[2,1]]/.(WindowScaled[a_]:>a);xs=""];
+  Switch[body[[2,2]],
+    Scaled[_],
+    y=body[[2,2,1]];ys="YDATA",
+    WindowScaled[_],
+    y=body[[2,2,1]];ys="",
+    _,
+    y=body[[2,2]]/.(WindowScaled[a_]:>a);ys=""];
+  Write[9,"SET TITLE SIZE ",-1.8*size,
+    "\nTITLE ",x," ",y," ",xs," ",ys," ",pos," ",TopDrawerAlign[al]," ",
+    If[rot<=>0,"ANGLE "//rot,""],
+    " ''\nMORE  '",
+    body[1],"'"];
+  If[ca<>"",Write[9,"CASES '",ca,"'"]]];
+
+TopDrawerAlign["n"]="";
+TopDrawerAlign["w"]="";
+TopDrawerAlign["e"]="";
+TopDrawerAlign["c"]="CENTER";
+TopDrawerAlign[x_]:=x;
+
+TopDrawerPrimitive[Point[body_,opt___]]:=Module[
+  {def={PointSize->1,PointSymbol->"1O",PlotColor->"Black"},size,sym,pc},
+  {size,sym,pc}={PointSize,PointSymbol,PlotColor}/.{opt}/.def;
+  Write[9,"SET COLOR BLACK;PLOT AXES;SET COLOR ",ToUpperCase[pc]];
+  Write[9,"SET SYMBOL ",sym," SIZE ",size*2];
+  TopDrawerPoints["PLOT",body]];
+
+With[{def={Dashing->{1},Plot->False,
+    PointSize->1,PointSymbol->"1O",PlotColor->"Black",ErrorBarTickSize->1}},
+  TopDrawerPrimitive[Line[body_,opt___]]:=Module[
+    {da,cmd,pl,size,sym,pc},
+    pl=Plot/.{opt}/.def;
+    {da,pc}={Dashing,PlotColor}/.{opt}/.def;
+    If[pl,
+      {size,sym}={PointSize,PointSymbol}/.{opt}/.def;
+      Write[9,"SET SYMBOL ",sym," SIZE ",size*2]];
+    If[Head[da]===List,da=StringJoin@@((#//" ")&/@da)];
+    Write[9,"SET COLOR BLACK;PLOT AXES;SET COLOR ",ToUpperCase[pc]];
+    Write[9,"SET PATTERN ",da];
+    cmd="JOIN 1 PATTERNED "//If[pl,";PLOT","",""];
+    TopDrawerPoints[cmd,body]]];
+
+TopDrawerPoints[cmd_,list_]:=Module[{i1,s,s1,l,i2,lm=1000,
+  lr=Floor[Restrict[list,-1e38,1e38]*1e38]/1e38},
+  i1=1;
+  l=Length[lr];
+  s="";
+  While[i1<l,
+    i2=Min[l,i1+lm-1];
+    Do[
+      s1=TclArg[lr[[i]]]//";";
+      If[StringLength[s1]+StringLength[s]>80,
+        Write[9,s];
+        s=s1,
+        s=s//s1],
+      {i,i1,i2}];
+    i1=i2;
+    Write[9,s];
+    Write[9,cmd]];
+  ];
+
+TopDrawerPrimitive[Rectangle[min_,max_,
+  opt:((_Rule|_RuleDelayed)...)]]:=
+    Write[9,"SET COLOR ",FillColor/.{opt}/.FillColor->"BLACK",";\n",
+      min[[1]],min[[2]],";",min[[1]],max[[2]],";",
+      max[[1]],max[[2]],"\n",
+      max[[1]],min[[2]],";",min[[1]],min[[2]],";JOIN 1"];
+
+TopDrawerPrimitive[Rectangle[min_,max_,g__]]:=Show1$[False,{min,max},g];
+
+Protect[TopDrawer,TopDrawerPrimitive,TopDrawerPoints,
+  TopDrawerTicks,TopDrawerTitle,TopDrawerWindow];

@@ -1,0 +1,52 @@
+--- generic/tkCanvBmap.c.orig	Sat Nov  5 00:22:43 2005
++++ generic/tkCanvBmap.c	Fri Feb 23 13:50:10 2007
+@@ -163,6 +163,39 @@
+  *
+  *--------------------------------------------------------------
+  */
++static int
++KBCreateBitmap(
++    Tcl_Interp *interp,		/* Interpreter for error reporting. */
++    Tk_Canvas canvas,		/* Canvas to hold new item. */
++    Tk_Item *itemPtr,		/* Record to hold new item; header has been
++				 * initialized by caller. */
++    int objc,			/* Number of arguments in objv. */
++    Tcl_Obj *CONST objv[])	/* Arguments describing rectangle. */
++{
++    BitmapItem *bmapPtr = (BitmapItem *) itemPtr;
++    int nn;
++    double *bb;
++
++    objc = -objc;
++    nn = *((int *)objv[objc-2]);
++    bb = (double *)objv[objc-1];
++    objc -= 2;
++
++    /*
++     * Process the arguments to fill in the item record.
++     */
++
++    bmapPtr->x = bb[0];
++    bmapPtr->y = bb[1];
++    ComputeBitmapBbox(canvas, bmapPtr);
++    if (ConfigureBitmap(interp, canvas, itemPtr, objc, objv, 0) == TCL_OK) {
++	return TCL_OK;
++    }
++
++    /*error:*/
++    DeleteBitmap(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
++    return TCL_ERROR;
++}
+ 
+ static int
+ TkcCreateBitmap(
+@@ -195,6 +228,9 @@
+     bmapPtr->activeBgColor = NULL;
+     bmapPtr->disabledBgColor = NULL;
+     bmapPtr->gc = None;
++
++    if (objc<0)
++	return KBCreateBitmap(interp, canvas, itemPtr, objc, objv);
+ 
+     /*
+      * Process the arguments to fill in the item record. Only 1 (list) or 2 (x

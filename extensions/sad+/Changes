@@ -1,0 +1,302 @@
+2011/11/17:
+  Regenerate dependency
+	src/.depend
+
+2011/06/22:
+  Remove unused .cvsignore
+	.cvsignore	(remove)
+
+2010/10/04:
+  Follow build framework revision 3337
+	Makefile
+
+2010/10/04:
+  Add missing SYS_CXX_ABIOPT
+	Makefile
+
+2010/09/16:
+  Remove unused variable: pf
+  Style fix
+	src/element.cc
+
+2010/09/16:
+  Remove unused variable: NA
+	src/concate.cc
+	src/perturb.cc
+	src/dalib.cc
+	src/p_dalib.cc
+
+2010/02/23:
+  Remove tailing null statement after destructor
+   Note: found by llvm/clang
+	include/dacpp.h
+	include/map_c_da.h
+	include/map_double.h
+	include/map_p_da.h
+	include/p_da.h
+
+2009/02/05:
+  Reduce nameless-temporary variable
+	src/errf.cc
+	src/teigen.cc
+
+  Reduce complex mult/div
+  Resolve canceling around |cos(a)| \sim 1
+	src/perturb.cc
+
+2008/02/26 09:30:35 +0100:
+  Fix compiler error/warning on GCC 4.3.0
+   - Solve namespace problem of friend functions
+   - Modify char* to const char* for const character string variables
+   - Fix warning for comparing signed with unsigned int
+   - Append missing `{' and `}' for 2d-array definition
+   - Wrap conditional by ()
+	include/dacpp.h
+	include/lin_map.h
+	include/matrix.h
+	include/sadplus.h
+	src/beam.cc
+	src/dalib.cc
+	src/element.cc
+	src/p_dalib.cc
+	src/splined.cc
+
+2008/01/25 12:33:47 +0100:
+  Apply template fix at rev.1310
+	Makefile
+
+2007/12/13 09:43:50 +0100:
+  Add (void*) cast operator for class instance object pointer in *printf()
+	include/map_p_da.h
+
+2007/12/09 11:54:47 +0100:
+  Update document
+	README
+
+2007/12/09 11:52:01 +0100:
+  Use TOPDIR variable
+	Makefile
+
+2007/12/08 09:06:28 +0100:
+  Replace dependency by .depend
+  Remove unused variables
+	src/Makefile
+
+2007/12/08 08:52:47 +0100:
+  Remove DISTCLEAN_FILES
+  Replace gccmakedep target by depend target supported by framework
+	Makefile
+
+  Regenerate .depend
+	src/.depend
+
+2007/11/28 11:08:02 +0100:
+  Fix compiler warnings
+	src/bb.cc
+	src/concate.cc
+	src/dalib.cc
+	src/element.cc
+	src/hamilton.cc
+	src/lie_da.cc
+	src/lin_map.cc
+	src/map.cc
+	src/matrix.cc
+	src/p_dalib.cc
+	src/perturb.cc
+	src/splined.cc
+	src/teigen.cc
+
+2006/02/01 14:26:03 +0900:
+  Add history and bugs
+	README
+
+2006/02/01 13:54:19 +0900:
+  Support MULT, SOL, MAP, TCAVI element
+	README
+	TaylorMap.n
+
+2005/03/31 14:33:06 +0900:
+  Set svn:keywords = Id
+	TaylorMap.n
+
+2005/03/31 14:31:07 +0900:
+  Add minimum README document and TODO list
+	README
+	TODO
+
+2005/03/31 14:28:50 +0900:
+  Add Makefile based on amorita's SAD module framework
+	Makefile		(new)
+	.depend			(new)
+	.cvsignore		(new)
+
+2005/03/31 14:23:47 +0900:
+  Add TaylorMap driver SADScript for OHMI's DA engine:sadp.exe
+	TaylorMap.n		(new)
+
+2005/03/31 14:19:52 +0900:
+  Change program name sadp to sadp.exe
+  Remove arch target
+	src/Makefile
+
+2005/03/31 14:17:42 +0900:
+  Fix Order==2 errata in sin/con/sinh/conh by OHMI
+	src/dalib.cc
+
+2005/03/31 14:15:36 +0900:
+  Replace printf/putchar to cout stream operator
+  Import std namespace's libc functions
+	include/c_da.h
+	include/element.h
+	include/lin_map.h
+	include/map_double.h
+	include/map_p_da.h
+	include/sadplus.h
+	src/bb.cc
+	src/beam.cc
+	src/bend.cc
+	src/c_dalib.cc
+	src/c_p_dalib.cc
+	src/cav.cc
+	src/da_init.cc
+	src/dalib.cc
+	src/drift.cc
+	src/element.cc
+	src/errf.cc
+	src/hamilton.cc
+	src/lie_da.cc
+	src/lin_map.cc
+	src/linelem.cc
+	src/map.cc
+	src/matrix.cc
+	src/p_dalib.cc
+	src/ph_rot.cc
+	src/quad.cc
+	src/ran.cc
+	src/sadp.cc
+	src/solenoid.cc
+	src/splined.cc
+	src/teigen.cc
+	src/track.cc
+	src/wig.cc
+
+2005/03/31 14:13:08 +0900:
+  Fix command line parser
+	src/sadp.cc
+
+2005/03/31 14:12:30 +0900:
+  Add missing Complex.h header
+  Fix C-header includes: <*.h> -> <c*>
+  Fix stream header includes and namespaces
+  Add missing c* headers
+	include/Complex.h		(new)
+	include/c_da.h
+	include/c_p_da.h
+	include/dacpp.h
+	include/element.h
+	include/lie_da.h
+	include/lin_map.h
+	include/map_da.h
+	include/map_double.h
+	include/matrix.h
+	include/p_da.h
+	include/sadplus.h
+	include/track.h
+	src/Makefile
+	src/bb.cc
+	src/beam.cc
+	src/bend.cc
+	src/c_dalib.cc
+	src/c_p_dalib.cc
+	src/cav.cc
+	src/da_init.cc
+	src/dalib.cc
+	src/drift.cc
+	src/element.cc
+	src/errf.cc
+	src/hamilton.cc
+	src/impedance.cc
+	src/lie_da.cc
+	src/lin_map.cc
+	src/linelem.cc
+	src/map.cc
+	src/matrix.cc
+	src/p_dalib.cc
+	src/ph_rot.cc
+	src/quad.cc
+	src/ran.cc
+	src/sadp.cc
+	src/sext.cc
+	src/solenoid.cc
+	src/splined.cc
+	src/teigen.cc
+	src/thin.cc
+	src/track.cc
+
+2005/03/31 14:01:42 +0900:
+  Import OHMI's sad+ DA extension from vendor drop
+    Vendor Drop: /extensions/sad+/vender/OHMI/initial-2004-11-17
+	include/		(mkdir)
+	include/bb.h		(import)
+	include/bend.h		(import)
+	include/c_da.h		(import)
+	include/c_p_da.h	(import)
+	include/cavity.h	(import)
+	include/dacpp.h		(import)
+	include/element.h	(import)
+	include/impedance.h	(import)
+	include/lie_da.h	(import)
+	include/lin_map.h	(import)
+	include/linelem.h	(import)
+	include/map_c_da.h	(import)
+	include/map_da.h	(import)
+	include/map_double.h	(import)
+	include/map_p_da.h	(import)
+	include/matrix.h	(import)
+	include/p_da.h		(import)
+	include/ph_rot.h	(import)
+	include/phys_const.h	(import)
+	include/quad.h		(import)
+	include/sadplus.h	(import)
+	include/sext.h		(import)
+	include/solenoid.h	(import)
+	include/thin.h		(import)
+	include/track.h		(import)
+	include/wiggler.h	(import)
+	src/			(mkdir)
+	src/Makefile		(import)
+	src/bb.cc		(import)
+	src/beam.cc		(import)
+	src/bend.cc		(import)
+	src/c_dalib.cc		(import)
+	src/c_p_dalib.cc	(import)
+	src/cav.cc		(import)
+	src/concate.cc		(import)
+	src/da_init.cc		(import)
+	src/dalib.cc		(import)
+	src/drift.cc		(import)
+	src/element.cc		(import)
+	src/errf.cc		(import)
+	src/hamilton.cc		(import)
+	src/impedance.cc	(import)
+	src/lie_da.cc		(import)
+	src/lin_map.cc		(import)
+	src/linelem.cc		(import)
+	src/map.cc		(import)
+	src/matrix.cc		(import)
+	src/oldmul.cc		(import)
+	src/p_dalib.cc		(import)
+	src/perturb.cc		(import)
+	src/ph_rot.cc		(import)
+	src/quad.cc		(import)
+	src/ran.cc		(import)
+	src/sadp.cc		(import)
+	src/sext.cc		(import)
+	src/solenoid.cc		(import)
+	src/splined.cc		(import)
+	src/teigen.cc		(import)
+	src/thin.cc		(import)
+	src/track.cc		(import)
+	src/wig.cc		(import)
+
+# End of File

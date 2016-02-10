@@ -1,0 +1,82 @@
+#!/bin/sh
+
+usage () {
+    echo "usage: `basename $0` [-h] [-s] fromdir" >&2
+    exit $1
+}
+
+ln="ln -s"
+while [ $# -gt 1 ]; do
+    case $1 in
+	--)
+	    shift
+	    break
+	    ;;
+
+	-s)
+	    ln="ln -s"
+	    ;;
+
+	-h)
+	    ln="ln"
+	    ;;
+
+	*)
+	    usage
+	    ;;
+    esac
+    shift
+done
+
+[ $# -ne 1 ] && usage 2
+
+fromdir="$1"
+todir=`pwd`
+
+linkdir () {
+case $1 in
+../*)
+    rel=True
+    ;;
+*)
+    rel=False
+    ;;
+esac
+
+linkdir0 "$1" "$2"
+}
+
+linkdir0 () {
+local f
+local files
+files=`cd $2; cd $1; ls -A`
+cd $2
+for f in ${files}; do
+    case $f in
+    BitKeeper|RCS|SCCS|CVS|CVS.adm|.svn)
+    ;;
+    .DS_Store|._.DS_Store)
+    ;;
+    *)
+    if [ -d $1/$f ]; then
+	echo "$1/$f:"
+	mkdir "$2/$f" 2>/dev/null
+	if [ "x${rel}" = "xTrue" ]; then
+	    linkdir0 "../$1/$f" "$2/$f"
+	else
+	    linkdir0 "$1/$f" "$2/$f"
+	fi
+	cd $2
+    else
+	${ln} -f "$1/$f" "$2/"
+    fi
+    ;;
+    esac
+done
+}
+
+if [ -d ${fromdir} -a -d ${todir} ]; then
+    linkdir "${fromdir}" "${todir}"
+fi
+
+# End of File

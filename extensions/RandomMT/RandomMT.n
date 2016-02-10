@@ -1,0 +1,24 @@
+! RandomMT.so compatible SIM for Random Plugin Framework
+
+Library@Require["Random/SAD"];
+Library@Require["Random/MT19937"];
+Library@Require["Random/SFMT"];
+
+If[Not[BoundQ[ListRandomMT]],
+  ListRandomMT      := ListRandom;
+  SeedRandomMT      := SeedRandom;
+  RandomMT          := Random;
+  ParabolaRandomMT  := ParabolaRandom;
+  GaussRandomMT     := GaussRandom;
+  UniformRandomMT   := UniformRandom;
+  UniformRandomMT0  := UniformRandom0;
+  UniformRandomMT1  := UniformRandom1;
+  UniformRandomMT01 := UniformRandom01;
+  ];
+
+If[BoundQ[ListRandomMT], With[{l = ListRandomMT[]},
+  Which[
+    Position[l, "MT19937/53bit"] <=> {}, SeedRandomMT["MT19937/53bit"],
+    Position[l, "MT19937/32bit"] <=> {}, SeedRandomMT["MT19937/32bit"]]]];
+
+! End of File

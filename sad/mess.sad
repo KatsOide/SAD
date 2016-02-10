@@ -1,0 +1,5 @@
+FFS;
+
+Message[9,General::narg,"1"]
+
+end

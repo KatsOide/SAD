@@ -1,0 +1,52 @@
+!
+MOMENTUM= 1 GEV;
+ON ECHO;OFF EMIT COD CTIME    RAD RFSW;
+LINE     
+  CELL=(IP2 QF L1 B1 B2 B2 B1 L1 QD L2)
+  CELL1=(IP2 QF L1 BB1 BB2 BB3 BB4 L1 QD L2)
+ ;
+ DRIFT  L1     =(L = 1 ) 
+       L2=(L=6)
+ ;
+ BEND   B = (L=1 ANGLE=.1 E1=.5 E2=.5)
+        B1 = (L=.9983341664682815 ANGLE=0 K0=.09983341664682815 ROTATE=90 DEG)
+        B2 = (L=.9983341664682815 ANGLE=0 K0=-.09983341664682815 ROTATE=90 DEG)
+        BB1 = (L=1 ANGLE=0.1 E1=0 E2 = 1 ROTATE=90 DEG)
+        BB2 = (L=1 ANGLE=-0.1 E1=1 E2 = 0 ROTATE=90 DEG)
+        BB3 = (L=1 ANGLE=-0.1 E1=0 E2 = 1 ROTATE=90 DEG)
+        BB4 = (L=1 ANGLE=0.1 E1=1 E2 = 0 ROTATE=90 DEG)
+ ;
+ MULT   QF     =(L = 0.1 K1 = 0.1549322394  DISFRIN=0)
+        QD     =(L = 0.1 K1 =-0.1549322394 )
+ ;
+ ;
+ MARK   IP1     =(BETAX = 1.93      BETAY =1.93    EMIX = 4.0E-5
+           EMIY = 4.0E-5  DP = 0.01 SIGZ = 1.5E-3 )
+        IP2     =(BETAX = 0.703     BETAY = 0.703  EMIX = 4.0E-5
+           EMIY = 4.0E-5  DP = 0.01 SIGZ = 8E-4 )
+;
+MAP  P1=()
+;
+SOL ES1=(BZ=1  BOUND=1)
+    ES2=(BZ=1 GEO=1 BOUND=1 DPX=0.01)
+ ;
+ CAVI   CA1 = (VOLT=1185 MV HARM=100)
+;
+ FFS USE=CELL1;
+  cell;
+ b* rotate 0;save b* rotate;
+ 
+   fit nx .2 ny .23 free q* go;
+  emit;
+  save;
+
+  use CELL;
+ b* rotate 0;save b* rotate;
+
+   fit nx .2 ny .23 free q* go;
+  FSHIFT=-.006663/LINE["LENG","$$$"];
+  emit;
+
+
+
+end

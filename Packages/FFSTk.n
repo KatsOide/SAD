@@ -1,0 +1,11 @@
+AutoLoad[x_,f_]:=(x:=(Unprotect[x];Get[f]);Protect[x]);
+SetAttributes[x,HoldFirst];
+
+FFSVarList={"MOMENTUM","PBUNCH"};
+ReadFFSVars:=Map[{#,ToExpression[#]}&,FFSVarList];
+
+FFS$Status:=Module[{fl=FFSFlags[],fv=ReadFFSVars},
+  If[SAD$Tk$fn==0,OpenTk];
+  CreateWindow[Name->"ffsstatus",Pack[
+    Table[CheckButton[Name->fl[i,1],Text->fl[i,1],
+      Variable->fl[i,2]]/.i->ii,{ii,Length[fl]}],Side->"top"]]];

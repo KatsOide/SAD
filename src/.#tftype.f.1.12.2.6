@@ -1,0 +1,94 @@
+      subroutine tftype(latt,ival,iele1,
+     $     errk,klp,lfno,word,twiss,
+     $     emx,emy,dpmax,nlat,nele,ndim)
+      use tfstk
+      use tffitcode
+      implicit none
+      include 'inc/MACCODE.inc'
+      integer*4 ntyp
+      parameter (ntyp=18)
+      integer*4 nlat,nele,ndim,lfno,k1
+      integer*4 latt(2,nlat),ival(nele),iele1(nlat)
+      real*8 twiss(nlat,-ndim:ndim,ntwissfun),errk(2,nlat),
+     $     emx,emy,dpmax
+      integer*4 ltyp(ntyp),klp(nele)
+      integer*4 j,kx,lt,kp,notchar,ifany,lpw,itfgetrecl,
+     $     iavl,nl,kkk,irtc
+      character*(*) word
+      character*(MAXPNAME) name1,tfkwrd
+      character*80 patt
+      logical*4 exist,exist1,tmatch,start
+      data ltyp /icDRFT,
+     $     icBEND,icQUAD,icSEXT,icOCTU,icDECA,icDODECA,icMULT,icSOL,
+     $     icCAVI,icTCAV,
+     $     icMAP,icBEAM,icINS,icCOORD,icAPRT,icMONI,icMARK/
+      exist1=.false.
+      lpw=min(131,itfgetrecl())
+      name1=' '
+1     call getwdl(word)
+      if(word .eq. 'ALL' .or. word .eq. ' ' .and. .not. exist1)then
+        patt='*'
+      elseif(word .eq. ' ')then
+        patt=' '
+        exist=.false.
+        go to 21
+      elseif(notchar(word,'*',1) .eq. 0)then
+        patt='*'
+        call getwdl(word)
+      else
+        patt=word
+      endif
+      exist=.false.
+      if(patt .eq. ' ')then
+        go to 21
+      endif
+      call tfgetlineps(patt,len_trim(patt),nl,iavl,1,irtc)
+      if(irtc .ne. 0 .or. nl .le. 0)then
+        go to 21
+      endif
+      do j=1,ntyp
+        lt=ltyp(j)
+        start=.true.
+        do kkk=1,nl
+          k1=int(rlist(iavl+kkk))
+          kx=klp(k1)
+c     Note: Skip no-head multiple elements
+c     *     klp(iele1(kx)) == kx if singlet or head of multipole elements
+c          if(klp(iele1(kx)) .ne. kx)cycle
+          kp=latt(1,kx)
+          if(tmatch(pname(kp),patt))then
+            exist=.true.
+            if(idtype(kp) .eq. lt)then
+              if(start)then
+                write(lfno,*)';'
+                call twbuf(' ',lfno,1,lpw,0,0)
+                call twbuf(tfkwrd(lt,0),lfno,1,lpw,7,1)
+                start=.false.
+              endif
+              call tftyp1(
+     1             iele1(kx),kx,latt(2,kx),kp,
+     $             ival,errk,lt,twiss,lfno,
+     $             emx,emy,dpmax,nlat,nele,ndim,lpw)
+              if(lt .ne. 1)then
+                call twbuf(' ',lfno,10,lpw,0,-1)
+              endif
+            endif
+          endif
+        enddo
+        if(.not. start .and. lt .eq. 1)then
+          call twbuf(' ',lfno,10,lpw,0,-1)
+        endif
+      enddo
+21    exist1=exist1 .or. exist
+c      if(.not. exist1)then
+c        patt='*'
+c        go to 2
+c      endif
+      if(exist .and. notchar(patt,'*',1) .ne. 0)then
+        go to 1
+      else
+        exist=ifany(patt,'*%{|',1) .ne. 0
+        write(lfno,*)';'
+        return
+      endif
+      end

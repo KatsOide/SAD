@@ -1,0 +1,19 @@
+diff -dur generic/tcl.h.orig generic/tcl.h
+--- generic/tcl.h.orig	Fri Oct  6 06:24:33 2006
++++ generic/tcl.h	Fri Feb 23 11:53:37 2007
+@@ -78,6 +78,15 @@
+ #   endif
+ #endif
+ 
++#ifdef SAD_FORCE_X11
++#   ifdef __WIN32__
++#       undef __WIN32__
++#   endif
++#   ifdef WIN32
++#       undef WIN32
++#   endif
++#endif
++
+ /*
+  * STRICT: See MSDN Article Q83456
+  */

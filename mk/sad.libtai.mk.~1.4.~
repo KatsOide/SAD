@@ -1,0 +1,243 @@
+# New Makefile -- libtai Part
+#
+ifeq ($(BEFOREPORTMK),YES)
+
+## libtai Environment
+
+ifeq ($(USE_LIBTAI),YES)
+
+ifndef LIBTAI_ADDITIONAL_LEAPSECONDS
+LIBTAI_ADDITIONAL_LEAPSECONDS=	+2005-12-31 +2008-12-31
+endif
+
+LIBTAI_LAST_LEAPSECONDS=$(shell echo $(LIBTAI_ADDITIONAL_LEAPSECONDS) | tr ' ' '\n' | tail -n 1)
+
+ifndef LIBTAI_VERSION
+LIBTAI_VERSION=0.60
+endif
+
+ifndef LIBTAI_PATCH_VERSION
+LIBTAI_PATCH_VERSION=$(LIBTAI_VERSION)
+endif
+
+LIBTAI_PATCH_SET=	$(FILES)/libtai/set-$(LIBTAI_PATCH_VERSION)
+
+# Apply ugly hack converting `:' into wildcard `?' to avoid make sytax error
+LIBTAI_PATCH_FILES=$(shell grep -v ^\# $(LIBTAI_PATCH_SET) | sed -e s%^%$(FILES)/libtai/% -e s%:%?%g)
+
+ifndef LIBTAI_SRCBASE
+LIBTAI_SRCBASE=$(CONTRIB)
+endif
+
+LIBTAI_MASTERSITE=http://cr.yp.to/libtai/
+
+LIBTAI_DISTNAME=libtai-$(LIBTAI_VERSION).tar.gz
+LIBTAI_ARCHIVE=$(SOURCE_ARCHIVE_DIR)/$(LIBTAI_DISTNAME)
+
+LIBTAI_SRCDIR=$(LIBTAI_SRCBASE)/libtai-$(LIBTAI_VERSION)
+LIBTAI_OBJDIR=$(OBJDIR)/libtai-$(LIBTAI_VERSION)
+
+SYS_BUILD_LIBTAI=NO
+ifdef LIBTAI_PREFIX
+ifneq ($(shell test -r $(LIBTAI_PREFIX)/include/libtai/tai.h ; echo $$?),0)
+SYS_BUILD_LIBTAI=YES
+endif
+else # !LIBTAI_PREFIX
+
+ifeq ($(shell test -r /usr/local/include/libtai/tai.h ; echo $$?),0)
+LIBTAI_PREFIX=/usr/local
+endif
+
+ifeq ($(shell test -r /usr/include/libtai/tai.h ; echo $$?),0)
+LIBTAI_PREFIX=/usr
+endif
+
+ifeq ($(shell test -r $(SAD_ARCH_DIR)/include/libtai/tai.h ; echo $$?),0)
+LIBTAI_PREFIX=$(SAD_ARCH_DIR)
+SYS_BUILD_LIBTAI=YES
+endif
+
+ifndef LIBTAI_PREFIX
+SYS_BUILD_LIBTAI=YES
+endif
+endif # LIBTAI_PREFIX
+
+ifeq ($(BUILD_LIBTAI),AUTO)
+BUILD_LIBTAI=$(SYS_BUILD_LIBTAI)
+endif
+
+ifndef LIBTAI_PREFIX
+ifeq ($(BUILD_LIBTAI),YES)
+LIBTAI_PREFIX=$(SAD_ARCH_DIR)
+else
+LIBTAI_PREFIX=/usr/local
+endif
+endif # LIBTAI_PREFIX
+
+ifndef LIBTAI_LEAPSECONDS_PREFIX
+ifeq ($(realpath $(LIBTAI_PREFIX)),$(realpath $(SAD_ARCH_DIR)))
+LIBTAI_LEAPSECONDS_PREFIX=$(SAD_SHARE_ROOT)/libtai
+else
+LIBTAI_LEAPSECONDS_PREFIX=$(LIBTAI_PREFIX)/etc/libtai
+endif
+endif
+
+ifeq ($(HAVE_LEAPSECONDS),YES)
+_LIBTAI_LEAPSECONDS_PREFIX=$(LIBTAI_LEAPSECONDS_PREFIX)
+else
+_LIBTAI_LEAPSECONDS_PREFIX=
+endif
+
+ifndef LIBTAI_INCDIR
+LIBTAI_INCDIR=$(LIBTAI_PREFIX)/include
+endif
+
+ifndef LIBTAI_LIBDIR
+LIBTAI_LIBDIR=$(LIBTAI_PREFIX)/lib
+endif
+
+ifndef LIBTAI_LIBS
+LIBTAI_LIBS=-ltai
+endif
+
+LIBTAI_INSTALLED_MARK=$(LIBTAI_LEAPSECONDS_PREFIX)/.install_libtai-$(LIBTAI_VERSION)$(LIBTAI_LAST_LEAPSECONDS)_done
+
+ifeq ($(BUILD_LIBTAI),YES)
+LIBTAI_PATCH_TARGET=$(LIBTAI_SRCDIR)/.post_patch_done
+LIBTAI_BUILD_TARGET=$(LIBTAI_OBJDIR)/.post_build_done
+LIBTAI_INSTALL_TARGET=$(LIBTAI_INSTALLED_MARK)
+MOSTLYCLEAN_DIRS+=$(LIBTAI_SRCDIR)
+endif # BUILD_LIBTAI
+
+endif # USE_LIBTAI
+
+endif # BEFOREPORTMK
+
+ifeq ($(AFTERPORTMK),YES)
+ifeq ($(USE_LIBTAI),YES)
+OPT_INCDIR+= -I$(LIBTAI_INCDIR)
+OPT_LIBDIR+= -L$(LIBTAI_LIBDIR)
+OPT_LIBS+= $(LIBTAI_LIBS)
+ifeq ($(realpath $(LIBTAI_PREFIX)),$(realpath $(SAD_ARCH_DIR)))
+ifndef OPT_RLIBDIR
+OPT_RLIBDIR=$(TCLTK_LIBDIR)
+else
+OPT_RLIBDIR:="$(OPT_RLIBDIR)$(SYS_RLIBDIR_SEPARATOR)$(TCLTK_LIBDIR)"
+endif
+endif # LIBTAI_PREFIX=SAD_ARCH_DIR
+
+ifeq ($(BUILD_LIBTAI),YES)
+
+libtai-patch: $(LIBTAI_PATCH_TARGET)
+
+libtai-build: $(LIBTAI_BUILD_TARGET)
+
+libtai: $(LIBTAI_INSTALL_TARGET)
+
+# Fetch
+$(SOURCE_ARCHIVE_DIR)/$(LIBTAI_DISTNAME):
+	mkdir -p $(SOURCE_ARCHIVE_DIR)
+	(cd $(SOURCE_ARCHIVE_DIR) ; \
+	$(FETCH) $(LIBTAI_MASTERSITE)/$(LIBTAI_DISTNAME))
+
+# Extract
+$(LIBTAI_SRCDIR)/.extract_done: $(LIBTAI_PATCH_SET) $(LIBTAI_PATCH_FILES) $(LIBTAI_ARCHIVE)
+	(mkdir -p $(LIBTAI_SRCBASE); rm -fr $(LIBTAI_SRCDIR); \
+	cd $(LIBTAI_SRCBASE); \
+	(gzip -dc $(LIBTAI_ARCHIVE) | tar xvf -) && touch $@)
+
+# Patch
+$(LIBTAI_SRCDIR)/.patch_done: $(LIBTAI_SRCDIR)/.extract_done $(LIBTAI_PATCH_SET) $(LIBTAI_PATCH_FILES)
+	(cd $(LIBTAI_SRCDIR); \
+	cat /dev/null $(LIBTAI_PATCH_FILES) | $(PATCH) -p0 && touch $@)
+
+$(LIBTAI_SRCDIR)/.post_patch_done: $(LIBTAI_SRCDIR)/.patch_done
+	(cd $(LIBTAI_SRCDIR); \
+	for f in "# leapseconds after libtai release" \
+			$(LIBTAI_ADDITIONAL_LEAPSECONDS) \
+				"# End of File"; do \
+	    echo "$$f" >>leapsecs.txt; \
+	done; \
+	for f in *.h; do \
+	    mv -f $$f $$f.bak; \
+	    sed -e 's|\(#include[ 	]*\)"\([^"][^"]*\)"|\1<libtai/\2>|' $$f.bak >$$f; \
+	done; \
+	touch $@)
+
+# lndir
+ifeq ($(shell test -r $(SADDIR)/$(CONF_FILE) ; echo $$?),0)
+_LIBTAI_LINDIR_DEPEND=$(SADDIR)/$(CONF_FILE)
+endif
+
+ifeq ($(LIBTAI_SRCDIR),$(shell $(BINDIR)/realpath $(OBJDIR)/../../contrib/libtai-$(LIBTAI_VERSION)))
+$(LIBTAI_OBJDIR)/.lndir_done: $(LIBTAI_SRCDIR)/.post_patch_done $(_LIBTAI_LINDIR_DEPEND)
+	(rm -fr $(LIBTAI_OBJDIR); mkdir -p $(LIBTAI_OBJDIR); \
+	cd $(LIBTAI_OBJDIR); $(BINDIR)/lndir "../../../contrib/libtai-$(LIBTAI_VERSION)"; \
+	touch $@)
+else
+$(LIBTAI_OBJDIR)/.lndir_done: $(LIBTAI_SRCDIR)/.post_patch_done $(_LIBTAI_LINDIR_DEPEND)
+	(rm -fr $(LIBTAI_OBJDIR); mkdir -p $(LIBTAI_OBJDIR); \
+	cd $(LIBTAI_OBJDIR); $(BINDIR)/lndir $(LIBTAI_SRCDIR); \
+	touch $@)
+endif
+
+# Configure
+$(LIBTAI_OBJDIR)/.configure_done: $(LIBTAI_OBJDIR)/.lndir_done
+	(cd $(LIBTAI_OBJDIR); \
+	rm -f libtai conf-cc conf-ld; \
+	ln -s . libtai; \
+	echo "$(CC) -I. $(COPT)" >conf-cc; \
+	echo "$(CC)" >conf-ld; \
+	for f in leapsecs_read.c leapsecs.3; do \
+	    mv -f $$f $$f.bak; \
+	    sed -e 's|%%LEAPSECONDS_PREFIX%%|$(_LIBTAI_LEAPSECONDS_PREFIX)|' $$f.bak >$$f; \
+	done; \
+	touch $@)
+
+# Build
+$(LIBTAI_OBJDIR)/.build_done: $(LIBTAI_OBJDIR)/.configure_done
+	(cd $(LIBTAI_OBJDIR); $(MAKE) it && touch $@)
+
+$(LIBTAI_OBJDIR)/.post_build_done: $(LIBTAI_OBJDIR)/.build_done
+	(cd $(LIBTAI_OBJDIR); rm -f leapsecs.dat; \
+	./leapsecs <leapsecs.txt >leapsecs.dat && touch $@)
+
+# Install
+$(LIBTAI_INSTALLED_MARK): $(LIBTAI_OBJDIR)/.post_build_done
+	(cd $(LIBTAI_OBJDIR); \
+	mkdir -p $(LIBTAI_LEAPSECONDS_PREFIX); \
+	for f in leapsecs.txt leapsecs.dat; do \
+	    cp $$f $(LIBTAI_LEAPSECONDS_PREFIX)/$$f; \
+	    chmod 644 $(LIBTAI_LEAPSECONDS_PREFIX)/$$f; \
+	done; \
+	mkdir -p $(LIBTAI_PREFIX)/bin; \
+	for f in leapsecs yearcal easter nowutc; do \
+	    cp $$f $(LIBTAI_PREFIX)/bin/$$f; \
+	    chmod 755 $(LIBTAI_PREFIX)/bin/$$f; \
+	done; \
+	mkdir -p $(LIBTAI_INCDIR)/libtai; \
+	for f in *.h; do \
+	    cp $$f $(LIBTAI_INCDIR)/libtai/$$f; \
+	    chmod 644 $(LIBTAI_INCDIR)/libtai/$$f; \
+	done; \
+	mkdir -p $(LIBTAI_LIBDIR); \
+	for f in libtai.a; do \
+	    cp $$f $(LIBTAI_LIBDIR)/$$f; \
+	    chmod 644 $(LIBTAI_LIBDIR)/$$f; \
+	    $(RANLIB) $(LIBTAI_LIBDIR)/$$f; \
+	done; \
+	touch $@)
+
+else
+libtai-skip:
+	@echo "Skip libtai build"
+
+libtai-patch libtai-build libtai:	libtai-skip
+endif # BUILD_LIBTAI
+else
+libtai-patch libtai-build libtai:
+endif # USE_LIBTAI
+
+endif # AFTERPORTMK
+
+# End of File

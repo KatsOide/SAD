@@ -1,0 +1,28 @@
+#!/users/oide/WORK/oldsad/obj/OSF1/sad1.exe *
+MOMENTUM= 5 GEV; ON ECHO;OFF EMIT CTIME RAD RFSW ; 
+ LINE TESTLINE=( IA0 L1 )
+ ;
+ DRIFT  L1      =(L =1.6438921179655137 )  L2      =(L =14.238026004444558 )
+ ;
+ BEND   B       =(L =1    ANGLE = -.1 E1 =.5    E2 =.5    F1 =.1    FRINGE =3 )
+ ;
+ SEXT   SD      =(L =.001 K2 =3.009685508731555 )
+        SF      =(L =.001 K2 =-.1879393790936433 )
+ ;
+ MULT   QF2     =(L =.5   K1 =.22378290007183185 )
+        QD1     =(L =1    K1 =-.20282112241683073 )
+        QF1     =(L =1    K1 =.13417654970698867 )
+ ;
+ CAVI   CA1     =(VOLT =2500000     HARM =10 L=2 )
+ ;
+ MARK  IA0     =(BETAX = 1    BETAY = 1  EMIX = 1.0E-6 
+   EMIY = 1.0E-6  DP = 0.01 SIGZ = 8E-4 OFFSET=0 )
+ ;
+ CAVI   CA1 = (VOLT=2.5 MV HARM=10)
+ ;
+ DECA  DF=(L=2 K4=1)
+ ;
+ APERT A1=(DX1=0.001 DY1=0.001 DX1=-0.001 DY1=-0.001 JDPX=0.001 JDPY=0.001)
+ ;
+ FFS USE=TESTLINE;
+   ins cal;

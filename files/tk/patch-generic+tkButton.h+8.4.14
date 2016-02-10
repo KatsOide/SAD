@@ -1,0 +1,48 @@
+diff -dur generic/tkButton.h.orig generic/tkButton.h
+--- generic/tkButton.h.orig	Sat Apr 26 11:53:24 2003
++++ generic/tkButton.h	Thu Feb 22 22:29:06 2007
+@@ -145,6 +145,7 @@
+ 				 * room for borders. */
+     Tk_Font tkfont;		/* Value of -font option: specifies font
+ 				 * to use for display text. */
++    Tk_Font tkaltfont, tkscriptfont, tkaltscriptfont;
+     XColor *normalFg;		/* Value of -font option: specifies foreground
+ 				 * color in normal mode. */
+     XColor *activeFg;		/* Value of -activeforeground option:
+@@ -157,10 +158,13 @@
+     GC normalTextGC;		/* GC for drawing text in normal mode.  Also
+ 				 * used to copy from off-screen pixmap onto
+ 				 * screen. */
++    GC normalAltTextGC, normalScriptTextGC, normalAltScriptTextGC;
+     GC activeTextGC;		/* GC for drawing text in active mode (NULL
+ 				 * means use normalTextGC). */
++    GC activeAltTextGC, activeScriptTextGC, activeAltScriptTextGC;
+     GC disabledGC;		/* Used to produce disabled effect for text
+ 				 * and check/radio marks. */
++    GC disabledAltGC, disabledScriptGC, disabledAltScriptGC;
+     GC stippleGC;		/* Used to produce disabled stipple effect
+ 				 * for images when disabled. */
+     Pixmap gray;		/* Pixmap for displaying disabled text if
+@@ -253,6 +257,8 @@
+ 				 * invocataions of the button command. */
+     int flags;			/* Various flags;  see below for
+ 				 * definitions. */
++    int rotation;
++    int bspecial;
+ } TkButton;
+ 
+ /*
+@@ -313,6 +319,13 @@
+ EXTERN void		TkpDisplayButton _ANSI_ARGS_((ClientData clientData));
+ #endif
+ EXTERN int		TkInvokeButton  _ANSI_ARGS_((TkButton *butPtr));
++EXTERN void     TkKGDisplayText _ANSI_ARGS_((Display *display,
++                                             Drawable drawable, TkButton *, Tk_Font tkfont, Tk_Font tkaltfont,
++                                             Tk_Font tksciptfont, Tk_Font tkaltscriptfont, char *string,
++                                             int numChars, int x, int y, int length, Tk_Justify justify,
++                                             int underline, GC gc, GC altGc, GC scriptGc, GC altScriptGc,
++                                             int bmeas));
++
+ 
+ # undef TCL_STORAGE_CLASS
+ # define TCL_STORAGE_CLASS DLLIMPORT

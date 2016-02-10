@@ -1,0 +1,123 @@
+名称:
+	Pseudo Random Number Generator Plugin Extensions
+
+解説:
+	Mersenne Twister等を用いた 疑似乱数発生器プラグイン集
+
+使用例:	
+  A.	Library Packageを利用する
+   In:= Library@Require["Random/SFMT"];	! SFMT Plugin組み込み
+   In:= SeedRandom["SFMT19937/53bit"];	! SFMT19937/53bitへ切り替え
+   In:= SeedRandom[Date[]];		! 現在時刻で初期化
+   In:= r = Random[10];			! 10個の乱数を生成
+
+提供モジュール:
+  Random/MT19937  プラグイン名: MT19937/32bit, MT19937/53bit
+		    周期長 2^19937-1の Mersenne Twister(*1)を用いた
+		    32/53bit精度の疑似乱数発生器プラグイン
+
+  Random/SFMT[N]  プラグイン名: MT[N]/32bit, MT[N]/53bit
+		    SIMD-oriented Fast Mersenne Twister(*2)を用いた
+		    32/53bit精度の疑似乱数発生器プラグイン
+		    [N]は、コンパイル時にSFMT_MEXPで指定した周期長となる
+		    Mersenne数(2^N - 1)の指数(デフォルトは、19937)
+		    選択可能な SFMT_MEXPは、607, 1279, 2281, 4253, 11213,
+		    19937, 44497, 86243, 132049, 216091
+
+  Random/SAD	  プラグイン名: SAD(組み込みプラグインと同名)
+		    組み込み疑似乱数発生器プラグインの完全互換品
+		    組み込み版と異なるコンパイラ/最適化を用いた
+		    プラグインで組み込みプラグインを上書き出来ます
+
+  Random/SFMT	  SFMTプラグインローダ
+		    すべての Random/SFMT[N]プラグインを読み込みます
+
+  RandomMT	  後方互換ラッパー(RandomMT拡張モジュール 第五版互換)
+		    1. このプラグイン集で提供されるプラグインを全てロードする
+		    2. Random/MT19937提供の PRNGプラグインへ切り替える
+		    3. 旧版互換の関数(*RandomMT[])を提供する
+
+  RandomSFMT	  RandomMTの Random/SFMT優先版
+		    1. このプラグイン集で提供されるプラグインを全てロードする
+		    2. Random/SFMT提供の PRNGプラグインへ切り替える
+		    3. 旧版互換の関数(*RandomMT[])を提供する
+
+対応するSAD:	amorita branch Revision 1531以降
+
+履歴:
+  2008/04/22 第十九版公開
+	o 後方互換ラッパー内の ParabolaRandomMTの定義を修正
+
+  2008/03/27 第十八版公開
+	o Framework sub-moduleを除去
+	o Compatible sub-moduleを top-moduleへマージ
+
+  2008/01/18 第十七版公開
+	o Plugin versionの定義を変更
+	o Random/Frameworkをビルドから外す(SAD coreへ取り込まれた)
+
+  2008/01/15 第十六版公開
+	o Framework/random_driver.[ch]を SAD coreへ移動
+	o Random/Framework versionを 1.5 -> 1.6
+	o Module Symbol Exportが不要になったので Framework.nを削除
+
+  2008/01/13 第十五版公開
+	o Random Plugin Framework ABI Version 1.5
+	o Require Gaussian distribution without GCUT at random_register()
+	o Support feature_* API
+
+  2007/12/20 第十四版公開
+	o ISO C99コンパイラでの警告を修正
+
+  2007/12/09 第十三版公開
+	o downloadした配布物を SOURCE_ARCHIVE_DIRへ格納
+
+  2007/12/08 第十二版公開
+	o .depend導入
+
+  2007/11/28 第十一版公開
+	o Fix header includes
+	o Fix printf(3) format string
+
+  2007/11/14 第十版公開
+	o Require both uniform [0,1) and Gaussian distribution at random_register()
+	o Random Plugin Framework ABI Version 1.2
+
+  2007/11/10 第九版公開
+	o SAD Pluginに内部状態の正規化を追加
+	o SeedRandom[]への互換性を向上
+	o Random Plugin Framework ABI Version 1.1
+
+  2007/11/03 第八版公開
+	o 内部状態の冗長性を削減
+	o SFMT pluginを優先するモジュールローダー(RandomSFMT)を追加
+
+  2007/11/02 第七版公開
+	o GCUT変数をサポート
+	o SAD Plugin追加
+	o SFMT Plugin内部を inline展開
+
+  2007/11/01 第六版公開
+	o Random Plugin Framework化
+	o SFMT Plugin追加
+
+  2007/10/31 第五版公開
+	o エンジン部をRandom Plugin Frameworkベースへ移行
+
+  2006/11/17 第四版公開
+	o ParabolaRandom[] APIを byte code化
+
+  2006/11/16 第三版公開
+	o ParabolaRandom[] APIを追加
+
+  2005/01/24 第二版公開
+	o SeedRandom[] APIによる乱数発生器の内部状態の保存と復元に対応
+	o 乱数器初期子が未定義領域にアクセスする不具合を修正
+
+  2004/07/26 初版公開
+
+参照:	松本 眞 氏による Mersenne Twisterの紹介
+ *1	http://www.math.sci.hiroshima-u.ac.jp/%7Em-mat/MT/mt.html
+ *2	http://www.math.sci.hiroshima-u.ac.jp/%7Em-mat/MT/SFMT/index-jp.html
+
+# End of File

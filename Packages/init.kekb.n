@@ -1,0 +1,71 @@
+(* Site depend configuration for KEKB *)
+
+KBF$Launcher = "/usr/local/bin/kbl";
+KBF$LauncherName = "KBTaskLaunch";
+KBF$PrinterName = "lwbcoc1";
+KBF$ScreenShotDirectory = "/ldata/KEKB/KCG/ScrShot";
+
+(* Setup SAD_LIBRARY *)
+With[{env = Environment["SAD_ENV"], path = Environment["SAD_LIBRARY"],
+  default = "/ldata/KEKB/KCG/SAD/lib:/ldata/KEKB/KCG/SAD:/ldata/sad/lib:/ldata/KEKB:/ldata/LINAC"},
+  If[path === "", Environment["SAD_LIBRARY", default//":."], If[env === "kekb",
+    Environment["SAD_LIBRARY", default//":"//path//":."]]]];
+
+(* Replace /SAD/share/Extension for branch ABI dependence *)
+With[{
+  default = BuildInfo["Target:SAD_MOD_ROOT"],
+  dir = Switch[BuildInfo["Source:TreeName"],
+    "k64-1-6 branch",			"/SAD/share/Extension",
+    "MAIN trunk"|"amorita branch",	"/SAD/share/Extension-OldABI",
+    _,					Null]},
+  Which[
+    Not[StringQ[dir]],		(* Nothing TODO *),
+    Not[StringQ[default]],	Library@PrependPath[dir],
+    default <=> dir,		Library@Path = Library@Path//.{default->dir}]];
+
+Environment@@[{
+  {"UNIX95",""},
+  {"TCL_LIBRARY",""},
+  {"TK_LIBRARY",""},
+  {"KBFRAMEDIR","/SAD/share/KBFrame"},
+  {"PYTHONPATH","/SAD/share/Packages/"},
+  {"TMPDIR",Switch[Environment["HOST"][1,5],
+	"acsad"|"afsad",	"/scratch",
+	_,			"/tmp"]},
+  {"SERVHOST","172.19.58.19"},
+  {"EPICS","/cont/epics/R312/epics"},
+  {"EPICS_CA_AUTO_ADDR_LIST","NO"},
+!  If[Environment["EPICS_CA_ADDR_LIST"]==="",
+  {"EPICS_CA_ADDR_LIST","172.19.68.144 172.19.68.161 172.19.63.255 130.87.71.176 172.19.64.37"},
+!  Null[]],
+  {"TBLDIR","/users/furukawa/tbl"},
+  Null[]},{1}];
+
+With[{
+  ncpu = Check[Switch[BuildInfo["Target:OS_NAME"],
+    "FreeBSD",	Get[    "!/sbin/sysctl -n hw.ncpu"],
+    "Darwin",	Get["!/usr/sbin/sysctl -n hw.ncpu"],
+    _,		1], 1],
+  hostdomain = With[{h = HostName[], p = StringPosition[HostName[], "."]},
+    If[p <=> {}, {h[1, p[[1, 1]] - 1], h[p[[1,2]] + 1, -1]}, {h, ""}]]},
+  NPARA = With[{host = hostdomain[[1]], domain = hostdomain[[2]]}, Which[
+    domain == "kekb.kek.jp",	Ceiling[ncpu / 8],
+    host[1, 6] == "pfrsad",	2,
+    True,			ncpu]]];
+
+FullDISPLAY[]:=Module[{d=Environment["DISPLAY"]}, If[d[1]==":", Environment["HOST"]//d, d]];
+
+ChooseHost[opt___]:=Module[{
+  {host,file,op}=SwitchCases[{opt},
+    {(Rule|RuleDelayed)[AlternativeHost,_],(Rule|RuleDelayed)[File,_],_}]},
+  If[host<=>{} && file<=>{},
+    op=op/.{(Rule|RuleDelayed)->List};
+    Apply[
+      If[StringMatchQ[Environment[ToString[#]],#2],
+        System["rsh "//host[[1,2]]//" 'env DISPLAY="//FullDISPLAY[]//
+          " /SAD/bin/gs "//file[[1,2]]//" &'"];
+        Exit[]]&,op,{1}]]];
+
+AutoLoad[KEKBDatabase, PackagesDirectory//"Oracle.n"];
+
+!End of File

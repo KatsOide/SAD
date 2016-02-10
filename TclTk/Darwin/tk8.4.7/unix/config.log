@@ -1,0 +1,53 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+configure:576: checking for Tcl configuration
+configure:657: checking for existence of /Users/oide/SAD/oldsad/TclTk/Darwin/tcl8.4.7/unix/tclConfig.sh
+configure:734: checking whether to use symlinks for manpages
+configure:746: checking compression for manpages
+configure:774: checking for gcc
+configure:887: checking whether the C compiler (gcc  ) works
+configure:903: gcc -o conftest    conftest.c  1>&5
+configure:929: checking whether the C compiler (gcc  ) is a cross-compiler
+configure:934: checking whether we are using GNU C
+configure:962: checking whether gcc accepts -g
+configure:995: checking how to run the C preprocessor
+configure:1078: checking for unistd.h
+configure:1078: checking for limits.h
+configure:1123: checking if the compiler understands -pipe
+configure:1134: gcc -pipe -c   conftest.c 1>&5
+configure:1154: checking for building with threads
+configure:1609: checking how to build libraries
+configure:1642: checking for ranlib
+configure:1674: checking if 64bit support is requested
+configure:1694: checking if 64bit Sparc VIS support is requested
+configure:1718: checking system version (for dynamic loading)
+configure:1744: checking for dlopen in -ldl
+configure:1811: checking for ar
+configure:3207: checking for build with symbols
+configure:3268: checking for required early compiler flags
+configure:3376: checking for 64-bit integer type
+configure:3439: checking for struct dirent64
+configure:3474: checking for struct stat64
+configure:3509: checking for off64_t
+configure:3570: checking for sin
+configure:3619: checking for main in -lieee
+configure:3715: checking stdlib.h
+configure:3778: checking fd_set and sys/select
+configure:3787: gcc -pipe -c   conftest.c 1>&5
+configure:3831: checking for ANSI C header files
+configure:3935: checking for mode_t
+configure:3968: checking for pid_t
+configure:4001: checking for size_t
+configure:4034: checking for uid_t in sys/types.h
+configure:4076: checking for sys/time.h
+configure:4113: checking whether time.h and sys/time.h may both be included
+configure:4153: checking pw_gecos in struct pwd
+configure:4162: gcc -pipe -c   conftest.c 1>&5
+configure:4195: checking for X
+configure:4610: checking for main in -lXbsd
+configure:4648: checking for connect
+configure:4789: checking for gethostbyname
+configure:4927: checking whether char is unsigned
+configure:4999: checking for strtod
+configure:5049: checking for Solaris2.4/Tru64 strtod bugs

@@ -1,0 +1,39 @@
+CanvasCM=Class[{},{},
+  {Canv,menu,xpop={0,0}},
+
+  Constructor[c_]:=(
+    Canv=c;
+    menu=Menu[c,Relief->"raised",BD->2];
+    menu[Add]={
+      Button[Text->"",Command:>Pos[]],
+      Separator[],
+      Button[Text->"Save Graphics as ...",Command:>SaveAs[]],
+      Button[Text->"Load Graphics ...",Command:>Load[]]};
+    menu[State]="withdrawn";
+    Bind[Canv,"<Button-3>",Pop[]]);
+
+  Pop[]:=Module[{x={XRoot,YRoot}/.$Event},
+    menu[Popup]=(xpop=x+{-30,0})];
+
+  Pos[]:=(menu[Post]=xpop);
+
+  SaveAs[] := Module[{fno,fname,ff},
+    If [(fname=KBFSaveDialog[KBF$Dir,"*"])===Null, Return[]];
+    {KBF$Dir,ff}=KBF$GetDir[fname];
+    fno = OpenWrite[fname];
+    Write[fno,The$CanvasObject@AllGraphics];
+    Close[fno];
+    Print["Graphics saved as ",fname]
+    ];
+
+  Load[] := Module[{fno,fname,ff},
+    If [(fname=KBFOpenDialog[KBF$Dir,"*"])===Null, Return[]];
+    {KBF$Dir,ff}=KBF$GetDir[fname];
+    g=Get[fname];
+    Show[g];
+    Update[];
+    Print["Graphics Loaded: ",fname]
+    ];
+
+  ];
+

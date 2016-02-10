@@ -1,0 +1,196 @@
+STACKSIZ=STACKSIZ*100;
+FFS;
+
+w=KBMainFrame[DateString[],f];
+c=Canvas[f,Width->1024,Height->768,BG->"white"];
+Canvas$Widget=c;
+
+csrdummy=CSR[];
+
+SKEKBAC[x_,r_,r1_,h_,w1_,w2_]:=Module[{theta=ArcSin[(h+r1)/(r+r1)],x1,x2,c},
+  c=Cos[theta];
+  Which[
+    x< (x1=-(r+r1)*c), h,
+    x< (x2=x1+r1*c),   t=ArcSin[(x-x1)/r1];h+2*r1*Sin[t/2]^2,
+    x< -x2,            Sqrt[r^2-x^2],
+    x< -x1,            t=ArcSin[(-x1-x)/r1];h+2*r1*Sin[t/2]^2,
+    True,              h]];
+
+Nomega=32;
+MR={1,1};
+NP=4;
+MWNR=3.5;
+exp=1.001;
+vlim=1;
+
+With[{
+  sigz=0.0003,
+  rac=0.020},
+  With[{wid=w2-w1},
+
+    csrc=CSR[NParallel->NP,Nk->Nomega,MeshRatio->MR,
+      BunchLength->sigz,
+      MaxMeshSize->rac/3,
+      MaxWaveNumRatio->MWNR,
+      Center->rac,
+      PipeWidth->rac*2,
+      PipeFun->(Min[vlim*rac,Max[0,rac^exp-Abs[#]^exp]^(1/exp)]&)
+      ]]];
+
+
+wlp[x_]:=(
+  lpipekekb={{16.3,x},{0,0}};
+  csrc@MakeZL[lpipekekb,1000,1000];
+  );
+
+ka=1000;
+
+fmid[n_,k_]:=Module[{x},x/.FindRoot[BesselJ[n,x]-BesselJ[n+2,x]==0,
+  {x,(BesselJZero[n+1,k]+Max[n+2,BesselJZero[n+1,k-1]])/2,{1.5,Infinity}}]];
+
+pxa=Sort[Flatten[Table[n^2+m^2,{n,1,20},{m,0,20}]]];
+
+nkx=32;
+jx=Take[pxa,nkx];
+kx0=-jx*(Pi/0.02)^2/2/2/ka;
+kx=Take[kx0,nkx];
+
+feig[m_,f0_Real,f1_Real,f2_Real,f3_Real]:=(
+  feig[m,f0,f1,f2,f3]=
+    Module[{a,ev,u,r},
+      csrc@mx=m;
+      csrc@MakePipe[];
+      a=Module[{
+        a22=CSRMatrix[csrc@pipe,{csrc@dx,csrc@dy,f0,f1,f2,f3},ka,0,csrc@cent,22],
+        a23=CSRMatrix[csrc@pipe,{csrc@dx,csrc@dy,f0,f1,f2,f3},ka,0,csrc@cent,23],
+        a32=CSRMatrix[csrc@pipe,{csrc@dx,csrc@dy,f0,f1,f2,f3},ka,0,csrc@cent,32],
+        a33=CSRMatrix[csrc@pipe,{csrc@dx,csrc@dy,f0,f1,f2,f3},ka,0,csrc@cent,33]},
+        Join[MapThread[Join,{a22,a23}],MapThread[Join,{a32,a33}]]];
+      {ev,u}=Eigensystem[a];
+      r=Reverse[Sort[Thread[{ev,u}]]]]);
+
+evaleig[mx_,x_Real,y_Real,z_Real,u_Real]:=(
+  fe=feig[mx,x,y,z,u];
+  fel=fe[[Range[nkx],1]];
+  re=(Plus@@(fel/kx-1))/nkx;
+  res=(Plus@@((fel/kx-1)^2))/nkx;
+  Print[{x,y,z,u,re,Sqrt[res],fel[[{1,2}]]}];
+  fel);
+
+kxm=(Plus@@kx)/nkx;
+!ew=Exp[-(kx/kxm)^2/2]/kx;
+ew=1/kx;
+With[{eq=Prepend[Table[ew[[i]]*fel[[i]]==ew[[i]]*kx[[i]],{i,2,nkx}],w],ew},
+
+  Unevaluated[findeig[mx_,fu_:{1,-1.6,1,1.35}]:=(
+    fel=.;
+    FindRoot[eq,
+      {x,fu[[1]],{0,3}},
+      {y,fu[[2]],{-3,3}},
+      {z,fu[[3]],{0,3}},
+      {u,fu[[4]],{-3,3}},
+      D->False])]/.w:>((fel=.;evaleig[mx,x,y,z,u];
+        ew[[1]]*fel[[1]])==ew[[1]]*kx[[1]]);
+    ];
+
+!e=feig[28,1,2,1,0.337];
+e=feig[28,1,-1.8,1,1.3];
+leh=Length[e[[1,2]]]/2;
+EPlot[n_]:=Module[{{gx,gy}=Table[
+  ListContourPlot[CSRConvert[Take[e[[n,2]],k*Length[e[[1,2]]]/2],csrc@pipe],
+    AspectRatio->2,DisplayFunction->Identity],{k,1,-1,-2}]},
+  Show[
+    Graphics[{
+      Rectangle[{-0.2,-0.1},{1,0.5},gx],
+      Rectangle[{-0.2, 0.6},{1,1.2},gy]}]];
+  Update[]];
+
+EPlot[1];
+
+end
+
+csrc@Debug=True;
+!csrc@Adaptive=True;
+la=4;
+rho=16.3;
+wlp[la];
+
+end
+
+csrc@WLPlot[-0.02,0.02];
+
+end
+
+
+{ev00,tu00,u00}=csrkekb@CSRDataCache[k0,16.3][[{1,2,3}]];
+lu=Length[u00];
+
+
+Er0=csrkekb@Er0;
+er0d=Er0[[1]]*0;
+cent=csrkekb@cent;
+er0d[[cent,1]]=1;
+er0d[[cent+1,1]]=-1;
+kcent=Position[CSRConvert[er0d,csrkekb@pipe],1,1,1][[1,1]];
+kcent1=Position[CSRConvert[er0d,csrkekb@pipe],-1,1,1][[1,1]];
+pipe=csrkekb@pipe;
+
+end
+
+or=omega*rho;
+{ev11,u11}=Eigensystem[a110];
+{ev22,u22}=Eigensystem[a220];
+ac=0.5/(or^2-1)/rho;
+ev11*=ac*or;
+rx=(Range[Length[Er0[[1]]]]-csrkekb@cent-0.5)*csrkekb@dx;
+r=rx+rho;
+sig1=ac*   CSRConvert[omega^2*(r^2+rho^2)*Er0[[1]],pipe];
+sig2=ac*or*CSRConvert[(omega^2*rx*(r+rho)+2)*Er0[[1]], pipe];
+sig22=LinearSolve[a220,sig2];
+sig12=-a120.sig22;
+sig=sig1+sig12;
+sigc=CSRConvert[sig,pipe];
+sig2c=CSRConvert[sig2,pipe];
+sig12c=CSRConvert[sig12,pipe];
+sig22c=CSRConvert[sig22,pipe];
+wvb1=LinearSolve[tu11=Transpose[u11],sig];
+wvb1a=u11.(sig1+sig12);
+wloss1=-2*(Sin[ev11*la/2]/ev11)^2*wvb1*
+  (9*tu11[[kcent]]-tu11[[kcent+1]]+9*tu11[[kcent1]]-tu11[[kcent1+1]])/16*csrkekb@Wnorm*1e12/SpeedOfLight;
+wloss1a=-2*(Sin[ev11*la/2]/ev11)^2*wvb1a*
+  (9*tu11[[kcent]]-tu11[[kcent+1]]+9*tu11[[kcent1]]-tu11[[kcent1+1]])/16*csrkekb@Wnorm*1e12/SpeedOfLight;
+{m11,m12}=Position[wloss1,#,1,1][[1,1]]&/@MinMax[wloss1];
+{m11a,m12a}=Position[wloss1a,#,1,1][[1,1]]&/@MinMax[wloss1a];
+u11c=CSRConvert[#,pipe]&/@u11;
+
+wvb=csrkekb@CSRData[k0,16.3][[3]];
+wloss=-2*(Sin[ev00*la/2]/ev00)^2*wvb*(9*tu00[[kcent]]-tu00[[kcent+1]])/8*csrkekb@Wnorm*1e12/SpeedOfLight;
+
+{m1,m2}=Position[wloss,#,1,1][[1,1]]&/@MinMax[wloss];
+end
+
+g1r=ListContourPlot[CSRConvert[Take[u00[[m1]],lu/2],pipe],
+  FrameLabel->StandardForm[$FORM="S10.5";
+    {"","","eigen value = "//ev00[[m1]]//",  Z = "//wloss[[m1]]//" `fW`n",""}],
+  DisplayFunction->Identity];
+g1i=ListContourPlot[CSRConvert[Take[u00[[m1]],-lu/2],pipe],
+  FrameLabel->StandardForm[$FORM="S10.5";
+    {"","","eigen value = "//ev00[[m1]]//",  Z = "//wloss[[m1]]//" `fW`n",""}],
+  DisplayFunction->Identity];
+g2r=ListContourPlot[CSRConvert[Take[u00[[m2]],lu/2],pipe],
+  FrameLabel->StandardForm[$FORM="S10.5";
+    {"","","eigen value = "//ev00[[m2]]//",  Z = "//wloss[[m2]]//" `fW`n",""}],
+  DisplayFunction->Identity];
+g2i=ListContourPlot[CSRConvert[Take[u00[[m2]],-lu/2],pipe],
+  FrameLabel->StandardForm[$FORM="S10.5";
+    {"","","eigen value = "//ev00[[m2]]//",  Z = "//wloss[[m2]]//" `fW`n",""}],
+  DisplayFunction->Identity];
+
+Show[
+  {Graphics[Rectangle[{-0.1,-0.15},{0.4,0.45},g1r]],Graphics[Rectangle[{0.5,-0.15},{1,0.45},g1i]],
+    Graphics[Rectangle[{-0.1,0.6},{0.4,1.2},g2r]],Graphics[Rectangle[{0.5,0.6},{1,1.2},g2i]]},
+  PlotLabel->"k = "//k0//" /m\n\n\n\n"];
+Update[];
+
+end
+

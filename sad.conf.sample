@@ -1,0 +1,77 @@
+# New Makefile -- Local Configuration Part Sample
+#
+
+## Compiler setting examples
+
+# -- Intel C/Fortran Compiler 8.1 or later --
+#COMPILER=Intel
+#USE_IFC=8.1
+
+# -- Intel C/Fortran Compiler 7.1 --
+#COMPILER=Intel
+#USE_IFC=7.1
+
+# -- GNU Compiler Collection --
+#    Recommended GCC: 4.6.3 or later
+#COMPILER=GNU
+#USE_GCC=4.5.4|4.6.3|4.7.2|4.8.0|4.9.0
+
+# -- for Debugging source tree --
+#FOPT=	-g -O1
+#COPT=	-g -O1
+
+# -- for Debugging memory allocator --
+#COPT+=	-DDEBUG_MEMORY
+
+# -- for Debugging src/calc.y --
+#COPT+=	-DDEBUG_YYLEX
+
+# -- for Debugging src/fortran_io_.c --
+#COPT+=	-DDEBUG_ITOPENBUF
+
+# -- for SAD stack dump tool --
+#COPT+=	-DDEBUG_DUMPER
+
+# -- for Debugging memory usege by ElectricFence --
+#COPT+=	-DUSE_ELECTRICFENCE -DUSE_ELECTRICFENCE_FREECHECK
+#LIBS+=	-L/usr/local/lib -lefence
+
+## SAD root directory
+#SAD_ROOT=/usr/local/SAD
+
+## Contrib source archive directory
+#SOURCE_ARCHIVE_DIR=/usr/ports/distfiles
+
+## libtai setup
+#HAVE_LEAPSECONDS=YES
+#LIBTAI_ADDITIONAL_LEAPSECONDS=	+2005-12-31 +2008-12-31 +2012-06-30
+
+## X11 setup
+#
+#USE_X11=YES
+#X11_PREFIX=/usr/X11R6
+##X11_INCDIR=$(X11_PREFIX)/include
+##X11_LIBDIR=$(X11_PREFIX)/lib
+##X11_LIBS=-lX11
+
+## Tcl/Tk setup
+#
+#USE_TCLTK=YES
+##BUILD_TCLTK=YES
+##USE_TCLTK_SHARED_LIBRARY=YES
+##TCLTK_GUI_BACKEND=X11|AQUA
+##TCLTK_FONT_SYSTEM=Xlib|Xft
+##TCLTK_VERSION=8.4.20|8.5.18|8.6a3
+##TCLTK_PREFIX=$(SAD_ARCH_DIR)
+##TCLTK_INCDIR=$(TCLTK_PREFIX)/include
+##TCLTK_LIBDIR=$(TCLTK_PREFIX)/lib
+##TCLTK_LIBS=-ltk$(TCLTK_FEATURE_VERSION) -ltcl$(TCLTK_FEATURE_VERSION)
+
+## EPICS setup
+#
+#USE_EPICS=YES
+#EPICS_INCDIR=$(EPICS_PREFIX)/include
+#EPICS_LIBDIR=$(EPICS_PREFIX)/lib/$(EPICS_HOST_ARCH)
+#EPICS_LIBS=-lca -ldbStaticHost -lCom
+
+# End of File

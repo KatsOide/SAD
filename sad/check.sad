@@ -1,0 +1,107 @@
+FFS;
+
+ CheckFunctions=Class[{},{},{a,ndim=30,b,thre1=1e-15,
+
+   test1:={
+     {"Real Fourier",InverseFourier[Fourier[Re[#]]]-Re[#]&,0.5},
+     {"Complex Fourier",InverseFourier[Fourier[#]]-#&,0.6},
+     {"Real Trigonometrics",ArcSin[ArcCos[ArcTan[Tan[Cos[Sin[Re[#]]]]]]]-Re[#]&,6},
+     {"Complex Trigonometrics",ArcSin[ArcCos[ArcTan[Tan[Cos[Sin[#/10]]]]]]-#/10&,5},
+     {"Real Log",Log[Exp[Re[#]]]-Re[#]&,0.2},
+     {"Complex Log",Log[Exp[#]]-#&,0.3},
+     {"Real Det",Det[DiagonalMatrix[Re[#]]]-Times@@Re[#]&,0},
+     {"Complex Det",Det[DiagonalMatrix[#]]-Times@@#&,0},
+     {"Sort",Sort[#]-Sort[Reverse[#]]&,0},
+     {"SetPart",Module[{x=Table[0,{Length[#]}]},Do[x[[i]]=i,{i,Length[x]}];x-Range[Length[x]]]&,0},
+     {"RotateRight",Module[{x=#},Do[x=RotateRight[x],{Length[x]}];x-#]&,0},
+     {"RotateRight-1",Module[{x=#},Do[x=RotateRight[x,-1],{Length[x]}];x-#]&,0},
+     {"Append",Module[{x={}},Do[x=Append[x,#[[i]]],{i,Length[#]}];x-#]&,0},
+     {"AppendTo",Module[{x={}},Do[AppendTo[x,#[[i]]],{i,Length[#]}];x-#]&,0},
+     {"Difference",Difference[#]-Table[#[[i]]-#[[i-1]],{i,2,Length[#]}]&,0},
+     {"Difference-1",Difference[#,-2]-Table[#[[i]]-2*#[[i-1]],{i,2,Length[#]}]&,0},
+     {"Take & Drop",Take[#,{3,-3}]-Drop[Drop[#,2],-2]&,0},
+     {"Real Spline",Module[{x=Append[Prepend[Sort[Re[#]*2*Pi],0],0],sp},
+       sp=Spline[Thread[{x,Sin[x]}],Derivative->Periodic];
+       Sin[x*0.99]-sp[x*0.99]]&,5e11},
+     {"ToString & ToExpression",#-ToExpression[ToString[#]]&,0},
+     {"Position",With[{x=#},x[[Position[x,#][[1,1]]]]&/@x-x]&,0},
+     {"Partition",Flatten[Partition[#,4]]-Take[#,Floor[Length[#]/4]*4]&,0},
+     {"List Operations",Module[{a,b,c,d,e},(-3*{a,b,c,d,e}/(-2*{e,d,c,b,a})===1.5*{a/e,b/d,c/c,d/b,e/a})-1]&,0},
+     {"ReduceExpression",Module[{a},ReduceExpression[a/a]-1]&,0},
+     Null[]
+     },
+
+   test2:={
+     {"Real LinearSolve",Re[#].LinearSolve[Re[#],Re[#2]]-Re[#2]&,60},
+     {"Complex LinearSolve",#.LinearSolve[#,#2]-#2&,450},
+     {"Real SingularValues",Module[{{u,w,v}=SingularValues[Re[#],Inverse->False]},
+       Transpose[u].DiagonalMatrix[w].v-Re[#]]&,3},
+     {"Complex SingularValues",Module[{{u,w,v}=SingularValues[#,Inverse->False]},
+       Conjugate[Transpose[u]].DiagonalMatrix[w].v-#]&,3},
+     {"Real Eigensystem",Module[{{e,v}=Eigensystem[Re[#]]},
+       Re[#].Transpose[v]-Transpose[e*v]]&,40},
+     {"Complex Eigensystem",Module[{{e,v}=Eigensystem[#]},
+       #.Transpose[v]-Transpose[e*v]]&,15},
+     {"SetPart",Module[{x=Table[0,{Length[#]}]},Do[x[[i]]=i,{i,Length[x]}];x-Range[Length[x]]]&,0},
+     {"RotateRight",Module[{x=#},Do[x=RotateRight[x],{Length[x]}];x-#]&,0},
+     {"RotateRight-1",Module[{x=#},Do[x=RotateRight[x,-1],{Length[x]}];x-#]&,0},
+     {"Append",Module[{x={}},Do[x=Append[x,#[[i]]],{i,Length[#]}];x-#]&,0},
+     {"AppendTo",Module[{x={}},Do[AppendTo[x,#[[i]]],{i,Length[#]}];x-#]&,0},
+     {"Difference",Difference[#]-Table[#[[i]]-#[[i-1]],{i,2,Length[#]}]&,0},
+     {"Difference-1",Difference[#,-2]-Table[#[[i]]-2*#[[i-1]],{i,2,Length[#]}]&,0},
+     {"Take & Drop",Take[#,{3,-3}]-Drop[Drop[#,2],-2]&,0},
+     {"Position",With[{x=#},x[[Position[x,#][[1,1]]]]&/@x-x]&,0},
+     {"Partition",Partition[Flatten[Partition[#,4]],Length[#]]-Take[#,Floor[Length[#]/4]*4]&,0},
+     {"Thread",Thread[#]-Transpose[#]&,0},
+     {"Shared",Module[{f=OpenShared[64*Length[#]^2],p},
+       p=Fork[];
+       If[p,
+         Sleep[1];
+         {Shared[f]-#-1,Close[f]}[[1]],
+         Shared[f]=#+1;
+         Sleep[1];
+         Exit[]]]&,0},
+     {"Part",#-Thread[Table[#[[,i]],{i,Length[#]}]]&,0},
+     {"MapThread",MapThread[Subtract,{#,RotateRight[#]}]-Table[#[[i]]-#[[Mod[i-2,Length[#]]+1]],{i,Length[#]}]&,0},
+     {"TrackParticles",Module[{d=Take[Re[#],7]/1000,d1,d0,l=LINE["S","$$$"]},
+       d[[7]]=d[[7]]*0+1;
+       d1=TrackParticles[{1,d},1][[2]];
+       d1[[7,10]]=0;
+       d1=SurvivedParticles[d1];
+       d0=Thread[Drop[Thread[d],{10,10}]];
+       d0[[1]]=d0[[1]]+d0[[2]]/(1+d0[[6]])*l;
+       d0[[3]]=d0[[3]]+d0[[4]]/(1+d0[[6]])*l;
+       d0[[5]]=d0[[5]]-((d0[[2]]/(1+d0[[6]]))^2+(d0[[4]]/(1+d0[[6]]))^2)*l/2;
+       d1-d0]&,1e6},
+     Null[]
+     }
+
+   },
+
+   Constructor[]=(
+     a=Random[ndim]+I Random[ndim];
+     b=Random[ndim,ndim]+ I Random[ndim,ndim]
+     );
+
+   Test[]:={Catch[
+     Module[{r},
+       Join[
+         With[{f=#[[2]],m=#[[1]],th=#[[3]]},
+           If[(r=Max[Abs[f[a]]]) <= thre1*th,r,
+             BreakTest[m,r],
+             BreakTest[m,r]]]&/@test1,
+         With[{f=#[[2]],m=#[[1]],th=#[[3]]},
+           If[(r=Max[Abs[f[b,a]]]) <= thre1*th,r,
+             BreakTest[m,r],
+             BreakTest[m,r]]]&/@test2
+         ]]],
+     MemoryCheck[2]};
+
+   BreakTest[m_,r_]:=(
+     Print["Error in ",m,", Residual: ",r];
+     Throw[{m,r}])
+   ];
+
+  cf=CheckFunctions[];
+
+  cf@Test[]

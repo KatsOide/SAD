@@ -1,0 +1,91 @@
+#!/users/oide/WORK/oldsad/obj/OSF1/sad1.exe *
+MOMENTUM= 30 MEV; ON ECHO;OFF EMIT COD CTIME RAD RFSW RADCOD; 
+ LINE CELL=( QDH L2 QFH QFH L2 QDH)
+ ;
+ LINE  HALF=(QA2 LA1 QA1 LA0 B L1 QM4 L1 QM3 L1 QM2 L1 QM1 L1 QFH QFH L2 QDH 20*CELL )
+       TEST=(IP2 -HALF HALF CA1) 
+       TEST1=(IP2 22*CELL)
+ ;
+ ;
+ QUAD   QDH     =(L =.05  K1 =-2.6097891773681 )
+        QFH     =(L =.05  K1 =2.6097892520214 )
+ ;
+ ;
+ DRIFT  L2      =(L =.1 )    L1      =(L =.75 )   LA0     =(L =.1 )
+        LA1     =(L =1 )
+ ;
+ BEND   B       =(L =.3   ANGLE =.1 )
+ ;
+  ;
+ CAVI   CA1     =(VOLT =1000 FREQ =100000000 PHI= -180 DEG )
+ ;
+ MARK   IP2     =(AX =-2.3185923848E-14  BX =.2471002563045
+           BY =1.2828459835429 EX =5.153775292E-11 EPX =3.12883265992E-18
+           DP =.01   SIGZ =4.835243965342E-4  EMITX =1.78455074372E-11
+           EMITY =1E-12 )
+ ;
+ ;
+ STACKSIZ=100000;
+ FFS USE=TEST1;
+$DisplayFunction=CanvasDrawer;
+
+cell ;
+fit  qdh.2+1 nx .01 ny .25 free q* go;
+
+ cod rfsw ring cell cal
+MINCOUP=0.01;
+PBUNCH=30e9;
+
+beam=Table[0,{6},{6}];
+EMITX=EMITY=1e-10;
+SIGZ=1e-3;
+SIGE=3e-5;
+{bx,by}=LINE[{"BX","BY"},1];
+beam[[1,1]]=bx*EMITX;
+beam[[2,2]]=EMITX/bx;
+beam[[3,3]]=by*EMITY;
+beam[[4,4]]=EMITY/by;
+beam[[5,5]]=SIGZ^2;
+beam[[6,6]]=SIGE^2;
+
+
+emiout codplot trpt nocod intra;
+em:=(e=Emittance[InitialBeamMatrix->beam,
+  OneTurnInformation->True];
+  OneTurnExcitation/.e);
+
+em
+
+s=LINE["SIZE"];
+ex=Sqrt[s[[,1,1]]*s[[,2,2]]-s[[,1,2]]^2];
+ey=Sqrt[s[[,3,3]]*s[[,4,4]]-s[[,3,4]]^2];
+ez=Sqrt[s[[,5,5]]*s[[,6,6]]-s[[,5,6]]^2];
+g=MapThread[ListPlot[#,DisplayFunction->Identity,PointColor->#2]&,
+{{ex,ey,ez},{"forest green","tomato","gold"}}];
+Show[
+  Graphics[Rectangle[{0,2/3},{1,1},g[[1]]]],
+  Graphics[Rectangle[{0,1/3},{1,2/3},g[[2]]]],
+  Graphics[Rectangle[{0,0},{1,1/3},g[[3]]]]
+];Update[];
+
+
+end
+
+
+
+
+
+
+
+
+fit QFH.2 QFH.4 bx 1 by 1 nx .25 ny .25 ax 0 ay 0
+fit ex 0 epx 0
+free q* go
+intra emiout emit
+end
+!
+ e=Emittance[Matrix->True];
+ m=TransferMatrices/.e;
+ m3=m[[3]];
+ m3[[6]]*=LINE["GAMMABETA","$$$"]/LINE["GAMMABETA","^^^"];
+m3.SymplecticInverse[m3]

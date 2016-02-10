@@ -1,0 +1,40 @@
+! Demo code for Wait4[] function
+!
+! Wait forked child processes by Wait4[].
+!
+
+FFS;
+
+ForkChild[sleep_Real:10] := With[{pid = Fork[]}, Switch[pid,
+ -1, Print["Fork system call is failed!"]; Exit[],
+
+  0, (
+    Print["Child[", GetPID[], "] Sleeing ", sleep, "sec"];
+    Sleep[sleep];
+    Print["Child[", GetPID[], "] Exited"];
+    Exit[0]),
+
+  _, Return[pid]]];
+
+pid1 = ForkChild[10];	(* Child 1 *)
+pid2 = ForkChild[5];	(* Child 2 *)
+pid3 = ForkChild[1];	(* Child 3 *)
+
+
+Print["Child: ", {pid1, pid2, pid3}];
+
+Print[Wait4[-1, WNOHANG]];	(* Wait child process without blocking *)
+
+Print[Wait4[-1]];		(* Wait child process: Catch child 3 *)
+
+Kill[pid1, 9];			(* Kill child 1 *)
+
+Print[Wait4[pid3]];		(* Wait child 3: Not found *)
+
+Print[Wait4[-1]];		(* Wait child process: Catch child 1 *)
+
+Print[Wait4[-1]];		(* Wait child process: Catch child 2 *)
+
+Exit[];
+
+! End of File

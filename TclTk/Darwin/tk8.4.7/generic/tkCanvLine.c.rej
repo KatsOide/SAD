@@ -1,0 +1,125 @@
+***************
+*** 289,294 ****
+   *
+   *--------------------------------------------------------------
+   */
+  
+  static int
+  CreateLine(interp, canvas, itemPtr, objc, objv)
+--- 289,297 ----
+   *
+   *--------------------------------------------------------------
+   */
++ static int		KBCreateLine _ANSI_ARGS_((Tcl_Interp *interp,
++ 			    Tk_Canvas canvas, struct Tk_Item *itemPtr,
++ 			    int objc, Tcl_Obj *CONST objv[]));
+  
+  static int
+  CreateLine(interp, canvas, itemPtr, objc, objv)
+***************
+*** 328,333 ****
+      linePtr->smooth = (Tk_SmoothMethod *) NULL;
+      linePtr->splineSteps = 12;
+  
+      /*
+       * Count the number of points and then parse them into a point
+       * array.  Leading arguments are assumed to be points if they
+--- 331,339 ----
+      linePtr->smooth = (Tk_SmoothMethod *) NULL;
+      linePtr->splineSteps = 12;
+  
++     if (objc<0)
++  	return KBCreateLine(interp, canvas, itemPtr, objc, objv);
++ 
+      /*
+       * Count the number of points and then parse them into a point
+       * array.  Leading arguments are assumed to be points if they
+***************
+*** 344,349 ****
+  	goto error;
+      }
+      if (ConfigureLine(interp, canvas, itemPtr, objc-i, objv+i, 0) == TCL_OK) {
+  	return TCL_OK;
+      }
+  
+--- 350,429 ----
+  	goto error;
+      }
+      if (ConfigureLine(interp, canvas, itemPtr, objc-i, objv+i, 0) == TCL_OK) {
++ 	return TCL_OK;
++     }
++ 
++     error:
++     DeleteLine(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
++     return TCL_ERROR;
++ }
++ 
++ static int
++ KBCreateLine(interp, canvas, itemPtr, objc, objv)
++     Tcl_Interp *interp;			/* Interpreter for error reporting. */
++     Tk_Canvas canvas;			/* Canvas to hold new item. */
++     Tk_Item *itemPtr;			/* Record to hold new item;  header
++ 					 * has been initialized by caller. */
++     int objc;				/* Number of arguments in objv. */
++     Tcl_Obj *CONST objv[];		/* Arguments describing line. */
++ {
++     LineItem *linePtr = (LineItem *) itemPtr;
++     int i, numPoints;
++     int nn;
++     double *bb, *coordPtr;
++ 
++     objc = -objc;
++     nn = *((int *)objv[objc-2]);
++     bb = (double *)objv[objc-1];
++     objc -= 2;
++ 
++     /*
++      * Count the number of points and then parse them into a point
++      * array.  Leading arguments are assumed to be points if they
++      * start with a digit or a minus sign followed by a digit.
++      */
++ 
++     /* from LineCoords */
++     if (nn & 1) {
++ 	char buf[64 + TCL_INTEGER_SPACE];
++ 	sprintf(buf, "wrong # coordinates: expected an even number, got %d",
++ 		nn);
++ 	Tcl_SetResult(interp, buf, TCL_VOLATILE);
++ 	goto error;
++     } else if (nn < 4) {
++ 	char buf[64 + TCL_INTEGER_SPACE];
++ 	sprintf(buf, "wrong # coordinates: expected at least 4, got %d", nn);
++ 	Tcl_SetResult(interp, buf, TCL_VOLATILE);
++ 	goto error;
++     } else {
++ 	numPoints = nn/2;
++ 	if (linePtr->numPoints != numPoints) {
++ 	    coordPtr = (double *) ckalloc((unsigned)
++ 		    (sizeof(double) * nn));
++ 	    if (linePtr->coordPtr != NULL) {
++ 		ckfree((char *) linePtr->coordPtr);
++ 	    }
++ 	    linePtr->coordPtr = coordPtr;
++ 	    linePtr->numPoints = numPoints;
++ 	}
++ 	coordPtr = linePtr->coordPtr;
++ 	for (i = 0; i <nn; i++) {
++ 	    coordPtr[i] = bb[i];
++   	}
++ 	if (linePtr->firstArrowPtr != NULL) {
++ 	    ckfree((char *) linePtr->firstArrowPtr);
++ 	    linePtr->firstArrowPtr = NULL;
++ 	}
++ 	if (linePtr->lastArrowPtr != NULL) {
++ 	    ckfree((char *) linePtr->lastArrowPtr);
++ 	    linePtr->lastArrowPtr = NULL;
++ 	}
++ 	if (linePtr->arrow != ARROWS_NONE) {
++ 	    ConfigureArrows(canvas, linePtr);
++ 	}
++ 	ComputeLineBbox(canvas, linePtr);
++     }
++     if (ConfigureLine(interp, canvas, itemPtr, objc, objv, 0) == TCL_OK) {
+  	return TCL_OK;
+      }
+  

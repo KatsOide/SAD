@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="ja-JP">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-2022-JP">
+<TITLE>KBFrame 複数のウインドウ</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<A NAME="top" HREF="index-ja.html">目次</A>
+<A HREF="hello-ja.html">Hello, World!</A> 
+<A HREF="about-ja.html">About MessageBox</A>
+
+<HR><DIV ALIGN="CENTER"><H2>複数のウインドウ</H2></DIV><HR>
+
+<P>複数のウインドウを開くには、初めのウインドウをKBMainFrameで作り、
+残りをKBSubFrameで作ります。</P>
+<PRE><CODE>
+FFS;
+w  = KBMainFrame["Main", f, Title-&gt;"Main Frame"];
+s1 = KBSubFrame["Sub1", f1, Title-&gt;"Sub Frame 1"];
+s2 = KBSubFrame["Sub2", f2, Title-&gt;"Sub Frame 2"];
+TkWait[];
+</CODE></PRE>
+
+<P>この時、必ず最初のウインドウをKBMainFrameで、残りのウインドウを
+KBSubFrameでそれぞれ作るようにしてください。</P>
+
+<P><IMG SRC="sub1.gif" WIDTH=498 HEIGHT=469 ALT="Main-Frame &2 Sub-Frames"></P>
+
+<P>2つ目のKBSubFrameのWindowメニューは、下のようになります。
+メニューの上3つはそれぞれ作ったウインドウに対応しており、各ウインドウを
+前面に持ってくることが出来ます。Make Snapshotは、このウインドウの静的な
+イメージを別の独立なウインドウ内に表示します。
+一番下のConsoleとPromptは、これらの項目が
+無効になっていなければ、このウインドウを作ったSADが走っているウインドウ（
+例えばxterm、emacs等）を前面に持ってきて、さらにPromptの場合にはTkWait[]の
+ループから抜けてキーボードからの入力が可能な状態になります。</P>
+
+<P><IMG SRC="sub2.gif" WIDTH=430 HEIGHT=384 ALT="Window Menu"></P>
+
+<P><A HREF="#top">top</A></P>
+
+<HR>
+<ADDRESS>このページに関する御意見・質問は
+<A HREF="mailto:samo.stanic@kek.jp">Samo Stanic</A>
+まで.</ADDRESS>
+</BODY>
+</HTML>

@@ -1,0 +1,234 @@
+(* CaSad2c.n Originally developed by N. Akasaka *)
+(* 12/4/2001 *)
+(* constants from cadef.h and alarm.h *)
+
+CaMonitor = Class[{},
+  {rl,bcschk=False,il={},DBE$Value=1,DBE$Log=2,DBE$Alarm=4,
+    CS$NeverConn=0,CS$PrevConn=1,CS$Conn=2,CS$Closed=3,
+    DB$NoAlarm=0,DB$MinorAlarm=1,DB$MajorAlarm=2,DB$InvalidAlarm=3,
+    DBF$String=0,DBF$Real=6},
+  {rn,chid,cs,v,sev,ts,nrn,rnl,csl,vl,sevl,tsl,iniv,autostart,vtype,flio,pos,
+    evid,evflag,valcomm,cscomm,logcomm,putcomm,fst,waitflg},
+
+  Constructor[rn$_] := Module[{val,cst,log,pcb,almonl,var,iv,as,vt},
+    {val,cst,log,pcb,almonl,var,iv,as,vt,flio}=SwitchCases[Override[Options,AlarmOnly->False],
+      {RuleDelayed[ValueCommand,_],RuleDelayed[ConStatCommand,_],
+        RuleDelayed[LogCommand,_],RuleDelayed[PutCommand,_],Rule[AlarmOnly,_],
+	RuleDelayed[Variable,_],Rule[InitialValue,_],Rule[AutoStart,_],
+	Rule[ValueType,_],Rule[Flush,_]}];
+    rn = rn$;
+    waitflg = False;
+    iniv = If [iv<=>{},Extract[iv,{1,2}],Undefined];
+    fst = autostart = If[as<=>{},Extract[as,{1,2}],True];
+    evflag = DBE$Alarm+If[AlarmOnly/.almonl,0,DBE$Value];
+    valcomm = If [val<=>{},Extract[val,{1,2},Hold],Null];
+    cscomm = If [cst<=>{},Extract[cst,{1,2},Hold],Null];
+    logcomm = If [log<=>{},Extract[log,{1,2},Hold],Null];
+    putcomm = If [pcb<=>{},Extract[pcb,{1,2},Hold],Null];
+    vtype = If [vt<=>{},
+      Switch[Extract[vt,{1,2}],String,DBF$String,Real,DBF$Real],-1];
+    flio = If [flio<=>{},Extract[flio,{1,2}],True];
+    InitChannel[];
+    If [bcschk, AppendTo[il,This]];
+    ];
+
+  ! need to clear rl.
+  If[nrn<0,
+    Destructor[] := (
+      EPICS$CaClearChannel[chid];
+      rl[chid] =.;
+      If [bcschk, il = DeleteCases[il,This]]),
+    Destructor[] := (
+      Scan[(
+	EPICS$CaClearChannel[#];
+	rl[chid] =.;
+	)&,chid];
+      If [bcschk, il = DeleteCases[il,This]])];
+
+  If[Head[rn]<=>List,
+    InitChannel[] := (
+      nrn = -1;
+      cs = CS$NeverConn;
+      v = iniv;
+      evid = 0;
+      If [""<=>rn<=>Null,
+        chid = EPICS$CaOpen[rn];
+        rl[chid] = {This,0}
+        ,!Else
+        chid = Null
+        ];
+      If [flio, FlushIO[]]),
+    InitChannel[] := Module[{tc},
+      nrn = Length[rn];
+      cs = Table[CS$NeverConn, {nrn}];
+      v = Table[iniv, {nrn}];
+      ts = evid = Table[0, {nrn}];
+      sev = Table[DB$NoAlarm, {nrn}];
+      If [{""} <=> rn <=> {},
+        chid = Table[tc=EPICS$CaOpen[rn[[i]]];rl[tc]={This,i};tc, {i,nrn}]
+        ,!Else
+        chid = Null];
+      If [flio, FlushIO[]]]
+    ];
+
+  FlushIO[] := EPICS$CaFlushIO[];
+
+  DoPeriodicIO[] := After[5,EPICS$CaPendIO[0.001];DoPeriodicIO[]];
+
+  NewName[n$_String] := (
+    EPICS$CaClearChannel[chid];
+    rn = n$;
+    InitChannel[];
+    );
+
+  SetConStatCheckFlag[b$_:True] := (bcschk = b$);
+  CheckConStat[] := Module[{l,csl,nl},
+    l = {};
+    Scan[(
+      If [#@nrn<0,
+	If [#@ConStat[]<=>CS$Conn, l = {l, #@Name[]}] (* K. Oide 12/17/2000 *)
+	,!Else
+	csl = #@ConStat[];
+	If [Count[csl,CS$Conn,1,1]<=>Length[csl],
+	  nl = #@Name[];
+	  Do[
+	    If [csl[[j]]<=>CS$Conn, l = {l, nl[[j]]}] (* K. Oide 12/17/2000 *)
+	    ,{j,Length[csl]}];
+	  ];
+	];
+      )&,il];
+    Flatten[l]];
+
+  IOCName[] := EPICS$CaHostName[chid];
+  IOCName[n$_] := EPICS$CaHostName[chid[[n$]]];
+
+  Name[] := rn;
+  ConStat[] := cs;
+  Value[] := v;
+  ValueCopy[] := Duplicate[v];    (* K. Oide 12/18/1999 *)
+  Severity[] := sev;
+  TimeStamp[] := ts + 2840173210;
+
+  ConStatL[] := csl;
+  NameL[] := rnl;
+  ValueL[] := vl;
+  SeverityL[] := sevl;
+  PositionL[] := pos;
+
+  Value[n$_] := v[[n$]];
+  ValueCopy[n$_] := v[[n$]];       (* K. Oide 12/18/1999 *)
+
+  If[nrn<0,
+    Stop[] := (
+      autostart = False;
+      If [evid, EPICS$CaClearEvent[evid];evid=0]),
+    Stop[] := (
+      autostart = False;
+      Do [If[evid[[i]], EPICS$CaClearEvent[evid[[i]]];evid[[i]]=0], {i,nrn}])];
+
+  Start[] := (
+    autostart = True;
+    If [chid<=>Null,
+      If [nrn<0,
+        If [(cs==CS$Conn)&&(evid==0), evid=EPICS$CaAddEvent[chid,vtype,evflag]];
+	,!Else
+	Do[Start[i], {i,nrn}];
+	];
+      ];
+    );
+  Start[n_Real] := If[(cs[[n]]==CS$Conn)&&(evid[[n]]==0),
+    evid[[n]]=EPICS$CaAddEvent[chid[[n]],vtype,evflag]];
+
+  Put[v$_] := CheckAndPut[v$];
+  If[nrn<0,
+    Put[v$_List] := CheckAndPut[v$],
+    Put[v$_List] := Do[CheckAndPutL[i,v$[[i]]],{i,Length[v$]}]
+    ];
+
+  Put[n$_,v$_] := CheckAndPutL[n$,v$];
+  PutCB[v$_] := EPICS$CaPutCB[chid,v$];
+  CheckAndPut[v$_] := (
+    If [cs===CS$Conn,
+      EPICS$CaPut[chid,v$];
+      ,!Else
+      Print["Put Error: ",rn," is not connected !"];
+      ];
+    );
+  CheckAndPutL[i$_,v$_] := (
+    If [cs[[i$]]===CS$Conn,
+      EPICS$CaPut[chid[[i$]],v$];
+      ,!Else
+      Print["Put Error: ",rn,"[[",i$,"]] is not connected !"];
+      ];
+    );
+
+  If[nrn>0,
+    CountUndef[] := Count[Value[],Undefined,1,1],
+    CountUndef[] := (Value[]===Undefined)];
+
+  WaitValue[mxt$_:0] := Module[{r,aid,aidmx},
+    If [CountUndef[]===0, Return[True]];
+    waitflg = True;
+    If [mxt$>0, aidmx = After[mxt$, waitflg=False; TkReturn[]]];
+    While[CountUndef[]>0,
+      aid = After[1, TkReturn[]];
+      TkWait[];
+      AfterCancel[aid];
+      If [~waitflg, Break[]];
+      ];
+    If [mxt$>0, AfterCancel[aidmx]];
+    r = waitflg;
+    waitflg = False;
+    r];
+
+  BreakWaitValue[] := If [waitflg, waitflg=False; TkReturn[]];
+
+  ];	(* End of CaMonitor class *)
+
+EPICS$ConStatCB[chid$_,stat$_] := With[
+  {a=CaMonitor@rl[chid$][[1]],n=CaMonitor@rl[chid$][[2]]},
+  If [n<1,
+    a@cs = stat$;
+    ,!Else
+    a@pos = n;
+    a@cs[[n]] = stat$;
+    a@rnl = a@rn[[n]];
+    a@csl = stat$;
+    ];
+  If [a@cscomm<=>Null, ReleaseHold[a@cscomm]];
+  If [a@autostart && (stat$===CaMonitor@CS$Conn),
+    If [n<1, a@Start[], a@Start[n]]
+    ];
+  ];
+
+EPICS$PutCB[chid$_] := With[
+  {a=CaMonitor@rl[chid$][[1]],n=CaMonitor@rl[chid$][[2]]},
+  If [n<1,
+    ,!Else
+    a@pos = n;
+    a@rnl = a@rn[[n]];
+    ];
+  If [a@putcomm<=>Null, ReleaseHold[a@putcomm]];
+  ];
+
+EPICS$ValueCB[chid$_,v$_,st$_] := With[
+  {a=CaMonitor@rl[chid$][[1]],n=CaMonitor@rl[chid$][[2]]},
+  If [n<1,
+    a@v = v$;
+    a@sev = st$[[2]];
+    a@ts = st$[[3]];
+    ,!Else
+    a@pos = n;
+    a@v[[n]] = v$;
+    a@sev[[n]] = st$[[2]];
+    a@ts[[n]] = st$[[3]];
+    a@rnl = a@rn[[n]];
+    a@vl = v$;
+    a@sevl = st$[[2]];
+    a@tsl = st$[[3]];
+    ];
+  If [a@valcomm<=>Null,ReleaseHold[a@valcomm]];
+  ];
+
+EPICS$CaInit[];
+CaMonitor@DoPeriodicIO[];

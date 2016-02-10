@@ -1,0 +1,44 @@
+! Symbol Font Table
+!
+
+FFS;
+
+!AsciiFont = "";
+!SymbolFont = "symbol";
+FontSize = 24;
+
+hex0 = Characters["0123456789ABCDEF"]; hex = Prepend[hex0, "\\"];
+tbl0 = If[BitwiseAnd[#, 127] < 32, " ", FromCharacterCode[#]]&/@Range[0, 255];
+
+tblA = Flatten[MapThread[{#1, #2}&, {hex,
+  Prepend[Partition[tbl0, 16], hex0]}]];
+tblS = Flatten[MapThread[{#1, #2}&, {hex,
+  Prepend[Partition["`f"//#//"`n"&/@tbl0, 16], hex0]}]];
+
+padding = {PadX->0, PadY->0, IPadX->0, IPadY->0, BD->1};
+
+fonts := {
+  Font->TextFont[If[BoundQ[AsciiFont], AsciiFont, $DefaultSansSerifFont],
+    If[BoundQ[FontSize], FontSize, $DefaultFontSize], "bold"],
+  AltFont->TextFont[If[BoundQ[SymbolFont], SymbolFont, $DefaultSymbolFont],
+    If[BoundQ[FontSize], FontSize, $DefaultFontSize], "bold"],
+  Null[]};
+
+w = KBMainFrame["SymbolFontTable", f, Title->"Symbol Font Table"];
+
+cf = KBFComponentFrame[f, Transparent->True, Add->{
+  KBFFrameTabed[InitialTab->"Symbol", Add->{
+    KBFTab[TabName->"Symbol", Add->{
+      KBFButton[Columns->17, Text->tblS,
+	WidgetOption->{Width->1, Null@@padding, Null@@fonts}],
+      }],
+    KBFTab[TabName->"ASCII", Add->{
+      KBFButton[Columns->17, Text->tblA,
+	WidgetOption->{Width->1, Null@@padding, Null@@fonts}],
+      }],
+    }],
+  }];
+
+TkWait[];
+
+! End of File

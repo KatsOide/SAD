@@ -1,0 +1,64 @@
+diff -dur generic/tkCanvArc.c.orig generic/tkCanvArc.c
+--- generic/tkCanvArc.c.orig	Sun Feb  9 16:48:00 2003
++++ generic/tkCanvArc.c	Thu Feb 22 22:29:06 2007
+@@ -284,6 +284,9 @@
+  *
+  *--------------------------------------------------------------
+  */
++static int		KBCreateArc _ANSI_ARGS_((Tcl_Interp *interp,
++			    Tk_Canvas canvas, struct Tk_Item *itemPtr,
++			    int objc, Tcl_Obj *CONST objv[]));
+ 
+ static int
+ CreateArc(interp, canvas, itemPtr, objc, objv)
+@@ -323,6 +326,9 @@
+     arcPtr->style = PIESLICE_STYLE;
+     arcPtr->fillGC = None;
+ 
++    if (objc<0)
++	return KBCreateArc(interp, canvas, itemPtr, objc, objv);
++
+     /*
+      * Process the arguments to fill in the item record.
+      */
+@@ -340,6 +346,40 @@
+ 	return TCL_OK;
+     }
+     error:
++    DeleteArc(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
++    return TCL_ERROR;
++}
++
++static int
++KBCreateArc(interp, canvas, itemPtr, objc, objv)
++    Tcl_Interp *interp;			/* Interpreter for error reporting. */
++    Tk_Canvas canvas;			/* Canvas to hold new item. */
++    Tk_Item *itemPtr;			/* Record to hold new item;  header
++					 * has been initialized by caller. */
++    int objc;				/* Number of arguments in objv. */
++    Tcl_Obj *CONST objv[];		/* Arguments describing arc. */
++{
++    ArcItem *arcPtr = (ArcItem *) itemPtr;
++    int i;
++    int nn;
++    double *bb;
++
++    objc = -objc;
++    nn = *((int *)objv[objc-2]);
++    bb = (double *)objv[objc-1];
++    objc -= 2;
++
++    /*
++     * Process the arguments to fill in the item record.
++     */
++
++    for (i=0; i<4; i++)
++	arcPtr->bbox[i] = bb[i];
++    ComputeArcBbox(canvas, arcPtr);
++    if (ConfigureArc(interp, canvas, itemPtr, objc, objv, 0) == TCL_OK) {
++	return TCL_OK;
++    }
++    /*error:*/
+     DeleteArc(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
+     return TCL_ERROR;
+ }

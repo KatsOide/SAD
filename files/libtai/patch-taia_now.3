@@ -1,0 +1,23 @@
+--- taia_now.3.orig	2008-03-09 17:05:22.000000000 +0100
++++ taia_now.3	2008-03-09 17:04:52.000000000 +0100
+@@ -20,14 +20,17 @@
+ that contains the current time.
+ .SH NOTES
+ This implementation of
+-.B tai_now
++.B taia_now
+ assumes that the
+-.B struct timeval
++.B tv_sec
++member of
++.B struct timespec/timeval
+ returned from
+-.B gettimeofday
++.B clock_gettime/gettimeofday
+ represents the number of TAI seconds since
+ 1970-01-01 00:00:10 TAI.
+ .SH "SEE ALSO"
++clock_gettime(2),
+ gettimeofday(2),
+ tai_now(3),
+ taia(3)

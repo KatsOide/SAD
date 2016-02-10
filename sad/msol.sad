@@ -1,0 +1,198 @@
+ ON ECHO;OFF CTIME; 
+ MOMENTUM= 0.299792458 GEV; 
+ ;
+ LINE RING = (QDUM 4*B)
+      MSOL=( PEXT ZV 26*RING  PINJ)
+ ;
+ QUAD QDUM=()
+ ;
+ MULT B = (L = PI/2 ANGLE = PI/2 K1 = -0.001 K3 = -0.5)
+      ZV = (SK0 = 0) 
+ ;
+ MARK   PEXT =(BETAX = 1      BETAY =39.6    EMIX = 1E-6
+   EMIY = 1E-6  DP = 0.01 SIGZ = 1E-3 )
+        PINJ =()
+ ;
+ ;
+ DRIFT  LA1     =(L =1.1989899491919722 )  LA2     =(L =.5307787836489001 )
+        LA3     =(L =1.199614663448154 )   LA4     =(L =1.1992530564304686 )
+        LA5     =(L =1.1996698605159062 )
+ ;
+ QUAD   QD1     =(L =.1   K1 =-.6855129932636873
+           ROTATE =-26.071155466767113 DEG )
+        QF1     =(L =.1   K1 =1.7783270083938978
+           ROTATE =-24.951957138444634 DEG )
+        QD2     =(L =.1   K1 =2.5734308018419565
+           ROTATE =-19.61878594885069 DEG )
+        QF2     =(L =.1   K1 =.5354722641625793
+           ROTATE =-10.554366314732697 DEG )
+        QD3     =(L =.1   K1 =.8309872390317408
+           ROTATE =2.996388808018993 DEG )
+        QF3     =(L =.1   K1 =-2.322692502281334
+           ROTATE =1.0463008333488213 DEG )
+ ;
+ MAP    MMAP                            =()
+ ;
+ MARK   PEXT    =(BX =1   AY =2.7006815404571127   BY =1000  DP =.01
+           SIGZ =.001     EMITX =1e-06   EMITY =1e-06 )
+        PLIN    =(AX =-4.559161936867895e-10  BX =3.000000000081003
+           PSIX =4.396095130378722  AY =-3.063540630066086e-06
+           BY =2.9999966828006714   PSIY =5.089726712553635
+           EX =-.6345751856593849   EPX =-.028268779496047194
+           EY =25.06392847589553    EPY =-48.62609622451864
+           R1 =-3.0529045612529397e-10   R2 =1.6676211546708288e-09
+           R3 =5.924772095963782e-10     R4 =-3.210577309893896e-09
+           DP =.01   SIGZ =.001     EMITX =1e-06   EMITY =1e-06 )
+ ;
+ LINE MATCH = (PEXT MMAP QD1 LA1 QF1 LA2
+               QD2 LA3 QF2 LA4 QD3 LA5 QF3 PLIN)
+      MINJ = (-MATCH -MSOL)
+ ;
+ FFS USE=MSOL;
+  CELL;
+
+  CALC;
+
+  draw bx by & ex ey & dx dy q*;
+
+  {bx0, by0} = Twiss[{"BX", "BY"}, "^^^"];
+
+  INS;
+
+  Element["SK0","ZV"]=0.0021;
+
+  CALC;
+
+  draw bx by & ex ey & dx dy q*;
+
+  scale = 1e-6;
+  dq = {dx, dpx, dy, dpy, dz, dp} = 
+    {1, 1/bx0, 1, 1/by0, 1, 0.1}*scale;
+
+  q = IdentityMatrix[6]*dq;
+  q = MapThread[Join, {q,-q}];
+
+  AppendTo[q, Table[1, {12}]];
+
+  qt={1,q};
+
+  qt1 = TrackParticles[qt, "$$$"];
+
+  dqt = Subtract@@Partition[#, 6]&/@Drop[qt1[[2]], -1];
+
+  m = (# / dq / 2)& /@ dqt;
+
+  Standardform[$FORM="12.5";
+    Print/@m];
+
+  mi = -SymplecticJ[6].Transpose[m].SymplecticJ[6];
+
+  mim = mi.m;
+
+  StandardForm[$FORM="8.4";PageWidth=80;
+    Print[mim]];
+
+  Symplectize[m0_]:=Module[{m=m0,d=1,mi,dm},
+    While[d > 1e-11,
+      Print[d];
+      mi = -SymplecticJ[6].Transpose[m].SymplecticJ[6];
+      dm = (IdentityMatrix[6] - mi.m)/2;
+      m = m + m.dm;
+      d = Max[Abs[dm]]];
+    m];
+
+  ms = Symplectize[m];
+
+  NOCOD; NOEMIT;
+  {mcalc, dcod} = {OneTurnTransferMatrix, OrbitAtExit}/.
+    Emittance[OneTurnInformation->True];
+  StandardForm[$FORM="8.4";PageWidth=80;
+    Print[ms];
+    Print[mcalc]];
+
+ USE MATCH;
+
+ ExternalMap["OPTICS",LINE["POSITION","MMAP"],cod_]:=
+   {Table[0,{6}], ms};
+
+ adjustrot[]:=Module[{
+   quads = Element["POSITION", "Q*"], theta, k1},
+   theta = Element["ROTATE", quads];
+   k1    = Element["K1",     quads];
+   k1c = k1*Cos[2 theta];
+   k1s = k1*Sin[2 theta];
+   k1 = Abs[k1]*Sign[k1c];
+   theta = ArcTan[k1s/k1c]/2;
+   MapThread[
+     (Element["K1", #] = #2;
+      Element["ROTATE", #] = #3)&,
+     {quads, k1,theta}];
+   ];
+ 
+ adjustrot[];
+
+ dr := FFS["draw bx & by q*;"];
+
+ fit r1 0 r2 0 r3 0 r4 0;
+ fit ax 0 ay 0 bx 3 by 3;
+ free q* q* rotate l* ayi;
+ l* max 1.2;
+ 
+ go
+
+ USE MINJ;
+
+ revrot[]:=Module[{
+   quads = Element["POSITION", "Q*"]},
+   (Element["ROTATE", #] = -Element["ROTATE", #])&/@quads];
+
+! revrot[];
+
+ dcod[[2]] = -dcod[[2]];
+ dcod[[4]] = -dcod[[4]];
+ ExternalMap["OPTICS",LINE["POSITION","MMAP"],cod_]:=
+   {cod + dcod, IdentityMatrix[6]};
+
+ calc
+
+ ExternalMap["TRACK",LINE["POSITION","MMAP"],_,x_]:=Append[Take[x, 6] + dcod, x[[-1]]];
+ Element["SK0","ZV"]=0.0021;
+
+ trackemi[np_, emi_, sige_]:=Module[
+   {{bx, by} = Twiss[{"BX", "BY"}, "^^^"], p, siz},
+   p = GaussRandom[6, np];
+   siz = Join[ Sqrt[emi * {bx, 1/bx, by, 1/by}], {0, sige}];
+   p *= siz;
+   AppendTo[p, Table[1, {np}]];
+   TrackParticles[{1, p}, "$$$"][[2]]];
+
+ p1 = trackemi[300, 1e-9, 0];
+
+ part["X"]={1,2};
+ part["Y"]={3,4};
+ label["X"]={"x (mm)","p`dx`n (10`u-3`n)"};
+ label["Y"]={"y (mm)","p`dy`n (10`u-3`n)"};
+ colors={"purple","green"};
+
+ plottrack[l_,plane_]:=Module[{p,gy},
+   p=trackemi[1000,#,0]&/@l;
+   gy=MapThread[ListPlot[1000*Thread[#[[part[plane]]]],
+     PointColor->#2,
+     PointSize->0.3,
+     FrameLabel->label[plane],
+     GridLines->{Automatic,Automatic},
+     DisplayFunction->Identity,
+     AspectRatio->1]&,
+     {p, Take[colors, Length[p]]}]];
+
+ gx=plottrack[{1e-13,1e-15},"X"];
+ gy=plottrack[{1e-13,1e-15},"Y"];
+
+ Show[{
+   Graphics[ Rectangle[{-0.1, 0}, {0.5, 0.7}, gx] ],
+   Graphics[ Rectangle[{ 0.5, 0}, {1.1, 0.7}, gy] ]}];,
+ Update[];
+
+
+
+end

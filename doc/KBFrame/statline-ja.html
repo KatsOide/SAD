@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="ja-JP">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-2022-JP">
+<TITLE>KBFrame Status Line</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<A NAME="top" HREF="index-ja.html">目次</A>
+<A HREF=progbar-ja.html>Progress Bar</A>
+<A HREF=cmparr-ja.html>部品の配置</A>
+
+<HR><DIV ALIGN="CENTER"><H2>Status Line</H2></DIV><HR>
+
+<P>KBFrame下のステータスラインにメッセージを表示するには2つの方法があります。
+まず、マウスポインタがあるWidgetの上を通った時にメッセージを表示するには、
+w[StatusLine] = の右辺にWidgetのシンボルとメッセージを要素とするリストを
+与えます。これは簡易ヘルプにも使用できます。</P>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["StatLineExample1", f, Title-&gt;"Status Line Example 1"];
+b = Button[f, Text-&gt;"Print Date", Command:&gt;Print[DateString[]]];
+w[StatusLine] = {b, "This button prints date and time on the console."};
+TkWait[];
+</CODE></PRE>
+
+<P>上の例では、bに対して指定した文字列が長過ぎたので、マウスポインタがbの上を
+通る時はWindowが横に広がってしまいます。</P>
+
+<P><IMG SRC="statline1.gif" WIDTH=417 HEIGHT=111 ALT="StatusLine Example"></P>
+
+<P>もう一は、ステータスラインに固定のメッセージを表示する方法で、
+w[StatusLine] = の右辺に文字列を与えます。w[FreeStatusLine]は表示された
+メッセージの固定を解除します。</P>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["StatLineExample2", f, Title-&gt;"Status Line Example 2"];
+b1 = Button[f, Text-&gt;"Fix Status Line", Command:&gt;(w[StatusLine]="Status line fixed.")];
+b2 = Button[f, Text-&gt;"Free Status Line",
+               Command:&gt;(w[StatusLine]="Status line freed.";w[FreeStatusLine])];
+TkWait[];
+</CODE></PRE>
+
+<P><A HREF="#top">top</A></P>
+
+<HR>
+<ADDRESS>このページに関する御意見・質問は
+<A HREF="mailto:samo.stanic@kek.jp">Samo Stanic</A>
+まで.</ADDRESS>
+</BODY>
+</HTML>

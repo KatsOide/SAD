@@ -1,0 +1,125 @@
+Implementation Memo of New Make System for Hackers
+
+Detail of Makefile
+1. Make Target
+tcltk:		build Tcl/Tk for SAD and install
+
+all:		equal to `make (tcltk) lib exe doc'
+
+depend:		update Fortran code dependence file.
+
+lib:		build libsad.a
+
+exe:		build sad1.exe
+
+doc:		build SADHelp.HTML
+
+clean:		cleanup object
+
+insatll:	insatll SAD system to SAD_ROOT directory
+
+modules:		build extension modules
+
+install-modules:	install extension modules
+
+2.	Configurations
+2.1	User Configuration Variables
+SOURCE_ARCHIVE_DIR	Archive store directory for Tcl/Tk, etc...
+			(default oldsad/distfiles)
+SAD_ROOT		SAD insatll directory
+USE_EPICS		link EPICS Library
+USE_TCLTK		link Tcl/Tk Library
+USE_X11			link X11 library
+BUILD_TCLTK		Build Tcl/Tk for SAD
+OBJDYNL			Dynamic Loader MD part stub routine object
+		The following dynl MD APIs MUST be provided
+		o bool dynl_provide(void)
+		o bool dynl_init(void)
+		o void* dynl_link(const char *file, int mode)
+		o int dynl_unlink(void *handle)
+		o void* dynl_symbol(void *handle, const char *symbol)
+		o dynl_func_t dynl_function(void *handle, const char *symbol)
+		SEE ALSO: src/sim/dynl.h
+
+2.2	System Depend Environment Variables
+COMPILER		Compiler Type
+FC			Fortran Compiler
+CC			C Compiler
+CXX			C++ Compiler
+DOPT			Debug Option
+FOPT			Fortran Compiler Option
+COPT			C Compiler Option
+CXXOPT			C++ Compiler Option
+LDOPT			Linker Option
+RANLIB			ranlib(1) command
+HAVE_LEAPSECONDS	System clock contains leapseconds(default NO)
+
+2.3	C Extension Library Flags
+HAVE_MKSTEMPS			Have mkstemps(3)
+
+2.4	Fortran Extension Flags
+HAVE_F_ZTAN			Have ZTAN function
+HAVE_F_FORMAT_Q_EDIT		Have Q edit descriptor
+HAVE_F_FORMAT_DOLLAR_EDIT	Have $ edit descriptor
+HAVE_F_FSEEK			Have FSEEK subroutine
+HAVE_F_FGETC			Have FGETC function
+HAVE_F_FNUM			Have FNUM function
+HAVE_F_GETFD			Have GETFD function
+HAVE_F_PXFFILENO		Have PXFFILENO subroutine
+
+2.5	Library Linkage Control
+##Name			Default	Comment
+USE_EPICS		NO	Use EPICS Library
+EPICS_PREFIX			EPICS Library Tree Prefix
+EPICS_INCDIR			EPICS Include's Directory
+EPICS_LIBDIR			EPICS Library's Directory
+EPICS_LIBS			EPICS Library Linkage
+
+USE_TCLTK		NO	Use Tcl/Tk Library
+BUILD_TCLTK		YES	Build Tcl/Tk for SAD
+TCLTK_VERSION		rel	Tcl/Tk Version
+USE_TCLTK_TRIM_VERSION	 YES	Tcl/Tk trim dot in library name
+USE_TCLTK_SHARED_LIBRARY YES	Tcl/Tk build shared library
+TCLTK_PREFIX			Tcl/Tk Library Tree Prefix
+TCLTK_INCDIR			Tcl/Tk Include's Directory
+TCLTK_LIBDIR			Tcl/Tk Library's Directory
+TCLTK_LIBS			Tcl/Tk Library Linkage
+TCLTK_TYPE		unix	Tcl/Tk Architecture Type(e.g. unix, win)
+TCLTK_GUI_BACKEND	X11	Tcl/Tk GUI Backend Type
+TCLTK_FONT_SYSTEM	Xlib	Tcl/Tk Font Rendering System Type
+
+USE_X11			NO	Use X11 library
+X11_PREFIX			X11 System Tree Prefix
+X11_INCDIR			X11 Include's Directory
+X11_LIBDIR			X11 Library's Directory
+X11_LIBS			X11 Library Linkage
+
+USE_LIBTAI		NO	Use libtai library
+BUILD_LIBTAI		AUTO	Build libtai for SAD
+LIBTAI_PREFIX			libtai System Tree Prefix
+LIBTAI_INCDIR			libtai Include's Directory
+LIBTAI_LIBDIR			libtai Library's Directory
+LIBTAI_LIBS			libtai Library Linkage
+LIBTAI_ADDITIONAL_LEAPSECONDS	leapseconds data after libtai release date
+
+3.	System Depend Configurations
+SYS_COPT			required C compiler options
+SYS_COPT_DYNL_PIC		required C compiler options
+					to generate PIC for Dynamic Loading
+SYS_PTHREAD_COPT		required pthread options
+SYS_FOPT			required Fortran compiler options
+SYS_FOPT_DYNL_PIC		required Fortran compiler options
+					to generate PIC for Dynamic Loading
+SYS_FOPT_ENABLE_BACKSLASH_ESCAPE	options to enable backslash escape
+SYS_FOPT_DISABLE_BACKSLASH_ESCAPE	options to disable backslash escape
+SYS_LDOPT_RUNTIME_PATH_OPT	required linker option prefix
+					to embed the run-time path
+SYS_LDOPT_RUNTIME_PATH_SEP	directory separator for run-time library path
+SYS_LDOPT_EXPORT_SYMBOL		required linker options
+					to export symbol for dynamic loading
+SYS_LDOPT			required linker options
+SYS_PTHREAD_LIBS		library required for pthread
+SYS_OBJS			objects depended with system environment
+SYS_LIBS			required system libraries
+
+# End of File

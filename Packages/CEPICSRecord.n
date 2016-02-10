@@ -1,0 +1,217 @@
+EPICSRecord = Class[{},{},{name,pdbe,rt},
+  Constructor[rt$_,name$_] := (
+    name = name$;
+    rt = rt$;
+    pdbe = EPICS$DbCreateRecord[rt$@pdbe, name$];
+    This
+  );
+  PutField[fn$_String,v$_String] := Module[{rf},
+    rf = EPICS$DbFindField[pdbe, fn$];
+    If[rf<=>0,
+      EPICS$DbPutString[rf,v$];
+    ,!Else
+      Print["Field name ["//fn$//"] not found for "//rt@Name[]//"("//name//") !"];
+    ];
+  ];
+  GetField[fn$_String] := Module[{rf},
+    rf = EPICS$DbFindField[pdbe, fn$];
+    If[rf<=>0,
+Print[EPICS$DbGetFieldName[rf]];
+      Return[EPICS$DbGetString[rf]];
+    ,!Else
+      Print["Field name ["//fn$//"] not found for "//rt@Name[]//"("//name//") !"];
+    ];
+  ];
+  ChangeName[n$_] := (
+	name = n$;
+	PutField["NAME",n$];
+  );
+  Name[] := name;
+];
+
+EPICSRecordField = Class[{},
+  {DCT$STRING=0,DCT$INTEGER=1,DCT$REAL=2,DCT$MENU=3,DCT$MENUFORM=4,
+     DCT$INLINK=5,DCT$OUTLINK=6,DCT$FWDLINK=7,DCT$NOACCESS=8},
+  {name,type=Null,default=Null,pdbe,menu=Null},
+  Constructor[pdbe$_Real] := (
+    pdbe = pdbe$;
+    name = EPICS$DbGetFieldName[pdbe$];
+    This
+  );
+  Name[] := name;
+  Type[] := If[type===Null,type=EPICS$DbGetFieldType[pdbe],type];
+  mMenu[] := If[menu===Null,
+    If[MatchQ[Type[],DCT$MENU|DCT$MENUFORM],
+      menu = EPICS$DbGetMenuChoices[pdbe]
+    ]
+  ,!Else
+    menu
+  ];
+  Default[] := If[default===Null,default=EPICS$DbGetFieldType[pdbe],default];
+];
+
+EPICSRecordType = Class[{},{fvgrule={},rt},
+  {name,pdbe,fld,fvrule={},dctonly=True,lrec={}},
+
+  Constructor[pdbe$_] := (
+    rt[_] = Null;
+    pdbe=pdbe$;
+    name=EPICS$DbGetRecordTypeName[pdbe$];
+    fld[f$_] := (MakeFieldList[];fld[_]=Null;fld[f$]);
+!    fld[_] = Null;
+!    MakeFieldList[];
+    rt[name] = This;
+    This
+  );
+  MakeFieldList[] := Module[{n,nf,erf},
+    nf = EPICS$DbGetNFields[pdbe, dctonly];
+    Print[{name,nf}];
+    n = EPICS$DbFirstField[pdbe, dctonly];
+    erf = EPICSRecordField[n];
+    fld[erf@Name[]] = erf;
+    Do[
+      n = EPICS$DbNextField[n, dctonly];
+      erf = EPICSRecordField[n];
+      fld[erf@Name[]] = erf;
+    ,{nf-1}];
+  ];
+(*
+  CreateRecord[rtn_String,rn_String] := Module[{rt$,nr},
+    rt$ = rt[rtn];
+    Print[rt$];
+    If[rt$<=>Null,
+      nr = EPICSRecord[rt$,rn];
+    ,!Else
+      nr = Null;
+    ];
+    nr
+  ];
+*)
+  IgnoreCaseMatchQ[fn1$_,fn2$_] := 
+    StringMatchQ[ToLowerCase[fn1$],ToLowerCase[fn2$]//"*"];
+  CreateRecord[rn$_String] := CreateRecord[rn$,{}];
+  CreateRecord[rn$_String,fvl$_List] := Module[{nr,fn,fv,fld,rnpat,fvl={},pfv,fm,s},
+    Scan[(
+      fn = ToUpperCase[#[[1]]];
+      fv = #[[2]];
+      rnpat = If [Length[#]>=3, #[[3]], Null];
+      If[(fld=FindField[fn])<=>Null,
+        If[(rnpat===Null)||(StringMatchQ[rn$,rnpat]),
+		  If[MatchQ[fld@Type[],
+			   EPICSRecordField@DCT$MENU|EPICSRecordField@DCT$MENUFORM],
+			If[Length[pfv=Select[fm=fld@mMenu[],IgnoreCaseMatchQ[#,fv]&]]===1,
+			  AppendTo[fvl, fn->pfv[[1]]];
+			,!Else
+			  Print["\"",fv,"\" doesn't match possible selections of \"",
+					  fn,"\""];
+			  Print["Possible selections are: ",fm];
+			];
+		  ,!Else
+			If[(s=EPICS$DbVerify[fld@pdbe,fv])===Null,
+			  AppendTo[fvl, fn->fv];
+			,!Else
+			  Print[s];
+			];
+		  ];
+        ];
+      ,!Else
+        Print["Field name \""//fn//"\" is invalid or cannot be set."];
+        Return[];
+      ];
+    )&,Join[fvl$,fvrule]];
+    nr = EPICSRecord[This,rn$];
+    Scan[(
+      nr@PutField[#[[1]],#[[2]]];
+    )&,Override[fvl]];
+    AppendTo[lrec,nr];
+    Clear[fld];    (* Necessary to avoid destruction of instance 1/19/2007 K. O. *)
+    nr
+  ];
+  SelectByName[s$_String] := Select[lrec,StringMatchQ[#@Name[],s$]&];
+  FindField[fn$_String] := fld[fn$];
+  SetDefaultFieldValue[fn$_String,fv$_] := SetDefaultFieldValue[fn$,fv$,];
+  SetDefaultFieldValue[fn$_String,fv$_,rn$_] := Module[{l},
+    AppendTo[fvrule,{fn$,fv$,rn$}];
+  ];
+(*
+  FindField[fn$_String] := Module[{rf,ef},
+    If[fld[fn$]===Null,
+      rf = EPICS$DbFindField[pdbe, fn$];Print[{pdbe,fn$}];
+      If[rf<=>0,
+        ef = EPICSRecordField[rf];
+        fld[fn$] = ef;
+      ,!Else
+        Print["Field name not found !"];
+        Return[Null];
+      ];
+    ];
+    Return[fld[fn$]];
+  ];
+*)
+  Name[] := name;
+  Id[] := pdbe;
+];
+
+EPICSDB = Class[{},{},{ed,eapd,apd,dbd,apn,path,mac="",rtn,rtrule,fvrule,ri},
+  Constructor[apd$_String,apn$_String] := 
+    Constructor[apd$,apn$,{}];
+  Constructor[apd$_String,apn$_String,dbs$_String] := 
+    Constructor[apd$,apn$,{dbs$}];
+  Constructor[eapd$_String,apn$_String,dbs$_List] := (
+    eapd = If [eapd$[-1]<=>"/", eapd$, eapd$[1,-2]];
+    If [eapd[1]==="~", eapd=GetEnv["HOME"]//eapd[2,-1]];
+    apn = apn$;
+    apd = eapd//"/"//apn//"App";
+    dbd = apd//"/Db";
+    ed = GetEnv["EPICS"];
+    path = eapd//"/dbd:"//apd//"/src:"//ed//"/base/dbd";
+    Scan[ReadDatabaseDefinition[#]&,If [Length[dbs$]>0,dbs$,{apn//"App.dbd"}]];
+    rtn[_] = Null;
+    ri[_] = Null;
+    MakeRecordTypeList[];
+    rtnl = Map[(#@Name[])&,rtl];
+    rtrule = {};
+    fvrule = {};
+  );
+  ReadDatabaseDefinition[db$_String] := EPICS$DbReadDatabase[db$,path,mac];
+  MakeRecordTypeList[] := Module[{n,nrt,ert},
+    n = EPICS$DbFirstRecordType[];
+    nrt = EPICS$DbGetNRecordTypes[n];
+    ert = EPICSRecordType[n];
+    rtn[ert@Name[]] = ert;
+    Do[
+      n = EPICS$DbNextRecordType[n];
+      ert=EPICSRecordType[n];
+      rtn[ert@Name[]] = ert;
+    ,{nrt-1}];
+  ];
+  GetRecordType[rtn$_String] := rtn[rtn$];
+  print[] := print[""];
+  print[rtn$_] := EPICS$DbDumpRecord[rtn$];
+  WriteRecord[] := EPICS$DbWriteRecord[dbd//"/"//apn//".db"];
+  WriteRecord[db$_String] := EPICS$DbWriteRecord[dbd//"/"//db$//".db"];
+  OpenTemplate[] := OpenTemplate[""];
+  OpenTemplate[s$_String] := OpenWrite[dbd//"/"//apn//s$//"_tmpl"];
+!  AppendFile[f$_String] := System[""];
+
+  ForwardLink[l$_List] := Module[{n,r},
+    If [Length[l$] < 2, Return[]];
+    r = l$[[-1]];
+    Do[
+      n = r@Name[];
+      r@PutField["SCAN","Passive"];
+      r = l$[[i-1]];
+      r@PutField["FLNK",n];
+    ,{i,Length[l$],2,-1}];
+  ];
+
+(*
+  ! before record generation
+  ReadDB[];
+  DB2RecList[];
+
+  ! after record generation
+  ForLoop[n$_,nodes$__];
+*)
+
+];

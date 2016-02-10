@@ -1,0 +1,21 @@
+/.cvsignore/1.2/Sat Aug 25 07:38:06 2007//Tk64-1-6
+/BuildInfo.sad/1.1/Wed Feb  6 00:52:10 2008//Tk64-1-6
+/ColorTable.sad/1.4/Fri Apr 10 23:20:31 2009//Tk64-1-6
+/SymbolFonts.sad/1.1/Wed Feb  6 00:52:10 2008//Tk64-1-6
+/amida.sad/1.3/Wed Feb  6 00:55:16 2008//Tk64-1-6
+/bench-IO.sad/1.2/Sat Mar 22 05:58:41 2008//Tk64-1-6
+/bench-PRNG.sad/1.1/Sat Mar  8 10:43:58 2008//Tk64-1-6
+/bench-Tkinter.sad/1.1/Wed Mar 19 15:27:11 2008//Tk64-1-6
+/bench.sad/1.10/Sat Aug 25 07:38:07 2007//Tk64-1-6
+/bench2.sad/1.4/Sat Aug 25 07:38:07 2007//Tk64-1-6
+/demo-Execve.sad/1.1/Wed Feb  6 00:52:11 2008//Tk64-1-6
+/demo-Font.sad/1.1/Wed Feb  6 00:52:11 2008//Tk64-1-6
+/demo-KBFrame1.sad/1.1/Wed Feb  6 00:52:11 2008//Tk64-1-6
+/demo-LabelFrame.sad/1.1/Wed Feb  6 00:52:11 2008//Tk64-1-6
+/demo-Pipe.sad/1.2/Sat Mar  8 11:25:36 2008//Tk64-1-6
+/demo-SigAction.sad/1.1/Wed Feb  6 00:52:11 2008//Tk64-1-6
+/demo-Wait4.sad/1.1/Wed Feb  6 00:52:11 2008//Tk64-1-6
+/design_example.sad/1.2/Mon Feb 27 20:12:05 2012//Tk64-1-6
+/examples.sad/1.3/Wed Feb  6 00:55:16 2008//Tk64-1-6
+/help2HTML.sad/1.4.2.1/Sat Jan 18 05:10:20 2014//Tk64-1-6
+D

@@ -1,0 +1,34 @@
+--- unix/configure.orig	2008-04-18 00:13:45.000000000 +0900
++++ unix/configure	2012-09-18 15:05:45.106374667 +0900
+@@ -2929,12 +2929,12 @@
+ 	FreeBSD-*)
+ 	    # FreeBSD 3.* and greater have ELF.
+ 	    SHLIB_CFLAGS="-fPIC"
+-	    SHLIB_LD="ld -Bshareable -x"
++	    TCL_SHLIB_LD_EXTRAS="-Wl,-soname,\$@"
++	    SHLIB_LD="${CC} -shared"
+ 	    SHLIB_LD_LIBS='${LIBS}'
+ 	    SHLIB_SUFFIX=".so"
+ 	    DL_OBJS="tclLoadDl.o"
+ 	    DL_LIBS=""
+-	    LDFLAGS="$LDFLAGS -export-dynamic"
+ 	    CC_SEARCH_FLAGS='-Wl,-rpath,${LIB_RUNTIME_DIR}'
+ 	    LD_SEARCH_FLAGS='-rpath ${LIB_RUNTIME_DIR}'
+ 	    if test "${TCL_THREADS}" = "1" ; then
+@@ -2944,7 +2944,7 @@
+ 	    	LDFLAGS="$LDFLAGS -pthread"
+ 	    fi
+ 	    case $system in
+-	    FreeBSD-3.*)
++	    FreeBSD-*)
+ 	    	# FreeBSD-3 doesn't handle version numbers with dots.
+ 	    	UNSHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}\$\{DBGX\}.a'
+ 	    	SHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}\$\{DBGX\}.so'
+@@ -5954,7 +5954,6 @@
+     echo "$LDFLAGS " | grep -q -- '-prebind ' && TK_SHLIB_LD_EXTRAS="${TK_SHLIB_LD_EXTRAS}"' -seg1addr 0xb000000'
+     TK_SHLIB_LD_EXTRAS="${TK_SHLIB_LD_EXTRAS}"' -sectcreate __TEXT __info_plist Tk-Info.plist'
+     EXTRA_WISH_LIBS='-sectcreate __TEXT __info_plist Wish-Info.plist'
+-    EXTRA_APP_CC_SWITCHES='-mdynamic-no-pic'
+     tk_config_files="${tk_config_files} Tk-Info.plist:../macosx/Tk-Info.plist.in Wish-Info.plist:../macosx/Wish-Info.plist.in"
+     for l in ${LOCALES}; do CFBUNDLELOCALIZATIONS="${CFBUNDLELOCALIZATIONS}<string>$l</string>"; done
+     TK_YEAR="`date +%Y`"

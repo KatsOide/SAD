@@ -1,0 +1,142 @@
+!
+!   This is an example of SAD/FFS to design a positron ring 
+!   with unit cells and dispersion suppressors.   Chromaticity correction
+!   and also a survey of dynamic aperture are also done.
+!      The result of execution of this example is available in
+!   /SAD/doc/design_example.sad.result
+!
+MOMENTUM= 1 GEV;
+ON ECHO;OFF CTIME;
+!
+! ***** DEFINITION OF ELEMENTS IN MAIN LEVEL *****
+! 
+ ;
+ DRIFT  L1     = (L = 1)
+ ;
+ BEND   B      = (L = 2)
+ ;
+ QUAD   QF     = (L = 1 K1 =  0.1 )
+        QD     = (L = 1 K1 = -0.1 )
+        QSF    = (L = 1 K1 =  0.1 )
+        QSD    = (L = 1 K1 = -0.1 )
+        QRF    = (L = 1 K1 =  0.1 )
+        QRD    = (L = 1 K1 = -0.1 )
+ ; 
+ SEXT   SF     =(L = 1 K2 = 0.1)
+        SD     =(L = 1 K2 = -0.1)
+ ;
+ MARK   IP1     =(BETAX = 10   BETAY =10    EMIX = 4.0E-7
+           EMIY = 4.0E-7  DP = 0.01 )
+ ;
+ CAVI   CA1 = (L = 1  VOLT=1 MV HARM=100)
+ ;
+!
+! ***** DEFINITION OF UNIT CELL IN MAIN LEVEL *****
+!
+!     You need at least one LINE to start FFS, but
+!     other lines can be created in FFS.
+!
+ ;
+ LINE   CELL = (IP1 QF L1 SF L1 B 3*L1 QD L1 SD L1 B 3*L1)
+ ;
+ FFS USE=CELL;
+  Print[TimeUsed[]];! CPU Time used so far.
+!
+! Defining parameters:
+!
+  nbends=24;        ! number of bends per ring
+  nxcell=0.25;      ! horizontal tune/cell
+  nycell=0.25;      ! vertical tune/cell
+  Print[TimeUsed[]];! CPU Time used so far.
+!
+!  *****  UNIT CELL MATCHING  *****
+!
+  CELL;             ! peridic condition
+  B 2*Pi/nbends;    ! settin bending angle to the BEND B
+  FIT;              ! set fit point at end of line
+  NX nxcell;        ! set fit condition NX
+  NY nycell;        ! set fit condition NY
+  FREE Q*;          ! set Q* (in this case QF and QD) as the matching
+                    ! variable
+  GO;               ! start matching
+!                     define dr as the drawing command (needs X-Window)
+  dr:=FFS["OUT 'a' DRAW BX BY & EX EY {BQ}*; TERM OUT; TDR 'a';"];
+  dr;               ! draw optics of unit cell
+  SAVE;             ! save the matching result (values of QF, QD) to
+                    ! keep them after swtch the beam line.
+  Print[TimeUsed[]];! CPU Time used so far.
+!
+! *****  DISPERSION SUPPRESSOR  *****
+!
+  unitcell=ExtractBeamLine[];   ! get the current BeamLine
+!                     define a dispersion suppressor to insert rf
+  supp=BeamLine[QSF, 8*L1, QSD, 3*L1, B, 3*L1, QRF, 3*L1, CA1, 3*L1, QRD];
+  USE Join[unitcell, supp];     ! switch the beam line with suppressor
+  INS;              ! now nonperiodic (a transport line)
+  QRD L 0.5;        ! set the thickness of QD
+  FIT; 
+  AX 0;             ! set the end of line to be a symmetry point
+  AY 0;             
+  EX 0;             ! and dispersion-free
+  EPX 0;
+  Q*F MIN 0;        ! set the lower limit of K1 of QRF, QSF
+  Q*D MAX 0;        ! set the upper limit of K1 of QRD, QSD 
+  FREE QS* QR*;
+  GO; 
+  dr;               ! draw suppressor
+  SAVE;
+  Print[TimeUsed[]];! CPU Time used so far.
+!
+! ***** TOTAL RING *****
+!
+  ncell=(nbends/2-2)/2;   ! number of unitcells per half ring.
+!                     Defining a half ring, removing the
+!                     first QF and IP1 markers in unitcell
+  hring=BeamLine[IP1,-supp,Rest[ncell*Rest[unitcell]],supp];
+  USE Join[hring,-hring]; ! switch to full ring
+  CELL;             ! now periodic condition again
+  CAL NX NY;        ! set to display NX and NY after CAL
+  CAL               ! calculate the optics of ring
+  dr;               ! draw ring
+  Print[TimeUsed[]];! CPU Time used so far.
+!
+! ***** CHROMATICITY CORRECTION *****
+!                   
+!                     get the current tunes
+  {nx0, ny0}=Twiss[{"NX","NY"},"***"]/2/Pi;
+  FIT;
+  NX nx0 5;         ! set the offmomentum tunes for 5 points
+  NY ny0 5;         ! in -DP < dp/p0 < DP
+  DP=0.01;          ! set the bandwidth |dp/p0|max = DP = 0.01
+  FREE S*;          ! set S* (SF and SD) sextupoles as variable
+  GO;
+  FITP 1;           ! set the off-momentum points to 1 (on-momentum only).
+    !
+    ! Define Functions to display tunes as functions of dp/p0
+  nx[dp_]:=(DP0=dp;FFS["CALC"];Twiss["NX","***"]/2/Pi);
+  ny[dp_]:=(DP0=dp;FFS["CALC"];Twiss["NY","***"]/2/Pi);
+    !
+    ! Plot tunes -3% < dp/p0 < 3%.
+  Plot[{nx[dp],ny[dp]}, {dp, -0.03, 0.03},
+    PlotLabel->"Tune Chromaticity",
+    FrameLabel->{{"`fD`np/p`d0`n","F   X X"},{"`fn`n`dx`n, `fn`n`dy`n","GX X  GX X"}}];
+                    ! draw chromaticity
+  If[$DisplayFunction === CanvasDrawer, Update[]];
+  TYPE;             ! print out all elements
+  PrintBeamLine[ExtractBeamLine[]];   ! print out all beam line
+  Print[TimeUsed[]];! CPU Time used so far.
+!
+! ***** EMITTANCE CALCULATION *****
+!
+  EMIOUT;           ! turn on the output of matrices by EMIT.
+  EMIT;             ! This (or Emittance[]) is necessary before tracking
+  Print[TimeUsed[]];! CPU Time used so far.
+!
+! ***** DYNAMIC APERTURE *****
+!
+!                     Dynamic aperture for 1000 turns,
+  DynamicApertureSurvey[{{0,100},{0,100},Range[-30,30,4]},
+    1000,Output->6];
+!
+  Print[TimeUsed[]];! CPU Time used so far.
+  ABORT             ! stop SAD.

@@ -1,0 +1,72 @@
+--- generic/tkButton.h.orig	2012-11-07 00:08:30.000000000 +0900
++++ generic/tkButton.h	2012-12-04 11:01:49.231746566 +0900
+@@ -145,6 +145,12 @@
+ 				 * borders. */
+     Tk_Font tkfont;		/* Value of -font option: specifies font to
+ 				 * use for display text. */
++    Tk_Font tkaltfont;		/* Value of -altfont option:
++				 * specifies font to use for display text. */
++    Tk_Font tkscriptfont;	/* Value of -scriptfont option:
++				 * specifies font to use for display text. */
++    Tk_Font tkaltscriptfont;	/* Value of -altscriptfont option:
++				 * specifies font to use for display text. */
+     XColor *normalFg;		/* Value of -font option: specifies foreground
+ 				 * color in normal mode. */
+     XColor *activeFg;		/* Value of -activeforeground option:
+@@ -156,10 +162,31 @@
+     GC normalTextGC;		/* GC for drawing text in normal mode. Also
+ 				 * used to copy from off-screen pixmap onto
+ 				 * screen. */
++    GC normalAltTextGC;		/* GC for drawing alttext in normal mode.
++				 * Also used to copy from off-screen pixmap
++				 * onto screen. */
++    GC normalScriptTextGC;	/* GC for drawing scripttext in normal mode.
++				 * Also used to copy from off-screen pixmap
++				 * onto screen. */
++    GC normalAltScriptTextGC;	/* GC for drawing altscripttext in normal mode.
++				 * Also used to copy from off-screen pixmap
++				 * onto screen. */
+     GC activeTextGC;		/* GC for drawing text in active mode (NULL
+ 				 * means use normalTextGC). */
++    GC activeAltTextGC;		/* GC for drawing alttext in active mode
++				 * (NULL means use normalAltTextGC). */
++    GC activeScriptTextGC;	/* GC for drawing scripttext in active mode
++				 * (NULL means use normalScriptTextGC). */
++    GC activeAltScriptTextGC;	/* GC for drawing altscripttext in active mode
++				 * (NULL means use normalAltScriptTextGC). */
+     GC disabledGC;		/* Used to produce disabled effect for text
+ 				 * and check/radio marks. */
++    GC disabledAltGC;		/* Used to produce disabled effect
++				 * for alttext and check/radio marks. */
++    GC disabledScriptGC;	/* Used to produce disabled effect
++				 * for scripttext and check/radio marks. */
++    GC disabledAltScriptGC;	/* Used to produce disabled effect
++				 * for altscripttext and check/radio marks. */
+     GC stippleGC;		/* Used to produce disabled stipple effect for
+ 				 * images when disabled. */
+     Pixmap gray;		/* Pixmap for displaying disabled text if
+@@ -255,6 +282,8 @@
+ 				 * invocataions of the button command. */
+     int flags;			/* Various flags; see below for
+ 				 * definitions. */
++    int rotation;
++    int bspecial;
+ } TkButton;
+ 
+ /*
+@@ -318,5 +347,15 @@
+ MODULE_SCOPE void	TkpDisplayButton(ClientData clientData);
+ #endif
+ MODULE_SCOPE int	TkInvokeButton(TkButton *butPtr);
++EXTERN void		TkKGDisplayText(Display *display,
++					Drawable drawable, TkButton *,
++					Tk_Font tkfont, Tk_Font tkaltfont,
++					Tk_Font tksciptfont, Tk_Font tkaltscriptfont,
++					char *string, int numChars,
++					int x, int y, int length,
++					Tk_Justify justify, int underline,
++					GC gc, GC altGc,
++					GC scriptGc, GC altScriptGc,
++					int bmeas);
+ 
+ #endif /* _TKBUTTON */

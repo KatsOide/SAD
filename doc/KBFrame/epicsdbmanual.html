@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="en-US">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=US-ASCII">
+<TITLE>EPICSDB Manual</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<DIV ALIGN="CENTER"><H2>EPICSDB Manual</H2></DIV>
+
+<HR>
+
+<UL>
+<LI><A HREF="#Introduction">Introduction</A>
+<LI><A HREF="#EPICSDB">EPICSDB</A>
+<LI><A HREF="#EPICSRecordType">EPICSRecordType</A>
+<LI><A HREF="#EPICSRecord">EPICSRecord</A>
+<LI><A HREF="#Example">Example</A>
+</UL>
+
+<HR>
+
+<H3><A NAME="Introduction">Introduction</A></H3>
+
+<EM>EPICSDB</EM> and related classes are for creating EPICS database 
+with a SAD script. It assumes the following:
+
+<UL>
+<LI>EPICS 3.13 is used.
+<LI>Application directory is already created (e.g. ExampleApp).
+</UL>
+
+The merit of <EM>EPICSDB</EM> is that EPICS database can be created with 
+SAD script, and the demerit is that it is not graphical.
+
+
+<H3><A NAME="EPICSDB">EPICSDB</A></H3>
+<H4>Usage:</H4>
+
+<PRE><CODE>
+edb = EPICSDB[apptopdir,appname]
+</CODE></PRE>
+
+<H4>Where:</H4>
+<UL>
+<LI><EM>apptopdir</EM> is a EPICS application top directory 
+(e.g. "~/epics_r313"). "~" at the top of this string is replaced with 
+your home directory. "~username" is not supported.
+<LI><EM>appname</EM> is a EPICS application name (e.g. "Example").
+</UL>
+
+<H4>Description:</H4>
+<EM>EPICSDB</EM> create an EPICSDB object. It read a database definition (dbd)
+file <EM>appname//"App.dbd"</EM>. The search path is 
+<EM>apptopdir//"/dbd"</EM>, 
+<EM>apptopdir//appname//"App/src"</EM> and <EM>$EPICS/base/dbd</EM>. 
+You can create an EPICS record only when 
+the definition of the record is in the dbd file.
+
+<H4>Methods:</H4>
+
+<H5>ReadDatabaseDefinition[s]</H5>
+Reads additional dbd file. The search path is the same as the case of the 
+object creation.
+
+<H5><A NAME="GetRecordType">GetRecordType[rtn]</A></H5>
+Returns a <A HREF="#EPICSRecordType">EPICSRecordType</A> object whose name 
+is <EM>rtn</EM>. 
+
+<H5>WriteRecord[s]</H5>
+Writes created records in the directory <EM>apptopdir//appname//"App/Db"</EM>. 
+The file name is  <EM>s//".db"</EM>. When <EM>s</EM> is omitted, the file 
+name is <EM>appname//".db"</EM>. 
+The field value is written only when it is different from the default 
+of the record. Then even if you specify "Passive" for "SCAN" field, 
+it would not appear in the resulting output.
+
+<H5>ForwardLink[l]</H5>
+Connects the <A HREF="#EPICSRecord">EPICSRecord</A> objects in the 
+list <EM>l</EM> by forward link. The SCAN field of the downstream records 
+is set to "Passive".
+
+<H5>print[]</H5>
+Prints the current contents of the database. 
+
+<H4>Example:</H4>
+
+<PRE><CODE>
+edb = EPICSDB["~/epics_r313","Example"];
+</CODE></PRE>
+
+
+<H3><A NAME="EPICSRecordType">EPICSRecordType</A></H3>
+
+<H4>Description:</H4>
+Instances of <EM>EPICSRecordType</EM> can be obtained by 
+<A HREF="#GetRecordType">GetRecordType</A> method of 
+<A HREF="#EPICSDB">EPICSDB</A>.
+
+<H4>Methods:</H4>
+
+<H5><A NAME="CreateRecord">CreateRecord[rn,fvl]</A></H5>
+Creates a record object. The record name is <EM>rn</EM>. The field value 
+can be specified with <EM>fvl</EM>, which is a list of {fieldname, value}.
+When the field value should be one of predefined values, only the first 
+part necessary to uniquely identify it is sufficient and case insensitive.
+For example, you can specify "1 sec" for "1 second" or "pass" for "Passive"
+as the value of "SCAN" field.
+
+<H5>SetDefaultFieldValue[fn,fv,rn]</H5>
+Sets default field value for records that will be created. 
+If <EM>rn</EM> is not Null, this is applied only those records with 
+the name that matches <EM>rn</EM>.
+The rules set with this method is applied in the order of their
+apperance and the first value whith matched rn wins.
+For example, in the case:
+
+<PRE><CODE>
+ert@SetDefaultFieldValue["SCAN","Passive","*Passive"];
+ert@SetDefaultFieldValue["SCAN","1 sec"];
+</CODE></PRE>
+
+the record of the name "ERPassive" would be a passive record and the 
+record of the name "ER1sec" would be scanned with a period of 1 sedond.
+If the order of these two lines are reversed, "SCAN" field of all the 
+records would be "1 second".
+
+<H5>SelectByName[s]</H5>
+Returns <A HREF="#EPICSRecord">EPICSRecord</A> objects whose name matches 
+<EM>s</EM>.
+
+
+<H3><A NAME="EPICSRecord">EPICSRecord</A></H3>
+
+<H4>Description:</H4>
+Instances of <EM>EPICSRecord</EM> can be obtained by 
+<A HREF="#CreateRecord">CreateRecord</A> method of 
+<A HREF="#EPICSRecordType">EPICSRecordType</A>.
+
+<H4>Methods:</H4>
+
+<H5>PutField[fn,fv]</H5>
+Sets the value of the field <EM>fn</EM> to <EM>fv</EM>.
+
+<H5>Name[]</H5>
+Returns its name.
+
+
+<H3><A NAME="Example">Example</A></H3>
+
+
+<PRE><CODE>
+edb = EPICSDB["~/epics_r313","example"];
+
+! creating EPICSRecordType objects
+rtai = edb@GetRecordType["ai"];
+rtao = edb@GetRecordType["ao"];
+rtcal = edb@GetRecordType["calc"];
+
+! setting default values
+rtai@SetDefaultFieldValue["SCAN","1 sec"];
+
+! creating records
+air = rtai@CreateRecord["airec",
+  {{"DTYP","Camac"},
+   {"INP","#B0 C10 N1 A4 F0 @0x0fff"}}];
+calr = rtcal@CreateRecord["calrec",
+  {{"SCAN", "1 sec"},
+   {"INPA", air@Name[]},
+   {"CALC", "A**2"}}];
+aor = rtao@CreateRecord["aorec",
+  {{"DOL", calr@Name[]},
+   {"DTYP", "Camac"},
+   {"OUT", "#B0 C2 N2 A1 F16 @0x0fff"},
+   {"OMSL","closed_loop"}}];
+
+edb@print[];
+
+! making forward links
+edb@ForwardLink[{air,calr,aor}];
+
+edb@print[];
+
+! writing results
+edb@WriteRecord[];
+</CODE></PRE>
+
+<HR><ADDRESS>Send feedback to:
+<A HREF="mailto:samo.stanic@kek.jp">Samo Stanic</A>
+.</ADDRESS>
+</BODY>
+</HTML>

@@ -1,0 +1,21 @@
+FFS;
+
+m=Get["/Users/oide/SAD/oldsad/sad/QC1LPm"];
+
+mi=Inverse[m]
+lm=Length[m];
+d=IdentityMatrix[lm];
+
+MinMax[m.mi-d]
+
+end
+
+Norm[m_]:=Module[{tm=Transpose[m],l,r,{lm,wm}=Dimensions[m]},
+  l=Min[lm,wm];
+  r=Sqrt[MapThread[Max[Abs[#]]/Max[1e-10,Abs[#2]]&,{Take[m,l],Take[tm,l]}]];
+  r1=Join[r,Table[0,{lm-l}]];
+  r2=Join[r,Table[0,{wm-l}]];
+  ((#*r2)&/@m)/r1]
+
+m1=Norm[m]
+

@@ -1,0 +1,85 @@
+***************
+*** 173,178 ****
+   *
+   *--------------------------------------------------------------
+   */
+  
+  static int
+  CreateWinItem(interp, canvas, itemPtr, objc, objv)
+--- 173,181 ----
+   *
+   *--------------------------------------------------------------
+   */
++ static int		KBCreateWinItem _ANSI_ARGS_((Tcl_Interp *interp,
++ 			    Tk_Canvas canvas, struct Tk_Item *itemPtr,
++ 			    int objc, Tcl_Obj *CONST objv[]));
+  
+  static int
+  CreateWinItem(interp, canvas, itemPtr, objc, objv)
+***************
+*** 200,205 ****
+      winItemPtr->anchor = TK_ANCHOR_CENTER;
+      winItemPtr->canvas = canvas;
+  
+      /*
+       * Process the arguments to fill in the item record.
+       * Only 1 (list) or 2 (x y) coords are allowed.
+--- 203,211 ----
+      winItemPtr->anchor = TK_ANCHOR_CENTER;
+      winItemPtr->canvas = canvas;
+  
++     if (objc<0)
++ 	return KBCreateWinItem(interp, canvas, itemPtr, objc, objv);
++ 
+      /*
+       * Process the arguments to fill in the item record.
+       * Only 1 (list) or 2 (x y) coords are allowed.
+***************
+*** 223,228 ****
+      }
+  
+      error:
+      DeleteWinItem(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
+      return TCL_ERROR;
+  }
+--- 229,268 ----
+      }
+  
+      error:
++     DeleteWinItem(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
++     return TCL_ERROR;
++ }
++ 
++ static int
++ KBCreateWinItem(interp, canvas, itemPtr, argc, argv)
++     Tcl_Interp *interp;			/* Interpreter for error reporting. */
++     Tk_Canvas canvas;			/* Canvas to hold new item. */
++     Tk_Item *itemPtr;			/* Record to hold new item;  header
++ 					 * has been initialized by caller. */
++     int argc;				/* Number of arguments in argv. */
++     Tcl_Obj *CONST argv[];		/* Arguments describing window. */
++ {
++     WindowItem *winItemPtr = (WindowItem *) itemPtr;
++     int nn;
++     double *bb;
++ 
++     argc = -argc;
++     nn = *((int *)argv[argc-2]);
++     bb = (double *)argv[argc-1];
++     argc -= 2;
++ 
++     /*
++      * Process the arguments to fill in the item record.
++      */
++ 
++     winItemPtr->x = bb[0];
++     winItemPtr->y = bb[1];
++     ComputeWindowBbox(canvas, winItemPtr);
++     if (ConfigureWinItem(interp, canvas, itemPtr, argc, argv, 0) == TCL_OK) {
++ 	return TCL_OK;
++     }
++ 
++     /*error:*/
+      DeleteWinItem(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
+      return TCL_ERROR;
+  }

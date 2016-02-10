@@ -1,0 +1,1368 @@
+! Frames for KEKB control software
+If[Length[(Hold@@[?ReturnToSAD,{1}])[[1]]]==1 && ReturnToSAD<=>True,
+  ReturnToSAD=False];
+
+KBFrame$Names0 = Names["*"];
+
+KBDialogFrame = Class[];
+
+KBWindow = Class[{},
+  {aboutmsg,printername,dialog,tconfig,wmflag,symbol,framelist,host,console,
+   binfolabelcreated,binfolabelmapped,infolabelafterid,infolabeltext,
+   infolabelgeom,labelbgcolor,menubgcolor,infolabelwindow,infolabel,
+   confdir="/users/akasaka/sad"},
+  {wn,f,framewnid,frameshid,FrameSymbol=Null,WindowSymbol=Null,
+   labelstat,statlock=0,framename,labelstat,
+   closecommand=Null},
+
+  Constructor[an_String] := (
+    If [CheckDuplicate[an]===True,Return[]];
+    ! Create Main Window.
+    If [WindowSymbol<=>Null, wn = WindowSymbol];
+    With[{wn}, wn = Window[,Options]];
+    BindWidget[wn, "<Reparent>", ReparentCB[], Add->True];
+    BindWidget[wn, "<Map>", MapCB[], Add->True];
+    BindWidget[wn, "<Configure>", ConfigureCB[]];
+    framewnid = WidgetInformation[wn, ID];
+    frameshid = FindShellID[framewnid];
+    symbol[framewnid] := This;
+    SetProtocol[];
+
+    MakeMenus[];
+
+    ! make user area
+    If [FrameSymbol<=>Null, f = FrameSymbol];
+    With[{f},
+      f = Frame[wn, Fill->"both", Width->400, Height->300,
+                  Expand->True, Relief->"sunken", BD->1];
+    ];
+
+    MakeStatusLine[];
+    PostWidgetProcess[];
+  );
+
+  Destructor[] := (
+    closecommand;
+    DeleteWidget[wn];
+    symbol[framewnid] =.;
+    Object`Destructor[];
+  );
+
+  ! methods to be overridden
+  CheckDuplicate[an_String] := True;
+  SetProtocol[] := Null;
+  MakeMenus[] := Null;
+  MakeStatusLine[] := Null;
+  PostWidgetProcess[] := Null;
+
+  ReparentCB[] := (
+    frameshid = FindShellID[framewnid];
+    wmflag = 2;
+  );
+  MapCB[] := (
+    frameshid = FindShellID[framewnid];
+    BindWidget[wn, "<Map>",];
+  );
+  ConfigureCB[] := (
+    If [dialog === {}, Return[]];
+    If [tconfig === Null, After[0.1, Configure[]]];
+    tconfig = GetTimeOfDay[];
+  );
+  Configure[] := (
+    If [GetTimeOfDay[]-tconfig>0.1,
+      DoConfigure[];
+      tconfig = Null;
+    ,!Else
+      After[0.1, Configure[]]
+    ];
+  );
+
+  Close[] := (This=.);
+
+  StatusLine[w$_,s$_String] :=
+    Bind[w$, "<Enter>", If[statlock===0,labelstat[Text]=s$]];
+  StatusLine[s$_String] :=
+    (labelstat[Text] = s$; statlock = 1);
+  FreeStatusLine[] := (statlock = 0);
+
+  SetTitle[s$_String] := With[{wn}, wn[Title] = s$];
+  GetGeometry[] := wn[Geometry];
+  SetGeometry[s$_String] := With[{wn}, wn[Geometry] = s$];
+
+  MapInfoLabel[] := (
+    infolabelafterid = Null;
+    If [binfolabelcreated==False,
+      infolabelwindow = Window[,Title->"info",BG->"khaki"];
+      infolabel = TextLabel[infolabelwindow,BG->"khaki",PadX->1,PadY->1,
+        Font->TextFont[$DefaultSansSerifFont,12],Justify->"left"];
+      infolabelwindow[OverrideRedirect]=True;
+      binfolabelcreated = True;
+    ];
+    infolabel[Text] = infolabeltext;
+    infolabelwindow[Geometry] =
+      "+"//infolabelgeom[[1]]//"+"//infolabelgeom[[2]];
+    infolabelwindow[Deiconify];
+    Update[IdleTasks]; ! MacX needs this, though I don't know why.
+    binfolabelmapped = True;
+!    infolabelwindow[Raise];
+    infolabelafterid =
+      After[10, infolabelafterid=Null; WithdrawInfoLabel[-1]];
+  );
+
+  WithdrawInfoLabel[x$_] := (
+    If [binfolabelmapped==True, infolabelwindow[Withdraw]];
+    binfolabelmapped = x$;
+    If [infolabelafterid<=>Null,
+      AfterCancel[infolabelafterid];
+      infolabelafterid = Null
+    ];
+  );
+
+  MoveCBForInfoLabel[] := (
+    Switch [binfolabelmapped
+    ,True,
+      WithdrawInfoLabel[-1];
+    ,False,
+      infolabelgeom = {
+        (X/.$Event) + WidgetInformation[Widget/.$Event,RootX],
+        (Y/.$Event) + WidgetInformation[Widget/.$Event,RootY] + 15,
+      };
+      If [infolabelafterid<=>Null, AfterCancel[infolabelafterid]];
+      infolabelafterid = After[1, MapInfoLabel[]];
+    ];
+  );
+
+  Raise[] := wn[Literal[Raise]];
+  Lower[] := wn[Literal[Lower]];
+
+  RaiseApp[] := Module[{wl,fl,sl},
+    If [Length[framelist] > 1,
+      sl = {};
+      wl = XQueryTree[0][[3]];
+      fl = Map[(#@frameshid)&,framelist];
+      Scan[
+        If [MemberQ[fl,#], sl = Append[sl,#]]&
+      ,wl];
+      XRaiseWindow[sl[[1]]];
+      XRestackWindows[sl];
+    ,!Else
+      XRaiseWindow[framelist[[1]]@frameshid];
+    ];
+  ];
+
+  LowerApp[] := Module[{wl,fl,sl},
+    If [Length[framelist] > 1,
+      sl = {};
+      wl = XQueryTree[0][[3]];
+      fl = Map[(#@frameshid)&,framelist];
+      Scan[
+        If [MemberQ[fl,#], sl = Append[sl,#]]&
+      ,wl];
+      XLowerWindow[sl[[1]]];
+      XRestackWindows[sl];
+    ,!Else
+      XLowerWindow[framelist[[1]]@frameshid];
+    ];
+  ];
+
+  MessageBox[s_String, opt___] := Module[{wf,w,f1,fb,bmp,msg,f,b,i,r,bm,maxch,{items,title,bm}=SwitchCases[Override[opt,Title->appname//" Message",Bitmap->"info"],{Rule[Items|Buttons,_],Rule[Title,_],Rule[Bitmap,_]}]},
+    wf = KBDialogFrame[Title/.title, FrameSymbol->w, title[[1]]];
+    f = Frame[w, PadX->15, PadY->5];
+    bm = Bitmap/.bm;
+    bmp = TextLabel[f,Bitmap->bm,Side->"left",PadX->5];
+    msg = TextLabel[f,Text->s,Justify->"left",Side->"left",PadX->5,
+                      Font->TextFont[$DefaultSerifFont,14]];
+    f1 = Frame[w, Fill->"x", Height->2, BD->2, Relief->"sunken"];
+    fb = Frame[w,PadY->2];
+    If [items<=>{},
+      i=0;
+      maxch = Max[Map[StringLength, items[[1,2]]]];
+      Scan[(i++;
+        With[{i,tx=#},b[i] =
+          Button[fb,Text->tx,Side->"left",BD->1,Width->maxch,
+                 Command:>TkReturn[i]]]
+      )&,items[[1,2]]];
+    ,!Else
+      b = Button[fb,Text->"OK",BD->1,Width->6,Command:>TkReturn[1]];
+    ];
+    Update[IdleTasks];
+    wf[Grab$Set];
+    r = TkWait[];
+    wf[Grab$Release];
+    wf@Close[];
+    Update[IdleTasks];
+    r
+  ];
+];
+
+KBDialogFrame = Class[{KBWindow},{},{},
+  Destructor[] := (
+    dialog = Drop[dialog, 1];
+    KBWindow`Destructor[];
+  );
+  CheckDuplicate[an_String] := (
+    framename = an;
+  );
+  SetProtocol[] := (
+    wn[Protocol] := {"WM_DELETE_WINDOW", Close[]};
+    dialog = Prepend[dialog, {This,framename}];
+  );
+];
+
+KBAppFrame = Class[{KBWindow},{appname,screen},
+  {framemenu,frameprog,labeltime,
+   photoimage,mbkek,menukek,mbfile,menufile,mbedit,menuedit,menuhelp,
+   menueditcopy,frameusrmenu,mbwindow,menuwindow,mbtask,menutask,mbhelp,
+   framestat,frameprogbar1,frameprogbar2,
+   frameprognum1,frameprognum2,progpct=Null},
+
+  Destructor[] := (
+    framelist = DeleteCases[framelist, This];
+    KBWindow`Destructor[];
+  );
+
+  MakeMenus[] := With[{wn},
+    framemenu = Frame[wn,Fill->"x",BG->menubgcolor,Relief->"flat",BD->0,
+      IPadY->0];
+
+    photoimage = PhotoImage["kekblogo4",File->confdir//"/KEKBlogo4.gif",
+      Format->"gif"];
+    mbkek = MenuButton[framemenu, (*Bitmap->"@"//confdir//"/bb.xbm"*)
+      Picture->"kekblogo4", Side->"left", BD->0, PadX->5];
+    menukek = Menu[mbkek, Add->{
+      Button[Text->"About "//appname//"...",Underline->0,Command:>AboutBox[]],
+      Separator[],
+      Button[Text->"Tasks...",Underline->0,
+        State->If[(appname<=>"KBTaskLaunch"),"normal","disabled"],
+        Command:>System["/usr/local/bin/kbl>/dev/null&"]],
+      Button[Text->"SAD Inspect",Underline->4,Command:>StartSADInspect[],
+        State->"disabled"(*If[appname<=>"sadinspect","normal","disabled"]*)], 
+      Button[Text->"Printers...", Underline->0, Command:>PrinterChooser[], 
+        State->"disabled"], 
+      Button[Text->"Calculator", Underline->0, Command:>Calculator[]]}];
+
+    mbfile = MenuButton[framemenu,Text->"File",Underline->0,Side->"left",
+      PadX->1];
+    menufile = Menu[mbfile, Add->{
+      Button[Text->"New", Underline->0, State->"disabled"],
+      Button[Text->"Open...", Underline->0, State->"disabled"],
+      Button[Text->"Save",Underline->0,State->"disabled",
+        Command:>a[SaveCommand]],
+      Button[Text->"Save As...", Underline->5, State->"disabled",
+        Command:>a[SaveAsCommand]],
+      Separator[],
+      Button[Text->"Page Setup...", Underline->0, State->"disabled"],
+      Button[Text->"Hard Copy",Underline->0,Command:>HardCopy[a],
+        State->"disabled"],
+      Separator[],
+      Button[Text->"Exit", Underline->1, Command:>AppExit[]]}];
+
+    mbedit = MenuButton[framemenu,Text->"Edit",Underline->0,Side->"left",
+      PadX->1];
+    menuedit = Menu[mbedit];
+    menueditcopy = Menu[menuedit];
+    menuedit[Add] = {
+      Cascade[Text->"Copy",Underline->0,Menu->menueditcopy,State->"disabled"],
+      Button[Text->"Paste", Underline->0, State->"disabled"],
+      Separator[],
+      Button[Text->"Option...",Underline->0,State->"disabled"]};
+
+    frameusrmenu = Frame[framemenu,BG->menubgcolor,Relief->"flat",BD->0,
+      IPadY->0,Side->"left"];
+
+    mbwindow = MenuButton[framemenu,Text->"Window",Underline->0,Side->"left",
+      PadX->1];
+    menuwindow = Menu[mbwindow, PostCommand:>MakeWindowMenu[]];
+
+    mbtask = MenuButton[framemenu,Bitmap->"@"//confdir//"/downarrow.xbm",
+      Side->"right",PadX->2,IPadX->2,IPadY->2,ActiveForeground->"black",
+      ActiveBackground->menubgcolor];
+    menutask = Menu[mbtask, PostCommand:>MakeTaskMenu[]];
+
+    mbhelp = MenuButton[framemenu, Text->"Help", Underline->0, Side->"right"];
+    menuhelp = Menu[mbhelp, Add->{
+      Button[Text->"Help", Underline->0, State->"disabled"],
+      Separator[],
+      Button[Text->"About "//appname//"...",Underline->0,Command:>AboutBox[]]}
+    ];
+    labeltime = TextLabel[framemenu,Side->"right",Text->DateString[],
+      FG->"slateblue",Relief->"flat",BD->0,Width->20,BG->menubgcolor,
+      Font->TextFont[$DefaultSerifFont,"bold",14]];
+  ];
+
+  MakeStatusLine[] := With[{wn},
+    framestat = Frame[wn, Fill->"x"];
+    labelstat = TextLabel[framestat,TextAnchor->"w",Side->"left",
+      Text->"Status",FG->"darkgreen",Expand->True,Fill->"x",Relief->"sunken",
+      BD->1, BG->labelbgcolor];
+    frameprog = Frame[framestat,Side->"left",BG->labelbgcolor,Fill->"y",BD->1,
+      Relief->"sunken"];
+    frameprogbar1 = Frame[frameprog,Side->"left",Width->50,BG->labelbgcolor,
+      Fill->"y"];
+    frameprognum1 = TextLabel[frameprogbar1,GM->Place,X->50,RelY->0.5,
+      Anchor->"center",BG->labelbgcolor,FG->labelbgcolor];
+    frameprogbar2 = Frame[frameprog,Side->"right",Width->50,BG->labelbgcolor,
+      Fill->"y"];
+    frameprognum2 = TextLabel[frameprogbar2,GM->Place,X->0,RelY->0.5,
+      Anchor->"center",BG->labelbgcolor,FG->labelbgcolor];
+  ];
+
+  PostWidgetProcess[] := (
+    ClockUpdate[];
+    StatusLine[appname//" on "//screen];
+    FreeStatusLine[];
+    StatusLine[f, "Main Application Area"];
+    StatusLine[framemenu, "Menu Bar"];
+    StatusLine[frameprog, "Progress Bar"];
+    StatusLine[labelstat, "Status Display"];
+    StatusLine[labeltime, "Heart Beat (Tick Tock ....)"];
+  );
+
+  ClockUpdate[] := After[1, labeltime[Text] = DateString[]; ClockUpdate[]];
+
+  (mb$_ = AddMenuButton[opts___]) ^:= 
+    mb$ = MenuButton[frameusrmenu, Side->"left", PadX->1, opts];
+
+  AppExit[] := (
+    If [MemberQ[AppNames[],"KBTaskLaunch"]&&(appname<>"KBTaskLaunch"),
+      With[{an=appname},
+        Send["KBTaskLaunch", AppStopNotify[an]];
+      ];
+    ];
+    ExitCommand[];
+    TkReturn[0];
+    Exit[];
+  );
+
+  ProgressBar[p_] := Module[{pc,pct},
+    If[p===Null,
+      frameprog[BG] = labelbgcolor;
+      frameprogbar1[BG] = labelbgcolor;
+      frameprogbar2[BG] = labelbgcolor;
+      frameprognum1[BG] = labelbgcolor;
+      frameprognum2[BG] = labelbgcolor;
+      frameprognum1[FG] = labelbgcolor;
+      frameprognum2[FG] = labelbgcolor;
+    ,!Else
+      If[progpct===Null,
+        frameprog[BG] = "white";
+        frameprogbar1[BG] = "coral";
+        frameprogbar2[BG] = "white";
+        frameprognum1[BG] = "coral";
+        frameprognum2[BG] = "white";
+        frameprognum1[FG] = "white";
+        frameprognum2[FG] = "coral";
+      ];
+      pc=Restrict[Round[p*100],0,100];
+      pct = StandardForm[pc//"%"];
+      frameprognum1[Text] = pct;
+      frameprognum2[Text] = pct;
+      pc = Restrict[pc,1,99];
+      frameprogbar1[Width] = pc;
+      frameprogbar2[Width] = 100 - pc;
+      frameprognum2[X] = 50 - pc;
+    ];
+    Update[IdleTasks];
+    progpct=p
+  ];
+
+  InfoLabel[w$_,s$_String,opt$___] :=(
+    Bind[w$, "<Motion>", infolabeltext=s$;MoveCBForInfoLabel[],opt$];
+    Bind[w$, "<Leave>", WithdrawInfoLabel[False],opt$];
+  );
+  SetAboutMessage[s$_String] := (aboutmsg = s$);
+
+  AboutBox[] := Module[{ifs,m,form},
+    m = "\n\n\nHost :\t"//HostName[];
+    ifs = OpenRead["!whoami"];
+    m = m//"\nUser :\t"//Read[ifs,String];
+    Close[ifs];
+    form = $FORM;
+    $FORM = "S10.1";
+    m  = m//"\nCPU :\t"//TimeUsed[]//" sec";
+    $FORM = form;
+    MessageBox[aboutmsg//m, Title->"About "//appname];
+  ];
+
+  HostName[] := (
+    If[host === Null, host = Literal[HostName][];
+      If[Not[StringQ[host]], host = "Unkown.hostname"]];
+    Function[If[#2<=>{},#1[1,#2[[1,1]]-1],#1]][host,StringPosition[host,"."]]);
+
+  MakeWindowSnapshot[] := System["xwd -id "//frameshid//"|xwud -noclick&"];
+
+  MakeWindowMenu[] := (
+    menuwindow[Delete] = {1,"last"};
+    Scan[(
+      With[{wsym=#},
+        menuwindow[Add] = {Button[,Text->#@framename,
+          State->If[#===This,"disabled","normal"],Command:>wsym@Raise[]]}]
+    )&,framelist];
+    With[{shellid=console[[1]]},
+      menuwindow[Add] = {
+        Separator[],
+        Button[,Text->"Make Snapshot",Command:>MakeWindowSnapshot[]],
+        Separator[],
+        Button[,Text->"Console",State->console[[2]],
+          Command:>(XRaiseWindow[Tk$ShellID];XRaiseWindow[shellid])],
+        Button[,Text->"Prompt",State->console[[2]],
+          Command:>(XRaiseWindow[shellid];TkReturn["ReturnToSAD"])]};
+    ];
+  );
+
+  MakeTaskMenu[] := Module[{ids,anl},
+    menutask[Delete] = {1,"last"};
+    anl = AppNames[];
+    Scan[(
+      With[{an=#},
+        If[an==appname,
+          menutask[Add] = {Button[,Text->an//" *", State->"disabled"]};
+        ,!Else
+          menutask[Add] = {Button[,Text->an, State->"normal",
+            Command:>Send[an,KBFrame@RaiseApp[]]]};
+        ];
+      ];
+    )&
+    ,!List
+      anl
+    ];
+  ];
+  StartSADInspect[] := 
+  !  System["setenv SADINSPECTTARGET '"//appname//"';/SAD/bin/gs "//confdir//"/sadinspect.sad >&/dev/null&"];
+	System["SADINSPECTTARGET='"//appname//"';export SADINSPECTTARGET;/SAD/bin/gs "//confdir//"/sadinspect.sad > /dev/null 2>&1 &"];
+
+  Calculator[] := Module[{},
+	System[
+	  "if [ -x /usr/bin/X11/xhpcalc ] \n"//
+	  "then\n"//
+		"/usr/bin/X11/xhpcalc&\n"//
+	  "else\n"//
+		"/usr/bin/X11/xcalc&\n"//
+	  "fi"];
+  ];
+
+];
+
+KBFrame = Class[{KBAppFrame},{},
+  {appbasename},
+
+  CheckDuplicate[an_String] := (
+    If [StringQ[appname],
+      Print["KBFrame can be called only once."];
+      Return[True];
+    ];
+    appbasename = an;
+    apnms = AppNames[];
+    If [MemberQ[apnms,appbasename],
+      Send[appbasename,KBFrame@RaiseApp[]];
+      Exit[];
+    ];
+    aboutmsg = "KBFrame (Blank)\nAuthor: N. Akasaka\nSep. 20 1997";
+    printername = Null;
+    dialog = {};
+    tconfig = Null;
+    wmflag = 1;
+    binfolabelcreated = False;
+    binfolabelmapped = False;
+    infolabelafterid = Null;
+    host = Null;
+    Get[confdir//"/KBFrame.prn"];
+
+    labelbgcolor = "gray85";
+    menubgcolor = "white";
+  );
+
+  SetProtocol[] := (
+    wn[Protocol] := {"WM_DELETE_WINDOW", AppExit[]};
+    appname = ApplicationName[appbasename];
+    If [MemberQ[apnms,"KBTaskLaunch"]&&(appname<>"KBTaskLaunch"),
+      With[{an=appname},
+        Send["KBTaskLaunch", AppStartNotify[an]];
+      ];
+    ];
+    framename = appname;
+    TclEval["option readfile "//confdir//"/KBFrame.res"];
+    screen = WidgetInformation[wn, Screen];
+    framelist = {This};
+    If [(cwid=Environment["WINDOWID"])<>"",
+      console = {FindShellID[ToExpression[cwid]],"normal"};
+    ,!Else
+      console = {Null,"disabled"};
+    ];
+  );
+
+  MakeSubFrame[s$_String,opts$___] := Module[{sf},
+    sf = KBSubFrame[s$,opts$];
+    sf
+  ];
+];
+
+KBSubFrame = Class[{KBAppFrame},{},{},
+
+  CheckDuplicate[an_String] := (
+    If [appname===Null,
+      Print["KBMainFrame should be called first !!"];
+      Return[True];
+    ];
+    framename = an;
+    Scan[(
+      If[an==#@framename,
+        Print["Duplicated subframes !!"];
+        Return[True];
+      ];
+    )&,framelist];
+  );
+
+  SetProtocol[] := (
+    wn[Protocol] := {"WM_DELETE_WINDOW", Close[]};
+    AppendTo[framelist, This];
+  );
+
+  MakeMenus[] := (
+    KBAppFrame`MakeMenus[];
+    menufile[Insert] = {"Exit",Button[Text->"Close",Underline->0,
+      Command:>Close[],State->"disabled"]};
+  );
+];
+
+
+
+(*
+! Define Functions Available to Users.
+
+  (a[MenuEntryConfigure] = {me$_,opts___})^:=(
+     Switch[me$
+     ,"New"|"Open..."|"Save"|"Save As...",
+       menufile[EntryConfigure] = {me$,opts};
+     ,"Option...",
+       a[$Menu$Edit][EntryConfigure] = {me$,opts};
+    ];
+  );
+
+  (a[RegisterCopy]={t$_,Command:>c$_}) ^:= (
+    a[$Copy$list] = Append[a[$Copy$list],t$];
+    a[$Menu$Edit][EntryConfigure] = {"Copy",State->"normal"};
+    a[$Menu$Edit$Copy][Add] = {Button[Text->t$,Command:>KBF$DoCopy[a,c$],Stete->"normal"]};
+  );
+
+  (a[RegisterOption] := c$_) ^:= (
+    a[$Menu$Edit][EntryConfigure] = {"Option...",State->"normal"};
+    a[$Menu$Edit][EntryConfigure] = {"Option...",Command:>c$};
+  );
+
+  (a[m_:(RegisterOpen|RegisterOpenFilename)]={dir_,fil_,c$_}) ^:= (
+    a[OpenCommand] = c$;
+    menufile[EntryConfigure] = {"Open...",State->"normal"};
+    menufile[EntryConfigure] = {"Open...",Command:>KBF$Open[dir,fil,c$,If[m===RegisterOpen,True,False]]};
+  );
+
+  (a[RegisterSaveAs]={dir_,fil_,c$_}) ^:= (
+    a[SaveAsCommand] = c$;
+    menufile[EntryConfigure] = {"Save As...",State->"normal"};
+    menufile[EntryConfigure] = {"Save As...",Command:>KBF$SaveAs[dir,fil,c$]};
+  );
+
+  (a[RegisterSave] := c$_) ^:= (
+    a[SaveCommand] := c$;
+    menufile[EntryConfigure] = {"Save",State->"normal"};
+  );
+
+  (a[AddMenuButton]={mb$_,opts___})^:=
+    mb$ = MenuButton[frameusrmenu, Side->"left", PadX->1, opts];
+
+  DoConfigure[] := Module[{dl={},fl={},of,od,maxof,wl},
+    If [dialog === {}, Return[]];
+!    Print["DoConfigure"];
+!    Scan[(
+!      dl = Append[dl, #@frameshid];
+!    )&,!List
+!      Thread[dialog][[1]]
+!    ];Print["dl1",dl];
+    dl = Map[(#@frameshid)&,Thread[dialog][[1]]];!Print["dl2",dl];
+    fl = Map[(#@frameshid)&,framelist];
+    wl = XQueryTree[0][[3]];
+    od = Map[(Position[wl,#][[1,1]])&,dl];
+    of = Map[(Position[wl,#][[1,1]])&,fl];
+    !Print[{od,of,wl}];
+    If [(Min[Join[od,of]]<=wmflag)&&(Max[od]>(maxof=Min[of])),
+      XRaiseWindow[dl[[1]]];
+!      XRestackWindows[Join[dl,fl]];
+!      Print[Join[dl,fl]];Print[wl];
+    ];
+  ];
+
+! KBFSetAboutMessage[s$_String] := (aboutmsg = s$;);
+
+KBF$DoCopy[a_,c_] := Module[{},!Print[c];
+  wn[Selection$Own];
+  wn[Selection$Own] = selection->'CLIPBOARD';
+  wn[Clipboard$Clear];
+  wn[Clipboard$Append] = c;
+];
+
+KBF$Open[dir_,fil_,c_,ao_] := Module[{fno,fname},
+  If [(fname=KBFOpenDialog[dir,fil])===Null, Return[]];
+  If [ao,
+    fno = OpenRead[fname];
+    c[fno];
+    Close[fno];
+  ,!Else
+    c[fname];
+  ];
+];
+
+KBF$SaveAs[dir_,fil_,c_] := Module[{fno,fname},
+  If [(fname=KBFSaveDialog[dir,fil])===Null, Return[]];
+  fno = OpenWrite[fname];
+  c[fno];
+  Close[fno];
+];
+*)
+
+KBF$HardCopy[x_] := Module[{rshcmd="",queue,host},
+  queue = KBF$PrinterList[[KBF$SelectedPrinter,1]];
+  host = KBF$PrinterList[[KBF$SelectedPrinter,2]];
+  If [ host <=> host, rshcmd = "rsh "//queue];
+  System["xwd -id "//ToString[x@framewnid]//"|xpr -device pjetxl |"//rshcmd//" lp -d plinqc"];
+];
+
+KBF$PrinterChooser[] := Module[{f,p,s,pl={},np=1},
+  If[(f = OpenRead["!grep \"^[A-Za-z]\" /etc/printcap"])===$Failed,
+    f = OpenRead["!ls -1 /etc/lp/interface"],
+  ];
+  If[f<=>$Failed,
+    While[s=Read[f,String];s<=>EndOfFile,
+      If[(p=StringPosition[s,":"])<=>{}, s = s[1,p[[1,1]]-1]];
+      pl = Append[pl,StringReplace[s,"|"->" / "]];
+!      Print[s];
+    ];
+    Do[If[pl[[i]]==printername,np=i],{i,1,Length[pl]}];
+    r = KBOptionDialog[
+      Title->"Printer Chooser",
+      Add->{
+        KACGroup[Text->"Choose A Default Printer."],
+        KACText[Text->"Current Printer: "//
+          If[printername===Null,"None",printername]],
+        KACListBox[Text->"Printers:",Items->pl,Variable:>np]
+      }
+    ];
+    If[r<>0, printername=pl[[np]]];
+  ];
+];
+
+
+(cf_ = KBFComponentFrame[p_, opt___]) ^:= Module[
+  {{add,other}=SwitchCases[Override[opt],{Rule[Add,_],_}],i=1},
+  cf[i]=Frame[p,other];i++;
+  With[{j=i-1},(cf =.) ^:= DeleteWidget[cf[j]]];
+  If[add<=>{}, KBF$ArrangeComponents[cf,i-1,Unevaluated$[i],add[[1,2]]]];
+];
+
+KBF$ArrangeComponents[w_,np_,i_,add_,opt___] := Module[{lv={},icf=np,icft1,icgf=np,icsgf,icgf0,icft2,btv,tv,vtmp,t,v,o,c,n,wv,us,cn,co,nf,ew,bd,cl,ot,dbd,rem,epad,tpad,rpad,opad,lpad,scol,newcolumn,it,ilb,vdbd,vdew,iupad,idpad},
+  newcolumn[] := (
+    With[{icsgf}, w[i] = Frame[w[icsgf],Side->"left",Expand->True,Anchor->"n"]];icf=i;i++;
+  );
+  epad = {PadX->20}; tpad = {PadX->5}; rpad = {PadX->30}; opad = {PadX->30}; lpad = {PadX->20};
+  scol = {BG->"white",SelectBackground->"wheat",SelectForeground->"black",SelectBorderWidth->0};
+  vdbd = 1;
+  vdew = 15;
+
+  {tv} = SwitchCases[{opt},{Rule[TemporaryVariable,_]}];
+  If [tv == {},
+    btv = False;
+  ,!Else
+    btv = TemporaryVariable/.tv;
+  ];
+  w[i] = Frame[w[np],Side->"left",Fill->"x",Expand->True,Anchor->"n"];icgf=i;i++;
+  If[add=={}, Return[If[btv, {i,lv}, i]]];
+  Scan[(
+    {t,v,o,c,n,wv,us,cn,co,nf,ew,bd,cl,ot,dbd,rem} = SwitchCases[Level[#,1],{Rule[Text,_],RuleDelayed[Variable,_],Rule[Items,_],RuleDelayed[Command,_],Rule[NextColumn,_],RuleDelayed[WidgetVariable,_],Rule[UnitString,_],RuleDelayed[WidgetName|ComponentName,_],Rule[ComponentOption|WidgetOption,_],Rule[NumberForm,_],Rule[DefaultEntryWidth,_],RuleDelayed[Bind,_],Rule[Columns,_],Rule[OverrapText,_],Rule[DefaultBD,_],_}];
+    If [ew<=>{}, vdew = ew[[1,2]]];
+    If [dbd<=>{}, vdbd = dbd[[1,2]]];
+!    If [btv, wv={}];
+    Switch[#
+     ,(KBFGroup|KACGroup)[___],
+!      If[icf>np,With[{icf}, w[i] = Frame[w[icf],Height->5]]];i++;
+      If [n<=>{}&&n[[1,2]],
+        w[i] = Frame[w[np],Side->"left",Fill->"x",Expand->True,Anchor->"n"];icgf=i;i++;
+      ];
+      With[{icgf}, w[i] = Frame[w[icgf],Fill->"x"]];icgf0=i;i++;
+      With[{icgf0}, w[i] = Frame[w[icgf0],Height->5]];iupad=i;i++;
+      With[{icgf0}, w[i] = Frame[w[icgf0],If[co<>{},co[[1,2]],{}],If[Frame/.rem/.Frame->True,{BD->vdbd*2,Relief->"groove"},{}],PadX->10,Fill->"x",IPadY->3]];icsgf=i;i++;
+      With[{icsgf}, w[i] = Frame[w[icsgf],Height->5]];idpad=i;i++;
+      If[t<=>{},
+        w[iupad][Height] = 12-vdbd;
+        w[idpad][Height] = 6-vdbd;
+        With[{icgf0}, w[i] = TextLabel[w[icgf0],t,Font->TextFont[$DefaultSansSerifFont,"bold",14],GM->Place,Anchor->"nw",X->20+2*vdbd,Y->0]];i++;
+!      ,!Else
+!        DeleteWidget[w[iupad]];
+      ];
+      With[{icsgf}, w[i] = Frame[w[icsgf],Side->"left",Fill->"x",Expand->True,Anchor->"n"]];icf=i;i++;
+
+    ,(KBFSeparator|KACSeparator)[___],
+      With[{icf,wsym=If[wv<=>{},wv[[1,2]],w[i]]}, wsym = Frame[w[icf],If[co<>{},co[[1,2]],{}],PadX->10,PadY->3,BD->vdbd,Height->vdbd*2,Fill->"x",Relief->"sunken"]];i++;
+
+    ,(KBFText|KACText)[__],
+      If [n<=>{}&&n[[1,2]], newcolumn[]];
+      With[{icf,wsym=If[wv<=>{},wv[[1,2]],w[i]]}, wsym = TextLabel[w[icf],t,If[co<>{},co[[1,2]],{}],TextAnchor->"w",Justify->"left",tpad,(v/.Variable->TextVariable),Fill->"x"]];i++;
+
+    ,(KBFString|KACString)[__],
+      If [n<=>{}&&n[[1,2]], newcolumn[]];
+      If [v<=>{}&&~MatchQ[Variable/.v,_String],
+        Evaluate[Extract[v,{1,2},Unevaluated$]]="";
+      ];
+      If [v<=>{}&&btv,
+        w[i] = Variable/.v;
+        lv = Append[lv, Head[#][v[[1]],i]];
+        With[{i}, v = {Variable:>w[i]}];i++;
+      ];
+      If [t<=>{},
+        With[{icf}, w[i] = Frame[w[icf],Fill->"x",epad]];icft1=i;i++;
+        With[{icft1}, w[i] = TextLabel[w[icft1],t,Fill->"x",TextAnchor->"w",Side->"left"]];i++;
+        With[{icft1}, w[i] = Frame[w[icft1],t,Width->5,Side->"left"]];i++;
+      ,!Else
+        icft1 = icf;
+      ];
+      With[{icft1,wsym=If[wv<=>{},wv[[1,2]],w[i]]}, wsym = Entry[w[icft1],If[co<>{},co[[1,2]],{}],If[t<=>{},{Width->vdew,Side->"right"},{epad[[1]],Fill->"x"}],Justify->"left",(v/.Variable->TextVariable),BD->vdbd,scol]];i++;
+
+    ,(KBFNumber|KACNumber)[__],
+!TracePrint[
+      If [n<=>{}&&n[[1,2]], newcolumn[]];
+      If [v<=>{},
+        If [btv,
+          If [nf<>{},
+            $FORM=nf[[1,2]];
+            w[i] = ToString[Variable/.v];
+            $FORM="";
+          ,!Else
+            w[i] = ToString[Variable/.v];
+          ];
+          lv = Append[lv, Head[#][v[[1]],i]];
+          With[{i}, v = {Variable:>w[i]}];i++;
+        ,!Else
+          With[{vname=Extract[v,{1,2},Unevaluated$],i},
+            ntv = vname;
+            If [~MatchQ[ntv,_Real], ntv = 0];
+            Clear[vname];
+            w[i] = ntv;
+            vname := (w[i]=ToExpression[w[i]]);
+            If [nf<>{},
+              With[{fm=nf[[1,2]]},
+                (vname=x_) ^:= (w[i]=Module[{fm0=$FORM},$FORM=fm;{ToString[x],$FORM=fm0}[[1]]]);
+              ];
+            ,!Else
+              (vname=x_) ^:= (w[i]=ToString[x]);
+            ];
+            vname = ntv;
+            v = {Variable:>w[i]};
+          ];i++;
+        ];
+      ];
+      With[{icf}, w[i] = Frame[w[icf],Fill->"x",epad]];icft1=i;i++;
+      With[{icft1}, w[i] = TextLabel[w[icft1],t,Fill->"x",TextAnchor->"w",Side->"left"]];i++;
+      With[{icft1}, w[i] = Frame[w[icft1],t,Width->5,Side->"left"]];i++;
+      With[{icft1,wsym=If[wv<=>{},wv[[1,2]],w[i]]}, wsym = Entry[w[icft1],If[co<>{},co[[1,2]],{}],t,Width->vdew,Side->"right",(v/.Variable->TextVariable),BD->vdbd,Justify->"right",scol]];i++;
+!];
+    ,(KBFCheckButton|KACCheckButton)[__],
+      If [n<=>{}&&n[[1,2]], newcolumn[]];
+      If [t<>{}&&Head[t[[1,2]]]<=>List,
+        If [v<=>{}&&btv,
+          If [~MatchQ[Variable/.v,_Real],
+            Evaluate[Extract[v,{1,2},Unevaluated$]]=1;
+          ];
+          w[i] = Variable/.v;
+          lv = Append[lv, Head[#][v[[1]],i]];
+          With[{i}, v = {Variable:>w[i]}];i++;
+        ];
+        With[{icf,wsym=If[wv<=>{},wv[[1,2]],w[i]]}, wsym = CheckButton[w[icf],If[co<>{},co[[1,2]],{}],t,c,v,Fill->"x",TextAnchor->"w",BD->vdbd,epad,SelectColor->"seagreen",ActiveBackground->"gray85"]];i++;
+      ,!Else
+        cl = If [cl<=>{}, cl[[1,2]], 1];
+        Block[{rw1,tw,irf1,irf2,it=0,otmp,lo,vtmp,hs=Head[#]},
+          o = t[[1,2]];
+          lo = Length[o];
+          rw1 = Floor[lo/cl];
+          If [lo - rw1*cl <> 0, rw1++];
+          tw = Max[Map[StringLength,t[[1,2]]]];
+          With[{icf}, w[i] = Frame[w[icf]]];irf1=i;i++;
+          Do[
+            With[{irf1}, w[i] = Frame[w[irf1], Fill->"x"]];irf2=i;i++;
+            otmp = Take[o, {cl*(j-1)+1,Min[cl*j,lo]}];
+            Scan[(
+              it++;
+              If [v<=>{},
+                vtmp = With[{x=v[[1,2]],it},{Variable:>x[it]}];
+                If [~MatchQ[Variable/.vtmp,_Real],
+                  Evaluate[Extract[vtmp,{1,2},Unevaluated$]]=0;
+                ];
+                If [btv,
+                  w[i] = Variable/.vtmp;
+                  lv = Append[lv, hs[vtmp[[1]],i]];
+                  With[{i}, vtmp = {Variable:>w[i]}];i++;
+                ];
+              ];
+              With[{irf2,wsym=If[wv<=>{},wv[[1,2]][it],w[i]],vsym=If[v<=>{},Extract[v,{1,2},Unevaluated$]],it}, wsym = CheckButton[w[irf2],If[co<>{},co[[1,2]],{}],Text->#,If[c<=>{},With[{cc=Extract[c,{1,2},Unevaluated$]},If[vsym<=>Null,Command:>(vsym[0]=it;cc),c[[1]]]],{}],vtmp,TextAnchor->"w",Side->"left",Width->tw,PadX->3,PadY->2,BD->vdbd,SelectColor->"seagreen",ActiveBackground->"gray85"]];i++;)&
+            ,otmp
+            ];
+          ,{j,rw1}
+          ];
+        ]; !Block
+      ]; !If
+
+    ,(KBFRadioButton|KACRadioButton)[__],
+      If [n<=>{}&&n[[1,2]], newcolumn[]];
+      If [v<=>{}&&~MatchQ[Variable/.v,_Real],
+        Evaluate[Extract[v,{1,2},Unevaluated$]]=1;
+      ];
+      If [v<=>{}&&btv,
+        w[i] = Variable/.v;
+        lv = Append[lv, Head[#][v[[1]],i]];
+        With[{i}, v = {Variable:>w[i]}];i++;
+      ];
+      If [t<=>{},
+        With[{icf}, w[i] = TextLabel[w[icf],t,TextAnchor->"w",Justify->"left",epad,Fill->"x"]];i++;
+      ];
+      it=0;
+      cl = If [cl<=>{}, cl[[1,2]], 1];
+      If [cl == 1,
+        Scan[(
+          it++;
+          With[{icf,wsym=If[wv<=>{},wv[[1,2]][it],w[i]]}, wsym = RadioButton[w[icf],If[co<>{},co[[1,2]],{}],Text->#,rpad,v,Value->it,Fill->"x",TextAnchor->"w",BD->vdbd,SelectColor->"seagreen",c,ActiveBackground->"gray85"]];i++;)&
+        ,o[[1,2]]];
+      ,!Else
+        Block[{rw1,tw,irf1,irf2,it=0,otmp,lo},
+          o = o[[1,2]];
+          lo = Length[o];
+          rw1 = Floor[lo/cl];
+          If [lo - rw1*cl <> 0, rw1++];
+          tw = Max[Map[StringLength,o]];
+          With[{icf}, w[i] = Frame[w[icf], rpad]];irf1=i;i++;
+          Do[
+            With[{irf1}, w[i] = Frame[w[irf1], Fill->"x"]];irf2=i;i++;
+            otmp = Take[o, {cl*(j-1)+1,Min[cl*j,lo]}];
+            Scan[(
+              it++;
+              With[{irf2,wsym=If[wv<=>{},wv[[1,2]][it],w[i]]}, wsym = RadioButton[w[irf2],If[co<>{},co[[1,2]],{}],Text->#,v,Value->it,TextAnchor->"w",BD->vdbd,SelectColor->"seagreen",c,ActiveBackground->"gray85",Side->"left",Width->tw]];i++;)&
+            ,otmp
+            ];
+          ,{j,rw1}
+          ];
+        ]; !Block
+      ]; !If
+
+    ,(KBFOptionMenu|KACOptionMenu)[__],
+      If [n<=>{}&&n[[1,2]], newcolumn[]];
+      If [v<=>{},
+        If [~MatchQ[Variable/.v,_Real],
+          Evaluate[Extract[v,{1,2},Unevaluated$]]=1;
+        ];
+        If [btv,
+          With[{vt=Variable/.v,lo=Length[o[[1,2]]]},
+            w[i] = o[[1,2,If[vt<0,1,If[vt>lo,lo,vt]]]];
+          ];
+          lv = Append[lv, Head[#][v[[1]],i,o[[1,2]]]];
+          With[{i}, v = {Variable:>w[i]}];i++;
+        ,!Else
+          If [o<=>{},
+            With[{vname=Extract[v,{1,2},Unevaluated$],i,il=o[[1,2]],lo=Length[o[[1,2]]]},
+              ntv = vname;
+              Clear[vname];
+              w[i] = il[[ntv]];
+              vname := (Position[il,w[i]][[1,1]]);
+              (vname=x_) ^:= (w[i]=il[[Restrict[x,1,lo]]]);
+              v = {Variable:>w[i]};
+            ];i++;
+          ];
+        ];
+      ];
+!      With[{icf}, w[i] = Frame[w[icf],Fill->"x",epad]];icft1=i;i++;
+      If[t<=>{},With[{icf}, w[i] = TextLabel[w[icf],t,TextAnchor->"w",Justify->"left",epad,Fill->"x"]];i++];
+      With[{icf}, w[i] = Frame[w[icf],Fill->"x"]];icft1=i;i++;
+      With[{icft1,wsym=If[wv<=>{},wv[[1,2]],w[i]]}, wsym = OptionMenu[w[icft1],If[co<>{},co[[1,2]],{}],o,opad,(v/.Variable->TextVariable),PadX->10,Side->"left",BD->vdbd,FG->"black",BG->"gray85",ActiveForeground->"black",ActiveBackground->"gray85"]];i++;
+
+    ,(KBFButton|KACButton)[__],
+      If [n<=>{}&&n[[1,2]], newcolumn[]];
+      If [t<>{}&&Head[t[[1,2]]]===List,
+        cl = If [cl<=>{}, cl[[1,2]], 1];
+        Block[{rw1,tw,irf1,irf2,it=0,otmp,lo},
+          o = t[[1,2]];
+          lo = Length[o];
+          rw1 = Floor[lo/cl];
+          If [lo - rw1*cl <> 0, rw1++];
+          tw = Max[Map[StringLength,t[[1,2]]]];
+          With[{icf}, w[i] = Frame[w[icf]]];irf1=i;i++;
+          Do[
+            With[{irf1}, w[i] = Frame[w[irf1], Fill->"x"]];irf2=i;i++;
+            otmp = Take[o, {cl*(j-1)+1,Min[cl*j,lo]}];
+            Scan[(
+              it++;
+              With[{irf2,wsym=If[wv<=>{},wv[[1,2]][it],w[i]],vsym=If[v<=>{},Extract[v,{1,2},Unevaluated$]],it}, wsym = Button[w[irf2],If[co<>{},co[[1,2]],{}],Text->#,{If[c<=>{},With[{cc=Extract[c,{1,2},Unevaluated$]},If[vsym<=>Null,Command:>(vsym=it;cc),c[[1]]]]]},Side->"left",Width->tw,PadX->3,PadY->2,BD->vdbd,FG->"black",BG->"gray85",ActiveForeground->"black"]];i++;)&
+            ,otmp
+            ];
+          ,{j,rw1}
+          ];
+
+(*
+          With[{icft1,wsym=If[wv<=>{},wv[[1,2]],w[i]],vsym=If[v<=>{},Extract[v,{1,2},Unevaluated$]]},
+            Scan[(it++;
+! {If[vsym<=>Null,vsym[it] = t[[1,2,it]];TextVariable:>vsym[it],Text->t[[1,2,it]]]}
+              With[{it}, wsym[it] = Button[w[icft1],If[co<>{},co[[1,2]],{}],Text->t[[1,2,it]],{If[c<=>{},With[{cc=Extract[c,{1,2},Unevaluated$]},If[vsym<=>Null,Command:>(vsym=it;cc),c[[1]]]]]},Side->"left",Width->tw,PadX->3,PadY->2,BD->vdbd,FG->"black",BG->"gray85",ActiveForeground->"black"]];i++;
+            )&
+            ,!List
+              t[[1,2]]
+            ]; !Scan
+          ]; !With
+*)
+
+        ]; !Block
+      ,!Else
+        With[{icf,wsym=If[wv<=>{},wv[[1,2]],w[i]]}, wsym = Button[w[icf],If[co<>{},co[[1,2]],{}],opad,t,c,(v/.Variable->TextVariable),PadX->10,PadY->2,BD->vdbd,FG->"black",BG->"gray85",ActiveForeground->"black"]];i++;
+      ];
+
+    ,KBFTextEditor[__],
+      If [n<=>{}&&n[[1,2]], newcolumn[]];
+      If [t<=>{},
+        With[{icf}, w[i] = TextLabel[w[icf],t,TextAnchor->"w",Justify->"left",epad,Fill->"x"]];i++;
+      ];
+      With[{icf,wsym=If[wv<=>{},wv[[1,2]],w[i]]},
+        wsym = TextEditor[w[icf],If[co<>{},co[[1,2]],{}],c,Fill->"x",BorderWidth->1,Width->10,Height->5,epad];i++;
+        If [v<=>{}&&btv,
+          lv = Append[lv, Head[#][v[[1]],Hold[wsym]]];
+          wsym[Insert] = {"insert", Variable/.v};
+        ];
+      ];
+
+    ,(KBFListBox|KACListBox)[__],
+      If [n<=>{}&&n[[1,2]], newcolumn[]];
+      If [t<=>{},
+        With[{icf}, w[i] = TextLabel[w[icf],t,TextAnchor->"w",Justify->"left",epad,Fill->"x"]];i++;
+      ];
+      With[{icf}, w[i] = Frame[w[icf],Fill->"x",lpad,Fill->"x"]];icft1=i;i++;
+      With[{icft1}, w[i] = Frame[w[icft1],Width->10,Side->"left"]];i++;
+      With[{icft1}, w[i] = Frame[w[icft1],Fill->"x"]];icft2=i;i++;
+      With[{icft1}, w[i] = Frame[w[icft1],Fill->"x"]];icft1=i;i++;
+      With[{icft2}, w[i] = ScrollBar[w[icft2],Orient->"vertical",Side->"right",Fill->"y",Width->8,BD->vdbd]];isv=i;i++;
+      With[{icft1}, w[i] = Frame[w[icft1],Width->14,Side->"right"]];i++;
+      With[{icft1}, w[i] = ScrollBar[w[icft1],Orient->"horizontal",Side->"bottom",Fill->"x",Width->8,BD->vdbd]];ish=i;i++;
+      With[{icft2,isv,ish,wsym=If[wv<=>{},wv[[1,2]],w[i]]},
+        wsym = ListBox[w[icft2],If[co<>{},co[[1,2]],{}],{If[o[[1,2]]<=>{},Insert->{"end",o[[1,2]]}]},Height->4,SelectMode->"browse",Fill->"x",BD->vdbd,YScrollCommand:>w[isv][Set], XScrollCommand:>w[ish][Set],scol];ilb=i;i++;
+        If [v<>{}&&o<>{},
+          If [~MatchQ[Variable/.v,_Real],
+            Evaluate[Extract[v,{1,2},Unevaluated$]]=1;
+          ];
+          wsym[Select$Set] = Variable/.v;
+          wsym[YView] = Variable/.v;
+          If [btv,
+            lv = Append[lv, Head[#][v[[1]],ilb]];
+          ,!Else
+            With[{vname=Extract[v,{1,2},Unevaluated$]},
+              Clear[vname];
+              vname := wsym[Selection][[1]];
+              (vname=x_) ^:= (wsym[Select$Clear]=vname;wsym[Select$Set]=x;wsym[YView]=x);
+            ];
+          ];
+        ];
+        If[c<=>{},
+          With[{cc=Extract[c,{1,2},Unevaluated$]},
+            Bind[wsym,"<ButtonRelease-1>",cc];
+          ];
+        ];
+(*        If [bd<>{},Print[bd];
+          If [Check[Extract[bd,{1,2,1,0}],Null] === List,
+            bd = Map[Hold,Extract[bd,{1,2},Unevaluated$]];
+            Scan[(
+              With[{f=Extract[#,{1,2},Unevaluated$]},Print[Hold[f]];
+                Bind[wsym,#[[1,1]],f];
+              ];)&
+            ,bd];
+          ,!Else
+            With[{f=Extract[bd,{1,2,2},Unevaluated$]},
+              Bind[wsym,bd[[1,2,1]],f];
+            ];
+          ];
+        ];
+*)
+      ];
+      With[{icft2}, w[i] = Frame[w[icft2],Width->100,Side->"bottom"]];i++;
+
+    ,(KBFFrame|KACFrame)[___],
+      If [n<=>{}&&n[[1,2]], newcolumn[]];
+      With[{icf,wsym=If[wv<=>{},Extract[wv,{1,2},Unevaluated$],w[i]]}, wsym = Frame[w[icf],If[co<>{},co[[1,2]],{}]](*;Print[wsym]*)];i++;
+
+    ,(KBFComponent|KACComponent)[__],
+      If [n<=>{}&&n[[1,2]], newcolumn[]];
+      With[{icf,wsym=If[wv<=>{},Extract[wv,{1,2},Unevaluated$],w[i]]}, wsym = Apply[cn[[1,2]],Prepend[co[[1,2]],w[icf]]]];i++;
+
+    ];
+  )&,add];
+!  If[icf>0,With[{icf}, w[i] = Frame[w[icf],Height->5]]];i++;
+  If [btv, {i,lv}, i]
+];
+!SetAttributes[KBArrangeComponents,HoldFirst];
+
+KBFOptionDialog[opt___] := Module[{{add,title,pcc,rem}=SwitchCases[Override[opt],{Rule[Add,_],Rule[Title,_],RuleDelayed[PostCreationCommand,_],_}],f,i=0,it,isv,ish,ilb,w,r,icf=0,ts,lv},
+
+  If[title<=>{},ts=title[[1,2]],ts="Option for "//appname];
+  f = KBDialogFrame[ts, w[0], Title->ts, rem];
+  If [w[0] === Null, Return[0]];
+!  w[0] = Window[Title->ts,rem];i++;
+  BindWidget[w[0], "<Key-Escape>", TkReturn[0]];
+  BindWidget[w[0], "<Key-Return>", TkReturn[1]];
+  w[i] = Frame[w[0],Width->250];i++;
+  w[i] = Frame[w[0],Fill->"x",Side->"bottom",PadX->10,PadY->5];icf=i;i++;
+  With[{icf,i,ip=i+1}, w[i] = Button[w[icf],Text->"Cancel",Command:>(w[i][State]="disabled";w[ip][State]="disabled";Update[IdleTasks];TkReturn[0]),Side->"right",Width->8,BD->1]];i++;
+  With[{icf,i,im=i-1}, w[i] = Button[w[icf],Text->"Ok",Command:>(w[i][State]="disabled";w[im][State]="disabled";Update[IdleTasks];TkReturn[1]),Side->"right",Width->8,BD->1]];i++;
+  If[add<=>{}, {i,lv}=KBF$ArrangeComponents[w,0,Unevaluated[i],add[[1,2]],TemporaryVariable->True]];!Print[{"lv",lv}];
+  If[pcc<=>{}, pcc[[1,2]]];
+  Update[IdleTasks];
+  w[0][Grab$Set];
+  r = TkWait[];
+  w[0][Grab$Release];
+  i=0;
+  If[r<>0,Scan[(
+    Switch[Head[#]
+    ,KBFString|KBFCheckButton|KBFRadioButton|KACString|KACCheckButton|KACRadioButton,
+      Evaluate[Extract[#,{1,2},Unevaluated$]] = w[#[[2]]];
+    ,KBFNumber|KACNumber,
+      Evaluate[Extract[#,{1,2},Unevaluated$]] = ToExpression[w[#[[2]]]];
+    ,KBFOptionMenu|KACOptionMenu,
+      Evaluate[Extract[#,{1,2},Unevaluated$]] = Position[#[[3]],w[#[[2]]]][[1,1]];
+    ,KBFListBox|KACListBox,
+      Evaluate[Extract[#,{1,2},Unevaluated$]] = w[#[[2]]][Selection][[1]];
+    ,KBFTextEditor,
+      Evaluate[Extract[#,{1,2},Unevaluated$]] = #[[2,1]][GetText[{"1.0","end"}]][1,-2];
+    ];
+  )&,lv];];
+!  DeleteWidget[w[0]];
+  f@Close[];
+!  Scan[(If[Head[#]<=>KACListBox,DeleteVariable[tv[i]]])&,lv];
+  Update[IdleTasks];
+  r
+];
+
+! File Dialogs
+
+KBFFileDialog = Class[{},{},{wfa,f,r,fsp},
+  Constructor[dir$_String,filter$_String,fn$_Real] := (
+    wfa = KBDialogFrame["FileDialog", f, Title->"FileDialog"];
+    fsp = KBFFileSelectionPanel[f,dir$,filter$,brp->True,fn->fn$];
+  );
+  Wait[] := (r=TkWait[]);
+  Destructor[] := (
+    fsp=.;
+    wfa[Close];
+    Object`Destructor[]
+  );
+];
+
+KBFOpenDialog = Class[{KBFFileDialog},{},{},
+  Constructor[dir$_String, filter$_String] := 
+    KBFFileDialog`Constructor[dir$, filter$, 0];
+];
+KBFSaveDialog = Class[{KBFFileDialog},{},{},
+  Constructor[dir$_String, filter$_String] := 
+    KBFFileDialog`Constructor[dir$, filter$, 1];
+];
+
+KBFFileSelectionPanel = Class[{},
+  {SortDate=1,SortDateRev=2,SortName=3,SortNameRev=4,sc="#F44",ac="#F88",
+   confdir="/users/akasaka/sad"},
+  {f,s,l,currdir,currfilter,pwd,currfullpath,wf,workflag,tsp,
+   ls,omtv,a,btext,frr,frl,fr1,fr2,fr3,fr4,ldir,dirmenu,cwl,sortmethod,
+   vsb,lb,lfilt,eflt,lsel,efile,bup,b,c,lc,frc,bapp,bsort,fr2a,fr2b,fr2ap1,
+   fr2ap2,omt,omtm,lfile,ldate,kl,scol,bups1,bups2,savefile,
+   fn=0,dbflag=0,brp=False},
+
+  Constructor[w_,dir$_String,filter$_String] := (
+    If [dir$=="", dir$=Directory[]];
+    pwd = If[System["[ -d "//dir$//" ]"]==0,dir$,"/"];
+    If [pwd[-1] <=> "/", pwd = pwd//"/";];
+    currfilter = filter$;
+    currfullpath = pwd;
+    currdir = If [pwd == "/","/",pwd[StringPosition[pwd,"/"][[-2]][[1]]+1,-2]];
+    savefile = "";
+    btext = If[fn==0,"Open","Save"];
+    sortmethod=SortDate;
+
+    l = ListFiles[pwd,currfilter];
+    ! creating dialog
+    scol = {BG->"white",SelectBackground->"wheat",SelectForeground->"black",
+            SelectBorderWidth->0};
+    frr = Frame[w, Side->"left", Fill->"both", PadX->10, PadY->5, Expand->1];
+    fr1 = Frame[frr, PadX->7, PadY->2, Fill->"x"];
+    ldir = TextLabel[fr1, Width->12, TextAnchor->"w", Text->"Directory : ",
+                      Side->"left"];
+    omt = OptionMenu[fr1, TextVariable:>omtv, Side->"left", Relief->"ridge"
+                     ,BG->"gray85"];
+    omtm = Menu[omt];
+    omtm[Add]={Button[Text->"/", Command:>DoChangeDirectory["/",0]]};
+    If [pwd == "/",
+      omtv = "/"; tsp = {};
+    ,!Else
+      tsp = pwd[#[[1]],#[[2]]]&/@(Transpose[{Drop[#,-1]+1,Drop[#,1]-1}]&[
+               Transpose[StringPosition[pwd,"/"]][[1]]]);
+      omtv = tsp[[-1]];
+      Do[With[{a=tsp[[i]],i},
+        omtm[Add]={Button[Text->tsp[[i]], Command:>DoChangeDirectory[a,i]]}],
+        {i,Length[tsp]}]
+    ];
+    fr2 = Frame[frr, Fill->"both", PadX->8, PadY->5, Expand->1];
+    fr2a = Frame[fr2, Fill->"x", Relief->"sunken", BD->1, PadX->2];
+    bups1 = Button[fr2a, Side->"left", IPadY->1, BD->1,Command:>DirUp[1],
+             Bitmap->"@"//confdir//"/dirup.xbm"];
+    fr2ap1 = Frame[fr2a,Width->16,Side->"left"];
+![               ,BD->1,Relief->"raised",Fill->"y",PadY->2];
+    With[{SortDate,SortDateRev,SortName,SortNameRev},
+      bsort[SortDate] = Button[fr2a,Side->"left",IPadY->1,BD->1,
+             FG->sc,ActiveForeground->ac,
+             Bitmap->"@"//confdir//"/downarrow.xbm"];
+      ldate = TextLabel[fr2a,Text->"Date",Relief->"raised",Side->"left",BD->1,
+                        Font->TextFont[10,$DefaultSansSerifFont,"bold"],IPadX->5];
+      bsort[SortDateRev] = Button[fr2a,Side->"left",IPadY->1,BD->1,
+                            Bitmap->"@"//confdir//"/uparrow.xbm"];
+      fr2ap2 = Frame[fr2a,Width->26,Side->"left"];
+      bsort[SortName] = Button[fr2a,Side->"left",IPadY->1,BD->1,
+                                Bitmap->"@"//confdir//"/downarrow.xbm"];
+      lfile = TextLabel[fr2a,Text->"File",Relief->"raised",Side->"left",BD->1,
+                          Font->TextFont[10,$DefaultSansSerifFont,"bold"],IPadX->5];
+      bsort[SortNameRev] = Button[fr2a,Side->"left",IPadY->1,BD->1,
+                                  Bitmap->"@"//confdir//"/uparrow.xbm"];
+    ];
+    bups2 = Button[fr2a, Side->"right", IPadY->1, BD->1,Command:>DirUp[1],
+             Bitmap->"@"//confdir//"/dirup.xbm"];
+    fr2b = Frame[fr2, Fill->"both", Expand->1];
+    vsb=ScrollBar[fr2b, Orient->"vertical", Side->"right", Fill->"y",
+                     Width->12];
+    lb=ListBox[fr2b,If[l<>{},Insert->{"end",l},{}],Height->16,BG->"white",
+                SelectMode->"single", Expand->1, YScrollCommand:>vsb[Set],
+                Side->"right", Font->TextFont[12, $DefaultFixedFont, "bold"],
+                Fill->"both",Width->50, scol];
+    fr3 = Frame[frr, Fill->"x", PadX->7, PadY->2];
+    lfilt = TextLabel[fr3, Width->12, TextAnchor->"w", Text->"Filter : ",
+                       Side->"left"];
+    eflt = Entry[fr3, Side->"left", TextVariable:>currfilter, Fill->"x",
+                  Expand->1, scol];
+    bapp = Button[fr3, Side->"right", Text->"Apply", Width->6, PadX->5,
+                  Font->TextFont[10,$DefaultSansSerifFont,"bold"],Command:>DoFilter[]];
+    fr4 = Frame[frr, Fill->"x", PadX->7, PadY->2];
+    lsel = TextLabel[fr4, Width->12, TextAnchor->"w",Side->"left",
+             Text->If[fn==0,"Selection : ","Save File : "]];
+    efile = Entry[fr4, Width->35, Side->"left", Fill->"x", Expand->1,
+             If[fn==0,{State->"disabled", Relief->"ridge", TextVariable:>currfullpath,BG->"gray85"},{BG->"white", TextVariable:>savefile}]];
+    cwl = {w,frr};
+    If [brp===True,
+      frl = Frame[w, Side->"right", PadX->5, PadY->5, Fill->"y"];
+!      kl = PhotoImage["kekblogo",File->confdir//"/KEKBlogo2.gif",
+!                      Format->"gif"];
+!      lc = Canvas[frl, BD->2, Width->kl[Width]-4, Height->kl[Height]-4,
+!                   Relief->"sunken", PadY->3];
+!      lc[Create$Image]={0,0,Image->kl[Name],Anchor->"nw"};
+      bup = Button[frl, Width->8, Text->"Up", Side->"top",Command:>DirUp[1]];
+      b = Button[frl, Width->8, Text->btext, Side->"bottom",
+                   State->If[fn==0,"disabled","normal"]];
+      c = Button[frl,Width->8,Text->"Cancel",Side->"bottom",Command:>TkReturn[]];
+      If [pwd == "/", bup[State] = "disabled"];
+      Bind[b, "<Button-1>", OkOrDown[1]];
+      AppendTo[cwl,frl];
+    ];
+
+!   AdjustWindowGeometry[w];
+
+    ! set up widgets
+    If [pwd == "/",
+      bups1[State] = "disabled";
+      bups2[State] = "disabled";];
+    Do[With[{i},bsort[i][Command] := UpdateList[i]],{i,1,4}];
+
+    ! binding
+    Bind[lb, "<ButtonRelease-1>", LBSel[]];
+    Bind[lb, "<Double-Button-1>", (dbflag=1; OkOrDown[0])];
+    Bind[lb, "<Key-Return>", OkOrDown[0]];
+    Bind[eflt, "<Key-Return>", DoFilter[]];
+    Bind[eflt, "<Double-Button-1>", DoFilter[]];
+!    Bind[w, "<Key-Escape>", TkReturn[]];
+  );
+
+  GetSelection[] := currfullpath;
+
+  DoChangeDirectory[s$_String,n$_] := (
+    If [Length[tsp] == n$,
+      DoFilter[];
+    ,!Else
+      DirUp[Length[tsp]-n$];
+    ];
+  );
+  Destructor[] := (
+    frr=.;
+    frl=.;
+    Object`Destructor[]
+  );
+
+  DirUp[n_] := Module[{ups},
+    If [n > 0,
+      omtm[Delete]={Length[tsp]-n+2,Length[tsp]+1};
+      tsp = Drop[tsp, -n];
+      If [tsp == {},
+        pwd = "/";
+        currdir = "/";
+      ,!Else
+        currdir = tsp[[-1]];
+        pwd = "";
+        Scan[(pwd = pwd//"/"//#)&, tsp];
+        pwd = pwd//"/";
+      ];
+      omtv = currdir;
+      currfullpath = pwd;
+      If [brp===True,
+        b[Text] = btext;
+        If [fn==0, b[State] = "disabled"];
+      ];
+      l = ListFiles[pwd,currfilter];
+      lb[Delete] = {1, "end"};
+      If [l<=>{}, lb[Insert] = {"end", SortLs[l]}];
+      ups = If [pwd == "/", "disabled", "normal"];
+      bup[State] = ups; bups1[State] = ups; bups2[State] = ups; 
+    ];
+  ];
+
+  ListFiles[pwd_,currfilter0_] := Module[
+    {l,f,retcode,s,a,currfilter=currfilter0},
+    Scan[(#[Cursor]="watch")&,cwl];
+    Update[IdleTasks];
+    If[currfilter=="",currfilter = "*"];
+    f = OpenRead["!unset LANG LC_TIME;cd "//pwd//";ls -lLt | awk '{print $1, $6, $7, $8, $9}'"];
+    ! reading file listing
+    l = {};
+    If [f<=>$Failed,
+      ReadString[f];
+      While [(s=ReadString[f])<=>EndOfFile,
+        If [s[1]=="d"||((s[1]=="-")&&StringMatchQ[s[12,-1],"* * * "//currfilter]),
+          s = s[1]//"   "//s[12,-1];
+          s = If [s[10]==" ", StringInsert[s, " ", 9], s];
+          s = StringInsert[If [s[16]==" ", StringInsert[s, " ", 12], s],
+                             "  ",17];
+          l = {l,s};
+        ];
+      ];
+      l=Flatten[l]
+    ];
+    Close[f];
+    Scan[(#[Cursor]="left_ptr")&,cwl];
+    l
+  ];
+
+  OkOrDown[n_] := Module[{s,sel,ups},
+    Update[IdleTasks];
+    If [lb[Size]>0 && (sel=lb[Selection]) <=> {},
+      s = lb[GetText[sel[[1]]]];
+      If [(s[1] == "-")||((fn==1)&&(n==1)),
+!        If [(fn==1)&&(n==1),]
+        If [fn==1,
+          If [savefile<>"",
+            If [System["[ -e "//pwd//savefile//" ]"]==0,
+              If [KBFMessageBox["The file "//pwd//savefile//" already exists.\nDo you really want to overwrite the file ?",Bitmap->"warning",Items->{"Ok","Cancel"}]==1,TkReturn[pwd//savefile]];
+            ,!Else
+              If [brp===True, TkReturn[pwd//savefile]];
+            ];
+          ];
+        ,!Else
+!Print["2"];
+          If [brp===True, TkReturn[pwd//s[20,-1]]];
+        ];
+      ,!Else
+        If [s[1] == "d",
+          currdir = s[20,-1];
+          tsp = Append[tsp, currdir];
+          pwd = pwd//currdir//"/";
+          currfullpath = pwd;
+          With[{a=tsp[[-1]],b=Length[tsp]},
+            omtm[Add]={Button[Text->currdir,Command:>DoChangeDirectory[a,b]]}];
+          omtv = currdir;
+          If [brp===True,
+            b[Text] = btext;
+            If [fn==0, b[State] = "disabled"];
+          ];
+          l = ListFiles[pwd,currfilter];
+          lb[Delete] = {1, "end"};
+          If [l<=>{}, lb[Insert] = {"end", SortLs[l]}];
+!          lb[Insert] = {"end", SortLs[l]};
+          ups = "normal";
+          bup[State] = ups; bups1[State] = ups; bups2[State] = ups; 
+        ];
+      ];
+    ,!Else
+      If [(fn==1)&&(savefile<>""),
+        If[System["[ -e "//pwd//savefile//" ]"]==0,
+              If [KBFMessageBox["The file "//pwd//savefile//" already exists.\nDo you really want to overwrite the file ?",Bitmap->"warning",Items->{"Ok","Cancel"}]==1,TkReturn[pwd//savefile]];
+        ,!Else
+          If [brp===True, TkReturn[pwd//savefile]];
+        ];
+      ];
+    ];
+  ];
+
+  DoFilter[] := (
+    If [currfilter == "", currfilter = "*"];
+    l = ListFiles[pwd,currfilter];
+    lb[Delete] = {1, "end"};
+    If [l<=>{}, lb[Insert] = {"end", SortLs[l]}];
+  );
+
+  UpdateList[sm_] := 
+    If [sortmethod <=> sm,
+      With[{sortmethod},
+        bsort[sortmethod][FG] = "black";
+        bsort[sortmethod][ActiveForeground] = "black";];
+      bsort[sm][FG] = sc;
+      bsort[sm][ActiveForeground] = ac;
+      Update[IdleTaksk];
+      sortmethod = sm;
+      lb[Delete] = {1, "end"};
+      If [l<=>{}, lb[Insert] = {"end", SortLs[l]}];
+      b[Text] = btext;
+      b[State] = "disabled";
+    ];
+
+  SortLs[l_] :=
+    Switch[sortmethod,
+      SortDate,
+        l,
+      SortDateRev,
+        Reverse[l],
+      SortName,
+        Map[(#[-19,-1]//#[1,-20])&,Sort[Map[(#[20,-1]//#[1,19])&,l]]],
+      SortNameRev,
+        Reverse[Map[(#[-19,-1]//#[1,-20])&,Sort[Map[(#[20,-1]//#[1,19])&,l]]]]
+    ];
+
+  LBSel[] := Module[{s}, 
+    If [dbflag == 0,
+      If [lb[Size]>0, 
+        b[State] = "normal";
+        s = lb[GetText[lb[Selection][[1]]]];
+        If [s[1] == "-",
+          currfullpath = pwd//s[20,-1];
+          savefile = s[20,-1];
+          b[Text] = btext;
+        ,!Else
+          If [(s[1]=="d")&&(fn==0),
+            currfullpath = pwd//s[20,-1]//"/";
+            b[Text] = "Go Down";
+          ];
+        ];
+      ,!Else
+         If[fn==0,b[State] = "disabled"];
+      ];
+    ,!Else
+      dbflag = 0;
+    ];
+  ];
+];
+
+
+Protect[KBWindow,KBAppFrame,KBFrame,KBSubFrame,KBDialogFrame,KBFMessageBox,
+	KBFComponentFrame,KBFOptionDialog,KBFOpenDialog,KBFSaveDialog];
+Protect[Close,ProgressBar,StatusLine,FreeStatusLine,AddMenuButton,About,
+		RegisterCopy,RegisterSaveAs];
+
+System$Names = Join[System$Names,Complement[Names["*"],KBFrame$Names0]];
+KBFrame$Names0=.;

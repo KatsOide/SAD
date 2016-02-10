@@ -1,0 +1,324 @@
+#!/bin/sh
+
+terminate () {
+    if [ "x${cache}" != "x" ]; then
+	[ -r "${cache}" ] && rm -f "${cache}"
+	cache=
+    fi
+    exit $1
+}
+
+diff_path () {
+    local pre post dir1 dir2 n1 n2 _dir
+
+    [ $# -ne 2 ] && return
+    [ ! -e "$1" ] && return
+    [ ! -e "$2" ] && return
+
+    pre=
+    post=
+    if [ -d "$1" ]; then
+	dir1="$1"
+    else
+	dir1=`dirname "$1"`
+    fi
+    if [ -d "$2" ]; then
+	dir2="$2"
+    else
+	dir2=`dirname "$2"`
+	post=`basename "$2"`
+    fi
+
+    dir1=`realpath "${dir1}"`
+    dir2=`realpath "${dir2}"`
+
+    case "${dir2}" in
+	/usr/*|/opt/*|/sw/*)
+	    if [ "x${post}" = "x" ]; then
+		echo "${dir2}"
+	    else
+		echo "${dir2}/${post}"
+	    fi
+	    return
+	    ;;
+	*)
+	    ;;
+    esac
+
+    n1=0
+    _dir="${dir1}"
+    while [ "x${_dir}" != "x/" ]; do
+	_dir="${_dir%/*}"; _dir="/${_dir#/}"
+	n1=$((${n1} + 1))
+    done
+    n2=0
+    _dir="${dir2}"
+    while [ "x${_dir}" != "x/" ]; do
+	_dir="${_dir%/*}"; _dir="/${_dir#/}"
+	n2=$((${n2} + 1))
+    done
+
+    while [ ${n1} -gt ${n2} ]; do
+	dir1="${dir1%/*}"; dir1="/${dir1#/}"
+	pre="../${pre}"
+	n1=$((${n1} - 1))
+    done
+    while [ ${n2} -gt ${n1} ]; do
+	_dir="${dir2##*/}"; _dir="${_dir:-/}"
+	dir2="${dir2%/*}"; dir2="/${dir2#/}"
+	if [ "x${post}" = "x" ]; then
+	    post="${_dir}"
+	else
+	    post="${_dir}/${post}"
+	fi
+	n2=$((${n2} - 1))
+    done
+    while [ "x${dir1}" != "x${dir2}" ]; do
+	dir1="${dir1%/*}"; dir1="/${dir1#/}"
+	pre="../${pre}"
+	n1=$((${n1} - 1))
+	_dir="${dir2##*/}"; _dir="${_dir:-/}"
+	dir2="${dir2%/*}"; dir2="/${dir2#/}"
+	if [ "x${post}" = "x" ]; then
+	    post="${_dir}"
+	else
+	    post="${_dir}/${post}"
+	fi
+	n2=$((${n2} - 1))
+    done
+    echo "${pre}${post}"
+}
+
+mkdep () {
+local mode ldep_full ldep_list0 ldep_list ldep_use _file _ldep _dir _rel
+
+mode="$1"
+shift
+
+ldep_full=
+while [ $# -ge 1 ]; do
+    if grep "^${mode}:$1:	" "${cache}" >/dev/null 2>&1; then
+	ldep_list=`grep "^${mode}:$1:	" "${cache}" | tail -n 1 | sed -e "s,^${mode}:$1:	,,"`
+    else
+	ldep_list0=
+	ldep_use=
+	case "$1" in
+	    /*)
+		_file="$1"
+		;;
+	    *)
+		_file="${basedir}/$1"
+		;;
+	esac
+	if [ -r "${_file}" ]; then
+	    case ${mode} in
+		C)
+		    ldep_list0=`grep "^#[ 	]*include[ 	]*[<\"]" "${_file}" \
+			| sed -e "s@^#[ 	]*include[ 	]*@@" \
+			-e 's@\("[^"][^"]*"\).*@\1@' \
+			-e 's@\(<[^"][^"]*>\).*@\1@' \
+		        -e 's/^.\(.*\).$/\1/' | sort -u`
+		    ;;
+
+		Fortran)
+		    ldep_use=`grep "^[ 	][ 	]*[uU][sS][eE][ 	]" "${_file}" \
+			| sed -e "s/^[ 	][ 	]*[uU][sS][eE][ 	]*//" -e "s/\([^ 	,][^ 	,]*\).*/\1.MOD/" | sort -u`
+		    ldep_list0=`grep "^[ 	][ 	]*[iI][nN][cC][lL][uU][dD][eE][ 	]" "${_file}" \
+			| sed -e "s@^[ 	][ 	]*[iI][nN][cC][lL][uU][dD][eE] *@@" \
+			-e "s@\('[^'][^']*'\).*@\1@" \
+			-e 's@\("[^"][^"]*"\).*@\1@' \
+			-e 's/^.\(.*\).$/\1/' | sort -u`
+		    ;;
+
+		*)
+		    ldep_list0=
+		    ;;
+	    esac
+	fi
+	ldep_list=
+	for _ldep in ${ldep_list0}; do
+	    if [ -r ${_ldep} ]; then
+		ldep_list="${ldep_list# } ${_ldep}"
+	    else
+		for _dir in ${include_dir}; do
+		    if [ -r ${_dir}/${_ldep} ]; then
+			_rel=`diff_path "${basedir}" "${_dir}/${_ldep}"`
+			ldep_list="${ldep_list# } ${_rel}"
+			break
+		    fi
+		done
+	    fi
+	done
+	# Create temporary memorandum entry for recursion
+	echo "${mode}:$1:	${ldep_list# }" >>${cache}
+
+	# Recursion call
+	ldep_list="${ldep_list# } `mkdep ${mode} ${ldep_list}` `mkdep ${mode} ${ldep_use}`"
+
+	# Update memorandum entry
+	ldep_list=`echo "${ldep_list# }" | tr ' ' '\n' | sort -u | tr '\n' ' '`
+	echo "${mode}:$1:	${ldep_list# }" >>${cache}
+
+    fi
+    ldep_full="${ldep_full# } ${ldep_list# }"
+    shift
+done
+
+# Echo back sorted depend list
+echo "${ldep_full# }" | tr ' ' '\n' | sort -u | tr '\n' ' '
+}
+
+scan_fmod () {
+    local _modules _m
+
+    while [ $# -gt 0 ]; do
+	if [ -r "$1" ]; then
+	    case "$1" in
+		*.f|*.F)
+		    _modules=`grep "^[ 	][ 	]*[mM][oO][dD][uU][lL][eE]" "$1" \
+			| sed -e "s/^[ 	][ 	]*[mM][oO][dD][uU][lL][eE][ 	]*//" -e "s/\([^ 	][^ 	]*\).*/\1.MOD/"`
+		    for _m in ${_modules}; do
+			case ${_m} in
+			    *)
+				echo "Fortran:${_m}:	${1%.?}.o" >>${cache}
+				;;
+			esac
+		    done
+		    ;;
+
+		*)
+		    ;;
+	    esac
+	fi
+	shift
+    done
+
+    return 0
+}
+
+include_dir=
+exclude_dir=
+while [ $# -gt 0 ]; do
+    case "$1" in
+	-I*)
+	    include_dir="${include_dir} ${1##-I}"
+	    ;;
+	--exclude=*)
+	    exclude_dir="${exclude_dir} ${1##--exclude=}"
+	    ;;
+	--)
+	    shift
+	    break
+	    ;;
+	-*)
+	    ;;
+	*)
+	    break
+	    ;;
+    esac
+    shift
+done
+
+exclude_pattern=
+if [ "x${exclude_dir}" != "x" ]; then
+    for dir in ${exclude_dir}; do
+	exclude_pattern="${exclude_pattern}|${dir}"
+    done
+    exclude_pattern="(${exclude_pattern##|})"
+fi
+
+# for cache test
+if cache=`mktemp -q depend-cache-XXXXXXXXXXXX`; then
+    trap terminate 1 2 9 13 14 15 24 25 26 27 30 31
+else
+    echo "`basename $0`: Can't create cache file!" 1>&2
+    exit 1
+fi
+
+scan_fmod "$@"
+
+while [ $# -gt 0 ]; do
+    basedir=`dirname "$1"`
+    base=`basename "$1"`
+    suffix=
+    case "${base}" in
+	*.f)
+	    base="${base%.f}"
+	    suffix="f"
+	    ;;
+	*.F)
+	    base="${base%.F}"
+	    suffix="F"
+	    ;;
+	*.c)
+	    base="${base%.c}"
+	    suffix="c"
+	    ;;
+	*.C)
+	    base="${base%.C}"
+	    suffix="C"
+	    ;;
+	*.cc)
+	    base="${base%.cc}"
+	    suffix="cc"
+	    ;;
+	*.CC)
+	    base="${base%.CC}"
+	    suffix="CC"
+	    ;;
+	*.cpp)
+	    base="${base%.cpp}"
+	    suffix="cpp"
+	    ;;
+	*.CPP)
+	    base="${base%.CPP}"
+	    suffix="CPP"
+	    ;;
+	*.cxx)
+	    base="${base%.cxx}"
+	    suffix="cxx"
+	    ;;
+	*.CXX)
+	    base="${base%.CXX}"
+	    suffix="CXX"
+	    ;;
+	*)
+	    ;;
+    esac
+    mode=unknown
+    if [ "x${suffix}" != "x" ]; then
+	case ${suffix} in
+	    f|F)
+		mode=Fortran
+		;;
+	    c|C|cc|CC|cpp|CPP|cxx|CXX)
+		mode=C
+		;;
+	    *)
+		;;
+	esac
+    fi
+    if [ "x${basedir}"  != "x." ]; then
+	base="${basedir}/${base}"
+	basedir=.
+    fi
+
+    if [ -d "${basedir}" -a -r "${basedir}/${base}.${suffix}" ]; then
+	dep_list=`mkdep ${mode} "${base}.${suffix}"`
+	if [ "x${exclude_pattern}" != "x" ]; then
+	    dep_list=`echo $dep_list | tr ' ' '\n' | grep -v -E ^${exclude_pattern}`
+	fi
+	if [ "x${dep_list}" != x ]; then
+	    dep_list_head=`echo ${base}.${suffix} $dep_list | tr ' ' '\n' | sort | grep -v ^/ | grep -v "^${base}.${suffix}" | grep -v "^${base}.o"`
+	    dep_list_tail=`echo ${base}.${suffix} $dep_list | tr ' ' '\n' | sort | grep    ^/ | grep -v "^${base}.${suffix}" | grep -v "^${base}.o"`
+	    echo ${base}.o: ${base}.${suffix} ${dep_list_head} ${dep_list_tail}
+	else
+	    echo ${base}.o: ${base}.${suffix}
+	fi
+    fi
+    shift
+done
+
+terminate 0
+
+# End of File

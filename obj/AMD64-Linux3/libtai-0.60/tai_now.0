@@ -1,0 +1,31 @@
+tai_now(3)                 Library Functions Manual                 tai_now(3)
+
+
+
+NNAAMMEE
+       tai_now - get current time, with 1-second precision
+
+SSYYNNTTAAXX
+       ##iinncclluuddee <<ttaaii..hh>>
+
+       void ttaaii__nnooww(&_t);
+
+       struct tai _t;
+
+DDEESSCCRRIIPPTTIIOONN
+       ttaaii__nnooww puts the current time into _t.
+
+       More  precisely:  ttaaii__nnooww  puts  into  _t its best guess as to the TAI64
+       label for the 1-second interval that contains the current time.
+
+NNOOTTEESS
+       This implementation of ttaaii__nnooww assumes that the  ttiimmee__tt  returned  from
+       the ttiimmee function represents the number of TAI seconds since 1970-01-01
+       00:00:10 TAI.
+
+SSEEEE AALLSSOO
+       tai(3), taia_now(3), time(3)
+
+
+
+                                                                    tai_now(3)

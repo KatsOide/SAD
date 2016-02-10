@@ -1,0 +1,5 @@
+FFS;
+
+calc;
+draw bx by & ex ey ;
+FFS["draw bx by & ex ey;",6];

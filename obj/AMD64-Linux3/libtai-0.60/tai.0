@@ -1,0 +1,51 @@
+tai(3)                     Library Functions Manual                     tai(3)
+
+
+
+NNAAMMEE
+       tai - manipulate times with 1-second precision
+
+SSYYNNTTAAXX
+       ##iinncclluuddee <<ttaaii..hh>>
+
+       double ttaaii__aapppprrooxx(&_t);
+
+       int ttaaii__lleessss(&_a,&_b);
+       void ttaaii__aadddd(&_t,&_a,&_b);
+       void ttaaii__ssuubb(&_t,&_a,&_b);
+
+       struct tai _t;
+       struct tai _a;
+       struct tai _b;
+
+DDEESSCCRRIIPPTTIIOONN
+       A  ssttrruucctt ttaaii stores an integer between 0 inclusive and 2^64 exclusive.
+       The format of ssttrruucctt ttaaii is designed to  speed  up  common  operations;
+       applications should not look inside ssttrruucctt ttaaii.
+
+       A  ssttrruucctt  ttaaii  variable is commonly used to store a TAI64 label.  Each
+       TAI64 label refers to one second of real time.   TAI64  labels  span  a
+       period     of     hundreds     of     billions     of    years.     See
+       hhttttpp::////ppoobbooxx..ccoomm//~~ddjjbb//pprroottoo//ttaaii6644..ttxxtt for more information.
+
+       A ssttrruucctt ttaaii variable may also be used to store the  numerical  differ‐
+       ence between two TAI64 labels.
+
+AARRIITTHHMMEETTIICC
+       ttaaii__aapppprrooxx  returns  a double-precision approximation to _t.  The result
+       of ttaaii__aapppprrooxx is always nonnegative.
+
+       ttaaii__lleessss returns 1 if _a is smaller than _b, 0 otherwise.
+
+       ttaaii__aadddd adds _a and _b modulo 2^64 and  puts  the  result  into  _t.   The
+       inputs and outputs may overlap.
+
+       ttaaii__ssuubb subtracts _b from _a modulo 2^64 and puts the result into _t.  The
+       inputs and outputs may overlap.
+
+SSEEEE AALLSSOO
+       tai_now(3), tai_pack(3), taia(3), utc(3)
+
+
+
+                                                                        tai(3)

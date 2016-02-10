@@ -1,0 +1,293 @@
+KBFFileSelectionPanel = Class[{},
+  {SortDate=1,SortDateRev=2,SortName=3,SortNameRev=4,sc="#F44",ac="#F88"},
+  {f,s,l,currdir,currfilter,pwd,currfullpath,wf,workflag,tsp,kbw,w,
+   ls,omtv,a,btext,frr,frl,fr1,fr2,fr3,fr4,ldir,dirmenu,cwl,sortmethod,
+   vsb,lb,lfilt,eflt,lsel,efile,bup,b,c,lc,frc,bapp,bsort,fr2a,fr2b,fr2ap1,
+   fr2ap2,omt,omtm,lfile,ldate,kl,scol,bups1,bups2,savefile,
+   fn=0,dbflag=0,brp=False},
+
+  Constructor[kw_,dir$_String,filter$_String] := (
+    If [dir$=="", dir$=Directory[]];
+    pwd = If[System["[ -d "//dir$//" ]"]===0,dir$,"/"];
+    If [pwd[-1] <=> "/", pwd = pwd//"/";];
+    currfilter = filter$;
+    currfullpath = pwd;
+    currdir = If [pwd == "/","/",pwd[StringPosition[pwd,"/"][[-2]][[1]]+1,-2]];
+    savefile = "";
+    btext = If[fn==0,"Open","Save"];
+    sortmethod=SortDate;
+
+    l = ListFiles[pwd,currfilter];
+    ! creating dialog
+    scol = {BG->"white",SelectBackground->"wheat",SelectForeground->"black",
+            SelectBorderWidth->0};
+	kbw = kw;
+!	w = kw@GetFrame[];
+	w = Frame[kw];
+    frr = Frame[w, Side->"left", Fill->"both", PadX->10, PadY->5, Expand->1];
+    fr1 = Frame[frr, PadX->7, PadY->2, Fill->"x"];
+    ldir = TextLabel[fr1, Width->12, TextAnchor->"w", Text->"Directory : ",
+                      Side->"left"];
+    omt = OptionMenu[fr1, TextVariable:>omtv, Side->"left", Relief->"ridge"
+                     ,BG->"gray85"];
+    omtm = Menu[omt];
+    omtm[Add]={Button[Text->"/", Command:>DoChangeDirectory["/",0]]};
+    If [pwd == "/",
+      omtv = "/"; tsp = {};
+    ,!Else
+      tsp = pwd[#[[1]],#[[2]]]&/@(Transpose[{Drop[#,-1]+1,Drop[#,1]-1}]&[
+               Transpose[StringPosition[pwd,"/"]][[1]]]);
+      omtv = tsp[[-1]];
+      Do[With[{a=tsp[[i]],i},
+        omtm[Add]={Button[Text->tsp[[i]], Command:>DoChangeDirectory[a,i]]}],
+        {i,Length[tsp]}]
+    ];
+    fr2 = Frame[frr, Fill->"both", PadX->8, PadY->5, Expand->1];
+    fr2a = Frame[fr2, Fill->"x", Relief->"sunken", BD->1, PadX->2];
+    bups1 = Button[fr2a, Side->"left", IPadY->1, BD->1,Command:>DirUp[1],
+             Bitmap->"@"//KBF$ConfDir//"/dirup.xbm"];
+    fr2ap1 = Frame[fr2a,Width->16,Side->"left"];
+![               ,BD->1,Relief->"raised",Fill->"y",PadY->2];
+    With[{SortDate,SortDateRev,SortName,SortNameRev},
+      bsort[SortDate] = Button[fr2a,Side->"left",IPadY->1,BD->1,
+             FG->sc,ActiveForeground->ac,
+             Bitmap->"@"//KBF$ConfDir//"/downarrow.xbm"];
+      ldate = TextLabel[fr2a,Text->"Date",Relief->"raised",Side->"left",BD->1,
+                        Font->TextFont[10,$DefaultSansSerifFont,"bold"],IPadX->5];
+      bsort[SortDateRev] = Button[fr2a,Side->"left",IPadY->1,BD->1,
+                            Bitmap->"@"//KBF$ConfDir//"/uparrow.xbm"];
+      fr2ap2 = Frame[fr2a,Width->26,Side->"left"];
+      bsort[SortName] = Button[fr2a,Side->"left",IPadY->1,BD->1,
+                                Bitmap->"@"//KBF$ConfDir//"/downarrow.xbm"];
+      lfile = TextLabel[fr2a,Text->"File",Relief->"raised",Side->"left",BD->1,
+                          Font->TextFont[10,$DefaultSansSerifFont,"bold"],IPadX->5];
+      bsort[SortNameRev] = Button[fr2a,Side->"left",IPadY->1,BD->1,
+                                  Bitmap->"@"//KBF$ConfDir//"/uparrow.xbm"];
+    ];
+    bups2 = Button[fr2a, Side->"right", IPadY->1, BD->1,Command:>DirUp[1],
+             Bitmap->"@"//KBF$ConfDir//"/dirup.xbm"];
+    fr2b = Frame[fr2, Fill->"both", Expand->1];
+    vsb=ScrollBar[fr2b, Orient->"vertical", Side->"right", Fill->"y",
+                     Width->12];
+    lb=ListBox[fr2b,If[l<>{},Insert->{"end",l},{}],Height->8,BG->"white",
+                SelectMode->"single", Expand->1, YScrollCommand:>vsb[Set],
+                Side->"right", Font->TextFont[12, $DefaultFixedFont, "bold"],
+                Fill->"both",Width->50, scol];
+    fr3 = Frame[frr, Fill->"x", PadX->7, PadY->2];
+    lfilt = TextLabel[fr3, Width->12, TextAnchor->"w", Text->"Filter : ",
+                       Side->"left"];
+    eflt = Entry[fr3, Side->"left", TextVariable:>currfilter, Fill->"x",
+                  Expand->1, scol];
+    bapp = Button[fr3, Side->"right", Text->"Apply", Width->6, PadX->5,
+                  Font->TextFont[10,$DefaultSansSerifFont,"bold"],Command:>DoFilter[]];
+    fr4 = Frame[frr, Fill->"x", PadX->7, PadY->2];
+    lsel = TextLabel[fr4, Width->12, TextAnchor->"w",Side->"left",
+             Text->If[fn==0,"Selection : ","Save File : "]];
+    efile = Entry[fr4, Width->35, Side->"left", Fill->"x", Expand->1,
+             If[fn==0,{State->"disabled", Relief->"ridge", TextVariable:>currfullpath,BG->"gray85"},{BG->"white", TextVariable:>savefile}]];
+    cwl = {w,frr};
+    If [brp===True,
+      frl = Frame[w, Side->"right", PadX->5, PadY->5, Fill->"y"];
+!      kl = PhotoImage["kekblogo",File->KBF$ConfDir//"/KEKBlogo2.gif",
+!                      Format->"gif"];
+!      lc = Canvas[frl, BD->2, Width->kl[Width]-4, Height->kl[Height]-4,
+!                   Relief->"sunken", PadY->3];
+!      lc[Create$Image]={0,0,Image->kl[Name],Anchor->"nw"};
+      bup = Button[frl, Width->8, Text->"Up", Side->"top",Command:>DirUp[1]];
+      b = Button[frl, Width->8, Text->btext, Side->"bottom",
+                   State->If[fn==0,"disabled","normal"]];
+      c = Button[frl,Width->8,Text->"Cancel",Side->"bottom",Command:>TkReturn[]];
+      If [pwd == "/", bup[State] = "disabled"];
+      Bind[b, "<Button-1>", OkOrDown[1]];
+      AppendTo[cwl,frl];
+    ];
+
+!   AdjustWindowGeometry[w];
+
+    ! set up widgets
+    If [pwd == "/",
+      bups1[State] = "disabled";
+      bups2[State] = "disabled";];
+    Do[With[{i},bsort[i][Command] := UpdateList[i]],{i,1,4}];
+
+    ! binding
+    Bind[lb, "<ButtonRelease-1>", LBSel[]];
+    Bind[lb, "<Double-Button-1>", (dbflag=1; OkOrDown[0])];
+    Bind[lb, "<Key-Return>", OkOrDown[0]];
+    Bind[eflt, "<Key-Return>", DoFilter[]];
+    Bind[eflt, "<Double-Button-1>", DoFilter[]];
+!    Bind[w, "<Key-Escape>", TkReturn[]];
+  );
+
+  GetSelection[] := currfullpath;
+
+  DoChangeDirectory[s$_String,n$_] := (
+    If [Length[tsp] == n$,
+      DoFilter[];
+    ,!Else
+      DirUp[Length[tsp]-n$];
+    ];
+  );
+  Destructor[] := (
+    frr=.;
+    frl=.;
+  );
+
+  DirUp[n_] := Module[{ups},
+    If [n > 0,
+      omtm[Delete]={Length[tsp]-n+2,Length[tsp]+1};
+      tsp = Drop[tsp, -n];
+      If [tsp == {},
+        pwd = "/";
+        currdir = "/";
+      ,!Else
+        currdir = tsp[[-1]];
+        pwd = "";
+        Scan[(pwd = pwd//"/"//#)&, tsp];
+        pwd = pwd//"/";
+      ];
+      omtv = currdir;
+      currfullpath = pwd;
+      If [brp===True,
+        b[Text] = btext;
+        If [fn==0, b[State] = "disabled"];
+      ];
+      l = ListFiles[pwd,currfilter];
+      lb[Delete] = {1, "end"};
+      If [l<=>{}, lb[Insert] = {"end", SortLs[l]}];
+      ups = If [pwd == "/", "disabled", "normal"];
+      bup[State] = ups; bups1[State] = ups; bups2[State] = ups; 
+    ];
+  ];
+
+  ListFiles[pwd_,currfilter0_] := Module[
+    {l,f,retcode,s,a,currfilter=currfilter0},
+    Scan[(#[Cursor]="watch")&,cwl];
+    Update[IdleTasks];
+    If[currfilter=="",currfilter = "*"];
+    f = OpenRead["!unset LANG LC_TIME;cd "//pwd//";ls -nLt | awk '{print $1, $6, $7, $8, $9}'"];
+    ! reading file listing
+    l = {};
+    If [f<=>$Failed,
+      ReadString[f];
+      While [(s=ReadString[f])<=>EndOfFile,
+        If [s[1]=="d"||((s[1]=="-")&&StringMatchQ[s[12,-1],"* * * "//currfilter]),
+          s = s[1]//"   "//s[12,-1];
+          s = If [s[10]==" ", StringInsert[s, " ", 9], s];
+          s = StringInsert[If [s[16]==" ", StringInsert[s, " ", 12], s],
+                             "  ",17];
+          l = {l,s};
+        ];
+      ];
+    ];
+    Close[f];
+    Scan[(#[Cursor]="left_ptr")&,cwl];
+    Flatten[l]
+  ];
+
+  OkOrDown[n_] := Module[{s,sel,ups},
+    Update[IdleTasks];
+    If [lb[Size]>0 && (sel=lb[Selection]) <=> {},
+      s = lb[GetText[sel[[1]]]];
+      If [(s[1] == "-")||((fn==1)&&(n==1)),
+!        If [(fn==1)&&(n==1),]
+        If [fn==1,
+          If [savefile<>"",
+            If [System["[ -e "//pwd//savefile//" ]"]===0,
+              If [kbw@MessageBox["The file "//pwd//savefile//" already exists.\nDo you really want to overwrite the file ?",Bitmap->"warning",Items->{"Ok","Cancel"}]===1,TkReturn[pwd//savefile]];
+            ,!Else
+              If [brp===True, TkReturn[pwd//savefile]];
+            ];
+          ];
+        ,!Else
+          If [brp===True, TkReturn[pwd//s[20,-1]]];
+        ];
+      ,!Else
+        If [s[1] == "d",
+          currdir = s[20,-1];
+          tsp = Append[tsp, currdir];
+          pwd = pwd//currdir//"/";
+          currfullpath = pwd;
+          With[{a=tsp[[-1]],b=Length[tsp]},
+            omtm[Add]={Button[Text->currdir,Command:>DoChangeDirectory[a,b]]}];
+          omtv = currdir;
+          If [brp===True,
+            b[Text] = btext;
+            If [fn==0, b[State] = "disabled"];
+          ];
+          l = ListFiles[pwd,currfilter];
+          lb[Delete] = {1, "end"};
+          If [l<=>{}, lb[Insert] = {"end", SortLs[l]}];
+!          lb[Insert] = {"end", SortLs[l]};
+          ups = "normal";
+          bup[State] = ups; bups1[State] = ups; bups2[State] = ups; 
+        ];
+      ];
+    ,!Else
+      If [(fn==1)&&(savefile<>""),
+        If[System["[ -e "//pwd//savefile//" ]"]==0,
+              If [kbw@MessageBox["The file "//pwd//savefile//" already exists.\nDo you really want to overwrite the file ?",Bitmap->"warning",Items->{"Ok","Cancel"}]==1,TkReturn[pwd//savefile]];
+        ,!Else
+          If [brp===True, TkReturn[pwd//savefile]];
+        ];
+      ];
+    ];
+  ];
+
+  DoFilter[] := (
+    If [currfilter == "", currfilter = "*"];
+    l = ListFiles[pwd,currfilter];
+    lb[Delete] = {1, "end"};
+    If [l<=>{}, lb[Insert] = {"end", SortLs[l]}];
+  );
+
+  UpdateList[sm_] := 
+    If [sortmethod <=> sm,
+      With[{sortmethod},
+        bsort[sortmethod][FG] = "black";
+        bsort[sortmethod][ActiveForeground] = "black";];
+      bsort[sm][FG] = sc;
+      bsort[sm][ActiveForeground] = ac;
+      Update[IdleTaksk];
+      sortmethod = sm;
+      lb[Delete] = {1, "end"};
+      If [l<=>{}, lb[Insert] = {"end", SortLs[l]}];
+      b[Text] = btext;
+      b[State] = "disabled";
+    ];
+
+  SortLs[l_] :=
+    Switch[sortmethod,
+      SortDate,
+        l,
+      SortDateRev,
+        Reverse[l],
+      SortName,
+        Map[(#[-19,-1]//#[1,-20])&,Sort[Map[(#[20,-1]//#[1,19])&,l]]],
+      SortNameRev,
+        Reverse[Map[(#[-19,-1]//#[1,-20])&,Sort[Map[(#[20,-1]//#[1,19])&,l]]]]
+    ];
+
+  LBSel[] := Module[{s}, 
+    If [dbflag == 0,
+      If [lb[Size]>0, 
+        b[State] = "normal";
+        s = lb[GetText[lb[Selection][[1]]]];
+        If [s[1] == "-",
+          currfullpath = pwd//s[20,-1];
+          savefile = s[20,-1];
+          b[Text] = btext;
+        ,!Else
+          If [(s[1]=="d")&&(fn==0),
+            currfullpath = pwd//s[20,-1]//"/";
+            b[Text] = "Go Down";
+          ];
+        ];
+      ,!Else
+         If[fn==0,b[State] = "disabled"];
+      ];
+    ,!Else
+      dbflag = 0;
+    ];
+  ];
+];

@@ -1,0 +1,653 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="en-US">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=US-ASCII">
+<TITLE>KBFrame Manual</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<DIV ALIGN="CENTER"><H2>KBFrame Manual</H2></DIV>
+
+<HR>
+
+Creation commands :
+<UL>
+<LI><A HREF="#KBMainFrame">KBMainFrame,KBSubFrame</A>
+<LI><A HREF="#KBFAddMenuButton">KBFAddMenuButton</A>
+<LI><A HREF="#KBFComponentFrame">KBFComponentFrame</A>
+<LI><A HREF="#KBFOptionDialog">KBFOptionDialog</A>
+<LI><A HREF="#KBFOpenDialog">KBFOpenDialog,KBFSaveDialog</A>
+<LI><A HREF="#KBFTabFrame">KBFTabFrame</A>
+<LI><A HREF="#KBFToggleFrame">KBFToggleFrame</A>
+</UL>
+Delete commands :
+<UL>
+<LI><A HREF="#Close">Close</A>
+</UL>
+Display commands :
+<UL>
+<LI><A HREF="#ProgressBar">ProgressBar</A>
+<LI><A HREF="#StatusLine">StatusLine</A>
+<LI><A HREF="#InfoLabel">InfoLabel</A>
+<LI><A HREF="#AboutMessage">AboutMessage</A>
+</UL>
+
+<HR>
+
+<H3><A NAME="KBMainFrame">KBMainFrame,KBSubFrame</A></H3>
+
+<H4>Usage:</H4>
+
+<PRE><CODE>
+    mf = KBMainFrame[sm,fm,options];
+    sf = KBSubFrame[ss,fs,options];
+</CODE></PRE>
+
+<H4>Where:</H4>
+<UL>
+<LI><EM>sm</EM> is a unique character string that identifies the application 
+and the main frame.
+<LI><EM>ss</EM> is a character string that identifies the sub frame.
+<LI><EM>fm</EM>,<EM>fs</EM> is a frame where widgets can be put.
+<LI><EM>options</EM> are passed to the toplevel window.
+</UL>
+
+<H4>Description:</H4>
+<P><EM>KBMainFrame</EM> and <EM>KBSubFrame</EM> creates a toplevel window 
+with a menu bar and a status line. The first toplevel window should be 
+created with <EM>KBMainFrame</EM>, and the rest of the toplevel windows 
+with <EM>KBSubFrame</EM>.</P>
+
+<P><EM>mf</EM> can be treated as the name of the toplevel window. For example,
+<CODE>mf[Geometry]="+60+40"</CODE> sets the geometry of the toplevel 
+window.</P>
+
+<H4>Example:</H4>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["FrameTest",f,Title-&gt;"Frame Test"];
+b = Button[f,Text-&gt;"Button"];
+TkWait[];
+</CODE></PRE>
+
+<H3><A NAME="KBFAddMenuButton">KBFAddMenuButton</A></H3>
+<H4>Usage:</H4>
+
+<PRE><CODE>
+    mb = KBFAddMenuButton[w, opts];
+</CODE></PRE>
+
+<H4>Where:</H4>
+<UL>
+<LI><EM>mb</EM> is the symbol under which the MenuButton is created.
+<LI><EM>w</EM> is a KBFrame.
+<LI><EM>opts</EM> are passed to the new MenuButton.
+</UL>
+
+<H4>Description:</H4>
+<EM>KBFAddMenuButton</EM> create a new MenuButton on the menu bar of 
+<A HREF="#KBMainFrame">KBFrame</A>. The new MenuButton is placed 
+between the Edit and Window menu. A Menu associated with it can be 
+created as usual. (See the example below.)
+
+<H4>Example:</H4>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["MenuEx", f, Title-&gt;"Menu Example"];
+mb = KBFAddMenuButton[w, Text-&gt;"Test"];
+m = Menu[mb,Add-&gt;{
+      Button[Text-&gt;"Action 1", Command:&gt;Print["1"]],
+      Button[Text-&gt;"Action 2", Command:&gt;Print["2"]]}];
+TkWait[];
+</CODE></PRE>
+
+<H3><A NAME="KBFComponentFrame">KBFComponentFrame</A></H3>
+<H4>Usage:</H4>
+
+<PRE><CODE>
+    kcf = KBFComponentFrame[f, Add-&gt;cmpts, opts]
+</CODE></PRE>
+
+<H4>Where:</H4>
+<UL>
+<LI><EM>kcf</EM> is the symbol under which the components are created.
+<LI><EM>f</EM> is the parent widget.
+<LI><EM>cmpts</EM> is the list of the components.
+<LI><EM>opts</EM> is passed to the enclosing frame of 
+<EM>KBFComponentFrame</EM>.
+</UL>
+
+<H4>Description:</H4>
+<P><EM>KBFComponentFrame</EM> provides simple arrangement of Tk widgets 
+in the main application area. <EM>Add</EM> option specifies the list of 
+components, which are listed with the available options below. </P>
+
+<H5>Component[Grouping/Entry/Button]:</H5>
+<TABLE BORDER=3 SUMMARY="KBFComponentFrame's normal components">
+<TR><TD>Component</TD><TD>Text</TD><TD>Command</TD><TD>Items</TD><TD>Variable</TD><TD>TextWidgetVariable</TD><TD>WidgetVariable</TD><TD>WidgetOption</TD><TD>NextColumn</TD><TD>NumberForm</TD><TD>EntryWidth</TD><TD>SpinBox</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFGroup</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>-</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>-</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFSeparator</TD><TD>-</TD><TD>-</TD><TD>-</TD><TD>-</TD><TD>-</TD><TD>O</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>-</TD><TD>-</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFText</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>O</TD><TD>-</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>-</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFString</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>-</TD><TD>O</TD><TD>O</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFNumber</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFCursorEntry</TD><TD>O</TD><TD>O</TD><TD>-</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFCheckButton</TD><TD>O</TD><TD>O</TD><TD>-</TD><TD>O</TD><TD>-</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>-</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFRadioButton</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>-</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFOptionMenu</TD><TD>O</TD><TD>-</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>-</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFButton</TD><TD>O</TD><TD>O</TD><TD>-</TD><TD>O</TD><TD>-</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>-</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFTextEditor</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>-</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFListBox</TD><TD>O</TD><TD>-</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>-</TD></TR>
+</TABLE>
+
+<UL>
+<LI>Text option<BR>
+The label string assiciated with the component. 
+<LI>Command option<BR>
+The function invoked when the button is pressed.
+<LI>Items option<BR>
+The list of selections.
+<LI>Variable option<BR>
+The variable to store values of input string, number or selection.
+<LI>TextWidgetVariable option<BR>
+The label widget (e.g. TextLabel for KBFString) is created with this variable.
+<LI>WidgetVariable option<BR>
+The main widget (e.g. Entry for KBFString) is created with this variable.
+<LI>WidgetOption option<BR>
+The list of options to be passed to the main widget.
+<LI>NextColumn option<BR>
+If <EM>True</EM>, this component is placed at the top of the next column.
+<LI>NumberForm option<BR>
+The output form for KBFNumber/KBFCursorEntry.<BR>
+The default number form can be changed by <EM>DefaultNumberForm</EM> option.<BR>
+<LI>EntryWidth option<BR>
+The width of the entry box.<BR>
+The default width can be changed by <EM>DefaultEntryWidth</EM> option.<BR>
+<LI>SpinBox option(KBFNumber/KBFString/KBFCursorEntry)<BR>
+If <EM>True</EM>, this component appear with spin button(upward/downward).<BR>
+In <EM>KBFNumber/KBFString</EM> component,
+if spin button pushd, the function binded by Command option was invoked
+with <EM>$Event</EM> global variable.
+In the <EM>$Event</EM> variable, the spin button direction is reported
+by the rule <EM>Direction-&gt;"up"</EM> or <EM>Direction-&gt;"down"</EM>.
+
+</UL>
+<STRONG>Special Options:</STRONG>
+<UL>
+<LI>KBFCheckButton/KBFRadioButton
+     <UL>
+     <LI>InitialIndex option<BR>
+	  The initial number of variable index.
+     </UL>
+<LI>KBFCursorEntry
+     <UL>
+     <LI>CursorPosition option<BR>
+	  The initial cursor position is at
+	  <EM>n</EM>th column from left (when <EM>n</EM>&gt;0),<BR>
+	  or -<EM>n</EM>th column from right (when <EM>n</EM>&lt;0)
+	  The default width can be changed by <EM>DefaultCursorPosition</EM> option.<BR>
+	  <STRONG>Note: </STRONG> <EM>DefaultPosition</EM> option
+	  is available only for backword compatibility.<BR>
+	  <EM>DO NOT</EM> use <EM>DefaultPosition</EM> option
+	  for new programming.(Use <EM>CursorPosition</EM> option instead)
+     <LI>Range option<BR>
+	  The range of variable.
+	  The default width can be changed by <EM>DefaultRange</EM> option.<BR>
+     <LI>Factor option<BR>
+	  The magnification for display.
+     </UL>
+</UL>
+
+<H5>Component[Frame/Hook]:</H5>
+<TABLE BORDER=3 SUMMARY="KBFComponentFrame's Frame/Hook components">
+<TR><TD>Component</TD><TD>Add</TD><TD>Command</TD><TD>DeselectCommand</TD>
+<TD>Text</TD><TD>TabName</TD><TD>InitialTab</TD><TD>InitialState</TD>
+<TD>WidgetVariable</TD><TD>WidgetOption</TD><TD>NextColumn</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFFrame</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>-</TD><TD>-</TD><TD>-</TD><TD>-</TD><TD>O</TD><TD>O</TD><TD>O</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFFrameToggled</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFFrameTabed</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>-</TD><TD>-</TD><TD>O</TD><TD>-</TD><TD>O</TD><TD>O</TD><TD>O</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFTab</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>O</TD><TD>O</TD><TD>-</TD></TR>
+<TR ALIGN="center"><TD ALIGN="left">KBFHook</TD><TD>-</TD><TD>O</TD><TD>-</TD><TD>-</TD><TD>-</TD><TD>-</TD><TD>-</TD><TD>-</TD><TD>-</TD><TD>-</TD></TR>
+</TABLE>
+
+<UL>
+<LI>Add option<BR>
+The list of componets to create on this widget.
+<LI>Command option<BR>
+<EM>KBFTab</EM>: The function invoked when the tab is selected.<BR>
+<EM>KBFHook</EM>: The function invoked when KBFComponentFrame is created.
+<LI>DeselectCommand option<BR>
+The function invoked when the tab is deselected.
+<LI>Text option<BR>
+<EM>KBFFrameToggled</EM>: The label string assiciated with the component.<BR>
+<EM>KBFTab</EM>: The tab name string assiciated with the component.
+<LI>TabName option<BR>
+The tab name string assiciated with the component.
+<LI>InitialTab option<BR>
+The initial tab name or number to be selected.
+<LI>InitialState option<BR>
+The initial statue of toggle frame.
+<LI>WidgetVariable option<BR>
+The main widget (e.g. Entry for KBFString) is created with this variable.
+<LI>WidgetOption option<BR>
+The list of options to be passed to the main widget.
+<LI>NextColumn option<BR>
+If <EM>True</EM>, this component is placed at the top of the next column.
+</UL>
+
+<H4>Example:</H4>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["CompArr", f, Title-&gt;"Arrange Component Test"];
+s = "initial string"; n = 1; c = 1; r = 1; o = 1; l = 1;
+cf = KBFComponentFrame[f,
+  Add-&gt;{
+    KBFGroup[Text-&gt;"Group1"],
+    KBFText[Text-&gt;"Examples of Component Arrangement"],
+    KBFString[Text-&gt;"String Input :", Variable:&gt;s],
+    KBFNumber[Text-&gt;"Number Input :", Variable:&gt;n],
+    KBFCheckButton[Text-&gt;"Check", Variable:&gt;c],
+    KBFRadioButton[Items-&gt;{"Radio 1","Radio 2"}, Variable:&gt;r],
+    KBFOptionMenu[Items-&gt;{"Option 1","Option 2","Option 3"}, Variable:&gt;o],
+    KBFListBox[Items-&gt;{"List 1","List 2","List 3","List 4"}, Variable:&gt;l],
+    KBFSeparator[],
+    KBFButton[Text-&gt;"Print", Command:&gt;Print[{s,n,c,r,o,l}]]
+  }
+];
+TkWait[];
+</CODE></PRE>
+
+<H3><A NAME="KBFOptionDialog">KBFOptionDialog</A></H3>
+<H4>Usage:</H4>
+
+<PRE><CODE>
+    r = KBFOptionDialog[Add-&gt;cmpts, opts]
+</CODE></PRE>
+
+<H4>Where:</H4>
+<UL>
+<LI><EM>r</EM> is 0 when the user pressed the <EM>cancel</EM> button, 1 
+when <EM>ok</EM> button is pressed.
+<LI><EM>cmpts</EM> is the list of the components.
+<LI><EM>opts</EM> is other options. Currently only <EM>Title</EM> option
+is allowed.
+</UL>
+
+<H4>Description:</H4>
+<EM>KBFOptionDialog</EM> creates a dialog box and blocks until the 
+user clicks the <EM>ok</EM> or <EM>cancel</EM> button. The <EM>Add</EM> 
+option is the same as in the case of 
+<A HREF="#KBFComponentFrame"><EM>KBFComponentFrame</EM></A>, 
+with an exception that <EM>WidgetVariable</EM> option is not available 
+now. The contents of the <EM>Variable</EM> is not changed when the 
+user clicks the <EM>cancel</EM> button.
+
+<H4>Example:</H4>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["DialogTest", f, Title-&gt;"Dialog Box Test"];
+b = Button[f, Text-&gt;"Option", Command:&gt;ot];
+s = "initial string"; n = 1; c = 1; r = 1; o = 1; l = 1;
+ot := (rc = KBFOptionDialog[
+    Title-&gt;"Option Test",
+    Add-&gt;{
+      KBFGroup[Text-&gt;"Group1"],
+      KBFText[Text-&gt;"Examples of Component Arrangement"],
+      KBFString[Text-&gt;"String Input :", Variable:&gt;s],
+      KBFNumber[Text-&gt;"Number Input :", Variable:&gt;n],
+      KBFCheckButton[Text-&gt;"Check", Variable:&gt;c],
+      KBFRadioButton[Items-&gt;{"Radio 1","Radio 2"}, Variable:&gt;r],
+      KBFOptionMenu[Items-&gt;{"Option 1","Option 2","Option 3"}, Variable:&gt;o],
+      KBFListBox[Items-&gt;{"List 1","List 2","List 3","List 4"}, Variable:&gt;l],
+      KBFSeparator[],
+      KBFButton[Text-&gt;"Print", Command:&gt;Print[{s,n,c,r,o,l}]]
+    }
+  ];
+  Print[{rc,s,n,c,r,o,l}];
+);
+TkWait[];
+</CODE></PRE>
+
+<H3><A NAME="KBFOpenDialog">KBFOpenDialog,KBFSaveDialog</A></H3>
+<H4>Usage:</H4>
+
+<PRE><CODE>
+    fn = KBFOpenDialog[dir,flt]
+    fn = KBFSaveDialog[dir,flt]
+</CODE></PRE>
+
+<H4>Where:</H4>
+<UL>
+<LI><EM>fn</EM> is the returned file name.
+<LI><EM>dir</EM> is the initial directory.
+<LI><EM>flt</EM> is the filter for selecting what to display in the list.
+</UL>
+
+<H4>Description:</H4>
+<EM>KBFOpenDialog</EM> and <EM>KBFSaveDialog</EM> create a file selection 
+dialog box. They list the files that match <EM>flt</EM> and all the 
+directories in <EM>dir</EM> in its listbox. The return value is the 
+full path name of the selected file or Null if the user pressed the 
+cancel button.
+
+<H4>Example:</H4>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["OpenDialogTest", f, Title-&gt;"File Open Dialog Test"];
+b = Button[f,Text-&gt;"Open",Command:&gt;of[]];
+
+of[] := Module[{fn},
+  fn = KBFOpenDialog["/","*"];
+  If [fn &lt;=&gt; Null, Print["Open file is "//fn]];
+];
+
+TkWait[];
+</CODE></PRE>
+
+
+<H3><A NAME="KBFTabFrame">KBFTabFrame</A></H3>
+<H4>Usage:</H4>
+
+<PRE><CODE>
+    tf = KBFTabFrame[f]
+    tab1 = tf@AddTab[label, f1, opts]
+</CODE></PRE>
+
+<H4>Where:</H4>
+<UL>
+<LI><EM>tf</EM> is the symbol under which the container of tabbed frames is 
+created.
+<LI><EM>f</EM> is the parent widget.
+<LI><EM>label</EM> is a string used as the label of the new tab.
+<LI><EM>f1</EM> is a frame where widgets can be put.
+<LI><EM>opts</EM> is options to <EM>AddTab</EM>, which include 
+<EM>Command</EM>, <EM>DeselectCommand</EM> and <EM>Expand</EM>.
+</UL>
+
+<H4>Description:</H4>
+<EM>KBFTabFrame</EM> creates an object which is a container of tabbed frames.
+
+
+<H4>Methods:</H4>
+
+<H5>AddTab[label, f1, opts]</H5>
+Creates a new tab with a <EM>label</EM>. The contents of the tabbed frame 
+is created as children of <EM>f1</EM>. Possible options for <EM>opts</EM> are:
+
+<UL>
+<LI><EM>Command</EM> specifies the expression executed when the tab is 
+selected.
+<LI><EM>DeselectCommand</EM> specifies the expression executed when another 
+tab is selected and this tab is hidden.
+<LI>When <EM>Expand</EM> is <EM>True</EM>, this tabbed frame expands to the 
+size of KBFTabFrame.
+</UL>
+
+The return value of <EM>AddTab</EM> is used as an argument for 
+<EM>SelectTab</EM>.
+
+<H5>DisableTab[tab]</H5>
+Disables a tab <EM>tab</EM>. <EM>tab</EM> is a return value of <EM>AddTab</EM>.
+
+<H5>EnableTab[tab]</H5>
+Enables a tab <EM>tab</EM>. <EM>tab</EM> is a return value of <EM>AddTab</EM>.
+
+<H5>SelectTab[tab]</H5>
+Selects a tab <EM>tab</EM>. <EM>tab</EM> is a return value of <EM>AddTab</EM>.
+
+<H4>Example:</H4>
+
+<PRE><CODE>
+FFS;
+
+w = KBMainFrame["tabtest",f,Title-&gt;"TabFrame Test"];
+tf = KBFTabFrame[f];
+tab1 = tf@AddTab["red",f1,Command:&gt;Print["red"],DeselectCommand:&gt;Print["not red"]];
+fc1 = Frame[f1,Width-&gt;640,Height-&gt;240,BG-&gt;"red"];
+tab2 = tf@AddTab["green",f2];
+fc2 = Frame[f2,Width-&gt;320,Height-&gt;240,BG-&gt;"green"];
+tab3 = tf@AddTab["blue",f3];
+fc3 = Frame[f3,Width-&gt;320,Height-&gt;480,BG-&gt;"blue"];
+tf@SelectTab[tab1];
+
+TkWait[];
+</CODE></PRE>
+
+
+<H3><A NAME="KBFToggleFrame">KBFToggleFrame</A></H3>
+<H4>Usage:</H4>
+
+<PRE><CODE>
+    tf = KBFToggleFrame[p,f]
+</CODE></PRE>
+
+<H4>Where:</H4>
+<UL>
+<LI><EM>tf</EM> is the symbol under which the container of 
+<EM>KBFToggleFrame</EM> is created.
+<LI><EM>p</EM> is the parent widget.
+<LI><EM>f</EM> is a frame where widgets can be put.
+<LI><EM>opts</EM> is options, which include <EM>InitialState</EM> and
+<EM>Text</EM>.
+</UL>
+
+<H4>Description:</H4>
+<EM>KBFToggleFrame</EM> creates an frame which a user can hide and show. 
+<EM>Text</EM> option specifies the title of the frame. 
+If <EM>InitialState</EM> is <EM>True</EM>, the initial state of the frame is 
+"expanded". The default value of <EM>InitialState</EM> is <EM>False</EM> 
+("collapsed").
+
+<H4>Example:</H4>
+
+<PRE><CODE>
+FFS;
+
+w = KBMainFrame["toggleframe",f];
+uf = KBFToggleFrame[f,tf,Text-&gt;"Toggle",InitialState-&gt;True];
+b = Button[tf,Text-&gt;"exit",Width-&gt;20,Command:&gt;Exit[]];
+
+TkWait[];
+</CODE></PRE>
+
+
+<H3><A NAME="Close">Close</A></H3>
+<H4>Usage:</H4>
+
+<PRE><CODE>
+    w[Close]
+</CODE></PRE>
+
+<H4>Where:</H4>
+<UL>
+<LI><EM>w</EM> is a KBSubFrame.
+</UL>
+
+<H4>Description:</H4>
+Close the KBSubFrame <EM>w</EM>.
+
+<H4>Example:</H4>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["CloseTest", f, Title-&gt;"Close test"];
+ws = KBSubFrame["ClosedFrame", fs, Title-&gt;"To be closed"];
+Bind[fs,"&lt;Button&gt;",ws[Close]];
+TkWait[];
+</CODE></PRE>
+
+
+
+<H3><A NAME="ProgressBar">ProgressBar</A></H3>
+<H4>Usage:</H4>
+
+<PRE><CODE>
+    w[ProgressBar] = p
+    w[ProgressBar] = Null
+</CODE></PRE>
+
+<H4>Where:</H4>
+<UL>
+<LI><EM>w</EM> is a KBFrame.
+<LI><EM>p</EM> is a Real number between 0 and 1.
+</UL>
+
+<H4>Description:</H4>
+The first form displays the progress bar at the right of the status line.
+The second form disables the progress bar.
+
+<H4>Example:</H4>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["ProgBarTest", f, Title-&gt;"Progress Bar Test"];
+Bind[f, "&lt;Button-1&gt;", StartProgBar[]];
+
+StartProgBar[] := (
+  Do[w[ProgressBar]=p;Pause[0.1],{p,0,1,0.05}];
+  w[ProgressBar] = Null;
+);
+
+TkWait[];
+</CODE></PRE>
+
+<H3><A NAME="StatusLine">StatusLine</A></H3>
+<H4>Usage:</H4>
+
+<PRE><CODE>
+    w[StatusLine] = {d, s}
+    w[StatusLine] = s
+    w[FreeStatusLine]
+</CODE></PRE>
+
+<H4>Where:</H4>
+<UL>
+<LI><EM>w</EM> is a KBFrame.
+<LI><EM>d</EM> is a widget.
+<LI><EM>s</EM> is a string to be displayed in the status line.
+</UL>
+
+<H4>Description:</H4>
+The first form configures the widget <EM>d</EM> so that <EM>s</EM> is 
+displayed when the pointer enters it. This form is intended to be used 
+as a short user guide or information display.
+The second form displays <EM>s</EM> in the status line permanently. 
+The third form release the status line locked by the second form.
+
+<H4>Example:</H4>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["StatLineTest", f, Title-&gt;"Status Line Test"];
+f1 = Frame[f, Width-&gt;150, Height-&gt;100, Side-&gt;"left", BG-&gt;"red"];
+f2 = Frame[f, Width-&gt;150, Height-&gt;100, Side-&gt;"left", BG-&gt;"green"];
+f3 = Frame[f, Width-&gt;150, Height-&gt;100, Side-&gt;"left", BG-&gt;"blue"];
+
+w[StatusLine] = {f1, "red frame"};
+w[StatusLine] = {f2, "green frame"};
+w[StatusLine] = {f3, "blue frame"};
+
+TkWait[];
+</CODE></PRE>
+
+<H3><A NAME="InfoLabel">InfoLabel</A></H3>
+<H4>Usage:</H4>
+
+<PRE><CODE>
+    w[InfoLabel] = {d, s}
+    w[InfoLabel] = {d, s, Tags-&gt;t}
+</CODE></PRE>
+
+<H4>Where:</H4>
+<UL>
+<LI><EM>w</EM> is a KBFrame.
+<LI><EM>d</EM> is a widget.
+<LI><EM>s</EM> is a string to be displayed in the status line.
+<LI><EM>t</EM> is a tag of an item.
+</UL>
+
+<H4>Description:</H4>
+The first form configures the widget <EM>d</EM> so that <EM>s</EM> is 
+displayed in a small window when the pointer enters it. 
+The second form displays <EM>s</EM> when the pointer stops on an item 
+of a canvas with a tag <EM>t</EM>.
+
+<H4>Example:</H4>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["InfoLabelTest", f, Title-&gt;"InfoLabel Test"];
+c = Canvas[f,Width-&gt;640,Height-&gt;300];
+c[Create$Rectangle] = {100,100,200,200,Fill-&gt;"red",Tag-&gt;"red"};
+c[Create$Rectangle] = {300,100,400,200,Fill-&gt;"green",Tag-&gt;"green"};
+c[Create$Rectangle] = {500,100,600,200,Fill-&gt;"blue",Tag-&gt;"blue"};
+b = Button[f,Text-&gt;"button",Command:&gt;Print["hi,"]];
+
+w[InfoLabel] = {c,"red rectangle",Tags-&gt;"red"};
+w[InfoLabel] = {c,"green rectangle",Tags-&gt;"green"};
+w[InfoLabel] = {c,"blue rectangle",Tags-&gt;"blue"};
+w[InfoLabel] = {b,"prints hi"};
+
+TkWait[];
+</CODE></PRE>
+
+<H3><A NAME="AboutMessage">AboutMessage</A></H3>
+<H4>Usage:</H4>
+
+<PRE><CODE>
+    w[AboutMessage] = s
+</CODE></PRE>
+
+<H4>Where:</H4>
+<UL>
+<LI><EM>w</EM> is a KBFrame.
+<LI><EM>s</EM> is a string displayed in the "About" dialog box.
+</UL>
+
+<H4>Description:</H4>
+There are "About ..." menus under <IMG SRC="KEKBlogo4.gif"
+ WIDTH=18 HEIGHT=14 ALT="Belle Menu"> and <EM>Help</EM> 
+<EM>MenuButton</EM>. It creates a dialog box where <EM>s</EM> is 
+displayed.
+
+<H4>Example:</H4>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["AboutTest", f, Title-&gt;"About Dialog Test"];
+w[AboutMessage] = "This Program was developed by Mr. X\nIf you encounter any problem, please call.\n    Day: 5xxx\n    Night: 64-xxxx";
+TkWait[];
+</CODE></PRE>
+
+<!--
+<H3><A NAME=""></A></H3>
+<H4>Usage:</H4>
+
+<PRE><CODE>
+</CODE></PRE>
+
+<H4>Where:</H4>
+<UL>
+<LI><EM></EM>
+</UL>
+
+<H4>Description:</H4>
+
+<H4>Example:</H4>
+
+<PRE><CODE>
+FFS;
+TkWait[];
+</CODE></PRE>
+-->
+
+<HR><ADDRESS>Send feedback to:
+<A HREF="mailto:samo.stanic@kek.jp">Samo Stanic</A>
+.</ADDRESS>
+</BODY>
+</HTML>

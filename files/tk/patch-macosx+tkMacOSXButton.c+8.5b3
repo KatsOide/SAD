@@ -1,0 +1,71 @@
+--- macosx/tkMacOSXButton.c.orig	2007-11-09 07:23:06.000000000 +0100
++++ macosx/tkMacOSXButton.c	2007-11-15 12:19:22.000000000 +0100
+@@ -65,7 +65,7 @@
+ 				 * it is an image button, so we offset the
+ 				 * image to make the button appear to move
+ 				 * up and down as the relief changes. */
+-    GC gc;
++    GC gc, altGc, scriptGc, altScriptGc;
+     int hasImageOrBitmap;
+ } DrawParams;
+ 
+@@ -198,10 +198,16 @@
+ 					     * pixmap as well */
+     DrawParams drawParams, *dpPtr = &drawParams;
+ 
++    char	*text;
++
+     butPtr->flags &= ~REDRAW_PENDING;
+     if ((butPtr->tkwin == NULL) || !Tk_IsMapped(tkwin)) {
+ 	return;
+     }
++    if (butPtr->textPtr==NULL)
++      text = NULL;
++    else
++      text = Tcl_GetString(butPtr->textPtr);
+     pixmap = (Pixmap) Tk_WindowId(tkwin);
+     wasUsingControl = macButtonPtr->usingControl;
+ 
+@@ -433,9 +439,18 @@
+ 	TkComputeAnchor(butPtr->anchor, tkwin, butPtr->padX, butPtr->padY,
+ 		butPtr->indicatorSpace + butPtr->textWidth,
+ 		butPtr->textHeight, &x, &y);
+-	x += butPtr->indicatorSpace;
+-	Tk_DrawTextLayout(butPtr->display, pixmap, dpPtr->gc,
+-		butPtr->textLayout, x, y, 0, -1);
++        x += butPtr->indicatorSpace;
++        if (butPtr->bspecial||butPtr->rotation)
++	    TkKGDisplayText(butPtr->display, pixmap, butPtr, butPtr->tkfont,
++			    butPtr->tkaltfont, butPtr->tkscriptfont, butPtr->tkaltscriptfont,
++			    text, strlen(text), x, y, 
++			    (butPtr->rotation==90)||(butPtr->rotation==270)?butPtr->textHeight:butPtr->textWidth,
++			    butPtr->justify, butPtr->underline,
++			    dpPtr->gc, dpPtr->altGc, dpPtr->scriptGc, dpPtr->altScriptGc, 0);
++	else {
++	    Tk_DrawTextLayout(butPtr->display, pixmap, dpPtr->gc,
++			      butPtr->textLayout, x, y, 0, -1);
++	}
+     }
+ 
+     /*
+@@ -1530,11 +1545,20 @@
+     dpPtr->border = butPtr->normalBorder;
+     if ((butPtr->state == STATE_DISABLED) && (butPtr->disabledFg != NULL)) {
+ 	dpPtr->gc = butPtr->disabledGC;
++	dpPtr->altGc = butPtr->disabledAltGC;
++	dpPtr->scriptGc = butPtr->disabledScriptGC;
++	dpPtr->altScriptGc = butPtr->disabledAltScriptGC;
+     } else if (butPtr->type == TYPE_BUTTON && butPtr->state == STATE_ACTIVE) {
+ 	dpPtr->gc = butPtr->activeTextGC;
++	dpPtr->altGc = butPtr->activeAltTextGC;
++	dpPtr->scriptGc = butPtr->activeScriptTextGC;
++	dpPtr->altScriptGc = butPtr->activeAltScriptTextGC;
+ 	dpPtr->border = butPtr->activeBorder;
+     } else {
+ 	dpPtr->gc = butPtr->normalTextGC;
++	dpPtr->altGc = butPtr->normalAltTextGC;
++	dpPtr->scriptGc = butPtr->normalScriptTextGC;
++	dpPtr->altScriptGc = butPtr->normalAltScriptTextGC;
+     }
+ 
+     if ((butPtr->flags & SELECTED) && (butPtr->state != STATE_ACTIVE)

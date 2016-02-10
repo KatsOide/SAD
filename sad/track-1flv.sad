@@ -1,0 +1,73 @@
+#
+ON LOG ECHO;OFF CTIME;
+MOMENTUM=0.299792458 GEV;
+;
+;
+LINE MSOL = (PINJ MMAP PEXT)
+;
+MARK PINJ=(
+  BETAX=1 AX=2 BETAY=1 AY=0.5 EMIX=1E-5 EMITY=1E-5 DP=0.01 SIGZ=1E-3 )
+     PEXT=()
+;
+MAP MMAP  =  ()
+;
+
+FFS USE=MSOL;
+    INS;
+
+! Definition of Transfer Matrix
+
+
+!          ms={{1,0,0,0,0,0,},{0,1,0,0,0,0},{0,0,1,0,0,0},
+!              {0,0,0,0,1,0,},{0,0,0,0,1,0,},{0,0,0,0,0,1}};
+
+           ms={{0,2,0,0,0,0},{-0.5,0.75,0,0,0,0},{0,0,2,1,2,0},
+               {0,0,0,0,1,0},{0,0,0,0,1,0},{0,0,0,0,0,1}};
+
+ms=IdentityMatrix[6];
+
+ Standardform[$FORM="8.4";PageWidth=80;Print[ms]];
+
+ ExternalMap["TRACK",LINE["POSITION","MMAP"],_,x_]:=
+       Append[ms.Drop[x,-1],x[[-1]]];
+
+ Print[Twiss[{"BX","BY"},"^^^"]];
+ Print[Twiss[{"AX","AY"},"^^^"]];
+
+trackemi[np_,emi_,sige_]:=Module[
+  {{bx,by}=Twiss[{"BX","BY"},"^^^"],p,siz},
+  p=GaussRandom[6,np];
+  siz=Join[Sqrt[emi* {bx,1/bx,by,1/by}],{0,sige}];
+  p*=siz;
+  AppendTo[p,Table[1,{np}]];
+     TrackParticles[{1,p},LINE["POSITION","PEXT"]][[2]]];
+!    TrackParticles[{1,p},LINE["POSITION","PINJ"]][[2]]];
+
+part["X"]={1,2};
+part["Y"]={3,4};
+label["X"]={"x(mm)","p`dx`n(10`u-3`n)"};
+label["Y"]={"y(mm)","p`dy`n(10`u-3`n)"};
+colors={"purple","blue","green","red"};
+
+ plottrack[l_,plane_]:=Module[{p,gy},
+   p=trackemi[2000,#,0]&/@l;
+   gy=MapThread[ListPlot[1000*Thread[#[[part[plane]]]],
+     PointColor->#2,
+     PointSize->0.3,
+     FrameLabel->label[plane],
+     GridLines->{Automatic,Automatic},
+     DisplayFunction->Identity,
+     AspectRatio->1]&,
+     {p, Take[colors, Length[p]]}]];
+
+ gx=plottrack[{1e-12,1e-13,1e-14},"X"];
+ gy=plottrack[{1e-12,1e-13,1e-14},"Y"];
+
+ Show[{
+   Graphics[ Rectangle[{-0.2, 0.1}, {0.4, 0.8}, gx] ],
+   Graphics[ Rectangle[{0.5, .10}, {1.1, 0.8}, gy] ]}];,
+ Update[];
+
+
+
+end

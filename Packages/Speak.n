@@ -1,0 +1,38 @@
+Speak$FD[_] = $Failed;
+Speak$PortBase = 50006;
+
+SpeakMachine[m_String] := Module[{},
+  Speak$FD = UDPOpen[m,Speak$Port];
+];
+
+Speak[s$_,p$_:1] := Module[{ev,n,h},
+  If [Speak$FD[p$] === $Failed,
+    h = "130.87.82.216";
+    If [(n = UDPOpen[h,Speak$PortBase+p$]) <=> $Failed,
+      Speak$FD[p$] = n;
+      WriteString[Speak$FD[p$], s$//"\n"];
+      Flush/@Speak$FD[p$]
+    ];
+  ,!Else
+    WriteString[Speak$FD[p$], s$//"\n"];
+    Flush/@Speak$FD[p$]
+  ];
+];
+
+GetSpeakStatus[m_String] := Module[{nfd,nv,vl={},vi},
+  If [(nfd = TCPOpen[m,Speak$Port]) === $Failed,
+    Return[Null];
+  ];
+  nv = Read[nfd,Expression];
+  Print["nv = ",nv];
+  Do[
+    vi = Read[nfd,{Expression,Expression,Expression,Expression}];
+    Print[vi];
+    vl  = Append[vl, vi];
+    Read[nfd, String];
+  ,!List
+    {nv}
+  ];
+  Close[nfd];
+  vl
+];

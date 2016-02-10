@@ -1,0 +1,8 @@
+(* Try to load SAD/Xlib.so extension module *)
+If[Not[FBoundQ$[XServerVendor]],
+  Library@Require["SAD/Xlib.so"]];
+
+If[Not[FBoundQ$[XServerVendor]],	(* Eval after .so load *)
+  Print["SAD/Xlib is not supported by current binary"]; Exit[127]];
+
+! End of File

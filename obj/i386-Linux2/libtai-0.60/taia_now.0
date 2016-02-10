@@ -1,0 +1,31 @@
+taia_now(3)                                                        taia_now(3)
+
+
+
+NNAAMMEE
+       taia_now - get current time, with 1-attosecond precision
+
+SSYYNNTTAAXX
+       ##iinncclluuddee <<ttaaiiaa..hh>>
+
+       void ttaaiiaa__nnooww(&_t);
+
+       struct taia _t;
+
+DDEESSCCRRIIPPTTIIOONN
+       ttaaiiaa__nnooww puts the current time into _t.
+
+       More  precisely:  ttaaiiaa__nnooww puts into _t its best guess as to the TAI64NA
+       label for the 1-attosecond interval that contains the current time.
+
+NNOOTTEESS
+       This implementation of ttaaiiaa__nnooww  assumes  that  the  ttvv__sseecc  member  of
+       ssttrruucctt ttiimmeessppeecc//ttiimmeevvaall returned from cclloocckk__ggeettttiimmee//ggeettttiimmeeooffddaayy repre‐
+       sents the number of TAI seconds since 1970-01-01 00:00:10 TAI.
+
+SSEEEE AALLSSOO
+       clock_gettime(2), gettimeofday(2), tai_now(3), taia(3)
+
+
+
+                                                                   taia_now(3)

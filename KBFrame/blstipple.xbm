@@ -1,0 +1,4 @@
+#define blstipple_width 4
+#define blstipple_height 4
+static char blstipple_bits[] = {
+   0x00, 0x00, 0x03, 0x03};

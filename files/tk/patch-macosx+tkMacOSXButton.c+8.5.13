@@ -1,0 +1,54 @@
+--- macosx/tkMacOSXButton.c.orig	2012-11-07 00:08:31.000000000 +0900
++++ macosx/tkMacOSXButton.c	2012-12-04 11:24:41.879746446 +0900
+@@ -688,7 +688,7 @@
+ DisplayUnixButton(
+     TkButton *butPtr)
+ {
+-    GC gc;
++    GC gc, altGc, scriptGc, altScriptGc;
+     Tk_3DBorder border;
+     Pixmap pixmap;
+     int x = 0;			/* Initialization only needed to stop compiler
+@@ -706,12 +706,21 @@
+     border = butPtr->normalBorder;
+     if ((butPtr->state == STATE_DISABLED) && (butPtr->disabledFg != NULL)) {
+ 	gc = butPtr->disabledGC;
++	altGc = butPtr->disabledAltGC;
++	scriptGc = butPtr->disabledScriptGC;
++	altScriptGc = butPtr->disabledAltScriptGC;
+     } else if ((butPtr->state == STATE_ACTIVE)
+ 	    && !Tk_StrictMotif(butPtr->tkwin)) {
+ 	gc = butPtr->activeTextGC;
++	altGc = butPtr->activeAltTextGC;
++	scriptGc = butPtr->activeScriptTextGC;
++	altScriptGc = butPtr->activeAltScriptTextGC;
+ 	border = butPtr->activeBorder;
+     } else {
+ 	gc = butPtr->normalTextGC;
++	altGc = butPtr->normalAltTextGC;
++	scriptGc = butPtr->normalScriptTextGC;
++	altScriptGc = butPtr->normalAltScriptTextGC;
+     }
+     if ((butPtr->flags & SELECTED) && (butPtr->state != STATE_ACTIVE)
+ 	    && (butPtr->selectBorder != NULL) && !butPtr->indicatorOn) {
+@@ -908,10 +917,20 @@
+  	    TkComputeAnchor(butPtr->anchor, tkwin, butPtr->padX, butPtr->padY,
+ 		    butPtr->textWidth, butPtr->textHeight, &x, &y);
+ 
++	    if (butPtr->bspecial||butPtr->rotation) {
++	    const char *text = butPtr->textPtr ? Tcl_GetString(butPtr->textPtr) : NULL;
++	    TkKGDisplayText(butPtr->display, pixmap, butPtr, butPtr->tkfont,
++			    butPtr->tkaltfont, butPtr->tkscriptfont, butPtr->tkaltscriptfont,
++			    text, strlen(text), x, y, 
++			    (butPtr->rotation==90)||(butPtr->rotation==270)?butPtr->textHeight:butPtr->textWidth,
++			    butPtr->justify, butPtr->underline,
++			    gc, altGc, scriptGc, altScriptGc, 0)
++	    } else {
+ 	    Tk_DrawTextLayout(butPtr->display, pixmap, gc, butPtr->textLayout,
+ 		    x, y, 0, -1);
+ 	    Tk_UnderlineTextLayout(butPtr->display, pixmap, gc,
+ 		    butPtr->textLayout, x, y, butPtr->underline);
++	    }
+ 	    y += butPtr->textHeight/2;
+ 	}
+     }

@@ -1,0 +1,2964 @@
+MOMENTUM= 1 GEV; ON ECHO;OFF EMIT COD CTIME RAD RFSW RADCOD; LINE CELL=( -IP2
+L00 QF SF L1 B L1 QD SD L1 B L1 DF P1 BV CA1)
+         CELL1=( -IP2 L00 QF1 SF L1 B L1 QD1 SD  L1 B L1 DF P1 BV CA1)
+ ;
+ LINE        TESTLINE=(CELL CELL1)
+ ;
+ DRIFT  L1     =(L = 1)
+        L00    =(L=0)
+ ;
+ BEND   B = (L=5 ANGLE=.1 E1=0.5 E2=0.5)
+        B1= (L=5 ANGLE=.1 E1=0.5 E2=0.5)
+        B2= (L=5 ANGLE=.1 E1=0.5 E2=0.5)
+        B3= (L=5 ANGLE=.1 E1=0.5 E2=0.5)
+        BV=(L=1 ANGLE=0.001 ROTATE=90 DEG)
+ ;
+ QUAD   QF     =(L = 1 K1 = 0.1549322394 )
+        QD     =(L = 1 K1 =-0.1549322394 )
+        QF1     =(L = 1 K1 = 0.1549322394 )
+        QD1     =(L = 1 K1 =-0.1549322394 )
+ ;
+ SEXT   SF     =(L = 1 K2=0.1)
+        SD     =(L = 1 )
+ ;
+ MAP    P1 =()
+ ;
+ MARK   IP1     =(BETAX = 1.93      BETAY =1.93    EMIX = 4.0E-5
+           EMIY = 4.0E-5  DP = 0.01 SIGZ = 1.5E-3 )
+        IP2     =(BETAX = 0.703     BETAY = 0.703  EMIX = 4.0E-5
+           EMIY = 4.0E-5  DP = 0.01 SIGZ = 8E-4 )
+ ;
+ CAVI   CA1 = (VOLT=11 MV HARM=100)
+ ;
+ DECA  DF=(L=2 K4=1)
+;
+APERT A1=(DX1=0.001 DY1=0.001 DX1=-0.001 DY1=-0.001 JDPX=0.001 JDPY=0.001)
+ ;
+! EMIT USE=TESTLINE;
+ FFS USE=TESTLINE;
+ norfsw cell cal
+    Print[{MemoryCheck[1],TimeUsed[]}];
+!
+!  TclWidget
+   Print[">>>>>>>>>>",#,"<<<<<<<<<"]&["TclWidget"];
+   Tk$Echo=1;
+   w=Window[Title->"Test"];
+   b=Button[w,Text->"abc"];
+   b[Update];
+   TkWait[];
+   TclWidget[b,"configure",Text->"def"];
+   b[Update];
+! end
+!
+!
+   Print[">>>>>>>>>>",#,"<<<<<<<<<"]&["Def_func"];
+   Clear[a,b,c,d,e,f];
+   f[a_,b_,c__]:=Print[{a,b,{c}}];
+   f[0,1,d[2]]
+
+!
+!  FindRoot
+   Print[">>>>>>>>>>",#,"<<<<<<<<<"]&["FindRoot"];
+!
+  a:=FindRoot[(Print[x];Sin[x]+0.99)==0,{x,0}];
+  Sin[x]/.a
+  a:=FindRoot[(Print[x];Sqrt[Abs[x-2]])==0,{x,0}];
+  a
+  a:=FindRoot[Sin[x]==ArcSin[x],{x,0.9},AccuracyGoal->1e-30];
+  a
+  {Sin[x],Cos[y],Sin[y]}/.
+     FindRoot[{(Print[{x,y}];Sin[x])==Cos[y],Sin[y]==0.5},{x,0},{y,0}]
+  a:=FindRoot[x^2+y^2+0.1==0,{x,0.9},{y,0.1}]
+  a
+! end
+!
+   Print[">>>>>>>>>>",#,"<<<<<<<<<"]&["Scoping"];
+!
+   Clear[a,b,c,d,e,f,g,x,y];
+   f[x_]:=Module[{d},d=c;{d,x}];
+   g[x_]:=Unevaluated[Module[{d},d=c;{d,x}]];
+   SetAttributes[f,HoldAll];
+   f[d]
+   g[d]
+   Unevaluated[Module[{d},d=c;{d,x}]]/.x:>d
+! end
+!
+   Print[">>>>>>>>>>",#,"<<<<<<<<<"]&["Canvas"];
+!
+!  Tk$Echo=1;
+   qname=LINE["NAME","Q*.1"];
+!
+!  Define commands
+!
+!-----plot betas and orbits by OpticsPlot (slow)--------
+   plotorbit:=OpticsPlot[{{"BX","BY"},
+     {{Thread[{LINE["POSITION",qname],measx}],FrameLabel->"DX meas.",
+       Unit->Meter},"DX"},
+     {{Thread[{LINE["POSITION",qname],measy}],FrameLabel->"DY meas.",
+       Unit->Meter},"DY"}},
+     Region->{"QF","$$$"},Names->"Q*"];
+!-----simulate measure BPM-----------------------------
+   measdata:=(
+     measx=Table[GaussRandom[],{4}]*0.001;
+     measy=Table[GaussRandom[],{4}]*0.001;
+     Scan[FFS["FIT "//#[[1]]//" DX "//#[[2]]]&,Thread[{qname,measx}]];
+     Scan[FFS["FIT "//#[[1]]//" DY "//#[[2]]]&,Thread[{qname,measy}]];
+     plotorbit);
+!-----fit orbit to measured data----------------------
+   fitorbit:=(
+     Check[FFS[" FREE B*.* K0;GO"],];
+     plotorbit);
+!-----reset correctors to zero------------------------
+   resetcorr:=(
+     Check[FFS["B*.* K0 0;CAL"],];
+     plotorbit);
+!-----reject clicked BPMs (imperfect)-----------------
+   rejdata:=Module[{ev={Widget,Tag,X,Y}/.$Event,w,tag,x,y},
+     {w,tag,x,y}=ev;
+     sx=(x-Canvas$Offset[[1]])/Canvas$Scale[[1]];
+     m=Catch[Do[If[Abs[LINE["S",qname[i]]-sx]<0.5,Throw[qname[i]]],
+       {i,Length[qname]}];""];
+     Print[m,x,y];
+     If[m<>"",
+       r=If[y>300,"DY","DX"];
+       FFS["FIT "//m//" REJ "//r];
+       ConfigureWidget[w,AddTag$Closest->{"$rej",x,y}];
+       ConfigureWidget[w,ItemConfigure->{"$rej",Fill->"red"}]]];
+!
+!  Defining Widgets
+!
+   w=Window[Title->"Test"];
+   c=Canvas[w,Width->936,Height->550];
+   fr=Frame[w,BD->0,BG->"#ffffd0",Relief->"sunken",
+     Side->"right",Height->150];
+   meas=Button[fr,Text->"MEAS",BG->"yellow",Side->"left"];   cal=Button[fr,Text->"CAL",BG->"blue",FG->"white",Side->"left"];
+   set=Button[fr,Text->"SET",BG->"red",FG->"white",Side->"left"];
+   reset=Button[fr,Text->"RESET",BG->"green",Side->"left"];
+!
+!  Assign commands to buttons
+!
+   Tk$Echo=1;
+   meas[Command]:=measdata;
+   cal[Command]:=fitorbit;
+   reset[Command]:=resetcorr;
+   BindWidget[c,"<Button>",rejdata];
+   Tk$Echo=0;
+!
+!  Plot betas and orbits by OpticsPlot
+!
+   $DisplayFunction=CanvasDrawer;
+   Canvas$Widget=c;
+   Canvas$WindowOffset={0,1.5};
+   MemoryCheck[]
+   g=Timing[measdat]
+   c[Update]
+   w[Raise];
+   AdjustWindowGeometry[w];
+   TkWait[]
+! end
+!
+   Print[">>>>>>>>>>",#,"<<<<<<<<<"]&["SAD Tkinter"];
+!   Tk$Echo=-1;
+   
+   Dialog[mess_,buttons_]:=Module[{w1,b,m,f,wf,r},
+     w1=Window[Title->"Dialog",OverrideRedirect->True,
+       Geometry->"+400+300"];
+     wf=Frame[w1,BorderWidth->3,Relief->"ridge"];
+     m=TextLabel[wf,Text->mess,PadX->10,PadY->5];
+     f=Frame[wf];
+     Scan[With[{x=#},b[x]=Button[f,Text->#,Side->"left",PadX->10,
+       Command:>TkReturn[x]]]&,buttons];
+     r=TkWait[];
+     TracePrint[DeleteWidget[w1]];
+     r];
+
+
+   ww=Window[Title->"Test"];
+   w=Frame[ww];
+
+   time=DateString;
+   a=Button[w,TextVariable:>time];
+   b=Button[w,Text->"Dialog"];
+   tr=1;
+   echo=CheckButton[w,Text->"Echo",Variable:>tr];
+   a[Command]:=TkReturn[1];
+   b[Command]:=Print[Dialog["Do you really want to do this?",{"OK","Cancel"}]];
+   echo[Command]:=(Tk$Echo=tr);
+   mess=Message[w,Width->100,
+     Text->"Try Menu below to see Menu and Cascade."];
+   mb=MenuButton[w,Text->"Menu"];
+   menu=Menu[mb];
+   menu1=Menu[menu,
+     Add->{Button[Text->"Abort",Command:>FFS["abort"]]}];
+   menu[Add]={Button[Text->"CAL",Command:>FFS["CAL",6]],
+     Separator[],
+     Cascade[Text->"Cascade",Font->TextFont["Times","bold",14],
+       Menu:>menu1],
+     Separator[],
+     CheckButton[Text->"RFSW",Variable:>rfsw],
+     Separator[],
+     RadioButton[Text->"HER",Value->1,Variable:>ring],
+     RadioButton[Text->"LER",Value->2,Variable:>ring]};
+   mb[Menu]:=menu;
+   sc=Scale[w,From->-3,To->3,TickInterval->2,
+     Variable:>scv,Digits->1,Resolution->0.01,BigIncrement->1,
+     Orient->"horizontal",Length->200,Label->"Scale"];
+   While[TkSense[]===Null,time=DateString];
+   Print[Tk$Result];
+
+   TracePrint[a=Button[w,Text->"Return"]];
+   b=Button[w,TextVariable:>btext]
+   btext="CAL";
+   b[Command]:=FFS["cal",6];
+   a[FG]="blue";
+   a
+   a[Text]="OK";
+   a
+   d[1]=Window[Title->"test1"];
+   c[1]=Button[d[1],Text->"ccc",TextVariable:>c1text];
+   cb1=CheckButton[d[1],Text->"First",Variable:>first]
+   cb2=CheckButton[d[1],Text->"Second",Variable:>second]
+   fr1=Frame[d[1]];
+   tl=TextLabel[fr1,TextVariable:>tltext,Side->"left"];
+   ent=Entry[fr1,Width->10,TextVariable:>enttext,Side->"left"];
+   rbvar=1;
+   rb1=RadioButton[d[1],Text->"abc",Value->1,Variable:>rbvar];
+   rb2=RadioButton[d[1],Text->"def",Value->2,Variable:>rbvar];
+   fr2=Frame[w];
+   vsb=ScrollBar[fr2,Orient->"vertical",Side->"right",Fill->"y"];
+   lb=ListBox[fr2,Insert->{"end",Sort[Take[Names["*"],50]]},BG->"white",
+     SelectMode->"extended",YScrollCommand:>vsb[Set]];
+   vsb[Command]:=lb[YView];
+   AdjustWindowGeometry[w];
+   
+   cb1[Command]:=(tltext="First: ");
+   cb2[Command]:=(tltext="Second: ");
+
+   a[Focus$Set];
+   BindWidget[a,"<Enter>",Print["OK"]];
+   BindWidget[a,"<Key-a>",Print["OK"]];
+   BindWidget[a,"<KeyRelease>",Print["OK"]];
+   BindWidget[a,"<ButtonRelease>",Print["OK"]];
+   BindWidget[a,"<Leave>",Print["OK"]];
+   BindWidget[a,"<Motion>",Print["OK"]];
+   BindWidget[a,"<Button-2>",Print["OK"]];
+   TkEventLoop[];
+
+! end
+!
+!  Scoping with define
+   Clear[a,b,c,d,e,f,g,h];
+   a=Range[1,5];
+   Do[Print[a[i]],{i,Length[a]}]
+   h[a_]:=a;
+   SetAttributes[h,HoldAll];
+   f[a_]:=h[Module[{},Do[Print[a[i]],{i,Length[a]}]]];
+   g[a_]:=Module[{},Do[Print[a[i]],{i,Length[a]}]];
+   f[a]
+   g[a]
+! end
+!
+!  Module, generations
+  Clear[a,b,c,d,e,f,g];
+  b:=1;
+  f[a_]:=Module[{b=2},Print[a]];
+  SetAttributes[f,HoldAll];
+  f[b]
+  Clear[a,b,c,d,e];
+  f[a_]:=Module[{b},a+b/.b->c];
+  g[a_]:=Module[{b},a+b/.(b:b)->c];
+  {f[b],g[b]}
+  b:=d;
+  f[a_]:=Module[{b},{a,b}/.a:b->a+1];
+  g[a_]:=Module[{b},{a,b}/.c:b->a+1];
+  h[a_]:=Module[{b},{a,b}/.c:b->c+1];
+  SetAttributes[f,HoldAll];
+  SetAttributes[g,HoldAll];
+  {f[b],g[b],h[b],f[1]}
+  Clear[a,b,c,d,e];
+  a=b;
+  b=c;
+  Module[{b=d},{a,b}]
+  Module[{b=b},{a,b}]
+  Clear[a,b,c,d,e];
+  a=b;
+  b=a
+  a:=b;
+  b:=a;
+  a
+! end
+!
+   Print[">>>>>>>>>>",#,"<<<<<<<<<"]&["AppendTo"];!  
+  Clear[a,b,c,d,e];
+   a=b[1,2,3];
+  AppendTo[a,4]
+   a
+  PrependTo[a,0]
+! end
+!
+!
+  Clear[a,b,c,d,e];
+  (a=.)^:=Print["OK"];
+  a=2
+  a=.
+  a
+  Clear[a];
+  (#=1)&[a]
+  a
+  Clear[a];
+  (b[#]=3)&[a]
+  (f[b[a]]^=1)
+  Definition[b]
+  Clear[b[a]]
+  Definition[b]
+! end  
+Clear[a,b,c,d,e];
+!
+   Print[">>>>>>>>>>",#,"<<<<<<<<<"]&["listbox?"];
+!
+   System["ls -lt>a"];
+   f=OpenRead["a"];
+   s=ReadString[f];
+   s="";
+   l={};
+   While[(s=ReadString[f])<=>EndOfFile,
+     l=Append[l,s[42,-1]]];
+   Tk$Echo=1;
+   w=Window[Title->"Test"];
+   fr2=Frame[w];
+   vsb=ScrollBar[fr2,Orient->"vertical",Side->"right",Fill->"y"];
+   lb=ListBox[fr2,Insert->{"end",l},BG->"white",Width->30,
+     SelectMode->"single",YScrollCommand:>vsb[Set]];
+   vsb[Command]:=lb[YView];
+   AdjustWindowGeometry[w];
+!   Tk$Echo=1;
+   BindWidget[lb,"<Double-Button-1>",Print[
+     lb[GetText[lb[Selection][[1]]]]]];
+   lb[Focus$Reset];
+   TkWait[];
+
+   w=Button[Text->"New w"]
+   w[Update]
+
+! end
+!
+!
+  Clear[a,b,c,d];
+  d=1;
+  f:=StandardForm[Module[{d},Print[d]]];
+  f
+  d
+  DateString
+  d
+! end
+!
+!    LinearSolve
+   Clear[a,b];
+   a=Table[Random[]+Random[]*I,{i,3},{j,3}];
+   b=Table[Random[]+Random[]*I,{i, 2},{j,3}];
+   Print[{a,b}];
+   Timing[
+     Apply[Plus,Abs[Flatten[a.Transpose[LinearSolve[a,b]]-Transpose[b]]]^2]]
+   a=Table[Random[]+Random[]*I,{i,100},{j,100}];
+   b=Table[Random[]+Random[]*I,{i, 3},{j,100}];
+   Timing[Apply[Plus,Abs[Flatten[a.Transpose[LinearSolve[a,b]]-Transpose[b]]]^2]]
+   Timing[LinearSolve[a,b];]
+   a=Table[Random[],{i,100},{j,100}];
+   b=Table[Random[]+Random[]*I,{i,3},{j,100}];
+   Timing[Apply[Plus,Abs[Flatten[a.Transpose[LinearSolve[a,b]]-Transpose[b]]]^2]]
+   Timing[LinearSolve[a,b];]
+   a=Table[Random[],{i,100},{j,100}];
+   b=Table[Random[],{i,  3},{j,100}];
+   Timing[Apply[Plus,Abs[Flatten[a.Transpose[LinearSolve[a,b]]-Transpose[b]]]^2]]
+   Timing[LinearSolve[a,b];]
+! end
+!
+!  ListPlot with ErrorBar
+!   Tk$Echo=1;
+   w=Window[Title->"Test"];
+   c=Canvas[w,Width->936,Height->550];
+   $DisplayFunction=CanvasDrawer;
+   Canvas$Widget=c;
+   Canvas$WindowOffset={0,2};
+   ListPlot[{{1,2,1},{2,4,2},{3,5,1.5},{4,4,0},{5,1,0.0001}}];
+   c[Update];
+! end
+!
+!
+   Print[">>>>>>>>>>",#,"<<<<<<<<<"]&["CanvasDrawer"];
+   w=Window[Title->"Test"];
+   c=Canvas[w,Width->936,Height->550];
+   $DisplayFunction=CanvasDrawer;
+   Canvas$Widget=c;
+   Canvas$WindowOffset={0,8.5};
+   OpticsPlot[{{{1,0},{2,1},{10,2}}},Lattice->False]
+! end
+!
+!  Override
+   Clear[a,b,c,d,e];
+   Override[
+     {a->1,b->2,c:>4,a->3},b->3,{c->2,d->4},{a->2,b:>3}]
+! end
+!
+!  StringJoin
+   Clear[a,b,c,d,e,g];
+   MemoryCheck[]
+   a="a";
+   MemoryCheck[]
+   Clear[a];
+   MemoryCheck[]
+   a="a"//"b";
+   MemoryCheck[]
+   a="a";
+   MemoryCheck[]
+   b="b";
+   MemoryCheck[]
+   c=a//b;
+   MemoryCheck[]
+   c="c"
+   MemoryCheck[]
+
+! end
+!   While[1,Sleep[0.5];Print[DateString];Sleep[2]];
+   Print[DateString];Print[Timing[Pause[0.9]]];
+   Print[DateString];
+! end
+!
+!  Generations
+  Module[{a},Print[{a,Definition[a]}];a$1=2;a$0=3;Print[a]];
+! end
+!
+!  PatternTest
+  Clear[a,x];
+  a:=MatchQ[3,x_?((Print[#];#==3)&)]
+  a
+! end
+!
+!  SwitchCases, WhichCases
+  Clear[a,b,c,d,e];
+  a={1,"abc",2,3,{3,4,5},b};
+  SwitchCases[a,{_String,_Symbol,_List,_}]
+  WhichCases[a,{#>2&,Head[#]===List&,1&}]
+! end
+!
+!  Replace
+  Clear[a,b,c,d,e,f];
+  a=Alternatives@@Append[Table[b,{1000}],c];
+  e=Alternatives@@Append[Table[1,{1000}],2];
+  Timing[Do[c/.a->d,{1000}]]
+  Timing[Do[f[a],{10000}]]
+  Timing[c=0;Do[c=c+1;f[a],{10000}]]
+  Timing[Do[f[e],{10000}]]
+! end
+!
+!  OpticsProlog
+   OpticsProlog:=(Print["Optics Calculation Begin"]);
+   OpticsEpilog:=(Print["Optics Calculation End"];Return[]);
+   fit nx .4 free q* go
+! end
+!
+!  
+end
+   Clear[a,b,c,d,e];
+   a=b=c=Table[i,{i,10000}];
+   a[[-1]]=0
+   c[[-1]]="a"
+   Timing[Do[a===b,{1000}]]
+   Timing[Do[a===c,{1000}]]
+! end
+!
+!
+
+   c[AddTag$Closest]=Flatten[{'QFtag',
+     Canvas$Coord[{(LINE["S","QF"]+LINE["S","QF+1"])/2,0}]}];
+   BindWidget[c,"<Enter>",Print["OK"],Tag->"QFtag"];
+!
+!  With
+  Clear[a,b,c,d,e,f,x];
+  g[y_]:=y^2;
+  x=0;
+  With[{b[z_]:=g[z]},
+    f[x_]:=(Print[x];b[x+1])];
+  df=Definition[f]
+  x=0;Module[{x=2},{x,df[[1,2,2,1,2]]}]
+  Module[{x=3},{x,f[x]}]
+  x=0;Module[{x=3},{x,f[x]}]
+  Clear[f];
+  With[{b:=g},
+    f[x_]:=b[x+1]];
+  df=Definition[f]
+  x=3;Module[{x=2},{x,df[[1,2,2,1,2]]}]
+  Module[{x=3},{x,f[x]}]
+! end
+   
+!
+!  Plus
+   Timing[a=0;Do[a=a+i,{i,50000}]]
+   Timing[a=0;Do[a=a*i/10000,{i,50000}]]
+! end
+!
+!    Tracking, MAP
+  Clear[np,x,d];
+  np=10000;
+  x={1,Append[0.001*Table[GaussRandom[],{6},{np}],Table[1,{np}]]};
+  Do[x[2,1,i]=1000,{i,1001,9001,1000}];
+  d=TrackParticles[x,1];
+  p=Position[d[2,7],0]
+  track[np_]:=(
+    x1=Map[Take[#,np]&,x,{2}];
+    TrackParticles[x1,1];);
+  Date[]
+  Timing[Do[track[Floor[30000/32.8]],{100}]]
+  Date[]
+  Timing[Do[track[Floor[30000/33.2]],{100}]]
+  Date[]
+! end
+!  ExternalMap["TRACK",LINE["POSITION","P1"],nt_,x_]:=(Print[nt,x];x*2);
+!  ExternalMap["TRACK",LINE["POSITION","P1"],nt_,x_]:=Module[{p,p1,wbn},
+!    n=n+1;
+!    wbn=wb[n];
+!    p=x[6];p1=Map[If[#<wbn+hcbd && #>wbn-hcbd,#-cband,#]&,p];
+!    Print[p];
+!    ReplacePart[x,p1,6]];
+  ExternalMap["TRACK",LINE["POSITION","P1"],nt_,x_]:=Module[{},
+    xf={xf,x};Print[MemoryCheck[]];x];
+  n=0;
+  wb[n_]:=wstart-n*(wend-wstart)/nturn;
+  wstart=0.1;
+  wend=0.0001;
+  nturn=10000;
+  cband=1e-4;
+  xf={};
+  Print[MemoryCheck[]];
+  Do[d=TrackParticles[d,1],{3}]
+  Print[MemoryCheck[]];
+  Clear[xf];
+  Print[MemoryCheck[]];
+  xf={};
+  Do[d=TrackParticles[d,1],{3}]
+  Clear[xf];
+  Print[MemoryCheck[]];
+  xf={};
+  Do[d=TrackParticles[d,1],{1000}]
+  Clear[xf];
+  Print[MemoryCheck[]];
+! end
+
+  np=5;
+  x=Table[0,{7},{np}];
+  Do[x[7,i]=1,{i,np}];
+  sigp=0.01;
+  x[6]=Table[GaussRandom[]*sigp,{np}];
+  d={1,x};
+  TrackParticles[d,1]
+! end
+!
+!  Module
+  Module[{{a,b}={1,2},c=3,d},Print[{a,b,c,d}]]
+! end
+!
+!  With
+   Clear[f,x];
+   With[{Pi,Sin[1],Cos},f[x_]:=Pi*x+Sin[1]+Cos[x]];
+   g[x_]:=Pi*x+Sin[1]+Cos[x];
+   Definition[f]
+   Timing[Do[f[2],{10000}]]
+   Timing[Do[g[2],{10000}]]
+   Module[{Cos=aa},{f[2],g[2]}]
+   With[{a=1},a+1]
+   Clear[f];
+   With[{f[x_]:=(Print[x];ToString[x])},f[x+y]]
+! end
+!
+!  Table
+  Table[Null[],{3}]
+  Timing[Table[i*100+j,{i,100},{j,100}]]
+  Timing[Sum[i*100+j,{i,100},{j,100}]]
+  Timing[Product[i*100+j,{i,100},{j,100}]]
+! end
+!
+! $FORM
+  $FORM='10.7'
+Pi
+Pi/1e8
+Pi/1e9
+Pi/1e10
+-Pi
+-Pi/1e8
+-Pi/1e9
+-Pi/1e10
+! end
+!
+! StringReplace
+  StringReplace["abcdefg","cd"->"xxx"]
+  StringReplace["abcdecd","cd"->"xxx"]
+  StringReplace["abcdecd",{"cd"->"xxx","bc"->"yyy"}]
+! end
+!
+!  Part, SetPart
+  Clear[a,b,c,d,e];
+  LINE["K1","QF"]=0.2
+  LINE["K1","QF"]
+! end
+  a=Table[i*10+j,{i,5},{j,3}];
+  Map[(Print[#[2]];#[[2]]=0)&,a]
+  a
+  a=Table[i*10+j+c,{i,5},{j,3}];
+  Map[(Print[#[2]];#[2]=0)&,a]
+  a
+! end
+  a=Table[i,{i,5}];
+  b=a;
+  a[3]=0;
+  Print[{a,b}];
+  a=Table[i*10+j,{i,3},{j,4}]
+  b=a;
+  a[3,3]=0;
+  Print[{a,b}];
+  (a[3,3]=c_)^=0.1;
+  Definition[a]
+  a[3,3]=2
+  a[3,3]
+! end
+!
+!    Set:
+   Clear[a,b,c,d]
+   a=2.5
+   Write[6,a]
+   b=0.5;c=0.6
+   d=3.2
+   Print[a+b,c+d];
+   {a,b,c}=1
+   {a,b,c}={1,2,3}
+   {a,b}={1,2,3}
+   {}=1
+   {}={1}
+   {}={}
+! end
+!
+!  Plot
+  Clear[x,y,z];
+  Plot[Print[x];Cos[x],{x,-Pi,Pi}];
+  y=Cos[x];
+  Plot[y*x,{x,-Pi,Pi}];
+  x=1;
+  Plot[y*x,{x,-Pi,Pi}];
+  Plot[{Sin[x],Cos[x]},{x,-Pi,Pi}]
+! end
+!
+! Set, etc.
+  Clear[a,b,c,d,e,f];
+  a={1,2,3,4,5};
+  a[[2]]=0;
+  a[4]=-1;
+  a
+  Clear[a];
+  a[5][6]=-2
+  a[5][6]
+  Clear[a];
+  f[x_]:=(x=1);
+  f[a];
+  a
+  Clear[a]
+  (#=1)&[a]
+  a
+  a={1,2,3,4,5};
+  (#[2]=-2;#[[4]]=-4)&[a]
+  a
+! end
+ 
+!
+!   ListPlot
+  Head[sc]
+  sc=Log;
+  Head[sc]
+  MemoryCheck[]
+  g1=ListPlot[{{1,2},{10,20}},Scale->Log,PlotJoined->True,
+    DisplayFunction->Null,FrameLabel->{"",DateString,DateString,""}];
+  MemoryCheck[]
+  Show[Graphics[Rectangle[{0,0},{0.5,1},g1]]];
+! end
+  MemoryCheck[]
+  g2=ListPlot[{{1,15},{10,3}},Scale->Log,PlotJoined->True,Dashing->"1 0.3",
+    DisplayFunction->Null,Plot->False,PlotColor->"Red"];
+  MemoryCheck[]
+  g3=ListPlot[{{1,2.5},{5,10},{10,12}},Scale->Log,
+    DisplayFunction->Null];
+  MemoryCheck[]
+  Show[g1,g2,g3,FrameLabel->{"X (mm)","Log(Y)"},PlotLabel->"Test Plot"];
+  MemoryCheck[]
+  Show[g1,g2,g3,FrameLabel->{"X (mm)","Log(Y)"},PlotLabel->"Test Plot",
+      AspectRatio->1,PlotSymbol->"1P"];
+  MemoryCheck[]
+! end
+!
+!  Set
+   Clear[c];
+   c[3]=4;
+   c[3]
+   (c[1][i_]=x_)^:={i,x};
+   c[1][3]=4
+   c[2][x_]:={x}
+   c[2][10]
+! end
+!
+!
+   Clear[a,b,c,d,e,f];
+   a=Range[1,10];
+   Do[a[3]=i,{i,1,5}];
+   a
+   Do[Range[1,10][3]=i,{i,1,5}];
+   Do[{1,2,3,4,5,6,7,8,9,10}[3]=i,{i,1,5}];
+! end
+!
+!  Releasing memory
+  Clear[a,b,c,d,e,f];
+  check[e_,r_]:=If[e<=>r,Print[e," ",MemoryCheck[]];FFS["ABORT"]];
+  a="a";
+  e:=Module[{},a=a//"b"];
+  check[f[e,e,e],f["ab","abb","abbb"]];
+  b={"a"};
+  e:=Module[{},b[1]=b[1]//"b"];
+  check[f[e,e,e],f["ab","abb","abbb"]];
+  Clear[b];
+  b[1]="a";
+  e:=Module[{},b[1]=b[1]//"b"];
+  check[f[e,e,e],f["ab","abb","abbb"]];
+  Clear[b];
+  b={"a"};
+  e:=Module[{},b=ReplacePart[b,b[1]//"b",{1}];b[1]];
+  check[f[e,e,e],f["ab","abb","abbb"]];
+  e:=Module[{aa={"a"}},aa[1]=aa[1]//"b"];
+  check[f[e,e,e],f["ab","ab","ab"]];
+!
+!  Define
+  Clear[a,b,c,d,e,f];
+  f[1]=2;
+  f[2]=3;
+  f[3]=4;
+  Definition[f]
+  f[x_]=5;
+  Definition[f]
+  f[3]
+  Definition[f]
+  f[5]
+  Definition[f]
+  f[1]
+  Definition[f]
+  f[x__]=6
+  f[1,2]
+  Definition[f]
+! end
+!
+!
+!  Hold, HeldPart, Unevaluated
+  Clear[a,b,c,d,e,f,p,x,y];
+!  Cases[Hold[Variable->a,b,c],(p:(Variable->x_))->Hold[p,x],1];
+  Hold[Cases[Hold[Variable->a,b,c],(p:(Variable->x_))->{p},1]];
+! end
+  MemoryCheck[1]
+! end
+  f[op__]:=Module[{opt},
+    opt=Hold[op];
+    r1=Cases[opt,p:(Variable->_),1];
+    Print[r1]
+  ];
+  f[1,Variable->b]
+  Length[Unevaluated[x+y]]
+  Unevaluated[x]
+  Unevaluated[x]/.x->5
+  x=1;y=2;
+  pri f[""//Unevaluated[x+y]//"..."]
+  HeldPart[Hold[a+1],1,2]
+  Hold[Variable->a,b,c]
+  a=3;
+  y=3;
+  d=e;
+  Evaluate[d]=4;
+  Print[d," ",e];
+  Print[Through[(f+g)[y,z]]]
+  Cases[Hold[Variable->a,b,c],(p:(Variable->x_)),1]
+!
+!  ToString
+  Print[ToString["\""]]
+  Print[ToString["\"",FormatType->InputForm]]
+! end
+!
+!   Map, Apply, MapAll
+  Clear[a,b,c,d,e];
+  a:=b/@c;
+  Definition[a]
+  a=b/@[c,d]
+  Definition[a]
+  Clear[a];
+  e={1,2,3,{4,5}};
+  pri a//@e
+  pri a//@[e,Heads->True]
+! end
+!
+!   Map, Apply
+   Clear[a,b,c,d,e,f,g];
+   a={b,c,{d,{e,g}}};
+   Apply[f,a,{-2,1}]
+   Map[f,a,{0,Infinity}]
+   Apply[f,a]
+   Apply[f,a,0]
+   Apply[f,a,1]
+   Apply[f,a,-1]
+   Apply[f,a,{1,2}]
+   Apply[f,a,{2,1}]
+   Apply[f,a,{1,-2}]
+   Level[a,{-2,1}]
+   Apply[f,a,{-2,1}]
+   Apply[f,a,{-3,-1}]
+   Apply[f,a,{-1,-3}]
+   MapAll[f,a]
+   Map[f,a]
+   Map[f,a,0]
+   Map[f,a,1]
+   Map[f,a,-1]
+   Map[f,a,{1,2}]
+   Map[f,a,{2,1}]
+   Map[f,a,{1,-2}]
+   Map[f,a,{-2,1}]
+   Map[f,a,{-3,-1}]
+   Map[f,a,{-1,-3}]
+   Clear[a];
+   a=Range[1,30000];
+   Timing[Map[Sin,a];]
+   Timing[Table[Sin[a[i]],{i,30000}];]
+! end
+!
+!  Increment
+  Clear[a,b,c];
+  a=1;
+  a++
+  ++a
+  1+(++a)
+  a={1,2,3}
+  a++
+  a
+! end
+!
+!  ReplaceRepeated
+  Clear[a,b,c,d,e]
+  {a,b,c}/.{a->b,b->d}
+  {a,b,c}//.{a->b,b->d}
+! end
+!
+!  Repeated, RepeatedNull
+  Clear[a,b,c,d,e,f];
+  f[_..,a_,_..]:=Print[a];
+  f[1]
+  f[1,2]
+  f[1,2,3]
+  f[1,2,3,4]
+  Definition[f]
+! end
+  Clear[f];
+  f[a_..]:=Print[a];
+  f[1,1,1];
+  f[1,2,3]
+  Clear[f];
+  f[a_..,b_...]:=Print[{a,b}];
+  f[1,1,2]
+  f[1,2,2]
+  f[1,1,1]
+  f[]
+  f[1]
+! end
+!
+!  Apply Const.
+  {1,2,3,4}@@3
+  {1,2,3,4}/@{2}
+! end
+!
+!  Times, etc.
+  Clear[a,b,c];
+  pri "abc"*a
+  pri "abc"*2
+! end
+
+!
+!   BeamLine
+   Clear[a,b,c,d,e];
+   a=BeamLine[b,c,d];
+   c=BeamLine[d,e];
+   a
+   3*a
+   a*3
+   BeamLine[b,2*a,3*b]
+   BeamLine[b,-2*a,-3*b]
+   -BeamLine[b,-2*a,-3*b]
+
+   disp end
+   BeamLineName[]
+   USE BeamLine[IP1,QF,QD]
+   BeamLineName[]
+   VISIT TESTLINE
+   BeamLineName[]
+   USE CELL
+   BeamLineName[]
+   BYE
+   BeamLineName[]
+   cal
+   disp
+   ExtractBeamLine[]
+   b=ExtractBeamLine[CELL]
+   a=Join[ExtractBeamLine[],-ExtractBeamLine[]]
+
+   PrintBeamLine[a]
+   PrintBeamLine[a,Format->"MAIN"]
+   PrintBeamLine[a,b,Format->"MAIN",Name->{"A","B"}]
+   USE TESTLINE; cal;
+! end
+!
+!  AddTo, etc.
+  Clear[a,b,c,d,e];
+  a=3;
+  a+=2
+  a
+  a/={3,4,5}
+  a
+! end
+!
+!  Relations
+  Clear[a,b,c]
+  pri 1<2
+  pri 1<{2,3}
+  pri {1,2}<{3,1};
+  1<2<3
+  1<2===2
+  pri   1<2<>a
+  pri   1<2<=>a
+  (1<2<3)+0
+  pri a<b<c
+  pri 1==2===0
+  pri (1==2)===0
+! end
+!
+!  FFS$Status
+!FFS$Status
+!end
+!
+!   MapThread
+   Clear[b,c,d,e,f];
+   d[c,e]=1;
+   f[{b,c},{d,e}]=1;
+   Apply[dd,{{b,c},{d,e}}]
+   Definition[dd]
+   Thread[Apply[dd,{{b,c},{d,e}}]]
+   Thread[Apply[dd,{{b,c},{d,e}}]]/.dd->f
+   MapThread[f,{{b,c},{d,e}}]
+   MapThread[f,{{b,c},{d,e}},{2}]
+   MemoryCheck[]
+! end
+!
+!    Pure functions
+   Clear[a,b,c,d,e,f];
+   Print[#+#2&[a,b]]
+   (f[a,##]&)@@{b,c,d}
+   Print[Function[{x,y},x+y][a,b]]
+   a={1.,2.};
+   (ArcTan[#,#2]&)@@a
+   Timing[Do[(ArcTan[#,#2]&)@@a,{10000}]]
+   Function[{x,y},ArcTan[x,y]]@@a
+   Timing[Do[Function[{x,y},ArcTan[x,y]]@@a,{10000}]]
+   Print[#+#2&[1,2]];
+   a={1,2,{3,{4,5}}}
+   Sin[#]&/@a
+   c=1;(#=#2)&[c,d]
+   a={1,2,3,4,5};#[3]&[a]
+   MemoryCheck[];
+! end
+!
+!  Head, Definition
+  Clear[a,b,c,d,e]
+  Head[Sin]
+  Head[Sin[a]]
+  Head[Pi]
+  Head[{1,2,3}]
+  Head[Plus]
+  Head[I]
+  Head[a_]
+  Head[a+b]
+  MatchQ[{1,2,3},a_List]
+  Definition[Element]
+  Definition[1,Sin,Sin[1],1*2,a*b+c]
+! end
+!
+!    Module and Block
+   Clear[a,b,c,d,e];
+   a=1;Module[{a=2,b,c},Module[{a},Print[a];a=3;b[x_]:=4;(c[x_]=y_)^=0.1];
+     Print[a];Definition[b,c]];Print[MemoryCheck[1]];Print[a];Definition[b,c]
+   a=-1;b=-2;c=-3;
+   Print[Module[{a,b,c=3},a=1;b=2;a+b]];
+   Print[Block[{a,b,c=3},a=1;b=2;a+b+c]];
+   Print[a,b,c];
+   Clear[f];
+   f[x_]:=Module[{a,b,c},a];
+   f[1]
+   f[x_,y_]:=Module[{a,b,c},
+     a=Cos[y];
+     b=Sin[1];
+     c=a+b]
+   a=1;b=2;c=3;
+   Print[f[1,2],' ',a,' ',b,' ',c];
+   mm:=ii^2;
+   Print[Module[{ii=aaa},mm+ii]];
+   Print[Block[{ii=aaa},mm+ii]];
+   Print[Definition[SymplecticJ]];
+   SymplecticJ[4]
+! end
+!
+!  Replace
+  Clear[a,b,c,d,e];
+  Print[a/.((b_)->2*b)]
+  Print[a/.((p:b_)->2*b)]
+! end
+!
+!   Optional argument, Named pattern
+  Clear[f,a,b,c,x,y];
+  f[x_]=1;
+  f[y_]=2;
+  f[x_]=3;
+  Definition[f]
+  f[x:_]=4;
+  f[y:_]=5;
+  f[x:_]=6;
+  Definition[f]
+  f[x___,y___]:=Print[{{x},{y}}];
+  f[x___,1,2,3];
+  f[1,2,3,y___];
+  f[x___,y___]:=0;
+  Definition[f]
+  Clear[f];
+  f[x_,y_List,z___]:=Print["A ",{{x},{y},{z}}];
+  f[x_,y__,z___]:=Print["B ",{{x},{y},{z}}];
+  Definition[f]
+  f[1,2,3]
+  f[1,{2},3]
+! end
+  Clear[f,a,b,c];
+  f[a_:3]:=Print[{a}];
+  f[4]
+  f[]
+  Clear[f];
+  aa={1,2,3};
+  f[x_:aa,y_]:=Print[x,",",y];
+  f[1,2]
+  f[3]
+  f[,3]
+  f[3,]
+  Clear[f,a,b,c,x,y];
+  f[x:b_*c_,y_]:=Print[x,",",y];
+  Definition[f]
+  f[a*b,y]
+! end
+!
+!  ToExpression
+  Clear[a,b,c,d,e,f];
+  Module[{f=Range[1,5]},
+    i=1;While[i<5,
+    ToExpression["f[i]:=-1"];
+    Print[f];i=i+1]];
+! end
+!
+!  Define
+  Clear[a,b,c,d,e,f];
+  Module[{a=Range[1,10]},
+  (a[2]=b_)^:=Print[Sqrt[b]];
+  Print[{a[1],a[2],a[2]=a[2],a[1],a[2]}]];
+! end
+!
+!
+! Upset
+   Clear[a,b,c,f];
+   b=a;
+   Unevaluated[c=b]
+   f[x__]:=Hold[x];
+   f[Unevaluated[c=b],1]
+   Clear[f];
+   f[x__,1]:=Hold[x,1];
+   f[Unevaluated[c=b],1]
+   UpSet[Unevaluated[c=b],1]
+   Definition[a,b,c]
+! end
+   (Unevaluated[c=b])^=1;
+   Definition[a,b,c]
+   Clear[a,b,c];
+   b=a;
+   (c=b)^=2;
+   Definition[a,b,c]
+! end
+   Clear[f,g,h]
+   Sin[g]^=1;
+   Sin[g]
+   Sin[g[f]]
+   Sin[g[f]]^=3;
+   a=5;
+   Sin[g[h,h]]^:=a+1;
+   a=3;
+   Sin[g[h,h]]
+   Definition[g]
+   Clear[f,g];
+   f[g]=2;
+   f[g]^=3;
+   f[g]
+   Clear[f];
+   (f[x_]=y_)^=4;
+   f[2]=3
+   Clear[f,g];
+   Protect[f,g];
+   f[g]=2;
+   f[g]^=2;
+   f[g]
+   Unprotect[f,g];
+! end
+!
+!  Replace in a pattern
+  Clear[f,a];
+  a=1;
+  f[a_]:=Print[p:a->5];
+  Definition[f];
+  f[2]
+! end
+!
+!  Pattern
+  Clear[a,b,c,d,e];
+  MatchQ[a+b+a,p_+_+p_]
+  MatchQ[a+b+a,p_+_+(p:_)]
+  MatchQ[a+b+c,p_+_+p_]
+  MatchQ[a+b+c,p_+_+(p:_)]
+  Table[MatchQ[1+b,p:1+b],{10}]
+  e=2;
+  MatchQ[2,p:e]
+  MatchQ[2,p:2]
+! end
+!
+! Alternatives
+Clear[a,b,c,f,x,r];
+  {a[2],b[3],c[4],a[5]}/.(f:(a|b))[x_]->r[f,x+10]
+! end
+!
+!
+! Gamma
+  Do[Print[Gamma[i]," ",LogGamma[i]],{i,-10.5,10.5,0.5}];
+! end
+!
+!  Fit
+   FitFunction:=(Table[0,{1000000}];
+     {Twiss["BX","***"]-30,Twiss["BY","***"]-30});
+   free q*
+   go
+! end
+!
+!  RENUMBER
+  renum qf.2 disp
+! end
+!
+!  Tcl/Tk
+!   Get["/users/oide/WORK/oldsad/Packages/Tk.n"];
+  OpenTk;
+  x=0.1
+SAD$Tk$fn=6;
+  CreateWindow["trans",OverrideRedirect->True,Position->{100,200},
+    Pack[Message[Name->"mess2",Text->"This is a message."]]];
+! end
+  WithdrawWindow["trans"];
+  CreateWindow["test",
+    Pack[
+      Button[Text->"OK",Command->Print["OK"],
+      Name->"OK",BackGround->"green"],
+      Title[Name->"title",Variable->x],
+      Pack[
+         Title[Name->"title1",Text->"a"],
+         Entry[Name->"entry",Variable->en,Width->7],Side->"left"],
+      Side->"top"],
+    Pack[Button[Text->"Apply",Command->"apply",Name->"Apply"],
+      Frame[Name->"fr",Relief->"ridge",
+        BackGround->"red",BorderWidth->4,
+        Pack[
+        Button[Text->"?",Name->"help1"],
+        Button[Text->"Not Apply",Command->Print["Not Apply"],
+          Name->"NOAPPLY"]]],Side->"top"],
+    Pack[Message[Name->"mess",Text->"This is a test of SAD/Tk/Tk.",
+      Width->"5c"]],
+    Pack[
+      Table[CheckButton[Name->"cb"//ii,Text->"status-"//ii,
+        Variable->y[ii]]/.ii->i,{i,1,3}],Side->"right"],
+    Pack[RadioButton[Name->"rb",Text->"select",Variable->z,Value->"aaa"],
+      Frame[Name->"mbar",Relief->"raised",
+        Pack[
+          MenuButton[Name->"SAD",Text->"SAD",Underline->0,
+            Menu[Button[Text->"GO",Command->(c="GO")],
+              Message[Text->"...",Name->"m1"],
+              Cascade[Text->"Command",
+              Menu[Button[Text->"CAL",Command->(c="cal")]]],
+              Separator[],
+              CheckButton[Text->"CELL",Variable->cellf],
+              RadioButton[Text->"TRACK",Variable->trk,Value->"TRACK"]]],
+           Side->"left"]],
+      ListBox[Text->{"a","b","c","d","e"},Name->"lb",YScroll->True,
+        Variable->lb,BorderWidth->2,SelectMode->"extended"],
+      Side->"bottom"]];
+  x=DateString;
+  BindWidget["test.OK","Enter",Print[$x,$y,$W,$K,$A]];
+  BindWidget["test.OK","Any-KeyPress",Print[$x,$y,$W,$K,$A]];
+  BindWidget["test.fr.help1","Button-1",RedrawWindow["trans"]];
+  BindWidget["test.fr.help1","ButtonRelease-1",WithdrawWindow["trans"]];
+  FocusWidget["test.OK"];
+!  Write[SAD$Tk$fn,".test.menua post 100 100"];Flush[SAD$Tk$fn];
+!  System["sleep 5"];
+!  Write[SAD$Tk$fn,".test.menu unpost 100 100"];Flush[SAD$Tk$fn];
+
+  While[c=Read[Tk$SAD$fn,String];c<=>EndOfFile,Print[c];ToExpression[c]];
+
+!!!   bind .test.lb <Shift-ButtonRelease-1> {puts \{\"[join [selection get] "\",\""]\"\}}
+! end
+!
+! Element
+  Element["K1","AA"]=0.1
+  Element["LENGTH"]
+  Element[LENGTH]
+  Element["NAME"]
+  Element["POSITION"]
+  Element["TYPE"]
+  Element["KEYWORDS"]
+  Element["DEFAULT"]
+  Element["VALUE"]
+  Element["ROTATE"]
+  Element["ROTATE","QF"]
+  dk 0.01 q*;
+  Element["K1","QF"]=0.1
+  Element["K1","QF"]
+  LINE["K1","QF.*"]
+  Element["L","QF"]=2
+  Element["L","QF"]
+  LINE["L","QF.*"]
+  Unprotect[Element];
+  Definition[Element]
+  MemoryCheck[]
+  Element[x___]=.
+  Definition[Element]
+! end
+!
+!  Components as variable
+!
+  free QF.1 QF.2
+  free Q*
+  var
+  fix QF.2
+  var
+  qf.2 0.1
+  LINE["K1","QF.2"]
+  cal nx ny cal noexp
+  reset
+  fix *;
+  var
+  disp qf.2
+  free qf.2
+  fit nx .55 
+  cal noexp
+  LINE["K1","QF.1"]
+  LINE["K1","QF.2"]
+  coup qf.2 qd.2 -1
+  var
+  fix *;free qf
+  var
+  free qf.2
+  var
+  coup qf qf 1
+  var
+! end
+!
+!  COD correction by GO
+  delx 1e-3 q*;
+  fit qf dx 0 fit qd dx 0 fit qf.2 dx 0 fit qd.2 dx 0
+  fit qf dy 0 fit qd dy 0 fit qf.2 dy 0 fit qd.2 dy 0
+     free b*.* k0
+  cal noexp
+  out 'a' draw dx & dy q* term out tdr 'a'
+  maxi 1
+  go noexp
+  out 'a' draw dx & dy q* term out tdr 'a'
+! end
+
+!
+! SetElement
+  SetElement["QF"]
+  SetElement["QF","QUAD"]
+  SetElement["QF","BEND"]
+  SetElement["QF","QUAD",{"K1"->0.1}]
+  SetElement["QF",,{"K1"->0.1}]
+  SetElement["QFF",,{"K1"->0.1}]
+  SetElement["QFF","QUAD",{"K1"->0.1}]
+  SetElement["QFF1"]
+  SetElement["QDD","QUAD"]
+  SetElement["QDD1","QUOD"]
+  SetElement["QF1"]
+  SetElement["QF1","QUAD"]
+! end
+!
+!
+!    RADLIGHT
+  MOMENTUM=1e9;
+  scale=1e-15;
+  tw=1e-16;
+  B ANGLE 0
+  B K0 0.1
+!  MOMENTUM=3e9;
+!  MOMENTUM=1e10;
+!  scale=1e-18;
+!  tw=1e-19;
+  FindPeak[l_]:=Position[Abs[l],Max[Abs[l]]][1,1];
+  RADLIGHT
+  np=1;
+  x=Table[0,{7},{np}];
+  Do[x[7,i]=1,{i,np}];
+!  x[1,1]=0.001;x[3,1]=0.001;
+  d={1,x};
+  r=TrackParticles[d,10][2,1];
+!  f=RadiationField[r,{20,0.1,0}];
+  f=RadiationField[r,{7.9918,0.249792,0}];
+  p=FindPeak[-f[3]];
+  f[1]=f[1]-f[1,p];
+  trange={f[1,p]-tw,f[1,p]+tw}/scale;
+  ListPlot[Transpose[{f[1]/scale,f[3]}],
+    PlotJoined->True,PlotRange->{trange,Automatic}];
+! end
+!  ListPlot[Transpose[{f[1]/scale,f[4]}],
+!    PlotJoined->True,PlotRange->{trange,Automatic}];
+!  ListPlot[Transpose[{f[1]/scale,f[2]}],
+!    PlotJoined->True,PlotRange->{trange,Automatic}];
+  s=RadiationSpectrum[{f[1],f[3]},{0.001,1,0.001}*3e-7];
+!  ListPlot[Transpose[{s[1],s[2]/scale}],PlotJoined->True]
+!  ListPlot[Transpose[{s[1],s[3]/scale}],PlotJoined->True]
+!  ListPlot[Transpose[{s[1],(s[2]^2+s[3]^2)/scale^2}],PlotJoined->True]
+  ListPlot[Transpose[{s[1],(s[2]^2+s[3]^2)/scale^2}],PlotJoined->True,
+    Scale->Log]
+! end
+!
+   fn=OpenWrite["sadmath.m"];
+   Write[fn,"Print[N[BesselJ[0,1]]];Quit;"];
+   Close[fn];
+   System["csh -c '/usr/local/bin/math < sadmath.m >! mathsad.m -nonint -batchoutput'"];
+   fn=OpenRead["mathsad.m"];
+   x=Read[fn]
+   Close[fn];
+! end   
+  
+
+!
+!   DownhillSimplex
+  f:=Apply[Function[{x,y},((x^2+y^2)-1)*(x^2+y^2)-(x-.5)/3.],#]&;
+  v={{1.,1.},{0.,-1.},{0.,1.}};
+  limit={{-0.5,-1.5},{0.65,1.5}};
+  p=Sort[Map[{f[#],#}&,v]]
+  DownhillSimplex[p,f,MaxIteration->100,Tolerance->1e-4,VariableRange->limit]
+
+! end
+!
+!   DownhillSimplex
+  free q* q* l
+  fit nx .3 ny .2
+  OptimizeOptics[]
+! end
+!
+!  Unary minus
+   Clear[a,b,c,d,e];
+   2^3^2
+   3^-2
+   3*-2
+   Print[-a^b," ",a^-b," ",a^-b^c," ",a-b^c," "];
+   Print[-a*b," ",a*-b," ",a*-b*c," ",a-b*c," "];
+! end
+!
+!    Inverse, Det
+   a=Table[Random[],{i,100},{j,100}];
+   Max[Abs[a.Inverse[a]-IdentityMatrix[100]]]
+   a={{1,I},{I,1}};
+   Det[a]
+   a.Inverse[a]
+   a=Table[Random[],{i,100},{j,100}];
+   Det[a]
+   1-1/Apply[Times,SingularValues[a][2]]/Det[a]
+   Timing[Inverse[a];]
+   Timing[Det[a];]
+   a=a+I*Table[Random[],{i,100},{j,100}];
+   Timing[Det[a];]
+! end
+!
+!  Obsolete symbol
+  Clear[f,g,a,b,c,d,e];
+  MemoryCheck[1]
+  Module[{a},a];
+  MemoryCheck[1]
+  Table[i,{i,10}]
+  MemoryCheck[1]
+  Table[i,{i,10},{i,10}]
+  MemoryCheck[1]
+  b=a;
+  Evaluate[b]=3;
+  Definition[a,b]
+  b=Module[{a},a];
+  Definition[b]
+  Evaluate[Module[{d},d]]=1;
+  Definition[d]
+  e[1]=2;
+  Module[{e},e][1]
+  Definition[e]
+  Module[{e},a={e,e};]
+  a[1,1]
+  Map[#[1]&,a]
+  f[Hold[x_]]:=x[1];
+  f[HeldPart[a,1]]  
+! end
+!
+!   TableForm
+!   a=Table[i*10+j,{i,5},{j,8}];
+!   TracePrint[TableForm[a]]
+!   TableForm[{1,2,3}]
+!end
+!
+!  D, ReduceExpression
+  Clear[D,ReduceExpression,f,x,a,b,c];
+  ReductionRule={x_^0->1,Times[0,___]->0,
+    Plus[x_]:>x,Times[x_]:>x,
+    Plus[a___,x_,x_]:>Plus[a,2*x],
+    Plus[a___,x_,n_Real*x_]:>Plus[a,(n+1)*x],
+    Plus[a___,m_Real*x_,n_Real*x_]:>Plus[a,(m+n)*x],
+    Times[a___,x_,x_]:>Times[a,x^2],
+    Times[a___,x_,x_^n_Real]:>Times[a,x^(n+1)],
+    Sqrt[x_]->x^(1/2)};
+  ReduceExpression[e_]:=Module[{r=e},
+    Scan[(r=r/.#)&,ReductionRule];If[r<=>e,ReduceExpression[r],r]];
+  Print[ReduceExpression[1+x-x+(3+x+3*x)]]
+  Print[a=ReduceExpression[1+x*(1/x)-x+(3+x+3*x)]];
+
+  D[y_,x_]:=Module[{z=ReduceExpression[y]},If[z===y,0,D[z,x]]];
+  D[x_,x_]=1;
+  D[_Real,x_]=0;
+  D[f_[y_],x_]:=ReduceExpression[((D[f[x],x])/.x->y)*D[y,x]];
+  D[Plus[x__],y_]:=ReduceExpression[Map[D[#,y]&,Plus[x]]];
+  D[Times[x__],y_]:=ReduceExpression[Apply[Plus,
+    Table[MapAt[D[#,y]&,Times[x],{i}],{i,Length[{x}]}]]];
+  D[y_List,x]:=Map[D[#,x]&,y];
+  D[y_^z_,x_]:=ReduceExpression[z*y^(z-1)*D[y,x]+Log[y]*y^z*D[z,x]];
+  D[Sin[x_],x_]:=Cos[x];
+  D[Cos[x_],x_]:=-Sin[x];
+  D[Exp[x_],x_]:=Exp[x];
+  D[Log[x_],x_]:=x^-1;
+  D[Tan[x_],x_]:=Cos[x]^-2;
+  D[Cosh[x_],x]:=Sinh[x];
+  D[Sinh[x_],x]:=Cosh[x];
+  
+  Print[D[Sin[3 x],x]];
+  Print[D[Sin[x]Cos[x],x]];
+  Print[D[x^3 Sin[x],x]];
+  Print[D[Sin[y],x]];
+  Print[D[Sin[Cos[x]],x]];
+  Print[D[{Sin[x]/Cos[x],Cos[x]/Sin[x]},x]];
+  MemoryCheck[1]
+  Print[D[x y,x]]
+  Timing[Do[D[x^3 Sin[x],x],{100}]]
+! end
+!
+!  Define
+  Clear[f,x,a,b,c];
+  Timing[Do[f[i*x_]=i,{i,1000}]]
+  Timing[Do[f[i x],{i,1000}]]
+  Clear[a,f];
+  a=Table[0,{1000}];
+  Timing[Do[a[i]=i,{i,1000}]]
+  Timing[Do[f[i]=i,{i,1000}]]
+ Print[{MemoryCheck[1],TimeUsed[]}];
+!
+!  Evaluate, ReleaseHold
+  Clear[a,b,c,d,e];
+  a[d]:=e;
+  SetAttributes[a,HoldAll];
+  c=d;
+  a[c]
+  a[Evaluate[c]]
+  a[a[Evaluate[c]]]
+  a[Evaluate[a[Evaluate[c]]]]
+  Clear[x,y,z];
+  Print[ReleaseHold[Hold[x]+Hold[y+Hold[z]]]];
+  f[1]=1;
+  Definition[f]
+  g[x_]:=Module[{f=x[1]+1},Print[{f,x[1]}]];
+  g[f]
+  Definition[f]
+  f[1]
+! end
+!
+!  Pattern
+  Clear[f,g,x,y,z];
+  f[x_,y_]:=Definition[x,y_,y];
+  g[x_,y_]:=Definition[x,y:_,y];
+  f[1,2]
+  g[1,2]
+! end
+!
+!    Throw and Catch
+  Clear[f]
+  f[x_]:=If[x>5,Throw[big],x^2];
+  Print[Catch[f[3]]];
+  Print[Catch[f[10]]];
+  MemoryCheck[1]
+  Catch[Throw[]]
+  MemoryCheck[1]
+  Catch[Throw[1.5]]
+  MemoryCheck[1]
+  Throw[1]
+  MemoryCheck[1]
+! end
+!
+!    Timing, TimeUsed
+  TimeUsed[]
+  Clear[a,b,c,d,e,f];
+  Timing[Do[,{100000}]]
+  Timing[Do[1,{100000}]]
+  Timing[Do[a,{100000}]]
+  Timing[Do[a;1,{100000}]]
+  Timing[a=1;Do[a,{100000}]]
+  Timing[a=1;Do[Identity[a],{100000}]]  
+  f[1]:=1;
+  Definition[f]
+  Timing[a=1;Do[f[a],{100000}]]  
+  Clear[f];f[x_]:=x;
+  Timing[b=2;Do[f[b],{100000}]]  
+  Timing[Do[a=1,{100000}]]  
+  Timing[Do[a=b,{100000}]]  
+  Timing[b=1;Do[a=b,{100000}]]  
+  Timing[b=1;Do[a=b+1,{100000}]]  
+  Timing[Do[a={};Do[a=Append[a,i],{i,100}],{100}]]
+  Print[a];
+  Timing[Do[a={};Do[a={a,i},{i,100}];Flatten[a],{100}]]
+  Timing[Do[Flatten[a],{1000}]]
+  a=Flatten[a];
+  Timing[Do[Take[a,50],{10000}]]
+  Timing[Do[Drop[a,50],{10000}]]
+  Timing[Do[Append[a,1],{10000}]]
+  MemoryCheck[1]
+  GarbageCollect[];
+  MemoryCheck[1]
+! end
+!
+!
+!   Sort,Union,Order,Intersection,Complement
+  Clear[a,A,b,c,d,e];
+  Union1[{{a},{1},{1},{a}}]
+  Sort[{{a},{1},{1},{a}}]
+  Intersection[{c,a,b,a},{a,b,b,c},{d,e,a,b}]
+  Complement[{c,a,b,a},{d,e},{c,d,e}]
+  Sort[{a,a,b}]
+  Sort[{"a",a,A,1,-1,100,Sin,Plus,b[1,2,3,4,5],"abc",{{1,2}},{1},{1,2,3,4,5}}]
+  MemoryCheck[]
+  Sort[{2,4,7},Greater]
+  Union[{1,2,3},{2,3,-1},{a,A,"a"}]
+  Order["a","A"]
+  Do[n=2^i;a=Table[Random[],{n}];Print[n," ",Timing[Sort[a];]],{i,9,14}]
+! end
+! 
+! Plot a defined function
+  Clear[f,dp];
+  f[dp_]:=Module[{},FSHIFT=-dp*2];
+  Plot[{dp,f[dp]},{dp,0,2}]
+! end
+!
+!   Pattern
+   Clear[f,x,y,z];
+   f[x_,y_]:=Print["x=",{x}," y=",{y}];
+   f[1,2];
+   f[1,2,3];
+   Clear[f]
+   f[x___,y___,y___]:=Print["x=",{x}," y=",{y}];
+   f[1,2,3,4,5];
+   f[3,1,2,1,2];
+   f[1,y___,2];
+   f[1,y___,y___];
+   f[1,z___,z___];
+   f[x___,y__]:=Print["x=",{x}," y=",{y}];
+   f[1];
+   f[2,1];
+   f[2,3,1];
+   f[2,3,4,1];
+   f[x___,2,3];
+   f[x___,y__]=.
+   Definition[f]
+! end
+!
+!
+ f[1]=2
+ f[1]
+ f[1]=4
+ f[1,2]=3
+ f[x_]=2
+ f[x]^=3
+ f[x]
+ Definition[f,x]
+ Clear[a];
+ Module[{a},MemoryCheck[];a=1];
+ u=v
+ MemoryCheck[1]
+ GarbageCollect[];
+ MemoryCheck[1]
+! end
+!
+!   
+   Clear[f];
+   f[x___,f[y___],z___]:=Print[{{x},{y},{z}}];
+   f[1,f[2,3],4]
+! end
+!
+!   Take, Join, Append, Prepend, Reverse
+  Clear[f];
+  f[1,2]=-1;
+  Take[f[1,2,3],2]
+  Join[f[1],f[2]]
+  Append[f[1],2]
+  Prepend[f[2],1]
+  Reverse[f[2,1]]
+! end
+!
+!
+  Clear[a,b,c,d,e];
+  a={};
+  MemoryCheck[]
+  Do[a=Append[a,i],{i,10000}];
+  MemoryCheck[]
+! end
+!
+!  OpticsPlot
+  p3=OpticsPlot[{{"BX","BY"},{"EX","EY"},{"NX","NY"}},
+    Region->{"QF.2","QF.1"}];
+! end
+  p1=OpticsPlot[{{"BX","BY"},{"EX","EY"},{"NX","NY"}}];
+  p2=OpticsPlot[
+    {{"BX","BY"},
+     {"DX",{{{10,0.001},{20,0.002}},FrameLabel->"DX meas.",
+      Unit->Meter}}}];
+!  p1=OpticsPlot$1[{"BX","BY"},{1,10}];
+!  Show[p1];
+! end
+  p1=ListPlot[OpticsList["BX",1,10,0.1,0],PlotJoined->True,Plot->False];
+! end
+!
+!   SPLIT
+   SPLIT QF 0.05
+   MemoryCheck[]
+   cal
+! end
+!
+! Expression handling
+   Clear[a,b,c,d,e];
+   Print[-1*(2*a)]
+   Print[-(2*a)]
+   Print[-(-a)]
+   Print[-(-2 a)]
+   Print[-(-2 a b)]
+   Print[1/(1/a)]
+   Print[1/a]
+   Print[a*1]
+   Print[a*(-1)]
+   Print[(a+b)+0]
+   Print[2*(-a)]
+   Print[-1*(-a)]
+! end
+!
+!  BeamMatrix
+!
+   BeamMatrix[10]
+   BeamMatrix[10.3]
+   BeamMatrix[11]
+! end
+!
+!    built-in functions
+   $FORM='M';
+   Print[Tan[Pi/4], Cos[1], Sin[1], Tanh[1], Cosh[1], Sinh[1]];
+   print Exp[1] Log[(1+1)*2-3] ArcTan[1] ArcTan[1,2] Sqrt[2]
+   print ArcSin[1] ArcCos[1] ArcSinh[1] ArcCosh[1] ArcTanh[0.5]
+   print Floor[-1.2] Ceiling[1.2] Min[1,2,3] Max[1,2,3] Mod[5,2]
+   s='Pi='//Pi//' Speed of Light='//SpeedOfLight
+   print 'This is a test... ' 1*2+(3.+.1*5)*2//s
+   print s[1] '-' s[2] '-' s[3,100]
+   print s
+   print s[Index[s,'3.14'],Len[s]-1]
+   Random[]
+   pri Sin[I] Cos[I] Exp[I] Log[I] Sqrt[I] Abs[I]
+! end
+!
+!  Rectangle
+  p1=Plot[Sin[x],{x,0,2Pi},DisplayFunction->Null];
+  p2=Plot[Cos[x],{x,0,2Pi},DisplayFunction->Null];
+  Show[Graphics[{Rectangle[{0,0},{1,0.5},p1],
+    Rectangle[{0,0.5},{1,1},p2]}]];
+! end
+!
+  Plot[Twiss["BX",s],{s,1.001,10}]
+! end
+!
+!   MapAt,FlattenAt,ReplacePart,Insert,Delete
+   Clear[a,b,c,f];
+   a=Table[i*100+j*10+k,{i,4},{j,3},{k,3}]
+   MapAt[f,a,2]
+   MapAt[f,a,{2,3}]
+   MapAt[f,a,{{2,3},{1,2}}]
+   FlattenAt[a,2]
+   FlattenAt[a,{2,3}]
+   FlattenAt[a,{{2,3},{1,2}}]
+   ReplacePart[a,0,2]
+   ReplacePart[a,0,{2,3}]
+   ReplacePart[a,0,{{2,3},{1,2}}]
+   ReplacePart[a,Plus,0]
+   MapAt[[0,#]&,a,2]
+   Insert[a,0,2]
+! end
+   Insert[a,0,{2,3}]
+   Insert[a,0,{{2,3},{1,2}}]
+   Delete[a,2]
+   Delete[a,{2,3}]
+   Delete[a,{{2,3},{1,2}}]
+! end
+!
+!   Transpose, SingularValues, DiagonalMatrix
+   a=Table[i*10+j,{i,5},{j,3}];
+   {u,w,v}=SingularValues[a]
+   Transpose[u].DiagonalMatrix[1/w].v
+   Transpose[a]
+   a=Table[i*10+j,{i,4},{j,4}];
+   {u,w,v}=SingularValues[a]
+   {Dimensions[u],Dimensions[a]}
+   wm=DiagonalMatrix[1/w];
+   {Transpose[u].wm.v-a}
+! end
+   a=Table[Random[],{i,100},{j,100}];
+   Timing[SingularValues[a];]
+! end
+!
+!  StringMatchQ, StringPosition, ToUpperCase
+  StringMatchQ["qf1","qf*"]
+  StringPosition["abcdeabcdeabc","cde"]
+  StringPosition["abcdeabcdeabc","cde",1]
+  StringPosition["abcdeabcdeabc",{"abc","cde","abc"}]
+  ToUpperCase["ToUpperCase"]
+! end
+!
+!   ToCharacterCode,FromCharacterCode,ToString,Characters
+  ToCharacterCode["Hello!"]
+  FromCharacterCode[{72,101,108,108,111,33}]
+  FromCharacterCode[65]
+  ToString[{1,2,3}]
+  ToCharacterCode["\t\n\f\r\\\27\abcde"]
+  Characters["A string."]
+  StringDrop["abcde",1]
+  StringDrop["abcde",3]
+  StringDrop["abcde",5]
+  StringDrop["abcde",-1]
+  StringDrop["abcde",-3]
+  StringDrop["abcde",-5]
+  StringDrop["abcde",{1,-1}]
+! end
+!
+! Operations
+  Clear[a,b,c,d,e]
+  {List[1,2,3],Function[a+1],Alternatives[a,b,c],
+  Sequence[1,2,3],PatternTest[a,b]}
+! end
+
+!
+!  Flags
+  ?CELL ,  ?RING , ?ABC
+  ?cell
+  rep 3 Print["OK"] until ?conv
+! end
+!
+!   Identity
+  Identity[{1,2,3}]
+  Length[Identity[{1,2,3}]]
+  a=Identity[{1,2,3}];
+  a
+  Identity[1,2,3]
+! end
+!
+!   Cases, DeleteCases, Scan, Position, Count, MemberQ
+  Clear[a,b,c,d,e,f,g];
+  a={1,2,3,{4,5},{6,{7,8}}};
+  Position[a,x_]
+  Position[a,x_,Heads->False]
+  Position[a,x_,1,2]
+  MemberQ[a,x_]
+  Position[a,{4,x_}]
+  Position[a,{x__,5}]
+  Position[a,{4,5,x_}]
+  Position[a,{4,5,x__}]
+  Position[a,{4,5,x___}]
+  Count[a,x_,1]
+  a={1,2,1,2,3};
+  Position[a,{x__,y__}]
+  Position[a,{x__,x__}]
+  Position[a,{x__,x__,3}]
+  a=Range[1000];
+  Timing[Do[Position[a,999],{100}]]
+  Clear[a,b,c,x];
+  Cases[{1,x,2},_Real]
+  Cases[{1,x,2},_Real->10]
+  Module[{c},Cases[{1,a->b,3},(p:(a->c_))->c]]
+  DeleteCases[{1,2,3,4,5},6]
+  DeleteCases[{1,2,3,4,5},2]
+  DeleteCases[{1,a,2,b},_Real]
+  DeleteCases[{1,f[2,3],4},f,{2},Heads->True]
+  DeleteCases[f[1,2,3,g[2,3]],2]
+  DeleteCases[f[1,2,3,g[2,3]],2,Infinity]
+  Scan[Print,1+x^2,Infinity];
+! end
+!
+!  Cases
+  NetMemory:=Flatten[{#,#[1]-#[2]}&[MemoryCheck[]]];
+  Clear[a,b,c,d,e];
+  Clear[cases];
+  NetMemory
+  cases[{1,2,3,4,5},3,1]:=1;
+  Timing[Do[cases[{1,2,3,4,5},3,1],{10000}]]
+  Clear[cases];
+  cases[_[_],_,___]:=1;
+  Timing[Do[cases[{1,2,3,4,5},3,1],{10000}]]
+  Clear[cases];
+  cases[_[__],_,___]:=1;
+  Timing[Do[cases[{1,2,3,4,5},3,1],{10000}]]
+  Clear[cases];
+  cases[_[___],_,___]:=1;
+  Timing[Do[cases[{1,2,3,4,5},3,1],{10000}]]
+  Clear[cases];
+  cases[_[l___],p_,opt___]:=1;
+  Timing[Do[cases[{1,2,3,4,5},3,1],{10000}]]
+  Clear[cases];
+  cases[_[l___],p_,opt___]:={l,l,p,opt};
+  Timing[Do[cases[{1,2,3,4,5},3,1],{10000}]]
+  Clear[cases];
+  cases[_[l___],p_->r_,opt___]:={l,l,p,opt};
+  cases[_[l___],p_,opt___]:={l,l,p,opt};
+  Timing[Do[cases[{1,2,3,4,5},3,1],{10000}]]
+  Clear[cases];
+  cases[_[l___],p_->r_,opt___]:={l,l,p,opt};
+  cases[_[l___],p_,opt___]:={[l],[l],p,opt};
+  Timing[Do[cases[{1,2,3,4,5},3,1],{10000}]]
+  Clear[cases];
+  cases[_[l___],p_->r_,opt___]:={l,l,p,opt};
+  cases[_[l___],p_,opt___]:={{{l},#}&,{l,p,opt}};
+  Timing[Do[cases[{1,2,3,4,5},3,1],{10000}]]
+  Clear[cases];
+  cases[_[l___],p_->r_,opt___]:={l,l,p,opt};
+  cases[_[l___],p_,opt___]:={{{l},#}&,{[1,2,3,4,5],p,opt}};
+  Timing[Do[cases[{1,2,3,4,5},3,1],{10000}]]
+  Clear[cases];
+  cases[_[l___],p_->r_,opt___]:={l,l,p,opt};
+  cases[_[l___],p_,opt___]:={{{l},#}&,{{[1,2,3,4,5]},p,opt}};
+  Timing[Do[cases[{1,2,3,4,5},3,1],{10000}]]
+  Clear[cases];
+  cases[_[l___],p_->r_,opt___]:={l,l,p,opt};
+  cases[_[l___],p_,opt___]:={{{l},#}&,{{l},p,opt}};
+  Timing[Do[cases[{1,2,3,4,5},3,1],{10000}]]
+! end
+  Clear[cases];
+  cases[_[l___],p_->r_,opt___]:={l,l,p,opt};
+  cases[_[l___],p_,opt___]:={{{[l]},#}&,{{[l]},p,opt}};
+  Timing[Do[cases[{1,2,3,4,5},3,1],{10000}]]
+  Clear[cases];
+  cases[_[l___],p_->r_,opt___]:={l,l,p,opt};
+  cases[_[l___],p_,opt___]:={{{Unevaluated$[l]},#}&,{{Unevaluated$[l]},p,opt}};
+  Timing[Do[cases[{1,2,3,4,5},3,1],{10000}]]
+  Clear[cases];
+  cases[_[l___],p_->r_,opt___]:={l,l,p,opt};
+  cases[_[l___],p_,opt___]:=Unevaluated$[Unevaluated$[{Unevaluated$[l]},#]&,Unevaluated$[{Unevaluated$[l]},p,opt]];
+  Timing[Do[cases[{1,2,3,4,5},3,1],{10000}]]
+  Clear[cases];
+  NetMemory
+  cases[_[l___],p_->r_,opt___]:={l,l,p,opt};
+  cases[_[l___],p_,opt___]:=Map[Apply[{Unevaluated$[l]},#]&,
+    Position[{Unevaluated$[l]},p,opt]]
+  TracePrint[cases[{1,2,3,4,5},3,1]]
+  Timing[Do[cases[{1,2,3,4,5},3,1],{10000}]]
+  Timing[Do[a/.a->1,{10000}]]
+  Timing[Do[a/.a_->1,{10000}]]
+! end
+  Cases[{1,2,3,4,5},3,1]
+  Timing[Do[Position[{1,2,3,4,5},3,1],{10000}]]
+  Timing[Do[Position[{Unevaluated$[[1,2,3,4,5]]},3,1],{10000}]]
+  Timing[Do[Map[b,Position[{Unevaluated$[[1,2,3,4,5]]},3,1]],{10000}]]
+  Timing[Do[Map[b&,Position[{Unevaluated$[[1,2,3,4,5]]},3,1]],{10000}]]
+  Timing[Do[Map[{Unevaluated$[[1,2,3,4,5]]}&,Position[{Unevaluated$[[1,2,3,4,5]]},3,1]],{10000}]]
+  Timing[Do[Map[Apply[{Unevaluated$[[1,2,3,4,5]]},#]&,Position[{Unevaluated$[[1,2,3,4,5]]},3,1]],{10000}]]
+  Timing[Do[Cases[{1,2,3,4,5},3,1],{10000}]]
+
+! end
+!
+!  SameQ
+  1===1
+  SameQ[1,1]
+! end
+!
+!   level, ntfdef
+  Clear[a,b,c,d,e];
+  Table[0,{10},{10}];
+  a:=(j=0;While[Table[0,{10},{10}];j==0,a=1;j=1];Print[2];Print[3]);
+  a
+  Definition[b];
+  b=b;
+  c=b;
+  Definition[b,c];
+  Clear[a,b,c,d,e];
+  a={b};
+  b=1;
+  a
+! end
+!
+!
+!  If and While
+  n=1;While[a={1,2,3,4,5};n<6,a[6-n]=n;Print[a];n=n+1];
+  Print[a];
+  Select[a,(b=Sin[{1,2,3,4,5}];b[#]=2;Print[b];1)&]
+  Print If[2>3,'wrong','right']
+  Print If[2>3,'wrong']
+  Print If['a','wrong','wrong','Not a number']
+  m=2
+  n=0;While[n=n+1;n<10,m=m*2]
+  print m
+! end
+!
+!    Dot, Inner
+   a={1,2,3,4,5};   b={5,4,3,2,1};
+   Print Dot[a,b]
+   Print Inner[#-#2&,a,b,#+#2&]
+   a={{0,1},{-1,0}};
+   Print Dot[a,a] a.a
+   a=Table[i*100+j,{i,100},{j,100}];
+   b=Table[i*100+j,{i,100},{j,100}];
+   Timing[a.b;]
+   a=Table[i,{i,100}];
+   Timing[Do[2.*a,{10000}]]
+   Timing[Do[a.a,{10000}]]
+   Timing[Do[Inner[Times,a,a,Plus],{100}];]
+! end
+!
+!   Fourier, InverseFourier
+   Clear[a,b,c];
+   a={-1.,-1.,-1.,-1.,1.,1.,1.,1.};
+   Fourier[a]
+   InverseFourier[Fourier[a]]
+   FourierTest:=[
+     a=Table[i*1.,{i,1024}];
+     Print[Timing[Do[Fourier[a],{100}]]];
+     c=Table[Complex[i*1.,i*1.],{i,1024}];
+     Print[Timing[Do[Fourier[c],{100}]]]];
+   Do[FourierTest,{3}];
+! end
+!
+! Part
+  Clear[a,b,c];
+  {Print[a];1,Print[b];2}[[2]]
+  {a,b,c}={1,2,{3,4}};
+  Print[{a,b,c}];
+! end
+!
+!    Replace
+  Clear[a,b,c,f,x];
+  Print[1/.x_->f[x]];
+  Print[a+b/.b->2];
+  Print[a+b/.{a->3,b->4}];
+  b=3;
+  r1=a->b;
+  r2=a->c;
+  r=a:>b;
+  s:=b;
+  b=5;
+  a/.r1
+  a/.r2
+  s
+  a/.r
+! end
+!
+!  Evaluate
+  Clear[f,g,h,a,x];
+  Definition[Evaluate];
+  f[x_]:=x+1;
+  f[1]=0;
+  a=1;
+  SetAttributes[f,HoldAll];
+  f[a]
+  f[1]
+  TracePrint[f[Evaluate[a]]]
+  Clear[f,g,a];
+  SetAttributes[f,HoldAll];
+  g[1]=0
+  f[g[a]]/.a->1
+! end
+!
+! Set, Power
+Clear[a,b,c];
+  a=b=1;
+  Definition[a,b];
+  2^3^2
+! end
+!
+!  Unset
+  Clear[a,b,c,d,f]
+  c=3;
+  c=.;
+  c={a,a=.;a,{a,2},a=.;1}
+  MemoryCheck[]
+  Print[c];
+  f[a]=1
+  f[b]=2
+Definition[f]
+  f[a]=.
+Definition[f]
+! end
+!
+!   Flatten, Take, Drop, Select
+  Clear[ff,g,a];
+  a={};Do[a={a,i},{i,10000}];
+  a={a,a};
+   Length[b=Flatten[a,10000]]
+  DeleteCases[b,_Real,1]
+  a={1,2,{3,{4,5}}};
+  Flatten[a]
+  Flatten[a,1]
+  Flatten[a,2]
+  Print[Flatten[ ff[1,2,{3,4},ff[5,6],g[7,ff[8,9]]]]];
+   Print[Take[{1,2,3,4},2]];
+   Print[Take[{1,2,3,4},-2]];
+   Print[Take[{1,2,3,4},{2,3}]];
+   Print[Drop[{1,2,3,4},2]];
+   Print[Drop[{1,2,3,4},-2]];
+   Print[Drop[{1,2,3,4},{2,3}]];
+   Print[Select[{{1,1},{2,-3},{4,5,6}},#[2]<0&]];
+! end
+!
+!  FFSFlags
+  FFSFlags[]
+! end
+!
+!    Depth,Level
+  a={1,2,{3,{4,5}}}
+  Depth[a]
+  Level[a,0]
+  Level[a,1]
+  Level[a,-1]
+  Level[a,{-2}]
+  Level[a,-2]
+  Level[a,{1,2}]
+  Level[a,{2,1}]
+  Level[a,{1,-2}]
+  Level[a,{-2,1}]
+  Level[a,{-3,-1}]
+  Level[a,{-1,-3}]
+  Level[a,{-10,1}]
+! end
+
+!
+!   FFS functions
+  Twiss['*',{1,5}]
+  betax=Sqrt[Twiss[{'BX','BY'}]]
+  Twiss["BX","Q*"]
+  types=LINE['TYPE',"Q*"]
+  k0s=LINE['ANGLE',"B*"]
+  eles=LINE['POSITION','Q*']
+  LINE['K1','QF.1']
+  LINE['K1','QF.1']=0.2;
+  LINE['K1']
+  LINE["DIR"]
+  LINE["DIR","QF"]=-1
+  disp
+  LINE["GEO"]
+  LINE["GEO","QF*"]
+! end
+!
+! Read
+   i=OpenRead["/data/mrdata/onepass/DEC895_23_23.adc"];
+   Timing[
+   b={};While[a=Read[i,Real];a<=>EndOfFile,b={b,a}];
+   Length[Flatten[b]]]
+   Timing[Length[Flatten[b]]]
+   MemoryCheck[]
+   Close[i];
+   i=OpenRead["/data/mrdata/onepass/DEC895_23_23.adc"];
+   Timing[
+   b={};While[a=Read[i,Real];a<=>EndOfFile,b=Append[b,a]];
+   Length[b]]
+! end
+!
+!  Read
+  Clear[a,b,c,d,e,f];
+  f:=(s=Read[-1,Word,ReadNewRecord->False];Print["arg = ",s];WriteString[6,"More? "];
+    s=Read[-1,Word];t=Read[-1,Word,ReadNewRecord->False];Print["arg = ",s," ",t]);
+  f abc
+def
+ghi
+! end
+!
+! Read, ToExpression
+  l=OpenRead["~/OLDSAD/src/b"]
+  Read[l]
+  Read[l]
+  Read[l,String]
+  Read[l,String]
+  Read[l]
+  MemoryCheck[]
+  Read[l,String]
+  MemoryCheck[]
+  ToExpression["1+2;4"]
+  ToExpression["1+2;4 5"]
+!  ToExpression["1+2;4 5+"]
+  Read[-1] 1
+  Read[-1,String] ABCDEFG
+  Do[Print["\"",Read[-1,Word],"\""],{3}]  ABCDE FGHIJ KLM
+  Close[l]
+  l=OpenRead["~/OLDSAD/src/b"]
+  Read[l,Word]
+  Read[l,Word]
+  Read[l,Word,WordSeparators->"!"]
+! end
+  
+!
+!    Return, Break, Continue, Goto, Label
+  Clear[f,x,a]
+  f[x_]:=(If[x>5,Return[big]];x^2);
+  Print[f[3],f[10]];
+  f[x_]:=If[x==0,Return[],Return[1],Return["a"]];
+  f[0] f[1] f["x"]
+  Return[5]
+  Do[a=i;If[i==10,Return["OK"]],{i,100}]
+  Do[a=i;If[i==10,Break[]],{i,100}];Print[a];
+  Do[If[i==5,a=i;Continue[]];Print[i],{i,10}];Print[a];
+  While[1==1,Break[]]
+  (a=1;While[True,If[a>5,Goto[1]];a=a+1];Label[1];Print[a]);
+! end
+!
+!
+  a=Table[Random[],{i,100},{j,100}];
+  Timing[Do[SingularValues[a],{10}];]
+! end
+!
+!
+ Table[0,{2},{2}]
+ TracePrint[SymplecticJ[2]]
+ Table[0,{2},{2}]
+!
+!
+   Clear[f];
+   f[x___]:=Module[{def={A->1}},
+      Print[A/.{x}/.def]];
+   f[A->2]
+! end
+!
+!   Switch, Which
+  Do[Print[Switch[i,1,"a",2,"b",3,"c",_,"z"]],{i,5}]
+  Do[Print[Switch[i,1,"a",2,"b",3,"c"]],{i,5}]
+  Do[Print[Which[i==1,"a",i==2,"b",i==3,"c",True,"z"]],{i,5}]
+  Do[Print[Which[i==1,"a",i==2,"b",i==3,"c"]],{i,5}]
+! end
+!
+!   MapIndexed
+   Clear[a,b,c,d,e,f,g];
+   a={b,c,{d,{e,g}}};
+   MapIndexed[f,a]
+   MapIndexed[f,a,0]
+   MapIndexed[f,a,1]
+   MapIndexed[f,a,-1]
+   MapIndexed[f,a,{1,2}]
+   MapIndexed[f,a,{2,1}]
+   MapIndexed[f,a,{1,-2}]
+   MapIndexed[f,a,{-2,1}]
+   MapIndexed[f,a,{-3,-1}]
+   MapIndexed[f,a,{-1,-3}]
+!
+!  Map, MapThread
+  Clear[a,b,c,d,e,f];
+  a=Range[1000];
+  f[a_,b_]:=Module[{d},Thread[Apply[d,b]]/.d->a];
+  Timing[Do[f[c,{a,a}],{10}]]
+  Timing[Do[MapThread[c,{a,a}],{10}]]
+  Timing[Do[Map[c,a],{10}]]
+  Timing[Do[Map[Sin,a],{1000}]]
+  Timing[Do[Map[Identity,a],{1000}]]
+! end
+!
+!   Illegal store
+  qf0=#QF;
+  Element["VALUE","QF"]=0.1
+  Element["VALUE","QF"]='a'
+  #QF=qf0
+  #QF='a'
+  Do[i='a';Print[i],{i,2}]
+! end
+!
+!   TracePrint,Definition
+  Clear[a,b,c,f]
+  TracePrint[a=1;b=2];
+  f[a_]:=Module[{},a*2;a*4];
+  Definition[f]
+  TracePrint[f[2]];
+  Definition[Sin,Pi,c,SymplecticJ,x_,1.22,"aaa",Function]
+! end
+!
+!
+   Clear[f,x,y,g];
+   f[x_]:=x;
+   f[2]
+   f[x_]=x;
+   f[2]
+! end
+!
+!  Definition
+   Clear[f,g,h]
+   f[1]=3;
+   MemoryCheck[]
+   g=f;
+   Definition[f,g]
+   g[1]=4;
+   Definition[f,g]
+   f=.;
+   Definition[f,g]
+! end
+!
+!   DynamicAperture
+   e=Emittance[];
+   Timing[
+     DynamicApertureSurvey[{{0,100},{0,100},Range[-20,20,2]},100,Output->6]]
+! end
+!
+! LINE
+  dk 0.01 q*;
+  LINE["LENGTH"]
+  LINE["POSITION"]
+  LINE["NAME"]
+  LINE["TYPE"]
+  LINE["ELEMENT"]
+  LINE["DIR"]
+  LINE["S"]
+  LINE["GEO"]
+  LINE["DK"]
+  LINE["ROTATE"]
+  LINE["ROTATE","QF.*"]
+  LINE["K1","QF"]=0.1
+  LINE["K1","QF"]
+  Element["K1","QF"]
+! end
+!
+  Clear[f,g,h]
+   f[1]=1;
+Print[g->f,g->h]
+Definition[f,g]
+! end
+!
+!   Complex array
+   a=Table[Exp[2 Pi/16 I i],{i,0,15}];
+   b=1/a;
+   a^2*b^2
+   a=Table[Exp[2 Pi/1024 I i],{i,0,1023}];
+   b=Table[Re[Exp[2 Pi/1024 I i]],{i,0,1023}];
+! end
+   Timing[Do[a*2,{100}]]
+   Timing[Do[a*I,{100}]]
+   Timing[Do[a*a,{100}]]
+   Timing[Do[b*2,{100}]]
+   Timing[Do[b*I,{100}]]
+   Timing[Do[b*b,{100}]]
+   Timing[Do[a*b,{100}]]
+   Timing[Do[b*a,{100}]]
+   Timing[Do[a*a,{100}]]
+! end
+!
+!   FFS commands
+   FFS["fit bx 30 free qf go",6]
+   if 1<>1
+     FFS["else print \"Not OK\"",6]
+   else
+     print "OK"
+! endif
+   free q* q* rotate
+   FFS["VAR"]
+! end
+!
+!   Thread
+  Clear[a,b,c,f];
+  Thread[f[{1,2},{3,4}]]
+  Thread[f[{1,2,3},4,{5,6,7}]]
+  Print[Thread[Log[a==b],Operation["=="]]];
+! end
+!
+!
+  Clear[a,b,c,d,e,f,g];
+  f[a_,b_]:=Module[{c,d},
+    {c,d}={Range[100],Range[100]}];
+  g[a_,b_]:=Module[{c,d,e={}},
+    {c,d}=f[a,b];
+    ReplacePart[c,-1,10]];
+  MemoryCheck[]
+  g[Range[100],Range[100]];
+  MemoryCheck[]
+! end
+!
+!
+  coup qf qd 1
+  coup qd qf 1
+  attr
+  coup qf qf 1
+  attr
+! end
+!
+! FitWeight
+ nx .4 5 cal
+ FitWeight["***","NX",dp_,w_]:=(Print[{dp,w}];w*10)
+ cal
+! end
+!
+!
+  f[x_]:=Print[{x}];
+  f["aaa"]
+! end
+!
+!  Comment, continuation
+a="This is a string \
+which continues to the next line\            ! backslash works after removeal of comment.
+. A comment is specified by \"!\"\n\         ! The "!" in a quotation is not a comment.
+which is placed \"outside\" of a quatation, \
+but the rule may not be perfect,\nso you should avoid \
+interlacing a comment and a quotation as much as possible.";
+Print[a]
+a="\
+" !   Is this a comment or not?"
+! end
+!
+! Date,FromDate,Todate
+  Date[]
+  FromDate[{2100,3,14,3,24,4}]
+  FromDate[{2100,2,14,3,24,4}]
+  FromDate[{1600,2,14,3,24,4}]
+  ToDate[FromDate[{2100,3,14,3,24,4}]]
+  ToDate[FromDate[{2100,2,14,3,24,4}]]
+  ToDate[FromDate[{1600,2,14,3,24,4}]]
+! end
+!
+!
+ rep 2
+   use CELL
+   cell cal 
+   use TESTLINE
+   cell cal
+ until
+ fit nx .25 free qf
+ visit CELL
+   cell cal
+! end
+ bye
+ cell go
+ show var
+! end
+rep 2
+  FFS["use CELL;cell cal",6]
+  FFS["use TESTLINE;cell cal",6]
+until
+MemoryCheck[]
+a=1
+! END 
+!
+!    Defined functions
+   Clear[a,f];
+   a[3]=-1;a[3,1]=2;
+   Print[a[3]+a[3,1]];
+   a=3;
+   Print[ a];
+   a[2]=rrrr;
+   Print[a[2]];
+   f[x_]:=Sin[x];
+   Print[f[1]+f[2]+f[3],' ',Sin[1]+Sin[2]+Sin[3]];
+   f[x_,y_]:=Sin[x]+Sin[y];
+   Print[f[1]+f[2,3]];
+   Print[f[f[1],f[2]],' ',Sin[Sin[1]]+Sin[Sin[2]]];
+   f[1]=-1;
+   Print[f[f[1],f[2]],' ',Sin[-1]+Sin[Sin[2]]];
+   f[x_,y_]:=x*y;
+   Print[f[3,4]];
+   f[x___]:=Print[x];
+   f[1,' ',2];
+   f[1,2]
+   Clear[f];
+   f[x___]:=Print[x];
+   f[x_Real,y_Real]:=x+y;
+   f[3,4]
+   f['a','b']
+! end
+!
+!
+Clear[f,f];
+f[1]=2;
+f=3;
+Print[f]
+f:=f;
+f[1]
+Print[f]
+g:=g;
+Print[g]
+h:=j;
+j:=h;
+Print[h]
+! end
+!
+!
+ NP=100;
+ Do[FFS["meas",If[i>105,6,0]],{i,110}]
+ Do[FFS["cal",If[i>105,6,0]],{i,110}]
+! end
+!
+!
+!
+ if 1==0
+   If[1==1,Print["a"]]
+ else
+   If[1==1,Print["b"]]==2
+! endif
+ Print["OK"]
+
+! end
+! endif
+! end
+
+!
+  rep 10 Print[\"b\"] if 1<0 Print[\"a\"] endif until
+  c="rep 10 Print[\"b\"] if 1<0 Print[\"a\"] endif until"
+  exec c
+! end
+  ins
+  free ip2 ax ip2 bx ip2 ay ip2 by
+  fit bx 10 by 10 ax 0 ay 0 
+! end
+!
+!
+  TYPE B
+ LINE["K0","B"]
+ LINE["K0","B"]=0.0001;
+  initial=Table[0,{27}];
+  initial[2]=1;initial[5]=1;initial[20]=0.00;
+  CalculateOptics[1,'***',initial,True,2][1,-1]
+  cal
+! end
+!
+!
+  1.1 a
+  b=(1.1 a)
+  b=(1.1 (-a))
+! end
+!
+  VariableRange["QF","ROTATE",v_]:=(Print[v];v<0.01);
+  free q* rotate
+! end
+!
+!    Emittance
+  e=CalculateEmittance[3];
+  Map[Dimensions,e]
+  f=Emittance[Matrix->True];
+  m=OneTurnTransferMatrix/.f
+  m.SymplecticInverse[m]
+  m.Inverse[m]
+  OneTurnExcitation/.f
+!
+!   TransferMatrix,NormalCoordinates
+  Twiss['*','***']
+  m=TransferMatrix[1,'***']
+  m.SymplecticJ[4].Transpose[m]
+  r=NormalCoordinates['***']
+  r[1].SymplecticJ[6].Transpose[r[1]]
+! end
+  LINE["DK"]
+  LINE["DK","QF"]
+  LINE["DK","QF*"]
+! end
+
+LINE["NAME","QF.*"]
+LINE["K1","QF.*"]
+Element["K1","QF"]=0.1
+LINE["K1","QF.*"]
+LINE["EXPAND"]
+LINE["K1","QF.*"]
+! end
+!
+  DP0=0.001;FSHIFT=-1e-8/4.3e-4/0.9987/1.023/3.0273/10.408/1.018;cod emiout cal mat emit
+!
+  by 8 free q* go
+  by * 3 cal
+  MatchingAmplitude={{-0.01,1,0}};
+  cal
+!
+!
+f[]:=
+  Module[{j},
+      Table[j=g[i];j,{i,2,10}]
+  ];
+
+g[j_]:=Module[{},
+  Do[Sin[i],{i,-3,-1}];  ! <---- This makes trouble!
+  j
+];
+f[]
+! end
+!
+!
+  free qf qd 
+  var fix qf var
+  free q* b var fix * var
+  qf 0.1 free qf var
+  q* minmax 10 attr
+  reset var rec var
+  Print[#QF]
+  Element["VALUE","QF"]  
+  Element["K1","QF"]  
+  dk 0.001 q* dump cal
+  fit by 5 bx 30 reset free qf qd go var
+  coup qf qd -1 var
+  rej bx go var
+  reset
+  rej total
+  coup qf qf 1
+  fix *
+  fit r1 0.1 bx 21
+  free qf rotate qf
+  go var 
+  free qd rotate
+  r2 0.1
+  go var
+! end
+  disp
+  type
+! end
+  
+! end
+!
+!   Floor, Ceiling, Round
+  Print[{Floor[1.5],Floor[-1.5],Ceiling[1.5],Ceiling[-1.5],Round[1.5],Round[-1.5],Ceiling[1],Floor[-1],Round[-1.49999]}]
+!
+!
+   a=Table[i*10+j,{i,3},{j,4}]
+   Map[#[1]&,a]
+   Map[Part[#,1]&,a]
+   Map[(Element["VALUE",#[1]]=#[2])&,Transpose[{{"QF","QD"},{0.1,-0.2}}]]
+! end 
+!
+!   FitValue
+   FitValue[loc_,fun_,dp_,v_,v0_]:=Print[{loc,fun,dp,v,v0}];0.3;
+   nx .25 ny .21 cal
+! end
+!
+!   ListPlot
+  d=-.001;
+  nu=0.243;
+  a=Table[Exp[d n]*{Cos[2 Pi nu n],Sin[2 Pi nu n]},{n,1,1500}];
+  Timing[
+  ListPlot[a];
+  ListPlot[a,PlotRange->{{-.5,.5},{-.5,.5}},AspectRatio->1];
+  ListPlot[a,PlotJoined->True]]
+! end
+!
+!    NumberQ, VectorQ, MatrixQ, AtomQ
+  Clear[a,b]
+  NumberQ[1+2 I]
+  VectorQ[{1,2,{3,4}}]
+  VectorQ[{1,2,3+4 I}]
+  MatrixQ[{{1,"2"},{3,4},{5,6}}]
+  MatrixQ[{{1,2},{{3,3},4},{5,6}}]
+  AtomQ[1+2 I]
+  AtomQ[a+b I]
+! end
+!
+!  Reverse
+  Reverse[{1,2,3,4,5}]
+!
+!   MatchQ
+  Clear[f,x];
+  MatchQ[1,x_]
+  MatchQ[f[x],f[x_]]
+!
+!   Outer
+  Clear[A,B]
+  Outer[A,{1,2},{3,4},{5,6,7}]
+  Outer[A,B[1,2],B[3,4],B[5,6,7]]
+! end
+!
+!   Auto map.
+  a=Range[1,LINE['LENGTH']];
+  Timing[Do[LINE['POSITION',a],{1000}];]
+  Timing[Do[LINE['POSITION',1],{40000}];]
+! end
+!
+!    Evaluate, Hold, ReleaseHold
+  Clear[a,b];
+  a=1;b=2;
+  c=Hold[a+b,a-b]
+  Print[ReleaseHold[c]];
+! end
+!
+!   Operations for small number of args.
+  Plus[]
+  Times[]
+  And[]
+  Or[]
+  Not[]
+  Power[]
+  Plus[1]
+  Times[1]
+! end
+!
+!   Sign,Sqrt
+  Sign[Range[-5,5]]
+  Sign[1+2 I]
+  Sqrt[-2]
+  Sqrt[Range[-5,5]]
+  Sqrt[1+2 I]
+! end
+!
+!   Dimensions
+  Clear[a,b,c];
+  Dimensions[{{1,2},{3,4},{5,6}}]
+  Dimensions[{{1,2,3},{3,4},{5,6}}]
+  Dimensions[{{1,2},{3,4},{5,6,7}}]
+  Dimensions[{{1,2},{3,4},a[5,6]}]
+! end
+!
+!   Equal,SameQ
+  Clear[a,b,c];
+  Print[{1}=={1}];
+  Print[{a}=={1}];
+  Print[{a}==1];
+  Print[{a,b}=={1}];
+  Print[{a,b}==1];
+  Print[{a,b}=={1,2}];
+  Print[{1}==={1}];
+  Print[{a}==={1}];
+  Print[{a}===1];
+  Print[{a,b}==={1}];
+  Print[{a,b}===1];
+  Print[{a,b}==={1,2}];
+! end  
+!
+!   Optics
+  m=NormalCoordinates[1][1];
+  m.SymplecticInverse[m]
+  initial=Table[0,{27}];
+  initial[2]=1;initial[5]=1;initial[20]=0.001;
+  CalculateOptics[1,'***',initial,True,2]
+!
+!   Partition
+!  Clear[a];
+  a={1,2,3,4,5};
+  Partition[a,2]
+  Partition[a,3,1]
+  b={a,a*2,a*3,a*4,a*5};
+  Partition[b,{2,2}]
+!
+!   Operation
+   Clear[a1,a2,a3,a4,a5];
+   Timing[Do[a=Operation["{"][a1,a2,a3,a4,a5,a6],{10000}]]
+   Timing[Do[a={a1,a2,a3,a4,a5,a6},{10000}]]
+   Timing[Do[a=Operation["+"][a1,a2,a3,a4,a5,a6],{10000}]]
+! end
+!
+!    SeedRandom,GaussRandom
+  SeedRandom[3];
+  GaussRandom[]
+  SeedRandom[]
+  GaussRandom[]
+  SeedRandom[3]
+  GaussRandom[]
+! end
+!
+!    SetDelayed
+   aa:=bb+cc;
+   Print[aa];
+   bb=2;
+   cc=3;
+   Print[aa, ' ', bb+cc];
+   cc=4;
+   Print[aa];
+   aa:=1-bbb;
+   Print[aa*aa+aa];
+!
+!    Complex number
+   I
+   1+I
+   a=1+I
+   b=1-I
+   Print[a+b, a-b, a*b, a/b, a^b, -a];
+   Timing[Do[a+b;a-b;a*b;a/b;a^b;-a,{10000}]]
+   a-Conjugate[Complex[Re[a],-Im[a]]]
+!
+!   IdentityMatrix, Eigensystem
+!  IdentityMatrix[3]
+   Eigensystem[{{0,1},{-1,0}}]
+   a=Table[Random[]+Random[]*I,{10},{10}];
+   e=Eigensystem[a];
+   Apply[Plus,Abs[Flatten[a.Transpose[e[2]]-Transpose[e[2]].DiagonalMatrix[e[1]]]]^2]
+   a=Table[i+j,{i,4},{j,4}];
+   Eigensystem[a]   
+   a=Table[Random[],{i,100},{j,100}];
+   Timing[Eigensystem[a];]
+! end
+!
+!   ComplexQ
+   ComplexQ[I]
+   ComplexQ[{1,I}]
+   ComplexQ[{1,{1,I}}]
+   ComplexQ[{1,0}]
+!
+!   MapAt,FlattenAt,ReplacePart,Insert,Delete
+   Clear[a,b,c,f];
+   a=Table[i*100+j*10+k,{i,4},{j,3},{k,3}]
+   MapAt[f,a,2]
+   MapAt[f,a,{2,3}]
+   MapAt[f,a,{{2,3},{1,2}}]
+   FlattenAt[a,2]
+   FlattenAt[a,{2,3}]
+   FlattenAt[a,{{2,3},{1,2}}]
+   ReplacePart[a,0,2]
+   ReplacePart[a,0,{2,3}]
+   ReplacePart[a,0,{{2,3},{1,2}}]
+   Insert[a,0,2]
+   Insert[a,0,{2,3}]
+   Insert[a,0,{{2,3},{1,2}}]
+   Delete[a,2]
+   Delete[a,{2,3}]
+   Delete[a,{{2,3},{1,2}}]
+! end
+!
+!   SetAttributes;
+  Clear[f];
+  f[x___]:=Write[6,x];
+  f[$FORM='10.6';Sin[1],Print[$FORM];$FORM='';Cos[1]];
+  SetAttributes[f,{{0,1},{0,1}}]
+  f[$FORM='10.6';Sin[1],Print[$FORM];$FORM='';Cos[1]];
+  Write[6,$FORM='10.6';Sin[1],Print[$FORM];$FORM='';Cos[1]];
+! end
+!
+!
+   Print[{1,1}];
+   Print[({1,2} ; 3)];
+!
+ norfsw  cell
+  cal
+  disp qf.2+1;
+! end
+!
+!    Table and Do
+   a=Table[Table[i,{i,1,10,2}]*i,{i,-1,-10,-2}]
+   a=Table[i,{i,10}]
+   s=0;i=1;rep 10 s=s+a[i];i=i+1;until
+   print s;
+   s=0;Table[s=s+a[i],{i,10}];
+   Print[s];
+   a=Table[i*10+j,{i,1,3},{j,1,4}]
+   Do[a[i,j]=i*100+j*10,{i,3},{j,4}]
+   Print[a];
+   a=Table[Sin[i],{i,10}]
+!
+!   Sum, Product, Range
+   Sum[i,{i,10}]
+   Clear[a]; pri Product[a+i,{i,3}]
+!   Timing[Do[Sum[i,{i,1000}],{100}]]
+!   Timing[Do[Product[i,{i,1000}],{100}]]
+   Range[10,1,-1]
+   Range[10]
+!
+!  Join, Append, Prepend
+  Print Join[{1},{1,2,3},{4,5,6}]
+  Print Append[{1,2,3,4,5},6]
+  Print Prepend[{1,2,3,4,5},0]
+!
+!    Sequence
+   Clear[a,b,c,d,e];
+   Print[1+[2,3,4],[2,3,4]+1];
+   Print[[1,2,3]];
+   Print[f[a,[b,c,d],e]];
+   a=[1,2,3]
+!
+!  Clear, Protect, Unprotect
+  a=1;b={2,3};c=aaaaa;
+  Print a b c
+  Clear[a,b,c]
+  Print a b c
+  Clear[sin]
+  a=1
+  Protect[a]
+  Clear[a]
+  Unprotect[a]
+  Clear[a]
+!
+!    array operations
+   a={1,2,3,4,5}*2
+   Print[a];
+   a=ARRAY[2,2];
+   a=a+1
+   a1=2/a
+   a2=(a+2)/3
+   ArcTan[a1,a2]
+   {a,b,c}={1,2,3};Print[a, b, c];
+   a=Table[i*10+j,{i,4},{j,4}];
+   Length[a]
+   Dimensions[a]
+   Print[a[{2,3},{2,3}]];
+   Clear[a,b,c,d,e];
+   a=b*c+d;
+   Print[a[0]];
+   a=Table[Exp[I Pi/8 m],{m,0,7}]
+   Log[a]/Pi
+! end
+!
+!   WriteString
+  WriteString[6,"abcde"];  WriteString[6,"fghij"]
+!
+!    Get
+  Get["~/OLDSAD/src/init.n"]
+!
+!    OpenWrite, OpenAppend, Close, Flush
+   f=OpenWrite["test.dat"];
+   Write[f,"This is test-OpenWrite."];
+! end
+   Flush[f];
+! end
+   Write[f,"This is test-Flush."];
+   Close[f];
+! end
+   f=OpenAppend["test.dat"];
+   Write[f,"This is test-Append."];
+   Close[f];
+! end
+!
+!    Speed
+   stat rep 10000 a=1; until; stat
+   stat rep 10000 until; stat
+   Timing[ Do[a=1.,{100000}]]
+   Timing[ Do[Sin[i],{i,100000}]]
+   Timing[ Do[1.,{i,100000}] ]
+   Timing[ Do[#+1.&[i],{i,100000}] ]
+   t qf
+   #qf=0.1+#qf*.99
+   #qf #qf/2
+   cal out 'a' draw bx &by &ex q* term out
+  fit l1 nym 80
+  fit qf.1+0 qd bxm 100 bym 100;
+  rej *;
+  fn= '~/OLDSAD/sad/test1.ffs';
+  in fn
+  rep 3 in fn    
+  until
+  dk u 1e-3 qf*
+   print n=Element['LENGTH'];
+   i=1;
+   rep n
+    print Element['NAME',i] ' ' Element['VALUE',i];
+    i=i+1;
+  until
+  i=0;
+  REP 4
+  i=i+1;
+  IF i==1
+    print 'i=1'
+  ELSEIF i==2
+    print 'i=2'
+  ELSEIF i==3
+    print 'i=3'
+  ELSE
+    print 'i<>1,2,3'
+! ENDIF
+UNTIL
+ momentum=30E9
+ print momentum
+   qf* min -1 qd* min -1
+   nx +.1;
+   nx +.1,1
+   nx * 3 show
+    1+(2
+  +3)*4
+  1+(2
+    ]*3
+    1+(2;
+  +3)*4
+    1+/2
+    1+(2])*3
+    max[1,2,'a']
+    1+'a'
+    ---3
+    1=3
+    sin(1)
+    'a'='abc'
+   a=.1
+   cell nx -(-a)+.01*(2+1-1E0)-3E-4*(5-5); ny .05+a ; show free q*
+   rep 3  go until ?conv;
+   title='TEST'//' of title'
+   case ='  A '//'    GGGG '
+   out 11 draw bx by & ex ey q* term out
+! end
+! EMIT USE=TESTLINE; 
+!FFS USE=TESTLINE;
+!   RESULTSOFTRACKING[nt_,x_]:=Print[{nt,x}];
+!quit
+!EMIT USE=TESTLINE;
+!TRACK USE=TESTLINE NPART=2 NX=(1) NY=(0) NZ=(1)
+!  TURNS=3;
+!stop
+!OFF SMEAR;
+!TRACK USE=TESTLINE NPART=2 NX=(1) NY=(0) NZ=(1)
+!  TURNS=300;
+!stop;
+  stop
+!PLOT PTYPE=4 NPART=1 SPAN=1024 TURNS=1;
+OFF RFSW RAD RADCOD;ON EMIOUT;
+EMIT USE=TESTLINE;
+TRACK USE=TESTLINE NPART=2 NX=(1) NY=(0) NZ=(1)
+  TURNS=100;
+FFS USE=TESTLINE;
+print resultsoftracking
+! end
+! in '/users/kikuchim/sad/WLDATAC'
+!  meas out '/users/oide/a.td' x-px end
+! cal delc 0 1e-3 1e-3 * dump cal disp o
+  trpt
+  cal fix 
+! end
+  ste bv*
+  fit ip2 ddy 0 ddx 0
+  fit ddy 1e-4 bump dump
+! end
+  ring cell
+  nx .25 ny .25 free q* go
+  save
+  norfsw emit
+  nxr 1 3 1
+  nyr 1 3 1
+  nzr 1 3 1
+  np 100
+  turns 100
+  survey init
+  dapert
+  ny 0.05 
+  repeat 10
+    nx .05
+    repeat 10
+     go
+     if ?conv
+       track
+       survey
+     else
+       reset
+       survey skip
+! endif
+     nx + .05
+    until
+    ny + .05
+  until
+  survey result
+! end
+  dapert
+  track
+! end

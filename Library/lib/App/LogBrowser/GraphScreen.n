@@ -1,0 +1,225 @@
+!
+! LogBrowser GraphScreen Class
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: GraphScreen.n,v 1.12 2006/06/23 15:29:47 amorita Exp $
+! Style:      Class Library
+! Require:    Prog/DebugLog.n
+!             Prog/ProgressInfo.n
+!
+Library@Require["Prog/DebugLog", "Prog/ProgressInfo"];
+
+! <<< LogBrowser GraphScreen class >>>
+GraphScreen=Class[{DebugLog},
+  { ModuleFile = "LogBrowser/GraphScreen.n",
+    ModuleClassName = "GraphScreen",
+    RevisionID = "$Revision: 1.12 $"[12, -3],
+    PollingCycle = 100e-3
+    },
+  { clObj, progInfo, cf, canvas,
+    bAxMenu, AxMenu, AxMenuVar, popupMenu, popupMenuVar,
+    Axis$Source, Axis$Scale,
+    state, rid, progress0, t0, dt0
+    },
+
+  Destructor[] := (
+    clObj@UnregisterNotifyCallback[Command:>ReceiveNotify]; Clear[clObj];
+    cf =.; progInfo =.;
+    DebugLog`Destructor[]);
+
+  Constructor[f_, clObj$_] := Module[{rem, fvOpt, wOpt},
+    DebugLog`Constructor["GraphScreen"];
+    clObj = clObj$; clObj@RegisterNotifyCallback[Command:>ReceiveNotify];
+    {fvOpt, wOpt, rem} = SwitchCases[Options/.{BG->Background},
+      {RuleDelayed[FrameVariable, _], Rule[Width|Height|Background, _], _}];
+
+    (* Initialize default axis options *)
+    Axis$Source[_] := "XAxis";
+    Axis$Scale["XAxis", _] := Date; Axis$Scale[_, _] := Linear;
+
+    If[Length[fvOpt] > 0,
+      With[{fv = Extract[fvOpt,{1,2},Unevaluated$]},
+	fv[AddMenuButton] = {bAxMenu, Text->"Axis"};
+	(* Initialize Menu *)
+	AxMenu[List] = {"/"}; AxMenu["/"] = Menu[bAxMenu,
+	  PostCommand:>GUI$CreateMenu[
+	    MenuVariable:>AxMenu, Variable:>AxMenuVar]];
+      With[{opt = fvOpt/.FrameVariable->WidgetVariable},
+	progInfo = ProgressInfo[Null@@opt]]]];
+
+    cf = KBFComponentFrame[f, Add->{
+      KBFGroup[Height->0],
+      KBFComponent[ComponentName:>Canvas, WidgetVariable:>canvas,
+	WidgetOption->Override[wOpt, Width->640, Height->480]],
+      KBFHook[Command:>(
+	Bind[canvas, "<Button-3>", GUI$PopupMenu[]];
+	)],
+      }];
+
+    state = "Dormant"; StateNotify[]];
+
+  (* GUI Event handler *)
+  GUI$PopupMenu[] := (
+    GUI$CreateMenu[MenuVariable:>popupMenu, Variable:>popupMenuVar];
+    popupMenu["/"][Popup] = {
+      (X/.$Event) + WidgetInformation[Widget/.$Event, RootX],
+      (Y/.$Event) + WidgetInformation[Widget/.$Event, RootY],
+      Length[clObj@Active["XAxis"]] + 2});
+
+  GUI$CreateMenu[opt___RuleDelayed] := Module[{vopt, template},
+    {vopt} = SwitchCases[{opt}, {RuleDelayed[Variable, _]}];
+    With[{v = Extract[vopt, {1,2}, Unevaluated$]},
+      If[RealQ[v[0]] && v[0] > 1, (* Clean-up variable *)
+	Do[DeleteVariable[v[i]], {i, v[0] - 1}]];
+      v[0] = 1; (* Initialize variable index *)
+      StandardForm[template = GUI$MenuTemplate[Variable:>v]]];
+    While[template[[-1, 0]] === Separator, template = Drop[template, -1]];
+    Channel@GUI$ComponentMenu[template, opt]];
+
+  (* Menu template generator *)
+  GUI$MenuTemplate[Variable:>v_] := Module[{i, clist = clObj@Active[]},
+    { i = v[0];
+      (* XAxis scale menu *)
+      Null@@Map[With[{src = {Axis$Source[#], #}, text = "X"//#//" Axis"},
+	v[i] = Switch[Axis$Scale@@src, Date, 0, Linear, 1, Log, 2, _, -1];
+	Cascade[Text->text, With[{i}, Add->{
+	  RadioButton[Text->"Date",   Value->0, Variable:>v[i],
+	    Command:>clObj@Notify["Screen:Scale:Set", src, Date]],
+	  RadioButton[Text->"Linear", Value->1, Variable:>v[i],
+	    Command:>clObj@Notify["Screen:Scale:Set", src, Linear]],
+	  RadioButton[Text->"Log",    Value->2, Variable:>v[i],
+	    Command:>clObj@Notify["Screen:Scale:Set", src, Log]],
+	  Null[]}], i += 1; Null[]]]&, clObj@Active["XAxis"]],
+      Separator[],
+
+      (* YAxis scale menu *)
+      Null@@Map[With[{src = {"YAxis", #}, text = "Y"//#//" Axis"},
+	v[i] = Switch[Axis$Scale@@src, Date, 0, Linear, 1, Log, 2, _, -1];
+	Cascade[Text->text, With[{i}, Add->{
+	  RadioButton[Text->"Linear", Value->1, Variable:>v[i],
+	    Command:>clObj@Notify["Screen:Scale:Set", src, Linear]],
+	  RadioButton[Text->"Log",    Value->2, Variable:>v[i],
+	    Command:>clObj@Notify["Screen:Scale:Set", src, Log]],
+	  Null[]}], i += 1; Null[]]]&, clObj@Active["YAxis"]],
+      Separator[],
+
+      (* XAxis source menu *)
+      Null@@Map[With[{clist, src = #, text = "X"//#//" Source",
+	val = Axis$Source[#]},
+	v[i] = Switch[val,
+	  "XAxis", 0,
+	  {"Channel", _Real}, If[
+	    Position[clist, val[[2]]] <=> {}, val[[2]], 0],
+	  _, 0];
+	Cascade[Text->text, With[{i}, Add->{
+	  RadioButton[Text->"Time", Value->0, Variable:>v[i],
+	    Command:>clObj@Notify["Screen:Source:Set", src, "XAxis"]],
+	  Null@@Map[With[{j = #, label = "CH"//#},
+	    RadioButton[Text->label, Value->j, Variable:>v[i],
+	      Command:>clObj@Notify["Screen:Source:Set",
+		src, {"Channel", j}]]]&, clist],
+	  Null[]}], i += 1; Null[]]]&, clObj@Active["XAxis"]],
+
+      v[0] = i; Null[]}];
+
+  (* Screen event handler *)
+  Request[cmd_String] := Switch[{state, cmd},
+    {_, "Status"}, StateNotify[],
+
+    {"Dormant", "Draw"}, (
+      progress0 = 0; t0 = FromDate[Tick->0.01]; dt0 = 0;
+      progInfo@message["Drawing..."]; progInfo@progress[0];
+      rid = clObj@RenderRequest[AxisOptions->Join[
+	(* Expand Axis source options *)
+	Select[Map[With[{src = Axis$Source[#]}, Source["X", #]->Switch[src,
+	  "XAxis", Date,
+	  {"Channel", _Real}, With[{cid = clObj@CL$Channel[src[[2]]]},
+	    If[RealQ[cid], {"Channel", cid}, Date]],
+	  _, Null]]&, clObj@Active["XAxis"]], #[[2]] <=> Null&],
+
+	(* Expand XAxis scale options *)
+	Select[Map[(Scale["X", #]->Axis$Scale[Axis$Source[#], #])&,
+	  clObj@Active["XAxis"]], #[[2]] <=> Date&],
+
+	(* Expand YAxis scale options *)
+	Select[Map[(Scale["Y", #]->Axis$Scale["YAxis", #])&,
+	  clObj@Active["YAxis"]], #[[2]] <=> Linear&],
+
+	{}]];
+Print["Debug: AxisOpt = ", clObj@CLR$AxisOptions[rid]];
+      If[RealQ[rid], state = "Drawing"; After[PollingCycle, Polling[]],
+	progInfo@message["Drawing is canceled(non-active channel)."];
+	progInfo@message[]; progInfo@progress[]];
+      StateNotify[]),
+
+    {"Drawing", "Stop"}, (state = "Stoping"; StateNotify[]),
+
+    {"Transit", _}, (* Discard request in transit state *),
+
+    _, Debug[WARN, "Request",
+      "Receive ", cmd, " request at ", state, " state"]];
+
+  Polling[] := Switch[state,
+    "Dormant", (* Nothing TODO *),
+
+    "Drawing", Module[{g, tRef, t = FromDate[Tick->0.01],
+      progress = clObj@RenderPoll[rid]},
+      progInfo@progress[progress];
+      If[progress > 0 && Or[progress == 1, progress - progress0 > 0.10,
+	t > t0 + Max[5, 4 * dt0],
+	Null[]],
+	clObj@RenderUpdate[rid, FromDate[]];
+	g = clObj@RenderGraphics[rid];
+	tRef = TimeUsed[]; Draw[g]; dt0 = TimeUsed[] - tRef;
+	progInfo@message["Drawing...(", 1e3 * dt0, "msec)"];
+	progInfo@tick[];
+	progress0 = progress;  t0 = t];
+      If[progress0 < 1, After[PollingCycle, Polling[]],
+	state = "Stoping"; Polling[]]],
+
+    "Stoping", Module[{g, tRef, progress = clObj@RenderPoll[rid]},
+      If[progress == 1 && progress0 < 1,
+	clObj@RenderGraphics[rid];
+	g = clObj@RenderGraphics[rid];
+	tRef = TimeUsed[]; Draw[g]; dt0 = TimeUsed[] - tRef;
+	progress0 = progress];
+      state = "Transit";
+      progInfo@message["Drawing",
+	If[progress0 < 1, " is interrupted by user.", "...done."]];
+      clObj@RenderRelease[rid];
+      progInfo@message[]; progInfo@progress[];
+      clObj@Notify["Screen:TimeUsed:Show", Undefined, dt0];
+      state = "Dormant"; StateNotify[]],
+
+    _, (* Nothing TODO *)];
+
+  Draw[g_] := StandardForm[Canvas$Widget = canvas; Show[Null@@g];
+    With[{tag = {Raise->False,
+      Tags->Table["BG$"//frid, {frid, The$CanvasObject@Canvas$Frame}]}},
+      Bind[canvas, "<Button-3>", Null];
+      Bind[canvas, "<Button-3>", GUI$PopupMenu[], Null@@tag]]];
+
+  StateNotify[] := clObj@Notify["Screen:State:"//state];
+
+  (* GUI event decoder *)
+  ReceiveNotify[event_, src_, argv___] := Which[
+    event[1,15] === "Screen:Request:", Request[event[16,-1]],
+    True, Switch[event,
+      "Screen:Scale:Set", If[Length[src] == 2 && Length[{argv}] == 1,
+	Axis$Scale[src[[1]], src[[2]]] = argv, Debug[ERROR, "ReceiveNotify",
+	  "Incorrect event Screen:Scale:Set[", src,
+	  Null@@If[Length[{argv}] < 1, {}, Join@@Thread[{",", {argv}}]], "]"]],
+
+      "Screen:Source:Set", If[RealQ[src] && Length[{argv}] == 1,
+	Axis$Source[src] = argv, Debug[ERROR, "ReceiveNotify",
+	  "Incorrect event Screen:Source:Set[", src,
+	  Null@@If[Length[{argv}] < 1, {}, Join@@Thread[{",", {argv}}]], "]"]],
+
+      _, (* Nothing TODO *)]];
+
+  ];
+! >>> LogBrowser GraphScreen class <<<
+
+LogBrowser@RegisterModule["System", GraphScreen];
+
+! End of File

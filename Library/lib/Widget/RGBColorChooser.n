@@ -1,0 +1,100 @@
+!
+! RGB Color Chooser Widget
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: RGBColorChooser.n,v 1.13 2005/07/26 06:11:40 amorita Exp $
+! Style:      Widget Class Library
+! Require:    Misc/Convert.n
+!
+Library@Require["Misc/Convert.n"];
+
+! <<< RGBColorChooser widget class >>>
+RGBColorChooser=Class[{}, (* RGB Color Chooser Widget *)
+  { def = {ColorTipSize->80}
+    },
+  { H, S, V,
+    f0, fL, fR, fG, fB, tR, tG, tB, sR, sG, sB, c, palette,
+    variable
+    },
+
+  Destructor[] := (
+    If[variable <=> {}, With[{vsym = Extract[variable, {1, 2}, Unevaluated$]},
+      Clear[vsym];
+      vsym = This@GetRGB[]]];
+    DeleteWidget[palette];
+    DeleteWidget[f0]);
+
+  Constructor[f_] := Module[{v, size,
+    topt = {Side->"left", TextAnchor->"s", Fill->"y", PadY->3},
+    sopt = {Side->"left", HighlightThickness->0, Command:>UpdateColorTip[],
+      Orient->"horizontal", ShowValue->True, Resolution->1, Length->100},
+    fopt, opt, rem},
+
+    {variable, size, fopt, opt, rem} = SwitchCases[Override[Options, def,
+      Background->f[Background], HighlightBackground->f[Background]],
+      {RuleDelayed[Variable, _], Rule[ColorTipSize, _],
+	Rule[Background, _], Rule[HighlightBackground, _], _}];
+
+    If[size <=> {}, size = size[[1,2]]];
+    If[Not[RealQ[size] && size > 0], size = ColorTipSize/.def];
+
+    f0 = Frame[f, Null@@fopt, Null@@rem];
+
+    c = Canvas[f0, Side->"left",Width->size, Height->size,
+      HighlightThickness->0, Anchor->"s", PadX->10, PadY->15,
+      Null@@fopt, Null@@opt];
+    c[Create$Rectangle]={{0, 0, size, size}, Tags->"cTip",
+      Width->1, Outline->"Black"};
+    Bind[c, "<Button-1>", PopupPalette[], Tags->"cTip"];
+    Bind[c, "<Button-3>", PopupPalette[], Tags->"cTip"];
+
+    fL = Frame[f0, Side->"right", Null@@fopt];
+
+    fR = Frame[fL, Side->"top", Null@@fopt];
+    fG = Frame[fL, Side->"top", Null@@fopt];
+    fB = Frame[fL, Side->"top", Null@@fopt];
+
+    tR = TextLabel[fR, Text->"R:", Null@@topt, Null@@fopt];
+    tG = TextLabel[fG, Text->"G:", Null@@topt, Null@@fopt];
+    tB = TextLabel[fB, Text->"B:", Null@@topt, Null@@fopt];
+
+    sR = Scale[fR, From->0, To->255, Variable:>R, Null@@sopt, Null@@fopt];
+    sG = Scale[fG, From->0, To->255, Variable:>G, Null@@sopt, Null@@fopt];
+    sB = Scale[fB, From->0, To->255, Variable:>B, Null@@sopt, Null@@fopt];
+
+    paletteList = MakePalette[];
+    palette = Menu[f0];
+    palette[Add] = Map[With[{i = #[[1]], break = #[[2]], color = #[[3]]},
+      Button[Text->" ", Font->TextFont["fixed", 16], ColumnBreak->break,
+	Command:>SetHSV[color],	Background->Convert@HSV2X11Color[color],
+	ActiveBackground->Convert@HSV2X11Color[color]]]&,
+      Table[{i, Mod[i - 1, 6] === 0, {(i - 1) / 36, 1, 1}}, {i, 36}]];
+
+    If[variable <=> {}, With[{vsym = Extract[variable, {1, 2}, Unevaluated$]},
+      v = vsym;
+      Clear[vsym];
+      (vsym = val_) ^:= This@SetRGB[val];
+      vsym := GetRGB[];
+      vsym = v]];
+
+    UpdateColorTip[]];
+
+  UpdateColorTip[] := (c[ItemConfigure] = {"cTip",
+    Fill->Convert@RGB2X11Color[R / 255, G / 255, B / 255]});
+
+  GetRGB[] := {R, G, B} / 255;
+
+  SetRGB[{r_Real, g_Real, b_Real}] := (
+    {R, G, B} = Restrict[Round[{r, g, b} * 255], 0, 255];
+    UpdateColorTip[]);
+
+  SetHSV[hsv_] := SetRGB[Convert@HSV2RGB[hsv]];
+
+  PopupPalette[] := (palette[Popup] = {
+    (X/.$Event) + WidgetInformation[Widget/.$Event, RootX],
+    (Y/.$Event) + WidgetInformation[Widget/.$Event, RootY], 3});
+
+  ];
+! >>> RGBColorChooser widget class <<<
+
+! End of File

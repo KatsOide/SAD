@@ -1,0 +1,36 @@
+caldate(3)                                                          caldate(3)
+
+
+
+NNAAMMEE
+       caldate - calendar dates
+
+SSYYNNTTAAXX
+       ##iinncclluuddee <<ccaallddaattee..hh>>
+
+       unsigned int ccaallddaattee__ffmmtt(_s,&_c_d);
+       unsigned int ccaallddaattee__ssccaann(_s,&_c_d);
+
+       struct caldate _c_d;
+       char *_s;
+
+DDEESSCCRRIIPPTTIIOONN
+       A  ssttrruucctt  ccaallddaattee  value is a calendar date.  It has three components:
+       yyeeaarr, mmoonntthh (1...12), and ddaayy (1...31).
+
+       ccaallddaattee__ffmmtt prints _c_d in ISO style (yyyy-mm-dd) into the character buf‐
+       fer  _s, without a terminating NUL.  It returns the number of characters
+       printed.  _s may be zero; then ccaallddaattee__ffmmtt returns the number of charac‐
+       ters that would have been printed.
+
+       ccaallddaattee__ssccaann  reads  a calendar date in ISO style from the beginning of
+       the character buffer _s and puts it into _c_d.  It returns the  number  of
+       characters  read.   If  _s  does  not start with an ISO-style date, ccaall‐‐
+       ddaattee__ssccaann returns 0.
+
+SSEEEE AALLSSOO
+       caldate_mjd(3), caltime(3)
+
+
+
+                                                                    caldate(3)

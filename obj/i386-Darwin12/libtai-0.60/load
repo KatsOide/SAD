@@ -1,0 +1,4 @@
+#!/bin/sh
+# WARNING: This file was auto-generated. Do not edit!
+main="$1"; shift
+exec gcc-mp-4.7 -Wall -std=gnu11 -m64 -m64 -o "$main" "$main".o ${1+"$@"}

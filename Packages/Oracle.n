@@ -1,0 +1,34 @@
+BeginPackage[Oracle`];
+
+Begin[Oracle`];
+
+With[{rsh=Switch[Environment["OSTYPE"],"hpux","remsh",_,"rsh"]},
+  `KEKBDatabase=Class[{},{},{Data,Description},
+
+    Constructor[x_]:=Module[
+      {cmd="!"//rsh//
+        " abco2.kek.jp source /cont/etc/cshrc.operator';\
+setenv PYTHONPATH "//Environment["PYTHONPATH"]//
+  ":$PYTHONPATH;'/proj/local/PA8000/bin/python -c \"'\"'from orsad import *;printor(\""//
+    x//"\")'\"'\" ",
+        s="",l={},d={},f},
+    Print[cmd];
+    f=OpenRead[cmd];
+      Sleep[2];
+      If[f===$Failed,Return[Data=Description=$Failed]];
+      While[Sleep[0.01];s<=>EndOfFile && s[1]<=>"*",s=Read[f,String]];
+      While[Sleep[0.01];s=ReadString[f];s<=>EndOfFile && s[1]<=>"*",
+        AppendTo[l,ToExpression["{"//StringReplace[s[2,-2],"'"->"\""]//"}"]]];
+      While[Sleep[0.01];s=ReadString[f];s<=>EndOfFile && s[1]<=>"*",
+        AppendTo[d,ToExpression["{"//StringReplace[s[2,-2],"'"->"\""]//"}"]]];
+      Close[f];
+      Description=l;
+      Data=d];
+
+    Short[x__:This]:=Literal[Short][x@Data,8]]];
+
+Protect[`KEKBDatabase];
+
+End[];
+
+EndPackage[];

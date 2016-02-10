@@ -1,0 +1,18 @@
+Codcorrect1[]:=(
+!
+! COD correction 1 iteration
+!
+
+! 1st iteration
+optics=CalculateOptics[1,LINE["LENGTH"],Twiss['*',1],FLAG["CELL"],2];
+bpm=Monitor[{"MO*"},Offset->{0.3E-3,0.3E-3},Jitter->{0.3E-3,0.3E-3}];
+str=Steer[{"ZSH*","ZSV*"}];
+CorrectOrbit[{"X","Y"},bpm,str,optics,Solver->"LeastSquare",
+ ExpectedOrbit->True,Epsilon->1.0E-4];
+!Print[bpm];
+
+FFS["RING; CELL; CAL;"];
+FFS["SAVE;"];
+
+);
+

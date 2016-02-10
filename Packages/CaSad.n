@@ -1,0 +1,62 @@
+(* CaSad 6/12/2000 *)
+
+Off[General::unprotconst];
+Unprotect[CaOpen,CaRead,CaWrite,CaGet,CaPut,CaClose];
+On[General::unprotconst];
+
+Class;
+
+BeginPackage[CAManager`];
+
+Begin[CAManager`];
+
+CAManager=Class[{},{},{},
+  
+  Open[ch_Real]:=ch;
+  Open[ch_String]:=
+    Open[ch]=If[FBoundQ[CaOpen2],
+      Check[First[CaOpen2[ch]], Message[9,CA::open];Return[$Failed]],
+      Message[9, CA::open]; Return[$Failed]];
+  Open[_]:=$Failed;
+
+  ];
+
+CAMGR=CAManager[];
+
+Protect[CAMGR,CAManager];
+
+CaOpen[chs_List]:=CAMGR@Open/@chs;
+CaOpen[chs_String]:=CAMGR@Open[chs];
+CaOpen[chs__String]:=CAMGR@Open/@{chs};
+CaOpen[__]=$Failed;
+
+CaRead[chs_List]:=CaRead/@chs;
+CaRead[chs_Real]:=Check[First[CaRead2[chs]],Message[999,CA::read]];
+CaRead[chs__Real]:=Check[CaRead2[chs],Message[999,CA::read]];
+CaRead[chs__]:=CaRead/@{chs};
+CaRead[chs_String]:=Check[
+  First[CaRead2[CAMGR@Open[chs]]],
+  Message[999,CA::read]];
+CaRead[__]=$Failed;
+
+CaWrite[chs_String,val_]:=Check[
+  CaWrite2[{CAMGR@Open[chs],val}];
+  CaRead[chs],
+  Message[999,CA::write]];
+CaWrite[chs_Real,val_]:=Check[
+  CaWrite2[{chs,val}];First[CaRead2[chs]],
+  Message[999,CA::write]];
+CaWrite[chs_List]:=CaWrite@@[chs,{1}];
+CaWrite[chs_List, val_List]:=MapThread[CaWrite,{chs,val}];
+CaWrite[__]=$Failed;
+
+CaGet[chs_]:=CaRead[chs];
+CaPut[chs_, val_]:=CaWrite[chs,val];
+
+CaClose[__]=Null;
+
+End[];
+
+EndPackage[];
+
+Protect[CaOpen,CaRead,CaWrite,CaGet,CaPut,CaClose];

@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="ja-JP">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-2022-JP">
+<TITLE>KBFrame 例 EPICS CA 用ルーチンを使う場合</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<A NAME="top" HREF="index-ja.html">目次</A>
+<A HREF=emmeas-ja.html>例 emittance測定値計算用パネル</A>
+<A HREF=cmptepics-ja.html>例 EPICS用部品を使う場合</A>
+
+<HR><DIV ALIGN="CENTER"><H2>例 EPICS CA 用ルーチンを使う場合</H2></DIV><HR>
+
+<H3>1. SADから一定時間毎にIOCをアクセスする場合</H3>
+
+<P>10秒毎に"some_record_name"と"some_other_record_name"(両方とも実際には
+存在しない)を読み込んで、その値を表示する。1行目の"some_record_name"
+に関しては、アラームの程度も表示する。</P>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["BasicEPICSTest1", f, Title-&gt;"Basic EPICS Test 1"];
+
+f1 = Frame[f, PadY-&gt;5, Fill-&gt;"x"];
+f2 = Frame[f, PadY-&gt;5, Fill-&gt;"x"];
+v1 = ""; s1 = "normal"; ch1 = CaOpen["some_record_name"];
+v2 = ""; ch2 = CaOpen["some_other_record_name"];
+font = Font-&gt;TextFont["times","bold",18];
+side = Side-&gt;"left";
+
+l1a = TextLabel[f1, Text-&gt;"EPICS Record No. 1 is ", side, font];
+l1b = TextLabel[f1, TextVariable:&gt;v1, FG-&gt;"tomato", side, font];
+l1c = TextLabel[f1, Text-&gt;" unit. Alarm Severity is ", side, font];
+l1d = TextLabel[f1, TextVariable:&gt;s1, FG-&gt;"tomato", side, font];
+
+l2a = TextLabel[f2, Text-&gt;"EPICS Record No. 2 is ", side, font];
+l2b = TextLabel[f2, TextVariable:&gt;v2, FG-&gt;"tomato", side, font];
+l2c = TextLabel[f2, Text-&gt;" unit.", side, font];
+
+getvalue[] := (
+  $FORM = "6.2";
+  e1 = CaRead[ch1];
+  v1 = ToString[e1[[1]]];
+  s1 = Switch[e1[[3]],0,"normal",1,"minor",2,"major"];
+  v2 = ToString[CaRead[ch2][[1]]];
+  $FORM = "";
+);
+
+getvalue[];
+ReadRecord := After[10, getvalue[]; ReadRecord];
+ReadRecord;
+
+TkWait[];
+</CODE></PRE>
+
+<P><IMG SRC="smplepics1.gif" WIDTH=499 HEIGHT=138
+ ALT="EPICS Record Readout Panel Example1"></P>
+
+<H3>2. Monitorをセットして、値の変化があった時に値を受けとる場合</H3>
+
+<P>1の場合と同様の表示をするコードは、以下のようになる。</P>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["BasicEPICSTest2", f, Title-&gt;"Basic EPICS Test 2"];
+
+f1 = Frame[f, PadY-&gt;5, Fill-&gt;"x"];
+f2 = Frame[f, PadY-&gt;5, Fill-&gt;"x"];
+v1 = ""; s1 = "normal";
+ch1 = CaOpenMonitor["some_record_name",
+  ValueCommand:&gt;(
+    $FORM = "6.2";
+    v1=ToString[ch1[Value]];
+    $FORM = "";
+    s1=Switch[ch1[Severity],0,"normal",1,"minor",2,"major"];
+  )];
+v2 = "";
+ch2 = CaOpenMonitor["some_other_record_name",
+  ValueCommand:&gt;(
+    $FORM = "6.2";
+    v2=ToString[ch2[Value]];
+    $FORM = "";
+  )];
+font = Font-&gt;TextFont["times","bold",18];
+side = Side-&gt;"left";
+
+l1a = TextLabel[f1, Text-&gt;"EPICS Record No. 1 is ", side, font];
+l1b = TextLabel[f1, TextVariable:&gt;v1, FG-&gt;"tomato", side, font];
+l1c = TextLabel[f1, Text-&gt;" unit. Alarm Severity is ", side, font];
+l1d = TextLabel[f1, TextVariable:&gt;s1, FG-&gt;"tomato", side, font];
+
+l2a = TextLabel[f2, Text-&gt;"EPICS Record No. 2 is ", side, font];
+l2b = TextLabel[f2, TextVariable:&gt;v2, FG-&gt;"tomato", side, font];
+l2c = TextLabel[f2, Text-&gt;" unit.", side, font];
+
+TkWait[];
+</CODE></PRE>
+
+<P><IMG SRC="smplepics2.gif" WIDTH=499 HEIGHT=138
+ ALT="EPICS Record Readout Panel Example2"></P>
+
+<P><A HREF="#top">top</A></P>
+
+<HR><ADDRESS>このページに関する御意見・質問は
+<A HREF="mailto:samo.stanic@kek.jp">Samo Stanic</A>
+まで.</ADDRESS>
+</BODY>
+</HTML>

@@ -1,0 +1,35 @@
+# Template Makefile for SAD Dynamic Loading Extension/External Engine Module
+
+#SUB_MODULES=
+
+MODULE_TYPE=Extension	# Extension/Engine/Script
+MODULE_NAME=$(error Set module name)
+#MODULE_SUBDIR=
+#MODULE_SCRIPT=
+OBJS=$(error Set objects list)
+
+GENSRC_FILES=
+
+MOSTLYCLEAN_FILES=
+
+MOSTLYCLEAN_DIRS=
+
+#SADSRCDIR=$(error Set top directory of SAD source tree)
+
+module:
+
+# Module Local Rules
+
+
+# Don't touch after here
+
+ifdef SADSRCDIR
+include $(SADSRCDIR)/mk/sad.module.mk
+else
+all depend module clean distclean mostlyclean install install-module install-script:
+	@echo "Edit SADSRCDIR in Makefile or Type $(MAKE) with \`SADSRCDIR=(Top directory of SAD source tree)'"
+	@echo "Type $(MAKE) module to build extension module"
+	@echo "Type $(MAKE) install to install extension module"
+endif
+
+# End of File

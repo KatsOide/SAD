@@ -1,0 +1,20 @@
+FFS;
+
+  wk=KBMainFrame["aaa",fr];
+  ca=Canvas[fr,Width->700,Height->500,Side->"right"];
+  Canvas$Widget=ca;
+  xa=Range[-5,5,0.2];
+  ya=0*Exp[-(xa^2/2)]+0.3*Table[GaussRandom[],{Length[xa]}];
+  dya=Table[0.3,{Length[xa]}];
+  data=Thread[{xa,ya,dya}];
+  fun=a+b+c+d+e*x;
+  f2=Fit[data,Evaluate[fun],x,{a,1},{b,1},{c,1},{d,1},{e,1}];
+  $Line=0;MemoryCheck[2]
+  pl=FitPlot[data,Evaluate[fun],x,{a,1},{b,1},{c,1},{d,1},{e,1},
+!    ResultLabel->{1,10},
+!    FunctionLabel->{1,0.8},
+!    PlotLabel->"FitPlot Test"
+    Null[]
+      ];
+
+Update[];

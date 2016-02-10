@@ -1,0 +1,10 @@
+Patch kit for libtai
+
+This patch kit is based on FreeBSD ports-current(2007/12/09)
+except patch for building shared library.
+
+This patch kit contains:
+- Fix include header proto-type
+- Change location of leapsecs.dat
+
+# End of File

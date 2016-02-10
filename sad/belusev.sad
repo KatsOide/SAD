@@ -1,0 +1,74 @@
+OFF LOG ;ON ECHO;
+DRIFT LG=(L=0.1)
+;
+BEND BF1=(L=1 K1=0.1 E1=0.5 E2=0.5)
+     BD1=(L=1 K1=-0.1 E1=0.5 E2=0.5)
+;
+LINE CELL=(C1 BF1 LG BD1 LG)
+;
+MARK C1 =()
+;
+FFS USE=CELL;
+
+MOMENTUM=40e9;
+data={rho->1000,theta->3/2 Pi,Bmax->1,lgap->0.1,mux->Pi/2,
+  emitxn->3e-6,ar->100,aq->0.005};
+data={rho->250,theta-> Pi,Bmax->1,lgap->0.1,mux->Pi/2,
+  emitxn->3e-6,ar->100,aq->0.005};
+
+gamma=MOMENTUM/ElectronMass;
+lambdae=ElectronRadius/FineStructureConstant;
+
+nph=5/2/Sqrt[3]*FineStructureConstant*gamma*theta;
+
+uc=3/2*gamma^2/rho*lambdae;
+
+uave=8/15/Sqrt[3]*uc;
+uuave=11/27*uc^2;
+
+dE=(uave*nph)/.data
+ddE=Sqrt[uuave*nph]/.data
+
+Brho=MOMENTUM/SpeedOfLight;
+B0=Brho/rho;
+
+emitx=emitxn/gamma;
+
+kl=2*Sin[mux/2];
+betax=2*l*(1+Sin[mux/2])/Sin[mux];
+lq=l-lgap;
+
+B1=B0+kl/l*Brho/lq*Max[aq,ar*Sqrt[emitx*betax]];
+
+eq=((B1==Bmax)/.data)
+
+ls=With[{eq},FindRoot[eq,{l,1}]]
+
+CELL=ExtractBeamLine[];
+CELL101=101*CELL;
+
+norfsw;cell;noradcod;nocod;
+
+rademitp[p_]:=Module[{},
+  MOMENTUM=p;
+  ls=With[{eq},FindRoot[eq,{l,1}]];
+  rademit[l/.ls]];
+
+rademit[lb_]:=Module[{},
+  LINE["L","BF1"]=(LINE["L","BD1"]=lb);
+  LINE["K1","BF1"]=-(LINE["K1","BD1"]=-Sqrt[2]/lb);
+  LINE["ANGLE","BF1"]=LINE["ANGLE","BD1"]=(lb/rho/.data);
+  FFS["fit nx 0.25 ny 0.211;\
+      free bf1 k1 bd1 k1;go;save all"];
+  ncell=Floor[theta/LINE["ANGLE","BF1"]/2/.data];
+  FFS["VISIT CELL101;RESET ALL"];
+  em=Emittance[Emittance->False,OneTurnInformation->True];
+  FFS["BYE"];
+  bm=OneTurnExcitation/.em;
+  de=Sqrt[bm[[1,1]]*bm[[2,2]]-bm[[1,2]]^2]*ncell/101*gamma];
+
+Plot[rademitp[pgev*1e9]*1e6,{pgev,1,80},
+  FrameLabel->{"E (GeV)","`fDe`n`dxn`n (`fm`nm)"}];
+  Update[];
+
+end

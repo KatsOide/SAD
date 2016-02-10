@@ -1,0 +1,120 @@
+TextTerminal=Class[{},{},
+
+  {frame,sbx,sby,text,SendCommand,OutputPointer={1,0},MaxHistory=32,
+    History={},HistoryPoint=0},
+
+  Constructor[f_]:=(
+    frame=Frame[f,Fill->"both",Expand->True];
+    sby=ScrollBar[frame,Orient->"vertical",BD->1,
+      GM->Grid,Row->1,Column->2,Sticky->"ns"];
+    sbx=ScrollBar[frame,Orient->"horizontal",BD->1,
+      GM->Grid,Row->2,Column->1,Sticky->"ew"];
+    text=TextEditor[frame,Font->TextFont[$DefaultTerminalFont, 13],
+      YScrollCommand:>sby[Set],
+      XScrollCommand:>sbx[Set],
+      GM->Grid,Row->1,Column->1,Sticky->"news",Options];
+    Tcl["grid rowconfigure "//TkPathName[frame]//" 1 -weight 1"];
+    Tcl["grid columnconfigure "//TkPathName[frame]//" 1 -weight 1"];
+    text[Focus];
+    InsertText[""];
+    Bind[text,"<Key-KP_Enter>",Send[]];
+    Bind[text,"<Key-Return>",Send[],Break->True];
+    Bind[text,"<Control-Key-Up>",RecallHistory[1],Break->True];
+    Bind[text,"<Control-Key-Down>",RecallHistory[-1],Break->True]
+    );
+
+  Destructor[] := (frame =.);
+
+  InsertLine[s_,cr_]:=(text[Insert]={"end",If[cr,"\n"//s,s]});
+
+  InsertFile[fn_Real,epilog_:""]:=Module[{s,cr=False},
+    While[s=ReadString[fn];s<=>EndOfFile,
+      InsertLine[s,cr];
+      cr=True];
+    InsertText[epilog]];
+
+  InsertFile[f_String,epilog_:""]:=Module[{fn=OpenRead[f],s,cr=False},
+    While[s=ReadString[fn];s<=>EndOfFile,
+      InsertLine[s,cr];
+      cr=True];
+    Close[fn];
+    InsertText[epilog]];
+
+  InsertText[s_]:=(
+    text[Insert]={"end",s};
+    OutputPointer=text[Index["insert"]];
+    text[See]={OutputPointer[[1]],0});
+
+  ClearText[]:=(text[Delete]={1,"end"};$Line=0);
+
+  SetFont[f_]:=(text[Font]=f);
+
+  SetScrollBarWidth[w_]:=(sbx[Width]=w;sby[Width]=w);
+
+  Send[]:=
+    Module[{p=OutputPointer,i={text[Index["insert"]][[1]],-1},s},
+      AddHistory[s=text[GetText[p,i]]];
+      text[Insert]={i,"\n"};
+      OutputPointer={i[[1]]+1,0};
+      text[Mark$Set]={"insert",OutputPointer};
+      text[See]=OutputPointer;
+      SendCommand[ (*StringReplace[s,{"\253"->"{","\273"->"}"}]*) s
+        ]];
+
+  AddHistory[s_]:=(
+    History=Take[Append[History,s],-Min[MaxHistory,Length[History]+1]];
+    HistoryPoint=0);
+
+  RecallHistory[d_]:=Module[{p=Mod[HistoryPoint+d,Length[History]+1],
+    q=OutputPointer},
+    HistoryPoint=p;
+    text[Delete]={q,"end"};
+    InsertText[If[p==0,"",History[[-p]]]];
+    text[Mark$Set]={"insert","end"};
+    OutputPointer=q];
+
+  ];
+
+KBF$MakeSADTerminal[x_] := (
+  KBF$SADTerminal =.;
+  KBF$SADTerminal = KBFSADTerminal[x];
+);
+
+KBF$CloseTerminal[] := (
+  KBF$SADTerminal =.;
+  KBF$SADTerminal = Null;
+);
+
+KBFSADTerminal = Class[{},{},{w,f,st,term,m,mb,file,mf},
+  Constructor[w$_] := StandardForm[
+	file=If[StringLength[#]>0, #, "/tmp"]&[Environment["TMPDIR"]]
+	  //"/"//Environment["HOST"]//GetPID[];
+	w = KBSubFrame["SADTerminal",f,Title->"FFS Terminal ("//w$[Title]//")"];
+	w[Close] := KBF$CloseTerminal[];
+	w[Close] = "normal";
+	f[Fill] = "both";
+	f[Expand] = True;
+	mb = KBFAddMenuButton[w,Text->"Terminal",Underline->0];
+	m = Menu[mb];
+	mf = Menu[m,Add->{Button[Text->"small",Command:>(term@SetFont[TextFont[$DefaultTerminalFont, 7]];term@SetScrollBarWidth[7])],Button[Text->"medium",Command:>(term@SetFont[TextFont[$DefaultTerminalFont, 13]];term@SetScrollBarWidth[9])],Button[Text->"large",Command:>(term@SetFont[TextFont[$DefaultTerminalFont, 15]];term@SetScrollBarWidth[11])]}];
+	m[Add] = {Button[Text->"Close",Underline->0,Command:>KBF$CloseTerminal[]],Button[Text->"Clear",Command:>ClearText[]],Cascade[Text->"Font",Underline->0,Menu->mf]};
+	term=TextTerminal[f,Width->132,Height->36,Wrap->"none",SendCommand->Send];
+        $Line=0;
+        term@InsertText[" In[1]:= "];
+	term@SetScrollBarWidth[9];
+  ];
+
+  Destructor[] := (System["rm -f "//file];term=.;w[Close]:=None;w[Close]);
+
+  Send[s_]:=Module[{form = $FORM, fn = OpenWrite[file]},
+    WriteString[fn," "]; (* for truncating file without FFS[] results *)
+    StandardForm[PageWidth=131; (* Line MUST be short enough to read *)
+      Check[$FORM = form; FFS[s, fn]; form = $FORM, ]; Close[fn];
+      fn = OpenRead[file]; Read[fn, Byte]; (* Drop 1st dummy whitespace *)
+      $FORM = ""; term@InsertFile[fn,"\n In["//$Line+1//"]:= "]; Close[fn]];
+    $FORM = form];
+
+  ClearText[] := (term@ClearText[]; term@InsertText[" In[1]:= "]);
+  ];
+
+Protect[TextTerminal,KBF$MakeSADTerminal,KBF$CloseSADTerminal,KBFSADTerminal];

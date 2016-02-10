@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="en-US">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=US-ASCII">
+<TITLE>CursorEntry Manual</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<DIV ALIGN="CENTER"><H2>CursorEntry Manual</H2></DIV>
+
+<HR>
+
+<H3>CursorEntry</H3>
+<H4>Usage:</H4>
+
+<PRE><CODE>
+r = CursorEntry[p,v,options]
+</CODE></PRE>
+
+<H4>Where:</H4>
+<UL>
+<LI><EM>p</EM> is a parent widget.
+<LI><EM>v</EM> is an initial value.
+<LI><EM>options</EM> includes <EM>Form</EM>, <EM>Command</EM>, 
+<EM>Range</EM>, <EM>DefaultPosition</EM>.
+Other options are passed to the Entry widget.
+</UL>
+
+<H4>Description:</H4>
+CursorEntry is an Entry widget, which can change number with cursor keys. 
+The left and right cursor keys 
+shifts the current position. The up and down cursor keys changes the 
+value by 1 and execute the script specified by <EM>Command</EM> option.
+If <EM>Command</EM> returns <EM>True</EM>, the value will finally change. 
+Otherwise, the value returns to the original one before the cursor 
+manupilation.
+If <EM>Range</EM> option is set to a list of 2 numbers, the value is 
+restricted within these numbers. <EM>Form</EM> option is used when the 
+value is set to the Entry widget. The shift key increase the speed 
+by a factor of 3.
+If <EM>DefaultPosition</EM> option is n (integer value), initial cursor 
+position is at nth column from left (when n&gt;0), or -nth column from 
+right (when n&lt;0).
+If <EM>SpinBox</EM> oprion is True, upward and downward spin button
+appear on the CursorEntry. These spin buttons act like a up and down
+cursor key.
+
+<H4>Methods:</H4>
+
+<H5>SetValue[v]</H5>
+Sets a new value <EM>v</EM>.
+
+<H5>Value[]</H5>
+Returns the current value.
+
+<H5>SetRange[v1,v2]</H5>
+Sets a new lower limit to v1, upper limit to v2.
+
+<H5>SetForm[f]</H5>
+Sets a new $Form.
+
+<H4>Example:</H4>
+
+<PRE><CODE>
+c = CursorEntry[f,10.23,Form-&gt;"10.5",Command:&gt;(Print[c@Value[]];True),Range-&gt;{10,11},DefaultPosition-&gt;-3];
+</CODE></PRE>
+
+
+<HR><ADDRESS>Send feedback to:
+<A HREF="mailto:samo.stanic@kek.jp">Samo Stanic</A>
+.</ADDRESS>
+</BODY>
+</HTML>

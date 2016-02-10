@@ -1,0 +1,13 @@
+--- generic/default.h.orig	2008-11-07 07:18:37.000000000 +0900
++++ generic/default.h	2008-11-18 14:28:38.000000000 +0900
+@@ -16,8 +16,8 @@
+ #ifndef _DEFAULT
+ #define _DEFAULT
+ 
+-#if defined(__WIN32__) || defined(_WIN32) || \
+-    defined(__MINGW32__)
++#if (defined(__WIN32__) || defined(_WIN32) ||	\
++     defined(__MINGW32__)) && !defined(SAD_FORCE_X11)
+ #   include "tkWinDefault.h"
+ #else
+ #   if defined(MAC_OSX_TK)

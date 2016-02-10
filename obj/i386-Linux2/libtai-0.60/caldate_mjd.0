@@ -1,0 +1,72 @@
+caldate_mjd(3)                                                  caldate_mjd(3)
+
+
+
+NNAAMMEE
+       caldate_mjd - manipulate calendar dates
+
+SSYYNNTTAAXX
+       ##iinncclluuddee <<ccaallddaattee..hh>>
+
+       void ccaallddaattee__ffrroommmmjjdd(&_c_d,_d_a_y,_w_e_e_k_d_a_y,_y_e_a_r_d_a_y);
+       long ccaallddaattee__mmjjdd(&_c_d);
+       void ccaallddaattee__nnoorrmmaalliizzee(&_c_d);
+
+       void ccaallddaattee__eeaasstteerr(&_c_d);
+
+       struct caldate _c_d;
+       long _d_a_y;
+       int *_w_e_e_k_d_a_y;
+       int *_y_e_a_r_d_a_y;
+
+BBAASSIICC CCOONNVVEERRSSIIOONNSS
+       Every  calendar  date has a _m_o_d_i_f_i_e_d _J_u_l_i_a_n _d_a_y _n_u_m_b_e_r.  The day number
+       increases by 1 every day.  Day number 0 is 17 November 1858.  Day  num‐
+       ber 51604 is 1 March 2000.
+
+       ccaallddaattee__ffrroommmmjjdd  puts  into  _c_d  the date corresponding to the modified
+       Julian day number _d_a_y.
+
+       ccaallddaattee__ffrroommmmjjdd also computes the day of the week (0 through 6) and the
+       day  of  the  year  (0  through 365).  It stores the day of the week in
+       **_w_e_e_k_d_a_y if _w_e_e_k_d_a_y is nonzero.  It stores  the  day  of  the  year  in
+       **_y_e_a_r_d_a_y if _y_e_a_r_d_a_y is nonzero.
+
+       ccaallddaattee__mmjjdd returns the modified Julian day number corresponding to the
+       date in _c_d.
+
+       ccaallddaattee__mmjjdd accepts days outside the range 1 to 31, referring  to  days
+       before  the  beginning  or after the end of the month.  It also accepts
+       months outside the range 1 to 12, referring to months before the begin‐
+       ning or after the end of the year.
+
+       ccaallddaattee__nnoorrmmaalliizzee calls ccaallddaattee__ffrroommmmjjdd with the result of ccaallddaattee__mmjjdd.
+       This means that it accepts out-of-range months and out-of-range days in
+       _c_d, and puts a valid calendar date back into _c_d.
+
+OOTTHHEERR FFUUNNCCTTIIOONNSS
+       ccaallddaattee__eeaasstteerr  reads  the year from _c_d and then changes _c_d to the date
+       of Easter in the same year.
+
+LLIIMMIITTAATTIIOONNSS
+       The ccaallddaattee routines currently support the  Gregorian  calendar,  which
+       was  defined  in 1582 and adopted at different times in different coun‐
+       tries.  For earlier dates the ccaallddaattee routines work with ``virtual Gre‐
+       gorian,''  defined  mathematically  by the 400-year Gregorian cycle for
+       years before 1582.  The Julian calendar is not supported.
+
+       The Gregorian calendar will be replaced by a new calendar within a  few
+       thousand  years.   The ccaallddaattee__ffrroommmmjjdd and ccaallddaattee__mmjjdd routines will be
+       upgraded accordingly.  The current ccaallddaattee__ffrroommmmjjdd and ccaallddaattee__mmjjdd rou‐
+       tines are not useful for dates far in the future.
+
+       Day  numbers  will  overflow  a  32-bit  lloonngg  sometime  after the year
+       5000000; all systems should upgrade to 64-bit lloonnggs before then.   ccaall‐‐
+       ddaattee__mmjjdd does not check for overflow.
+
+SSEEEE AALLSSOO
+       caldate(3)
+
+
+
+                                                                caldate_mjd(3)

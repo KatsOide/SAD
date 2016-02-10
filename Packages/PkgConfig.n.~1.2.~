@@ -1,0 +1,80 @@
+(* PkgConfigMatch[] public API *)
+PkgConfigMatch[pkg_String, key_String] := Select[
+  Union[PkgConfig$UserDB[pkg][[,1]], PkgConfig$SystemDB[pkg][[,1]]],
+  StringMatchQ[#, key]&];
+
+(* PkgConfig[]/PkgConfigList[] public API *)
+PkgConfigList[l__] := Scan[With[{pkg = #[[1]], config = #[[2]]},
+  Scan[With[{var = #[[1]], val = #[[2]]},
+    PkgConfig[pkg, var] = val]&,
+    First[SwitchCases[config, {Rule[_String, _]}]]]]&,
+  First[SwitchCases[Flatten[{l}], {Rule[_String, _List]}]]];
+PkgConfig[pkg_String, var_String] := Module[{hit},
+  {hit} = SwitchCases[PkgConfig$UserDB[pkg],
+    {Rule[var, PkgConfig$Type[pkg, var]]}];
+  If[hit <=> {}, hit[[1,2]], PkgConfig$Default[pkg, var]]];
+(PkgConfig[pkg_String, var_String] =.) ^:= Module[{drop, rem},
+  {drop, rem} = SwitchCases[PkgConfig$UserDB[pkg],
+    {Rule[var, _], _}];
+  PkgConfig$UserDB[pkg] = rem];
+(PkgConfig[pkg_String, var_String] = val_) ^:= With[{
+  types = PkgConfig$Type[pkg, var]},
+  Switch[val,
+    types, Module[{drop, rem},
+      {drop, rem} = SwitchCases[PkgConfig$UserDB[pkg],
+	{Rule[var, _], _}];
+      PkgConfig$UserDB[pkg] = AppendTo[rem, Rule[var, val]]],
+    _, PkgConfig$UserDB[pkg]]];
+
+(* PkgConfig$Type[]/PkgConfig$TypeList[] package API *)
+PkgConfig$TypeList[l__] := Scan[With[{pkg = #[[1]], config = #[[2]]},
+  Scan[With[{var = #[[1]], type = #[[2]]},
+    PkgConfig$Type[pkg, var] = type]&,
+    First[SwitchCases[config, {Rule[_String, _]}]]]]&,
+  First[SwitchCases[Flatten[{l}], {Rule[_String, _List]}]]];
+PkgConfig$Type[pkg_String, var_String] := With[{
+  types = PkgConfig$TypeDB[pkg, var]},
+  If[types === Null, _, types]];
+(PkgConfig$Type[pkg_String, var_String] =.) ^:= (
+  PkgConfig$TypeDB[pkg, var] =.);
+(PkgConfig$Type[pkg_String, var_String] = val_) ^:= (
+  PkgConfig$TypeDB[pkg, var] = val);
+
+(* PkgConfig$Default[]/PkgConfig$DefaultList[] package API *)
+PkgConfig$DefaultList[l__] := Scan[With[{pkg = #[[1]], config = #[[2]]},
+  Scan[With[{var = #[[1]], val = #[[2]]},
+      PkgConfig$Default[pkg, var] = val]&,
+    First[SwitchCases[config, {Rule[_String, _]}]]]]&,
+  First[SwitchCases[Flatten[{l}], {Rule[_String, _List]}]]];
+PkgConfig$Default[pkg_String, var_String] := Module[{hit},
+  {hit} = SwitchCases[PkgConfig$SystemDB[pkg],
+    {Rule[var, PkgConfig$Type[pkg, var]]}];
+  If[hit <=> {}, hit[[1,2]], Null]];
+(PkgConfig$Default[pkg_String, var_String] =.) ^:= Module[{drop, rem},
+  {drop, rem} = SwitchCases[PkgConfig$SystemDB[pkg],
+    {Rule[var, _], _}];
+  PkgConfig$SystemDB[pkg] = rem];
+(PkgConfig$Default[pkg_String, var_String] = val_) ^:= With[{
+  types = PkgConfig$Type[pkg, var]},
+  If[PkgConfig$TypeDB[pkg, var] === Null,
+    (* Automatic type definition *)
+    PkgConfig$Type[pkg, var] = Switch[val,
+      _Real,		_Real,
+      _String,		_String,
+      {__Real},		{___Real},
+      {__String},	{___String},
+      _List,		_List,
+      _,		_]];
+  Switch[val,
+    types, Module[{drop, rem},
+      {drop, rem} = SwitchCases[PkgConfig$SystemDB[pkg],
+	{Rule[var, _], _}];
+      PkgConfig$SystemDB[pkg] = AppendTo[rem, Rule[var, val]]],
+    _, PkgConfig$SystemDB[pkg]]];
+
+(* PkgConfig internal database *)
+PkgConfig$UserDB[_]   := {};
+PkgConfig$SystemDB[_] := {};
+PkgConfig$TypeDB[_, _]  := Null;
+
+! End of File

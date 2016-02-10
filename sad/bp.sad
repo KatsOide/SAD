@@ -1,0 +1,70 @@
+#!/users/oide/WORK/oldsad/obj/OSF1/sad1.exe *
+MOMENTUM= 1 GEV; ON ECHO;OFF EMIT COD CTIME RAD RFSW RADCOD; 
+ LINE CELL=( -IP2 
+   L00 QF SF L1 B  L1 QD SD L1 B L1  CA1)
+ CELL1=( -IP2 L00 QF1 SF L1 B L1 QD1 SD  L1 B L1 CA1 M1)
+ ;
+ LINE        TESTLINE=(CELL CELL1)
+ ;
+ DRIFT  L1     =(L = 1)
+        L00    =(L=0)
+ ;
+ BEND   B = (L=5 ANGLE=0.1 E1=0.5 E2=0.5 F1=0.1 FRINGE=3)
+        B1= (L=5 ANGLE=.1 E1=0.5 E2=0.5)
+        B2= (L=5 ANGLE=.1 E1=0.5 E2=0.5)
+        B3= (L=5 ANGLE=.1 E1=0.5 E2=0.5)
+        BV=(L=0 ANGLE=0 ROTATE=-90 DEG)
+ ;
+ MULT   QF     =(L = 1 K1 = 0.1549322394 )
+        QD     =(L = 1 K1 =-0.1549322394 )
+        QF1     =(L = 1 K1 = 0.1549322394 )
+        QD1     =(L = 1 K1 =-0.1549322394 )
+ ;
+ SEXT   SF     =(L = 1 K2=0.1)
+        SD     =(L = 1 )
+ ;
+ MAP    P1 =()
+        P2=()
+ ;
+ MONI   M1=()
+ ;
+ MARK   IP1     =(BETAX = 1.93      BETAY =1.93    EMIX = 4.0E-5
+   EMIY = 4.0E-5  DP = 0.01 SIGZ = 1.5E-3 )
+ IP2     =(BETAX = 0.703     BETAY = 0.703  EMIX = 4.0E-5
+   EMIY = 4.0E-5  DP = 0.01 SIGZ = 8E-4 )
+ ;
+ CAVI   CA1 = (VOLT=1 MV HARM=100)
+ ;
+ DECA  DF=(L=2 K4=1)
+ ;
+ APERT A1=(DX1=0.001 DY1=0.001 DX1=-0.001 DY1=-0.001 JDPX=0.001 JDPY=0.001)
+ ;
+ FFS USE=TESTLINE;
+
+  w=KBMainFrame["BP",f];
+  c=Canvas[f,Width->800,Height->600];
+  Canvas$Widget=c;
+  
+
+dxi 0.001 r1i 0.5 calc;
+beam;
+
+g=Graphics[{Polygon[{{0,0},{1,2},{3,5}},FillColor->"green"]},DataRange->{{-1,4},{-1,6}}];
+Show[g];
+
+end
+
+OpticsPlot[{{"BX"},{"BY"}},FrameTicks->{True,True,False,Fale}];TkWait[];
+
+end
+
+g1=BeamPlot[1,{"X","Y"},DisplayFunction->Identity,Orbit->False];
+g2=BeamPlot[4,{"X","Y"},DisplayFunction->Identity,Orbit->False,PlotColor->"tomato"];
+Show[g1,g2,GridLines->{Automatic,Automatic}];Update[];
+
+
+
+
+
+
+end

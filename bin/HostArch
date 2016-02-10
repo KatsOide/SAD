@@ -1,0 +1,112 @@
+#!/bin/sh
+
+config=false
+if [ x"$1" = x"-config" ]; then
+    config=true
+fi
+
+os_name=`uname -s 2>/dev/null`
+release=`uname -r 2>/dev/null`
+os_major=`expr "${release}" : "[^0-9]*\([0-9]*\)"`
+os_minor=`expr "${release}" : "[^0-9]*[0-9]*.\([0-9]*\)"`
+processor=`uname -p 2>/dev/null`
+architecture=`uname -m 2>/dev/null`
+
+cpu_arch=unknown
+for symbol in processor architecture; do
+    eval symbol="\$$symbol"
+    case ${symbol} in
+	i[3456]86)
+	    cpu_arch=i386
+	    ;;
+	amd64|x86_64)
+	    cpu_arch=AMD64
+	    ;;
+	ia64)
+	    cpu_arch=IA64
+	    ;;
+	ppc|powerpc)
+	    cpu_arch=PowerPC
+	    ;;
+	alpha|ev6)
+	    cpu_arch=Alpha
+	    ;;
+	sun4u|sparc)
+	    cpu_arch=SPARC
+	    ;;
+	9000/31?)
+	    cpu_arch=m68000
+	    ;;
+	9000/[34]??)
+	    cpu_arch=m68k
+	    ;;
+	9000/[678][0-9][0-9])
+	    case ${os_name} in
+		HP-UX)
+		    case `/usr/bin/getconf SC_CPU_VERSION 2>/dev/null` in
+			523)
+			    cpu_arch=PA1.0
+			    ;;
+			523)
+			    cpu_arch=PA1.1
+			    ;;
+			532)
+			    case `/usr/bin/getconf SC_KERNEL_BITS 2>/dev/null` in
+				64)
+				    cpu_arch=PA2.0n
+				    ;;
+				32)
+				    cpu_arch=PA2.0w
+				    ;;
+				*)
+				    cpu_arch=PA2.0
+				    ;;
+			    esac
+			    ;;
+		    esac
+		    ;;
+	    esac
+	    ;;
+    esac
+    [ "x${cpu_arch}" != xunknown ] && break
+done
+
+case ${os_name} in
+CYGWIN*)
+    os_suffix=-
+    os_name="CYGWIN${os_name##CYGWIN*-}"
+    os_type=CYGWIN
+    ;;
+FreeBSD|NetBSD|OpenBSD|DragonFly|Darwin)
+    os_type=4.4BSD-Lite
+    ;;
+Linux)
+    os_type=Linux
+    ;;
+SunOS)
+    os_type=SunOS
+    ;;
+OSF1)
+    os_suffix=-
+    os_type=OSF1
+    ;;
+HP-UX)
+    os_type=HP-UX
+    ;;
+*)
+    os_type=
+    ;;
+esac
+
+if [ x"${config}" = x"true" ]; then
+    echo OS_NAME=${os_name}
+    echo OS_TYPE=${os_type}
+    echo OS_MAJOR_VERSION=${os_major}
+    echo OS_MINOR_VERSION=${os_minor}
+    echo CPU_ARCH=${cpu_arch}
+    echo MACH_ARCH=${cpu_arch}-${os_name}${os_suffix}${os_major}
+else
+    echo ${cpu_arch}-${os_name}${os_suffix}${os_major}
+fi
+
+# End of File

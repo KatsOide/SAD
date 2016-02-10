@@ -1,0 +1,8 @@
+(* Try to load SAD/Tkinter.so extension module *)
+If[Not[FBoundQ$[TclArg]],
+  Library@Require["SAD/Xlib", "SAD/Tkinter.so"]];
+
+If[Not[FBoundQ$[TclArg]],		(* Eval after .so load *)
+  Print["SAD/Tkinter is not supported by current binary"]; Exit[127]];
+
+! End of File

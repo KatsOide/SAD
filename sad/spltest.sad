@@ -1,0 +1,14 @@
+FFS;
+
+ a=Drop[Thread[{Range[10],Random[10]}],{2,2}];
+ f=Spline[a,Derivative->Periodic];
+ g=Spline[a,Derivative->{0,0}];
+ 
+   Plot[{f[x],Derivative[1][f][x],Derivative[2][f][x],g[x]},{x,1,10},MaxBend->0.01,PlotPoints->100];Update[];
+
+end
+
+
+
+
+

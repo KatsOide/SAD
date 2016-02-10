@@ -1,0 +1,262 @@
+***************
+*** 181,186 ****
+      {TK_CONFIG_CUSTOM, "-state", "state", "State",
+  	"normal", Tk_Offset(TkCanvas, canvas_state), TK_CONFIG_DONT_SET_DEFAULT,
+  	&stateOption},
+      {TK_CONFIG_STRING, "-takefocus", "takeFocus", "TakeFocus",
+  	DEF_CANVAS_TAKE_FOCUS, Tk_Offset(TkCanvas, takeFocus),
+  	TK_CONFIG_NULL_OK},
+--- 181,188 ----
+      {TK_CONFIG_CUSTOM, "-state", "state", "State",
+  	"normal", Tk_Offset(TkCanvas, canvas_state), TK_CONFIG_DONT_SET_DEFAULT,
+  	&stateOption},
++     {TK_CONFIG_INT, "-suppressdrawing", "suppressDrawing", "SuppressDrawing",
++ 	"0", Tk_Offset(TkCanvas, sd), 0},
+      {TK_CONFIG_STRING, "-takefocus", "takeFocus", "TakeFocus",
+  	DEF_CANVAS_TAKE_FOCUS, Tk_Offset(TkCanvas, takeFocus),
+  	TK_CONFIG_NULL_OK},
+***************
+*** 2201,2206 ****
+      Pixmap pixmap;
+      int screenX1, screenX2, screenY1, screenY2, width, height;
+  
+      if (canvasPtr->tkwin == NULL) {
+  	return;
+      }
+--- 2203,2214 ----
+      Pixmap pixmap;
+      int screenX1, screenX2, screenY1, screenY2, width, height;
+  
++     if (canvasPtr->sd) {
++       canvasPtr->flags &= ~REDRAW_PENDING;
++       return;
++     }
++     /*goto borders;*/
++ 
+      if (canvasPtr->tkwin == NULL) {
+  	return;
+      }
+***************
+*** 4049,4058 ****
+          }
+          itemPtr = TagSearchFirst(*searchPtrPtr);
+  #endif /* USE_OLD_TAG_SEARCH */
+- 	if (itemPtr != NULL) {
+- 	    if (itemPtr->prevPtr != NULL) {
+- 		DoItem(interp, itemPtr->prevPtr, uid);
+- 	    }
+  	}
+  	break;
+        }
+--- 4057,4066 ----
+          }
+          itemPtr = TagSearchFirst(*searchPtrPtr);
+  #endif /* USE_OLD_TAG_SEARCH */
++ 	if (itemPtr == NULL) {
++ 	    DoItem(interp, canvasPtr->lastItemPtr, uid);
++ 	} else if (itemPtr->prevPtr != NULL) {
++ 	    DoItem(interp, itemPtr->prevPtr, uid);
+  	}
+  	break;
+        }
+***************
+*** 5477,5482 ****
+  	    canvasPtr->xOrigin, canvasPtr->yOrigin,
+  	    canvasPtr->xOrigin + Tk_Width(canvasPtr->tkwin),
+  	    canvasPtr->yOrigin + Tk_Height(canvasPtr->tkwin));
+  }
+  
+  /*
+--- 5485,5676 ----
+  	    canvasPtr->xOrigin, canvasPtr->yOrigin,
+  	    canvasPtr->xOrigin + Tk_Width(canvasPtr->tkwin),
+  	    canvasPtr->yOrigin + Tk_Height(canvasPtr->tkwin));
++ }
++ 
++ /*
++  * Addition for SAD
++  */
++ 
++  typedef struct SAD_String {
++   int length;
++   int dummy;
++   char str;
++ } SAD_String;
++ 
++ void ctkcanvcreateitem_(int *cp, int *nt, int *nn, double *bb, int *pargc, SAD_String **argv, int *id)
++ {
++     Tcl_Interp *interp;
++     TkCanvas *canvasPtr = ((TkWindow *)((long)*cp))->instanceData;
++     Tk_ItemType *typePtr;
++     Tk_Item *itemPtr;
++     int isNew = 0, argc = *pargc+2, i;
++     Tcl_HashEntry *entryPtr;
++     static oargc=0,newoargc;
++     static Tcl_Obj **oargv=NULL, *oargvsav[2];
++ 
++ /*
++     printf("pathname: %s\n", ((TkWindow *)((long)*cp))->pathName);
++     printf("%d %d\n", *nn, *pargc);
++     for (i=0; i<*nn; i++)
++       printf("%f\n", bb[i]);
++     for (i=0; i<*pargc; i++)
++       printf("%s\n", argv[i]);
++ */
++ 
++     Tcl_Preserve((ClientData) canvasPtr);
++ 
++ /*
++     printf("width: %d\n", canvasPtr->width);
++     for (typePtr = sadTypeList; typePtr != NULL; typePtr = typePtr->nextPtr) {
++ 	printf("%s\n", typePtr->name);
++     }
++ */
++ 
++     interp = canvasPtr->interp;
++     for (typePtr = typeList, i=0; i<*nt; i++)
++ 	typePtr = typePtr->nextPtr;
++ 
++     itemPtr = (Tk_Item *) ckalloc((unsigned) typePtr->itemSize);
++     itemPtr->id = canvasPtr->nextId;
++     canvasPtr->nextId++;
++     itemPtr->tagPtr = itemPtr->staticTagSpace;
++     itemPtr->tagSpace = TK_TAG_SPACE;
++     itemPtr->numTags = 0;
++     itemPtr->typePtr = typePtr;
++     itemPtr->state = TK_STATE_NULL;
++     itemPtr->redraw_flags = 0;
++ 
++     if (oargc<argc) {
++ 	newoargc = 2*argc;
++ 	oargv = realloc(oargv, sizeof(Tcl_Obj *)*newoargc);
++ 	for (i=oargc; i<newoargc; i++) {
++ 	    oargv[i] = Tcl_NewObj();
++ 	    Tcl_IncrRefCount(oargv[i]);
++ 	}
++ 	oargc = newoargc;
++     }
++ 
++     for (i=0; i<argc-2; i++) {
++ 	if (Tcl_IsShared(oargv[i])) {
++ 	    Tcl_DecrRefCount(oargv[i]);
++ 	    oargv[i] = Tcl_NewStringObj(&(argv[i]->str),argv[i]->length);
++ 	    Tcl_IncrRefCount(oargv[i]);
++ 	} else {
++ 	    Tcl_SetStringObj(oargv[i],&(argv[i]->str),argv[i]->length);
++ 	}
++     }
++     oargvsav[0] = oargv[argc-2];
++     oargvsav[1] = oargv[argc-1];
++     oargv[argc-2] = (Tcl_Obj *)nn;
++     oargv[argc-1] = (Tcl_Obj *)bb;
++     /* argc = -argc; */
++     if ((*typePtr->createProc)(interp, (Tk_Canvas) canvasPtr,
++ 		itemPtr, -argc, oargv) != TCL_OK) {
++ 	ckfree((char *) itemPtr);
++ 	*id = -1;
++ 	goto error;
++     }
++     /* argc = -argc; */
++ 
++     itemPtr->nextPtr = NULL;
++     entryPtr = Tcl_CreateHashEntry(&canvasPtr->idTable,
++ 		(char *) itemPtr->id, &isNew);
++     Tcl_SetHashValue(entryPtr, itemPtr);
++     itemPtr->prevPtr = canvasPtr->lastItemPtr;
++     canvasPtr->hotPtr = itemPtr;
++     canvasPtr->hotPrevPtr = canvasPtr->lastItemPtr;
++     if (canvasPtr->lastItemPtr == NULL) {
++ 	canvasPtr->firstItemPtr = itemPtr;
++     } else {
++ 	canvasPtr->lastItemPtr->nextPtr = itemPtr;
++     }
++     canvasPtr->lastItemPtr = itemPtr;
++     itemPtr->redraw_flags |= FORCE_REDRAW;
++     EventuallyRedrawItem((Tk_Canvas) canvasPtr, itemPtr);
++     canvasPtr->flags |= REPICK_NEEDED;
++     *id = itemPtr->id;
++ 
++  error:
++     oargv[argc-2] = oargvsav[0];
++     oargv[argc-1] = oargvsav[1];
++     Tcl_Release((ClientData) canvasPtr);
++ }
++ 
++ void ctkcanvgettype_(char *name, int *nt)
++ {
++     int n;
++     Tk_ItemType *typePtr;
++ 
++     if (typeList == NULL) {
++ 	InitCanvas();
++     }
++     n = 0;
++     for (typePtr = typeList; typePtr != NULL; typePtr = typePtr->nextPtr) {
++ 	if (strcmp(name, typePtr->name)==0) {
++ 	    *nt = n;
++ 	    return;
++ 	}
++ 	n++;
++     }
++     *nt = -1;
++ }
++ 
++ void ctkcanvgettypes_(int *names, int *nt, char *ilist)
++ {
++     int n;
++     Tk_ItemType *typePtr;
++ 
++     if (typeList == NULL) {
++ 	InitCanvas();
++     }
++     n = 0;
++     for (typePtr = typeList; typePtr != NULL; typePtr = typePtr->nextPtr) {
++ 	names[2*n] = typePtr->name - ilist;
++ 	names[2*n+1] = strlen(typePtr->name);
++ 	n++;
++     }
++     *nt = n;
++ }
++ 
++ void ctkcanvlastitem_(int *cp, int *ni)
++ {
++     TkCanvas *canvasPtr = ((TkWindow *)((long)*cp))->instanceData;
++ 
++     *ni = canvasPtr->nextId - 1;
++ }
++ 
++ /* from FindArea */
++ void ctkcanvfindenclosed_(int *cp, double *rect, double *nir, int *ni)
++ {
++     TkCanvas *canvasPtr = ((TkWindow *)((long)*cp))->instanceData;
++     double tmp;
++     int x1, y1, x2, y2;
++     Tk_Item *itemPtr;
++ 
++     if (rect[0] > rect[2]) {
++ 	tmp = rect[0]; rect[0] = rect[2]; rect[2] = tmp;
++     }
++     if (rect[1] > rect[3]) {
++ 	tmp = rect[1]; rect[1] = rect[3]; rect[3] = tmp;
++     }
++ 
++     x1 = (int) (rect[0]-1.0);
++     y1 = (int) (rect[1]-1.0);
++     x2 = (int) (rect[2]+1.0);
++     y2 = (int) (rect[3]+1.0);
++     *ni = 0;
++     for (itemPtr = canvasPtr->firstItemPtr; itemPtr != NULL;
++ 	    itemPtr = itemPtr->nextPtr) {
++ 	if ((itemPtr->x1 >= x2) || (itemPtr->x2 <= x1)
++ 		|| (itemPtr->y1 >= y2) || (itemPtr->y2 <= y1)) {
++ 	    continue;
++ 	}
++ 	if ((*itemPtr->typePtr->areaProc)((Tk_Canvas) canvasPtr, itemPtr, rect)
++ 		>= 1) {
++ 	    nir[*ni] = itemPtr->id;
++ 	    (*ni)++;
++ 	}
++     }
+  }
+  
+  /*

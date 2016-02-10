@@ -1,0 +1,60 @@
+FFS;
+sadk64=False;
+ sadk64=True;
+
+f=OpenRead["LevelMarker.dat"];
+head=Read[f,String];
+Print[head];
+ss={};
+y1={};
+y2={};
+y3={};
+y4={};
+y5={};
+y6={};
+y7={};
+y8={};
+While[(id=Read[f,Real])<=>EndOfFile,
+  smm=Read[f,Real];
+  sm=Read[f,Real];
+  dy1=Read[f,Real];
+  dy2=Read[f,Real];
+  dy3=Read[f,Real];
+  dy4=Read[f,Real];
+  dy5=Read[f,Real];
+  dy6=Read[f,Real];
+  dy7=Read[f,Real];
+  dy8=Read[f,Real];
+
+(* mm -> m *)
+  ss=smm/1e3;  
+  If[dy1<>999,AppendTo[y1,{ss,1e-3*dy1}]];
+  If[dy2<>999,AppendTo[y2,{ss,1e-3*dy2}]];
+  If[dy3<>999,AppendTo[y3,{ss,1e-3*dy3}]];
+  If[dy4<>999,AppendTo[y4,{ss,1e-3*dy4}]];
+  If[dy5<>999,AppendTo[y5,{ss,1e-3*dy5}]];
+  If[dy6<>999,AppendTo[y6,{ss,1e-3*dy6}]];
+  If[dy7<>999,AppendTo[y7,{ss,1e-3*dy7}]];
+  If[dy8<>999,AppendTo[y8,{ss,1e-3*dy8}]];
+  ];
+Close[f];
+
+y1=Join[{{0,0}},Sort[Drop[y1,-1],(#1[[1]]<#2[[1]])&],{{3016.262,0.0}}];
+
+If[sadk64,
+ sp1a=Spline[y1]; (* 2005 *)
+ sp1=Spline[y1,Derivative->Periodic];
+  ,
+  sp1=Spline[y1]; 
+  ];
+
+pl[v_,sp_]:=(
+  g1=ListPlot[v,PointSize->0.5];
+  g2=Plot[sp[x],{x,0,3016.262},PlotColor->"red"];
+  Show[g1,g2,PlotRange->{{0,3016.262},{Automatic,Automatic}}];
+  Update[];
+  );
+
+pl[y1,sp1];
+
+end;

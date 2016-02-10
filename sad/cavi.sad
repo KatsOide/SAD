@@ -1,0 +1,54 @@
+#!/users/oide/WORK/oldsad/obj/OSF1/sad1.exe *
+MOMENTUM= 200 MEV; ON ECHO;OFF EMIT COD CTIME RAD RFSW RADCOD; 
+ LINE CELL=( QDH L2 QFH QFH L2 QDH)
+ ;
+ LINE  HALF=(QA2 LA1 QA1 LA0 B L1 QM4 L1 QM3 L1 QM2 L1 QM1 L1 QFH QFH L2 QDH 20*CELL )
+       TEST=(IP2 -HALF HALF CA1) 
+ ;
+;
+ DRIFT  L2      =(L =.2 )    L1      =(L =.75 )   LA0     =(L =.1 )
+        LA1     =(L =1 )
+ ;
+ BEND   B       =(L =.3   ANGLE =.1 )
+ ;
+ QUAD   QDH     =(L =.1   K1 =-2.170668822139 )
+        QFH     =(L =.1   K1 =2.170668822139 )
+        QM1     =(L =.1   K1 =-1.1309410063465 )
+        QM2     =(L =.1   K1 =-.231243525452 )
+        QM3     =(L =.1   K1 =.0547442524436 )
+        QM4     =(L =.1   K1 =1.4443844460719 )
+        QA1     =(L =.1   K1 =-.9588860627699 )
+        QA2     =(L =.1   K1 =.7604027171287 )
+ ;
+ CAVI   CA1     =(VOLT =1000 FREQ =100000000 PHI= 0 DEG )
+ ;
+ MARK   IP2     =(AX =-2.3185923848E-14  BX =.2471002563045
+           BY =1.2828459835429 EX =5.153775292E-11 EPX =3.12883265992E-18
+           DP =.01   SIGZ =4.835243965342E-4  EMITX =1.78455074372E-11
+           EMITY =1E-12 )
+ ;
+ ;
+ STACKSIZ=100000;
+ FFS USE=TEST;
+$DisplayFunction=CanvasDrawer;
+ cod rfsw ring cell cal
+g1=OpticsPlot[{{"BX","BY"},{"EX","EY"}},
+  Dashing->{{0.3,0.1},{0.4,0.05,0.1,0.05}}];
+
+Update[];
+end
+
+
+MINCOUP=0.01;
+PBUNCH=0.0001;
+fit QFH.2 QFH.4 bx 1 by 1 nx .25 ny .25 ax 0 ay 0
+fit ex 0 epx 0
+free q* go
+intra emiout emit
+end
+!
+ e=Emittance[Matrix->True];
+ m=TransferMatrices/.e;
+ m3=m[[3]];
+ m3[[6]]*=LINE["GAMMABETA","$$$"]/LINE["GAMMABETA","^^^"];
+m3.SymplecticInverse[m3]

@@ -1,0 +1,34 @@
+tai_pack(3)                Library Functions Manual                tai_pack(3)
+
+
+
+[1mNAME[0m
+       tai_pack - convert TAI64 labels to external format
+
+[1mSYNTAX[0m
+       [1m#include <tai.h>[0m
+
+       void [1mtai_pack[22m([4mbuf[24m,&[4mt[24m);
+       void [1mtai_unpack[22m([4mbuf[24m,&[4mt[24m);
+
+       char [4mbuf[24m[[1mTAI_PACK[22m];
+       struct tai [4mt[24m;
+
+[1mDESCRIPTION[0m
+       [1mtai_pack [22mconverts a TAI64 label from internal format in [4mt[24m to TAI64 for-
+       mat in [4mbuf[24m.
+
+       [1mtai_unpack [22mconverts a TAI64 label from TAI64 format in [4mbuf[24m to  internal
+       format in [4mt[24m.
+
+       [1mTAI_PACK [22mis 8.
+
+       See  [1mhttp://pobox.com/~djb/proto/tai64.txt  [22mfor  more information about
+       TAI64 format.
+
+[1mSEE ALSO[0m
+       tai(3)
+
+
+
+                                                                   tai_pack(3)

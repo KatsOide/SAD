@@ -1,0 +1,1 @@
+gcc-mp-4.7 -Wall -std=gnu11 -m64  -m64 -I. -g -O1

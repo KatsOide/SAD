@@ -1,0 +1,17 @@
+patch-Makefile
+patch-caldate.h
+patch-caltime.h
+patch-check.c
+patch-easter.c
+patch-leapsecs.3
+patch-leapsecs.c
+patch-leapsecs.h
+patch-leapsecs_read.c
+patch-nowutc.c
+patch-tai.h
+patch-tai_now.c
+patch-taia.h
+patch-taia_now.3
+patch-taia_now.c
+patch-tryclock_gettime.c
+patch-yearcal.c

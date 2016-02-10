@@ -1,0 +1,17 @@
+# New Makefile -- OS Dependence Part for Cygwin/i386
+#
+# BROKEN=This ports is reported as BROKEN. BROKEN flag WOULD be kept until ports maintainer was assigned.
+
+HAVE_LIBCRYPT=YES
+
+ifeq ($(COMPILER),System)
+override COMPILER=GCC
+endif
+
+include $(SADCONF)/GCC.spec
+
+TCLTK_TYPE=unix
+X11_PREFIX=/usr/X11R6
+X11_LIBS=-lX11
+
+# End of File

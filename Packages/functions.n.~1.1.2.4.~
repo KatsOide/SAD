@@ -1,0 +1,81 @@
+Label[]:=Label;
+SetAttributes[Label,HoldAll];
+Log2$[10,`x_]:=Log[`x]/Log[10];
+Log2$[`b_,`x_]:=Log[`x]/Log[`b];
+Gamma[x_]:=Factorial[x]/x;
+Gamma[0,x_]:=Gamma0[x];
+Gamma[a_,x_]:=GammaRegularized[a,x]*Factorial[a]/a;
+LogGamma[x_]:=LogGamma1[x]-Log[x];
+Names[x_]:=Names$[x];
+RotateRight[a_,`n_]:=RotateRight1[Unevaluated$[a],`n];
+RotateRight[a_]:=RotateRight1[Unevaluated$[a]];
+RotateRight[a_,{`n1_,`n2__}]:=RotateRight[#,{n2}]&/@
+  RotateRight1[Unevaluated$[a],n1];
+RotateRight[a_,{n1_}]:=RotateRight1[Unevaluated$[a],n1];
+RotateLeft[a_,n_]:=RotateRight[Unevaluated$[a],-n];
+RotateLeft[a_]:=RotateRight1[Unevaluated$[a],-1];
+Union[x__,SameTest->`f_]:=Union1[Join[Unevaluated$[x]],Unevaluated$[f]];
+Union[x__,SameTest:>`f_]:=Union1[Join[Unevaluated$[x]],Unevaluated$[f]];
+Union[x__]:=Union1[Join[Unevaluated$[x]]];
+MatrixQ[x_]:=Length[Dimensions[x]]==2&&Select[x,~VectorQ[#]&,1]=={};
+MatrixQ[x_,`t_]:=Length[Dimensions[x]]==2&&Select[x,~VectorQ[#,t]&,1]=={};
+SetAttributes[MatrixQ,HoldRest];
+Count[x__]:=Length[Position[x]];
+MemberQ[`l_,`p_]:=Position[l,p,1,1]<=>{};
+MemberQ[l_,`p_,`lev_]:=Position[l,p,lev,1]<=>{};
+FreeQ[`f_,p_]:=
+  Position[Unevaluated$[f],Unevaluated$[p],{0,Infinity},1]==={};
+FreeQ[f_,p_,lev_]:=
+  Position[Unevaluated$[f],Unevaluated$[p],lev,1]==={};
+Nest[f_,x_,n_]:=Module[{`y=x},Do[`y=f[y],{n}];y];
+NestList[f_,x_,n_]:=Module[{y=x,l={x}},Do[y=f[y];AppendTo[l,y],{n}];l];
+Fold[f_,x_,`e_]:=Module[{y=x},Do[y=f[`y,`e[[i]]],{i,Length[e]}];y];
+FoldList[`f_,`x_,`e_]:=Module[{`y=`x,`l={`x}},
+  Do[`y=f[`y,`e[[i]]];AppendTo[`l,`y],{i,Length[`e]}];`l];
+For[`ini_,`cond_,`incr_,`body_]:=(ini;While[cond,body;incr];);
+SetAttributes[For,HoldAll];
+Through[`p_[f__][x__]]:=p@@(#[x]&/@{f});
+Positive:=#>0&;
+Negative:=#<0&;
+NonNegative:=#>=0&;
+NonPositive:=#<=0&;
+IntegerQ:=(#==Floor[#])&;
+Subtract:=(#1-#2)&;
+Divide:=(#1/#2)&;
+Xor:=(#&&~#2)||(~#&&#2)&;
+Append[x__]:=Append$[x];
+Prepend[x__]:=Prepend$[x];
+(a_=Append[a_,b_])^:=AppendTo[a,b];
+(a_=Prepend[a_,b_])^:=PrependTo[a,b];
+
+SetAttributes[{Union,
+  MatrixQ,Count,MemberQ,FreeQ,Nest,NestList,Fold,FoldList,For,IntegerQ,
+  RotateRight,RotateLeft,Positive,Negative,NonNegative,NonPositive,
+  Through,Append,Prepend,
+  Subtract,Divide,Xor,Label,Log2$,Gamma,LogGamma,Names},
+  Constant];
+
+HeldPart[x_,n__]:=Extract[x,{n},Hold];
+f_[a___,Unevaluated[b__],`c___]^:=f@@Unevaluated$[{a,b,c}];
+SetAttributes[Unevaluated,HoldAll];
+Evaluate[x__]:=x;
+f_[a___,Evaluate[b__],c___]^:=With[{b},f[a,b,c]];
+Protect[ReleaseHold,HeldPart,Unevaluated,Evaluate];
+
+StringQ[x_]:=(Head[x]===String);
+Characters[x_]:=FromCharacterCode/@ToCharacterCode[x];
+StringDrop[x_,{n_}]:=x[1,n-1]//x[n+1,-1];
+StringDrop[x_,n_?((#<0)&)]:=x[1,n-1];
+StringDrop[x_,n_]:=x[n+1,-1];
+StringDrop[x_,{n1_,n2_}]:=x[1,n1-1]//x[n2+1,-1];
+StringDrop[x_,{n1_,-1}]:=x[1,n1-1];
+StringInsert[x_,y_,n_]:=x[1,n-1]//y//x[n,-1];
+StringInsert[x_,y_,n_List]:=
+  StringJoin@@Flatten[Thread[{
+    MapThread[x,{Prepend$[n,1],Append$[n-1,-1]}],
+    Append[Table[y,{Length[n]}],""]}]];
+
+Timing[f_]:=MapAt[#+TimeUsed[]&,{-TimeUsed[],f},1];
+SetAttributes[Timing,HoldAll];
+
+Protect[StringQ,Characters,StringDrop,StringInsert,Timing];

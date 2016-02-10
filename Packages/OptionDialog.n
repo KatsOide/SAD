@@ -1,0 +1,82 @@
+KBFOptionDialog[opt___] := Module[{{add,title,pcc,rem}=
+  SwitchCases[Override[opt],{Rule[Add,_],Rule[Title,_],RuleDelayed[PostCreationCommand,_],_}],
+  f,i=1,it,isv,ish,ilb,w,r,icf=0,ts,lv},
+
+  If[title<=>{},ts=title[[1,2]],ts="Option for "//KBF$AppName];
+  f = KBDialogFrame[ts, w[0], Title->ts, rem];
+  f[State] = "withdraw"; (* Hide dialog window under construction... *)
+  If [w[0] === Null, Return[0]];
+  BindWidget[w[0], "<Key-Escape>", TkReturn[0]];
+  BindWidget[w[0], "<Key-Return>", TkReturn[1]];
+  w[i++] = Frame[w[0],Width->250];i++;
+  w[i] = Frame[w[0],Fill->"x",Side->"bottom",PadX->10,PadY->5];icf=i++;
+  With[{i},
+    w[i] = Button[w[icf],Text->"Cancel",
+      Command:>(w[i][State]="disabled";w[i+1][State]="disabled";Update[IdleTasks];TkReturn[0]),Side->"right",Width->8,BD->1]];i++;
+  With[{i},w[i] = Button[w[icf],Text->"Ok",
+    Command:>(w[i][State]="disabled";w[i-1][State]="disabled";Update[IdleTasks];TkReturn[1]),Side->"right",Width->8,BD->1]];i++;
+  If[add<=>{}, {i,lv}=KBF$ArrangeComponents[w,0,i,add[[1,2]],TemporaryVariable->True]];!Print[{"lv",lv}];
+  If[pcc<=>{}, pcc[[1,2]]];
+
+  f[Close] := TkReturn[0]; (* Bind Close event as Cancel Button *)
+  (* Waiting construction of complex widget: KBFTabFrame *)
+  Do[(Pause[0.01]; Update[TimerTasks]; (* Invoke After[] events *)
+    Update[IdleTasks]), {loop, 5}];
+  f[State] = "normal"; (* Show dialog window *)
+  r = TkWait[];
+  
+  i=0;
+  Check[
+    If[r<>0,Scan[(
+      Switch[Head[#]
+        ,KBFString|KBFCheckButton|KBFRadioButton|KACString|KACCheckButton|KACRadioButton,
+        Evaluate[Extract[#,{1,2},Unevaluated$]] = w[#[[2]]];
+        ,KBFNumber|KACNumber,
+        Evaluate[Extract[#,{1,2},Unevaluated$]] = ToExpression[w[#[[2]]]];
+        ,KBFOptionMenu|KACOptionMenu,
+        Evaluate[Extract[#,{1,2},Unevaluated$]] = Position[#[[3]],w[#[[2]]]][[1,1]];
+        ,KBFListBox|KACListBox,
+        Evaluate[Extract[#,{1,2},Unevaluated$]] = w[#[[2]]][Selection][[1]];
+        ,KBFTextEditor,
+        Evaluate[Extract[#,{1,2},Unevaluated$]] = #[[2,1]][GetText[{"1.0","end"}]][1,-2];
+        ,KBFCursorEntry,
+        Evaluate[Extract[#,{1,2},Unevaluated$]] = w[#[[2]]]@Value[];
+        ];
+      )&,lv];],r=Null];
+  f[Close] := None; f[Close];
+  Update[IdleTasks];
+  r
+];
+
+KBFMessageBox[s_String, opt___] := Module[{wf,w,f1,fb,bmp,msg,f,b,i,r,bm,maxch,
+  {items,title,bm,fn,rem}=SwitchCases[Override[opt,Title->KBF$AppName//" Message",Bitmap->"info"],
+    {Rule[Items|Buttons,_],Rule[Title,_],Rule[Bitmap,_],Rule[Font,_],_}]},
+  wf = KBDialogFrame[Title/.title, w, title];
+  f = Frame[w, PadX->15, PadY->5];
+  bm = Bitmap/.bm;
+  bmp = TextLabel[f, Bitmap->bm, Side->"left", PadX->5];
+  msg = TextLabel[f, Text->s, rem, Justify->"left", Side->"left", PadX->5, fn, Font->TextFont[$DefaultSerifFont,14]];
+  f1 = Frame[w, Fill->"x", Height->2, BD->2, Relief->"sunken"];
+  fb = Frame[w,PadY->2];
+  If [items<=>{},
+    i=0;
+    maxch = Max[Map[StringLength, items[[1,2]]]];
+    Scan[(i++;
+      With[{i},
+        b[i] =
+          Button[fb,Text->#,Side->"left",BD->1,Width->maxch,fn,
+            Command:>TkReturn[i]]])&
+    ,!List
+      items[[1,2]]
+    ];
+  ,!Else
+    b = Button[fb,Text->"OK",BD->1,Width->6,Command:>TkReturn[1]];
+  ];
+  Update[IdleTasks];
+  r = TkWait[];
+  wf[Close];
+  Update[IdleTasks];
+  r
+];
+
+Protect[KBFOptionDialog,KBFMessageBox];

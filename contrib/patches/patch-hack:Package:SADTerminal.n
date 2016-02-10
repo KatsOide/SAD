@@ -1,0 +1,13 @@
+Index: Packages/SADTerminal.n
+===================================================================
+--- Packages/SADTerminal.n	(revision 627)
++++ Packages/SADTerminal.n	(working copy)
+@@ -19,6 +19,8 @@
+     InsertText[""];
+     Bind[text,"<Key-KP_Enter>",Send[]];
+     Bind[text,"<Key-Return>",Send[],Break->True];
++    Bind[text,"<Key-Up>",RecallHistory[1],Break->True];
++    Bind[text,"<Key-Down>",RecallHistory[-1],Break->True];
+     Bind[text,"<Control-Key-Up>",RecallHistory[1],Break->True];
+     Bind[text,"<Control-Key-Down>",RecallHistory[-1],Break->True]
+     );

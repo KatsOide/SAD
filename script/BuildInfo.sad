@@ -1,0 +1,11 @@
+FFS;
+
+DumpBuildInfo[] := With[{maxlen = Max[StringLength/@BuildInfo[]]},
+  Print["Build Information"];
+  Scan[With[{s = #}, Print[
+    StringFill[s, " ", maxlen + 2], BuildInfo[s]]]&, BuildInfo[]];
+  Exit[]];
+
+DumpBuildInfo[];
+
+! End of File

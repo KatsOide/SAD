@@ -1,0 +1,13 @@
+FFS;
+
+m=Get["/Users/oide/SAD/oldsad/sad/QC1LPm"];
+
+mi=Inverse[m]
+lm=Length[m];
+d=DiagonalMatrix[lm];
+
+MinMax[m.mi-d]
+
+
+
+

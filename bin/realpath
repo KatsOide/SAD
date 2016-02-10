@@ -1,0 +1,12 @@
+#!/bin/sh
+[ "x$1" != x ] && if [ -d "$1" ]; then
+    { cd "$1" ; pwd -P ; }
+else
+    base=`basename "$1" 2>/dev/null`
+    dir=`dirname "$1" 2>/dev/null`
+    if [ -d "$dir" ]; then
+	{ cd "$dir" ; pwd -P | tr \\n / ; } ; echo $base
+    else
+	$0 $dir | tr \\n / ; echo $base
+    fi
+fi

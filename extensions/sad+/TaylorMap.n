@@ -1,0 +1,274 @@
+!
+! TaylorMap(Differential Algebra) Support Library
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: TaylorMap.n,v 1.1 2006/09/12 04:30:27 amorita Exp $
+! Style:      Class Module
+! Require:    
+!
+
+! <<< TaylorMap$ class >>>
+TaylorMap$=Class[{},
+  {
+    DAEnginePath, DAEngineName="sadp.exe",
+
+    FringeDirectionConversionTable = {
+      ("FRINGE"->1)->("FRINGE"->2), ("FRINGE"->2)->("FRINGE"->1)},
+
+    EdgeDirectionConversionTable = {
+      "AE1"->-"AE2", "AE2"->-"AE1", "E1"->"E2", "E2"->"E1"},
+
+    ComponentDirectionConversionTable = {"ANGLE", "ROTATE",
+      "VOLT", "V1",  "V20",  "V11", "V02",
+      "SK0" , "K1",  "SK2",  "K3",  "SK4",  "K5",  "SK6",  "K7",
+      "SK8",  "K9",  "SK10", "K11", "SK12", "K13", "SK14", "K15",
+      "SK16", "K17", "SK18", "K19", "SK20", "K21"},
+
+    BeamLineElementScaleTable = {
+      "K0",  "SK0",  "K1",  "SK1",  "K2",  "SK2",  "K3",  "SK3",
+      "K4",  "SK4",  "K5",  "SK5",  "K6",  "SK6",  "K7",  "SK7",
+      "K8",  "SK8",  "K9",  "SK9",  "K10", "SK10", "K11", "SK11",
+      "K12", "SK12", "K13", "SK13", "K14", "SK14", "K15", "SK15",
+      "K16", "SK16", "K17", "SK17", "K18", "SK18", "K19", "SK19",
+      "K20", "SK20", "K21", "SK21",
+      "VOLT", "V1", "V20", "V11", "V02",
+      "L", "ANGLE"},
+
+    BeamLineTranslationTable = {
+      (* ElementType -> {ElementType*,	{components}} *)
+
+      "DRIFT"->{"Drift",
+	{"L", "DISKIN", "COUPLE", "RADIUS"}},
+
+      "BEND"->{"Bend",
+	{ "L", "ANGLE", "E1", "E2", "ROTATE",
+	  "DISRAD", "K1", "DX", "DY", "K0",
+	  "DISFRIN", "EPS", "RANKICK", "F1", "FRINGE",
+	  "COUPLE", "DROTATE", "AE1", "AE2"}},
+
+      "QUAD"->{"Quad",
+	{ "L", "K1", "ROTATE", "DX", "DY",
+	  "DISRAD", "ACHROMA", "DISFRIN", "F1", "F2",
+	  "FRINGE", "EPS", "DISKIN", "COUPLE"}},
+
+      "SEXT"->{"Sext",
+	{ "L", "K2", "ROTATE", "DX", "DY",
+	  "DISRAD", "DISFRIN", "COUPLE"}},
+
+      "OCT"->{"Octu",
+	{ "L", "K3", "ROTATE", "DX", "DY",
+	  "DISRAD", "DISFRIN", "COUPLE"}},
+
+      "CAVI"->{"Cavity",
+	{ "L", "VOLT", "HARM", "PHI", "FREQ",
+	  "RANVOLT", "RANPHASE", "LWAKE", "TWAKE", "DX",
+	  "DY", "ROTATE", "V1", "V20", "V11",
+	  "V02", "COUPLE", "DPHI"}},
+
+      "BEAMBEAM"->{"IP",
+	{ "AX", "BX", "AY", "BY", "R1",
+	  "R2", "R3", "R4", "EX", "EPX",
+	  "EY", "EPY", "ZX", "ZPX", "ZY",
+	  "ZPY", "DX", "DPX", "DY", "DPY",
+	  "XANGLE", "EMITX", "EMITY", "DP", "AZ",
+	  "DZ", "SIGZ", "SLICE", "NP", "STURN",
+	  "R11", "R12", "R13", "R14", "R15",
+	  "R16", "R22", "R23", "R24", "R25",
+	  "R26", "R33", "R34", "R35", "R36",
+	  "R44", "R45", "R46", "R55", "R56",
+	  "R66", "COUPLE"}},
+
+      (* Incomplete conversion *)
+      "MULT"->{"Quad",
+	{ "L", "K1", "ROTATE", "DX", "DY",
+	  "DISRAD", 0, "DISFRIN", "F1", "F2",
+	  "FRINGE", "EPS", 0, "COUPLE"}},
+
+      (* Not implemented on sad+ engine *)
+      "TCAVI"->Null, "SOL"->Null, "MAP"->Null,
+
+      (* Zero length element *)
+      "MONI"->Null, "MARK"->Null, ""->Null}
+    },
+  {
+    },
+
+  CheckDAEnginePath[] := If[Not[StringQ[DAEnginePath]], With[{
+    found = Library@FindModule[DAEngineName]},
+    If[fount === $Failed, False, DAEnginePath = found; True]], True];
+
+  GetBeamLineElement[elm:(_Real|_String)] := {
+    LINE["NAME", elm], LINE["TYPENAME", elm], LINE["DIR", elm],
+    Map[(#->LINE[#, elm])&, Element["KEYWORDS", LINE["ELEMENT", elm]]]};
+
+  ReverseBeamLineElement[{name_String, type_String, dir_Real, val_List}]
+  := Module[{eval},
+    (* Reverse edge angles *)
+    eval = Map[With[{src = #[[1]], dst = #[[2]]},
+      If[RealQ[src/.val], src->(dst/.val), Null[]]]&,
+      EdgeDirectionConversionTable];
+
+    (* Reverse components *)
+    cval = Map[With[{comp = #},
+      If[RealQ[comp/.val], comp->-(comp/.val), Null[]]]&,
+      ComponentDirectionConversionTable];
+
+    {name, type, -dir,
+      Override[eval, cval, val]/.FringeDirectionConversionTable}];
+
+  CutBeamLineElement[{name_String, type_String, dir_Real, val_List}, cut$_Real]
+  := Module[{cut = cut$ * dir, scale = 1 - Abs[cut$], eval, fval, sval},
+    (* Fix fringe flags *)
+    fval = Switch[{type, Sign[cut], "FRINGE"/.val},
+      {"BEND", _, _}, {},
+      {_, +1, 3}, {"FRINGE"->2}, {_, +1, 1}, {"FRINGE"->0},
+      {_, -1, 3}, {"FRINGE"->1}, {_, -1, 2}, {"FRINGE"->0},
+      _, {}];
+
+    (* Fix edge angles *)
+    eval = First[SwitchCases[val, {"E1"|"E2"|"AE1"|"AE2"->_}]]/.If[cut > 0,
+      { ("E1"->_Real)->("E1"->0), ("AE1"->_Real)->("AE1"->0),
+	("E2"->e2_Real)->("E2"->e2 / scale)},
+      { ("E2"->_Real)->("E2"->0), ("AE2"->_Real)->("AE2"->0),
+	("E1"->e1_Real)->("E1"->e1 / scale)}];
+
+    (* Scaling length dependent variables *)
+    sval = MapThread[If[RealQ[#2], #1->scale * #2, Null[]]&,
+      {BeamLineElementScaleTable, BeamLineElementScaleTable/.val}];
+
+    {name, type, dir, Override[sval, eval, fval, val]}];
+
+  DumpBeamLine[begin:(_Real|_String), end:(_Real|_String), op___Rule]
+  := Module[{beamline, pBegin, pEnd, oBegin, oEnd, turns,
+    opt = Override[op, Normalize->False, Revolution->0]},
+    turns = Revolution/.opt; turns = If[RealQ[turns], Max[0, Round[turns]], 0];
+
+    pBegin = LINE["POSITION", begin]; pEnd = LINE["POSITION", end];
+    If[Not[RealQ[pBegin] && RealQ[pEnd]], Return[$Failed]];
+
+    (* Calculate offset number of begin/end elements *)
+    {oBegin, oEnd} = Map[With[{pos = #[[2]], L = LINE["L", #[[2]]],
+      ds = LINE["S", #[[1]]] - LINE["S", #[[2]]]},
+      If[L > 0, Restrict[ds / L, 0, 1], 0]]&, {{begin, pBegin}, {end, pEnd}}];
+
+    (* Expand element position list *)
+    beamline = Join[
+      RotateLeft[Flatten[Table[Range[LINE["LENGTH"]-1], {turns}]], pBegin - 1],
+      If[pBegin + oBegin < pEnd + oEnd,
+	Table[pos, {pos, pBegin, If[oEnd > 0, pEnd, pEnd - 1]}],
+	Join[Table[pos, {pos, pBegin, LINE["LENGTH"] - 1}],
+	  Table[pos, {pos, 1, If[oEnd > 0, pEnd, pEnd - 1]}]]]];
+
+    (* Expand element type & value... *)
+    beamline = GetBeamLineElement/@beamline;
+
+    If[oBegin > 0,
+      beamline = Prepend[Drop[beamline, 1],
+	CutBeamLineElement[First[beamline], oBegin]]];
+    If[oEnd > 0,
+      beamline = Append[Drop[beamline, -1],
+	CutBeamLineElement[Last[beamline], oEnd - 1]]];
+
+    (* Normalize reversed elements *)
+    If[Normalize/.opt, beamline = Map[With[{elm = #, dir = #[[3]]},
+      If[dir > 0, elm, ReverseBeamLineElement[elm]]]&, beamline]];
+
+    beamline];
+
+  TranslateBeamLine[begin:(_Real|_String), end:(_Real|_String), op___Rule]
+  := TranslateBeamLine[DumpBeamLine[begin, end, Normalize->True, op]];
+
+  TranslateBeamLine[beamline_List] :=
+    Map[With[{name = #[[1]], type = #[[2]], dir = #[[3]], val = #[[4]],
+      translation = #[[2]]/.BeamLineTranslationTable},
+      If[dir < 0, $Failed, Switch[translation,
+	Null, Null[], (* Removable zero-length element *)
+	_List, StandardForm[StringJoin[First[translation], " ",
+	  name, "=(", Second[translation]/.val, ");"]],
+	_, $Failed]]]&, beamline];
+
+  (* Generate TaylorMap of selected BeamLine *)
+  (*  Result: $Failed(failure case)
+    *         List of Taylor Map of x, Px, y, Py, z, Pz coordinates
+    *
+    *         Taylor Map  := List of Taylor Term
+    *         Taylor Term := {coefficient, n_x, n_Px, n_y, n_Py, n_z, n_Pz}
+    *         n_foo       := polynomial order of foo coordinate
+    *)
+
+  TaylorMap[begin:(_Real|_String), end:(_Real|_String), op___Rule]
+  := Module[{taylormap, beamline, temp, cmdExec, line,
+    order, opt = Override[op, Order->1]},
+
+    If[Not[CheckDAEnginePath[]], Return[$Failed]];
+
+    (* Decode options... *)
+    order = Order/.opt; order = If[RealQ[order], Max[1, Round[order]], 1];
+
+    (* Translate BeamLine object *)
+    beamline = TranslateBeamLine[begin, end, op];
+    If[Select[beamline, # === $Failed&, 1] <=> {}, Return[$Failed]];
+
+    (* Create temporary file *)
+    temp = MkSecureTemp[Prefix->"SAD+DA", Suffix->"lattice"];
+    If[temp === $Failed, Return[$Failed]];
+
+    With[{fp = OpenWrite[temp]},
+      If[fp === $Failed, System["rm -f "//temp]; Return[$Failed]];
+
+      (* Setup beam energy *)
+      With[{energy = Sqrt[MASS^2 + MOMENTUM^2]},
+	StandardForm[Write[fp,
+	  "Beam BEAM=(energy=", energy / 1e9, ");"]];
+
+      (* Write down lattice information *)
+      StandardForm[Scan[Write[fp, #]&, beamline]];
+
+      Close[fp]]];
+
+    (* Execute external command: Ohmi's SAD+ differential algebra engine *)
+    cmdExec = StandardForm[StringJoin[
+      DAEnginePath, " ", temp, " ", order, " ", "2>/dev/null"]];
+
+    taylormap = Block[{x, p, y, q, z, e, nan = NaN, inf = Inf},
+      With[{fp = OpenRead["!"//cmdExec]}, If[fp === $Failed, $Failed,
+	(* Skip output header structure... *)
+	While[line = Read[fp, String]; line <=> EndOfFile
+	  && Not[StringMatchQ[line, "*map_da print out*"]], ];
+	Check[Read[fp, 6 * Expression];	Close[fp]; {x, p, y, q, z, e},
+	  Close[fp]; $Failed]]]];
+ 
+    If[Union[Head/@taylormap] <=> {List}, taylormap = $Failed];
+
+    (* Unlink temporary file *)
+    System["rm -f "//temp];
+
+    (* TaylorMap coefficient format translation *)
+    If[taylormap <=> $Failed,
+      (*  Structure of Ohmi's TaylorMap
+	* TaylorMap: Coefficent list of {x, Px, y, Py, z, Pz} variables
+	* Coefficient list: {{maximum order, number of variables},
+	*     {{order of term, order of variables, ...}, coefficent}, ...}
+	* Variable sequence in Coefficient list: x, y, z, Px, Py, Pz
+	*)
+      taylormap = Check[Map[With[{header = First[#], body = Rest[#]},
+	Map[With[{k = Second[#], Ntot = #[[1,1]],
+	  Nx =  #[[1,2]],  Ny = #[[1,3]],  Nz = #[[1,4]],
+	  Npx = #[[1,5]], Npy = #[[1,6]], Npz = #[[1,7]]},
+	  {k, Nx, Npx, Ny, Npy, Nz, Npz}]&, body]]&, taylormap], $Failed]];
+
+    taylormap];
+
+  ];
+! >>> TaylorMap$ class <<<
+
+(* Define Global Namespace function: TaylorMap[] *)
+Unprotect[TaylorMap];
+Clear[TaylorMap];
+
+TaylorMap[begin:(_Real|_String), end:(_Real|_String),
+  op___Rule] := TaylorMap$@TaylorMap[begin, end, op];
+
+Protect[TaylorMap];
+
+! End of File

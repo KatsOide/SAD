@@ -1,0 +1,776 @@
+FFS;
+
+w = KBMainFrame["SADInspect",f,Title->"SAD Inspector []"];
+SI$StartInspect[];
+Print["SAD Inspect Ver. 0.9"];
+w[ExitCommand] := ShutDownConnection[];
+w[AboutMessage] = "SAD Inspector Ver. 0.9\nby N.Akasaka";
+mbt = KBFAddMenuButton[w,Text->"Target",Underline->0];
+mt = Menu[mbt, PostCommand:>MakeTaskMenu[]];
+fnt = Font->TextFont["courier",12];
+bd = BD->1;
+sb = SelectBackground->"wheat";
+bic = SelectColor->"limegreen";
+bir = SelectColor->"coral";
+bg = BG->"white";
+rel = Relief->"sunken";
+sbw = SelectBorderWidth->0;
+ov = OverrideRedirect->True;
+dis = State->"disabled";
+srchstr = "=Widget";
+vwatexp = "";
+vsrdir = True;
+vsrreg = True;
+vsrcas = True;
+vlssym = True;
+vtclf = False;
+
+f1 = Frame[f,Fill->"x"];
+f1b = Frame[f1,Side->"left",Fill->"y"];
+f1bd = Frame[f1b,Fill->"y",Expand->True];
+f1bu = Frame[f1b,Fill->"x",bd,rel,PadX->2,PadY->2];
+rblssym = RadioButton[f1bu,Text->"Symbol",Variable:>vlssym,Value->True,Side->"left",bd,Command:>MakeSymList[]];
+rblswdg = RadioButton[f1bu,Text->"Widget",Variable:>vlssym,Value->False,Side->"left",bd,Command:>MakeSymList[]];
+sbsym = ScrollBar[f1bd,Orient->"vertical",Side->"left",Fill->"y",Width->10,bd];
+lbsym = ListBox[f1bd,Width->20,Side->"left",Fill->"y",YScrollCommand:>sbsym[Set],bd,fnt,sb];
+f1a = Frame[f1,Fill->"both",Expand->True];
+f1au = Frame[f1a,Fill->"x",bd,rel];
+bsrch = Button[f1au,Side->"left",Text->"Search",bd,Command:>Search[]];
+esrch = Entry[f1au,Fill->"x",Expand->True,fnt,Side->"left",bd,bg,TextVariable:>srchstr];
+rbsrdirf = RadioButton[f1au,Text->"forward",Variable:>vsrdir,Value->True,Side->"left",bd,bir];
+rbsrdirb = RadioButton[f1au,Text->"backward",Variable:>vsrdir,Value->False,Side->"left",bd,bir];
+cbsrreg = CheckButton[f1au,Text->"regexp",Variable:>vsrreg,Side->"left",bd,bic];
+cbsrcas = CheckButton[f1au,Text->"case sens.",Variable:>vsrcas,Side->"left",bd,bic];
+f1ad = Frame[f1a,Fill->"both",Expand->True];
+sbdef = ScrollBar[f1ad,Orient->"vertical",Side->"left",Fill->"y",Width->10,bd];
+tedef = TextEditor[f1ad,Height->15,Width->80,bd,Fill->"x",fnt,Expand->True,YScrollCommand:>sbdef[Set],dis,sb,sbw];
+f2 = Frame[f,Fill->"both",Expand->True];
+f2l = Frame[f2,Side->"left",Fill->"y"];
+sbedv = ScrollBar[f2l,Orient->"vertical",Side->"left",Fill->"y",Width->10,bd];
+sbedh = ScrollBar[f2l,Orient->"horizontal",Side->"bottom",Fill->"x",Width->10,bd];
+teed = TextEditor[f2l,Height->20,Width->35,Fill->"y",Side->"left",XScrollCommand:>sbedh[Set],YScrollCommand:>sbedv[Set],Wrap->"none",fnt,bd,sb,sbw];
+f2r = Frame[f2,Side->"left",Fill->"both",Expand->True];
+sbdbgv = ScrollBar[f2r,Orient->"vertical",Side->"left",Fill->"y",Width->10,bd];
+sbdbgh = ScrollBar[f2r,Orient->"horizontal",Side->"bottom",Fill->"x",Width->10,bd];
+tedbg = TextEditor[f2r,Height->10,Width->20,Side->"top",Fill->"both",Expand->True,YScrollCommand:>sbdbgv[Set],XScrollCommand:>sbdbgh[Set],State->"disabled",Wrap->"none",fnt,bd,sb,sbw];
+f4 = Frame[f,Fill->"x",bd,rel];
+f3 = Frame[f,Fill->"x"];
+f3l = Frame[f3,Fill->"both",Side->"left",Expand->True];
+sbres = ScrollBar[f3l,Orient->"vertical",Side->"left",Fill->"y",Width->10,bd];
+teres = TextEditor[f3l,Height->6,Fill->"both",Expand->True,YScrollCommand:>sbres[Set],fnt,bd,sb,sbw,dis];
+f3r = Frame[f3,Side->"left"];
+f3ru = Frame[f3r,bd,rel];
+bwatadd = Button[f3ru,Side->"left",Text->"Ins",Command:>AddWatch[],bd];
+ewat = Entry[f3ru,Fill->"x",Expand->True,fnt,Side->"left",bd,bg,TextVariable:>vwatexp];
+bwatdel = Button[f3ru,Side->"left",Text->"Del",Command:>DelWatch[],bd];
+f3rd = Frame[f3r,Fill->"x"];
+sbwat = ScrollBar[f3rd,Orient->"vertical",Side->"left",Fill->"y",Width->10,bd];
+tewat = TextEditor[f3rd,Height->8,Width->20,Fill->"x",YScrollCommand:>sbwat[Set],fnt,bd,sb,sbw];
+cbtclf = CheckButton[f4,Side->"left",Text->"Tcl format",Variable:>vtclf,SelectColor->"aquamarine",BD->1,HighlightThickness->0,Command:>EditClear[]];
+bshow = Button[f4,Side->"left",Text->"Show",Command:>GetWidgetGeometry[],bd,dis];
+bpick = Button[f4,Side->"left",Text->"Pick",Command:>PickWindow[],bd,dis];
+bclr = Button[f4,Side->"left",Text->"Clear",Command:>EditClear[],bd];
+bsend = Button[f4,Side->"left",Text->"Send",Command:>SendCommand[],bd,dis];
+braise = Button[f4,Side->"left",Text->"Raise",Command:>CheckSend[appname,KBFRaise[]],dis,bd];
+bmark = Button[f4,Side->"right",Text->"Mark",Width->6,Command:>MarkFunction[],bd,dis];
+bsetbp = Button[f4,Side->"right",Text->"Set BP",Width->7,Command:>ToggleBP[],bd,dis];
+bedit = Button[f4,Side->"right",Text->"Edit",Width->4,Command:>EditFunction[],bd,dis];
+bstep = Button[f4,Side->"right",Text->"Step",Command:>StepExecute[],bd,dis];
+binto = Button[f4,Side->"right",Text->"Into",Command:>StepInto[],bd,dis];
+bgo = Button[f4,Side->"right",Text->"Go",Command:>Go[],bd,dis];
+
+w[StatusLine] = {lbsym, "List of symbols"};
+w[StatusLine] = {tedef, "Definition of a symbol"};
+w[StatusLine] = {teed, "TextEditor for preparation of sending command"};
+w[StatusLIne] = {tedbg, "Debugging window"};
+w[StatusLine] = {teres, "Display of the result of the sent command"};
+w[StatusLine] = {tewat, "Display of the values of the watch expressions"};
+
+Bind[lbsym,"<ButtonRelease-1>", SelectSymbol[]];
+
+SelectSymbol[] := Module[{l},
+  l = lbsym[Selection];
+  If [l<=>{},
+    With[{w=lbsym[GetText[l[[1]]]]},
+      currsym = w;
+      GetDefinition[w];
+      If [vlssym, vwatexp=w,GetWindowOpts[w]];
+    ];
+  ];
+];
+
+StepExecute[] := (
+  ResetCurrentBPLine[];
+  CheckSend[appname,SI$Mode=SI$Step;SI$Stop=False];
+);
+StepInto[] := (
+  ResetCurrentBPLine[];
+!  CheckSendCallback[appname,SI$,Apply[MarkFunction,Com$Result]];
+  CheckSend[appname,SI$GetSymFunc[]];
+  CheckSend[appname,SI$Mode=SI$Step;SI$Stop=False];
+);
+Go[] := (
+  ResetCurrentBPLine[];
+  CheckSend[appname,SI$Mode=Null;SI$Stop=False];
+);
+ResetCurrentBPLine[] := (
+  bstep[State] = "disabled";
+  binto[State] = "disabled";
+  bgo[State] = "disabled";
+  bedit[State] = "normal";
+  If [currbpline<=>{,},
+    If [MemberQ[bptags[dbgfunc],currbpline[[2]]],
+      tedbg[Tag$Configure] = {currbpline[[2]],Foreground->"cornflowerblue"};
+    ,!Else
+      tedbg[Tag$Configure] = {currbpline[[2]],Foreground->"black",Underline->False};
+    ];
+  ];
+  currbpline = {,};
+);
+
+ShutDownConnection[] := 
+  If [CheckApp[],
+    CheckSend[appname,SI$Mode=Null;SI$Stop=False];
+    CheckSend[appname, SI$StopInspect[]];
+    Send$PropertyConnection[appname]
+  ];
+
+GetWidgetGeometry[] := With[{cw=currwidget},
+  CheckSendCallback[appname,
+    ToExpression[
+      "{WidgetInfo["//cw//",RootX],WidgetInfo["//cw//",RootY],"//
+        "WidgetInfo["//cw//",Width],WidgetInfo["//cw//",Height]}"
+    ]
+  ,Apply[ShowWidget,Com$Result]];
+];
+
+ShowWidget[x_,y_,w_,h_] := (
+  With[{cw=currwidget},CheckSend[appname,ToExpression["TkWidget[WidgetInfo["//cw//",TopLevel]][Raise]"]]];
+  wtl = Window[,Width->2,Height->h,ov,BG->"red"];
+  wtl[Geometry] = "+"//(x-2)//"+"//y;
+  wtt = Window[,Width->w+4,Height->2,ov,BG->"red"];
+  wtt[Geometry] = "+"//(x-2)//"+"//(y-2);
+  wtr = Window[,Width->2,Height->h,ov,BG->"red"];
+  wtr[Geometry] = "+"//(x+w)//"+"//y;
+  wtb = Window[,Width->w+4,Height->2,ov,BG->"red"];
+  wtb[Geometry] = "+"//(x-2)//"+"//(y+h);
+  wtlist = {wtl,wtt,wtr,wtb};
+  After[0.1,Scan[(#[Raise])&,wtlist]];
+!  After[0.05,Scan[(#[Raise])&,wtlist];SimRainbow[0]];
+  After[1,Scan[(#[BG]="blue")&,wtlist];After[1,Apply[DeleteWidget,wtlist]]];
+);
+
+SimRainbow[v_] := (
+  Scan[(#[BG]=RainbowColor[v])&,wtlist];
+  If[v<1,
+    After[0.05,SimRainbow[v+.05]];
+  ,!Else
+    Apply[DeleteWidget,wtlist];
+  ];
+);
+RainbowColor[v_] := RGBColor[1-2*v,1-2*Abs[v-.5],2*v-1];
+
+CheckSend[app_,comm_] := If [CheckApp[True], Send[app,comm]];
+CheckSendCallback[app_,comm_,cb_] := 
+  If [CheckApp[True], SendCallback[app,comm,cb]];
+SetAttributes[{CheckSend,CheckSendCallback},HoldRest];
+
+CheckApp[b_:False] := (
+  If [(appname===Null)||~MemberQ[AppNames[],appname],
+    If [b, KBFMessageBox[If[appname===Null,
+      "Target application is not set.","Target application has gone away."],
+        Bitmap->"error"];
+    ];
+    If [appname<=>Null, ResetSADInspect[]];
+    False
+  ,!Else
+    True
+  ]
+);
+
+ResetSADInspect[] := (
+  bpick[State] = "disabled";
+  bshow[State] = "disabled";
+  bsend[State] = "disabled";
+  braise[State] = "disabled";
+  bmark[State] = "disabled";
+  bmark[Text] = "Mark";
+  bedit[State] = "disabled";
+  bedit[Text] = "Edit";
+  lbsym[Delete] = {1,"end"};
+  DefClear[];
+  EditClear[];
+  DebugClear[];
+  ResultClear[];
+  ResetVariables[];
+  w[Title] = "SAD Inspector []";
+);
+
+ResetVariables[] := (
+  appname = Null;
+  newwidget = Null;
+  currwidget = Null;
+  currsym = Null;
+  currfunc = Null;
+  dbgfunc = Null;
+  currbpline = {,};
+  currcsrline = Null;
+  currwatline = Null;
+  symlist = {};
+  watchlist = {};
+  watchres = {};
+  ncbed = 0;
+  Clear[bptags];
+  Clear[marked];
+  marked[_] = Null;
+  binedit = False;
+);
+
+PickWindow[] := (
+  If [~CheckApp[True],Return[]];
+  w[Grab$Set$Global];
+  Bind[w[$Window],"<ButtonRelease-1>",FindWindow[]];
+  CheckSend[appname,KBFRaise[]];
+  TkWait[];
+  Bind[w[$Window],"<ButtonRelease-1>",Null];
+  w[Grab$Release];
+  XFlush[];
+);
+
+FindWindow[] := Module[{anl},
+!  Print[{XRoot,YRoot}/.$Event];
+  With[{s="winfo containing "//(XRoot/.$Event)//" "//(YRoot/.$Event)},
+!    CheckSendCallback[appname,TkWidget[TclReturn[s,String]],CheckWindow[]];
+    CheckSendCallback[appname,
+      Module[{sn=TkWidget[TclReturn[s,String]]},
+        If[sn<=>"",
+          With[{sns=Extract[sn,{1},Unevaluated$]},
+            {ToString[sns,HoldForm],
+              If [Head[Unevaluated[sns]]===Symbol,
+                ToString[sns,HoldForm]
+              ,!Else
+                ToString[Head[Unevaluated[sns]]]
+              ]}
+          ]
+        ,{}]
+      ]
+    ,CheckWindow[]];
+  ];
+  TkReturn[1];
+];
+
+CheckWindow[] := (
+!Print[Com$Result];
+!Print[symlist];
+!Print["chkwin"];
+  If [Com$Result <=> "",
+    newwidget = Com$Result[[1]];
+    GetDefinition[Com$Result[[1]],False];
+    GetWindowOpts[Com$Result[[1]]];
+    (If[#<=>{},lbsym[Select$Clear]={1,"end"};lbsym[Select$Set]=#[[1,1]];lbsym[YView]=#[[1,1]]])&[Position[symlist,Com$Result[[If[vlssym,2,1]]]]];
+  ,!Else
+    KBFMessageBox["You missed the window !!",Bitmap->"info"];
+  ];
+);
+
+Search[] := Module[{p1,p2},
+  p1 = TclReturn[TkPathName[tedef]//" search"//If[~vsrdir," -backwards",""]//If[vsrreg," -regexp",""]//If[~vsrcas," -nocase",""]//" -count tmpcount -- {"//srchstr//"} insert",String];
+  If [p1=="", KBFMessageBox["Search String not Found !",Bitmap->"error"];Return[];];
+  p2 = p1//" +"//TclReturn["expr $tmpcount",Real]//" chars";
+  tedef[Tag$Remove] = {"sel","1.0","end"};
+  tedef[Tag$Add] = {"sel",p1,p2};
+  TclEval[TkPathName[tedef]//" mark set insert {"//If[vsrdir,p2,p1]//"}"];
+  tedef[See] = p1;
+];
+
+DisplayResult[s_] := (
+!Print[{s}];
+  teres[State] = "normal";
+  teres[Delete] = {"1.0","end"};
+  teres[Insert] = {"end",If[#==="","\"\"",#]&@ToString[s]};
+  teres[State] = "disabled";
+);
+
+SendCommand[] := (
+  ResultClear["Waiting for an answer....."];
+  If [vtclf,
+    With[{t=teed[GetText[{"1.0","end"}]]},
+      CheckSendCallback[appname,
+        TclReturn[t,String], DisplayResult[Com$Result]];
+    ];
+  ,!Else
+    If [ncbed > 0,
+      Module[{s=""},
+        Do[
+          If[ved[n], s = s//","//teed[GetText[{(n+1)//".1",(n+1)//".end"}]]];
+        ,{n,ncbed}];
+!        Print[s];
+        If [s<>"", With[{cs="Configure["//currwidget//s//"]"},
+          CheckSendCallback[appname, ToExpression[cs], DisplayResult[Com$Result]]
+        ]];
+      ];
+    ,!Else
+      With[{t=teed[GetText[{"1.0","end"}]]},
+        CheckSendCallback[appname, ToExpression[t], DisplayResult[Com$Result]];
+      ];
+    ];
+  ];
+);
+
+GetDefinition[sn_] := GetDefinition[sn,vlssym];
+GetDefinition[sn_,b_] := With[{sn,b},
+!Print["getdef"];
+  DefClear["Waiting for an answer....."];
+!  If [vlssym, currsym = sn; currfunc = Null];
+  If [vlssym,
+    currsym = sn; currfunc = Null;!Print[{"sn",sn}];
+    CheckSendCallback[appname, SI$MakeDefList[ToExpression["Definition["//sn//"]"]],
+      DisplayDefinition[Com$Result]];
+  ,!Else
+    CheckSendCallback[appname, SI$MakeDefList[sn,b],
+      DisplayDefinition[Com$Result]];
+  ];
+];
+
+DisplayDefinition[d_] := Module[{dh,lhsl,i=0,tag1,tag2,tagw=Null},
+!Print[{"dispdef",d}];
+  DefList = d;
+  Clear[deftag];
+  tedef[State] = "normal";
+  tedef[Delete] = {"1.0","end"};
+  Scan[(
+    i++;
+    tag1 = "ldef"//i;
+    tag2 = "rdef"//i;
+    deftag[#[[1]]] = tag1;
+    tedef[Insert] = {"end",#[[1]],tag1};
+    tedef[Insert] = {"end",#[[2]]//"\n",tag2};
+    tedef[Tag$Configure] = {tag1,Foreground->If[marked[#[[1]]]<=>Null,"tomato","mediumblue"],Underline->True};
+    If [#[[1]]==newwidget,
+      tagw = tag1;
+      tedef[Tag$Add] = {"sel",tag1//".first",tag2//".last -1 chars"};
+    ];
+    Bind[tedef,"<ButtonRelease-1>",SelectDef[Tag/.$Event],Tags->tag1];
+  )&,d];
+  If [tagw<=>Null,tedef[See] = tagw//".first"];
+  tedef[State] = "disabled";
+  newwidget = Null;
+];
+
+SelectDef[t_] := Module[{tr,rtxt,wn,dn,sn},
+!  dn = ToExpression[t[5,-1]];
+  tr = "r"//t[2,-1];
+  tedef[Tag$Remove] = {"sel","1.0","end"};
+  tedef[Tag$Add] = {"sel",t//".first",tr//".last -1 chars"};
+  rtxt = tedef[GetText[{tr//".first",tr//".last -1 chars"}]];
+  dn = tedef[GetText[{t//".first",t//".last"}]];
+!  sn = lbsym[GetText[lbsym[Selection][[1]]]];
+  If [(StringLength[rtxt]>=9)&&(rtxt[1,9]==":=Widget["),
+    GetWindowOpts[dn];
+    bmark[State] = "disabled";
+  ,!Else
+    DecomposeFunction[currsym,dn];
+  ];
+];
+
+EditFunction[] := (
+  If [binedit,
+    binedit = False;
+    tedbg[State] = "disabled";
+    With[{t=StringReplace[tedbg[GetText[{"1.0","end"}]],"\n"->""]},
+!Print[{"t",t}];
+      CheckSend[appname, ToExpression[t]];
+    ];
+    bedit[Text] = "Edit";
+    w[Focus];
+  ,!Else
+    If [marked[dbgfunc]<=>Null, MarkFunction[]];
+    bedit[Text] = "Set";
+    tedbg[State] = "normal";
+    tedbg[Tag$Delete] = tedbg[Tag$Names];
+!    tedbg[Tag$Remove] = DeleteCases[tedbg[Tag$Names],"sel"];
+    binedit = True;
+    tedbg[Focus];
+  ];
+);
+
+MarkFunction[] := MarkFunction[currsym,dbgfunc];
+MarkFunction[cs_,cf_] := With[{cs,cf},
+  If [marked[cf]===Null,
+    marked[cf] = cs;
+    bptags[cf] = {};
+    tedef[Tag$Configure] = {deftag[cf],Foreground->"tomato"};
+    Send[appname, SI$MarkFunction[cs,cf]];
+    bmark[Text] = "UnMark";
+  ,!Else
+    marked[cf] = Null;
+    ClearBPListOf[cf];
+    tedef[Tag$Configure] = {deftag[cf],Foreground->"mediumblue"};
+    Send[appname, SI$UnMarkFunction[cf]];
+    bmark[Text] = "Mark";
+  ];
+];
+
+DecomposeFunction[sn_,dn_] := With[{sn,dn},
+!Print[{"dec",currfunc}];
+  CheckSendCallback[appname, SI$DecomposeFunction[sn,dn],
+    DisplayFunction[{},Com$Result]];
+  dispfunccomplete=False;
+  DebugClear["Waiting for an answer....."];
+  dbgfunc = dn;
+  binedit = False;
+  bedit[State] = "normal";
+  bmark[State] = "normal";
+  bmark[Text] = If [marked[dn]<=>Null, "UnMark", "Mark"];
+  bpincf = Cases[SI$BPList,{dn,_}];
+];
+
+DisplayFunction[pl_,s_] := Module[{pc,pcl,p,si,sii,cl,sp,ni="",tag,nt,tt},
+  If [pl==={},
+    tedbg[State] = "normal";
+    tedbg[Delete] = {"1.0","end"};
+!    Tk$Echo=1;
+  ];
+  Do[ni=ni//" ",{Length[pl]}];
+  si = Cases[s,{pl,_}][[1,2]];!Print[{pl,si}];
+  tag = "tedbg"//StringReplace[ToString[pl][2,-2],","->"_"];
+  nt = 1;
+  Scan[(
+    sp = 1;
+    sii = #;
+    pcl = StringPosition[#,"]"];
+    If [(p=StringPosition[#,"SI$Expr["])<=>{},
+      Scan[(
+        Do[If[(pc=pcl[[i,1]])>#[[2]],Break[]],{i,Length[pcl]}];
+        tedbg[Insert] = {"end", ni};
+        tt = If [(sp==1)&&(sii[#[[1]]-1]<>"="), tag//"_"//(nt++),"nobp"];
+        tedbg[Insert] = {"end", sii[sp,#[[1]]-1]//"(\n",tt};
+        Bind[tedbg,"<ButtonRelease-1>",SelectLine[Tag/.$Event],Tags->tt];
+        DisplayFunction[ToExpression["{"//sii[#[[2]]+1,pc-1]//"}"],s];
+        sp = pc+1;
+      )&,p];
+    ];
+    tedbg[Insert] = {"end", ni};
+    tt = If [sp==1, tag//"_"//(nt++), "nobp"];
+    tedbg[Insert] = {"end", If[sp>1,")",""]//#[sp,-1]//";\n",tt};
+    Bind[tedbg,"<ButtonRelease-1>",SelectLine[Tag/.$Event],Tags->tt];
+  )&,si];
+  tedbg[Delete] = {"end - 3 chars"};
+  If [pl==={},
+    tedbg[State] = "disabled";
+    dispfunccomplete=True;
+    If [marked[dbgfunc]<=>Null, DisplayFunction2[]];
+!    Tk$Echo=0;
+  ];
+];
+DisplayFunction2[] := (
+  Scan[(tedbg[Tag$Configure]={#, Foreground->"cornflowerblue",Underline->True})&,bptags[dbgfunc]];
+  If [currbpline<=>{,},
+    tedbg[Tag$Configure] = {currbpline[[2]],Foreground->If[MemberQ[bptags[dbgfunc],currbpline[[2]]],"violetred","tomato"],Underline->True};
+  ];
+);
+(*
+        If [(sp==1)&&(sii[#[[1]]-1]<>"="),
+          tt = tag//"_"//(nt++);
+          tedbg[Insert] = {"end", sii[sp,#[[1]]-1]//"\n",tt};
+          Bind[tedbg,"<ButtonRelease-1>",SelectLine[Tag/.$Event],Tags->tt];
+        ,!Else
+          tedbg[Insert] = {"end", sii[sp,#[[1]]-1]//"\n","nobp"};
+          Bind[tedbg,"<ButtonRelease-1>",SelectLine[Tag/.$Event],Tags->"nobp"];
+        ];
+*)
+(*
+    If [sp==1,
+      tt = tag//"_"//(nt++);
+      tedbg[Insert] = {"end", #[sp,-1]//";\n",tt};
+      Bind[tedbg,"<ButtonRelease-1>",SelectLine[Tag/.$Event],Tags->tt];
+    ,!Else
+      tedbg[Insert] = {"end", #[sp,-1]//";\n","nobp"};
+      Bind[tedbg,"<ButtonRelease-1>",SelectLine[Tag/.$Event],Tags->"nobp"];
+    ];
+*)
+
+SelectLine[tg_] := (
+!Print[tg];
+  If [binedit, Return[]];
+  tedbg[Tag$Remove] = {"currline","1.0","end"};
+  If [tg<=>"nobp",
+    currcsrline = tg;
+    tedbg[Tag$Add] = {"currline",tg//".first linestart",tg//".last"};
+    bsetbp[State] = "normal";
+    If [marked[dbgfunc]<=>Null,
+      bsetbp[Text] = If[~MemberQ[bptags[dbgfunc],tg],"Set BP","Unset BP"];
+    ,!Else
+      bsetbp[Text] = "Set BP";
+    ];
+  ,!Else
+    currcsrline = Null;
+    bsetbp[State] = "disabled";
+  ];
+  tedbg[Tag$Configure] = {"currline",Background->"lightyellow"};
+);
+
+ClearBPListOf[cf_] := (
+  CheckSend[appname,SI$ClearBPListOf[cf]];
+  SI$ClearBPListOf[cf];
+  bptags[cf] =.;
+);
+
+ToggleBP[] := Module[{ad},
+!Tk$Echo=1;
+  ad = {dbgfunc, If[currcsrline==="tedbg_1",{},
+           ToExpression["{"//StringReplace[currcsrline[6,-1],"_"->","]//"}"]]};
+  If [marked[ad[[1]]]===Null, MarkFunction[]];
+  If [~MemberQ[SI$BPList,ad],
+    SI$AddBP[ad];
+    bptags[dbgfunc] = Append[bptags[dbgfunc],currcsrline];
+    With[{ad},CheckSend[appname,SI$AddBP[ad]]];
+    tedbg[Tag$Configure] = {currcsrline, Foreground->If[currcsrline===currbpline[[2]],"violetred","cornflowerblue"],Underline->True};
+    bsetbp[Text] = "Unset BP";
+  ,!Else
+    SI$DeleteBP[ad];
+    bptags[dbgfunc]=DeleteCases[bptags[dbgfunc],currcsrline];
+    With[{ad},CheckSend[appname,SI$DeleteBP[ad]]];
+    If[currcsrline===currbpline[[2]],
+      tedbg[Tag$Configure] = {currcsrline, Foreground->"tomato",Underline->True};
+    ,!Else
+      tedbg[Tag$Configure] = {currcsrline, Foreground->"black",Underline->False};
+    ];
+    bsetbp[Text] = "Set BP";
+  ];
+!Tk$Echo=0;
+];
+
+SI$BPStop[ad_] := (!Print["stop at "//ad];
+  currbpline = {ad[[1]],"tedbg"//If[ad[[2]]==={},"_1",StringReplace[ToString[ad[[2]]][2,-2],","->"_"]]};
+!Print[{bptags[dbgfunc],currbpline}];
+  If [ad[[1]]===dbgfunc,
+    tedbg[Tag$Configure] = {currbpline[[2]],Foreground->If[MemberQ[bptags[dbgfunc],currbpline[[2]]],"violetred","tomato"],Underline->True};
+  ,!Else
+     DecomposeFunction[marked[ad[[1]]],ad[[1]]]
+  ];
+!  nextline = tedbg[GetText[{currbpline[[2]]//".first",currbpline[[2]]//".last -1 char"}]];
+!  If [nextline[-1]===";", nextline=nextline[1,-2]];
+!  If [nextline[-1]==="]",
+!    With[{nl=nextline},CheckSendCallback[appname,"FunctionDefinition["//nl//"]",EnableStepInto[Com$Result]]];
+!  ];
+  bstep[State] = "normal";
+  bgo[State] = "normal";
+  bedit[State] = "disabled";
+  vlssym = True;
+  MakeSymList[];
+  EvalWatchList[];
+  KBFRaise[w];
+);
+
+EnableStepInto[def_] := If [def<=>Null, binto[State] = "normal"];
+
+AddWatch[] := Module[{e,i},
+  e = ewat[GetText];
+  i = If [currwatline<=>Null, ToExpression[currwatline[4,-1]], Length[watchlist]+1];
+  watchlist = Insert[watchlist,e,{i}];
+  watchres = Insert[watchres,"",{i}];
+  WatchClear[];
+  DisplayWatch[watchres];
+];
+DelWatch[] := Module[{i},
+  If [currwatline<=>Null,
+    i = ToExpression[currwatline[4,-1]];
+    watchlist = Drop[watchlist, {i}];
+    watchres = Drop[watchres, {i}];
+    WatchClear[];
+    DisplayWatch[watchres];
+  ];
+];
+EvalWatchList[] := With[{wl=watchlist},
+  WatchClear[];
+!Print[wl];
+  If [wl<=>{},
+    CheckSendCallback[appname, Map[ToString[ToExpression[#]]&,wl]
+      ,watchres=Com$Result;DisplayWatch[Com$Result]];
+  ];
+];
+DisplayWatch[wl_] := Module[{n=1,tag},
+  tewat[State] = "normal";
+  Scan[(
+    tag = "wat"//n++;
+    tewat[Insert] = {"end", #[[1]]//" = "//#[[2]]//"\n",tag};
+    Bind[tewat,"<ButtonRelease-1>",HilightWatchLine[Tag/.$Event],Tags->tag];
+  )&,Thread[{watchlist,wl}]];
+  tewat[State] = "disabled";
+];
+HilightWatchLine[tg_] := (
+  tewat[Tag$Remove] = {"currline","1.0","end"};
+  currwatline = tg;
+  tewat[Tag$Add] = {"currline",tg//".first linestart",tg//".last"};
+  tewat[Tag$Configure] = {"currline",Background->"lightyellow"};
+  bwatdel[State] = "normal";
+);
+
+GetWindowOpts[sn_] := (
+!Print[{"sn",sn}];
+  EditClear["Waiting for an answer....."];
+  currwidget = sn;
+  bshow[State] = "normal";
+  With[{sn},
+    If [vtclf,
+      CheckSendCallback[appname,
+        With[{tn=ToExpression["TkPathName["//sn//"]"],gm=ToExpression["GeometryManager["//sn//"]"]},
+          {tn, TclReturn[tn//" configure",String],
+              If[gm<=>"",TclReturn[gm//"info "//tn,String],""]}
+      ]
+      ,DisplayWindowOpts[sn,Com$Result]];
+    ,!Else
+      CheckSendCallback[appname,
+        Map[ToString,ToExpression["Configure["//sn//"]"]]
+      ,DisplayWindowOpts[sn,Com$Result]];
+    ];
+  ];
+);
+
+DisplayWindowOpts[sn_,wo_] := (
+!Print["dispwinopts"];
+!Print[wo];
+  teed[Delete] = {"1.0","end"};
+  If [vtclf,
+    teed[Insert] = {"end",wo[[1]],"sn"};
+    teed[Insert] = {"end","\n\nWidget Options\n"//wo[[2]]//"\n"};
+    If [wo[[3]]<=>"",
+      teed[Insert] = {"end","\nGeometry Options\n"//wo[[3]]//"\n"};
+    ];
+  ,!Else
+    teed[Insert] = {"end",sn//"\n","sn"};
+    Scan[(
+      ncbed++;
+      ved[ncbed] = 0;
+      With[{ncbed},
+        cbed[ncbed] = CheckButton[teed,Variable:>ved[ncbed],BG->"white",ActiveBackground->"white",BD->1,HighlightThickness->0,SelectColor->"lightblue",Command:>CheckCheckBoxes[]];
+        TclEval[TkPathName[teed]//" window create end -window "//TkPathName[cbed[ncbed]]];
+      ];
+      teed[Insert] = {"end", #//"\n"};
+    )&,Sort[wo]];
+    teed[Tag$Configure] = {"sn",Foreground->"tomato",Font->TextFont["courier","bold",14],Underline->True};
+    bsend[State] = "disabled";
+  ];
+);
+
+CheckCheckBoxes[] := (
+  bsend[State] = If [Apply[Or,Table[ved[i],{i,ncbed}]],"normal","disabled"];
+);
+
+EditClear[] := EditClear[""];
+EditClear[s_] := (
+  currwidget = Null;
+  bshow[State] = "disabled";
+  If [ncbed > 0,
+    Do[DeleteWidget[cbed[n]],{n,ncbed}];
+    ncbed = 0;
+  ];
+  teed[Delete] = {"1.0","end"};
+  If [s<=>"", teed[Insert]={"end",s}];
+  bsend[State] = "normal";
+);
+DefClear[] := DefClear[""];
+DefClear[s_] := (
+  tedef[State] = "normal";
+  tedef[Delete] = {"1.0","end"};
+  If [s<=>"", tedef[Insert]={"end",s}];
+  tedef[State] = "disabled";
+  bmark[State] = "disabled";
+  currfunc = Null;
+);
+DebugClear[] := DebugClear[""];
+DebugClear[s_] := (
+  tedbg[State] = "normal";
+  tedbg[Delete] = {"1.0","end"};
+  If [s<=>"", tedbg[Insert]={"end",s}];
+  tedbg[State] = "disabled";
+  bsetbp[State] = "disabled";
+  tedbg[Tag$Delete] = tedbg[Tag$Names];
+  currbpline = {,};
+  currcsrline = Null;
+  dbgfunc = Null;
+);
+WatchClear[] := WatchClear[""];
+WatchClear[s_] := (
+  tewat[State] = "normal";
+  tewat[Delete] = {"1.0","end"};
+  If [s<=>"", tewat[Insert]={"end",s}];
+  tewat[State] = "disabled";
+  bwatdel[State] = "disabled";
+);
+ResultClear[] := ResultClear[""];
+ResultClear[s_] := (
+  teres[State] = "normal";
+  teres[Delete] = {"1.0","end"};
+  If [s<=>"", teres[Insert]={"end",s}];
+  teres[State] = "disabled";
+);
+
+SetTarget[an_] := (
+!  If [an===appname, Return[]];
+  If [~MemberQ[AppNames[],an], Return[]];
+  If [appname<=>Null, ShutDownConnection[];ResetSADInspect[]];
+  appname = an;!Print[an];
+  Send[an,SI$StartInspect["SADInspect"]];
+  Send$DirectConnection[an];
+  MakeSymList[];
+  w[Title] = "SAD Inspector ["//an//"]";
+  bpick[State] = "normal";
+  bsend[State] = "normal";
+  braise[State] = "normal";
+  DefClear[];
+  EditClear[];
+  DebugClear[];
+  WatchClear[];
+  ResultClear[];
+);
+
+MakeSymList[] := (
+  If [appname===Null,Return[]];
+  If [vlssym,
+    CheckSendCallback[appname,
+      Select[Complement[Names["*"],System$Names],
+        ((~StringMatchQ[#,"*$*"])&&
+          (~(ToString[ToExpression["Definition["//#//"]"]]==
+            "Hold[{("//#//":="//#//")}]")))&]
+    ,DisplaySymList[Com$Result]];
+  ,!Else
+    If [currbpline <=> {,}, vlssym=True;Return[]];
+    CheckSendCallback[appname,
+      Map[(ToString[#][6,-2])&,Apply[List,Map[Hold,ListAllWidgets[]]]]
+    ,DisplaySymList[Com$Result]];
+  ];
+  bmark[State] = "disabled";
+);
+
+DisplaySymList[l_] := (
+  symlist = Sort[l];
+  lbsym[Delete] = {1,"end"};
+  lbsym[Insert] = {"end",symlist};
+);
+
+MakeTaskMenu[] := Module[{ids,anl},
+!Tk$Echo=1;Print["maketaskmenu"];
+  mt[Delete] = {1,"end"};
+  anl = AppNames[];
+  Scan[(
+    With[{an=#},
+      If[an==KBF$AppName,
+        mt[Add] = {Button[,Text->an//" *", State->"disabled"]};
+      ,!Else
+        mt[Add] = {Button[,Text->an, State->"normal",
+          Command:>SetTarget[an]]};
+      ];
+    ];
+  )&,anl];
+  mt[Add] = {Separator[],Button[,Text->"Disconnect",State->If[CheckApp[],"normal","disabled"],Command:>(ShutDownConnection[];ResetSADInspect[])]};
+!Tk$Echo=0;
+];
+
+ResetVariables[];
+
+Update[];
+SetTarget[Environment["SADINSPECTTARGET"]];
+
+TkWait[];

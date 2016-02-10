@@ -1,0 +1,114 @@
+#!/bin/sh
+
+usage () {
+    echo "usage: `basename $0` [-v]         repository_directory set_files..." 2>&1
+    echo "       `basename $0` [-v] -unused repository_directory" 2>&1
+}
+
+memberQ () {
+    local target entry hit
+
+    target="$1"
+    shift
+
+    hit=1
+    for entry in "$@"; do
+	if [ "x${entry}" = "x${target}" ]; then
+	    hit=0
+	    break
+	fi
+    done
+
+    return ${hit}
+}
+
+check_unused=false
+verbose=0
+while [ $# -gt 0 ]; do
+    case $1 in
+	-v)
+	    verbose=$((${verbose} + 1))
+	    ;;
+	-unused)
+	    check_unused=true
+	    ;;
+	-*)
+	    ;;
+	*)
+	    break
+	    ;;
+    esac
+    shift
+done
+
+if [ $# -lt 1 ]; then
+    usage
+    exit 2    
+fi
+
+if [ -d "$1" ]; then
+    target="$1"
+    shift
+else
+    usage
+    exit 2
+fi
+
+if [ "x${check_unused}" = "xtrue" ]; then
+    if [ $# -gt 0 ]; then
+	usage
+	exit 2
+    fi
+    files=`ls ${target} | grep ^patch-`
+    patches=`cat ${target}/set-* | grep -v ^# | sort -u`
+    status=0
+    for entry in ${files}; do
+	if memberQ ${entry} ${patches}; then
+	    if [ ${verbose} -gt 0 ]; then
+		echo "Patch ${target}/${entry} is referred by patch set"
+	    fi
+	else
+	    status=1
+	    echo "Patch ${target}/${entry} is not used"
+	fi
+    done
+    exit ${status}
+else
+    status=0
+    while [ $# -gt 0 ]; do
+	patch_ver=
+	case $1 in
+	    *set-*)
+		patch_set="$1"
+		patch_ver=${1##*set-}
+		;;
+	esac
+
+	if [ "x${patch_ver}" != "x" -a -d ${target}/ ]; then
+	    if [ ${verbose} -gt 0 ]; then
+		echo "Checking patch files of ${patch_set} in ${target}"
+	    fi
+	    files=`ls ${target} | grep ^patch-`
+	    patches=`cat ${patch_set} | grep -v ^#`
+	    for entry in ${patches}; do
+		if memberQ ${entry} ${files}; then
+		    if [ ${verbose} -gt 1 ]; then
+			echo "Patch ${target}/${entry} is found"
+		    fi
+		else
+		    status=1
+		    echo "Patch ${target}/${entry} is not found"
+		fi
+	    done
+	    if [ ${verbose} -gt 1 ]; then
+		echo ""
+	    fi
+	fi
+	shift
+    done
+    exit ${status}
+fi
+
+exit 0
+
+# End of File

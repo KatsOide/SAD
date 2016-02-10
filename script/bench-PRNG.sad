@@ -1,0 +1,40 @@
+!
+! Pseudo Random Number Generator Benchmark
+!
+FFS;
+
+N = 200;
+BatchSize = 1024 * 1024;
+
+SpeedTest[] := StandardForm[
+  slen = Max[8, StringLength/@ListRandom[]];
+  Print[""];
+  Print["Benchmark for Pseudo Randum Number Generator Plugins"];
+  Print["Batch Size:           ", BatchSize];
+  Print["Number of Statistics: ", N];
+  Print[""];
+  Print["Plugin Name"];
+
+  Scan[With[{plugin0 = #},
+    SeedRandom[plugin0];
+    plugin = First[SeedRandom[]];
+    dt = Table[(
+      Clear[d];
+      t0 = TimeUsed[];
+      Random[BatchSize];
+      t  = TimeUsed[];
+      1e9 * (t - t0) / BatchSize), {N}];
+    {min, max} = MinMax[dt];
+    avg = Plus@@dt / N;
+    sigma = Sqrt[Plus@@((dt - avg)^2) / (N - 1)];
+    Print[StringFill[plugin, " ", slen + 1],
+      $FORM = "F8.3";
+      StringJoin[" min=", min, " typ=", avg, " max=", max],
+      $FORM = "F6.3";
+      StringJoin[" sigma=", sigma, " nsec/rand"]];
+    ]&, ListRandom[]];
+  Exit[]];
+
+SpeedTest[];
+
+! End of File

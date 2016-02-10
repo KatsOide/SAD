@@ -1,0 +1,50 @@
+diff -dur unix/tkUnixEvent.c.orig unix/tkUnixEvent.c
+--- unix/tkUnixEvent.c.orig	Sat Jan 21 03:41:41 2006
++++ unix/tkUnixEvent.c	Thu Feb 22 22:29:14 2007
+@@ -15,6 +15,10 @@
+ #include "tkInt.h"
+ #include "tkUnixInt.h"
+ #include <signal.h>
++#include <sys/types.h>
++#include <sys/socket.h>
++#include <netinet/in.h>
++#include <netinet/tcp.h>
+ 
+ /*
+  * The following static indicates whether this module has been initialized
+@@ -140,6 +144,35 @@
+     if (display == NULL) {
+ 	return NULL;
+     }
++
++    {
++	int on = 1;
++#ifdef TCP_KEEPIDLE
++	int keepidle = 600;
++#endif /* TCP_KEEPIDLE */
++#ifdef TCP_KEEPINTVL
++	int keepintvl = 30;
++#endif /* TCP_KEEPINTVL */
++#ifdef TCP_KEEPCNT
++	int keepcnt = 4;
++#endif /* TCP_KEEPCNT */
++
++	setsockopt(ConnectionNumber(display), SOL_SOCKET, SO_KEEPALIVE, 
++		   (char *)&on, sizeof(on));
++#ifdef TCP_KEEPIDLE
++	setsockopt(ConnectionNumber(display), IPPROTO_TCP, TCP_KEEPIDLE, 
++		   (char *)&keepidle, sizeof(keepidle));
++#endif /* TCP_KEEPIDLE */
++#ifdef TCP_KEEPINTVL
++	setsockopt(ConnectionNumber(display), IPPROTO_TCP, TCP_KEEPINTVL, 
++		   (char *)&keepintvl, sizeof(keepintvl));
++#endif /* TCP_KEEPINTVL */
++#ifdef TCP_KEEPCNT
++	setsockopt(ConnectionNumber(display), IPPROTO_TCP, TCP_KEEPCNT, 
++		   (char *)&keepcnt, sizeof(keepcnt));
++#endif /* TCP_KEEPCNT */
++    }
++
+     dispPtr = (TkDisplay *) ckalloc(sizeof(TkDisplay));
+     memset(dispPtr, 0, sizeof(TkDisplay));
+     dispPtr->display = display;

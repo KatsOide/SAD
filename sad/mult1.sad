@@ -1,0 +1,37 @@
+#!/users/oide/WORK/oldsad/obj/OSF1/sad1.exe *
+MOMENTUM= 1 GEV; ON ECHO;OFF EMIT CTIME RAD RFSW ; 
+ LINE CELL=( IA0 S1 QF S2)
+ ;
+ LINE        TESTLINE=(CELL CELL1)
+ ;
+ MULT   QF     =(L = 0.5 K0=0.01 SK0=0.01 K1=0.1)
+ ;
+ SOL    S1=(BOUND=1 GEO=1 BZ=0)
+        S2=(BOUND=1);
+ ;
+ MARK IA0     =(BETAX = 0.703     BETAY = 0.703  EMIX = 4.0E-5
+   EMIY = 4.0E-5  DP = 0.01 SIGZ = 8E-4 OFFSET=0 )
+ ;
+ ;
+! EMIT USE=TESTLINE;
+ STACKSIZ=100000;
+ FFS USE=CELL;
+
+  ins trpt cal;
+
+nocod emiout emit;
+
+end
+
+ amp=1e-6;
+ z=Table[0,{7},{6}];
+ Do[z[[i,i]]=amp;z[[7,i]]=1,{i,6}];
+ z={1,z};
+
+ z1=TrackParticles[z,1];
+
+ m=Drop[z1[[2]],-1]/amp;
+ d=m.SymplecticInverse[m]-IdentityMatrix[6]
+
+
+end

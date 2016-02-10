@@ -1,0 +1,10 @@
+FFS;
+
+ f[x_,x_String]:={x};
+
+ f[1,"a"]
+ f["a","b"] 
+ f["a","a"] 
+
+end
+

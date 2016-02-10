@@ -1,0 +1,54 @@
+FFS;
+
+N = 200;
+BatchSize = 1024 * 1024;
+
+Library@Require["RandomMT"];
+
+SpeedTest[] := StandardForm[
+  slen = Max[8, StringLength/@ListRandomMT[]];
+  Print[""];
+  Print["Speed Test of Randum Number Generator Plugins..."];
+  Print["Batch Size:           ", BatchSize];
+  Print["Number of Statistics: ", N];
+  Print[""];
+  Print["Plugin Name"];
+  If[Not[BoundQ[ListRandom]],
+    dt = Table[(
+      Clear[d];
+      t0 = TimeUsed[];
+      Random[BatchSize];
+      t  = TimeUsed[];
+      1e9 * (t - t0) / BatchSize), {N}];
+    {min, max} = MinMax[dt];
+    avg = Plus@@dt / N;
+    sigma = Sqrt[Plus@@((dt - avg)^2) / (N - 1)];
+    Print[StringFill["SAD Core", " ", slen + 1],
+      $FORM = "F8.3";
+      StringJoin[" min=", min, " typ=", avg, " max=", max],
+      $FORM = "F6.3";
+      StringJoin[" sigma=", sigma, " nsec/rand"]]];
+
+  Scan[With[{plugin0 = #},
+    SeedRandomMT[plugin0];
+    plugin = First[SeedRandomMT[]];
+    dt = Table[(
+      Clear[d];
+      t0 = TimeUsed[];
+      RandomMT[BatchSize];
+      t  = TimeUsed[];
+      1e9 * (t - t0) / BatchSize), {N}];
+    {min, max} = MinMax[dt];
+    avg = Plus@@dt / N;
+    sigma = Sqrt[Plus@@((dt - avg)^2) / (N - 1)];
+    Print[StringFill[plugin, " ", slen + 1],
+      $FORM = "F8.3";
+      StringJoin[" min=", min, " typ=", avg, " max=", max],
+      $FORM = "F6.3";
+      StringJoin[" sigma=", sigma, " nsec/rand"]];
+    ]&, ListRandomMT[]];
+  Exit[]];
+
+SpeedTest[];
+
+! End of File

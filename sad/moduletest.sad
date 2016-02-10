@@ -1,0 +1,8 @@
+FFS;
+
+f[x_]:=Module[{a=e},Module[{b=g},{a,b}={c,d};{a,b}]];
+
+ f[a]
+
+
+

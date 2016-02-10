@@ -1,0 +1,29 @@
+Index: generic/tk.h
+diff -u generic/tk.h:1.74.2.22 generic/tk.h:1.74.2.23
+--- generic/tk.h:1.74.2.22	Mon Apr  7 19:17:54 2008
++++ generic/tk.h	Wed Aug  6 16:54:48 2008
+@@ -635,18 +635,16 @@
+  *
+  *---------------------------------------------------------------------------
+  */
+-#define VirtualEvent	    (LASTEvent)
+-#define ActivateNotify	    (LASTEvent + 1)
+-#define DeactivateNotify    (LASTEvent + 2)
+-#define MouseWheelEvent     (LASTEvent + 3)
+-#define TK_LASTEVENT	    (LASTEvent + 4)
+ 
+-#define MouseWheelMask	    (1L << 28)
++#define VirtualEvent	    (MappingNotify + 1)
++#define ActivateNotify	    (MappingNotify + 2)
++#define DeactivateNotify    (MappingNotify + 3)
++#define MouseWheelEvent     (MappingNotify + 4)
++#define TK_LASTEVENT	    (MappingNotify + 5)
+ 
++#define MouseWheelMask	    (1L << 28)
+ #define ActivateMask	    (1L << 29)
+ #define VirtualEventMask    (1L << 30)
+-#define TK_LASTEVENT	    (LASTEvent + 4)
+-
+ 
+ /*
+  * A virtual event shares most of its fields with the XKeyEvent and

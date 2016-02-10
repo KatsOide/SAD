@@ -1,0 +1,1 @@
+../../../contrib/libtai-0.60/find-systype.sh

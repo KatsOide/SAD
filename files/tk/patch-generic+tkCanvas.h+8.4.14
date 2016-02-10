@@ -1,0 +1,11 @@
+diff -dur generic/tkCanvas.h.orig generic/tkCanvas.h
+--- generic/tkCanvas.h.orig	Thu Jan  9 08:02:11 2003
++++ generic/tkCanvas.h	Thu Feb 22 22:29:06 2007
+@@ -235,6 +235,7 @@
+ #ifndef USE_OLD_TAG_SEARCH
+     TagSearchExpr *bindTagExprs; /* linked list of tag expressions used in bindings */
+ #endif
++    int sd;
+ } TkCanvas;
+ 
+ /*

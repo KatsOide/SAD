@@ -1,0 +1,12 @@
+diff -dur unix/tkUnixWm.c.orig unix/tkUnixWm.c
+--- unix/tkUnixWm.c.orig	Wed Apr 12 05:23:22 2006
++++ unix/tkUnixWm.c	Thu Feb 22 22:29:06 2007
+@@ -19,6 +19,8 @@
+ #include "tkInt.h"
+ #include "tkUnixInt.h"
+ 
++extern int bKBMenuRestack;
++
+ /*
+  * A data structure of the following type holds information for
+  * each window manager protocol (such as WM_DELETE_WINDOW) for

@@ -1,0 +1,25 @@
+
+Unprotect[PyFormat,EscapeChar,Escape]
+
+PyFormat[x_Real]:=ToString[x];
+PyFormat[x_String]:=StringJoin["'",Escape[x],"'"];
+PyFormat[Null]:="None";
+PyFormat[l_List]:= If[l == {},
+		     "()",
+		     StringJoin["[",
+			Apply[StringJoin,Map[
+			(StringJoin[PyFormat[#],","])&,l]],
+			"]"]];
+
+Escape[str_String]:=Apply[StringJoin,
+			Table[Module[{c=str[i]},
+			If[Or[LetterQ[c],DigitQ[c], Equal[c,"_"]],
+				c,
+			   If[Equal[c,"\n"],
+				"\\n",
+				"\\"//c]]],
+			{i,1,StringLength[str]}]];
+
+EscapeChar=Escape;
+
+Protect[PyFormat,EscapeChar,Escape]

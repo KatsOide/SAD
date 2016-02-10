@@ -1,0 +1,31 @@
+tai_now(3)                 Library Functions Manual                 tai_now(3)
+
+
+
+[1mNAME[0m
+       tai_now - get current time, with 1-second precision
+
+[1mSYNTAX[0m
+       [1m#include <tai.h>[0m
+
+       void [1mtai_now[22m(&[4mt[24m);
+
+       struct tai [4mt[24m;
+
+[1mDESCRIPTION[0m
+       [1mtai_now [22mputs the current time into [4mt[24m.
+
+       More  precisely:  [1mtai_now  [22mputs  into  [4mt[24m its best guess as to the TAI64
+       label for the 1-second interval that contains the current time.
+
+[1mNOTES[0m
+       This implementation of [1mtai_now [22massumes that the  [1mtime_t  [22mreturned  from
+       the [1mtime [22mfunction represents the number of TAI seconds since 1970-01-01
+       00:00:10 TAI.
+
+[1mSEE ALSO[0m
+       tai(3), taia_now(3), time(3)
+
+
+
+                                                                    tai_now(3)

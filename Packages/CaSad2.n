@@ -1,0 +1,86 @@
+(a_ = CaOpenMonitor[rn_String, opt___]) ^:= Module[{val,cst,log,almonl,var},
+
+  {val,cst,log,almonl,var}=SwitchCases[{opt,AlarmOnly->False},
+    {RuleDelayed[ValueCommand,_],RuleDelayed[ConStatCommand,_],
+      RuleDelayed[LogCommand,_],Rule[AlarmOnly,_],RuleDelayed[Variable,_]}];
+
+  a[EPICS$NAME] = rn;
+!  a[EPICS$CHID] = EPICS$CaOpen[rn];
+!  a[ConStat] = CS$NeverConn;
+!  EPICS$CHIDArray[a[EPICS$CHID]] = a;
+!  a[EPICS$EVID] = 0;
+!  EPICS$CaFlushIO[];
+  EPICS$InitChannel[a];
+  a[EPICS$EventFlag] = DBE$Alarm+If[AlarmOnly/.almonl,0,DBE$Value];
+  a[EPICS$ValueCommand] = If [val<=>{},Extract[val,{1,2},Hold],Null];
+  a[EPICS$ConStatCommand] = If [cst<=>{},Extract[cst,{1,2},Hold],Null];
+  a[EPICS$LogCommand] = If [log<=>{},Extract[cst,{1,2},Hold],Null];
+
+  (a[EPICSRecName] = n_) ^:= (
+    EPICS$CaClearChannel[a[EPICS$CHID]];
+    a[EPICS$NAME] = n;
+    EPICS$InitChannel[a];
+  );
+  a[Close] := (EPICS$CaClearChannel[a[EPICS$CHID]];Clear[a]);
+  a[StopMonitor] :=
+    If [a[EPICS$EVID]<>0,EPICS$CaClearEvent[a[EPICS$EVID]];a[EPICS$EVID]=0];
+  a[StartMonitor] := EPICS$AddEvent[a];
+!  a[Get] := ;
+!  a[Put][v_] := EPICS$CaPut[a[EPICS$CHID],v];
+  (a[Put] = v_) ^:= EPICS$CaPut[a[EPICS$CHID],v];
+
+!  If [var<=>{},
+!    With[{v=Extract[var,{1,2},Unevaluated$]},
+!      (v=x_) ^:= CaPutSim[a[EPICS$CHID],x];!Print[Definition[v]];
+!      v := a[Value];!Print[Definition[v]];
+!    ];
+!  ];
+];
+
+EPICS$InitChannel[a_] := (
+  a[EPICS$CHID] = EPICS$CaOpen[a[EPICS$NAME]];
+  a[ConStat] = CS$NeverConn;
+  EPICS$CHIDArray[a[EPICS$CHID]] = a;
+  a[EPICS$EVID] = 0;
+!  EPICS$CaFlushIO[];
+);
+
+DBE$Value = 1;
+DBE$Log = 2;
+DBE$Alarm = 4;
+CS$NeverConn = 0;
+CS$PrevConn = 1;
+CS$Conn = 2;
+CS$Closed = 3;
+
+EPICS$ConStatCB[chid_,stat_] := (
+  With[{a=#},
+    a[ConStat]=stat;
+    If [a[EPICS$ConStatCommand]<=>Null,a[EPICS$ConStatCommand][[1]]];
+    EPICS$AddEvent[a];
+!    If [(a[EPICS$EVID]==0)&&(a[EPICS$ValueCommand]<=>Null),
+!      a[EPICS$EVID]=EPICS$CaAddEvent[chid,a[EPICS$EventFlag]]];
+  ]&[EPICS$CHIDArray[chid]];
+!  Print[{"type,count = ",EPICS$CaFieldType[chid],EPICS$CaElementCount[chid]}];
+);
+
+EPICS$AddEvent[a_] := 
+  If [(a[EPICS$EVID]==0)&&(a[EPICS$ValueCommand]<=>Null),
+    a[EPICS$EVID]=EPICS$CaAddEvent[a[EPICS$CHID],a[EPICS$EventFlag]]
+  ];
+
+EPICS$ValueCB[chid_,v_,st_] := (
+!  Print[{"EPICS$ValueCB ",chid,v}];
+  With[{a=#},
+    a[Value] = v;
+    a[Severity] = st[[2]];
+    a[TimeStamp] = st[[3]];
+    If [a[EPICS$ValueCommand]<=>Null,a[EPICS$ValueCommand][[1]]];
+  ]&[EPICS$CHIDArray[chid]];
+);
+
+EPICS$CaInit[];
+
+!EPICS$PendIOTimer[] :=
+!    After[5.05, EPICS$CaPendIO[0.001]; EPICS$PendIOTimer[]];
+!EPICS$PendIOTimer[];

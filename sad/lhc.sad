@@ -1,0 +1,46 @@
+FFS;
+
+ E0=Elhc=4e12;
+ Mass=ProtonMass;
+ gamma:=(E0/Mass+1)
+ beta:=Sqrt[1-1/gamma^2]
+ gamma*ElectronMass/1e9
+
+ tlhc=20*3600;
+ beta*SpeedOfLight*tlhc/1e11
+
+ np=2.3e14;
+ circ=27e3;
+ Ib=np*ElectronCharge*SpeedOfLight/circ
+ np*ProtonMass*ElectronCharge/SpeedOfLight^2
+ tlhc/(circ/SpeedOfLight)/1e8
+
+ en=3.8e-6;
+ emix=en/gamma;
+ nx=64;
+ betaave=circ/nx/2/Pi
+ Sqrt[emix*betaave]
+end
+
+
+ lcar=20e7;
+ vcar=60e3/3600;
+ tcar=lcar/vcar;
+ rcar=1500/60;
+ ncar=rcar*tcar
+
+end
+
+ lum=7.7e37;
+ nb=circ/SpeedOfLight/5e-8;
+ sig=1/Sqrt[(lum/nb)/(np/nb)^2*(circ/SpeedOfLight)*4*Pi]
+end
+
+ U=E0*Ib*circ/SpeedOfLight
+ vsk=Sqrt[2*U/700e3];
+ vsk*3600/1e3
+
+ E0=Elep2=104e9;
+ Mass=ElectronMass
+ beta
+

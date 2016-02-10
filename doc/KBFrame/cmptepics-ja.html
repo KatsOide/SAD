@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="ja-JP">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-2022-JP">
+<TITLE>KBFrame 例 EPICS用部品を使う場合</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<A NAME="top" HREF="index-ja.html">目次</A>
+<A HREF=smplepics-ja.html>例 EPICS CA 用ルーチンを使う場合</A>
+
+<HR><DIV ALIGN="CENTER"><H2>例 EPICS用部品を使う場合</H2></DIV><HR>
+
+<P>EPICSレコードにアクセスする時に、CaOpen、CaRead等の関数を直接使わずに
+KBDigitalIndicator[]等の部品を使う場合。以下の例では、上の
+KBDigitalIndicator[]のEPICS Recordは存在して、下のKBDigitalIndicator[]
+のEPICS Recordは存在しない。</P>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["DigitalIndicatorTest", f, Title-&gt;"Digital Indicator Test"];
+cf = KBFComponentFrame[f,
+  Add-&gt;{
+    KBFGroup[Text-&gt;"EPICS Test"],
+    KBFComponent[ComponentName:&gt;KBDigitalIndicator,
+      ComponentOption-&gt;{EPICSRecName-&gt;"some_existent_record",Controller-&gt;True}],
+    KBFFrame[WidgetVariable:&gt;f1]
+  }
+];
+kdi1 = KBDigitalIndicator[f1,EPICSRecName-&gt;"non_existent_record"];
+TkWait[];
+</CODE></PRE>
+
+<P><IMG SRC="cmptepics1.gif" WIDTH=706 HEIGHT=412
+ ALT="KBDigitalIndicator Example"></P>
+
+<P><A HREF="#top">top</A></P>
+
+<HR><ADDRESS>このページに関する御意見・質問は
+<A HREF="mailto:samo.stanic@kek.jp">Samo Stanic</A>
+まで.</ADDRESS>
+</BODY>
+</HTML>

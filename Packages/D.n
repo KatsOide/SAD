@@ -1,0 +1,290 @@
+(* D.n 4/23/2011 *)
+
+With[{ReductionRule:={
+  ((a_^z_)*b___)^y_:>a^(z*y)*Times[b]^y,
+  x_*(m__)+x_*(n__)+a___:>a+(Times[m]+Times[n])*x,
+  x_+x_*(n__)+a___:>a+(1+Times[n])*x,
+  x_+x_+a___:>a+2*x,
+  x_^m_*x_^n_*a___:>a*x^(m+n),
+  x_*x_^n_*a___:>a*x^(n+1),
+  x_*x_*a___:>a*x^2,
+  Sin[x_]^2+Cos[x_]^2+a___:>1+a,
+  -Sin[x_]^2+Cos[x_]^2+a___:>a+Cos[2x],
+  Sin[x_]^2-Cos[x_]^2+a___:>a-Cos[2x],
+  1+a___-Cos[x_]:>a+2*Sin[x/2]^2,
+  b___*Sin[x_]*Cos[x_]:>b Sin[2x]/2,
+  a___+x_-Sin[x_]:>a+XSin[x],
+  XSin[x_]+Sin[x_]+a___:>a+x,
+  Exp[x_]*Exp[y_]*a___:>Exp[x+y]*a,
+  Log[x_]+Log[y_]+a___:>Log[x*y]+a,
+  Log[Exp[x_]*(y__:1)|Exp[x_]]:>x+Log[Times[y]],
+  Log[x_^y_]:>y*Log[x],
+  Exp[(x__:0)+Log[y_]|Log[y_]]:>y*Exp[Plus[x]],
+  Exp[Log[x_]*a__]:>x^Times[a],
+  Plus[x_]:>x,Times[x_]:>x,
+  {0 ..}->0,
+  -0->0
+  }},
+
+  ReduceExpression[e_]:=Module[{r=$ReduceMath,v=e/.Sqrt[x_]:>x^(1/2),v0},
+    $ReduceMath=True;
+!    While[v<=>v0,
+!      v0=v;
+!      v=v/.Unevaluated$[ReductionRule];
+!      Print[v]];
+    v=v//.Unevaluated$[ReductionRule];
+    $ReduceMath=r;
+    v];
+  ];
+
+D[y_,{x_,n_}]:=If[Position[y,x,{0,Infinity},1]<=>{},
+  ReduceExpression[
+    Unevaluated$[
+      Module[{z=y},
+        Do[z=D$[z,x],{n}];z]]],
+  0];
+D[y_,x_]:=If[Position[y,x,{0,Infinity},1]<=>{},
+  ReduceExpression[Unevaluated$[D$[y,x]]],
+  0];
+
+D$[__]=0;
+D$[_Real,_]=0;
+D$[x_,x_]=1;
+D$[_Symbol,_]=0;
+D$[_String,_]=0;
+D$[x_+y_,z_]:=D$[x,z]+D$[y,z];
+D$[p_Plus,y_]:=D$[#,y]&/@p;
+D$[x_*y_,x_]:=y+x*D$[y,x];
+D$[x_*y_,z_]:=y*D$[x,z]+x*D$[y,z];
+D$[a_*b__,y_]:=D$[a,y]*b+a*D$[Times[b],y];
+D$[y_List,x_]:=D[#,x]&/@y;
+D$[x_^2,x_]:=(2 x);
+D$[x_^z_,x_]:=z*x^(z-1)+D$[z,x]*Log[x]*x^z;
+D$[y_^2,x_]:=(2 y D$[y,x]);
+D$[y_^z_,x_]:=z*y^(z-1)*D$[y,x]+Log[y]*y^z*D$[z,x];
+D$[f_[x_],x_]:=Derivative[1][f][x];
+D$[f_[y_],x_]:=D$[y,x]*Derivative[1][f][y];
+D$[p:f_[y__],x_]:=Sum[Derivative[##][f][y]*D$[{y}[[i]],x]&@@
+  Table[k==i,{k,Length[p]}],{i,Length[p]}];
+D$[If[a_,b___],x_]:=With[{v=Null@@(D$[#,x]&/@{b})},If[a,v]];
+D$[Re[f_],x_]:=Re[D$[f,x]];
+D$[Im[f_],x_]:=Im[D$[f,x]];
+D$[Conjugate[f_],x_]:=Conjugate[D$[f,x]];
+D$[Rational[n_,d_],x_]:=Rationa[D[n,x] d-n D[d,x], d^2];
+
+Derivative[1][Sqrt]=(#^-(1/2))/2&;
+Derivative[1][Sin]=Cos;
+Derivative[1][Cos]=-Sin[#]&;
+Derivative[1][Tan]=(Cos[#]^-2)&;
+Derivative[1][XSin]=(2 Sin[#/2]^2)&;
+Derivative[1][Exp]=Exp;
+Derivative[1][Log]=#^-1&;
+Derivative[1][Sinh]=Cosh;
+Derivative[1][Cosh]=Sinh;
+Derivative[1][Tanh]=(Cosh[#]^-2)&;
+Derivative[1][ArcSin]=(1-#^2)^(-1/2)&;
+Derivative[1][ArcCos]=-(1-#^2)^(-1/2)&;
+Derivative[1][ArcTan]=1/(1+#^2)&;
+Derivative[1][ArcSinh]=(1+#^2)^(-1/2)&;
+Derivative[1][ArcCosh]=(-1+#^2)^(-1/2)&;
+Derivative[1][ArcTanh]=1/(1-#^2)&;
+Derivative[1][Abs]=Sign;
+Derivative[1][Sign]=0&;
+Derivative[1][Erf]=(2/Sqrt[Pi] Exp[-#^2])&;
+Derivative[1][Erfc]=(-2/Sqrt[Pi] Exp[-#^2])&;
+Derivative[1][InverseErf]=(Sqrt[Pi]/2 Exp[InverseErf[#]^2])&;
+Derivative[1][Gamma]=(Gamma[#]PolyGamma[0,#])&;
+Derivative[0,1][GammaRegularized]=(-Exp[-#2] #2^(#-1)/Gamma[#])&;
+Derivative[0,1][ArcTan]=#1/(#1^2+#2^2)&;
+Derivative[1,0][ArcTan]=-#2/(#1^2+#2^2)&;
+Derivative[0,1][Log]=1/(Log[#1]#2)&;
+Derivative[1,0][Log]=-Log[#2]/(Log[#1]^2#1)&;
+Derivative[0,1][BesselJ]=(BesselJ[#-1,#2]-BesselJ[#+1,#2])/2&;
+Derivative[0,1][BesselY]=(BesselY[#-1,#2]-BesselY[#+1,#2])/2&;
+Derivative[0,1][BesselI]=(BesselI[#-1,#2]+BesselI[#+1,#2])/2&;
+Derivative[0,1][BesselK]=-(BesselK[#-1,#2]+BesselK[#+1,#2])/2&;
+
+Derivative[1][Derivative[n_][f_]]:=Derivative[n+1][f];
+Derivative[n__][Derivative[m__][f]]:=Derivative[##][f]&@@({n}+{m});
+
+CheckDerivative[f_]:=Position[f,Derivative,{0,Infinity},1]<=>{};
+
+Expand[Times[a__,(c:_Plus)]]:=(Expand[Times[a,Expand[#]]])&/@c;
+Expand[c:_Plus]:=Expand/@c;
+Expand[a_]:=a;
+
+Spline[l:{{_Real,_List},___},opt___]:=
+  Module[{{x,y}=Thread[l],z},
+    z=Spline[Thread[{x,#}],opt]&/@Thread[y];
+    SplineData[{x,y,Transpose[z[[,1,3]]]}]];
+Spline[l_?ComplexQ,opt___]:=Module[
+  {{x,y}=Thread[l]},
+  SplineData[{x,y,
+    Complex[Spline$[{x,Re[y]},opt][[3]],Spline$[{x,Im[y]},opt][[3]]]}]];
+Spline[l:{{_Real,_Real},___},opt___]:=SplineData[Spline$[Thread[l],opt]];
+
+Off[General::unprotconst];
+Unprotect[Vector];
+On[General::unprotconst];
+
+SplineData[a_][Vector[x_],b___]^:=Vector@@{SplineData[a][x,b]};
+Protect[Vector];
+SplineData[{{_},y_,_}][_Real]:=First[y];
+SplineData[{xl_,y_,ddy_}][x:(_Real|_List)]:=Module[
+  {i=FindIndex[xl,x],dx,a,b,c,d,g,x0},
+  dx=xl[[i+1]]-(x0=xl[[i]]);
+  b=(x-x0)/dx;
+  a=1-b;
+  g=-a*b*dx^2;
+  {c,d}={(a+1)*g,(b+1)*g};
+  a*y[[i]]+b*y[[i+1]]+c*ddy[[i]]+d*ddy[[i+1]]];
+SplineData[a_][x_,3]:=SplineData[a][x];
+SplineData[{{_},y_,_}][_Real,1]:=First[y];
+SplineData[{xl_,y_,ddy_}][x:(_Real|_List),1]:=Module[
+  {i=FindIndex[xl,x],dx,dx1,a,b,x0},
+  dx=xl[[i+1]]-(x0=xl[[i]]);
+  dx1=x-x0;
+  b=dx1/dx;
+  a=1-b;
+  a*y[[i]]+b*y[[i+1]]];
+
+Derivative[1][SplineData[{{_},_,_}]][_Real]:=0;
+Derivative[1][SplineData[{xl_,y_,ddy_}]][x:(_Real|_List)]:=Module[
+  {i=FindIndex[xl,x],dx,dx1,a,b},
+  dx=xl[[i+1]]-xl[[i]];
+  dx1=x-xl[[i]];
+  b=dx1/dx;
+  a=1-b;
+  (y[[i+1]]-y[[i]])/dx-(3a^2-1)*dx*ddy[[i]]+(3b^2-1)*dx*ddy[[i+1]]];
+Derivative[2][SplineData[{{_},_,_}]][_Real]:=0;
+Derivative[2][SplineData[{xl_,_,ddy_}]][x:(_Real|_List)]:=Module[
+  {i=FindIndex[xl,x],dx,dx1,a,b},
+  dx=xl[[i+1]]-xl[[i]];
+  dx1=x-xl[[i]];
+  b=dx1/dx;
+  a=1-b;
+  6*(a*ddy[[i]]+b*ddy[[i+1]])];
+
+Integrate$a[SplineData[{{_},y_,_}][x_],{x_,x0_Real,x1_Real}]:=(x1-x0)*First[y];
+Integrate$a[SplineData[a:{xl_,y_,ddy_}][x_],{x_,x0_Real,x1_Real}]:=Module[
+  {i0=FindIndex[xl,x0],i1=FindIndex[xl,x1]},
+  If[i0==i1,
+    SplineIntegrate[a,i0,x0,x1],
+    SplineIntegrate2[a,i0+1,i1]+
+      SplineIntegrate[a,i0,x0,xl[[i0+1]]]+
+        SplineIntegrate[a,i1,xl[[i1]],x1]]];
+
+SplineIntegrate[a:{xl_,y_,ddy_},i_,x0_Real,x1_Real]:=Module[
+  {dx=xl[[i+1]]-xl[[i]],h=x1-x0,xh=(x0+x1)/2-xl[[i]]},
+  h*(ddy[[i]]*(h^2/4-3*xh*(dx-xh))+y[[i]]+
+    xh*((ddy[[i+1]]-ddy[[i]])*(h^2/4+xh^2-dx^2)+(y[[i+1]]-y[[i]]))/dx)];
+
+SplineIntegrate1[a:{xl_,y_,ddy_},i_]:=Module[
+  {dx=xl[[i+1]]-xl[[i]]},
+  0.5*dx*(-0.5*dx^2*(ddy[[i+1]]+ddy[[i]])+(y[[i+1]]+y[[i]]))];
+
+SplineIntegrate2[a:{xl_,y_,ddy_},i_,j_]:=Module[
+  {
+    dx=Take[xl,{i+1,j}]-Take[xl,{i,j-1}],
+    ys=Take[y,{i,j-1}]+Take[y,{i+1,j}],
+    ddys=Take[ddy,{i,j-1}]+Take[ddy,{i+1,j}]},
+  0.5*Plus@@(dx*(-0.5*dx^2*ddys+ys))];
+
+SplineIntegrateAll[a:{xl_,y_,ddy_}]:=Module[
+  {
+    dx=Difference[xl],
+    ys=Difference[y,1],
+    ddys=Difference[ddy,1]},
+!    ys=Rest[y]+Drop[y,-1],
+!    ddys=Rest[ddy]+Drop[ddy,-1]},
+  0.5*Plus@@(dx*(-0.5*dx^2*ddys+ys))];
+
+Integrate[f_,{x_,x0_,x1_}]:=If[x1>x0,
+  Block[{x},Integrate$a[f,{x,x0,x1}]],
+  Block[{x},-Integrate$a[f,{x,x1,x0}]],
+  Unevaluated$[Integrate[f,{x,x0,x1}]]];
+
+NIntegrate[a:(SplineData[_][_]),y_,___]:=Integrate[a,y];
+NIntegrate[a:(Spline[_][_]),y_,___]:=Integrate[a,y];
+
+With[{def={AccuracyGoal->1e-13,InitialPoints->20,Spline->True}},
+  NIntegrate[f_,{x_Symbol,x0_,x1_},opt___]:=
+    Module[{eps,n,d,u,v,smax,sp,s,u1,v1,ds,w,fa,spl},
+      {eps,n,spl}={AccuracyGoal,InitialPoints,Spline}/.{opt}/.def;
+      fa[y_]:=With[{x=Vector[y]},Check[ReleaseVector[f],y*0]];
+      d=(x1-x0)/n;
+      u=Range[0,n]*d+x0;
+      v=fa[u];
+      smax=Plus@@Abs[v]-0.5*(Abs[First[v]]+Abs[Last[v]]);
+      If[spl,
+        sp=Spline[w=Thread[{u,v}]];
+        s=SplineIntegrateAll[First[sp]],
+        s=d*(Plus@@v-0.5*(First[v]+Last[v]))];
+      While[
+        d*=0.5;
+        u1=u+d;
+        u1[[-1]]=x1;
+        v1=fa[u1];
+!        v=Drop[Flatten[Thread[{v,v1}]],-1];
+        v=Drop[MapThread[Null,{v,v1}],-1];
+        n*=2;
+        u=Range[0,n]*d+x0;
+        If[spl,
+          sp=Spline[Thread[{u,v}]];
+          s1=SplineIntegrateAll[First[sp]],
+	  s1=0.5*s+d*Plus@@Drop[v1,-1]];
+        ds=Abs[s1-s];
+        s=s1;
+        smax+=Plus@@Abs[v1];
+        ds>=smax*Abs[d*eps],
+        If[n>=20000,Message[NIntegrate::conv,Evaluate[ds/(smax*Abs[d])]];Break[]]
+        ];
+      s];
+  ];
+
+NIntegrate::conv="Poor Convergence `1`";
+
+SetAttributes[{Integrate,NIntegrate},HoldAll];
+
+LegendreP[0, _] = 1;
+LegendreP[1, x_] := x;
+LegendreP[n_?(# < -1/2 &), x_] := LegendreP[-1 - n, x];
+LegendreP[n_, x_] := ((2 n - 1)x LegendreP[n - 1, x] - (n - 1)LegendreP[n - 2, x])/n;
+LegendreP[0, 0, _] = 1;
+LegendreP[0, m_, x_] := ((1 + x)/(1 - x))^(m/2)/Gamma[1 - m];
+LegendreP[1, 0, x_] := x;
+LegendreP[1, 1, x_] := -Sqrt[1 - x^2];
+LegendreP[1, m_, x_] := (((1 + x)/(1 - x))^(m/2)(x - m)/Gamma[2 - m]);
+LegendreP[n_, 0, x_] := LegendreP[n, x];
+LegendreP[n_?(# < -1/2 &), m_, x_] := LegendreP[-1 - n, m, x];
+LegendreP[n_?IntegerQ, n_, x_] := Product[-(2k - 1)Sqrt[1 - x^2], {k, n}];
+LegendreP[n_, m_?IntegerQ, x_] := Which[
+		m > n, 0,
+		n == m + 1, x (2m + 1) LegendreP[m, m, x],
+		m < 0, LegendreP[n - 2, m, x] - (2n - 1)Sqrt[1 - x^2]LegendreP[n - 1, m - 1, x],
+		True,
+		Module[{f1 = LegendreP[m, m, x], f2, f},
+			f2 = x(2m + 1)f1;
+			Do[f = (x(2 k - 1)f2 - (k + m - 1)f1)/(k - m);
+				f1 = f2;
+				f2 = f, {k, m + 2, n}];
+			f]];
+LegendreP[n_, 1/2, x_] := (Sqrt[2/Pi]Cos[(n + 1/2)ArcCos[x]]/(1 - x^2)^(1/4));
+LegendreP[n_, m_?((Negative[#] && IntegerQ[#*2]) &), x_] := 
+  (-LegendreP[n + 1, m + 1, x] + x LegendreP[n, m + 1, x])/(n + m + 1)/
+    Sqrt[1 - x^2]; 
+LegendreP[n_, m_?(IntegerQ[#*2] &), x_] := ((-(n + m - 1)LegendreP[n - 1, m - 1, x] + (n - m + 1)x LegendreP[n, m - 1, x])/
+    Sqrt[1 - x^2]); 
+LegendreP[n_?IntegerQ, m_, x_] := (
+  LegendreP[n - 2, m, x] - (2n - 1)Sqrt[1 - x^2]LegendreP[n - 1, m - 1, x]);
+
+BesselJZero[0,0]=NaN;
+BesselJZero[n_,0]=0;
+BesselJZero[n_,k_]:=Module[{x=(k+n/2-0.25)*Pi,y},
+  BesselJZero[n,k]=
+    y/.FindRoot$[BesselJ[n,y]==0,{y,x-(2n+1)(2n-1)/x*(0.125+(28n^2-31)/384/x^2)}]];
+
+Protect[ReduceExpression,D$,Expand,CheckDerivative,LegendreP,
+  Integrate,Integrate$a,Spline,SplineData,SplineIntegrate,
+  SplineIntegrate1,SplineIntegrate2,SplineIntegrateAll,NIntegrate
+  ];

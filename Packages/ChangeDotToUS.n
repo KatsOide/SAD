@@ -1,0 +1,2 @@
+ChangeDotToUS[x_String]:=Module[{},FromCharacterCode[Map[(If[#==46,95,#])&, ToCharacterCode[x]]]];
+ChangeDotToUS[x__List]:=Module[{},Map[ChangeDotToUS[#]&,x]];

@@ -1,0 +1,121 @@
+FFS;
+
+Timing[FindRoot[{Sin[x]==1.1,Cos[y] +0.5 ==0.5+Sin[x]},{x,0},{y,1},D->True]]
+Timing[FindRoot[{Sin[x]==1.1,Cos[y] +0.5 ==0.5+Sin[x]},{x,0},{y,1},Complex->True,D->True]]
+FindRoot[{Sin[x]==1.1,Cos[y] I+1 ==I/2+Sin[x]},{x,0},{y,1},D->True,Trace->True]
+FindRoot[{(Print[x];Sin[x]),Cos[y] I+1}=={1.1,I/2+Sin[x]},{x,0},{y,1},D->True,Trace->True]
+end
+
+FindRoot[eq_,vars__List,opt:(_Rule|_RuleDelayed)...]:=Module[{vlist,vs},
+  vlist=MapAt[Hold,Hold[vars],{,1}];
+  vlist=Append[#,{-INF,INF}]&/@vlist;
+  vs=Flatten[Thread[vlist][[1]]];
+  With[{vlist,vs},
+    FindRoot$1[eq,vlist,vs,{opt},vars]]];
+
+With[{def={MaxIterations->50,AccuracyGoal->1.d-20,Trace->False,D->True,Complex->False}},
+  FindRoot$1[eqs:((eq1_==eq2_)|(eql_List)),vlist_,Hold[vs__],opt_,vars__]:=Module[
+    {{mi,ag,tr,d,cmpl}={MaxIterations,AccuracyGoal,Trace,D,Complex}/.opt/.def,vl,leq,eq,df,res},
+    Block[{vs},
+      With[{var=(With[{v=##},Hold[Set[v]]]&@@[vlist[[,{1,2}]],{1}])},
+        If[Length[Hold[eql]]==0,
+          vl=ReleaseHold[Hold[Unevaluated$[Block[var,{eq1,eq2}]]/.Hold->Null]];
+          If[(leq=Length[vl[[1]]])<>Length[vl[[2]]],
+            Message[General::equalleng,"both sides of eqs"];
+            Return[]],
+          eq=Hold[eql]/.Equal->Subtract;
+          With[{eq},
+            vl=Unevaluated$[Block[var,eq]]/.Hold->Null];
+          leq=-1]];
+      If[~cmpl && (RealListQ[vl] || RealQ[vl]),
+        Return[If[leq<=0,
+          FindRoot$[eqs,vars,{mi,ag,tr,d,cmpl}],
+          With[{eq=Thread[eq1==eq2]},
+            FindRoot$[eq,vars,{mi,ag,tr,d,cmpl}]]]]];
+      Which[
+        leq<0,eq=ReleaseHold[eq],
+        leq,eq:=eq1-eq2,
+        True,eq:={eq1-eq2}];
+      With[{vlist,mi,ag,tr,df=If[d,Outer[D,eq,{vs}],False]},
+        res=FR$Newton[eq,{vs},vlist[[,2]],vlist[[,3]],mi,ag,df,tr]];
+      ];
+    Block[{vs},
+      Append[MapThread[Rule,{{vs},res[[2]]}],Residual->res[[3]]]]
+    ];
+ ]; 
+
+FRN$Eval[f_,var_,v_]:=Module[{v1=v,f1},
+  With[{v1},
+    MapThread[Set,Hold[var,v1]]];
+  f1=f;
+  If[~RealListQ[f1],f1=Flatten[f1]];
+  {f1,Plus@@(f1*Conjugate[f1])}];
+
+FRN$D[f_,var_,v0_,d_]:=d;
+
+With[{frac=1d-7,svmin=1d-7},
+  FRN$D[f_,var_,v0_,False]:=Module[{sv=(Plus@@Abs[v0*frac])/Length[v0],f0=f,k},
+    svi=Restrict[Abs[v0]*frac,sv,INF];
+    Transpose[
+      Table[
+        v1=v0;
+        v1[[k]]+=svi[[k]];
+        (FRN$Eval[f,var,v1][[1]]-f0)/svi[[k]],
+        {k,Length[v0]}]]]];
+
+FRN$Reduction[f1_,f2_,g1_,g2_,g0_,dg_]:=Module[{a,b},
+  Restrict[
+    If[f2,
+      a=((g1-g0)/f1^2-(g2-g0)/f2^2)/(f1-f2)+dg/f1/f2;
+      b=(-f2*(g1-g0)/f1^2+f1*(g2-g0)/f2^2)-dg*(f1+f2)/f1/f2;
+      If[b>0,
+        -dg/(Sqrt[Max[0,b^2-3*a*dg]]+b),
+        (Sqrt[Max[0,b^2-3*a*dg]]-b)/3/a],
+      -0.5*f1*dg/((g1-g0)/f1-dg)],
+    f1/16,0.577*f1]];
+
+With[{tol=1e-4,rmin=1d-4},
+  FR$Newton[f_,var_,vini_,lim_,mi_,ag_,d_,tr_]:=Module[
+    {v0=vini,v1,r1,r0,df,f1,f0,red=1,dv,red1,red2,r2,dg,iter=0,cmpl},
+    {f0,r0}=FRN$Eval[f,var,v0];
+    red1=0;
+    r2=r0;
+    While[r0>ag,
+      If[tr,
+        Print["FindRoot Residual: ",r0," Reduction: ",red]];
+      If[++iter>mi,Return[{f0,v0,r0}]];
+      df=FRN$D[f,var,v0,d];
+      dv=If[cmpl=(ComplexQ[df] || ComplexQ[f0]),
+        LinearSolve[Join[Re[df],Im[df]],Join[Re[f0],Im[f0]],Tolerance->tol],
+        LinearSolve[df,f0,Tolerance->tol]];
+      r1=r0*2;
+      red1=0;
+      dg=Null;
+      While[r1>r0,
+        v1=MapThread[Restrict[#,#2[[1]],#2[[2]]]&,{v0-dv*red,lim}];
+        r2=r1;
+        {f1,r1}=FRN$Eval[f,var,v1];
+        If[r1>r0,
+          If[dg===Null,
+            dg=-2*If[cmpl,
+              Re[Conjugate[f0].df.dv],
+              f0.df.dv]
+            ];
+          {red2,red1}={red1,red};
+          red=FRN$Reduction[red1,red2,r1,r2,r0,dg];
+          If[red<rmin,Return[{f0,v0,r0}]]]];
+      {f0,v0,r0}={f1,v1,r1};
+      red=Min[1,red*2]];
+    {f0,v0,r0}
+    ];
+  ];
+
+SetAttributes[{FindRoot,FindRoot$1,FRN$Eval,FR$Newton,FRN$D},HoldAll];
+
+Timing[FindRoot[{Sin[x]==1.1,Cos[y] +0.5 ==0.5+Sin[x]},{x,0},{y,1},D->True]]
+Timing[FindRoot[{Sin[x]==1.1,Cos[y] +0.5 ==0.5+Sin[x]},{x,0},{y,1},Complex->True,D->True]]
+FindRoot[{Sin[x]==1.1,Cos[y] I+1 ==I/2+Sin[x]},{x,0},{y,1},D->True,Trace->True]
+FindRoot[{(Print[x];Sin[x]),Cos[y] I+1}=={1.1,I/2+Sin[x]},{x,0},{y,1},D->True,Trace->True]
+
+end
+

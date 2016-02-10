@@ -1,0 +1,814 @@
+!!!   Bench2  6/24/2000 K. Oide
+
+!   5/4 cell + local correction, 112 bends, arc from FQ50 by H. Koiso
+!
+!   Refined from lerfqlc143.sad 
+!   Crab cavity @ LA5{IO}.2
+!   QB1 & QC5 added.
+!   Reversed bends.
+!   "Canonical" parameters
+!   LF1I=1.685 m, LF2I=3.215 m, QC2I L 1 m, etc.
+!   BYM @ SCY 330
+!   BX3I=0.021
+!   BC4* L 2 BC2* L 3.5
+!   Suppress delta Jy^2; HJJ = 2.17
+!   2 < BX @ SCY < 3
+!   LA* MIN 2 LC* MIN 2
+!   EX @ SCYI == -EX @ SCYO
+!   Correction up tp DP=0.028
+!   High NX at IP (6 QAs)
+!   "Finite Amplitude Matching"
+!   MatchingAmplitude:={{-0.026,xa,xa/3},{0.026,xa,xa/3},{0.022,xa*1.2,0},{-0.022,xa*1.2,0},{-0.024,-xa*1.1,0},{0.024,-xa*1.1,0}};xa=8;
+!   CONV. 3.3E-2 @ DP=0.028, 28 points, EOR=0.5
+!
+!
+!
+OFF CTIME;OFF ECHO;
+MOMENTUM=3.5 GEV;
+!  # of bends = 112
+ ;
+! COORD QIN=(DX= 13.45760367E-3 DY=0  DZ= 0.253975127E-3
+!                              CHI1=-0.01887             CHI2=0  CHI3=0)
+!       QOU =(DX=-25.8795027E-3 DY=0  DZ=0
+!                              CHI1= 0.032255283         CHI2=0  CHI3=0 )
+!      QQIN=(DX= 13.45760367E-3 DY=0  DZ= 0.253975127E-3
+!                DIR=1         CHI1=-0.01887             CHI2=0  CHI3=0)
+!      QQOU =(DX=-25.8795027E-3 DY=0  DZ=0
+!                DIR=1         CHI1= 0.032255283         CHI2=0  CHI3=0 )
+ ;
+ ;
+ SEXT	SD1    =(L = .175     K2 = 0 )
+        SF1    =(L = .175     K2 = 0 )
+ ;
+
+ ;
+ DRIFT  LF1O    =(L = 1.5 )  LF2O    =(L = 2.1 )  LF00    =(L = .3 )
+        LC3O    =(L = 11.46862523238 )     LC4O    =(L = 4.91923532075 )
+        LC5O    =(L = 3.15999070535 )      LB2O    =(L = 2.27166116169 )
+        LO1O    =(L = 3 )    LFST    =(L = .8 )   LO0O    =(L = 2 )
+        LA7O    =(L = 9.98764988377 )      LA6O    =(L = 3.88408276116 )
+        LA5O    =(L = 2.03234470392 )      LA4O    =(L = 3.88724672513 )
+        LA3O    =(L = 4.09814780294 )      LA2O    =(L = 2.27728878987 )
+        LA1O    =(L = 2.39467373169 )      LSTL    =(L = 3.28591542798 )
+        L3TL    =(L = 3.28591542798 )      LXSX    =(L = .35 )
+        L7      =(L = .52 )  L4      =(L = 4.82981828785 )
+        LX40    =(L = .4 )   L8      =(L = 3.8 )
+        L5      =(L = 4.73600730278 )      L6      =(L = 2.63795900262 )
+        L0      =(L = 2.10100419569 )      L3      =(L = 4.23611433716 )
+        L2      =(L = 3.41535617369 )      L1      =(L = 6.59420289864 )
+        LTAL    =(L = .11619688059 )       LT0L    =(L = 3.70001811112 )
+        LT1L    =(L = 1.6897419335 )       LTBLL   =(L = 3.90448592928 )
+        LTBL    =(L = 5.09801666216 )      LT2L    =(L = 1.5 )
+        LT3L    =(L = 3.23660259754 )      LT4L    =(L = 6.34956840049 )
+        L3W     =(L = 4.23887169827 )      L3WW    =(L = 1.19022931555 )
+        LB22    =(L = 2.3 )  LW8NR   =(L = 1.5 )
+        LW7NR   =(L = 4.49863773478 )      LW6NR   =(L = 5.06901722836 )
+        LW5NR   =(L = 14 )   LW4NR   =(L = 8.6 )  LW3NR   =(L = 8.6 )
+        LW2NR   =(L = 8.6 )  LWF     =(L = .8 )   LW      =(L = .3 )
+        LWD     =(L = .8 )   LW2NL   =(L = 8.6 )  LW3NL   =(L = 8.6 )
+        LW4NL   =(L = 8.6 )  LW5NL   =(L = 14 )
+        LW6NL   =(L = 5.06901722836 )      LW7NL   =(L = 4.49863773478 )
+        LW8NL   =(L = 1.5 )  L3FR    =(L = 3.28591542798 )
+        LSFR    =(L = 3.28591542798 )      LR8FR   =(L = .76191048108 )
+        LR7FR   =(L = 2.75602226124 )      LR6FR   =(L = 4.54933794634 )
+        LR5FR   =(L = 7.30427660431 )      LR4FR   =(L = 5.86047081648 )
+        LR3FR   =(L = 7.41344282488 )      LXRF2   =(L = 3.5 )
+        LV2     =(L = 5 )    LV3     =(L = .8 )   LBV1    =(L = 1.445 )
+        LVB2    =(L = 2 )    LVB1    =(L = 1.445 )       LV4     =(L = 5 )
+        LV5     =(L = 7 )    LM2FL   =(L = 7.80318120495 )
+        LM3FL   =(L = 6.89469864194 )      LX200   =(L = 2 )
+        LM4FL   =(L = 6.37096989464 )      LM5FL   =(L = 6.80474152634 )
+        LX80    =(L = .8 )   LM6FL   =(L = 7.22516735959 )
+        LM7FL   =(L = 2.5 )  LX250   =(L = 2.5 )  LM8FL   =(L = 1 )
+        LSFL    =(L = 3.28591542798 )      L3FL    =(L = 3.28591542798 )
+        LW8OR   =(L = 1.5 )  LW7OR   =(L = 4.23382748157 )
+        LW6OR   =(L = 4.23382748157 )      LW5OR   =(L = 14 )
+        LW4OR   =(L = 8.6 )  LW3OR   =(L = 8.6 )  LW2OR   =(L = 8.6 )
+        LW2OL   =(L = 8.6 )  LW3OL   =(L = 8.6 )  LW4OL   =(L = 8.6 )
+        LW5OL   =(L = 14 )   LW6OL   =(L = 4.23382748157 )
+        LW7OL   =(L = 4.23382748157 )      LW8OL   =(L = 1.5 )
+        LA1I    =(L = 3.10591710093 )      LA2I    =(L = 3.5241281222 )
+        LA3I    =(L = 2.33152501528 )      LA4I    =(L = 2.72066881879 )
+        LA5I    =(L = 2.90425865829 )      LA6I    =(L = 4.59297938456 )
+        LA7I    =(L = 5.99856269969 )      LO1I    =(L = 3 )
+        LO0I    =(L = 2 )    LB2I    =(L = 4.83871708973 )
+        LC5I    =(L = 4.94078867709 )      LC4I    =(L = 3.68585752362 )
+        LC3I    =(L = 10.09459030875 )     LF2I    =(L = 2.915 )
+        LF1I    =(L = 1.685 )
+ ;
+ BEND   BQ1LP   =(ANGLE = -.012955 )
+        BC4O    =(L = 2.5 ANGLE = -.04071460282    E1 = .5   E2 = .5 )
+        BC2O    =(L = 3   ANGLE = .10993077264     E1 = .5   E2 = .5 )
+        BC3O    =(L = 3   ANGLE = -.02104299707    E1 = .5   E2 = .5 )
+        BC1O    =(L = 2.5 ANGLE = -.03121222886    E1 = .5   E2 = .5 )
+        B       =(L = .86 ANGLE = .05609986881     E1 = .5   E2 = .5
+           F1 = .2   FRINGE = 1 )
+        B2      =(L = .43 ANGLE = .0280499344 E1 = .5   E2 = .5
+           F1 = .2   FRINGE = 1 )
+        BW1     =(L = .25 ANGLE = 0 E2 = 1 )
+        BW2     =(L = .5  ANGLE = 0 E1 = .5   E2 = .5 )
+        BW3     =(L = .5  ANGLE = 0 E1 = .5   E2 = .5 )
+        BW4     =(L = .25 ANGLE = 0 E1 = 1 )
+        BSFR    =(L = .86 ANGLE = .06106351182     E1 = .5   E2 = .5
+           F1 = .2   FRINGE = 1 )
+        BV1     =(L = 3.18     ANGLE = .02162 E2 = 1    ROTATE = 90 DEG )
+        BV2     =(L = 3.18     ANGLE = -.02162     E1 = 1
+           ROTATE = 90 DEG )
+        BV3     =(L = 3.18     ANGLE = -.02162     E2 = 1
+           ROTATE = 90 DEG )
+        BV4     =(L = 3.18     ANGLE = .02162 E1 = 1    ROTATE = 90 DEG )
+        BSFL    =(L = .86 ANGLE = .05113622583     E1 = .5   E2 = .5
+           F1 = .2   FRINGE = 1 )
+        BC1I    =(L = 2.5 ANGLE = .04490914725     E1 = .5   E2 = .5 )
+        BC2I    =(L = 3   ANGLE = -.10997025973    E1 = .5   E2 = .5 )
+        BX3I    =(L = 3   ANGLE = .021   E1 = .5   E2 = .5 )
+        BC4I    =(L = 2.5 ANGLE = .05326464104     E1 = .5   E2 = .5 )
+ ;
+ QUAD   QC1O    =(L = .25 K1 = -.39229882887 )
+        QC2O    =(L = .3  K1 = .1689103266 )
+        QK3O    =(L = .2  K1 = 0 )
+        QC3O    =(L = .3  K1 = -.17205421352 )
+        QK4O    =(L = .2  K1 = 0 )
+        QC4O    =(L = .3  K1 = .12552943134 )
+        QC5O    =(L = .3  K1 = -.16512201391 )
+        QB1O    =(L = .3  K1 = .22388288414 )
+        QK5O    =(L = .2  K1 = 0 )
+        QK6O    =(L = .2  K1 = 0 )
+        QB2O    =(L = .3  K1 = -.22382382953 )
+        QO2O    =(L = .2  K1 = .14068783868 )
+        QO1O    =(L = .15 K1 = -.07262946847 )
+        QA8O    =(L = .3  K1 = -.11814749251 )
+        QA7O    =(L = .3  K1 = .1503284702 )
+        QA6O    =(L = .3  K1 = -.08971521798 )
+        QA5O    =(L = .3  K1 = .09171602936 )
+        QA4O    =(L = .3  K1 = -.06870162863 )
+        QA3O    =(L = .3  K1 = .0345397223 )
+        QA2O    =(L = .3  K1 = -.07416781211 )
+        QA1O    =(L = .3  K1 = .14908897547 )
+        QS0TL   =(L = .4  K1 = .06694407849   F1 = .05  FRINGE = 3 )
+        QS1TL   =(L = .2  K1 = -.10144012037  F1 = .05  FRINGE = 3 )
+        QS2TL   =(L = .2  K1 = .09711895118   F1 = .05  FRINGE = 3 )
+        QE2     =(L = .2  K1 = 0    F1 = .05  FRINGE = 3 )
+        QD3     =(L = .2  K1 = -.08637799967  F1 = .05  FRINGE = 3 )
+        QF3     =(L = .2  K1 = .10630498115   F1 = .05  FRINGE = 3 )
+        QF2     =(L = .2  K1 = .10412532552   F1 = .05  FRINGE = 3 )
+        QD2     =(L = .2  K1 = -.10626378002  F1 = .05  FRINGE = 3 )
+        QF1     =(L = .2  K1 = .08630348782   F1 = .05  FRINGE = 3 )
+        QD1     =(L = .2  K1 = -.09658565664  F1 = .05  FRINGE = 3 )
+        QTAL    =(L = .4  K1 = -.21759598613  F1 = .05  FRINGE = 3 )
+        QT1L    =(L = .4  K1 = .20749253556   F1 = .05  FRINGE = 3 )
+        QTBL    =(L = .4  K1 = 0    F1 = .05  FRINGE = 3 )
+        QT2L    =(L = .4  K1 = -.12407342335  F1 = .05  FRINGE = 3 )
+        QT3L    =(L = .4  K1 = .14352464957   F1 = .05  FRINGE = 3 )
+        QT4L    =(L = .2  K1 = -.06598949831  F1 = .05  FRINGE = 3 )
+        QW9NR   =(L = .4  K1 = .19684334181   F1 = .05  FRINGE = 3 )
+        QW8NR   =(L = .4  K1 = -.24572015024  F1 = .05  FRINGE = 3 )
+        QWBNR   =(L = .4  K1 = .11528151105   F1 = .05  FRINGE = 3 )
+        QW7NR   =(L = .4  K1 = .0699567001    F1 = .05  FRINGE = 3 )
+        QW6NR   =(L = .4  K1 = -.18154032597  F1 = .05  FRINGE = 3 )
+        QW5NR   =(L = .4  K1 = .15335220702   F1 = .05  FRINGE = 3 )
+        QW4NR   =(L = .4  K1 = -.10159502464  F1 = .05  FRINGE = 3 )
+        QW3NR   =(L = .4  K1 = .16876795502   F1 = .05  FRINGE = 3 )
+        QW2NR   =(L = .4  K1 = -.14672610456  F1 = .05  FRINGE = 3 )
+        QW1NR   =(L = .4  K1 = .17279996403   F1 = .05  FRINGE = 3 )
+        QDW     =(L = .2  K1 = -.0797691611   F1 = .05  FRINGE = 3 )
+        QFW     =(L = .2  K1 = .0797691611    F1 = .05  FRINGE = 3 )
+        QW1NL   =(L = .4  K1 = .17279996403   F1 = .05  FRINGE = 3 )
+        QW2NL   =(L = .4  K1 = -.14672610456  F1 = .05  FRINGE = 3 )
+        QW3NL   =(L = .4  K1 = .16876795502   F1 = .05  FRINGE = 3 )
+        QW4NL   =(L = .4  K1 = -.10159502464  F1 = .05  FRINGE = 3 )
+        QW5NL   =(L = .4  K1 = .15335220702   F1 = .05  FRINGE = 3 )
+        QW6NL   =(L = .4  K1 = -.18154032597  F1 = .05  FRINGE = 3 )
+        QW7NL   =(L = .4  K1 = .0699567001    F1 = .05  FRINGE = 3 )
+        QWBNL   =(L = .4  K1 = .11528151105   F1 = .05  FRINGE = 3 )
+        QW8NL   =(L = .4  K1 = -.24572015024  F1 = .05  FRINGE = 3 )
+        QW9NL   =(L = .4  K1 = .19684334181   F1 = .05  FRINGE = 3 )
+        QS2FR   =(L = .2  K1 = .09740403147   F1 = .05  FRINGE = 3 )
+        QS1FR   =(L = .2  K1 = -.10884457478  F1 = .05  FRINGE = 3 )
+        QS0FR   =(L = .4  K1 = .10340267623   F1 = .05  FRINGE = 3 )
+        QR7FR   =(L = .4  K1 = -.41067639986  F1 = .05  FRINGE = 3 )
+        QR6FR   =(L = .4  K1 = .29759873949   F1 = .05  FRINGE = 3 )
+        QR5FR   =(L = .4  K1 = -.21924327014  F1 = .05  FRINGE = 3 )
+        QR4FR   =(L = .4  K1 = .09690817809   F1 = .05  FRINGE = 3 )
+        QR3FR   =(L = .4  K1 = -.15160181922  F1 = .05  FRINGE = 3 )
+        QR2FR   =(L = .4  K1 = .16053578002   F1 = .05  FRINGE = 3 )
+        QR1FR   =(L = .4  K1 = -.25144755193  F1 = .05  FRINGE = 3 )
+        QFR2    =(L = .2  K1 = .09734201528   F1 = .05  FRINGE = 3 )
+        QDR2    =(L = .2  K1 = -.09734201528  F1 = .05  FRINGE = 3 )
+        QV1     =(L = .2  K1 = .13643287224   F1 = .05  FRINGE = 3 )
+        QV2     =(L = .2  K1 = -.10281873056  F1 = .05  FRINGE = 3 )
+        QV3     =(L = .4  K1 = .19199314629   F1 = .05  FRINGE = 3 )
+        QV4     =(L = .4  K1 = -.18961059839  F1 = .05  FRINGE = 3 )
+        QV5     =(L = .4  K1 = .21338213469   F1 = .05  FRINGE = 3 )
+        QV6     =(L = .2  K1 = -.13381119535  F1 = .05  FRINGE = 3 )
+        QM1FL   =(L = .2  K1 = .09143852738   F1 = .05  FRINGE = 3 )
+        QM2FL   =(L = .4  K1 = -.17966742536  F1 = .05  FRINGE = 3 )
+        QM3FL   =(L = .4  K1 = .16725687873   F1 = .05  FRINGE = 3 )
+        QM4FL   =(L = .4  K1 = -.1888490662   F1 = .05  FRINGE = 3 )
+        QM5FL   =(L = .4  K1 = .20188825087   F1 = .05  FRINGE = 3 )
+        QM6FL   =(L = .4  K1 = -.22393942078  F1 = .05  FRINGE = 3 )
+        QM7FL   =(L = .4  K1 = .21799006154   F1 = .05  FRINGE = 3 )
+        QS0FL   =(L = .4  K1 = .05168454575   F1 = .05  FRINGE = 3 )
+        QS1FL   =(L = .2  K1 = -.11341762194  F1 = .05  FRINGE = 3 )
+        QS2FL   =(L = .2  K1 = .09918313354   F1 = .05  FRINGE = 3 )
+        QW9OR   =(L = .4  K1 = .19684334181   F1 = .05  FRINGE = 3 )
+        QW8OR   =(L = .4  K1 = -.24572015024  F1 = .05  FRINGE = 3 )
+        QWBOR   =(L = .4  K1 = .11528151105   F1 = .05  FRINGE = 3 )
+        QW7OR   =(L = .4  K1 = .08076354061   F1 = .05  FRINGE = 3 )
+        QW6OR   =(L = .4  K1 = -.1971791286   F1 = .05  FRINGE = 3 )
+        QW5OR   =(L = .4  K1 = .16008082344   F1 = .05  FRINGE = 3 )
+        QW4OR   =(L = .4  K1 = -.09919291551  F1 = .05  FRINGE = 3 )
+        QW3OR   =(L = .4  K1 = .16619303988   F1 = .05  FRINGE = 3 )
+        QW2OR   =(L = .4  K1 = -.14895425467  F1 = .05  FRINGE = 3 )
+        QW1OR   =(L = .4  K1 = .17877706561   F1 = .05  FRINGE = 3 )
+        QW1OL   =(L = .4  K1 = .17877706561   F1 = .05  FRINGE = 3 )
+        QW2OL   =(L = .4  K1 = -.14895425467  F1 = .05  FRINGE = 3 )
+        QW3OL   =(L = .4  K1 = .16619303988   F1 = .05  FRINGE = 3 )
+        QW4OL   =(L = .4  K1 = -.09919291551  F1 = .05  FRINGE = 3 )
+        QW5OL   =(L = .4  K1 = .16008082344   F1 = .05  FRINGE = 3 )
+        QW6OL   =(L = .4  K1 = -.1971791286   F1 = .05  FRINGE = 3 )
+        QW7OL   =(L = .4  K1 = .08076354061   F1 = .05  FRINGE = 3 )
+        QWBOL   =(L = .4  K1 = .11528151105   F1 = .05  FRINGE = 3 )
+        QW8OL   =(L = .4  K1 = -.24572015024  F1 = .05  FRINGE = 3 )
+        QW9OL   =(L = .4  K1 = .19684334181   F1 = .05  FRINGE = 3 )
+        QA1I    =(L = .3  K1 = .17513278752 )
+        QA2I    =(L = .3  K1 = -.14507590597 )
+        QA3I    =(L = .3  K1 = .03843135823 )
+        QA4I    =(L = .3  K1 = -.06575437626 )
+        QA5I    =(L = .3  K1 = .10597346684 )
+        QA6I    =(L = .3  K1 = -.01033864396 )
+        QA7I    =(L = .3  K1 = .16003803721 )
+        QA8I    =(L = .3  K1 = -.15149224805 )
+        QO2I    =(L = .3  K1 = .14034036578 )
+        QO1I    =(L = .15 K1 = -.07232234376 )
+        QB2I    =(L = .3  K1 = -.13534477212 )
+        QB1I    =(L = .3  K1 = .17654497451 )
+        QC5I    =(L = .3  K1 = -.10626237821 )
+        QC4I    =(L = .3  K1 = .04626872216 )
+        QK4I    =(L = .2  K1 = 0 )
+        QC3I    =(L = .3  K1 = -.12915157432 )
+        QK3I    =(L = .2  K1 = 0 )
+        QC2I    =(L = .5  K1 = .13916470993 )
+        QC1I    =(L = .25 K1 = -.36182823323 )
+ ;
+ SEXT   SCYO    =(L = .05 K2 = .4099224071 )
+        SF1O    =(L = .35 K2 = .97850377339 )
+        SD1O    =(L = .35 K2 = -3.41320333945 )
+        SF2O    =(L = .35 K2 = .79927639561 )
+        SD2O    =(L = .35 K2 = -.02728914822 )
+        SF3O    =(L = .35 K2 = 1.76055131401 )
+        SD3O    =(L = .35 K2 = -4.24711407796 )
+        SF4O    =(L = .35 K2 = 1.14127144133 )
+        SD4O    =(L = .35 K2 = -3.76851232207 )
+        SF5O    =(L = .35 K2 = .85893529547 )
+        SD5O    =(L = .35 K2 = -2.91014650583 )
+        SF6O    =(L = .35 K2 = 1.55590212766 )
+        SD6O    =(L = .35 K2 = -1.87061326745 )
+        SF7O    =(L = .35 K2 = .5855190729 )
+        SF8O    =(L = .35 K2 = .13643611434 )
+        SD7O    =(L = .35 K2 = -5.96212172988 )
+        SF9O    =(L = .35 K2 = .48797611396 )
+        SD8O    =(L = .35 K2 = -5.2119668226 )
+        SFAO    =(L = .35 K2 = 1.25084237669 )
+        SD9O    =(L = .35 K2 = -2.83502731108 )
+        SFBO    =(L = .35 K2 = .56036064555 )
+        SDAO    =(L = .35 K2 = -.74298079389 )
+        SFCO    =(L = .35 K2 = .63223885565 )
+        SDBO    =(L = .35 K2 = -4.24485278627 )
+        SFDO    =(L = .35 K2 = .90293021016 )
+        SDCO    =(L = .35 K2 = -1.61578573014 )
+        SFEO    =(L = .35 K2 = .38384624729 )
+        SFEI    =(L = .35 K2 = .58339373342 )
+        SDCI    =(L = .35 K2 = -1.50299877347 )
+        SFDI    =(L = .35 K2 = 1.42075301284 )
+        SDBI    =(L = .35 K2 = -4.49343902529 )
+        SFCI    =(L = .35 K2 = .94156256375 )
+        SDAI    =(L = .35 K2 = -5.93294940678 )
+        SFBI    =(L = .35 K2 = 1.48882366741 )
+        SD9I    =(L = .35 K2 = -3.57621355311 )
+        SFAI    =(L = .35 K2 = 1.33756442109 )
+        SD8I    =(L = .35 K2 = -.76680248767 )
+        SF9I    =(L = .35 K2 = .32042985837 )
+        SD7I    =(L = .35 K2 = -5.84679542381 )
+        SF8I    =(L = .35 K2 = .01706533179 )
+        SF7I    =(L = .35 K2 = .87211379126 )
+        SD6I    =(L = .35 K2 = -3.41711136536 )
+        SF6I    =(L = .35 K2 = 1.02491324021 )
+        SD5I    =(L = .35 K2 = -2.36820978001 )
+        SF5I    =(L = .35 K2 = 1.50998190111 )
+        SD4I    =(L = .35 K2 = -2.0206469302 )
+        SF4I    =(L = .35 K2 = 1.12061185539 )
+        SD3I    =(L = .35 K2 = -5.14068387724 )
+        SF3I    =(L = .35 K2 = 1.53653424003 )
+        SD2I    =(L = .35 K2 = -.02594946894 )
+        SF2I    =(L = .35 K2 = .66763854153 )
+        SD1I    =(L = .35 K2 = -1.41585104977 )
+        SF1I    =(L = .35 K2 = .39058973068 )
+        SCYI    =(L = .05 K2 = -.46656692383 )
+ ;
+ ;
+ CAVI   CAV     =(VOLT = 476383.9570348  FREQ = 508887000 )
+ ;
+ ;
+ MARK   IP      =(ALPHAX = 8.58049513E-9 BETAX = .3300000013
+           ALPHAY =-3.82797233E-9   BETAY = 8.00000002E-3   
+           EX = 2.4874527E-11  EPX =-6.1495386E-11 EY =-1.4638322E-18 
+           EPY =-7.6541493E-17 R1 =-2.8258664E-20  R2 = 6.2263962E-21 
+           R3 = 3.3432917E-18  R4 =-1.0419402E-18  EMIX = 1.8E-8 
+           EMIY = 3.6E-10 DP = .02 )
+        FFINAL  =(ALPHAX = 9.2486441923  BETAX = 128.848406924   
+           PSIX = 1.5986570233 ALPHAY = -.4715662761   
+           BETAY = .5907226363 PSIY = 3.6236563972 EX =-4.1453164E-10 
+           EPX = 2.6028271E-11 EY = 1.3584705E-17  EPY = 8.8647714E-18
+           R1 =-5.2581041E-20  R2 =-7.000799E-19   R3 = 2.2623751E-19 
+           R4 = 2.8481207E-18  EMIX = 1.8E-8  EMIY = 3.6E-10 DP = .02 )
+        ENTRANCE=(ALPHAX = 1.9591551266  BETAX = 15.4819598502   
+           PSIX = 9.1586030462 ALPHAY = -1.3727750459  
+           BETAY = 9.5654585305     PSIY = 10.2839132559    
+           EX =-2.0357294E-10  EPX = 3.1583643E-11 EY = 4.9092107E-17 
+           EPY = 4.4837734E-18 R1 =-4.2462755E-20  R2 =-4.762127E-19  
+           R3 =-2.1682692E-21  R4 =-2.2748728E-19  EMIX = 1.8E-8 
+           EMIY = 3.6E-10 DP = .02 )
+ ;
+ MARK   IP      =(ALPHAX =-9.30826957E-5 BETAX = .3300238439
+           ALPHAY = 7.38230947E-5   BETAY = 7.99999099E-3   
+           EX =-9.58634676E-7  EPX = 4.25421818E-6 EY =-3.5626678E-18 
+           EPY =-1.5119257E-16 R1 = 7.3292103E-21  R2 = 2.453114E-22  
+           R3 =-7.5850921E-18  R4 = 7.7913648E-19  EMIX = 1.8E-8 
+           EMIY = 3.6E-10 DP = 3E-3 )
+        FFINAL  =(ALPHAX = 4.0359718437  BETAX = 102.340767536   
+           PSIX = 1.5677463476 ALPHAY = 4.8578477119   
+           BETAY = 12.4331728841    PSIY = 1.8159638069
+           EX = -.1633910965   EPX =-2.12355344E-3 EY =-1.2303324E-17 
+           EPY = 1.6698132E-17 R1 = 5.8862306E-19  R2 = 1.3906467E-17 
+           R3 =-2.3648347E-19  R4 =-5.5741588E-18  EMIX = 1.8E-8 
+           EMIY = 3.6E-10 DP = 3E-3 )
+        ENTRANCE=(ALPHAX = 1.9578803222  BETAX = 15.4192917495   
+           PSIX = 6.36433872   ALPHAY = -1.3754103157  
+           BETAY = 9.5653709816     PSIY = 9.8653229132
+           EX = 4.64538433E-6  EPX =-1.70664674E-6 EY = 1.2926831E-16 
+           EPY = 1.7051395E-17 R1 =-8.1364325E-21  R2 =-8.0013264E-19 
+           R3 = 6.5167136E-21  R4 =-2.8967602E-19  EMIX = 1.8E-8 
+           EMIY = 3.6E-10 DP = 3E-3 )
+        NSYMM   =(ALPHAX = 7.99360578E-15     BETAX = 16.72656547519
+           PSIX = 35.77373443264    ALPHAY = 1.93178806E-13
+           BETAY = 39.95256191677   PSIY = 36.26282629891
+           EX = .39295653633   EPX = -9.7144515E-17
+           EMIX = 1.686152843E-8    EMIY = 1.06682106E-12
+           DP = 7.491909922E-4 AZ = 7.39611792E-4 )
+ ;
+ ;
+ MARK   IP      =(ALPHAX = 1.34729215E-10     BETAX = .33000000036
+           ALPHAY = 2.22062961E-10  BETAY = 8.000000003E-3
+           EX = -2.4494763E-11 EPX = -1.4599864E-11
+           EY = -3.9705902E-18 EPY = 2.50664337E-16
+           R1 = 2.66080077E-20 R2 = -9.2056283E-21 R3 = 4.50401932E-18
+           R4 = -1.3685698E-18 EMIX = 1.811216586E-8
+           EMIY = 1.05381823E-12    DP = .02 )
+        FFINAL  =(ALPHAX = 8.25031910784 BETAX = 135.5186760226
+           PSIX = 1.5904774085 ALPHAY = -2.3022428446
+           BETAY = 6.71163722913    PSIY = 4.16720604141
+           EX = -.21084324206  EPX = 5.423772834E-3
+           EY = 9.90055085E-18 EPY = -1.5741931E-17
+           R1 = 5.78439991E-19 R2 = 8.47532576E-18 R3 = 1.90074109E-19
+           R4 = 2.7936993E-18  EMIX = 1.811216586E-8
+           EMIY = 1.05381823E-12    DP = .02 )
+        ENTRANCE=(ALPHAX = 1.80133652591 BETAX = 15.75208318618
+           PSIX = 9.39879487794     ALPHAY = -.39959264189
+           BETAY = 2.00873889536    PSIY = 9.30213079691
+           EX = -4.6757381E-11 EPX = 1.19979895E-11
+           EY = 6.63324061E-17 EPY = 1.32717995E-18
+           R1 = -4.3371878E-20 R2 = -8.326698E-19  R3 = -3.564988E-20
+           R4 = -8.0079514E-19 EMIX = 1.811216586E-8
+           EMIY = 1.05381823E-12    DP = .02 )
+        NMARK   =(ALPHAX = 1.082537837E-9     BETAX = 6.98709669866
+           PSIX = 16.40044447954    ALPHAY = 3.74433817E-10
+           BETAY = 27.85408480448   PSIY = 16.49637084001
+           EX = -.0799999999   EPX = -7.8569685E-12
+           EY = 8.12414516E-17 EPY = -8.9604898E-18
+           R1 = 8.37064049E-20 R2 = -5.5137985E-18 R3 = 1.25450998E-21
+           R4 = -2.2336452E-20 EMIX = 1.811216586E-8
+           EMIY = 1.05381823E-12    DP = .02  AZ = 7.39611792E-4
+           DZ = 7.39611792E-4  GEO = 1 )
+        NSYMMTN =(ALPHAX = 3.19760884E-11     BETAX = 15.33247587478
+           PSIX = 36.11079678877    ALPHAY = -3.9376324E-10
+           BETAY = 39.99999998045   PSIY = 36.13132492517
+           EX = .41840547346   EPX = -1.4161321E-11
+           EY = -1.4278233E-16 EPY = -7.0053917E-18
+           R1 = -3.3671612E-19 R2 = -5.8096733E-18 R3 = 7.13798459E-21
+           R4 = 1.08168113E-19 EMIX = 1.811216586E-8
+           EMIY = 1.05381823E-12    DP = .02  AZ = 7.39611792E-4 )
+        WGMARKF =(ALPHAX = 4.49800197E-11     BETAX = 30.56615715282
+           PSIX = 69.17291787507    ALPHAY = -2.4479768E-10
+           BETAY = 5.29954574488    PSIY = 68.33264962422
+           EX = -2.8840047E-10 EPX = -6.3471179E-13
+           EY = -1.088656E-16  EPY = -6.687283E-18 R1 = -1.6877791E-20
+           R2 = 3.25045277E-19 R3 = 2.10632882E-20 R4 = -7.0470912E-19
+           EMIX = 1.811216586E-8    EMIY = 1.05381823E-12    DP = .02 )
+        WGSYMF  =(ALPHAX = 4.49826842E-11     BETAX = 30.56615715282
+           PSIX = 72.31451052856    ALPHAY = -2.4479735E-10
+           BETAY = 5.29954574488    PSIY = 71.47424227771
+           EX = 2.88400469E-10 EPX = 6.34711793E-13
+           EY = 1.08865595E-16 EPY = 6.68728299E-18
+           R1 = -1.6877791E-20 R2 = 3.25045278E-19 R3 = 2.10632883E-20
+           R4 = -7.0470912E-19 EMIX = 1.811216586E-8
+           EMIY = 1.05381823E-12    DP = .02 )
+        RFMARK2 =(ALPHAX = -5.453667E-10 BETAX = 4.3622552705
+           PSIX = 140.0020436182    ALPHAY = 4.12899048E-10
+           BETAY = 25.10324568932   PSIY = 138.5826644532
+           EX = -1.0720513E-14 EPX = 3.95100693E-12
+           EY = -1.6994656E-16 EPY = 7.25919227E-18
+           R1 = -6.8336369E-19 R2 = -1.9584299E-18 R3 = -1.5951663E-20
+           R4 = -5.3101483E-20 EMIX = 1.811216586E-8
+           EMIY = 1.05381823E-12    DP = .02 )
+        KICKER1 =(ALPHAX = 3.69044639972 BETAX = 31.01109697085
+           PSIX = 153.7862445755    ALPHAY = -.92326487595
+           BETAY = 7.74676017676    PSIY = 152.9488653655
+           EX = 4.31109848E-11 EPX = -4.6172671E-12
+           EY = 8.00017456E-17 EPY = 2.47014359E-17
+           R1 = -1.0481922E-19 R2 = -1.9741351E-18 R3 = 1.25498405E-20
+           R4 = 1.21396704E-19 EMIX = 1.811216586E-8
+           EMIY = 1.05381823E-12    DP = .02 )
+        INJECTION=(ALPHAX = -3.99267633889     BETAX = 29.99999999895
+           PSIX = 156.149892   ALPHAY = 1.32063893673
+           BETAY = 16.33418668773   PSIY = 153.6889776616
+           EX = -1.9221686E-11 EPX = -3.9217856E-12
+           EY = 2.00831642E-16 EPY = -1.3321157E-17
+           R1 = 8.43798295E-20 R2 = -5.7289475E-19 R3 = -7.3533325E-21
+           R4 = 1.92736339E-19 EMIX = 1.811216586E-8
+           EMIY = 1.05381823E-12    DP = .02 )
+        KICKER2 =(ALPHAX = -1.56775602216     BETAX = 13.77323126773
+           PSIX = 156.9278372291    ALPHAY = 6.05681944728
+           BETAY = 25.77902877156   PSIY = 154.1324395152
+           EX = -2.8730772E-11 EPX = -4.040255E-12 EY = 2.53572197E-16
+           EPY = -6.1679589E-17     R1 = 4.58118552E-19
+           R2 = -2.2041419E-18 R3 = -7.4024039E-20 R4 = 3.82455277E-19
+           EMIX = 1.811216586E-8    EMIY = 1.05381823E-12    DP = .02 )
+ ;
+ ;
+ MARK   CELLR=()  RFFIT=()
+ ;
+ MONI   M = ()                                                          
+ ;
+!
+LINE LLLL=(BC LBC BC2 LBC BCA);
+LINE FQCELL=( NMARK 
+           QD1 L1 QF1 QF1 L2 B L3 SD1 SD1 L7 QD2 QD2 L4   QF2 QF2 LX40 SF1 SF1 L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF1 SF1 LX40 QF2 QF2   L4 QD2 QD2 L7 SD1 SD1 L3 B L2 QF1 QF1 L1 QD1)
+ ;
+LINE ACC  =(L1R   CAV  L1R)
+     ACC2 =(LXRF2 CAV LXRF2)
+     ARCLH=(RFMARK1 4*RFCL1 
+                QDR1 ACC QFR1 QFR1 ACC   QM1TL LM1TL  QM2TL 
+                     LM2TL  QM3TL LM3TL  QM4TL LM4TL  QM5TL  LM5TL QM6TL  
+           LM6TL B L3TL SD1 SD1 L7 QS1TL QS1TL L4   QS2TL QS2TL LX40 SF1 SF1 L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF1 SF1 LX40 QF2 QF2   L4 QD2 QD2 L7 SD1 SD1 L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD1 SD1 L7 QD2 QD2 L4   QF2 QF2 LX40 SF1 SF1 L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF1 SF1 LX40 QF2 QF2   L4 QD2 QD2 L7 SD1 SD1 L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD1 SD1 L7 QD2 QD2 L4   QF2 QF2 LX40 SF1 SF1 L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF1 SF1 LX40 QF2 QF2   L4 QD2 QD2 L7 SD1 SD1 L3 B L2 QF1 QF1 L1 QD1
+          NMARK 
+           QD1 L1 QF1 QF1 L2 B L3 SD1 SD1 L7 LTAL QTAL  LT0L  QT1L LT1L LX40 SF1 SF1  LTBLL QTBL LTBL QT2L LT2L B LT3L 
+              QT3L  LT4L  QT4L  NSYMMTN)
+     ARCL=(ARCLH -ARCLH)
+     ARCTN=(IP -COLO 
+           QD1 L1 QF1 QF1 L2 B L3 SD1O L7 QD2 QD2 L4   QF2 QF2 LX40 SF2O L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF2O LX40 QF2 QF2   L4 QD2 QD2 L7 SD2O L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD2O L7 QD2 QD2 L4   QF2 QF2 LX40 SF3O L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF3O LX40 QF2 QF2   L4 QD2 QD2 L7 SD3O L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD3O L7 LTAL QTAL LT0L QT1L LT1L LX40 SF4O LTBLL QTBL LTBL QT2L LT2L B LT3L 
+              QT3L  LT4L  QT4L  NSYMM  QT4L LT4L QT3L
+           LT3L B LT2L QT2L LTBL QTBL LTBLL SF4O LX40 LT1L QT1L LT0L QTAL LTAL L7 SD4O L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD4O L7 QD2 QD2 L4   QF2 QF2 LX40 SF5O L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF5O LX40 QF2 QF2   L4 QD2 QD2 L7 SD5O L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD5O L7 QD2 QD2 L4   QF2 QF2 LX40 SF6O L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF6O LX40 QF2 QF2   L4 QD2 QD2 L7 SD6O L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD6O L7 QD2 QD2 L4   QF2 QF2 LX40 SF7O L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF7O LX40 QW9NR L4 QW8NR L7 LXSX L3W QWBNR L3WW B2 LB22 LB22 B2 LW8NR QW7NR  
+                 LW7NR QW6NR LW6NR QW5NR LW5NR QW4NR LW4NR QW3NR LW3NR QW2NR LW2NR 
+                 QW1NR LWF WIG LWD QDW QDW LWD WIG LWF QFW
+                 2*WGCLF WGSYMF)
+     ARCOT=(     WGSYMF 2*WGCLF
+                 QFW LWF WIG LWD QDW QDW LWD WIG LWF QW1OL
+                 LW2OL QW2OL LW3OL QW3OL LW4OL QW4OL LW5OL QW5OL LW6OL QW6OL LW7OL
+           QW7OL LW8OL B2 LB22 LB22 B2 L3WW QWBOL L3W LXSX L7 QW8OL L4 QW9OL LX40 SF7I L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3 
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF7I LX40 QF2 QF2   L4 QD2 QD2 L7 SD6I L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD6I L7 QD2 QD2 L4   QF2 QF2 LX40 SF6I L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF6I LX40 QF2 QF2   L4 QD2 QD2 L7 SD5I L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD5I L7 QD2 QD2 L4   QF2 QF2 LX40 SF5I L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF5I LX40 QF2 QF2   L4 QD2 QD2 L7 SD4I L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD4I L7 LTAL QTAL LT0L QT1L LT1L LX40 SF4I LTBLL QTBL LTBL QT2L LT2L B LT3L 
+              QT3L  LT4L  QT4L  NSYMM  QT4L LT4L QT3L
+           LT3L B LT2L QT2L LTBL QTBL LTBLL SF4I LX40 LT1L QT1L LT0L QTAL LTAL L7 SD3I L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD3I L7 QD2 QD2 L4   QF2 QF2 LX40 SF3I L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF3I LX40 QF2 QF2   L4 QD2 QD2 L7 SD2I L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD2I L7 QD2 QD2 L4   QF2 QF2 LX40 SF2I L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF2I LX40 QF2 QF2   L4 QD2 QD2 L7 SD1I L3 B L2 QF1 QF1 L1 QD1 COLI IP)
+     MARCOT=( -ARCOT ) 
+     RFSECT=(WGSYMF 2*WGCLF
+                 QFW LWF WIG LWD QDW QDW LWD WIG LWF QW1NL
+                 LW2NL QW2NL LW3NL QW3NL LW4NL QW4NL LW5NL QW5NL LW6NL QW6NL LW7NL
+           QW7NL LW8NL B2 LB22 LB22 B2 L3WW QWBNL L3W LXSX L7 QW8NL L4 QW9NL LX40 SF8O L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3 
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF8O LX40 QF2 QF2   L4 QD2 QD2 L7 SD7O L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD7O L7 QD2 QD2 L4   QF2 QF2 LX40 SF9O L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF9O LX40 QF2 QF2   L4 QD2 QD2 L7 SD8O L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD8O L7 QD2 QD2 L4   QF2 QF2 LX40 SFAO L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SFAO LX40 QF2 QF2   L4 QD2 QD2 L7 SD9O L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD9O L7 LTAL QTAL LT0L QT1L LT1L LX40 SFBO LTBLL QTBL LTBL QT2L LT2L B LT3L 
+              QT3L  LT4L  QT4L  NSYMM  QT4L LT4L QT3L
+           LT3L B LT2L QT2L LTBL QTBL LTBLL SFBO LX40 LT1L QT1L LT0L QTAL LTAL L7 SDAO L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SDAO L7 QD2 QD2 L4   QF2 QF2 LX40 SFCO L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SFCO LX40 QF2 QF2   L4 QD2 QD2 L7 SDBO L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SDBO L7 QD2 QD2 L4   QF2 QF2 LX40 SFDO L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SFDO LX40 QF2 QF2   L4 QD2 QD2 L7 SDCO L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SDCO L7 QD2 QD2 L4   QF2 QF2 LX40 SFEO L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SFEO LX40 QS2FR QS2FR L4 QS1FR QS1FR L7 LXSX L3FR QS0FR LSFR BSFR LR8FR
+              QR7FR  LR7FR QR6FR  LR6FR QR5FR  LR5FR
+              QR4FR  LR4FR QR3FR  LR3FR QR2FR ACC2 QR1FR 
+                  ACC2         QFR2 QFR2 ACC2 QDR2 RFMARK2
+              QDR2 ACC2 QV1 QV1 ACC2 QV2
+              QV2  LV2  QV3  LV3 BV1 LBV1 BV2 LVB2 LVB2 BV3 LVB1 BV4 LV3 QV4 LV4 QV5 LV5 QV6  
+              QV6 ACC2 QFR2 QFR2 ACC2 QDR2
+            RFMARK2 3*RFCL2 QDR2 ACC2 QM1FL QM1FL 
+              LM2FL  QM2FL  LM3FL  QM3FL 
+              LX200 KICKER1 LM4FL  QM4FL  LM5FL INJECTION LX80 QM5FL 
+              LM6FL QM6FL  LM7FL KICKER2   LX250 QM7FL   
+           LM8FL BSFL LSFL QS0FL L3FL LXSX L7 QS1FL QS1FL L4 QS2FL QS2FL LX40 SFEI L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SFEI LX40 QF2 QF2   L4 QD2 QD2 L7 SDCI L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SDCI L7 QD2 QD2 L4   QF2 QF2 LX40 SFDI L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SFDI LX40 QF2 QF2   L4 QD2 QD2 L7 SDBI L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SDBI L7 QD2 QD2 L4   QF2 QF2 LX40 SFCI L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SFCI LX40 QF2 QF2   L4 QD2 QD2 L7 SDAI L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SDAI L7 LTAL QTAL LT0L QT1L LT1L LX40 SFBI LTBLL QTBL LTBL QT2L LT2L B LT3L 
+              QT3L  LT4L  QT4L  NSYMM  QT4L LT4L QT3L
+           LT3L B LT2L QT2L LTBL QTBL LTBLL SFBI LX40 LT1L QT1L LT0L QTAL LTAL L7 SD9I L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD9I L7 QD2 QD2 L4   QF2 QF2 LX40 SFAI L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SFAI LX40 QF2 QF2   L4 QD2 QD2 L7 SD8I L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD8I L7 QD2 QD2 L4   QF2 QF2 LX40 SF9I L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF9I LX40 QF2 QF2   L4 QD2 QD2 L7 SD7I L3 B L2 QF1 QF1 L1 QD1
+          NMARK
+           QD1 L1 QF1 QF1 L2 B L3 SD7I L7 QD2 QD2 L4   QF2 QF2 LX40 SF8I L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF8I LX40 QW9OR L4 QW8OR L7 LXSX L3W QWBOR L3WW B2 LB22 LB22 B2 LW8OR QW7OR  
+                 LW7OR QW6OR LW6OR QW5OR  LW5OR QW4OR LW4OR QW3OR LW3OR QW2OR  LW2OR 
+                 QW1OR LWF WIG LWD QDW QDW LWD WIG LWF QFW
+                 2*WGCLF WGSYMF)
+     RFCL1=(RFMARK1 QDR1 ACC QFR1 QFR1 ACC QDR1)
+     RFCL2=(RFMARK2 QDR2 ACC2 QFR2 QFR2 ACC2 QDR2)
+     WIG=( LW BW1 LW BW2 LW BW3 LW BW2 LW BW3 LW BW2 LW BW3 LW BW2 LW BW4 LW)
+     WGCL =( WGMARK QDW  LWD  WIG LWF QFW QFW LWF  WIG LWD QDW)
+     WGCLF =( WGMARKF QFW LWF  WIG LWD QDW QDW  LWD  WIG LWF QFW)
+     WGCLFM =( WGMARKF QFW LWF  WIG LWD QDW QDW  LWD  WIG LWF QFW WGSYMF)
+     ASC=(ARCTN RFSECT ARCOT)
+     COLM=(NMARK COL)
+     COLIM=(NMARK COLI)
+;
+    ASC=(ARCTN RFSECT ARCOT)
+    ASCM= ( RFSEC2 IRIN IROUT RFSEC1)
+    COLM=(NMARK COL)
+    COLIM=(NMARK COLI)
+     ACC  =(L1R          CAV  L1R)
+     ACCV =(LXC ZV1 L1RC CAV  L1R)
+     ACCH =(LXC ZH1 L1RC CAV  L1R)
+     ACCV1=(LXC ZV1 L1RC CAV1 L1R)
+     ACCH1=(LXC ZH1 L1RC CAV1 L1R)
+     ACC1 =(L1R    CAV1    L1R)
+;
+ ;
+ LINE SUPPO=(   B LSTL QS0TL L3TL LXSX L7 QS1TL QS1TL L4   QS2TL QS2TL LX40 SF1O L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF1O LX40 QF2 QF2   L4 QD2 QD2 L7 SD1O L3 B L2 QF1 QF1 L1 QD1)
+      SUPPI=(   B LSTL QS0TL L3TL LXSX L7 QS1TL QS1TL L4   QS2TL QS2TL LX40 SF1I L8 QE2 QE2 L5 QD3 QD3 L6 B L0 QF3
+           QF3 L0 B L6 QD3 QD3 L5 QE2 QE2 L8 SF1I LX40 QF2 QF2   L4 QD2 QD2 L7 SD1I L3 B L2 QF1 QF1 L1 QD1)
+;
+ ;
+LINE COLI=(-SUPPI LERLCI)
+     COLO=(-SUPPO LERLCO)
+     COLIO=(NMARK COLI IP -COLO NMARK)
+ ;
+ LINE   CCSYHI   =( SCYI SCYI LF00  BC2I LO1I BX3I LFST
+                    QO2I LF00 BX3I LF00 BX3I  LO0I LFST QO1I)
+        CCSYMI   =( CCSIN  CCSYHI -CCSYHI)
+        LERLCI = ( ENTRANCE 
+               LF00 QA1I LA1I QA2I LA2I QA3I LA3I QA4I LA4I QA5I LA5I LA5I
+               QA6I  LA6I BC1I LF00 QA7I  LA7I 
+               QA8I  LF00 SCYI SCYI CCSYHI -CCSYHI
+               SCYI SCYI LF00 QB2I LB2I QB1I LF00   BC4I  LF00
+               FINALI)
+        FINALI   =(   FFINAL   QC5I LC5I QC4I  LF00 QK4I LC4I QC3I LF00 QK3I LC3I
+            LF00 QC2I QC2I LF00 LF2I QC1I QC1I  LF1I  )
+        CCSYHO   =( SCYO SCYO LF00  BC2O LO1O BC3O LFST
+                    QO2O LF00 BC3O LF00 BC3O LO0O LFST QO1O)
+        CCSYMO   =( CCSIN  CCSYHO -CCSYHO)
+        LERLCO = ( ENTRANCE 
+               LF00 QA1O LA1O QA2O LA2O QA3O LA3O QA4O LA4O QA5O LA5O LA5O
+               QA6O LA6O BC1O  LF00 QA7O  LA7O 
+               QA8O  LF00 SCYO SCYO CCSYHO -CCSYHO
+               SCYO SCYO  LF00 QB2O LF00 QK6O  LB2O QK5O LF00 QB1O LF00 BC4O LF00
+               FINALO)
+        FINALO   =(   FFINAL   QC5O LC5O QC4O  LF00 QK4O LC4O QC3O LF00 QK3O LC3O 
+           LF00 QC2O       QC2O       LF00 LF2O       
+           BQ1LP   QC1O       QC1O   BQ1LP         LF1O )
+;
+     MARK ENTRANCE=() NMARKGI=() NMARKGO=()
+       CCSIN=(BETAX=10 BETAY=10)
+      FSF=() FSFEX=() FFINAL=() IP=()
+;
+ LINE RING=( RFMARK1  ARCTN  RFSECT  ARCOT )
+      IR  =( COLIM -COLO )
+;
+PBUNCH=3.3E10; MINCOUP=0.02;
+!
+OFF ECHO CTIME;
+FFS USE=FQCELL;
+     NPARA=1;
+     EMFLG='M';
+     FLENG='ON';
+     FSUPP='OFF';
+     FINIT='OFF';
+     cell cal
+     vquad=Element['VALUE','Q*'];nquad=Element['NAME','Q*'];
+    ! setquad[name_,val_]:=Module[{},Element['VALUE',name]=val];
+    ! MapThread[Element['VALUE',#1 ]=#2 &,{nquad,vquad}]
+    ! Do[Element['VALUE',nquad[ii]]=vquad[ii],{ii,Length[nquad]}]
+       fit SD1.2 nx .25 ny .25
+       fit SF1.2 SF1.4 nx 0.5 ny 0.5 
+       fit B.2 ex .183
+       fit ex -0.065
+       fit leng 76.1809 nx 1.25 ny 1.25
+       fit qf1.2 qf3.2 bx 10
+       fit qf1.2 qf2.2 bx 10
+       fit qd1 qd2.2 by 10
+       fit qd1 qd3.2 by 10
+       b 2*Pi/112  b l .86
+       l7 .52
+       free q* l0 l1 l2 l3 l4 l5 l6  fix qe2
+       CONVERGENCE=1e-28;
+   IF EMFLG=='H'
+       fix * free qe2 qd2 qd3 qf2 qf3
+       fit rej leng nx ny;fit sd1.2 rej * ;fit qf1.2 qf2.2 rej bx;fit qf1.2 qf3.2 rej bx;
+       fit qd1 qd2.2 rej by fit qd1 qd3.2 rej by;fit qd1 qd2.2 by 10;
+       fit ex -.30 fit b.2 ex 0.35  
+   ENDIF
+   IF EMFLG=='L'
+       fix * free qe2 qd2 qd3 qf2 qf3
+       fit rej leng nx ny;fit sd1.2 rej * ;fit qf1.2 qf2.2 rej bx;fit qf1.2 qf3.2 rej bx;
+       fit qd1 qd2.2 rej by fit qd1 qd3.2 rej by;fit qd2.2 qd3.2 by 10;
+       fit ex 0.11 fit b.2 ex 0.05  
+   ENDIF
+!     go
+       org nmark 0 0 0 360/112*2 0 0 ; 
+       calc;
+       xxx=LINE['GEO','***'][1,1]/2/Tan[Pi*2/112*2]-LINE['GEO','QF3.2'][1,2];
+       yyy=LINE['GEO','***'][1,1]/2/Sin[Pi*2/112*2];
+       delr=(xxx+yyy)/2-yyy
+       Clear[xxx];Clear[yyy];
+     stop
+! FFS USE=CCSYMI;
+!   FIT NX .5 NY .5           BX 10 BY 10
+!   FREE Q*     CONVERGENCE=1E-25 GO
+!   Stop
+! FFS USE=CCSYMO;
+!   FIT NX .5 NY .5           BX 10 BY 10
+!   FREE Q*     CONVERGENCE=1E-25 GO
+!   Stop
+!;
+  by0=0.008;
+!!!!!!!   Do the following to change the tunes !!!!!
+  nx0=46.52;
+  ny0=46.08;
+!  FFS USE=RFCL2;
+!    CELL FIT NX .25 NY .25 ; CONVERGENCE=1e-30; 
+!    FREE Q* go
+!    stop
+  FFS USE=ASC;
+    CONVERGENCE=1e-25;
+    fit rfmark2 bx @ by @ ax 0 ay 0
+    fit rfmark2.2 bx @ by @ ax 0 ay 0 
+    fit sfeo.2 rfmark2.2 bxm 80 bym 80
+    fit nx nx0 ny ny0 free qr* qv*
+!   go
+    sdsq:=Apply[Plus,Element["K2","SD*"]^2];
+    coda="DP=0.024 fitp 24 go DP=0.02 fitp 20 go DP=0.016 fitp 16 go DP=0.02 fitp 20 go";
+    cell
+   MatchingAmplitude:={{-0.026,xa,xa/3},{0.026,xa,xa/3},{0.022,xa*1.2,0},{-0.022,xa*1.2,0},{-0.024,-xa*1.1,0},{0.024,-xa*1.1,0}};xa=8;
+    fix * rej total; 
+!   fit rfmark2 bx @ 20 by @ 20 ax 0 20 ay 0 20 
+    fit rfmark2.2 bx @ 20 by @ 20 ax 0 20 ay 0 20 
+    fit nx nx0 20 ny ny0 20 ax 0 20 ay 0 20 bx .33 20 by by0 20
+    free s{fdc}*; nodifcod
+    ExponentOfResidual=0.5;
+    DP=0.02
+    gym="p=12;rep 4 DP=p*0.001 fitp p go  p=p+4 until; DP=0.02 fitp 20 go"
+    sf* min 0 sf* max 2.5 sd* max 0 sd* min -6 
+
+
+!!!!      Function Test     !!!!!
+
+
+  FunctionTest=Class[{},{},{t0,a,b,c,d,e,f,g,C,a1,x,a2,b2,x2,
+        ndim=300},
+
+    Constructor[]:=(
+        C=Literal[Class][{},{},{aa},];
+        );
+
+    Fact[xx_]:=If[xx<=1,1,xx*Fact[xx-1]];
+
+    Fun[xx_,z__,xx_]:=xx+z;
+
+    Test[]:=(
+      t0=TimeUsed[];
+      SeedRandom[35];
+      Print[Timing[Do[c=C[];c@aa=1,{ndim}];"Instance"]];
+      a1=a=Table[Random[],{ndim},{ndim}];
+      b=Table[Join[Random[200],Table["b",{200}]],{ndim}];
+      Print[Timing[Do[D[Sin[x2]*x2^3,x2],{800}];"D"]];
+      Print[Timing[Do[
+        Fit[a[[,{1,2}]],a2*x2+b2,x2,{a2,0},{b2,0}],{300}];"Fit"]];
+      Print[Timing[Do[Sort[Flatten[a]],{5}];"Sort"]];
+      Print[Timing[Do[Plot[{Sin[x2],Cos[x2]},{x2,-Pi,Pi},
+        DisplayFunction->Identity],{6}];"Plot"]];
+      Print[Timing[Do[ListPlot[a[[,{1,2}]],
+        DisplayFunction->Identity],{400}];"ListPlot"]];
+      Print[Timing[Do[Spline[a[[,{1,2}]]],{700}];"Spline"]];
+      Print[Timing[Do[Join[a,b],{2200}];"Join"]];
+      Print[Timing[Do[Append[a,b],{8000}];"Append"]];
+      Print[Timing[Do[ToExpression["a=1+Pi"],{60000}];"ToExpression"]];
+      Print[Timing[Do[ToString/@[a,{-1}],{1}];"ToString"]];
+      Print[Timing[Do[Fun[1,2,3,1],{400000}];"Fun"]];
+      Print[Timing[Do[b/.{x_String:>x//"c"},{2}];"Replace"]];
+      Print[Timing[Do[Do[b[[,i]],{i,ndim}],{100}];"ThreadPart"]];
+      Print[Timing[
+        Do[Do[a1[[i,j]]=a1[[j,i]],{i,ndim},{j,i}],{1}];"Part"]];
+      Print[Timing[Do[Fact/@[a,{-1}],{1}];"Map"]];
+      Print[Timing[Do[Thread[a],{100}];"Thread Real List"]];
+      Print[Timing[Do[Thread[b],{20}];"Thread Non-Real List"]];
+      Print[Timing[Do[Fact[200],{500}];"Fact"]];
+      Print[Timing[Do[Flatten[b],{100}];"Flatten"]];
+
+      Print[" \n******* Function Test CPU used = ",tf=TimeUsed[]-t0," sec\n"]);
+
+        ];
+  ft=FunctionTest[];
+  ft@Test[];
+  ft=.;
+  MemoryCheck[1]
+
+end
+
+
+!!!!       Optics Calculation Test     !!!!!!!
+
+    t0=TimeUsed[]
+    Do[FFS["CALC"],{15}];
+    Print[" \n******* Optics Calculation Test: CPU time used = ",toc=TimeUsed[]-t0," sec\n"];
+
+
+!!!    Tracking Test   !!!!!!!
+  t0=TimeUsed[]
+  RFSW RADCOD
+  e=Emittance[SaveEMIT->True]
+
+  DynamicApertureSurvey[{{0,50},{0,50},Table[i,{i,-16,16,4}]},60,Output->6];
+  Print[" \n******* Tracking Test CPU used = ",tt=TimeUsed[]-t0," sec\n"];
+ 
+
+!!!!       Matching Test     !!!!!!!
+
+    t0=TimeUsed[]
+    CONVERGENCE=2e-4;
+    dp0=0.020;
+    dp=dp0;
+    FFS["fitp dp/0.001;go",6];
+    Print[" \n******* Matching Test: CPU time used = ",tm=TimeUsed[]-t0," sec\n"];
+
+Print["\n *********** summary of the bench mark \n",
+"\tFunction Test \t",tf,"\n\tOptics Test\t",toc,
+"\n\tTracking Test\t",tt, "\n\tMatching Test\t",tm,
+"\n\tOverall Score (smaller is faster): ",tf/42+(toc+tt+tm)/96];
+end
+Abort  
+
+

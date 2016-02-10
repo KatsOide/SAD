@@ -1,0 +1,30 @@
+/Users/oide/SAD/oldsad/src/itfpmat.f:1022.17:
+
+      integer*4 i                                                       
+                 1
+Warning: Unused variable 'i' declared at (1)
+/Users/oide/SAD/oldsad/src/itfpmat.f:1117.34:
+
+      integer*4 i,m,isp0,isp2,isp1                                      
+                                  1
+Warning: Unused variable 'isp1' declared at (1)
+/Users/oide/SAD/oldsad/src/itfpmat.f:1117.29:
+
+      integer*4 i,m,isp0,isp2,isp1                                      
+                             1
+Warning: Unused variable 'isp2' declared at (1)
+/Users/oide/SAD/oldsad/src/itfpmat.f:1117.19:
+
+      integer*4 i,m,isp0,isp2,isp1                                      
+                   1
+Warning: Unused variable 'm' declared at (1)
+/Users/oide/SAD/oldsad/src/itfpmat.f:987.24:
+
+      integer*8 k,kp,kap,ka,kt                                          
+                        1
+Warning: Unused variable 'kap' declared at (1)
+/Users/oide/SAD/oldsad/src/itfpmat.f:987.20:
+
+      integer*8 k,kp,kap,ka,kt                                          
+                    1
+Warning: Unused variable 'kp' declared at (1)

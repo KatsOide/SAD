@@ -1,0 +1,69 @@
+(* This is an example of init.local.n: edit and rename this to init.local.n *)
+(* Please localize this file as you like. *)
+
+(* If you use `Task Launcher' from KBFrame Menu Bar, comment out next two line
+   and set launcher command path and X11 window name of launcher application *)
+!KBF$Launcher = "/usr/local/bin/kbl";
+!KBF$LauncherName = "KBTaskLaunch";
+
+(* If you change default printer name, comment out next line
+   and set queue name of local printer. (see lpr/lp manual) *)
+!KBF$PrinterName = "lp";
+
+(* If you use `Screen Shot' feature,   comment out next line
+   and set screen shot archive directory prefix. *)
+!KBF$ScreenShotDirectory = "/ldata/KEKB/KCG/ScrShot";
+
+(* CAUTION:
+   HardCopy/Make PDF feature need ImageMagick's convert command.
+   If you want invoke convert command of other host,
+   set hostname to CONVHOST environment variable and comment out next line
+   and fill convert command path of external host *)
+!KBF$Remote$convert["convert.hostname"] = "/path.to.convert";
+
+Environment@@[{
+  {"UNIX95",""},
+
+  (* Example: CONVHOST setting(see previous comment for KBF$Remote$convert) *)
+!  {"CONVHOST",If[Environment["HOST"][1,5]=="alsad","acsad0",""]},
+
+  (* Example: Libraty@Require/AutoLoad function's default search path *)
+!  {"SAD_LIBRARY", "/ldata/KEKB/KCG/SAD/lib:/ldata/KEKB/KCG/SAD:."},
+
+  (* Example: SAD related environment variable override *)
+!  {"TK_LIBRARY",If[Environment["OSTYPE"]=="darwin","/SAD/share/TclTk/Darwin/lib/tk8.3","",""]},
+!  {"PYTHONPATH","/SAD/share/Packages/"},
+!  {"KBFRAMEDIR","/SAD/share/KBFrame"}
+
+  (* Example: EPICS environment setting *)
+!  {"EPICS","/cont/epics/R312/epics"},
+!  {"EPICS_CA_AUTO_ADDR_LIST","NO"},
+!  {"EPICS_CA_ADDR_LIST","172.19.63.255 192.153.107.144 192.153.107.161 130.87.71.176"},
+
+  (* Example: temporary directory changes *)
+!  {"TMPDIR","/scratch"},
+
+  (* Example: other setting *)
+!  {"SERVHOST","172.19.58.19"},
+!  {"TBLDIR","/users/furukawa/tbl"},
+  },{1}];
+
+(* Example: Additional system function definition *)
+FullDISPLAY[]:=Module[{d=Environment["DISPLAY"]},
+  If[d[1]==":",Environment["HOST"]//d,d]];
+
+ChooseHost[opt___]:=Module[{
+  {host,file,op}=SwitchCases[{opt},
+    {(Rule|RuleDelayed)[AlternativeHost,_],(Rule|RuleDelayed)[File,_],_}]},
+  If[host<=>{} && file<=>{},
+    op=op/.{(Rule|RuleDelayed)->List};
+    Apply[
+      If[StringMatchQ[Environment[ToString[#]],#2],
+        System["rsh "//host[[1,2]]//" 'env DISPLAY="//FullDISPLAY[]//
+          " /SAD/bin/gs "//file[[1,2]]//" &'"];
+        Exit[]]&,op,{1}]]];
+
+(* Example: additional AutoLoader binding *)
+AutoLoad[KEKBDatabase,
+  PackagesDirectory//"Oracle.n"];
+! End of File

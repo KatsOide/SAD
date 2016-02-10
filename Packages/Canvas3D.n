@@ -1,0 +1,272 @@
+(* Canvas3D 12/2/2007 *)
+
+CanvasGraphics3D=Class[{CanvasGraphics},
+
+  {CanvasObject3D},
+
+  { 
+    Canvas$EyePoint={5,-10,3},
+    Canvas$ProjectYDirection={0,0,1},
+    Canvas$LightSources={{{1000,5Pi/3,Pi/3},{1,1,1}}},
+    Canvas3D$PlotRange=Null,
+    Canvas3D$PlotRegion=Null,
+    Canvas$EyeDistance,
+    Canvas$EyeDirection,
+    Canvas$ProjectY,
+    Canvas$ProjectX,
+    Canvas3D$Offset,
+    Canvas3D$RegionSize,
+    Canvas3D$RegionCenter,
+    Canvas3D$RangeSize,
+    Canvas3D$RangeCenter,
+    Canvas3D$Scale1,
+    Canvas$LightSourcesAbsolute,
+    Canvas3D$Coord1,
+    Canvas3D$Coord2,
+    CanvasProjection,
+    CanvasProjectionList,
+    To3DRegion
+    },
+
+  Constructor[c_]:=CanvasGraphics`Constructor[c];
+
+  SetCanvas$EyePoint[]:=(
+    Canvas$Window={{7.2-4.8/GoldenRatio,7.2+4.8/GoldenRatio},
+      {1.8,1.8+9.6/GoldenRatio}};
+    Canvas$PlotRange={{-1.4,1.4},{-1.4,1.4}};
+    Canvas$PlotRegion={{0,1},{0,1}};
+    SetCanvas$Scale[Automatic];
+    Canvas$EyeDistance=Sqrt[Canvas$EyePoint.Canvas$EyePoint];
+    Canvas$EyeDirection=Canvas$EyePoint/Canvas$EyeDistance;
+    Canvas$ProjectY=Canvas$ProjectYDirection-
+      (Canvas$ProjectYDirection.Canvas$EyeDirection)*Canvas$EyeDirection;
+    Canvas$ProjectY=Canvas$ProjectY/Sqrt[Canvas$ProjectY.Canvas$ProjectY];
+    Canvas$ProjectX=-{
+      Canvas$EyeDirection[[2]]*Canvas$ProjectY[[3]]-
+        Canvas$EyeDirection[[3]]*Canvas$ProjectY[[2]],
+      Canvas$EyeDirection[[3]]*Canvas$ProjectY[[1]]-
+        Canvas$EyeDirection[[1]]*Canvas$ProjectY[[3]],
+      Canvas$EyeDirection[[1]]*Canvas$ProjectY[[2]]-
+        Canvas$EyeDirection[[2]]*Canvas$ProjectY[[1]]};
+    Canvas3D$Offset=Apply[Plus,Canvas3D$PlotRange,{1}]/2;
+    Canvas3D$RegionSize=Apply[#2-#1&,Canvas3D$PlotRegion,{1}]/2;
+    Canvas3D$RegionCenter=Apply[Plus,Canvas3D$PlotRegion,{1}]/2;
+    Canvas3D$RangeSize=Apply[#2-#1&,Canvas3D$PlotRange,{1}]/2;
+    Canvas3D$RangeCenter=Apply[Plus,Canvas3D$PlotRange,{1}]/2;
+    Canvas3D$Scale1={1,1,1}/Canvas3D$RangeSize;
+
+    With[{Canva3D$Scale,Canvas$EyeDirection,Canvas$EyePoint,Canvas$Offset,
+      Canvas$EyeDistance,Canvas$ProjectX,Canvas$ProjectY,Canvas$Scale,
+      Canvas3D$Offset,Canvas3D$Scale1,Canvas3D$RegionSize,
+      Canvas3D$RegionCenter},
+      
+      Canvas$LightSourcesAbsolute=Map[
+        Module[
+          {{r,phi,theta}=#[[1]]},
+          {Plus@@(r*
+            {Sin[theta]*Cos[phi],Sin[theta]*Sin[phi],Cos[theta]}*
+              {Canvas$EyeDirection,Canvas$ProjectX,Canvas$ProjectY}),
+            #[[2]]}]&,Canvas$LightSources];
+      Canvas3D$Coord1[u_]:=(u-Canvas3D$Offset)*Canvas3D$Scale1;
+      Canvas3D$Coord2[u_]:=u*Canvas3D$RegionSize+Canvas3D$RegionCenter;
+      CanvasProjection[u_]:=
+        Canvas3DProjection[u,Canvas$EyePoint,
+          Canvas$ProjectX*Canvas$Scale[[1]],
+          Canvas$ProjectY*Canvas$Scale[[2]],
+          Canvas$Offset];
+      CanvasProjectionList[x_]:=CanvasProjection[
+        Thread[Canvas3D$Coord2[Canvas3D$Coord1[Thread[x]]]]];
+      To3DRegion[x_]:={
+        CanvasProjection[{Canvas3D$RegionCenter+x*Canvas3D$RegionSize}][[2,1]],
+        x}];);
+
+  FrameLabelTag[{1,0,0}]:=1;
+  FrameLabelTag[{0,1,0}]:=2;
+  FrameLabelTag[{0,0,1}]:=3;
+
+  With[{def={FrameLabel->{"","",""}}},
+    DrawFrame3D[c_,opt___]:=Module[
+      {op=Override[opt,def]},
+      Scan[DrawFrame3D1[c,#,FrameLabel/.op]&,FindOuterFrame[]]];
+    DrawFrame3D1[c_,{p1_,p2_,axis_},fl_]:=Module[
+      {form0,fm,s,logt,dx,oc,tv,range,tick,mt,label,fc,Mt,
+        others={1,1,1}-axis,logdt,tcs,tcsp,mt1},
+      oc=(tv=p1*others*Canvas3D$RangeSize)+Canvas3D$RangeCenter*others;
+      tv/=40;
+      range=Plus@@(Canvas3D$PlotRange*axis);
+      {tick,Mt,mt,logdt}=CanvasDrawerTicks[range,15/DPI,1,Linear];
+      If[tick<=>{},
+        tcs=TickString[tick];
+        tcs=(#[[1]]*axis+#[[2]]*tv+oc)&/@tcs;
+        tcsp=CanvasProjectionList[tcs][[2]];
+        The$Canvas[Create$Line]=tcsp;
+        logt=Ceiling[Log[10,Max[Abs[Mt[[1]]],
+          Abs[Mt[[Min[2,Length[Mt]]]]]]]+1e-10];
+        fm=If[logdt<0,"S"//(Max[logt,1]-logdt+4)//"."//-logdt,""];
+        dx=tv*7;
+        mt1=Thread[{Mt,CanvasProjectionList[(#*axis+dx*others+oc)&/@Mt][[2]]}];
+        Scan[(
+          Block[{$FORM=fm},s=ToString[#[[1]]]];
+          The$Canvas[Create$Text]={#[[2]],Text->s,Anchor->"c"})&,mt1]];
+      If[(label=fl[[FrameLabelTag[axis]]])<=>"",
+        fc=CanvasProjectionList[{(Plus@@range)/2*axis+tv*15*others+oc}][[2]];
+        The$Canvas[Create$Text]={fc,Text->label,Anchor->"c"}]]];
+
+  With[{box={
+    {{-1,-1,-1},{-1,-1, 1}},{{-1,-1,-1},{-1, 1,-1}},
+    {{-1,-1,-1},{ 1,-1,-1}},{{-1,-1, 1},{-1, 1, 1}},
+    {{-1,-1, 1},{ 1,-1, 1}},{{-1, 1,-1},{-1, 1, 1}},
+    {{-1, 1,-1},{ 1, 1,-1}},{{-1, 1, 1},{ 1, 1, 1}},
+    {{ 1,-1,-1},{ 1,-1, 1}},{{ 1,-1,-1},{ 1, 1,-1}},
+    {{ 1,-1, 1},{ 1, 1, 1}},{{ 1, 1,-1},{ 1, 1, 1}}}},
+
+    DrawBox3D[c_,Back]:=Scan[
+      (The$Canvas[Create$Line]={#[[2]],Fill->"black"})&,
+      Take[Sort[CanvasProjectionList[
+        Thread[Thread[#]*Canvas3D$RangeSize
+          +Canvas3D$RangeCenter]]&/@box],3]
+      ];
+
+    DrawBox3D[c_,Front]:=Scan[
+      (The$Canvas[Create$Line]={#[[2]],Fill->"black"})&,
+      Take[Sort[CanvasProjectionList[
+        Thread[Thread[#]*Canvas3D$RangeSize
+          +Canvas3D$RangeCenter]]&/@box],{4,-1}]
+      ]];
+
+  With[{def={EliminateTooSmall->True}},
+    Canvas3DPrimitive[Triangle[t_,opt___]]:=Module[
+      {ts=Canvas3D$Coord1[Thread[Flatten[t,1]]],tc,
+        eli=EliminateTooSmall/.{opt}/.def},
+      tc=Canvas3DClipTriangle[ts,
+        Canvas3D$RegionSize,Canvas3D$RegionCenter];
+      Thread[{CanvasProjection[tc],
+        RGBColor[Canvas3DLightTriangle[tc,Canvas$LightSourcesAbsolute]]}]]];
+
+  Neighbor[x_]:=To3DRegion/@((x[[2]]*#)&/@{{1,1,-1},{1,-1,1},{-1,1,1}});
+
+  With[{p={{-1,-1,-1},{-1,-1,1},{-1,1,-1},{-1,1,1},
+    {1,-1,-1},{1,-1,1},{1,1,-1},{1,1,1}}},
+    FindOuterFrame[]:=Module[
+      {p1=Sort[To3DRegion/@p,(#1[[1,2]]>#2[[1,2]])&][[1]],
+        pn2,axis1,axis2,axis3p,pn213,pn223,axis3},
+      pn2=Sort[Neighbor[p1]][[{1,3}]];
+      {axis1,axis2}={p1[[2]],#[[2]],(#[[2]]-p1[[2]])/2}&/@pn2;
+      axis3p={-1,-1,-1}+(Abs[axis1[[3]]]+Abs[axis2[[3]]])*2;
+      {pn213,pn223}=To3DRegion[#*axis3p]&/@pn2[[,2]];
+      axis3=If[pn223[[1,1]]>pn2[[2,1,1]] && pn213[[1,1]]>pn2[[1,1,1]],
+        {pn223[[2]],pn2[[2,2]],(pn2[[2,2]]-pn223[[2]])/2},
+        {pn213[[2]],pn2[[1,2]],(pn2[[1,2]]-pn213[[2]])/2}];
+      If[Plus@@#[[3]]<0,{#[[2]],#[[1]],Abs[#[[3]]]},#]&/@
+        {axis1,axis2,axis3}]];
+
+  With[{def={PlotRegion->{{-1.2,1.2},{-1,1},{-0.5,0.5}},
+    PlotRange->{Automatic,Automatic,Automatic},
+    FrameLabel->{"","",""},
+    Lighting->True,
+    Box->False.,
+    EyePoint->{5,-10,5},LightSources->{{{10000,-3Pi/8,Pi/4},{0,0,1}},
+      {{10000,-Pi/4,3Pi/8},{1,0,0}},
+      {{10000,-Pi/8,Pi/4},{0,1,0}}}}},
+
+    ListBirdsEyePlot[l_,opt___]:=Module[
+      {op=Override[opt,def],x=l[[1]],zy=l[[2]],z,y,dr,drc,drw,pr,
+        box,bfront,
+        x1,x2,y1,y2,z1,z2,y11,y12,y21,y22,zys,n,t,t2,t3,tp},
+      ClearCanvas[];
+      z=zy[[,1]];
+      y=zy[[,2]];
+      dr=MinMax/@{x,y,z};
+      drc=Apply[Plus,dr,{1}]/2;
+      drw=1.1*(dr-drc)+drc;
+      pr=PlotRange/.op;
+      pr=Map[Switch[#[[1]],
+        Automatic,#[[2]],
+        {Automatic,_},{#[[2,1]],#[[1,2]]},
+        {_,Automatic},{#[[1,1]],#[[2,1]]},
+        _,#[[1]]]&,Thread[{pr,drw}]];
+      Canvas3D$PlotRange={pr[[1]],pr[[3]],pr[[2]]};
+      {Canvas$EyePoint,Canvas$LightSources,Canvas3D$PlotRegion}=
+        {EyePoint,LightSources,PlotRegion}/.op;
+      SetCanvas$EyePoint[];
+      If[box=Box/.op,DrawBox3D[The$Canvas,Back]];
+      x1=Drop[x,-1];
+      x2=Drop[x,1];
+      y1=Drop[#,-1]&/@y;
+      y2=Drop[#,1]&/@y;
+      y11=Drop[y1,-1];
+      y12=Drop[y1,1];
+      y21=Drop[y2,-1];
+      y22=Drop[y2,1];
+      n=Length[x];
+      z1=Thread[Table[Drop[z,-1],{n-1}]];
+      z2=Thread[Table[Drop[z,1],{n-1}]];
+      zys=Thread[{z1,y11,y21,z2,y12,y22}];
+      If[Lighting/.op,
+        t=Flatten[Map[
+          {Thread[{Thread[{x1,#[[1]],#[[2]]}],
+            t2=Thread[{x2,#[[1]],#[[3]]}],
+            t3=Thread[{x1,#[[4]],#[[5]]}]}],
+            Thread[{t3,t2,Thread[{x2,#[[4]],#[[6]]}]}]}&,zys],2];
+        tp=Sort[Canvas3DPrimitive[Triangle[t]]];
+        Scan[(The$Canvas[Create$Polygon]={#[[1,2]],Fill->#[[2]]})&,tp],
+        t=Flatten[Map[CanvasProjection[
+          Thread[{
+            Thread[Canvas3D$Coord2[Canvas3D$Coord1[{x1,#[[1]],#[[2]]}]]],
+            Thread[Canvas3D$Coord2[Canvas3D$Coord1[{x2,#[[1]],#[[3]]}]]],
+            Thread[Canvas3D$Coord2[Canvas3D$Coord1[{x2,#[[4]],#[[6]]}]]],
+            Thread[Canvas3D$Coord2[Canvas3D$Coord1[{x1,#[[4]],#[[5]]}]]],
+            Thread[Canvas3D$Coord2[Canvas3D$Coord1[{x1,#[[1]],#[[2]]}]]]}]]&,
+          zys],1];
+        tp=Sort[t];
+        Scan[(The$Canvas[Create$Polygon]={#[[2]],Fill->"white"};
+          The$Canvas[Create$Line]={#[[2]],Fill->"black"})&,tp]];
+      If[box,DrawBox3D[The$Canvas,Front]];
+      DrawFrame3D[The$Canvas,Null@@op]]];
+
+  With[{def={PlotRegion->{{-1.2,1.2},{-1.2,1.2},{-0.6,0.6}},
+    PlotRange->{Automatic,Automatic,Automatic},
+    Box->True,
+    EyePoint->{6,-10,4}}},
+
+    ListPlot3D[l_,opt___]:=Module[
+      {op=Override[opt,def],box,
+        {x,y,z}=Thread[l],dr,drc,drw,pr,tp},
+      ClearCanvas[];
+      dr=MinMax/@{x,y,z};
+      drc=Apply[Plus,dr,{1}]/2;
+      drw=1.1*(dr-drc)+drc;
+      pr=PlotRange/.op;
+      pr=Map[Switch[#[[1]],
+        Automatic,#[[2]],
+        {Automatic,_},{#[[2,1]],#[[1,2]]},
+        {_,Automatic},{#[[1,1]],#[[2,1]]},
+        _,#[[1]]]&,Thread[{pr,drw}]];
+      Canvas3D$PlotRange=pr;
+      {Canvas$EyePoint,Canvas3D$PlotRegion}=
+        {EyePoint,PlotRegion}/.op;
+      SetCanvas$EyePoint[];
+      tp=CanvasProjectionList[l][[2]];
+      tp=Thread[(Thread[tp]-Canvas$Offset)/Canvas$Scale];
+      Canvas$LastID1=0;
+      If[box=Box/.op,DrawBox3D[The$Canvas,Back]];
+      Primitive[Point[tp]];
+      If[box,DrawBox3D[The$Canvas,Front]];
+      DrawFrame3D[The$Canvas,Null@@op]]]
+
+  ];
+
+CanvasGraphics3D@CanvasObject3D[_]=Null;
+
+InitCanvas3D[c_]:=(
+  If[CanvasGraphics3D@CanvasObject3D[c]===Null,
+    CanvasGraphics3D@CanvasObject3D[c]=CanvasGraphics3D[c]];
+  The$CanvasObject3D=CanvasGraphics3D@CanvasObject3D[c]);
+
+ListBirdsEyePlot[x__]:=(
+  InitCanvas3D[The$Canvas];
+  With[{f=The$CanvasObject3D},f@ListBirdsEyePlot[x]]);
+
+ListPlot3D[x__]:=(
+  InitCanvas3D[The$Canvas];
+  With[{f=The$CanvasObject3D},f@ListPlot3D[x]]);

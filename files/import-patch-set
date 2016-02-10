@@ -1,0 +1,67 @@
+#!/bin/sh
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+	-n)
+	    cmd=echo
+	    ;;
+	-svn)
+	    cmd=svn
+	    ;;
+	--)
+	    break
+	    ;;
+
+	-*)
+	    ;;
+
+	*)
+	    break
+	    ;;
+    esac
+    shift
+done
+
+if [ $# -lt 2 ]; then
+    echo "usage: `basename $0` [-svn] repository_directory set_files..." 2>&1
+    exit 1
+fi
+
+target="$1"
+shift
+
+while [ $# -gt 0 ]; do
+    patch_ver=
+    case $1 in
+	*set-*)
+	    patch_set="$1"
+	    patch_ver=${1##*set-}
+	    ;;
+    esac
+    if [ "x${patch_ver}" != "x" -a -d ${target}/ ]; then
+	echo "Collecting patch files of ${patch_set} in ${target}"
+	patches=`cat ${patch_set} | grep -v ^#`
+	for file in ${patches}; do
+	    full="${file}"
+	    base="${file%%@*}"
+	    ver="${file##*@}"
+	    if [ ! -r "${target}/${full}" ]; then
+		if [ -r "${target}/${base}" ]; then
+		    ${cmd} mv "${target}/${base}" "${target}/${full}"
+		    echo "	${target}/${full}	(move ./${base})"
+		    echo "	${target}/${base}	(remove)"
+		else
+		    if [ -r "${target}${ver}/${base}" ]; then
+			${cmd} cp "${target}${ver}/${base}" "${target}/${full}"
+			echo "	${target}/${full}	(copy ../${target}${ver}/${base})"
+		    else
+			echo "#Patch[${base}] for ${target} version ${patch_ver} is not found"
+		    fi
+		fi
+	    fi
+	done
+    fi
+    shift
+done
+
+# End of File

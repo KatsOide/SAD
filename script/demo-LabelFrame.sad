@@ -1,0 +1,26 @@
+! Demo code for LabelFrame[] widget
+!
+! Demonstration to embed other widget(CheckButton[])
+! into label of LabelFrame[] widhet.
+!
+
+FFS;
+
+w = KBMainFrame["LabelFrameDemo", f, Title->"LabelFrame Demo"];
+cb[0] = CheckButton[Text->"Enable", Variable:>cbv[0],
+  Command:>(
+    Scan[(cb[#][State] = If[cbv[0], "normal", "disabled"])&,
+      Range[3]])];
+cf = KBFComponentFrame[f, Add->{
+  KBFHook[Command:>(cbv[0] = True)],
+  KBFGroup[WidgetOption->{
+    LabelWidget->cb[0]
+    }],
+  KBFCheckButton[Text->"A", Variable:>cbv[1], WidgetVariable:>cb[1]],
+  KBFCheckButton[Text->"B", Variable:>cbv[2], WidgetVariable:>cb[2]],
+  KBFCheckButton[Text->"C", Variable:>cbv[3], WidgetVariable:>cb[3]],
+  }];
+
+TkWait[];
+
+! End of File

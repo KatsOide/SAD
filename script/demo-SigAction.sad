@@ -1,0 +1,40 @@
+! Demo code of SigAction[] function
+!
+! Fork child process for sending signals to parent.
+! Register signal handler for SIGINT and SIGHUP.
+! Child process send two SIGHUP and two SIGINT.
+! SIGINT handler automatically removed by SA$RESETHAND flag.
+! Thus, second SIGINT terminate parent process.
+!
+
+FFS;
+
+ppid = GetPID[];	(* Hold parent process ID *)
+
+With[{pid = Fork[]}, Switch[pid,
+  -1, Print["Fork system call is failed!"]; Exit[],
+
+  0, (
+    Sleep[1];		(* Wait 1second *)
+    Kill[ppid, SIGHUP];	(* Send 1st SIGHUP *)
+    Sleep[1];		(* Wait 1second *)
+    Kill[ppid, SIGHUP];	(* Send 2nd SIGHUP *)
+    Sleep[1];		(* Wait 1second *)
+    Kill[ppid, SIGINT];	(* Send 1st SIGINT *)
+    Sleep[1];		(* Wait 1second *)
+    Execve["/bin/kill",	(* Send 2nd SIGINT by kill *)
+      {"kill", "-INT", ToString[ppid]},
+      Environments[]]),
+
+  _, (
+    sigHUP = 0;
+    SigAction[SIGHUP,
+      Action:>((sigHUP += 1;
+	Print["Recieve SIGHUP[", sigHUP, "]: ", {##}])&),
+      Flag->{SA$RESTART}];
+    SigAction[SIGINT,
+      Action:>(Print["Recieve SIGINT: ", {##}]&),
+      Flag->{SA$RESTART, SA$RESETHAND}];
+    )]];
+
+! End of File

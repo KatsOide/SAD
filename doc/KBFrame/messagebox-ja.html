@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="ja-JP">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-2022-JP">
+<TITLE>KBFrame MessageBox</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<A NAME="top" HREF="index-ja.html">目次</A>
+<A HREF=dialog-ja.html>入力用ダイアログボックス</A>
+<A HREF=filedialog-ja.html>ファイル選択用ダイアログボックス</A>
+
+<HR><DIV ALIGN="CENTER"><H2>メッセージボックス</H2></DIV><HR>
+
+<P>あるメッセージを独立したウインドウに表示してユーザの注意を喚起するには、
+KBFMessageBoxを使用します。第一引数は表示する文字列です。</P>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["KBFMBEx1", f, Title-&gt;"KBFMessageBox  Example 1"];
+b = Button[f, Text-&gt;" OK ? ", Command:&gt;KBFMessageBox["Are you OK ?"]];
+TkWait[];
+</CODE></PRE>
+
+<P><IMG SRC="messagebox1.gif" WIDTH=176 HEIGHT=130 ALT="KBFMessageBox Example"></P>
+
+<P>いくつかのボタンの中からユーザに選択させるには、Buttonsオプションで
+ボタンのラベルをリストとして与えます。KBFMessageBoxはどのボタンが
+押されたかをリスト中のラベルの順番として返します。また、Titleオプションで
+ウインドウのタイトルを、Bitmapオプションでメッセージの左側に表示される
+ビットマップをそれぞれ指定できます。</P>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["KBFMBEx2", f, Title-&gt;"KBFMessageBox  Example 2"];
+b = Button[f, Text-&gt;" OK ? ", Command:&gt;ask[]];
+ask[] := (
+  ans = KBFMessageBox["Are you OK ?", Buttons-&gt;{"OK","Not OK"},
+           Title-&gt;"Really OK ?", Bitmap-&gt;"question"];
+  Print[ans];
+);
+TkWait[];
+</CODE></PRE>
+
+<P><IMG SRC="messagebox2.gif" WIDTH=185 HEIGHT=136
+ ALT="MessageBox Example with Bitmap"></P>
+
+<P><A HREF="#top">top</A></P>
+
+<HR>
+<ADDRESS>このページに関する御意見・質問は
+<A HREF="mailto:samo.stanic@kek.jp">Samo Stanic</A>
+まで.</ADDRESS>
+</BODY>
+</HTML>

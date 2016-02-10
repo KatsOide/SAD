@@ -1,0 +1,1 @@
+/home/oide/SAD/oldsad/contrib/tcl8.5.8/library/msgs/pt_br.msg

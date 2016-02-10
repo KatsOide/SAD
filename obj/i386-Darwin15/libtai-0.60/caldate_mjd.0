@@ -1,0 +1,72 @@
+caldate_mjd(3)             Library Functions Manual             caldate_mjd(3)
+
+
+
+[1mNAME[0m
+       caldate_mjd - manipulate calendar dates
+
+[1mSYNTAX[0m
+       [1m#include <caldate.h>[0m
+
+       void [1mcaldate_frommjd[22m(&[4mcd[24m,[4mday[24m,[4mweekday[24m,[4myearday[24m);
+       long [1mcaldate_mjd[22m(&[4mcd[24m);
+       void [1mcaldate_normalize[22m(&[4mcd[24m);
+
+       void [1mcaldate_easter[22m(&[4mcd[24m);
+
+       struct caldate [4mcd[24m;
+       long [4mday[24m;
+       int *[4mweekday[24m;
+       int *[4myearday[24m;
+
+[1mBASIC CONVERSIONS[0m
+       Every  calendar  date has a [4mmodified[24m [4mJulian[24m [4mday[24m [4mnumber[24m.  The day number
+       increases by 1 every day.  Day number 0 is 17 November 1858.  Day  num-
+       ber 51604 is 1 March 2000.
+
+       [1mcaldate_frommjd  [22mputs  into  [4mcd[24m  the date corresponding to the modified
+       Julian day number [4mday[24m.
+
+       [1mcaldate_frommjd [22malso computes the day of the week (0 through 6) and the
+       day  of  the  year  (0  through 365).  It stores the day of the week in
+       [1m*[4m[22mweekday[24m if [4mweekday[24m is nonzero.  It stores  the  day  of  the  year  in
+       [1m*[4m[22myearday[24m if [4myearday[24m is nonzero.
+
+       [1mcaldate_mjd [22mreturns the modified Julian day number corresponding to the
+       date in [4mcd[24m.
+
+       [1mcaldate_mjd [22maccepts days outside the range 1 to 31, referring  to  days
+       before  the  beginning  or after the end of the month.  It also accepts
+       months outside the range 1 to 12, referring to months before the begin-
+       ning or after the end of the year.
+
+       [1mcaldate_normalize [22mcalls [1mcaldate_frommjd [22mwith the result of [1mcaldate_mjd[22m.
+       This means that it accepts out-of-range months and out-of-range days in
+       [4mcd[24m, and puts a valid calendar date back into [4mcd[24m.
+
+[1mOTHER FUNCTIONS[0m
+       [1mcaldate_easter  [22mreads  the year from [4mcd[24m and then changes [4mcd[24m to the date
+       of Easter in the same year.
+
+[1mLIMITATIONS[0m
+       The [1mcaldate [22mroutines currently support the  Gregorian  calendar,  which
+       was  defined  in 1582 and adopted at different times in different coun-
+       tries.  For earlier dates the [1mcaldate [22mroutines work with ``virtual Gre-
+       gorian,''  defined  mathematically  by the 400-year Gregorian cycle for
+       years before 1582.  The Julian calendar is not supported.
+
+       The Gregorian calendar will be replaced by a new calendar within a  few
+       thousand  years.   The [1mcaldate_frommjd [22mand [1mcaldate_mjd [22mroutines will be
+       upgraded accordingly.  The current [1mcaldate_frommjd [22mand [1mcaldate_mjd [22mrou-
+       tines are not useful for dates far in the future.
+
+       Day  numbers  will  overflow  a  32-bit  [1mlong  [22msometime  after the year
+       5000000; all systems should upgrade to 64-bit [1mlong[22ms before then.   [1mcal-[0m
+       [1mdate_mjd [22mdoes not check for overflow.
+
+[1mSEE ALSO[0m
+       caldate(3)
+
+
+
+                                                                caldate_mjd(3)

@@ -1,0 +1,13 @@
+FFS;
+
+ a=Thread[{Range[10],Random[10]}];
+ f=Spline[a,Derivative->Periodic];
+
+  Plot[f[x],{x,1,10}];Update[];
+
+end
+
+
+
+
+

@@ -1,0 +1,49 @@
+--- unix/tkUnixEvent.c.orig	2013-04-02 03:21:26.000000000 +0900
++++ unix/tkUnixEvent.c	2013-04-18 10:27:02.649147034 +0900
+@@ -12,6 +12,10 @@
+ 
+ #include "tkUnixInt.h"
+ #include <signal.h>
++#include <sys/types.h>
++#include <sys/socket.h>
++#include <netinet/in.h>
++#include <netinet/tcp.h>
+ #ifdef HAVE_XKBKEYCODETOKEYSYM
+ #  include <X11/XKBlib.h>
+ /* Work around stupid un-const-ified Xkb headers.  Grrrrr.... */
+@@ -152,6 +156,35 @@
+     if (display == NULL) {
+ 	return NULL;
+     }
++
++    {
++	int on = 1;
++#ifdef TCP_KEEPIDLE
++	int keepidle = 600;
++#endif /* TCP_KEEPIDLE */
++#ifdef TCP_KEEPINTVL
++	int keepintvl = 30;
++#endif /* TCP_KEEPINTVL */
++#ifdef TCP_KEEPCNT
++	int keepcnt = 4;
++#endif /* TCP_KEEPCNT */
++
++	setsockopt(ConnectionNumber(display), SOL_SOCKET, SO_KEEPALIVE, 
++		   (char *)&on, sizeof(on));
++#ifdef TCP_KEEPIDLE
++	setsockopt(ConnectionNumber(display), IPPROTO_TCP, TCP_KEEPIDLE, 
++		   (char *)&keepidle, sizeof(keepidle));
++#endif /* TCP_KEEPIDLE */
++#ifdef TCP_KEEPINTVL
++	setsockopt(ConnectionNumber(display), IPPROTO_TCP, TCP_KEEPINTVL, 
++		   (char *)&keepintvl, sizeof(keepintvl));
++#endif /* TCP_KEEPINTVL */
++#ifdef TCP_KEEPCNT
++	setsockopt(ConnectionNumber(display), IPPROTO_TCP, TCP_KEEPCNT, 
++		   (char *)&keepcnt, sizeof(keepcnt));
++#endif /* TCP_KEEPCNT */
++    }
++
+     dispPtr = (TkDisplay *) ckalloc(sizeof(TkDisplay));
+     memset(dispPtr, 0, sizeof(TkDisplay));
+     dispPtr->display = display;

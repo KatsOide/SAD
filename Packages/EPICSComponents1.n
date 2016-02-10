@@ -1,0 +1,203 @@
+(a_ = KBDigitalIndicator[p_,opt___]) ^:= Module[
+  {xs1,xs2,xs3,xs4,ys1,ys2,ys3,ys4,bcont,d1,d2,lcol,bcol,dh,dw,ds,csw,csh,lw,udh,dxsl,dpd,dxl,dyl,dxd,bgcol="black",def,er,fw,sc},
+
+  def = {DigitWidth->60,DigitHeight->100,SegmentWidth->11,DigitSpace->6,
+         Controller->False,FieldWidth->{7,3},SegmentColor->{"#fb8","black"}};
+  {er,dw,dh,lw,ds,fw,sc,bcont}=SwitchCases[Override[opt,def],
+         {Rule[EPICSRecName,_],Rule[DigitWidth,_],
+         Rule[DigitHeight,_],Rule[SegmentWidth,_],Rule[DigitSpace,_],
+         Rule[FieldWidth,_],Rule[SegmentColor,_],Rule[Controller,_]}];
+
+! Parameters
+  bcont = Controller/.bcont;
+  {d1,d2} = FieldWidth/.fw;
+  a[$KDI$DigitWidth1] = d1;
+  a[$KDI$DigitWidth2] = d2;
+  {lcol,bcol} = SegmentColor/.sc;
+  a[$KDI$ActiveColor] = lcol;
+  a[$KDI$InactiveColor] = bcol;
+  dw = DigitWidth/.dw;
+  dh = DigitHeight/.dh;
+  ds = DigitSpace/.ds;
+  lw = SegmentWidth/.lw;
+  csw = 0;
+  csh = 9;
+  udh = 10;
+  dxsl = dh*.04;
+  dpd = dw*.17;
+  a[$KDI$ConCol] = "#8f8";!"#282";
+  a[$KDI$DisConCol] = "#f66";!"#c44";
+
+  a[$KDI$ConBmp] = "@"//KBF$ConfDir//"/constat5.xbm";
+  a[$KDI$DisConBmp] = "@"//KBF$ConfDir//"/constat1.xbm";
+  a[$KDI$Value] = 0;
+  a[$KDI$PrevStr] = "                                              ";
+
+  If [er<=>{},
+    a[$EPICS$Rec] = CaMonitor[er[[1,2]], ValueCommand:>(a[$KDI$Mon$SetValue]=a[$EPICS$Rec]@Value[];a[Severity]=a[$EPICS$Rec]@Severity[]), ConStatCommand:>(a[ConnectionState]=a[$EPICS$Rec]@ConStat[])]
+  ,!Else
+	a[$EPICS$Rec] = Null;
+  ];
+
+! Widgets
+  a[$KDI$Frame] = Frame[p,BG->bgcol];
+  If [bcont<>False, a[$KDI$UpFrame] = Frame[a[$KDI$Frame],Height->udh,BG->bgcol,PadY->2]];
+  a[$KDI$Canvas] = Canvas[a[$KDI$Frame],BG->bgcol,BD->0,HighlightThickness->0,
+    Width->(csw+(d1+d2)*(dw+ds)+2*dxsl),Height->dh];
+  If [bcont<>False, a[$KDI$DownFrame] = Frame[a[$KDI$Frame],Height->udh,BG->bgcol]];
+  a[$KDI$Info] = Frame[a[$KDI$Frame],Fill->"x",BG->bgcol];
+
+  If [er<=>{},
+    a[$KDI$ConStat] = TextLabel[a[$KDI$Info],Bitmap->a[$KDI$DisConBmp],Side->"left",Foreground->a[$KDI$DisConCol],BG->bgcol,Width->30,PadX->5];
+    a[$KDI$Severity] = TextLabel[a[$KDI$Info],Text->"Unknown",Side->"left",Foreground->a[$KDI$DisConCol],BG->bgcol,Width->10,PadX->5];
+  ];
+  If [bcont<=>0,
+    a[$KDI$UpFramePad] = Frame[a[$KDI$UpFrame],Side->"left",Width->dxsl*2,BG->bgcol];
+    Do[
+      With[{i,d1},
+        a[$KDI$UpButton,i] = Button[a[$KDI$UpFrame],Bitmap->"@"//KBF$ConfDir//"/inc.xbm",Side->"left",Width->dw,Height->13,BD->0,HighlightThickness->0,PadX->ds/2-1,ActiveBackground->bgcol,ActiveForeground->a[$KDI$ConCol],FG->bgcol,BG->bgcol,Command:>(a[Add]=10^(d1-i))];
+        a[$KDI$DownButton,i] = Button[a[$KDI$DownFrame],Bitmap->"@"//KBF$ConfDir//"/dec.xbm",Side->"left",Width->dw,Height->13,BD->0,HighlightThickness->0,PadX->ds/2-1,ActiveBackground->bgcol,ActiveForeground->a[$KDI$ConCol],FG->bgcol,BG->bgcol,Command:>(a[Add]=-10^(d1-i))];
+      ];
+    ,{i,1,d1+d2}
+    ];
+    a[$KDI$SendButton] = Button[a[$KDI$Info],Bitmap->"@"//KBF$ConfDir//"/toioc.xbm",BD->1,Side->"right",FG->a[$KDI$DisConCol],BG->bgcol,ActiveForeground->a[$KDI$DisConCol],ActiveBackground->bgcol,HighlightThickness->0,PadX->5,IPadX->3,IPadY->2,State->"disabled",Command:>a[Send]];
+    a[$KDI$ValStat] = TextLabel[a[$KDI$Info],Text->"undefined",Side->"right",Foreground->a[$KDI$ConCol],Width->10,PadX->5,BG->bgcol];
+  ];
+
+
+! Create segments
+  a[$KDI$SegmentIndex] = 1;
+  dyl = Floor[(dh-lw)/2];
+  dxl = dw-lw;
+  Do[
+    dxd = (i-1)*dw+i*ds+2*dxsl;
+    xs1=lw/2+csw+1+dxd; xs2=lw+csw+1+dxd; xs3=dw+csw-lw-1+dxd; xs4=dw+csw-lw/2-1+dxd;
+    ys1=0; ys2=lw/2; ys3=lw+1;
+    a[$KDI$Canvas][Create$Polygon] = {xs1,ys2,xs2,ys1,xs3,ys1,xs4,ys2,xs3,ys3,xs2,ys3,xs1,ys2,Fill->bcol};
+    xs1=xs1-dxsl; xs2=xs2-dxsl; xs3=xs3-dxsl; xs4=xs4-dxsl;
+    ys1=ys1+dyl; ys2=ys2+dyl; ys3=ys3+dyl;
+    a[$KDI$Canvas][Create$Polygon] = {xs1,ys2,xs2,ys1,xs3,ys1,xs4,ys2,xs3,ys3,xs2,ys3,xs1,ys2,Fill->bcol,Tags->"d"//i};
+!    With[{i},Bind[a[$KDI$Canvas], "<Button-1>", Print[i], Tags->"d"//i]];
+    xs1=xs1-dxsl; xs2=xs2-dxsl; xs3=xs3-dxsl; xs4=xs4-dxsl;
+    ys1=ys1+dyl; ys2=ys2+dyl; ys3=ys3+dyl;
+    a[$KDI$Canvas][Create$Polygon] = {xs1,ys2,xs2,ys1,xs3,ys1,xs4,ys2,xs3,ys3,xs2,ys3,xs1,ys2,Fill->bcol};
+    xs1=csw+dxd; xs2=csw+lw/2+dxd; xs3=csw+lw+dxd;
+    ys1=lw/2+1; ys2=lw+1; ys3=dh/2-lw/2-1; ys4=dh/2-1;
+    a[$KDI$Canvas][Create$Polygon] = {xs2,ys1,xs3,ys2,xs3-dxsl,ys3,xs2-dxsl,ys4,xs1-dxsl,ys3,xs1,ys2,xs2,ys1,Fill->bcol};
+    xs1=xs1-dxsl; xs2=xs2-dxsl; xs3=xs3-dxsl;
+    ys1=ys1+dyl; ys2=ys2+dyl; ys3=ys3+dyl; ys4=ys4+dyl;
+    a[$KDI$Canvas][Create$Polygon] = {xs2,ys1,xs3,ys2,xs3-dxsl,ys3,xs2-dxsl,ys4,xs1-dxsl,ys3,xs1,ys2,xs2,ys1,Fill->bcol};
+    xs1=xs1+dxl; xs2=xs2+dxl; xs3=xs3+dxl;
+    a[$KDI$Canvas][Create$Polygon] = {xs2,ys1,xs3,ys2,xs3-dxsl,ys3,xs2-dxsl,ys4,xs1-dxsl,ys3,xs1,ys2,xs2,ys1,Fill->bcol};
+    xs1=xs1+dxsl; xs2=xs2+dxsl; xs3=xs3+dxsl;
+    ys1=ys1-dyl; ys2=ys2-dyl; ys3=ys3-dyl; ys4=ys4-dyl;
+    a[$KDI$Canvas][Create$Polygon] = {xs2,ys1,xs3,ys2,xs3-dxsl,ys3,xs2-dxsl,ys4,xs1-dxsl,ys3,xs1,ys2,xs2,ys1,Fill->bcol};
+  ,{i,1,d1+d2}
+  ];
+  xs1=csw+(dw+ds)*d1-(dpd-ds)/2; xs2=xs1+dpd;
+  ys1=dh-dpd; ys2=dh;
+  a[$KDI$Canvas][Create$Oval] = {xs1,ys1,xs2,ys2,Fill->lcol,Outline->lcol};
+
+  (a[$KDI$Mon$SetValue] = v_Real) ^:= (
+    If [v == a[$KDI$Value],
+      a[$KDI$ValStat][Text] = "updated";
+    ,!Else
+      a[$KDI$ValStat][Text] = "changed";
+    ];
+    a[$KDI$SendButton][State] = "disabled";
+    a[$KDI$SetValue] = v;
+  );
+
+  (a[SetValue] = v_Real) ^:= (
+	If [a[$EPICS$Rec]<=>Null,
+	  a[$KDI$ValStat][Text] = "to be sent";
+	  a[$KDI$SendButton][State] = "normal";
+	];
+    a[$KDI$SetValue] = v;
+  );
+
+  (a[$KDI$SetValue] = v_Real) ^:= Module[{s,sl,dp,fw,fpi,lcol,bcol,j},
+    a[$KDI$Value] = v;
+
+    s = StringReplace[StandardForm[$FORM="F26.15";ToString[v]]," "->""];
+    sl = StringLength[s];
+    If [(dp=StringPosition[s,"."])==={},
+      dp = sl;
+    ,!Else
+      dp = dp[[1,1]]-1;
+      s = StringReplace[s, "."->""];
+    ];
+    If [dp>a[$KDI$DigitWidth1],
+      s = s[dp-a[$KDI$DigitWidth1]+1,-1];
+    ,!Else
+      If [dp<a[$KDI$DigitWidth1],
+        Do[s = " "//s, {i,dp,a[$KDI$DigitWidth1]-1}];
+      ];
+    ];
+    sl = StringLength[s];
+    fw = a[$KDI$DigitWidth1]+a[$KDI$DigitWidth2];
+    s=StringFill[s,"0",fw];
+
+    fpi = a[$KDI$SegmentIndex];
+    lcol = a[$KDI$ActiveColor];
+    bcol = a[$KDI$InactiveColor];
+    Do[
+      If [s[i]<>a[$KDI$PrevStr][i],
+        j=0;
+        Scan[(
+          If [#[[1]]<>#[[2]],
+            a[$KDI$Canvas][ItemConfigure] = {7*(i-1)+j+fpi,Fill->If[#[[1]]==1,lcol,bcol]};
+          ];
+          j++;)&
+        ,!List
+          Thread[{s[i],a[$KDI$PrevStr][i]}/.KDISegments]
+        ];
+      ];
+    ,{i,1,fw}
+    ];
+    a[$KDI$PrevStr] = s;
+  ];
+
+  KDISegments = {
+    " "->{0,0,0,0,0,0,0},
+    "-"->{0,1,0,0,0,0,0},
+    "1"->{0,0,0,0,0,1,1},
+    "2"->{1,1,1,0,1,0,1},
+    "3"->{1,1,1,0,0,1,1},
+    "4"->{0,1,0,1,0,1,1},
+    "5"->{1,1,1,1,0,1,0},
+    "6"->{1,1,1,1,1,1,0},
+    "7"->{1,0,0,0,0,1,1},
+    "8"->{1,1,1,1,1,1,1},
+    "9"->{1,1,1,1,0,1,1},
+    "0"->{1,0,1,1,1,1,1}
+  };
+
+  (a[ConnectionState] = st_) ^:= (
+    a[$KDI$ConStat][Bitmap] = If[st==2, a[$KDI$ConBmp], a[$KDI$DisConBmp]];
+    a[$KDI$ConStat][Foreground] = If[st==2, a[$KDI$ConCol], a[$KDI$DisConCol]];
+  );
+
+  (a[Severity] = sev_) ^:= (
+    a[$KDI$Severity][Text] = {"Normal","Minor Alarm","Major Alarm","Invalid"}[[sev+1]];
+    a[$KDI$Severity][Foreground] = If[sev==0, a[$KDI$ConCol], a[$KDI$DisConCol]];
+  );
+
+  a[Send] := Module[{},
+    a[$EPICS$Rec]@Put[a[$KDI$Value]];
+    a[$KDI$ValStat][Text] = "sent";
+    a[$KDI$SendButton][State] = "disabled";
+  ];
+
+  (a[Add] = v_Real) ^:= (
+    a[SetValue] = a[$KDI$Value] + v;
+  );
+
+  (a[EPICSRecName] = rn_) ^:= (
+    a[$EPICS$Rec]@NewName[rn];
+    a[ConnectionState] = 0;
+    a[Severity] = 3;
+  );
+];
+
+SetAttributes[KBDigitalIndicator,HoldFirst];

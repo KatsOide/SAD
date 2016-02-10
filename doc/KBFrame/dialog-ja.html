@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="ja-JP">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-2022-JP">
+<TITLE>KBFrame 入力用ダイアログボックス</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<A NAME="top" HREF="index-ja.html">目次</A>
+<A HREF=cmparr-ja.html>部品の配置</A>
+<A HREF=messagebox-ja.html>メッセージボックス</A>
+
+<HR><DIV ALIGN="CENTER"><H2>入力用ダイアログボックス</H2></DIV><HR>
+
+<P>ダイアログボックスの作成にもKBFComponentFrame[]と同じような書式が
+使用できます。ただし、Variable:&gt;で指定した変数に値がsetされるのは
+OKボタンを押した時(KBFOptionDialogの戻り値が1)だけで、Cancelボタンを
+押した時(KBFOptionDialogの戻り値が0)には値はsetされません。
+また、WidgetVariable:&gt;オプションは使用できません。</P>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["DialogTest", f, Title-&gt;"Dialog Box Test"];
+b = Button[f, Text-&gt;"Option", Command:&gt;ot];
+s = "initial string"; n = 1; c = 1; r = 1; o = 1; l = 1;
+ot := (rc = KBFOptionDialog[
+    Title-&gt;"Option Test",
+    Add-&gt;{
+      KBFGroup[Text-&gt;"Group1"],
+      KBFText[Text-&gt;"Examples of Component Arrangement"],
+      KBFString[Text-&gt;"String Input :", Variable:&gt;s],
+      KBFNumber[Text-&gt;"Number Input :", Variable:&gt;n],
+      KBFCheckButton[Text-&gt;"Check", Variable:&gt;c],
+      KBFRadioButton[Items-&gt;{"Radio 1","Radio 2"}, Variable:&gt;r],
+      KBFOptionMenu[Items-&gt;{"Option 1","Option 2","Option 3"}, Variable:&gt;o],
+      KBFListBox[Items-&gt;{"List 1","List 2","List 3","List 4"}, Variable:&gt;l],
+      KBFSeparator[],
+      KBFButton[Text-&gt;"Print", Command:&gt;Print[{s,n,c,r,o,l}]]
+    }
+  ];
+  Print[{rc,s,n,c,r,o,l}];
+);
+TkWait[];
+</CODE></PRE>
+
+<P>上のコードを実行した結果は下のようになります。</P>
+
+<P><IMG SRC="dialog1.gif" WIDTH=353 HEIGHT=98 ALT="OptionDialog Example1"></P>
+
+<P>Optionボタンを押すと、下のウインドウが開きます。一番下のOkとCancelの
+ボタンは自動的に作られます。</P>
+
+<P><IMG SRC="dialog2.gif" WIDTH=305 HEIGHT=411 ALT="OptionDialog Example2"></P>
+
+<P><A HREF="#top">top</A></P>
+
+<HR>
+<ADDRESS>
+このページに関する御意見・質問は<A HREF="mailto:Nobumasa.Akasaka@kek.jp">
+N. Akasaka</A>まで.
+</ADDRESS>
+</BODY>
+</HTML>

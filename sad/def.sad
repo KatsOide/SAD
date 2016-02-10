@@ -1,0 +1,10 @@
+FFS;
+
+ a=1;
+ b:=Print["OK"];
+ d=Definition/@Hold[a,b,c]
+ 
+end
+
+
+

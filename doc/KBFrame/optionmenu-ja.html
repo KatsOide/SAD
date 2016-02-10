@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="ja-JP">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-2022-JP">
+<TITLE>KBFrame OptionMenuの作成</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<A NAME="top" HREF="index-ja.html">目次</A>
+
+<HR><DIV ALIGN="CENTER"><H2>OptionMenuの作成</H2></DIV><HR>
+
+<P>OptionMenuには２つの使用法があります。
+まず、単にユーザの選択したオプションを必要な時に読むだけの場合には、</P>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["OptionMenuEx", f, Title-&gt;"OptionMenu Example"];
+v = "two";
+om = OptionMenu[f,Items-&gt;{"one","two","three"},TextVariable:&gt;v];
+b = Button[f,Text-&gt;"print",Command:&gt;Print[v]];
+TkWait[];
+</CODE></PRE>
+
+<P><IMG SRC="optionmenu1.gif" WIDTH=354 HEIGHT=124
+ ALT="OptionMenu Example with Items option"></P>
+
+<P>のように、Itemsオプションで選択肢を指定します。TextVariableオプションは
+必須で、選択されている項目の文字列が値として入ります。<BR>
+次に、ユーザがメニューを選択する度に何らかのアクションを起したい時は、</P>
+
+<PRE><CODE>
+FFS;
+w = KBMainFrame["OptionMenuEx", f, Title-&gt;"OptionMenu Example"];
+v = "1";
+om = OptionMenu[f,TextVariable:&gt;v];
+m = Menu[om,Add-&gt;{
+      Button[Text-&gt;"Action 1", Command:&gt;(v="1";Print["1"])],
+      Button[Text-&gt;"Action 2", Command:&gt;(v="2";Print["2"])]}];
+TkWait[];
+</CODE></PRE>
+
+<P><IMG SRC="optionmenu2.gif" WIDTH=354 HEIGHT=96
+ ALT="OptionMenu Example without Items option"></P>
+
+<P>のようにします。OptionMenuにItemsオプションを与えるかわりに、Menuを
+そのOptionMenuの下に作ります。この場合、OptionMenuに表示される文字列は
+自動的に更新されないので、MenuのCommandで明示的に設定する必要があります。</P>
+
+<P><A HREF="#top">top</A></P>
+
+<HR><ADDRESS>このページに関する御意見・質問は
+<A HREF="mailto:samo.stanic@kek.jp">Samo Stanic</A>
+まで.</ADDRESS>
+</BODY>
+</HTML>

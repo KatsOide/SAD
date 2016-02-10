@@ -1,0 +1,21 @@
+! Demo code of Large Font drawing
+!
+
+FFS;
+
+w = KBMainFrame["LargeFontDemo", f, Title->"Large Font Drawing Demo"];
+
+cf = KBFComponentFrame[f, Transparent->True, Add->{
+  KBFText[WidgetVariable:>t,
+    Text->"Large Font Example `fa`n version`uScript Font`n`d`fabcdefg`n`n",
+    WidgetOption->{
+      Font->TextFont[$DefaultSerifFont, 64, "italic"],
+      ScriptFont->TextFont[$DefaultSerifFont, 24, "bold"],
+      AltFont->TextFont[$DefaultSymbolFont, 64, "bold"],
+      AltScriptFont->TextFont[$DefaultSymbolFont, 24],
+      }],
+  }];
+
+TkWait[];
+
+! End of File

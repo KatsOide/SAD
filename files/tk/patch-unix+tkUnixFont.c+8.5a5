@@ -1,0 +1,27 @@
+--- unix/tkUnixFont.c.orig	Fri Oct  6 06:27:20 2006
++++ unix/tkUnixFont.c	Fri Mar  9 16:06:51 2007
+@@ -319,6 +319,10 @@
+  *-------------------------------------------------------------------------
+  */
+ 
++#ifndef TCL_CFGVAL_ENCODING
++#define TCL_CFGVAL_ENCODING "ascii"
++#endif
++
+ void
+ TkpFontPkgInit(
+     TkMainInfo *mainPtr)	/* The application being created. */
+@@ -328,6 +332,13 @@
+     Tcl_EncodingType type;
+     SubFont dummy;
+     int i;
++
++    static Tcl_Config cfg[] = {
++	{ "fontsystem", "x11" },
++	{ 0,0 }
++    };
++
++    Tcl_RegisterConfig(mainPtr->interp, "tk", cfg, TCL_CFGVAL_ENCODING);
+ 
+     if (tsdPtr->controlFamily.encoding == NULL) {
+ 	type.encodingName = "X11ControlChars";

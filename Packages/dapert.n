@@ -1,0 +1,44 @@
+(* dapert 4/19/2013 *)
+
+With[{def={Output->0,ExpandElementValues->True,
+  ReferenceOrbit->Default,PhaseX->0,PhaseY->0,
+  Damping->False}
+  },
+  
+  DynamicApertureSurvey[range_,nt_,opt___]:=Module[
+    {TURNS0,NP0,op,lfno,z,dz,nz,score,phix,phiy,dapw=DAPWIDTH,damp},
+    TURNS0=TURNS;
+    TURNS=nt;
+    NP0=NP;
+    op=Override[{opt},def];
+    If[ExpandElementValues/.op,
+      Element["EXPAND"]];
+    {lfno,ref,phix,phiy,damp}={Output,ReferenceOrbit,PhaseX,PhaseY,Damping}/.op;
+    nz=Min[201,Length[range[[3]]]];
+    NP=Min[4000,nz*Min[dapw,51]*2];
+    Write[lfno, " Turns =",nt," Maximum number of particles =",NP];
+    score=DynamicAperture[range,lfno,ref,phix,phiy,damp];
+    NP=NP0;
+    TURNS=TURNS0;
+    {score,ReplacePart[ResultOfDAPERT,range,1]}]
+  ];
+
+AccelerateParticles[beam_,mom_,{n_Symbol,nturn_},opt___]:=
+  Module[
+    {synch=Synchronize/.{opt},b=beam[[2]],p0,p1,u,m2=MASS^2,v},
+    FFS["RING RFSW"];
+    Do[
+      p0=MOMENTUM;
+      MOMENTUM=p1=mom;
+      u=p0/p1;
+      v=u*Sqrt[(p1^2+m2)/(p0^2+m2)];
+      synch[n,{1,b}];
+      b=TrackParticles[
+        {1,{b[[1]],b[[2]]*u,b[[3]],b[[4]]*u,b[[5]]/v,
+          b[[6]]*u-(1-u),b[[7]]}},1][[2]],
+      {n,nturn}];
+    {1,b}];
+SetAttributes[AccelerateParticles,HoldAll];
+
+Protect[DynamicApertureSurvey,AccelerateParticles,
+  PhaseX,PhaseY,ReferenceOrbit];

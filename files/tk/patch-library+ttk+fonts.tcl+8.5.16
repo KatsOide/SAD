@@ -1,0 +1,61 @@
+--- library/ttk/fonts.tcl.orig	2014-07-23 21:11:31.000000000 +0900
++++ library/ttk/fonts.tcl	2014-09-03 11:40:27.711798787 +0900
+@@ -61,6 +61,9 @@
+ namespace eval ttk {
+ 
+ variable tip145 [catch {font create TkDefaultFont}]
++catch {font create TkDefaultScriptFont}
++catch {font create TkDefaultAltFont}
++catch {font create TkDefaultAltScriptFont}
+ catch {font create TkTextFont}
+ catch {font create TkHeadingFont}
+ catch {font create TkCaptionFont}
+@@ -104,14 +107,21 @@
+     aqua {
+ 	set F(family) "Lucida Grande"
+ 	set F(fixed) "Monaco"
++	set F(symbol) "Symbol"
+ 	set F(menusize) 14
+ 	set F(size) 13
++	set F(scsize) -10
++	set F(altsize) -14
++	set F(altscsize) -10
+ 	set F(viewsize) 12
+ 	set F(smallsize) 11
+ 	set F(labelsize) 10
+ 	set F(fixedsize) 11
+ 
+-	font configure TkDefaultFont -family $F(family) -size $F(size)
++	font configure TkDefaultFont       -family $F(family) -size $F(size)
++	font configure TkDefaultScriptFont -family $F(family) -size $F(scsize)
++	font configure TkDefaultAltFont       -family $F(symbol) -size $F(altsize)
++	font configure TkDefaultAltScriptFont -family $F(symbol) -size $F(altscsize)
+ 	font configure TkTextFont    -family $F(family) -size $F(size)
+ 	font configure TkHeadingFont -family $F(family) -size $F(smallsize)
+ 	font configure TkCaptionFont -family $F(family) -size $F(size) \
+@@ -127,16 +137,24 @@
+ 	if {![catch {tk::pkgconfig get fontsystem} F(fs)] && $F(fs) eq "xft"} {
+ 	    set F(family) "sans-serif"
+ 	    set F(fixed)  "monospace"
++	    set F(symbol) "Symbol"
+ 	} else {
+ 	    set F(family) "Helvetica"
+ 	    set F(fixed)  "courier"
++	    set F(symbol) "symbol"
+ 	}
+ 	set F(size) -12
++	set F(scsize) -8
++	set F(altsize) -14
++	set F(altscsize) -10
+ 	set F(ttsize) -10
+ 	set F(capsize) -14
+ 	set F(fixedsize) -12
+ 
+-	font configure TkDefaultFont -family $F(family) -size $F(size)
++	font configure TkDefaultFont       -family $F(family) -size $F(size)
++	font configure TkDefaultScriptFont -family $F(family) -size $F(scsize)
++	font configure TkDefaultAltFont       -family $F(symbol) -size $F(altsize)
++	font configure TkDefaultAltScriptFont -family $F(symbol) -size $F(altscsize)
+ 	font configure TkTextFont    -family $F(family) -size $F(size)
+ 	font configure TkHeadingFont -family $F(family) -size $F(size) \
+ 			-weight bold

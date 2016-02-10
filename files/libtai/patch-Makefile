@@ -1,0 +1,25 @@
+--- Makefile.orig	2008-03-09 17:05:30.000000000 +0100
++++ Makefile	2008-03-09 16:58:38.000000000 +0100
+@@ -11,6 +11,13 @@
+ 	echo LD=\'`head -1 conf-ld`\' \
+ 	) > auto-ccld.sh
+ 
++hasclock_gettime.h: \
++tryclock_gettime.c compile load
++	( ( ./compile tryclock_gettime.c && ./load tryclock_gettime ) >/dev/null \
++	2>&1 \
++	&& echo \#define HASCLOCK_GETTIME 1 || exit 0 ) > hasclock_gettime.h
++	rm -f tryclock_gettime.o
++
+ caldate.0: \
+ caldate.3
+ 	nroff -man caldate.3 > caldate.0
+@@ -266,7 +273,7 @@
+ 	nroff -man taia_now.3 > taia_now.0
+ 
+ taia_now.o: \
+-compile taia_now.c taia.h tai.h uint64.h
++compile taia_now.c taia.h tai.h uint64.h hasclock_gettime.h
+ 	./compile taia_now.c
+ 
+ taia_pack.0: \

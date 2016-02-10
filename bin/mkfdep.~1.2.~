@@ -1,0 +1,38 @@
+#!/bin/sh
+
+mkdep () {
+local ldep_list0 ldep ldep_list
+
+while [ $# -ge 1 ]; do
+if [ -r $dir/$1 ]; then
+    ldep_list0=`grep "^[ 	][ 	]*include" $dir/$1 \
+	| sed -e "s@^[ 	][ 	]*include *['\"]@@" -e "s@['\"] *"'$@@'`
+fi
+ldep_list="${ldep_list0}"
+export dep_list
+dep_list="${dep_list} ${ldep_list}"
+mkdep ${ldep_list}
+shift
+done
+}
+
+while [ $# -gt 0 ]; do
+    dir=`dirname $1`
+    base=`basename $1 .f`
+    if [ "x${dir}"  != "x." ]; then
+	base="${dir}/${base}"
+	dir=.
+    fi
+    dep_list=""
+
+    if [ -d $dir -a -r $dir/$base.f ]; then
+	mkdep $base.f
+	dep_list=`echo $dep_list | tr ' ' '\n' | sort -u`
+	if [ "x${dep_list}" != x ]; then
+	    echo $base.o: $base.f $dep_list
+	fi
+    fi
+    shift
+done
+
+# End of File

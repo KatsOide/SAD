@@ -1,0 +1,27 @@
+ON LOG ECHO;
+
+MULT M1=(L=1 K0=0.1 K3=0.1)
+;
+SOL ES1=(GEO=1 BOUND=1)
+    ES2=(BOUND=1)
+;
+MARK ENT=()
+     CM1=(OFFSET=1.5)
+;
+LINE BT=(ENT ES1 CM1 M1 ES1)
+;
+FFS USE=BT;
+ins trpt;
+
+fit cm1 dpx 0;
+free es1 dpx dx;
+
+go
+
+end
+
+
+
+
+
+

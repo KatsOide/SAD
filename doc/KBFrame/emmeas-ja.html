@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML lang="ja-JP">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-2022-JP">
+<TITLE>KBFrame 例 emittance測定値計算用パネル</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White" TEXT="Black" LINK="Blue" VLINK="Teal" ALINK="Red">
+
+<A NAME="top" HREF="index-ja.html">目次</A>
+<A HREF=filedialog-ja.html>ファイル選択用ダイアログボックス</A>
+<A HREF=smplepics-ja.html>例 EPICS CA 用ルーチンを使う場合</A>
+
+<HR><DIV ALIGN="CENTER"><H2>例 emittance測定値計算用パネル</H2></DIV><HR>
+
+<P>これはJ-Linacで使用されているEmittance測定値計算用パネルのコードを
+単純化したものです。動作は単純化されていますが、パネルの構成自体は
+そのままです。この例は、他の例と違ってこのままでは実行できません。</P>
+
+<PRE><CODE>
+!!! You need some beam line definition to execute the following code !!!
+
+! Making Main Window
+  mf=KBMainFrame["EmitMeas", fr, Title-&gt;"Emittance Measurement"];
+! Making Canvas for OpticsPlot[]
+  canv=Canvas[fr,Width-&gt;800,Height-&gt;600];
+! Making TextLabel[] for displaying the name of Q magnets
+  tlqn=TextLabel[fr,Text-&gt;"",Width-&gt;20,FG-&gt;"tomato",Font-&gt;TextFont["times",20]];
+
+! Initializing variables
+  ael=Append[Apply[List,ExtractBeamLine[]],$$$];
+  lqnamel = LINE["NAME","Q*"];
+  lscnamel = LINE["NAME","SC*"];
+  dhv=1;
+  qvar=ToString[lqnamel[[1]]];
+  scvar=ToString[lscnamel[[1]]];
+
+! Arranging Widgets
+  kcf = KBFComponentFrame[fr,
+    Add-&gt;{
+      KBFGroup[Text-&gt;"Fitting Option"],
+      KBFRadioButton[Text-&gt;"Fitting Direction",Items-&gt;{"Horizontal","Vertical"},Variable:&gt;dhv,Command:&gt;chgdir[]],
+      KBFSeparator[],
+      KBFButton[Text-&gt;"  Fit Panel  ",Command:&gt;KEKBFrameRaise[fp]],
+      KBFListBox[Text-&gt;"Target Position :",Items-&gt;ael,WidgetVariable:&gt;tvar,NextColumn-&gt;True],
+      KBFGroup[Text-&gt;"Measurement Condition",NextColumn-&gt;True],
+      KBFText[Text-&gt;"Click the lattice to select."],
+      KBFString[Text-&gt;"Adjusted Q :",Variable:&gt;qvar,WidgetVariable:&gt;qent],
+      KBFString[Text-&gt;"Screen :",Variable:&gt;scvar,WidgetVariable:&gt;scent],
+      KBFListBox[Text-&gt;"Unused Q's (Shift-Click to toggle) :",Items-&gt;{},WidgetVariable:&gt;lbnq,NextColumn-&gt;True]
+    }
+  ];
+! Configuring Widgets
+  qent[State] = "disabled";
+  scent[State] = "disabled";
+  tvar[Select$Set] = 1;
+
+! Making OpticsPlot[]
+  $DisplayFunction=CanvasDrawer;
+  Canvas$Widget=canv;
+  pl=OpticsPlot[{{"SIGX","SIGY"}},Names-&gt;"SC*",Tags-&gt;True,Initialize-&gt;True];
+! Changing the outline color of the initially selected Q magnet
+  canv[ItemConfigure]={"C$"//qvar,Outline-&gt;"tomato"};
+! Binding functions to tags
+  lqs = Map[StringJoin["C$",#]&amp;,lqnamel];
+  lsc = Map[StringJoin["L$",#]&amp;,lscnamel];
+  Bind[canv, "&lt;Button-1&gt;", qpick[], Tags-&gt;lqs];
+  Bind[canv, "&lt;Enter&gt;", qenter[], Tags-&gt;lqs];
+  Bind[canv, "&lt;Leave&gt;", qleave[], Tags-&gt;lqs];
+  Bind[canv, "&lt;Enter&gt;", scenter[], Tags-&gt;lsc];
+
+! Defining binded functions
+  qpick[] := (
+    canv[ItemConfigure]={"C$"//qvar,Outline-&gt;"black"};
+    qvar = (Tag/.$Event)[3,-1];
+  );
+  qenter[] := Module[{tagname=Tag/.$Event,name},
+    name=tagname[3,-1];
+    canv[ItemConfigure]={tagname,Outline-&gt;"yellow"};
+    tlqn[Text] = name;
+  ];
+  qleave[] := Module[{tagname=Tag/.$Event,name},
+    name=tagname[3,-1];
+    canv[ItemConfigure]={tagname,Outline-&gt;If[name==qvar,"tomato","black"]};
+    tlqn[Text] = "";
+  ];
+  scenter[] := (
+    mf[StatusLine]=(Tag/.$Event)[3,-1];mf[FreeStatusLine];
+  );
+! Defining the function for radiobuttons
+  chgdir[] := Print[If[dhv==1,"x","y"]];
+</CODE></PRE>
+
+<P><IMG SRC="emmeas1.gif" WIDTH=957 HEIGHT=842
+ ALT="Emittance Measurement Panel Example"></P>
+
+<P>以下のパネルは、mainのパネルで測定条件の設定をした後で、emittanceの計算と
+opticsのmatchingをとるためのパネルです。</P>
+
+<P><IMG SRC="emmeas2.gif" WIDTH=870 HEIGHT=581
+ ALT="Fit Panel Example"></P>
+
+<P><IMG SRC="emmeas3.gif" WIDTH=1072 HEIGHT=769
+ ALT="Matching Panel Exaple"></P>
+
+<P><A HREF="#top">top</A></P>
+
+<HR><ADDRESS>このページに関する御意見・質問は
+<A HREF="mailto:samo.stanic@kek.jp">Samo Stanic</A>
+まで.</ADDRESS>
+</BODY>
+</HTML>

@@ -1,0 +1,1 @@
+/home/oide/SAD/oldsad/contrib/tcl8.5.15/library/msgs/af_za.msg

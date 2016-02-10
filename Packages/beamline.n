@@ -1,0 +1,51 @@
+BeamLine[x___,BeamLine[y___],z___]^:=
+  BeamLine@@Flatten[{x,y,z},Infinity,BeamLine];
+!BeamLine[x___,(n_Real?(#<>-1&))*y_,z___]:=
+!  BeamLine@@Flatten[{x,Table[Sign[n]*y,{Abs[n]}],z}];
+BeamLine[x__]:=ExpandBeamLine[x];
+-BeamLine[x__]^:=BeamLine@@(-Reverse[{x}]);
+(n_?(#>=0&))*BeamLine[x__]^:=BeamLine@@Flatten[Table[{x},{n}]];
+n_*BeamLine[x__]^:=Abs[n]*BeamLine@@(-Reverse[{x}]);
+
+PrintBeamLine[x___]:=WriteBeamLine[$Output,x];
+WriteBeamLine[f_,b_List,opt___]:=
+  Module[{name=Name/.{opt}/.{Name->Table[None,{Length[b]}]}},
+    If[Length[name]<Length[b],
+      Print["WriteBeamLine - Insufficient number of Names"];Return[]];
+    Scan[WriteBeamLine1[f,#[1],Name->#[2],opt]&,Thread[{b,name}]]];
+WriteBeamLine[f_,b__BeamLine:ExtractBeamLine[],opt___]:=Module[{bo,op},
+  op=Cases[{opt},p:(_->_)];
+  bo=Complement[Flatten[{b,opt}],op];
+  WriteBeamLine[f,bo,Apply[Sequence,op]]];
+
+WriteBeamLine1[f_,b_:ExtractBeamLine[],opt___]:=Module[
+  {def={Format->"FFS",Name->None},form,name,ch,col,s,lb=Length[b]},
+  {form,name}={Format,Name}/.{opt}/.def;
+  If[form=="MAIN",
+    col=9;
+    If[name<=>None,
+      Write[f,"\nLINE ",name//" = "]];
+    ch="       (";
+    Scan[(WriteString[f,Fill$String[ch//Remove$Paren[ToString[#]],9]];
+      col=col+9;ch=" ";
+      If[col>69,Write[f,"\n"];col=9;ch="        "])&,b];
+    Write[f,")"];
+    If[name<=>None,Write[f,";"]],
+    col=9;
+    If[name<=>None,
+      Write[f,"\n",name//" = BeamLine["],
+      Write[f,"BeamLine["]];
+    ch="        ";
+    Do[s=Fill$String[ch//Remove$Paren[ToString[b[[i]]]]//If[i==lb,"",","],9];
+      WriteString[f,s];
+      col=col+StringLength[s];ch="";
+      If[col>69,Write[f,""];col=9;ch="        "],{i,lb}];
+    Write[f,"];"]
+    ]];
+
+Fill$String[s_,n_]:=(s//"                     "[1,n])[1,
+  n*Floor[(StringLength[s]-1)/n]+n];
+
+Remove$Paren[s_]:=If[StringMatchQ[s,"(*)"],s[2,-2],s,s];
+
+Protect[BeamLine,WriteBeamLine,WriteBeamLine1,PrintBeamLine,Fill$String,Remove$Paren];

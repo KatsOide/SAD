@@ -1,0 +1,12 @@
+FFS;
+
+f=OpenRead["~/SAD/oldsad/sad/Examples.sad"];
+Read[f,String]
+Close[f];
+
+end
+
+
+
+
+

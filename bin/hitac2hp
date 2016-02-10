@@ -1,0 +1,41 @@
+#!/bin/csh
+#
+
+foreach foo (../*.{for})
+	echo "start conversion of $foo"
+	cat $foo |\
+	awk '/^ +$/{next} /^[*]+[ *]*$/{next}{print}'|\
+	sed -e "s/[.][tT][.]/.TRUE./" |\
+	sed -e "s/\.[fF]\./.FALSE./" |\
+	sed -e "s/SUBROUTINE/subroutine/" |\
+	sed -e "s/FUNCTION/function/" |\
+	sed -e "s/,[ ]*action='[a-zA-Z]*'//" |\
+	sed -e "s/,RECFORM='FB'//" |\
+	sed -e "s/BLOCKL=[0-9]*,//" |\
+	sed -e "s/,BLOCKL=[0-9]*//" |\
+	sed -e "s/position='APPEND'/access='APPEND'/" |\
+	sed -e "s/position='[A-Z]*'[,]*//" |\
+	sed -e "s/call *exec(\([a-z0-9()]*\),/call exec(\%VAL(\1),/"|\
+	sed -e "s/\(icRSVD\),\(do[a-z]*\)/\1,\%LOC(\2)/" |\
+	sed -e "s/\(Act\)\([a-zA-Z]*\))/\%LOC(\1\2))/" |\
+	sed -e "s/,,/,/" |\
+	sed -e "s/INCLUDE/include/" |\
+	sed -e "/include/s/(\([a-zA-Z].*\))/\'inc\/\1.inc\'/" |\
+	sed -e "s/\([^f]\)allo/\1fallo/g" |\
+	sed -e "s/\([^'f]\)rand/\1frand/g" >tmp
+#	sed -e '/include/s/src\//inc\//' < $foo >tmp
+	echo "${foo} has converted"
+	fsplit tmp
+#	mv -f tmp cnv/$foo
+end
+
+
+
+
+
+
+
+
+
+
+

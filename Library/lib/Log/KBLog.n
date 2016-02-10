@@ -1,0 +1,139 @@
+!
+! Obsoleted KBLog Access Library API Simulator
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: KBLog.n,v 1.4 2004/02/06 08:19:08 amorita Exp $
+! Style:      Class Library
+! Require:    Log/KEKBLog.n
+!             Prog/QFunctions.n
+!             Prog/DebugLog.n
+!
+Library@Require["Log/KEKBLog", "Prog/QFunctions", "Prog/DebugLog"];
+
+KBLog=Class[{DebugLog}, (* KBLog Public API SIM *)
+  { GCMaximumKeepSize=5000000,
+    LogDelay=300,
+    LogReadCmd={"/usr/local/bin/kblogrd",
+      { "alsad4.kek.jp",
+        "alsad{234}.kek.jp"}}
+    },
+  { progInfo, catalog, retriever
+    },
+
+  Destructor[] := (
+    retriever =.;
+    catalog =.;
+    Clear[progInfo];
+    DebugLog`Destructor[]);
+
+  Constructor[progInfo$_, useSwap_:True] := (
+    DebugLog`Constructor["KBLog"];
+    retriever = KEKBLog$Retrieve[];
+    catalog = KEKBLog$Catalog[];
+    progInfo = progInfo$);
+
+  (* Dummy API Function *)
+  GCRawDataCache[] := Null;
+
+  rawDataTouch[path_List, from_Real, to_Real, step_Real] := Null;
+
+  (* SIM to KEKBLog$Catalog/Retrieve class instance *)
+  (* Catalog Access *)
+  list[] := list[{}];
+  list[group_String] := list[{group}];
+  list[group_String, subGroup_String] := list[{group, subGroup}];
+
+  list[path$_List] := Module[{ret, path = PathConv[path$]},
+    progInfo@message["Listing "//path//"..."];
+    ret = Map[If[#[-1] == "/", #[1,-2], #]&, catalog@ls[path]];
+    progInfo@message["Listing "//path//"...done"];
+    ret];
+
+  recordInfo[path_List, "exist"] := First[recordInfo[path, "region"]];
+  recordInfo[path_List, "from"] := First[recordInfo[path, "region"]];
+  recordInfo[path_List, "to"] := Second[recordInfo[path, "region"]];
+
+  recordInfo[path_List, "region"] := With[{l = catalog@cat[PathConv[path]]},
+    If[l === {}, $Failed, {#1, If[#2 == 0, INF, #2]}&@@Drop[
+      Flatten[Part[Join@@(File/.#&/@l),, 2]], {2, -2}]]];
+
+  recordInfo[path_List, "index"] := With[{l = catalog@cat[PathConv[path]]},
+    If[l === {}, $Failed, Min@@(Length/.#&/@l)]];
+
+  recordInfo[path_List,type_String,val_] := Debug[INFO, "recordInfo",
+    PathConv[path]//"["//type//"]="//val//" called!"];
+
+  recordInfo[path_List] := (
+    Debug[INFO, "recordInfo", PathConv[path]//" required!"];
+    {"Never used!!"});
+
+  recordInfo[path_List, type_String] := Debug[PANIC, "recordInfo",
+    "unkown type["//type//"]"];
+
+  maxIndex[path_List] := recordInfo[path,"index"];
+
+  (* Data Access *)
+  rawData[path$_List, from$_Real, to$_Real, step_Real] := Module[{
+    path = PathConv[path$], epoch = FromDate[{1970, 1, 1, 9, 0, 0}],
+    from = Max[from$, recordInfo[path$, "from"]],
+    to = Min[to$, recordInfo[path$, "to"], FromDate[]],
+    id, d, last, status},
+
+    If[from >= to, Return[{}]];
+
+    progInfo@message["Retrieving "//path//"..."];
+    last = Prepend[Table[0, {i, maxIndex[path$]}], 0];
+    id = retriever@Request[{path}, Range->{from, to}, Resolution->step];
+    If[id === $Failed, Return[{}]];
+    retriever@Strategy[];
+    While[retriever@ProcessIO[]; status = retriever@Poll[id]; status < 1,
+      progInfo@progress[status];
+      retriever@Pause[0.2]];
+    progInfo@progress[1]; Update[Idletasks];
+
+    d = Map[With[{sel = #}, If[RuleQ[sel], If[Length[sel[[2]]] < 1,
+      If[step == 0, {},	Table[(last[[1]] = i; last), {i,
+	epoch + step * Ceiling[(Max[last[[1]], sel[[1, 1]]] - epoch)/ step],
+	epoch + step * Floor[(sel[[1, 2]] - epoch) / step], step}]],
+      If[sel[[2, 1, 1]] =< last[[1]], last = sel[[2, -1]]; Drop[sel[[2]], 1],
+	last = sel[[2, -1]]; sel[[2]]]],
+      If[step == 0, {}, Table[(last[[1]] = i; last), {i,
+	epoch + step * Ceiling[(Max[last[[1]], sel[[1]]] - epoch)/ step],
+	epoch + step * Floor[(sel[[2]] - epoch) / step], step}]]]]&,
+      Check[First[retriever@Retrieve[id, Blocking->True, Release->True]], {}]];
+
+    progInfo@message["Retrieving "//path//"...done."];
+    progInfo@progress[];
+    progInfo@message[];
+    If[Length[d] < 1, {}, Join@@d]];
+
+  saveRawData[fn_String, path_List, from_Real, to_Real, step_Real,
+    format$_String:"free"] := Module[{range, host, cmd, cmdExec},
+    If[Length[path] <=> 3, Return[$Failed]];
+
+    range = "-t "//retriever@KEKBLogTime[from]//"-"//retriever@KEKBLogTime[to];
+    If[step > 0, range = range//"d"//ToString[step]];
+
+    host = checkHost[LogReadCmd[[2]]];
+
+    cmd = LogReadCmd[[1]]//" -f "//format$//" -r "//path[[3]]//" "//range
+    //" "//path[[1]]//"/"//path[[2]];
+    cmd = cmd//"|| echo >/dev/null";
+
+    cmdExec = If[host === HostName[], "("//cmd//") >"//fn,
+      "sh -c 'until "//Rsh//" "//host//" \""//cmd//"\" >"//fn//";"
+        //"do echo Retry fetching "
+          //path[[1]]//"/"//path[[2]]//" "//path[[3]]//";done'"];
+
+    System[cmdExec//"&"]];
+
+  (* Internal Function *)
+  PathConv[path_List] := StringJoin@@Drop[Flatten[
+    Thread[{path, Table["/", {i, Length[path]}]}]], -1];
+
+  checkHost[hostList_List] := With[{host = HostName[]},
+    If[Length[Select[hostList, StringMatchQ[host, #]&]] > 0, Return[host]];
+    hostList[[1]]];
+  ];
+
+! End of File
