@@ -6,7 +6,6 @@ sad/*
 .DS_Store
 /CVS
 .#*
-CVS
 
 src/sim/CVS/Entries
 
