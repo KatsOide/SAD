@@ -1,7 +1,0 @@
-FFS;
-
- Delete[{1,2,3},2]
- Delete[Hold[1,2,3],2]
-
-end
-

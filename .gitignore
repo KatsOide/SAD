@@ -1,2 +1,6 @@
+*.orig
+*.~
 /TclTk
 /obj
+sad/*
+.DS_Store

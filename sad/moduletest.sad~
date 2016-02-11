@@ -1,8 +1,0 @@
-FFS;
-
- f[x_]:=Module[{a},Module[{b},a+b+x]];
-
- f[a]
-
-
-
