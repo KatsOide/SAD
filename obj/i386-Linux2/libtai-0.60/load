@@ -1,4 +1,0 @@
-#!/bin/sh
-# WARNING: This file was auto-generated. Do not edit!
-main="$1"; shift
-exec gcc-4 -Wall -std=gnu99 -g -O1 -o "$main" "$main".o ${1+"$@"}
