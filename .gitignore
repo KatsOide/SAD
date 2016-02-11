@@ -2,4 +2,4 @@
 *.~
 /TclTk
 /obj
-/sad/*
+sad/*
