@@ -1,4 +1,6 @@
 <<How to compile SAD>>
+http://acc-physics.kek.jp/SAD/SADrelease/index.html
+
 *  General configuration
   1.  Copy sad.conf.sample to sad.conf and edit it.
 
