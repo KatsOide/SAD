@@ -4,3 +4,6 @@
 /obj
 sad/*
 .DS_Store
+/CVS
+.#*
+CVS
