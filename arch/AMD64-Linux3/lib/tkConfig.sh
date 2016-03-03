@@ -32,7 +32,7 @@ TK_DBGX=
 TK_LIB_FILE='libtk8.5.so'
 
 # Additional libraries to use when linking Tk.
-TK_LIBS='-L/usr/X11R6/lib -lX11 -lXft   -lfontconfig  -ldl  -lieee -lm'
+TK_LIBS='-L/usr/X11/lib -lX11 -lXft   -lfontconfig  -ldl  -lieee -lm'
 
 # Top-level directory in which Tk's platform-independent files are
 # installed.
@@ -46,7 +46,7 @@ TK_EXEC_PREFIX='/Users/oide/SAD/oldsad//arch/AMD64-Linux3'
 TK_XINCLUDES=''
 
 # Linker switch(es) to use to link with the X11 library archive.
-TK_XLIBSW='-L/usr/X11R6/lib -lX11'
+TK_XLIBSW='-L/usr/X11/lib -lX11'
 
 # -l flag to pass to the linker to pick up the Tk library
 TK_LIB_FLAG='-ltk8.5'

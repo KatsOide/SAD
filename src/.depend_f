@@ -40,6 +40,8 @@ actPlt.o: actPlt.f tfstk.o
 atof.o: atof.f
 autofg.o: autofg.f tfstk.o
 bb.o: bb.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO.inc inc/TMACRO1.inc tfstk.o
+bbstrhl.o: bbstrhl.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc tfstk.o
+bbtool.o: bbtool.f
 bint.o: bint.f
 corfree.o: corfree.f inc/common.inc inc/coroper.inc tfstk.o
 corinit.o: corinit.f inc/common.inc inc/coroper.inc tfstk.o
@@ -216,6 +218,9 @@ qchg.o: qchg.f
 qcoord.o: qcoord.f tfstk.o
 qdbend.o: qdbend.f tfstk.o
 qdcell.o: qdcell.f tfstk.o
+qdcell_0.o: qdcell_0.f tfstk.o
+qdcell_1.o: qdcell_1.f tfstk.o
+qdcell_2.o: qdcell_2.f tfstk.o
 qddrif.o: qddrif.f tfstk.o
 qdmdia.o: qdmdia.f
 qdquad.o: qdquad.f tfstk.o
@@ -230,6 +235,7 @@ qquad.o: qquad.f
 qtent.o: qtent.f tfstk.o
 qthin.o: qthin.f
 qtwiss.o: qtwiss.f inc/MACCODE.inc inc/MACKW.inc tfstk.o
+qtwiss_0.o: qtwiss_0.f inc/MACCODE.inc inc/MACKW.inc tfstk.o
 rdexpr.o: rdexpr.f inc/CBKMAC.inc inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMISC.inc inc/MACTTYP.inc tfstk.o
 rdkwdl.o: rdkwdl.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMISC.inc inc/MACTTYP.inc tfstk.o
 rdterm.o: rdterm.f inc/MACCODE.inc inc/MACTTYP.inc tfstk.o
@@ -243,14 +249,15 @@ spkick.o: spkick.f tfstk.o
 spline.o: spline.f tfstk.o
 sprexl.o: sprexl.f inc/MACCODE.inc inc/MACFILE.inc tfstk.o
 sprlin.o: sprlin.f inc/MACCODE.inc inc/MACFILE.inc tfstk.o
-synradcl.o: synradcl.f inc/MACMATH.inc inc/MACPHYS.inc
+synradcl.o: synradcl.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc
 talign.o: talign.f tfstk.o
 tapert.o: tapert.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc tfstk.o
 tbal.o: tbal.f
 tbdecoup.o: tbdecoup.f
 tbend.o: tbend.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TENT.inc inc/TEXIT.inc inc/TMACRO1.inc tfstk.o
-tbende.o: tbende.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc tfstk.o
-tbendi.o: tbendi.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TENT.inc inc/TEXIT.inc inc/TMACRO.inc inc/TMACRO1.inc
+tbende.o: tbende.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc tbendi.o tfstk.o
+tbende_0.o: tbende_0.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc tfstk.o
+tbendi.o: tbendi.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TENT.inc inc/TEXIT.inc inc/TMACRO1.inc tfstk.o
 tbfrie.o: tbfrie.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc tfstk.o
 tbrad.o: tbrad.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TENT.inc inc/TEXIT.inc inc/TMACRO.inc inc/TMACRO1.inc tfstk.o
 tcav.o: tcav.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TENT.inc inc/TEXIT.inc inc/TMACRO1.inc tfstk.o
@@ -282,7 +289,7 @@ teigen.o: teigen.f
 temap.o: temap.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc tfstk.o
 temat.o: temat.f tfstk.o
 temit.o: temit.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc tfstk.o
-temitf.o: temitf.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO.inc inc/TMACRO1.inc
+temitf.o: temitf.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc
 temits.o: temits.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO.inc inc/TMACRO1.inc temit.o tfstk.o
 temp.o: temp.f inc/CBKMAC.inc inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACMISC.inc inc/MACTTYP.inc
 termes.o: termes.f tfstk.o
@@ -390,7 +397,7 @@ tgrot.o: tgrot.f
 thess.o: thess.f
 tinitr.o: tinitr.f
 tins.o: tins.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO.inc inc/TMACRO1.inc
-tinse.o: tinse.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO.inc inc/TMACRO1.inc
+tinse.o: tinse.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc
 tintrb.o: tintrb.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc temit.o tfstk.o
 title.o: title.f inc/MACFILE.inc
 tltrm.o: tltrm.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc tfstk.o
@@ -452,10 +459,10 @@ tsteer.o: tsteer.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc
 tstrad.o: tstrad.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TENT.inc inc/TEXIT.inc inc/TMACRO.inc inc/TMACRO1.inc
 tsvdm.o: tsvdm.f
 ttcav.o: ttcav.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TENT.inc inc/TEXIT.inc inc/TMACRO1.inc tfstk.o
-ttcave.o: ttcave.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO.inc inc/TMACRO1.inc
+ttcave.o: ttcave.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc
 ttdr.o: ttdr.f
 tthine.o: tthine.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO.inc inc/TMACRO1.inc
-ttinit.o: ttinit.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TFFITCODE.inc inc/TMACRO.inc inc/TMACRO1.inc tfstk.o
+ttinit.o: ttinit.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO.inc inc/TMACRO1.inc tfstk.o
 ttstat.o: ttstat.f tfstk.o
 tturn.o: tturn.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc tfstk.o
 tturne.o: tturne.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc temit.o tfstk.o

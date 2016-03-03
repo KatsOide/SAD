@@ -1,9 +1,12 @@
       subroutine temitf(latt,twiss,size,gammab,ndim,plot,lfni,lfno)
-      include 'inc/TMACRO.inc'
+      implicit none
+      include 'inc/TMACRO1.inc'
+      integer*4 nparam,ntitle
       parameter (nparam=59,ntitle=26)
-      integer*4 latt(2,nlat)
+      integer*4 ndim,lfni,lfno,latt(2,nlat),i,in,lfnos,in1,lu,j,
+     $     indexs,lene
       real*8 twiss(nlat,-ndim:ndim,*),size(21,nlat),gammab(nlat),
-     1       scale(nparam),rsave(78),cod(6)
+     1     scale(nparam),rsave(78),cod(6),circ,dps,dpsa,ddl,rgetgl1,v
       real*8 sx(-2:2),sy(-2:2),stbl(4,nparam)
       real*8 trans(6,12),beam(21,2),ctrb(21,21),param(nparam,-2:2)
       character*24 title(nparam),unit
@@ -11,7 +14,7 @@
       character*11 autofg
       logical*4 plot,stab
       external trim
-      common /tem/ r(6,6),ri(6,7)
+      real*8 r(6,6),ri(6,7)
       data (title(i),i=1,15)/
      1           'COD x,mm,0.001          ',
      1           '    px/p0,mrad,0.001    ',
@@ -57,10 +60,12 @@
         call tmov(r,rsave,78)
         lfnos=lfno
         lfno=0
-        ddl=-dps*param(13,0)*.5d0*c/omega0*pi2
+        circ=c/omega0*pi2;
+        ddl=dps*param(13,0)*.5d0*circ
         do 110 i=-2,2
           if(i .ne. 0)then
             dleng=param(14,0)+i*ddl
+            call rsetgl1('FSHIFT',-dleng/circ)
             call tsetdvfs
             call temit(latt,trans,cod,beam,ctrb,
      1           twiss,size,gammab,.true.,
@@ -76,6 +81,7 @@
 110     continue
         lfno=lfnos
         dleng=param(14,0)
+        call rsetgl1('FSHIFT',-dleng/circ)
         call tsetdvfs
         trf0=param(12,0)
         call tmov(param(1,0),codin,6)

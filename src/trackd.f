@@ -16,7 +16,7 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       irtc=1
       intlm=ktfallocshared((nzp0*nxp+1)/2)
       call trackd0(latt,kptbl,x,px,y,py,z,g,dv,pz,
-     1     mturn,kzx,trval,phix,phiy,damp,klist(intlm),lfno)
+     1     mturn,kzx,trval,phix,phiy,damp,ilist(1,intlm),lfno)
       call tfreeshared(intlm)
 c      if(mapfree(ntloss(intlm+1)) .ne. 0)then
 c        write(*,*)'???trackd-error in munmap.'
@@ -29,13 +29,12 @@ c      endif
       use tfstk
       implicit none
       include 'inc/TMACRO1.inc'
-
       integer*4 nzp0,nxp,maxturn,maxpara,nw,lfno,ncons,nscore
       parameter (nzp0=200,nxp=51,maxturn=2**30,maxpara=256,nw=16)
       integer, parameter :: nkptbl = 6
       integer*8 kv,kax,kax11,kax12,kax13,kax2,
      $     kaxi,kaxi3,kax1
-      integer*4 latt(2,nlat),kptbl(np0,nkptbl),nzp,lp0,nzp1,
+      integer*4 latt(2,nlat),kptbl(np0,nkptbl),nzp,lp0,npr1,
      $     ipr,j,n,jzout,np1,k,np,kp,kz,kx,irw,nsc,iw,
      $     jj,ip,isw,kseed,npmax,npara,nxm(nzp0)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
@@ -143,13 +142,13 @@ c     end   initialize for preventing compiler warning
       ipr=1
       if(npara .gt. 1)then
         kseed=0
-        nzp1=1
-        do while(nzp1 .lt. npara .and. ipr .gt. 0)
+        npr1=1
+        do while(npr1 .lt. npara .and. ipr .gt. 0)
           kseed=kseed+2
           ipr=fork_worker()
           if(ipr .gt. 0)then
-            ichpid(nzp1)=ipr
-            nzp1=nzp1+1
+            ichpid(npr1)=ipr
+            npr1=npr1+1
             call tfaddseed(kseed,irtc)
             if(irtc .ne. 0)then
               go to 3000
@@ -158,7 +157,7 @@ c     end   initialize for preventing compiler warning
         enddo
         npmax=max(1,min(nzp*ncons/npara,np0))
       else
-        nzp1=1
+        npr1=1
         npmax=np0
       endif
       kzx(1,1:npmax)=0
@@ -203,7 +202,7 @@ c     Reinit kptbl(ip,4) to reuse particle array slot `ip'
      $                   z(ip),g(ip),dv(ip),
      $                   emx,emz,codin,dvfs,.false.)
 c                    write(*,'(a,4i5,1p3g15.7)')
-c     $                   ' trackd-Launch ',nzp1,i,j,
+c     $                   ' trackd-Launch ',npr1,i,j,
 c     $                     nxm(i),x(ip),px(ip),g(ip)
                     cycle LOOP_K
                   endif
@@ -266,8 +265,8 @@ c     $     'trackd-tturn-2 ',n,np,(kptbl(i,1),y(i),i=1,14)
           kx=kzx(2,i)
           ntloss(kz,kx)=mturn(i)
           kzx(1,i)=0
-c          write(*,'(a,1x,9i6)')'trackd-Lost ',
-c     $         kz,kx,nxr(kz),nxm(kz),mturn(i),i,np,np1,kp
+c          write(*,'(a,1x,7i6)')'trackd-Lost ',
+c     $         kz,kx,mturn(i),i,np,np1,kp
           ini=.true.
         endif
       enddo
@@ -282,14 +281,14 @@ c     $         kz,kx,nxr(kz),nxm(kz),mturn(i),i,np,np1,kp
       go to 101
  3000 continue
       if(ipr .eq. 0)then
-c        write(*,*)'trackd-stop ',nzp1
+c        write(*,*)'trackd-stop ',npr1
 c        stop
         call tfresetsharedmap()
         call exit_without_hooks(0)
       endif
-      do j=1,nzp1-1
+      do j=1,npr1-1
  3010   irw=wait(isw)
-        do k=1,nzp1-1
+        do k=1,npr1-1
           if(irw .eq. ichpid(k))then
             n=k
             ichpid(k)=0
@@ -371,7 +370,8 @@ c        enddo
           xa(6)=xa(6)*tgauss()
         endif
         call tmap(xa,xa,-1)
-        call tadd(xa,codin,xa,6)
+        xa(1:6)=xa(1:6)+codin
+c        call tadd(xa,codin,xa,6)
         call tconv(xa,xa,-1)
         x(i) =xa(1)+dxi
         px(i)=xa(2)

@@ -4,7 +4,7 @@
       dimension trans(6,12),cod(6),beam(42)
       real*8 a
       logical dir
-      common /tem/ trans1(6,6),trans2(6,6)
+      real*8 trans1(6,6),trans2(6,6)
       cchi1=cos(chi1)
       schi1=sin(chi1)
       cchi2=cos(chi2)

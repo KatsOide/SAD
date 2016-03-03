@@ -1,25 +1,291 @@
+      module bendeb
+      use tfstk
+      use bendib
+      implicit none
+      logical*4 tbinit
+      real*8 als,al,b1,b,aind,trans1(6,13),cx,cy,
+     $     drhopp,rhosqp,akxsqp,dcxp,aksxp,dcyp,aksyp,phixp,phiyp,
+     $     drhopakp,akysqp
+
+      contains
+      subroutine tbendeinit(ak1,al)
+      implicit none
+      real*8 , intent(in) :: ak1,al
+      rhoe=rhob*p
+      call tbendiinit(ak1,al)
+      cx=1.d0+dcx
+      cy=1.d0+dcy
+      drhopp=1.d0/rhoe/p
+      rhosqp=rhosq/p
+      akxsqp=-akxsq/p
+      drhopakp=(drhopp-drhopak*akxsqp)/akxsq
+      phixp=-0.5d0*phixp/p
+      dcxp=phixp*aksx/akx
+      aksxp=-0.5d0*aksx/p+akx*cx*phixp
+      akysqp=-akysq/p
+      phiyp=-0.5d0*phiyp/p
+      dcyp=phiyp*aksy/aky
+      aksyp=-0.5d0*aksy/p+aky*cy*phiyp
+      tbinit=.false.
+      return
+      end subroutine
+
+      subroutine tbendecorr(trans,cod,beam,ak1,al)
+      implicit none
+      include 'inc/TMACRO1.inc'
+      real*8 , intent(in) :: ak1,al
+      real*8 trans(6,12),cod(6),beam(42)
+      real*8 pzi,dpzi,xr,s,a,trans2(6,6),dk,pxf,xf,yf,zf,phi
+      phi=al/rho0
+      p  =1.d0+cod(6)
+      xi =cod(1)
+      pxi=cod(2)/p
+      yi =cod(3)
+      pyi=cod(4)/p
+      s=min(psqmax,pxi**2+pyi**2)
+      dpzi=sqrt1(-s)
+      pzi=1.d0+dpzi
+      a=1.d0/(pzi-phi*pxi)
+      xf =(-al*dpzi*pxi+pzi*xi)*a
+      pxf=pxi+phi*dpzi
+      yf =yi+(-al*dpzi+xf*phi)*pyi/pzi
+      zf =cod(5)-phi*dpzi*xf/pzi+al*dpzi*(.5d0*pzi+.5d0-1.d0/pzi)
+      xr=xf/rho0
+      pxf=pxf-ak1*xf*xr*(0.5d0-xr*(2.d0-xr)/12.d0)/p
+      dk=-ak1*xr*(1.d0-xr*(1.d0-2.d0*xr))
+      trans2(1,1)=pzi*a
+      trans2(1,2)=((al+phi*xi)*(pzi**2+pxi**2)
+     $     -al*(phi*pxi**3+pzi**3))*a**2/pzi/p
+      trans2(1,3)=0
+      trans2(1,4)=(al*(1.d0-phi*pxi)+phi*xi)*pxi*pyi*a**2/pzi/p
+      trans2(1,5)=0.d0
+      trans2(1,6)=pxi/pzi*a*(al*(-a*(1.d0-phi*pxi)+pzi**2)-a*phi*xi)
+      trans2(2,1)=dk*trans2(1,1)
+      trans2(2,2)=1.d0-phi*pxi/pzi+dk*trans2(1,2)
+      trans2(2,3)=0.d0
+      trans2(2,4)=-phi*pyi/pzi+dk*trans2(1,4)
+      trans2(2,5)=0.d0
+      trans2(2,6)=-phi/pzi*dpzi+dk*trans2(1,6)
+      trans2(3,1)=phi*pyi*a
+      trans2(3,2)=(-al*phi*(pzi**2+pxi**2)
+     $     +(al+phi*xi)*(pxi+phi*pzi))*a**2*pyi/pzi/p
+      trans2(3,3)=1.d0
+      trans2(3,4)=(-al*(pzi**2*(pzi-phi*pxi)+phi*pxi*pyi**2)
+     $     +(pyi**2+pzi*(pzi-phi*pxi))*(al+phi*xi))*a**2/p/pzi
+      trans2(3,5)=0.d0
+      trans2(3,6)=-(al*(dpzi*(1.d0+pzi)*phi*pxi-pzi**3)+(al+phi*xi))
+     $     *a**2*pyi/pzi/p
+      trans2(4,1)=0.d0
+      trans2(4,2)=0.d0
+      trans2(4,3)=0.d0
+      trans2(4,4)=1.d0
+      trans2(4,5)=0.d0
+      trans2(4,6)=0.d0
+      trans2(5,1)=-trans2(1,1)*trans2(2,6)
+      trans2(5,2)=-trans2(1,2)*trans2(2,6)+trans2(2,2)*trans2(1,6)
+      trans2(5,3)=0.d0
+      trans2(5,4)=trans2(3,6)
+      trans2(5,5)=1.d0
+      trans2(5,6)=(-al*pzi*(a*phi*pxi+pzi)+
+     $     a*(al*(-phi*pxi*dpzi*(phi*pxi-1.d0)*a/pzi**2+1.d0)+
+     $     phi*xi*(pxi*phi*dpzi*a/pzi**2+1.d0)))/p
+      trans2(6,1)=0.d0
+      trans2(6,2)=0.d0
+      trans2(6,3)=0.d0
+      trans2(6,4)=0.d0
+      trans2(6,5)=0.d0
+      trans2(6,6)=1.d0
+      call tmultr5(trans,trans2,irad)
+      call tmulbs(beam ,trans2,.true.,.true.)
+      cod(1)=xf
+      cod(2)=pxf*p
+      cod(3)=yf
+      cod(5)=zf
+      return
+      end subroutine
+
+      subroutine tbendebody(trans,cod,beam,al,
+     $     ak1,fal,fb1,fb2,alnr,enarad)
+      implicit none
+      include 'inc/TMACRO1.inc'
+      real*8, intent(in):: ak1,fal,fb1,fb2,al,alnr
+      real*8 trans(6,12),cod(6),beam(42)
+      real*8 bx,by,bxy,xr,xe,dxe,pxf,xf,phin,dxpx,
+     $     dxf,dpxf,dyf,dpyf,hi,hip,pyf,yf,zf,dpini
+      logical*4 enarad
+      if(enarad)then
+        dpini=cod(6)
+        xr=cod(1)/rho0
+        xe=xi+xi*xr*(.5d0-xr*(2.d0-xr)/12.d0)
+        dxe=1.d0+xr*(1.d0-xr*(.5d0-xr/3.d0))
+        bx=b1*cod(3)
+        by=b+b1*xe
+        bxy=b1*dxe
+        call trade(trans,beam,cod,bx,by,0.d0,0.d0,
+     $       0.d0,bxy,0.d0,fal,fb1,fb2,als,al,alnr)
+        tbinit=tbinit .or. cod(6) .ne. dpini
+      endif
+      dp=cod(6)
+      p=1.d0+dp
+      xi=cod(1)
+      pxi=cod(2)/p
+      yi=cod(3)
+      pyi=cod(4)/p
+      zi=cod(5)
+      phin=al/rho0
+      if(tbinit)then
+        call tbendeinit(ak1,al)
+      endif
+      dxf =(drhopak+xi)*dcx+aksx/akxsq*pxi
+      dpxf= aksx*(drhopak+xi)+pxi*dcx
+      dyf = dcy*yi+aksy/akysq*pyi
+      dpyf=aksy*yi+dcy*pyi
+      hi=.5d0*(pxi**2+pyi**2-akxsq*xi**2-akysq*yi**2)
+     $     -drhop*xi
+      hip=.5d0*(-2.d0*(pxi**2+pyi**2)/p-akxsqp*xi**2-akysqp*yi**2)
+     $     -drhopp*xi
+      dxpx=dxf*pxi+xi*dpxf+dxf*dpxf+dyf*pyi+yi*dpyf+dyf*dpyf
+      zf =zi-.25d0*(dxpx
+     $     -(5.d0/rho0-1.d0/rhoe)*(drhopak*al-dpxf/akxsq))
+     $     -hi*al*.5d0
+      xf =xi +dxf
+      pxf=pxi+dpxf
+      yf =yi +dyf
+      pyf=pyi+dpyf
+      trans1(1,1)=cx
+      trans1(1,2)=aksx/akxsq/p
+      trans1(1,6)=drhopakp*dcx+(drhopak+xi)*dcxp
+     $     -0.5d0*aksx/akxsq/p*pxi
+      trans1(2,1)=aksx*p
+      trans1(2,2)=cx
+      trans1(2,6)=aksxp*(drhopak+xi)*p
+     $     +aksx*(drhopakp*p+drhopak+xi)+pxi*dcxp
+      trans1(3,3)=cy
+      trans1(3,4)=aksy/akysq/p
+      trans1(3,6)=yi*dcyp-0.5d0*aksy/akysq/p*pyi
+      trans1(4,3)=aksy*p
+      trans1(4,4)=cy
+      trans1(4,6)=(aksyp*p+aksy)*yi+pyi*dcyp
+      trans1(5,1)=-trans1(1,1)*trans1(2,6)+trans1(2,1)*trans1(1,6)
+      trans1(5,2)=-trans1(1,2)*trans1(2,6)+trans1(2,2)*trans1(1,6)
+      trans1(5,3)=-trans1(3,3)*trans1(4,6)+trans1(4,3)*trans1(3,6)
+      trans1(5,4)=-trans1(3,4)*trans1(4,6)+trans1(4,4)*trans1(3,6)
+      trans1(5,6)=-0.25d0*(-dxpx/p
+     $     +trans1(1,6)*pxf+trans1(2,6)/p*xf
+     $     +trans1(3,6)*pyf+trans1(4,6)/p*yf
+     $     -1.d0/rhoe/p*(drhopak*al-dpxf/akxsq)
+     $     -(5.d0/rho0-1.d0/rhoe)
+     $     *(drhopakp*al-trans1(2,6)/akxsq))
+     $     -hip*al*.5d0+h0/h1emit**3*al
+      call tmultr5(trans,trans1,irad)
+      call tmulbs(beam ,trans1,.true.,.true.)
+      cod(1)=xf
+      cod(2)=pxf*p
+      cod(3)=yf
+      cod(4)=pyf*p
+      cod(5)=zf-dvemit*al
+      return
+      end subroutine
+
+      subroutine tbendebody0(trans,cod,beam,aln,
+     $     phi0n,snphi0,sinsq0,csphi0,fal,fb1,fb2,alnr,
+     $     enarad)
+      implicit none
+      include 'inc/TMACRO1.inc'
+      real*8, intent(in):: phi0n,snphi0,sinsq0,csphi0,
+     $     fal,fb1,fb2,aln,alnr
+      real*8 trans(6,12),cod(6),beam(42)
+      real*8 xi,pxi,yi,pyi,dp,pr,rhoe,
+     $     dpzinv,phsq,dtn,s,dpz1,pz1,drho,dpx,pxf,
+     $     pz2,d,sinda,da,dpz2,xf
+      logical*4 enarad
+      xi=cod(1)
+      if(enarad)then
+        call trade(trans,beam,cod,0.d0,b,0.d0,0.d0,
+     $       0.d0,0.d0,0.d0,fal,fb1,fb2,als,al,alnr)
+      endif
+      dp=cod(6)
+      pr=1.d0+dp
+      pxi=cod(2)/pr
+      yi=cod(3)
+      pyi=cod(4)/pr
+      rhoe=rhob*pr
+      s=min(psqmax,pxi**2+pyi**2)
+      dpz1=sqrt1(-s)
+      pz1=1.d0+dpz1
+      drho=drhob+rhoe*dpz1+rhob*dp
+      dpx=-(xi-drho)/rhoe*snphi0-sinsq0*pxi
+      pxf=pxi+dpx
+      s=min(psqmax,pxf**2+pyi**2)
+      dpz2=sqrt1(-s)
+      pz2=1.d0+dpz2
+      d=pxf*pz1+pxi*pz2
+      if(d .eq. 0.d0)then
+        sinda=min(1.d0,max(-1.d0,2.d0*pxf*pz2/(pxf**2+pz2**2)))
+      else
+        sinda=min(1.d0,max(-1.d0,dpx*(pxf+pxi)/d))
+      endif
+      s=sinda**2
+      if(s .gt. 2.d-4)then
+        da=sinda
+     1       *(1.d0+s*(a3+s*(a5+s*(a7+s*(a9+s*(a11+s*(a13+s*a15)))))))
+      else
+        da=sinda*(1.d0+s*(a3+s*(a5+a7*s)))
+      endif
+      trans1(2,1)=-snphi0/rhob
+      trans1(2,2)=csphi0-snphi0*pxi/pz1
+      trans1(2,6)=snphi0/pz1
+      trans1(2,4)=-pyi*trans1(2,6)
+      dpzinv=dpx/pz1/pz2*(pxi+pxf)/(pz1+pz2)
+      phsq=(1.d0-pyi)*(1.d0+pyi)
+      if(d .eq. 0.d0)then
+        dtn=-2.d0*pxi/pz1
+      else
+        dtn= phsq*sinda/pz1/pz2
+      endif
+      trans1(1,1)=csphi0+snphi0*pxf/pz2
+      trans1(1,2)=rhob*(snphi0-dtn*csphi0+pxi*pxf/pz1/pz2*snphi0)
+      trans1(1,6)=rhob*(dpzinv+sinsq0/pz1-pxf/pz2*trans1(2,6))
+      trans1(1,4)=-pyi*trans1(1,6)
+      trans1(5,1)=rhob*trans1(2,1)/pz2
+      trans1(5,2)=rhob*(dpzinv-sinsq0/pz2-snphi0*pxi/pz1/pz2)
+      trans1(5,6)=rhob*(trans1(2,6)/pz2-dtn/phsq)
+      trans1(5,4)=-pyi*trans1(5,6)
+      trans1(3,1)=-pyi*trans1(5,1)
+      trans1(3,2)=-pyi*trans1(5,2)
+      trans1(3,4)=rhob*(phi0n-da)-pyi*trans1(5,4)
+      trans1(3,6)=trans1(5,4)
+      trans1(5,6)=trans1(5,6)-(phi0n-da)*rhob+h0/h1emit**3*aln
+      xf=xi*csphi0+rhoe*(snphi0*pxi-dpx*(pxi+pxf)/(pz1+pz2))
+     1     +drho*sinsq0
+      call tmultr5(trans,trans1,irad)
+      call tmulbs(beam ,trans1,.true.,.true.)
+      cod(1)=xf
+      cod(3)=yi+pyi*rhoe*(phi0n-da)
+      cod(2)=pxf*pr
+      cod(4)=pyi*pr
+      cod(5)=cod(5)-phi0n*(dp*rhob+drhob)+da*rhoe-dvemit*aln
+      return
+      end subroutine
+      end module
+
       subroutine tbende(trans,cod,beam,al0,phib,phi0,
      $     psi1,psi2,apsi1,apsi2,ak,
      1     dx,dy,theta,dtheta,
      $     fb1,fb2,mfring,fringe,eps0,enarad,alcorr,ld)
+      use bendeb
       use tfstk
       implicit none
       include 'inc/TMACRO1.inc'
-      real*8 a3,a5,a7,a9,ptmax
-      parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
-     1           a9=35.d0/1152.d0,ptmax=0.9999d0)
-      integer*4 ld,mfring,ndiv,nrad,k,n
+      integer*4 ld,mfring,ndiv,nrad,n
       real*8 al0,phib,phi0,psi1,psi2,ak,dx,dy,theta,dtheta,
-     $     fb1,fb2,eps0,
-     $     al,dphix,rho0,
+     $     fb1,fb2,eps0,dphix,
      $     dxfr1,dyfr1,dxfr2,dyfr2,
-     $     eps,drhob,aind,f1r,
-     $     b,b1,aln,akn,phibn,phi0n,csphi0,snphi0,sqphi0,tanp1,tanp2,
-     $     f,xi,xr,xe,ak1,bx,by,bxy,dp,pr,pxi,yi,pyi,rhoe,s,
-     $     dpz2,pz2,d,sinda,da,dpzinv,phsq,xf,xfr,dxe,t21,t43,
-     $     dphiy,rhob,dpz1,pz1,drho,dpx,pxf,dtn,dyfra1,dyfra2,
-     $     apsi1,apsi2,als
-      real*8 trans(6,12),cod(6),beam(42),trans1(6,13)
+     $     eps,f1r,akn,tanp1,tanp2,
+     $     f,xe,bx,by,bxy,xf,xfr,dxe,
+     $     dphiy,dyfra1,dyfra2,apsi1,apsi2,
+     $     csphin,snphin,sinsqn,phin,aln
+      real*8 trans(6,12),cod(6),beam(42)
       logical*4 enarad,alcorr,fringe
       if(alcorr .and. 
      $     mfring .ne. 0 .and. al0 .ne. 0.d0
@@ -72,43 +338,36 @@
         endif
       endif
       if(eps0 .eq. 0.d0)then
-        eps=1.d-6
+        eps=epsbend
       else
-        eps=1.d-6*eps0
+        eps=epsbend*eps0
       endif
       drhob=rhob-rho0
       aind=rho0/phi0*ak
       b=brhoz/rhob
       b1=b*aind/rhob
-      ndiv=1+int(sqrt(abs(ak*al)/eps/12.d0))
+      if(ak .eq. 0.d0)then
+        ndiv=1
+      else
+        ndiv=1+int(abs(phi0/eps))
+      endif
       if(enarad)then
         nrad=int(al/epsrad*crad*(h0*b)**2)
         ndiv=max(ndiv,int(nrad*emidiv*emidib),
      1       int(min(pi2,abs(phib))/epsrad/1.d3*emidiv*emidib))
       endif
-      aln=al/ndiv
-      akn=ak/ndiv
-      phibn=phib/ndiv
-      phi0n=phi0/ndiv
-      csphi0=cos(phi0n)
-      snphi0=sin(phi0n)
-      if(csphi0 .ge. 0.d0)then
-        sqphi0=snphi0**2/(1.d0+csphi0)
-      else
-        sqphi0=1.d0-csphi0
-      endif
-      tanp1=tan(psi1*phi0+apsi1)
-      tanp2=tan(psi2*phi0+apsi2)
-      f=1.d0/rho0
-      call tbedge(trans,cod,beam,al,phib,psi1*phi0+apsi1,.true.,ld)
+      trans1(1,3)=0.d0
+      trans1(1,4)=0.d0
       trans1(1,5)=0.d0
+      trans1(2,3)=0.d0
+      trans1(2,4)=0.d0
       trans1(2,5)=0.d0
+      trans1(3,1)=0.d0
+      trans1(3,2)=0.d0
       trans1(3,5)=0.d0
       trans1(4,1)=0.d0
       trans1(4,2)=0.d0
-      trans1(4,4)=1.d0
       trans1(4,5)=0.d0
-      trans1(4,6)=0.d0
       trans1(5,5)=1.d0
       trans1(6,1)=0.d0
       trans1(6,2)=0.d0
@@ -116,160 +375,77 @@
       trans1(6,4)=0.d0
       trans1(6,5)=0.d0
       trans1(6,6)=1.d0
+      tanp1=tan(psi1*phi0+apsi1)
+      tanp2=tan(psi2*phi0+apsi2)
+      f=1.d0/rho0
+      call tbedge(trans,cod,beam,al,phib,psi1*phi0+apsi1,.true.,ld)
+      akn=ak/ndiv
+      aln=al/ndiv
+      phin=phi0/ndiv
       als=0.d0
-      do 100 n=1,ndiv
-        xi=cod(1)
-        xr=xi/rho0
-        xe=xi+xi*xr*(.5d0-xr*(2.d0-xr)/12.d0)
-        dxe=1.d0+xr*(1.d0-xr*(.5d0-xr/3.d0))
-        if(n .eq. 1)then
-          ak1=akn*.5d0
-          if(enarad)then
-            bx=b1*cod(3)
-            by=b+b1*xe
-            bxy=b1*dxe
-            call trade(trans,beam,cod,bx,by,0.d0,0.d0,
-     $           0.d0,bxy,0.d0,
-     1           f*aln*.5d0-tanp1,fb1,fb2,0.d0,al,aln*.5d0)
+      if(ak .eq. 0.d0)then
+        trans1(3,3)=1.d0
+        trans1(4,3)=0.d0
+        trans1(4,4)=1.d0
+        trans1(4,6)=0.d0
+        trans1(5,3)=0.d0
+        csphin=cos(phin)
+        snphin=sin(phin)
+        if(csphin .ge. 0.d0)then
+          sinsqn=snphin**2/(1.d0+csphin)
+        else
+          sinsqn=1.d0-csphin
+        endif
+        call tbendebody0(trans,cod,beam,aln,
+     $       phin,snphin,sinsqn,csphin,f*aln*.5d0-tanp1,
+     $       fb1,fb2,aln*.5d0,enarad)
+        do n=2,ndiv
+          call tbendebody0(trans,cod,beam,aln,
+     $         phin,snphin,sinsqn,csphin,f*aln,
+     $         fb1,fb2,aln,enarad)
+        enddo
+        if(enarad)then
+          if(fb2 .ne. 0.d0 .and.
+     $         mfring .gt. 0 .or. mfring .eq. -2)then
+            f1r=fb2
+          else
+            f1r=0.d0
           endif
-        else
-          ak1=akn
-          if(enarad)then
-            bx=b1*cod(3)
-            by=b+b1*xe
-            bxy=b1*dxe
-            call trade(trans,beam,cod,bx,by,0.d0,0.d0,
-     $           0.d0,bxy,0.d0,f*aln,
-     $           fb1,fb2,als,al,aln)
+          call trade(trans,beam,cod,0.d0,b,0.d0,0.d0,
+     $         0.d0,0.d0,0.d0,
+     $         f*aln*.5d0-tanp2,fb1,fb2,al,al,aln*.5d0)
+        endif
+      else
+        tbinit=.true.
+c        call tbendecorr(trans,cod,beam,akn*.5d0,aln*.5d0)
+        call tbendebody(trans,cod,beam,aln,
+     $       akn,f*aln*.5d0-tanp1,
+     $       fb1,fb2,aln*.5d0,enarad)
+        do n=2,ndiv
+c          call tbendecorr(trans,cod,beam,akn,aln)
+          call tbendebody(trans,cod,beam,aln,
+     $         akn,f*aln,fb1,fb2,aln,enarad)
+        enddo
+c        call tbendecorr(trans,cod,beam,akn*.5d0,aln*.5d0)
+        if(enarad)then
+          if(fb2 .ne. 0.d0 .and.
+     $         mfring .gt. 0 .or. mfring .eq. -2)then
+            f1r=fb2
+          else
+            f1r=0.d0
           endif
-        endif
-        als=als+aln
-        dp=cod(6)
-        pr=1.d0+dp
-        pxi=min(ptmax,max(-ptmax,(cod(2)-ak1*xe)/pr))
-        yi=cod(3)
-        pyi=min(ptmax,max(-ptmax,(cod(4)+ak1*yi)/pr))
-        rhoe=rhob*pr
-        s=min(ptmax,pxi**2+pyi**2)
-        dpz1=-s/(1.d0+sqrt(1.d0-s))
-        pz1=1.d0+dpz1
-        drho=drhob+rhoe*dpz1+rhob*dp
-        dpx=-(xi-drho)/rhoe*snphi0-sqphi0*pxi
-        pxf=pxi+dpx
-        s=min(ptmax,pxf**2+pyi**2)
-        dpz2=-s/(1.d0+sqrt(1.d0-s))
-        pz2=1.d0+dpz2
-        d=pxf*pz1+pxi*pz2
-        if(d .eq. 0.d0)then
-          sinda=min(1.d0,max(-1.d0,2.d0*pxf*pz2/(pxf**2+pz2**2)))
-        else
-          sinda=min(1.d0,max(-1.d0,dpx*(pxf+pxi)/d))
-        endif
-        da=asin(sinda)
-        trans1(2,1)=-snphi0/rhob
-        trans1(2,2)=csphi0-snphi0*pxi/pz1
-        trans1(2,6)=snphi0/pz1
-        trans1(2,4)=-pyi*trans1(2,6)
-        dpzinv=dpx/pz1/pz2*(pxi+pxf)/(pz1+pz2)
-        phsq=(1.d0-pyi)*(1.d0+pyi)
-        if(d .eq. 0.d0)then
-          dtn=-2.d0*pxi/pz1
-        else
-          dtn= phsq*sinda/pz1/pz2
-        endif
-        trans1(1,1)=csphi0+snphi0*pxf/pz2
-        trans1(1,2)=rhob*(snphi0-dtn*csphi0+pxi*pxf/pz1/pz2*snphi0)
-        trans1(1,6)=rhob*(dpzinv+sqphi0/pz1-pxf/pz2*trans1(2,6))
-        trans1(1,4)=-pyi*trans1(1,6)
-        trans1(5,1)=rhob*trans1(2,1)/pz2
-        trans1(5,2)=rhob*(dpzinv-sqphi0/pz2-snphi0*pxi/pz1/pz2)
-        trans1(5,6)=rhob*(trans1(2,6)/pz2-dtn/phsq)
-        trans1(5,4)=-pyi*trans1(5,6)
-        trans1(3,1)=-pyi*trans1(5,1)
-        trans1(3,2)=-pyi*trans1(5,2)
-        trans1(3,4)=rhob*(phi0n-da)-pyi*trans1(5,4)
-        trans1(3,6)=trans1(5,4)
-        trans1(5,6)=trans1(5,6)-(phi0n-da)*rhob+h0/h1emit**3*aln
-        if(ak1 .eq. 0.d0)then
-          trans1(1,3)=0.d0
-          trans1(2,3)=0.d0
-          trans1(3,3)=1.d0
-          trans1(4,3)=0.d0
-          trans1(5,3)=0.d0
-        else
-          t21=-ak1*dxe
-          t43= ak1
-          trans1(1,1)=trans1(1,1)+trans1(1,2)*t21
-          trans1(1,3)=            trans1(1,4)*t43
-          trans1(2,1)=trans1(2,1)+trans1(2,2)*t21
-          trans1(2,3)=            trans1(2,4)*t43
-          trans1(3,1)=trans1(3,1)+trans1(3,2)*t21
-          trans1(3,3)=1.d0       +trans1(3,4)*t43
-          trans1(4,3)=            trans1(4,4)*t43
-          trans1(5,1)=trans1(5,1)+trans1(5,2)*t21
-          trans1(5,3)=            trans1(5,4)*t43
-        endif
-        xf=xi*csphi0+rhoe*(snphi0*pxi-dpx*(pxi+pxf)/(pz1+pz2))
-     1       +drho*sqphi0
-        if(n .eq. ndiv .and. akn .ne. 0.d0)then
+          xf=cod(1)
           xfr=xf/rho0
           dxe=1.d0+xfr*(1.d0-xfr*(.5d0-xfr/3.d0))
-          t21=-akn*.5d0*dxe
-          t43= akn*.5d0
-          do 120 k=1,6
-            trans1(2,k)=trans1(2,k)+trans1(1,k)*t21
-            trans1(4,k)=trans1(4,k)+trans1(3,k)*t43
-120       continue
-        else
-          xfr=0.d0
-        endif
-        call tmultr5(trans,trans1,irad)
-        call tmulbs(beam ,trans1,.true.,.true.)
-        if(calpol)then
-          if(n .eq. 1)then
-            call polpar(21,ld,aln,phi0n,phibn,ak,0.d0,cod)
-          else
-            call polpar(22,ld,aln,phi0n,phibn,ak,0.d0,cod)
-          endif
-        endif
-        cod(1)=xf
-        cod(3)=yi+pyi*rhoe*(phi0n-da)
-        if(n .eq. ndiv .and. akn .ne. 0.d0)then
           xe=xf+xf*xfr*(.5d0-xfr*(2.d0-xfr)/12.d0)
-          cod(2)=pxf*pr-akn*.5d0*xe
-          cod(4)=pyi*pr+akn*cod(3)*.5d0
-        else
-          cod(2)=pxf*pr
-          cod(4)=pyi*pr
+          bx=b1*cod(3)
+          by=b+b1*xe
+          bxy=b1*dxe
+          call trade(trans,beam,cod,bx,by,0.d0,0.d0,
+     $         0.d0,bxy,0.d0,
+     $         f*aln*.5d0-tanp2,fb1,fb2,al,al,aln*.5d0)
         endif
-        cod(5)=cod(5)-phi0n*(dp*rhob+drhob)+da*rhoe-dvemit*aln
-        if(n .eq. ndiv)then
-          if(calpol)then
-            if(irad .eq. 6)then
-              npelm=npelm+1
-            else
-              ipelm=ipelm+1
-              call tinitr(trans1)
-              call tmov(trans1,rlist(ipoltr+(ipelm-1)*36),36)
-              call polpar(23,ld,aln,phi0n,phibn,ak,0.d0,cod)
-            endif
-          endif
-          if(enarad)then
-            if(fb2 .ne. 0.d0 .and.
-     $           mfring .gt. 0 .or. mfring .eq. -2)then
-              f1r=fb2
-            else
-              f1r=0.d0
-            endif
-            bx=b1*cod(3)
-            by=b+b1*xe
-            bxy=b1*dxe
-            call trade(trans,beam,cod,bx,by,0.d0,0.d0,
-     $           0.d0,bxy,0.d0,
-     $           f*aln*.5d0-tanp2,fb1,fb2,al,al,aln*.5d0)
-          endif
-        endif
-100   continue
+      endif
       call tbedge(trans,cod,beam,al,phib,psi2*phi0+apsi2,.false.,ld)
       if(fb2 .ne. 0.d0)then
         if(mfring .gt. 0 .or. mfring .eq. -2)then
@@ -297,10 +473,10 @@
       real*8 trans(6,12),cod(6),beam(42),phi0,al,cp,sp,pr,pxi,pzf,
      $     trans1(6,6),xi,pyi,pzi,pxf,xf,dpzipxi,dpzipyi,dpzip,
      $     dpzfpxi,dpzfpyi,dpzfp,rho0,h0,dl,xsin,dcp,
-     $     h1emit,dvemit,a,ptmax
+     $     h1emit,dvemit,a,psqmax
       integer*4 ld,irad
       logical*4 calpol
-      parameter (ptmax=0.999d0)
+      parameter (psqmax=0.9999d0)
       cp=cos(phi0)
       sp=sin(phi0)
       if(cp .ge. 0.d0)then
@@ -315,7 +491,7 @@
       pr=1.d0+cod(6)
       pxi=cod(2)
       pyi=cod(4)
-      a=min(ptmax,pxi**2+pyi**2)
+      a=min(psqmax,pxi**2+pyi**2)
       pzi=pr*sqrt(1.d0-a/pr**2)
 c      pzi=sqrt(max(1.d-4,(pr-pxi)*(pr+pxi)-pyi**2))
       pzf=pzi*cp-pxi*sp
@@ -415,8 +591,7 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       include 'inc/TMACRO1.inc'
       integer*4 ld
       real*8 trans(6,12),cod(6),beam(42),phib,phi0,dx,dy,theta,
-     $     trans1
-      common /tem/ trans1(6,13)
+     $     trans1(6,13)
       call tchge(trans,cod,beam,-dx,-dy,theta,.true.,ld)
       call tinitr(trans1)
       trans1(2,6)=phi0

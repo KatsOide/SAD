@@ -66,9 +66,9 @@ c        g(i)=g(i)*(2.d0+g(i))
         px(i)=px(i)+tanp1*x(i)/rhoe
 1100  continue
       if(eps0 .le. 0.d0)then
-        eps=1.d-5
+        eps=epsbend
       else
-        eps=1.d-5*eps0
+        eps=epsbend*eps0
       endif
       ur=urad*p0**3
       an=anrad*p0

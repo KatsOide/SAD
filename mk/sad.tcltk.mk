@@ -102,7 +102,7 @@ TCLTK_CONFIG_ARG+=$(_TCLTK_CONFIG_ARG_XFT)
 TCLTK_CONFIG_ARG+=--x-includes=$(X11_INCDIR) --x-libraries=$(X11_LIBDIR)
 
 ifneq ($(USE_X11),YES)
-$(error USE_TCLTK flag is couppled with USE_X11 flag!)
+$(error USE_TCLTK flag is coupled with USE_X11 flag!)
 endif
 endif
 

@@ -1189,8 +1189,7 @@ c     write(*,*)'temit ',emy,emy1
       subroutine tsymp(trans)
       implicit none
       integer*4 i,j
-      real*8 trans(6,6),r,ri
-      common /tem/ r(6,6),ri(6,7)
+      real*8 trans(6,6),r(6,6),ri(6,7)
       call tinv(trans,ri,6,6)
       call tmultr(ri,trans,6)
       do 10 i=1,6

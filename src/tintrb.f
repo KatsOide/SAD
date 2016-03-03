@@ -15,14 +15,14 @@
       integer*4 i,j,ll
       real*8 trans(6,12),cod(6),beam(42),bmi(21)
       real*8 pl(3,3),r(3,3),eig(3),xx(3,3),xxs(3,3),
-     $     trans1,trans2,touckf,bint,e1,e2,e3
+     $     touckf,bint,e1,e2,e3
       real*8 xp(3,3),transw(6,6),
      $     al,al1,pxi,pyi,s,pr,pzi,alx,ale,alz,hi,a,b,d,vol,
      $     bm,ptrans,extrans,eytrans,eztrans,tf,aez,aex0,aey0,
      $     aez0,aexz,aeyz,f1,f2,f3,bn,bmax,bmin,ci,pvol,vol1,
      $     transa(6,6),transsp(6,6)
       integer*4 ia(6,6)
-      common /tem/ trans1(6,6),trans2(6,6)
+      real*8 trans1(6,6),trans2(6,6)
 c     real*8  vmin/0.d0/
       data ia/ 1, 2, 4, 7,11,16,
      1         2, 3, 5, 8,12,17,

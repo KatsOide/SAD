@@ -57,6 +57,7 @@ c     begin initialize for preventing compiler warning
       anux0=0.d0
       anuy0=0.d0
       anusumi0=0.d0
+      anudiffi0=0.d0
       iutm=0
       lfno=icslfno()
 c     end   initialize for preventing compiler warning
@@ -205,6 +206,11 @@ c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
                     twiss(1,1,mfitdx:mfitdpy)=
      $                   utwiss(mfitdx:mfitdpy,i2,1)
      $                   +(dp(ii)-dp(i2))*utwiss(mfitex:mfitepy,i2,1)
+c                    if(ii .eq. nfr)then
+c                      write(*,'(a,1p10g12.4)')'tffscalc ',
+c     $                     twiss(1,1,mfitdx:mfitdpy),
+c     $                     utwiss(mfitex:mfitepy,i2,1),dp(ii),dp(i2)
+c                    endif
                   endif
                   twiss(1,1,mfitdz )=utwiss(mfitdz ,i2,1)
                   twiss(1,1,mfitddp)=twiss(1,0,mfitddp)+dp(ii)
