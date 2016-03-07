@@ -135,7 +135,7 @@ With[{gamma:=e/ElectronMass,lambdae=ElectronRadius/FineStructureConstant},
   BeamstrahlungUpsilon[e_,nb_,sigx_,sigy_,sigz_]:=5/6*ElectronRadius^2*gamma*nb/(FineStructureConstant*sigz*(sigx+sigy));
   BeamstrahlungU0[ups_]:=1/Sqrt[1+ups^(2/3)];
   BeamstrahlungU1[ups_]:=1/(1+(1.5 ups)^(2/3))^2;
-  BeamstrahlungNGamma[e_,ups_,sigz_]=2.54*(FineStructureConstant sigz/lambdae/gamma)*ups*BeamstrahlungU0[ups];
+  BeamstrahlungNGamma[e_,ups_,sigz_]=2.54*(sigz/lambdae/gamma)*ups*BeamstrahlungU0[ups];
   BeamstrahlungDeltaGamma[ups_]=4*Sqrt[3]/15*ups*BeamstrahlungU1[ups]/BeamstrahlungU0[ups]];
 
 Protect[BeamstrahlungUpsilon, BeamstrahlungNGamma, BeamstrahlungDeltaGamma,

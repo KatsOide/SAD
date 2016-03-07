@@ -702,7 +702,7 @@ AutoLoad[Monitor,Steer,
 AutoLoad[BeamLine,PrintBeamLine,WriteBeamLine,
   PackagesDirectory//"beamline.n"];
 
-AutoLoad[`ElementValues,SetCoupledElements,CouplingMatrix,`CoupledKeys,
+AutoLoad[SetCoupledElements,CouplingMatrix,`CoupledKeys,
   PackagesDirectory//"Couple.n"];
 
 AutoLoad[D,Derivative,ReduceExpression,ReductionRule,Expand,
