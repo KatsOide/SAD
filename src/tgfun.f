@@ -109,6 +109,41 @@ c     end   initialize for preventing compiler warning
       return
       end
 
+      subroutine tgetphysdispu(utwiss,pe)
+      use tfstk
+      use ffs
+      use tffitcode
+      implicit none
+      real*8 utwiss(ntwissfun),pe(4)
+      real*8 cc,r1,r2,r3,r4,detr
+      r1=utwiss(mfitr1)
+      r2=utwiss(mfitr2)
+      r3=utwiss(mfitr3)
+      r4=utwiss(mfitr4)
+      detr=r1*r4-r2*r3
+      cc=sqrt(1.d0-detr)
+      if(utwiss(mfitdetr) .lt. 1.d0)then
+        pe(1)=cc*utwiss(mfitex)
+     $       +r4*utwiss(mfitey)-r2*utwiss(mfitepy)
+        pe(2)=cc*utwiss(mfitepx)
+     $       -r3*utwiss(mfitey)+r1*utwiss(mfitepy)
+        pe(3)=cc*utwiss(mfitey)
+     $       -r1*utwiss(mfitex)-r2*utwiss(mfitepx)
+        pe(4)=cc*utwiss(mfitepy)
+     $       -r3*utwiss(mfitex)-r4*utwiss(mfitepx)
+      else
+        pe(1)=cc*utwiss(mfitey)
+     $       -r1*utwiss(mfitex)-r2*utwiss(mfitepx)
+        pe(2)=cc*utwiss(mfitepy)
+     $       -r3*utwiss(mfitex)-r4*utwiss(mfitepx)
+        pe(3)=cc*utwiss(mfitex)
+     $       +r4*utwiss(mfitey)-r2*utwiss(mfitepy)
+        pe(4)=cc*utwiss(mfitepx)
+     $       -r3*utwiss(mfitey)+r1*utwiss(mfitepy)
+      endif
+      return
+      end
+
       real*8 function tfchi(geo,i)
       implicit none
       real*8 geo(3,4)

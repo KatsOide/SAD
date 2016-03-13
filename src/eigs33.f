@@ -19,7 +19,7 @@ c     Use extended double precision real for internal variables if possible
      $     fact,dd,u,g,y33,y22,y11
       parameter (one=1.)
 
-      d=hypot(a(2,1),a(3,1))
+      d=abs(complex(a(2,1),a(3,1)))
       if(d .ne. 0.d0)then
         c=a(2,1)/d
         s=a(3,1)/d
@@ -51,7 +51,7 @@ c     write(*,'(1x6f12.6)')x11,x21,x31,x22,x32,x33
       if(abs(x21)/fact+dd .eq. dd)then
         eig(1)=dble(x11)
         u=x22-x33
-        d=hypot(u,2.d0*x32)
+        d=abs(complex(u,2.d0*x32))
         if(d .eq. 0.d0)then
           eig(2)=dble(x22)
           eig(3)=dble(x33)
@@ -86,7 +86,7 @@ c         eig(3)=.5d0*(x22+x33-sign(d,u))
       if(abs(x32)/fact+dd .eq. dd)then
         eig(3)=dble(x33)
         u=x11-x22
-        d=hypot(u,2.d0*x21)
+        d=abs(complex(u,2.d0*x21))
         if(d .eq. 0.d0)then
           eig(1)=dble(x11)
           eig(2)=dble(x22)
@@ -118,9 +118,9 @@ c         eig(2)=.5d0*(x11+x22-sign(d,u))
         go to 1000
       endif
       u=x22-x11
-      d=hypot(u,2.d0*x21)
+      d=abs(complex(u,2.d0*x21))
       g=x11-2.d0*x21**2/(u+sign(d,u))
-      d=hypot(x32,x33-g)
+      d=abs(complex(x32,x33-g))
       c=(x33-g)/d
       s=-x32/d
       y22=x22
@@ -140,7 +140,7 @@ c         eig(2)=.5d0*(x11+x22-sign(d,u))
       r32= c*rr+s*r33
       r33=-s*rr+c*r33
       if(abs(x31)/fact+abs(x32) .ne. abs(x32))then
-        d=hypot(x32,x31)
+        d=abs(complex(x32,x31))
         c=x32/d
         s=-x31/d
         y11=x11

@@ -25,7 +25,7 @@ c      include 'DEBUG.inc'
       integer*8 kx
       integer*4 nlat,nele,ndim,nfr,maxcond,ibegin,nqcol,
      $     lfno,nfam,nfam1,nut,lbegin,lend,irtc
-      integer*4 i1,i2,i,ii,j,nfcol,iter,nvar,kt,iq,l,maxf,
+      integer*4 i1,i2,i3,i,ii,j,nfcol,iter,nvar,kt,iq,l,maxf,
      $     nqcol1,ie,ie1,iv,nfc0,nstab,lout,icslfno
       integer*4 latt(2,nlat),mult(nlat),itwissp(nlat),
      $     iele(nlat),iele1(nlat),ivvar(nvar),ival(nele),
@@ -43,7 +43,7 @@ c      include 'DEBUG.inc'
      $     hstab(-nfam:nfam),vstab(-nfam:nfam),error,parallel
       character*8 nlist(mfit1)
       real*8 anux0,anuy0,anuxi,anuyi,etamax,avebeta,rw,drw,rstab,
-     $anusumi,anusumi0, anudiffi,anudiffi0
+     $anusumi,anusumi0, anudiffi,anudiffi0,physd(4)
       logical*4 fam,over(-nfam:nfam),beg,zerores,inicond,wake,
      $     chgini,accoup,orbitcal
       integer*4 fork_worker,wait,irw,isw,ipr,ifb,ife,idir,
@@ -162,6 +162,8 @@ c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
             ife=nfr
           endif
  2        i1=0
+          i2=0
+          i3=0
           fam=.false.
  1        do ii=ifb,ife,idir
             if(fam)then
@@ -171,9 +173,11 @@ c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
      $               ipr .eq. 0 .and. jfam(ii) .lt. 0)then
                 cycle
               endif
+              i3=i2
               i2=jfam(ii)
               i1=ii
             else
+              i3=i2
               i2=i1
               i1=ii
             endif
@@ -203,9 +207,15 @@ c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
                     twiss(1,1,mfitdx:mfitdpy )=
      $                   utwiss(mfitdx:mfitdpy ,i2,1)+dfam(1:4,ii)
                   else
+                    if(dp(i2) .eq. dp(i3))then
+                      call tgetphysdispu(utwiss(1,i2,1),physd)
+                    else
+                      physd=(utwiss(mfitdx:mfitdpy,i2,1)
+     $                     -utwiss(mfitdx:mfitdpy,i3,1))/(dp(i2)-dp(i3))
+                    endif
                     twiss(1,1,mfitdx:mfitdpy)=
      $                   utwiss(mfitdx:mfitdpy,i2,1)
-     $                   +(dp(ii)-dp(i2))*utwiss(mfitex:mfitepy,i2,1)
+     $                   +(dp(ii)-dp(i2))*physd
 c                    if(ii .eq. nfr)then
 c                      write(*,'(a,1p10g12.4)')'tffscalc ',
 c     $                     twiss(1,1,mfitdx:mfitdpy),
@@ -239,7 +249,7 @@ c                    endif
      $             twiss(nlat,1,mfitny)/pi2+
      $             aint(twiss(nlat,1,mfitny)/pi2)
               accoup=anusumi .eq. anusumi0
-     $             .and. anudiffi*anudiffi0 .ge. 0.d0
+c     $             .and. anudiffi*anudiffi0 .ge. 0.d0
               hstab(ii)=hstab(ii) .and. (fam .or.
      $             anuxi .eq. anux0 .and. accoup)
               vstab(ii)=vstab(ii) .and. (fam .or.
