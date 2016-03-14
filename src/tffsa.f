@@ -1879,6 +1879,7 @@ c nlocal = mcommon in TFFSLOCAL.inc
       use tffitcode
       implicit none
       type (sad_list), pointer :: klx,kli,kle
+      type (sad_symdef), pointer :: symd
       integer*8 ktaloc
       integer*4 lfno,i,j,k,nk,m,me,nc, ie,iet,ik,irtc
       character*(MAXPNAME) key,tfgetstrs
@@ -1897,6 +1898,9 @@ c nlocal = mcommon in TFFSLOCAL.inc
       endif
 c      call tfdebugprint(kx,'setupcoup',3)
       if(.not. tflistqd(kx,klx))then
+        if(ktfsymbolqdef(kx%k,symd) .and. symd%value%k .eq. kx%k)then
+          return
+        endif
         go to 9000
       endif
       m=klx%nl
