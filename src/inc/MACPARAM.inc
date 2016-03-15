@@ -5,7 +5,7 @@ c
       integer*4 HTMAX,MAXPNAME,LILISTDUMMY
       parameter(MAXPNAME=32,LILISTDUMMY=3)
       character*(MAXPNAME) NULSTR
-      parameter(HTMAX=32767,NULSTR='        ')
+      parameter(HTMAX=2**15-1,NULSTR='        ')
 c     define `RBASE': base index number in pfalloc.f
       integer*4 RBASE
       parameter (RBASE=1513*1024)

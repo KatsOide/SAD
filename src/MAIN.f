@@ -13,7 +13,7 @@ c
       common /version/ versionid,versiondate
 c                      /'         1111111111'/
 c                      /'1234567890123456789'/
-      data versionid   /'1.0.10.9.1k64      '/
+      data versionid   /'1.0.10.9.1.1k64    '/
       data versiondate /'3/20/2016 19:00:00 '/
 c
       call fdate1(dat)

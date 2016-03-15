@@ -300,7 +300,9 @@ c        write(*,*)ig,ig1,kas1,klist(loc+1)
             stop 1
           else
             name(1:nc)=loc%str%str(1:nc)
+c            write(*,*)'tfsydefg ',name(1:nc)
             idx=hsrchz1(name(1:nc))
+c            write(*,*)' : ',idx
             if(idx .ne. 0 .and. idtype(idx) .eq. icGLR)then
               kx=kxnaloc1(ig,locp)
               call descr_sad(kx,symd)

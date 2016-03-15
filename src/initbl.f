@@ -16,10 +16,10 @@ c      external ActLie,ActTra,ActPlt,ActGRA,ActLin
 c
 c     external dotemp
 c
-       do 100 i=1,HTMAX
-          pname(i)=NULSTR
- 100   continue
-       msglvl=8
+      do i=1,HTMAX
+        pname(i)=NULSTR
+      enddo
+      msglvl=8
 c
        idummy=sethtb('LINE    ',icDEF,icLINE)
        idummy=sethtb('line    ',icDEF,icLINE)

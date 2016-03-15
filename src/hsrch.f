@@ -1,8 +1,8 @@
-      function hsrch(id)
+      integer*4 function hsrch(id)
       use maccbk
-      implicit real*8 (a-h,o-z)
+      implicit none
       character*(*) id,idw*(MAXPNAME+1)
-      integer*4 hsrchz,slen,lenw,hsrch
+      integer*4 hsrchz,slen,lenw
 c for debug
 c      print *,'hsrch>',lenw(id),id(:lenw(id))
 c end debug
@@ -20,7 +20,7 @@ c end debug
       return
       end
 
-      integer function hsrchz(token)
+      integer*4 function hsrchz(token)
       use maccbk
       implicit none
       include 'inc/MACCODE.inc'
@@ -43,7 +43,7 @@ c
 c         read(wtoken(i:i),'(A1)')iw
          isum=iw+2*abs(isum)
       end do
-      isum=isum*isum
+c      isum=isum*isum
       hsrchz=mod(abs(isum), HTMAX)+1
 c       write(*,*)'@hsrchz ',token(:slen),slen," -> ", hsrchz
       do loopc=1,HTMAX
@@ -92,7 +92,7 @@ c
         iw=ichar(wtoken(i:i))
         isum=iw+2*abs(isum)
       end do
-      isum=isum*isum
+c      isum=isum*isum
       hsrchz1=mod(abs(isum), HTMAX)+1
       do loopc=1,HTMAX
         slenw=lenw(pname(hsrchz1))

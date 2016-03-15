@@ -176,9 +176,11 @@ c     index(env,'/') MUST be `0' or grater than `1'
      $     pkg(1:lpkg)//'init.n ***'
       call cssetlfno(0)
       call tfgetf(pkg(1:lpkg)//'init.n')
+c      write(*,*)'tfinitn 1 '
       klist(itfcontextpath)=itfcontroot
       klist(itfcontextpath+1)=itfcontext
       itfcontext=itfcontroot
+c      write(*,*)'tfinitn 1.1 ',itfcontroot
       write(*,*) '*** Run time Environment:     '//
      $     pkg(1:lpkg)//'init.'//env(1:lenv)//'.n ***'
       call tfgetf(pkg(1:lpkg)//'init.'//env(1:lenv)//'.n')
