@@ -1,9 +1,9 @@
-      logical function skipch(char,token,slen,ttype,rval,ival)
+      logical*4 function skipch(char,token,slen,ttype,rval,ival)
 c
-      implicit real*8 (a-h,o-z)
+      implicit none
       character*(*) char
       character*(*)  token
-      integer slen,ttype,ival
+      integer*4 slen,ttype,ival
       real*8 rval
 c
       if (token(:slen) .eq. char) then

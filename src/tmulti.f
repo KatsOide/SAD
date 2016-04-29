@@ -3,7 +3,7 @@
      $     psi1,psi2,
      $     dx,dy,dz,chi1,chi2,theta,dtheta,
      $     eps0,enarad,fringe,f1,f2,mfring,fb1,fb2,
-     $     vc,harm,phirf,freq,dphirf,radius,rtaper,
+     $     vc,w,phirf,dphirf,radius,rtaper,autophi,
      $     kturn,l,latt,kptbl)
       use tfstk
       implicit none
@@ -19,10 +19,10 @@ c      parameter (oneev=1.d0+3.83d-12)
       real*8 al
       complex*16 ak(0:nmult)
       real*8 bz,phia,psi1,psi2,dx,dy,dz,chi1,chi2,theta,dtheta,eps0
-      logical*4 enarad,fringe
+      logical*4 enarad,fringe,autophi
       real*8 f1,f2
       integer*4 mfring
-      real*8 fb1,fb2,vc,harm,phirf,freq,dphirf,radius
+      real*8 fb1,fb2,vc,phirf,dphirf,radius
       integer*4 kturn,l,latt(2,nlat),kptbl(np0,6)
       logical acc,spac1,dofr(0:nmult)
       integer*4 i,j,m,n,ndiv,nmmin,nmmax
@@ -290,11 +290,6 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       endif
       acc=(trpt .or. rfsw) .and. vc .ne. 0.d0
       if(acc)then
-        if(harm .eq. 0.d0)then
-          w=pi2*freq/c
-        else
-          w=omega0*harm/c
-        endif
         if(w .eq. 0.d0)then
           wi=0.d0
         else
@@ -306,7 +301,11 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
           phis=0.d0
         else
           vnominal=0.d0
-          phis=w*trf0
+          if(autophi)then
+            phis=phic
+          else
+            phis=w*trf0
+          endif
         endif
         he=h0+vnominal
         pe=h2p(he)
@@ -339,12 +338,12 @@ c        pe=sqrt((he-1.d0)*(he+1.d0))
         endif            
         phic=(phirf+dphirf)*charge-vcphic
         dphis=phis-phic
-        if(rad .or. trpt)then
+        if(rad .or. trpt .or. autophi)then
           offset=sin(dphis)
           offset1=0.d0
         else
           offset=sin(dphis)-sin(phis)
-          offset1=vcalpha*sin(phis)
+          offset1=sin(phis)
         endif
         tlim=1.d4
       else

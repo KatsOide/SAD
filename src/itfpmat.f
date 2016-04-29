@@ -444,6 +444,7 @@
      $     np,ispp,mop,iop,iop0,np0,npd,npdi,
      $     isp1a,isp2a,ispt,mstk0,itfseqmatstk1
       logical*4 realp
+      mop=0
       if(mp1 .gt. map)then
         if(isp20 .lt. isp10)then
           ix=1

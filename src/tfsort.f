@@ -1141,13 +1141,13 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
       type (sad_pat), pointer :: pat1,pat2
       integer*8 icont1,icont2
       integer*4 m1,m2,l,i,itfstringorder,itfpatorder
-      real*8 d,rfromk
+      real*8 d,v1,v2
       ix=-1
-      if(ktfrealqd(k1))then
-        if(ktfrealqd(k2))then
-          if(rfromk(k1%k) .gt. rfromk(k2%k))then
+      if(ktfrealqd(k1,v1))then
+        if(ktfrealqd(k2,v2))then
+          if(v1 .gt. v2)then
             ix=1
-          elseif(rfromk(k1%k) .eq. rfromk(k2%k))then
+          elseif(v1 .eq. v2)then
             ix=0
           endif
         endif

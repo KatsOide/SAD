@@ -98,7 +98,7 @@
       real*8 sint,cost
       real*8 cnbs,cp2bs,dp2bs,cpbs,cubs,dpzbs,dsz,rhoi,rhoi2
       real*8 rnbs,rlum_col,w2x,w2y,xij,xtmp,ucE
-      real*8 tgauss,tran,rgetgl
+      real*8 tran,rgetgl
       type (sad_symdef), pointer :: symd
 !      equilavence (blist(1),gamp)
 

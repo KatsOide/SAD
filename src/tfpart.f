@@ -30,8 +30,7 @@
       kl=dtastk(isp1+1)
       isp0=isp
       irtc=0
-      if(ktfrealqd(kl))then
-        iv=int(rfromd(kl))
+      if(ktfrealqdi(kl,iv))then
         if(iv .lt. 0)then
           iv=ma+iv+1
           if(iv .lt. 0)then
@@ -167,8 +166,7 @@
         return
       endif
       kl=dtastk(isp1+1)
-      if(ktfrealqd(kl))then
-        iv=int(rtastk(isp1+1))
+      if(ktfrealqdi(kl,iv))then
         if(iv .lt. 0)then
           iv=ma+iv+1
           if(iv .lt. 0)then
@@ -682,6 +680,7 @@ c        enddo
       type (sad_descriptor) kx,kp,k,ks
       type (sad_list), pointer :: klp,kl,kls
       integer*4 isp1,irtc,narg,i,m,id,itfmessage
+      real*8 vp,vs
       narg=isp-isp1
       k=dtastk(isp1+1)
       if(ktfnonlistqd(k,kl))then
@@ -690,9 +689,8 @@ c        enddo
       endif
       kp=dtastk(isp1+2)
       if(narg .eq. 2)then
-        if(ktfrealqd(kp))then
+        if(ktfrealqdi(kp,itastk(1,isp+1)))then
           isp=isp+1
-          itastk(1,isp)=int(rfromd(kp))
           itastk(2,isp)=itastk(1,isp)
           call tfpartitionstk(isp,isp,kl,kx,irtc)
           isp=isp1+2
@@ -711,10 +709,10 @@ c        enddo
         return
       elseif(narg .eq. 3)then
         ks=dtastk(isp)
-        if(ktfrealqd(kp) .and. ktfrealqd(ks))then
+        if(ktfrealqd(kp,vp) .and. ktfrealqd(ks,vs))then
           isp=isp+1
-          itastk(1,isp)=int(rfromd(kp))
-          itastk(2,isp)=int(rfromd(ks))
+          itastk(1,isp)=vp
+          itastk(2,isp)=vs
           call tfpartitionstk(isp,isp,kl,kx,irtc)
           isp=isp1+3
           return
@@ -727,8 +725,7 @@ c        enddo
               itastk(1,isp)=int(klp%rbody(i))
               itastk(2,isp)=int(kls%rbody(i))
             enddo
-          elseif(ktfrealqd(ks))then
-            id=int(rfromd(ks))
+          elseif(ktfrealqdi(ks,id))then
             do i=1,m
               isp=isp+1
               itastk(1,isp)=int(klp%rbody(i))

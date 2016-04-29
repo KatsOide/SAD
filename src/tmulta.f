@@ -30,7 +30,7 @@
       if(bz .ne. 0.d0)then
         write(*,*)
      $       'MULT with nonzero ANGLE and BZ is not yet supported.'
-        stop
+        call forcesf()
       endif
       if(gknini)then
         call gkninit
@@ -225,7 +225,7 @@
       if(bz .ne. 0.d0)then
         write(*,*)
      $       'MULT with nonzero ANGLE and BZ is not yet supported.'
-        stop
+        call forcesf()
       endif
       if(gknini)then
         call gkninit

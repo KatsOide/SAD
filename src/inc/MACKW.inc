@@ -43,7 +43,7 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
       integer                                        kwR66
       integer kwKx,kwQy,kwpole,kwFBx,kwFBy,kwDBZ,kwCOUPLE,
      $     kwRADI,kwDROT,kwAE1,kwAE2,kwFB1,kwFB2,kwLDEV,kwLRAD,
-     $     kwFL
+     $     kwFL,kwAPHI
       parameter (kwL=1,kwANGL=kwL+1,kwROT=kwANGL+1)
       parameter (kwK0=kwROT+1)
       parameter (kwK1=kwK0+1,kwDK1=kwK1+1)
@@ -152,8 +152,8 @@ c
      $     kwAE1=kwDROT+1,kwAE2=kwAE1+1,
      $     kwFB1=kwAE2+1,kwFB2=kwFB1+1,
      $     kwLDEV=kwFB2+1,kwLRAD=kwLDEV+1,
-     $     kwFL=kwLRAD+1)
-      parameter (kwMAX=kwFL+1)
+     $     kwFL=kwLRAD+1,kwAPHI=kwFL+1)
+      parameter (kwMAX=kwAPHI+1)
 c
       integer kytbl
       common /kywdtb/ kytbl(0:kwMAX,0:icMXEL)

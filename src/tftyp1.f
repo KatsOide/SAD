@@ -63,6 +63,9 @@
             unit=' DEG'
           else
             unit=' '
+            if(kw .eq. 'SIGMAZ')then
+              kw='SIGZ'
+            endif
           endif
           vout=kw(1:lenw(kw))//' ='
      $         //autos(v)//unit(1:lene(unit))

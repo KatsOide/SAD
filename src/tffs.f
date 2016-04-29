@@ -64,7 +64,7 @@
       integer*4 nl,latt(2,nl),j,l,ntwis,k,i,itehash
       if(idtype(latt(1,1)) .ne. icMARK)then
         write(*,*)'The first element must be a MARK element.'
-        stop
+        call forcesf()
       endif
       marki=1
       nlat=ilist(1,ilattp)+1
@@ -273,8 +273,9 @@ c      call tfree(ifibzl)
      1     'BUNCHSTA','CONV    ','STABLE  ','SPAC    ',
      $     'RADLIGHT','GEOCAL  ','PHOTONS ','WSPAC   ',
      $     'SELFCOD ','PSPAC   ','CONVCASE','PRSVCASE',
-     $     'LOSSMAP ','ORBITCAL','RADTAPER','SORG     ',
-     $  20*'        '/
+     $     'LOSSMAP ','ORBITCAL','RADTAPER','SORG    ',
+     $     'INTRES  ','HALFRES ','SUMRES  ','DIFFRES ',
+     $  16*'        '/
       data sino  /
      $     '        ','        ','        ','        ',
      1     '        ','RING    ','        ','UNIFORM ',
@@ -287,5 +288,6 @@ c      call tfree(ifibzl)
      $     '        ','GEOFIX  ','        ','        ',
      $     '        ','        ','        ','        ',
      $     '        ','        ','        ','        ',
-     $  20*'        '/
+     $     '        ','        ','        ','        ',
+     $  16*'        '/
       end

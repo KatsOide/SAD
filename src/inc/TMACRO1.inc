@@ -19,25 +19,28 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
      $     simulate,absweit,jitter,trgauss,lwake,twake,smearp,
      $     bunchsta,caltouck,canon,cellstab,spac,tparaed,radlight,
      $     oldflagsdummy,geocal,photons,wspac,selfcod,pspac,
-     $     convcase,preservecase,lossmap,orbitcal,radtaper,sorg
+     $     convcase,preservecase,lossmap,orbitcal,radtaper,sorg,
+     $     intres,halfres,sumres,diffres
       real*8
      $     amass,charge,h0,p0,omega0,trf0,crad,erad,epsrad,
-     $     codin(6),dleng,anrad,urad,u0,vc0,hvc0,dp0,brho,
+     $     codin(6),dleng,anrad,urad,u0,vc0,wrfeff,dp0,brho,
      $     ccintr,cintrb,pbunch,coumin,re0,pgev,emidiv,
      $     emidib,emidiq,emidis,ctouck,dvemit,h1emit,
      $     anbunch,tdummy(6),zlost,alost,
      $     taurdx,taurdy,taurdz,fridiv,beamin(21),
      $     vccos,vcsin,vcphic,vcalpha,vceff,
+     $     vcacc,dvcacc,ddvcacc,
      $     pspac_dx,pspac_dy,pspac_dz,dvfs,rcratio,rclassic,brhoz,
-     $     dummycom(114)
+     $     dummycom(111)
       common /tparm/
      $     amass,charge,h0,p0,omega0,trf0,crad,erad,epsrad,
-     $     codin,dleng,anrad,urad,u0,vc0,hvc0,dp0,brho,
+     $     codin,dleng,anrad,urad,u0,vc0,wrfeff,dp0,brho,
      $     ccintr,cintrb,pbunch,coumin,re0,pgev,emidiv,
      $     emidib,emidiq,emidis,ctouck,dvemit,h1emit,
      $     anbunch,tdummy,zlost,alost,
      $     taurdx,taurdy,taurdz,fridiv,beamin,
      $     vccos,vcsin,vcphic,vcalpha,vceff,
+     $     vcacc,dvcacc,ddvcacc,
      $     pspac_dx,pspac_dy,pspac_dz,dvfs,rcratio,rclassic,brhoz,
      $     dummycom
 c      integer*4 ntouckl,ntouckx,ntouckz
@@ -71,4 +74,6 @@ c      common /intr/ touckm,tampl,touckl,toucke
      $     (flags(34),geocal),(flags(35),photons),(flags(36),wspac),
      $     (flags(37),selfcod),(flags(38),pspac),(flags(39),convcase),
      $     (flags(40),preservecase),(flags(41),lossmap),
-     $     (flags(42),orbitcal),(flags(43),radtaper),(flags(44),sorg)
+     $     (flags(42),orbitcal),(flags(43),radtaper),(flags(44),sorg),
+     $     (flags(45),intres),(flags(46),halfres),(flags(47),sumres),
+     $     (flags(48),diffres)

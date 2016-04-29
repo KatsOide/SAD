@@ -9,7 +9,7 @@
       type (sad_complex), pointer :: cx
       integer*8 ks
       integer*4 m,irtc,i,isp0,iopc1,iopc,itfcanonicalorder
-      real*8 vx1,vy,rfromk
+      real*8 vx1,vy,v2,vx
       logical*4 eval
       iopc=iopc1
       ky=k
@@ -129,7 +129,7 @@
         endif
         go to 5000
       case (mtfslot,mtfslotseq)
-        if(ktfrealqdv(ky,vy))then
+        if(ktfrealqd(ky,vy))then
           ks=int8(vy)
 c          write(*,*)'tfeexpr-slot ',vy,ks
           if(dble(ks) .ne. vy) then
@@ -199,8 +199,8 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
                 else
                   call tftake(k1,dble(-m+1),k2,.true.,.false.,irtc)
                 endif
-                if(ktfrealqd(k2) .and. ktfrealqd(ky))then
-                  kx=dfromr(rfromk(k2%k)*rfromk(ky%k))
+                if(ktfrealqd(k2,v2) .and. ktfrealqd(ky,vy))then
+                  kx=dfromr(v2*vy)
                 else
                   call tfeexpr(k2,ky,kx,mtftimes)
                 endif
@@ -225,8 +225,8 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
                 elseif(ktflistq(ktastk(isp),listi))then
                   if(listi%head .eq. ktfoper+mtfcomplex)then
                     call tfeexpr(dtastk(isp),ky,kx,mtfpower)
-                    if(ktfrealqd(kx))then
-                      vx1=vx1*rfromk(kx%k)
+                    if(ktfrealqd(kx,vx))then
+                      vx1=vx1*vx
                     else
                       call tfeexpr(kx2,kx,kx2,mtftimes)
                     endif
@@ -244,8 +244,8 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
                 endif
                 isp=isp0
                 call tfeexpr(kx,ky,ke,mtfpower)
-                if(ktfrealqd(kx2))then
-                  vx1=vx1*rfromk(kx2)
+                if(ktfrealqd(kx2,v2))then
+                  vx1=vx1*v2
                 else
                   call tfeexpr(kx2,ke,ke,mtftimes)
                 endif
@@ -406,7 +406,7 @@ c      enddo
       type (sad_complex), pointer :: cx1,cx2
       integer*8 ki1,ki2
       integer*4 irtc,iopc
-      real*8 v1,v2,tfenum,rfromk
+      real*8 v1,v2,tfenum
       complex*16 c1
       irtc=0
       if(iopc .eq. mtfnot)then
@@ -421,8 +421,8 @@ c      enddo
         endif
         return
       endif
-      if(ktfrealqdv(k1,v1))then
-        if(ktfrealqdv(k2,v2))then
+      if(ktfrealqd(k1,v1))then
+        if(ktfrealqd(k2,v2))then
           if(iopc .eq. mtfcomplex)then
             if(k2%k .ne. 0)then
               kx=kxcalocv(-1,v1,v2)
@@ -472,8 +472,8 @@ c      enddo
           go to 8000
         endif
       elseif(tfcomplexqx(k1%k,cx1))then
-        if(ktfrealqd(k2))then
-          call tfcmplxmath(cx1%cx,dcmplx(rfromk(k2),0.d0),
+        if(ktfrealqd(k2,v2))then
+          call tfcmplxmath(cx1%cx,dcmplx(v2,0.d0),
      $         kx,iopc,irtc)
           return
         elseif(tfcomplexqx(k2%k,cx2))then

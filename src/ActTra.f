@@ -1,5 +1,6 @@
       Subroutine ActTra(argp)
       use maccbk
+      use tfstk
       implicit none
 c     export
       integer parptr,lptr
@@ -27,7 +28,7 @@ c      integer*4 idxtws
       real*8  p0,charge,mass,em(2),sigs,sige
       real*8  v0,dist,comp,df,de,ex,ey,r0,r
       real*8 RgetGL
-      integer*4 IgetGL,mcfallo
+      integer*4 IgetGL,mctaloc
 c     
 c  K. Oide 9/10/1999
       character*1 xc(-3:3)
@@ -60,13 +61,13 @@ c
 c     for debug
 c     call ptrace('acttra',1)
 c     end debug
-c      write(*,*)'ActTra-1 ',ilist(2,1)
-      parptr=mcfallo(22)
+c      write(*,*)'ActTra-1 '
+      parptr=mctaloc(22)
       ilist(1,parptr)=22
       xbase=parptr+16
       pbase=xbase+1
 c     print *,'acttra(49 )>',ilist(1,30),ilist(2,30)
-      sptr=mcfallo(NSPARM)
+      sptr=mctaloc(NSPARM)
 c     print *,'acttra(49 )>',parptr,sptr
       ilist(1,sptr)=NSPARM
       ilist(2,parptr+1)=sptr
@@ -94,7 +95,7 @@ c******* K. Oide 7/6/1997 *********
 c
 c        call talocinit
         ilist(2,argp+1)=itfdummyline()
-c        write(*,*)'ActTra-2.1 ',argp,ilist(2,1)
+c        write(*,*)'ActTra-2.1 ',argp
         go to 101
 c         call errmsg('actTra',
 c     &        pname(lptr)(:lpname(lptr))//'is not a line name.',0,4)
@@ -106,11 +107,11 @@ c**********************************
 c.......for debug
 c     print *,'argument for track',pname(lptr),ilist(2,idval(lptr))
 c.......end debug
-c      write(*,*)'ActTra-2.2 ',ilist(2,1)
+c      write(*,*)'ActTra-2.2 '
          if (ilist(2,idval(lptr)) .le. 0) then
             call expnln(lptr)
          endif
-c      write(*,*)'ActTra-2.3 ',ilist(2,1)
+c       write(*,*)'ActTra-2.3 ',lptr,ilist(2,idval(lptr))
          call filaux(idval(lptr))
          pexln=ilist(2,idval(lptr))
       endif
@@ -139,9 +140,9 @@ c.....parameters for ploting
       i=ilist(2,i)
       go to 1000
  1100 continue
-c      write(*,*)'ActTra-2.9 ',ilist(2,1)
-      pltpw=mcfallo(npw+1)
-      pltps=mcfallo(nps+1)
+c      write(*,*)'ActTra-2.9 '
+      pltpw=mctaloc(npw+1)
+      pltps=mctaloc(nps+1)
       ilist(2,parptr+4)=pltpw
       ilist(2,parptr+5)=pltps
       ilist(1,pltpw)=npw+1
@@ -152,20 +153,20 @@ c     print *,'at 1100 nps ',nps
       if(i .le. 0) go to 1300
       if(abs(ilist(1,i+1)) .le. 3) then
          pltps=pltps+1
-         ilist(2,pltps)=mcfallo(3)
+         ilist(2,pltps)=mctaloc(4)
          call v_copy(rlist(i+1),rlist(ilist(2,pltps)),3)
       else if(abs(ilist(1,i+1)) .le. 6) then
          pltpw=pltpw+1
-         ilist(2,pltpw)=mcfallo(ilist(1,i)-1)
+         ilist(2,pltpw)=mctaloc(ilist(1,i)-1)
          call v_copy(rlist(i+1),rlist(ilist(2,pltpw)),ilist(1,i)-1)
       endif
       i=ilist(2,i)
       go to 1200
  1300 continue
-c      write(*,*)'ActTra-3 ',ilist(2,1)
 c     
       nt=ilist(2,argp+nt$)
       np=ilist(2,argp+np$)
+c      write(*,*)'ActTra-3 ',np
       if(ilist(2,argp+ex$) .ne. 0)then
         ex=rlist(ilist(2,argp+ex$))
       else
@@ -222,9 +223,9 @@ c     ilist(2,parptr+2)=idxtws
       ilist(2,parptr+2)=0
       do i=1,2
 c       write(*,*)'ActTra-3.3 ',i,ilist(2,1)
-         xptr=mcfallo(np)
+         xptr=mctaloc(np)
 c      write(*,*)'ActTra-3.35 ',i,np
-         pptr=mcfallo(np)
+         pptr=mctaloc(np)
 c      write(*,*)'ActTra-3.4 ',i,np,xptr,pptr
          ilist(2,xbase)=xptr
          ilist(2,pbase)=pptr
@@ -249,9 +250,9 @@ c     write(*,*)'ActTra-3.6 ',np,xptr,pptr
          pbase=pbase+2
       enddo
 c     
-c      write(*,*)'ActTra-4 ',ilist(2,1)
-      xptr=mcfallo(np)
-      pptr=mcfallo(np)
+c      write(*,*)'ActTra-4 '
+      xptr=mctaloc(np)
+      pptr=mctaloc(np)
       ilist(2,xbase)=xptr
       ilist(2,pbase)=pptr
       nxp0=nxp(3)
@@ -266,7 +267,7 @@ c      write(*,*)'ActTra-4 ',ilist(2,1)
       enddo
 c     
       call tfsetbeamlinename(pname(lptr))
-c      write(*,*)'ActTra-5',ilist(2,1)
+c      write(*,*)'ActTra-5',pexln,parptr,mstk
       call track(pexln,parptr)
       if(np .gt. 0)then
          do k=1,3
@@ -319,7 +320,8 @@ c     &             partid,.false.)
          enddo
       endif
       do i=1,6
-         call freeme(ilist(2,parptr+15+i),np)
+         call tfreem(ilist(2,parptr+15+i),np)
+c         call freeme(ilist(2,parptr+15+i),np)
       enddo
 c     for debug
 c     call ptrace('acttra',-1)

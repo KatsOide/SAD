@@ -401,12 +401,10 @@ c     $             itastk(2,isp),vstk2(isp)
       implicit none
       type (sad_descriptor) k
       integer*4 isp0,narg,irtc,iv,nc,ifany1,i,itfmessage,j,ielmh
-      real*8 rfromk
       character*1024 name
       logical*4 tmatch
       isp0=isp
-      if(ktfrealqd(k) .and. narg .eq. 2)then
-        iv=int(rfromk(k%k))
+      if(ktfrealqdi(k,iv) .and. narg .eq. 2)then
         if(iv .lt. 0)then
           iv=nele+iv+1
         endif
@@ -1120,12 +1118,10 @@ c     end   initialize for preventing compiler warning
       implicit none
       type (sad_descriptor) k
       integer*4 irtc,nc,ielm,itfmessage
-      real*8 rfromk
       character*(MAXPNAME+16) tfgetstrs,name
       logical*4 exist
       irtc=0
-      if(ktfrealqd(k))then
-        itfloc=int(rfromk(k%k))
+      if(ktfrealqdi(k,itfloc))then
         if(itfloc .le. 0 .or. itfloc .gt. nlat)then
           irtc=itfmessage(9,'General::wrongval',
      $         '"Component number",'//

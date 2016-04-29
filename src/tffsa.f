@@ -21,7 +21,7 @@
      $     trval,rese,v,wa,wd,wl,xa,ya,xxa,xya,yya,getva,rgetgl1,
      $     wp,getvad,tgetgcut
       parameter (rmax=1.d35,ndimmax=500)
-      parameter (nflaga=44,nflagn=nflag-nflaga)
+      parameter (nflaga=48,nflagn=nflag-nflaga)
       parameter (maxrpt=32,maxlfn=128)
       character*255 word,wordp,title,case,tfgetstrv,tfgetstrs,tfgetstr
       character*8 nlist(mfit1)
@@ -69,12 +69,15 @@
 c      write(*,*)'tffsa ',flv%mcommon
       kffs=ktfoper+mtfnull
       irtcffs=0
+c      write(*,*)'tffsa-0 ',lfnb,ilattp,mstk
       l=itfuplevel()
+c      write(*,*)'tffsa-1 ',l
       chguse=.false.
 c     begin initialize for preventing compiler warning
       levelr=0
 c     end   initialize for preventing compiler warning
  101  if(lfnb .le. 1 .or. chguse)then
+c        write(*,*)ilist(1,ilattp)
         call tffsalloc(ilist(1,ilattp+1),ilist(1,ilattp))
         if(.not. chguse)then
           call cputime(flv%ctime0,irtc0)
@@ -1536,7 +1539,8 @@ c      write(*,*)'tffsa-1 ',flv%iut,%LOC(rlist(flv%iut)),busy
      $     nqcol,nqcol1,nfcol,nfc0,
      $     maxcond,nlist,brho,
      $     emx,emy,dpmax,dp0,coumin,r,residual(-nfam),absweit,
-     $     cell,fitflg,geomet,cellstab,convgo,nparallel,orbitcal,
+     $     cell,fitflg,geomet,cellstab,convgo,nparallel,
+     $     orbitcal,intres,halfres,sumres,diffres,
      $     lfno,irtc)
       call tclrfpe
       if(wake)then

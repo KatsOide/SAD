@@ -1,6 +1,6 @@
       subroutine tcave(trans,cod,beam,gammab,l,
      $     al,vc,harm,phi,freq,dx,dy,theta,v10,v20,v11,v02,
-     $     fringe,mfring,ld)
+     $     fringe,mfring,autophi,ld)
       use tfstk
       implicit none
       include 'inc/TMACRO1.inc'
@@ -17,7 +17,7 @@
      $     v10a,v11a,v20a,v02a,ddhdx,ddhdy,ddhdz,ddhdp,
      $     wi,offset1,va,sp,cp,av,dpxa,dpya,dav,davdz,davdp,
      $     dpx,dpy,dv,s0
-      logical*4 fringe
+      logical*4 fringe,autophi
       call tchge(trans,cod,beam,-dx,-dy,theta,.true.,ld)
       if(harm .eq. 0.d0)then
         w=pi2*freq/c
@@ -52,24 +52,23 @@ c      write(*,'(a,1p5g15.7)')'tcave ',phi,phis,phic,vcphic,trf0
         dhg=0.d0
       endif
       vc0=vc0+vc
-      vccos=vccos+vc*cos(phic)
-      vcsin=vcsin+vc*sin(phic)
-      if(omega0 .ne. 0.d0)then
-        hvc0=hvc0+(c*w)/omega0*vc
-      endif
+c      vccos=vccos+vc*cos(phic)
+c      vcsin=vcsin+vc*sin(phic)
+c      if(omega0 .ne. 0.d0)then
+c        hvc0=hvc0+(c*w)/omega0*vc
+c      endif
       if(rfsw)then
-        if(trpt .or. radcod)then
+        if(trpt .or. radcod .or. autophi)then
           offset1=0.d0
           s0=0.d0
         else
           s0=sin(phis)
-          offset1=vcalpha*sin(phis)
+          offset1=sin(phis)
         endif
-c        write(*,*)'tcave-1 ',fringe,mfring
         if(al .ne. 0.d0 .and. fringe
      $       .and. mfring .ge. 0 .and. mfring .ne. 2)then
-          call tcavfrie(trans,cod,beam,al,v,w,phis-phic,s0,p0,
-     $     irad,irad .gt. 6 .or. calpol)
+          call tcavfrie(trans,cod,beam,al,v,w,phic,phis-phic,s0,p0,
+     $     irad,irad .gt. 6 .or. calpol,autophi)
         endif
         call tinitr(trans1)
         dgb=0.d0
@@ -93,9 +92,18 @@ c          h1=sqrt(1.d0+p1**2)
           t=-cod(5)/v1
           va=vn+(v10a+v20a*cod(1)+v11a*cod(3))*cod(1)
      $           +v02a*cod(3)**2
-          phii=w*t+phic-phis
-          sp=sin(phii)
-          cp=cos(phii)
+          if(autophi)then
+            phii=phic
+            sp=sin(phii)
+            cp=cos(phii)
+          else
+            phii=w*t+phic-phis
+            sp=sin(phii)
+            cp=cos(phii)
+            dvcacc=dvcacc+vcn*cp*w
+            ddvcacc=ddvcacc+vcn*sp*w**2
+          endif
+          vcacc=vcacc-vcn*sp
           dh=max(oneev-h1,-va*(sp+offset1))
 c          write(*,'(a,1p6g15.7)')'tcave ',
 c     $         phii,cod(5),sp,offset1,phic,phis
@@ -159,8 +167,8 @@ c          write(*,*)'tcave ',dpx,dpy
           cod(5)=cod(5)+dv*aln*.5d0
 c          write(*,*)'tcave-2 ',fringe,mfring
           if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
-            call tcavfrie(trans,cod,beam,al,-v,w,phis-phic,s0,p0,
-     $           irad,irad .gt. 6 .or. calpol)
+            call tcavfrie(trans,cod,beam,al,-v,w,phic,phis-phic,s0,p0,
+     $           irad,irad .gt. 6 .or. calpol,autophi)
           endif
         endif
       else
@@ -191,15 +199,15 @@ c        rg=sqrt(rg2)
       return
       end
 
-      subroutine tcavfrie(trans,cod,beam,al,v,w,dphis,s0,p0,
-     $     irad,calb)
+      subroutine tcavfrie(trans,cod,beam,al,v,w,phic,dphis,s0,p0,
+     $     irad,calb,autophi)
       implicit none
       real*8 trans(6,12),cod(6),trans1(6,6),beam(42),
-     $     v,al,p0,vf,dp1r,p1r,p1,h1,v1,t,
+     $     v,al,p0,vf,dp1r,p1r,p1,h1,v1,t,phic,
      $     ph,w,dphis,sph,cph,dpt,s0,wc,dha,dh,h2,a,dpr,
      $     dp2r,p2r,v2,at,az
       integer*4 irad
-      logical*4 calb
+      logical*4 calb,autophi
       vf=v/al/p0*.5d0
       dp1r=cod(6)
       p1r=1.d0+dp1r
@@ -207,7 +215,11 @@ c        rg=sqrt(rg2)
       h1=p1*sqrt(1.d0+1.d0/p1**2)
       v1=p1/h1
       t=-cod(5)/v1
-      ph=w*t-dphis
+      if(autophi)then
+        ph=phic
+      else
+        ph=w*t-dphis
+      endif
       sph=sin(ph)
       cph=cos(ph)
       dpt=vf*(sph+s0)

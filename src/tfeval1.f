@@ -407,7 +407,7 @@
         call tflocald(symd%value)
         symd%value=ks
       elseif(ktfrefqd(k1,ka1))then
-        if(ka1 .gt. RBASE .and. ktfrealqd(k2))then
+        if(ka1 .gt. 0 .and. ktfrealqd(k2))then
           dlist(ka1)=k2
         else
           irtc=itfmessage(999,'General::invset',

@@ -1,22 +1,23 @@
 c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       subroutine trackd(latt,kptbl,x,px,y,py,z,g,dv,pz,
-     $     mturn,kzx,trval,phix,phiy,damp,lfno)
+     $     mturn,kzx,trval,phi,damp,dampenough,ivar1,ivar2,lfno)
       use tfstk
       use tfshare
       implicit none
       include 'inc/TMACRO1.inc'
-      integer*4 nzp0,nxp
-      parameter (nzp0=200,nxp=51)
+      integer*4 n1p0,nxp
+      parameter (n1p0=200,nxp=51)
       integer*4 latt(2,nlat),kptbl(np0,6),lfno,
      $     mturn(np0),kzx(2,np0)
       integer*8 intlm
-      integer*4 irtc
+      integer*4 irtc,ivar1,ivar2
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
-      real*8 trval,phix,phiy,damp
+      real*8 trval,phi(3),damp,dampenough
       irtc=1
-      intlm=ktfallocshared((nzp0*nxp+1)/2)
+      intlm=ktfallocshared((n1p0*nxp+1)/2)
       call trackd0(latt,kptbl,x,px,y,py,z,g,dv,pz,
-     1     mturn,kzx,trval,phix,phiy,damp,ilist(1,intlm),lfno)
+     1     mturn,kzx,trval,phi,
+     $     damp .ne. 0.d0,dampenough,ilist(1,intlm),ivar1,ivar2,lfno)
       call tfreeshared(intlm)
 c      if(mapfree(ntloss(intlm+1)) .ne. 0)then
 c        write(*,*)'???trackd-error in munmap.'
@@ -25,34 +26,40 @@ c      endif
       end
 
       subroutine trackd0(latt,kptbl,x,px,y,py,z,g,dv,pz,
-     1     mturn,kzx,trval,phix,phiy,damp,ntloss,lfno)
+     1     mturn,kzx,trval,phi,
+     $     damp,dampenough,ntloss,ivar1,ivar2,lfno)
       use tfstk
       implicit none
       include 'inc/TMACRO1.inc'
-      integer*4 nzp0,nxp,maxturn,maxpara,nw,lfno,ncons,nscore
-      parameter (nzp0=200,nxp=51,maxturn=2**30,maxpara=256,nw=16)
+      integer*4 n1p0,n2p,maxturn,maxpara,nw,lfno,ncons,nscore,
+     $     ivar1,ivar2,ivar3
+      parameter (n1p0=200,n2p=51,maxturn=2**30,maxpara=256,nw=16)
       integer, parameter :: nkptbl = 6
       integer*8 kv,kax,kax11,kax12,kax13,kax2,
      $     kaxi,kaxi3,kax1
-      integer*4 latt(2,nlat),kptbl(np0,nkptbl),nzp,lp0,npr1,
+      integer*4 latt(2,nlat),kptbl(np0,nkptbl),n1p,lp0,npr1,
      $     ipr,j,n,jzout,np1,k,np,kp,kz,kx,irw,nsc,iw,
-     $     jj,ip,isw,kseed,npmax,npara,nxm(nzp0)
+     $     jj,ip,isw,kseed,npmax,npara,nxm(n1p0)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
-     1     pz(np0)
-      real*8 xmin,xmax,ymin,ymax,zmin,zmax,xstep,ystep,zstep,
-     $     emx,emz,rgetgl1,cx,cy,sx,sy,dampx,dampy,dampz,t0
-      real*8 trval,phix,phiy,damp
-      real*8 zi(nzp0)
+     1     pz(np0),dampenough,aenox(np0),aenoy(np0),aenoz(np0)
+      real*8 a2min,a2max,a3min,a3max,a1min,a1max,a2step,a3step,a1step,
+     $     emx,emz,rgetgl1,cx,cy,cz,sx,sy,sz,
+     $     dampx,dampy,dampz,t0
+      real*8 trval,phi(3)
+      real*8 a1i(n1p0)
+      real*8, parameter :: big=1.d300
       character*14 vname
       data vname /'ResultOfDAPERT'/
-      integer*4 ntloss(nzp0,nxp),mturn(np0),kzx(2,np0),muls,irtc
+      integer*4 ntloss(n1p0,n2p),mturn(np0),kzx(2,np0),muls,irtc
       integer*4 i,fork_worker,wait,ichpid(maxpara)
-      logical ini,remain
+      logical*4 ini,remain,damp
+      character label(3)
+      data label /'X','Y','Z'/
       character rad62a
 c     begin initialize for preventing compiler warning
       ipr=0
 c     end   initialize for preventing compiler warning
-      if(damp .eq. 0.d0)then
+      if(damp)then
         dampx=1.d0
         dampy=1.d0
         dampz=1.d0
@@ -72,42 +79,46 @@ c     end   initialize for preventing compiler warning
       else
         muls=10
       endif
-      xmin=x(1)
-      xmax=x(2)
-      ymin=y(1)
-      ymax=y(2)
-      zmin=min(g(1),g(2))
-      zmax=max(g(1),g(2))
-      if(zmax .eq. zmin)then
-        zmin=0.d0
+      a2min=x(1)
+      a2max=x(2)
+      a3min=y(1)
+      a3max=y(2)
+      a1min=min(g(1),g(2))
+      a1max=max(g(1),g(2))
+      if(a1max .eq. a1min)then
+        a1min=0.d0
       endif
-      xstep=(xmax-xmin)/(nxp-1)
-      ystep=(ymax-ymin)/(nxp-1)
+      a2step=(a2max-a2min)/(n2p-1)
+      a3step=(a3max-a3min)/(n2p-1)
       if(pz(1) .eq. 0.d0)then
-        zstep=abs(g(3))
-        if(zstep .eq. 0.d0 .or. zmin .eq. zmax)then
-          nzp=1
+        a1step=abs(g(3))
+        if(a1step .eq. 0.d0 .or. a1min .eq. a1max)then
+          n1p=1
         else
-          nzp=min(nzp0,int(max(2.d0,(zmax-zmin)/zstep+1.1d0)))
-          zstep=(zmax-zmin)/(nzp-1)
+          n1p=min(n1p0,int(max(2.d0,(a1max-a1min)/a1step+1.1d0)))
+          a1step=(a1max-a1min)/(n1p-1)
         endif
-        do i=1,nzp
-          zi(i)=zmin+zstep*(i-1)
+        do i=1,n1p
+          a1i(i)=a1min+a1step*(i-1)
         enddo
       else
-        nzp=int(pz(1))
-        zi(1:nzp)=g(1:nzp)
-        zmin=minval(zi(1:nzp))
-        zmax=maxval(zi(1:nzp))
+        n1p=int(pz(1))
+        a1i(1:n1p)=g(1:n1p)
+        a1min=minval(a1i(1:n1p))
+        a1max=maxval(a1i(1:n1p))
       endif
+      ivar3=6-ivar1-ivar2
       write(lfno,'(
-     $     '' Range    Xmin:'',f8.3,'' Xmax:'',f8.3,/
-     $     ''         (Ymin:'',f8.3,'' Ymax:'',f8.3,'')'',/
-     $     ''          Zmin:'',f8.3,'' Zmax:'',f8.3,/
-     $     '' Display: '',i5,'' turns/character'')')
-     $     xmin,xmax,ymin,ymax,zmin,zmax,muls
+     $   '' Range    '',a,''min:'',f8.3,'' '',a,''max:'',f8.3,/
+     $   ''         ('',a,''min:'',f8.3,'' '',a,''max:'',f8.3,'')'',/
+     $   ''          '',a,''min:'',f8.3,'' '',a,''max:'',f8.3,/
+     $   '' Display: '',i5,'' turns/character'')')
+     $     label(ivar2),a2min,label(ivar2),a2max,
+     $     label(ivar3),a3min,label(ivar3),a3max,
+     $     label(ivar1),a1min,label(ivar1),a1max,muls
       write(lfno,*)
-     $'     NZ     0----|----1----|----2----|----3----|----4----|----5'
+     $'     N'//label(ivar1)//
+     $     '     0----|----1----|----2----|----3----|----4----|----5'
       kv=ktfsymbolz(vname,len(vname))-4
       call tflocal(klist(kv))
       kax=ktadaloc(0,2)
@@ -116,17 +127,17 @@ c     end   initialize for preventing compiler warning
       klist(kax+1)=ktflist+kax1
       kax11=ktavaloc(0,2)
       klist(kax1+1)=ktflist+kax11
-      rlist(kax11+1)=xmin
-      rlist(kax11+2)=xmax
+      rlist(kax11+1)=a2min
+      rlist(kax11+2)=a2max
       kax12=ktavaloc(0,2)
       klist(kax1+2)=ktflist+kax12
-      rlist(kax12+1)=ymin
-      rlist(kax12+2)=ymax
+      rlist(kax12+1)=a3min
+      rlist(kax12+2)=a3max
       kax13=ktavaloc(0,2)
       klist(kax1+3)=ktflist+kax13
-      rlist(kax13+1)=zmin
-      rlist(kax13+2)=zmax
-      kax2=ktadalocnull(0,nzp)
+      rlist(kax13+1)=a1min
+      rlist(kax13+2)=a1max
+      kax2=ktadalocnull(0,n1p)
       klist(kax+2)=ktflist+kax2
       lp0=latt(2,1)+kytbl(kwmax,idtype(latt(1,1)))+1
       emx=sqrt(abs(rgetgl1('EMITX'))+abs(rgetgl1('EMITY')))
@@ -136,8 +147,8 @@ c     end   initialize for preventing compiler warning
         emz=abs(rgetgl1('SIGE'))
       endif
       call tpara(latt)
-      ntloss(1:nzp,1:nxp)=maxturn
-      nxm(1:nzp)=nxp+1
+      ntloss(1:n1p,1:n2p)=maxturn
+      nxm(1:n1p)=n2p+1
       npara=min(nparallel,maxpara)
       ipr=1
       if(npara .gt. 1)then
@@ -155,7 +166,7 @@ c     end   initialize for preventing compiler warning
             endif
           endif
         enddo
-        npmax=max(1,min(nzp*ncons/npara,np0))
+        npmax=max(1,min(n1p*ncons/npara,np0))
       else
         npr1=1
         npmax=np0
@@ -167,16 +178,18 @@ c     end   initialize for preventing compiler warning
  1    np1=npmax
       iw=nw
       remain=.true.
-      cx=cos(phix)
-      sx=sin(phix)
-      cy=cos(phiy)
-      sy=sin(phiy)
+      cx=cos(phi(1))
+      sx=sin(phi(1))
+      cy=cos(phi(2))
+      sy=sin(phi(2))
+      cz=cos(phi(3))
+      sz=sin(phi(3))
       LOOP_K: do k=1,npmax
         if(kzx(1,k) .eq. 0)then
           ip=kptbl(k,1)
           if(ip .le. np1)then
             if(remain)then
-              do i=1,nzp
+              do i=1,n1p
                 do j=nxm(i)-1,1,-1
                   if(j .lt. nxm(i)-ncons)then
                     exit
@@ -187,23 +200,61 @@ c     end   initialize for preventing compiler warning
                     kzx(1,k)=i
                     kzx(2,k)=j
                     mturn(k)=0
-                    x(ip)=xstep*(j-1)+xmin
-                    px(ip)=-x(ip)*sx
-                    x(ip)=x(ip)*cx
-                    y(ip)=ystep*(j-1)+ymin
-                    py(ip)=-y(ip)*sy
-                    y(ip)=y(ip)*cy
-                    z(ip)=0.d0
-                    g(ip)=zi(i)
+                    if(ivar1 .eq. 1)then
+                      x(ip)=a1i(i)
+                      px(ip)=0.d0
+                    elseif(ivar1 .eq. 2)then
+                      y(ip)=a1i(i)
+                      py(ip)=0.d0
+                    else
+                      z(ip)=0.d0
+                      g(ip)=a1i(i)
+                    endif
+                    if(ivar2 .eq. 1)then
+                      x(ip)=a2step*(j-1)+a2min
+                      px(ip)=-x(ip)*sx
+                      x(ip)=x(ip)*cx
+                    elseif(ivar2 .eq. 2)then
+                      y(ip)=a2step*(j-1)+a2min
+                      py(ip)=-y(ip)*sy
+                      y(ip)=y(ip)*cy
+                    else
+                      z(ip)=a2step*(j-1)+a2min
+                      g(ip)=-z(ip)*sz
+                      z(ip)=z(ip)*cz
+                    endif
+                    if(ivar3 .eq. 1)then
+                      x(ip)=a3step*(j-1)+a3min
+                      px(ip)=-x(ip)*sx
+                      x(ip)=cx*x(ip)
+                    elseif(ivar3 .eq. 2)then
+                      y(ip)=a3step*(j-1)+a3min
+                      py(ip)=-y(ip)*sy
+                      y(ip)=cy*y(ip)
+                    else
+                      z(ip)=a3step*(j-1)+a3min
+                      g(ip)=-z(ip)*sz
+                      z(ip)=cz*z(ip)
+                    endif
+                    aenox(k)=(x(ip)**2+px(ip)**2)*emx**2*dampenough
+                    aenoy(k)=(y(ip)**2+py(ip)**2)*emx**2*dampenough
+                    aenoz(k)=(z(ip)**2+ g(ip)**2)*emz**2*dampenough
+                    if(ivar3 .eq. 1)then
+                      aenox(k)=big
+                    elseif(ivar3 .eq. 2)then
+                      aenoy(k)=big
+                    else
+                      aenoz(k)=big
+                    endif
 c     Reinit kptbl(ip,4) to reuse particle array slot `ip'
                     kptbl(ip,4)=0
                     call tinip(1,
      $                   x(ip),px(ip),y(ip),py(ip),
      $                   z(ip),g(ip),dv(ip),
      $                   emx,emz,codin,dvfs,.false.)
-c                    write(*,'(a,4i5,1p3g15.7)')
-c     $                   ' trackd-Launch ',npr1,i,j,
-c     $                     nxm(i),x(ip),px(ip),g(ip)
+c                    write(*,'(a,7i5,1p3g15.7)')
+c     $                   ' trackd-Launch ',npr1,i,j,ivar1,ivar2,ivar3,
+c     $                     nxm(i),x(ip),y(ip),py(ip)
                     cycle LOOP_K
                   endif
                 enddo
@@ -241,8 +292,9 @@ c     $     'trackd-tturn-1 ',n,np,(kptbl(i,1),y(i),i=1,14)
       call tturn(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n)
 c      write(*,'(a,2i5,14(i5,1pg12.5))')
 c     $     'trackd-tturn-2 ',n,np,(kptbl(i,1),y(i),i=1,14)
-      if(damp .ne. 0.d0)then
-        call tpdamp(np,x,px,y,py,z,g,dv,dampx,dampy,dampz)
+      if(damp .or. dampenough .ne. 0.d0)then
+        call tpdamp(np,x,px,y,py,z,g,dv,dampx,dampy,dampz,damp,
+     $       aenox,aenoy,aenoz,kptbl(1,2),mturn)
       endif
       n=n+1
       ini=.false.
@@ -299,31 +351,32 @@ c        stop
         go to 3010
  3020   continue
       enddo
-      do i=1,nzp
+      do i=1,n1p
         nsc=0
-        do k=1,nxp
+        do k=1,n2p
           if(ntloss(i,k) .lt. nturn)then
             nsc=k-1
             go to 431
           endif
         enddo
-        nsc=nxp
+        nsc=n2p
  431    nscore=nscore+nsc
-        write(lfno,'(1x,f8.2,i3,1x,51a1)')zi(i),nsc,
-     $       (rad62a(ntloss(i,jj)/muls,jj),jj=1,nxp)
+        write(lfno,'(1x,f8.2,i3,1x,51a1)')a1i(i),nsc,
+     $       (rad62a(ntloss(i,jj)/muls,jj),jj=1,n2p)
         kaxi=ktadaloc(0,3)
         klist(kax2+i)=ktflist+kaxi
-        rlist(kaxi+1)=zi(i)
+        rlist(kaxi+1)=a1i(i)
         rlist(kaxi+2)=dble(nsc)
-        kaxi3=ktraaloc(0,nxp)
+        kaxi3=ktraaloc(0,n2p)
         klist(kaxi+3)=ktflist+kaxi3
-        rlist(kaxi3+1:kaxi3+nxp)=ntloss(i,1:nxp)
-c        do jj=1,nxp
+        rlist(kaxi3+1:kaxi3+n2p)=ntloss(i,1:n2p)
+c        do jj=1,n2p
 c          rlist(kaxi3+jj)=ntloss(i,jj)
 c        enddo
       enddo
       write(lfno,*)
-     $'     NZ     0----|----1----|----2----|----3----|----4----|----5'
+     $'     N'//label(ivar1)//
+     $     '     0----|----1----|----2----|----3----|----4----|----5'
       write(lfno,'(a,i5)')'    Score: ',nscore
       trval=nscore
       call tltrm(latt,kptbl)
@@ -385,13 +438,16 @@ c      write(*,*)'tinip ',np,(xa(i),i=1,6)
       return
       end
 
-      subroutine tpdamp(np,x,px,y,py,z,g,dv,dampx,dampy,dampz)
+      subroutine tpdamp(np,x,px,y,py,z,g,dv,dampx,dampy,dampz,
+     $     damp,aenox,aenoy,aenoz,kptbl,mturn)
       use tfstk
       implicit none
       include 'inc/TMACRO1.inc'
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     xa(7),dampx,dampy,dampz
+     $     xa(7),dampx,dampy,dampz,aenox(np0),aenoy(np0),aenoz(np0)
+      integer*4 kptbl(np),mturn(np0),j
+      logical*4 damp
       call tconvm(np,px,py,g,dv,1)
       do i=1,np
         xa(1)=x(i)-codin(1)
@@ -401,19 +457,30 @@ c      write(*,*)'tinip ',np,(xa(i),i=1,6)
         xa(5)=z(i)-codin(5)
         xa(6)=g(i)-codin(6)
         call tmap(xa,xa,1)
-        xa(1)=xa(1)*dampx
-        xa(2)=xa(2)*dampx
-        xa(3)=xa(3)*dampy
-        xa(4)=xa(4)*dampy
-        xa(5)=xa(5)*dampz
-        xa(6)=xa(6)*dampz
-        call tmap(xa,xa,-1)
-        x(i) =xa(1)+codin(1)
-        px(i)=xa(2)+codin(2)
-        y(i) =xa(3)+codin(3)
-        py(i)=xa(4)+codin(4)
-        z(i) =xa(5)+codin(5)
-        g(i) =xa(6)+codin(6)
+        j=kptbl(i)
+        if(
+     $       xa(1)**2+xa(2)**2 .lt. aenox(j) .and.
+     $       xa(3)**2+xa(4)**2 .lt. aenoy(j) .and.
+     $       xa(5)**2+xa(6)**2 .lt. aenoz(j))then
+c          write(*,'(a,2i5,1p6g15.7)')'tpdamp ',j,i,
+c     $xa(1),xa(2),xa(5),xa(6),aenox(j),aenoz(j)
+          mturn(j)=nturn-1
+        endif
+        if(damp)then
+          xa(1)=xa(1)*dampx
+          xa(2)=xa(2)*dampx
+          xa(3)=xa(3)*dampy
+          xa(4)=xa(4)*dampy
+          xa(5)=xa(5)*dampz
+          xa(6)=xa(6)*dampz
+          call tmap(xa,xa,-1)
+          x(i) =xa(1)+codin(1)
+          px(i)=xa(2)+codin(2)
+          y(i) =xa(3)+codin(3)
+          py(i)=xa(4)+codin(4)
+          z(i) =xa(5)+codin(5)
+          g(i) =xa(6)+codin(6)
+        endif
       enddo
       call tconvm(np,px,py,g,dv,-1)
       return

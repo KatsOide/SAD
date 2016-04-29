@@ -2,9 +2,11 @@
       use tfstk
       use ffs
       use tffitcode
-      implicit real*8 (a-h,o-z)
+      implicit none
       integer*4 latt(2,nlat)
       real*8 pos(nlat)
+      integer*4 i0,i,id,ip,ld,idj,jp,jd,j
+      real*8 s0,sx,sy
       i0=0
       do 10 i=1,nlat-1
         if(i .gt. i0)then

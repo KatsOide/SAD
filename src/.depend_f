@@ -256,7 +256,6 @@ tbal.o: tbal.f
 tbdecoup.o: tbdecoup.f
 tbend.o: tbend.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TENT.inc inc/TEXIT.inc inc/TMACRO1.inc tfstk.o
 tbende.o: tbende.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc tbendi.o tfstk.o
-tbende_0.o: tbende_0.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc tfstk.o
 tbendi.o: tbendi.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TENT.inc inc/TEXIT.inc inc/TMACRO1.inc tfstk.o
 tbfrie.o: tbfrie.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO1.inc tfstk.o
 tbrad.o: tbrad.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TENT.inc inc/TEXIT.inc inc/TMACRO.inc inc/TMACRO1.inc tfstk.o
@@ -271,7 +270,7 @@ tconvm.o: tconvm.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc
 tcoord.o: tcoord.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO.inc inc/TMACRO1.inc
 tcoorde.o: tcoorde.f inc/MACCODE.inc inc/MACFILE.inc inc/MACKW.inc inc/MACMATH.inc inc/MACPHYS.inc inc/TMACRO.inc inc/TMACRO1.inc
 tcorr.o: tcorr.f tfstk.o
-tcsvdm.o: tcsvdm.f
+tcsvdm.o: tcsvdm.f tfstk.o
 tday.o: tday.f
 tdcmd.o: tdcmd.f inc/MACFILE.inc tfstk.o
 tdet.o: tdet.f

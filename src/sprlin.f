@@ -1,7 +1,7 @@
       Subroutine sprlin(idxl)
       use maccbk
-      implicit real*8 (a-h,o-z)
-      integer idxl
+      implicit none
+      integer*4 idxl,ip,llen,i,j
 c
       include 'inc/MACCODE.inc'
       include 'inc/MACFILE.inc'

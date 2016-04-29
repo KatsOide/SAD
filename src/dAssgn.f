@@ -12,7 +12,7 @@ c
       real*8 rval, val
       logical skipch,skiped
       integer*4 idx,i,ival,ttype,newblk,allmem,membas,memptr,memuse
-      integer*4 mfalloc
+      integer*4 mtaloc,italoc
 c     macro functions
       logical issign
       character char
@@ -38,12 +38,17 @@ c
             idval(idx)=INT(rval)
          else if ((idtype(idx) .eq. icGLR) .or.
      &           (idtype(idx) .eq. icNULL)) then
-            if(idval(idx) .le. 0) idval(idx)=mfalloc(1)
+            if(idval(idx) .le. 0)then
+              idval(idx)=italoc(3)
+c              idval(idx)=mfalloc(1)
+            endif
             idtype(idx)=icGLR
             rlist(idval(idx))=rval
          else if (idtype(idx) .eq. icGLL) then
-            call freeme(idval(idx),ilist(1,idval(idx)))
-            idval(idx)=mfalloc(2)
+            call tfreem(idval(idx),ilist(1,idval(idx)))
+            idval(idx)=italoc(3)
+c            call freeme(idval(idx),ilist(1,idval(idx)))
+c            idval(idx)=mfalloc(2)
             ilist(1,idval(idx))=1
             if(ilist(2,idval(idx)) .eq. icNULL)
      &           ilist(2,idval(idx))=icGLR
@@ -55,11 +60,14 @@ c
             call errmsg('dasgn', 'type mismatch',0,4)
             return
          endif
-         if(idtype(idx) .eq. icGLL)
-     &        call freeme(idval(idx),ilist(1,idval(idx)))
+         if(idtype(idx) .eq. icGLL)then
+           call tfreem(idval(idx),ilist(1,idval(idx)))
+c           call freeme(idval(idx),ilist(1,idval(idx)))
+         endif
          call defglb(pname(idx),icGLL,idx)
          allmem=pagesz/4
-         membas=mfalloc(allmem)
+         membas=mtaloc(allmem)
+c         membas=mfalloc(allmem)
          if(membas .eq. 0) then
             call errmsg('dAssgn',' cannot allocate memory',0,0)
             stop
@@ -81,7 +89,8 @@ c     See ilist(*,ptr)@src/LgetGL.f
          rlist(memptr)=val
          memptr=memptr+1
          if(memptr-membas .ge. allmem) then
-               newblk=mfalloc(2*allmem)
+               newblk=mtaloc(2*allmem)
+c               newblk=mfalloc(2*allmem)
                if (newblk .eq. 0) then
                   call errmsg('dAssgn',
      &                 ' cannot extend working area.',32,0)
@@ -92,7 +101,8 @@ c     See ilist(*,ptr)@src/LgetGL.f
                   ilist(2,newblk+i)=ilist(2,membas+i)
                end do
                memptr=newblk+(memptr-membas)
-               call freeme(membas,allmem)
+               call tfreem(membas,allmem)
+c               call freeme(membas,allmem)
                allmem=2*allmem
                membas=newblk
          endif
@@ -108,7 +118,8 @@ c     End of List.
      &           ' broken memory area.',0,16)
             stop 9999
          endif
-         call freeme(memptr,allmem-memuse)
+         call tfreem(memptr,allmem-memuse)
+c         call freeme(memptr,allmem-memuse)
          call LsetGL(pname(idx),idx,membas,memuse-1,icGLR)
       endif
 c     for debug

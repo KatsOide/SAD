@@ -17,15 +17,18 @@
       real*8 trans1(6,12),cod1(6),beam1(42)
       real*8 twiss(nlat,-ndim:ndim,*),bsize(21,nlat),
      $     gammab(nlat),vsave(100)
-      real*8 pgev00,frbegin,frend,phis,dvcphic,r,
+      real*8 pgev00,frbegin,frend,r,dzmax,alambdarf,
      $     xp,xb,xe,fr,fra,frb,tffselmoffset,z0
       logical*4 sol,plot,update,chg,sol1,cp0,int0,rt
       pgev00=pgev
       vc0=0.d0
       u0=0.d0
-      hvc0=0.d0
-      vccos=0.d0
-      vcsin=0.d0
+c      hvc0=0.d0
+c      vccos=0.d0
+c      vcsin=0.d0
+      vcacc=0.d0
+      dvcacc=0.d0
+      ddvcacc=0.d0
       z0=cod(5)
       sol=.false.
       if(calint)then
@@ -169,19 +172,31 @@ c     below is incorrect for fra <> 0
         twiss(lend,0,mfitddp)=cod(6)*r
       endif
       if(vc0 .ne. 0.d0 .and. update)then
-        vceff=sign(sqrt(vccos**2+vcsin**2),vc0)
+        wrfeff=sqrt(abs(ddvcacc/vcacc))
+        vceff=abs(dcmplx(vcacc,dvcacc/wrfeff))
+c        hvc0=vceff*(c*wrfeff)/omega0
+c        vceff=sign(abs(dcmplx(vccos,vcsin)),vc0)
         if(trpt)then
           trf0=0.d0
           vcphic=0.d0
           vcalpha=1.d0
         else
-          dvcphic=atan2(vcsin,vccos)
-          if(abs(dvcphic) .lt. pi*.5d0)then
-            vcphic=vcphic+dvcphic
-          endif
+c          dvcphic=atan2(vcsin,vccos)
+c          if(abs(dvcphic) .lt. pi*.5d0)then
+c            vcphic=vcphic+dvcphic
+c          endif
           vcalpha=vceff/vc0
-          phis=asin(min(1.d0,max(-1.d0,u0*p0*amass/sign(vceff,vccos))))
-          trf0=phis*c*p0/h0/omega0/hvc0*vceff
+          if(dvcacc .ne. 0.d0)then
+            alambdarf=pi2/wrfeff
+            dzmax=alambdarf*.24d0
+            trf0=trf0+min(dzmax,max(-dzmax,
+     $           (u0*pgev-charge*vcacc)/charge/dvcacc))
+            trf0=mod(trf0+alambdarf*.5d0,alambdarf)-alambdarf*.5d0
+c            write(*,'(a,1p6g15.7)')'tturne ',
+c     $           u0*pgev,vcacc,dvcacc,trf0,u0,pgev
+          endif
+c          phis=asin(min(1.d0,max(-1.d0,u0*p0*amass/sign(vceff,vccos))))
+c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
         endif
         call RsetGL1('DTSYNCH',trf0)
         call RsetGL1('PHICAV',vcphic)
@@ -435,7 +450,7 @@ c        endif
         alid=0.d0
         go to 1010
  3100   write(*,*)'Use BEND with ANGLE=0 for ST.'
-        stop
+        call forcesf()
  3200   phi=rlist(lp+kytbl(kwANGL,icMULT))
         mfr=nint(rlist(lp+kytbl(kwFRMD,icMULT)))
         if(dir .gt. 0.d0)then
@@ -479,6 +494,7 @@ c        endif
      $       rlist(lp+kytbl(kwK0FR,icMULT)) .eq. 0.d0,
      $       rlist(lp+15),rlist(lp+16),rlist(lp+17),rlist(lp+18),
      $       rlist(lp+kytbl(kwW1,icMULT)),rtaper,
+     $       rlist(lp+kytbl(kwAPHI,icMULT)) .ne. 0.d0,
      $       ld)
         go to 1010
  4100   mfr=nint(rlist(lp+kytbl(kwFRMD,icCAVI)))
@@ -492,6 +508,7 @@ c        endif
      1       rlist(lp+13),rlist(lp+14),rlist(lp+15),
      $       rlist(lp+16),rlist(lp+17),rlist(lp+18),rlist(lp+19),
      $       rlist(lp+kytbl(kwFRIN,icCAVI)) .eq. 0.d0,mfr,
+     $       rlist(lp+kytbl(kwAPHI,icCAVI)) .ne. 0.d0,
      $       ld)
         go to 1010
  4200   call ttcave(trans,cod,beam,al,

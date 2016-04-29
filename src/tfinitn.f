@@ -192,12 +192,14 @@ c      write(*,*)'tfinitn 1.1 ',itfcontroot
       implicit none
       integer*4 italoc
       integer*4 igetgl1
+      if(tfstkinit)then
+        return
+      endif
       mstk=max(2**18,igetgl1('STACKSIZ'))
       isp=italoc(mstk*2)-1
-c      write(*,*)'initstk: ',isp
       if(isp .le. 0)then
         write(*,*)'Too large STACKSIZ: ',mstk
-        stop
+        call forcesf()
       endif
       isporg=isp
 c      write(*,*)'isporg: ',isporg,isporg+mstk*2
@@ -570,7 +572,7 @@ c      call tmov(ktastk(isp0+1),klist(ka1),m)
       nfun=nfun+1
       if(nfun .gt. maxnfun)then
         write(*,*)'itfunaloc-too many functions.'
-        stop
+        call forcesf()
       endif
       return
       end

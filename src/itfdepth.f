@@ -327,10 +327,10 @@ c      write(*,*)'tflevel ',n1,n2
       type (sad_descriptor) k
       integer*4 n1,n2,irtc,ivl,maxlevel,m,itfmessage
       parameter (maxlevel=2**30)
-      real*8 vlmax
+      real*8 vlmax,v
       parameter (vlmax=1.d8)
-      if(ktfrealqd(k))then
-        ivl=int(max(-vlmax,min(vlmax,rfromd(k))))
+      if(ktfrealqd(k,v))then
+        ivl=int(max(-vlmax,min(vlmax,v)))
         n1=1
         n2=ivl
       elseif(ktflistqd(k,kl))then

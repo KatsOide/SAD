@@ -775,11 +775,10 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       type (sad_descriptor) k,kx
       type (sad_list), pointer :: klx,klxi
       integer*4 irtc,m,i,itfmessage
-      if(ktfnonrealqd(k))then
+      if(ktfnonrealqdi(k,m))then
         irtc=itfmessage(9,'General::wrongtype','"Real number"')
         return
       endif
-      m=int(rfromd(k))
       if(m .le. 0)then
         irtc=itfmessage(9,'General::wrongnum','"Positive"')
         return

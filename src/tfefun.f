@@ -59,7 +59,7 @@
       integer*4 isp1,irtc,i,id,narg,nc,isp2,icslfno,itfdepth,
      $     itfgetrecl,ltr0,iaf,itfopenwrite,itfmessage,
      $     itfopenappend,itfopcode,isp0,nsize
-      real*8 vx,v1
+      real*8 vx,v1,v
       character*3 opcx
       character*8 char8
       logical*4 euv,upvalue,tfnearlysameqf,rep
@@ -973,8 +973,8 @@ c        go to 6900
         go to 6900
  2040   irtc=-5
         if(narg .eq. 1)then
-          if(ktfrealqd(k))then
-            irtc=int(min(max(-3.d0,rfromd(k)),-1.d0)-3.d0)
+          if(ktfrealqd(k,v))then
+            irtc=int(min(max(-3.d0,v),-1.d0)-3.d0)
           endif
         endif
         go to 6900
@@ -1562,15 +1562,16 @@ c            msgn TagS (*   *)   Hold z
       type (sad_descriptor) kx,k1,k,ki
       type (sad_list), pointer :: klx
       integer*4 isp1,irtc,i,iopc,narg
+      real*8 v,v1,vx,vi
       narg=isp-isp1
       if(narg .eq. 2)then
         k1=dtastk(isp1+1)
         k =dtastk(isp)
-        if(ktfrealqd(k1) .and. ktfrealqd(k))then
+        if(ktfrealqd(k1,v1) .and. ktfrealqd(k,v))then
           if(iopc .eq. mtfplus)then
-            kx=dfromr(rfromd(k1)+rfromd(k))
+            kx=dfromr(v1+v)
           else
-            kx=dfromr(rfromd(k1)*rfromd(k))
+            kx=dfromr(v1*v)
           endif
           irtc=0
         else
@@ -1605,12 +1606,11 @@ c            msgn TagS (*   *)   Hold z
         irtc=0
         do i=isp1+2,isp
           ki=dtastk(i)
-          if(iand(ktrmask,kx%k) .ne. ktfnr .and.
-     $       iand(ktrmask,ki%k) .ne. ktfnr)then
+          if(ktfrealqd(ki,vi) .and. ktfrealqd(kx,vx))then
             if(iopc .eq. mtfplus)then
-              kx=dfromr(rfromd(kx)+rfromd(ki))
+              kx=dfromr(vx+vi)
             else
-              kx=dfromr(rfromd(kx)*rfromd(ki))
+              kx=dfromr(vx*vi)
             endif
           else
             k1=kx

@@ -25,8 +25,9 @@ c
          return
       else if (erlvl .lt. 32) then
          write(errfl,*) '16<= error level < 32'
-         call myfflush
-         call toplvl
+         stop 8000
+c         call myfflush
+c         call toplvl
       else 
          write(errfl,*) 'error level >=32.'
          stop 9000

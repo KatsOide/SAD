@@ -3,7 +3,7 @@
       implicit real*8 (a-h,o-z)
       integer idx
       include 'inc/MACCODE.inc'
-      integer llen,lptnew,lptold,direct,hsrchz
+      integer*4 llen,lptnew,lptold,direct,hsrchz,italoc
       integer STACSZ
       parameter (STACSZ=400)
       integer istack(STACSZ),pstack
@@ -13,7 +13,7 @@ c.....statment functions
 c
       lptold=idval(idx)
       llen=ilist(1,lptold)
-      lptnew=mcfallo(llen+1)
+      lptnew=italoc(llen+1)
       rslvin=lptnew
       ilist(1,lptnew)=llen
       ilist(2,lptnew)=0
@@ -70,7 +70,7 @@ c.........
             direct=-1
           endif
           idtype(icdr(lptnew+i0))=idtype(icdr(lptold+i))
-          idval(icdr(lptnew+i0))=mcfallo(icar(idval(icdr(lptold+i)))+1)
+          idval(icdr(lptnew+i0))=mctaloc(icar(idval(icdr(lptold+i)))+1)
           ilist(1,idval(icdr(lptnew+i0)))=
      &                            icar(idval(icdr(lptold+i)))
 c.........

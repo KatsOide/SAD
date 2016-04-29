@@ -62,7 +62,11 @@ c
               endif
               ilist(2,idx1)=0
             endif
-            call freeme(idx1,ilist(1,idx1)+1)
+c            write(*,*)'doline-delete ',
+c     $           idx1,ilist(1,idx1),ilist(1,idx1-1),pname(idx)
+            call tfree(int8(idx1))
+c            call tfreem(idx1,ilist(1,idx1)+1)
+c            call freeme(idx1,ilist(1,idx1)+1)
             idval(idx)=0
           endif
           call lread(idx,token,slen,ttype,rval,ival)

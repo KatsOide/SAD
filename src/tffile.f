@@ -6,7 +6,7 @@
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
-      real*8 rfromk
+      real*8 vx
       integer*4 maxlfn,lfno,i,lfni0,lfni1,nc,next,icsmrk,icslinep,
      $     icslrecl,itype,lfno1,j
       integer*4 lfnstk(maxlfn),lfret(maxlfn),lfrecl(maxlfn),
@@ -59,8 +59,8 @@
      1       .or. word .eq. 'READ')then
         rew=word .eq. 'READ'
         itype=itfpeeko(kx,next)
-        if(ktfrealqd(kx))then
-          lfni1=int(rfromk(kx%k)+.5d0)
+        if(ktfrealqd(kx,vx))then
+          lfni1=int(vx+.5d0)
           call cssetp(next)
           write(word,'(''ftn'',i2.2)')lfni1
           lfnp=lfnp+1
@@ -143,8 +143,8 @@
         app=abbrev(word,'APP_END','_')
         itype=itfpeeko(kx,next)
 c        write(*,*)'tffile-0 ',itype,ia
-        if(ktfrealqd(kx))then
-          lfno1=int(rfromk(kx%k)+.5d0)
+        if(ktfrealqd(kx,vx))then
+          lfno1=int(vx+.5d0)
           call cssetp(next)
         elseif(ktfstringqd(kx))then
           lfno1=98

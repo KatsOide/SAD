@@ -677,6 +677,11 @@ With[{addtags=AddTag$Above|AddTag$Below|AddTag$Closest|
         TclEval[l$//TclArgFontReplace[x$]]]];
     WithPriority[{l$=String[TkPathName[a$]//" raise "]},
       (a$[Raise]=x$_)^:=StandardForm[TclEval[TclArg[l$,x$]]]];
+    a$/:WidgetValue[a$,ItemCGet[v$_,opt$_]]:=
+      With[{l$=TkPathName[a$]//" itemcget "//TclArg[v$]//" "//TkOptionLabel[opt$],
+        f$=TclReturnForm[opt$,Canvas]},
+        a$/:WidgetValue[a$,ItemCGet[v$,opt$]]:=TclReturn[l$,f$];
+        TclReturn[l$,f$]];
     With[{l$=String[TkPathName[a$]//" addtag "]},
       (a$[act$:addtags]=v$_)^:=(
         With[{s$=ToLowerCase[act$//" "],v1$=Flatten[{v$},1]},

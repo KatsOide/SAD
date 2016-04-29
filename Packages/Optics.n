@@ -112,7 +112,7 @@ With[{z9=Table[0,{9}]},
     by=B[[1,2]]/s;
     ay=(B[[1,1]]-c)/s;
     muy=ArcTan[c,s];
-    {ax,bx,mux,ay,by,muy,0,0,0,0,R[[1,1]],R[[1,2]],R[[2,1]],R[[2,2]],
+    {ax,bx,mux,ay,by,muy,0,0,0,0,R[[1,1]],R[[1,2]],R[[2,1]],R[[2,2]],Det[R],
       Null@@LinearSolve[IdentityMatrix[4]-m,z],Null@@z9}]
   ];
 

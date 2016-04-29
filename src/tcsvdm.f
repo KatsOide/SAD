@@ -29,6 +29,7 @@ c               V is returned in a .
 c               a=Conjugate[U^T].W.V .
 c    
 c
+      use tfstk, only : forcesf
       implicit none
       integer*4 nmax,itmax,n,m,ndim,ndimb
       parameter (nmax=100000,itmax=256)
@@ -215,7 +216,7 @@ c     This code path MIGHT satisfy c > s
      $                'Identity equation c > s ',
      $                'for j >= n+2 && 1 >= s is broken!',
      $                '(FIXME)'
-                stop
+                call forcesf()
               endif
 c     begin initialize for preventing compiler warning
               zc=0.d0

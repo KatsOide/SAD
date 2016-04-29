@@ -282,8 +282,8 @@ c     end   initialize for preventing compiler warning
           go to 20
  2000     write(*,*)'Qtwiss: implementation error of solenoid ',l1
           go to 1010
- 2100     write(*,*)'Use BEND with ANGLE=0 for ST.'
-          stop
+ 2100     write(*,*)'Use BEND with ANGLE=0 for STEER.'
+          call forcesf()
  2200     phi=rlist(lp+kytbl(kwANGL,icMULT))
           mfr=nint(rlist(lp+14))
           if(rlist(latt(2,l1)+ilist(1,latt(2,l1))) .ge. 0.d0)then
@@ -319,6 +319,7 @@ c     end   initialize for preventing compiler warning
      $         rlist(lp+kytbl(kwK0FR,icMULT)) .eq. 0.d0,
      $         rlist(lp+15),rlist(lp+16),rlist(lp+17),rlist(lp+18),
      $         rlist(lp+kytbl(kwW1,icMULT)),
+     $         rlist(lp+kytbl(kwAPHI,icMULT)) .ne. 0.d0,
      $         coup)
           go to 20
  3000     call qtest(trans,cod,al,rlist(lp+2),coup)
@@ -333,6 +334,7 @@ c     end   initialize for preventing compiler warning
      $         rlist(lp+13),rlist(lp+14),rlist(lp+15),
      $         rlist(lp+16),rlist(lp+17),rlist(lp+18),rlist(lp+19),
      $         rlist(lp+kytbl(kwFRIN,icCAVI)) .eq. 0.d0,mfr,
+     $         rlist(lp+kytbl(kwAPHI,icCAVI)) .ne. 0.d0,
      $         coup)
           go to 20
  3200     call qtcav(trans,cod,
@@ -786,17 +788,11 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
           return
         endif
         cx=.5d0*(trans(1,1)+trans(2,2))
-        if(abs(cx) .gt. 1.d0)then
-          cx=1.d0/cx
-        endif
-        bx=abs(trans(1,2)/sqrt(max(1.d-8,1.d0-cx**2)))
+        bx=abs(trans(1,2)/sqrt(max(1.d-6,abs(1.d0-cx**2))))
         cy=.5d0*(trans(3,3)+trans(4,4))
-        if(abs(cy) .gt. 1.d0)then
-          cy=1.d0/cy
-        endif
-        by=abs(trans(3,4)/sqrt(max(1.d-8,1.d0-cy**2)))
-        r=(cod(1)-cod0(1))**2+(bx*(cod(2)-cod0(2)))**2
-     $       +(cod(3)-cod0(3))**2+(by*(cod(4)-cod0(4)))**2
+        by=abs(trans(3,4)/sqrt(max(1.d-6,abs(1.d0-cy**2))))
+        r=(cod(1)-cod0(1))**2/bx+bx*(cod(2)-cod0(2))**2
+     $       +(cod(3)-cod0(3))**2/by+by*(cod(4)-cod0(4))**2
         if(r .le. conv)then
           codfnd=.true.
           return

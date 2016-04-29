@@ -27,7 +27,8 @@ c     print *,'prsad',plist,len
      &               ,0,0)
         endif
  1100 continue
-      call freeme(plist,ilist(1,plist))
+      call tfreem(plist,ilist(1,plist))
+c      call freeme(plist,ilist(1,plist))
       do 2110 i=1,HTMAX
         if((idtype(i) .ge. icGLI) .and.
      &       (idtype(i) .le. icGLR)) then

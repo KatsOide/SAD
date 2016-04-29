@@ -3,13 +3,17 @@
      1                  coss,sins,cosphi,sinphi,ns, lfno)
       use ffs
       use tffitcode
-      implicit real*8 (a-h,o-z)
+      implicit none
+      integer*4 ndp,maxdp,ntmax
+      real*8 dpstep,em0
       parameter (ndp=30,maxdp=ndp*2,dpstep=.001d0,ntmax=6100,em0=1.d-8)
       real*8 twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat)
       real*8 twissm(-ndp:ndp,ntwissfun),twisss(-ndp:ndp,ntwissfun)
       real*8 x(4,maxdp,ns),dp(-ndp:ndp),work(-ndp:ndp),trans(4,5)
-      real*8 omegas(ns),coss(ns),sins(ns),cosphi(ns),sinphi(ns)
-      integer*4 latt(2,nlat),mx(maxdp,ns),my(maxdp,ns)
+      real*8 omegas(ns),coss(ns),sins(ns),cosphi(ns),sinphi(ns),
+     $     detr,x1,x2,x3,x4,as,bs,cos1,cs,dpi,ds
+      integer*4 latt(2,nlat),mx(maxdp,ns),my(maxdp,ns),i,j,mdp,mdpx,
+     $     ns,lfno,i1,k,n,nl,nsc
       character rad62
       logical cell0,over,hstab,vstab
       real*8 tracex,tracey

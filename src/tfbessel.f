@@ -27,6 +27,7 @@
       type (sad_descriptor) k1,k2,kx
       type (sad_list), pointer :: kl1,kl2
       integer*4 irtc,itfmessage,n1,n2,isp0,isp2,i
+      real*8 x1,x2
       complex*16 cfun,cx,c1,c2
       external cfun
       if(tfcomplexnumlistqk(k1%k,kl1))then
@@ -84,13 +85,13 @@
         enddo
         kx=kxmakelist(isp2)
         isp=isp0
-      elseif(ktfrealqd(k1))then
-        if(ktfrealqd(k2))then
-          kx=dfromr(dble(cfun(dcmplx(rfromd(k1),0.d0),
-     $         dcmplx(rfromd(k2),0.d0))))
+      elseif(ktfrealqd(k1,x1))then
+        if(ktfrealqd(k2,x2))then
+          kx=dfromr(dble(cfun(dcmplx(x2,0.d0),
+     $         dcmplx(x2,0.d0))))
         elseif(tfcomplexqk(k2%k,kl2))then
           c2=dcmplx(kl2%rbody(1),kl2%rbody(2))
-          cx=cfun(dcmplx(rfromd(k1),0.d0),c2)
+          cx=cfun(dcmplx(x1,0.d0),c2)
           go to 10
         else
           irtc=-1
@@ -98,8 +99,8 @@
         endif
       elseif(tfcomplexqk(k1%k,kl1))then
         c1=dcmplx(kl1%rbody(1),kl1%rbody(2))
-        if(ktfrealqd(k2))then
-          cx=cfun(c1,dcmplx(rfromd(k2),0.d0))
+        if(ktfrealqd(k2,x2))then
+          cx=cfun(c1,dcmplx(x2,0.d0))
         elseif(tfcomplexqk(k2%k,kl2))then
           cx=dcmplx(kl2%rbody(1),kl2%rbody(2))
           cx=cfun(c1,c2)

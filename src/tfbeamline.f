@@ -29,7 +29,7 @@
       if(n .lt. 3)then
         go to 9900
       endif
-      idx1=italoc(n)-1
+      idx1=italoc(n+1)
       ilist(1,idx1)=n
       ilist(2,idx1)=0
       do i=1,n
@@ -90,7 +90,7 @@
       irtc=0
       return
  9000 ilist(1,idx1)=n+1
-      call tfree(int8(idx1+1))
+      call tfree(int8(idx1))
       return
  9900 irtc=itfmessage(9,'General::wrongtype','"BeamLine[ ... ]"')
       return
@@ -108,7 +108,7 @@
         idx=hsrchz('$DUMMYLINE')
         idtype(idx)=icLINE
         pname(idx)='$DUMMYLINE'
-        idx1=italoc(2)-1
+        idx1=italoc(3)
         ilist(1,idx1)=2
         ilist(2,idx1)=0
         idval(idx)=idx1
@@ -116,19 +116,21 @@
         idtype(idxm)=icMARK
         pname(idxm)='$DUMMYMARK'
         n=kytbl(kwMAX,icMARK)
-        idxm1=italoc(n-1)-1
+        idxm1=italoc(n+1)
         idval(idxm)=idxm1
+        ilist(1,idxm1)=n
         ilist(2,idxm1)=0
-        call tclr(rlist(idxm1+1),n-1)
+        rlist(idxm1+1:idxm1+n-1)=0.d0
         idxd=hsrchz('$DUMMYDRIFT')
         idtype(idxd)=icDRFT
         pname(idxd)='$DUMMYDRIFT'
         n=kytbl(kwMAX,icDRFT)
-        idxd1=italoc(n-1)-1
+        idxd1=italoc(n+1)
         idval(idxd)=idxd1
+        ilist(1,idxd1)=n
         ilist(2,idxd1)=0
-        call tclr(rlist(idxd1+1),n-1)
         rlist(idxd1+1)=1.d0
+        rlist(idxd1+2:idxd1+n-1)=0.d0
         ilist(1,idx1+1)=1
         ilist(2,idx1+1)=idxm
         ilist(1,idx1+2)=1
@@ -146,9 +148,10 @@
       type (sad_list), pointer :: klxi,klx
       include 'inc/MACCODE.inc'
       include 'inc/MACKW.inc'
-      integer*8 ka1,kas,ktaloc,idx1
+      integer*8 ka1,kas
       integer*4 isp1,irtc,nc,lenw,narg,idx,itype,
-     $     idt,n,i,nce,m,hsrchz,isp0, itfmessage
+     $     idt,n,i,nce,m,hsrchz,isp0, itfmessage,
+     $     italoc,idx1
       character*(MAXPNAME) ename,type,tfgetstrs,key,tfkwrd
       ename=tfgetstrs(ktastk(isp1+1),nce)
       if(nce .lt. 0)then
@@ -195,8 +198,8 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
             idtype(idx)=itype
             if(itype .ne. icNULL)then
               n=kytbl(kwMAX,itype)
-              idx1=ktaloc(n-1)-1
-              idval(idx)=int(idx1)
+              idx1=italoc(n+1)
+              idval(idx)=idx1
               ilist(1,idx1)=n
               ilist(2,idx1)=0
               call tclr(rlist(idx1+1),n-1)

@@ -14,7 +14,7 @@
       character*11 autofg
       logical*4 plot,stab
       external trim
-      real*8 r(6,6),ri(6,7)
+      real*8 r(6,6)
       data (title(i),i=1,15)/
      1           'COD x,mm,0.001          ',
      1           '    px/p0,mrad,0.001    ',

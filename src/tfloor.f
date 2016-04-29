@@ -319,8 +319,8 @@ c     end   initialize for preventing compiler warning
         enddo
         kx=kxmakelist(isp2)
         isp=isp0
-      elseif(ktfrealqdv(k1,v1))then
-        if(ktfrealqdv(k2,v2))then
+      elseif(ktfrealqd(k1,v1))then
+        if(ktfrealqd(k2,v2))then
           if(mode .eq. 0)then
             if(k2%k .eq. 0)then
               irtc=itfmessage(9,'General::wrongval','"#2","nonzero"')
@@ -356,7 +356,7 @@ c     end   initialize for preventing compiler warning
         endif
       elseif(tfcomplexqk(k1%k,kl1))then
         c1=dcmplx(kl1%rbody(1),kl1%rbody(2))
-        if(ktfrealqdv(k2,v2))then
+        if(ktfrealqd(k2,v2))then
           if(mode .eq. 0)then
             if(v2 .eq. 0.d0)then
               irtc=itfmessage(9,'General::wrongval','"#2","nonzero"')
@@ -592,10 +592,10 @@ c        irtc=itfmessage(9,'General::wrongtype','"x, min, max"')
       type (sad_descriptor) k,kx
       type (sad_list), pointer :: kl,klx
       integer*4 irtc,i,isp0,n
-      real*8 x1,x2,rfromk
+      real*8 x1,x2,v
       irtc=0
-      if(ktfrealqd(k))then
-        kx=dfromr(min(x2,max(x1,rfromk(k))))
+      if(ktfrealqd(k,v))then
+        kx=dfromr(min(x2,max(x1,v)))
       elseif(tflistqd(k,kl))then
         n=kl%nl
         if(n .eq. 0)then
@@ -724,7 +724,7 @@ c     $       '"Real or List of Reals"')
       logical*4 cmpl
       external fun,cfun
       ir=0
-      if(ktfrealqdv(k,v))then
+      if(ktfrealqd(k,v))then
         if(v .lt. rmin .or. v .gt. rmax)then
           cv=cfun(dcmplx(v,0.d0))
           if(imag(cv) .ne. 0.d0)then
@@ -838,12 +838,12 @@ c     $       '"Real or List of Reals"')
       integer*4 ir,i,m,m1,isp0
       logical*4 cmpl
       external fun,cfun
-      real*8 fun
+      real*8 fun,v,v1
       complex*16 cv,cv1,cfun
       
       ir=0
-      if(ktfrealqd(k) .and. ktfrealqd(k1))then
-        kx=dfromr(fun(rfromd(k),rfromd(k1)))
+      if(ktfrealqd(k,v) .and. ktfrealqd(k1,v1))then
+        kx=dfromr(fun(v,v1))
       elseif(tfnumberqd(k,cv) .and. tfnumberqd(k1,cv1))then
         if(cmpl)then
           cv=cfun(cv,cv1)

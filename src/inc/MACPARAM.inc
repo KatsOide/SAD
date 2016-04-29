@@ -7,5 +7,3 @@ c
       character*(MAXPNAME) NULSTR
       parameter(HTMAX=2**15-1,NULSTR='        ')
 c     define `RBASE': base index number in pfalloc.f
-      integer*4 RBASE
-      parameter (RBASE=1513*1024)

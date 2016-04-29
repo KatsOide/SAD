@@ -6,6 +6,7 @@
       integer*8 ix,ktaloc,i,ic,i1,j
       ix=ktaloc(n)
       if(ix .ge. 2**31 .or. ix .le. 0)then
+c        write(*,*)'italoc ',ix
         call tfree(ix)
         n1=max(n,3)
         m=n1+1
@@ -53,9 +54,20 @@
           enddo
         enddo
         write(*,*)'italoc memory allocation error ',ix
-        stop
+        call meminfo()
+        call forcesf()
       endif
       italoc=int(ix)
+      return
+      end
+
+      integer*4 function itcaloc(n)
+      use tfstk
+      implicit none
+      integer*4 n,italoc,i
+      i=italoc(n)
+      klist(i:i+n-1)=0
+      itcaloc=i
       return
       end
 
@@ -206,7 +218,7 @@
       if(m .lt. 4)then
         if(m .ne. 0)then
           write(*,*)'tfree-too small segment: ',ka,m
-          rlist(7)=0.d0
+          call forcesf()
         endif
         return
       endif
@@ -288,11 +300,19 @@
       return
       end
 
+      integer*4 function mtaloc(n)
+      use tfstk
+      implicit none
+      integer*4 n,italoc
+      mtaloc=italoc(max(3,n-1))-1
+      return
+      end
+
       integer*4 function mctaloc(n)
       use tfstk
       implicit none
       integer*4 n,i,italoc
-      i=italoc(n-1)-1
+      i=italoc(max(3,n-1))-1
       klist(i:i+n-1)=0
       mctaloc=i
       return
@@ -319,14 +339,14 @@
       implicit none
       type (sad_descriptor) kx
       integer*8 ktaloc,k
-      integer*4 isp1,irtc,i,itfmessage,m
+      integer*4 isp1,irtc,i,itfmessage,m,ir
       kx%k=ktfoper+mtfnull
       do i=isp1+1,isp
-        if(ktfnonrealqd(dtastk(i)))then
+        if(ktfnonrealqdi(dtastk(i),ir))then
           irtc=itfmessage(9,'General::wrongtype','"Real"')
           return
         endif
-        m=max(3,(int(rtastk(i))+7)/8)
+        m=max(3,(ir+7)/8)
         k=ktaloc(m)
         if(k .le. 0)then
           irtc=itfmessage(9999,'Memory::alloc','""')
@@ -351,11 +371,16 @@
       use tfstk
       implicit none
       integer*4 ip,n
-      if(n .ge. 4)then
-        ilist(1,ip)=n
-        call tfree(int8(ip+1))
-      else
-        call freeme(ip,n)
-      endif
+      ilist(1,ip)=max(n,4)
+      call tfree(int8(ip+1))
+      return
+      end
+
+      subroutine meminfo()
+      use tfmem
+      implicit none
+      write(*,*)' klist(0): ',kcpklist0,
+     $     ', nitaloc: ',nitaloc,', icp: ',icp,
+     $     ', firstalloc: ',kfirstalloc
       return
       end

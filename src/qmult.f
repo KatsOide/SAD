@@ -3,7 +3,7 @@
      1     dx,dy,dz,chi1,chi2,theta,dtheta,
      $     eps0,fringe,f1,f2,mfring,fb1,fb2,
      $     bfrm,
-     $     vc,harm,phi,freq,wakew1,coup)
+     $     vc,harm,phi,freq,wakew1,autophi,coup)
       use tfstk
       use ffs
       use tffitcode
@@ -15,7 +15,7 @@
      $     vc,harm,phi,freq,gammab(*),wakew1,
      $     psi1,psi2,phi0,dtheta,apsi1,apsi2,fb1,fb2
       complex*16 ak(0:nmult)
-      logical*4 fringe,coup,rfsw0,bfrm
+      logical*4 fringe,coup,rfsw0,bfrm,autophi
       rfsw0=rfsw
       rfsw=rfsw .and. trpt
       call tinitr(transe)
@@ -23,7 +23,8 @@
      $     phi0,psi1,psi2,apsi1,apsi2,
      1     dx,dy,dz,chi1,chi2,theta,dtheta,
      $     eps0,.false.,fringe,
-     $     f1,f2,mfring,fb1,fb2,bfrm,vc,harm,phi,freq,wakew1,1.d0,0)
+     $     f1,f2,mfring,fb1,fb2,bfrm,vc,harm,phi,freq,wakew1,
+     $     1.d0,autophi,0)
       call qcopymatg(trans,transe,gammab,k)
       coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
      $     trans(2,3) .ne. 0.d0 .or. trans(2,4) .ne. 0.d0

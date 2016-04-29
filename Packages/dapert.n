@@ -1,27 +1,48 @@
-(* dapert 4/19/2013 *)
+(* dapert 4/6/2016 *)
 
-With[{def={Output->0,ExpandElementValues->True,
-  ReferenceOrbit->Default,PhaseX->0,PhaseY->0,
-  Damping->False}
-  },
-  
-  DynamicApertureSurvey[range_,nt_,opt___]:=Module[
-    {TURNS0,NP0,op,lfno,z,dz,nz,score,phix,phiy,dapw=DAPWIDTH,damp},
-    TURNS0=TURNS;
-    TURNS=nt;
-    NP0=NP;
-    op=Override[{opt},def];
-    If[ExpandElementValues/.op,
-      Element["EXPAND"]];
-    {lfno,ref,phix,phiy,damp}={Output,ReferenceOrbit,PhaseX,PhaseY,Damping}/.op;
-    nz=Min[201,Length[range[[3]]]];
-    NP=Min[4000,nz*Min[dapw,51]*2];
-    Write[lfno, " Turns =",nt," Maximum number of particles =",NP];
-    score=DynamicAperture[range,lfno,ref,phix,phiy,damp];
-    NP=NP0;
-    TURNS=TURNS0;
-    {score,ReplacePart[ResultOfDAPERT,range,1]}]
+DALib=Class[{},{},{},
+
+  Mode["ZX"]={3,1};
+  Mode["ZY"]={3,2};
+  Mode["XY"]={1,2};
+  Mode["XZ"]={1,3};
+  Mode["YX"]={2,1};
+  Mode["YZ"]={2,3};
+  Mode[x_String]:=If[ToUpperCase[x]<=>x,
+    Mode[ToUpperCase[x]],
+    Message[99,DALib::wrongmode,x]];
+  Mode[x_]:=Message[99,DALib::wrongmode,x];
+
+  With[{def={Output->0,ExpandElementValues->True,
+    ReferenceOrbit->Default,PhaseX->0,PhaseY->0,PhaseZ->-Pi/2,
+    Axes->"ZX",Damping->False,DampEnough->0}
+    },
+    
+    DynamicApertureSurvey[range_,nt_,opt___]:=Module[
+      {TURNS0,NP0,op,lfno,n1,score,phix,phiy,phiz,ax,
+        dapw=DAPWIDTH,damp,dampenough,axes},
+      TURNS0=TURNS;
+      TURNS=nt;
+      NP0=NP;
+      op=Override[{opt},def];
+      If[ExpandElementValues/.op,
+        Element["EXPAND"]];
+      {lfno,ref,phix,phiy,phiz,damp,dampenough,axes}=
+        {Output,ReferenceOrbit,PhaseX,PhaseY,PhaseZ,Damping,DampEnough,Axes}/.op;
+      ax=Mode[axes];
+      n1=Min[201,Length[range[[ax[[1]]]]]];
+      NP=Min[4000,n1*Min[dapw,51]*2];
+      Write[lfno, " Turns =",nt," Maximum number of particles =",NP];
+      score=DynamicAperture[range,lfno,ref,{phix,phiy,phiz},damp,dampenough,ax];
+      NP=NP0;
+      TURNS=TURNS0;
+      {score,ReplacePart[ResultOfDAPERT,range,1]}]
+    ];
   ];
+
+DALib::wrongmode="Wrong Axes `1`";
+DA$Lib=DALib[];
+DynamicApertureSurvey=DA$Lib@DynamicApertureSurvey;
 
 AccelerateParticles[beam_,mom_,{n_Symbol,nturn_},opt___]:=
   Module[
@@ -38,7 +59,8 @@ AccelerateParticles[beam_,mom_,{n_Symbol,nturn_},opt___]:=
           b[[6]]*u-(1-u),b[[7]]}},1][[2]],
       {n,nturn}];
     {1,b}];
+
 SetAttributes[AccelerateParticles,HoldAll];
 
 Protect[DynamicApertureSurvey,AccelerateParticles,
-  PhaseX,PhaseY,ReferenceOrbit];
+  PhaseX,PhaseY,PhaseZ,ReferenceOrbit,DampEnough];

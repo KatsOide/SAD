@@ -105,6 +105,9 @@ c main routine of gettok
          if( isdgt(curc) ) then
            call mygetchr(curc,iost,*900)
            slen=slen+1
+           if(slen .gt. LLEN)then
+             go to 900
+           endif
            token(slen:slen)=curc
            call mycurchr(curc,iost)
            go to 200
@@ -151,6 +154,9 @@ c          ival=int(rval)
            if(curc .eq. quot) then
               call mygetchr(curc,iost,*910)
               slen=slen+1
+              if(slen .gt. LLEN)then
+                go to 900
+              endif
               token(slen:slen)=quot
               call mycurchr(curc,iost)
               go to 300
@@ -159,6 +165,9 @@ c          ival=int(rval)
         else 
            call mygetchr(curc,iost,*910)
            slen=slen+1
+           if(slen .gt. LLEN)then
+             go to 900
+           endif
            token(slen:slen)=curc
            call mycurchr(curc,iost)
            go to 300
@@ -168,7 +177,7 @@ c
  900  continue
       if (slen .gt. LLEN)
      &   call errmsg('gettok',
-     &               'too long identifier',0,16)
+     &               'too long identifier: '//token(:slen),0,16)
 c      write(*,*) "new_gettok:900: ",token(:slen)
       return
 c

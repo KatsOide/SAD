@@ -11,7 +11,8 @@
       integer*4 irtc,latt,iparam,l,isp1,
      $     nts,itfdownlevel,naz,lscal,ltpara,igetgl1
       character*20 title
-      real*8 ol,trval,dt1,df,rgetgl1,dt0
+      logical*4, save :: trackinit=.false.
+      real*8 ol,trval,dt1,df,rgetgl1,dt0,phi(3)
       if(bypasstrack)then
         write(*,*)
      $       '??? FFS, EMIT, TRACK in GetMAIN are bypassed. ???'
@@ -19,7 +20,8 @@
       endif
       open(0,file='/dev/null',status='UNKNOWN',err=10)
  10   call tsetupsig
-      if(.not. tfstkinit)then
+      if(.not. trackinit)then
+        trackinit=.true.
         call tffsvinit
         call csinit(0,1,'!',.false.)
         call tfinitn
@@ -86,6 +88,10 @@ c      l=itfdownlevel()
       fourie=igetgl1('$FOURIE$') .ne. 0
       smearp=igetgl1('$SMEAR$' ) .ne. 0
       geocal=igetgl1('$GEOCAL$' ) .ne. 0
+      intres=igetgl1('$INTRES$') .ne. 0
+      halfres=igetgl1('$HALFRES$') .ne. 0
+      sumres=igetgl1('$SUMRES$') .ne. 0
+      diffres=igetgl1('$DIFFRES$') .ne. 0
       photons=igetgl1('$PHOTONS$' ) .ne. 0
       nparallel=max(1,int(rgetgl1('NPARA')))
       radlight=.false.
@@ -216,12 +222,13 @@ c      l=itfdownlevel()
         kzx=ktaloc(np0)
         trval=0.d0
         rlist(ipz)=0.d0
+        phi=0.d0
         call trackd(ilist(1,ilattp+1),ilist(1,ikptbl),
      1        rlist(ilist(2,iparam+16)),rlist(ilist(2,iparam+17)),
      1        rlist(ilist(2,iparam+18)),rlist(ilist(2,iparam+19)),
      1        rlist(ilist(2,iparam+20)),rlist(ilist(2,iparam+21)),
      1        rlist(ig),rlist(ipz),
-     1        ilist(1,imt),ilist(1,kzx),trval,outfl)
+     1        ilist(1,imt),ilist(1,kzx),trval,phi,0.d0,0.d0,3,1,outfl)
         call tfree(kzx)
         call tfree(imt)
       endif
@@ -244,6 +251,10 @@ c      l=itfdownlevel()
       call isetgl1('$FOURIE$',fourie)
       call isetgl1('$SMEAR$',smearp)
       call isetgl1('$GEOCAL$',geocal)
+      call isetgl1('$INTRES$',intres)
+      call isetgl1('$HALFRES$',halfres)
+      call isetgl1('$SUMRES$',sumres)
+      call isetgl1('$DIFFRES$',diffres)
       call isetgl1('$PHOTONS$',photons)
       nlat  =ilist(1,ilattp)+1
       call tclrpara(ilist(1,ilattp+1),nlat-1)

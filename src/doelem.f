@@ -10,7 +10,7 @@ c
       integer*4 elmcd
       character*(MAXSTR) token,wtoken*(*)
       integer slen,ival,ttype,slen2,ttype2,idx
-      integer*4 hsrchz,mcfallo
+      integer*4 hsrchz,itcaloc
       real*8 rval
       logical skipch
 c
@@ -42,7 +42,7 @@ c end debug
         idx =hsrchz(token(:slen))
         if (idtype(idx) .eq. icNULL) then
           idtype(idx)=elmcd
-          idval(idx)=mcfallo(kytbl(kwMAX,elmcd))
+          idval(idx)=itcaloc(kytbl(kwMAX,elmcd)+1)
           call rdkwdl(idx)
 c for debug
 c      print *,'doelem:',idtype(idx),elmcd,pname(kytbl(0,elmcd))

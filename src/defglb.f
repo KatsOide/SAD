@@ -5,7 +5,7 @@
       character*(*) id,idw*(MAXSTR)
       integer*4 type,idx,idx1,lenw
       real*8 rval
-      integer*4 ival,idxx,hsrchz,mfalloc
+      integer*4 ival,idxx,hsrchz,italoc
       logical isglobal
       isglobal(idx)=((idtype(idx) .eq. icGLR)
      &         .or.  (idtype(idx) .eq. icGLI)
@@ -33,7 +33,10 @@ c
       entry RsetGL(id,rval,idx1)
       idxx=hsrchz(id)
       if(idtype(idxx) .eq. icGLR .or. idtype(idxx) .eq. icNULL) then
-        if (idval(idxx) .le. 0) idval(idxx)=mfalloc(1)
+        if (idval(idxx) .le. 0)then
+          idval(idxx)=italoc(3)
+c          idval(idxx)=mfalloc(1)
+        endif
         rlist(idval(idxx))=rval
       else
         idw=id

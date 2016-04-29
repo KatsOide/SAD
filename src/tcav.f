@@ -1,8 +1,8 @@
-      subroutine tcav(np,x,px,y,py,z,g,dv,al,
-     $     vc,harm,phi,freq,dphi,
+      subroutine tcav(np,x,px,y,py,z,g,dv,al,vc,
+     $     w,phi,dphi,
      $     lwl,wakel,lwt,waket,
      $     dx,dy,theta,v1,v20,v11,v02,
-     $     fringe,mfring)
+     $     fringe,mfring,autophi)
       use tfstk
       implicit none
       include 'inc/TMACRO1.inc'
@@ -12,19 +12,14 @@
       integer*4 np,ndiv,i,n,mfring,itab(np),lwl,lwt,izs(np)
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np)
       real*8 wakel(2,lwl),waket(2,lwt),ws(ndivmax)
-      real*8 phi,dphi,vnominal,he,al,vc,harm,freq,
+      real*8 phi,dphi,vnominal,he,al,vc,
      1     dx,dy,theta,v1,v20,v11,v02,w,wi,cost,sint,v,v1a,
      $     v20a,v11a,v02a,phis,r,wl,r1,ws1,we,wsn,phic,
      $     dphis,offset,offset1,tlim,sv,a,dpz,al1,h2,p2,
      $     dp2,pr2,dvn,dzn,dp1r,p1r,p1,h1,dp2r,p2r,av,dpx,fw,
      $     alx,dpepe,xi,pxi,fw0,
      $     asinh,t,ph,dh,dpr,dpy,dp,dp1,pr1,pe,vcorr
-      logical*4 fringe
-      if(harm .eq. 0.d0)then
-        w=pi2*freq/c
-      else
-        w=omega0*harm/c
-      endif
+      logical*4 fringe,autophi
       if(w .eq. 0.d0)then
         wi=0.d0
       else
@@ -38,6 +33,7 @@
         sint=0.0d0
       endif
       include 'inc/TENT.inc'
+      phic=(phi+dphi)*charge-vcphic
       v=vc/amass*abs(charge)
       v1a=v1/amass*abs(charge)
       v20a=.5d0*v20/amass*abs(charge)
@@ -48,7 +44,11 @@
         phis=0.d0
       else
         vnominal=0.d0
-        phis=w*trf0
+        if(autophi)then
+          phis=phic
+        else
+          phis=w*trf0
+        endif
       endif
       he=h0+vnominal
       pe=h2p(he)
@@ -78,14 +78,13 @@ c      pe=sqrt((he-1.d0)*(he+1.d0))
           ws(i)=wsn
         enddo
       endif            
-      phic=(phi+dphi)*charge-vcphic
       dphis=phis-phic
-      if(rad .or. trpt)then
+      if(rad .or. trpt .or. autophi)then
         offset=sin(dphis)
         offset1=0.d0
       else
         offset=sin(dphis)-sin(phis)
-        offset1=vcalpha*sin(phis)
+        offset1=sin(phis)
       endif
       if(rfsw)then
         tlim=1.d4
@@ -149,6 +148,9 @@ c            h1=sqrt(1.d0+p1**2)
           dh=max(oneev-h1,
      $         (v+(v1a+v20a*x(i)+v11a*y(i))*x(i)+v02a*y(i)**2)
      $         *(-2.d0*sin(ph)*cos(ph-dphis)+offset)*wsn)
+c          if(autophi)then
+c            write(*,'(a,1p4g15.7)')'tcav ',dh,ph,dphis,offset
+c          endif
           h2=h1+dh
           a=max(dh*(h1+h2)/p1**2,-1.d0)
           dpr=sqrt1(a)

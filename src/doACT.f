@@ -8,11 +8,12 @@ c.....cmdidxbrings pointer to command name
       include 'inc/MACTTYP.inc'
       include 'inc/MACVAR.inc'
       character*(MAXSTR) token
-      integer*4 slen,ival,ttype,hsrch,hsrchz,mfalloc,mcfallo
+      integer*4, parameter :: memmax = 8192
+      integer*4 slen,ival,ttype,hsrch,hsrchz
       integer*4 scan, yyparse,yypushtoken,yypoptoken,yyreturn
       real*8 rval,yyval
       logical*4 skipch,ldummy,inlist
-      integer*4 restme,membas,memuse,idx
+      integer*4 restme,membas,memuse,idx,mctaloc,mtaloc
       integer*4 i,lidx,iwork,ic
       integer*4 argp,argdfp,offset
 c     
@@ -37,7 +38,8 @@ c     &              'missing '''//LCURL//''' is assumed',0,0)
 c
       argdfp=idval(cmdidx)
       if(ilist(2,argdfp) .le. 0) then
-         argp=mcfallo(ilist(1,argdfp))
+         argp=mctaloc(ilist(1,argdfp))
+c         argp=mcfallo(ilist(1,argdfp))
          ilist(2,argdfp)=argp
          ilist(1,argp)=ilist(1,argdfp)-1
          do i=1,ilist(1,argp)
@@ -79,8 +81,10 @@ c..........read right value
             else if( (.not. inlist) .and.
      &              skipch(LPAR,token,slen,ttype,rval,ival)) then
                inlist=.true.
-               restme=mfalloc(-1)
-               membas=mfalloc(restme)
+c               restme=mfalloc(-1)
+c               membas=mfalloc(restme)
+               restme=memmax
+               membas=mtaloc(restme)
                memuse=1
                ilist(2,argp+offset)=membas
             else if(inlist  .and.
@@ -93,7 +97,8 @@ c     stop 9999
                   call pr_mem_map
                endif
                ilist(1,membas)=memuse
-               call freeme(membas+memuse,restme-memuse)
+               call tfreem(membas+memuse,restme-memuse)
+c               call freeme(membas+memuse,restme-memuse)
             else if ((ttype .eq. ttypNM) .or.
      $              (ttype .eq. ttypID) .or.
      $              (ttype .eq. ttypDM) ) then
@@ -119,7 +124,8 @@ c                  print  *,' doACT/int:', INT(yyval)
                      rlist(membas+memuse)=yyval
                      memuse=memuse+1
                   else
-                     ilist(2,argp+offset)=mcfallo(1)
+                     ilist(2,argp+offset)=mctaloc(4)
+c                     ilist(2,argp+offset)=mcfallo(1)
                      rlist(ilist(2,argp+offset))=yyval
                   endif
 c                  print  *,' doACT/real:', yyval
@@ -162,7 +168,8 @@ c                  print  *,' doACT/real:', yyval
                      ilist(2,membas+memuse)=membas+memuse+1
                      memuse=memuse+(slen+7)/8+1
                   else
-                     iwork =mcfallo((slen+7)/8+1)
+                     iwork =mctaloc((slen+7)/8+1)
+c                     iwork =mcfallo((slen+7)/8+1)
                      ilist(2,argp+offset)=iwork
                      ilist(1,iwork)=slen
                      ilist(2,iwork)=iwork+1

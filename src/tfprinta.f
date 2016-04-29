@@ -66,7 +66,6 @@
       use tfform
       implicit none
       type (sad_descriptor) ks
-      real*8 rfromk
       integer*4 irtc
       if(iaxform .eq. 0)then
         call tfforminit
@@ -75,10 +74,9 @@
       if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
         call tfreseterror
         itfgetrecl=131
-      elseif(.not. ktfrealqd(ks))then
+      elseif(ktfnonrealqdi(ks,itfgetrecl))then
         itfgetrecl=131
       else
-        itfgetrecl=int(rfromk(ks%k))
         if(itfgetrecl .le. 0)then
           itfgetrecl=131
         endif

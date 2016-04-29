@@ -18,7 +18,7 @@ TK_MINOR_VERSION='5'
 TK_PATCH_LEVEL='.18'
 
 # -D flags for use with the C compiler.
-TK_DEFS='-DPACKAGE_NAME=\"tk\" -DPACKAGE_TARNAME=\"tk\" -DPACKAGE_VERSION=\"8.5\" -DPACKAGE_STRING=\"tk\ 8.5\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_LIMITS_H=1 -DMODULE_SCOPE=extern\ __attribute__\(\(__visibility__\(\"hidden\"\)\)\) -DTCL_CFG_DO64BIT=1 -DHAVE_CAST_TO_UNION=1 -DTCL_SHLIB_EXT=\".so\" -DNDEBUG=1 -DTCL_CFG_OPTIMIZED=1 -D_LARGEFILE64_SOURCE=1 -DTCL_WIDE_INT_IS_LONG=1 -DHAVE_SYS_TIME_H=1 -DTIME_WITH_SYS_TIME=1 -DHAVE_INTPTR_T=1 -DHAVE_UINTPTR_T=1 -DHAVE_PW_GECOS=1 -DHAVE_XKBKEYCODETOKEYSYM=1'
+TK_DEFS='-DPACKAGE_NAME=\"tk\" -DPACKAGE_TARNAME=\"tk\" -DPACKAGE_VERSION=\"8.5\" -DPACKAGE_STRING=\"tk\ 8.5\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_LIMITS_H=1 -DMODULE_SCOPE=extern\ __attribute__\(\(__visibility__\(\"hidden\"\)\)\) -DTCL_CFG_DO64BIT=1 -DHAVE_CAST_TO_UNION=1 -DTCL_SHLIB_EXT=\".so\" -DNDEBUG=1 -DTCL_CFG_OPTIMIZED=1 -D_LARGEFILE64_SOURCE=1 -DTCL_WIDE_INT_IS_LONG=1 -DHAVE_SYS_TIME_H=1 -DTIME_WITH_SYS_TIME=1 -DHAVE_INTPTR_T=1 -DHAVE_UINTPTR_T=1 -DHAVE_PW_GECOS=1 -DHAVE_LIBXFT=1 -DHAVE_XFT=1 -DHAVE_XKBKEYCODETOKEYSYM=1'
 
 # Flag, 1: we built a shared lib, 0 we didn't
 TK_SHARED_BUILD=1
@@ -32,7 +32,7 @@ TK_DBGX=
 TK_LIB_FILE='libtk8.5.so'
 
 # Additional libraries to use when linking Tk.
-TK_LIBS='-L/usr/X11/lib -lX11   -ldl  -lieee -lm'
+TK_LIBS='-L/usr/X11/lib -lX11 -L/usr/X11/lib -lXft -lX11 -L/usr/X11/lib -lfreetype -L/usr/X11/lib -lfontconfig -L/usr/X11/lib -lXrender -lX11 -lfontconfig  -ldl  -lieee -lm'
 
 # Top-level directory in which Tk's platform-independent files are
 # installed.
@@ -43,7 +43,7 @@ TK_PREFIX='/Users/oide/SAD/oldsad//arch/AMD64-Linux4'
 TK_EXEC_PREFIX='/Users/oide/SAD/oldsad//arch/AMD64-Linux4'
 
 # -I switch(es) to use to make all of the X11 include files accessible:
-TK_XINCLUDES=''
+TK_XINCLUDES='-I/usr/X11/include'
 
 # Linker switch(es) to use to link with the X11 library archive.
 TK_XLIBSW='-L/usr/X11/lib -lX11'

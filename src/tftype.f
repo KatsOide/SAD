@@ -5,6 +5,7 @@
       use tffitcode
       implicit none
       include 'inc/MACCODE.inc'
+      include 'inc/MACKW.inc'
       integer*4 ntyp
       parameter (ntyp=18)
       integer*4 nlat,nele,ndim,lfno,k1
@@ -69,13 +70,13 @@ c          if(klp(iele1(kx)) .ne. kx)cycle
      1             iele1(kx),kx,latt(2,kx),kp,
      $             ival,errk,lt,twiss,lfno,
      $             emx,emy,dpmax,nlat,nele,ndim,lpw)
-              if(lt .ne. 1)then
+              if(kytbl(kwMAX,lt) .gt. kytbl(kwMAX, icDRFT))then
                 call twbuf(' ',lfno,10,lpw,0,-1)
               endif
             endif
           endif
         enddo
-        if(.not. start .and. lt .eq. 1)then
+        if(.not. start .and. lt .eq. icDRFT)then
           call twbuf(' ',lfno,10,lpw,0,-1)
         endif
       enddo

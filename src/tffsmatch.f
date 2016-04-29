@@ -9,7 +9,7 @@
      $     nlist,brho,
      $     emx,emy,dpmax,dp0,coumin,r,residual,absweit,
      $     cell,fitflg,geomet,cellstab,convgo,nparallel,
-     $     orbitcal,lfno,irtc)
+     $     orbitcal,intres,halfres,sumres,diffres,lfno,irtc)
       use tfstk
       use ffslocal, only:ffslocalv
       use tffitcode
@@ -62,7 +62,8 @@ c      include 'DEBUG.inc'
      $     tffsfmin,rp,rp0,wlimit(nvar),dv,vl,dvkc
       real*8 twisss(ntwissfun)
       logical*4 chgmod,newton,convgo,imprv,limited,over,
-     $     parallel,nderiv,outt,orbitcal,nderiv0,dlim
+     $     parallel,nderiv,outt,orbitcal,nderiv0,dlim,
+     $     intres,halfres,sumres,diffres
       integer*4 itfgetrecl,kkk,kkkk,npa
       character ch
       integer*8 intffs,inumderiv,iexponent,inumw,iconvergence
@@ -150,7 +151,7 @@ c     end   initialize for preventing compiler warning
      $         r,rp,rstab,nstab,residual,wexponent,
      $         offmw,etamax,avebeta,emx,emy,dpmax,coumin,
      $         cell,zcal,fitflg,geomet,cellstab,wcal,parallel,
-     $         chgini,orbitcal,
+     $         chgini,orbitcal,intres,halfres,sumres,diffres,
      $         lout,error)
           if(error)then
             if(irtc .eq. 20001)then
@@ -367,7 +368,8 @@ c                    enddo
      $                 ra1,rpa1,rstaba1,nstaba1,residuala1,wexponent,
      $                 offmw,etamax,avebeta,emx,emy,dpmax,coumin,
      $                 cell,zcal1,fitflg,geomet,cellstab,wcal1,.false.,
-     $                 chgini,orbitcal,lfno,error)
+     $                 chgini,orbitcal,intres,halfres,sumres,diffres,
+     $                 lfno,error)
                   valvar(kc)=valvar0-dvkc
                   call tfsetv(latt,ivarele,ivvar,ivcomp,valvar,nvar,
      $                 nele,klp,ival,couple,errk,iele,iele1,nlat)
@@ -383,7 +385,8 @@ c                    enddo
      $                 ra1,rpa1,rstaba1,nstaba1,residuala1,wexponent,
      $                 offmw,etamax,avebeta,emx,emy,dpmax,coumin,
      $                 cell,zcal1,fitflg,geomet,cellstab,wcal1,.false.,
-     $                 chgini,orbitcal,lfno,error2)
+     $                 chgini,orbitcal,intres,halfres,sumres,diffres,
+     $                 lfno,error2)
                   valvar(kc)=valvar0
                   if(error .or. error2)then
                     call tclr(ddf1,nqcol)

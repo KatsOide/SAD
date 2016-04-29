@@ -536,6 +536,7 @@ c              - Swap particle coordinates
       type (sad_descriptor) kx,kn
       type (sad_list), pointer :: klx
       integer*4 kseed,isp1,irtc
+      real*8 vn
       isp1=isp
       isp=isp1+1
       dtastk(isp)=dxnull
@@ -552,12 +553,12 @@ c              - Swap particle coordinates
       endif
 c      call tfdebugprint(kx,'tfaddseed',1)
       kn=klx%dbody(2)
-      if(ktfnonrealqd(kn))then
+      if(ktfnonrealqd(kn,vn))then
         irtc=-1
         return
       endif
       isp=isp1+1
-      rtastk(isp)=rfromd(kn)+kseed
+      rtastk(isp)=vn+kseed
       call SeedRandom(isp1,kx,irtc)
 c      call tfdebugprint(kx,'=> ',1)
       isp=isp1

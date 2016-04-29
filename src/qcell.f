@@ -97,6 +97,7 @@ C     ----------------------------
         twiss(ibegin,idp,mfitr2) = r2
         twiss(ibegin,idp,mfitr3) = r3
         twiss(ibegin,idp,mfitr4) = r4
+        twiss(ibegin,idp,mfitdetr) = r1*r4-r2*r3
 C------s : transformation matrix
 C     ( c1*I  J.Transpose[R].J )
 C     ( R     c1*I             )

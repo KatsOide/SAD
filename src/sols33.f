@@ -1,6 +1,6 @@
       subroutine sols33(a,b)
-      implicit real*8 (a-h,o-z)
-      dimension a(3,3),b(3,3)
+      implicit none
+      real*8 a(3,3),b(3,3),r,c,s,a11,a12,a32,a13,a33,a22,a23,rr
       r=abs(dcmplx(a(1,1),a(3,1)))
       c=a(1,1)/r
       s=a(3,1)/r

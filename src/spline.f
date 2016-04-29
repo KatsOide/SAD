@@ -325,22 +325,20 @@ C
             if(ka1 .ne. mtfnull)then
               go to 9100
             endif
-          elseif(ktfnonrealqd(k1))then
+          elseif(ktfnonrealqd(k1,dy(1)))then
             go to 9100
           else
             mode=1
-            dy(1)=rfromd(k1)
           endif
           k2=kld%dbody(2)
           if(ktfoperqd(k2,ka2))then
             if(ka2 .ne. mtfnull)then
               go to 9100
             endif
-          elseif(ktfnonrealqd(k2))then
+          elseif(ktfnonrealqd(k2,dy(2)))then
             go to 9100
           else
             mode=mode+2
-            dy(2)=rfromd(k2)
           endif
         endif
       elseif(isp .ne. isp1+1)then

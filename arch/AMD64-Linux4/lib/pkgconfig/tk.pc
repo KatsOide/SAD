@@ -11,5 +11,5 @@ URL: http://www.tcl.tk/
 Version: 8.5.18
 Requires: tcl >= 8.5
 Libs: -L${libdir} -ltk8.5
-Libs.private:  -L/usr/X11/lib -lX11
+Libs.private: -L/usr/X11/lib -lXft -lX11 -L/usr/X11/lib -lfreetype -L/usr/X11/lib -lfontconfig -L/usr/X11/lib -lXrender -lX11 -lfontconfig -L/usr/X11/lib -lX11
 Cflags: -I${includedir}

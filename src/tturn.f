@@ -108,7 +108,7 @@
       integer*4 np,n,la,lbegin,lend,kdx,kdy,krot
       integer*4 latt(2,nlat),kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
-      real*8 sa(6),ss(6,6),phi,bz,
+      real*8 sa(6),ss(6,6),phi,bz,harm,w,
      $     al,a,dpz,al1,ak0,ak1,psi1,psi2,tgauss,ph,harmf,
      $     sspac0,sspac,fw,dx,dy,rot,sspac1,sspac2,
      $     fb1,fb2,chi1,chi2,ak,rtaper
@@ -117,7 +117,7 @@
      $     nwakep,iwakeelm(nwakep),
      $     nextwake,nwak,itab(np),izs(np)
       integer*8 kwaketbl(2,nwakep),iwpl,iwpt,iwplc,iwptc
-      logical*4 sol,out,wake
+      logical*4 sol,out,wake,autophi
       if(np .le. 0)then
         return
       endif
@@ -364,8 +364,8 @@ c        endif
           return
         endif
         go to 1020
- 2100   write(*,*)'Use BEND with ANGLE=0 for ST.'
-        stop
+ 2100   write(*,*)'Use BEND with ANGLE=0 for STEER.'
+        call forcesf()
  2200   phi=rlist(lp+kytbl(kwANGL,icMULT))
         mfr=nint(rlist(lp+14))
         if(rlist(lp+ilist(1,lp)) .gt. 0.d0)then
@@ -389,6 +389,17 @@ c        endif
           chi2=-rlist(lp+kytbl(kwCHI2,icMULT))
         endif
         bz=0.d0
+        harm=rlist(lp+kytbl(kwHARM,icMULT))
+        if(harm .eq. 0.d0)then
+          w=pi2*rlist(lp+kytbl(kwFREQ,icMULT))/c
+        else
+          w=omega0*harm/c
+        endif
+        autophi=rlist(lp+kytbl(kwAPHI,icMULT)) .ne. 0.d0
+        ph=rlist(lp+kytbl(kwDPHI,icMULT))
+        if(autophi)then
+          ph=ph+gettwiss(mfitdz,l)*w
+        endif
         rtaper=1.d0
         if(rad .and. radcod .and. radtaper)then
           rtaper=1.d0+(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
@@ -403,65 +414,71 @@ c        endif
      $       rlist(lp+9),rlist(lp+10) .eq. 0.d0,
      $       rlist(lp+11) .eq. 0.d0,
      $       rlist(itp+1)*rtaper,rlist(itp+2)*rtaper,mfr,fb1,fb2,
-     $       rlist(lp+15),rlist(lp+16),rlist(lp+17),rlist(lp+18),
-     $       rlist(lp+kytbl(kwDPHI,icMULT)),
-     $       rlist(lp+kytbl(kwRADI,icMULT)),rtaper,
+     $       rlist(lp+15),w,rlist(lp+17),ph,
+     $       rlist(lp+kytbl(kwRADI,icMULT)),rtaper,autophi,
      $       n,l,latt,kptbl)
         go to 1020
- 3100     if(rlist(lp+9) .eq. 0.d0)then
-            ak=rlist(lp+2)
+ 3100   harm=rlist(lp+kytbl(kwHARM,icCAVI))
+        if(harm .eq. 0.d0)then
+          w=pi2*rlist(lp+kytbl(kwFREQ,icCAVI))/c
+        else
+          w=omega0*harm/c
+        endif
+        if(rlist(lp+9) .eq. 0.d0)then
+          ak=rlist(lp+2)
+        else
+          ak=rlist(lp+2)+rlist(lp+9)*tgauss()
+        endif
+        if(rlist(lp+10) .eq. 0.d0)then
+          ph=rlist(lp+kytbl(kwDPHI,icCAVI))
+        else
+          ph=rlist(lp+kytbl(kwDPHI,icCAVI))+
+     $         rlist(lp+kytbl(kwRANP,icCAVI))*tgauss()
+        endif
+        autophi=rlist(lp+kytbl(kwAPHI,icCAVI)) .ne. 0.d0
+        if(autophi)then
+          ph=ph+gettwiss(mfitdz,l)*w
+c          write(*,*)'tturn ',l,gettwiss(mfitdz,l),ph
+        endif
+        mfr=nint(rlist(lp+kytbl(kwFRMD,icCAVI)))
+        if(rlist(lp+ilist(1,lp)) .gt. 0.d0)then
+        else
+          mfr=mfr*(11+mfr*(2*mfr-9))/2
+        endif
+        if(twake .or. lwake)then
+          if(l .eq. nextwake)then
+            iwplc=max(iwpl-1,0)
+            iwptc=max(iwpt-1,0)
+            lwlc=lwl
+            lwtc=lwt
           else
-            ak=rlist(lp+2)+rlist(lp+9)*tgauss()
-          endif
-          if(rlist(lp+10) .eq. 0.d0)then
-            ph=rlist(lp+kytbl(kwDPHI,icCAVI))
-          else
-            ph=rlist(lp+kytbl(kwDPHI,icCAVI))+
-     $           rlist(lp+kytbl(kwRANP,icCAVI))*tgauss()
-          endif
-          mfr=nint(rlist(lp+kytbl(kwFRMD,icCAVI)))
-          if(rlist(lp+ilist(1,lp)) .gt. 0.d0)then
-          else
-            mfr=mfr*(11+mfr*(2*mfr-9))/2
-          endif
-          if(twake .or. lwake)then
-            if(l .eq. nextwake)then
-              iwplc=max(iwpl-1,0)
-              iwptc=max(iwpt-1,0)
-              lwlc=lwl
-              lwtc=lwt
+            iwplc=abs(ilist(1,lp+kytbl(kwLWAK,icCAVI)))
+            if(iwplc .eq. 0 .or. .not. lwake)then
+              lwlc=0
             else
-              iwplc=abs(ilist(1,lp+kytbl(kwLWAK,icCAVI)))
-              if(iwplc .eq. 0 .or. .not. lwake)then
-                lwlc=0
-              else
-                lwlc=(ilist(1,iwplc-1)-2)/2
-              endif
-              iwptc=abs(ilist(1,lp+kytbl(kwTWAK,icCAVI)))
-              if(iwptc .eq. 0 .or. .not. twake)then
-                lwtc=0
-              else
-                lwtc=(ilist(1,iwptc-1)-2)/2
-              endif
+              lwlc=(ilist(1,iwplc-1)-2)/2
             endif
-            call tcav(np,x,px,y,py,z,g,dv,al,ak,
-     1           rlist(lp+3),
-     $           rlist(lp+kytbl(kwPHI,icCAVI)),
-     $           rlist(lp+5),ph,
-     $           lwlc,rlist(iwplc+1),lwtc,rlist(iwptc+1),
-     1           rlist(lp+13),rlist(lp+14),rlist(lp+15),
-     $           rlist(lp+16),rlist(lp+17),rlist(lp+18),rlist(lp+19),
-     $           rlist(lp+kytbl(kwFRIN,icCAVI)) .eq. 0.d0,mfr)
-          else
-            call tcav(np,x,px,y,py,z,g,dv,al,ak,
-     1           rlist(lp+3),
-     $           rlist(lp+kytbl(kwPHI,icCAVI)),
-     $           rlist(lp+5),ph,
-     $           0,0.d0,0,0.d0,
-     1           rlist(lp+13),rlist(lp+14),rlist(lp+15),
-     $           rlist(lp+16),rlist(lp+17),rlist(lp+18),rlist(lp+19),
-     $           rlist(lp+kytbl(kwFRIN,icCAVI)) .eq. 0.d0,mfr)
+            iwptc=abs(ilist(1,lp+kytbl(kwTWAK,icCAVI)))
+            if(iwptc .eq. 0 .or. .not. twake)then
+              lwtc=0
+            else
+              lwtc=(ilist(1,iwptc-1)-2)/2
+            endif
           endif
+          call tcav(np,x,px,y,py,z,g,dv,al,ak,
+     1         w,rlist(lp+kytbl(kwPHI,icCAVI)),ph,
+     $         lwlc,rlist(iwplc+1),lwtc,rlist(iwptc+1),
+     1         rlist(lp+13),rlist(lp+14),rlist(lp+15),
+     $         rlist(lp+16),rlist(lp+17),rlist(lp+18),rlist(lp+19),
+     $         rlist(lp+kytbl(kwFRIN,icCAVI)) .eq. 0.d0,mfr,autophi)
+        else
+          call tcav(np,x,px,y,py,z,g,dv,al,ak,
+     1         w,rlist(lp+kytbl(kwPHI,icCAVI)),ph,
+     $         0,0.d0,0,0.d0,
+     1         rlist(lp+13),rlist(lp+14),rlist(lp+15),
+     $         rlist(lp+16),rlist(lp+17),rlist(lp+18),rlist(lp+19),
+     $         rlist(lp+kytbl(kwFRIN,icCAVI)) .eq. 0.d0,mfr,autophi)
+        endif
         go to 1020
  3200   if(rfsw)then
           if(rlist(lp+9) .eq. 0.d0)then

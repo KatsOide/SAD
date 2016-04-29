@@ -33,7 +33,7 @@
       type (sad_descriptor) kx
       integer*4 irtype,itfpeeko,next
       irtype=itfpeeko(kx,next)
-      if(irtype .eq. 0 .and. ktfrealqdv(kx,getval))then
+      if(irtype .eq. 0 .and. ktfrealqd(kx,getval))then
         call cssetp(next)
       else
         getval=0.d0

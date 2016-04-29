@@ -127,7 +127,7 @@
       enddo
       if(ibz .ne. 0)then
         Write(*,*)'Missing end of solenoid: ',ibz
-        stop
+        call forcesf()
       endif
       ibzl(1,nlat)=0
       ibzl(2,nlat)=0

@@ -118,7 +118,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      tfkwrd.o    tflag.o     tflogi.o     tfltr1.o   \
      tfmat.o     tfoptics.o  tfprint.o   \
      tfsave.o    tfsetparam.o             tfsetv.o   tfshow.o    tftmat.o \
-     tftrack.o   tftrad.o     tftrak.o    tftrb.o \
+     tftrack.o   tftrak.o    tftrb.o \
      tftyp1.o    tftype.o    tfvars.o     tfwake.o   tgauss_.o \
      tgetfv.o    thess.o     tins.o     tinse.o \
      tlum.o      tmov.o       tmulbs.o   tmulte.o \

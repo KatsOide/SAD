@@ -371,7 +371,7 @@ c          call tfstk2l(lista,lista)
         kx%k=ktflist+ks
       case default
         write(*,*)'tfleval-implementation error: ',kaf
-        stop
+        call forcesf()
       end select
       go to 8000
 
@@ -1067,8 +1067,7 @@ c        call tmov(klist(ka+1),ktastk(isp+1),m)
             irtc=itfmessage(999,'General::invop',' ')
             return
           endif
-        elseif(ktfrealqd(ka))then
-          ind=int(rfromd(ka))
+        elseif(ktfrealqdi(ka,ind))then
         elseif(ktfsymbolqd(ka,sym) .and. kopc .eq. mtfslot)then
           call sym_namtbl(sym,nam)
           nc=nam%str%nch+1

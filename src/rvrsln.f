@@ -1,7 +1,7 @@
       subroutine rvrsln(idxl)
       use maccbk
-      implicit real*8 (a-h,o-z)
-      integer idxl
+      implicit none
+      integer*4 idxl
 c
       include 'inc/MACCODE.inc'
       include 'inc/MACKW.inc'
@@ -9,8 +9,9 @@ c
       include 'inc/MACFILE.inc'
       include 'inc/MACMISC.inc'
 c
-      integer llen
-      integer oldpt,oldex
+      integer*4 llen
+      integer*4 oldpt,oldex,i,ioldpt
+      real*8 work
 c
       llen=ilist(1,idval(idxl))
       oldpt=idval(idxl)

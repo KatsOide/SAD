@@ -476,8 +476,9 @@ c          endif
               go to 9200
             endif
             if(klist(ip) .lt. 128 .or. klist(ip) .gt. 2**30)then
-              write(*,*)'tfck-1 ',klist(ip),ip,ip1,ix,jx
-              v=rlist(7)
+              write(*,*)'tfck-1 error in memory allocation ',
+     $             klist(ip),ip,ip1,ix,jx
+              call forcesf()
             endif
             ip1=ip
             ip=klist(ip1)

@@ -1,5 +1,6 @@
       subroutine lread(idxl,token,slen,ttype,rval,ival)
       use maccbk
+      use tfstk
       implicit none
       include 'inc/CBKMAC.inc'
       integer*4 idxl,idx
@@ -7,8 +8,8 @@
       integer*4 slen,ival,ttype
       real*8 rval
 c     
-      integer*4 hsrchz,mfalloc
-      integer*4 llen,mult,blksz,newblk,i
+      integer*4 hsrchz,italoc
+      integer*4 n,isp0,ia,mult
       logical skipch
 c     
 c     first character must be '='
@@ -22,86 +23,70 @@ c     next is to be a '('
      &        'missing '''//LPAR//''' is assumed.',0,0)
       endif
 c     intialize parameters
-      blksz=pagesz/4
-      idval(idxl)=mfalloc(blksz)
-      if(idval(idxl) .eq. 0) then
-         call errmsg('lread',' cannot allocate memory',0,0)
-         stop
-      end if
-      llen=0
+      isp0=isp
 c     now read elemnt list
- 2000 continue
-      if (skipch(COMMA,token,slen,ttype,rval,ival)) go to 2000
-      mult=1
- 2100 continue
-      if(skipch(PLUS,token,slen,ttype,rval,ival))then
-         go to 2100
-      else if(skipch(MINUS,token,slen,ttype,rval,ival)) then
-         mult=-mult
-         go to 2100
-      else if (ttype .eq. ttypID) then
-         idx=hsrchz(token(:slen))
-         if ( (idtype(idx) .gt. icMXEL) .and.
-     &        (idtype(idx) .ne. icLINE)      ) then
-            wkstr(:slen)=token(:slen)
-            call errmsg('lread',
-     &           'syntax error:'//wkstr(:slen)
-     &           //'is not line nor element.',0,16)
-         else
-            llen=llen+1
-            if(llen+1 .gt. blksz ) then
-               newblk=mfalloc(2*blksz)
-               if (newblk .eq. 0) then
-                  call errmsg('lread',
-     &                 ' cannot extend working area.',32,0)
-                  stop
-               end if
-               do i=1,llen-1
-                  ilist(1,newblk+i)=ilist(1,idval(idxl)+i)
-                  ilist(2,newblk+i)=ilist(2,idval(idxl)+i)
-               end do
-               call freeme(idval(idxl),blksz)
-               blksz=2*blksz
-               idval(idxl)=newblk
-            endif
-            ilist(1,idval(idxl)+llen)=mult
-            ilist(2,idval(idxl)+llen)=idx
-         endif
-      else if(ttype .eq. ttypNM) then
-         if (ival .eq. 0) then
-            call errmsg('lread',
-     &           'invalid muliplicity',0,16)
-         else
-            mult=ival
-         endif
-         call gettok(token,slen,ttype,rval,ival)
-         if (.not. skipch(STAR,token,slen,ttype,rval,ival)) then
-            if (ttype .eq. ttypID) then
-               call errmsg('lread',
-     &              'missing '''//STAR//''' is assumed',0,0)
+      w2000: do while(.true.)
+        if (skipch(COMMA,token,slen,ttype,rval,ival))then
+          cycle
+        endif
+        mult=1
+        w2100: do while(.true.)
+          if(skipch(PLUS,token,slen,ttype,rval,ival))then
+            cycle
+          else if(skipch(MINUS,token,slen,ttype,rval,ival)) then
+            mult=-mult
+            cycle
+          else if (ttype .eq. ttypID) then
+            idx=hsrchz(token(:slen))
+            if ( (idtype(idx) .gt. icMXEL) .and.
+     &           (idtype(idx) .ne. icLINE)      ) then
+              wkstr(:slen)=token(:slen)
+              call errmsg('lread',
+     &             'syntax error:'//wkstr(:slen)
+     &             //'is not line nor element.',0,16)
             else
-               call errmsg('lread',
-     &              'syntax error:<line elemnt>:: <num>*!<ID>',0,16)
+              isp=isp+1
+              itastk(1,isp)=mult
+              itastk(2,isp)=idx
             endif
-         endif
-         go to 2100
-      else if (ttype .eq. ttypDM) then
-         if(.not. skipch(RPAR,token,slen,ttype,rval,ival))then
+            exit
+          else if(ttype .eq. ttypNM) then
+            if (ival .eq. 0) then
+              call errmsg('lread',
+     &             'invalid muliplicity',0,16)
+            else
+              mult=mult*ival
+            endif
+            call gettok(token,slen,ttype,rval,ival)
+            if (.not. skipch(STAR,token,slen,ttype,rval,ival)) then
+              if (ttype .eq. ttypID) then
+                call errmsg('lread',
+     &               'missing '''//STAR//''' is assumed',0,0)
+              else
+                call errmsg('lread',
+     &               'syntax error:<line elemnt>:: <num>*!<ID>',0,16)
+              endif
+            endif
+            cycle
+          else if (ttype .eq. ttypDM) then
+            if(.not. skipch(RPAR,token,slen,ttype,rval,ival))then
+              call errmsg('lread',
+     &             'ivalid delimiter',0,0)
+            endif
+            exit w2000
+          else
             call errmsg('lread',
-     &           'ivalid delemiter',0,0)
-         endif
-         ilist(1,idval(idxl))=llen
-         ilist(2,idval(idxl))=0
-         if(llen+1 .gt. blksz) then
-            call errmsg('lread','too long error list',0,32)
-         endif
-         call freeme(idval(idxl)+llen+1,blksz-llen-1)
-         return
-      else
-         call errmsg('lread',
-     &        'syntax error: <num>*!<element name> is expected',0,16)
-      endif
-      call gettok(token,slen,ttype,rval,ival)
-      go to 2000
-c
+     &           'syntax error: <num>*!<element name> is expected',0,16)
+          endif
+        enddo w2100
+        call gettok(token,slen,ttype,rval,ival)
+      enddo w2000
+      n=isp-isp0
+      ia=italoc(n+1)
+      ilist(1,ia)=n
+      ilist(2,ia)=0
+      klist(ia+1:ia+n)=ktastk(isp0+1:isp)
+      idval(idxl)=ia
+c      write(*,*)'lread ',ia,n,pname(idxl)
+      return
       end

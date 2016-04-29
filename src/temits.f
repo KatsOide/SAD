@@ -139,6 +139,8 @@ c      write(*,*)damp
      $     *(params(27)*params(13)*pi2)**2
       if(kx .ne. 0)then
         kax=ktadaloc(-1,ns)
+      else
+        kax=0
       endif
       do kk=1,ns
         amus=amus0+amusstep*(kk-1)
@@ -239,7 +241,9 @@ c            endif
           klist(kax+kk)=ktflist+kai
         endif
       enddo
-      kx=ktflist+kax
+      if(kx .ne. 0)then
+        kx=ktflist+kax
+      endif
       rfsw=rfsw0
       irtc=0
       return

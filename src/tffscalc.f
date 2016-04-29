@@ -12,7 +12,7 @@
      $     r,rp,rstab,nstab,residual,wexponent,
      $     offmw,etamax,avebeta,emx,emy,dpmax,coumin,
      $     cell,zcal,fitflg,geomet,cellstab,wcal,parallel,
-     $     chgini,orbitcal,
+     $     chgini,orbitcal,intres,halfres,sumres,diffres,
      $     lout,error)
       use tfstk
       use ffslocal, only: ffslocalv
@@ -42,10 +42,11 @@ c      include 'DEBUG.inc'
       logical*4 cell,zcal,fitflg,geomet,cellstab,wcal,
      $     hstab(-nfam:nfam),vstab(-nfam:nfam),error,parallel
       character*8 nlist(mfit1)
-      real*8 anux0,anuy0,anuxi,anuyi,etamax,avebeta,rw,drw,rstab,
-     $anusumi,anusumi0, anudiffi,anudiffi0,physd(4)
+      real*8 anux0,anuy0,anux0h,anuy0h,anuxi,anuyi,anuxih,anuyih,
+     $     etamax,avebeta,rw,drw,rstab,
+     $     anusumi,anusum0,anudiffi,anudiff0,physd(4)
       logical*4 fam,over(-nfam:nfam),beg,zerores,inicond,wake,
-     $     chgini,accoup,orbitcal
+     $     chgini,orbitcal,intres,halfres,sumres,diffres
       integer*4 fork_worker,wait,irw,isw,ipr,ifb,ife,idir,
      $     jjfam(-nfam:nfam),ivoid,itfuplevel,itfdownlevel,
      $     nwakep,iwakeelm(nwakep),itgetfpe,ifpe,ntfun
@@ -56,8 +57,10 @@ c      include 'DEBUG.inc'
 c     begin initialize for preventing compiler warning
       anux0=0.d0
       anuy0=0.d0
-      anusumi0=0.d0
-      anudiffi0=0.d0
+      anux0h=0.d0
+      anuy0h=0.d0
+      anusum0=0.d0
+      anudiff0=0.d0
       iutm=0
       lfno=icslfno()
 c     end   initialize for preventing compiler warning
@@ -128,10 +131,12 @@ c     end   initialize for preventing compiler warning
         call tffssetutwiss(latt,twiss,utwiss,itwissp,0,nlat,
      $       ndim,nfam,nut,lbegin,lend,frend,beg,.true.,.true.)
         if(cell)then
-          anux0=aint(twiss(nlat,0,mfitnx)/pi)
-          anuy0=aint(twiss(nlat,0,mfitny)/pi)
-          anusumi0=aint((twiss(nlat,0,mfitnx)+twiss(nlat,0,mfitny))/pi2)
-          anudiffi0=twiss(nlat,0,mfitnx)/pi2-
+          anux0=aint(twiss(nlat,0,mfitnx)/pi2)
+          anuy0=aint(twiss(nlat,0,mfitny)/pi2)
+          anux0h=aint(twiss(nlat,0,mfitnx)/pi)
+          anuy0h=aint(twiss(nlat,0,mfitny)/pi)
+          anusum0=aint((twiss(nlat,0,mfitnx)+twiss(nlat,0,mfitny))/pi2)
+          anudiff0=twiss(nlat,0,mfitnx)/pi2-
      $         aint(twiss(nlat,0,mfitnx)/pi2)-
      $         twiss(nlat,0,mfitny)/pi2+
      $         aint(twiss(nlat,0,mfitny)/pi2)
@@ -240,20 +245,26 @@ c                    endif
      $             beg,.true.,.true.)
             endif
             if(cell)then
-              anuxi=aint(twiss(nlat,1,mfitnx)/pi)
-              anuyi=aint(twiss(nlat,1,mfitny)/pi)
+              anuxih=aint(twiss(nlat,1,mfitnx)/pi)
+              anuyih=aint(twiss(nlat,1,mfitny)/pi)
+              anuxi=aint(twiss(nlat,1,mfitnx)/pi2)
+              anuyi=aint(twiss(nlat,1,mfitny)/pi2)
               anusumi=aint((twiss(nlat,1,mfitnx)
      $             +twiss(nlat,1,mfitny))/pi2)
               anudiffi=twiss(nlat,1,mfitnx)/pi2-
      $             aint(twiss(nlat,1,mfitnx)/pi2)-
      $             twiss(nlat,1,mfitny)/pi2+
      $             aint(twiss(nlat,1,mfitny)/pi2)
-              accoup=anusumi .eq. anusumi0
-c     $             .and. anudiffi*anudiffi0 .ge. 0.d0
               hstab(ii)=hstab(ii) .and. (fam .or.
-     $             anuxi .eq. anux0 .and. accoup)
+     $             (.not. intres .or. anuxi .eq. anux0) .and.
+     $             (.not. halfres .or. anuxih .eq. anux0h) .and.
+     $             (.not. sumres .or. anusumi .eq. anusum0) .and.
+     $             (.not. diffres .or. anudiffi .eq. anudiff0))
               vstab(ii)=vstab(ii) .and. (fam .or.
-     $             anuyi .eq. anuy0 .and. accoup)
+     $             (.not. intres .or. anuyi .eq. anuy0) .and.
+     $             (.not. halfres .or. anuyih .eq. anuy0h) .and.
+     $             (.not. sumres .or. anusumi .eq. anusum0) .and.
+     $             (.not. diffres .or. anudiffi .eq. anudiff0))
             endif
           enddo
           if(ipr .eq. -1 .and. .not. fam .and. idir .eq. 1)then

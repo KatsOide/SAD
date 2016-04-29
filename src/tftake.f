@@ -4,7 +4,6 @@
       type (sad_descriptor) k,kn,kx
       type (sad_list), pointer :: kl,kln,klx
       integer*4 irtc,m,iv,n1,n2,mn,mx,itfmessage,i
-      real*8 rfromk
       logical*4 take0,take,eval,list,d
       if(ktfnonlistqd(k,kl))then
         irtc=itfmessage(9,'General::wrongtype',
@@ -18,8 +17,7 @@
         return
       endif
       take=take0
-      if(ktfrealqd(kn))then
-        iv=int(rfromk(kn%k))
+      if(ktfrealqdi(kn,iv))then
         if(iv .lt. 0)then
           n1=m+iv+1
           n2=m
@@ -271,7 +269,7 @@
       real*8 cv
       cv=-1.d0
       if(isp .eq. isp1+2)then
-        if(.not. ktfrealqdv(dtastk(isp),cv))then
+        if(.not. ktfrealqd(dtastk(isp),cv))then
           irtc=itfmessage(9,'General::wrongtype',
      $         '"Real for #2"')
           return

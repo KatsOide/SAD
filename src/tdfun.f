@@ -296,7 +296,7 @@ c      write(*,*)'kp: ',kp,'kp1: ',kp1
         call termes(6,
      $       'Error in FitValue '//
      $       nlist//' at '//name,' ')
-      elseif(ktfrealqdv(kx,vf1))then
+      elseif(ktfrealqd(kx,vf1))then
       elseif(kx%k .eq. ktfoper+mtfnull)then
         irtc=-1
       elseif(retry)then
@@ -368,13 +368,12 @@ c      write(*,*)'with ',irtc
         call termes(6,'Error in FitFunction ',' ')
         error=.true.
         return
-      elseif(ktfrealqd(kx))then
+      elseif(ktfrealqd(kx,df(nqcol+1)))then
         if(nqcol .ge. maxcond)then
           error=.true.
           return
         endif
         nqcol=nqcol+1
-        df(nqcol)=rfromd(kx)
         iqcol(nqcol)=-1
         kdp(nqcol)=0
       elseif(tfreallistq(kx%k,klx))then

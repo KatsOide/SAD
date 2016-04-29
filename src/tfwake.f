@@ -3,8 +3,8 @@
       use ffs
       use tffitcode
       integer*8 ktaloc,lwp
-      integer*4 latt(2,nlat),mult(nlat),minsize
-      parameter (minsize=2000)
+      integer*4 latt(2,nlat),mult(nlat),minsize,memmax
+      parameter (minsize=2000,memmax=32768)
       character*(*) word
       character*16 name,word1
       logical*4 err,abbrev,temat,exist
@@ -39,7 +39,7 @@
               call tfree(int8(ip))
             endif
 21          if(lwp .eq. 0)then
-              na=max((mfalloc(-1)-2)/4,minsize)
+              na=max((memmax-2)/4,minsize)
               lwp=ktaloc(na*2+1)
               if(lwp .le. 0)then
                 call termes(lfno,
@@ -82,7 +82,8 @@
               return
 31            continue
               if(na .gt. nw)then
-                call freeme(lwp+nw*2+1,na*2-nw*2)
+                call tfreem(lwp+nw*2+1,na*2-nw*2)
+c                call freeme(lwp+nw*2+1,na*2-nw*2)
                 ilist(1,lwp-1)=nw*2+2
               endif
               ilist(1,latt(2,i)+ioff)=lwp

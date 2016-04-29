@@ -5,7 +5,7 @@ c     $Header: /SAD/cvsroot/oldsad/src/rdexpr.f,v 1.7.2.2 2012/09/15 08:14:57 oi
       integer*4 elmidx,kwcode
       character*(*) token
       character*64 token1
-      integer*4 slen,ival,ttype,mfalloc
+      integer*4 slen,ival,ttype,mtaloc
       real*8 rval
       include 'inc/CBKMAC.inc'
 c     
@@ -13,6 +13,7 @@ c
       integer*4 Lrdnum,scan,
      $     yyparse,yypushtoken,yypoptoken,yyreturn
      $     ,allmem,membas,memuse,hsrch,idxerl,idxran
+      parameter (allmem=32768)
       logical skipch
 c     for debug
 c     call ptrace('rdexpr '//token(:slen)//'!',1)
@@ -45,8 +46,8 @@ c at first find end of error list
            go to 2100
         endif
 c
-        allmem=mfalloc(-1)
-        membas=mfalloc(allmem)
+c        allmem=mtaloc(-1)
+        membas=mtaloc(allmem)
         memuse=0
 c.........fordebug
 c     print *,'fallocated ',allmem,' from ',membas
@@ -83,7 +84,8 @@ c     ilist(2,idxerl+1)=idval(idxran) changed by NY apr.9,88
            endif
            rdexpr=rlist(idval(elmidx)+kytbl(kwcode,idtype(elmidx)))
         endif
-        call freeme(membas+memuse,allmem-memuse)
+        call tfreem(membas+memuse,allmem-memuse)
+c        call freeme(membas+memuse,allmem-memuse)
       else
          call errmsg('rdexpr',
      &        'syntax error:<number>  <unit> ! or (<num1>,...)',0,16)

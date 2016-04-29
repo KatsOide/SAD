@@ -8,7 +8,7 @@ c.....cmdidx brings pointer to command name
       include 'inc/MACCODE.inc'
       include 'inc/MACTTYP.inc'
       include 'inc/MACVAR.inc'
-      integer*4 mfalloc,mcfallo
+      integer*4 mtaloc,mctaloc
 C
       integer*4 argp,argdfp,i,offset
 c
@@ -17,7 +17,7 @@ c       print *,'setdfl>',pname(cmdidx),pname(vidx),val
 c.......end debug
         argdfp=idval(cmdidx)
         if(ilist(2,argdfp) .le. 0) then
-          argp=mcfallo(ilist(1,argdfp))
+          argp=mctaloc(ilist(1,argdfp))
           ilist(2,argdfp)=argp
           ilist(1,argp)=ilist(1,argdfp)-1
           do 1100 i=1,ilist(1,argp)
@@ -42,7 +42,7 @@ c.......for debug
 c       print *,'setdfl<',pname(vidx),offset,ilist(2,argp+offset)
 c.......end debug
         else if (idval(vidx) .eq. VarRl) then
-          ilist(2,argp+offset)=mfalloc(1)
+          ilist(2,argp+offset)=mtaloc(4)
           rlist(ilist(2,argp+offset))=val
 c.......for debug
 c       print *,'setdfl<',pname(vidx),offset

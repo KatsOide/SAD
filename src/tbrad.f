@@ -425,7 +425,7 @@ c      write(*,*)'tlstore ',lpoint,dphi,dl,theta,rho0,v0
           katbl=new
         else
           write(*,*)'Too long ltbl',ltbl
-          stop
+          call forcesf()
         endif
       endif
       m=ltbl*4

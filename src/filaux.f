@@ -11,7 +11,7 @@
       integer NAUX
       parameter (NAUX=6)
       integer llen,pexln,iaux,status,iw,idummy
-      integer*4 mcfallo
+      integer*4 mctaloc
 c      integer*4 i,IgetGL
 c      real*8 dist
       real*8 u0,Vc,codin(6),codou(6)
@@ -19,7 +19,7 @@ c      real*8 dist
 C.....calculate total length of line
       pexln=ilist(2,idx)
       if (ilist(2,pexln) .eq. 0)then
-        iaux=mcfallo(NAUX)
+        iaux=mctaloc(NAUX)
         ilist(1,iaux)=NAUX
         ilist(2,pexln)=iaux
         rlist(iaux+1)=0.d0

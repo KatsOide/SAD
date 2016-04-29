@@ -459,6 +459,13 @@ are printed out.",
     "DISPLAY(DISP) VARIABLES(VAR) elements",
     {}},
 
+   {"ORG",
+    "Usage: ORG location, dgx, dgy, dgz, dchi1, dchi2, dch3\n\n\
+sets the origin of the geometrical coordinate relative to the location\n\
+with a relative shift (dgx, dgy, dgz) and rotation (dchi1, dchi2, dchi3).",
+    "",
+    {}},
+
    {"EMITTANCE(EMIT)",
     "\
 Usage: (1) EMIT\n\
@@ -2059,6 +2066,12 @@ simulate misalignments within a solenoid, etc.",
       "GEOCAL",
       {}},
 
+     {"SORG",
+      "SORG sets the origin of S (design orbit length) at the location\n\
+set by ORG.",
+      "ORG"
+      {}},
+
      {"FFSPRMPT",
       "\
 When FFSPRMPT is off(default)ü the input prompt is In[n]:= , where n\n\
@@ -2312,6 +2325,12 @@ MASS is the rest mass of the particle. The default is electron mass.",
      {"MOMENTUM",
       "MOMENTUM is the nominal momentum of the beam line at the entrance\n\
 in eV. Accessible in MAIN.",
+      "",
+      {}},
+
+     {"NPARA",
+      "NPARA specifies the maximum number of parallel processes for\n\
+variaous calulations such as CALC, GO, TrackParticles, DynamicApertureSurve, etc.",
       "",
       {}},
 
@@ -4538,18 +4557,25 @@ where\n\n\
 range: a list of {xrange,yrange,zrange}, with\n\
        xrange: {xmin, xmax},\n\
        yrange: {ymin, ymax},\n\
-       zrange: {z1, z2, .., zn},\n\
+       zrange: {zmin, zmax},\n\
+       and for the horizontal plane, specified by the Axes option, \n\
+       the corresponding range must be given as {v1, ..., vn}.\n\
        These values are the initial amplitude divided by the equilibrium \n\
        values, i.e., Sqrt[2Jx,y/(EMITX+EMITY)], Sqrt[2Jz/EMITZ].\n\
        See EMITTANCE(EMIT) command or Emittance function.\n\
 nturn: number of turns to track.\n\
 options: Output->lfn : output to the unit lfn (see OpenWrite).\n\
+         Axes->axes : one of \"XY\", \"XZ\", \"YX\", \"YZ\", \"ZX\", \"ZY\",\n\
+          where the first character specifies the horizontal axis, and\n\
+          the second the vertical, respectively. The default is \"ZX\".\n\
          ReferenceOrbit->{x0, px0, y0, py0, z0, dp0} : Survey is done around\n\
           this orbit.\n\
          PhaseX->phix : The initial amplitude is rotated in (X, PX) phase space\n\
           by phix. Default is zero.\n\
          PhaseY->phiy : The initial amplitude is rotated in (Y, PY) phase space\n\
           by phiy. Default is zero.\n\
+         PhaseZ->phiz : The initial amplitude is rotated in (Z, PZ) phase space\n\
+          by phiz. Default is -Pi/2.\n\
          ExpandElementValues->True(default) : set the values of the components\n\
           according to the values of elements.  Machine errors may be reset.\n\
           See machine-error-commands, CALCULATE(CALC).\n\n\
@@ -4566,8 +4592,9 @@ dynamic aperture of the ring.   Fifty one initial conditions are chosen\n\
 in the range x-range for each point of z-range.  The initial y-amplitude is\n\
 linearly dependent on the x-amplitude.   It tracks from xmax to downward for\n\
 each z-amplitude zn, until the particles turns nturn with successive \n\
-DAPWIDTH x-amplitudes.   The default DAPWIDTH is 7.",
-        "",
+DAPWIDTH x-amplitudes.   The default DAPWIDTH is 7.\n\
+  DynamicApertureSurvey does parallel processing up to NPARA processes.",
+        "NPARA",
         {}},
 
        {"BeamMatrix",

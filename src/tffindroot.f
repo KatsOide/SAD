@@ -294,7 +294,7 @@ c      enddo
       type (sad_list), pointer :: kli,kl3
       integer*4 isp1,nvar,nvmax,i,j,isp0,isp2,irtc,ig,itfmessage
       type (symv) sav(nvmax),sav0(nvmax)
-      real*8 v0(nvmax),vmin(nvmax),vmax(nvmax),rfromk
+      real*8 v0(nvmax),vmin(nvmax),vmax(nvmax)
       nvar=isp2-isp1+1
       if(nvar .gt. nvmax)then
         irtc=itfmessage(9,'General::toomany','"variables"')
@@ -344,12 +344,11 @@ c        ktastk(isp)=ig
         if(irtc .ne. 0)then
           go to 9000
         endif
-        if(ktfnonrealqd(kv))then
+        if(ktfnonrealqd(kv,v0(j)))then
           irtc=itfmessage(9,'General::wrongval',
      $         '"initial value","Real"')
           go to 9000
         endif
-        v0(j)=rfromk(kv%k)
       enddo
 c      if(isp .gt. isp0)then
 c        isp4=isp
@@ -425,7 +424,7 @@ c        call tfstk2l(lista,list)
       integer*4 isp1,nvar,i,maxi,ispv,isp2,n,m,iu,ig,itfmessage
       type (symv) sav(nvmax),sav0(nvmax)
       integer*8 kdl(nvmax),kdp,kci,kcv,ktfmaloc
-      real*8 v0(nvmax),r,gammaq,rfromk,
+      real*8 v0(nvmax),r,gammaq,rfromk,vx,
      $     vmin(nvmax),vmax(nvmax),cut,cutoff,v0s(nvmax)
       logical*4 used
       type (sad_descriptor), save ::
@@ -461,18 +460,17 @@ c        call tfstk2l(lista,list)
         if(irtc .ne. 0)then
           return
         endif
-        if(ktfrealqd(kx))then
+        if(ktfrealqdi(kx,maxi))then
           ispv=i-1
-          maxi=int(rfromk(kx%k))
           cycle
         endif
         call tfgetoption('D',ktastk(i),kx,irtc)
         if(irtc .ne. 0)then
           return
         endif
-        if(ktfrealqd(kx))then
+        if(ktfrealqd(kx,vx))then
           ispv=i-1
-          used=rfromk(kx%k) .ne. 0.d0
+          used=vx .ne. 0.d0
           cycle
         endif
         call tfgetoption('Cutoff',ktastk(i),kx,irtc)

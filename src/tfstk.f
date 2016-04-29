@@ -40,7 +40,8 @@ c      integer*8, target :: klist(RBASE:RBASE+MAXMEM0-1)
       integer*4, parameter :: nindex=64,mhash=32767,
      $     minseg0=9,minseg1=16,minseg2=16
       integer*8 :: icp=0,nmem=0,nnet=0,ich=0,maxic=3,
-     $     minic,lastpend,icsep
+     $     minic,lastpend,icsep,nitaloc
+      integer*8 kcpklist0,kfirstalloc
 
       type cbkalloc
         integer*8, allocatable :: ca(:)
@@ -282,7 +283,6 @@ c      integer*8, target :: klist(RBASE:RBASE+MAXMEM0-1)
      $     dlist
       type (sad_descriptor) kxmatrix,dxliteral,dxeof,dxfailed,
      $     dxvect,dxvect1,dxnull,dxnulll,dxnulls
-      integer*8 kcpklist0
 
 c      integer*4 ivstk (2,RBASE:RBASE+MAXMEM0-1)
 c      real*8    vstk  (  RBASE:RBASE+MAXMEM0-1)
@@ -323,12 +323,14 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         use tfmem
         use iso_c_binding
         implicit none
-        integer*8 ka,kb,ics,ic,nitaloc
+        integer*8 ka,kb,ic
         integer*4 irtc
-        integer*8, parameter :: kcpthre1=(ktamask+1)/2
+        integer*8, parameter :: kcpthre1=(ktamask+1)/2,
+     $       nitalocmin=2**24
         allocate(sadalloc(1)%ca(nindex*2+mhash+16))
         ka=transfer(c_loc(sadalloc(1)%ca(1)),int8(0))
-c        write(*,*)'talocinit ',ka
+        kfirstalloc=ka
+c        write(*,*)'talocinit ',ka,kcpthre,kcpthre1
         if(ka .ge. kcpthre)then
           deallocate(sadalloc(1)%ca)
           if(ka .ge. kcpthre1)then
@@ -341,12 +343,13 @@ c        write(*,*)'talocinit ',ka
           nitaloc=nitaloc0*2
           do while(irtc .ne. 0)
             nitaloc=nitaloc/2
-            if(nitaloc .lt. 2**17)then
+            if(nitaloc .lt. nitalocmin)then
               write(*,*)'talocinit-error ',kcpklist0
-              stop
+              call forcesf()
             endif
             call mapallocfixed8(klist(0),nitaloc,8,irtc)
           enddo
+c          write(*,*)'talocinit-1 ',nitaloc
           icbk=0
           icp=1
         else
@@ -369,15 +372,16 @@ c        write(*,*)'talocinit ',icp,kcpklist0
         klist(icsep)=icsep
         if(ka .ge. kcpthre)then
           kb=icsep+2
-          ilist(1,kb-1)=int(nitaloc-(kb-icp-1)-4)
+          ilist(1,kb-1)=int(nitaloc-(kb-icp-1)-1)
+c          write(*,*)'talocinit ',ilist(1,kb-1),kb,icp
           call tfree(kb)
-          ics=icp+nitaloc-3
-          klist(ics)=klist(icsep)
-          klist(icsep)=ics
-          ilist(1,ics-1)=4
-          ilist(2,ics-1)=4
-          nnet=ilist(1,kb-1)
-          nmem=nnet
+c          ics=icp+nitaloc-3
+c          klist(ics)=klist(icsep)
+c          klist(icsep)=ics
+c          ilist(1,ics-1)=4
+c          ilist(2,ics-1)=4
+          nmem=ilist(1,kb-1)
+          nnet=0
         endif
         return
         end subroutine
@@ -432,20 +436,20 @@ c        kcpklist0=transfer(c_loc(kdummy),int8(0))-kcpoffset-8
         integer*4 istat
         if(icbk .ge. ncbk)then
           write(*,*)'ktfsadalloc too many allocations: ',icbk
-          stop
+          call forcesf()
         endif
         icbk=icbk+1
         allocate(sadalloc(icbk)%ca(n),stat=istat)
         if(istat .ne. 0)then
           write(*,*)'ktfsadalloc allocation error in ALLOCATE: ',
      $         istat,n
-          stop
+          call forcesf()
         endif
         ktfsadalloc=ksad_loc(sadalloc(icbk)%ca(1))
 c        write(*,*)'ktfsadalloc ',ktfsadalloc,n
         if(ktfsadalloc .lt. 0)then
           write(*,*)'ktfsadalloc negative allocation ',ktfsadalloc,n
-          stop
+          call forcesf()
         endif
         return
         end function
@@ -461,6 +465,7 @@ c        write(*,*)'ktfsadalloc ',ktfsadalloc,n
         end function
 
         integer*8 function ksad_loc(k)
+        use tfmem
         use iso_c_binding
         implicit none
         integer*8, target :: k
@@ -469,6 +474,7 @@ c        write(*,*)'ktfsadalloc ',ktfsadalloc,n
         end function
 
         integer*8 function isad_loc(i)
+        use tfmem
         use iso_c_binding
         implicit none
         integer*4, target:: i
@@ -478,6 +484,7 @@ c        write(*,*)'ktfsadalloc ',ktfsadalloc,n
         end function
 
         integer*8 function rsad_loc(x)
+        use tfmem
         use iso_c_binding
         implicit none
         real*8, target:: x
@@ -768,44 +775,53 @@ c        write(*,*)'ktfsadalloc ',ktfsadalloc,n
         return
         end function ktfnonrealq
 
-        logical*4 function ktfrealqd(k)
+        logical*4 function ktfrealqd(k,v)
         implicit none
         type (sad_descriptor) k
-      
+        real*8, optional, intent(out) :: v
+        real*8 rfromk
         ktfrealqd=iand(ktrmask,k%k) .ne. ktfnr
+        if(ktfrealqd .and. present(v))then
+          v=rfromk(k%k)
+        endif
         return
         end function ktfrealqd
 
-        logical*4 function ktfrealqdv(k,v)
+        logical*4 function ktfnonrealqd(k,v)
         implicit none
         type (sad_descriptor) k
-        real*8, intent(out) :: v
+        real*8 , optional, intent(out) :: v
         real*8 rfromk
-        ktfrealqdv=iand(ktrmask,k%k) .ne. ktfnr
-        if(ktfrealqdv)then
+        ktfnonrealqd=iand(ktrmask,k%k) .eq. ktfnr
+        if(.not. ktfnonrealqd .and. present(v))then
           v=rfromk(k%k)
         endif
-        return
-        end function ktfrealqdv
-
-        logical*4 function ktfnonrealqd(k)
-        implicit none
-        type (sad_descriptor) k
-        ktfnonrealqd=iand(ktrmask,k%k) .eq. ktfnr
         return
         end function ktfnonrealqd
 
-        logical*4 function ktfnonrealqdv(k,v)
+        logical*4 function ktfrealqdi(k,iv)
         implicit none
         type (sad_descriptor) k
-        real*8, intent(out) :: v
+        integer*4, optional, intent(out) :: iv
         real*8 rfromk
-        ktfnonrealqdv=iand(ktrmask,k%k) .eq. ktfnr
-        if(.not. ktfnonrealqdv)then
-          v=rfromk(k%k)
+        ktfrealqdi=iand(ktrmask,k%k) .ne. ktfnr
+        if(ktfrealqdi .and. present(iv))then
+          iv=rfromk(k%k)
         endif
         return
-        end function ktfnonrealqdv
+        end function ktfrealqdi
+
+        logical*4 function ktfnonrealqdi(k,iv)
+        implicit none
+        type (sad_descriptor) k
+        integer*4 , optional, intent(out) :: iv
+        real*8 rfromk
+        ktfnonrealqdi=iand(ktrmask,k%k) .eq. ktfnr
+        if(.not. ktfnonrealqdi .and. present(iv))then
+          iv=rfromk(k%k)
+        endif
+        return
+        end function ktfnonrealqdi
 
         logical*4 function ktfoperq(k)
         implicit none
@@ -1071,11 +1087,11 @@ c        write(*,*)'ktfsadalloc ',ktfsadalloc,n
         type (sad_descriptor) k
         type (sad_complex), pointer :: cx
         complex*16, optional, intent(out) :: c
-        real*8 rfromk
-        if(ktfrealqd(k))then
+        real*8 v
+        if(ktfrealqd(k,v))then
           tfnumberqd=.true.
           if(present(c))then
-            c=rfromk(k%k)
+            c=v
           endif
         else
           tfnumberqd=tfcomplexqx(k%k,cx)
@@ -2540,6 +2556,12 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         ksym(n0)=kxargsym
         return
         end function
+
+        subroutine forcesf
+        implicit none
+        rlist(-17)=0.d0
+        stop
+        end subroutine
 
         real*8 function p2h(p)
         implicit none

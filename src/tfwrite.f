@@ -54,7 +54,6 @@
       type (sad_list), pointer :: kl
       integer*4 isp1,irtc,itfmessage,icslfni,icslfno
       logical*4 read
-      real*8 rfromk
       itfgetlfn=0
       if(isp .le. isp1)then
         irtc=itfmessage(9,'General::narg','"1 or more"')
@@ -69,8 +68,7 @@
         else
           k=kl%dbody(2)
         endif
-        if(ktfrealqd(k))then
-          itfgetlfn=int(rfromk(k))
+        if(ktfrealqdi(k,itfgetlfn))then
           go to 100
         endif
       endif
@@ -502,8 +500,7 @@ c      enddo
       integer*4 isp1,irtc,i,narg,isp0,nrpt
       narg=isp-isp1
       if(narg .ge. 3 .and.
-     $     iand(ktrmask,ktastk(isp1+3)) .ne. ktfnr)then
-        nrpt=int(rfromd(dtastk(isp1+3)))
+     $     ktfrealqdi(dtastk(isp1+3),nrpt))then
         isp0=isp
         do i=1,nrpt
           ktastk(isp0+1)=ktastk(isp1+1)
@@ -561,9 +558,8 @@ c          enddo
       include 'inc/TFREADOPT.inc'
       type (sad_descriptor) kx,k1,k2
       type (sad_list), pointer :: list
-      integer*4 isp1,irtc,isp0,n1,narg,itfmessage,lfn
+      integer*4 isp1,irtc,isp0,n1,narg,itfmessage,lfn,i1
       logical*4 tfsamesymbolqd
-      real*8 rfromk
       type(ropt) opts
       type (sad_descriptor)
      $     itfexprs,itfstrs,itfwords,itfreals,itfchars,
@@ -641,10 +637,10 @@ c          enddo
           elseif(list%head .eq. ktfoper+mtftimes .and.
      $           list%nl .eq. 2)then
             k1=list%dbody(1)
-            if(ktfnonrealqd(k1))then
+            if(ktfnonrealqdi(k1,i1))then
               go to 9000
             endif
-            call tfreadfm(lfn,list,int(rfromk(k1)),opts,.true.,kx,irtc)
+            call tfreadfm(lfn,list,i1,opts,.true.,kx,irtc)
           else
             go to 9000
           endif
@@ -1260,12 +1256,10 @@ c      endif
       implicit none
       type (sad_descriptor) k
       integer*4 irtc,iu,itfmessage
-      real*8 rfromk
-      if(.not. ktfrealqd(k))then
+      if(ktfnonrealqdi(k,iu))then
         irtc=itfmessage(9,'General::wrongtype','"Real number"')
         return
       endif
-      iu=int(rfromk(k))
       call tfreadbuf(irbclose,iu,int8(0),int8(0),0,' ')
       irtc=0
       return

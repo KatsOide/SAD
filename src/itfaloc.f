@@ -297,7 +297,7 @@ c        write(*,*)ig,ig1,kas1,klist(loc+1)
         if(nc .le. MAXPNAME)then
           if(nc .le. 0)then
             write(*,*)'tfsydef ',loc
-            stop 1
+            call forcesf
           else
             name(1:nc)=loc%str%str(1:nc)
 c            write(*,*)'tfsydefg ',name(1:nc)

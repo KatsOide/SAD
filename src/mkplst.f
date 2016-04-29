@@ -3,14 +3,14 @@
       implicit real*8 (a-h,o-z)
       integer idxl
       include 'inc/MACCODE.inc'
-      integer STKSIZ
-      parameter (STKSIZ =1024)
-      integer allmem,mtop,mlen,isp,pstack
+      integer*4 STKSIZ,allmem
+      parameter (STKSIZ =1024, allmem=32768)
+      integer mtop,mlen,isp,pstack
 c
-      pstack=mfalloc(STKSIZ)
+      pstack=mtaloc(STKSIZ)
       isp=0
-      allmem=mfalloc(-1)
-      mtop=mfalloc(allmem)
+c      allmem=mtaloc(-1)
+      mtop=mtaloc(allmem)
       mlen=0
       call push(0,0,mlen,ilist(1,mtop),allmem)
 c
@@ -42,7 +42,8 @@ c
  2000 continue
       ilist(1,mtop)=mlen
       ilist(2,mtop)=0
-      call freeme(mtop+mlen,allmem-mlen)
+      call tfreem(mtop+mlen,allmem-mlen)
+c      call freeme(mtop+mlen,allmem-mlen)
       mkplst=mtop
 c     print *,'mklst',mtop,mlen
       return

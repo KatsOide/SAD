@@ -1,17 +1,17 @@
       subroutine dolist(dummy)
       use maccbk
-      implicit real*8 (a-h,o-z)
+      implicit none
       include 'inc/MACFILE.inc'
       include 'inc/MACCODE.inc'
       include 'inc/MACKW.inc'
       include 'inc/MACTTYP.inc'
       include 'inc/MACMISC.inc'
       character*(MAXSTR) token
-      integer slen,ival,ttype,hsrch,lpname
-      real*8 rval
-      logical skipch
-      logical Ldump,Lline,Lelem(icMXEL),Lcmd,Lmem
-      integer idx,lcount,used,iky
+      integer*4 slen,ival,ttype,hsrch,lpname
+      real*8 rval,dummy
+      logical*4 skipch
+      logical*4 Ldump,Lline,Lelem(icMXEL),Lcmd,Lmem
+      integer*4 idx,lcount,used,iky,i
 c
           Lmem=.false.
           Lcmd=.false.

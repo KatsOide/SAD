@@ -7,7 +7,7 @@
       include 'inc/MACPHYS.inc'
       include 'inc/MACFILE.inc'
 c
-      integer*4 idummy,sethtb,hsrch,mfalloc,mcfallo
+      integer*4 idummy,sethtb,hsrch,mtaloc,mctaloc
 c     external doline
       external doprin, doexpn, doread, dolist, docod, dostop, dotwis
       external dooffl, doonfl,dorvrs
@@ -15,7 +15,7 @@ c     external doline
 
        call defglb('$PLOT$',icGLI,idummy)
        call IsetGL('$PLOT$',0,idummy)
-       idummy=sethtb('PLOT   ',icACT,mfalloc(8))
+       idummy=sethtb('PLOT   ',icACT,mtaloc(8))
        ilist(1,idval(idummy))=7
        call setfnp(ilist(1,idval(idummy)+1),ActPlt)
        ilist(1,idval(idummy)+2)=hsrch('PTYPE')
@@ -27,12 +27,12 @@ c
        idummy=sethtb('ID      ',icVAR,VarPt+VarLst)
        idummy=sethtb('GTYPE   ',icVAR,VarStr)
 c
-c      idummy=sethtb('DRAW    ',icACT,mfalloc(8))
+c      idummy=sethtb('DRAW    ',icACT,mtaloc(8))
 c      idummy=sethtb('graw    ',icACT,idval(idummy))
 c      ilist(1,idval(idummy))=7
 c      call setfnp(ilist(1,idval(idummy)+1),Act)
 c
-       idummy=sethtb('GRAPH   ',icACT,mfalloc(8))
+       idummy=sethtb('GRAPH   ',icACT,mtaloc(8))
        idummy=sethtb('graph   ',icACT,idval(idummy))
        ilist(1,idval(idummy))=7
        call setfnp(ilist(1,idval(idummy)+1),ActGra)
@@ -137,7 +137,8 @@ c
        kytbl(kwPY  ,0)=sethtb('PSIY    ',icKWRD,kwPY  )
        kytbl(kwPZ  ,0)=sethtb('PSIZ    ',icKWRD,kwPZ  )
        kytbl(kwDP  ,0)=sethtb('DP      ',icKWRD,kwDP  )
-       kytbl(kwSIGZ,0)=sethtb('SIGZ    ',icKWRD,kwSIGZ)
+       kytbl(kwSIGZ,0)=sethtb('SIGMAZ  ',icKWRD,kwSIGZ)
+                idummy=sethtb('SIGZ    ',icKWRD,kwSIGZ)
        kytbl(kwGEO ,0)=sethtb('GEO     ',icKWRD,kwGEO )
        kytbl(kwR1  ,0)=sethtb('R1      ',icKWRD,kwR1  )
        kytbl(kwR2  ,0)=sethtb('R2      ',icKWRD,kwR2  )
@@ -291,7 +292,8 @@ c
        kytbl(kwFB2 ,0) =sethtb('FB2     ',icKWRD,kwFB2)
        kytbl(kwLDEV,0) =sethtb('LDEV    ',icKWRD,kwLDEV)
        kytbl(kwLRAD,0) =sethtb('LRAD    ',icKWRD,kwLRAD)
-       kytbl(kwFL,0) =sethtb('FLAT    ',icKWRD,kwLRAD)
+       kytbl(kwFL,0)   =sethtb('FLAT    ',icKWRD,kwLRAD)
+       kytbl(kwAPHI,0) =sethtb('AUTOPHI ',icKWRD,kwAPHI)
 c  for drift 
       idummy=sethtb('drift   ',icDEF,icDRFT)
       kytbl(0,icDRFT)=sethtb('DRIFT   ',icDEF,icDRFT)
@@ -498,16 +500,16 @@ c
       kytbl(kwSK13,icMULT)=57
       kytbl(kwK14 ,icMULT)=58
       kytbl(kwSK14,icMULT)=59
-      Kytbl(kwK15  ,icMULT)=60
-      kytbl(kwSK15 ,icMULT)=61
-      kytbl(kwK16  ,icMULT)=62
-      kytbl(kwSK16 ,icMULT)=63
-      kytbl(kwK17  ,icMULT)=64
-      kytbl(kwSK17 ,icMULT)=65
-      kytbl(kwK18  ,icMULT)=66
-      kytbl(kwSK18 ,icMULT)=67
-      kytbl(kwK19  ,icMULT)=68
-      kytbl(kwSK19 ,icMULT)=69
+      Kytbl(kwK15 ,icMULT)=60
+      kytbl(kwSK15,icMULT)=61
+      kytbl(kwK16 ,icMULT)=62
+      kytbl(kwSK16,icMULT)=63
+      kytbl(kwK17 ,icMULT)=64
+      kytbl(kwSK17,icMULT)=65
+      kytbl(kwK18 ,icMULT)=66
+      kytbl(kwSK18,icMULT)=67
+      kytbl(kwK19 ,icMULT)=68
+      kytbl(kwSK19,icMULT)=69
       kytbl(kwK20 ,icMULT)=70
       kytbl(kwSK20,icMULT)=71
       kytbl(kwK21 ,icMULT)=72
@@ -519,8 +521,9 @@ c
       kytbl(kwAY  ,icMULT)=77
       kytbl(kwLDEV,icMULT)=78
       kytbl(kwLRAD,icMULT)=79
+      kytbl(kwAPHI,icMULT)=80
 c
-      kytbl(kwMAX ,icMULT)=80
+      kytbl(kwMAX ,icMULT)=81
 c  for UNDULATOR
       idummy=sethtb('und     ',icDEF,icUND)
       kytbl(0,icUND)=sethtb('UND    ',icDEF,icUND)
@@ -608,8 +611,7 @@ c
       kytbl(kwAX  ,icCAVI)=24
       kytbl(kwAY  ,icCAVI)=25
       kytbl(kwLDEV,icCAVI)=26
-c     kytbl(kwLRAD,icCAVI)=27
-c
+      kytbl(kwAPHI,icCAVI)=27
       kytbl(kwMAX ,icCAVI)=28
 cc for t-Cavity
       idummy=sethtb('tcavi   ',icDEF,icTCAV)
@@ -919,59 +921,59 @@ c       print *,j,i,kytbl(j,i),pname(kytbl(0,i)),pname(kytbl(j,0))
 c9998 continue
 c.....end debug
 c
-       rlist(idval(sethtb('%       ',icUNIT,mcfallo(1))))=0.01d0
-       rlist(idval(sethtb('rad     ',icUNIT,mcfallo(1))))=1.00d0
-       rlist(idval(sethtb('RAD     ',icUNIT,mcfallo(1))))=1.00d0
-       rlist(idval(sethtb('mrad    ',icUNIT,mcfallo(1))))=1.00d-3
-       rlist(idval(sethtb('MRAD    ',icUNIT,mcfallo(1))))=1.00d-3
-       rlist(idval(sethtb('DEG     ',icUNIT,mcfallo(1))))=pi/180.d0
-       rlist(idval(sethtb('deg     ',icUNIT,mcfallo(1))))=pi/180.d0
-       rlist(idval(sethtb('M       ',icUNIT,mcfallo(1))))=1.00d0
-       rlist(idval(sethtb('m       ',icUNIT,mcfallo(1))))=1.00d0
-       rlist(idval(sethtb('cm      ',icUNIT,mcfallo(1))))=1.00d-2
-       rlist(idval(sethtb('CM      ',icUNIT,mcfallo(1))))=1.0d-2
-       rlist(idval(sethtb('mm      ',icUNIT,mcfallo(1))))=1.0d-3
-       rlist(idval(sethtb('MM      ',icUNIT,mcfallo(1))))=1.0d-3
-       rlist(idval(sethtb('T       ',icUNIT,mcfallo(1))))=1.0d0
-       rlist(idval(sethtb('GAUSS   ',icUNIT,mcfallo(1))))=1.0d-4
-       rlist(idval(sethtb('gauss   ',icUNIT,mcfallo(1))))=1.0d-4
+       rlist(idval(sethtb('%       ',icUNIT,mctaloc(4))))=0.01d0
+       rlist(idval(sethtb('rad     ',icUNIT,mctaloc(4))))=1.00d0
+       rlist(idval(sethtb('RAD     ',icUNIT,mctaloc(4))))=1.00d0
+       rlist(idval(sethtb('mrad    ',icUNIT,mctaloc(4))))=1.00d-3
+       rlist(idval(sethtb('MRAD    ',icUNIT,mctaloc(4))))=1.00d-3
+       rlist(idval(sethtb('DEG     ',icUNIT,mctaloc(4))))=pi/180.d0
+       rlist(idval(sethtb('deg     ',icUNIT,mctaloc(4))))=pi/180.d0
+       rlist(idval(sethtb('M       ',icUNIT,mctaloc(4))))=1.00d0
+       rlist(idval(sethtb('m       ',icUNIT,mctaloc(4))))=1.00d0
+       rlist(idval(sethtb('cm      ',icUNIT,mctaloc(4))))=1.00d-2
+       rlist(idval(sethtb('CM      ',icUNIT,mctaloc(4))))=1.0d-2
+       rlist(idval(sethtb('mm      ',icUNIT,mctaloc(4))))=1.0d-3
+       rlist(idval(sethtb('MM      ',icUNIT,mctaloc(4))))=1.0d-3
+       rlist(idval(sethtb('T       ',icUNIT,mctaloc(4))))=1.0d0
+       rlist(idval(sethtb('GAUSS   ',icUNIT,mctaloc(4))))=1.0d-4
+       rlist(idval(sethtb('gauss   ',icUNIT,mctaloc(4))))=1.0d-4
 c      Standard energy unit wasJoule.(MKSA unit system)
 c      Standard energy unit is Now eV.
-       rlist(idval(sethtb('JOULE   ',icUNIT,mcfallo(1))))
+       rlist(idval(sethtb('JOULE   ',icUNIT,mctaloc(4))))
      &                 = 1.0d0/elemch
-       rlist(idval(sethtb('eV      ',icUNIT,mcfallo(1))))
+       rlist(idval(sethtb('eV      ',icUNIT,mctaloc(4))))
      &                 = 1.0d0
-       rlist(idval(sethtb('KeV     ',icUNIT,mcfallo(1))))
+       rlist(idval(sethtb('KeV     ',icUNIT,mctaloc(4))))
      &                 = 1.d3
-       rlist(idval(sethtb('MeV     ',icUNIT,mcfallo(1))))
+       rlist(idval(sethtb('MeV     ',icUNIT,mctaloc(4))))
      &                 = 1.d6
-       rlist(idval(sethtb('GeV     ',icUNIT,mcfallo(1))))
+       rlist(idval(sethtb('GeV     ',icUNIT,mctaloc(4))))
      &                 = 1.d9
-       rlist(idval(sethtb('EV      ',icUNIT,mcfallo(1))))
+       rlist(idval(sethtb('EV      ',icUNIT,mctaloc(4))))
      &                 = 1.0d0
-       rlist(idval(sethtb('KEV     ',icUNIT,mcfallo(1))))
+       rlist(idval(sethtb('KEV     ',icUNIT,mctaloc(4))))
      &                 = 1.d3
-       rlist(idval(sethtb('MEV     ',icUNIT,mcfallo(1))))
+       rlist(idval(sethtb('MEV     ',icUNIT,mctaloc(4))))
      &                 = 1.d6
-       rlist(idval(sethtb('GEV     ',icUNIT,mcfallo(1))))
+       rlist(idval(sethtb('GEV     ',icUNIT,mctaloc(4))))
      &                 = 1.d9
 c
-       rlist(idval(sethtb('V       ',icUNIT,mfalloc(1))))
+       rlist(idval(sethtb('V       ',icUNIT,mtaloc(4))))
      &                 = 1.d0
-       rlist(idval(sethtb('KV      ',icUNIT,mfalloc(1))))
+       rlist(idval(sethtb('KV      ',icUNIT,mtaloc(4))))
      &                 = 1.d3
-       rlist(idval(sethtb('MV      ',icUNIT,mfalloc(1))))
+       rlist(idval(sethtb('MV      ',icUNIT,mtaloc(4))))
      &                 = 1.d6
-       rlist(idval(sethtb('GV      ',icUNIT,mfalloc(1))))
+       rlist(idval(sethtb('GV      ',icUNIT,mtaloc(4))))
      &                 = 1.d9
 c
-       rlist(idval(sethtb('HZ      ',icUNIT,mfalloc(1))))
+       rlist(idval(sethtb('HZ      ',icUNIT,mtaloc(4))))
      &                 = 1.d0
-       rlist(idval(sethtb('KHZ     ',icUNIT,mfalloc(1))))
+       rlist(idval(sethtb('KHZ     ',icUNIT,mtaloc(4))))
      &                 = 1.d3
-       rlist(idval(sethtb('MHZ     ',icUNIT,mfalloc(1))))
+       rlist(idval(sethtb('MHZ     ',icUNIT,mtaloc(4))))
      &                 = 1.d6
-       rlist(idval(sethtb('GHZ     ',icUNIT,mfalloc(1))))
+       rlist(idval(sethtb('GHZ     ',icUNIT,mtaloc(4))))
      &                 = 1.d9
 c
        idummy=sethtb('normal  ',icRAND,1 )
@@ -1116,7 +1118,11 @@ c
        call defflg('DEBUG',FLAGOF)
        call defflg('ECHO',FLAGOF)
        call defflg('LOG',FLAGOF)
-       call defflg('CTIME',FLAGON)
+       call defflg('CTIME',FLAGOF)
+       call defflg('INTRES',FLAGON)
+       call defflg('HALFRES',FLAGON)
+       call defflg('SUMRES',FLAGON)
+       call defflg('DIFFRES',FLAGOF)
        call defglb('NPARA',icGLR,idummy)
        call RsetGL('NPARA',1.d0,idummy)
        msglvl=0

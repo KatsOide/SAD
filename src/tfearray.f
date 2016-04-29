@@ -171,7 +171,7 @@ c$$$      endif
       real*8 v1,v2i
       complex*16 c1,cx,cx1,cx2,tfcmplxmathv
       logical*4 d,c,tfconstqk
-      if(ktfrealqdv(k1,v1))then
+      if(ktfrealqd(k1,v1))then
         if(tflistqd(k2,kl2))then
           m2=kl2%nl
           if(m2 .eq. 0)then

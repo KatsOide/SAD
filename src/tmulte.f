@@ -3,7 +3,7 @@
      1     dx,dy,dz,chi1,chi2,theta,dtheta,
      $     eps0,enarad,fringe,
      $     f1,f2,mfring,fb1,fb2,bfrm,vc,harm,phi,freq,wakew1,
-     $     rtaper,ld)
+     $     rtaper,autophi,ld)
       use tfstk
       implicit none
       include 'inc/TMACRO1.inc'
@@ -23,7 +23,7 @@
       complex*16 cx,cx0,cx2,cr,cr1
       real*8 fact(0:nmult),an(0:nmult)
       complex*16 ak(0:nmult),akn(0:nmult),ak0n
-      logical*4 enarad,fringe,acc,bfrm
+      logical*4 enarad,fringe,acc,bfrm,autophi
       data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
      1     720.d0,     5040.d0,     40320.d0,362880.d0,3628800.d0,
      $     39916800.d0,479001600.d0,6227020800.d0,87178291200.d0,
@@ -126,19 +126,19 @@ c      h1=sqrt(p1**2+1.d0)
         v11a=0.d0
         v20a=vn*(w*(.5d0/p0+.5d0/p1))**2/4.d0
         v02a=vn*(w*(.5d0/p0+.5d0/p1))**2/4.d0
-        if(trpt .or. radcod)then
+        if(trpt .or. radcod .or. autophi)then
           s0=0.d0
           offset1=0.d0
         else
           s0=sin(phis)
-          offset1=vcalpha*sin(phis)
+          offset1=sin(phis)
         endif
         vc0=vc0+vc
-        vccos=vccos+vc*cos(phic)
-        vcsin=vcsin+vc*sin(phic)
-        if(omega0 .ne. 0.d0)then
-          hvc0=hvc0+(c*w)/omega0*vc
-        endif
+c        vccos=vccos+vc*cos(phic)
+c        vcsin=vcsin+vc*sin(phic)
+c        if(omega0 .ne. 0.d0)then
+c          hvc0=hvc0+(c*w)/omega0*vc
+c        endif
       else
         aln=al/ndiv
 c     begin initialize for preventing compiler warning
@@ -171,8 +171,8 @@ c     end   initialize for preventing compiler warning
       if(al .ne. 0.d0)then
         if(fringe .and. mfring .ne. 2)then
           if(acc)then
-            call tcavfrie(trans,cod,beam,al,v,w,phis-phic,s0,p0,
-     $           irad,irad .gt. 6 .or. calpol)
+            call tcavfrie(trans,cod,beam,al,v,w,phic,phis-phic,s0,p0,
+     $           irad,irad .gt. 6 .or. calpol,autophi)
           endif
           if(ak1 .ne. 0.d0)then
             call tqfrie(trans,cod,beam,ak1,al1,ld,bzs)
@@ -237,17 +237,26 @@ c          h1=sqrt(1.d0+p1**2)
           h1=p1+1.d0/(h1+p1)
           v1=p1/h1
           t=-cod(5)/v1
-          phii=w*t+phic-phis
+          if(autophi)then
+            phii=phic
+            sp=sin(phii)
+            cp=cos(phii)
+          else
+            phii=w*t+phic-phis
+            sp=sin(phii)
+            cp=cos(phii)
+            dvcacc=dvcacc+vcn*cp*w
+            ddvcacc=ddvcacc+vcn*sp*w**2
+          endif
+          vcacc=vcacc-vcn*sp
           va=vn+(v10a+v20a*cod(1)+v11a*cod(3))*cod(1)
      $           +v02a*cod(3)**2
-          sp=sin(phii)
-          cp=cos(phii)
           dh=max(oneev-h1,-va*(sp+offset1))
           veff=vcn
           vc0=vc0+veff
-          if(omega0 .ne. 0.d0)then
-            hvc0=hvc0+(c*w)/omega0*veff
-          endif
+c          if(omega0 .ne. 0.d0)then
+c            hvc0=hvc0+(c*w)/omega0*veff
+c          endif
           h2=h1+dh
           p2=h2*sqrt(1.d0-1.d0/h2**2)
           pf    =(h2+h1)/(p2+p1)*dh
@@ -356,8 +365,8 @@ c          h1=sqrt(1.d0+p1**2)
             call tqfrie(trans,cod,beam,-ak1,al1,ld,bzs)
           endif
           if(acc)then
-            call tcavfrie(trans,cod,beam,al,-v,w,phis-phic,s0,p0,
-     $           irad,irad .gt. 6 .or. calpol)
+            call tcavfrie(trans,cod,beam,al,-v,w,phic,phis-phic,s0,p0,
+     $           irad,irad .gt. 6 .or. calpol,autophi)
           endif
         endif
       endif

@@ -249,8 +249,8 @@ c        call tfdebugprint(kr,':= ',3)
         call loc_deftbl(kan,dtbl)
         call tfcleardaloc(kan)
         if(npat .gt. dtbl%npat)then
-          write(*,*)'ktdaloc-implementation error'
-          rlist(7)=0.d0
+          write(*,*)'ktdaloc-implementation error ',npat,dtbl%npat
+          call forcesf()
         endif
       endif
       dtbl%npat=npat
@@ -544,11 +544,11 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       integer*8 ka
       integer*4 m,itfhash1,nh,ix(2),ih1
       integer*2 h(2)
-      real*8 x,ha
+      real*8 x,ha,v
       parameter (ha=7.d0**5+1.d0/7.d0**5)
       equivalence (h,ih1),(x,ix)
-      if(ktfrealqd(k))then
-        ih=int(rfromd(k)*ha)
+      if(ktfrealqd(k,v))then
+        ih=int(v*ha)
       elseif(ktfoperqd(k,ka))then
         ih=int(ka)
       elseif(ktflistqd(k,kl))then
@@ -597,11 +597,11 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       type (sad_symbol), pointer :: sym
       integer*8 ka
       integer*4 ix(2)
-      real*8 x,ha
+      real*8 x,ha,v
       parameter (ha=7.d0**5+1.d0/7.d0**5)
       equivalence (x,ix)
-      if(ktfrealqd(k))then
-        ih=int(rfromd(k)*ha)
+      if(ktfrealqd(k,v))then
+        ih=int(v*ha)
       elseif(ktfoperqd(k,ka))then
         ih=int(ka)
       elseif(ktflistqd(k,kl))then

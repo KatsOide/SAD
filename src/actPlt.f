@@ -19,7 +19,7 @@ c......find last of list.
         newpl$=ilist(2,last$)
         go to 1000
  1100 continue
-       newpl$=mcfallo(nparm)
+       newpl$=mctaloc(nparm)
        ilist(1,newpl$)=nparm
        ilist(2,newpl$)=0
        if (last$ .eq. 0) then

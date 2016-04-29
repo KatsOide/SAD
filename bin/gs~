@@ -1,11 +1,25 @@
 #!/bin/sh
 
-SAD_PACKAGES=/home/oide/SAD/oldsad/Packages/; export SAD_PACKAGES
+SAD_PACKAGES="/home/oide/SAD/oldsad/Packages/"; export SAD_PACKAGES
 SAD_ARCH=`/home/oide/SAD/oldsad/bin/HostArch`
-SAD_EXE=/home/oide/SAD/oldsad/obj/${SAD_ARCH}/sad1.exe; export SAD_EXE
+SAD_EXE="/home/oide/SAD/oldsad/obj/${SAD_ARCH}/sad1.exe"; export SAD_EXE
 
 # Set stack limit
 stacksize=8192		# Kbytes
+
+usage () {
+    basename0="`basename $0`"
+
+    blankname=""
+    bname="${basename0}"
+    while [ -n "${bname}" ]; do
+	bname="${bname#?}"
+	blankname="${blankname} "
+    done
+
+    echo "usage: ${basename0} [-gsl|--debug-wait] [-env environment] [command or filename]"
+    exit 1
+}
 
 # Check driver script name
 case "${0##*/}" in
@@ -18,15 +32,34 @@ case "${0##*/}" in
 esac
 
 # Check options
-case "x$1" in
-    x-gsl|x--debug-wait)
-	mode=debug-wait
-	shift
-	;;
-    x--)
-	shift
-	;;
-esac
+while [ $# -gt 0 ]; do
+    case "$1" in
+	-env)
+	    [ $# -lt 2 ] && usage
+	    shift
+	    SAD_ENV="$1"
+	    export SAD_ENV
+	    ;;
+
+	-gsl|--debug-wait)
+	    mode=debug-wait
+	    ;;
+
+	--)
+	    shift
+	    break
+	    ;;
+
+	-*)
+	    usage
+	    ;;
+
+	*)
+	    break
+	    ;;
+    esac
+    shift
+done
 
 case ${SAD_ARCH} in
 *-CYGWIN*)
@@ -50,10 +83,10 @@ esac
 # Set library path for dynamic link library
 case ${SAD_ARCH} in
 *-CYGWIN*)
-    PATH=/home/oide/SAD/oldsad/arch/${SAD_ARCH}/bin:${PATH}
+    PATH=/Users/oide/SAD/oldsad//arch/${SAD_ARCH}/bin:${PATH}
     ;;
 *-Darwin)
-    DYLD_LIBRARY_PATH=/home/oide/SAD/oldsad/arch/${SAD_ARCH}/lib ; export DYLD_LIBRARY_PATH
+    DYLD_LIBRARY_PATH=/Users/oide/SAD/oldsad//arch/${SAD_ARCH}/lib ; export DYLD_LIBRARY_PATH
     ;;
 *)
     ;;

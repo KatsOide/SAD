@@ -10,7 +10,7 @@
       integer*8 ls
       integer*4 isp1,isp2,irtc,mode,ispa,narg,ns,
      $     itfmessage,itfdownlevel,lv,m,j,isp0,ispb,i
-      real*8 x0,x1,xstep,xns,xi
+      real*8 x0,x1,xstep,xns,xi,ve
       logical*4 var
       narg=ispa-isp1
       if(narg .lt. 2)then
@@ -27,7 +27,7 @@
           m=listi%nl
           if(m .eq. 1)then
             call tfeevalref(listi%body(1),kl,irtc)
-            if(.not. ktfrealqdv(kl,x1))then
+            if(.not. ktfrealqd(kl,x1))then
               irtc=itfmessage(9,'General::wrongtype','"Real number"')
               return
             endif
@@ -48,10 +48,9 @@
             if(irtc .ne. 0)then
               return
             endif
-            if(ktfnonrealqd(k1))then
+            if(ktfnonrealqd(k1,x1))then
               go to 9500
             endif
-            x1=rfromd(k1)
             if(m .eq. 2)then
               x0=1.d0
               xstep=1.d0
@@ -61,7 +60,7 @@
               if(irtc .ne. 0)then
                 return
               endif
-              if(ktfnonrealqdv(k1,x1))then
+              if(ktfnonrealqd(k1,x1))then
                 go to 9500
               endif
               if(m .eq. 3)then
@@ -71,7 +70,7 @@
                 if(irtc .ne. 0)then
                   return
                 endif
-                if(ktfnonrealqdv(k1,xstep))then
+                if(ktfnonrealqd(k1,xstep))then
                   go to 9500
                 endif
               endif
@@ -174,15 +173,15 @@
               enddo
             endif
           else
-            if(ktfrealqd(ke))then
+            if(ktfrealqd(ke,ve))then
               irtc=0
               if(mode .eq. 1)then
                 kx=kxavaloc(-1,ns,klx)
                 klx%dbody(1:ns)=ke
               elseif(mode .eq. 2)then
-                kx=dfromr(rfromd(ke)*ns)
+                kx=dfromr(ve*ns)
               elseif(mode .eq. 3)then
-                kx=dfromr(rfromd(ke)**ns)
+                kx=dfromr(ve**ns)
               endif
               isp=ispb-1
               call tfdelete(symd,.true.,.false.)
@@ -293,15 +292,15 @@
               enddo
             endif
           else
-            if(ktfrealqd(ke))then
+            if(ktfrealqd(ke,ve))then
               irtc=0
               if(mode .eq. 1)then
                 kx=kxavaloc(-1,ns,klx)
                 klx%dbody(1:ns)=ke
               elseif(mode .eq. 2)then
-                kx=dfromr(rfromd(ke)*ns)
+                kx=dfromr(ve*ns)
               elseif(mode .eq. 3)then
-                kx=dfromr(rfromd(ke)**ns)
+                kx=dfromr(ve**ns)
               endif
               isp=ispb-1
               return

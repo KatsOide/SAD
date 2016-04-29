@@ -19,7 +19,7 @@ c     Initialize memory block list root node
       use iso_c_binding
       implicit none
       include 'inc/MACFILE.inc'
-      integer*4 memsize,italoc
+      integer*4 memsize,mtaloc
 
       call talocinit
 c      call lminit(klist(0), 8)
@@ -34,8 +34,9 @@ c        if(irtc .ne. 0) then
 c          stop 'inimem is failed to allocate root memory node'
 c        endif
 c      endif
-      memsize=MAXMEM0
-      ilistroot=italoc(memsize)-1
+      memsize=4
+c      memsize=MAXMEM0
+      ilistroot=mtaloc(memsize)
 
       ilist(1,ilistroot)=0
       ilist(2,ilistroot)=ilistroot+2
@@ -60,11 +61,14 @@ c      call pr_mem_map()
 c     Allocate small memory block initialized by Real[0]
       integer*4 function mcfallo(n)
       use maccbk
+      use tfstk
       implicit none
       include 'inc/MACFILE.inc'
       integer n
       integer*4 i,mfalloc
-
+      
+      write(*,*)'mcfallo is obsolete: use mctaloc. ',n
+      call forcesf()
       mcfallo=mfalloc(n)
       if (n .ge. 1) then
          do i=0,n-1
@@ -77,6 +81,7 @@ c     Allocate small memory block initialized by Real[0]
 c     Allocate/Free small memory block
       integer*4 function mfalloc(n)
       use maccbk
+      use tfstk
       implicit none
       include 'inc/MACFILE.inc'
       integer*4 n
@@ -85,6 +90,8 @@ c     Allocate/Free small memory block
       integer*4 currp,next,msize
       integer*4 lene
 
+      write(*,*)'mfalloc is obsolete: use mtaloc. ',n
+      call forcesf()
 c      call chkflst(ilistroot,'mfalloc in')
       if(n .le. 0) then
          mfalloc=0
@@ -156,6 +163,7 @@ c      call pr_mem_map()
 
       subroutine freeme(pt,size)
       use maccbk
+      use tfstk
       implicit none
       include 'inc/MACFILE.inc'
       integer*4 pt,size
@@ -163,6 +171,8 @@ c      call pr_mem_map()
       integer*4 currp,next
       integer*4 lene
 
+      write(*,*)'freeme is obsolete. use tfreem. ',pt,size
+      call forcesf()
       if(pt .eq. 0 .or. size .eq. 0) then
          return
       else if(pt .le. 0 .or. size .le. 0)then

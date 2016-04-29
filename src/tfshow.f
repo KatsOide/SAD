@@ -198,6 +198,8 @@
      $         .true.,err)
         endif
 3010  continue
+      kax4=0
+      kaxi4=0
       if(ret)then
         nf=nfam-mf+1
         irtc=0
@@ -324,7 +326,7 @@ c          name(ln+1:namel)='/'//name1
           dlist(kaxi+1)=kxsalocb(0,namea,len_trim(namea))
           dlist(kaxi+2)=kxsalocb(0,name1,len_trim(name1))
           dlist(kaxi+3)=kxsalocb(0,fun,len_trim(fun))
-          kaxi4=ktadaloc(0,nf)
+          kaxi4=ktavaloc(0,nf)
           klist(kaxi+4)=ktflist+kaxi4
           klist(kax4+i)=ktflist+kaxi
         endif

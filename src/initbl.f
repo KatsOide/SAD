@@ -7,7 +7,7 @@
       include 'inc/MACPHYS.inc'
       include 'inc/MACFILE.inc'
 c
-      integer*4 i,idummy,sethtb,hsrch,mfalloc
+      integer*4 i,idummy,sethtb,hsrch,mtaloc
 c     external doline
       external doprin, doexpn, doread, dolist, docod, dostop, dotwis
       external dooffl, doonfl,dorvrs
@@ -50,7 +50,7 @@ c       idummy=sethtb('TWISS   ',icRSVD,dotwis)
 c
        idummy=sethtb('USE     ',icVAR,VarPt)
 c
-       idummy=sethtb('LIE     ',icACT,mfalloc(3))
+       idummy=sethtb('LIE     ',icACT,mtaloc(4))
        idummy=sethtb('lie     ',icACT,idval(idummy))
        ilist(1,idval(idummy))=2
        call setfnp(ilist(1,idval(idummy)+1),ActLie)
@@ -59,7 +59,7 @@ c
        idummy=sethtb('OPTION  ',icVAR,VarStr)
        idummy=sethtb('OPTIONS ',icVAR,VarLst+VarStr)
 c
-c       idummy=sethtb('LINEAR  ',icACT,mfalloc(5))
+c       idummy=sethtb('LINEAR  ',icACT,mtaloc(5))
 c       idummy=sethtb('linear  ',icACT,idval(idummy))
 c       call setfnp(ilist(1,idval(idummy)+1),ActLin)
 c       ilist(1,idval(idummy)+2)=hsrch('USE     ')
@@ -87,7 +87,7 @@ c
        idummy=sethtb('NY      ',icVAR,VarLst+ VarRL)
        idummy=sethtb('NZ      ',icVAR,VarLst+ VarRL)
 c
-       idummy=sethtb('TRACK   ',icACT,mfalloc(21))
+       idummy=sethtb('TRACK   ',icACT,mtaloc(21))
        idummy=sethtb('track   ',icACT,idval(idummy))
        ilist(1,idval(idummy))=20
        call setfnp(ilist(1,idval(idummy)+1),ActTra)
@@ -111,7 +111,7 @@ c
        ilist(1,idval(idummy)+19)=hsrch('NY      ')
        ilist(1,idval(idummy)+20)=hsrch('NZ      ')
 c
-       idummy=sethtb('FFS     ',icACT,mfalloc(21))
+       idummy=sethtb('FFS     ',icACT,mtaloc(21))
        idummy=sethtb('ffs     ',icACT,idval(idummy))
        ilist(1,idval(idummy))=20
        call setfnp(ilist(1,idval(idummy)+1),ActTra)
@@ -137,7 +137,7 @@ c
        ilist(1,idval(idummy)+19)=hsrch('NY      ')
        ilist(1,idval(idummy)+20)=hsrch('NZ      ')
 c
-       idummy=sethtb('QUICK   ',icACT,mfalloc(21))
+       idummy=sethtb('QUICK   ',icACT,mtaloc(21))
        idummy=sethtb('quick   ',icACT,idval(idummy))
        ilist(1,idval(idummy))=20
        call setfnp(ilist(1,idval(idummy)+1),ActTra)
@@ -163,7 +163,7 @@ c
        ilist(1,idval(idummy)+19)=hsrch('NY      ')
        ilist(1,idval(idummy)+20)=hsrch('NZ      ')
 c
-       idummy=sethtb('EMIT    ',icACT,mfalloc(21))
+       idummy=sethtb('EMIT    ',icACT,mtaloc(21))
        idummy=sethtb('emit    ',icACT,idval(idummy))
        ilist(1,idval(idummy))=20
        call setfnp(ilist(1,idval(idummy)+1),ActTra)

@@ -60,7 +60,7 @@
         if(kbuf .le. 0)then
           write(6,*)'Memory allocation error (getstringbuf), size =',
      $         m
-          stop
+          call forcesf()
         endif
         call strbuf_loc(kbuf,strb)
         strb%indw=maxint
@@ -98,23 +98,23 @@ c     ilist(2,kbuf-3)=0       ! llevel
         LOOP_I: do i=1,l
           ch=string(i:i)
           if(ch .eq. C_NEW_LINE)then
-            str='\n'
+            str='\\n'
             go to 20
           elseif(ch .eq. C_CARRIAGE_RETURN)then
-            str='\r'
+            str='\\r'
             go to 20
           elseif(ch .eq. C_FORM_FEED)then
-            str='\f'
+            str='\\f'
             go to 20
           elseif(ch .eq. C_HORIZONTAL_TAB)then
-            str='\t'
+            str='\\t'
             go to 20
           elseif(ch .eq. '"')then
-            str='\"'
+            str='\\"'
             go to 20
           elseif(ch .eq. '\')then
 c'\
-            str='\\'
+            str='\\\\'
             go to 20
           elseif(ichar(string(i:i)) .lt. 32 .or.
      $           ichar(string(i:i)) .gt. 126)then
@@ -229,7 +229,7 @@ c'\
         type (sad_symbol), pointer :: sym
         integer*8 kv,ktv,kav,ic,i,ip
         integer*4 nc,lenw,lfno,irtc,nc0,nc1,kpat
-        real*8 rfromk
+        real*8 rfromk,v
         character*27 buff
         character*26 form1,tfgetform,autos,autofg
         character*(*) form
@@ -263,7 +263,7 @@ c'\
             nc=1
           elseif(klist(ic) .ne. 0)then
             call tfconvstrb(strb,dlist(ic),
-     $           nc,str,gens,lfno,form,irtc)
+     $           nc,.false.,gens,lfno,form,irtc)
           endif
           if(irtc .ne. 0)then
             return
@@ -315,7 +315,7 @@ c'\
             ip=ktfaddr(pat%sym%alloc%k)
             if(ip .gt. 0)then
               call tfconvstrb(strb,transfer(ktfsymbol+ip,k),
-     $             nc1,str,gens,lfno,form,irtc)
+     $             nc1,.false.,gens,lfno,form,irtc)
               if(irtc .ne. 0)then
                 return
               endif
@@ -330,7 +330,7 @@ c'\
             nc=nc+kpat
             if(pat%head%k .ne. 0)then
               call tfconvstrb(strb,
-     $             pat%head,nc1,str,gens,lfno,form,irtc)
+     $             pat%head,nc1,.false.,gens,lfno,form,irtc)
               if(irtc .ne. 0)then
                 return
               endif
@@ -341,7 +341,8 @@ c'\
             if(irtc .ne. 0)then
               return
             endif
-            call tfconvstrb(strb,pat%expr,nc1,str,gens,lfno,form,irtc)
+            call tfconvstrb(strb,pat%expr,nc1,.true.,
+     $           gens,lfno,form,irtc)
             nc=nc+nc1+1
           endif
           if(pat%default%k .ne. ktfref)then
@@ -353,7 +354,7 @@ c'\
               nc=nc+1
             endif
             call tfconvstrb(strb,pat%default,
-     $           nc1,str,gens,lfno,form,irtc)
+     $           nc1,.true.,gens,lfno,form,irtc)
             call putstringbufp(strb,')',lfno,irtc)
             nc=nc+nc1+1
           endif
@@ -366,13 +367,13 @@ c'\
         elseif(isnan(rfromk(k%k)))then
           nc=3
           call putstringbufpb(strb,'NaN',nc,.true.,lfno,irtc)        
-        elseif(ktfrealqd(k))then
+        elseif(ktfrealqd(k,v))then
           if(form .eq. '*')then
             form1=tfgetform()
           else
             form1=form
           endif
-          buff=autofg(rfromk(k%k),form1)
+          buff=autofg(v,form1)
           nc=len_trim(buff)
           call putstringbufpb(strb,buff,nc,.true.,lfno,irtc)
         else
@@ -394,7 +395,7 @@ c'\
         integer*8 ka,kt,kai
         integer*4 lfno,nd,iaaf,ncx,nc,i,irtc,i1,llevel,lenw,le,istep,
      $       iaaf1
-        real*8 rfromk
+        real*8 v1
         character*(*) form
         character*4 opcx
         character*2 opce
@@ -481,8 +482,8 @@ c
               return
             case (mtfmult)
               k1=dlist(ka+1)
-              if(ktfrealqd(k1))then
-                if(rfromk(k1%k) .eq. -1.d0)then
+              if(ktfrealqd(k1,v1))then
+                if(v1 .eq. -1.d0)then
                   call putstringbufp(strb,'(-',lfno,irtc)
                   if(irtc .ne. 0)then
                     return
@@ -690,7 +691,7 @@ c
             write(6,*)
      $           'Memory allocation error (extendstringbuf), size =',
      $           lnew
-            stop
+            call forcesf()
           endif
           call tmov(strb%indw,ilist(1,i-3),strb%maxnch/8+5)
           ilist(2,i)=lnew

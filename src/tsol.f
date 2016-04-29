@@ -11,13 +11,14 @@
       integer*4 k,kbz,np
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       real*8 tfbzs,fw,bzs,rho,al,theta,phi,phix,phiy,rhoe,
-     $     psi1,psi2,bz1,rho1,dx,dy,rot,fb1,fb2,chi1m,chi2m,rtaper
+     $     psi1,psi2,bz1,rho1,dx,dy,rot,fb1,fb2,chi1m,chi2m,rtaper,
+     $     harm,w,ph
       integer*4 latt(2,nlat),kptbl(np0,6),
      $     nwakep,iwakeelm(nwakep),nwak,nextwake,n,
      $     l1,i,ke,l,lt,lp,itp,mfr,itab(np),izs(np),
      $     lenw,kdx,kdy,krot,kstop,kb,lwl,lwt
       integer*8 kwaketbl(2,nwakep),iwpl,iwpt
-      logical*4 sol,enarad,dir,out,fringe
+      logical*4 sol,enarad,dir,out,fringe,autophi
       l1=latt(2,k)
       if(sol)then
         kb=k
@@ -175,6 +176,17 @@
             chi1m=-rlist(lp+kytbl(kwCHI1,icMULT))
             chi2m=-rlist(lp+kytbl(kwCHI2,icMULT))
           endif
+          harm=rlist(lp+kytbl(kwHARM,icMULT))
+          if(harm .eq. 0.d0)then
+            w=pi2*rlist(lp+kytbl(kwFREQ,icMULT))/c
+          else
+            w=omega0*harm/c
+          endif
+          autophi=rlist(lp+kytbl(kwAPHI,icMULT)) .ne. 0.d0
+          ph=rlist(lp+kytbl(kwDPHI,icMULT))
+          if(autophi)then
+            ph=ph+gettwiss(mfitdz,l)*w
+          endif
           rtaper=1.d0
           if(rad .and. radcod .and. radtaper)then
             rtaper=1.d0+(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
@@ -189,10 +201,8 @@
      $         rlist(lp+9),rlist(lp+10) .eq. 0.d0,
      $         rlist(lp+11) .eq. 0.d0,
      $         rlist(itp+1)*rtaper,rlist(itp+2)*rtaper,mfr,fb1,fb2,
-     $         rlist(lp+15),rlist(lp+16),
-     $         rlist(lp+17),rlist(lp+18),
-     $         rlist(lp+kytbl(kwDPHI,icMULT)),
-     $         rlist(lp+kytbl(kwRADI,icMULT)),rtaper,
+     $         rlist(lp+15),w,rlist(lp+17),ph,
+     $         rlist(lp+kytbl(kwRADI,icMULT)),rtaper,autophi,
      $         n,l,latt,kptbl)
         elseif(lt .eq. icSOL)then
           if(l .eq. ke)then
