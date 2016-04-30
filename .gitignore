@@ -2,7 +2,7 @@
 *.~
 /TclTk
 /obj
-sad/*
+/sad/*
 .DS_Store
 /CVS
 .#*
@@ -11,6 +11,5 @@ mk/CVS/Entries
 Packages/CVS/Entries
 src/CVS/Entries
 src/inc/CVS/Entries
-Packages/.DS_Store
-src/.DS_Store
-src/gdtoa/*.c
+src/gdtoa/*
+src/gdtoa/test/*
