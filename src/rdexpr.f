@@ -1,5 +1,5 @@
       real*8 function rdexpr(elmidx,kwcode,token,slen,ttype)
-c     $Header: /SAD/cvsroot/oldsad/src/rdexpr.f,v 1.7.2.2 2012/09/15 08:14:57 oide Exp $
+c     $Header: /SAD/cvsroot/oldsad/src/rdexpr.f,v 1.7.2.3 2016/05/04 05:02:40 oide Exp $
       use maccbk
       implicit none
       integer*4 elmidx,kwcode

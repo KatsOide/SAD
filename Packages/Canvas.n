@@ -1794,13 +1794,15 @@ Canvas$Scale:=The$CanvasObject@Set$Canvas$Scale[];
 
 The$CanvasObject:=StandardForm[
   Clear[The$CanvasObject];
+  If[~RealQ[Default$CanvasWidth],Default$CanvasWidth=1024];
+  If[~RealQ[Default$CanvasHeight],Default$CanvasHeight=768/1024*Default$CanvasWidth];
   If[The$Canvas===Null,
     If[StringQ[KBF$AppName],
       Canvas$Window=KBSubFrame["Canvas_"//GetPID[],DefauleCanvas$Frame],
       Canvas$Window=KBMainFrame["Canvas_"//GetPID[],DefaultCanvas$Frame]];
     Canvas$Canvas=Canvas[DefaultCanvas$Frame,
-      Width->Min[WidgetInfo[Canvas$Window[$Window],ScreenWidth]*0.8,1024],
-      Height->Min[WidgetInfo[Canvas$Window[$Window],ScreenHeight]*0.8,768]];
+      Width->Default$CanvasWidth,
+      Height->Default$CanvasHeight];
     Canvas$Widget=Canvas$Canvas,
     Canvas$Widget=The$Canvas];
   The$CanvasObject];

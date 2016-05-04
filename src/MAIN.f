@@ -14,7 +14,7 @@ c
 c                      /'         1111111111'/
 c                      /'1234567890123456789'/
       data versionid   /'1.0.10.9.4k64      '/
-      data versiondate /'4/30/2016 19:00:00 '/
+      data versiondate /'5/4/2016 19:00:00  '/
 c
       call fdate1(dat)
       call buildinfo_get_string('Built:Date', builtdate)
