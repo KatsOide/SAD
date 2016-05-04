@@ -1,6 +1,7 @@
 *.orig
 *.~
 /TclTk
+/arch
 /obj
 /sad/*
 .DS_Store
