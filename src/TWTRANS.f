@@ -1,5 +1,6 @@
       subroutine TWTRANS(R0,R0I)
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit real*8(a-h,o-z)
       integer*4 ntwissfun
       parameter (ntwissfun=20)
       COMMON /TWISSP/TWPIN(ntwissfun),TWPOT(ntwissfun),

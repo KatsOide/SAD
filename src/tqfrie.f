@@ -1,7 +1,8 @@
       subroutine tqfrie(trans,cod,beam,ak,al,ld,bz)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 ld,i
       real*8 trans(6,12),cod(6),beam(42),ak,al,bz,akk,pr
       real*8 trans1(6,6),xmax

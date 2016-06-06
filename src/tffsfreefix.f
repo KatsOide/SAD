@@ -1,23 +1,16 @@
-      subroutine tffsfreefix(latt,frefix,
-     $     ivarele,ivvar,ivcomp,valvar,nvar,nve,
-     $     itouchele,itouchv,ntouch,
-     $     ival,klp,nele,errk,mult,iele,iele1,
-     $     nlat,nlist,lfno)
+      subroutine tffsfreefix(frefix,nvar,ntouch,lfno)
       use tfstk
+      use ffs, only:nve,nele,nlat
+      use ffs_pointer
+      use ffs_fit
       use tffitcode
       implicit none
       include 'inc/MACCODE.inc'
       integer*8 kal
-      integer*4 nvar,nele,lfno,nlat,nve,
-     $     ivarele(nve),ivvar(nve),l,
-     $     itouchele(nve),itouchv(nve),ntouch,
-     $     ivcomp(nve),mult(nlat),iele(nlat),iele1(nlat),
-     $     klp(nele),ival(nele),ifany,latt(2,nlat),
+      integer*4 nvar,lfno,l,ntouch,ifany,
      $     i,j,k,it,iv,ivi,next,itk,ivk,lenw,kk,jj,ivck,
      $     irtc,nl,kkk
-      real*8 valvar(nve,2),errk(2,nlat)
       logical*4 frefix,tmatch,wild,found,comp,temat
-      character*(*) nlist(ntwissfun)
       character*80 word1,keyword,tfkwrd
       character*80 word,nlist1
       character*(MAXPNAME+16) name,name1
@@ -50,7 +43,7 @@
         LOOP_K_2: do kkk=1,nl
           k=int(rlist(kal+kkk))
           if(comp)then
-            if(.not. temat(latt,k,mult,name,word))then
+            if(.not. temat(k,name,word))then
               cycle LOOP_K_2
             endif
             ivck=k
@@ -119,7 +112,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
                   endif
                 else
                   if(ivcomp(i) .ne. 0)then
-                    call elname(latt,ivcomp(i),mult,name)
+                    call elname(ivcomp(i),name)
                     call termes(lfno,
      $        'A component has been already used as variable: ',
      $                   name)
@@ -140,8 +133,8 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
                 ivarele(j+1)=ivarele(j)
                 ivvar(j+1)=ivvar(j)
                 ivcomp(j+1)=ivcomp(j)
-                valvar(j+1,1)=valvar(j,1)
-                valvar(j+1,2)=valvar(j,2)
+                valvar2(j+1,1)=valvar2(j,1)
+                valvar2(j+1,2)=valvar2(j,2)
               enddo
               go to 11
             endif
@@ -155,22 +148,22 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
             ivi=iv
           endif
           ivvar(i)=ivi
-          valvar(i,1)=rlist(latt(2,k)+ivi)
+          valvar2(i,1)=rlist(latt(2,k)+ivi)
           ivcomp(i)=ivck
           if(ivi .eq. ival(kk))then
             if(comp)then
-              call elname1(latt,iele(k),mult,name1,.true.)
+              call elnameK(iele(k),name1)
               if(iele(k) .eq. k)then
                 do jj=1,nlat-1
                   if(jj .ne. k .and. iele(jj) .eq. k)then
-                    call elname1(latt,jj,mult,name,.true.)
+                    call elnameK(jj,name)
                     call termes(lfno,'Info-Component '//
      $                   name(1:lenw(name))//' is coupled to ',
      $                   name1(1:lenw(name1))//' .')
                   endif
                 enddo
               else
-                call elname1(latt,k,mult,name,.true.)
+                call elnameK(k,name)
                 call termes(lfno,'Info-Component '//
      $               name(1:lenw(name))//' is coupled to ',
      $               name1(1:lenw(name1))//' .')
@@ -181,18 +174,18 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
      $               .and. iele(jj) .ne. k)then
 c     `jj' is same family but different master with `k',
 c     where klp(iele1(k)) == k
-                  call elname1(latt,jj,mult,name,.true.)
-                  call elname1(latt,iele(jj),mult,name1,.true.)
+                  call elnameK(jj,name)
+                  call elnameK(iele(jj),name1)
                   call termes(lfno,'Info-Component '//
      $                 name(1:lenw(name))//' is coupled to ',
      $                 name1(1:lenw(name1)))
                 endif
               enddo
             endif
-            valvar(i,1)=valvar(i,1)/errk(1,k)
-            valvar(i,2)=valvar(i,1)
+            valvar2(i,1)=valvar2(i,1)/errk(1,k)
+            valvar2(i,2)=valvar2(i,1)
           else
-            valvar(i,2)=valvar(i,1)
+            valvar2(i,2)=valvar2(i,1)
             if(.not. comp)then
               do j=1,ntouch
                 if(itouchele(j) .eq. kk .and.
@@ -205,7 +198,7 @@ c     where klp(iele1(k)) == k
               itouchv(ntouch)=ivi
             endif
           endif
-c          write(*,*)'tffsfreefix ',i,k,ivi,valvar(i,1),valvar(i,2)
+c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
  10       if(.not. wild)then
             go to 1
           endif
@@ -229,7 +222,7 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar(i,1),valvar(i,2)
  1210     continue
           kk=ivarele(i)
           if(ivcomp(i) .ne. 0)then
-            if(.not. temat(latt,ivcomp(i),mult,name,word))then
+            if(.not. temat(ivcomp(i),name,word))then
               cycle LOOP_I_3
             endif
           elseif(comp)then
@@ -271,8 +264,8 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar(i,1),valvar(i,2)
               ivarele(j)=ivarele(j+1)
               ivvar(j)=ivvar(j+1)
               ivcomp(j)=ivcomp(j+1)
-              valvar(j,1)=valvar(j+1,1)
-              valvar(j,2)=valvar(j+1,2)
+              valvar2(j,1)=valvar2(j+1,1)
+              valvar2(j,2)=valvar2(j+1,2)
             enddo
             nvar=nvar-1
             if(i .gt. nvar .or.

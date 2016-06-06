@@ -1,16 +1,13 @@
-      subroutine tftyp1(kx,l,lp,kp,
-     $     ival,errk,lt,twiss,lfno,
-     $     emx,emy,dpmax,nlat,nele,ndim,lpw)
+      subroutine tftyp1(kx,l,lp,kp,lt,lfno,lpw)
       use tfstk
+      use ffs, only:emx,emy,dpmax
+      use ffs_pointer
       use tffitcode
       implicit none
       include 'inc/MACCODE.inc'
       include 'inc/MACKW.inc'
-      integer*4 nlat,nele,ndim
-      integer*4 ival(nele)
       integer*4 ioff,kx,l,lp,kp,lt,lfno,lv,lene,lenw,lpw
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),errk(2,nlat),
-     $     v,emx,emy,dpmax
+      real*8 v
       character*32 autos
       character*132 vout
       character*(MAXPNAME) kw,tfkwrd

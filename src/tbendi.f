@@ -85,20 +85,22 @@
 
       end module
 
-      subroutine tbendi(np,x,px,y,py,z,g,dv,pz,al,phib,phi0,
+      subroutine tbendi(np,x,px,y,py,z,g,dv,pz,l,al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dphix,dphiy,cost,sint,
      1     fb1,fb2,mfring,enarad,fringe,eps0)
       use bendib
       use tfstk
+      use ffs_flag
+      use tmacro
+      use ffs_pointer, only:inext,iprev
       implicit none
-      include 'inc/TMACRO1.inc'
-      integer*4 np,mfring,i,ndiv,n
+      integer*4 np,mfring,i,ndiv,n,l
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
      $     al,phib,phi0,cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dphix,dphiy,cost,sint,fb1,fb2,eps0,
      $     tanp1,tanp2,aind,b,dxfr1,dyfr1,dyfra1,pr,eps,
-     $     af,f,fpx,ff,akn,aln,phin,
+     $     af,f,fpx,ff,akn,aln,phin,f1r,f2r,
      $     dxfr2,dyfr2,dyfra2
       logical*4 enarad,fringe
       include 'inc/TENT.inc'
@@ -116,10 +118,20 @@ c          pr=(1.d0+g(i))**2
       rho0=al/phi0
       aind=rho0/phi0*ak
       if(rad .and. enarad)then
+        if(iprev(l) .eq. 0)then
+          f1r=fb1
+        else
+          f1r=0.d0
+        endif
+        if(inext(l) .eq. 0)then
+          f2r=fb2
+        else
+          f2r=0.d0
+        endif
         b=brhoz/rhob
         call trad(np,x,px,y,py,g,dv,b,0.d0,b*(aind/rho0),
      1             1.d0/rho0,-tanp1*2.d0/al,.5d0*al,
-     $       fb1,fb2,0.d0,al,1.d0)
+     $       f1r,f2r,0.d0,al,1.d0)
       endif
       if(fb1 .ne. 0.d0)then
         if(mfring .gt. 0 .or. mfring .eq. -1)then
@@ -199,7 +211,7 @@ c            dp=g(i)*(2.d0+g(i))
       if(rad .and. enarad)then
         call trad(np,x,px,y,py,g,dv,b,0.d0,b*(aind/rho0),
      1             1.d0/rho0,-tanp2*2.d0/al,.5d0*al,
-     $       fb1,fb2,al,al,-1.d0)
+     $       f1r,f2r,al,al,-1.d0)
       endif
       if(dphiy .ne. 0.d0)then
         do i=1,np

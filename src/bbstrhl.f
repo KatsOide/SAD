@@ -82,9 +82,8 @@
       use besseltab
       use wsbb
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
-!     include 'inc/MACPHYS.inc'
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),work(np)
       real*8 p_in(70),blist(nblist)
       real*8 sqrpi
@@ -525,8 +524,8 @@
       use besseltab
       use wsbb
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 idummy,nsli,i
 !  parameter (nblist=1600,tbuf0=1100,nslimax=500)
       real*8 benv_inv(36),m_sub5(25),v_sub5(5),c_sub

@@ -1,8 +1,9 @@
       subroutine tsteee(trans,cod,beam,al,phib,dx,dy,theta,enarad,
-     $     apsi1,apsi2,fb1,fb2,mfring,fringe,ld)
+     $     apsi1,apsi2,fb1,fb2,mfring,fringe,next,ld)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       real*8 epslon,a3,a5,a7,a9,a11,a13,a15
       parameter (epslon=1.d-6)
       parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
@@ -10,15 +11,14 @@
      1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
       integer*4 mfring,ld,nrad,ndiv,n
       real*8 trans(6,12),cod(6),beam(42),al,phib,dx,dy,theta,
-     $     fb1,fb2,
-     $     rhob,
+     $     fb1,fb2,f2r,rhob,
      $     dxfr1,dyfr1,
      $     dxfr2,dyfr2,
      $     f1r,b,aln,phin,pr,pxi,pyi,rhoe,s,dpz1,
      $     pz1,dpx,pxf,d,w,u,spz,spx,phsq,dl,dpz2,pz2,
      $     dyfra1,dyfra2,apsi1,apsi2,tanp1,tanp2,als
       real*8 trans1(6,6)
-      logical*4 enarad,fringe
+      logical*4 enarad,fringe,next,prev
       if(al .le. 0.d0)then
         call tthine(trans,cod,beam,2,al,-phib,dx,dy,theta,
      $       .false.,ld)
@@ -30,6 +30,7 @@
       endif
       call tchge(trans,cod,beam,-dx,-dy,theta,.true.,ld)
       rhob=al/phib
+      prev=bradprev .ne. 0.d0
       if(fb1 .ne. 0.d0 .and. (mfring .gt. 0 .or. mfring .eq. -1))then
         dxfr1=-fb1**2/rhob/24.d0
         dyfr1=fb1/rhob**2/6.d0
@@ -42,6 +43,12 @@
         f1r=fb1
       else
         f1r=0.d0
+      endif
+      if(fb2 .ne. 0.d0 .and.
+     $       (mfring .gt. 0 .or. mfring .eq. -2))then
+        f2r=fb2
+      else
+        f2r=0.d0
       endif
       if(enarad)then
         tanp1=tan(apsi1)
@@ -70,11 +77,11 @@ c        call tbfrie(trans,cod,beam,-rhob,0.d0,.true.,ld)
           if(n .eq. 1)then
             call trade(trans,beam,cod,0.d0,b,0.d0,0.d0,
      $           0.d0,0.d0,0.d0,-tanp1,
-     $           f1r,f1r,0.d0,al,.5d0*aln)
+     $           .5d0*aln,als,al,f1r,f2r,prev,next)
           else
             call trade(trans,beam,cod,0.d0,b,0.d0,0.d0,
      $           0.d0,0.d0,0.d0,0.d0,
-     $           f1r,f1r,als,al,aln)
+     $           aln,als,al,f1r,f2r,prev,next)
           endif
           als=als+aln
         endif
@@ -148,16 +155,15 @@ c        call tbfrie(trans,cod,beam,-rhob,0.d0,.true.,ld)
             endif
           endif
           if(enarad)then
-            if(fb2 .ne. 0.d0 .and.
-     $           (mfring .gt. 0 .or. mfring .eq. -2))then
-              f1r=fb2
-            endif
             call trade(trans,beam,cod,0.d0,b,0.d0,0.d0,
      $           0.d0,0.d0,0.d0,-tanp2,
-     $           f1r,f1r,al,al,.5d0*aln)
+     $           .5d0*aln,al,al,f1r,f2r,prev,next)
           endif
         endif
 100   continue
+      if(.not. next)then
+        bradprev=0.d0
+      endif
       if(mfring .ne. -1)then
 c        call tbfrie(trans,cod,beam, rhob,0.d0,.false.,ld)
         call tbedge(trans,cod,beam,al,-phib,apsi2,.false.,ld)

@@ -1,5 +1,6 @@
       subroutine tspac(np,x,px,y,py,z,g,dv,pz,al,al1)
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit real*8 (a-h,o-z)
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
 c      real*8 tr(4,4)
       complex*16 fxy

@@ -1,9 +1,7 @@
-      subroutine tfvars(ivarele,ivvar,valvar,ivcomp,
-     $     nvar,latt,klp,mult,
-     $     ival,vlim,iele,iele1,couple,
-     $     kx,irtc,ret,lfno)
+      subroutine tfvars(nvar,kx,irtc,ret,lfno)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       type (sad_descriptor) kx
@@ -11,12 +9,9 @@
       integer*8 kxr
       integer*4 lfno,i,iv,kk,level, itfuplevel,itfdownlevel,
      $     isp1,next,ifany
-      integer*4 nvar,ivarele(nvar),ivvar(nvar),ivcomp(nvar),
-     $     latt(2,nlat),mult(nlat),irtc,lenw,
-     $     iele(nlat),iele1(nlat),ival(nele)
-      real*8 valvar(nve,2), x3,vlim(nele,2),couple(nlat),
-     $vmin,vmax,coup
-      integer*4 klp(nele),k
+      integer*4 nvar,irtc,lenw
+      real*8 x3,vmin,vmax,coup
+      integer*4 k
       logical*4 ret,exist,tmatch
       character*15 autofg,v1,v2,v3,v4,v5,v6
       character*(MAXPNAME) key,tfkwrd
@@ -54,21 +49,20 @@
         if(ivcomp(i) .eq. 0)then
           name=pname(k)
         else
-          call elname1(latt,ivcomp(i),mult,name,.true.)
+          call elnameK(ivcomp(i),name)
         endif
         if(tmatch(name,ele))then
           exist=.true.
           call cssetp(next)
-          v1=autofg(valvar(i,1),'15.12')
-          v2=autofg(valvar(i,2),'12.9')
+          v1=autofg(valvar2(i,1),'15.12')
+          v2=autofg(valvar2(i,2),'12.9')
           x3=rlist(idval(k)+ivvar(i))
           v3=autofg(x3,'12.9')
           key=tfkwrd(idtype(k),ivvar(i))
           if(ivvar(i) .eq. ival(iv))then
             vmin=vlim(iv,1)
             vmax=vlim(iv,2)
-            call elname1(latt,iele(kk),mult,ncoup,
-     $           ivcomp(i) .ne. 0)
+            call elname1(iele(kk),ncoup,ivcomp(i) .ne. 0)
             coup=couple(kk)
           else
             vmin=-1.d99
@@ -80,7 +74,7 @@
           call tfpadstr(name,ifnvar+1,ilist(1,ifnvar))
           ilist(1,ifvkey)=lenw(key)
           call tfpadstr(key,ifvkey+1,ilist(1,ifvkey))
-          rlist(ifv+3)=valvar(i,1)
+          rlist(ifv+3)=valvar2(i,1)
           call tclrfpe
           level=itfuplevel()
           call tfleval(klist(ifv-3),kxr,.true.,irtc)
@@ -105,8 +99,8 @@
             dtastk(isp)=kxadaloc(-1,9,kli)
             kli%dbody(1)=kxsalocb(0,name,lenw(name))
             kli%dbody(2)=kxsalocb(0,key,lenw(key))
-            kli%rbody(3)=valvar(i,1)
-            kli%rbody(4)=valvar(i,2)
+            kli%rbody(3)=valvar2(i,1)
+            kli%rbody(4)=valvar2(i,2)
             kli%rbody(5)=x3
             kli%rbody(6)=vmin
             kli%rbody(7)=vmax

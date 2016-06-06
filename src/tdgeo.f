@@ -1,15 +1,14 @@
-      subroutine tdgeo(latt,utwiss,itwissp,gammab,
-     $couple,qu,kf,ne,k,geo,ltyp,iv,nut,nfam)
+      subroutine tdgeo(couple1,qu,kf,ne,k,ltyp,iv,nut,nfam)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 kf,ne,k,ltyp,iv,nut,nfam,ip,j,j1,j2,
      $     k1
-      integer*4 latt(2,nlat),itwissp(nlat),kbe,kbg
-      real*8 geo(3,4,nlat),utwiss(ntwissfun,-nfam:nfam,nut),
-     $     gammab(nlat),dtrans(36),dcod(6),dcod0(6),
-     $     trans1(4,5),s,couple,qu,theta,al,drj1,drj2,c1,c2,
+      integer*4 kbe,kbg
+      real*8 dtrans(36),dcod(6),dcod0(6),
+     $     trans1(4,5),s,couple1,qu,theta,al,drj1,drj2,c1,c2,
      $     cost,sint,yr1,yr2,yr3,xr,dz1,dz2,dx3,dy3,dx,dy,
      $     dr1,dr2,dr3,v,sinc
       if(ne .eq. iorgr)then
@@ -19,7 +18,7 @@
      1   ne .lt. iorgr .and. (k .lt. ne .or. k .ge. iorgr))then
         return
       endif
-      s=couple*sign(1.d0,dble(ne-iorgr))
+      s=couple1*sign(1.d0,dble(ne-iorgr))
       if(ltyp .eq. 1)then
         if(kf .ge. mfitgx .and. kf .le. mfitgz)then
           qu=qu+s*geo(kf-mfitgx+1,3,k)
@@ -96,13 +95,12 @@
           dx=rlist(idval(ip)+kytbl(kwDX,ltyp))
           dy=rlist(idval(ip)+kytbl(kwDY,ltyp))
           k1=k+1
-          call qdtrans(latt,nlat,ltyp,itwissp(k),k,k1,
-     $         iv,dtrans,dcod0,0,
-     $         utwiss,gammab,nfam,nut)
+          call qdtrans(ltyp,itwissp(k),k,k1,
+     $         iv,dtrans,dcod0,0,nfam,nut)
           call tftmatu(
      $         utwiss(1,0,itwissp(k1)),utwiss(1,0,itwissp(kbe)),
      $         0.d0,0.d0,
-     $         gammab,trans1,k1,kbe,.false.,.false.)
+     $         trans1,k1,kbe,.false.,.false.)
           dcod(1)=trans1(1,1)*dcod0(1)+trans1(1,2)*dcod0(2)
      $           +trans1(1,3)*dcod0(3)+trans1(1,4)*dcod0(4)
           dcod(2)=trans1(2,1)*dcod0(1)+trans1(2,2)*dcod0(2)

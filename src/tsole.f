@@ -1,17 +1,18 @@
-      subroutine tsole(trans,cod,beam,latt,k,ke,sol,
-     1     twiss,size,gammab,iatr,iacod,iabmi,ndim,plot,rt)
+      subroutine tsole(trans,cod,beam,k,ke,sol,
+     1     iatr,iacod,iabmi,plot,rt)
       use tfstk
       use tffitcode
       use ffs, only:gettwiss
+      use ffs_pointer
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       real*8 conv
       parameter (conv=3.d-16)
       integer*8 iatr,iacod,iabmi,iatrl,iacodl,iabmilz
-      integer*4 latt(2,nlat),k,ke,ndim,i,l
+      integer*4 k,ke,i,l
       real*8 trans(6,12),cod(6),beam(42),bmir(6,6),rtaper
-      real*8 twiss(nlat,-ndim:ndim,*),size(21,nlat),
-     $     gammab(nlat),r
+      real*8 r
       logical*4 sol,plot,rt
       save iabmilz
       data iabmilz /0/
@@ -35,7 +36,7 @@
             rtaper=(1.d0+cod(6))
           endif
         endif
-        call tsole1(trans,cod,beam,gammab,latt,l,rtaper,.true.,.false.)
+        call tsole1(trans,cod,beam,l,rtaper,.true.,.false.)
         if(plot)then
           if(iatr .ne. 0)then
             if(iatr .gt. 0)then
@@ -57,11 +58,11 @@
             twiss(l+1,0,mfitdpy)=cod(4)*r
             twiss(l+1,0,mfitdz )=cod(5)
             twiss(l+1,0,mfitddp)=cod(6)*r
-            call tmov(beam,size(1,l+1),21)
+            beamsize(:,l+1)=beam
           endif
           if(calint .and. iabmi .ne. 0)then
             if(iabmilz .eq. 0)then
-              call tclr(bmir,36)
+              bmir=0.d0
               iabmilz=ktfaddr(kxm2l(bmir,6,6,6,.false.))
             endif
             call tflocal(klist(iabmi+l))
@@ -72,15 +73,17 @@
       return
       end
 
-      subroutine tsole1(trans,cod,beam,gammab,latt,l,rtaper,enarad,qsol)
+      subroutine tsole1(trans,cod,beam,l,rtaper,enarad,qsol)
       use tfstk
+      use ffs_pointer
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
-      integer*4 latt(2,nlat),l,ld,lt,lp,mfr,kb
+      integer*4 l,ld,lt,lp,mfr,kb
       real*8 trans(6,12),cod(6),beam(42),al,theta,
      $     phi,phix,phiy,bzs,cod1(6),trans1(6,6),trans2(6,6),
      $     tfbzs,radlvl,bzs0,fb1,fb2,chi1,chi2,
-     $     gammab(*),psi1,psi2,apsi1,apsi2,f1,rtaper
+     $     psi1,psi2,apsi1,apsi2,f1,rtaper
       logical*4 enarad,dir,ent,qsol,coup,err,enarad1
       ld=latt(1,l)
       lt=idtype(ld)
@@ -228,19 +231,18 @@
       return
       end
 
-      subroutine qsol(trans,cod,gammab,latt,k,coup)
+      subroutine qsol(trans,cod,k,coup)
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 k
-      real*8 trans(4,5),cod(6),transe(6,12),beam(42),
-     $     gammab(*)
-      integer*4 latt(2,nlat)
+      real*8 trans(4,5),cod(6),transe(6,12),beam(42)
       logical*4 coup,radtaper0
       radtaper0=radtaper
       radtaper=.false.
       call tinitr(transe)
-      call tsole1(transe,cod,beam,gammab,latt,k,1.d0,.false.,.true.)
+      call tsole1(transe,cod,beam,k,1.d0,.false.,.true.)
       radtaper=radtaper0
       call qcopymat(trans,transe,.false.)
       coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.

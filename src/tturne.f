@@ -1,22 +1,21 @@
-      subroutine tturne(latt,trans,cod,beam,
-     $     twiss,bsize,gammab,
-     $     iatr,iacod,iabmi,ndim,plot,update,rt)
+      subroutine tturne(trans,cod,beam,
+     $     iatr,iacod,iabmi,plot,update,rt)
       use touschek_table
       use tfstk
       use tffitcode
       use ffs, only: gettwiss
+      use ffs_pointer
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       type (sad_list), pointer :: kli
       real*8 codmax,demax
       parameter (codmax=1.d4,demax=.5d0)
       integer*8 iatr,iacod,iabmi
-      integer*4 ndim,lbegin,lend,ls,l,nvar,lx
-      integer*4 latt(2,nlat)
+      integer*4 lbegin,lend,ls,l,nvar,lx
       real*8 trans(6,12),cod(6),beam(42)
       real*8 trans1(6,12),cod1(6),beam1(42)
-      real*8 twiss(nlat,-ndim:ndim,*),bsize(21,nlat),
-     $     gammab(nlat),vsave(100)
+      real*8 vsave(100)
       real*8 pgev00,frbegin,frend,r,dzmax,alambdarf,
      $     xp,xb,xe,fr,fra,frb,tffselmoffset,z0
       logical*4 sol,plot,update,chg,sol1,cp0,int0,rt
@@ -47,38 +46,38 @@ c      vcsin=0.d0
         npelm=0
       endif
       ipelm=0
-      call tffsbound(nlat,latt,lbegin,frbegin,lend,frend)
+      call tffsbound(lbegin,frbegin,lend,frend)
       if(frbegin .ne. 0.d0)then
-        call qfracsave(latt(1,lbegin),vsave,nvar,ideal,.true.)
+        call qfracsave(latt(1,lbegin),vsave,nvar,.true.)
         call qfraccomp(latt(1,lbegin),frbegin,1.d0,ideal,chg)
-        call tturne1(latt,trans,cod,beam,twiss,bsize,gammab,
-     $       iatr,iacod,iabmi,ndim,plot,sol,rt,lbegin,lbegin)
+        call tturne1(trans,cod,beam,
+     $       iatr,iacod,iabmi,plot,sol,rt,lbegin,lbegin)
         if(chg)then
-          call qfracsave(latt(1,lbegin),vsave,nvar,ideal,.false.)
+          call qfracsave(latt(1,lbegin),vsave,nvar,.false.)
         endif
         ls=lbegin+1
       else
         ls=lbegin
       endif
-      call tturne1(latt,trans,cod,beam,twiss,bsize,gammab,
-     $     iatr,iacod,iabmi,ndim,plot,sol,rt,ls,lend-1)
+      call tturne1(trans,cod,beam,
+     $     iatr,iacod,iabmi,plot,sol,rt,ls,lend-1)
       if(frend .ne. 0.d0)then
-        call qfracsave(latt(1,lend),vsave,nvar,ideal,.true.)
+        call qfracsave(latt(1,lend),vsave,nvar,.true.)
         call qfraccomp(latt(1,lend),0.d0,frend,ideal,chg)
-        call tturne1(latt,trans,cod,beam,twiss,bsize,gammab,
-     $       iatr,iacod,iabmi,ndim,plot,sol,rt,lend,lend)
+        call tturne1(trans,cod,beam,
+     $       iatr,iacod,iabmi,plot,sol,rt,lend,lend)
         if(chg)then
-          call qfracsave(latt(1,lend),vsave,nvar,ideal,.false.)
+          call qfracsave(latt(1,lend),vsave,nvar,.false.)
         endif
       endif
       if(plot)then
-        call tfsetplot(trans,cod,beam,twiss,bsize,ndim,
+        call tfsetplot(trans,cod,beam,
      $       lend,iatr,iacod,.false.,
      $       gammab(lend-1)/gammab(lend))
         xb=lbegin+frbegin
         xe=lend+frend
         do l=1,nlat
-          xp=min(xe,max(xb,tffselmoffset(latt,l,nlat)))
+          xp=min(xe,max(xb,tffselmoffset(l)))
           if(xp .ne. dble(l))then
             lx=int(xp)
             fr=xp-lx
@@ -99,7 +98,7 @@ c      vcsin=0.d0
               endif
               if(codplt)then
                 twiss(l,0,mfitdx:mfitddp)=twiss(lx,0,mfitdx:mfitddp)
-                bsize(:,l)=bsize(:,lx)
+                beamsize(:,l)=beamsize(:,lx)
               endif
             else
               if(lx .eq. lbegin)then
@@ -117,7 +116,7 @@ c      vcsin=0.d0
                 go to 8101
               endif
 c     below is incorrect for fra <> 0
-              call qfracsave(latt(1,lx),vsave,nvar,ideal,.true.)
+              call qfracsave(latt(1,lx),vsave,nvar,.true.)
               call qfraccomp(latt(1,lx),fra,frb,ideal,chg)
               if(.not. chg)then
                 fr=0.d0
@@ -137,12 +136,12 @@ c     below is incorrect for fra <> 0
               else
                 call tinitr(trans1)
               endif
-              call tclr(trans1(1,7),36)
+              trans1(:,7:12)=0.d0
               if(codplt)then
                 cod1=twiss(lx,0,mfitdx:mfitddp)
-                beam1(1:21)=bsize(:,lx)
+                beam1(1:21)=beamsize(:,lx)
                 if(calint)then
-                  beam1(22:42)=bsize(:,lx)
+                  beam1(22:42)=beamsize(:,lx)
                 endif
               endif
               sol1=.false.
@@ -150,15 +149,14 @@ c     below is incorrect for fra <> 0
               codplt=.false.
               int0=calint
               calint=.false.
-              call tturne1(latt,trans1,cod1,beam1,twiss,bsize,gammab,
-     $             int8(0),int8(0),int8(0),ndim,.false.,sol1,rt,
+              call tturne1(trans1,cod1,beam1,
+     $             int8(0),int8(0),int8(0),.false.,sol1,rt,
      $             lx,lx)
               codplt=cp0
               calint=int0
-              call qfracsave(latt(1,lx),vsave,nvar,ideal,.false.)
-              call tfsetplot(trans1,cod1,beam1,twiss,bsize,ndim,
-     $             l,iatr,iacod,
-     $             l .ge. lbegin .and. l .le. lend,
+              call qfracsave(latt(1,lx),vsave,nvar,.false.)
+              call tfsetplot(trans1,cod1,beam1,
+     $             l,iatr,iacod,l .ge. lbegin .and. l .le. lend,
      $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb))
             endif
           endif
@@ -209,26 +207,27 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
       return
       end
 
-      subroutine tturne1(latt,trans,cod,beam,twiss,bsize,gammab,
-     $     iatr,iacod,iabmi,ndim,plot,sol,rt,ibegin,iend)
+      subroutine tturne1(trans,cod,beam,
+     $     iatr,iacod,iabmi,plot,sol,rt,ibegin,iend)
       use tfstk
       use tffitcode
       use ffs, only: gettwiss
+      use ffs_pointer
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       real*8 codmax,demax
       parameter (codmax=1.d4,demax=.5d0)
       integer*8 iatr,iacod,iabmi,kbmz,kbmzi
-      integer*4 ndim,latt(2,nlat),i
+      integer*4 i
       real*8 trans(6,12),cod(6),beam(42),bmir(6,6),
      $     bmi(21),bmh(21)
-      real*8 twiss(nlat,-ndim:ndim,*),bsize(21,nlat),gammab(nlat),
-     $     psi1,psi2,apsi1,apsi2,alid,cod60,
+      real*8 psi1,psi2,apsi1,apsi2,alid,cod60,
      $     r,dir,al,alib,dtheta,theta0,
      $     phi,fb1,fb2,chi1,chi2,ak0,ak1,rtaper
       integer*4 l,ld,lele,lp,kl,
      $     mfr,ibegin,iend,ke
-      logical*4 sol,plot,bmaccum,plotib,isnan,rt
+      logical*4 sol,plot,bmaccum,plotib,isnan,rt,next
       save kbmz
       data kbmz /0/
       if(kbmz .eq. 0)then
@@ -243,7 +242,9 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
       alid=0.d0
       call tsetdvfs
       call tesetdv(cod(6))
+      bradprev=0.d0
       do l=ibegin,iend
+        next=inext(l) .ne. 0
         if(isnan(cod(1)) .or. isnan(cod(3)))then
           cod=0.d0
           call tinitr(trans)
@@ -280,7 +281,7 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
             twiss(l,0,mfitdpy)=cod(4)*r
             twiss(l,0,mfitdz )=cod(5)
             twiss(l,0,mfitddp)=cod(6)*r
-            bsize(:,l)=beam(1:21)
+            beamsize(:,l)=beam(1:21)
           endif
         elseif(radtaper .and. codplt)then
           if(l .eq. 1)then
@@ -317,14 +318,14 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
             if(plotib)then
               if(lele .eq. icDRFT)then
                 if(bmaccum)then
-                  call tadd(bmh,bmi,bmh,21)
+                  bmh=bmh+bmi
                 else
-                  call tmov(bmi,bmh,21)
+                  bmh=bmi
                 endif
                 bmaccum=.true.
               else
                 if(bmaccum)then
-                  call tadd(bmh,bmi,bmi,21)
+                  bmi=bmi+bmh
                 endif
                 call tconvbm(bmi,bmir)
                 dlist(iabmi+l)=
@@ -353,10 +354,10 @@ c        endif
      $           .true.,.false.,calpol,irad,ld)
             call tintrb(trans,cod,beam,bmi,al,al*.5d0,l)
             if(plotib)then
-              call tmul(bmi,.5d0,bmi,21)
-              call tadd(bmh,bmi,bmh,21)
+              bmi=bmi*0.5d0
+              bmh=bmh+bmi
               call tconvbm(bmh,bmir)
-              call tmov(bmi,bmh,21)
+              bmh=bmi
               dlist(iabmi+l)=
      $             dtfcopy1(kxm2l(bmir,6,6,6,.false.))
             endif
@@ -410,7 +411,8 @@ c        endif
      $       nint(rlist(lp+kytbl(kwFRMD,icBEND))),
      $       rlist(lp+kytbl(kwFRIN,icBEND)) .eq. 0.d0,
      $       rlist(lp+kytbl(kwEPS,icBEND)),
-     1       rlist(lp+kytbl(kwRAD,icBEND)) .eq. 0.d0,.true.,ld)
+     1       rlist(lp+kytbl(kwRAD,icBEND)) .eq. 0.d0,.true.,
+     $       next,ld)
         go to 1010
 1400    continue
         if(dir .gt. 0.d0)then
@@ -432,7 +434,7 @@ c        endif
      1       rlist(lp+4),rlist(lp+kytbl(kwRAD,icQUAD)) .eq. 0.d0,
      1       rlist(lp+9) .eq. 0.d0,
      1       rlist(lp+10),rlist(lp+11),mfr,
-     $       rlist(lp+13),rlist(lp+14) .eq. 0.d0,ld)
+     $       rlist(lp+13),rlist(lp+14) .eq. 0.d0,next,ld)
         go to 1010
  1600   ak1=rlist(lp+2)
         if(radcod .and. radtaper)then
@@ -445,8 +447,8 @@ c        endif
         call tthine(trans,cod,beam,lele,al,ak1,
      1             rlist(lp+5),rlist(lp+6),rlist(lp+4),.false.,ld)
         go to 1010
- 3000   call tsole(trans,cod,beam,latt,l,ke,sol,
-     1       twiss,bsize,gammab,iatr,iacod,iabmi,ndim,plot)
+ 3000   call tsole(trans,cod,beam,l,ke,sol,
+     1       iatr,iacod,iabmi,plot,rt)
         alid=0.d0
         go to 1010
  3100   write(*,*)'Use BEND with ANGLE=0 for ST.'
@@ -533,7 +535,7 @@ c        endif
           call tintrb(trans,cod,beam,bmi,alid,alid,l)
           alid=0.d0
         else
-          call tclr(bmi,21)
+          bmi=0.d0
         endif
         if(plotib)then
           if(bmaccum)then
@@ -562,16 +564,17 @@ c        endif
       return
       end
 
-      subroutine tfsetplot(trans,cod,beam,twiss,bsize,ndim,
+      subroutine tfsetplot(trans,cod,beam,
      $     l,iatr,iacod,local,r)
       use tfstk
+      use ffs_pointer
+      use ffs_flag
       use tffitcode
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*8 iatr,iacod
-      integer*4 l,ndim
-      real*8 trans(6,12),cod(6),beam(21),bsize(21,*),r,
-     $     twiss(nlat,-ndim:ndim,*)
+      integer*4 l
+      real*8 trans(6,12),cod(6),beam(21),r
       logical*4 local
       if(iatr .ne. 0)then
         if(iatr .gt. 0)then
@@ -596,15 +599,15 @@ c        endif
         twiss(l,0,mfitdpy)=cod(4)*r
         twiss(l,0,mfitdz )=cod(5)
         twiss(l,0,mfitddp)=cod(6)*r
-        call tmov(beam,bsize(1,l),21)
+        beamsize(:,l)=beam
       endif
       return
       end
 
       subroutine tesetdv(dp)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       real*8 dp,p1
       p1=p0*(1.d0+dp)
       h1emit=p2h(p1)
@@ -616,8 +619,9 @@ c      h1emit=p1+1.d0/(sqrt(1.d0+p1**2)+p1)
 
       subroutine tsetdvfs
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       real*8 rgetgl1
       if(rfsw)then
         dvfs=rgetgl1('FSHIFT')
@@ -629,8 +633,8 @@ c      h1emit=p1+1.d0/(sqrt(1.d0+p1**2)+p1)
 
       subroutine tgetdv(dp,dv,dvdp)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       real*8 dp,dv,dvdp,pr,p1,h1
       pr=1.d0+dp
       p1=p0*pr
@@ -644,8 +648,8 @@ c      h1=p1+1.d0/(sqrt(1.d0+p1**2)+p1)
 
       subroutine tgetdvh(dh,dv)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       real*8 dh,dv,h1,p1
       if(dh .ne. 0.d0)then
         h1=h0+dh

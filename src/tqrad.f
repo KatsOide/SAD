@@ -1,7 +1,9 @@
       subroutine tqrad(np,x,px,y,py,z,g,dv,pz,l,al,ak,
      1                 dx,dy,theta,cost,sint,radlvl,
      1                 f1,f2,mfring)
-      include 'inc/TMACRO.inc'
+      use ffs_flag
+      use tmacro
+      implicit real*8(a-h,o-z)
       integer*4 np,l
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np)
       LOGICAL GAUSSR

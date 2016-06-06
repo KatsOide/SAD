@@ -35,13 +35,14 @@ c
       real*8 v(0:nmax),anorm,enorm
       real*8 aa,f,g,s,r,w,u,h,xmin,z,vv,d,c,p,bb,y,an
       real*8 q,h1,h2,t,r1,r2,ra
-      integer*4 lsep(0:nmax),i,j,k,kkk,
+      integer*4 lsep(0:nmax),i,j,k,kkk,nfail,
      $     mn,it,isep,ibegin,iend,ma,i1,i1mn
       logical*4 svd
 c     begin initialize for preventing compiler warning
       enorm=0.d0
 c     end   initialize for preventing compiler warning
 
+      nfail=4
       mn=min(n,m)
       if(max(mn+m,n) .gt. nmax)then
         write(*,*)' TSVD Too large matrix. ',n,m
@@ -443,8 +444,14 @@ c            an=max(abs(x(i)),abs(x(i+1)))
           enddo do1221
           v(ibegin-1)=0.d0
  1210   continue
-        write(*,*)' TSVD convergence fail. ',iend,v(iend-1),
-     $       x(iend-1),x(iend)
+        if(nfail .ge. 0)then
+          write(*,'(a,i10,1p3g15.7)')' TSVD convergence failed: ',
+     $         iend,v(iend-1),x(iend-1),x(iend)
+          if(nfail .eq. 0)then
+            write(*,*)' -- further message will be suppressed.'
+          endif
+          nfail=nfail-1
+        endif
         iend=iend-1
         v(iend)=0.d0
       enddo do3001

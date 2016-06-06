@@ -1,17 +1,16 @@
-      subroutine tshow(flv,latt,scale,nlist,mult,kx,irtc,ret,lfno)
+      subroutine tshow(kx,irtc,ret,lfno)
       use tfstk
       use ffs
-      use ffslocal, only: ffslocalv
+      use ffs_pointer
+      use ffs_fit
       use tffitcode
       implicit none
-      type (ffslocalv) flv
       type (sad_descriptor) kx
       type (sad_list), pointer :: klx,klxi
-      integer*4 lfno,nc,i,j,kf
-      integer*4 latt(2,nlat),mult(nlat),irtc
-      real*8 scale(mfit1),x
+      integer*4 lfno,nc,i,j,kf,irtc
+      real*8 x
       logical*4 ret
-      character*8 nlist(mfit1),fun
+      character*8 fun
       character*12 name,name1
       character*32 namer,name1r
       character*12 autofg,vout,sout
@@ -24,13 +23,13 @@
       do i=1,flv%nfc
         if(flv%mfitp(i) .ne. 0)then
           if(lfno .gt. 0)then
-            call elname(latt,flv%ifitp(i),mult,name)
+            call elname(flv%ifitp(i),name)
             kf=flv%kfit(i)
             x=flv%fitval(i)/scale(kf)
             vout=autofg(x,'12.9')
             sout=autofg(scale(kf),'12.9')
             if(flv%ifitp(i) .ne. flv%ifitp1(i))then
-              call elname(latt,flv%ifitp1(i),mult,name1)
+              call elname(flv%ifitp1(i),name1)
             else
               name1=' '
             endif
@@ -50,11 +49,11 @@
         j=0
         do i=1,flv%nfc
           if(flv%mfitp(i) .ne. 0)then
-            call elname(latt,flv%ifitp(i),mult,namer)
+            call elname(flv%ifitp(i),namer)
             kf=flv%kfit(i)
             x=flv%fitval(i)/scale(kf)
             if(flv%ifitp(i) .ne. flv%ifitp1(i))then
-              call elname(latt,flv%ifitp1(i),mult,name1r)
+              call elname(flv%ifitp1(i),name1r)
             else
               name1r=' '
             endif

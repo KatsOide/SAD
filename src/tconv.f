@@ -1,7 +1,7 @@
       subroutine tconv(x1,x2,idir)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 idir
       real*8 x1(8),x2(8),pr,h1,p1
       if(idir .ge. 0)then

@@ -1,7 +1,7 @@
       subroutine tspini(iparam,kptbl,spect)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer, parameter :: nkptbl = 6
       integer*4 iparam,kptbl(np0,nkptbl),nexp2(16),i,j,
      $     lp,lpa,itype,ip,kp,nt,nd1,m,italoc,ispp,nd
@@ -71,8 +71,8 @@
 
       subroutine tplini(iparam,kptbl)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 iparam,kptbl(np0,6),j,itype,kp,
      $     lpa,ip,nt,ispp,italoc
       lplot=ilist(2,iparam)

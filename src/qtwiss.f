@@ -1,27 +1,25 @@
-      subroutine qtwiss(latt,twiss,gammab,idp,la,lb,over)
+      subroutine qtwiss(twiss,idp,la,lb,over)
       use tfstk
       use ffs
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),idp,la,lb
-      real*8 twiss(nlat*(2*ndim+1),ntwissfun),gammab(nlat)
+      integer*4 idp,la,lb
+      real*8 twiss(nlat*(2*ndim+1),ntwissfun)
       real*8 trans(4,5),cod(6)
       logical*4 over
-      call qtwiss1(latt,twiss,gammab,idp,la,lb,
-     $     trans,cod,.false.,over)
+      call qtwiss1(twiss,idp,la,lb,trans,cod,.false.,over)
       return
       end
 
-      subroutine qtwiss1(latt,twiss,gammab,idp,la,lb,
-     $     tr,cod,mat,over)
+      subroutine qtwiss1(twiss,idp,la,lb,tr,cod,mat,over)
       use tfstk
       use ffs
+      use ffs_pointer, only:gammab,latt
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),idp,la,lb,ip0,l1,i,l,ip1,ip,ltyp,
+      integer*4 idp,la,lb,ip0,l1,i,l,ip1,ip,ltyp,
      $     j,le,ld,lp,mfr,itgetfpe,k,ibb,ibg,ntfun
-      real*8 twiss(nlat*(2*ndim+1),ntwissfun),gammab(nlat),
-     $     epschop
+      real*8 twiss(nlat*(2*ndim+1),ntwissfun),epschop
       parameter (epschop=1.d-30)
       real*8 trans(4,5),cod(6),tr(4,5),rxy(4,5),
      $     r1,r2,r3,r4,detr,rr,sqrdet,trtr,bx0,by0,
@@ -164,7 +162,7 @@ c     end   initialize for preventing compiler warning
           endif
           call tfbndsol(l1,ibg,ibb)
           if(ibg .gt. 0)then
-            call qsol(trans,cod,gammab,latt,l1,coup)
+            call qsol(trans,cod,l1,coup)
             go to 20
           endif
           le=latt(2,l1)
@@ -346,7 +344,7 @@ c     end   initialize for preventing compiler warning
             go to 1010
           endif
           go to 20
- 3400     call qins(trans,cod,latt,twiss,gammab,l1,idp,
+ 3400     call qins(trans,cod,l1,idp,
      $         rlist(lp+19) .ge. 0.d0,rlist(lp+1),rlist(lp+20),coup,
      $         mat,insmat)
           if(insmat)then
@@ -701,34 +699,34 @@ c     $               'qtwiss-coup-n  ',r1,r2,r3,r4,r1*r4-r2*r3,detp
       return
       end
 
-      subroutine qtrans(latt,gammab,la,lb,trans,cod,over)
+      subroutine qtrans(la,lb,trans,cod,over)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),la,lb,la1,lb1
-      real*8 gammab(nlat),trans(4,5),cod(6),fra,frb
+      integer*4 la,lb,la1,lb1
+      real*8 trans(4,5),cod(6),fra,frb
       logical*4 over
-      call tffsbound1(nlat,latt,la,lb,la1,fra,lb1,frb)
+      call tffsbound1(la,lb,la1,fra,lb1,frb)
 c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       cod(5)=0.d0
-      call qcod(latt,gammab,1,
-     $     la1,fra,lb1,frb,trans,cod,.true.,over)
+      call qcod(1,la1,fra,lb1,frb,trans,cod,.true.,over)
       return
       end
 
-      subroutine qcod(latt,gammab,idp,
-     $     la,fra,lb,frb,
+      subroutine qcod(idp,la,fra,lb,frb,
      $     trans,cod0,codfnd,over)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       real*8 conv,cx,bx,cy,by,r0
       integer*4 itmax
       parameter (conv=1.d-20,itmax=15)
-      integer*4 latt(2,nlat),idp,la,lb,it,i
-      real*8 gammab(nlat),fra,frb,r
+      integer*4 idp,la,lb,it,i
+      real*8 fra,frb,r
       real*8 trans(4,5),cod(6),cod0(6),trans1(4,5),transb(4,5),
      $     transe(4,5),ftwiss(ntwissfun),trans2(4,5),cod00(6)
       logical*4 over,codfnd
@@ -738,10 +736,9 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       do while(it .le. itmax)
         cod=cod0
         if(fra .gt. 0.d0)then
-          call qtwissfrac1(ftwiss,latt,0.d0,gammab,
-     $         transb,cod,idp,
+          call qtwissfrac1(ftwiss,transb,cod,idp,
      $         la,fra,1.d0,.true.,.true.,over)
-          call qtwiss1(latt,rlist(iftwis),gammab,idp,la+1,lb,
+          call qtwiss1(rlist(iftwis),idp,la+1,lb,
      $         trans1,cod,.true.,over)
           do i=1,5
             trans2(1,i)=trans1(1,1)*transb(1,i)+trans1(1,2)*transb(2,i)
@@ -755,12 +752,11 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
           enddo
           trans2(:,5)=trans2(:,5)+trans1(:,5)
         else
-          call qtwiss1(latt,rlist(iftwis),gammab,idp,la,lb,
+          call qtwiss1(rlist(iftwis),idp,la,lb,
      $         trans2,cod,.true.,over)
         endif
         if(frb .gt. 0.d0)then
-          call qtwissfrac1(ftwiss,latt,0.d0,gammab,
-     $         transe,cod,idp,
+          call qtwissfrac1(ftwiss,transe,cod,idp,
      $         lb,0.d0,frb,.true.,.true.,over)
           do i=1,5
             trans(1,i)=transe(1,1)*trans2(1,i)+transe(1,2)*trans2(2,i)
@@ -823,32 +819,32 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       return
       end
 
-      subroutine qtwissfrac(ftwiss,latt,twiss,gammab,l,fr,over)
+      subroutine qtwissfrac(ftwiss,l,fr,over)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),l
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat),fr,
-     $     ftwiss(ntwissfun),trans(4,5),cod(6)
+      integer*4 l
+      real*8 fr,ftwiss(ntwissfun),trans(4,5),cod(6)
       logical*4 over
-      call qtwissfrac1(ftwiss,latt,twiss,gammab,trans,cod,
+      call qtwissfrac1(ftwiss,trans,cod,
      $     0,l,0.d0,fr,.false.,.false.,over)
       return
       end
 
-      subroutine qtwissfrac1(ftwiss,latt,twiss,gammab,
+      subroutine qtwissfrac1(ftwiss,
      $     trans,cod,idp,l,fr1,fr2,mat,force,over)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),idp,l,i,nvar
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat),
-     $     vsave(100),twisss(27),ftwiss(ntwissfun),
+      integer*4 idp,l,i,nvar
+      real*8 vsave(100),twisss(27),ftwiss(ntwissfun),
      $     trans(4,5),cod(6),fr1,fr2,gb0,gb1,dgb
       logical*4 over,chg,mat,force
-      call qfracsave(latt(1,l),vsave,nvar,ideal,.true.)
+      call qfracsave(latt(1,l),vsave,nvar,.true.)
       call qfraccomp(latt(1,l),fr1,fr2,ideal,chg)
       gb0=gammab(l)
       gb1=gammab(l+1)
@@ -859,14 +855,14 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
         pgev=gammab(l)*amass
         call tphyzp
         if(mat)then
-          call qtwiss1(latt,twiss,gammab,idp,l,l+1,
+          call qtwiss1(twiss,idp,l,l+1,
      $         trans,cod,.true.,over)
         elseif(force)then
-          call qtwiss(latt,twiss,gammab,idp,l,l+1,over)
+          call qtwiss(twiss,idp,l,l+1,over)
         else
 c          forall(i=1:ntwissfun)twisss(i)=twiss(l+1,idp,i)
           twisss(1:ntwissfun)=twiss(l+1,idp,1:ntwissfun)
-          call qtwiss(latt,twiss,gammab,idp,l,l+1,over)
+          call qtwiss(twiss,idp,l,l+1,over)
           ftwiss(1:ntwissfun)=twiss(l+1,idp,1:ntwissfun)
           twiss(l+1,idp,1:ntwissfun)=twisss(1:ntwissfun)
 c          do i=1,ntwissfun
@@ -877,7 +873,7 @@ c          enddo
         gammab(l)=gb0
         gammab(l+1)=gb1
         if(chg)then
-          call qfracsave(latt(1,l),vsave,nvar,ideal,.false.)
+          call qfracsave(latt(1,l),vsave,nvar,.false.)
         endif
       else
         forall(i=1:ntwissfun) ftwiss(i)=twiss(l+1,idp,i)
@@ -885,28 +881,25 @@ c          enddo
       return
       end
 
-      subroutine qfracsave(latt,vsave,nvar,ideal,save)
+      subroutine qfracsave(latt1,vsave,nvar,save)
       use tfstk
+      use ffs_flag
       implicit none
       include 'inc/MACCODE.inc'
       include 'inc/MACKW.inc'
-      integer*4 latt(2),lt,nvar
-      real*8 vsave(1)
-      logical*4 ideal,save
-      if(save)then
-        lt=idtype(latt(1))
-        nvar=kytbl(kwmax,lt)-1
-        if(ideal)then
-          call tmov(rlist(idval(latt(1))+1),vsave,nvar)
-        else
-          call tmov(rlist(latt(2)+1),vsave,nvar)
-        endif
+      integer*4 latt1(2),nvar,i
+      real*8 vsave(*)
+      logical*4 save
+      if(ideal)then
+        i=idval(latt1(1))
       else
-        if(ideal)then
-          call tmov(vsave,rlist(idval(latt(1))+1),nvar)
-        else
-          call tmov(vsave,rlist(latt(2)+1),nvar)
-        endif
+        i=latt1(2)
+      endif
+      if(save)then
+        nvar=kytbl(kwMAX,idtype(latt1(1)))-1
+        vsave(1:nvar)=rlist(i+1:i+nvar)
+      else
+        rlist(i+1:i+nvar)=vsave(1:nvar)
       endif
       return
       end

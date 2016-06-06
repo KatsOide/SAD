@@ -3,15 +3,24 @@
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dphix,dphiy,cost,sint,
      1     fs1,fs2,mfring,fringe,eps0)
-      include 'inc/TMACRO.inc'
+      use ffs_flag
+      use tmacro
+      use bendeb, only:epsbend
+      implicit none
 c      parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
 c     1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
 c     1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
-      integer*4 np,l
+      integer*4 np,l,i,mfring,ndiv,nx,ngamma,n
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np)
       real*8 al,phib,phi0,tanp1,tanp2,ak,dx,dy,theta,dphix,dphiy,
      $     cost,sint,fs1,fs2,eps0,bxa,bya,alr,dpradx,dprady,
-     $     alsum
+     $     alsum,brad0,brad1,brad2,rhob,rho0,af,aind,dxfr1,
+     $     dyfr1,dyfra1,p,f,eps,fpx,ff,ur,an,phin,cs00,sn00,
+     $     akk0,by0,byx,drhob,sp,ak1,dp,xi,yi,pxi,pyi,s,dpz1,xr,
+     $     brad,rho,alx,prob,pz1,dpx,pxf,dpz2,pz2,d,
+     $     sinda,da,al0,cosp1,sinp1,cosp2,sinp2,akn,aln,
+     $     bx00,by00,csphi0,dprad,drho,dxfr2,p1,phix,pr,
+     $     rhoe,sinsq0,snphi0,sq00,tran,dyfr2,dyfra2,h
       logical*4 fringe
 c     begin initialize for preventing compiler warning
       brad0=0.d0
@@ -341,7 +350,7 @@ c          pr=(1.d0+g(i))**2
       gy=geo(2,4)
       gz=geo(3,4)
       gt=0.d0
-      call tmov(geo,geo0,9)
+      geo0(:,3)=geo(:,3)
       geo0(1,4)=gx
       geo0(2,4)=gy
       geo0(3,4)=gz
@@ -356,7 +365,7 @@ c          pr=(1.d0+g(i))**2
       integer*4 np,np0,ltbl,lpoint,m,i
       real*8 x(np),y(np),z(np),dv(np),theta,dphi,rho0,v0,
      $     x1,x2,x3,y1,y2,y3,sp0,cp0,r1,r2,
-     $     geoi(3,4),cost,sint,dl
+     $     geoi(3,3),cost,sint,dl
       real*8 geo0(3,4),tax,tay,taz,t0,gx,gy,gz,gt,dvfs
       logical*4 keep
       common /radlcomr/geo0,t0,tax,tay,taz,gx,gy,gz,gt
@@ -373,7 +382,7 @@ c      write(*,*)'tlstore ',lpoint,dphi,dl,theta,rho0,v0
         gx=geo0(1,4)+dl*geo0(1,3)
         gy=geo0(2,4)+dl*geo0(2,3)
         gz=geo0(3,4)+dl*geo0(3,3)
-        call tmov(geo0,geoi,9)
+        geoi=geo0(:,1:3)
         gt=t0+dl/v0
       else
         if(theta .ne. 0.d0)then
@@ -414,6 +423,7 @@ c      write(*,*)'tlstore ',lpoint,dphi,dl,theta,rho0,v0
       endif
       lpoint=lpoint+1
       if(lpoint .gt. ltbl)then
+c        write(*,*)'tlspect ',ltbl,np0,ltbl*8*np0
         new=ktaloc(ltbl*8*np0)
         if(new .gt. 0)then
           call tmov(rlist(katbl),rlist(new),ltbl*np0)
@@ -437,7 +447,7 @@ c      write(*,*)'tlstore ',lpoint,dphi,dl,theta,rho0,v0
         rlist(kai+ltbl*3)=gz+x(i)*geoi(3,1)+y(i)*geoi(3,2)
       enddo
       if(keep)then
-        call tmov(geoi,geo0,9)
+        geo0(:,3)=geoi(:,3)
         if(dphi .ne. 0 .and. theta .ne. 0.d0)then
           geo0(1,2)=-sint*geo0(1,1)+cost*y1
           geo0(1,1)= cost*geo0(1,1)+sint*y1
@@ -515,8 +525,8 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
 
       subroutine tlcalc(ka,ke,lpoint,tx,ty,tz)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*8 ka,ke
       integer*4 lpoint,i,j
       real*8 xtbl(lpoint,4),f(lpoint,10),
@@ -736,8 +746,9 @@ c     end   initialize for preventing compiler warning
       subroutine tsynchrad(p,alr,bxa,bya,
      $     dprad,dpradx,dprady,
      $     mp,l,al,s0,phi,theta,xi,yi,pxi,pyi)
-      use ffs
       use tfstk
+      use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 irtn,ng,l,mp
@@ -777,7 +788,7 @@ c     end   initialize for preventing compiler warning
             phi1=phi*al1/al
           endif
           call tphotonconv(al1,phi1,theta,
-     $         rlist(ifgeo+(l-1)*12),xi,yi,
+     $         geo(:,:,l),xi,yi,
      $         dprad,pxi-thx1,pyi-thy1,
      $         gx,gy,gz,dpgx,dpgy,dpgz,xi1,xi3)
           call tphotonstore(mp,l,gx,gy,gz,
@@ -799,8 +810,8 @@ c     end   initialize for preventing compiler warning
       subroutine tphotoninit()
       use photontable
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       nt=ntable
       lt=ltable
       itp=0
@@ -809,27 +820,27 @@ c     end   initialize for preventing compiler warning
       return
       end
 
-      subroutine tphotonconv(al,phi,theta,geo,xi,yi,dp,dpx,dpy,
+      subroutine tphotonconv(al,phi,theta,geo1,xi,yi,dp,dpx,dpy,
      $     gx,gy,gz,dpgx,dpgy,dpgz,xi1,xi3)
       implicit none
-      real*8 al,phi,theta,geo(3,4),xi,yi,dp,dpx,dpy,gx,gy,gz,
+      real*8 al,phi,theta,geo1(3,4),xi,yi,dp,dpx,dpy,gx,gy,gz,
      $     dpz,x1,x2,x3,y1,y2,y3,z1,z2,z3,rho0,sp0,cp0,r1,r2,
      $     dpgx,dpgy,dpgz,cost,sint,xi1,xi3,chi,xi3a
       cost=cos(theta)
       sint=sin(theta)
-      x1= cost*geo(1,1)-sint*geo(1,2)
-      x2= cost*geo(2,1)-sint*geo(2,2)
-      x3= cost*geo(3,1)-sint*geo(3,2)
-      y1= sint*geo(1,1)+cost*geo(1,2)
-      y2= sint*geo(2,1)+cost*geo(2,2)
-      y3= sint*geo(3,1)+cost*geo(3,2)
+      x1= cost*geo1(1,1)-sint*geo1(1,2)
+      x2= cost*geo1(2,1)-sint*geo1(2,2)
+      x3= cost*geo1(3,1)-sint*geo1(3,2)
+      y1= sint*geo1(1,1)+cost*geo1(1,2)
+      y2= sint*geo1(2,1)+cost*geo1(2,2)
+      y3= sint*geo1(3,1)+cost*geo1(3,2)
       if(phi .eq. 0.d0)then
-        gx=geo(1,4)+geo(1,3)*al
-        gy=geo(2,4)+geo(2,3)*al
-        gz=geo(3,4)+geo(3,3)*al
-        z1=geo(1,3)
-        z2=geo(2,3)
-        z3=geo(3,3)
+        gx=geo1(1,4)+geo1(1,3)*al
+        gy=geo1(2,4)+geo1(2,3)*al
+        gz=geo1(3,4)+geo1(3,3)*al
+        z1=geo1(1,3)
+        z2=geo1(2,3)
+        z3=geo1(3,3)
       else
         rho0=al/phi
         sp0=sin(phi)
@@ -840,15 +851,15 @@ c     end   initialize for preventing compiler warning
         else
           r2=rho0*(1.d0-cp0)
         endif
-        gx=geo(1,4)+(r1*geo(1,3)-r2*x1)
-        gy=geo(2,4)+(r1*geo(2,3)-r2*x2)
-        gz=geo(3,4)+(r1*geo(3,3)-r2*x3)
-        z1=-sp0*x1+cp0*geo(1,3)
-        x1= cp0*x1+sp0*geo(1,3)
-        z2=-sp0*x2+cp0*geo(2,3)
-        x2= cp0*x2+sp0*geo(2,3)
-        z3=-sp0*x3+cp0*geo(3,3)
-        x3= cp0*x3+sp0*geo(3,3)
+        gx=geo1(1,4)+(r1*geo1(1,3)-r2*x1)
+        gy=geo1(2,4)+(r1*geo1(2,3)-r2*x2)
+        gz=geo1(3,4)+(r1*geo1(3,3)-r2*x3)
+        z1=-sp0*x1+cp0*geo1(1,3)
+        x1= cp0*x1+sp0*geo1(1,3)
+        z2=-sp0*x2+cp0*geo1(2,3)
+        x2= cp0*x2+sp0*geo1(2,3)
+        z3=-sp0*x3+cp0*geo1(3,3)
+        x3= cp0*x3+sp0*geo1(3,3)
       endif
       gx=gx+xi*x1+yi*y1
       gy=gy+xi*x2+yi*y2
@@ -868,14 +879,14 @@ c     end   initialize for preventing compiler warning
       return
       end
 
-      subroutine tphotonstore(mp,kp,gx,gy,gz,dpgx,dpgy,dpgz,
+      subroutine tphotonstore(mp,l,gx,gy,gz,dpgx,dpgy,dpgz,
      $     xi1,xi2,xi3)
       use photontable
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*8 kp,ktaloc
-      integer*4 mp
+      integer*4 mp,l
       real*8 gx,gy,gz,dpgx,dpgy,dpgz,xi1,xi2,xi3
       if(ilp .eq. 0)then
         itp=itp+1
@@ -884,7 +895,7 @@ c     end   initialize for preventing compiler warning
       endif
       kp=kphtable(itp)+(ilp-1)*10
       ilist(1,kp)=mp
-      ilist(2,kp)=int(kp)
+      ilist(2,kp)=l
       rlist(kp+1)=gx
       rlist(kp+2)=gy
       rlist(kp+3)=gz
@@ -904,9 +915,9 @@ c     end   initialize for preventing compiler warning
       subroutine tphotonlist()
       use photontable
       use tfstk
+      use tmacro
       implicit none
       type (sad_list), pointer ::kli,klx
-      include 'inc/TMACRO1.inc'
       integer*4 nitem
       parameter (nitem=12)
       integer*8 kax, kp,kt

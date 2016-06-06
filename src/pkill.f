@@ -13,10 +13,10 @@ c
       if(word.eq.'M') then
         if(nmon.eq.0) return
         call getwdl2(word,wordp)
-        ni=ielm(latt,wordp,1,mult,exist)
+        ni=ielm(wordp,exist)
         if(exist) then
           call getwdl2(word,wordp)
-          nf=ielm(latt,wordp,1,mult,exist)
+          nf=ielm(wordp,exist)
           if(exist) then
             call getwdl2(word,wordp)
           else
@@ -38,10 +38,10 @@ c
       elseif(word.eq.'C') then
         if(nmon.eq.0) return
         call getwdl2(word,wordp)
-        ni=ielm(latt,wordp,1,mult,exist)
+        ni=ielm(wordp,exist)
         if(exist) then
           call getwdl2(word,wordp)
-          nf=ielm(latt,wordp,1,mult,exist)
+          nf=ielm(wordp,exist)
           if(exist) then
             call getwdl2(word,wordp)
           else

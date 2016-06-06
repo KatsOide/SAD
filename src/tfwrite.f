@@ -830,8 +830,10 @@ c          enddo
             nc=1
             call cssetp(icsmrk()+1)
           elseif(opts%ndel .gt. 0)then
+c            write(*,*)'tfreadstring-1 ',opts%delim(1:opts%ndel),'$ ',
+c     $           opts%ndel,opts%null
             call tfword(buff(1:nc),nc,opts%delim(1:opts%ndel),
-     $           isw,nc1,next,opts%null)
+     $           opts%ndel,isw,nc1,next,opts%null)
             if(next .gt. 0)then
               call cssetp(icsmrk()+next-1)
             else
@@ -867,7 +869,7 @@ c          enddo
             next=2
           elseif(opts%ndel .gt. 0)then
             call tfword(jlist(is,ib),nc,opts%delim(1:opts%ndel),
-     $           isw,nc1,next,opts%null)
+     $           opts%ndel,isw,nc1,next,opts%null)
             if(nc1 .le. 0 .and. .not. opts%null)then
               if(opts%new)then
                 nc=-1
@@ -1000,12 +1002,13 @@ c        kx=kxsalocb(-1,jlist(is+isw-1,ib),nc)
       return
       end
 
-      subroutine tfword(str,nc,del,is,nw,next,null)
+      subroutine tfword(str,nc,del,ndel,is,nw,next,null)
       implicit none
-      character*(*) del
-      integer*4 nw,is,nc,i,next
+      integer*4 nw,is,nc,i,next,ndel
+      character*(ndel) del
       logical*4 null
       integer*1 str(nc)
+c      write(*,*)'tfword ',len(del)
       if(null)then
         is=1
         if(index(del,char(str(1))) .gt. 0)then
@@ -1027,6 +1030,8 @@ c        kx=kxsalocb(-1,jlist(is+isw-1,ib),nc)
       endif
  10   do i=is+1,nc
         if(index(del,char(str(i))) .gt. 0)then
+c          write(*,*)'tfword ',i,' $',del,'$',
+c     $         char(str(i)),'$'
           nw=i-is
           next=i+1
           return

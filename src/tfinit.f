@@ -1,14 +1,11 @@
-      subroutine tfinit(latt,ival,klp,vlim,
-     1                  iele,iele1,iele2,ibzl,
-     1                  errk,couple,mult)
+      subroutine tfinit
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 i,l,j,ikx,lele,ib,ibz,ibznext,ibzb,k,ibg,ibb
-      integer*4 latt(2,nlat),klp(nele),ival(nele),ibzl(3,nlat)
-      integer*4 iele(nlat),iele1(nlat),iele2(nlat),mult(nlat)
-      real*8 errk(2,nlat),couple(nlat),vlim(nele,2),v
+      real*8 v
       do i=1,nele
         klp(i)=mult(i)
         ival(i)=0
@@ -71,7 +68,7 @@
       mult(nlat)=0
       iele(nlat)=nlat
       iele1(nlat)=0
-      call tfinimult(latt,1,mult,iele,iele1,klp)
+      call tfinimult(1)
       ib=1
       ibz=0
       ibzb=0
@@ -163,11 +160,12 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       subroutine tfbndsol(i,ibg,ibb)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 i,ibg,ibb
-      ibg=ilist(i*3-1,ifibzl)
-      ibb=ilist(i*3  ,ifibzl)
+      ibg=ibzl(2,i)
+      ibb=ibzl(3,i)
       return
       end
 
@@ -199,21 +197,20 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       return
       end
 
-      subroutine tffsrenumber(latt,mult,iele,iele1,iele2,klp,lfno)
+      subroutine tffsrenumber(lfno)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),mult(nlat),
-     $     iele(nlat),iele1(nlat),iele2(nlat),klp(nele),
-     $     next,ielm,lfno,i0
+      integer*4 next,ielm,lfno,i0
       character*(MAXPNAME+16) name
       logical*4 exist
       call peekwdp(name,next)
-      i0=ielm(latt,name,1,mult,exist)
+      i0=ielm(name,exist)
       if(exist)then
         call cssetp(next)
-        call tfinimult(latt,i0,mult,iele,iele1,iele2,klp)
+        call tfinimult(i0)
       else
         call termes(lfno,
      $       'Missing origin component for RENUM_BER',' ')
@@ -221,14 +218,13 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       return
       end
 
-      subroutine tfinimult(latt,i0,mult,iele,iele1,klp)
+      subroutine tfinimult(i0)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),i0,mult(nlat),im(nele),
-     $     iele(nlat),iele1(nlat),klp(nele),i,
-     $     ii,iie,k,ltyp,idx
+      integer*4 i0,im(nele),i,ii,iie,k,ltyp,idx
       do i=1,nlat
         mult(i)=0
       enddo

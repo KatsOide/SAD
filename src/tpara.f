@@ -1,11 +1,10 @@
       subroutine tpara(latt)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 lele,lp,l,lele1,lp1,ib,id,italoc
       integer*4 latt(2,nlat)
       real*8 dir,phi,f1,al,psi1,psi2,theta,dtheta,w,akk,sk1
-      data tparaed/.false./
       if(tparaed)then
         return
       endif
@@ -146,10 +145,10 @@ c      This number should be 2*nslicemax+200 and equal to nblist.
 
       subroutine tclrpara(latt,nl)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 nl,latt(2,nl),i,lp,iwpl,iwpt
-      do 100 i=1,nl
+      do i=1,nl
         lp=latt(2,i)
         if(lp .gt. 0)then
           if(ilist(2,lp) .gt. 0)then
@@ -173,7 +172,7 @@ c      This number should be 2*nslicemax+200 and equal to nblist.
             endif
           endif
         endif
- 100  continue
+      enddo
       tparaed=.false.
       return
       end

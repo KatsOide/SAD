@@ -1,7 +1,8 @@
       subroutine tchge(trans,cod,beam,dx,dy,theta,enter,ld)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 ld
       real*8 trans(6,12),cod(6),beam(42),trans1(6,13),
      $     dx,dy,theta,cost,sint,xi,pxi

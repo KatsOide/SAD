@@ -1,17 +1,13 @@
-      subroutine terror(word,latt,pos,ival,
-     $     couple,iele,iele1,klp,
-     1     errk,mult,master,new,lfno,exist,errflg)
+      subroutine terror(word,new,lfno,exist,errflg)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 lfno,ierr,i,j,k,id,jd,kw,ie,i0,istep,
      $     ifany,le,ld,ldv
-      integer*4 latt(2,0:nlat),ival(nele),iele(nlat),mult(nlat)
-      integer*4 master(nlat),klp(nele),iele1(nlat)
       real*8 errg,dl,dk,ddk,dtheta,dx,dy,err,er,v,
      $     getva,tgauss
-      real*8 errk(2,nlat),couple(nlat),pos(nlat)
       character*(*) word
       character*20  name,word1
       logical exist,new,uni,abbrev,temat,all,errflg,abb,
@@ -49,7 +45,7 @@
         endif
         do 1010 i=1,nlat-1
 c     temat(latt(1,1)... MUST need because of latt defined by (2,0:nlatt)
-          if(temat(latt(1,1),i,mult,name,word1))then
+          if(temat(i,name,word1))then
             exist=.true.
             j=latt(1,i)
             k=latt(2,i)
@@ -183,7 +179,7 @@ c     temat(latt(1,1)... MUST need because of latt defined by (2,0:nlatt)
       do 10 i=1,nlat-1
         id=idtype(latt(1,i))
 c     temat(latt(1,1)... MUST need because of latt defined by (2,0:nlatt)
-        if(temat(latt(1,1),i,mult,name,word))then
+        if(temat(i,name,word))then
           if(id .eq. icDRFT)then
             ie=i
           else
@@ -295,7 +291,7 @@ c     temat(latt(1,1)... MUST need because of latt defined by (2,0:nlatt)
 10    continue
 11    if(.not. uni)then
 c     tfadjust(latt(1,1)... MUST need because of latt defined by (2,0:nlatt)
-        call tfadjst(latt(1,1),pos)
+        call tfadjst
       endif
       if(exist)then
         go to 2

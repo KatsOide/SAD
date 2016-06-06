@@ -202,7 +202,7 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
               idval(idx)=idx1
               ilist(1,idx1)=n
               ilist(2,idx1)=0
-              call tclr(rlist(idx1+1),n-1)
+              rlist(idx1+1:idx1+n)=0.d0
             endif
           elseif(idval(idt) .ne. itype)then
             irtc=itfmessage(9,'FFS::equaltype',

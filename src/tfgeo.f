@@ -1,19 +1,20 @@
-      subroutine tfgeo(latt,geo,pos,gammab,calgeo0)
+      subroutine tfgeo(calgeo0)
       use tfstk
       use ffs
+      use ffs_flag
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 i,lxp,lt,nv,j
-      real*8 geo(3,4,nlat),pos(nlat),gammab(nlat),geo1(3,4),
-     $     vsave(256),dpos,offset,xp,fr,pos0,dox,doy,doz,
-     $     g1,tffsmarkoffset,g2,rgetgl1,poso,circ
-      integer*4 latt(2,nlat)
+      integer*4 i,lxp,lt,nv,j,it
+      real*8 geo1(3,4),vsave(256),dpos,offset,xp,fr,pos0,
+     $     dox,doy,doz,g1,tffsmarkoffset,g2,rgetgl1,poso,circ,
+     $     posi
       logical*4 calgeo,calgeo0,calpol0,chg
       call tfsetparam
       if(.not. geocal)then
         if(gammab(1) .ne. p0)then
           gammab(1)=p0
-          call tfgeo1(latt,geo,pos,gammab,1,nlat,calgeo,.true.)
+          call tfgeo1(1,nlat,calgeo,.true.)
           go to 9000
         endif
         return
@@ -31,23 +32,26 @@
 1030    continue
       endif
 1040  if(calgeo)then
-        call tclr(geo,12)
+        geo(:,:,1)=0.d0
         geo(2,1,1)=-1.d0
         geo(3,2,1)=-1.d0
         geo(1,3,1)= 1.d0
       endif
       pos(1)=0.d0
       gammab(1)=p0
-      call tfgeo1(latt,geo,pos,gammab,1,nlat,calgeo,.false.)
+      inext=0
+      iprev=0
+      call tfgeo1(1,nlat,calgeo,.false.)
       do i=1,nlat-1
-        if(idtype(latt(1,i)) .eq. icMARK)then
+        it=idtype(latt(1,i))
+        if(it .eq. icMARK)then
           offset=tffsmarkoffset(latt(1,i))
           if(offset .ne. 0.d0)then
             xp=max(1.d0,min(dble(nlat),offset+dble(i)))
             lxp=int(xp)
             fr=xp-lxp
             if(fr .eq. 0.d0)then
-              call tmov(geo(1,1,lxp),geo(1,1,i),12)
+              geo(:,:,i)=geo(:,:,lxp)
               pos(i)=pos(lxp)
             else
               lt=idtype(latt(1,lxp))
@@ -61,8 +65,7 @@
               if(chg)then
                 call tmov(geo(1,1,lxp+1),geo1,12)
                 pos0=pos(lxp+1)
-                call tfgeo1(latt,geo,pos,gammab,lxp,lxp+1,
-     $               calgeo,.false.)
+                call tfgeo1(lxp,lxp+1,calgeo,.false.)
                 if(i .ne. lxp+1)then
                   call tmov(geo(1,1,lxp+1),geo(1,1,i),12)
                   pos(i)=pos(lxp+1)
@@ -80,9 +83,7 @@
               endif
               if(i .eq. 1)then
                 dpos=pos(1)
-                do j=1,nlat
-                  pos(j)=pos(j)-dpos
-                enddo
+                pos=pos-dpos
               endif
               if(i .eq. nlat-1)then
                 call tmov(geo(1,1,i),geo(1,1,nlat),12)
@@ -90,13 +91,28 @@
               endif
             endif
           endif
+        else
+          j=i+1
+          posi=pos(j)
+          do while(.true.)
+c            write(*,*)'tfgeo ',i,j,posi,pos(j),inext(i)
+            if(pos(j) .ne. posi)then
+              exit
+            elseif(idtype(latt(1,j)) .eq. it)then
+              inext(i)=j
+              iprev(j)=i
+              exit
+            elseif(j .eq. nlat)then
+              j=0
+              posi=pos(1)
+            endif
+            j=j+1
+          enddo
         endif
       enddo
       if(sorg)then
         poso=pos(iorgr)
-        do i=1,nlat
-          pos(i)=pos(i)-poso
-        enddo
+        pos=pos-poso
       endif
       if(calgeo)then
         dox=geo(1,4,iorgr)+ffv%geo0(1,4)*geo(1,3,iorgr)
@@ -132,9 +148,7 @@
 120     continue
         if(sorg)then
           poso=pos(iorgr)
-          do i=1,nlat
-            pos(i)=pos(i)-poso
-          enddo
+          pos=pos-poso
         endif
       endif
       calpol=calpol0
@@ -157,16 +171,14 @@
       return
       end
 
-      subroutine tfgeo1(latt,geo,pos,gammab,istart0,istop,
-     $     calgeo,acconly)
+      subroutine tfgeo1(istart0,istop,calgeo,acconly)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),istart,istop,ke,ke1,i,k,i1,
-     $     id,istart0
-      real*8 geo(3,4,nlat),pos(nlat),gammab(nlat),p1,h1,ali,
-     $     v,zetau,b,a,xiu,dchi3,coschi,sinchi,
+      integer*4 istart,istop,ke,ke1,i,k,i1,id,istart0
+      real*8 p1,h1,ali,v,zetau,b,a,xiu,dchi3,coschi,sinchi,
      $     x1,x2,x3,y1,y2,y3,rho0,sp0,cp0,r1,r2,cchi1,schi1,
      $     cchi2,schi2,cchi3,schi3,dx,dy,dz,r11,r12,r13,
      $     r31,r32,r33,oneev,etau,phi,fb1,fb2,
@@ -191,7 +203,7 @@ c      h1=sqrt(1.d0+p1**2)
       do i=istart,istop-1
         k=idtype(latt(1,i))
         if(trpt .and. (k .eq. icCAVI .or. k .eq. icMULT))then
-          p1=tfacc(latt,i,p1,h1,.true.)
+          p1=tfacc(i,p1,h1,.true.)
         endif
         gammab(i+1)=p1
       enddo
@@ -207,9 +219,6 @@ c      h1=sqrt(1.d0+p1**2)
           go to 10
         endif
         k=idtype(latt(1,i))
-c        write(*,*)'tfgeo1 ',i,latt(1,i),latt(2,i),
-c     $       ilist(1,latt(2,i)),
-c     $       rlist(latt(2,i)+ilist(1,latt(2,i))),pname(latt(1,i))
         if(kytbl(kwANGL,k) .ne. 0)then
           if(ideal)then
             id=idval(latt(1,i))
@@ -227,7 +236,7 @@ c     $       rlist(latt(2,i)+ilist(1,latt(2,i))),pname(latt(1,i))
      $           -rlist(id+kytbl(kwE2,k))))/sin(.5d0*phi)
           endif
         elseif(k .eq. icSOL)then
-          call tsgeo(latt,gammab,i,ke,ke1,geo,pos,sol)
+          call tsgeo(i,ke,ke1,sol)
           go to 10
         elseif(kytbl(kwL,k) .ne. 0)then
           if(ideal)then
@@ -324,7 +333,7 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
               endif
             endif
           elseif(k .eq. icMAP)then
-            call tgmap(geo,pos,i)
+            call tgmap(i)
           elseif(k .eq. icCOORD)then
             id=idval(latt(1,i))
             cchi1=cos(rlist(id+4))
@@ -408,8 +417,9 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
 
       subroutine tfinitgeo
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       type (sad_descriptor) kx
       integer*4 irtc
       logical*4 err,geocal0
@@ -419,16 +429,17 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
         call tffsa(0,kx,irtc)
         geocal=geocal0
       endif
-      call tffssaveparams(0,-1,0,1,err)
+      call tffssaveparams(0,-1,err)
       return
       end
 
-      real*8 function tfacc(latt,i,p1,h1,dir)
+      real*8 function tfacc(i,p1,h1,dir)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 i,latt(2,nlat),ip,id
+      integer*4 i,ip,id
       real*8 harm,w,v,phic,dh,h2,p2,oneev,h1,p1
       logical*4 dir
       parameter (oneev=1.d0+3.83d-12)

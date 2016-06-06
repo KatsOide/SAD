@@ -1,7 +1,7 @@
       subroutine tturn(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       real*8 plimit,zlimit,vmax
       parameter (plimit=0.7d0,zlimit=1.d10)
       parameter (vmax=.9d0)
@@ -12,22 +12,21 @@
       return
       end
 
-      subroutine tturn0(np,latt,lb,le,x,px,y,py,z,g,dv,pz,kptbl,n,
-     $     wake,iwakeelm,kwaketbl,nwakep)
+      subroutine tturn0(np,latt,lb,le,x,px,y,py,z,g,dv,pz,kptbl,n)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       real*8 plimit,zlimit,vmax
       parameter (plimit=0.7d0,zlimit=1.d10)
       parameter (vmax=.9d0)
       integer*4 np,n,la,ls,lbegin,lend,nvar,lb,le
-      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
+c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
       real*8 frbegin,frend,pgev00
-      integer*4 latt(2,nlat),kptbl(np0,6),nwakep,iwakeelm(nwakep)
-      integer*8 kwaketbl(2,nwakep)
+      integer*4 latt(2,nlat),kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       real*8 sa(6),ss(6,6),vsave(100)
-      logical*4 sol,chg,wake,tfinsol
+      logical*4 sol,chg,tfinsol
       pgev00=pgev
       sol=tfinsol(lb)
       novfl=0
@@ -36,55 +35,54 @@
         call tlstore(np,x,y,z,dv,0.d0,0.d0,0.d0,0.d0,
      $       p0/h0*c,dvfs,.true.)
       endif
-      call tffsbound1(nlat,latt,lb,le,lbegin,frbegin,lend,frend)
+      call tffsbound1(lb,le,lbegin,frbegin,lend,frend)
       if(frbegin .ne. 0.d0)then
-        call qfracsave(latt(1,lbegin),vsave,nvar,ideal,.true.)
+        call qfracsave(latt(1,lbegin),vsave,nvar,.true.)
         call qfraccomp(latt(1,lbegin),frbegin,1.d0,ideal,chg)
         call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
-     $       sol,la,lbegin,lbegin,
-     $       wake,iwakeelm,kwaketbl,nwakep)
+     $       sol,la,lbegin,lbegin)
         if(chg)then
-          call qfracsave(latt(1,lbegin),vsave,nvar,ideal,.false.)
+          call qfracsave(latt(1,lbegin),vsave,nvar,.false.)
         endif
         ls=lbegin+1
       else
         ls=lbegin
       endif
       call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
-     $     sol,la,ls,lend-1,
-     $     wake,iwakeelm,kwaketbl,nwakep)
+     $     sol,la,ls,lend-1)
       if(frend .ne. 0.d0)then
-        call qfracsave(latt(1,lend),vsave,nvar,ideal,.true.)
+        call qfracsave(latt(1,lend),vsave,nvar,.true.)
         call qfraccomp(latt(1,lend),0.d0,frend,ideal,chg)
         call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
-     $       sol,la,lend,lend,
-     $     wake,iwakeelm,kwaketbl,nwakep)
+     $       sol,la,lend,lend)
         if(chg)then
-          call qfracsave(latt(1,lend),vsave,nvar,ideal,.false.)
+          call qfracsave(latt(1,lend),vsave,nvar,.false.)
         endif
       endif
       if(trpt .and. codplt)then
-        call ttstat(np,x,px,y,py,z,g,dv,rlist(ilist(2,iwakepold+4)),
-     1       ' ',
-     1       sa,ss,0.d0,
+        call ttstat(np,x,px,y,py,z,g,dv,0.d0,
+     1       ' ',sa,ss,0.d0,
      1       .false.,.false.,0)
-        itwb=ilist(1,iwakepold+6)
-     1       +ilist(1,iwakepold+5)*ilist(2,iwakepold+5)
-        ntw=(2*ilist(1,iwakepold+5)+1)*ilist(2,iwakepold+5)
-        itwb1=itwb+ntw*14-1
-        itwb2=itwb+ntw*15-1
-        itwb3=itwb+ntw*16-1
-        itwb4=itwb+ntw*17-1
-        isb=ilist(2,iwakepold+6)
-        rlist(itwb1+nlat)=sa(1)
-        rlist(itwb2+nlat)=sa(2)
-        rlist(itwb3+nlat)=sa(3)
-        rlist(itwb4+nlat)=sa(4)
-        call tt6621(ss,rlist(isb+21*(nlat-1)))
+c        call ttstat(np,x,px,y,py,z,g,dv,rlist(ilist(2,iwakepold+4)),
+c     1       ' ',sa,ss,0.d0,
+c     1       .false.,.false.,0)
+c        itwb=ilist(1,iwakepold+6)
+c     1       +ilist(1,iwakepold+5)*ilist(2,iwakepold+5)
+c        ntw=(2*ilist(1,iwakepold+5)+1)*ilist(2,iwakepold+5)
+c        itwb1=itwb+ntw*14-1
+c        itwb2=itwb+ntw*15-1
+c        itwb3=itwb+ntw*16-1
+c        itwb4=itwb+ntw*17-1
+c        isb=ilist(2,iwakepold+6)
+c        rlist(itwb1+nlat)=sa(1)
+c        rlist(itwb2+nlat)=sa(2)
+c        rlist(itwb3+nlat)=sa(3)
+c        rlist(itwb4+nlat)=sa(4)
+c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       endif
       if(rfsw)then
       else
-        call tclr(z,np)
+        z(1:np)=0.d0
       endif
       if(pgev .ne. pgev00)then
         pgev=pgev00
@@ -94,11 +92,11 @@
       end
 
       subroutine tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
-     $     sol,la,lbegin,lend,
-     $     wake,iwakeelm,kwaketbl,nwakep)
+     $     sol,la,lbegin,lend)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_wake
       implicit none
       integer*4 la1
       parameter (la1=15)
@@ -112,18 +110,20 @@
      $     al,a,dpz,al1,ak0,ak1,psi1,psi2,tgauss,ph,harmf,
      $     sspac0,sspac,fw,dx,dy,rot,sspac1,sspac2,
      $     fb1,fb2,chi1,chi2,ak,rtaper
-      integer*4 itwb,ntw,itwb1,itwb2,itwb3,itwb4,
-     $     isb,l,lele,lp,itp,i,mfr,ke,lwl,lwt,lwlc,lwtc,
-     $     nwakep,iwakeelm(nwakep),
+      integer*4 l,lele,lp,itp,i,mfr,ke,lwl,lwt,lwlc,lwtc,
      $     nextwake,nwak,itab(np),izs(np)
-      integer*8 kwaketbl(2,nwakep),iwpl,iwpt,iwplc,iwptc
-      logical*4 sol,out,wake,autophi
+      integer*8 iwpl,iwpt,iwplc,iwptc
+      logical*4 sol,out,autophi
       if(np .le. 0)then
         return
       endif
       call wspaccheck
       out=.true.
       nextwake=0
+      iwpt=0
+      iwpl=0
+      lp=0
+      sspac1=0.d0
       if(wake)then
         do i=1,nwakep
           if(iwakeelm(i) .ge. lbegin)then
@@ -133,14 +133,14 @@
           endif
         enddo
       endif
-      itwb=ilist(1,iwakepold+6)
-     1     +ilist(1,iwakepold+5)*ilist(2,iwakepold+5)
-      ntw=(2*ilist(1,iwakepold+5)+1)*ilist(2,iwakepold+5)
-      itwb1=itwb+ntw*14-1
-      itwb2=itwb+ntw*15-1
-      itwb3=itwb+ntw*16-1
-      itwb4=itwb+ntw*17-1
-      isb=ilist(2,iwakepold+6)
+c      itwb=ilist(1,iwakepold+6)
+c     1     +ilist(1,iwakepold+5)*ilist(2,iwakepold+5)
+c      ntw=(2*ilist(1,iwakepold+5)+1)*ilist(2,iwakepold+5)
+c      itwb1=itwb+ntw*14-1
+c      itwb2=itwb+ntw*15-1
+c      itwb3=itwb+ntw*16-1
+c      itwb4=itwb+ntw*17-1
+c      isb=ilist(2,iwakepold+6)
       xlimit=alost*3.d0
       sspac0=rlist(ifpos+lbegin-1)
       call tsetdvfs
@@ -149,15 +149,18 @@ c        if(mod(l,100) .eq. 1)then
 c          write(*,*)'ttrun1 ',l,z(1),dvfs
 c        endif
         if(trpt .and. codplt)then
-          call ttstat(np,x,px,y,py,z,g,dv,rlist(ilist(2,iwakepold+4)),
-     1         ' ',
-     1         sa,ss,0.d0,
+          call ttstat(np,x,px,y,py,z,g,dv,0.d0,
+     1         ' ',sa,ss,0.d0,
      1         .false.,.false.,0)
-          rlist(itwb1+l)=sa(1)
-          rlist(itwb2+l)=sa(2)
-          rlist(itwb3+l)=sa(3)
-          rlist(itwb4+l)=sa(4)
-          call tt6621(ss,rlist(isb+21*(l-1)))
+c         call ttstat(np,x,px,y,py,z,g,dv,rlist(ilist(2,iwakepold+4)),
+c     1         ' ',
+c     1         sa,ss,0.d0,
+c     1         .false.,.false.,0)
+c          rlist(itwb1+l)=sa(1)
+c          rlist(itwb2+l)=sa(2)
+c          rlist(itwb3+l)=sa(3)
+c          rlist(itwb4+l)=sa(4)
+c          call tt6621(ss,rlist(isb+21*(l-1)))
         endif
         if(la .le. 0)then
           call tapert(l,latt,x,px,y,py,z,g,dv,pz,
@@ -173,8 +176,7 @@ c        endif
         if(sol)then
           if(l .eq. lbegin)then
             call tsol(np,x,px,y,py,z,g,dv,pz,latt,l,lend,
-     $           ke,sol,kptbl,la,n,
-     $           nwakep,iwakeelm,kwaketbl,nwak,nextwake,out)
+     $           ke,sol,kptbl,la,n,nwak,nextwake,out)
           endif
           if(np .le. 0)then
             return
@@ -339,7 +341,7 @@ c        endif
      1       rlist(lp+kytbl(kwRAD,icQUAD)),rlist(lp+8) .eq. 0.d0,
      1       rlist(lp+9) .eq. 0.d0,
      $       rlist(itp+5)*rtaper,rlist(itp+6)*rtaper,
-     1       mfr,rlist(lp+kytbl(kwF1,icQuad)),rlist(lp+13),
+     1       mfr,rlist(lp+13),
      $       rlist(lp+14) .eq. 0.d0)
         go to 1020
  1600   ak1=rlist(lp+2)
@@ -358,8 +360,7 @@ c        endif
      1       rlist(lp+4),itp)
         go to 1020
  2000   call tsol(np,x,px,y,py,z,g,dv,pz,latt,l,lend,
-     $       ke,sol,kptbl,la,n,
-     $       nwakep,iwakeelm,kwaketbl,nwak,nextwake,out)
+     $       ke,sol,kptbl,la,n,nwak,nextwake,out)
         if(np .le. 0)then
           return
         endif
@@ -501,6 +502,7 @@ c          write(*,*)'tturn ',l,gettwiss(mfitdz,l),ph
         endif
         go to 1020
  3300   continue
+c        write(*,*)'ttrun1-temaxp ',np,np0,i,n
         call temap(np,np0,x,px,y,py,z,g,dv,l,n,kptbl)
         go to 1010
  3400   call tins(np,x,px,y,py,z,g,rlist(lp+20))

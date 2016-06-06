@@ -1,10 +1,8 @@
-      subroutine tfgetm(flv,ndp,xa,ya)
+      subroutine tfgetm(ndp,xa,ya)
       use tfstk
       use ffs
-      use ffslocal, only: ffslocalv
       use tffitcode
       implicit none
-      type (ffslocalv) flv
       integer*4 i,ndp(*)
       real*8 xa,ya,alphad,getva,xa1,ya1,xxa1,xya1,yya1
       integer*4 lfnig

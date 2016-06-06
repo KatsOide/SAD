@@ -1,5 +1,5 @@
-Help$Update="$Date: 2016/05/04 05:02:34 $"[8,17];
-Help$Version="1.0.10.8.4k64";
+Help$Update="$Date: 2016/06/06 01:01:26 $"[8,17];
+Help$Version="1.0.10.9.5k64";
 
 Help$Messages=(Print["SAD/FFS Help Update: ",Help$Update];{
 {" ",
@@ -124,7 +124,7 @@ together with the 1D optical parameters.",
 
      {"BEAM(B)",
       "DISP B displays the beam sizes and the projected Twiss parameters, \n\
-calculated either by the BEAMSIZE(BEAM) command or the EMIT command with\n\
+calculated either by Twiss parameters or the EMIT command with\n\
 the CODPLOT flag.\n\n\
 Example: EMITX=...; EMITY=...;DP=...; \n\
          BEAMSIZE(BEAM)\n\
@@ -1905,7 +1905,7 @@ Accessible in the MAIN level.",
      {"GAUSS",
       "GAUSS or NOUNIFORM sets the momentum distribution of the incoming \n\
 beam to be Gaussian, otherwise uniform(square) distribution is assumed.\n\
-It affects the beam size calculated by the BEAM command.",
+It affects the beam size calculated by Twiss parameters.",
       "UNIFORM MEASURE(MEA) BEAM special-variables DP",
       {}},
 
@@ -1943,7 +1943,7 @@ number generator after the particle tracking.",
 
      {"CODPLOT",
       "CODPLOT lets the emittance calculation return the information on \n\
-the closed-orbit and the beam size around the beam line into the FFS optics\n\
+the closed-orbit and the beam size along the beam line into the FFS optics\n\
 buffer, which can be shown by DISPLAY(DISP) or DRAW commands.",
       "EMITTANCE(EMIT) DISPLAY(DISP) DRAW WSPAC",
       {}},
@@ -4541,12 +4541,11 @@ specify logitudinal and transverse dipole wake functions at a component comp\n\
 (string).  Each functions is a list of {z, w} where z is the distance (z>=0)\n\
 and w is the value of the wake, in the unit of either V/C or V/C/m.\n\
    The wake functons are applied at the componet comp, giving kicks to each\n\
-orbit whose initial conditions are given by InitialOrbits.   The sufficient\n\
+orbit whose initial conditions are given by InitialOrbits. The sufficient\n\
 number of orbits depends on the situation.\n\
    WakeFunction is valid only when TRPT and INS, and also either TWAKE or\n\
 LWAKE is ON.\n\
-   For tracking, it is only valid in TrackParticles. If a wake is given by\n\
-the WAKE command to the same component, WakeFunction supersedes.",
+   For tracking, it is only valid in TrackParticles.",
          "TrackParticles Flags:TRPT INS TWAKE LWAKE",
          {}},
 

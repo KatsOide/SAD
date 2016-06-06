@@ -1,8 +1,9 @@
       subroutine tsol(np,x,px,y,py,z,g,dv,pz,
      $     latt,k,kstop,ke,sol,kptbl,la,n,
-     $     nwakep,iwakeelm,kwaketbl,nwak,nextwake,out)
+     $     nwak,nextwake,out)
       use tfstk
       use ffs
+      use ffs_wake
       implicit none
       real*8 conv
       parameter (conv=3.d-16)
@@ -14,10 +15,10 @@
      $     psi1,psi2,bz1,rho1,dx,dy,rot,fb1,fb2,chi1m,chi2m,rtaper,
      $     harm,w,ph
       integer*4 latt(2,nlat),kptbl(np0,6),
-     $     nwakep,iwakeelm(nwakep),nwak,nextwake,n,
+     $     nwak,nextwake,n,
      $     l1,i,ke,l,lt,lp,itp,mfr,itab(np),izs(np),
      $     lenw,kdx,kdy,krot,kstop,kb,lwl,lwt
-      integer*8 kwaketbl(2,nwakep),iwpl,iwpt
+      integer*8 iwpl,iwpt
       logical*4 sol,enarad,dir,out,fringe,autophi
       l1=latt(2,k)
       if(sol)then
@@ -145,13 +146,13 @@
             rtaper=1.d0+(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
           endif
           itp=ilist(2,lp)
-          call tquads(np,x,px,y,py,z,g,dv,pz,al,
+          call tquads(np,x,px,y,py,z,g,dv,pz,l,al,
      $         rlist(lp+kytbl(kwK1,icQUAD))*rtaper,bzs,
      $         rlist(lp+5),rlist(lp+6),rlist(lp+4),
      1         cos(rlist(lp+4)),sin(rlist(lp+4)),
      1         rlist(lp+kytbl(kwRAD,icQUAD)),rlist(lp+9) .eq. 0.d0,
      $         rlist(itp+5)*rtaper,rlist(itp+6)*rtaper,
-     $         mfr,rlist(lp+kytbl(kwF1,icQuad)),rlist(lp+13),l,dir)
+     $         mfr,rlist(lp+13),l,dir)
         elseif(lt .eq. icMULT)then
           dir=rlist(lp+ilist(1,lp)) .gt. 0.d0
           if(dir)then
@@ -277,8 +278,9 @@
 c     
       subroutine trads(x,px,y,py,g,dv,brad,al)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none 
-      include 'inc/TMACRO1.inc'
       real*8 x,px,y,py,g,dv,brad,al,
      $     alc,er,pr,p,hh,dp,de,h1,tran
       alc=al*crad

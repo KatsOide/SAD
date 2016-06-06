@@ -9,7 +9,9 @@ c                                                                 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
       subroutine phsinit(p_in,blist)
-      include 'inc/TMACRO.inc'
+      use ffs_flag
+      use tmacro
+      implicit real*8(a-h,o-z)
       real*8 blist(*),p_in(*)
       real*8 tmp(36),eig(12)
 c      real*8 tmp2(36)
@@ -85,7 +87,9 @@ cc
 c ####### Tracking routine ##################################
 c   
       subroutine phsrot(np,x,px,y,py,z,g,dv,work,blist)
-      include 'inc/TMACRO.inc'
+      use ffs_flag
+      use tmacro
+      implicit real*8(a-h,o-z)
       integer v_eig,v_difu
       parameter(nblist=200,m_PtoN=1,m_prot=37,m_NtoP=73,
      &          m_damp=109,m_difu=145,m_prot_d=181,

@@ -1,8 +1,9 @@
       subroutine csinit(lfn0,iconv1,cmnt1,rec0)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
       include 'inc/TFCSI.inc'
-      include 'inc/TMACRO1.inc'
       integer*4 lfn0,iconv1
       character*(*) cmnt1
       logical*4 rec0

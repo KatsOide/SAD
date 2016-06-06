@@ -1,35 +1,31 @@
-      subroutine qcell(latt,
-     1              twiss,gammab,ibegin,idp,
-     1              hstab,vstab,tracex,tracey,fam,over)
+      subroutine qcell(ibegin,idp,
+     1     hstab,vstab,tracex,tracey,fam,over)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 ibegin,idp
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat),
-     $     tracex,tracey
-      integer*4 latt(2,nlat)
+      real*8 tracex,tracey
       logical*4 hstab,vstab,fam,over
-      call qcell1(latt,
-     1     twiss,gammab,1,0.d0,nlat,0.d0,idp,
+      call qcell1(1,0.d0,nlat,0.d0,idp,
      1     hstab,vstab,tracex,tracey,fam,over,.true.,0)
       return
       end
 
-      subroutine qcell1(latt,twiss,gammab,
-     $     ibegin,frbegin,iend,frend,
+      subroutine qcell1(ibegin,frbegin,iend,frend,
      $     idp,hstab,vstab,tracex,tracey,fam,over,
      $     chgini,lfno)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       real*8 bmin,bmax,amax
       integer*4 itmax
       parameter (bmin=1.d-16,bmax=1.d16,amax=1.d16)
       parameter (itmax=63)
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat),
-     $     ftwiss(ntwissfun),tracex,tracey,frbegin,frend,
+      real*8 ftwiss(ntwissfun),tracex,tracey,frbegin,frend,
      $     tffselmoffset,r1,r2,r3,r4,c1,
      $     s11,s12,s13,s14,s21,s22,s23,s24,
      $     s31,s32,s33,s34,s41,s42,s43,s44,
@@ -40,7 +36,7 @@
      $     xb,xe,xp,fr,fra,frb,tr,
      $     dpsix,dpsiy,cosx,sinx,cosy,siny,
      $     x11,x22,y11,y22
-      integer*4 latt(2,nlat),ibegin,iend,idp,level,
+      integer*4 ibegin,iend,idp,level,
      $     ie1,l,nm,lx,k,lfno
       logical*4 hstab,vstab,over,stab,codfnd,fam,chgini,pri
       real*8 trans(4,5),cod(6),
@@ -61,8 +57,7 @@
       if(cell)then
         codfnd=fam
         cod=twiss(ibegin,idp,mfitdx:mfitddp)
-        call qcod(latt,gammab,idp,
-     $       ibegin,frbegin,iend,frend,
+        call qcod(idp,ibegin,frbegin,iend,frend,
      $       trans,cod,codfnd,over)
         if(orbitcal)then
           twiss(ibegin,idp,mfitdx:mfitddp )=cod
@@ -264,16 +259,13 @@ c     (Note) Disperdion is defined in 2*2 world
       endif
  1    continue
       if(frbegin .gt. 0.d0)then
-        call qtwissfrac1(ftwiss,latt,twiss,gammab,
-     $       trans,cod,idp,ibegin,frbegin,1.d0,
+        call qtwissfrac1(ftwiss,trans,cod,idp,ibegin,frbegin,1.d0,
      $       .false.,.true.,over)
         if(.not. over)then
-          call qtwiss(latt,twiss,gammab,
-     $         idp,ibegin+1,iend,over)
+          call qtwiss(twiss,idp,ibegin+1,iend,over)
         endif
       else
-        call qtwiss(latt,twiss,gammab,
-     $       idp,ibegin,iend,over)
+        call qtwiss(twiss,idp,ibegin,iend,over)
       endif
       ie1=iend
       if(over)then
@@ -285,8 +277,7 @@ c     (Note) Disperdion is defined in 2*2 world
         vstab=.false.
       endif
       if(frend .gt. 0.d0)then
-        call qtwissfrac1(ftwiss,latt,twiss,gammab,
-     $       trans,cod,idp,iend,0.d0,frend,
+        call qtwissfrac1(ftwiss,trans,cod,idp,iend,0.d0,frend,
      $       .false.,.true.,over)
         if(over)then
           hstab=.false.
@@ -299,7 +290,7 @@ c     (Note) Disperdion is defined in 2*2 world
       do l=ibegin+1,min(iend,nlat-1)
         nm=0
         if(idtype(latt(1,l)) .eq. icMARK)then
-          xp=tffselmoffset(latt,l,nlat)
+          xp=tffselmoffset(l)
           if(xp .ne. dble(l))then
 c            write(*,*)'qcell ',l,iend,nlat,xp,xe
             if(xp .ge. xb .and. xp .lt. xe)then
@@ -324,12 +315,10 @@ c            write(*,*)'qcell ',l,iend,nlat,xp,xe
                   fr=0.d0
                   go to 8101
                 endif
-                call qtwissfrac1(ftwiss,latt,twiss,gammab,
+                call qtwissfrac1(ftwiss,
      $               tr,cod,idp,lx,fra,frb,
      $               .false.,.false.,over)
-                do k=1,ntwissfun
-                  twiss(l,idp,k)=ftwiss(k)
-                enddo
+                twiss(l,idp,1:ntwissfun)=ftwiss
               endif
             endif
           endif

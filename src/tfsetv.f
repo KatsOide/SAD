@@ -1,14 +1,11 @@
-      subroutine tfsetv(latt,ivarele,ivvar,ivcomp,valvar,
-     $     nvar,nele,
-     $     klp,ival,couple,errk,iele,iele1,nlat)
+      subroutine tfsetv(nvar)
       use tfstk
+      use ffs, only:nlat
+      use ffs_pointer
       implicit none
       include 'inc/MACCODE.inc'
       include 'inc/MACKW.inc'
-      integer*4 nvar,nele,nlat
-      integer*4 ivarele(nvar),ivvar(nvar),klp(nele),
-     $     iele(nlat),iele1(nlat),latt(2,nlat),ival(nele),ivcomp(nvar)
-      real*8 valvar(nvar),couple(nlat),errk(2,nlat)
+      integer*4 nvar
       integer*4 i,ie,iv,j,ii,ie1
       if(nvar .gt. 0)then
         call tfclrtparaed
@@ -30,20 +27,16 @@
             endif
           enddo
         enddo
-        call tfinitvar(ivarele,ivvar,ivcomp,valvar,nvar,
-     $       latt,klp,ival,errk,nlat,nele)
+        call tfinitvar(nvar)
       endif
       return
       end
 
-      subroutine tfinitvar(ivarele,ivvar,ivcomp,valvar,nvar,
-     $     latt,klp,ival,errk,nlat,nele)
+      subroutine tfinitvar(nvar)
       use tfstk
+      use ffs_pointer
       implicit none
-      integer*4 nvar,nlat,nele,ivarele(nvar),ivvar(nvar),
-     $     latt(2,nlat),klp(nele),ival(nele),ivcomp(nvar),k,
-     $     irtc,icslfno
-      real*8 valvar(nvar),errk(2,nlat)
+      integer*4 nvar,k,irtc,icslfno
       integer*4 i,ie,iv
       call tffscoupledvar(irtc)
       if(irtc .ne. 0)then
@@ -65,12 +58,11 @@
       return
       end
 
-      subroutine tfsavevar(ie,itouchele,itouchv,ntouch,latt,klp,
-     $     nlat,nele)
+      subroutine tfsavevar(ie,ntouch)
       use tfstk
+      use ffs_pointer
       implicit none
-      integer*4 ntouch,nlat,nele,itouchele(ntouch),itouchv(ntouch),
-     $     latt(2,nlat),klp(nele),i,ie
+      integer*4 ntouch,i,ie
       do i=1,ntouch
         if(itouchele(i) .eq. ie)then
           rlist(idval(latt(1,klp(ie)))+itouchv(i))=
@@ -80,20 +72,16 @@
       return
       end
 
-      subroutine tffsadjust(itouchele,itouchv,latt,errk,
-     $     couple,iele,iele1,klp,ival,ntouch)
+      subroutine tffsadjust(ntouch)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 itv(ntouch+1),ite(nele+1)
-      integer*4 ntouch,itouchele(ntouch),itouchv(ntouch),
-     $     latt(2,nlat),klp(nele),i,ie,ival(nele),iele(nlat),j,
-     $     iele1(nlat),irtc,icslfno,ie1,
-     $     ntv,k
-      real*8 errk(2,nlat),couple(nlat)
+      integer*4 ntouch,i,ie,j,irtc,icslfno,ie1,ntv,k
       call tfclrtparaed
-      call tclr(ite,(nele+1)/2)
+      ite=0
       ntv=0
       do j=1,ntouch
         if(ival(itouchele(j)) .ne. itouchv(j))then

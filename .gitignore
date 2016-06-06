@@ -1,12 +1,14 @@
 *.orig
 *.~
-/TclTk
-/arch
-/obj
+/TclTk/*
+/arch/*
+/obj/*
 /sad/*
 .DS_Store
 /CVS
 .#*
+*.enc
+*.exe
 src/sim/CVS/Entries
 mk/CVS/Entries
 Packages/CVS/Entries

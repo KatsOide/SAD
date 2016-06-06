@@ -105,20 +105,21 @@ c     Table of loss-rate
 
       end module touschek_table
 
-      subroutine temit(latt,trans,cod,beam,btr,
-     $     twiss,size,gammab,calem,
-     $     iatr,iacod,iabmi,iamat,
-     $     ndim,plot,params,stab,lfni,lfno)
+      subroutine temit(trans,cod,beam,btr,
+     $     calem,iatr,iacod,iabmi,iamat,
+     $     plot,params,stab,lfni,lfno)
       use tfstk
       use temw
+      use ffs_flag
+      use ffs_pointer
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 npara
       real*8 conv
       parameter (npara=59)
       parameter (conv=1.d-12)
       integer*8 iatr,iacod,iamat,iabmi
-      integer*4 latt(2,nlat),lfni,lfno,ndim,ia,it,i,j,k,
+      integer*4 lfni,lfno,ia,it,i,j,k,
      $k1,k2,k3,m,n, iret,l,italoc
       real*8 trans(6,12),cod(6),beam(42),emx0,emy0,emz0,dl,
      $     heff,orf,phirf,alphap,omegaz,bh,so,s,
@@ -131,13 +132,11 @@ c     Table of loss-rate
       complex*16 cc(6),cd(6),ceig(6),ceig0(6),dceig(6)
       real*8 btr(21,21),emit(21),emit1(42),beam1(42),
      1       beam2(21),params(npara),codold(6),ab(6)
-      real*8 twiss(nlat,-ndim:ndim,*),size(21,nlat),
-     $     polsca(7),demin,rgetgl1
-      real*8 gammab(nlat)
+      real*8 polsca(7),demin,rgetgl1
       character*10 label1(6),label2(6)
       character*11 autofg,vout(9)
       logical*4 plot,pri,fndcod,synchm,intend,stab,calem,
-     $     epi,calcodr
+     $     epi,calcodr,cp0
       data label1/'        X ','       Px ','        Y ',
      1            '       Py ','        Z ','       Pz '/
       data label2/'        x ','    px/p0 ','        y ',
@@ -153,12 +152,11 @@ c     Table of loss-rate
       intend=.false.
       epi=.false.
       cod=codin
-      call tmov(beamin,beam,21)
-c      call tclr(beam,21)
-      call tclr(beam(22),21)
+      beam(1:21)=beamin
+      beam(22:42)=0.d0
       call tfill(codold,10.d0,6)
-      call tclr(params,npara)
-      call tclr(ceig0,12)
+      params=0.d0
+      ceig0=(0.d0,0.d0)
       emxe=rgetgl1('EMITXE')
       emye=rgetgl1('EMITYE')
       emze=rgetgl1('EMITZE')
@@ -181,7 +179,10 @@ c
 c zero clear initial cod (comment out by Y.O, 2010/10/28)
 c
 c        call tclr(cod,6)
-        call tcod(latt,trans,cod,beam,twiss,gammab,ndim,fndcod)
+        cp0=codplt
+        codplt=codplt .or. radtaper
+        call tcod(trans,cod,beam,fndcod)
+        codplt=cp0
         codin=cod
 c        write(*,*)'temit-tcod ',trf0
         if(pri)then
@@ -205,9 +206,8 @@ c        write(*,*)'temit-tcod ',trf0
           call tput(cod,label2,' Entrance ','9.6',1,lfno)
         endif
         call tinitr(trans)
-        call tclr(trans(1,7),36)
-        call tturne(latt,trans,cod,beam,0.d0,0.d0,gammab,0,0,0,
-     1       0,.false.,.false.,.true.)
+        trans(:,7:12)=0.d0
+        call tturne(trans,cod,beam,0,0,0,.false.,.false.,.true.)
       endif
       if(calpol .and. irad .eq. 6)then
         ipoltr=italoc(npelm*36)
@@ -222,10 +222,10 @@ c        write(*,*)'temit-tcod ',trf0
         beam(1:21)=beamin
 c        call tclr(beam,21)
         call tinitr(trans)
-        call tclr(trans(1,7),36)
+        trans(:,7:12)=0.d0
 c        write(*,*)'temit ',trf0,cod
-        call tturne(latt,trans,cod,beam,twiss,size,gammab,0,0,0,
-     1       ndim,.false.,.false.,.true.)
+        call tturne(trans,cod,beam,0,0,0,
+     1       .false.,.false.,.true.)
       endif
 c     call tsymp(trans)
       params(1:6)=cod
@@ -458,9 +458,9 @@ c     $          /pi2/abs(hvc0)/vcalpha*pgev/cos(phirf)*p0/h0
 9014    format(10x,3(a,f10.4,7x))
         write(lfno,*)
       endif
-      call tmov(beam,beam1,21)
+      beam1(1:21)=beam(1:21)
       call tmulbs(beam,ri,.false.,.false.)
-      call tmov(beam,beam2,21)
+      beam2(1:21)=beam(1:21)
       if(.not. synchm)then
         do i=1,6
           beam(ia(5,i))=0.d0
@@ -468,8 +468,10 @@ c     $          /pi2/abs(hvc0)/vcalpha*pgev/cos(phirf)*p0/h0
           trans(5,i)=0.d0
         enddo
       endif
-      call tclr(btr,441)
-      call tclr(trans(1,7),36)
+      btr=0.d0
+      trans(:,7:12)=0.d0
+c      call tclr(btr,441)
+c      call tclr(trans(1,7),36)
       do i=1,5,2
         tune=imag(cd(i/2+4))
         trans(i  ,i+6)= cos(tune)
@@ -682,7 +684,8 @@ c        write(*,*)'temit-intraconv ',iret,beam(27)
      $         dtfcopy1(kxm2l(emit1,0,21,1,.false.))
         endif
         call tinitr(trans)
-        call tclr(trans(1,7),36)
+        trans(:,7:12)=0.d0
+c        call tclr(trans(1,7),36)
         cod=codin
         call tmov(r,btr,78)
         if(trpt)then
@@ -692,8 +695,8 @@ c        write(*,*)'temit-intraconv ',iret,beam(27)
         endif
         emit1(22:42)=beam(22:42)
 c        write(*,*)'temit-7101: ',emit1(6),emit1(27)
-        call tturne(latt,trans,cod,emit1,twiss,size,gammab,
-     $       iatr,iacod,iabmi,ndim,.true.,.false.,.true.)
+        call tturne(trans,cod,emit1,
+     $       iatr,iacod,iabmi,.true.,.false.,.true.)
         if(iamat .gt. 0)then
           dlist(iamat+2)=
      $         dtfcopy1(kxm2l(trans,6,6,6,.false.))
@@ -705,7 +708,7 @@ c        write(*,*)'temit-7101: ',emit1(6),emit1(27)
           if(charge .lt. 0.d0)then
             do i=1,nlat
               do j=1,21
-                size(j,i)=-size(j,i)
+                beamsize(j,i)=-beamsize(j,i)
               enddo
             enddo
           endif
@@ -740,10 +743,11 @@ c        write(*,*)'temit-7101: ',emit1(6),emit1(27)
      $     emx0,emy0,emz0,demin,sigz,sige,dc,
      $     vout,pri,intend,epi,synchm,iret)
       use tfstk
+      use ffs_flag
       use touschek_table
+      use tmacro
       implicit none
       type (sad_list), pointer :: klx,klx1,klx2,klx1d,klx1l
-      include 'inc/TMACRO1.inc'
       integer*4 itmax,ia,m,n
       real*8 resib,dcmin
       parameter (itmax=100,resib=3.d-6,dcmin=0.06d0)
@@ -1232,10 +1236,10 @@ c     write(*,*)'temit ',emy,emy1
       go to 1
       end
 
-      subroutine tinv(r,ri,n,ndim)
+      subroutine tinv(r,ri,n,ndimr)
       implicit none
-      integer*4 i,j,n,ndim
-      real*8 r(ndim,n),ri(ndim,n)
+      integer*4 i,j,n,ndimr
+      real*8 r(ndimr,n),ri(ndimr,n)
       do 10 i=1,n-1,2
         do 20 j=1,n-1,2
           ri(i  ,j  )= r(j+1,i+1)

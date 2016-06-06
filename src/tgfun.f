@@ -1,13 +1,12 @@
-      real*8 function tgfun(kf,kp,idp,utwiss,itwissp,
-     1           tracex,tracey,pos,geo,nfam)
+      real*8 function tgfun(kf,kp,idp)
       use tfstk
       use ffs
+      use ffs_fit
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 kf,kp,idp,itwissp(nlat),nfam
-      real*8 pos(nlat),geo(3,4,nlat),utwiss(ntwissfun,-nfam:nfam,1),
-     $     tracex(-nfam:nfam),tracey(-nfam:nfam),
-     $     tfchi,tphysdisp
+      integer*4 kf,kp,idp
+      real*8 tfchi,tphysdisp
       if(kf .le. mfitddp)then
         tgfun=utwiss(kf,idp,itwissp(kp))
       elseif(kf .ge. mfitpex .and. kf .le. mfitpepy)then
@@ -73,13 +72,14 @@ c     end   initialize for preventing compiler warning
       return
       end
 
-      subroutine tgetphysdisp(twiss,l,pe)
+      subroutine tgetphysdisp(l,pe)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 l
-      real*8 twiss(nlat,-ndim:ndim,*),pe(4)
+      real*8 pe(4)
       real*8 cc,r1,r2,r3,r4,detr
       r1=twiss(l,0,mfitr1)
       r2=twiss(l,0,mfitr2)
@@ -109,37 +109,37 @@ c     end   initialize for preventing compiler warning
       return
       end
 
-      subroutine tgetphysdispu(utwiss,pe)
+      subroutine tgetphysdispu(utwiss1,pe)
       use tfstk
       use ffs
       use tffitcode
       implicit none
-      real*8 utwiss(ntwissfun),pe(4)
+      real*8 utwiss1(ntwissfun),pe(4)
       real*8 cc,r1,r2,r3,r4,detr
-      r1=utwiss(mfitr1)
-      r2=utwiss(mfitr2)
-      r3=utwiss(mfitr3)
-      r4=utwiss(mfitr4)
+      r1=utwiss1(mfitr1)
+      r2=utwiss1(mfitr2)
+      r3=utwiss1(mfitr3)
+      r4=utwiss1(mfitr4)
       detr=r1*r4-r2*r3
       cc=sqrt(1.d0-detr)
-      if(utwiss(mfitdetr) .lt. 1.d0)then
-        pe(1)=cc*utwiss(mfitex)
-     $       +r4*utwiss(mfitey)-r2*utwiss(mfitepy)
-        pe(2)=cc*utwiss(mfitepx)
-     $       -r3*utwiss(mfitey)+r1*utwiss(mfitepy)
-        pe(3)=cc*utwiss(mfitey)
-     $       -r1*utwiss(mfitex)-r2*utwiss(mfitepx)
-        pe(4)=cc*utwiss(mfitepy)
-     $       -r3*utwiss(mfitex)-r4*utwiss(mfitepx)
+      if(utwiss1(mfitdetr) .lt. 1.d0)then
+        pe(1)=cc*utwiss1(mfitex)
+     $       +r4*utwiss1(mfitey)-r2*utwiss1(mfitepy)
+        pe(2)=cc*utwiss1(mfitepx)
+     $       -r3*utwiss1(mfitey)+r1*utwiss1(mfitepy)
+        pe(3)=cc*utwiss1(mfitey)
+     $       -r1*utwiss1(mfitex)-r2*utwiss1(mfitepx)
+        pe(4)=cc*utwiss1(mfitepy)
+     $       -r3*utwiss1(mfitex)-r4*utwiss1(mfitepx)
       else
-        pe(1)=cc*utwiss(mfitey)
-     $       -r1*utwiss(mfitex)-r2*utwiss(mfitepx)
-        pe(2)=cc*utwiss(mfitepy)
-     $       -r3*utwiss(mfitex)-r4*utwiss(mfitepx)
-        pe(3)=cc*utwiss(mfitex)
-     $       +r4*utwiss(mfitey)-r2*utwiss(mfitepy)
-        pe(4)=cc*utwiss(mfitepx)
-     $       -r3*utwiss(mfitey)+r1*utwiss(mfitepy)
+        pe(1)=cc*utwiss1(mfitey)
+     $       -r1*utwiss1(mfitex)-r2*utwiss1(mfitepx)
+        pe(2)=cc*utwiss1(mfitepy)
+     $       -r3*utwiss1(mfitex)-r4*utwiss1(mfitepx)
+        pe(3)=cc*utwiss1(mfitex)
+     $       +r4*utwiss1(mfitey)-r2*utwiss1(mfitepy)
+        pe(4)=cc*utwiss1(mfitepx)
+     $       -r3*utwiss1(mfitey)+r1*utwiss1(mfitepy)
       endif
       return
       end

@@ -1,10 +1,9 @@
-      subroutine tfadjst(latt,pos)
+      subroutine tfadjst
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat)
-      real*8 pos(nlat)
       integer*4 i0,i,id,ip,ld,idj,jp,jd,j
       real*8 s0,sx,sy
       i0=0

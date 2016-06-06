@@ -8,7 +8,7 @@
       r1=trdtbl(1:3,3)
       phi(1:2)=0.d0
       phi(3)=-0.5d0*pi
-      call tfdapert1(ilist(1,ilattp),range,r1,3,trval,
+      call tfdapert1(range,r1,3,trval,
      $     phi,0.d0,3,1,lfno)
       return
       end

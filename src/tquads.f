@@ -1,14 +1,16 @@
-      subroutine tquads(np,x,px,y,py,z,g,dv,pz,al,ak,bz,
+      subroutine tquads(np,x,px,y,py,z,g,dv,pz,l,al,ak,bz,
      1                 dx,dy,theta,cost,sint,radlvl,
-     1                 fringe,f1,f2,mfring,f1r,eps0,ld,forward)
+     1                 fringe,f1,f2,mfring,eps0,ld,forward)
       use tfstk
+      use ffs_flag
+      use tmacro
+      use ffs_pointer, only:inext,iprev
       implicit none
       type (sad_list), pointer :: klx
-      include 'inc/TMACRO1.inc'
       integer*4 np,ld,mfring,i,irtc,ld1,level,m,itfuplevel,
-     $     itfdownlevel
+     $     itfdownlevel,l
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
-     $     al,bz,ak,dx,dy,theta,cost,sint,radlvl,f1,f2,f1r,eps0,
+     $     al,bz,ak,dx,dy,theta,cost,sint,radlvl,f1,f2,f1r,f2r,eps0,
      $     a,aki,akm,ali,alm,b,b1,ea,fx,fy,p,pr,px0,pxf,pyf,rb,x0
       logical*4 enarad,fringe,forward
       character*13 vname
@@ -70,9 +72,19 @@ c          p=(1.d0+g(i))**2
 2110    continue
       endif
       if(enarad)then
+        if(iprev(l) .eq. 0)then
+          f1r=f1
+        else
+          f1r=0.d0
+        endif
+        if(inext(l) .eq. 0)then
+          f2r=f1
+        else
+          f2r=0.d0
+        endif
         b1=brhoz*ak/al
         call trad(np,x,px,y,py,g,dv,0.d0,
-     1       b1,0.d0,0.d0,.5d0*al,f1r,f1r,0.d0,al,1.d0)
+     1       b1,0.d0,0.d0,.5d0*al,f1r,f2r,0.d0,al,1.d0)
       endif
       if(ifv .eq. 0)then
         call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,bz,0.d0,0.d0,eps0)
@@ -128,7 +140,7 @@ c          p=(1.d0+g(i))**2
       endif
       if(enarad)then
         call trad(np,x,px,y,py,g,dv,0.d0,
-     1       b1,0.d0,0.d0,.5d0*al,f1r,f1r,al,al,-1.d0)
+     1       b1,0.d0,0.d0,.5d0*al,f1r,f2r,al,al,-1.d0)
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
         do 2120 i=1,np

@@ -5,8 +5,10 @@
      $     cosw,sinw,sqwh,sinwp1,
      1     enarad,alb,ale,ala,eps)
       use tfstk
+      use ffs_flag
+      use tmacro
+      use ffs_pointer, only:inext,iprev
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 np,mfring,i,l,ndiv,mfr1,mfr2,ndivmax
       parameter (ndivmax=1024)
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,ak,dx,dy,theta,
@@ -18,7 +20,7 @@
      $     dz4,pr,xi,dxfr1,dyfr1,dzfr1,dxfr2,dyfr2,dzfr2,dpz32,
      $     dyfra1,dyfra2,fa,t4,dpx3a,dpz2,t2t3,dcosp,px1px3,
      $     psi1,psi2,wn1,wn2,wnc,aln,phibn,phi0n,alb,ale,ala,als,
-     $     fb1,fb2,eps1,
+     $     fb1,fb2,eps1,f1r,f2r,
      $     coswn1,sinwn1,sqwhn1,sinwp1n1,
      $     coswnc,sinwnc,sqwhnc,sinwp1nc,
      $     coswn2,sinwn2,sqwhn2,sinwp1n2
@@ -51,7 +53,7 @@
      1       fringe,eps)
         return
       elseif(ak .ne. 0.d0)then
-        call tbendi(np,x,px,y,py,z,g,dv,pz,al,phib,phi0,
+        call tbendi(np,x,px,y,py,z,g,dv,pz,l,al,phib,phi0,
      1       cosp1,sinp1,cosp2,sinp2,
      1       ak,dx,dy,theta,dphix,dphiy,cost,sint,
      1       fb1,fb2,mfring,enarad,fringe,eps)
@@ -66,6 +68,16 @@
         enddo
       endif
       if(rad .and. enarad)then
+        if(iprev(l) .eq. 0)then
+          f1r=fb1
+        else
+          f1r=0.d0
+        endif
+        if(inext(l) .eq. 0)then
+          f2r=fb2
+        else
+          f2r=0.d0
+        endif
         eps1=eps
         if(eps1 .eq. 0.d0)then
           eps1=1.d0
@@ -157,7 +169,7 @@
         endif
         call trad(np,x,px,y,py,g,dv,b,0.d0,0.d0,
      1       1.d0/rho0,-tanp1*2.d0/al,.5d0*al,
-     $       fb1,fb2,als,ala,1.d0)
+     $       f1r,f2r,als,ala,1.d0)
       endif
       dxfr1=0.d0
       dyfr1=0.d0
@@ -303,7 +315,7 @@ c        dpz4=-s/(1.d0+sqrt(1.d0-s))
         endif
         call trad(np,x,px,y,py,g,dv,b,0.d0,0.d0,
      1       1.d0/rho0,-tanp2*2.d0/al,.5d0*al,
-     $       fb1,fb2,als,ala,-1.d0)
+     $       f1r,f2r,als,ala,-1.d0)
       endif
       if(dphiy .ne. 0.d0)then
         do i=1,np

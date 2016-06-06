@@ -1,5 +1,6 @@
       real*8 function tluma(np,x,y,xm,ym,sigx,sigy0,bin,nmesh)
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit real*8(a-h,o-z)
       dimension x(2,np),y(2,np)
       real*4 bin(2,0:nmesh,0:nmesh),alum
       s=nmesh/6.d0

@@ -1,69 +1,48 @@
       subroutine tffsa(lfnb,kffs,irtcffs)
       use tfstk
       use ffs
+      use ffs_pointer
       use trackbypass
-      use ffslocal
       use tffitcode
+      use ffs_fit
+      use ffs_wake
       implicit none
       include 'inc/TFCSI.inc'
-      integer*4 ndimmax,nflaga,nflagn,maxrpt,maxlfn,hsrchz,nwakep
-      integer*8 kffs,k,kx,ktaloc,kwakep,kwakeelm,itwisso,
+      integer*4 maxrpt,maxlfn,hsrchz
+      integer*8 kffs,k,kx,ktaloc,itwisso,
      $     ifvalvar2,iparams,kax,iutwiss
-      integer*4 kk,i,lfnb,ia,iflevel,j,nqcol1,ielm,igelm,k1,
+      integer*4 kk,i,lfnb,ia,iflevel,j,ielm,igelm,k1,
      $     ii,irtc0,it,itemon,itmon,itestr,itstr,itt,
      $     itt1,itt2,itt3,itt4,itt5,iuse,l,itfuplevel,icslrecl,
      $     levelr,lfnl0,lpw,meas0,mfpnta,igetgl1,lenw,
-     $     mphi2,newcor,next,nextt,nfam,nfam1,nfcol,nfp,nfr,nmon,
-     $     nqcol,nster,nrpt1,ns,nut,icsmrk,itfpeeko,
-     $     itfgetrecl,nl
+     $     mphi2,newcor,next,nextt,nfp,nmon,
+     $     nster,nrpt1,icsmrk,itfpeeko,itfgetrecl,nl
       real*8 rmax,amus0,amus1,amusstep,apert,axi,ayi,ctime1,
      $     dpm2,dpxi,dpyi,em,emxe,emye,epxi,epyi,pspan,r,r2i,r3i,
      $     trval,rese,v,wa,wd,wl,xa,ya,xxa,xya,yya,getva,rgetgl1,
      $     wp,getvad,tgetgcut
-      parameter (rmax=1.d35,ndimmax=500)
-      parameter (nflaga=48,nflagn=nflag-nflaga)
+      parameter (rmax=1.d35)
       parameter (maxrpt=32,maxlfn=128)
       character*255 word,wordp,title,case,tfgetstrv,tfgetstrs,tfgetstr
-      character*8 nlist(mfit1)
       character*(MAXPNAME) ename
       character*(MAXPNAME+8) name
       character*16 autofg
       character*20 str
-      integer*4 irtcffs,irtc,nc,nfc0
+      integer*4 irtcffs,irtc,nc
       integer*4 lfnstk(maxlfn),lfret(maxlfn),
      $     lfrecl(maxlfn),lflinep(maxlfn),nrpt(maxrpt),
-     $     irptp(maxrpt),iuid(-ndimmax:ndimmax),
-     $     jfam(-ndimmax:ndimmax),kfam(-ndimmax:ndimmax)
-      real*8 scale(mfit1),dp(-ndimmax:ndimmax),
-     $     tracex(-ndimmax:ndimmax),tracey(-ndimmax:ndimmax),
-     $     dfam(4,-ndimmax:ndimmax),residual(-ndimmax:ndimmax),
-     $     df(maxcond),chi0(3),trdtbl(3,6),
-     $     uini(28,-ndimmax:ndimmax)
-      logical*4 hstab(-ndimmax:ndimmax),vstab(-ndimmax:ndimmax),
-     $     geomet,err,new,cmd,open98,abbrev,ftest,
-     $     fitflg,frefix,exist,init,trpt0,expnd,chguse,visit,
-     $     byeall,expndc,tfvcomp,tffsinitialcond,inicond,wake,
+     $     irptp(maxrpt),df(maxcond)
+      real*8 chi0(3),trdtbl(3,6)
+      logical*4 err,new,cmd,open98,abbrev,ftest,
+     $     frefix,exist,init,trpt0,expnd,chguse,visit,
+     $     byeall,expndc,tfvcomp,tffsinitialcond,
      $     geocal0,busy
       logical*4 lfopen(maxlfn)
-      save lfnstk,lfret,lfrecl,lfopen,open98,exist,init,scale,
+      save lfnstk,lfret,lfrecl,lfopen,open98,exist,init,
      $     nmon,nster
       save busy
       data busy /.false./
       common /tt/ itt1,itt2,itt3,itt4,itt5
-      data nlist /
-     $     'AX      ','BX      ','NX      ','AY      ',
-     1     'BY      ','NY      ','EX      ','EPX     ',
-     1     'EY      ','EPY     ','R1      ','R2      ',
-     1     'R3      ','R4      ','DETR    ',
-     $     'DX      ','DPX     ',
-     1     'DY      ','DPY     ','DZ      ','DDP     ',
-     1     'PEX     ','PEPX    ','PEY     ','PEPY    ',
-     $     'TRX     ','TRY     ','LENG    ','GX      ',
-     $     'GY      ','GZ      ','CHI1    ','CHI2    ',
-     $     'CHI3    ','DEX     ','DEPX    ','DEY     ',
-     $     'DEPY    ','DDX     ','DDPX    ','DDY     ',
-     $     'DDPY    ','PDEX    ','PDEPX   ','PDEY    ',
-     $     'PDEPY   '/
       itwisso(kk,i,j)=iftwis+kk+nlat*(i+ndim+(j-1)*ndima)-1
       flv%mcommon=int((sizeof(flv)+7)/8)
 c      write(*,*)'tffsa ',flv%mcommon
@@ -77,7 +56,6 @@ c     begin initialize for preventing compiler warning
       levelr=0
 c     end   initialize for preventing compiler warning
  101  if(lfnb .le. 1 .or. chguse)then
-c        write(*,*)ilist(1,ilattp)
         call tffsalloc(ilist(1,ilattp+1),ilist(1,ilattp))
         if(.not. chguse)then
           call cputime(flv%ctime0,irtc0)
@@ -86,7 +64,7 @@ c        write(*,*)ilist(1,ilattp)
         flv%iut=0
         flv%nvar=0
         flv%ntouch=0
-        call tclr(trdtbl,18)
+        trdtbl=0.d0
         itt1=0
         flv%itmax=40
 c        bzero=1.0d0
@@ -103,14 +81,13 @@ c        bzero=1.0d0
         if(geocal .or. chguse)then
           geocal0=geocal
           geocal=.true.
-          call tfgeo(ilist(1,ilattp+1),rlist(ifgeo),rlist(ifpos),
-     $         rlist(ifgamm),.true.)
+          call tfgeo(.true.)
           geocal=geocal0
         endif
         if(lfnb .le. 0)then
           go to 8900
         endif
-        call tffsinitparam(ilist(1,ilattp+1))
+        call tffsinitparam
 c     kikuchi ... next 1 line added     (11/13/'91)
         call corinit(newcor,nster,nmon,itstr,itestr,itmon,itemon)
 c     
@@ -119,9 +96,8 @@ c
         mfpnt1=nlat
         flv%nfc=0
         call tfinitcalc
-        call tmast(ilist(1,ilattp+1),ilist(1,ifmast),
-     $       ilist(1,ifele1),rlist(ifpos))
-        call twmov(ilist(2,ilattp+1),rlist(iftwis),nlat,ndim,.true.)
+        call tmast
+        call twmov(ilist(2,ilattp+1),twiss,nlat,ndim,.true.)
         if(.not. chguse)then
           do i=1,mfit1
             scale(i)=1.d0
@@ -301,22 +277,16 @@ c          call cssetlinep(icslrecl())
         go to 10
       endif
       call tgetfv
-     1     (word,nlist,flv%nfc,lfno,ilist(1,ilattp+1),flv%icalc,
-     $     flv%ncalc,
-     1     flv%kfit,flv%fitval,flv%mfitp,flv%ifitp,flv%ifitp1,scale,
-     $     maxcond,exist,err)
+     1     (word,flv%nfc,lfno,flv%icalc,flv%ncalc,
+     1     flv%kfit,flv%fitval,flv%mfitp,flv%ifitp,flv%ifitp1,
+     $     exist,err)
       if(err)then
         go to 2
       endif
       if(exist)then
         go to 10
       endif
-      call terror(word,ilist(1,ilattp),rlist(ifpos),
-     $     ilist(1,ifival),
-     $     rlist(ifcoup),ilist(1,ifele),ilist(1,ifele1),
-     $     ilist(1,ifklp),
-     1     rlist(iferrk),ilist(1,ifmult),ilist(1,ifmast),
-     $     new,lfno,exist,err)
+      call terror(word,new,lfno,exist,err)
       if(err)then
         go to 2
       endif
@@ -356,17 +326,12 @@ c          call cssetlinep(icslrecl())
       cmd=.false.
       if(word .eq. 'STOP' .or. word .eq. 'EXIT')then
         call tffsadjustvar
-        call tfsave(word,.false.,ilist(1,ilattp+1),
-     $       ilist(1,iftouchele),ilist(1,iftouchv),flv%ntouch,
-     1       ilist(1,ifklp),ilist(1,ifival),rlist(iftwis),
-     $       rlist(iferrk))
-        call tfgeo(ilist(1,ilattp+1),rlist(ifgeo),
-     $       rlist(ifpos),rlist(ifgamm),.false.)
+        call tfsave(word,.false.,flv%ntouch)
+        call tfgeo(.false.)
         call corfree(newcor,nster,nmon,itstr,itestr,itmon,itemon)
         go to 8900
       elseif(word .eq. 'QUIT')then
-        call tfgeo(ilist(1,ilattp+1),rlist(ifgeo),rlist(ifpos),
-     $       rlist(ifgamm),.false.)
+        call tfgeo(.false.)
         call corfree(newcor,nster,nmon,itstr,itestr,itmon,itemon)
         go to 8900
       elseif(word .eq. 'ABORT')then
@@ -413,16 +378,11 @@ c          call cssetlinep(icslrecl())
           endif
           call tfclearlinep()
           call cssetp(next)
-          call tffssaveparams(2,ilattp,0,err)
+          call tffssaveparams(2,ilattp,err)
           expnd=expnd .and. .not. err
-          call tclrpara(ilist(1,ilattp+1),nlat-1)
+          call tclrpara(latt,nlat-1)
           if(visit)then
-            call tffssaveparams(3,0,0,err)
-            if(err)then
-              call termes(lfno,'Too deep VISIT.',' ')
-              go to 2
-            endif
-            call tffssaveparams(0,ilattp,flv%mcommon,err)
+            call tffssaveparams(0,ilattp,err)
             call tfblocksym('`FitFunction',12)
             call tfblocksym('`FitValue',9)
             call tfblocksym('`ElementValues',14)
@@ -431,7 +391,6 @@ c          call cssetlinep(icslrecl())
             call tfunblocksym('`FitValue',9,.false.)
             call tfunblocksym('`ElementValues',14,.false.)
             call tffsfree
-            call tffsfreebzl
             if(lattuse .eq. lattredef)then
               call tclrline(lattredef)
               lattredef=0
@@ -459,7 +418,7 @@ c          call cssetlinep(icslrecl())
         else
           byeall=.false.
         endif
-        call tffssaveparams(4,0,0,err)
+        call tffssaveparams(4,0,err)
         if(err)then
           if(byeall)then
             go to 10
@@ -468,16 +427,17 @@ c          call cssetlinep(icslrecl())
             go to 2
           endif
         endif
-        call tclrpara(ilist(1,ilattp+1),ilist(1,ilattp))
+        call tclrpara(latt,ilist(1,ilattp))
         call tffsfree
-        call tffsfreebzl
         if(byeall)then
-          call tffssaveparams(-1,0,2,err)
+          call tffssaveparams(-2,0,err)
         endif
-        call tffssaveparams(1,ilattp,flv%mcommon,err)
+        call tffssaveparams(1,ilattp,err)
         lattuse=ilattp
         nlat=ilist(1,ilattp)+1
         dleng =rlist(ilist(2,ilattp)+1)*rgetgl1('FSHIFT')
+        call ffs_init_pointer
+        call ffs_twiss_pointer
         call tmovb(flv%blname,ename,MAXPNAME)
         call tfsetbeamlinename(ename)
         call tfclearlinep()
@@ -491,32 +451,16 @@ c          call cssetlinep(icslrecl())
         call tfgeti(flv%itmax,1.d0,word,lfno,exist)
         go to 31
       elseif(abbrev(word,'ATT_RIBUTE','_'))then
-        call tfattr(word,ilist(1,ilattp+1),ilist(1,ifele),
-     $       ilist(1,ifele1),ilist(1,ifival),
-     $       rlist(ifcoup),rlist(ifaux),rlist(iferrk),
-     $       ilist(1,ifklp),ilist(1,ifmult),lfno,exist,
-     $       kffs,irtcffs,lfnb .gt. 1)
+        call tfattr(word,lfno,exist,kffs,irtcffs,lfnb .gt. 1)
         go to 30
       elseif(word .eq. 'SAVE')then
         call tffsadjustvar
-        call tfsave(word,.true.,ilist(1,ilattp+1),
-     $       ilist(1,iftouchele),ilist(1,iftouchv),flv%ntouch,
-     1       ilist(1,ifklp),ilist(1,ifival),rlist(iftwis),
-     $       rlist(iferrk))
+        call tfsave(word,.true.,flv%ntouch)
       elseif(abbrev(word,'EXPAND','_'))then
         call tffsadjustvar
-        call tfsave(word,.true.,ilist(1,ilattp+1),
-     $       ilist(1,iftouchele),ilist(1,iftouchv),flv%ntouch,
-     1       ilist(1,ifklp),ilist(1,ifival),rlist(iftwis),
-     $       rlist(iferrk))
+        call tfsave(word,.true.,flv%ntouch)
       elseif(word .eq. 'RESET')then
-        call tfrst(word,.true.,ilist(1,ilattp+1),
-     $       ilist(1,ifvarele),ilist(1,ifvvar),
-     $       ilist(1,ifivcomp),rlist(ifvalvar),flv%nvar,
-     $       ilist(1,iftouchele),ilist(1,iftouchv),flv%ntouch,
-     1       ilist(1,ifklp),ilist(1,ifival),ilist(1,ifele),
-     $       ilist(1,ifele1),rlist(iferrk),
-     $       rlist(ifcoup))
+        call tfrst(word,.true.,flv%nvar,flv%ntouch)
       elseif(word .eq. 'FREE' .or. word .eq. 'FIX')then
         frefix=word .eq. 'FREE'
         call peekwd(word,next)
@@ -526,33 +470,25 @@ ckikuchi ... next 5 lines added     (8/17/'90)
           if(frefix) then
             call mcfre(newcor)
           else
-            call mcfix(ilist(1,ilattp+1),rlist(iftwis),
-     $           rlist(ifgamm),newcor)
+            call mcfix(latt,twiss,
+     $           gammab,newcor)
           endif
           go to 10
         endif
-        call tffsfreefix(ilist(1,ilattp+1),frefix,
-     $       ilist(1,ifvarele),ilist(1,ifvvar),
-     $       ilist(1,ifivcomp),rlist(ifvalvar),
-     $       flv%nvar,nve,
-     $       ilist(1,iftouchele),ilist(1,iftouchv),flv%ntouch,
-     $       ilist(1,ifival),ilist(1,ifklp),nele,
-     $       rlist(iferrk),ilist(1,ifmult),ilist(1,ifele),
-     $       ilist(1,ifele1),
-     $       nlat,nlist,lfno)
+        call tffsfreefix(frefix,flv%nvar,flv%ntouch,lfno)
       elseif(word .eq. 'FIT')then
         call getwdl2(word,wordp)
         if(word .eq. 'ALL')then
           mfpnt=1
           mfpnt1=nlat
         else
-          mfpnt=ielm(ilist(1,ilattp+1),wordp,1,ilist(1,ifmult),exist)
+          mfpnt=ielm(wordp,exist)
           if(.not. exist)then
             mfpnt1=mfpnt
             go to 12
           endif
           call getwdl2(word,wordp)
-          mfpnta=ielm(ilist(1,ilattp+1),wordp,1,ilist(1,ifmult),exist)
+          mfpnta=ielm(wordp,exist)
           if(exist)then
             mfpnt1=max(mfpnt,mfpnta)
             mfpnt=min(mfpnt,mfpnta)
@@ -576,9 +512,7 @@ ckikuchi ... next 5 lines added     (8/17/'90)
       elseif(abbrev(word,'CAL_CULATE','_'))then
         call tfcalc(word,nlist,flv%icalc,flv%ncalc,mfpnt,mfpnt1,exist)
         if(exist)then
-          expndc=.not. tfvcomp(ilist(1,ifivcomp),
-     $         ilist(1,ifvarele),ilist(1,ifvvar),
-     $         ilist(1,ifival),nele,flv%nvar)
+          expndc=.not. tfvcomp()
           if(abbrev(word,'NOEXP_AND','_'))then
             word=' '
             expndc=.false.
@@ -592,9 +526,7 @@ ckikuchi ... next 5 lines added     (8/17/'90)
           go to 12
         endif
       elseif(word .eq. 'GO')then
-        expndc=.not. tfvcomp(ilist(1,ifivcomp),
-     $       ilist(1,ifvarele),ilist(1,ifvvar),
-     $       ilist(1,ifival),nele,flv%nvar)
+        expndc=.not. tfvcomp()
         call peekwd(word,next)
         if(abbrev(word,'NOEXP_AND','_'))then
           call cssetp(next)
@@ -614,54 +546,41 @@ ckikuchi ... next 5 lines added     (8/17/'90)
           rlist(ifvalvar+i-1)=rlist(ifvalvar2+i-1)
           rlist(ifvalvar2+i-1)=v
         enddo
-        call tfsetv(ilist(1,ilattp+1),ilist(1,ifvarele),
-     $       ilist(1,ifvvar),ilist(1,ifivcomp),
-     $       rlist(ifvalvar),flv%nvar,nele,
-     $       ilist(1,ifklp),ilist(1,ifival),rlist(ifcoup),
-     $       rlist(iferrk),ilist(1,ifele),
-     $       ilist(1,ifele1),nlat)
+        call tfsetv(flv%nvar)
       elseif(abbrev(word,'T_YPE','_'))then
         call tfsetparam
-        call tftype(ilist(1,ilattp+1),ilist(1,ifival),
-     $       ilist(1,ifele1),rlist(iferrk),ilist(1,ifklp),lfno,word,
-     $       rlist(iftwis),emx,emy,dpmax,nlat,nele,ndim)
+        call tftype(lfno,word)
         go to 12
       elseif(abbrev(word,'DISP_LAY','_'))then
         call tfsetparam
-        call tfdisp(word,id1,id2,
-     1       ilist(1,ilattp+1),rlist(iftwis),rlist(ifpos),rlist(ifgeo),
-     $       rlist(ifgamm),dp0,rlist(ifsize),
-     $       ilist(1,ifele),ilist(1,ifele1),ilist(1,ifival),
-     $       scale,ilist(1,ifmult),lfno,exist)
+        call tfdisp(word,id1,id2,dp0,lfno,exist)
         go to 30
       elseif(word .eq. 'SCALE')then
         call tscale(nlist,scale,lfno)
       elseif(word.eq.'MAPANA') then
-        call gosadpls(ilist(1,ilattp+1),ilist(1,ifklp),
+        call gosadpls(latt,ilist(1,ifklp),
      $       ilist(1,ifele),lfno)
       elseif(abbrev(word,'AP_ERTURE','_'))then
         call tfsetparam
-        call tfaprt(ilist(1,ilattp+1),
-     $       ilist(1,ifmult),lfno,word,rlist(iftwis),rlist(ifgamm))
+        call tfaprt(lfno,word)
         go to 12
       elseif(abbrev(word,'MAT_RIX','_'))then
-        call tfmat(ilist(1,ilattp+1),ilist(1,ifmult),rlist(iftwis),
-     $       rlist(ifgamm),lfno,word,wordp,exist)
+        call tfmat(lfno,word,wordp,exist)
         go to 30
       elseif(abbrev(word,'CHRO_MATICITY','_'))then
         call tfsetparam
         i=0
-        call tfchro(ilist(1,ilattp+1),ilist(1,ifmult),
+        call tfchro(latt,mult,
      1       rlist(itwisso(1,i,1)),rlist(itwisso(1,i,2)),
      $       rlist(itwisso(1,i,3)),rlist(itwisso(1,i,7)),
      1       rlist(itwisso(1,i,4)),rlist(itwisso(1,i,5)),
      $       rlist(itwisso(1,i,6)),lfno)
       elseif(word .eq. 'RADINT')then
         call tfsetparam
-        call intgrl( ilist(1,ilattp+1),rlist(iftwis),0,1.d0,lfno)
+        call intgrl( latt,twiss,0,1.d0,lfno)
       elseif(word .eq. 'DIMAD')then
         call tfsetparam
-        call tdimad(ilist(1,ilattp+1),ilist(1,ifmult),lfno)
+        call tdimad(latt,mult,lfno)
       elseif(word .eq. 'ZAP')then
         call tfsetparam
         apert=getva(exist)
@@ -669,7 +588,7 @@ ckikuchi ... next 5 lines added     (8/17/'90)
           apert=1.d0
         endif
         i=0
-        call tfzap(apert,rlist(ifpos),
+        call tfzap(apert,pos,
      1       rlist(itwisso(1,i,1)),rlist(itwisso(1,i,2)),
      $       rlist(itwisso(1,i,7)),rlist(itwisso(1,i,8)),
      1       rlist(itwisso(1,i,4)),rlist(itwisso(1,i,5)),
@@ -681,57 +600,56 @@ C     23/06/92 212101550  MEMBER NAME  TRCOD    *.FORT     M  E2FORT
 c     write(6,*)'trcod scan ', word ,abbrev(word,'FIXCOD','_')
          if(abbrev(word,'FIXCOD','_')) then
             call getwdl2(word,wordp)
-            meas0=ielm(ilist(1,ilattp+1),wordp,1,ilist(1,ifmult),exist)
+            meas0=ielm(wordp,exist)
             if(exist)then
                flv%measp=meas0
             endif
             title=tfgetstrv('TITLE')
             case=Tfgetstrv('CASE')
-            call trcodf(ilist(1,ilattp+1),flv%measp,name,
-     $           ilist(1,ifmult),
+            call trcodf(latt,flv%measp,name,
+     $           mult,
      &           .false.,word,title,case,exist,
-     &           rlist(iftwis),lfno)
+     &           twiss,lfno)
             if(.not. exist)then
                go to 12
             endif
          else if(abbrev(word,'MVCOD','_')) then
             call getwdl2(word,wordp)
-            meas0=ielm(ilist(1,ilattp+1),wordp,1,ilist(1,ifmult),exist)
+            meas0=ielm(wordp,exist)
             if(.NOT. exist)then
                meas0=flv%measp
             endif
             title=Tfgetstrv('TITLE')
             case=Tfgetstrv('CASE')
-            call trcodM(ilist(1,ilattp+1),meas0,name,ilist(1,ifmult),
+            call trcodM(latt,meas0,name,mult,
      &           .false.,word,title,case,exist,
-     &           rlist(iftwis),lfno)
+     &           twiss,lfno)
             if(.not. exist)then
                go to 12
             endif
          else if(abbrev(word,'STN_COD','_')) then
             title=Tfgetstrv('TITLE')
             case=Tfgetstrv('CASE')
-            call trcodS(ilist(1,ilattp+1),meas0,name,ilist(1,ifmult),
+            call trcodS(latt,meas0,name,mult,
      &           .false.,word,title,case,exist,
-     &           rlist(iftwis),lfno)
+     &           twiss,lfno)
             go to 10
          else if(abbrev(word,'ALIGN','_')) then
             call getwdl(word)
-            call nalign(ilist(1,ilattp+1),ilist(1,ifmult),
+            call nalign(latt,mult,
      $           ilist(1,ifmast),word,lfno,exist)
             go to 10
          else
-            meas0=ielm(ilist(1,ilattp+1),wordp,1,ilist(1,ifmult),exist)
+            meas0=ielm(wordp,exist)
             if(exist)then
                flv%measp=meas0
             endif
-            call elname(ilist(1,ilattp+1),flv%measp,
-     $           ilist(1,ifmult),name)
+            call elname(flv%measp,name)
             title=Tfgetstrv('TITLE')
             case=Tfgetstrv('CASE')
-            call trcoda(ilist(1,ilattp+1),flv%measp,name,
-     $           ilist(1,ifmult),.false.,word,title,case,exist,
-     &           rlist(iftwis),xa,ya,xxa,xya,yya,lfno)
+            call trcoda(latt,flv%measp,name,
+     $           mult,.false.,word,title,case,exist,
+     &           twiss,xa,ya,xxa,xya,yya,lfno)
          end if
          if(.not. exist)then
             go to 12
@@ -776,8 +694,8 @@ c                   directio_vector(angle)
           wd=0.d0
         end if
         call ndelw(wl,wa,wp,wd,
-     &             ilist(1,ilattp+1),ilist(1,ifele),rlist(ifcoup),
-     $       rlist(ifgeo),rlist(ifpos),ilist(1,ifmast))
+     &             latt,ilist(1,ifele),rlist(ifcoup),
+     $       rlist(ifgeo),pos,ilist(1,ifmast))
         go to 10
 c End of the lines added by N. Yamamoto Apr. 25, '93
       else
@@ -788,12 +706,8 @@ c End of the lines added by N. Yamamoto Apr. 25, '93
       endif
       cmd=.false.
       if(word .eq. 'VARY')then
-        call tfchgv(ilist(1,ilattp+1),ilist(1,ifival),
-     $       ilist(1,ifklp),lfno)
-        call tfinitvar(ilist(1,ifvarele),ilist(1,ifvvar),
-     $       ilist(1,ifivcomp),
-     $       rlist(ifvalvar),flv%nvar,ilist(1,ilattp+1),ilist(1,ifklp),
-     $       ilist(1,ifival),rlist(iferrk),nlat,nele)
+        call tfchgv(lfno)
+        call tfinitvar(flv%nvar)
         go to 10
       elseif(abbrev(word,'REJ_ECT','_'))then
         call tfrej
@@ -801,46 +715,47 @@ c End of the lines added by N. Yamamoto Apr. 25, '93
      1    flv%kfit,flv%mfitp,flv%ifitp,flv%ifitp1,exist)
         go to 30
       elseif(abbrev(word,'COUP_LE','_'))then
-        call tfcoup(ilist(1,ilattp+1),rlist(ifcoup),
-     $       ilist(1,ifele),ilist(1,ifele1),
-     $       ilist(1,ifklp),ilist(1,ifival),rlist(iferrk),
-     $       ilist(1,ifmult),lfno,exist)
+        call tfcoup(lfno,exist)
         call tffsadjustvar
         if(.not. exist)then
           go to 2
         endif
         go to 10
       elseif(abbrev(word,'DECOUP_LE','_'))then
-        call tfdecoup(ilist(1,ilattp+1),rlist(ifcoup),
-     $       ilist(1,ifele),ilist(1,ifele1),
-     $       ilist(1,ifklp),ilist(1,ifmult),lfno)
+        call tfdecoup(lfno)
         call tffsadjustvar
         go to 10
       elseif(abbrev(word,'INDEP_ENDENT','_'))then
-        call tfindep(ilist(1,ilattp+1),ilist(1,ifele),ilist(1,ifmult))
+        call tfindep
         call tffsadjustvar
         go to 10
       elseif(word .eq. 'SBUNCH')then
-        iwakepold=ifwakep
-        call tfgetr(rlist(iwakepold+1),1.d0,word,lfno,exist)
-        go to 31
+        call termes(lfno,'?SBUNCH is obsolete.',' ')
+        go to 10
+c        iwakepold=ifwakep
+c        call tfgetr(rlist(iwakepold+1),1.d0,word,lfno,exist)
+c        go to 31
       elseif(word .eq. 'DBUNCH')then
-        iwakepold=ifwakep
-        call tfdbun(word,rlist(ilist(2,iwakepold)),ilist(1,iwakepold),
-     1              lfno,err)
-        go to 32
+        call termes(lfno,'?DBUNCH is obsolete.',' ')
+        go to 10
+c        iwakepold=ifwakep
+c        call tfdbun(word,rlist(ilist(2,iwakepold)),ilist(1,iwakepold),
+c     1              lfno,err)
+c        go to 32
       elseif(word .eq. 'SLICE')then
-        iwakepold=ifwakep
-        ns=ilist(1,iwakepold+2)
-        call tfgeti(ns,1.d0,word,lfno,exist)
-        if(ns .le. 0)then
-          call termes(lfno,'?Parameter out of range in SLICE.',' ')
-          go to 2
-        endif
-        ilist(1,iwakepold+2)=ns
-        go to 31
+        call termes(lfno,'?SLICE is obsolete.',' ')
+        go to 10
+c        iwakepold=ifwakep
+c        ns=ilist(1,iwakepold+2)
+c        call tfgeti(ns,1.d0,word,lfno,exist)
+c        if(ns .le. 0)then
+c          call termes(lfno,'?Parameter out of range in SLICE.',' ')
+c          go to 2
+c        endif
+c        ilist(1,iwakepold+2)=ns
+c        go to 31
       elseif(abbrev(word,'ORI_GIN','_') .or. word .eq. 'ORG')then
-        iorgr=igelm(ilist(1,ilattp+1),word,ilist(1,ifmult),exist)
+        iorgr=igelm(word,exist)
         if(.not. exist)then
           iorgr=1
           go to 12
@@ -863,9 +778,7 @@ c End of the lines added by N. Yamamoto Apr. 25, '93
         endif
         go to 10
       elseif(word .eq. 'SHOW')then
-        call tshow(flv,ilist(1,ilattp+1),
-     $       scale,nlist,ilist(1,ifmult),
-     $       kffs,irtcffs,lfnb .gt. 1,lfno)
+        call tshow(kffs,irtcffs,lfnb .gt. 1,lfno)
         go to 10
       elseif(abbrev(word,'STAT_US','_'))then
         call cputime(ctime1,irtc0)
@@ -879,7 +792,7 @@ c End of the lines added by N. Yamamoto Apr. 25, '93
         call twbuf('sec',lfno,1,lpw,8,1)
         flv%ctime2=ctime1
         call twbuf(word,lfno,1,0,0,-1)
-        do i=1,nflaga
+        do i=1,nflag
           if(fname(i) .ne. ' ')then
             if(flags(i))then
               call twbuf(fname(i),lfno,1,lpw,8,1)
@@ -918,33 +831,22 @@ c        flv%rsconv=rlist(ktlookup('CONVERGENCE'))
         write(word,'(A,I4)')'MAXITERATION=',flv%itmax
         call twbuf(word,lfno,1,lpw,8,1)
         call twbuf(word,lfno,1,lpw,8,-1)
-        call twelm(lfno,ilist(1,ilattp+1),ilist(1,ifmult),
+        call twelm(lfno,latt,mult,
      $       mfpnt,mfpnt1,'FIT',lpw,8)
-        call twelm(lfno,ilist(1,ilattp+1),ilist(1,ifmult),
+        call twelm(lfno,latt,mult,
      $       flv%measp,0,'MEA_SURE',lpw,8)
-        call twelm(lfno,ilist(1,ilattp+1),ilist(1,ifmult),
+        call twelm(lfno,latt,mult,
      $       iorgr,0,'ORG',lpw,8)
-        call twelm(lfno,ilist(1,ilattp+1),ilist(1,ifmult),
+        call twelm(lfno,latt,mult,
      $       id1,id2,'DISP_LAY',lpw,8)
         call twbuf(word,lfno,1,lpw,8,-1)
         go to 10
       elseif(abbrev(word,'VAR_IABLES','_') .or. word .eq. 'VARS')then
-        call tfinitvar(ilist(1,ifvarele),ilist(1,ifvvar),
-     $       ilist(1,ifivcomp),
-     $       rlist(ifvalvar),flv%nvar,ilist(1,ilattp+1),ilist(1,ifklp),
-     $       ilist(1,ifival),rlist(iferrk),nlat,nele)
-        call tfvars(ilist(1,ifvarele),ilist(1,ifvvar),
-     $       rlist(ifvalvar),ilist(1,ifivcomp),
-     $       flv%nvar,ilist(1,ilattp+1),ilist(1,ifklp),ilist(1,ifmult),
-     $       ilist(1,ifival),rlist(ifaux),
-     $       ilist(1,ifele),ilist(1,ifele1),
-     $       rlist(ifcoup),
-     $       kffs,irtcffs,lfnb .gt. 1,lfno)
+        call tfinitvar(flv%nvar)
+        call tfvars(flv%nvar,kffs,irtcffs,lfnb .gt. 1,lfno)
         go to 10
       elseif(abbrev(word,'RENUM_BER','_'))then
-        call tffsrenumber(ilist(1,ilattp+1),ilist(1,ifmult),
-     $       ilist(1,ifele),ilist(1,ifele1),ilist(1,ifele2),
-     $       ilist(1,ifklp),lfno)
+        call tffsrenumber(lfno)
         go to 10
       elseif(abbrev(word,'REV_ERSE','_'))then
         axi=-axi
@@ -962,9 +864,9 @@ c        flv%rsconv=rlist(ktlookup('CONVERGENCE'))
         if(irtc .ne. 0 .or. ktfnonstringq(kx))then
           title=Tfgetstrv('TITLE')
           case=Tfgetstrv('CASE')
-          call twsdrw(ilist(1,ilattp+1),rlist(ifpos),ilist(1,ifele),
-     $         ilist(1,ifmult),word,wordp,lfno,
-     1         rlist(iftwis),rlist(ifgamm),
+          call twsdrw(latt,pos,ilist(1,ifele),
+     $         mult,word,wordp,lfno,
+     1         twiss,gammab,
      1         0,rlist(itmon),rlist(itemon),nmon,
      1         title,case,exist)
         else
@@ -975,7 +877,7 @@ c        flv%rsconv=rlist(ktlookup('CONVERGENCE'))
       elseif(word .eq. 'GEO')then
         title=Tfgetstrv('TITLE')
         case=Tfgetstrv('CASE')
-        call geodrw(ilist(1,ilattp+1),rlist(ifgeo),
+        call geodrw(latt,rlist(ifgeo),
      $       word,lfno,title,case)
         go to 10
       elseif(word .eq. 'TDR')then
@@ -996,21 +898,18 @@ c        flv%rsconv=rlist(ktlookup('CONVERGENCE'))
       if(abbrev(word,'MEA_SURE','_'))then
         call tfsetparam
         call getwdl2(word,wordp)
-        meas0=ielm(ilist(1,ilattp+1),wordp,1,ilist(1,ifmult),exist)
+        meas0=ielm(wordp,exist)
         if(exist)then
           flv%measp=meas0
         endif
-        call elname(ilist(1,ilattp+1),flv%measp,ilist(1,ifmult),name)
+        call elname(flv%measp,name)
 ckikuchi ... 1 line modified
         if(twake .or. lwake)then
-          iwakepold=ifwakep
-          ns=ilist(1,iwakepold+2)
-          np0=max(1,np0/ilist(1,iwakepold)/ns/8)*ns*
-     $         ilist(1,iwakepold)*8
-          if(ifsize .eq. 0)then
-            ifsize=ktaloc(nlat*21)
-            ilist(2,iwakepold+6)=int(ifsize)
-          endif
+c          iwakepold=ifwakep
+c          ns=ilist(1,iwakepold+2)
+c          np0=max(1,np0/ilist(1,iwakepold)/ns/8)*ns*
+c     $         ilist(1,iwakepold)*8
+          call ffs_init_sizep
         endif
         trpt=.true.
         trf0=0.d0
@@ -1018,7 +917,7 @@ ckikuchi ... 1 line modified
         vcalpha=1.d0
         title=tfgetstrv('TITLE')
         case=tfgetstrv('CASE')
-        call trackb(ilist(1,ilattp+1),flv%measp,name,.true.,
+        call trackb(latt,flv%measp,name,.true.,
      $       word,title,case,exist,
      $       kffs,irtcffs,lfnb .gt. 1,
      1       xa,ya,xxa,xya,yya,lfno)
@@ -1027,13 +926,13 @@ ckikuchi ... 1 line modified
         endif
         go to 10
       elseif(abbrev(word,'ORBITJ_ITTER','_'))then
-        call tfojit(rlist(iftwis),lfno)
+        call tfojit(twiss,lfno)
         go to 10
       elseif(abbrev(word,'PUTM_EASURE','_'))then
          call  nfputm(lfno,xa,ya,xxa,xya,yya)
          goto 10
       elseif(abbrev(word,'GET_MEASURE','_'))then
-         call tfgetm(flv,flv%mfitp,xa,ya)
+         call tfgetm(flv%mfitp,xa,ya)
          go to 10
       elseif(abbrev(word,'LOGM_EASURE','_'))then
          write(lfno,9771)xa,ya,xxa,xya,yya
@@ -1041,83 +940,83 @@ ckikuchi ... 1 line modified
          go to 10
 C   19/12/90 302031849  MEMBER NAME  CORRECT  *.FORT     M  E2FORT
       elseif(abbrev(word,'STE_ERING','_'))then
-ckiku   call tfstr(word,ilist(1,ilattp+1),ist,nstr)
+ckiku   call tfstr(word,latt,ist,nstr)
         call mcmess(lfno)
-        call mcstr(word,ilist(1,ilattp+1),
-     $       ilist(1,ifmult),ilist(1,ifmast),itstr,itestr,nster,
+        call mcstr(word,latt,
+     $       mult,ilist(1,ifmast),itstr,itestr,nster,
      $       .false.,lfno)
         go to 12
       elseif(word.eq.'COUPLESTE') then
-        call mcoupste(word,ilist(1,ilattp+1),ilist(1,ifmult),
+        call mcoupste(word,latt,mult,
      $       rlist(itstr),nster,lfno)
         go to 12
       elseif(word.eq.'READSTE')then
-        call mcstr(' ',ilist(1,ilattp+1),ilist(1,ifmult),
+        call mcstr(' ',latt,mult,
      $       ilist(1,ifmast),itstr,itestr,nster,.true.,lfno)
-        call preadstr(word,ilist(1,ilattp+1),rlist(iftwis),
-     $       ilist(1,ifmult),rlist(itstr),nster,lfno)
+        call preadstr(word,latt,twiss,
+     $       mult,rlist(itstr),nster,lfno)
         go to 12
       elseif(word.eq.'WRITESTE')then
-        call pwrtstr(word,ilist(1,ilattp+1),rlist(iftwis),
-     $       ilist(1,ifmult),rlist(itstr),nster,lfno)
+        call pwrtstr(word,latt,twiss,
+     $       mult,rlist(itstr),nster,lfno)
         go to 12
       elseif(abbrev(word,'MON_ITOR','_'))then
         call mcmess(lfno)
-        call mcmon(word,ilist(1,ilattp+1),ilist(1,ifmult),rlist(ifpos),
+        call mcmon(word,latt,mult,pos,
      $       ilist(1,ifmast),itmon,itemon,nmon,.false.,
      &             lfno)
         go to 12
       elseif(word.eq.'READMON')then
-        call mcmon(' ',ilist(1,ilattp+1),ilist(1,ifmult),rlist(ifpos),
+        call mcmon(' ',latt,mult,pos,
      $       ilist(1,ifmast),itmon,itemon,nmon,.true.,
      &             lfno)
-        call preadmon(word,ilist(1,ilattp+1),rlist(iftwis),
-     $       ilist(1,ifmult),rlist(itmon),nmon,lfno)
+        call preadmon(word,latt,twiss,
+     $       mult,rlist(itmon),nmon,lfno)
         go to 12
       elseif(word.eq.'WRITEMON')then
-        call pwrtmon(word,ilist(1,ilattp+1),rlist(iftwis),
-     $       ilist(1,ifmult),rlist(itmon),nmon,lfno)
+        call pwrtmon(word,latt,twiss,
+     $       mult,rlist(itmon),nmon,lfno)
         go to 12
       elseif(word.eq.'KILL')then
-        call pkill(word,wordp,ilist(1,ilattp+1),ilist(1,ifmult),
+        call pkill(word,wordp,latt,mult,
      $       rlist(itmon),nmon,rlist(itstr),
      1       nster,lfno)
         go to 12
       elseif(abbrev(word,'COR_RECT','_')) then
         call mcmess(lfno)
         call mccor(word,wordp,
-     $       ilist(1,ilattp+1),rlist(ifpos),rlist(iftwis),
-     $       rlist(ifgamm),ilist(1,ifmult),ilist(1,ifmast),flv%kfit,
+     $       latt,pos,twiss,
+     $       gammab,mult,ilist(1,ifmast),flv%kfit,
      $       flv%ifitp,
      $       flv%mfitp,flv%fitval,flv%nfc,rlist(itstr),rlist(itestr),
      $       nster,
      $       rlist(itmon),rlist(itemon),nmon,newcor,lfno)
         go to 12
       elseif(abbrev(word,'KI_CK','_'))then
-        call mckick(word,wordp,ilist(1,ilattp+1),ilist(1,ifmult))
+        call mckick(word,wordp,latt,mult)
         go to 12
       elseif(abbrev(word,'CLE_AR','_')) then
-        call mclear(word,ilist(1,ilattp+1),rlist(itstr),nster)
+        call mclear(word,latt,rlist(itstr),nster)
         goto 12
       elseif(abbrev(word,'UNDO_CORRECT','_')) then
-        call pundo(ilist(1,ilattp+1),rlist(iftwis),
-     $       rlist(ifgamm),0,1.d0+dp0)
+        call pundo(latt,twiss,
+     $       gammab,0,1.d0+dp0)
         go to 10
       elseif(word.eq.'SUM+'.or.word.eq.'SUM-'.or.word.eq.'SUM'.or.
      1       abbrev(word,'SUMC_LR','_')) then
         title=Tfgetstrv('TITLE')
         case=Tfgetstrv('CASE')
-        call pstati(word,ilist(1,ilattp+1),rlist(iftwis),
+        call pstati(word,latt,twiss,
      $       rlist(itmon),rlist(itemon),nmon,
      1       rlist(itstr),nster,title,case,lfno)
         go to 12
       elseif(abbrev(word,'STO_RE','_')) then
-        call mstore(word,ilist(1,ilattp+1),rlist(iftwis),
+        call mstore(word,latt,twiss,
      $       rlist(itstr),nster,rlist(itmon),
      1       rlist(itemon),nmon)
         go to 12
       elseif(abbrev(word,'RECA_LL','_')) then
-        call mrecal(word,ilist(1,ilattp+1),rlist(iftwis),
+        call mrecal(word,latt,twiss,
      $       rlist(itstr),nster,rlist(itmon),rlist(itemon),nmon,lfno)
         go to 12
       elseif(abbrev(word,'DIR_ECTORY','_'))then
@@ -1130,21 +1029,21 @@ ckiku   call tfstr(word,ilist(1,ilattp+1),ist,nstr)
      z       .or.abbrev(word,'FAC_TOR','_')
      z       .or.abbrev(word,'DIV_IDE','_')
      1       .or.word.eq.'PUSH'.or.word.eq.'DROP'            ) then
-        call mstack(word,ilist(1,ilattp+1),rlist(iftwis),
+        call mstack(word,latt,twiss,
      $       rlist(itstr),nster,rlist(itmon),
      1       rlist(itemon),nmon)
         goto 12
       elseif(word.eq.'TRIM') then
-        call ptrim(word,ilist(1,ilattp+1),rlist(iftwis),rlist(itmon),
+        call ptrim(word,latt,twiss,rlist(itmon),
      $       rlist(itemon),nmon,lfno)
         goto 12
       elseif(word.eq.'TCOD') then
-        call mcrcod(ilist(1,ilattp+1),rlist(iftwis),ilist(1,ifmult),
+        call mcrcod(latt,twiss,mult,
      $       rlist(itmon),rlist(itemon),nmon,
      $       .false.,.false.,.true.,lfno)
         go to 10
       elseif(word.eq.'MCOD') then
-        call mcrcod(ilist(1,ilattp+1),rlist(iftwis),ilist(1,ifmult),
+        call mcrcod(latt,twiss,mult,
      $       rlist(itmon),rlist(itemon),
      1       nmon,.true.,.false.,.true.,lfno)
         go to 10
@@ -1157,18 +1056,18 @@ ckiku   call tfstr(word,ilist(1,ilattp+1),ist,nstr)
       elseif(abbrev(word,'ECOR_R','_')) then
         title=Tfgetstrv('TITLE')
         case=Tfgetstrv('CASE')
-        call pecorr(word,ilist(1,ilattp+1),rlist(ifpos),
+        call pecorr(word,latt,pos,
      $       rlist(iferrk),title,case,lfno)
         goto 12
       elseif(word .eq. 'BUMP')then
         call getwdl(word)
-        call pcbak(ilist(1,ilattp+1),rlist(iftwis))
+        call pcbak(latt,twiss)
         if(abbrev(word,'I_TERATION','_')) then
           call getwdl(word)
           call pbumps(rlist(itstr),nster,flv%kfit,flv%ifitp,flv%mfitp,
      $         flv%nfc,.true.)
-          call pbump(ilist(1,ilattp+1),rlist(iftwis),
-     $         rlist(ifgamm),0,ilist(1,ifmult),rlist(itstr),
+          call pbump(latt,twiss,
+     $         gammab,0,mult,rlist(itstr),
      1               rlist(itestr),nster,flv%kfit,flv%ifitp,flv%mfitp,
      $         flv%fitval,flv%nfc,
      1               .true.,.false.,.false.,lfno)
@@ -1177,8 +1076,8 @@ ckiku   call tfstr(word,ilist(1,ilattp+1),ist,nstr)
         else
           call pbumps(rlist(itstr),nster,flv%kfit,flv%ifitp,flv%mfitp,
      $         flv%nfc,.true.)
-          call pbump(ilist(1,ilattp+1),rlist(iftwis),
-     $         rlist(ifgamm),0,ilist(1,ifmult),rlist(itstr),
+          call pbump(latt,twiss,
+     $         gammab,0,mult,rlist(itstr),
      1               rlist(itestr),nster,flv%kfit,flv%ifitp,flv%mfitp,
      $         flv%fitval,flv%nfc,
      1               .false.,.false.,.false.,lfno)
@@ -1188,11 +1087,11 @@ ckiku   call tfstr(word,ilist(1,ilattp+1),ist,nstr)
         go to 12
       elseif(word.eq.'LBUMP') then
         call getwdl(word)
-        call pcbak(ilist(1,ilattp+1),rlist(iftwis))
+        call pcbak(latt,twiss)
         call pbumps(rlist(itstr),nster,flv%kfit,flv%ifitp,flv%mfitp,
      $       flv%nfc,.true.)
-        call pbump(ilist(1,ilattp+1),rlist(iftwis),rlist(ifgamm),
-     $       0,ilist(1,ifmult),rlist(itstr),rlist(itestr),
+        call pbump(latt,twiss,gammab,
+     $       0,mult,rlist(itstr),rlist(itestr),
      1             nster,flv%kfit,flv%ifitp,flv%mfitp,flv%fitval,
      $       flv%nfc,.false.,.true.,
      1             .false.,lfno)
@@ -1200,47 +1099,44 @@ ckiku   call tfstr(word,ilist(1,ilattp+1),ist,nstr)
      $       flv%nfc,.false.)
         go to 12
       elseif(abbrev(word,'TOR_','_')) then
-        call ptol(word,ilist(1,ilattp+1),ilist(1,ifmult),
-     $       ilist(1,ifmast),rlist(iftwis),
-     $       rlist(ifgamm),0,1.d0+dp0,
+        call ptol(word,latt,mult,
+     $       ilist(1,ifmast),twiss,
+     $       gammab,0,1.d0+dp0,
      1            rlist(itstr),nster,lfno)
         goto 12
       elseif(word.eq.'VBUMP') then
-        call pvbump(word,wordp,ilist(1,ilattp+1),rlist(iftwis),
-     $       ilist(1,ifmult),ilist(1,ifmast),rlist(itstr),nster,
+        call pvbump(word,wordp,latt,twiss,
+     $       mult,ilist(1,ifmast),rlist(itstr),nster,
      $       nlist,flv%kfit,flv%ifitp,flv%mfitp,flv%fitval,flv%nfc,lfno)
         goto 12
       elseif(word.eq.'BTUNE') then
-        if(ifsize .eq. 0)then
-          ifsize=ktaloc(nlat*21)
-          ilist(2,iwakepold+6)=int(ifsize)
-        endif
+        call ffs_init_sizep
         title=Tfgetstrv('TITLE')
         case=Tfgetstrv('CASE')
-        call petune(word,ilist(1,ilattp+1),rlist(iftwis),
-     $       ilist(1,ifmult),rlist(ifgamm),rlist(ifsize),nlist,
+        call petune(word,latt,twiss,
+     $       mult,gammab,rlist(ifsize),nlist,
      $       rlist(itstr),rlist(itestr),nster,title,case,lfno)
         goto 12
       elseif(word.eq.'BALS') then
         title=Tfgetstrv('TITLE')
         case=Tfgetstrv('CASE')
         call pasex(word,wordp,
-     $       ilist(1,ilattp+1),rlist(ifpos),rlist(iftwis),
-     $       ilist(1,ifmult),ilist(1,ifmast),rlist(ifgamm),title,case,
+     $       latt,pos,twiss,
+     $       mult,ilist(1,ifmast),gammab,title,case,
      $       rlist(itstr),rlist(itestr),nster,rlist(itmon),
      $       rlist(itemon),nmon,lfno)
         go to 12
       elseif(word.eq.'PETIN'.or.word.eq.'PETOUT') then
-        call petcod(word,rlist(iftwis),rlist(itmon),nmon)
+        call petcod(word,twiss,rlist(itmon),nmon)
         goto 12
       elseif(abbrev(word,'WR_ITE','_')) then
         call getwdl(word)
         if(word.eq.'RMATQ'.or.word.eq.'RMAT') then
-          call pwrite(word,ilist(1,ilattp+1),rlist(iftwis),
-     $         rlist(ifgamm),rlist(ifpos),rlist(itmon),nmon)
+          call pwrite(word,latt,twiss,
+     $         gammab,pos,rlist(itmon),nmon)
         elseif(abbrev(word,'LAT_TICE','_').or.
      1         abbrev(word,'PS_NAME','_')) then
-          call pwrlat(word,wordp,ilist(1,ilattp+1),ilist(1,ifmult),lfno)
+          call pwrlat(word,wordp,latt,mult,lfno)
         endif
         goto 12
       else
@@ -1253,19 +1149,18 @@ ckiku   call tfstr(word,ilist(1,ilattp+1),ist,nstr)
       if(word .eq. 'WAKE')then
         lfnl0=lfn1
         lfn1=lfno
-        call tfwake(word,ilist(1,ilattp+1),ilist(1,ifmult),lfno,err)
+        call tfevalb('WAKECOMMAND[]',13,kx,irtc)
         lfn1=lfnl0
-        if(err)then
+        if(irtc .ne. 0 .or. kx .ne. ktftrue)then
           go to 2
         endif
         go to 10
       elseif(abbrev(word,'DELC_OR','_'))then
-        call tcorr(word,ilist(1,ilattp+1),rlist(ifpos),ilist(1,ifmult),
+        call tcorr(word,latt,pos,mult,
      $       ilist(1,ifmast),lfno)
         go to 10
       elseif(abbrev(word,'LTR_ACK','_'))then
-        call tfltra(ilist(1,ilattp+1),rlist(iftwis),
-     $       rlist(ifgamm),word,lfno)
+        call tfltra(word,lfno)
         go to 10
       elseif(abbrev(word,'EMIT_TANCE','_'))then
         pspan=getva(exist)
@@ -1275,18 +1170,17 @@ ckiku   call tfstr(word,ilist(1,ilattp+1),ist,nstr)
         endif
         trpt0=trpt
         trpt=.false.
-        call tfgeo(ilist(1,ilattp+1),rlist(ifgeo),rlist(ifpos),
-     $       rlist(ifgamm),.true.)
-        if(ifsize .eq. 0 .and. codplt)then
-          ifsize=ktaloc(nlat*21)
-          ilist(2,iwakepold+6)=int(ifsize)
+        call tfgeo(.true.)
+        if(codplt)then
+          call ffs_init_sizep
+c          ilist(2,iwakepold+6)=int(ifsize)
         endif
-        call temitf(ilist(1,ilattp+1),rlist(iftwis),
-     $       rlist(ifsize),rlist(ifgamm),ndim,codplt,lfni,lfno)
+        call temitf(codplt,lfni,lfno)
         trpt=trpt0
-        if(.not. codplt)then
-          call tfgeo(ilist(1,ilattp+1),rlist(ifgeo),rlist(ifpos),
-     $         rlist(ifgamm),.true.)
+        if(codplt)then
+          updatesize=.true.
+        else
+          call tfgeo(.true.)
         endif
         emx=max(4.d-13/p0,rgetgl1('EMITX'))
         emy=max(4.d-13/p0,rgetgl1('EMITY'))
@@ -1307,26 +1201,23 @@ c        rlist(itlookup('DP',ivtype))=dpmax
         if(.not. exist)then
           go to 7310
         endif
-        call tfgeo(ilist(1,ilattp+1),rlist(ifgeo),rlist(ifpos),
-     $       rlist(ifgamm),.true.)
+        call tfgeo(.true.)
         mphi2=9
         iparams=ktaloc(59)
-        call tclr(codin,6)
-        if(ifsize .eq. 0 .and. codplt)then
-          ifsize=ktaloc(nlat*21)
-          ilist(2,iwakepold+6)=int(ifsize)
+        codin=0.d0
+        if(codplt)then
+          call ffs_init_sizep
+c          ilist(2,iwakepold+6)=int(ifsize)
         endif
-        call temits(ilist(1,ilattp+1),
-     $     rlist(iftwis),rlist(ifsize),rlist(ifgamm),
-     $     ndim,ntwissfun,
-     $     mphi2,
+        call temits(ndim,ntwissfun,mphi2,
      $     amus0,amus1,amusstep,
      $     emxe,emye,rese,rlist(iparams),
      $     lfni,lfno,int8(0),irtc)
         call tfree(iparams)
-        if(.not. codplt)then
-          call tfgeo(ilist(1,ilattp+1),rlist(ifgeo),rlist(ifpos),
-     $         rlist(ifgamm),.true.)
+        if(codplt)then
+          updatesize=.true.
+        else
+          call tfgeo(.true.)
         endif
         emx=max(4.d-13/p0,rgetgl1('EMITX'))
         emy=max(4.d-13/p0,rgetgl1('EMITY'))
@@ -1338,27 +1229,19 @@ c        rlist(itlookup('DP',ivtype))=dpmax
      $       'Usage: SYNCHROB_ETA nus_start nus_stop nus_step.',' ')
         go to 2
       elseif(abbrev(word,'BEAM_SIZE','_'))then
-        if(ifsize .eq. 0)then
-          ifsize=ktaloc(nlat*21)
-          ilist(2,iwakepold+6)=int(ifsize)
-        endif
         call tfsetparam
-        call tfsize(rlist(iftwis),rlist(ifgamm),rlist(ifsize))
+        call tfsize
         go to 10
       elseif(abbrev(word,'ALI_GN','_'))then
-        call talign(ilist(1,ilattp+1),word,wordp,
-     $       rlist(ifpos),ilist(1,ifmult),lfno,exist)
+        call talign(latt,word,wordp,
+     $       pos,mult,lfno,exist)
         go to 30
       endif
- 7000 call tfgetv(word,ilist(1,ilattp+1),
-     $     ilist(1,ifival),ilist(1,ifklp),ilist(1,ifele),
-     $     ilist(1,ifele1),rlist(ifcoup),
-     $     rlist(iferrk),rlist(ifaux),
-     $     ilist(1,iftouchele),ilist(1,iftouchv),flv%ntouch,lfno,exist)
+ 7000 call tfgetv(word,flv%ntouch,lfno,exist)
       if(.not. exist)then
         if(itt .ge. 0)then
           call cssetp(nextt)
-          call tfprintout(lfno,itfgetrecl(),16,irtc)
+          call tfprintout(16.d0,irtc)
           go to 10
         else
           call termes(lfno,
@@ -1396,7 +1279,7 @@ c        go to 8900
       call tfsetparam
       nfc0=flv%nfc
       if(cell)then
-        call tfsetupcell(flv,nlat,maxcond)
+        call tfsetupcell(nlat,maxcond)
 c        write(*,*)'tffsa ',flv%nfc,nfc0
       endif
       geomet=.false.
@@ -1443,7 +1326,7 @@ c        write(*,*)'tffsa ',flv%nfc,nfc0
       if(fitflg)then
         call tmov(rlist(ifvalvar),rlist(ifvalvar+nve),flv%nvar)
       endif
-      if(tffsinitialcond(iuid,uini,nfr,ndimmax,lfno,err))then
+      if(tffsinitialcond(lfno,err))then
         inicond=.true.
         nfam=nfr
         if(iuid(-nfam) .lt. 0)then
@@ -1489,8 +1372,7 @@ c        dpm2=rlist(ktlookup('DPM'))
           endif
         enddo
         em=abs(emx)+abs(emy)
-        call tffamsetup(dp,dfam,jfam,kfam,ilist(2,ilattp+1),
-     $       nfam,nfr,ndimmax,em)
+        call tffamsetup(ilist(2,ilattp+1),em)
         if(nfam .gt. nfr .and. kfam(-nfam) .le. 0)then
           nfam1=1-nfam
         else
@@ -1502,8 +1384,7 @@ c        dpm2=rlist(ktlookup('DPM'))
       kwakeelm=0
       nwakep=0
       if(wake)then
-        call tffssetupwake(ilist(1,ilattp+1),ilist(1,ifmult),
-     $       kwakeelm,kwakep,nwakep,lfno,irtc)
+        call tffssetupwake(lfno,irtc)
         if(irtc .ne. 0)then
           call termes(lfno,'?Error in WakeFunction.',' ')
           go to 8810
@@ -1512,39 +1393,18 @@ c        dpm2=rlist(ktlookup('DPM'))
           wake=.false.
         endif
       endif
-      flv%iut=iutwiss(flv,ilist(1,iftwissp),ilist(1,ilattp+1),
-     $     ilist(1,kwakeelm),nwakep,ilist(1,ifvarele),
-     $     ilist(1,ifele),int(ifele1),int(ifele2),
-     $     nlat,flv%nvar,nfcol,nfam,nut,.not. cell)
+      flv%iut=iutwiss(nlat,flv%nvar,nfcol,nfam,nut,.not. cell)
       if(flv%iut .le. 1)then
         call termes(lfno,
      $       '?Too many off-momentum or fit points.',' ')
         go to 8810
       endif
 c      write(*,*)'tffsa-1 ',flv%iut,%LOC(rlist(flv%iut)),busy
-      call tffsmatch(flv,rlist(iftwis),rlist(ifpos),rlist(ifgeo),
-     $     rlist(ifgamm),rlist(flv%iut),
-     $     ilist(1,ilattp+1),ilist(1,ifmult),ilist(1,ifele),
-     $     ilist(1,ifele1),ilist(1,ifele2),rlist(ifcoup),
-     $     ilist(1,iftwissp),
-     $     ilist(1,ifival),ilist(1,ifklp),
-     $     ilist(1,ifvarele),ilist(1,ifvvar),
-     $     ilist(1,ifivcomp),rlist(ifvalvar),
-     $     rlist(iferrk),rlist(ifaux),nlat,nele,ndim,nut,flv%nvar,
-     $     dp(-nfam),tracex(-nfam),tracey(-nfam),
-     $     hstab(-nfam),vstab(-nfam),df,nfr,nfam,nfam1,
-     $     dfam(1,-nfam),jfam(-nfam),kfam(-nfam),
-     $     inicond,iuid(-nfam),uini(1,-nfam),
-     $     wake,ilist(1,kwakeelm),klist(kwakep),nwakep,
-     $     nqcol,nqcol1,nfcol,nfc0,
-     $     maxcond,nlist,brho,
-     $     emx,emy,dpmax,dp0,coumin,r,residual(-nfam),absweit,
-     $     cell,fitflg,geomet,cellstab,convgo,nparallel,
-     $     orbitcal,intres,halfres,sumres,diffres,
-     $     lfno,irtc)
+      call tffsmatch(df,dp0,r,nparallel,lfno,irtc)
+      updatesize=.false.
       call tclrfpe
       if(wake)then
-        call tffsclearwake(kwakeelm,kwakep,nwakep)
+        call tffsclearwake
       endif
       if(irtc .ne. 0)then
         call tmunmapp(flv%iut)
@@ -1552,16 +1412,10 @@ c      write(*,*)'tffsa-1 ',flv%iut,%LOC(rlist(flv%iut)),busy
       endif
       flv%nfc=nfc0
 c      write(*,*)'tffsa-2 ',flv%iut,%LOC(rlist(flv%iut)),busy
-      call tfshow(flv,ilist(1,ilattp+1),ilist(1,ifmult),
-     $     nfr,nfam,nfam1,kfam(-nfam),
-     1     scale,nlist,rlist(flv%iut),ilist(1,iftwissp),nut,
-     $     rlist(ifgeo),rlist(ifpos),tracex(-nfam),tracey(-nfam),
-     $     cellstab,residual(-nfam),hstab(-nfam),vstab(-nfam),
-     $     dp(-nfam),df,inicond,iuid(-nfam),
-     1     mfpnt,mfpnt1,nqcol,nqcol1,
+      call tfshow(cellstab,df,mfpnt,mfpnt1,
      $     kffs,irtcffs,lfnb .gt. 1,lfno)
       call tmunmapp(flv%iut)
-      call tffsclearcouple(ilist(1,ifele2))
+      call tffsclearcouple(iele2)
       if(cell)then
         str=' '
         do i=nfam1,nfam
@@ -1605,20 +1459,17 @@ c      write(*,*)'tffsa-2 ',flv%iut,%LOC(rlist(flv%iut)),busy
       return
       end
 
-      integer*8 function iutwiss(flv,
-     $     itwissp,latt,iwakeelm,nwakep,
-     $     ivarele,iele,iele1,iele2,
-     $     nlat,nvar,nfcol,nfam,nut,nonl)
+      integer*8 function iutwiss(nlat,nvar,nfcol,nfam,nut,nonl)
       use tfstk
-      use ffslocal, only:ffslocalv
+      use ffs, only:flv
+      use ffs_pointer
       use tffitcode
+      use ffs_wake
+      use iso_c_binding
       implicit none
-      type (ffslocalv) flv
       include 'inc/MACCODE.inc'
       include 'inc/MACKW.inc'
-      integer*4 nlat,nvar,nfcol,nfam,nut,nwakep,i2
-      integer*4 itwissp(nlat),latt(2,nlat),ivarele(nvar),iele(nlat),
-     $     iele1,iele2,iwakeelm(nwakep)
+      integer*4 nlat,nvar,nfcol,nfam,nut,i2
       integer*4 i,j,id,k
       integer*8 itmmapp
       real*8 tffsmarkoffset
@@ -1641,13 +1492,13 @@ c      write(*,*)'tffsa-2 ',flv%iut,%LOC(rlist(flv%iut)),busy
       endif
       LOOP_I: do i=2,nlat-1
         do j=1,nvar
-          if(ivarele(j) .eq. ilist(iele(i),iele1))then
+          if(ivarele(j) .eq. iele1(iele(i)))then
             itwissp(i)=1
             itwissp(i+1)=1
             cycle LOOP_I
           endif
         enddo
-        if(ilist(i,iele2) .ne. 0)then
+        if(iele2(i) .ne. 0)then
           itwissp(i)=1
           itwissp(i+1)=1
         endif
@@ -1695,81 +1546,82 @@ c      write(*,*)'tffsa-2 ',flv%iut,%LOC(rlist(flv%iut)),busy
         endif
       enddo
       iutwiss=itmmapp(nut*(2*nfam+1)*ntwissfun)
+      call c_f_pointer(c_loc(rlist(iutwiss)),utwiss,
+     $     [ntwissfun,2*nfam+1,nut])
+      utwiss(1:ntwissfun,-nfam:nfam,1:nut)=>utwiss
       return
       end
 
-      subroutine tffssaveparams(icmd,ilattp,n,err)
+      subroutine tffssaveparams(icmd,ilattp,err)
       use tfstk
-      use ffslocal
       use ffs, local_ilattp=>ilattp
       implicit none
-      integer*4 nstk
-      parameter (nstk=64)
 c nlocal = mcommon in TFFSLOCAL.inc
-      integer*8 ktaloc
-      integer*4 icmd,ilattp,n,nr,istkp,i,nxh
-      integer*8 iffsstk(nstk)
+      integer*8 ktaloc,isave
+      integer*4 icmd,ilattp,nxh
       logical*4 err
-      save istkp,iffsstk
-      data istkp /0/
       nxh=int((sizeof(ffv)+7)/8)
-      nr=n
       err=.false.
       if(icmd .eq. 0)then
-        istkp=istkp+1
-        if(istkp .gt. nstk)then
-          istkp=nstk
-          err=.true.
-          return
-        endif
-        iffsstk(istkp)=ktaloc(nr+nxh+1)
-        ilist(1,iffsstk(istkp))=ilattp
-        call tmov(ffv,rlist(iffsstk(istkp)+1),nxh)
-        call tmov(flv,rlist(iffsstk(istkp)+nxh+1),nr)
-        call tffsresetbzl
+        isave=ktaloc(nxh+2)
+        ilist(1,isave)=ilattp
+        klist(isave+1)=iffssave
+        call tmov(ffv,rlist(isave+2),nxh)
+        iffssave=isave
       elseif(icmd .eq. 1)then
-        if(istkp .gt. 0)then
-          ilattp=ilist(1,iffsstk(istkp))
-          call tmov(rlist(iffsstk(istkp)+1),ffv,nxh)
-          call tmov(rlist(iffsstk(istkp)+nxh+1),flv,nr)
-          call tfree(iffsstk(istkp))
-          istkp=istkp-1
+        if(iffssave .gt. 0)then
+          isave=iffssave
+          ilattp=ilist(1,isave)
+          call tmov(rlist(isave+2),ffv,nxh)
+          iffssave=klist(isave+1)
+          call tfree(isave)
         else
           err=.true.
         endif
       elseif(icmd .eq. 2)then
         err=.false.
-        do i=istkp,1,-1
-          if(ilist(1,iffsstk(i)) .eq. ilattp)then
+        isave=iffssave
+        do while(isave .gt. 0)
+          if(ilist(1,isave) .eq. ilattp)then
             err=.true.
             return
           endif
+          isave=klist(isave+1)
         enddo
       elseif(icmd .eq. 3)then
-        err=istkp .ge. nstk
-        return
+        err=.false.
       elseif(icmd .eq. 4)then
-        err=istkp .le. 0
-        return
-      else
-        do i=istkp,n,-1
-          call tmov(rlist(iffsstk(i)+1),ffv,nxh)
-          call tffsfree
-          call tffsfreebzl
-          call tfree(iffsstk(i))
+        err=iffssave .eq. 0
+      elseif(icmd .eq. -1)then
+        do while(iffssave .gt. 0)
+          isave=iffssave
+          ilattp=ilist(1,isave)
+          call tmov(rlist(isave+2),ffv,nxh)
+          iffssave=klist(isave+1)
+          call tfree(isave)
         enddo
-        istkp=min(n-1,istkp)
+        err=.false.
+      elseif(icmd .eq. -2)then
+        isave=klist(iffssave+1)
+        do while(isave .gt. 0)
+          ilattp=ilist(1,iffssave)
+          write(*,*)'tffssave -2: ',isave,ilattp
+          call tmov(rlist(iffssave+2),ffv,nxh)
+          call tfree(iffssave)
+          iffssave=isave
+          isave=klist(iffssave+1)
+        enddo
       endif
       return
       end
 
-      logical*4 function tfvcomp(ivcomp,
-     $     ivarele,ivvar,ival,nele,nvar)
+      logical*4 function tfvcomp()
+      use ffs_pointer
+      use ffs, only:flv
       implicit none
-      integer*4 nvar,i,nele,
-     $     ivcomp(nvar),ivarele(nvar),ivvar(nvar),ival(nele)
+      integer*4 i
       tfvcomp=.false.
-      do i=1,nvar
+      do i=1,flv%nvar
         if(ivcomp(i) .ne. 0 .and.
      $       ivvar(i) .ne. ival(ivarele(i)))then
           tfvcomp=.true.
@@ -1782,30 +1634,21 @@ c nlocal = mcommon in TFFSLOCAL.inc
       subroutine tffsadjustvar
       use tfstk
       use ffs
-      use ffslocal
       use tffitcode
       implicit none
-      call tffsadjust(ilist(1,iftouchele),ilist(1,iftouchv),
-     $     ilist(1,ilattp+1),rlist(iferrk),rlist(ifcoup),
-     $     ilist(1,ifele),ilist(1,ifele1),
-     $     ilist(1,ifklp),ilist(1,ifival),flv%ntouch)
-      call tfinitvar(ilist(1,ifvarele),ilist(1,ifvvar),
-     $     ilist(1,ifivcomp),
-     $     rlist(ifvalvar),flv%nvar,ilist(1,ilattp+1),ilist(1,ifklp),
-     $     ilist(1,ifival),rlist(iferrk),nlat,nele)
+      call tffsadjust(flv%ntouch)
+      call tfinitvar(flv%nvar)
       return
       end
 
-      logical*4 function tffsinitialcond(
-     $     iuid,uini,nfr,ndimmax,lfno,err)
+      logical*4 function tffsinitialcond(lfno,err)
       use tfstk
+      use ffs_fit
       use tffitcode
       implicit none
       type (sad_list), pointer :: klx,klj
       integer*8 kx
-      integer*4 nfr,irtc,lfno,n,i,j,nfr1,
-     $     ndimmax,iuid(-ndimmax:ndimmax)
-      real*8 uini(28,-ndimmax:ndimmax)
+      integer*4 irtc,lfno,n,i,j,nfr1
       logical*4 err
       integer*8 iaini
       data iaini/0/
@@ -1834,7 +1677,8 @@ c nlocal = mcommon in TFFSLOCAL.inc
         j=0
         do i=nfr1,nfr
           if(i .eq. 0)then
-            call tclr(uini(1,0),28)
+            uini(:,0)=0.d0
+c            call tclr(uini(1,0),28)
             iuid(0)=0
           else
             j=j+1
@@ -1843,8 +1687,8 @@ c nlocal = mcommon in TFFSLOCAL.inc
                 uini(mfitdx:mfitdx+5,i)=klj%rbody(1:6)
                 uini(1,i)=-1.d0
                 iuid(i)=j
-              elseif(klj%nl .eq. 28)then
-                uini(mfitax:mfitax+27,i)=klj%rbody(1:28)
+              elseif(klj%nl .eq. ntwissfun)then
+                uini(mfitax:mfitax+ntwissfun-1,i)=klj%rbody(1:ntwissfun)
                 iuid(i)=j
               else
                 return
@@ -1997,11 +1841,10 @@ c      call tfdebugprint(kx,'setupcoup',3)
       return
       end
 
-      subroutine tfsetupcell(flv,nlat,maxcond)
-      use ffslocal, only: ffslocalv
+      subroutine tfsetupcell(nlat,maxcond)
+      use ffs, only:flv
       use tffitcode
       implicit none
-      type (ffslocalv) flv
       integer*4 maxcond,nlat,mfc
       integer*4 k
       if(flv%nfc .gt. maxcond-4)then
@@ -2037,20 +1880,6 @@ c      call tfdebugprint(kx,'setupcoup',3)
       flv%ifitp1(flv%nfc)=nlat
       flv%fitval(flv%nfc)=1.d0
       flv%mfitp(flv%nfc)=mfc
-      return
-      end
-
-      subroutine tfsize(twiss,gammab,size)
-      use tfstk
-      use ffs
-      use tffitcode
-      implicit none
-      integer*4 i
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat),
-     $     size(21,nlat)
-      do 10 i=1,nlat
-        call tfbeam(twiss,gammab,i,0.d0,size(1,i))
-10    continue
       return
       end
 

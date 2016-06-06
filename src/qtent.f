@@ -1,11 +1,11 @@
-      subroutine qtent(trans,cod,twiss,k1,idp,disp)
+      subroutine qtent(trans,cod,k1,idp,disp)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 k1,idp
-      real*8 trans(4,5),twiss(nlat,-ndim:ndim,ntwissfun),
-     $     cod(6),r1,r2,r3,r4,detr,cc
+      real*8 trans(4,5),cod(6),r1,r2,r3,r4,detr,cc
       logical*4 disp,normal
       r1=twiss(k1,idp,mfitr1)
       r2=twiss(k1,idp,mfitr2)
@@ -13,7 +13,8 @@
       r4=twiss(k1,idp,mfitr4)
       detr=r1*r4-r2*r3
       cc=sqrt(1.d0-detr)
-      if(twiss(k1,idp,mfitdetr) .lt. 1.d0)then
+      normal=twiss(k1,idp,mfitdetr) .lt. 1.d0
+      if(normal)then
         trans(1,1)=cc
         trans(1,2)=0.d0
         trans(1,3)= r4
@@ -121,20 +122,20 @@
       return
       end
 
-      subroutine qtentu(trans,cod,utwiss,disp)
+      subroutine qtentu(trans,cod,utwiss1,disp)
       use ffs
       use tffitcode
       implicit none
-      real*8 trans(4,5),cod(6),utwiss(*),
+      real*8 trans(4,5),cod(6),utwiss1(*),
      $     r1,r2,r3,r4,detr,cc
       logical*4 disp,normal
-      r1=utwiss(mfitr1)
-      r2=utwiss(mfitr2)
-      r3=utwiss(mfitr3)
-      r4=utwiss(mfitr4)
+      r1=utwiss1(mfitr1)
+      r2=utwiss1(mfitr2)
+      r3=utwiss1(mfitr3)
+      r4=utwiss1(mfitr4)
       detr=r1*r4-r2*r3
       cc=sqrt(1.d0-detr)
-      normal=utwiss(mfitdetr) .lt. 1.d0
+      normal=utwiss1(mfitdetr) .lt. 1.d0
       if(normal)then
         trans(1,1)=cc
         trans(1,2)=0.d0
@@ -172,23 +173,23 @@
       endif
       if(disp)then
         if(normal)then
-          trans(1,5)=cc*utwiss(7)
-     1              +r4*utwiss(9)-r2*utwiss(10)
-          trans(2,5)=cc*utwiss(8)
-     1              -r3*utwiss(9)+r1*utwiss(10)
-          trans(3,5)=cc*utwiss(9)
-     1              -r1*utwiss(7)-r2*utwiss(8)
-          trans(4,5)=cc*utwiss(10)
-     1              -r3*utwiss(7)-r4*utwiss(8)
+          trans(1,5)=cc*utwiss1(7)
+     1              +r4*utwiss1(9)-r2*utwiss1(10)
+          trans(2,5)=cc*utwiss1(8)
+     1              -r3*utwiss1(9)+r1*utwiss1(10)
+          trans(3,5)=cc*utwiss1(9)
+     1              -r1*utwiss1(7)-r2*utwiss1(8)
+          trans(4,5)=cc*utwiss1(10)
+     1              -r3*utwiss1(7)-r4*utwiss1(8)
         else
-          trans(1,5)=-r1*utwiss(7)-r2*utwiss(8)
-     1              +cc*utwiss(9)
-          trans(2,5)=-r3*utwiss(7)-r4*utwiss(8)
-     1              +cc*utwiss(10)
-          trans(3,5)=cc*utwiss(7)
-     1              +r4*utwiss(9)-r2*utwiss(10)
-          trans(4,5)=cc*utwiss(8)
-     1              -r3*utwiss(9)+r1*utwiss(10)
+          trans(1,5)=-r1*utwiss1(7)-r2*utwiss1(8)
+     1              +cc*utwiss1(9)
+          trans(2,5)=-r3*utwiss1(7)-r4*utwiss1(8)
+     1              +cc*utwiss1(10)
+          trans(3,5)=cc*utwiss1(7)
+     1              +r4*utwiss1(9)-r2*utwiss1(10)
+          trans(4,5)=cc*utwiss1(8)
+     1              -r3*utwiss1(9)+r1*utwiss1(10)
 c             write(*,'(1P5G15.7)')((trans(ii,jj),jj=1,5),ii=1,4)
         endif
       else
@@ -197,12 +198,12 @@ c             write(*,'(1P5G15.7)')((trans(ii,jj),jj=1,5),ii=1,4)
         trans(3,5)=0.d0
         trans(4,5)=0.d0
       endif
-      cod(1)=utwiss(mfitdx)
-      cod(2)=utwiss(mfitdpx)
-      cod(3)=utwiss(mfitdy)
-      cod(4)=utwiss(mfitdpy)
-      cod(5)=utwiss(mfitdz)
-      cod(6)=utwiss(mfitddp)
+      cod(1)=utwiss1(mfitdx)
+      cod(2)=utwiss1(mfitdpx)
+      cod(3)=utwiss1(mfitdy)
+      cod(4)=utwiss1(mfitdpy)
+      cod(5)=utwiss1(mfitdz)
+      cod(6)=utwiss1(mfitddp)
       return
       end
 

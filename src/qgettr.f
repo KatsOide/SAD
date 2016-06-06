@@ -1,11 +1,10 @@
-      subroutine qgettr(twiss,gammab,trans1,k1,k2,idp,
-     $     disp,fold)
+      subroutine qgettr(trans1,k1,k2,idp,disp,fold)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 k1,k2,idp,i
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat)
       real*8 trans1(4,5)
       logical*4 disp,fold
       real*8 utwiss1(ntwissfun),utwiss2(ntwissfun)
@@ -15,17 +14,18 @@
       enddo
       call qgettru(utwiss1,utwiss2,
      $     twiss(nlat,idp,mfitnx),twiss(nlat,idp,mfitny),
-     $     gammab,trans1,k1,k2,disp,fold,trpt)
+     $     trans1,k1,k2,disp,fold,trpt)
       return
       end
 
       subroutine qgettru(utwiss1,utwiss2,amux,amuy,
-     $     gammab,trans1,k1,k2,disp,fold,trpt1)
+     $     trans1,k1,k2,disp,fold,trpt1)
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 k1,k2
-      real*8 utwiss1(*),utwiss2(*),gammab(*)
+      real*8 utwiss1(*),utwiss2(*)
       real*8 trans(4,5),trans1(4,5),amux,amuy
       logical*4 disp,fold,trpt1
       real*8 sqrtb1,sqrtb2,dpsi1,cospsi,sinpsi,gr,

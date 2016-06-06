@@ -28,7 +28,7 @@ c
       else
         twiss(1,0,3)=0d0
         twiss(1,0,6)=0d0
-        call qtwiss(latt,twiss,gammab,idp,1,nlat,over)
+        call qtwiss(twiss,idp,1,nlat,over)
       endif
       return
       end

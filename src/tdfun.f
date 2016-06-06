@@ -1,35 +1,20 @@
-      subroutine tdfun(flv,
-     1     nfcol,iqcol,lfp,nqcol,nqcol1,
-     1     kdp,nfr,nfam,nfam1,jfam,kfam,
-     $     inicond,iuid,
-     $     df,utwiss,itwissp,nut,
-     1     tracex,tracey,pos,geo,
-     $     latt,mult,dp,maxcond,
-     $     nlist,error)
+      subroutine tdfun(iqcol,lfp,nqcola,nqcola1,
+     1     kdp,df1,error)
       use tfstk
       use ffs
-      use ffslocal, only: ffslocalv
+      use ffs_pointer
+      use ffs_fit
       use tffitcode
       implicit none
-      type (ffslocalv) flv
       real*8 factor,dmax
       integer*4 npeak
       parameter (factor=0.97d0,dmax=1.d10)
       parameter (npeak=10)
-      integer*4 nqcol,nut,nfr,itwissp(nlat),maxcond,
-     $     nfam,nqcol1,nfam1,j,nfcol,i,ka,kf,kp,kp1,mp,
-     $     idp,kpb,kpe,k,ip,irtc,m
-      integer*4 
-     1     kdp(*),iqcol(*),
-     1     lfp(2,maxcond),mult(*),latt(2,nlat),ipeak(npeak),
-     $     iuid(-nfam:nfam)
-      real*8 utwiss(ntwissfun,-nfam:nfam,nut),
-     $     df(*),dp(-nfam:nfam),pos(nlat),geo(3,4,nlat),
-     $     tracex(-nfam:nfam),tracey(-nfam:nfam),
-     $     vpeak(npeak),vf,tdfun1,tgfun,vb,ve,v,vf1
-      logical*4 error,maxfit,ttrans(-nfam:nfam),tftype1fit,inicond
-      character*8 nlist(*)
-      integer*4 jfam(-nfam:nfam),kfam(-nfam:nfam)
+      integer*4 nqcola,nqcola1,j,
+     $     i,ka,kf,kp,kp1,mp,idp,kpb,kpe,k,ip,irtc,m
+      integer*4 kdp(*),iqcol(*),lfp(2,maxcond),ipeak(npeak)
+      real*8 df1(*),vpeak(npeak),vf,tdfun1,tgfun,vb,ve,v,vf1
+      logical*4 error,maxfit,ttrans(-nfam:nfam),tftype1fit
 c      do j=1,nfcol
 c        if(flv%kfit(flv%kfitp(j)) .eq. mfitnx .or.
 c     $       flv%kfit(flv%kfitp(j)) .eq. mfitny)then
@@ -109,17 +94,16 @@ c           write(*,*)'TDFUN ',j,i,idp,kf,kp,kp1,maxcond,flv%mfitp(ka)
                     elseif(kf .le. mfitdpy
      $                     .or. kf .ge. mfitpex .and.
      $                     kf .le. mfitpepx)then
-                      call tfpeak(utwiss,itwissp,idp,kf,kpb,kpe,
-     $                     ipeak,vpeak,npeak,nlat,nfam,ntwissfun)
+                      call tfpeak(idp,kf,kpb,kpe,ipeak,vpeak,npeak)
                       do 110 k=1,npeak
                         ip=ipeak(k)
                         if(ip .le. 0)then
                           cycle do20
                         endif
-                        df(i)=tdfun1(vf,vpeak(k),
+                        df1(i)=tdfun1(vf,vpeak(k),
      $                       kf,maxfit,idp,ttrans(idp))
 c                        write(*,*)'tdfun ',k,ip,kf,maxfit,vpeak(k),df(i)
-                        if(df(i) .ne. 0.d0)then
+                        if(df1(i) .ne. 0.d0)then
                           iqcol(i)=j
                           lfp(1,i)=ip
                           lfp(2,i)=0
@@ -136,14 +120,12 @@ c                        write(*,*)'tdfun ',k,ip,kf,maxfit,vpeak(k),df(i)
                     if(kf .le. mfitpepy .or.
      $                   (kf .ge. mfitleng .and. kf .le. mfitgz))then
                       maxfit=flv%mfitp(ka) .lt. 0
-                      vb=tgfun(kf,kpb,idp,utwiss,itwissp,
-     $                     tracex,tracey,pos,geo,nfam)
-                      ve=tgfun(kf,kpe,idp,utwiss,itwissp,
-     $                     tracex,tracey,pos,geo,nfam)
+                      vb=tgfun(kf,kpb,idp)
+                      ve=tgfun(kf,kpe,idp)
                       vf1=vb
-                      call tfgetfitval(latt,mult,nlist(kf),
+                      call tfgetfitval(nlist(kf),
      $                     kpb,kpe,dp(idp),
-     $                     iuid(idp),kfam(idp),inicond,
+     $                     iuid(idp),kfam(idp),
      $                     vb,ve,vf,vf1,irtc)
                       if(irtc .eq. -1)then
 c                        write(*,*)kf,vb,ve,vf1
@@ -153,10 +135,10 @@ c                        write(*,*)kf,vb,ve,vf1
                         ve=ve-vf1
                         vf1=vf
                       endif
-                      df(i)=tdfun1(vf1,ve,kf,maxfit,idp,ttrans(idp))
+                      df1(i)=tdfun1(vf1,ve,kf,maxfit,idp,ttrans(idp))
                       if(tftype1fit(kf))then
                         if(.not. maxfit)then
-                          df(i)=vf+df(i)
+                          df1(i)=vf+df1(i)
                         endif
                       endif
                       iqcol(i)=j
@@ -171,17 +153,16 @@ c                        write(*,*)kf,vb,ve,vf1
                     endif
                   endif
                 else
-                  v=tgfun(kf,kp,idp,utwiss,itwissp,
-     $                 tracex,tracey,pos,geo,nfam)
+                  v=tgfun(kf,kp,idp)
                   vf1=vf
-                  call tfgetfitval(latt,mult,nlist(kf),kp,0,dp(idp),
-     $                 iuid(idp),kfam(idp),inicond,vf,v,vf,vf1,irtc)
+                  call tfgetfitval(nlist(kf),kp,0,dp(idp),
+     $                 iuid(idp),kfam(idp),vf,v,vf,vf1,irtc)
                   if(irtc .eq. -1)then
                     cycle
                   endif
-                  df(i)=tdfun1(vf1,v,kf,maxfit,idp,ttrans(idp))
+                  df1(i)=tdfun1(vf1,v,kf,maxfit,idp,ttrans(idp))
 c                  write(*,*)'tdfun ',vf1,v,df(i)
-                  if(maxfit .and. df(i) .eq. 0.d0)then
+                  if(maxfit .and. df1(i) .eq. 0.d0)then
                     cycle
                   endif
                   iqcol(i)=j
@@ -199,25 +180,25 @@ c                  write(*,*)'tdfun ',vf1,v,df(i)
           enddo do20
         endif
  10   continue
-      nqcol=i-1
-      nqcol1=nqcol
-      call tffsfitfun(nqcol,df,iqcol,kdp,maxcond,error)
+      nqcola=i-1
+      nqcola1=nqcola
+      call tffsfitfun(nqcol,df1,iqcol,kdp,maxcond,error)
       return
       end
 
-      subroutine tfgetfitval(latt,mult,nlist,kp,kp1,dp,
-     $     iuid,kfam,inicond,vf,v,vf0,vf1,irtc)
+      subroutine tfgetfitval(funname,kp,kp1,dp,
+     $     iuid,kfam,vf,v,vf0,vf1,irtc)
       use tfstk
       use ffs
+      use ffs_pointer, only:mult
+      use ffs_fit, only:inicond
       use tffitcode
       implicit none
       type (sad_descriptor) kx
-      integer*4 latt(2,*),mult(*)
-      character*8 nlist
+      character*8 funname
       integer*4 kp,kp1
       real*8 dp
       integer*4 iuid,kfam
-      logical*4 inicond
       real*8 vf,v,vf0,vf1
       integer*4 irtc
 c     
@@ -248,22 +229,22 @@ c
         klist(ifv1+4)=ktflist+ktfcopy1(ifid)
       endif
       irtc=0
-      call tfpadstr(nlist,ifvfun+1,len_trim(nlist))
-      ilist(1,ifvfun)=len_trim(nlist)
+      call tfpadstr(funname,ifvfun+1,len_trim(funname))
+      ilist(1,ifvfun)=len_trim(funname)
       if(inicond)then
         rlist(ifid+1)=dble(iuid)
       else
         rlist(ifid+1)=dble(kfam)
       endif
       rlist(ifid+2)=dp
-      call elname1(latt,kp,mult,name,.false.)
+      call elname(kp,name)
       ln=lenw(name)
       if(kp1 .eq. 0)then
         retry1=.false.
         rlist(ifv+4)=vf
         rlist(ifv+5)=v
       else
-        call elname1(latt,kp1,mult,name1,.false.)
+        call elname(kp1,name1)
         ln1=lenw(name1)
         retry1=kp1 .ne. nlat
         rlist(ifv1+5)=vf0
@@ -295,7 +276,7 @@ c      write(*,*)'kp: ',kp,'kp1: ',kp1
         endif
         call termes(6,
      $       'Error in FitValue '//
-     $       nlist//' at '//name,' ')
+     $       funname//' at '//name,' ')
       elseif(ktfrealqd(kx,vf1))then
       elseif(kx%k .eq. ktfoper+mtfnull)then
         irtc=-1
@@ -303,7 +284,7 @@ c      write(*,*)'kp: ',kp,'kp1: ',kp1
         retry=.false.
         if(mult(kp) .eq. 0)then
 c     Generate singlet element name with suffix number(.###)
-          call elname1(latt,kp,mult,name,.true.)
+          call elnameK(kp,name)
           ln=lenw(name)
           go to 100
         elseif(ilist(ilist(kp,ifele1),ifklp) .eq. kp)then
@@ -322,13 +303,13 @@ c     however, we need scan candidates for 2nd argument(name1)
 c     Reset `kp'-element name in name(1:ln)
         retry=kp .ne. nlat
         if(retry)then
-          call elname1(latt,kp,mult,name,.false.)
+          call elname(kp,name)
           ln=lenw(name)
         endif
 c
         if(mult(kp1) .eq. 0)then
 c     Generate singlet element name with suffix number(.###)
-          call elname1(latt,kp1,mult,name1,.true.)
+          call elnameK(kp1,name1)
           ln1=lenw(name1)
           go to 100
         elseif(ilist(ilist(kp1,ifele1),ifklp) .eq. kp1)then
@@ -511,12 +492,11 @@ c      v1=pi2*(anint(v/pi2)+sign(.5d0*sin(.5d0*v)**2,sin(v)))
       return
       end
 
-      subroutine tfpeak(utwiss,itwissp,idp,kf,
-     $ibegin,iend,ipeak,vpeak,npeak,nlat,nfam,ntwissfun)
+      subroutine tfpeak(idp,kf,ibegin,iend,ipeak,vpeak,npeak)
+      use ffs_pointer
       implicit none
-      integer*4 nlat,nfam,ibegin,iend,kf,npeak,idp,ipeak(npeak),
-     $     itwissp(nlat),ntwissfun
-      real*8 vpeak(npeak),utwiss(ntwissfun,-nfam:nfam,*)
+      integer*4 ibegin,iend,kf,npeak,idp,ipeak(npeak)
+      real*8 vpeak(npeak)
       integer*4 i,j,k
       real*8 va,va0,va1
       do 10 i=1,npeak

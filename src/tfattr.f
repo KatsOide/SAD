@@ -1,16 +1,14 @@
-      subroutine tfattr(word,latt,
-     $         iele,iele1,ival,couple,vlim,errk,
-     $         klp,mult,lfno,exist,kx,irtc,ret)
+      subroutine tfattr(word,lfno,exist,kx,irtc,ret)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       type (sad_descriptor) kx
       type (sad_list), pointer :: klxi
       integer*4 lfno,i,j
-      integer*4 latt(2,nlat),iele(nlat),iele1(nlat),mult(nlat)
-      integer*4 ival(nele),klp(nele),irtc,isp1,lenw
-      real*8 errk(2,nlat),couple(nlat),vlim(nele,2),v
+      integer*4 irtc,isp1,lenw
+      real*8 v
       character*(*) word
       character*(MAXPNAME+16) namc,name
       character*10 autofg
@@ -33,8 +31,8 @@
       endif
  2    LOOP_J: do j=1,nlat-1
         if(all)then
-          call elname(latt,j,mult,name)
-        elseif(temat(latt,j,mult,name,word))then
+          call elname(j,name)
+        elseif(temat(j,name,word))then
         else
           cycle LOOP_J
         endif
@@ -43,7 +41,7 @@
         if(iele(j) .eq. j .or. klp(iele1(j)) .eq. j .or.
      $       iele(j) .ne. klp(iele1(j)) .and.
      $       iele(j) .ne. iele(klp(iele1(j))))then
-          call elname(latt,iele(j),mult,namc)
+          call elname(iele(j),namc)
           if(ival(i) .eq. 0)then
             v=0.d0
           else

@@ -1,7 +1,7 @@
       subroutine tsconv(trans1,cod,l1,ent)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 l1
       real*8 trans1(6,6),cod(6)
       real*8 p,pxi,pyi,pzi,xi,yi,ds,

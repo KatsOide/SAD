@@ -1,7 +1,8 @@
       subroutine ttcave(trans,cod,beam,al,ak,harm,phi,freq,
      $     dx,dy,theta,ld)
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 ld
       real*8 trans(6,12),cod(6),beam(42),trans1(6,13),
      $     al,ak,harm,phi,freq,dx,dy,theta,w,v,p1,h1,dh1,phic,v1,t,

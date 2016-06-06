@@ -1,5 +1,6 @@
 c     Peek/Get word from input buffer with case preserving
       integer*4 function peekwd0(outstr,next)
+      use ffs_flag
       implicit none
       include 'inc/TFCSI.inc'
       character*(*) outstr
@@ -56,8 +57,9 @@ c     Peek/Get word from input buffer with case preserving
 c     Peek/Get word from input buffer with case normalization
       subroutine peekwd(outstr,next)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       character*(*) outstr
       integer*4 next,l,peekwd0
       l=peekwd0(outstr,next)
@@ -69,8 +71,9 @@ c     Peek/Get word from input buffer with case normalization
 
       subroutine getwdl(outstr)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       character*(*) outstr
       integer*4 l,getwdl0
       l=getwdl0(outstr)
@@ -82,8 +85,9 @@ c     Peek/Get word from input buffer with case normalization
 
       subroutine getwrd(outstr)
             use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       character*(*) outstr
       integer*4 l,getwrd0
       l=getwrd0(outstr)
@@ -96,8 +100,9 @@ c     Peek/Get word from input buffer with case normalization
 c     Peek/Get word from input buffer with case preserving by preservecase
       subroutine peekwdp(outstr,next)
             use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       character*(*) outstr
       integer*4 next,l,peekwd0
       l=peekwd0(outstr,next)
@@ -109,8 +114,9 @@ c     Peek/Get word from input buffer with case preserving by preservecase
 
       subroutine getwdlp(outstr)
             use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       character*(*) outstr
       integer*4 l,getwdl0
       l=getwdl0(outstr)
@@ -122,8 +128,9 @@ c     Peek/Get word from input buffer with case preserving by preservecase
 
       subroutine getwrdp(outstr)
             use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       character*(*) outstr
       integer*4 l,getwrd0
       l=getwrd0(outstr)
@@ -138,8 +145,9 @@ c     1st arg(outstr)	case normalized word
 c     2nd arg(outstrp)	case preserved word by preservecase flag
       subroutine peekwd2(outstr,outstrp,next)
             use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       character*(*) outstr,outstrp
       integer*4 next,l,peekwd0
       l=peekwd0(outstrp,next)
@@ -163,8 +171,9 @@ c     2nd arg(outstrp)	case preserved word by preservecase flag
 
       subroutine getwdl2(outstr,outstrp)
             use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       character*(*) outstr,outstrp
       integer*4 l,getwdl0
       l=getwdl0(outstrp)
@@ -188,8 +197,9 @@ c     2nd arg(outstrp)	case preserved word by preservecase flag
 
       subroutine getwrd2(outstr,outstrp)
             use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       character*(*) outstr,outstrp
       integer*4 l,getwrd0
       l=getwrd0(outstrp)
@@ -214,9 +224,10 @@ c     2nd arg(outstrp)	case preserved word by preservecase flag
 c     Peek character from input buffer with case normalization
       character function peekch(next)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
       include 'inc/TFCSI.inc'
-      include 'inc/TMACRO1.inc'
       integer*4 next,notspace
       next=ipoint
       if(ipoint .ge. lrecl)then
@@ -241,6 +252,7 @@ c     Peek character from input buffer with case normalization
       end
 
       subroutine skipln
+      use ffs_flag
       implicit none
       include 'inc/TFCSI.inc'
       integer*4 ifany,is

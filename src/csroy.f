@@ -160,7 +160,7 @@ c
       use tfstk
       implicit none
       integer*8 kax
-      integer*4 nj,nphi,nr,i,mphi,nrh,m,j,j1,m1,n,n1,
+      integer*4 nj,nphi,nr,mphi,nrh,m,j,j1,m1,n,n1,
      $     mz,jn,jn1,jn10
       real*8 bm(nj*nphi,nj*nphi),wi0(nr),omega(nj),
      $     zjn(nphi*16,nj),ddwi(nr),work(nr),wi(nr),dz,pi,

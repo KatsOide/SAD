@@ -364,8 +364,8 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       type (sad_list), pointer :: larg,klx
       type (sad_deftbl), pointer :: dtbl
       type (sad_defhash), pointer :: dhash
-      integer*8 kad0,kad,kadv,kadv0,kap,ktfrehash
-      integer*4 isp1,iup,irtc,is,ihash,itfhasharg,
+      integer*8 kad0,kad,kadv,kadv0,kap,ktfrehash,khash
+      integer*4 isp1,iup,irtc,is,itfhasharg,
      $     m,mstk0,im,i,itfseqmatstk,isp0,ns,nh,iord0
       logical*4 ev,ordless,tfsameqk,def,tfmaxgenerationq,tfordlessq
       ev=.false.
@@ -382,8 +382,8 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
         endif
         nh=dhash%nhash
         itastk2(1,isp1)=isp
-        ihash=int(ksad_loc(dhash%hash(itfhasharg(ktfref+isp1,nh))))
-        kadv=klist(ihash)
+        khash=ksad_loc(dhash%hash(itfhasharg(ktfref+isp1,nh)))
+        kadv=klist(khash)
         if(kadv .ne. 0)then
           is=1
           kadv0=kadv
@@ -441,8 +441,8 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
                   endif
                   dtbl%next=kadv0
                   klist(kadv0+1)=kadv
-                  dtbl%prev=ihash
-                  klist(ihash)=kadv
+                  dtbl%prev=khash
+                  klist(khash)=kadv
                 endif
               endif
               ev=.true.

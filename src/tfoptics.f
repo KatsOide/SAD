@@ -66,12 +66,10 @@
         rlist(itoff)=rlist(kaini+k)
       enddo
       if(geo)then
-        call tfgeo(ilist(1,ilattp+1),rlist(ifgeo),rlist(ifpos),
-     $       rlist(ifgamm),.true.)
+        call tfgeo(.true.)
       endif
       lout=icslfno()
-      call qcell1(ilist(1,ilattp+1),rlist(iftwis),rlist(ifgamm),
-     $     i1,0.d0,i2,0.d0,
+      call qcell1(i1,0.d0,i2,0.d0,
      $     0,hstab,vstab,tracex,tracey,.false.,over,.true.,lout)
       cell0=cell
       kax=ktadaloc(-1,3)

@@ -1,10 +1,10 @@
-      subroutine tftmat(twiss,gammab,trans,l1,l2,idp,fold)
+      subroutine tftmat(trans,l1,l2,idp,fold)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 l1,l2,idp,i
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat)
       real*8 trans(4,5)
       real*8 utwiss1(ntwissfun),utwiss2(ntwissfun)
       logical*4 fold
@@ -14,23 +14,24 @@
       enddo
       call tftmatu(utwiss1,utwiss2,
      $     twiss(nlat,idp,mfitnx),twiss(nlat,idp,mfitny),
-     $     gammab,trans,l1,l2,fold,trpt)
+     $     trans,l1,l2,fold,trpt)
       return
       end
 
       subroutine tftmatu(utwiss1,utwiss2,amux,amuy,
-     $     gammab,trans,l1,l2,fold,trpt1)
+     $     trans,l1,l2,fold,trpt1)
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 l1,l2
-      real*8 utwiss1(*),utwiss2(*),gammab(*)
+      real*8 utwiss1(*),utwiss2(*)
       real*8 trans(4,5),amux,amuy
       logical*4 fold,trpt1
       integer*4 i
       real*8 detr,cc,x,px,y,py,r1,r2,r3,r4
       call qgettru(utwiss1,utwiss2,amux,amuy,
-     $     gammab,trans,l1,l2,.false.,fold,trpt1)
+     $     trans,l1,l2,.false.,fold,trpt1)
       r1=utwiss1(mfitr1)
       r2=utwiss1(mfitr2)
       r3=utwiss1(mfitr3)

@@ -29,7 +29,8 @@
       s6m=0.d0
       call tclr(sa,6)
       call tclr(ss,36)
-      waks=twake .or. lwake
+c      waks=twake .or. lwake
+      waks=.false.
       wn=0.d0
       w=1.d0
       do 110 i=1,np

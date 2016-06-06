@@ -1,11 +1,10 @@
-      subroutine tmast(latt,master,iele1,pos)
+      subroutine tmast
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 i,ie,id,j
-      integer*4 latt(2,nlat),master(nlat),iele1(nlat)
-      real*8 pos(nlat)
       do 10 i=1,nlat
         master(i)=0
 10    continue

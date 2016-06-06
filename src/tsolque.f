@@ -261,9 +261,10 @@
       
       end module
 
-      subroutine tsolque(trans,cod,beam,al,ak,
+      recursive subroutine tsolque(trans,cod,beam,al,ak,
      $     bz0,ak0x,ak0y,eps0,enarad,radcod,calpol,irad,ld)
       use tsolz
+      use tmacro, only:bradprev
       implicit none
       type(tzparam) tz
       integer*4 i,n,ndiv,ld,itgetqraddiv,irad
@@ -311,7 +312,7 @@
       if(ak*(1.d0+cod(6)) .lt. 0.d0)then
 c        write(*,'(a,1p8g13.5)')'tsolque-in  ',ak,bz,cod
         call texchg(trans,cod,beam)
-        call tsolquerc(trans,cod,beam,al,-ak,
+        call tsolque(trans,cod,beam,al,-ak,
      $       -bz0,-ak0y,-ak0x,eps0,enarad,radcod,calpol,irad,ld)
         call texchg(trans,cod,beam)
 c        write(*,'(a,1p8g13.5)')'tsolque-out ',ak,bz,cod
@@ -353,11 +354,11 @@ c     end   initialize for preventing compiler warning
           if(n .eq. 1)then
             call trade(trans,beam,cod,bx,by,bz*br,bz,
      $           0.d0,bxy,0.d0,0.d0,
-     $           0.d0,0.d0,0.d0,0.d0,.5d0*aln)
+     $           .5d0*aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
           else
             call trade(trans,beam,cod,bx,by,bz*br,bz,
      $           0.d0,bxy,0.d0,0.d0,
-     $           0.d0,0.d0,0.d0,0.d0,aln)
+     $           aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
           endif
         endif
         if(n .eq. 1)then
@@ -534,26 +535,16 @@ c     $       'tsolque ',((trans1(i,j),j=1,6),i=1,6)
         bxy= b1
         call trade(trans,beam,cod,bx,by,bz*br,bz,
      $       0.d0,bxy,0.d0,0.d0,
-     $       0.d0,0.d0,0.d0,0.d0,.5d0*aln)
+     $       .5d0*aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
       endif
+      bradprev=0.d0
       return
       end associate
       end
 
-      subroutine tsolquerc(trans,cod,beam,al,ak,
-     $     bz,ak0x,ak0y,eps0,enarad,radcod,calpol,irad,ld)
-      implicit none
-      integer*4 ld,irad
-      real*8 trans(6,12),cod(6),beam(42)
-      real*8 al,ak,eps0,bz,ak0x,ak0y
-      logical*4 enarad,radcod,calpol
-      call tsolque(trans,cod,beam,al,ak,
-     $     bz,ak0x,ak0y,eps0,enarad,radcod,calpol,irad,ld)
-      return
-      end
-
       integer*4 function itgetirad()
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit none
       itgetirad=irad
       return
       end
@@ -630,8 +621,8 @@ c     $       'tsolque ',((trans1(i,j),j=1,6),i=1,6)
 
       integer*4 function itgetqraddiv(cod,ak,al)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 nrad
       real*8 cod(6),ak,xd,xpd,a,b,al
       xd=max(1.d-6,abs(cod(1))+abs(cod(3)))
@@ -646,16 +637,16 @@ c     $       'tsolque ',((trans1(i,j),j=1,6),i=1,6)
 
       real*8 function tbrho()
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       tbrho=brho
       return
       end
 
       real*8 function tbrhoz()
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       tbrhoz=brhoz
       return
       end

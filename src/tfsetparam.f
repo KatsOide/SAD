@@ -54,14 +54,14 @@
       xixf  =rfromd(kxsymbolv('XIX',3))*pi2
       xiyf  =rfromd(kxsymbolv('XIY',3))*pi2
       nparallel=max(1,int(rgetgl1('NPARA')))
-      iwakepold=ifwakep
+c      iwakepold=ifwakep
       return
       end
 
       subroutine tphyzp
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       brhoz =pgev/c
       brho  =brhoz/abs(charge)
       p0    =pgev/amass

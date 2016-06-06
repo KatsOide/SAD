@@ -1,11 +1,16 @@
       subroutine tquad(np,x,px,y,py,z,g,dv,pz,l,al,ak,
      1                 dx,dy,theta,cost,sint,radlvl,chro,
-     1                 fringe,f1,f2,mfring,f1r,eps0,kin)
-      include 'inc/TMACRO.inc'
+     1                 fringe,f1,f2,mfring,eps0,kin)
+      use ffs_flag
+      use tmacro
+      use ffs_pointer, only:inext,iprev
+      implicit none
       logical*4 enarad,chro,fringe,kin
-      integer*4 ndiv,np,l
+      integer*4 ndiv,np,l,i,mfring,n
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
-     $     f1r
+     $     f1r,f2r,al,ak,dx,dy,theta,cost,sint,radlvl,f1,f2,eps0,
+     $     p,a,ea,b,pxi,pxf,pyf,b1,eps,akin,sqrtk,alx,dpz,r,xi,yi,akk,
+     $     phi,s,t,th,u,a11,a12,b11,b12,a21,b21,aln,pti,ei
       if(al .le. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,pz,4,l,0.d0,ak,
      $             dx,dy,theta,cost,sint, 1.d0,.false.)
@@ -42,10 +47,20 @@ c          p=(1.d0+g(i))**2
 2110    continue
       endif
       if(enarad)then
+        if(iprev(l) .eq. 0)then
+          f1r=f1
+        else
+          f1r=0.d0
+        endif
+        if(inext(l) .eq. 0)then
+          f2r=f1
+        else
+          f2r=0.d0
+        endif
         b1=brho*ak/al
         call trad(np,x,px,y,py,g,dv,0.d0,0.d0,
      1       b1,0.d0,0.d0,.5d0*al,
-     $       f1r,f1r,0.d0,al,1.d0)
+     $       f1r,f2r,0.d0,al,1.d0)
       endif
       if(eps0 .eq. 0.d0)then
         eps=.1d0
@@ -173,7 +188,7 @@ c      endif
       if(enarad)then
         call trad(np,x,px,y,py,g,dv,0.d0,0.d0,
      1       b1,0.d0,0.d0,.5d0*al,
-     $       f1r,f1r,al,al,-1.d0)
+     $       f1r,f2r,al,al,-1.d0)
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
         do 2120 i=1,np
@@ -202,8 +217,9 @@ c
       subroutine tthin(np,x,px,y,py,z,g,dv,pz,nord,l,al,ak,
      1                 dx,dy,theta,cost,sint,radlvl,fringe)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
 c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
       integer*4 nmult
       parameter (nmult=21)
@@ -488,8 +504,9 @@ c
       subroutine tthinrad(np,x,px,y,py,z,g,dv,pz,nord,l,al,ak,
      1                 dx,dy,theta,cost,sint,fringe)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 nmult,n,ndivmax
       parameter (nmult=21)
       real*8 ampmax,eps00

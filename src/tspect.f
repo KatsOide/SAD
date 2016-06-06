@@ -1,6 +1,7 @@
       subroutine tspect(isp1,n,cx)
       use tfstk
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit real*8 (a-h,o-z)
       dimension cx(2)
       lpa=ilist(2,lspect+isp1)
       if(n .lt. ilist(1,lpa+2))then
@@ -31,7 +32,9 @@ c       write(*,*)isp1,j,joff+j,rlist(joff+j)
 
       subroutine tsptrm
       use tfstk
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit none
+      integer*4 lp,lpa,isp1
       do 10 isp1=1,nspect
         lpa=ilist(2,lspect+isp1)
         lp=ilist(2,lpa)

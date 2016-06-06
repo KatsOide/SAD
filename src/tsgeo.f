@@ -1,14 +1,15 @@
-      subroutine tsgeo(latt,gammab,k,ke,ke1,geo,pos,sol)
+      subroutine tsgeo(k,ke,ke1,sol)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       real*8 conv
       parameter (conv=3.d-16)
-      integer*4 latt(2,nlat),i,kg,k1,k2,lp,le,idir,i0,i1,lt,
+      integer*4 i,kg,k1,k2,lp,le,idir,i0,i1,lt,
      $     led,mfr,ll,j,l1,lenw,l2,kbz
-      real*8 geo(3,4,nlat),geo1(3,3),geos(3,4),pos(nlat),
-     $     pzf,trans(6,12),cod(6),beam(42),gammab(nlat),
+      real*8 geo1(3,3),geos(3,4),
+     $     pzf,trans(6,12),cod(6),beam(42),
      $     db,bzs,bzs0,psi1,psi2,phi,apsi1,apsi2,
      $     chi1,chi2,cschi1,snchi1,cschi2,snchi2,chi3,
      $     cschi3,snchi3,g1,xi,yi,pxi,pyi,al,pzi,fb1,fb2,
@@ -96,11 +97,11 @@
         pos(k+1)=pos(k)
       else
         bzs=tfbzs(k1-1,kbz)
-        call tclr(geo1,9)
+        geo1(:,1:3)=0.d0
         geo1(2,1)=-1.d0
         geo1(3,2)=-1.d0
         geo1(1,3)=1.d0
-        call tmov(geo(1,1,k),geos,12)
+        geos=geo(:,:,k)
         geo(1,1,ke)= snchi1
         geo(2,1,ke)=-cschi1
         geo(3,1,ke)=0.d0
@@ -209,13 +210,12 @@ c            a14= 2.d0*sin(phi*.5d0)**2/ak
           endif
           gf=0.d0
           dvf=0.d0
-          call tquads(1,xf,pxf,yf,pyf,zf,gf,dvf,pzf,
+          call tquads(1,xf,pxf,yf,pyf,zf,gf,dvf,pzf,i,
      $         al,rlist(ll+2),bzs*dir,
      $         rlist(ll+5),rlist(ll+6),theta,
      1         cos(theta),sin(theta),
      1         1.d0,rlist(ll+9) .eq. 0.d0,
-     $         f1,f2,mfr,rlist(ll+kytbl(kwF1,icQuad)),
-     $         rlist(ll+13),i,dirf)
+     $         f1,f2,mfr,rlist(ll+13),i,dirf)
           rlist(ll+ilist(1,ll))=rlist(ll+ilist(1,ll))*dir
           pxf=pxf*dir+f*yf
           pyf=pyf*dir-f*xf
@@ -261,8 +261,8 @@ c            a14= 2.d0*sin(phi*.5d0)**2/ak
 c          if(chi1m .ne. 0.d0)then
 c            write(*,*)'tsgeo ',i,chi1m,dirf,dir
 c          endif
-          call tclr(beam,21)
-          call tclr(trans,36)
+          beam(1:21)=0.d0
+          trans(:,1:6)=0.d0
           bzs=bzs*dir
           call tmulte(trans,cod,beam,gammab,i,
      $         al,rlist(ll+kytbl(kwK0,icMULT)),bzs,
@@ -319,7 +319,7 @@ c          endif
               pxf=pxi+yi*db*.5d0
               pyf=pyi-xi*db*.5d0
             endif
-            call tclr(rlist(ll+3),10)
+            rlist(ll+3:ll+12)=0.d0
           else
             pxf=pxi-yi*bzs*.5d0
             pyf=pyi+xi*bzs*.5d0
@@ -361,6 +361,7 @@ c          endif
         pyi=pyf
         pos(i1)=pos(i0)+(al+dl)*dir
         ds=ds+dl
+c        write(*,*)'tsgeo ',i1,geo(1,4,i1),geo(2,4,i1)
 1010  continue
       rlist(led+3)=xi
       rlist(led+4)=yi
@@ -441,9 +442,9 @@ c        snchi3=sin(chi3)
           geo1(j,3)= geo(1,1,k)*g1+geo(1,2,k)*g2
      1              +geo(1,3,k)*geo1(j,3)
 240     continue
-        call tmov(geos,geo(1,1,k),12)
+        geo(:,:,k)=geos
         call tgrot(rlist(l1+kytbl(kwCHI1,icSOL)),geos,geo1)
-        call tmov(geo(1,1,ke),geo(1,1,ke+1),12)
+        geo(:,:,ke+1)=geo(:,:,ke)
       endif
       return
       end

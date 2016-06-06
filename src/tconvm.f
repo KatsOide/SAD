@@ -1,7 +1,7 @@
       subroutine tconvm(np,px,py,g,dv,idir)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 np,idir,i
       real*8 px(np),py(np),dv(np),g(np),pr,h1,p1
       if(idir .ge. 0)then

@@ -388,11 +388,10 @@ c          write(*,*)'kax ',kax
       real*8 function fflogi(name,exist)
       use tfstk
       implicit none
-      include 'inc/TMACRO1.inc'
       character*(*) name
       logical*4 exist,v,tflogi
       call capita(name)
-      v=tflogi(name,flags,fname,sino,nflag,exist)
+      v=tflogi(name,exist)
       if(exist)then
         if(v)then
           fflogi=1.d0
@@ -407,26 +406,25 @@ c          write(*,*)'kax ',kax
 
       subroutine tfflags(isp1,kx,irtc)
       use tfstk
+      use ffs, only:fff,nflag,fname
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       type (sad_descriptor) kx
       type (sad_list), pointer :: klx,klxi
       type (sad_string), pointer :: str
-      integer*4 irtc,i,m,lenw,isp1
+      integer*4 irtc,i,lenw,isp1,itfmessage
+      if(isp .gt. isp1+1)then
+        irtc=itfmessage(9,'General::narg','"0"')
+        return
+      endif
+      kx=kxadaloc(-1,nflag,klx)
       do i=1,nflag
-        if(fname(i) .eq. ' ')then
-          m=i-1
-          go to 1
-        endif
-      enddo
- 1    kx=kxadaloc(-1,m,klx)
-      do i=1,m
         klx%dbody(i)=kxadaloc(0,2,klxi)
         klxi%dbody(1)=kxsalocb(0,fname(i),lenw(fname(i)),str)
-        if(flags(i))then
+        if(fff%flags(i))then
           klxi%body(2)=ktftrue
         else
-          klxi%body(2)=0
+          klxi%rbody(2)=0.d0
         endif
       enddo
       irtc=0

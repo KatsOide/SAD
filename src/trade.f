@@ -1,18 +1,20 @@
       subroutine trade(trans,beam,cod,bx,by,bz,br,
-     $     bxx,bxy,byy,dldx,
-     $     f1,f2,s,ala,al)
+     $     bxx,bxy,byy,dldx,al,s,ala,f1,f2,prev,next)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 i
       real*8 f1,al,dldx,bx,by,bz,
      $     bxx,bxy,byy,pr,pxi,pyi,dtdsc,ar,br,
-     $     p1,brad,dtds,h1sq,alr,tlc,dp,alr1,tlc1,
-     $     dp1,de,ala,s,sq,fact,fact1,f2,
-     $     vx,vy,vz,qx,qy,qzi,pzi,htlc,htlc2
+     $     p1,brad,dtds,h1sq,alr,tlc,dp,tlc1,
+     $     dp1,de,sq,fact,fact1,brad2,brad3,dbrad2,
+     $     vx,vy,vz,qx,qy,qzi,pzi,htlc,htlc2,
+     $     s,ala,f2,alr2,alr3,f1r,f2r
       real*8 , parameter :: pmax=0.9999d0, pmin=0.99999d0
       real*8 trans(6,12),beam(42),cod(6)
       real*8 radi(6,6)
+      logical*4 prev,next
       pr=1.d0+cod(6)
       p1=p0*pr
       ar=.5d0*br
@@ -23,21 +25,40 @@
       vx=pyi*bz-pzi*by
       vy=pzi*bx-pxi*bz
       vz=pxi*by-pyi*bx
-      brad=(vx**2+vy**2+vz**2)
-c      if(al .eq. 0.02d0)then
-c      write(*,'(a,1p5g15.7)')
-c     $       'trade ',pyi,cod(4),cod(1),ar,sqrt(brad)*al
-c      endif
-      call tradel(al,f1,f2,s,ala,alr,alr1)
-      alr=alr+cod(1)*dldx
-      alr1=alr1+cod(1)*dldx
+      brad2=vx**2+vy**2+vz**2
+      alr=al+cod(1)*dldx
+      brad=sqrt(brad2)
+      brad3=brad2*brad
+      if(prev .and. s .eq. 0.d0)then
+        dbrad2=-(brad-bradprev)**2*f1/alr/6.d0
+        brad2=brad2+dbrad2
+        brad3=brad3+dbrad2*1.5d0*(brad+bradprev)
+      else
+        if(prev)then
+          f1r=0.d0
+        else
+          f1r=f1
+        endif
+        if(next)then
+          f2r=0.d0
+        else
+          f2r=f2
+        endif
+        if(f1r .ne. 0.d0 .or. f2r .ne. 0.d0)then
+          call tradel(al,f1r,f2r,s,ala,alr2,alr3)
+          brad2=brad2*alr2/al
+          brad3=brad3*alr3/al
+c          write(*,'(a,1p7g15.7)')'trade ',al,f1r,f2r,s,ala,alr2,alr3
+        endif
+      endif
+      bradprev=brad
       dtds=1.d0/pzi
       dtdsc=dtds*crad
       h1sq=1.d0+p1**2
       tlc=alr*dtdsc
       htlc=-h1sq*tlc
       htlc2=htlc*2.d0
-      dp=max(htlc*brad,-pmin*p0)
+      dp=max(htlc*brad2,-pmin*p0)
       u0=u0-dp
       if(irad .gt. 6)then
         qzi=-sq/pzi
@@ -46,7 +67,7 @@ c      endif
         radi=0.d0
         radi(6,1)=htlc2*
      $       (pzi*(-vx*bxy+vy*bxx)+vz*(pxi*bxy-pyi*bxx))
-     1       -h1sq*brad*dtdsc*dldx
+     1       -h1sq*brad2*dtdsc*dldx
         radi(6,2)=(dp*dtds**2*pxi+htlc2*
      $       ((vx*by-vy*bx)*pxi/pzi-vy*bz+vz*by))/pr
         radi(6,3)=htlc2*
@@ -54,7 +75,7 @@ c      endif
         radi(6,4)=(dp*dtds**2*pyi+htlc2*
      $       ((-vx*by+vy*bx)*pyi/pzi+vx*bz-vz*bx))/pr
         radi(6,5)=0.d0
-        radi(6,6)=-2.d0*p1*p0*tlc*brad
+        radi(6,6)=-2.d0*p1*p0*tlc*brad2
      1       -dp*dtds**2*sq/pr
      1       -htlc2*(qx*vx+qy*vy+vz**2)/pr
 c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
@@ -63,9 +84,9 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
         do i=1,6
           radi(i,i)=radi(i,i)+1.d0
         enddo
-        tlc1=alr1*dtdsc*.5d0
-        dp1=-h1sq*brad*tlc1
-        de=-erad*dp1*h1sq*sqrt(h1sq*brad)/brhoz/pr
+        tlc1=alr*dtdsc*.5d0
+        dp1=-h1sq*brad3*tlc1
+        de=-erad*dp1*h1sq*sqrt(h1sq)/brhoz/pr
         beam(21)=beam(21)+de
         fact=1.d0+de/pr**2
         fact1=1.d0-de/pr**2
@@ -181,6 +202,7 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
       end
 
       subroutine trades(trans,beam,cod,bzs0,bzs1,f1,brhoz)
+      use tmacro, only:bradprev
       implicit none
       real*8 trans(6,12),beam(42),cod(6),bxr,byr,bzs0,bzs1,
      $             bxx,f1,bzr,brhoz
@@ -193,16 +215,17 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
       byr=bxx*cod(3)
       call trade(trans,beam,cod,bxr,byr,0.d0,bzs0,
      $     bxx,0.d0,bxx,0.d0,
-     $     0.d0,0.d0,0.d0,0.d0,f1*.25d0)
+     $     f1*.25d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
       bxr=bxx*cod(1)
       byr=bxx*cod(3)
       call trade(trans,beam,cod,bxr,byr,0.d0,.5d0*(bzs0+bzs1),
      $     bxx,0.d0,bxx,0.d0,
-     $     0.d0,0.d0,0.d0,0.d0,f1*.5d0)
+     $     f1*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
       bxr=bxx*cod(1)
       byr=bxx*cod(3)
       call trade(trans,beam,cod,bxr,byr,0.d0,bzs1,
      $     bxx,0.d0,bxx,0.d0,
-     $     0.d0,0.d0,0.d0,0.d0,f1*.25d0)
+     $     f1*.25d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
+      bradprev=0.d0
       return
       end

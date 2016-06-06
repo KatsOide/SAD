@@ -5,8 +5,9 @@
      $     f1,f2,mfring,fb1,fb2,bfrm,vc,harm,phi,freq,wakew1,
      $     rtaper,autophi,ld)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 nmult,ndivmax
       real*8 ampmax,oneev,pmax
       parameter (nmult=21,ampmax=0.05d0,ndivmax=300,pmax=0.9999d0)

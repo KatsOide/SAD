@@ -43,7 +43,7 @@ c     call getwdlK(word)
       if(istope.ne.0) then
         do 10 i=1,nstope
           j=ilist(mod(i-1,2)+1,istope+(i-1)/2)
-          call elnameK(latt,istr(j,1),mult,en)
+          call elnameK(istr(j,1),en)
           call mbufw(en,.false.,io)
           outc=autofg(rlist(latt(2,istr(j,1))+11),'S13.10')
           call mbufw(outc,.false.,io)
@@ -64,7 +64,7 @@ c     call getwdlK(word)
       else
         do 11 i=1,nstr
           j=istr(i,2)
-          call elnameK(latt,istr(j,1),mult,en)
+          call elnameK(istr(j,1),en)
           call mbufw(en,.false.,io)
           outc=autofg(rlist(latt(2,istr(j,1))+11),'S13.10')
           call mbufw(outc,.false.,io)

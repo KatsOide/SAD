@@ -32,12 +32,12 @@ c
    10   temp(i)=rlist(latt(2,istr(j,1))+11)-rlist(ibckup-1+istr(j,1))
       call mstatp(temp,nstr,ceil,floor,rc(2),rc(3),imax)
       rc(1)=max(ceil,-floor)*sign(1d0,ceil+floor)
-      call elname(latt,istr(istr(imax,2),1),mult,name(1))
+      call elname(istr(istr(imax,2),1),name(1))
       do 12 i=1,nstr
    12   temp(i)=rlist(latt(2,istr(istr(i,2),1))+11)
       call mstatp(temp,nstr,ceil,floor,rc(5),rc(6),imax)
       rc(4)=max(ceil,-floor)*sign(1d0,ceil+floor)
-      call elname(latt,istr(istr(imax,2),1),mult,name(2))
+      call elname(istr(istr(imax,2),1),name(2))
       if(print) then
         vout(1)(16:23)=autofg(rc(1)*1d3,'S8.5')
         vout(1)(25:32)=name(1)

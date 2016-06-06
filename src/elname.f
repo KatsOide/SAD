@@ -1,25 +1,26 @@
-      subroutine elname(latt,i,mult,name)
+      subroutine elname(i,name)
       implicit none
-      integer*4 latt(2,*),i,mult(*)
+      integer*4 i
       character*(*) name
-      call elname1(latt,i,mult,name,.false.)
+      call elname1(i,name,.false.)
       return
       end
 
-      subroutine elnameK(latt,i,mult,name)
+      subroutine elnameK(i,name)
       implicit none
-      integer*4 latt(2,*),i,mult(*)
+      integer*4 i
       character*(*) name
-      call elname1(latt,i,mult,name,.true.)
+      call elname1(i,name,.true.)
       return
       end
 
-      subroutine elname1(latt,i,mult,name,comp)
+      subroutine elname1(i,name,comp)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none 
-      integer*4 latt(2,nlat),i,mult(nlat)
+      integer*4 i
       character*(*) name
       logical*4 comp
 c

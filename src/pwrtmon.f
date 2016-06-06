@@ -34,7 +34,7 @@ c     call getwdlK(word)
       amax(1)=amin(1)
       amax(2)=amin(2)
       do 10 i=1,nmon
-        call elnameK(latt,imon(imon(i,2),1),mult,en)
+        call elnameK(imon(imon(i,2),1),en)
         call mbufw(en,.false.,io)
         outc=autofg(twiss(imon(imon(i,2),1),0,15),'S13.10')
         call mbufw(outc,.false.,io)

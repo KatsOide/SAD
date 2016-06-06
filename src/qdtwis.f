@@ -1,15 +1,14 @@
-      subroutine qdtwis(latt,utwiss,itwissp,
-     $     gammab,dtwiss,ctrans,iclast,
+      subroutine qdtwis(dtwiss,ctrans,iclast,
      $     k0,l,idp,iv,nfam,nut,disp,dzfit)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 nfam,nut,latt(2,nlat),itwissp(nlat),
+      integer*4 nfam,nut,
      $     iclast(-nfam:nfam),k0,k,ke,lp,l,idp,iv,
      $     iutk,iutl,i,k1
-      real*8 utwiss(ntwissfun,-nfam:nfam,nut),gammab(nlat),
-     $     dtwiss(mfittry),dcod(6),dcod2(6),dtrans(4,5),
+      real*8 dtwiss(mfittry),dcod(6),dcod2(6),dtrans(4,5),
      $     trans(4,5),trans1(4,5),dcod1(6),dtrans1(4,5),
      $     ctrans(27,-nfam:nfam),g1,dir,psi1,psi2,dt1,dt2,
      $     r,gr,detp,sqrdet,ddetp,dsqr,
@@ -56,47 +55,40 @@
         dt1=dtrans(1,5)
         dt2=dtrans(2,5)
       else
-        call qdtrans(latt,nlat,ke,iutk,k,k+1,
-     $       iv,dtrans,dcod,idp,
-     $       utwiss,gammab,nfam,nut)
+        call qdtrans(ke,iutk,k,k+1,
+     $       iv,dtrans,dcod,idp)
       endif
       go to 2001
  1140 if(iv .eq. kytbl(kwK1,icQUAD) .or.
      $     iv .eq. kytbl(kwROT,icQUAD))then
         call qdquad(dtrans,dcod,rlist(lp+1),rlist(lp+2),
-     $       utwiss,itwissp,gammab,k,idp,
-     1       rlist(lp+5),rlist(lp+6),rlist(lp+4),iv,nfam,nut)
+     $       k,idp,rlist(lp+5),rlist(lp+6),rlist(lp+4),iv,nfam,nut)
         if(geocal .and.
      $       rlist(lp+5) .ne. 0.d0 .or. rlist(lp+6) .ne. 0.d0)then
           call qdquad(dtrans1,dcod1,rlist(lp+1),rlist(lp+2),
-     $         utwiss,itwissp,gammab,k,0,
-     1         rlist(lp+5),rlist(lp+6),rlist(lp+4),iv,nfam,nut)
+     $         k,0,rlist(lp+5),rlist(lp+6),rlist(lp+4),iv,nfam,nut)
           dcod(1)=dcod(1)-dcod1(1)
           dcod(2)=dcod(2)-dcod1(2)
           dcod(3)=dcod(3)-dcod1(3)
           dcod(4)=dcod(4)-dcod1(4)
         endif
       else
-        call qdtrans(latt,nlat,ke,iutk,k,k+1,
-     $       iv,dtrans,dcod,idp,
-     $       utwiss,gammab,nfam,nut)
+        call qdtrans(ke,iutk,k,k+1,
+     $       iv,dtrans,dcod,idp)
       endif
       go to 2001
  1160 if(iv .eq. 2 .or. iv .eq. 4)then
         call qdthin(dtrans,dcod,ke,rlist(lp+1),rlist(lp+2),
-     1       utwiss,itwissp,gammab,k,idp,
-     1       rlist(lp+5),rlist(lp+6),rlist(lp+4),iv,nfam,nut)
+     1       k,idp,rlist(lp+5),rlist(lp+6),rlist(lp+4),iv,nfam,nut)
       else
-        call qdtrans(latt,nlat,ke,iutk,k,k+1,
-     $       iv,dtrans,dcod,idp,
-     $       utwiss,gammab,nfam,nut)
+        call qdtrans(ke,iutk,k,k+1,
+     $       iv,dtrans,dcod,idp)
       endif
       go to 2001
- 1320 call qdtrans(latt,nlat,ke,iutk,k,k+1,
-     $     iv,dtrans,dcod,idp,
-     $     utwiss,gammab,nfam,nut)
+ 1320 call qdtrans(ke,iutk,k,k+1,
+     $     iv,dtrans,dcod,idp)
 c      if(rlist(lp+3) .ne. 0.d0 .or. rlist(lp+4) .ne. 0.d0)then
-c        call qdtrans(latt,nlat,ke,iutk,k,k+1,
+c        call qdtrans(nlat,ke,iutk,k,k+1,
 c     $       iv,dtrans1,dcod1,0,
 c     $       utwiss,gammab,nfam,nut)
 c        dcod(1)=dcod(1)-dcod1(1)
@@ -108,7 +100,7 @@ c      endif
  4100 if(k .eq. 1)then
         if(iv .eq. mfitddp)then
           call tftmatu(utwiss(1,idp,1),utwiss(1,idp,iutl),
-     $         0.d0,0.d0,gammab,dtrans,1,l,.false.,trpt)
+     $         0.d0,0.d0,dtrans,1,l,.false.,trpt)
           r=sqrt(gammab(k)/gammab(l))
           do i=mfitdx,mfitdpy
             dtwiss(i)=dtrans(i-mfitdx+1,5)*r
@@ -119,8 +111,8 @@ c      endif
      $         rlist(latt(2,1)+kytbl(kwOFFSET,icMARK)))))
           gammab(1)=gammab(k)
           iutk=itwissp(k)
-          call qdini(latt,utwiss(1,idp,1),utwiss(1,idp,iutk),
-     $         k,gammab,dtrans,dcod,iv)
+          call qdini(utwiss(1:ntwissfun,idp,1),
+     $         utwiss(1:ntwissfun,idp,iutk),k,dtrans,dcod,iv)
           k1=k
           go to 2002
         else
@@ -131,20 +123,14 @@ c      endif
       endif
  2001 k1=k+1
  2002 gr=sqrt(gammab(k1)/gammab(l))
-      dcod2(1)=dcod(1)*gr
-      dcod2(2)=dcod(2)*gr
-      dcod2(3)=dcod(3)*gr
-      dcod2(4)=dcod(4)*gr
+      dcod2(1:4)=dcod(1:4)*gr
       dcod2(5)=dcod(5)
       dcod2(6)=dcod(6)*gr**2
-      dtrans(1,5)=dtrans(1,5)/gr
-      dtrans(2,5)=dtrans(2,5)/gr
-      dtrans(3,5)=dtrans(3,5)/gr
-      dtrans(4,5)=dtrans(4,5)/gr
+      dtrans(1:4,5)=dtrans(1:4,5)/gr
       call tftmatu(utwiss(1,idp,itwissp(k1)),
      $     utwiss(1,idp,iutl),
      $     utwiss(mfitnx,idp,nut),utwiss(mfitny,idp,nut),
-     $     gammab,trans,k1,l,.false.,trpt)
+     $     trans,k1,l,.false.,trpt)
       nzcod=.false.
       do 10 i=1,4
         trans1(i,1)= trans(i,1)*dtrans(1,1)+trans(i,2)*dtrans(2,1)
@@ -163,17 +149,14 @@ c      endif
 10    continue
       dcod1(5)=dcod2(5)
       if(dzfit .or. (nzcod .and. disp .and. .not. cell))then
-        call qddtwiss(
-     $       latt,nlat,k,k1,l,itwissp,
+        call qddtwiss(k,k1,l,
      $       trans,trans1,dcod,idp,
-     $       utwiss,gammab,
-     $       ctrans(1,idp),iclast(idp),
-     $       nfam,nut,trpt)
+     $       ctrans(1,idp),iclast(idp),trpt)
         dcod1(5)=dcod(5)
       endif
       call qgettru(utwiss(1,idp,iutk),utwiss(1,idp,iutl),
      $     utwiss(3,idp,nut),utwiss(6,idp,nut),
-     $     gammab,trans,k,l,.true.,.true.,trpt)
+     $     trans,k,l,.true.,.true.,trpt)
       r1=utwiss(mfitr1,idp,iutl)
       r2=utwiss(mfitr2,idp,iutl)
       r3=utwiss(mfitr3,idp,iutl)
@@ -330,14 +313,14 @@ c      write(*,*)'qdtwis ',k0,l,dtwiss(mfitey)
       return
       end
 
-      subroutine qdini(latt,utwiss1,utwiss2,k2,
-     $     gammab,dtrans,dcod,iv)
+      subroutine qdini(utwiss1,utwiss2,k2,dtrans,dcod,iv)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),iv,k2 
-      real*8 utwiss1(ntwissfun),utwiss2(ntwissfun),gammab(nlat),
+      integer*4 iv,k2 
+      real*8 utwiss1(ntwissfun),utwiss2(ntwissfun),
      $     trans(4,5),dtrans(4,5),dcod(6)
       real*8 b,detr,damu,dir
       dtrans=0.d0
@@ -350,7 +333,7 @@ c     begin initialize for preventing compiler warning
         detr=0
 c     end   initialize for preventing compiler warning
         call qgettru(utwiss1,utwiss2,0.d0,0.d0,
-     $       gammab,trans,1,k2,.true.,.false.,.true.)
+     $       trans,1,k2,.true.,.false.,.true.)
       endif
       go to (100,200,300,400,500,600,700,800,900,1000,
      $     1100,1200,1300,1400,1500,1600,1700,1800,1900),iv
@@ -483,25 +466,23 @@ c     end   initialize for preventing compiler warning
       return
       end
 
-      subroutine qddtwiss(latt,nlat,k,k1,l,itwissp,
-     $     trans,dtrans,dcod,idp,
-     $     utwiss,gammab,
-     $     ctrans,iclast,nfam,nut,trpt)
+      subroutine qddtwiss(k,k1,l,trans,dtrans,dcod,idp,
+     $     ctrans,iclast,trpt)
       use tfstk
+      use ffs_pointer
+      use ffs_fit, only:nut
       use tffitcode
       implicit none
       include 'inc/MACCODE.inc'
       include 'inc/MACKW.inc'
       real*8 eps
       parameter (eps=1.d-4)
-      integer*4 nlat,latt(2,nlat),k,l,idp,nfam,nut,itwk,itwl,
-     $     itwissp(nlat),la1,lb1,iclast,k1,itwk1,ibg,ibe,
-     $     itwe,ibe1,itwbe
+      integer*4 k,l,idp,itwk,itwl,
+     $     la1,lb1,iclast,k1,itwk1,ibg,ibe,itwe,ibe1,itwbe
       real*8 dtrans(4,5),dcod(6),trans(20),trans2s(20),
      $     trans2(4,5),trans3(4,5),trans1(4,5),transe(4,5),
      $     transe2(4,5),cod2(6),code(6),dcode(6),
-     $     utwiss(ntwissfun,-nfam:nfam,nut),
-     $     gammab(nlat),w,fra,frb,ctrans(27)
+     $     w,fra,frb,ctrans(27)
       logical*4 over,trpt
       equivalence (trans2,trans2s)
       itwk=itwissp(k)
@@ -511,7 +492,7 @@ c     end   initialize for preventing compiler warning
      $     +abs(dcod(5)))
       cod2(6)=utwiss(mfitddp,idp,itwk1)
       call tfbndsol(k,ibg,ibe)
-      call tffsbound1(nlat,latt,k1,l,la1,fra,lb1,frb)
+      call tffsbound1(k1,l,la1,fra,lb1,frb)
       if(iclast .gt. 0 .and. iclast .le. lb1 .and.
      $     (iclast .ne. lb1 .or. ctrans(27) .le. frb))then
         cod2(1)=ctrans(21)
@@ -519,8 +500,7 @@ c     end   initialize for preventing compiler warning
         cod2(3)=ctrans(23)
         cod2(4)=ctrans(24)
         cod2(5)=ctrans(25)
-        call qcod(latt,gammab,1,
-     $       iclast,ctrans(27),lb1,frb,
+        call qcod(1,iclast,ctrans(27),lb1,frb,
      $       trans3,cod2,.true.,over)
         call tmultr45(ctrans,trans3,trans2)
       else
@@ -530,8 +510,7 @@ c     end   initialize for preventing compiler warning
         cod2(4)=utwiss(mfitdpy,idp,itwk1)+w*dcod(4)
         cod2(5)=utwiss(mfitdz, idp,itwk1)+w*dcod(5)
         if(ibg .eq. 0 .or. l .le. max(ibg,ibe))then
-          call qcod(latt,gammab,1,
-     $         la1,fra,lb1,frb,
+          call qcod(1,la1,fra,lb1,frb,
      $         trans2,cod2,.true.,over)
         else
           if(ibg .lt. ibe)then
@@ -539,8 +518,7 @@ c     end   initialize for preventing compiler warning
             itwe=itwissp(ibe1)
             code(2)=utwiss(mfitdpx,idp,itwe)
             code(4)=utwiss(mfitdpy,idp,itwe)
-            call qcod(latt,gammab,1,
-     $           la1,fra,ibe1,0.d0,
+            call qcod(1,la1,fra,ibe1,0.d0,
      $           transe,cod2,.true.,over)
 c            write(*,*)'qddtwis-0 ',transe(2,5),cod2(2),code(2)
             transe(2,5)=transe(2,5)-cod2(2)+code(2)
@@ -548,14 +526,13 @@ c            write(*,*)'qddtwis-0 ',transe(2,5),cod2(2),code(2)
             call tftmatu(utwiss(1,idp,itwissp(ibe1)),
      $           utwiss(1,idp,itwl),
      $           0.d0,0.d0,
-     $           gammab,transe2,ibe1,l,.false.,trpt)
+     $           transe2,ibe1,l,.false.,trpt)
             cod2(1)=utwiss(mfitdx, idp,itwk1)
             cod2(2)=utwiss(mfitdpx,idp,itwk1)
             cod2(3)=utwiss(mfitdy, idp,itwk1)
             cod2(4)=utwiss(mfitdpy,idp,itwk1)
             cod2(5)=utwiss(mfitdz, idp,itwk1)
-            call qcod(latt,gammab,1,
-     $           la1,fra,ibe1,0.d0,
+            call qcod(1,la1,fra,ibe1,0.d0,
      $           trans3,cod2,.true.,over)
             trans3(2,5)=trans3(2,5)-cod2(2)+code(2)
             trans3(4,5)=trans3(4,5)-cod2(4)+code(4)
@@ -565,7 +542,7 @@ c            write(*,*)'qddtwis-0 ',transe(2,5),cod2(2),code(2)
             call tftmatu(utwiss(1,idp,itwk1),
      $           utwiss(1,idp,itwbe),
      $           0.d0,0.d0,
-     $           gammab,transe,k1,ibe,.false.,trpt)
+     $           transe,k1,ibe,.false.,trpt)
             dcode(1)=
      $            transe(1,1)*dcod(1)+transe(1,2)*dcod(2)
      $           +transe(1,3)*dcod(3)+transe(1,4)*dcod(4)
@@ -583,8 +560,7 @@ c            write(*,*)'qddtwis-0 ',transe(2,5),cod2(2),code(2)
             cod2(3)=utwiss(mfitdy, idp,itwbe)-w*dcode(3)
             cod2(4)=utwiss(mfitdpy,idp,itwbe)-w*dcode(4)
             cod2(5)=utwiss(mfitdz, idp,itwbe)
-            call qcod(latt,gammab,1,
-     $           ibe,0.d0,k1,0.d0,
+            call qcod(1,ibe,0.d0,k1,0.d0,
      $           trans2,cod2,.true.,over)
             transe(2,5)=transe(2,5)-w*dcode(2)
             transe(4,5)=transe(4,5)-w*dcode(4)
@@ -592,7 +568,7 @@ c            write(*,*)'qddtwis-0 ',transe(2,5),cod2(2),code(2)
             call tftmatu(utwiss(1,idp,itwk1),
      $           utwiss(1,idp,itwl),
      $           0.d0,0.d0,
-     $           gammab,transe2,k1,l,.false.,trpt)
+     $           transe2,k1,l,.false.,trpt)
           endif
           cod2(1)=utwiss(mfitdx, idp,itwl)
           cod2(2)=utwiss(mfitdpx,idp,itwl)
@@ -623,26 +599,24 @@ c      enddo
       ctrans(26)=cod2(6)
       call qgettru(utwiss(1,idp,itwk),utwiss(1,idp,itwk1),
      $     utwiss(3,idp,nut),utwiss(6,idp,nut),
-     $     gammab,trans1,k,k1,.true.,.true.,trpt)
+     $     trans1,k,k1,.true.,.true.,trpt)
       call tmultr45(trans1,trans2,transe)
       call tadd(transe,dtrans,dtrans,20)
       return
       end
 
-      subroutine qdtrans(latt,nlat,ke,kk1,j,je,
-     $     iv,dtrans,dcod,idp,
-     $     utwiss,gammab,nfam,nut)
+      subroutine qdtrans(ke,kk1,j,je,
+     $     iv,dtrans,dcod,idp)
       use tfstk
+      use ffs_pointer
       use tffitcode
       implicit none
       include 'inc/MACCODE.inc'
       include 'inc/MACKW.inc'
       real*8 eps,vmin
       parameter (eps=1.d-6,vmin=1.d-6)
-      integer*4 nlat,latt(2,nlat),ke,iv,idp,lp,j,nfam,
-     $     nut,kk1,je
-      real*8 dtrans(4,5),dcod(6),v0,wv,dv,
-     $     utwiss(ntwissfun,-nfam:nfam,nut),gammab(nlat),trans2(20),
+      integer*4 ke,iv,idp,lp,j,kk1,je
+      real*8 dtrans(4,5),dcod(6),v0,wv,dv,trans2(20),
      $     cod2(20),trans1(20),cod1(20),trans(4,5),trans3(4,5)
       equivalence (trans2,trans3)
       logical*4 over
@@ -678,8 +652,7 @@ c      enddo
       cod2(4)=utwiss(mfitdpy,idp,kk1)
       cod2(5)=utwiss(mfitdz,idp,kk1)
       cod2(6)=utwiss(mfitddp,idp,kk1)
-      call qtwiss1(latt,0.d0,gammab,idp,j,je,
-     $     trans2,cod2,.true.,over)
+      call qtwiss1(0.d0,idp,j,je,trans2,cod2,.true.,over)
       rlist(lp+iv)=v0-dv
       cod1(1)=utwiss(mfitdx,idp,kk1)
       cod1(2)=utwiss(mfitdpx,idp,kk1)
@@ -687,8 +660,7 @@ c      enddo
       cod1(4)=utwiss(mfitdpy,idp,kk1)
       cod1(5)=utwiss(mfitdz,idp,kk1)
       cod1(6)=utwiss(mfitddp,idp,kk1)
-      call qtwiss1(latt,0.d0,gammab,idp,j,je,
-     $     trans1,cod1,.true.,over)
+      call qtwiss1(0.d0,idp,j,je,trans1,cod1,.true.,over)
       trans2(1:20)=(trans2(1:20)-trans1(1:20))/(2.d0*dv)
       dcod(1)=(cod2(1)-cod1(1))/(2.d0*dv)
       dcod(2)=(cod2(2)-cod1(2))/(2.d0*dv)

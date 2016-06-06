@@ -1,22 +1,17 @@
-      subroutine tfdisp(word,idisp1,idisp2,
-     1     latt,twiss,pos,geo,gammab,dp00,
-     1     size,iele,iele1,ival,
-     1     scale,mult,lfno,exist)
+      subroutine tfdisp(word,idisp1,idisp2,dp00,lfno,exist)
       use tfstk
       use ffs
+      use ffs_pointer
+      use ffs_fit, only:scale
       use tffitcode
       implicit none
       integer*4 idisp1,idisp2,lfno,mdisp,icolm,ifany,id0,id3,idstep,
      $     lines,l,id,ielm,i
-      integer*4 latt(2,nlat)
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),size(21,nlat)
-      real*8 pos(nlat),geo(3,4,nlat),gammab(nlat),dp00,
-     $     dgam,bx0,by0,bx1,by1,bx2,by2,r,sigpp,tfchi,detr,
+      real*8 dp00,dgam,bx0,by0,bx1,by1,bx2,by2,r,sigpp,tfchi,detr,
      $     etaxp,etapxp,sigxxp,sigxpxp,sigpxpxp,emixp,
      $     etayp,etapyp,sigyyp,sigypyp,sigpypyp,emiyp
-      integer*4 iele(nlat),ival(nele),mult(nlat),iele1(nlat),
-     $     lname,lb,lb1
-      real*8 scale(mfit1),pe(4)
+      integer*4 lname,lb,lb1
+      real*8 pe(4)
       real*8 og(3,4)
       character*(*) word
       character*255 wordp,word1,name
@@ -74,7 +69,7 @@ c      write(*,*)'tfdisp ',word,wordp
         dpeak=.true.
         go to 270
       endif
-      id0=ielm(latt,wordp,1,mult,exist)
+      id0=ielm(wordp,exist)
       if(exist)then
         idisp1=id0
       else
@@ -84,7 +79,7 @@ c      write(*,*)'tfdisp ',word,wordp
         go to 250
       endif
       call getwdl2(word,wordp)
-      id0=ielm(latt,wordp,1,mult,exist)
+      id0=ielm(wordp,exist)
       if(exist)then
         idisp2=id0
       else
@@ -103,7 +98,7 @@ c      write(*,*)'tfdisp ',word,wordp
       by1=twiss(idisp1,icolm,mfitby)
       lines=0
       do 200 l=idisp1,id3,idstep
-        mat=temat(latt,l,mult,name,word1)
+        mat=temat(l,name,word1)
         lname=len_trim(name)
         if(seldis .and. .not. mat)then
           go to 200
@@ -286,24 +281,22 @@ c      write(*,*)'tfdisp ',word,wordp
             buff(33:40)=autofg(twiss(l,icolm,mfitepx)/
      $           scale(mfitepx),'8.5')
           else
-            if(ifsize .eq. 0)then
-              call termes(lfno,
-     $'Calculate beam size first, by BEAMSIZE or (EMIT w/CODPLOT)',' ')
-              return
-            else
-              sigpp=size(21,l)
-              etaxp=size(16,l)/sigpp
-              etapxp=size(17,l)/sigpp
-              sigxxp=size(1,l)-etaxp**2*sigpp
-              sigxpxp=size(2,l)-etaxp*etapxp*sigpp
-              sigpxpxp=size(3,l)-etapxp**2*sigpp
-              emixp=sqrt(sigxxp*sigpxpxp-sigxpxp**2)
-              buff( 1: 8)=autofg(-sigxpxp/emixp/scale(mfitax),'8.5')
-              buff( 9:16)=autofg(sigxxp/emixp/scale(mfitbx),'8.5')
-              buff(17:24)=autofg(emixp,'8.5')
-              buff(25:32)=autofg(etaxp/scale(mfitex),'8.5')
-              buff(33:40)=autofg(etapxp/scale(mfitepx),'8.5')
+            call ffs_init_sizep
+            if(.not. updatesize .or. sizedp .ne. dpmax)then
+              call tfsize
             endif
+            sigpp=beamsize(21,l)
+            etaxp=beamsize(16,l)/sigpp
+            etapxp=beamsize(17,l)/sigpp
+            sigxxp=beamsize(1,l)-etaxp**2*sigpp
+            sigxpxp=beamsize(2,l)-etaxp*etapxp*sigpp
+            sigpxpxp=beamsize(3,l)-etapxp**2*sigpp
+            emixp=sqrt(sigxxp*sigpxpxp-sigxpxp**2)
+            buff( 1: 8)=autofg(-sigxpxp/emixp/scale(mfitax),'8.5')
+            buff( 9:16)=autofg(sigxxp/emixp/scale(mfitbx),'8.5')
+            buff(17:24)=autofg(emixp,'8.5')
+            buff(25:32)=autofg(etaxp/scale(mfitex),'8.5')
+            buff(33:40)=autofg(etapxp/scale(mfitepx),'8.5')
           endif
           if(l .ne. nlat .and.
      $         rlist(latt(2,l)+ilist(1,latt(2,l))) .le. 0.d0)then
@@ -326,7 +319,7 @@ c      write(*,*)'tfdisp ',word,wordp
      $             /scale(mfitr1+i),'7.4')
             enddo
           elseif(mdisp .eq. 6)then
-            call tgetphysdisp(twiss,l,pe)
+            call tgetphysdisp(l,pe)
             do i=0,3
               buff(51+i*7:57+i*7)
      $             =autofg(pe(i+1)
@@ -339,11 +332,11 @@ c      write(*,*)'tfdisp ',word,wordp
      $             scale(mfitdx+i),'7.4')
 120         continue
           elseif(mdisp .eq. 4)then
-            buff(51:60)=autofg(sqrt(size(1,l))*1.d3,'10.8')
-            buff(61:70)=autofg(sqrt(size(6,l))*1.d3,'10.8')
+            buff(51:60)=autofg(sqrt(beamsize(1,l))*1.d3,'10.8')
+            buff(61:70)=autofg(sqrt(beamsize(6,l))*1.d3,'10.8')
             buff(71:79)=autofg(
-     1           atan2(-2.d0*size(4,l),size(1,l)-size(6,l))*90.d0/pi,
-     1                  '9.4')
+     1           atan2(-2.d0*beamsize(4,l),beamsize(1,l)-beamsize(6,l))
+     $           *90.d0/pi,'9.4')
           elseif(mdisp .eq. 5)then
             buff(51:58)=autofg((gammab(l)+dgam)*amass/1.d9,'8.6')
             r=(gammab(1)+dgam)/(gammab(l)+dgam)
@@ -384,11 +377,11 @@ c      write(*,*)'tfdisp ',word,wordp
               buff(120:126)=autofg(detr,'7.4')
             endif
           else
-            etayp=size(18,l)/sigpp
-            etapyp=size(19,l)/sigpp
-            sigyyp=size(6,l)-etayp**2*sigpp
-            sigypyp=size(9,l)-etayp*etapyp*sigpp
-            sigpypyp=size(10,l)-etapyp**2*sigpp
+            etayp=beamsize(18,l)/sigpp
+            etapyp=beamsize(19,l)/sigpp
+            sigyyp=beamsize(6,l)-etayp**2*sigpp
+            sigypyp=beamsize(9,l)-etayp*etapyp*sigpp
+            sigpypyp=beamsize(10,l)-etapyp**2*sigpp
             emiyp=sqrt(sigyyp*sigpypyp-sigypyp**2)
             buff(80:87)=autofg(-sigypyp/emiyp/scale(mfitay),'8.5')
             buff(88:95)=autofg(sigyyp/emiyp/scale(mfitby),'8.5')

@@ -6,7 +6,7 @@
       dimension latt(2,nlat),mult(nlat),pos(nlat)
       character*(*) word,wordp
       logical exist
-      i1=igelm(latt,word,mult,exist)
+      i1=igelm(word,exist)
       if(.not. exist)then
         write(lfno,*)' Missing element for ALIGN.'
         return
@@ -40,7 +40,7 @@
           dy1=0.d0
         endif
       endif
-212   i2=ielm(latt,wordp,1,mult,exist)
+212   i2=ielm(wordp,exist)
       if(.not. exist)then
         i2=i1
         dx2=dx1

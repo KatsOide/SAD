@@ -36,9 +36,9 @@ c     end   initialize for preventing compiler warning
  110  continue
       call tclr(codin,6)
       call tclr(beamin,21)
-      call temit(latt,rlist(itr),codin,rlist(ibeam),rlist(ictrb),
-     &     twiss,size,gammab,.true.,0,0,0,0,
-     $     ndim,.true.,params,stab,15,0)
+      call temit(rlist(itr),codin,rlist(ibeam),rlist(ictrb),
+     $     .true.,0,0,0,0,
+     $     .true.,params,stab,15,0)
       if(.not.stab) then
         call permes(' ','pmeas(temit) --> Unstable orbit.',' ',lfno)
       endif
@@ -52,7 +52,7 @@ c     end   initialize for preventing compiler warning
         amus1=amus0
         amusstep=0d0
         mphi2=7
-        call temits(latt,twiss,size,gammab,ndim,ntwissfun,mphi2,
+        call temits(ndim,ntwissfun,mphi2,
      $       amus0,amus1,amusstep,
      $       emxe,emye,rese,paramss,
      $       15,0,0,irtc)
@@ -97,7 +97,8 @@ c         ... Accumulate data to the history buffer ....
         s=0d0
         do i=1,nobs
           j=iobs(i+1)
-          s=s + (size(6,j)/twiss(j,ndim,5))/(size(1,j)/twiss(j,ndim,2))
+          s=s + (size(6,j)
+     $         /twiss(j,ndim,5))/(size(1,j)/twiss(j,ndim,2))
           if(sto) call pmeas1(twiss,j,size(1,j),datas(1,ic,i))
         enddo
         pmeas=s/dble(nobs)

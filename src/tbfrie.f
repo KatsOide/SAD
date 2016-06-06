@@ -1,7 +1,8 @@
       subroutine tbfrie(trans,cod,beam,rhob,ak,ent,ld)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 i,ld
       real*8 trans(6,12),cod(6),beam(42),trans1(6,6),
      $     yi,pr,rho,ak,rhob,pxi
@@ -127,8 +128,9 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
 
       subroutine tbedge(trans0,cod,beam,al,phib,psi,ent,ld)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 ld
       real*8 trans0(6,12),cod(6),beam(42),phib,psi,al,
      $     trans(6,6),trans1(6,6),rhob
@@ -362,8 +364,9 @@ c      trans(3,6)=-pr*pyi*sxa*(f+pxi*sinp/pzi)
 
       subroutine tbfrme(trans,cod,beam,ak,fb1,ent,ld)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 ld
       real*8 trans(6,6),trans1(6,6),cod(6),beam(42),ak(2),pr,
      $     akx,aky,xi,pxi,yi,pyi,y1,px1,a,dx,dpx,dy,dpy,dz,fb1,
@@ -455,8 +458,8 @@ c      trans(3,6)=-pr*pyi*sxa*(f+pxi*sinp/pzi)
       subroutine tbfrmle(trans,cod,beam,
      $     dxfrx,dyfrx,dyfrax,
      $     dxfry,dyfry,dxfray)
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       real*8 trans(6,6),cod(6),beam(42),trans1(6,6),
      $     dxfrx,dyfrx,dyfrax,
      $     dxfry,dyfry,dxfray,dpx,dpy,pr,xi,yi,dz

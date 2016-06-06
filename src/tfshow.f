@@ -1,31 +1,20 @@
-      subroutine tfshow(flv,latt,mult,
-     $     nfr,nfam,nfam1,kfam,
-     1     scale,nlist,utwiss,itwissp,nut,
-     $     geo,pos,tracex,tracey,
-     1     stab,residual,hstab,vstab,dp,df,
-     $     inicond,iuid,mfpnta,mfpnta1,nqcol,nqcol1,
+      subroutine tfshow(stab,df,mfpnta,mfpnta1,
      $     kx,irtc,ret,lfno)
       use tfstk
       use ffs
-      use ffslocal, only:ffslocalv
+      use ffs_pointer
+      use ffs_fit
       use tffitcode
       implicit none
-      type (ffslocalv) flv
       integer*8 kx,kax,kax1,kax2,kax3,kax4,kax3i,kaxi,kaxi4
-      integer*4 namel,nfr,nfam,nfam1,nut,mfpnta,mfpnta1,
-     $     lfno,nqcol,nqcol1,lw,lf,lfs,nn,mf,m,i,k,l,jshowi,
+      integer*4 namel,mfpnta,mfpnta1,
+     $     lfno,lw,lf,lfs,nn,mf,m,i,k,l,jshowi,
      $     ncc,iq,kpa,kpb,jm,lfs1,ln,
      $     mm,lb,ip,j,nf,nl
       parameter (namel=11)
-      integer*4 latt(2,nlat),mult(nlat),icalc1(3,ndim1),
-     $     itwissp(nlat),iuid(-nfam:nfam)
-      real*8 utwiss(ntwissfun,-nfam:nfam,nut),geo(3,4,nlat),pos(nlat),
-     $     tracex(-nfam:nfam),tracey(-nfam:nfam),df(nqcol),fm,
-     $     x,tgfun
-      real*8 scale(mfit1)
-      real*8 residual(-nfam:nfam),dp(-nfam:nfam)
-      integer*4 jshow(64),itfgetrecl,kfam(-nfam:nfam),irtc
-      character*8 nlist(mfit1)
+      integer*4 icalc1(3,ndim1)
+      real*8 df(nqcol),fm,x,tgfun
+      integer*4 jshow(64),itfgetrecl,irtc
       character*5 fun,form,forms
       character*31 name
       character*15 name1,namea
@@ -34,8 +23,7 @@
       character*255 buf2
       character*255 buf0,buf1
       character*2 label(6)
-      logical*4 err,stab,trx,try,ret,tftype1fit,inicond,
-     $     hstab(-nfam:nfam),vstab(-nfam:nfam)
+      logical*4 err,stab,trx,try,ret,tftype1fit
       external trim
       data label/'x1','x2','x3','y1','y2','y3'/
       lw=max(79,min(255,itfgetrecl()))
@@ -286,8 +274,7 @@ c     write(*,*)jm,flv%mfitp(jm),lfs,vout(lfs+1:lfs+2)
             if(flv%mfitp(jm) .gt. 0)then
               if(flv%ifitp(jm) .ne. flv%ifitp1(jm) .and.
      $             .not. tftype1fit(k))then
-                x=tgfun(k,flv%ifitp(jm),0,utwiss,itwissp,
-     $               tracex,tracey,pos,geo,nfam)
+                x=tgfun(k,flv%ifitp(jm),0)
                 vout(1:lfs)=autofg(x/scale(k),forms)
               else
                 vout(1:lfs)=autofg(flv%fitval(jm)/scale(k),forms)
@@ -307,9 +294,9 @@ c     write(*,*)jm,flv%mfitp(jm),lfs,vout(lfs+1:lfs+2)
           call trim(fun(4:))
           fun(1:3)='FUN'
         endif
-        call elname(latt,kpa,mult,namea)
+        call elname(kpa,namea)
         if(kpa .ne. kpb)then
-          call elname(latt,kpb,mult,name1)
+          call elname(kpb,name1)
           ln=len_trim(namea)
 c          name=namea
 c          name(ln+1:namel)='/'//name1
@@ -334,19 +321,13 @@ c          name(ln+1:namel)='/'//name1
           do 1020 m=1,mm
             j=jshow(m)
             buf0((m-1)*lf+1:m*lf)=
-     1      autofg((tgfun(k,kpb,j,utwiss,itwissp,
-     1           tracex,tracey,pos,geo,nfam)-
-     1              tgfun(k,kpa,j,utwiss,itwissp,
-     1           tracex,tracey,pos,geo,nfam))/scale(k),form)
+     1      autofg((tgfun(k,kpb,j)-tgfun(k,kpa,j))/scale(k),form)
 1020      continue
           buf0(mm*lf+1:)=' '
           if(ret)then
             do j=mf,nfam
               rlist(kaxi4+j-mf+1)=
-     $             tgfun(k,kpb,j,utwiss,itwissp,
-     1             tracex,tracey,pos,geo,nfam)-
-     1             tgfun(k,kpa,j,utwiss,itwissp,
-     1             tracex,tracey,pos,geo,nfam)
+     $             tgfun(k,kpb,j)-tgfun(k,kpa,j)
             enddo
           endif
         elseif(k .le. mfittry .and. k .gt. 0)then
@@ -358,25 +339,19 @@ c     $             utwiss(1,0,1),
 c     $             utwiss(k,j,itwissp(kpb))
 c            endif
             buf0((m-1)*lf+1:m*lf)=
-     1           autofg(tgfun(k,kpb,j,utwiss,itwissp,
-     1           tracex,tracey,pos,geo,nfam)/scale(k),form)
+     1           autofg(tgfun(k,kpb,j)/scale(k),form)
 1010      continue
           buf0(mm*lf+1:)=' '
           if(ret)then
             do j=mf,nfam
-              rlist(kaxi4+j-mf+1)=
-     $             tgfun(k,kpb,j,utwiss,itwissp,
-     1             tracex,tracey,pos,geo,nfam)
+              rlist(kaxi4+j-mf+1)=tgfun(k,kpb,j)
             enddo
           endif
         elseif(k .gt. 0)then
-          buf0=autofg(tgfun(k,kpb,0,utwiss,itwissp,
-     1           tracex,tracey,pos,geo,nfam)/scale(k),'10.6')
+          buf0=autofg(tgfun(k,kpb,0)/scale(k),'10.6')
           if(ret)then
             do j=mf,nfam
-              rlist(kaxi4+j-mf+1)=
-     $             tgfun(k,kpb,j,utwiss,itwissp,
-     1             tracex,tracey,pos,geo,nfam)
+              rlist(kaxi4+j-mf+1)=tgfun(k,kpb,j)
             enddo
           endif
         else

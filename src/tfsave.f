@@ -1,14 +1,11 @@
-      subroutine tfsave(word,cmd0,latt,
-     $     itouchele,itouchv,ntouch,
-     1     klp,ival,twiss,errk)
+      subroutine tfsave(word,cmd0,ntouch)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 i,l,lt,j,k,next
-      integer*4 latt(2,nlat),klp(nele),ival(nele),
-     $     ntouch,itouchele(ntouch),itouchv(ntouch)
-      real*8 errk(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun)
+      integer*4 ntouch
       character*(*) word
       logical*4 cmd,cmd0,exist,tmatch,exist1,all
       call tfsetparam
@@ -43,8 +40,7 @@
               rlist(j+k)=rlist(latt(2,l)+k)
             enddo
           endif
-          call tfsavevar(i,itouchele,itouchv,ntouch,latt,klp,
-     $           nlat,nele)
+          call tfsavevar(i,ntouch)
           if(lt .eq. icMARK)then
             if(l .eq. 1)then
               do 30 k=1,ntwissfun
@@ -96,21 +92,14 @@ c     $             rlist(j+1),rlist(j+4)
       return
       end
 
-      subroutine tfrst(word,cmd0,latt,
-     $     ivarele,ivvar,ivcomp,valvar,nvar,
-     $     itouchele,itouchv,ntouch,
-     1     klp,ival,iele,iele1,errk,couple)
+      subroutine tfrst(word,cmd0,nvar,ntouch)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 l,i,lt,j,k,next
-      integer*4 latt(2,nlat),klp(nele),ival(nele)
-      integer*4 nvar,ivarele(nvar),ivvar(nvar),iele(nlat),
-     $     ntouch,itouchele(ntouch),itouchv(ntouch),
-     $     iele1(nlat),ivcomp(nvar)
-      real*8 errk(2,nlat),couple(nlat)
-      real*8 valvar(nvar)
+      integer*4 nvar,ntouch
       character*(*) word
       logical*4 cmd,cmd0,exist,tmatch,exist1,all
       call tfsetparam
@@ -183,19 +172,18 @@ c     $             rlist(j+1),rlist(j+4)
           go to 1
         endif
       endif
- 9000 call tffsadjust(itouchele,itouchv,latt,errk,
-     $     couple,iele,iele1,klp,ival,ntouch)
-      call tfinitvar(ivarele,ivvar,ivcomp,valvar,nvar,latt,klp,
-     $     ival,errk,nlat,nele)
+ 9000 call tffsadjust(ntouch)
+      call tfinitvar(nvar)
       return
       end
 
-      subroutine tffsresetall(latt)
+      subroutine tffsresetall
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),l,j,k,m,lt
+      integer*4 l,j,k,m,lt
       do l=1,nlat-1
         j=idval(latt(1,l))
         lt=idtype(latt(1,l))

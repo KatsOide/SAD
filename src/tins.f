@@ -1,9 +1,10 @@
       subroutine tins(np,x,px,y,py,z,g,trans)
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit none
+      integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),g(np)
-      real*8 trans(6,7)
+      real*8 trans(6,7),dp,pr,x1,px1,y1,py1
       do i=1,np
-c        dp=g(i)*(2.d0+g(i))
         dp=g(i)
         pr=1.d0+dp
         x1=x(i)

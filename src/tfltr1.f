@@ -1,27 +1,25 @@
-      subroutine tfltr1(latt,twiss,gammab,twissm,twisss,x,
+      subroutine tfltr1(twissm,twisss,x,
      1                  mx,my,omegas,
      1                  coss,sins,cosphi,sinphi,ns, lfno)
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 ndp,maxdp,ntmax
       real*8 dpstep,em0
       parameter (ndp=30,maxdp=ndp*2,dpstep=.001d0,ntmax=6100,em0=1.d-8)
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat)
       real*8 twissm(-ndp:ndp,ntwissfun),twisss(-ndp:ndp,ntwissfun)
       real*8 x(4,maxdp,ns),dp(-ndp:ndp),work(-ndp:ndp),trans(4,5)
       real*8 omegas(ns),coss(ns),sins(ns),cosphi(ns),sinphi(ns),
      $     detr,x1,x2,x3,x4,as,bs,cos1,cs,dpi,ds
-      integer*4 latt(2,nlat),mx(maxdp,ns),my(maxdp,ns),i,j,mdp,mdpx,
+      integer*4 mx(maxdp,ns),my(maxdp,ns),i,j,mdp,mdpx,
      $     ns,lfno,i1,k,n,nl,nsc
       character rad62
       logical cell0,over,hstab,vstab
       real*8 tracex,tracey
       cell0=cell
       cell=.true.
-      call qcell(latt,
-     1           twiss,gammab,1,0,
-     1           hstab,vstab,tracex,tracey,.false.,over)
+      call qcell(1,0,hstab,vstab,tracex,tracey,.false.,over)
       cell=.false.
       do 1 i=11,ntwissfun
         twiss(1,0,i)=0.d0
@@ -29,7 +27,7 @@
       mdp=ndp
       do 10 i=-ndp,ndp
         dp(i)=i*dpstep
-        call qtwiss(latt,twiss,gammab,0,1,nlat,over)
+        call qtwiss(twiss,0,1,nlat,over)
 c     1.d0+dp(i) ???
         do 20 j=1,ntwissfun
           twissm(i,j)=twiss(nlat,0,j)
@@ -104,7 +102,7 @@ c     call spldrw(2*mdp+1,dp(-mdp),twissm(-mdp,14),twisss(-mdp,14))
             twiss(nlat,0,5)=exp(twiss(nlat,0,5))
             twiss(nlat,0,1)=sinh(twiss(nlat,0,1))
             twiss(nlat,0,4)=sinh(twiss(nlat,0,4))
-            call qgettr(twiss,gammab,trans,1,nlat,0,.false.,.false.)
+            call qgettr(trans,1,nlat,0,.false.,.false.)
 c     1.d0+dpi ???
 c           if(i .eq. 1)then
 c             write(*,'(1p5g14.6)')((trans(k,l),l=1,5),k=1,4)

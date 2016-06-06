@@ -1,25 +1,17 @@
-      subroutine tffswake(latt,twiss,gammab,utwiss,itwissp,
-     $     uini,
-     $     iwakeelm,kwaketbl,nwakep,
-     $     ibegin,frbegin,lend,frend,
-     $     nfam,nfam1,nut,hstab,vstab,tracex,tracey,over,beg)
+      subroutine tffswake(ibegin,frbegin,lend,frend,over,beg)
       use tfstk
       use ffs
+      use ffs_pointer
+      use ffs_fit
+      use ffs_wake
       use tffitcode
       implicit none
-      integer*8 ktaloc,iwbufxy,iwbufxyl,iwl,iwt,iwsl,iwst,i1,i2,
-     $     kwaketbl(2,nwakep)
-      integer*4 latt(2,nlat),itwissp(nlat),nfam,nfam1,nut,nwakep,
-     $     ibegin,lend,itp1,i,j,ii,iutp,iwp,iutp1,np,npf,
-     $     iwakeelm(nwakep),idx,idy
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat),
-     $     utwiss(ntwissfun,-nfam:nfam,nut),uini(27,-nfam:nfam),
-     $     frbegin,frend,tracex(-nfam:nfam),tracey(-nfam:nfam),
+      integer*8 ktaloc,iwbufxy,iwbufxyl,iwl,iwt,iwsl,iwst,i1,i2
+      integer*4 ibegin,lend,itp1,i,j,ii,iutp,iwp,iutp1,np,npf,idx,idy
+      real*8 frbegin,frend,
      $     rgetgl1,utwiss1(ntwissfun,-nfam:nfam),fr1,fr2,sigz,
-     $     wbuf(nfam1:nfam),
-     $     wzl(nfam1:nfam),wzt(nfam1:nfam),dx,dy
-      logical*4 hstab(-nfam:nfam),vstab(-nfam:nfam),
-     $     over(-nfam:nfam),beg
+     $     wbuf(nfam1:nfam),wzl(nfam1:nfam),wzt(nfam1:nfam),dx,dy
+      logical*4 over(-nfam:nfam),beg
       sigz=rgetgl1('SIGZ')
       i1=ibegin
       fr1=frbegin
@@ -69,13 +61,11 @@
             do j=1,ntwissfun
               twiss(i1,ii,j)=utwiss(j,i,itp1)
             enddo
-            call qcell1(latt,twiss,gammab,
-     $           i1,fr1,i2,fr2,ii,
+            call qcell1(i1,fr1,i2,fr2,ii,
      1           hstab(i),vstab(i),tracex(i),tracey(i),
      $           i .ne. 0,over(i),.true.,0)
-            call tffssetutwiss(latt,twiss,utwiss,itwissp,i,nlat,
-     $           ndim,nfam,nut,i1,i2,fr2,beg,i1 .eq. ibegin,
-     $           i2 .eq. lend)
+            call tffssetutwiss(i,nlat,
+     $           i1,i2,fr2,beg,i1 .eq. ibegin,i2 .eq. lend)
           enddo
         elseif(i1 .eq. lend)then
           npf=np*ntwissfun
@@ -107,27 +97,22 @@
           endif
           iwl=abs(kwaketbl(1,iwp))
           iwt=abs(kwaketbl(2,iwp))
-          call tffswakekick(utwiss(1,-nfam,iutp),utwiss1,
+          call tffswakekick(utwiss(1:ntwissfun,-nfam,iutp),utwiss1,
      $         iwl,iwt,rlist(iwl),rlist(iwt),
      $         sigz,2.d0*gammab(i2)*amass,nfam,nfam1,
      $         dx,dy,wbuf,rlist(iwbufxy),rlist(iwbufxyl),
      $         wzl,wzt,iwsl,iwst)
           do i=nfam1,nfam
             ii=min(1,abs(i))
-            do j=1,ntwissfun
-              twiss(i2,ii,j)=utwiss1(j,i)
-            enddo
-            call qcell1(latt,twiss,gammab,
-     $           i2,0.d0,i2+1,0.d0,ii,
+            twiss(i2,ii,1:ntwissfun)=utwiss1(1:ntwissfun,i)
+            call qcell1(i2,0.d0,i2+1,0.d0,ii,
      1           hstab(i),vstab(i),tracex(i),tracey(i),
      $           i .ne. 0,over(i),.true.,0)
-            do j=1,ntwissfun
-              utwiss1(j,i)=twiss(i2+1,ii,j)
-            enddo
+            utwiss1(1:ntwissfun,i)=twiss(i2+1,ii,1:ntwissfun)
           enddo
           iutp1=itwissp(i2+1)
           call tffswakekick(utwiss1,
-     $         utwiss(1,-nfam,iutp1),
+     $         utwiss(1:ntwissfun,-nfam,iutp1),
      $         iwl,iwt,rlist(iwl),rlist(iwt),
      $         sigz,2.d0*gammab(i2+1)*amass,nfam,nfam1,
      $         dx,dy,wbuf,rlist(iwbufxy),rlist(iwbufxyl),
@@ -317,19 +302,20 @@ c      parameter (fact=1.d0/sqrt(pi2))
       return
       end
 
-      subroutine tffssetupwake(latt,mult,kwakeelm,kwakep,nwakep,
-     $     lfno,irtc)
+      subroutine tffssetupwake(lfno,irtc)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
+      use ffs_wake
+      use iso_c_binding
       implicit none
       integer*8 kx,ktaloc,kal,kalj,ktfmalocp,kat,katj
-      integer*4 latt(2,nlat),mult(nlat),nwakep,irtc,
-     $     isp0,isp1,lfno,n,m,lenw,l,itfdownlevel,isp2,
+      integer*4 irtc,isp0,isp1,lfno,n,m,lenw,l,itfdownlevel,isp2,
      $     i,lbegin,lend,j,k
       real*8 frbegin,frend
       character*(MAXPNAME+10) name
-      integer*8 ifname,ifwfunl,ifwfunt,kwakeelm,kwakep
+      integer*8 ifname,ifwfunl,ifwfunt
       save ifname,ifwfunl,ifwfunt
       data ifwfunl,ifwfunt/0,0/
       if(ifwfunl .eq. 0)then
@@ -343,13 +329,13 @@ c      parameter (fact=1.d0/sqrt(pi2))
         klist(ifwfunl+2)=ktfstring+ifname
         klist(ifwfunt+2)=ktfstring+ifname
       endif
-      call tffsbound(nlat,latt,lbegin,frbegin,lend,frend)
+      call tffsbound(lbegin,frbegin,lend,frend)
       isp0=isp
       do i=lbegin,lend-1
         isp1=isp+2
         kal=0
         kat=0
-        call elname(latt,i,mult,name)
+        call elname(i,name)
         ilist(1,ifname)=lenw(name)
         call tfpadstr(name,ifname+1,ilist(1,ifname))
         levele=levele+1
@@ -429,6 +415,8 @@ c      parameter (fact=1.d0/sqrt(pi2))
           ilist(i,kwakeelm)=ivstk2(1,isp0+i*2)
         enddo
       endif
+      call c_f_pointer(c_loc(ilist(1,kwakeelm)),iwakeelm,[nwakep])
+      call c_f_pointer(c_loc(klist(kwakep)),kwaketbl,[2,nwakep])
       irtc=0
       return
  9000 l=itfdownlevel()
@@ -441,11 +429,11 @@ c      parameter (fact=1.d0/sqrt(pi2))
       return
       end
 
-      subroutine tffsclearwake(kwakeelm,kwakep,nwakep)
+      subroutine tffsclearwake
       use tfstk
+      use ffs_wake
       implicit none
-      integer*4 nwakep
-      integer*8 kwakeelm,kwakep,i
+      integer*8 i
       if(nwakep .gt. 0)then
         do i=kwakep,kwakep+2*nwakep-1
           if(klist(i) .gt. 0)then

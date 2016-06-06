@@ -44,7 +44,7 @@ c ..... write status ....
           lv=ilist(2,lp)
           kv=ilist(1,lp+1)
           call mcchar(ilist(2,lp+1),vname,3)
-          call elname(latt,ilist(mod(lv-1,2)+1,lp2+(lv-1)/2),mult,name)
+          call elname(ilist(mod(lv-1,2)+1,lp2+(lv-1)/2),name)
           call mbufw(vname//': fit '//name,.false.,lfno)
           call mbufw(nlist(kv)(1:lene(nlist(k)))//
      $         autofg(rlist(lp3+lv-1),'S10.3'),.false.,lfno)
@@ -100,7 +100,7 @@ c...... get conditions from matching-condition buffer ...
             if(kfit(i) .ge. mfitc1 .and. kfit(i) .le. mfitc1+3 .or.
      &         kfit(i) .ge. mfitc2 .and. kfit(i) .le. mfitc2+3  ) then
               nc=nc+1
-              call elname(latt,ifitp(i),mult,name)
+              call elname(ifitp(i),name)
               if(wordp.eq.name) then
                 if(kv.eq.kfit(i)) then
                   ltarget=nc
@@ -147,7 +147,7 @@ c++++++++++++++++++++++
         do 30 i=1,nb
           j=(ncor+4)*(i-1)
           lt=ilist(mod(j,2)+1,isb+j/2)
-          call elname(latt,lt,mult,name)
+          call elname(lt,name)
 c ....... delete (kv,name) from 'vbump' list, if it exists.          
           call pvbump3(kv,name)
           vname=name(1:lene(name))//'_'//nlist(kv)

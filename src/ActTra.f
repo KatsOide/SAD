@@ -107,7 +107,7 @@ c**********************************
 c.......for debug
 c     print *,'argument for track',pname(lptr),ilist(2,idval(lptr))
 c.......end debug
-c      write(*,*)'ActTra-2.2 '
+c      write(*,*)'ActTra-2.2 ',lptr,ilist(2,idval(lptr))
          if (ilist(2,idval(lptr)) .le. 0) then
             call expnln(lptr)
          endif

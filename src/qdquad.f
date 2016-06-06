@@ -1,24 +1,21 @@
-      subroutine qdquad(dtrans,dcod,al,ak,utwiss,itwissp,
-     $gammab,k1,idp,dx,dy,theta,iv,nfam,nut)
-            use tfstk
+      subroutine qdquad(dtrans,dcod,al,ak,
+     $     k1,idp,dx,dy,theta,iv,nfam,nut)
+      use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 nfam,nut,k1,idp,iv,itwissp(nlat),i
-      real*8  utwiss(ntwissfun,-nfam:nfam,nut),gammab(nlat),
-     $     al,ak,theta,
+      integer*4 nfam,nut,k1,idp,iv,i
+      real*8  al,ak,theta,
      $     dtrans(4,5),dcod(6),cod(6),dx,dy,pr,xi,pxi,yi,pyi,
      $     akk,phi,dphi,sinphi,cosphi,a1,a2,a11,a12,a21,shphi,chphi,
      $     b1,b2,b11,b12,b21,b16,b26,a16,a26,x,y
       if(iv .eq. 4)then
-        call qdrotate(dtrans,dcod,utwiss,gammab,
-     $       k1,itwissp(k1),idp,dx,dy,iv,
-     $       ndim,nlat,nfam,nut,ntwissfun)
+        call qdrotate(dtrans,dcod,k1,itwissp(k1),idp,dx,dy,nut)
       elseif(iv .eq. 2)then
         if(al .le. 0.d0)then
           call qdthin(dtrans,dcod,4,al,ak,
-     $         utwiss,itwissp,gammab,k1,idp,
-     $         dx,dy,theta,iv,nfam,nut)
+     $         k1,idp,dx,dy,theta,iv,nfam,nut)
           return
         endif
         call qtentu(dtrans,cod,utwiss(1,idp,itwissp(k1)),.true.)
@@ -107,12 +104,11 @@
       return
       end
 
-      subroutine qdrotate(dtrans,dcod,utwiss,gammab,
-     $k1,kk1,idp,dx,dy,iv,ndim,nlat,nfam,nut,ntwissfun)
+      subroutine qdrotate(dtrans,dcod,k1,kk1,idp,dx,dy,nut)
+      use ffs_pointer
       implicit none
-      integer*4 ndim,nlat,idp,k1,iv,nfam,nut,kk1,ntwissfun
-      real*8  utwiss(ntwissfun,-nfam:nfam,nut),gammab(nlat),
-     $     dtrans(4,5),dcod(6),cod(6),trans1(4,5),trans2(4,5),
+      integer*4 idp,k1,nut,kk1
+      real*8  dtrans(4,5),dcod(6),cod(6),trans1(4,5),trans2(4,5),
      $     dcod1(4),dx,dy,cod2(6)
       integer*4 i
       real*8 x,px,y,py
@@ -126,7 +122,7 @@ c      endif
       cod(3)=cod(3)-dy
       call tftmatu(utwiss(1,idp,kk1),utwiss(1,idp,kk1+1),
      $     utwiss(3,idp,nut),utwiss(6,idp,nut),
-     $     gammab,trans1,k1,k1+1,.false.,.true.)
+     $     trans1,k1,k1+1,.false.,.true.)
       do i=1,4
         dtrans(i,3)=-trans1(i,1)
         dtrans(i,1)= trans1(i,3)

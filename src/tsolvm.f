@@ -8,8 +8,9 @@
       real*8 aa,f,g,s,r,w,u,h,xmin,z,vv,d,c,p,bb,y,an
       real*8 q,h1,h2,t,r1,r2,ra
       integer*4 lsep(m+n),i,j,k,mn,it,isep,ibegin,iend,ma,i1,i1mn,
-     $     kk
+     $     kk,nfail
       logical*4 svd
+      nfail=4
       mn=min(n,m)
       do 1 i=1,n
         v(i)=1.d0
@@ -441,7 +442,13 @@ C         if(j .lt. ndim+2)then
           enddo do1221
           v(ibegin-1)=0.d0
  1210   continue
-        write(*,*)' TSOLVM convergence fail. ',iend
+        if(nfail .ge. 0)then
+          write(*,*)' TSOLVM convergence fail: ',iend
+          if(nfail .eq. 0)then
+            write(*,*)' -- further message will be suppressed.'
+          endif
+          nfail=nfail-1
+        endif
         iend=iend-1
         v(iend)=0.d0
       enddo do3001

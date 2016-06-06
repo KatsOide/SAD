@@ -1,15 +1,14 @@
-      subroutine tfltra(latt,twiss,gammab,word,lfno)
+      subroutine tfltra(word,lfno)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4, parameter :: ndp=30,maxdp=ndp*2
       real*8, parameter :: dpstep=.001d0
       integer*4 lfno,ns,ios,i,italoc,n1,ics,isn,ic,is,
      $     itm,its,ix,imx,imy
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat),
-     $     os1,os2,oss
-      integer*4 latt(2,nlat)
+      real*8 os1,os2,oss
       character*(*) word
       logical exist
       call tfgetr(os1,pi2,word,lfno,exist)
@@ -51,7 +50,7 @@
       ix =italoc(maxdp*4*ns)
       imx=italoc(maxdp*ns/2+1)
       imy=italoc(maxdp*ns/2+1)
-      call tfltr1(latt,twiss,gammab,rlist(itm),rlist(its),rlist(ix),
+      call tfltr1(rlist(itm),rlist(its),rlist(ix),
      1            rlist(imx),rlist(imy),rlist(ios),
      1            rlist(ics),rlist(isn),rlist(ic),rlist(is),
      1            ns,lfno)

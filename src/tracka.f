@@ -1,8 +1,9 @@
       subroutine tracka(latt,kptbl,x,px,y,py,z,g,dv,pz,
      $                  sjx,sjxjx,sjy,sjyjy,sjz,sjzjz,zbuf,lsp,zbufa)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       type (sad_symdef), pointer :: symd
       integer*4  latt(2,nlat),kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)

@@ -1,7 +1,8 @@
       subroutine tserad(np,x,px,y,py,g,dv,l1,rho)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 np,l1,i
       real*8 x(np),px(np),y(np),py(np),g(np),dv(np),
      $     rho,alf1,alc,b,f,dpr,pr,pxi,pyi,s,pzi,u,brad,p,hh,dp,de,

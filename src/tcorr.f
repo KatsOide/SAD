@@ -51,7 +51,7 @@
      $       id .ne. 31 .and. id .ne. 41))then
           go to 10
         endif
-        if(temat(latt,i,mult,name,word))then
+        if(temat(i,name,word))then
           exist=.true.
           call cssetp(next)
           if(id .eq. 41)then

@@ -69,7 +69,7 @@
               beam(4)=sv(5)
               beam(6)=sv(4)
             else
-              call tfbeam(twiss,gammab,i,theta,beam)
+              call tfbeam(i,theta,beam)
             endif
             if(kv.ne.32) then
               ia=(kv-27)*(kv-26)/2
@@ -102,8 +102,7 @@ c              ha=gammab(i)*sqrt(1.d0+1.d0/gammab(i)**2)
               endif
               do n=1,ndiv
                 rn=dble(n)/(ndiv+1)
-                call qtwissfrac(ftwiss,
-     $               latt,twiss,gammab,i,rn*f,over)
+                call qtwissfrac(ftwiss,i,rn*f,over)
                 do ii=1,ntwissfun
                   twiss(i+1,idp,ii)=ftwiss(ii)
                 enddo
@@ -130,7 +129,7 @@ c                  gammab(i+1)=sqrt((rn*f*dh+ha)**2-1.d0)
                     hbs=rn*f*dh+ha
                     gammab(i+1)=h2p(hbs)
 c                    gammab(i+1)=hbs*sqrt(1.d0-1.d0/hbs**2)
-                    call tfbeam(twiss,gammab,i+1,theta,beam)
+                    call tfbeam(i+1,theta,beam)
                     gammab(i+1)=gbs
                   endif
                   if(kv.ne.32) then
@@ -180,7 +179,7 @@ c        write(*,*)'tdrwdt ',i,id,jp
             beam(4)=sv(5)
             beam(6)=sv(4)
           else
-            call tfbeam(twiss,gammab,i,theta,beam)
+            call tfbeam(i,theta,beam)
           endif
           if(kv.ne.32) then
             ia=(kv-27)*(kv-26)/2
@@ -235,7 +234,7 @@ c        u(2)=twiss(i,idp,mfitepx)
 c        u(3)=twiss(i,idp,mfitey)
 c        u(4)=twiss(i,idp,mfitepy)
 c        call mc2to4(twiss,idp,i,u,v)
-        call tgetphysdisp(twiss,i,v)
+        call tgetphysdisp(i,v)
         drwfun=v(kv-18)
       elseif(kv .eq. 23) then
         drwfun=twiss(i,idp,mfitr1)*twiss(i,idp,mfitr4)

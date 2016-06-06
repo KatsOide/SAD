@@ -3,8 +3,9 @@
      $     ax,ay,dx,dy,
      $     xl,yl,xh,yh,pxj,pyj,dpj,theta)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer, parameter :: nkptbl = 6
       real*8 plimit,zlimit
       parameter (plimit=0.99d0,zlimit=1.d10)
@@ -232,8 +233,8 @@ c      - Swap particle coordinates
       subroutine tapert1(l,latt,x,px,y,py,z,g,dv,pz,
      $     kptbl,np,kturn)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 l,latt(2,nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       integer*4 kptbl(np0,6),np,kturn
@@ -273,8 +274,8 @@ c     Report new drop marked particles in alive area [1, np]
       subroutine tapert_report_dropped(outfd,kturn,lbegin,
      $     latt,np,x,px,y,py,z,g,dv,pz,kptbl)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 outfd,kturn,lbegin
       integer*4 latt(2,nlat),np
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)

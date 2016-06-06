@@ -1,21 +1,22 @@
-      subroutine tgetfv
-     1   (word,nlist,nfc,lfno,latt,icalc,ncalc,
-     1    kfit,fitval,mfitp,ifitp,ifitp1,scale,
-     $    maxcond,exist,err)
+      subroutine tgetfv(word,nfc,lfno,icalc,ncalc,
+     1    kfit,fitval,mfitp,ifitp,ifitp1,
+     $    exist,err)
       use tfstk
       use ffs
+      use ffs_pointer
+      use ffs_fit
       use tffitcode
       implicit none
-      integer*4 nfc,lfno,maxcond,i,l,lenw,ix2,kp,j,next,ncalc
+      integer*4 nfc,lfno,i,l,lenw,ix2,kp,j,next,ncalc
       real*8 sc,x1,x,getva
-      character*8 nlist(mfit1),name1
+      character*8 name1
       character*(MAXPNAME) tname
       character*(MAXPNAME+8) name4,name3
       character*(*) word
       character peekch,ch
       integer*4 kfit(*),mfitp(*),ifitp(*),ifitp1(*),
-     $     icalc(3,maxcond),latt(2,nlat),lw
-      real*8 scale(mfit1),fitval(*)
+     $     icalc(3,maxcond),lw
+      real*8 fitval(*)
       logical*4 exist,maxfit,err,err1,exist1
       exist=.true.
       err=.false.

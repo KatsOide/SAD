@@ -1,6 +1,7 @@
       subroutine tdrife(trans,cod,beam,al,bz,ak0x,ak0y,
      $     dvon,enarad,calpol,irad,ld)
       use element_drift_common
+      use tmacro, only:bradprev
       implicit none
       integer*4 irad,ld,i,itmax
       parameter (itmax=10)
@@ -62,7 +63,7 @@
 c   dl/dx is temporarily set to zero, of course it is wrong...
           call trade(trans,beam,cod,bx,by,bz*br,bz,
      $         0.d0,0.d0,0.d0,0.d0,
-     $         0.d0,0.d0,0.d0,0.d0,al*.5d0)
+     $         al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
         else
           br=0.d0
         endif
@@ -96,7 +97,7 @@ c   dl/dx is temporarily set to zero, of course it is wrong...
         if(enarad)then
           call trade(trans,beam,cod,bx,by,bz*br,bz,
      $         0.d0,0.d0,0.d0,0.d0,
-     $         0.d0,0.d0,0.d0,0.d0,al*.5d0)
+     $         al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
         endif
         if(irad .gt. 6 .or. calpol)then
           call tmulbs(beam ,trans1,.true.,.true.)
@@ -105,5 +106,6 @@ c   dl/dx is temporarily set to zero, of course it is wrong...
           call polpar(10,ld,al,0.d0,0.d0,0.d0,0.d0,cod)
         endif
       endif
+      bradprev=0.d0
       return
       end

@@ -4,9 +4,9 @@
       dimension latt(2,nlat),mult(nlat)
       character*(*) title
       character*16 name,name1,title1
-      call elname(latt,idisp1,mult,name)
+      call elname(idisp1,name)
       if(idisp2 .gt. 0)then
-        call elname(latt,idisp2,mult,name1)
+        call elname(idisp2,name1)
       else
         name1=' '
       endif

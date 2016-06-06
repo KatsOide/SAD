@@ -8,7 +8,7 @@
       if(cell) then
         hstab=.true.
         vstab=.true.
-        call qcell(latt,twiss,gammab,1,idp,hstab,vstab,tracex,
+        call qcell(1,idp,hstab,vstab,tracex,
      1             tracey,.false.,over)
         if( .not.hstab .or. .not.vstab ) then
           write(*,'(A,1PD12.5,A,2(A,0PF9.4))')
@@ -20,7 +20,7 @@
       else
         twiss(1,0,3)=0d0
         twiss(1,0,6)=0d0
-        call qtwiss(latt,twiss,gammab,idp,1,nlat,over)
+        call qtwiss(twiss,idp,1,nlat,over)
       endif
       if(over) then
         write(*,'(A,1PD12.5)')

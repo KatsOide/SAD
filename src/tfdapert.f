@@ -1,7 +1,8 @@
       subroutine tfdapert(isp1,kx,irtc)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       type (sad_descriptor) :: kmode,kc,kx
       type (sad_list), pointer :: kml,klc,klcx,klp,klc1,klar
       integer*4 isp1,irtc,narg,i,lfno,n1,itfmessage,np00,iv(3)
@@ -82,8 +83,7 @@
       endif
       np00=np0
       np0=max(2000,n1*max(1,nint(rgetgl1('DAPWIDTH'))))
-      call tfdapert1(ilist(1,ilattp+1),
-     $     range,klc1%rbody(1),
+      call tfdapert1(range,klc1%rbody(1),
      $     n1,kx,phi,damp,dampenough,iv(1),iv(2),lfno)
       np0=np00
       irtc=0
@@ -91,12 +91,14 @@
       return
       end
 
-      subroutine tfdapert1(latt,range,r1,n1,trval,phi,damp,dampenough,
+      subroutine tfdapert1(range,r1,n1,trval,phi,damp,dampenough,
      $     ivar1,ivar2,lfno)
       use tfstk
+      use ffs_pointer
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
-      integer*4 latt(2,nlat),kptbl(np0,6),lfno,mturn(np0),kzx(2,np0),
+      integer*4 kptbl(np0,6),lfno,mturn(np0),kzx(2,np0),
      $     n1,itgetfpe,ivar1,ivar2
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
      1     pz(np0),trval,phi(3),range(3,3),r1(n1),damp,dampenough
@@ -132,7 +134,6 @@ c      write(*,*)'tfda1 ',phix,phiy,phiz,ivar1,ivar2
       r1=trdtbl(1:3,6)
       phi(1:2)=0.d0
       phi(3)=-0.5d0*pi
-      call tfdapert1(ilist(1,ilattp),range,r1,3,trval,
-     $     phi,0.d0,3,1,lfno)
+      call tfdapert1(range,r1,3,trval,phi,0.d0,3,1,lfno)
       return
       end

@@ -74,7 +74,7 @@ c     .... reset current specification of BPMs
       if(.not.name) goto 1
       ls=jm
       do 20 i=ls+1,nmona
-        call elnameK(latt,imon(imon(i,2),1),mult,en)
+        call elnameK(imon(imon(i,2),1),en)
         if(ename.eq.en) then
           jm=i
           imon(imon(i,2),3)=0
@@ -82,7 +82,7 @@ c     .... reset current specification of BPMs
         endif
  20   continue
       do 21 i=ls,1,-1
-        call elnameK(latt,imon(imon(i,2),1),mult,en)
+        call elnameK(imon(imon(i,2),1),en)
         if(ename.eq.en) then
           jm=i
           imon(imon(i,2),3)=0

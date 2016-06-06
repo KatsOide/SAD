@@ -37,7 +37,7 @@
             xix=xix+(betax(i)*dx(i)+betax(i+1)*dx(i+1))*v*.5d0
             xiy=xiy-(betay(i)*dx(i)+betay(i+1)*dx(i+1))*v*.5d0
           endif
-          call elname(latt,i,mult,name)
+          call elname(i,name)
           write(lfno,9001)name,xix,xiy
 9001      format(1x,a,1x,2f17.3)
           gx=gx+xix

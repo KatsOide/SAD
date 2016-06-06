@@ -1,6 +1,8 @@
       subroutine tthine(trans,cod,beam,nord,al,ak,
      1                 dx,dy,theta,enarad,ld)
-      include 'inc/TMACRO.inc'
+      use ffs_flag
+      use tmacro
+      implicit real*8 (a-h,o-z)
       dimension trans(6,12),cod(6),beam(42)
       complex*16 cx,cx1
       dimension fact(0:10)
@@ -51,7 +53,7 @@
         bxy= b1*dble(cx1)
         call trade(trans,beam,cod,bx,by,0.d0,0.d0,
      $       bxx,bxy,0.d0,0.d0,0.d0,
-     $       0.d0,0.d0,0.d0,al*.5d0)
+     $       al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
       endif
       if(calpol)then
         if(nord .eq. 2)then
@@ -97,7 +99,7 @@
           bxy= b1*dble(cx1)
           call trade(trans,beam,cod,bx,by,0.d0,0.d0,
      $         bxx,bxy,0.d0,0.d0,0.d0,
-     $         0.d0,0.d0,0.d0,al*.5d0)
+     $         al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
         endif
         if(calpol)then
           if(nord .eq. 2)then
@@ -117,6 +119,7 @@
         call tdrife(trans,cod,beam,ala,
      $       0.d0,0.d0,0.d0,.true.,enarad,calpol,irad,ld)
       endif
+      bradprev=0.d0
       call tchge(trans,cod,beam,dx,dy,-theta,.false.,ld)
       return
       end

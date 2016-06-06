@@ -75,10 +75,10 @@ c itemon
 c itstr
 c itestr
       npair1=npair
-      npnti=ielm(latt,wordp,1,mult,exist)
+      npnti=ielm(wordp,exist)
       if(exist) then
         call getwdl2(word,wordp)
-        npntf=ielm(latt,wordp,1,mult,exist)
+        npntf=ielm(wordp,exist)
         if(exist) then
           bump=.true.
         else
@@ -557,7 +557,7 @@ c             akick=rlist(ix-1+jp)/rlist(idval(latt(1,ipair(1,jp)))+2)
      z                           /trans(3,4)
      z                    /sin(rlist(idval(latt(1,jst(js)))+5))
 c             print *,' jst(js)=',jst(js)
-              call elname(latt,jst(js),mult,name)
+              call elname(jst(js),name)
               print *,name
               call mwbufr(akick,'(1PD12.4)',5,lfno)
               rlist(latt(2,jst(js))+11)=rlist(latt(2,jst(js))+11)
@@ -962,12 +962,12 @@ c       vertical scale in the graphics.
           if(word.eq.' ') then
             exist=.false.
           else
-            ls=ielm(latt,wordp,1,mult,exist)
+            ls=ielm(wordp,exist)
             call getwdl2(word,wordp)
             if(word.eq.' ') then
               exist=.false.
             else
-              lf=ielm(latt,wordp,1,mult,exist)
+              lf=ielm(wordp,exist)
             endif
           endif
         endif
@@ -1325,7 +1325,7 @@ c    $         (xs(1,i)*(xs(3,i)+xs0(3,i))+xs(3,i)*xs0(1,i))
         ex(i)=chisq*ex(i)
       enddo
       do i=1,nsex
-        call elnameK(latt,isex(i),mult,name)
+        call elnameK(isex(i),name)
         if(simulate) then
           dx=rlist(latt(2,isex(i))+5)
           dy=rlist(latt(2,isex(i))+6)
@@ -1528,7 +1528,7 @@ c
       implicit real*8 (a-h,o-z)
       dimension twiss(nlat,-ndim:ndim,ntwissfun),gammab(*),tr(4,5)
 c   Next line is changed by Oide 10/6/1994
-      call tftmat(twiss,gammab,tr,l1,l2,ip,.false.)
+      call tftmat(tr,l1,l2,ip,.false.)
       if(trpt) then
         r=sqrt(gammab(l1)/gammab(l2))
         call ptimes(r,tr,20)
@@ -1781,7 +1781,7 @@ c     write(lio,*)
 c    $     'SET OUTLINE ALL OFF;SET TICK ALL OFF;SET LABEL ALL OFF'
 c     write(lio,*)'SET TITLE SIZE -.5'
 c     do i=1,nsex
-c       call elnameK(latt,isex(i),mult,name)
+c       call elnameK(isex(i),name)
 c       write(lio,*)'TITLE ',i,sngl(1.5-0.7*mod(i,2)),
 c    $       ' XDATA ANGLE 90 ''',name,''''
 c     enddo
@@ -1815,7 +1815,8 @@ c     enddo
       subroutine pbump(latt,twiss,gammab,ip,mult,istr,estr,nstr,kfit,
      1                 ifitp,mfitp,fitval,nfc,iter,lin,disp,lfno)
       use tfstk
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit real*8(a-h,o-z)
       logical iter,lin,disp
       dimension latt(*),twiss(*),gammab(*),mult(*),istr(*),estr(*),
      1          kfit(*),ifitp(*),mfitp(*),fitval(*)
@@ -2313,7 +2314,7 @@ c
         call permes(' !!!',' Too large kick angle: --> canceled.',' ',
      &              lfno)
         if(disp) then
-          call elname(latt,istr(istr(imax,2),1),mult,name)
+          call elname(istr(istr(imax,2),1),name)
           vout(27:34)=autofg(rc(1)*1d3,'8.5')
           vout(36:43)=name
           vout(43:50)=autofg(rc(2)*1d3,'8.5')
@@ -2890,7 +2891,7 @@ c       endif
         nepas=j.eq.0 .and. nepas
         if(j.eq.0) then
           do 14 i=1,nlat-1
-            call elnameK(latt,i,mult,name)
+            call elnameK(i,name)
             if(name.eq.word) then
               do 13 l=1,nobs
                 if(ilist(mod(l,2)+1,iob+l/2).eq.i) then

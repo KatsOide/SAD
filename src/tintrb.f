@@ -8,8 +8,9 @@
       use temw, diagr=>r, diagri=>ri
       use touschek_table
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       real*8 fintrb
       external fintrb
       integer*4 i,j,ll
@@ -31,7 +32,7 @@ c     real*8  vmin/0.d0/
      1        11,12,13,14,15,20,
      1        16,17,18,19,20,21/
       if(al .le. 0.d0)then
-        call tclr(bmi,21)
+        bmi=0.d0
         return
       endif
       pxi=cod(2)
@@ -218,7 +219,7 @@ c     if(ci .gt. vmin)then
 c     vmin=ci
 c     write(*,*)vmin,cintrb,bmin
 c     endif
-        call tclr(bmi,21)
+        bmi=0.d0
         bmi(ia(2,2))=ci*pl(1,1)
         bmi(ia(4,2))=ci*pl(2,1)
         bmi(ia(6,2))=ci*pl(3,1)
@@ -265,8 +266,8 @@ c      parameter (eeuler=7.98221278918726d0,a=5.5077d0,b=1.1274d0)
 
       subroutine twspace(trans,cod,al,beam)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       real*8 trans(6,6),cod(6),al,beam(21),
      $     xx1,yy1,xy1,u,v,a,c2,s2,sx,sy,p1,h1,f,akx,aky,
      $     aks,akd,sigzsq
@@ -310,8 +311,8 @@ c      h1=sqrt(1.d0+p1**2)
 
       subroutine qwspac(trans,cod,al,beam,coup)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       real*8 trans(4,5),cod(6),al,beam(42),trs(6,6)
       logical*4 coup
       if(al .eq. 0.d0)then
@@ -347,8 +348,9 @@ c      h1=sqrt(1.d0+p1**2)
       subroutine twspac(np,x,px,y,py,z,g,dv,pz,al,
      $     cod,beam)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
      $     al,cod(6),beam(42),

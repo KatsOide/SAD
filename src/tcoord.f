@@ -1,6 +1,7 @@
       subroutine tcoord(np,x,px,y,py,z,
      1                 dx,dy,dz,chi1,chi2,chi3,dir)
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit real*8(a-h,o-z)
       logical dir
       dimension x(np),px(np),y(np),py(np),z(np)
 c

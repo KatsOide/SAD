@@ -89,10 +89,10 @@ c     end   initialize for preventing compiler warning
       only=.false.
       monly=.false.
       call getwdl2(word,wordp)
-      ls=ielm(latt,wordp,1,mult,exist)
+      ls=ielm(wordp,exist)
       if(exist) then
         call getwdl2(word,wordp)
-        le=ielm(latt,wordp,1,mult,exist)
+        le=ielm(wordp,exist)
         if(exist) then
           call getwdl2(word,wordp)
           do 920 i=1,nlat-1
@@ -125,7 +125,7 @@ c     end   initialize for preventing compiler warning
           call getwdl2(word,wordp)
         endif
       endif
-      call tffsbound(nlat,latt,lbegin,frbegin,lend,frend)
+      call tffsbound(lbegin,frbegin,lend,frend)
       if(lbegin .ne. 1 .or. lend .ne. nlat)then
         ls1=ls
         ls=max(min(ls1,le),lbegin)

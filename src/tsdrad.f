@@ -1,7 +1,8 @@
 cvs $Hearder$
       subroutine tsdrad(np,x,px,y,py,z,g,dv,al,rho)
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 np,i,n,ndiv
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
      $     al,rho,b,uave,gi,pr,bzx,pxi,pyi,s,brad,rhor,al1,

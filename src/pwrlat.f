@@ -28,10 +28,10 @@ c
    10 continue
       patt=' '
    11 continue
-      ni=ielm(latt,wordp,1,mult,exist)
+      ni=ielm(wordp,exist)
       if(exist) then
         call getwdl2(word,wordp)
-        nf=ielm(latt,wordp,1,mult,exist)
+        nf=ielm(wordp,exist)
         if(exist) then
           call getwdl2(word,wordp)
         else
@@ -72,7 +72,7 @@ c     print *,ni,nf
               if(psname) then
                 name=pname(latt(1,i))
               else
-                call elname(latt,i,mult,name)
+                call elname(i,name)
               endif
             endif
             cline(ip:ip+7)=name

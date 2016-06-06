@@ -1,11 +1,11 @@
-      subroutine qdthin(dtrans,dcod,nord,al,ak,utwiss,itwissp,
-     $     gammab,k1,idp,dx,dy,theta,iv,nfam,nut)
+      subroutine qdthin(dtrans,dcod,nord,al,ak,
+     $     k1,idp,dx,dy,theta,iv,nut)
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 nfam,nut,k1,idp,iv,itwissp(nlat),nord,i,kord
-      real*8  utwiss(ntwissfun,-nfam:nfam,nut),gammab(nlat),
-     $     trans1(4,5),dtrans(4,5),dcod(6),cod(6),al,ak,
+      integer*4 nut,k1,idp,iv,nord,i,kord
+      real*8 trans1(4,5),dtrans(4,5),dcod(6),cod(6),al,ak,
      $     dx,dy,theta,ala,alb,pr,aki,daki,
      $     a21,a23,a41,a43,a26,a46,
      $     da21,da23,da41,da43,da26,da46
@@ -14,9 +14,7 @@
       data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
      1          720.d0,5040.d0,40320.d0,362880.d0,3628800.d0 /
       if(iv .eq. 4)then
-        call qdrotate(dtrans,dcod,utwiss,gammab,
-     $       k1,itwissp(k1),idp,dx,dy,iv,
-     $       ndim,nlat,nfam,nut,ntwissfun)
+        call qdrotate(dtrans,dcod,k1,itwissp(k1),idp,dx,dy,nut)
       else
         call qtentu(trans1,cod,utwiss(1,idp,itwissp(k1)),.true.)
         call qchg(trans1,cod,-dx,-dy,theta,.true.)

@@ -176,7 +176,8 @@ c                  - Swap particle coordinates
 
         if(dodrop)then
         endif
-
+      else
+c        call tfdebugprint(kx,'temap',1)
       endif
  9000 levele=itfdownlevel()
       isp=isp0
@@ -185,8 +186,8 @@ c                  - Swap particle coordinates
 
       subroutine temape(trans,cod,beam,l)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*8 kx,k1,k2,k3,k4,kax,
      $     ktfmalocp,ka1,kat1,kbm,krt
       integer*4 l,isp0,itfdownlevel,n,m,irtc,i,j,ia
@@ -236,7 +237,7 @@ c                  - Swap particle coordinates
       if(ilist(2,ka1-1) .ne. 6 .or. ktfnonreallistq(ka1))then
         go to 9100
       endif
-      call tmov(rlist(ka1+1),cod,6)
+      cod=rlist(ka1+1:ka1+6)
       k2=klist(kax+2)
       kat1=ktfmalocp(k2,n,m,.false.,.false.,
      $     .false.,.false.,irtc)
@@ -306,9 +307,8 @@ c                  - Swap particle coordinates
 
       subroutine qemap(trans,cod,l,coup,err)
       use tfstk
-      use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*8 ktfmalocp, k1,k2,kx,kax,kat1,ka1
       integer*4 l,isp0,itfdownlevel,n,m,irtc
       real*8 trans(4,5),cod(6)
@@ -363,7 +363,7 @@ c      itastk(2,isp)=iat
       if(ilist(2,ka1-1) .ne. 6 .or. ktfnonreallistq(ka1))then
         go to 9100
       endif
-      call tmov(rlist(ka1+1),cod,6)
+      cod=rlist(ka1+1:ka1+6)
       k2=klist(kax+2)
       kat1=ktfmalocp(k2,n,m,.false.,.false.,
      $     .false.,.false.,irtc)
@@ -388,14 +388,14 @@ c      itastk(2,isp)=iat
       go to 9000
       end
 
-      subroutine tgmap(geo,pos,l)
+      subroutine tgmap(l)
       use tfstk
-      use tfstk
+      use ffs_pointer
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*8 ktfgeol,kx,kax,k1,k2,k11,k12,ka1,ka11,ka12,kdb
       integer*4 l,isp0,irtc,itfdownlevel
-      real*8 geo(3,4,nlat),pos(nlat),rfromk
+      real*8 rfromk
       character*2 ord
       logical*4 err
       integer*8 ifv,iem

@@ -1,6 +1,7 @@
       subroutine phdrw(ix,np,word,title,case,exist,lfno)
       use tfstk
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit real*8(a-h,o-z)
       integer*4 ax(2)
       character*(*) word,title,case
       character*8 coord(6)

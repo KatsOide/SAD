@@ -27,10 +27,10 @@ c     POS      : get position and angel (NY)
 c     DISP     :                        (NY)
 c
       implicit none
-      integer*8 kx,ktaloc,ix,ikptbl,ix1,ioff
-      integer*4 latt(2,nlat),lfno,l20,np,nl0,l1,l2s,nb,npb,i,ns,l2
+      integer*8 kx,ktaloc,ix,ikptbl,ix1
+      integer*4 latt(2,nlat),lfno,l20,np,nl0,l1,l2s,l2
       integer*4 irtc
-      real*8 sv(5),sa(6),ss(6,7),es,sb
+      real*8 sv(5),sa(6),ss(6,7),es
       save sa
       character*(*) cmd,name
       common /tt/ikptbl,ix,ix1,l1,l2s
@@ -96,41 +96,47 @@ c     Store current random seed into NISTACK$FIXSEED stack
      1          rlist(ix      ),rlist(ix+np0  ),
      1          rlist(ix+np0*2),rlist(ix+np0*3),
      1          rlist(ix+np0*4),rlist(ix+np0*5),
-     1          rlist(ix+np0*6),rlist(ilist(2,ifwakep+4)),
-     1          name,
-     1          sa,ss,es,.false.,.true.,lfno)
+     1          rlist(ix+np0*6),0.d0,
+     1          name,sa,ss,es,.false.,.true.,lfno)
+c$$$            call ttstat(np,
+c$$$     1          rlist(ix      ),rlist(ix+np0  ),
+c$$$     1          rlist(ix+np0*2),rlist(ix+np0*3),
+c$$$     1          rlist(ix+np0*4),rlist(ix+np0*5),
+c$$$     1          rlist(ix+np0*6),rlist(ilist(2,ifwakep+4)),
+c$$$     1          name,
+c$$$     1          sa,ss,es,.false.,.true.,lfno)
             sv(1)=sa(1)
             sv(2)=sa(3)
             sv(3)=ss(1,1)
             sv(4)=ss(3,3)
             sv(5)=ss(1,3)
-            call tmov(sa,ss(1,7),6)
-            if(twake .or. lwake)then
-              nb=ilist(1,ifwakep)
-              sb=rlist(ifwakep+1)
-              ns=ilist(1,ifwakep+2)
-              write(lfno,9082)nb,sb,ns,pbunch
-9082          format(' Bunches =',i4,
-     1               ' Spacing =',f8.5,' m',
-     1               ' Slices =',i3,
-     1               ' Particles/bunch =',1pg12.4)
-              if(bunchsta)then
-                npb=np0/nb
-                do 8010 i=1,nb
-                  write(lfno,9081)i
-9081              format(' Bunch #',i4,':')
-                  ioff=ix+(i-1)*npb
-                  call ttstat(npb,
-     1                rlist(ioff      ),rlist(ioff+np0  ),
-     1                rlist(ioff+np0*2),rlist(ioff+np0*3),
-     1                rlist(ioff+np0*4),rlist(ioff+np0*5),
-     1                rlist(ioff+np0*6),
-     1                rlist(ilist(2,ifwakep+4)+(i-1)*npb),
-     1                name,
-     1                sa,ss,es,.false.,.false.,lfno)
-8010            continue
-              endif
-            endif
+            ss(:,7)=sa
+c$$$            if(twake .or. lwake)then
+c$$$              nb=ilist(1,ifwakep)
+c$$$              sb=rlist(ifwakep+1)
+c$$$              ns=ilist(1,ifwakep+2)
+c$$$              write(lfno,9082)nb,sb,ns,pbunch
+c$$$9082          format(' Bunches =',i4,
+c$$$     1               ' Spacing =',f8.5,' m',
+c$$$     1               ' Slices =',i3,
+c$$$     1               ' Particles/bunch =',1pg12.4)
+c$$$              if(bunchsta)then
+c$$$                npb=np0/nb
+c$$$                do 8010 i=1,nb
+c$$$                  write(lfno,9081)i
+c$$$9081              format(' Bunch #',i4,':')
+c$$$                  ioff=ix+(i-1)*npb
+c$$$                  call ttstat(npb,
+c$$$     1                rlist(ioff      ),rlist(ioff+np0  ),
+c$$$     1                rlist(ioff+np0*2),rlist(ioff+np0*3),
+c$$$     1                rlist(ioff+np0*4),rlist(ioff+np0*5),
+c$$$     1                rlist(ioff+np0*6),
+c$$$     1                rlist(ilist(2,ifwakep+4)+(i-1)*npb),
+c$$$     1                name,
+c$$$     1                sa,ss,es,.false.,.false.,lfno)
+c$$$8010            continue
+c$$$              endif
+c$$$            endif
           endif
         endif
 c     Following lines are added by N. Yamamoto Apr. 25, '93

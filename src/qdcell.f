@@ -1,14 +1,13 @@
-      subroutine qdcell(latt,utwiss,itwissp,
-     $     gammab,dtwiss,kk,ll,idp,iv,
+      subroutine qdcell(dtwiss,kk,ll,idp,iv,
      $     ctrans,iclast,nfam,nut,disp,nzcod)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 nfam,nut,kk,ll,idp,iv,k,l
-      integer*4 latt(2,nlat),itwissp(nlat),iclast(-nfam:nfam)
-      real*8 gammab(nlat),dtwiss(mfittry),
-     $     utwiss(ntwissfun,-nfam:nfam,nut),ctrans(27,-nfam:nfam),
+      integer*4 iclast(-nfam:nfam)
+      real*8 dtwiss(mfittry),ctrans(27,-nfam:nfam),
      $     dpsix,dpsiy,cosmux,cosmuy,sinmux,sinmuy,
      $     bxr,byr,trx,try,akx,aky,
      $     x11,x12,x21,x22,y11,y12,y21,y22,
@@ -88,8 +87,7 @@ c        cell=.not. (htrx .or. htry)
         detimx=0.d0
         detimy=0.d0
       endif
-      call qdtwis(latt,utwiss,itwissp,
-     $     gammab,dtwiss,ctrans,iclast,
+      call qdtwis(dtwiss,ctrans,iclast,
      $     kk,ll,idp,iv,nfam,nut,disp,nzcod)
 c          ------------------------------------
       if(.not. cell)then

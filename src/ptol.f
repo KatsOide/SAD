@@ -136,7 +136,7 @@ c     (vsb=K1 of bend)
                     lp=0
                   endif
                 endif
-                call elname(latt,i,mult,name)
+                call elname(i,name)
                 line=name
               endif
               ida=idtype(latt(1,i))
@@ -204,7 +204,7 @@ c           ip=idval(latt(1,i))
               else
                 rlist(ip+2)=vs*rn
               endif
-              call qtwiss(latt,twiss,gammab,idp,i,i+1,over)
+              call qtwiss(twiss,idp,i,i+1,over)
               if(id.eq.icquad.or.id.eq.icbend) then
                 tt(1)=tt(1)+sqrt(twiss(i1,idp,5))*twiss(i1,idp,7)
                 tt(2)=tt(2)-twiss(i1,idp,5)
@@ -312,7 +312,7 @@ c           ip=idval(latt(1,i))
                 ndivt=0
               endif
             endif
-            call elname(latt,if+1,mult,name)
+            call elname(if+1,name)
             line=name
             line(28:)=autofg(sum1,'8.5')
             line(55:)=autofg(sum2,'8.5')

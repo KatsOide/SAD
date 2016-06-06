@@ -713,10 +713,10 @@ c     $       '"Real or List of Reals"')
       recursive subroutine tfeintf(fun,cfun,k,kx,cmpl,rmin,rmax,ir)
       use tfstk
       use cfunc
+      use tmacro
       implicit none
       type (sad_descriptor) k,kx
       type (sad_list), pointer ::klx,kl
-      include 'inc/TMACRO1.inc'
       integer*4 ir,i,m,isp0
       real*8 fun,rmin,rmax
       complex*16 cfun,cv
@@ -831,10 +831,10 @@ c     $       '"Real or List of Reals"')
       recursive subroutine tfeintf2(fun,cfun,k,k1,cmpl,kx,ir)
       use tfstk
       use cfunc
+      use tmacro
       implicit none
       type (sad_descriptor) kx,k,k1,ki,k1i
       type (sad_list), pointer ::klx,kl,kl1
-      include 'inc/TMACRO1.inc'
       integer*4 ir,i,m,m1,isp0
       logical*4 cmpl
       external fun,cfun
@@ -903,9 +903,9 @@ c     $       '"Real or List of Reals"')
       use tfstk
       use trackbypass, only: bypasstrack
       use tfrbuf
+      use tmacro
       implicit none
       type (sad_descriptor) kx
-      include 'inc/TMACRO1.inc'
       integer*4 isp1,irtc,infl0,itfopenread,itfmessage,lfn,ierrfl
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')

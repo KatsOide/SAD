@@ -13,6 +13,7 @@
       character*20 title
       logical*4, save :: trackinit=.false.
       real*8 ol,trval,dt1,df,rgetgl1,dt0,phi(3)
+c      write(*,*)'track-0'
       if(bypasstrack)then
         write(*,*)
      $       '??? FFS, EMIT, TRACK in GetMAIN are bypassed. ???'
@@ -22,9 +23,16 @@
  10   call tsetupsig
       if(.not. trackinit)then
         trackinit=.true.
+c        write(*,*)'track-0.0'
         call tffsvinit
+        iffssave=0
+c        write(*,*)'track-0.1'
+        call ffs_init_flag
+c        write(*,*)'track-0.2'
         call csinit(0,1,'!',.false.)
+c        write(*,*)'track-0.3'
         call tfinitn
+c        write(*,*)'track-0.4'
         call tfevals('CONVERGENCE=1E-9;ExponentOfResidual=2;'//
      $       'OffMomentumWeight=1;MatchingResidual=0;'//
      $       'NetResidual=0;StabilityLevel=0;'//
@@ -38,6 +46,7 @@
         initmessage=0
         ifibzl=0
         ifgamm=0
+        tparaed=.false.
       else
         levele=1
       endif
@@ -131,10 +140,7 @@ c      l=itfdownlevel()
      1             smearp
 9001  format(1x,12(L3,3X))
       if(nturn .eq. 0)then
-        ideal=.false.
-        call temitf(rlist(ilattp+1),0.d0,0.d0,rlist(ifgamm),
-     $       0,.false.,infl,outfl)
-        title='Emittance'
+        write(*,*)'Use EMIT_TANCE or Emittance[] within FFS.'
         go to 8001
       endif
       if(nturn .lt. 0)then
@@ -258,7 +264,6 @@ c      l=itfdownlevel()
       call isetgl1('$PHOTONS$',photons)
       nlat  =ilist(1,ilattp)+1
       call tclrpara(ilist(1,ilattp+1),nlat-1)
-      call tffsfreebzl
       call cputime(dt1,irtc)
       write(*,'(1X,2A,F10.3,A)')
      1     title,' end:  CPU time =',(dt1-dt0)*1.d-6,' sec'
@@ -272,8 +277,8 @@ c      l=itfdownlevel()
 
       integer function itfilattp()
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       itfilattp=ilattp
       return
       end

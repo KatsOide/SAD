@@ -12,8 +12,8 @@
       logical*4 exist,force,pri
       character*(*) word
       character peekch
-      integer*4 itfgetrecl,l,itfdownlevel,maxline,lenw
-      parameter (maxline=16)
+      integer*4 itfgetrecl,l,itfdownlevel,lenw
+      real*8 , parameter :: amaxline=8
       character*255 word0,word1
       itx=-1
       call unreadbuf(word)
@@ -86,27 +86,27 @@ c     endif
       pri=(force .or. peekch(next) .ne. ';') .and.
      $     kx%k .ne. ktfoper+mtfnull
       if(pri)then
-        call tfsetout(kx,lfno,lpw,maxline)
+        call tfsetout(kx,lfno,amaxline)
       endif
       l=itfdownlevel()
 c      if(levele .le. 3)then
 c        call tfclearlocal
 c      endif
       go to 1
- 9000 call tfsetout(kx,0,lpw,maxline)
+ 9000 call tfsetout(kx,0,amaxline)
  9100 l=itfdownlevel()
       return
       end
 
-      subroutine tfsetout(kx,lfno,lpw,maxline)
+      subroutine tfsetout(kx,lfno,amaxline)
       use tfstk
       implicit none
       type (sad_descriptor) kx
       type (sad_list), pointer ::klarg
       type (sad_symdef), pointer :: sdout
       integer*8 karg,kh,ktdhtaloc,kad,kan,ktdaloc
-      integer*4 lfno,lpw,maxline,irtc,itfhasharg
-      real*8 al
+      integer*4 lfno,irtc,itfhasharg
+      real*8 al,amaxline
       al=rlist(iaxline)+1.d0
       rlist(iaxline)=al
       karg=ktavaloc(-1,1,klarg)
@@ -122,7 +122,7 @@ c      endif
       kan=ktdaloc(int8(0),kh,klist(kh),ktfref,karg,kx,karg,.false.)
       rlist(kan+7)=1.d100
       if(lfno .gt. 0)then
-        call tfprintout(lfno,lpw,maxline,irtc)
+        call tfprintout(amaxline,irtc)
         if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
           call tfreseterror
         endif
@@ -130,15 +130,16 @@ c      endif
       return
       end
 
-      subroutine tfprintout(lfno,lpw,maxline,irtc)
+      subroutine tfprintout(amaxline,irtc)
       use tfstk
       use tfrbuf
+      use ffs_flag
       implicit none
       type (sad_list), pointer :: kl
       type (sad_symbol), pointer :: sym
       integer*8 kad,kah,ka,k,kt,kx,k1
-      integer*4 lfno,lpw,maxline,irtc,l,lenw,itfhasharg,isp0
-      real*8 al
+      integer*4 irtc,l,lenw,itfhasharg,isp0
+      real*8 al,amaxline
       character*10 n,autofg
       integer*8 iaxshort
       data iaxshort/0/
@@ -188,7 +189,7 @@ c      endif
             isp=isp+1
             ktastk(isp)=k
             isp=isp+1
-            rtastk(isp)=8.d0
+            rtastk(isp)=amaxline
             call tfefunref(isp0,kx,.true.,irtc)
             isp=isp0-1
             ncprolog=0
@@ -235,9 +236,10 @@ c      endif
           
       subroutine unreadbuf(word)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
       include 'inc/TFCSI.inc'
-      include 'inc/TMACRO1.inc'
       integer*4 l,lenw,ip1,i
       character*(*) word
       character*255 word1,word2

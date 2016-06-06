@@ -1,17 +1,13 @@
-      subroutine tfgetv(word,latt,
-     $     ival,klp,iele,iele1,couple,
-     1     errk,aux,itouchele,itouchv,ntouch,lfno,exist)
+      subroutine tfgetv(word,ntouch,lfno,exist)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*8 kav
       integer*4 ii,i,id,iv,next,k,lfno,j,ivi,kv,kk
-      integer*4 latt(2,nlat),iele(nlat),iele1(nlat)
-      real*8 couple(nlat),v,getva,va,vx
-      integer*4 ntouch,itouchele(ntouch),itouchv(ntouch),
-     $     ival(nele),klp(nele), nl,irtc,lw, iii
-      real*8 aux(nele,2),errk(2,nlat)
+      real*8 v,getva,va,vx
+      integer*4 ntouch,nl,irtc,lw, iii
       character*(*) word
       character*(MAXPNAME) keywrd,tfkwrd1
       character*64 word1
@@ -75,8 +71,7 @@ c
                 go to 9000
               else
                 if(.not. vcomp)then
-                  call tffsadjust(itouchele,itouchv,latt,errk,
-     $                 couple,iele,iele1,klp,ival,ntouch)
+                  call tffsadjust(ntouch)
                 endif
                 call cssetp(next)
                 word=word1
@@ -124,15 +119,15 @@ c
           vx=rlist(latt(2,ii)+ivi)/errk(1,ii)
           if(minf)then
             if(maxf)then
-              aux(i,1)=-abs(va)
-              aux(i,2)=abs(va)
+              vlim(i,1)=-abs(va)
+              vlim(i,2)=abs(va)
               vx=min(abs(va),max(-abs(va),vx))
             else
-              aux(i,1)=va
+              vlim(i,1)=va
               vx=max(va,vx)
             endif
           elseif(maxf)then
-            aux(i,2)=va
+            vlim(i,2)=va
             vx=min(va,vx)
           else
             vx=va
@@ -158,8 +153,7 @@ c
         go to 1
       endif
  9000 if(exist .and. .not. vcomp)then
-        call tffsadjust(itouchele,itouchv,latt,errk,
-     $       couple,iele,iele1,klp,ival,ntouch)
+        call tffsadjust(ntouch)
       endif
       return
       end

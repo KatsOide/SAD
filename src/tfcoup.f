@@ -1,14 +1,11 @@
-      subroutine tfcoup(latt,
-     $     couple,iele,iele1,klp,ival,errk,mult,
-     $     lfno,exist)
+      subroutine tfcoup(lfno,exist)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 lfno,kk1,k1,i,kk2,k2,ielm,lenw,lpname
-      integer*4 latt(2,nlat),iele(nlat),iele1(nlat),
-     $     ival(nele),klp(nele),mult(nlat)
-      real*8 errk(2,nlat),couple(nlat),co,v,getva
+      real*8 co,v,getva
       character*(MAXPNAME+16) ele1,ele2,name
       logical*4 exist,comp
       call getwdlp(ele1)
@@ -19,14 +16,14 @@
         go to 9000
       endif
       comp=index(ele1,'.') .gt. 0
-      kk1=ielm(latt,ele1,1,mult,exist)
+      kk1=ielm(ele1,exist)
       k1=iele1(kk1)
       if(.not. exist)then
         call termes(lfno,'Undefined slave element for COUP_LE: ',
      $       ele1)
         go to 9000
       endif
-      kk2=ielm(latt,ele2,1,mult,exist)
+      kk2=ielm(ele2,exist)
       if(.not. exist)then
         call termes(lfno,'Undefined master component for COUP_LE: ',
      $       ele2)
@@ -45,7 +42,7 @@
       endif
       if(iele(kk2) .ne. kk2)then
         if(kk2 .eq. klp(k2))then
-          call elname1(latt,kk2,mult,name,.true.)
+          call elnameK(kk2,name)
           call termes(lfno,'Info-COUPLEs of Components '//
      $         pname(latt(1,kk2))(1:lpname(latt(1,kk2)))//'.*'//
      $         ' have been reset to ',name(1:lenw(name))//' .')
@@ -68,7 +65,7 @@
           co=1.d0
           do i=1,nlat-1
             if(iele(i) .eq. kk1 .and. i .ne. kk1)then
-              call elname(latt,i,mult,name)
+              call elname(i,name)
               call termes(lfno,'Info-Component '//name(1:lenw(name))//
      $             ' has been made uncoupled.',' ')
               iele(i)=i
@@ -78,7 +75,7 @@
         else
           do i=1,nlat-1
             if(iele(i) .eq. kk1 .and. i .ne. kk1)then
-              call tfdecoupcomp(latt,i,lfno,iele,iele1,
+              call tfdecoupcomp(i,lfno,iele,iele1,
      $             mult,klp,couple)
             endif
           enddo
@@ -92,7 +89,7 @@
             if(iele1(i) .ne. k1)then
               if(iele1(iele(i)) .eq. k1)then
                 call tfdecoupcomp(
-     $               latt,i,lfno,iele,iele1,mult,klp,couple)
+     $               i,lfno,iele,iele1,mult,klp,couple)
               endif
             else
               iele(i)=kk2
@@ -118,16 +115,13 @@
       return
       end
 
-      subroutine tfdecoup(latt,
-     $     couple,iele,iele1,klp,mult,
-     $     lfno)
+      subroutine tfdecoup(lfno)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),iele(nlat),iele1(nlat),
-     $     klp(nele),mult(nlat),lfno,next,i,j
-      real*8 couple(nlat)
+      integer*4 lfno,next,i,j
       character*(MAXPNAME+16) ele,name
       logical*4 mat,temat
  1    call peekwdp(ele,next)
@@ -137,19 +131,18 @@
       mat=.false.
       do i=1,nlat-1
         if(.not. mat)then
-          if(.not. temat(latt,i,mult,name,ele))cycle
+          if(.not. temat(i,name,ele))cycle
           mat=.true.
           call cssetp(next)
         endif
         j=iele(i)
         if(j .ne. klp(iele1(i)))then
-          if(temat(latt,i,mult,name,ele))then
+          if(temat(i,name,ele))then
             iele(i)=klp(iele1(i))
             couple(i)=1.d0
           elseif(klp(iele1(j)) .ne. j)then
-            if(temat(latt,j,mult,name,ele))then
-              call tfdecoupcomp(
-     $             latt,i,lfno,iele,iele1,mult,klp,couple)
+            if(temat(j,name,ele))then
+              call tfdecoupcomp(i,lfno)
             endif
           endif
         endif
@@ -160,12 +153,13 @@
       return
       end
 
-      subroutine tfindep(latt,iele,mult)
+      subroutine tfindep
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),iele(nlat),mult(nlat),next,i
+      integer*4 next,i
       character*(MAXPNAME+16) ele,name
       logical*4 mat,temat
  1    call peekwdp(ele,next)
@@ -174,7 +168,7 @@
       endif
       mat=.false.
       do i=1,nlat-1
-        if(temat(latt,i,mult,name,ele))then
+        if(temat(i,name,ele))then
           if(.not. mat)then
             mat=.true.
             call cssetp(next)
@@ -188,17 +182,16 @@
       return
       end
 
-      subroutine tfdecoupcomp(latt,i,lfno,iele,iele1,mult,klp,couple)
+      subroutine tfdecoupcomp(i,lfno)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),iele(nlat),iele1(nlat),klp(nlat),
-     $     mult(nlat),i,lfno,lenw
-      real*8 couple(nlat)
+      integer*4 i,lfno,lenw
       character*(MAXPNAME+16)name,name1
-      call elname(latt,i,mult,name)
-      call elname1(latt,klp(iele1(i)),mult,name1,.true.)
+      call elname(i,name)
+      call elnameK(klp(iele1(i)),name1)
       call termes(lfno,'Info-COUPLE of component '//name(1:lenw(name))//
      $     ' has been reset to ',name1(1:lenw(name1))//' .')
       iele(i)=klp(iele1(i))

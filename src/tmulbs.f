@@ -1,7 +1,8 @@
       subroutine tmulbs(beam,trans1,poldiv,beamr)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 j
       real*8 beam(42),trans1(6,12),s(6,6)
       logical*4 poldiv,beamr

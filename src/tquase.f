@@ -2,9 +2,10 @@
      1                 dx,dy,theta,radlvl,
      1                 fringe,f1,f2,mfring,eps0,l,forward,ld)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
       type (sad_list), pointer :: klx
-      include 'inc/TMACRO1.inc'
       integer*8 ifvh,kx
       integer*4 level,irtc
       real*8 trans(1,12),cod(6),beam(21),al,ak,bz,

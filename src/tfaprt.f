@@ -1,15 +1,13 @@
-      subroutine tfaprt(latt,mult,lfno,word,
-     1                  twiss,gammab)
+      subroutine tfaprt(lfno,word)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 m,n,lfno,i,i1,it,nl,ia,ifany,lene
       real*8 a,al,bpole,ak,bpole1,brho1,s,sigx,sigy,
      $     sigx0,sigx1,sigy0,sigy1,sigxp,sigyp,theta,v,
      $     getva,sigxy0,sigxy1
-      integer*4 latt(2,nlat),mult(nlat)
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat)
       real*8 beam1(21),beam2(21)
       character*(*) word
       character*8 patt,name,aout
@@ -43,7 +41,7 @@ c     end   initialize for preventing compiler warning
         if(it .eq. 1)then
           go to 10
         endif
-        if(temat(latt,i,mult,name,patt))then
+        if(temat(i,name,patt))then
           if(mod(nl,65) .eq. 0)then
             begin=.false.
             aout=autofg(bpole,'S6.3')
@@ -85,8 +83,8 @@ c     end   initialize for preventing compiler warning
           endif
           brho1=brho*gammab(i)/gammab(1)
           i1=i+1
-          call tfbeam(twiss,gammab,i ,theta,beam1)
-          call tfbeam(twiss,gammab,i1,theta,beam2)
+          call tfbeam(i ,theta,beam1)
+          call tfbeam(i1,theta,beam2)
           sigx0=sqrt(beam1(ia(1,1)))
           sigy0=sqrt(beam1(ia(3,3)))
           sigxy0=beam1(ia(1,3))/sigx0/sigy0

@@ -1,10 +1,10 @@
-      subroutine tfchgv(latt,ival,klp,lfno)
+      subroutine tfchgv(lfno)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 lfno,i,k,j,next1
-      integer*4 latt(2,nlat),ival(nele),klp(nele)
       character*(MAXPNAME) word
       character*8 key,ki,tfkwrd
       logical*4 tmatch,apply,exist

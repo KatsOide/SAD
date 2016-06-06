@@ -1,70 +1,47 @@
-      subroutine tffsmatch(flv,twiss,pos,geo,gammab,utwiss,
-     $     latt,mult,iele,iele1,iele2,couple,itwissp,
-     $     ival,klp,ivarele,ivvar,ivcomp,valvar,
-     $     errk,vlim,nlat,nele,ndim,nut,nvar,
-     $     dp,tracex,tracey,hstab,vstab,df,nfr,nfam,nfam1,
-     $     dfam,jfam,kfam,inicond,iuid,uini,
-     $     wake,iwakeelm,kwaketbl,nwakep,
-     $     nqcol,nqcol1,nfcol,nfc0,maxcond,
-     $     nlist,brho,
-     $     emx,emy,dpmax,dp0,coumin,r,residual,absweit,
-     $     cell,fitflg,geomet,cellstab,convgo,nparallel,
-     $     orbitcal,intres,halfres,sumres,diffres,lfno,irtc)
+      subroutine tffsmatch(df,dp0,r,nparallel,lfno,irtc)
       use tfstk
-      use ffslocal, only:ffslocalv
+      use ffs, only: flv,dpmax,nele,ndim,nlat,maxcond
+      use ffs_pointer
+      use ffs_flag
+      use ffs_fit
       use tffitcode
       use tfshare
+      use iso_c_binding
       implicit none
       include 'inc/MACCODE.inc'
-      type (ffslocalv) flv
 c      include 'DEBUG.inc'
-      integer*8 ifqu,ifqu0,itmmapp,iuta1,kqu
+      integer*8 ifqu,ifqu0,iuta1,kqu
       real*8 flim1,flim2,aimp1,aimp2,badc1,badc2,amedc1,amedc2,alit,
-     $     wlmin,eps,eps1,brho
+     $     wlmin,eps,eps1
       parameter (flim1=-4.d0,flim2=-3.d0,aimp1=-1.8d0,aimp2=-.8d0,
      $     badc1=-3.5d0,badc2=-2.5d0,amedc1=-2.3d0,amedc2=-1.3d0,
      $     alit=0.75d0,wlmin=0.009d0,eps=1.d-5,eps1=1.d-8)
-      integer*4 nlat,nele,ndim,nfr,maxcond,ibegin,nqcol,nut,
-     $     lfno,irtc,nqumax,nfcol,nfam,nfam1,nvar,
-     $     nqcol0,nparallel,nqcol1,nqcol00,iuid(-nfam:nfam),
-     $     nqcola1,nqcol1a1,nqcola2,nqcol1a2,lout,
-     $     nwakep,iwakeelm(nwakep)
-      integer*8 kwaketbl(2,nwakep)
-      integer*4 latt(2,nlat),iele(nlat),iele1(nlat),iele2(nlat),
-     $     mult(nlat),itwissp(nut),ivcomp(nvar),
-     $     ival(nele),ivarele(nvar),ivvar(nvar),klp(nele),
-     $     kdpa1(maxcond),kdpa2(maxcond),
-     $     iqcol0(maxcond),jfam(-nfam:nfam),
-     $     iqcola1(maxcond),iqcola2(maxcond),
-     $     kfam(-nfam:nfam),nfc0,nretry,nstab,nstaba1
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),pos(nlat),
-     $     geo(3,4,nlat),
-     $     gammab(nlat),couple(nlat),utwiss(ntwissfun,-nfam:nfam,nut),
-     $     vlim(nele,2),dval(nvar),errk(2,nlat),
-     $     valvar(nele*2),dfam(4,-nfam:nfam),
-     $     dp(-nfam:nfam),tracex(-nfam:nfam),tracey(-nfam:nfam),
-     $     df(maxcond),df0(maxcond),emx,emy,wfit(maxcond),
-     $     wiq(maxcond),df1(maxcond),df2(maxcond),
-     $     ddf1(maxcond),ddf2(maxcond),r,wexponent,dpmax,dp0,
-     $     residual(-nfam:nfam),residuala1(-nfam:nfam),
-     $     offmw,coumin,wsum,v00,uini(6,-nfam:nfam)
-      logical*4 free(nele),cell,zcal,fitflg,geomet,cellstab,wcal,
-     $     hstab(-nfam:nfam),vstab(-nfam:nfam),error,error2,
-     $     absweit,inicond,wake,limited1,chgini,wcal1,zcal1
-      character*8 nlist(mfit1)
+      integer*4 ibegin,lfno,irtc,nqumax,
+     $     nqcol0,nparallel,nqcol00,
+     $     nqcola1,nqcol1a1,nqcola2,nqcol1a2,lout
+      integer*4 kdpa1(maxcond),kdpa2(maxcond),iqcol0(maxcond),
+     $     iqcola1(maxcond),iqcola2(maxcond),nretry,nstab,nstaba1
+      real*8 dval(flv%nvar),
+     $     df(maxcond),df0(maxcond),df1(maxcond),df2(maxcond),
+     $     ddf1(maxcond),ddf2(maxcond),r,dp0,
+     $     residuala1(-ndimmax:ndimmax),v00
+      logical*4 free(nele),zcal,error,error2,
+     $     limited1,wcal1,zcal1
       integer*4 iter,ii,j,kc,nvara, i,
      $     lfpa1(2,maxcond),lfpa2(2,maxcond),
-     $     ip,fork_worker,ipr,istep,npr(nparallel)
+     $     ip,ipr,istep,npr(nparallel)
       real*8 rl,fuzz,a,b,x,crate,aimprv,fact,r0,r00,ra,alate,
-     $     smallf,badcnv,amedcv,tweigh,rstab,vl1,vl2,
-     $     avebeta,etamax,aitm1,aitm2,bestval(nvar),wvar(nvar),
+     $     smallf,badcnv,amedcv,rstab,vl1,vl2,
+     $     aitm1,aitm2,bestval(flv%nvar),wvar(flv%nvar),
      $     dg,f1,f2,g1,g2,ra1,rpa1,rstaba1,valvar0,
-     $     tffsfmin,rp,rp0,wlimit(nvar),dv,vl,dvkc
+     $     rp,rp0,wlimit(flv%nvar),dv,vl,dvkc
       real*8 twisss(ntwissfun)
-      logical*4 chgmod,newton,convgo,imprv,limited,over,
-     $     parallel,nderiv,outt,orbitcal,nderiv0,dlim,
-     $     intres,halfres,sumres,diffres
-      integer*4 itfgetrecl,kkk,kkkk,npa
+      logical*4 chgmod,newton,imprv,limited,over,wcal,
+     $     parallel,nderiv,outt,nderiv0,dlim
+      integer*4 kkk,kkkk,npa
+      integer*4 , external :: itfgetrecl, fork_worker
+      integer*8 , external :: itmmapp
+      real*8 , external :: tffsfmin, tweigh
       character ch
       integer*8 intffs,inumderiv,iexponent,inumw,iconvergence
       data intffs,inumderiv,iexponent,inumw,iconvergence /0,0,0,0,0/
@@ -72,6 +49,7 @@ c
       fuzz(x,a,b)=max(0.d0,min(1.d0,(x-a)/(b-a)))
 c     
 c     begin initialize for preventing compiler warning
+      associate (nvar=>flv%nvar)
       if(inumderiv .eq. 0)then
         inumderiv   =ktfsymbolz('FFS$NumericalDerivative',23)-4
         intffs      =ktfsymbolz('FFS$Interrupt',13)-4
@@ -112,9 +90,7 @@ c     end   initialize for preventing compiler warning
       ibegin=1
       rstab=0.d0
       if(fitflg)then
-        call tffssetlimit(valvar,vlim,ivvar,ival,nvar,
-     $     latt,ivarele,ivcomp,
-     $     klp,couple,errk,iele,iele1,dlim)
+        call tffssetlimit(nvar,dlim)
         fact=1.d0
         iter=0
         newton=.true.
@@ -139,20 +115,10 @@ c     end   initialize for preventing compiler warning
         do 200: do kkk=1,1
           call tftclupdate(int(rlist(intffs)))
           dp0=rlist(latt(2,1)+mfitddp)
-          call tffscalc(flv,twiss,pos,geo,gammab,utwiss,
-     $         latt,mult,ivarele,ivcomp,iele,iele1,ivvar,ival,
-     $         nvar,klp,itwissp,nut,nlat,nele,ndim,
-     $         dp,tracex,tracey,hstab,vstab,nfr,nfam,nfam1,
-     $         flv%kdp,df,
-     $         wfit,wiq,wsum,flv%iqcol,flv%lfp,nqcol,nqcol1,nfcol,nfc0,
-     $         maxcond,nlist,
-     $         ibegin,dfam,jfam,kfam,inicond,iuid,uini,
-     $         wake,iwakeelm,kwaketbl,nwakep,
-     $         r,rp,rstab,nstab,residual,wexponent,
-     $         offmw,etamax,avebeta,emx,emy,dpmax,coumin,
-     $         cell,zcal,fitflg,geomet,cellstab,wcal,parallel,
-     $         chgini,orbitcal,intres,halfres,sumres,diffres,
-     $         lout,error)
+          call tffscalc(flv%kdp,df,flv%iqcol,flv%lfp,
+     $         nqcol,nqcol1,ibegin,
+     $         r,rp,rstab,nstab,residual,
+     $         zcal,wcal,parallel,lout,error)
           if(error)then
             if(irtc .eq. 20001)then
               exit do9000
@@ -177,7 +143,7 @@ c     end   initialize for preventing compiler warning
      $           ' OffMomentumWeight =',f8.3)
             fitflg=.false.
             if(.not. geomet)then
-              call tfgeo(latt,geo,pos,gammab,.true.)
+              call tfgeo(latt,.true.)
             endif
             exit do9000
           elseif(.not. fitflg)then
@@ -317,9 +283,7 @@ c                    enddo
                 endif
                 wvar(kc)=tweigh(latt(1,klp(i)),
      $               idtype(latt(1,klp(i))),
-     $               ivvar(kc),bestval(kc),v00,
-     $               avebeta,etamax,dpmax,emx,emy,brho,
-     $               absweit)
+     $               ivvar(kc),bestval(kc),v00,absweit)
                 if(.not. nderiv)then
                   nderiv=idtype(latt(1,klp(i))) .eq. icSOL
                 endif
@@ -345,8 +309,9 @@ c                    enddo
                 endif
                 if(ipr .eq. 0)then
                   iuta1=itmmapp(nut*(2*nfam+1)*ntwissfun)
-                else
-                  iuta1=sad_loc(utwiss(1,-nfam,1))
+                  call c_f_pointer(c_loc(rlist(iuta1)),utwiss,
+     $                 [ntwissfun,2*nfam+1,nut])
+                  utwiss(1:ntwissfun,-nfam:nfam,1:nut)=>utwiss
                 endif
                 wcal1=wcal
                 zcal1=zcal
@@ -354,43 +319,21 @@ c                    enddo
                   dvkc=max(abs(valvar(kc))*eps,abs(eps1/wvar(kc)))
                   valvar0=valvar(kc)
                   valvar(kc)=valvar0+dvkc
-                  call tfsetv(latt,ivarele,ivvar,ivcomp,valvar,nvar,
-     $                 nele,klp,ival,couple,errk,iele,iele1,nlat)
-                  call tffscalc(flv,twiss,pos,geo,gammab,rlist(iuta1),
-     $                 latt,mult,ivarele,ivcomp,iele,iele1,ivvar,ival,
-     $                 nvar,klp,itwissp,nut,nlat,nele,ndim,
-     $                 dp,tracex,tracey,hstab,vstab,nfr,nfam,nfam1,
-     $                 kdpa1,df1,
-     $                 wfit,wiq,wsum,iqcola1,lfpa1,nqcola1,nqcol1a1,
-     $                 nfcol,nfc0,maxcond,nlist,
-     $                 ibegin,dfam,jfam,kfam,inicond,iuid,uini,
-     $                 wake,iwakeelm,kwaketbl,nwakep,
-     $                 ra1,rpa1,rstaba1,nstaba1,residuala1,wexponent,
-     $                 offmw,etamax,avebeta,emx,emy,dpmax,coumin,
-     $                 cell,zcal1,fitflg,geomet,cellstab,wcal1,.false.,
-     $                 chgini,orbitcal,intres,halfres,sumres,diffres,
-     $                 lfno,error)
+                  call tfsetv(nvar)
+                  call tffscalc(kdpa1,df1,iqcola1,lfpa1,
+     $                 nqcola1,nqcol1a1,ibegin,
+     $                 ra1,rpa1,rstaba1,nstaba1,residuala1,
+     $                 zcal1,wcal1,.false.,lfno,error)
                   valvar(kc)=valvar0-dvkc
-                  call tfsetv(latt,ivarele,ivvar,ivcomp,valvar,nvar,
-     $                 nele,klp,ival,couple,errk,iele,iele1,nlat)
-                  call tffscalc(flv,twiss,pos,geo,gammab,rlist(iuta1),
-     $                 latt,mult,ivarele,ivcomp,iele,iele1,ivvar,ival,
-     $                 nvar,klp,itwissp,nut,nlat,nele,ndim,
-     $                 dp,tracex,tracey,hstab,vstab,nfr,nfam,nfam1,
-     $                 kdpa2,df2,
-     $                 wfit,wiq,wsum,iqcola2,lfpa2,nqcola2,nqcol1a2,
-     $                 nfcol,nfc0,maxcond,nlist,
-     $                 ibegin,dfam,jfam,kfam,inicond,iuid,uini,
-     $                 wake,iwakeelm,kwaketbl,nwakep,
-     $                 ra1,rpa1,rstaba1,nstaba1,residuala1,wexponent,
-     $                 offmw,etamax,avebeta,emx,emy,dpmax,coumin,
-     $                 cell,zcal1,fitflg,geomet,cellstab,wcal1,.false.,
-     $                 chgini,orbitcal,intres,halfres,sumres,diffres,
-     $                 lfno,error2)
+                  call tfsetv(nvar)
+                  call tffscalc(kdpa2,df2,iqcola2,lfpa2,
+     $                 nqcola2,nqcol1a2,ibegin,
+     $                 ra1,rpa1,rstaba1,nstaba1,residuala1,
+     $                 zcal1,wcal1,.false.,lfno,error2)
                   valvar(kc)=valvar0
                   if(error .or. error2)then
-                    call tclr(ddf1,nqcol)
-                    call tclr(ddf2,nqcol)
+                    ddf1(1:nqcol)=0.d0
+                    ddf2(1:nqcol)=0.d0
                   else
                     call tffsddf(ddf1,df,df1,flv%iqcol,iqcola1,flv%lfp,
      $                   lfpa1,flv%kdp,kdpa1,nqcol,nqcola1)
@@ -407,11 +350,8 @@ c     $                 /2.d0/dvkc/wvar(kc)
                 call tffswait(ipr,npa,npr,iuta1,
      $               'tffsmatch-NumDerv',irtc)
               else
-                call tffsqu(flv,nqcol,nqcol1,nvar,nqumax,ifqu0,ifqu,
-     $               latt,ivarele,ivvar,ivcomp,
-     $               free,ival,iele,iele1,iele2,
-     $               couple,nlat,nele,
-     $               nfam,nfam1,utwiss,itwissp,nut,gammab,geo,pos,
+                call tffsqu(nqcol,nqcol1,nvar,nqumax,ifqu0,ifqu,
+     $               free,nlat,nele,nfam,nfam1,nut,
      $               nparallel,cell,lfno,irtc)
                 if(irtc .ne. 0)then
                   irtc=20003
@@ -447,12 +387,10 @@ c     $                 /2.d0/dvkc/wvar(kc)
                       if(cell)then
                         call twmov(latt(2,1),twisss,1,0,.false.)
                       endif
-                      call tfsetv(latt,ivarele,ivvar,ivcomp,valvar,nvar,
-     $                     nele,klp,ival,couple,errk,iele,iele1,nlat)
+                      call tfsetv(nvar)
                       call twmov(latt(2,1),twiss,nlat,ndim,.true.)
                       if(zcal)then
-                        call tfgeo(latt,geo,pos,gammab,
-     $                       geomet .or. .not. fitflg)
+                        call tfgeo(latt,geomet .or. .not. fitflg)
                       endif
                       over=.false.
                       if(ibegin .ne. 1)then
@@ -463,7 +401,7 @@ c     $                 /2.d0/dvkc/wvar(kc)
                         twiss(1,0,3)=0.d0
                         twiss(1,0,6)=0.d0
                       endif
-                      call qcell(latt,twiss,gammab,ibegin,0,
+                      call qcell(ibegin,0,
      1                     hstab(0),vstab(0),tracex(0),tracey(0),
      $                     .false.,over)
                       nqcol00=nqcol
@@ -474,8 +412,7 @@ c     $                 /2.d0/dvkc/wvar(kc)
                         irtc=20003
                       endif
                       valvar(kc)=valvar(kc)-eps1/wvar(kc)
-                      call tfsetv(latt,ivarele,ivvar,ivcomp,valvar,
-     $                  nvar,nele,klp,ival,couple,errk,iele,iele1,nlat)
+                      call tfsetv(nvar)
                       do j=nqcol1+1,nqcol
                         kqu=(kc-1)*nqcol+j+ifqu-1
                         rlist(kqu)=(df(j)-df1(j))/eps1
@@ -540,12 +477,9 @@ c     $                 /2.d0/dvkc/wvar(kc)
             endif
           endif
         enddo do200
-        call tfsetv(latt,ivarele,ivvar,ivcomp,valvar,nvar,nele,
-     $       klp,ival,couple,errk,iele,iele1,nlat)
+        call tfsetv(nvar)
         if(dlim)then
-          call tffssetlimit(valvar,vlim,ivvar,ival,nvar,
-     $         latt,ivarele,ivcomp,
-     $         klp,couple,errk,iele,iele1,dlim)
+          call tffssetlimit(nvar,dlim)
         endif
       enddo do9000
       if(nqumax .gt. 0)then
@@ -554,6 +488,7 @@ c     $                 /2.d0/dvkc/wvar(kc)
       endif
       call tclrfpe
       return
+      end associate
       end
 
       subroutine tffsddf(ddf,df,df1,iqcol,iqcola1,lfp,lfpa1,
@@ -662,18 +597,14 @@ c     $                 /2.d0/dvkc/wvar(kc)
       return
       end
 
-      subroutine tffssetlimit(valvar,vlim,ivvar,ival,nvar,
-     $     latt,ivarele,ivcomp,
-     $     klp,couple,errk,iele,iele1,dlim)
+      subroutine tffssetlimit(nvar,dlim)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 ii,i,nvar,ivvar(nvar),ival(nele)
-      integer*4 latt(2,nlat),iele(nlat),iele1(nlat),
-     $     ivcomp(nvar),ivarele(nvar),klp(nele)
-      real*8 valvar(nvar),vlim(nele,2),vl,vl1,vl2,
-     $     couple(nlat),errk(2,nlat)     
+      integer*4 ii,i,nvar
+      real*8 vl,vl1,vl2
       logical*4 dlim,limited,limited1
       limited=.false.
       do ii=1,nvar
@@ -686,8 +617,7 @@ c     $                 /2.d0/dvkc/wvar(kc)
         endif
       enddo
       if(limited)then
-        call tfsetv(latt,ivarele,ivvar,ivcomp,valvar,nvar,
-     $       nele,klp,ival,couple,errk,iele,iele1,nlat)
+        call tfsetv(nvar)
       endif
       return
       end
@@ -825,30 +755,22 @@ c     $                 /2.d0/dvkc/wvar(kc)
       return
       end
 
-      subroutine tffsqu(flv,nqcol,nqcol1,nvar,nqumax,ifqu0,ifqu,
-     $     latt,ivarele,ivvar,ivcomp,
-     $     free,ival,iele,iele1,iele2,
-     $     couple,nlat,nele,
-     $     nfam,nfam1,utwiss,itwissp,nut,gammab,geo,pos,
+      subroutine tffsqu(nqcol,nqcol1,nvar,nqumax,ifqu0,ifqu,
+     $     free,nlat,nele,nfam,nfam1,nut,
      $     nparallel,cell,lfno,irtc)
       use tfstk
-      use ffslocal, only:ffslocalv
+      use ffs, only:flv
+      use ffs_pointer
       use tffitcode
       use tfshare
       implicit none
       include 'inc/MACCODE.inc'
       include 'inc/MACKW.inc'
-      type (ffslocalv) flv
       integer*8 itmmapp,ifqu,ifqu0,ktaloc,kcm,kkqu,kqu,ic
       integer*4 nqcol,nqcol1,nvar,nqumax,nlat,nele,
      $     irtc,lfno,nut,nfam,nfam1
-      integer*4 latt(2,nlat),ivarele(nvar),ivvar(nvar),
-     $     iele(nlat),iele1(nlat),
-     $     iele2(nlat),ival(nele),itwissp(nlat),
-     $     ivcomp(nvar),npp
-      real*8 utwiss(ntwissfun,-nfam:nfam,nut),gammab(nlat),
-     $     geo(3,4,nlat),
-     $     couple(nlat),pos(nlat),frbegin,frend
+      integer*4 npp
+      real*8 frbegin,frend
       logical*4 free(nele),cell
       integer*4 nqu,k,kk,i,kq,j,kf,lp,kp,iv,kkf,kkq,kkk,
      $     ii,ltyp,jj,lbegin,lend,kc,ik1,nparallel,
@@ -876,8 +798,8 @@ c     $                 /2.d0/dvkc/wvar(kc)
           endif
           nqumax=nqu
         endif
-        call tffsbound(nlat,latt,lbegin,frbegin,lend,frend)
-        call tclr(rlist(ifqu),nqu)
+        call tffsbound(lbegin,frbegin,lend,frend)
+        rlist(ifqu:ifqu+nqu-1)=0.d0
         npp=min(nvar,nparallel)
         ipr=-1
         if(npp .gt. 1)then
@@ -990,8 +912,7 @@ c     $               ivarele(ii),k,ivcomp(ii),ii
                             enddo
                           endif
                           kp=flv%kdp(kq)
-                          call qdcell(latt,
-     1                         utwiss,itwissp,gammab,dtwiss,
+                          call qdcell(dtwiss,
      $                         k,lp,kp,iv,ctrans,iclast,
      $                         nfam,nut,disp,nzcod)
                           rlist(kqu)=rlist(kqu)+s*dtwiss(kf)
@@ -1027,9 +948,8 @@ c     $               ivarele(ii),k,ivcomp(ii),ii
 c                        write(*,'(a,1p3g15.7,3i5)')'tffsqu ',
 c     $                       posk,pos(lp),rlist(kqu),ltyp,iv
                       else
-                        call tdgeo(latt,utwiss,itwissp
-     $                       ,gammab,s,rlist(kqu),
-     $                       kf,lp,k,geo,ltyp,iv,nut,nfam)
+                        call tdgeo(s,rlist(kqu),
+     $                       kf,lp,k,ltyp,iv,nut,nfam)
                       endif
                     endif
                     s=-s
@@ -1161,15 +1081,16 @@ c        enddo
       return
       end
 
-      real*8 function tweigh(i,ltyp,iv,val0,vk,
-     $     avebeta,etamax,dpmax,emx,emy,brho,absweit)
+      real*8 function tweigh(i,ltyp,iv,val0,vk,absweit)
       use tfstk
+      use ffs, only:dpmax,emx,emy,brho
+      use ffs_fit
       use tfcode
       implicit none
       include 'inc/CBKMAC.inc'
       integer*8 kx
       integer*4 i,ltyp,iv,irtc
-      real*8 val0,avebeta,dpmax,emx,emy,etamax,gw,vmin,brho,rfromk,vk
+      real*8 val0,gw,vmin,rfromk,vk
       logical*4 absweit
       gw=1.d0
       if(iv .eq. kytbl(kwK1,ltyp))then
@@ -1317,8 +1238,8 @@ c        enddo
       use tfmem
       use tfstk
       use tfshare
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*8 ktaloc
       integer*4 n,irtc
       if(nparallel .gt. 1)then
@@ -1335,8 +1256,8 @@ c        write(*,*)'mmapp ',itmmapp,n
       subroutine tmunmapp(i)
       use tfstk
       use tfshare
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*8 i
       if(nparallel .gt. 1)then
         call tfreeshared(i)

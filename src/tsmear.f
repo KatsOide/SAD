@@ -1,6 +1,7 @@
       subroutine tsmear(n,nsmear,np,kptbl,
      1     sjx,sjxjx,sjy,sjyjy,sjz,sjzjz,lfno)
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit real*8 (a-h,o-z)
       dimension sjx(np0),sjxjx(np0),sjy(np0),sjyjy(np0),
      1          sjz(np0),sjzjz(np0)
       dimension kptbl(np0,6)

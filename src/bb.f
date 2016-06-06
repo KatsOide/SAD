@@ -12,7 +12,8 @@ c                                                                 c
 c                                        July 1994                c
 c        with trkick                                              c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit real*8(a-h,o-z)
       parameter(nblist=1600,m_Benv=1103,m_Benv5=1493,iv_bc_fac=1518)
       parameter(m_B5_11=1493,m_B5_12=1494,m_B5_22=1499)
       parameter(m_B5_33=1505,m_B5_34=1506,m_B5_44=1511)
@@ -422,7 +423,8 @@ c
 C   18/01/93 303072023  MEMBER NAME  BBINIT   *.FORT     M  E2FORT
       subroutine bbinit(p_in,blist)
       use tfstk
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit real*8(a-h,o-z)
 c     elradi:	Classical electron radius
 c     elmass:	Electron mass energy equivalent in eV
       parameter (am_e=elmass,re=elradi)

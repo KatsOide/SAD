@@ -1,7 +1,9 @@
       subroutine ttinit(latt,x,px,y,py,z,g,dv)
       use tfstk
+      use ffs_flag
       use tffitcode
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit real*8 (a-h,o-z)
       dimension latt(2,nlat)
       dimension x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
       trf0=0.d0
@@ -49,84 +51,84 @@
       sigy=sqrt(byi*emy)
       sigpy=sqrt(emy/byi)
       rz=sqrt(1.d0+azi**2)
-      if(twake .or. lwake)then
-        nb=ilist(1,iwakepold)
-        ns=ilist(1,iwakepold+2)
-        sb=rlist(iwakepold+1)
-        n=np0/nb/ns
-        ndp=n/8
-        if(ns .eq. 1)then
-          ds=0.d0
-        else
-          sp=min(3.d0,sqrt(ns/2.d0))
-          ds=sigz/(ns-1)*2.d0*sp
-        endif
-        if(sigz .eq. 0.d0)then
-          ddp=0.d0
-        else
-          ddp=-ds/sigz*azi/rz*dpmax
-        endif
-        rlist(iwakepold+3)=ds
-        call tfree(int8(ilist(2,iwakepold+2)))
-        iwsp=italoc(ns)
-        ilist(2,iwakepold+2)=iwsp
-        call tfree(int8(ilist(2,iwakepold+4)))
-        iwwp=italoc(np0)
-        ilist(2,iwakepold+4)=iwwp
-        if(ds .ne. 0.d0)then
-          s=0.d0
-          do 250 i=1,ns
-            rlist(iwsp+i-1)=exp(-((i-(ns+1)*.5d0)*ds/sigz)**2*.5d0)
-            s=s+rlist(iwsp+i-1)
-250       continue
-          do 251 i=1,ns
-            rlist(iwsp+i-1)=rlist(iwsp+i-1)/s
-251       continue
-        else
-          do 260 i=1,ns
-            rlist(iwsp+i-1)=1.d0
-260       continue
-        endif
-        do 210 i=1,nb
-          do 220 j=1,ns
-            dz=-ds*(j-(ns+1)*.5d0)
-            zij=-(i-1)*sb+dz
-            dp=ddp*(j-(ns+1)*.5d0)
-            l=((i-1)*ns+j-1)*n
-            if(ndp .eq. 1)then
-              dpc=0.d0
-            else
-              dpc=dpmax*2.d0/(ndp-1)
-            endif
-            do 230 k=1,ndp
-              pc=(k-1)*dpc-dpmax
-              pj=pc+dp+dp0
-              koff=l+(k-1)*8
-              do 240 m=koff+1,koff+8
-                x(m)=dxi+exi*pj
-                px(m)=dpxi-axi/bxi*x(m)+epxi*pj
-                y(m)=dyi+eyi*pj
-                py(m)=dpyi-ayi/byi*y(m)+epyi*pj
-                z(m)=zij
-                g(m)=pj
-                rlist(iwwp+m-1)=rlist(iwsp+j-1)
-240           continue
-              x(koff+1)=x(koff+1)+sigx*2.d0
-              px(koff+1)=px(koff+1)-axi/bxi*sigx*2.d0
-              px(koff+3)=px(koff+3)+sigpx*2.d0
-              y(koff+5)=y(koff+5)+sigy*2.d0
-              py(koff+5)=py(koff+5)-ayi/byi*sigy*2.d0
-              py(koff+7)=py(koff+7)+sigpy*2.d0
-              x(koff+2)=x(koff+2)-sigx*2.d0
-              px(koff+2)=px(koff+2)+axi/bxi*sigx*2.d0
-              px(koff+4)=px(koff+4)-sigpx*2.d0
-              y(koff+6)=y(koff+6)-sigy*2.d0
-              py(koff+6)=py(koff+6)+ayi/byi*sigy*2.d0
-              py(koff+8)=py(koff+8)-sigpy*2.d0
-230         continue
-220       continue
-210     continue
-      else
+c      if(twake .or. lwake)then
+c        nb=ilist(1,iwakepold)
+c        ns=ilist(1,iwakepold+2)
+c        sb=rlist(iwakepold+1)
+c        n=np0/nb/ns
+c        ndp=n/8
+c        if(ns .eq. 1)then
+c          ds=0.d0
+c        else
+c          sp=min(3.d0,sqrt(ns/2.d0))
+c          ds=sigz/(ns-1)*2.d0*sp
+c        endif
+c        if(sigz .eq. 0.d0)then
+c          ddp=0.d0
+c        else
+c          ddp=-ds/sigz*azi/rz*dpmax
+c        endif
+c        rlist(iwakepold+3)=ds
+c        call tfree(int8(ilist(2,iwakepold+2)))
+c        iwsp=italoc(ns)
+c        ilist(2,iwakepold+2)=iwsp
+c        call tfree(int8(ilist(2,iwakepold+4)))
+c        iwwp=italoc(np0)
+c        ilist(2,iwakepold+4)=iwwp
+c        if(ds .ne. 0.d0)then
+c          s=0.d0
+c          do 250 i=1,ns
+c            rlist(iwsp+i-1)=exp(-((i-(ns+1)*.5d0)*ds/sigz)**2*.5d0)
+c            s=s+rlist(iwsp+i-1)
+c250       continue
+c          do 251 i=1,ns
+c            rlist(iwsp+i-1)=rlist(iwsp+i-1)/s
+c251       continue
+c        else
+c          do 260 i=1,ns
+c            rlist(iwsp+i-1)=1.d0
+c260       continue
+c        endif
+c$$$        do 210 i=1,nb
+c$$$          do 220 j=1,ns
+c$$$            dz=-ds*(j-(ns+1)*.5d0)
+c$$$            zij=-(i-1)*sb+dz
+c$$$            dp=ddp*(j-(ns+1)*.5d0)
+c$$$            l=((i-1)*ns+j-1)*n
+c$$$            if(ndp .eq. 1)then
+c$$$              dpc=0.d0
+c$$$            else
+c$$$              dpc=dpmax*2.d0/(ndp-1)
+c$$$            endif
+c$$$            do 230 k=1,ndp
+c$$$              pc=(k-1)*dpc-dpmax
+c$$$              pj=pc+dp+dp0
+c$$$              koff=l+(k-1)*8
+c$$$              do 240 m=koff+1,koff+8
+c$$$                x(m)=dxi+exi*pj
+c$$$                px(m)=dpxi-axi/bxi*x(m)+epxi*pj
+c$$$                y(m)=dyi+eyi*pj
+c$$$                py(m)=dpyi-ayi/byi*y(m)+epyi*pj
+c$$$                z(m)=zij
+c$$$                g(m)=pj
+c$$$                rlist(iwwp+m-1)=rlist(iwsp+j-1)
+c$$$240           continue
+c$$$              x(koff+1)=x(koff+1)+sigx*2.d0
+c$$$              px(koff+1)=px(koff+1)-axi/bxi*sigx*2.d0
+c$$$              px(koff+3)=px(koff+3)+sigpx*2.d0
+c$$$              y(koff+5)=y(koff+5)+sigy*2.d0
+c$$$              py(koff+5)=py(koff+5)-ayi/byi*sigy*2.d0
+c$$$              py(koff+7)=py(koff+7)+sigpy*2.d0
+c$$$              x(koff+2)=x(koff+2)-sigx*2.d0
+c$$$              px(koff+2)=px(koff+2)+axi/bxi*sigx*2.d0
+c$$$              px(koff+4)=px(koff+4)-sigpx*2.d0
+c$$$              y(koff+6)=y(koff+6)-sigy*2.d0
+c$$$              py(koff+6)=py(koff+6)+ayi/byi*sigy*2.d0
+c$$$              py(koff+8)=py(koff+8)-sigpy*2.d0
+c$$$230         continue
+c$$$220       continue
+c$$$210     continue
+c      else
         do 10 i=1,np0
           pk=tgauss()
           if(twake .or. lwake)then
@@ -206,7 +208,7 @@
             py(i)=py(i)-spy
 120       continue
         endif
-      endif
+c      endif
       call tconvm(np0,px,py,g,dv,-1)
       return
       end

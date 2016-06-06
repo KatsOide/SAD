@@ -1,9 +1,10 @@
-      logical*4 function temat(latt,i,mult,name,word)
+      logical*4 function temat(i,name,word)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),i,mult(nlat)
+      integer*4 i
       character*(*) name,word
       integer*4 lenw,ifany1,lpname
       logical*4 tmatchl
@@ -11,7 +12,7 @@
       integer*4 lw,l
 c
       lw=lenw(word)
-      call elname1(latt,i,mult,name,.false.)
+      call elname(i,name)
       l=lenw(name)
       if(ifany1(word,lw,'*{|%',1) .eq. 0)then
         if(name(1:l) .eq. word(1:lw))then
@@ -22,7 +23,7 @@ c     No more test for nlat($$$)
           temat=.false.
         elseif(mult(i) .eq. 0)then
 c     Test implicit match with singlet element
-          call elname1(latt,i,mult,name1,.true.)
+          call elnameK(i,name1)
           temat=name1(1:lenw(name1)) .eq. word(1:lw)
         elseif(ilist(ilist(i,ifele1),ifklp) .eq. i)then
 c     Test implicit match with head of multiple elements
@@ -39,7 +40,7 @@ c     No more test for nlat($$$)
           temat=.false.
         elseif(mult(i) .eq. 0)then
 c     Test implicit pattern match with singlet element
-          call elname1(latt,i,mult,name1,.true.)
+          call elnameK(i,name1)
           temat=tmatchl(name1,lenw(name1),word,lw)
         elseif(ilist(ilist(i,ifele1),ifklp) .eq. i)then
 c     Test implicit pattern match with head of multiple elements

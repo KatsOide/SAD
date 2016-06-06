@@ -1,17 +1,15 @@
-      subroutine tffamsetup(dp,dfam,jfam,kfam,lp,
-     $     nfam,nfr,ndimmax,em)
+      subroutine tffamsetup(lp,em)
       use tfstk
       use tffitcode
+      use ffs_fit
       implicit none
       real*8 sqrt3
 c      parameter (sqrt3=sqrt(3.d0))
       parameter (sqrt3=1.732050807568877d0)
       type (sad_list), pointer :: kl,kli
       integer*8 kx,ki
-      integer*4 nfam,nfr,ndimmax,jfam(-ndimmax:ndimmax),
-     $     kfam(-ndimmax:ndimmax),lp
-      real*8 dp(-ndimmax:ndimmax),dfam(4,-ndimmax:ndimmax),
-     $     twissi(50),em,trans(4,4),dx(4,6),dxp(4,6)
+      integer*4 lp
+      real*8 twissi(50),em,trans(4,4),dx(4,6),dxp(4,6)
       integer*4 m,nfa,i,j,irtc,itfdownlevel,l,k
       real*8 dpw,x0,px0,y0,py0,dpi,x,y,dp0
       type (sad_descriptor) kxmamp
@@ -51,7 +49,7 @@ c      call tfdebugprint(kx,'famsetup',1)
       y0=sqrt(twissi(mfitby)*em)
       py0=sqrt(em/twissi(mfitby))
       call tfnormaltophysical(twissi,trans)
-      call tclr(dx,24)
+      dx=0.d0
       dx(1,1)=x0
       dx(1,2)=-.5d0*x0
       dx(2,2)=( px0*sqrt3-twissi(mfitax)/twissi(mfitbx)*(-x0))*.5d0

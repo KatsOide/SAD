@@ -6,8 +6,10 @@
      $     vc,w,phirf,dphirf,radius,rtaper,autophi,
      $     kturn,l,latt,kptbl)
       use tfstk
+      use ffs_flag
+      use tmacro
+      use ffs_pointer, only:inext,iprev
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 nmult,itmax,ndivmax
       real*8 conv,ampmax,alstep,eps00,oneev,pmin
       parameter (nmult=21,itmax=10,ndivmax=1000,conv=3.d-16,
@@ -16,7 +18,7 @@ c      parameter (oneev=1.d0+3.83d-12)
       parameter (oneev=1.d0+1.d-6)
       integer*4 np
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
-      real*8 al
+      real*8 al,f1r,f2r
       complex*16 ak(0:nmult)
       real*8 bz,phia,psi1,psi2,dx,dy,dz,chi1,chi2,theta,dtheta,eps0
       logical*4 enarad,fringe,autophi
@@ -416,12 +418,22 @@ c     end   initialize for preventing compiler warning
         endif
         if(rad .and. enarad .and.
      $       (akr1 .ne. 0.d0 .or. akr(0) .ne. (0.d0,0.d0)))then
+          if(iprev(l) .eq. 0)then
+            f1r=fb1
+          else
+            f1r=0.d0
+          endif
+          if(inext(l) .eq. 0)then
+            f2r=fb2
+          else
+            f2r=0.d0
+          endif
           radlvl=0.d0
           b1=brhoz*akr1/al
           b0=brhoz*akr(0)/al
           call trad(np,x,px,y,py,g,dv,dble(b0),-imag(b0),
      1         b1,0.d0,0.d0,.5d0*al,
-     $         f1,f1,0.d0,al,1.d0)
+     $         f1r,f2r,0.d0,al,1.d0)
         endif
       endif
       spac1 = spac .and. radius .ne. 0.d0
@@ -527,7 +539,7 @@ c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
         if(radlvl .eq. 0.d0)then
           call trad(np,x,px,y,py,g,dv,dble(b0),-imag(b0),
      1         b1,0.d0,0.d0,.5d0*al,
-     $         f1,f1,al,al,-1.d0)
+     $         f1r,f1r,al,al,-1.d0)
         endif
         if(mfring .eq. 2 .or. mfring .eq. 3)then
           if(f1 .ne. 0.d0 .or. f2 .ne. 0.d0)then

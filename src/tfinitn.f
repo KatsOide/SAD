@@ -202,7 +202,7 @@ c      write(*,*)'tfinitn 1.1 ',itfcontroot
         call forcesf()
       endif
       isporg=isp
-c      write(*,*)'isporg: ',isporg,isporg+mstk*2
+c      write(*,*)'tfinitstk: ',isporg
       ivstkoffset=mstk
       mstk=isp+mstk
       ipurefp=0

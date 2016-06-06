@@ -1,12 +1,11 @@
-      subroutine temitf(latt,twiss,size,gammab,ndim,plot,lfni,lfno)
+      subroutine temitf(plot,lfni,lfno)
+      use ffs_pointer
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 nparam,ntitle
       parameter (nparam=59,ntitle=26)
-      integer*4 ndim,lfni,lfno,latt(2,nlat),i,in,lfnos,in1,lu,j,
-     $     indexs,lene
-      real*8 twiss(nlat,-ndim:ndim,*),size(21,nlat),gammab(nlat),
-     1     scale(nparam),rsave(78),cod(6),circ,dps,dpsa,ddl,rgetgl1,v
+      integer*4 lfni,lfno,i,in,lfnos,in1,lu,j,indexs,lene
+      real*8 scale(nparam),cod(6),circ,dps,dpsa,ddl,rgetgl1,v
       real*8 sx(-2:2),sy(-2:2),stbl(4,nparam)
       real*8 trans(6,12),beam(21,2),ctrb(21,21),param(nparam,-2:2)
       character*24 title(nparam),unit
@@ -14,7 +13,7 @@
       character*11 autofg
       logical*4 plot,stab
       external trim
-      real*8 r(6,6)
+      real*8 r(6,13),rsave(6,13)
       data (title(i),i=1,15)/
      1           'COD x,mm,0.001          ',
      1           '    px/p0,mrad,0.001    ',
@@ -48,16 +47,15 @@
         in=indexs(title(i),',',in+1)
         read(title(i)(in+1:),*)scale(i)
 10    continue
-      call tclr(codin,6)
-      call tclr(beamin,21)
-      call temit(latt,trans,cod,beam,ctrb,
-     1     twiss,size,gammab,.true.,
-     $     int8(0),int8(0),int8(0),int8(0),
-     1     ndim,plot,param(1,0),stab,lfni,lfno)
+      codin=0.d0
+      beamin=0.d0
+      call temit(trans,cod,beam,ctrb,
+     1     .true.,int8(0),int8(0),int8(0),int8(0),
+     1     plot,param(1,0),stab,lfni,lfno)
       dps=rgetgl1('PSPAN')
       dpsa=dps*.5d0
       if(dps .gt. 0.d0)then
-        call tmov(r,rsave,78)
+        rsave=r
         lfnos=lfno
         lfno=0
         circ=c/omega0*pi2;
@@ -67,11 +65,9 @@
             dleng=param(14,0)+i*ddl
             call rsetgl1('FSHIFT',-dleng/circ)
             call tsetdvfs
-            call temit(latt,trans,cod,beam,ctrb,
-     1           twiss,size,gammab,.true.,
-     $           int8(0),int8(0),int8(0),int8(0),
-     1           ndim,plot,param(1,i),stab,
-     1           lfni,lfno)
+            call temit(trans,cod,beam,ctrb,
+     1           .true.,int8(0),int8(0),int8(0),int8(0),
+     1           plot,param(1,i),stab,lfni,lfno)
             if(.not. stab .and. lfnos .ne. 0)then
               write(lfnos,9101)'Unstable at "dp/p0" =',i*dps*.5d0
 9101          format(1x,a,f10.6)
@@ -84,8 +80,8 @@
         call rsetgl1('FSHIFT',-dleng/circ)
         call tsetdvfs
         trf0=param(12,0)
-        call tmov(param(1,0),codin,6)
-        call tmov(rsave,r,78)
+        codin=param(1:6,0)
+        r=rsave
         if(lfno .ne. 0)then
           write(lfno,9001)-dps,-.5d0*dps,0.d0,dps*.5d0,dps
  9001     format(' "dp/p0"   ',5f12.6)

@@ -1,9 +1,10 @@
-      logical*4 function tflogi(word,flg,fname,sino,nflag,exist)
+      logical*4 function tflogi(word,exist)
+      use ffs
       implicit none
-      integer*4 nflag,i
-      character*(*) word,fname(nflag),sino(nflag)
+      integer*4 i
+      character*(*) word
       character*32 fname1
-      logical*4 flg(nflag),exist
+      logical*4 exist
       tflogi=.false.
       exist=.true.
       if(word .eq. ' ')then
@@ -12,20 +13,20 @@
       endif
       do i=1,nflag
         if(word .eq. fname(i))then
-          tflogi=flg(i)
+          tflogi=flags(i)
           return
         else
           fname1='NO'//fname(i)
           if(word .eq. fname1)then
-            tflogi=.not. flg(i)
+            tflogi=.not. flags(i)
             return
           elseif(word .eq. sino(i))then
-            tflogi=.not. flg(i)
+            tflogi=.not. flags(i)
             return
           else
             fname1='NO'//sino(i)
             if(word .eq. fname1)then
-              tflogi=flg(i)
+              tflogi=flags(i)
               return
             endif
           endif

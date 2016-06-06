@@ -10,7 +10,8 @@ c                                                                 c
 c                                        Dec  1994                c
 c                                                                 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit real*8 (a-h,o-z)
 c      implicit none
       parameter (nsli=1,npole=2,len=3,i_F0=4,i_G0=5,i_dph=6,
      &   i_Kz=7,i_Kx=8,i_Ky=9,i_Qx=10,i_Qy=11,lambda=12,i_ds=13)
@@ -128,7 +129,8 @@ c      g(i)=g(i)/(1.d0+sqrt(pn))
       end
 
       subroutine undinit(p_in,ulist)
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit real*8 (a-h,o-z)
       parameter (nsli=1,npole=2,len=3,i_F0=4,i_G0=5,i_dph=6,
      &   i_Kz=7,i_Kx=8,i_Ky=9,i_Qx=10,i_Qy=11,lambda=12,i_ds=13)
       parameter (nulist=20)

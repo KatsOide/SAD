@@ -22,7 +22,7 @@ c
       do 11 j=1,nw
         l=ifte(3,j)-1
         do 10 i=1,nlat-1
-          call elnameK(latt,i,mult,name)
+          call elnameK(i,name)
           enome=name.eq.wkey(j)
           if( tmatch(pname(latt(1,i)),wkey(j)) .or. enome)then
             pat=idtype(latt(1,i)).eq.icmark .or. master(i).gt.0
@@ -119,7 +119,7 @@ c
           if(nw.eq.0) return
           if(i.ne.3) then
             call getwdl2(word,wordp)
-            m=ielm(latt,wordp,1,mult,exist)
+            m=ielm(wordp,exist)
             if(exist) ifte(i,nw)=m
           else
             m=int(getva(exist))
@@ -141,7 +141,7 @@ c
         endif
    61 continue
       do 62 i=1,nlat-1
-        call elnameK(latt,i,mult,name)
+        call elnameK(i,name)
         enome=name.eq.wordp
         if( tmatch(pname(latt(1,i)),word) .or. enome) then
           if(.not.fcon) then
@@ -159,7 +159,7 @@ c     write(*,*) (ifte(1,i),ifte(2,i),ifte(3,i),i=1,nw)
       do 71 j=1,nw
         l=ifte(3,j)-1
         do 70 i=1,nlat-1
-          call elnameK(latt,i,mult,name)
+          call elnameK(i,name)
           enome=name.eq.wkey(j)
           if( tmatch(pname(latt(1,i)),wkey(j)) .or. enome)then
             pat=idtype(latt(1,i)).eq.icmark .or. master(i).gt.0
@@ -583,8 +583,8 @@ c     ----- obtain optics
             twiss(1,ndim-1,j)=twiss(1,0,j)
             twiss(1,1-ndim,j)=twiss(1,0,j)
  30       continue
-          call pqcell(latt,twiss,gammab,ndim-1,dp1(ndim-1),stab)
-          call pqcell(latt,twiss,gammab,1-ndim,dp1(1-ndim),stab)
+          call pqcell(latt,ndim-1,dp1(ndim-1),stab)
+          call pqcell(latt,1-ndim,dp1(1-ndim),stab)
           newcor=1
         endif
         call pcbak(latt,twiss)
@@ -1109,7 +1109,7 @@ c93/11/01
         if( cell ) then
           hstab=.true.
           vstab=.true.
-          call qcell(latt,twiss,gammab,1,ip,
+          call qcell(1,ip,
      $         hstab,vstab,tracex(ip),tracey(ip),
      $         .false.,over)
           if( .not. hstab .or. .not. vstab ) then
@@ -1120,7 +1120,7 @@ c93/11/01
         else
           twiss(1,0,3)=0d0
           twiss(1,0,6)=0d0
-          call qtwiss(latt,twiss,gammab,ip,1,nlat,over)
+          call qtwiss(twiss,ip,1,nlat,over)
         endif
       enddo
 c     ------- save current cod & dispersion as standards to which the
@@ -1189,7 +1189,7 @@ c     endif
         return
       endif
       call getwdl2(word,wordp)
-      npnt=ielm(latt,wordp,1,mult,exist)
+      npnt=ielm(wordp,exist)
       if( exist ) then
         if(idtype(latt(1,npnt)).eq.2) then
           rlist(latt(2,npnt)+11)=rlist(latt(2,npnt)+11)+xk
@@ -1400,7 +1400,7 @@ c  ---------------------------------------------------------
         goto 11
       else
         do 14 i=1,nmona
-          call elnameK(latt,imon(imon(i,2),1),mult,en)
+          call elnameK(imon(imon(i,2),1),en)
           if(en.eq.word) then
             imon(imon(i,2),3)=0
             nm=nm+1
@@ -3238,7 +3238,7 @@ c     enddo
         goto 1
       else
         do 11 i=1,nstra
-          call elnameK(latt,istr(istr(i,2),1),mult,en)
+          call elnameK(istr(istr(i,2),1),en)
           if(en.eq.word) then
             istr(istr(i,2),3)=0
             ns=ns+1

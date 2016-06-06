@@ -1,8 +1,8 @@
       subroutine ttcav(np,x,px,y,py,z,g,dv,pz,
      1                 al,ak,harm,phi,freq,dx,dy,theta)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
       real*8 al,ak,harm,phi,freq,dx,dy,theta,cost,sint,w,phic,

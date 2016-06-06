@@ -2,8 +2,9 @@
      $     al,vc,harm,phi,freq,dx,dy,theta,v10,v20,v11,v02,
      $     fringe,mfring,autophi,ld)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       real*8 eps,oneev
       parameter (eps=1.d-2)
       parameter (oneev=1.d0+3.83d-12)

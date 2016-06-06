@@ -73,7 +73,6 @@
       subroutine tfinitcalc
       use tfstk
       use ffs
-      use ffslocal
       use tffitcode
       implicit none
       logical*4 err

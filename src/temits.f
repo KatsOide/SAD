@@ -1,15 +1,16 @@
-      subroutine temits(latt,
-     $     twiss,size,gammab,
+      subroutine temits(
      $     ndim,ntwissfun,
      $     mphi2,amus0,amus1,amusstep,
      $     emx,emy,res,params,
      $     lfni,lfno,kx,irtc)
       use tfstk
-      include 'inc/TMACRO.inc'
+      use ffs_pointer
+      use ffs_flag
+      use tmacro
+      implicit real*8(a-h,o-z)
       integer*8 kx
-      integer*4 latt(2,nlat),ntwissfun,irtc
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),
-     $     size(21,nlat),gammab(nlat),params(59)
+      integer*4 ntwissfun,irtc
+      real*8 params(59)
       logical*4 trpt0,stab
       trpt0=trpt
       trpt=.false.
@@ -32,8 +33,10 @@
      $     emx,emy,res0,params,
      $     lfni,lfno,kx,irtc)
       use tfstk
+      use ffs_flag
       use temw, only: r, ri
-      include 'inc/TMACRO.inc'
+      use tmacro
+      implicit real*8(a-h,o-z)
       parameter (npara=59,itmax=1000)
       integer*8 kx,kax,kai
       integer*4 ntwissfun,irtc
@@ -70,9 +73,9 @@
       rfsw=.false.
       call tclr(codin,6)
       call tclr(beamin,21)
-      call temit(latt,trans,cod,beamr,btr,
-     $     twiss,size,gammab,.true.,0,0,0,0,
-     $     ndim,plot,params,stab,lfni,lfno)
+      call temit(trans,cod,beamr,btr,
+     $     .true.,0,0,0,0,
+     $     plot,params,stab,lfni,lfno)
       call tinitr(rx)
       call tmov(rx,rxi,36)
       do i=1,4
@@ -98,7 +101,7 @@ c      write(*,*)damp
         call tinitr(trans)
         call tclr(trans(1,7),36)
         call tclr(beam,21)
-        call tturne(latt,trans,cod,beam,twiss,size,gammab,0,0,0,
+        call tturne(trans,cod,beam,0,0,0,
      $       ndim,.false.,.false.,.false.)
         call tmultr(trans,rxi,12)
         call tmov(rx,rm,36)

@@ -2,9 +2,10 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       subroutine trackd(latt,kptbl,x,px,y,py,z,g,dv,pz,
      $     mturn,kzx,trval,phi,damp,dampenough,ivar1,ivar2,lfno)
       use tfstk
+      use ffs_flag
       use tfshare
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 n1p0,nxp
       parameter (n1p0=200,nxp=51)
       integer*4 latt(2,nlat),kptbl(np0,6),lfno,
@@ -29,8 +30,9 @@ c      endif
      1     mturn,kzx,trval,phi,
      $     damp,dampenough,ntloss,ivar1,ivar2,lfno)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 n1p0,n2p,maxturn,maxpara,nw,lfno,ncons,nscore,
      $     ivar1,ivar2,ivar3
       parameter (n1p0=200,n2p=51,maxturn=2**30,maxpara=256,nw=16)
@@ -441,8 +443,8 @@ c      write(*,*)'tinip ',np,(xa(i),i=1,6)
       subroutine tpdamp(np,x,px,y,py,z,g,dv,dampx,dampy,dampz,
      $     damp,aenox,aenoy,aenoz,kptbl,mturn)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     xa(7),dampx,dampy,dampz,aenox(np0),aenoy(np0),aenoz(np0)

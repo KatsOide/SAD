@@ -1,11 +1,12 @@
       subroutine tinse(trans,cod,beam,trx,ld)
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 ld      
       real*8 trans(6,12),cod(6),beam(42),trx(6,7),trans1(6,13),
      $     x1,px1,y1,py1
-      call tclr(trans1(1,7),36)
-      call tmov(trx,trans1,36)
+      trans1(:,7:12)=0.d0
+      trans1(:,1:6)=trx(:,1:6)
       call tmultr(trans,trans1,irad)
       call tmulbs(beam ,trans1,.true.,.true.)
       if(calpol)then

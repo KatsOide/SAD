@@ -4,8 +4,9 @@
      $     dx,dy,theta,v1,v20,v11,v02,
      $     fringe,mfring,autophi)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 ndivmax
       real*8 eps,oneev
       parameter (eps=1.d-3,ndivmax=1000,oneev=1.d0+3.83d-12)

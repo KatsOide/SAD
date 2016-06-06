@@ -12,10 +12,10 @@
       integer*8 function ktfmalocp(k,n,m,vec,trans,map,err,irtc)
       use tfstk
       use tfshare
+      use tmacro
       implicit none
       type (sad_descriptor) k
       type (sad_list), pointer :: kl,kl1,kli
-      include 'inc/TMACRO1.inc'
       integer*8 ktaloc,kap,i0,ip,ip0
       integer*4 n,m,irtc,i,j,itfmessage
       logical*4 vec,trans,map,err

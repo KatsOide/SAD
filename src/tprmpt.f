@@ -12,22 +12,19 @@
       if(lfni .eq. 5 .and. lfno .eq. 6 .and. lfn1 .eq. 0)then
         if(ipr .eq. 0)then
           if(ffsprmpt)then
-            call elname(ilist(1,ilattp+1),mfpnt,ilist(1,ifmult),pr)
+            call elname(mfpnt,pr)
             l=len_trim(pr)
             if(mfpnt .ne. mfpnt1)then
               pr(l+1:l+1)=':'
-              call elname(ilist(1,ilattp+1),mfpnt1,ilist(1,ifmult),
-     $             pr(l+2:80))
+              call elname(mfpnt1,pr(l+2:80))
               l=len_trim(pr)
             endif
             pr(l+1:l+1)='/'
-            call elname(ilist(1,ilattp+1),id1,ilist(1,ifmult),
-     $           pr(l+2:80))
+            call elname(id1,pr(l+2:80))
             l=len_trim(pr)
             if(id1 .ne. id2)then
               pr(l+1:l+1)=':'
-              call elname(ilist(1,ilattp+1),id2,ilist(1,ifmult),
-     $             pr(l+2:80))
+              call elname(id2,pr(l+2:80))
               l=len_trim(pr)
             endif
             pr(l+1:l+1)='>'

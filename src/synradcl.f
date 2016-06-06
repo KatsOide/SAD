@@ -57,6 +57,7 @@ C       in DS randomly where the photon is emitted and take electron orbit
 C       angle at that point as the x-angle of the photon.
 C  (4)  MASS and COMPTON have to be changed for proton radiation.
 C    
+      use tmacro
       IMPLICIT NONE
 c     Including physical constant
 c     CVELOC:	Speed of light
@@ -66,7 +67,6 @@ c     ELEMCH:	Elementary charge
 c     ELMASS:	Electron mass energy equivalent in eV
 c     Including math constant
 c     M_SQRT3:	SQRT(3.D0)
-      include 'inc/TMACRO1.inc'
       real*8 MASS,COMPTON,C1
 c      parameter (MASS=elmass)
 c      parameter (COMPTON=PLANKR*CVELOC/(ELEMCH*MASS))

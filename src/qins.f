@@ -1,13 +1,13 @@
-      subroutine qins(trans,cod,latt,twiss,gammab,l1,idp,
+      subroutine qins(trans,cod,l1,idp,
      $         enter,param,trx,coup,mat,insmat)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
       integer*4 i,l2,k
-      integer*4 l1,idp,latt(2,nlat)
+      integer*4 l1,idp
       real*8 dp,x,px,y,py,dpsix,dpsiy,x1,px1,y1,py1
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat)
       real*8 trans(4,5),param(ntwissfun),trx(6,7),cod(6)
       logical*4 enter,coup,mat,insmat
       trans=0.d0
@@ -78,7 +78,7 @@
       else
         twiss(l2,idp,3)=twiss(l1,idp,3)+dpsix
         twiss(l2,idp,6)=twiss(l1,idp,6)+dpsiy
-        call tftmat(twiss,gammab,trans,l1,l2,idp,.false.)
+        call tftmat(trans,l1,l2,idp,.false.)
       endif
       call tinitr(trx)
       do i=1,4

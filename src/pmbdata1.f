@@ -25,7 +25,7 @@ c....... register ylo in the data buffer.
      $     '  sminy '
       do 12 i=1,nobs
         j=iobs(i+1)
-        call elname(latt,j,mult,name)
+        call elname(j,name)
         line(1:8)=name
         do 11 l=1,2
           if(single) then

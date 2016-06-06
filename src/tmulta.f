@@ -4,8 +4,8 @@
      1     dx,dy,theta,dtheta,
      $     eps0,enarad,fb1,fb2,mfring,fringe)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       include 'inc/TMULTA.inc'
       integer*4 ndivmax
       real*8 ampmax,eps00
@@ -199,8 +199,8 @@
      1     dx,dy,theta,dtheta,
      $     eps0,enarad,fringe,fb1,fb2,mfring,ld)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       include 'inc/TMULTA.inc'
       integer*4 ndivmax
       real*8 ampmax,eps00
@@ -296,12 +296,12 @@
           call tbende(trans,cod,beam,aln*.5d0,phinh,phinh,
      $         psi1n,0.d0,apsi1,0.d0,0.d0,
      $         0.d0,0.d0,0.d0,0.d0,
-     1         fb1,fb2,mfr,fringe,eps0,enarad,.false.,ld)
+     1         fb1,fb2,mfr,fringe,eps0,enarad,.false.,.false.,ld)
         else
           call tbende(trans,cod,beam,aln,phin,phin,
      $         0.d0,0.d0,0.d0,0.d0,0.d0,
      $         0.d0,0.d0,0.d0,0.d0,
-     1         0.d0,0.d0,0,.false.,eps0,enarad,.false.,ld)
+     1         0.d0,0.d0,0,.false.,eps0,enarad,.false.,.false.,ld)
         endif
         cx1=dcmplx(cod(1),cod(3))
         csl=(0.d0,0.d0)
@@ -361,7 +361,7 @@
       call tbende(trans,cod,beam,aln*.5d0,phinh,phinh,
      $     0.d0,psi2n,0.d0,apsi2,0.d0,
      $     0.d0,0.d0,0.d0,0.d0,
-     1     fb1,fb2,mfr,fringe,eps0,enarad,.false.,ld)
+     1     fb1,fb2,mfr,fringe,eps0,enarad,.false.,.false.,ld)
       if(dtheta .ne. 0.d0)then
         cod(2)=cod(2)+dphix
         cod(4)=cod(4)+dphiy

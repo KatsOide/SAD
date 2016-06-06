@@ -1,6 +1,6 @@
-      integer*4 function ielm(latt,word,istart,mult,exist)
+      integer*4 function ielm(word,exist)
       implicit none
-      integer*4 latt(2,1),istart,mult(1),ielmf
+      integer*4 ielmf
       character*(*) word
       real*8 frac
       logical*4 exist
@@ -119,17 +119,18 @@
       return
       end
 
-      integer function igelm(latt,word,mult,exist)
+      integer function igelm(word,exist)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),mult(nlat),ielm
+      integer*4 ielm
       character*(*) word
       character*255 wordp
       logical exist
       call getwdl2(word,wordp)
-      igelm=ielm(latt,wordp,1,mult,exist)
+      igelm=ielm(wordp,exist)
       return
       end
 
@@ -168,12 +169,13 @@ c     *     by tfinit(), tfinimult() initialization
       return
       end
 
-      subroutine tfhashelement(latt)
+      subroutine tfhashelement
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),itehash,nelm(0:nelmhash),
+      integer*4 itehash,nelm(0:nelmhash),
      $     i,j,k,l,n,italoc
       do j=0,nelmhash
         nelm(j)=0

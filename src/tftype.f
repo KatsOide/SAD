@@ -1,18 +1,13 @@
-      subroutine tftype(latt,ival,iele1,
-     $     errk,klp,lfno,word,twiss,
-     $     emx,emy,dpmax,nlat,nele,ndim)
+      subroutine tftype(lfno,word)
       use tfstk
+      use ffs_pointer
       use tffitcode
       implicit none
       include 'inc/MACCODE.inc'
       include 'inc/MACKW.inc'
       integer*4 ntyp
       parameter (ntyp=18)
-      integer*4 nlat,nele,ndim,lfno,k1
-      integer*4 latt(2,nlat),ival(nele),iele1(nlat)
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),errk(2,nlat),
-     $     emx,emy,dpmax
-      integer*4 ltyp(ntyp),klp(nele)
+      integer*4 lfno,k1,ltyp(ntyp)
       integer*4 j,kx,lt,kp,notchar,ifany,lpw,itfgetrecl,
      $     iavl,nl,kkk,irtc
       character*(*) word
@@ -66,10 +61,8 @@ c          if(klp(iele1(kx)) .ne. kx)cycle
                 call twbuf(tfkwrd(lt,0),lfno,1,lpw,7,1)
                 start=.false.
               endif
-              call tftyp1(
-     1             iele1(kx),kx,latt(2,kx),kp,
-     $             ival,errk,lt,twiss,lfno,
-     $             emx,emy,dpmax,nlat,nele,ndim,lpw)
+              call tftyp1(iele1(kx),kx,latt(2,kx),kp,
+     $             lt,lfno,lpw)
               if(kytbl(kwMAX,lt) .gt. kytbl(kwMAX, icDRFT))then
                 call twbuf(' ',lfno,10,lpw,0,-1)
               endif

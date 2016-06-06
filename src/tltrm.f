@@ -1,7 +1,7 @@
       subroutine tltrm(latt,kptbl)
       use tfstk
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 i
       integer*4 latt(2,nlat),kptbl(np0,6)
       call tclrpara(latt,nlat-1)

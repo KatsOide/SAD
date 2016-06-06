@@ -1,7 +1,9 @@
       subroutine tfemit(isp1,kx,irtc)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
+      use iso_c_binding
       implicit none
       type (sad_descriptor) kx
       type (sad_list), pointer :: kl,kl1,kl2,klx
@@ -12,8 +14,8 @@
       real*8 param(nparam),trans(6,12),cod(6),beam(42),btr(441),sx
       logical*4 stab
       narg=isp-isp1
-      call tclr(codin,6)
-      call tclr(beamin,21)
+      codin=0.d0
+      beamin=0.d0
       if(narg .eq. 3)then
         if(tflistqk(ktastk(isp),kl))then
           if(tfreallistqd(kl%dbody(1),kl1))then
@@ -65,12 +67,13 @@
       call tfsetparam
       if(ifsize .eq. 0 .and. codplt)then
         ifsize=ktaloc(nlat*21)
-        ilist(2,iwakepold+6)=ifsize
+        call c_f_pointer(c_loc(rlist(ifsize)),beamsize,[21,nlat])
+        updatesize=.false.
+c        ilist(2,iwakepold+6)=ifsize
       endif
-      call temit(ilist(1,ilattp+1),trans,cod,beam,btr,
-     $     rlist(iftwis),rlist(ifsize),rlist(ifgamm),mode .ge. 0,
-     $     iatr,iacod,iabmi,iamat,
-     $     ndim,.true.,param,stab,0,lno)
+      call temit(trans,cod,beam,btr,
+     $     mode .ge. 0,iatr,iacod,iabmi,iamat,
+     $     .true.,param,stab,0,lno)
       if(mode .eq. 3 .and. intra)then
         kx=kxadaloc(-1,6,klx)
       else
@@ -123,13 +126,12 @@ c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparam
         arg(i)=rtastk(isp1+i)
       enddo
       mphi2=max(1.d0,min(32.d0,arg(4)))
-      call tfgeo(ilist(1,ilattp+1),rlist(ifgeo),rlist(ifpos),
-     $     rlist(ifgamm),.true.)
+      call tfgeo(.true.)
       kparams=ktaloc(59)
-      call tclr(codin,6)
+      codin=0.d0
       if(ifsize .eq. 0 .and. codplt)then
         ifsize=ktaloc(nlat*21)
-        ilist(2,iwakepold+6)=ifsize
+c        ilist(2,iwakepold+6)=ifsize
       endif
       kx%k=ktfoper+mtfnull
       call temits(ilist(1,ilattp+1),
@@ -141,8 +143,7 @@ c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparam
      $     lfni,0,kx,irtc)
       call tfree(kparams)
       if(.not. codplt)then
-        call tfgeo(ilist(1,ilattp+1),rlist(ifgeo),rlist(ifpos),
-     $       rlist(ifgamm),.true.)
+        call tfgeo(.true.)
       endif
       return
  9001 irtc=itfmessage(9,'General::wrongtype',

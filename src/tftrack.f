@@ -1,8 +1,10 @@
       subroutine tftrack(isp1,kx,irtc)
       use tfstk
       use ffs
+      use ffs_pointer
       use tffitcode
       use tfshare
+      use ffs_wake
       implicit none
       type (sad_descriptor) kx,kx1,kx2,ks,kp
       type (sad_list), pointer :: klx,kl
@@ -13,10 +15,9 @@
       integer*4 isp1,irtc,narg,itfloc,outfl0,ld,ls,mc,npz,npa,np00,
      $     ipr(100),npr,np1,fork_worker,iprid, ne,nend,
      $     npp,ipn,m,itfmessage,nt,mt,kseed,j
-      integer*8 ikptblw,ikptblm,icslfno,kwakeelm,kwakep
-      integer*4 nwakep
+      integer*8 ikptblw,ikptblm,icslfno
       real*8 trf00,p00,vcphic0,vcalpha0
-      logical*4 dapert0,wake
+      logical*4 dapert0
       narg=isp-isp1
       if(narg .gt. 4)then
         irtc=itfmessage(9,'General::narg','"1, 2, 3, or 4"')
@@ -94,8 +95,7 @@
       kwakeelm=0
       nwakep=0
       if(wake)then
-        call tffssetupwake(ilist(1,ilattp+1),ilist(1,ifmult),
-     $       kwakeelm,kwakep,nwakep,icslfno(),irtc)
+        call tffssetupwake(icslfno(),irtc)
         if(irtc .ne. 0)then
           return
         endif
@@ -172,7 +172,7 @@
       call tfsetparticles(rlist(kzp),rlist(kzf),rlist(kpz),
      $     ilist(1,ikptblw),npp,npa,npz,mc,nlat,nt)
       if(npa .gt. 0)then
-        call tpara(ilist(1,ilattp+1))
+        call tpara(latt)
         outfl0=outfl
         outfl=0
         dapert0=dapert
@@ -180,11 +180,10 @@
         np00=np0
         np0=npp
         if(mt .gt. 1)then
-          call tturn0(npa,ilist(1,ilattp+1),ls,nlat,
+          call tturn0(npa,latt,ls,nlat,
      $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
      $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
-     $         rlist(kzp+npz*6),rlist(kpz),ilist(1,ikptblw),nt,
-     $         wake,ilist(1,kwakeelm),klist(kwakep),nwakep)
+     $         rlist(kzp+npz*6),rlist(kpz),ilist(1,ikptblw),nt)
           nt=nt+1
           mt=mt-1
           ls=1
@@ -200,20 +199,18 @@
             mt=0
             exit
           endif
-          call tturn0(npa,ilist(1,ilattp+1),1,nlat,
+          call tturn0(npa,latt,1,nlat,
      $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
      $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
-     $         rlist(kzp+npz*6),rlist(kpz),ilist(1,ikptblw),nt,
-     $         wake,ilist(1,kwakeelm),klist(kwakep),nwakep)
+     $         rlist(kzp+npz*6),rlist(kpz),ilist(1,ikptblw),nt)
           nt=nt+1
           mt=mt-1
         enddo
         if(mt .ge. 1 .and. npa .gt. 0 .and. ld .gt. ls)then
-          call tturn0(npa,ilist(1,ilattp+1),ls,ld,
+          call tturn0(npa,latt,ls,ld,
      $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
      $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
-     $         rlist(kzp+npz*6),rlist(kpz),ilist(1,ikptblw),nt,
-     $         wake,ilist(1,kwakeelm),klist(kwakep),nwakep)
+     $         rlist(kzp+npz*6),rlist(kpz),ilist(1,ikptblw),nt)
         endif
         np0=np00
         outfl=outfl0
@@ -263,7 +260,7 @@ c        endif
       endif
       call tclrfpe
  8900 if(wake)then
-        call tffsclearwake(kwakeelm,kwakep,nwakep)
+        call tffsclearwake
       endif
       return
  9000 irtc=itfmessage(9,'General::wrongtype',

@@ -1,9 +1,10 @@
       subroutine tquade(trans,cod,beam,al,ak,
      1     dx,dy,theta,enarad,fringe,f1,f2,mfring,eps0,
-     $     kin,ld)
+     $     kin,next,ld)
       use tfstk
+      use ffs_flag
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
       integer*4 ld,ndiv,i,mfring,n,itgetqraddiv
       real*8 trans(6,12),cod(6),beam(21),trans1(6,6),
      $     al,ak,dx,dy,theta,f1,f2,eps0,f1r,f2r,eps,b1,akn,
@@ -11,7 +12,7 @@
      $     xsin2,xsinh2,a11,a12,a21,b11,b12,b21,als,
      $     bx,by,bxy,xi,pxi,yi,pyi,xf,pxf,yf,pyf,
      $     zx,zy,zxp,zyp,x,y,sinc,sinhc,xsin,xsinh,pramin
-      logical enarad,fringe,kin
+      logical*4 enarad,fringe,kin,next,prev
       parameter (pramin=1.d-4)
       if(al .le. 0.d0)then
         call tthine(trans,cod,beam,4,
@@ -26,11 +27,17 @@
       if(fringe .and. mfring .ge. 0. and. mfring .ne. 2)then
         call tqfrie(trans,cod,beam,ak,al,ld,0.d0)
       endif
+      prev=bradprev .ne. 0.d0
       if(mfring .eq. 1 .or. mfring .eq. 3)then
         call tqlfre(trans,cod,beam,al,ak,f1,f2,0.d0,ld)
         f1r=f1
       else
         f1r=0.d0
+      endif
+      if(mfring .eq. 2 .or. mfring .eq. 3)then
+        f2r=f1
+      else
+        f2r=0.d0
       endif
       if(eps0 .eq. 0.d0)then
         eps=.1d0
@@ -88,11 +95,11 @@
           if(n .eq. 1)then
             call trade(trans,beam,cod,bx,by,0.d0,0.d0,
      $           0.d0,bxy,0.d0,0.d0,
-     $           f1r,f1r,0.d0,al,.5d0*aln)
+     $           .5d0*aln,als,al,f1r,f2r,prev,next)
           else
             call trade(trans,beam,cod,bx,by,0.d0,0.d0,
      $           0.d0,bxy,0.d0,0.d0,
-     $           f1r,f1r,als,al,aln)
+     $           aln,als,al,f1r,f2r,prev,next)
           endif
           als=als+aln
           if(radcod)then
@@ -241,14 +248,12 @@
         bx= b1*cod(3)
         by= b1*cod(1)
         bxy= b1
-        if(mfring .eq. 2 .or. mfring .eq. 3)then
-          f2r=f1
-        else
-          f2r=0.d0
-        endif
         call trade(trans,beam,cod,bx,by,0.d0,0.d0,
      $       0.d0,bxy,0.d0,0.d0,
-     $       f2r,f2r,al,al,.5d0*aln)
+     $       .5d0*aln,al,al,f1r,f2r,prev,next)
+      endif
+      if(.not. next)then
+        bradprev=0.d0
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
         call tqlfre(trans,cod,beam,al,ak,-f1,f2,0.d0,ld)

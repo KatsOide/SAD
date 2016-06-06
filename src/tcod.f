@@ -1,18 +1,19 @@
-      recursive subroutine tcod(latt,
-     $     trans,cod,beam,twiss,gammab,ndim,fndcod)
+      recursive subroutine tcod(trans,cod,beam,fndcod)
       use tfstk
+      use ffs_flag
+      use ffs_pointer
+      use ffs_fit
+      use tmacro
       implicit none
-      include 'inc/TMACRO1.inc'
-      integer*4 im,lmax,ndim
+      integer*4 im,lmax
       real*8 conv0,epsr0,epsrr,rmax,fmin,a,ddpmax
       logical fndcod
       parameter (lmax=300,
      $     conv0=1.d-10,epsr0=1.d-6,ddpmax=3.e-5,
      1     epsrr=1.d-4,rmax=1.d200,fmin=1.d-4,a=0.25d0)
       real*8 trans(6,12),cod(6),codi(6),codf(6),dcod(6),beam(42),
-     1     gammab(*),r0,fact,trf00,dtrf0,r,dcod1(6),codw(6),
-     $     twiss(nlat,-ndim:ndim,*),conv
-      integer*4 latt(2,nlat),loop,i
+     1     r0,fact,trf00,dtrf0,r,dcod1(6),codw(6),conv
+      integer*4 loop,i
       logical*4 isnan,rt
       real*8 , parameter :: codw0(6) =
      $     [1.d-6,1.d-5,1.d-6,1.d-5,1.d-5,1.d-6]
@@ -43,15 +44,11 @@
           conv=conv*1.d5
         endif
       endif
-1     trf0=trf0+codi(5)
-      codi(5)=0.d0
-      cod(5)=0.d0
-      loop=loop-1
+ 1    loop=loop-1
       if(loop .le. 0)then
         if(radtaper .and. codplt)then
           codplt=.false.
-          call tcod(latt,
-     $     trans,cod,beam,twiss,gammab,ndim,fndcod)
+          call tcod(trans,cod,beam,fndcod)
           codplt=.true.
         else
           write(*,*)'Closed orbit was not found.'
@@ -59,7 +56,6 @@
         endif
         return
       endif
-      trans=0.d0
       call tinitr(trans)
       if(radtaper .and. codplt)then
         cod(6)=0.d0
@@ -67,8 +63,8 @@
       endif
       codf=codi
       trf00=trf0
-      call tturne(latt,trans,codf,beam,twiss,0.d0,gammab,
-     $     int8(0),int8(0),int8(0),1,.false.,.true.,rt)
+      call tturne(trans,codf,beam,
+     $     int8(0),int8(0),int8(0),.false.,.true.,rt)
       rt=.true.
       dcod1=codi-codf
       r=0.d0
@@ -82,7 +78,9 @@
 c      write(6,'(a,1p5g12.5)')' tcod ',r,r0,fact,trf0
 c      write(6,'(1p6g12.5)')codi,codf
       if(r .lt. conv)then
-        cod=codi
+c        trf0=trf0+codi(5)
+c        cod=codi
+c        cod(5)=0.d0
         return
       endif
       if(r .ge. r0 .or. isnan(r))then

@@ -725,4 +725,6 @@ AutoLoad[LifeTrack,PackagesDirectory//"LifeTrack.n"];
 
 AutoLoad[CSR,CSRStability,PackagesDirectory//"CSR.n"];
 
+AutoLoad[WAKECOMMAND,PackagesDirectory//"WAKECOMMAND.n"];
+
 ! End of File

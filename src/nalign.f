@@ -12,7 +12,7 @@
 c
       exist=.false.
         do 1010 i=1,nlat-1
-          if(temat(latt,i,mult,name,word))then
+          if(temat(i,name,word))then
             is=i
             go to 1020
           end if
@@ -21,7 +21,7 @@ c
 1020    continue
         call getwdl(word)
         do 1100 i=1,nlat-1
-          if(temat(latt,i,mult,name,word))then
+          if(temat(i,name,word))then
             exist=.true.
             ie=i
             go to 1120
@@ -38,9 +38,9 @@ c
         if (master(is) .lt. 0) then is=-master(is)
         if (master(ie) .gt. 0) ie=master(ie)
 c
-c       call elname(latt,is,mult,name)
+c       call elname(is,name)
 c       write(lfno,*)' nalign start', name
-c       call elname(latt,ie,mult,name)
+c       call elname(ie,name)
 c       write(lfno,*)' nalign end  ', name
 c
           j=latt(1,is)

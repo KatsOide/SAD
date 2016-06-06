@@ -1,59 +1,39 @@
-      subroutine tffscalc(flv,twiss,pos,geo,gammab,utwiss,
-     $     latt,mult,ivarele,ivcomp,
-     $     iele,iele1,ivvar,ival,
-     $     nvar,klp,itwissp,nut,
-     $     nlat,nele,ndim,
-     $     dp,tracex,tracey,hstab,vstab,nfr,nfam,nfam1,
-     $     kdp,df,
-     $     wfit,wiq,wsum,iqcol,lfp,
-     $     nqcol,nqcol1,nfcol,nfc0,maxcond,nlist,ibegin,
-     $     dfam,jfam,kfam,inicond,iuid,uini,
-     $     wake,iwakeelm,kwaketbl,nwakep,
-     $     r,rp,rstab,nstab,residual,wexponent,
-     $     offmw,etamax,avebeta,emx,emy,dpmax,coumin,
-     $     cell,zcal,fitflg,geomet,cellstab,wcal,parallel,
-     $     chgini,orbitcal,intres,halfres,sumres,diffres,
-     $     lout,error)
+      subroutine tffscalc(kdp,df,iqcol,lfp,
+     $     nqcola,nqcola1,ibegin,
+     $     r,rp,rstab,nstab,residual1,
+     $     zcal,wcal,parallel,lout,error)
       use tfstk
-      use ffslocal, only: ffslocalv
+      use ffs, only:ndim,nlat,flv,maxcond
+      use ffs_flag
+      use ffs_pointer
+      use ffs_fit
+      use ffs_wake
       use tffitcode
       use tfshare
       implicit none
-      type (ffslocalv) flv
       include 'inc/MACMATH.inc'
 c      include 'DEBUG.inc'
       integer*8 kx
-      integer*4 nlat,nele,ndim,nfr,maxcond,ibegin,nqcol,
-     $     lfno,nfam,nfam1,nut,lbegin,lend,irtc
-      integer*4 i1,i2,i3,i,ii,j,nfcol,iter,nvar,kt,iq,l,maxf,
-     $     nqcol1,ie,ie1,iv,nfc0,nstab,lout,icslfno
-      integer*4 latt(2,nlat),mult(nlat),itwissp(nlat),
-     $     iele(nlat),iele1(nlat),ivvar(nvar),ival(nele),
-     $     ivarele(nvar),klp(nele),ivcomp(nvar),
-     1     kdp(maxcond),iqcol(maxcond),lfp(2,maxcond),
-     $     jfam(-nfam:nfam),kfam(-nfam:nfam),iuid(-nfam:nfam)
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),pos(nlat),geo(3,4,nlat),
-     $     gammab(nlat),utwiss(ntwissfun,-nfam:nfam,nut),
-     $     dp(-nfam:nfam),tracex(-nfam:nfam),tracey(-nfam:nfam),
-     $     df(maxcond),wfit(maxcond),wiq(maxcond),
-     $     r,rp,wexponent,dfam(4,-nfam:nfam),offmw,
-     $     residual(-nfam:nfam),emx,emy,dpmax,coumin,wsum,wi,
-     $     frbegin,frend,uini(27,-nfam:nfam)
-      logical*4 cell,zcal,fitflg,geomet,cellstab,wcal,
-     $     hstab(-nfam:nfam),vstab(-nfam:nfam),error,parallel
-      character*8 nlist(mfit1)
+      integer*4 ibegin,nqcola,lfno,lbegin,lend,irtc
+      integer*4 i1,i2,i3,i,ii,j,iter,kt,iq,l,maxf,
+     $     nqcola1,ie,ie1,iv,nstab,lout
+      integer*4 kdp(maxcond),iqcol(maxcond),lfp(2,maxcond)
+      real*8 df(maxcond),r,rp,wi,
+     $     frbegin,frend,residual1(-ndimmax:ndimmax)
+      logical*4 zcal,wcal,error,parallel
       real*8 anux0,anuy0,anux0h,anuy0h,anuxi,anuyi,anuxih,anuyih,
-     $     etamax,avebeta,rw,drw,rstab,
+     $     rw,drw,rstab,
      $     anusumi,anusum0,anudiffi,anudiff0,physd(4)
-      logical*4 fam,over(-nfam:nfam),beg,zerores,inicond,wake,
-     $     chgini,orbitcal,intres,halfres,sumres,diffres
-      integer*4 fork_worker,wait,irw,isw,ipr,ifb,ife,idir,
-     $     jjfam(-nfam:nfam),ivoid,itfuplevel,itfdownlevel,
-     $     nwakep,iwakeelm(nwakep),itgetfpe,ifpe,ntfun
-      integer*8 iutm,jb,kwaketbl(2,nwakep)
+      logical*4 fam,over(-nfam:nfam),beg,zerores
+      integer*4 irw,isw,ipr,ifb,ife,idir,
+     $     jjfam(-nfam:nfam),ivoid,ifpe,ntfun
+      integer*4, external :: fork_worker,wait,itfdownlevel,itfuplevel,
+     $     itgetfpe,icslfno
+      integer*8 iutm,jb
       parameter (ivoid=9999)
       integer*8 iprolog,iepilog,imr,inr,isl
       data iprolog,iepilog,imr,inr,isl/0,0,0,0,0/
+      associate (nvar=>flv%nvar)
 c     begin initialize for preventing compiler warning
       anux0=0.d0
       anuy0=0.d0
@@ -89,9 +69,9 @@ c     end   initialize for preventing compiler warning
       endif
       call tsetfpe(ifpe)
       if(zcal)then
-        call tfgeo(latt,geo,pos,gammab,geomet .or. .not. fitflg)
+        call tfgeo(latt,geomet .or. .not. fitflg)
       endif
-      call tffsbound(nlat,latt,lbegin,frbegin,lend,frend)
+      call tffsbound(lbegin,frbegin,lend,frend)
       over(nfam1:nfam)=.false.
       hstab(nfam1:nfam)=.true.
       vstab(nfam1:nfam)=.true.
@@ -119,17 +99,13 @@ c     end   initialize for preventing compiler warning
         ibegin=lbegin
       endif
       if(wake)then
-        call tffswake(latt,twiss,gammab,utwiss,itwissp,uini,
-     $       iwakeelm,kwaketbl,nwakep,
-     $       ibegin,frbegin,lend,frend,
-     $       nfam,nfam1,nut,hstab,vstab,tracex,tracey,over,beg)
+        call tffswake(ibegin,frbegin,lend,frend,over,beg)
       else
-        call qcell1(latt,twiss,gammab,
-     $       ibegin,frbegin,lend,frend,0,
+        call qcell1(ibegin,frbegin,lend,frend,0,
      1       hstab(0),vstab(0),tracex(0),tracey(0),.false.,over(0),
      $       chgini,lout)
-        call tffssetutwiss(latt,twiss,utwiss,itwissp,0,nlat,
-     $       ndim,nfam,nut,lbegin,lend,frend,beg,.true.,.true.)
+        call tffssetutwiss(0,nlat,
+     $       lbegin,lend,frend,beg,.true.,.true.)
         if(cell)then
           anux0=aint(twiss(nlat,0,mfitnx)/pi2)
           anuy0=aint(twiss(nlat,0,mfitny)/pi2)
@@ -236,13 +212,11 @@ c                    endif
                   twiss(lbegin,1,1:ntfun)=twiss(1,1,1:ntfun)
                 endif
               endif
-              call qcell1(latt,twiss,gammab,
-     $             ibegin,frbegin,lend,frend,
+              call qcell1(ibegin,frbegin,lend,frend,
      $             1,hstab(ii),vstab(ii),tracex(ii),tracey(ii),
      $             fam,over(ii),chgini,lout)
-              call tffssetutwiss(latt,twiss,utwiss,itwissp,ii,nlat,
-     $             ndim,nfam,nut,lbegin,lend,frend,
-     $             beg,.true.,.true.)
+              call tffssetutwiss(ii,nlat,
+     $             lbegin,lend,frend,beg,.true.,.true.)
             endif
             if(cell)then
               anuxih=aint(twiss(nlat,1,mfitnx)/pi)
@@ -323,13 +297,7 @@ c            endif
           endif
         endif
       endif
-      call tdfun(flv,nfcol,iqcol,lfp,nqcol,nqcol1,
-     1     kdp,nfr,nfam,nfam1,jfam,kfam,
-     $     inicond,iuid,
-     $     df,utwiss,itwissp,nut,
-     1     tracex,tracey,pos,geo,
-     $     latt,mult,
-     $     dp,maxcond,nlist,error)
+      call tdfun(iqcol,lfp,nqcola,nqcola1,kdp,df,error)
       if(error)then
         call termes(lfno,
      1         '?Too many fit conditions.',' ')
@@ -397,16 +365,13 @@ c            endif
         avebeta=(pos(maxf)-pos(1))/
      $       max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
       endif
-      call twfit(nfcol,nfc0,flv%kfit,wfit,wiq,
-     1     flv%ifitp,flv%kfitp,kdp,nqcol,iqcol,twiss,pos,maxf,
-     $     kfam,inicond,iuid,
-     $     nlat,ndim,nfam,dp,emx,emy,dpmax,coumin,latt,mult,nlist,
-     $     wcal)
+      call twfit(flv%kfit,
+     1     flv%ifitp,flv%kfitp,kdp,nqcola,iqcol,maxf,wcal)
       wcal=.false.
       rw=0.d0
-      residual(nfam1:nfam)=0.d0
+      residual1(nfam1:nfam)=0.d0
       wsum=0.d0
-      do i=1,nqcol
+      do i=1,nqcola
         if(kdp(i) .ne. 0)then
           iq=iqcol(i)
           wi=(offmw/2.d0/
@@ -420,7 +385,7 @@ c            endif
         if(df(i) .ne. 0.d0)then
           drw=min(1.d50,max(1.d-50,abs(df(i))))**wexponent
           rw=rw+drw
-          residual(kdp(i))=residual(kdp(i))+drw
+          residual1(kdp(i))=residual1(kdp(i))+drw
         endif
       enddo
       if(rw .gt. 0.d0)then
@@ -440,17 +405,17 @@ c            endif
         cellstab=.true.
         zerores=.true.
         do i=nfam1,nfam
-          if(residual(i) .ne. 0.d0)then
+          if(residual1(i) .ne. 0.d0)then
             zerores=.false.
             if(.not. hstab(i))then
               nstab=nstab+1
-              residual(i)=residual(i)+rstab
+              residual1(i)=residual1(i)+rstab
               r=r+rstab
               cellstab=.false.
             endif
             if(.not. vstab(i))then
               nstab=nstab+1
-              residual(i)=residual(i)+rstab
+              residual1(i)=residual1(i)+rstab
               r=r+rstab
               cellstab=.false.
             endif
@@ -465,7 +430,7 @@ c            endif
         do i=nfam1,nfam
           if(.not. hstab(i))then
             nstab=nstab+2
-            residual(i)=residual(i)+20.d0
+            residual1(i)=residual1(i)+20.d0
           endif
         enddo
       endif
@@ -489,30 +454,25 @@ c            endif
       endif
       call tsetfpe(ifpe)
       return
+      end associate
       end
 
-      subroutine twfit(nfcol,nfc0,kfit,wfit,wiq,
-     1     ifitp,kfitp,kdp,nqcol,iqcol,twiss,pos,maxf,
-     $     kfam,inicond,iuid,
-     $     nlat,ndim,nfam,dp,emx,emy,dpmax,coumin,latt,mult,nlist,
-     $     wcal)
+      subroutine twfit(kfit,
+     1     ifitp,kfitp,kdp,nqcola,iqcol,maxf,wcal)
       use tfstk
+      use ffs, only:emx,emy,dpmax,coumin
+      use ffs_pointer
+      use ffs_fit
       use tffitcode
       implicit none
 c      include 'DEBUG.inc'
       integer*8 kx
-      integer*4 nfcol,nlat,ndim,nfam,maxf,i,j,k,nqcol,iq
-      integer*4 kfit(*),ifitp(*),kfitp(*),
-     $     latt(2,nlat),mult(nlat),kdp(*),idp,iqcol(nqcol),
-     $     kfam(-nfam:nfam),iuid(-nfam:nfam)
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),pos(nlat),wfit(*),
-     $     dp(-nfam:nfam),wiq(nqcol),
-     $     emx,emy,dpmax,coum,emxx,emyy,dpm,coup,em,coumin,
-     $rfromk
-      integer*4 itfuplevel, level,irtc,nfc0
+      integer*4 maxf,i,j,k,nqcola,iq
+      integer*4 kfit(*),ifitp(*),kfitp(*),kdp(*),idp,iqcol(nqcola)
+      real*8 coum,emxx,emyy,dpm,coup,em,rfromk
+      integer*4 itfuplevel, level,irtc
       character*16 name
-      character*8 nlist(*)
-      logical*4 wcal,inicond
+      logical*4 wcal
       integer*8 ifv,ifvh,ifvloc,ifvfun,ifid
       save ifv,ifvh,ifvloc,ifvfun,ifid
       data ifv /0/
@@ -589,14 +549,14 @@ c      include 'DEBUG.inc'
           endif
         enddo
       endif
-      do iq=1,nqcol
+      do iq=1,nqcola
         i=iqcol(iq)
         if(i .gt. 0)then
           k=kfit(kfitp(i))
           j=ifitp(kfitp(i))
           idp=kdp(iq)
           wiq(iq)=wfit(i)
-          call elname(latt,j,mult,name)
+          call elname(j,name)
           call tfpadstr(name,ifvloc+1,len_trim(name))
           ilist(1,ifvloc)=len_trim(name)
           call tfpadstr(nlist(k),ifvfun+1,len_trim(nlist(k)))
@@ -629,12 +589,14 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
       return
       end
 
-      subroutine tffsbound(nlat,latt,lbegin,frbegin,lend,frend)
+      subroutine tffsbound(lbegin,frbegin,lend,frend)
       use tfstk
+      use ffs, only:nlat
+      use ffs_pointer
       implicit none
       include 'inc/MACCODE.inc'
       include 'inc/MACKW.inc'
-      integer*4 nlat,latt(2,nlat),lbegin,lend
+      integer*4 lbegin,lend
       real*8 frbegin,frend,xnlat,offset,tffsmarkoffset
       xnlat=nlat
       if(idtype(latt(1,1)) .eq. icMARK)then
@@ -662,13 +624,15 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
       return
       end
 
-      subroutine tffsbound1(nlat,latt,la,lb,
+      subroutine tffsbound1(la,lb,
      $     lbegin,frbegin,lend,frend)
       use tfstk
+      use ffs, only:nlat
+      use ffs_pointer
       implicit none
       include 'inc/MACCODE.inc'
       include 'inc/MACKW.inc'
-      integer*4 nlat,latt(2,nlat),lbegin,lend,la,lb,lb1
+      integer*4 lbegin,lend,la,lb,lb1
       real*8 frbegin,frend,xnlat,offset,tffsmarkoffset
       xnlat=nlat
       if(idtype(latt(1,la)) .eq. icMARK)then
@@ -714,13 +678,14 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
       return
       end
 
-      real*8 function tffselmoffset(latt,l,nlat)
+      real*8 function tffselmoffset(l)
       use tfstk
+      use ffs, only:nlat
+      use ffs_pointer
       implicit none
       include 'inc/MACCODE.inc'
       include 'inc/MACKW.inc'
-      integer*4 nlat,latt(2,nlat),l,lm,nm,lx,nmmax,
-     $     icslfno
+      integer*4 l,lm,nm,lx,nmmax,icslfno
       parameter (nmmax=256)
       real*8 offset,xp,xe,tffsmarkoffset
       nm=0
@@ -750,17 +715,16 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
       return
       end
 
-      subroutine tffssetutwiss(latt,twiss,utwiss,itwissp,idp,nlat,
-     $     ndim,nfam,nut,lbegin,lend,frend,beg,begin,end)
+      subroutine tffssetutwiss(idp,nlat,
+     $     lbegin,lend,frend,beg,begin,end)
       use tfstk
+      use ffs_pointer
       use tffitcode
       implicit none
       include 'inc/MACCODE.inc'
       include 'inc/MACKW.inc'
-      integer*4 nlat,ndim,nfam,nut,lbegin,lend,idp,jdp,
-     $     latt(2,nlat),j,jp,le1,k,itwissp(nlat)
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),
-     $     utwiss(ntwissfun,-nfam:nfam,nut),frend
+      integer*4 nlat,lbegin,lend,idp,jdp,j,jp,le1,k
+      real*8 frend
       logical*4 beg,begin,end
       jdp=min(1,abs(idp))
       do j=lbegin,lend

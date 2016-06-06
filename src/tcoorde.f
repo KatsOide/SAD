@@ -1,6 +1,8 @@
       subroutine tcoorde(trans,cod,beam,
      1                 dx,dy,dz,chi1,chi2,chi3,dir,ld)
-      include 'inc/TMACRO.inc'
+      use ffs_flag
+      use tmacro
+      implicit real*8(a-h,o-z)
       dimension trans(6,12),cod(6),beam(42)
       real*8 a
       logical dir
