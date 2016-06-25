@@ -269,6 +269,7 @@ TclReturnForm[XView|YView, Canvas|ListBox|TextEditor] := List;
 TclReturnForm[Get, Scale] := Real;
 TclReturnForm[Get, ScrollBar] := List;
 TclReturnForm[Tag$Names, _] := StringList;
+TclReturnForm[GetTags, _] := StringList;
 TclReturnForm[Tag$Ranges, _] := TextIndexList;
 TclReturnForm[Focus$DisplayOf|Grab$Current, _] := Widget;
 

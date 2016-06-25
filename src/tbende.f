@@ -112,7 +112,7 @@
       real*8 trans(6,12),cod(6),beam(42)
       real*8 bx,by,bxy,xr,xe,dxe,pxf,xf,phin,dxpx,
      $     dxf,dpxf,dyf,dpyf,hi,hip,pyf,yf,zf,dpini,
-     $     s,ala,fb2
+     $     ala,fb2
       logical*4 enarad,prev,next
       if(enarad)then
         dpini=cod(6)

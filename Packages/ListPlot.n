@@ -132,7 +132,9 @@ With[{
         Do[
           df[Override[opt,gl[[i,2]]],gl[[i,1]],init,False,
             rect,i==Length[gl],ini],
-          {i,2,Length[gl]}]]
+          {i,2,Length[gl]}]];
+      If[df===CanvasDrawer,
+        After[0,The$CanvasObject@AdjustLegend[]]]
       ];
     gl
     ]];

@@ -53,7 +53,7 @@ c        write(*,*)'italoc ',ix
             i=klist(i)
           enddo
         enddo
-        write(*,*)'italoc memory allocation error ',ix
+        write(*,*)'italoc memory allocation error ',ix,n
         call meminfo()
         call forcesf()
       endif

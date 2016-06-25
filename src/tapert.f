@@ -50,13 +50,13 @@ c            g(i)=dp/(1.d0+sqrt(1.d0+dp))
       endif
 
 c     Shortcut case: twake || lwake
-      if(twake .or. lwake)then
-        do i=1,np
-          x(i)=min(xh,max(xl,x(i)))
-          y(i)=min(yh,max(yl,y(i)))
-        enddo
-        return
-      endif
+c      if(twake .or. lwake)then
+c        do i=1,np
+c          x(i)=min(xh,max(xl,x(i)))
+c          y(i)=min(yh,max(yl,y(i)))
+c        enddo
+c        return
+c      endif
 
 c     General aperture case:
 c

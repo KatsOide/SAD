@@ -149,7 +149,7 @@ integer4 tftmpnam_(character s, ftnlen slen) {
   char buf[L_tmpnam];
   size_t blen;
 
-  if(!tmpnam(buf)) {
+  if(!mkstemp(buf)) {
     return 0;
   }
 

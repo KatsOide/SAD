@@ -95,6 +95,9 @@ CanvasGraphics=Class[{},
     WindowID,
     CCM=Null,
     DragZ,DragZ0,DragTag,DragDo,DragStart,DragMove,DragRelease,
+    FirstBG="",
+    BGItems={},
+    Legends={},
 
     Canvas$Symbol,
     CanvasWidget,
@@ -334,7 +337,7 @@ CanvasGraphics=Class[{},
     CanvasDrawer[opt_,list_,init_,w_,rect_,last_,ini_]:=Module[
       {fl,pl,ft,wsx,wsy,wsfx,wsfy,det,wc,fr,tag,t1,t2,addtag,enc,glist,ws,
         pr,id,l1,align,up,ts,frid,fclk,dr,plr,sca,gr,ib,tkf,frt,frt1,
-        op=Override[opt,def]},
+        op=Override[opt,def],wfr},
       {tag,fl,pl,fr,wc,align,pr,fclk,dr,ft,frt,ts,ib,tkf}=
         {Tags,FrameLabel,PlotLabel,Frame,Background,Alignment,
           PlotRegion,FrameClick,DataRange,FrameTicks,FrameThickness,TickSize,
@@ -344,7 +347,8 @@ CanvasGraphics=Class[{},
           Canvas$Initialize=init;
           If[init<=>False,
             Canvas$Frame=0;
-            WindowList=LegendList={};
+            WindowList=LegendList=BGItems=Legends={};
+            FirstBG="";
             If[init <=> Frame,TickListY={}];
             Canvas$PlotRegion=pr]];
         If[Canvas$Initialize===Frame &&
@@ -408,11 +412,20 @@ CanvasGraphics=Class[{},
         AppendTo[GraphicsList[[frid]],glist];
         AppendTo[Canvas$IDList[[frid]],{0,0}]];
       StartID=CanvasLastID+1;
+      If[addtag=(tag<=>False),t1=CanvasLastID+1];
+      If[Head[list]===List,
+        Scan[Primitive,list],
+        Primitive[list]];     
+      If[last && frid<=Length[LegendList] && LegendList[[frid]]<=>{},
+        Canvas$Legend[frid,Canvas$Range];
+        LegendList[[frid]]={}];
+      If[addtag,
+        t2=CanvasLastID;
+        If[~NumberQ[tag],
+          CanvasWidget[AddTag$Above]={tag,t1-1}]];
       If[w,
-        If[Canvas$PlotRange[[1,1]]<Canvas$PlotRange[[1,2]] && 
-          Canvas$PlotRange[[2,1]]<Canvas$PlotRange[[2,2]],
-          If[StringQ[wc],
-            WindowBG[frid,wc,fr,ib]];
+        If[wfr=(Canvas$PlotRange[[1,1]]<Canvas$PlotRange[[1,2]] && 
+          Canvas$PlotRange[[2,1]]<Canvas$PlotRange[[2,2]]),
           If[fr,
             ft=ExpandFrameTicks[ft];
             ts=Take[Flatten[{ts,ts}],2];
@@ -429,28 +442,20 @@ CanvasGraphics=Class[{},
               DefaultTitleSize*(StandardScale*{wsfx,wsfy,wsfx,wsfy})^0.45};
             ScanThread[If[""<=>#<=>{"",""},
               MakeTitle[#,Restrict[#3,9,28],#2]]&,fl]]
-          ]];
-      If[addtag=(tag<=>False),t1=CanvasLastID+1];
-      If[Head[list]===List,
-        Scan[Primitive,list],
-        Primitive[list]];     
-      If[last && frid<=Length[LegendList] && LegendList[[frid]]<=>{},
-        Canvas$Legend[frid,Canvas$Range];
-        LegendList[[frid]]={}];
-      If[addtag,
-        t2=CanvasLastID;
-        If[~NumberQ[tag],
-          CanvasWidget[AddTag$Above]={tag,t1-1}]];
+          ];
+       If[""<=>pl<=>{"",""},
+         If[Canvas$PlotLabel<=>0,
+           CanvasWidget[Delete]=Canvas$PlotLabel];
+         MakeTitle[pl,Restrict[DefaultTitleSize*1.3*(wsx*wsy)^(.4),9,32],"TOP HIGH"];
+         Canvas$PlotLabel=CanvasLastID
+         ];
+        If[wfr && StringQ[wc],
+          WindowBG[frid,wc,fr,ib]]
+        ];
       If[Length[Canvas$IDList[[frid]]]>=id,
         Canvas$IDList[[frid,id]]={StartID,CanvasLastID},
         AppendTo[Canvas$IDList[[frid]],
           {StartID,CanvasLastID}]];
-      If[w && ""<=>pl<=>{"",""},
-        If[Canvas$PlotLabel<=>0,
-          CanvasWidget[Delete]=Canvas$PlotLabel];
-        MakeTitle[pl,Restrict[DefaultTitleSize*1.3*(wsx*wsy)^(.4),9,32],"TOP HIGH"];
-        Canvas$PlotLabel=CanvasLastID
-        ];
       StartID=CanvasLastID+1;
       frid]];
 
@@ -775,12 +780,16 @@ CanvasGraphics=Class[{},
     If[ib && ~CanvasBind[frid],
       Bind[CanvasWidget,"<Button-1>",CanvasInfo[frid],Tags->t];
       CanvasBind[frid]=True];
-    CanvasWidget[Lower] = {t}];
+    If[FirstBG==="",FirstBG=t];
+    AppendTo[BGItems,CanvasLastID];
+    CanvasWidget[Lower] = t];
   WindowBG[_,,0,_]=Null;
   WindowBG[_,,fr_,_]:=(
     The$Canvas[Create$Rectangle]={Thread[WindowCoord[Canvas$Window]],
-      OutLine->"black",Width->1};
-    CanvasWidget[Lower] = {CanvasLastID});
+      OutLine->"black",Width->1,Tags->"BG$0"};
+    If[FirstBG==="",FirstBG="BG$0"];
+    AppendTo[BGItems,CanvasLastID];
+    CanvasWidget[Lower] = "BG$0");
 
   CanvasBind[_]:=False;
   CanvasInfo[fr_]:=Module[{{x,t}={{X,Y},Tag}/.$Event,
@@ -942,7 +951,8 @@ CanvasGraphics=Class[{},
           axis=False;
           AxisGrid[xy,0,yl,tag]]];
       #/.Axis[x__]:>Scan[AxisGrid[xy,#,yl,grtag]&,Flatten[{x}]])&,
-      Flatten[{gr}]]];
+      Flatten[{gr}]];
+    BGItems=Join[BGItems,CanvasWidget[Find$WithTag[tag]]]];
 
   With[{
     TickFun[ft_,a_]:=Switch[ft,
@@ -1653,14 +1663,14 @@ CanvasGraphics=Class[{},
   With[{txdef={PlotColor->"black",TextFont->"",TextSize->1}},
     Canvas$Legend[n_, r_] := Module[
       {pc,pl,size,sym,ptc,dash,thick,pj,pbc,pbc1,leg,cmd,x0,dx,dy,y,d1=5,d2=-1,d3=1,legtag,legtagfr,bdf,
-        x1,x2,y1,y2,ls=StandardForm["legend"//n],lsfr,w,h,rb,tx,txfont,txsize,txcol,
+        x1,x2,y1,y2,ls=StandardForm["legend"//n],lsfr,w,h,rb,tx,txfont,txsize,txcol,zr,
         l=LegendList[[n]],wy=(-Subtract@@WindowList[[n,2]])*DPI},
       lsfr=ls//"fr";
       {w,h} = WidgetInfo[CanvasWidget,{Width,Height}];
       If [{w,h}==={1,1}, {w,h} = CanvasWidget[CGet[Width,Height]]];
       legtag = (Tags->ls);
       legtagfr=(Tags->ls//" "//lsfr);
-      {x0,y} = {r[[2,1]]-200,r[[1,2]] + 30};
+      {x0,y} = {r[[2,1]]-200,r[[1,2]] + 30 + d3 +1};
       dx = 40;
       d2=Round[Min[d2,wy/20]];
       Scan[(
@@ -1697,19 +1707,17 @@ CanvasGraphics=Class[{},
           ];
         y += (CanvasWidget[BBox[ls]][[4]] - y)*2;
         )&,l];
-      {x1,y1,x2,y2} = CanvasWidget[BBox[ls]];
-      If[
-        ({dx,dy}={r[[2,1]]-30-x2,0}+LegendOffset[ls])<=>{0,0},
+      zr = CanvasWidget[BBox[ls]];
+      If[({dx,dy}={r[[2,1]]-30-zr[[3]],0}+LegendOffset[ls])<=>{0,0},
         CanvasWidget[Move] = {ls, {dx,dy}};
-        x1+=dx;
-        x2+=dx;
-        y1+=dy;
-        y2+=dy];
+        zr+={dx,dy,dx,dy}];
+      {x1,y1,x2,y2}=zr;
       CanvasWidget[Create$Rectangle]={x1-d1,y1-d3,x2+d1,y2+d2,legtagfr,Outline->"gray40"};
       CanvasWidget[Create$Line]={x1-d1+1,y2+d2+1,x2+d1+1,y2+d2+1,x2+d1+1,y1-d3+1,
         Fill->"gray60",legtagfr};
       With[{lsfr},
-        After[0,CanvasWidget[Raise]={lsfr,StandardForm["BG$"//n]}]];
+        After[0,CanvasWidget[Raise]={lsfr,FirstBG}]];
+      AppendTo[Legends,{ls,r}];
       With[{ls},
         Bind[CanvasWidget,"<ButtonPress>",
           LegendStartMove[ls],legtag];
@@ -1733,6 +1741,34 @@ CanvasGraphics=Class[{},
     CanvasWidget[Move] = {t$,dp};
     LegendPos = p;
     ];
+
+  AdjustLegend1[ls_,r_,ida_]:=Module[{
+    id=Join[BGItems,ida],
+    novmin=Infinity,zrmin,zr=CanvasWidget[BBox[ls]],ov,nov,d=10,dx,dy},
+      zrmin=zr;
+      While[ov=Complement[CanvasWidget[Find$Overlapping[zr]],id];
+!        Print[{zr,r,ov}];
+        nov=Length[ov];
+        nov>0,
+        If[nov<novmin,
+          novmin=nov;
+          zrmin=zr];
+        If[zr[[4]]<r[[2,2]]-30,
+          CanvasWidget[Move] = {ls, {0,d}};
+          zr+={0,d,0,d},
+          If[zr[[1]]>r[[1,1]]+30,
+            {dx,dy}={-d,r[[1,2]]+10-zr[[2]]};
+            zr+={dx,dy,dx,dy};
+            CanvasWidget[Move] = {ls, {dx,dy}},
+            CanvasWidget[Move] = {ls, (zrmin-zr)[[{1,2}]]};
+            zr=zrmin;
+            Break[]]]]];
+
+  AdjustLegend[]:=Module[{rl=Reverse[Legends],ida={}},
+    AdjustLegend1@@[
+      Reverse[Thread[Append[Thread[Legends],(ida=Join[ida,CanvasWidget[Find$WithTag[#[[1]]]]])&/@Legends]]],{1}]];
+
+(AdjustLegend1@@[Reverse[Legends],{1}]);
 
   Canvas$FrameClick[fr_, axis_, opt___] := Module[
     {d=4,sc,vperm,gr,xyr,r,ax1,ax2,ay1,ay2,gl},
