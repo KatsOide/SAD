@@ -1,4 +1,4 @@
-(* OpticsPlot 2/10/2016 *)
+(* OpticsPlot 9/10/2016 *)
 
 PkgConfig$DefaultList["OpticsPlot"->{
   "PlotDivision"->80,
@@ -388,19 +388,19 @@ With[{def={Names->"*",Tags->False,NameFilter->Identity,
     With[{s1, leng}, Graphics[#,{DataRange->{{s1,s1+leng},{-1,1}},
       PlotRange:>With[{XRange=OP$XRange}, OP$XRange=.;
 	{If[Head[XRange]===List, XRange, {s1-0.001, s1+leng+0.001}],{-1,1}}],
-      Frame->False,Background->Null}]&/@l]]];
+      Frame->False,Background->Null,RemoveOverlap->"L$NAME"}]&/@l]]];
 
 LatticeNames[{pr1_,pr2_},n_,off_,w_,yoff_,tag_,nf_]:=Module[
-  {s,s0=LINE["S",pr1]+off-w*5,e=""},
+  {s,s0=LINE["S",pr1]+off,e=""},
   Table[
     With[{l=LINE["NAME",i]},
       If[StringMatchQ[l,n] && e<>LINE["ELEMENT",i] &&
         ((s=(LINE["S",i]+LINE["S",i+1])/2+off)>=s0),
-        s0=Max[s-w/3,s0+w*1.1];
+        s0=Max[s-w/2,s0];
         e=LINE["ELEMENT",i];
         Text[{nf[l],{Scaled[s0],Scaled[yoff]}},TextFont->$DefaultSansSerifFont,
           TextRotate->270,TextSize->0.8,TextAlign->"n",UseBG->False,
-          If[tag,Tags->"L$"//l,Null[],Null[]]],
+          Tags->If[tag,{"L$"//l,"L$NAME"},"L$NAME","L$NAME"]],
         e="";Null[],e="";Null[]]],
     {i,pr1,pr2-1}]];
 

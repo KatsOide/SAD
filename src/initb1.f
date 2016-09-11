@@ -927,6 +927,9 @@ cc for spch
       kytbl(kwZY      ,icSPCH)=17
       kytbl(kwZPY     ,icSPCH)=18
       kytbl(kwMAX     ,icSPCH)=19
+
+      call initkyindex
+
 c.....for debug
 c     do 9999 i=1,kwMAX
 c       print *,i,kytbl(i,0),pname(kytbl(i,0))

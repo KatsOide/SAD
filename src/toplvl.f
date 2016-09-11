@@ -79,6 +79,29 @@
      $     kwMAX=kwF2K1B+1
 
       integer*4 ::  kytbl(0:kwMAX,0:icMXEL)=0
+      integer*4, pointer :: kyindex(:,:)
+      integer*4 INDMAX
+
+      contains
+        subroutine initkyindex
+        use tfcode
+        implicit none
+        integer*4 i,k,id
+        INDMAX=0
+        do i=icDRFT,icMXEL
+          INDMAX=max(INDMAX,kytbl(kwMAX,i))
+        enddo
+        allocate(kyindex(0:INDMAX,0:icMXEL))
+        do i=icDRFT,icMXEL
+          do k=0,kwMAX-1
+            id=kytbl(k,i)
+            if(id .ne. 0)then
+              kyindex(id,i)=k
+            endif
+          enddo
+        enddo
+        return
+        end subroutine
 
       end module
 

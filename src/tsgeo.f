@@ -265,7 +265,7 @@ c          endif
           beam(1:21)=0.d0
           trans(:,1:6)=0.d0
           call tsetfringepe(cmp,icMULT,al,cmp%value(kytbl(kwK1,icMULT)),
-     $       dir,ftable)
+     $       direlc(i),ftable)
           bzs=bzs*dir
           call tmulte(trans,cod,beam,i,
      $         al,cmp%value(kytbl(kwK0,icMULT)),bzs,

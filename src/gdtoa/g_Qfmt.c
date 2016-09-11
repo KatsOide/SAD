@@ -1,1 +1,1 @@
-/home/oide/SAD/oldsad/contrib/gdtoa/g_Qfmt.c
+/Users/oide/SAD/oldsad/contrib/gdtoa/g_Qfmt.c

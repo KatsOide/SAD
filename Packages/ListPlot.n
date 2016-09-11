@@ -13,7 +13,7 @@ SetAttributes[{Graphics,AspectRatio,PlotRange,
   TextSize,TextRotate,TextAlign,Scaled,GridLines,WindowScaled,CanvasScaled,
   RectScaled,AboveTags,BelowTags,
   TextCases,TextPosition,Prolog,Epilog,Vertical,Alignment,Legend,
-  Scale,Weight,FrameClick,InfoBind,TickFont,
+  Scale,Weight,FrameClick,InfoBind,TickFont,RemoveOverlap,
   Major,Minor,Both,Ticks},Constant];
 
 Graphics$Options=AspectRatio|FrameLabel|PlotRange|GridLines|Alignment|DataRange|
@@ -30,7 +30,7 @@ With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
   PointTags->Null,LineTags->Null,Thickness->1,
   FrameTicks->{True,True,Ticks,Ticks},Initialize->True,
   FrameLabel->{"","","",""},FrameUnitLabel->{},
-  DisplayFunction:>$DisplayFunction,
+  DisplayFunction:>$DisplayFunction,RemoveOverlap->"",
   PlotLabel->"",Prolog->{},Epilog->{},Legend->False,
   Background->"#ffffff"},
   r=(Rule|RuleDelayed)[Graphics$Options,_]},

@@ -95,15 +95,14 @@
 
       subroutine tftypekeystk(ic,all)
       use tfstk
+      use mackw
       implicit none
-      integer*4 ic,l,lenw
+      integer*4 ic,lenw,i
       logical*4 all
       character*(MAXPNAME) key,tfkwrd
-      l=0
-      do while(key .ne. ' ')
-        l=l+1
-        key=tfkwrd(ic,l)
-        if(key .ne. ' ' .and. (all .or. key .ne. '-'))then
+      do i=1,kytbl(kwMAX,ic)-1
+        key=tfkwrd(ic,i)
+        if(all .or. key .ne. '-')then
           isp=isp+1
           if(key .eq. '-')then
             dtastk(isp)=ksdumm

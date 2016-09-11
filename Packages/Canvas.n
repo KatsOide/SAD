@@ -1,4 +1,4 @@
-(* Canvas 7/4/2016 *)
+(* Canvas 9/10/2016 *)
 
 SetAttributes[{OutLine,Outline,UseBG,Permanent,Redraw},Constant];
 
@@ -99,6 +99,7 @@ CanvasGraphics=Class[{},
     BGItems={},
     Legends={},
     FrameTag="F$0",
+    TickYTag="T$Y",
 
     Canvas$Symbol,
     CanvasWidget,
@@ -341,6 +342,7 @@ CanvasGraphics=Class[{},
     Alignment->Automatic,
     TickSize->Automatic,
     TickFont->Default,
+    RemoveOverlap->"",
     PlotLabel->"",Background->"#ffffff"},    
     CanvasListVar:={EffectiveRange,EffectiveAxes,EffectiveGL,
       Canvas$PlotRange,Canvas$Axes,
@@ -349,12 +351,14 @@ CanvasGraphics=Class[{},
 
     CanvasDrawer[opt_,list_,init_,w_,rect_,last_,ini_]:=StandardForm[Module[
       {fl,pl,ft,wsx,wsy,wsfx,wsfy,det,wc,fr,tag,t1,t2,addtag,enc,glist,ws,
-        pr,id,l1,align,up,ts,frid,fclk,dr,plr,sca,gr,ib,tkf,frt,frt1,
+        pr,id,l1,align,up,ts,frid,fclk,dr,plr,sca,gr,ib,tkf,frt,frt1,rmo,
         op=Override[opt,def],wfr},
-      {tag,fl,pl,fr,wc,align,pr,fclk,dr,ft,frt,ts,ib,tkf,ful}=
+      {tag,fl,pl,fr,wc,align,pr,fclk,dr,ft,frt,ts,ib,tkf,ful,rmo}=
         {Tags,FrameLabel,PlotLabel,Frame,Background,Alignment,
           PlotRegion,FrameClick,DataRange,FrameTicks,FrameThickness,TickSize,
-          InfoBind,TickFont,FrameUnitLabel}/.op;
+          InfoBind,TickFont,FrameUnitLabel,RemoveOverlap}/.op;
+      opt001=op;
+      rmo00=rmo;
       If[w,
         If[ini,
           Canvas$Initialize=init;
@@ -476,7 +480,31 @@ CanvasGraphics=Class[{},
         AppendTo[Canvas$IDList[[frid]],
           {StartID,CanvasLastID}]];
       StartID=CanvasLastID+1;
+      Remove$Overlap[rmo];
       frid]]];
+
+  OverlapQ[r1_,r2_]:=
+    ~(r1[[1]]>r2[[3]] || r2[[1]]>r1[[3]] ||
+     r1[[2]]>r2[[4]] || r2[[2]]>r1[[4]]);
+  ExtendBB[r1_,r2_]:={
+    Min[r1[[1]],r2[[1]]],
+    Min[r1[[2]],r2[[2]]],
+    Max[r1[[3]],r2[[3]]],
+    Max[r1[[4]],r2[[4]]]};
+
+  Remove$Overlap[""]=Null;
+  Remove$Overlap[t_]:=Module[{p=CanvasWidget[Find$WithTag[t]],
+    r1={Infinity,Infinity,-Infinity,-Infinity},r2},
+    If[Length[p],
+      r2=CanvasWidget[BBox[p[[1]]]]];
+    While[Length[p]>1,
+      r1=ExtendBB[r1,r2];
+      p=Rest[p];
+      While[Length[p],
+        If[OverlapQ[r1,r2=CanvasWidget[BBox[p[[1]]]]],
+          CanvasWidget[Delete]=p[[1]];
+          p=Rest[p],
+          Break[]]]]];
 
   ExpandFrameTicks[Automatic]={True,True,Ticks,Ticks};
   ExpandFrameTicks[{Automatic,l__}]:=ExpandFrameTicks[{True,l}];
@@ -1173,6 +1201,11 @@ CanvasGraphics=Class[{},
       Font->font,Tags->{"E"//fltag,FrameTag},
       Anchor->"n"//anc});
 
+  DeleteOverlap[tag_]:=Module[{r=CanvasWidget[BBox[tag]],t},
+    t=Intersection[CanvasWidget[Find$Overlapping[r]],CanvasWidget[Find$WithTag[TickYTag]]];
+    If[Length[t]>1,
+      CanvasWidget[Delete]=tag]];
+
   FrameTickX[yy_,anc_,Mt_,logdt_,fltag_,font_,fun_List,ful_]:=
     (Switch[First[Canvas$Axes],
       Linear|Date,
@@ -1185,25 +1218,30 @@ CanvasGraphics=Class[{},
       (CanvasWidget[Create$Text] = {
         {Canvas$Coord1[{Log[#,10],0}][[1]],yy},
         Null@@Override[Null@@(FtOption/@Flatten[{##2}]),
-          Anchor->anc,Tags->{fltag,FrameTag},
+          Anchor->anc,Tags->{fltag,FrameTag,StandardForm[fltag//++n]},
           Font->font]})&@@[fun,{1}]];
       UnitLabelX[ful,fltag,font]);
 
   FrameTickY[x2_,anc_,Mt_,logdt_,fltag_,font_,fun_List,ful_]:=
-    (Switch[Second[Canvas$Axes],
-      Linear|Date,
-      (CanvasWidget[Create$Text] = {
-        {x2,Canvas$Coord1[{0,#}][[2]]},
-        Null@@Override[Null@@(FtOption/@Flatten[{##2}]),
-          Font->font,Tags->{fltag,FrameTag},
-          Anchor->anc]})&@@[fun,{1}],
-      Log,
-      (CanvasWidget[Create$Text] = {
-        {x2,Canvas$Coord1[{0,#}][[2]]},
-        Null@@Override[Null@@(FtOption/@Flatten[{##2}]),
-          Font->font,Tags->{fltag,FrameTag},
-          Anchor->anc]})&@@[fun,{1}]];
-      UnitLabelY[ful,fltag,font,anc]);
+    Module[{n=0},
+      Switch[Second[Canvas$Axes],
+        Linear|Date,
+        (CanvasWidget[Create$Text] = {
+          {x2,Canvas$Coord1[{0,#}][[2]]},
+          Null@@Override[Null@@(FtOption/@Flatten[{##2}]),
+            Font->font,
+            Tags->{fltag,FrameTag,TickYTag,StandardForm[fltag//"_"//++n]},
+            Anchor->anc]})&@@[fun,{1}],
+        Log,
+        (CanvasWidget[Create$Text] = {
+          {x2,Canvas$Coord1[{0,#}][[2]]},
+          Null@@Override[Null@@(FtOption/@Flatten[{##2}]),
+            Font->font,
+            Tags->{fltag,TickYTag,FrameTag,StandardForm[fltag//"_"//++n]},
+            Anchor->anc]})&@@[fun,{1}]];
+      DeleteOverlap[fltag//"_1"];
+      DeleteOverlap[StandardForm[fltag//"_"//n]];
+      UnitLabelY[ful,fltag,font,anc]];
 
   FrameTickX[yy_,anc_,Mt_,logdt_,fltag_,font_,fun_:({}&),ful_]:=
     Module[{fm,zero,s0,logt,s,sout,{texp,exps,exp}=TickExp[Mt],
@@ -1251,7 +1289,7 @@ CanvasGraphics=Class[{},
                 Font->font]})&,Mt]]];
   
   FrameTickY[x2_,anc_,Mt_,logdt_,fltag_,font_,fun_:({}&),ful_]:=
-    Module[{fm,zero,s0,logt,s,sout,{texp,exps,exp}=TickExp[Mt]},
+    Module[{fm,zero,s0,logt,s,sout,{texp,exps,exp}=TickExp[Mt],n=0},
       exps=exps//ful//" ";
       Switch[Second[Canvas$Axes],
         Linear,
@@ -1266,8 +1304,8 @@ CanvasGraphics=Class[{},
           CanvasWidget[Create$Text] = {
             {x2,Canvas$Coord1[{0,#}][[2]]},
             Null@@Override[Null@@fun[#,exp,s],
-              Text->s,
-              Font->font,Tags->{fltag,FrameTag},
+              Text->s,Font->font,
+              Tags->{fltag,FrameTag,TickYTag,StandardForm[fltag//"_"//++n]},
               Anchor->anc]})&,Mt];
         UnitLabelY[exps,fltag,font,anc],
         Log,
@@ -1276,8 +1314,8 @@ CanvasGraphics=Class[{},
           CanvasWidget[Create$Text] = {
             {x2,Canvas$Coord1[{0,#}][[2]]},
             Null@@Override[Null@@fun[#,1,s],
-              Text->s,
-              Font->font,Tags->{fltag,FrameTag},
+              Text->s,Font->font,
+              Tags->{fltag,FrameTag,TickYTag,StandardForm[fltag//"_"//++n]},
               Anchor->anc]})&,Mt];
         UnitLabelY[ful//" ",fltag,font,anc],
         Date,
@@ -1288,8 +1326,12 @@ CanvasGraphics=Class[{},
           CanvasWidget[Create$Text] = {
             {x2,Canvas$Coord1[{0,#}][[2]]},
             Null@@Override[Null@@fun[#,1,sout],
-              Anchor->anc,Text->sout,Tags->{fltag,FrameTag},
-              Font->font]})&,Mt]]];
+              Anchor->anc,Text->sout,
+              Tags->{fltag,FrameTag,TickYTag,StandardForm[fltag//"_"//++n]},
+              Font->font]})&,Mt]];
+      DeleteOverlap[fltag//"_1"];
+      DeleteOverlap[StandardForm[fltag//"_"//n]]
+      ];
 
   TickExp[Mt_]:=Module[{x=Max[Abs[Mt]]},
     If[10^5>x>10^-3,{0,"",1},
