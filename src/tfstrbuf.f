@@ -48,7 +48,7 @@
         endif
         l=m/8+2
         if(stk)then
-          kbuf=isp+4
+          kbuf=isp+4+ispbase
           isp=isp+l+3
           if(isp .ge. mstk)then
             isp=isp-l-3
@@ -909,7 +909,7 @@ c
         n=strb%nch
         if(n .eq. 0)then
           kxstringbuftostring=dxnulls
-          if(kbuf .gt. mstk .or. kbuf .lt. isporg)then
+          if(.not. tfonstackq(kbuf))then
             strb%indw=strb%maxnch/8+5
             call tfree(kbuf-2)
           endif
@@ -919,20 +919,22 @@ c
             k=k+256
           endif
           kxstringbuftostring%k=ktfstring+iaxschar+k*5+3
-          if(kbuf .gt. mstk .or. kbuf .lt. isporg)then
+          if(.not. tfonstackq(kbuf))then
             strb%indw=strb%maxnch/8+5
             call tfree(kbuf-2)
           endif
         else
-          if(kbuf .lt. mstk .and. kbuf .gt. isporg)then
+          if(tfonstackq(kbuf))then
             m=n/8
+c            write(*,*)'strbuftostr ',m,n,kbuf,ispbase,mstk+ispbase
             ka=ktfaloc(-1,ktfstring,m+2)
+c            write(*,*)'strbuftostr-ka ',ka
             ilist(2,ka-3)=-1
             ilist(1,ka)=n
-            do i=1,m
-              klist(ka+i)=klist(kbuf+i)
-            enddo
-            rlist(ka+m+1)=0.d0
+c            do i=1,m
+              klist(ka+1:ka+m)=klist(kbuf+1:kbuf+m)
+c            enddo
+            klist(ka+m+1)=0
             do i=m*8+1,n
               jlist(i,ka+1)=jlist(i,kbuf+1)
             enddo

@@ -187,21 +187,25 @@ With[{def={PlotRange->Automatic,
 
   OpticsPlot1$[f_,pr_,right_,opt___]:=Module[
     {lf,plt,pra,fl,frame,lfr,fropt,l,unit,v,opv,min,max,am,ru,
-      del,del1,leg,
+      del,del1,leg,fly,
       {fopt,f1}=SwitchCases[f,{_Rule|_RuleDelayed,_}]},
     lf=Length[f1];
     fopt=Override[fopt,opt,def];
     {plt,pra,fl,leg}={Plot,PlotRange,FrameLabel,Legend}/.fopt;
-    If[StringQ[fl],
-      fl={fl,StringFill[""," ",StringLength[fl]]}];
+    {fl,fly}=If[ListQ[fl],
+      {fl=Take[Join[fl,{"","","",""}],4],
+      If[right,fl[[4]],fl[[2]]]},
+      {If[right,
+        {"","","",fl},
+        {"",fl,"",""}],fl}];
     frame=Thread[Prepend[
       (If[Head[fropt=#/.fopt]<=>List,fropt={fropt}];
       lfr=Length[fropt];
       With[{r=#},(r->#)&/@
         Take[Flatten[Table[fropt,{Ceiling[lf/lfr]}],1],lf]])&/@frameoptions,
       f1]];
-    l=If[f1==={},{OpticsList1$[pr,{},Null@@fopt]},
-      Apply[OpticsList1$[pr,##,Null@@fopt]&,frame,{1}]];
+    l=If[f1==={},{OpticsList1$[pr,{},FrameLabel->fly,Null@@fopt]},
+      Apply[OpticsList1$[pr,##,FrameLabel->fly,Null@@fopt]&,frame,{1}]];
     unit=l[[1,1,2]];
     Scan[If[#[[1,2]]<=>unit,
       Message[OpticsPlot::units,Evaluate[#[[1,2]]],Evaluate[unit]]]&,l];
@@ -224,31 +228,39 @@ With[{def={PlotRange->Automatic,
     {del,del1}={"",""};
     If[leg===Automatic,
       leg=l[[,1,1]]];
-    If[fl===Automatic,
-      fl={"",""};
+    If[fly===Automatic,
+      fly={"",""};
       Scan[
         (If[Head[#]===List,
-          fl={First[fl]//del//First[#],Second[fl]//del1//Second[#]},
+          fly={First[fly]//del//First[#],Second[fly]//del1//Second[#]},
           If[#<=>"",
-            fl={First[fl]//del//#,Second[fl]//del1//
+            fly={First[fly]//del//#,Second[fly]//del1//
               StringFill[""," ",StringLength[#]]}]];
           {del,del1}={", "," "})&,l[[,1,1]]]];
-    fl=Optics$FrameLabel[fl,unit];
-    fl=If[right,{"","","",fl},{"",fl,"",""}];
+    fly=Optics$FrameLabel[fly,unit];
+    If[right,fl[[4]]=fly,fl[[2]]=fly];
+    fl00={fl,fly};
     MapThread[ListPlot[#,
       PlotJoined->#2,PointTags->#3,
       DisplayFunction->Identity,PlotRange->pra,
-      FrameLabel->fl,Legend->#5,Null@@#4,Plot->plt,Null@@fopt]&,
+      FrameLabel->fl,FrameUnitLabel->{"m"},Legend->#5,Null@@#4,Plot->plt,Null@@fopt]&,
       {v,l[[,1,3]],l[[,1,4]],opv,leg}]
     ]];
 
-Optics$FrameLabel[fl_,unit_]:=Module[{lu=Twiss$Unit$Label[unit]},
+Optics$FrameLabel[fl_List,unit_]:=Module[{lu=Twiss$Unit$Label[unit]},
   If[""<=>lu<=>{"",""},
-    If[Head[lu]===List,
+    If[ListQ[lu],
       { First[fl]//" ("//First[lu]//")",
         Second[fl]//"  "//Second[lu]//" "},
       First[fl]//" ("//lu//")"],
     {First[fl],Second[fl]}]];
+
+Optics$FrameLabel[fl_,unit_]:=Module[{lu=Twiss$Unit$Label[unit]},
+  If[""<=>lu<=>{"",""},
+    If[ListQ[lu],
+      {fl//" ("//First[lu]//")",StringFill[""," ",StringLength[fl]+2]//Second[lu]},
+      fl//" ("//lu//")"],
+    fl]];
 
 OpticsList1$[pr_,{f_,r:((_Rule|_RuleDelayed)..)},opt___]:=OpticsList1$[pr,f,r,opt];
 
@@ -684,7 +696,7 @@ Unit$Factor[_]=1;
 
 LINE$FunctionsQ[f_]:=
   MemberQ[LINE$Functions,f] || f[1,3]=="SIG" || f[1,4]=="SIZE";
-LINE$Functions={"GAMMA","GAMMABETA","S"};
+LINE$Functions={"GAMMA","GAMMABETA","S","BZS"};
 
 OpticsPlot::units="Different units in one window: `1` `2`";
 OpticsPlot::frameheight=

@@ -3,10 +3,12 @@
       use ffs
       use tffitcode
       use tfstk
+      use ffs_pointer, only:idelc,idtypec
       implicit real*8(a-h,o-z)
       logical cor(*),exist,bump,pvert
       character*(*) word,wordp
-      dimension latt(2,nlat),twiss(*),gammab(nlat)
+      integer*8 latt(nlat)
+      dimension twiss(*),gammab(nlat)
      z,         mult(*),pairs(*)
      z,         istr(nstra,4),jst(*),estr(*),imon(*)
       external pack
@@ -98,11 +100,11 @@ c itestr
       endif
       nquad=0
       do 20 i=npnti,npntf-1
-        if(idtype(latt(1,i)).eq.4) then
+        if(idtypec(i).eq.4) then
           do 21 j=i-1,-nlat,-1
             k=j+nlat*((1-sign(1,j-1))/2)
-            if(idtype(latt(1,k)).ne.41.and.k.ne.nlat)then
-              if(k.le.npntf-1.and.idtype(latt(1,k)).eq.4) then
+            if(idtypec(k).ne.41.and.k.ne.nlat)then
+              if(k.le.npntf-1.and.idtypec(k).eq.4) then
               else
                 nquad=nquad+1
               endif
@@ -168,6 +170,8 @@ c     ..... include vertical steerings
       use ffs
       use tffitcode
       use tfstk
+      use sad_main
+      use ffs_pointer, only:idelc,idvalc,idtypec
       implicit real*8(a-h,o-z)
       parameter (mfitc1=32,floor=1d-15,ceil=1d15,halfpi=pi*0.5d0)
       parameter (qupi=pi*0.25d0,qupi3=pi*0.75d0,qupi5=pi*1.25d0
@@ -175,7 +179,9 @@ c     ..... include vertical steerings
       parameter (cutl=1d-5)
       logical stab,xplane,yplane,cor(*),mhogan,pvert,bump
       character name*8
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun)
+      integer*8 latt(nlat),id
+      integer*4 i
+      dimension twiss(nlat,-ndim:ndim,ntwissfun)
      z,         mult(*),ipair(2,npair),ipairt(2,npair),iquad(*)
      z,         istr(nstra,4),jst(*),estr(*),imon(nmona,4)
      z,         kfit(nfc),ifitp(nfc),mfitp(nfc),fitval(nfc)
@@ -273,11 +279,11 @@ c itestr
 c     print *,' npnti=', npnti,' npntf=',npntf
       nquad=0
       do 20 i=npnti,npntf-1
-        if(idtype(latt(1,i)).eq.4) then
+        if(idtypec(i).eq.4) then
           do 21 j=i-1,-nlat,-1
             k=j+nlat*((1-sign(1,j-1))/2)
-            if(idtype(latt(1,k)).ne.41.and.k.ne.nlat)then
-              if(k.le.npntf-1.and.idtype(latt(1,k)).eq.4) then
+            if(idtypec(k).ne.41.and.k.ne.nlat)then
+              if(k.le.npntf-1.and.idtypec(k).eq.4) then
               else
                 nquad=nquad+1
                 iquad(nquad)=i
@@ -303,16 +309,16 @@ c     ::::::::::
         isav=italoc(nstr)
         itr=italoc(npair)
         do 41 i=1,npair
-        rlist(itr-1+i)=
-     1     -rlist(idval(latt(1,ipair(1,i)))+2)*
-     1      (twiss(ipair(1,i),0,17)+twiss(ipair(2,i),0,17)
-     1       -rlist(latt(2,ipair(1,i))+6)
-     1       -rlist(latt(2,ipair(2,i))+6))
+          rlist(itr-1+i)=
+     1         -rlist(idvalc(ipair(1,i))+2)*
+     1         (twiss(ipair(1,i),0,17)+twiss(ipair(2,i),0,17)
+     1         -rlist(latt(ipair(1,i))+6)
+     1         -rlist(latt(ipair(2,i))+6))
    41   continue
 1       continue
         do 50 i=1,nstr
-c   50     rlist(isav-1+i)=rlist(latt(2,ist(i))+11)
-   50     rlist(isav-1+i)=rlist(latt(2,jst(i))+11)
+c   50     rlist(isav-1+i)=rlist(latt(ist(i))+11)
+   50     rlist(isav-1+i)=rlist(latt(jst(i))+11)
         do 52 i=1,nmo
           j=imon(i,2)
    52     rlist(ib-1+i)=twiss(imon(j,1),0,17)
@@ -380,7 +386,7 @@ cdebug------>
           istr(1,2)=kkk
           imon(1,1)=ll
           imon(1,2)=lll
-          rlist(latt(2,npntk)+11)=rlist(latt(2,npntk)+11)
+          rlist(latt(npntk)+11)=rlist(latt(npntk)+11)
      z                            - xamp/trans(1,1)
         endif
         call pqcell(latt,twiss,gammab,0,dp0+1d0,stab)
@@ -392,9 +398,9 @@ cdebug------>
         psix=twiss(nlat,0,3)-twiss(1,0,3)
         psiy=twiss(nlat,0,6)-twiss(1,0,6)
         do 110 jp=1,npair
-          i=idval(latt(1,ipair(1,jp)))+5
-          dx=rlist(i)
-          rlist(i)=halfpi
+          id=idvalc(ipair(1,jp))+5
+          dx=rlist(id)
+          rlist(id)=halfpi
 c         call mcrmat(latt,twiss,gammab,-ndim,0d0,0d0,
 c    1                rlist(ia+nmo*(jp-1)),nmo,
           kk=istr(1,1)
@@ -406,14 +412,14 @@ c    1                rlist(ia+nmo*(jp-1)),nmo,
      1                .false.,.false.,istr,1,imon,nmo,'Y')
           istr(1,1)=kk
           istr(1,2)=kkk
-          rlist(i)=dx
+          rlist(id)=dx
   110   continue
         j=ia+nmo*(npair-1)
         do 112 l=1,nquad
-          i=idval(latt(1,iquad(l)))+5
+          id=idvalc(iquad(l))+5
           j=j+nmo
-          dx=rlist(i)
-          rlist(i)=halfpi
+          dx=rlist(id)
+          rlist(id)=halfpi
           kk=istr(1,1)
           kkk=istr(1,2)
           istr(1,1)=iquad(l)
@@ -422,7 +428,7 @@ c    1                rlist(ia+nmo*(jp-1)),nmo,
      z                .false.,.false.,istr,1,imon,nmo,'Y')
           istr(1,1)=kk
           istr(1,2)=kkk
-          rlist(i)=dx
+          rlist(id)=dx
   112   continue
 c       print *,' response matrix'
 c       write(*,'(5e12.4)')((rlist(ia+nmo*(jp-1)+j),j=0,nmo-1),
@@ -494,11 +500,11 @@ c       ... weight factor
 c       --- reset horizontal bump
         if( bump ) then
           do 130 i=1,nstr
-c  130       rlist(latt(2,ist(i))+11)=rlist(isav-1+i)
-  130       rlist(latt(2,jst(i))+11)=rlist(isav-1+i)
+c  130       rlist(latt(ist(i))+11)=rlist(isav-1+i)
+  130       rlist(latt(jst(i))+11)=rlist(isav-1+i)
         else
-c          rlist(latt(2,ist(ipntk))+11)=rlist(isav-1+ipntk)
-          rlist(latt(2,jst(ipntk))+11)=rlist(isav-1+ipntk)
+c          rlist(latt(ist(ipntk))+11)=rlist(isav-1+ipntk)
+          rlist(latt(jst(ipntk))+11)=rlist(isav-1+ipntk)
         endif
 c       ------------------------
         if(nmo.ge.npair+nquad) then
@@ -551,16 +557,16 @@ c       ------------------------
             if(ns.gt.0) then
               call pfmat(twiss,ndim,jst(js),ipair(2,jp),trans)
               trans(3,4)=trans(3,4)
-c    z                   + 0.5d0*rlist(latt(2,ipair(2,jp))+1)*trans(4,4)
-c             akick=rlist(ix-1+jp)/rlist(idval(latt(1,ipair(1,jp)))+2)
-              akick=rlist(ix-1+jp)/rlist(latt(2,ipair(1,jp))+2)
+c    z                   + 0.5d0*rlist(latt(ipair(2,jp))+1)*trans(4,4)
+c             akick=rlist(ix-1+jp)/rlist(idval(ilist(2,latt(ipair(1,jp))))+2)
+              akick=rlist(ix-1+jp)/rlist(latt(ipair(1,jp))+2)
      z                           /trans(3,4)
-     z                    /sin(rlist(idval(latt(1,jst(js)))+5))
+     z                    /sin(rlist(idvalc(jst(js))+5))
 c             print *,' jst(js)=',jst(js)
               call elname(jst(js),name)
               print *,name
               call mwbufr(akick,'(1PD12.4)',5,lfno)
-              rlist(latt(2,jst(js))+11)=rlist(latt(2,jst(js))+11)
+              rlist(latt(jst(js))+11)=rlist(latt(jst(js))+11)
      z                                + akick*(1d0+estr(istr(js,2)))
             else
             endif
@@ -855,6 +861,7 @@ c     stacks and the corresponding corrector is stored in the 'C' stacks
 c-----------------------------------------------------------------------
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idtypec,pnamec
       implicit real*8 (a-h,o-z)
       parameter (kstack=3)
       parameter (lioo=50,lstdo=6,nminc=20)
@@ -862,7 +869,8 @@ c-----------------------------------------------------------------------
      $     micado,vonly
       character*(*) word,wordp,title,case
       character*16 patt
-      dimension latt(2,nlat),pos(nlat),twiss(nlat,-ndim:ndim,ntwissfun),
+      integer*8 latt(nlat)
+      dimension pos(nlat),twiss(nlat,-ndim:ndim,ntwissfun),
      $     gammab(nlat)
       dimension istr(nstra,4),imon(nmona,4),emon(*),estr(*),mult(*),
      $     master(nlat)
@@ -974,8 +982,9 @@ c       vertical scale in the graphics.
         if(isex.eq.0) then
  10       nsex=0
           do i=1,nlat-1
-            if(idtype(latt(1,i)).eq.icsext .and. master(i).gt.0) then
-              if(tmatch(pname(latt(1,i)),patt)) then
+            if(idtypec(i).eq.icsext
+     $           .and. master(i).gt.0) then
+              if(tmatch(pnamec(i),patt)) then
                 if(mhogal(ls,lf,i)) then
                   nsex=nsex+1
                   if(isex.ne.0) then
@@ -1055,8 +1064,8 @@ c      call tmov(rlist(it),twiss(1,0,15),nlat)
 c      call tmov(rlist(it+nlat),twiss(1,0,17),nlat)
 c      call pundo(latt,twiss,gammab,0,dp0+1d0)
       do i=1,nlat-1
-        if(idtype(latt(1,i)).eq.icbend) then
-          rlist(latt(2,i)+11)=rlist(ibckup-1+i)
+        if(idtypec(i).eq.icbend) then
+          rlist(latt(i)+11)=rlist(ibckup-1+i)
         endif
       enddo
       call pmovi(rlist(im),imon(1,3),nmona)
@@ -1092,12 +1101,13 @@ c
 c***** K'*xb*yb term is included in the response matrix ****************
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idvalc
       implicit real*8 (a-h,o-z)
       parameter (kstack=3,halfpi=0.5d0*pi,tiny=1d-20)
       logical pass,corc(8),vonly,micado,stab,subbase
       character name*8,autofg*11
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),
-     $     gammab(nlat)
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat)
       dimension a(ia,*),b(*),x(2*nsex),ex(2*nsex),mult(*)
       dimension xs(4,nsex),xs0(4,nsex),xsb(2,nsex),isex(nsex)
       dimension istr(nstra,4),imon(nmona,4),emon(*),estr(*)
@@ -1106,8 +1116,8 @@ c***** K'*xb*yb term is included in the response matrix ****************
       include 'inc/common.inc'
       data corc/.false.,.true.,6*.false./
 c
-      print *,'mfaloc=',mfalloc(-1)
-      print *,'nsex=',nsex
+c      print *,'mfaloc=',mfalloc(-1)
+c      print *,'nsex=',nsex
 c     ip=ipnt(3)
 c     ic=ipnt(1)
 c     if(pass) then
@@ -1131,9 +1141,9 @@ c.....Get base orbit from current buffer......
         do i=1,nsex
 c     ++ assume sextupole is a single piece
           xsb(1,i)=xs0(1,i)+
-     $         0.5d0*rlist(idval(latt(1,isex(i)))+1)*xs0(2,i)
+     $         0.5d0*rlist(idvalc(isex(i)-1)+1)*xs0(2,i)
           xsb(2,i)=xs0(3,i)+
-     $         0.5d0*rlist(idval(latt(1,isex(i)))+1)*xs0(4,i)
+     $         0.5d0*rlist(idvalc(isex(i)-1)+1)*xs0(4,i)
         enddo
       endif
 c.....Get data from stacks .......
@@ -1148,9 +1158,9 @@ c...... estimate positions at sextupoles from BPM data for base orbit.....
         do i=1,nsex
 c         ++ assume sextupole is a single piece
           xs0(1,i)=xs0(1,i)+
-     $         0.5d0*rlist(idval(latt(1,isex(i)))+1)*xs0(2,i)
+     $         0.5d0*rlist(idvalc(isex(i))+1)*xs0(2,i)
           xs0(3,i)=xs0(3,i)+
-     $         0.5d0*rlist(idval(latt(1,isex(i)))+1)*xs0(4,i)
+     $         0.5d0*rlist(idvalc(isex(i))+1)*xs0(4,i)
         enddo
 c...... fetch stack-'M' to current buffer. ......
         call mfetch(3,ldep+1,latt,twiss,istr,nc,imon,no)
@@ -1165,8 +1175,10 @@ c...... estimate positions at sextupoles from BPM data. ...
      $       imon,emon,no,2,lfno)
         do 16 i=1,nsex
 c         ++ assume sextupole is a single piece
-          xs(1,i)=xs(1,i)+0.5d0*rlist(idval(latt(1,isex(i)))+1)*xs(2,i)
-          xs(3,i)=xs(3,i)+0.5d0*rlist(idval(latt(1,isex(i)))+1)*xs(4,i)
+          xs(1,i)=xs(1,i)+
+     $         0.5d0*rlist(idvalc(isex(i))+1)*xs(2,i)
+          xs(3,i)=xs(3,i)+
+     $         0.5d0*rlist(idvalc(isex(i))+1)*xs(4,i)
  16     continue
 c        print *,'to check pasex2'
 c        write(*,'(1p,10d11.3)')(xs(1,i)-twiss(isex(i),0,15),xs(3,i)-
@@ -1179,13 +1191,13 @@ c       assume thin quads are attached to both ends of sexts.
         call perr(latt,.true.)
         do i=1,nsex
           ls=isex(i)
-          alh=0.5d0*rlist(idval(latt(1,ls))+1)
-          akh=0.5d0*rlist(idval(latt(1,ls))+2)
-c         rlist(latt(2,ls-1)+2)=akh*(xs(1,i)-alh*xs(2,i))
-c         rlist(latt(2,ls+1)+2)=akh*(xs(1,i)+alh*xs(2,i))
-          rlist(latt(2,ls-2)+2)=akh*(xs(1,i)-alh*xs(2,i))
-          rlist(latt(2,ls+2)+2)=akh*(xs(1,i)+alh*xs(2,i))
-          rlist(latt(2,ls  )+2)=0d0
+          alh=0.5d0*rlist(idvalc(ls)+1)
+          akh=0.5d0*rlist(idvalc(ls)+2)
+c         rlist(latt(ls-1)+2)=akh*(xs(1,i)-alh*xs(2,i))
+c         rlist(latt(ls+1)+2)=akh*(xs(1,i)+alh*xs(2,i))
+          rlist(latt(ls-2)+2)=akh*(xs(1,i)-alh*xs(2,i))
+          rlist(latt(ls+2)+2)=akh*(xs(1,i)+alh*xs(2,i))
+          rlist(latt(ls  )+2)=0d0
         enddo
         do i=1,ntwissfun
           twiss(1,-ndim,i)=twiss(1,ndim,i)
@@ -1195,23 +1207,24 @@ c         rlist(latt(2,ls+1)+2)=akh*(xs(1,i)+alh*xs(2,i))
         do 20 i=1,nsex
 c         ++ assume sextupole is a single piece
           ls=isex(i)
-          r=rlist(idval(latt(1,ls))+5)
-          rlist(idval(latt(1,ls))+5)=-halfpi+rlist(idval(latt(1,ls))+4)
+          r=rlist(idvalc(ls)+5)
+          rlist(idvalc(ls)+5)=
+     $         -halfpi+rlist(idvalc(ls)+4)
           k=istr(istr(1,2),1)
           istr(istr(1,2),1)=ls
           call mcrmat(latt,twiss,gammab,-ndim,0d0,0d0,
      $         a(la,i),ia,.false.,.false.,istr,1,imon,no,'Y')
           istr(istr(1,2),1)=k
-          rlist(idval(latt(1,ls))+5)=r
+          rlist(idvalc(ls)+5)=r
           call tmov(a(la,i),a(la,i+nsex),no)
-          ak=rlist(idval(latt(1,ls))+2)*
+          ak=rlist(idvalc(ls)+2)*
 c    $         (xs(1,i)*(xs(3,i)+xs0(3,i))+xs(3,i)*xs0(1,i))
      $         (xs(1,i)*xs0(3,i)+xs(3,i)*xs0(1,i))
           do j=1,no
             b(la-1+j)=b(la-1+j)-ak*a(la-1+j,i)
           enddo
 c         ++ assume sextupole is a single piece
-          ak=rlist(idval(latt(1,ls))+2)
+          ak=rlist(idvalc(ls)+2)
 c         ak=ak*xs(3,i)*(xs(1,i)+ak*al/12d0*(xs(1,i)**2+xs(3,i)**2))
           call ptimes(ak*xs(1,i),a(la,i),no)
           call ptimes(ak*xs(3,i),a(la,i+nsex),no)
@@ -1255,9 +1268,9 @@ c     print *,'Input number of variable:'
         do i=1,nsex
 c         ++ assume sextupole is a single piece
           xs0(1,i)=xs0(1,i)+
-     $         0.5d0*rlist(idval(latt(1,isex(i)))+1)*xs0(2,i)
+     $         0.5d0*rlist(idvalc(isex(i))+1)*xs0(2,i)
           xs0(3,i)=xs0(3,i)+
-     $         0.5d0*rlist(idval(latt(1,isex(i)))+1)*xs0(4,i)
+     $         0.5d0*rlist(idvalc(isex(i))+1)*xs0(4,i)
         enddo
         call mfetch(3,ldep+1,latt,twiss,istr,nc,imon,no)
         do i=1,no
@@ -1268,19 +1281,21 @@ c         ++ assume sextupole is a single piece
         call pasex2(latt,twiss,gammab,isex,nsex,xs,istr,estr,nc,
      $       imon,emon,no,2,lfno)
         do i=1,nsex
-          xs(1,i)=xs(1,i)+0.5d0*rlist(idval(latt(1,isex(i)))+1)*xs(2,i)
-          xs(3,i)=xs(3,i)+0.5d0*rlist(idval(latt(1,isex(i)))+1)*xs(4,i)
+          xs(1,i)=xs(1,i)+
+     $         0.5d0*rlist(idvalc(isex(i))+1)*xs(2,i)
+          xs(3,i)=xs(3,i)+
+     $         0.5d0*rlist(idvalc(isex(i))+1)*xs(4,i)
         enddo
         call perr(latt,.true.)
         do i=1,nsex
           ls=isex(i)
-          alh=0.5d0*rlist(idval(latt(1,ls))+1)
-          akh=0.5d0*rlist(idval(latt(1,ls))+2)
-c         rlist(latt(2,ls-1)+2)=akh*(xs(1,i)-alh*xs(2,i))
-c         rlist(latt(2,ls+1)+2)=akh*(xs(1,i)+alh*xs(2,i))
-          rlist(latt(2,ls-2)+2)=akh*(xs(1,i)-alh*xs(2,i))
-          rlist(latt(2,ls+2)+2)=akh*(xs(1,i)+alh*xs(2,i))
-          rlist(latt(2,ls  )+2)=0d0
+          alh=0.5d0*rlist(idvalc(ls)+1)
+          akh=0.5d0*rlist(idvalc(ls)+2)
+c         rlist(latt(ls-1)+2)=akh*(xs(1,i)-alh*xs(2,i))
+c         rlist(latt(ls+1)+2)=akh*(xs(1,i)+alh*xs(2,i))
+          rlist(latt(ls-2)+2)=akh*(xs(1,i)-alh*xs(2,i))
+          rlist(latt(ls+2)+2)=akh*(xs(1,i)+alh*xs(2,i))
+          rlist(latt(ls  )+2)=0d0
         enddo
         do i=1,ntwissfun
           twiss(1,-ndim,i)=twiss(1,ndim,i)
@@ -1289,22 +1304,23 @@ c         rlist(latt(2,ls+1)+2)=akh*(xs(1,i)+alh*xs(2,i))
         call perr(latt,.false.)
         do 200 i=1,nsex
           ls=isex(i)
-          r=rlist(idval(latt(1,ls))+5)
-          rlist(idval(latt(1,ls))+5)=-halfpi+rlist(idval(latt(1,ls))+4)
+          r=rlist(idvalc(ls)+5)
+          rlist(idvalc(ls)+5)=
+     $         -halfpi+rlist(idvalc(ls)+4)
           k=istr(istr(1,2),1)
           istr(istr(1,2),1)=ls
           call mcrmat(latt,twiss,gammab,-ndim,0d0,0d0,
      $         a(la,i),ia,.false.,.false.,istr,1,imon,no,'Y')
           istr(istr(1,2),1)=k
-          rlist(idval(latt(1,ls))+5)=r
+          rlist(idvalc(ls)+5)=r
           call tmov(a(la,i),a(la,i+nsex),no)
-          ak=rlist(idval(latt(1,ls))+2)*
+          ak=rlist(idvalc(ls)+2)*
 c    $         (xs(1,i)*(xs(3,i)+xs0(3,i))+xs(3,i)*xs0(1,i))
      $         (xs(1,i)*xs0(3,i)+xs(3,i)*xs0(1,i))
           do j=1,no
             b(la-1+j)=b(la-1+j)-ak*a(la-1+j,i)
           enddo
-          ak=rlist(idval(latt(1,ls))+2)
+          ak=rlist(idvalc(ls)+2)
           call ptimes(ak*xs(1,i),a(la,i),no)
           call ptimes(ak*xs(3,i),a(la,i+nsex),no)
  200    continue
@@ -1327,8 +1343,8 @@ c    $         (xs(1,i)*(xs(3,i)+xs0(3,i))+xs(3,i)*xs0(1,i))
       do i=1,nsex
         call elnameK(isex(i),name)
         if(simulate) then
-          dx=rlist(latt(2,isex(i))+5)
-          dy=rlist(latt(2,isex(i))+6)
+          dx=rlist(latt(isex(i))+5)
+          dy=rlist(latt(isex(i))+6)
           x(i)=x(i)-(xsb(2,i)-dy)
           x(i+nsex)=x(i+nsex)-(xsb(1,i)-dx)
         elseif(subbase) then
@@ -1350,8 +1366,8 @@ c    $         (xs(1,i)*(xs(3,i)+xs0(3,i))+xs(3,i)*xs0(1,i))
         twiss(isex(i),0,7)=ex(i+nsex)
         twiss(isex(i),0,9)=ex(i)
 c      <<< check >>>
-        rlist(latt(2,isex(i))+6)=-x(i)
-        if(.not.vonly) rlist(latt(2,isex(i))+5)=-x(i+nsex)
+        rlist(latt(isex(i))+6)=-x(i)
+        if(.not.vonly) rlist(latt(isex(i))+5)=-x(i+nsex)
 c      <<<       >>>
       enddo
       call mbufw(' ',.true.,lfno)
@@ -1364,10 +1380,11 @@ c
 c.... estimate positions at sextupoles from BPM data. ...
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idvalc
       implicit real*8 (a-h,o-z)
       logical exta,mhogal
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),
-     $     gammab(nlat)
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat)
       dimension isex(nsex),xs(4,nsex)
       dimension istr(*),estr(*),imon(nmona,4),emon(*)
       dimension tr(4,5),ra(4)
@@ -1381,8 +1398,8 @@ c     end   initialize for preventing compiler warning
         ibs=1
         do 100 isx=1,nsex
           ls=isex(isx)
-          al=rlist(idval(latt(1,ls))+1)
-          ak=rlist(idval(latt(1,ls))+2)
+          al=rlist(idvalc(ls)+1)
+          ak=rlist(idvalc(ls)+2)
           do 10 i=1,no-1
             if(mhogal(imon(imon(i,2),1),imon(imon(i+1,2),1),ls)) then
               l1=imon(imon(i,2),1)
@@ -1483,9 +1500,11 @@ c
 c     effect of steerings that place in between l1 and l2
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idvalc,idtypec
       implicit real*8 (a-h,o-z)
       logical mhogan,first
-      dimension twiss(*),latt(2,nlat),gammab(*),ra(4)
+      integer*8 latt(nlat)
+      dimension twiss(*),gammab(*),ra(4)
       dimension istr(nstra,4)
       dimension tr(4,5),tr1(4,5)
       include 'inc/common.inc'
@@ -1498,16 +1517,16 @@ c
       do 20 i=is1,is2
         j=istr(istr(i,2),1)
         if(mhogan(l1,l2,j)) then
-          if(idtype(latt(1,j)).eq.icbend) then
+          if(idtypec(j).eq.icbend) then
             if(first) then
               iss=i
               first=.false.
             endif
             call pftmat(twiss,gammab,tr,j,ls,ndim)
             call pftmat(twiss,gammab,tr1,j+1,ls,ndim)
-            cost=cos(-rlist(idval(latt(1,j))+5))
-            sint=sin(-rlist(idval(latt(1,j))+5))
-            ddk=rlist(latt(2,j)+11)
+            cost=cos(-rlist(idvalc(j)+5))
+            sint=sin(-rlist(idvalc(j)+5))
+            ddk=rlist(latt(j)+11)
             call padd(tr1,tr,20)
             call ptimes(0.5d0,tr,20)
             do 15 k=1,4
@@ -1555,7 +1574,7 @@ c
       use tffitcode
       implicit real*8 (a-h,o-z)
       logical rst
-      dimension latt(2,nlat)
+      integer*8 latt(nlat)
       save ie
 c
       if(rst) then
@@ -1572,19 +1591,21 @@ c
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idvalc,idtypec
       implicit real*8 (a-h,o-z)
       logical rst
-      dimension latt(2,nlat),errs(4,nlat)
+      integer*8 latt(nlat),lp
+      dimension errs(4,nlat)
 c
       if(rst) then
         do i=1,nlat-1
-          ld=idtype(latt(1,i))
-          lp=latt(2,i)
+          ld=idtypec(i)
+          lp=latt(i)
           if(ld.eq.icbend) then
             errs(1,i)=rlist(lp+11)
             errs(2,i)=rlist(lp+5)
             rlist(lp+11)=0d0
-            rlist(lp+5)=rlist(idval(latt(1,i))+5)
+            rlist(lp+5)=rlist(idvalc(i)+5)
           elseif(ld.eq.icquad.or.ld.eq.icsext) then
             errs(1,i)=rlist(lp+5)
             errs(2,i)=rlist(lp+6)
@@ -1592,14 +1613,14 @@ c
             errs(4,i)=rlist(lp+2)
             rlist(lp+5)=0d0
             rlist(lp+6)=0d0
-            rlist(lp+4)=rlist(idval(latt(1,i))+4)
-            rlist(lp+2)=rlist(idval(latt(1,i))+2)
+            rlist(lp+4)=rlist(idvalc(i)+4)
+            rlist(lp+2)=rlist(idvalc(i)+2)
           endif
         enddo
       else
         do i=1,nlat-1
-          ld=idtype(latt(1,i))
-          lp=latt(2,i)
+          ld=idtypec(i)
+          lp=latt(i)
           if(ld.eq.icbend) then
             rlist(lp+11)=errs(1,i)
             rlist(lp+5)=errs(2,i)
@@ -1620,7 +1641,8 @@ c
       use tffitcode
       implicit real*8 (a-h,o-z)
       parameter (kstack=3)
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun)
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun)
       dimension istr(nstra,4),imon(nmona,4)
       common /mcstack/icoma,ipnt(kstack),iistck(kstack),mstkmx(kstack)
       include 'inc/common.inc'
@@ -1637,7 +1659,8 @@ c
       use tffitcode
       implicit real*8 (a-h,o-z)
       parameter (kstack=3)
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun)
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun)
       dimension istr(nstra,4),imon(nmona,4)
       dimension idc(*),ido(*),idm(*)
       external pack
@@ -1658,10 +1681,10 @@ c...... copy stack 'C' to current buffer. .....
         call pack(istr(1,2),istr(1,3),nc,nstra)
         do 14 i=1,nc
           j=istr(istr(i,2),1)
-          rlist(latt(2,j)+11)=rlist(lc+i)
+          rlist(latt(j)+11)=rlist(lc+i)
  14     continue
         do i=nc+1,nstra
-          rlist(latt(2,istr(istr(i,2),1))+11)=0d0
+          rlist(latt(istr(istr(i,2),1))+11)=0d0
         enddo
       elseif(icom.eq.2) then
       elseif(icom.eq.3) then
@@ -1695,7 +1718,8 @@ c
 c      character*8 name
       character*80 line
       character*30 dat
-      dimension latt(2,nlat),pos(nlat),mult(*)
+      integer*8 latt(nlat)
+      dimension pos(nlat),mult(*)
       dimension x(2*nsex),ex(2*nsex),isex(nsex),vscale(2)
       data line/' '/
 c
@@ -1795,8 +1819,8 @@ c     enddo
       use tffitcode
       implicit real*8(a-h,o-z)
       logical disp
-      dimension latt(2,nlat)
-     z,         mult(*),x(2*nbump),isb(ncb+4,nbump),xs(ncb+2,2,nbump)
+      integer*8 latt(nlat)
+      dimensionmult(*),x(2*nbump),isb(ncb+4,nbump),xs(ncb+2,2,nbump)
      z,         istr(*),estr(*)
       iw=italoc(nstr)
       call pclr(rlist(iw),nstr)
@@ -1818,7 +1842,8 @@ c     enddo
       use tmacro
       implicit real*8(a-h,o-z)
       logical iter,lin,disp
-      dimension latt(*),twiss(*),gammab(*),mult(*),istr(*),estr(*),
+      integer*8 latt(*)
+      dimension twiss(*),gammab(*),mult(*),istr(*),estr(*),
      1          kfit(*),ifitp(*),mfitp(*),fitval(*)
       if(nstr.eq.0 .or. nfc.eq.0)then
         return
@@ -1843,11 +1868,13 @@ c     enddo
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idtypec
       implicit real*8 (a-h,o-z)
       parameter (mfitc1=32,mfitc2=28,epsi=1d-10,epse=1d-10,loopmx=19)
       parameter (ddp=1.d-6)
       logical idealz,stab,iter,lin,conv,disp
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),
      $     gammab(nlat),
      1          mult(*),istr(nstra,4),estr(nstra),qu(nfc,nstr),
      1          dval(nstr),df(nfc),iwk(2,nfc),wrk(4),imw(1,4)
@@ -1872,8 +1899,8 @@ c
       conv=.false.
       ideal=.true.
       do 22 i=1,nlat-1
-        if(idtype(latt(1,i)).eq.icbend) then
-          rlist(latt(2,i)+11)=0d0
+        if(idtypec(i).eq.icbend) then
+          rlist(latt(i)+11)=0d0
         endif
    22 continue
       idd=ip
@@ -1971,7 +1998,7 @@ c       write(*,'(a/(1p,5e11.4))')' qu',((qu(i,j),i=1,nc),j=1,nstr)
 c       write(*,'(a/(1p,8e11.4))') ' dval',(dval(i),i=1,nstr)
         do 60 i=1,nstr
           j=istr(i,2)
-          rlist(latt(2,istr(j,1))+11) = rlist(latt(2,istr(j,1))+11)
+          rlist(latt(istr(j,1))+11) = rlist(latt(istr(j,1))+11)
      1                               - dval(i)
    60   continue
         if(iter) then
@@ -2003,7 +2030,7 @@ c         print *,' loop=',loop,' dmax=',sngl(dmax),' (model)'
       nmona=nmonaa
       do 102 i=1,nstr
         j=istr(i,2)
-        dval(i)=rlist(latt(2,istr(j,1))+11)
+        dval(i)=rlist(latt(istr(j,1))+11)
   102 continue
       if(idealz) then
         ideal=.true.
@@ -2012,9 +2039,9 @@ c         print *,' loop=',loop,' dmax=',sngl(dmax),' (model)'
       endif
       ideal=.false.
       do 103 i=1,nlat-1
-        if(idtype(latt(1,i)).eq.icbend) then
-c          write(*,*)i,rlist(latt(2,i)+11),rlist(ibckup-1+i)
-          rlist(latt(2,i)+11)=rlist(ibckup-1+i)
+        if(idtypec(i).eq.icbend) then
+c          write(*,*)i,rlist(latt(i)+11),rlist(ibckup-1+i)
+          rlist(latt(i)+11)=rlist(ibckup-1+i)
         endif
   103 continue
       do 104 i=1,18
@@ -2037,9 +2064,9 @@ c             df(nc)=fitval(k)
       else
         call pcset(latt,mult,dval,istr,estr,nstr,1d0,disp,lfno)
 c        do  i=1,nlat-1
-c          if(idtype(latt(1,i)).eq.icbend) then
-c            if(abs(rlist(latt(2,i)+11)).gt.1d-10) then
-c              print *,'pbump1',i,rlist(latt(2,i)+11),rlist(ibckup-1+i)
+c          if(idtypec(i).eq.icbend) then
+c            if(abs(rlist(latt(i)+11)).gt.1d-10) then
+c              print *,'pbump1',i,rlist(latt(i)+11),rlist(ibckup-1+i)
 c            endif
 c          endif
 c        enddo
@@ -2076,8 +2103,8 @@ c       write(*,'(a/(1p,5e11.4))')' qu',((qu(i,j),i=1,nc),j=1,nstr)
   201 continue
       do 210 i=1,nstr
         j=istr(i,2)
-        dval(i)=rlist(latt(2,istr(j,1))+11)-rlist(ibckup-1+istr(j,1))
-        rlist(latt(2,istr(j,1))+11)=rlist(ibckup-1+istr(j,1))
+        dval(i)=rlist(latt(istr(j,1))+11)-rlist(ibckup-1+istr(j,1))
+        rlist(latt(istr(j,1))+11)=rlist(ibckup-1+istr(j,1))
   210 continue
       call pcset(latt,mult,dval,istr,estr,nstr,1d0,disp,lfno)
       call pqcell(latt,twiss,gammab,0,dp0+1d0,stab)
@@ -2151,17 +2178,19 @@ c              istr(j,3)=istr(j,3)+1
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idtypec
 c ----- Save current steering & initial values of optics
 c       If operate, save dx dy ex ey on twiss(*,ndim-2,*) -----
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun)
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun)
       include 'inc/common.inc'
-c     print *,'ibckup=',ibckup,latt(1,1)
+c     print *,'ibckup=',ibckup,ilist(2,latt(1))
       if(ibckup.eq.0) then
         ibckup=italoc(nlat)
       endif
       do 100 i=1,nlat-1
-        if(idtype(latt(1,i)).eq.icbend) then
-          rlist(ibckup-1+i)=rlist(latt(2,i)+11)
+        if(idtypec(i).eq.icbend) then
+          rlist(ibckup-1+i)=rlist(latt(i)+11)
         endif
   100 continue
       do 130 i=1,18
@@ -2213,7 +2242,8 @@ c     endif
       use tffitcode
       logical prime,normal,dcon
       character*(*) xy
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),
      $     gammab(nlat)
       dimension istr(nstra,4),imon(*)
       dimension a(ia,nstr),wrk(2*nmon,2),dcon(2)
@@ -2280,7 +2310,8 @@ c         ----- add correction -dR/dp*R^(-1)*(x)
       parameter (bigg=pi*0.5d0)
       logical disp
       character*8 vout*80,autofg,name
-      dimension latt(2,nlat),mult(*),
+      integer*8 latt(nlat)
+      dimension mult(*),
      &          istr(nstra,4),estr(nstra),
      &          x(nstr),rc(4)
       data vout/' kick calc (max/@/rms/ave)'/
@@ -2291,19 +2322,19 @@ c
       if(pm.eq.-1d0) then
         do 20 i=1,nstr
           j=istr(i,2)
-          rlist(it-1+i)=rlist(latt(2,istr(j,1))+11)-x(i)*(1d0+estr(j))
+          rlist(it-1+i)=rlist(latt(istr(j,1))+11)-x(i)*(1d0+estr(j))
           big=max(big,rlist(it-1+i),-rlist(it-1+i))
    20   continue
       elseif(pm.eq.1d0) then
         do 21 i=1,nstr
           j=istr(i,2)
-          rlist(it-1+i)=rlist(latt(2,istr(j,1))+11)+x(i)*(1d0+estr(j))
+          rlist(it-1+i)=rlist(latt(istr(j,1))+11)+x(i)*(1d0+estr(j))
           big=max(big,rlist(it-1+i),-rlist(it-1+i))
    21   continue
       else
         do 22 i=1,nstr
           j=istr(i,2)
-          rlist(it-1+i)=rlist(latt(2,istr(j,1))+11)
+          rlist(it-1+i)=rlist(latt(istr(j,1))+11)
      1                 + pm*x(i)*(1d0+estr(j))
           big=max(big,rlist(it-1+i),-rlist(it-1+i))
    22   continue
@@ -2324,7 +2355,7 @@ c
       else
         do 30 i=1,nstr
           j=istr(i,2)
-   30     rlist(latt(2,istr(j,1))+11)= rlist(it-1+i)
+   30     rlist(latt(istr(j,1))+11)= rlist(it-1+i)
       endif
       call tfree(int8(it))
       return
@@ -2369,7 +2400,8 @@ c     write(lfno,*)'TITLE 8 8.5 ''',dat,  ''''
       use tffitcode
       implicit real*8 (a-h,o-z)
       parameter (ier=6)
-      dimension latt(2,nlat),pos(nlat),errk(2,nlat)
+      integer*8 latt(nlat)
+      dimension pos(nlat),errk(2,nlat)
       character*(*) word,title,case
       logical exist
       dds=getva(exist)
@@ -2395,11 +2427,13 @@ c     write(lfno,*)'TITLE 8 8.5 ''',dat,  ''''
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,pnamec
       implicit real*8 (a-h,o-z)
       parameter (ier=6)
+      integer*8 jd
       complex*16 ft(nbin,ier)
-      dimension latt(2,nlat),pos(nlat),
-     1          errk(2,nlat),ift(nbin,ier),err(ier)
+      integer*8 latt(nlat),k
+      dimension pos(nlat),errk(2,nlat),ift(nbin,ier),err(ier)
       equivalence (dl,err(1)),(dk,err(2)),(ddk,err(3)),(dtheta,err(4)),
      1            (dx,err(5)),(dy,err(6))
       character*(*) word,title,case
@@ -2424,10 +2458,10 @@ c     character*20  name
         call pclr(ft,2*ier*nbin)
         call pclri(ift,ier*nbin)
         do 2010 i=1,nlat-1
-          if( .not.tmatch(pname(latt(1,i)),word) )goto 2010
+          if( .not.tmatch(pnamec(i),word) )goto 2010
           exist=.true.
-          j=latt(1,i)
-          k=latt(2,i)
+          j=ilist(2,latt(i))
+          k=latt(i)
           id=idtype(j)
           jd=idval(j)
           go to (2110,2120,2010,2140,2010,2140,2010,2140),id
@@ -2769,6 +2803,8 @@ c
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,pnamec
+      use tfcsi, only:cssetp
       implicit real*8(a-h,o-z)
       parameter (ftol0=1d-6,itmax0=100,demi0=0d0,nrep=10,loop0=1)
       parameter (meminc0=1800,meminc=720,item=20)
@@ -2779,7 +2815,8 @@ c
       character name*12,observ*4
       character*8 nlist(mfit1)
       character*255 tfconvstr
-      dimension latt(2,nlat),twiss(*),mult(*),gammab(*),size(*),istr(*),
+      integer*8 latt(nlat)
+      dimension twiss(*),mult(*),gammab(*),size(*),istr(*),
      $     estr(*)
       include 'inc/common.inc'
       common /cordefv/ ipvbmp,nvbmp
@@ -2875,7 +2912,7 @@ c       endif
  10     j=0
         nepas=.false.
         do 12 i=1,nlat-1
-          if(tmatch(pname(latt(1,i)),word)) then
+          if(tmatch(pnamec(i),word)) then
             do 11 l=1,nobs
               if(ilist(mod(l,2)+1,iob+l/2).eq.i) then
                 nepas=.true.
@@ -3143,8 +3180,9 @@ c7/13   inited=.false.
       implicit real*8(a-h,o-z)
       character*(*) observ
       logical synchb
+      integer*8 latt(*)
       dimension y(0:nd),p(nd,0:nd),id(nd)
-      dimension latt(*),twiss(*),mult(*),gammab(*),istr(*),estr(*),
+      dimension twiss(*),mult(*),gammab(*),istr(*),estr(*),
      $     iobs(*),size(*)
 c     <----- output status -------------------
       common /corbtune/ipyv,ippv,ipobs,ipiv,ipbckup1,ipemibuf,nemitd,
@@ -3193,7 +3231,8 @@ c     emittance tuning by a single bump.
       character*(*) observ
       character name*12
       character*8 nlist(mfit1)
-      dimension latt(*),twiss(*),mult(*),gammab(*),size(*),istr(*),
+      integer*8 latt(*)
+      dimension twiss(*),mult(*),gammab(*),size(*),istr(*),
      $     estr(*),iobs(*)
       dimension a(0:norder),wb(norder+1),wc(norder+1,norder+1)
       common /cordefv/ ipvbmp,nvbmp

@@ -2,6 +2,7 @@
       use tfstk
       use tfcode
       use iso_c_binding
+      use tfcsi,only:cssetp
       implicit none
       type (sad_list), pointer :: klx
       type (sad_symdef), pointer :: symd
@@ -38,9 +39,7 @@
         if(force)then
           exist=.true.
         else
-c     if(isnan(rfromk(kx)))then
-c     write(*,'(z16)')kx
-c     endif
+c          call tfdebugprint(kx,'tfprint',1)
           if(ktfoperqd(kx,kax))then
             if(kx%k .eq. ktfoper+mtfnull)then
               go to 8000
@@ -155,7 +154,7 @@ c      endif
         isp=isp+1
         rtastk(isp)=al
         kad=klist(iaxout-5)
-        kah=itfhasharg(ktfref+isp-1,ilist(2,kad+2))
+        kah=itfhasharg(ktfref+isp-1+ispbase,ilist(2,kad+2))
         isp=isp-2
         kad=klist(kad+kah+3)
         n=autofg(al,'S10.0')
@@ -238,8 +237,8 @@ c      endif
       use tfstk
       use ffs_flag
       use tmacro
+      use tfcsi
       implicit none
-      include 'inc/TFCSI.inc'
       integer*4 l,lenw,ip1,i
       character*(*) word
       character*255 word1,word2

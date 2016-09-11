@@ -1,6 +1,6 @@
       subroutine phdrwa(ep,zp,npart,ax,title,case,ip)
+      use macmath
       implicit none
-      include 'inc/MACMATH.inc'
       integer nbin,npara
       parameter (nbin=100,npara=3)
 

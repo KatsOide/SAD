@@ -1,35 +1,35 @@
       subroutine filaux(idx)
       use maccbk
+      use mackw
+      use macphys
+      use macfile
+      use macmisc
       implicit none
-      integer idx
+      integer*4 idx
 
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      include 'inc/MACMISC.inc'
-      include 'inc/MACFILE.inc'
-      include 'inc/MACPHYS.inc'
       integer NAUX
       parameter (NAUX=6)
-      integer llen,pexln,iaux,status,iw,idummy
-      integer*4 mctaloc
+      integer*8 pexln,iaux,ktcaloc
+      integer*4 llen,status,iw,idummy
 c      integer*4 i,IgetGL
 c      real*8 dist
       real*8 u0,Vc,codin(6),codou(6)
       real*8 g,p0,pmass,phis,RgetGL
 C.....calculate total length of line
-      pexln=ilist(2,idx)
+c      write(*,*)'filaux-0 ',idx
+      pexln=idval(ilist(2,idval(idx)))
       if (ilist(2,pexln) .eq. 0)then
-        iaux=mctaloc(NAUX)
+        iaux=ktcaloc(NAUX)
         ilist(1,iaux)=NAUX
-        ilist(2,pexln)=iaux
+        klist(pexln)=iaux
         rlist(iaux+1)=0.d0
-      else if(ilist(1,ilist(2,pexln)) .ne. NAUX) then
+      else if(ilist(1,klist(pexln)) .ne. NAUX) then
         call errmsg('filaux','Inconsistent memory fallocation.',0,4)
         return
       else
-         iaux=ilist(2,pexln)
+         iaux=klist(pexln)
       endif
-      llen=ilist(1,pexln)
+      llen=ilist(1,pexln-1)-2
 c      dist=0
 c   K. Oide 10/26/1996
 c      do 1100 i=pexln+1,pexln+llen

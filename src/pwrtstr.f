@@ -8,8 +8,8 @@
       character*(*) word
       character*13 outc,autofg
       character*16 en
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),mult(*),
-     &          istr(nstra,4)
+      integer*8 latt(nlat),i
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),mult(*),istr(nstra,4)
       dimension rms(2),amin(2),amax(2),ave(2)
       include 'inc/common.inc'
       include 'inc/coroper.inc'
@@ -45,19 +45,19 @@ c     call getwdlK(word)
           j=ilist(mod(i-1,2)+1,istope+(i-1)/2)
           call elnameK(istr(j,1),en)
           call mbufw(en,.false.,io)
-          outc=autofg(rlist(latt(2,istr(j,1))+11),'S13.10')
+          outc=autofg(rlist(latt(istr(j,1))+11),'S13.10')
           call mbufw(outc,.false.,io)
           if(pvert(latt,istr(j,1))) then
-            rms(2)=rms(2)+rlist(latt(2,istr(j,1))+11)**2
-            amin(2)=min(amin(2),rlist(latt(2,istr(j,1))+11))
-            amax(2)=max(amax(2),rlist(latt(2,istr(j,1))+11))
-            ave(2)=ave(2)+rlist(latt(2,istr(j,1))+11)
+            rms(2)=rms(2)+rlist(latt(istr(j,1))+11)**2
+            amin(2)=min(amin(2),rlist(latt(istr(j,1))+11))
+            amax(2)=max(amax(2),rlist(latt(istr(j,1))+11))
+            ave(2)=ave(2)+rlist(latt(istr(j,1))+11)
             ny=ny+1
           else
-            rms(1)=rms(1)+rlist(latt(2,istr(j,1))+11)**2
-            amin(1)=min(amin(1),rlist(latt(2,istr(j,1))+11))
-            amax(1)=max(amax(1),rlist(latt(2,istr(j,1))+11))
-            ave(1)=ave(1)+rlist(latt(2,istr(j,1))+11)
+            rms(1)=rms(1)+rlist(latt(istr(j,1))+11)**2
+            amin(1)=min(amin(1),rlist(latt(istr(j,1))+11))
+            amax(1)=max(amax(1),rlist(latt(istr(j,1))+11))
+            ave(1)=ave(1)+rlist(latt(istr(j,1))+11)
             nx=nx+1
           endif
  10     continue
@@ -66,19 +66,19 @@ c     call getwdlK(word)
           j=istr(i,2)
           call elnameK(istr(j,1),en)
           call mbufw(en,.false.,io)
-          outc=autofg(rlist(latt(2,istr(j,1))+11),'S13.10')
+          outc=autofg(rlist(latt(istr(j,1))+11),'S13.10')
           call mbufw(outc,.false.,io)
           if(pvert(latt,istr(j,1))) then
-            rms(2)=rms(2)+rlist(latt(2,istr(j,1))+11)**2
-            amin(2)=min(amin(2),rlist(latt(2,istr(j,1))+11))
-            amax(2)=max(amax(2),rlist(latt(2,istr(j,1))+11))
-            ave(2)=ave(2)+rlist(latt(2,istr(j,1))+11)
+            rms(2)=rms(2)+rlist(latt(istr(j,1))+11)**2
+            amin(2)=min(amin(2),rlist(latt(istr(j,1))+11))
+            amax(2)=max(amax(2),rlist(latt(istr(j,1))+11))
+            ave(2)=ave(2)+rlist(latt(istr(j,1))+11)
             ny=ny+1
           else
-            rms(1)=rms(1)+rlist(latt(2,istr(j,1))+11)**2
-            amin(1)=min(amin(1),rlist(latt(2,istr(j,1))+11))
-            amax(1)=max(amax(1),rlist(latt(2,istr(j,1))+11))
-            ave(1)=ave(1)+rlist(latt(2,istr(j,1))+11)
+            rms(1)=rms(1)+rlist(latt(istr(j,1))+11)**2
+            amin(1)=min(amin(1),rlist(latt(istr(j,1))+11))
+            amax(1)=max(amax(1),rlist(latt(istr(j,1))+11))
+            ave(1)=ave(1)+rlist(latt(istr(j,1))+11)
             nx=nx+1
           endif
  11     continue

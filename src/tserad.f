@@ -3,7 +3,8 @@
       use ffs_flag
       use tmacro
       implicit none
-      integer*4 np,l1,i
+      integer*8 l1
+      integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),g(np),dv(np),
      $     rho,alf1,alc,b,f,dpr,pr,pxi,pyi,s,pzi,u,brad,p,hh,dp,de,
      $     er,h1

@@ -1,12 +1,11 @@
       subroutine rdkwdl(elmidx)
       use maccbk
+      use mackw
+      use macttyp
+      use macfile
+      use macmisc
       implicit none
       integer elmidx
-      include 'inc/MACFILE.inc'
-      include 'inc/MACMISC.inc'
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
 c
       character*(MAXSTR) token
       integer*4 slen,ival,ttype,hsrch

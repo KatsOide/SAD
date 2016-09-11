@@ -3,9 +3,11 @@
       use tfstk
       use ffs_flag
       use tmacro
+      use ffs_pointer, only:idelc,idtypec
       implicit none
       type (sad_symdef), pointer :: symd
-      integer*4  latt(2,nlat),kptbl(np0,6)
+      integer*8 latt(nlat)
+      integer*4 kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       real*8 sjx(np0),sjxjx(np0),sjy(np0),sjyjy(np0),sjz(np0),sjzjz(np0)
       complex*16 zbuf(lsp,3,np0)
@@ -15,8 +17,8 @@
       logical cmplot1,fourie1
       integer*8 kal,kaf,
      $     kv,kaj,ke,kax,ktaloc,ix0pl,iy0pl,ixjpl,ixnpl,ixppl,
-     $     izwrk,izexp,iajx,iaord,ib,iaexp,iiord,izwork
-      integer*4 lp0,np,jpcm,level,nsmear,
+     $     izwrk,izexp,iajx,iaord,ib,iaexp,iiord,izwork,lp0
+      integer*4 np,jpcm,level,nsmear,
      $     n,j,i,ip,jp,irtc,nsm,lpa,k,
      $     kp,lpl,kpl,lfnplt,maxord,nres,ndim,lcoeff,lv
       real*8 emx,rgetgl1,emz,es,ajx,ajy,ajyjy,ajz,ajxjx,ajzjz
@@ -26,7 +28,7 @@
       data vname/'RESULTSOFTRACKING'/
       character*2 ord
       integer*4 itfuplevel,itfdownlevel
-      lp0=latt(2,1)+kytbl(kwmax,idtype(latt(1,1)))+1
+      lp0=latt(1)+kytbl(kwmax,idtypec(1))+1
       np=np0
       emx=sqrt(abs(rgetgl1('EMITX')+rgetgl1('EMITY')))
       if(rfsw)then
@@ -46,7 +48,7 @@
       else
         call tinip(np,x,px,y,py,z,g,dv,emx,emz,codin,dvfs,cmplot)
       endif
-      call tpara(latt)
+      call tpara()
       if(.not. trpt)then
         call tclr(sjx,np0)
         call tclr(sjxjx,np0)
@@ -279,7 +281,7 @@ c         write(*,*)jp,k,kptbl(jp,3),rlist(kp),rlist(kp+1)
           call tfree(izexp)
         endif
       endif
-      call tltrm(latt,kptbl)
+      call tltrm(kptbl)
       if(kv .gt. 0)then
         call tflocal1(kal)
       endif

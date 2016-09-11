@@ -49,6 +49,7 @@
       use tfstk
       use tfmem
       use tfshare
+      use tfcsi
       implicit none
       type (sad_descriptor) kx,k1,k,kh
       type (sad_list), pointer :: kl,kl1,klx,klh
@@ -56,7 +57,7 @@
       type (sad_symdef), pointer :: symd
       type (sad_string), pointer :: str
       integer*8 ka1,ka,kax,km
-      integer*4 isp1,irtc,i,id,narg,nc,isp2,icslfno,itfdepth,
+      integer*4 isp1,irtc,i,id,narg,nc,isp2,itfdepth,
      $     itfgetrecl,ltr0,iaf,itfopenwrite,itfmessage,
      $     itfopenappend,itfopcode,isp0,nsize
       real*8 vx,v1,v
@@ -73,6 +74,8 @@ c     from Fortran77   77   77    77    77    77     77
       intrinsic dsin,dcos,dtan,dasin,dacos,datan,datan2
 c     from Fortran 77    77    77
       intrinsic dsinh,dcosh,dtanh
+c     from Fortran 08    08  <-- somehow cannot pass as an argument @ gfortran 5
+c      intrinsic derf,derfc
 
 c     DOUBLE COMPLEX specific math intrinsic function
 c     from Fortran EX    EX     EX    EX    EX
@@ -97,12 +100,12 @@ c     DOUBLE COMPLEX specific math function implemented by SAD
       real*8 tfarg,tfcarg
       external tfloor,tceiling,tfdummy,ccdabs,tfsign,tfcsign,
      $     tround,tcfloor,tcceiling,tcround,tfarg,tfcarg,inverseerf
-      real*8 aloggamma1,factorial,gammaq,gammap,erf,erfc,inverseerf,
-     $     tfevenq,tfoddq,productlog,gamma0,xsin
+      real*8 aloggamma1,factorial,gammaq,gammap,inverseerf,
+     $     tfevenq,tfoddq,productlog,gamma0,xsin,erf,erfc
       complex*16 cloggamma1,cfactorial,cerfc,cerf,
      $     tfcevenq,tfcoddq,cproductlog,tfdummy
       external aloggamma1,cloggamma1,factorial,cfactorial,gammaq,
-     $     gammap,erf,erfc,cerfc,cerf,gamma0,
+     $     gammap,cerfc,cerf,gamma0,erf,erfc,
      $     tfevenq,tfoddq,tfcevenq,tfcoddq,
      $     cproductlog,productlog,xsin
 c      call tfreecheck1('tfefun-0',itastk(1,isp),
@@ -228,8 +231,10 @@ c              GaCU GaCF Rest RRt1 Diff Gam0 **** XSin
             go to 6900
           elseif(id .le. 5000) then
 c            call tfdebugprint(ktastk(isp1),'tfefun-ctbl8',1)
-c            call tfdebugprint(ktastk(isp),'with ',1)
+c            call tfdebugprint(ktastk(isp),'with',1)
             call tfefunctbl8(isp1,id,kx,irtc)
+c            call tfdebugprint(kx,'result',1)
+c            write(*,*)'irtc: ',irtc
             go to 6900
           endif
         endif
@@ -427,9 +432,9 @@ c            call tfdebugprint(ktastk(isp),'with ',1)
           irtc=itfmessage(9,'General::wrongtype','"Real number"')
         else
           ka=int8(rtastk(isp))
-          if(ka .gt. lastpend)then
+          if(.not. tfchecklastp(ka))then
             irtc=itfmessage(9,'General::wrongnum',
-     $           '"Larger than lastpend"')
+     $           '"within allocated block"')
           else
             kx=kxadaloc(-1,4,klx)
             klx%rbody(1)=dble(klist(ka))
@@ -1543,6 +1548,8 @@ c            msgn TagS (*   *)   Hold z
         kx=kf%dbody(2)
         if(narg .ne. 0)then
           call tfreplacesymbolstk(kx,isp1+narg,narg,kx,.true.,rep,irtc)
+c          call tfdebugprint(kx,'puref-2',3)
+c          write(*,*)irtc
           if(irtc .ne. 0)then
             isp=isp1+narg
             return
@@ -1997,7 +2004,7 @@ c     Type fixed function proxy for generic math function/vendor extension
 c     DOUBLE instance of ASINH in Fortran2008
       real*8 function tasinh(x)
       implicit none
-      include 'inc/MATH.inc'
+c      include 'inc/MATH.inc'
       real*8 x
       tasinh=asinh(x)
       return
@@ -2005,7 +2012,7 @@ c     DOUBLE instance of ASINH in Fortran2008
 c     DOUBLE instance of ACOSH in Fortran2008
       real*8 function tacosh(x)
       implicit none
-      include 'inc/MATH.inc'
+c      include 'inc/MATH.inc'
       real*8 x
       tacosh=acosh(x)
       return
@@ -2013,7 +2020,7 @@ c     DOUBLE instance of ACOSH in Fortran2008
 c     DOUBLE instance of ATANH in Fortran2008
       real*8 function tatanh(x)
       implicit none
-      include 'inc/MATH.inc'
+c      include 'inc/MATH.inc'
       real*8 x
       tatanh=atanh(x)
       return
@@ -2028,7 +2035,6 @@ c     DOUBLE COMPLEX proxy of ZTAN vendor extension
 
 
       subroutine tfefundummy
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
+      use mackw
       return
       end

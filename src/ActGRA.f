@@ -1,10 +1,9 @@
       subroutine ActGRA(argp)
       use maccbk
+      use maccode
+      use macvar
       implicit real*8 (a-h,o-z)
       integer*4 argp
-      include 'inc/MACCBK.inc'
-      include 'inc/MACCODE.inc'
-      include 'inc/MACVAR.inc'
       integer id,gtype
       integer slen
       character*(MAXSTR) option

@@ -116,7 +116,7 @@ c     dp00=rlist(ifirst+20)+1.d0
           return
         endif
         
-        call pgrmat1(ilist(1,ilattp+1),rlist(ifgamm),im,
+        call pgrmat1(rlist(ifgamm),im,
      $       rtastk(isp1+2),rtastk(isp1+3),1,
      $       rlist(kam+1),kax1,kx,psix,psiy,psix0,psiy0,
      $       periodic,normalmode,angle,xplane)
@@ -136,7 +136,7 @@ c       print *,'length=',m
           return
         endif
         kax=ktavaloc(-1,m)
-        call pgrmat1(ilist(1,ilattp+1),rlist(ifgamm),im,rlist(kaa+1),
+        call pgrmat1(rlist(ifgamm),im,rlist(kaa+1),
      $       rlist(kaa1+1),m,rlist(kam+1),kax1,rlist(kax+1),psix,psiy,
      $       psix0,psiy0,periodic,normalmode,angle,xplane)
         kx=ktflist+kax
@@ -146,15 +146,16 @@ c       print *,'length=',m
       return
       end
 
-      subroutine pgrmat1 (latt,gammab,im,st,stt,ns,twsi,kax1,ar,psix,
+      subroutine pgrmat1 (gammab,im,st,stt,ns,twsi,kax1,ar,psix,
      $     psiy,psix0,psiy0,periodic,normalmode,angle,xplane)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idtypec,idvalc
       implicit none
       integer*8 kax1
       logical*4 periodic,normalmode,angle,xplane,entrance
-      integer*4 latt(2,nlat),im,js,ns,i,i1,iaxj,ias
+      integer*4 im,js,ns,i,i1,iaxj,ias
       real*8 gammab(nlat),twsi(27),st(ns),stt(ns),psix,psiy,ar(ns),
      $     psix0,psiy0,axi,bxi,ayi,byi,ri11,ri12,ri21,ri22,pinx,piny,
      $     fx,fy,rotation,cost,sint,r11,r12,r21,r22,det,qr,um,
@@ -179,8 +180,8 @@ c----- Ring ------------------------------------------------------------
       fy=0.5d0/sin(piny)
       do 101 i=1,ns
         js=st(i)
-        if(idtype(latt(1,js)) .eq. icbend) then
-          rotation=-rlist(idval(latt(1,js))+5)
+        if(idtypec(js) .eq. icbend) then
+          rotation=-rlist(idvalc(js)+5)
           cost=cos(rotation)
           sint=sin(rotation)
         else
@@ -350,8 +351,8 @@ c     write(*,'(a,1p,4e15.7)') 'response=',v
 c----- Transport line --------------------------------------------------
       do 201 i=1,ns
         js=st(i)
-        if(idtype(latt(1,js)) .eq. icbend) then
-          rotation=-rlist(idval(latt(1,js))+5)
+        if(idtypec(js) .eq. icbend) then
+          rotation=-rlist(idvalc(js)+5)
           cost=cos(rotation)
           sint=sin(rotation)
         else

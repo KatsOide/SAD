@@ -1,27 +1,30 @@
       subroutine expln(idxl)
       use maccbk
       implicit none
-      include 'inc/MACexpn.inc'
       integer*4 idxl
-      if(ilist(2,idval(idxl)) .gt. 0) return
-      call expnln(idxl)
+      if(ilist(2,idval(idxl)) .le. 0)then
+        call expnln(idxl)
+      endif
       return
       end
 
       subroutine expnln(idxl)
       use tfstk, only:ilist,itastk,isp,idval,idtype,rlist
+      use maccbk
+      use sad_main
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      include 'inc/MACexpn.inc'
-      integer*4 idxl,idx0,isp0,ia,i,idi,iti,plen,orientation,
-     $     itcaloc,ip,idxerr,idxpar,n,j
+      type (sad_el), pointer :: el
+      type (sad_comp), pointer :: cmp
+      integer*4 idxl,isp0,i,iti,plen,orientation,
+     $     idxerr,n,j,hsrchz,idxe,lpname
+      integer*8 kp,idxpar,ia,idx0,idi
       real*8 frand
 c      write(*,*)'expnln-0 ',idxl
       idx0=idval(idxl)
-c      write(*,*)'expnln-0.1 ',idx0
+c      write(*,*)'expnln-0.1 ',pname(idxl)
       if(ilist(2,idx0) .gt. 0)then
-        call tfree(int8(ilist(2,idx0)))
+        call tfreeln(ilist(2,idx0))
       endif
 c      write(*,*)'expnln-0.2 ',ilist(2,idx0)
       ilist(2,idx0)=0
@@ -31,34 +34,32 @@ c     first stage
 c      write(*,*)'expln: first stage done. ',isp,isp0
 c     
 c     Second stage : expand parameter list of each element
-c     
+c
       n=isp-isp0
-      ia=itcaloc(n+1)
-      ilist(1,ia)=n
-      ilist(2,ia)=0
-      ilist(2,idx0)=ia
+      idxe=hsrchz(pname(idxl)(:lpname(idxl))//"$EXPND")
+      ia=kmelaloc(n,el)
+      idval(idxe)=ia
+c      write(*,*)'expnln-0.3 ',idxe,ia,n
+      el%aux=0
+      ilist(2,idx0)=idxe
       do j=1,n
         i=isp0+j
-c         write(*,*)'explnstk-i ',i,itastk(1,i)
         idi=idval(itastk(1,i))
         plen=ilist(1,idi)
         orientation=sign(1,itastk(2,i))
-        ip=itcaloc(plen+1+expnsize)
-c        write(*,*)'expln-i ',i-isp0,ip,
-c     $       itastk(1,i),idtype(itastk(1,i)),plen
-        ilist(1,ia+j)=itastk(1,i)
-        ilist(2,ia+j)=ip
-        ilist(1,ip)=plen+expnsize
-        ilist(2,ip)=0
-        rlist(ip+plen+expnsize)=dble(orientation)
+        kp=kmcompaloc(plen,cmp)
+        el%comp(j)=kp
+        cmp%id=itastk(1,i)
+        cmp%param=0
+        cmp%value(cmp%ncomp2-2)=dble(orientation)
 c     set Nominal values
-        rlist(ip+1:ip+plen)=rlist(idi+1:idi+plen)
+        cmp%value(1:plen)=rlist(idi+1:idi+plen)
 c     and then add statistical error
         idxerr=ilist(2,idi)
         do while(idxerr .ne. 0)
           iti=idtype(itastk(1,i))
           if (kytbl(ilist(1,idxerr),iti) .ne. 0) then
-            idxpar=ip+kytbl(ilist(1,idxerr),iti)
+            idxpar=kp+kytbl(ilist(1,idxerr),iti)
             if (ilist(2,idxerr+1) .gt. 0) then
               rlist(idxpar)=rlist(idxpar)+ frand(idxerr+1)
             else
@@ -71,7 +72,6 @@ c     and then add statistical error
           idxerr=ilist(2,idxerr)
         enddo
       enddo
-c         write(*,*)'explnstk-9 ',isp,isp0
       isp=isp0
       return
       end
@@ -79,11 +79,12 @@ c         write(*,*)'explnstk-9 ',isp,isp0
       recursive subroutine explnstk(idxl,direct)
       use maccbk
       use tfstk, only:ilist,itastk,isp,idval,idtype
+      use maccode
+      use mackw
       implicit none
+      integer*8 idx,i1,i2,i
       integer*4 idxl
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      integer*4 idx,direct,i1,i2,i,idxi2,dir,j,lpname
+      integer*4 direct,idxi2,dir,j,lpname
       idx=idval(idxl)
       if(direct .gt. 0)then
         i1=idx+1
@@ -121,5 +122,29 @@ c         write(*,*)'explnstk-9 ',isp,isp0
           enddo
         endif
       enddo
+      return
+      end
+
+      subroutine tfreeln(idxe)
+      use maccbk
+      use tfstk, only:ilist,klist
+      use sad_main
+      implicit none
+      type (sad_el), pointer ::el
+      type (sad_comp), pointer ::cmp
+      integer*4 i,idxe
+      integer*8 k,ip
+      ip=idval(idxe)
+      call loc_el(ip,el)
+      idval(idxe)=0
+      do i=1,el%nlat1-2
+        k=el%comp(i)
+        call loc_comp(k,cmp)
+        if(cmp%param .gt. 0)then
+          call tfree(cmp%param)
+        endif
+        call tfree(k)
+      enddo
+      call tfree(ip)
       return
       end

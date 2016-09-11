@@ -1,10 +1,10 @@
       subroutine sprexl(idxl)
       use maccbk
+      use mackw
+      use macfile
       implicit none
       integer*4 idxl,ip,llen,i,j
 c
-      include 'inc/MACCODE.inc'
-      include 'inc/MACFILE.inc'
 c for debug
       call ptrace('sprexl '//pname(idxl)//'!',1)
 c end debug

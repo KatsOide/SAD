@@ -1,15 +1,16 @@
       subroutine lread(idxl,token,slen,ttype,rval,ival)
       use maccbk
       use tfstk
+      use cbkmac
       implicit none
-      include 'inc/CBKMAC.inc'
       integer*4 idxl,idx
       character*(MAXSTR) token,wkstr
       integer*4 slen,ival,ttype
       real*8 rval
 c     
-      integer*4 hsrchz,italoc
-      integer*4 n,isp0,ia,mult
+      integer*8 ktaloc,ia
+      integer*4 hsrchz
+      integer*4 n,isp0,mult
       logical skipch
 c     
 c     first character must be '='
@@ -82,7 +83,7 @@ c     now read elemnt list
         call gettok(token,slen,ttype,rval,ival)
       enddo w2000
       n=isp-isp0
-      ia=italoc(n+1)
+      ia=ktaloc(n+1)
       ilist(1,ia)=n
       ilist(2,ia)=0
       klist(ia+1:ia+n)=ktastk(isp0+1:isp)

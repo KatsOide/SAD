@@ -1,7 +1,7 @@
       subroutine getbuf
       use tfrbuf
+      use tfcsi
       implicit none
-      include 'inc/TFCSI.inc'
       integer*4 lrecl0,lr
       if(lfni .le. 0)then
         ios=99999
@@ -102,8 +102,8 @@
       end
 
       subroutine setbuf(string,nc)
+      use tfcsi
       implicit none
-      include 'inc/TFCSI.inc'
       integer*4 nc
       integer*1 string(nc)
       ipoint=lrecl+1
@@ -116,8 +116,8 @@
       end
 
       subroutine savebuf(string,nc)
+      use tfcsi
       implicit none
-      include 'inc/TFCSI.inc'
       integer*4 nc,i
       character*(*) string
       nc=min(len(string),max(lrecl-ipoint,0))

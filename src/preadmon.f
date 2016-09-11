@@ -1,6 +1,7 @@
       subroutine preadmon(word,latt,twiss,mult,imon,nmon,lfno)
       use ffs
       use tffitcode
+      use tfcsi, only:cssetp
       logical lod,lex,stat,name
       character*(*) word
       character*80 outc,ename,en
@@ -8,7 +9,8 @@
 C*DEC
       character*255 word2
 C*DEC
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),mult(*),
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),mult(*),
      &          imon(nmona,4)
       external pack
       include 'inc/common.inc'

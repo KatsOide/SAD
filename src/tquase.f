@@ -1,6 +1,7 @@
       subroutine tquase(trans,cod,beam,al,ak,bz,
-     1                 dx,dy,theta,radlvl,
-     1                 fringe,f1,f2,mfring,eps0,l,forward,ld)
+     1     dx,dy,theta,radlvl,
+     1     fringe,f1in,f2in,f1out,f2out,
+     $     mfring,eps0,l,forward,ld)
       use tfstk
       use ffs_flag
       use tmacro
@@ -9,7 +10,7 @@
       integer*8 ifvh,kx
       integer*4 level,irtc
       real*8 trans(1,12),cod(6),beam(21),al,ak,bz,
-     $    dx,dy,theta,radlvl,f1,f2,eps0
+     $    dx,dy,theta,radlvl,f1in,f2in,f1out,f2out,eps0
       integer*4 mfring,l,ld
       logical*4 fringe,forward
       real*8 bxs,bys,bzs,ali,alm,aki,akm,rb
@@ -43,7 +44,7 @@ c        ilist(1,ifvh-2)=-1
         call tqfrie(trans,cod,beam,ak,al,ld,bz)
       endif
       if(mfring .eq. 1 .or. mfring .eq. 3)then
-        call tqlfre(trans,cod,beam,al,ak,f1,f2,bz,ld)
+        call tqlfre(trans,cod,beam,al,ak,f1in,f2in,bz,ld)
       endif
       if(ifv .eq. 0)then
         call tsolque(trans,cod,beam,al,ak,
@@ -52,7 +53,7 @@ c        ilist(1,ifvh-2)=-1
       else
         level=itfuplevel()
         l1=l
- 1      rlist(ilist(2,ifv+1)+1)=l1
+ 1      rlist(ifv+1)=dble(l1)
         call tfleval(klist(ifv-3),kx,.true.,irtc)
         if(irtc .ne. 0)then
           level=itfdownlevel()
@@ -102,7 +103,7 @@ c        ilist(1,ifvh-2)=-1
         endif
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
-        call tqlfre(trans,cod,beam,al,ak,-f1,f2,bz,ld)
+        call tqlfre(trans,cod,beam,al,ak,-f1out,f2out,bz,ld)
       endif
       if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
         call tqfrie(trans,cod,beam,-ak,al,ld,bz)

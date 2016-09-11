@@ -518,7 +518,7 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
       tx=klt%rbody(1)
       ty=klt%rbody(2)
       tz=klt%rbody(3)
-      call tlcalc(klist(isp1+1),ke,m,tx,ty,tz)
+      call tlcalc(ktastk(isp1+1),ke,m,tx,ty,tz)
       kx=ktflist+ke
       return
       end
@@ -585,8 +585,8 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
 
       subroutine tlspect(isp1,kx,nparallel,irtc)
       use tfstk
+      use macphys
       implicit none
-      include 'inc/MACPHYS.inc'
       type (sad_list), pointer :: klp,kl1,kl2,klt,klx
       real*8 speedoflight
       parameter (speedoflight=cveloc)

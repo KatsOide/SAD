@@ -1,6 +1,7 @@
       subroutine tquads(np,x,px,y,py,z,g,dv,pz,l,al,ak,bz,
-     1                 dx,dy,theta,cost,sint,radlvl,
-     1                 fringe,f1,f2,mfring,eps0,ld,forward)
+     1     dx,dy,theta,cost,sint,radlvl,
+     1     fringe,f1in,f2in,f1out,f2out,
+     $     mfring,eps0,ld,forward)
       use tfstk
       use ffs_flag
       use tmacro
@@ -10,7 +11,8 @@
       integer*4 np,ld,mfring,i,irtc,ld1,level,m,itfuplevel,
      $     itfdownlevel,l
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
-     $     al,bz,ak,dx,dy,theta,cost,sint,radlvl,f1,f2,f1r,f2r,eps0,
+     $     al,bz,ak,dx,dy,theta,cost,sint,radlvl,
+     $     f1in,f2in,f1out,f2out,f1r,f2r,eps0,
      $     a,aki,akm,ali,alm,b,b1,ea,fx,fy,p,pr,px0,pxf,pyf,rb,x0
       logical*4 enarad,fringe,forward
       character*13 vname
@@ -58,9 +60,9 @@ c        pr=(1.d0+g(i))**2
         do 2110 i=1,np
 c          p=(1.d0+g(i))**2
           p=(1.d0+g(i))
-          a=f1/p
+          a=f1in/p
           ea=exp(a)
-          b=f2/p
+          b=f2in/p
           pxf=px(i)/ea
           pyf=py(i)*ea
           z(i)=z(i)-(a*x(i)+b*(1.d0+.5d0*a)*pxf)*px(i)
@@ -73,12 +75,12 @@ c          p=(1.d0+g(i))**2
       endif
       if(enarad)then
         if(iprev(l) .eq. 0)then
-          f1r=f1
+          f1r=f1in
         else
           f1r=0.d0
         endif
         if(inext(l) .eq. 0)then
-          f2r=f1
+          f2r=f1out
         else
           f2r=0.d0
         endif
@@ -146,9 +148,9 @@ c          p=(1.d0+g(i))**2
         do 2120 i=1,np
 c          p=(1.d0+g(i))**2
           p=(1.d0+g(i))
-          a=-f1/p
+          a=-f1out/p
           ea=exp(a)
-          b=f2/p
+          b=f2out/p
           pxf=px(i)/ea
           pyf=py(i)*ea
           z(i)=z(i)-(a*x(i)+b*(1.d0+.5d0*a)*pxf)*px(i)

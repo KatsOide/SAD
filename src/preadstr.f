@@ -2,6 +2,7 @@
       use tfstk
       use ffs
       use tffitcode
+      use tfcsi,only:cssetp
       logical lod,lex,stat,name
       character*(*) word
       character*80 outc,ename,en
@@ -9,7 +10,8 @@
 C*DEC
       character*255 word2
 C*DEC
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),mult(*),
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),mult(*),
      &          istr(nstra,4)
       external pack
       include 'inc/common.inc'
@@ -94,7 +96,7 @@ c     .... reset current specification of Coorectors
       goto 1
 c
  22   continue
-      rlist(latt(2,istr(istr(jm,2),1))+11)=va1
+      rlist(latt(istr(istr(jm,2),1))+11)=va1
       goto 1
  98   call permes('??',outc,' is not a number.',lfno)
  99   call pack(istr(1,2),istr(1,3),nstr,nstra)

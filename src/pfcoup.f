@@ -2,11 +2,12 @@
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idvalc,idtypec
       implicit real*8(a-h,o-z)
       parameter (tol=1d-16)
       logical coup
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),
-     $     ls(2),lf(2)
+      integer*8 latt(nlat),le,ld,lp
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),ls(2),lf(2)
       coup=.false.
       if(la+1.gt.lb) then
         ls(1)=la+1
@@ -22,9 +23,9 @@
       do 1999 i=1,2
         do 110 l=ls(i),lf(i)
           l1=l-1
-          ltyp=idtype(latt(1,l1))
-          le=latt(2,l1)
-          ld=idval(latt(1,l1))
+          ltyp=idtypec(l1)
+          le=latt(l1)
+          ld=idvalc(l1)
 c         if(ideal)then
             lp=ld
 c         else

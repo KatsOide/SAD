@@ -19,7 +19,7 @@
       real*8 tracex,tracey
       cell0=cell
       cell=.true.
-      call qcell(1,0,hstab,vstab,tracex,tracey,.false.,over)
+      call qcell(0,hstab,vstab,tracex,tracey,.false.,over)
       cell=.false.
       do 1 i=11,ntwissfun
         twiss(1,0,i)=0.d0

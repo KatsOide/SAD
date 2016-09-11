@@ -38,6 +38,8 @@ FoldList[`f_,`x_,`e_]:=Module[{`y=`x,`l={`x}},
 For[`ini_,`cond_,`incr_,`body_]:=(ini;While[cond,body;incr];);
 SetAttributes[For,HoldAll];
 Through[`p_[f__][x__]]:=p@@(#[x]&/@{f});
+
+FractionalPart[x_]=x-Floor[x];
 Positive[x_Real]:=x>0;
 Positive[x_List]:=Positive/@x;
 Negative[x_Real]:=x<0;

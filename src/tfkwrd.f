@@ -1,8 +1,7 @@
       character*(*) function tfkwrd(lt,ioff)
       use tfstk
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
       integer*4 lt,ioff,i
       if(ioff .eq. 0)then
         tfkwrd=pname(kytbl(0,lt))(2:)
@@ -24,9 +23,8 @@
 
       character*(*) function tfkwrd1(lt,ioff,ii)
       use tfstk
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
       integer*4 lt,ioff,i,ii
       ii=0
       if(ioff .eq. 0)then

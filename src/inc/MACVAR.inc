@@ -1,5 +1,5 @@
 c     Don't confuse, Emacs. This is -*- fortran -*- mode!
-      integer*4 VarPt,VarInt,VarRl,VarLog,VarLst,VarStr,maxv
-      parameter(VarPt=1, VarLog=2, VarInt=4, VarRl=8, VarStr=128)
-      parameter(VarLst=256)
-      parameter (maxv=20)
+c$$$      integer*4 VarPt,VarInt,VarRl,VarLog,VarLst,VarStr,maxv
+c$$$      parameter(VarPt=1, VarLog=2, VarInt=4, VarRl=8, VarStr=128)
+c$$$      parameter(VarLst=256)
+c$$$      parameter (maxv=20)

@@ -6,7 +6,8 @@
       character*(*) word
       character*13 outc,autofg
       character*16 en
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),mult(*),
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),mult(*),
      &          imon(nmona,4)
       dimension rms(2),amin(2),amax(2)
       include 'inc/common.inc'

@@ -1,15 +1,15 @@
       Subroutine ActLie(argp)
       use maccbk
+      use macvar
       implicit real*8 (a-h,o-z)
       integer*4 argp
-      include 'inc/MACVAR.inc'
 C
 C      idummy=sethtb('LIE     ',icACT,mfalloc(3))
 C      ilist(1,idval(idummy))=2
 C      call setfnp(ilist(1,idval(idummy)+1),Act)
 C      ilist(1,idval(idummy)+2)=hsrch('USE')
       integer len,idx,hsrchz
-      integer rslvin
+      integer*8 rslvin
 c
       save
 c

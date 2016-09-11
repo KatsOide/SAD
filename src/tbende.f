@@ -273,13 +273,14 @@
       subroutine tbende(trans,cod,beam,al0,phib,phi0,
      $     psi1,psi2,apsi1,apsi2,ak,
      1     dx,dy,theta,dtheta,
-     $     fb1,fb2,mfring,fringe,eps0,enarad,alcorr,next,ld)
+     $     fb1,fb2,mfring,fringe,eps0,enarad,alcorr,next,l,ld)
       use bendeb
       use tfstk
       use ffs_flag
       use tmacro
+      use multa, only:nmult
       implicit none
-      integer*4 ld,mfring,ndiv,nrad,n
+      integer*4 ld,mfring,ndiv,nrad,n,l
       real*8 al0,phib,phi0,psi1,psi2,ak,dx,dy,theta,dtheta,
      $     fb1,fb2,eps0,dphix,phibl,
      $     dxfr1,dyfr1,dxfr2,dyfr2,
@@ -288,6 +289,7 @@
      $     dphiy,dyfra1,dyfra2,apsi1,apsi2,
      $     csphin,snphin,sinsqn,phin,aln
       real*8 trans(6,12),cod(6),beam(42)
+      complex*16 akm(0:nmult)
       logical*4 enarad,alcorr,fringe,next,prev
       if(alcorr .and. 
      $     mfring .ne. 0 .and. al0 .ne. 0.d0
@@ -299,9 +301,26 @@
         al=al0
       endif
       if(phi0 .eq. 0.d0)then
-        call tsteee(trans,cod,beam,al0,-phib,dx,dy,theta,enarad,
-     $       apsi1,apsi2,
-     $       fb1,fb2,mfring,fringe,next,ld)
+        if(ak .eq. 0.d0)then
+          call tsteee(trans,cod,beam,al0,-phib,dx,dy,theta,enarad,
+     $         apsi1,apsi2,
+     $         fb1,fb2,mfring,fringe,next,ld)
+        elseif(phib .eq. phi0)then
+          call tquade(trans,cod,beam,al0,ak,
+     1     dx,dy,theta,enarad,fringe,0.d0,0.d0,0.d0,0.d0,0,eps0,
+     $     .true.,next,ld)
+        else
+          akm=(0.d0,0.d0)
+          akm(0)=phib-phi0
+          akm(1)=ak
+          call tmulte(trans,cod,beam,l,al,akm,0.d0,
+     $         0.d0,psi1,psi2,apsi1,apsi2,
+     1         dx,dy,0.d0,0.d0,0.d0,theta,dtheta,
+     $         eps0,enarad,fringe,
+     $         0.d0,0.d0,0.d0,0.d0,mfring,fb1,fb2,.true.,
+     $         0.d0,0.d0,0.d0,0.d0,0.d0,
+     $         .false.,.false.,ld)
+        endif
         return
       elseif(phib .eq. 0.d0)then
         call tchge(trans,cod,beam,-dx,-dy,theta,.true.,ld)

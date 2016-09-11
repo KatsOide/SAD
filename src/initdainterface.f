@@ -64,6 +64,7 @@ c
       use ffs
       use temw, only: rr=>r, rri=>ri
       use tffitcode
+      use ffs_pointer, only:latt,idelc
       implicit real*8 (a-h,o-z)
 c
 c  ilist(1,ilattp+1)=latt(1,1)
@@ -74,6 +75,7 @@ c
       data il,ib,iq,is,icv/5*0/
 c     aa=45.d0/datan(1.d0)
       integer ent_edge,exit_edge
+      integer*8 i_pin0
       logical preele,sucele
       aa=1.
       lfile=11
@@ -101,7 +103,7 @@ c
       write(*,*) ' nlat, nele ',nlat,nele
       do 10 i=1,nlat-1
 c         j=latt(1,i)
-         j=ilist(1,ilattp+i)
+         j=idelc(i)
          id=idtype(j)
          rle=rlist(idval(j)+1)
 c
@@ -111,10 +113,10 @@ c         if(id.ge.2.and.id.le.40) then
  1       continue
          if(ipre.le.0) then
             ipre=1
-            jpre=ilist(1,ilattp+ipre)
+            jpre=idelc(ipre)
             goto 2
          endif
-         jpre=ilist(1,ilattp+ipre)
+         jpre=idelc(ipre)
          if(idtype(jpre).gt.40) then
             ipre=ipre-1
             goto 1
@@ -124,10 +126,10 @@ c         if(id.ge.2.and.id.le.40) then
  3       continue
          if(isuc.gt.nlat-1) then
             isuc=nlat-1
-            jsuc=ilist(1,ilattp+nlat-1)
+            jsuc=idelc(nlat-1)
             goto 4
          endif
-         jsuc=ilist(1,ilattp+isuc)
+         jsuc=idelc(isuc)
          if(idtype(jsuc).gt.40) then
             isuc=isuc+1
             goto 3
@@ -144,7 +146,7 @@ c         if(id.ge.2.and.id.le.40) then
             write(*,*) 'idsuc is set id which is',id,i,'-th element'
          endif
 c
-c         if(i.lt.nlat) jsuc=ilist(1,ilattp+i+1)
+c         if(i.lt.nlat) jsuc=ilist(2,latt(i+1))
 c         write(6,*) i,j
 
          if(id.eq.1) then
@@ -155,14 +157,14 @@ c -----  Bending magnet  ----------------------------------
 c
          else if(id.eq.2) then
             ib=ib+1
-            ang=rlist(ilist(2,ilattp+i)+2)
-            e1=rlist(ilist(2,ilattp+i)+3)*ang*aa
-            e2=rlist(ilist(2,ilattp+i)+4)*ang*aa
+            ang=rlist(latt(i)+2)
+            e1=rlist(latt(i)+3)*ang*aa
+            e2=rlist(latt(i)+4)*ang*aa
             teta=rlist(idval(j)+5)*aa
-            dteta=rlist(ilist(2,ilattp+i)+5)*aa-teta
-            dx=rlist(ilist(2,ilattp+i)+9)
-            dy=rlist(ilist(2,ilattp+i)+10)
-            disfrin=rlist(ilist(2,ilattp+i)+12)
+            dteta=rlist(latt(i)+5)*aa-teta
+            dx=rlist(latt(i)+9)
+            dy=rlist(latt(i)+10)
+            disfrin=rlist(latt(i)+12)
             rhoi=ang/rle
             if(disfrin.eq.0.) then
             ent_edge=1
@@ -170,9 +172,9 @@ c
             preele=idpre.ge.2.and.idpre.le.40
             sucele=idsuc.ge.2.and.idsuc.le.40
             if(preele.
-     +              and.rlist(ilist(2,ilattp+ipre)).ne.0.) ent_edge=0
+     +              and.rlist(latt(ipre)).ne.0.) ent_edge=0
             if(sucele.
-     +              and.rlist(ilist(2,ilattp+isuc)).ne.0.) exit_edge=0
+     +              and.rlist(latt(isuc)).ne.0.) exit_edge=0
             else
                ent_edge=0
                exit_edge=0
@@ -190,12 +192,12 @@ c -----  Quadrupole magnet  ----------------------------------
 c
          else if(id.eq.4) then
             iq=iq+1
-            rkl1=rlist(ilist(2,ilattp+i)+2)
+            rkl1=rlist(latt(i)+2)
             teta=rlist(idval(j)+4)*aa
-            dx=rlist(ilist(2,ilattp+i)+5)
-            dy=rlist(ilist(2,ilattp+i)+6)
-            dteta=rlist(ilist(2,ilattp+i)+4)*aa-teta
-            disfrin=rlist(ilist(2,ilattp+i)+9)
+            dx=rlist(latt(i)+5)
+            dy=rlist(latt(i)+6)
+            dteta=rlist(latt(i)+4)*aa-teta
+            disfrin=rlist(latt(i)+9)
             e1=0.
             e2=0.
             if(disfrin.eq.0.) then
@@ -204,9 +206,9 @@ c
             preele=idpre.ge.2.and.idpre.le.40
             sucele=idsuc.ge.2.and.idsuc.le.40
             if(preele.
-     +              and.rlist(ilist(2,ilattp+ipre)).ne.0.) ent_edge=0
+     +              and.rlist(latt(ipre)).ne.0.) ent_edge=0
             if(sucele.
-     +              and.rlist(ilist(2,ilattp+isuc)).ne.0.) exit_edge=0
+     +              and.rlist(latt(isuc)).ne.0.) exit_edge=0
             else
                ent_edge=0
                exit_edge=0
@@ -224,11 +226,11 @@ c -----  Sextupole magnet  ----------------------------------
 c
          else if(id.eq.6) then
             is=is+1
-            rkl2=rlist(ilist(2,ilattp+i)+2)
+            rkl2=rlist(latt(i)+2)
             teta=rlist(idval(j)+4)*aa
-            dx=rlist(ilist(2,ilattp+i)+5)
-            dy=rlist(ilist(2,ilattp+i)+6)*aa-teta
-            dteta=rlist(ilist(2,ilattp+i)+4)
+            dx=rlist(latt(i)+5)
+            dy=rlist(latt(i)+6)*aa-teta
+            dteta=rlist(latt(i)+4)
             e1=0.
             e2=0.
             if(rle.gt.0.) then
@@ -250,11 +252,11 @@ c -----  Octupole magnet  ----------------------------------
 c
          else if(id.eq.8) then
             is=is+1
-            rkl2=rlist(ilist(2,ilattp+i)+2)
+            rkl2=rlist(latt(i)+2)
             teta=rlist(idval(j)+4)*aa
-            dx=rlist(ilist(2,ilattp+i)+5)
-            dy=rlist(ilist(2,ilattp+i)+6)*aa-teta
-            dteta=rlist(ilist(2,ilattp+i)+4)
+            dx=rlist(latt(i)+5)
+            dy=rlist(latt(i)+6)*aa-teta
+            dteta=rlist(latt(i)+4)
             e1=0.
             e2=0.
             if(rle.gt.0.) then
@@ -275,16 +277,16 @@ c -----  Cavity  ----------------------------------
 c
          else if(id.eq.31) then
             icv=icv+1
-            rfv=rlist(ilist(2,ilattp+i)+2)
-            rharm=rlist(ilist(2,ilattp+i)+3)
-            freq=rlist(ilist(2,ilattp+i)+5)
+            rfv=rlist(latt(i)+2)
+            rharm=rlist(latt(i)+3)
+            freq=rlist(latt(i)+5)
             write(lfile,*) 'Cavity ',pname(j),'(volt=',rfv,
      +           ', freq=',freq,' );'
 c
 c -----  Beam-beam collision  ----------------------------------
 c
          else if(id.eq.36) then
-            i_pin0=ilist(2,ilattp+i)
+            i_pin0=latt(i)
             write(lfile,*) 'IP ',pname(j),
      &           '( N_particle=',rlist(i_pin0+29),
      &           ', N_slice=',rlist(i_pin0+28),
@@ -314,7 +316,7 @@ c
 c -----  Phase space rotator  ----------------------------------
 c
          else if(id.eq.37) then
-            i_pin0=ilist(2,ilattp+i)
+            i_pin0=latt(i)
             write(lfile,*) 'R_ph_rot ',pname(j),
      &           '( nux=',rlist(i_pin0+3),
      &           ', nuy=',rlist(i_pin0+6),

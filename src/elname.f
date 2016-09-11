@@ -19,6 +19,7 @@
       use ffs
       use ffs_pointer
       use tffitcode
+      use sad_main
       implicit none 
       integer*4 i
       character*(*) name
@@ -26,21 +27,23 @@
 c
       integer*4 lenw
 c
-      integer ltyp,idx,l
+      integer*4 ltyp,idx,l,id
       character*(MAXPNAME) buff
 c
       if(i .eq. nlat)then
         name='$$$'
       else
-        name=pname(latt(1,i))
+        id=idelc(i)
+        name=pname(id)
         idx=max(0,abs(mult(i)))
+c        write(*,*)'elname1 ',i,mult(i)
         if(comp .and. idx .eq. 0)then
 c     Case: Force append suffix number by comp flag
-          ltyp=idtype(latt(1,i))
+          ltyp=idtype(id)
           if(ltyp .gt. icNULL .and. ltyp .lt. icMXEL)then
             idx=kytbl(kwINDX,ltyp)
             if(idx .ne. 0)then
-              idx=max(1,int(rlist(idval(latt(1,i))+idx)))
+              idx=max(1,int(rlist(idval(id)+idx)))
             endif
           else
             idx=0

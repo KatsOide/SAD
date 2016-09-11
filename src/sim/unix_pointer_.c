@@ -57,7 +57,7 @@ void setfnp_(integer4 *table, void (*func)(integer4 *)) {
 }
 
 /* funcall1(func, argv) */
-void funcall1_(integer4 *func, integer4 *arg1) {
+void funcall1_(integer8 *func, integer8 *arg1) {
   ptrdiff_t address = ((ptrdiff_t)*func)*sizeof(void*);
 
   /* Cast integer *func as 1 argument function: void (*)(integer4 *) */

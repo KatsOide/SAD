@@ -8,7 +8,7 @@ SetAttributes[{Graphics,AspectRatio,PlotRange,
   PlotJoined,StepRatio,PointSize,PointSymbol,PlotColor,Dashing,
   ErrorBarTickSize,ErrorBarThickness,PointColor,PointBorderColor,PointTags,
   LineTags,Thickness,FrameTicks,Initialize,FrameLabel,DisplayFunction,
-  DataRange,Reference,FillColor,Arrow,Clip,
+  DataRange,Reference,FillColor,Arrow,Clip,FrameUnitLabel,
   Orientation,Line,Point,Rectangle,Circle,Polygon,Hook,Linear,Bar,Text,
   TextSize,TextRotate,TextAlign,Scaled,GridLines,WindowScaled,CanvasScaled,
   RectScaled,AboveTags,BelowTags,
@@ -18,7 +18,7 @@ SetAttributes[{Graphics,AspectRatio,PlotRange,
 
 Graphics$Options=AspectRatio|FrameLabel|PlotRange|GridLines|Alignment|DataRange|
   PlotRegion|PlotLabel|FrameTicks|TickSize|TickFont|Tags|Background|Frame|FrameClick|
-    InfoBind;
+    InfoBind|FrameUnitLabel;
 
 With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
   AspectRatio->Automatic,PlotJoined->False,StepRatio->1,
@@ -29,7 +29,8 @@ With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
   PointBorderColor->Automatic,GridLines->{Automatic,Automatic},
   PointTags->Null,LineTags->Null,Thickness->1,
   FrameTicks->{True,True,Ticks,Ticks},Initialize->True,
-  FrameLabel->{"","","",""},DisplayFunction:>$DisplayFunction,
+  FrameLabel->{"","","",""},FrameUnitLabel->{},
+  DisplayFunction:>$DisplayFunction,
   PlotLabel->"",Prolog->{},Epilog->{},Legend->False,
   Background->"#ffffff"},
   r=(Rule|RuleDelayed)[Graphics$Options,_]},
@@ -145,6 +146,79 @@ PR$$[{x_List,y_}]:={x,{y,y}};
 PR$$[{x_,y_}]:={{Automatic,Automatic},{x,y}};
 PR$$[Default]=Default;
 PR$$[x_]:={{x,x},{x,x}};
+
+With[{def={MaxBend->0.1,PlotPoints->32,PlotDivision->1024,
+  PlotJoined->True,StepRatio->1,Plot->False,GridLines->{Automatic,Automatic}}},
+
+  Plot[f_,{x_,xmin_,xmax_},opt___]:=Block[{x},Module[
+    {{maxb,minp,minx,pj,sr,pt,gr}=
+      {MaxBend,PlotPoints,PlotDivision,PlotJoined,StepRatio,Plot,GridLines}/.{opt}/.def},
+    ListPlot[PlotInterpolate[f,{x,xmin,xmax},minp,Max[minp*3,minx],maxb],
+      PlotJoined->pj,StepRatio->sr,Plot->pt,GridLines->gr,opt]]]];
+
+With[{def={Dashing->{{1},{0.75,0.25},{0.4, 0.15},{0.2,0.1},{0.1,0.08},
+  {0.8,0.08, 0.08, 0.08},{0.4,0.08,0.08,0.08}},
+  PlotColor:>If[$DisplayFunction===TopDrawer,
+    {"black","red","blue","green","gray","magenta","cyan","yellow"},
+    {"black","red3","dark slate blue","forest green","gray",
+      "magenta","cyan","yellow"}],
+  Legend->{False},
+  DisplayFunction->Default}},
+
+  Plot[f_List,{x_,xmin_,xmax_},opt___]:=Block[{x},Module[
+    {da,pc,leg,n,g,h=Map[Hold,Unevaluated[f]]},
+    x=xmin;
+    {da,pc,leg}={Dashing,PlotColor,Legend}/.{opt}/.def;
+    n=Length[h];
+    da=(Dashing->#)&/@Take[Flatten[Table[da,
+      {Ceiling[n/Max[Length[da],1]]}],1],n];
+    pc=(PlotColor->#)&/@Take[Flatten[Table[pc,
+      {Ceiling[n/Max[Length[pc],1]]}]],n];
+    leg=(Legend->#)&/@Take[Flatten[{{leg},Table[False,{n}]}], n];
+    g=MapThread[Function[{a,b,c,d},Plot[ReleaseHold[a],{x,xmin,xmax},
+      DisplayFunction->Null,b,c,d,opt]],{h,da,pc,leg}];
+    If[(DisplayFunction/.{opt}/.def)===Default,Show[g]];
+    g]]];
+
+PlotInterpolate[fin_,{y_,xmin_,xmax_},min0_,maxdiv_,maxb_]:=Module[
+  {f,fs,s,dl,dl0,dl1,la,cos,a,yw,ar,dx,xl,yl,x0,x1,x2,cosm,cosm1=-1,la0=0,
+    costh=1-maxb^2/2,min=min0,fh=Extract[Hold[fin],{1},Head]},
+  If[Head[fh]===SplineData,
+    min=Max[min,Length[fh[[1,1]]]]];
+  fs = With[{y = #}, {#, Check[fin, 0]}]&;
+  f  = With[{y = Vector[#]},
+    Check[ReleaseVector[fin], ReleaseVector[fs[Vector[#]]]]]&;
+  dx=(xmax-xmin)/min;
+  yl=Re[f[xl=Range[0,min]*dx+xmin]];
+  s=True;
+  While[s && Length[xl]<maxdiv,
+    yw=Max[yl]-Min[yl];
+    ar=Abs[yw/(xmax-xmin)];
+    la=Thread[{ar*xl,yl}];
+    dl=Difference[la];
+    dl0=Drop[dl,-1];
+    dl1=Rest[dl];
+    cos=MapThread[(#.#2)/Max[Abs[Complex@@#]*Abs[Complex@@#2],1e-100]&,{dl1,dl0}];
+    cosm=Min[cos];
+    If[cosm<cosm1-maxb/10 || cosm>cosm1+maxb/10,
+      cosm1=cosm;
+      x0=Take[xl,{2,-2}];
+      x1=(Drop[xl,-2]+2*x0)/3;
+      x2=(Drop[xl,2]+2*x0)/3;
+      a=MapThread[
+        If[#<costh,
+          Null[#2,#3],
+          Null[]]&,
+        {cos,x1,x2}];
+      s=Length[a]>0;
+      If[s,
+        {xl,yl}=Thread[
+          Union[Thread[{Join[xl,a],Join[yl,f[a]]}]]]],
+      s=False]];
+  Thread[{xl,yl}]];
+
+SetAttributes[Plot,HoldAll];
+SetAttributes[PlotInterpolate,HoldFirst];
 
 SetAttributes[
   {ListPlot,SetOption,PR$$,

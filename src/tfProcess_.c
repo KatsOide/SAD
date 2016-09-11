@@ -1242,7 +1242,7 @@ static int SetEnv(integer4 *isp1, integer8 *kx,
 
 static int UnsetEnv(integer4 *isp1, integer8 *kx,
 		    integer4 *irtc) {
-  integer4 ia;
+  integer8 ia;
 
   if(isp != *isp1 + 1) {
     *irtc = itfmessage(9, "General::narg", "\"1\"");
@@ -1294,7 +1294,7 @@ static int GetDirectory(integer4 *isp1, integer8 *kx,
 
 static int SetDirectory(integer4 *isp1, integer8 *kx,
 			integer4 *irtc) {
-  integer4 ia;
+  integer8 ia;
   char *expanded, *buf;
 
   if(isp != *isp1 + 1) {

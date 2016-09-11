@@ -1,26 +1,30 @@
-      subroutine tmulte(trans,cod,beam,gammab,l,al,ak,bz0,
+      subroutine tmulte(trans,cod,beam,l,al,ak,bz0,
      $     phia,psi1,psi2,apsi1,apsi2,
      1     dx,dy,dz,chi1,chi2,theta,dtheta,
      $     eps0,enarad,fringe,
-     $     f1,f2,mfring,fb1,fb2,bfrm,vc,harm,phi,freq,wakew1,
+     $     f1in,f2in,f1out,f2out,mfring,
+     $     fb1,fb2,bfrm,vc,harm,phi,freq,wakew1,
      $     rtaper,autophi,ld)
       use tfstk
       use ffs_flag
+      use ffs_pointer , only:gammab
       use tmacro
+      use multa, only:nmult
       implicit none
-      integer*4 nmult,ndivmax
+      integer*4 ndivmax
       real*8 ampmax,oneev,pmax
-      parameter (nmult=21,ampmax=0.05d0,ndivmax=300,pmax=0.9999d0)
+      parameter (ampmax=0.05d0,ndivmax=300,pmax=0.9999d0)
       parameter (oneev=1.d0+3.83d-12)
       integer*4 mfring,ld,l,n,ndiv,m,kord,i,nmmax,nmmin
-      real*8 f1,f2,al,vc,harm,phi,freq,bz,dx,dy,dz,chi1,chi2,theta,
+      real*8 f1in,f2in,f1out,f2out,
+     $     al,vc,harm,phi,freq,bz,dx,dy,dz,chi1,chi2,theta,
      $     eps0,bxs,bys,bzs,al1,p1,h1,v1,t,phii,a,dh,dtheta,
      $     h2,p2,pf,v2,eps,v,w,aln,vn,phis,phic,ak1,vcn,veff,
      $     dhg,rg2,dgb,wakew1,w1n,theta1,phia,psi1,psi2,
      $     apsi1,apsi2,bz0,v10a,v11a,v20a,v02a,offset1,va,sp,cp,
      $     av,dpxa,dpya,dpx,dpy,dav,davdz,davdp,ddhdx,ddhdy,ddhdp,
      $     ddhdz,wi,dv,s0,fb1,fb2,rtaper
-      real*8 trans(6,12),trans1(6,6),cod(6),beam(42),gammab(nlat)
+      real*8 trans(6,12),trans1(6,6),cod(6),beam(42)
       complex*16 cx,cx0,cx2,cr,cr1
       real*8 fact(0:nmult),an(0:nmult)
       complex*16 ak(0:nmult),akn(0:nmult),ak0n
@@ -56,7 +60,7 @@
         call tmultae(trans,cod,beam,al,ak,
      $       phia,psi1,psi2,apsi1,apsi2,bz0,
      1       dx,dy,theta,dtheta,
-     $       eps0,enarad,fringe,fb1,fb2,mfring,ld)
+     $       eps0,enarad,fringe,fb1,fb2,mfring,l,ld)
         return
       endif
       if(imag(ak(1)) .eq. 0.d0)then
@@ -187,7 +191,7 @@ c     end   initialize for preventing compiler warning
           endif
         endif
         if(mfring .eq. 1 .or. mfring .eq. 3)then
-          call tqlfre(trans,cod,beam,al1,ak1,f1,f2,bzs,ld)
+          call tqlfre(trans,cod,beam,al1,ak1,f1in,f2in,bzs,ld)
         endif
         nmmin=2
       else
@@ -352,7 +356,7 @@ c          endif
       endif
       if(al .ne. 0.d0)then
         if(mfring .eq. 2 .or. mfring .eq. 3)then
-          call tqlfre(trans,cod,beam,al1,ak1,-f1,f2,bzs,ld)
+          call tqlfre(trans,cod,beam,al1,ak1,-f1out,f2out,bzs,ld)
         endif
         if(bfrm .and. ak0n .ne. (0.d0,0.d0))then
           if(mfring .eq. 2 .or. mfring .eq. 3)then

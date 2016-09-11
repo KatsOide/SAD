@@ -5,6 +5,7 @@
       use tffitcode
       use tfshare
       use ffs_wake
+      use tfcsi
       implicit none
       type (sad_descriptor) kx,kx1,kx2,ks,kp
       type (sad_list), pointer :: klx,kl
@@ -15,7 +16,7 @@
       integer*4 isp1,irtc,narg,itfloc,outfl0,ld,ls,mc,npz,npa,np00,
      $     ipr(100),npr,np1,fork_worker,iprid, ne,nend,
      $     npp,ipn,m,itfmessage,nt,mt,kseed,j
-      integer*8 ikptblw,ikptblm,icslfno
+      integer*8 ikptblw,ikptblm
       real*8 trf00,p00,vcphic0,vcalpha0
       logical*4 dapert0
       narg=isp-isp1
@@ -172,7 +173,7 @@
       call tfsetparticles(rlist(kzp),rlist(kzf),rlist(kpz),
      $     ilist(1,ikptblw),npp,npa,npz,mc,nlat,nt)
       if(npa .gt. 0)then
-        call tpara(latt)
+        call tpara()
         outfl0=outfl
         outfl=0
         dapert0=dapert

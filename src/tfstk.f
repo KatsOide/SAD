@@ -1,3 +1,82 @@
+      module maccode
+c Do not forget to update sim/MACCODE.h when you change this module!!!!
+      integer*4 , parameter ::
+     $     icNULL   =   0, icDRFT   =   1,
+     $     icBEND   =   2, icQUAD   =   4, icSEXT   =   6,
+     $     icOCTU   =   8, icDECA   =  10, icDODECA =  12,
+     $     icUND    =  18, icWIG    =  19, icSOL    =  20,
+     $     icST     =  21, icMULT   =  22, icTEST   =  30,
+     $     icCAVI   =  31, icTCAV   =  32, icMAP    =  33,
+     $     icINS    =  34, icCOORD  =  35, icBEAM   =  36,
+     $     icPROT   =  37, icSPCH   =  38,
+     $     icMARK   =  41, icMONI   =  42, icAPRT   =  43,
+     $     icMXEL   =  99, icLINE   = 100, icCELL   = 100,
+
+     $     icRSVD = 258,
+     $     icDEF  = icRSVD + 2, icACT  = icDEF  + 2,
+     $     icPROC = icACT  + 2, icVAR  = icPROC + 2,
+     $     icKWRD = icVAR  + 2, icUNIT = icKWRD + 2,
+     $     icRAND = icUNIT + 2, icENV  = icRAND + 2,
+     $     icFLAG = icENV  + 2, icGLI  = icFLAG + 4,
+     $     icGLL  = icGLI  + 4, icGLR  = icGLI  + 8,
+     $     icGraf = icGLL  + 2, icPART = icGraf + 2
+      end module
+
+      module maccbk
+      implicit none
+      integer*4 FLAGON,FLAGOF
+      parameter (FLAGON=-1,FLAGOF=0)
+      integer*4 HTMAX,MAXPNAME,LILISTDUMMY
+      parameter(MAXPNAME=32,LILISTDUMMY=3)
+      character*(MAXPNAME) NULSTR
+      parameter(HTMAX=2**15-1,NULSTR='        ')
+
+      integer*4 pagesz,inipage
+      parameter(pagesz=4096/8,inipage=4)
+      integer*4 MAXSTR,MAXMEM0,MAXMEM
+      parameter (MAXSTR=255)
+      parameter (MAXMEM=2*inipage*pagesz)
+      parameter (MAXMEM0=6*1024*pagesz)
+      character*(MAXPNAME) pname(HTMAX)
+      integer*4 idtype(HTMAX)
+      integer*8 idval(HTMAX)
+      integer*8 ilistroot
+      integer*8, pointer, dimension(:) :: klist
+      real*8, pointer, dimension(:) :: rlist
+      integer*4, pointer, dimension(:,:) :: ilist
+      integer*1, pointer, dimension(:,:)  :: jlist
+
+      contains
+      integer*4 function sethtb8(token,type,ival)
+      use iso_c_binding
+      use maccode
+      implicit none
+      character*(*) token
+      integer*8, target:: ival
+      integer*4 type
+      integer*4 idx,hsrch,lenw
+      sethtb8=0
+c
+      idx= hsrch(token(:lenw(token)))
+c       print *,"sethtb: ",token(:lenw(token)),lenw(token),
+c     $      type,ival,idx
+       if(idx .le. 0 .or. idx .gt. HTMAX) then
+          call errmsg('sethtb'
+     &               ,'illegal index value for sethashtble'
+     &               , 0,16)
+       else
+         idtype(idx)=type
+         if(type .eq. icRSVD) then
+            idval(idx)=transfer(c_loc(ival),int8(0))/8
+         else
+            idval(idx)=ival
+         endif
+         sethtb8=idx
+       endif
+       return
+       end function
+      end module
+
 c     Don't confuse, Emacs. This is -*- fortran -*- mode!
       module tfcbk
       integer*4 maxgeneration,maxlevele,nsymhash,nslots
@@ -20,27 +99,13 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
      $     modethrow,iordless
       end module
 
-      module maccbk
-      implicit none
-      include 'inc/MACPARAM.inc'
-      include 'inc/MACMAX.inc'
-      character*(MAXPNAME) pname(HTMAX)
-      integer*4 idtype(HTMAX),idval(HTMAX)
-      integer*4 ilistroot
-c      integer*8, target :: klist(RBASE:RBASE+MAXMEM0-1)
-      integer*8, pointer, dimension(:) :: klist
-      real*8, pointer, dimension(:) :: rlist
-      integer*4, pointer, dimension(:,:) :: ilist
-      integer*1, pointer, dimension(:,:)  :: jlist
-      end module
-
       module tfmem
       implicit none
-      integer*8, parameter :: mpsize=2**20
+      integer*8, parameter :: mpsize=2**22
       integer*4, parameter :: nindex=64,mhash=32767,
      $     minseg0=9,minseg1=16,minseg2=16
       integer*8 :: icp=0,nmem=0,nnet=0,ich=0,maxic=3,
-     $     minic,lastpend,icsep,nitaloc
+     $     minic,icsep,nitaloc
       integer*8 kcpklist0,kfirstalloc
 
       type cbkalloc
@@ -48,9 +113,10 @@ c      integer*8, target :: klist(RBASE:RBASE+MAXMEM0-1)
       end type
 
       integer*8, parameter :: ncbk = 2**16, kcpoffset = 0*2**28,
-     $     kcpthre  = 2**35, nlarge = 2**30, nitaloc0 = 2**31
-      integer*4 icbk
+     $     kcpthre  = 2**34, nlarge = 2**30, nitaloc0 = 2**24
+      integer*4 icbk,jcbk
       type (cbkalloc), target :: sadalloc(ncbk)
+      integer*8 kcbk(3,ncbk)
 
       end module
 
@@ -275,6 +341,7 @@ c      integer*8, target :: klist(RBASE:RBASE+MAXMEM0-1)
       use tfcode
       use maccbk
       integer*4, parameter :: klistlen=16;
+      integer*8 ispbase
       integer*4 mstk,isp,ivstkoffset,ipurefp,napuref,isporg
       integer*4, pointer, dimension(:,:) :: ivstk,itastk,ivstk2,itastk2
       real*8, pointer, dimension(:) :: vstk,rtastk,vstk2,rtastk2
@@ -319,73 +386,6 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
       end interface
 
       contains
-        subroutine talocinit
-        use tfmem
-        use iso_c_binding
-        implicit none
-        integer*8 ka,kb,ic
-        integer*4 irtc
-        integer*8, parameter :: kcpthre1=(ktamask+1)/2,
-     $       nitalocmin=2**24
-        allocate(sadalloc(1)%ca(nindex*2+mhash+16))
-        ka=transfer(c_loc(sadalloc(1)%ca(1)),int8(0))
-        kfirstalloc=ka
-c        write(*,*)'talocinit ',ka,kcpthre,kcpthre1
-        if(ka .ge. kcpthre)then
-          deallocate(sadalloc(1)%ca)
-          if(ka .ge. kcpthre1)then
-            kcpklist0=kcpthre1
-          else
-            kcpklist0=kcpthre
-          endif
-          call tfcbkinit
-          irtc=-1
-          nitaloc=nitaloc0*2
-          do while(irtc .ne. 0)
-            nitaloc=nitaloc/2
-            if(nitaloc .lt. nitalocmin)then
-              write(*,*)'talocinit-error ',kcpklist0
-              call forcesf()
-            endif
-            call mapallocfixed8(klist(0),nitaloc,8,irtc)
-          enddo
-c          write(*,*)'talocinit-1 ',nitaloc
-          icbk=0
-          icp=1
-        else
-          kcpklist0=0
-          call tfcbkinit
-          icbk=1;
-          icp=ksad_loc(sadalloc(1)%ca(1))
-        endif
-c        write(*,*)'talocinit ',icp,kcpklist0
-        lastpend=0
-        do ic=icp,icp+nindex*2,2
-          klist(ic)=ic
-          klist(ic+1)=ic
-        enddo
-        ich=icp+nindex*2+4
-        do ic=ich,ich+mhash
-          klist(ic)=ic
-        enddo
-        icsep=ich+mhash+1
-        klist(icsep)=icsep
-        if(ka .ge. kcpthre)then
-          kb=icsep+2
-          ilist(1,kb-1)=int(nitaloc-(kb-icp-1)-1)
-c          write(*,*)'talocinit ',ilist(1,kb-1),kb,icp
-          call tfree(kb)
-c          ics=icp+nitaloc-3
-c          klist(ics)=klist(icsep)
-c          klist(icsep)=ics
-c          ilist(1,ics-1)=4
-c          ilist(2,ics-1)=4
-          nmem=ilist(1,kb-1)
-          nnet=0
-        endif
-        return
-        end subroutine
-
         subroutine tfcbkinit
         use tfmem
         use iso_c_binding
@@ -403,28 +403,49 @@ c        kcpklist0=transfer(c_loc(kdummy),int8(0))-kcpoffset-8
         call lminit(klist(0),lps)
         call c_f_pointer(c_loc(klist(1)),rlist,[klistlen])
         call c_f_pointer(c_loc(klist(1)),dlist,[klistlen])
-        call c_f_pointer(c_loc(klist(1)),vstk,[klistlen])
-        call c_f_pointer(c_loc(klist(1)),rtastk,[klistlen])
-        call c_f_pointer(c_loc(klist(1)),ktastk,[klistlen])
-        call c_f_pointer(c_loc(klist(1)),dtastk,[klistlen])
         call c_f_pointer(c_loc(klist(1)),ilist,[2,klistlen])
-        call c_f_pointer(c_loc(klist(1)),itastk,[2,klistlen])
-        call c_f_pointer(c_loc(klist(1)),ivstk,[2,klistlen])
         call c_f_pointer(c_loc(klist(1)),jlist,[8,klistlen])
         return
         end subroutine
 
-        subroutine tfstk2init
+        subroutine tfinitstk
         use iso_c_binding
-        implicit none        
-        call c_f_pointer(c_loc(klist(ivstkoffset+1)),vstk2,[klistlen])
-        call c_f_pointer(c_loc(klist(ivstkoffset+1)),rtastk2,[klistlen])
-        call c_f_pointer(c_loc(klist(ivstkoffset+1)),ktastk2,[klistlen])
-        call c_f_pointer(c_loc(klist(ivstkoffset+1)),dtastk2,[klistlen])
-        call c_f_pointer(c_loc(klist(ivstkoffset+1)),
+        implicit none
+        integer*8 ktaloc
+        integer*4 igetgl1
+        if(tfstkinit)then
+          return
+        endif
+        mstk=max(2**18,igetgl1('STACKSIZ'))
+        ispbase=ktaloc(mstk*2)-1
+        if(ispbase .le. 0)then
+          write(*,*)'Stack allocation failed: ',mstk,ispbase
+          call forcesf()
+        endif
+        isp=0
+        isporg=isp+1
+        ivstkoffset=mstk
+        ipurefp=0
+        napuref=0
+        call c_f_pointer(c_loc(klist(ispbase+1)),vstk,[klistlen])
+        call c_f_pointer(c_loc(klist(ispbase+1)),rtastk,[klistlen])
+        call c_f_pointer(c_loc(klist(ispbase+1)),ktastk,[klistlen])
+        call c_f_pointer(c_loc(klist(ispbase+1)),dtastk,[klistlen])
+        call c_f_pointer(c_loc(klist(ispbase+1)),itastk,[2,klistlen])
+        call c_f_pointer(c_loc(klist(ispbase+1)),ivstk,[2,klistlen])
+        call c_f_pointer(c_loc(klist(ivstkoffset+ispbase+1)),
+     $       vstk2,[klistlen])
+        call c_f_pointer(c_loc(klist(ivstkoffset+ispbase+1)),
+     $       rtastk2,[klistlen])
+        call c_f_pointer(c_loc(klist(ivstkoffset+ispbase+1)),
+     $       ktastk2,[klistlen])
+        call c_f_pointer(c_loc(klist(ivstkoffset+ispbase+1)),
+     $       dtastk2,[klistlen])
+        call c_f_pointer(c_loc(klist(ivstkoffset+ispbase+1)),
      $       itastk2,[2,klistlen])
-        call c_f_pointer(c_loc(klist(ivstkoffset+1)),
+        call c_f_pointer(c_loc(klist(ivstkoffset+ispbase+1)),
      $       ivstk2,[2,klistlen])
+        tfstkinit=.true.
         return
         end subroutine
 
@@ -433,26 +454,140 @@ c        kcpklist0=transfer(c_loc(kdummy),int8(0))-kcpoffset-8
         use iso_c_binding
         implicit none
         integer*8 n
-        integer*4 istat
+        integer*4 istat,i
+        ktfsadalloc=0
+        do i=icbk+1,int(ncbk)
+          allocate(sadalloc(i)%ca(n),stat=istat)
+          if(istat .ne. 0)then
+            write(*,*)'ktfsadalloc allocation error in ALLOCATE: ',
+     $           istat,n
+            call forcesf()
+          endif
+          icbk=icbk+1
+          ktfsadalloc=ksad_loc(sadalloc(i)%ca(1))
+          if(ktfsadalloc .ge. 0)then
+            call tfentercbk(ktfsadalloc,n)
+            return
+          else
+            write(*,*)'Negative allocation - retry: ',i,ktfsadalloc
+          endif
+        enddo          
         if(icbk .ge. ncbk)then
           write(*,*)'ktfsadalloc too many allocations: ',icbk
           call forcesf()
         endif
-        icbk=icbk+1
-        allocate(sadalloc(icbk)%ca(n),stat=istat)
-        if(istat .ne. 0)then
-          write(*,*)'ktfsadalloc allocation error in ALLOCATE: ',
-     $         istat,n
-          call forcesf()
-        endif
-        ktfsadalloc=ksad_loc(sadalloc(icbk)%ca(1))
-c        write(*,*)'ktfsadalloc ',ktfsadalloc,n
-        if(ktfsadalloc .lt. 0)then
-          write(*,*)'ktfsadalloc negative allocation ',ktfsadalloc,n
-          call forcesf()
+        end function
+
+        subroutine tfentercbk(ka,n)
+        use tfmem
+        implicit none
+        integer*8 ka,n
+        integer*4 j,j0,k
+        j0=jcbk+1
+        do j=1,jcbk
+          if(kcbk(2,j) .eq. ka-1)then
+            kcbk(2,j)=ka+n-1
+            kcbk(3,j)=kcbk(2,j)
+            do k=1,jcbk
+              if(kcbk(1,k) .eq. kcbk(2,j)+1)then
+                if(k .lt. j)then
+                  kcbk(1,k)=kcbk(1,j)
+                  kcbk(1,j)=0
+                  kcbk(2,j)=0
+                  kcbk(3,j)=0
+                  if(j .eq. jcbk)then
+                    jcbk=jcbk-1
+                  endif
+                else
+                  kcbk(2,j)=kcbk(2,k)
+                  kcbk(3,j)=kcbk(2,k)
+                  kcbk(1,k)=0
+                  kcbk(2,k)=0
+                  kcbk(3,k)=0
+                endif
+                return
+              endif
+            enddo
+          elseif(kcbk(1,j) .eq. ka+n)then
+            kcbk(1,j)=ka
+            do k=1,jcbk
+              if(kcbk(2,k) .eq. kcbk(1,j)+1)then
+                if(k .lt. j)then
+                  kcbk(2,k)=kcbk(2,j)
+                  kcbk(3,k)=kcbk(3,j)
+                  kcbk(1,j)=0
+                  kcbk(2,j)=0
+                  kcbk(3,j)=0
+                  if(j .eq. jcbk)then
+                    jcbk=jcbk-1
+                  endif
+                else
+                  kcbk(1,j)=kcbk(1,k)
+                  kcbk(1,k)=0
+                  kcbk(2,k)=0
+                  kcbk(3,k)=0
+                endif
+                return
+              endif
+            enddo
+          elseif(kcbk(2,j) .eq. 0)then
+            j0=min(j0,j)
+          endif
+        enddo
+        kcbk(1,j0)=ka
+        kcbk(2,j0)=ka+n-1
+        kcbk(3,j0)=kcbk(2,j0)
+        jcbk=max(jcbk,j0)
+        return
+        end subroutine
+
+        integer*4 function itfcbk(k)
+        use tfmem
+        implicit none
+        integer*8 k
+        integer*4 i
+        do i=1,jcbk
+          if(k .le. kcbk(2,i) .and. k .ge. kcbk(1,i))then
+            itfcbk=i
+            return
+          endif
+        enddo
+        itfcbk=0
+        return
+        end
+
+        subroutine tfsetlastp(k)
+        use tfmem
+        implicit none
+        integer*8 k
+        integer*4 i
+        i=itfcbk(k)
+        if(i .ne. 0)then
+          kcbk(3,i)=max(kcbk(3,i),k)
         endif
         return
-        end function
+        end
+
+        logical*4 function tfchecklastp(k)
+        use tfmem
+        implicit none
+        integer*8 k
+        integer*4 i
+        i=itfcbk(k)
+        if(i .ne. 0)then
+          tfchecklastp=k .le. kcbk(3,i)
+        else
+          tfchecklastp=.false.
+        endif
+        if(.not. tfchecklastp)then
+          if(i .ne. 0)then
+            write(*,*)'tfcklastp ',k,i,kcbk(3,i),kcbk(2,i)
+          else
+            write(*,*)'tfcklastp ',k,0
+          endif
+        endif
+        return
+        end
 
         integer*4 function iget_fun_id(ka)
         use iso_c_binding
@@ -1859,6 +1994,14 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end function
 
+        integer*4 function ifromd(d)
+        implicit none
+        type (sad_descriptor) d
+        real*8 rfromk
+        ifromd=int(rfromk(d%k))
+        return
+        end function
+
         type (sad_descriptor) function dfromr(x)
         implicit none
         integer*8 kfromr
@@ -2353,7 +2496,8 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         logical*4 function tfonstackq(ka)
         implicit none
         integer*8 ka
-        tfonstackq=ka .ge. isporg .and. ka .le. isporg+ivstkoffset
+        tfonstackq=ka .ge. isporg+ispbase
+     $       .and. ka .le. isporg+ivstkoffset*2+ispbase
         return
         end function
 

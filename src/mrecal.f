@@ -7,7 +7,8 @@
       parameter (kfiles=3)
       logical exist
       character*(*) word
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun)
+      integer*8 latt(nlat)
+      real*8 twiss(nlat,-ndim:ndim,ntwissfun)
       common /mcfiles/icomf,nof(kfiles),iifnam(kfiles),iidata(kfiles),
      1                memax(kfiles)
       dimension istr(*),imon(*),emon(*)

@@ -17,12 +17,11 @@ c
       real*8 a(ndim,m),b(ndimb,n),x(m),epslon
 c      real*8 v(0:n+m+32),anorm,enorm
       real*8 v(0:nmax),anorm
-      real*8 aa,f,g,s,r,w,h,xmin,z,vv,c,p,bb,y,an
+      real*8 aa(m),f,g,s,r,w,h,xmin,z,vv,c,p,bb(n),y,an
       real*8 q,h1,h2,t,r1,r2
 c      integer*4 lsep(0:n+m+32)
       integer*4 lsep(0:nmax)
-      integer*4 i,j,k,mn,it,isep,ibegin,iend,i1,i1mn,
-     $     n1,kkk
+      integer*4 i,j,mn,it,isep,ibegin,iend,i1,i1mn,n1,kkk
       logical*4 inv
       mn=min(n,m)
       n1=min(ndimb,n)
@@ -30,16 +29,10 @@ c      integer*4 lsep(0:n+m+32)
         write(*,*)' TSVDM Too large matrix. ',n,m
         return
       endif
-      do i=1,n
-        v(i)=1.d0
-      enddo
-      do i=1,m
-        x(i)=1.d0
-      enddo
+      v(1:n)=1.d0
+      x(1:m)=1.d0
       do j=1,n1
-        do i=1,n1
-          b(i,j)=0.d0
-        enddo
+        b(1:n1,j)=0.d0
         b(j,j)=1.d0
       enddo
       do i=1,mn
@@ -52,33 +45,33 @@ c      integer*4 lsep(0:n+m+32)
               q=v(j)*p/h1
               v(j)=v(i)*v(j)/h1
               v(i)=h1
-              do k=i1,m
-                a(j,k)=a(j,k)-p*a(i,k)
-                a(i,k)=a(i,k)+q*a(j,k)
-              enddo
+c              do k=i1,m
+                a(j,i1:m)=a(j,i1:m)-p*a(i,i1:m)
+                a(i,i1:m)=a(i,i1:m)+q*a(j,i1:m)
+c              enddo
               a(j,i)=0.d0
-              do k=1,n1
-                b(j,k)=b(j,k)-p*b(i,k)
-                b(i,k)=b(i,k)+q*b(j,k)
-              enddo
+c              do k=1,n1
+                b(j,1:n1)=b(j,1:n1)-p*b(i,1:n1)
+                b(i,1:n1)=b(i,1:n1)+q*b(j,1:n1)
+c              enddo
             elseif(a(j,i) .ne. 0.d0)then
               p=a(i,i)/a(j,i)
               h1=v(j)+v(i)*p**2
               q=v(i)*p/h1
               v(j)=v(i)*v(j)/h1
               v(i)=h1
-              do k=i1,m
-                aa=a(j,k)
-                a(j,k)=p*aa-a(i,k)
-                a(i,k)=aa-q*a(j,k)
-              enddo
+c              do k=i1,m
+                aa(i1:m)=a(j,i1:m)
+                a(j,i1:m)=p*aa(i1:m)-a(i,i1:m)
+                a(i,i1:m)=aa(i1:m)-q*a(j,i1:m)
+c              enddo
               a(i,i)=a(j,i)
               a(j,i)=0.d0
-              do k=1,n1
-                bb=b(j,k)
-                b(j,k)=p*bb-b(i,k)
-                b(i,k)=bb-q*b(j,k)
-              enddo
+c              do k=1,n1
+                bb(1:n1)=b(j,1:n1)
+                b(j,1:n1)=p*bb(1:n1)-b(i,1:n1)
+                b(i,1:n1)=bb(1:n1)-q*b(j,1:n1)
+c              enddo
             endif
           enddo
         endif
@@ -98,10 +91,10 @@ c      integer*4 lsep(0:n+m+32)
                 q=s*x(j )/h1
                 x(i1)=h1
                 x(j )=h2
-                do  k=i1,n
-                  a(k,j )=a(k,j )-p*a(k,i1)
-                  a(k,i1)=a(k,i1)+q*a(k,j )
-                enddo
+c                do  k=i1,n
+                  a(i1:n,j )=a(i1:n,j )-p*a(i1:n,i1)
+                  a(i1:n,i1)=a(i1:n,i1)+q*a(i1:n,j )
+c                enddo
               else
                 a(i,i1)=a(i,j)
                 a(i,j)=0.d0
@@ -111,11 +104,11 @@ c      integer*4 lsep(0:n+m+32)
                 q=c*x(i1)/h1
                 x(i1)=h1
                 x(j )=h2
-                do k=i1,n
-                  aa=a(k,j)
-                  a(k,j )=p*aa-a(k,i1)
-                  a(k,i1)=aa-q*a(k,j )
-                enddo
+c                do k=i1,n
+                  bb(i1:n)=a(i1:n,j)
+                  a(i1:n,j )=p*bb(i1:n)-a(i1:n,i1)
+                  a(i1:n,i1)=bb(i1:n)-q*a(i1:n,j )
+c                enddo
               endif
             else
               c=1.d0
@@ -140,9 +133,9 @@ C     if(j .lt. ndim+2)then
         v(i+mn)=x(i)
         a(i,i)=a(i,i)*p
         x(i)=a(i,i)*x(i)
-        do k=1,n1
-          b(i,k)=b(i,k)*p
-        enddo
+c        do k=1,n1
+          b(i,1:n1)=b(i,1:n1)*p
+c        enddo
         if(i .lt. m)then
           a(i,i+1)=a(i,i+1)*p
           v(i)=a(i,i+1)*x(i+1)
@@ -155,9 +148,9 @@ C     if(j .lt. ndim+2)then
           xmin=min(xmin,abs(x(i)))
         endif
       enddo
-      do i=mn+1,m
-        v(i+mn)=x(i)
-      enddo
+c      do i=mn+1,m
+        v(2*mn+1:m)=x(mn+1:m)
+c      enddo
       do i=min(mn,m-2),1,-1
         i1=i+1
         i1mn=i1+mn
@@ -183,10 +176,10 @@ C     if(j .lt. ndim+2)then
             v(i1mn)=h1
             v(j +mn)=h2
             a(i,j)=q*a(i,i1)
-            do k=i1,mn
-              a(k,i1)=a(k,i1)-p*a(k,j )
-              a(k,j )=a(k,j )+q*a(k,i1)
-            enddo
+c            do k=i1,mn
+              a(i1:mn,i1)=a(i1:mn,i1)-p*a(i1:mn,j )
+              a(i1:mn,j )=a(i1:mn,j )+q*a(i1:mn,i1)
+c            enddo
           else
             h1=v(j +mn)/s
             h2=v(i1mn)*s
@@ -196,11 +189,11 @@ C     if(j .lt. ndim+2)then
             v(j +mn)=h2
             a(i,j )=a(i,i1)
             a(i,i1)=a(i,i1)*q
-            do k=i1,mn
-              aa=a(k,j)
-              a(k,j )=p*aa+a(k,i1)
-              a(k,i1)=q*a(k,j )-aa
-            enddo
+c            do k=i1,mn
+              aa(i1:mn)=a(i1:mn,j)
+              a(i1:mn,j )=p*aa(i1:mn)+a(i1:mn,i1)
+              a(i1:mn,i1)=q*a(i1:mn,j )-aa(i1:mn)
+c            enddo
           endif
         enddo
       enddo
@@ -211,9 +204,9 @@ c9710 format(1x,:1p11g11.3)
       isep=1
       ibegin=1
       iend=mn
-      do i=1,mn
-        v(mn+i)=1.d0
-      enddo
+c      do i=1,mn
+        v(mn*2+1:mn)=1.d0
+c      enddo
       v(0)=0.d0
  1002 if(v(iend) .ne. 0.d0)then
         f=v(iend)
@@ -321,14 +314,14 @@ c            an=max(abs(x(i)),abs(x(i+1)))
                 t=s*v(i1+mn)/h1
                 v(i+mn)=h1
                 v(i1+mn)=h2
-                do k=1,m
-                  a(i1,k)=a(i1,k)-r*a(i ,k)
-                  a(i ,k)=a(i ,k)+t*a(i1,k)
-                enddo
-                do k=1,n1
-                  b(i1,k)=b(i1,k)-r*b(i,k)
-                  b(i ,k)=b(i ,k)+t*b(i1,k)
-                enddo
+c                do k=1,m
+                  a(i1,1:m)=a(i1,1:m)-r*a(i ,1:m)
+                  a(i ,1:m)=a(i ,1:m)+t*a(i1,1:m)
+c                enddo
+c                do k=1,n1
+                  b(i1,1:n1)=b(i1,1:n1)-r*b(i,1:n1)
+                  b(i ,1:n1)=b(i ,1:n1)+t*b(i1,1:n1)
+c                enddo
               else
                 h1=v(i1+mn)/s
                 h2=v(i+mn)*s
@@ -336,16 +329,16 @@ c            an=max(abs(x(i)),abs(x(i+1)))
                 t=c*v(i+mn)/h1
                 v(i+mn)=h1
                 v(i1+mn)=h2
-                do k=1,m
-                  aa=a(i1,k)
-                  a(i1,k)=r*aa-a(i ,k)
-                  a(i ,k)=aa-t*a(i1,k)
-                enddo
-                do k=1,n1
-                  bb=b(i1,k)
-                  b(i1,k)=r*bb-b(i,k)
-                  b(i ,k)=bb-t*b(i1,k)
-                enddo
+c                do k=1,m
+                  aa(1:m)=a(i1,1:m)
+                  a(i1,1:m)=r*aa(1:m)-a(i ,1:m)
+                  a(i ,1:m)=aa(1:m)-t*a(i1,1:m)
+c                enddo
+c                do k=1,n1
+                  bb(1:n1)=b(i1,1:n1)
+                  b(i1,1:n1)=r*bb(1:n1)-b(i,1:n1)
+                  b(i ,1:n1)=bb(1:n1)-t*b(i1,1:n1)
+c                enddo
               endif
             enddo
             v(iend-1)=f
@@ -374,12 +367,12 @@ c            an=max(abs(x(i)),abs(x(i+1)))
             x(i)=s/anorm**2
             w=f
           endif
-          do j=1,m
-            a(i,j)=a(i,j)*w
-          enddo
-          do k=1,n1
-            b(i,k)=b(i,k)*f
-          enddo
+c          do j=1,m
+            a(i,1:m)=a(i,1:m)*w
+c          enddo
+c          do k=1,n1
+            b(i,1:n1)=b(i,1:n1)*f
+c          enddo
         enddo
       else
         do i=1,mn
@@ -392,21 +385,21 @@ c            an=max(abs(x(i)),abs(x(i+1)))
             w=f
           endif
           x(i)=s
-          do j=1,m
-            a(i,j)=a(i,j)*w
-          enddo
-          do k=1,n1
-            b(i,k)=b(i,k)*f
-          enddo
+c          do j=1,m
+            a(i,1:m)=a(i,1:m)*w
+c          enddo
+c          do k=1,n1
+            b(i,1:n1)=b(i,1:n1)*f
+c          enddo
         enddo
       endif
-      do j=mn+1,m
-        x(i)=0.d0
-      enddo
-      do i=1,m
-        do j=mn+1,n
-          a(j,i)=0.d0
-        enddo
-      enddo
+c      do j=mn+1,m
+        x(mn+1:m)=0.d0
+c      enddo
+c      do i=1,m
+c        do j=mn+1,n
+          a(mn+1:n,1:m)=0.d0
+c        enddo
+c      enddo
       return
       end

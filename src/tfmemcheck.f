@@ -7,6 +7,7 @@
       integer*8 ip1,ip0,ip,ix,i,j, i1, ki,m,ih,mf
       integer*4 isp1,irtc,l,nf,isp0,itfmessage
       real*8 xnmem,xnnet
+      character*12 tftypename
       logical*4 tfcheckelement,freel,check
       if(isp1+1 .eq. isp .and. ktfrealq(ktastk(isp)))then
         check=.true.
@@ -33,8 +34,8 @@
             endif
             ki=iand(ktfmask,klist(i))+i+2
             if(.not. tfcheckelement(ki,.true.))then
-              write(*,*)' Error in temporary element'
-c              call tfdebugprint(ki,'Error in temporary element',3)
+              write(*,*)' Error in a temporary element:'
+              call tfdebugprint(ki,' ',3)
               go to 9100
             endif
             i1=i
@@ -68,6 +69,13 @@ c              call tfdebugprint(ki,'Error in temporary element',3)
             endif
           else
             m=ilist(1,ip-1)
+          endif
+          if(.not. tfchecklastp(ip) .or.
+     $         .not. tfchecklastp(ip+m-1))then
+            write(*,*)
+     $       'Free area is out of allocated block: area =',ip,
+     $           'size =',m
+            go to 9200
           endif
           mf=mf+m
           if(freel)then
@@ -103,10 +111,37 @@ c              call tfdebugprint(ki,'Error in temporary element',3)
      $     ', temporary element =',i,
      $     ', previous =',i1,
      $     ', next =',ktfaddr(klist(i)),
-     $     ', type =',iand(ktfmask,klist(i)),
+     $     ', type = ',tftypename(klist(i)),
      $     ', size =',ilist(1,i-1)
  9200 irtc=itfmessage(999,'General::memory',' ')
       kx%k=ktfoper+mtfnull
+      return
+      end
+
+      character*(*) function tftypename(k)
+      use tfstk
+      implicit none
+      integer*8 k
+      select case (ktftype(k))
+      case (ktflist)
+        tftypename='List'
+      case (ktfsymbol)
+        tftypename='Symbol'
+      case (ktfpat)
+        tftypename='Pattern'
+      case (ktfstring)
+        tftypename='String'
+      case (ktfoper)
+        tftypename='Function'
+      case (ktfref)
+        tftypename='Reference'
+      case default
+        if(ktfrealq(k))then
+          tftypename='Real'
+        else
+          tftypename='Undefined'
+        endif
+      end select
       return
       end
 
@@ -170,10 +205,10 @@ c          write(*,*)'checkcont ',loc%str%str(1:nc)
      $                 kad,' previous pointer =',kad0
                   go to 9000
                 endif
-                if(kad .gt. lastpend)then
+                if(.not. tfchecklastp(kad))then
                   write(*,*)
-     $                 'Too large pointer: ',kad,
-     $                 ' lastpend =',lastpend
+     $                 'Out of memory block ',kad,
+     $                 ' block = ',itfcbk(kad)
                   go to 9000
                 endif
                 if(klist(kad+1) .ne. kad0)then
@@ -327,6 +362,11 @@ c          write(*,*)'checkcont ',loc%str%str(1:nc)
           write(*,*)'Zero pointer:'
           return
         endif
+        if(.not. tfchecklastp(ka))then
+          write(*,*)
+     $         'Element is out of allocated block: element =',ka
+          return
+        endif
         kt1=iand(ktfmask,klist(ka-2))
         if(kt .eq. ktfsymbol)then
           if(ilist(2,ka-3) .ne. 0)then
@@ -379,13 +419,13 @@ c          write(*,*)'checkcont ',loc%str%str(1:nc)
                 if(ktfnonrealq(klist(ka+i)))then
                   write(*,*)' Non-real in a real list, index =',i,
      $                 ' size =',m
-                  call tfdebugprint(klist(ka),'Head:',3)
+c                  call tfdebugprint(klist(ka),'Head:',3)
 c                  call tfdebugprint(klist(ka+i),
 c     $             'Non-real in a real list:',3)
                   return
                 endif
               enddo
-            else
+            elseif(m .ne. 0)then
               nr=.false.
               do i=1,m
                 nr=nr .or. ktfnonrealq(klist(ka+i))
@@ -395,6 +435,7 @@ c     $             'Non-real in a real list:',3)
               enddo
               if(.not. nr)then
                 write(*,*)'All reals in a non-real list'
+c                call tfdebugprint(k,' ',1)
                 return
               endif
             endif
@@ -531,7 +572,7 @@ c        call tfdebugprint(it,ia,v,tag,3)
       return
       end
 
-      subroutine tfmemcheckprint(tag,pri)
+      subroutine tfmemcheckprint(tag,pri,irtc)
       use tfstk
       implicit none
       integer*8 k1

@@ -1,13 +1,12 @@
       subroutine doflag(fval,dummy)
       use maccbk
+      use mackw
+      use macttyp
+      use macmisc
       implicit none
       integer fval
       real*8 dummy
 c
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACMISC.inc'
       character*(MAXSTR) token
       integer slen,ival,ttype,hsrchz,idx
       real*8 rval

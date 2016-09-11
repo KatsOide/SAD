@@ -1,11 +1,13 @@
       subroutine tfinitn
       use tfstk
       use tfrbuf
+      use tfcsi
+      use macphys
+      use version
       implicit none
       type (sad_symdef), pointer :: contd
       type (sad_list), pointer :: klx
       type (sad_string), pointer :: str
-      include 'inc/MACPHYS.inc'
       character(len=1024) :: pkg
       character(len=64) :: env
       integer :: lpkg, lenv
@@ -13,9 +15,6 @@
      $     iaxsys,loc,ktaloc,ktcvaloc,kax,k1,k2,i
       integer*4 lpw
       integer*4 lenw,ifromstr
-      character*19 versionid,versiondate
-      common /version/ versionid,versiondate
-      call tfinitstk
       call tfinfinit
       call tfsinglechar
       levele=1
@@ -184,31 +183,6 @@ c      write(*,*)'tfinitn 1.1 ',itfcontroot
       write(*,*) '*** Run time Environment:     '//
      $     pkg(1:lpkg)//'init.'//env(1:lenv)//'.n ***'
       call tfgetf(pkg(1:lpkg)//'init.'//env(1:lenv)//'.n')
-      return
-      end
-
-      subroutine tfinitstk
-      use tfstk
-      implicit none
-      integer*4 italoc
-      integer*4 igetgl1
-      if(tfstkinit)then
-        return
-      endif
-      mstk=max(2**18,igetgl1('STACKSIZ'))
-      isp=italoc(mstk*2)-1
-      if(isp .le. 0)then
-        write(*,*)'Too large STACKSIZ: ',mstk
-        call forcesf()
-      endif
-      isporg=isp
-c      write(*,*)'tfinitstk: ',isporg
-      ivstkoffset=mstk
-      mstk=isp+mstk
-      ipurefp=0
-      napuref=0
-      call tfstk2init
-      tfstkinit=.true.
       return
       end
 
@@ -1167,6 +1141,7 @@ c-----Kikuchi addition end-----
       i=itfunaloc('ExtractBeamLine',1019,1,map,ieval,0)
       i=itfunaloc('BeamLineName',1020,0,map,ieval,0)
       i=itfunaloc('SetElement$',1021,1,map,ieval,0)
+      i=itfunaloc('Type$Key$',1022,1,map,ieval,0)
 c      i=itfunaloc('PyArg',1022,1,map,ieval,2)
 c      i=itfunaloc('TclArg',1023,1,map,ieval,0)
 c      i=itfunaloc('Tcl',1024,1,map,ieval,0)

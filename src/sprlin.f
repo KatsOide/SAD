@@ -1,10 +1,11 @@
       Subroutine sprlin(idxl)
       use maccbk
+      use mackw
+      use macfile
       implicit none
-      integer*4 idxl,ip,llen,i,j
+      integer*8 ip
+      integer*4 idxl,llen,i,j
 c
-      include 'inc/MACCODE.inc'
-      include 'inc/MACFILE.inc'
 c for debug
 c     call ptrace('prexl '//pname(idxl)//'!',1)
 c end debug

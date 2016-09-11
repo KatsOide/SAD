@@ -9,7 +9,8 @@ c----- Measure luminosity and store data (if sto). ------
       integer*4 irtc
       logical stab,lumi,sto,synchb
       character*(*) observ
-      dimension latt(2,*),twiss(nlat,-ndim:ndim,ntwissfun),gammab(*),
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),gammab(*),
      $     size(21,nlat)
       dimension iobs(*),datas(itemn,2,*)
       dimension params(npara),paramss(npara),x(21),u(21)

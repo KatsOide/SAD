@@ -57,7 +57,7 @@ typedef struct {
   Tk_Window rw;
   char **_filehandler;
   int fd_setsize;
-  integer4 _itfinterp;
+  integer8 _itfinterp;
   bool stoploop;
 } TkInterState_t;
 

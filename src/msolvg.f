@@ -4,17 +4,18 @@
       use tffitcode
       logical cond,micado,norm,svd
       dimension a(nd,m), b(n), x(m)
+      integer*8 ixc,it,iu,ic1,ia,ib,im,ktaloc
 c
       na=n-nc
       if(cond) then
-        ixc=italoc(m)
-        it=italoc(nc)
-        iu=italoc(nc)
-        ic1=italoc(nc*m)
+        ixc=ktaloc(m)
+        it=ktaloc(nc)
+        iu=ktaloc(nc)
+        ic1=ktaloc(nc*m)
         if(micado) then
-          ia=italoc(nd*m)
-          ib=italoc(n)
-          im=italoc(m)
+          ia=ktaloc(nd*m)
+          ib=ktaloc(n)
+          im=ktaloc(m)
           call tmov(a,rlist(ia),nd*m)
           call tmov(b,rlist(ib),n)
           call msolv1(a,b,x,na,m,nd,a(na+1,1),b(na+1),nc,nd,.false.,
@@ -39,18 +40,18 @@ c
               x(i)=0d0
             endif
           enddo
-          call tfree(int8(im))
-          call tfree(int8(ib))
-          call tfree(int8(ia))
+          call tfree(im)
+          call tfree(ib)
+          call tfree(ia)
         else
           call msolv1(a,b,x,na,m,nd,a(na+1,1),b(na+1),nc,nd,cond,
      1         micado,nx,norm,rlist(ixc),rlist(it),rlist(iu),
      1         rlist(ic1),svd)
         endif
-        call tfree(int8(ic1))
-        call tfree(int8(iu))
-        call tfree(int8(it))
-        call tfree(int8(ixc))
+        call tfree(ic1)
+        call tfree(iu)
+        call tfree(it)
+        call tfree(ixc)
       else
         call msolv1(a,b,x,n,m,nd,a,b,nc,nd,cond,
      1              micado,nx,norm,b,b,b,a,svd)

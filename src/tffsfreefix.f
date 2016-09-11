@@ -4,8 +4,9 @@
       use ffs_pointer
       use ffs_fit
       use tffitcode
+      use mackw
+      use tfcsi,only:cssetp
       implicit none
-      include 'inc/MACCODE.inc'
       integer*8 kal
       integer*4 nvar,lfno,l,ntouch,ifany,
      $     i,j,k,it,iv,ivi,next,itk,ivk,lenw,kk,jj,ivck,
@@ -31,7 +32,7 @@
             call cssetp(next)
             found=.true.
             it=41
-            word=pname(latt(1,1))
+            word=pnamec(1)
             iv=k
             exit LOOP_K_1
           endif
@@ -51,7 +52,7 @@
 c     Note: Skip no-head multiple elements
 c     *     klp(iele1(k)) == k if singlet or head of multipole elements
             if(klp(iele1(k)) .ne. k .or.
-     $           .not. tmatch(pname(latt(1,k)),word))then
+     $           .not. tmatch(pnamec(k),word))then
               cycle LOOP_K_2
             endif
             ivck=0
@@ -60,7 +61,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
             call cssetp(next)
             call peekwd(word1,next)
           endif
-          itk=idtype(latt(1,k))
+          itk=idtypec(k)
           if(itk .ne. it)then
             if(word1 .ne. ' ')then
               ivk=1
@@ -89,7 +90,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
           if(iv .eq. 0)then
             if(ival(kk) .eq. 0)then
               call termes(lfno,'Can''t use as variable ',
-     $             pname(latt(1,k)))
+     $             pnamec(k))
               return
             endif
           endif
@@ -105,7 +106,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
                   if(ivcomp(i) .eq. 0)then
                     call termes(lfno,
      $                   'Element already used as variable: ',
-     $                   pname(latt(1,k)))
+     $                   pnamec(k))
                     return
                   elseif(ivcomp(i) .ne. k)then
                     cycle LOOP_I_1
@@ -148,7 +149,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
             ivi=iv
           endif
           ivvar(i)=ivi
-          valvar2(i,1)=rlist(latt(2,k)+ivi)
+          valvar2(i,1)=rlist(latt(k)+ivi)
           ivcomp(i)=ivck
           if(ivi .eq. ival(kk))then
             if(comp)then
@@ -213,7 +214,7 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
             call cssetp(next)
             found=.true.
             it=41
-            word=pname(latt(1,1))
+            word=pnamec(1)
             iv=k
             exit LOOP_K_3
           endif
@@ -227,7 +228,7 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
             endif
           elseif(comp)then
             cycle LOOP_I_3
-          elseif(.not. tmatch(pname(latt(1,klp(kk))),word))then
+          elseif(.not. tmatch(pnamec(klp(kk)),word))then
             cycle LOOP_I_3
           endif
           if(.not. found)then
@@ -235,7 +236,7 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
             call peekwd(word1,next)
           endif
           found=.true.
-          itk=idtype(latt(1,klp(kk)))
+          itk=idtypec(klp(kk))
           if(itk .ne. it)then
             if(word1 .ne. ' ')then
               ivk=1
@@ -280,7 +281,7 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
         enddo LOOP_I_3
         if(.not. found .and. .not. wild)then
           do k=1,nele
-            if(tmatch(pname(latt(1,klp(k))),word))then
+            if(tmatch(pnamec(k),word))then
               call cssetp(next)
               found=.true.
               go to 1

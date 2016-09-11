@@ -963,7 +963,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
         irtc=0
         return
       elseif(isp1+1 .eq. isp)then
-        if(klist(isp) .eq. ktfoper+mtfnull)then
+        if(ktastk(isp) .eq. ktfoper+mtfnull)then
           kx=kxnulll
           irtc=0
           return
@@ -1000,7 +1000,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       enddo
       n=isp-isp2
       isp3=isp
-      call tfsortl(klist(isp2-3),.false.,n,2,ktfref,.true.,irtc)
+      call tfsortl(ktastk(isp2-3),.false.,n,2,ktfref,.true.,irtc)
       if(irtc .ne. 0)then
         isp=isp0-1
         return

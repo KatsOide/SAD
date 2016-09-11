@@ -1,14 +1,14 @@
-      real*8 function gamma(x)
-      implicit none
-      real*8 x,factorial
-      gamma=factorial(x)/x
-      return
-      end
+c$$$      real*8 function gamma(x)
+c$$$      implicit none
+c$$$      real*8 x,factorial
+c$$$      gamma=factorial(x)/x
+c$$$      return
+c$$$      end
 
       real*8 function factorial(x)
+      use macmath
       implicit none
 c     Including pi = m_pi
-      include 'inc/MACMATH.inc'
       integer*4 ix,lt
       parameter (lt=23)
       real*8 x,aloggamma1,fac(0:lt)
@@ -40,7 +40,7 @@ c     Including pi = m_pi
       if(x .lt. 0.d0)then
         factorial=exp(-aloggamma1(-x))*pi*x/sin(pi*x)
       else
-        ix=x
+        ix=int(x)
         if(ix .le. lt .and. x-ix .eq. 0.d0)then
           factorial=fac(ix)
         else
@@ -51,9 +51,9 @@ c     Including pi = m_pi
       end
 
       real*8 function aloggamma1(x)
+      use macmath
       implicit none
 c     Including pi = m_pi
-      include 'inc/MACMATH.inc'
       real*8 x,x1
       real*8 c0,c1,c2,c3,c4,c5,c6,c7,c8
       real*8 gamma,alogsqrt2pi,alogpi
@@ -101,9 +101,9 @@ c     Including pi = m_pi
       end
 
       complex*16 function cloggamma1(z)
+      use macmath
       implicit none
 c     Including pi = m_pi
-      include 'inc/MACMATH.inc'
       complex*16 z,z1
       real*8 c0,c1,c2,c3,c4,c5,c6,c7,c8
       real*8 gamma,alogsqrt2pi,alogpi
@@ -189,9 +189,9 @@ c     Including pi = m_pi
       end
 
       real*8 function gamma0(x)
+      use macmath
       implicit none
 c     Including Euler's gamma(euler)
-      include 'inc/MACMATH.inc'
       real*8 x,gamma0ser,gamma0cf
       if(x .lt. 0.d0)then
         gamma0=x/0.d0
@@ -206,9 +206,9 @@ c     Including Euler's gamma(euler)
       end
 
       real*8 function gamma0log(x)
+      use macmath
       implicit none
 c     Including Euler's gamma(euler)
-      include 'inc/MACMATH.inc'
       real*8 x,gamma0ser,gamma0cf
       if(x .lt. 0.d0)then
         gamma0log=x/0.d0
@@ -398,10 +398,10 @@ c     Including Euler's gamma(euler)
       end
 
       complex*16 function cerfs(z)
+      use macmath
       implicit none
       real*8 r
 c     Including m_2_sqrtpi:	2 / Sqrt[Pi]
-      include 'inc/MACMATH.inc'
       parameter (r=m_2_sqrtpi)
       complex*16 z,z2
       z2=z**2
@@ -411,9 +411,9 @@ c     Including m_2_sqrtpi:	2 / Sqrt[Pi]
       end
 
       complex*16 function cerfcd(z)
+      use macmath
       implicit none
 c     Including m_2_sqrtpi:	2 / Pi
-      include 'inc/MACMATH.inc'
       real*8 r,h,an,an1,an2,an0
       parameter (r=m_2_pi,h=0.2d0)
       complex*16 z,cs,cs1,ca,ca2,cd,z1,z2
@@ -479,9 +479,9 @@ c     Including m_2_sqrtpi:	2 / Pi
       end
 
       complex*16 function cerfcf(z)
+      use macmath
       implicit none
 c     Including m_2_sqrtpi:	2 / Sqrt[Pi]
-      include 'inc/MACMATH.inc'
       real*8 fpmin,eps,r
       parameter (fpmin=1.d-300,eps=1.d-15,r=m_2_sqrtpi)
       integer*4 i,itmax
@@ -513,9 +513,9 @@ c     Including m_2_sqrtpi:	2 / Sqrt[Pi]
 
       real*8 function productlog(x)
       use tfstk
+      use macmath
       implicit none
 c     Including m_e(Napier's constant: Exp[1])
-      include 'inc/MACMATH.inc'
       real*8 x,w,f1,d,eps,en
       parameter (eps=3.d-16,en=m_e)
       if(x .le. -1.d0/en)then
@@ -547,9 +547,9 @@ c        w=.5d0*(sqrt(4.d0*x+1.d0)-1.d0)
       end
 
       complex*16 function cproductlog(z)
+      use macmath
       implicit none
 c     Including m_e(Napier's constant: Exp[1])
-      include 'inc/MACMATH.inc'
       complex*16 z,w,f1,d
       real*8 productlog,eps,en
       parameter (eps=3.d-16,en=m_e)

@@ -6,8 +6,8 @@
       implicit none
       integer*4, parameter :: ndp=30,maxdp=ndp*2
       real*8, parameter :: dpstep=.001d0
-      integer*4 lfno,ns,ios,i,italoc,n1,ics,isn,ic,is,
-     $     itm,its,ix,imx,imy
+      integer*4 lfno,ns,i,n1
+      integer*8 ktaloc,ios,ics,isn,ic,is,itm,its,ix,imx,imy
       real*8 os1,os2,oss
       character*(*) word
       logical exist
@@ -31,7 +31,7 @@
       else
         ns=50
       endif
-      ios=italoc(ns)
+      ios=ktaloc(ns)
       if(ns .gt. 1)then
         oss=(os2-os1)/(ns-1)
       else
@@ -41,29 +41,29 @@
         rlist(ios+i)=os1+i*oss
 10    continue
       n1=ndp*2+1
-      ics=italoc(ns)
-      isn=italoc(ns)
-      ic =italoc(ns)
-      is =italoc(ns)
-      itm=italoc(n1*ntwissfun)
-      its=italoc(n1*ntwissfun)
-      ix =italoc(maxdp*4*ns)
-      imx=italoc(maxdp*ns/2+1)
-      imy=italoc(maxdp*ns/2+1)
+      ics=ktaloc(ns)
+      isn=ktaloc(ns)
+      ic =ktaloc(ns)
+      is =ktaloc(ns)
+      itm=ktaloc(n1*ntwissfun)
+      its=ktaloc(n1*ntwissfun)
+      ix =ktaloc(maxdp*4*ns)
+      imx=ktaloc(maxdp*ns/2+1)
+      imy=ktaloc(maxdp*ns/2+1)
       call tfltr1(rlist(itm),rlist(its),rlist(ix),
      1            rlist(imx),rlist(imy),rlist(ios),
      1            rlist(ics),rlist(isn),rlist(ic),rlist(is),
      1            ns,lfno)
-      call tfree(int8(imy))
-      call tfree(int8(imx))
-      call tfree(int8(ix))
-      call tfree(int8(its))
-      call tfree(int8(itm))
-      call tfree(int8(is ))
-      call tfree(int8(ic ))
-      call tfree(int8(isn))
-      call tfree(int8(ics))
-      call tfree(int8(ios))
+      call tfree(imy)
+      call tfree(imx)
+      call tfree(ix)
+      call tfree(its)
+      call tfree(itm)
+      call tfree(is )
+      call tfree(ic )
+      call tfree(isn)
+      call tfree(ics)
+      call tfree(ios)
       return
 8001  call termes(lfno,'Syntax: LTR_ACK nusi nusf nusstep',' ')
       return

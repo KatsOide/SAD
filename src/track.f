@@ -4,12 +4,14 @@
       use touschek_table, only: initialize_tampl
       use trackbypass, only: bypasstrack, lattuse
       use tffitcode
+      use sad_main
+      use ffs_pointer, only:elatt
       implicit none
       type (sad_descriptor) kx
       integer*8 ikptbl,ig,ipz,ix,ixx,iy,iyy,iz,izz,ifz,imt,kzx,
-     $     ktaloc
-      integer*4 irtc,latt,iparam,l,isp1,
-     $     nts,itfdownlevel,naz,lscal,ltpara,igetgl1
+     $     ktaloc,latt,iparam,lscal
+      integer*4 irtc,l,isp1,
+     $     nts,itfdownlevel,naz,ltpara,igetgl1
       character*20 title
       logical*4, save :: trackinit=.false.
       real*8 ol,trval,dt1,df,rgetgl1,dt0,phi(3)
@@ -58,11 +60,12 @@ c      l=itfdownlevel()
       call cputime(dt0,irtc)
       pltfl=8
       ilattp=latt
+      call loc_el(ilattp,elatt)
       lattuse=latt
-      lscal =ilist(2,iparam+1)
+      lscal =klist(iparam+1)
       np0   =ilist(1,lscal+1)
       nturn =ilist(1,lscal+2)
-      ltpara=ilist(2,ilist(2,ilattp))
+      ltpara=ilist(2,elatt%aux)
       charge=rlist(lscal+4)
       call rsetgl1('NP',dble(np0))
       call rsetgl1('TURNS',dble(nturn))
@@ -82,7 +85,8 @@ c      l=itfdownlevel()
       trf0  =rgetgl1('DTSYNCH')
       vcphic=rgetgl1('PHICAV')
       vcalpha=rgetgl1('EFFVCRATIO')
-      nlat  =ilist(1,ilattp)+1
+      nlat  =elatt%nlat1-1
+c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       df    =rgetgl1('FSHIFT')
       isynch=igetgl1('$RFSW$'  )
       intra =igetgl1('$INTRA$' ) .ne. 0
@@ -109,7 +113,7 @@ c      l=itfdownlevel()
       call tsetgcut
       call tphyzp
       call tsetdvfs
-      ol=rlist(ilist(2,ilattp)+1)
+      ol=rlist(elatt%aux+1)
       if(nturn .lt. 0 .and. np0 .eq. 0)then
         if(ol .le. 0.d0)then
           omega0=0.d0
@@ -130,7 +134,7 @@ c      l=itfdownlevel()
       orbitcal=.true.
       dp0   =0.d0
       call initialize_tampl()
-      call tclrpara(ilist(1,ilattp+1),nlat-1)
+      call tclrpara(elatt,nlat-1)
       call tclrfpe
       write(*,'(a)')
      1' RFSW RADCOD RAD   FLUC INTRA '//
@@ -165,7 +169,7 @@ c      l=itfdownlevel()
       nturn=abs(nturn)
       ikptbl=ktaloc(np0*3)
       call tspini(iparam+4,ilist(1,ikptbl),.true.)
-      call tplini(iparam+5,ilist(1,ikptbl))
+c      call tplini(iparam+5,ilist(1,ikptbl))
       ig=ktaloc(np0)
       ipz=ktaloc(np0)
       if(.not. dapert .or. trpt)then
@@ -262,8 +266,8 @@ c      l=itfdownlevel()
       call isetgl1('$SUMRES$',sumres)
       call isetgl1('$DIFFRES$',diffres)
       call isetgl1('$PHOTONS$',photons)
-      nlat  =ilist(1,ilattp)+1
-      call tclrpara(ilist(1,ilattp+1),nlat-1)
+      nlat  =elatt%nlat1-1
+      call tclrpara(elatt,nlat-1)
       call cputime(dt1,irtc)
       write(*,'(1X,2A,F10.3,A)')
      1     title,' end:  CPU time =',(dt1-dt0)*1.d-6,' sec'
@@ -275,7 +279,7 @@ c      l=itfdownlevel()
       return
       end
 
-      integer function itfilattp()
+      integer*8 function itfilattp()
       use tfstk
       use tmacro
       implicit none

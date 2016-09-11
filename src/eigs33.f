@@ -1,6 +1,5 @@
       subroutine eigs33(a,r,eig)
       implicit none
-      include 'inc/MATH.inc'
       real*8 a(3,3),r(3,3),eig(3)
 
 c     Use extended double precision real for internal variables if possible
@@ -177,8 +176,8 @@ c         eig(2)=.5d0*(x11+x22-sign(d,u))
       end
 
       real*8 function eigr33(r,u,ndim)
+      use macmath
       implicit none
-      include 'inc/MACMATH.inc'
       integer*4 ndim
       real*8 r(ndim,3),u(3),a,b,s2,u1,u2,u3,w,x1,x2,x3,c,s
       s2=r(1,3)**2+r(2,3)**2

@@ -4,6 +4,7 @@
       use tffitcode
       use ffs, only:gettwiss
       use ffs_pointer
+      use sad_main
       use ffs_flag
       use tmacro
       implicit none
@@ -18,8 +19,8 @@
       data iabmilz /0/
       sol=.true.
       do i=k+1,nlat-1
-        if(idtype(latt(1,i)) .eq. icSOL)then
-          if(rlist(idval(latt(1,i))+8) .ne. 0.d0)then
+        if(idtypec(i) .eq. icSOL)then
+          if(rlist(idvalc(i)+8) .ne. 0.d0)then
             ke=i
             go to 20
           endif
@@ -78,107 +79,115 @@
       use ffs_pointer
       use ffs_flag
       use tmacro
+      use sad_main
       implicit none
-      integer*4 l,ld,lt,lp,mfr,kb
+      integer*4 l,ld,lt,mfr,kb
+      integer*8 lp
+      type (sad_comp), pointer ::cmp
       real*8 trans(6,12),cod(6),beam(42),al,theta,
      $     phi,phix,phiy,bzs,cod1(6),trans1(6,6),trans2(6,6),
      $     tfbzs,radlvl,bzs0,fb1,fb2,chi1,chi2,
-     $     psi1,psi2,apsi1,apsi2,f1,rtaper
+     $     psi1,psi2,apsi1,apsi2,f1,rtaper,ftable(4),ak1
       logical*4 enarad,dir,ent,qsol,coup,err,enarad1
-      ld=latt(1,l)
+      ld=idelc(l)
       lt=idtype(ld)
-      lp=latt(2,l)
-      al=rlist(lp+1)
+      lp=elatt%comp(l)
+      call loc_comp(lp,cmp)
+      al=cmp%value(1)
       bzs=tfbzs(l,kb)
       if(lt .eq. icDRFT)then
         call tdrife(trans,cod,beam,al,
      $       bzs,0.d0,0.d0,.true.,
-     $       enarad .and. rlist(lp+kytbl(kwRAD,icDRFT)) .eq. 0.d0,
+     $       enarad .and. cmp%value(kytbl(kwRAD,icDRFT)) .eq. 0.d0,
      $       calpol,irad,ld)
       elseif(lt .eq. icBEND)then
-        theta=rlist(lp+kytbl(kwROT,icBEND))
-     $       +rlist(lp+kytbl(kwDROT,icBEND))
-        phi=rlist(lp+2)+rlist(lp+kytbl(kwK0,icBEND))
+        theta=cmp%value(kytbl(kwROT,icBEND))
+     $       +cmp%value(kytbl(kwDROT,icBEND))
+        phi=cmp%value(2)+cmp%value(kytbl(kwK0,icBEND))
         phiy= phi*cos(theta)
         phix= phi*sin(theta)
         call tdrife(trans,cod,beam,al,
      $       bzs,phiy,phix,.true.,
-     $       enarad .and. rlist(lp+kytbl(kwRAD,icBEND)) .eq. 0.d0,
+     $       enarad .and. cmp%value(kytbl(kwRAD,icBEND)) .eq. 0.d0,
      $       calpol,irad,ld)
       elseif(lt .eq. icQUAD)then
-        dir=rlist(lp+ilist(1,lp)) .gt. 0.d0
+        dir=direlc(l) .gt. 0.d0
         if(dir)then
-          mfr=nint(rlist(lp+12))
+          mfr=nint(cmp%value(12))
         else
-          mfr=nint(rlist(lp+12))
+          mfr=nint(cmp%value(12))
           mfr=mfr*(11+mfr*(2*mfr-9))/2
         endif
         if(enarad)then
-          radlvl=rlist(lp+7)
+          radlvl=cmp%value(7)
         else
           radlvl=1.d0
         endif
+        ak1=cmp%value(kytbl(kwK1,icQUAD))
+        call tsetfringepe(cmp,icQUAD,al,ak1,direlc(l),ftable)
         call tquase(trans,cod,beam,
-     $       al,rlist(lp+2),bzs,
-     $       rlist(lp+5),rlist(lp+6),rlist(lp+4),
-     1       radlvl,rlist(lp+9) .eq. 0.d0,
-     $       rlist(lp+10),rlist(lp+11),
-     $       mfr,rlist(lp+13),l,dir,ld)
+     $       al,ak1,bzs,
+     $       cmp%value(5),cmp%value(6),cmp%value(4),
+     1       radlvl,cmp%value(9) .eq. 0.d0,
+     $       ftable(1),ftable(2),ftable(3),ftable(4),
+     $       mfr,cmp%value(13),l,dir,ld)
       elseif(lt .eq. icMULT)then
-        dir=rlist(lp+ilist(1,lp)) .gt. 0.d0
-        phi=rlist(lp+kytbl(kwANGL,icMULT))
-        mfr=nint(rlist(lp+kytbl(kwFRMD,icMULT)))
+        dir=direlc(l).gt. 0.d0
+        phi=cmp%value(kytbl(kwANGL,icMULT))
+        mfr=nint(cmp%value(kytbl(kwFRMD,icMULT)))
         if(dir)then
-          psi1=rlist(lp+kytbl(kwE1,icMULT))
-          psi2=rlist(lp+kytbl(kwE2,icMULT))
-          apsi1=rlist(lp+kytbl(kwAE1,icMULT))
-          apsi2=rlist(lp+kytbl(kwAE2,icMULT))
-          fb1=rlist(lp+kytbl(kwFB1,icMULT))
-          fb2=rlist(lp+kytbl(kwFB2,icMULT))
-          chi1=rlist(lp+kytbl(kwCHI1,icMULT))
-          chi2=rlist(lp+kytbl(kwCHI2,icMULT))
+          psi1=cmp%value(kytbl(kwE1,icMULT))
+          psi2=cmp%value(kytbl(kwE2,icMULT))
+          apsi1=cmp%value(kytbl(kwAE1,icMULT))
+          apsi2=cmp%value(kytbl(kwAE2,icMULT))
+          fb1=cmp%value(kytbl(kwFB1,icMULT))
+          fb2=cmp%value(kytbl(kwFB2,icMULT))
+          chi1=cmp%value(kytbl(kwCHI1,icMULT))
+          chi2=cmp%value(kytbl(kwCHI2,icMULT))
         else
           mfr=mfr*(11+mfr*(2*mfr-9))/2
-          psi1=rlist(lp+kytbl(kwE2,icMULT))
-          psi2=rlist(lp+kytbl(kwE1,icMULT))
-          apsi1=rlist(lp+kytbl(kwAE2,icMULT))
-          apsi2=rlist(lp+kytbl(kwAE1,icMULT))
-          fb2=rlist(lp+kytbl(kwFB1,icMULT))
-          fb1=rlist(lp+kytbl(kwFB2,icMULT))
-          chi1=-rlist(lp+kytbl(kwCHI1,icMULT))
-          chi2=-rlist(lp+kytbl(kwCHI2,icMULT))
+          psi1=cmp%value(kytbl(kwE2,icMULT))
+          psi2=cmp%value(kytbl(kwE1,icMULT))
+          apsi1=cmp%value(kytbl(kwAE2,icMULT))
+          apsi2=cmp%value(kytbl(kwAE1,icMULT))
+          fb2=cmp%value(kytbl(kwFB1,icMULT))
+          fb1=cmp%value(kytbl(kwFB2,icMULT))
+          chi1=-cmp%value(kytbl(kwCHI1,icMULT))
+          chi2=-cmp%value(kytbl(kwCHI2,icMULT))
         endif
-        call tmulte(trans,cod,beam,gammab,l,al,
-     $       rlist(lp+kytbl(kwK0,icMULT)),bzs,
+        call tsetfringepe(cmp,icMULT,al,cmp%value(kytbl(kwK1,icMULT)),
+     $       direlc(l),ftable)
+        call tmulte(trans,cod,beam,l,al,
+     $       cmp%value(kytbl(kwK0,icMULT)),bzs,
      $       phi,psi1,psi2,apsi1,apsi2,
-     1       rlist(lp+3),rlist(lp+4),rlist(lp+5),
-     $       chi1,chi2,rlist(lp+8),
-     $       rlist(lp+kytbl(kwDROT,icMULT)),
-     $       rlist(lp+9),
-     $       rlist(lp+kytbl(kwRAD,icMULT)) .eq. 0.d0 .and. enarad,
-     $       rlist(lp+11) .eq. 0.d0,
-     $       rlist(lp+12),rlist(lp+13),mfr,fb1,fb2,
-     $       rlist(lp+kytbl(kwK0FR,icMULT)) .eq. 0.d0,
-     $       rlist(lp+15),rlist(lp+16),rlist(lp+17),rlist(lp+18),
-     $       rlist(lp+kytbl(kwW1,icMULT)),rtaper,
+     1       cmp%value(3),cmp%value(4),cmp%value(5),
+     $       chi1,chi2,cmp%value(8),
+     $       cmp%value(kytbl(kwDROT,icMULT)),
+     $       cmp%value(9),
+     $       cmp%value(kytbl(kwRAD,icMULT)) .eq. 0.d0 .and. enarad,
+     $       cmp%value(11) .eq. 0.d0,
+     $       ftable(1),ftable(2),ftable(3),ftable(4),
+     $       mfr,fb1,fb2,
+     $       cmp%value(kytbl(kwK0FR,icMULT)) .eq. 0.d0,
+     $       cmp%value(15),cmp%value(16),cmp%value(17),cmp%value(18),
+     $       cmp%value(kytbl(kwW1,icMULT)),rtaper,
      $       ld)
       elseif(lt .eq. icSOL)then
-        enarad1=enarad .and. rlist(lp+kytbl(kwRAD,icSOL)) .eq. 0.d0
+        enarad1=enarad .and. cmp%value(kytbl(kwRAD,icSOL)) .eq. 0.d0
         if(rlist(idval(ld)+kytbl(kwBND,icSOL)) .ne. 0.d0)then
-          ent=rlist(lp+ilist(1,lp)) .gt. 0.d0 .and. l .eq. kb
-     $         .or. rlist(lp+ilist(1,lp)) .lt. 0.d0
-     $         .and. l .ne. kb
+          ent=direlc(l) .gt. 0.d0 .and. l .eq. kb
+     $         .or. direlc(l) .lt. 0.d0 .and. l .ne. kb
           if(calpol)then
-            call tmov(cod,cod1,6)
+            cod1=cod
           endif
           bzs0=tfbzs(l-1,kb)
           if(enarad1 .and. .not. ent)then
-            f1=rlist(lp+kytbl(kwF1,icSOL))
+            f1=cmp%value(kytbl(kwF1,icSOL))
             if(f1 .ne. 0.d0)then
               call trades(trans,beam,cod,-bzs0,0.d0,f1,brhoz)
             endif
           endif
-          if(rlist(lp+kytbl(kwFRIN,icSOL)) .eq. 0.d0)then
+          if(cmp%value(kytbl(kwFRIN,icSOL)) .eq. 0.d0)then
             if(ent)then
               call tsconv(trans1,cod,lp,.true.)
               call tsfrie(trans2,cod,bzs)
@@ -196,7 +205,7 @@
             call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod1)
           endif
           if(enarad1 .and. ent)then
-            f1=rlist(lp+kytbl(kwF1,icSOL))
+            f1=cmp%value(kytbl(kwF1,icSOL))
             if(f1 .ne. 0.d0)then
               call trades(trans,beam,cod,0.d0,bzs,f1,brhoz)
             endif
@@ -204,12 +213,12 @@
         else
           bzs0=tfbzs(l-1,kb)
           if(enarad1)then
-            f1=rlist(lp+kytbl(kwF1,icSOL))
+            f1=cmp%value(kytbl(kwF1,icSOL))
             if(f1 .ne. 0.d0)then
               call trades(trans,beam,cod,bzs0,bzs,f1,brhoz)
             endif
           endif
-          if(rlist(lp+kytbl(kwFRIN,icSOL)) .eq. 0.d0)then
+          if(cmp%value(kytbl(kwFRIN,icSOL)) .eq. 0.d0)then
             if(calpol)then
               call tmov(cod,cod1,6)
             endif

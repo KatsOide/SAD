@@ -1,16 +1,16 @@
       subroutine inifil
       use maccbk
+      use macfile
       implicit none
-      include 'inc/MACFILE.inc'
-      integer*4 mctaloc
+      integer*8 ktcaloc
 c
          infl=STDIN
          outfl=STDOUT
          pltfl=STDPLT
          errfl=STDERR
          lstfl=STDLST
-         inflpt=mctaloc(4)
-         ilist(1,inflpt)=infl
-         ilist(2,inflpt)=0
+         inflpt=ktcaloc(5)
+         klist(inflpt)=infl
+         klist(inflpt+1)=0
       return
       end

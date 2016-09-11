@@ -8,8 +8,8 @@
       character*(*) word,wordp
       character name*8,vname*12,autofg*11
       character*8  nlist(mfit1)
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),
-     $     mult(*),master(*)
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),mult(*),master(*)
       dimension istr(*)
       dimension kfit(nfc),ifitp(nfc),mfitp(nfc),fitval(nfc)
       include 'inc/common.inc'

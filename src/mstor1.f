@@ -9,7 +9,8 @@
       character*(*) word
       character*30 dat
       character fn(1)*(ichr),fnn(1)*(ichr)
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun)
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun)
       dimension id(*),ifname(*)
       dimension istr(nstra,4),imon(nmona,4),emon(nmona,4)
       common /mcfiles/icomf,nof(kfiles),iifnam(kfiles),iidata(kfiles),
@@ -49,7 +50,7 @@ c
         id(np)=italoc(1+(3*nstr+1)/2)
         ilist(1,id(np))=nstr
         do 21 i=1,nstr
-          rlist(id(np)+i)=rlist(latt(2,istr(istr(i,2),1))+11)
+          rlist(id(np)+i)=rlist(latt(istr(istr(i,2),1))+11)
           ilist(mod(i-1,2)+1,id(np)+nstr+1+(i-1)/2)=istr(i,2)
    21   continue
       elseif(icom.eq.2) then
@@ -66,9 +67,9 @@ c       print *,np,id(np)
           j=imon(imon(i,2),1)
           nq=imon(imon(i,2),4)
           rlist(id(np)+i)=twiss(j,0,15)-twiss(j,ndim,15)
-     1                   -rlist(latt(2,nq)+5)+emon(imon(i,2),1)
+     1                   -rlist(latt(nq)+5)+emon(imon(i,2),1)
           rlist(id(np)+nmon+i)=twiss(j,0,17)-twiss(j,ndim,17)
-     1                   -rlist(latt(2,nq)+6)+emon(imon(i,2),2)
+     1                   -rlist(latt(nq)+6)+emon(imon(i,2),2)
           ilist(mod(i-1,2)+1,id(np)+2*nmon+1+(i-1)/2)=imon(i,2)
    22   continue
       endif

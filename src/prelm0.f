@@ -1,14 +1,12 @@
       subroutine prelm0(idxe,idxl,head)
       use maccbk
+      use mackw
+      use macttyp
+      use macfile
+      use macmisc
       implicit real*8 (a-h,o-z)
       integer idxe,idxl
       character*(*) head
-c
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACFILE.inc'
-      include 'inc/MACMISC.inc'
 c
 c for debug
 c     print *,'>enter into prelem',pname(idxe)

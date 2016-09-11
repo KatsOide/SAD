@@ -6,8 +6,9 @@
       use ffs_wake
       use tffitcode
       implicit none
-      integer*8 ktaloc,iwbufxy,iwbufxyl,iwl,iwt,iwsl,iwst,i1,i2
-      integer*4 ibegin,lend,itp1,i,j,ii,iutp,iwp,iutp1,np,npf,idx,idy
+      integer*8 ktaloc,iwbufxy,iwbufxyl,iwl,iwt,iwsl,iwst
+      integer*4 ibegin,lend,itp1,i,j,ii,iutp,iwp,iutp1,np,npf,idx,idy,
+     $     i1,i2
       real*8 frbegin,frend,
      $     rgetgl1,utwiss1(ntwissfun,-nfam:nfam),fr1,fr2,sigz,
      $     wbuf(nfam1:nfam),wzl(nfam1:nfam),wzt(nfam1:nfam),dx,dy
@@ -69,7 +70,7 @@
           enddo
         elseif(i1 .eq. lend)then
           npf=np*ntwissfun
-          if(idtype(latt(1,nlat-1)) .eq. icMARK)then
+          if(idtypec(nlat-1) .eq. icMARK)then
             iutp=itwissp(nlat-1)
             call tmov(utwiss(1,nfam1,itp1),
      $           utwiss(1,nfam1,iutp),np)
@@ -83,15 +84,15 @@
         endif
         if(iwp .le. nwakep)then
           iutp=itwissp(i2)
-          idx=kytbl(kwDX,idtype(latt(1,i2)))
+          idx=kytbl(kwDX,idtypec(i2))
           if(idx .ne. 0)then
-            dx=rlist(latt(2,i2)+idx)
+            dx=rlist(latt(i2)+idx)
           else
             dx=0.d0
           endif
-          idy=kytbl(kwDY,idtype(latt(1,i2)))
+          idy=kytbl(kwDY,idtypec(i2))
           if(idy .ne. 0)then
-            dy=rlist(latt(2,i2)+idy)
+            dy=rlist(latt(i2)+idy)
           else
             dy=0.d0
           endif

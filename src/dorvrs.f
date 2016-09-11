@@ -1,12 +1,11 @@
       subroutine dorvrs(dummy)
       use maccbk
+      use mackw
+      use macttyp
+      use macmisc
       implicit none
       integer*4 dummy
 
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACMISC.inc'
       character*(MAXSTR) token
       integer slen,ival,ttype,hsrchz,lpname,idx
       real*8 rval

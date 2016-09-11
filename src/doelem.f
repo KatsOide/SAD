@@ -1,16 +1,15 @@
       subroutine doelem(elmcd)
       use maccbk
+      use mackw
+      use macttyp
+      use macfile
+      use macmisc
       implicit none
 c
-      include 'inc/MACFILE.inc'
-      include 'inc/MACMISC.inc'
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      integer*4 elmcd
+      integer*8 elmcd,ktcaloc
       character*(MAXSTR) token,wtoken*(*)
       integer slen,ival,ttype,slen2,ttype2,idx
-      integer*4 hsrchz,itcaloc
+      integer*4 hsrchz
       real*8 rval
       logical skipch
 c
@@ -41,8 +40,8 @@ c end debug
       else if (ttype .eq. ttypID) then
         idx =hsrchz(token(:slen))
         if (idtype(idx) .eq. icNULL) then
-          idtype(idx)=elmcd
-          idval(idx)=itcaloc(kytbl(kwMAX,elmcd)+1)
+          idtype(idx)=int(elmcd)
+          idval(idx)=ktcaloc(kytbl(kwMAX,elmcd)+1)
           call rdkwdl(idx)
 c for debug
 c      print *,'doelem:',idtype(idx),elmcd,pname(kytbl(0,elmcd))

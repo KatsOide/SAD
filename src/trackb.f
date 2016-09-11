@@ -5,6 +5,8 @@
       use tfstk
       use ffs
       use tffitcode
+      use track_tt, ix0=>itt1,ix=>itt2,ix1=>itt3,ix2=>itt4,
+     $     ix3=>itt5,ix4=>itt6
       implicit none
 ckikuchi ... 1 line modified
       logical print, exist
@@ -15,11 +17,9 @@ ckikuchi ... 1 line added
       real*8 result(6,7),xa,ya,xxa,xya,yya
       character*(*) word,title,case
       character*(MAXPNAME) name
-      integer*4 latt(2,nlat)
+      integer*8 latt(nlat)
       real*8 sv(5)
       logical*4 ret
-      integer*4 ix0,ix,ix1,ix2,ix3,ix4
-      common /tt/ ix0,ix,ix1,ix2,ix3,ix4
       call tracker(latt,nlat1,sv,result,np,'STANDBY',name,lfno)
       call tracker(latt,nlat1,sv,result,np,'CONT',name,lfno)
       xa=sv(1)

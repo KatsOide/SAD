@@ -1,6 +1,6 @@
       subroutine tvcorr(cv,x0,al,n)
+      use macmath
       implicit none
-      include 'inc/MACMATH.inc'
       integer*4 n,i
       real*8 x,w,tgauss,s,x1,al,x0
       complex*16 cv(n),cd

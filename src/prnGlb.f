@@ -1,8 +1,8 @@
       Subroutine prnGlb(gname)
       use maccbk
+      use maccode
+      use macfile
       implicit real*8 (a-h,o-z)
-      include 'inc/MACCODE.inc'
-      include 'inc/MACFILE.inc'
       character*(*) gname
       integer*4  idx,ptr,n,itype,hsrch,ival
       real*8 rval

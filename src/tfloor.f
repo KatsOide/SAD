@@ -458,7 +458,7 @@ c     end   initialize for preventing compiler warning
       ymin=dinfinity
       ymax=-ymin
       if(isp .eq. isp1+1)then
-        if(klist(isp) .eq. ktfoper+mtfnull)then
+        if(ktastk(isp) .eq. ktfoper+mtfnull)then
           go to 10
         endif
       endif

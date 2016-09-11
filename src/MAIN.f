@@ -1,28 +1,24 @@
-      use maccbk
+      module version
+        character*19, parameter ::
+c                     /'1234567890123456789'/
+     $     versionid  ='1.0.10.10k64       ',
+     $     versiondate='9/13/2016 00:00:00 '
+        character*25 builtdate
+        character*30 startdat
+      end module
+
+      program MAIN
+      use version
       implicit none
-      include 'inc/MACFILE.inc'
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACMISC.inc'
 c
-      character*30 dat
 c
-      character*19 versionid,versiondate
-      character*25 builtdate
-      common /version/ versionid,versiondate
-c                      /'         1111111111'/
-c                      /'1234567890123456789'/
-      data versionid   /'1.0.10.9.5.1k64    '/
-      data versiondate /'6/24/2016 0:00:00  '/
-c
-      call fdate1(dat)
+      call fdate1(startdat)
       call buildinfo_get_string('Built:Date', builtdate)
 c
       write(*,*)
      $     '*** Welcome to SAD Ver.',versionid(1:len_trim(versionid)),
      $     ' built at ',builtdate(1:len_trim(builtdate)),' ***'
-      write(*,*)'*** Today: ',dat(1:len_trim(dat)),' ***'
+      write(*,*)'*** Today: ',startdat(1:len_trim(startdat)),' ***'
 c
       call inimem
       call inifil

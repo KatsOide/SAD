@@ -314,12 +314,12 @@
 
       subroutine tfset1(k10,k20,kx,mopc,irtc)
       use tfstk
+      use mackw
       implicit none
       type (sad_descriptor) k1,k2,kx,k10,k20,ks,ka
       type (sad_list),pointer :: list,kls1,kla,kls
       type (sad_symbol), pointer ::sym
       type (sad_symdef),pointer :: symd
-      include 'inc/MACCODE.inc'
       integer*8 ka1,kaa,kas,kar
       integer*4 irtc,mopc,itfmessage,itfmessageexp,i
       irtc=0

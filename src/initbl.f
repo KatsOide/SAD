@@ -1,13 +1,13 @@
       subroutine initbl
       use maccbk
+      use mackw
+      use macphys
+      use macvar
+      use macfile
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      include 'inc/MACVAR.inc'
-      include 'inc/MACPHYS.inc'
-      include 'inc/MACFILE.inc'
 c
-      integer*4 i,idummy,sethtb,hsrch,mtaloc
+      integer*8 ktcaloc
+      integer*4 i,idummy,sethtb,hsrch,sethtbr
 c     external doline
       external doprin, doexpn, doread, dolist, docod, dostop, dotwis
       external dooffl, doonfl,dorvrs
@@ -25,34 +25,34 @@ c
        idummy=sethtb('line    ',icDEF,icLINE)
        idummy=sethtb('CELL    ',icDEF,icCELL)
        idummy=sethtb('cell    ',icDEF,icCELL)
-       idummy=sethtb('EXPAND  ',icRSVD,doexpn)
-       idummy=sethtb('expand  ',icRSVD,doexpn)
-       idummy=sethtb('print   ',icRSVD,doprin)
-       idummy=sethtb('PRINT   ',icRSVD,doprin)
-       idummy=sethtb('READ    ',icRSVD,doread)
-       idummy=sethtb('read    ',icRSVD,doread)
-       idummy=sethtb('list    ',icRSVD,dolist)
-       idummy=sethtb('LIST    ',icRSVD,dolist)
-c       idummy=sethtb('cod     ',icRSVD,docod)
-c       idummy=sethtb('COD     ',icRSVD,docod)
-       idummy=sethtb('reverse ',icRSVD,dorvrs)
-       idummy=sethtb('REVERSE ',icRSVD,dorvrs)
-       idummy=sethtb('stop    ',icRSVD,dostop)
-       idummy=sethtb('STOP    ',icRSVD,dostop)
-c      idummy=sethtb('temp    ',icRSVD,dotemp)
-c      idummy=sethtb('TEMP    ',icRSVD,dotemp)
-c       idummy=sethtb('twiss   ',icRSVD,dotwis)
-c       idummy=sethtb('TWISS   ',icRSVD,dotwis)
-       idummy=sethtb('on      ',icRSVD,doonfl)
-       idummy=sethtb('ON      ',icRSVD,doonfl)
-       idummy=sethtb('off     ',icRSVD,dooffl)
-       idummy=sethtb('OFF     ',icRSVD,dooffl)
+       idummy=sethtbr('EXPAND  ',doexpn)
+       idummy=sethtbr('expand  ',doexpn)
+       idummy=sethtbr('print   ',doprin)
+       idummy=sethtbr('PRINT   ',doprin)
+       idummy=sethtbr('READ    ',doread)
+       idummy=sethtbr('read    ',doread)
+       idummy=sethtbr('list    ',dolist)
+       idummy=sethtbr('LIST    ',dolist)
+c       idummy=sethtbr('cod     ',docod)
+c       idummy=sethtbr('COD     ',docod)
+       idummy=sethtbr('reverse ',dorvrs)
+       idummy=sethtbr('REVERSE ',dorvrs)
+       idummy=sethtbr('stop    ',dostop)
+       idummy=sethtbr('STOP    ',dostop)
+c      idummy=sethtbr('temp    ',dotemp)
+c      idummy=sethtbr('TEMP    ',dotemp)
+c       idummy=sethtbr('twiss   ',dotwis)
+c       idummy=sethtbr('TWISS   ',dotwis)
+       idummy=sethtbr('on      ',doonfl)
+       idummy=sethtbr('ON      ',doonfl)
+       idummy=sethtbr('off     ',dooffl)
+       idummy=sethtbr('OFF     ',dooffl)
 c
        idummy=sethtb('USE     ',icVAR,VarPt)
 c
-       idummy=sethtb('LIE     ',icACT,mtaloc(4))
-       idummy=sethtb('lie     ',icACT,idval(idummy))
-       ilist(1,idval(idummy))=2
+       idummy=sethtb8('LIE     ',icACT,ktcaloc(4))
+       idummy=sethtb8('lie     ',icACT,idval(idummy))
+       ilist(1,idval(idummy)-1)=2
        call setfnp(ilist(1,idval(idummy)+1),ActLie)
        ilist(1,idval(idummy)+2)=hsrch('USE')
 c
@@ -87,9 +87,9 @@ c
        idummy=sethtb('NY      ',icVAR,VarLst+ VarRL)
        idummy=sethtb('NZ      ',icVAR,VarLst+ VarRL)
 c
-       idummy=sethtb('TRACK   ',icACT,mtaloc(21))
-       idummy=sethtb('track   ',icACT,idval(idummy))
-       ilist(1,idval(idummy))=20
+       idummy=sethtb8('TRACK   ',icACT,ktcaloc(21))
+       idummy=sethtb8('track   ',icACT,idval(idummy))
+       ilist(1,idval(idummy)-1)=20
        call setfnp(ilist(1,idval(idummy)+1),ActTra)
        ilist(1,idval(idummy)+2)=hsrch('USE     ')
        ilist(1,idval(idummy)+3)=hsrch('TURNS   ')
@@ -111,15 +111,38 @@ c
        ilist(1,idval(idummy)+19)=hsrch('NY      ')
        ilist(1,idval(idummy)+20)=hsrch('NZ      ')
 c
-       idummy=sethtb('FFS     ',icACT,mtaloc(21))
-       idummy=sethtb('ffs     ',icACT,idval(idummy))
-       ilist(1,idval(idummy))=20
+       idummy=sethtb8('FFS     ',icACT,ktcaloc(21))
+       idummy=sethtb8('ffs     ',icACT,idval(idummy))
+       ilist(1,idval(idummy)-1)=20
        call setfnp(ilist(1,idval(idummy)+1),ActTra)
        ilist(1,idval(idummy)+2)=hsrch('USE     ')
        ilist(1,idval(idummy)+3)=hsrch('TURNS   ')
+       ilist(1,idval(idummy)+4)=hsrch('NPART   ')
+       ilist(1,idval(idummy)+5)=hsrch('XEMI    ')
+       ilist(1,idval(idummy)+6)=hsrch('YEMI    ')
+       ilist(1,idval(idummy)+7)=hsrch('SIGS    ')
+       ilist(1,idval(idummy)+8)=hsrch('SIGE    ')
+       ilist(1,idval(idummy)+9)=hsrch('ELEC    ')
+       ilist(1,idval(idummy)+10)=hsrch('POSI    ')
+       ilist(1,idval(idummy)+11)=hsrch('PROTON  ')
+       ilist(1,idval(idummy)+12)=hsrch('RADI    ')
+       ilist(1,idval(idummy)+13)=hsrch('SPAN    ')
+       ilist(1,idval(idummy)+14)=hsrch('CENTER  ')
+       ilist(1,idval(idummy)+15)=hsrch('AFTER   ')
+       ilist(1,idval(idummy)+16)=hsrch('AXIS    ')
+       ilist(1,idval(idummy)+17)=hsrch('SYNC    ')
+       ilist(1,idval(idummy)+18)=hsrch('NX      ')
+       ilist(1,idval(idummy)+19)=hsrch('NY      ')
+       ilist(1,idval(idummy)+20)=hsrch('NZ      ')
        call setdfl(idummy,hsrch('TURNS   '),-1.d0)
+c
+       idummy=sethtb8('QUICK   ',icACT,ktcaloc(21))
+       idummy=sethtb8('quick   ',icACT,idval(idummy))
+       ilist(1,idval(idummy)-1)=20
+       call setfnp(ilist(1,idval(idummy)+1),ActTra)
+       ilist(1,idval(idummy)+2)=hsrch('USE     ')
+       ilist(1,idval(idummy)+3)=hsrch('TURNS   ')
        ilist(1,idval(idummy)+4)=hsrch('NPART   ')
-       call setdfl(idummy,hsrch('NPART   '),-3.d0)
        ilist(1,idval(idummy)+5)=hsrch('XEMI    ')
        ilist(1,idval(idummy)+6)=hsrch('YEMI    ')
        ilist(1,idval(idummy)+7)=hsrch('SIGS    ')
@@ -136,16 +159,16 @@ c
        ilist(1,idval(idummy)+18)=hsrch('NX      ')
        ilist(1,idval(idummy)+19)=hsrch('NY      ')
        ilist(1,idval(idummy)+20)=hsrch('NZ      ')
-c
-       idummy=sethtb('QUICK   ',icACT,mtaloc(21))
-       idummy=sethtb('quick   ',icACT,idval(idummy))
-       ilist(1,idval(idummy))=20
-       call setfnp(ilist(1,idval(idummy)+1),ActTra)
-       ilist(1,idval(idummy)+2)=hsrch('USE     ')
-       ilist(1,idval(idummy)+3)=hsrch('TURNS   ')
        call setdfl(idummy,hsrch('TURNS   '),-1.d0)
-       ilist(1,idval(idummy)+4)=hsrch('NPART   ')
        call setdfl(idummy,hsrch('NPART   '),-3.d0)
+c
+       idummy=sethtb8('EMIT    ',icACT,ktcaloc(21))
+       idummy=sethtb8('emit    ',icACT,idval(idummy))
+       ilist(1,idval(idummy)-1)=20
+       call setfnp(ilist(1,idval(idummy)+1),ActTra)
+       ilist(1,idval(idummy)+2)=hsrch('USE     ')
+       ilist(1,idval(idummy)+3)=hsrch('TURNS   ')
+       ilist(1,idval(idummy)+4)=hsrch('NPART   ')
        ilist(1,idval(idummy)+5)=hsrch('XEMI    ')
        ilist(1,idval(idummy)+6)=hsrch('YEMI    ')
        ilist(1,idval(idummy)+7)=hsrch('SIGS    ')
@@ -162,31 +185,7 @@ c
        ilist(1,idval(idummy)+18)=hsrch('NX      ')
        ilist(1,idval(idummy)+19)=hsrch('NY      ')
        ilist(1,idval(idummy)+20)=hsrch('NZ      ')
-c
-       idummy=sethtb('EMIT    ',icACT,mtaloc(21))
-       idummy=sethtb('emit    ',icACT,idval(idummy))
-       ilist(1,idval(idummy))=20
-       call setfnp(ilist(1,idval(idummy)+1),ActTra)
-       ilist(1,idval(idummy)+2)=hsrch('USE     ')
-       ilist(1,idval(idummy)+3)=hsrch('TURNS   ')
        call setdfl(idummy,hsrch('TURNS   '),0.d0 )
-       ilist(1,idval(idummy)+4)=hsrch('NPART   ')
-       ilist(1,idval(idummy)+5)=hsrch('XEMI    ')
-       ilist(1,idval(idummy)+6)=hsrch('YEMI    ')
-       ilist(1,idval(idummy)+7)=hsrch('SIGS    ')
-       ilist(1,idval(idummy)+8)=hsrch('SIGE    ')
-       ilist(1,idval(idummy)+9)=hsrch('ELEC    ')
-       ilist(1,idval(idummy)+10)=hsrch('POSI    ')
-       ilist(1,idval(idummy)+11)=hsrch('PROTON  ')
-       ilist(1,idval(idummy)+12)=hsrch('RADI    ')
-       ilist(1,idval(idummy)+13)=hsrch('SPAN    ')
-       ilist(1,idval(idummy)+14)=hsrch('CENTER  ')
-       ilist(1,idval(idummy)+15)=hsrch('AFTER   ')
-       ilist(1,idval(idummy)+16)=hsrch('AXIS    ')
-       ilist(1,idval(idummy)+17)=hsrch('SYNC    ')
-       ilist(1,idval(idummy)+18)=hsrch('NX      ')
-       ilist(1,idval(idummy)+19)=hsrch('NY      ')
-       ilist(1,idval(idummy)+20)=hsrch('NZ      ')
 c
        call initb1
        return

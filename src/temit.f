@@ -118,9 +118,8 @@ c     Table of loss-rate
       real*8 conv
       parameter (npara=59)
       parameter (conv=1.d-12)
-      integer*8 iatr,iacod,iamat,iabmi
-      integer*4 lfni,lfno,ia,it,i,j,k,
-     $k1,k2,k3,m,n, iret,l,italoc
+      integer*8 iatr,iacod,iamat,iabmi,ktaloc
+      integer*4 lfni,lfno,ia,it,i,j,k,k1,k2,k3,m,n,iret,l
       real*8 trans(6,12),cod(6),beam(42),emx0,emy0,emz0,dl,
      $     heff,orf,phirf,alphap,omegaz,bh,so,s,
      $     sr,sqr2,bb,sige,
@@ -182,6 +181,9 @@ c        call tclr(cod,6)
         cp0=codplt
         codplt=codplt .or. radtaper
         call tcod(trans,cod,beam,fndcod)
+        if(.not. fndcod)then
+          write(lfno,*)'???-Emittance[]-closed orbit not found.'
+        endif
         codplt=cp0
         codin=cod
 c        write(*,*)'temit-tcod ',trf0
@@ -210,11 +212,11 @@ c        write(*,*)'temit-tcod ',trf0
         call tturne(trans,cod,beam,0,0,0,.false.,.false.,.true.)
       endif
       if(calpol .and. irad .eq. 6)then
-        ipoltr=italoc(npelm*36)
-        ipolb=italoc(npelm*21)
-        ipolo=italoc(npelm*6)
-        ipoll=italoc(npelm)
-        ipolid=italoc(npelm)
+        ipoltr=ktaloc(npelm*36)
+        ipolb=ktaloc(npelm*21)
+        ipolo=ktaloc(npelm*6)
+        ipoll=ktaloc(npelm)
+        ipolid=ktaloc(npelm)
       endif
       irad=12
  4001 if(calem)then

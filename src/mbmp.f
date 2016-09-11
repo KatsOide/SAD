@@ -3,13 +3,17 @@
       use tfstk
       use ffs
       use tffitcode
+      use sad_main
+      use ffs_pointer, only:elatt
       implicit real*8 (a-h,o-z)
       parameter (nconj=3, keymax=50)
       logical tmatch,yplane,mhogal,pat,enome
       character*8 wkey,name
       character ermes*30
-      dimension latt(2,*),twiss(nlat,-ndim:ndim,ntwissfun),mult(*)
-      integer*4 master(nlat)
+      integer*8 latt(*)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),mult(*)
+      integer*4 master(nlat),id
+      integer*8 itemp,ktaloc
       dimension isb(nbcor+4,nbump),istr(nstra,4)
       include 'inc/common.inc'
       common/mbumpf/wkey(keymax),ifte(nconj,keymax),nw
@@ -24,9 +28,10 @@ c
         do 10 i=1,nlat-1
           call elnameK(i,name)
           enome=name.eq.wkey(j)
-          if( tmatch(pname(latt(1,i)),wkey(j)) .or. enome)then
-            pat=idtype(latt(1,i)).eq.icmark .or. master(i).gt.0
-c           print *,pname(latt(1,i)),name,enome
+          id=idcomp(elatt,i)
+          if( tmatch(pname(id),wkey(j)) .or. enome)then
+            pat=idtype(id).eq.icmark .or. master(i).gt.0
+c           print *,pnamec(i),name,enome
             if(pat .or. enome) then
               if(mhogal(ifte(1,j),ifte(2,j),i)) then
                 l=l+1
@@ -42,7 +47,7 @@ c           print *,pname(latt(1,i)),name,enome
    10   continue
    11 continue
    12 if(nw.gt.1) then
-        itemp=italoc((nbp+1)/2)
+        itemp=ktaloc((nbp+1)/2)
         do 13 i=1,nbp
           ilist(mod(i-1,2)+1,itemp+(i-1)/2)=isb(1,i)
    13   continue
@@ -72,7 +77,7 @@ c     ---- find corrector around j-th target
           return
         endif
 c       print *,isb(1,j)
-c       call mbufw(pname(latt(1,isb(1,j))),.false.,lfno)
+c       call mbufw(pnamec(isb(1,j)),.false.,lfno)
 c       write(ermes,'(i3)') isb(2,j)
 c       call mbufw(ermes,.false.,lfno)
 c       do i=3,isb(2,j)+2
@@ -91,13 +96,15 @@ c       call mbufw(' ',.true.,lfno)
       use tfstk
       use ffs
       use tffitcode
+      use sad_main
+      use ffs_pointer, only:elatt
       implicit real*8 (a-h,o-z)
       parameter (nconj=3, keymax=50)
       logical tmatch,exist,abbrev,fcon,mhogal,pat,enome
       character*(*) word,wordp
       character*8 wkey,conj(nconj),name
-      integer*4 master(nlat),mult(*)
-      dimension latt(2,*)
+      integer*4 master(nlat),mult(*),id
+      integer*8 latt(*)
       common/mbumpf/wkey(keymax),ifte(nconj,keymax),nw
       data conj/'F_ROM   ','T_O     ','E_VERY  '/
 c
@@ -143,7 +150,7 @@ c
       do 62 i=1,nlat-1
         call elnameK(i,name)
         enome=name.eq.wordp
-        if( tmatch(pname(latt(1,i)),word) .or. enome) then
+        if( tmatch(pname(idcomp(elatt,i)),word) .or. enome) then
           if(.not.fcon) then
             fcon=.true.
             nwc=nw
@@ -161,11 +168,12 @@ c     write(*,*) (ifte(1,i),ifte(2,i),ifte(3,i),i=1,nw)
         do 70 i=1,nlat-1
           call elnameK(i,name)
           enome=name.eq.wkey(j)
-          if( tmatch(pname(latt(1,i)),wkey(j)) .or. enome)then
-            pat=idtype(latt(1,i)).eq.icmark .or. master(i).gt.0
+          id=idcomp(elatt,i)
+          if( tmatch(pname(id),wkey(j)) .or. enome)then
+            pat=idtype(id).eq.icmark .or. master(i).gt.0
             if(pat .or. enome) then
               if(mhogal(ifte(1,j),ifte(2,j),i)) then
-c                print *,pname(latt(1,i)),i,ifte(1,j),ifte(2,j),
+c                print *,pnamec(i),i,ifte(1,j),ifte(2,j),
 c    $               master(i)
                 l=l+1
                 if(l.eq.ifte(3,j)) then
@@ -189,7 +197,8 @@ c     ---- solve bump equation ---------
       use tffitcode
       implicit real*8 (a-h,o-z)
       logical cor(*),xplane,yplane
-      dimension latt(2,nlat),twiss(*),gammab(nlat),mult(*)
+      integer*8 latt(nlat)
+      dimension twiss(*),gammab(nlat),mult(*)
      z,         isb(ncb+4,*),xs(ncb+2,2,*),istr(*),estr(*),wk(ncb+2,2)
 c
       save
@@ -344,16 +353,21 @@ c     istr(*,3) ;area for flag (>0:error 0:normal)
 c ----------------------------------------------------------------------
       use ffs
       use tffitcode
+      use sad_main
+      use ffs_pointer, only:elatt
       implicit real*8 (a-h,o-z)
       parameter (nobj=8,nmeth=5,nsolvr=2,nbound=2,nother=nsolvr+nbound,
      1           nkey=nobj+nmeth+nother,ddp=1d-6, nbc0=4)
       parameter (mfitc1=32,mfitc2=28)
       character*(*) word,wordp,keywrd(nkey)*8,xy*4,line*79
       integer*4 coex(nmeth+nother,nmeth+nother)
+      integer*8 ktaloc,isex,istb,ixs,istb1,ia,ib,ix,iz,iwk,iqc,iqd,
+     $     itemp,iu,iv,ixb,iaad,iadd,iac,ibc,iaa,iqq
       logical stab,cod,dsp,normal,xplane,yplane,both,bump,minusi,micado,
      1        cond,zsum,exist,exec,coup,operate
       logical corc(nkey),corcn(nkey),corca(nobj),method(nobj,nmeth)
-      dimension latt(2,nlat),pos(nlat),twiss(nlat,-ndim:ndim,ntwissfun),
+      integer*8 latt(nlat),l,iofs
+      dimension pos(nlat),twiss(nlat,-ndim:ndim,ntwissfun),
      $     gammab(nlat),mult(nlat),master(nlat)
       dimension dp1(-ndim:ndim)
       dimension istr(nstra,4),imon(nmona,4),emon(*),estr(*)
@@ -473,7 +487,7 @@ c 1001 continue
       if( minusi ) then
         call ppair1(latt,1,nlat,icsext,npair)
         write(lfno,'(A,I4)')' No. of sext. pairs (total ring) =',npair
-        isex=italoc(npair)
+        isex=ktaloc(npair)
         call ppair(latt,1,nlat,icsext,rlist(isex))
         call packpi(rlist(isex),npair,istr,istr(1,2),istr(1,3),nstr,
      1               nstr,.true.)
@@ -530,7 +544,7 @@ c 1001 continue
       if(zsum) then
         do i=1,nstr
           zsum=.false.
-          l=idval(latt(1,istr(istr(i,2),1)))
+          l=idval(idcomp(elatt,istr(istr(i,2),1)))
           if(rlist(l+1).ne.0d0 .and. rlist(l+2).ne.0d0) then
             zsum=.true.
             exit
@@ -550,14 +564,14 @@ c 1001 continue
           else
             nbump=nbp
           endif
-          istb=italoc(((nbco+4)*nbump+1)/2)
-          ixs =italoc(2*(nbco+2)*nbump)
+          istb=ktaloc(((nbco+4)*nbump+1)/2)
+          ixs =ktaloc(2*(nbco+2)*nbump)
         elseif( corc(nobj+3) ) then
           nbco=4
           if(nbp.eq.0) exit
-          istb=italoc(((nbco+4)*nbp+1)/2)
-          istb1=italoc(((nbco+4)*nbp+1)/2)
-          ixs =italoc(4*nbco*nbp)
+          istb=ktaloc(((nbco+4)*nbp+1)/2)
+          istb1=ktaloc(((nbco+4)*nbp+1)/2)
+          ixs =ktaloc(4*nbco*nbp)
         endif
 c     7/30--------------->
         if(corc(12)) then
@@ -568,10 +582,10 @@ c     'ALIGN'
           iz=0
 c     7/30<--------------
         else
-          ia=italoc(mdim*nstr)
-          ib=italoc(mdim)
-          ix=italoc(nstr)
-          iz=italoc(4*nmon+nc)
+          ia=ktaloc(mdim*nstr)
+          ib=ktaloc(mdim)
+          ix=ktaloc(nstr)
+          iz=ktaloc(4*nmon+nc)
         endif
 c     ----- obtain optics
         dp1(ndim-1)= ddp/2d0 + dp0 +1d0
@@ -627,23 +641,23 @@ c     ---- BUMP ----
      1             mdim,.false.,normal,istr,nstr,imon,nmon,xy)
 c     ---- Calc steerings of unit bumps.
               if(both) then
-                call mbmp(latt,twiss,mult,master,rlist(istb),nbp,istr,
+                call mbmp(latt,twiss,mult,master,ilist(1,istb),nbp,istr,
      1               nstr,nbco,.false.,iret,lfno)
                 k=nbp*(nbco+4)
                 call mbmp(latt,twiss,mult,master,ilist(mod(k,2)+1,
      $               istb+k/2),nbp,istr,nstr,nbco,.true.,iret,lfno)
               else
-                call mbmp(latt,twiss,mult,master,rlist(istb),nbp,istr,
+                call mbmp(latt,twiss,mult,master,ilist(1,istb),nbp,istr,
      1               nstr,nbco,corc(2).or.corc(4),iret,lfno)
               endif
-              iwk =italoc(2*(nbco+2))
+              iwk =ktaloc(2*(nbco+2))
 c     print *,'free before mbstr=',mfalloc(-1)
-              call mbstr(latt,twiss,gammab,mult,rlist(istb),rlist(ixs),
-     1             nbp,nbco,istr,estr,rlist(iwk),corc)
-              call tfree(int8(iwk))
+              call mbstr(latt,twiss,gammab,mult,ilist(1,istb),
+     $             rlist(ixs),nbp,nbco,istr,estr,rlist(iwk),corc)
+              call tfree(iwk)
 c     ---- calc bump response
-              iqc =italoc(mdim*2*nbump)
-              call mrmb(rlist(istb),rlist(ixs),rlist(iqc),
+              iqc =ktaloc(mdim*2*nbump)
+              call mrmb(ilist(1,istb),rlist(ixs),rlist(iqc),
      z             nbco,nbump,rlist(ia+irow),mdim)
             elseif(dsp) then
               psix=0d0
@@ -660,38 +674,38 @@ c     ---- calc bump response
               istr(1,2)=k
 c     ---- calc steerings for unit bumps
               if(both) then
-                call mbmp(latt,twiss,mult,master,rlist(istb),nbp,istr,
+                call mbmp(latt,twiss,mult,master,ilist(1,istb),nbp,istr,
      1               nstr,nbco,.false.,iret,lfno)
                 k=nbp*(nbco+4)
                 call mbmp(latt,twiss,mult,master,ilist(mod(k,2)+1,
      $               istb+k/2),nbp,istr,nstr,nbco,.true.,iret,lfno)
               else
-                call mbmp(latt,twiss,mult,master,rlist(istb),nbp,istr,
+                call mbmp(latt,twiss,mult,master,ilist(1,istb),nbp,istr,
      1               nstr,nbco,corc(6).or.corc(8),iret,lfno)
               endif
-              iwk =italoc(2*(nbco+2))
-              call mbstr(latt,twiss,gammab,mult,rlist(istb),rlist(ixs),
-     1             nbp,nbco,istr,estr,rlist(iwk),corc)
-              call tfree(int8(iwk))
+              iwk =ktaloc(2*(nbco+2))
+              call mbstr(latt,twiss,gammab,mult,ilist(1,istb),
+     $             rlist(ixs),nbp,nbco,istr,estr,rlist(iwk),corc)
+              call tfree(iwk)
 c     ---- calc bump response
-              iqd =italoc(mdim*2*nbump)
-              call mrmb(rlist(istb),rlist(ixs),rlist(iqd),nbco,nbump,
+              iqd =ktaloc(mdim*2*nbump)
+              call mrmb(ilist(1,istb),rlist(ixs),rlist(iqd),nbco,nbump,
      z             rlist(ia+irow),mdim)
             endif
           elseif(method(ic,3)) then
 c     ---- SEX ----
             if(cod) then
               nbp1=nbp
-              call mbmp(latt,twiss,mult,master,rlist(istb),
+              call mbmp(latt,twiss,mult,master,ilist(1,istb),
      $             nbp1,istr,nstr,
      z             nbco,.false.,iret,lfno)
               nbp1=nbp
               call mbmp(latt,twiss,mult,master,rlist(istb1),nbp1,istr,
      1             nstr,nbco,.true.,iret,lfno)
               nbp=nbp1
-              iwk =italoc(6*(nbco+2))
-              call tfree(int8(iwk))
-              call tfree(int8(istb1))
+              iwk =ktaloc(6*(nbco+2))
+              call tfree(iwk)
+              call tfree(istb1)
 c     elseif(dsp) then
             endif
           elseif(method(ic,4)) then
@@ -720,7 +734,7 @@ c     93/10/28
 c     .... Take into account conditions in the matching conditions buffer ..
         jc=0
         if(cond) then
-          itemp=italoc(nmona)
+          itemp=ktaloc(nmona)
           ilist(mod(nmona,2)+1,itemp+nmona/2)=1
           iac=ia+mdim-nc
           ibc=ib+mdim-nc
@@ -785,7 +799,7 @@ c     -- 'NY' ---
               jc=jc+1
             endif
  50       continue
-          call tfree(int8(itemp))
+          call tfree(itemp)
 c     print *,' nc=',nc,' mdim=',mdim,' mdim1=',mdim1
 c     write(*,'(1p,5d11.3)')(rlist(ibc+i),i=0,j)
 c     <------Check of Condition Matrix-------
@@ -799,7 +813,7 @@ c     -------Check of Condition Matrix------>
         ibc=ib+mdim-nc+jc
         if(zsum) then
           do 51 i=1,nstr  
-            l=idval(latt(1,istr(istr(i,2),1)))
+            l=idval(idcomp(elatt,istr(istr(i,2),1))-1)
             rlist(iac+(i-1)*mdim)=rlist(l+1)*rlist(l+2)
  51       continue
           rlist(ibc)=0d0
@@ -808,7 +822,7 @@ c     -------Check of Condition Matrix------>
         endif
         if(coup) then
           n=mcoupsten()
-          itemp=italoc(n*(nstr+1))
+          itemp=ktaloc(n*(nstr+1))
           call mcoupstea(rlist(itemp),n,latt,mult,istr,nstr,lfno)
           do j=1,n
             do i=1,nstr
@@ -818,7 +832,7 @@ c     -------Check of Condition Matrix------>
             iac=iac+1
             ibc=ibc+1
           enddo
-          call tfree(int8(itemp))
+          call tfree(itemp)
         endif
 c     ----- solve equation ---------
         if(psix.eq.0d0) then
@@ -856,8 +870,8 @@ c     write(*,'(1p,2e15.7)')rlist(ib),rlist(ib+1)
           iaa=ia
         endif
         if(operate) then
-          iu=italoc(mdim)
-          iv=italoc(mdim*nvar)
+          iu=ktaloc(mdim)
+          iv=ktaloc(mdim*nvar)
           call tmov(rlist(iaa),rlist(iv),mdim*nvar)
           call preduce(rlist(iaa),mdim1,rlist(iv),mdim,nc,nmon,nvar,
      $         corc,nobj)
@@ -873,7 +887,7 @@ c     -----Check of Response Matrix------>
      1       ' BPMs using =',nmon,' Steerings using =',nstr
         call cputime(ctime1,irtc)
         if( bump ) then
-          ixb=italoc(nvar)
+          ixb=ktaloc(nvar)
           if( cod ) then
             iqq=iqc
           else
@@ -885,17 +899,17 @@ c     -----Check of Response Matrix------>
      $         nc,cond.or.zsum.or.coup,micado,nmicad,.true.,
      $         .false.)
           write(*,'(1p,10d12.4)') (rlist(ixb-1+i),i=1,nvar)
-          call tfree(int8(iqq))
-          call pbset(latt,mult,rlist(ixb),rlist(istb),rlist(ixs),
+          call tfree(iqq)
+          call pbset(latt,mult,rlist(ixb),ilist(1,istb),rlist(ixs),
      1         istr,estr,nstr,nbco,nbump,.true.,lfno)
           if(operate) then
             call mbexpect(twiss,imon,nmon,
-     $           rlist(istb),rlist(ixs),rlist(ixb),nbco,nbump,
+     $           ilist(1,istb),rlist(ixs),rlist(ixb),nbco,nbump,
      $           rlist(ia),mdim,corc,nobj)
           endif
-          call tfree(int8(ixb))
-          call tfree(int8(ixs))
-          call tfree(int8(istb))
+          call tfree(ixb)
+          call tfree(ixs)
+          call tfree(istb)
         else
           call mwght(twiss,ndim,rlist(ia),rlist(ib),mdim1,nstr,mdim1,
      1         imon,nmon,corc)
@@ -933,8 +947,8 @@ c     -------------------
           endif
         endif
         if(operate)then
-          call tfree(int8(iu))
-          call tfree(int8(iv))
+          call tfree(iu)
+          call tfree(iv)
         endif
       enddo
       call cputime(ctime2,irtc)
@@ -953,13 +967,13 @@ c ----- unpack -------
       if( minusi ) then
         call packpi(rlist(isex),npair,istr,istr(1,2),istr(1,3),nstr,
      1              nstra,.false.)
-        call tfree(int8(isex))
+        call tfree(isex)
       endif
 c --------------------
-      if(iz.ne.0)call tfree(int8(iz))
-      if(ix.ne.0)call tfree(int8(ix))
-      if(ib.ne.0)call tfree(int8(ib))
-      if(ia.ne.0)call tfree(int8(ia))
+      if(iz.ne.0)call tfree(iz)
+      if(ix.ne.0)call tfree(ix)
+      if(ib.ne.0)call tfree(ib)
+      if(ia.ne.0)call tfree(ia)
       if(.not.stab) then
 c       eptsol=eptsol*10
 c       if(eptsol.lt.1.d0) then
@@ -1022,7 +1036,7 @@ c
       dimension is(ncb+4,nbp),xs(ncb+2,2,nbp),x(2,nbp),a(ia,*)
       include 'inc/common.inc'
 c
-      iw=italoc(ia)
+      iw=ktaloc(ia)
       call pclr(rlist(iw),ia)
       do j=1,nbp
         ncor=is(2,j)
@@ -1061,7 +1075,7 @@ c
           endif
         endif
       enddo
-      call tfree(int8(iw))
+      call tfree(iw)
       return
       end
 
@@ -1090,7 +1104,7 @@ c             -1: optics is fixed by FIX
       logical*4 hstab,vstab,over
 c BOTH HP and DEC compiler allows dynamic array size if these arrays are
 c  automatic (NY )
-      integer*4 latt(2,nlat)
+      integer*8 latt(nlat)
       real*8 twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat)
       real*8 tracex(-ndim:ndim),tracey(-ndim:ndim)
       real*8 dp1(-ndim:ndim)
@@ -1109,7 +1123,7 @@ c93/11/01
         if( cell ) then
           hstab=.true.
           vstab=.true.
-          call qcell(1,ip,
+          call qcell(ip,
      $         hstab,vstab,tracex(ip),tracey(ip),
      $         .false.,over)
           if( .not. hstab .or. .not. vstab ) then
@@ -1149,11 +1163,13 @@ c   --------------------------
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idtypec
       character*(*) word,wordp
       character*(MAXPNAME) word1
 c     character*255 tfconvstr
       logical exist
-      dimension latt(2,nlat),mult(nlat)
+      integer*8 latt(nlat)
+      dimension mult(nlat)
 c
       save
 c
@@ -1191,8 +1207,8 @@ c     endif
       call getwdl2(word,wordp)
       npnt=ielm(wordp,exist)
       if( exist ) then
-        if(idtype(latt(1,npnt)).eq.2) then
-          rlist(latt(2,npnt)+11)=rlist(latt(2,npnt)+11)+xk
+        if(idtypec(npnt).eq.2) then
+          rlist(latt(npnt)+11)=rlist(latt(npnt)+11)+xk
         else
           word1=wordp
           call permes(' ???',' '//word1,' is not a BEND.',6)
@@ -1206,9 +1222,12 @@ c     endif
       use tfstk
       use ffs
       use tffitcode
+      use sad_main
+      use ffs_pointer, only:elatt
       logical tmatch
       character*(*) word
-      dimension latt(2,nlat),istr(nstra,4)
+      integer*8 latt(nlat)
+      dimension istr(nstra,4)
       include 'inc/common.inc'
 c
       save
@@ -1216,14 +1235,14 @@ c
 c
     1 call getwdl(word)
       do 10 i=1,nstr
-        if(tmatch(pname(latt(1,istr(istr(i,2),1))),word)) then
+        if(tmatch(pname(idcomp(elatt,istr(istr(i,2),1))),word)) then
           goto 11
         endif
    10 continue
       return
    11 do 12 i=1,nstr
-        if(tmatch(pname(latt(1,istr(istr(i,2),1))),word)) then
-          rlist(latt(2,istr(istr(i,2),1))+11)=0d0
+        if(tmatch(pname(idcomp(elatt,istr(istr(i,2),1))),word)) then
+          rlist(latt(istr(istr(i,2),1))+11)=0d0
         endif
    12 continue
       goto 1
@@ -1297,7 +1316,8 @@ c     endif
       use tffitcode
       logical initial
       character*(*) word
-      dimension latt(2,nlat),pos(nlat)
+      integer*8 latt(nlat)
+      dimension pos(nlat)
       integer*4 master(nlat),mult(*)
       include 'inc/common.inc'
       if(itmon.eq.0) then
@@ -1308,8 +1328,8 @@ c     endif
           endif
    10   continue
         nmona=k
-        ipmon =italoc(2*nmona)
-        ipemon=italoc(4*nmona)
+        ipmon =ktaloc(2*nmona)
+        ipemon=ktaloc(4*nmona)
         itmon=ipmon
         itemon=ipemon
         j=0
@@ -1339,11 +1359,14 @@ c     .. mcmon is called by preadmon with initial=.true. .......
       use tfstk
       use ffs
       use tffitcode
+      use sad_main
+      use ffs_pointer, only:elatt
       implicit real*8 (a-h,o-z)
       character*(*) word
       character*16 en
       logical tmatch, exist
-      dimension latt(2,nlat),mult(*)
+      integer*8 latt(nlat)
+      dimension mult(*)
       dimension imon(nmona,4),emon(nmona,4)
       external pack
       parameter (nvpar=4)
@@ -1390,7 +1413,7 @@ c  ---------------------------------------------------------
    10 continue
    11 call getwdl(word)
    12 do 13 i=1,nmona
-        if( tmatch(pname(latt(1,imon(imon(i,2),1))),word) ) then
+        if( tmatch(pname(idcomp(elatt,imon(imon(i,2),1))),word) )then
           imon(imon(i,2),3)=0
           nm=nm+1
         endif
@@ -1451,10 +1474,11 @@ c
       parameter (nkey=8, ddp=1d-6)
       parameter (sqr2=1.41421356d0)
       logical corc(nkey),cod,dsp,normal
+      integer*8 latt(nlat)
       dimension b(*)
      1,         imon(nmona,4),emon(nmona,4)
      1,         twiss(nlat,-ndim:ndim,ntwissfun)
-     1,         latt(2,nlat),u(4),xx(4)
+     1,         u(4),xx(4)
       include 'inc/common.inc'
 c
       cod=corc(1).or.corc(2).or.corc(3).or.corc(4)
@@ -1486,25 +1510,25 @@ c         ::::::::::::       : COD in normal_mode
               un=sqrt(det)
               if( corc(1).and.corc(2) ) then
                 x=twiss(n,0,15)-twiss(n,ndim,15)
-     z           -rlist(latt(2,nq)+5)-emon(j,1)+errval(2)*tgauss()
+     z           -rlist(latt(nq)+5)-emon(j,1)+errval(2)*tgauss()
                 xp=twiss(n,0,16)-twiss(n,ndim,16)
                 y=twiss(n,0,17)-twiss(n,ndim,17)
-     z           -rlist(latt(2,nq)+6)-emon(j,2)+errval(4)*tgauss()
+     z           -rlist(latt(nq)+6)-emon(j,2)+errval(4)*tgauss()
                 yp=twiss(n,0,18)-twiss(n,ndim,18)
                 b(i)=-r12*qr*x + r22*qr*xp + un    *y
                 b(i+nmon)=un*x             + r21*qr*y + r22*qr*yp
               elseif( corc(1) ) then
                 x=twiss(n,0,15)-twiss(n,ndim,15)
-     z           -rlist(latt(2,nq)+5)-emon(j,1)+errval(2)*tgauss()
+     z           -rlist(latt(nq)+5)-emon(j,1)+errval(2)*tgauss()
                 xp=twiss(n,0,16)-twiss(n,ndim,16)
                 y=twiss(n,0,17)-twiss(n,ndim,17)
-     z           -rlist(latt(2,nq)+6)-emon(j,2)+errval(4)*tgauss()
+     z           -rlist(latt(nq)+6)-emon(j,2)+errval(4)*tgauss()
                 b(i)=-r12*qr*x + r22*qr*xp + un    *y
               elseif( corc(2) ) then
                 x=twiss(n,0,15)-twiss(n,ndim,15)
-     z           -rlist(latt(2,nq)+5)-emon(j,1)+errval(2)*tgauss()
+     z           -rlist(latt(nq)+5)-emon(j,1)+errval(2)*tgauss()
                 y=twiss(n,0,17)-twiss(n,ndim,17)
-     z           -rlist(latt(2,nq)+6)-emon(j,2)+errval(4)*tgauss()
+     z           -rlist(latt(nq)+6)-emon(j,2)+errval(4)*tgauss()
                 yp=twiss(n,0,18)-twiss(n,ndim,18)
                 b(i) =    un*x             + r21*qr*y + r22*qr*yp
               endif
@@ -1512,26 +1536,26 @@ c         ::::::::::::       : COD in normal_mode
               un=sqrt(1d0-det)
               if( corc(1).and.corc(2) ) then
                 x=twiss(n,0,15)-twiss(n,ndim,15)
-     z           -rlist(latt(2,nq)+5)-emon(j,1)+errval(2)*tgauss()
+     z           -rlist(latt(nq)+5)-emon(j,1)+errval(2)*tgauss()
                 xp=twiss(n,0,16)-twiss(n,ndim,16)
                 y=twiss(n,0,17)-twiss(n,ndim,17)
-     z           -rlist(latt(2,nq)+6)-emon(j,2)+errval(4)*tgauss()
+     z           -rlist(latt(nq)+6)-emon(j,2)+errval(4)*tgauss()
                 yp=twiss(n,0,18)-twiss(n,ndim,18)
                 b(i)=      un*x          - r22*y + r12*yp
                 b(i+nmon)=r11*x + r12*xp + un *y
               elseif( corc(1) ) then
                 x=twiss(n,0,15)-twiss(n,ndim,15)
-     z           -rlist(latt(2,nq)+5)-emon(j,1)+errval(2)*tgauss()
+     z           -rlist(latt(nq)+5)-emon(j,1)+errval(2)*tgauss()
                 y=twiss(n,0,17)-twiss(n,ndim,17)
-     z           -rlist(latt(2,nq)+6)-emon(j,2)+errval(4)*tgauss()
+     z           -rlist(latt(nq)+6)-emon(j,2)+errval(4)*tgauss()
                 yp=twiss(n,0,18)-twiss(n,ndim,18)
                 b(i)=      un*x          - r22*y + r12*yp
               elseif( corc(2) ) then
                 x=twiss(n,0,15)-twiss(n,ndim,15)
-     z           -rlist(latt(2,nq)+5)-emon(j,1)+errval(2)*tgauss()
+     z           -rlist(latt(nq)+5)-emon(j,1)+errval(2)*tgauss()
                 xp=twiss(n,0,16)-twiss(n,ndim,16)
                 y=twiss(n,0,17)-twiss(n,ndim,17)
-     z           -rlist(latt(2,nq)+6)-emon(j,2)+errval(4)*tgauss()
+     z           -rlist(latt(nq)+6)-emon(j,2)+errval(4)*tgauss()
                 b(i) =    r11*x + r12*xp + un *y
               endif
             endif
@@ -1540,15 +1564,15 @@ c         ____
 c         ::::               : COD in real_space
             if( corc(3).and.corc(4) ) then
               b(i)=twiss(n,0,15)-twiss(n,ndim,15)
-     z            -rlist(latt(2,nq)+5)-emon(j,1)+errval(2)*tgauss()
+     z            -rlist(latt(nq)+5)-emon(j,1)+errval(2)*tgauss()
               b(i+nmon)=twiss(n,0,17)-twiss(n,ndim,17)
-     z            -rlist(latt(2,nq)+6)-emon(j,2)+errval(4)*tgauss()
+     z            -rlist(latt(nq)+6)-emon(j,2)+errval(4)*tgauss()
             elseif( corc(3) ) then
               b(i)=twiss(n,0,15)-twiss(n,ndim,15)
-     z            -rlist(latt(2,nq)+5)-emon(j,1)+errval(2)*tgauss()
+     z            -rlist(latt(nq)+5)-emon(j,1)+errval(2)*tgauss()
             elseif( corc(4) ) then
               b(i)=twiss(n,0,17)-twiss(n,ndim,17)
-     z            -rlist(latt(2,nq)+6)-emon(j,2)+errval(4)*tgauss()
+     z            -rlist(latt(nq)+6)-emon(j,2)+errval(4)*tgauss()
             endif
 c         _____
           endif
@@ -1742,11 +1766,11 @@ c     write(*,'(1P,10d12.4)') (b(i),i=1,nmon)
       use tffitcode
       implicit real*8 (a-h,o-z)
       logical push,print,mcod
-      dimension latt(*),twiss(*),imon(*),emon(*),mult(*)
-      ix=italoc(nmon*2)
+      integer*8 latt(*)
+      dimension twiss(*),imon(*),emon(*),mult(*)
+      real*8 x(nmon*2)
       call mcrcod1(latt,twiss,mult,imon,emon,nmon,
-     1             rlist(ix),mcod,push,print,lfno)
-      call tfree(int8(ix))
+     1             x,mcod,push,print,lfno)
       return
       end
 
@@ -1759,7 +1783,8 @@ c     write(*,'(1P,10d12.4)') (b(i),i=1,nmon)
       logical push,print,mcod
 cHP   character*8 vout(4,2)*80,autofg,name(4,2)
       character*8 vout(4,2)*79,autofg,name(4,2)
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),mult(*),
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),mult(*),
      1          imon(nmona,4),emon(nmona,4),temp(nmon,2),rc(12,2)
       include 'inc/common.inc'
       data rc /24*0d0/
@@ -1795,7 +1820,7 @@ c
         j=imon(i,2)
         nq=imon(j,4)
         temp(i,1)=twiss(imon(j,1),0,15)-twiss(imon(j,1),ndim,15)
-     1         -rlist(latt(2,nq)+5)-emon(j,1)
+     1         -rlist(latt(nq)+5)-emon(j,1)
    11 continue
       do 12 i=1,nmon
         j=imon(i,2)
@@ -1815,7 +1840,7 @@ c
         j=imon(i,2)
         nq=imon(j,4)
         temp(i,1)=twiss(imon(j,1),0,17)-twiss(imon(j,1),ndim,17)
-     1         -rlist(latt(2,nq)+6)-emon(j,2)
+     1         -rlist(latt(nq)+6)-emon(j,2)
    15 continue
       do 16 i=1,nmon
         j=imon(i,2)
@@ -1899,10 +1924,12 @@ c
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idtypec
       implicit real*8 (a-h,o-z)
       logical cxy(3),prime,normal
       character*(*) xy
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),
      $     gammab(nlat)
      1,         a(ida,nstr)
      1,         istr(nstra,4),imon(nmona,4)
@@ -1932,7 +1959,7 @@ c     cofx=0.5/sin(px2)
 c     cofy=0.5/sin(py2)
       do 300 j=1,nstr
         jp=istr(istr(j,2),1)
-        jt=idtype(latt(1,jp))
+        jt=idtypec(jp)
         if(jt.eq.icbend) then
           call mcrmatb(latt,twiss,gammab,ip,px2,py2,a(1,j),ida,prime,
      $     normal,jp,imon,nmon,cxy)
@@ -1952,11 +1979,14 @@ c     cofy=0.5/sin(py2)
       use tfstk
       use ffs
       use tffitcode
+      use sad_main
+      use ffs_pointer, only:elatt
       implicit real*8 (a-h,o-z)
 c     parameter (nvec=16)
 c     logical*4 cxy(3),prime,normal,vec1,vec2,edge
       logical*4 cxy(3),prime,normal,          edge,enter,exit
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),
      $     gammab(nlat),
      $     a(ida),
      $     imon(nmona,4),
@@ -1989,9 +2019,9 @@ c     endif
       cofy=0.5/sin(py2)
 c     do 300 j=1,nstr
 c       jp=istr(j,2)
-c       cost=cos(-rlist(idval(latt(1,istr(jp,1)))+5))
-c       sint=sin(-rlist(idval(latt(1,istr(jp,1)))+5))
-        rotation=-rlist(idval(latt(1,jp))+5)
+c       cost=cos(-rlist(idvalc(istr(jp,1))+5))
+c       sint=sin(-rlist(idval(idelc(istr(jp,1)))+5))
+        rotation=-rlist(idval(idcomp(elatt,jp))+5)
         cost=cos(rotation)
         sint=sin(rotation)
         if(cxy(3)) then
@@ -2493,9 +2523,9 @@ c ****** non-periodic lattice *********************************
 c     do 410 j=1,nstr
 c       jp=istr(j,2)
 c       m=istr(jp,1)
-c       cost=cos(-rlist(idval(latt(1,m))+5))
-c       sint=sin(-rlist(idval(latt(1,m))+5))
-        rotation=-rlist(idval(latt(1,jp))+5)
+c       cost=cos(-rlist(idval(idelc(m))+5))
+c       sint=sin(-rlist(idval(idelc(m))+5))
+        rotation=-rlist(idval(idcomp(elatt,jp))+5)
         cost=cos(rotation)
         sint=sin(rotation)
         if(cxy(3)) then
@@ -2967,9 +2997,10 @@ c itestr
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idvalc
       logical initial
       character*(*) word
-      dimension latt(2,nlat)
+      integer*8 latt(nlat),ipstr,ipestr,itstr,itestr
       integer*4 mult(*),master(nlat)
       include 'inc/common.inc'
       include 'inc/coroper.inc'
@@ -2977,21 +3008,21 @@ c
       if(itstr.eq.0) then
         ns=0
         do 20 i=1,nlat-1
-          if(idtype(latt(1,i)).eq.icbend) then
+          if(idvalc(i).eq.icbend) then
             if(master(i).gt.0) then
               ns=ns+1
             endif
           endif
    20    continue
         if(ns.eq.0) return
-        ipstr =italoc(2*ns)
-        ipestr=italoc(ns)
+        ipstr =ktaloc(2*ns)
+        ipestr=ktaloc(ns)
         itstr=ipstr
         itestr=ipestr
         nstra=ns
         ns=0
         do 21 i=1,nlat-1
-          if(idtype(latt(1,i)).eq.icbend) then
+          if(idvalc(i).eq.icbend) then
             if(master(i).gt.0) then
               ilist(mod(ns,2)+1,ipstr+int(ns/2))=i
               ilist(mod(ns+nstra,2)+1,ipstr+int((nstra+ns)/2))=ns+1
@@ -3003,7 +3034,7 @@ c
         call pclr(rlist(ipestr),ns)
       endif
       if(istope.ne.0) then
-        call tfree(int8(istope))
+        call tfree(istope)
         istope=0
         nstope=0
       endif
@@ -3023,10 +3054,11 @@ c
       character*(*) word
       character*16 en
       character*11 autofg
-      dimension latt(2,nlat)
+      integer*8 latt(2,nlat),mcaloc,it,it1,last,iofs,next,l
       integer*4 mult(*)
       dimension istr(nstra,4)
       include 'inc/common.inc'
+      integer*8 itcoupste
       common /corcoup/ itcoupste
 c
       if(word.eq.'REMOVE') then
@@ -3035,17 +3067,17 @@ c.......remove
           next=0
           last=itcoupste
           do while(next.ne.itcoupste)
-            next=ilist(2,last)
+            next=klist(last+1)
 c           print *,last
-            call tfree(int8(last))
+            call tfree(last)
             last=next
           enddo
           itcoupste=0
         endif
         return
       endif
-      itemp=italoc(nstr)
-      ia=italoc(nstr)
+      itemp=ktaloc(nstr)
+      ia=ktaloc(nstr)
       js=0
  1    a=getva(exist)
       if(.not.exist) a=1d0
@@ -3057,12 +3089,12 @@ c.........write accumulated couple condition
             next=0
             last=itcoupste
             do while(next.ne.itcoupste)
-              next=ilist(2,last)
+              next=klist(last+1)
 c.............print out
               n=ilist(1,last+1)
               l=last+3+n
               do i=1,n
-                a=rlist(last+1+i)
+                a=rlist(last+2+i)
                 if(a.ne.1d0) then
                   en=autofg(a,'S11.8')
                   call mbufw(en,.false.,lfno)
@@ -3071,7 +3103,7 @@ c.............print out
                 call elname(latt,k,mult,en)
                 call mbufw(en,.false.,lfno)
               enddo
-              a=rlist(last+1+n+1)
+              a=rlist(last+2+n+1)
               en=autofg(a,'S11.8')
               call mbufw(en,.false.,lfno)
               call mbufw(' ',.true.,lfno)
@@ -3079,7 +3111,7 @@ c.............print out
             enddo
           endif
         else
-          it=mcaloc(itcoupste,js+3+(js+1)/2)
+          it=mcaloc(itcoupste,js+3+(js+1)/2)+1
           it1=it+1
           ilist(1,it1)=js
           call tmov(rlist(ia),rlist(it1+1),js)
@@ -3099,34 +3131,35 @@ c.............print out
           go to 1
         endif
       enddo
- 99   call tfree(int8(itemp))
-      call tfree(int8(ia))
+ 99   call tfree(itemp)
+      call tfree(ia)
       return
       end
 c
-      integer*4 function mcaloc(itroot,n)
+      integer*8 function mcaloc(itroot,n)
       use tfstk
       use ffs
       use tffitcode
+      integer*8 next,itroot,last
       if(itroot.eq.0) then
-        itroot=italoc(n)
-        ilist(1,itroot)=itroot
-        ilist(2,itroot)=itroot
+        itroot=ktaloc(n+1)
+        klist(itroot)=itroot
+        klist(itroot+1)=itroot
         mcaloc=itroot
       else
         next=0
         last=itroot
         do while(next.ne.itroot)
-          next=ilist(2,last)
+          next=klist(last+1)
 c         print *,last,next
           last=next
         enddo
-        last=ilist(1,itroot)
-        next=italoc(n)
-        ilist(2,last)=next
-        ilist(1,next)=last
-        ilist(2,next)=itroot
-        ilist(1,itroot)=next
+        last=klist(itroot)
+        next=ktaloc(n+1)
+        klist(last+1)=next
+        klist(next)=last
+        klist(next+1)=itroot
+        klist(itroot)=next
         mcaloc=next
       endif
 c     print *,mcaloc
@@ -3159,7 +3192,7 @@ c
       use ffs
       use tffitcode
       implicit real*8 (a-h,o-z)
-      dimension latt(2,nlat)
+      integer*8 latt(nlat)
       integer*4 mult(*)
       dimension istr(nstra,4)
       dimension ar(nstr+1,nc)
@@ -3188,7 +3221,7 @@ c         print *,j,a
               go to 10
             endif
           enddo
-          cr=cr-a*rlist(latt(2,j)+11)
+          cr=cr-a*rlist(latt(j)+11)
  10       continue
         enddo
         ar(nstr+1,icoup)=cr
@@ -3204,11 +3237,14 @@ c     enddo
       use tfstk
       use ffs
       use tffitcode
+      use sad_main
+      use ffs_pointer, only:elatt
       implicit real*8 (a-h,o-z)
       character*(*) word
       character*16 en
       logical tmatch, exist, err
-      dimension latt(2,nlat),mult(*)
+      integer*8 latt(nlat)
+      dimension mult(*)
       dimension istr(nstra,4), estr(nstra)
       external pack
       include 'inc/common.inc'
@@ -3228,7 +3264,7 @@ c     enddo
     1 continue
       call getwdl(word)
       do 10 i=1,nstra
-        if( tmatch(pname(latt(1,istr(istr(i,2),1))),word) ) then
+        if( tmatch(pname(idcomp(elatt,istr(istr(i,2),1))),word) )then
           istr(istr(i,2),3)=0
           ns=ns+1
         endif

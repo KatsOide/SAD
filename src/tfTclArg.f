@@ -273,14 +273,16 @@ c        write(*,*)'unicode ',buf(1:m)
       recursive subroutine tfgetcanvasargstk(ka,irtc)
       use tfstk
       use strbuf
+      use tclstrbuf
       implicit none
+      type (sad_descriptor) :: k1,k2,kx,k2i
       type (sad_strbuf), pointer :: strb
       type (sad_string), pointer :: str
-      type (sad_list), pointer ::kl
-      integer*8 ktrsaloc,ka,k1,k2,kx,kax,ki,kai
-      integer*4 n,i,isp3,irtc
+      type (sad_list), pointer ::kl,k2l
+      integer*8 ktrsaloc,ka,ki,kai
+      integer*4 n,i,isp3,irtc,nc
       logical*4 ev,full
-      real*8 rfromk
+      real*8 x
       integer*8 iflabel
       data iflabel/0/
       if(iflabel .eq. 0)then
@@ -312,34 +314,47 @@ c        write(*,*)'unicode ',buf(1:m)
       elseif((kl%head .eq. ktfoper+mtfrule .or.
      $       kl%head .eq. ktfoper+mtfruledelayed) .and. 
      $       n .eq. 2)then
-        k1=kl%body(1)
-        if(ktfsymbolq(k1) .or. ktfoperq(k1))then
-          k2=kl%body(2)
-          if(ktfrealq(k2) .or. ktfstringq(k2))then
+        k1=kl%dbody(1)
+        if(ktfsymbolqd(k1) .or. ktfoperqd(k1))then
+          k2=kl%dbody(2)
+          if(ktfrealqd(k2) .or. ktfstringqd(k2) .or.
+     $         ktflistqd(k2,k2l) .and.
+     $         k2l%head .eq. ktfoper+mtflist)then
             isp3=isp
             isp=isp+1
             ktastk(isp)=ktfsymbol+iflabel
             isp=isp+1
-            ktastk(isp)=k1
+            dtastk(isp)=k1
             call tfdeval(isp-1,iflabel,kx,1,.false.,ev,irtc)
             if(irtc .ne. 0)then
               return
             endif
 c            call tfdebugprint(kx,'TkOptionLabel',2)
-            if(ktfstringq(kx))then
+            if(ktfstringqd(kx,str))then
               isp=isp3+1
-              kax=ktfaddr(kx)
-              call loc_string(kax,str)
               call getstringbuf(strb,0,.true.)
               call putstringbufb(strb,str%str(2:str%nch-1),
      $             str%nch-2,full)
               dtastk(isp3+1)=kxstringbuftostring(strb)
-              if(ktfrealq(k2))then
-                k2=ktfstring+ktrsaloc(-1,rfromk(k2))
+              if(ktfrealqd(k2,x))then
+                k2%k=ktfstring+ktrsaloc(-1,x)
+              elseif(ktflistqd(k2,k2l))then
+                call getstringbuf(strb,0,.true.)
+                do i=1,k2l%nl
+                  k2i=k2l%dbody(i)
+                  if(ktfstringqd(k2i,str))then
+                    call tftclstringbuf(strb,str%str,str%nch,full)
+                  else
+                    call tfconvstrb(strb,k2i,nc,
+     $                   .false.,.false.,-1,' ',irtc)
+                  endif
+                  call putstringbufb1(strb,' ')
+                enddo
+                k2=kxstringbuftostring(strb)
               endif
 c              call tfdebugprint(k2,'== ',2)
               isp=isp3+2
-              ktastk(isp)=k2
+              dtastk(isp)=k2
             endif
           endif
         endif

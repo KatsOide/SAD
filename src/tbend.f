@@ -8,6 +8,7 @@
       use ffs_flag
       use tmacro
       use ffs_pointer, only:inext,iprev
+      use multa, only:nmult
       implicit none
       integer*4 np,mfring,i,l,ndiv,mfr1,mfr2,ndivmax
       parameter (ndivmax=1024)
@@ -31,12 +32,33 @@
       real*8 smax,smin,rphidiv
       parameter (smax=0.99d0,smin=0.01d0,rphidiv=3e-3)
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np)
+      complex*16 akm(0:nmult)
       logical*4 enarad,fringe
       if(phi0 .eq. 0.d0)then
-        call tsteer(np,x,px,y,py,z,g,dv,pz,l,al,-phib,
-     1       dx,dy,theta,cost,sint,
-     1       cosp1,sinp1,cosp2,sinp2,
-     $       fb1,fb2,mfring,fringe,eps)
+        if(ak .eq. 0.d0)then
+          call tsteer(np,x,px,y,py,z,g,dv,pz,l,al,-phib,
+     1         dx,dy,theta,cost,sint,
+     1         cosp1,sinp1,cosp2,sinp2,
+     $         fb1,fb2,mfring,fringe,eps)
+        elseif(phib .eq. phi0)then
+          call tquad(np,x,px,y,py,z,g,dv,pz,l,al,ak,
+     1         dx,dy,theta,cost,sint,0.d0,.true.,
+     1         fringe,0.d0,0.d0,0,eps,.true.)
+        else
+          akm=0.d0
+          akm(0)=phib-phi0
+          akm(1)=ak
+          call tmulti(np,x,px,y,py,z,g,dv,pz,
+     $         al,ak,0.d0,0.d0,
+     $         psi1,psi2,
+     $         dx,dy,0.d0,0.d0,0.d0,theta,0.d0,
+     $         eps,enarad,fringe,
+     $         0.d0,0.d0,0.d0,0.d0,
+     $         mfring,fb1,fb2,
+     $         0.d0,0.d0,0.d0,0.d0,0.d0,
+     $         .false.,.false.,
+     $         int8(0),int8(0),int8(0),int8(0))
+        endif
         return
       elseif(phib .eq. 0.d0)then
         call tbdrift(np,x,px,y,py,z,dv,pz,al,phi0)

@@ -5,11 +5,13 @@
       use tfstk
       use ffs_flag
       use tmacro
+      use ffs_pointer, only:idelc,idtypec
       implicit none
       integer, parameter :: nkptbl = 6
       real*8 plimit,zlimit
       parameter (plimit=0.99d0,zlimit=1.d10)
-      integer*4 l,latt(2,nlat)
+      integer*4 l
+      integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       integer*4 kptbl(np0,nkptbl),np,kturn
       real*8 ax,ay,dx,dy,xl,yl,xh,yh,pxj,pyj,dpj,theta
@@ -167,8 +169,8 @@ c     Shortcut case: Lossless
       endif
 
 c     Reporting drop particles
-      if(         (.not. dapert)
-     $     .and. (.not. trpt .or. idtype(latt(1,l)) .eq. icAprt)
+      if( (.not. dapert)
+     $     .and. (.not. trpt .or. idtypec(l) .eq. icAprt)
      $     .and. (outfl .ne. 0))then
         call tapert_report_dropped(outfl,kturn,l,
      $       latt,np,x,px,y,py,z,g,dv,pz,kptbl)
@@ -235,12 +237,13 @@ c      - Swap particle coordinates
       use tfstk
       use tmacro
       implicit none
-      integer*4 l,latt(2,nlat)
+      integer*4 l
+      integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       integer*4 kptbl(np0,6),np,kturn
-      integer*4 lp
+      integer*8 lp
       real*8 dpxj,dpyj,ddp,dx1,dy1,dx2,dy2
-      lp=latt(2,l)
+      lp=latt(l)
       dpxj=rlist(lp+kytbl(kwJDPX,icAprt))
       dpyj=rlist(lp+kytbl(kwJDPY,icAprt))
       ddp=rlist(lp+kytbl(kwDP,icAprt))
@@ -275,14 +278,15 @@ c     Report new drop marked particles in alive area [1, np]
      $     latt,np,x,px,y,py,z,g,dv,pz,kptbl)
       use tfstk
       use tmacro
+      use ffs_pointer, only:idvalc,idtypec,idelc
       implicit none
-      integer*4 outfd,kturn,lbegin
-      integer*4 latt(2,nlat),np
+      integer*4 outfd,kturn,lbegin,lpname
+      integer*8 latt(nlat)
+      integer*4 np
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       integer*4 kptbl(np0,6)
       integer*4 i,l,t
       character*2 ord
-      integer*4 lenw
 
       do i=1,np
          l = kptbl(i,4)
@@ -292,13 +296,12 @@ c     Report new drop marked particles in alive area [1, np]
              write(outfd,'(1x,''P. '',i5,'' lost in '',i5,a,'' turn'',
      $'' at '',i5,''('',a,''), amplitudes:'',3(1x,g13.7))')
      $            kptbl(i,2), t, ord(t),l,
-     $            pname(latt(1,l))(1:lenw(pname(latt(1,l)))),
+     $            pname(idelc(l))(1:lpname(idelc(l))),
      $            x(i),y(i),z(i)
            else
              write(outfd,'(1x,''P. '',i5,'' lost in '',i5,a,'' turn'',
      $ '' at '',i5,'', amplitudes:'',3(1x,g13.7))')
-     $            kptbl(i,2), t, ord(t),
-     $            l,
+     $            kptbl(i,2), t, ord(t), l,
      $            x(i),y(i),z(i)
            endif
          endif

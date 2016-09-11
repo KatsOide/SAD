@@ -27,6 +27,16 @@ c        write(*,*)' QDBTHI Not installed yet.'
         phi=phi0
         phib=phib0
       endif
+      dx1=0.d0
+      dpx1=0.d0
+      a12=0.d0
+      a16=0.d0
+      a22=0.d0
+      a26=0.d0
+      a34=0.d0
+      a44=0.d0
+      a46=0.d0
+      a36=0.d0
       call qtentu(dtrans,cod,utwiss,.true.)
       call qchg(dtrans,cod,-dx,-dy,theta,.true.)
       rhob=al/phib

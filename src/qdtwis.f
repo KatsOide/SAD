@@ -3,10 +3,12 @@
       use tfstk
       use ffs
       use ffs_pointer
+      use sad_main
       use tffitcode
       implicit none
+      type (sad_comp), pointer::cmp
       integer*4 nfam,nut,
-     $     iclast(-nfam:nfam),k0,k,ke,lp,l,idp,iv,
+     $     iclast(-nfam:nfam),k0,k,ke,l,idp,iv,
      $     iutk,iutl,i,k1
       real*8 dtwiss(mfittry),dcod(6),dcod2(6),dtrans(4,5),
      $     trans(4,5),trans1(4,5),dcod1(6),dtrans1(4,5),
@@ -21,9 +23,9 @@
       logical*4 nzcod,disp,dzfit,normal
       k=k0
       g1=gammab(1)
-      ke=idtype(latt(1,k))
-      lp=latt(2,k)
-      dir=rlist(lp+ilist(1,lp))
+      ke=idtypec(k)
+      call compelc(k,cmp)
+      dir=direlc(k)
       iutk=itwissp(k)
       iutl=itwissp(l)
       dcod(5)=0.d0
@@ -40,18 +42,18 @@
       if(iv .eq. kytbl(kwANGL,icBEND) .or.
      $     iv .eq. kytbl(kwK1,icBEND))then
         if(dir .gt. 0.d0)then
-          psi1=rlist(lp+3)
-          psi2=rlist(lp+4)
+          psi1=cmp%value(3)
+          psi2=cmp%value(4)
         else
-          psi1=rlist(lp+4)
-          psi2=rlist(lp+3)
+          psi1=cmp%value(4)
+          psi2=cmp%value(3)
         endif
-        call qdbend(dtrans,dcod,rlist(lp+1),
-     1       rlist(lp+2)+rlist(lp+11),rlist(lp+2),
-     1       psi1,psi2,rlist(lp+8),
+        call qdbend(dtrans,dcod,cmp%value(1),
+     1       cmp%value(2)+cmp%value(11),cmp%value(2),
+     1       psi1,psi2,cmp%value(8),
      1       utwiss(1,idp,iutk),
-     1       rlist(lp+9),rlist(lp+10),
-     1       rlist(lp+5),iv)
+     1       cmp%value(9),cmp%value(10),
+     1       cmp%value(5),iv)
         dt1=dtrans(1,5)
         dt2=dtrans(2,5)
       else
@@ -61,12 +63,12 @@
       go to 2001
  1140 if(iv .eq. kytbl(kwK1,icQUAD) .or.
      $     iv .eq. kytbl(kwROT,icQUAD))then
-        call qdquad(dtrans,dcod,rlist(lp+1),rlist(lp+2),
-     $       k,idp,rlist(lp+5),rlist(lp+6),rlist(lp+4),iv,nfam,nut)
+        call qdquad(dtrans,dcod,cmp%value(1),cmp%value(2),
+     $       k,idp,cmp%value(5),cmp%value(6),cmp%value(4),iv,nfam,nut)
         if(geocal .and.
-     $       rlist(lp+5) .ne. 0.d0 .or. rlist(lp+6) .ne. 0.d0)then
-          call qdquad(dtrans1,dcod1,rlist(lp+1),rlist(lp+2),
-     $         k,0,rlist(lp+5),rlist(lp+6),rlist(lp+4),iv,nfam,nut)
+     $       cmp%value(5) .ne. 0.d0 .or. cmp%value(6) .ne. 0.d0)then
+          call qdquad(dtrans1,dcod1,cmp%value(1),cmp%value(2),
+     $         k,0,cmp%value(5),cmp%value(6),cmp%value(4),iv,nfam,nut)
           dcod(1)=dcod(1)-dcod1(1)
           dcod(2)=dcod(2)-dcod1(2)
           dcod(3)=dcod(3)-dcod1(3)
@@ -78,8 +80,8 @@
       endif
       go to 2001
  1160 if(iv .eq. 2 .or. iv .eq. 4)then
-        call qdthin(dtrans,dcod,ke,rlist(lp+1),rlist(lp+2),
-     1       k,idp,rlist(lp+5),rlist(lp+6),rlist(lp+4),iv,nfam,nut)
+        call qdthin(dtrans,dcod,ke,cmp%value(1),cmp%value(2),
+     1       k,idp,cmp%value(5),cmp%value(6),cmp%value(4),iv,nfam,nut)
       else
         call qdtrans(ke,iutk,k,k+1,
      $       iv,dtrans,dcod,idp)
@@ -87,7 +89,7 @@
       go to 2001
  1320 call qdtrans(ke,iutk,k,k+1,
      $     iv,dtrans,dcod,idp)
-c      if(rlist(lp+3) .ne. 0.d0 .or. rlist(lp+4) .ne. 0.d0)then
+c      if(cmp%value(3) .ne. 0.d0 .or. cmp%value(4) .ne. 0.d0)then
 c        call qdtrans(nlat,ke,iutk,k,k+1,
 c     $       iv,dtrans1,dcod1,0,
 c     $       utwiss,gammab,nfam,nut)
@@ -108,7 +110,7 @@ c      endif
           go to 9000
         elseif(.not. cell)then
           k=min(nlat-1,max(2,1+int(
-     $         rlist(latt(2,1)+kytbl(kwOFFSET,icMARK)))))
+     $         rlist(latt(1)+kytbl(kwOFFSET,icMARK)))))
           gammab(1)=gammab(k)
           iutk=itwissp(k)
           call qdini(utwiss(1:ntwissfun,idp,1),
@@ -325,7 +327,7 @@ c      write(*,*)'qdtwis ',k0,l,dtwiss(mfitey)
       real*8 b,detr,damu,dir
       dtrans=0.d0
       dcod=0.d0
-      dir=rlist(latt(2,1)+ilist(1,latt(2,1)))
+      dir=direlc(1)
       if(iv .ge. mfitr1 .and. iv .le. mfitr4)then
         detr=utwiss1(mfitdetr)
       else
@@ -468,13 +470,12 @@ c     end   initialize for preventing compiler warning
 
       subroutine qddtwiss(k,k1,l,trans,dtrans,dcod,idp,
      $     ctrans,iclast,trpt)
+      use mackw
       use tfstk
       use ffs_pointer
       use ffs_fit, only:nut
       use tffitcode
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
       real*8 eps
       parameter (eps=1.d-4)
       integer*4 k,l,idp,itwk,itwl,
@@ -609,19 +610,20 @@ c      enddo
      $     iv,dtrans,dcod,idp)
       use tfstk
       use ffs_pointer
+      use sad_main
       use tffitcode
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
+      type (sad_comp), pointer :: cmp
       real*8 eps,vmin
       parameter (eps=1.d-6,vmin=1.d-6)
-      integer*4 ke,iv,idp,lp,j,kk1,je
+      integer*4 ke,iv,idp,j,kk1,je
       real*8 dtrans(4,5),dcod(6),v0,wv,dv,trans2(20),
      $     cod2(20),trans1(20),cod1(20),trans(4,5),trans3(4,5)
       equivalence (trans2,trans3)
       logical*4 over
-      lp=latt(2,j)
-      v0=rlist(lp+iv)
+      call compelc(j,cmp)
+      v0=cmp%value(iv)
       wv=1.d0
       go to (
      $     4900, 200,4900, 400,4900, 600,4900, 600,4900, 600,
@@ -645,7 +647,7 @@ c      enddo
       endif
       go to 6000
  6000 dv=max(abs(eps*v0),abs(vmin*wv))
-      rlist(lp+iv)=v0+dv
+      cmp%value(iv)=v0+dv
       cod2(1)=utwiss(mfitdx,idp,kk1)
       cod2(2)=utwiss(mfitdpx,idp,kk1)
       cod2(3)=utwiss(mfitdy,idp,kk1)
@@ -653,7 +655,7 @@ c      enddo
       cod2(5)=utwiss(mfitdz,idp,kk1)
       cod2(6)=utwiss(mfitddp,idp,kk1)
       call qtwiss1(0.d0,idp,j,je,trans2,cod2,.true.,over)
-      rlist(lp+iv)=v0-dv
+      cmp%value(iv)=v0-dv
       cod1(1)=utwiss(mfitdx,idp,kk1)
       cod1(2)=utwiss(mfitdpx,idp,kk1)
       cod1(3)=utwiss(mfitdy,idp,kk1)
@@ -667,7 +669,7 @@ c      enddo
       dcod(3)=(cod2(3)-cod1(3))/(2.d0*dv)
       dcod(4)=(cod2(4)-cod1(4))/(2.d0*dv)
       dcod(5)=(cod2(5)-cod1(5))/(2.d0*dv)
-      rlist(lp+iv)=v0
+      cmp%value(iv)=v0
 c      write(*,'(a,1p8g15.7)')'qdtrans ',iv,dcod(1),dcod(2)
       call qtentu(trans,cod1,utwiss(1,idp,kk1),.true.)
       call tmultr45(trans,trans3,dtrans)

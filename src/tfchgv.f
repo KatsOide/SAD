@@ -3,6 +3,7 @@
       use ffs
       use ffs_pointer
       use tffitcode
+      use tfcsi,only:cssetp
       implicit none
       integer*4 lfno,i,k,j,next1
       character*(MAXPNAME) word
@@ -13,7 +14,7 @@
  1    call peekwd(word,next1)
       exist=.false.
       LOOP_I: do i=1,nele
-        k=latt(1,klp(i))
+        k=idelc(klp(i))
         if(tmatch(pname(k),word))then
           if(.not. exist)then
             call cssetp(next1)

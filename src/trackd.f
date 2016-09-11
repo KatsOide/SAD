@@ -8,9 +8,9 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       implicit none
       integer*4 n1p0,nxp
       parameter (n1p0=200,nxp=51)
-      integer*4 latt(2,nlat),kptbl(np0,6),lfno,
+      integer*4 kptbl(np0,6),lfno,
      $     mturn(np0),kzx(2,np0)
-      integer*8 intlm
+      integer*8 intlm,latt(nlat)
       integer*4 irtc,ivar1,ivar2
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       real*8 trval,phi(3),damp,dampenough
@@ -32,14 +32,15 @@ c      endif
       use tfstk
       use ffs_flag
       use tmacro
+      use ffs_pointer, only:idelc
       implicit none
       integer*4 n1p0,n2p,maxturn,maxpara,nw,lfno,ncons,nscore,
      $     ivar1,ivar2,ivar3
       parameter (n1p0=200,n2p=51,maxturn=2**30,maxpara=256,nw=16)
       integer, parameter :: nkptbl = 6
       integer*8 kv,kax,kax11,kax12,kax13,kax2,
-     $     kaxi,kaxi3,kax1
-      integer*4 latt(2,nlat),kptbl(np0,nkptbl),n1p,lp0,npr1,
+     $     kaxi,kaxi3,kax1,latt(nlat)
+      integer*4 kptbl(np0,nkptbl),n1p,npr1,
      $     ipr,j,n,jzout,np1,k,np,kp,kz,kx,irw,nsc,iw,
      $     jj,ip,isw,kseed,npmax,npara,nxm(n1p0)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
@@ -141,14 +142,14 @@ c     end   initialize for preventing compiler warning
       rlist(kax13+2)=a1max
       kax2=ktadalocnull(0,n1p)
       klist(kax+2)=ktflist+kax2
-      lp0=latt(2,1)+kytbl(kwmax,idtype(latt(1,1)))+1
+c      lp0=latt(1)+kytbl(kwmax,idtype(idelc(1)))+1
       emx=sqrt(abs(rgetgl1('EMITX'))+abs(rgetgl1('EMITY')))
       if(rfsw)then
         emz=sqrt(abs(rgetgl1('EMITZ')))
       else
         emz=abs(rgetgl1('SIGE'))
       endif
-      call tpara(latt)
+      call tpara()
       ntloss(1:n1p,1:n2p)=maxturn
       nxm(1:n1p)=n2p+1
       npara=min(nparallel,maxpara)
@@ -381,7 +382,7 @@ c        enddo
      $     '     0----|----1----|----2----|----3----|----4----|----5'
       write(lfno,'(a,i5)')'    Score: ',nscore
       trval=nscore
-      call tltrm(latt,kptbl)
+      call tltrm(kptbl)
       return
       end
 

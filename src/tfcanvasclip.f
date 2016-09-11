@@ -308,7 +308,7 @@ c        write(*,*)na,isp-isp0
                   rtastk(isp-1)=anint(x0)
                   rtastk(isp  )=anint(y0)
                   kaxi=ktavaloc(-1,isp-isp3)
-                  klist(kaxi+1:kaxi+isp-isp3)=klist(isp3+1:isp)
+                  klist(kaxi+1:kaxi+isp-isp3)=ktastk(isp3+1:isp)
                   isp3=isp3+1
                   ktastk(isp3)=ktflist+kaxi
                   isp=isp3
@@ -347,7 +347,7 @@ c        write(*,*)na,isp-isp0
           if(dash .gt. 0.d0)then
             if(isp .gt. isp3)then
               kaxi=ktavaloc(-1,isp-isp3)
-              klist(kaxi+1:kaxi+isp-isp3)=klist(isp3+1:isp)
+              klist(kaxi+1:kaxi+isp-isp3)=ktastk(isp3+1:isp)
               isp3=isp3+1
               ktastk(isp3)=ktflist+kaxi
             endif
@@ -364,7 +364,7 @@ c        write(*,*)na,isp-isp0
           kx=dxnulll
         else
           kx=kxavaloc(-1,na,klx)
-          klx%body(1:na)=klist(isp0+1:isp0+na)
+          klx%body(1:na)=ktastk(isp0+1:isp0+na)
         endif
       endif
       isp=isp0

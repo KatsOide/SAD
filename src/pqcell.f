@@ -3,12 +3,13 @@
       use tffitcode
       implicit real*8(a-h,o-z)
       logical hstab,vstab,stab,over
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),
      $     gammab(nlat)
       if(cell) then
         hstab=.true.
         vstab=.true.
-        call qcell(1,idp,hstab,vstab,tracex,
+        call qcell(idp,hstab,vstab,tracex,
      1             tracey,.false.,over)
         if( .not.hstab .or. .not.vstab ) then
           write(*,'(A,1PD12.5,A,2(A,0PF9.4))')

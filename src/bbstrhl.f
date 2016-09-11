@@ -1,12 +1,12 @@
       module wsbb
       implicit none
-      integer*4, parameter :: nslimax=500,nblist=1200
+      integer*4, parameter :: nslimax=500,nblist=1600
       real*8, parameter:: re=2.81794092d-15, am_e=510999.06
 
       type sbeam 
       real*8 Benv(36),Benv5(25),v_cen(5),cod(6)
       real*8 xangle(8)  !(8)
-      integer*4 nslice
+      integer*4 nslice,bstrl
       integer*8 iax
       real*8 zslice(nslimax*2)   !(nslimax*2+2)
 !      real*8, pointer :: zslice(:)   !(nslimax*2+2)
@@ -34,6 +34,7 @@
       colb%v_cen(1:5)=blist(73:77)
       colb%cod(1:6)=blist(78:83)
       colb%Luminosity=blist(84)
+      colb%bstrl=int(blist(85)+0.1)
       colb%nslice=int(blist(99)+0.1)
       colb%zslice(1:nslimax*2)=blist(100:99+nslimax*2)
 
@@ -56,6 +57,7 @@
       blist(73:77)=colb%v_cen(1:5)
       blist(78:83)=colb%cod(1:6)
       blist(84)=colb%Luminosity
+      blist(85)=dble(colb%bstrl)
       blist(99)=dble(colb%nslice)
       blist(100:99+nslimax*2)=colb%zslice(1:nslimax*2)
 
@@ -104,9 +106,9 @@
 !      type(sbeam), target :: colb
       type(sbeam) colb
 
-      bstrhl=1
-
       call setcolb(blist,colb)
+
+      bstrhl=colb%bstrl
 
       write(*,'(A,I6,1P,3E12.3)') 'Welcome to beambeam',
      &     iturn,colb%ce,colb%gamma
@@ -552,7 +554,8 @@
       
       rne=p_in(29)
       nsli=int(p_in(28))
-      
+      colb%bstrl=p_in(53)
+            
       colb%nslice=nsli
       if(nsli .le. 0) then
          colb%nslice=1
@@ -571,7 +574,7 @@
 !        zx    =p_in(13), zpx  =(14),     zy=(15),  zpy =(16)
 !        dx    =p_in(17), dpx  =(18),     dy=(19),  dpy =(20)
 !        emix  =p_in(22), emiy =(23),     dp=(24),  sigz=(27)
-!        nsli  =p_in(28), rne  =(29),
+!        nsli  =p_in(28), rne  =(29),     bstrl=(53)
 !---  |----1----|----2----|----3----|----4----|----5----|----6----|----7
        write(*,'(//A)') 
      &   '*** Strong Beam setup *****************************'
@@ -585,7 +588,12 @@
        WRITE(*,'(A,1PD12.6,A,D12.6,A)')
      &    'sigz       = ',p_in(27),'m  sigp       = ',p_in(24),'m'
        WRITE(*,'(A,F10.2,A)') 'Crossing angle ',p_in(21)*1.D3,' mrad'
-!
+       if(colb%bstrl.eq.1) then
+          WRITE(*,'(A)') 'Beam strahlung ON'
+       else
+          WRITE(*,'(A)') 'Beam strahlung OFF'
+       endif
+!     
 !  Strong beam envelope calculation
 
       if(p_in(31).gt.0..and.p_in(37).gt.0..and.p_in(42).gt.0..and. 
@@ -666,7 +674,8 @@
       colb%cod(3)=p_in(19)
       colb%cod(4)=p_in(20)/colb%xangle(3)
       colb%cod(5)=p_in(26)/colb%xangle(3)
-!       write(*,*) '  Beam displacement'
+
+!     write(*,*) '  Beam displacement'
 !       write(*,'(A/,1P,(5D12.5)/)')
 !     &    '    dx          dpx         dy         dpy        dz',
 !     &            (blist(i_cod+i),i=0,4)

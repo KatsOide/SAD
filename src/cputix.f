@@ -1,9 +1,9 @@
       subroutine cputix
+      use macfile
       implicit none
-      include 'inc/MACFILE.inc'
       real*8 ctime
       real*8 ctime0,dt
-      integer*4 mtaloc,irtn
+      integer*4 irtn
       data ctime0/0.0d0/
       save ctime0
 c

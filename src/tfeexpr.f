@@ -343,6 +343,10 @@ c        call tfdebugprint(ky,'@',1)
       ktastk(isp-2)=ktfoper+iopc
       dtastk(isp-1)=k1
       dtastk(isp  )=ky
+c      call tfdebugprint(ktfoper+iopc,'tfeexpr',1)
+c      call tfdebugprint(k1,'tfeexpr',1)
+c      call tfdebugprint(ky,'tfeexpr',1)
+c      write(*,*)isp
       ke=kxcompose(isp-2)
       isp=isp-3
       return

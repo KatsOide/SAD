@@ -1,26 +1,3 @@
-      module tfrbuf
-      use tfstk
-      integer*4 irbinit,irbopen,irbclose,irbreadrecord,irbreadbuf,
-     $     irbmovepoint,irbeor2bor,irbgetpoint,irbreset,
-     $     irbreadrecordbuf,irbbor,irbsetinp,irbcloseinp,
-     $     irbsetbuf,irbibuf
-      parameter (irbinit=1,irbopen=2,irbclose=3,irbreadrecord=4,
-     $     irbreadbuf=5,irbmovepoint=6,irbbor=7,irbgetpoint=8,
-     $     irbreset=9,irbreadrecordbuf=10,irbeor2bor=11,
-     $     irbsetinp=12,irbcloseinp=13,irbsetbuf=14,irbibuf=15)
-      integer*4 nbuf
-      parameter (nbuf=1024)
-      integer*4 ncprolog
-      character*128 prolog
-      integer*4 lbuf(nbuf),mbuf(nbuf)
-      integer*8 ibuf(nbuf),itbuf(nbuf)
-      data lbuf/nbuf*0/,ibuf/nbuf*0/,mbuf/nbuf*0/,itbuf/nbuf*0/
-      type cbkshared
-        integer*8, allocatable :: ca(:)
-      end type
-      type (cbkshared) rbshared(nbuf)
-      end module
-
       subroutine tfreadbuf(icmd,lfn,ib,is,nc,buff)
       use tfstk
       use tfrbuf
@@ -307,7 +284,7 @@ c      write(*,*)'openshared ',ia,m
         irtc=0
         return
       endif
-      call tfreadbuf(irbopen,iu,ia,int8(4),int8(0),' ')
+      call tfreadbuf(irbopen,iu,ia,int8(4),0,' ')
       if(iu .le. 0)then
         call tfreeshared(ia)
         irtc=itfmessage(9,'General::fileopen','"(Shared)"')
@@ -340,7 +317,7 @@ c      call tfdebugprint(ktastk(isp),'readshard',3)
       endif
       irtc=0
       iu=int(rtastk(isp))
-      call tfreadbuf(irbibuf,iu,ia,int8(4),int8(0),' ')
+      call tfreadbuf(irbibuf,iu,ia,int8(4),0,' ')
       if(ia .eq. 0)then
         kx%k=kxeof
         return
@@ -388,8 +365,8 @@ c          write(*,*)'readshared-other '
       use tfstk
       use tfrbuf
       implicit none
-      integer*8 kx,kas,ka,kt,kap,k,iu
-      integer*4 isp1,irtc,itfmessage,itfmessageexp,isp0,n,i
+      integer*8 kx,kas,ka,kt,kap,k
+      integer*4 isp1,irtc,itfmessage,itfmessageexp,isp0,n,i,iu
       if(isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
@@ -397,8 +374,8 @@ c          write(*,*)'readshared-other '
         irtc=itfmessage(9,'General::wrongtype','"Real"')
         return
       endif
-      iu=int8(rtastk(isp1+1))
-      call tfreadbuf(irbibuf,iu,kas,int8(4),int8(0),' ')
+      iu=int(rtastk(isp1+1))
+      call tfreadbuf(irbibuf,iu,kas,int8(4),0,' ')
       if(kas .eq. 0)then
         irtc=itfmessage(99,'Shared::notopen','""')
         return

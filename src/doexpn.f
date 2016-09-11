@@ -1,10 +1,9 @@
       subroutine doexpn(dummy)
       use maccbk
+      use mackw
+      use macttyp
+      use macmisc
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACMISC.inc'
 c
       character*(MAXSTR) token
       integer*4 slen,ival,ttype,hsrchz,idx,dummy

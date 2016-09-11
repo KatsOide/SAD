@@ -1,7 +1,7 @@
       integer*4 function itfgeto(kx)
       use tfstk
+      use tfcsi
       implicit none
-      include 'inc/TFCSI.inc'
       type (sad_descriptor) kx
       integer*4 irtc, m
       if(ipoint .ge. lrecl)then
@@ -31,9 +31,10 @@ c      write(*,*)'with ',irtc,kerror
 
       integer*4 function itfpeeko(kx,next)
       use tfstk
+      use tfcsi
       implicit none
       type (sad_descriptor) kx
-      integer*4 next,ip0,icsmrk,itfgeto
+      integer*4 next,ip0,itfgeto
       ip0=icsmrk()
       itfpeeko=itfgeto(kx)
       next=icsmrk()
@@ -129,12 +130,12 @@ c      write(*,*)'with ',irtc,kerror
 
       subroutine tfgettok(word)
       use tfstk
+      use tfcsi
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
       integer*4 notspace,istop,nc,irt,i
       character*(*) word
-      include 'inc/TFCSI.inc'
  1    if(ipoint .ge. lrecl)then
         call getbuf
         if(ios .ne. 0)then
