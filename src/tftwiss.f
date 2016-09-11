@@ -1187,9 +1187,9 @@ c     end   initialize for preventing compiler warning
         kl=ilist(-i,ifklp)
         it=idtypec(kl)
       endif
-      do j=1,kwMAX-1
-        l=kytbl(j,it)
-        if(l .gt. 0)then
+      do l=1,kytbl(kwMAX,it)-1
+        j=kyindex(l,it)
+        if(j .gt. 0)then
           if(pname(kytbl(j,0))(2:) .eq. keyword)then
             go to 1
           endif

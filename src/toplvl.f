@@ -92,6 +92,7 @@
           INDMAX=max(INDMAX,kytbl(kwMAX,i))
         enddo
         allocate(kyindex(0:INDMAX,0:icMXEL))
+        kyindex=0
         do i=icDRFT,icMXEL
           do k=0,kwMAX-1
             id=kytbl(k,i)

@@ -176,8 +176,9 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
       else
         type=tfgetstrs(ktastk(isp1+2),nc)
         call capita(type(1:nc))
- 1      if(nc .lt. 0)then
-          if(ktastk(isp1+1) .eq. ktfoper+mtfnull)then
+ 1      if(nc .le. 0)then
+          if(ktastk(isp1+2) .eq. ktfoper+mtfnull .or.
+     $         ktastk(isp1+2) .eq. kxnulls)then
             type=pname(kytbl(0,itype))(2:)
           elseif(ktfrealq(ktastk(isp1+2)))then
             idt=int(rtastk(isp1+2))
@@ -290,12 +291,10 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
             return
           endif
           idt=idtype(idx)
-          do i=1,kwMAX-1
-            ioff=kytbl(i,idt)
-            if(ioff .ne. 0)then
-              if(pname(kytbl(i,0))(2:) .eq. key(1:nc))then
-                go to 10
-              endif
+          do ioff=1,kytbl(kwMAX,idt)-1
+            i=kyindex(ioff,idt)
+            if(i .ne. 0 .and. pname(kytbl(i,0))(2:) .eq. key(1:nc))then
+              go to 10
             endif
           enddo
           irtc=itfmessage(9,'FFS::undefkey',
