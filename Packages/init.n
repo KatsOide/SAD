@@ -435,11 +435,12 @@ InitLINE$P[]:=(
     Element$P[n]=Flatten[{Element["POSITION",n]}]);
   Element$Key[n_]:=(Element$Key[n]=Type$Key[Element$["TYPE",n]]);
   Element$Key[n_,k_String]:=
-    (Element$Key[n,k]=(Position[Element$Key[n],k]/.{}->{{0}})[[1,1]]);
-  Type$Key[n_]:=(Type$Key[n]=Type$Key$[n]);
-  Type$Key[n_,k_String]:=
-    (Type$Key[n,k]=(Position[Type$Key[n],k]/.{}->{{0}})[[1,1]])
-  );
+    (Element$Key[n,k]=(Position[Element$Key[n],k]/.{}->{{0}})[[1,1]]));
+
+Type$Key[n_]:=(Type$Key[n]=Type$Key$[n]);
+Type$Key[n_,k_String]:=
+    (Type$Key[n,k]=(Position[Type$Key[n],k]/.{}->{{0}})[[1,1]]);
+
 Protect[Element,SetElement,InitLINE$P];
 FFS$SingleParameterCommands={
   AXI,BXI,AYI,BYI,EXI,EPXI,EYI,EPYI,

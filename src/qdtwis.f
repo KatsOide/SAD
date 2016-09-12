@@ -312,6 +312,11 @@ c      write(*,*)'qdtwis ',dx11,dx12,x12,x11,ax0,bx0,gx0,dbx
       endif
 c      write(*,*)'qdtwis ',k0,l,dtwiss(mfitey)
  9000 gammab(1)=g1
+      do i=1,mfittry
+        if(isnan(dtwiss(i)))then
+          dtwiss(i)=0.d0
+        endif
+      enddo
       return
       end
 
@@ -521,7 +526,6 @@ c     end   initialize for preventing compiler warning
             code(4)=utwiss(mfitdpy,idp,itwe)
             call qcod(1,la1,fra,ibe1,0.d0,
      $           transe,cod2,.true.,over)
-c            write(*,*)'qddtwis-0 ',transe(2,5),cod2(2),code(2)
             transe(2,5)=transe(2,5)-cod2(2)+code(2)
             transe(4,5)=transe(4,5)-cod2(4)+code(4)
             call tftmatu(utwiss(1,idp,itwissp(ibe1)),

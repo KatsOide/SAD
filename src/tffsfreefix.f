@@ -12,8 +12,8 @@
      $     i,j,k,it,iv,ivi,next,itk,ivk,lenw,kk,jj,ivck,
      $     irtc,nl,kkk
       logical*4 frefix,tmatch,wild,found,comp,temat
-      character*80 word1,keyword,tfkwrd
-      character*80 word,nlist1
+      character*256 word1,keyword,tfkwrd
+      character*256 word,nlist1
       character*(MAXPNAME+16) name,name1
  1    call peekwdp(word,next)
       if(word .eq. ' ')then

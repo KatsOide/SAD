@@ -33,11 +33,11 @@
      $     r15,r25,r35,r45,pr,a,dpz,trf00,dtheta,phi,
      $     apsi1,apsi2,sspc0,sspc,vcphic0,vcalpha0,fb1,fb2,
      $     chi1m,chi2m,ak1,ftable(4),dir
-      logical*4 over,coup,normal,mat,calpol0,insmat,err
+      logical*4 over,coup,normal,mat,calpol0,insmat,err,isnan
       real*8 a11,a12,a13,a14,a21,a22,a23,a24,a31,a32,a33,
      $     a34,a41,a42,a43,a44,a15,a25,a35,a45
       real*8 u11,u12,u13,u14,u21,u22,u23,u24,u31,u32,u33,
-     $     u34,u41,u42,u43,u44,u15,u25,u35,u45
+     $     u34,u41,u42,u43,u44,u15,u25,u35,u45,cod1(6)
       equivalence (a11,trans(1,1)),(a12,trans(1,2)),(a13,trans(1,3)),
      1            (a14,trans(1,4)),(a21,trans(2,1)),(a22,trans(2,2)),
      1            (a23,trans(2,3)),(a24,trans(2,4)),
@@ -262,6 +262,7 @@ c     end   initialize for preventing compiler warning
           endif
           dtheta=cmp%value(kytbl(kwDROT,icBEND))
           theta0=cmp%value(kytbl(kwROT,icBEND))+dtheta
+          cod1=cod
           call qbend(trans,cod,al,cmp%value(2)+cmp%value(11),
      1         cmp%value(2),psi1,psi2,apsi1,apsi2,cmp%value(8),
      1         cmp%value(kytbl(kwDX,icBEND)),

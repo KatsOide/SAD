@@ -39,9 +39,9 @@
       phi=al/rho0
       p  =1.d0+cod(6)
       xi =cod(1)
-      pxi=cod(2)/p
+      pxi=min(p,max(-p,cod(2)))/p
       yi =cod(3)
-      pyi=cod(4)/p
+      pyi=min(p,max(-p,cod(4)))/p
       s=min(psqmax,pxi**2+pyi**2)
       dpzi=sqrt1(-s)
       pzi=1.d0+dpzi
@@ -98,7 +98,7 @@
       call tmultr5(trans,trans2,irad)
       call tmulbs(beam ,trans2,.true.,.true.)
       cod(1)=xf
-      cod(2)=pxf*p
+      cod(2)=min(p,max(-p,pxf*p))
       cod(3)=yf
       cod(5)=zf
       return
@@ -129,9 +129,9 @@
       dp=cod(6)
       p=1.d0+dp
       xi=cod(1)
-      pxi=cod(2)/p
+      pxi=min(p,max(-p,cod(2)))/p
       yi=cod(3)
-      pyi=cod(4)/p
+      pyi=min(p,max(-p,cod(4)))/p
       zi=cod(5)
       phin=al/rho0
       if(tbinit)then
@@ -181,9 +181,9 @@
       call tmultr5(trans,trans1,irad)
       call tmulbs(beam ,trans1,.true.,.true.)
       cod(1)=xf
-      cod(2)=pxf*p
+      cod(2)=min(p,max(-p,pxf*p))
       cod(3)=yf
-      cod(4)=pyf*p
+      cod(4)=min(p,max(-p,pyf*p))
       cod(5)=zf-dvemit*al
       return
       end subroutine
@@ -207,9 +207,9 @@
       endif
       dp=cod(6)
       pr=1.d0+dp
-      pxi=cod(2)/pr
+      pxi=min(pr,max(-pr,cod(2)))/pr
       yi=cod(3)
-      pyi=cod(4)/pr
+      pyi=min(pr,max(-pr,cod(4)))/pr
       rhoe=rhob*pr
       s=min(psqmax,pxi**2+pyi**2)
       dpz1=sqrt1(-s)
@@ -263,8 +263,8 @@
       call tmulbs(beam ,trans1,.true.,.true.)
       cod(1)=xf
       cod(3)=yi+pyi*rhoe*(phi0n-da)
-      cod(2)=pxf*pr
-      cod(4)=pyi*pr
+      cod(2)=min(pr,max(-pr,pxf*pr))
+      cod(4)=min(pr,max(-pr,pyi*pr))
       cod(5)=cod(5)-phi0n*(dp*rhob+drhob)+da*rhoe-dvemit*aln
       return
       end subroutine
@@ -477,6 +477,10 @@
         bradprev=0.d0
       endif
       call tbedge(trans,cod,beam,al,phib,psi2*phi0+apsi2,.false.,ld)
+c      if(isnan(cod(3)) .or. isnan(cod(1)) .or.
+c     $     isnan(cod(2)) .or. isnan(cod(4)))then
+c        write(*,*)'tbende-edge1 ',cod
+c      endif
       if(fb2 .ne. 0.d0)then
         if(mfring .gt. 0 .or. mfring .eq. -2)then
           dxfr2=-fb2**2/rhob/24.d0
