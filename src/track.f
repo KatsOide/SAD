@@ -25,14 +25,14 @@ c      write(*,*)'track-0'
  10   call tsetupsig
       if(.not. trackinit)then
         trackinit=.true.
-c        write(*,*)'track-0.0'
+c        write(*,*)'track-0.0 ',klist( 1621700052)
         call tffsvinit
         iffssave=0
-c        write(*,*)'track-0.1'
+c        write(*,*)'track-0.1 ',klist( 1621700052)
         call ffs_init_flag
-c        write(*,*)'track-0.2'
+c        write(*,*)'track-0.2 ',klist( 1621700052)
         call csinit(0,1,'!',.false.)
-c        write(*,*)'track-0.3'
+c        write(*,*)'track-0.3 ',klist( 1621700052)
         call tfinitn
 c        write(*,*)'track-0.4'
         call tfevals('CONVERGENCE=1E-9;ExponentOfResidual=2;'//

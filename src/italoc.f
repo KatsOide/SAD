@@ -282,7 +282,7 @@ c      if(tfchecklastp(ix1))then
           ip=klist(ik)
         enddo
 c      endif
-      call tsetindexhash(ix-2,m)
+        call tsetindexhash(ix-2,m)
       return
       end
 

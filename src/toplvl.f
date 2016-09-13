@@ -94,7 +94,7 @@
         allocate(kyindex(0:INDMAX,0:icMXEL))
         kyindex=0
         do i=icDRFT,icMXEL
-          do k=0,kwMAX-1
+          do k=1,kwMAX-1
             id=kytbl(k,i)
             if(id .ne. 0)then
               kyindex(id,i)=k
@@ -369,7 +369,7 @@ c         write(*,*)'toplvl-1 ',index,idtype(index),idval(index),icRSVD
             endif
             go to 1000
          else if (idtype(index) .eq. icACT) then
-           call tfinitstk
+            call tfinitstk
             if(bypasstrack)then
               return
             endif

@@ -7,7 +7,7 @@
       implicit none
 c
       integer*8 ktcaloc
-      integer*4 i,idummy,sethtb,hsrch,sethtbr
+      integer*4 i,idummy,sethtb,hsrch,sethtbr,idummy1
 c     external doline
       external doprin, doexpn, doread, dolist, docod, dostop, dotwis
       external dooffl, doonfl,dorvrs
@@ -51,7 +51,7 @@ c
        idummy=sethtb('USE     ',icVAR,VarPt)
 c
        idummy=sethtb8('LIE     ',icACT,ktcaloc(4))
-       idummy=sethtb8('lie     ',icACT,idval(idummy))
+       idummy1=sethtb8('lie     ',icACT,idval(idummy))
        ilist(1,idval(idummy)-1)=2
        call setfnp(ilist(1,idval(idummy)+1),ActLie)
        ilist(1,idval(idummy)+2)=hsrch('USE')
@@ -88,7 +88,7 @@ c
        idummy=sethtb('NZ      ',icVAR,VarLst+ VarRL)
 c
        idummy=sethtb8('TRACK   ',icACT,ktcaloc(21))
-       idummy=sethtb8('track   ',icACT,idval(idummy))
+       idummy1=sethtb8('track   ',icACT,idval(idummy))
        ilist(1,idval(idummy)-1)=20
        call setfnp(ilist(1,idval(idummy)+1),ActTra)
        ilist(1,idval(idummy)+2)=hsrch('USE     ')
@@ -112,7 +112,7 @@ c
        ilist(1,idval(idummy)+20)=hsrch('NZ      ')
 c
        idummy=sethtb8('FFS     ',icACT,ktcaloc(21))
-       idummy=sethtb8('ffs     ',icACT,idval(idummy))
+       idummy1=sethtb8('ffs     ',icACT,idval(idummy))
        ilist(1,idval(idummy)-1)=20
        call setfnp(ilist(1,idval(idummy)+1),ActTra)
        ilist(1,idval(idummy)+2)=hsrch('USE     ')
@@ -137,7 +137,7 @@ c
        call setdfl(idummy,hsrch('TURNS   '),-1.d0)
 c
        idummy=sethtb8('QUICK   ',icACT,ktcaloc(21))
-       idummy=sethtb8('quick   ',icACT,idval(idummy))
+       idummy1=sethtb8('quick   ',icACT,idval(idummy))
        ilist(1,idval(idummy)-1)=20
        call setfnp(ilist(1,idval(idummy)+1),ActTra)
        ilist(1,idval(idummy)+2)=hsrch('USE     ')
@@ -163,7 +163,7 @@ c
        call setdfl(idummy,hsrch('NPART   '),-3.d0)
 c
        idummy=sethtb8('EMIT    ',icACT,ktcaloc(21))
-       idummy=sethtb8('emit    ',icACT,idval(idummy))
+       idummy1=sethtb8('emit    ',icACT,idval(idummy))
        ilist(1,idval(idummy)-1)=20
        call setfnp(ilist(1,idval(idummy)+1),ActTra)
        ilist(1,idval(idummy)+2)=hsrch('USE     ')

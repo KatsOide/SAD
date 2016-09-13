@@ -6,7 +6,7 @@
       use macfile
       implicit none
 c
-      integer*4 idummy,sethtb,hsrch
+      integer*4 idummy,sethtb,hsrch,idummy1
       integer*8 ktcaloc,ktaloc
 c     external doline
       external doprin, doexpn, doread, dolist, docod, dostop, dotwis
@@ -25,7 +25,7 @@ c     external doline
        ilist(1,idval(idummy)+6)=hsrch('CENTER  ')
 c
        idummy=sethtb('ID      ',icVAR,VarPt+VarLst)
-       idummy=sethtb('GTYPE   ',icVAR,VarStr)
+       idummy1=sethtb('GTYPE   ',icVAR,VarStr)
 c
 c      idummy=sethtb('DRAW    ',icACT,mtaloc(8))
 c      idummy=sethtb('graw    ',icACT,idval(idummy))
@@ -33,7 +33,7 @@ c      ilist(1,idval(idummy))=7
 c      call setfnp(ilist(1,idval(idummy)+1),Act)
 c
        idummy=sethtb8('GRAPH   ',icACT,ktaloc(8))
-       idummy=sethtb8('graph   ',icACT,idval(idummy))
+       idummy1=sethtb8('graph   ',icACT,idval(idummy))
        ilist(1,idval(idummy))=7
        call setfnp(ilist(1,idval(idummy)+1),ActGra)
        ilist(1,idval(idummy)+2)=hsrch('ID')
@@ -681,7 +681,6 @@ cc for INS
       kytbl(kwCOUPLE     ,icINS)=62
       kytbl(kwMAX     ,icINS)=63
 cc for Coordinate transformation
-      idummy=sethtb('COORD   ',icDEF,icCOORD)
       kytbl(0,     icCOORD  )=sethtb('COORD   ',icDEF,icCOORD)
       kytbl(kwDX  ,icCOORD  )=1
       kytbl(kwDY  ,icCOORD  )=2
