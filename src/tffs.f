@@ -703,13 +703,14 @@ c$$$  endif
         return
         end subroutine
 
-        subroutine tsetfringepe(cmp,ic,al,ak,dir,table)
+        subroutine tsetfringepe(cmp,ic,dir,table)
         use mackw
         implicit none
         type (sad_comp) cmp
         integer*4 ic
-        real*8 dir,table(4),f1in,f1out,f2in,f2out,al,ak
-        if(al .ne. 0.d0 .and. ak .ne. 0.d0)then
+        real*8 dir,table(4),f1in,f1out,f2in,f2out,al
+        if(cmp%value(kytbl(kwL,ic))*
+     $       cmp%value(kytbl(kwK1,ic)) .ne. 0.d0)then
           f1in =cmp%value(kytbl(kwF1,ic))
      $         +cmp%value(kytbl(kwF1K1F,ic))
           f1out=cmp%value(kytbl(kwF1,ic))
@@ -730,7 +731,7 @@ c$$$  endif
             table(2)=f2out
           endif
         else
-          table(1:4)=0.d0
+          table=0.d0
         endif
         return
         end subroutine

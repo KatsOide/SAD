@@ -33,6 +33,7 @@ c         dpzi=-s/(1.d0+sqrt(1.d0-s))
 
 c     drift in the parallel solenoid
       subroutine tdrift_solenoid(np,x,px,y,py,z,g,dv,pz,al,bz)
+      use tfstk, only: sqrtl
       use element_drift_common
       implicit none
       integer*4 np
@@ -50,7 +51,7 @@ c         pr=(1.d0+g(i))**2
          pyi=py(i)-bzp*x(i)*.5d0
 
          s=min(ampmax,pxi**2+pyi**2)
-         dpzi=-s/(1.d0+sqrt(1.d0-s))
+         dpzi=-s/(1.d0+sqrtl(1.d0-s))
          pzi=1.d0+dpzi
          al1=al/pzi
 
@@ -92,6 +93,7 @@ c
       subroutine tdrift(np,x,px,y,py,z,g,dv,pz,
      $     al,bz,ak0x,ak0y)
       use element_drift_common
+      use tfstk, only:sqrtl
       implicit none
       integer*4 np,i,j,itmax,ndiag
       real*8 conv
@@ -126,7 +128,7 @@ c          pr=(1.d0+g(i))**2
           px(i)=px(i)+bzp*y(i)*.5d0
           py(i)=py(i)-bzp*x(i)*.5d0
           s=min(ampmax,px(i)**2+py(i)**2)
-          dpz0=-s/(1.d0+sqrt(1.d0-s))
+          dpz0=-s/(1.d0+sqrtl(1.d0-s))
           pz0=1.d0+dpz0
           dpl=px(i)*phix+py(i)*phiy+dpz0*phiz
           pl=phiz+dpl

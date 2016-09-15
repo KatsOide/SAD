@@ -2,6 +2,7 @@
      1                 dx,dy,dz,chi1,chi2,chi3,dir,ld)
       use ffs_flag
       use tmacro
+      use tfstk, only: sqrtl
       implicit real*8(a-h,o-z)
       dimension trans(6,12),cod(6),beam(42)
       real*8 a
@@ -51,7 +52,7 @@
       pxi=cod(2)
       pyi=cod(4)
       a=pxi**2+pyi**2
-      pzi=p*sqrt(1.d0-a/p**2)
+      pzi=p*sqrtl(1.d0-a/p**2)
       zi=pzi/p*z-dz0
       xi=cod(1)-dx0+pxi/p*z
       yi=cod(3)-dy0+pyi/p*z

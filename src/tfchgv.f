@@ -7,7 +7,7 @@
       implicit none
       integer*4 lfno,i,k,j,next1
       character*(MAXPNAME) word
-      character*8 key,ki,tfkwrd
+      character*8 key,ki,tfkwrd,tfkwrd1
       logical*4 tmatch,apply,exist
       call getwdl(key)
       apply=.false.
@@ -25,6 +25,12 @@
           do while(ki .ne. ' ')
             j=j+1
             ki=tfkwrd(idtype(k),j)
+            if(ki .eq. key)then
+              apply=.true.
+              ival(i)=j
+              cycle LOOP_I
+            endif
+            ki=tfkwrd1(idtype(k),j)
             if(ki .eq. key)then
               apply=.true.
               ival(i)=j

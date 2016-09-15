@@ -503,6 +503,7 @@ c      endif
 
       subroutine tbdrifte(trans,cod,beam,al,phi0,
      $     h0,h1emit,dvemit,irad,calpol,ld)
+      use tfstk, only: sqrtl
       implicit none
       real*8 trans(6,12),cod(6),beam(42),phi0,al,cp,sp,pr,pxi,pzf,
      $     trans1(6,6),xi,pyi,pzi,pxf,xf,dpzipxi,dpzipyi,dpzip,
@@ -525,8 +526,8 @@ c      endif
       pr=1.d0+cod(6)
       pxi=cod(2)
       pyi=cod(4)
-      a=min(psqmax,pxi**2+pyi**2)
-      pzi=pr*sqrt(1.d0-a/pr**2)
+      a=pxi**2+pyi**2
+      pzi=pr*sqrtl(1.d0-a/pr**2)
 c      pzi=sqrt(max(1.d-4,(pr-pxi)*(pr+pxi)-pyi**2))
       pzf=pzi*cp-pxi*sp
       pxf=pzi*sp+pxi*cp

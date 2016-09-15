@@ -293,8 +293,15 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
           idt=idtype(idx)
           do ioff=1,kytbl(kwMAX,idt)-1
             i=kyindex(ioff,idt)
-            if(i .ne. 0 .and. pname(kytbl(i,0))(2:) .eq. key(1:nc))then
-              go to 10
+            if(i .ne. 0)then
+              if(pname(kytbl(i,0))(2:) .eq. key(1:nc))then
+                go to 10
+              endif
+              i=kyindex1(ioff,idt)
+              if(i .ne. 0 .and.
+     $             pname(kytbl(i,0))(2:) .eq. key(1:nc))then
+                go to 10
+              endif
             endif
           enddo
           irtc=itfmessage(9,'FFS::undefkey',

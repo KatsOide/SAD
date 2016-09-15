@@ -439,7 +439,7 @@ InitLINE$P[]:=(
 
 Type$Key[n_]:=(Type$Key[n]=Type$Key$[n]);
 Type$Key[n_,k_String]:=
-    (Type$Key[n,k]=(Position[Type$Key[n],k]/.{}->{{0}})[[1,1]]);
+    (Type$Key[n,k]=(Position[Type$Key[n],k|{___,k,___},1,1]/.{}->{{0}})[[1,1]]);
 
 Protect[Element,SetElement,InitLINE$P];
 FFS$SingleParameterCommands={

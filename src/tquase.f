@@ -117,6 +117,7 @@ c        ilist(1,ifvh-2)=-1
 
       subroutine tsolrot(trans,cod,beam,al,bz,dx,dy,dz,
      $     chi1,chi2,theta,bxs,bys,bzs,ent,ld)
+      use tfstk, only: sqrtl
       implicit none
       integer*4 ld,i,itgetirad
       real*8 trans(6,12),cod(6),beam(21),trans1(6,6),
@@ -155,8 +156,8 @@ c        ilist(1,ifvh-2)=-1
           cod(1)=cod(1)-dx
           cod(3)=cod(3)-dy
           pr=1.d0+cod(6)
-          a=min(ptmax,cod(2)**2+cod(4)**2)
-          pz0=pr*sqrt(1.d0-a/pr**2)
+          a=cod(2)**2+cod(4)**2
+          pz0=pr*sqrtl(1.d0-a/pr**2)
 c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
           dpz0dpx=-cod(2)/pz0
           dpz0dpy=-cod(4)/pz0
@@ -253,8 +254,8 @@ c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
           bzh=bzs*.5d0
           cod(2)=cod(2)+bzh*cod(3)
           cod(4)=cod(4)-bzh*cod(1)
-          a=min(ptmax,cod(2)**2+cod(4)**2)
-          pz0=pr*sqrt(1.d0-a/pr**2)
+          a=cod(2)**2+cod(4)**2
+          pz0=pr*sqrtl(1.d0-a/pr**2)
 c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
           dpz0dpx=-cod(2)/pz0
           dpz0dpy=-cod(4)/pz0
@@ -311,6 +312,7 @@ c     $     'tsolrot ',((trans1(i,j),j=1,6),i=1,6)
       end
 
       subroutine tsoldz(trans,cod,al,bxs0,bys0,bzs0,drift)
+      use tfstk, only: sqrtl
       implicit none
       integer*4 j,itmax,ndiag
       parameter (itmax=15)
@@ -340,8 +342,8 @@ c     $     'tsolrot ',((trans1(i,j),j=1,6),i=1,6)
       pr=1.d0+cod(6)
       pxi=cod(2)
       pyi=cod(4)
-      a=min(pxi**2+pyi**2,ptmax)
-      dpz0=-a/pr/(1.d0+sqrt(1.d0-a/pr**2))
+      a=pxi**2+pyi**2
+      dpz0=-a/pr/(1.d0+sqrtl(1.d0-a/pr**2))
       pz0=pr+dpz0
       r=al/pz0
       dpz0dpx= -pxi/pz0

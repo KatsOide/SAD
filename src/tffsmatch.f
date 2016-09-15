@@ -1000,7 +1000,7 @@ c     $                       posk,pos(lp),rlist(kqu),ltyp,iv
       use ffs
       use tffitcode
       use sad_main
-      use ffs_pointer,only:elatt,direlc,compelc
+      use ffs_pointer,only:direlc,compelc
       implicit none
       type (sad_comp), pointer::cmp
       integer*4 n1,n2,ntfun,l

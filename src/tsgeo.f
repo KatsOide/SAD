@@ -15,7 +15,7 @@
      $     chi1,chi2,cschi1,snchi1,cschi2,snchi2,chi3,
      $     cschi3,snchi3,g1,xi,yi,pxi,pyi,al,pzi,fb1,fb2,
      $     ak,sinphi,a22,a12,a14,a24,dx,pxf,dy,pyf,zf,
-     $     theta,akk,gf,dvf,dl,f,dir,tfbzs,pos0,
+     $     theta,gf,dvf,dl,f,dir,tfbzs,pos0,
      $     chi2i,cchi2i,schi2i,chi1i,cchi1i,schi1i,ds,
      $     s1,s2,s3,u,v,w,phix,phiy,xf,yf,g2,tfchi,gi,
      $     chi1m,chi2m,ftable(4),ak1
@@ -198,7 +198,7 @@ c            a14= 2.d0*sin(phi*.5d0)**2/ak
           pyf=(pyi+f*xi)*dir
           zf=0.d0
           theta=cmp%value(4)
-          akk=cmp%value(2)/al
+          ak1=cmp%value(kytbl(kwK1,icQUAD))
           call setdirelc(i,direlc(i)*dir)
           dirf=direlc(i) .gt. 0.d0
           if(dirf)then
@@ -209,8 +209,7 @@ c            a14= 2.d0*sin(phi*.5d0)**2/ak
           endif
           gf=0.d0
           dvf=0.d0
-          ak1=cmp%value(kytbl(kwK1,icQUAD))
-          call tsetfringepe(cmp,icQUAD,al,ak1,direlc(i),ftable)
+          call tsetfringepe(cmp,icQUAD,direlc(i),ftable)
           call tquads(1,xf,pxf,yf,pyf,zf,gf,dvf,pzf,i,
      $         al,ak1,bzs*dir,
      $         cmp%value(5),cmp%value(6),theta,
@@ -264,8 +263,7 @@ c            write(*,*)'tsgeo ',i,chi1m,dirf,dir
 c          endif
           beam(1:21)=0.d0
           trans(:,1:6)=0.d0
-          call tsetfringepe(cmp,icMULT,al,cmp%value(kytbl(kwK1,icMULT)),
-     $       direlc(i),ftable)
+          call tsetfringepe(cmp,icMULT,direlc(i),ftable)
           bzs=bzs*dir
           call tmulte(trans,cod,beam,i,
      $         al,cmp%value(kytbl(kwK0,icMULT)),bzs,

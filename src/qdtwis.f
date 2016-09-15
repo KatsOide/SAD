@@ -312,11 +312,7 @@ c      write(*,*)'qdtwis ',dx11,dx12,x12,x11,ax0,bx0,gx0,dbx
       endif
 c      write(*,*)'qdtwis ',k0,l,dtwiss(mfitey)
  9000 gammab(1)=g1
-      do i=1,mfittry
-        if(isnan(dtwiss(i)))then
-          dtwiss(i)=0.d0
-        endif
-      enddo
+      call resetnan(dtwiss)
       return
       end
 

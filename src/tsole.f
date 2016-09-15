@@ -124,7 +124,7 @@
           radlvl=1.d0
         endif
         ak1=cmp%value(kytbl(kwK1,icQUAD))
-        call tsetfringepe(cmp,icQUAD,al,ak1,direlc(l),ftable)
+        call tsetfringepe(cmp,icQUAD,direlc(l),ftable)
         call tquase(trans,cod,beam,
      $       al,ak1,bzs,
      $       cmp%value(5),cmp%value(6),cmp%value(4),
@@ -155,8 +155,7 @@
           chi1=-cmp%value(kytbl(kwCHI1,icMULT))
           chi2=-cmp%value(kytbl(kwCHI2,icMULT))
         endif
-        call tsetfringepe(cmp,icMULT,al,cmp%value(kytbl(kwK1,icMULT)),
-     $       direlc(l),ftable)
+        call tsetfringepe(cmp,icMULT,direlc(l),ftable)
         call tmulte(trans,cod,beam,l,al,
      $       cmp%value(kytbl(kwK0,icMULT)),bzs,
      $       phi,psi1,psi2,apsi1,apsi2,
@@ -171,6 +170,7 @@
      $       cmp%value(kytbl(kwK0FR,icMULT)) .eq. 0.d0,
      $       cmp%value(15),cmp%value(16),cmp%value(17),cmp%value(18),
      $       cmp%value(kytbl(kwW1,icMULT)),rtaper,
+     $       cmp%value(kytbl(kwAPHI,icMULT)) .ne. 0.d0,
      $       ld)
       elseif(lt .eq. icSOL)then
         enarad1=enarad .and. cmp%value(kytbl(kwRAD,icSOL)) .eq. 0.d0
@@ -220,7 +220,7 @@
           endif
           if(cmp%value(kytbl(kwFRIN,icSOL)) .eq. 0.d0)then
             if(calpol)then
-              call tmov(cod,cod1,6)
+              cod1=cod
             endif
             call tsfrie(trans1,cod,bzs-bzs0)
             call tmultr5(trans,trans1,irad)

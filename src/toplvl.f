@@ -79,12 +79,14 @@
      $     kwMAX=kwF2K1B+1
 
       integer*4 ::  kytbl(0:kwMAX,0:icMXEL)=0
-      integer*4, pointer :: kyindex(:,:)
+      integer*4, pointer :: kyindex(:,:),kyindex1(:,:)
       integer*4 INDMAX
 
       contains
         subroutine initkyindex
         use tfcode
+        use maccbk,only:pname
+        use tfstk, only:forcesf
         implicit none
         integer*4 i,k,id
         INDMAX=0
@@ -92,12 +94,22 @@
           INDMAX=max(INDMAX,kytbl(kwMAX,i))
         enddo
         allocate(kyindex(0:INDMAX,0:icMXEL))
+        allocate(kyindex1(0:INDMAX,0:icMXEL))
         kyindex=0
+        kyindex1=0
         do i=icDRFT,icMXEL
           do k=1,kwMAX-1
             id=kytbl(k,i)
             if(id .ne. 0)then
-              kyindex(id,i)=k
+              if(kyindex(id,i) .eq. 0)then
+                kyindex(id,i)=k
+              elseif(kyindex1(id,i) .eq. 0)then
+                kyindex1(id,i)=k
+              else
+                write(*,*)'Too many aliases ',pname(kytbl(0,i)),
+     $               ' ',pname(kytbl(k,0))
+                call forcesf()
+              endif
             endif
           enddo
         enddo

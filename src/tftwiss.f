@@ -97,9 +97,10 @@
       use tfstk
       use mackw
       implicit none
+      type (sad_descriptor) kx
       integer*4 ic,lenw,i
       logical*4 all
-      character*(MAXPNAME) key,tfkwrd
+      character*(MAXPNAME) key,tfkwrd,tfkwrd1
       do i=1,kytbl(kwMAX,ic)-1
         key=tfkwrd(ic,i)
         if(all .or. key .ne. '-')then
@@ -108,6 +109,14 @@
             dtastk(isp)=ksdumm
           else
             dtastk(isp)=kxsalocb(-1,key,lenw(key))
+            if(kyindex1(i,ic) .ne. 0)then
+              key=tfkwrd1(ic,i)
+              isp=isp+1
+              dtastk(isp)=kxsalocb(-1,key,lenw(key))
+              kx=kxmakelist(isp-2)
+              isp=isp-1
+              dtastk(isp)=kx
+            endif
           endif
         endif
       enddo
@@ -631,10 +640,12 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
       use tfstk
       use ffs
       use tffitcode
-      use ffs_pointer, only:latt,idelc,idtypec,pnamec
+      use ffs_pointer, only:latt,idelc,idtypec,pnamec,compelc,direlc
+      use sad_main
       implicit none
       type (sad_descriptor) kx
-      integer*8 kax,ktfgeol,kai,j,i,lp,ip,itoff
+      type (sad_comp), pointer ::cmp
+      integer*8 kax,ktfgeol,kai,j,i,ip,itoff
       integer*4 irtc,lenw,lxp,nv,lt,kk,ia,isp1,ibz
       real*8 v,tfkeyv,beam(42),xp,fr,geo1(12),pos0,
      $     vsave(256),gam0,gv(3,4),ogv(3,4),cod(4),vtwiss(27),tfchi,
@@ -726,8 +737,10 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
           kax=ktfgeol(rlist(j))
         else
           lt=idtypec(lxp)
-          nv=kytbl(kwmax,lt)-1
-          call tmov(rlist(latt(lxp)+1),vsave,nv)
+          call compelc(lxp,cmp)
+          nv=kytbl(kwMAX,lt)-1
+          vsave(1:nv)=cmp%value(1:nv)
+c          call tmov(rlist(latt(lxp)+1),vsave,nv)
           call qfraccomp(lxp,0.d0,fr,.false.,chg)
           if(chg)then
             geo1=rlist(j+1:j+12)
@@ -741,7 +754,8 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
           else
             kax=ktfgeol(rlist(j+12))
           endif
-          call tmov(vsave,rlist(latt(lxp)+1),nv)
+          cmp%value(1:nv)=vsave(1:nv)
+c          call tmov(vsave,rlist(latt(lxp)+1),nv)
         endif
         kx%k=ktflist+kax
       elseif(keyword .eq. 'GX' .or. keyword .eq. 'GY' .or.
@@ -755,8 +769,10 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
           call tmov(rlist(j),gv,12)
         else
           lt=idtypec(lxp)
+          call compelc(lxp,cmp)
           nv=kytbl(kwmax,lt)-1
-          call tmov(rlist(latt(lxp)+1),vsave,nv)
+          vsave(1:nv)=cmp%value(1:nv)
+c          call tmov(rlist(latt(lxp)+1),vsave,nv)
           call qfraccomp(lxp,0.d0,fr,.false.,chg)
           if(chg)then
             call tmov(rlist(j+12),geo1,12)
@@ -771,7 +787,8 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
           else
             call tmov(rlist(j+12),gv,12)
           endif
-          call tmov(vsave,rlist(latt(lxp)+1),nv)
+          cmp%value(1:nv)=vsave(1:nv)
+c          call tmov(vsave,rlist(latt(lxp)+1),nv)
         endif
         if(keyword .eq. 'GX')then
           kx=dfromr(gv(1,4))
@@ -799,8 +816,10 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
           call tmov(rlist(j),gv,12)
         else
           lt=idtypec(lxp)
+          call compelc(lxp,cmp)
           nv=kytbl(kwmax,lt)-1
-          call tmov(rlist(latt(lxp)+1),vsave,nv)
+          vsave(1:nv)=cmp%value(1:nv)
+c          call tmov(rlist(latt(lxp)+1),vsave,nv)
           call qfraccomp(lxp,0.d0,fr,.false.,chg)
           if(chg)then
             call tmov(rlist(j+12),geo1,12)
@@ -815,9 +834,11 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
           else
             call tmov(rlist(j+12),gv,12)
           endif
-          call tmov(vsave,rlist(latt(lxp)+1),nv)
+          cmp%value(1:nv)=vsave(1:nv)
+c          call tmov(vsave,rlist(latt(lxp)+1),nv)
           call qtwissfrac(vtwiss,lxp,fr,over)
-          call tmov(vtwiss(mfitdx),cod,4)
+          cod(1:4)=vtwiss(mfitdx:mfitdpy)
+c          call tmov(vtwiss(mfitdx),cod,4)
         endif
         call tforbitgeo(ogv,gv,cod(1),cod(2),cod(3),cod(4))
         kx%k=ktflist+ktfgeol(ogv)
@@ -837,8 +858,10 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
           enddo
         else
           lt=idtypec(lxp)
+          call compelc(lxp,cmp)
           nv=kytbl(kwmax,lt)-1
-          call tmov(rlist(latt(lxp)+1),vsave,nv)
+          vsave(1:nv)=cmp%value(1:nv)
+c          call tmov(rlist(latt(lxp)+1),vsave,nv)
           call qfraccomp(lxp,0.d0,fr,.false.,chg)
           if(chg)then
             call tmov(rlist(j+12),geo1,12)
@@ -854,9 +877,11 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
           else
             call tmov(rlist(j+12),gv,12)
           endif
-          call tmov(vsave,rlist(latt(lxp)+1),nv)
+          cmp%value(1:nv)=vsave(1:nv)
+c          call tmov(vsave,rlist(latt(lxp)+1),nv)
           call qtwissfrac(vtwiss,lxp,fr,over)
-          call tmov(vtwiss(mfitdx),cod,4)
+          cod(1:4)=vtwiss(mfitdx:mfitdpy)
+c          call tmov(vtwiss(mfitdx),cod,4)
         endif
         call tforbitgeo(ogv,gv,cod(1),cod(2),cod(3),cod(4))
         if(keyword .eq. 'OGX')then
@@ -874,12 +899,11 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
         endif
       elseif(keyword .eq. 'DIR')then
         if(ia .ne. nlat)then
-          lp=latt(ia)
-          kax=lp+ilist(1,lp-1)-2
           if(ref)then
-            kx=dfromr(rlist(kax))
+            kx=dfromr(direlc(ia))
           else
-            kx%k=ktfref+kax
+            call compelc(ia,cmp)
+            kx%k=ktfref+latt(ia)+cmp%ncomp2-2
           endif
         else
           kx%k=ktftrue
@@ -1193,6 +1217,12 @@ c     end   initialize for preventing compiler warning
           if(pname(kytbl(j,0))(2:) .eq. keyword)then
             go to 1
           endif
+          j=kyindex1(l,it)
+          if(j .gt. 0)then
+            if(pname(kytbl(j,0))(2:) .eq. keyword)then
+              go to 1
+            endif
+          endif
         endif
       enddo
       ia=0
@@ -1263,7 +1293,8 @@ c     end   initialize for preventing compiler warning
       real*8 geo(3,4),tfchi
       kax=ktadaloc(-1,2)
       kax1=ktavaloc(0,3)
-      call tmov(geo(1,4),rlist(kax1+1),3)
+      rlist(kax1+1:kax1+3)=geo(1:3,4)
+c      call tmov(geo(1,4),rlist(kax1+1),3)
       klist(kax+1)=ktflist+kax1
       kax2=ktavaloc(0,3)
       rlist(kax2+1)=tfchi(geo,1)

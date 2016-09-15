@@ -9,7 +9,7 @@
       parameter (nkey=35,nstyle=8)
       integer*8 latt(nlat),ktaloc,it,it1,jp
       real*8 pos(nlat)
-      integer*4 iele(nlat),mult(nlat),imon(*)
+      integer*4 iele(nlat),imon(*)
       real*8 twiss(nlat,-ndim:ndim,ntwissfun),emon(*)
       real*8 ymax(nkey,2),ymin(nkey,2),gmin(2),gmax(2),fctr(2)
       integer*4 icat(nkey),ipw(2,nkey),kvar(nkey),

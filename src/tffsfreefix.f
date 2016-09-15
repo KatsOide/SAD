@@ -12,8 +12,7 @@
      $     i,j,k,it,iv,ivi,next,itk,ivk,lenw,kk,jj,ivck,
      $     irtc,nl,kkk
       logical*4 frefix,tmatch,wild,found,comp,temat
-      character*256 word1,keyword,tfkwrd
-      character*256 word,nlist1
+      character*256 word1,keyword,tfkwrd,tfkwrd1,word,nlist1
       character*(MAXPNAME+16) name,name1
  1    call peekwdp(word,next)
       if(word .eq. ' ')then
@@ -74,10 +73,18 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
                 word1=' '
                 iv=0
                 go to 1020
-              elseif(keyword .eq. word1)then
-                call cssetp(next)
-                iv=ivk
-                go to 1020
+              else
+                if(keyword .eq. word1)then
+                  call cssetp(next)
+                  iv=ivk
+                  go to 1020
+                endif
+                keyword=tfkwrd1(itk,ivk)
+                if(keyword .eq. word1)then
+                  call cssetp(next)
+                  iv=ivk
+                  go to 1020
+                endif
               endif
               ivk=ivk+1
               go to 1010
@@ -249,11 +256,19 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
                 word1=' '
                 iv=0
                 go to 1120
-              elseif(keyword .eq. word1)then
-                call cssetp(next)
-                iv=ivk
-                go to 1120
-              endif
+              else
+                if(keyword .eq. word1)then
+                  call cssetp(next)
+                  iv=ivk
+                  go to 1120
+                endif
+                keyword=tfkwrd1(itk,ivk)
+                if(keyword .eq. word1)then
+                  call cssetp(next)
+                  iv=ivk
+                  go to 1120
+                endif
+              endif                
               ivk=ivk+1
               go to 1110
  1120         continue

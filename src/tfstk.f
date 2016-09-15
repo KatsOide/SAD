@@ -2745,6 +2745,26 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end function
 
+        subroutine resetnan(a)
+        implicit none
+        real*8 a(:)
+        integer*4 i
+        do i=1,size(a)
+          if(isnan(a(i)))then
+            a(i)=0.d0
+          endif
+        enddo
+        return
+        end subroutine
+
+        real*8 function sqrtl(x)
+        implicit none
+        real*8 x
+        real*8 ,parameter :: am=1.d-20
+        sqrtl=sqrt(max(x,am))
+        return
+        end function
+
       end module
 
       module ophash

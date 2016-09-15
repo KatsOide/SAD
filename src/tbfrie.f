@@ -243,6 +243,7 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       end
 
       subroutine tbedgemaxwell(trans,cod,rhob)
+      use tfstk, only: sqrtl
       implicit none
       real*8 trans(6,6),rhob,cod(6),pr,a,b,pxi,pyi,yi,pvi,
      $     c,af,bf,pvi2,yr
@@ -250,8 +251,8 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       pr=1.d0+cod(6)
       pxi=min(pr,max(-pr,cod(2)))
       pyi=min(pr,max(-pr,cod(4)))
-      pvi2=max(ampmin,(pr-pxi)*(pr+pxi))
-      pvi=pr*sqrt(pvi2/pr**2)
+      pvi2=(pr-pxi)*(pr+pxi)
+      pvi=pr*sqrtl(pvi2/pr**2)
       yi=cod(3)
       yr=(yi/rhob)**2
       a=(1.d0-yr/6.d0)

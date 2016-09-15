@@ -1,4 +1,5 @@
       subroutine tqente(trans,cod,beam,al,bz,calpol,irad,ld)
+      use tfstk, only: sqrtl
       implicit none
       integer*4 irad,ld,i
       real*8 trans(6,12),cod(6),beam(42),trans1(6,6),trans2(6,6),
@@ -9,8 +10,8 @@
       if(bz .eq. 0.d0)then
         pxi=cod(2)
         pyi=cod(4)
-        a=min(ptmin,pxi**2+pyi**2)
-        dpz=-a/pr/(1.d0+sqrt(1.d0-a/pr**2))
+        a=pxi**2+pyi**2
+        dpz=-a/pr/(1.d0+sqrtl(1.d0-a/pr**2))
         pz=pr+dpz
         r=-dpz/pz/pr*al
         rpz=pz/pr
@@ -81,8 +82,8 @@
         bzh=bz*.5d0
         pxi=cod(2)+bzh*cod(3)
         pyi=cod(4)-bzh*cod(1)
-        a=min(ptmin*pr**2,pxi**2+pyi**2)
-        pz=pr*sqrt(1.d0-a/pr**2)
+        a=pxi**2+pyi**2
+        pz=pr*sqrtl(1.d0-a/pr**2)
         r=a/pr/(pr+pz)*al
         call tinitr(trans2)
         trans2(2,3)= bzh

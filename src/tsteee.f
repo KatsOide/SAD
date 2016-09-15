@@ -89,13 +89,13 @@ c        call tbfrie(trans,cod,beam,-rhob,0.d0,.true.,ld)
         pxi=cod(2)/pr
         pyi=cod(4)/pr
         rhoe=rhob*pr
-        s=min(.9d0,pxi**2+pyi**2)
-        dpz1=-s/(1.d0+sqrt(1.d0-s))
+        s=pxi**2+pyi**2
+        dpz1=-s/(1.d0+sqrtl(1.d0-s))
         pz1=1.d0+dpz1
         dpx=aln/rhoe
         pxf=pxi+dpx
-        s=min(.9d0,pxf**2+pyi**2)
-        dpz2=-s/(1.d0+sqrt(1.d0-s))
+        s=pxf**2+pyi**2
+        dpz2=-s/(1.d0+sqrtl(1.d0-s))
         pz2=1.d0+dpz2
         phsq=pxi**2+pz1**2
         d=pxf*pz1+pxi*pz2

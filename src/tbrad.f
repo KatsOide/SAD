@@ -3,6 +3,7 @@
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dphix,dphiy,cost,sint,
      1     fs1,fs2,mfring,fringe,eps0)
+      use tfstk, only: sqrtl
       use ffs_flag
       use tmacro
       use bendeb, only:epsbend
@@ -119,8 +120,8 @@ c      sq00=2.d0*sin(phin*.5d0)**2
             pxi=px(i)
             pyi=py(i)
             if(n .eq. 1)then
-              s=min(.95d0,pxi**2+pyi**2)
-              dpz1=-s/(1.d0+sqrt(1.d0-s))
+              s=pxi**2+pyi**2
+              dpz1=-s/(1.d0+sqrtl(1.d0-s))
             else
               dpz1=pz(i)
             endif
@@ -129,7 +130,7 @@ c      sq00=2.d0*sin(phin*.5d0)**2
             pxi=px(i)-ak1*(xi+xi*xr*(.5d0-xr*(2.d0-xr)/12.d0))/p
             pyi=py(i)+ak1*yi/p
             s=min(.95d0,pxi**2+pyi**2)
-            dpz1=-s/(1.d0+sqrt(1.d0-s))
+            dpz1=-s/(1.d0+sqrtl(1.d0-s))
           endif
           al0=aln
           alsum=aln*(n-1)
@@ -209,7 +210,7 @@ c            sinsq0=2.d0*sin(phix*.5d0)**2
           dpx=-(xi-drho)/rhoe*snphi0-sinsq0*pxi
           pxf=pxi+dpx
           s=min(.95d0,pxf**2+pyi**2)
-          dpz2=-s/(1.d0+sqrt(1.d0-s))
+          dpz2=-s/(1.d0+sqrtl(1.d0-s))
           pz2=1.d0+dpz2
           d=pxf*pz1+pxi*pz2
           if(d .eq. 0.d0)then
@@ -822,6 +823,7 @@ c     end   initialize for preventing compiler warning
 
       subroutine tphotonconv(al,phi,theta,geo1,xi,yi,dp,dpx,dpy,
      $     gx,gy,gz,dpgx,dpgy,dpgz,xi1,xi3)
+      use tfstk, only: sqrtl
       implicit none
       real*8 al,phi,theta,geo1(3,4),xi,yi,dp,dpx,dpy,gx,gy,gz,
      $     dpz,x1,x2,x3,y1,y2,y3,z1,z2,z3,rho0,sp0,cp0,r1,r2,
@@ -864,7 +866,7 @@ c     end   initialize for preventing compiler warning
       gx=gx+xi*x1+yi*y1
       gy=gy+xi*x2+yi*y2
       gz=gz+xi*x3+yi*y3
-      dpz=dp*sqrt(1.d0-dpx**2-dpy**2)
+      dpz=dp*sqrtl(1.d0-dpx**2-dpy**2)
       dpgx=dpz*z1+dp*(dpx*x1+dpy*y1)
       dpgy=dpz*z2+dp*(dpx*x2+dpy*y2)
       dpgz=dpz*z3+dp*(dpx*x3+dpy*y3)

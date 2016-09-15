@@ -433,7 +433,7 @@ c        endif
             ak1=ak1*(1.d0+cod(6))
           endif
         endif
-        call tsetfringepe(cmp,icQUAD,al,ak1,dir,ftable)
+        call tsetfringepe(cmp,icQUAD,dir,ftable)
         call tquade(trans,cod,beam,al,
      1       ak1,cmp%value(5),cmp%value(6),
      1       cmp%value(4),cmp%value(kytbl(kwRAD,icQUAD)) .eq. 0.d0,
@@ -488,8 +488,7 @@ c        endif
             rtaper=1.d0+cod(6)
           endif
         endif
-        call tsetfringepe(cmp,icMULT,al,cmp%value(kytbl(kwK1,icMULT)),
-     $       dir,ftable)
+        call tsetfringepe(cmp,icMULT,dir,ftable)
         call tmulte(trans,cod,beam,l,al,
      $       cmp%value(kytbl(kwK0,icMULT)),
      $       0.d0,

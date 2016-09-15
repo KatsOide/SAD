@@ -33,7 +33,7 @@
      $     r15,r25,r35,r45,pr,a,dpz,trf00,dtheta,phi,
      $     apsi1,apsi2,sspc0,sspc,vcphic0,vcalpha0,fb1,fb2,
      $     chi1m,chi2m,ak1,ftable(4),dir
-      logical*4 over,coup,normal,mat,calpol0,insmat,err,isnan
+      logical*4 over,coup,normal,mat,calpol0,insmat,err
       real*8 a11,a12,a13,a14,a21,a22,a23,a24,a31,a32,a33,
      $     a34,a41,a42,a43,a44,a15,a25,a35,a45
       real*8 u11,u12,u13,u14,u21,u22,u23,u24,u31,u32,u33,
@@ -276,13 +276,13 @@ c     end   initialize for preventing compiler warning
           go to 20
  1400     continue
           mfr=nint(cmp%value(12))
-          if(direlc(l1) .lt. 0.d0)then
+          if(dir .lt. 0.d0)then
             mfr=mfr*(11+mfr*(2*mfr-9))/2
           endif
           ak1=cmp%value(kytbl(kwK1,icQUAD))
-          call tsetfringepe(cmp,icQUAD,al,ak1,dir,ftable)
+          call tsetfringepe(cmp,icQUAD,dir,ftable)
           call qquad(trans,cod,al,
-     1         cmp%value(2),cmp%value(5),cmp%value(6),
+     1         ak1,cmp%value(5),cmp%value(6),
      1         cmp%value(4),cmp%value(9) .eq. 0.d0,
      $         ftable(1),ftable(2),ftable(3),ftable(4),
      $         mfr,cmp%value(13),cmp%value(14) .eq. 0.d0,coup)
@@ -297,7 +297,7 @@ c     end   initialize for preventing compiler warning
           call forcesf()
  2200     phi=cmp%value(kytbl(kwANGL,icMULT))
           mfr=nint(cmp%value(14))
-          if(direlc(l1) .ge. 0.d0)then
+          if(dir .ge. 0.d0)then
             psi1=cmp%value(kytbl(kwE1,icMULT))
             psi2=cmp%value(kytbl(kwE2,icMULT))
             apsi1=cmp%value(kytbl(kwAE1,icMULT))
@@ -317,8 +317,7 @@ c     end   initialize for preventing compiler warning
             chi1m=-cmp%value(kytbl(kwCHI1,icMULT))
             chi2m=-cmp%value(kytbl(kwCHI2,icMULT))
           endif
-          ak1=cmp%value(kytbl(kwK1,icMULT))
-          call tsetfringepe(cmp,icMULT,al,ak1,dir,ftable)
+          call tsetfringepe(cmp,icMULT,dir,ftable)
           bz=0.d0
           call qmult(trans,cod,l1,al,
      $         cmp%value(kytbl(kwK0,icMULT)),bz,
