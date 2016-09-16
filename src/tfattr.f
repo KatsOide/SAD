@@ -45,9 +45,9 @@
           if(ival(i) .eq. 0)then
             v=0.d0
           else
-            v=rlist(latt(2,j)+ival(i))/errk(1,j)
+            v=rlist(latt(j)+ival(i))/errk(1,j)
           endif
-          key=tfkwrd(idtype(latt(1,j)),ival(i))
+          key=tfkwrd(idtypec(j),ival(i))
           if(ret)then
             dtastk(isp)=kxadaloc(-1,7,klxi)
             klxi%dbody(1)=kxsalocb(0,name,lenw(name))

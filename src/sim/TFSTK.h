@@ -13,6 +13,7 @@ typedef struct {
   integer4 __ipurefp;
   integer4 __napuref;
   integer4 __isporg;
+  integer8 __ispbase;
 } tfstk_t;
 
 extern tfstk_t tfstk_;
@@ -22,16 +23,17 @@ extern integer4		__tfstk_MOD_ivstkoffset;
 extern integer4		__tfstk_MOD_ipurefp;
 extern integer4		__tfstk_MOD_napuref;
 extern integer4		__tfstk_MOD_isporg;
+extern integer8		__tfstk_MOD_ispbase;
 
 
 /* *stk macro */
-#define   vstk(     index)	rlist(     index)
-#define  ivstk(off, index)	ilist(off, index)
-#define rtastk(     index)	rlist(     index)
-#define itastk(off, index)	ilist(off, index)
+#define   vstk(     index)	rlist(     index+ispbase)
+#define  ivstk(off, index)	ilist(off, index+ispbase)
+#define rtastk(     index)	rlist(     index+ispbase)
+#define itastk(off, index)	ilist(off, index+ispbase)
 #define jtastk(off, index)	\
-	(((integer2*)(lm_table->rlist0 + (index)))[(off) - 1])
-#define ktastk(     index)      klist(     index)
+	(((integer2*)(lm_table->rlist0 + (index+ispbase)))[(off) - 1])
+#define ktastk(     index)      klist(     index+ispbase)
 
 /* tfstk common block macro */
 /*
@@ -48,5 +50,6 @@ extern integer4		__tfstk_MOD_isporg;
 #define ipurefp		__tfstk_MOD_ipurefp
 #define napuref		__tfstk_MOD_napuref
 #define isporg		__tfstk_MOD_isporg
+#define ispbase		__tfstk_MOD_ispbase
 
 #endif /* _TFSTK_H_ */

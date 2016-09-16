@@ -1,7 +1,7 @@
       subroutine getbuf
       use tfrbuf
+      use tfcsi
       implicit none
-      include 'inc/TFCSI.inc'
       integer*4 lrecl0,lr
       if(lfni .le. 0)then
         ios=99999
@@ -102,13 +102,13 @@
       end
 
       subroutine setbuf(string,nc)
+      use tfcsi
       implicit none
-      include 'inc/TFCSI.inc'
       integer*4 nc
-      integer*1 string(nc)
+      character*(nc) string
       ipoint=lrecl+1
       lrecl=ipoint+nc
-      call tmovb(string,buffer(ipoint:lrecl-1),nc)
+      buffer(ipoint:lrecl-1)=string
       call removetab(buffer(ipoint:lrecl))
       call removecomment(buffer(ipoint:lrecl),cmnt(1:lcmnt),'''"')
       buffer(lrecl:lrecl)=char(10)
@@ -116,8 +116,8 @@
       end
 
       subroutine savebuf(string,nc)
+      use tfcsi
       implicit none
-      include 'inc/TFCSI.inc'
       integer*4 nc,i
       character*(*) string
       nc=min(len(string),max(lrecl-ipoint,0))
@@ -125,10 +125,10 @@
         do i=ipoint,ipoint+nc-1
           if(buffer(i:i) .eq. char(10))then
             nc=i-ipoint+1
-            go to 10
+            exit
           endif
         enddo
- 10     call tmovb(buffer(ipoint:lrecl-1),string,nc)
+        string(:nc)=buffer(ipoint:lrecl-1)
       endif
       return
       end

@@ -1,7 +1,7 @@
       subroutine temp(pexln)
+      use macmath
+      use cbkmac
       implicit real*8 (a-h,o-z)
-      include 'inc/CBKMAC.inc'
-      include 'inc/MACMATH.inc'
       integer pexln,status
       real*8 tm(6,6),codin(6),codout(6)
       real*8 tmw(6,6),codw(6)

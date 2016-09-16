@@ -8,7 +8,8 @@
       parameter (integr=4,lreal8=8,ichr=lreal8*10,namel=ichr/integr)
       character*(*) word
       character fnn(1)*(ichr)
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun)
+      integer*8 latt(nlat)
+      real*8 twiss(nlat,-ndim:ndim,ntwissfun)
       dimension id(*),ifname(*)
       dimension istr(nstra,4),imon(nmona,4),emon(*)
       common /mcfiles/icomf,nof(kfiles),iifnam(kfiles),iidata(kfiles),
@@ -38,7 +39,7 @@ c
         do 21 i=1,no
           j=ilist(mod(i-1,2)+1,id(np)+no+1+(i-1)/2)
           if(istr(j,3).eq.0) then
-            rlist(latt(2,istr(j,1))+11)=rlist(id(np)+i)
+            rlist(latt(istr(j,1))+11)=rlist(id(np)+i)
           endif
    21   continue
       elseif(icom.eq.2) then

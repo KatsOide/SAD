@@ -37,7 +37,7 @@ c     end   initialize for preventing compiler warning
         go to 11
       endif
       do 10 i=1,nlat-1
-        it=idtype(latt(1,i))
+        it=idtypec(i)
         if(it .eq. 1)then
           go to 10
         endif
@@ -58,16 +58,16 @@ c     end   initialize for preventing compiler warning
             match=.true.
           endif
           if(it .gt. 1 .and. it .le. 6)then
-            v=rlist(latt(2,i)+2)
-            al=rlist(latt(2,i)+1)
+            v=rlist(latt(i)+2)
+            al=rlist(latt(i)+1)
             if(al .ne. 0.d0)then
               ak=abs(v/al)
             else
               ak=0.d0
             endif
           elseif(it .eq. icmult)then
-            v=rlist(latt(2,i)+13)
-            al=rlist(latt(2,i)+1)
+            v=rlist(latt(i)+13)
+            al=rlist(latt(i)+1)
             if(al .ne. 0.d0)then
               ak=abs(v/al)
             else
@@ -75,9 +75,9 @@ c     end   initialize for preventing compiler warning
             endif
           endif
           if(it .eq. 2)then
-            theta=rlist(latt(2,i)+5)
+            theta=rlist(latt(i)+5)
           elseif(it .eq. 4 .or. it .eq. 6)then
-            theta=rlist(latt(2,i)+4)
+            theta=rlist(latt(i)+4)
           else
             theta=0.d0
           endif

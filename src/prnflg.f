@@ -1,9 +1,9 @@
       Subroutine prnflg(fname)
       use maccbk
+      use maccode
+      use macfile
       implicit real*8 (a-h,o-z)
       character*(*) fname
-      include 'inc/MACCODE.inc'
-      include 'inc/MACFILE.inc'
       integer*4 fval,idummy,slen,lenw
       character*(MAXPNAME) cwork
       slen=lenw(fname)

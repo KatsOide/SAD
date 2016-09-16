@@ -403,7 +403,7 @@ integer4 mapfree_(void *ptr) {
   return success;
 }
 
-void mapallocfixed_(void *base, const integer8 *usize,
+SAD_OFFSET_T mapallocfixed_(void *base, const integer8 *usize,
 		  const integer4 *unit, integer4 *irtc) {
   char align;
   size_t size, *map0;
@@ -421,11 +421,12 @@ void mapallocfixed_(void *base, const integer8 *usize,
       MAP_ANONYMOUS | MAP_SHARED | MAP_FIXED, -1, 0); 
   if(map < 0){ */
   if(map0 == MAP_FAILED) {
-    printf("mapallocfixed %llu,%llu\n",base,size);
-    fprintf(stderr,"%s\n",strerror(errno));
+    /*    printf("mapallocfixed %llu,%llu\n",base,size);
+          fprintf(stderr,"%s\n",strerror(errno)); */
     *irtc=-1;}
   else{
     *irtc=0;};
+  return((integer8) map0);
 
 }
 

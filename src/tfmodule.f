@@ -45,7 +45,9 @@
       endif
       if(eval)then
         if(ktflistqd(ke,kle))then
+c          call tfdebugprint(ke,'tfmodule',1)
           call tfleval(kle,kx,.true.,irtc)
+c          call tfdebugprint(kx,'tfmodule-1',1)
         else
           call tfeevalref(ke,kx,irtc)
         endif

@@ -1,11 +1,12 @@
       Subroutine prSad(idx)
       use maccbk
+      use maccode
+      use macfile
       implicit real*8 (a-h,o-z)
       integer idx
 c
-      include 'inc/MACCODE.inc'
-      include 'inc/MACFILE.inc'
-      integer*4 plist,len,idxl,oldfl
+      integer*4 len,oldfl
+      integer*8 idxl,plist,mkplst,i
 c for debug
 c     call ptrace('prSad',1)
 c end debug
@@ -27,7 +28,8 @@ c     print *,'prsad',plist,len
      &               ,0,0)
         endif
  1100 continue
-      call tfreem(plist,ilist(1,plist))
+      call tfree(plist)
+c      call tfreem(int8(plist),ilist(1,plist))
 c      call freeme(plist,ilist(1,plist))
       do 2110 i=1,HTMAX
         if((idtype(i) .ge. icGLI) .and.

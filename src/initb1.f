@@ -1,13 +1,13 @@
       subroutine initb1
       use maccbk
+      use mackw
+      use macphys
+      use macvar
+      use macfile
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      include 'inc/MACVAR.inc'
-      include 'inc/MACPHYS.inc'
-      include 'inc/MACFILE.inc'
 c
-      integer*4 idummy,sethtb,hsrch,mtaloc,mctaloc
+      integer*4 idummy,sethtb,hsrch,idummy1
+      integer*8 ktcaloc,ktaloc
 c     external doline
       external doprin, doexpn, doread, dolist, docod, dostop, dotwis
       external dooffl, doonfl,dorvrs
@@ -15,7 +15,7 @@ c     external doline
 
        call defglb('$PLOT$',icGLI,idummy)
        call IsetGL('$PLOT$',0,idummy)
-       idummy=sethtb('PLOT   ',icACT,mtaloc(8))
+       idummy=sethtb8('PLOT   ',icACT,ktaloc(8))
        ilist(1,idval(idummy))=7
        call setfnp(ilist(1,idval(idummy)+1),ActPlt)
        ilist(1,idval(idummy)+2)=hsrch('PTYPE')
@@ -25,15 +25,15 @@ c     external doline
        ilist(1,idval(idummy)+6)=hsrch('CENTER  ')
 c
        idummy=sethtb('ID      ',icVAR,VarPt+VarLst)
-       idummy=sethtb('GTYPE   ',icVAR,VarStr)
+       idummy1=sethtb('GTYPE   ',icVAR,VarStr)
 c
 c      idummy=sethtb('DRAW    ',icACT,mtaloc(8))
 c      idummy=sethtb('graw    ',icACT,idval(idummy))
 c      ilist(1,idval(idummy))=7
 c      call setfnp(ilist(1,idval(idummy)+1),Act)
 c
-       idummy=sethtb('GRAPH   ',icACT,mtaloc(8))
-       idummy=sethtb('graph   ',icACT,idval(idummy))
+       idummy=sethtb8('GRAPH   ',icACT,ktaloc(8))
+       idummy1=sethtb8('graph   ',icACT,idval(idummy))
        ilist(1,idval(idummy))=7
        call setfnp(ilist(1,idval(idummy)+1),ActGra)
        ilist(1,idval(idummy)+2)=hsrch('ID')
@@ -239,6 +239,11 @@ c
        kytbl(kwFRIN,0)=sethtb('DISFRIN ',icKWRD,kwFRIN)
        kytbl(kwF1  ,0)=sethtb('F1      ',icKWRD,kwF1  )
        kytbl(kwF2  ,0)=sethtb('F2      ',icKWRD,kwF2  )
+       kytbl(kwF1K1F,0)=sethtb('F1K1F  ',icKWRD,kwF1K1F)
+       kytbl(kwF2K1F,0)=sethtb('F2K1F  ',icKWRD,kwF2K1F)
+       kytbl(kwF1K1B,0)=sethtb('F1K1B  ',icKWRD,kwF1K1B)
+       kytbl(kwF2K1B,0)=sethtb('F2K1B  ',icKWRD,kwF2K1B)
+       kytbl(kwF2  ,0)=sethtb('F2      ',icKWRD,kwF2  )
        kytbl(kwFRMD,0)=sethtb('FRINGE  ',icKWRD,kwFRMD)
        kytbl(kwK0FR,0)=sethtb('DISK0FR ',icKWRD,kwK0FR)
        kytbl(kwEPS ,0)=sethtb('EPS     ',icKWRD,kwEPS )
@@ -259,6 +264,7 @@ c
        kytbl(kwDIR ,0)=sethtb('DIR     ',icKWRD,kwDIR )
        kytbl(kwSLI ,0)=sethtb('SLICE   ',icKWRD,kwSLI )
        kytbl(kwSTURN ,0)=sethtb('STURN   ',icKWRD,kwSTURN )
+       kytbl(kwBSTRL ,0)=sethtb('BSTRL   ',icKWRD,kwBSTRL )
        kytbl(kwXANGLE ,0)=sethtb('XANGLE  ',icKWRD,kwXANGLE )
        kytbl(kwNP  ,0)=sethtb('NP      ',icKWRD,kwNP  )
        kytbl(kwKx  ,0)=sethtb('KX      ',icKWRD,kwKx  )
@@ -368,8 +374,13 @@ c
       kytbl(kwAY      ,icQUAD)=18
       kytbl(kwLDEV    ,icQUAD)=19
       kytbl(kwLRAD    ,icQUAD)=20
+      kytbl(kwF1K1F   ,icQUAD)=21
+      kytbl(kwF2K1F   ,icQUAD)=22
+      kytbl(kwF1K1B   ,icQUAD)=23
+      kytbl(kwF2K1B   ,icQUAD)=24
+      kytbl(kwLRAD    ,icQUAD)=25
 c
-      kytbl(kwMAX     ,icQUAD)=21
+      kytbl(kwMAX     ,icQUAD)=26
 c  for sextu
       idummy=sethtb('sext    ',icDEF,icsext)
       kytbl(0,icSEXT)=sethtb('SEXT    ',icDEF,icsext)
@@ -522,8 +533,12 @@ c
       kytbl(kwLDEV,icMULT)=78
       kytbl(kwLRAD,icMULT)=79
       kytbl(kwAPHI,icMULT)=80
+      kytbl(kwF1K1F   ,icMULT)=81
+      kytbl(kwF2K1F   ,icMULT)=82
+      kytbl(kwF1K1B   ,icMULT)=83
+      kytbl(kwF2K1B   ,icMULT)=84
 c
-      kytbl(kwMAX ,icMULT)=81
+      kytbl(kwMAX ,icMULT)=85
 c  for UNDULATOR
       idummy=sethtb('und     ',icDEF,icUND)
       kytbl(0,icUND)=sethtb('UND    ',icDEF,icUND)
@@ -666,7 +681,6 @@ cc for INS
       kytbl(kwCOUPLE     ,icINS)=62
       kytbl(kwMAX     ,icINS)=63
 cc for Coordinate transformation
-      idummy=sethtb('COORD   ',icDEF,icCOORD)
       kytbl(0,     icCOORD  )=sethtb('COORD   ',icDEF,icCOORD)
       kytbl(kwDX  ,icCOORD  )=1
       kytbl(kwDY  ,icCOORD  )=2
@@ -732,7 +746,8 @@ cc for BEAMBEAM
       kytbl(kwR56     ,icBEAM)=50
       kytbl(kwR66     ,icBEAM)=51
       kytbl(kwCOUPLE     ,icBEAM)=52
-      kytbl(kwMAX     ,icBEAM)=53
+      kytbl(kwBSTRL     ,icBEAM)=53
+      kytbl(kwMAX     ,icBEAM)=54
 cc for PHSROT
       idummy=sethtb('phsrot  ',icDEF,icProt)
       kytbl(0,icProt)=sethtb('PHSROT  ',icDEF,icProt)
@@ -882,7 +897,7 @@ cc for apert
       kytbl(kwMAX     ,icAprt)=14
 cc for mon
       idummy=sethtb('moni    ',icDEF,icMoni)
-      kytbl(0,icMONI)=sethtb('MONI    ',icDEF,icMoni)
+      kytbl(0,icMONI)=sethtb('MONI    ',icDEF,icMONI)
       kytbl(kwDX      ,icMONI)=1
       kytbl(kwDY      ,icMONI)=2
       kytbl(kwOFFSET  ,icMONI)=3
@@ -911,6 +926,9 @@ cc for spch
       kytbl(kwZY      ,icSPCH)=17
       kytbl(kwZPY     ,icSPCH)=18
       kytbl(kwMAX     ,icSPCH)=19
+
+      call initkyindex
+
 c.....for debug
 c     do 9999 i=1,kwMAX
 c       print *,i,kytbl(i,0),pname(kytbl(i,0))
@@ -921,59 +939,59 @@ c       print *,j,i,kytbl(j,i),pname(kytbl(0,i)),pname(kytbl(j,0))
 c9998 continue
 c.....end debug
 c
-       rlist(idval(sethtb('%       ',icUNIT,mctaloc(4))))=0.01d0
-       rlist(idval(sethtb('rad     ',icUNIT,mctaloc(4))))=1.00d0
-       rlist(idval(sethtb('RAD     ',icUNIT,mctaloc(4))))=1.00d0
-       rlist(idval(sethtb('mrad    ',icUNIT,mctaloc(4))))=1.00d-3
-       rlist(idval(sethtb('MRAD    ',icUNIT,mctaloc(4))))=1.00d-3
-       rlist(idval(sethtb('DEG     ',icUNIT,mctaloc(4))))=pi/180.d0
-       rlist(idval(sethtb('deg     ',icUNIT,mctaloc(4))))=pi/180.d0
-       rlist(idval(sethtb('M       ',icUNIT,mctaloc(4))))=1.00d0
-       rlist(idval(sethtb('m       ',icUNIT,mctaloc(4))))=1.00d0
-       rlist(idval(sethtb('cm      ',icUNIT,mctaloc(4))))=1.00d-2
-       rlist(idval(sethtb('CM      ',icUNIT,mctaloc(4))))=1.0d-2
-       rlist(idval(sethtb('mm      ',icUNIT,mctaloc(4))))=1.0d-3
-       rlist(idval(sethtb('MM      ',icUNIT,mctaloc(4))))=1.0d-3
-       rlist(idval(sethtb('T       ',icUNIT,mctaloc(4))))=1.0d0
-       rlist(idval(sethtb('GAUSS   ',icUNIT,mctaloc(4))))=1.0d-4
-       rlist(idval(sethtb('gauss   ',icUNIT,mctaloc(4))))=1.0d-4
+       rlist(idval(sethtb8('%       ',icUNIT,ktcaloc(3))))=0.01d0
+       rlist(idval(sethtb8('rad     ',icUNIT,ktcaloc(3))))=1.00d0
+       rlist(idval(sethtb8('RAD     ',icUNIT,ktcaloc(3))))=1.00d0
+       rlist(idval(sethtb8('mrad    ',icUNIT,ktcaloc(3))))=1.00d-3
+       rlist(idval(sethtb8('MRAD    ',icUNIT,ktcaloc(3))))=1.00d-3
+       rlist(idval(sethtb8('DEG     ',icUNIT,ktcaloc(3))))=pi/180.d0
+       rlist(idval(sethtb8('deg     ',icUNIT,ktcaloc(3))))=pi/180.d0
+       rlist(idval(sethtb8('M       ',icUNIT,ktcaloc(3))))=1.00d0
+       rlist(idval(sethtb8('m       ',icUNIT,ktcaloc(3))))=1.00d0
+       rlist(idval(sethtb8('cm      ',icUNIT,ktcaloc(3))))=1.00d-2
+       rlist(idval(sethtb8('CM      ',icUNIT,ktcaloc(3))))=1.0d-2
+       rlist(idval(sethtb8('mm      ',icUNIT,ktcaloc(3))))=1.0d-3
+       rlist(idval(sethtb8('MM      ',icUNIT,ktcaloc(3))))=1.0d-3
+       rlist(idval(sethtb8('T       ',icUNIT,ktcaloc(3))))=1.0d0
+       rlist(idval(sethtb8('GAUSS   ',icUNIT,ktcaloc(3))))=1.0d-4
+       rlist(idval(sethtb8('gauss   ',icUNIT,ktcaloc(3))))=1.0d-4
 c      Standard energy unit wasJoule.(MKSA unit system)
 c      Standard energy unit is Now eV.
-       rlist(idval(sethtb('JOULE   ',icUNIT,mctaloc(4))))
+       rlist(idval(sethtb8('JOULE   ',icUNIT,ktcaloc(3))))
      &                 = 1.0d0/elemch
-       rlist(idval(sethtb('eV      ',icUNIT,mctaloc(4))))
+       rlist(idval(sethtb8('eV      ',icUNIT,ktcaloc(3))))
      &                 = 1.0d0
-       rlist(idval(sethtb('KeV     ',icUNIT,mctaloc(4))))
+       rlist(idval(sethtb8('KeV     ',icUNIT,ktcaloc(3))))
      &                 = 1.d3
-       rlist(idval(sethtb('MeV     ',icUNIT,mctaloc(4))))
+       rlist(idval(sethtb8('MeV     ',icUNIT,ktcaloc(3))))
      &                 = 1.d6
-       rlist(idval(sethtb('GeV     ',icUNIT,mctaloc(4))))
+       rlist(idval(sethtb8('GeV     ',icUNIT,ktcaloc(3))))
      &                 = 1.d9
-       rlist(idval(sethtb('EV      ',icUNIT,mctaloc(4))))
+       rlist(idval(sethtb8('EV      ',icUNIT,ktcaloc(3))))
      &                 = 1.0d0
-       rlist(idval(sethtb('KEV     ',icUNIT,mctaloc(4))))
+       rlist(idval(sethtb8('KEV     ',icUNIT,ktcaloc(3))))
      &                 = 1.d3
-       rlist(idval(sethtb('MEV     ',icUNIT,mctaloc(4))))
+       rlist(idval(sethtb8('MEV     ',icUNIT,ktcaloc(3))))
      &                 = 1.d6
-       rlist(idval(sethtb('GEV     ',icUNIT,mctaloc(4))))
+       rlist(idval(sethtb8('GEV     ',icUNIT,ktcaloc(3))))
      &                 = 1.d9
 c
-       rlist(idval(sethtb('V       ',icUNIT,mtaloc(4))))
+       rlist(idval(sethtb8('V       ',icUNIT,ktcaloc(3))))
      &                 = 1.d0
-       rlist(idval(sethtb('KV      ',icUNIT,mtaloc(4))))
+       rlist(idval(sethtb8('KV      ',icUNIT,ktcaloc(3))))
      &                 = 1.d3
-       rlist(idval(sethtb('MV      ',icUNIT,mtaloc(4))))
+       rlist(idval(sethtb8('MV      ',icUNIT,ktcaloc(3))))
      &                 = 1.d6
-       rlist(idval(sethtb('GV      ',icUNIT,mtaloc(4))))
+       rlist(idval(sethtb8('GV      ',icUNIT,ktcaloc(3))))
      &                 = 1.d9
 c
-       rlist(idval(sethtb('HZ      ',icUNIT,mtaloc(4))))
+       rlist(idval(sethtb8('HZ      ',icUNIT,ktcaloc(3))))
      &                 = 1.d0
-       rlist(idval(sethtb('KHZ     ',icUNIT,mtaloc(4))))
+       rlist(idval(sethtb8('KHZ     ',icUNIT,ktcaloc(3))))
      &                 = 1.d3
-       rlist(idval(sethtb('MHZ     ',icUNIT,mtaloc(4))))
+       rlist(idval(sethtb8('MHZ     ',icUNIT,ktcaloc(3))))
      &                 = 1.d6
-       rlist(idval(sethtb('GHZ     ',icUNIT,mtaloc(4))))
+       rlist(idval(sethtb8('GHZ     ',icUNIT,ktcaloc(3))))
      &                 = 1.d9
 c
        idummy=sethtb('normal  ',icRAND,1 )
@@ -1096,6 +1114,8 @@ c
        call RsetGL('PSPACNTURN',1.0D0,idummy)
        call defglb('PSPACNTURNCALC',icGLR,idummy)
        call RsetGL('PSPACNTURNCALC',0.0D0,idummy)
+       call defglb('BSTRL',icGLR,idummy)
+       call RsetGL('BSTRL',0.d0,idummy)
 c
 c      call defglb('$RADIZZZ',icGLI,idummy)
 c      call IsetGL('$RADIZZZ',-1,idummy)

@@ -78,7 +78,7 @@
         if(tfordlessq(kh) .and. lista%nl .gt. 1)then
           iop=iordless
           do while(iop .ne. 0)
-            if(klist(iop) .ne. ksad_loc(listp%head))then
+            if(ktastk(iop) .ne. ksad_loc(listp%head))then
               iop=itastk2(1,iop)
             else
               exit
@@ -87,7 +87,7 @@
           if(iop .ne. 0)then
             iordless=iop
             itflistmat=min(itflistmat,
-     $           itfseqmatstk(ilist(1,iop+1),ilist(2,iop+1),
+     $           itfseqmatstk(itastk(1,iop+1),itastk(2,iop+1),
      $           listp%dbody(1),np,1,ktfreallistqo(listp),int8(-1)))
             if(itflistmat .lt. 0)then
               call tfresetpat(kph)
@@ -349,7 +349,7 @@
           if(list%head .eq. ktfoper+mtfnull)then
             isp1=isp
             call tfgetllstkall(list)
-            iss=int(kav1)
+            iss=int(kav1-ispbase)
             isp2=isp
             np=itastk2(1,iss)-iss
             if(isp2-isp1 .ge. np)then
@@ -533,7 +533,7 @@
       iop=iordless
  3    if(iop .ne. 0)then
         if(kpp .gt. 0)then
-          do while(iop .ne. 0 .and. klist(iop) .ne. kpp)
+          do while(iop .ne. 0 .and. ktastk(iop) .ne. kpp)
             iop=itastk2(1,iop)
           enddo
           if(iop .eq. 0)then
@@ -542,17 +542,17 @@
           iordless=iop
         endif
         ispf=itastk2(2,iop)
-        isp1a=ilist(1,iop+1)
-        isp2a=ilist(2,iop+1)
+        isp1a=itastk(1,iop+1)
+        isp2a=itastk(2,iop+1)
         np=itastk2(1,iop+1)
       else
         mstk=mstk-2
         iop=mstk+1
-        klist(iop)=kpp
+        ktastk(iop)=kpp
         itastk2(1,iop)=iordless
         itastk2(2,iop)=ispf
-        ilist(1,iop+1)=isp10
-        ilist(2,iop+1)=isp20
+        itastk(1,iop+1)=isp10
+        itastk(2,iop+1)=isp20
         itastk2(1,iop+1)=0
         np=0
         iordless=iop
@@ -655,7 +655,7 @@ c     write(*,*)'at ',ispp,' with ',mop,np
         if(k2%k .ne. ktfref)then
           ispf=isp1-2
           if(ktfrefqd(k2,ka2) .and. ka2 .gt. 3)then
-            iss=int(ka2)
+            iss=int(ka2-ispbase)
             np=itastk2(1,iss)-iss
             m=isp1+np-1
             if(m .le. ispt)then
@@ -699,10 +699,10 @@ c     write(*,*)'at ',ispp,' with ',mop,np
           isps=ispt+1
           if(ispt .eq. isp1)then
             ix=itfsinglepat(dtastk(isp1),pat)
-          elseif(ispt .ge. isp1-kad+2)then
+          elseif(ispt .ge. isp1-int(kad)+2)then
             if(pat%head%k .ne. ktfref)then
               itastk2(1,isp1-1)=ispt
-              ix=itfsinglepat(ktfref+isp1-1,pat)
+              ix=itfsinglepat(ktfref+isp1-1+ispbase,pat)
               if(ix .lt. 0)then
                 return
               endif
@@ -844,8 +844,9 @@ c          write(*,*)'==> ',ix
             return
           endif
           if(ktfrefqd(k,ka) .and. kax .gt. 1)then
+            ka=ka-ispbase
             isp1=itastk2(1,ka)
-            do i=ka+1,isp1
+            do i=int(ka)+1,isp1
               call tfhead(dtastk(i),kh)
               if(.not. tfsameqd(kh,kv))then
                 return
@@ -906,7 +907,7 @@ c          write(*,*)'==> ',ix
         elseif(isp2 .eq. isp1+1)then
           pat%value%k=ktastk(isp2)
         else
-          pat%value%k=ktfref+isp1
+          pat%value%k=ktfref+isp1+ispbase
           itastk2(1,isp1)=isp2
         endif
       endif
@@ -1214,7 +1215,6 @@ c          write(*,*)'==> ',ix
       end
 
       subroutine itfpmatdummy
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
+      use mackw
       return
       end

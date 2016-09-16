@@ -5,19 +5,19 @@
       parameter (itmax=256)
       real*8 a(ndim,m),b(ndimb,l),x(ndimx,l),epslon
       real*8 v(0:m+n),anorm,enorm
-      real*8 aa,f,g,s,r,w,u,h,xmin,z,vv,d,c,p,bb,y,an
+      real*8 aa(m+l),f,g,s,r,w,u,h,xmin,z,vv,d,c,p,bb(n),y,an
       real*8 q,h1,h2,t,r1,r2,ra
       integer*4 lsep(m+n),i,j,k,mn,it,isep,ibegin,iend,ma,i1,i1mn,
      $     kk,nfail
       logical*4 svd
       nfail=4
       mn=min(n,m)
-      do 1 i=1,n
-        v(i)=1.d0
-1     continue
-      do 2 i=1,m
-        x(i,1)=1.d0
-2     continue
+c      do 1 i=1,n
+        v(1:n)=1.d0
+c1     continue
+c      do 2 i=1,m
+        x(1:m,1)=1.d0
+c2     continue
       do 10 i=1,mn
         i1=i+1
         if(i .lt. n)then
@@ -28,33 +28,33 @@
               q=v(j)*p/h1
               v(j)=v(i)*v(j)/h1
               v(i)=h1
-              do 5120 k=i1,m
-                a(j,k)=a(j,k)-p*a(i,k)
-                a(i,k)=a(i,k)+q*a(j,k)
-5120          continue
+c              do 5120 k=i1,m
+                a(j,i1:m)=a(j,i1:m)-p*a(i,i1:m)
+                a(i,i1:m)=a(i,i1:m)+q*a(j,i1:m)
+c5120          continue
               a(j,i)=0.d0
-              do k=1,l
-                b(j,k)=b(j,k)-p*b(i,k)
-                b(i,k)=b(i,k)+q*b(j,k)
-              enddo
+c              do k=1,l
+                b(j,1:l)=b(j,1:l)-p*b(i,1:l)
+                b(i,1:l)=b(i,1:l)+q*b(j,1:l)
+c              enddo
             elseif(a(j,i) .ne. 0.d0)then
               p=a(i,i)/a(j,i)
               h1=v(j)+v(i)*p**2
               q=v(i)*p/h1
               v(j)=v(i)*v(j)/h1
               v(i)=h1
-              do 5130 k=i1,m
-                aa=a(j,k)
-                a(j,k)=p*aa-a(i,k)
-                a(i,k)=aa-q*a(j,k)
-5130          continue
+c              do 5130 k=i1,m
+                aa(i1:m)=a(j,i1:m)
+                a(j,i1:m)=p*aa(i1:m)-a(i,i1:m)
+                a(i,i1:m)=aa(i1:m)-q*a(j,i1:m)
+c5130          continue
               a(i,i)=a(j,i)
               a(j,i)=0.d0
-              do k=1,l
-                bb=b(j,k)
-                b(j,k)=p*bb-b(i,k)
-                b(i,k)=bb-q*b(j,k)
-              enddo
+c              do k=1,l
+                bb(1:l)=b(j,1:l)
+                b(j,1:l)=p*bb(1:l)-b(i,1:l)
+                b(i,1:l)=bb(1:l)-q*b(j,1:l)
+c              enddo
             endif
 5110      continue
         endif
@@ -74,10 +74,10 @@
                 q=s*x(j ,1)/h1
                 x(i1,1)=h1
                 x(j ,1)=h2
-                do 5220 k=i1,n
-                  a(k,j )=a(k,j )-p*a(k,i1)
-                  a(k,i1)=a(k,i1)+q*a(k,j )
-5220            continue
+c                do 5220 k=i1,n
+                  a(i1:n,j )=a(i1:n,j )-p*a(i1:n,i1)
+                  a(i1:n,i1)=a(i1:n,i1)+q*a(i1:n,j )
+c5220            continue
               else
                 a(i,i1)=a(i,j)
                 a(i,j)=0.d0
@@ -87,11 +87,11 @@
                 q=c*x(i1,1)/h1
                 x(i1,1)=h1
                 x(j ,1)=h2
-                do 5221 k=i1,n
-                  aa=a(k,j)
-                  a(k,j )=p*aa-a(k,i1)
-                  a(k,i1)=aa-q*a(k,j )
-5221            continue
+c                do 5221 k=i1,n
+                  bb(i1:n)=a(i1:n,j)
+                  a(i1:n,j )=p*bb(i1:n)-a(i1:n,i1)
+                  a(i1:n,i1)=bb(i1:n)-q*a(i1:n,j )
+c5221            continue
               endif
             else
               c=1.d0
@@ -116,9 +116,9 @@ C           if(j .lt. ndim+2)then
         v(i+mn)=x(i,1)
         a(i,i)=a(i,i)*p
         x(i,1)=a(i,i)*x(i,1)
-        do k=1,l
-          b(i,k)=b(i,k)*p
-        enddo
+c        do k=1,l
+          b(i,1:l)=b(i,1:l)*p
+c        enddo
         if(i .lt. m)then
           a(i,i+1)=a(i,i+1)*p
           v(i)=a(i,i+1)*x(i+1,1)
@@ -134,9 +134,9 @@ C           if(j .lt. ndim+2)then
       enorm=anorm*epslon
       if(.not. svd .and. xmin .gt. enorm)then
         do 4010 i=mn+2,m
-          do k=1,l
-            x(i,k)=0.d0
-          enddo
+c          do k=1,l
+            x(i,1:l)=0.d0
+c          enddo
 4010    continue
         r=abs(dcmplx(x(mn,1),v(mn)))
         if(r .ne. 0.d0)then
@@ -169,30 +169,30 @@ C           if(j .lt. ndim+2)then
             ra=abs(x(i,1))+abs(v(i))
             r=(x(i,1)/ra)**2+((v(i)-p)/ra)*((v(i)+p)/ra)
             w=1.d0/sqrt(abs(r))/ra
-            do k=1,l
-              b(i,k)=(b(i,k)-p*b(i+1,k))*w
-            enddo
+c            do k=1,l
+              b(i,1:l)=(b(i,1:l)-p*b(i+1,1:l))*w
+c            enddo
             u=-p*w
             do 4030 kk=i+1,min(mn,ma-1)
               v(kk)=u*v(kk)
-              do k=1,l
-                x(kk+1,k)=x(kk+1,k)+b(i,k)*v(kk)
-              enddo
+c              do k=1,l
+                x(kk+1,1:l)=x(kk+1,1:l)+b(i,1:l)*v(kk)
+c              enddo
  4030       continue
             v(i)=(v(i)-p*d)*w
             d=x(i,1)*w
-            do k=1,l
-              x(i+1,k)=x(i+1,k)+b(i,k)*v(i)
-              x(i,k)=d*b(i,k)
-            enddo
+c            do k=1,l
+              x(i+1,1:l)=x(i+1,1:l)+b(i,1:l)*v(i)
+              x(i,1:l)=d*b(i,1:l)
+c            enddo
           else
             ma=i
             d=0.d0
             v(i)=0.d0
-            do k=1,l
-              b(i,k)=0.d0
-              x(i,k)=0.d0
-            enddo
+c            do k=1,l
+              b(i,1:l)=0.d0
+              x(i,1:l)=0.d0
+c            enddo
           endif
 4020    continue
         do 4040 i=min(mn,m-2),1,-1
@@ -209,18 +209,18 @@ C           if(j .lt. ndim+2)then
                 c=1.d0-s**2/(1.d0+sqrt((1.d0-s)*(1.d0+s)))
               endif
             endif
-            do k=1,l
-              aa=x(i+1,k)
-              x(i+1,k)= c*aa-s*x(j,k)
-              x(j  ,k)= s*aa+c*x(j,k)
-            enddo
+c            do k=1,l
+              aa(1:l)=x(i+1,1:l)
+              x(i+1,1:l)= c*aa(1:l)-s*x(j,1:l)
+              x(j  ,1:l)= s*aa(1:l)+c*x(j,1:l)
+c            enddo
 4050      continue
 4040    continue
         return
       endif
-      do 5301 i=mn+1,m
-        v(i+mn)=x(i,1)
-5301  continue
+c      do 5301 i=mn+1,m
+        v(2*mn+1:mn+m)=x(mn+1:m,1)
+c5301  continue
       do 5310 i=min(mn,m-2),1,-1
         i1=i+1
         i1mn=i1+mn
@@ -246,10 +246,10 @@ C         if(j .lt. ndim+2)then
             v(i1mn)=h1
             v(j +mn)=h2
             a(i,j)=q*a(i,i1)
-            do 5330 k=i1,mn
-              a(k,i1)=a(k,i1)-p*a(k,j )
-              a(k,j )=a(k,j )+q*a(k,i1)
-5330        continue
+c            do 5330 k=i1,mn
+              a(i1:mn,i1)=a(i1:mn,i1)-p*a(i1:mn,j )
+              a(i1:mn,j )=a(i1:mn,j )+q*a(i1:mn,i1)
+c5330        continue
           else
             h1=v(j +mn)/s
             h2=v(i1mn)*s
@@ -259,11 +259,11 @@ C         if(j .lt. ndim+2)then
             v(j +mn)=h2
             a(i,j )=a(i,i1)
             a(i,i1)=a(i,i1)*q
-            do 5331 k=i1,mn
-              aa=a(k,j)
-              a(k,j )=p*aa+a(k,i1)
-              a(k,i1)=q*a(k,j )-aa
-5331        continue
+c            do 5331 k=i1,mn
+              aa(i1:mn)=a(i1:mn,j)
+              a(i1:mn,j )=p*aa(i1:mn)+a(i1:mn,i1)
+              a(i1:mn,i1)=q*a(i1:mn,j )-aa(i1:mn)
+c5331        continue
           endif
 5320    continue
 5310  continue
@@ -271,9 +271,9 @@ C         if(j .lt. ndim+2)then
       isep=1
       ibegin=1
       iend=mn
-      do 1510 i=1,mn
-        v(mn+i)=1.d0
-1510  continue
+c      do 1510 i=1,mn
+        v(mn+1:mn*2)=1.d0
+c1510  continue
       v(0)=0.d0
 1002  if(v(iend) .ne. 0.d0)then
         f=v(iend)
@@ -335,12 +335,12 @@ C         if(j .lt. ndim+2)then
  1720           continue
                 if(r .ne. 0.d0)then
                   p=s/r
-                  do 1730 j=1,m
-                    a(i-1,j)=a(i-1,j)-p*a(i,j)
- 1730             continue
-                  do k=1,l
-                    b(i-1,k)=b(i-1,k)-p*b(i,k)
-                  enddo
+c                  do 1730 j=1,m
+                    a(i-1,1:m)=a(i-1,1:m)-p*a(i,1:m)
+c 1730             continue
+c                  do k=1,l
+                    b(i-1,1:l)=b(i-1,1:l)-p*b(i,1:l)
+c                  enddo
                 endif
                 x(i,1)=sqrt(r)*v(i+mn)
                 v(i-1)=0.d0
@@ -410,14 +410,14 @@ C         if(j .lt. ndim+2)then
                 t=s*v(i1+mn)/h1
                 v(i+mn)=h1
                 v(i1+mn)=h2
-                do 1150 k=1,m
-                  a(i1,k)=a(i1,k)-r*a(i ,k)
-                  a(i ,k)=a(i ,k)+t*a(i1,k)
- 1150           continue
-                do k=1,l
-                  b(i1,k)=b(i1,k)-r*b(i,k)
-                  b(i ,k)=b(i ,k)+t*b(i1,k)
-                enddo
+c                do 1150 k=1,m
+                  a(i1,1:m)=a(i1,1:m)-r*a(i ,1:m)
+                  a(i ,1:m)=a(i ,1:m)+t*a(i1,1:m)
+c 1150           continue
+c                do k=1,l
+                  b(i1,1:l)=b(i1,1:l)-r*b(i,1:l)
+                  b(i ,1:l)=b(i ,1:l)+t*b(i1,1:l)
+c                enddo
               else
                 h1=v(i1+mn)/s
                 h2=v(i+mn)*s
@@ -425,16 +425,16 @@ C         if(j .lt. ndim+2)then
                 t=c*v(i+mn)/h1
                 v(i+mn)=h1
                 v(i1+mn)=h2
-                do 1151 k=1,m
-                  aa=a(i1,k)
-                  a(i1,k)=r*aa-a(i ,k)
-                  a(i ,k)=aa-t*a(i1,k)
- 1151           continue
-                do k=1,l
-                  bb=b(i1,k)
-                  b(i1,k)=r*bb-b(i,k)
-                  b(i ,k)=bb-t*b(i1,k)
-                enddo
+c                do 1151 k=1,m
+                  aa(1:m)=a(i1,1:m)
+                  a(i1,1:m)=r*aa(1:m)-a(i ,1:m)
+                  a(i ,1:m)=aa(1:m)-t*a(i1,1:m)
+c 1151           continue
+c                do k=1,l
+                  aa(1:l)=b(i1,1:l)
+                  b(i1,1:l)=r*aa(1:l)-b(i,1:l)
+                  b(i ,1:l)=aa(1:l)-t*b(i1,1:l)
+c                enddo
               endif
  1140       continue
             v(iend-1)=f
@@ -464,9 +464,9 @@ C         if(j .lt. ndim+2)then
         else
           w=(s*v(i+mn)/anorm**2)**2
         endif
-        do k=1,l
-          b(i,k)=b(i,k)*w
-        enddo
+c        do k=1,l
+          b(i,1:l)=b(i,1:l)*w
+c        enddo
 3110  continue
       do k=1,l
         do 3030 i=1,m

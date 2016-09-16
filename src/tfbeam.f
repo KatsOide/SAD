@@ -97,8 +97,8 @@ c     $     beam(1)
       beam(1:21)=beamsize(:,k)
       beam(22:42)=beam(1:21)
       if(f .ne. 0.d0)then
-        call qfracsave(ilist(1,ilattp+k),vsave,nvar,.true.)
-        call qfraccomp(ilist(1,ilattp+k),0.d0,f,ideal,chg)
+        call qfracsave(k,vsave,nvar,.true.)
+        call qfraccomp(k,0.d0,f,ideal,chg)
         if(.not. chg)then
           return
         endif
@@ -118,7 +118,7 @@ c     $     beam(1)
         call tturne1(trans,cod,beam,0,0,0,.false.,sol,.false.,k,k)
         codplt=cp0
         calint=int0
-        call qfracsave(ilist(1,ilattp+k),vsave,nvar,.false.)
+        call qfracsave(k,vsave,nvar,.false.)
       endif
       return
       end

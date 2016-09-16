@@ -51,7 +51,6 @@
           call tcod(trans,cod,beam,fndcod)
           codplt=.true.
         else
-          write(*,*)'Closed orbit was not found.'
           fndcod=.false.
         endif
         return

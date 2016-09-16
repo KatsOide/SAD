@@ -265,6 +265,7 @@ c        call tfdebugprint(ktflist+ifv,'FitValue-1',3)
         call tfleval(klist(ifv-3),kx,.true.,irtc)
       else
 c        call tfdebugprint(ktflist+ifv1,'FitValue-2',3)
+c        write(*,*)'tfgetfitval ',ifv1
         call tfleval(klist(ifv1-3),kx,.true.,irtc)
       endif
 c      call tfdebugprint(kx,'==> ',3)
@@ -325,13 +326,14 @@ c     Note: index(name1,'.') > 0 if kp1 != 0
 
       subroutine tffsfitfun(nqcol,df,iqcol,kdp,maxcond,error)
       use tfstk
+      use tfcsi, only:icslfno
       implicit none
       type (sad_list), pointer :: klx
       type (sad_descriptor) kx
       integer*8 kff
       integer*4 maxcond,nqcol,iqcol(maxcond),kdp(maxcond)
       real*8 df(maxcond)
-      integer*4 l,itfuplevel,itfdownlevel,i,m,level,irtc,icslfno
+      integer*4 l,itfuplevel,itfdownlevel,i,m,level,irtc
       logical*4 error
       save kff
       data kff/0/
@@ -378,8 +380,8 @@ c      write(*,*)'with ',irtc
       end
 
       real*8 function tdfun1(vf,v,kf,maxfit,kdp,ttrans)
+      use macmath
       implicit none
-      include 'inc/MACMATH.inc'
       real*8 factor
       parameter (factor=1.d0)
       integer*4 kf,kdp

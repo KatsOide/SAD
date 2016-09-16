@@ -3,8 +3,10 @@
       use tfstk
       use ffs
       use tffitcode
+      use tfcsi, only:cssetp
       implicit real*8(a-h,o-z)
       parameter (ndl=16,nde=8,nd=20,lio=50)
+      integer*8 ix,isa,ktaloc,isb,isc
       logical abbrev,exist,start,ghisto,lod,append
       character*(*) word,title,case
       character*255 tfconvstr
@@ -15,15 +17,15 @@
       if(word.eq.'SUM+') then
         if(start .and. max(nmon,nstr).ne.0) then
           if(na.eq.0) then
-            isa=italoc(nd*ndl)
+            isa=ktaloc(nd*ndl)
           elseif(mod(na,nd).eq.0) then
             call palocx(isa,ndl*na,ndl*(na+nd))
           endif
           na=na+1
-          ix=italoc(max(nmon,nstr))
+          ix=ktaloc(max(nmon,nstr))
           call pstati1(latt,twiss,imon,emon,nmon,istr,nstr,xst,
      1         rlist(ix))
-          call tfree(int8(ix))
+          call tfree(ix)
           call tmov(xst,rlist(isa+(na-1)*ndl),ndl)
         endif
       elseif(word.eq.'SUM-') then
@@ -33,7 +35,7 @@
           if(na.eq.0) goto 999
           na=na-1
           if(na.eq.0) then
-            call tfree(int8(isa))
+            call tfree(isa)
             goto 999
           elseif(mod(na,nd).eq.0) then
             call palocx(isa,ndl*(na+1),ndl*na)
@@ -42,7 +44,7 @@
           if(nb.eq.0) goto 100
           nb=nb-1
           if(nb.eq.0) then
-            call tfree(int8(isb))
+            call tfree(isb)
             goto 100
           elseif(mod(nb,nd).eq.0) then
             call palocx(isb,nde*(nb+1),nde*nb)
@@ -50,7 +52,7 @@
   100     if(nc.eq.0) goto 999
           nc=nc-1
           if(nc.eq.0) then
-            call tfree(int8(isc))
+            call tfree(isc)
             goto 999
           elseif(mod(nc,nd).eq.0) then
             call palocx(isc,nde*(nc+1),nde*nc)
@@ -122,15 +124,15 @@
         endif
       elseif(abbrev(word,'SUMC_LR','_')) then
         if(na.ne.0) then
-          call tfree(int8(is))
+          call tfree(is)
           na=0
         endif
         if(nb.ne.0) then
-          call tfree(int8(isb))
+          call tfree(isb)
           nb=0
         endif
         if(nc.ne.0) then
-          call tfree(int8(isc))
+          call tfree(isc)
           nc=0
         endif
         start=.false.

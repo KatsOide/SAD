@@ -160,8 +160,8 @@ c
       COMPLEX*16 function FXYGAU(X,Y,SX,SY)
 C   ELECTROMAGNETIC FORCE OF GAUSSIAN BEAM
 C   NOT USED IN TRACKING. FOR COMPARISON ONLY.
+      use macmath
       IMPLICIT REAL*8 (A-H,O-Z)
-      INCLUDE 'inc/MACMATH.inc'
       REAL*8 CC1,CC2
       PARAMETER (CC1 = m_sqrt2 * m_2_sqrtpi, CC2 = m_1_sqrt2)
 C             CC1=SQRT(8/PI)=SQRT(2) * (2 / SQRT(PI))  CC2=SQRT(1/2)
@@ -272,8 +272,8 @@ C    T(4,4)     4*4 TRANSFER MATRIX NEAR (D(1),D(2)) IS GIVEN BY
 C                M=I+A*T   (I=4*4 UNIT MATRIX. A=DEFINED ABOVE)
 C               THE VECTOR IS (X,X',Y,Y').
 C
+      use macmath
       IMPLICIT REAL*8 (A-H,O-Z)
-      INCLUDE 'inc/MACMATH.inc'
       REAL*8 RTPI
       PARAMETER (RTPI = m_sqrtpi)
       COMPLEX*16 CWERF,ddf,ddz1,ddz2,ddf2
@@ -361,8 +361,8 @@ C    T(4,4)     4*4 TRANSFER MATRIX NEAR (D(1),D(2)) IS GIVEN BY
 C                M=I+A*T   (I=4*4 UNIT MATRIX. A=DEFINED ABOVE)
 C               THE VECTOR IS (X,X',Y,Y').
 C
+      use macmath
       implicit none
-      INCLUDE 'inc/MACMATH.inc'
       REAL*8 RTPI
       PARAMETER (RTPI = m_sqrtpi)
       real*8 ex,g,r1,r2,c0,c1,ss,t21,t43

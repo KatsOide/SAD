@@ -1,5 +1,6 @@
       Subroutine tdjin$(lvar,span,center,bottom,left,top,right)
       use maccbk
+      use macfile
       implicit real*8 (a-h,o-z)
       integer lvar
       real*8 span,center,t(3),dt
@@ -7,7 +8,6 @@
       character cdate*9,cdate1*8, ctime*12,fmt*80
       DATA CTIME /'00:00:00****'/
       character*6 time1
-      include 'inc/MACFILE.inc'
       integer*4 lene
       CHARACTER*1 SYMB(10)
       DIMENSION PLIST(10),PT(10)

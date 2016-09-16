@@ -4,6 +4,7 @@
       implicit real*8 (a-h,o-z)
       integer*4 i
       real*8 trans(6,12),cod(6),beam(21),trans1(6,13)
+c      write(*,*)'tflfre ',f1,f2
       af1=-ak/al*f1*abs(f1)/24.d0
       af2=ak/al*f2
       p=1.d0+cod(6)

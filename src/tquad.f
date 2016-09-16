@@ -1,6 +1,6 @@
       subroutine tquad(np,x,px,y,py,z,g,dv,pz,l,al,ak,
      1                 dx,dy,theta,cost,sint,radlvl,chro,
-     1                 fringe,f1,f2,mfring,eps0,kin)
+     1                 fringe,f1in,f2in,f1out,f2out,mfring,eps0,kin)
       use ffs_flag
       use tmacro
       use ffs_pointer, only:inext,iprev
@@ -8,7 +8,8 @@
       logical*4 enarad,chro,fringe,kin
       integer*4 ndiv,np,l,i,mfring,n
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
-     $     f1r,f2r,al,ak,dx,dy,theta,cost,sint,radlvl,f1,f2,eps0,
+     $     f1r,f2r,al,ak,dx,dy,theta,cost,sint,radlvl,eps0,
+     $     f1in,f1out,f2in,f2out,
      $     p,a,ea,b,pxi,pxf,pyf,b1,eps,akin,sqrtk,alx,dpz,r,xi,yi,akk,
      $     phi,s,t,th,u,a11,a12,b11,b12,a21,b21,aln,pti,ei
       if(al .le. 0.d0)then
@@ -22,7 +23,7 @@
       enarad=rad .and. radlvl .ne. 1.d0
       if(trpt .and. enarad)then
         call tqrad(np,x,px,y,py,z,g,dv,pz,l,al,ak,dx,dy,theta,
-     1             cost,sint,radlvl,f1,f2,mfring)
+     1             cost,sint,radlvl,f1in,f2in,f1out,f2out,mfring)
         return
       endif
       include 'inc/TENT.inc'
@@ -33,9 +34,9 @@
         do 2110 i=1,np
 c          p=(1.d0+g(i))**2
           p=1.d0+g(i)
-          a=f1/p
+          a=f1in/p
           ea=exp(a)
-          b=f2/p
+          b=f2in/p
           pxf=px(i)/ea
           pyf=py(i)*ea
           z(i)=z(i)-(a*x(i)+b*(1.d0+.5d0*a)*pxf)*px(i)
@@ -48,12 +49,12 @@ c          p=(1.d0+g(i))**2
       endif
       if(enarad)then
         if(iprev(l) .eq. 0)then
-          f1r=f1
+          f1r=f1in
         else
           f1r=0.d0
         endif
         if(inext(l) .eq. 0)then
-          f2r=f1
+          f2r=f1out
         else
           f2r=0.d0
         endif
@@ -194,9 +195,9 @@ c      endif
         do 2120 i=1,np
 c          p=(1.d0+g(i))**2
           p=1.d0+g(i)
-          a=-f1/p
+          a=-f1out/p
           ea=exp(a)
-          b= f2/p
+          b= f2out/p
           pxf=px(i)/ea
           pyf=py(i)*ea
           z(i)=z(i)-(a*x(i)+b*(1.d0+.5d0*a)*pxf)*px(i)
@@ -760,8 +761,8 @@ c          write(*,*)'ttfrin ',kord,ca,an(kord+1),cz
       end
 
       subroutine ttfrins(np,x,px,y,py,z,g,nord,ak,al,bz)
+      use macmath
       implicit none
-      include 'inc/MACMATH.inc'
       integer*4 np
       real*8 x(np),px(np),y(np),py(np),z(np),g(np)
       real*8 bz,aka

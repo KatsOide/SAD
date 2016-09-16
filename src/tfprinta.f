@@ -1,11 +1,11 @@
       subroutine tfstandardform(isp1,kx,irtc)
       use tfstk
       use tfform
+      use tfcsi
       implicit none
       type (sad_descriptor) kx
       type (sad_symbol), pointer :: symf,symp
       type (sad_symdef), pointer :: symfd,sympd
-      include 'inc/TFCSI.inc'
       integer*8 kf1,kp1
       integer*4 isp1,irtc,itfmessage
       if(isp .ne. isp1+1)then
@@ -91,7 +91,7 @@
       type (sad_strbuf) strb
       integer*8 kbuf
       kbuf=sad_loc(strb%nch)
-      if(kbuf .gt. mstk .or. kbuf .lt. isporg)then
+      if(.not. tfonstackq(kbuf))then
         strb%indw=strb%maxnch/8+5
         call tfree(kbuf-2)
       endif

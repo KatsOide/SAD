@@ -6,7 +6,8 @@
       implicit real*8(a-h,o-z)
       parameter (kstack=3)
       logical addxerr,addyerr
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun)
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun)
       dimension id(*)
       dimension istr(nstra,4),imon(nmona,4),emon(nmona,4)
       real*8 tgauss
@@ -24,7 +25,7 @@ c
           id(ip)=italoc(1+(3*nstr+1)/2)
           ilist(1,id(ip))=nstr
           do 10 i=1,nstr
-            rlist(id(ip)+i)=rlist(latt(2,istr(istr(i,2),1))+11)
+            rlist(id(ip)+i)=rlist(latt(istr(istr(i,2),1))+11)
    10     continue
           call pmovi(istr(1,2),rlist(id(ip)+1+nstr),nstr)
         elseif(iop.eq.2) then
@@ -32,7 +33,7 @@ c
           do 11 i=1,no
             j=ilist(mod(i-1,2)+1,id(ip)+no+1+(i-1)/2)
             if(istr(j,3).eq.0) then
-              rlist(latt(2,istr(j,1))+11)=rlist(id(ip)+i)
+              rlist(latt(istr(j,1))+11)=rlist(id(ip)+i)
             endif
    11     continue
           call tfree(int8(id(ip)))
@@ -46,8 +47,8 @@ c
             do 12 l=ls,no
               j1=ilist(mod(l-1,2)+1,id(ip)+no+1+(l-1)/2)
               if(j.eq.j1)then
-                rlist(latt(2,istr(j,1))+11)=rlist(id(ip)+l)
-     1                                     +rlist(latt(2,istr(j,1))+11)
+                rlist(latt(istr(j,1))+11)=rlist(id(ip)+l)
+     1                                     +rlist(latt(istr(j,1))+11)
                 ll=l
                 goto 13
               endif
@@ -72,8 +73,8 @@ c
             do 14 l=ls,no
               j1=ilist(mod(l-1,2)+1,id(ip)+no+1+(l-1)/2)
               if(j.eq.j1)then
-                rlist(latt(2,istr(j,1))+11)=rlist(id(ip)+l)
-     1                                     -rlist(latt(2,istr(j,1))+11)
+                rlist(latt(istr(j,1))+11)=rlist(id(ip)+l)
+     1                                     -rlist(latt(istr(j,1))+11)
                 ll=l
                 goto 15
               endif
@@ -92,18 +93,18 @@ c
         elseif(iop.eq.5 .or. iop.eq.6 .or. iop.eq.7)then
           do 16 i=1,nstr
             j=istr(i,2)
-            rlist(latt(2,istr(j,1))+11)=ax*rlist(latt(2,istr(j,1))+11)
+            rlist(latt(istr(j,1))+11)=ax*rlist(latt(istr(j,1))+11)
    16     continue
         elseif(iop.eq.8)then
           itemp=italoc(nstr)
           do 17 i=1,nstr
-            rlist(itemp-1+i)=rlist(latt(2,istr(istr(i,2),1))+11)
+            rlist(itemp-1+i)=rlist(latt(istr(istr(i,2),1))+11)
    17     continue
           no=ilist(1,id(ip))
           do 18 i=1,no
             j=ilist(mod(i-1,2)+1,id(ip)+1+(i-1)/2)
             if(istr(j,3).eq.0) then
-              rlist(latt(2,istr(j,1))+11)=rlist(id(ip)+i)
+              rlist(latt(istr(j,1))+11)=rlist(id(ip)+i)
             endif
    18     continue
           call tfree(int8(id(ip)))
@@ -169,9 +170,9 @@ c
               j=imon(imon(i,2),1)
               nq=imon(imon(i,2),4)
               rlist(id(ip)+i)=twiss(j,0,15)-twiss(j,ndim,15)
-     1             -rlist(latt(2,nq)+5)+emon(imon(i,2),1)
+     1             -rlist(latt(nq)+5)+emon(imon(i,2),1)
               rlist(id(ip)+nmon+i)=twiss(j,0,17)-twiss(j,ndim,17)
-     1             -rlist(latt(2,nq)+6)+emon(imon(i,2),2)
+     1             -rlist(latt(nq)+6)+emon(imon(i,2),2)
               ilist(mod(i-1,2)+1,id(ip)+2*nmon+1+(i-1)/2)=imon(i,2)
  20         continue
           else
@@ -209,14 +210,14 @@ c
                 nq=imon(j,4)
                 twiss(k,0,15)=rlist(id(ip)+l)
      1                       +twiss(k,0,15)-twiss(k,ndim,15)
-     1                         -rlist(latt(2,nq)+5)+emon(j,1)
+     1                         -rlist(latt(nq)+5)+emon(j,1)
 c             ++  added 08Sep93 ++
                 if(addxerr) twiss(k,0,15)=
      $               twiss(k,0,15)+errval(2)*tgauss()
 c             ++
                 twiss(k,0,17)=rlist(id(ip)+no+l)
      1                       +twiss(k,0,17)-twiss(k,ndim,17)
-     1                         -rlist(latt(2,nq)+6)+emon(j,2)
+     1                         -rlist(latt(nq)+6)+emon(j,2)
 c             ++  added 08Sep93 ++
                 if(addyerr) twiss(k,0,17)=
      $               twiss(k,0,17)+errval(4)*tgauss()
@@ -251,14 +252,14 @@ c             ++
                 nq=imon(j,4)
                 twiss(k,0,15)=rlist(id(ip)+l)
      1                       -(twiss(k,0,15)-twiss(k,ndim,15)
-     1                         -rlist(latt(2,nq)+5)+emon(j,1))
+     1                         -rlist(latt(nq)+5)+emon(j,1))
 c             ++  added 08Sep93 ++
                 if(addxerr) twiss(k,0,15)=
      $               twiss(k,0,15)-errval(2)*tgauss()
 c             ++
                 twiss(k,0,17)=rlist(id(ip)+no+l)
      1                       -(twiss(k,0,17)-twiss(k,ndim,17)
-     1                         -rlist(latt(2,nq)+6)+emon(j,2))
+     1                         -rlist(latt(nq)+6)+emon(j,2))
 c             ++  added 08Sep93 ++
                 if(addyerr) twiss(k,0,17)=
      $               twiss(k,0,17)-errval(4)*tgauss()
@@ -290,9 +291,9 @@ c             ++
             j=imon(imon(i,2),1)
             nq=imon(imon(i,2),4)
             rlist(itemp-1+i)=twiss(j,0,15)-twiss(j,ndim,15)
-     1                     -rlist(latt(2,nq)+5)+emon(imon(i,2),1)
+     1                     -rlist(latt(nq)+5)+emon(imon(i,2),1)
             rlist(itemp-1+nmon+i)=twiss(j,0,17)-twiss(j,ndim,17)
-     1                     -rlist(latt(2,nq)+6)+emon(imon(i,2),2)
+     1                     -rlist(latt(nq)+6)+emon(imon(i,2),2)
    27     continue
           no=ilist(1,id(ip))
           do 28 i=1,no

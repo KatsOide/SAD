@@ -389,7 +389,6 @@ c            endif
       logical*4 function tftype1fit(k)
       use tffitcode
       implicit none
-      include 'inc/TFFITCODE.inc'
       integer*4 k
       tftype1fit=k .eq. mfitnx .or. k .eq. mfitny .or.
      $     (k .ge. mfitleng .and. k .le. mfitgz)

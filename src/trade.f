@@ -20,8 +20,8 @@
       ar=.5d0*br
       pxi=(cod(2)+ar*cod(3))/pr
       pyi=(cod(4)-ar*cod(1))/pr
-      sq=min(pxi**2+pyi**2,pmax)
-      pzi=sqrt(1.d0-sq)
+      sq=pxi**2+pyi**2
+      pzi=sqrtl(1.d0-sq)
       vx=pyi*bz-pzi*by
       vy=pzi*bx-pxi*bz
       vz=pxi*by-pyi*bx

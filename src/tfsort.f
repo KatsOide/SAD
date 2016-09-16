@@ -483,7 +483,7 @@ c     Initialize Array Index
 
         p1=p2
         p2=p2+1
-        ilist(p2,isp0)=i1
+        itastk(p2,isp0)=i1
 
         i2=i1+1
         do while(i2 .le. n)
@@ -494,9 +494,9 @@ c     Initialize Array Index
           endif
           if(l .gt. 0)then
             if(p2-p1 .lt. 2)then
-              ilist(p2,isp0)=i2
+              itastk(p2,isp0)=i2
               p2=p2+1
-              ilist(p2,isp0)=i1
+              itastk(p2,isp0)=i1
               i1=i2+1
             else
               i1=i2
@@ -504,10 +504,10 @@ c     Initialize Array Index
             exit
           elseif(l .lt. 0)then
             p2=p2+1
-            ilist(p2,isp0)=i2
+            itastk(p2,isp0)=i2
           elseif(mode .eq. 0)then
             p2=p2+1
-            ilist(p2,isp0)=i2
+            itastk(p2,isp0)=i2
           endif
           i2=i2+1
         enddo
@@ -533,8 +533,8 @@ c     Merge
           im=im+1
           itab(im)=p2-p0+1
           do while(.true.)
-            j1=ilist(p1+i1,isp0)
-            j2=ilist(p1+i2,isp0)
+            j1=itastk(p1+i1,isp0)
+            j2=itastk(p1+i2,isp0)
 
             l=itforderl(kl,av,j1,j2,kf,irtc)
             if(irtc .ne. 0)then
@@ -543,24 +543,24 @@ c     Merge
             endif
             if(l .lt. 0)then
               p2=p2+1
-              ilist(p2,isp0)=j1
+              itastk(p2,isp0)=j1
               i1=i1+1
               if(i1 .ge. l1)then
                 do while(i2 .lt. l2)
                   p2=p2+1
-                  ilist(p2,isp0)=ilist(p1+i2,isp0)
+                  itastk(p2,isp0)=itastk(p1+i2,isp0)
                   i2=i2+1
                 enddo
                 exit
               endif
             elseif(l .gt. 0)then
               p2=p2+1
-              ilist(p2,isp0)=j2
+              itastk(p2,isp0)=j2
               i2=i2+1
               if(i2 .ge. l2)then
                 do while(i1 .lt. l1)
                   p2=p2+1
-                  ilist(p2,isp0)=ilist(p1+i1,isp0)
+                  itastk(p2,isp0)=itastk(p1+i1,isp0)
                   i1=i1+1
                 enddo
                 exit
@@ -568,12 +568,12 @@ c     Merge
             else
               if(mode .eq. 0)then
                 p2=p2+1
-                ilist(p2,isp0)=j1
+                itastk(p2,isp0)=j1
                 i1=i1+1
                 if(i1 .ge. l1)then
                   do while(i2 .lt. l2)
                     p2=p2+1
-                    ilist(p2,isp0)=ilist(p1+i2,isp0)
+                    itastk(p2,isp0)=itastk(p1+i2,isp0)
                     i2=i2+1
                   enddo
                   exit
@@ -583,7 +583,7 @@ c     Merge
                 if(i2 .ge. l2)then
                   do while(i1 .lt. l1)
                     p2=p2+1
-                    ilist(p2,isp0)=ilist(p1+i1,isp0)
+                    itastk(p2,isp0)=itastk(p1+i1,isp0)
                     i1=i1+1
                   enddo
                   exit
@@ -597,7 +597,7 @@ c     Merge
           itab(im)=p2-p0+1
           do i1=itab(is),itab(is+1)-1
             p2=p2+1
-            ilist(p2,isp0)=ilist(p1+i1,isp0)
+            itastk(p2,isp0)=itastk(p1+i1,isp0)
           enddo
         endif
         itab(im+1)=p2-p0+1
@@ -609,7 +609,7 @@ c     Merge
 c     Copy index table to return area
       l1=itab(2)
       do i1=1,l1-1
-         itab(i1)=ilist(p1+i1,isp0)
+         itab(i1)=itastk(p1+i1,isp0)
       enddo
       if(mode .ne. 2)then
         itab(l1:n)=-1
@@ -618,14 +618,14 @@ c          itab(i1)=-1
 c        enddo
       else
         do im=1,n
-          ilist(im,isp0+1)=-im
+          itastk(im,isp0+1)=-im
         enddo
         do i1=1,l1-1
-          ilist(itab(i1),isp0+1)=0
+          itastk(itab(i1),isp0+1)=0
         enddo
         i1=l1
         do im=1,n
-          i2=ilist(im,isp0+1)
+          i2=itastk(im,isp0+1)
           if(i2 .lt. 0)then
             itab(i1)=i2
             i1=i1+1
@@ -673,7 +673,7 @@ c     Initialize Array Index
 
         p1=p2
         p2=p2+1
-        ilist(p2,isp0)=i1
+        itastk(p2,isp0)=i1
 
         i2=i1+1
         do while(i2 .le. n)
@@ -681,9 +681,9 @@ c     Initialize Array Index
           v2=kl%rbody(i2)
           if(v1 .gt. v2)then
             if(p2-p1  .lt. 2)then
-              ilist(p2,isp0)=i2
+              itastk(p2,isp0)=i2
               p2=p2+1
-              ilist(p2,isp0)=i1
+              itastk(p2,isp0)=i1
               i1=i2+1
             else
               i1=i2
@@ -692,11 +692,11 @@ c     Initialize Array Index
           elseif(v1 .eq. v2)then
             if(mode .eq. 0)then
               p2=p2+1
-              ilist(p2,isp0)=i2
+              itastk(p2,isp0)=i2
             endif
           else
             p2=p2+1
-            ilist(p2,isp0)=i2
+            itastk(p2,isp0)=i2
           endif
           i2=i2+1
         enddo
@@ -721,18 +721,18 @@ c     Merge
           im=im+1
           itab(im)=p2-p0+1
           do while(.true.)
-            j1=ilist(p1+i1,isp0)
-            j2=ilist(p1+i2,isp0)
+            j1=itastk(p1+i1,isp0)
+            j2=itastk(p1+i2,isp0)
             v1=kl%rbody(j1)
             v2=kl%rbody(j2)
             if(v1 .gt. v2)then
               p2=p2+1
-              ilist(p2,isp0)=j2
+              itastk(p2,isp0)=j2
               i2=i2+1
               if(i2 .ge. l2)then
                 do while(i1 .lt. l1)
                   p2=p2+1
-                  ilist(p2,isp0)=ilist(p1+i1,isp0)
+                  itastk(p2,isp0)=itastk(p1+i1,isp0)
                   i1=i1+1
                 enddo
                 exit
@@ -740,12 +740,12 @@ c     Merge
             elseif(v1 .eq. v2)then
               if(mode .eq. 0)then
                 p2=p2+1
-                ilist(p2,isp0)=j1
+                itastk(p2,isp0)=j1
                 i1=i1+1
                 if(i1 .ge. l1)then
                   do while(i2 .lt. l2)
                     p2=p2+1
-                    ilist(p2,isp0)=ilist(p1+i2,isp0)
+                    itastk(p2,isp0)=itastk(p1+i2,isp0)
                     i2=i2+1
                   enddo
                   exit
@@ -755,7 +755,7 @@ c     Merge
                 if(i2 .ge. l2)then
                   do while(i1 .lt. l1)
                     p2=p2+1
-                    ilist(p2,isp0)=ilist(p1+i1,isp0)
+                    itastk(p2,isp0)=itastk(p1+i1,isp0)
                     i1=i1+1
                   enddo
                   exit
@@ -763,12 +763,12 @@ c     Merge
               endif
             else
               p2=p2+1
-              ilist(p2,isp0)=j1
+              itastk(p2,isp0)=j1
               i1=i1+1
               if(i1 .ge. l1)then
                 do while(i2 .lt. l2)
                   p2=p2+1
-                  ilist(p2,isp0)=ilist(p1+i2,isp0)
+                  itastk(p2,isp0)=itastk(p1+i2,isp0)
                   i2=i2+1
                 enddo
                 exit
@@ -781,7 +781,7 @@ c     Merge
           itab(im)=p2-p0+1
           do i1=itab(is),itab(is+1)-1
             p2=p2+1
-            ilist(p2,isp0)=ilist(p1+i1,isp0)
+            itastk(p2,isp0)=itastk(p1+i1,isp0)
           enddo
         endif
         itab(im+1)=p2-p0+1
@@ -793,7 +793,7 @@ c     Merge
 c     Copy index table to return area
       l1=itab(2)
       do i1=1,l1-1
-        itab(i1)=ilist(p1+i1,isp0)
+        itab(i1)=itastk(p1+i1,isp0)
       enddo
       if(mode .ne. 2)then
         itab(l1:n)=-1
@@ -802,14 +802,14 @@ c          itab(i1)=-1
 c        enddo
       else
         do im=1,n
-          ilist(im,isp0+1)=-im
+          itastk(im,isp0+1)=-im
         enddo
         do i1=1,l1-1
-          ilist(itab(i1),isp0+1)=0
+          itastk(itab(i1),isp0+1)=0
         enddo
         i1=l1
         do im=1,n
-          i2=ilist(im,isp0+1)
+          i2=itastk(im,isp0+1)
           if(i2 .lt. 0)then
             itab(i1)=i2
             i1=i1+1

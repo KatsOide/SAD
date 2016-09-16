@@ -32,7 +32,7 @@ TK_DBGX=
 TK_LIB_FILE='libtk8.5.dylib'
 
 # Additional libraries to use when linking Tk.
-TK_LIBS='-L/usr/X11/lib -lX11 -Wl,-weak-lXss -lXext -L/opt/local/lib -lXft -lfontconfig  -framework CoreFoundation   -framework CoreFoundation '
+TK_LIBS='-L/usr/X11/lib -lX11 -Wl,-weak-lXss -lXext -L/usr/X11/lib -lXft -lX11 -L/usr/X11/lib -lfreetype -L/usr/X11/lib -lfontconfig -L/usr/X11/lib -lXrender -lX11 -lfontconfig  -framework CoreFoundation   -framework CoreFoundation '
 
 # Top-level directory in which Tk's platform-independent files are
 # installed.

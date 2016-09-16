@@ -2,8 +2,10 @@
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idtypec,pnamec
       character*(MAXPNAME) name
-      dimension latt(2,nlat),ipair(2,*),ns(2),nf(2)
+      integer*8 latt(nlat)
+      dimension ipair(2,*),ns(2),nf(2)
       goto 1
       entry ppair1(latt,l1,l2,ntyp,npair)
       is=0
@@ -21,18 +23,18 @@
       endif
       do 10 k=1,2
         do 12 l=ns(k),nf(k)
-          if(idtype(latt(1,l)).eq.ntyp) then
-            if(l.eq.1.or.idtype(latt(1,l-1)).ne.ntyp) then
+          if(idtypec(l).eq.ntyp) then
+            if(l.eq.1.or.idtypec(l-1).ne.ntyp) then
               is=is+1
               if(mod(is,2).eq.0) then
-                if(name.eq.pname(latt(1,l))) then
+                if(name.eq.pnamec(l)) then
                   npair=is/2
                 else
                   is=is-1
-                  name=pname(latt(1,l))
+                  name=pnamec(l)
                 endif
               else
-                name=pname(latt(1,l))
+                name=pnamec(l)
               endif
             endif
           endif
@@ -55,21 +57,21 @@
       endif
       do 20 k=1,2
         do 20 l=ns(k),nf(k)
-          if(idtype(latt(1,l)).eq.ntyp) then
-            if(l.eq.1.or.idtype(latt(1,l-1)).ne.ntyp) then
+          if(idtypec(l).eq.ntyp) then
+            if(l.eq.1.or.idtypec(l-1).ne.ntyp) then
               is=is+1
               if(mod(is,2).eq.0) then
-                if(name.eq.pname(latt(1,l))) then
+                if(name.eq.pnamec(l)) then
                   ip=is/2
                   ipair(1,ip)=ll
                   ipair(2,ip)=l
                 else
                   is=is-1
-                  name=pname(latt(1,l))
+                  name=pnamec(l)
                   ll=l
                 endif
               else
-                name=pname(latt(1,l))
+                name=pnamec(l)
                 ll=l
               endif
             endif

@@ -10,8 +10,9 @@
       use ffs_wake
       use tffitcode
       use tfshare
+      use tfcsi,only:icslfno
+      use macmath
       implicit none
-      include 'inc/MACMATH.inc'
 c      include 'DEBUG.inc'
       integer*8 kx
       integer*4 ibegin,nqcola,lfno,lbegin,lend,irtc
@@ -28,7 +29,7 @@ c      include 'DEBUG.inc'
       integer*4 irw,isw,ipr,ifb,ife,idir,
      $     jjfam(-nfam:nfam),ivoid,ifpe,ntfun
       integer*4, external :: fork_worker,wait,itfdownlevel,itfuplevel,
-     $     itgetfpe,icslfno
+     $     itgetfpe
       integer*8 iutm,jb
       parameter (ivoid=9999)
       integer*8 iprolog,iepilog,imr,inr,isl
@@ -87,7 +88,7 @@ c     end   initialize for preventing compiler warning
      $       =utwiss(1:ntfun,0,itwissp(ibegin))
         frbegin=0.d0
       else
-        call twmov(latt(2,1),twiss,nlat,ndim,.true.)
+        call twmov(1,twiss,nlat,ndim,.true.)
         twiss(1,0,mfitnx)=0.d0
         twiss(1,0,mfitny)=0.d0
         if(orbitcal)then
@@ -117,7 +118,7 @@ c     end   initialize for preventing compiler warning
      $         twiss(nlat,0,mfitny)/pi2+
      $         aint(twiss(nlat,0,mfitny)/pi2)
           if(hstab(0) .and. vstab(0) .or. chgini)then
-            call twmov(latt(2,1),twiss,nlat,ndim,.false.)
+            call twmov(1,twiss,nlat,ndim,.false.)
           endif
         endif
         if(nfam .ne. 0)then
@@ -307,7 +308,7 @@ c            endif
         iter=1
         zcal=.false.
         do i=1,nvar
-          kt=idtype(latt(1,klp(ivarele(i))))
+          kt=idtypec(klp(ivarele(i)))
           if(kt .ne. 6 .and. kt .ne. 8 .and. kt .ne. 10
      $         .and. kt .ne. 12)then
             zcal=.true.
@@ -593,22 +594,21 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
       use tfstk
       use ffs, only:nlat
       use ffs_pointer
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
       integer*4 lbegin,lend
       real*8 frbegin,frend,xnlat,offset,tffsmarkoffset
       xnlat=nlat
-      if(idtype(latt(1,1)) .eq. icMARK)then
-        offset=max(1.d0,min(xnlat,1.d0+tffsmarkoffset(latt(1,1))))
+      if(idtypec(1) .eq. icMARK)then
+        offset=max(1.d0,min(xnlat,1.d0+tffsmarkoffset(1)))
         lbegin=int(offset)
         frbegin=offset-lbegin
       else
         lbegin=1
         frbegin=0.d0
       endif
-      if(idtype(latt(1,nlat-1)) .eq. icMARK)then
-        offset=tffsmarkoffset(latt(1,nlat-1))
+      if(idtypec(nlat-1) .eq. icMARK)then
+        offset=tffsmarkoffset(nlat-1)
         if(offset .ne. 0.d0)then
           offset=max(dble(lbegin+1),min(xnlat,xnlat-1.d0+offset))
           lend=int(offset)
@@ -629,14 +629,13 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
       use tfstk
       use ffs, only:nlat
       use ffs_pointer
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
       integer*4 lbegin,lend,la,lb,lb1
       real*8 frbegin,frend,xnlat,offset,tffsmarkoffset
       xnlat=nlat
-      if(idtype(latt(1,la)) .eq. icMARK)then
-        offset=max(1.d0,min(xnlat,la+tffsmarkoffset(latt(1,la))))
+      if(idtypec(la) .eq. icMARK)then
+        offset=max(1.d0,min(xnlat,la+tffsmarkoffset(la)))
         lbegin=int(offset)
         frbegin=offset-lbegin
       else
@@ -644,11 +643,17 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
         frbegin=0.d0
       endif
       lb1=lb
-      if(lb .eq. nlat .and. idtype(latt(1,nlat-1)) .eq. icMARK)then
-        lb1=lb1-1
+      if(lb .eq. nlat)then
+        if(idtypec(nlat-1) .eq. icMARK)then
+          lb1=lb1-1
+        else
+          lend=lb1
+          frend=0.d0
+          return
+        endif
       endif
-      if(idtype(latt(1,lb1)) .eq. icMARK)then
-        offset=tffsmarkoffset(latt(1,lb1))
+      if(idtypec(lb1) .eq. icMARK)then
+        offset=tffsmarkoffset(lb1)
         if(offset .ne. 0.d0)then
           offset=max(dble(lbegin+1),min(xnlat,lb1+offset))
           lend=int(offset)
@@ -664,16 +669,15 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
       return
       end
 
-      real*8 function tffsmarkoffset(latt)
+      real*8 function tffsmarkoffset(lp)
       use tfstk
+      use ffs_pointer
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      integer*4 latt(2)
-      tffsmarkoffset=rlist(latt(2)+kytbl(kwOFFSET,icMARK))
+      integer*4 lp
+      tffsmarkoffset=rlist(elatt%comp(lp)+kytbl(kwOFFSET,icMARK))
       if(tffsmarkoffset .ne. 0.d0)then
-        tffsmarkoffset=(tffsmarkoffset-.5d0)
-     $       *rlist(latt(2)+ilist(1,latt(2)))+.5d0
+        tffsmarkoffset=(tffsmarkoffset-.5d0)*direlc(lp)+.5d0
       endif
       return
       end
@@ -682,30 +686,30 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
       use tfstk
       use ffs, only:nlat
       use ffs_pointer
+      use mackw
+      use tfcsi, only:icslfno
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      integer*4 l,lm,nm,lx,nmmax,icslfno
+      integer*4 l,lm,nm,lx,nmmax
       parameter (nmmax=256)
       real*8 offset,xp,xe,tffsmarkoffset
       nm=0
       xp=l
-      if(idtype(latt(1,l)) .eq. icMARK)then
+      if(l .ne. nlat .and. idtypec(l) .eq. icMARK)then
         xe=nlat
         lm=l
- 8111   offset=tffsmarkoffset(latt(1,lm))
+ 8111   offset=tffsmarkoffset(lm)
         if(offset .ne. 0.d0)then
           xp=offset+lm
           if(xp .ge. 1.d0 .and. xp .le. xe)then
             lx=int(xp)
-            if(idtype(latt(1,lx)) .eq. icMARK)then
+            if(idtypec(lx) .eq. icMARK)then
               nm=nm+1
               if(nm .lt. nmmax)then
                 lm=lx
                 go to 8111
               else
                 call termes(icslfno(),
-     $               '?Recursive OFFSET in',pname(latt(1,l)))
+     $               '?Recursive OFFSET in',pnamec(l))
               endif
             endif
           endif
@@ -720,9 +724,8 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
       use tfstk
       use ffs_pointer
       use tffitcode
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
       integer*4 nlat,lbegin,lend,idp,jdp,j,jp,le1,k
       real*8 frend
       logical*4 beg,begin,end
@@ -745,7 +748,7 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
         endif
       endif
       if(end)then
-        if(idtype(latt(1,nlat-1)) .eq. icMARK)then
+        if(idtypec(nlat-1) .eq. icMARK)then
           if(frend .eq. 0.d0)then
             le1=lend
           else

@@ -4,13 +4,12 @@ c     ----- msolb is called by mbstr ------
       use tfstk
       use ffs
       use tffitcode
-      include 'inc/TFMACRO.inc'
       parameter (mfitc1=32,unit=1d-4,nfcmax=6)
       logical yplane,simulz
       dimension wk(ncb+2),iwk(ncb+2,2),isb(ncb+4),istr(nstra,4),estr(*),
      1          x(ncb+2,2)
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),
-     $     gammab(nlat),
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat),
      1          mult(*),kfit(nfcmax),ifitp(nfcmax),mfitp(nfcmax),
      1          fitval(nfcmax)
       data lfno/6/
@@ -50,7 +49,7 @@ c
       endif
       do 20 i=1,ncor
         j=istr(isb(i+2),2)
-        wk(i)=rlist(latt(2,istr(j,1))+11)
+        wk(i)=rlist(latt(istr(j,1))+11)
         iwk(i,1)=j
         iwk(i,2)=istr(i,2)
    20 continue
@@ -66,7 +65,7 @@ c     ---- make cos bump ----
       call pbump(latt,twiss,gammab,ndim,mult,istr,estr,ncor,kfit,
      1           ifitp,mfitp,fitval,nfc,.false.,.true.,.false.,lfno)
       do 30 i=1,ncor
-   30   x(i,1)=(rlist(latt(2,istr(iwk(i,1),1))+11)-wk(i))/unit
+   30   x(i,1)=(rlist(latt(istr(iwk(i,1),1))+11)-wk(i))/unit
 c     ---- make sin bump ----
       fitval(1)=0d0
       fitval(2)=unit
@@ -76,10 +75,10 @@ c     call cputime(ctime0,irtc)
 c     call cputime(ctime1,irtc)
 c     write(*,'(A,F10.6)')' ctime(pbump)=',1d-6*(ctime1-ctime0)
       do 50 i=1,ncor
-        x(i,2)=(rlist(latt(2,istr(iwk(i,1),1))+11)-wk(i))/unit
+        x(i,2)=(rlist(latt(istr(iwk(i,1),1))+11)-wk(i))/unit
    50 continue
       do 60 i=1,ncor
-        rlist(latt(2,istr(iwk(i,1),1))+11)=wk(i)
+        rlist(latt(istr(iwk(i,1),1))+11)=wk(i)
         istr(i,2)=iwk(i,2)
    60 continue
 c     write(*,'(1p,6e11.2)')(x(i,1),i=1,isb(2))

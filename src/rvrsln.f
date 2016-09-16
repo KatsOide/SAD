@@ -1,16 +1,15 @@
       subroutine rvrsln(idxl)
       use maccbk
+      use mackw
+      use macttyp
+      use macfile
+      use macmisc
       implicit none
       integer*4 idxl
 c
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACFILE.inc'
-      include 'inc/MACMISC.inc'
-c
       integer*4 llen
-      integer*4 oldpt,oldex,i,ioldpt
+      integer*8 oldpt,ioldpt
+      integer*4 oldex,i
       real*8 work
 c
       llen=ilist(1,idval(idxl))

@@ -1,7 +1,7 @@
 If[Not[FBoundQ$[TclArg]], Library@Require["SAD/Tkinter"]];
-
 (* Create Tcl interpreter object *)
 Tcl$Interp=TclCreateInterp[];
+Tcl["return $tk_patchLevel"];
 
 (* Define TclEval[], Tk$Echo *)
 (* Note: This definition runs before Set[Tk$Echo, ___] via SetAutoLoad[] *)
@@ -38,12 +38,10 @@ $FontSystem=Switch[Which[
     || Tk$MajorVersion == 8 && Tk$MinorVersion >= 5), (
       ToUpperCase[TclEval["tk::pkgconfig get fontsystem", String]]),
   True,	Null],
-
   "AQUA",	"Aqua",
   "XFT",	"Xft",
   _,		"X11"];
 Protect[$FontSystem];
-
 (* Setup default font setting *)
 PkgConfig$DefaultList["Tkinter"->Join[
   {			(* Backend independent settings *)
@@ -53,7 +51,6 @@ PkgConfig$DefaultList["Tkinter"->Join[
     "AltFonts:AltScale"->1.15,
     "AltFonts:ScriptScale"->0.8,
     Null[]},
-
   Switch[$FontSystem,	(* Backend dependent settings *)
     "Aqua",	{
       "Font:SansSerif"->"helvetica",
@@ -62,7 +59,6 @@ PkgConfig$DefaultList["Tkinter"->Join[
       "Font:Terminal"->"fixed",
       "Font:Symbol"->"symbol",
       Null[]},
-
     "Xft",	{
       "Font:SansSerif"->"Arial",
       "Font:Serif"->"Times",
@@ -70,7 +66,6 @@ PkgConfig$DefaultList["Tkinter"->Join[
       "Font:Terminal"->"Mono",
       "Font:Symbol"->"Symbol",
       Null[]},
-
     _,	{
       "Font:SansSerif"->"helvetica neue",
       "Font:Serif"->"utopia",
@@ -78,14 +73,12 @@ PkgConfig$DefaultList["Tkinter"->Join[
       "Font:Terminal"->"fixed",
       "Font:Symbol"->"symbol",
       Null[]}]]];
-
 (* Default font reference proxy *)
 $DefaultSansSerifFont	:= PkgConfig["Tkinter", "Font:SansSerif"];
 $DefaultSerifFont	:= PkgConfig["Tkinter", "Font:Serif"];
 $DefaultFixedFont	:= PkgConfig["Tkinter", "Font:Fixed"];
 $DefaultTerminalFont	:= PkgConfig["Tkinter", "Font:Terminal"];
 $DefaultSymbolFont	:= PkgConfig["Tkinter", "Font:Symbol"];
-
 $DefaultFontWeight	:= PkgConfig["Tkinter", "Font:Weight"];
 $DefaultFontSlant	:= PkgConfig["Tkinter", "Font:Slant"];
 $DefaultFontSize	:= PkgConfig["Tkinter", "Font:Size"];
@@ -94,12 +87,9 @@ $DefaultFontSize	:= PkgConfig["Tkinter", "Font:Size"];
 $DefaultFont := {$DefaultTerminalFont, $DefaultFontSize};
 *)
 $DefaultFont := {$DefaultSansSerifFont, $DefaultFontSize};
-
 (* Tk version dependent setup *)
 Which[
   (* Current Supported Tcl/Tk 8.4.19 or 8.5.# (# >= 8) *)
   Tk$MajorVersion == 8,	TclEval["set ::tk::AlwaysShowSelection {1}"],
-
   True,	(* Nothing TODO *)];
-
 ! End of File

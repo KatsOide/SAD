@@ -1,4 +1,5 @@
       subroutine qdrift(trans,cod,al,coup)
+      use tfstk, only:sqrtl
       implicit none
       real*8 trans(4,5),cod(6),al,pxi,pyi,pxisq,pyisq,
      $     pzi,ale,alz
@@ -7,7 +8,7 @@
       pyi=cod(4)
       pxisq=pxi**2
       pyisq=pyi**2
-      pzi=sqrt(max(0.001d0,1.d0-pxisq-pyisq))
+      pzi=sqrtl(1.d0-pxisq-pyisq)
       ale=al/pzi
       alz=ale/pzi**2
       cod(1)=cod(1)+pxi*ale

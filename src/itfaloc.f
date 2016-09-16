@@ -264,12 +264,11 @@
       subroutine tfsydefg(locp,kx,ig0)
       use tfstk
       use tfcode
+      use mackw
       implicit none
       type (sad_descriptor) kx
       type (sad_symdef), pointer :: symd
       type (sad_namtbl), pointer :: loc
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
       integer*8 kas1,locp
       integer*4 nc,idx
       character*(MAXPNAME) name

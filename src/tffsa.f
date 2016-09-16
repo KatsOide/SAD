@@ -1,3 +1,7 @@
+      module track_tt
+        integer*8 itt1,itt2,itt3,itt4,itt5,itt6
+      end module
+
       subroutine tffsa(lfnb,kffs,irtcffs)
       use tfstk
       use ffs
@@ -6,17 +10,20 @@
       use tffitcode
       use ffs_fit
       use ffs_wake
+      use sad_main
+      use tfcsi
+      use track_tt
       implicit none
-      include 'inc/TFCSI.inc'
+      type (sad_comp), pointer :: cmp
       integer*4 maxrpt,maxlfn,hsrchz
       integer*8 kffs,k,kx,ktaloc,itwisso,
      $     ifvalvar2,iparams,kax,iutwiss
       integer*4 kk,i,lfnb,ia,iflevel,j,ielm,igelm,k1,
      $     ii,irtc0,it,itemon,itmon,itestr,itstr,itt,
-     $     itt1,itt2,itt3,itt4,itt5,iuse,l,itfuplevel,icslrecl,
+     $     iuse,l,itfuplevel,
      $     levelr,lfnl0,lpw,meas0,mfpnta,igetgl1,lenw,
      $     mphi2,newcor,next,nextt,nfp,nmon,
-     $     nster,nrpt1,icsmrk,itfpeeko,itfgetrecl,nl
+     $     nster,nrpt1,itfpeeko,itfgetrecl,nl
       real*8 rmax,amus0,amus1,amusstep,apert,axi,ayi,ctime1,
      $     dpm2,dpxi,dpyi,em,emxe,emye,epxi,epyi,pspan,r,r2i,r3i,
      $     trval,rese,v,wa,wd,wl,xa,ya,xxa,xya,yya,getva,rgetgl1,
@@ -42,7 +49,6 @@
      $     nmon,nster
       save busy
       data busy /.false./
-      common /tt/ itt1,itt2,itt3,itt4,itt5
       itwisso(kk,i,j)=iftwis+kk+nlat*(i+ndim+(j-1)*ndima)-1
       flv%mcommon=int((sizeof(flv)+7)/8)
 c      write(*,*)'tffsa ',flv%mcommon
@@ -56,7 +62,7 @@ c     begin initialize for preventing compiler warning
       levelr=0
 c     end   initialize for preventing compiler warning
  101  if(lfnb .le. 1 .or. chguse)then
-        call tffsalloc(ilist(1,ilattp+1),ilist(1,ilattp))
+        call tffsalloc()
         if(.not. chguse)then
           call cputime(flv%ctime0,irtc0)
           flv%ctime2=flv%ctime0
@@ -97,7 +103,7 @@ c
         flv%nfc=0
         call tfinitcalc
         call tmast
-        call twmov(ilist(2,ilattp+1),twiss,nlat,ndim,.true.)
+        call twmov(1,twiss,nlat,ndim,.true.)
         if(.not. chguse)then
           do i=1,mfit1
             scale(i)=1.d0
@@ -295,8 +301,8 @@ c          call cssetlinep(icslrecl())
       elseif(new)then
         go to 12
       endif
-      call tffile(word,lfnstk,lfopen,lfret,lfrecl,lflinep,
-     $     maxlfn,lfni,lfno,lfnb,init,exist)
+      call tffile(word,lfnstk,lfopen,lfret,lfnb,lfrecl,
+     $     maxlfn,init,exist)
       if(lfnp .lt. lfnb)then
         go to 9000
       endif
@@ -380,7 +386,7 @@ c          call cssetlinep(icslrecl())
           call cssetp(next)
           call tffssaveparams(2,ilattp,err)
           expnd=expnd .and. .not. err
-          call tclrpara(latt,nlat-1)
+          call tclrpara(elatt,nlat-1)
           if(visit)then
             call tffssaveparams(0,ilattp,err)
             call tfblocksym('`FitFunction',12)
@@ -399,11 +405,12 @@ c          call cssetlinep(icslrecl())
           if(ilist(2,idval(iuse)) .le. 0 .or. expnd)then
             call expnln(iuse)
           endif
-          call filaux(idval(iuse))
-          ilattp=ilist(2,idval(iuse))
+          call filaux(iuse)
+          ilattp=idval(ilist(2,idval(iuse)))
+          call loc_el(ilattp,elatt)
           lattuse=ilattp
-          call tclrpara(ilist(1,ilattp+1),ilist(1,ilattp))
-          dleng =rlist(ilist(2,ilattp)+1)*rgetgl1('FSHIFT')
+          call tclrpara(elatt,elatt%nlat1-2)
+          dleng =rlist(elatt%aux+1)*rgetgl1('FSHIFT')
           ename=pname(iuse)
           call tmovb(ename,flv%blname,MAXPNAME)
           call tfsetbeamlinename(ename)
@@ -418,7 +425,7 @@ c          call cssetlinep(icslrecl())
         else
           byeall=.false.
         endif
-        call tffssaveparams(4,0,err)
+        call tffssaveparams(4,int8(0),err)
         if(err)then
           if(byeall)then
             go to 10
@@ -427,15 +434,16 @@ c          call cssetlinep(icslrecl())
             go to 2
           endif
         endif
-        call tclrpara(latt,ilist(1,ilattp))
+        call tclrpara(elatt,elatt%nlat1-2)
         call tffsfree
         if(byeall)then
-          call tffssaveparams(-2,0,err)
+          call tffssaveparams(-2,int8(0),err)
         endif
         call tffssaveparams(1,ilattp,err)
+        call loc_el(ilattp,elatt)
         lattuse=ilattp
-        nlat=ilist(1,ilattp)+1
-        dleng =rlist(ilist(2,ilattp)+1)*rgetgl1('FSHIFT')
+        nlat=elatt%nlat1-1
+        dleng =rlist(elatt%aux+1)*rgetgl1('FSHIFT')
         call ffs_init_pointer
         call ffs_twiss_pointer
         call tmovb(flv%blname,ename,MAXPNAME)
@@ -570,7 +578,7 @@ ckikuchi ... next 5 lines added     (8/17/'90)
       elseif(abbrev(word,'CHRO_MATICITY','_'))then
         call tfsetparam
         i=0
-        call tfchro(latt,mult,
+        call tfchro(latt,
      1       rlist(itwisso(1,i,1)),rlist(itwisso(1,i,2)),
      $       rlist(itwisso(1,i,3)),rlist(itwisso(1,i,7)),
      1       rlist(itwisso(1,i,4)),rlist(itwisso(1,i,5)),
@@ -831,14 +839,10 @@ c        flv%rsconv=rlist(ktlookup('CONVERGENCE'))
         write(word,'(A,I4)')'MAXITERATION=',flv%itmax
         call twbuf(word,lfno,1,lpw,8,1)
         call twbuf(word,lfno,1,lpw,8,-1)
-        call twelm(lfno,latt,mult,
-     $       mfpnt,mfpnt1,'FIT',lpw,8)
-        call twelm(lfno,latt,mult,
-     $       flv%measp,0,'MEA_SURE',lpw,8)
-        call twelm(lfno,latt,mult,
-     $       iorgr,0,'ORG',lpw,8)
-        call twelm(lfno,latt,mult,
-     $       id1,id2,'DISP_LAY',lpw,8)
+        call twelm(lfno,mfpnt,mfpnt1,'FIT',lpw,8)
+        call twelm(lfno,flv%measp,0,'MEA_SURE',lpw,8)
+        call twelm(lfno,iorgr,0,'ORG',lpw,8)
+        call twelm(lfno,id1,id2,'DISP_LAY',lpw,8)
         call twbuf(word,lfno,1,lpw,8,-1)
         go to 10
       elseif(abbrev(word,'VAR_IABLES','_') .or. word .eq. 'VARS')then
@@ -865,9 +869,8 @@ c        flv%rsconv=rlist(ktlookup('CONVERGENCE'))
           title=Tfgetstrv('TITLE')
           case=Tfgetstrv('CASE')
           call twsdrw(latt,pos,ilist(1,ifele),
-     $         mult,word,wordp,lfno,
-     1         twiss,gammab,
-     1         0,rlist(itmon),rlist(itemon),nmon,
+     $         word,wordp,lfno,
+     1         twiss,0,rlist(itmon),rlist(itemon),nmon,
      1         title,case,exist)
         else
           word=tfgetstr(kx,nc)
@@ -877,8 +880,7 @@ c        flv%rsconv=rlist(ktlookup('CONVERGENCE'))
       elseif(word .eq. 'GEO')then
         title=Tfgetstrv('TITLE')
         case=Tfgetstrv('CASE')
-        call geodrw(latt,rlist(ifgeo),
-     $       word,lfno,title,case)
+        call geodrw(rlist(ifgeo),word,lfno,title,case)
         go to 10
       elseif(word .eq. 'TDR')then
         call ttdr(lfno,err)
@@ -1156,8 +1158,7 @@ ckiku   call tfstr(word,latt,ist,nstr)
         endif
         go to 10
       elseif(abbrev(word,'DELC_OR','_'))then
-        call tcorr(word,latt,pos,mult,
-     $       ilist(1,ifmast),lfno)
+        call tcorr(word,latt,pos,ilist(1,ifmast),lfno)
         go to 10
       elseif(abbrev(word,'LTR_ACK','_'))then
         call tfltra(word,lfno)
@@ -1233,11 +1234,11 @@ c        rlist(itlookup('DP',ivtype))=dpmax
         call tfsize
         go to 10
       elseif(abbrev(word,'ALI_GN','_'))then
-        call talign(latt,word,wordp,
-     $       pos,mult,lfno,exist)
+        call talign(latt,word,wordp,pos,lfno,exist)
         go to 30
       endif
- 7000 call tfgetv(word,flv%ntouch,lfno,exist)
+ 7000 call tfgetv(word,flv%ntouch,lfno,nextt,exist)
+c      write(*,*)'tffsa ',nextt,exist,itt
       if(.not. exist)then
         if(itt .ge. 0)then
           call cssetp(nextt)
@@ -1307,8 +1308,8 @@ c        write(*,*)'tffsa ',flv%nfc,nfc0
       if(.not. geomet)then
         do i=1,nele
           ii=(i-1)/2
-          if(idtype(ilist(1,ilattp+ilist(i-ii*2,ifklp+ii)))
-     $         .eq. 20)then
+          call compelc(ilist(i-ii*2,ifklp+ii),cmp)
+          if(idtype(cmp%id) .eq. 20)then
             geomet=.true.
             exit
           endif
@@ -1372,7 +1373,7 @@ c        dpm2=rlist(ktlookup('DPM'))
           endif
         enddo
         em=abs(emx)+abs(emy)
-        call tffamsetup(ilist(2,ilattp+1),em)
+        call tffamsetup(1,em)
         if(nfam .gt. nfr .and. kfam(-nfam) .le. 0)then
           nfam1=1-nfam
         else
@@ -1466,9 +1467,9 @@ c      write(*,*)'tffsa-2 ',flv%iut,%LOC(rlist(flv%iut)),busy
       use tffitcode
       use ffs_wake
       use iso_c_binding
+      use sad_main
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
       integer*4 nlat,nvar,nfcol,nfam,nut,i2
       integer*4 i,j,id,k
       integer*8 itmmapp
@@ -1477,12 +1478,12 @@ c      write(*,*)'tffsa-2 ',flv%iut,%LOC(rlist(flv%iut)),busy
       do i=3,nlat-1
         itwissp(i)=0
       enddo
-      if(idtype(latt(1,nlat-1)) .eq. icMARK)then
+      if(idtypec(nlat-1) .eq. icMARK)then
         itwissp(nlat-1)=1
       endif
       if(nonl)then
         do i=2,nlat-1
-          id=idtype(latt(1,i))
+          id=idtypec(i)
           if(id .ge. icSEXT .and. id .le. icDODECA
      $         .or. id .eq. icMULT .or. id .eq. icSOL)then
             itwissp(i)=1
@@ -1534,7 +1535,7 @@ c      write(*,*)'tffsa-2 ',flv%iut,%LOC(rlist(flv%iut)),busy
         endif
       enddo
       itwissp(1)=1
-      i2=max(1,min(nlat,1+int(tffsmarkoffset(latt(1,1)))))
+      i2=max(1,min(nlat,1+int(tffsmarkoffset(1))))
       itwissp(i2)=1
       itwissp(min(nlat,i2+1))=1
       itwissp(nlat)=1
@@ -1557,21 +1558,21 @@ c      write(*,*)'tffsa-2 ',flv%iut,%LOC(rlist(flv%iut)),busy
       use ffs, local_ilattp=>ilattp
       implicit none
 c nlocal = mcommon in TFFSLOCAL.inc
-      integer*8 ktaloc,isave
-      integer*4 icmd,ilattp,nxh
+      integer*8 ktaloc,isave,ilattp
+      integer*4 icmd,nxh
       logical*4 err
       nxh=int((sizeof(ffv)+7)/8)
       err=.false.
       if(icmd .eq. 0)then
         isave=ktaloc(nxh+2)
-        ilist(1,isave)=ilattp
+        klist(isave)=ilattp
         klist(isave+1)=iffssave
         call tmov(ffv,rlist(isave+2),nxh)
         iffssave=isave
       elseif(icmd .eq. 1)then
         if(iffssave .gt. 0)then
           isave=iffssave
-          ilattp=ilist(1,isave)
+          ilattp=klist(isave)
           call tmov(rlist(isave+2),ffv,nxh)
           iffssave=klist(isave+1)
           call tfree(isave)
@@ -1582,7 +1583,7 @@ c nlocal = mcommon in TFFSLOCAL.inc
         err=.false.
         isave=iffssave
         do while(isave .gt. 0)
-          if(ilist(1,isave) .eq. ilattp)then
+          if(klist(isave) .eq. ilattp)then
             err=.true.
             return
           endif
@@ -1595,7 +1596,7 @@ c nlocal = mcommon in TFFSLOCAL.inc
       elseif(icmd .eq. -1)then
         do while(iffssave .gt. 0)
           isave=iffssave
-          ilattp=ilist(1,isave)
+          ilattp=klist(isave)
           call tmov(rlist(isave+2),ffv,nxh)
           iffssave=klist(isave+1)
           call tfree(isave)
@@ -1604,8 +1605,8 @@ c nlocal = mcommon in TFFSLOCAL.inc
       elseif(icmd .eq. -2)then
         isave=klist(iffssave+1)
         do while(isave .gt. 0)
-          ilattp=ilist(1,iffssave)
-          write(*,*)'tffssave -2: ',isave,ilattp
+          ilattp=klist(iffssave)
+c          write(*,*)'tffssave -2: ',isave,ilattp
           call tmov(rlist(iffssave+2),ffv,nxh)
           call tfree(iffssave)
           iffssave=isave
@@ -1712,10 +1713,11 @@ c            call tclr(uini(1,0),28)
       use ffs
       use tffitcode
       implicit none
-      integer*4 iele2(nlat),i
+      integer*8 iele2(nlat)
+      integer*4 i
       do i=1,nlat-1
         if(iele2(i) .ne. 0)then
-          call tfree(int8(iele2(i)))
+          call tfree(iele2(i))
         endif
       enddo
       return
@@ -1728,12 +1730,12 @@ c            call tclr(uini(1,0),28)
       implicit none
       type (sad_list), pointer :: klx,kli,kle
       type (sad_symdef), pointer :: symd
-      integer*8 ktaloc
-      integer*4 lfno,i,j,k,nk,m,me,nc, ie,iet,ik,irtc
+      integer*8 ktaloc,iet
+      integer*4 lfno,i,j,k,nk,m,me,nc, ie,ik,irtc
       character*(MAXPNAME) key,tfgetstrs
       type (sad_descriptor) itfelv,itfcoupk,kx,ki,kk,ke
       data itfelv%k,itfcoupk%k /0,0/
-      ilist(1:nlat,ifele2)=0
+      klist(ifele2:ifele2+nlat-1)=0
       if(itfelv%k .eq. 0)then
         itfelv=kxsymbolz('`ElementValues',14)
         itfcoupk=kxsymbolz('`CoupledKeys',12)
@@ -1774,31 +1776,31 @@ c      call tfdebugprint(kx,'setupcoup',3)
             if(ik .lt. 0)then
               do k=1,nlat-1
                 if(ilist(k,ifele1) .eq. -ie)then
-                  iet=ilist(k,ifele2)
+                  iet=klist(ifele2+k-1)
                   if(iet .eq. 0)then
-                    iet=int(ktaloc(m+1))
+                    iet=ktaloc(m+1)
                     ilist(1,iet)=0
-                    ilist(k,ifele2)=iet
+                    klist(ifele2+k-1)=iet
                   endif
                   nk=ilist(1,iet)+1
                   ilist(1,iet+nk)=i
                   ilist(2,iet+nk)=-ik
                   ilist(1,iet)=nk
-                  ilist(nlat,ifele2)=1
+                  klist(ifele2+nlat-1)=1
                 endif
               enddo
             elseif(ik .gt. 0)then
-              iet=ilist(ie,ifele2)
+              iet=klist(ifele2+ie-1)
               if(iet .eq. 0)then
-                iet=int(ktaloc(m+1))
+                iet=ktaloc(m+1)
                 ilist(1,iet)=0
-                ilist(ie,ifele2)=iet
+                klist(ifele2+ie-1)=iet
               endif
               nk=ilist(1,iet)+1
               ilist(1,iet+nk)=i
               ilist(2,iet+nk)=ik
               ilist(1,iet)=nk
-              ilist(nlat,ifele2)=1
+              klist(ifele2+nlat-1)=1
             endif
           enddo
         endif
@@ -1817,15 +1819,17 @@ c      call tfdebugprint(kx,'setupcoup',3)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idtypec
+      use sad_main
       implicit none
       integer*4 i,ia,it,kl,l
       character*(*) keyword
       character*8 tfkwrd,kw
       if(i .gt. 0)then
-        it=idtype(ilist(1,ilattp+i))
+        it=idtypec(i)
       else
         kl=ilist(-i,ifklp)
-        it=idtype(ilist(1,ilattp+kl))
+        it=idtypec(kl)
       endif
       kw='-'
       l=0
@@ -1899,9 +1903,10 @@ c      call tfdebugprint(kx,'setupcoup',3)
       subroutine tclrline(line)
       use tfstk
       implicit none
-      integer*4 line,i,ip,n
+      integer*4 i,n
+      integer*8 line,ip
       do i=1,ilist(1,line)
-        ip=ilist(2,line+i)
+        ip=klist(line+i)
         n=ilist(1,ip)+1
         call tfreem(ip,n)
       enddo

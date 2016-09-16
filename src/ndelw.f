@@ -5,11 +5,12 @@ C   08/12/92 212101617  MEMBER NAME  NDELW    *.FORT     M  E2FORT
       use tfstk
       use ffs
       use tffitcode
+      use sad_main
+      use ffs_pointer, only:elatt,idelc,idtypec
       real*8 wl,wa,wp,wd
       dimension geo(3,4,nlat),pos(nlat)
-      dimension latt(2,nlat),
-     &          iele(nlat),couple(nlat),
-     &          master(nlat)
+      integer*8 latt(nlat),le,idv
+      dimension iele(nlat),couple(nlat),master(nlat)
 c
       real*8 kx,ky
       real*8 delz
@@ -21,7 +22,7 @@ c
       kx=pi2/wl*cos(wd)
       ky=pi2/wl*sin(wd)
       do 10 i=1,nlat-1
-        id=idtype(latt(1,i))
+        id=idtypec(i)
         if(id .eq. 1 .or. (id .gt. 8 .and. id .ne. 20))then
           go to 10
         endif
@@ -40,15 +41,16 @@ c
         endif
         do 110 j=i0,ie,istep
           if(master(j) .ne. 0)then
-            le=latt(2,j)+5
+            le=latt(j)+5
             dx1=delx
             dy1=dely
             if(id .eq. 2)then
               le=le+4
             elseif(id .eq. 20)then
               le=le-2
-              dx1=rlist(idval(latt(1,j))+3)-delx
-              dy1=rlist(idval(latt(1,j))+4)-dely
+              idv=idval(idcomp(elatt,j))
+              dx1=rlist(idv+3)-delx
+              dy1=rlist(idv+4)-dely
             endif
             rlist(le)=dx1
             rlist(le+1)=dy1

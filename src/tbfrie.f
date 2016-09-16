@@ -63,11 +63,11 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-1 ',trans1
           call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod)
         endif
         cod(1)=cod(1)+.5d0*yi**2/rho
-        cod(4)=cod(4)+(ak-cod(2)/rho)*yi
+        cod(4)=min(pr,max(-pr,cod(4)+(ak-cod(2)/rho)*yi))
         cod(5)=cod(5)-.5d0*(yi/pr)**2*cod(2)/rhob
-        cod(2)=cod(2)-ak*cod(1)
+        cod(2)=min(pr,max(-pr,cod(2)-ak*cod(1)))
       else
-        pxi=cod(2)-ak*cod(1)
+        pxi=min(pr,max(-pr,cod(2)-ak*cod(1)))
         trans1(1,1)=1.d0
         trans1(1,2)=0.d0
         trans1(1,3)=yi/rho
@@ -120,7 +120,7 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
         endif
         cod(2)=pxi
         cod(1)=cod(1)+.5d0*yi**2/rho
-        cod(4)=cod(4)+(ak-pxi/rho)*yi
+        cod(4)=min(pr,max(-pr,cod(4)+(ak-pxi/rho)*yi))
         cod(5)=cod(5)-.5d0*(yi/pr)**2*pxi/rhob
       endif
       return
@@ -171,14 +171,15 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
      $     sinsq,pxi,pyi,s,dpzi,pzi,phsq,px0,dpz0,pz0,
      $     xi,pxf,pzf,dpzf,a,b,theta,aa,c,ddpz,s1,
      $     sqrs,sqrs1
+      real*8, parameter :: ampmin=1.d-6,ampmax=1.d0-ampmin
       pr=1.d0+cod(6)
       cosp=cos(psi)
       sinp=sin(psi)
       sinsq=2.d0*sin(.5d0*psi)**2
-      pxi=min(.999d0,max(-.999d0,cod(2)))
-      pyi=min(.999d0,max(-.999d0,cod(4)))
-      s=pxi**2+pyi**2
-      sqrs=pr*sqrt(1.d0-s/pr**2)
+      pxi=min(pr,max(-pr,cod(2)))
+      pyi=min(pr,max(-pr,cod(4)))
+      s=min(ampmax,pxi**2+pyi**2)
+      sqrs=pr*sqrt(max(ampmin,1.d0-s/pr**2))
       dpzi=-s/(pr+sqrs)
       pzi=pr+dpzi
       phsq=pzi**2+pxi**2
@@ -187,9 +188,9 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       pz0=pr+dpz0
       xi=cod(1)
       pxf=px0+xi*sinp/rhob
-      cod(2)=pxf
-      s1=min(.99d0,max(-.99d0,pyi**2+pxf**2))
-      sqrs1=pr*sqrt(1.d0-s1/pr**2)
+      cod(2)=min(pr,max(-pr,pxf))
+      s1=min(ampmax,pyi**2+pxf**2)
+      sqrs1=pr*sqrt(max(ampmin,1.d0-s1/pr**2))
       dpzf=-s1/(pr+sqrs1)
       pzf=pr+dpzf
       ddpz=(s-s1)/(sqrs+sqrs1)+(dpzi+pr)*sinsq-pxi*sinp
@@ -198,7 +199,7 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       aa=a*cosp-(px0*pxf+pz0*pzf)*sinp
       c=(aa/phsq+sinp)/pzi/pzf
       b=dpzi+pr*sinsq-dpzf*cosp+pxf*sinp
-      theta=asin(a/phsq)
+      theta=asin(min(ampmax,max(-ampmax,a/phsq)))
       cod(3)=cod(3)-rhob*theta*pyi
       cod(5)=cod(5)+rhob*theta*pr
       trans(1,1)=cosp-pxf/pzf*sinp
@@ -242,14 +243,16 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       end
 
       subroutine tbedgemaxwell(trans,cod,rhob)
+      use tfstk, only: sqrtl
       implicit none
       real*8 trans(6,6),rhob,cod(6),pr,a,b,pxi,pyi,yi,pvi,
      $     c,af,bf,pvi2,yr
+      real*8, parameter :: ampmin=1.d-6
       pr=1.d0+cod(6)
-      pxi=cod(2)
-      pyi=cod(4)
+      pxi=min(pr,max(-pr,cod(2)))
+      pyi=min(pr,max(-pr,cod(4)))
       pvi2=(pr-pxi)*(pr+pxi)
-      pvi=pr*sqrt(pvi2/pr**2)
+      pvi=pr*sqrtl(pvi2/pr**2)
       yi=cod(3)
       yr=(yi/rhob)**2
       a=(1.d0-yr/6.d0)
@@ -258,7 +261,7 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       bf=b*yi**2/rhob/pvi2/pvi
       c=(1.d0-yr/2.d0)
       cod(1)=cod(1)+bf*pr
-      cod(4)=cod(4)-af*pxi
+      cod(4)=min(pr,max(-pr,cod(4)-af*pxi))
       cod(5)=cod(5)-bf*pxi
       trans(1,1)=1.d0
       trans(1,2)=3.d0*bf*pr**2*pxi/pvi2
@@ -303,13 +306,14 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       implicit none
       real*8 trans(6,6),psi,cod(6),cosp,sinp,
      $     s,pr,f,dpzi,pzi,sx,phsq,sxa,pxi,pyi
+      real*8, parameter ::ampmin=1.d-6
+      pr=1.d0+cod(6)
       cosp=cos(psi)
       sinp=sin(psi)
-      pxi=cod(2)
-      pyi=cod(4)
+      pxi=min(pr,max(-pr,cod(2)))
+      pyi=min(pr,max(-pr,cod(4)))
       s=pxi**2+pyi**2
-      pr=1.d0+cod(6)
-      dpzi=-s/(pr+pr*sqrt(1.d0-s/pr**2))
+      dpzi=-s/(pr+pr*sqrt(max(ampmin,1.d0-s/pr**2)))
       pzi=pr+dpzi
       f=cosp-pxi/pzi*sinp
       cod(1)=cod(1)/f
@@ -318,6 +322,9 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       cod(2)=pxi*cosp+pzi*sinp
       cod(3)=cod(3)+pyi/pzi*sx
       cod(5)=cod(5)-pr/pzi*sx
+      if(isnan(cod(2)))then
+        write(*,*)'edgedrift-1 ',cod(2),s,pxi,pyi,pzi,pr
+      endif
       phsq=pzi**2+pxi**2
       trans(1,1)=1.d0/f
       trans(1,2)=phsq*sxa
@@ -403,9 +410,9 @@ c      trans(3,6)=-pr*pyi*sxa*(f+pxi*sinp/pzi)
       endif
       trans1=0.d0
       xi =cod(1)
-      pxi=cod(2)
       yi =cod(3)
-      pyi=cod(4)
+      pxi=min(pr,max(-pr,cod(2)))
+      pyi=min(pr,max(-pr,cod(4)))
       y1 =-aky*xi +akx*yi
       px1= akx*pxi+aky*pyi
       a  =1.d0/(akx**2+aky**2)/pr

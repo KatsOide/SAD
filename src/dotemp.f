@@ -1,9 +1,9 @@
       subroutine dotemp(dummy)
       use maccbk
+      use cbkmac
       implicit none
       integer*4 dummy
 
-      include 'inc/CBKMAC.inc'
       character*(MAXSTR) token
       integer slen,ival,ttype,hsrchz
       real*8 rval

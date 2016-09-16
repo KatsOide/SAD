@@ -13,7 +13,7 @@
         if(i .le. ie)then
           go to 1010
         endif
-        id=idtype(latt(1,i))
+        id=idtypec(i)
         if(id .eq. icSOL)then
           go to 1010
         elseif(id .eq. 1 .or. id .gt. icDODECA .and.

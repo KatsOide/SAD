@@ -1,10 +1,10 @@
       subroutine errmsg(rtn,msg,ercode,erlvl)
+      use macttyp
+      use macfile
+      use macmisc
       implicit none
       integer*4 ercode,erlvl
       character*(*) rtn,msg
-      include 'inc/MACFILE.inc'
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACMISC.inc'
 c
       integer*4 lene,lst,ln
       character*(MAXLLEN) cwork

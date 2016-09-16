@@ -7,8 +7,8 @@
       logical push,print
 cHP   character*8 vout(2)*80,autofg,name(2)
       character*(8) vout(2)*79,autofg*8,name(2)
-      dimension latt(2,nlat),mult(*),
-     1          istr(nstra,4),temp(nstr),rc(6)
+      integer*8 latt(nlat)
+      dimension mult(*),istr(nstra,4),temp(nstr),rc(6)
       data rc /6*0d0/
       data vout(1)/' kick new (mrd)'/,
      1     vout(2)/'      totl(mrd)'/
@@ -29,12 +29,12 @@ c
       if(nstr.eq.0) return
       do 10 i=1,nstr
         j=istr(i,2)
-   10   temp(i)=rlist(latt(2,istr(j,1))+11)-rlist(ibckup-1+istr(j,1))
+   10   temp(i)=rlist(latt(istr(j,1))+11)-rlist(ibckup-1+istr(j,1))
       call mstatp(temp,nstr,ceil,floor,rc(2),rc(3),imax)
       rc(1)=max(ceil,-floor)*sign(1d0,ceil+floor)
       call elname(istr(istr(imax,2),1),name(1))
       do 12 i=1,nstr
-   12   temp(i)=rlist(latt(2,istr(istr(i,2),1))+11)
+   12   temp(i)=rlist(latt(istr(istr(i,2),1))+11)
       call mstatp(temp,nstr,ceil,floor,rc(5),rc(6),imax)
       rc(4)=max(ceil,-floor)*sign(1d0,ceil+floor)
       call elname(istr(istr(imax,2),1),name(2))

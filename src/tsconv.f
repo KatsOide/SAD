@@ -2,7 +2,7 @@
       use tfstk
       use tmacro
       implicit none
-      integer*4 l1
+      integer*8 l1
       real*8 trans1(6,6),cod(6)
       real*8 p,pxi,pyi,pzi,xi,yi,ds,
      $     cchi1,schi1,cchi2,schi2,cchi3,schi3,

@@ -146,7 +146,7 @@ integer4 cfexptilde_(character path, ftnlen plen)
 
 /* tempnam(3) wrapper for Fortran [unsafe] */
 integer4 tftmpnam_(character s, ftnlen slen) {
-  char buf[L_tmpnam];
+  char buf[] = "/tmp/fileXXXXXX";
   size_t blen;
 
   if(!mkstemp(buf)) {

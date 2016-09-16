@@ -7,6 +7,7 @@
       use ffs_pointer
       use ffs_flag
       use tmacro
+      use sad_main
       implicit none
       type (sad_list), pointer :: kli
       real*8 codmax,demax
@@ -48,12 +49,12 @@ c      vcsin=0.d0
       ipelm=0
       call tffsbound(lbegin,frbegin,lend,frend)
       if(frbegin .ne. 0.d0)then
-        call qfracsave(latt(1,lbegin),vsave,nvar,.true.)
-        call qfraccomp(latt(1,lbegin),frbegin,1.d0,ideal,chg)
+        call qfracsave(lbegin,vsave,nvar,.true.)
+        call qfraccomp(lbegin,frbegin,1.d0,ideal,chg)
         call tturne1(trans,cod,beam,
      $       iatr,iacod,iabmi,plot,sol,rt,lbegin,lbegin)
         if(chg)then
-          call qfracsave(latt(1,lbegin),vsave,nvar,.false.)
+          call qfracsave(lbegin,vsave,nvar,.false.)
         endif
         ls=lbegin+1
       else
@@ -62,12 +63,12 @@ c      vcsin=0.d0
       call tturne1(trans,cod,beam,
      $     iatr,iacod,iabmi,plot,sol,rt,ls,lend-1)
       if(frend .ne. 0.d0)then
-        call qfracsave(latt(1,lend),vsave,nvar,.true.)
-        call qfraccomp(latt(1,lend),0.d0,frend,ideal,chg)
+        call qfracsave(lend,vsave,nvar,.true.)
+        call qfraccomp(lend,0.d0,frend,ideal,chg)
         call tturne1(trans,cod,beam,
      $       iatr,iacod,iabmi,plot,sol,rt,lend,lend)
         if(chg)then
-          call qfracsave(latt(1,lend),vsave,nvar,.false.)
+          call qfracsave(lend,vsave,nvar,.false.)
         endif
       endif
       if(plot)then
@@ -116,8 +117,8 @@ c      vcsin=0.d0
                 go to 8101
               endif
 c     below is incorrect for fra <> 0
-              call qfracsave(latt(1,lx),vsave,nvar,.true.)
-              call qfraccomp(latt(1,lx),fra,frb,ideal,chg)
+              call qfracsave(lx,vsave,nvar,.true.)
+              call qfraccomp(lx,fra,frb,ideal,chg)
               if(.not. chg)then
                 fr=0.d0
                 go to 8101
@@ -154,7 +155,7 @@ c     below is incorrect for fra <> 0
      $             lx,lx)
               codplt=cp0
               calint=int0
-              call qfracsave(latt(1,lx),vsave,nvar,.false.)
+              call qfracsave(lx,vsave,nvar,.false.)
               call tfsetplot(trans1,cod1,beam1,
      $             l,iatr,iacod,l .ge. lbegin .and. l .le. lend,
      $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb))
@@ -215,18 +216,19 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
       use ffs_pointer
       use ffs_flag
       use tmacro
+      use sad_main
       implicit none
       real*8 codmax,demax
       parameter (codmax=1.d4,demax=.5d0)
-      integer*8 iatr,iacod,iabmi,kbmz,kbmzi
+      type (sad_comp), pointer :: cmp
+      integer*8 iatr,iacod,iabmi,kbmz,kbmzi,lp
       integer*4 i
       real*8 trans(6,12),cod(6),beam(42),bmir(6,6),
      $     bmi(21),bmh(21)
       real*8 psi1,psi2,apsi1,apsi2,alid,cod60,
-     $     r,dir,al,alib,dtheta,theta0,
+     $     r,dir,al,alib,dtheta,theta0,ftable(4),
      $     phi,fb1,fb2,chi1,chi2,ak0,ak1,rtaper
-      integer*4 l,ld,lele,lp,kl,
-     $     mfr,ibegin,iend,ke
+      integer*4 l,ld,lele,kl,mfr,ibegin,iend,ke
       logical*4 sol,plot,bmaccum,plotib,isnan,rt,next
       save kbmz
       data kbmz /0/
@@ -291,17 +293,18 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
           endif
           twiss(l,0,mfitddp)=cod(6)*r
         endif
-        ld=latt(1,l)
+        ld=idelc(l)
         lele=idtype(ld)
         if(ideal)then
           lp=idval(ld)
         else
-          lp=latt(2,l)
+          lp=elatt%comp(l)
         endif
-        dir=rlist(latt(2,l)+ilist(1,latt(2,l)))
+        call loc_comp(lp,cmp)
+        dir=direlc(l)
         kl=kytbl(kwL,lele)
         if(kl .ne. 0)then
-          al=rlist(lp+kl)
+          al=cmp%value(kl)
         else
           al=0.d0
         endif
@@ -337,7 +340,7 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
             klist(iabmi+l)=ktflist+ktfcopy1(kbmz)
           endif
         endif
-c        WRITE(*,*)lele,' ',PNAME(LATT(1,L))(1:16)
+c        WRITE(*,*)lele,' ',PNAME(ILIST(2,LATT(L)))(1:16)
 c        if(l .lt. 5)then
 c          write(*,*)'tturne1-l ',l,beam(6)
 c        endif
@@ -369,28 +372,29 @@ c        endif
         go to 1010
 1200    continue
         if(dir .gt. 0.d0)then
-          psi1=rlist(lp+kytbl(kwE1,icBEND))
-          psi2=rlist(lp+kytbl(kwE2,icBEND))
-          apsi1=rlist(lp+kytbl(kwAE1,icBEND))
-          apsi2=rlist(lp+kytbl(kwAE2,icBEND))
-          fb1=rlist(lp+kytbl(kwF1,icBEND))
-     $         +rlist(lp+kytbl(kwFB1,icBEND))
-          fb2=rlist(lp+kytbl(kwF1,icBEND))
-     $         +rlist(lp+kytbl(kwFB2,icBEND))
+          psi1=cmp%value(kytbl(kwE1,icBEND))
+          psi2=cmp%value(kytbl(kwE2,icBEND))
+          apsi1=cmp%value(kytbl(kwAE1,icBEND))
+          apsi2=cmp%value(kytbl(kwAE2,icBEND))
+          fb1=cmp%value(kytbl(kwF1,icBEND))
+     $         +cmp%value(kytbl(kwFB1,icBEND))
+          fb2=cmp%value(kytbl(kwF1,icBEND))
+     $         +cmp%value(kytbl(kwFB2,icBEND))
         else
-          psi1=rlist(lp+kytbl(kwE2,icBEND))
-          psi2=rlist(lp+kytbl(kwE1,icBEND))
-          apsi1=rlist(lp+kytbl(kwAE2,icBEND))
-          apsi2=rlist(lp+kytbl(kwAE1,icBEND))
-          fb2=rlist(lp+kytbl(kwF1,icBEND))
-     $         +rlist(lp+kytbl(kwFB1,icBEND))
-          fb1=rlist(lp+kytbl(kwF1,icBEND))
-     $         +rlist(lp+kytbl(kwFB2,icBEND))
+          psi1=cmp%value(kytbl(kwE2,icBEND))
+          psi2=cmp%value(kytbl(kwE1,icBEND))
+          apsi1=cmp%value(kytbl(kwAE2,icBEND))
+          apsi2=cmp%value(kytbl(kwAE1,icBEND))
+          fb2=cmp%value(kytbl(kwF1,icBEND))
+     $         +cmp%value(kytbl(kwFB1,icBEND))
+          fb1=cmp%value(kytbl(kwF1,icBEND))
+     $         +cmp%value(kytbl(kwFB2,icBEND))
         endif
-        dtheta=rlist(lp+kytbl(kwDROT,icBEND))
-        theta0=rlist(lp+kytbl(kwROT,icBEND))+dtheta
-        ak0=rlist(lp+kytbl(kwK0,icBEND))+rlist(lp+kytbl(kwANGL,icBEND))
-        ak1=rlist(lp+kytbl(kwK1,icBEND))
+        dtheta=cmp%value(kytbl(kwDROT,icBEND))
+        theta0=cmp%value(kytbl(kwROT,icBEND))+dtheta
+        ak0=cmp%value(kytbl(kwK0,icBEND))
+     $       +cmp%value(kytbl(kwANGL,icBEND))
+        ak1=cmp%value(kytbl(kwK1,icBEND))
         if(radcod .and. radtaper)then
           if(rt)then
             ak0=ak0*(4.d0+3.d0*cod(6)+gettwiss(mfitddp,l+1))*.25d0
@@ -403,25 +407,25 @@ c        endif
         cod60=cod(6)
         call tbende(trans,cod,beam,al,
      1       min(pi2,max(-pi2,ak0)),
-     $       rlist(lp+2),
+     $       cmp%value(2),
      $       psi1,psi2,apsi1,apsi2,ak1,
-     1       rlist(lp+kytbl(kwDX,icBEND)),
-     $       rlist(lp+kytbl(kwDY,icBEND)),theta0,dtheta,
+     1       cmp%value(kytbl(kwDX,icBEND)),
+     $       cmp%value(kytbl(kwDY,icBEND)),theta0,dtheta,
      $       fb1,fb2,
-     $       nint(rlist(lp+kytbl(kwFRMD,icBEND))),
-     $       rlist(lp+kytbl(kwFRIN,icBEND)) .eq. 0.d0,
-     $       rlist(lp+kytbl(kwEPS,icBEND)),
-     1       rlist(lp+kytbl(kwRAD,icBEND)) .eq. 0.d0,.true.,
-     $       next,ld)
+     $       nint(cmp%value(kytbl(kwFRMD,icBEND))),
+     $       cmp%value(kytbl(kwFRIN,icBEND)) .eq. 0.d0,
+     $       cmp%value(kytbl(kwEPS,icBEND)),
+     1       cmp%value(kytbl(kwRAD,icBEND)) .eq. 0.d0,.true.,
+     $       next,l,ld)
         go to 1010
 1400    continue
         if(dir .gt. 0.d0)then
-          mfr=nint(rlist(lp+12))
+          mfr=nint(cmp%value(12))
         else
-          mfr=nint(rlist(lp+12))
+          mfr=nint(cmp%value(12))
           mfr=mfr*(11+mfr*(2*mfr-9))/2
         endif
-        ak1=rlist(lp+kytbl(kwK1,icQUAD))
+        ak1=cmp%value(kytbl(kwK1,icQUAD))
         if(radcod .and. radtaper)then
           if(rt)then
             ak1=ak1*(2.d0+cod(6)+gettwiss(mfitddp,l+1))*.5d0
@@ -429,14 +433,15 @@ c        endif
             ak1=ak1*(1.d0+cod(6))
           endif
         endif
+        call tsetfringepe(cmp,icQUAD,dir,ftable)
         call tquade(trans,cod,beam,al,
-     1       ak1,rlist(lp+5),rlist(lp+6),
-     1       rlist(lp+4),rlist(lp+kytbl(kwRAD,icQUAD)) .eq. 0.d0,
-     1       rlist(lp+9) .eq. 0.d0,
-     1       rlist(lp+10),rlist(lp+11),mfr,
-     $       rlist(lp+13),rlist(lp+14) .eq. 0.d0,next,ld)
+     1       ak1,cmp%value(5),cmp%value(6),
+     1       cmp%value(4),cmp%value(kytbl(kwRAD,icQUAD)) .eq. 0.d0,
+     1       cmp%value(9) .eq. 0.d0,
+     $       ftable(1),ftable(2),ftable(3),ftable(4),
+     $       mfr,cmp%value(13),cmp%value(14) .eq. 0.d0,next,ld)
         go to 1010
- 1600   ak1=rlist(lp+2)
+ 1600   ak1=cmp%value(2)
         if(radcod .and. radtaper)then
           if(rt)then
             ak1=ak1*(2.d0+cod(6)+gettwiss(mfitddp,l+1))*.5d0
@@ -445,7 +450,7 @@ c        endif
           endif
         endif
         call tthine(trans,cod,beam,lele,al,ak1,
-     1             rlist(lp+5),rlist(lp+6),rlist(lp+4),.false.,ld)
+     1             cmp%value(5),cmp%value(6),cmp%value(4),.false.,ld)
         go to 1010
  3000   call tsole(trans,cod,beam,l,ke,sol,
      1       iatr,iacod,iabmi,plot,rt)
@@ -453,27 +458,27 @@ c        endif
         go to 1010
  3100   write(*,*)'Use BEND with ANGLE=0 for ST.'
         call forcesf()
- 3200   phi=rlist(lp+kytbl(kwANGL,icMULT))
-        mfr=nint(rlist(lp+kytbl(kwFRMD,icMULT)))
+ 3200   phi=cmp%value(kytbl(kwANGL,icMULT))
+        mfr=nint(cmp%value(kytbl(kwFRMD,icMULT)))
         if(dir .gt. 0.d0)then
-          psi1=rlist(lp+kytbl(kwE1,icMULT))
-          psi2=rlist(lp+kytbl(kwE2,icMULT))
-          apsi1=rlist(lp+kytbl(kwAE1,icMULT))
-          apsi2=rlist(lp+kytbl(kwAE2,icMULT))
-          fb1=rlist(lp+kytbl(kwFB1,icMULT))
-          fb2=rlist(lp+kytbl(kwFB2,icMULT))
-          chi1=rlist(lp+kytbl(kwCHI1,icMULT))
-          chi2=rlist(lp+kytbl(kwCHI2,icMULT))
+          psi1=cmp%value(kytbl(kwE1,icMULT))
+          psi2=cmp%value(kytbl(kwE2,icMULT))
+          apsi1=cmp%value(kytbl(kwAE1,icMULT))
+          apsi2=cmp%value(kytbl(kwAE2,icMULT))
+          fb1=cmp%value(kytbl(kwFB1,icMULT))
+          fb2=cmp%value(kytbl(kwFB2,icMULT))
+          chi1=cmp%value(kytbl(kwCHI1,icMULT))
+          chi2=cmp%value(kytbl(kwCHI2,icMULT))
         else
           mfr=mfr*(11+mfr*(2*mfr-9))/2
-          psi1=rlist(lp+kytbl(kwE2,icMULT))
-          psi2=rlist(lp+kytbl(kwE1,icMULT))
-          apsi1=rlist(lp+kytbl(kwAE2,icMULT))
-          apsi2=rlist(lp+kytbl(kwAE1,icMULT))
-          fb2=rlist(lp+kytbl(kwFB1,icMULT))
-          fb1=rlist(lp+kytbl(kwFB2,icMULT))
-          chi1=-rlist(lp+kytbl(kwCHI1,icMULT))
-          chi2=-rlist(lp+kytbl(kwCHI2,icMULT))
+          psi1=cmp%value(kytbl(kwE2,icMULT))
+          psi2=cmp%value(kytbl(kwE1,icMULT))
+          apsi1=cmp%value(kytbl(kwAE2,icMULT))
+          apsi2=cmp%value(kytbl(kwAE1,icMULT))
+          fb2=cmp%value(kytbl(kwFB1,icMULT))
+          fb1=cmp%value(kytbl(kwFB2,icMULT))
+          chi1=-cmp%value(kytbl(kwCHI1,icMULT))
+          chi2=-cmp%value(kytbl(kwCHI2,icMULT))
         endif
         rtaper=1.d0
         if(radcod .and. radtaper)then
@@ -483,49 +488,51 @@ c        endif
             rtaper=1.d0+cod(6)
           endif
         endif
-        call tmulte(trans,cod,beam,gammab,l,al,
-     $       rlist(lp+kytbl(kwK0,icMULT)),
+        call tsetfringepe(cmp,icMULT,dir,ftable)
+        call tmulte(trans,cod,beam,l,al,
+     $       cmp%value(kytbl(kwK0,icMULT)),
      $       0.d0,
      $       phi,psi1,psi2,apsi1,apsi2,
-     1       rlist(lp+3),rlist(lp+4),rlist(lp+5),
-     $       chi1,chi2,rlist(lp+8),
-     $       rlist(lp+kytbl(kwDROT,icMULT)),
-     $       rlist(lp+9),rlist(lp+10) .eq. 0.d0,
-     $       rlist(lp+11) .eq. 0.d0,
-     $       rlist(lp+12),rlist(lp+13),mfr,fb1,fb2,
-     $       rlist(lp+kytbl(kwK0FR,icMULT)) .eq. 0.d0,
-     $       rlist(lp+15),rlist(lp+16),rlist(lp+17),rlist(lp+18),
-     $       rlist(lp+kytbl(kwW1,icMULT)),rtaper,
-     $       rlist(lp+kytbl(kwAPHI,icMULT)) .ne. 0.d0,
+     1       cmp%value(3),cmp%value(4),cmp%value(5),
+     $       chi1,chi2,cmp%value(8),
+     $       cmp%value(kytbl(kwDROT,icMULT)),
+     $       cmp%value(9),cmp%value(10) .eq. 0.d0,
+     $       cmp%value(11) .eq. 0.d0,
+     $       ftable(1),ftable(2),ftable(3),ftable(4),
+     $       mfr,fb1,fb2,
+     $       cmp%value(kytbl(kwK0FR,icMULT)) .eq. 0.d0,
+     $       cmp%value(15),cmp%value(16),cmp%value(17),cmp%value(18),
+     $       cmp%value(kytbl(kwW1,icMULT)),rtaper,
+     $       cmp%value(kytbl(kwAPHI,icMULT)) .ne. 0.d0,
      $       ld)
         go to 1010
- 4100   mfr=nint(rlist(lp+kytbl(kwFRMD,icCAVI)))
+ 4100   mfr=nint(cmp%value(kytbl(kwFRMD,icCAVI)))
         if(dir .gt. 0.d0)then
         else
           mfr=mfr*(11+mfr*(2*mfr-9))/2
         endif
-        call tcave(trans,cod,beam,gammab,l,al,
-     1       rlist(lp+2),rlist(lp+3),
-     1       rlist(lp+4),rlist(lp+5),
-     1       rlist(lp+13),rlist(lp+14),rlist(lp+15),
-     $       rlist(lp+16),rlist(lp+17),rlist(lp+18),rlist(lp+19),
-     $       rlist(lp+kytbl(kwFRIN,icCAVI)) .eq. 0.d0,mfr,
-     $       rlist(lp+kytbl(kwAPHI,icCAVI)) .ne. 0.d0,
+        call tcave(trans,cod,beam,l,al,
+     1       cmp%value(2),cmp%value(3),
+     1       cmp%value(4),cmp%value(5),
+     1       cmp%value(13),cmp%value(14),cmp%value(15),
+     $       cmp%value(16),cmp%value(17),cmp%value(18),cmp%value(19),
+     $       cmp%value(kytbl(kwFRIN,icCAVI)) .eq. 0.d0,mfr,
+     $       cmp%value(kytbl(kwAPHI,icCAVI)) .ne. 0.d0,
      $       ld)
         go to 1010
  4200   call ttcave(trans,cod,beam,al,
-     $       rlist(lp+2),rlist(lp+3),
-     1       rlist(lp+4),rlist(lp+5),
-     1       rlist(lp+6),rlist(lp+7),rlist(lp+8),ld)
+     $       cmp%value(2),cmp%value(3),
+     1       cmp%value(4),cmp%value(5),
+     1       cmp%value(6),cmp%value(7),cmp%value(8),ld)
         go to 1010
  4300   call temape(trans,cod,beam,l)
         go to 1010
- 4400   call tinse(trans,cod,beam,rlist(lp+20),ld)
+ 4400   call tinse(trans,cod,beam,cmp%value(20),ld)
         go to 1010
  4500   call tcoorde(trans,cod,beam,
-     1       rlist(lp+1),rlist(lp+2),rlist(lp+3),
-     1       rlist(lp+4),rlist(lp+5),rlist(lp+6),
-     1       rlist(lp+7) .eq. 0.d0,ld)
+     1       cmp%value(1),cmp%value(2),cmp%value(3),
+     1       cmp%value(4),cmp%value(5),cmp%value(6),
+     1       cmp%value(7) .eq. 0.d0,ld)
         go to 1010
  5000   go to 1010
  1010   continue

@@ -108,6 +108,9 @@ c     $     transfer(c_loc(klist(kpb)),k)/8
         call forcesf()
       endif
 c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
+      if(itfcbk(k) .eq. 0)then
+        call tfentercbk(k,klist(kpb-1)+1)
+      endif
       call tfree(k)
       return
       end subroutine

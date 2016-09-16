@@ -22,12 +22,12 @@ c end debug
 
       integer*4 function hsrchz(token)
       use maccbk
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
       character*(*) token
       character wtoken*(MAXPNAME)
 c
-      integer*4 loopc,slen,slenw,iw,isum,i
+      integer*4 loopc,slen,slenw,iw,isum,i,lpname
       integer*4 lenw
 c
       slen=lenw(token)
@@ -47,7 +47,7 @@ c      isum=isum*isum
       hsrchz=mod(abs(isum), HTMAX)+1
 c       write(*,*)'@hsrchz ',token(:slen),slen," -> ", hsrchz
       do loopc=1,HTMAX
-         slenw=lenw(pname(hsrchz))
+         slenw=lpname(hsrchz)
          if(slenw .le. 0) then
             pname(hsrchz)=wtoken(:slen)
 c            print *,"@hsrchz insert ",pname(hsrchz)
@@ -72,12 +72,12 @@ c
 
       integer function hsrchz1(token)
       use maccbk
+      use maccode
       implicit none
-      include 'inc/MACCODE.inc'
       character*(*) token
       character wtoken*(MAXPNAME)
 c     
-      integer*4 loopc,slen,slenw,iw,isum,i
+      integer*4 loopc,slen,slenw,iw,isum,i,lpname
       integer*4 lenw
 c     
       slen=lenw(token)
@@ -95,7 +95,7 @@ c
 c      isum=isum*isum
       hsrchz1=mod(abs(isum), HTMAX)+1
       do loopc=1,HTMAX
-        slenw=lenw(pname(hsrchz1))
+        slenw=lpname(hsrchz1)
         if(slenw .le. 0) then
           hsrchz1=0
           return

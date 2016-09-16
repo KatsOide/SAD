@@ -12,7 +12,7 @@ enum {
   icST     =  21, icMULT   =  22, icTEST   =  30,
   icCAVI   =  31, icTCAV   =  32, icMAP    =  33,
   icINS    =  34, icCOORD  =  35, icBEAM   =  36,
-  icPROT   =  37,
+  icPROT   =  37, icSPCH   =  38,
   icMARK   =  41, icMONI   =  42, icAPRT   =  43,
   icMXEL   =  99, icLINE   = 100, icCELL   = 100,
 

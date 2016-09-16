@@ -1,7 +1,7 @@
-      subroutine twelm(lfno,latt,mult,idisp1,idisp2,title,irmgn,itab)
+      subroutine twelm(lfno,idisp1,idisp2,title,irmgn,itab)
       use ffs
       use tffitcode
-      dimension latt(2,nlat),mult(nlat)
+      use ffs_pointer
       character*(*) title
       character*16 name,name1,title1
       call elname(idisp1,name)

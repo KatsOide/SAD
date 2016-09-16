@@ -1,15 +1,16 @@
-      subroutine tcave(trans,cod,beam,gammab,l,
+      subroutine tcave(trans,cod,beam,l,
      $     al,vc,harm,phi,freq,dx,dy,theta,v10,v20,v11,v02,
      $     fringe,mfring,autophi,ld)
       use tfstk
       use ffs_flag
       use tmacro
+      use ffs_pointer, only: gammab
       implicit none
       real*8 eps,oneev
       parameter (eps=1.d-2)
       parameter (oneev=1.d0+3.83d-12)
       integer*4 l,ld,ndiv,n,mfring
-      real*8 trans(6,12),cod(6),beam(42),gammab(*)
+      real*8 trans(6,12),cod(6),beam(42)
       real*8 trans1(6,6)
       real*8 al,vc,harm,phi,freq,w,v,vn,vcn,p1,h1,
      $     aln,phis,phic,dhg,v1,t,phii,dh,a,
@@ -106,8 +107,7 @@ c          h1=sqrt(1.d0+p1**2)
           endif
           vcacc=vcacc-vcn*sp
           dh=max(oneev-h1,-va*(sp+offset1))
-c          write(*,'(a,1p6g15.7)')'tcave ',
-c     $         phii,cod(5),sp,offset1,phic,phis
+c          write(*,'(a,i5,1p6g14.6)')'tcave ',n,dh,va,cod(6)
           h2=h1+dh
           p2=h2*sqrt(1.d0-1.d0/h2**2)
           pf    =(h2+h1)/(p2+p1)*dh
@@ -147,7 +147,6 @@ c          trans1(5,5)=(p2+a*t/p2/h2)/h2/v1
 c          trans1(5,6)=t*p0/h1**2/h2**2/p1/p2*(dh*(h2*(h2+h1)+p1**2)+a*t)
 c          trans1(6,5)=-a/v1/v2/p0
 c          trans1(6,6)=(p1-a*t/p1/h1)/h1/v2
-c          write(*,*)'tcave ',dpx,dpy
           cod(2)=cod(2)+dpx
           cod(4)=cod(4)+dpy
           cod(6)=cod(6)+pf/p0
@@ -166,7 +165,6 @@ c          write(*,*)'tcave ',dpx,dpy
      $         0.d0,0.d0,0.d0,.true.,.false.,calpol,irad,ld)
           call tgetdvh(dgb,dv)
           cod(5)=cod(5)+dv*aln*.5d0
-c          write(*,*)'tcave-2 ',fringe,mfring
           if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
             call tcavfrie(trans,cod,beam,al,-v,w,phic,phis-phic,s0,p0,
      $           irad,irad .gt. 6 .or. calpol,autophi)

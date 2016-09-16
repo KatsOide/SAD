@@ -1,11 +1,10 @@
       subroutine dolist(dummy)
       use maccbk
+      use mackw
+      use macttyp
+      use macfile
+      use macmisc
       implicit none
-      include 'inc/MACFILE.inc'
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACMISC.inc'
       character*(MAXSTR) token
       integer*4 slen,ival,ttype,hsrch,lpname
       real*8 rval,dummy

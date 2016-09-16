@@ -2,10 +2,11 @@
       use tfstk
       use ffs
       use tffitcode
+      use tfcsi, only:icslfno
       implicit none
-      integer*8 kx,kax,kax1,kax2,kax3,kaxi,kaini
+      integer*8 kx,kax,kax1,kax2,kax3,kaxi,kaini,itoff
       integer*4 isp1,narg,irtc,idim,k,i,
-     $     itoff,itfloc,itfmessage,i1,i2,lout,icslfno
+     $     itfloc,itfmessage,i1,i2,lout
       logical*4 cell0,hstab,vstab,over,geo
       real*8 tracex,tracey
       narg=isp-isp1
@@ -27,7 +28,7 @@
         irtc=itfmessage(9,'General::wrongtype','"Real(IDIM) for #5"')
         return
       endif
-      idim=rtastk(isp1+5)
+      idim=int(rtastk(isp1+5))
       if(idim .ne. 2)then
         irtc=itfmessage(9,'General::wrongnum','"IDIM must be 2"')
         return

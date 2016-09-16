@@ -1,28 +1,28 @@
-      integer*4 function flmgr(ifn)
+      integer*8 function flmgr(ifn)
       use maccbk
+      use macfile
 c
 c     flmgr(0) returns last saved file number
 c     flmgr(>0) push ifn onto stack.
       implicit none
-      integer*4 ifn,mtaloc
-      include 'inc/MACFILE.inc'
+      integer*4 ifn
+      integer*8 ktaloc
 c
-      integer*4 itemp
+      integer*8 itemp
 c
       if(ifn .eq. 0) then
-        flmgr=ilist(1,inflpt)
-        if(ilist(2,inflpt) .ne. 0) then
+        flmgr=klist(inflpt)
+        if(klist(inflpt+1) .ne. 0) then
           itemp=inflpt
-          inflpt=ilist(2,itemp)
-          call tfreem(itemp,1)
+          inflpt=klist(itemp+1)
+          call tfree(itemp)
 c          call freeme(itemp,1)
         endif
 c        write(*,*)'@flmgr pop ',flmgr,inflpt
       else
-        flmgr=mtaloc(4)
-c        flmgr=mfalloc(1)
-        ilist(1,flmgr)=ifn
-        ilist(2,flmgr)=inflpt
+        flmgr=ktaloc(5)
+        klist(flmgr)=int8(ifn)
+        klist(flmgr+1)=inflpt
         inflpt=flmgr
 c        write(*,*)'@flmgr push ',ifn,inflpt
       endif

@@ -139,9 +139,9 @@
       end
 
       complex*16 function cbesselk(cn,z)
+      use macmath
       implicit none
 c     Including euler(Euler-Mascheroni constant)/pi symbol
-      include 'inc/MACMATH.inc'
       complex*16 cn,z,cbessely,cbesselj
       if(imag(z) .eq. 0.d0 .and.
      $     imag(cn) .eq. 0.d0)then
@@ -158,9 +158,9 @@ c     Including euler(Euler-Mascheroni constant)/pi symbol
 
       recursive complex*16 function cbessely(cn,z)
      $     result(cb)
+      use macmath
       implicit none
 c     Including m_pi_2 symbol
-      include 'inc/MACMATH.inc'
       integer*4 i,itmax,m
       parameter (itmax=26)
       complex*16 cn,z,cbesselj,cj,cg1,cg2,cgamm1,cgamm2,ca3,
@@ -330,9 +330,9 @@ c
       end
 
       subroutine cbesasym(cn,z,cbesj,cbesy)
+      use macmath
       implicit none
 c     Including m_pi_2/m_pi_4/m_2_pi symbol
-      include 'inc/MACMATH.inc'
       complex*16 cn,z,cp,cq,cmu,cbesj,cbesy,z1,chi,csqrtz,
      $     ccoschi,csinchi
       cmu=4.d0*cn**2

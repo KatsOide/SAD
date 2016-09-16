@@ -3,13 +3,14 @@
       use ffs
       use ffs_pointer
       use tffitcode
+      use tfcsi,only:cssetp
       implicit none
       type (sad_descriptor) kx
       type (sad_list), pointer :: kli,kla
       integer*8 kxr
       integer*4 lfno,i,iv,kk,level, itfuplevel,itfdownlevel,
      $     isp1,next,ifany
-      integer*4 nvar,irtc,lenw
+      integer*4 nvar,irtc,lenw,lpname
       real*8 x3,vmin,vmax,coup
       integer*4 k
       logical*4 ret,exist,tmatch
@@ -45,7 +46,7 @@
         else
           kk=ivcomp(i)
         endif
-        k=latt(1,kk)
+        k=idelc(kk)
         if(ivcomp(i) .eq. 0)then
           name=pname(k)
         else
@@ -84,7 +85,7 @@
               call tfaddmessage(' ',2,6)
             endif
             call termes(6,'Error in VariableRange ',
-     $           pname(k)(1:lenw(pname(k)))//' '//key(1:lenw(key)))
+     $           pname(k)(:lpname(k))//' '//key(1:lenw(key)))
             kx=kxadalocnull(-1,nvar)
             return
           elseif(tfreallistq(kxr,kla))then

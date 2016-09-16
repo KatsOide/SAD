@@ -7,6 +7,7 @@
       parameter(MAXLLEN=255)
       parameter(LLEN=MAXLLEN)
 c
+      atof=0.d0
       if (slen .gt. LLEN)  then
        call errmsg('atof',
      &             'Data is too long.',0,0)

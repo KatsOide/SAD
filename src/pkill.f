@@ -4,7 +4,8 @@
       use tffitcode
       character*(*) word,wordp
       logical mhogal,exist
-      dimension latt(2,nlat),mult(*)
+      integer*8 latt(nlat)
+      dimension mult(*)
       dimension imon(nmona,4),istr(nstra,4)
       external pack
       include 'inc/common.inc'

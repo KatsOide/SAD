@@ -1,8 +1,8 @@
 c     Peek/Get word from input buffer with case preserving
       integer*4 function peekwd0(outstr,next)
       use ffs_flag
+      use tfcsi
       implicit none
-      include 'inc/TFCSI.inc'
       character*(*) outstr
       integer*4 next,is,notany,ifany
       next=ipoint
@@ -30,6 +30,7 @@ c     Peek/Get word from input buffer with case preserving
       end
 
       integer*4 function getwdl0(outstr)
+      use tfcsi
       implicit none
       character*(*) outstr
       integer*4 next,peekwd0
@@ -39,9 +40,10 @@ c     Peek/Get word from input buffer with case preserving
       end
 
       integer*4 function getwrd0(outstr)
+      use tfcsi
       implicit none
       character*(*) outstr
-      integer*4 getwdl0,icsstat
+      integer*4 getwdl0
  1    getwrd0=getwdl0(outstr)
       if(outstr(1:1) .eq. ' ')then
         call skipln
@@ -99,7 +101,7 @@ c     Peek/Get word from input buffer with case normalization
 
 c     Peek/Get word from input buffer with case preserving by preservecase
       subroutine peekwdp(outstr,next)
-            use tfstk
+      use tfstk
       use ffs_flag
       use tmacro
       implicit none
@@ -113,7 +115,7 @@ c     Peek/Get word from input buffer with case preserving by preservecase
       end
 
       subroutine getwdlp(outstr)
-            use tfstk
+      use tfstk
       use ffs_flag
       use tmacro
       implicit none
@@ -226,8 +228,8 @@ c     Peek character from input buffer with case normalization
       use tfstk
       use ffs_flag
       use tmacro
+      use tfcsi
       implicit none
-      include 'inc/TFCSI.inc'
       integer*4 next,notspace
       next=ipoint
       if(ipoint .ge. lrecl)then
@@ -253,8 +255,8 @@ c     Peek character from input buffer with case normalization
 
       subroutine skipln
       use ffs_flag
+      use tfcsi
       implicit none
-      include 'inc/TFCSI.inc'
       integer*4 ifany,is
       if(ipoint .gt. 0)then
         is=ifany(buffer(1:lrecl),delim(1:2),ipoint)
@@ -272,8 +274,8 @@ c     Peek character from input buffer with case normalization
       end
 
       subroutine csrst(lfn0)
+      use tfcsi
       implicit none
-      include 'inc/TFCSI.inc'
       integer*4 lfn0
       lfn1=lfn0
       call skipline
@@ -282,8 +284,8 @@ c     Peek character from input buffer with case normalization
       end
 
       subroutine skipline
+      use tfcsi
       implicit none
-      include 'inc/TFCSI.inc'
       integer*4 ipoint1,ifchar
       if(ipoint .ge. lrecl)then
         ipoint=lrecl+1

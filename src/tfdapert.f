@@ -112,7 +112,7 @@ c      write(*,*)'tfda1 ',phix,phiy,phiz,ivar1,ivar2
       g(1:n1)=r1
       pz(1)=n1
       kptbl=0
-      call tspini(1,kptbl,.false.)
+      call tspini(int8(1),kptbl,.false.)
       call trackd(latt,kptbl,x,px,y,py,z,g,dv,pz,
      1     mturn,kzx,trval,phi,damp,dampenough,ivar1,ivar2,lfno)
       dapert=dapert0

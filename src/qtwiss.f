@@ -14,11 +14,15 @@
       subroutine qtwiss1(twiss,idp,la,lb,tr,cod,mat,over)
       use tfstk
       use ffs
-      use ffs_pointer, only:gammab,latt
+      use ffs_pointer, only:elatt,idelc,direlc,idtypec,idvalc,
+     $     tsetfringepe
       use tffitcode
+      use sad_main
       implicit none
+      type (sad_comp), pointer :: cmp
       integer*4 idp,la,lb,ip0,l1,i,l,ip1,ip,ltyp,
-     $     j,le,ld,lp,mfr,itgetfpe,k,ibb,ibg,ntfun
+     $     j,mfr,itgetfpe,k,ibb,ibg,ntfun,ipa
+      integer*8 le,lp,ld
       real*8 twiss(nlat*(2*ndim+1),ntwissfun),epschop
       parameter (epschop=1.d-30)
       real*8 trans(4,5),cod(6),tr(4,5),rxy(4,5),
@@ -28,12 +32,12 @@
      $     detm,ex0,epx0,ey0,epy0,t1,t2,t3,t4,bz,
      $     r15,r25,r35,r45,pr,a,dpz,trf00,dtheta,phi,
      $     apsi1,apsi2,sspc0,sspc,vcphic0,vcalpha0,fb1,fb2,
-     $     chi1m,chi2m
+     $     chi1m,chi2m,ak1,ftable(4),dir
       logical*4 over,coup,normal,mat,calpol0,insmat,err
       real*8 a11,a12,a13,a14,a21,a22,a23,a24,a31,a32,a33,
      $     a34,a41,a42,a43,a44,a15,a25,a35,a45
       real*8 u11,u12,u13,u14,u21,u22,u23,u24,u31,u32,u33,
-     $     u34,u41,u42,u43,u44,u15,u25,u35,u45
+     $     u34,u41,u42,u43,u44,u15,u25,u35,u45,cod1(6)
       equivalence (a11,trans(1,1)),(a12,trans(1,2)),(a13,trans(1,3)),
      1            (a14,trans(1,4)),(a21,trans(2,1)),(a22,trans(2,2)),
      1            (a23,trans(2,3)),(a24,trans(2,4)),
@@ -79,7 +83,7 @@ c     end   initialize for preventing compiler warning
       over=.false.
       insmat=.false.
       ip0=(ndim+idp)*nlat
-      l1=ip0+la
+      ipa=ip0+la
       if(mat)then
         tr=0.d0
         tr(1,1)=1.d0
@@ -88,18 +92,18 @@ c     end   initialize for preventing compiler warning
         tr(4,4)=1.d0
       else
         do i=mfitex,ntwissfun
-          if(abs(twiss(l1,i)) .lt. epschop)then
-            twiss(l1,i)=0.d0
+          if(abs(twiss(ipa,i)) .lt. epschop)then
+            twiss(ipa,i)=0.d0
           endif
         enddo
-        cod=twiss(l1,mfitdx:mfitddp)
-        r1=twiss(l1,mfitr1)
-        r2=twiss(l1,mfitr2)
-        r3=twiss(l1,mfitr3)
-        r4=twiss(l1,mfitr4)
+        cod=twiss(ipa,mfitdx:mfitddp)
+        r1=twiss(ipa,mfitr1)
+        r2=twiss(ipa,mfitr2)
+        r3=twiss(ipa,mfitr3)
+        r4=twiss(ipa,mfitr4)
         detr=r1*r4-r2*r3
         sqrdet=sqrt(1.d0-detr)
-        normal=twiss(l1,mfitdetr) .lt. 1.d0
+        normal=twiss(ipa,mfitdetr) .lt. 1.d0
       endif
       dvfs=0.d0
       call tesetdv(cod(6))
@@ -109,16 +113,20 @@ c     end   initialize for preventing compiler warning
       else
         ntfun=mfitdetr
       endif
-      do 10 l=la+1,lb
+      do l=la+1,lb
         l1=l-1
         ip1=ip0+l1
         ip=ip1+1
-        ltyp=idtype(latt(1,l1))
+        ltyp=idtypec(l1)
         if(.not. orbitcal)then
           cod=twiss(ip1,mfitdx:mfitddp)
           call tesetdv(cod(6))
         endif
-        if(ltyp .lt. 42)then
+        if(ltyp .gt. icMARK)then
+          if(.not. mat)then
+            twiss(ip,1:ntfun)=twiss(ip1,1:ntfun)
+          endif
+        else
           if(mat)then
             if(itgetfpe() .ne. 0)then
               call tclrfpe
@@ -165,14 +173,16 @@ c     end   initialize for preventing compiler warning
             call qsol(trans,cod,l1,coup)
             go to 20
           endif
-          le=latt(2,l1)
-          ld=idval(latt(1,l1))
+          le=elatt%comp(l1)
+          ld=idvalc(l1)
           if(ideal)then
             lp=ld
           else
             lp=le
           endif
-          al=rlist(lp+1)
+          call loc_comp(lp,cmp)
+          al=cmp%value(kytbl(kwL,ltyp))
+          dir=direlc(l1)
           go to (
      $         1100,1200,1010,1400,1010,1600,1010,1600,1010,1600,
      1         1010,1600,1010,1010,1010,1010,1010,1010,1010,2000,
@@ -211,7 +221,7 @@ c     end   initialize for preventing compiler warning
             tr(3,3)=tr(3,3)+a32*tr(2,3)+a34*tr(4,3)
             tr(3,4)=tr(3,4)+a32*tr(2,4)+a34*tr(4,4)
             tr(3,5)=tr(3,5)+a32*tr(2,5)+a34*tr(4,5)+a35
-            go to 30
+            go to 10
           else
             coup=a14 .ne. 0.d0
             a11=1.d0
@@ -231,113 +241,118 @@ c     end   initialize for preventing compiler warning
             go to 20
           endif
  1200     continue
-          if(rlist(latt(2,l1)+ilist(1,latt(2,l1))) .gt. 0.d0)then
-            psi1=rlist(lp+kytbl(kwE1,icBEND))
-            psi2=rlist(lp+kytbl(kwE2,icBEND))
-            apsi1=rlist(lp+kytbl(kwAE1,icBEND))
-            apsi2=rlist(lp+kytbl(kwAE2,icBEND))
-            fb1=rlist(lp+kytbl(kwF1,icBEND))
-     $           +rlist(lp+kytbl(kwFB1,icBEND))
-            fb2=rlist(lp+kytbl(kwF1,icBEND))
-     $           +rlist(lp+kytbl(kwFB2,icBEND))
+          if(dir .gt. 0.d0)then
+            psi1=cmp%value(kytbl(kwE1,icBEND))
+            psi2=cmp%value(kytbl(kwE2,icBEND))
+            apsi1=cmp%value(kytbl(kwAE1,icBEND))
+            apsi2=cmp%value(kytbl(kwAE2,icBEND))
+            fb1=cmp%value(kytbl(kwF1,icBEND))
+     $           +cmp%value(kytbl(kwFB1,icBEND))
+            fb2=cmp%value(kytbl(kwF1,icBEND))
+     $           +cmp%value(kytbl(kwFB2,icBEND))
           else
-            psi1=rlist(lp+kytbl(kwE2,icBEND))
-            psi2=rlist(lp+kytbl(kwE1,icBEND))
-            apsi1=rlist(lp+kytbl(kwAE2,icBEND))
-            apsi2=rlist(lp+kytbl(kwAE1,icBEND))
-            fb2=rlist(lp+kytbl(kwF1,icBEND))
-     $           +rlist(lp+kytbl(kwFB1,icBEND))
-            fb1=rlist(lp+kytbl(kwF1,icBEND))
-     $           +rlist(lp+kytbl(kwFB2,icBEND))
+            psi1=cmp%value(kytbl(kwE2,icBEND))
+            psi2=cmp%value(kytbl(kwE1,icBEND))
+            apsi1=cmp%value(kytbl(kwAE2,icBEND))
+            apsi2=cmp%value(kytbl(kwAE1,icBEND))
+            fb2=cmp%value(kytbl(kwF1,icBEND))
+     $           +cmp%value(kytbl(kwFB1,icBEND))
+            fb1=cmp%value(kytbl(kwF1,icBEND))
+     $           +cmp%value(kytbl(kwFB2,icBEND))
           endif
-          dtheta=rlist(lp+kytbl(kwDROT,icBEND))
-          theta0=rlist(lp+kytbl(kwROT,icBEND))+dtheta
-          call qbend(trans,cod,al,rlist(lp+2)+rlist(lp+11),
-     1         rlist(lp+2),psi1,psi2,apsi1,apsi2,rlist(lp+8),
-     1         rlist(lp+kytbl(kwDX,icBEND)),
-     $         rlist(lp+kytbl(kwDY,icBEND)),
+          dtheta=cmp%value(kytbl(kwDROT,icBEND))
+          theta0=cmp%value(kytbl(kwROT,icBEND))+dtheta
+          cod1=cod
+          call qbend(trans,cod,al,cmp%value(2)+cmp%value(11),
+     1         cmp%value(2),psi1,psi2,apsi1,apsi2,cmp%value(8),
+     1         cmp%value(kytbl(kwDX,icBEND)),
+     $         cmp%value(kytbl(kwDY,icBEND)),
      $         theta0,dtheta,
      $         fb1,fb2,
-     $         nint(rlist(lp+kytbl(kwFRMD,icBEND))),
-     $         rlist(lp+kytbl(kwFRIN,icBEND)) .eq. 0.d0,
-     $         rlist(lp+kytbl(kwEPS,icBEND)),
+     $         nint(cmp%value(kytbl(kwFRMD,icBEND))),
+     $         cmp%value(kytbl(kwFRIN,icBEND)) .eq. 0.d0,
+     $         cmp%value(kytbl(kwEPS,icBEND)),
      1         coup)
           go to 20
  1400     continue
-          mfr=nint(rlist(lp+12))
-          if(rlist(latt(2,l1)+ilist(1,latt(2,l1))) .lt. 0.d0)then
+          mfr=nint(cmp%value(12))
+          if(dir .lt. 0.d0)then
             mfr=mfr*(11+mfr*(2*mfr-9))/2
           endif
+          ak1=cmp%value(kytbl(kwK1,icQUAD))
+          call tsetfringepe(cmp,icQUAD,dir,ftable)
           call qquad(trans,cod,al,
-     1         rlist(lp+2),rlist(lp+5),rlist(lp+6),
-     1         rlist(lp+4),rlist(lp+9) .eq. 0.d0,
-     $         rlist(lp+10),rlist(lp+11),
-     $         mfr,rlist(lp+13),rlist(lp+14) .eq. 0.d0,coup)
+     1         ak1,cmp%value(5),cmp%value(6),
+     1         cmp%value(4),cmp%value(9) .eq. 0.d0,
+     $         ftable(1),ftable(2),ftable(3),ftable(4),
+     $         mfr,cmp%value(13),cmp%value(14) .eq. 0.d0,coup)
           go to 20
  1600     continue
-          call qthin(trans,cod,ltyp,al,rlist(lp+2),
-     1               rlist(lp+5),rlist(lp+6),rlist(lp+4),coup)
+          call qthin(trans,cod,ltyp,al,cmp%value(2),
+     1               cmp%value(5),cmp%value(6),cmp%value(4),coup)
           go to 20
  2000     write(*,*)'Qtwiss: implementation error of solenoid ',l1
           go to 1010
  2100     write(*,*)'Use BEND with ANGLE=0 for STEER.'
           call forcesf()
- 2200     phi=rlist(lp+kytbl(kwANGL,icMULT))
-          mfr=nint(rlist(lp+14))
-          if(rlist(latt(2,l1)+ilist(1,latt(2,l1))) .ge. 0.d0)then
-            psi1=rlist(lp+kytbl(kwE1,icMULT))
-            psi2=rlist(lp+kytbl(kwE2,icMULT))
-            apsi1=rlist(lp+kytbl(kwAE1,icMULT))
-            apsi2=rlist(lp+kytbl(kwAE2,icMULT))
-            fb1=rlist(lp+kytbl(kwFB1,icMULT))
-            fb2=rlist(lp+kytbl(kwFB2,icMULT))
-            chi1m=rlist(lp+kytbl(kwCHI1,icMULT))
-            chi2m=rlist(lp+kytbl(kwCHI2,icMULT))
+ 2200     phi=cmp%value(kytbl(kwANGL,icMULT))
+          mfr=nint(cmp%value(14))
+          if(dir .ge. 0.d0)then
+            psi1=cmp%value(kytbl(kwE1,icMULT))
+            psi2=cmp%value(kytbl(kwE2,icMULT))
+            apsi1=cmp%value(kytbl(kwAE1,icMULT))
+            apsi2=cmp%value(kytbl(kwAE2,icMULT))
+            fb1=cmp%value(kytbl(kwFB1,icMULT))
+            fb2=cmp%value(kytbl(kwFB2,icMULT))
+            chi1m=cmp%value(kytbl(kwCHI1,icMULT))
+            chi2m=cmp%value(kytbl(kwCHI2,icMULT))
           else
             mfr=mfr*(11+mfr*(2*mfr-9))/2
-            psi1=rlist(lp+kytbl(kwE2,icMULT))
-            psi2=rlist(lp+kytbl(kwE1,icMULT))
-            apsi1=rlist(lp+kytbl(kwAE2,icMULT))
-            apsi2=rlist(lp+kytbl(kwAE1,icMULT))
-            fb2=rlist(lp+kytbl(kwFB1,icMULT))
-            fb1=rlist(lp+kytbl(kwFB2,icMULT))
-            chi1m=-rlist(lp+kytbl(kwCHI1,icMULT))
-            chi2m=-rlist(lp+kytbl(kwCHI2,icMULT))
+            psi1=cmp%value(kytbl(kwE2,icMULT))
+            psi2=cmp%value(kytbl(kwE1,icMULT))
+            apsi1=cmp%value(kytbl(kwAE2,icMULT))
+            apsi2=cmp%value(kytbl(kwAE1,icMULT))
+            fb2=cmp%value(kytbl(kwFB1,icMULT))
+            fb1=cmp%value(kytbl(kwFB2,icMULT))
+            chi1m=-cmp%value(kytbl(kwCHI1,icMULT))
+            chi2m=-cmp%value(kytbl(kwCHI2,icMULT))
           endif
+          call tsetfringepe(cmp,icMULT,dir,ftable)
           bz=0.d0
-          call qmult(trans,cod,gammab,l1,al,
-     $         rlist(lp+kytbl(kwK0,icMULT)),bz,
+          call qmult(trans,cod,l1,al,
+     $         cmp%value(kytbl(kwK0,icMULT)),bz,
      $         phi,psi1,psi2,apsi1,apsi2,
-     1         rlist(lp+3),rlist(lp+4),rlist(lp+5),
-     $         chi1m,chi2m,rlist(lp+8),
-     $         rlist(lp+kytbl(kwDROT,icMULT)),
-     $         rlist(lp+9),
-     $         rlist(lp+11) .eq. 0.d0,
-     $         rlist(lp+12),rlist(lp+13),mfr,fb1,fb2,
-     $         rlist(lp+kytbl(kwK0FR,icMULT)) .eq. 0.d0,
-     $         rlist(lp+15),rlist(lp+16),rlist(lp+17),rlist(lp+18),
-     $         rlist(lp+kytbl(kwW1,icMULT)),
-     $         rlist(lp+kytbl(kwAPHI,icMULT)) .ne. 0.d0,
+     1         cmp%value(3),cmp%value(4),cmp%value(5),
+     $         chi1m,chi2m,cmp%value(8),
+     $         cmp%value(kytbl(kwDROT,icMULT)),
+     $         cmp%value(9),
+     $         cmp%value(11) .eq. 0.d0,
+     $         ftable(1),ftable(2),ftable(3),ftable(4),
+     $         mfr,fb1,fb2,
+     $         cmp%value(kytbl(kwK0FR,icMULT)) .eq. 0.d0,
+     $         cmp%value(15),cmp%value(16),cmp%value(17),cmp%value(18),
+     $         cmp%value(kytbl(kwW1,icMULT)),
+     $         cmp%value(kytbl(kwAPHI,icMULT)) .ne. 0.d0,
      $         coup)
           go to 20
- 3000     call qtest(trans,cod,al,rlist(lp+2),coup)
+ 3000     call qtest(trans,cod,al,cmp%value(2),coup)
           go to 20
- 3100     mfr=nint(rlist(lp+kytbl(kwFRMD,icCAVI)))
-          if(rlist(latt(2,l1)+ilist(1,latt(2,l1))) .ge. 0.d0)then
+ 3100     mfr=nint(cmp%value(kytbl(kwFRMD,icCAVI)))
+          if(direlc(l1) .ge. 0.d0)then
           else
             mfr=mfr*(11+mfr*(2*mfr-9))/2
           endif
-          call qcav(trans,cod,gammab,l1,
-     1         al,rlist(lp+2),rlist(lp+3),rlist(lp+4),rlist(lp+5),
-     $         rlist(lp+13),rlist(lp+14),rlist(lp+15),
-     $         rlist(lp+16),rlist(lp+17),rlist(lp+18),rlist(lp+19),
-     $         rlist(lp+kytbl(kwFRIN,icCAVI)) .eq. 0.d0,mfr,
-     $         rlist(lp+kytbl(kwAPHI,icCAVI)) .ne. 0.d0,
+          call qcav(trans,cod,l1,
+     1         al,cmp%value(2),cmp%value(3),cmp%value(4),cmp%value(5),
+     $         cmp%value(13),cmp%value(14),cmp%value(15),
+     $         cmp%value(16),cmp%value(17),cmp%value(18),cmp%value(19),
+     $         cmp%value(kytbl(kwFRIN,icCAVI)) .eq. 0.d0,mfr,
+     $         cmp%value(kytbl(kwAPHI,icCAVI)) .ne. 0.d0,
      $         coup)
           go to 20
  3200     call qtcav(trans,cod,
-     $         al,rlist(lp+2),rlist(lp+3),rlist(lp+4),rlist(lp+5),
-     $         rlist(lp+6),rlist(lp+7),rlist(lp+8),coup)
+     $         al,cmp%value(2),cmp%value(3),cmp%value(4),cmp%value(5),
+     $         cmp%value(6),cmp%value(7),cmp%value(8),coup)
           go to 20
  3300     call qemap(trans,cod,l1,coup,err)
           if(err)then
@@ -345,7 +360,7 @@ c     end   initialize for preventing compiler warning
           endif
           go to 20
  3400     call qins(trans,cod,l1,idp,
-     $         rlist(lp+19) .ge. 0.d0,rlist(lp+1),rlist(lp+20),coup,
+     $         cmp%value(19) .ge. 0.d0,cmp%value(1),cmp%value(20),coup,
      $         mat,insmat)
           if(insmat)then
             go to 1010
@@ -356,9 +371,9 @@ c     end   initialize for preventing compiler warning
             go to 10
           endif
  3500     call qcoord(trans,cod,
-     1                rlist(lp+1),rlist(lp+2),rlist(lp+3),
-     1                rlist(lp+4),rlist(lp+5),rlist(lp+6),
-     1                rlist(lp+7) .eq. 0.d0,coup)
+     1                cmp%value(1),cmp%value(2),cmp%value(3),
+     1                cmp%value(4),cmp%value(5),cmp%value(6),
+     1                cmp%value(7) .eq. 0.d0,coup)
           go to 20
  4100     continue
  1010     if(wspac)then
@@ -681,17 +696,16 @@ c     $               'qtwiss-coup-n  ',r1,r2,r3,r4,r1*r4-r2*r3,detp
               endif
             endif
           endif
- 30       if(.not. mat)then
+          if(.not. mat)then
             if(orbitcal)then
               twiss(ip,mfitdx:mfitddp)=cod
             endif
             twiss(ip,mfitnx)=twiss(ip1,mfitnx)+dpsix
             twiss(ip,mfitny)=twiss(ip1,mfitny)+dpsiy
           endif
-        elseif(.not. mat)then
-          twiss(ip,1:ntfun)=twiss(ip1,1:ntfun)
         endif
- 10   continue
+ 10     continue
+      enddo
  9000 calpol=calpol0
       trf0=trf00
       vcphic=vcphic0
@@ -844,8 +858,8 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       real*8 vsave(100),twisss(27),ftwiss(ntwissfun),
      $     trans(4,5),cod(6),fr1,fr2,gb0,gb1,dgb
       logical*4 over,chg,mat,force
-      call qfracsave(latt(1,l),vsave,nvar,.true.)
-      call qfraccomp(latt(1,l),fr1,fr2,ideal,chg)
+      call qfracsave(l,vsave,nvar,.true.)
+      call qfraccomp(l,fr1,fr2,ideal,chg)
       gb0=gammab(l)
       gb1=gammab(l+1)
       dgb=gb1-gb0
@@ -873,7 +887,7 @@ c          enddo
         gammab(l)=gb0
         gammab(l+1)=gb1
         if(chg)then
-          call qfracsave(latt(1,l),vsave,nvar,.false.)
+          call qfracsave(l,vsave,nvar,.false.)
         endif
       else
         forall(i=1:ntwissfun) ftwiss(i)=twiss(l+1,idp,i)
@@ -881,22 +895,23 @@ c          enddo
       return
       end
 
-      subroutine qfracsave(latt1,vsave,nvar,save)
+      subroutine qfracsave(l,vsave,nvar,save)
       use tfstk
+      use mackw
       use ffs_flag
+      use ffs_pointer, only:idelc,elatt,idtypec,idvalc
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      integer*4 latt1(2),nvar,i
+      integer*4 nvar,l
+      integer*8 i
       real*8 vsave(*)
       logical*4 save
       if(ideal)then
-        i=idval(latt1(1))
+        i=idvalc(l)
       else
-        i=latt1(2)
+        i=elatt%comp(l)
       endif
       if(save)then
-        nvar=kytbl(kwMAX,idtype(latt1(1)))-1
+        nvar=kytbl(kwMAX,idtypec(l))-1
         vsave(1:nvar)=rlist(i+1:i+nvar)
       else
         rlist(i+1:i+nvar)=vsave(1:nvar)
@@ -904,12 +919,15 @@ c          enddo
       return
       end
 
-      subroutine qfraccomp(latt,rx1,rx2,ideal,chg)
+      subroutine qfraccomp(l,rx1,rx2,ideal,chg)
       use tfstk
+      use sad_main
+      use ffs_pointer, only:idelc,direlc,elatt,idtypec,idvalc
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      integer*4 latt(2),ip,lt,ifr
+      type (sad_comp), pointer:: cmp
+      integer*4 lt,l
+      integer*8 ip,ifr
       real*8 r,dl,rx1,rx2,f1,f2,fr0
       logical*4 ideal,chg
       chg=.false.
@@ -927,12 +945,13 @@ c          enddo
       else
         f2=0.d0
       endif
-      lt=idtype(latt(1))
+      lt=idtypec(l)
       if(ideal)then
-        ip=idval(latt(1))
+        ip=idvalc(l)
       else
-        ip=latt(2)
+        ip=elatt%comp(l)
       endif
+      call loc_comp(ip,cmp)
       go to (1100,1200,1010,1400,1010,1600,1010,1600,1010,1600,
      1       1010,1600,1010,1010,1010,1010,1010,1010,1010,1010,
      1       1600,2200,1010,1010,1010,1010,1010,1010,1010,1010,
@@ -941,83 +960,84 @@ c          enddo
  1100 go to 9000
  1200 ifr=ip+kytbl(kwFRMD,lt)
       if(rlist(ifr) .eq. 0.d0)then
-        rlist(ip+kytbl(kwF1,icBEND))=0.d0
+        cmp%value(kytbl(kwF1,icBEND))=0.d0
       endif
       rlist(ifr)=-f1-2.d0*f2
       if(r .ne. 0.d0)then
-        if(rlist(ip+ilist(1,ip)) .gt. 0.d0)then
-          rlist(ip+kytbl(kwE1,icBEND))=
-     $         rlist(ip+kytbl(kwE1,icBEND))*f1/r
-          rlist(ip+kytbl(kwE2,icBEND))=
-     $         rlist(ip+kytbl(kwE2,icBEND))*f2/r
+        if(direlc(l) .gt. 0.d0)then
+          cmp%value(kytbl(kwE1,icBEND))=
+     $         cmp%value(kytbl(kwE1,icBEND))*f1/r
+          cmp%value(kytbl(kwE2,icBEND))=
+     $         cmp%value(kytbl(kwE2,icBEND))*f2/r
         else
-          rlist(ip+kytbl(kwE1,icBEND))=
-     $         rlist(ip+kytbl(kwE1,icBEND))*f2/r
-          rlist(ip+kytbl(kwE2,icBEND))=
-     $         rlist(ip+kytbl(kwE2,icBEND))*f1/r
+          cmp%value(kytbl(kwE1,icBEND))=
+     $         cmp%value(kytbl(kwE1,icBEND))*f2/r
+          cmp%value(kytbl(kwE2,icBEND))=
+     $         cmp%value(kytbl(kwE2,icBEND))*f1/r
         endif
       endif
-      rlist(ip+kytbl(kwANGL,icBEND))=
-     $     rlist(ip+kytbl(kwANGL,icBEND))*r
-      rlist(ip+kytbl(kwK1,icBEND))=rlist(ip+kytbl(kwK1,icBEND))*r
-      rlist(ip+kytbl(kwK0,icBEND))=rlist(ip+kytbl(kwK0,icBEND))*r
+      cmp%value(kytbl(kwANGL,icBEND))=
+     $     cmp%value(kytbl(kwANGL,icBEND))*r
+      cmp%value(kytbl(kwK1,icBEND))=cmp%value(kytbl(kwK1,icBEND))*r
+      cmp%value(kytbl(kwK0,icBEND))=cmp%value(kytbl(kwK0,icBEND))*r
 c      write(*,*)'qfraccomp ',r,
-c     $     rlist(ip+kytbl(kwANGL,icBEND)),
-c     $     rlist(ip+kytbl(kwK1,icBEND)),
-c     $     rlist(ip+kytbl(kwK0,icBEND))
+c     $     cmp%value(kytbl(kwANGL,icBEND)),
+c     $     cmp%value(kytbl(kwK1,icBEND)),
+c     $     cmp%value(kytbl(kwK0,icBEND))
       go to 9000
- 1400 rlist(ip+2)=rlist(ip+2)*r
+ 1400 cmp%value(2)=cmp%value(2)*r
       go to 8000
- 1600 rlist(ip+2)=rlist(ip+2)*r
+ 1600 cmp%value(2)=cmp%value(2)*r
       go to 9000
- 2200 rlist(ip+kytbl(kwK0,icMULT):ip+kytbl(kwMAX,icMULT)-1)=
-     $       rlist(ip+kytbl(kwK0,icMULT):ip+kytbl(kwMAX,icMULT)-1)*r
-      dl=(1.d0-r)*rlist(ip+1)*.5d0
-      rlist(ip+3)=rlist(ip+3)-dl*sin(rlist(ip+6))
-      rlist(ip+4)=rlist(ip+4)-dl*sin(rlist(ip+7))
-      rlist(ip+5)=rlist(ip+5)
-     $     +dl*(1.d0-cos(rlist(ip+6))*cos(rlist(ip+7)))
-      rlist(ip+15)=rlist(ip+15)*r
-      rlist(ip+kytbl(kwW1,icMULT))=rlist(ip+kytbl(kwW1,icMULT))*r
-      if(rlist(ip+kytbl(kwANGL,icMULT)) .ne. 0.d0)then
+ 2200 cmp%value(kytbl(kwK0,icMULT):kytbl(kwMAX,icMULT)-1)=
+     $       cmp%value(kytbl(kwK0,icMULT):kytbl(kwMAX,icMULT)-1)*r
+      dl=(1.d0-r)*cmp%value(1)*.5d0
+      cmp%value(3)=cmp%value(3)-dl*sin(cmp%value(6))
+      cmp%value(4)=cmp%value(4)-dl*sin(cmp%value(7))
+      cmp%value(5)=cmp%value(5)
+     $     +dl*(1.d0-cos(cmp%value(6))*cos(cmp%value(7)))
+      cmp%value(15)=cmp%value(15)*r
+      cmp%value(kytbl(kwW1,icMULT))=cmp%value(kytbl(kwW1,icMULT))*r
+      if(cmp%value(kytbl(kwANGL,icMULT)) .ne. 0.d0)then
         ifr=ip+kytbl(kwFRMD,lt)
         if(rlist(ifr) .eq. 0.d0)then
-          rlist(ip+kytbl(kwF1,icMULT))=0.d0
+          cmp%value(kytbl(kwFB1,icMULT))=0.d0
+          cmp%value(kytbl(kwFB2,icMULT))=0.d0
         endif
         rlist(ifr)=-f1-2.d0*f2
-        if(rlist(ip+ilist(1,ip)) .gt. 0.d0)then
-          rlist(ip+kytbl(kwE1,icMULT))=
-     $         rlist(ip+kytbl(kwE1,icMULT))*f1/r
-          rlist(ip+kytbl(kwE2,icMULT))=
-     $         rlist(ip+kytbl(kwE2,icMULT))*f2/r
+        if(direlc(l) .gt. 0.d0)then
+          cmp%value(kytbl(kwE1,icMULT))=
+     $         cmp%value(kytbl(kwE1,icMULT))*f1/r
+          cmp%value(kytbl(kwE2,icMULT))=
+     $         cmp%value(kytbl(kwE2,icMULT))*f2/r
         else
-          rlist(ip+kytbl(kwE1,icMULT))=
-     $         rlist(ip+kytbl(kwE1,icMULT))*f2/r
-          rlist(ip+kytbl(kwE2,icMULT))=
-     $         rlist(ip+kytbl(kwE2,icMULT))*f1/r
+          cmp%value(kytbl(kwE1,icMULT))=
+     $         cmp%value(kytbl(kwE1,icMULT))*f2/r
+          cmp%value(kytbl(kwE2,icMULT))=
+     $         cmp%value(kytbl(kwE2,icMULT))*f1/r
         endif
-        rlist(ip+kytbl(kwANGL,icMULT))=
-     $       rlist(ip+kytbl(kwANGL,icMULT))*r
+        cmp%value(kytbl(kwANGL,icMULT))=
+     $       cmp%value(kytbl(kwANGL,icMULT))*r
         go to 9000
       endif
       go to 8000
- 3100 rlist(ip+2)=rlist(ip+2)*r
-      rlist(ip+9)=rlist(ip+9)*r
-      rlist(ip+16)=rlist(ip+16)*r
+ 3100 cmp%value(2)=cmp%value(2)*r
+      cmp%value(9)=cmp%value(9)*r
+      cmp%value(16)=cmp%value(16)*r
       go to 8000
- 3200 rlist(ip+2)=rlist(ip+2)*r
-      rlist(ip+9)=rlist(ip+9)*r
+ 3200 cmp%value(2)=cmp%value(2)*r
+      cmp%value(9)=cmp%value(9)*r
       go to 9000
  8000 ifr=ip+kytbl(kwFRMD,lt)
       fr0=rlist(ifr)
       if(fr0 .eq. 0.d0 .or. fr0 .eq. 2)then
-        if(kytbl(kwF1,lt) .ne. 0)then
-          rlist(ip+kytbl(kwF1,lt))=0.d0
+        if(kytbl(kwFB1,lt) .ne. 0)then
+          cmp%value(kytbl(kwFB1,lt))=0.d0
         endif
       endif
       if(fr0 .eq. 0.d0 .or. fr0 .eq. 1)then
-        if(kytbl(kwF2,lt) .ne. 0)then
-          rlist(ip+kytbl(kwF2,lt))=0.d0
+        if(kytbl(kwFB2,lt) .ne. 0)then
+          cmp%value(kytbl(kwFB2,lt))=0.d0
         endif
       endif
       if(fr0 .eq. 0)then
@@ -1025,7 +1045,7 @@ c     $     rlist(ip+kytbl(kwK0,icBEND))
       endif
       rlist(ifr)=0.d0
       if(f1 .ne. 0.d0)then
-        if(rlist(ip+ilist(1,ip)) .gt. 0.d0)then
+        if(direlc(l) .gt. 0.d0)then
           if(fr0 .eq. 3.d0 .or. fr0 .eq. 1.d0)then
             rlist(ifr)=1.d0
           endif
@@ -1036,7 +1056,7 @@ c     $     rlist(ip+kytbl(kwK0,icBEND))
         endif
       endif
       if(f2 .ne. 0.d0)then
-        if(rlist(ip+ilist(1,ip)) .gt. 0.d0)then
+        if(cmp%value(ilist(1,ip)) .gt. 0.d0)then
           if(fr0 .eq. 3.d0 .or. fr0 .eq. 2.d0)then
             rlist(ifr)=rlist(ifr)+2.d0
           endif
@@ -1051,7 +1071,7 @@ c     $     rlist(ip+kytbl(kwK0,icBEND))
       endif
       go to 9000
  9000 if(kytbl(kwL,lt) .ne. 0)then
-        rlist(ip+kytbl(kwL,lt))=rlist(ip+kytbl(kwL,lt))*r
+        cmp%value(kytbl(kwL,lt))=cmp%value(kytbl(kwL,lt))*r
       endif
       chg=.true.
  1010 return

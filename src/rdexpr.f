@@ -1,18 +1,20 @@
       real*8 function rdexpr(elmidx,kwcode,token,slen,ttype)
-c     $Header: /SAD/cvsroot/oldsad/src/rdexpr.f,v 1.7.2.3 2016/05/04 05:02:40 oide Exp $
+c     $Header: /SAD/cvsroot/oldsad/src/rdexpr.f,v 1.7.2.7 2016/09/09 12:09:01 oide Exp $
       use maccbk
+      use mackw
+      use macttyp
+      use cbkmac
       implicit none
       integer*4 elmidx,kwcode
       character*(*) token
       character*64 token1
-      integer*4 slen,ival,ttype,mtaloc
+      integer*4 slen,ival,ttype
       real*8 rval
-      include 'inc/CBKMAC.inc'
 c     
       real*8 yyval
-      integer*4 Lrdnum,scan,
-     $     yyparse,yypushtoken,yypoptoken,yyreturn
-     $     ,allmem,membas,memuse,hsrch,idxerl,idxran
+      integer*8 idxerl,membas,ktaloc
+      integer*4 Lrdnum,scan,yyparse,yypushtoken,yypoptoken,yyreturn
+     $     ,allmem,memuse,hsrch,idxran
       parameter (allmem=32768)
       logical skipch
 c     for debug
@@ -40,23 +42,20 @@ c or    (<distribution type>,<list of parameters>)
 c       <distribution> = Normal, uniform etc.
 c at first find end of error list
         idxerl=idval(elmidx)
- 2100   continue
-        if (ilist(2,idxerl).ne. 0) then
-           idxerl=ilist(2,idxerl)
-           go to 2100
-        endif
-c
+        do while(klist(idxerl).ne. 0)
+          idxerl=klist(idxerl)
+        enddo
 c        allmem=mtaloc(-1)
-        membas=mtaloc(allmem)
+        membas=ktaloc(allmem)
         memuse=0
 c.........fordebug
 c     print *,'fallocated ',allmem,' from ',membas
 c.........enddebug
 c     
-        ilist(2,idxerl)=membas
-        idxerl=ilist(2,idxerl)
-        ilist(1,idxerl)=kwcode
-        ilist(2,idxerl)=0
+        klist(idxerl)=membas
+        idxerl=klist(idxerl)
+        ilist(2,idxerl-1)=kwcode
+        klist(idxerl)=0
         memuse=memuse+2
         call gettok(token,slen,ttype,rval,ival)
         if (ttype .eq. ttypNM) then
@@ -84,7 +83,10 @@ c     ilist(2,idxerl+1)=idval(idxran) changed by NY apr.9,88
            endif
            rdexpr=rlist(idval(elmidx)+kytbl(kwcode,idtype(elmidx)))
         endif
-        call tfreem(membas+memuse,allmem-memuse)
+        if(allmem .gt. memuse+3)then
+          ilist(1,membas+memuse)=allmem-memuse
+          call tfree(membas+memuse+1)
+        endif
 c        call freeme(membas+memuse,allmem-memuse)
       else
          call errmsg('rdexpr',

@@ -1,8 +1,7 @@
       character*(*) function tfkwrd(lt,ioff)
       use tfstk
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
       integer*4 lt,ioff,i
       if(ioff .eq. 0)then
         tfkwrd=pname(kytbl(0,lt))(2:)
@@ -10,39 +9,34 @@
         if(ioff .ge. kytbl(kwMAX,lt))then
           tfkwrd=' '
         else
-          do i=1,kwMAX-1
-            if(kytbl(i,lt) .eq. ioff)then
-              tfkwrd=pname(kytbl(i,0))(2:)
-              return
-            endif
-          enddo
-          tfkwrd='-'
+          i=kyindex(ioff,lt)
+          if(i .ne. 0)then
+            tfkwrd=pname(kytbl(i,0))(2:)
+          else
+            tfkwrd='-'
+          endif
         endif
       endif
       return
       end
 
-      character*(*) function tfkwrd1(lt,ioff,ii)
+      character*(*) function tfkwrd1(lt,ioff)
       use tfstk
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      integer*4 lt,ioff,i,ii
-      ii=0
+      integer*4 lt,ioff,i
       if(ioff .eq. 0)then
         tfkwrd1=pname(kytbl(0,lt))(2:)
       else
         if(ioff .ge. kytbl(kwMAX,lt))then
           tfkwrd1=' '
         else
-          do i=1,kwMAX-1
-            if(kytbl(i,lt) .eq. ioff)then
-              tfkwrd1=pname(kytbl(i,0))(2:)
-              ii=i
-              return
-            endif
-          enddo
-          tfkwrd1='-'
+          i=kyindex1(ioff,lt)
+          if(i .ne. 0)then
+            tfkwrd1=pname(kytbl(i,0))(2:)
+          else
+            tfkwrd1='-'
+          endif
         endif
       endif
       return

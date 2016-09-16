@@ -589,24 +589,24 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       return
       end
 
-      logical*4 function tfrefq(k)
+      recursive logical*4 function tfrefq(k) result(l)
       use tfstk
       implicit none
       type (sad_descriptor) k
       type (sad_list), pointer ::kl
       integer*4 i
       if(ktfrefq(k%k))then
-        tfrefq=.true.
+        l=.true.
       else
-        tfrefq=.false.
+        l=.false.
         if(tflistqd(k,kl))then
           if(kl%nl .gt. 0)then
             do i=1,kl%nl
-              if(ktfnonrefq(kl%body(i)))then
+              if(.not. tfrefq(kl%dbody(i)))then
                 return
               endif
             enddo
-            tfrefq=.true.
+            l=.true.
           endif
         endif
       endif
@@ -621,7 +621,6 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       end
 
       subroutine tfsameqdummy
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
+      use mackw
       return
       end

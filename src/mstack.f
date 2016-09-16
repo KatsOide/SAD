@@ -5,7 +5,8 @@
       parameter (kstack=3)
       logical abbrev,exist,number
       character*(*) word
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun)
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun)
       common /mcstack/icoma,ipnt(kstack),iistck(kstack),mstkmx(kstack)
       dimension istr(*),imon(*),emon(*)
 c     begin initialize for preventing compiler warning

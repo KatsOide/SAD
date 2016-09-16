@@ -2,18 +2,20 @@
       use tfstk
       use ffs
       use tffitcode
-      dimension latt(2,nlat),pos(nlat)
+      use ffs_pointer,only:idelc,idtypec
+      integer*8 latt(nlat)
+      dimension pos(nlat)
       circ=pos(nlat)-pos(1)
       nq=n
-      if( idtype(latt(1,n)).ne.icquad .and.
-     1    idtype(latt(1,n)).ne.icsext ) then
+      if( idtypec(n).ne.icquad .and.
+     1    idtypec(n).ne.icsext ) then
 c     .... search right
 10      nq=nq+1
         if(nq.ge.nlat) then
           nq=1
         endif
-        if( idtype(latt(1,nq)).ne.icquad .and.
-     1      idtype(latt(1,nq)).ne.icsext ) then
+        if( idtypec(nq).ne.icquad .and.
+     1      idtypec(nq).ne.icsext ) then
           goto 10
         else
           nqr=nq
@@ -25,8 +27,8 @@ c     .... search left
         if(nq.lt.1) then
           nq=nlat-1
         endif
-        if( idtype(latt(1,nq)).ne.icquad .and.
-     1      idtype(latt(1,nq)).ne.icsext ) then
+        if( idtypec(nq).ne.icquad .and.
+     1      idtypec(nq).ne.icsext ) then
           goto 11
         else
           nql=nq

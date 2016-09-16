@@ -1,17 +1,18 @@
       subroutine filbuf(fst)
       use tfrbuf
       use maccbk
+      use macttyp
+      use macfile
+      use macmisc
       implicit none
 c
-      include 'inc/MACFILE.inc'
-      include 'inc/MACMISC.inc'
-      include 'inc/MACTTYP.inc'
 cccccc K. Oide 8/30/1999
 c
       integer fst
       character*(MAXLLEN) str
       integer*4 ione,LL1, idummy,ii
-      integer*4 flmgr,lene,igetGL,irtc
+      integer*4 lene,igetGL,irtc
+      integer*8 flmgr
       logical at1st
       save at1st
       data at1st/.true./
@@ -67,7 +68,7 @@ cccccccccccc   K. Oide end
         else
           close(infl)
           ii=infl-infl
-          infl=flmgr(ii)
+          infl=int(flmgr(ii))
 c        write(*,*)'@ii',ii,infl
 c         call errmsg('filbuf',
 c    &         'input file is redirected to STDIN',0,0)

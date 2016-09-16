@@ -1,10 +1,10 @@
       subroutine tdcmd$(cmd,lvar,bottom,left,top,right,limit)
       use maccbk
+      use macfile
       implicit real*8 (a-h,o-z)
       integer lvar
       character*(*) cmd,bottom,left,top,right
       logical limit
-      include 'inc/MACFILE.inc'
 c
       integer*4 lene
       character*8 cdate1

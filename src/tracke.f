@@ -3,7 +3,8 @@
       use ffs
       use tffitcode
       implicit none
-      integer*4 latt(2,nlat),l20,lfno,np
+      integer*8 latt(nlat)
+      integer*4 l20,lfno,np
       character*(*) cmd,name
       real*8 result(6,7),sv(5)
       save result
@@ -15,6 +16,8 @@
       use tfstk
       use ffs
       use tffitcode
+      use track_tt ,ikptbl=>itt1,ix=>itt2,ix1=>itt3,
+     $     l1=>itt4,l2s=>itt5
 c
 c     method   : function
 c     STANDBY  : set up intitiol distribution
@@ -27,13 +30,13 @@ c     POS      : get position and angel (NY)
 c     DISP     :                        (NY)
 c
       implicit none
-      integer*8 kx,ktaloc,ix,ikptbl,ix1
-      integer*4 latt(2,nlat),lfno,l20,np,nl0,l1,l2s,l2
+      integer*8 kx,ktaloc
+      integer*8 latt(nlat)
+      integer*4 lfno,l20,np,nl0,l2
       integer*4 irtc
       real*8 sv(5),sa(6),ss(6,7),es
       save sa
       character*(*) cmd,name
-      common /tt/ikptbl,ix,ix1,l1,l2s
 c
 c     This routine is called from MEA_SURE/DRAW/TRC_OD command @ tffsa.f
 c     (Subroutine call flow at 2008/01/25)
@@ -43,10 +46,10 @@ c     Store current random seed into NISTACK$FIXSEED stack
       call tfevalb('NISTACK$FIXSEED@Push[]',22,kx,irtc)
       l2=l20
       if(l20 .lt. nlat)then
-        if(idtype(latt(1,l20)) .eq. icMARK)then
+        if(idtype(ilist(2,latt(l20))) .eq. icMARK)then
           l2=l20+1
         elseif(l20 .gt. 1 .and.
-     $         idtype(latt(1,l20-1)) .eq. icMARK)then
+     $         idtype(ilist(2,latt(l20-1))) .eq. icMARK)then
           l2=l20-1
         endif
       endif
@@ -57,7 +60,7 @@ c     Store current random seed into NISTACK$FIXSEED stack
         ikptbl=ktaloc(np0*3)
         call tspini(0,ilist(1,ikptbl),.false.)
         nl0=nlat
-        call tpara(latt)
+        call tpara()
         call ttinit(latt,
      1        rlist(ix      ),rlist(ix+np0  ),
      1        rlist(ix+np0*2),rlist(ix+np0*3),
@@ -159,7 +162,7 @@ c     end of lines added by N. Yamamoto
         l1=l2s
       else
         nl0=nlat
-        call tltrm(latt,ilist(1,ikptbl))
+        call tltrm(ilist(1,ikptbl))
         call tfree(ix)
         call tfree(ix1)
         call tfree(ikptbl)

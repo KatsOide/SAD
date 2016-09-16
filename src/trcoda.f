@@ -26,7 +26,7 @@ ckikuchi ... 1 line added
       real*8 sv
       logical*4 ojitter
       integer*4 nl,i,olfno
-      integer*4 itw
+      integer*8 itw,ktaloc
       data itw /0/
       save itw
 c
@@ -112,7 +112,7 @@ c
          end if
       end if
       if(itw .eq. 0) then
-         itw=italoc(nlat*ntwissfun)
+         itw=ktaloc(nlat*ntwissfun)
       endif
       do 2000 i=7,10
         call tmov(twiss(1,0,i),twiss(1,ndim,i),nlat1)

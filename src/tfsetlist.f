@@ -119,7 +119,6 @@
       end
 
       subroutine tfsetlistdummy
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
+      use mackw
       return
       end

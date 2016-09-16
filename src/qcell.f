@@ -1,11 +1,11 @@
-      subroutine qcell(ibegin,idp,
+      subroutine qcell(idp,
      1     hstab,vstab,tracex,tracey,fam,over)
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 ibegin,idp
+      integer*4 idp
       real*8 tracex,tracey
       logical*4 hstab,vstab,fam,over
       call qcell1(1,0.d0,nlat,0.d0,idp,
@@ -36,8 +36,7 @@
      $     xb,xe,xp,fr,fra,frb,tr,
      $     dpsix,dpsiy,cosx,sinx,cosy,siny,
      $     x11,x22,y11,y22
-      integer*4 ibegin,iend,idp,level,
-     $     ie1,l,nm,lx,k,lfno
+      integer*4 ibegin,iend,idp,ie1,l,nm,lx,k,lfno
       logical*4 hstab,vstab,over,stab,codfnd,fam,chgini,pri
       real*8 trans(4,5),cod(6),
      $     tm11,tm12,tm13,tm14,tm15,
@@ -83,7 +82,7 @@
      1       tm21,tm22,tm23,tm24,
      1       tm31,tm32,tm33,tm34,
      1       tm41,tm42,tm43,tm44,
-     1       r1,r2,r3,r4,c1,level,stab,lfno)
+     1       r1,r2,r3,r4,c1,stab,lfno)
 C     ----------------------------
         if(.not. stab)then
           go to 1
@@ -289,7 +288,7 @@ c     (Note) Disperdion is defined in 2*2 world
       xe=dble(min(iend+1,nlat))
       do l=ibegin+1,min(iend,nlat-1)
         nm=0
-        if(idtype(latt(1,l)) .eq. icMARK)then
+        if(idtypec(l) .eq. icMARK)then
           xp=tffselmoffset(l)
           if(xp .ne. dble(l))then
 c            write(*,*)'qcell ',l,iend,nlat,xp,xe

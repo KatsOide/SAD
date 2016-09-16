@@ -5,6 +5,7 @@
 c      Release memories
       parameter (kfiles=3)
       parameter (kstack=3)
+      integer*8 isa,isb,isc,ipyv,ippv,ipobs,ipiv,ipbckup1,ipemibuf
       common /mcfiles/icomf,nof(kfiles),iifnam(kfiles),iidata(kfiles),
      1                memax(kfiles)
       common /mcstack/icoma,ipnt(kstack),iistck(kstack),mstkmx(kstack)
@@ -16,10 +17,10 @@ c      Release memories
      $     nememax,iter
       common /corcoup/ itcoupste
       newcor=0
-      if(ibckup.ne.0) call tfree(int8(ibckup))
+      if(ibckup.ne.0) call tfree(ibckup)
       if(itmon.ne.0) then
-        call tfree(int8(ipmon))
-        call tfree(int8(ipemon))
+        call tfree(ipmon)
+        call tfree(ipemon)
         nmon=0
         nmona=0
         nmonact=0
@@ -29,8 +30,8 @@ c      Release memories
         itemon=0
       endif
       if(itstr.ne.0) then
-        call tfree(int8(ipstr))
-        call tfree(int8(ipestr))
+        call tfree(ipstr)
+        call tfree(ipestr)
         nstr=0
         nstra=0
         ipstr=0
@@ -42,43 +43,43 @@ c      Release memories
       do 11 i=1,kfiles
         do 10 j=1,nof(i)
           k=ilist(mod(j-1,2)+1,iifnam(i)+(j-1)/2)
-          if(k.ne.0) call tfree(int8(k))
+          if(k.ne.0) call tfree(k)
           k=ilist(mod(j-1,2)+1,iidata(i)+(j-1)/2)
-          if(k.ne.0) call tfree(int8(k))
+          if(k.ne.0) call tfree(k)
    10   continue
-        if(iifnam(i).ne.0) call tfree(int8(iifnam(i)))
-        if(iidata(i).ne.0) call tfree(int8(iidata(i)))
+        if(iifnam(i).ne.0) call tfree(iifnam(i))
+        if(iidata(i).ne.0) call tfree(iidata(i))
    11 continue
       icoma=0
       do 13 i=1,kstack
         do 12 j=1,ipnt(i)
           k=ilist(mod(j-1,2)+1,iistck(i)+(j-1)/2)
-          if(k.ne.0) call tfree(int8(k))
+          if(k.ne.0) call tfree(k)
    12   continue
         if(iistck(i).ne.0) call tfree(int8(iistck(i)))
    13 continue
       na=0
       nb=0
       nc=0
-      if(istope.ne.0) call tfree(int8(istope))
+      if(istope.ne.0) call tfree(istope)
       istope=0
       nstope=0
       if(ipdefv.ne.0) then
         do 14 i=1,idefvar
           ip=ilist(mod(i-1,2)+1,ipdefv+(i-1)/2) 
-          if(ip.ne.0) call tfree(int8(ip))
+          if(ip.ne.0) call tfree(ip)
  14     continue
-        call tfree(int8(ipdefv))
+        call tfree(ipdefv)
       endif
       if(ipemibuf.ne.0) then
-        call tfree(int8(ipemibuf))
+        call tfree(ipemibuf)
         nemitd=0
       endif
-      if(ipyv.ne.0) call tfree(int8(ipyv))
-      if(ippv.ne.0) call tfree(int8(ippv))
-      if(ipobs.ne.0) call tfree(int8(ipobs))
-      if(ipiv.ne.0) call tfree(int8(ipiv))
-      if(ipbckup1.ne.0) call tfree(int8(ipbckup1))
-      if(itcoupste.ne.0) call tfree(int8(itcoupste))
+      if(ipyv.ne.0) call tfree(ipyv)
+      if(ippv.ne.0) call tfree(ippv)
+      if(ipobs.ne.0) call tfree(ipobs)
+      if(ipiv.ne.0) call tfree(ipiv)
+      if(ipbckup1.ne.0) call tfree(ipbckup1)
+      if(itcoupste.ne.0) call tfree(itcoupste)
       return
       end

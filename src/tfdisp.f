@@ -125,18 +125,18 @@ c      write(*,*)'tfdisp ',word,wordp
         if(l .eq. nlat)then
           id=41
         else
-          id=idtype(latt(1,l))
+          id=idtypec(l)
         endif
         if(iele1(iele((l))) .gt. 0 .and.
      $       id .ne. icMARK .and. id .ne. 34)then
           if(ival(iele1(iele(l))) .gt. 0)then
-            vout=autofg(rlist(latt(2,l)
+            vout=autofg(rlist(latt(l)
      $           +ival(iele1(iele(l)))),'10.7')
           else
             vout=' 0'
           endif
         elseif(id .eq. icSOL)then
-          vout=autofg(rlist(latt(2,l)+2),'10.7')
+          vout=autofg(rlist(latt(l)+2),'10.7')
         else
           vout=' 0'
         endif
@@ -163,7 +163,7 @@ c      write(*,*)'tfdisp ',word,wordp
             buff(49:58)=autofg(0.d0,'10.6')
           else
             buff(49:58)=autofg(
-     $           rlist(latt(2,l)+kytbl(kwL,id)),'10.6')
+     $           rlist(latt(l)+kytbl(kwL,id)),'10.6')
           endif
           if(id .ne. 41 .and. id .ne. 42 .and. id .ne. 34)then
             buff(59:69)=' '//vout(1:10)
@@ -194,7 +194,7 @@ c      write(*,*)'tfdisp ',word,wordp
           endif
           dir=' '
           if(l .ne. nlat)then
-            if(rlist(latt(2,l)+ilist(1,latt(2,l))) .le. 0.d0)then
+            if(direlc(l) .le. 0.d0)then
               dir='-'
             endif
           endif
@@ -299,7 +299,7 @@ c      write(*,*)'tfdisp ',word,wordp
             buff(33:40)=autofg(etapxp/scale(mfitepx),'8.5')
           endif
           if(l .ne. nlat .and.
-     $         rlist(latt(2,l)+ilist(1,latt(2,l))) .le. 0.d0)then
+     $         direlc(l) .le. 0.d0)then
             bname(1:max(10,lname+2))=' -'//name(1:lname)
             lname=max(10,lname+2)
           else
@@ -349,7 +349,7 @@ c      write(*,*)'tfdisp ',word,wordp
               buff(51:58)=autofg(0.d0,'8.5')
             else
               buff(51:68)=autofg(
-     $             rlist(latt(2,l)+kytbl(kwL,id)),'8.5')
+     $             rlist(latt(l)+kytbl(kwL,id)),'8.5')
             endif
             if(id .ne. 41 .and. id .ne. 42 .and. id .ne. 34)then
               buff(59:68)=vout(1:10)

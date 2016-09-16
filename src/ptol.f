@@ -4,12 +4,13 @@
       use ffs
 c     Tor Raubenheimer's analytical estimation (SLAC-PUB-4937)
       use tffitcode
+      use ffs_pointer, only:idelc,idvalc,idtypec
       implicit real*8(a-h,o-z)
       logical over,full
       character*(*) word,vo(4)*8,autofg*8,line*79,name*8
       complex*16 ct,cts,cc
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),
-     $     gammab(nlat),
+      integer*8 latt(nlat),ip
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat),
      1          istr(nstra,4),mult(nlat)
       dimension twisss(ntwissfun),t(10),tt(10),ct(5),cts(5),cc(5),a(10)
       integer*4 master(nlat)
@@ -73,11 +74,12 @@ c
         endif
         ida=0
         do 90 i=is,if
-          if(idtype(latt(1,i)).eq.icquad .or.
-     1      idtype(latt(1,i)).eq.icbend .or.
-     1      idtype(latt(1,i)).eq.icsext ) then
-            id=idtype(latt(1,i))
-            if(id.eq.icbend.and.rlist(idval(latt(1,i))+8).eq.0d0)goto 90
+          if(idtypec(i).eq.icquad .or.
+     1      idtypec(i).eq.icbend .or.
+     1      idtypec(i).eq.icsext ) then
+            id=idtypec(i)
+            if(id.eq.icbend.and.
+     $           rlist(idvalc(i)+8).eq.0d0)goto 90
             if(master(i).gt.0) then
               ndivt=max(ndivt,1)
               if(ida.eq.icbend .or. ida.eq.icquad) then
@@ -139,7 +141,7 @@ c     (vsb=K1 of bend)
                 call elname(i,name)
                 line=name
               endif
-              ida=idtype(latt(1,i))
+              ida=idtypec(i)
             endif
             i1=i+1
             if(id.eq.icquad .or. id.eq.icbend) then
@@ -181,11 +183,11 @@ c     (vsb=K1 of bend)
      1                   +0.5d0*sqrt(twiss(i1,idp,2))*twiss(i1,idp,5)
      1              *dcmplx(cos(twiss(i1,idp,3)),sin(twiss(i1,idp,3)))
             endif
-            ip=latt(2,i)
-c           ip=idval(latt(1,i))
+            ip=latt(i)
+c           ip=idvalc(i)
             als=rlist(ip+1)
             vs=rlist(ip+2)
-            vsa=rlist(idval(latt(1,i))+2)
+            vsa=rlist(idvalc(i)+2)
             vsb=rlist(ip+8)
             e2s=rlist(ip+4)
             ndiv=min(1,int(als/ale)-1)
@@ -197,7 +199,7 @@ c           ip=idval(latt(1,i))
               rn=dble(n)/(ndiv+1)
               rlist(ip+1)=als*rn
               if(id .eq. icbend)then
-                rlist(idval(latt(1,i))+2)=vsa*rn
+                rlist(idvalc(i)+2)=vsa*rn
                 rlist(ip+2)=vs*rn
                 rlist(ip+4)=0.d0
                 rlist(ip+8)=vsb*rn
@@ -230,7 +232,7 @@ c           ip=idval(latt(1,i))
             rlist(ip+1)=als
             if(id .eq. icbend)then
               rlist(ip+2)=vs
-              rlist(idval(latt(1,i))+2)=vsa
+              rlist(idvalc(i)+2)=vsa
               rlist(ip+4)=e2s
               rlist(ip+8)=vsb
             else
