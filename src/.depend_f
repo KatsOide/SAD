@@ -450,6 +450,7 @@ tshow.o: tshow.f tffs.o tfstk.o
 tsmear.o: tsmear.f tffs.o
 tsol.o: tsol.f tffs.o tfstk.o
 tsole.o: tsole.f tffs.o tfstk.o
+tsole_orig.o: tsole_orig.f tffs.o tfstk.o
 tsolqu.o: tsolqu.f tfstk.o tsolque.o
 tsolque.o: tsolque.f tffs.o tfstk.o
 tsolvg.o: tsolvg.f

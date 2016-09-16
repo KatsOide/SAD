@@ -19,3 +19,7 @@ src/gdtoa/test/*
 Packages/Canvas.n_0
 Packages/#Canvas.n#
 *_*
+
+*.~
+
+*.~
