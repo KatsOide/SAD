@@ -29,7 +29,7 @@ c Do not forget to update sim/MACCODE.h when you change this module!!!!
       integer*4 HTMAX,MAXPNAME,LILISTDUMMY
       parameter(MAXPNAME=32,LILISTDUMMY=3)
       character*(MAXPNAME) NULSTR
-      parameter(HTMAX=2**15-1,NULSTR='        ')
+      parameter(HTMAX=2**16-1,NULSTR='        ')
 
       integer*4 pagesz,inipage
       parameter(pagesz=4096/8,inipage=4)

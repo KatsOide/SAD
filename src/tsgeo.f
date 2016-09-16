@@ -209,7 +209,11 @@ c            a14= 2.d0*sin(phi*.5d0)**2/ak
           endif
           gf=0.d0
           dvf=0.d0
-          call tsetfringepe(cmp,icQUAD,direlc(i),ftable)
+          if(al .ne. 0.d0)then
+            call tsetfringep(cmp,icQUAD,direlc(i),ak1/al,ftable)
+          else
+            ftable=0.d0
+          endif
           call tquads(1,xf,pxf,yf,pyf,zf,gf,dvf,pzf,i,
      $         al,ak1,bzs*dir,
      $         cmp%value(5),cmp%value(6),theta,

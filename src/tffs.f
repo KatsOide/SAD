@@ -708,7 +708,7 @@ c$$$  endif
         implicit none
         type (sad_comp) cmp
         integer*4 ic
-        real*8 dir,table(4),f1in,f1out,f2in,f2out,al
+        real*8 dir,table(4),f1in,f1out,f2in,f2out
         if(cmp%value(kytbl(kwL,ic))*
      $       cmp%value(kytbl(kwK1,ic)) .ne. 0.d0)then
           f1in =cmp%value(kytbl(kwF1,ic))
