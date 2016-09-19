@@ -7,7 +7,7 @@
       use ffs_pointer, only:idelc,idtypec,pnamec
       implicit real*8 (a-h,o-z)
       parameter (nkey=35,nstyle=8)
-      integer*8 latt(nlat),ktaloc,it,it1,jp
+      integer*8 latt(nlat),it,it1,jp
       real*8 pos(nlat)
       integer*4 iele(nlat),imon(*)
       real*8 twiss(nlat,-ndim:ndim,ntwissfun),emon(*)

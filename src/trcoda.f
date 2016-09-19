@@ -26,7 +26,7 @@ ckikuchi ... 1 line added
       real*8 sv
       logical*4 ojitter
       integer*4 nl,i,olfno
-      integer*8 itw,ktaloc
+      integer*8 itw
       data itw /0/
       save itw
 c

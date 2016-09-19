@@ -12,7 +12,7 @@
       character(len=64) :: env
       integer :: lpkg, lenv
       integer*8 ktfsymbolc,ktrvaloc,ktcontaloc,
-     $     iaxsys,loc,ktaloc,ktcvaloc,kax,k1,k2,i
+     $     iaxsys,loc,ktcvaloc,kax,k1,k2,i
       integer*4 lpw
       integer*4 lenw,ifromstr
       call tfinfinit
@@ -208,7 +208,7 @@ c      write(*,*)'tfinitn 1.1 ',itfcontroot
       use tfstk
       implicit none
       type (sad_string), pointer :: str
-      integer*8 ktaloc,j
+      integer*8 j
       integer*4 i
       iaxschar=ktaloc(1280)
       do i=0,255
@@ -378,7 +378,7 @@ c        write(*,*)'tftocontext ',str%str(1:nc)
       type (sad_descriptor) kx,k
       type (sad_list), pointer :: kl
       type (sad_symdef), pointer :: symd
-      integer*8 ka1,ki,ktaloc
+      integer*8 ka1,ki
       integer*4 isp1,irtc,itfmessage,m,i,isp0
       logical*4 tfcontextqk
       if(isp1+1 .ne. isp)then

@@ -11,8 +11,7 @@
       type (sad_list), pointer :: klx,kl
       integer, parameter :: nkptbl = 6
       integer*4, parameter :: npparamin=9,npnlatmin=30000
-      integer*8 kz,kzp,kpz,ktaloc,kzf,
-     $     kaxl,ktfmalocp,ktfresetparticles
+      integer*8 kz,kzp,kpz,kzf,kaxl,ktfmalocp,ktfresetparticles
       integer*4 isp1,irtc,narg,itfloc,outfl0,ld,ls,mc,npz,npa,np00,
      $     ipr(100),npr,np1,fork_worker,iprid, ne,nend,
      $     npp,ipn,m,itfmessage,nt,mt,kseed,j

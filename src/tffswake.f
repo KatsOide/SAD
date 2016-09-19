@@ -6,7 +6,7 @@
       use ffs_wake
       use tffitcode
       implicit none
-      integer*8 ktaloc,iwbufxy,iwbufxyl,iwl,iwt,iwsl,iwst
+      integer*8 iwbufxy,iwbufxyl,iwl,iwt,iwsl,iwst
       integer*4 ibegin,lend,itp1,i,j,ii,iutp,iwp,iutp1,np,npf,idx,idy,
      $     i1,i2
       real*8 frbegin,frend,
@@ -311,7 +311,7 @@ c      parameter (fact=1.d0/sqrt(pi2))
       use ffs_wake
       use iso_c_binding
       implicit none
-      integer*8 kx,ktaloc,kal,kalj,ktfmalocp,kat,katj
+      integer*8 kx,kal,kalj,ktfmalocp,kat,katj
       integer*4 irtc,isp0,isp1,lfno,n,m,lenw,l,itfdownlevel,isp2,
      $     i,lbegin,lend,j,k
       real*8 frbegin,frend

@@ -2,8 +2,9 @@
       use maccbk
       use maccode
       use macvar
+      use tfmem, only:ktaloc
       implicit none
-      integer*4 id,LPARM,LBUF,ktcaloc,ktaloc
+      integer*4 id,LPARM,LBUF,ktcaloc
        parameter(LPARM=10,LBUF=1+2*1024)
 c
        idtype(id)=icGRAF

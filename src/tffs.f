@@ -40,11 +40,10 @@
 
         contains
         integer*8 function kmelaloc(n,el)
-        use tfstk, only:klist
+        use tfstk, only:klist,ktaloc
         use iso_c_binding
         implicit none
         integer*4 n
-        integer*8 ktaloc
         type (sad_el), pointer, intent(out) :: el
         kmelaloc=ktaloc(n+1)
         call c_f_pointer(c_loc(klist(kmelaloc-1)),el)
@@ -116,6 +115,7 @@ c$$$
         use tmacro
 c        use maccbk, only:idtype,pname
         use tfstk, only:itfcbk
+        use tfmem, only:tfree
         implicit none
         type (sad_el), pointer :: el
         type (sad_comp), pointer :: cmp
@@ -584,7 +584,6 @@ c$$$  endif
         use ffs
         use iso_c_binding
         implicit none
-        integer*8 ktaloc
         if(ifsize .eq. 0)then
           ifsize=ktaloc(21*nlat)
           call c_f_pointer(c_loc(rlist(ifsize)),beamsize,[21,nlat])
@@ -846,7 +845,7 @@ c$$$  endif
       use tffitcode
       use sad_main
       implicit none
-      integer*8 ktaloc,j
+      integer*8 j
       integer*4 l,ntwis,k,i,itehash
       marki=1
       nlat=elatt%nlat1-1

@@ -118,7 +118,7 @@ c     Table of loss-rate
       real*8 conv
       parameter (npara=59)
       parameter (conv=1.d-12)
-      integer*8 iatr,iacod,iamat,iabmi,ktaloc
+      integer*8 iatr,iacod,iamat,iabmi
       integer*4 lfni,lfno,ia,it,i,j,k,k1,k2,k3,m,n,iret,l
       real*8 trans(6,12),cod(6),beam(42),emx0,emy0,emz0,dl,
      $     heff,orf,phirf,alphap,omegaz,bh,so,s,

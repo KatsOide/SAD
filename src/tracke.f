@@ -30,7 +30,7 @@ c     POS      : get position and angel (NY)
 c     DISP     :                        (NY)
 c
       implicit none
-      integer*8 kx,ktaloc
+      integer*8 kx
       integer*8 latt(nlat)
       integer*4 lfno,l20,np,nl0,l2
       integer*4 irtc

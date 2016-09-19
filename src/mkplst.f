@@ -1,12 +1,13 @@
       Integer*8 function mkplst(idxl)
       use maccbk
       use mackw
+      use tfmem, only:ktaloc,tfree
       implicit real*8 (a-h,o-z)
       integer*8 idxl,i
       integer*4 STKSIZ,allmem
       parameter (STKSIZ =1024, allmem=32768)
       integer mlen,isp
-      integer*8 pstack,mtop,ktaloc
+      integer*8 pstack,mtop
 c
       pstack=ktaloc(STKSIZ)
       isp=0

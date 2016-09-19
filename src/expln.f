@@ -127,7 +127,7 @@ c     and then add statistical error
 
       subroutine tfreeln(idxe)
       use maccbk
-      use tfstk, only:ilist,klist
+      use tfstk, only:ilist,klist,tfree
       use sad_main
       implicit none
       type (sad_el), pointer ::el

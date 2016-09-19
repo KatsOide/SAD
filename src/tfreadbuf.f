@@ -3,7 +3,7 @@
       use tfrbuf
       use tfshare
       implicit none
-      integer*8 ib,is,ktaloc,ia
+      integer*8 ib,is,ia
       integer*4 icmd,lfn,nc,i,j,ls,ie,itfgetbuf,irtc
       character*(*) buff
       select case (icmd)

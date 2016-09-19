@@ -122,7 +122,7 @@ c
       use tffitcode
       logical save
       dimension a(nd,m),b(na),d(nc),x(m)
-      integer*8 it,it1,ktaloc
+      integer*8 it,it1
       save it,it1
       if(save) then
         it=ktaloc(nd*m)

@@ -657,9 +657,7 @@ c
         return
         end subroutine
 
-
         subroutine tfconvreal(strb,x)
-        use tfstk
         implicit none
         type (sad_strbuf), pointer :: strb
         integer*4 l,lenw,ich

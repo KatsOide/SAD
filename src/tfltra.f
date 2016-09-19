@@ -7,7 +7,7 @@
       integer*4, parameter :: ndp=30,maxdp=ndp*2
       real*8, parameter :: dpstep=.001d0
       integer*4 lfno,ns,i,n1
-      integer*8 ktaloc,ios,ics,isn,ic,is,itm,its,ix,imx,imy
+      integer*8 ios,ics,isn,ic,is,itm,its,ix,imx,imy
       real*8 os1,os2,oss
       character*(*) word
       logical exist

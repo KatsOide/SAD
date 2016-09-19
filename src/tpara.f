@@ -8,7 +8,7 @@
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 lele,l
-      integer*8 ib,ktaloc,id
+      integer*8 ib,id
       real*8 dir,phi,f1,al,psi1,psi2,theta,dtheta,w,akk,sk1
       if(tparaed)then
         return

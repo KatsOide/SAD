@@ -4,6 +4,7 @@
       use macttyp
       use macvar
       use macmisc
+      use tfmem, only:ktaloc,tfree
       implicit none
 c     
       character*(MAXSTR) token
@@ -11,9 +12,8 @@ c
 
       real*8 rval, val
       logical skipch,skiped
-      integer*4 idx,ival,ttype
-      integer*8 newblk,allmem,membas,memptr,memuse,m
-      integer*8 ktaloc
+      integer*4 idx,ival,ttype,allmem
+      integer*8 newblk,membas,memptr,memuse,m
 c     macro functions
       logical issign
       character char

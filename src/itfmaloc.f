@@ -16,7 +16,7 @@
       implicit none
       type (sad_descriptor) k
       type (sad_list), pointer :: kl,kl1,kli
-      integer*8 ktaloc,kap,i0,ip,ip0
+      integer*8 kap,i0,ip,ip0
       integer*4 n,m,irtc,i,j,itfmessage
       logical*4 vec,trans,map,err
 c
@@ -223,7 +223,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       type (sad_descriptor) k
       type (sad_complex), pointer :: cxi
       type (sad_list), pointer :: kl,kl1,kli,klj
-      integer*8 ktaloc,kap,ki,ip0,kj,kaj
+      integer*8 kap,ki,ip0,kj,kaj
       integer*4 n,m,irtc,i,j,itfmessage
       logical*4 vec,trans,err
       ktfcmaloc=0

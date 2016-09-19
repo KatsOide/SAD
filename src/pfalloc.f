@@ -18,9 +18,9 @@ c     Initialize memory block list root node
       use tfstk
       use iso_c_binding
       use macfile
+      use tfmem
       implicit none
       integer*4 memsize
-      integer*8 ktaloc
 
       call talocinit
 c      call lminit(klist(0), 8)

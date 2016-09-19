@@ -1,7 +1,7 @@
       real*8 function tlum(np,x,y,xm,ym,sigx,sigy,nmesh)
       use tfstk
       implicit none
-      integer*8 ibin,ktaloc
+      integer*8 ibin
       integer*4 np,nmesh
       real*8 x(2,np),y(2,np),xm,ym,tluma,sigx,sigy
       nmesh=max(int(sqrt(real(np))),6)

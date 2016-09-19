@@ -9,7 +9,7 @@
       implicit none
       type (sad_descriptor) kx
       integer*8 ikptbl,ig,ipz,ix,ixx,iy,iyy,iz,izz,ifz,imt,kzx,
-     $     ktaloc,latt,iparam,lscal
+     $     latt,iparam,lscal
       integer*4 irtc,l,isp1,
      $     nts,itfdownlevel,naz,ltpara,igetgl1
       character*20 title

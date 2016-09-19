@@ -8,7 +8,7 @@
       implicit none
       type (sad_descriptor) kx
       type (sad_list), pointer :: kl,kl1,kl2,klx
-      integer*8 iatr,iacod,iamat,kaparam,iabmi,ktaloc
+      integer*8 iatr,iacod,iamat,kaparam,iabmi
       integer*4 isp1,irtc,narg,mode,itgetfpe,nparam,
      $     itfmessage,lno
       parameter (nparam=59)
@@ -114,7 +114,7 @@ c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparam
       use tffitcode
       implicit none
       type (sad_descriptor) kx
-      integer*8 kparams,ktaloc
+      integer*8 kparams
       integer*4 isp1,irtc,mphi2,i,itfmessage,lfni
       real*8 arg(4),emxe,emye,rese
       if(isp .ne. isp1+4)then

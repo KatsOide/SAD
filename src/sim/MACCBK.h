@@ -7,7 +7,7 @@
 #define	MAXPNAME	32
 /*extern integer4 __maccbk_MOD_MAXPNAME;
   #define MAXPNAME __maccbk_MOD_MAXPNAME*/
-#define	HTMAX		16381
+#define	HTMAX		65536
 
 /* idlist common block */
 /*

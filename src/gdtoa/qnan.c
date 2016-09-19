@@ -1,1 +1,1 @@
-/Users/oide/SAD/oldsad/contrib/gdtoa/qnan.c
+/home/oide/SAD/oldsad/contrib/gdtoa/qnan.c

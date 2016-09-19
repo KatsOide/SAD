@@ -2,7 +2,7 @@
       use tfstk
       implicit none
       integer*4 nw,mode
-      integer*8 ktype,ktaloc,k1,itfroot
+      integer*8 ktype,k1,itfroot
       k1=ktaloc(nw+2)
       ilist(2,k1-1)=0
       if(mode .eq. 0)then
@@ -40,7 +40,7 @@
       use tfstk
       implicit none
       integer*4 nw
-      integer*8 ktype,ktaloc,k1
+      integer*8 ktype,k1
       k1=ktaloc(nw+2)
       ilist(2,k1-1)=0
       klist(k1)=ktype
@@ -105,7 +105,7 @@
       integer*8 function ktalocr(n)
       use tfstk
       implicit none
-      integer*8 kresv,ktaloc
+      integer*8 kresv
       integer*4 nresv,n,nsize
       parameter (nsize=2**18-1)
       save kresv
@@ -369,7 +369,7 @@ c            write(*,*)' : ',idx
       implicit none
       type(sad_list), pointer :: kl
       integer*4 n,i
-      integer*8 k,ktaloc
+      integer*8 k
       k=ktaloc(n*6-1)+2
       do i=1,n
         call loc_list(k+(i-1)*6,kl)
