@@ -624,6 +624,20 @@ c$$$  endif
         return
         end function
 
+        integer*4 function idtypecx(i)
+        use maccbk, only:idtype
+        use maccode
+        use tmacro, only:nlat
+        implicit none
+        integer*4 i
+        if(i .le. 0 .or. i .ge. nlat)then
+          idtypecx=icNull
+        else
+          idtypecx=idtype(idcomp(elatt,i))
+        endif
+        return
+        end function
+
         integer*8 function idvalc(i)
         use maccbk, only:idval
         implicit none
