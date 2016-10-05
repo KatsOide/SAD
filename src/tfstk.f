@@ -89,8 +89,7 @@ c Do not forget to update sim/MACCODE.h when you change this module!!!!
 
         subroutine forcesf
         implicit none
-        rlist(-17)=0.d0
-        stop
+        call abort
         end subroutine
 
       end module
@@ -362,7 +361,7 @@ c     call tfsetlastp(ip+m-1)
         if(m .lt. 4)then
           if(m .ne. 0)then
             write(*,*)'tfree-too small segment: ',ka,m
-            call forcesf()
+            call abort
           endif
           return
         endif
@@ -682,7 +681,7 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         ispbase=ktaloc(mstk*2)-1
         if(ispbase .le. 0)then
           write(*,*)'Stack allocation failed: ',mstk,ispbase
-          call forcesf()
+          call abort
         endif
         isp=0
         isporg=isp+1
@@ -724,7 +723,7 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
           if(istat .ne. 0)then
             write(*,*)'ktfsadalloc allocation error in ALLOCATE: ',
      $           istat,n
-            call forcesf()
+            call abort
           endif
           icbk=icbk+1
           ktfsadalloc=sad_loc(sadalloc(i)%ca(1))
@@ -737,7 +736,7 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         enddo          
         if(icbk .ge. ncbk)then
           write(*,*)'ktfsadalloc too many allocations: ',icbk
-          call forcesf()
+          call abort
         endif
         end function
 

@@ -59,7 +59,7 @@
       endif
       jpcm=abs(kptbl(1,3))
       level= itfuplevel()
-      kaf=ktfsymbolz(vname,lnblnk(vname),symd)
+      kaf=ktfsymbolz(vname,len_trim(vname),symd)
       kax=0
       if(symd%downval .eq. 0)then
         kv=0

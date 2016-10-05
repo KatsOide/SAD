@@ -250,7 +250,7 @@ c        call tfdebugprint(kr,':= ',3)
         call tfcleardaloc(kan)
         if(npat .gt. dtbl%npat)then
           write(*,*)'ktdaloc-implementation error ',npat,dtbl%npat
-          call forcesf()
+          call abort
         endif
       endif
       dtbl%npat=npat

@@ -20,7 +20,7 @@ c     Initialize memory block list root node
       use macfile
       use tfmem
       implicit none
-      integer*4 memsize
+c      integer*4 memsize
 
       call talocinit
 c      call lminit(klist(0), 8)
@@ -66,17 +66,17 @@ c     Allocate small memory block initialized by Real[0]
       use macfile
       implicit none
       integer n
-      integer*4 i,mfalloc
+c      integer*4 i,mfalloc
       
       write(*,*)'mcfallo is obsolete: use mctaloc. ',n
-      call forcesf()
-      mcfallo=mfalloc(n)
-      if (n .ge. 1) then
-         do i=0,n-1
-            rlist(mcfallo+i)=0.0d0
-         enddo
-      endif
-      return
+      call abort
+c      mcfallo=mfalloc(n)
+c      if (n .ge. 1) then
+c         do i=0,n-1
+c            rlist(mcfallo+i)=0.0d0
+c         enddo
+c      endif
+c      return
       end
 
 c     Allocate/Free small memory block
@@ -86,13 +86,13 @@ c     Allocate/Free small memory block
       use macfile
       implicit none
       integer*4 n
-      integer*4 pfalloc
-      character*(MAXLLEN) msgstr
-      integer*4 currp,next,msize
-      integer*4 lene
+c      integer*4 pfalloc
+c      character*(MAXLLEN) msgstr
+c      integer*4 currp,next,msize
+c      integer*4 lene
 
       write(*,*)'mfalloc is obsolete: use mtaloc. ',n
-      call forcesf()
+      call abort
 c      call chkflst(ilistroot,'mfalloc in')
 c$$$      if(n .le. 0) then
 c$$$         mfalloc=0
@@ -168,12 +168,12 @@ c$$$      return
       use macfile
       implicit none
       integer*4 pt,size
-      character*(MAXLLEN) msgstr
-      integer*4 currp,next
-      integer*4 lene
+c      character*(MAXLLEN) msgstr
+c      integer*4 currp,next
+c      integer*4 lene
 
       write(*,*)'freeme is obsolete. use tfreem. ',pt,size
-      call forcesf()
+      call abort
 c$$$      if(pt .eq. 0 .or. size .eq. 0) then
 c$$$         return
 c$$$      else if(pt .le. 0 .or. size .le. 0)then

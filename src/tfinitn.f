@@ -546,7 +546,7 @@ c      call tmov(ktastk(isp0+1),klist(ka1),m)
       nfun=nfun+1
       if(nfun .gt. maxnfun)then
         write(*,*)'itfunaloc-too many functions.'
-        call forcesf()
+        call abort
       endif
       return
       end

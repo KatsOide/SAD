@@ -437,7 +437,7 @@ c        write(*,*)'tlspect ',ltbl,np0,ltbl*8*np0
           katbl=new
         else
           write(*,*)'Too long ltbl',ltbl
-          call forcesf()
+          call abort
         endif
       endif
       m=ltbl*4

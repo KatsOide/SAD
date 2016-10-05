@@ -57,7 +57,7 @@ c      write(*,*)'ktfallocshared-mmap ',nsh1,kpb,na-lps
       call mapallocshared8(klist(kpb),int8(na-lps),8,irtc)
       if(irtc .ne. 0)then
         write(*,*)'ktfallocshared ',kpb,na-lps
-        call forcesf()
+        call abort
       endif
       ktfallocshared=kpb+2
       klist(kpb)=k
@@ -105,7 +105,7 @@ c     $     transfer(c_loc(klist(kpb)),k)/8
       call mapallocfixed8(klist(kpb-2),klist(kpb-1),8,irtc)
       if(irtc .ne. 0)then
         write(*,*)'tffreecshared ',kpb,klist(kpb-1)
-        call forcesf()
+        call abort
       endif
 c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       if(itfcbk(k) .eq. 0)then

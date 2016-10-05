@@ -86,7 +86,6 @@
         subroutine initkyindex
         use tfcode
         use maccbk,only:pname
-        use tfstk, only:forcesf
         implicit none
         integer*4 i,k,id
         INDMAX=0
@@ -108,7 +107,7 @@
               else
                 write(*,*)'Too many aliases ',pname(kytbl(0,i)),
      $               ' ',pname(kytbl(k,0))
-                call forcesf()
+                call abort
               endif
             endif
           enddo

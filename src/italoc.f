@@ -68,7 +68,7 @@
       enddo
       write(*,*)'italoc memory allocation error ',ixl(16),n
       call meminfo()
-      call forcesf()
+      call abort
       italoc=-1
       return
       end

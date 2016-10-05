@@ -118,7 +118,7 @@ c      write(*,*)'with ',irtc,kerror
       type (sad_descriptor) k
       type (sad_string), pointer :: str
       character*(*) name
-      k=kxsymbolv(name,lnblnk(name))
+      k=kxsymbolv(name,len_trim(name))
       if(ktfstringqd(k,str))then
         tfgetstrv(1:str%nch)=str%str(1:str%nch)
         tfgetstrv(str%nch+1:)=' '

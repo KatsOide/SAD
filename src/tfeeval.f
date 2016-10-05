@@ -370,7 +370,7 @@ c          call tfstk2l(lista,lista)
         kx%k=ktflist+ks
       case default
         write(*,*)'tfleval-implementation error: ',kaf
-        call forcesf()
+        call abort
       end select
       go to 8000
 

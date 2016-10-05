@@ -11,7 +11,7 @@
       i=index(mess,'::')
       if(i .le. 0)then
         write(*,*)'itfmessagename implementation error: ',mess
-        call forcesf()
+        call abort
       endif
       isp1=isp+1
       ktastk(isp1)=ktfoper+mtfmessagename

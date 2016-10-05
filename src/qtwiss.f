@@ -294,7 +294,7 @@ c     end   initialize for preventing compiler warning
  2000     write(*,*)'Qtwiss: implementation error of solenoid ',l1
           go to 1010
  2100     write(*,*)'Use BEND with ANGLE=0 for STEER.'
-          call forcesf()
+          call abort
  2200     phi=cmp%value(kytbl(kwANGL,icMULT))
           mfr=nint(cmp%value(14))
           if(dir .ge. 0.d0)then

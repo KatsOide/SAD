@@ -750,7 +750,7 @@ c      write(*,*)'twspfu ',x,y,sigx,sigy
       if(wspac .and. ifsize .eq. 0)then
         write(*,*)'WSPAC without beam matrix. ',
      $       'You need EMIT with CODPLOT.'
-        call forcesf()
+        call abort
       endif
       return
       end

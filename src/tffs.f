@@ -866,7 +866,7 @@ c$$$  endif
       latt(1:nlat)=>elatt%comp(1:nlat)
       if(idtypec(1) .ne. icMARK)then
         write(*,*)'The first element must be a MARK element.'
-        call forcesf()
+        call abort
       endif
       call tfhashelement
       ifele1=ktaloc(nlat/2+1)
