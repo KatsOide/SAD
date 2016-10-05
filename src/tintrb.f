@@ -527,7 +527,7 @@ c     $       epslon,epsabs,8)+rlog
       subroutine twspfu(x,y,sigx,sigy,fx,fy,fu)
       use tfstk
       implicit none
-      integer*8 ktaloc,iu
+      integer*8 iu
       integer*4 nr,nx,ny,m
       real*8 x,y,sigy,sigx,fx,fy,fu
       parameter (nr=20,nx=60,ny=60,m=(nr+1)*(nx+1)*(ny+1))
@@ -750,7 +750,7 @@ c      write(*,*)'twspfu ',x,y,sigx,sigy
       if(wspac .and. ifsize .eq. 0)then
         write(*,*)'WSPAC without beam matrix. ',
      $       'You need EMIT with CODPLOT.'
-        call forcesf()
+        call abort
       endif
       return
       end

@@ -86,7 +86,6 @@
         subroutine initkyindex
         use tfcode
         use maccbk,only:pname
-        use tfstk, only:forcesf
         implicit none
         integer*4 i,k,id
         INDMAX=0
@@ -108,7 +107,7 @@
               else
                 write(*,*)'Too many aliases ',pname(kytbl(0,i)),
      $               ' ',pname(kytbl(k,0))
-                call forcesf()
+                call abort
               endif
             endif
           enddo
@@ -360,7 +359,7 @@ c
       if (IgetGL('$CTIME$',idummy) .eq. FLAGON) call cputix
       call gettok(token,slen,ttype,rval,ival)
 c     for debug
-c       print *,token(:slen),slen,ttype
+c       print *,'toplvl-0 ',token(:slen),slen,ttype
 c     end debug
 c     
  1100 continue
@@ -427,12 +426,9 @@ c     end debug
       go to 1000
 c     
  9000 continue
-cccccccccccc   K. Oide 11/22/1997
-cccccccccccc   K. Oide 9/2/1999
       if(itbuf(infl) .ne. 0)then
         return
       endif
-cccccccccccc   K. Oide end
       print *," SAD1 reads EOF."
       call errmsg("main","Stop execution.(READ EOF)" ,0,0)
 c     

@@ -248,7 +248,12 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
       do l=ibegin,iend
         next=inext(l) .ne. 0
         if(isnan(cod(1)) .or. isnan(cod(3)))then
-          cod=0.d0
+          if(isnan(cod(1)))then
+            cod(1)=0.d0
+          endif
+          if(isnan(cod(3)))then
+            cod(3)=0.d0
+          endif
           call tinitr(trans)
           if(.not. plot)then
             return

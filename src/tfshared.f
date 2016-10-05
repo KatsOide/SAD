@@ -10,8 +10,8 @@
       use iso_c_binding
       implicit none
       integer*4, save :: lps=0
-      integer*4 irtc,n,getpagesize,nsh1,i
-      integer*8 k,ktaloc,kpb,kcp,na
+      integer*4 irtc,n,getpagesize,nsh1,i,na
+      integer*8 k,kpb,kcp
       if(lps .eq. 0)then
         lps=getpagesize()/8
       endif
@@ -54,10 +54,10 @@
       kcp=transfer(c_loc(klist(k)),k)/8
       kpb=k+((kcp+1+lps)/lps)*lps-kcp
 c      write(*,*)'ktfallocshared-mmap ',nsh1,kpb,na-lps
-      call mapallocshared8(klist(kpb),na-lps,8,irtc)
+      call mapallocshared8(klist(kpb),int8(na-lps),8,irtc)
       if(irtc .ne. 0)then
         write(*,*)'ktfallocshared ',kpb,na-lps
-        call forcesf()
+        call abort
       endif
       ktfallocshared=kpb+2
       klist(kpb)=k
@@ -105,7 +105,7 @@ c     $     transfer(c_loc(klist(kpb)),k)/8
       call mapallocfixed8(klist(kpb-2),klist(kpb-1),8,irtc)
       if(irtc .ne. 0)then
         write(*,*)'tffreecshared ',kpb,klist(kpb-1)
-        call forcesf()
+        call abort
       endif
 c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       if(itfcbk(k) .eq. 0)then
@@ -147,8 +147,8 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       use tfshare
       implicit none
       integer*4, save :: lps=0
-      integer*4 getpagesize,i,irtc
-      integer*8 k,kcp,na,ktaloc
+      integer*4 getpagesize,i,irtc,na
+      integer*8 k,kcp
       if(lps .eq. 0)then
         lps=getpagesize()/8
       endif
@@ -157,7 +157,7 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
         k=ktaloc(na)
         kcp=transfer(c_loc(klist(k)),k)/8
         kstshare=k+((kcp+1+lps)/lps)*lps-kcp+1
-        call mapallocshared8(klist(kstshare-1),na-lps,8,irtc)
+        call mapallocshared8(klist(kstshare-1),int8(na-lps),8,irtc)
         do i=1,nshmax
           ilist(i,kstshare)=0
           kashare(i)=0

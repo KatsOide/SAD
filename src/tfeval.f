@@ -304,7 +304,7 @@ c     because stack does not have mtfleft(brace|bra|paren)!!
         go to 8040
       case default
         write(*,*)'tfeval undefined return code ',irt
-        call forcesf()
+        call abort
       end select
 
  2400 if(ktastk(isp) .ne. ktfoper+mtfnull)then

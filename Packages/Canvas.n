@@ -296,7 +296,7 @@ CanvasGraphics=Class[{},
     {wy1,wy2}=Restrict[Second[Canvas$PlotRegion]*(wy2-wy1)+wy1,YOrg*Margin[[2,1]],YOrg*Margin[[2,2]]];
     {wxc,wyc}={wx1+wx2,wy1+wy2}/2;
     If[~RealQ[ar0],ar0=RawWindowAspectRatio];
-    If[ar0<=CanvasAspectRatio,
+    If[ar0<=(wx2-wx1)/(wy2-wy1),
       {wx1,wx2}=wxc+(wy2-wy1)*ar0/{-2,2},
       {wy1,wy2}=wyc+(wx2-wx1)/ar0/{-2,2}];
     Canvas$Window={{wx1,wx2},{wy1,wy2}};
@@ -357,8 +357,6 @@ CanvasGraphics=Class[{},
         {Tags,FrameLabel,PlotLabel,Frame,Background,Alignment,
           PlotRegion,FrameClick,DataRange,FrameTicks,FrameThickness,TickSize,
           InfoBind,TickFont,FrameUnitLabel,RemoveOverlap}/.op;
-      opt001=op;
-      rmo00=rmo;
       If[w,
         If[ini,
           Canvas$Initialize=init;
@@ -516,7 +514,7 @@ CanvasGraphics=Class[{},
         t=CanvasWidget[Find$WithTag[p[[1]]]];
         Do[
           If[Length[t]<=1,Break[]];
-          rt00=rt=CanvasWidget[BBox[t[[1]]]];
+          rt=CanvasWidget[BBox[t[[1]]]];
           Scan[
             If[OverlapQ[rt,#],
               CanvasWidget[Delete]=t[[1]];
@@ -525,7 +523,6 @@ CanvasGraphics=Class[{},
           t=Reverse[Rest[t]],
           {2}];
         AppendTo[r,CanvasWidget[BBox[p[[1]]]]];
-        r00=r;
         p=Rest[p]]]];
 
   ExpandFrameTicks[Automatic]={True,True,Ticks,Ticks};
@@ -1215,13 +1212,12 @@ CanvasGraphics=Class[{},
     CanvasWidget[Create$Text] = {{bb[[3]],(bb[[2]]+bb[[4]])/2},
       Text->" "//ful,Anchor->"w",Tags->{tag,FrameTag},Font->font}];
   UnitLabelY["",__]=Null;
-  UnitLabelY[exps_,fltag_,font_,anc_]:=(
+  UnitLabelY[exps_,fltag_,font_,anc_]:=Module[{bb=CanvasWidget[BBox[fltag]]},
     CanvasWidget[Create$Text] = {
-      {CanvasWidget[BBox[fltag]][[Switch[anc,"e",1,_,3]]],
-        Canvas$Coord1[{0,Canvas$PlotRange[[2,2]]}][[2]]},
+      {bb[[Switch[anc,"e",3,_,1]]],bb[[2]]-2},
       Text->exps,
       Font->font,Tags->{"E"//fltag,FrameTag},
-      Anchor->"n"//anc});
+      Anchor->"s"//anc}];
 
   FrameTickX[yy_,anc_,Mt_,logdt_,fltag_,font_,fun_List,ful_]:=
     (Switch[First[Canvas$Axes],

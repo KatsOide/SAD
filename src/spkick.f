@@ -6,7 +6,7 @@
       implicit none
       integer*4 nzmax,ntheta
       parameter (nzmax=1000,ntheta=12)
-      integer*8 latt(nlat),itt,ktaloc,irho,iphi,iq,iphis,iex,iey,iez
+      integer*8 latt(nlat),itt,irho,iphi,iq,iphis,iex,iey,iez
       integer*4 np,kturn,l,kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),zz(np0)
       real*8 al,radius,alx

@@ -16,7 +16,7 @@
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 maxrpt,maxlfn,hsrchz
-      integer*8 kffs,k,kx,ktaloc,itwisso,
+      integer*8 kffs,k,kx,itwisso,
      $     ifvalvar2,iparams,kax,iutwiss
       integer*4 kk,i,lfnb,ia,iflevel,j,ielm,igelm,k1,
      $     ii,irtc0,it,itemon,itmon,itestr,itstr,itt,
@@ -1558,7 +1558,7 @@ c      write(*,*)'tffsa-2 ',flv%iut,%LOC(rlist(flv%iut)),busy
       use ffs, local_ilattp=>ilattp
       implicit none
 c nlocal = mcommon in TFFSLOCAL.inc
-      integer*8 ktaloc,isave,ilattp
+      integer*8 isave,ilattp
       integer*4 icmd,nxh
       logical*4 err
       nxh=int((sizeof(ffv)+7)/8)
@@ -1730,7 +1730,7 @@ c            call tclr(uini(1,0),28)
       implicit none
       type (sad_list), pointer :: klx,kli,kle
       type (sad_symdef), pointer :: symd
-      integer*8 ktaloc,iet
+      integer*8 iet
       integer*4 lfno,i,j,k,nk,m,me,nc, ie,ik,irtc
       character*(MAXPNAME) key,tfgetstrs
       type (sad_descriptor) itfelv,itfcoupk,kx,ki,kk,ke

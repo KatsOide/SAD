@@ -1,9 +1,10 @@
       real*8 function rdexpr(elmidx,kwcode,token,slen,ttype)
-c     $Header: /SAD/cvsroot/oldsad/src/rdexpr.f,v 1.7.2.7 2016/09/09 12:09:01 oide Exp $
+c     $Header: /SAD/cvsroot/oldsad/src/rdexpr.f,v 1.7.2.8 2016/09/19 04:55:35 oide Exp $
       use maccbk
       use mackw
       use macttyp
       use cbkmac
+      use tfmem, only:ktaloc,tfree
       implicit none
       integer*4 elmidx,kwcode
       character*(*) token
@@ -12,7 +13,7 @@ c     $Header: /SAD/cvsroot/oldsad/src/rdexpr.f,v 1.7.2.7 2016/09/09 12:09:01 oi
       real*8 rval
 c     
       real*8 yyval
-      integer*8 idxerl,membas,ktaloc
+      integer*8 idxerl,membas
       integer*4 Lrdnum,scan,yyparse,yypushtoken,yypoptoken,yyreturn
      $     ,allmem,memuse,hsrch,idxran
       parameter (allmem=32768)

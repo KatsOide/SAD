@@ -4,6 +4,7 @@
       use macttyp
       use macvar
       use macmisc
+      use tfmem, only:tfree
       implicit none
       integer*4 cmdidx
 c.....cmdidxbrings pointer to command name

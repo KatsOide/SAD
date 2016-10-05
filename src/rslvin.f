@@ -1,9 +1,10 @@
       integer*8 function rslvin(idx)
       use maccbk
       use mackw
+      use tfmem, only:ktaloc
       implicit real*8 (a-h,o-z)
       integer idx
-      integer*8 lptold,lptnew,ktaloc,i,ktcaloc
+      integer*8 lptold,lptnew,i,ktcaloc
       integer*4 llen,direct,hsrchz
       integer STACSZ
       parameter (STACSZ=400)

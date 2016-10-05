@@ -72,7 +72,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
             else
               word='@'
             endif
-            if(idtypec(mfpnt) .eq. icMARK)then
+            if(idtypecx(mfpnt) .eq. icMARK)then
               if(i .le. ntwissfun)then
                 x1=rlist(idvalc(mfpnt)+i)
                 if(word .eq. '@-')then
@@ -196,9 +196,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
       end
 
       character*(*) function tname(i)
-      use tfstk
-      use ffs
-      use tffitcode
+      use tmacro, only:nlat
       use ffs_pointer, only:pnamec
       implicit none
       integer*4 i

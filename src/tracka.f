@@ -16,7 +16,7 @@
 
       logical cmplot1,fourie1
       integer*8 kal,kaf,
-     $     kv,kaj,ke,kax,ktaloc,ix0pl,iy0pl,ixjpl,ixnpl,ixppl,
+     $     kv,kaj,ke,kax,ix0pl,iy0pl,ixjpl,ixnpl,ixppl,
      $     izwrk,izexp,iajx,iaord,ib,iaexp,iiord,izwork,lp0
       integer*4 np,jpcm,level,nsmear,
      $     n,j,i,ip,jp,irtc,nsm,lpa,k,
@@ -59,7 +59,7 @@
       endif
       jpcm=abs(kptbl(1,3))
       level= itfuplevel()
-      kaf=ktfsymbolz(vname,lnblnk(vname),symd)
+      kaf=ktfsymbolz(vname,len_trim(vname),symd)
       kax=0
       if(symd%downval .eq. 0)then
         kv=0

@@ -179,7 +179,7 @@ c     ..... include vertical steerings
       parameter (cutl=1d-5)
       logical stab,xplane,yplane,cor(*),mhogan,pvert,bump
       character name*8
-      integer*8 latt(nlat),id
+      integer*8 latt(nlat),id,itw,isaw,ivar,ix,idx,ia,ib,itr,isav
       integer*4 i
       dimension twiss(nlat,-ndim:ndim,ntwissfun)
      z,         mult(*),ipair(2,npair),ipairt(2,npair),iquad(*)
@@ -628,7 +628,8 @@ c     :::::
       use tfstk
       use ffs
       use tffitcode
-      ib=italoc(nna)
+      integer*8 ia,ib
+      ib=ktaloc(nna)
       call tmov(rlist(ia),rlist(ib),min(na,nna))
       call tfree(ia)
       ia=ib
@@ -3231,7 +3232,7 @@ c     emittance tuning by a single bump.
       character*(*) observ
       character name*12
       character*8 nlist(mfit1)
-      integer*8 latt(*)
+      integer*8 latt(*),ipw,iyw
       dimension twiss(*),mult(*),gammab(*),size(*),istr(*),
      $     estr(*),iobs(*)
       dimension a(0:norder),wb(norder+1),wc(norder+1,norder+1)

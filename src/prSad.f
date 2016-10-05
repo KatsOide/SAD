@@ -2,6 +2,7 @@
       use maccbk
       use maccode
       use macfile
+      use tfmem, only:tfree
       implicit real*8 (a-h,o-z)
       integer idx
 c

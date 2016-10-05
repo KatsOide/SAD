@@ -6,7 +6,7 @@
       use tfcsi, only:cssetp
       implicit real*8(a-h,o-z)
       parameter (ndl=16,nde=8,nd=20,lio=50)
-      integer*8 ix,isa,ktaloc,isb,isc
+      integer*8 ix,isa,isb,isc,is
       logical abbrev,exist,start,ghisto,lod,append
       character*(*) word,title,case
       character*255 tfconvstr

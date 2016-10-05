@@ -7,7 +7,7 @@
       implicit none
 c
       integer*8 ktcaloc
-      integer*4 i,idummy,sethtb,hsrch,sethtbr,idummy1
+      integer*4 i,idummy,idummy1,hsrch,sethtbr
 c     external doline
       external doprin, doexpn, doread, dolist, docod, dostop, dotwis
       external dooffl, doonfl,dorvrs

@@ -11,7 +11,7 @@
       implicit none
       type (sad_descriptor) k,ki,k1
       type (sad_list), pointer :: kl,kli
-      integer*8 kfromr,kdx1,ktaloc
+      integer*8 kfromr,kdx1
       integer*4 irtc,hsrchz,lid,idx,n,lenw,idxi,
      $     i,idir,idti,nc,itfmessage
       character*(MAXPNAME) tfgetstrs,ename
@@ -107,7 +107,7 @@
       use tfstk
       use mackw
       implicit none
-      integer*8 ktaloc,kdx1,idxm1,idxd1
+      integer*8 kdx1,idxm1,idxd1
       integer*4 itfdummyptr,idx,hsrchz,idxm,n,idxd
       data itfdummyptr /0/
       if(itfdummyptr .eq. 0)then
@@ -153,7 +153,7 @@
       implicit none
       type (sad_descriptor) kx,kr
       type (sad_list), pointer :: klxi,klx
-      integer*8 ka1,kas,kdx1,ktaloc
+      integer*8 ka1,kas,kdx1
       integer*4 isp1,irtc,nc,lenw,narg,idx,itype,
      $     idt,n,i,nce,m,hsrchz,isp0, itfmessage
       character*(MAXPNAME) ename,type,tfgetstrs,key,tfkwrd

@@ -4,7 +4,7 @@
       use tffitcode
       logical cond,micado,norm,svd
       dimension a(nd,m), b(n), x(m)
-      integer*8 ixc,it,iu,ic1,ia,ib,im,ktaloc
+      integer*8 ixc,it,iu,ic1,ia,ib,im
 c
       na=n-nc
       if(cond) then

@@ -1,12 +1,12 @@
       integer*8 function flmgr(ifn)
       use maccbk
       use macfile
+      use tfmem, only:ktaloc,tfree
 c
 c     flmgr(0) returns last saved file number
 c     flmgr(>0) push ifn onto stack.
       implicit none
       integer*4 ifn
-      integer*8 ktaloc
 c
       integer*8 itemp
 c

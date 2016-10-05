@@ -1,5 +1,5 @@
-Help$Update="$Date: 2016/06/06 01:01:26 $"[8,17];
-Help$Version="1.0.10.9.5k64";
+Help$Update="$Date: 2016/10/05 06:19:08 $"[8,17];
+Help$Version="1.0.10.10.5k64";
 
 Help$Messages=(Print["SAD/FFS Help Update: ",Help$Update];{
 {" ",
@@ -3705,7 +3705,9 @@ ColorFunction    Function or String\n\
                                 Automatic           Null or None means \"white\"\n\
 Mesh             True or False  False               True to draw mesh\n\
 MeshColor        Function or String\n\
-                                Automatic           Null or None to hide\n\n\
+                                Automatic           Null or None to hide\n\
+ColorScale       True or False  True                displays a color scale on the right\n\
+Smoothing        integer >= 0   1                   number of linear interpolations\n\n\
 Example:\n\
 data = Table[Sin[x]/Cos[x^2 + y^2], {x, -2, 2, 0.1}, {y, -2, 2, 0.1}];\n\
    ListDensityPlot[data,PlotRange->{-5,5}, MeshRange->{{-2,2},{-2,2}},\n\

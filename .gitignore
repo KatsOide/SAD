@@ -19,3 +19,12 @@ src/gdtoa/test/*
 Packages/Canvas.n_0
 Packages/#Canvas.n#
 *_*
+
+*.~
+
+*.~
+<<<<<<< HEAD
+
+src/.DS_Store
+=======
+>>>>>>> origin/master

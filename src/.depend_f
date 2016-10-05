@@ -12,7 +12,7 @@ IgetGL.o: IgetGL.f tfstk.o
 JNLPRM.o: JNLPRM.f
 LgetGL.o: LgetGL.f tfstk.o
 Lrdnum.o: Lrdnum.f tfstk.o toplvl.o
-MAIN.o: MAIN.f
+MAIN.o: MAIN.f tfstk.o
 MINV2.o: MINV2.f
 MMUL2.o: MMUL2.f
 MMUL4.o: MMUL4.f
@@ -227,7 +227,7 @@ qdcell_2.o: qdcell_2.f tffs.o tfstk.o
 qddrif.o: qddrif.f tffs.o
 qdmdia.o: qdmdia.f
 qdquad.o: qdquad.f tffs.o tfstk.o
-qdrift.o: qdrift.f
+qdrift.o: qdrift.f tfstk.o
 qdthin.o: qdthin.f tffs.o
 qdtwis.o: qdtwis.f tffs.o tfstk.o toplvl.o
 qgettr.o: qgettr.f tffs.o tfstk.o
@@ -245,7 +245,7 @@ rdterm.o: rdterm.f tfstk.o toplvl.o
 rslvin.o: rslvin.f tfstk.o toplvl.o
 rvrsln.o: rvrsln.f tfstk.o toplvl.o
 setdfl.o: setdfl.f tfstk.o toplvl.o
-sethtb.o: sethtb.f tfstk.o toplvl.o
+sethtb.o: sethtb.f tfstk.o
 skipch.o: skipch.f
 sols33.o: sols33.f
 spkick.o: spkick.f tffs.o tfstk.o
@@ -271,7 +271,7 @@ tcod.o: tcod.f tffs.o tfstk.o
 tconv.o: tconv.f tffs.o tfstk.o
 tconvm.o: tconvm.f tffs.o tfstk.o
 tcoord.o: tcoord.f tffs.o
-tcoorde.o: tcoorde.f tffs.o
+tcoorde.o: tcoorde.f tffs.o tfstk.o
 tcorr.o: tcorr.f csinit.o tffs.o tfstk.o
 tcsvdm.o: tcsvdm.f tfstk.o
 tday.o: tday.f
@@ -283,7 +283,7 @@ tdinit.o: tdinit.f
 tdjin.o: tdjin.f tfstk.o toplvl.o
 tdlat.o: tdlat.f tffs.o tfstk.o
 tdplt.o: tdplt.f
-tdrife.o: tdrife.f tdrift.o tffs.o
+tdrife.o: tdrife.f tdrift.o tffs.o tfstk.o
 tdrift.o: tdrift.f tfstk.o
 tdrwdt.o: tdrwdt.f inc/common.inc tffs.o tfstk.o
 tedrawf.o: tedrawf.f
@@ -423,7 +423,7 @@ tphplt.o: tphplt.f
 tprmpt.o: tprmpt.f tffs.o tfstk.o
 tput.o: tput.f
 tputbs.o: tputbs.f
-tqente.o: tqente.f
+tqente.o: tqente.f tfstk.o
 tqfrie.o: tqfrie.f tffs.o tfstk.o
 tqlfre.o: tqlfre.f tffs.o
 tqr.o: tqr.f
@@ -450,6 +450,7 @@ tshow.o: tshow.f tffs.o tfstk.o
 tsmear.o: tsmear.f tffs.o
 tsol.o: tsol.f tffs.o tfstk.o
 tsole.o: tsole.f tffs.o tfstk.o
+tsole_orig.o: tsole_orig.f tffs.o tfstk.o
 tsolqu.o: tsolqu.f tfstk.o tsolque.o
 tsolque.o: tsolque.f tffs.o tfstk.o
 tsolvg.o: tsolvg.f

@@ -8,7 +8,7 @@
       integer*4 slen,ival,ttype
       real*8 rval
 c     
-      integer*8 ktaloc,ia
+      integer*8 ia
       integer*4 hsrchz
       integer*4 n,isp0,mult
       logical skipch

@@ -5,6 +5,7 @@
       use macttyp
       use macfile
       use macmisc
+      use tfmem, only:tfree
       implicit none
       character*(MAXSTR) token
       integer*8 incode,icode,idx1

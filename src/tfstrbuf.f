@@ -60,7 +60,7 @@
         if(kbuf .le. 0)then
           write(6,*)'Memory allocation error (getstringbuf), size =',
      $         m
-          call forcesf()
+          call abort
         endif
         call strbuf_loc(kbuf,strb)
         strb%indw=maxint
@@ -657,9 +657,7 @@ c
         return
         end subroutine
 
-
         subroutine tfconvreal(strb,x)
-        use tfstk
         implicit none
         type (sad_strbuf), pointer :: strb
         integer*4 l,lenw,ich
@@ -691,7 +689,7 @@ c
             write(6,*)
      $           'Memory allocation error (extendstringbuf), size =',
      $           lnew
-            call forcesf()
+            call abort
           endif
           call tmov(strb%indw,ilist(1,i-3),strb%maxnch/8+5)
           ilist(2,i)=lnew

@@ -86,7 +86,7 @@ extern void capita_(character, ftnlen);
 extern void tfreadbuf_(integer4*, integer4*, integer4*, integer4*,
 		       integer4*, const_character, ftnlen);
 extern void gettok_(character, integer4*, integer4*, real8*, integer4*, ftnlen);
-extern void tfree_(integer4*);
+extern void __tfmem_MOD_tfree(integer8*);
 extern integer4 itfdownlevel_(void);
 extern logical8 tfruleqk_(integer8*);
 extern logical4 tfsamesymbolq_(integer4*, integer4*);
@@ -138,7 +138,7 @@ extern integer4 itfsymbolc(const char*, integer4);
 extern integer8 ktfsymbolz(const char*);
 extern integer8 ktfsymbolf(const char*, logical4);
 extern integer4 itfsymbol(const char*, int);
-extern void tfree(integer4);
+extern void tfree(integer8);
 extern integer8 ktsalocb(integer4 , const char*);
 extern integer8 ktsalocbl(integer4, const char*, integer4);
 extern integer4 italoc(integer4);

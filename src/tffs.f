@@ -40,11 +40,10 @@
 
         contains
         integer*8 function kmelaloc(n,el)
-        use tfstk, only:klist
+        use tfstk, only:klist,ktaloc
         use iso_c_binding
         implicit none
         integer*4 n
-        integer*8 ktaloc
         type (sad_el), pointer, intent(out) :: el
         kmelaloc=ktaloc(n+1)
         call c_f_pointer(c_loc(klist(kmelaloc-1)),el)
@@ -116,6 +115,7 @@ c$$$
         use tmacro
 c        use maccbk, only:idtype,pname
         use tfstk, only:itfcbk
+        use tfmem, only:tfree
         implicit none
         type (sad_el), pointer :: el
         type (sad_comp), pointer :: cmp
@@ -584,7 +584,6 @@ c$$$  endif
         use ffs
         use iso_c_binding
         implicit none
-        integer*8 ktaloc
         if(ifsize .eq. 0)then
           ifsize=ktaloc(21*nlat)
           call c_f_pointer(c_loc(rlist(ifsize)),beamsize,[21,nlat])
@@ -622,6 +621,20 @@ c$$$  endif
         implicit none
         integer*4 i
         idtypec=idtype(idcomp(elatt,i))
+        return
+        end function
+
+        integer*4 function idtypecx(i)
+        use maccbk, only:idtype
+        use maccode
+        use tmacro, only:nlat
+        implicit none
+        integer*4 i
+        if(i .le. 0 .or. i .ge. nlat)then
+          idtypecx=icNull
+        else
+          idtypecx=idtype(idcomp(elatt,i))
+        endif
         return
         end function
 
@@ -709,26 +722,31 @@ c$$$  endif
         type (sad_comp) cmp
         integer*4 ic
         real*8 dir,table(4),f1in,f1out,f2in,f2out
-        if(cmp%value(kytbl(kwL,ic))*
-     $       cmp%value(kytbl(kwK1,ic)) .ne. 0.d0)then
-          f1in =cmp%value(kytbl(kwF1,ic))
-     $         +cmp%value(kytbl(kwF1K1F,ic))
-          f1out=cmp%value(kytbl(kwF1,ic))
-     $         +cmp%value(kytbl(kwF1K1B,ic))
-          f2in =cmp%value(kytbl(kwF2,ic))
-     $         +cmp%value(kytbl(kwF2K1F,ic))
-          f2out=cmp%value(kytbl(kwF2,ic))
-     $         +cmp%value(kytbl(kwF2K1B,ic))
-          if(dir .ge. 0.d0)then
-            table(1)=f1in
-            table(2)=f2in
-            table(3)=f1out
-            table(4)=f2out
+        if(cmp%value(kytbl(kwL,ic)) .ne. 0.d0)then
+          if(cmp%value(kytbl(kwK1,ic)) .ne. 0.d0 .or.
+     $         kytbl(kwSK1,ic) .ne. 0 .and.
+     $         cmp%value(kytbl(kwSK1,ic)) .ne. 0.d0)then
+            f1in =cmp%value(kytbl(kwF1,ic))
+     $           +cmp%value(kytbl(kwF1K1F,ic))
+            f1out=cmp%value(kytbl(kwF1,ic))
+     $           +cmp%value(kytbl(kwF1K1B,ic))
+            f2in =cmp%value(kytbl(kwF2,ic))
+     $           +cmp%value(kytbl(kwF2K1F,ic))
+            f2out=cmp%value(kytbl(kwF2,ic))
+     $           +cmp%value(kytbl(kwF2K1B,ic))
+            if(dir .ge. 0.d0)then
+              table(1)=f1in
+              table(2)=f2in
+              table(3)=f1out
+              table(4)=f2out
+            else
+              table(3)=f1in
+              table(4)=f2in
+              table(1)=f1out
+              table(2)=f2out
+            endif
           else
-            table(3)=f1in
-            table(4)=f2in
-            table(1)=f1out
-            table(2)=f2out
+            table=0.d0
           endif
         else
           table=0.d0
@@ -841,14 +859,14 @@ c$$$  endif
       use tffitcode
       use sad_main
       implicit none
-      integer*8 ktaloc,j
+      integer*8 j
       integer*4 l,ntwis,k,i,itehash
       marki=1
       nlat=elatt%nlat1-1
       latt(1:nlat)=>elatt%comp(1:nlat)
       if(idtypec(1) .ne. icMARK)then
         write(*,*)'The first element must be a MARK element.'
-        call forcesf()
+        call abort
       endif
       call tfhashelement
       ifele1=ktaloc(nlat/2+1)

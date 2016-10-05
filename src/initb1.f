@@ -4,10 +4,11 @@
       use macphys
       use macvar
       use macfile
+      use tfmem, only:ktaloc
       implicit none
 c
-      integer*4 idummy,sethtb,hsrch,idummy1
-      integer*8 ktcaloc,ktaloc
+      integer*4 idummy,idummy1,hsrch
+      integer*8 ktcaloc
 c     external doline
       external doprin, doexpn, doread, dolist, docod, dostop, dotwis
       external dooffl, doonfl,dorvrs
@@ -15,7 +16,7 @@ c     external doline
 
        call defglb('$PLOT$',icGLI,idummy)
        call IsetGL('$PLOT$',0,idummy)
-       idummy=sethtb8('PLOT   ',icACT,ktaloc(8))
+       idummy=sethtb('PLOT   ',icACT,ktaloc(8))
        ilist(1,idval(idummy))=7
        call setfnp(ilist(1,idval(idummy)+1),ActPlt)
        ilist(1,idval(idummy)+2)=hsrch('PTYPE')
@@ -32,8 +33,8 @@ c      idummy=sethtb('graw    ',icACT,idval(idummy))
 c      ilist(1,idval(idummy))=7
 c      call setfnp(ilist(1,idval(idummy)+1),Act)
 c
-       idummy=sethtb8('GRAPH   ',icACT,ktaloc(8))
-       idummy1=sethtb8('graph   ',icACT,idval(idummy))
+       idummy=sethtb('GRAPH   ',icACT,ktaloc(8))
+       idummy1=sethtb('graph   ',icACT,idval(idummy))
        ilist(1,idval(idummy))=7
        call setfnp(ilist(1,idval(idummy)+1),ActGra)
        ilist(1,idval(idummy)+2)=hsrch('ID')
@@ -939,59 +940,59 @@ c       print *,j,i,kytbl(j,i),pname(kytbl(0,i)),pname(kytbl(j,0))
 c9998 continue
 c.....end debug
 c
-       rlist(idval(sethtb8('%       ',icUNIT,ktcaloc(3))))=0.01d0
-       rlist(idval(sethtb8('rad     ',icUNIT,ktcaloc(3))))=1.00d0
-       rlist(idval(sethtb8('RAD     ',icUNIT,ktcaloc(3))))=1.00d0
-       rlist(idval(sethtb8('mrad    ',icUNIT,ktcaloc(3))))=1.00d-3
-       rlist(idval(sethtb8('MRAD    ',icUNIT,ktcaloc(3))))=1.00d-3
-       rlist(idval(sethtb8('DEG     ',icUNIT,ktcaloc(3))))=pi/180.d0
-       rlist(idval(sethtb8('deg     ',icUNIT,ktcaloc(3))))=pi/180.d0
-       rlist(idval(sethtb8('M       ',icUNIT,ktcaloc(3))))=1.00d0
-       rlist(idval(sethtb8('m       ',icUNIT,ktcaloc(3))))=1.00d0
-       rlist(idval(sethtb8('cm      ',icUNIT,ktcaloc(3))))=1.00d-2
-       rlist(idval(sethtb8('CM      ',icUNIT,ktcaloc(3))))=1.0d-2
-       rlist(idval(sethtb8('mm      ',icUNIT,ktcaloc(3))))=1.0d-3
-       rlist(idval(sethtb8('MM      ',icUNIT,ktcaloc(3))))=1.0d-3
-       rlist(idval(sethtb8('T       ',icUNIT,ktcaloc(3))))=1.0d0
-       rlist(idval(sethtb8('GAUSS   ',icUNIT,ktcaloc(3))))=1.0d-4
-       rlist(idval(sethtb8('gauss   ',icUNIT,ktcaloc(3))))=1.0d-4
+       rlist(idval(sethtb('%       ',icUNIT,ktcaloc(3))))=0.01d0
+       rlist(idval(sethtb('rad     ',icUNIT,ktcaloc(3))))=1.00d0
+       rlist(idval(sethtb('RAD     ',icUNIT,ktcaloc(3))))=1.00d0
+       rlist(idval(sethtb('mrad    ',icUNIT,ktcaloc(3))))=1.00d-3
+       rlist(idval(sethtb('MRAD    ',icUNIT,ktcaloc(3))))=1.00d-3
+       rlist(idval(sethtb('DEG     ',icUNIT,ktcaloc(3))))=pi/180.d0
+       rlist(idval(sethtb('deg     ',icUNIT,ktcaloc(3))))=pi/180.d0
+       rlist(idval(sethtb('M       ',icUNIT,ktcaloc(3))))=1.00d0
+       rlist(idval(sethtb('m       ',icUNIT,ktcaloc(3))))=1.00d0
+       rlist(idval(sethtb('cm      ',icUNIT,ktcaloc(3))))=1.00d-2
+       rlist(idval(sethtb('CM      ',icUNIT,ktcaloc(3))))=1.0d-2
+       rlist(idval(sethtb('mm      ',icUNIT,ktcaloc(3))))=1.0d-3
+       rlist(idval(sethtb('MM      ',icUNIT,ktcaloc(3))))=1.0d-3
+       rlist(idval(sethtb('T       ',icUNIT,ktcaloc(3))))=1.0d0
+       rlist(idval(sethtb('GAUSS   ',icUNIT,ktcaloc(3))))=1.0d-4
+       rlist(idval(sethtb('gauss   ',icUNIT,ktcaloc(3))))=1.0d-4
 c      Standard energy unit wasJoule.(MKSA unit system)
 c      Standard energy unit is Now eV.
-       rlist(idval(sethtb8('JOULE   ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('JOULE   ',icUNIT,ktcaloc(3))))
      &                 = 1.0d0/elemch
-       rlist(idval(sethtb8('eV      ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('eV      ',icUNIT,ktcaloc(3))))
      &                 = 1.0d0
-       rlist(idval(sethtb8('KeV     ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('KeV     ',icUNIT,ktcaloc(3))))
      &                 = 1.d3
-       rlist(idval(sethtb8('MeV     ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('MeV     ',icUNIT,ktcaloc(3))))
      &                 = 1.d6
-       rlist(idval(sethtb8('GeV     ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('GeV     ',icUNIT,ktcaloc(3))))
      &                 = 1.d9
-       rlist(idval(sethtb8('EV      ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('EV      ',icUNIT,ktcaloc(3))))
      &                 = 1.0d0
-       rlist(idval(sethtb8('KEV     ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('KEV     ',icUNIT,ktcaloc(3))))
      &                 = 1.d3
-       rlist(idval(sethtb8('MEV     ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('MEV     ',icUNIT,ktcaloc(3))))
      &                 = 1.d6
-       rlist(idval(sethtb8('GEV     ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('GEV     ',icUNIT,ktcaloc(3))))
      &                 = 1.d9
 c
-       rlist(idval(sethtb8('V       ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('V       ',icUNIT,ktcaloc(3))))
      &                 = 1.d0
-       rlist(idval(sethtb8('KV      ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('KV      ',icUNIT,ktcaloc(3))))
      &                 = 1.d3
-       rlist(idval(sethtb8('MV      ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('MV      ',icUNIT,ktcaloc(3))))
      &                 = 1.d6
-       rlist(idval(sethtb8('GV      ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('GV      ',icUNIT,ktcaloc(3))))
      &                 = 1.d9
 c
-       rlist(idval(sethtb8('HZ      ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('HZ      ',icUNIT,ktcaloc(3))))
      &                 = 1.d0
-       rlist(idval(sethtb8('KHZ     ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('KHZ     ',icUNIT,ktcaloc(3))))
      &                 = 1.d3
-       rlist(idval(sethtb8('MHZ     ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('MHZ     ',icUNIT,ktcaloc(3))))
      &                 = 1.d6
-       rlist(idval(sethtb8('GHZ     ',icUNIT,ktcaloc(3))))
+       rlist(idval(sethtb('GHZ     ',icUNIT,ktcaloc(3))))
      &                 = 1.d9
 c
        idummy=sethtb('normal  ',icRAND,1 )

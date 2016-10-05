@@ -13,7 +13,7 @@
       integer*8 latt(*)
       dimension twiss(nlat,-ndim:ndim,ntwissfun),mult(*)
       integer*4 master(nlat),id
-      integer*8 itemp,ktaloc
+      integer*8 itemp
       dimension isb(nbcor+4,nbump),istr(nstra,4)
       include 'inc/common.inc'
       common/mbumpf/wkey(keymax),ifte(nconj,keymax),nw
@@ -361,7 +361,7 @@ c ----------------------------------------------------------------------
       parameter (mfitc1=32,mfitc2=28)
       character*(*) word,wordp,keywrd(nkey)*8,xy*4,line*79
       integer*4 coex(nmeth+nother,nmeth+nother)
-      integer*8 ktaloc,isex,istb,ixs,istb1,ia,ib,ix,iz,iwk,iqc,iqd,
+      integer*8 isex,istb,ixs,istb1,ia,ib,ix,iz,iwk,iqc,iqd,
      $     itemp,iu,iv,ixb,iaad,iadd,iac,ibc,iaa,iqq
       logical stab,cod,dsp,normal,xplane,yplane,both,bump,minusi,micado,
      1        cond,zsum,exist,exec,coup,operate
@@ -1031,6 +1031,7 @@ c
       use tffitcode
       implicit real*8 (a-h,o-z)
       logical corc(nobje)
+      integer*8 iw
       dimension twiss(nlat,-ndim:ndim,ntwissfun)
       dimension imon(nmona,4)
       dimension is(ncb+4,nbp),xs(ncb+2,2,nbp),x(2,nbp),a(ia,*)
@@ -3054,7 +3055,8 @@ c
       character*(*) word
       character*16 en
       character*11 autofg
-      integer*8 latt(2,nlat),mcaloc,it,it1,last,iofs,next,l
+      integer*8 latt(2,nlat),mcaloc,it,it1,last,iofs,next,l,
+     $     itemp,ia
       integer*4 mult(*)
       dimension istr(nstra,4)
       include 'inc/common.inc'

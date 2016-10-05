@@ -1170,7 +1170,7 @@ c     write(*,*)axi,bxi,amuxi,ayi,byi,amuyi,ip,f
       
       subroutine tediag(trans,cod,tws,i,ndims,ntwissfun,lfno)
       implicit none
-      integer*4 i,ndims,level,ntwissfun,lfno
+      integer*4 i,ndims,ntwissfun,lfno
       real*8 trans(6,6),cod(6),tws(ntwissfun,-ndims:ndims)
       real*8 r1,r2,r3,r4,amu,
      $     r1a,r2a,r3a,r4a,

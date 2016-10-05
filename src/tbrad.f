@@ -335,10 +335,11 @@ c          pr=(1.d0+g(i))**2
       end
 
       subroutine tlinit(np,h0,geo)
+      use tfmem, only:ktaloc
       implicit none
       integer*4 np
       real*8 h0,geo(3,4)
-      integer*8 katbl,ktaloc
+      integer*8 katbl
       integer*4 np0,ltbl,lpoint
       real*8 geo0(3,4),tax,tay,taz,t0,gx,gy,gz,gt
       common /radlcomr/geo0,t0,tax,tay,taz,gx,gy,gz,gt
@@ -362,7 +363,7 @@ c          pr=(1.d0+g(i))**2
       subroutine tlstore(np,x,y,z,dv,theta,dl,dphi,rho0,v0,dvfs,keep)
       use tfstk
       implicit none
-      integer*8 katbl,new,ktaloc,kai
+      integer*8 katbl,new,kai
       integer*4 np,np0,ltbl,lpoint,m,i
       real*8 x(np),y(np),z(np),dv(np),theta,dphi,rho0,v0,
      $     x1,x2,x3,y1,y2,y3,sp0,cp0,r1,r2,
@@ -436,7 +437,7 @@ c        write(*,*)'tlspect ',ltbl,np0,ltbl*8*np0
           katbl=new
         else
           write(*,*)'Too long ltbl',ltbl
-          call forcesf()
+          call abort
         endif
       endif
       m=ltbl*4
@@ -591,7 +592,7 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
       type (sad_list), pointer :: klp,kl1,kl2,klt,klx
       real*8 speedoflight
       parameter (speedoflight=cveloc)
-      integer*8 kx,k1,k2,kac,kas,kal,ktaloc,kack,kad
+      integer*8 kx,k1,k2,kac,kas,kal,kack,kad
       integer*4 isp1,irtc,m,na,i,k,
      $     na1,nastep,nparallel,ipr,fork_worker,getpid,j,
      $     wait,irw,naa,isw,ipid,itfmessage
@@ -887,7 +888,7 @@ c     end   initialize for preventing compiler warning
       use tfstk
       use tmacro
       implicit none
-      integer*8 kp,ktaloc
+      integer*8 kp
       integer*4 mp,l
       real*8 gx,gy,gz,dpgx,dpgy,dpgz,xi1,xi2,xi3
       if(ilp .eq. 0)then

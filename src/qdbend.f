@@ -351,7 +351,7 @@ c     This block is never invoked by src/qdtwiss.f
         write(*,*)'qdbend @ src/qdbend.f: ',
      $        'Invoked with invalid iv=',iv,
      $        '(FIXME)' 
-        call forcesf()
+        call abort
       endif
       do 4010 i=1,5
         dtrans(2,i)=dtrans(2,i)-ak1*dtrans(1,i)

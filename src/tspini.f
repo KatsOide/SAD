@@ -3,7 +3,7 @@
       use tmacro
       implicit none
       integer, parameter :: nkptbl = 6
-      integer*8 iparam,ktaloc,lp
+      integer*8 iparam,lp
       integer*4 kptbl(np0,nkptbl),nexp2(16),i,j,
      $     lpa,itype,ip,kp,nt,nd1,m,ispp,nd
       real*8 sp1,c1,phi
@@ -75,7 +75,7 @@ c$$$      return
       use tfstk
       use tmacro
       implicit none
-      integer*8 iparam,ispp,ktaloc
+      integer*8 iparam,ispp
       integer*4 kptbl(np0,6),j,itype,kp,lpa,ip,nt
       lplot=ilist(2,iparam)
       nplot=ilist(1,lplot)-1

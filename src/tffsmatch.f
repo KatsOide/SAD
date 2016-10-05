@@ -568,8 +568,9 @@ c     $                 /2.d0/dvkc/wvar(kc)
       end
 
       subroutine tffssetupqu(ifqu,ifqu0,nqumax,nqcol,nvar,lfno)
+      use tfmem, only:ktaloc,tfree
       implicit none
-      integer*8 ifqu,ifqu0,itmmapp,ktaloc
+      integer*8 ifqu,ifqu0,itmmapp
       integer*4 nqumax,nqu,nqcol,nvar,lfno
       nqu=nqcol*nvar
       if(nqu .gt. nqumax)then
@@ -766,7 +767,7 @@ c     $                 /2.d0/dvkc/wvar(kc)
       use tfshare
       use mackw
       implicit none
-      integer*8 itmmapp,ifqu,ifqu0,ktaloc,kcm,kkqu,kqu,ic,iec
+      integer*8 itmmapp,ifqu,ifqu0,kcm,kkqu,kqu,ic,iec
       integer*4 nqcol,nqcol1,nvar,nqumax,nlat,nele,
      $     irtc,lfno,nut,nfam,nfam1
       integer*4 npp
@@ -1241,7 +1242,6 @@ c        enddo
       use tfshare
       use tmacro
       implicit none
-      integer*8 ktaloc
       integer*4 n,irtc
       if(nparallel .gt. 1)then
         irtc=1

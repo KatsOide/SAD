@@ -5,7 +5,7 @@
       use ffs_pointer, only:idelc,idvalc,idtypec
       use tfcsi,only:cssetp
       implicit real*8 (a-h,o-z)
-      integer*8 latt(nlat),le,le1,ix,ktaloc,i1,i2
+      integer*8 latt(nlat),le,le1,ix,i1,i2
       dimension pos(nlat)
       integer*4 master(nlat)
       character*(*) word

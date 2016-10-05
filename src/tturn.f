@@ -358,7 +358,7 @@ c        endif
         endif
         go to 1020
  2100   write(*,*)'Use BEND with ANGLE=0 for STEER.'
-        call forcesf()
+        call abort
  2200   phi=cmp%value(kytbl(kwANGL,icMULT))
         mfr=nint(cmp%value(14))
         if(direlc(l) .gt. 0.d0)then

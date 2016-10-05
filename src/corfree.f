@@ -5,7 +5,9 @@
 c      Release memories
       parameter (kfiles=3)
       parameter (kstack=3)
-      integer*8 isa,isb,isc,ipyv,ippv,ipobs,ipiv,ipbckup1,ipemibuf
+      integer*8 isa,isb,isc,ipyv,ippv,ipobs,ipiv,ipbckup1,ipemibuf,
+     $     ipmon,ipstr,ipestr,ipemon,k,ip,ipdefv,itcoupste
+      integer*8 iifnam,iidata
       common /mcfiles/icomf,nof(kfiles),iifnam(kfiles),iidata(kfiles),
      1                memax(kfiles)
       common /mcstack/icoma,ipnt(kstack),iistck(kstack),mstkmx(kstack)

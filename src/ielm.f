@@ -177,7 +177,7 @@ c     *     by tfinit(), tfinimult() initialization
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*8 k,ktaloc
+      integer*8 k
       integer*4 itehash,nelm(0:nelmhash),j,n,i
       do j=0,nelmhash
         nelm(j)=0

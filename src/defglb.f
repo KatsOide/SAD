@@ -1,11 +1,12 @@
       Subroutine defglb(id,type,idx)
       use maccbk
       use maccode
+      use tfmem, only:ktaloc
       implicit none
       character*(*) id,idw*(MAXSTR)
       integer*4 type,idx,lenw
       real*8 rval
-      integer*8 ktaloc,ival8
+      integer*8 ival8
       integer*4 ival,idxx,hsrchz,idx1
       logical isglobal
       isglobal(idx)=((idtype(idx) .eq. icGLR)

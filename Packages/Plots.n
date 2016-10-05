@@ -6,7 +6,7 @@ Off[General::unprotconst];
 Unprotect[GoodnessOfFit,ChiSquare,ConfidenceInterval];
 On[General::unprotconst];
 SetAttributes[{Contours,MeshRange,ColorFunction,ColorFunctionScaling,
-  ContourColorFunction,
+  ContourColorFunction,ColorScale,
   MaxBend,PlotPoints,PlotDivision,FunctionLabel,ResultLabel,RaiseFit,
   Signal,GoodnessOfFit,ChiSquare,ConfidenceInterval,ColumnTags,MeshStyle,
   PlotStyle,Columns,ColumnOffset,Bins,BinRange,ColumnLabel,Mesh,MeshColor,
@@ -365,16 +365,27 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
     If[df===Default,Show[gr,op]];
     gr]];
 
+LDP$Smooth[l_]:=Module[{l1,l2},
+  l2=Transpose[(l1=Rest[#];
+    Flatten[{#[[1]],Thread[{(l1+Drop[#,-1])/2,l1}]}])&/@l];
+  Transpose[(l1=Rest[#];
+    Flatten[{#[[1]],Thread[{(l1+Drop[#,-1])/2,l1}]}])&/@l2]];
+
 With[{def={PlotRange->Automatic,MeshRange->Default,
   ColorFunction->Automatic,DisplayFunction->Default,
   ColorFunctionScaling->True,
-  AspectRatio->1,Mesh->False,MeshColor->Automatic,Prolog->{},Epilog->{}}},
+  Smoothing->1,
+  ColorScale->True,
+  AspectRatio->1,Mesh->False,MeshColor->Automatic,Prolog->{},Epilog->{}},
+  ncs=16},
 
-  ListDensityPlot[l_,opt___]:=Module[{
-    m0,m1,mesh,x,gr,op,l1,g,
-    {pr,mr,cf,cfs,df,ar,ms,mc}={PlotRange,MeshRange,
+  ListDensityPlot[l0_,opt___]:=Module[{l=l0,
+    m0,m1,mesh,x,gr,op,l1,g,gs,cr,dcr,nx,ny,
+    {pr,mr,cf,cfs,df,ar,ms,mc,cs,sm}={PlotRange,MeshRange,
       ColorFunction,ColorFunctionScaling,
-      DisplayFunction,AspectRatio,Mesh,MeshColor}/.opt/.def},
+      DisplayFunction,AspectRatio,Mesh,MeshColor,
+      ColorScale,Smoothing}/.opt/.def},
+    Do[l=LDP$Smooth[l],{sm}];
     {nx,ny}=Dimensions[l];
     pr=CP$PlotRange[pr,l];
     mr=mr/.Automatic->Default;
@@ -382,7 +393,7 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
       mesh[x_]=x-0.5,
       mr=CP$MeshRange[mr];
       {m0,m1}=Thread[mr];
-      m1=(m1-m0)/({nx,ny}-1);
+      m1=(m1-m0)/({Max[nx,2],Max[ny,2]}-1);
       mesh[x_]=m0+(x-1.5)*m1];
     Switch[cf,
       _String,
@@ -412,10 +423,28 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
         Rectangle[mesh[{i,j}],mesh[{i+1,j+1}],FillColor->cf[l1[[i,j]]],
           PlotColor->cf[l1[[i,j]]]],
         {i,nx},{j,ny}]];
+    If[cs,
+      cr=If[cfs,
+        {0,1},
+        pr];
+      dcr=cr[[2]]-cr[[1]];
+      gs=Rectangle[{Min[ar/2/GoldenRatio,1]+0.03,0},{Min[ar/2/GoldenRatio+1.03,1.43],1},
+        ListDensityPlot[
+          {(Range[ncs+1]-1)*dcr/ncs+cr[[1]]},
+          PlotRange->cr,
+          Smoothing->0,
+          ColorScale->False,
+          DisplayFunction->Identity,
+          AspectRatio->1/ncs,
+          FrameTicks->{None,None,None,True},
+          FrameLabel->{"",""},
+          TickSize->-0.1,
+          MeshRange->{{0,1},{pr[[1]],pr[[2]]}},opt]],
+      gs:=Null[]];
     op=DeleteCases[
       Override[AspectRatio->ar,DataRange->Thread[{mesh[{1,1}],mesh[{nx,ny}+1]}],opt,def],
       _[PlotRange,_],1];
-    g=Graphics[Flatten[{Prolog/.op,g,Epilog/.op}],op];
+    g=Graphics[Flatten[{Prolog/.op,g,gs,Epilog/.op}],op];
     If[df===Default,Show[g,op]];
     g]];
 
