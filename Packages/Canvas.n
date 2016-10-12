@@ -613,7 +613,7 @@ CanvasGraphics=Class[{},
     {c=WindowCoord[
       {(Canvas$Window[[1,1]]+Canvas$Window[[1,2]])/2,Canvas$Window[[2,2]]}],
       f=CanvasWidget[BBox[FrameTag]]},
-    If[f==={},{c+{0,-2},(Canvas$Window[[1,2]]-Canvas$Window[[1,1]])*DPI,"s"},
+    If[f==={},{c+{0,-1},(Canvas$Window[[1,2]]-Canvas$Window[[1,1]])*DPI,"s"},
       {{First[c],Min[Second[f],Second[c]]-1},Third[f]-First[f],"s"}]];
   TitlePosition["TOP HIGH",t_:"L"]:=Module[
     {f,c=WindowCoord[
@@ -1207,11 +1207,11 @@ CanvasGraphics=Class[{},
       s[1,2]==="-.","-0"//s[2,-1],
       True,s]]];
 
-  UnitLabelX["",__]=Null;
+  UnitLabelX[""|" ",__]=Null;
   UnitLabelX[ful_,tag_,font_]:=With[{bb=CanvasWidget[BBox[tag]]},
     CanvasWidget[Create$Text] = {{bb[[3]],(bb[[2]]+bb[[4]])/2},
       Text->" "//ful,Anchor->"w",Tags->{tag,FrameTag},Font->font}];
-  UnitLabelY["",__]=Null;
+  UnitLabelY[""|" ",__]=Null;
   UnitLabelY[exps_,fltag_,font_,anc_]:=Module[{bb=CanvasWidget[BBox[fltag]]},
     CanvasWidget[Create$Text] = {
       {bb[[Switch[anc,"e",3,_,1]]],bb[[2]]-2},
