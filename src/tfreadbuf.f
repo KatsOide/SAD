@@ -258,7 +258,7 @@ c     $         buff(:min(nc,len(buff)))
       implicit none
       type (sad_descriptor) kx
       integer*8 ia
-      integer*4 isp1,irtc,itfmessage,n,m,iu
+      integer*4 isp1,irtc,itfmessage,n,m,iu,nc
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -284,7 +284,7 @@ c      write(*,*)'openshared ',ia,m
         irtc=0
         return
       endif
-      call tfreadbuf(irbopen,iu,ia,int8(4),0,' ')
+      call tfreadbuf(irbopen,iu,ia,int8(4),nc,' ')
       if(iu .le. 0)then
         call tfreeshared(ia)
         irtc=itfmessage(9,'General::fileopen','"(Shared)"')
@@ -305,7 +305,7 @@ c      write(*,*)'openshared ',ia,m
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
       integer*8 ia
-      integer*4 isp1,irtc,itfmessage,isp0,iu
+      integer*4 isp1,irtc,itfmessage,isp0,iu,nc
       logical*4 tfcheckelement
 c      call tfdebugprint(ktastk(isp),'readshard',3)
       if(isp .ne. isp1+1)then
@@ -317,7 +317,7 @@ c      call tfdebugprint(ktastk(isp),'readshard',3)
       endif
       irtc=0
       iu=int(rtastk(isp))
-      call tfreadbuf(irbibuf,iu,ia,int8(4),0,' ')
+      call tfreadbuf(irbibuf,iu,ia,int8(4),nc,' ')
       if(ia .eq. 0)then
         kx%k=kxeof
         return
@@ -366,7 +366,7 @@ c          write(*,*)'readshared-other '
       use tfrbuf
       implicit none
       integer*8 kx,kas,ka,kt,kap,k
-      integer*4 isp1,irtc,itfmessage,itfmessageexp,isp0,n,i,iu
+      integer*4 isp1,irtc,itfmessage,itfmessageexp,isp0,n,i,iu,nc
       if(isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
@@ -375,7 +375,7 @@ c          write(*,*)'readshared-other '
         return
       endif
       iu=int(rtastk(isp1+1))
-      call tfreadbuf(irbibuf,iu,kas,int8(4),0,' ')
+      call tfreadbuf(irbibuf,iu,kas,int8(4),nc,' ')
       if(kas .eq. 0)then
         irtc=itfmessage(99,'Shared::notopen','""')
         return

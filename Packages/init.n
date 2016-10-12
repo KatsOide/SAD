@@ -321,9 +321,6 @@ CloseShared=Close;
 Parallelize[`f_,`n_,`lshare_,`npara_,`fcomp_:Identity]:=Module[{`shared,`sharedpid,`l={},`fk,`r,`k,`i,`np},
   np=OpenShared[16];
   Shared[np]=0;
-  shared[_]=Undefined;
-  shared[1]=OpenShared[lshare];
-  Shared[shared[1]]=Undefined;
   Do[
     While[Shared[np]>=npara,Sleep[1]];
     Shared[np]++;

@@ -1012,7 +1012,7 @@ CSRStability=Class[{CSR},{},
       {ev,u}=Eigensystem[oym];
       ev=Sqrt[ev];
       gr=Max[Abs[Im[ev]]-damp*Restrict[Abs[Re[ev]/(2Pi nus)],1,Infinity]];
-      StandardForm[$FORM="10.5";Print["OYS factor, growth: ",fact,"  ",gr]];
+      StandardForm[$FORM="10.5";Print["OYS factor, growth rate/turn: ",fact,"  ",gr]];
       {gr<0,gr,ev,u}]];
 
   OYSF[aw_,nj_,nphi_,f_Real]:=OYStability[aw,nj,nphi,BLFactor->f];

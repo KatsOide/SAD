@@ -375,7 +375,7 @@ c      enddo
       implicit none
       type (sad_descriptor) k,kx,kf,kfn
       integer*4 irtc,itfgeto,lfni0,lfn10,ip0,lr0,
-     $     lfn,isp0,itf
+     $     lfn,isp0,itf,nc
       isp0=isp
       isp=isp+1
       dtastk(isp)=k
@@ -415,7 +415,7 @@ c      enddo
       enddo
       call tfconnect(kx,0)
       close(lfn)
-      call tfreadbuf(irbclose,lfn,int8(0),int8(0),0,' ')
+      call tfreadbuf(irbclose,lfn,int8(0),int8(0),nc,' ')
       call cssetlfni(lfni0)
       call cssetlfn1(lfn10)
       call cssetl(lr0)
@@ -436,9 +436,9 @@ c      enddo
       use tfcsi
       implicit none
       type (sad_descriptor) kx,kf
-      integer*4 isp1,irtc,itfgeto,
+      integer*4 isp1,irtc,itfgeto,nc,
      $     lfni0,lfn10,ip0,lr0,itf,
-     $     lfn,nc,linep0,itfmessage
+     $     lfn,linep0,itfmessage
       logical*4 openf
       if(isp .gt. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
@@ -481,14 +481,14 @@ c      enddo
         call cssets(0)
         kx%k=kxeof
         if(openf)then
-          call tfreadbuf(irbreset,lfn,int8(0),int8(0),0,' ')
+          call tfreadbuf(irbreset,lfn,int8(0),int8(0),nc,' ')
         endif
       elseif(openf)then
         call savebuf(buffer,nc)
         if(nc .gt. 0)then
           call tfreadbuf(irbsetbuf,lfn,int8(0),int8(0),nc,buffer)
         else
-          call tfreadbuf(irbreset,lfn,int8(0),int8(0),0,' ')
+          call tfreadbuf(irbreset,lfn,int8(0),int8(0),nc,' ')
         endif
       endif
       call tfconnect(kx,0)
@@ -868,7 +868,7 @@ c     $           opts%ndel,opts%null
               nc=-1
               go to 10
             endif
-            call tfreadbuf(irbeor2bor,lfn,int8(0),int8(0),0,' ')
+            call tfreadbuf(irbeor2bor,lfn,int8(0),int8(0),nc,' ')
           endif
           kx=dxnulls
           return
@@ -894,7 +894,7 @@ c     $           opts%ndel,opts%null
             next=nc+1
           endif
           if(opts%new .and. next .gt. nc)then
-            call tfreadbuf(irbbor,lfn,int8(0),int8(0),0,' ')
+            call tfreadbuf(irbbor,lfn,int8(0),int8(0),nc,' ')
           else
             call tfreadbuf(irbmovepoint,lfn,int8(0),int8(0),next-1,' ')
           endif
@@ -1245,7 +1245,7 @@ c      endif
       implicit none
       type (sad_descriptor) kx
       integer*8 kfromr
-      integer*4 isp1,irtc,itfmessage,iu
+      integer*4 isp1,irtc,itfmessage,iu,nc
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -1255,7 +1255,7 @@ c      endif
         return
       endif
       call tfreadbuf(irbopen,iu,ktfaddr(ktastk(isp)),
-     $     int8(3),int8(0),' ')
+     $     int8(3),nc,' ')
       if(iu .le. 0)then
         irtc=itfmessage(9,'General::fileopen','"(String)"')
       else
@@ -1272,12 +1272,12 @@ c      endif
       use tfrbuf
       implicit none
       type (sad_descriptor) k
-      integer*4 irtc,iu,itfmessage
+      integer*4 irtc,iu,itfmessage,nc
       if(ktfnonrealqdi(k,iu))then
         irtc=itfmessage(9,'General::wrongtype','"Real number"')
         return
       endif
-      call tfreadbuf(irbclose,iu,int8(0),int8(0),0,' ')
+      call tfreadbuf(irbclose,iu,int8(0),int8(0),nc,' ')
       irtc=0
       return
       end
