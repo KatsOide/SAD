@@ -265,7 +265,7 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             elseif(mdisp .eq. 11)then
               write(lfno,9032)
  9032         format(
-     1      '   AZ      BZ      NZ                   ',
+     1      '   AZ      BZ      NZ      DZ    DDP    ',
      1      ' Element   Length   Value      s(m)   ',' ',
      1      '   ZX      ZPX     ZY      ZPY            DetR     #')
             else
@@ -283,6 +283,10 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
      $           scale(mfitbz),'8.5')
             buff(17:24)=autofg(twiss(l,icolm,mfitnz)/
      $           scale(mfitnz),'8.5')
+            buff(25:32)=autofg(twiss(l,icolm,mfitdz)/
+     $           scale(mfitdz),'8.5')
+            buff(33:40)=autofg(twiss(l,icolm,mfitddp)/
+     $           scale(mfitddp),'8.5')
           elseif(mdisp .ne. 4)then
             buff( 1: 8)=autofg(twiss(l,icolm,mfitax)/
      $           scale(mfitax),'8.5')

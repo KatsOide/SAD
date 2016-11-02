@@ -142,7 +142,7 @@
       if(ifcoupv%k .eq. 0)then
         ifcoupv  =kxsymbolz('`EVList',7)
         call descr_sad(ifcoupv,symdcoupv)
-        ifsetcoup=kxsymbolz('`SetCoupledElements',19)
+        ifsetcoup=kxsymbolz('SetCoupledElements',18)
       endif
       irtc=0
       k=symdcoupv%value

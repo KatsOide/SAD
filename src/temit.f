@@ -1081,8 +1081,8 @@ c     write(*,*)'temit ',emy,emy1
       subroutine tfetwiss(r,cod,twiss)
       use ffs
       implicit none
-      real*8 r(6,6),twiss(28),h(6,6),hi(6,6),cod(6)
-      real*8 ax,ay,az,axy,f,detm,his(6),
+      real*8 r(6,6),twiss(28),hi(6,6),cod(6)
+      real*8 ax,ay,az,axy,f,detm,his(4),
      $     uz11,uz12,uz21,uz22,
      $     hx11,hx12,hx21,hx22,
      $     hy11,hy12,hy21,hy22,
@@ -1106,54 +1106,53 @@ c     write(*,*)'temit ',emy,emy1
       f=1.d0/(1.d0+az)
       ax=1.d0-(hx11*hx22-hx21*hx12)*f
       ay=1.d0-(hy11*hy22-hy21*hy12)*f
-      h(1,1)=ax
-      h(1,2)=0.d0
-      h(1,3)= (hx12*hy21-hx11*hy22)*f
-      h(1,4)=(-hx12*hy11+hx11*hy12)*f
-      h(1,5)=-hx11
-      h(1,6)=-hx12
-      h(2,1)= 0.d0
-      h(2,2)= ax
-      h(2,3)= (hx22*hy21-hx21*hy22)*f
-      h(2,4)=(-hx22*hy11+hx21*hy12)*f
-      h(2,5)=-hx21
-      h(2,6)=-hx22
-      h(3,1)= h(2,4)
-      h(3,2)=-h(1,4)
-      h(3,3)= ay
-      h(3,4)= 0.d0
-      h(3,5)=-hy11
-      h(3,6)=-hy12
-      h(4,1)=-h(2,3)
-      h(4,2)= h(1,3)
-      h(4,3)= 0.d0
-      h(4,4)= ay
-      h(4,5)=-hy21
-      h(4,6)=-hy22
-      h(5,1)= hx22
-      h(5,2)=-hx21
-      h(5,3)= hy22
-      h(5,4)=-hy21
-      h(5,5)= az
-      h(5,6)= 0.d0
-      h(6,1)=-hx12
-      h(6,2)= hx11
-      h(6,3)=-hy12
-      h(6,4)= hy11
-      h(6,5)= 0.d0
-      h(6,6)= az
-      call tinv6(h,hi)
+      hi(2,2)=ax
+      hi(1,2)=0.d0
+      hi(4,2)= (hx12*hy21-hx11*hy22)*f
+      hi(3,2)=-(-hx12*hy11+hx11*hy12)*f
+      hi(6,2)=-hx11
+      hi(5,2)= hx12
+      hi(2,1)= 0.d0
+      hi(1,1)= ax
+      hi(4,1)=-(hx22*hy21-hx21*hy22)*f
+      hi(3,1)=(-hx22*hy11+hx21*hy12)*f
+      hi(6,1)= hx21
+      hi(5,1)=-hx22
+      hi(2,4)= hi(3,1)
+      hi(1,4)=-hi(3,2)
+      hi(4,4)= ay
+      hi(3,4)= 0.d0
+      hi(6,4)=-hy11
+      hi(5,4)= hy12
+      hi(2,3)=-hi(4,1)
+      hi(1,3)= hi(4,2)
+      hi(4,3)= 0.d0
+      hi(3,3)= ay
+      hi(6,3)= hy21
+      hi(5,3)=-hy22
+      hi(2,6)= hx22
+      hi(1,6)= hx21
+      hi(4,6)= hy22
+      hi(3,6)= hy21
+      hi(6,6)= az
+      hi(5,6)= 0.d0
+      hi(2,5)= hx12
+      hi(1,5)= hx11
+      hi(4,5)= hy12
+      hi(3,5)= hy11
+      hi(6,5)= 0.d0
+      hi(5,5)= az
       call tmultr(hi,r,6)
       detm=(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2)
      $     +hi(3,3)*hi(4,4)-hi(4,3)*hi(3,4))*.5d0
       normal=detm .gt. xyth
       if(.not. normal)then
-        his=hi(1,1:6)
-        hi(1,1:6)=hi(3,1:6)
-        hi(3,1:6)=his
-        his=hi(2,1:6)
-        hi(2,1:6)=hi(4,1:6)
-        hi(4,1:6)=his
+        his=hi(1,1:4)
+        hi(1,1:4)=hi(3,1:4)
+        hi(3,1:4)=his
+        his=hi(2,1:4)
+        hi(2,1:4)=hi(4,1:4)
+        hi(4,1:4)=his
         detm=(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2)
      $       +hi(3,3)*hi(4,4)-hi(4,3)*hi(3,4))*.5d0
       endif

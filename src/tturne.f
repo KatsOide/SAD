@@ -637,11 +637,11 @@ c        write(*,*)'tturne-tcave-1',cod
         if(twiss(l-1,0,mfitny) .gt. twiss(l,0,mfitny)+toln)then
           twiss(l,0,mfitny)=twiss(l,0,mfitny)+pi2
         endif
-        twiss(l,0,mfitnz)=int(twiss(l-1,0,mfitnz)/pi2)*pi2
-     $       +twiss(l,0,mfitnz)
-        if(twiss(l-1,0,mfitnz) .gt. twiss(l,0,mfitnz)+toln)then
-          twiss(l,0,mfitnz)=twiss(l,0,mfitnz)+pi2
-        endif
+c        twiss(l,0,mfitnz)=int(twiss(l-1,0,mfitnz)/pi2)*pi2
+c     $       +twiss(l,0,mfitnz)
+c        if(twiss(l-1,0,mfitnz) .gt. twiss(l,0,mfitnz)+toln)then
+c          twiss(l,0,mfitnz)=twiss(l,0,mfitnz)+pi2
+c        endif
       endif
       twiss(l,0,mfitdpx)=twiss(l,0,mfitdpx)*rgb
       twiss(l,0,mfitdpy)=twiss(l,0,mfitdpy)*rgb

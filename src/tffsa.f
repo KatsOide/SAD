@@ -1772,6 +1772,7 @@ c      call tfdebugprint(kx,'setupcoup',3)
           do j=1,me
             ie=int(kle%rbody(j))
             call tfkeya(ie,key,ik)
+c            write(*,*)'setupcouple ',j,ik,key(1:10)
             if(ik .lt. 0)then
               do k=1,nlat-1
                 if(ilist(k,ifele1) .eq. -ie)then
@@ -1782,6 +1783,7 @@ c      call tfdebugprint(kx,'setupcoup',3)
                     klist(ifele2+k-1)=iet
                   endif
                   nk=ilist(1,iet)+1
+c                  write(*,*)'setupcouple ',k,iet,ik,nk
                   ilist(1,iet+nk)=i
                   ilist(2,iet+nk)=-ik
                   ilist(1,iet)=nk
