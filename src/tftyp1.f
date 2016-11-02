@@ -37,7 +37,9 @@
               if(ioff .eq. mfitax .or. ioff .eq. mfitay
      $             .or. ioff .eq. mfitepx .or. ioff .eq. mfitepy
      $             .or. ioff .eq. mfitr2 .or. ioff .eq. mfitr3
-     $             .or. ioff .eq. mfitdpx .or. ioff .eq. mfitdpy)then
+     $             .or. ioff .eq. mfitdpx .or. ioff .eq. mfitdpy
+     $             .or. ioff .eq. mfitaz .or. ioff .eq. mfitzpx
+     $             .or. ioff .eq. mfitzpy)then
                 v=v*direlc(l)
               endif
             endif

@@ -1,4 +1,4 @@
-(* Canvas 9/10/2016 *)
+(* Canvas 10/16/2016 *)
 
 SetAttributes[{OutLine,Outline,UseBG,Permanent,Redraw},Constant];
 
@@ -105,10 +105,12 @@ CanvasGraphics=Class[{},
     CanvasWidget,
     CanvasPathName,
     DefaultFont=$DefaultSansSerifFont,
+    FontScale=1,
+    TickFontScale=1,
     DefaultTitleSize=Switch[$FontSystem,
       "Xft",16,
       _,18],
-    FontFactor=Switch[$FontSystem,
+    FSFontScale=Switch[$FontSystem,
       "Xft",1.7,
       _,2.2]
     },
@@ -342,6 +344,8 @@ CanvasGraphics=Class[{},
     Alignment->Automatic,
     TickSize->Automatic,
     TickFont->Default,
+    Literal[FontScale]->1,
+    Literal[TickFontScale]->1,
     RemoveOverlap->"",
     PlotLabel->"",Background->"#ffffff"},    
     CanvasListVar:={EffectiveRange,EffectiveAxes,EffectiveGL,
@@ -352,11 +356,14 @@ CanvasGraphics=Class[{},
     CanvasDrawer[opt_,list_,init_,w_,rect_,last_,ini_]:=StandardForm[Module[
       {fl,pl,ft,wsx,wsy,wsfx,wsfy,det,wc,fr,tag,t1,t2,addtag,enc,glist,ws,
         pr,id,l1,align,up,ts,frid,fclk,dr,plr,sca,gr,ib,tkf,frt,frt1,rmo,
-        op=Override[opt,def],wfr},
-      {tag,fl,pl,fr,wc,align,pr,fclk,dr,ft,frt,ts,ib,tkf,ful,rmo}=
+        op=Override[opt,def],wfr,ff,tff},
+      {tag,fl,pl,fr,wc,align,pr,fclk,dr,ft,frt,ts,ib,tkf,ful,rmo,ff,tff}=
         {Tags,FrameLabel,PlotLabel,Frame,Background,Alignment,
           PlotRegion,FrameClick,DataRange,FrameTicks,FrameThickness,TickSize,
-          InfoBind,TickFont,FrameUnitLabel,RemoveOverlap}/.op;
+          InfoBind,TickFont,FrameUnitLabel,RemoveOverlap,
+          Literal[FontScale],Literal[TickFontScale]}/.op;
+      FontScale=ff;
+      TickFontScale=tff;
       If[w,
         If[ini,
           Canvas$Initialize=init;
@@ -467,7 +474,7 @@ CanvasGraphics=Class[{},
        If[""<=>pl<=>nullsl2,
          If[Canvas$PlotLabel<=>0,
            CanvasWidget[Delete]=Canvas$PlotLabel];
-         MakeTitle[pl,Restrict[DefaultTitleSize*1.3*(wsx*wsy)^(.4),9,32],"TOP HIGH"];
+         MakeTitle[pl,Restrict[DefaultTitleSize*1.3*(wsx*wsy)^(.4),9,40],"TOP HIGH"];
          Canvas$PlotLabel=CanvasLastID
          ];
         If[wfr && StringQ[wc],
@@ -506,7 +513,8 @@ CanvasGraphics=Class[{},
           p=Rest[p],
           Break[]]]]];
 
-  DeleteOverlapLabel[]:=Module[{p=TickLabels,r,t,rt},
+  DeleteOverlapLabel[]:=Module[{p=Union[TickLabels],r,t,rt},
+    TickLabels=p;
     If[Length[p]>1,
       r={CanvasWidget[BBox[p[[1]]]]};
       p=Rest[p];
@@ -651,7 +659,7 @@ CanvasGraphics=Class[{},
           fl=Max[fl,bl[[3]]]],
         {i,0,Canvas$Frame}];
     Round[
-      Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FontFactor,pos[[1]]-fl-1,size*1.3]]]];
+      FontScale*Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,pos[[1]]-fl-1,size*1.3]]]];
   DefaultSize[t_,w_,size_,pos_,"w"]:=Module[{wc=CanvasWidget[Width],bl,fl},
     fl=wc;
       Do[bl=CanvasWidget[BBox[{"LF$Y1"//i,"FL$Y1"//i,"F$Y1"//i}]];
@@ -659,7 +667,7 @@ CanvasGraphics=Class[{},
           fl=Min[fl,bl[[1]]]],
         {i,0,Canvas$Frame}];
     Round[
-      Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FontFactor,fl-pos[[1]]-1,size*1.3]]]];
+      FontScale*Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,fl-pos[[1]]-1,size*1.3]]]];
   DefaultSize[t_,w_,size_,pos_,"n"]:=Module[{wc=CanvasWidget[Height],bl,fl},
     fl=wc;
       Do[bl=CanvasWidget[BBox[{"LF$X2"//i,"FL$X2"//i,"F$X2"//i}]];
@@ -667,14 +675,14 @@ CanvasGraphics=Class[{},
           fl=Min[fl,bl[[2]]]],
         {i,0,Canvas$Frame}];
     Round[
-      Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FontFactor,fl-pos[[2]]-1,size*1.3]]]];
+      FontScale*Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,fl-pos[[2]]-1,size*1.3]]]];
   DefaultSize[t_,w_,size_,pos_,"s"]:=Module[{fl=0,bl},
       Do[bl=CanvasWidget[BBox[{"LF$X1"//i,"FL$X1"//i,"F$X1"//i}]];
         If[bl<=>{} && bl[[2]]<pos[[2]] && bl[[1]]<=pos[[1]]<=bl[[3]],
             fl=Max[fl,bl[[4]]]],
         {i,0,Canvas$Frame}];
     Round[
-      Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FontFactor,pos[[2]]-fl-1,size*1.3]]]];
+      FontScale*Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,pos[[2]]-fl-1,size*1.3]]]];
 
   MakeTitle["",__]:=Null;
   MakeTitle[t_,size_,p_]:=Module[{{pos,w,anc}=TitlePosition[p],sz,it=0},
@@ -1005,8 +1013,8 @@ CanvasGraphics=Class[{},
 	Canvas$FrameCallBack[frid, event]]];
 
   DefaultTickFont[x_,y_]:=
-    TextFont[Restrict[Round[
-      Switch[$FontSystem,"Xft",15,_,16]*x^y],7,32],
+    TextFont[Round[TickFontScale*FontScale*Restrict[
+      Switch[$FontSystem,"Xft",15,_,16]*x^y,7,32]],
       DefaultFont];
 
   MinorGrid[`X,m_,yl_,tag_]:=Scan[
@@ -1969,5 +1977,9 @@ The$CanvasObject:=StandardForm[
     Canvas$Widget=Canvas$Canvas,
     Canvas$Widget=The$Canvas];
   The$CanvasObject];
+If[RealQ[Default$CanvasFontScale],
+  The$CanvasObject@FontScale=Default$CanvasFontScale];
+If[RealQ[Default$CanvasTickFontScale],
+  The$CanvasObject@TickFontScale=Default$CanvasTickFontScale];
 
 Canvas::busy="Canvas `1` is busy";

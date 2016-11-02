@@ -340,7 +340,7 @@ Parallelize[`f_,`n_,`lshare_,`npara_,`fcomp_:Identity]:=Module[{`shared,`sharedp
     Close[shared[k]];
     AppendTo[l,r];
     fcomp[l];
-    If[k>1,Check[Wait[],]],
+    Check[Wait[],],
     {k,n}];
   Close[np];
   l];

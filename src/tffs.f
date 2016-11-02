@@ -170,12 +170,15 @@ c$$$  endif
      $     mfitdx=mfitdetr+1,mfitdpx=mfitdx+1,
      $     mfitdy=mfitdpx+1,mfitdpy=mfitdy+1,
      $     mfitdz=mfitdpy+1,mfitddp=mfitdz+1,
-     $     mfitpex=mfitddp+1,mfitpepx=mfitpex+1,
+     $     mfitaz=mfitddp+1,mfitbz=mfitaz+1,mfitnz=mfitbz+1,
+     $     mfitzx=mfitnz+1,mfitzpx=mfitzx+1,
+     $     mfitzy=mfitzpx+1,mfitzpy=mfitzy+1,
+     $     mfitpex=mfitzpy+1,mfitpepx=mfitpex+1,
      $     mfitpey=mfitpepx+1,mfitpepy=mfitpey+1,
      $     mfittrx=mfitpepy+1,mfittry=mfittrx+1,mfitleng=mfittry+1,
      $     mfitgx=mfitleng+1,mfitgy=mfitgx+1,mfitgz=mfitgy+1,
      $     mfitchi1=mfitgz+1,mfitchi2=mfitchi1+1,mfitchi3=mfitchi2+1,
-     $     ntwissfun=mfitddp,mfito=mfittry,mfit=mfitchi3,
+     $     ntwissfun=mfitzpy,mfito=mfittry,mfit=mfitchi3,
      $     mfit1=mfit+12
       end module
 
@@ -771,16 +774,20 @@ c$$$  endif
       integer*4 nut,nfam,nfam1,nfr,nqcol,nqcol1,nfcol,nfc0
       real*8 wexponent,offmw,etamax,avebeta,wsum
       character*8 , save :: nlist(1:mfit1)=(/
-     $     'AX      ','BX      ','NX      ','AY      ',
-     1     'BY      ','NY      ','EX      ','EPX     ',
-     1     'EY      ','EPY     ','R1      ','R2      ',
-     1     'R3      ','R4      ','DETR    ',
-     $     'DX      ','DPX     ',
-     1     'DY      ','DPY     ','DZ      ','DDP     ',
+     $     'AX      ','BX      ','NX      ',
+     $     'AY      ','BY      ','NY      ',
+     $     'EX      ','EPX     ','EY      ','EPY     ',
+     $     'R1      ','R2      ','R3      ','R4      ','DETR    ',
+     $     'DX      ','DPX     ','DY      ','DPY     ',
+     $     'DZ      ','DDP     ',
+     $     'AZ      ','BZ      ','NZ      ',
+     $     'ZX      ','ZPX     ','ZY      ','ZPY     ',
      1     'PEX     ','PEPX    ','PEY     ','PEPY    ',
-     $     'TRX     ','TRY     ','LENG    ','GX      ',
-     $     'GY      ','GZ      ','CHI1    ','CHI2    ',
-     $     'CHI3    ','DEX     ','DEPX    ','DEY     ',
+     $     'TRX     ','TRY     ',
+     $     'LENG    ',
+     $     'GX      ','GY      ','GZ      ',
+     $     'CHI1    ','CHI2    ','CHI3    ',
+     $     'DEX     ','DEPX    ','DEY     ',
      $     'DEPY    ','DDX     ','DDPX    ','DDY     ',
      $     'DDPY    ','PDEX    ','PDEPX   ','PDEY    ',
      $     'PDEPY   '/)

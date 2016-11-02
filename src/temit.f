@@ -133,7 +133,8 @@ c     Table of loss-rate
      1       beam2(21),params(npara),codold(6),ab(6)
       real*8 polsca(7),demin,rgetgl1
       character*10 label1(6),label2(6)
-      character*11 autofg,vout(9)
+      character*11 autofg,vout(28)
+      character*9 vout9(28)
       logical*4 plot,pri,fndcod,synchm,intend,stab,calem,
      $     epi,calcodr,cp0
       data label1/'        X ','       Px ','        Y ',
@@ -245,7 +246,7 @@ c     call tsymp(trans)
       if(pri .and. emiout)then
         write(lfno,*)'   Symplectic part of the transfer matrix:'
         call tput(trans,label2,label2,'9.6',6,lfno)
-        call tinv(r,ri,6,6)
+        call tinv6(r,ri)
         call tmultr(ri,trans,6)
         call tput(ri,label2,label2,'9.6',6,lfno)
       endif
@@ -261,7 +262,7 @@ c     call tsymp(trans)
       call tnorm(r,ceig,lfno)
       call tsub(ceig,ceig0,dceig,12)
       ceig0=ceig
-      call tinv(r,ri,6,6)
+      call tinv6(r,ri)
       call tmultr(trans,ri,6)
       call tmov(r,btr,36)
       call tmultr(btr,trans,6)
@@ -323,8 +324,28 @@ c     $          /pi2/abs(hvc0)/vcalpha*pgev/cos(phirf)*p0/h0
       params(14)=dleng
       params(15)=bh
       params(27)=heff
-      call tfetwiss(ri,cod,params(31),lfno,pri)
+      call tfetwiss(ri,cod,params(31))
       if(pri)then
+        if(lfno .gt. 0)then
+          do i=1,28
+            vout9(i)=autofg(params(30+i),'9.6')
+          enddo
+          write(lfno,9001)
+     $         vout9(1),vout9(2),vout9(25),vout9(7),
+     $         vout9(3),vout9(26),vout9(8),
+     $         vout9(11),vout9(12),vout9(4),vout9(5),vout9(27),vout9(9),
+     $         vout9(13),vout9(14),vout9(6),vout9(28),vout9(10),
+     $         vout9(22),vout9(23),vout9(24)
+ 9001     format('    Extended Twiss Parameters:',/,
+     $         'AX:',a,' BX:',a,              26x,'  ZX:',a,'  EX:',a,/
+     $         11x,'PSIX:',a,              26x,' ZPX:',a,' EPX:',a,/
+     $         'R1:',a,' R2:',a,' AY:',a,' BY:',a,'  ZY:',a,'  EY:',a,/
+     $         'R3:',a,' R4:',a,    12x,'PSIY:',a,' ZPY:',a,' EPY:',a,/
+     $         51x,'  AZ:',a,'  BZ:',a,/
+     $         65x,'PSIZ:',a,/
+     $         '    Units: B(X,Y,Z), E(X,Y), R2: m ',
+     $         '| PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m',/)
+        endif
         vout(1)=autofg(pgev/1.d9       ,'10.7')
         vout(2)=autofg(omega0/pi2      ,'10.7')
         vout(3)=autofg(u0*pgev/1.d6    ,'10.7')
@@ -1057,19 +1078,18 @@ c     write(*,*)'temit ',emy,emy1
       return
       end
 
-      subroutine tfetwiss(r,cod,twiss,lfno,pri)
+      subroutine tfetwiss(r,cod,twiss)
+      use ffs
       implicit none
-      integer*4 lfno,i
       real*8 r(6,6),twiss(28),h(6,6),hi(6,6),cod(6)
-      real*8 ax,ay,az,axy,f,
+      real*8 ax,ay,az,axy,f,detm,his(6),
      $     uz11,uz12,uz21,uz22,
      $     hx11,hx12,hx21,hx22,
      $     hy11,hy12,hy21,hy22,
      $     r11,r12,r21,r22,
      $     crx,cry,crz,cx,cy,cz,sx,sy,sz,
      $     bx21,bx22,by21,by22,bz21,bz22
-      character*9 autofg,vout(28)
-      logical*4 pri
+      logical*4 normal
       az=sqrt(r(5,5)*r(6,6)-r(6,5)*r(5,6))
       uz11=r(5,5)/az
       uz12=r(5,6)/az
@@ -1122,9 +1142,22 @@ c     write(*,*)'temit ',emy,emy1
       h(6,4)= hy11
       h(6,5)= 0.d0
       h(6,6)= az
-      call tinv(h,hi,6,6)
+      call tinv6(h,hi)
       call tmultr(hi,r,6)
-      axy=sqrt(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2))
+      detm=(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2)
+     $     +hi(3,3)*hi(4,4)-hi(4,3)*hi(3,4))*.5d0
+      normal=detm .gt. xyth
+      if(.not. normal)then
+        his=hi(1,1:6)
+        hi(1,1:6)=hi(3,1:6)
+        hi(3,1:6)=his
+        his=hi(2,1:6)
+        hi(2,1:6)=hi(4,1:6)
+        hi(4,1:6)=his
+        detm=(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2)
+     $       +hi(3,3)*hi(4,4)-hi(4,3)*hi(3,4))*.5d0
+      endif
+      axy=sqrt(detm)
       r11=( hi(4,4)*hi(3,1)-hi(3,4)*hi(4,1))/axy
       r12=( hi(4,4)*hi(3,2)-hi(3,4)*hi(4,2))/axy
       r21=(-hi(4,3)*hi(3,1)+hi(3,3)*hi(4,1))/axy
@@ -1133,32 +1166,54 @@ c     write(*,*)'temit ',emy,emy1
       cx= hi(2,2)/crx
       sx=-hi(1,2)/crx
       bx21=(-sx*hi(1,1)+cx*hi(2,1))/axy
-      bx22=(-sx*hi(2,1)+cx*hi(2,2))/axy
+      bx22=crx/axy
       cry=sqrt(hi(3,4)**2+hi(4,4)**2)
       cy= hi(4,4)/cry
       sy=-hi(3,4)/cry
       by21=(-sy*hi(3,3)+cy*hi(4,3))/axy
-      by22=(-sy*hi(4,3)+cy*hi(4,4))/axy
+      by22=cry/axy
       crz=sqrt(uz12**2+uz22**2)
       cz= uz22/crz
       sz=-uz12/crz
       bz21=-sz*uz11+cz*uz21
-      bz22=-sz*uz21+cz*uz22
-      twiss(1)= bx21*bx22
-      twiss(2)= bx22**2
-      twiss(3)= atan2(sx,cx)
-      twiss(4)= by21*by22
-      twiss(5)= by22**2
-      twiss(6)= atan2(sy,cy)
-      twiss(7)= axy*hx12-r22*hy12+r12*hy22
-      twiss(8)= axy*hx22+r21*hy12-r11*hy22
-      twiss(9)= axy*hy12+r11*hx12+r12*hx22
-      twiss(10)=axy*hy22+r21*hx12+r22*hx22
+      bz22=crz
       twiss(11)=r11
       twiss(12)=r12
       twiss(13)=r21
       twiss(14)=r22
-      twiss(15)=r11*r22-r12*r21
+      if(normal)then
+        twiss(1)= bx21*bx22
+        twiss(2)= bx22**2
+        twiss(3)= atan2(sx,cx)
+        twiss(4)= by21*by22
+        twiss(5)= by22**2
+        twiss(6)= atan2(sy,cy)
+        twiss(7)= axy*hx12-r22*hy12+r12*hy22
+        twiss(8)= axy*hx22+r21*hy12-r11*hy22
+        twiss(9)= axy*hy12+r11*hx12+r12*hx22
+        twiss(10)=axy*hy22+r21*hx12+r22*hx22
+        twiss(15)=r11*r22-r12*r21
+        twiss(25)=axy*hx11-r22*hy11+r12*hy21
+        twiss(26)=axy*hx21+r21*hy11-r11*hy21
+        twiss(27)=axy*hy11+r11*hx11+r12*hx21
+        twiss(28)=axy*hy21+r21*hx11+r22*hx21
+      else
+        twiss(4)= bx21*bx22
+        twiss(5)= bx22**2
+        twiss(6)= atan2(sx,cx)
+        twiss(1)= by21*by22
+        twiss(2)= by22**2
+        twiss(3)= atan2(sy,cy)
+        twiss(9)= axy*hx12-r22*hy12+r12*hy22
+        twiss(10)= axy*hx22+r21*hy12-r11*hy22
+        twiss(7)= axy*hy12+r11*hx12+r12*hx22
+        twiss(8)= axy*hy22+r21*hx12+r22*hx22
+        twiss(15)=1.d0+xyth-r11*r22+r12*r21
+        twiss(27)=axy*hx11-r22*hy11+r12*hy21
+        twiss(28)=axy*hx21+r21*hy11-r11*hy21
+        twiss(25)=axy*hy11+r11*hx11+r12*hx21
+        twiss(26)=axy*hy21+r21*hx11+r22*hx21
+      endif
       twiss(16)=cod(1)
       twiss(17)=cod(2)
       twiss(18)=cod(3)
@@ -1168,30 +1223,6 @@ c     write(*,*)'temit ',emy,emy1
       twiss(22)=bz21*bz22
       twiss(23)=bz22**2
       twiss(24)=atan2(sz,cz)
-      twiss(25)=axy*hx11-r22*hy11+r12*hy21
-      twiss(26)=axy*hx21+r21*hy11-r11*hy21
-      twiss(27)=axy*hy11+r11*hx11+r12*hx21
-      twiss(28)=axy*hy21+r21*hx11+r22*hx21
-      if(lfno .gt. 0 .and. pri)then
-        do i=1,28
-          vout(i)=autofg(twiss(i),'9.6')
-        enddo
-        write(lfno,9001)
-     $       vout(1),vout(2),vout(25),vout(7),
-     $       vout(3),vout(26),vout(8),
-     $       vout(11),vout(12),vout(4),vout(5),vout(27),vout(9),
-     $       vout(13),vout(14),vout(6),vout(28),vout(10),
-     $       vout(22),vout(23),vout(24)
- 9001   format('    Extended Twiss Parameters:',/,
-     $       'AX:',a,' BX:',a,              26x,'  ZX:',a,'  EX:',a,/
-     $          11x,'PSIX:',a,              26x,' ZPX:',a,' EPX:',a,/
-     $       'R1:',a,' R2:',a,' AY:',a,' BY:',a,'  ZY:',a,'  EY:',a,/
-     $       'R3:',a,' R4:',a,    12x,'PSIY:',a,' ZPY:',a,' EPY:',a,/
-     $                                      51x,'  AZ:',a,'  BZ:',a,/
-     $                                                65x,'PSIZ:',a,/
-     $       '    Units: B(X,Y,Z), E(X,Y), R2: m ',
-     $       '| PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m',/)
-      endif
       return
       end
 
@@ -1199,7 +1230,7 @@ c     write(*,*)'temit ',emy,emy1
       implicit none
       integer*4 i,j
       real*8 trans(6,6),ri(6,7)
-      call tinv(trans,ri,6,6)
+      call tinv6(trans,ri)
       call tmultr(ri,trans,6)
       do 10 i=1,6
         do 20 j=1,6
@@ -1250,5 +1281,47 @@ c     write(*,*)'temit ',emy,emy1
           ri(i+1,j+1)= r(j  ,i  )
 20      continue
 10    continue
+      return
+      end
+
+      subroutine tinv6(r,ri)
+      implicit none
+      real*8 r(6,6),ri(6,6)
+      ri(1,1)= r(2,2)
+      ri(1,2)=-r(1,2)
+      ri(1,3)= r(4,2)
+      ri(1,4)=-r(3,2)
+      ri(1,5)= r(6,2)
+      ri(1,6)=-r(5,2)
+      ri(2,1)=-r(2,1)
+      ri(2,2)= r(1,1)
+      ri(2,3)=-r(4,1)
+      ri(2,4)= r(3,1)
+      ri(2,5)=-r(6,1)
+      ri(2,6)= r(5,1)
+      ri(3,1)= r(2,4)
+      ri(3,2)=-r(1,4)
+      ri(3,3)= r(4,4)
+      ri(3,4)=-r(3,4)
+      ri(3,5)= r(6,4)
+      ri(3,6)=-r(5,4)
+      ri(4,1)=-r(2,3)
+      ri(4,2)= r(1,3)
+      ri(4,3)=-r(4,3)
+      ri(4,4)= r(3,3)
+      ri(4,5)=-r(6,3)
+      ri(4,6)= r(5,3)
+      ri(5,1)= r(2,6)
+      ri(5,2)=-r(1,6)
+      ri(5,3)= r(4,6)
+      ri(5,4)=-r(3,6)
+      ri(5,5)= r(6,6)
+      ri(5,6)=-r(5,6)
+      ri(6,1)=-r(2,5)
+      ri(6,2)= r(1,5)
+      ri(6,3)=-r(4,5)
+      ri(6,4)= r(3,5)
+      ri(6,5)=-r(6,5)
+      ri(6,6)= r(5,5)
       return
       end

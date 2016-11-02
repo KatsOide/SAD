@@ -148,6 +148,8 @@
      1     'R3      ','R4      ','DETR    ',
      $     'DX      ','DPX     ','DY      ','DPY     ',
      $     'DZ      ','DDP     ',
+     $     'AZ      ','BZ      ','NZ      ',
+     $     'ZX      ','ZPX     ','ZY      ','ZPY     ',
      $     'PEX     ','PEPX    ','PEY     ','PEPY    '/
       narg=isp-isp1
       keyword=tfgetstrs(ktastk(isp1+1),nc)

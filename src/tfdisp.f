@@ -11,11 +11,12 @@
      $     etaxp,etapxp,sigxxp,sigxpxp,sigpxpxp,emixp,
      $     etayp,etapyp,sigyyp,sigypyp,sigpypyp,emiyp
       integer*4 lname,lb,lb1
+      integer*4, parameter:: blen=ntwissfun*12+15
       real*8 pe(4)
       real*8 og(3,4)
       character*(*) word
       character*255 wordp,word1,name
-      character*327 buff
+      character*(blen) buff
       character*16 autofg,vout
       character*255 bname
       character*1 dir,hc
@@ -30,6 +31,7 @@ c     end   initialize for preventing compiler warning
       seldis=.false.
       mdisp=0
       icolm=0
+      buff=' '
 270   call getwdl2(word,wordp)
 c      write(*,*)'tfdisp ',word,wordp
       if(word(1:3) .ne. '***' .and.
@@ -64,6 +66,9 @@ c      write(*,*)'tfdisp ',word,wordp
         go to 270
       elseif(abbrev(word,'D_UMPOPTICS','_'))then
         mdisp=10
+        go to 270
+      elseif(word .eq. 'Z')then
+        mdisp=11
         go to 270
       elseif(abbrev(word,'E_XTREMUM','_'))then
         dpeak=.true.
@@ -204,14 +209,10 @@ c      write(*,*)'tfdisp ',word,wordp
         elseif(mdisp .eq. 10)then
           if(l .eq. idisp1)then
             buff(1:15)=' '
-            do i=1,19
+            do i=1,ntwissfun
               buff((i-1)*12+16:i*12+15)=autofg(scale(i),'12.8')
             enddo
-            do i=22,27
-              buff((i-3)*12+16:(i-2)*12+15)=autofg(scale(i),'12.8')
-            enddo
-            buff(25*12+16:26*12+15)=autofg(1.d0,'12.8')
-            write(lfno,'(a)')buff(1:327)
+            write(lfno,'(a)')buff(1:ntwissfun*12+15)
           endif
           buff(1:12)=name
           write(buff(13:15),'(I3)')id
@@ -219,16 +220,16 @@ c      write(*,*)'tfdisp ',word,wordp
             buff((i-1)*12+16:i*12+15)
      $           =autofg(twiss(l,icolm,i)/scale(i),'12.8')
           enddo
-          buff((19-1)*12+16:19*12+15)=autofg(pos(l)/
-     $         scale(mfitleng),'12.8')
-          do i=0,2
-            buff((19+i)*12+16:(20+i)*12+15)=
-     $           autofg(geo(i+1,4,l)/scale(mfitgx+i),'12.8')
-            buff((22+i)*12+16:(23+i)*12+15)=
-     $           autofg(tfchi(geo(1,1,l),i+1)/scale(mfitchi1+i),'12.8')
-          enddo
-          buff((26-1)*12+16:26*12+15)=vout
-          write(lfno,'(a)')buff(1:327)
+c$$$          buff((19-1)*12+16:19*12+15)=autofg(pos(l)/
+c$$$     $         scale(mfitleng),'12.8')
+c$$$          do i=0,2
+c$$$            buff((19+i)*12+16:(20+i)*12+15)=
+c$$$     $           autofg(geo(i+1,4,l)/scale(mfitgx+i),'12.8')
+c$$$            buff((22+i)*12+16:(23+i)*12+15)=
+c$$$     $           autofg(tfchi(geo(1,1,l),i+1)/scale(mfitchi1+i),'12.8')
+c$$$          enddo
+c$$$          buff((26-1)*12+16:26*12+15)=vout
+          write(lfno,'(a)')buff(1:blen)
         else
           if(mod(lines,66) .eq. 0)then
             if(mdisp .eq. 2)then
@@ -261,6 +262,12 @@ c      write(*,*)'tfdisp ',word,wordp
      1      '   AX      BX      NX      EX     EPX   ',
      1      ' Element    p(GeV)emitx(m)emity(m) DDP',' ',
      1      '   AY      BY      NY      EY     EPY      DZ      #')
+            elseif(mdisp .eq. 11)then
+              write(lfno,9032)
+ 9032         format(
+     1      '   AZ      BZ      NZ                   ',
+     1      ' Element   Length   Value      s(m)   ',' ',
+     1      '   ZX      ZPX     ZY      ZPY            DetR     #')
             else
               write(lfno,9031)
 9031          format(
@@ -269,7 +276,14 @@ c      write(*,*)'tfdisp ',word,wordp
      1      '   AY      BY      NY      EY     EPY     DetR     #')
             endif
           endif
-          if(mdisp .ne. 4)then
+          if(mdisp .eq. 11)then
+            buff( 1: 8)=autofg(twiss(l,icolm,mfitaz)/
+     $           scale(mfitaz),'8.5')
+            buff( 9:16)=autofg(twiss(l,icolm,mfitbz)/
+     $           scale(mfitbz),'8.5')
+            buff(17:24)=autofg(twiss(l,icolm,mfitnz)/
+     $           scale(mfitnz),'8.5')
+          elseif(mdisp .ne. 4)then
             buff( 1: 8)=autofg(twiss(l,icolm,mfitax)/
      $           scale(mfitax),'8.5')
             buff( 9:16)=autofg(twiss(l,icolm,mfitbx)/
@@ -358,7 +372,18 @@ c      write(*,*)'tfdisp ',word,wordp
             endif
             buff(69:79)=autofg(pos(l)/scale(mfitleng),'11.6')
           endif
-          if(mdisp .ne. 4)then
+          if(mdisp .eq. 11)then
+            buff(80:87)=autofg(twiss(l,icolm,mfitzx)/
+     $           scale(mfitzx),'8.5')
+            buff(88:95)=autofg(twiss(l,icolm,mfitzpx)/
+     $           scale(mfitzpx),'8.5')
+            buff(96:103)=autofg(twiss(l,icolm,mfitzy)/
+     $           scale(mfitzy),'8.5')
+            buff(104:111)=autofg(twiss(l,icolm,mfitzpy)/
+     $           scale(mfitzpy),'8.5')
+            buff(120:126)=autofg(twiss(l,icolm,mfitdetr)/
+     $           scale(mfitdetr),'7.4')
+          elseif(mdisp .ne. 4)then
             buff(80:87)=autofg(twiss(l,icolm,mfitay)/
      $           scale(mfitay),'8.5')
             buff(88:95)=autofg(twiss(l,icolm,mfitby)/

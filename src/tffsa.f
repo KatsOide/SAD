@@ -105,11 +105,10 @@ c
         call tmast
         call twmov(1,twiss,nlat,ndim,.true.)
         if(.not. chguse)then
-          do i=1,mfit1
-            scale(i)=1.d0
-          enddo
+          scale=1.d0
           scale(mfitnx)=pi2
           scale(mfitny)=pi2
+          scale(mfitnz)=pi2
           scale(mfitchi1)=pi/180.d0
           scale(mfitchi2)=pi/180.d0
           scale(mfitchi3)=pi/180.d0

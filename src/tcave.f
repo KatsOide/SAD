@@ -107,7 +107,7 @@ c          h1=sqrt(1.d0+p1**2)
           endif
           vcacc=vcacc-vcn*sp
           dh=max(oneev-h1,-va*(sp+offset1))
-c          write(*,'(a,i5,1p6g14.6)')'tcave ',n,dh,va,cod(6)
+c          write(*,'(a,1p6g14.6)')'tcave ',vcacc,vcn,sp
           h2=h1+dh
           p2=h2*sqrt(1.d0-1.d0/h2**2)
           pf    =(h2+h1)/(p2+p1)*dh
@@ -222,6 +222,7 @@ c        rg=sqrt(rg2)
       sph=sin(ph)
       cph=cos(ph)
       dpt=vf*(sph+s0)
+c      write(*,'(a,1p6g15.7)')'tcavfrie ',dpt,ph,phic,w,t,dphis
       cod(2)=cod(2)+cod(1)*dpt
       cod(4)=cod(4)+cod(3)*dpt
       wc=-w*vf

@@ -28,9 +28,8 @@
       real*8 trans(4,5),cod(6),tr(4,5),rxy(4,5),
      $     r1,r2,r3,r4,detr,rr,sqrdet,trtr,bx0,by0,
      $     ax0,ay0,al,pxi,pyi,pxisq,pyisq,pzi,ale,alz,psi1,psi2,
-     $     theta0,x,px,y,detp,aa,cc,dpsix,bb,dd,dpsiy,
-     $     detm,ex0,epx0,ey0,epy0,t1,t2,t3,t4,bz,
-     $     r15,r25,r35,r45,pr,a,dpz,trf00,dtheta,phi,
+     $     theta0,x,px,y,dpsix,dpsiy,bz,
+     $     pr,a,dpz,trf00,dtheta,phi,
      $     apsi1,apsi2,sspc0,sspc,vcphic0,vcalpha0,fb1,fb2,
      $     chi1m,chi2m,ak1,ftable(4),dir
       logical*4 over,coup,normal,mat,calpol0,insmat,err
@@ -398,8 +397,8 @@ c     end   initialize for preventing compiler warning
             sspc0=sspc
             coup=.true.
           endif
-          if(coup)then
-            if(mat)then
+          if(mat)then
+            if(coup)then
               x =tr(1,1)
               px=tr(2,1)
               y =tr(3,1)
@@ -436,151 +435,6 @@ c     end   initialize for preventing compiler warning
               tr(3,5)=a31*x+a32*px+a33*y+a34*tr(4,5)+a35
               tr(4,5)=a41*x+a42*px+a43*y+a44*tr(4,5)+a45
             else
-              r1=twiss(ip1,mfitr1)
-              r2=twiss(ip1,mfitr2)
-              r3=twiss(ip1,mfitr3)
-              r4=twiss(ip1,mfitr4)
-              sqrdet=sqrt(1.d0-r1*r4+r2*r3)
-              if(normal)then
-                r15=sqrdet*twiss(ip1,mfitex)
-     1               +r4*twiss(ip1,mfitey)-r2*twiss(ip1,mfitepy)
-                r25=sqrdet*twiss(ip1,mfitepx)
-     1               -r3*twiss(ip1,mfitey)+r1*twiss(ip1,mfitepy)
-                r35=sqrdet*twiss(ip1,mfitey)
-     1               -r1*twiss(ip1,mfitex)-r2*twiss(ip1,mfitepx)
-                r45=sqrdet*twiss(ip1,mfitepy)
-     1               -r3*twiss(ip1,mfitex)-r4*twiss(ip1,mfitepx)
-                u11= a11*sqrdet-a13*r1-a14*r3
-                u12= a12*sqrdet-a13*r2-a14*r4
-                u13= a11*r4-a12*r3+a13*sqrdet
-                u14=-a11*r2+a12*r1+a14*sqrdet
-                u15= a11*r15+a12*r25+a13*r35+a14*r45+a15
-                u21= a21*sqrdet-a23*r1-a24*r3
-                u22= a22*sqrdet-a23*r2-a24*r4
-                u23= a21*r4-a22*r3+a23*sqrdet
-                u24=-a21*r2+a22*r1+a24*sqrdet
-                u25= a21*r15+a22*r25+a23*r35+a24*r45+a25
-                u31= a31*sqrdet-a33*r1-a34*r3
-                u32= a32*sqrdet-a33*r2-a34*r4
-                u33= a31*r4-a32*r3+a33*sqrdet
-                u34=-a31*r2+a32*r1+a34*sqrdet
-                u35= a31*r15+a32*r25+a33*r35+a34*r45+a35
-                u41= a41*sqrdet-a43*r1-a44*r3
-                u42= a42*sqrdet-a43*r2-a44*r4
-                u43= a41*r4-a42*r3+a43*sqrdet
-                u44=-a41*r2+a42*r1+a44*sqrdet
-                u45= a41*r15+a42*r25+a43*r35+a44*r45+a45
-              else
-                r15=-r1*twiss(ip1,mfitex)-r2*twiss(ip1,mfitepx)
-     1               +sqrdet*twiss(ip1,mfitey)
-                r25=-r3*twiss(ip1,mfitex)-r4*twiss(ip1,mfitepx)
-     1               +sqrdet*twiss(ip1,mfitepy)
-                r35=sqrdet*twiss(ip1,mfitex)
-     1               +r4*twiss(ip1,mfitey)-r2*twiss(ip1,mfitepy)
-                r45=sqrdet*twiss(ip1,mfitepx)
-     1               -r3*twiss(ip1,mfitey)+r1*twiss(ip1,mfitepy)
-                u11=-a11*r1-a12*r3+a13*sqrdet
-                u12=-a11*r2-a12*r4+a14*sqrdet
-                u13= a11*sqrdet+a13*r4-a14*r3
-                u14= a12*sqrdet-a13*r2+a14*r1
-                u15= a11*r15+a12*r25+a13*r35+a14*r45+a15
-                u21=-a21*r1-a22*r3+a23*sqrdet
-                u22=-a21*r2-a22*r4+a24*sqrdet
-                u23= a21*sqrdet+a23*r4-a24*r3
-                u24= a22*sqrdet-a23*r2+a24*r1
-                u25= a21*r15+a22*r25+a23*r35+a24*r45+a25
-                u31=-a31*r1-a32*r3+a33*sqrdet
-                u32=-a31*r2-a32*r4+a34*sqrdet
-                u33= a31*sqrdet+a33*r4-a34*r3
-                u34= a32*sqrdet-a33*r2+a34*r1
-                u35= a31*r15+a32*r25+a33*r35+a34*r45+a35
-                u41=-a41*r1-a42*r3+a43*sqrdet
-                u42=-a41*r2-a42*r4+a44*sqrdet
-                u43= a41*sqrdet+a43*r4-a44*r3
-                u44= a42*sqrdet-a43*r2+a44*r1
-                u45= a41*r15+a42*r25+a43*r35+a44*r45+a45
-              endif
-              detp=(u11*u22-u21*u12+u33*u44-u43*u34)*.5d0
-              normal=detp .gt. xyth
-              if(normal)then
-                sqrdet=sqrt(detp)
-                u11=u11/sqrdet
-                u12=u12/sqrdet
-                u21=u21/sqrdet
-                u22=u22/sqrdet
-                u33=u33/sqrdet
-                u34=u34/sqrdet
-                u43=u43/sqrdet
-                u44=u44/sqrdet
-                r1=-u31*u22+u32*u21
-                r2= u31*u12-u32*u11
-                r3=-u41*u22+u42*u21
-                r4= u41*u12-u42*u11
-                twiss(ip,mfitr1)=r1
-                twiss(ip,mfitr2)=r2
-                twiss(ip,mfitr3)=r3
-                twiss(ip,mfitr4)=r4
-                twiss(ip,mfitdetr)=r1*r4-r2*r3
-                sqrdet=sqrt(1.d0-twiss(ip,mfitdetr))
-c                write(*,'(a,1p6g15.7)')
-c     $               'qtwiss-coup-n  ',r1,r2,r3,r4,r1*r4-r2*r3,detp
-                twiss(ip,mfitex)=u15*sqrdet
-     1               -twiss(ip,mfitr4)*u35+twiss(ip,mfitr2)*u45
-                twiss(ip,mfitepx)=u25*sqrdet
-     1               +twiss(ip,mfitr3)*u35-twiss(ip,mfitr1)*u45
-                twiss(ip,mfitey)=u35*sqrdet+
-     1               twiss(ip,mfitr1)*u15+twiss(ip,mfitr2)*u25
-                twiss(ip,mfitepy)=u45*sqrdet+
-     1               twiss(ip,mfitr3)*u15+twiss(ip,mfitr4)*u25
-                aa=bx0*u11-ax0*u12
-                cc=(u12-ax0*aa)/bx0
-                twiss(ip,mfitax) =-(u21*aa+u22*cc)
-                twiss(ip,mfitbx) =u11*aa+u12*cc
-                dpsix=atan2(u12,aa)
-                bb=by0*u33-ay0*u34
-                dd=(u34-ay0*bb)/by0
-                twiss(ip,mfitay) =-(u43*bb+u44*dd)
-                twiss(ip,mfitby) =u33*bb+u34*dd
-                dpsiy=atan2(u34,bb)
-              else
-                detm=(u31*u42-u32*u41+u13*u24-u14*u23)*.5d0
-                sqrdet=sqrt(abs(detm))
-                u31=u31/sqrdet
-                u32=u32/sqrdet
-                u41=u41/sqrdet
-                u42=u42/sqrdet
-                u13=u13/sqrdet
-                u14=u14/sqrdet
-                u23=u23/sqrdet
-                u24=u24/sqrdet
-                r1=-u11*u42+u12*u41
-                r2= u11*u32-u12*u31
-                r3=-u21*u42+u22*u41
-                r4= u21*u32-u22*u31
-                sqrdet=sqrt(1.d0-r1*r4+r2*r3)
-                twiss(ip,mfitex) =u35*sqrdet-r4*u15+r2*u25
-                twiss(ip,mfitepx)=u45*sqrdet+r3*u15-r1*u25
-                twiss(ip,mfitey) =u15*sqrdet+r1*u35+r2*u45
-                twiss(ip,mfitepy)=u25*sqrdet+r3*u35+r4*u45
-                twiss(ip,mfitr1)=r1
-                twiss(ip,mfitr2)=r2
-                twiss(ip,mfitr3)=r3
-                twiss(ip,mfitr4)=r4
-                twiss(ip,mfitdetr)=1.d0+xyth-r1*r4+r2*r3
-                aa=bx0*u31-ax0*u32
-                cc=(u32-ax0*aa)/bx0
-                twiss(ip,mfitax) =-(u41*aa+u42*cc)
-                twiss(ip,mfitbx) =u31*aa+u32*cc
-                dpsix=atan2(u32,aa)
-                bb=by0*u13-ay0*u14
-                dd=(u14-ay0*bb)/by0
-                twiss(ip,mfitay) =-(u23*bb+u24*dd)
-                twiss(ip,mfitby) =u13*bb+u14*dd
-                dpsiy=atan2(u14,bb)
-              endif
-            endif
-          else
-            if(mat)then
               x =tr(1,1)
               y =tr(3,1)
               tr(1,1)=a11*x+a12*tr(2,1)
@@ -611,90 +465,9 @@ c     $               'qtwiss-coup-n  ',r1,r2,r3,r4,r1*r4-r2*r3,detp
               tr(2,5)=a21*x+a22*tr(2,5)+a25
               tr(3,5)=a33*y+a34*tr(4,5)+a35
               tr(4,5)=a43*y+a44*tr(4,5)+a45
-            else
-              if(ltyp .eq. 31)then
-                ex0 =twiss(ip1,mfitex)*a11
-                epx0=twiss(ip1,mfitepx)*a11
-                ey0 =twiss(ip1,mfitey)*a11
-                epy0=twiss(ip1,mfitepy)*a11
-              else
-                ex0 =twiss(ip1,mfitex)
-                epx0=twiss(ip1,mfitepx)
-                ey0 =twiss(ip1,mfitey)
-                epy0=twiss(ip1,mfitepy)
-              endif
-              if(normal)then
-                t1= twiss(ip1,mfitr1)*a22-twiss(ip1,mfitr2)*a21
-                t2=-twiss(ip1,mfitr1)*a12+twiss(ip1,mfitr2)*a11
-                t3= twiss(ip1,mfitr3)*a22-twiss(ip1,mfitr4)*a21
-                t4=-twiss(ip1,mfitr3)*a12+twiss(ip1,mfitr4)*a11
-                r1= a33*t1+a34*t3
-                r2= a33*t2+a34*t4
-                r3= a43*t1+a44*t3
-                r4= a43*t2+a44*t4
-                twiss(ip,mfitr1)=r1
-                twiss(ip,mfitr2)=r2
-                twiss(ip,mfitr3)=r3
-                twiss(ip,mfitr4)=r4
-                twiss(ip,mfitdetr)=r1*r4-r2*r3
-                sqrdet=sqrt(1.d0-twiss(ip,mfitdetr))
-                twiss(ip,mfitex) =
-     1               a11*ex0+a12*epx0+sqrdet*a15-r4*a35+r2*a45
-                twiss(ip,mfitepx) =
-     1               a21*ex0+a22*epx0+sqrdet*a25+r3*a35-r1*a45
-                twiss(ip,mfitey) =
-     1               a33*ey0+a34*epy0+sqrdet*a35+r1*a15+r2*a25
-                twiss(ip,mfitepy)=
-     1               a43*ey0+a44*epy0+sqrdet*a45+r3*a15+r4*a25
-                aa=bx0*a11-ax0*a12
-                cc=(a12-ax0*aa)/bx0
-                twiss(ip,mfitax) =-(a21*aa+a22*cc)
-                twiss(ip,mfitbx) =a11*aa+a12*cc
-                dpsix=atan2(a12,aa)
-                bb=by0*a33-ay0*a34
-                dd=(a34-ay0*bb)/by0
-                twiss(ip,mfitay) =-(a43*bb+a44*dd)
-                twiss(ip,mfitby) =a33*bb+a34*dd
-                dpsiy=atan2(a34,bb)
-              else
-                r1=twiss(ip1,mfitr1)
-                r2=twiss(ip1,mfitr2)
-                r3=twiss(ip1,mfitr3)
-                r4=twiss(ip1,mfitr4)
-                sqrdet=sqrt(1.d0-r1*r4+r2*r3)
-                t1= r1*a44-r2*a43
-                t2=-r1*a34+r2*a33
-                t3= r3*a44-r4*a43
-                t4=-r3*a34+r4*a33
-                r1= a11*t1+a12*t3
-                r2= a11*t2+a12*t4
-                r3= a21*t1+a22*t3
-                r4= a21*t2+a22*t4
-                twiss(ip,mfitr1)=r1
-                twiss(ip,mfitr2)=r2
-                twiss(ip,mfitr3)=r3
-                twiss(ip,mfitr4)=r4
-                twiss(ip,mfitdetr)=1.d0+xyth-r1*r4+r2*r3
-                twiss(ip,mfitex) =
-     1               a33*ex0+a34*epx0+sqrdet*a35+(-r4*a15+r2*a25)
-                twiss(ip,mfitepx) =
-     1               a43*ex0+a44*epx0+sqrdet*a45+( r3*a15-r1*a25)
-                twiss(ip,mfitey) =
-     1               a11*ey0+a12*epy0+sqrdet*a15+( r1*a35+r2*a45)
-                twiss(ip,mfitepy)=
-     1               a21*ey0+a22*epy0+sqrdet*a25+( r3*a35+r4*a45)
-                aa=bx0*a33-ax0*a34
-                cc=(a34-ax0*aa)/bx0
-                twiss(ip,mfitax) =-(a43*aa+a44*cc)
-                twiss(ip,mfitbx) =a33*aa+a34*cc
-                dpsix=atan2(a34,aa)
-                bb=by0*a11-ay0*a12
-                dd=(a12-ay0*bb)/by0
-                twiss(ip,mfitay) =-(a21*bb+a22*dd)
-                twiss(ip,mfitby) =a11*bb+a12*dd
-                dpsiy=atan2(a12,bb)
-              endif
             endif
+          else
+            call qmat2twiss(trans,ip1,ip,twiss,dpsix,dpsiy,coup,normal)
           endif
           if(.not. mat)then
             if(orbitcal)then
@@ -710,6 +483,278 @@ c     $               'qtwiss-coup-n  ',r1,r2,r3,r4,r1*r4-r2*r3,detp
       trf0=trf00
       vcphic=vcphic0
       vcalpha=vcalpha0
+      return
+      end
+
+      subroutine qmat2twiss(trans,ip1,ip,
+     $     twiss,dpsix,dpsiy,coup,normal)
+      use tfstk
+      use ffs
+      use tffitcode
+      use ffs_pointer, only:gammab
+      implicit none
+      integer*4 ip1,ip
+      real*8 trans(4,5),twiss(nlat*(2*ndim+1),ntwissfun),dpsix,dpsiy,
+     $     ax0,bx0,ay0,by0
+      real*8 r1,r2,r3,r4,sqrdet,detp,epx0,epy0,ex0,ey0
+      real*8 u11,u12,u13,u14,u21,u22,u23,u24,u31,u32,u33,
+     $     u34,u41,u42,u43,u44,u15,u25,u35,u45,
+     $     r15,r25,r35,r45,aa,bb,cc,dd,detm,gr,
+     $     t1,t2,t3,t4
+      logical*4 coup,normal
+      twiss(ip,mfitaz:mfitzpy)=0.d0
+      ax0=twiss(ip1,mfitax)
+      bx0=twiss(ip1,mfitbx)
+      ay0=twiss(ip1,mfitay)
+      by0=twiss(ip1,mfitby)
+      if(coup)then
+        r1=twiss(ip1,mfitr1)
+        r2=twiss(ip1,mfitr2)
+        r3=twiss(ip1,mfitr3)
+        r4=twiss(ip1,mfitr4)
+        sqrdet=sqrt(1.d0-r1*r4+r2*r3)
+        if(normal)then
+          r15=sqrdet*twiss(ip1,mfitex)
+     1         +r4*twiss(ip1,mfitey)-r2*twiss(ip1,mfitepy)
+          r25=sqrdet*twiss(ip1,mfitepx)
+     1         -r3*twiss(ip1,mfitey)+r1*twiss(ip1,mfitepy)
+          r35=sqrdet*twiss(ip1,mfitey)
+     1         -r1*twiss(ip1,mfitex)-r2*twiss(ip1,mfitepx)
+          r45=sqrdet*twiss(ip1,mfitepy)
+     1         -r3*twiss(ip1,mfitex)-r4*twiss(ip1,mfitepx)
+          u11= trans(1,1)*sqrdet-trans(1,3)*r1-trans(1,4)*r3
+          u12= trans(1,2)*sqrdet-trans(1,3)*r2-trans(1,4)*r4
+          u13= trans(1,1)*r4-trans(1,2)*r3+trans(1,3)*sqrdet
+          u14=-trans(1,1)*r2+trans(1,2)*r1+trans(1,4)*sqrdet
+          u15= trans(1,1)*r15+trans(1,2)*r25+trans(1,3)*r35
+     $         +trans(1,4)*r45+trans(1,5)
+          u21= trans(2,1)*sqrdet-trans(2,3)*r1-trans(2,4)*r3
+          u22= trans(2,2)*sqrdet-trans(2,3)*r2-trans(2,4)*r4
+          u23= trans(2,1)*r4-trans(2,2)*r3+trans(2,3)*sqrdet
+          u24=-trans(2,1)*r2+trans(2,2)*r1+trans(2,4)*sqrdet
+          u25= trans(2,1)*r15+trans(2,2)*r25+trans(2,3)*r35
+     $         +trans(2,4)*r45+trans(2,5)
+          u31= trans(3,1)*sqrdet-trans(3,3)*r1-trans(3,4)*r3
+          u32= trans(3,2)*sqrdet-trans(3,3)*r2-trans(3,4)*r4
+          u33= trans(3,1)*r4-trans(3,2)*r3+trans(3,3)*sqrdet
+          u34=-trans(3,1)*r2+trans(3,2)*r1+trans(3,4)*sqrdet
+          u35= trans(3,1)*r15+trans(3,2)*r25+trans(3,3)*r35
+     $         +trans(3,4)*r45+trans(3,5)
+          u41= trans(4,1)*sqrdet-trans(4,3)*r1-trans(4,4)*r3
+          u42= trans(4,2)*sqrdet-trans(4,3)*r2-trans(4,4)*r4
+          u43= trans(4,1)*r4-trans(4,2)*r3+trans(4,3)*sqrdet
+          u44=-trans(4,1)*r2+trans(4,2)*r1+trans(4,4)*sqrdet
+          u45= trans(4,1)*r15+trans(4,2)*r25+trans(4,3)*r35
+     $         +trans(4,4)*r45+trans(4,5)
+        else
+          r15=-r1*twiss(ip1,mfitex)-r2*twiss(ip1,mfitepx)
+     1         +sqrdet*twiss(ip1,mfitey)
+          r25=-r3*twiss(ip1,mfitex)-r4*twiss(ip1,mfitepx)
+     1         +sqrdet*twiss(ip1,mfitepy)
+          r35=sqrdet*twiss(ip1,mfitex)
+     1         +r4*twiss(ip1,mfitey)-r2*twiss(ip1,mfitepy)
+          r45=sqrdet*twiss(ip1,mfitepx)
+     1         -r3*twiss(ip1,mfitey)+r1*twiss(ip1,mfitepy)
+          u11=-trans(1,1)*r1-trans(1,2)*r3+trans(1,3)*sqrdet
+          u12=-trans(1,1)*r2-trans(1,2)*r4+trans(1,4)*sqrdet
+          u13= trans(1,1)*sqrdet+trans(1,3)*r4-trans(1,4)*r3
+          u14= trans(1,2)*sqrdet-trans(1,3)*r2+trans(1,4)*r1
+          u15= trans(1,1)*r15+trans(1,2)*r25+trans(1,3)*r35
+     $         +trans(1,4)*r45+trans(1,5)
+          u21=-trans(2,1)*r1-trans(2,2)*r3+trans(2,3)*sqrdet
+          u22=-trans(2,1)*r2-trans(2,2)*r4+trans(2,4)*sqrdet
+          u23= trans(2,1)*sqrdet+trans(2,3)*r4-trans(2,4)*r3
+          u24= trans(2,2)*sqrdet-trans(2,3)*r2+trans(2,4)*r1
+          u25= trans(2,1)*r15+trans(2,2)*r25+trans(2,3)*r35
+     $         +trans(2,4)*r45+trans(2,5)
+          u31=-trans(3,1)*r1-trans(3,2)*r3+trans(3,3)*sqrdet
+          u32=-trans(3,1)*r2-trans(3,2)*r4+trans(3,4)*sqrdet
+          u33= trans(3,1)*sqrdet+trans(3,3)*r4-trans(3,4)*r3
+          u34= trans(3,2)*sqrdet-trans(3,3)*r2+trans(3,4)*r1
+          u35= trans(3,1)*r15+trans(3,2)*r25+trans(3,3)*r35
+     $         +trans(3,4)*r45+trans(3,5)
+          u41=-trans(4,1)*r1-trans(4,2)*r3+trans(4,3)*sqrdet
+          u42=-trans(4,1)*r2-trans(4,2)*r4+trans(4,4)*sqrdet
+          u43= trans(4,1)*sqrdet+trans(4,3)*r4-trans(4,4)*r3
+          u44= trans(4,2)*sqrdet-trans(4,3)*r2+trans(4,4)*r1
+          u45= trans(4,1)*r15+trans(4,2)*r25+trans(4,3)*r35
+     $         +trans(4,4)*r45+trans(4,5)
+        endif
+        detp=(u11*u22-u21*u12+u33*u44-u43*u34)*.5d0
+        normal=detp .gt. xyth
+        if(normal)then
+          sqrdet=sqrt(detp)
+          u11=u11/sqrdet
+          u12=u12/sqrdet
+          u21=u21/sqrdet
+          u22=u22/sqrdet
+          u33=u33/sqrdet
+          u34=u34/sqrdet
+          u43=u43/sqrdet
+          u44=u44/sqrdet
+          r1=-u31*u22+u32*u21
+          r2= u31*u12-u32*u11
+          r3=-u41*u22+u42*u21
+          r4= u41*u12-u42*u11
+          twiss(ip,mfitr1)=r1
+          twiss(ip,mfitr2)=r2
+          twiss(ip,mfitr3)=r3
+          twiss(ip,mfitr4)=r4
+          twiss(ip,mfitdetr)=r1*r4-r2*r3
+          sqrdet=sqrt(1.d0-twiss(ip,mfitdetr))
+c     write(*,'(a,1p6g15.7)')
+c     $               'qtwiss-coup-n  ',r1,r2,r3,r4,r1*r4-r2*r3,detp
+          twiss(ip,mfitex)=u15*sqrdet
+     1         -twiss(ip,mfitr4)*u35+twiss(ip,mfitr2)*u45
+          twiss(ip,mfitepx)=u25*sqrdet
+     1         +twiss(ip,mfitr3)*u35-twiss(ip,mfitr1)*u45
+          twiss(ip,mfitey)=u35*sqrdet+
+     1         twiss(ip,mfitr1)*u15+twiss(ip,mfitr2)*u25
+          twiss(ip,mfitepy)=u45*sqrdet+
+     1         twiss(ip,mfitr3)*u15+twiss(ip,mfitr4)*u25
+          aa=bx0*u11-ax0*u12
+          cc=(u12-ax0*aa)/bx0
+          twiss(ip,mfitax) =-(u21*aa+u22*cc)
+          twiss(ip,mfitbx) =u11*aa+u12*cc
+          dpsix=atan2(u12,aa)
+          bb=by0*u33-ay0*u34
+          dd=(u34-ay0*bb)/by0
+          twiss(ip,mfitay) =-(u43*bb+u44*dd)
+          twiss(ip,mfitby) =u33*bb+u34*dd
+          dpsiy=atan2(u34,bb)
+        else
+          detm=(u31*u42-u32*u41+u13*u24-u14*u23)*.5d0
+          sqrdet=sqrt(abs(detm))
+          u31=u31/sqrdet
+          u32=u32/sqrdet
+          u41=u41/sqrdet
+          u42=u42/sqrdet
+          u13=u13/sqrdet
+          u14=u14/sqrdet
+          u23=u23/sqrdet
+          u24=u24/sqrdet
+          r1=-u11*u42+u12*u41
+          r2= u11*u32-u12*u31
+          r3=-u21*u42+u22*u41
+          r4= u21*u32-u22*u31
+          sqrdet=sqrt(1.d0-r1*r4+r2*r3)
+          twiss(ip,mfitex) =u35*sqrdet-r4*u15+r2*u25
+          twiss(ip,mfitepx)=u45*sqrdet+r3*u15-r1*u25
+          twiss(ip,mfitey) =u15*sqrdet+r1*u35+r2*u45
+          twiss(ip,mfitepy)=u25*sqrdet+r3*u35+r4*u45
+          twiss(ip,mfitr1)=r1
+          twiss(ip,mfitr2)=r2
+          twiss(ip,mfitr3)=r3
+          twiss(ip,mfitr4)=r4
+          twiss(ip,mfitdetr)=1.d0+xyth-r1*r4+r2*r3
+          aa=bx0*u31-ax0*u32
+          cc=(u32-ax0*aa)/bx0
+          twiss(ip,mfitax) =-(u41*aa+u42*cc)
+          twiss(ip,mfitbx) =u31*aa+u32*cc
+          dpsix=atan2(u32,aa)
+          bb=by0*u13-ay0*u14
+          dd=(u14-ay0*bb)/by0
+          twiss(ip,mfitay) =-(u23*bb+u24*dd)
+          twiss(ip,mfitby) =u13*bb+u14*dd
+          dpsiy=atan2(u14,bb)
+        endif
+      else
+        if(trpt)then
+          gr=gammab(ip)/gammab(ip1)
+          ex0 =twiss(ip1,mfitex)*gr
+          epx0=twiss(ip1,mfitepx)*gr
+          ey0 =twiss(ip1,mfitey)*gr
+          epy0=twiss(ip1,mfitepy)*gr
+        else
+          ex0 =twiss(ip1,mfitex)
+          epx0=twiss(ip1,mfitepx)
+          ey0 =twiss(ip1,mfitey)
+          epy0=twiss(ip1,mfitepy)
+        endif
+        if(normal)then
+          t1= twiss(ip1,mfitr1)*trans(2,2)
+     $         -twiss(ip1,mfitr2)*trans(2,1)
+          t2=-twiss(ip1,mfitr1)*trans(1,2)
+     $         +twiss(ip1,mfitr2)*trans(1,1)
+          t3= twiss(ip1,mfitr3)*trans(2,2)
+     $         -twiss(ip1,mfitr4)*trans(2,1)
+          t4=-twiss(ip1,mfitr3)*trans(1,2)
+     $         +twiss(ip1,mfitr4)*trans(1,1)
+          r1= trans(3,3)*t1+trans(3,4)*t3
+          r2= trans(3,3)*t2+trans(3,4)*t4
+          r3= trans(4,3)*t1+trans(4,4)*t3
+          r4= trans(4,3)*t2+trans(4,4)*t4
+          twiss(ip,mfitr1)=r1
+          twiss(ip,mfitr2)=r2
+          twiss(ip,mfitr3)=r3
+          twiss(ip,mfitr4)=r4
+          twiss(ip,mfitdetr)=r1*r4-r2*r3
+          sqrdet=sqrt(1.d0-twiss(ip,mfitdetr))
+          twiss(ip,mfitex) =
+     1         trans(1,1)*ex0+trans(1,2)*epx0+sqrdet*trans(1,5)
+     $         -r4*trans(3,5)+r2*trans(4,5)
+          twiss(ip,mfitepx) =
+     1         trans(2,1)*ex0+trans(2,2)*epx0+sqrdet*trans(2,5)
+     $         +r3*trans(3,5)-r1*trans(4,5)
+          twiss(ip,mfitey) =
+     1         trans(3,3)*ey0+trans(3,4)*epy0+sqrdet*trans(3,5)
+     $         +r1*trans(1,5)+r2*trans(2,5)
+          twiss(ip,mfitepy)=
+     1         trans(4,3)*ey0+trans(4,4)*epy0+sqrdet*trans(4,5)
+     $         +r3*trans(1,5)+r4*trans(2,5)
+          aa=bx0*trans(1,1)-ax0*trans(1,2)
+          cc=(trans(1,2)-ax0*aa)/bx0
+          twiss(ip,mfitax) =-(trans(2,1)*aa+trans(2,2)*cc)
+          twiss(ip,mfitbx) =trans(1,1)*aa+trans(1,2)*cc
+          dpsix=atan2(trans(1,2),aa)
+          bb=by0*trans(3,3)-ay0*trans(3,4)
+          dd=(trans(3,4)-ay0*bb)/by0
+          twiss(ip,mfitay) =-(trans(4,3)*bb+trans(4,4)*dd)
+          twiss(ip,mfitby) =trans(3,3)*bb+trans(3,4)*dd
+          dpsiy=atan2(trans(3,4),bb)
+        else
+          r1=twiss(ip1,mfitr1)
+          r2=twiss(ip1,mfitr2)
+          r3=twiss(ip1,mfitr3)
+          r4=twiss(ip1,mfitr4)
+          sqrdet=sqrt(1.d0-r1*r4+r2*r3)
+          t1= r1*trans(4,4)-r2*trans(4,3)
+          t2=-r1*trans(3,4)+r2*trans(3,3)
+          t3= r3*trans(4,4)-r4*trans(4,3)
+          t4=-r3*trans(3,4)+r4*trans(3,3)
+          r1= trans(1,1)*t1+trans(1,2)*t3
+          r2= trans(1,1)*t2+trans(1,2)*t4
+          r3= trans(2,1)*t1+trans(2,2)*t3
+          r4= trans(2,1)*t2+trans(2,2)*t4
+          twiss(ip,mfitr1)=r1
+          twiss(ip,mfitr2)=r2
+          twiss(ip,mfitr3)=r3
+          twiss(ip,mfitr4)=r4
+          twiss(ip,mfitdetr)=1.d0+xyth-r1*r4+r2*r3
+          twiss(ip,mfitex) =
+     1         trans(3,3)*ex0+trans(3,4)*epx0+sqrdet*trans(3,5)
+     $         +(-r4*trans(1,5)+r2*trans(2,5))
+          twiss(ip,mfitepx) =
+     1         trans(4,3)*ex0+trans(4,4)*epx0+sqrdet*trans(4,5)
+     $         +( r3*trans(1,5)-r1*trans(2,5))
+          twiss(ip,mfitey) =
+     1         trans(1,1)*ey0+trans(1,2)*epy0+sqrdet*trans(1,5)
+     $         +( r1*trans(3,5)+r2*trans(4,5))
+          twiss(ip,mfitepy)=
+     1         trans(2,1)*ey0+trans(2,2)*epy0+sqrdet*trans(2,5)
+     $         +( r3*trans(3,5)+r4*trans(4,5))
+          aa=bx0*trans(3,3)-ax0*trans(3,4)
+          cc=(trans(3,4)-ax0*aa)/bx0
+          twiss(ip,mfitax) =-(trans(4,3)*aa+trans(4,4)*cc)
+          twiss(ip,mfitbx) =trans(3,3)*aa+trans(3,4)*cc
+          dpsix=atan2(trans(3,4),aa)
+          bb=by0*trans(1,1)-ay0*trans(1,2)
+          dd=(trans(1,2)-ay0*bb)/by0
+          twiss(ip,mfitay) =-(trans(2,1)*bb+trans(2,2)*dd)
+          twiss(ip,mfitby) =trans(1,1)*bb+trans(1,2)*dd
+          dpsiy=atan2(trans(1,2),bb)
+        endif
+      endif
       return
       end
 

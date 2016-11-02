@@ -1019,8 +1019,11 @@ c
         if(direlc(l) .lt. 0.d0)then
           twiss(1,0,mfitax)=-cmp%value(mfitax)
           twiss(1,0,mfitay)=-cmp%value(mfitay)
+          twiss(1,0,mfitaz)=-cmp%value(mfitaz)
           twiss(1,0,mfitepx)=-cmp%value(mfitepx)
           twiss(1,0,mfitepy)=-cmp%value(mfitepy)
+          twiss(1,0,mfitzpx)=-cmp%value(mfitzpx)
+          twiss(1,0,mfitzpy)=-cmp%value(mfitzpy)
           twiss(1,0,mfitr2)=-cmp%value(mfitr2)
           twiss(1,0,mfitr3)=-cmp%value(mfitr3)
           if(orbitcal)then
@@ -1033,8 +1036,11 @@ c
         if(direlc(l) .lt. 0.d0)then
           cmp%value(mfitax)=-twiss(1,0,mfitax)
           cmp%value(mfitay)=-twiss(1,0,mfitay)
+          cmp%value(mfitaz)=-twiss(1,0,mfitaz)
           cmp%value(mfitepx)=-twiss(1,0,mfitepx)
           cmp%value(mfitepy)=-twiss(1,0,mfitepy)
+          cmp%value(mfitzpx)=-twiss(1,0,mfitzpx)
+          cmp%value(mfitzpy)=-twiss(1,0,mfitzpy)
           cmp%value(mfitr2)=-twiss(1,0,mfitr2)
           cmp%value(mfitr3)=-twiss(1,0,mfitr3)
           cmp%value(mfitdpx)=-twiss(1,0,mfitdpx)

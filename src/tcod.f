@@ -74,7 +74,7 @@
         trf0=trf0*a+trf00*(1.d0-a)
       endif
       dtrf0=trf0-trf00
-c      write(6,'(a,1p5g12.5)')' tcod ',r,r0,fact,trf0
+c      write(6,'(a,1p5g12.5)')' tcod ',r,r0,fact,trf0,trf00
 c      write(6,'(1p6g12.5)')codi,codf
       if(r .lt. conv)then
 c        trf0=trf0+codi(5)

@@ -1,8 +1,8 @@
       module tfshare
       integer*4, parameter:: nshmax=1024
-      integer*8, save:: kashare(nshmax),lshare(nshmax),
-     $     kstshare=0
-      integer*4, save :: ishared(nshmax)
+      integer*8, save:: kashare(nshmax)=0,lshare(nshmax)=0
+      integer*4, save :: ishared(nshmax)=0,kstshare(0:nshmax)=0
+
       
       contains
       integer*8 function ktfallocshared(n)
@@ -17,38 +17,38 @@
       endif
       na=((n+3)/lps+2)*lps
       nsh1=0
-      do i=1,ilist(0,kstshare)
-        if(ilist(i,kstshare) .eq. 0 .and. lshare(i) .ge. na)then
-          ilist(i,kstshare)=1
+      do i=1,kstshare(0)
+        if(kstshare(i) .eq. 0 .and. lshare(i) .ge. na)then
+          kstshare(i)=1
           ktfallocshared=kashare(i)
           return
-        elseif(ilist(i,kstshare) .ge. 0)then
+        elseif(kstshare(i) .ge. 0)then
           nsh1=i
         endif
       enddo
-      ilist(0,kstshare)=nsh1
+      kstshare(0)=nsh1
       nsh1=0
-      if(ilist(0,kstshare) .eq. nshmax)then
-        do i=1,ilist(0,kstshare)
-          if(ilist(i,kstshare) .le. 0)then
+      if(kstshare(0) .eq. nshmax)then
+        do i=1,kstshare(0)
+          if(kstshare(i) .le. 0)then
             if(lshare(i) .gt. 0)then
-              ilist(i,kstshare)=1
+              kstshare(i)=1
               if(nsh1 .ne. 0)then
-                ilist(nsh1,kstshare)=1-ilist(i,kstshare)
+                kstshare(nsh1)=1-kstshare(i)
               endif
               call tfreleaseshared(kashare(i))
               nsh1=i
               exit
             elseif(nsh1 .eq. 0)then
-              ilist(i,kstshare)=1-ilist(i,kstshare)
+              kstshare(i)=1-kstshare(i)
               nsh1=i
             endif
           endif
         enddo
       else
-        nsh1=ilist(0,kstshare)+1
-        ilist(nsh1,kstshare)=1
-        ilist(0,kstshare)=nsh1
+        nsh1=kstshare(0)+1
+        kstshare(nsh1)=1
+        kstshare(0)=nsh1
       endif
       k=ktaloc(na)
       kcp=transfer(c_loc(klist(k)),k)/8
@@ -56,7 +56,7 @@
 c      write(*,*)'ktfallocshared-mmap ',nsh1,kpb,na-lps
       call mapallocshared8(klist(kpb),int8(na-lps),8,irtc)
       if(irtc .ne. 0)then
-        write(*,*)'ktfallocshared ',kpb,na-lps
+        write(*,*)'ktfallocshared failed: ',kpb,na-lps
         call abort
       endif
       ktfallocshared=kpb+2
@@ -64,7 +64,7 @@ c      write(*,*)'ktfallocshared-mmap ',nsh1,kpb,na-lps
       klist(kpb+1)=na-lps
       if(nsh1 .ne. 0)then
         ishared(nsh1)=1
-        ilist(nsh1,kstshare)=1
+        kstshare(nsh1)=1
         kashare(nsh1)=kpb+2
         lshare(nsh1)=na
       endif
@@ -83,9 +83,9 @@ c     $     transfer(c_loc(klist(kpb)),k)/8
       if(present(ist))then
         is=ist
       endif
-      do i=1,ilist(0,kstshare)
+      do i=1,kstshare(0)
         if(kashare(i) .eq. kpb)then
-          ilist(i,kstshare)=is
+          kstshare(i)=is
           if(is .lt. 0)then
             lshare(i)=0
           endif
@@ -104,7 +104,7 @@ c     $     transfer(c_loc(klist(kpb)),k)/8
       k=klist(kpb-2)
       call mapallocfixed8(klist(kpb-2),klist(kpb-1),8,irtc)
       if(irtc .ne. 0)then
-        write(*,*)'tffreecshared ',kpb,klist(kpb-1)
+        write(*,*)'tffreecshared failed: ',kpb,klist(kpb-1)
         call abort
       endif
 c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
@@ -121,10 +121,8 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       use tfstk
       use tfshare
       implicit none
-      integer*4 i
-      do i=1,nshmax
-        ishared(i)=0
-      enddo
+      ishared=0
+      kstshare(0)=0
       return
       end subroutine
 
@@ -133,9 +131,9 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       use tfshare
       implicit none
       integer*4 i
-      do i=1,ilist(0,kstshare)
+      do i=1,kstshare(0)
         if(ishared(i) .ne. 0)then
-          ilist(i,kstshare)=-1
+          kstshare(i)=-1
         endif
       enddo
       return
@@ -147,23 +145,10 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       use tfshare
       implicit none
       integer*4, save :: lps=0
-      integer*4 getpagesize,i,irtc,na
+      integer*4 getpagesize,irtc,na
       integer*8 k,kcp
       if(lps .eq. 0)then
         lps=getpagesize()/8
-      endif
-      if(kstshare .eq. 0)then
-        na=((nshmax/2+2)/lps+2)*lps
-        k=ktaloc(na)
-        kcp=transfer(c_loc(klist(k)),k)/8
-        kstshare=k+((kcp+1+lps)/lps)*lps-kcp+1
-        call mapallocshared8(klist(kstshare-1),int8(na-lps),8,irtc)
-        do i=1,nshmax
-          ilist(i,kstshare)=0
-          kashare(i)=0
-          lshare(i)=0
-        enddo
-        ilist(0,kstshare)=0
       endif
       return
       end

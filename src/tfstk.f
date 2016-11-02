@@ -97,7 +97,7 @@ c Do not forget to update sim/MACCODE.h when you change this module!!!!
 c     Don't confuse, Emacs. This is -*- fortran -*- mode!
       module tfcbk
       integer*4 maxgeneration,maxlevele,nsymhash,nslots
-      parameter (maxgeneration=2**30,maxlevele=2**14,nsymhash=2047,
+      parameter (maxgeneration=2**30-1,maxlevele=2**14,nsymhash=2047,
      $     nslots=32)
       integer*4 maxlbuf
       parameter (maxlbuf=32768)

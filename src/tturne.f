@@ -171,8 +171,13 @@ c     below is incorrect for fra <> 0
         twiss(lend,0,mfitddp)=cod(6)*r
       endif
       if(vc0 .ne. 0.d0 .and. update)then
-        wrfeff=sqrt(abs(ddvcacc/vcacc))
+        if(vcacc .ne. 0.d0)then
+          wrfeff=sqrt(abs(ddvcacc/vcacc))
+        else
+          wrfeff=abs(dvcacc/vc0)
+        endif
         vceff=abs(dcmplx(vcacc,dvcacc/wrfeff))
+c        write(*,'(a,1p6g15.7)')'tturne ',wrfeff,dvcacc,vc0
 c        hvc0=vceff*(c*wrfeff)/omega0
 c        vceff=sign(abs(dcmplx(vccos,vcsin)),vc0)
         if(trpt)then
@@ -191,8 +196,6 @@ c          endif
             trf0=trf0+min(dzmax,max(-dzmax,
      $           (u0*pgev-charge*vcacc)/charge/dvcacc))
             trf0=mod(trf0+alambdarf*.5d0,alambdarf)-alambdarf*.5d0
-c            write(*,'(a,1p6g15.7)')'tturne ',
-c     $           u0*pgev,vcacc,dvcacc,trf0,u0,pgev
           endif
 c          phis=asin(min(1.d0,max(-1.d0,u0*p0*amass/sign(vceff,vccos))))
 c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
@@ -225,7 +228,7 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
       integer*4 i
       real*8 trans(6,12),cod(6),beam(42),bmir(6,6),
      $     bmi(21),bmh(21)
-      real*8 psi1,psi2,apsi1,apsi2,alid,cod60,
+      real*8 psi1,psi2,apsi1,apsi2,alid,
      $     r,dir,al,alib,dtheta,theta0,ftable(4),
      $     phi,fb1,fb2,chi1,chi2,ak0,ak1,rtaper
       integer*4 l,ld,lele,kl,mfr,ibegin,iend,ke
@@ -282,12 +285,7 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
             else
               r=gammab(l-1)/gammab(l)
             endif
-            twiss(l,0,mfitdx )=cod(1)
-            twiss(l,0,mfitdpx)=cod(2)*r
-            twiss(l,0,mfitdy )=cod(3)
-            twiss(l,0,mfitdpy)=cod(4)*r
-            twiss(l,0,mfitdz )=cod(5)
-            twiss(l,0,mfitddp)=cod(6)*r
+            call tsetetwiss(trans,cod,l,r)
             beamsize(:,l)=beam(1:21)
           endif
         elseif(radtaper .and. codplt)then
@@ -371,7 +369,6 @@ c        endif
             endif
           endif
         endif
-        cod60=cod(6)
         call tdrife(trans,cod,beam,al,0.d0,0.d0,0.d0,
      $       .true.,.false.,calpol,irad,ld)
         go to 1010
@@ -409,7 +406,6 @@ c        endif
             ak1=ak1*(1.d0+cod(6))
           endif
         endif
-        cod60=cod(6)
         call tbende(trans,cod,beam,al,
      1       min(pi2,max(-pi2,ak0)),
      $       cmp%value(2),
@@ -516,6 +512,7 @@ c        endif
         else
           mfr=mfr*(11+mfr*(2*mfr-9))/2
         endif
+c        write(*,*)'tturne-tcave',cod
         call tcave(trans,cod,beam,l,al,
      1       cmp%value(2),cmp%value(3),
      1       cmp%value(4),cmp%value(5),
@@ -524,6 +521,7 @@ c        endif
      $       cmp%value(kytbl(kwFRIN,icCAVI)) .eq. 0.d0,mfr,
      $       cmp%value(kytbl(kwAPHI,icCAVI)) .ne. 0.d0,
      $       ld)
+c        write(*,*)'tturne-tcave-1',cod
         go to 1010
  4200   call ttcave(trans,cod,beam,al,
      $       cmp%value(2),cmp%value(3),
@@ -605,14 +603,49 @@ c        endif
         endif
       endif
       if(codplt)then
-        twiss(l,0,mfitdx )=cod(1)
-        twiss(l,0,mfitdpx)=cod(2)*r
-        twiss(l,0,mfitdy )=cod(3)
-        twiss(l,0,mfitdpy)=cod(4)*r
-        twiss(l,0,mfitdz )=cod(5)
-        twiss(l,0,mfitddp)=cod(6)*r
+        call tsetetwiss(trans,cod,l,r)
         beamsize(:,l)=beam
       endif
+      return
+      end
+
+      subroutine tsetetwiss(trans,cod,l,rgb)
+      use ffs_pointer
+      use tffitcode
+      use tmacro
+      use temw
+      implicit none
+      integer*4 l
+      real*8 trans(6,6),ti(6,6),twi(ntwissfun),cod(6),rgb
+      real*8, parameter :: toln=1.d-10
+      call tinv6(trans,ti)
+      call tmultr(ti,ri,6)
+      call tfetwiss(ti,cod,twi)
+      twiss(l,0,1:ntwissfun)=twi
+      if(l .eq. 1)then
+        twiss(l,0,mfitnx)=0.d0
+        twiss(l,0,mfitny)=0.d0
+        twiss(l,0,mfitnz)=0.d0
+      else
+        twiss(l,0,mfitnx)=int(twiss(l-1,0,mfitnx)/pi2)*pi2
+     $       +twiss(l,0,mfitnx)
+        if(twiss(l-1,0,mfitnx) .gt. twiss(l,0,mfitnx)+toln)then
+          twiss(l,0,mfitnx)=twiss(l,0,mfitnx)+pi2
+        endif
+        twiss(l,0,mfitny)=int(twiss(l-1,0,mfitny)/pi2)*pi2
+     $       +twiss(l,0,mfitny)
+        if(twiss(l-1,0,mfitny) .gt. twiss(l,0,mfitny)+toln)then
+          twiss(l,0,mfitny)=twiss(l,0,mfitny)+pi2
+        endif
+        twiss(l,0,mfitnz)=int(twiss(l-1,0,mfitnz)/pi2)*pi2
+     $       +twiss(l,0,mfitnz)
+        if(twiss(l-1,0,mfitnz) .gt. twiss(l,0,mfitnz)+toln)then
+          twiss(l,0,mfitnz)=twiss(l,0,mfitnz)+pi2
+        endif
+      endif
+      twiss(l,0,mfitdpx)=twiss(l,0,mfitdpx)*rgb
+      twiss(l,0,mfitdpy)=twiss(l,0,mfitdpy)*rgb
+      twiss(l,0,mfitddp)=twiss(l,0,mfitddp)*rgb
       return
       end
 

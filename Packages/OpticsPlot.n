@@ -7,8 +7,9 @@ PkgConfig$DefaultList["OpticsPlot"->{
 ListPlot;
 
 SetAttributes[{Region,FrameHeight,Graph,Lattice,ListCoordinate,Unit,
-  InfoLabel,NameFilter,LatticeRegion},
-  Constant];
+  InfoLabel,NameFilter,LatticeRegion,Kilometer,Milimeter,Micron,
+  Nanometer,Picometer,Femtometer,Attometer,InvKilometer,SquareMilimeter,
+  SquareMicrometer,Pi2,Miliradian,Microradian,PPM,Percent},  Constant];
 
 With[{def={
   Region:>{1,LINE["LENGTH"]},
@@ -23,7 +24,7 @@ With[{def={
   GridLines->{Automatic,Automatic}}},
 
   OpticsPlot[f_List,opt___]:=Module[
-    {nf=Length[f],g,pr,rg,dx,init,fh,yh,yh1,i1,lr,plb,op=Override[opt,def],opd},
+    {nf=Length[f],g,pr,rg,dx,init,fh,yh,yh1,i1,lr,plb,op=Override[opt,def],opd,lpr,ss,slabel},
     op = op/.{
 !      Rule[sRegion->{s1_Real, s2_Real}, Region->OP$S2Position[s1,s2]],
       Rule[Region->{S[s1_Real], s2:(_Real|_String)}, Region->{Floor[OP$S2Position[s1]], s2}],
@@ -34,6 +35,8 @@ With[{def={
       InfoLabel,LatticeRegion,PlotLabel,GridLines}/.op;
     If[Head[pr]<=>List,pr={1,pr}];
     pr=LINE["POSITION",pr]/.{0->1,{}->LINE["LENGTH"]};
+    lpr=-Subtract@@MinMax[LINE["S",pr]];
+    {ss,slabel}=If[lpr>=10000,{0.001,"km"},{1,"m"}];
     If[fh===Automatic,fh=Table[1,{nf}]/nf];
     If[Head[fh]<=>List||Length[fh]<>nf,
       Message[OpticsPlot::frameheight]];
@@ -46,7 +49,7 @@ With[{def={
       If[fh[[i]]==0,
         Rectangle[{0,yh1},{1,yh},
           {yh,yh1}-=fh[[{i-1,i1}]];
-          OpticsPlot1$[f[[i]],pr,True,
+          OpticsPlot1$[f[[i]],pr,ss,slabel,True,
             FrameTicks->{False,False,False,True},
             TickSize->Sqrt[fh[[i-1]]],
             GridLines->{None,None},
@@ -54,7 +57,7 @@ With[{def={
         Rectangle[{0,yh1},{1,yh},
           If[fh[[i1]]<>0,
             {yh,yh1}-=fh[[{i,i1}]]];
-          OpticsPlot1$[f[[i]],pr,False,
+          OpticsPlot1$[f[[i]],pr,ss,slabel,False,
             FrameTicks->
               If[i==nf||i1==nf&&fh[[i1]]==0,
                 {True, True,Ticks,If[fh[[i1]],Ticks,False]},
@@ -71,7 +74,7 @@ With[{def={
 	g, {1,3}]];
       AppendTo[g,
         Rectangle[{0,lr[[1]]},{1,lr[[2]]},
-          LatticePlot[pr,PlotRegion->rg,opt],
+          LatticePlot[pr,ss,PlotRegion->rg,opt],
 	  If[il, Graphics[Hook[Command:>(If[#===CanvasDrawer &&
 	    RealQ[Canvas$Frame], OPBind[Canvas$Frame]]&)]], Null[]]]]];
     g=Graphics[g,Override[Background->None,Initialize->init,opt]];
@@ -185,7 +188,7 @@ With[{def={PlotRange->Automatic,
   },
   frameoptions={PlotColor,Dashing,PointColor,PointSize}},
 
-  OpticsPlot1$[f_,pr_,right_,opt___]:=Module[
+  OpticsPlot1$[f_,pr_,ss_,slabel_,right_,opt___]:=Module[
     {lf,plt,pra,fl,frame,lfr,fropt,l,unit,v,opv,min,max,am,ru,
       del,del1,leg,fly,
       {fopt,f1}=SwitchCases[f,{_Rule|_RuleDelayed,_}]},
@@ -224,7 +227,7 @@ With[{def={PlotRange->Automatic,
       v=MapAt[#*ru&,v,{,,1}];
       If[pra<=>Automatic,pra=If[RealQ[#],#/ru,#]&/@pra]];
     If[pra===Automatic && unit===SqrtMeter,pra={0,am*1.1}];
-    If[Depth[pra]<=2,pra={l[[1,1,5]],pra}];
+    If[Depth[pra]<=2,pra={l[[1,1,5]]*ss,pra}];
     {del,del1}={"",""};
     If[leg===Automatic,
       leg=l[[,1,1]]];
@@ -239,11 +242,10 @@ With[{def={PlotRange->Automatic,
           {del,del1}={", "," "})&,l[[,1,1]]]];
     fly=Optics$FrameLabel[fly,unit];
     If[right,fl[[4]]=fly,fl[[2]]=fly];
-    fl00={fl,fly};
-    MapThread[ListPlot[#,
+    MapThread[ListPlot[If[ss==1,#,Thread[{ss,1}*Thread[#]]],
       PlotJoined->#2,PointTags->#3,
       DisplayFunction->Identity,PlotRange->pra,
-      FrameLabel->fl,FrameUnitLabel->{"m"},Legend->#5,Null@@#4,Plot->plt,Null@@fopt]&,
+      FrameLabel->fl,FrameUnitLabel->{slabel},Legend->#5,Null@@#4,Plot->plt,Null@@fopt]&,
       {v,l[[,1,3]],l[[,1,4]],opv,leg}]
     ]];
 
@@ -343,7 +345,7 @@ OpticsList[f_List,i1_,i2_,_,off_,"S",t_,pj_]:=
 
 OpticsList[f_,i1_,i2_,dl_,off_,_,tags_,_]:=Module[{fun,ndiv},
   Which[
-    f=="BX" || f =="BY",
+    f=="BX" || f=="BY" || f=="BZ",
     fun:=Sqrt[Twiss[f,#]]&,
     MemberQ[Twiss$Functions,f],
     fun:=Twiss[f,#]&,
@@ -364,7 +366,7 @@ OpticsList[f_,i1_,i2_,dl_,off_,_,tags_,_]:=Module[{fun,ndiv},
 
 With[{def={Names->"*",Tags->False,NameFilter->Identity,
   PlotRegion->{{0,1},{0,1}},ElementHeight->Automatic}},
-  LatticePlot[{pr01_,pr02_},opt___]:=Module[
+  LatticePlot[{pr01_,pr02_},ss_,opt___]:=Module[
     {l,nlat=LINE["LENGTH"],s1=LINE["S",pr01],leng,
       {pr1,pr2}=LINE["POSITION",{pr01,pr02}],
       {n,tag,nf,pr,eh}={Names,Tags,NameFilter,PlotRegion,ElementHeight}/.
@@ -375,22 +377,22 @@ With[{def={Names->"*",Tags->False,NameFilter->Identity,
       ltotal=LINE["S",nlat]-LINE["S","^^^"];
       s1=s1-ltotal;
       leng=LINE["S",pr2]-s1;
-      Join[LatticePlot1$[{pr1,nlat},-ltotal,tag,w,eh],
-        LatticePlot1$[{1,pr2},0,tag,w,eh]],
+      Join[LatticePlot1$[{pr1,nlat},-ltotal,tag,w,eh,ss],
+        LatticePlot1$[{1,pr2},0,tag,w,eh,ss]],
       leng=LINE["S",pr2]-s1;
-      LatticePlot1$[{pr1,pr2},0,tag,w,eh]];
+      LatticePlot1$[{pr1,pr2},0,tag,w,eh,ss]];
     l=If[StringQ[n] && n<>"",
       {l,If[pr2<=pr1,
-        Join[LatticeNames[{pr1,nlat},n,-ltotal,leng/100/w,yoff,tag,nf],
-          LatticeNames[{1,pr2},n,0,leng/100/w,yoff,tag,nf]],
-        LatticeNames[{pr1,pr2},n,0,leng/100/w,yoff,tag,nf]]},
+        Join[LatticeNames[{pr1,nlat},n,-ltotal,leng/100/w,yoff,tag,nf,ss],
+          LatticeNames[{1,pr2},n,0,leng/100/w,yoff,tag,nf,ss]],
+        LatticeNames[{pr1,pr2},n,0,leng/100/w,yoff,tag,nf,ss]]},
       {l}];
-    With[{s1, leng}, Graphics[#,{DataRange->{{s1,s1+leng},{-1,1}},
+    With[{s1,leng,ss}, Graphics[#,{DataRange->{{s1,s1+leng}*ss,{-1,1}},
       PlotRange:>With[{XRange=OP$XRange}, OP$XRange=.;
-	{If[Head[XRange]===List, XRange, {s1-0.001, s1+leng+0.001}],{-1,1}}],
+	{If[Head[XRange]===List, XRange, {s1-0.001, s1+leng+0.001}]*ss,{-1,1}}],
       Frame->False,Background->Null,RemoveOverlap->"L$NAME"}]&/@l]]];
 
-LatticeNames[{pr1_,pr2_},n_,off_,w_,yoff_,tag_,nf_]:=Module[
+LatticeNames[{pr1_,pr2_},n_,off_,w_,yoff_,tag_,nf_,ss_]:=Module[
   {s,s0=LINE["S",pr1]+off,e=""},
   Table[
     With[{l=LINE["NAME",i]},
@@ -398,14 +400,14 @@ LatticeNames[{pr1_,pr2_},n_,off_,w_,yoff_,tag_,nf_]:=Module[
         ((s=(LINE["S",i]+LINE["S",i+1])/2+off)>=s0),
         s0=Max[s-w/2,s0];
         e=LINE["ELEMENT",i];
-        Text[{nf[l],{Scaled[s0],Scaled[yoff]}},TextFont->$DefaultSansSerifFont,
+        Text[{nf[l],{Scaled[s0*ss],Scaled[yoff]}},TextFont->$DefaultSansSerifFont,
           TextRotate->270,TextSize->0.8,TextAlign->"n",UseBG->False,
           Tags->If[tag,{"L$"//l,"L$NAME"},"L$NAME","L$NAME"]],
         e="";Null[],e="";Null[]]],
     {i,pr1,pr2-1}]];
 
 With[{yoff0=0.1},
-  LatticePlot1$[{pr1_,pr2_},off_,tag_,wid_,eh_]:=Module[
+  LatticePlot1$[{pr1_,pr2_},off_,tag_,wid_,eh_,ss_]:=Module[
     {type,h,si,si1,yoff,s1=LINE["S",pr1],ds,h1,v},
     ds=(LINE["S",pr2-1]-s1)/400/wid;
     Table[
@@ -420,7 +422,7 @@ With[{yoff0=0.1},
           v=If[default==="",0,LINE[default,i]]];
         {h1,s1}={h,si1};
         yoff=If[h>yoff0*1.1, Sign[v]*yoff0, 0.0];
-        Rectangle[{si+off,yoff-h/2},{si1+off,yoff+h/2},
+        Rectangle[{(si+off)*ss,yoff-h/2},{(si1+off)*ss,yoff+h/2},
           FillColor->Element$Color[type,v],
           If[tag,Tags->"C$"//LINE["NAME",i],Null[],Null[]]],
         Null[],Null[]],
@@ -498,6 +500,12 @@ Optics$Unit[unit_,am_]:=
     Switch[unit,
       Meter,
       Which[
+        am<1e-15,
+        Attometer,
+        am<1e-12,
+        Femtometer,
+        am<1e-9,
+        Picometer,
         am<1e-6,
         Nanometer,
         am<1e-3,
@@ -543,12 +551,13 @@ Optics$Unit[unit_,am_]:=
 
 Twiss$Functions={"AX","BX","NX","AY","BY","NY","EX","EPX","EY","EPY",
   "R1","R2","R3","R4","DX","DPX","DY","DPY","DZ","DDP",
+  "AZ","BZ","NZ","ZX","ZPX","ZY","ZPY",
   "PEX","PEPX","PEY","PEPY"};
 Twiss$Unit["EX"|"EY"|"R2"|"DX"|"DY"|"S"|"PEX"|"PEY"|"DZ"]=Meter;
 Twiss$Unit["DPX"|"DPY"|"EPX"|"EPY"|"PEPX"|"PEPY"]=Radian;
-Twiss$Unit["R3"]=InvMeter;
-Twiss$Unit["BX"|"BY"]=SqrtMeter;
-Twiss$Unit["NX"|"NY"]=Pi2;
+Twiss$Unit["R3"|"ZPX"|"ZPY"]=InvMeter;
+Twiss$Unit["BX"|"BY"|"BZ"]=SqrtMeter;
+Twiss$Unit["NX"|"NY"|"NZ"]=Pi2;
 Twiss$Unit["DDP"]=Ratio;
 Twiss$Unit[x_String?(#[1,4]==="SIZE"&)]:=Module[
   {{l,u}=MakeSize$Label$Unit[x[5,-1]]},
@@ -606,6 +615,9 @@ If[$DisplayFunction===Unevaluated[TopDrawer],
   Twiss$Unit$Label[Miliradian]="mrad";
   Twiss$Unit$Label[Radian]="rad";
   Twiss$Unit$Label[Nanometer]="nm";
+  Twiss$Unit$Label[Picometer]="pm";
+  Twiss$Unit$Label[Femtometer]="fm";
+  Twiss$Unit$Label[Attometer]="am";
   Twiss$Unit$Label[Ratio]="";
   Twiss$Unit$Label[PPM]="ppm";
   Twiss$Unit$Label[Percent]="%";
@@ -644,6 +656,13 @@ If[$DisplayFunction===Unevaluated[TopDrawer],
   Twiss$Label["R3"]="R`d3`n";
   Twiss$Label["R4"]="R`d4`n";
   Twiss$Label["DETR"]="DetR";
+  Twiss$Label["AZ"]="`fa`n`dz`n";
+  Twiss$Label["BZ"]="`f\326`ob`n`dz`O`n";
+  Twiss$Label["NZ"]="`fn`n`dz`n";
+  Twiss$Label["ZX"]="`fz`n`dx`n";
+  Twiss$Label["ZPX"]="`fz`n`dpx`n";
+  Twiss$Label["ZY"]="`fz`n`dy`n";
+  Twiss$Label["ZPY"]="`fz`n`dpy`n";
   Twiss$Label[x_String?(#[1,4]==="SIZE"&)]:=Module[
     {{l,u}=MakeSize$Label$Unit[x[5,-1]]},
     Twiss$Unit[x]=u;
@@ -684,6 +703,9 @@ Unit$Factor[Kilometer]=1E3;
 Unit$Factor[Milimeter]=1E-3;
 Unit$Factor[Micron]=1E-6;
 Unit$Factor[Nanometer]=1E-9;
+Unit$Factor[Picometer]=1E-12;
+Unit$Factor[Femtometer]=1E-15;
+Unit$Factor[Attometer]=1E-18;
 Unit$Factor[InvKilometer]=1E-3;
 Unit$Factor[SquareMilimeter]=1e-6;
 Unit$Factor[SquareMicrometer]=1e-12;

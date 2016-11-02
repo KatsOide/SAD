@@ -36,7 +36,7 @@ c      endif
       implicit none
       integer*4 n1p0,n2p,maxturn,maxpara,nw,lfno,ncons,nscore,
      $     ivar1,ivar2,ivar3
-      parameter (n1p0=200,n2p=51,maxturn=2**30,maxpara=256,nw=16)
+      parameter (n1p0=200,n2p=51,maxturn=2**29,maxpara=256,nw=16)
       integer, parameter :: nkptbl = 6
       integer*8 kv,kax,kax11,kax12,kax13,kax2,
      $     kaxi,kaxi3,kax1,latt(nlat)
@@ -105,7 +105,7 @@ c     end   initialize for preventing compiler warning
           a1i(i)=a1min+a1step*(i-1)
         enddo
       else
-        n1p=int(pz(1))
+        n1p=min(n1p0,int(pz(1)))
         a1i(1:n1p)=g(1:n1p)
         a1min=minval(a1i(1:n1p))
         a1max=maxval(a1i(1:n1p))
