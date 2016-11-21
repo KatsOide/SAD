@@ -223,7 +223,7 @@ c$$$  endif
      $       rad,rfsw,radcod,calcod,
      $       intra,trpt,emiout,gauss,
      $       bipol,cell,ffsprmpt,dapert,
-     $       fseed,ideal,codplt,canon,
+     $       fseed,ideal,codplt,calc6d,
      $       calpol,rfluct,cmplot,fourie,
      $       trsize,simulate,absweit,jitter,
      $       trgauss,lwake,twake,smearp,
@@ -240,7 +240,7 @@ c$$$  endif
      $     'RAD     ','RFSW    ','RADCOD  ','COD     ',
      1     'INTRA   ','TRPT    ','EMIOUT  ','GAUSS   ',
      1     'BIPOL   ','CELL    ','FFSPRMPT','DAPERT  ',
-     1     'FIXSEED ','IDEAL   ','CODPLOT ','CANON   ',
+     1     'FIXSEED ','IDEAL   ','CODPLOT ','CALC6D  ',
      1     'POL     ','FLUC    ','CMPLOT  ','FOURIER ',
      1     'TRACKSIZ','SIMULATE','ABSW    ','JITTER  ',
      1     'TRGAUSS ','LWAKE   ','TWAKE   ','BARYCOD ',
@@ -253,7 +253,7 @@ c$$$  endif
      $     '        ','        ','        ','        ',
      1     '        ','RING    ','        ','UNIFORM ',
      1     'UNIPOL  ','INS     ','        ','        ',
-     1     'MOVESEED','REAL    ','        ','        ',
+     1     'MOVESEED','REAL    ','        ','CALC4D  ',
      1     '        ','DAMPONLY','        ','        ',
      1     '        ','OPERATE ','RELW    ','QUIET   ',
      1     'TRUNI   ','        ','        ','        ',
@@ -273,6 +273,12 @@ c$$$  endif
       integer*4, pointer :: ndim,ndima,nele,nfit,marki,iorgx,iorgy,
      $     iorgr,mfpnt,mfpnt1,id1,id2,nve
       logical*4 , pointer :: updatesize
+
+      type ffs_bound
+      sequence
+      integer*4 lb,le
+      real*8 fb,fe
+      end type
 
       contains
         subroutine tffsvinit
@@ -465,7 +471,7 @@ c$$$  endif
      $       rad,rfsw,radcod,calcod,
      $       intra,trpt,emiout,gauss,
      $       bipol,cell,ffsprmpt,dapert,
-     $       fseed,ideal,codplt,canon,
+     $       fseed,ideal,codplt,calc6d,
      $       calpol,rfluct,cmplot,fourie,
      $       trsize,simulate,absweit,jitter,
      $       trgauss,lwake,twake,smearp,
@@ -507,7 +513,7 @@ c$$$  endif
         twake=>fff%twake
         smearp=>fff%smearp
         bunchsta=>fff%bunchsta
-        canon=>fff%canon
+        calc6d=>fff%calc6d
         cellstab=>fff%cellstab
         spac=>fff%spac
         radlight=>fff%radlight
@@ -761,15 +767,18 @@ c$$$  endif
       module ffs_fit
       use ffs, only:ntwissfun,maxcond
       use tffitcode, only:mfit1
+      type ffs_stat
+        real*8 tracex,tracey,tracez
+        logical*4 stabx,staby,stabz,over
+      end type
       integer*4 , parameter :: ndimmax=500
+      type (ffs_stat) optstat(-ndimmax:ndimmax)
       integer*4 iuid(-ndimmax:ndimmax),
      $     jfam(-ndimmax:ndimmax),kfam(-ndimmax:ndimmax)
       real*8 dp(-ndimmax:ndimmax),scale(mfit1),
-     $     tracex(-ndimmax:ndimmax),tracey(-ndimmax:ndimmax),
      $     dfam(4,-ndimmax:ndimmax),residual(-ndimmax:ndimmax),
      $     uini(ntwissfun,-ndimmax:ndimmax),wfit(maxcond),
      $     wiq(maxcond)
-      logical*4 hstab(-ndimmax:ndimmax),vstab(-ndimmax:ndimmax)
       logical*4 fitflg,geomet,inicond,chgini
       integer*4 nut,nfam,nfam1,nfr,nqcol,nqcol1,nfcol,nfc0
       real*8 wexponent,offmw,etamax,avebeta,wsum
@@ -853,6 +862,9 @@ c$$$  endif
       endif
       if(rlist(latt(1)+kytbl(kwBY,icMARK)) .le. 0.d0)then
         rlist(latt(1)+kytbl(kwBY,icMARK))=1.d0
+      endif
+      if(rlist(latt(1)+kytbl(kwBZ,icMARK)) .le. 0.d0)then
+        rlist(latt(1)+kytbl(kwBZ,icMARK))=1.d0
       endif
       sigz0=max(0.d0,rlist(j+kytbl(kwSIGZ,icMARk)))
       call rsetgl1('SIGZ',sigz0)

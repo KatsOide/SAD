@@ -107,6 +107,7 @@ c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       diffres=igetgl1('$DIFFRES$') .ne. 0
       photons=igetgl1('$PHOTONS$' ) .ne. 0
       nparallel=max(1,int(rgetgl1('NPARA')))
+      calc6d=.false.
       radlight=.false.
       ffsprmpt=.false.
       rfsw  =isynch .ne. 0

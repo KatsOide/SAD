@@ -17,13 +17,15 @@
       use tfstk
       use ffs_flag
       use tmacro
+      use ffs, only:ffs_bound
       implicit none
+      type (ffs_bound) fbound
       real*8 plimit,zlimit,vmax
       parameter (plimit=0.7d0,zlimit=1.d10)
       parameter (vmax=.9d0)
-      integer*4 np,n,la,ls,lbegin,lend,nvar,lb,le
+      integer*4 np,n,la,ls,nvar,lb,le
 c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
-      real*8 frbegin,frend,pgev00
+      real*8 pgev00
       integer*4 kptbl(np0,6)
       integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
@@ -37,28 +39,28 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
         call tlstore(np,x,y,z,dv,0.d0,0.d0,0.d0,0.d0,
      $       p0/h0*c,dvfs,.true.)
       endif
-      call tffsbound1(lb,le,lbegin,frbegin,lend,frend)
-      if(frbegin .ne. 0.d0)then
-        call qfracsave(lbegin,vsave,nvar,.true.)
-        call qfraccomp(lbegin,frbegin,1.d0,ideal,chg)
+      call tffsbound1(lb,le,fbound)
+      if(fbound%fb .ne. 0.d0)then
+        call qfracsave(fbound%lb,vsave,nvar,.true.)
+        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
         call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
-     $       sol,la,lbegin,lbegin)
+     $       sol,la,fbound%lb,fbound%lb)
         if(chg)then
-          call qfracsave(lbegin,vsave,nvar,.false.)
+          call qfracsave(fbound%lb,vsave,nvar,.false.)
         endif
-        ls=lbegin+1
+        ls=fbound%lb+1
       else
-        ls=lbegin
+        ls=fbound%lb
       endif
       call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
-     $     sol,la,ls,lend-1)
-      if(frend .ne. 0.d0)then
-        call qfracsave(lend,vsave,nvar,.true.)
-        call qfraccomp(lend,0.d0,frend,ideal,chg)
+     $     sol,la,ls,fbound%le-1)
+      if(fbound%fe .ne. 0.d0)then
+        call qfracsave(fbound%le,vsave,nvar,.true.)
+        call qfraccomp(fbound%le,0.d0,fbound%fe,ideal,chg)
         call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
-     $       sol,la,lend,lend)
+     $       sol,la,fbound%le,fbound%le)
         if(chg)then
-          call qfracsave(lend,vsave,nvar,.false.)
+          call qfracsave(fbound%le,vsave,nvar,.false.)
         endif
       endif
       if(trpt .and. codplt)then

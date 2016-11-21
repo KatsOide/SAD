@@ -476,15 +476,17 @@ c     end   initialize for preventing compiler warning
       use ffs_pointer
       use ffs_fit, only:nut
       use tffitcode
+      use ffs, only:ffs_bound
       implicit none
+      type (ffs_bound) fbound,fbound1
       real*8 eps
       parameter (eps=1.d-4)
       integer*4 k,l,idp,itwk,itwl,
-     $     la1,lb1,iclast,k1,itwk1,ibg,ibe,itwe,ibe1,itwbe
+     $     iclast,k1,itwk1,ibg,ibe,itwe,ibe1,itwbe
       real*8 dtrans(4,5),dcod(6),trans(20),trans2s(20),
      $     trans2(4,5),trans3(4,5),trans1(4,5),transe(4,5),
      $     transe2(4,5),cod2(6),code(6),dcode(6),
-     $     w,fra,frb,ctrans(27)
+     $     w,ctrans(27)
       logical*4 over,trpt
       equivalence (trans2,trans2s)
       itwk=itwissp(k)
@@ -494,16 +496,18 @@ c     end   initialize for preventing compiler warning
      $     +abs(dcod(5)))
       cod2(6)=utwiss(mfitddp,idp,itwk1)
       call tfbndsol(k,ibg,ibe)
-      call tffsbound1(k1,l,la1,fra,lb1,frb)
-      if(iclast .gt. 0 .and. iclast .le. lb1 .and.
-     $     (iclast .ne. lb1 .or. ctrans(27) .le. frb))then
+      call tffsbound1(k1,l,fbound)
+      if(iclast .gt. 0 .and. iclast .le. fbound%le .and.
+     $     (iclast .ne. fbound%le .or. ctrans(27) .le. fbound%fe))then
         cod2(1)=ctrans(21)
         cod2(2)=ctrans(22)
         cod2(3)=ctrans(23)
         cod2(4)=ctrans(24)
         cod2(5)=ctrans(25)
-        call qcod(1,iclast,ctrans(27),lb1,frb,
-     $       trans3,cod2,.true.,over)
+        fbound1=fbound
+        fbound1%lb=iclast
+        fbound1%fb=ctrans(27)
+        call qcod(1,fbound1,trans3,cod2,.true.,over)
         call tmultr45(ctrans,trans3,trans2)
       else
         cod2(1)=utwiss(mfitdx, idp,itwk1)+w*dcod(1)
@@ -512,16 +516,17 @@ c     end   initialize for preventing compiler warning
         cod2(4)=utwiss(mfitdpy,idp,itwk1)+w*dcod(4)
         cod2(5)=utwiss(mfitdz, idp,itwk1)+w*dcod(5)
         if(ibg .eq. 0 .or. l .le. max(ibg,ibe))then
-          call qcod(1,la1,fra,lb1,frb,
-     $         trans2,cod2,.true.,over)
+          call qcod(1,fbound,trans2,cod2,.true.,over)
         else
           if(ibg .lt. ibe)then
             ibe1=ibe+1
             itwe=itwissp(ibe1)
             code(2)=utwiss(mfitdpx,idp,itwe)
             code(4)=utwiss(mfitdpy,idp,itwe)
-            call qcod(1,la1,fra,ibe1,0.d0,
-     $           transe,cod2,.true.,over)
+            fbound1=fbound
+            fbound1%le=ibe1
+            fbound1%fe=0.d0
+            call qcod(1,fbound1,transe,cod2,.true.,over)
             transe(2,5)=transe(2,5)-cod2(2)+code(2)
             transe(4,5)=transe(4,5)-cod2(4)+code(4)
             call tftmatu(utwiss(1,idp,itwissp(ibe1)),
@@ -533,8 +538,7 @@ c     end   initialize for preventing compiler warning
             cod2(3)=utwiss(mfitdy, idp,itwk1)
             cod2(4)=utwiss(mfitdpy,idp,itwk1)
             cod2(5)=utwiss(mfitdz, idp,itwk1)
-            call qcod(1,la1,fra,ibe1,0.d0,
-     $           trans3,cod2,.true.,over)
+            call qcod(1,fbound1,trans3,cod2,.true.,over)
             trans3(2,5)=trans3(2,5)-cod2(2)+code(2)
             trans3(4,5)=trans3(4,5)-cod2(4)+code(4)
             call tmultr45(trans3,transe2,trans)
@@ -561,8 +565,12 @@ c     end   initialize for preventing compiler warning
             cod2(3)=utwiss(mfitdy, idp,itwbe)-w*dcode(3)
             cod2(4)=utwiss(mfitdpy,idp,itwbe)-w*dcode(4)
             cod2(5)=utwiss(mfitdz, idp,itwbe)
-            call qcod(1,ibe,0.d0,k1,0.d0,
-     $           trans2,cod2,.true.,over)
+            fbound1=fbound
+            fbound1%lb=ibe
+            fbound1%fb=0.d0
+            fbound1%le=k1
+            fbound1%fe=0.d0
+            call qcod(1,fbound1,trans2,cod2,.true.,over)
             transe(2,5)=transe(2,5)-w*dcode(2)
             transe(4,5)=transe(4,5)-w*dcode(4)
             call tmultr45(transe,trans2,transe)
@@ -583,8 +591,8 @@ c      call tmov(trans,transe2,20)
 c      write(*,*)'qddtws-2 '
 c      write(*,'(1p5g13.5)')((transe2(i,j),j=1,5),i=1,4)
 c      write(*,'(1p5g13.5)')((trans2(i,j),j=1,5),i=1,4)
-      iclast=lb1
-      ctrans(27)=frb
+      iclast=fbound%le
+      ctrans(27)=fbound%fe
       ctrans(1:20)=trans2s(1:20)
       trans2s(1:20)=(trans2s(1:20)-trans(1:20))/w
 c      do i=1,20

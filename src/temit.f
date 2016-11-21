@@ -23,6 +23,7 @@ c     Inverse matrix of r
      $     (/6, 7/))
 
       real(8), public :: emx, emy, emz
+      logical*4, public :: normali
 
       end module temw
 
@@ -122,7 +123,7 @@ c     Table of loss-rate
       integer*4 lfni,lfno,ia,it,i,j,k,k1,k2,k3,m,n,iret,l
       real*8 trans(6,12),cod(6),beam(42),emx0,emy0,emz0,dl,
      $     heff,orf,phirf,alphap,omegaz,bh,so,s,
-     $     sr,sqr2,bb,sige,
+     $     sr,sqr2,bb,bbv(21),sige,
      $     emxr,emyr,emzr,xxs,yys,btilt,
      $     sig1,sig2,sigx,sigy,tune,sigz,
      $     emxmin,emymin,emzmin,emxmax,emymax,emzmax,
@@ -324,7 +325,7 @@ c     $          /pi2/abs(hvc0)/vcalpha*pgev/cos(phirf)*p0/h0
       params(14)=dleng
       params(15)=bh
       params(27)=heff
-      call tfetwiss(ri,cod,params(31))
+      call tfetwiss(ri,cod,params(31),.true.)
       if(pri)then
         if(lfno .gt. 0)then
           do i=1,28
@@ -519,21 +520,21 @@ c      call tclr(trans(1,7),36)
         k1=ia(i  ,i  )
         k2=ia(i+1,i+1)
         k3=ia(i  ,i+1)
-        do j=1,21
-          bb=btr(k1,j)
-          btr(k1,j)=( bb+btr(k2,j))*sqr2
-          btr(k2,j)=(-bb+btr(k2,j))*sqr2
-          btr(k3,j)=btr(k3,j)/sqr2
-        enddo
+c        do j=1,21
+          bbv=btr(k1,1:21)
+          btr(k1,1:21)=( bbv+btr(k2,1:21))*sqr2
+          btr(k2,1:21)=(-bbv+btr(k2,1:21))*sqr2
+          btr(k3,1:21)=btr(k3,1:21)/sqr2
+c        enddo
         bb=beam(k1)
         beam(k1)=( bb+beam(k2))*sqr2
         beam(k2)=(-bb+beam(k2))*sqr2
         beam(k3)=beam(k3)/sqr2
         do j=1,21
-          bb=btr(j,k1)
-          btr(j,k1)=( bb+btr(j,k2))*sqr2
-          btr(j,k2)=(-bb+btr(j,k2))*sqr2
-          btr(j,k3)=btr(j,k3)*sqr2
+          bbv=btr(1:21,k1)
+          btr(1:21,k1)=( bbv+btr(1:21,k2))*sqr2
+          btr(1:21,k2)=(-bbv+btr(1:21,k2))*sqr2
+          btr(1:21,k3)=btr(1:21,k3)*sqr2
         enddo
       enddo
       do  i=1,21
@@ -558,10 +559,10 @@ c      call tclr(trans(1,7),36)
         k2=ia(i+1,i+1)
         if(btr(k2,k2) .ne. 0.d0 .and. btr(k1,k1) .ne. 0.d0)then
           ab(i)=sqrt(abs(btr(k1,k1)/btr(k2,k2)))
-          do j=1,21
-            btr(k1,j)=btr(k1,j)/ab(i)
-            btr(k2,j)=btr(k2,j)*ab(i)
-          enddo
+c          do j=1,21
+            btr(k1,1:21)=btr(k1,1:21)/ab(i)
+            btr(k2,1:21)=btr(k2,1:21)*ab(i)
+c          enddo
           beam(k1)=beam(k1)/ab(i)
           beam(k2)=beam(k2)*ab(i)
         else
@@ -729,11 +730,7 @@ c        write(*,*)'temit-7101: ',emit1(6),emit1(27)
         call tmov(btr,r,78)
         if(iamat .eq. 0)then
           if(charge .lt. 0.d0)then
-            do i=1,nlat
-              do j=1,21
-                beamsize(j,i)=-beamsize(j,i)
-              enddo
-            enddo
+            beamsize=-beamsize
           endif
         endif
       endif
@@ -1044,22 +1041,12 @@ c     write(*,*)'temit ',emy,emy1
             emit(ia(5,5))=sigz**2
             emit(ia(5,6))=0.d0
             emit(ia(6,6))=sige**2
-            r(1,5)=0.d0
-            r(2,5)=0.d0
-            r(3,5)=0.d0
-            r(4,5)=0.d0
+            r(1:4,5)=0.d0
             r(5,5)=1.d0
             r(6,5)=0.d0
-            r(6,1)=0.d0
-            r(6,2)=0.d0
-            r(6,3)=0.d0
-            r(6,4)=0.d0
-            r(6,5)=0.d0
+            r(6,1:5)=0.d0
             r(6,6)=1.d0
-            r(5,1)=0.d0
-            r(5,2)=0.d0
-            r(5,3)=0.d0
-            r(5,4)=0.d0
+            r(5,1:4)=0.d0
             r(5,5)=1.d0
             r(5,6)=0.d0
           endif
@@ -1078,10 +1065,10 @@ c     write(*,*)'temit ',emy,emy1
       return
       end
 
-      subroutine tfetwiss(r,cod,twiss)
+      subroutine tfetwiss(r,cod,twiss,normi)
       use ffs
       implicit none
-      real*8 r(6,6),twiss(28),hi(6,6),cod(6)
+      real*8 r(6,6),twiss(ntwissfun),hi(6,6),cod(6)
       real*8 ax,ay,az,axy,f,detm,his(4),
      $     uz11,uz12,uz21,uz22,
      $     hx11,hx12,hx21,hx22,
@@ -1089,7 +1076,7 @@ c     write(*,*)'temit ',emy,emy1
      $     r11,r12,r21,r22,
      $     crx,cry,crz,cx,cy,cz,sx,sy,sz,
      $     bx21,bx22,by21,by22,bz21,bz22
-      logical*4 normal
+      logical*4 normal,normi
       az=sqrt(r(5,5)*r(6,6)-r(6,5)*r(5,6))
       uz11=r(5,5)/az
       uz12=r(5,6)/az
@@ -1176,52 +1163,216 @@ c     write(*,*)'temit ',emy,emy1
       sz=-uz12/crz
       bz21=-sz*uz11+cz*uz21
       bz22=crz
-      twiss(11)=r11
-      twiss(12)=r12
-      twiss(13)=r21
-      twiss(14)=r22
-      if(normal)then
-        twiss(1)= bx21*bx22
-        twiss(2)= bx22**2
-        twiss(3)= atan2(sx,cx)
-        twiss(4)= by21*by22
-        twiss(5)= by22**2
-        twiss(6)= atan2(sy,cy)
-        twiss(7)= axy*hx12-r22*hy12+r12*hy22
-        twiss(8)= axy*hx22+r21*hy12-r11*hy22
-        twiss(9)= axy*hy12+r11*hx12+r12*hx22
-        twiss(10)=axy*hy22+r21*hx12+r22*hx22
-        twiss(15)=r11*r22-r12*r21
-        twiss(25)=axy*hx11-r22*hy11+r12*hy21
-        twiss(26)=axy*hx21+r21*hy11-r11*hy21
-        twiss(27)=axy*hy11+r11*hx11+r12*hx21
-        twiss(28)=axy*hy21+r21*hx11+r22*hx21
-      else
-        twiss(4)= bx21*bx22
-        twiss(5)= bx22**2
-        twiss(6)= atan2(sx,cx)
-        twiss(1)= by21*by22
-        twiss(2)= by22**2
-        twiss(3)= atan2(sy,cy)
-        twiss(9)= axy*hx12-r22*hy12+r12*hy22
-        twiss(10)= axy*hx22+r21*hy12-r11*hy22
-        twiss(7)= axy*hy12+r11*hx12+r12*hx22
-        twiss(8)= axy*hy22+r21*hx12+r22*hx22
-        twiss(15)=1.d0+xyth-r11*r22+r12*r21
-        twiss(27)=axy*hx11-r22*hy11+r12*hy21
-        twiss(28)=axy*hx21+r21*hy11-r11*hy21
-        twiss(25)=axy*hy11+r11*hx11+r12*hx21
-        twiss(26)=axy*hy21+r21*hx11+r22*hx21
+      twiss(mfitr1)=r11
+      twiss(mfitr2)=r12
+      twiss(mfitr3)=r21
+      twiss(mfitr4)=r22
+      if(.not. normi)then
+        normal=.not. normal
       endif
-      twiss(16)=cod(1)
-      twiss(17)=cod(2)
-      twiss(18)=cod(3)
-      twiss(19)=cod(4)
-      twiss(20)=cod(5)
-      twiss(21)=cod(6)
-      twiss(22)=bz21*bz22
-      twiss(23)=bz22**2
-      twiss(24)=atan2(sz,cz)
+      if(normal)then
+        twiss(mfitax)= bx21*bx22
+        twiss(mfitbx)= bx22**2
+        twiss(mfitnx)= atan2(sx,cx)
+        twiss(mfitay)= by21*by22
+        twiss(mfitby)= by22**2
+        twiss(mfitny)= atan2(sy,cy)
+        twiss(mfitex)= axy*hx12-r22*hy12+r12*hy22
+        twiss(mfitepx)= axy*hx22+r21*hy12-r11*hy22
+        twiss(mfitey) = axy*hy12+r11*hx12+r12*hx22
+        twiss(mfitepy)=axy*hy22+r21*hx12+r22*hx22
+        twiss(mfitdetr)=r11*r22-r12*r21
+        twiss(mfitzx) =axy*hx11-r22*hy11+r12*hy21
+        twiss(mfitzpx)=axy*hx21+r21*hy11-r11*hy21
+        twiss(mfitzy) =axy*hy11+r11*hx11+r12*hx21
+        twiss(mfitzpy)=axy*hy21+r21*hx11+r22*hx21
+      else
+        twiss(mfitay)= bx21*bx22
+        twiss(mfitby)= bx22**2
+        twiss(mfitny)= atan2(sx,cx)
+        twiss(mfitax)= by21*by22
+        twiss(mfitbx)= by22**2
+        twiss(mfitnx)= atan2(sy,cy)
+        twiss(mfitey)= axy*hx12-r22*hy12+r12*hy22
+        twiss(mfitepy)= axy*hx22+r21*hy12-r11*hy22
+        twiss(mfitex) = axy*hy12+r11*hx12+r12*hx22
+        twiss(mfitepx)=axy*hy22+r21*hx12+r22*hx22
+        twiss(mfitdetr)=1.d0+xyth-r11*r22+r12*r21
+        twiss(mfitzy) =axy*hx11-r22*hy11+r12*hy21
+        twiss(mfitzpy)=axy*hx21+r21*hy11-r11*hy21
+        twiss(mfitzx) =axy*hy11+r11*hx11+r12*hx21
+        twiss(mfitzpx)=axy*hy21+r21*hx11+r22*hx21
+      endif
+      twiss(mfitdx:mfitddp)=cod
+      twiss(mfitaz)=bz21*bz22
+      twiss(mfitbz)=bz22**2
+      twiss(mfitnz)=atan2(sz,cz)
+      return
+      end
+
+      subroutine etwiss2ri(twiss1,ri,normal)
+      use ffs
+      implicit none
+      real*8 twiss1(ntwissfun),ri(6,6),h(4,6),br(4,4),
+     $     hx11,hx12,hx21,hx22,
+     $     hy11,hy12,hy21,hy22,
+     $     ex,epx,ey,epy,zx,zpx,zy,zpy,
+     $     r1,r2,r3,r4,amu,detr,sqrbx,sqrby,sqrbz,aa,
+     $     ax,ay,az,dethx,dethy,amux,amuy,azz
+      logical*4 normal
+      r1=twiss1(mfitr1)
+      r2=twiss1(mfitr2)
+      r3=twiss1(mfitr3)
+      r4=twiss1(mfitr4)
+      detr=twiss1(mfitdetr)
+      normal=detr .lt. 1.d0
+      if(normal)then
+        amu=sqrt(1.d0-detr)
+        ex =twiss1(mfitex)
+        epx=twiss1(mfitepx)
+        ey =twiss1(mfitey)
+        epy=twiss1(mfitepy)
+        zx =twiss1(mfitzx)
+        zpx=twiss1(mfitzpx)
+        zy =twiss1(mfitzy)
+        zpy=twiss1(mfitzpy)
+        sqrbx=sqrt(twiss1(mfitbx))
+        ax=twiss1(mfitax)
+        sqrby=sqrt(twiss1(mfitby))
+        ay=twiss1(mfitay)
+      else
+        amu=sqrt(1.d0-r1*r4+r2*r3)
+        ey =twiss1(mfitex)
+        epy=twiss1(mfitepx)
+        ex =twiss1(mfitey)
+        epx=twiss1(mfitepy)
+        zy =twiss1(mfitzx)
+        zpy=twiss1(mfitzpx)
+        zx =twiss1(mfitzy)
+        zpx=twiss1(mfitzpy)
+        sqrby=sqrt(twiss1(mfitbx))
+        ay=twiss1(mfitax)
+        sqrbx=sqrt(twiss1(mfitby))
+        ax=twiss1(mfitay)
+      endif
+      hx11=amu*zx -r2*zpy+r4*zy
+      hx12=amu*ex -r2*epy+r4*ey
+      hx21=amu*zpx+r1*zpy-r3*zy
+      hx22=amu*epx+r1*epy-r3*ey
+      hy11=amu*zy -r2*zpx-r1*zx
+      hy12=amu*ey -r2*epx-r1*ex
+      hy21=amu*zpy-r4*zpx-r3*zx
+      hy22=amu*epy-r4*epx-r3*ex
+      dethx=hx11*hx22-hx21*hx12
+      dethy=hy11*hy22-hy21*hy12
+      azz=sqrt(1.d0-dethx-dethy)
+      aa=1.d0/(1.d0+azz)
+      amux=1.d0-dethx*aa
+      amuy=1.d0-dethy*aa
+      h(1,1)=amux
+      h(1,2)=0.d0
+      h(1,3)=( hx12*hy21-hx11*hy22)*aa
+      h(1,4)=(-hx12*hy11+hx11*hy12)*aa
+      h(1,5)=-hx11
+      h(1,6)=-hx12
+      h(2,1)=0.d0
+      h(2,2)=amux
+      h(2,3)=( hx22*hy21-hx21*hy22)*aa
+      h(2,4)=(-hx22*hy11+hx21*hy12)*aa
+      h(2,5)=-hx21
+      h(2,6)=-hx22
+      h(3,1)= h(2,4)
+      h(3,2)=-h(1,4)
+      h(3,3)=amuy
+      h(3,4)=0.d0
+      h(3,5)=-hy11
+      h(3,6)=-hy12
+      h(4,1)=-h(2,3)
+      h(4,2)=h(1,3)
+      h(4,3)=0.d0
+      h(4,4)=amuy
+      h(4,5)=-hy21
+      h(4,6)=-hy22
+      ri(5,1)= hx22
+      ri(5,2)=-hx12
+      ri(5,3)= hy22
+      ri(5,4)=-hy12
+      ri(5,5)=azz
+      ri(5,6)=0.d0
+      ri(6,1)=-hx21
+      ri(6,2)= hx11
+      ri(6,3)=-hy21
+      ri(6,4)= hy11
+      ri(6,5)=0.d0
+      ri(6,6)=azz
+      sqrbz=sqrt(twiss1(mfitbz))
+      az=twiss1(mfitaz)
+      br(1,1)= amu/sqrbx
+      br(1,2)=0.d0
+      br(1,3)=-r4/sqrbx
+      br(1,4)= r2/sqrbx
+      br(2,1)= amu*ax/sqrbx
+      br(2,2)= amu*sqrbx
+      br(2,3)= r3*sqrbx-r4*ax/sqrbx
+      br(2,4)= r2*ax/sqrbx-r1*sqrbx
+      br(3,1)= r1/sqrby
+      br(3,2)= r2/sqrby
+      br(3,3)= amu/sqrby
+      br(3,4)=0.d0
+      br(4,1)= r1*ay/sqrby+r3*sqrby
+      br(4,2)= r2*ay/sqrby+r4*sqrby
+      br(4,3)= amu*ay/sqrby
+      br(4,4)= amu*sqrby
+      ri(1,1)=br(1,1)*h(1,1)+br(1,2)*h(2,1)
+     $       +br(1,3)*h(3,1)+br(1,4)*h(4,1)
+      ri(1,2)=br(1,1)*h(1,2)+br(1,2)*h(2,2)
+     $       +br(1,3)*h(3,2)+br(1,4)*h(4,2)
+      ri(1,3)=br(1,1)*h(1,3)+br(1,2)*h(2,3)
+     $       +br(1,3)*h(3,3)+br(1,4)*h(4,3)
+      ri(1,4)=br(1,1)*h(1,4)+br(1,2)*h(2,4)
+     $       +br(1,3)*h(3,4)+br(1,4)*h(4,4)
+      ri(1,5)=br(1,1)*h(1,5)+br(1,2)*h(2,5)
+     $       +br(1,3)*h(3,5)+br(1,4)*h(4,5)
+      ri(1,6)=br(1,1)*h(1,6)+br(1,2)*h(2,6)
+     $       +br(1,3)*h(3,6)+br(1,4)*h(4,6)
+      ri(2,1)=br(2,1)*h(1,1)+br(2,2)*h(2,1)
+     $       +br(2,3)*h(3,1)+br(2,4)*h(4,1)
+      ri(2,2)=br(2,1)*h(1,2)+br(2,2)*h(2,2)
+     $       +br(2,3)*h(3,2)+br(2,4)*h(4,2)
+      ri(2,3)=br(2,1)*h(1,3)+br(2,2)*h(2,3)
+     $       +br(2,3)*h(3,3)+br(2,4)*h(4,3)
+      ri(2,4)=br(2,1)*h(1,4)+br(2,2)*h(2,4)
+     $       +br(2,3)*h(3,4)+br(2,4)*h(4,4)
+      ri(2,5)=br(2,1)*h(1,5)+br(2,2)*h(2,5)
+     $       +br(2,3)*h(3,5)+br(2,4)*h(4,5)
+      ri(2,6)=br(2,1)*h(1,6)+br(2,2)*h(2,6)
+     $       +br(2,3)*h(3,6)+br(2,4)*h(4,6)
+      ri(3,1)=br(3,1)*h(1,1)+br(3,2)*h(2,1)
+     $       +br(3,3)*h(3,1)+br(3,4)*h(4,1)
+      ri(3,2)=br(3,1)*h(1,2)+br(3,2)*h(2,2)
+     $       +br(3,3)*h(3,2)+br(3,4)*h(4,2)
+      ri(3,3)=br(3,1)*h(1,3)+br(3,2)*h(2,3)
+     $       +br(3,3)*h(3,3)+br(3,4)*h(4,3)
+      ri(3,4)=br(3,1)*h(1,4)+br(3,2)*h(2,4)
+     $       +br(3,3)*h(3,4)+br(3,4)*h(4,4)
+      ri(3,5)=br(3,1)*h(1,5)+br(3,2)*h(2,5)
+     $       +br(3,3)*h(3,5)+br(3,4)*h(4,5)
+      ri(3,6)=br(3,1)*h(1,6)+br(3,2)*h(2,6)
+     $       +br(3,3)*h(3,6)+br(3,4)*h(4,6)
+      ri(4,1)=br(4,1)*h(1,1)+br(4,2)*h(2,1)
+     $       +br(4,3)*h(3,1)+br(4,4)*h(4,1)
+      ri(4,2)=br(4,1)*h(1,2)+br(4,2)*h(2,2)
+     $       +br(4,3)*h(3,2)+br(4,4)*h(4,2)
+      ri(4,3)=br(4,1)*h(1,3)+br(4,2)*h(2,3)
+     $       +br(4,3)*h(3,3)+br(4,4)*h(4,3)
+      ri(4,4)=br(4,1)*h(1,4)+br(4,2)*h(2,4)
+     $       +br(4,3)*h(3,4)+br(4,4)*h(4,4)
+      ri(4,5)=br(4,1)*h(1,5)+br(4,2)*h(2,5)
+     $       +br(4,3)*h(3,5)+br(4,4)*h(4,5)
+      ri(4,6)=br(4,1)*h(1,6)+br(4,2)*h(2,6)
+     $       +br(4,3)*h(3,6)+br(4,4)*h(4,6)
+      ri(5,1:6)=ri(5,1:6)/sqrbz
+      ri(6,1:6)=ri(6,1:6)*sqrbz+ri(5,1:6)*az
       return
       end
 

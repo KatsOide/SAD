@@ -1,5 +1,5 @@
       subroutine tsole(trans,cod,beam,k,ke,sol,
-     1     iatr,iacod,iabmi,plot,rt)
+     1     iatr,iacod,iabmi,idp,plot,rt)
       use tfstk
       use tffitcode
       use ffs, only:gettwiss
@@ -11,7 +11,7 @@
       real*8 conv
       parameter (conv=3.d-16)
       integer*8 iatr,iacod,iabmi,iatrl,iacodl,iabmilz
-      integer*4 k,ke,i,l
+      integer*4 k,ke,i,l,idp
       real*8 trans(6,12),cod(6),beam(42),bmir(6,6),rtaper
       real*8 r
       logical*4 sol,plot,rt
@@ -52,14 +52,15 @@
             endif
           endif
           if(codplt)then
-            r=gammab(l)/gammab(l+1)
-            twiss(l+1,0,mfitdx )=cod(1)
-            twiss(l+1,0,mfitdpx)=cod(2)*r
-            twiss(l+1,0,mfitdy )=cod(3)
-            twiss(l+1,0,mfitdpy)=cod(4)*r
-            twiss(l+1,0,mfitdz )=cod(5)
-            twiss(l+1,0,mfitddp)=cod(6)*r
-            beamsize(:,l+1)=beam
+            if(l .eq. 1)then
+              r=1.d0
+            else
+              r=gammab(l)/gammab(l+1)
+            endif
+            call tsetetwiss(trans,cod,beam,0,l+1,idp,r)
+            if(irad .gt. 6)then
+              beamsize(:,l+1)=beam
+            endif
           endif
           if(calint .and. iabmi .ne. 0)then
             if(iabmilz .eq. 0)then

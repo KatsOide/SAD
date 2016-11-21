@@ -34,7 +34,7 @@ c
       real*8 a(ndim,m),b(n),x(m),epslon
       real*8 v(0:nmax),anorm,enorm
       real*8 aa,f,g,s,r,w,u,h,xmin,z,vv,d,c,p,bb,y,an
-      real*8 q,h1,h2,t,r1,r2,ra
+      real*8 q,h1,h2,t,r1,r2,ra,aam(m),bbm(n)
       integer*4 lsep(0:nmax),i,j,k,kkk,nfail,
      $     mn,it,isep,ibegin,iend,ma,i1,i1mn
       logical*4 svd
@@ -60,10 +60,10 @@ c     end   initialize for preventing compiler warning
               q=v(j)*p/h1
               v(j)=v(i)*v(j)/h1
               v(i)=h1
-              do 5120 k=i1,m
-                a(j,k)=a(j,k)-p*a(i,k)
-                a(i,k)=a(i,k)+q*a(j,k)
- 5120         continue
+c              do 5120 k=i1,m
+                a(j,i1:m)=a(j,i1:m)-p*a(i,i1:m)
+                a(i,i1:m)=a(i,i1:m)+q*a(j,i1:m)
+c 5120         continue
               a(j,i)=0.d0
               b(j)=b(j)-p*b(i)
               b(i)=b(i)+q*b(j)
@@ -73,11 +73,11 @@ c     end   initialize for preventing compiler warning
               q=v(i)*p/h1
               v(j)=v(i)*v(j)/h1
               v(i)=h1
-              do 5130 k=i1,m
-                aa=a(j,k)
-                a(j,k)=p*aa-a(i,k)
-                a(i,k)=aa-q*a(j,k)
- 5130         continue
+c              do 5130 k=i1,m
+                aam(i1:m)=a(j,i1:m)
+                a(j,i1:m)=p*aam(i1:m)-a(i,i1:m)
+                a(i,i1:m)=aam(i1:m)-q*a(j,i1:m)
+c 5130         continue
               a(i,i)=a(j,i)
               a(j,i)=0.d0
               bb=b(j)
@@ -102,10 +102,10 @@ c     end   initialize for preventing compiler warning
                 q=s*x(j )/h1
                 x(i1)=h1
                 x(j )=h2
-                do 5220 k=i1,n
-                  a(k,j )=a(k,j )-p*a(k,i1)
-                  a(k,i1)=a(k,i1)+q*a(k,j )
- 5220           continue
+c                do 5220 k=i1,n
+                  a(i1:n,j )=a(i1:n,j )-p*a(i1:n,i1)
+                  a(i1:n,i1)=a(i1:n,i1)+q*a(i1:n,j )
+c 5220           continue
               else
                 a(i,i1)=a(i,j)
                 a(i,j)=0.d0
@@ -115,11 +115,11 @@ c     end   initialize for preventing compiler warning
                 q=c*x(i1)/h1
                 x(i1)=h1
                 x(j )=h2
-                do 5221 k=i1,n
-                  aa=a(k,j)
-                  a(k,j )=p*aa-a(k,i1)
-                  a(k,i1)=aa-q*a(k,j )
- 5221           continue
+c                do 5221 k=i1,n
+                  bbm(i1:n)=a(i1:n,j)
+                  a(i1:n,j )=p*bbm(i1:n)-a(i1:n,i1)
+                  a(i1:n,i1)=bbm(i1:n)-q*a(i1:n,j )
+c 5221           continue
               endif
             else
               c=1.d0
@@ -345,9 +345,9 @@ c            an=max(abs(x(i)),abs(x(i+1)))
  1610         continue
               do 1710 i=iend,ibegin+1,-1
                 p=v(i+mn)*v(i-1)/v(i-1+mn)/x(i)
-                do 1730 j=1,m
-                  a(i-1,j)=a(i-1,j)-p*a(i,j)
- 1730           continue
+c                do 1730 j=1,m
+                  a(i-1,1:m)=a(i-1,1:m)-p*a(i,1:m)
+c 1730           continue
                 b(i-1)=b(i-1)-p*b(i)
                 v(i-1)=0.d0
  1710         continue
@@ -416,10 +416,10 @@ c            an=max(abs(x(i)),abs(x(i+1)))
                 t=s*v(i1+mn)/h1
                 v(i+mn)=h1
                 v(i1+mn)=h2
-                do 1150 k=1,m
-                  a(i1,k)=a(i1,k)-r*a(i ,k)
-                  a(i ,k)=a(i ,k)+t*a(i1,k)
- 1150           continue
+c                do 1150 k=1,m
+                  a(i1,1:m)=a(i1,1:m)-r*a(i ,1:m)
+                  a(i ,1:m)=a(i ,1:m)+t*a(i1,1:m)
+c 1150           continue
                 b(i1)=b(i1)-r*b(i)
                 b(i )=b(i )+t*b(i1)
               else
@@ -429,11 +429,11 @@ c            an=max(abs(x(i)),abs(x(i+1)))
                 t=c*v(i+mn)/h1
                 v(i+mn)=h1
                 v(i1+mn)=h2
-                do 1151 k=1,m
-                  aa=a(i1,k)
-                  a(i1,k)=r*aa-a(i ,k)
-                  a(i ,k)=aa-t*a(i1,k)
- 1151           continue
+c                do 1151 k=1,m
+                  aam(1:m)=a(i1,1:m)
+                  a(i1,1:m)=r*aam(1:m)-a(i ,1:m)
+                  a(i ,1:m)=aam(1:m)-t*a(i1,1:m)
+c 1151           continue
                 bb=b(i1)
                 b(i1)=r*bb-b(i)
                 b(i )=bb-t*b(i1)
@@ -471,9 +471,9 @@ c 3010 continue
           endif
           v(i)=w/v(i+mn)
           b(i)=b(i)*w
-          do j=1,m
-            a(i,j)=a(i,j)*w
-          enddo
+c          do j=1,m
+            a(i,1:m)=a(i,1:m)*w
+c          enddo
         enddo
         do i=1,m
           s=a(1,i)*b(1)

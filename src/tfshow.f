@@ -206,12 +206,12 @@
           kax3i=ktavaloc(0,3)
           klist(kax3+i-mf+1)=ktflist+kax3i
           rlist(kax3i+1)=residual(i)
-          if(hstab(i))then
+          if(optstat(i)%stabx)then
             rlist(kax3i+2)=1.d0
           else
             rlist(kax3i+2)=0.d0
           endif
-          if(vstab(i))then
+          if(optstat(i)%staby)then
             rlist(kax3i+3)=1.d0
           else
             rlist(kax3i+3)=0.d0

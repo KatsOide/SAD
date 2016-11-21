@@ -823,6 +823,7 @@ c          call tfdebugprint(kx,'==>',1)
       character string(nc)
       istart=1
       levele=levele+1
+c      write(*,*)'tfevalb ',string
       call tfeval(string,nc,istart,istop,kx,.false.,irtc)
       call tfconnect(kx,irtc)
       return

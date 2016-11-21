@@ -764,28 +764,29 @@ c     $               'qtwiss-coup-n  ',r1,r2,r3,r4,r1*r4-r2*r3,detp
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 la,lb,la1,lb1
-      real*8 trans(4,5),cod(6),fra,frb
+      type (ffs_bound) fbound
+      integer*4 la,lb
+      real*8 trans(4,5),cod(6)
       logical*4 over
-      call tffsbound1(la,lb,la1,fra,lb1,frb)
+      call tffsbound1(la,lb,fbound)
 c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       cod(5)=0.d0
-      call qcod(1,la1,fra,lb1,frb,trans,cod,.true.,over)
+      call qcod(1,fbound,trans,cod,.true.,over)
       return
       end
 
-      subroutine qcod(idp,la,fra,lb,frb,
-     $     trans,cod0,codfnd,over)
+      subroutine qcod(idp,fbound,trans,cod0,codfnd,over)
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
       implicit none
+      type (ffs_bound) fbound
       real*8 conv,cx,bx,cy,by,r0
       integer*4 itmax
       parameter (conv=1.d-20,itmax=15)
-      integer*4 idp,la,lb,it,i
-      real*8 fra,frb,r
+      integer*4 idp,it
+      real*8 r
       real*8 trans(4,5),cod(6),cod0(6),trans1(4,5),transb(4,5),
      $     transe(4,5),ftwiss(ntwissfun),trans2(4,5),cod00(6)
       logical*4 over,codfnd
@@ -794,39 +795,47 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       cod00=cod0
       do while(it .le. itmax)
         cod=cod0
-        if(fra .gt. 0.d0)then
+        if(fbound%fb .gt. 0.d0)then
           call qtwissfrac1(ftwiss,transb,cod,idp,
-     $         la,fra,1.d0,.true.,.true.,over)
-          call qtwiss1(rlist(iftwis),idp,la+1,lb,
+     $         fbound%lb,fbound%fb,1.d0,.true.,.true.,over)
+          call qtwiss1(rlist(iftwis),idp,fbound%lb+1,fbound%le,
      $         trans1,cod,.true.,over)
-          do i=1,5
-            trans2(1,i)=trans1(1,1)*transb(1,i)+trans1(1,2)*transb(2,i)
-     $                 +trans1(1,3)*transb(3,i)+trans1(1,4)*transb(4,i)
-            trans2(2,i)=trans1(2,1)*transb(1,i)+trans1(2,2)*transb(2,i)
-     $                 +trans1(2,3)*transb(3,i)+trans1(2,4)*transb(4,i)
-            trans2(3,i)=trans1(3,1)*transb(1,i)+trans1(3,2)*transb(2,i)
-     $                 +trans1(3,3)*transb(3,i)+trans1(3,4)*transb(4,i)
-            trans2(4,i)=trans1(4,1)*transb(1,i)+trans1(4,2)*transb(2,i)
-     $                 +trans1(4,3)*transb(3,i)+trans1(4,4)*transb(4,i)
-          enddo
+c          do i=1,5
+            trans2(1,1:5)=
+     $         trans1(1,1)*transb(1,1:5)+trans1(1,2)*transb(2,1:5)
+     $        +trans1(1,3)*transb(3,1:5)+trans1(1,4)*transb(4,1:5)
+            trans2(2,1:5)=
+     $         trans1(2,1)*transb(1,1:5)+trans1(2,2)*transb(2,1:5)
+     $        +trans1(2,3)*transb(3,1:5)+trans1(2,4)*transb(4,1:5)
+            trans2(3,1:5)=
+     $         trans1(3,1)*transb(1,1:5)+trans1(3,2)*transb(2,1:5)
+     $        +trans1(3,3)*transb(3,1:5)+trans1(3,4)*transb(4,1:5)
+            trans2(4,1:5)=
+     $         trans1(4,1)*transb(1,1:5)+trans1(4,2)*transb(2,1:5)
+     $        +trans1(4,3)*transb(3,1:5)+trans1(4,4)*transb(4,1:5)
+c          enddo
           trans2(:,5)=trans2(:,5)+trans1(:,5)
         else
-          call qtwiss1(rlist(iftwis),idp,la,lb,
+          call qtwiss1(rlist(iftwis),idp,fbound%lb,fbound%le,
      $         trans2,cod,.true.,over)
         endif
-        if(frb .gt. 0.d0)then
+        if(fbound%fe .gt. 0.d0)then
           call qtwissfrac1(ftwiss,transe,cod,idp,
-     $         lb,0.d0,frb,.true.,.true.,over)
-          do i=1,5
-            trans(1,i)=transe(1,1)*trans2(1,i)+transe(1,2)*trans2(2,i)
-     $                +transe(1,3)*trans2(3,i)+transe(1,4)*trans2(4,i)
-            trans(2,i)=transe(2,1)*trans2(1,i)+transe(2,2)*trans2(2,i)
-     $                +transe(2,3)*trans2(3,i)+transe(2,4)*trans2(4,i)
-            trans(3,i)=transe(3,1)*trans2(1,i)+transe(3,2)*trans2(2,i)
-     $                +transe(3,3)*trans2(3,i)+transe(3,4)*trans2(4,i)
-            trans(4,i)=transe(4,1)*trans2(1,i)+transe(4,2)*trans2(2,i)
-     $                +transe(4,3)*trans2(3,i)+transe(4,4)*trans2(4,i)
-          enddo
+     $         fbound%le,0.d0,fbound%fe,.true.,.true.,over)
+c          do i=1,5
+            trans(1,1:5)=
+     $           transe(1,1)*trans2(1,1:5)+transe(1,2)*trans2(2,1:5)
+     $          +transe(1,3)*trans2(3,1:5)+transe(1,4)*trans2(4,1:5)
+            trans(2,1:5)=
+     $           transe(2,1)*trans2(1,1:5)+transe(2,2)*trans2(2,1:5)
+     $          +transe(2,3)*trans2(3,1:5)+transe(2,4)*trans2(4,1:5)
+            trans(3,1:5)=
+     $           transe(3,1)*trans2(1,1:5)+transe(3,2)*trans2(2,1:5)
+     $          +transe(3,3)*trans2(3,1:5)+transe(3,4)*trans2(4,1:5)
+            trans(4,1:5)=
+     $           transe(4,1)*trans2(1,1:5)+transe(4,2)*trans2(2,1:5)
+     $          +transe(4,3)*trans2(3,1:5)+transe(4,4)*trans2(4,1:5)
+c          enddo
           trans(:,5)=trans(:,5)+transe(:,5)
         else
           trans=trans2
@@ -884,11 +893,40 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 l
-      real*8 fr,ftwiss(ntwissfun),trans(4,5),cod(6)
-      logical*4 over
-      call qtwissfrac1(ftwiss,trans,cod,
-     $     0,l,0.d0,fr,.false.,.false.,over)
+      integer*4 l,nvar
+      real*8 fr,ftwiss(ntwissfun),trans(6,6),cod(6),
+     $     vsave(kwMAX),tw1(ntwissfun),ri(6,6),beam(21)
+      logical*4 over,sol,rt,chg,cp0,normal
+      if(calc6d)then
+        cp0=codplt
+        codplt=.false.
+        rt=radtaper
+        sol=.false.
+        irad=6
+        call qfracsave(l,vsave,nvar,.true.)
+        call qfraccomp(l,0.d0,fr,ideal,chg)
+        tw1=twiss(l,0,1:ntwissfun)
+        cod=tw1(mfitdx:mfitddp)
+        call etwiss2ri(tw1,ri,normal)
+        call tinv6(ri,trans)
+        call tturne1(trans,cod,beam,
+     $     int8(0),int8(0),int8(0),0,
+     $       .false.,sol,rt,l,l)
+        if(chg)then
+          call qfracsave(l,vsave,nvar,.false.)
+        endif
+        call tinv6(trans,ri)
+        call tfetwiss(ri,cod,ftwiss,normal)
+        ftwiss(mfitnx)=ftwiss(mfitnx)+twiss(l,0,mfitnx)
+        ftwiss(mfitny)=ftwiss(mfitny)+twiss(l,0,mfitny)
+        ftwiss(mfitnz)=ftwiss(mfitnz)+twiss(l,0,mfitnz)
+c        write(*,'(a,i5,1p7g14.6)')'qtwissfrac ',l,fr,ftwiss(1:mfitny)
+        over=.false.
+        codplt=cp0
+      else
+        call qtwissfrac1(ftwiss,trans,cod,
+     $       0,l,0.d0,fr,.false.,.false.,over)
+      endif
       return
       end
 
@@ -900,7 +938,7 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       use tffitcode
       implicit none
       integer*4 idp,l,i,nvar
-      real*8 vsave(100),twisss(27),ftwiss(ntwissfun),
+      real*8 vsave(100),twisss(ntwissfun),ftwiss(ntwissfun),
      $     trans(4,5),cod(6),fr1,fr2,gb0,gb1,dgb
       logical*4 over,chg,mat,force
       call qfracsave(l,vsave,nvar,.true.)

@@ -118,7 +118,6 @@ c
           convgo=.false.
           trsize=.false.
           cellstab=.true.
-          canon=.true.
           simulate=.true.
           absweit=.true.
           jitter=.true.
@@ -1419,13 +1418,13 @@ c      write(*,*)'tffsa-2 ',flv%iut,%LOC(rlist(flv%iut)),busy
       if(cell)then
         str=' '
         do i=nfam1,nfam
-          if(.not. hstab(i))then
+          if(.not. optstat(i)%stabx)then
             str='Horizontal'
             exit
           endif
         enddo
         do i=nfam1,nfam
-          if(.not. vstab(i))then
+          if(.not. optstat(i)%staby)then
             if(str(1:1) .ne. ' ')then
               str='Horizontal/Vertical'
             else

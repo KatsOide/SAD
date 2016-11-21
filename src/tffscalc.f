@@ -3,7 +3,7 @@
      $     r,rp,rstab,nstab,residual1,
      $     zcal,wcal,parallel,lout,error)
       use tfstk
-      use ffs, only:ndim,nlat,flv,maxcond
+      use ffs, only:ndim,nlat,flv,maxcond,ffs_bound
       use ffs_flag
       use ffs_pointer
       use ffs_fit
@@ -14,18 +14,19 @@
       use macmath
       implicit none
 c      include 'DEBUG.inc'
+      type (ffs_bound) fbound,ibound
       integer*8 kx
-      integer*4 ibegin,nqcola,lfno,lbegin,lend,irtc
+      integer*4 ibegin,nqcola,lfno,irtc
       integer*4 i1,i2,i3,i,ii,j,iter,kt,iq,l,maxf,
      $     nqcola1,ie,ie1,iv,nstab,lout
       integer*4 kdp(maxcond),iqcol(maxcond),lfp(2,maxcond)
       real*8 df(maxcond),r,rp,wi,
-     $     frbegin,frend,residual1(-ndimmax:ndimmax)
+     $     residual1(-ndimmax:ndimmax)
       logical*4 zcal,wcal,error,parallel
       real*8 anux0,anuy0,anux0h,anuy0h,anuxi,anuyi,anuxih,anuyih,
      $     rw,drw,rstab,
      $     anusumi,anusum0,anudiffi,anudiff0,physd(4)
-      logical*4 fam,over(-nfam:nfam),beg,zerores
+      logical*4 fam,beg,zerores
       integer*4 irw,isw,ipr,ifb,ife,idir,
      $     jjfam(-nfam:nfam),ivoid,ifpe,ntfun
       integer*4, external :: fork_worker,wait,itfdownlevel,itfuplevel,
@@ -72,21 +73,22 @@ c     end   initialize for preventing compiler warning
       if(zcal)then
         call tfgeo(latt,geomet .or. .not. fitflg)
       endif
-      call tffsbound(lbegin,frbegin,lend,frend)
-      over(nfam1:nfam)=.false.
-      hstab(nfam1:nfam)=.true.
-      vstab(nfam1:nfam)=.true.
+      call tffsbound(fbound)
+      optstat(nfam1:nfam)%over=.false.
+      optstat(nfam1:nfam)%stabx=.true.
+      optstat(nfam1:nfam)%staby=.true.
+      optstat(nfam1:nfam)%stabz=.true.
       jjfam(nfam1:nfam)=ivoid
-      if(orbitcal)then
+      if(orbitcal .or. calc6d)then
         ntfun=ntwissfun
       else
         ntfun=mfitdetr
       endif
-      beg=ibegin .gt. lbegin
+      beg=ibegin .gt. fbound%lb
       if(beg)then
         twiss(ibegin,0,1:ntfun)
      $       =utwiss(1:ntfun,0,itwissp(ibegin))
-        frbegin=0.d0
+        fbound%fb=0.d0
       else
         call twmov(1,twiss,nlat,ndim,.true.)
         twiss(1,0,mfitnx)=0.d0
@@ -94,19 +96,18 @@ c     end   initialize for preventing compiler warning
         if(orbitcal)then
           twiss(1,0,mfitddp)=twiss(1,0,mfitddp)+dp(0)
         endif
-        if(lbegin .gt. 1)then
-          twiss(lbegin,0,1:ntfun)=twiss(1,0,1:ntfun)
+        if(fbound%lb .gt. 1)then
+          twiss(fbound%lb,0,1:ntfun)=twiss(1,0,1:ntfun)
         endif
-        ibegin=lbegin
+        ibegin=fbound%lb
       endif
+      ibound=fbound
+      ibound%lb=ibegin
       if(wake)then
-        call tffswake(ibegin,frbegin,lend,frend,over,beg)
+        call tffswake(ibound,beg)
       else
-        call qcell1(ibegin,frbegin,lend,frend,0,
-     1       hstab(0),vstab(0),tracex(0),tracey(0),.false.,over(0),
-     $       chgini,lout)
-        call tffssetutwiss(0,nlat,
-     $       lbegin,lend,frend,beg,.true.,.true.)
+        call qcell1(ibound,0,optstat(0),.false.,chgini,lout)
+        call tffssetutwiss(0,nlat,fbound,beg,.true.,.true.)
         if(cell)then
           anux0=aint(twiss(nlat,0,mfitnx)/pi2)
           anuy0=aint(twiss(nlat,0,mfitny)/pi2)
@@ -117,7 +118,8 @@ c     end   initialize for preventing compiler warning
      $         aint(twiss(nlat,0,mfitnx)/pi2)-
      $         twiss(nlat,0,mfitny)/pi2+
      $         aint(twiss(nlat,0,mfitny)/pi2)
-          if(hstab(0) .and. vstab(0) .or. chgini)then
+          if(optstat(0)%stabx .and. optstat(0)%staby
+     $         .and. optstat(0)%stabz .or. chgini)then
             call twmov(1,twiss,nlat,ndim,.false.)
           endif
         endif
@@ -163,14 +165,16 @@ c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
               i2=i1
               i1=ii
             endif
-            if(over(i2))then
+            if(optstat(i2)%over)then
               utwiss(1,ii,1:nut)=utwiss(1,i2,1:nut)
               utwiss(mfitddp,ii,1:nut)=utwiss(mfitddp,ii,1:nut)+dp(ii)
-              over(ii)=.true.
-              hstab(ii)=.false.
-              vstab(ii)=.false.
-              tracex(ii)=tracex(i2)
-              tracey(ii)=tracey(i2)
+              optstat(ii)%over=.true.
+              optstat(ii)%stabx=.false.
+              optstat(ii)%staby=.false.
+              optstat(ii)%stabz=.false.
+              optstat(ii)%tracex=optstat(i2)%tracex
+              optstat(ii)%tracey=optstat(i2)%tracey
+              optstat(ii)%tracez=optstat(i2)%tracez
             else
               if(beg)then
                 twiss(ibegin,1,1:ntfun)
@@ -209,15 +213,12 @@ c                    endif
                 endif
                 twiss(1,1,mfitnx)=0.d0
                 twiss(1,1,mfitny)=0.d0
-                if(lbegin .gt. 1)then
-                  twiss(lbegin,1,1:ntfun)=twiss(1,1,1:ntfun)
+                if(fbound%lb .gt. 1)then
+                  twiss(fbound%lb,1,1:ntfun)=twiss(1,1,1:ntfun)
                 endif
               endif
-              call qcell1(ibegin,frbegin,lend,frend,
-     $             1,hstab(ii),vstab(ii),tracex(ii),tracey(ii),
-     $             fam,over(ii),chgini,lout)
-              call tffssetutwiss(ii,nlat,
-     $             lbegin,lend,frend,beg,.true.,.true.)
+              call qcell1(ibound,1,optstat(ii),fam,chgini,lout)
+              call tffssetutwiss(ii,nlat,fbound,beg,.true.,.true.)
             endif
             if(cell)then
               anuxih=aint(twiss(nlat,1,mfitnx)/pi)
@@ -230,12 +231,12 @@ c                    endif
      $             aint(twiss(nlat,1,mfitnx)/pi2)-
      $             twiss(nlat,1,mfitny)/pi2+
      $             aint(twiss(nlat,1,mfitny)/pi2)
-              hstab(ii)=hstab(ii) .and. (fam .or.
+              optstat(ii)%stabx=optstat(ii)%stabx .and. (fam .or.
      $             (.not. intres .or. anuxi .eq. anux0) .and.
      $             (.not. halfres .or. anuxih .eq. anux0h) .and.
      $             (.not. sumres .or. anusumi .eq. anusum0) .and.
      $             (.not. diffres .or. anudiffi .eq. anudiff0))
-              vstab(ii)=vstab(ii) .and. (fam .or.
+              optstat(ii)%staby=optstat(ii)%staby .and. (fam .or.
      $             (.not. intres .or. anuyi .eq. anuy0) .and.
      $             (.not. halfres .or. anuyih .eq. anuy0h) .and.
      $             (.not. sumres .or. anusumi .eq. anusum0) .and.
@@ -268,10 +269,10 @@ c                    endif
               if(i .gt. 0 .and. i .le. nfr .or.
      $             kfam(i) .ne. 0 .and. jfam(i) .ge. 0)then
                 jb=iutm+(i+nfam)*4
-                call tmovi(rlist(jb+1),hstab(i),1)
-                call tmovi(rlist(jb+2),vstab(i),1)
-                tracex(i)=rlist(jb+3)
-                tracey(i)=rlist(jb+4)
+                call tmovi(rlist(jb+1),optstat(i)%stabx,1)
+                call tmovi(rlist(jb+2),optstat(i)%staby,1)
+                optstat(i)%tracex=rlist(jb+3)
+                optstat(i)%tracey=rlist(jb+4)
 c                write(*,*)'tffscalc1 ',i,jb,tracex(i),rlist(jb+3)
               endif
             enddo
@@ -280,10 +281,10 @@ c                write(*,*)'tffscalc1 ',i,jb,tracex(i),rlist(jb+3)
               if(i .gt. 0 .and. i .le. nfr .or.
      $             kfam(i) .ne. 0 .and. jfam(i) .ge. 0)then
                 jb=iutm+(i+nfam)*4
-                call tmovi(hstab(i),rlist(jb+1),1)
-                call tmovi(vstab(i),rlist(jb+2),1)
-                rlist(jb+3)=tracex(i)
-                rlist(jb+4)=tracey(i)
+                call tmovi(optstat(i)%stabx,rlist(jb+1),1)
+                call tmovi(optstat(i)%staby,rlist(jb+2),1)
+                rlist(jb+3)=optstat(i)%tracex
+                rlist(jb+4)=optstat(i)%tracey
 c                write(*,*)'tffscalc2 ',i,jb,tracex(i),rlist(jb+3)
               endif
             enddo
@@ -348,18 +349,18 @@ c            endif
         endif
 1023    etamax=1.d-2
         if(cell)then
-          maxf=lend
+          maxf=fbound%le
         else
-          maxf=lbegin
+          maxf=fbound%lb
           do i=1,nfcol
             maxf=max(maxf,
      $           flv%ifitp(flv%kfitp(i)),flv%ifitp1(flv%kfitp(i)))
           enddo
           if(pos(maxf) .le. pos(1))then
-            maxf=lend
+            maxf=fbound%le
           endif
         endif
-        do l=lbegin,maxf
+        do l=fbound%lb,maxf
           etamax=max(abs(twiss(l,0,mfitex)),
      $         abs(twiss(l,0,mfitey)),etamax)
         enddo
@@ -408,13 +409,13 @@ c            endif
         do i=nfam1,nfam
           if(residual1(i) .ne. 0.d0)then
             zerores=.false.
-            if(.not. hstab(i))then
+            if(.not. optstat(i)%stabx)then
               nstab=nstab+1
               residual1(i)=residual1(i)+rstab
               r=r+rstab
               cellstab=.false.
             endif
-            if(.not. vstab(i))then
+            if(.not. optstat(i)%staby)then
               nstab=nstab+1
               residual1(i)=residual1(i)+rstab
               r=r+rstab
@@ -424,12 +425,13 @@ c            endif
         enddo
         if(zerores)then
           do i=nfam1,nfam
-            cellstab=cellstab .and. hstab(i) .and. vstab(i)
+            cellstab=cellstab .and.
+     $           optstat(i)%stabx .and. optstat(i)%staby
           enddo
         endif
       else
         do i=nfam1,nfam
-          if(.not. hstab(i))then
+          if(.not. optstat(i)%stabx)then
             nstab=nstab+2
             residual1(i)=residual1(i)+20.d0
           endif
@@ -590,81 +592,81 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
       return
       end
 
-      subroutine tffsbound(lbegin,frbegin,lend,frend)
+      subroutine tffsbound(fbound)
       use tfstk
-      use ffs, only:nlat
+      use ffs, only:nlat,ffs_bound
       use ffs_pointer
       use mackw
       implicit none
-      integer*4 lbegin,lend
-      real*8 frbegin,frend,xnlat,offset,tffsmarkoffset
+      type (ffs_bound) fbound
+      real*8 xnlat,offset,tffsmarkoffset
       xnlat=nlat
       if(idtypec(1) .eq. icMARK)then
         offset=max(1.d0,min(xnlat,1.d0+tffsmarkoffset(1)))
-        lbegin=int(offset)
-        frbegin=offset-lbegin
+        fbound%lb=int(offset)
+        fbound%fb=offset-fbound%lb
       else
-        lbegin=1
-        frbegin=0.d0
+        fbound%lb=1
+        fbound%fb=0.d0
       endif
       if(idtypec(nlat-1) .eq. icMARK)then
         offset=tffsmarkoffset(nlat-1)
         if(offset .ne. 0.d0)then
-          offset=max(dble(lbegin+1),min(xnlat,xnlat-1.d0+offset))
-          lend=int(offset)
-          frend=offset-lend
+          offset=max(dble(fbound%lb+1),min(xnlat,xnlat-1.d0+offset))
+          fbound%le=int(offset)
+          fbound%fe=offset-fbound%le
         else
-          lend=nlat
-          frend=0.d0
+          fbound%le=nlat
+          fbound%fe=0.d0
         endif
       else
-        lend=nlat
-        frend=0.d0
+        fbound%le=nlat
+        fbound%fe=0.d0
       endif
       return
       end
 
-      subroutine tffsbound1(la,lb,
-     $     lbegin,frbegin,lend,frend)
+      subroutine tffsbound1(la,lb,fbound)
       use tfstk
-      use ffs, only:nlat
+      use ffs, only:nlat,ffs_bound
       use ffs_pointer
       use mackw
       implicit none
-      integer*4 lbegin,lend,la,lb,lb1
-      real*8 frbegin,frend,xnlat,offset,tffsmarkoffset
+      type (ffs_bound) fbound
+      integer*4 la,lb,lb1
+      real*8 xnlat,offset,tffsmarkoffset
       xnlat=nlat
       if(idtypec(la) .eq. icMARK)then
         offset=max(1.d0,min(xnlat,la+tffsmarkoffset(la)))
-        lbegin=int(offset)
-        frbegin=offset-lbegin
+        fbound%lb=int(offset)
+        fbound%fb=offset-fbound%lb
       else
-        lbegin=la
-        frbegin=0.d0
+        fbound%lb=la
+        fbound%fb=0.d0
       endif
       lb1=lb
       if(lb .eq. nlat)then
         if(idtypec(nlat-1) .eq. icMARK)then
           lb1=lb1-1
         else
-          lend=lb1
-          frend=0.d0
+          fbound%le=lb1
+          fbound%fe=0.d0
           return
         endif
       endif
       if(idtypec(lb1) .eq. icMARK)then
         offset=tffsmarkoffset(lb1)
         if(offset .ne. 0.d0)then
-          offset=max(dble(lbegin+1),min(xnlat,lb1+offset))
-          lend=int(offset)
-          frend=offset-lend
+          offset=max(dble(fbound%lb+1),min(xnlat,lb1+offset))
+          fbound%le=int(offset)
+          fbound%fe=offset-fbound%le
         else
-          lend=lb1
-          frend=0.d0
+          fbound%le=lb1
+          fbound%fe=0.d0
         endif
       else
-        lend=lb1
-        frend=0.d0
+        fbound%le=lb1
+        fbound%fe=0.d0
       endif
       return
       end
@@ -674,10 +676,17 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
       use ffs_pointer
       use mackw
       implicit none
-      integer*4 lp
-      tffsmarkoffset=rlist(elatt%comp(lp)+kytbl(kwOFFSET,icMARK))
-      if(tffsmarkoffset .ne. 0.d0)then
-        tffsmarkoffset=(tffsmarkoffset-.5d0)*direlc(lp)+.5d0
+      type (sad_comp), pointer :: cmp
+      integer*4 lp,k
+      call compelc(lp,cmp)
+      k=kytbl(kwOFFSET,idtype(cmp%id))
+      if(k .gt. 0)then
+        tffsmarkoffset=cmp%value(k)
+        if(tffsmarkoffset .ne. 0.d0)then
+          tffsmarkoffset=(tffsmarkoffset-.5d0)*direlc(lp)+.5d0
+        endif
+      else
+        tffsmarkoffset=0
       endif
       return
       end
@@ -694,7 +703,7 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
       real*8 offset,xp,xe,tffsmarkoffset
       nm=0
       xp=l
-      if(l .ne. nlat .and. idtypec(l) .eq. icMARK)then
+      if(l .ne. nlat .and. kytbl(kwOFFSET,idtypec(l)) .ne. 0)then
         xe=nlat
         lm=l
  8111   offset=tffsmarkoffset(lm)
@@ -719,56 +728,56 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
       return
       end
 
-      subroutine tffssetutwiss(idp,nlat,
-     $     lbegin,lend,frend,beg,begin,end)
+      subroutine tffssetutwiss(idp,nlat,fbound,beg,begin,end)
       use tfstk
+      use ffs, only:ffs_bound
       use ffs_pointer
       use tffitcode
       use mackw
       implicit none
-      integer*4 nlat,lbegin,lend,idp,jdp,j,jp,le1,k
-      real*8 frend
+      type (ffs_bound) fbound
+      integer*4 nlat,idp,jdp,j,jp,le1
       logical*4 beg,begin,end
       jdp=min(1,abs(idp))
-      do j=lbegin,lend
+      do j=fbound%lb,fbound%le
         jp=itwissp(j)
         if(jp .gt. 0)then
-          do k=1,ntwissfun
-            utwiss(k,idp,jp)=twiss(j,jdp,k)
-          enddo
+c          do k=1,ntwissfun
+            utwiss(:,idp,jp)=twiss(j,jdp,:)
+c          enddo
         endif
       enddo
       jp=itwissp(1)
       if(begin)then
         if(jp .gt. 0 .and. .not. beg)then
-          do k=1,ntwissfun
-            twiss(1,jdp,k)=twiss(lbegin,jdp,k)
-            utwiss(k,idp,jp)=twiss(lbegin,jdp,k)
-          enddo
+c          do k=1,ntwissfun
+            twiss(1,jdp,:)=twiss(fbound%lb,jdp,:)
+            utwiss(:,idp,jp)=twiss(fbound%lb,jdp,:)
+c          enddo
         endif
       endif
       if(end)then
         if(idtypec(nlat-1) .eq. icMARK)then
-          if(frend .eq. 0.d0)then
-            le1=lend
+          if(fbound%fe .eq. 0.d0)then
+            le1=fbound%le
           else
-            le1=lend+1
+            le1=fbound%le+1
           endif
-          do k=1,ntwissfun
-            twiss(nlat-1,jdp,k)=twiss(le1,jdp,k)
-            twiss(nlat,jdp,k)=twiss(le1,jdp,k)
-          enddo
+c          do k=1,ntwissfun
+            twiss(nlat-1,jdp,:)=twiss(le1,jdp,:)
+            twiss(nlat,jdp,:)=twiss(le1,jdp,:)
+c          enddo
           jp=itwissp(nlat-1)
           if(jp .gt. 0)then
-            do k=1,ntwissfun
-              utwiss(k,idp,jp)=twiss(le1,jdp,k)
-            enddo
+c            do k=1,ntwissfun
+              utwiss(:,idp,jp)=twiss(le1,jdp,:)
+c            enddo
           endif
           jp=itwissp(nlat)
           if(jp .gt. 0)then
-            do k=1,ntwissfun
-              utwiss(k,idp,jp)=twiss(le1,jdp,k)
-            enddo
+c            do k=1,ntwissfun
+              utwiss(:,idp,jp)=twiss(le1,jdp,:)
+c            enddo
           endif
         endif
       endif

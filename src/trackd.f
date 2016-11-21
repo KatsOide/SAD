@@ -437,7 +437,7 @@ c        call tadd(xa,codin,xa,6)
         g(i) =xa(6)
         dv(i)=xa(7)+dvfs
       enddo
-c      write(*,*)'tinip ',np,(xa(i),i=1,6)
+c      write(*,'(a,1p6g15.7)')'tinip ',xa(6),emx,emz
       return
       end
 

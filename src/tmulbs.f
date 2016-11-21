@@ -3,8 +3,7 @@
       use ffs_flag
       use tmacro
       implicit none
-      integer*4 j
-      real*8 beam(42),trans1(6,12),s(6,6)
+       real*8 beam(42),trans1(6,12),s(6,6)
       logical*4 poldiv,beamr
 c     ia(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
 c     data ia/ 1, 2, 4, 7,11,16,
@@ -25,26 +24,26 @@ c    1        16,17,18,19,20,21/
           call tmov(trans1,rlist(ipoltr+(ipelm-1)*36),36)
         endif
       endif
-      do j=1,6
-        s(1,j)=trans1(j,1)*beam(1) +trans1(j,2)*beam(2)
-     1        +trans1(j,3)*beam(4) +trans1(j,4)*beam(7)
-     1        +trans1(j,5)*beam(11)+trans1(j,6)*beam(16)
-        s(2,j)=trans1(j,1)*beam(2) +trans1(j,2)*beam(3)
-     1        +trans1(j,3)*beam(5) +trans1(j,4)*beam(8)
-     1        +trans1(j,5)*beam(12)+trans1(j,6)*beam(17)
-        s(3,j)=trans1(j,1)*beam(4) +trans1(j,2)*beam(5)
-     1        +trans1(j,3)*beam(6) +trans1(j,4)*beam(9)
-     1        +trans1(j,5)*beam(13)+trans1(j,6)*beam(18)
-        s(4,j)=trans1(j,1)*beam(7) +trans1(j,2)*beam(8)
-     1        +trans1(j,3)*beam(9) +trans1(j,4)*beam(10)
-     1        +trans1(j,5)*beam(14)+trans1(j,6)*beam(19)
-        s(5,j)=trans1(j,1)*beam(11)+trans1(j,2)*beam(12)
-     1        +trans1(j,3)*beam(13)+trans1(j,4)*beam(14)
-     1        +trans1(j,5)*beam(15)+trans1(j,6)*beam(20)
-        s(6,j)=trans1(j,1)*beam(16)+trans1(j,2)*beam(17)
-     1        +trans1(j,3)*beam(18)+trans1(j,4)*beam(19)
-     1        +trans1(j,5)*beam(20)+trans1(j,6)*beam(21)
-      enddo
+c      do j=1,6
+        s(1,1:6)=trans1(1:6,1)*beam(1) +trans1(1:6,2)*beam(2)
+     1          +trans1(1:6,3)*beam(4) +trans1(1:6,4)*beam(7)
+     1          +trans1(1:6,5)*beam(11)+trans1(1:6,6)*beam(16)
+        s(2,1:6)=trans1(1:6,1)*beam(2) +trans1(1:6,2)*beam(3)
+     1          +trans1(1:6,3)*beam(5) +trans1(1:6,4)*beam(8)
+     1          +trans1(1:6,5)*beam(12)+trans1(1:6,6)*beam(17)
+        s(3,1:6)=trans1(1:6,1)*beam(4) +trans1(1:6,2)*beam(5)
+     1          +trans1(1:6,3)*beam(6) +trans1(1:6,4)*beam(9)
+     1          +trans1(1:6,5)*beam(13)+trans1(1:6,6)*beam(18)
+        s(4,1:6)=trans1(1:6,1)*beam(7) +trans1(1:6,2)*beam(8)
+     1          +trans1(1:6,3)*beam(9) +trans1(1:6,4)*beam(10)
+     1          +trans1(1:6,5)*beam(14)+trans1(1:6,6)*beam(19)
+        s(5,1:6)=trans1(1:6,1)*beam(11)+trans1(1:6,2)*beam(12)
+     1          +trans1(1:6,3)*beam(13)+trans1(1:6,4)*beam(14)
+     1          +trans1(1:6,5)*beam(15)+trans1(1:6,6)*beam(20)
+        s(6,1:6)=trans1(1:6,1)*beam(16)+trans1(1:6,2)*beam(17)
+     1          +trans1(1:6,3)*beam(18)+trans1(1:6,4)*beam(19)
+     1          +trans1(1:6,5)*beam(20)+trans1(1:6,6)*beam(21)
+c      enddo
         beam(1)=s(1,1)*trans1(1,1)+s(2,1)*trans1(1,2)
      1         +s(3,1)*trans1(1,3)+s(4,1)*trans1(1,4)
      1         +s(5,1)*trans1(1,5)+s(6,1)*trans1(1,6)
@@ -109,26 +108,26 @@ c    1        16,17,18,19,20,21/
      1         +s(3,6)*trans1(6,3)+s(4,6)*trans1(6,4)
      1         +s(5,6)*trans1(6,5)+s(6,6)*trans1(6,6)
        if(calint .and. beamr)then
-         do j=1,6
-           s(1,j)=trans1(j,1)*beam(21+1) +trans1(j,2)*beam(21+2)
-     1          +trans1(j,3)*beam(21+4) +trans1(j,4)*beam(21+7)
-     1          +trans1(j,5)*beam(21+11)+trans1(j,6)*beam(21+16)
-           s(2,j)=trans1(j,1)*beam(21+2) +trans1(j,2)*beam(21+3)
-     1          +trans1(j,3)*beam(21+5) +trans1(j,4)*beam(21+8)
-     1          +trans1(j,5)*beam(21+12)+trans1(j,6)*beam(21+17)
-           s(3,j)=trans1(j,1)*beam(21+4) +trans1(j,2)*beam(21+5)
-     1          +trans1(j,3)*beam(21+6) +trans1(j,4)*beam(21+9)
-     1          +trans1(j,5)*beam(21+13)+trans1(j,6)*beam(21+18)
-           s(4,j)=trans1(j,1)*beam(21+7) +trans1(j,2)*beam(21+8)
-     1          +trans1(j,3)*beam(21+9) +trans1(j,4)*beam(21+10)
-     1          +trans1(j,5)*beam(21+14)+trans1(j,6)*beam(21+19)
-           s(5,j)=trans1(j,1)*beam(21+11)+trans1(j,2)*beam(21+12)
-     1          +trans1(j,3)*beam(21+13)+trans1(j,4)*beam(21+14)
-     1          +trans1(j,5)*beam(21+15)+trans1(j,6)*beam(21+20)
-           s(6,j)=trans1(j,1)*beam(21+16)+trans1(j,2)*beam(21+17)
-     1          +trans1(j,3)*beam(21+18)+trans1(j,4)*beam(21+19)
-     1          +trans1(j,5)*beam(21+20)+trans1(j,6)*beam(21+21)
-         enddo
+c         do j=1,6
+           s(1,1:6)=trans1(1:6,1)*beam(21+1) +trans1(1:6,2)*beam(21+2)
+     1          +trans1(1:6,3)*beam(21+4) +trans1(1:6,4)*beam(21+7)
+     1          +trans1(1:6,5)*beam(21+11)+trans1(1:6,6)*beam(21+16)
+           s(2,1:6)=trans1(1:6,1)*beam(21+2) +trans1(1:6,2)*beam(21+3)
+     1          +trans1(1:6,3)*beam(21+5) +trans1(1:6,4)*beam(21+8)
+     1          +trans1(1:6,5)*beam(21+12)+trans1(1:6,6)*beam(21+17)
+           s(3,1:6)=trans1(1:6,1)*beam(21+4) +trans1(1:6,2)*beam(21+5)
+     1          +trans1(1:6,3)*beam(21+6) +trans1(1:6,4)*beam(21+9)
+     1          +trans1(1:6,5)*beam(21+13)+trans1(1:6,6)*beam(21+18)
+           s(4,1:6)=trans1(1:6,1)*beam(21+7) +trans1(1:6,2)*beam(21+8)
+     1          +trans1(1:6,3)*beam(21+9) +trans1(1:6,4)*beam(21+10)
+     1          +trans1(1:6,5)*beam(21+14)+trans1(1:6,6)*beam(21+19)
+           s(5,1:6)=trans1(1:6,1)*beam(21+11)+trans1(1:6,2)*beam(21+12)
+     1          +trans1(1:6,3)*beam(21+13)+trans1(1:6,4)*beam(21+14)
+     1          +trans1(1:6,5)*beam(21+15)+trans1(1:6,6)*beam(21+20)
+           s(6,1:6)=trans1(1:6,1)*beam(21+16)+trans1(1:6,2)*beam(21+17)
+     1          +trans1(1:6,3)*beam(21+18)+trans1(1:6,4)*beam(21+19)
+     1          +trans1(1:6,5)*beam(21+20)+trans1(1:6,6)*beam(21+21)
+c         enddo
          beam(21+1)=s(1,1)*trans1(1,1)+s(2,1)*trans1(1,2)
      1        +s(3,1)*trans1(1,3)+s(4,1)*trans1(1,4)
      1        +s(5,1)*trans1(1,5)+s(6,1)*trans1(1,6)

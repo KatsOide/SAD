@@ -394,16 +394,15 @@ c     $                 /2.d0/dvkc/wvar(kc)
                       endif
                       over=.false.
                       if(ibegin .ne. 1)then
-                        do j=1,ntwissfun
-                          twiss(ibegin,0,j)=utwiss(j,0,itwissp(ibegin))
-                        enddo
+c                        do j=1,ntwissfun
+                          twiss(ibegin,0,1:ntwissfun)=
+     $                       utwiss(1:ntwissfun,0,itwissp(ibegin))
+c                        enddo
                       else
                         twiss(1,0,3)=0.d0
                         twiss(1,0,6)=0.d0
                       endif
-                      call qcell(0,
-     1                     hstab(0),vstab(0),tracex(0),tracey(0),
-     $                     .false.,over)
+                      call qcell(0,optstat(0),.false.)
                       nqcol00=nqcol
                       nqcol=nqcol1
                       call tffsfitfun(nqcol,df1,flv%iqcol,flv%kdp,
@@ -761,20 +760,20 @@ c     $                 /2.d0/dvkc/wvar(kc)
      $     free,nlat,nele,nfam,nfam1,nut,
      $     nparallel,cell,lfno,irtc)
       use tfstk
-      use ffs, only:flv
+      use ffs, only:flv,ffs_bound
       use ffs_pointer
       use tffitcode
       use tfshare
       use mackw
       implicit none
+      type (ffs_bound) fbound
       integer*8 itmmapp,ifqu,ifqu0,kcm,kkqu,kqu,ic,iec
       integer*4 nqcol,nqcol1,nvar,nqumax,nlat,nele,
      $     irtc,lfno,nut,nfam,nfam1
       integer*4 npp
-      real*8 frbegin,frend
       logical*4 free(nele),cell
       integer*4 nqu,k,kk,i,kq,j,kf,lp,kp,iv,kkf,kkq,kkk,
-     $     ii,ltyp,jj,lbegin,lend,kc,ik1,nparallel,
+     $     ii,ltyp,jj,kc,ik1,nparallel,
      $     iclast(-nfam:nfam),ik,nk,kk1,
      $     ip,ipr,istep,npr(nparallel),fork_worker
       real*8 s,dtwiss(mfittry),coup,posk,wk,ctrans(27,-nfam:nfam)
@@ -799,7 +798,7 @@ c     $                 /2.d0/dvkc/wvar(kc)
           endif
           nqumax=nqu
         endif
-        call tffsbound(lbegin,frbegin,lend,frend)
+        call tffsbound(fbound)
         rlist(ifqu:ifqu+nqu-1)=0.d0
         npp=min(nvar,nparallel)
         ipr=-1
@@ -831,11 +830,11 @@ c     $                 /2.d0/dvkc/wvar(kc)
           if(kk .gt. 0 .and. free(kk) .or. iec .ne. 0)then
             posk=pos(k)
             wk=1.d0
-            if(k .eq. lbegin)then
-              wk=1.d0-frbegin
+            if(k .eq. fbound%lb)then
+              wk=1.d0-fbound%fb
             endif
-            if(k .eq. lend)then
-              wk=frend
+            if(k .eq. fbound%le)then
+              wk=fbound%fe
             endif
             ltyp=idtypec(k)
             do ii=ip,nvar,istep
@@ -1010,7 +1009,7 @@ c     $                       posk,pos(lp),rlist(kqu),ltyp,iv
 c
       call compelc(l,cmp)
       if(right)then
-        if(orbitcal)then
+        if(orbitcal .or. calc6d)then
           ntfun=ntwissfun
         else
           ntfun=mfitdetr
@@ -1204,9 +1203,9 @@ c        enddo
       do i=1,nqcol
         if(fit(i))then
           nj=nj+1
-          do j=1,nvar
-            qu0(nj,j)=qu(i,j)*wlimit(j)
-          enddo
+c          do j=1,nvar
+            qu0(nj,1:nvar)=qu(i,1:nvar)*wlimit(1:nvar)
+c          enddo
           b(nj)=df(i)
         endif
       enddo

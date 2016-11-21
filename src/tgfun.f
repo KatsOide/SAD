@@ -12,9 +12,9 @@
       elseif(kf .ge. mfitpex .and. kf .le. mfitpepy)then
         tgfun=tphysdisp(kf,utwiss(1,idp,itwissp(kp)))
       elseif(kf .eq. mfittrx)then
-        tgfun=tracex(idp)
+        tgfun=optstat(idp)%tracex
       elseif(kf .eq. mfittry)then
-        tgfun=tracey(idp)
+        tgfun=optstat(idp)%tracey
       elseif(kf .eq. mfitleng)then
         tgfun=pos(kp)
       elseif(kf .le. mfitgz)then

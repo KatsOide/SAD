@@ -6,6 +6,7 @@
       use tffitcode
       use ffs_pointer, only:idelc,idtypec,pnamec
       implicit real*8 (a-h,o-z)
+      type (ffs_bound) fbound
       parameter (nkey=35,nstyle=8)
       integer*8 latt(nlat),it,it1,jp
       real*8 pos(nlat)
@@ -126,11 +127,11 @@ c     end   initialize for preventing compiler warning
           call getwdl2(word,wordp)
         endif
       endif
-      call tffsbound(lbegin,frbegin,lend,frend)
-      if(lbegin .ne. 1 .or. lend .ne. nlat)then
+      call tffsbound(fbound)
+      if(fbound%lb .ne. 1 .or. fbound%le .ne. nlat)then
         ls1=ls
-        ls=max(min(ls1,le),lbegin)
-        le=min(max(ls1,le),lend+1)
+        ls=max(min(ls1,le),fbound%lb)
+        le=min(max(ls1,le),fbound%le+1)
       endif
       altotal=pos(nlat)-pos(1)
       alen=pos(le)-pos(ls)
@@ -242,7 +243,8 @@ cslac   write(lfnd,*)'TITLE 7 8.5 ''',dat,''''
                 monly=.true.
               endif
               call tdrwdt(line(j,l),rlist(it1),mp(j,l),
-     1             ymin(j,l),ymax(j,l),ls,le,frbegin,frend,ale,np*km,
+     1             ymin(j,l),ymax(j,l),ls,le,
+     $             fbound%fb,fbound%fe,ale,np*km,
      $             only,monly,patt,
      1             latt,twiss,idp,pos,imon,emon,nmon)
               if(line(j,l).eq.33 .or. line(j,l).eq.34) then
