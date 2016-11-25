@@ -1,4 +1,4 @@
-Help$Update="$Date: 2016/11/04 06:19:08 $"[8,17];
+Help$Update="$Date: 2016/11/22 06:19:08 $"[8,17];
 Help$Version="1.0.10.11k64";
 
 Help$Messages=(Print["SAD/FFS Help Update: ",Help$Update];{
@@ -148,7 +148,7 @@ suitable to be read by a spread-sheet program.",
 
       {"Z",
        "DISP Z displays muatching functions related to the Z plane:\n\
-AZ BZ NZ DZ DDP ZX ZPX ZY ZPY",
+AZ BZ NZ DZ DDP ZX ZPX ZY ZPY , which are obtained by CALC/GO with CALC6D.",
       "extended-twiss-parameters",
       {}},
 
@@ -1790,7 +1790,8 @@ of the extended Twiss parameters.   In 6 by 6 case, those are\n\n\
    R3  R4    PSIY ZPY EPY\n\
                    AZ  BZ\n\
                      PSIZ .\n\n\
-A(X,Y,Z), B(X,Y,Z) are alphas and betas in the usual sense, after a diagonalization to 2 by 2 submatrices.  PSI(X,Y,Z) are the rotation angle to set one\n\
+A(X,Y,Z), B(X,Y,Z) are alphas and betas in the usual sense, after a diagonalization\n\
+to 2 by 2 submatrices.  PSI(X,Y,Z) are the rotation angle to set one\n\
 the coordinate to parallel to the (X,Y,Z) axes.   R(1,2,3,4) are the\n\
 components of the x-y coupling matrix (see x-y-coupling).   E(X,PX,Y,PY) are\n\
 \"dispersions\" which decouples synchro-beta coupling terms together with\n\
@@ -2144,6 +2145,19 @@ distribution to be a uniform(square) within +-DP.",
      {"UNSTABLE",
       "UNSTABLE is the antonym of STABLE.",
       "STABLE",
+      {}},
+
+     {"CALC6D",
+      "If CALC6D is on, the optics calculation in CALC and GO performs full\n\
+6D calculation, which may takes RADCOD into account. The antonyms is CALC4D.\n\
+The Default is CALC4D.",
+      "CALC4D",
+      {}},
+
+     {"CALC4D",
+      "If CALC4D is on, the optics calculation in CALC and GO performs a 4x5\n\
+calculation (4D + dispersion). The antonyms is CALC6D. The Default is CALC4D.",
+      "CALC6D",
       {}},
 
      {"CONVCASE",
