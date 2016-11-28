@@ -25,6 +25,346 @@ c     Inverse matrix of r
       real(8), public :: emx, emy, emz
       logical*4, public :: normali
 
+      public :: tfetwiss,etwiss2ri,tfnormalcoord
+      contains
+      subroutine tfetwiss(r,cod,twiss,normi)
+      use ffs
+      implicit none
+      real*8 r(6,6),twiss(ntwissfun),hi(6,6),cod(6)
+      real*8 ax,ay,az,axy,f,detm,his(4),
+     $     uz11,uz12,uz21,uz22,
+     $     hx11,hx12,hx21,hx22,
+     $     hy11,hy12,hy21,hy22,
+     $     r11,r12,r21,r22,
+     $     crx,cry,crz,cx,cy,cz,sx,sy,sz,
+     $     bx21,bx22,by21,by22,bz21,bz22
+      logical*4 normal,normi
+c      write(*,'(a,1p5g15.7)')'tfetwiss ',r(5,5),r(5,6),r(6,5),r(6,6),
+c     $     r(5,5)*r(6,6)-r(6,5)*r(5,6)
+      az=sqrt(r(5,5)*r(6,6)-r(6,5)*r(5,6))
+      uz11=r(5,5)/az
+      uz12=r(5,6)/az
+      uz21=r(6,5)/az
+      uz22=r(6,6)/az
+      hx11= r(6,2)*uz11-r(5,2)*uz21
+      hx12= r(6,2)*uz12-r(5,2)*uz22
+      hx21=-r(6,1)*uz11+r(5,1)*uz21
+      hx22=-r(6,1)*uz12+r(5,1)*uz22
+      hy11= r(6,4)*uz11-r(5,4)*uz21
+      hy12= r(6,4)*uz12-r(5,4)*uz22
+      hy21=-r(6,3)*uz11+r(5,3)*uz21
+      hy22=-r(6,3)*uz12+r(5,3)*uz22
+      f=1.d0/(1.d0+az)
+      ax=1.d0-(hx11*hx22-hx21*hx12)*f
+      ay=1.d0-(hy11*hy22-hy21*hy12)*f
+      hi(2,2)=ax
+      hi(1,2)=0.d0
+      hi(4,2)= (hx12*hy21-hx11*hy22)*f
+      hi(3,2)=-(-hx12*hy11+hx11*hy12)*f
+      hi(6,2)=-hx11
+      hi(5,2)= hx12
+      hi(2,1)= 0.d0
+      hi(1,1)= ax
+      hi(4,1)=-(hx22*hy21-hx21*hy22)*f
+      hi(3,1)=(-hx22*hy11+hx21*hy12)*f
+      hi(6,1)= hx21
+      hi(5,1)=-hx22
+      hi(2,4)= hi(3,1)
+      hi(1,4)=-hi(3,2)
+      hi(4,4)= ay
+      hi(3,4)= 0.d0
+      hi(6,4)=-hy11
+      hi(5,4)= hy12
+      hi(2,3)=-hi(4,1)
+      hi(1,3)= hi(4,2)
+      hi(4,3)= 0.d0
+      hi(3,3)= ay
+      hi(6,3)= hy21
+      hi(5,3)=-hy22
+      hi(2,6)= hx22
+      hi(1,6)= hx21
+      hi(4,6)= hy22
+      hi(3,6)= hy21
+      hi(6,6)= az
+      hi(5,6)= 0.d0
+      hi(2,5)= hx12
+      hi(1,5)= hx11
+      hi(4,5)= hy12
+      hi(3,5)= hy11
+      hi(6,5)= 0.d0
+      hi(5,5)= az
+      call tmultr(hi,r,6)
+      detm=(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2)
+     $     +hi(3,3)*hi(4,4)-hi(4,3)*hi(3,4))*.5d0
+c      write(*,'(a,1p6g15.7)')'tfetwiss ',detm,ax,ay,az,f,xyth
+      normal=detm .gt. xyth
+      if(.not. normal)then
+        his=hi(1,1:4)
+        hi(1,1:4)=hi(3,1:4)
+        hi(3,1:4)=his
+        his=hi(2,1:4)
+        hi(2,1:4)=hi(4,1:4)
+        hi(4,1:4)=his
+        detm=(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2)
+     $       +hi(3,3)*hi(4,4)-hi(4,3)*hi(3,4))*.5d0
+      endif
+      axy=sqrt(detm)
+      r11=( hi(4,4)*hi(3,1)-hi(3,4)*hi(4,1))/axy
+      r12=( hi(4,4)*hi(3,2)-hi(3,4)*hi(4,2))/axy
+      r21=(-hi(4,3)*hi(3,1)+hi(3,3)*hi(4,1))/axy
+      r22=(-hi(4,3)*hi(3,2)+hi(3,3)*hi(4,2))/axy
+      crx=sqrt(hi(1,2)**2+hi(2,2)**2)
+      cx= hi(2,2)/crx
+      sx=-hi(1,2)/crx
+      bx21=(-sx*hi(1,1)+cx*hi(2,1))/axy
+      bx22=crx/axy
+      cry=sqrt(hi(3,4)**2+hi(4,4)**2)
+      cy= hi(4,4)/cry
+      sy=-hi(3,4)/cry
+      by21=(-sy*hi(3,3)+cy*hi(4,3))/axy
+      by22=cry/axy
+      crz=sqrt(uz12**2+uz22**2)
+      cz= uz22/crz
+      sz=-uz12/crz
+      bz21=-sz*uz11+cz*uz21
+      bz22=crz
+      twiss(mfitr1)=r11
+      twiss(mfitr2)=r12
+      twiss(mfitr3)=r21
+      twiss(mfitr4)=r22
+      if(.not. normi)then
+        normal=.not. normal
+      endif
+      if(normal)then
+        twiss(mfitax)= bx21*bx22
+        twiss(mfitbx)= bx22**2
+        twiss(mfitnx)= atan2(sx,cx)
+        twiss(mfitay)= by21*by22
+        twiss(mfitby)= by22**2
+        twiss(mfitny)= atan2(sy,cy)
+        twiss(mfitex)= axy*hx12-r22*hy12+r12*hy22
+        twiss(mfitepx)= axy*hx22+r21*hy12-r11*hy22
+        twiss(mfitey) = axy*hy12+r11*hx12+r12*hx22
+        twiss(mfitepy)=axy*hy22+r21*hx12+r22*hx22
+        twiss(mfitdetr)=r11*r22-r12*r21
+        twiss(mfitzx) =axy*hx11-r22*hy11+r12*hy21
+        twiss(mfitzpx)=axy*hx21+r21*hy11-r11*hy21
+        twiss(mfitzy) =axy*hy11+r11*hx11+r12*hx21
+        twiss(mfitzpy)=axy*hy21+r21*hx11+r22*hx21
+      else
+        twiss(mfitay)= bx21*bx22
+        twiss(mfitby)= bx22**2
+        twiss(mfitny)= atan2(sx,cx)
+        twiss(mfitax)= by21*by22
+        twiss(mfitbx)= by22**2
+        twiss(mfitnx)= atan2(sy,cy)
+        twiss(mfitey)= axy*hx12-r22*hy12+r12*hy22
+        twiss(mfitepy)= axy*hx22+r21*hy12-r11*hy22
+        twiss(mfitex) = axy*hy12+r11*hx12+r12*hx22
+        twiss(mfitepx)=axy*hy22+r21*hx12+r22*hx22
+        twiss(mfitdetr)=1.d0+xyth-r11*r22+r12*r21
+        twiss(mfitzy) =axy*hx11-r22*hy11+r12*hy21
+        twiss(mfitzpy)=axy*hx21+r21*hy11-r11*hy21
+        twiss(mfitzx) =axy*hy11+r11*hx11+r12*hx21
+        twiss(mfitzpx)=axy*hy21+r21*hx11+r22*hx21
+      endif
+      twiss(mfitdx:mfitddp)=cod
+      twiss(mfitaz)=bz21*bz22
+      twiss(mfitbz)=bz22**2
+      twiss(mfitnz)=atan2(sz,cz)
+      return
+      end subroutine
+
+      subroutine etwiss2ri(twiss1,ria,normal)
+      use ffs
+      implicit none
+      real*8 twiss1(ntwissfun),ria(6,6),h(4,6),br(4,4),
+     $     hx11,hx12,hx21,hx22,
+     $     hy11,hy12,hy21,hy22,
+     $     ex,epx,ey,epy,zx,zpx,zy,zpy,
+     $     r1,r2,r3,r4,amu,detr,sqrbx,sqrby,sqrbz,aa,
+     $     ax,ay,az,dethx,dethy,amux,amuy,azz
+      logical*4 normal
+      r1=twiss1(mfitr1)
+      r2=twiss1(mfitr2)
+      r3=twiss1(mfitr3)
+      r4=twiss1(mfitr4)
+      detr=twiss1(mfitdetr)
+      normal=detr .lt. 1.d0
+      if(normal)then
+        amu=sqrt(1.d0-detr)
+        ex =twiss1(mfitex)
+        epx=twiss1(mfitepx)
+        ey =twiss1(mfitey)
+        epy=twiss1(mfitepy)
+        zx =twiss1(mfitzx)
+        zpx=twiss1(mfitzpx)
+        zy =twiss1(mfitzy)
+        zpy=twiss1(mfitzpy)
+        sqrbx=sqrt(twiss1(mfitbx))
+        ax=twiss1(mfitax)
+        sqrby=sqrt(twiss1(mfitby))
+        ay=twiss1(mfitay)
+      else
+        amu=sqrt(1.d0-r1*r4+r2*r3)
+        ey =twiss1(mfitex)
+        epy=twiss1(mfitepx)
+        ex =twiss1(mfitey)
+        epx=twiss1(mfitepy)
+        zy =twiss1(mfitzx)
+        zpy=twiss1(mfitzpx)
+        zx =twiss1(mfitzy)
+        zpx=twiss1(mfitzpy)
+        sqrby=sqrt(twiss1(mfitbx))
+        ay=twiss1(mfitax)
+        sqrbx=sqrt(twiss1(mfitby))
+        ax=twiss1(mfitay)
+      endif
+      sqrbz=sqrt(twiss1(mfitbz))
+      az=twiss1(mfitaz)
+      hx11=amu*zx -r2*zpy+r4*zy
+      hx12=amu*ex -r2*epy+r4*ey
+      hx21=amu*zpx+r1*zpy-r3*zy
+      hx22=amu*epx+r1*epy-r3*ey
+      hy11=amu*zy -r2*zpx-r1*zx
+      hy12=amu*ey -r2*epx-r1*ex
+      hy21=amu*zpy-r4*zpx-r3*zx
+      hy22=amu*epy-r4*epx-r3*ex
+      dethx=hx11*hx22-hx21*hx12
+      dethy=hy11*hy22-hy21*hy12
+      azz=sqrt(1.d0-dethx-dethy)
+      aa=1.d0/(1.d0+azz)
+      amux=1.d0-dethx*aa
+      amuy=1.d0-dethy*aa
+      h(1,1)=amux
+      h(1,2)=0.d0
+      h(1,3)=( hx12*hy21-hx11*hy22)*aa
+      h(1,4)=(-hx12*hy11+hx11*hy12)*aa
+      h(1,5)=-hx11
+      h(1,6)=-hx12
+      h(2,1)=0.d0
+      h(2,2)=amux
+      h(2,3)=( hx22*hy21-hx21*hy22)*aa
+      h(2,4)=(-hx22*hy11+hx21*hy12)*aa
+      h(2,5)=-hx21
+      h(2,6)=-hx22
+      h(3,1)= h(2,4)
+      h(3,2)=-h(1,4)
+      h(3,3)=amuy
+      h(3,4)=0.d0
+      h(3,5)=-hy11
+      h(3,6)=-hy12
+      h(4,1)=-h(2,3)
+      h(4,2)=h(1,3)
+      h(4,3)=0.d0
+      h(4,4)=amuy
+      h(4,5)=-hy21
+      h(4,6)=-hy22
+      ria(5,1)= hx22
+      ria(5,2)=-hx12
+      ria(5,3)= hy22
+      ria(5,4)=-hy12
+      ria(5,5)=azz
+      ria(5,6)=0.d0
+      ria(6,1)=-hx21
+      ria(6,2)= hx11
+      ria(6,3)=-hy21
+      ria(6,4)= hy11
+      ria(6,5)=0.d0
+      ria(6,6)=azz
+      br(1,1)= amu/sqrbx
+      br(1,2)=0.d0
+      br(1,3)=-r4/sqrbx
+      br(1,4)= r2/sqrbx
+      br(2,1)= amu*ax/sqrbx
+      br(2,2)= amu*sqrbx
+      br(2,3)= r3*sqrbx-r4*ax/sqrbx
+      br(2,4)= r2*ax/sqrbx-r1*sqrbx
+      br(3,1)= r1/sqrby
+      br(3,2)= r2/sqrby
+      br(3,3)= amu/sqrby
+      br(3,4)=0.d0
+      br(4,1)= r1*ay/sqrby+r3*sqrby
+      br(4,2)= r2*ay/sqrby+r4*sqrby
+      br(4,3)= amu*ay/sqrby
+      br(4,4)= amu*sqrby
+      ria(1,1)=br(1,1)*h(1,1)+br(1,2)*h(2,1)
+     $       +br(1,3)*h(3,1)+br(1,4)*h(4,1)
+      ria(1,2)=br(1,1)*h(1,2)+br(1,2)*h(2,2)
+     $       +br(1,3)*h(3,2)+br(1,4)*h(4,2)
+      ria(1,3)=br(1,1)*h(1,3)+br(1,2)*h(2,3)
+     $       +br(1,3)*h(3,3)+br(1,4)*h(4,3)
+      ria(1,4)=br(1,1)*h(1,4)+br(1,2)*h(2,4)
+     $       +br(1,3)*h(3,4)+br(1,4)*h(4,4)
+      ria(1,5)=br(1,1)*h(1,5)+br(1,2)*h(2,5)
+     $       +br(1,3)*h(3,5)+br(1,4)*h(4,5)
+      ria(1,6)=br(1,1)*h(1,6)+br(1,2)*h(2,6)
+     $       +br(1,3)*h(3,6)+br(1,4)*h(4,6)
+      ria(2,1)=br(2,1)*h(1,1)+br(2,2)*h(2,1)
+     $       +br(2,3)*h(3,1)+br(2,4)*h(4,1)
+      ria(2,2)=br(2,1)*h(1,2)+br(2,2)*h(2,2)
+     $       +br(2,3)*h(3,2)+br(2,4)*h(4,2)
+      ria(2,3)=br(2,1)*h(1,3)+br(2,2)*h(2,3)
+     $       +br(2,3)*h(3,3)+br(2,4)*h(4,3)
+      ria(2,4)=br(2,1)*h(1,4)+br(2,2)*h(2,4)
+     $       +br(2,3)*h(3,4)+br(2,4)*h(4,4)
+      ria(2,5)=br(2,1)*h(1,5)+br(2,2)*h(2,5)
+     $       +br(2,3)*h(3,5)+br(2,4)*h(4,5)
+      ria(2,6)=br(2,1)*h(1,6)+br(2,2)*h(2,6)
+     $       +br(2,3)*h(3,6)+br(2,4)*h(4,6)
+      ria(3,1)=br(3,1)*h(1,1)+br(3,2)*h(2,1)
+     $       +br(3,3)*h(3,1)+br(3,4)*h(4,1)
+      ria(3,2)=br(3,1)*h(1,2)+br(3,2)*h(2,2)
+     $       +br(3,3)*h(3,2)+br(3,4)*h(4,2)
+      ria(3,3)=br(3,1)*h(1,3)+br(3,2)*h(2,3)
+     $       +br(3,3)*h(3,3)+br(3,4)*h(4,3)
+      ria(3,4)=br(3,1)*h(1,4)+br(3,2)*h(2,4)
+     $       +br(3,3)*h(3,4)+br(3,4)*h(4,4)
+      ria(3,5)=br(3,1)*h(1,5)+br(3,2)*h(2,5)
+     $       +br(3,3)*h(3,5)+br(3,4)*h(4,5)
+      ria(3,6)=br(3,1)*h(1,6)+br(3,2)*h(2,6)
+     $       +br(3,3)*h(3,6)+br(3,4)*h(4,6)
+      ria(4,1)=br(4,1)*h(1,1)+br(4,2)*h(2,1)
+     $       +br(4,3)*h(3,1)+br(4,4)*h(4,1)
+      ria(4,2)=br(4,1)*h(1,2)+br(4,2)*h(2,2)
+     $       +br(4,3)*h(3,2)+br(4,4)*h(4,2)
+      ria(4,3)=br(4,1)*h(1,3)+br(4,2)*h(2,3)
+     $       +br(4,3)*h(3,3)+br(4,4)*h(4,3)
+      ria(4,4)=br(4,1)*h(1,4)+br(4,2)*h(2,4)
+     $       +br(4,3)*h(3,4)+br(4,4)*h(4,4)
+      ria(4,5)=br(4,1)*h(1,5)+br(4,2)*h(2,5)
+     $       +br(4,3)*h(3,5)+br(4,4)*h(4,5)
+      ria(4,6)=br(4,1)*h(1,6)+br(4,2)*h(2,6)
+     $       +br(4,3)*h(3,6)+br(4,4)*h(4,6)
+      ria(5,1:6)=ria(5,1:6)/sqrbz
+      ria(6,1:6)=ria(6,1:6)*sqrbz+ri(5,1:6)*az
+      return
+      end subroutine
+
+      subroutine tfnormalcoord(isp1,kx,irtc)
+      use tfstk
+      use ffs
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 isp1,irtc,itfmessage
+      real*8 rn(6,6)
+      logical*4 normal
+      type (sad_list), pointer :: kl
+      if(isp .ne. isp1+1)then
+        irtc=itfmessage(9,'General::narg','"1"')
+        return
+      endif
+      if(.not. tfnumlistqnk(dtastk(isp),ntwissfun,kl))then
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"Real List of Length 28"')
+        return
+      endif
+      call etwiss2ri(kl%rbody(1:ntwissfun),rn,normal)
+      kx=kxm2l(rn,6,6,6,.false.)
+      irtc=0
+      return
+      end subroutine
+
       end module temw
 
       module touschek_table
@@ -263,6 +603,7 @@ c     call tsymp(trans)
       call tnorm(r,ceig,lfno)
       call tsub(ceig,ceig0,dceig,12)
       ceig0=ceig
+      call tsymp(r)
       call tinv6(r,ri)
       call tmultr(trans,ri,6)
       call tmov(r,btr,36)
@@ -1065,327 +1406,16 @@ c     write(*,*)'temit ',emy,emy1
       return
       end
 
-      subroutine tfetwiss(r,cod,twiss,normi)
-      use ffs
-      implicit none
-      real*8 r(6,6),twiss(ntwissfun),hi(6,6),cod(6)
-      real*8 ax,ay,az,axy,f,detm,his(4),
-     $     uz11,uz12,uz21,uz22,
-     $     hx11,hx12,hx21,hx22,
-     $     hy11,hy12,hy21,hy22,
-     $     r11,r12,r21,r22,
-     $     crx,cry,crz,cx,cy,cz,sx,sy,sz,
-     $     bx21,bx22,by21,by22,bz21,bz22
-      logical*4 normal,normi
-      az=sqrt(r(5,5)*r(6,6)-r(6,5)*r(5,6))
-      uz11=r(5,5)/az
-      uz12=r(5,6)/az
-      uz21=r(6,5)/az
-      uz22=r(6,6)/az
-      hx11= r(6,2)*uz11-r(5,2)*uz21
-      hx12= r(6,2)*uz12-r(5,2)*uz22
-      hx21=-r(6,1)*uz11+r(5,1)*uz21
-      hx22=-r(6,1)*uz12+r(5,1)*uz22
-      hy11= r(6,4)*uz11-r(5,4)*uz21
-      hy12= r(6,4)*uz12-r(5,4)*uz22
-      hy21=-r(6,3)*uz11+r(5,3)*uz21
-      hy22=-r(6,3)*uz12+r(5,3)*uz22
-      f=1.d0/(1.d0+az)
-      ax=1.d0-(hx11*hx22-hx21*hx12)*f
-      ay=1.d0-(hy11*hy22-hy21*hy12)*f
-      hi(2,2)=ax
-      hi(1,2)=0.d0
-      hi(4,2)= (hx12*hy21-hx11*hy22)*f
-      hi(3,2)=-(-hx12*hy11+hx11*hy12)*f
-      hi(6,2)=-hx11
-      hi(5,2)= hx12
-      hi(2,1)= 0.d0
-      hi(1,1)= ax
-      hi(4,1)=-(hx22*hy21-hx21*hy22)*f
-      hi(3,1)=(-hx22*hy11+hx21*hy12)*f
-      hi(6,1)= hx21
-      hi(5,1)=-hx22
-      hi(2,4)= hi(3,1)
-      hi(1,4)=-hi(3,2)
-      hi(4,4)= ay
-      hi(3,4)= 0.d0
-      hi(6,4)=-hy11
-      hi(5,4)= hy12
-      hi(2,3)=-hi(4,1)
-      hi(1,3)= hi(4,2)
-      hi(4,3)= 0.d0
-      hi(3,3)= ay
-      hi(6,3)= hy21
-      hi(5,3)=-hy22
-      hi(2,6)= hx22
-      hi(1,6)= hx21
-      hi(4,6)= hy22
-      hi(3,6)= hy21
-      hi(6,6)= az
-      hi(5,6)= 0.d0
-      hi(2,5)= hx12
-      hi(1,5)= hx11
-      hi(4,5)= hy12
-      hi(3,5)= hy11
-      hi(6,5)= 0.d0
-      hi(5,5)= az
-      call tmultr(hi,r,6)
-      detm=(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2)
-     $     +hi(3,3)*hi(4,4)-hi(4,3)*hi(3,4))*.5d0
-      normal=detm .gt. xyth
-      if(.not. normal)then
-        his=hi(1,1:4)
-        hi(1,1:4)=hi(3,1:4)
-        hi(3,1:4)=his
-        his=hi(2,1:4)
-        hi(2,1:4)=hi(4,1:4)
-        hi(4,1:4)=his
-        detm=(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2)
-     $       +hi(3,3)*hi(4,4)-hi(4,3)*hi(3,4))*.5d0
-      endif
-      axy=sqrt(detm)
-      r11=( hi(4,4)*hi(3,1)-hi(3,4)*hi(4,1))/axy
-      r12=( hi(4,4)*hi(3,2)-hi(3,4)*hi(4,2))/axy
-      r21=(-hi(4,3)*hi(3,1)+hi(3,3)*hi(4,1))/axy
-      r22=(-hi(4,3)*hi(3,2)+hi(3,3)*hi(4,2))/axy
-      crx=sqrt(hi(1,2)**2+hi(2,2)**2)
-      cx= hi(2,2)/crx
-      sx=-hi(1,2)/crx
-      bx21=(-sx*hi(1,1)+cx*hi(2,1))/axy
-      bx22=crx/axy
-      cry=sqrt(hi(3,4)**2+hi(4,4)**2)
-      cy= hi(4,4)/cry
-      sy=-hi(3,4)/cry
-      by21=(-sy*hi(3,3)+cy*hi(4,3))/axy
-      by22=cry/axy
-      crz=sqrt(uz12**2+uz22**2)
-      cz= uz22/crz
-      sz=-uz12/crz
-      bz21=-sz*uz11+cz*uz21
-      bz22=crz
-      twiss(mfitr1)=r11
-      twiss(mfitr2)=r12
-      twiss(mfitr3)=r21
-      twiss(mfitr4)=r22
-      if(.not. normi)then
-        normal=.not. normal
-      endif
-      if(normal)then
-        twiss(mfitax)= bx21*bx22
-        twiss(mfitbx)= bx22**2
-        twiss(mfitnx)= atan2(sx,cx)
-        twiss(mfitay)= by21*by22
-        twiss(mfitby)= by22**2
-        twiss(mfitny)= atan2(sy,cy)
-        twiss(mfitex)= axy*hx12-r22*hy12+r12*hy22
-        twiss(mfitepx)= axy*hx22+r21*hy12-r11*hy22
-        twiss(mfitey) = axy*hy12+r11*hx12+r12*hx22
-        twiss(mfitepy)=axy*hy22+r21*hx12+r22*hx22
-        twiss(mfitdetr)=r11*r22-r12*r21
-        twiss(mfitzx) =axy*hx11-r22*hy11+r12*hy21
-        twiss(mfitzpx)=axy*hx21+r21*hy11-r11*hy21
-        twiss(mfitzy) =axy*hy11+r11*hx11+r12*hx21
-        twiss(mfitzpy)=axy*hy21+r21*hx11+r22*hx21
-      else
-        twiss(mfitay)= bx21*bx22
-        twiss(mfitby)= bx22**2
-        twiss(mfitny)= atan2(sx,cx)
-        twiss(mfitax)= by21*by22
-        twiss(mfitbx)= by22**2
-        twiss(mfitnx)= atan2(sy,cy)
-        twiss(mfitey)= axy*hx12-r22*hy12+r12*hy22
-        twiss(mfitepy)= axy*hx22+r21*hy12-r11*hy22
-        twiss(mfitex) = axy*hy12+r11*hx12+r12*hx22
-        twiss(mfitepx)=axy*hy22+r21*hx12+r22*hx22
-        twiss(mfitdetr)=1.d0+xyth-r11*r22+r12*r21
-        twiss(mfitzy) =axy*hx11-r22*hy11+r12*hy21
-        twiss(mfitzpy)=axy*hx21+r21*hy11-r11*hy21
-        twiss(mfitzx) =axy*hy11+r11*hx11+r12*hx21
-        twiss(mfitzpx)=axy*hy21+r21*hx11+r22*hx21
-      endif
-      twiss(mfitdx:mfitddp)=cod
-      twiss(mfitaz)=bz21*bz22
-      twiss(mfitbz)=bz22**2
-      twiss(mfitnz)=atan2(sz,cz)
-      return
-      end
-
-      subroutine etwiss2ri(twiss1,ri,normal)
-      use ffs
-      implicit none
-      real*8 twiss1(ntwissfun),ri(6,6),h(4,6),br(4,4),
-     $     hx11,hx12,hx21,hx22,
-     $     hy11,hy12,hy21,hy22,
-     $     ex,epx,ey,epy,zx,zpx,zy,zpy,
-     $     r1,r2,r3,r4,amu,detr,sqrbx,sqrby,sqrbz,aa,
-     $     ax,ay,az,dethx,dethy,amux,amuy,azz
-      logical*4 normal
-      r1=twiss1(mfitr1)
-      r2=twiss1(mfitr2)
-      r3=twiss1(mfitr3)
-      r4=twiss1(mfitr4)
-      detr=twiss1(mfitdetr)
-      normal=detr .lt. 1.d0
-      if(normal)then
-        amu=sqrt(1.d0-detr)
-        ex =twiss1(mfitex)
-        epx=twiss1(mfitepx)
-        ey =twiss1(mfitey)
-        epy=twiss1(mfitepy)
-        zx =twiss1(mfitzx)
-        zpx=twiss1(mfitzpx)
-        zy =twiss1(mfitzy)
-        zpy=twiss1(mfitzpy)
-        sqrbx=sqrt(twiss1(mfitbx))
-        ax=twiss1(mfitax)
-        sqrby=sqrt(twiss1(mfitby))
-        ay=twiss1(mfitay)
-      else
-        amu=sqrt(1.d0-r1*r4+r2*r3)
-        ey =twiss1(mfitex)
-        epy=twiss1(mfitepx)
-        ex =twiss1(mfitey)
-        epx=twiss1(mfitepy)
-        zy =twiss1(mfitzx)
-        zpy=twiss1(mfitzpx)
-        zx =twiss1(mfitzy)
-        zpx=twiss1(mfitzpy)
-        sqrby=sqrt(twiss1(mfitbx))
-        ay=twiss1(mfitax)
-        sqrbx=sqrt(twiss1(mfitby))
-        ax=twiss1(mfitay)
-      endif
-      hx11=amu*zx -r2*zpy+r4*zy
-      hx12=amu*ex -r2*epy+r4*ey
-      hx21=amu*zpx+r1*zpy-r3*zy
-      hx22=amu*epx+r1*epy-r3*ey
-      hy11=amu*zy -r2*zpx-r1*zx
-      hy12=amu*ey -r2*epx-r1*ex
-      hy21=amu*zpy-r4*zpx-r3*zx
-      hy22=amu*epy-r4*epx-r3*ex
-      dethx=hx11*hx22-hx21*hx12
-      dethy=hy11*hy22-hy21*hy12
-      azz=sqrt(1.d0-dethx-dethy)
-      aa=1.d0/(1.d0+azz)
-      amux=1.d0-dethx*aa
-      amuy=1.d0-dethy*aa
-      h(1,1)=amux
-      h(1,2)=0.d0
-      h(1,3)=( hx12*hy21-hx11*hy22)*aa
-      h(1,4)=(-hx12*hy11+hx11*hy12)*aa
-      h(1,5)=-hx11
-      h(1,6)=-hx12
-      h(2,1)=0.d0
-      h(2,2)=amux
-      h(2,3)=( hx22*hy21-hx21*hy22)*aa
-      h(2,4)=(-hx22*hy11+hx21*hy12)*aa
-      h(2,5)=-hx21
-      h(2,6)=-hx22
-      h(3,1)= h(2,4)
-      h(3,2)=-h(1,4)
-      h(3,3)=amuy
-      h(3,4)=0.d0
-      h(3,5)=-hy11
-      h(3,6)=-hy12
-      h(4,1)=-h(2,3)
-      h(4,2)=h(1,3)
-      h(4,3)=0.d0
-      h(4,4)=amuy
-      h(4,5)=-hy21
-      h(4,6)=-hy22
-      ri(5,1)= hx22
-      ri(5,2)=-hx12
-      ri(5,3)= hy22
-      ri(5,4)=-hy12
-      ri(5,5)=azz
-      ri(5,6)=0.d0
-      ri(6,1)=-hx21
-      ri(6,2)= hx11
-      ri(6,3)=-hy21
-      ri(6,4)= hy11
-      ri(6,5)=0.d0
-      ri(6,6)=azz
-      sqrbz=sqrt(twiss1(mfitbz))
-      az=twiss1(mfitaz)
-      br(1,1)= amu/sqrbx
-      br(1,2)=0.d0
-      br(1,3)=-r4/sqrbx
-      br(1,4)= r2/sqrbx
-      br(2,1)= amu*ax/sqrbx
-      br(2,2)= amu*sqrbx
-      br(2,3)= r3*sqrbx-r4*ax/sqrbx
-      br(2,4)= r2*ax/sqrbx-r1*sqrbx
-      br(3,1)= r1/sqrby
-      br(3,2)= r2/sqrby
-      br(3,3)= amu/sqrby
-      br(3,4)=0.d0
-      br(4,1)= r1*ay/sqrby+r3*sqrby
-      br(4,2)= r2*ay/sqrby+r4*sqrby
-      br(4,3)= amu*ay/sqrby
-      br(4,4)= amu*sqrby
-      ri(1,1)=br(1,1)*h(1,1)+br(1,2)*h(2,1)
-     $       +br(1,3)*h(3,1)+br(1,4)*h(4,1)
-      ri(1,2)=br(1,1)*h(1,2)+br(1,2)*h(2,2)
-     $       +br(1,3)*h(3,2)+br(1,4)*h(4,2)
-      ri(1,3)=br(1,1)*h(1,3)+br(1,2)*h(2,3)
-     $       +br(1,3)*h(3,3)+br(1,4)*h(4,3)
-      ri(1,4)=br(1,1)*h(1,4)+br(1,2)*h(2,4)
-     $       +br(1,3)*h(3,4)+br(1,4)*h(4,4)
-      ri(1,5)=br(1,1)*h(1,5)+br(1,2)*h(2,5)
-     $       +br(1,3)*h(3,5)+br(1,4)*h(4,5)
-      ri(1,6)=br(1,1)*h(1,6)+br(1,2)*h(2,6)
-     $       +br(1,3)*h(3,6)+br(1,4)*h(4,6)
-      ri(2,1)=br(2,1)*h(1,1)+br(2,2)*h(2,1)
-     $       +br(2,3)*h(3,1)+br(2,4)*h(4,1)
-      ri(2,2)=br(2,1)*h(1,2)+br(2,2)*h(2,2)
-     $       +br(2,3)*h(3,2)+br(2,4)*h(4,2)
-      ri(2,3)=br(2,1)*h(1,3)+br(2,2)*h(2,3)
-     $       +br(2,3)*h(3,3)+br(2,4)*h(4,3)
-      ri(2,4)=br(2,1)*h(1,4)+br(2,2)*h(2,4)
-     $       +br(2,3)*h(3,4)+br(2,4)*h(4,4)
-      ri(2,5)=br(2,1)*h(1,5)+br(2,2)*h(2,5)
-     $       +br(2,3)*h(3,5)+br(2,4)*h(4,5)
-      ri(2,6)=br(2,1)*h(1,6)+br(2,2)*h(2,6)
-     $       +br(2,3)*h(3,6)+br(2,4)*h(4,6)
-      ri(3,1)=br(3,1)*h(1,1)+br(3,2)*h(2,1)
-     $       +br(3,3)*h(3,1)+br(3,4)*h(4,1)
-      ri(3,2)=br(3,1)*h(1,2)+br(3,2)*h(2,2)
-     $       +br(3,3)*h(3,2)+br(3,4)*h(4,2)
-      ri(3,3)=br(3,1)*h(1,3)+br(3,2)*h(2,3)
-     $       +br(3,3)*h(3,3)+br(3,4)*h(4,3)
-      ri(3,4)=br(3,1)*h(1,4)+br(3,2)*h(2,4)
-     $       +br(3,3)*h(3,4)+br(3,4)*h(4,4)
-      ri(3,5)=br(3,1)*h(1,5)+br(3,2)*h(2,5)
-     $       +br(3,3)*h(3,5)+br(3,4)*h(4,5)
-      ri(3,6)=br(3,1)*h(1,6)+br(3,2)*h(2,6)
-     $       +br(3,3)*h(3,6)+br(3,4)*h(4,6)
-      ri(4,1)=br(4,1)*h(1,1)+br(4,2)*h(2,1)
-     $       +br(4,3)*h(3,1)+br(4,4)*h(4,1)
-      ri(4,2)=br(4,1)*h(1,2)+br(4,2)*h(2,2)
-     $       +br(4,3)*h(3,2)+br(4,4)*h(4,2)
-      ri(4,3)=br(4,1)*h(1,3)+br(4,2)*h(2,3)
-     $       +br(4,3)*h(3,3)+br(4,4)*h(4,3)
-      ri(4,4)=br(4,1)*h(1,4)+br(4,2)*h(2,4)
-     $       +br(4,3)*h(3,4)+br(4,4)*h(4,4)
-      ri(4,5)=br(4,1)*h(1,5)+br(4,2)*h(2,5)
-     $       +br(4,3)*h(3,5)+br(4,4)*h(4,5)
-      ri(4,6)=br(4,1)*h(1,6)+br(4,2)*h(2,6)
-     $       +br(4,3)*h(3,6)+br(4,4)*h(4,6)
-      ri(5,1:6)=ri(5,1:6)/sqrbz
-      ri(6,1:6)=ri(6,1:6)*sqrbz+ri(5,1:6)*az
-      return
-      end
-
       subroutine tsymp(trans)
       implicit none
-      integer*4 i,j
+      integer*4 i
       real*8 trans(6,6),ri(6,7)
       call tinv6(trans,ri)
       call tmultr(ri,trans,6)
       do 10 i=1,6
-        do 20 j=1,6
-          ri(j,i)=-ri(j,i)*.5d0
-20      continue
+c        do 20 j=1,6
+          ri(1:6,i)=-ri(1:6,i)*.5d0
+c20      continue
         ri(i,i)=ri(i,i)+1.5d0
 10    continue
       call tmultr(trans,ri,6)

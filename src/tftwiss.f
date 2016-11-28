@@ -1023,6 +1023,9 @@ c          call tmov(vtwiss(mfitdx),cod,4)
           irtc=itfmessage(9,'General::wrongnum',
      $         '"positive and less than length of beam line"')
         else
+          if(i .eq. nlat)then
+            r=0.d0
+          endif
           isp=isp+1
           itastk(1,isp)=ilist(i,ifele1)
           itastk(2,isp)=i

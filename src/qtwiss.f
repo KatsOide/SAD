@@ -467,7 +467,7 @@ c     end   initialize for preventing compiler warning
               tr(4,5)=a43*y+a44*tr(4,5)+a45
             endif
           else
-            call qmat2twiss(trans,ip1,ip,twiss,dpsix,dpsiy,coup,normal)
+            call qmat2twiss(trans,ip,l,twiss,dpsix,dpsiy,coup,normal)
           endif
           if(.not. mat)then
             if(orbitcal)then
@@ -486,14 +486,14 @@ c     end   initialize for preventing compiler warning
       return
       end
 
-      subroutine qmat2twiss(trans,ip1,ip,
+      subroutine qmat2twiss(trans,ip,l,
      $     twiss,dpsix,dpsiy,coup,normal)
       use tfstk
       use ffs
       use tffitcode
       use ffs_pointer, only:gammab
       implicit none
-      integer*4 ip1,ip
+      integer*4 ip1,ip,l1,l
       real*8 trans(4,5),twiss(nlat*(2*ndim+1),ntwissfun),dpsix,dpsiy,
      $     ax0,bx0,ay0,by0
       real*8 r1,r2,r3,r4,sqrdet,detp,epx0,epy0,ex0,ey0
@@ -502,7 +502,9 @@ c     end   initialize for preventing compiler warning
      $     r15,r25,r35,r45,aa,bb,cc,dd,detm,gr,
      $     t1,t2,t3,t4
       logical*4 coup,normal
-      twiss(ip,mfitaz:mfitzpy)=0.d0
+      ip1=ip-1
+      l1=l-1
+      twiss(ip,mfitaz:mfitzpy)=twiss(ip1,mfitaz:mfitzpy)
       ax0=twiss(ip1,mfitax)
       bx0=twiss(ip1,mfitbx)
       ay0=twiss(ip1,mfitay)
@@ -660,7 +662,7 @@ c     $               'qtwiss-coup-n  ',r1,r2,r3,r4,r1*r4-r2*r3,detp
         endif
       else
         if(trpt)then
-          gr=gammab(ip)/gammab(ip1)
+          gr=gammab(l)/gammab(l1)
           ex0 =twiss(ip1,mfitex)*gr
           epx0=twiss(ip1,mfitepx)*gr
           ey0 =twiss(ip1,mfitey)*gr
@@ -892,9 +894,10 @@ c          enddo
       use ffs
       use ffs_pointer
       use tffitcode
+      use temw, only:etwiss2ri,tfetwiss
       implicit none
       integer*4 l,nvar
-      real*8 fr,ftwiss(ntwissfun),trans(6,6),cod(6),
+      real*8 fr,ftwiss(ntwissfun),trans(6,6),cod(6),gr,sgr,
      $     vsave(kwMAX),tw1(ntwissfun),ri(6,6),beam(21)
       logical*4 over,sol,rt,chg,cp0,normal
       if(calc6d)then
@@ -915,12 +918,23 @@ c          enddo
         if(chg)then
           call qfracsave(l,vsave,nvar,.false.)
         endif
+        if(trpt)then
+          gr=gammab(l+1)/gammab(l)
+          sgr=sqrt(1.d0+(gr-1.d0)*fr)
+          trans(1,:)=trans(1,:)*sgr
+          trans(3,:)=trans(3,:)*sgr
+          trans(5,:)=trans(5,:)*sgr
+          trans(2,:)=trans(2,:)*gr/sgr
+          trans(4,:)=trans(4,:)*gr/sgr
+          trans(6,:)=trans(6,:)*gr/sgr
+        endif
+c        write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6)
         call tinv6(trans,ri)
         call tfetwiss(ri,cod,ftwiss,normal)
         ftwiss(mfitnx)=ftwiss(mfitnx)+twiss(l,0,mfitnx)
         ftwiss(mfitny)=ftwiss(mfitny)+twiss(l,0,mfitny)
         ftwiss(mfitnz)=ftwiss(mfitnz)+twiss(l,0,mfitnz)
-c        write(*,'(a,i5,1p7g14.6)')'qtwissfrac ',l,fr,ftwiss(1:mfitny)
+c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
         over=.false.
         codplt=cp0
       else
@@ -957,15 +971,10 @@ c        write(*,'(a,i5,1p7g14.6)')'qtwissfrac ',l,fr,ftwiss(1:mfitny)
         elseif(force)then
           call qtwiss(twiss,idp,l,l+1,over)
         else
-c          forall(i=1:ntwissfun)twisss(i)=twiss(l+1,idp,i)
           twisss(1:ntwissfun)=twiss(l+1,idp,1:ntwissfun)
           call qtwiss(twiss,idp,l,l+1,over)
           ftwiss(1:ntwissfun)=twiss(l+1,idp,1:ntwissfun)
           twiss(l+1,idp,1:ntwissfun)=twisss(1:ntwissfun)
-c          do i=1,ntwissfun
-c            ftwiss(i)=twiss(l+1,idp,i)
-c            twiss(l+1,idp,i)=twisss(i)
-c          enddo
         endif
         gammab(l)=gb0
         gammab(l+1)=gb1
@@ -973,7 +982,7 @@ c          enddo
           call qfracsave(l,vsave,nvar,.false.)
         endif
       else
-        forall(i=1:ntwissfun) ftwiss(i)=twiss(l+1,idp,i)
+        ftwiss(1:ntwissfun)=twiss(l+1,idp,1:ntwissfun)
       endif
       return
       end

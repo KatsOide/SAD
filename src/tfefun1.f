@@ -1,6 +1,7 @@
       recursive subroutine tfefun1(isp1,id0,kx,ref,irtc)
       use tfstk
       use tflinepcom
+      use temw, only:tfnormalcoord
       implicit none
       type (sad_descriptor) kx,kxj,kispi
       type (sad_list), pointer :: klx,kli
@@ -47,7 +48,7 @@ c-------next 4 lines were modified by Kikuchi---------------
      $     ),id
 c            ELEM TWIS LINE CalE TraP CalO DyAp RspM Mast FLAG
 c            Mcad exDA InDA MAP  FFS  RadF RadS Flag ExBL BLNm
-c            SetE TKey TclA Tcl  ClLi ExpB GetM ClTr LiTr RGBC
+c            SetE TKey NCD6 Tcl  ClLi ExpB GetM ClTr LiTr RGBC
 c            CPro TcA1 CaSy TkOA CaSD TcSR LifT SyBE CSRI CSRM
 c            CSRC CSRT CSRH CSOS CSOM AliP
       write(*,*)
@@ -99,7 +100,7 @@ c-------Kikuchi addition end-----
       return
  5220 call tftypekey(isp1,kx,irtc)
       return
- 5230 irtc=itfmessage(999,'General::unregister',' ')
+ 5230 call tfnormalcoord(isp1,kx,irtc)
       return
  5240 irtc=itfmessage(999,'General::unregister',' ')
       return

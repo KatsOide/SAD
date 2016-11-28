@@ -673,6 +673,7 @@ c        write(*,'(a,2i5,1p6g15.7)')'tsetplot  ',lorg,l,twiss(l,idp,1:6)
       end
 
       subroutine tsetetwiss(trans,cod,beam,lorg,l,idp,rgb)
+      use ffs
       use ffs_pointer
       use tffitcode
       use tmacro
@@ -680,10 +681,16 @@ c        write(*,'(a,2i5,1p6g15.7)')'tsetplot  ',lorg,l,twiss(l,idp,1:6)
       implicit none
       integer*4 l,idp,lorg
       real*8 trans(6,6),ti(6,6),twi(ntwissfun),cod(6),rgb,
-     $     beam(21),ril(6,6)
+     $     beam(21),ril(6,6),gr,tr0(6,6)
       logical*4 norm
       real*8,parameter :: toln=-2.d-9
-      call tinv6(trans,ti)
+      if(trpt)then
+        gr=gammab(l)/gammab(max(1,lorg-1))
+        tr0=trans*sqrt(gr)
+        call tinv6(tr0,ti)
+      else
+        call tinv6(trans,ti)
+      endif
       if(lorg .eq. 0)then
         call tmultr(ti,ri,6)
         norm=normali

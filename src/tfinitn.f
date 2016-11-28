@@ -1142,8 +1142,7 @@ c-----Kikuchi addition end-----
       i=itfunaloc('BeamLineName',1020,0,map,ieval,0)
       i=itfunaloc('SetElement$',1021,1,map,ieval,0)
       i=itfunaloc('Type$Key$',1022,1,map,ieval,0)
-c      i=itfunaloc('PyArg',1022,1,map,ieval,2)
-c      i=itfunaloc('TclArg',1023,1,map,ieval,0)
+      i=itfunaloc('NormalCoordinate6',1023,1,map,ieval,0)
 c      i=itfunaloc('Tcl',1024,1,map,ieval,0)
 c      i=itfunaloc('CanvasClipLine',1025,2,map,ieval,0)
 c      ieval(1)=1
