@@ -1,9 +1,121 @@
+      module tfcsi
+        integer*4, parameter :: nbmax=200000
+        integer*4 ipoint,iconv,ios,lfn1,lfni,lfno,lrecl,ldel,
+     $       lcmnt,linep,lastln,ibegt,lastt
+        logical*4 rec
+        character*16 delim,cmnt
+        character*(nbmax) buffer
+
+        contains
+        subroutine cssetp(ip)
+        implicit none
+        integer*4 ip
+        ipoint=ip
+        return
+        end subroutine
+
+        subroutine cssets(ip)
+        implicit none
+        integer*4 ip
+        ios=ip
+        return
+        end subroutine
+
+        subroutine cssetl(ip)
+        implicit none
+        integer*4 ip
+        lrecl=ip
+        return
+        end subroutine
+
+        subroutine cssetlfni(ip)
+        implicit none
+        integer*4 ip
+        lfni=ip
+        return
+        end subroutine
+
+        subroutine cssetlfno(ip)
+        implicit none
+        integer*4 ip
+        lfno=ip
+        return
+        end subroutine
+
+        subroutine cssetlfn1(ip)
+        implicit none
+        integer*4 ip
+        lfn1=ip
+        return
+        end subroutine
+
+        subroutine cssetrec(f)
+        implicit none
+        logical*4 f
+        rec=f
+        return
+        end subroutine
+
+        subroutine cssetlinep(ip)
+        implicit none
+        integer*4 ip
+        linep=ip
+        return
+        end subroutine
+
+        integer*4 function icsmrk()
+        implicit none
+        icsmrk=ipoint
+        return
+        end function
+
+        integer*4 function icsstat()
+        implicit none
+        icsstat=ios
+        return
+        end function
+
+        integer*4 function icslrecl()
+        implicit none
+        icslrecl=lrecl
+        return
+        end function
+
+        integer*4 function icslfni()
+        implicit none
+        icslfni=lfni
+        return
+        end function
+
+        integer*4 function icslfno()
+        implicit none
+        icslfno=lfno
+        return
+        end function
+
+        integer*4 function icslfn1()
+        implicit none
+        icslfn1=lfn1
+        return
+        end function
+
+        integer*4 function icslinep()
+        implicit none
+        icslinep=linep
+        return
+        end function
+
+        logical*4 function csrec()
+        implicit none
+        csrec=rec
+        return
+        end function
+
+      end module
+
       subroutine csinit(lfn0,iconv1,cmnt1,rec0)
-      use tfstk
-      use ffs_flag
-      use tmacro
+      use tfcsi
       implicit none
-      include 'inc/TFCSI.inc'
       integer*4 lfn0,iconv1
       character*(*) cmnt1
       logical*4 rec0
@@ -12,7 +124,7 @@
       buffer(1:1)=char(10)
       ipoint=1
       iconv=iconv1
-      convcase=iconv1.eq.1
+      call tfsetconvcase(iconv1 .eq. 1)
       delim=';'//char(10)//' ,'
       ldel=len_trim(delim)
       cmnt=cmnt1

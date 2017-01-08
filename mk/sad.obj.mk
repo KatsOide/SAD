@@ -56,13 +56,12 @@ OBJ2=packpi.o    tfdbun.o    tracke.o    NewGRF.o \
      ZEROM2.o	ZEROM4.o	ZEROV4.o \
      tfrej.o     setdfl.o    tsmear.o    actPlt.o
 
-OBJ3=sethtb.o    atof.o      bint.o \
-     skipch.o    tspect.o    mbmp.o       pfcoup.o \
+OBJ3=sethtb.o    atof.o      bint.o      skipch.o    tspect.o    mbmp.o       pfcoup.o \
      sols33.o    pgaussj.o   corfree.o   spline.o \
      tstrad.o    corinit.o   phdrw.o     sprexl.o     \
      phdrwa.o    sprlin.o    pinner.o     \
      tfzap.o     ttcav.o     pkill.o \
-     ttcave.o    talign.o    tgfun.o     cssetp.o     \
+     ttcave.o    talign.o    tgfun.o      \
      pmicad.o    tgrot.o     dAssgn.o    \
      pmovi.o     defflg.o    polpar.o
 
@@ -100,7 +99,7 @@ OBJ5=trcoda.o    nalign.o    ndelw.o    pwrtstr.o \
      initdainterface.o       initda.o     tfepicsconstatcb.o
 
 OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
-     doACT.o     eval1_.o    getbuf.o     getwrd.o   icsmrk.o \
+     doACT.o     eval1_.o    getbuf.o     getwrd.o    \
      ielm.o      itfgeto.o   \
      pfalloc.o   pgflag.o    pgmast.o     pgrmat.o \
      pgsolvcond.o            qcell.o      qdbend.o     qdcell.o \
@@ -119,7 +118,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      tfmat.o     tfoptics.o  tfprint.o   \
      tfsave.o    tfsetparam.o             tfsetv.o   tfshow.o    tftmat.o \
      tftrack.o   tftrak.o    tftrb.o \
-     tftyp1.o    tftype.o    tfvars.o     tfwake.o   tgauss_.o \
+     tftyp1.o    tftype.o    tfvars.o     tgauss_.o \
      tgetfv.o    thess.o     tins.o     tinse.o \
      tlum.o      tmov.o       tmulbs.o   tmulte.o \
      tmulti.o    tmulta.o    tdrift.o     trackd.o \

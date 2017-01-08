@@ -1,16 +1,18 @@
-      Integer*4 function mkplst(idxl)
+      Integer*8 function mkplst(idxl)
       use maccbk
+      use mackw
+      use tfmem, only:ktaloc,tfree
       implicit real*8 (a-h,o-z)
-      integer idxl
-      include 'inc/MACCODE.inc'
+      integer*8 idxl,i
       integer*4 STKSIZ,allmem
       parameter (STKSIZ =1024, allmem=32768)
-      integer mtop,mlen,isp,pstack
+      integer mlen,isp
+      integer*8 pstack,mtop
 c
-      pstack=mtaloc(STKSIZ)
+      pstack=ktaloc(STKSIZ)
       isp=0
 c      allmem=mtaloc(-1)
-      mtop=mtaloc(allmem)
+      mtop=ktaloc(allmem)
       mlen=0
       call push(0,0,mlen,ilist(1,mtop),allmem)
 c
@@ -42,8 +44,10 @@ c
  2000 continue
       ilist(1,mtop)=mlen
       ilist(2,mtop)=0
-      call tfreem(mtop+mlen,allmem-mlen)
-c      call freeme(mtop+mlen,allmem-mlen)
+      if(allmem .gt. mlen+3)then
+        ilist(1,mtop+mlen)=allmem-mlen
+        call tfree(mtop+mlen+1)
+      endif
       mkplst=mtop
 c     print *,'mklst',mtop,mlen
       return

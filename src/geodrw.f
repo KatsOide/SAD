@@ -1,12 +1,14 @@
-      subroutine geodrw(latt,geo,word,lfnd,title,case)
+      subroutine geodrw(geo,word,lfnd,title,case)
       use tfstk
       use ffs
       use tffitcode
+      use sad_main
+      use ffs_pointer, only:elatt
+      use tfcsi
       implicit real*8 (a-h,o-z)
 c       idval(latt(1,i)+5) ---> rotation
 c       s.t.       x(beam)=x cos(t) - y sin(t)
       parameter (nkey=2)
-      dimension latt(2,nlat)
       dimension geo(3,4,nlat)
       dimension window(4), pn1(3), pn2(3), pn3(3), ds(3)
       dimension cs(7),csa(7)
@@ -192,7 +194,7 @@ c ... write element box
         else
           angl=angl0
         endif
-        n=latt(1,i)
+        n=idcomp(elatt,i)
         id=idtype(n)
         if(id.eq.1) then
           bw=fh
@@ -260,11 +262,11 @@ c ... write element name
         else
           angl=angl0
         endif
-        n=latt(1,i)
+        n=idcomp(elatt,i)
         id=idtype(n)
         if( tmatch(pname(n),word) ) then
           call cssetp(next)
-          if( pname(n).ne.pname(latt(1,i+1)) ) then
+          if( pname(n).ne.pname(idcomp(elatt,i+1)) ) then
             cs(1)=x+dx/2.-spname*dy/dss*parity
             cs(2)=y+dy/2.+spname*dx/dss*parity
             cs(3)=atan2(dy,dx)+parity*pi/2.

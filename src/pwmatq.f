@@ -2,12 +2,12 @@
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idvalc,idtypec
       implicit real*8(a-h,o-z)
       parameter (halfpi=pi*0.5d0)
       logical avecmo
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),
-     $     gammab(nlat),
-     1          pos(nlat)
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat),pos(nlat)
       dimension imon(nmona,4)
       dimension a(nmon,nq,2),b(nq)
       logical errflg
@@ -82,9 +82,9 @@ c     end   initialize for preventing compiler warning
       lq=0
       itemp=italoc(nstra)
       do 20 l=1,nlat-1
-        if(idtype(latt(1,l)).eq.icquad) then
+        if(idtypec(l).eq.icquad) then
           avecmo=.false.
-          t=rlist(idval(latt(1,l))+4)
+          t=rlist(idvalc(l)+4)
 c         .... reject skew quads ....
           if(abs(t-pi/4d0).lt.0.01 .or. abs(t+pi/4d0).lt.0.01) goto 20
           lq=lq+1
@@ -100,15 +100,15 @@ c         .... reject skew quads ....
           call mcrmat(latt,twiss,gammab,0,psix,psiy,a(1,lq,1),nmon,
      1               .false.,.false.,ilist(1,itemp),1,imon,nmon,'X')
           do 22 i=1,nmon
-            a(i,lq,1)=a(i,lq,1)*rlist(idval(latt(1,l))+2)
+            a(i,lq,1)=a(i,lq,1)*rlist(idvalc(l)+2)
    22     continue
-          dx=rlist(idval(latt(1,l))+5)
-          rlist(idval(latt(1,l))+5)=t+halfpi
+          dx=rlist(idvalc(l)+5)
+          rlist(idvalc(l)+5)=t+halfpi
           call mcrmat(latt,twiss,gammab,0,psix,psiy,a(1,lq,2),nmon,
      1                .false.,.false.,ilist(1,itemp),1,imon,nmon,'Y')
-          rlist(idval(latt(1,l))+5)=dx
+          rlist(idvalc(l)+5)=dx
           do 24 i=1,nmon
-            a(i,lq,2)=-a(i,lq,2) * rlist(idval(latt(1,l))+2)
+            a(i,lq,2)=-a(i,lq,2) * rlist(idvalc(l)+2)
    24     continue
           if(avecmo) then
             a(iq,lq,1)=a(iq,lq,1)-1d0

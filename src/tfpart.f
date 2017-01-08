@@ -711,8 +711,8 @@ c        enddo
         ks=dtastk(isp)
         if(ktfrealqd(kp,vp) .and. ktfrealqd(ks,vs))then
           isp=isp+1
-          itastk(1,isp)=vp
-          itastk(2,isp)=vs
+          itastk(1,isp)=int(vp)
+          itastk(2,isp)=int(vs)
           call tfpartitionstk(isp,isp,kl,kx,irtc)
           isp=isp1+3
           return

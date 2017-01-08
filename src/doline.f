@@ -1,15 +1,16 @@
       subroutine doline(incode)
       use trackbypass
       use maccbk
+      use mackw
+      use macttyp
+      use macfile
+      use macmisc
+      use tfmem, only:tfree
       implicit none
-      include 'inc/MACFILE.inc'
-      include 'inc/MACMISC.inc'
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
       character*(MAXSTR) token
-      integer*4 icode,incode,index,idx,idx1,membas
-      integer slen,ival,ttype,hsrchz,lenw ,slen2,ttype2
+      integer*8 incode,icode,idx1
+      integer*4 index,idx,membas,lpname
+      integer slen,ival,ttype,hsrchz,slen2,ttype2
       real*8 rval
       logical skipch
 c
@@ -48,15 +49,15 @@ c
         if ((idtype(idx) .eq. icNULL)
      &      .or. (idtype(idx) .eq. icode)) then
           if(idtype(idx) .eq. icode )
-     &         call errmsg('doline',pname(idx)(:lenw(pname(idx)))//
+     &         call errmsg('doline',pname(idx)(:lpname(idx))//
      &         ' is redefined',0,-1)
-          idtype(idx)=icode
+          idtype(idx)=int(icode)
           idx1=idval(idx)
           if(idx1 .ne. 0) then
             membas=ilist(2,idx1)
             if(membas .gt. 0) then
-              if(membas .ne. lattuse)then
-                call tclrline(membas)
+              if(idval(membas) .ne. lattuse)then
+                call tclrline(idval(membas))
               else
                 lattredef=lattuse
               endif
@@ -64,7 +65,7 @@ c
             endif
 c            write(*,*)'doline-delete ',
 c     $           idx1,ilist(1,idx1),ilist(1,idx1-1),pname(idx)
-            call tfree(int8(idx1))
+            call tfree(idx1)
 c            call tfreem(idx1,ilist(1,idx1)+1)
 c            call freeme(idx1,ilist(1,idx1)+1)
             idval(idx)=0

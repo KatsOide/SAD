@@ -2,7 +2,8 @@
      $     al,ak,bz,phia,
      $     psi1,psi2,
      $     dx,dy,dz,chi1,chi2,theta,dtheta,
-     $     eps0,enarad,fringe,f1,f2,mfring,fb1,fb2,
+     $     eps0,enarad,fringe,f1in,f2in,f1out,f2out,
+     $     mfring,fb1,fb2,
      $     vc,w,phirf,dphirf,radius,rtaper,autophi,
      $     kturn,l,latt,kptbl)
       use tfstk
@@ -18,14 +19,14 @@ c      parameter (oneev=1.d0+3.83d-12)
       parameter (oneev=1.d0+1.d-6)
       integer*4 np
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
-      real*8 al,f1r,f2r
+      real*8 al,f1r,f2r,f1in,f2in,f1out,f2out
       complex*16 ak(0:nmult)
       real*8 bz,phia,psi1,psi2,dx,dy,dz,chi1,chi2,theta,dtheta,eps0
       logical*4 enarad,fringe,autophi
-      real*8 f1,f2
       integer*4 mfring
       real*8 fb1,fb2,vc,phirf,dphirf,radius
-      integer*4 kturn,l,latt(2,nlat),kptbl(np0,6)
+      integer*8 latt(nlat)
+      integer*4 kturn,l,kptbl(np0,6)
       logical acc,spac1,dofr(0:nmult)
       integer*4 i,j,m,n,ndiv,nmmin,nmmax
       real*8 pz0,s0,bxs,bys,bzs,
@@ -81,6 +82,7 @@ c      parameter (oneev=1.d0+3.83d-12)
      $       eps0,enarad,fb1,fb2,mfring,fringe)
         return
       endif
+      dphis=0.d0
       radlvl=1.d0
       b0=0.d0
       z00=z(1)
@@ -397,14 +399,14 @@ c     end   initialize for preventing compiler warning
         endif
         if(mfring .eq. 1 .or. mfring .eq. 3)then
           if(akr(0) .ne. (0.d0,0.d0) .and. fb1 .ne. 0.d0)then
-            call tblfri(np,x,px,y,py,z,g,al,akr(0),fb1)
+            call tblfri(np,x,px,y,py,z,g,al,dble(akr(0)),fb1)
           endif
-          if(f1 .ne. 0.d0 .or. f2 .ne. 0.d0)then
+          if(f1in .ne. 0.d0 .or. f2in .ne. 0.d0)then
             do i=1,np
               p=(1.d0+g(i))
-              a=f1/p
+              a=f1in/p
               ea=exp(a)
-              b=f2/p
+              b=f2in/p
               pxf=px(i)/ea
               pyf=py(i)*ea
               z(i)=z(i)-(a*x(i)+b*(1.d0+.5d0*a)*pxf)*px(i)
@@ -542,12 +544,12 @@ c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
      $         f1r,f1r,al,al,-1.d0)
         endif
         if(mfring .eq. 2 .or. mfring .eq. 3)then
-          if(f1 .ne. 0.d0 .or. f2 .ne. 0.d0)then
+          if(f1out .ne. 0.d0 .or. f2out .ne. 0.d0)then
             do i=1,np
               p=(1.d0+g(i))
-              a=-f1/p
+              a=-f1out/p
               ea=exp(a)
-              b= f2/p
+              b= f2out/p
               pxf=px(i)/ea
               pyf=py(i)*ea
               z(i)=z(i)-(a*x(i)+b*(1.d0+.5d0*a)*pxf)*px(i)
@@ -559,7 +561,7 @@ c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
             enddo
           endif
           if(fb2 .ne. 0.d0 .and. akr(0) .ne. (0.d0,0.d0))then
-            call tblfri(np,x,px,y,py,z,g,al,-akr(0),fb2)
+            call tblfri(np,x,px,y,py,z,g,al,-dble(akr(0)),fb2)
           endif
         endif
         if(fringe .and. mfring .ne. 1)then

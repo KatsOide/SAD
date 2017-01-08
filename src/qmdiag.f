@@ -2,7 +2,7 @@
      1     tm21,tm22,tm23,tm24,
      1     tm31,tm32,tm33,tm34,
      1     tm41,tm42,tm43,tm44,
-     1     r1,r2,r3,r4,c,level,stab,lfno)
+     1     r1,r2,r3,r4,c,stab,lfno)
 c     
 c---- This subroutine find a transformation matrix---
 c     which diagonalizes 4*4 transfer matrix.

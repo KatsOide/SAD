@@ -108,7 +108,7 @@ c      pe=sqrt((he-1.d0)*(he+1.d0))
             alx=al*(wsn+ws(n-1))*.5d0
           endif
           do 10 i=1,np
-            a=min(.99d0,px(i)**2+py(i)**2)
+            a=px(i)**2+py(i)**2
             dpz=sqrt1(-a)
 c            dpz=-a/(1.d0+sqrt(1.d0-a))
             al1=alx/(1.d0+dpz)
@@ -179,7 +179,7 @@ c      write(*,*)'tcav-2 ',z(1),g(1),dv(1)
       if(al .ne. 0.d0)then
         alx=al*ws(ndiv)*.5d0
         do 30 i=1,np
-          a=min(.99d0,px(i)**2+py(i)**2)
+          a=px(i)**2+py(i)**2
           dpz=sqrt1(-a)
 c          dpz=-a/(1.d0+sqrt(1.d0-a))
           al1=alx/(1.d0+dpz)

@@ -881,9 +881,9 @@ CSRStability=Class[{CSR},{},
           AspectRatio->1
           ];Update[],*)
         With[{opt={DisplayFunction->Identity,GridLines->{Automatic,Automatic}}},
-          g1=ListPlot[resz,Null@@opt,
+          g1=ListPlot[resz,opt,
             FrameLabel->{"Turns","`fs`n`dz`n / `fs`n`dz0`n"}];
-          g2=ListPlot[resdp,Null@@opt,
+          g2=ListPlot[resdp,opt,
             FrameTicks->{Ticks,Both,Ticks,Ticks},
             FrameLabel->{"","`fs`dd`n / `fs`dd`n`d0`n",label,""}]];
         Show[gr=
@@ -1012,7 +1012,7 @@ CSRStability=Class[{CSR},{},
       {ev,u}=Eigensystem[oym];
       ev=Sqrt[ev];
       gr=Max[Abs[Im[ev]]-damp*Restrict[Abs[Re[ev]/(2Pi nus)],1,Infinity]];
-      StandardForm[$FORM="10.5";Print["OYS factor, growth: ",fact,"  ",gr]];
+      StandardForm[$FORM="10.5";Print["OYS factor, growth rate/turn: ",fact,"  ",gr]];
       {gr<0,gr,ev,u}]];
 
   OYSF[aw_,nj_,nphi_,f_Real]:=OYStability[aw,nj,nphi,BLFactor->f];

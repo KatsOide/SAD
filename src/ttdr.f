@@ -1,4 +1,5 @@
       subroutine ttdr(lfno,err)
+      use tfcsi,only:cssetp
       implicit none
       logical*4 err,exist
       character*80 word,display

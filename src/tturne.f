@@ -3,22 +3,20 @@
       use touschek_table
       use tfstk
       use tffitcode
-      use ffs, only: gettwiss
+      use ffs, only: gettwiss,ffs_bound
       use ffs_pointer
       use ffs_flag
       use tmacro
+      use sad_main
+      use temw, only:normali
       implicit none
-      type (sad_list), pointer :: kli
+      type (ffs_bound) fbound
       real*8 codmax,demax
       parameter (codmax=1.d4,demax=.5d0)
       integer*8 iatr,iacod,iabmi
-      integer*4 lbegin,lend,ls,l,nvar,lx
       real*8 trans(6,12),cod(6),beam(42)
-      real*8 trans1(6,12),cod1(6),beam1(42)
-      real*8 vsave(100)
-      real*8 pgev00,frbegin,frend,r,dzmax,alambdarf,
-     $     xp,xb,xe,fr,fra,frb,tffselmoffset,z0
-      logical*4 sol,plot,update,chg,sol1,cp0,int0,rt
+      real*8 z0,pgev00,alambdarf,dzmax
+      logical*4 plot,update,rt
       pgev00=pgev
       vc0=0.d0
       u0=0.d0
@@ -29,7 +27,6 @@ c      vcsin=0.d0
       dvcacc=0.d0
       ddvcacc=0.d0
       z0=cod(5)
-      sol=.false.
       if(calint)then
         touckl(:) = 0.d0
         touckm(:,:,:) = 0.d0
@@ -46,37 +43,116 @@ c      vcsin=0.d0
         npelm=0
       endif
       ipelm=0
-      call tffsbound(lbegin,frbegin,lend,frend)
-      if(frbegin .ne. 0.d0)then
-        call qfracsave(latt(1,lbegin),vsave,nvar,.true.)
-        call qfraccomp(latt(1,lbegin),frbegin,1.d0,ideal,chg)
-        call tturne1(trans,cod,beam,
-     $       iatr,iacod,iabmi,plot,sol,rt,lbegin,lbegin)
-        if(chg)then
-          call qfracsave(latt(1,lbegin),vsave,nvar,.false.)
+      normali=.true.
+      call tffsbound(fbound)
+      call tturne0(trans,cod,beam,fbound,
+     $     iatr,iacod,iabmi,0,plot,rt)
+      if(vc0 .ne. 0.d0 .and. update)then
+        if(vcacc .ne. 0.d0)then
+          wrfeff=sqrt(abs(ddvcacc/vcacc))
+        else
+          wrfeff=abs(dvcacc/vc0)
         endif
-        ls=lbegin+1
-      else
-        ls=lbegin
+        vceff=abs(dcmplx(vcacc,dvcacc/wrfeff))
+c        write(*,'(a,1p6g15.7)')'tturne ',wrfeff,dvcacc,vc0
+c        hvc0=vceff*(c*wrfeff)/omega0
+c        vceff=sign(abs(dcmplx(vccos,vcsin)),vc0)
+        if(trpt)then
+          trf0=0.d0
+          vcphic=0.d0
+          vcalpha=1.d0
+        else
+c          dvcphic=atan2(vcsin,vccos)
+c          if(abs(dvcphic) .lt. pi*.5d0)then
+c            vcphic=vcphic+dvcphic
+c          endif
+          vcalpha=vceff/vc0
+          if(dvcacc .ne. 0.d0)then
+            alambdarf=pi2/wrfeff
+            dzmax=alambdarf*.24d0
+            trf0=trf0+min(dzmax,max(-dzmax,
+     $           (u0*pgev-charge*vcacc)/charge/dvcacc))
+            trf0=mod(trf0+alambdarf*.5d0,alambdarf)-alambdarf*.5d0
+          endif
+c          phis=asin(min(1.d0,max(-1.d0,u0*p0*amass/sign(vceff,vccos))))
+c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
+        endif
+        call RsetGL1('DTSYNCH',trf0)
+        call RsetGL1('PHICAV',vcphic)
+        call RsetGL1('EFFVCRATIO',vcalpha)
       endif
-      call tturne1(trans,cod,beam,
-     $     iatr,iacod,iabmi,plot,sol,rt,ls,lend-1)
-      if(frend .ne. 0.d0)then
-        call qfracsave(latt(1,lend),vsave,nvar,.true.)
-        call qfraccomp(latt(1,lend),0.d0,frend,ideal,chg)
+      if(pgev00 .ne. pgev)then
+        pgev=pgev00
+        call tphyzp
+      endif
+      return
+      end
+
+      subroutine tturne0(trans,cod,beam,fbound,
+     $     iatr,iacod,iabmi,idp,plot,rt)
+      use touschek_table
+      use tfstk
+      use tffitcode
+      use ffs, only: gettwiss,ffs_bound
+      use ffs_pointer
+      use ffs_flag
+      use tmacro
+      use sad_main
+      implicit none
+      type (ffs_bound) fbound
+      type (sad_list), pointer :: kli
+      integer*8 iatr,iacod,iabmi
+      integer*4 ls,l,nvar,lx,idp
+      real*8 trans(6,12),cod(6),beam(42)
+      real*8 trans1(6,12),cod1(6),beam1(42)
+      real*8 vsave(kwMAX)
+      real*8 r,xp,xb,xe,fr,fra,frb,tffselmoffset
+      logical*4 sol,plot,chg,sol1,cp0,int0,rt
+      sol=.false.
+      if(fbound%fb .ne. 0.d0)then
+        call qfracsave(fbound%lb,vsave,nvar,.true.)
+        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
         call tturne1(trans,cod,beam,
-     $       iatr,iacod,iabmi,plot,sol,rt,lend,lend)
+     $       iatr,iacod,iabmi,idp,plot,sol,rt,fbound%lb,fbound%lb)
         if(chg)then
-          call qfracsave(latt(1,lend),vsave,nvar,.false.)
+          call qfracsave(fbound%lb,vsave,nvar,.false.)
+        endif
+        ls=fbound%lb+1
+      else
+        ls=fbound%lb
+      endif
+      if(fbound%fe .eq. 0.d0)then
+        call tturne1(trans,cod,beam,
+     $       iatr,iacod,iabmi,idp,plot,sol,rt,ls,min(nlat-1,fbound%le))
+        if(plot)then
+          call tfsetplot(trans,cod,beam,0,
+     $         fbound%le,iatr,iacod,.false.,idp,
+     $         gammab(fbound%le-1)/gammab(fbound%le))
+        endif
+      else
+        call tturne1(trans,cod,beam,
+     $       iatr,iacod,iabmi,idp,plot,sol,rt,ls,fbound%le-1)
+        call qfracsave(fbound%le,vsave,nvar,.true.)
+        call qfraccomp(fbound%le,0.d0,fbound%fe,ideal,chg)
+        call tturne1(trans,cod,beam,
+     $       iatr,iacod,iabmi,idp,plot,sol,rt,fbound%le,nlat-1)
+        if(chg)then
+          call qfracsave(fbound%le,vsave,nvar,.false.)
+        endif
+        if(plot)then
+          call tfsetplot(trans,cod,beam,0,
+     $         nlat,iatr,iacod,.false.,idp,
+     $         gammab(fbound%le)/gammab(nlat))
         endif
       endif
       if(plot)then
-        call tfsetplot(trans,cod,beam,
-     $       lend,iatr,iacod,.false.,
-     $       gammab(lend-1)/gammab(lend))
-        xb=lbegin+frbegin
-        xe=lend+frend
-        do l=1,nlat
+        if(codplt)then
+          call tfadjustn(idp,mfitnx)
+          call tfadjustn(idp,mfitny)
+        endif
+        xb=fbound%lb+fbound%fb
+        xe=fbound%le+fbound%fe
+        do l=1,nlat-1
           xp=min(xe,max(xb,tffselmoffset(l)))
           if(xp .ne. dble(l))then
             lx=int(xp)
@@ -84,29 +160,33 @@ c      vcsin=0.d0
  8101       if(fr .eq. 0.d0)then
               if(iatr .ne. 0)then
                 if(iatr .gt. 0)then
-                  if(l .ge. lbegin .and. l .le. lend)then
+                  if(l .ge. fbound%lb .and. l .le. fbound%le)then
                     call tflocal(klist(iatr+l))
                   endif
                   klist(iatr+l)=ktfcopy1(klist(iatr+lx))
                 endif
                 if(iacod .gt. 0)then
-                  if(l .ge. lbegin .and. l .le. lend)then
+                  if(l .ge. fbound%lb .and. l .le. fbound%le)then
                     call tflocal(klist(iacod+l))
                   endif
                   klist(iacod+l)=ktfcopy(klist(iacod+lx))
                 endif
               endif
               if(codplt)then
-                twiss(l,0,mfitdx:mfitddp)=twiss(lx,0,mfitdx:mfitddp)
-                beamsize(:,l)=beamsize(:,lx)
+                twiss(l,idp,mfitdx:mfitddp)=twiss(lx,idp,mfitdx:mfitddp)
+                if(irad .ge. 12)then
+                  beamsize(:,l)=beamsize(:,lx)
+                endif
+              elseif(rt)then
+                twiss(l,idp,mfitddp)=twiss(lx,idp,mfitddp)
               endif
             else
-              if(lx .eq. lbegin)then
-                fra=frbegin
+              if(lx .eq. fbound%lb)then
+                fra=fbound%fb
                 frb=max(fr,fra)
-              elseif(lx .eq. lend)then
+              elseif(lx .eq. fbound%le)then
                 fra=0.d0
-                frb=min(frend,fr)
+                frb=min(fbound%fe,fr)
               else
                 fra=0.d0
                 frb=fr
@@ -116,8 +196,8 @@ c      vcsin=0.d0
                 go to 8101
               endif
 c     below is incorrect for fra <> 0
-              call qfracsave(latt(1,lx),vsave,nvar,.true.)
-              call qfraccomp(latt(1,lx),fra,frb,ideal,chg)
+              call qfracsave(lx,vsave,nvar,.true.)
+              call qfraccomp(lx,fra,frb,ideal,chg)
               if(.not. chg)then
                 fr=0.d0
                 go to 8101
@@ -138,10 +218,12 @@ c     below is incorrect for fra <> 0
               endif
               trans1(:,7:12)=0.d0
               if(codplt)then
-                cod1=twiss(lx,0,mfitdx:mfitddp)
-                beam1(1:21)=beamsize(:,lx)
-                if(calint)then
-                  beam1(22:42)=beamsize(:,lx)
+                cod1=twiss(lx,idp,mfitdx:mfitddp)
+                if(irad .ge. 12)then
+                  beam1(1:21)=beamsize(:,lx)
+                  if(calint)then
+                    beam1(22:42)=beamsize(:,lx)
+                  endif
                 endif
               endif
               sol1=.false.
@@ -150,83 +232,53 @@ c     below is incorrect for fra <> 0
               int0=calint
               calint=.false.
               call tturne1(trans1,cod1,beam1,
-     $             int8(0),int8(0),int8(0),.false.,sol1,rt,
+     $             int8(0),int8(0),int8(0),idp,.false.,sol1,rt,
      $             lx,lx)
               codplt=cp0
               calint=int0
-              call qfracsave(latt(1,lx),vsave,nvar,.false.)
-              call tfsetplot(trans1,cod1,beam1,
-     $             l,iatr,iacod,l .ge. lbegin .and. l .le. lend,
+              call qfracsave(lx,vsave,nvar,.false.)
+c              write(*,*)'tturne0 ',lx,l,fbound%lb,fbound%le,idp,
+c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
+              call tfsetplot(trans1,cod1,beam1,lx,
+     $             l,iatr,iacod,
+     $             l .ge. fbound%lb .and. l .le. fbound%le,idp,
      $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb))
             endif
           endif
         enddo
-      elseif(radtaper .and. codplt)then
-        if(lend .eq. 1)then
+      elseif(radtaper .and. radcod)then
+        if(fbound%le .eq. 1)then
           r=1.d0
         else
-          r=gammab(lend-1)/gammab(lend)
+          r=gammab(fbound%le-1)/gammab(fbound%le)
         endif
-        twiss(lend,0,mfitddp)=cod(6)*r
-      endif
-      if(vc0 .ne. 0.d0 .and. update)then
-        wrfeff=sqrt(abs(ddvcacc/vcacc))
-        vceff=abs(dcmplx(vcacc,dvcacc/wrfeff))
-c        hvc0=vceff*(c*wrfeff)/omega0
-c        vceff=sign(abs(dcmplx(vccos,vcsin)),vc0)
-        if(trpt)then
-          trf0=0.d0
-          vcphic=0.d0
-          vcalpha=1.d0
-        else
-c          dvcphic=atan2(vcsin,vccos)
-c          if(abs(dvcphic) .lt. pi*.5d0)then
-c            vcphic=vcphic+dvcphic
-c          endif
-          vcalpha=vceff/vc0
-          if(dvcacc .ne. 0.d0)then
-            alambdarf=pi2/wrfeff
-            dzmax=alambdarf*.24d0
-            trf0=trf0+min(dzmax,max(-dzmax,
-     $           (u0*pgev-charge*vcacc)/charge/dvcacc))
-            trf0=mod(trf0+alambdarf*.5d0,alambdarf)-alambdarf*.5d0
-c            write(*,'(a,1p6g15.7)')'tturne ',
-c     $           u0*pgev,vcacc,dvcacc,trf0,u0,pgev
-          endif
-c          phis=asin(min(1.d0,max(-1.d0,u0*p0*amass/sign(vceff,vccos))))
-c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
-        endif
-        call RsetGL1('DTSYNCH',trf0)
-        call RsetGL1('PHICAV',vcphic)
-        call RsetGL1('EFFVCRATIO',vcalpha)
-      endif
-      if(pgev00 .ne. pgev)then
-        pgev=pgev00
-        call tphyzp
+        twiss(fbound%le,idp,mfitddp)=cod(6)*r
       endif
       return
       end
 
       subroutine tturne1(trans,cod,beam,
-     $     iatr,iacod,iabmi,plot,sol,rt,ibegin,iend)
+     $     iatr,iacod,iabmi,idp,plot,sol,rt,ibegin,iend)
+      use kyparam
       use tfstk
       use tffitcode
       use ffs, only: gettwiss
       use ffs_pointer
       use ffs_flag
       use tmacro
+      use sad_main
       implicit none
       real*8 codmax,demax
       parameter (codmax=1.d4,demax=.5d0)
-      integer*8 iatr,iacod,iabmi,kbmz,kbmzi
-      integer*4 i
+      type (sad_comp), pointer :: cmp
+      integer*8 iatr,iacod,iabmi,kbmz,kbmzi,lp
+      integer*4 idp,i,l1
       real*8 trans(6,12),cod(6),beam(42),bmir(6,6),
      $     bmi(21),bmh(21)
-      real*8 psi1,psi2,apsi1,apsi2,alid,cod60,
-     $     r,dir,al,alib,dtheta,theta0,
+      real*8 psi1,psi2,apsi1,apsi2,alid,
+     $     r,dir,al,alib,dtheta,theta0,ftable(4),
      $     phi,fb1,fb2,chi1,chi2,ak0,ak1,rtaper
-      integer*4 l,ld,lele,lp,kl,
-     $     mfr,ibegin,iend,ke
+      integer*4 l,ld,lele,kl,mfr,ibegin,iend,ke
       logical*4 sol,plot,bmaccum,plotib,isnan,rt,next
       save kbmz
       data kbmz /0/
@@ -246,7 +298,12 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
       do l=ibegin,iend
         next=inext(l) .ne. 0
         if(isnan(cod(1)) .or. isnan(cod(3)))then
-          cod=0.d0
+          if(isnan(cod(1)))then
+            cod(1)=0.d0
+          endif
+          if(isnan(cod(3)))then
+            cod(3)=0.d0
+          endif
           call tinitr(trans)
           if(.not. plot)then
             return
@@ -275,33 +332,31 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
             else
               r=gammab(l-1)/gammab(l)
             endif
-            twiss(l,0,mfitdx )=cod(1)
-            twiss(l,0,mfitdpx)=cod(2)*r
-            twiss(l,0,mfitdy )=cod(3)
-            twiss(l,0,mfitdpy)=cod(4)*r
-            twiss(l,0,mfitdz )=cod(5)
-            twiss(l,0,mfitddp)=cod(6)*r
-            beamsize(:,l)=beam(1:21)
+            call tsetetwiss(trans,cod,beam,0,l,idp,r)
+c            write(*,'(a,i5,1p6g15.7)')'tturne1 ',l,twiss(l,idp,1:6)
+c            et=twiss(l,0,1:mfitzpy)
+c            call checketwiss(trans,et)
           endif
-        elseif(radtaper .and. codplt)then
+        elseif(radtaper .and. radcod)then
           if(l .eq. 1)then
             r=1.d0
           else
             r=gammab(l-1)/gammab(l)
           endif
-          twiss(l,0,mfitddp)=cod(6)*r
+          twiss(l,idp,mfitddp)=cod(6)*r
         endif
-        ld=latt(1,l)
+        ld=idelc(l)
         lele=idtype(ld)
         if(ideal)then
           lp=idval(ld)
         else
-          lp=latt(2,l)
+          lp=elatt%comp(l)
         endif
-        dir=rlist(latt(2,l)+ilist(1,latt(2,l)))
+        call loc_comp(lp,cmp)
+        dir=direlc(l)
         kl=kytbl(kwL,lele)
         if(kl .ne. 0)then
-          al=rlist(lp+kl)
+          al=cmp%value(kl)
         else
           al=0.d0
         endif
@@ -337,7 +392,7 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
             klist(iabmi+l)=ktflist+ktfcopy1(kbmz)
           endif
         endif
-c        WRITE(*,*)lele,' ',PNAME(LATT(1,L))(1:16)
+c        WRITE(*,*)lele,' ',PNAME(ILIST(2,LATT(L)))(1:16)
 c        if(l .lt. 5)then
 c          write(*,*)'tturne1-l ',l,beam(6)
 c        endif
@@ -363,169 +418,187 @@ c        endif
             endif
           endif
         endif
-        cod60=cod(6)
         call tdrife(trans,cod,beam,al,0.d0,0.d0,0.d0,
      $       .true.,.false.,calpol,irad,ld)
         go to 1010
 1200    continue
         if(dir .gt. 0.d0)then
-          psi1=rlist(lp+kytbl(kwE1,icBEND))
-          psi2=rlist(lp+kytbl(kwE2,icBEND))
-          apsi1=rlist(lp+kytbl(kwAE1,icBEND))
-          apsi2=rlist(lp+kytbl(kwAE2,icBEND))
-          fb1=rlist(lp+kytbl(kwF1,icBEND))
-     $         +rlist(lp+kytbl(kwFB1,icBEND))
-          fb2=rlist(lp+kytbl(kwF1,icBEND))
-     $         +rlist(lp+kytbl(kwFB2,icBEND))
+          psi1=cmp%value(ky_E1_BEND)
+          psi2=cmp%value(ky_E2_BEND)
+          apsi1=cmp%value(ky_AE1_BEND)
+          apsi2=cmp%value(ky_AE2_BEND)
+          fb1=cmp%value(ky_F1_BEND)
+     $         +cmp%value(ky_FB1_BEND)
+          fb2=cmp%value(ky_F1_BEND)
+     $         +cmp%value(ky_FB2_BEND)
         else
-          psi1=rlist(lp+kytbl(kwE2,icBEND))
-          psi2=rlist(lp+kytbl(kwE1,icBEND))
-          apsi1=rlist(lp+kytbl(kwAE2,icBEND))
-          apsi2=rlist(lp+kytbl(kwAE1,icBEND))
-          fb2=rlist(lp+kytbl(kwF1,icBEND))
-     $         +rlist(lp+kytbl(kwFB1,icBEND))
-          fb1=rlist(lp+kytbl(kwF1,icBEND))
-     $         +rlist(lp+kytbl(kwFB2,icBEND))
+          psi1=cmp%value(ky_E2_BEND)
+          psi2=cmp%value(ky_E1_BEND)
+          apsi1=cmp%value(ky_AE2_BEND)
+          apsi2=cmp%value(ky_AE1_BEND)
+          fb2=cmp%value(ky_F1_BEND)
+     $         +cmp%value(ky_FB1_BEND)
+          fb1=cmp%value(ky_F1_BEND)
+     $         +cmp%value(ky_FB2_BEND)
         endif
-        dtheta=rlist(lp+kytbl(kwDROT,icBEND))
-        theta0=rlist(lp+kytbl(kwROT,icBEND))+dtheta
-        ak0=rlist(lp+kytbl(kwK0,icBEND))+rlist(lp+kytbl(kwANGL,icBEND))
-        ak1=rlist(lp+kytbl(kwK1,icBEND))
+        dtheta=cmp%value(ky_DROT_BEND)
+        theta0=cmp%value(ky_ROT_BEND)+dtheta
+        ak0=cmp%value(ky_K0_BEND)
+     $       +cmp%value(ky_ANGL_BEND)
+        ak1=cmp%value(ky_K1_BEND)
         if(radcod .and. radtaper)then
           if(rt)then
-            ak0=ak0*(4.d0+3.d0*cod(6)+gettwiss(mfitddp,l+1))*.25d0
-            ak1=ak1*(4.d0+3.d0*cod(6)+gettwiss(mfitddp,l+1))*.25d0
+            l1=nextl(l)
+            ak0=ak0*(4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0
+            ak1=ak1*(4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0
           else
             ak0=ak0*(1.d0+cod(6))
             ak1=ak1*(1.d0+cod(6))
           endif
         endif
-        cod60=cod(6)
         call tbende(trans,cod,beam,al,
      1       min(pi2,max(-pi2,ak0)),
-     $       rlist(lp+2),
+     $       cmp%value(ky_ANGL_BEND),
      $       psi1,psi2,apsi1,apsi2,ak1,
-     1       rlist(lp+kytbl(kwDX,icBEND)),
-     $       rlist(lp+kytbl(kwDY,icBEND)),theta0,dtheta,
+     1       cmp%value(ky_DX_BEND),
+     $       cmp%value(ky_DY_BEND),theta0,dtheta,
      $       fb1,fb2,
-     $       nint(rlist(lp+kytbl(kwFRMD,icBEND))),
-     $       rlist(lp+kytbl(kwFRIN,icBEND)) .eq. 0.d0,
-     $       rlist(lp+kytbl(kwEPS,icBEND)),
-     1       rlist(lp+kytbl(kwRAD,icBEND)) .eq. 0.d0,.true.,
-     $       next,ld)
+     $       nint(cmp%value(ky_FRMD_BEND)),
+     $       cmp%value(ky_FRIN_BEND) .eq. 0.d0,
+     $       cmp%value(ky_EPS_BEND),
+     1       cmp%value(ky_RAD_BEND) .eq. 0.d0,.true.,
+     $       next,l,ld)
         go to 1010
 1400    continue
         if(dir .gt. 0.d0)then
-          mfr=nint(rlist(lp+12))
+          mfr=nint(cmp%value(ky_FRMD_QUAD))
         else
-          mfr=nint(rlist(lp+12))
+          mfr=nint(cmp%value(ky_FRMD_QUAD))
           mfr=mfr*(11+mfr*(2*mfr-9))/2
         endif
-        ak1=rlist(lp+kytbl(kwK1,icQUAD))
+        ak1=cmp%value(ky_K1_QUAD)
         if(radcod .and. radtaper)then
           if(rt)then
-            ak1=ak1*(2.d0+cod(6)+gettwiss(mfitddp,l+1))*.5d0
+            l1=nextl(l)
+            ak1=ak1*(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0
           else
             ak1=ak1*(1.d0+cod(6))
           endif
         endif
-        call tquade(trans,cod,beam,al,
-     1       ak1,rlist(lp+5),rlist(lp+6),
-     1       rlist(lp+4),rlist(lp+kytbl(kwRAD,icQUAD)) .eq. 0.d0,
-     1       rlist(lp+9) .eq. 0.d0,
-     1       rlist(lp+10),rlist(lp+11),mfr,
-     $       rlist(lp+13),rlist(lp+14) .eq. 0.d0,next,ld)
+        call tsetfringepe(cmp,icQUAD,dir,ftable)
+        call tquade(trans,cod,beam,al,ak1,
+     $       cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
+     1       cmp%value(ky_ROT_QUAD),
+     $       cmp%value(ky_RAD_QUAD) .eq. 0.d0,
+     1       cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
+     $       ftable(1),ftable(2),ftable(3),ftable(4),
+     $       mfr,cmp%value(ky_EPS_QUAD),
+     $       cmp%value(ky_KIN_QUAD) .eq. 0.d0,next,ld)
         go to 1010
- 1600   ak1=rlist(lp+2)
+ 1600   ak1=cmp%value(ky_K_THIN)
         if(radcod .and. radtaper)then
           if(rt)then
-            ak1=ak1*(2.d0+cod(6)+gettwiss(mfitddp,l+1))*.5d0
+            l1=nextl(l)
+            ak1=ak1*(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0
           else
             ak1=ak1*(1.d0+cod(6))
           endif
         endif
         call tthine(trans,cod,beam,lele,al,ak1,
-     1             rlist(lp+5),rlist(lp+6),rlist(lp+4),.false.,ld)
+     1       cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
+     $       cmp%value(ky_ROT_THIN),.false.,ld)
         go to 1010
  3000   call tsole(trans,cod,beam,l,ke,sol,
-     1       iatr,iacod,iabmi,plot,rt)
+     1       iatr,iacod,iabmi,idp,plot,rt)
         alid=0.d0
         go to 1010
  3100   write(*,*)'Use BEND with ANGLE=0 for ST.'
         call forcesf()
- 3200   phi=rlist(lp+kytbl(kwANGL,icMULT))
-        mfr=nint(rlist(lp+kytbl(kwFRMD,icMULT)))
+ 3200   phi=cmp%value(ky_ANGL_MULT)
+        mfr=nint(cmp%value(ky_FRMD_MULT))
         if(dir .gt. 0.d0)then
-          psi1=rlist(lp+kytbl(kwE1,icMULT))
-          psi2=rlist(lp+kytbl(kwE2,icMULT))
-          apsi1=rlist(lp+kytbl(kwAE1,icMULT))
-          apsi2=rlist(lp+kytbl(kwAE2,icMULT))
-          fb1=rlist(lp+kytbl(kwFB1,icMULT))
-          fb2=rlist(lp+kytbl(kwFB2,icMULT))
-          chi1=rlist(lp+kytbl(kwCHI1,icMULT))
-          chi2=rlist(lp+kytbl(kwCHI2,icMULT))
+          psi1=cmp%value(ky_E1_MULT)
+          psi2=cmp%value(ky_E2_MULT)
+          apsi1=cmp%value(ky_AE1_MULT)
+          apsi2=cmp%value(ky_AE2_MULT)
+          fb1=cmp%value(ky_FB1_MULT)
+          fb2=cmp%value(ky_FB2_MULT)
+          chi1=cmp%value(ky_CHI1_MULT)
+          chi2=cmp%value(ky_CHI2_MULT)
         else
           mfr=mfr*(11+mfr*(2*mfr-9))/2
-          psi1=rlist(lp+kytbl(kwE2,icMULT))
-          psi2=rlist(lp+kytbl(kwE1,icMULT))
-          apsi1=rlist(lp+kytbl(kwAE2,icMULT))
-          apsi2=rlist(lp+kytbl(kwAE1,icMULT))
-          fb2=rlist(lp+kytbl(kwFB1,icMULT))
-          fb1=rlist(lp+kytbl(kwFB2,icMULT))
-          chi1=-rlist(lp+kytbl(kwCHI1,icMULT))
-          chi2=-rlist(lp+kytbl(kwCHI2,icMULT))
+          psi1=cmp%value(ky_E2_MULT)
+          psi2=cmp%value(ky_E1_MULT)
+          apsi1=cmp%value(ky_AE2_MULT)
+          apsi2=cmp%value(ky_AE1_MULT)
+          fb2=cmp%value(ky_FB1_MULT)
+          fb1=cmp%value(ky_FB2_MULT)
+          chi1=-cmp%value(ky_CHI1_MULT)
+          chi2=-cmp%value(ky_CHI2_MULT)
         endif
         rtaper=1.d0
         if(radcod .and. radtaper)then
           if(rt)then
-            rtaper=(2.d0+cod(6)+gettwiss(mfitddp,l+1))*.5d0
+            l1=nextl(l)
+            rtaper=(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0
           else
             rtaper=1.d0+cod(6)
           endif
         endif
-        call tmulte(trans,cod,beam,gammab,l,al,
-     $       rlist(lp+kytbl(kwK0,icMULT)),
+        call tsetfringepe(cmp,icMULT,dir,ftable)
+        call tmulte(trans,cod,beam,l,al,
+     $       cmp%value(ky_K0_MULT),
      $       0.d0,
      $       phi,psi1,psi2,apsi1,apsi2,
-     1       rlist(lp+3),rlist(lp+4),rlist(lp+5),
-     $       chi1,chi2,rlist(lp+8),
-     $       rlist(lp+kytbl(kwDROT,icMULT)),
-     $       rlist(lp+9),rlist(lp+10) .eq. 0.d0,
-     $       rlist(lp+11) .eq. 0.d0,
-     $       rlist(lp+12),rlist(lp+13),mfr,fb1,fb2,
-     $       rlist(lp+kytbl(kwK0FR,icMULT)) .eq. 0.d0,
-     $       rlist(lp+15),rlist(lp+16),rlist(lp+17),rlist(lp+18),
-     $       rlist(lp+kytbl(kwW1,icMULT)),rtaper,
-     $       rlist(lp+kytbl(kwAPHI,icMULT)) .ne. 0.d0,
+     1       cmp%value(ky_DX_MULT),cmp%value(ky_DY_MULT),
+     $       cmp%value(ky_DZ_MULT),
+     $       chi1,chi2,cmp%value(ky_ROT_MULT),
+     $       cmp%value(ky_DROT_MULT),
+     $       cmp%value(ky_EPS_MULT),
+     $       cmp%value(ky_RAD_MULT) .eq. 0.d0,
+     $       cmp%value(ky_FRIN_MULT) .eq. 0.d0,
+     $       ftable(1),ftable(2),ftable(3),ftable(4),
+     $       mfr,fb1,fb2,
+     $       cmp%value(ky_K0FR_MULT) .eq. 0.d0,
+     $       cmp%value(ky_VOLT_MULT),cmp%value(ky_HARM_MULT),
+     $       cmp%value(ky_PHI_MULT),cmp%value(ky_FREQ_MULT),
+     $       cmp%value(ky_W1_MULT),rtaper,
+     $       cmp%value(ky_APHI_MULT) .ne. 0.d0,
      $       ld)
         go to 1010
- 4100   mfr=nint(rlist(lp+kytbl(kwFRMD,icCAVI)))
+ 4100   mfr=nint(cmp%value(ky_FRMD_CAVI))
         if(dir .gt. 0.d0)then
         else
           mfr=mfr*(11+mfr*(2*mfr-9))/2
         endif
-        call tcave(trans,cod,beam,gammab,l,al,
-     1       rlist(lp+2),rlist(lp+3),
-     1       rlist(lp+4),rlist(lp+5),
-     1       rlist(lp+13),rlist(lp+14),rlist(lp+15),
-     $       rlist(lp+16),rlist(lp+17),rlist(lp+18),rlist(lp+19),
-     $       rlist(lp+kytbl(kwFRIN,icCAVI)) .eq. 0.d0,mfr,
-     $       rlist(lp+kytbl(kwAPHI,icCAVI)) .ne. 0.d0,
+c        write(*,*)'tturne-tcave',cod
+        call tcave(trans,cod,beam,l,al,
+     1       cmp%value(ky_VOLT_CAVI),cmp%value(ky_HARM_CAVI),
+     1       cmp%value(ky_PHI_CAVI),cmp%value(ky_FREQ_CAVI),
+     1       cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
+     $       cmp%value(ky_ROT_CAVI),
+     $       cmp%value(ky_V1_CAVI),cmp%value(ky_V20_CAVI),
+     $       cmp%value(ky_V11_CAVI),cmp%value(ky_V02_CAVI),
+     $       cmp%value(ky_FRIN_CAVI) .eq. 0.d0,mfr,
+     $       cmp%value(ky_APHI_CAVI) .ne. 0.d0,
      $       ld)
+c        write(*,*)'tturne-tcave-1',cod
         go to 1010
  4200   call ttcave(trans,cod,beam,al,
-     $       rlist(lp+2),rlist(lp+3),
-     1       rlist(lp+4),rlist(lp+5),
-     1       rlist(lp+6),rlist(lp+7),rlist(lp+8),ld)
+     1       cmp%value(ky_K0_TCAV),cmp%value(ky_HARM_TCAV),
+     1       cmp%value(ky_PHI_TCAV),cmp%value(ky_FREQ_TCAV),
+     1       cmp%value(ky_DX_TCAV),cmp%value(ky_DY_TCAV),
+     $       cmp%value(ky_ROT_TCAV),ld)
         go to 1010
  4300   call temape(trans,cod,beam,l)
         go to 1010
- 4400   call tinse(trans,cod,beam,rlist(lp+20),ld)
+ 4400   call tinse(trans,cod,beam,cmp%value(ky_DIR_INS+1),ld)
         go to 1010
  4500   call tcoorde(trans,cod,beam,
-     1       rlist(lp+1),rlist(lp+2),rlist(lp+3),
-     1       rlist(lp+4),rlist(lp+5),rlist(lp+6),
-     1       rlist(lp+7) .eq. 0.d0,ld)
+     1       cmp%value(ky_DX_COORD),cmp%value(ky_DY_COORD),
+     $       cmp%value(ky_DZ_COORD),cmp%value(ky_CHI1_COORD),
+     $       cmp%value(ky_CHI2_COORD),cmp%value(ky_CHI3_COORD),
+     1       cmp%value(ky_DIR_COORD) .eq. 0.d0,ld)
         go to 1010
  5000   go to 1010
  1010   continue
@@ -564,8 +637,27 @@ c        endif
       return
       end
 
-      subroutine tfsetplot(trans,cod,beam,
-     $     l,iatr,iacod,local,r)
+      subroutine tfadjustn(idp,m)
+      use tffitcode
+      use ffs_pointer, only:twiss
+      use tmacro
+      implicit none
+      integer*4 idp,m,l
+      real*8 phi0
+      real*8,parameter :: toln=2.d-9
+      phi0=0.d0
+      do l=2,nlat
+        twiss(l,idp,m)=twiss(l,idp,m)+phi0
+        if(twiss(l,idp,m)+toln .lt. twiss(l-1,idp,m))then
+          phi0=phi0+pi2
+          twiss(l,idp,m)=twiss(l,idp,m)+pi2
+        endif
+      enddo
+      return
+      end
+
+      subroutine tfsetplot(trans,cod,beam,lorg,
+     $     l,iatr,iacod,local,idp,r)
       use tfstk
       use ffs_pointer
       use ffs_flag
@@ -573,7 +665,7 @@ c        endif
       use tmacro
       implicit none
       integer*8 iatr,iacod
-      integer*4 l
+      integer*4 l,idp,lorg
       real*8 trans(6,12),cod(6),beam(21),r
       logical*4 local
       if(iatr .ne. 0)then
@@ -593,14 +685,87 @@ c        endif
         endif
       endif
       if(codplt)then
-        twiss(l,0,mfitdx )=cod(1)
-        twiss(l,0,mfitdpx)=cod(2)*r
-        twiss(l,0,mfitdy )=cod(3)
-        twiss(l,0,mfitdpy)=cod(4)*r
-        twiss(l,0,mfitdz )=cod(5)
-        twiss(l,0,mfitddp)=cod(6)*r
+        call tsetetwiss(trans,cod,beam,lorg,l,idp,r)
+c        write(*,'(a,2i5,1p6g15.7)')'tsetplot  ',lorg,l,
+c     $       twiss(l,idp,mfitzx:mfitzpy)
+      elseif(radcod .and. radtaper)then
+        twiss(l,idp,mfitddp)=cod(6)
+      endif
+      return
+      end
+
+      subroutine tsetetwiss(trans,cod,beam,lorg,l,idp,rgb)
+      use ffs
+      use ffs_pointer
+      use tffitcode
+      use tmacro
+      use temw
+      implicit none
+      integer*4 l,idp,lorg
+      real*8 trans(6,6),ti(6,6),twi(ntwissfun),cod(6),rgb,
+     $     beam(21),ril(6,6),gr,tr0(6,6)
+      logical*4 norm
+      real*8,parameter :: toln=-2.d-9
+      if(trpt)then
+        gr=gammab(l)/gammab(max(1,lorg-1))
+        tr0=trans*sqrt(gr)
+        call tinv6(tr0,ti)
+      else
+        call tinv6(trans,ti)
+      endif
+      if(lorg .eq. 0)then
+        call tmultr(ti,ri,6)
+        norm=normali
+      else
+        twi=twiss(lorg,idp,1:ntwissfun)
+        call etwiss2ri(twi,ril,norm)
+        call tmultr(ti,ril,6)
+      endif
+      call tfetwiss(ti,cod,twi,norm)
+      if(l .eq. 1)then
+        twi(mfitnx)=0.d0
+        twi(mfitny)=0.d0
+        twi(mfitnz)=0.d0
+      else
+        if(twi(mfitnx) .lt. toln)then
+          twi(mfitnx)=twiss(lorg,idp,mfitnx)+twi(mfitnx)+pi2
+        else
+          twi(mfitnx)=twiss(lorg,idp,mfitnx)+twi(mfitnx)
+        endif
+        if(twi(mfitny) .lt. toln)then
+          twi(mfitny)=twiss(lorg,idp,mfitny)+twi(mfitny)+pi2
+        else
+          twi(mfitny)=twiss(lorg,idp,mfitny)+twi(mfitny)
+        endif
+        twi(mfitnz)=twiss(lorg,idp,mfitnz)+twi(mfitnz)
+      endif
+      twi(mfitdpx)=twi(mfitdpx)*rgb
+      twi(mfitdpy)=twi(mfitdpy)*rgb
+      twi(mfitddp)=twi(mfitddp)*rgb
+      twiss(l,idp,1:ntwissfun)=twi
+      if(irad .ge. 12)then
         beamsize(:,l)=beam
       endif
+      return
+      end
+
+      subroutine checketwiss(trans,tw1)
+      use ffs_pointer
+      use tffitcode
+      use tmacro
+      use temw
+      implicit none
+      integer*4 i
+      real*8 tw1(ntwissfun),ra(6,6),trans(6,6),ti(6,6)
+      logical*4 normal
+      call etwiss2ri(tw1,ra,normal)
+      ti=r
+      call tmultr(ti,trans,6)
+      call tmultr(ti,ra,6)
+      write(*,*)'checketwiss ',tw1(mfitdetr)
+      do i=1,6
+        write(*,'(1p6g15.7)')ti(i,:)
+      enddo
       return
       end
 

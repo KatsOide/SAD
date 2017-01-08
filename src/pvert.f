@@ -2,9 +2,10 @@
       use tfstk
       use ffs
       use tffitcode
-      dimension latt(2,nlat)
+      use ffs_pointer, only:idelc,idtypec
+      integer*8 latt(nlat)
 c
-      id=idtype(latt(1,n))
+      id=idtypec(n)
       if(id.eq.icbend) then
         lpr=5
       elseif(id.eq.icquad) then
@@ -15,7 +16,7 @@ c
         pvert=.true.
         return
       endif
-      phi=mod(max(rlist(latt(2,n)+lpr),-rlist(latt(2,n)+lpr)),pi)
+      phi=mod(max(rlist(latt(n)+lpr),-rlist(latt(n)+lpr)),pi)
       if(phi.gt.pi*0.25.and.phi.lt.pi*0.75) then
         pvert=.true.
       else

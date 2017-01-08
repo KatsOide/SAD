@@ -1023,6 +1023,9 @@ c        call tfdebugprint(ktastk(isp),'by ',2)
 c        call tfdebugprint(kd,'==>',2)
         ierrorexp=ierr0
         if(irtc .ne. 0)then
+          if(irtc .gt. 0. and. ierrorprint .ne. 0)then
+            call tfreseterror
+          endif
           go to 100
         endif
         isp=isp0+2
@@ -1053,7 +1056,7 @@ c        call tfdebugprint(kd,'==>',2)
 
       real*8 function tinvgr(an)
       implicit none
-      real*8 an,c0,x0,gn,erfc,gamma,gammaq,df,dfdx,anh
+      real*8 an,c0,x0,gn,erfc,gammaq,df,dfdx,anh
       if(an .eq. 1.d0)then
         tinvgr=1.d0
         return

@@ -1,16 +1,16 @@
-      subroutine tffile(word,lfnstk,lfopen,lfret,lfrecl,lflinep,
-     $     maxlfn,lfni,lfno,lfnb,init,exist)
+      subroutine tffile(word,lfnstk,lfopen,lfret,lfnb,lfrecl,
+     $     maxlfn,init,exist)
       use tfstk
       use ffs
       use tffitcode
+      use tfcsi
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
       real*8 vx
-      integer*4 maxlfn,lfno,i,lfni0,lfni1,nc,next,icsmrk,icslinep,
-     $     icslrecl,itype,lfno1,j
-      integer*4 lfnstk(maxlfn),lfret(maxlfn),lfrecl(maxlfn),
-     $     itfpeeko,lfnb,lfni,lflinep(maxlfn)
+      integer*4 i,lfni0,lfni1,nc,next,itype,lfno1,j,maxlfn,lfnb
+      integer*4 itfpeeko,lfnstk(maxlfn),lfret(maxlfn),lflinep(maxlfn),
+     $     lfrecl(maxlfn)
       logical*4 lfopen(maxlfn),init,exist,termin,rew,app,abbrev,
      $     clo,ret
       character*(*) word
@@ -21,7 +21,7 @@
       if(word .eq. 'END')then
         init=lfnp .gt. lfnb
         lfni0=lfni
-        call tfclose(lfnb,lfnp,lfnstk,lfopen,lfret,lfrecl,
+        call tfclose(lfnb,int(lfnp),lfnstk,lfopen,lfret,lfrecl,
      $       lflinep,maxlfn,lfni,lfnb)
         lfnp=lfnb
         lfno=6
@@ -48,7 +48,7 @@
           termin=.true.
         endif
         if(termin)then
-          call tfclose(lfnp,lfnp,lfnstk,lfopen,lfret,lfrecl,
+          call tfclose(int(lfnp),int(lfnp),lfnstk,lfopen,lfret,lfrecl,
      $         lflinep,maxlfn,lfni,lfnb)
         else
           lfno=6
@@ -195,6 +195,8 @@ c
 
       subroutine tfclose(lfnp1,lfnp,lfnstk,lfopen,lfret,lfrecl,
      $     lflinep,maxlfn,lfni,lfnb)
+      use tfcsi, only:cssetl,cssetlfno,cssetlinep,cssetp,cssets,
+     $     icslfni,icslfno,icsmrk,icsstat
       implicit none
       integer*4 lfnp1,lfnp,maxlfn,lfnstk(maxlfn),lfni0,
      $     lfni,i,lfret(maxlfn),lfrecl(maxlfn),lfnp0,lfnb,

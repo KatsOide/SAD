@@ -1,6 +1,6 @@
 c     Don't confuse, Emacs. This is -*- fortran -*- mode!
-      include 'inc/MACFILE.inc'
-      include 'inc/MACMISC.inc'
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
+c$$$      include 'inc/MACFILE.inc'
+c$$$      include 'inc/MACMISC.inc'
+c$$$      include 'inc/MACTTYP.inc'
+c$$$      include 'inc/MACCODE.inc'
+c$$$      include 'inc/MACKW.inc'

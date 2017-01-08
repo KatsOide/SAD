@@ -1,21 +1,23 @@
-      subroutine tffamsetup(lp,em)
+      subroutine tffamsetup(ll,em)
       use tfstk
       use tffitcode
       use ffs_fit
+      use ffs_pointer, only:elatt
       implicit none
       real*8 sqrt3
 c      parameter (sqrt3=sqrt(3.d0))
       parameter (sqrt3=1.732050807568877d0)
       type (sad_list), pointer :: kl,kli
       integer*8 kx,ki
-      integer*4 lp
+      integer*8 lp
       real*8 twissi(50),em,trans(4,4),dx(4,6),dxp(4,6)
-      integer*4 m,nfa,i,j,irtc,itfdownlevel,l,k
+      integer*4 m,nfa,i,j,irtc,itfdownlevel,l,k,ll
       real*8 dpw,x0,px0,y0,py0,dpi,x,y,dp0
       type (sad_descriptor) kxmamp
       data kxmamp%k /0/
       integer*4 ivoid
       parameter (ivoid=9999)
+      lp=elatt%comp(ll)
       do i=-nfr,nfr
         kfam(i)=0
         jfam(i)=ivoid
@@ -43,7 +45,7 @@ c      call tfdebugprint(kx,'famsetup',1)
       nfa=nfr+1
       dpw=dp(nfr)-dp(-nfr)
       dp0=(dp(nfr)+dp(-nfr))*.5d0
-      call twmov(lp,twissi,1,0,.true.)
+      call twmov(ll,twissi,1,0,.true.)
       x0=sqrt(twissi(mfitbx)*em)
       px0=sqrt(em/twissi(mfitbx))
       y0=sqrt(twissi(mfitby)*em)

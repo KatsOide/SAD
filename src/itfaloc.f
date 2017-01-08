@@ -2,7 +2,7 @@
       use tfstk
       implicit none
       integer*4 nw,mode
-      integer*8 ktype,ktaloc,k1,itfroot
+      integer*8 ktype,k1,itfroot
       k1=ktaloc(nw+2)
       ilist(2,k1-1)=0
       if(mode .eq. 0)then
@@ -40,7 +40,7 @@
       use tfstk
       implicit none
       integer*4 nw
-      integer*8 ktype,ktaloc,k1
+      integer*8 ktype,k1
       k1=ktaloc(nw+2)
       ilist(2,k1-1)=0
       klist(k1)=ktype
@@ -105,7 +105,7 @@
       integer*8 function ktalocr(n)
       use tfstk
       implicit none
-      integer*8 kresv,ktaloc
+      integer*8 kresv
       integer*4 nresv,n,nsize
       parameter (nsize=2**18-1)
       save kresv
@@ -264,12 +264,11 @@
       subroutine tfsydefg(locp,kx,ig0)
       use tfstk
       use tfcode
+      use mackw
       implicit none
       type (sad_descriptor) kx
       type (sad_symdef), pointer :: symd
       type (sad_namtbl), pointer :: loc
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
       integer*8 kas1,locp
       integer*4 nc,idx
       character*(MAXPNAME) name
@@ -297,7 +296,7 @@ c        write(*,*)ig,ig1,kas1,klist(loc+1)
         if(nc .le. MAXPNAME)then
           if(nc .le. 0)then
             write(*,*)'tfsydef ',loc
-            call forcesf
+            call abort
           else
             name(1:nc)=loc%str%str(1:nc)
 c            write(*,*)'tfsydefg ',name(1:nc)
@@ -370,7 +369,7 @@ c            write(*,*)' : ',idx
       implicit none
       type(sad_list), pointer :: kl
       integer*4 n,i
-      integer*8 k,ktaloc
+      integer*8 k
       k=ktaloc(n*6-1)+2
       do i=1,n
         call loc_list(k+(i-1)*6,kl)

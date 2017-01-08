@@ -9,7 +9,8 @@
       logical leave,synchb
       character*(*) observ
       dimension p(nd),id(nd)
-      dimension latt(2,*),twiss(nlat,-ndim:ndim,ntwissfun),
+      integer*8 latt(*)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),
      $     mult(*),gammab(*),size(21,*)
       dimension istr(*),estr(*),iobs(*)
       include 'inc/common.inc'

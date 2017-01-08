@@ -1,4 +1,4 @@
-      subroutine tffswake(ibegin,frbegin,lend,frend,over,beg)
+      subroutine tffswake(fbound,beg)
       use tfstk
       use ffs
       use ffs_pointer
@@ -6,21 +6,22 @@
       use ffs_wake
       use tffitcode
       implicit none
-      integer*8 ktaloc,iwbufxy,iwbufxyl,iwl,iwt,iwsl,iwst,i1,i2
-      integer*4 ibegin,lend,itp1,i,j,ii,iutp,iwp,iutp1,np,npf,idx,idy
-      real*8 frbegin,frend,
-     $     rgetgl1,utwiss1(ntwissfun,-nfam:nfam),fr1,fr2,sigz,
+      type (ffs_bound) fbound,ibound,ibound1
+      integer*8 iwbufxy,iwbufxyl,iwl,iwt,iwsl,iwst
+      integer*4 itp1,i,j,ii,iutp,iwp,iutp1,np,npf,idx,idy
+      real*8 rgetgl1,utwiss1(ntwissfun,-nfam:nfam),sigz,
      $     wbuf(nfam1:nfam),wzl(nfam1:nfam),wzt(nfam1:nfam),dx,dy
-      logical*4 over(-nfam:nfam),beg
+      logical*4 beg
       sigz=rgetgl1('SIGZ')
-      i1=ibegin
-      fr1=frbegin
-      itp1=itwissp(ibegin)
+      ibound1%fb=0.d0
+      ibound1%fe=0.d0
+      ibound=fbound
+      itp1=itwissp(fbound%lb)
       if(.not. beg)then
         do j=nfam1,nfam
           if(uini(1,j) .le. 0.d0)then
             do i=1,mfitdetr
-              utwiss(i,j,itp1)=twiss(ibegin,0,i)
+              utwiss(i,j,itp1)=twiss(fbound%lb,0,i)
             enddo
           else
             do i=1,mfitdetr
@@ -28,7 +29,7 @@
             enddo
           endif
           do i=mfitdx,mfitddp
-            utwiss(i,j,itp1)=twiss(ibegin,0,i)+uini(i,j)
+            utwiss(i,j,itp1)=twiss(fbound%lb,0,i)+uini(i,j)
           enddo
         enddo
       endif
@@ -39,42 +40,41 @@
       iwbufxyl=ktaloc(np**2)
       do iwp=1,nwakep+1
         if(iwp .eq. nwakep+1)then
-          i2=lend
-          fr2=frend
+          ibound%le=fbound%le
+          ibound%fe=fbound%fe
         else
-          i2=iwakeelm(iwp)
-          if(i2 .gt. lend)then
+          ibound%le=iwakeelm(iwp)
+          if(ibound%le .gt. fbound%le)then
             cycle
           endif
-          if(i2 .eq. lend)then
-            fr2=frend
+          if(ibound%le .eq. fbound%le)then
+            ibound%fe=fbound%fe
           else
-            fr2=0.d0
+            ibound%fe=0.d0
           endif
         endif
-        if(i2 .lt. i1)then
+        if(ibound%le .lt. ibound%lb)then
           cycle
-        elseif(i2 .gt. i1 .or.
-     $         i2 .eq. i1 .and. fr2 .ne. 0.d0)then
+        elseif(ibound%le .gt. ibound%lb .or.
+     $         ibound%le .eq. ibound%lb .and. ibound%fe .ne. 0.d0)then
           do i=nfam1,nfam
             ii=min(1,abs(i))
             do j=1,ntwissfun
-              twiss(i1,ii,j)=utwiss(j,i,itp1)
+              twiss(ibound%lb,ii,j)=utwiss(j,i,itp1)
             enddo
-            call qcell1(i1,fr1,i2,fr2,ii,
-     1           hstab(i),vstab(i),tracex(i),tracey(i),
-     $           i .ne. 0,over(i),.true.,0)
-            call tffssetutwiss(i,nlat,
-     $           i1,i2,fr2,beg,i1 .eq. ibegin,i2 .eq. lend)
+            call qcell1(ibound,ii,optstat(i),
+     $           i .ne. 0,.true.,0)
+            call tffssetutwiss(i,nlat,ibound,beg,
+     $           ibound%lb .eq. fbound%lb,ibound%le .eq. fbound%le)
           enddo
-        elseif(i1 .eq. lend)then
+        elseif(ibound%lb .eq. fbound%le)then
           npf=np*ntwissfun
-          if(idtype(latt(1,nlat-1)) .eq. icMARK)then
+          if(idtypec(nlat-1) .eq. icMARK)then
             iutp=itwissp(nlat-1)
             call tmov(utwiss(1,nfam1,itp1),
      $           utwiss(1,nfam1,iutp),np)
           endif
-          if(i1 .lt. nlat)then
+          if(ibound%lb .lt. nlat)then
             iutp=itwissp(nlat)
             call tmov(utwiss(1,nfam1,itp1),
      $           utwiss(1,nfam1,iutp),np)
@@ -82,16 +82,16 @@
           return
         endif
         if(iwp .le. nwakep)then
-          iutp=itwissp(i2)
-          idx=kytbl(kwDX,idtype(latt(1,i2)))
+          iutp=itwissp(ibound%le)
+          idx=kytbl(kwDX,idtypec(ibound%le))
           if(idx .ne. 0)then
-            dx=rlist(latt(2,i2)+idx)
+            dx=rlist(latt(ibound%le)+idx)
           else
             dx=0.d0
           endif
-          idy=kytbl(kwDY,idtype(latt(1,i2)))
+          idy=kytbl(kwDY,idtypec(ibound%le))
           if(idy .ne. 0)then
-            dy=rlist(latt(2,i2)+idy)
+            dy=rlist(latt(ibound%le)+idy)
           else
             dy=0.d0
           endif
@@ -99,27 +99,28 @@
           iwt=abs(kwaketbl(2,iwp))
           call tffswakekick(utwiss(1:ntwissfun,-nfam,iutp),utwiss1,
      $         iwl,iwt,rlist(iwl),rlist(iwt),
-     $         sigz,2.d0*gammab(i2)*amass,nfam,nfam1,
+     $         sigz,2.d0*gammab(ibound%le)*amass,nfam,nfam1,
      $         dx,dy,wbuf,rlist(iwbufxy),rlist(iwbufxyl),
      $         wzl,wzt,iwsl,iwst)
+          ibound1%lb=ibound%le
+          ibound1%le=ibound%le+1
           do i=nfam1,nfam
             ii=min(1,abs(i))
-            twiss(i2,ii,1:ntwissfun)=utwiss1(1:ntwissfun,i)
-            call qcell1(i2,0.d0,i2+1,0.d0,ii,
-     1           hstab(i),vstab(i),tracex(i),tracey(i),
-     $           i .ne. 0,over(i),.true.,0)
-            utwiss1(1:ntwissfun,i)=twiss(i2+1,ii,1:ntwissfun)
+            twiss(ibound%le,ii,1:ntwissfun)=utwiss1(1:ntwissfun,i)
+            call qcell1(ibound1,ii,optstat(i),
+     $           i .ne. 0,.true.,0)
+            utwiss1(1:ntwissfun,i)=twiss(ibound%le+1,ii,1:ntwissfun)
           enddo
-          iutp1=itwissp(i2+1)
+          iutp1=itwissp(ibound%le+1)
           call tffswakekick(utwiss1,
      $         utwiss(1:ntwissfun,-nfam,iutp1),
      $         iwl,iwt,rlist(iwl),rlist(iwt),
-     $         sigz,2.d0*gammab(i2+1)*amass,nfam,nfam1,
+     $         sigz,2.d0*gammab(ibound%le+1)*amass,nfam,nfam1,
      $         dx,dy,wbuf,rlist(iwbufxy),rlist(iwbufxyl),
      $         wzl,wzt,iwsl,iwst)
-          i1=i2+1
-          fr1=0.d0
-          itp1=itwissp(i1)
+          ibound%lb=ibound%le+1
+          ibound%fb=0.d0
+          itp1=itwissp(ibound%lb)
         endif
       enddo
       call tfree(iwbufxy)
@@ -310,10 +311,10 @@ c      parameter (fact=1.d0/sqrt(pi2))
       use ffs_wake
       use iso_c_binding
       implicit none
-      integer*8 kx,ktaloc,kal,kalj,ktfmalocp,kat,katj
+      type (ffs_bound) fbound
+      integer*8 kx,kal,kalj,ktfmalocp,kat,katj
       integer*4 irtc,isp0,isp1,lfno,n,m,lenw,l,itfdownlevel,isp2,
-     $     i,lbegin,lend,j,k
-      real*8 frbegin,frend
+     $     i,j,k
       character*(MAXPNAME+10) name
       integer*8 ifname,ifwfunl,ifwfunt
       save ifname,ifwfunl,ifwfunt
@@ -329,9 +330,9 @@ c      parameter (fact=1.d0/sqrt(pi2))
         klist(ifwfunl+2)=ktfstring+ifname
         klist(ifwfunt+2)=ktfstring+ifname
       endif
-      call tffsbound(lbegin,frbegin,lend,frend)
+      call tffsbound(fbound)
       isp0=isp
-      do i=lbegin,lend-1
+      do i=fbound%lb,fbound%le-1
         isp1=isp+2
         kal=0
         kat=0

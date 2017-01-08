@@ -216,7 +216,7 @@ c     This code path MIGHT satisfy c > s
      $                'Identity equation c > s ',
      $                'for j >= n+2 && 1 >= s is broken!',
      $                '(FIXME)'
-                call forcesf()
+                call abort
               endif
 c     begin initialize for preventing compiler warning
               zc=0.d0

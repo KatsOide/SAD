@@ -1,12 +1,11 @@
       subroutine doprin(dummy)
       use maccbk
+      use mackw
+      use macttyp
+      use macfile
+      use macmisc
       implicit none
       real*8  dummy
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACMISC.inc'
-      include 'inc/MACFILE.inc'
       character*(MAXSTR) token
       integer*4 slen,ival,ttype,hsrchz,hsrch,lpname
       real*8 rval

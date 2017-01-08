@@ -1,11 +1,10 @@
       subroutine prexln(idxl,head)
       use maccbk
+      use maccode
+      use macfile
       implicit real*8 (a-h,o-z)
       integer idxl
       character*(*) head
-c
-      include 'inc/MACCODE.inc'
-      include 'inc/MACFILE.inc'
 c
       character*12 head1,cwork*80
       integer slen

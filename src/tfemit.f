@@ -4,12 +4,13 @@
       use ffs_pointer
       use tffitcode
       use iso_c_binding
+      use tfcsi, only:icslfno
       implicit none
       type (sad_descriptor) kx
       type (sad_list), pointer :: kl,kl1,kl2,klx
-      integer*8 iatr,iacod,iamat,kaparam,iabmi,ktaloc
+      integer*8 iatr,iacod,iamat,kaparam,iabmi
       integer*4 isp1,irtc,narg,mode,itgetfpe,nparam,
-     $     itfmessage,lno,icslfno
+     $     itfmessage,lno
       parameter (nparam=59)
       real*8 param(nparam),trans(6,12),cod(6),beam(42),btr(441),sx
       logical*4 stab
@@ -113,7 +114,7 @@ c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparam
       use tffitcode
       implicit none
       type (sad_descriptor) kx
-      integer*8 kparams,ktaloc
+      integer*8 kparams
       integer*4 isp1,irtc,mphi2,i,itfmessage,lfni
       real*8 arg(4),emxe,emye,rese
       if(isp .ne. isp1+4)then
@@ -134,8 +135,7 @@ c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparam
 c        ilist(2,iwakepold+6)=ifsize
       endif
       kx%k=ktfoper+mtfnull
-      call temits(ilist(1,ilattp+1),
-     $     rlist(iftwis),rlist(ifsize),rlist(ifgamm),
+      call temits(
      $     ndim,ntwissfun,
      $     mphi2,
      $     arg(1)*pi2,arg(2)*pi2,arg(3)*pi2,

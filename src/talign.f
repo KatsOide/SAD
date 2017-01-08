@@ -1,9 +1,11 @@
-      subroutine talign(latt,word,wordp,pos,mult,lfno,exist)
+      subroutine talign(latt,word,wordp,pos,lfno,exist)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idtypec,pnamec
       implicit real*8 (a-h,o-z)
-      dimension latt(2,nlat),mult(nlat),pos(nlat)
+      integer*8 latt(nlat)
+      dimension pos(nlat)
       character*(*) word,wordp
       logical exist
       i1=igelm(word,exist)
@@ -12,7 +14,7 @@
         return
       endif
       do 210 i=i1,nlat-1
-        id=idtype(latt(1,i))
+        id=idtypec(i)
         if(id .eq. 4 .or. id .eq. 6 .or. id .eq. 8)then
           i1=i
           go to 211
@@ -24,7 +26,7 @@
       if(.not. exist)then
         call getwdl2(word,wordp)
         if(word .eq. '*')then
-          dx1=rlist(latt(2,i1)+5)
+          dx1=rlist(latt(i1)+5)
         else
           dy1=0.d0
           go to 212
@@ -34,7 +36,7 @@
       call getwdl2(word,wordp)
       if(.not. exist)then
         if(word .eq. '*')then
-          dy1=rlist(latt(2,i1)+6)
+          dy1=rlist(latt(i1)+6)
           call getwdl2(word,wordp)
         else
           dy1=0.d0
@@ -69,15 +71,15 @@
         if(i .le. ie)then
           go to 10
         endif
-        k=idtype(latt(1,i))
+        k=idtypec(i)
         if(k .eq. 4 .or. k .eq. 6)then
           dx=((pos(i)+pos(i+1))*.5d0-pos(i1))*r*(dx2-dx1)+dx1
           dy=((pos(i)+pos(i+1))*.5d0-pos(i1))*r*(dy2-dy1)+dy1
           do 20 j=i1,nlat-1
-            if(pname(latt(1,j)) .eq. pname(latt(1,i)))then
+            if(pnamec(j) .eq. pnamec(i))then
               ie=j
-              rlist(latt(2,j)+5)=dx
-              rlist(latt(2,j)+6)=dy
+              rlist(latt(j)+5)=dx
+              rlist(latt(j)+6)=dy
             elseif(pos(j) .ne. pos(j+1))then
               go to 10
             endif

@@ -1,5 +1,6 @@
 c     Don't confuse, Emacs. This is -*- fortran -*- mode!
       logical errflg
+      integer*8 ibckup
       common /codcor/eptsol,errflg(4),errval(4),dpshft,optiv(18),
      $               ibckup,nmona,nmonact,nstra,nstract,
      $               itmon,itemon,itstr,itestr

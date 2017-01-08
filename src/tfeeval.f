@@ -14,11 +14,10 @@
 
       subroutine tfeevalref(k,kx,irtc)
       use tfstk
+      use mackw
       implicit none
       type (sad_descriptor) k,kx
       type (sad_list), pointer :: list
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
       integer*8 ka
       integer*4 irtc
       kx=k
@@ -371,7 +370,7 @@ c          call tfstk2l(lista,lista)
         kx%k=ktflist+ks
       case default
         write(*,*)'tfleval-implementation error: ',kaf
-        call forcesf()
+        call abort
       end select
       go to 8000
 
@@ -394,10 +393,13 @@ c          call tfstk2l(lista,lista)
         endif
       endif
  6000 ktastk(isp1)=kf
+c      call tfmemcheckprint('seval-efun',.false.,irtc)
+c      if(irtc .ne. 0)then
+c        call tfdebugprint(kf,'tfseval-efunref-in',3)
+c        call tfdebugprint(ktastk(isp1+1),' ',3)
+c        call tfdebugprint(ktastk(isp),' ',3)
+c      endif
       if(ref)then
-c          call tfdebugprint(kf,'tfseval-efunref-in',3)
-c          call tfdebugprint(ktastk(isp1+1),' ',3)
-c          call tfdebugprint(ktastk(isp),' ',3)
         call tfefunref(isp1,kx,.true.,irtc)
 c          call tfdebugprint(kf,'tfseval-efunref-out',3)
 c          call tfdebugprint(ktastk(isp1+1),' ',3)
@@ -406,6 +408,7 @@ c          call tfdebugprint(ktastk(isp),' ',3)
         call tfefundef(isp1,kx,irtc)
       endif
  7000 continue
+c      call tfdebugprint(kx,'tfseval-connect',3)
       call tfconnect(kx,irtc)
  8000 isp=isp0
  9000 level=max(0,level-1)
@@ -641,6 +644,10 @@ c          call tfdebugprint(ktastk(isp),' ',3)
                   return
                 endif
               elseif(ilist(2,iaat+min(isp-isp0+1,mf+1)) .eq. 0)then
+c                call tfmemcheckprint('aevstk',.false.,irtc)
+c                if(irtc .ne. 0)then
+c                  call tfdebugprint(ki,'argevstk',1)
+c                endif
                 call tflevalstk(kli,.true.,irtc)
                 if(irtc .ne. 0)then
                   return
@@ -920,7 +927,7 @@ c          call tfdebugprint(ktastk(isp),' ',3)
       logical*4 noseq
       m=list%nl
       if(iand(list%attr,lnoseqlist) .ne. 0)then
-        klist(isp+1:isp+m)=list%body(1:m)
+        ktastk(isp+1:isp+m)=list%body(1:m)
 c        call tmov(klist(ka+1),ktastk(isp+1),m)
         isp=isp+m
         return
@@ -951,9 +958,8 @@ c        call tmov(klist(ka+1),ktastk(isp+1),m)
       use tfstk
       use tfcode
       use iso_c_binding
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
       type (sad_descriptor) ka,kx
       type (sad_symbol), pointer :: sym
       type (sad_symdef), pointer :: symd
@@ -1136,6 +1142,8 @@ c        call tmov(klist(ka+1),ktastk(isp+1),m)
       kae=ktfaddrd(ke)
       kte=ke%k-kae
       if(kte .ne. ktfref)then
+c        call tfdebugprint(ke,'pateval',1)
+c        write(*,*)'at ',kae
         call tfeevalref(ke,ke,irtc)
         if(irtc .ne. 0)then
           return

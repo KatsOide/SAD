@@ -6,7 +6,8 @@
       parameter (meminc=16,lreal8=8,ichr=lreal8*10)
       logical extend,exist
       character*(*) word
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun)
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun)
       common /mcfiles/icomf,nof(kfiles),iifnam(kfiles),iidata(kfiles),
      1                memax(kfiles)
       dimension istr(*),imon(*),emon(*)

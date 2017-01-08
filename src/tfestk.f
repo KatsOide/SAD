@@ -823,6 +823,7 @@ c          call tfdebugprint(kx,'==>',1)
       character string(nc)
       istart=1
       levele=levele+1
+c      write(*,*)'tfevalb ',string
       call tfeval(string,nc,istart,istop,kx,.false.,irtc)
       call tfconnect(kx,irtc)
       return
@@ -861,9 +862,9 @@ c      call tfdebugprint(kx,'==>',1)
       end
 
       logical*4 function tfreadevalbuf(istart,istop,l,ipr)
+      use tfcsi
       implicit none
-      integer*4 icsmrk,ip1,istart,istop,l,ipr,icslrecl,icsstat
-      logical*4 csrec
+      integer*4 ip1,istart,istop,l,ipr
       ip1=icsmrk()
       call cssetp(istop)
       call tprmpt(ipr,-1,0)

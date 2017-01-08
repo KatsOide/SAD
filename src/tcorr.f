@@ -1,10 +1,12 @@
-      subroutine tcorr(word,latt,pos,
-     1                  mult,master,lfno)
+      subroutine tcorr(word,latt,pos,master,lfno)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idvalc,idtypec
+      use tfcsi,only:cssetp
       implicit real*8 (a-h,o-z)
-      dimension latt(2,nlat),mult(nlat),pos(nlat)
+      integer*8 latt(nlat),le,le1,ix,i1,i2
+      dimension pos(nlat)
       integer*4 master(nlat)
       character*(*) word
       character*20 name
@@ -35,7 +37,7 @@
       do while(nc .le. 32768 .and. nc*.5d0 .lt. al)
         nc=nc*2
       enddo
-      ix=italoc(nc*2)
+      ix=ktaloc(nc*2)
       call tvcorr(rlist(ix),cl,al,nc)
       exist1=.false.
  1    call peekwd(word,next)
@@ -45,7 +47,7 @@
       abb=ifany(word,'*%{}',1) .gt. 0
       exist=.false.
       do 10 i=1,nlat-1
-        id=idtype(latt(1,i))
+        id=idtypec(i)
         if(id .eq. 1 .or.
      1     (id .gt. 8 .and. id .ne. 20 .and.
      $       id .ne. 31 .and. id .ne. 41))then
@@ -78,7 +80,7 @@
           endif
           do 110 j=i0,ie,istep
             if(master(j) .ne. 0 .or. id .eq. 41)then
-              le=latt(2,j)+5
+              le=latt(j)+5
               le1=le+1
               dx1=delx
               dy1=dely
@@ -89,8 +91,8 @@
                 le=le-2
                 le1=le+1
                 if(.not. add)then
-                  dx1=rlist(idval(latt(1,j))+3)-delx
-                  dy1=rlist(idval(latt(1,j))+4)-dely
+                  dx1=rlist(idvalc(j)+3)-delx
+                  dy1=rlist(idvalc(j)+4)-dely
                 else
                   dx1=-delx
                   dy1=-dely
@@ -99,15 +101,15 @@
                 le=le-2
                 le1=le+1
                 if(.not. add)then
-                  dx1=rlist(idval(latt(1,j))+13)-delx
-                  dy1=rlist(idval(latt(1,j))+14)-dely
+                  dx1=rlist(idvalc(j)+13)-delx
+                  dy1=rlist(idvalc(j)+14)-dely
                 else
                   dx1=-delx
                   dy1=-dely
                 endif
               elseif(id .eq. 41)then
-                le=latt(2,j)+15
-                le1=latt(2,j)+17
+                le=latt(j)+15
+                le1=latt(j)+17
               endif
               if(add)then
                 rlist(le)=rlist(le)+dx1

@@ -1,27 +1,29 @@
       subroutine ttinit(latt,x,px,y,py,z,g,dv)
+      use kyparam
       use tfstk
       use ffs_flag
       use tffitcode
       use tmacro
+      use ffs_pointer, only:idelc,idtypec
       implicit real*8 (a-h,o-z)
-      dimension latt(2,nlat)
+      integer*8 latt(nlat),kx
       dimension x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
       trf0=0.d0
       vcphic=0.d0
       vcalpha=1.d0
-      if(idtype(latt(1,1)) .ne. icMARK)then
+      if(idtypec(1) .ne. icMARK)then
         write(*,*)'Missing entrance condition of beam.'
         nturn=0
         return
       endif
-      kx=latt(2,1)
+      kx=latt(1)
       axi=rlist(kx+1)
       ayi=rlist(kx+4)
       bxi=rlist(kx+2)
       byi=rlist(kx+5)
-      emx=rlist(kx+kytbl(kwEMIX,icMARK))
-      emy=rlist(kx+kytbl(kwEMIY,icMARK))
-      dpmax=rlist(kx+kytbl(kwDP,icMARK))
+      emx=rlist(kx+ky_EMIX_MARK)
+      emy=rlist(kx+ky_EMIY_MARK)
+      dpmax=rlist(kx+ky_DP_MARK)
       exi=rlist(kx+ 7)
       epxi=rlist(kx+ 8)
       eyi=rlist(kx+ 9)
@@ -36,8 +38,8 @@
       dpxi=rlist(kx+mfitdpx)
       dyi=rlist(kx+mfitdy)
       dpyi=rlist(kx+mfitdpy)
-      sigz=rlist(kx+kytbl(kwSIGZ,icMARK))
-      azi=rlist(kx+kytbl(kwAZ,icMARK))
+      sigz=rlist(kx+ky_SIGZ_MARK)
+      azi=rlist(kx+ky_AZ_MARK)
       dxj=rlist(kx+26)
       dpxj=rlist(kx+27)
       dyj=rlist(kx+28)

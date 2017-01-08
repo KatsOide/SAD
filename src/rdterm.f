@@ -1,14 +1,13 @@
       Subroutine rdterm(token,slen,ttype,val,status)
-c     $Header: /SAD/cvsroot/oldsad/src/rdterm.f,v 1.2.14.2 2012/09/15 08:14:57 oide Exp $
+c     $Header: /SAD/cvsroot/oldsad/src/rdterm.f,v 1.2.14.4 2016/09/09 04:38:31 oide Exp $
       use maccbk
+      use mackw
+      use macttyp
       implicit none
       character*(*) token
       integer slen,ttype,status
       integer*4 scan, yyparse,yypushtoken,yypoptoken,yyreturn
       real*8 val,yyval
-
-      include 'inc/MACCODE.inc'
-      include 'inc/MACTTYP.inc'
 c
 c      print *,'rdterm:',slen,token(:slen)
       status=0

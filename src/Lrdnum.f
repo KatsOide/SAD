@@ -1,11 +1,10 @@
       function Lrdnum(idxl,token,slen,ttype)
-c     $Header: /SAD/cvsroot/oldsad/src/Lrdnum.f,v 1.2.14.2 2012/09/15 08:14:55 oide Exp $
+c     $Header: /SAD/cvsroot/oldsad/src/Lrdnum.f,v 1.2.14.5 2016/09/09 12:08:57 oide Exp $
       use maccbk
+      use maccode
+      use macttyp
+      use macmisc
       implicit none
-c
-      include 'inc/MACCODE.inc'
-      include 'inc/MACMISC.inc'
-      include 'inc/MACTTYP.inc'
 c
       integer*4 Lrdnum,scan, yyparse,yypushtoken,yypoptoken,yyreturn
       integer idxl,idxm

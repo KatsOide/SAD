@@ -906,9 +906,9 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
 
       subroutine tffourier(inv,k,kx,irtc)
       use tfstk
+      use macmath
       implicit none
       type (sad_descriptor) k,kx
-      include 'inc/MACMATH.inc'
       type (sad_list), pointer :: kl
       integer*4 irtc, m, itfmessage
       logical*4 inv
@@ -937,9 +937,9 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
 
       subroutine tffft(kl,m,kx,inv,irtc)
       use tfstk
+      use macmath
       implicit none
       type (sad_descriptor) kx
-      include 'inc/MACMATH.inc'
       type (sad_list) :: kl
       type (sad_list), pointer :: kli
       integer*8 ktfc2l

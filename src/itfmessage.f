@@ -11,7 +11,7 @@
       i=index(mess,'::')
       if(i .le. 0)then
         write(*,*)'itfmessagename implementation error: ',mess
-        call forcesf()
+        call abort
       endif
       isp1=isp+1
       ktastk(isp1)=ktfoper+mtfmessagename
@@ -34,10 +34,11 @@
       integer*4 function itfmessage(level,mess0,arg0)
       use tfstk
       use tfmessage
+      use tfcsi
       implicit none
       type (sad_descriptor) dm,ks,mn
       type (sad_list), pointer :: klx,klm,klhm,klhms
-      integer*4 level,irtc,icslfno,ltr0,l,la,isp0
+      integer*4 level,irtc,ltr0,l,la,isp0
       character*(*) mess0,arg0
       character*256 mess,arg
       logical*4 iter
@@ -166,9 +167,10 @@ c     Search '"' from string(is+1:l) with backslash escape
 
       subroutine tferrorhandle(kx,irtc)
       use tfstk
+      use tfcsi
       implicit none
       type (sad_descriptor) kx
-      integer*4 irtc,icslfno
+      integer*4 irtc
       if(ierrorprint .ne. 0)then
         ierrorf=kx%k
         if(irtc .gt. 0)then
@@ -305,10 +307,11 @@ c      call tfdebugprint(kerror,'addmessage',1)
 
       subroutine tfcheck(isp1,kx,irtc)
       use tfstk
+      use tfcsi
       implicit none
       type (sad_descriptor) kx,kf,kxcheckmessage,kxmessagelist
       type (sad_symdef), pointer,save :: symd
-      integer*4 isp1,irtc,icslfno,isp0,
+      integer*4 isp1,irtc,isp0,
      $     itgetfpe,itfmessage,narg,irtc1
       data kxmessagelist%k,kxcheckmessage%k /0,0/
       narg=isp-isp1

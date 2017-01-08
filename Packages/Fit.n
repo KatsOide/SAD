@@ -34,17 +34,13 @@ With[{def={MaxIterations->50,AccuracyGoal->1.d-20,Trace->False,D->True,Complex->
       Block[ba,
         With[{var=(With[{v=##},Hold[Set[v]]]&@@[vlist[[,{1,2}]],{1}])},
           If[Length[Hold[eql]]==0,
-            vl=If[blk,
-              ReleaseHold[Hold[Unevaluated$[Block[var,{eq1,eq2}]]/.Hold->Null]],
-              {eq1,eq2}];
+            vl=ReleaseHold[Hold[Unevaluated$[Block[var,{eq1,eq2}]]/.Hold->Null]];
             If[List===Head[vl[[1]]]===Head[vl[[2]]] && (leq=Length[vl[[1]]])<>Length[vl[[2]]],
               Message[General::equalleng,"both sides of eqs"];
               Return[]],
             eq=Hold[eql]/.Equal->Subtract;
             With[{eq},
-              vl=If[blk,
-                Unevaluated$[Block[var,eq]]/.Hold->Null,
-                eq]];
+              vl=Unevaluated$[Block[var,eq]]/.Hold->Null];
             leq=-1]];
         If[~cmpl && (RealListQ[vl] || RealQ[vl]),
           Return[If[leq<=0,

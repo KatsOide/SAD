@@ -117,7 +117,7 @@ c                        write(*,*)'tdfun ',k,ip,kf,maxfit,vpeak(k),df(i)
  110                  continue
                     endif
                   else
-                    if(kf .le. mfitpepy .or.
+                    if(kf .le. mfitpzpy .or.
      $                   (kf .ge. mfitleng .and. kf .le. mfitgz))then
                       maxfit=flv%mfitp(ka) .lt. 0
                       vb=tgfun(kf,kpb,idp)
@@ -136,11 +136,16 @@ c                        write(*,*)kf,vb,ve,vf1
                         vf1=vf
                       endif
                       df1(i)=tdfun1(vf1,ve,kf,maxfit,idp,ttrans(idp))
-                      if(tftype1fit(kf))then
+c                      if(tftype1fit(kf))then
                         if(.not. maxfit)then
-                          df1(i)=vf+df1(i)
+                          if(kf .eq. mfitbx .or. kf .eq. mfitby
+     $                         .or. kf .eq. mfitbz)then
+                            df1(i)=log(vf)+df1(i)
+                          else
+                            df1(i)=vf+df1(i)
+                          endif
                         endif
-                      endif
+c                      endif
                       iqcol(i)=j
                       lfp(1,i)=kpe
                       lfp(2,i)=kpb
@@ -265,6 +270,7 @@ c        call tfdebugprint(ktflist+ifv,'FitValue-1',3)
         call tfleval(klist(ifv-3),kx,.true.,irtc)
       else
 c        call tfdebugprint(ktflist+ifv1,'FitValue-2',3)
+c        write(*,*)'tfgetfitval ',ifv1
         call tfleval(klist(ifv1-3),kx,.true.,irtc)
       endif
 c      call tfdebugprint(kx,'==> ',3)
@@ -325,13 +331,14 @@ c     Note: index(name1,'.') > 0 if kp1 != 0
 
       subroutine tffsfitfun(nqcol,df,iqcol,kdp,maxcond,error)
       use tfstk
+      use tfcsi, only:icslfno
       implicit none
       type (sad_list), pointer :: klx
       type (sad_descriptor) kx
       integer*8 kff
       integer*4 maxcond,nqcol,iqcol(maxcond),kdp(maxcond)
       real*8 df(maxcond)
-      integer*4 l,itfuplevel,itfdownlevel,i,m,level,irtc,icslfno
+      integer*4 l,itfuplevel,itfdownlevel,i,m,level,irtc
       logical*4 error
       save kff
       data kff/0/
@@ -378,26 +385,29 @@ c      write(*,*)'with ',irtc
       end
 
       real*8 function tdfun1(vf,v,kf,maxfit,kdp,ttrans)
+      use macmath
+      use tffitcode
       implicit none
-      include 'inc/MACMATH.inc'
       real*8 factor
       parameter (factor=1.d0)
       integer*4 kf,kdp
       real*8 vf,v,vfa
       logical*4 maxfit,ttrans
-      go to (
-     $     1130,1110,1210,1130,1110,1210,1170,1190,1170,1190,
-     $     1190,1190,1190,1190,1190,1190,1190,1190,1190,1190,
-     $     1190,1190,1190,1190,1190,1190,1190,1190,1190,1190,
-     $     1190,1410,1410,1410
-     $     ),kf
-      go to 1190
+c      go to (
+c     $     1130,1110,1210,1130,1110,1210,1170,1190,1170,1190,
+c     $     1190,1190,1190,1190,1190,1190,1190,1190,1190,1190,
+c     $     1190,1190,1190,1190,1190,1190,1190,1190,1190,1190,
+c     $     1190,1410,1410,1410
+c     $     ),kf
+c      go to 1190
 c     $  'AX   ','BX   ','NX   ','AY   ','BY   ','NY   ','EX   ','EPX  ','EY   ','EPY  ',
 c     $  'R1   ','R2   ','R3   ','R4   ','DETR ','DX   ','DPX  ','DY   ','DPY  ','DZ   ',
 c     $  'DDP  ','PEX  ','PEPX ','PEY  ','PEPY ','TRX  ','TRY  ','LENG ','GX   ','GY   ',
 c     $  'GZ   ','CHI1 ','CHI2 ','CHI3 ','DEX  ','DEPX ','DEY  ','DEPY ','DDX  ','DDPX ',
 c     $  'DDY  ','DDPY ','PDEX ','PDEPX','PDEY ','PDEPY'/
-1110  if(maxfit)then
+      select case (kf)
+      case (mfitbx,mfitby,mfitbz)
+        if(maxfit)then
         if(v .gt. vf)then
           tdfun1=log(vf*factor/v)
         else
@@ -408,7 +418,9 @@ c     $  'DDY  ','DDPY ','PDEX ','PDEPX','PDEY ','PDEPY'/
         tdfun1=log(vf/v)
       endif
       return
-1130  if(maxfit)then
+
+      case (mfitax,mfitay,mfitaz)
+        if(maxfit)then
         vfa=abs(vf)
         if(v .gt. vfa)then
           tdfun1=atan(vfa*factor)-atan(v)
@@ -422,7 +434,9 @@ c     $  'DDY  ','DDPY ','PDEX ','PDEPX','PDEY ','PDEPY'/
         tdfun1=atan(vf)-atan(v)
       endif
       return
-1170  if(maxfit)then
+
+      case (mfitex,mfitey)
+        if(maxfit)then
         vfa=abs(vf)
         if(v .gt. vfa)then
           tdfun1=vfa-v
@@ -440,37 +454,9 @@ c     $  'DDY  ','DDPY ','PDEX ','PDEPX','PDEY ','PDEPY'/
         endif
       endif
       return
-1190  if(maxfit)then
-        vfa=abs(vf)
-        if(v .gt. vfa)then
-          tdfun1=vfa-v
-        elseif(v .lt. -vfa)then
-          tdfun1=-vfa-v
-        else
-          tdfun1=0.d0
-        endif
-        return
-      else
-        tdfun1=vf-v
-      endif
-      return
- 1210 continue
-c      vf1=pi2*(anint(vf/pi2)+sign(.5d0*sin(.5d0*vf)**2,sin(vf)))
-c      v1=pi2*(anint(v/pi2)+sign(.5d0*sin(.5d0*v)**2,sin(v)))
-      if(maxfit)then
-        if(v .gt. vf)then
-          tdfun1=vf-v
-        else
-          tdfun1=0.d0
-        endif
-      else
-        tdfun1=vf-v
-      endif
-      if(ttrans)then
-        tdfun1=tdfun1-anint(tdfun1/pi2)*pi2
-      endif
-      return
- 1410 if(maxfit)then
+
+      case (mfitchi1,mfitchi2,mfitchi3)
+        if(maxfit)then
         vfa=abs(vf)
         if(v .gt. vfa)then
           tdfun1=vfa-v
@@ -490,6 +476,42 @@ c      v1=pi2*(anint(v/pi2)+sign(.5d0*sin(.5d0*v)**2,sin(v)))
         tdfun1=tdfun1-pi2
       enddo
       return
+      
+      case (mfitnx,mfitny,mfitnz)
+c      vf1=pi2*(anint(vf/pi2)+sign(.5d0*sin(.5d0*vf)**2,sin(vf)))
+c      v1=pi2*(anint(v/pi2)+sign(.5d0*sin(.5d0*v)**2,sin(v)))
+      if(maxfit)then
+        if(v .gt. vf)then
+          tdfun1=vf-v
+        else
+          tdfun1=0.d0
+        endif
+      else
+        tdfun1=vf-v
+      endif
+      if(ttrans)then
+        tdfun1=tdfun1-anint(tdfun1/pi2)*pi2
+      endif
+      return
+
+      case default
+        if(maxfit)then
+        vfa=abs(vf)
+        if(v .gt. vfa)then
+          tdfun1=vfa-v
+        elseif(v .lt. -vfa)then
+          tdfun1=-vfa-v
+        else
+          tdfun1=0.d0
+        endif
+        return
+      else
+        tdfun1=vf-v
+      endif
+      return
+      end select
+      return
+
       end
 
       subroutine tfpeak(idp,kf,ibegin,iend,ipeak,vpeak,npeak)

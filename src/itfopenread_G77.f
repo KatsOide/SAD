@@ -69,8 +69,8 @@ c     $       buffercount=16,
 
       integer*4 function itfopenappend(k,irtc)
       use tfstk
+      use tfrbuf
       implicit none
-      include 'inc/TFRBUF.inc'
       integer*8 k
       integer*4 irtc,nc,i,itfmessage,nextfn
       character*255 fname,tfgetstr

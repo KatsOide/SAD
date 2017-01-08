@@ -1,17 +1,16 @@
       subroutine prline(idxl,head)
       use maccbk
+      use mackw
+      use macttyp
+      use macfile
+      use macmisc
       implicit real*8 (a-h,o-z)
       integer idxl
       character*(*) head
 c
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACFILE.inc'
-      include 'inc/MACMISC.inc'
-c
       character    head1*6,cwork*80
-      integer slen,llen,listp
+      integer slen,llen
+      integer*8 listp,iw
       character*17 fmt
       data fmt /'(A**,A4,A8,:,A20)'/
 c

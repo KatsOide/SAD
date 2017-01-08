@@ -2,12 +2,15 @@
       use tfstk
       use ffs
       use tffitcode
-      dimension latt(2,nlat),mult(nlat),master(nlat)
+      use sad_main
+      use ffs_pointer, only:elatt
+      integer*8 latt(nlat),k,jd
+      dimension mult(nlat),master(nlat)
       integer*4 master
       character*(*) word
       character*20  name
       logical exist,temat
-      integer*4 ie,is,i,j,k,id
+      integer*4 ie,is,i,j,id
       real*8 dx,dy
 c
       exist=.false.
@@ -43,8 +46,8 @@ c       write(lfno,*)' nalign start', name
 c       call elname(ie,name)
 c       write(lfno,*)' nalign end  ', name
 c
-          j=latt(1,is)
-          k=latt(2,is)
+        j=idcomp(elatt,is)
+          k=latt(is)
           id=idtype(j)
 c
           if(id .eq. 2) then
@@ -65,8 +68,8 @@ c
 c       write (lfno,*)' align :',dx,dy,is,ie
 c
         do 3010 i=is+1,ie
-          j=latt(1,i)
-          k=latt(2,i)
+          j=idcomp(elatt,i)
+          k=latt(i)
           id=idtype(j)
           go to (3010,3120,3010,3140,3010,3140,3010,3140,3010,3010,
      &           3010,3010,3010,3010,3010,3010,3010,3010,3010,3160),id

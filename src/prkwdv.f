@@ -1,7 +1,7 @@
       subroutine prkwdv(head,kwd,val)
       use maccbk
+      use macfile
       implicit none
-      include 'inc/MACFILE.inc'
       character head*(*),kwd*(*)
       real*8 val
       integer*4 chrcnt,lene

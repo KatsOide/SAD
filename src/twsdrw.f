@@ -1,15 +1,17 @@
-      subroutine twsdrw(latt,pos,iele,mult,word,wordp,lfnd,
-     1                 twiss,gammab,idp,imon,emon,nmon,
+      subroutine twsdrw(latt,pos,iele,word,wordp,lfnd,
+     1                 twiss,idp,imon,emon,nmon,
      1                 title,case,exist)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idtypec,pnamec
       implicit real*8 (a-h,o-z)
+      type (ffs_bound) fbound
       parameter (nkey=35,nstyle=8)
-      integer*4 latt(2,nlat)
+      integer*8 latt(nlat),it,it1,jp
       real*8 pos(nlat)
-      integer*4 iele(nlat),mult(nlat),imon(*)
-      real*8 twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat),emon(*)
+      integer*4 iele(nlat),imon(*)
+      real*8 twiss(nlat,-ndim:ndim,ntwissfun),emon(*)
       real*8 ymax(nkey,2),ymin(nkey,2),gmin(2),gmax(2),fctr(2)
       integer*4 icat(nkey),ipw(2,nkey),kvar(nkey),
      1     line(nkey,2),lno(2),mp(nkey,2)
@@ -96,7 +98,7 @@ c     end   initialize for preventing compiler warning
         if(exist) then
           call getwdl2(word,wordp)
           do 920 i=1,nlat-1
-            if( tmatch(pname(latt(1,i)),wordp) ) then
+            if( tmatch(pname(ilist(2,latt(i))),wordp) ) then
               only=.true.
               patt=wordp
               call getwdl2(word,wordp)
@@ -113,7 +115,7 @@ c     end   initialize for preventing compiler warning
       else
         ls=1
         do 926 i=1,nlat-1
-          if( tmatch(pname(latt(1,i)),wordp) ) then
+          if( tmatch(pname(ilist(2,latt(i))),wordp) ) then
             only=.true.
             patt=wordp
             call getwdl2(word,wordp)
@@ -125,11 +127,11 @@ c     end   initialize for preventing compiler warning
           call getwdl2(word,wordp)
         endif
       endif
-      call tffsbound(lbegin,frbegin,lend,frend)
-      if(lbegin .ne. 1 .or. lend .ne. nlat)then
+      call tffsbound(fbound)
+      if(fbound%lb .ne. 1 .or. fbound%le .ne. nlat)then
         ls1=ls
-        ls=max(min(ls1,le),lbegin)
-        le=min(max(ls1,le),lend+1)
+        ls=max(min(ls1,le),fbound%lb)
+        le=min(max(ls1,le),fbound%le+1)
       endif
       altotal=pos(nlat)-pos(1)
       alen=pos(le)-pos(ls)
@@ -149,11 +151,11 @@ c     end   initialize for preventing compiler warning
       endif
       fin=.false.
 911   do 910 i=istrt,istop
-        id=idtype(latt(1,i))
+        id=idtypec(i)
         if(id .le. icdodeca .or. id .eq. icmult .or.
      $       id .eq. iccavi .or. id .eq. ictcav)then
           ndiv=int(max(
-     $         pos(i+1)-pos(i),rlist(latt(2,i)+kytbl(kwL,id)))/ale)
+     $         pos(i+1)-pos(i),rlist(latt(i)+kytbl(kwL,id)))/ale)
           np=np+ndiv+1
         endif
 910   continue
@@ -218,7 +220,7 @@ cslac   write(lfnd,*)'TITLE 7 8.5 ''',dat,''''
               endif
             endif
 40        continue
-          it=italoc(np*2*km)
+          it=ktaloc(np*2*km)
           lno(1)=0
           lno(2)=0
           left=icat(kvar(1))
@@ -241,9 +243,10 @@ cslac   write(lfnd,*)'TITLE 7 8.5 ''',dat,''''
                 monly=.true.
               endif
               call tdrwdt(line(j,l),rlist(it1),mp(j,l),
-     1             ymin(j,l),ymax(j,l),ls,le,frbegin,frend,ale,np*km,
+     1             ymin(j,l),ymax(j,l),ls,le,
+     $             fbound%fb,fbound%fe,ale,np*km,
      $             only,monly,patt,
-     1             latt,twiss,gammab,idp,pos,imon,emon,nmon)
+     1             latt,twiss,idp,pos,imon,emon,nmon)
               if(line(j,l).eq.33 .or. line(j,l).eq.34) then
                 monly=monly1
               endif
@@ -481,7 +484,7 @@ c         endif
 1010    continue
 1000  continue
       if(lat) then
-        it=italoc(nlat)
+        it=ktaloc(nlat)
         call tdlat(latt,ls,le,pos,rlist(it),
      1             iele,' ',exist,lfnd)
         call tfree(int8(it))
@@ -494,7 +497,7 @@ c         endif
         endif
         fin=.false.
 1111    do 1110 i=istrt,istop
-          if( tmatch(pname(latt(1,i)),wordp) ) then
+          if( tmatch(pnamec(i),wordp) ) then
             goto 1100
           endif
 1110    continue
@@ -508,7 +511,7 @@ c         endif
           return
         endif
 1100    continue
-        it=italoc(nlat)
+        it=ktaloc(nlat)
         call tdlat(latt,ls,le,pos,rlist(it),
      1                            iele,wordp,exist,lfnd)
         call tfree(int8(it))

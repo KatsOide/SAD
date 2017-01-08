@@ -1,12 +1,13 @@
       subroutine tftyp1(kx,l,lp,kp,lt,lfno,lpw)
+      use kyparam
       use tfstk
       use ffs, only:emx,emy,dpmax
       use ffs_pointer
       use tffitcode
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      integer*4 ioff,kx,l,lp,kp,lt,lfno,lv,lene,lenw,lpw
+      integer*8 lp
+      integer*4 ioff,kx,l,kp,lt,lfno,lv,lene,lenw,lpw,lpname
       real*8 v
       character*32 autos
       character*132 vout
@@ -19,7 +20,8 @@
         kw=tfkwrd(lt,ioff)
         if(kw .eq. ' ')then
           if(start)then
-            call twbuf(pname(kp)//'=()',lfno,7,lpw,7,1)
+            call twbuf(pname(kp)(1:max(8,lpname(kp)))//'=()',
+     $           lfno,7,lpw,7,1)
           else
             call twbuf(')',lfno,10,lpw,1,1)
           endif
@@ -36,15 +38,17 @@
               if(ioff .eq. mfitax .or. ioff .eq. mfitay
      $             .or. ioff .eq. mfitepx .or. ioff .eq. mfitepy
      $             .or. ioff .eq. mfitr2 .or. ioff .eq. mfitr3
-     $             .or. ioff .eq. mfitdpx .or. ioff .eq. mfitdpy)then
-                v=v*rlist(lp+ilist(1,lp))
+     $             .or. ioff .eq. mfitdpx .or. ioff .eq. mfitdpy
+     $             .or. ioff .eq. mfitaz .or. ioff .eq. mfitzpx
+     $             .or. ioff .eq. mfitzpy)then
+                v=v*direlc(l)
               endif
             endif
-          elseif(ioff .eq. kytbl(kwEMIX,icMARK))then
+          elseif(ioff .eq. ky_EMIX_MARK)then
             v=emx
-          elseif(ioff .eq. kytbl(kwEMIY,icMARK))then
+          elseif(ioff .eq. ky_EMIY_MARK)then
             v=emy
-          elseif(ioff .eq. kytbl(kwDP,icMARK))then
+          elseif(ioff .eq. ky_DP_MARK)then
             v=dpmax
           else
             v=rlist(lp+ioff)
@@ -72,7 +76,7 @@
             vout(lv+1:lv+1)='.'
           endif
           if(start)then
-            call twbuf(pname(kp)(1:max(8,lenw(pname(kp))))//
+            call twbuf(pname(kp)(1:max(8,lpname(kp)))//
      $           '=('//vout,lfno,7,lpw-2,7,1)
             start=.false.
           else

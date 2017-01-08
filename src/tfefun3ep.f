@@ -771,7 +771,7 @@ c      endif
       nfunc=rtastk(isp)
       iarg=rtastk(isp1+1)
       isp0=isp
-      call cdbint2strs(nfunc,iarg,ilist(1,isp0+1),np)
+      call cdbint2strs(nfunc,iarg,itastk(1,isp0+1),np)
       isp=isp+np+1
       isp2=isp
       do i=1,np

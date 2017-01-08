@@ -3,10 +3,11 @@
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:pnamec,lpnamec,idtypec,idvalc
       implicit real*8 (a-h,o-z)
       parameter (dh=.08,qh=.8,bh=.4,sh=.6,ch=.3,oh=.2,width=.2d0)
       real*4 xc,yc,dx,dy,xs
-      dimension latt(2,nlat)
+      integer*8 latt(nlat)
       dimension pos(nlat),posa(nlat),iele(nlat)
       dimension height(7)
       logical tmatch,exist,fin
@@ -41,13 +42,13 @@
         iend=le-1
       endif
       do i=istart,iend
-        if(idtype(latt(1,i)) .eq. icMARK)then
+        if(idtypec(i) .eq. icMARK)then
           posa(i)=posa(i-1)
         endif
       enddo
       fin=.false.
 11    do 10 i=istart,iend
-        id=idtype(latt(1,i))
+        id=idtypec(i)
         if(id .ge. 41)then
           go to 12
         endif
@@ -58,28 +59,28 @@
           yc=0.d0
           dy=height(7)*2.d0*yscale
         elseif(id .eq. icmult)then
-          yc=sign(height(4)-oh,rlist(latt(2,i)+13))*.5d0
+          yc=sign(height(4)-oh,rlist(latt(i)+13))*.5d0
           dy=(height(4)+oh)*yscale
         elseif(iele(i) .eq. 0 .or. id .eq. 1 .or.
      1          id .gt. icdodeca)then
           yc=0.d0
           dy=dh*2.d0*yscale
         else
-          yc=sign(height(min(id,6))-oh,rlist(latt(2,i)+2))*.5d0
+          yc=sign(height(min(id,6))-oh,rlist(latt(i)+2))*.5d0
           dy=(height(min(id,6))+oh)*yscale
         endif
  12     if(kytbl(kwL,id) .gt. 0)then
-          al=rlist(latt(2,i)+kytbl(kwL,id))
+          al=rlist(latt(i)+kytbl(kwL,id))
         else
           al=0.d0
         endif
         xc=pa+al*.5d0
         dx=al*xscale
-        if( tmatch(pname(latt(1,i)),patt) )then
+        if( tmatch(pnamec(i),patt) )then
           exist=.true.
-          ln=min(8,lene(pname(latt(1,i))))
+          ln=min(8,lene(pnamec(i)))
           name=' '
-          name(9-ln:8)=pname(latt(1,i))
+          name(9-ln:8)=pnamec(i)
 c          xs=max(xc,REAL(ps))
           xs=REAL(ps)
           xs=max(xc,xs)
@@ -92,7 +93,7 @@ c          xs=max(xc,REAL(ps))
         endif
         if(id .ne. icMARK)then
           pa=max(pa+al,posa(i+1))
-c     write(*,*)'tdlat ',pname(latt(1,i)),xc,yc,dx,dy
+c     write(*,*)'tdlat ',pnamec(i),xc,yc,dx,dy
           write(lfnd,9001)
      1         'BOX ',xc,yc,' DATA SIZE ',dx,dy
  9001     format(1x,a,1p,2g14.6,a,2g14.6)

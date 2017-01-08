@@ -1,9 +1,11 @@
       subroutine tfsetparam
+      use kyparam
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,latt,idtypec
       implicit none
-      integer*4 ix
+      integer*8 ix
       real*8 rgetgl1,df
       emx   =rgetgl1('EMITX')
       emy   =rgetgl1('EMITY')
@@ -14,13 +16,13 @@
         emy=1.d-12
       endif
       dpmax =rfromd(kxsymbolv('DP',2))
-      if(idtype(ilist(1,ilattp+1)) .eq. icMARK)then
-        ix=ilist(2,ilattp+1)
-        rlist(ix+kytbl(kwEMIX,icMARK))=emx
-        rlist(ix+kytbl(kwEMIY,icMARK))=emy
-        rlist(ix+kytbl(kwDP,icMARK))=dpmax
-        rlist(ix+kytbl(kwSIGZ,icMARK))=rgetgl1('SIGZ')
-        dp0=rlist(ix+kytbl(kwDDP,icMARK))
+      if(idtypec(1) .eq. icMARK)then
+        ix=latt(1)
+        rlist(ix+ky_EMIX_MARK)=emx
+        rlist(ix+ky_EMIY_MARK)=emy
+        rlist(ix+ky_DP_MARK)=dpmax
+        rlist(ix+ky_SIGZ_MARK)=rgetgl1('SIGZ')
+        dp0=rlist(ix+ky_DDP_MARK)
       else
         dp0=0.d0
       endif
@@ -40,7 +42,7 @@
       alost =rgetgl1('LOSSAMPL')
       zlost =rgetgl1('LOSSDZ')
       df    =rgetgl1('FSHIFT')
-      dleng =rlist(ilist(2,ilattp)+1)*df
+      dleng =rlist(klist(ilattp)+1)*df
       pspac_nx =max(1,int(rgetgl1('PSPACNX')))
       pspac_ny =max(1,int(rgetgl1('PSPACNY')))
       pspac_nz =max(1,int(rgetgl1('PSPACNZ')))
@@ -75,8 +77,8 @@ c      h0    =p0*sqrt(1.d0+1.d0/p0**2)
       rcratio=rclassic/(hp*c/amass/e)
       anrad =5.d0/2.d0/sqrt(3.d0)*rcratio
       ccintr=(rclassic/h0**2)**2/8.d0/pi
-      if(rlist(ilist(2,ilattp)+1) .ne. 0.d0)then
-        omega0=pi2*c*p0/h0/rlist(ilist(2,ilattp)+1)
+      if(rlist(klist(ilattp)+1) .ne. 0.d0)then
+        omega0=pi2*c*p0/h0/rlist(klist(ilattp)+1)
       else
         omega0=0.d0
       endif

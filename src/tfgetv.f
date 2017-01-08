@@ -1,32 +1,37 @@
-      subroutine tfgetv(word,ntouch,lfno,exist)
+      subroutine tfgetv(word,ntouch,lfno,next,exist)
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
+      use tfcsi,only:cssetp
+      use tflinepcom
       implicit none
       integer*8 kav
-      integer*4 ii,i,id,iv,next,k,lfno,j,ivi,kv,kk
+      integer*4 ii,i,id,iv,next,lfno,j,ivi,kv,next1,lw1
       real*8 v,getva,va,vx
-      integer*4 ntouch,nl,irtc,lw, iii
+      integer*4 ntouch,nl,irtc,lw,iii,lenw
       character*(*) word
-      character*(MAXPNAME) keywrd,tfkwrd1
-      character*64 word1
-      logical*4 exist,get,rel,maxf,minf,unitf,
-     $abbrev,var,exist1,diff,vcomp, cont
+      character*128 word1
+      logical*4 exist,get,rel,maxf,minf,
+     $     abbrev,var,exist1,diff,vcomp, cont
 
 c     Initialize to avoid compiler warning
+      if(iflinep .eq. 0)then
+        call tfinitlinep(irtc)
+      endif
       v=0
       kv=-1
       iv=-1
+      id=0
 c
- 2    vcomp=index(word,'.') .gt. 0
+      vcomp=index(word,'.') .gt. 0
       cont=.false.
  1    exist=.false.
       get=.true.
       rel=.false.
       maxf=.false.
       minf=.false.
-      unitf=.false.
+      diff=.true.
       id=0
       lw=len_trim(word)
       call tfgetlineps(word,lw,nl,kav,1,irtc)
@@ -38,12 +43,16 @@ c
         i=int(rlist(kav+iii))
         ii=klp(i)
         if(get)then
-          id=idtype(latt(1,ii))
+          id=idtypec(ii)
           get=.false.
           iv=ival(i)
           kv=0
           var=.true.
- 101      call peekwd(word1,next)
+          call peekwd(word1,next1)
+          lw1=lenw(word1)
+          if(lw1 .gt. MAXPNAME)then
+            go to 912
+          endif
           if(abbrev(word1,'R_ELATIVE','_'))then
             rel=.true.
           elseif(word1 .eq. 'MAX')then
@@ -54,54 +63,58 @@ c
      1           word1 .eq. 'MAXMIN' .or. word1 .eq. 'MINMAX')then
             maxf=.true.
             minf=.true.
-          else
-            do k=1,1000
-              keywrd=tfkwrd1(id,k,kk)
-              if(keywrd .eq. ' ')then
-                go to 909
-              elseif(keywrd .eq. word1)then
-                iv=k
-                kv=kk
-                go to 912
-              endif
-            enddo
- 909        if(cont)then
-              if(word1 .eq. ' ')then
-                exist=.true.
-                go to 9000
-              else
-                if(.not. vcomp)then
-                  call tffsadjust(ntouch)
-                endif
-                call cssetp(next)
-                word=word1
-                go to 2
-              endif
-            endif
-            v=getva(exist1)
-            if(.not. exist1)then
+          elseif(word1 .eq. ' ' .or. word1 .eq. '-')then
+            next=next1
+            call cssetp(next)
+            exist=.true.
+            if(cont)then
+              go to 9000
+            else
               call termes(lfno,'?Missing value for ',word)
               return
             endif
-            go to 913
+          else
+            kv=itftypekey(id,word1,lw1)
+            if(kv .eq. 0)then
+              go to 912
+            else
+              iv=kv
+            endif
           endif
- 912      call cssetp(next)
-          cont=.false.
-          go to 101
+          next=next1
+          call cssetp(next)
+          exist=.true.
+ 912      if(iv .eq. 0)then
+            call termes(lfno,'?No default keyword for ',word)
+            return
+          endif
+          v=getva(exist1)
+          if(.not. exist1)then
+            if(cont)then
+              if(.not. vcomp)then
+                call tffsadjust(ntouch)
+              endif
+            else
+              call termes(lfno,'?Missing value for ',word)
+            endif
+            return
+          endif
         endif
- 913    if(idtype(latt(1,ii)) .ne. id)then
-          if(diff)then
-            call termes(lfno,
-     1           'Info-Different types of variables match ',word)
-            diff=.false.
-          endif
+        if(idtypec(ii) .ne. id)then
+          kv=itftypekey(idtypec(ii),word1,lw1)
           if(kv .ne. 0)then
-            ivi=kytbl(kv,idtype(latt(1,ii)))
+            ivi=kv
           else
             ivi=ival(i)
           endif
           if(ivi .eq. 0)then
             cycle LOOP_II
+          endif
+          if(diff)then
+            call termes(lfno,
+     1           'Info-Different types of elements match ',
+     $           word(1:lw)//" "//word1(1:lw1))
+            diff=.false.
           endif
         else
           ivi=iv
@@ -109,14 +122,18 @@ c
         if(minf .or. maxf)then
           ivi=ival(i)
         endif
+        if(ivi .eq. 0)then
+          call termes(lfno,'?No default keyword for ',word)
+          return
+        endif
         var=ivi .eq. ival(i)
         if(rel)then
-          va=rlist(idval(latt(1,ii))+ivi)*(1.d0+v)
+          va=rlist(idvalc(ii)+ivi)*(1.d0+v)
         else
           va=v
         endif
         if(var)then
-          vx=rlist(latt(2,ii)+ivi)/errk(1,ii)
+          vx=rlist(latt(ii)+ivi)/errk(1,ii)
           if(minf)then
             if(maxf)then
               vlim(i,1)=-abs(va)
@@ -132,10 +149,10 @@ c
           else
             vx=va
           endif
-          rlist(latt(2,ii)+ivi)=vx*errk(1,ii)
+          rlist(latt(ii)+ivi)=vx*errk(1,ii)
         else
           vx=va
-          rlist(latt(2,ii)+ivi)=vx
+          rlist(latt(ii)+ivi)=vx
           if(.not. vcomp)then
             do j=1,ntouch
               if(itouchele(j) .eq. i .and. itouchv(j) .eq. ivi)then

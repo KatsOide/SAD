@@ -1,4 +1,5 @@
       subroutine tfgeo(calgeo0)
+      use kyparam
       use tfstk
       use ffs
       use ffs_flag
@@ -25,7 +26,7 @@
       calgeo=calgeo0
       if(.not. calgeo)then
         do 1030 i=1,nlat-1
-          if(idtype(latt(1,i)) .eq. 20)then
+          if(idtypec(i) .eq. 20)then
             calgeo=.true.
             goto 1040
           endif
@@ -43,9 +44,9 @@
       iprev=0
       call tfgeo1(1,nlat,calgeo,.false.)
       do i=1,nlat-1
-        it=idtype(latt(1,i))
+        it=idtypec(i)
         if(it .eq. icMARK)then
-          offset=tffsmarkoffset(latt(1,i))
+          offset=tffsmarkoffset(i)
           if(offset .ne. 0.d0)then
             xp=max(1.d0,min(dble(nlat),offset+dble(i)))
             lxp=int(xp)
@@ -54,14 +55,14 @@
               geo(:,:,i)=geo(:,:,lxp)
               pos(i)=pos(lxp)
             else
-              lt=idtype(latt(1,lxp))
+              lt=idtypec(lxp)
               nv=kytbl(kwmax,lt)-1
               if(ideal)then
-                call tmov(rlist(idval(latt(1,lxp))+1),vsave,nv)
+                call tmov(rlist(idvalc(lxp)+1),vsave,nv)
               else
-                call tmov(rlist(latt(2,lxp)+1),vsave,nv)
+                call tmov(rlist(latt(lxp)+1),vsave,nv)
               endif
-              call qfraccomp(latt(1,lxp),0.d0,fr,ideal,chg)
+              call qfraccomp(lxp,0.d0,fr,ideal,chg)
               if(chg)then
                 call tmov(geo(1,1,lxp+1),geo1,12)
                 pos0=pos(lxp+1)
@@ -77,9 +78,9 @@
                 pos(i)=pos(lxp+1)
               endif
               if(ideal)then
-                call tmov(vsave,rlist(idval(latt(1,lxp))+1),nv)
+                call tmov(vsave,rlist(idvalc(lxp)+1),nv)
               else
-                call tmov(vsave,rlist(latt(2,lxp)+1),nv)
+                call tmov(vsave,rlist(latt(lxp)+1),nv)
               endif
               if(i .eq. 1)then
                 dpos=pos(1)
@@ -95,16 +96,15 @@
           j=i+1
           posi=pos(j)
           do while(.true.)
-c            write(*,*)'tfgeo ',i,j,posi,pos(j),inext(i)
             if(pos(j) .ne. posi)then
-              exit
-            elseif(idtype(latt(1,j)) .eq. it)then
-              inext(i)=j
-              iprev(j)=i
               exit
             elseif(j .eq. nlat)then
               j=0
               posi=pos(1)
+            elseif(idtypec(j) .eq. it)then
+              inext(i)=j
+              iprev(j)=i
+              exit
             endif
             j=j+1
           enddo
@@ -155,14 +155,10 @@ c            write(*,*)'tfgeo ',i,j,posi,pos(j),inext(i)
  9000 pgev=rgetgl1('MOMENTUM')
       call tphyzp
       circ=pos(nlat)-pos(1)
-      rlist(ilist(2,ilattp)+1)=circ
+      rlist(elatt%aux+1)=circ
       dleng=rgetgl1('FSHIFT')*circ
       if(circ .ne. 0.d0)then
-        if(circ .ne. 0.d0)then
-          omega0=pi2*c*p0/h0/circ
-        else
-          omega0=0.d0
-        endif
+        omega0=pi2*c*p0/h0/circ
         if(omega0 .eq. 0.d0)then
           write(*,*)'Design orbit length =',circ
         endif
@@ -172,12 +168,16 @@ c            write(*,*)'tfgeo ',i,j,posi,pos(j),inext(i)
       end
 
       subroutine tfgeo1(istart0,istop,calgeo,acconly)
+      use kyparam
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
+      use sad_main
       implicit none
-      integer*4 istart,istop,ke,ke1,i,k,i1,id,istart0
+      type (sad_comp), pointer :: cmp
+      integer*4 istart,istop,ke,ke1,i,k,i1,istart0
+      integer*8 id
       real*8 p1,h1,ali,v,zetau,b,a,xiu,dchi3,coschi,sinchi,
      $     x1,x2,x3,y1,y2,y3,rho0,sp0,cp0,r1,r2,cchi1,schi1,
      $     cchi2,schi2,cchi3,schi3,dx,dy,dz,r11,r12,r13,
@@ -201,7 +201,7 @@ c     end   initialize for preventing compiler warning
 c      h1=p1*sqrt(1.d0+1.d0/p1**2)
 c      h1=sqrt(1.d0+p1**2)
       do i=istart,istop-1
-        k=idtype(latt(1,i))
+        k=idtypec(i)
         if(trpt .and. (k .eq. icCAVI .or. k .eq. icMULT))then
           p1=tfacc(i,p1,h1,.true.)
         endif
@@ -218,32 +218,29 @@ c      h1=sqrt(1.d0+p1**2)
           sol=i .lt. ke
           go to 10
         endif
-        k=idtype(latt(1,i))
+        k=idtypec(i)
+        if(ideal)then
+          id=idvalc(i)
+        else
+          id=elatt%comp(i)
+        endif
+        call loc_comp(id,cmp)
         if(kytbl(kwANGL,k) .ne. 0)then
-          if(ideal)then
-            id=idval(latt(1,i))
-          else
-            id=latt(2,i)
-          endif
-          ali=rlist(id+kytbl(kwL,k))
-          phi=rlist(id+kytbl(kwANGL,k))
-          if(rlist(id+kytbl(kwFRMD,k)) .ne. 0.d0 .and.
+          ali=cmp%value(kytbl(kwL,k))
+          phi=cmp%value(kytbl(kwANGL,k))
+          if(cmp%value(kytbl(kwFRMD,k)) .ne. 0.d0 .and.
      1       ali .ne. 0.d0 .and. phi .ne. 0.d0)then
-            fb1=rlist(id+kytbl(kwF1,k))+rlist(id+kytbl(kwFB1,k))
-            fb2=rlist(id+kytbl(kwF1,k))+rlist(id+kytbl(kwFB2,k))
+            fb1=cmp%value(kytbl(kwF1,k))+cmp%value(kytbl(kwFB1,k))
+            fb2=cmp%value(kytbl(kwF1,k))+cmp%value(kytbl(kwFB2,k))
             ali=ali-((phi*fb1)**2+(phi*fb2)**2)/ali/48.d0
-     $           *sin(.5d0*phi*(1.d0-rlist(id+kytbl(kwE1,k))
-     $           -rlist(id+kytbl(kwE2,k))))/sin(.5d0*phi)
+     $           *sin(.5d0*phi*(1.d0-cmp%value(kytbl(kwE1,k))
+     $           -cmp%value(kytbl(kwE2,k))))/sin(.5d0*phi)
           endif
         elseif(k .eq. icSOL)then
           call tsgeo(i,ke,ke1,sol)
           go to 10
         elseif(kytbl(kwL,k) .ne. 0)then
-          if(ideal)then
-            ali=rlist(idval(latt(1,i))+kytbl(kwL,k))
-          else
-            ali=rlist(latt(2,i)+kytbl(kwL,k))
-          endif
+          ali=cmp%value(kytbl(kwL,k))
         else
           ali=0.d0
         endif
@@ -251,7 +248,8 @@ c      h1=sqrt(1.d0+p1**2)
         if(calgeo)then
           if(k .eq. icMARK)then
             if(ke .ne. 0 .and. ke1 .ne. 0)then
-              if(rlist(idval(latt(1,i))+kytbl(kwGEO,icMARK)) .ne. 0)then
+              if(rlist(idvalc(i)+ky_GEO_MARK)
+     $             .ne. 0)then
                 zetau=geo(1,3,ke1)*geo(1,1,i)+geo(2,3,ke1)*geo(2,1,i)
      1               +geo(3,3,ke1)*geo(3,1,i)
                 b=min(1.d0,max(-1.d0,-zetau/geo(3,2,i)))
@@ -263,8 +261,8 @@ c                a=sqrt((1.d0-b)*(1.d0+b))
      1               +geo(3,1,ke1)*geo(3,1,i)
                 dchi3=atan2(a*etau-b*geo(3,3,ke1)*xiu,
      1                      a*xiu+b*geo(3,3,ke1)*etau)
-                rlist(latt(2,ke)+kytbl(kwCHI3,icSOL))=
-     $               rlist(latt(2,ke)+kytbl(kwCHI3,icSOL))+dchi3
+                rlist(latt(ke)+ky_CHI3_SOL)=
+     $               rlist(latt(ke)+ky_CHI3_SOL)+dchi3
                 coschi= cos(dchi3)
                 sinchi=-sin(dchi3)
                 call trotg(geo(1,1,ke1),geo(1,3,ke1),coschi,sinchi)
@@ -277,15 +275,19 @@ c                a=sqrt((1.d0-b)*(1.d0+b))
             call tmov(geo(1,1,i),geo(1,1,i1),12)
           endif
           if(kytbl(kwANGL,k) .ne. 0)then
-            v=rlist(latt(2,i)+kytbl(kwANGL,k))
-            ald=rlist(latt(2,i)+kytbl(kwL,k))
+            v=cmp%value(kytbl(kwANGL,k))
+            ald=ali
             if(v .eq. 0.d0)then
               geo(1,4,i1)=geo(1,3,i)*ald+geo(1,4,i)
               geo(2,4,i1)=geo(2,3,i)*ald+geo(2,4,i)
               geo(3,4,i1)=geo(3,3,i)*ald+geo(3,4,i)
               call tmov(geo(1,1,i),geo(1,1,i1),9)
             else
-              theta=rlist(latt(2,i)+kytbl(kwROT,k))
+              if(kytbl(kwROT,k) .ne. 0)then
+                theta=cmp%value(kytbl(kwROT,k))
+              else
+                theta=0.d0
+              endif
               if(theta .ne. 0.d0)then
                 cost=cos(theta)
                 sint=sin(theta)
@@ -335,18 +337,18 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
           elseif(k .eq. icMAP)then
             call tgmap(i)
           elseif(k .eq. icCOORD)then
-            id=idval(latt(1,i))
-            cchi1=cos(rlist(id+4))
-            schi1=sin(rlist(id+4))
-            cchi2=cos(rlist(id+5))
-            schi2=sin(rlist(id+5))
-            cchi3=cos(rlist(id+6))
-            schi3=sin(rlist(id+6))
-            dir=rlist(id+7) .eq. 0.d0
+            id=idvalc(i)
+            cchi1=cos(cmp%value(ky_CHI1_COORD))
+            schi1=sin(cmp%value(ky_CHI1_COORD))
+            cchi2=cos(cmp%value(ky_CHI2_COORD))
+            schi2=sin(cmp%value(ky_CHI2_COORD))
+            cchi3=cos(cmp%value(ky_CHI3_COORD))
+            schi3=sin(cmp%value(ky_CHI3_COORD))
+            dir=cmp%value(ky_DIR_COORD) .eq. 0.d0
             if(dir)then
-              dx=rlist(id+1)
-              dy=rlist(id+2)
-              dz=rlist(id+3)
+              dx=cmp%value(ky_DX_COORD)
+              dy=cmp%value(ky_DY_COORD)
+              dz=cmp%value(ky_DZ_COORD)
               r11= cchi1*cchi3+schi1*schi2*schi3
               r12=-cchi2*schi3
               r13= schi1*cchi3-cchi1*schi2*schi3
@@ -363,9 +365,9 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
               geo(3,4,i1)=geo(3,4,i)
      1                  +dx*geo(3,1,i)+dy*geo(3,2,i)+dz*geo(3,3,i)
             else
-              dx=-rlist(id+1)
-              dy= rlist(id+2)
-              dz= rlist(id+3)
+              dx=-cmp%value(ky_DX_COORD)
+              dy= cmp%value(ky_DY_COORD)
+              dz= cmp%value(ky_DZ_COORD)
               r11= cchi1*cchi3+schi1*schi2*schi3
               r21= cchi2*schi3
               r31=-schi1*cchi3+cchi1*schi2*schi3
@@ -408,6 +410,8 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
             geo(3,3,i1)=geo(3,3,i)
           endif
         endif
+c        write(*,*)'tfgeo1 ',i1,i1,k,ali,geo(
+c     $       1,4,i1),geo(1,3,i),geo(1,4,i)
  10     continue
       enddo
       call tsetdvfs
@@ -439,16 +443,17 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 i,ip,id
+      integer*4 i,id
+      integer*8 ip
       real*8 harm,w,v,phic,dh,h2,p2,oneev,h1,p1
       logical*4 dir
       parameter (oneev=1.d0+3.83d-12)
       if(ideal)then
-        ip=idval(latt(1,i))
+        ip=idvalc(i)
       else
-        ip=latt(2,i)
+        ip=latt(i)
       endif
-      id=idtype(latt(1,i))
+      id=idtypec(i)
       if(dir)then
         v=abs(charge)*rlist(ip+kytbl(kwVOLT,id))/amass
       else

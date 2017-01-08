@@ -1,9 +1,11 @@
-      integer function rslvin(idx)
+      integer*8 function rslvin(idx)
       use maccbk
+      use mackw
+      use tfmem, only:ktaloc
       implicit real*8 (a-h,o-z)
       integer idx
-      include 'inc/MACCODE.inc'
-      integer*4 llen,lptnew,lptold,direct,hsrchz,italoc
+      integer*8 lptold,lptnew,i,ktcaloc
+      integer*4 llen,direct,hsrchz
       integer STACSZ
       parameter (STACSZ=400)
       integer istack(STACSZ),pstack
@@ -13,7 +15,7 @@ c.....statment functions
 c
       lptold=idval(idx)
       llen=ilist(1,lptold)
-      lptnew=italoc(llen+1)
+      lptnew=ktaloc(llen+1)
       rslvin=lptnew
       ilist(1,lptnew)=llen
       ilist(2,lptnew)=0
@@ -55,8 +57,8 @@ c end debug
      &           'stack over flow. too deep definition of line'
      &           ,0,16)
           endif
-          istack(pstack)=lptold
-          istack(pstack-1)=lptnew
+          istack(pstack)=int(lptold)
+          istack(pstack-1)=int(lptnew)
           istack(pstack-2)=i0
           istack(pstack-3)=direct
 c.........
@@ -70,7 +72,7 @@ c.........
             direct=-1
           endif
           idtype(icdr(lptnew+i0))=idtype(icdr(lptold+i))
-          idval(icdr(lptnew+i0))=mctaloc(icar(idval(icdr(lptold+i)))+1)
+          idval(icdr(lptnew+i0))=ktcaloc(icar(idval(icdr(lptold+i)))+1)
           ilist(1,idval(icdr(lptnew+i0)))=
      &                            icar(idval(icdr(lptold+i)))
 c.........

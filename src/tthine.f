@@ -2,6 +2,7 @@
      1                 dx,dy,theta,enarad,ld)
       use ffs_flag
       use tmacro
+      use temw
       implicit real*8 (a-h,o-z)
       dimension trans(6,12),cod(6),beam(42)
       complex*16 cx,cx1
@@ -9,7 +10,7 @@
       logical*4 enarad
       data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
      1          720.d0,5040.d0,40320.d0,362880.d0,3628800.d0 /
-      common /tem/ trans1(6,13)
+      real*8 trans1(6,13)
       if(ak .eq. 0.d0)then
         call tdrife(trans,cod,beam,al,
      $       0.d0,0.d0,0.d0,.true.,enarad,calpol,irad,ld)

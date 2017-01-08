@@ -140,11 +140,11 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
       type (sad_namtbl), pointer ::loc
       type (sad_strbuf), pointer :: strb
       integer*4 istop,nc,is2,isp0,lm,ich,irt
-      integer*8 kax,ka
+      integer*8 kax,ka,icont
       character*(*) string
       real*8 vx,eval1
       integer*4 m,l,i1,is1,notspace,ifromstr,
-     $     i,jc,itfopcode,icont,it1,it2,notany1
+     $     i,jc,itfopcode,it1,it2,notany1
       character*1 ch
       kx%k=ktfoper+mtfnull
       l=len(string)
@@ -247,6 +247,13 @@ c      endif
                 istop=is1
                 return
               endif
+            elseif(jc .eq. mtfpower)then
+              if(is1 .ne. 1 .and. is1 .lt. l-1
+     $             .and. string(is1:is1+2) .eq. '^^^')then
+                irt=-2
+                istop=is1
+                return
+              endif
             elseif(jc .eq. mtfleftcomment)then
               istop=l+1
               if(is1 .lt. l-2)then
@@ -331,6 +338,7 @@ c          write(*,*)'kax ',kax
       endif
  9000 return
       end
+
       integer function itfopcode(oper)
       use ophash
       implicit none
@@ -435,9 +443,11 @@ c          write(*,*)'kax ',kax
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:latt
       implicit none
       logical*4 exist
-      integer*4 i,lenw,ia
+      integer*4 i,lenw
+      integer*8 ia
       character*(*) name
       character*(MAXPNAME) name1
       ffval=0.d0
@@ -447,11 +457,11 @@ c          write(*,*)'kax ',kax
       endif
       name1=name(2:lenw(name))
       do i=1,nele
-        if(pname(ilist(1,ilattp+ilist(i,ifklp))) .eq. name1)then
+        if(pname(ilist(2,latt(ilist(i,ifklp)))) .eq. name1)then
           exist=.true.
-          ia=ilist(2,ilattp+ilist(i,ifklp))+ilist(i,ifival)
+          ia=latt(ilist(i,ifklp))+ilist(i,ifival)
           ffval=rlist(ia)
-     $         /rlist(iferrk+(ilist(i,ifklp)-1)*2)
+     $         /rlist(iferrk+(ilist(i,ifklp))*2)
           return
         endif
       enddo

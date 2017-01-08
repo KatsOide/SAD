@@ -1,16 +1,18 @@
       subroutine tdrwdt(kv,y,jp,ymin,ymax,ls,le,frs,fre,ale,np,
      $     only,monly,patt,
-     1     latt,twiss,gammab,idp,pos,imon,emon,nmon)
+     1     latt,twiss,idp,pos,imon,emon,nmon)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idvalc,idtypec,pnamec,lpnamec,gammab
       implicit real*8 (a-h,o-z)
       logical*4 sol,over,fin,monel,only,monly,tmatch
       character*(*) patt
       real*8 y(2,np),twiss(nlat,-ndim:ndim,ntwissfun),pos(nlat),
-     $     gammab(nlat),emon(nmona,4),twisss(ntwissfun),ymin,ymax,
+     $     emon(nmona,4),twisss(ntwissfun),ymin,ymax,
      $     frs,fre,hbs
-      integer*4 kv,ls,le,imon(nmona,4),latt(2,nlat),jp
+      integer*8 latt(nlat),ip
+      integer*4 kv,ls,le,imon(nmona,4)
       real*8 beam(42),sv(5),vsave(100),ftwiss(ntwissfun)
       include 'inc/common.inc'
       theta=0d0
@@ -30,7 +32,7 @@
       pa=0.d0
       fin=.false.
  111  LOOP_I: do i=istrt,istop-1
-        if(only .and. .not. tmatch(pname(latt(1,i)),patt))then
+        if(only .and. .not. tmatch(pname(ilist(2,latt(i))),patt))then
         elseif(monly .and. .not. monel(imon,nmon,i,m1))then
         elseif(kv .gt. 32 .and. kv .le. 34) then
           if(monel(imon,nmon,i,m1)) then
@@ -39,10 +41,10 @@
             ll=imon(m1,2)
             nq=imon(ll,4)
             y(2,jp)=twiss(i,idp,2*kv-51)-twiss(i,ndim,2*kv-51)
-     1           -rlist(latt(2,nq)+kv-28)-emon(ll,kv-32)
+     1           -rlist(latt(nq)+kv-28)-emon(ll,kv-32)
           endif
         else
-          id=idtype(latt(1,i))
+          id=idtypec(i)
           if(id .ge. icMARK)then
             cycle LOOP_I
           endif
@@ -78,7 +80,7 @@
               y(2,jp)=atan2(-2d0*beam(4),beam(1)-beam(6)) /2d0
             endif
           endif
-          ip=latt(2,i)
+          ip=latt(i)
           if(id .le. icdodeca .or. id .eq. icmult
      $         .or. id .eq. iccavi .or. id .eq. icTCAV)then
             al=rlist(ip+kytbl(kwL,id))
@@ -116,15 +118,15 @@ c                  gammab(i+1)=sqrt((rn*f*dh+ha)**2-1.d0)
                   gammab(i+1)=gbs
                 elseif(kv.le.32)then
                   if(trsize)then
-                    call tpara(latt(1,i))
-                    call tracke(latt,i+1,sv,np,'TRACK',' ',0)
-                    beam(1)=sv(3)
-                    beam(4)=sv(5)
-                    beam(6)=sv(4)
-                    if(ilist(2,latt(2,i)) .ne. 0)then
-                      call tfree(ilist(2,latt(2,i)))
-                      ilist(2,latt(2,i))=0
-                    endif
+c                    call tpara(ilist(2,latt(i)))
+c                    call tracke(latt,i+1,sv,np,'TRACK',' ',0)
+c                    beam(1)=sv(3)
+c                    beam(4)=sv(5)
+c                    beam(6)=sv(4)
+c                    if(ilist(2,latt(i)) .ne. 0)then
+c                      call tfree(ilist(2,latt(i)))
+c                      ilist(2,latt(i))=0
+c                    endif
                   else
                     hbs=rn*f*dh+ha
                     gammab(i+1)=h2p(hbs)
@@ -163,7 +165,7 @@ c        write(*,*)'tdrwdt ',i,id,jp
       else
         dpa=0.d0
       endif
-      if(only .and. .not. tmatch(pname(latt(1,i)),patt))then
+      if(only .and. .not. tmatch(pnamec(i),patt))then
       elseif(monly .and. .not. monel(imon,nmon,i,m1))then
       else
         if(kv .le. 27 .or. kv .eq. 35)then
@@ -194,7 +196,7 @@ c        write(*,*)'tdrwdt ',i,id,jp
             ll=imon(m1,2)
             nq=imon(ll,4)
             y(2,jp)=twiss(i,idp,2*kv-51)-twiss(i,ndim,2*kv-51)
-     1           -rlist(latt(2,nq)+kv-28)-emon(ll,kv-32)
+     1           -rlist(latt(nq)+kv-28)-emon(ll,kv-32)
           endif
         endif
       endif

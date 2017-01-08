@@ -4,7 +4,8 @@
 c      trim data greater than cut*sigma
       use tffitcode
       implicit real*8(a-h,o-z)
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),
      1          imon(nmona,4),emon(nmona,4),rms(2)
       external pack
       logical exist
@@ -28,10 +29,10 @@ c
             j=imon(i,2)
             nq=imon(j,4)
             rlist(ia1+i)=twiss(imon(j,1),0,mfitdx)
-     1           -twiss(imon(j,1),ndim,mfitdx)-rlist(latt(2,nq)+5)
+     1           -twiss(imon(j,1),ndim,mfitdx)-rlist(latt(nq)+5)
      1           -emon(j,1)
             rlist(ia2+i)=twiss(imon(j,1),0,mfitdy)
-     1           -twiss(imon(j,1),ndim,mfitdy)-rlist(latt(2,nq)+6)
+     1           -twiss(imon(j,1),ndim,mfitdy)-rlist(latt(nq)+6)
      1           -emon(j,2)
  10       continue
         else

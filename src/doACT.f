@@ -1,21 +1,23 @@
       Subroutine doACT(cmdidx)
       use maccbk
+      use maccode
+      use macttyp
+      use macvar
+      use macmisc
+      use tfmem, only:tfree
       implicit none
       integer*4 cmdidx
 c.....cmdidxbrings pointer to command name
-      include 'inc/MACMISC.inc'
-      include 'inc/MACCODE.inc'
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACVAR.inc'
       character*(MAXSTR) token
       integer*4, parameter :: memmax = 8192
       integer*4 slen,ival,ttype,hsrch,hsrchz
       integer*4 scan, yyparse,yypushtoken,yypoptoken,yyreturn
       real*8 rval,yyval
       logical*4 skipch,ldummy,inlist
-      integer*4 restme,membas,memuse,idx,mctaloc,mtaloc
-      integer*4 i,lidx,iwork,ic
-      integer*4 argp,argdfp,offset
+      integer*8 membas,iwork,ktcaloc,ktsalocb
+      integer*4 restme,memuse,idx,i,lidx
+      integer*8 argdfp,argp
+      integer*4 offset
 c     
 c     for debug
 c     call ptrace('doAct '//pname(cmdidx)(2:)//'!',1)
@@ -37,17 +39,16 @@ c     &              'missing '''//LCURL//''' is assumed',0,0)
       endif
 c
       argdfp=idval(cmdidx)
-      if(ilist(2,argdfp) .le. 0) then
-         argp=mctaloc(ilist(1,argdfp))
+      if(klist(argdfp) .le. 0) then
+         argp=ktcaloc((ilist(1,argdfp-1)-1)*2+1)
 c         argp=mcfallo(ilist(1,argdfp))
-         ilist(2,argdfp)=argp
-         ilist(1,argp)=ilist(1,argdfp)-1
-         do i=1,ilist(1,argp)
-            ilist(1,argp+i)=ilist(1,argdfp+i+1)
-            ilist(2,argp+i)=0
+         klist(argdfp)=argp
+         ilist(1,argp-1)=ilist(1,argdfp-1)-1
+         do i=1,ilist(1,argp-1)
+           ilist(1,argp+i*2-1)=ilist(1,argdfp+i+1)
          enddo
       else
-         argp=ilist(2,argdfp)
+         argp=klist(argdfp)
       endif
 c
  2000 if (skipch(COMMA,token,slen,ttype,rval,ival)) go to 2000
@@ -67,8 +68,8 @@ c      write(*,*)"doACT:", token(:slen),slen,ttype
          ldummy=skipch('=',token,slen,ttype,rval,ival)
          if (idtype(idx) .eq. icVAR) then
             offset=0
-            do i=1,ilist(1,argdfp)
-               if(ilist(1,argp+i) .eq. idx) then
+            do i=1,ilist(1,argp-1)
+               if(ilist(1,argp+i*2-1) .eq. idx) then
                   offset=i
                   go to 2200
                endif
@@ -84,9 +85,9 @@ c..........read right value
 c               restme=mfalloc(-1)
 c               membas=mfalloc(restme)
                restme=memmax
-               membas=mtaloc(restme)
+               membas=ktcaloc(restme)
                memuse=1
-               ilist(2,argp+offset)=membas
+               klist(argp+offset*2)=membas
             else if(inlist  .and.
      &              skipch(RPAR,token,slen,ttype,rval,ival)) then
                inlist=.false.
@@ -97,7 +98,11 @@ c     stop 9999
                   call pr_mem_map
                endif
                ilist(1,membas)=memuse
-               call tfreem(membas+memuse,restme-memuse)
+               if(restme .gt. memuse+3)then
+                 ilist(1,membas+memuse)=restme-memuse
+                 call tfree(membas+memuse+1)
+               endif
+c               call tfreem(int8(membas+memuse),restme-memuse)
 c               call freeme(membas+memuse,restme-memuse)
             else if ((ttype .eq. ttypNM) .or.
      $              (ttype .eq. ttypID) .or.
@@ -113,7 +118,7 @@ c............enddebug
                      ilist(1,membas+memuse)=INT(yyval)
                      memuse=memuse+1
                   else
-                     ilist(2,argp+offset)=INT(yyval)
+                     ilist(1,argp+offset*2)=INT(yyval)
                   endif
 c                  print  *,' doACT/int:', INT(yyval)
                else if (mod(idval(idx),VarLst) .eq. VarRl) then
@@ -124,9 +129,9 @@ c                  print  *,' doACT/int:', INT(yyval)
                      rlist(membas+memuse)=yyval
                      memuse=memuse+1
                   else
-                     ilist(2,argp+offset)=mctaloc(4)
+                     rlist(argp+offset*2)=yyval
 c                     ilist(2,argp+offset)=mcfallo(1)
-                     rlist(ilist(2,argp+offset))=yyval
+c                     rlist(ilist(2,argp+offset))=yyval
                   endif
 c                  print  *,' doACT/real:', yyval
                else if(mod(idval(idx),varLst) .eq. VarPt) then
@@ -135,7 +140,7 @@ c                  print  *,' doACT/real:', yyval
                      ilist(2,membas+memuse)=lidx
                      memuse=memuse+1
                   else
-                     ilist(2,argp+offset)=lidx
+                     ilist(1,argp+offset*2)=lidx
                   endif
                   call gettok(token,slen,ttype,rval,ival)
                else if(mod(idval(idx),VarLst).eq. VarLog) then
@@ -144,18 +149,18 @@ c                  print  *,' doACT/real:', yyval
                         ilist(1,membas+memuse)=1
                         memuse=memuse+1
                      else
-                        ilist(2,argp+offset)=1
+                        ilist(1,argp+offset*2)=1
                      endif
                   else if (skipch('F',token,slen,ttype,rval,ival)) then
                      if (inlist) then
                         ilist(1,membas+memuse)=0
                         memuse=memuse+1
                      else
-                        ilist(2,argp+offset)=0
+                        ilist(1,argp+offset*2)=0
                      endif
                   else
                      call errmsg(pname(cmdidx),
-     &                    pname(ilist(1,argp+offset))
+     &                    pname(ilist(1,argp+offset*2))
      $                    //' is logical variable.'
      &                    //'range of variable is T or F',
      &                    0,0)
@@ -164,24 +169,16 @@ c                  print  *,' doACT/real:', yyval
                else if (mod(idval(idx),VarLst) .eq. VarStr) then
                   if (inlist) then
                      iwork=membas+memuse
-                     ilist(1,membas+memuse)=slen
-                     ilist(2,membas+memuse)=membas+memuse+1
-                     memuse=memuse+(slen+7)/8+1
+                     klist(membas+memuse)=ktsalocb(0,token(1:slen),slen)
+                     memuse=memuse+1
                   else
-                     iwork =mctaloc((slen+7)/8+1)
-c                     iwork =mcfallo((slen+7)/8+1)
-                     ilist(2,argp+offset)=iwork
-                     ilist(1,iwork)=slen
-                     ilist(2,iwork)=iwork+1
+                     klist(argp+offset*2)=ktsalocb(0,token(1:slen),slen)
                   endif
-                  do ic=1,(slen+7)/8
-                     read(token(ic*8-7:ic*8),'(A8)')rlist(iwork+ic)
-                  enddo
                   call gettok(token,slen,ttype,rval,ival)
                else
                   call errmsg(pname(cmdidx),
      &            'argument type does not match with the definition of'
-     &                 //pname(ilist(1,argp+offset))//'.',
+     &                 //pname(ilist(1,argp+offset*2))//'.',
      &                0,0)
                   call errmsg(pname(cmdidx),
      &                 'argument given is '//token(:slen),
@@ -207,7 +204,8 @@ c                     iwork =mcfallo((slen+7)/8+1)
        go to 2000
 c
  3000 continue
-        call funcall1(ilist(1,argdfp+1),argp)
+c      write(*,*)'doAct ',argp
+        call funcall1(int8(ilist(1,argdfp+1)),argp)
 c for debug
 c        call ptrace('doAct '//pname(cmdidx)(2:)//'!',-1)
 c end debug

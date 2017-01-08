@@ -18,7 +18,7 @@
       ndims=mphiz
       ndps=mphiz
       nzz=mphiz*2+1
-      call temits1(latt,twiss,size,gammab,
+      call temits1(twiss,size,gammab,
      $     ndim,ntwissfun,codplt,stab,ndps,nzz,mphiz,mphi2,ndims,
      $     amus0,amus1,amusstep,
      $     emx,emy,res,params,
@@ -27,7 +27,7 @@
       return
       end
 
-      subroutine temits1(latt,twiss,size,gammab,
+      subroutine temits1(twiss,size,gammab,
      $     ndim,ntwissfun,plot,stab,ndp,nz,mphi,mphi2,ndims,
      $     amus0,amus1,amusstep,
      $     emx,emy,res0,params,
@@ -58,7 +58,6 @@
       
      $     dhc(4,mphi2,ndp),dhs(4,mphi2,ndp),
      $     amuj(ndp)
-      integer*4 latt(2,nlat)
       real*8 params(npara),twiss(nlat,-ndim:ndim,ntwissfun),
      $     size(21,nlat),gammab(nlat),btr(21,21)
       real*8 rm(6,12),rx(6,6),rxi(6,6),cmu(256),smu(256),
@@ -786,8 +785,8 @@ c      call tmov(bs,dbs,nsbp)
       subroutine tefsetup(ha,hb,ba,bb,bd,
      $     ndp,mphi,mphi2,nz,ndims,ntwissfun,
      $     beams,trads,tws,dj,btr,btrd,dpndim,sigea)
+      use macmath
       implicit none
-      include 'inc/MACMATH.inc'
       integer*4 mphi,mphi2,nz,ndp,i,j,k,l,m,ndims,ntwissfun
       real*8 
      $     beams(10,-ndims:ndims),
@@ -1171,7 +1170,7 @@ c     write(*,*)axi,bxi,amuxi,ayi,byi,amuyi,ip,f
       
       subroutine tediag(trans,cod,tws,i,ndims,ntwissfun,lfno)
       implicit none
-      integer*4 i,ndims,level,ntwissfun,lfno
+      integer*4 i,ndims,ntwissfun,lfno
       real*8 trans(6,6),cod(6),tws(ntwissfun,-ndims:ndims)
       real*8 r1,r2,r3,r4,amu,
      $     r1a,r2a,r3a,r4a,
@@ -1184,7 +1183,7 @@ c     write(*,*)axi,bxi,amuxi,ayi,byi,amuyi,ip,f
      $     trans(2,1),trans(2,2),trans(2,3),trans(2,4),
      $     trans(3,1),trans(3,2),trans(3,3),trans(3,4),
      $     trans(4,1),trans(4,2),trans(4,3),trans(4,4),
-     $     r1,r2,r3,r4,amu,level,stab,lfno)
+     $     r1,r2,r3,r4,amu,stab,lfno)
 c     amu=sqrt(1.d0-r1*r4+r2*r3)
       r1a=r1/amu
       r2a=r2/amu

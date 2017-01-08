@@ -11,20 +11,21 @@
       if(narg .gt. 1) go to 9010
       irtc=0
       kax=ktavaloc(-1,nlat)
-      call pgmast1(ilist(1,ilattp+1),rlist(kax+1),ilist(1,ifele),
-     $     rlist(ifpos))
+      call pgmast1(rlist(kax+1:kax+nlat),ilist(1:nlat,ifele),
+     $     rlist(ifpos:ifpos+nlat-1))
       kx=ktflist+kax
       return
  9010 irtc=itfmessage(9,'General::narg','"1"')
       return
       end
 c     
-      subroutine pgmast1(latt,rmaster,iele,pos)
+      subroutine pgmast1(rmaster,iele,pos)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idtypec
       implicit none
-      integer*4 latt(2,nlat),iele(nlat)
+      integer*4 iele(nlat)
       real*8 pos(nlat),rmaster(nlat)
       integer*4 i,ie,id,j
       do 10 i=1,nlat
@@ -35,7 +36,7 @@ c
         if(i .le. ie)then
           go to 1010
         endif
-        id=idtype(latt(1,i))
+        id=idtypec(i)
 c        if(id .eq. 20)then
 c          if(rmaster(i) .eq. 0.d0)then
 c            if(rlist(latt(2,i)+8) .ne. 0.d0)then

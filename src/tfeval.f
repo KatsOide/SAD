@@ -2,14 +2,15 @@
       use tfstk
       use ophash
       use opdata
+      use tfcsi
       implicit none
       type (sad_descriptor) kx
       type (sad_list), pointer :: kla,klx
       logical*4 re
       character*1023 string
       integer*4 istart,istop,irtc,isp0,ist10,iop1,
-     $     icsmrk,i,ist1,ishash,l,ifchar,mopc,itgetfpe,m1,
-     $     itfmessage,level1,ist2,icslfni,icslfno,irt
+     $     i,ist1,ishash,l,ifchar,mopc,itgetfpe,m1,
+     $     itfmessage,level1,ist2,irt
       logical*4 tfreadevalbuf,eol
 c     begin initialize for preventing compiler warning
       mopc=0
@@ -302,8 +303,8 @@ c     because stack does not have mtfleft(brace|bra|paren)!!
       case (-4)
         go to 8040
       case default
-        write(*,*)'tfeval ',irt
-        call forcesf()
+        write(*,*)'tfeval undefined return code ',irt
+        call abort
       end select
 
  2400 if(ktastk(isp) .ne. ktfoper+mtfnull)then

@@ -2,6 +2,7 @@
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,pnamec
       implicit none
       integer*8 kx, ia, ki
       integer(4), intent(in)  :: isp1
@@ -36,7 +37,7 @@ c     Checking 1st argument
 
          count = 0
          do i=1,nlat
-            if(name(1:namel) .eq. pname(ilist(1, ilattp + i)))then
+            if(name(1:namel) .eq. pnamec(i))then
                count = count + 1
             endif
          enddo
@@ -78,7 +79,7 @@ c     Load sequence number list and check conflicts
 c     Execute renumbering
          j = 0
          do i=1,nlat
-            if(name(1:namel) .eq. pname(ilist(1, ilattp + i)))then
+            if(name(1:namel) .eq. pnamec(i))then
                if(j .lt. min(n,count))then
                   j = j + 1 
                   ilist(i, ifmult) = forward_map(j)

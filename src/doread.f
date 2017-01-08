@@ -1,17 +1,18 @@
       subroutine doread(dummy)
       use maccbk
+      use macttyp
+      use macfile
+      use macmisc
       implicit none
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACFILE.inc'
-      include 'inc/MACMISC.inc'
       character*(MAXSTR) token
 c      character*(22) cfmsg
       integer slen,ival,ttype
       real*8 rval
       logical*4 skipch,ok
-      integer*4 f,flmgr,maxstk
+      integer*4 f,maxstk
+      integer*8 flmgr,itemp
       parameter (maxstk=255)
-      integer*4 fstk(maxstk),stkpt,nextfn,ipak,i,itemp,dummy
+      integer*4 fstk(maxstk),stkpt,nextfn,ipak,i,dummy
 c
 c      data cfmsg/'read data from file=**'/
 c     
@@ -103,9 +104,10 @@ c
       end
 c
       subroutine redirectInput(fn,fd)
+      use macfile
       character*255 fn
-      integer fd, f,flmgr
-      include 'inc/MACFILE.inc'
+      integer fd
+      integer*8 flmgr,f
 c
       fd=nextfn(fd)
       if (fd .eq. 0) then

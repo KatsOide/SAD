@@ -1,27 +1,146 @@
+      module tflinepcom
+      use tfstk
+      implicit none
+      integer*8, save :: iflinep=0,ifinitlinep=0,ifelementp=0,
+     $     ifelementkeyp=0,iftypekeyp=0
+      type (sad_descriptor) ksdumm
+
+      contains
+
+      integer*4 function itftypekey(i,word1,lw1)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx,ks
+      integer*4 i,isp0,lw1,irtc
+      character*(lw1) word1
+      isp0=isp
+      ktastk(isp0+1)=iftypekeyp
+      rtastk(isp0+2)=dble(i)
+      isp=isp0+3
+      ks=kxsalocb(-1,word1,lw1)
+      dtastk(isp)=ks
+      levele=levele+1
+      call tfefunref(isp0+1,kx,.false.,irtc)
+      call tfconnect(kx,irtc)
+      isp=isp0
+      if(irtc .ne. 0)then
+        call tfreseterror
+        itftypekey=0
+      elseif(.not. ktfrealqd(kx))then
+        itftypekey=0
+      else
+        itftypekey=ifromd(kx)
+      endif        
+      return
+      end function
+
+      integer*4 function itfelementkey(i,word1,lw1)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx,ks
+      integer*4 i,isp0,lw1,irtc
+      character*(lw1) word1
+      isp0=isp
+      ktastk(isp0+1)=ifelementkeyp
+      rtastk(isp0+2)=dble(i)
+      isp=isp0+3
+      ks=kxsalocb(-1,word1,lw1)
+      dtastk(isp)=ks
+      levele=levele+1
+      call tfefunref(isp0+1,kx,.false.,irtc)
+      call tfconnect(kx,irtc)
+      isp=isp0
+      if(irtc .ne. 0)then
+        call tfreseterror
+        itfelementkey=0
+      elseif(.not. ktfrealqd(kx))then
+        itfelementkey=0
+      else
+        itfelementkey=ifromd(kx)
+      endif        
+      return
+      end function
+
+      subroutine tftypekey(isp1,kx,irtc)
+      use tfstk
+      use maccbk
+      use maccode
+      use mackw
+      implicit none
+      type (sad_descriptor) kx
+      real*8 c
+      integer*4 ic,isp0,isp1,irtc,itfmessage
+      if(isp .ne. isp1+1)then
+        irtc=itfmessage(9,'General::narg','"1"')
+        return
+      endif
+      if(.not. ktfrealqd(dtastk(isp),c))then
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"Typecode for #1"')
+        return
+      endif
+      ic=int(c)
+      if(ic .lt. 0 .or. ic .gt. icMXEL)then
+        irtc=itfmessage(9,'General::wrongval',
+     $       '"Typecode out of range"')
+        return
+      endif
+      isp0=isp
+      call tftypekeystk(ic,.true.)
+      kx=kxmakelist(isp0)
+      isp=isp0
+      irtc=0
+      return
+      end subroutine
+
+      subroutine tftypekeystk(ic,all)
+      use tfstk
+      use mackw
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 ic,lenw,i
+      logical*4 all
+      character*(MAXPNAME) key,tfkwrd,tfkwrd1
+      do i=1,kytbl(kwMAX,ic)-1
+        key=tfkwrd(ic,i)
+        if(all .or. key .ne. '-')then
+          isp=isp+1
+          if(key .eq. '-')then
+            dtastk(isp)=ksdumm
+          else
+            dtastk(isp)=kxsalocb(-1,key,lenw(key))
+            if(kyindex1(i,ic) .ne. 0)then
+              key=tfkwrd1(ic,i)
+              isp=isp+1
+              dtastk(isp)=kxsalocb(-1,key,lenw(key))
+              kx=kxmakelist(isp-2)
+              isp=isp-1
+              dtastk(isp)=kx
+            endif
+          endif
+        endif
+      enddo
+      return
+      end subroutine
+
+      end module
+
       subroutine tftwiss(isp1,kx,ref,irtc)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_fit, only:nlist
       implicit none
       type (sad_descriptor) kx
       type (sad_list), pointer :: klx
       integer*4 nkey
-      parameter (nkey=mfitpepy)
-      integer*8 ktatwissaloc,kax,kaxi
-      integer*4 isp1,irtc,narg,i,itoff,m,nc,j,
+      parameter (nkey=mfitpzpy)
+      integer*8 ktatwissaloc,kax,kaxi,itoff
+      integer*4 isp1,irtc,narg,i,m,nc,j,
      $     isp0,nd,kt,itfmessage
-      real*8 ftwiss(28),pe(4),tfgettwiss,tphysdisp
+      real*8 ftwiss(28),pe(4),tfgettwiss,tphysdisp,tphysdispz
       logical*4 over,ref
       character*(MAXPNAME+16) keyword,tfgetstrs
-      character*8 nlist(nkey)
-      data nlist /
-     $     'AX      ','BX      ','NX      ','AY      ',
-     1     'BY      ','NY      ','EX      ','EPX     ',
-     1     'EY      ','EPY     ','R1      ','R2      ',
-     1     'R3      ','R4      ','DETR    ',
-     $     'DX      ','DPX     ','DY      ','DPY     ',
-     $     'DZ      ','DDP     ',
-     $     'PEX     ','PEPX    ','PEY     ','PEPY    '/
       narg=isp-isp1
       keyword=tfgetstrs(ktastk(isp1+1),nc)
       if(nc .le. 0)then
@@ -45,7 +164,7 @@
             kaxi=ktatwissaloc(0)
             klx%body(i)=ktflist+kaxi
             do j=1,ntwissfun
-              itoff=((2*ndim+1)*(j-1)+ndim)*nlat+int(iftwis)+i-1
+              itoff=((2*ndim+1)*(j-1)+ndim)*nlat+iftwis+i-1
               rlist(kaxi+i)=rlist(itoff)
             enddo
           enddo
@@ -58,7 +177,7 @@
             kax=ktatwissaloc(-1)
             if(vstk2(isp) .eq. 0.d0)then
               do j=1,ntwissfun
-                itoff=(2*ndim+1)*nlat*(j-1)+ndim*nlat+int(iftwis)
+                itoff=(2*ndim+1)*nlat*(j-1)+ndim*nlat+iftwis
      $               +itastk(2,isp)-1
                 rlist(kax+j)=rlist(itoff)
               enddo
@@ -74,7 +193,7 @@
               klx%body(i)=ktflist+kaxi
               if(vstk2(isp0+i) .eq. 0.d0)then
                 do j=1,ntwissfun
-                  itoff=(2*ndim+1)*nlat*(j-1)+ndim*nlat+int(iftwis)
+                  itoff=(2*ndim+1)*nlat*(j-1)+ndim*nlat+iftwis
      $                 +itastk(2,isp0+i)-1
                   rlist(kaxi+j+1)=rlist(itoff)
                 enddo
@@ -108,7 +227,7 @@
      $         ') is","to be name of optical function"')
         endif
         return
- 110    itoff=(2*ndim+1)*nlat*(kt-1)+ndim*nlat+int(iftwis)
+ 110    itoff=(2*ndim+1)*nlat*(kt-1)+ndim*nlat+iftwis
         if(narg .eq. 1)then
           kax=ktavaloc(-1,nlat)
           if(kt .le. ntwissfun)then
@@ -117,6 +236,11 @@
             do i=1,nlat
               call tgetphysdisp(i,pe)
               rlist(kax+i)=pe(kt-mfitpex+1)
+            enddo
+          elseif(kt .ge. mfitpzx .and. kt .le. mfitpzpy)then
+            do i=1,nlat
+              call tgetphysdispz(i,pe)
+              rlist(kax+i)=pe(kt-mfitpzx+1)
             enddo
           endif
           kx%k=ktflist+kax
@@ -136,6 +260,9 @@
               elseif(kt .ge. mfitpex .and. kt .le. mfitpepy)then
                 call tgetphysdisp(itastk(2,isp),pe)
                 kx=dfromr(pe(kt-mfitpex+1))
+              elseif(kt .ge. mfitpzx .and. kt .le. mfitpzpy)then
+                call tgetphysdispz(itastk(2,isp),pe)
+                kx=dfromr(pe(kt-mfitpzx+1))
               endif
             else
               call qtwissfrac(ftwiss,itastk(2,isp),
@@ -167,6 +294,17 @@ c     $             itastk(2,isp),vstk2(isp)
                   call qtwissfrac(ftwiss,itastk(2,isp0+i),
      $                 vstk2(isp0+i),over)
                   rlist(kax+i)=tphysdisp(kt,ftwiss)
+                endif
+              enddo
+            elseif(kt .ge. mfitpzx .and. kt. le. mfitpzpy)then
+              do i=1,m
+                if(vstk2(isp0+i) .eq. 0.d0)then
+                  call tgetphysdispz(itastk(2,isp0+i),pe)
+                  rlist(kax+i)=pe(kt-mfitpzx+1)
+                else
+                  call qtwissfrac(ftwiss,itastk(2,isp0+i),
+     $                 vstk2(isp0+i),over)
+                  rlist(kax+i)=tphysdispz(kt,ftwiss)
                 endif
               enddo
             endif
@@ -216,12 +354,14 @@ c     $             itastk(2,isp),vstk2(isp)
       integer*4 kt
       real*8 rfromk
       logical*4 isnan
-      real*8 ftwiss(ntwissfun),tphysdisp
+      real*8 ftwiss(ntwissfun),tphysdisp,tphysdispz
       tfgettwiss=0.d0
       if(kt .le. ntwissfun)then
         tfgettwiss=ftwiss(kt)
       elseif(kt .ge. mfitpex .and. kt .le. mfitpepy)then
         tfgettwiss=tphysdisp(kt,ftwiss)
+      elseif(kt .ge. mfitpzx .and. kt .le. mfitpzpy)then
+        tfgettwiss=tphysdispz(kt,ftwiss)
       endif
       if(isnan(tfgettwiss))then
         tfgettwiss=rfromk(ktfnan)
@@ -309,29 +449,32 @@ c     $             itastk(2,isp),vstk2(isp)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:latt,idelc,idtypec,idvalc
+      use tflinepcom
       implicit none
       type (sad_descriptor) kx
-      integer*4 irtc,id,lenw,it,ia,iv,isps,l,iax
+      integer*8 iax
+      integer*4 irtc,id,lenw,it,ia,iv,isps,l,lpname
       real*8 tfkeyv
       character*(*) keyword
       character*(MAXPNAME) key,tfkwrd
       logical*4 saved,ref
       irtc=0
       if(keyword .eq. 'NAME')then
-        id=ilist(1,ilattp+ia)
-        kx=kxsalocb(-1,pname(id),lenw(pname(id)))
+        id=idelc(ia)
+        kx=kxsalocb(-1,pname(id),lpname(id))
       elseif(keyword .eq. 'VALUE')then
         iv=ilist(it,ifival)
         if(iv .gt. 0)then
           if(saved)then
-            iax=idval(ilist(1,ilattp+ia))+iv
+            iax=idvalc(ia)+iv
             if(ref)then
               kx%k=klist(iax)
             else
               kx%k=ktfref+iax
             endif
           else
-            iax=ilist(2,ilattp+ia)+iv
+            iax=latt(ia)+iv
             if(ref)then
               kx=dfromr(rlist(iax)/rlist(iferrk+2*(ia-1)))
             else
@@ -346,28 +489,21 @@ c     $             itastk(2,isp),vstk2(isp)
         if(iv .eq. 0)then
           key=' '
         else
-          key=tfkwrd(idtype(ilist(1,ilattp+ia)),iv)
+          key=tfkwrd(idtypec(ia),iv)
         endif
         Kx=kxsalocb(-1,key,lenw(key))
-      elseif(keyword .eq. 'KEYWORDS')then
+      elseif(keyword .eq. 'KEYWORDS' .or.
+     $       keyword .eq. 'KEYWORDS_ALL')then
         l=0
-        id=idtype(ilist(1,ilattp+ia))
+        id=idtypec(ia)
         isps=isp
-        key='-'
-        do while(key .ne. ' ')
-          l=l+1
-          key=tfkwrd(id,l)
-          if(key .ne. ' ' .and. key .ne. '-')then
-            isp=isp+1
-            dtastk(isp)=kxsalocb(-1,key,lenw(key))
-          endif
-        enddo
+        call tftypekeystk(id,keyword .eq. 'KEYWORDS_ALL')
         kx=kxmakelist(isps)
         isp=isps
       elseif(keyword .eq. 'TYPE')then
-        kx=dfromr(dble(idtype(ilist(1,ilattp+ia))))
+        kx=dfromr(dble(idtypec(ia)))
       elseif(keyword .eq. 'TYPENAME')then
-        key=pname(kytbl(0,idtype(ilist(1,ilattp+ia))))
+        key=pname(kytbl(0,idtypec(ia)))
         kx=kxsalocb(-1,key(2:),lenw(key)-1)
       elseif(keyword .eq. 'POSITION')then
         kx=dfromr(dble(it))
@@ -384,6 +520,7 @@ c     $             itastk(2,isp),vstk2(isp)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,pnamec
       implicit none
       type (sad_descriptor) k
       integer*4 isp0,narg,irtc,iv,nc,ifany1,i,itfmessage,j,ielmh
@@ -422,7 +559,8 @@ c     $             itastk(2,isp),vstk2(isp)
         if(name(1:nc) .ne. '***' .and.
      $       ifany1(name(1:nc),nc,'*%{<|',1) .gt. 0)then
           do i=1,nele
-            if(tmatch(pname(ilist(1,ilattp+ilist(i,ifklp))),
+c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
+            if(tmatch(pnamec(ilist(i,ifklp)),
      $           name(1:nc)))then
               isp=isp+1
               itastk(1,isp)=i
@@ -447,6 +585,7 @@ c     $             itastk(2,isp),vstk2(isp)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:latt
       implicit none
       type (sad_descriptor) kx
       integer*4 isp1,irtc,ie,iv,k,j,m,ispa
@@ -477,10 +616,10 @@ c     $             itastk(2,isp),vstk2(isp)
             iv=ilist(ie,ifival)
             if(iv .gt. 0)then
               k=ilist(ie,ifklp)
-              rlist(ilist(2,ilattp+i)+iv)=
+              rlist(latt(i)+iv)=
      $             rlist(ifcoup+i-1)*
      $             rlist(iferrk+i*2-2)/rlist(iferrk+k*2-2)*
-     $             rlist(ilist(2,ilattp+k)+iv)
+     $             rlist(latt(k)+iv)
             endif
           endif
         enddo
@@ -514,12 +653,16 @@ c     $             itastk(2,isp),vstk2(isp)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:latt,idelc,idtypec,pnamec,compelc,direlc
+      use sad_main
       implicit none
       type (sad_descriptor) kx
-      integer*8 kax,ktfgeol,kai,j,i
-      integer*4 irtc,lp,lenw,lxp,nv,lt,itoff,kk,ia,ip,isp1
+      type (sad_comp), pointer ::cmp
+      integer*8 kax,ktfgeol,kai,j,i,ip,itoff
+      integer*4 irtc,lenw,lxp,nv,lt,kk,ia,isp1,ibz
       real*8 v,tfkeyv,beam(42),xp,fr,geo1(12),pos0,
-     $     vsave(256),gam0,gv(3,4),ogv(3,4),cod(4),vtwiss(27),tfchi
+     $     vsave(256),gam0,gv(3,4),ogv(3,4),cod(4),vtwiss(27),tfchi,
+     $     tfbzs
       character*(*) keyword
       character*64 name
       integer*4 iaa
@@ -577,13 +720,13 @@ c     $             itastk(2,isp),vstk2(isp)
         if(ia .eq. nlat)then
           kx%k=0
         else
-          kx=dfromr(dble(idtype(ilist(1,ilattp+ia))))
+          kx=dfromr(dble(idtypec(ia)))
         endif
       elseif(keyword .eq. 'TYPENAME')then
         if(ia .eq. nlat)then
           kx=dxnulls
         else
-          name=pname(kytbl(0,idtype(ilist(1,ilattp+ia))))
+          name=pname(kytbl(0,idtypec(ia)))
           kx=kxsalocb(-1,name(2:),lenw(name)-1)
         endif
       elseif(keyword .eq. 'NAME')then
@@ -593,7 +736,7 @@ c     $             itastk(2,isp),vstk2(isp)
         if(ia .eq. nlat)then
           name='$$$'
         else
-          name=pname(ilist(1,ilattp+ia))
+          name=pnamec(ia)
         endif
         kx=kxsalocb(-1,name,lenw(name))
       elseif(keyword .eq. 'POSITION')then
@@ -606,17 +749,17 @@ c     $             itastk(2,isp),vstk2(isp)
         if(fr .eq. 0.d0)then
           kax=ktfgeol(rlist(j))
         else
-          lt=idtype(ilist(1,ilattp+lxp))
-          nv=kytbl(kwmax,lt)-1
-          call tmov(rlist(ilist(2,ilattp+lxp)+1),vsave,nv)
-          call qfraccomp(ilist(1,ilattp+lxp),0.d0,fr,.false.,chg)
+          lt=idtypec(lxp)
+          call compelc(lxp,cmp)
+          nv=kytbl(kwMAX,lt)-1
+          vsave(1:nv)=cmp%value(1:nv)
+c          call tmov(rlist(latt(lxp)+1),vsave,nv)
+          call qfraccomp(lxp,0.d0,fr,.false.,chg)
           if(chg)then
             geo1=rlist(j+1:j+12)
             pos0=rlist(ifpos+lxp)
             gam0=rlist(ifgamm+lxp)
-            call tfgeo1(ilist(1,ilattp+1),
-     $           rlist(ifgeo),rlist(ifpos),rlist(ifgamm),
-     $           lxp,lxp+1,.true.,.false.)
+            call tfgeo1(lxp,lxp+1,.true.,.false.)
             kax=ktfgeol(rlist(j+12))
             rlist(ifgamm+lxp)=gam0
             rlist(j+1:j+12)=geo1
@@ -624,7 +767,8 @@ c     $             itastk(2,isp),vstk2(isp)
           else
             kax=ktfgeol(rlist(j+12))
           endif
-          call tmov(vsave,rlist(ilist(2,ilattp+lxp)+1),nv)
+          cmp%value(1:nv)=vsave(1:nv)
+c          call tmov(vsave,rlist(latt(lxp)+1),nv)
         endif
         kx%k=ktflist+kax
       elseif(keyword .eq. 'GX' .or. keyword .eq. 'GY' .or.
@@ -637,10 +781,12 @@ c     $             itastk(2,isp),vstk2(isp)
         if(fr .eq. 0.d0)then
           call tmov(rlist(j),gv,12)
         else
-          lt=idtype(ilist(1,ilattp+lxp))
+          lt=idtypec(lxp)
+          call compelc(lxp,cmp)
           nv=kytbl(kwmax,lt)-1
-          call tmov(rlist(ilist(2,ilattp+lxp)+1),vsave,nv)
-          call qfraccomp(ilist(1,ilattp+lxp),0.d0,fr,.false.,chg)
+          vsave(1:nv)=cmp%value(1:nv)
+c          call tmov(rlist(latt(lxp)+1),vsave,nv)
+          call qfraccomp(lxp,0.d0,fr,.false.,chg)
           if(chg)then
             call tmov(rlist(j+12),geo1,12)
             pos0=rlist(ifpos+lxp)
@@ -654,7 +800,8 @@ c     $             itastk(2,isp),vstk2(isp)
           else
             call tmov(rlist(j+12),gv,12)
           endif
-          call tmov(vsave,rlist(ilist(2,ilattp+lxp)+1),nv)
+          cmp%value(1:nv)=vsave(1:nv)
+c          call tmov(vsave,rlist(latt(lxp)+1),nv)
         endif
         if(keyword .eq. 'GX')then
           kx=dfromr(gv(1,4))
@@ -676,15 +823,17 @@ c     $             itastk(2,isp),vstk2(isp)
         j=ifgeo+(lxp-1)*12
         if(fr .eq. 0.d0)then
           do kk=mfitdx,mfitdpy
-            itoff=(2*ndim+1)*nlat*(kk-1)+ndim*nlat+int(iftwis)+lxp-1
+            itoff=(2*ndim+1)*nlat*(kk-1)+ndim*nlat+iftwis+lxp-1
             cod(kk-mfitdx+1)=rlist(itoff)
           enddo
           call tmov(rlist(j),gv,12)
         else
-          lt=idtype(ilist(1,ilattp+lxp))
+          lt=idtypec(lxp)
+          call compelc(lxp,cmp)
           nv=kytbl(kwmax,lt)-1
-          call tmov(rlist(ilist(2,ilattp+lxp)+1),vsave,nv)
-          call qfraccomp(ilist(1,ilattp+lxp),0.d0,fr,.false.,chg)
+          vsave(1:nv)=cmp%value(1:nv)
+c          call tmov(rlist(latt(lxp)+1),vsave,nv)
+          call qfraccomp(lxp,0.d0,fr,.false.,chg)
           if(chg)then
             call tmov(rlist(j+12),geo1,12)
             pos0=rlist(ifpos+lxp)
@@ -698,9 +847,11 @@ c     $             itastk(2,isp),vstk2(isp)
           else
             call tmov(rlist(j+12),gv,12)
           endif
-          call tmov(vsave,rlist(ilist(2,ilattp+lxp)+1),nv)
+          cmp%value(1:nv)=vsave(1:nv)
+c          call tmov(vsave,rlist(latt(lxp)+1),nv)
           call qtwissfrac(vtwiss,lxp,fr,over)
-          call tmov(vtwiss(mfitdx),cod,4)
+          cod(1:4)=vtwiss(mfitdx:mfitdpy)
+c          call tmov(vtwiss(mfitdx),cod,4)
         endif
         call tforbitgeo(ogv,gv,cod(1),cod(2),cod(3),cod(4))
         kx%k=ktflist+ktfgeol(ogv)
@@ -714,15 +865,17 @@ c     $             itastk(2,isp),vstk2(isp)
         if(fr .eq. 0.d0)then
           call tmov(rlist(j),gv,12)
           do kk=mfitdx,mfitdpy
-            itoff=(2*ndim+1)*nlat*(kk-1)+ndim*nlat+int(iftwis)
+            itoff=(2*ndim+1)*nlat*(kk-1)+ndim*nlat+iftwis
      $           +lxp-1
             cod(kk-mfitdx+1)=rlist(itoff)
           enddo
         else
-          lt=idtype(ilist(1,ilattp+lxp))
+          lt=idtypec(lxp)
+          call compelc(lxp,cmp)
           nv=kytbl(kwmax,lt)-1
-          call tmov(rlist(ilist(2,ilattp+lxp)+1),vsave,nv)
-          call qfraccomp(ilist(1,ilattp+lxp),0.d0,fr,.false.,chg)
+          vsave(1:nv)=cmp%value(1:nv)
+c          call tmov(rlist(latt(lxp)+1),vsave,nv)
+          call qfraccomp(lxp,0.d0,fr,.false.,chg)
           if(chg)then
             call tmov(rlist(j+12),geo1,12)
             pos0=rlist(ifpos+lxp)
@@ -737,9 +890,11 @@ c     $             itastk(2,isp),vstk2(isp)
           else
             call tmov(rlist(j+12),gv,12)
           endif
-          call tmov(vsave,rlist(ilist(2,ilattp+lxp)+1),nv)
+          cmp%value(1:nv)=vsave(1:nv)
+c          call tmov(vsave,rlist(latt(lxp)+1),nv)
           call qtwissfrac(vtwiss,lxp,fr,over)
-          call tmov(vtwiss(mfitdx),cod,4)
+          cod(1:4)=vtwiss(mfitdx:mfitdpy)
+c          call tmov(vtwiss(mfitdx),cod,4)
         endif
         call tforbitgeo(ogv,gv,cod(1),cod(2),cod(3),cod(4))
         if(keyword .eq. 'OGX')then
@@ -757,12 +912,11 @@ c     $             itastk(2,isp),vstk2(isp)
         endif
       elseif(keyword .eq. 'DIR')then
         if(ia .ne. nlat)then
-          lp=ilist(2,ilattp+ia)
-          kax=lp+ilist(1,lp)
           if(ref)then
-            kx=dfromr(rlist(kax))
+            kx=dfromr(direlc(ia))
           else
-            kx%k=ktfref+kax
+            call compelc(ia,cmp)
+            kx%k=ktfref+latt(ia)+cmp%ncomp2-2
           endif
         else
           kx%k=ktftrue
@@ -774,9 +928,15 @@ c     $             itastk(2,isp),vstk2(isp)
         else
           kx%k=ktfref+kax
         endif
+      elseif(keyword .eq. 'BZS')then
+        if(ref)then
+          kx=dfromr(tfbzs(ia,ibz))
+        else
+          kx%k=0
+        endif
       else
         if(ia .lt. nlat)then
-          kx=dfromr(tfkeyv(ia,keyword,ip,.false.))
+          kx=dfromr(tfkeyv(int(ia),keyword,ip,.false.))
           if(.not. ref)then
             kx%k=ktfref+ip
           endif
@@ -847,11 +1007,12 @@ c     $             itastk(2,isp),vstk2(isp)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,pnamec
       implicit none
       type (sad_descriptor) k
-      integer*8 kav,ka
-      integer*4 narg,isp0,irtc,i,nc,ifany1,ielmf,itfmessage,
-     $     j,itehash,l
+      integer*8 kav,ka,j,jj
+      integer*4 narg,isp0,irtc,nc,ifany1,ielmf,itfmessage,
+     $     itehash,l,i
       real*8 r
       character*1024 name,name2
       character*(MAXPNAME+16) name1
@@ -873,6 +1034,9 @@ c     $             itastk(2,isp),vstk2(isp)
           irtc=itfmessage(9,'General::wrongnum',
      $         '"positive and less than length of beam line"')
         else
+          if(i .eq. nlat)then
+            r=0.d0
+          endif
           isp=isp+1
           itastk(1,isp)=ilist(i,ifele1)
           itastk(2,isp)=i
@@ -916,12 +1080,12 @@ c     $             itastk(2,isp),vstk2(isp)
         if(nc .gt. 2 .and. name(nc-1:nc) .eq. '.*' .and.
      $       ifany1(name(1:nc),nc-2,'*%{|',1) .eq. 0)then
           name2(1:nc-2)=name(1:nc-2)
-          ka=itehash(name2(1:nc-2),nc-2)
-          j=ilist(2,ielmhash+ka)
+          ka=itehash(name2(1:nc-2),nc-2)*2
+          j=klist(ielmhash+ka+2)
           if(j .ne. 0)then
-            do i=j,j+ilist(1,ielmhash+ka)-1
-              l=ilist(1,i)
-              if(name2(1:nc-2) .eq. pname(ilist(1,ilattp+l)))then
+            do jj=j,j+ilist(1,ielmhash+ka+1)-1
+              l=ilist(1,jj)
+              if(name2(1:nc-2) .eq. pnamec(l))then
                 isp=isp+1
                 itastk(1,isp)=ilist(l,ifele1)
                 itastk(2,isp)=l
@@ -958,11 +1122,6 @@ c            write(*,*)'linestk ',name(1:nc),r
       return
       end
 
-      module tflinepcom
-      implicit none
-      integer*8, save :: iflinep=0,ifinitlinep=0,ifelementp=0
-      end module
-
       subroutine tfclearlinep()
       use tflinepcom
       implicit none
@@ -973,6 +1132,7 @@ c            write(*,*)'linestk ',name(1:nc),r
       subroutine tfinitlinep(irtc)
       use tflinepcom
       use tfstk
+      use maccbk
       implicit none
       type (sad_descriptor) kx
       integer*4 irtc,isp0
@@ -980,10 +1140,13 @@ c            write(*,*)'linestk ',name(1:nc),r
       if(ifinitlinep .eq. 0)then
         ifinitlinep=ktfsymbol+
      $       ktfsymbolz('InitLINE$P',10)
+        ksdumm=kxsalocb(0,'-',1)
       endif
       if(iflinep .eq. 0)then
         iflinep=ktfsymbol+ktfsymbolz('LINE$P',6)
         ifelementp=ktfsymbol+ktfsymbolz('Element$P',9)
+        ifelementkeyp=ktfsymbol+ktfsymbolz('Element$Key',11)
+        iftypekeyp=ktfsymbol+ktfsymbolz('Type$Key',8)
         isp0=isp
         isp=isp+1
         ktastk(isp)=ifinitlinep
@@ -1020,8 +1183,8 @@ c            write(*,*)'linestk ',name(1:nc),r
       if(.not. tfreallistqd(kx,klx))then
         nl=0
       else
-        nl=klx%nl
         kax=ktfaddr(kx)
+        nl=klx%nl
       endif
       return
       end
@@ -1049,24 +1212,32 @@ c            write(*,*)'linestk ',name(1:nc),r
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,elatt,idtypec,idvalc
       implicit none
-      integer*4 i,ia,it,kl,l,j
+      integer*4 i,it,kl,l,j
+      integer*8 ia
       character*(*) keyword
       logical*4 saved
 c     begin initialize for preventing compiler warning
       kl=0
 c     end   initialize for preventing compiler warning
       if(i .gt. 0)then
-        it=idtype(ilist(1,ilattp+i))
+        it=idtypec(i)
       else
         kl=ilist(-i,ifklp)
-        it=idtype(ilist(1,ilattp+kl))
+        it=idtypec(kl)
       endif
-      do j=1,kwMAX-1
-        l=kytbl(j,it)
-        if(l .gt. 0)then
+      do l=1,kytbl(kwMAX,it)-1
+        j=kyindex(l,it)
+        if(j .gt. 0)then
           if(pname(kytbl(j,0))(2:) .eq. keyword)then
             go to 1
+          endif
+          j=kyindex1(l,it)
+          if(j .gt. 0)then
+            if(pname(kytbl(j,0))(2:) .eq. keyword)then
+              go to 1
+            endif
           endif
         endif
       enddo
@@ -1074,17 +1245,16 @@ c     end   initialize for preventing compiler warning
       tfkeyv=0.d0
       return
  1    if(i .gt. 0)then
-        ia=ilist(2,ilattp+i)+l
+        ia=elatt%comp(i)+l
         tfkeyv=rlist(ia)
       elseif(saved)then
-        ia=idval(ilist(1,ilattp+kl))+l
+        ia=idvalc(kl)+l
         tfkeyv=rlist(ia)
       else
+        ia=elatt%comp(kl)+l
         if(l .eq. ilist(-i,ifival))then
-          ia=ilist(2,ilattp+kl)+l
           tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
         else
-          ia=ilist(2,ilattp+kl)+l
           tfkeyv=rlist(ia)
         endif
       endif
@@ -1116,8 +1286,7 @@ c     end   initialize for preventing compiler warning
           itfloc=0
           return
         endif
-        itfloc=ielm(ilist(1,ilattp+1),name(1:nc),
-     $       1,ilist(1,ifmult),exist)
+        itfloc=ielm(name(1:nc),exist)
         if(.not. exist)then
           irtc=itfmessage(9,'FFS::undefcomp',
      $         '"'//name(1:nc)//'"')
@@ -1140,7 +1309,8 @@ c     end   initialize for preventing compiler warning
       real*8 geo(3,4),tfchi
       kax=ktadaloc(-1,2)
       kax1=ktavaloc(0,3)
-      call tmov(geo(1,4),rlist(kax1+1),3)
+      rlist(kax1+1:kax1+3)=geo(1:3,4)
+c      call tmov(geo(1,4),rlist(kax1+1),3)
       klist(kax+1)=ktflist+kax1
       kax2=ktavaloc(0,3)
       rlist(kax2+1)=tfchi(geo,1)

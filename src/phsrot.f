@@ -89,9 +89,10 @@ c
       subroutine phsrot(np,x,px,y,py,z,g,dv,work,blist)
       use ffs_flag
       use tmacro
+      use wsbb, only:nblist
       implicit real*8(a-h,o-z)
       integer v_eig,v_difu
-      parameter(nblist=200,m_PtoN=1,m_prot=37,m_NtoP=73,
+      parameter(m_PtoN=1,m_prot=37,m_NtoP=73,
      &          m_damp=109,m_difu=145,m_prot_d=181,
      &          v_eig=217,v_difu=223)
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),work(np)

@@ -6,7 +6,7 @@ Off[General::unprotconst];
 Unprotect[GoodnessOfFit,ChiSquare,ConfidenceInterval];
 On[General::unprotconst];
 SetAttributes[{Contours,MeshRange,ColorFunction,ColorFunctionScaling,
-  ContourColorFunction,
+  ContourColorFunction,ColorScale,
   MaxBend,PlotPoints,PlotDivision,FunctionLabel,ResultLabel,RaiseFit,
   Signal,GoodnessOfFit,ChiSquare,ConfidenceInterval,ColumnTags,MeshStyle,
   PlotStyle,Columns,ColumnOffset,Bins,BinRange,ColumnLabel,Mesh,MeshColor,
@@ -226,79 +226,6 @@ With[{def={PlotStyle->ColumnPlot,Orientation->Vertical,
           DisplayFunction->Identity,opt][[2]]&,{histall,da,pc}]]]]
     ]];
 
-With[{def={MaxBend->0.1,PlotPoints->32,PlotDivision->1024,
-  PlotJoined->True,StepRatio->1,Plot->False,GridLines->{Automatic,Automatic}}},
-
-  Plot[f_,{x_,xmin_,xmax_},opt___]:=Block[{x},Module[
-    {{maxb,minp,minx,pj,sr,pt,gr}=
-      {MaxBend,PlotPoints,PlotDivision,PlotJoined,StepRatio,Plot,GridLines}/.{opt}/.def},
-    ListPlot[PlotInterpolate[f,{x,xmin,xmax},minp,Max[minp*3,minx],maxb],
-      PlotJoined->pj,StepRatio->sr,Plot->pt,GridLines->gr,opt]]]];
-
-With[{def={Dashing->{{1},{0.75,0.25},{0.4, 0.15},{0.2,0.1},{0.1,0.08},
-  {0.8,0.08, 0.08, 0.08},{0.4,0.08,0.08,0.08}},
-  PlotColor:>If[$DisplayFunction===TopDrawer,
-    {"black","red","blue","green","gray","magenta","cyan","yellow"},
-    {"black","red3","dark slate blue","forest green","gray",
-      "magenta","cyan","yellow"}],
-  Legend->{False},
-  DisplayFunction->Default}},
-
-  Plot[f_List,{x_,xmin_,xmax_},opt___]:=Block[{x},Module[
-    {da,pc,leg,n,g,h=Map[Hold,Unevaluated[f]]},
-    x=xmin;
-    {da,pc,leg}={Dashing,PlotColor,Legend}/.{opt}/.def;
-    n=Length[h];
-    da=(Dashing->#)&/@Take[Flatten[Table[da,
-      {Ceiling[n/Max[Length[da],1]]}],1],n];
-    pc=(PlotColor->#)&/@Take[Flatten[Table[pc,
-      {Ceiling[n/Max[Length[pc],1]]}]],n];
-    leg=(Legend->#)&/@Take[Flatten[{{leg},Table[False,{n}]}], n];
-    g=MapThread[Function[{a,b,c,d},Plot[ReleaseHold[a],{x,xmin,xmax},
-      DisplayFunction->Null,b,c,d,opt]],{h,da,pc,leg}];
-    If[(DisplayFunction/.{opt}/.def)===Default,Show[g]];
-    g]]];
-
-PlotInterpolate[fin_,{y_,xmin_,xmax_},min0_,maxdiv_,maxb_]:=Module[
-  {f,fs,s,dl,dl0,dl1,la,cos,a,yw,ar,dx,xl,yl,x0,x1,x2,cosm,cosm1=-1,la0=0,
-    costh=1-maxb^2/2,min=min0,fh=Extract[Hold[fin],{1},Head]},
-  If[Head[fh]===SplineData,
-    min=Max[min,Length[fh[[1,1]]]]];
-  fs = With[{y = #}, {#, Check[fin, 0]}]&;
-  f  = With[{y = Vector[#]},
-    Check[ReleaseVector[fin], ReleaseVector[fs[Vector[#]]]]]&;
-  dx=(xmax-xmin)/min;
-  yl=Re[f[xl=Range[0,min]*dx+xmin]];
-  s=True;
-  While[s && Length[xl]<maxdiv,
-    yw=Max[yl]-Min[yl];
-    ar=Abs[yw/(xmax-xmin)];
-    la=Thread[{ar*xl,yl}];
-    dl=Difference[la];
-    dl0=Drop[dl,-1];
-    dl1=Rest[dl];
-    cos=MapThread[(#.#2)/Max[Abs[Complex@@#]*Abs[Complex@@#2],1e-100]&,{dl1,dl0}];
-    cosm=Min[cos];
-    If[cosm<cosm1-maxb/10 || cosm>cosm1+maxb/10,
-      cosm1=cosm;
-      x0=Take[xl,{2,-2}];
-      x1=(Drop[xl,-2]+2*x0)/3;
-      x2=(Drop[xl,2]+2*x0)/3;
-      a=MapThread[
-        If[#<costh,
-          Null[#2,#3],
-          Null[]]&,
-        {cos,x1,x2}];
-      s=Length[a]>0;
-      If[s,
-        {xl,yl}=Thread[
-          Union[Thread[{Join[xl,a],Join[yl,f[a]]}]]]],
-      s=False]];
-  Thread[{xl,yl}]];
-
-SetAttributes[Plot,HoldAll];
-SetAttributes[PlotInterpolate,HoldFirst];
-
 FitPlot[data_,fun_,x_,par0__]:=
   Module[{s,g1,g,fun1,dy=0.28,xl,yl,dx,d,dm,x0,y0,lsym,
     {opt,par}=SwitchCases[{par0},{_Rule|_RuleDelayed,_}],
@@ -438,16 +365,27 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
     If[df===Default,Show[gr,op]];
     gr]];
 
+LDP$Smooth[l_]:=Module[{l1,l2},
+  l2=Transpose[(l1=Rest[#];
+    Flatten[{#[[1]],Thread[{(l1+Drop[#,-1])/2,l1}]}])&/@l];
+  Transpose[(l1=Rest[#];
+    Flatten[{#[[1]],Thread[{(l1+Drop[#,-1])/2,l1}]}])&/@l2]];
+
 With[{def={PlotRange->Automatic,MeshRange->Default,
   ColorFunction->Automatic,DisplayFunction->Default,
   ColorFunctionScaling->True,
-  AspectRatio->1,Mesh->False,MeshColor->Automatic,Prolog->{},Epilog->{}}},
+  Smoothing->1,
+  ColorScale->True,
+  AspectRatio->1,Mesh->False,MeshColor->Automatic,Prolog->{},Epilog->{}},
+  ncs=16},
 
-  ListDensityPlot[l_,opt___]:=Module[{
-    m0,m1,mesh,x,gr,op,l1,g,
-    {pr,mr,cf,cfs,df,ar,ms,mc}={PlotRange,MeshRange,
+  ListDensityPlot[l0_,opt___]:=Module[{l=l0,
+    m0,m1,mesh,x,gr,op,l1,g,gs,cr,dcr,nx,ny,
+    {pr,mr,cf,cfs,df,ar,ms,mc,cs,sm}={PlotRange,MeshRange,
       ColorFunction,ColorFunctionScaling,
-      DisplayFunction,AspectRatio,Mesh,MeshColor}/.opt/.def},
+      DisplayFunction,AspectRatio,Mesh,MeshColor,
+      ColorScale,Smoothing}/.opt/.def},
+    Do[l=LDP$Smooth[l],{sm}];
     {nx,ny}=Dimensions[l];
     pr=CP$PlotRange[pr,l];
     mr=mr/.Automatic->Default;
@@ -455,7 +393,7 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
       mesh[x_]=x-0.5,
       mr=CP$MeshRange[mr];
       {m0,m1}=Thread[mr];
-      m1=(m1-m0)/({nx,ny}-1);
+      m1=(m1-m0)/({Max[nx,2],Max[ny,2]}-1);
       mesh[x_]=m0+(x-1.5)*m1];
     Switch[cf,
       _String,
@@ -485,10 +423,28 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
         Rectangle[mesh[{i,j}],mesh[{i+1,j+1}],FillColor->cf[l1[[i,j]]],
           PlotColor->cf[l1[[i,j]]]],
         {i,nx},{j,ny}]];
+    If[cs,
+      cr=If[cfs,
+        {0,1},
+        pr];
+      dcr=cr[[2]]-cr[[1]];
+      gs=Rectangle[{Min[ar/2/GoldenRatio,1]+0.03,0},{Min[ar/2/GoldenRatio+1.03,1.43],1},
+        ListDensityPlot[
+          {(Range[ncs+1]-1)*dcr/ncs+cr[[1]]},
+          PlotRange->cr,
+          Smoothing->0,
+          ColorScale->False,
+          DisplayFunction->Identity,
+          AspectRatio->1/ncs,
+          FrameTicks->{None,None,None,True},
+          FrameLabel->{"",""},
+          TickSize->-0.1,
+          MeshRange->{{0,1},{pr[[1]],pr[[2]]}},opt]],
+      gs:=Null[]];
     op=DeleteCases[
       Override[AspectRatio->ar,DataRange->Thread[{mesh[{1,1}],mesh[{nx,ny}+1]}],opt,def],
       _[PlotRange,_],1];
-    g=Graphics[Flatten[{Prolog/.op,g,Epilog/.op}],op];
+    g=Graphics[Flatten[{Prolog/.op,g,gs,Epilog/.op}],op];
     If[df===Default,Show[g,op]];
     g]];
 

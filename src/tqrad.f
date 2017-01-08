@@ -1,6 +1,6 @@
       subroutine tqrad(np,x,px,y,py,z,g,dv,pz,l,al,ak,
      1                 dx,dy,theta,cost,sint,radlvl,
-     1                 f1,f2,mfring)
+     1                 f1in,f2in,f1out,f2out,mfring)
       use ffs_flag
       use tmacro
       implicit real*8(a-h,o-z)
@@ -8,6 +8,7 @@
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np)
       LOGICAL GAUSSR
       real*8 byx,bxa,bya,dprad,dpradx,dprady
+      real*8 f1in,f2in,f1out,f2out
       include 'inc/TENT.inc'
       call ttfrin(np,x,px,y,py,z,g,4,ak,al,0.d0)
       al2=al*.5d0
@@ -25,9 +26,9 @@
         do 2110 i=1,np
 c          p=(1.d0+g(i))**2
           p=(1.d0+g(i))
-          a=f1/p
+          a=f1in/p
           ea=exp(a)
-          b=f2/p
+          b=f2in/p
           pxf=px(i)/ea
           pyf=py(i)*ea
           z(i)=z(i)-(a*x(i)+b*(1.d0+.5d0*a)*pxf)*px(i)
@@ -179,9 +180,9 @@ c        g(i)=dp/(1.d0+sqrt(pr))
         do 2120 i=1,np
 c          p=(1.d0+g(i))**2
           p=(1.d0+g(i))
-          a=f1/p
+          a=f1out/p
           ea=exp(a)
-          b=f2/p
+          b=f2out/p
           pxf=px(i)/ea
           pyf=py(i)*ea
           z(i)=z(i)-(a*x(i)+b*(1.d0+.5d0*a)*pxf)*px(i)

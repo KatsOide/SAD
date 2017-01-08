@@ -1,4 +1,5 @@
       subroutine tfwake(word,lfno,err)
+      use kyparam
       use tfstk
       use ffs
       use ffs_pointer
@@ -13,10 +14,10 @@
       call getwdl(word)
       if(abbrev(word,'L_ONGITUDINAL','_'))then
         lt=0
-        ioff=kytbl(kwLWAK,icCAVI)
+        ioff=ky_LWAK_CAVI
       elseif(abbrev(word,'T_RANSVERSE','_'))then
         lt=1
-        ioff=kytbl(kwTWAK,icCAVI)
+        ioff=ky_TWAK_CAVI
       else
         err=.true.
         return
@@ -24,14 +25,14 @@
       lwp=0
       call getwdl(word)
       do 10 i=1,nlat-1
-        if(idtype(latt(1,i)) .eq. icCAVI)then
+        if(idtypec(i) .eq. icCAVI)then
           if(temat(i,name,word))then
-            ip=ilist(1,latt(2,i)+ioff)
+            ip=ilist(1,latt(i)+ioff)
             if(ip .gt. 0)then
               do 20 j=1,nlat
-                if(idtype(latt(1,i)) .eq. 31)then
-                  if(ilist(1,latt(2,j)+ioff) .eq. -ip)then
-                    ilist(1,latt(2,j)+ioff)=ip
+                if(idtypec(i) .eq. 31)then
+                  if(ilist(1,latt(j)+ioff) .eq. -ip)then
+                    ilist(1,latt(j)+ioff)=ip
                     go to 21
                   endif
                 endif
@@ -83,14 +84,14 @@
               return
 31            continue
               if(na .gt. nw)then
-                call tfreem(lwp+nw*2+1,na*2-nw*2)
+                call tfreem(int8(lwp+nw*2+1),na*2-nw*2)
 c                call freeme(lwp+nw*2+1,na*2-nw*2)
                 ilist(1,lwp-1)=nw*2+2
               endif
-              ilist(1,latt(2,i)+ioff)=lwp
+              ilist(1,latt(i)+ioff)=lwp
               ilist(2,lwp)=0
             else
-              ilist(1,latt(2,i)+ioff)=-lwp
+              ilist(1,latt(i)+ioff)=-lwp
             endif
           endif
         endif

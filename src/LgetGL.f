@@ -1,10 +1,11 @@
       subroutine LgetGL(id,idxx,ptr,n,itype)
       use maccbk
+      use maccode
       implicit none
-      include 'inc/MACCODE.inc'
 
       character*(*) id,idw*(MAXPNAME)
-      integer*4 idxx,n,ptr,itype
+      integer*8 ptr
+      integer*4 idxx,n,itype
       integer*4 hsrchz
 c
       idxx=hsrchz(id)

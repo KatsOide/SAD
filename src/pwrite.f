@@ -2,6 +2,7 @@
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idtypec
       implicit real*8(a-h,o-z)
       character*(*) word
 C*DEC
@@ -11,9 +12,8 @@ C*HP
 C     character*80  fnam
 C*HP
       logical lod,lex,rmatq
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),
-     $     gammab(nlat),
-     1          pos(nlat)
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat),pos(nlat)
       dimension imon(*)
       data io/50/
       if(word.eq.'RMATQ') then
@@ -62,8 +62,8 @@ C*HP
       if(.not.rmatq) goto 100
       lq=0
       do 10 l=1,nlat-1
-        if(idtype(latt(1,l)).eq.icquad) then
-          t=rlist(idval(latt(1,l))+4)
+        if(idtypec(l).eq.icquad) then
+          t=rlist(idval(idelc(l))+4)
 c         .... reject skew quads ....
           if(abs(t-pi/4d0).lt.0.01 .or. abs(t+pi/4d0).lt.0.01) goto 10
           lq=lq+1

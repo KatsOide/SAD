@@ -145,18 +145,20 @@ c     *        >0: found
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,pnamec
       implicit none
       character*(*) name
+      integer*8 j,i
       integer*4 iord
-      integer*4 itehash,k,j,i
+      integer*4 itehash,k
       character*(MAXPNAME) name1
       name1=name
-      k=itehash(name1,MAXPNAME)
-      j=ilist(2,ielmhash+k)
+      k=itehash(name1,MAXPNAME)*2
+      j=klist(ielmhash+k+2)
       if(j .ne. 0)then
-        do i=j,j+ilist(1,ielmhash+k)-1
+        do i=j,j+ilist(1,ielmhash+k+1)-1
           ielmh=ilist(1,i)
-          if(name1 .eq. pname(ilist(1,ilattp+ielmh)))then
+          if(name1 .eq. pnamec(ielmh))then
             if(ilist(ielmh,ifmult) .eq. iord)return
             if(iord .ne. 0)cycle
             if(ilist(ilist(ielmh,ifele1),ifklp) .eq. ielmh)return
@@ -175,31 +177,30 @@ c     *     by tfinit(), tfinimult() initialization
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 itehash,nelm(0:nelmhash),
-     $     i,j,k,l,n,italoc
+      integer*8 k
+      integer*4 itehash,nelm(0:nelmhash),j,n,i
       do j=0,nelmhash
         nelm(j)=0
       enddo
       do i=1,nlat-1
-        j=itehash(pname(latt(1,i)),MAXPNAME)
+        j=itehash(pnamec(i),MAXPNAME)
         nelm(j)=nelm(j)+1
       enddo
-      k=italoc(nelmhash+1)
-      ilist(2,k-1)=ielmhash
+      k=ktaloc((nelmhash+1)*2+1)
+      klist(k)=ielmhash
       do j=0,nelmhash
         n=nelm(j)
-        ilist(1,k+j)=0
+        ilist(1,k+j*2+1)=0
         if(n .gt. 0)then
-          ilist(2,k+j)=italoc(n)
+          klist(k+j*2+2)=ktaloc(n)
         else
-          ilist(2,k+j)=0
+          klist(k+j*2+2)=0
         endif
       enddo
       do i=1,nlat-1
-        j=itehash(pname(latt(1,i)),MAXPNAME)
-        l=ilist(2,k+j)+ilist(1,k+j)
-        ilist(1,l)=i
-        ilist(1,k+j)=ilist(1,k+j)+1
+        j=itehash(pnamec(i),MAXPNAME)*2
+        ilist(1,klist(k+j+2)+ilist(1,k+j+1))=i
+        ilist(1,k+j+1)=ilist(1,k+j+1)+1
       enddo
       ielmhash=k
       return
@@ -230,14 +231,15 @@ c     *     by tfinit(), tfinimult() initialization
       use ffs
       use tffitcode
       implicit none
-      integer*4 i,j
+      integer*8 j
+      integer*4 i
       j=ielmhash
-      do i=0,nelmhash
-        if(ilist(1,j+i) .ne. 0)then
-          call tfree(int8(ilist(2,j+i)))
+      do i=0,nelmhash*2,2
+        if(ilist(1,j+i+1) .ne. 0)then
+          call tfree(klist(j+i+2))
         endif
       enddo
-      ielmhash=ilist(2,j-1)
-      call tfree(int8(j))
+      ielmhash=klist(j)
+      call tfree(j)
       return
       end

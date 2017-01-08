@@ -4,21 +4,22 @@
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 i0,i,id,ip,ld,idj,jp,jd,j
+      integer*8 ld,jd,ip,jp
+      integer*4 i0,id,idj,i,j
       real*8 s0,sx,sy
       i0=0
       do 10 i=1,nlat-1
         if(i .gt. i0)then
-          id=idtype(latt(1,i))
+          id=idtypec(i)
           if((id .ge. 2 .and. id .le. 8) .or. id .eq. 22
      1       .or. id .eq. 31)then
-            ip=latt(2,i)
-            ld=idval(latt(1,i))
+            ip=latt(i)
+            ld=idvalc(i)
             s0=pos(i)
             sx=rlist(ip+kytbl(kwdx,id))-rlist(ld+kytbl(kwdx,id))
             sy=rlist(ip+kytbl(kwdy,id))-rlist(ld+kytbl(kwdy,id))
             do 20 j=i,nlat-1
-              idj=idtype(latt(1,j))
+              idj=idtypec(j)
               if(pos(j) .ne. s0)then
                 go to 10
               endif
@@ -26,8 +27,8 @@
      1           .or. idj .eq. 31)then
                 i0=j
                 s0=pos(j+1)
-                jp=latt(2,j)
-                jd=idval(latt(1,j))
+                jp=latt(j)
+                jd=idvalc(j)
                 rlist(jp+kytbl(kwdx,idj))=sx+rlist(jd+kytbl(kwdx,idj))
                 rlist(jp+kytbl(kwdy,idj))=sy+rlist(jd+kytbl(kwdy,idj))
               endif

@@ -1,7 +1,7 @@
       Subroutine openP$(name,x1,x2,y1,y2)
+      use macfile
       real*8 x1,x2,y1,y2
       character*(*) name
-      include 'inc/MACFILE.inc'
 C
       character*8 cdate1,tim
       character cdate*8,ctime*12

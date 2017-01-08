@@ -206,12 +206,12 @@
           kax3i=ktavaloc(0,3)
           klist(kax3+i-mf+1)=ktflist+kax3i
           rlist(kax3i+1)=residual(i)
-          if(hstab(i))then
+          if(optstat(i)%stabx)then
             rlist(kax3i+2)=1.d0
           else
             rlist(kax3i+2)=0.d0
           endif
-          if(vstab(i))then
+          if(optstat(i)%staby)then
             rlist(kax3i+3)=1.d0
           else
             rlist(kax3i+3)=0.d0
@@ -272,10 +272,15 @@
  9001       format(I3)
 c     write(*,*)jm,flv%mfitp(jm),lfs,vout(lfs+1:lfs+2)
             if(flv%mfitp(jm) .gt. 0)then
-              if(flv%ifitp(jm) .ne. flv%ifitp1(jm) .and.
-     $             .not. tftype1fit(k))then
-                x=tgfun(k,flv%ifitp(jm),0)
-                vout(1:lfs)=autofg(x/scale(k),forms)
+              if(flv%ifitp(jm) .ne. flv%ifitp1(jm))then
+                if(k .eq. mfitbx .or. k .eq. mfitby
+     $               .or. k .eq. mfitbz)then
+                  vout(1:lfs)=autofg(flv%fitval(jm),forms)
+                else
+                  vout(1:lfs)=autofg(flv%fitval(jm)/scale(k),forms)
+c                  x=tgfun(k,flv%ifitp(jm),0)
+c                  vout(1:lfs)=autofg(x/scale(k),forms)
+                endif
               else
                 vout(1:lfs)=autofg(flv%fitval(jm)/scale(k),forms)
               endif
@@ -317,18 +322,34 @@ c          name(ln+1:namel)='/'//name1
           klist(kaxi+4)=ktflist+kaxi4
           klist(kax4+i)=ktflist+kaxi
         endif
-        if(tftype1fit(k) .and. kpa .ne. kpb)then
-          do 1020 m=1,mm
-            j=jshow(m)
-            buf0((m-1)*lf+1:m*lf)=
-     1      autofg((tgfun(k,kpb,j)-tgfun(k,kpa,j))/scale(k),form)
-1020      continue
-          buf0(mm*lf+1:)=' '
-          if(ret)then
-            do j=mf,nfam
-              rlist(kaxi4+j-mf+1)=
-     $             tgfun(k,kpb,j)-tgfun(k,kpa,j)
+        if(kpa .ne. kpb)then
+          if(k .eq. mfitbx .or. k .eq. mfitby
+     $         .or. k .eq. mfitbz)then
+            do m=1,mm
+              j=jshow(m)
+              buf0((m-1)*lf+1:m*lf)=
+     1             autofg((tgfun(k,kpb,j)/tgfun(k,kpa,j)),form)
             enddo
+            buf0(mm*lf+1:)=' '
+            if(ret)then
+              do j=mf,nfam
+                rlist(kaxi4+j-mf+1)=
+     $               tgfun(k,kpb,j)/tgfun(k,kpa,j)
+              enddo
+            endif
+          else
+            do m=1,mm
+              j=jshow(m)
+              buf0((m-1)*lf+1:m*lf)=
+     1             autofg((tgfun(k,kpb,j)-tgfun(k,kpa,j))/scale(k),form)
+            enddo
+            buf0(mm*lf+1:)=' '
+            if(ret)then
+              do j=mf,nfam
+                rlist(kaxi4+j-mf+1)=
+     $               tgfun(k,kpb,j)-tgfun(k,kpa,j)
+              enddo
+            endif
           endif
         elseif(k .le. mfittry .and. k .gt. 0)then
           do 1010 m=1,mm
@@ -389,7 +410,6 @@ c            endif
       logical*4 function tftype1fit(k)
       use tffitcode
       implicit none
-      include 'inc/TFFITCODE.inc'
       integer*4 k
       tftype1fit=k .eq. mfitnx .or. k .eq. mfitny .or.
      $     (k .ge. mfitleng .and. k .le. mfitgz)

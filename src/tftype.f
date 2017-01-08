@@ -1,19 +1,20 @@
       subroutine tftype(lfno,word)
+      use kyparam
       use tfstk
       use ffs_pointer
       use tffitcode
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
       integer*4 ntyp
       parameter (ntyp=18)
+      integer*8 kavl
       integer*4 lfno,k1,ltyp(ntyp)
       integer*4 j,kx,lt,kp,notchar,ifany,lpw,itfgetrecl,
-     $     iavl,nl,kkk,irtc
+     $     nl,kkk,irtc
       character*(*) word
       character*(MAXPNAME) name1,tfkwrd
       character*80 patt
-      logical*4 exist,exist1,tmatch,start
+      logical*4 exist,exist1,tmatch,start,mulc
       data ltyp /icDRFT,
      $     icBEND,icQUAD,icSEXT,icOCTU,icDECA,icDODECA,icMULT,icSOL,
      $     icCAVI,icTCAV,
@@ -38,20 +39,21 @@
       if(patt .eq. ' ')then
         go to 21
       endif
-      call tfgetlineps(patt,len_trim(patt),nl,iavl,1,irtc)
+      call tfgetlineps(patt,len_trim(patt),nl,kavl,1,irtc)
       if(irtc .ne. 0 .or. nl .le. 0)then
         go to 21
       endif
       do j=1,ntyp
         lt=ltyp(j)
+        mulc=kytbl(kwMAX,lt) .gt. ky_MAX_DRFT
         start=.true.
         do kkk=1,nl
-          k1=int(rlist(iavl+kkk))
+          k1=int(rlist(kavl+kkk))
           kx=klp(k1)
 c     Note: Skip no-head multiple elements
 c     *     klp(iele1(kx)) == kx if singlet or head of multipole elements
 c          if(klp(iele1(kx)) .ne. kx)cycle
-          kp=latt(1,kx)
+          kp=idelc(kx)
           if(tmatch(pname(kp),patt))then
             exist=.true.
             if(idtype(kp) .eq. lt)then
@@ -61,15 +63,14 @@ c          if(klp(iele1(kx)) .ne. kx)cycle
                 call twbuf(tfkwrd(lt,0),lfno,1,lpw,7,1)
                 start=.false.
               endif
-              call tftyp1(iele1(kx),kx,latt(2,kx),kp,
-     $             lt,lfno,lpw)
-              if(kytbl(kwMAX,lt) .gt. kytbl(kwMAX, icDRFT))then
+              call tftyp1(iele1(kx),kx,latt(kx),kp,lt,lfno,lpw)
+              if(mulc)then
                 call twbuf(' ',lfno,10,lpw,0,-1)
               endif
             endif
           endif
         enddo
-        if(.not. start .and. lt .eq. icDRFT)then
+        if(.not. start .and. .not. mulc)then
           call twbuf(' ',lfno,10,lpw,0,-1)
         endif
       enddo

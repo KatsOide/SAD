@@ -388,7 +388,7 @@ c
       end 
 c ------------------------------------------------------------------
       subroutine m_prot_set_6d(p,a)
-      include 'inc/MACMATH.inc'
+      use macmath
       real*8 px,py,pz,p(*),a(6,6)
       call m_clear(a,6)
       px=p(3)*2.d0*pi

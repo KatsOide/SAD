@@ -6,7 +6,7 @@
       implicit none
       integer*4 i
       character*(*) name,word
-      integer*4 lenw,ifany1,lpname
+      integer*4 lenw,ifany1
       logical*4 tmatchl
       character*(MAXPNAME+8) name1
       integer*4 lw,l
@@ -14,6 +14,7 @@ c
       lw=lenw(word)
       call elname(i,name)
       l=lenw(name)
+c      write(*,*)'temat ',i,latt(i),ilist(2,latt(i)),name(1:l)
       if(ifany1(word,lw,'*{|%',1) .eq. 0)then
         if(name(1:l) .eq. word(1:lw))then
 c     Exact match with standard element name(elname)
@@ -27,7 +28,7 @@ c     Test implicit match with singlet element
           temat=name1(1:lenw(name1)) .eq. word(1:lw)
         elseif(ilist(ilist(i,ifele1),ifklp) .eq. i)then
 c     Test implicit match with head of multiple elements
-          temat=pname(latt(1,i))(1:lpname(latt(1,i))) .eq. word(1:lw)
+          temat=pname(idelc(i))(1:lpnamec(i)) .eq. word(1:lw)
         else
           temat=.false.
         endif
@@ -44,7 +45,7 @@ c     Test implicit pattern match with singlet element
           temat=tmatchl(name1,lenw(name1),word,lw)
         elseif(ilist(ilist(i,ifele1),ifklp) .eq. i)then
 c     Test implicit pattern match with head of multiple elements
-          temat=tmatchl(pname(latt(1,i)),lpname(latt(1,i)),word,lw)
+          temat=tmatchl(pnamec(i),lpnamec(i),word,lw)
         else
           temat=.false.
         endif

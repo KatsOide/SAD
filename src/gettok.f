@@ -1,12 +1,12 @@
       subroutine gettok(token,slen,type,rval,ival)
       use ISO_C_BINDING
+      use macttyp
+      use macfile
+      use macmisc
       implicit none
       character*(*) token
       integer*4 slen,type,ival
       real*8 rval,atof
-      include 'inc/MACFILE.inc'
-      include 'inc/MACMISC.inc'
-      include 'inc/MACTTYP.inc'
 c
       integer*4 iost,lens,ik,ipak
       character*(*) SPACES,DELIMS,PERIOD,TAB,EOL
@@ -208,13 +208,12 @@ c
 c****************** this routine uses an alternate return
       subroutine mygetchr(chr,iost,*)
       use ISO_C_BINDING
+      use macttyp
+      use macfile
+      use macmisc
       implicit none
       character chr
       integer*4 iost
-c
-      include 'inc/MACFILE.inc'
-      include 'inc/MACMISC.inc'
-      include 'inc/MACTTYP.inc'
 c
       integer LLEN
       parameter(LLEN=MAXLLEN)
@@ -239,13 +238,12 @@ c
 c
       subroutine mycurchr(chr,iost)
       use ISO_C_BINDING
+      use macttyp
+      use macfile
+      use macmisc
       implicit none
       character chr
       integer*4 iost
-c
-      include 'inc/MACFILE.inc'
-      include 'inc/MACMISC.inc'
-      include 'inc/MACTTYP.inc'
 c
       integer LLEN
       parameter(LLEN=MAXLLEN)
@@ -283,10 +281,10 @@ c
 c
       end
 
-      function lpname(idx)
+      integer*4 function lpname(idx)
       use maccbk
       implicit none
-      integer*4 lpname,idx
+      integer*4 idx
       integer*4 lenw
       
       lpname=lenw(pname(idx))

@@ -1,12 +1,19 @@
+      module beamline
+      use maccbk, only:MAXPNAME
+      implicit none
+      character*(MAXPNAME) :: lname=' '
+      end module
+
       subroutine tfbeamline(k,idx,ename,irtc)
       use tfstk
+      use mackw
+      use maccbk, only:MAXPNAME
       implicit none
-      include 'inc/MACCODE.inc'
       type (sad_descriptor) k,ki,k1
       type (sad_list), pointer :: kl,kli
-      integer*8 kfromr
-      integer*4 irtc,hsrchz,lid,idx,n,lenw,idxi,idx1,
-     $     i,idir,idti,nc,itfmessage,italoc
+      integer*8 kfromr,kdx1
+      integer*4 irtc,hsrchz,lid,idx,n,lenw,idxi,
+     $     i,idir,idti,nc,itfmessage
       character*(MAXPNAME) tfgetstrs,ename
       logical*4 tfsameqk
       type (sad_descriptor) kxbl
@@ -29,9 +36,9 @@
       if(n .lt. 3)then
         go to 9900
       endif
-      idx1=italoc(n+1)
-      ilist(1,idx1)=n
-      ilist(2,idx1)=0
+      kdx1=ktaloc(n+1)
+      ilist(1,kdx1)=n
+      ilist(2,kdx1)=0
       do i=1,n
         ki=kl%dbody(i)
         idir=1
@@ -66,8 +73,8 @@
               irtc=itfmessage(9,'FFS::firstmark',' ')
               go to 9000
             endif
-            ilist(1,idx1+i)=idir
-            ilist(2,idx1+i)=idxi
+            ilist(1,kdx1+i)=idir
+            ilist(2,kdx1+i)=idxi
           else
             irtc=itfmessage(9,'General::wrongleng',
      $           '"name of element","nonzero"')
@@ -85,38 +92,38 @@
         go to 9000
       endif
       idtype(idx)=icLINE
-      idval(idx)=idx1
+      idval(idx)=kdx1
       pname(idx)=ename
       irtc=0
       return
- 9000 ilist(1,idx1)=n+1
-      call tfree(int8(idx1))
+ 9000 ilist(1,kdx1)=n+1
+      call tfree(kdx1)
       return
  9900 irtc=itfmessage(9,'General::wrongtype','"BeamLine[ ... ]"')
       return
       end
 
       integer function itfdummyline()
+      use kyparam
       use tfstk
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      integer*4 itfdummyptr,idx,hsrchz,idx1,italoc,idxm,n,
-     $     idxd,idxd1,idxm1
+      integer*8 kdx1,idxm1,idxd1
+      integer*4 itfdummyptr,idx,hsrchz,idxm,n,idxd
       data itfdummyptr /0/
       if(itfdummyptr .eq. 0)then
         idx=hsrchz('$DUMMYLINE')
         idtype(idx)=icLINE
         pname(idx)='$DUMMYLINE'
-        idx1=italoc(3)
-        ilist(1,idx1)=2
-        ilist(2,idx1)=0
-        idval(idx)=idx1
+        kdx1=ktaloc(3)
+        ilist(1,kdx1)=2
+        ilist(2,kdx1)=0
+        idval(idx)=kdx1
         idxm=hsrchz('$DUMMYMARK')
         idtype(idxm)=icMARK
         pname(idxm)='$DUMMYMARK'
-        n=kytbl(kwMAX,icMARK)
-        idxm1=italoc(n+1)
+        n=ky_MAX_MARK
+        idxm1=ktaloc(n+1)
         idval(idxm)=idxm1
         ilist(1,idxm1)=n
         ilist(2,idxm1)=0
@@ -124,17 +131,17 @@
         idxd=hsrchz('$DUMMYDRIFT')
         idtype(idxd)=icDRFT
         pname(idxd)='$DUMMYDRIFT'
-        n=kytbl(kwMAX,icDRFT)
-        idxd1=italoc(n+1)
+        n=ky_MAX_DRFT
+        idxd1=ktaloc(n+1)
         idval(idxd)=idxd1
         ilist(1,idxd1)=n
         ilist(2,idxd1)=0
         rlist(idxd1+1)=1.d0
         rlist(idxd1+2:idxd1+n-1)=0.d0
-        ilist(1,idx1+1)=1
-        ilist(2,idx1+1)=idxm
-        ilist(1,idx1+2)=1
-        ilist(2,idx1+2)=idxd
+        ilist(1,kdx1+1)=1
+        ilist(2,kdx1+1)=idxm
+        ilist(1,kdx1+2)=1
+        ilist(2,kdx1+2)=idxd
         itfdummyptr=idx
       endif
       itfdummyline=itfdummyptr
@@ -143,15 +150,13 @@
 
       subroutine tfsetelement(isp1,kx,irtc)
       use tfstk
+      use mackw
       implicit none
       type (sad_descriptor) kx,kr
       type (sad_list), pointer :: klxi,klx
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      integer*8 ka1,kas
+      integer*8 ka1,kas,kdx1
       integer*4 isp1,irtc,nc,lenw,narg,idx,itype,
-     $     idt,n,i,nce,m,hsrchz,isp0, itfmessage,
-     $     italoc,idx1
+     $     idt,n,i,nce,m,hsrchz,isp0, itfmessage
       character*(MAXPNAME) ename,type,tfgetstrs,key,tfkwrd
       ename=tfgetstrs(ktastk(isp1+1),nce)
       if(nce .lt. 0)then
@@ -172,8 +177,9 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
       else
         type=tfgetstrs(ktastk(isp1+2),nc)
         call capita(type(1:nc))
- 1      if(nc .lt. 0)then
-          if(ktastk(isp1+1) .eq. ktfoper+mtfnull)then
+ 1      if(nc .le. 0)then
+          if(ktastk(isp1+2) .eq. ktfoper+mtfnull .or.
+     $         ktastk(isp1+2) .eq. kxnulls)then
             type=pname(kytbl(0,itype))(2:)
           elseif(ktfrealq(ktastk(isp1+2)))then
             idt=int(rtastk(isp1+2))
@@ -194,15 +200,15 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
           endif
           if(idval(idt) .eq. icNULL)then
           elseif(itype .eq. icNULL)then
-            itype=idval(idt)
+            itype=int(idval(idt))
             idtype(idx)=itype
             if(itype .ne. icNULL)then
               n=kytbl(kwMAX,itype)
-              idx1=italoc(n+1)
-              idval(idx)=idx1
-              ilist(1,idx1)=n
-              ilist(2,idx1)=0
-              rlist(idx1+1:idx1+n)=0.d0
+              kdx1=ktaloc(n+1)
+              idval(idx)=kdx1
+              ilist(1,kdx1)=n
+              ilist(2,kdx1)=0
+              rlist(kdx1+1:kdx1+n)=0.d0
             endif
           elseif(idval(idt) .ne. itype)then
             irtc=itfmessage(9,'FFS::equaltype',
@@ -232,7 +238,7 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
           if(irtc .ne. 0)then
             return
           endif
-          call tfsetelementkey(idx,kr,irtc)
+          call tfsetelementkey(idx,kr%k,irtc)
           if(irtc .ne. 0)then
             return
           endif
@@ -263,10 +269,9 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
 
       recursive subroutine tfsetelementkey(idx,k,irtc)
       use tfstk
+      use mackw
       implicit none
       type (sad_list), pointer :: kl
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
       integer*8 k,ki,kk,kv
       integer*4 irtc,idx,i,idt,ioff,nc,itfmessage
       character*(MAXPNAME) tfgetstrs,key
@@ -287,10 +292,15 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
             return
           endif
           idt=idtype(idx)
-          do i=1,kwMAX-1
-            ioff=kytbl(i,idt)
-            if(ioff .ne. 0)then
+          do ioff=1,kytbl(kwMAX,idt)-1
+            i=kyindex(ioff,idt)
+            if(i .ne. 0)then
               if(pname(kytbl(i,0))(2:) .eq. key(1:nc))then
+                go to 10
+              endif
+              i=kyindex1(ioff,idt)
+              if(i .ne. 0 .and.
+     $             pname(kytbl(i,0))(2:) .eq. key(1:nc))then
                 go to 10
               endif
             endif
@@ -320,12 +330,6 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
       irtc=0
       return
       end
-
-      module beamline
-      implicit none
-      include 'inc/MACPARAM.inc'
-      character*(MAXPNAME) :: lname=' '
-      end module
 
       subroutine tfbeamlinename(isp1,kx,irtc)
       use beamline, only: lname
@@ -360,12 +364,15 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
 
       subroutine tfextractbeamline(isp1,kx,irtc)
       use tfstk
+      use sad_main
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
       type (sad_descriptor) kx
       type (sad_list), pointer :: klx,kli
-      integer*4 isp1,irtc,itfilattp, 
-     $     lenw,i,n,idx,hsrchz,idl,nc,itfmessage
+      type (sad_el), pointer ::el
+      integer*8 itfilattp,idx
+      integer*4 isp1,irtc,
+     $     lenw,i,n,hsrchz,idl,nc,itfmessage
       character*(MAXPNAME) ename,tfgetstrs
       logical*4 eval
       data eval /.true./
@@ -396,19 +403,20 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
      $           '"'//ename(1:lenw(ename))//'"')
             return
           endif
-          idx=ilist(2,idval(idl))
+          idx=idval(ilist(2,idval(idl)))
           if(idx .le. 0)then
             call expnln(idl)
-            idx=ilist(2,idval(idl))
+            idx=idval(ilist(2,idval(idl)))
           endif
         endif
       endif
-      n=ilist(1,idx)
+      call loc_el(idx,el)
+      n=el%nlat1-2
       kx=kxadaloc(-1,n,klx)
       klx%dbody(0)=dtfcopy1(kxsymbolz('BeamLine',8))
       do i=1,n
-        ename=pname(ilist(1,idx+i))
-        if(rlist(ilist(2,idx+i)+ilist(1,ilist(2,idx+i))) .ge. 0.d0)then
+        ename=pname(idcomp(el,i))
+        if(dircomp(el,i) .ge. 0.d0)then
           klx%dbody(i)=dtfcopy1(kxsymbolf(ename,lenw(ename),.true.))
         else
           klx%dbody(i)=kxadaloc(0,2,kli)

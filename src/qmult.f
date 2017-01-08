@@ -1,8 +1,8 @@
-      subroutine qmult(trans,cod,gammab,k,al,ak,bz,
+      subroutine qmult(trans,cod,k,al,ak,bz,
      $     phi0,psi1,psi2,apsi1,apsi2,
      1     dx,dy,dz,chi1,chi2,theta,dtheta,
-     $     eps0,fringe,f1,f2,mfring,fb1,fb2,
-     $     bfrm,
+     $     eps0,fringe,f1in,f2in,f1out,f2out,
+     $     mfring,fb1,fb2,bfrm,
      $     vc,harm,phi,freq,wakew1,autophi,coup)
       use tfstk
       use ffs
@@ -11,21 +11,23 @@
       integer*4 nmult,mfring,k
       parameter (nmult=21)
       real*8 trans(4,5),cod(6),transe(6,12),beam(42),
-     $     dx,dy,theta,f1,f2,al,bz,eps0,chi1,chi2,dz,
-     $     vc,harm,phi,freq,gammab(*),wakew1,
+     $     dx,dy,theta,f1in,f2in,f1out,f2out,
+     $     al,bz,eps0,chi1,chi2,dz,
+     $     vc,harm,phi,freq,wakew1,
      $     psi1,psi2,phi0,dtheta,apsi1,apsi2,fb1,fb2
       complex*16 ak(0:nmult)
       logical*4 fringe,coup,rfsw0,bfrm,autophi
       rfsw0=rfsw
       rfsw=rfsw .and. trpt
       call tinitr(transe)
-      call tmulte(transe,cod,beam,gammab,k,al,ak,bz,
+      call tmulte(transe,cod,beam,k,al,ak,bz,
      $     phi0,psi1,psi2,apsi1,apsi2,
      1     dx,dy,dz,chi1,chi2,theta,dtheta,
      $     eps0,.false.,fringe,
-     $     f1,f2,mfring,fb1,fb2,bfrm,vc,harm,phi,freq,wakew1,
+     $     f1in,f2in,f1out,f2out,
+     $     mfring,fb1,fb2,bfrm,vc,harm,phi,freq,wakew1,
      $     1.d0,autophi,0)
-      call qcopymatg(trans,transe,gammab,k)
+      call qcopymatg(trans,transe,k)
       coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
      $     trans(2,3) .ne. 0.d0 .or. trans(2,4) .ne. 0.d0
       rfsw=rfsw0
@@ -98,9 +100,10 @@
       return
       end
 
-      subroutine qcopymatg(trans,transe,gammab,k)
+      subroutine qcopymatg(trans,transe,k)
+      use ffs_pointer, only:gammab
       implicit none
-      real*8 trans(4,5),transe(6,6),gammab(*),rg
+      real*8 trans(4,5),transe(6,6),rg
       integer*4 k
       if(gammab(k) .eq. gammab(k+1))then
         trans(1,1)=transe(1,1)

@@ -944,7 +944,7 @@ KBFMakePDF[s$_,l$_:Null] := Module[{l,ld,s,n,fn,fns,lid,tn,
   n = Length[l];
   lid = Map[(If[Head[#]===Widget,WidgetInfo[#,ID],#[$Frame$WindowID]])&,l];
   Do[If[~RealQ[lid[[i]]],Print["can't get window id."]; Return[]],{i,n}];
-  ld = {};
+  ld = {tn};
   Do[
 	KBFRaise[l[[i]]];
 	Update[WindowTasks,IdleTasks];

@@ -1,18 +1,19 @@
       Subroutine dAssgn(token,slen,status)
       use maccbk
+      use maccode
+      use macttyp
+      use macvar
+      use macmisc
+      use tfmem, only:ktaloc,tfree
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACTTYP.inc'
-      include 'inc/MACVAR.inc'
-      include 'inc/MACMISC.inc'
 c     
       character*(MAXSTR) token
       integer slen,status
 
       real*8 rval, val
       logical skipch,skiped
-      integer*4 idx,i,ival,ttype,newblk,allmem,membas,memptr,memuse
-      integer*4 mtaloc,italoc
+      integer*4 idx,ival,ttype,allmem
+      integer*8 newblk,membas,memptr,memuse,m
 c     macro functions
       logical issign
       character char
@@ -33,20 +34,21 @@ c
       if(ttype .eq. ttypNM .or. ttype .eq. ttypID
      $     .or. issign(token(:slen)) ) then
          call rdterm(token,slen,ttype,rval,status)
+c         write(*,*)'dAssgn ',ttype,rval,ival,status,token(1:slen)
          if (status .ne. 0) return
          if (idtype(idx) .eq. icGLI) then
-            idval(idx)=INT(rval)
+            idval(idx)=INT8(rval)
          else if ((idtype(idx) .eq. icGLR) .or.
      &           (idtype(idx) .eq. icNULL)) then
             if(idval(idx) .le. 0)then
-              idval(idx)=italoc(3)
+              idval(idx)=ktaloc(3)
 c              idval(idx)=mfalloc(1)
             endif
             idtype(idx)=icGLR
             rlist(idval(idx))=rval
          else if (idtype(idx) .eq. icGLL) then
             call tfreem(idval(idx),ilist(1,idval(idx)))
-            idval(idx)=italoc(3)
+            idval(idx)=ktaloc(3)
 c            call freeme(idval(idx),ilist(1,idval(idx)))
 c            idval(idx)=mfalloc(2)
             ilist(1,idval(idx))=1
@@ -66,7 +68,7 @@ c           call freeme(idval(idx),ilist(1,idval(idx)))
          endif
          call defglb(pname(idx),icGLL,idx)
          allmem=pagesz/4
-         membas=mtaloc(allmem)
+         membas=ktaloc(allmem)
 c         membas=mfalloc(allmem)
          if(membas .eq. 0) then
             call errmsg('dAssgn',' cannot allocate memory',0,0)
@@ -89,19 +91,18 @@ c     See ilist(*,ptr)@src/LgetGL.f
          rlist(memptr)=val
          memptr=memptr+1
          if(memptr-membas .ge. allmem) then
-               newblk=mtaloc(2*allmem)
+               newblk=ktaloc(2*allmem)
 c               newblk=mfalloc(2*allmem)
                if (newblk .eq. 0) then
                   call errmsg('dAssgn',
      &                 ' cannot extend working area.',32,0)
                   stop
                end if
-               do i=1,memptr-membas-1
-                  ilist(1,newblk+i)=ilist(1,membas+i)
-                  ilist(2,newblk+i)=ilist(2,membas+i)
+               do m=1,memptr-membas-1
+                  klist(newblk+m)=klist(membas+m)
                end do
                memptr=newblk+(memptr-membas)
-               call tfreem(membas,allmem)
+               call tfree(membas)
 c               call freeme(membas,allmem)
                allmem=2*allmem
                membas=newblk
@@ -118,7 +119,10 @@ c     End of List.
      &           ' broken memory area.',0,16)
             stop 9999
          endif
-         call tfreem(memptr,allmem-memuse)
+         if(allmem .gt. memuse+3)then
+           ilist(1,memptr)=int(allmem-memuse)
+           call tfree(memptr+1)
+         endif
 c         call freeme(memptr,allmem-memuse)
          call LsetGL(pname(idx),idx,membas,memuse-1,icGLR)
       endif

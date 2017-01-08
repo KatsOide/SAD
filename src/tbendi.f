@@ -133,6 +133,9 @@ c          pr=(1.d0+g(i))**2
      1             1.d0/rho0,-tanp1*2.d0/al,.5d0*al,
      $       f1r,f2r,0.d0,al,1.d0)
       endif
+      if(fringe .and. mfring .gt. -4 .and. mfring .ne. 2)then
+        call ttfrin(np,x,px,y,py,z,g,4,ak,al,0.d0)
+      endif
       if(fb1 .ne. 0.d0)then
         if(mfring .gt. 0 .or. mfring .eq. -1)then
           dxfr1=fb1**2/rhob/24.d0
@@ -212,6 +215,9 @@ c            dp=g(i)*(2.d0+g(i))
         call trad(np,x,px,y,py,g,dv,b,0.d0,b*(aind/rho0),
      1             1.d0/rho0,-tanp2*2.d0/al,.5d0*al,
      $       f1r,f2r,al,al,-1.d0)
+      endif
+      if(fringe .and. mfring .gt. -4 .and. mfring .ne. 1)then
+        call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
       endif
       if(dphiy .ne. 0.d0)then
         do i=1,np

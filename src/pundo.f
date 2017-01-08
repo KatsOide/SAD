@@ -2,15 +2,16 @@
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:idelc,idtypec
       implicit real*8(a-h,o-z)
       logical stab
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun),
-     $     gammab(nlat)
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat)
       include 'inc/common.inc'
 c
       do 10 i=1,nlat-1
-        if(idtype(latt(1,i)).eq.icbend) then
-          rlist(latt(2,i)+11)=rlist(ibckup-1+i)
+        if(idtypec(i).eq.icbend) then
+          rlist(latt(i)+11)=rlist(ibckup-1+i)
         endif
    10 continue
       do 20 i=1,18

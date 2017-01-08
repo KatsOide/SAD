@@ -1,4 +1,5 @@
       subroutine tffsmatch(df,dp0,r,nparallel,lfno,irtc)
+      use kyparam
       use tfstk
       use ffs, only: flv,dpmax,nele,ndim,nlat,maxcond
       use ffs_pointer
@@ -7,8 +8,8 @@
       use tffitcode
       use tfshare
       use iso_c_binding
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
 c      include 'DEBUG.inc'
       integer*8 ifqu,ifqu0,iuta1,kqu
       real*8 flim1,flim2,aimp1,aimp2,badc1,badc2,amedc1,amedc2,alit,
@@ -85,7 +86,7 @@ c     end   initialize for preventing compiler warning
       rl=abs(rlist(iconvergence))*max(nfcol,1)
       zcal=.true.
       if(cell)then
-         call twmov(latt(2,1),twisss,1,0,.true.)
+         call twmov(1,twisss,1,0,.true.)
       endif
       ibegin=1
       rstab=0.d0
@@ -114,7 +115,7 @@ c     end   initialize for preventing compiler warning
       do 9000: do while(.true.)
         do 200: do kkk=1,1
           call tftclupdate(int(rlist(intffs)))
-          dp0=rlist(latt(2,1)+mfitddp)
+          dp0=rlist(latt(1)+mfitddp)
           call tffscalc(flv%kdp,df,flv%iqcol,flv%lfp,
      $         nqcol,nqcol1,ibegin,
      $         r,rp,rstab,nstab,residual,
@@ -127,7 +128,7 @@ c     end   initialize for preventing compiler warning
               irtc=20001
               bestval(1:nvar)=valvar(1:nvar)
               if(cell)then
-                call twmov(latt(2,1),twisss,1,0,.false.)
+                call twmov(1,twisss,1,0,.false.)
               endif
               exit do200
             endif
@@ -152,7 +153,7 @@ c     end   initialize for preventing compiler warning
             exit do9000
           else
             if(chgini .and. cell)then
-              call twmov(latt(2,1),twisss,1,0,.true.)
+              call twmov(1,twisss,1,0,.true.)
             endif
             chgini=.true.
             do1082: do kkkk=1,1
@@ -170,7 +171,7 @@ c     end   initialize for preventing compiler warning
                 ra=r0*1.000000001d0
                 bestval(1:nvar)=valvar(1:nvar)
                 if(cell)then
-                  call twmov(latt(2,1),twisss,1,0,.true.)
+                  call twmov(1,twisss,1,0,.true.)
                 endif
               else
                 imprv=r .lt. r0
@@ -202,7 +203,7 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                   g1=rp
                   bestval(1:nvar)=valvar(1:nvar)
                   if(cell)then
-                    call twmov(latt(2,1),twisss,1,0,.true.)
+                    call twmov(1,twisss,1,0,.true.)
                   endif
                   rp0=rp
                   r0=r
@@ -235,7 +236,7 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                   fact=1.d0
                   valvar(1:nvar)=bestval(1:nvar)
                   if(cell)then
-                    call twmov(latt(2,1),twisss,1,0,.false.)
+                    call twmov(1,twisss,1,0,.false.)
                   endif
                   exit do200
                 elseif(.not. imprv)then
@@ -250,7 +251,7 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                     fact=fact*.5d0
                   endif
                   if(cell)then
-                    call twmov(latt(2,1),twisss,1,0,.false.)
+                    call twmov(1,twisss,1,0,.false.)
                   endif
                   if(nvara .eq. nvar)then
                     a=fact/f1
@@ -277,15 +278,15 @@ c                    enddo
               do kc=1,nvar
                 i=ivarele(kc)
                 if(ival(i) .gt. 0)then
-                  v00=rlist(latt(2,klp(i))+ival(i))
+                  v00=rlist(latt(klp(i))+ival(i))
                 else
                   v00=0.d0
                 endif
-                wvar(kc)=tweigh(latt(1,klp(i)),
-     $               idtype(latt(1,klp(i))),
+                wvar(kc)=tweigh(idelc(klp(i)),
+     $               idtypec(klp(i)),
      $               ivvar(kc),bestval(kc),v00,absweit)
                 if(.not. nderiv)then
-                  nderiv=idtype(latt(1,klp(i))) .eq. icSOL
+                  nderiv=idtypec(klp(i)) .eq. icSOL
                 endif
               enddo
               npa=min(nvar,nparallel)
@@ -385,25 +386,24 @@ c     $                 /2.d0/dvkc/wvar(kc)
                     if(nqcol .gt. nqcol1)then
                       valvar(kc)=valvar(kc)+eps1/wvar(kc)
                       if(cell)then
-                        call twmov(latt(2,1),twisss,1,0,.false.)
+                        call twmov(1,twisss,1,0,.false.)
                       endif
                       call tfsetv(nvar)
-                      call twmov(latt(2,1),twiss,nlat,ndim,.true.)
+                      call twmov(1,twiss,nlat,ndim,.true.)
                       if(zcal)then
                         call tfgeo(latt,geomet .or. .not. fitflg)
                       endif
                       over=.false.
                       if(ibegin .ne. 1)then
-                        do j=1,ntwissfun
-                          twiss(ibegin,0,j)=utwiss(j,0,itwissp(ibegin))
-                        enddo
+c                        do j=1,ntwissfun
+                          twiss(ibegin,0,1:ntwissfun)=
+     $                       utwiss(1:ntwissfun,0,itwissp(ibegin))
+c                        enddo
                       else
                         twiss(1,0,3)=0.d0
                         twiss(1,0,6)=0.d0
                       endif
-                      call qcell(ibegin,0,
-     1                     hstab(0),vstab(0),tracex(0),tracey(0),
-     $                     .false.,over)
+                      call qcell(0,optstat(0),.false.)
                       nqcol00=nqcol
                       nqcol=nqcol1
                       call tffsfitfun(nqcol,df1,flv%iqcol,flv%kdp,
@@ -455,7 +455,7 @@ c     $                 /2.d0/dvkc/wvar(kc)
               i=ivarele(ii)
               dv=dval(ii)*fact/wvar(ii)*wlimit(ii)
               valvar(ii)=bestval(ii)+dv
-              call tffsvlimit(ii,i,latt(1,klp(i)),valvar(ii),
+              call tffsvlimit(ii,i,idelc(klp(i)),valvar(ii),
      $             bestval(ii),
      $             vl,vlim,vl1,vl2,ivvar,ival,nvar,limited1,dlim)
               if(limited1)then
@@ -568,8 +568,9 @@ c     $                 /2.d0/dvkc/wvar(kc)
       end
 
       subroutine tffssetupqu(ifqu,ifqu0,nqumax,nqcol,nvar,lfno)
+      use tfmem, only:ktaloc,tfree
       implicit none
-      integer*8 ifqu,ifqu0,itmmapp,ktaloc
+      integer*8 ifqu,ifqu0,itmmapp
       integer*4 nqumax,nqu,nqcol,nvar,lfno
       nqu=nqcol*nvar
       if(nqu .gt. nqumax)then
@@ -609,7 +610,8 @@ c     $                 /2.d0/dvkc/wvar(kc)
       limited=.false.
       do ii=1,nvar
         i=ivarele(ii)
-        call tffsvlimit(ii,i,latt(1,klp(i)),valvar(ii),valvar(ii),
+        call tffsvlimit(ii,i,idelc(klp(i)),
+     $       valvar(ii),valvar(ii),
      $       vl,vlim,vl1,vl2,ivvar,ival,nvar,limited1,dlim)
         if(limited1)then
           limited=.true.
@@ -759,22 +761,21 @@ c     $                 /2.d0/dvkc/wvar(kc)
      $     free,nlat,nele,nfam,nfam1,nut,
      $     nparallel,cell,lfno,irtc)
       use tfstk
-      use ffs, only:flv
+      use ffs, only:flv,ffs_bound
       use ffs_pointer
       use tffitcode
       use tfshare
+      use mackw
       implicit none
-      include 'inc/MACCODE.inc'
-      include 'inc/MACKW.inc'
-      integer*8 itmmapp,ifqu,ifqu0,ktaloc,kcm,kkqu,kqu,ic
+      type (ffs_bound) fbound
+      integer*8 itmmapp,ifqu,ifqu0,kcm,kkqu,kqu,ic,iec
       integer*4 nqcol,nqcol1,nvar,nqumax,nlat,nele,
      $     irtc,lfno,nut,nfam,nfam1
       integer*4 npp
-      real*8 frbegin,frend
       logical*4 free(nele),cell
       integer*4 nqu,k,kk,i,kq,j,kf,lp,kp,iv,kkf,kkq,kkk,
-     $     ii,ltyp,jj,lbegin,lend,kc,ik1,nparallel,
-     $     iclast(-nfam:nfam),iec,ik,nk,kk1,
+     $     ii,ltyp,jj,kc,ik1,nparallel,
+     $     iclast(-nfam:nfam),ik,nk,kk1,
      $     ip,ipr,istep,npr(nparallel),fork_worker
       real*8 s,dtwiss(mfittry),coup,posk,wk,ctrans(27,-nfam:nfam)
       logical*4 col(2,nqcol),disp,nzcod
@@ -798,7 +799,7 @@ c     $                 /2.d0/dvkc/wvar(kc)
           endif
           nqumax=nqu
         endif
-        call tffsbound(lbegin,frbegin,lend,frend)
+        call tffsbound(fbound)
         rlist(ifqu:ifqu+nqu-1)=0.d0
         npp=min(nvar,nparallel)
         ipr=-1
@@ -830,13 +831,13 @@ c     $                 /2.d0/dvkc/wvar(kc)
           if(kk .gt. 0 .and. free(kk) .or. iec .ne. 0)then
             posk=pos(k)
             wk=1.d0
-            if(k .eq. lbegin)then
-              wk=1.d0-frbegin
+            if(k .eq. fbound%lb)then
+              wk=1.d0-fbound%fb
             endif
-            if(k .eq. lend)then
-              wk=frend
+            if(k .eq. fbound%le)then
+              wk=fbound%fe
             endif
-            ltyp=idtype(latt(1,k))
+            ltyp=idtypec(k)
             do ii=ip,nvar,istep
               if(kk .le. 0 .or.
      $             (.not. free(kk) .and. .not. free(kk1)))then
@@ -995,47 +996,55 @@ c     $                       posk,pos(lp),rlist(kqu),ltyp,iv
       return
       end
 
-      subroutine twmov(lp,twiss,n1,n2,right)
+      subroutine twmov(l,twiss,n1,n2,right)
       use tfstk
       use ffs
       use tffitcode
+      use sad_main
+      use ffs_pointer,only:direlc,compelc
       implicit none
-      integer*4 lp,n1,n2,i,ntfun
+      type (sad_comp), pointer::cmp
+      integer*4 n1,n2,ntfun,l
       real*8 twiss(n1,-n2:n2,1:ntwissfun)
       logical*4 right
 c
-      if(orbitcal)then
-        ntfun=ntwissfun
-      else
-        ntfun=mfitdetr
-      endif
+      call compelc(l,cmp)
       if(right)then
-        twiss(1,0,1:ntfun)=rlist(lp+1:lp+ntfun)
-        if(rlist(lp+ilist(1,lp)) .lt. 0.d0)then
-          twiss(1,0,mfitax)=-rlist(lp+mfitax)
-          twiss(1,0,mfitay)=-rlist(lp+mfitay)
-          twiss(1,0,mfitepx)=-rlist(lp+mfitepx)
-          twiss(1,0,mfitepy)=-rlist(lp+mfitepy)
-          twiss(1,0,mfitr2)=-rlist(lp+mfitr2)
-          twiss(1,0,mfitr3)=-rlist(lp+mfitr3)
+        if(orbitcal .or. calc6d)then
+          ntfun=ntwissfun
+        else
+          ntfun=mfitdetr
+        endif
+        twiss(1,0,1:ntfun)=cmp%value(1:ntfun)
+        if(direlc(l) .lt. 0.d0)then
+          twiss(1,0,mfitax)=-cmp%value(mfitax)
+          twiss(1,0,mfitay)=-cmp%value(mfitay)
+          twiss(1,0,mfitaz)=-cmp%value(mfitaz)
+          twiss(1,0,mfitepx)=-cmp%value(mfitepx)
+          twiss(1,0,mfitepy)=-cmp%value(mfitepy)
+          twiss(1,0,mfitzpx)=-cmp%value(mfitzpx)
+          twiss(1,0,mfitzpy)=-cmp%value(mfitzpy)
+          twiss(1,0,mfitr2)=-cmp%value(mfitr2)
+          twiss(1,0,mfitr3)=-cmp%value(mfitr3)
           if(orbitcal)then
-            twiss(1,0,mfitdpx)=-rlist(lp+mfitdpx)
-            twiss(1,0,mfitdpy)=-rlist(lp+mfitdpy)
+            twiss(1,0,mfitdpx)=-cmp%value(mfitdpx)
+            twiss(1,0,mfitdpy)=-cmp%value(mfitdpy)
           endif
         endif
       else
-        do i=1,ntwissfun
-          rlist(lp+i)=twiss(1,0,i)
-        enddo
-        if(rlist(lp+ilist(1,lp)) .lt. 0.d0)then
-          rlist(lp+mfitax)=-twiss(1,0,mfitax)
-          rlist(lp+mfitay)=-twiss(1,0,mfitay)
-          rlist(lp+mfitepx)=-twiss(1,0,mfitepx)
-          rlist(lp+mfitepy)=-twiss(1,0,mfitepy)
-          rlist(lp+mfitr2)=-twiss(1,0,mfitr2)
-          rlist(lp+mfitr3)=-twiss(1,0,mfitr3)
-          rlist(lp+mfitdpx)=-twiss(1,0,mfitdpx)
-          rlist(lp+mfitdpy)=-twiss(1,0,mfitdpy)
+        cmp%value(1:ntwissfun)=twiss(1,0,1:ntwissfun)
+        if(direlc(l) .lt. 0.d0)then
+          cmp%value(mfitax)=-twiss(1,0,mfitax)
+          cmp%value(mfitay)=-twiss(1,0,mfitay)
+          cmp%value(mfitaz)=-twiss(1,0,mfitaz)
+          cmp%value(mfitepx)=-twiss(1,0,mfitepx)
+          cmp%value(mfitepy)=-twiss(1,0,mfitepy)
+          cmp%value(mfitzpx)=-twiss(1,0,mfitzpx)
+          cmp%value(mfitzpy)=-twiss(1,0,mfitzpy)
+          cmp%value(mfitr2)=-twiss(1,0,mfitr2)
+          cmp%value(mfitr3)=-twiss(1,0,mfitr3)
+          cmp%value(mfitdpx)=-twiss(1,0,mfitdpx)
+          cmp%value(mfitdpy)=-twiss(1,0,mfitdpy)
         endif
       endif
       return
@@ -1082,12 +1091,12 @@ c        enddo
       end
 
       real*8 function tweigh(i,ltyp,iv,val0,vk,absweit)
+      use kyparam
       use tfstk
       use ffs, only:dpmax,emx,emy,brho
       use ffs_fit
-      use tfcode
+      use cbkmac
       implicit none
-      include 'inc/CBKMAC.inc'
       integer*8 kx
       integer*4 i,ltyp,iv,irtc
       real*8 val0,gw,vmin,rfromk,vk
@@ -1109,9 +1118,9 @@ c        enddo
       elseif(iv .eq. kytbl(kwK4,ltyp))then
         gw=(max(1.d-3,dpmax)*max(1.d-2,etamax))**4
       elseif(ltyp .eq. icMULT)then
-        if(iv .ge. kytbl(kwK1,icMULT))then
+        if(iv .ge. ky_K1_MULT)then
           gw=(max(1.d-3,dpmax)*max(1.d-2,etamax))
-     $         **((iv-kytbl(kwK1,icMULT))/2+1)
+     $         **((iv-ky_K1_MULT)/2+1)
         endif
       elseif(iv .eq. kytbl(kwVOLT,ltyp))then
         gw=100.d0/max(1.d0,abs(vk))
@@ -1125,23 +1134,23 @@ c        enddo
       elseif(iv .eq. kytbl(kwBZ,ltyp))then
         gw=1.d0/brho
       elseif(ltyp .eq. icMARK)then
-        if(iv .eq. kytbl(kwAX,icMARK) .or.
-     $       iv .eq. kytbl(kwAY,icMARK) .or.
-     $       iv .eq. kytbl(kwR1,icMARK) .or.
-     $       iv .eq. kytbl(kwR4,icMARK))then
+        if(iv .eq. ky_AX_MARK .or.
+     $       iv .eq. ky_AY_MARK .or.
+     $       iv .eq. ky_R1_MARK .or.
+     $       iv .eq. ky_R4_MARK)then
           gw=1.d0/avebeta
-        elseif(iv .eq. kytbl(kwBX,icMARK) .or.
-     $         iv .eq. kytbl(kwBY,icMARK))then
+        elseif(iv .eq. ky_BX_MARK .or.
+     $         iv .eq. ky_BY_MARK)then
           gw=1.d0/avebeta**2
-        elseif(iv .eq. kytbl(kwEX,icMARK) .or.
-     $         iv .eq. kytbl(kwEPX,icMARK))then
+        elseif(iv .eq. ky_EX_MARK .or.
+     $         iv .eq. ky_EPX_MARK)then
           gw=max(1.d-3,dpmax)*sqrt(avebeta/(abs(emx)+abs(emy)))
      $         /avebeta**2
-        elseif(iv .eq. kytbl(kwEPX,icMARK) .or.
-     $         iv .eq. kytbl(kwEPX,icMARK))then
+        elseif(iv .eq. ky_EPX_MARK .or.
+     $         iv .eq. ky_EPX_MARK)then
           gw=max(1.d-3,dpmax)*sqrt(avebeta/(abs(emx)+abs(emy)))
      $         /avebeta
-        elseif(iv .eq. kytbl(kwR2,icMARK))then
+        elseif(iv .eq. ky_R2_MARK)then
           gw=1.d0/avebeta**2
         endif
       endif
@@ -1160,8 +1169,8 @@ c        enddo
         elseif(iv .eq. kytbl(kwK6,ltyp))then
           vmin=1.d5
         elseif(ltyp .eq. icMULT)then
-          if(iv .ge. kytbl(kwK1,icMULT))then
-            vmin=10.d0**(((iv-kytbl(kwK1,icMULT))/2)*2-5)
+          if(iv .ge. ky_K1_MULT)then
+            vmin=10.d0**(((iv-ky_K1_MULT)/2)*2-5)
           endif
         endif
         gw=sqrt(max(vmin,abs(val0))/gw)
@@ -1196,9 +1205,9 @@ c        enddo
       do i=1,nqcol
         if(fit(i))then
           nj=nj+1
-          do j=1,nvar
-            qu0(nj,j)=qu(i,j)*wlimit(j)
-          enddo
+c          do j=1,nvar
+            qu0(nj,1:nvar)=qu(i,1:nvar)*wlimit(1:nvar)
+c          enddo
           b(nj)=df(i)
         endif
       enddo
@@ -1240,7 +1249,6 @@ c        enddo
       use tfshare
       use tmacro
       implicit none
-      integer*8 ktaloc
       integer*4 n,irtc
       if(nparallel .gt. 1)then
         irtc=1
@@ -1249,7 +1257,6 @@ c        write(*,*)'mmapp ',itmmapp,n
       else
         itmmapp=ktaloc(n)
       endif
-      lastpend=max(lastpend,itmmapp)
       return
       end
 
@@ -1275,8 +1282,8 @@ c        endif
       use ffs
       use tffitcode
       implicit none
-      integer*8 km,k1,kam,kcm,ktfmaloc,k2
-      integer*4 iele2(nlat),lfno,irtc,n,m
+      integer*8 km,k1,kam,kcm,ktfmaloc,k2,iele2(nlat)
+      integer*4 lfno,irtc,n,m
       real*8 rfromk
       integer*8 itfcoupm
       data itfcoupm /0/

@@ -1,5 +1,6 @@
       subroutine tdrife(trans,cod,beam,al,bz,ak0x,ak0y,
      $     dvon,enarad,calpol,irad,ld)
+      use tfstk, only: sqrtl
       use element_drift_common
       use tmacro, only:bradprev
       implicit none
@@ -26,7 +27,7 @@
         pxi=cod(2)
         pyi=cod(4)
         a=min(ampmax,pxi**2+pyi**2)
-        pzi=pr*sqrt(1.d0-a/pr**2)
+        pzi=pr*sqrtl(1.d0-a/pr**2)
         ale=al/pzi
         alz=ale/pzi**2
         trans1(1,2)=ale+pxi**2*alz

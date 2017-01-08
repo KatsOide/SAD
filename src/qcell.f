@@ -1,31 +1,36 @@
-      subroutine qcell(ibegin,idp,
-     1     hstab,vstab,tracex,tracey,fam,over)
+      subroutine qcell(idp,optstat,fam)
       use tfstk
       use ffs
       use ffs_pointer
+      use ffs_fit, only:ffs_stat
       use tffitcode
       implicit none
-      integer*4 ibegin,idp
-      real*8 tracex,tracey
-      logical*4 hstab,vstab,fam,over
-      call qcell1(1,0.d0,nlat,0.d0,idp,
-     1     hstab,vstab,tracex,tracey,fam,over,.true.,0)
+      type (ffs_bound) fb
+      type (ffs_stat) optstat
+      integer*4 idp
+      logical*4 fam
+      fb%lb=1
+      fb%le=nlat
+      fb%fb=0.d0
+      fb%fe=0.d0
+      call qcell1(fb,idp,optstat,fam,.true.,0)
       return
       end
 
-      subroutine qcell1(ibegin,frbegin,iend,frend,
-     $     idp,hstab,vstab,tracex,tracey,fam,over,
-     $     chgini,lfno)
+      subroutine qcell1(fbound,idp,optstat,fam,chgini,lfno)
       use tfstk
       use ffs
       use ffs_pointer
+      use ffs_fit , only:ffs_stat
       use tffitcode
       implicit none
+      type (ffs_bound) fbound
+      type (ffs_stat) optstat
       real*8 bmin,bmax,amax
       integer*4 itmax
       parameter (bmin=1.d-16,bmax=1.d16,amax=1.d16)
       parameter (itmax=63)
-      real*8 ftwiss(ntwissfun),tracex,tracey,frbegin,frend,
+      real*8 ftwiss(ntwissfun),
      $     tffselmoffset,r1,r2,r3,r4,c1,
      $     s11,s12,s13,s14,s21,s22,s23,s24,
      $     s31,s32,s33,s34,s41,s42,s43,s44,
@@ -36,9 +41,8 @@
      $     xb,xe,xp,fr,fra,frb,tr,
      $     dpsix,dpsiy,cosx,sinx,cosy,siny,
      $     x11,x22,y11,y22
-      integer*4 ibegin,iend,idp,level,
-     $     ie1,l,nm,lx,k,lfno
-      logical*4 hstab,vstab,over,stab,codfnd,fam,chgini,pri
+      integer*4 idp,ie1,l,nm,lx,lfno
+      logical*4 stab,codfnd,fam,chgini,pri
       real*8 trans(4,5),cod(6),
      $     tm11,tm12,tm13,tm14,tm15,
      $     tm21,tm22,tm23,tm24,tm25,
@@ -53,16 +57,19 @@
      $     (trans(3,4),tm34),(trans(3,5),tm35),
      $     (trans(4,1),tm41),(trans(4,2),tm42),(trans(4,3),tm43),
      $     (trans(4,4),tm44),(trans(4,5),tm45)
+      if(calc6d)then
+        call qcell61(fbound,idp,optstat,lfno)
+        return
+      endif
       pri=.false.
       if(cell)then
         codfnd=fam
-        cod=twiss(ibegin,idp,mfitdx:mfitddp)
-        call qcod(idp,ibegin,frbegin,iend,frend,
-     $       trans,cod,codfnd,over)
+        cod=twiss(fbound%lb,idp,mfitdx:mfitddp)
+        call qcod(idp,fbound,trans,cod,codfnd,optstat%over)
         if(orbitcal)then
-          twiss(ibegin,idp,mfitdx:mfitddp )=cod
+          twiss(fbound%lb,idp,mfitdx:mfitddp)=cod
         endif
-        if(over)then
+        if(optstat%over)then
           if(lfno .gt. 0)then
             if(.not. codfnd)then
               write(lfno,*)
@@ -72,8 +79,8 @@
             endif
             pri=.true.
           endif
-          hstab=.false.
-          vstab=.false.
+          optstat%stabx=.false.
+          optstat%staby=.false.
         elseif(.not. codfnd .and. lfno .gt. 0)then
           write(lfno,*)'*****qcod---> Closed orbit not found'
           pri=.true.
@@ -83,16 +90,16 @@
      1       tm21,tm22,tm23,tm24,
      1       tm31,tm32,tm33,tm34,
      1       tm41,tm42,tm43,tm44,
-     1       r1,r2,r3,r4,c1,level,stab,lfno)
+     1       r1,r2,r3,r4,c1,stab,lfno)
 C     ----------------------------
         if(.not. stab)then
           go to 1
         endif
-        twiss(ibegin,idp,mfitr1) = r1
-        twiss(ibegin,idp,mfitr2) = r2
-        twiss(ibegin,idp,mfitr3) = r3
-        twiss(ibegin,idp,mfitr4) = r4
-        twiss(ibegin,idp,mfitdetr) = r1*r4-r2*r3
+        twiss(fbound%lb,idp,mfitr1) = r1
+        twiss(fbound%lb,idp,mfitr2) = r2
+        twiss(fbound%lb,idp,mfitr3) = r3
+        twiss(fbound%lb,idp,mfitr4) = r4
+        twiss(fbound%lb,idp,mfitdetr) = r1*r4-r2*r3
 C------s : transformation matrix
 C     ( c1*I  J.Transpose[R].J )
 C     ( R     c1*I             )
@@ -178,135 +185,137 @@ c     print *,tmd23,tmd24
 c     print *,'-------(2,1) part'
 c     print *,tmd31,tmd32
 c     print *,tmd41,tmd42
-        tracex=a11+a22
-        tracey=b11+b22
-        hstab=tracex .ge. -2.d0 .and. tracex .le. 2.d0
-        vstab=tracey .ge. -2.d0 .and. tracey .le. 2.d0
-        if(hstab)then
-          cosmux=.5d0*tracex
+        optstat%tracex=a11+a22
+        optstat%tracey=b11+b22
+        optstat%stabx=optstat%tracex .ge. -2.d0
+     $       .and. optstat%tracex .le. 2.d0
+        optstat%staby=optstat%tracey .ge. -2.d0
+     $       .and. optstat%tracey .le. 2.d0
+        if(optstat%stabx)then
+          cosmux=.5d0*optstat%tracex
         else
-          cosmux=2.d0/tracex
+          cosmux=2.d0/optstat%tracex
         endif
-        if(chgini .or. hstab)then
-          if(hstab)then
+        if(chgini .or. optstat%stabx)then
+          if(optstat%stabx)then
             sinmux=sign(sqrt(abs(-a12*a21-.25d0*(a11-a22)**2)),a12)
           else
             sinmux=sign(sqrt(1.d0-cosmux**2),a12)
           endif
           amux=atan2(sinmux,cosmux)
           dcosmux=2.d0*sin(.5d0*amux)**2
-          twiss(ibegin,idp,mfitax)=.5d0*(a11-a22)/sinmux
+          twiss(fbound%lb,idp,mfitax)=.5d0*(a11-a22)/sinmux
           if(a12*a21 .lt. 0.d0)then
-            twiss(ibegin,idp,mfitbx)=sqrt(-a12/a21
-     $           *(1.d0+twiss(ibegin,idp,mfitax)**2))
+            twiss(fbound%lb,idp,mfitbx)=sqrt(-a12/a21
+     $           *(1.d0+twiss(fbound%lb,idp,mfitax)**2))
           else
-            twiss(ibegin,idp,mfitbx)=a12/sinmux
+            twiss(fbound%lb,idp,mfitbx)=a12/sinmux
           endif
         else
           dcosmux=1.d0-cosmux
         endif
-        if(vstab)then
-          cosmuy=.5d0*tracey
+        if(optstat%staby)then
+          cosmuy=.5d0*optstat%tracey
         else
-          cosmuy=2.d0/tracey
+          cosmuy=2.d0/optstat%tracey
         endif
-        if(chgini .or. vstab)then
-          if(vstab)then
+        if(chgini .or. optstat%staby)then
+          if(optstat%staby)then
             sinmuy=sign(sqrt(abs(-b12*b21-.25d0*(b11-b22)**2)),b12)
           else
             sinmuy=sign(sqrt(1.d0-cosmuy**2),b12)
           endif
           amuy=atan2(sinmuy,cosmuy)
           dcosmuy=2.d0*sin(.5d0*amuy)**2
-          twiss(ibegin,idp,mfitay)=.5d0*(b11-b22)/sinmuy
+          twiss(fbound%lb,idp,mfitay)=.5d0*(b11-b22)/sinmuy
           if(b12*b21 .lt. 0.d0)then
-            twiss(ibegin,idp,mfitby)=sqrt(-b12/b21
-     $           *(1.d0+twiss(ibegin,idp,mfitay)**2))
+            twiss(fbound%lb,idp,mfitby)=sqrt(-b12/b21
+     $           *(1.d0+twiss(fbound%lb,idp,mfitay)**2))
           else
-            twiss(ibegin,idp,mfitby)=b12/sinmuy
+            twiss(fbound%lb,idp,mfitby)=b12/sinmuy
           endif
         else
           dcosmuy=1.d0-cosmuy
         endif
 C--   deb
 c     print *,'   new parameters------'
-c     print *,'    axi,bxi  =',twiss(ibegin,idp,1),twiss(ibegin,idp,2)
-c     print *,'    ayi,byi  =',twiss(ibegin,idp,4),twiss(ibegin,idp,5)
-c     print *,'    r11,r12  =',twiss(ibegin,idp,11),twiss(ibegin,idp,12)
-c     print *,'    r21,r22  =',twiss(ibegin,idp,13),twiss(ibegin,idp,14)
+c     print *,'    axi,bxi  =',twiss(fbound%lb,idp,1),twiss(fbound%lb,idp,2)
+c     print *,'    ayi,byi  =',twiss(fbound%lb,idp,4),twiss(fbound%lb,idp,5)
+c     print *,'    r11,r12  =',twiss(fbound%lb,idp,11),twiss(fbound%lb,idp,12)
+c     print *,'    r21,r22  =',twiss(fbound%lb,idp,13),twiss(fbound%lb,idp,14)
 C========Dispersion ========
 c     (Note) Disperdion is defined in 2*2 world
         a13=s11*tm15+s13*tm35+s14*tm45
         a23=s22*tm25+s23*tm35+s24*tm45
         b13=s31*tm15+s32*tm25+s33*tm35
         b23=s41*tm15+s42*tm25+s44*tm45
-        if(chgini .or. hstab)then
+        if(chgini .or. optstat%stabx)then
           if( dcosmux.ne.0.d0 ) then
-            twiss(ibegin,idp,mfitex) =
+            twiss(fbound%lb,idp,mfitex) =
      $           0.5d0*(a13+a12*a23-a22*a13)/dcosmux
-            twiss(ibegin,idp,mfitepx) =
+            twiss(fbound%lb,idp,mfitepx) =
      $           0.5d0*(a23+a21*a13-a11*a23)/dcosmux
           endif
         endif
-        if(chgini .or. vstab)then
+        if(chgini .or. optstat%staby)then
           if( dcosmuy.ne.0.d0 ) then
-            twiss(ibegin,idp,mfitey) =
+            twiss(fbound%lb,idp,mfitey) =
      $           0.5d0*(b13+b12*b23-b22*b13)/dcosmuy
-            twiss(ibegin,idp,mfitepy)=
+            twiss(fbound%lb,idp,mfitepy)=
      $           0.5d0*(b23+b21*b13-b11*b23)/dcosmuy
           end if
         endif
       endif
  1    continue
-      if(frbegin .gt. 0.d0)then
-        call qtwissfrac1(ftwiss,trans,cod,idp,ibegin,frbegin,1.d0,
-     $       .false.,.true.,over)
-        if(.not. over)then
-          call qtwiss(twiss,idp,ibegin+1,iend,over)
+      if(fbound%fb .gt. 0.d0)then
+        call qtwissfrac1(ftwiss,trans,cod,idp,fbound%lb,fbound%fb,1.d0,
+     $       .false.,.true.,optstat%over)
+        if(.not. optstat%over)then
+          call qtwiss(twiss,idp,fbound%lb+1,fbound%le,optstat%over)
         endif
       else
-        call qtwiss(twiss,idp,ibegin,iend,over)
+        call qtwiss(twiss,idp,fbound%lb,fbound%le,optstat%over)
       endif
-      ie1=iend
-      if(over)then
+      ie1=fbound%le
+      if(optstat%over)then
         if(lfno .gt. 0)then
           write(lfno,*)'***qtwiss---> Overflow'
           pri=.true.
         endif
-        hstab=.false.
-        vstab=.false.
+        optstat%stabx=.false.
+        optstat%staby=.false.
       endif
-      if(frend .gt. 0.d0)then
-        call qtwissfrac1(ftwiss,trans,cod,idp,iend,0.d0,frend,
-     $       .false.,.true.,over)
-        if(over)then
-          hstab=.false.
-          vstab=.false.
+      if(fbound%fe .gt. 0.d0)then
+        call qtwissfrac1(ftwiss,trans,cod,idp,fbound%le,0.d0,fbound%fe,
+     $       .false.,.true.,optstat%over)
+        if(optstat%over)then
+          optstat%stabx=.false.
+          optstat%staby=.false.
         endif
-        ie1=iend+1
+        ie1=fbound%le+1
       endif
-      xb=dble(ibegin)
-      xe=dble(min(iend+1,nlat))
-      do l=ibegin+1,min(iend,nlat-1)
+      xb=dble(fbound%lb)
+      xe=dble(min(fbound%le+1,nlat))
+      do l=fbound%lb+1,min(fbound%le,nlat-1)
         nm=0
-        if(idtype(latt(1,l)) .eq. icMARK)then
+        if(idtypec(l) .eq. icMARK)then
           xp=tffselmoffset(l)
           if(xp .ne. dble(l))then
-c            write(*,*)'qcell ',l,iend,nlat,xp,xe
+c            write(*,*)'qcell ',l,fbound%fe,nlat,xp,xe
             if(xp .ge. xb .and. xp .lt. xe)then
               lx=int(xp)
               fr=xp-lx
  8101         if(fr .eq. 0.d0)then
-                do k=1,ntwissfun
-                  twiss(l,idp,k)=twiss(lx,idp,k)
-                enddo
+c                do k=1,ntwissfun
+                  twiss(l,idp,:)=twiss(lx,idp,:)
+c                enddo
               else
-                if(lx .eq. ibegin)then
-                  fra=frbegin
+                if(lx .eq. fbound%lb)then
+                  fra=fbound%fb
                   frb=max(fr,fra)
-                elseif(lx .eq. iend)then
+                elseif(lx .eq. fbound%le)then
                   fra=0.d0
-                  frb=min(frend,fr)
+                  frb=min(fbound%fe,fr)
                 else
                   fra=0.d0
                   frb=fr
@@ -317,37 +326,101 @@ c            write(*,*)'qcell ',l,iend,nlat,xp,xe
                 endif
                 call qtwissfrac1(ftwiss,
      $               tr,cod,idp,lx,fra,frb,
-     $               .false.,.false.,over)
+     $               .false.,.false.,optstat%over)
                 twiss(l,idp,1:ntwissfun)=ftwiss
               endif
             endif
           endif
         endif
       enddo
-      dpsix = twiss(ie1,idp,mfitnx) - twiss(ibegin,idp,mfitnx)
-      dpsiy = twiss(ie1,idp,mfitny) - twiss(ibegin,idp,mfitny)
+      dpsix = twiss(ie1,idp,mfitnx) - twiss(fbound%lb,idp,mfitnx)
+      dpsiy = twiss(ie1,idp,mfitny) - twiss(fbound%lb,idp,mfitny)
       cosx=cos(dpsix)
       sinx=sin(dpsix)
       cosy=cos(dpsiy)
       siny=sin(dpsiy)
-      x11=sqrt(twiss(ie1,idp,mfitbx)/twiss(ibegin,idp,mfitbx))
-     1     *(cosx+twiss(ibegin,idp,mfitax)*sinx)
-      x22=sqrt(twiss(ibegin,idp,mfitbx)/twiss(ie1,idp,mfitbx))*
+      x11=sqrt(twiss(ie1,idp,mfitbx)/twiss(fbound%lb,idp,mfitbx))
+     1     *(cosx+twiss(fbound%lb,idp,mfitax)*sinx)
+      x22=sqrt(twiss(fbound%lb,idp,mfitbx)/twiss(ie1,idp,mfitbx))*
      1     (cosx-twiss(ie1,idp,mfitax)*sinx)
-      y11=sqrt(twiss(ie1,idp,mfitby)/twiss(ibegin,idp,mfitby))
-     1     *(cosy+twiss(ibegin,idp,mfitay)*siny)
-      y22=sqrt(twiss(ibegin,idp,mfitby)/twiss(ie1,idp,mfitby))*
+      y11=sqrt(twiss(ie1,idp,mfitby)/twiss(fbound%lb,idp,mfitby))
+     1     *(cosy+twiss(fbound%lb,idp,mfitay)*siny)
+      y22=sqrt(twiss(fbound%lb,idp,mfitby)/twiss(ie1,idp,mfitby))*
      1     (cosy-twiss(ie1,idp,mfitay)*siny)
-      tracex=x11+x22
-      tracey=y11+y22
+      optstat%tracex=x11+x22
+      optstat%tracey=y11+y22
       if(cell)then
-        hstab=tracex .ge. -2.d0 .and. tracex .le. 2.d0
-        vstab=tracey .ge. -2.d0 .and. tracey .le. 2.d0
-        hstab=hstab .and. stab .and. (codfnd .or. fam)
-        vstab=vstab .and. stab .and. (codfnd .or. fam)
+        optstat%stabx=optstat%tracex .ge. -2.d0 .and.
+     $       optstat%tracex .le. 2.d0
+        optstat%staby=optstat%tracey .ge. -2.d0 .and.
+     $       optstat%tracey .le. 2.d0
+        optstat%stabx=optstat%stabx .and. stab .and. (codfnd .or. fam)
+        optstat%staby=optstat%staby .and. stab .and. (codfnd .or. fam)
       endif
       if(pri)then
         lfno=0
       endif
+      return
+      end
+
+      subroutine  qcell61(fbound,idp,optstat,lfno)
+      use ffs
+      use ffs_fit ,only:ffs_stat
+      use ffs_pointer
+      use temw
+      implicit none
+      type (ffs_bound) fbound
+      type (ffs_stat) optstat
+      integer*4 lfno,idp
+      real*8 trans(6,12),cod(6),beam(21),tw1(ntwissfun)
+      complex*16 ceig(6)
+      logical*4 codfnd,cell0,codplt0,ci0,rt
+      cell0=cell
+      codplt0=codplt
+      ci0=calint
+      rt=radtaper
+      calint=.false.
+      irad=6
+ 1    cod=twiss(1,idp,mfitdx:mfitddp)
+      if(cell)then
+        codfnd=.false.
+        call tcod(trans,cod,beam,codfnd)
+        if(.not. codfnd)then
+          write(lfno,*)
+     $         '*****tcod---> Closed orbit not found'
+          optstat%stabx=.false.
+          optstat%staby=.false.
+          cell=.false.
+          go to 1
+        endif
+        r=trans(:,1:6)
+        if(.not. rfsw)then
+          r(6,1)=0.d0
+          r(6,2)=0.d0
+          r(6,3)=0.d0
+          r(6,4)=0.d0
+          r(6,5)=0.d0
+          r(6,6)=1.d0
+        endif
+c        write(*,'(1p6g15.7)')(r(i,1:6),i=1,6)
+        call teigen(r,ri,ceig,6,6)
+        call tnorm(r,ceig,0)
+        call tsymp(r)
+        call tinv6(r,ri)
+c       write(*,'(1p6g15.7)')(ri(i,1:6),i=1,6)
+       normali=.true.
+      else
+        tw1=twiss(1,idp,1:ntwissfun)
+        call etwiss2ri(tw1,ri,normali)
+        call tinv6(ri,r)
+      endif
+      codplt=.true.
+      call tinitr(trans)
+      call tturne0(trans,cod,beam,fbound,
+     $     int8(0),int8(0),int8(0),idp,.true.,rt)
+c        write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6)
+      calint=ci0
+      codplt=codplt0
+      cell=cell0
       return
       end

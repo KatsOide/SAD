@@ -4,8 +4,9 @@
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 lfno,ierr,i,j,k,id,jd,kw,ie,i0,istep,
-     $     ifany,le,ld,ldv
+      integer*4 lfno,ierr,i,id,kw,i0,istep,
+     $     ifany,j,ie
+      integer*8 k,jj,le,ldv,jd,ld
       real*8 errg,dl,dk,ddk,dtheta,dx,dy,err,er,v,
      $     getva,tgauss
       character*(*) word
@@ -44,11 +45,11 @@
           word1='*'
         endif
         do 1010 i=1,nlat-1
-c     temat(latt(1,1)... MUST need because of latt defined by (2,0:nlatt)
+c     temat(ilist(2,latt(1))... MUST need because of latt defined by (2,0:nlatt)
           if(temat(i,name,word1))then
             exist=.true.
-            j=latt(1,i)
-            k=latt(2,i)
+            j=idelc(i)
+            k=latt(i)
             id=idtype(j)
             jd=idval(j)
             kw=kytbl(kwL,id)
@@ -136,8 +137,8 @@ c     temat(latt(1,1)... MUST need because of latt defined by (2,0:nlatt)
         endif
       endif
       if(ierr .eq. 10)then
-        j=latt(2,0)
-        k=idval(latt(1,0))
+        jj=latt(0)
+        k=idval(ilist(2,jj))
         rlist(j+1)=rlist(k+1)+sqrt(1.d0+rlist(k+1)**2)*err*tgauss()
         rlist(j+4)=rlist(k+4)+sqrt(1.d0+rlist(k+4)**2)*err*tgauss()
         rlist(j+2)=rlist(k+2)*abs(1.d0+err*tgauss())
@@ -177,8 +178,8 @@ c     temat(latt(1,1)... MUST need because of latt defined by (2,0:nlatt)
       abb=ifany(word,'*%{}',1) .gt. 0
       exist=.false.
       do 10 i=1,nlat-1
-        id=idtype(latt(1,i))
-c     temat(latt(1,1)... MUST need because of latt defined by (2,0:nlatt)
+        id=idtypec(i)
+c     temat(ilist(2,latt(1))... MUST need because of latt defined by (2,0:nlatt)
         if(temat(i,name,word))then
           if(id .eq. icDRFT)then
             ie=i
@@ -198,10 +199,10 @@ c     temat(latt(1,1)... MUST need because of latt defined by (2,0:nlatt)
           istep=1
           do 110 j=i0,ie,istep
             if((id .ne. icSOL .and. master(j) .ne. 0)
-     $           .or. id .eq. icDRFT .or.
-     $           id .eq. icSOL .and. idtype(latt(1,j)) .eq. icSOL)then
-              le=latt(2,j)
-              ld=idval(latt(1,j))
+     $           .or. id .eq. icDRFT .or.id .eq. icSOL .and.
+     $           idtypec(j) .eq. icSOL)then
+              le=latt(j)
+              ld=idval(idelc(j))
               if(add)then
                 ldv=le
               else
@@ -218,8 +219,8 @@ c     temat(latt(1,1)... MUST need because of latt defined by (2,0:nlatt)
                 if(ival(k) .gt. 0 .and. id .ne. icSOL
      $               .and. id .ne. icMARK)then
                   if(j .eq. klp(k))then
-                    rlist(latt(2,j)+ival(k))
-     $                   =rlist(latt(2,j)+ival(k))/errk(1,j)
+                    rlist(latt(j)+ival(k))
+     $                   =rlist(latt(j)+ival(k))/errk(1,j)
                     er=1.d0
                   else
                     er=errk(1,klp(k))
@@ -232,7 +233,7 @@ c     temat(latt(1,1)... MUST need because of latt defined by (2,0:nlatt)
                   errk(1,j)=v+errg
                   if(id .ne. 20)then
                     rlist(le+ival(k))
-     1                   =rlist(latt(2,klp(k))+ival(k))
+     1                   =rlist(latt(klp(k))+ival(k))
      $                   /er*errk(1,j)*couple(j)
                   endif
                 endif
@@ -290,7 +291,7 @@ c     temat(latt(1,1)... MUST need because of latt defined by (2,0:nlatt)
         endif
 10    continue
 11    if(.not. uni)then
-c     tfadjust(latt(1,1)... MUST need because of latt defined by (2,0:nlatt)
+c     tfadjust(ilist(2,latt(1))... MUST need because of latt defined by (2,0:nlatt)
         call tfadjst
       endif
       if(exist)then

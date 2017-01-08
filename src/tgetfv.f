@@ -6,6 +6,7 @@
       use ffs_pointer
       use ffs_fit
       use tffitcode
+      use tfcsi,only:cssetp
       implicit none
       integer*4 nfc,lfno,i,l,lenw,ix2,kp,j,next,ncalc
       real*8 sc,x1,x,getva
@@ -71,21 +72,21 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
             else
               word='@'
             endif
-            if(idtype(latt(1,mfpnt)) .eq. icMARK)then
+            if(idtypecx(mfpnt) .eq. icMARK)then
               if(i .le. ntwissfun)then
-                x1=rlist(idval(latt(1,mfpnt))+i)
+                x1=rlist(idvalc(mfpnt)+i)
                 if(word .eq. '@-')then
                   x1=-x1
                 endif
               else
                 call termes(lfno,'No Marked value for '//nlist(i),
-     1               ' at '//tname(latt,mfpnt))
+     1               ' at '//tname(mfpnt))
                 err=.true.
                 return
               endif
             else
               call termes(lfno,'No MARK element at ',
-     $             tname(latt,mfpnt))
+     $             tname(mfpnt))
               err=.true.
               return
             endif
@@ -170,7 +171,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
             if((i .eq. mfitbx .or. i .eq. mfitby) .and. x .le. 0.d0)then
               call termes(lfno,'Zero or negative value for ',word)
             else
-              rlist(latt(2,1)+i)=x
+              rlist(latt(1)+i)=x
             endif
           else
             call termes(lfno,'?Missing number for ',word)
@@ -194,14 +195,13 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
       return
       end
 
-      character*(*) function tname(latt,i)
-      use tfstk
-      use ffs
-      use tffitcode
+      character*(*) function tname(i)
+      use tmacro, only:nlat
+      use ffs_pointer, only:pnamec
       implicit none
-      integer*4 latt(2,nlat),i
+      integer*4 i
       if(i .ne. nlat)then
-        tname=pname(latt(1,i))
+        tname=pnamec(i)
       else
         tname='$$$'
       endif

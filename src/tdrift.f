@@ -13,26 +13,26 @@ c     drift in the free space
       use element_drift_common
       use tfstk
       implicit none
-      integer*4 np
+      integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
-      real*8 al
-      integer*4 i
-      real*8 s,dpzi,pzi,al1
+      real*8 al,al1,dpz
       do i=1,np
-         s=min(ampmax,px(i)**2+py(i)**2)
-c         dpzi=-s/(1.d0+sqrt(1.d0-s))
-         dpzi=sqrt1(-s)
-         pzi=1.d0+dpzi
-         al1=al/pzi
-         x(i)=x(i)+px(i)*al1
-         y(i)=y(i)+py(i)*al1
-         z(i)=z(i)+dpzi *al1-dv(i)*al
+c        s=px(i)**2+py(i)**2
+        dpz=pxy2dpz(px(i),py(i))
+c        dpz=s*(-.5d0-s*(.125d0+s*.0625d0))
+c        dpz=(dpz**2-s)/(2.d0+2.d0*dpz)
+c        dpz=(dpz**2-s)/(2.d0+2.d0*dpz)
+        al1=al/(1.d0+dpz)
+        x(i)=x(i)+px(i)*al1
+        y(i)=y(i)+py(i)*al1
+        z(i)=z(i)+dpz  *al1-dv(i)*al
       enddo
       return
       end
 
 c     drift in the parallel solenoid
       subroutine tdrift_solenoid(np,x,px,y,py,z,g,dv,pz,al,bz)
+      use tfstk, only: sqrtl
       use element_drift_common
       implicit none
       integer*4 np
@@ -50,7 +50,7 @@ c         pr=(1.d0+g(i))**2
          pyi=py(i)-bzp*x(i)*.5d0
 
          s=min(ampmax,pxi**2+pyi**2)
-         dpzi=-s/(1.d0+sqrt(1.d0-s))
+         dpzi=-s/(1.d0+sqrtl(1.d0-s))
          pzi=1.d0+dpzi
          al1=al/pzi
 
@@ -92,6 +92,7 @@ c
       subroutine tdrift(np,x,px,y,py,z,g,dv,pz,
      $     al,bz,ak0x,ak0y)
       use element_drift_common
+      use tfstk, only:sqrtl
       implicit none
       integer*4 np,i,j,itmax,ndiag
       real*8 conv
@@ -126,7 +127,7 @@ c          pr=(1.d0+g(i))**2
           px(i)=px(i)+bzp*y(i)*.5d0
           py(i)=py(i)-bzp*x(i)*.5d0
           s=min(ampmax,px(i)**2+py(i)**2)
-          dpz0=-s/(1.d0+sqrt(1.d0-s))
+          dpz0=-s/(1.d0+sqrtl(1.d0-s))
           pz0=1.d0+dpz0
           dpl=px(i)*phix+py(i)*phiy+dpz0*phiz
           pl=phiz+dpl

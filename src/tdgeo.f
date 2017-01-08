@@ -1,4 +1,5 @@
       subroutine tdgeo(couple1,qu,kf,ne,k,ltyp,iv,nut,nfam)
+      use kyparam
       use tfstk
       use ffs
       use ffs_pointer
@@ -24,8 +25,8 @@
           qu=qu+s*geo(kf-mfitgx+1,3,k)
         endif
       elseif(ltyp .eq. icBEND)then
-        if(iv .eq. kytbl(kwANGL,icBEND))then
-          ip=latt(1,k)
+        if(iv .eq. ky_ANGL_BEND)then
+          ip=idelc(k)
           theta=rlist(idval(ip)+5)
           if(kf .ge. mfitgx .and. kf .le. mfitgz)then
             al=rlist(idval(ip)+1)
@@ -34,7 +35,7 @@
             j2=6-j-j1
             drj1=geo(j1,4,ne)-geo(j1,4,k+1)
             drj2=geo(j2,4,ne)-geo(j2,4,k+1)
-            v=rlist(latt(2,k)+2)
+            v=rlist(latt(k)+2)
             if(v .eq. 0.d0)then
               c1=0.d0
               c2=-.5d0
@@ -83,7 +84,7 @@
      $             /(geo(3,1,ne)**2+geo(3,2,ne)**2)*s
             endif
           endif
-        elseif(iv .eq. kytbl(kwL,icBEND))then
+        elseif(iv .eq. ky_L_BEND)then
           if(kf .ge. mfitgx .and. kf .le. mfitgz)then
             qu=qu+s*geo(kf-mfitgx+1,3,k+1)
           endif
@@ -91,7 +92,7 @@
       elseif(ltyp .le. icDODECA .or. ltyp .eq. icMULT)then
         call tfbndsol(k,kbg,kbe)
         if(kbe .ne. 0)then
-          ip=latt(1,k)
+          ip=ilist(2,latt(k))
           dx=rlist(idval(ip)+kytbl(kwDX,ltyp))
           dy=rlist(idval(ip)+kytbl(kwDY,ltyp))
           k1=k+1

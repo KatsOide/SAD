@@ -5,7 +5,8 @@ c----- mstack1 is also called by mstore with PUSH mode-----------------
       use tffitcode
       parameter (kstack=3)
       parameter (mstkic=16)
-      dimension latt(2,nlat),twiss(nlat,-ndim:ndim,ntwissfun)
+      integer*8 latt(nlat)
+      dimension twiss(nlat,-ndim:ndim,ntwissfun)
       common /mcstack/icoma,ipnt(kstack),iistck(kstack),mstkmx(kstack)
       dimension istr(*),imon(*),emon(*)
       icom=icoma

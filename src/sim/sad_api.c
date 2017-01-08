@@ -140,8 +140,8 @@ integer8 ktfsymbolf(const char *symbol, logical4 l) {
   return ktfsymbolf_(symbol, &length, &l, length);
 }
 
-void tfree(integer4 ia) {
-  tfree_(&ia);
+void tfree(integer8 ia) {
+  __tfmem_MOD_tfree(&ia);
 }
 
 integer8 ktsalocb(integer4 mode, const char *str) {

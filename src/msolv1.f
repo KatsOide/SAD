@@ -122,10 +122,11 @@ c
       use tffitcode
       logical save
       dimension a(nd,m),b(na),d(nc),x(m)
+      integer*8 it,it1
       save it,it1
       if(save) then
-        it=italoc(nd*m)
-        it1=italoc(na+nc)
+        it=ktaloc(nd*m)
+        it1=ktaloc(na+nc)
         call tmov(a,rlist(it),nd*m)
         call tmov(b,rlist(it1),na)
         call tmov(d,rlist(it1+na),nc)
@@ -136,8 +137,8 @@ c
         call mresdue(rlist(it),x,rlist(it1),resrms,nd,na+nc,m)
         write(*,'(1p,10g11.3)') (rlist(it1+i),i=0,na+nc-1)
         print *,' |b-a*x|/sqrt(n) :',resrms
-        call tfree(int8(it))
-        call tfree(int8(it1))
+        call tfree(it)
+        call tfree(it1)
       endif
       return
       end

@@ -39,9 +39,9 @@
       phi=al/rho0
       p  =1.d0+cod(6)
       xi =cod(1)
-      pxi=cod(2)/p
+      pxi=min(p,max(-p,cod(2)))/p
       yi =cod(3)
-      pyi=cod(4)/p
+      pyi=min(p,max(-p,cod(4)))/p
       s=min(psqmax,pxi**2+pyi**2)
       dpzi=sqrt1(-s)
       pzi=1.d0+dpzi
@@ -98,7 +98,7 @@
       call tmultr5(trans,trans2,irad)
       call tmulbs(beam ,trans2,.true.,.true.)
       cod(1)=xf
-      cod(2)=pxf*p
+      cod(2)=min(p,max(-p,pxf*p))
       cod(3)=yf
       cod(5)=zf
       return
@@ -129,9 +129,9 @@
       dp=cod(6)
       p=1.d0+dp
       xi=cod(1)
-      pxi=cod(2)/p
+      pxi=min(p,max(-p,cod(2)))/p
       yi=cod(3)
-      pyi=cod(4)/p
+      pyi=min(p,max(-p,cod(4)))/p
       zi=cod(5)
       phin=al/rho0
       if(tbinit)then
@@ -181,9 +181,9 @@
       call tmultr5(trans,trans1,irad)
       call tmulbs(beam ,trans1,.true.,.true.)
       cod(1)=xf
-      cod(2)=pxf*p
+      cod(2)=min(p,max(-p,pxf*p))
       cod(3)=yf
-      cod(4)=pyf*p
+      cod(4)=min(p,max(-p,pyf*p))
       cod(5)=zf-dvemit*al
       return
       end subroutine
@@ -207,9 +207,9 @@
       endif
       dp=cod(6)
       pr=1.d0+dp
-      pxi=cod(2)/pr
+      pxi=min(pr,max(-pr,cod(2)))/pr
       yi=cod(3)
-      pyi=cod(4)/pr
+      pyi=min(pr,max(-pr,cod(4)))/pr
       rhoe=rhob*pr
       s=min(psqmax,pxi**2+pyi**2)
       dpz1=sqrt1(-s)
@@ -263,8 +263,8 @@
       call tmulbs(beam ,trans1,.true.,.true.)
       cod(1)=xf
       cod(3)=yi+pyi*rhoe*(phi0n-da)
-      cod(2)=pxf*pr
-      cod(4)=pyi*pr
+      cod(2)=min(pr,max(-pr,pxf*pr))
+      cod(4)=min(pr,max(-pr,pyi*pr))
       cod(5)=cod(5)-phi0n*(dp*rhob+drhob)+da*rhoe-dvemit*aln
       return
       end subroutine
@@ -273,13 +273,14 @@
       subroutine tbende(trans,cod,beam,al0,phib,phi0,
      $     psi1,psi2,apsi1,apsi2,ak,
      1     dx,dy,theta,dtheta,
-     $     fb1,fb2,mfring,fringe,eps0,enarad,alcorr,next,ld)
+     $     fb1,fb2,mfring,fringe,eps0,enarad,alcorr,next,l,ld)
       use bendeb
       use tfstk
       use ffs_flag
       use tmacro
+      use multa, only:nmult
       implicit none
-      integer*4 ld,mfring,ndiv,nrad,n
+      integer*4 ld,mfring,ndiv,nrad,n,l
       real*8 al0,phib,phi0,psi1,psi2,ak,dx,dy,theta,dtheta,
      $     fb1,fb2,eps0,dphix,phibl,
      $     dxfr1,dyfr1,dxfr2,dyfr2,
@@ -288,6 +289,7 @@
      $     dphiy,dyfra1,dyfra2,apsi1,apsi2,
      $     csphin,snphin,sinsqn,phin,aln
       real*8 trans(6,12),cod(6),beam(42)
+      complex*16 akm(0:nmult)
       logical*4 enarad,alcorr,fringe,next,prev
       if(alcorr .and. 
      $     mfring .ne. 0 .and. al0 .ne. 0.d0
@@ -299,9 +301,26 @@
         al=al0
       endif
       if(phi0 .eq. 0.d0)then
-        call tsteee(trans,cod,beam,al0,-phib,dx,dy,theta,enarad,
-     $       apsi1,apsi2,
-     $       fb1,fb2,mfring,fringe,next,ld)
+        if(ak .eq. 0.d0)then
+          call tsteee(trans,cod,beam,al0,-phib,dx,dy,theta,enarad,
+     $         apsi1,apsi2,
+     $         fb1,fb2,mfring,fringe,next,ld)
+        elseif(phib .eq. phi0)then
+          call tquade(trans,cod,beam,al0,ak,
+     1     dx,dy,theta,enarad,fringe,0.d0,0.d0,0.d0,0.d0,0,eps0,
+     $     .true.,next,ld)
+        else
+          akm=(0.d0,0.d0)
+          akm(0)=phib-phi0
+          akm(1)=ak
+          call tmulte(trans,cod,beam,l,al,akm,0.d0,
+     $         0.d0,psi1,psi2,apsi1,apsi2,
+     1         dx,dy,0.d0,0.d0,0.d0,theta,dtheta,
+     $         eps0,enarad,fringe,
+     $         0.d0,0.d0,0.d0,0.d0,mfring,fb1,fb2,.true.,
+     $         0.d0,0.d0,0.d0,0.d0,0.d0,
+     $         .false.,.false.,ld)
+        endif
         return
       elseif(phib .eq. 0.d0)then
         call tchge(trans,cod,beam,-dx,-dy,theta,.true.,ld)
@@ -458,6 +477,10 @@
         bradprev=0.d0
       endif
       call tbedge(trans,cod,beam,al,phib,psi2*phi0+apsi2,.false.,ld)
+c      if(isnan(cod(3)) .or. isnan(cod(1)) .or.
+c     $     isnan(cod(2)) .or. isnan(cod(4)))then
+c        write(*,*)'tbende-edge1 ',cod
+c      endif
       if(fb2 .ne. 0.d0)then
         if(mfring .gt. 0 .or. mfring .eq. -2)then
           dxfr2=-fb2**2/rhob/24.d0
@@ -480,6 +503,7 @@
 
       subroutine tbdrifte(trans,cod,beam,al,phi0,
      $     h0,h1emit,dvemit,irad,calpol,ld)
+      use tfstk, only: sqrtl
       implicit none
       real*8 trans(6,12),cod(6),beam(42),phi0,al,cp,sp,pr,pxi,pzf,
      $     trans1(6,6),xi,pyi,pzi,pxf,xf,dpzipxi,dpzipyi,dpzip,
@@ -502,8 +526,8 @@
       pr=1.d0+cod(6)
       pxi=cod(2)
       pyi=cod(4)
-      a=min(psqmax,pxi**2+pyi**2)
-      pzi=pr*sqrt(1.d0-a/pr**2)
+      a=pxi**2+pyi**2
+      pzi=pr*sqrtl(1.d0-a/pr**2)
 c      pzi=sqrt(max(1.d-4,(pr-pxi)*(pr+pxi)-pyi**2))
       pzf=pzi*cp-pxi*sp
       pxf=pzi*sp+pxi*cp

@@ -1,16 +1,15 @@
       Subroutine ActTra(argp)
       use maccbk
       use tfstk
+      use maccode
+      use macphys
+      use macvar
+      use macfile
       implicit none
 c     export
-      integer parptr,lptr
+      integer*8 parptr,xbase,pbase
+      integer lptr
 c     
-      integer*4 argp
-      include 'inc/MACCODE.inc'
-      include 'inc/MACVAR.inc'
-      include 'inc/MACPHYS.inc'
-      include 'inc/MACFILE.inc'
-C     
       integer*4 NSPARM
       parameter (NSPARM=7)
       integer*4 nt$,np$,ex$,sigs$,sync$,elec$,posi$,prot$
@@ -19,16 +18,18 @@ C
      $     elec$=8,posi$=elec$+1,prot$=posi$+1,
      $     sync$=16,nx$=sync$+1,ny$=nx$+1,nz$=ny$+1)
 c      integer*4 idxtws
-      integer*4 nt,np,pexln
-      integer*4 sptr,pltpw,pltps,plot$
-      integer*4 idummy, npw, i,idx, nxp0,nxl0,j,k,nps
-      integer*4 xbase,pbase,xptr,pptr,sync,nxp(3),nxl(3)
+      integer*8 pexln,argp,ktcaloc,sptr,xptr,pptr,pltpw,pltps
+      integer*4 nt,np
+      integer*4 plot$
+      integer*4 idummy, npw, i,idx, j,k,nps
+      integer*4 sync,nxl(3),nxl0
+      integer*8 nxp(3),nxp0
       integer*4 span$,cent$e
       integer*4 itfdummyline
       real*8  p0,charge,mass,em(2),sigs,sige
       real*8  v0,dist,comp,df,de,ex,ey,r0,r
       real*8 RgetGL
-      integer*4 IgetGL,mctaloc
+      integer*4 IgetGL
 c     
 c  K. Oide 9/10/1999
       character*1 xc(-3:3)
@@ -62,24 +63,24 @@ c     for debug
 c     call ptrace('acttra',1)
 c     end debug
 c      write(*,*)'ActTra-1 '
-      parptr=mctaloc(22)
+      parptr=ktcaloc(22)
       ilist(1,parptr)=22
       xbase=parptr+16
       pbase=xbase+1
 c     print *,'acttra(49 )>',ilist(1,30),ilist(2,30)
-      sptr=mctaloc(NSPARM)
+      sptr=ktcaloc(NSPARM)
 c     print *,'acttra(49 )>',parptr,sptr
       ilist(1,sptr)=NSPARM
-      ilist(2,parptr+1)=sptr
+      klist(parptr+1)=sptr
 c     print *,'acttra(52 )>',ilist(1,30),ilist(2,30)
 c     
-      if (ilist(2,argp+elec$) .ne. 0) then
+      if (ilist(1,argp+elec$*2) .ne. 0) then
          mass=elmass
          charge=-echarg
-      else if(ilist(2,argp+posi$) .ne. 0) then
+      else if(ilist(1,argp+posi$*2) .ne. 0) then
          mass=elmass
          charge=echarg
-      else if(ilist(2,argp+prot$) .ne. 0) then
+      else if(ilist(1,argp+prot$*2) .ne. 0) then
          mass=prmass
          charge=echarg
       else
@@ -87,14 +88,14 @@ c
          charge=echarg
       endif
       call RsetGL('$MASS$',mass,idummy)
- 101  lptr=ilist(2,argp+1)
+ 101  lptr=ilist(1,argp+2)
 c      write(*,*)'ActTra-2 ',argp,lptr,idtype(lptr),icLINE
       if (idtype(lptr) .ne. icLINE) then
 c
 c******* K. Oide 7/6/1997 *********
 c
 c        call talocinit
-        ilist(2,argp+1)=itfdummyline()
+        ilist(1,argp+2)=itfdummyline()
 c        write(*,*)'ActTra-2.1 ',argp
         go to 101
 c         call errmsg('actTra',
@@ -111,12 +112,12 @@ c      write(*,*)'ActTra-2.2 ',lptr,ilist(2,idval(lptr))
          if (ilist(2,idval(lptr)) .le. 0) then
             call expnln(lptr)
          endif
-c       write(*,*)'ActTra-2.3 ',lptr,ilist(2,idval(lptr))
-         call filaux(idval(lptr))
-         pexln=ilist(2,idval(lptr))
+c       write(*,*)'ActTra-2.3 ',lptr,idval(ilist(2,idval(lptr)))
+         call filaux(lptr)
+         pexln=idval(ilist(2,idval(lptr)))
       endif
-      dist=rlist(ilist(2,pexln)+1)
-      comp=rlist(ilist(2,pexln)+2)
+      dist=rlist(klist(pexln)+1)
+      comp=rlist(klist(pexln)+2)
       df=RgetGL('FSHIFT',idummy)
       de=RgetGL('ESHIFT',idummy)
       if((df .ne. -comp*de) .and. (de .ne. 0.0d0)) then
@@ -131,67 +132,51 @@ c.....parameters for ploting
       npw=0
       i=plot$
  1000 continue
-      if(i .le. 0) go to 1100
-      if(abs(ilist(1,i+1)) .le. 3) then
-         nps=nps+1
-      else if(abs(ilist(1,i+1)) .le. 6) then
-         npw=npw+1
-      endif
-      i=ilist(2,i)
-      go to 1000
- 1100 continue
-c      write(*,*)'ActTra-2.9 '
-      pltpw=mctaloc(npw+1)
-      pltps=mctaloc(nps+1)
-      ilist(2,parptr+4)=pltpw
-      ilist(2,parptr+5)=pltps
-      ilist(1,pltpw)=npw+1
-      ilist(1,pltps)=nps+1
+      if(i .gt. 0)then
+        if(abs(ilist(1,i+1)) .le. 3) then
+          nps=nps+1
+        else if(abs(ilist(1,i+1)) .le. 6) then
+          npw=npw+1
+        endif
+        i=ilist(2,i)
+        go to 1000
+c     write(*,*)'ActTra-2.9 '
+        pltpw=ktcaloc(npw+1)
+        pltps=ktcaloc(nps+1)
+        klist(parptr+4)=pltpw
+        klist(parptr+5)=pltps
+        ilist(1,pltpw)=npw+1
+        ilist(1,pltps)=nps+1
 c     print *,'at 1100 nps ',nps
-      i=plot$
- 1200 continue
-      if(i .le. 0) go to 1300
-      if(abs(ilist(1,i+1)) .le. 3) then
-         pltps=pltps+1
-         ilist(2,pltps)=mctaloc(4)
-         call v_copy(rlist(i+1),rlist(ilist(2,pltps)),3)
-      else if(abs(ilist(1,i+1)) .le. 6) then
-         pltpw=pltpw+1
-         ilist(2,pltpw)=mctaloc(ilist(1,i)-1)
-         call v_copy(rlist(i+1),rlist(ilist(2,pltpw)),ilist(1,i)-1)
+        i=plot$
+ 1200   continue
+        if(i .le. 0) go to 1300
+        if(abs(ilist(1,i+1)) .le. 3) then
+          pltps=pltps+1
+          klist(pltps)=ktcaloc(4)
+          call v_copy(rlist(i+1),rlist(ilist(2,pltps)),3)
+        else if(abs(ilist(1,i+1)) .le. 6) then
+          pltpw=pltpw+1
+          klist(pltpw)=ktcaloc(ilist(1,i)-1)
+          call v_copy(rlist(i+1),rlist(ilist(2,pltpw)),ilist(1,i)-1)
+        endif
+        i=ilist(2,i)
+        go to 1200
+ 1300   continue
       endif
-      i=ilist(2,i)
-      go to 1200
- 1300 continue
 c     
-      nt=ilist(2,argp+nt$)
-      np=ilist(2,argp+np$)
-c      write(*,*)'ActTra-3 ',np
-      if(ilist(2,argp+ex$) .ne. 0)then
-        ex=rlist(ilist(2,argp+ex$))
-      else
-        ex=0.0
-      endif
+      nt=ilist(1,argp+nt$*2)
+      np=ilist(1,argp+np$*2)
+      ex=rlist(argp+ex$*2)
       em(1)=ex
-      if(ilist(2,argp+ex$+1) .ne. 0)then
-        ey=rlist(ilist(2,argp+ex$+1))
-      else
-        ey=0.0
-      endif
+      ey=rlist(argp+(ex$+1)*2)
       em(2)=ey
-      if(ilist(2,argp+sigs$) .ne. 0)then
-        sigs=rlist(ilist(2,argp+sigs$))
-      else
-        sigs=0.0
-      endif
-      if(ilist(2,argp+sigs$+1) .ne. 0)then
-        sige=rlist(ilist(2,argp+sigs$+1))
-      else
-        sige=0.0
-      endif
-      sync=ilist(2,argp+sync$)
+      sigs=rlist(argp+sigs$*2)
+      sige=rlist(argp+(sigs$+1)*2)
+      sync=ilist(1,argp+sync$*2)
       do i=1,3
-         nxp(i)=ilist(2,argp+nx$+i-1)
+         nxp(i)=klist(argp+(nx$+i-1)*2)
+c         write(*,*)'ActTra ',argp,i,nx$+i-1,nxp(i)
          if (nxp(i) .eq. 0) then
             nxl(i)=0
          else
@@ -204,6 +189,7 @@ c      write(*,*)'ActTra-3 ',np
         call RsetGL('OMEGA0',2.D0*PI*v0/dist,idx)
       endif
 c.....put scalar parameters in parameter list.
+c      write(*,*)'ActTra (np,nt) =',np,nt
       ilist(1,sptr+1)=np
       ilist(1,sptr+2)=nt
       rlist(sptr+3)=p0
@@ -223,12 +209,12 @@ c     ilist(2,parptr+2)=idxtws
       ilist(2,parptr+2)=0
       do i=1,2
 c       write(*,*)'ActTra-3.3 ',i,ilist(2,1)
-         xptr=mctaloc(np)
+         xptr=ktcaloc(np)
 c      write(*,*)'ActTra-3.35 ',i,np
-         pptr=mctaloc(np)
+         pptr=ktcaloc(np)
 c      write(*,*)'ActTra-3.4 ',i,np,xptr,pptr
-         ilist(2,xbase)=xptr
-         ilist(2,pbase)=pptr
+         klist(xbase)=xptr
+         klist(pbase)=pptr
 c     beta=rlist(idxtws+1+7*(i-1))
 c     alpha=rlist(idxtws+2+7*(i-1))
 c     r0=sqrt(em(i)*beta)
@@ -251,19 +237,19 @@ c     write(*,*)'ActTra-3.6 ',np,xptr,pptr
       enddo
 c     
 c      write(*,*)'ActTra-4 '
-      xptr=mctaloc(np)
-      pptr=mctaloc(np)
-      ilist(2,xbase)=xptr
-      ilist(2,pbase)=pptr
+      xptr=ktcaloc(np)
+      pptr=ktcaloc(np)
+      klist(xbase)=xptr
+      klist(pbase)=pptr
       nxp0=nxp(3)
       nxl0=nxl(3)
       do j=0,np-1
-         if(nxl0.eq.0) then
-            rlist(pptr+j)=0.0
-         else
-            rlist(pptr+j)=rlist(nxp0+mod(j,nxl0)+1)
-         endif
-         rlist(xptr+j)=0.0d0
+        if(nxl0.eq.0) then
+          rlist(pptr+j)=0.0
+        else
+          rlist(pptr+j)=rlist(nxp0+mod(j,nxl0)+1)
+        endif
+        rlist(xptr+j)=0.0d0
       enddo
 c     
       call tfsetbeamlinename(pname(lptr))
@@ -286,9 +272,9 @@ c      write(*,*)'ActTra-5',pexln,parptr,mstk
             endif
          enddo
 c     
-c.....maketop-drawer output
-         pltpw= ilist(2,parptr+4)
-         pltps= ilist(2,parptr+5)
+c.....make top-drawer output
+         pltpw= klist(parptr+4)
+         pltps= klist(parptr+5)
          npw=ilist(1,pltpw)-1
          nps=ilist(1,pltps)-1
          do i=1,npw
@@ -320,7 +306,7 @@ c     &             partid,.false.)
          enddo
       endif
       do i=1,6
-         call tfreem(ilist(2,parptr+15+i),np)
+         call tfree(klist(parptr+15+i))
 c         call freeme(ilist(2,parptr+15+i),np)
       enddo
 c     for debug

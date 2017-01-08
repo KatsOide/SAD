@@ -13,8 +13,9 @@ c                                        July 1994                c
 c        with trkick                                              c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       use tmacro
+      use wsbb
       implicit real*8(a-h,o-z)
-      parameter(nblist=1600,m_Benv=1103,m_Benv5=1493,iv_bc_fac=1518)
+      parameter(m_Benv=1103,m_Benv5=1493,iv_bc_fac=1518)
       parameter(m_B5_11=1493,m_B5_12=1494,m_B5_22=1499)
       parameter(m_B5_33=1505,m_B5_34=1506,m_B5_44=1511)
       parameter(iv_cen=1518,i_t_angle=1523,i_cr_angle=1526,i_cod=1530)
@@ -424,12 +425,13 @@ C   18/01/93 303072023  MEMBER NAME  BBINIT   *.FORT     M  E2FORT
       subroutine bbinit(p_in,blist)
       use tfstk
       use tmacro
+      use wsbb, only:nblist
       implicit real*8(a-h,o-z)
 c     elradi:	Classical electron radius
 c     elmass:	Electron mass energy equivalent in eV
       parameter (am_e=elmass,re=elradi)
       integer*4 tbuf0,idummy,nslimax
-      parameter (nblist=1600,tbuf0=1100,nslimax=500)
+      parameter (tbuf0=1100,nslimax=500)
       real*8 p_in(70),blist(nblist)
       type (sad_descriptor) kv
       type (sad_symdef), pointer :: vsymd
@@ -483,10 +485,10 @@ c
        m_Crs=m_BRHt+36
        if(p_in(31).gt.0..and.p_in(37).gt.0..and.p_in(42).gt.0..and.
      &    p_in(46).gt.0..and.p_in(49).gt.0..and.p_in(51).gt.0.) then
-c         write(*,*) 'Strong beam is constructed from envelope matrix'
+          write(*,*) 'Strong beam is constructed from envelope matrix'
          call m_symmet_set_6d(p_in(31),blist(m_Benv))
        else
-c         write(*,*) 'Strong beam is constructed from twiss parameters'
+         write(*,*) 'Strong beam is constructed from twiss parameters'
 c      p_in(25)=<z pz>
        emiz=p_in(24)**2*p_in(27)**2-p_in(25)**2
        if(emiz.lt.0.) then

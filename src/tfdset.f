@@ -250,7 +250,7 @@ c        call tfdebugprint(kr,':= ',3)
         call tfcleardaloc(kan)
         if(npat .gt. dtbl%npat)then
           write(*,*)'ktdaloc-implementation error ',npat,dtbl%npat
-          call forcesf()
+          call abort
         endif
       endif
       dtbl%npat=npat
@@ -382,7 +382,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
         endif
         nh=dhash%nhash
         itastk2(1,isp1)=isp
-        khash=ksad_loc(dhash%hash(itfhasharg(ktfref+isp1,nh)))
+        khash=ksad_loc(dhash%hash(itfhasharg(ktfref+isp1+ispbase,nh)))
         kadv=klist(khash)
         if(kadv .ne. 0)then
           is=1
@@ -515,6 +515,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
         if(ka .eq. 0)then
           ih=0
         else
+          ka=ka-ispbase
           m=itastk2(1,ka)-int(ka)
           if(m .eq. 0)then
             ih=0
@@ -565,6 +566,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
         if(ka .eq. 0)then
           ih=0
         else
+          ka=ka-ispbase
           m=itastk2(1,ka)-int(ka)
           if(m .eq. 0)then
             ih=0
@@ -610,6 +612,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
         if(ka .eq. 0)then
           ih=0
         else
+          ka=ka-ispbase
           ih=itfhash1(dtastk(ka))+itastk2(1,ka)-int(ka)
         endif
       elseif(ktfsymbolqd(k,sym))then
@@ -716,6 +719,10 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       if(irtc .ne. 0)then
         return
       endif
+c      call tfmemcheckprint('evalwitharg',.false.,irtc)
+c      if(irtc .ne. 0)then
+c        call tfdebugprint(k,'evwa-seval',1)
+c      endif
       if(kx%k .eq. ktfref)then
         call tfseval(ks,m,kh,kx,.true.,av,.true.,irtc)
       else
@@ -788,7 +795,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
           endif
           isp=isp1+1
           dtastk(isp)=kh
-          ks=isp
+          ks=isp+ispbase
           do i=1,m
 c            call tfdebugprint(list%body(i),'evwarg1',3)
             rep1=tfreplaceargstk(list%dbody(i),irtc)
@@ -800,11 +807,11 @@ c            call tfdebugprint(list%body(i),'==> ',3)
           if(rlist(iaximmediate) .ne. 0.d0)then
             if(ktfoperqd(kh))then
               if(kah .gt. mtfend)then
-                ks1=isp
+                ks1=isp+ispbase
                 call tfcomposefun(isp1+1,kah,kx,.false.,irtc)
               else
                 call tfcomposeoper(isp1+1,kah,kx,.false.,isp0,irtc)
-                ks1=isp0
+                ks1=isp0+ispbase
               endif
               if(irtc .eq. 0)then
                 if(kx%k .ne. ktfref)then
@@ -819,9 +826,9 @@ c            call tfdebugprint(list%body(i),'==> ',3)
               irtc=0
             endif
           endif
-          m=int(isp-ks)
+          m=int(isp+ispbase-ks)
           av=.true.
-          do i=ks+1,isp
+          do i=ks-ispbase+1,isp
             if(ktfnonrealq(ktastk(i)))then
               av=.false.
               exit
@@ -1025,6 +1032,8 @@ c              call tfdebugprint(list%body(i),'==>',3)
               endif
             endif
           endif
+c          call tfdebugprint(kh,'repargstk',1)
+c          write(*,*)isp-isp1-1
           dtastk(isp1+1)=kxcrelistm(isp-isp1-1,
      $         ktastk(isp1+2:isp),kh)
           isp=isp1+1
@@ -1109,6 +1118,7 @@ c          write(*,*)'with ',symd%sym%override
       if(ktfrefqd(ks,ka))then
         rep=.true.
         if(ka .gt. 3)then
+          ka=ka-ispbase
           do i=ka+1,itastk2(1,ka)
             ki=dtastk(i)
             if(ktfrefqd(ki))then

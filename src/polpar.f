@@ -3,6 +3,7 @@
       use ffs
       use tffitcode
       implicit real*8(a-h,o-z)
+      integer*8 icod,ib
       real*8 cod(6)
       if(irad .eq. 6)then
         return

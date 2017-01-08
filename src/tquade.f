@@ -1,5 +1,6 @@
       subroutine tquade(trans,cod,beam,al,ak,
-     1     dx,dy,theta,enarad,fringe,f1,f2,mfring,eps0,
+     1     dx,dy,theta,enarad,
+     $     fringe,f1in,f2in,f1out,f2out,mfring,eps0,
      $     kin,next,ld)
       use tfstk
       use ffs_flag
@@ -7,7 +8,8 @@
       implicit none
       integer*4 ld,ndiv,i,mfring,n,itgetqraddiv
       real*8 trans(6,12),cod(6),beam(21),trans1(6,6),
-     $     al,ak,dx,dy,theta,f1,f2,eps0,f1r,f2r,eps,b1,akn,
+     $     al,ak,dx,dy,theta,f1in,f2in,f1out,f2out,
+     $     eps0,f1r,f2r,eps,b1,akn,
      $     aln,pr,akk,phi,scphi,shcphi,sinc2,sinhc2,akr,
      $     xsin2,xsinh2,a11,a12,a21,b11,b12,b21,als,
      $     bx,by,bxy,xi,pxi,yi,pyi,xf,pxf,yf,pyf,
@@ -29,13 +31,13 @@
       endif
       prev=bradprev .ne. 0.d0
       if(mfring .eq. 1 .or. mfring .eq. 3)then
-        call tqlfre(trans,cod,beam,al,ak,f1,f2,0.d0,ld)
-        f1r=f1
+        call tqlfre(trans,cod,beam,al,ak,f1in,f2in,0.d0,ld)
+        f1r=f1in
       else
         f1r=0.d0
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
-        f2r=f1
+        f2r=f1out
       else
         f2r=0.d0
       endif
@@ -256,7 +258,7 @@
         bradprev=0.d0
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
-        call tqlfre(trans,cod,beam,al,ak,-f1,f2,0.d0,ld)
+        call tqlfre(trans,cod,beam,al,ak,-f1out,f2out,0.d0,ld)
       endif
       if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
         call tqfrie(trans,cod,beam,-ak,al,ld,0.d0)

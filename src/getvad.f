@@ -15,8 +15,8 @@
       end
 
       real*8 function getva(exist)
+      use tfcsi
       implicit none
-      include 'inc/TFCSI.inc'
       logical*4 exist
       real*8 getval
       getva=getval()
@@ -29,6 +29,7 @@
 
       real*8 function getval()
       use tfstk
+      use tfcsi
       implicit none
       type (sad_descriptor) kx
       integer*4 irtype,itfpeeko,next

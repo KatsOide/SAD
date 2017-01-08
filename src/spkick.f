@@ -6,12 +6,11 @@
       implicit none
       integer*4 nzmax,ntheta
       parameter (nzmax=1000,ntheta=12)
-      integer*4 np,kturn,l,latt(2,nlat),kptbl(np0,6)
+      integer*8 latt(nlat),itt,irho,iphi,iq,iphis,iex,iey,iez
+      integer*4 np,kturn,l,kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),zz(np0)
       real*8 al,radius,alx
-      integer*4 italoc
-      integer*4 i,itt,npz,nx,nz,nz1,nz2,nza,nrho,nphi,nq,
-     $     irho,iphi,iphis,iq,iex,iey,iez
+      integer*4 i,npz,nx,nz,nz1,nz2,nza,nrho,nphi,nq
       real*8 v0,gamma0,dx,dy,zc(nzmax),zf(nzmax)
       if(radius .eq. 0.d0)then
         return
@@ -28,7 +27,7 @@ c      call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
       endif
       call tftclupdate(7)
       call spzz(np,px,py,z,g,zz,v0,gamma0)
-      itt=italoc((np+1)/2)
+      itt=ktaloc((np+1)/2)
       do i=1,np
         ilist(i,itt)=i
       enddo
@@ -37,16 +36,16 @@ c      call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
      $     ilist(1,itt),nzmax)
       nza=nz2-nz1+1
       nrho=(2*nx)**2*nza
-      irho=italoc(nrho)
+      irho=ktaloc(nrho)
       call tclr(rlist(irho),nrho)
 c      call tfmemcheckprint('spkick0 ')
       call sprho(rlist(irho),nx,nz,nz1,nz2,dx,dy,zc,
      $     np,npz,x,y,zz,ilist(1,itt))
       nphi=(2*nx+2)**2*(nza+2)
-      iphi=italoc(nphi)
+      iphi=ktaloc(nphi)
       nq=ntheta*nz
-      iq=italoc(nq)
-      iphis=italoc(nq)
+      iq=ktaloc(nq)
+      iphis=ktaloc(nq)
       call tclr(rlist(iphi),nphi)
       call tclr(rlist(iphis),nq)
       call tclr(rlist(iq),nq)
@@ -54,8 +53,8 @@ c      call tfmemcheckprint('spkick0 ')
      $     rlist(iq),rlist(iphis),
      $     nx,nz,nz1,nz2,np,dx,dy,zc,zf,radius,ntheta)
       iex=irho
-      iey=italoc(nrho)
-      iez=italoc(nrho)
+      iey=ktaloc(nrho)
+      iez=ktaloc(nrho)
       call spfield(rlist(iphi),
      $     rlist(iex),rlist(iey),rlist(iez),
      $     nx,nz,nz1,nz2,dx,dy,zc,gamma0)
@@ -700,7 +699,8 @@ c     drift in the free space
       integer*4 nzmax
       real*8 alstep
       parameter (nzmax=1000,alstep=0.05d0)
-      integer*4 np,kturn,l,latt(2,nlat),kptbl(np0,6)
+      integer*8 latt(nlat)
+      integer*4 np,kturn,l,kptbl(np0,6)
       real*8 x(np0),px(np0),y(np),py(np0),z(np0),g(np0),dv(np0),zz(np0)
       real*8 al,radius
       integer*4 ndiv,i
@@ -738,7 +738,8 @@ c     drift in the parallel solenoid
       integer*4 nzmax
       real*8 alstep
       parameter (nzmax=1000,alstep=0.05d0)
-      integer*4 np,kturn,l,latt(2,nlat),kptbl(np0,6)
+      integer*8 latt(nlat)
+      integer*4 np,kturn,l,kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),zz(np0)
       real*8 al,bz,radius
       integer*4 ndiv,i
@@ -776,7 +777,8 @@ cProbably obsolete
       integer*4 nzmax
       real*8 alstep
       parameter (nzmax=1000,alstep=0.05d0)
-      integer*4 np,kturn,l,latt(2,nlat),kptbl(np0,6)
+      integer*8 latt(nlat)
+      integer*4 np,kturn,l,kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),zz(np0)
       real*8 al,bz,ak0x,ak0y,radius
       integer*4 ndiv,i
