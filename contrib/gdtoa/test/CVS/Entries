@@ -11,9 +11,17 @@ D/obad////
 /ddsi.out/1.1/Wed Oct  5 16:09:48 2016//Tk64-1-6
 /ddtest.c/1.1/Wed Oct  5 16:09:51 2016//Tk64-1-6
 /dt.c/1.1/Wed Oct  5 16:09:54 2016//Tk64-1-6
+<<<<<<< HEAD
 /dtst.out/1.1/Wed Oct  5 16:10:00 2016//Tk64-1-6
 /f.out/1.1/Wed Oct  5 16:10:03 2016//Tk64-1-6
 /ftest.c/1.1/Wed Oct  5 16:10:07 2016//Tk64-1-6
+=======
+/dtest.c/1.1/Wed Oct  5 15:39:35 2016//Tk64-1-6
+/dtst.out/1.1/Wed Oct  5 16:10:00 2016//Tk64-1-6
+/f.out/1.1/Wed Oct  5 16:10:03 2016//Tk64-1-6
+/ftest.c/1.1/Wed Oct  5 16:10:07 2016//Tk64-1-6
+/getround.c/1.1/Wed Oct  5 16:10:09 2016//Tk64-1-6
+>>>>>>> origin/master
 /makefile/1.1/Wed Oct  5 16:10:12 2016//Tk64-1-6
 /rtestnos/1.1/Wed Oct  5 16:10:27 2016//Tk64-1-6
 /strtoIdSI.c/1.1/Wed Oct  5 16:10:30 2016//Tk64-1-6
@@ -25,6 +33,7 @@ D/obad////
 /testnos/1.1/Wed Oct  5 16:10:48 2016//Tk64-1-6
 /testnos1/1.1/Wed Oct  5 16:10:51 2016//Tk64-1-6
 /testnos3/1.1/Wed Oct  5 16:10:54 2016//Tk64-1-6
+<<<<<<< HEAD
 /x.ou1/1.1/Wed Oct  5 16:11:00 2016//Tk64-1-6
 /xL.ou0/1.1/Wed Oct  5 16:11:03 2016//Tk64-1-6
 /xL.ou1/1.1/Wed Oct  5 16:11:07 2016//Tk64-1-6
@@ -35,3 +44,13 @@ D/obad////
 /xLtest.c/1.1/Wed Oct  5 15:39:35 2016//Tk64-1-6
 /xQtest.c/1.1/Wed Oct  5 15:39:35 2016//Tk64-1-6
 /xsum0.out/1.1/Wed Oct  5 16:11:16 2016//Tk64-1-6
+=======
+/x.ou0/1.1/Wed Oct  5 15:39:35 2016//Tk64-1-6
+/x.ou1/1.1/Wed Oct  5 16:11:00 2016//Tk64-1-6
+/xL.ou0/1.1/Wed Oct  5 16:11:03 2016//Tk64-1-6
+/xL.ou1/1.1/Wed Oct  5 16:11:07 2016//Tk64-1-6
+/xLtest.c/1.1/Wed Oct  5 16:11:09 2016//Tk64-1-6
+/xQtest.c/1.1/Wed Oct  5 16:11:13 2016//Tk64-1-6
+/xsum0.out/1.1/Wed Oct  5 16:11:15 2016//Tk64-1-6
+/xtest.c/1.1/Wed Oct  5 16:11:18 2016//Tk64-1-6
+>>>>>>> origin/master

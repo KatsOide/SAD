@@ -1,4 +1,4 @@
-Help$Update="$Date: 2017/01/08 18:25:46 $"[8,17];
+Help$Update="$Date: 2017/01/08 18:38:22 $"[8,17];
 Help$Version="1.0.10.11k64";
 
 Help$Messages=(Print["SAD/FFS Help Update: ",Help$Update];{
