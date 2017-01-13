@@ -1,4 +1,5 @@
       subroutine ttinit(latt,x,px,y,py,z,g,dv)
+      use kyparam
       use tfstk
       use ffs_flag
       use tffitcode
@@ -20,9 +21,9 @@
       ayi=rlist(kx+4)
       bxi=rlist(kx+2)
       byi=rlist(kx+5)
-      emx=rlist(kx+kytbl(kwEMIX,icMARK))
-      emy=rlist(kx+kytbl(kwEMIY,icMARK))
-      dpmax=rlist(kx+kytbl(kwDP,icMARK))
+      emx=rlist(kx+ky_EMIX_MARK)
+      emy=rlist(kx+ky_EMIY_MARK)
+      dpmax=rlist(kx+ky_DP_MARK)
       exi=rlist(kx+ 7)
       epxi=rlist(kx+ 8)
       eyi=rlist(kx+ 9)
@@ -37,8 +38,8 @@
       dpxi=rlist(kx+mfitdpx)
       dyi=rlist(kx+mfitdy)
       dpyi=rlist(kx+mfitdpy)
-      sigz=rlist(kx+kytbl(kwSIGZ,icMARK))
-      azi=rlist(kx+kytbl(kwAZ,icMARK))
+      sigz=rlist(kx+ky_SIGZ_MARK)
+      azi=rlist(kx+ky_AZ_MARK)
       dxj=rlist(kx+26)
       dpxj=rlist(kx+27)
       dyj=rlist(kx+28)

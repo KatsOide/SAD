@@ -84,8 +84,7 @@ c     Store current random seed into NISTACK$FIXSEED stack
      1          rlist(ix      ),rlist(ix+np0  ),
      1          rlist(ix+np0*2),rlist(ix+np0*3),
      1          rlist(ix+np0*4),rlist(ix+np0*5),
-     1          rlist(ix+np0*6),rlist(ix+np0*7),ilist(1,ikptbl),1,
-     $         .false.,0,0,0)
+     1          rlist(ix+np0*6),rlist(ix+np0*7),ilist(1,ikptbl),1)
         endif
         if(cmd .ne. 'PASS')then
           if(np .le. 1)then

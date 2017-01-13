@@ -145,8 +145,7 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       use tfshare
       implicit none
       integer*4, save :: lps=0
-      integer*4 getpagesize,irtc,na
-      integer*8 k,kcp
+      integer*4 getpagesize
       if(lps .eq. 0)then
         lps=getpagesize()/8
       endif

@@ -255,7 +255,7 @@ c      write(*,'(a,1p6g15.7)')'tfetwiss ',detm,ax,ay,az,f,xyth
       h(3,5)=-hy11
       h(3,6)=-hy12
       h(4,1)=-h(2,3)
-      h(4,2)=h(1,3)
+      h(4,2)= h(1,3)
       h(4,3)=0.d0
       h(4,4)=amuy
       h(4,5)=-hy21
@@ -337,7 +337,7 @@ c      write(*,'(a,1p6g15.7)')'tfetwiss ',detm,ax,ay,az,f,xyth
       ria(4,6)=br(4,1)*h(1,6)+br(4,2)*h(2,6)
      $       +br(4,3)*h(3,6)+br(4,4)*h(4,6)
       ria(5,1:6)=ria(5,1:6)/sqrbz
-      ria(6,1:6)=ria(6,1:6)*sqrbz+ri(5,1:6)*az
+      ria(6,1:6)=ria(6,1:6)*sqrbz+ria(5,1:6)*az
       return
       end subroutine
 
@@ -462,7 +462,7 @@ c     Table of loss-rate
       integer*8 iatr,iacod,iamat,iabmi
       integer*4 lfni,lfno,ia,it,i,j,k,k1,k2,k3,m,n,iret,l
       real*8 trans(6,12),cod(6),beam(42),emx0,emy0,emz0,dl,
-     $     heff,orf,phirf,alphap,omegaz,bh,so,s,
+     $     heff,orf,phirf,omegaz,bh,so,s,
      $     sr,sqr2,bb,bbv(21),sige,
      $     emxr,emyr,emzr,xxs,yys,btilt,
      $     sig1,sig2,sigx,sigy,tune,sigz,
@@ -520,13 +520,10 @@ c
 c zero clear initial cod (comment out by Y.O, 2010/10/28)
 c
 c        call tclr(cod,6)
-        cp0=codplt
-        codplt=codplt .or. radtaper
         call tcod(trans,cod,beam,fndcod)
         if(.not. fndcod)then
           write(lfno,*)'???-Emittance[]-closed orbit not found.'
         endif
-        codplt=cp0
         codin=cod
 c        write(*,*)'temit-tcod ',trf0
         if(pri)then
@@ -871,12 +868,12 @@ c        enddo
         beam(k1)=( bb+beam(k2))*sqr2
         beam(k2)=(-bb+beam(k2))*sqr2
         beam(k3)=beam(k3)/sqr2
-        do j=1,21
+c        do j=1,21
           bbv=btr(1:21,k1)
           btr(1:21,k1)=( bbv+btr(1:21,k2))*sqr2
           btr(1:21,k2)=(-bbv+btr(1:21,k2))*sqr2
           btr(1:21,k3)=btr(1:21,k3)*sqr2
-        enddo
+c        enddo
       enddo
       do  i=1,21
         btr(i,i)=btr(i,i)+1.d0

@@ -13,20 +13,19 @@ c     drift in the free space
       use element_drift_common
       use tfstk
       implicit none
-      integer*4 np
+      integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
-      real*8 al
-      integer*4 i
-      real*8 s,dpzi,pzi,al1
+      real*8 al,al1,dpz
       do i=1,np
-         s=min(ampmax,px(i)**2+py(i)**2)
-c         dpzi=-s/(1.d0+sqrt(1.d0-s))
-         dpzi=sqrt1(-s)
-         pzi=1.d0+dpzi
-         al1=al/pzi
-         x(i)=x(i)+px(i)*al1
-         y(i)=y(i)+py(i)*al1
-         z(i)=z(i)+dpzi *al1-dv(i)*al
+c        s=px(i)**2+py(i)**2
+        dpz=pxy2dpz(px(i),py(i))
+c        dpz=s*(-.5d0-s*(.125d0+s*.0625d0))
+c        dpz=(dpz**2-s)/(2.d0+2.d0*dpz)
+c        dpz=(dpz**2-s)/(2.d0+2.d0*dpz)
+        al1=al/(1.d0+dpz)
+        x(i)=x(i)+px(i)*al1
+        y(i)=y(i)+py(i)*al1
+        z(i)=z(i)+dpz  *al1-dv(i)*al
       enddo
       return
       end

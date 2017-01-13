@@ -1,6 +1,7 @@
       subroutine tcoord(np,x,px,y,py,z,
      1                 dx,dy,dz,chi1,chi2,chi3,dir)
       use tmacro
+      use tfstk, only:sqrt1
       implicit real*8(a-h,o-z)
       logical dir
       dimension x(np),px(np),y(np),py(np),z(np)
@@ -51,10 +52,11 @@ c
       do 10 i=1,np
         pxi=px(i)
         pyi=py(i)
-        a=min(.95d0,pxi**2+pyi**2)
-        dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-        dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-        dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+        a=pxi**2+pyi**2
+        dpz=sqrt1(-a)
+c        dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
+c        dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c        dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
         pzi=1.d0+dpz
         zi=pzi*z(i)-dz0
         xi=x(i)+pxi*z(i)-dx0

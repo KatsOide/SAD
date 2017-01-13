@@ -130,6 +130,7 @@ c     Physical constant
       kax=ktrvaloc('ElectronRadius',elradi)
       kax=ktrvaloc('ProtonMass',prmass)
       kax=ktrvaloc('ProtonRadius',prradi)
+      kax=ktrvaloc('BoltzmanConstant',kboltzman)
 
       ierrorth=0
       ierrorexp=0

@@ -308,6 +308,10 @@ c     					    = e c^2 * 10^-7 * (e / (m_p c^2))
 c      parameter (prradi = finest * plankr * cveloc / (elemch * prmass))
       real*8, parameter :: prradi = elemch * cveloc**2 * 1.d-7 / prmass
 
+c     Boltzman Constant:
+c     PDG2014:         1.380 6488(13) x 10^-23 J/K
+      real*8, parameter :: kboltzman = 1.3806488e-23
+
       end module
 
       module tfrbuf

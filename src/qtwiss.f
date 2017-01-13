@@ -12,6 +12,7 @@
       end
 
       subroutine qtwiss1(twiss,idp,la,lb,tr,cod,mat,over)
+      use kyparam
       use tfstk
       use ffs
       use ffs_pointer, only:elatt,idelc,direlc,idtypec,idvalc,
@@ -241,117 +242,129 @@ c     end   initialize for preventing compiler warning
           endif
  1200     continue
           if(dir .gt. 0.d0)then
-            psi1=cmp%value(kytbl(kwE1,icBEND))
-            psi2=cmp%value(kytbl(kwE2,icBEND))
-            apsi1=cmp%value(kytbl(kwAE1,icBEND))
-            apsi2=cmp%value(kytbl(kwAE2,icBEND))
-            fb1=cmp%value(kytbl(kwF1,icBEND))
-     $           +cmp%value(kytbl(kwFB1,icBEND))
-            fb2=cmp%value(kytbl(kwF1,icBEND))
-     $           +cmp%value(kytbl(kwFB2,icBEND))
+            psi1=cmp%value(ky_E1_BEND)
+            psi2=cmp%value(ky_E2_BEND)
+            apsi1=cmp%value(ky_AE1_BEND)
+            apsi2=cmp%value(ky_AE2_BEND)
+            fb1=cmp%value(ky_F1_BEND)
+     $           +cmp%value(ky_FB1_BEND)
+            fb2=cmp%value(ky_F1_BEND)
+     $           +cmp%value(ky_FB2_BEND)
           else
-            psi1=cmp%value(kytbl(kwE2,icBEND))
-            psi2=cmp%value(kytbl(kwE1,icBEND))
-            apsi1=cmp%value(kytbl(kwAE2,icBEND))
-            apsi2=cmp%value(kytbl(kwAE1,icBEND))
-            fb2=cmp%value(kytbl(kwF1,icBEND))
-     $           +cmp%value(kytbl(kwFB1,icBEND))
-            fb1=cmp%value(kytbl(kwF1,icBEND))
-     $           +cmp%value(kytbl(kwFB2,icBEND))
+            psi1=cmp%value(ky_E2_BEND)
+            psi2=cmp%value(ky_E1_BEND)
+            apsi1=cmp%value(ky_AE2_BEND)
+            apsi2=cmp%value(ky_AE1_BEND)
+            fb2=cmp%value(ky_F1_BEND)
+     $           +cmp%value(ky_FB1_BEND)
+            fb1=cmp%value(ky_F1_BEND)
+     $           +cmp%value(ky_FB2_BEND)
           endif
-          dtheta=cmp%value(kytbl(kwDROT,icBEND))
-          theta0=cmp%value(kytbl(kwROT,icBEND))+dtheta
+          dtheta=cmp%value(ky_DROT_BEND)
+          theta0=cmp%value(ky_ROT_BEND)+dtheta
           cod1=cod
-          call qbend(trans,cod,al,cmp%value(2)+cmp%value(11),
-     1         cmp%value(2),psi1,psi2,apsi1,apsi2,cmp%value(8),
-     1         cmp%value(kytbl(kwDX,icBEND)),
-     $         cmp%value(kytbl(kwDY,icBEND)),
+          call qbend(trans,cod,al,
+     $         cmp%value(ky_ANGL_BEND)+cmp%value(ky_K0_BEND),
+     1         cmp%value(ky_ANGL_BEND),psi1,psi2,apsi1,apsi2,
+     $         cmp%value(ky_K1_BEND),
+     1         cmp%value(ky_DX_BEND),
+     $         cmp%value(ky_DY_BEND),
      $         theta0,dtheta,
      $         fb1,fb2,
-     $         nint(cmp%value(kytbl(kwFRMD,icBEND))),
-     $         cmp%value(kytbl(kwFRIN,icBEND)) .eq. 0.d0,
-     $         cmp%value(kytbl(kwEPS,icBEND)),
+     $         nint(cmp%value(ky_FRMD_BEND)),
+     $         cmp%value(ky_FRIN_BEND) .eq. 0.d0,
+     $         cmp%value(ky_EPS_BEND),
      1         coup)
           go to 20
  1400     continue
-          mfr=nint(cmp%value(12))
+          mfr=nint(cmp%value(ky_FRMD_QUAD))
           if(dir .lt. 0.d0)then
             mfr=mfr*(11+mfr*(2*mfr-9))/2
           endif
-          ak1=cmp%value(kytbl(kwK1,icQUAD))
+          ak1=cmp%value(ky_K1_QUAD)
           call tsetfringepe(cmp,icQUAD,dir,ftable)
           call qquad(trans,cod,al,
-     1         ak1,cmp%value(5),cmp%value(6),
-     1         cmp%value(4),cmp%value(9) .eq. 0.d0,
+     1         ak1,cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
+     1         cmp%value(ky_ROT_QUAD),
+     $         cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $         ftable(1),ftable(2),ftable(3),ftable(4),
-     $         mfr,cmp%value(13),cmp%value(14) .eq. 0.d0,coup)
+     $         mfr,cmp%value(ky_EPS_QUAD),
+     $         cmp%value(ky_KIN_QUAD) .eq. 0.d0,coup)
           go to 20
  1600     continue
-          call qthin(trans,cod,ltyp,al,cmp%value(2),
-     1               cmp%value(5),cmp%value(6),cmp%value(4),coup)
+          call qthin(trans,cod,ltyp,al,cmp%value(ky_K_THIN),
+     1         cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
+     $         cmp%value(ky_ROT_THIN),coup)
           go to 20
  2000     write(*,*)'Qtwiss: implementation error of solenoid ',l1
           go to 1010
  2100     write(*,*)'Use BEND with ANGLE=0 for STEER.'
           call abort
- 2200     phi=cmp%value(kytbl(kwANGL,icMULT))
-          mfr=nint(cmp%value(14))
+ 2200     phi=cmp%value(ky_ANGL_MULT)
+          mfr=nint(cmp%value(ky_FRMD_MULT))
           if(dir .ge. 0.d0)then
-            psi1=cmp%value(kytbl(kwE1,icMULT))
-            psi2=cmp%value(kytbl(kwE2,icMULT))
-            apsi1=cmp%value(kytbl(kwAE1,icMULT))
-            apsi2=cmp%value(kytbl(kwAE2,icMULT))
-            fb1=cmp%value(kytbl(kwFB1,icMULT))
-            fb2=cmp%value(kytbl(kwFB2,icMULT))
-            chi1m=cmp%value(kytbl(kwCHI1,icMULT))
-            chi2m=cmp%value(kytbl(kwCHI2,icMULT))
+            psi1=cmp%value(ky_E1_MULT)
+            psi2=cmp%value(ky_E2_MULT)
+            apsi1=cmp%value(ky_AE1_MULT)
+            apsi2=cmp%value(ky_AE2_MULT)
+            fb1=cmp%value(ky_FB1_MULT)
+            fb2=cmp%value(ky_FB2_MULT)
+            chi1m=cmp%value(ky_CHI1_MULT)
+            chi2m=cmp%value(ky_CHI2_MULT)
           else
             mfr=mfr*(11+mfr*(2*mfr-9))/2
-            psi1=cmp%value(kytbl(kwE2,icMULT))
-            psi2=cmp%value(kytbl(kwE1,icMULT))
-            apsi1=cmp%value(kytbl(kwAE2,icMULT))
-            apsi2=cmp%value(kytbl(kwAE1,icMULT))
-            fb2=cmp%value(kytbl(kwFB1,icMULT))
-            fb1=cmp%value(kytbl(kwFB2,icMULT))
-            chi1m=-cmp%value(kytbl(kwCHI1,icMULT))
-            chi2m=-cmp%value(kytbl(kwCHI2,icMULT))
+            psi1=cmp%value(ky_E2_MULT)
+            psi2=cmp%value(ky_E1_MULT)
+            apsi1=cmp%value(ky_AE2_MULT)
+            apsi2=cmp%value(ky_AE1_MULT)
+            fb2=cmp%value(ky_FB1_MULT)
+            fb1=cmp%value(ky_FB2_MULT)
+            chi1m=-cmp%value(ky_CHI1_MULT)
+            chi2m=-cmp%value(ky_CHI2_MULT)
           endif
           call tsetfringepe(cmp,icMULT,dir,ftable)
           bz=0.d0
           call qmult(trans,cod,l1,al,
-     $         cmp%value(kytbl(kwK0,icMULT)),bz,
+     $         cmp%value(ky_K0_MULT),bz,
      $         phi,psi1,psi2,apsi1,apsi2,
-     1         cmp%value(3),cmp%value(4),cmp%value(5),
-     $         chi1m,chi2m,cmp%value(8),
-     $         cmp%value(kytbl(kwDROT,icMULT)),
-     $         cmp%value(9),
-     $         cmp%value(11) .eq. 0.d0,
+     1         cmp%value(ky_DX_MULT),cmp%value(ky_DY_MULT),
+     $         cmp%value(ky_DZ_MULT),
+     $         chi1m,chi2m,cmp%value(ky_ROT_MULT),
+     $         cmp%value(ky_DROT_MULT),
+     $         cmp%value(ky_EPS_MULT),
+     $         cmp%value(ky_FRIN_MULT) .eq. 0.d0,
      $         ftable(1),ftable(2),ftable(3),ftable(4),
      $         mfr,fb1,fb2,
-     $         cmp%value(kytbl(kwK0FR,icMULT)) .eq. 0.d0,
-     $         cmp%value(15),cmp%value(16),cmp%value(17),cmp%value(18),
-     $         cmp%value(kytbl(kwW1,icMULT)),
-     $         cmp%value(kytbl(kwAPHI,icMULT)) .ne. 0.d0,
+     $         cmp%value(ky_K0FR_MULT) .eq. 0.d0,
+     $         cmp%value(ky_VOLT_MULT),cmp%value(ky_HARM_MULT),
+     $         cmp%value(ky_PHI_MULT),cmp%value(ky_FREQ_MULT),
+     $         cmp%value(ky_W1_MULT),
+     $         cmp%value(ky_APHI_MULT) .ne. 0.d0,
      $         coup)
           go to 20
- 3000     call qtest(trans,cod,al,cmp%value(2),coup)
+ 3000     call qtest(trans,cod,al,cmp%value(ky_ANGL_TEST),coup)
           go to 20
- 3100     mfr=nint(cmp%value(kytbl(kwFRMD,icCAVI)))
+ 3100     mfr=nint(cmp%value(ky_FRMD_CAVI))
           if(direlc(l1) .ge. 0.d0)then
           else
             mfr=mfr*(11+mfr*(2*mfr-9))/2
           endif
           call qcav(trans,cod,l1,
-     1         al,cmp%value(2),cmp%value(3),cmp%value(4),cmp%value(5),
-     $         cmp%value(13),cmp%value(14),cmp%value(15),
-     $         cmp%value(16),cmp%value(17),cmp%value(18),cmp%value(19),
-     $         cmp%value(kytbl(kwFRIN,icCAVI)) .eq. 0.d0,mfr,
-     $         cmp%value(kytbl(kwAPHI,icCAVI)) .ne. 0.d0,
+     1         al,cmp%value(ky_VOLT_CAVI),cmp%value(ky_HARM_CAVI),
+     $         cmp%value(ky_HARM_CAVI),cmp%value(ky_FREQ_CAVI),
+     $         cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
+     $         cmp%value(ky_ROT_CAVI),
+     $         cmp%value(ky_V1_CAVI),cmp%value(ky_V20_CAVI),
+     $         cmp%value(ky_V11_CAVI),cmp%value(ky_V02_CAVI),
+     $         cmp%value(ky_FRIN_CAVI) .eq. 0.d0,mfr,
+     $         cmp%value(ky_APHI_CAVI) .ne. 0.d0,
      $         coup)
           go to 20
  3200     call qtcav(trans,cod,
-     $         al,cmp%value(2),cmp%value(3),cmp%value(4),cmp%value(5),
-     $         cmp%value(6),cmp%value(7),cmp%value(8),coup)
+     $         al,cmp%value(ky_K0_TCAV),cmp%value(ky_HARM_TCAV),
+     $         cmp%value(ky_PHI_TCAV),cmp%value(ky_FREQ_TCAV),
+     $         cmp%value(ky_DX_TCAV),cmp%value(ky_DY_TCAV),
+     $         cmp%value(ky_ROT_TCAV),coup)
           go to 20
  3300     call qemap(trans,cod,l1,coup,err)
           if(err)then
@@ -359,7 +372,8 @@ c     end   initialize for preventing compiler warning
           endif
           go to 20
  3400     call qins(trans,cod,l1,idp,
-     $         cmp%value(19) .ge. 0.d0,cmp%value(1),cmp%value(20),coup,
+     $         cmp%value(ky_DIR_INS) .ge. 0.d0,
+     $         cmp%value(1),cmp%value(ky_DIR_INS+1),coup,
      $         mat,insmat)
           if(insmat)then
             go to 1010
@@ -370,9 +384,10 @@ c     end   initialize for preventing compiler warning
             go to 10
           endif
  3500     call qcoord(trans,cod,
-     1                cmp%value(1),cmp%value(2),cmp%value(3),
-     1                cmp%value(4),cmp%value(5),cmp%value(6),
-     1                cmp%value(7) .eq. 0.d0,coup)
+     1         cmp%value(ky_DX_COORD),cmp%value(ky_DY_COORD),
+     $         cmp%value(ky_DZ_COORD),cmp%value(ky_CHI1_COORD),
+     $         cmp%value(ky_CHI2_COORD),cmp%value(ky_CHI3_COORD),
+     1         cmp%value(ky_DIR_COORD) .eq. 0.d0,coup)
           go to 20
  4100     continue
  1010     if(wspac)then
@@ -951,7 +966,7 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 idp,l,i,nvar
+      integer*4 idp,l,nvar
       real*8 vsave(100),twisss(ntwissfun),ftwiss(ntwissfun),
      $     trans(4,5),cod(6),fr1,fr2,gb0,gb1,dgb
       logical*4 over,chg,mat,force
@@ -1012,6 +1027,7 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
       end
 
       subroutine qfraccomp(l,rx1,rx2,ideal,chg)
+      use kyparam
       use tfstk
       use sad_main
       use ffs_pointer, only:idelc,direlc,elatt,idtypec,idvalc
@@ -1052,73 +1068,76 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
  1100 go to 9000
  1200 ifr=ip+kytbl(kwFRMD,lt)
       if(rlist(ifr) .eq. 0.d0)then
-        cmp%value(kytbl(kwF1,icBEND))=0.d0
+        cmp%value(ky_F1_BEND)=0.d0
       endif
       rlist(ifr)=-f1-2.d0*f2
       if(r .ne. 0.d0)then
         if(direlc(l) .gt. 0.d0)then
-          cmp%value(kytbl(kwE1,icBEND))=
-     $         cmp%value(kytbl(kwE1,icBEND))*f1/r
-          cmp%value(kytbl(kwE2,icBEND))=
-     $         cmp%value(kytbl(kwE2,icBEND))*f2/r
+          cmp%value(ky_E1_BEND)=
+     $         cmp%value(ky_E1_BEND)*f1/r
+          cmp%value(ky_E2_BEND)=
+     $         cmp%value(ky_E2_BEND)*f2/r
         else
-          cmp%value(kytbl(kwE1,icBEND))=
-     $         cmp%value(kytbl(kwE1,icBEND))*f2/r
-          cmp%value(kytbl(kwE2,icBEND))=
-     $         cmp%value(kytbl(kwE2,icBEND))*f1/r
+          cmp%value(ky_E1_BEND)=
+     $         cmp%value(ky_E1_BEND)*f2/r
+          cmp%value(ky_E2_BEND)=
+     $         cmp%value(ky_E2_BEND)*f1/r
         endif
       endif
-      cmp%value(kytbl(kwANGL,icBEND))=
-     $     cmp%value(kytbl(kwANGL,icBEND))*r
-      cmp%value(kytbl(kwK1,icBEND))=cmp%value(kytbl(kwK1,icBEND))*r
-      cmp%value(kytbl(kwK0,icBEND))=cmp%value(kytbl(kwK0,icBEND))*r
+      cmp%value(ky_ANGL_BEND)=
+     $     cmp%value(ky_ANGL_BEND)*r
+      cmp%value(ky_K1_BEND)=cmp%value(ky_K1_BEND)*r
+      cmp%value(ky_K0_BEND)=cmp%value(ky_K0_BEND)*r
 c      write(*,*)'qfraccomp ',r,
-c     $     cmp%value(kytbl(kwANGL,icBEND)),
-c     $     cmp%value(kytbl(kwK1,icBEND)),
-c     $     cmp%value(kytbl(kwK0,icBEND))
+c     $     cmp%value(ky_ANGL_BEND),
+c     $     cmp%value(ky_K1_BEND),
+c     $     cmp%value(ky_K0_BEND)
       go to 9000
- 1400 cmp%value(2)=cmp%value(2)*r
+ 1400 cmp%value(ky_K1_QUAD)=cmp%value(ky_K1_QUAD)*r
       go to 8000
- 1600 cmp%value(2)=cmp%value(2)*r
+ 1600 cmp%value(ky_K_THIN)=cmp%value(ky_K_THIN)*r
       go to 9000
- 2200 cmp%value(kytbl(kwK0,icMULT):kytbl(kwMAX,icMULT)-1)=
-     $       cmp%value(kytbl(kwK0,icMULT):kytbl(kwMAX,icMULT)-1)*r
-      dl=(1.d0-r)*cmp%value(1)*.5d0
-      cmp%value(3)=cmp%value(3)-dl*sin(cmp%value(6))
-      cmp%value(4)=cmp%value(4)-dl*sin(cmp%value(7))
-      cmp%value(5)=cmp%value(5)
-     $     +dl*(1.d0-cos(cmp%value(6))*cos(cmp%value(7)))
-      cmp%value(15)=cmp%value(15)*r
-      cmp%value(kytbl(kwW1,icMULT))=cmp%value(kytbl(kwW1,icMULT))*r
-      if(cmp%value(kytbl(kwANGL,icMULT)) .ne. 0.d0)then
+ 2200 cmp%value(ky_K0_MULT:ky_MAX_MULT-1)=
+     $       cmp%value(ky_K0_MULT:ky_MAX_MULT-1)*r
+      dl=(1.d0-r)*cmp%value(ky_L_MULT)*.5d0
+      cmp%value(ky_DX_MULT)=
+     $     cmp%value(ky_DX_MULT)-dl*sin(cmp%value(ky_CHI1_MULT))
+      cmp%value(ky_DY_MULT)=
+     $     cmp%value(ky_DY_MULT)-dl*sin(cmp%value(ky_CHI2_MULT))
+      cmp%value(ky_DZ_MULT)=cmp%value(ky_DZ_MULT)
+     $     +dl*(1.d0-cos(cmp%value(ky_CHI1_MULT))*
+     $     cos(cmp%value(ky_CHI2_MULT)))
+      cmp%value(ky_VOLT_MULT)=cmp%value(ky_VOLT_MULT)*r
+      cmp%value(ky_W1_MULT)=cmp%value(ky_W1_MULT)*r
+      if(cmp%value(ky_ANGL_MULT) .ne. 0.d0)then
         ifr=ip+kytbl(kwFRMD,lt)
         if(rlist(ifr) .eq. 0.d0)then
-          cmp%value(kytbl(kwFB1,icMULT))=0.d0
-          cmp%value(kytbl(kwFB2,icMULT))=0.d0
+          cmp%value(ky_FB1_MULT)=0.d0
+          cmp%value(ky_FB2_MULT)=0.d0
         endif
         rlist(ifr)=-f1-2.d0*f2
         if(direlc(l) .gt. 0.d0)then
-          cmp%value(kytbl(kwE1,icMULT))=
-     $         cmp%value(kytbl(kwE1,icMULT))*f1/r
-          cmp%value(kytbl(kwE2,icMULT))=
-     $         cmp%value(kytbl(kwE2,icMULT))*f2/r
+          cmp%value(ky_E1_MULT)=
+     $         cmp%value(ky_E1_MULT)*f1/r
+          cmp%value(ky_E2_MULT)=
+     $         cmp%value(ky_E2_MULT)*f2/r
         else
-          cmp%value(kytbl(kwE1,icMULT))=
-     $         cmp%value(kytbl(kwE1,icMULT))*f2/r
-          cmp%value(kytbl(kwE2,icMULT))=
-     $         cmp%value(kytbl(kwE2,icMULT))*f1/r
+          cmp%value(ky_E1_MULT)=
+     $         cmp%value(ky_E1_MULT)*f2/r
+          cmp%value(ky_E2_MULT)=
+     $         cmp%value(ky_E2_MULT)*f1/r
         endif
-        cmp%value(kytbl(kwANGL,icMULT))=
-     $       cmp%value(kytbl(kwANGL,icMULT))*r
+        cmp%value(ky_ANGL_MULT)=
+     $       cmp%value(ky_ANGL_MULT)*r
         go to 9000
       endif
       go to 8000
- 3100 cmp%value(2)=cmp%value(2)*r
-      cmp%value(9)=cmp%value(9)*r
-      cmp%value(16)=cmp%value(16)*r
+ 3100 cmp%value(ky_VOLT_CAVI)=cmp%value(ky_VOLT_CAVI)*r
+      cmp%value(ky_RANV_CAVI)=cmp%value(ky_RANV_CAVI)*r
+      cmp%value(ky_V1_CAVI)=cmp%value(ky_V1_CAVI)*r
       go to 8000
- 3200 cmp%value(2)=cmp%value(2)*r
-      cmp%value(9)=cmp%value(9)*r
+ 3200 cmp%value(ky_K0_TCAV)=cmp%value(ky_K0_TCAV)*r
+      cmp%value(ky_RANK_TCAV)=cmp%value(ky_RANK_TCAV)*r
       go to 9000
  8000 ifr=ip+kytbl(kwFRMD,lt)
       fr0=rlist(ifr)

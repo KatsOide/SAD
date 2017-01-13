@@ -39,7 +39,7 @@
       integer*4 lfnstk(maxlfn),lfret(maxlfn),
      $     lfrecl(maxlfn),lflinep(maxlfn),nrpt(maxrpt),
      $     irptp(maxrpt),df(maxcond)
-      real*8 chi0(3),trdtbl(3,6)
+      real*8 chi0(3),trdtbl(3,6),rfromk
       logical*4 err,new,cmd,open98,abbrev,ftest,
      $     frefix,exist,init,trpt0,expnd,chguse,visit,
      $     byeall,expndc,tfvcomp,tffsinitialcond,
@@ -1399,6 +1399,7 @@ c        dpm2=rlist(ktlookup('DPM'))
         go to 8810
       endif
 c      write(*,*)'tffsa-1 ',flv%iut,%LOC(rlist(flv%iut)),busy
+      call tfevalb('Setup$FF[]',10,kx,irtc)
       call tffsmatch(df,dp0,r,nparallel,lfno,irtc)
       updatesize=.false.
       call tclrfpe
@@ -1409,8 +1410,9 @@ c      write(*,*)'tffsa-1 ',flv%iut,%LOC(rlist(flv%iut)),busy
         call tmunmapp(flv%iut)
         go to 8810
       endif
+      call tfevalb('Reset$FF[]',10,kx,irtc)
+      nqcol=nqcol-int(rfromk(kx))
       flv%nfc=nfc0
-c      write(*,*)'tffsa-2 ',flv%iut,%LOC(rlist(flv%iut)),busy
       call tfshow(cellstab,df,mfpnt,mfpnt1,
      $     kffs,irtcffs,lfnb .gt. 1,lfno)
       call tmunmapp(flv%iut)

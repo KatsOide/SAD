@@ -553,10 +553,10 @@ Optics$Unit[unit_,am_]:=
 Twiss$Functions={"AX","BX","NX","AY","BY","NY","EX","EPX","EY","EPY",
   "R1","R2","R3","R4","DX","DPX","DY","DPY","DZ","DDP",
   "AZ","BZ","NZ","ZX","ZPX","ZY","ZPY",
-  "PEX","PEPX","PEY","PEPY"};
+  "PEX","PEPX","PEY","PEPY","PZX","PZPX","PZY","PZPY"};
 Twiss$Unit["EX"|"EY"|"R2"|"DX"|"DY"|"S"|"PEX"|"PEY"|"DZ"]=Meter;
 Twiss$Unit["DPX"|"DPY"|"EPX"|"EPY"|"PEPX"|"PEPY"]=Radian;
-Twiss$Unit["R3"|"ZPX"|"ZPY"]=InvMeter;
+Twiss$Unit["R3"|"ZPX"|"ZPY"|"PZPX"|"PZPY"]=InvMeter;
 Twiss$Unit["BX"|"BY"|"BZ"]=SqrtMeter;
 Twiss$Unit["NX"|"NY"|"NZ"]=Pi2;
 Twiss$Unit["DDP"]=Ratio;
@@ -663,7 +663,11 @@ If[$DisplayFunction===Unevaluated[TopDrawer],
   Twiss$Label["ZX"]="`fz`n`dx`n";
   Twiss$Label["ZPX"]="`fz`n`dpx`n";
   Twiss$Label["ZY"]="`fz`n`dy`n";
-  Twiss$Label["ZPY"]="`fz`n`dpy`n";
+  Twiss$Label["ZPY"]="`fz`n`dy`n";
+  Twiss$Label["PZX"]="`fz`n`dxP`n";
+  Twiss$Label["PZPX"]="`fz`n`dpxP`n";
+  Twiss$Label["PZY"]="`fz`n`dyP`n";
+  Twiss$Label["PZPY"]="`fz`n`dpyP`n";
   Twiss$Label[x_String?(#[1,4]==="SIZE"&)]:=Module[
     {{l,u}=MakeSize$Label$Unit[x[5,-1]]},
     Twiss$Unit[x]=u;

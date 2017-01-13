@@ -1311,10 +1311,11 @@ c      endif
           endif
         enddo
       endif
+      buff(1:9)='/tmp/tmp_'
+      buff(10:10+lm)=machine(:lm)//"_"
+      write(buff(11+lm:18+lm),'(I8.8)')getpid()
+      buff(19+lm:25+lm)='.XXXXXX'
       lw=tftmpnam(buff)
-      write(buff(lw+1:lw+8),'(I8.8)')getpid()
-      buff(lw+9:lw+8+lm)=machine(:lm)
-      lw=lw+8+lm
       kx=kxsalocb(-1,buff,lw)
       irtc=0
       return

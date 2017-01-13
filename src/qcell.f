@@ -394,21 +394,31 @@ c                enddo
           go to 1
         endif
         r=trans(:,1:6)
+        if(.not. rfsw)then
+          r(6,1)=0.d0
+          r(6,2)=0.d0
+          r(6,3)=0.d0
+          r(6,4)=0.d0
+          r(6,5)=0.d0
+          r(6,6)=1.d0
+        endif
 c        write(*,'(1p6g15.7)')(r(i,1:6),i=1,6)
         call teigen(r,ri,ceig,6,6)
         call tnorm(r,ceig,0)
+        call tsymp(r)
         call tinv6(r,ri)
-        normali=.true.
+c       write(*,'(1p6g15.7)')(ri(i,1:6),i=1,6)
+       normali=.true.
       else
         tw1=twiss(1,idp,1:ntwissfun)
         call etwiss2ri(tw1,ri,normali)
         call tinv6(ri,r)
-c        write(*,'(1p6g15.7)')(ri(i,1:6),i=1,6)
       endif
       codplt=.true.
       call tinitr(trans)
       call tturne0(trans,cod,beam,fbound,
      $     int8(0),int8(0),int8(0),idp,.true.,rt)
+c        write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6)
       calint=ci0
       codplt=codplt0
       cell=cell0

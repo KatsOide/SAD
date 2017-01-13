@@ -2935,9 +2935,10 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end function
 
-        real*8 function p2h(p)
+        real*8 pure function p2h(p)
         implicit none
-        real*8 p,p2
+        real*8, intent(in) :: p
+        real*8 p2
         real*8, parameter:: pth=1.d3;
         if(p .gt. pth)then
           p2=1.d0/p**2
@@ -2948,9 +2949,10 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end function
 
-        real*8 function h2p(h)
+        real*8 pure function h2p(h)
         implicit none
-        real*8 h,h2
+        real*8, intent(in) :: h
+        real*8 h2
         real*8, parameter:: hth=1.d3;
         if(h .gt. hth)then
           h2=-1.d0/h**2
@@ -2961,15 +2963,38 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end function
 
-        real*8 function sqrt1(x)
+        real*8 pure function pxy2dpz(px,py)
         implicit none
+        real*8, intent(in) :: px,py
         real*8 x
-        real*8, parameter:: xth=1.d-6;
+        real*8, parameter:: xth=1.d-6,xmin=1.d-100
+        x=px**2+py**2
+        if(x .lt. xth)then
+          pxy2dpz=-x*(0.5d0+x*(0.125d0+x*0.0625d0))
+        else
+          pxy2dpz=-x/(1.d0+sqrt(max(xmin,1.d0-x)))
+        endif
+        return
+        end function
+
+        real*8 pure function sqrt1(x)
+         implicit none
+        real*8, intent(in) :: x
+        real*8, parameter:: xth=1.d-6,xmin=1.d-100
         if(abs(x) .lt. xth)then
           sqrt1=x*(0.5d0-x*(0.125d0-x*0.0625d0))
         else
-          sqrt1=x/(1.d0+sqrt(1.d0+x))
+          sqrt1=x/(1.d0+sqrt(max(xmin,1.d0+x)))
         endif
+        return
+        end function
+
+        real*8 function sqrt1n(x)
+        implicit none
+        real*8, intent(in) :: x
+        sqrt1n=x*(0.5d0-x*(0.125d0-x*0.0625d0))
+        sqrt1n=(sqrt1n**2+x)/(2.d0+2.d0*sqrt1n)
+        sqrt1n=(sqrt1n**2+x)/(2.d0+2.d0*sqrt1n)
         return
         end function
 

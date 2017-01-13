@@ -1,4 +1,5 @@
       subroutine tffsmatch(df,dp0,r,nparallel,lfno,irtc)
+      use kyparam
       use tfstk
       use ffs, only: flv,dpmax,nele,ndim,nlat,maxcond
       use ffs_pointer
@@ -1090,6 +1091,7 @@ c        enddo
       end
 
       real*8 function tweigh(i,ltyp,iv,val0,vk,absweit)
+      use kyparam
       use tfstk
       use ffs, only:dpmax,emx,emy,brho
       use ffs_fit
@@ -1116,9 +1118,9 @@ c        enddo
       elseif(iv .eq. kytbl(kwK4,ltyp))then
         gw=(max(1.d-3,dpmax)*max(1.d-2,etamax))**4
       elseif(ltyp .eq. icMULT)then
-        if(iv .ge. kytbl(kwK1,icMULT))then
+        if(iv .ge. ky_K1_MULT)then
           gw=(max(1.d-3,dpmax)*max(1.d-2,etamax))
-     $         **((iv-kytbl(kwK1,icMULT))/2+1)
+     $         **((iv-ky_K1_MULT)/2+1)
         endif
       elseif(iv .eq. kytbl(kwVOLT,ltyp))then
         gw=100.d0/max(1.d0,abs(vk))
@@ -1132,23 +1134,23 @@ c        enddo
       elseif(iv .eq. kytbl(kwBZ,ltyp))then
         gw=1.d0/brho
       elseif(ltyp .eq. icMARK)then
-        if(iv .eq. kytbl(kwAX,icMARK) .or.
-     $       iv .eq. kytbl(kwAY,icMARK) .or.
-     $       iv .eq. kytbl(kwR1,icMARK) .or.
-     $       iv .eq. kytbl(kwR4,icMARK))then
+        if(iv .eq. ky_AX_MARK .or.
+     $       iv .eq. ky_AY_MARK .or.
+     $       iv .eq. ky_R1_MARK .or.
+     $       iv .eq. ky_R4_MARK)then
           gw=1.d0/avebeta
-        elseif(iv .eq. kytbl(kwBX,icMARK) .or.
-     $         iv .eq. kytbl(kwBY,icMARK))then
+        elseif(iv .eq. ky_BX_MARK .or.
+     $         iv .eq. ky_BY_MARK)then
           gw=1.d0/avebeta**2
-        elseif(iv .eq. kytbl(kwEX,icMARK) .or.
-     $         iv .eq. kytbl(kwEPX,icMARK))then
+        elseif(iv .eq. ky_EX_MARK .or.
+     $         iv .eq. ky_EPX_MARK)then
           gw=max(1.d-3,dpmax)*sqrt(avebeta/(abs(emx)+abs(emy)))
      $         /avebeta**2
-        elseif(iv .eq. kytbl(kwEPX,icMARK) .or.
-     $         iv .eq. kytbl(kwEPX,icMARK))then
+        elseif(iv .eq. ky_EPX_MARK .or.
+     $         iv .eq. ky_EPX_MARK)then
           gw=max(1.d-3,dpmax)*sqrt(avebeta/(abs(emx)+abs(emy)))
      $         /avebeta
-        elseif(iv .eq. kytbl(kwR2,icMARK))then
+        elseif(iv .eq. ky_R2_MARK)then
           gw=1.d0/avebeta**2
         endif
       endif
@@ -1167,8 +1169,8 @@ c        enddo
         elseif(iv .eq. kytbl(kwK6,ltyp))then
           vmin=1.d5
         elseif(ltyp .eq. icMULT)then
-          if(iv .ge. kytbl(kwK1,icMULT))then
-            vmin=10.d0**(((iv-kytbl(kwK1,icMULT))/2)*2-5)
+          if(iv .ge. ky_K1_MULT)then
+            vmin=10.d0**(((iv-ky_K1_MULT)/2)*2-5)
           endif
         endif
         gw=sqrt(max(vmin,abs(val0))/gw)

@@ -1,4 +1,5 @@
       subroutine tfinit
+      use kyparam
       use tfstk
       use ffs
       use ffs_pointer
@@ -33,7 +34,7 @@
 210       if(lele .eq. icSOL)then
             ival(ikx)=2
           elseif(lele .eq. icMULT)then
-            ival(ikx)=kytbl(kwK1,icMULT)
+            ival(ikx)=ky_K1_MULT
           elseif(lele .eq. icCAVI)then
             ival(ikx)=2
           elseif(lele .eq. 32)then
@@ -78,11 +79,11 @@
       do i=1,nlat-1
         if(idtypec(i) .eq. icSOL)then
           if(ibz .ne. 0 .and.
-     $         rlist(idvalc(i)+kytbl(kwBND,icSOL))
+     $         rlist(idvalc(i)+ky_BND_SOL)
      $         .ne. 0.d0)then
             ibznext=0
             if(ibzb .ne. 0)then
-              if(rlist(idvalc(i)+kytbl(kwGEO,icSOL))
+              if(rlist(idvalc(i)+ky_GEO_SOL)
      $             .ne. 0.d0)then
                 ibg=i
                 ibb=ibzb
@@ -131,6 +132,7 @@
       end
 
       real*8 function tfbzs(i,ibz)
+      use kyparam
       use tfstk
       use ffs
       use tffitcode
@@ -143,8 +145,8 @@
       ibz=ilist(i*3-2,ifibzl)
       if(ibz .gt. 0)then
         lp=latt(ibz)
-        tfbzs=charge*(rlist(lp+kytbl(kwBZ,icSOL))
-     $       +rlist(lp+kytbl(kwDBZ,icSOL)))
+        tfbzs=charge*(rlist(lp+ky_BZ_SOL)
+     $       +rlist(lp+ky_DBZ_SOL))
      $       *direlc(ibz)
      $       /(amass*rlist(ifgamm+i-1)/c)
         if(abs(tfbzs) .lt. bzthre)then
@@ -171,6 +173,7 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       end
 
       logical*4 function tfinsol(i)
+      use kyparam
       use tfstk
       use ffs
       use tffitcode
@@ -186,7 +189,7 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
           ld=idelc(i)
           if(idtype(ld) .ne. icSOL)then
             tfinsol=.true.
-          elseif(rlist(idval(ld)+kytbl(kwBND,icSOL)) .eq. 0.d0)then
+          elseif(rlist(idval(ld)+ky_BND_SOL) .eq. 0.d0)then
             tfinsol=.true.
           endif            
         else

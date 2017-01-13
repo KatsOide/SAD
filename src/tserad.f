@@ -1,4 +1,5 @@
       subroutine tserad(np,x,px,y,py,g,dv,l1,rho)
+      use kyparam
       use tfstk
       use ffs_flag
       use tmacro
@@ -8,7 +9,7 @@
       real*8 x(np),px(np),y(np),py(np),g(np),dv(np),
      $     rho,alf1,alc,b,f,dpr,pr,pxi,pyi,s,pzi,u,brad,p,hh,dp,de,
      $     er,h1
-      alf1=rlist(l1+kytbl(kwF1,icSOL))
+      alf1=rlist(l1+ky_F1_SOL)
       if(alf1 .le. 0.d0 .or. rho .eq. 0.d0)then
         return
       endif

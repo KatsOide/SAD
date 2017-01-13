@@ -881,9 +881,9 @@ CSRStability=Class[{CSR},{},
           AspectRatio->1
           ];Update[],*)
         With[{opt={DisplayFunction->Identity,GridLines->{Automatic,Automatic}}},
-          g1=ListPlot[resz,Null@@opt,
+          g1=ListPlot[resz,opt,
             FrameLabel->{"Turns","`fs`n`dz`n / `fs`n`dz0`n"}];
-          g2=ListPlot[resdp,Null@@opt,
+          g2=ListPlot[resdp,opt,
             FrameTicks->{Ticks,Both,Ticks,Ticks},
             FrameLabel->{"","`fs`dd`n / `fs`dd`n`d0`n",label,""}]];
         Show[gr=

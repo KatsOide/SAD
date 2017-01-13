@@ -42,8 +42,7 @@ c      dldpx=dldx*ald
      $         (by+dbydx*(x(i)+px(i)*ald/3.d0))*px(i))*(1.d0-py(i)**2)
      $        +((bx+dbydx*y(i))**2+dbydx*ald*
      $         (bx+dbydx*(y(i)+py(i)*ald/3.d0))*py(i))*(1.d0-px(i)**2)
-          pr=1.d0+g(i)
-          hh=1.d0+(p0*pr)**2
+          hh=1.d0+(p0*(1.d0+g(i)))**2
           dp=-hh*brad*(1.d0+x(i)*dldxx+px(i)*dldpx)*alc
      1        *(1.d0+(px(i)**2+py(i)**2)*.5d0)
           g(i)=max(gmin,g(i)+dp)

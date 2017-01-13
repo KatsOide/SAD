@@ -1,4 +1,4 @@
-(* Canvas 10/16/2016 *)
+(* Canvas 12/14/2016 *)
 
 SetAttributes[{OutLine,Outline,UseBG,Permanent,Redraw},Constant];
 
@@ -40,7 +40,7 @@ CanvasGraphics=Class[{},
 
   {$DefaultWindowWidth=9.6,
     $DefaultWindowHeight=9.6/GoldenRatio,
-    $DefaultWindowOrigin={2.4,1.8},
+    $DefaultWindowOrigin={2,1.8},
     $DefaultCanvasSize={13,10},
     $DefaultCanvasAspectRatio=13/10,
     EPS=1e-300,
@@ -447,12 +447,12 @@ CanvasGraphics=Class[{},
               Min[wsy/0.7,Max[wsy,wsx]]};
             frt1=frt/.(Automatic->Min[(Plus@@CanvGeo[])/500*Sqrt[wsfx*wsfy],2]);
             ful=Take[Join[ful,nullsl],4];
-            FrameX[First[ft],Third[ft],
-              First[ts]/.Automatic->Max[0.15,wsfy^(.4)],First[gr],Sqrt[wsfx],
-              tkf,frt1,ful];
             FrameY[Second[ft],ft[[4]],
               Second[ts]/.Automatic->Max[0.15,wsfx^(.4)],Second[gr],wsfy^0.4,
               tkf,frt1,ful,frid];
+            FrameX[First[ft],Third[ft],
+              First[ts]/.Automatic->Max[0.15,wsfy^(.4)],First[gr],Sqrt[wsfx],
+              tkf,frt1,ful];
             FrameBind[frid];
             fl=Take[Join[fl,nullsl],4];
             fl={fl,{"BOTTOM","LEFT CENTER","TOP","RIGHT CENTER"},
@@ -1216,16 +1216,35 @@ CanvasGraphics=Class[{},
       True,s]]];
 
   UnitLabelX[""|" ",__]=Null;
-  UnitLabelX[ful_,tag_,font_]:=With[{bb=CanvasWidget[BBox[tag]]},
-    CanvasWidget[Create$Text] = {{bb[[3]],(bb[[2]]+bb[[4]])/2},
-      Text->" "//ful,Anchor->"w",Tags->{tag,FrameTag},Font->font}];
+  UnitLabelX[ful_,fltag_,font_]:=
+    Module[{bb=CanvasWidget[BBox[fltag]],bbfly2=CanvasWidget[BBox["LF$Y2"//Canvas$Frame]],
+      et="E"//fltag,dy},
+      CanvasWidget[Create$Text] = {{bb[[3]],(bb[[2]]+bb[[4]])/2},
+        Text->" "//ful,Anchor->"w",Tags->{et,FrameTag},Font->font};
+      If[bbfly2<=>{},
+        If[(dy=CanvasWidget[BBox[et]][[2]]-bbfly2[[4]])<=0,
+          CanvasWidget[Move]={et,0,1-dy}]]];
   UnitLabelY[""|" ",__]=Null;
-  UnitLabelY[exps_,fltag_,font_,anc_]:=Module[{bb=CanvasWidget[BBox[fltag]]},
-    CanvasWidget[Create$Text] = {
-      {bb[[Switch[anc,"e",3,_,1]]],bb[[2]]-2},
-      Text->exps,
-      Font->font,Tags->{"E"//fltag,FrameTag},
-      Anchor->"s"//anc}];
+  UnitLabelY[exps_,fltag_,font_,"e"]:=
+    Module[{bb=CanvasWidget[BBox[fltag]],bbf=CanvasWidget[BBox[fltag[2,-1]]],
+      et="E"//fltag},
+      CanvasWidget[Create$Text] = {
+        {bbf[[1]]-2,Max[bb[[2]],bbf[[2]]]-2},
+        Text->exps,Font->font,Tags->{et,FrameTag},
+        Anchor->"ne"};
+      If[CanvasWidget[BBox[et]][[4]]>=bb[[2]],
+        CanvasWidget[Move]={et,bb[[1]]-bbf[[1]],0}]
+      ];
+  UnitLabelY[exps_,fltag_,font_,"w"]:=
+    Module[{bb=CanvasWidget[BBox[fltag]],bbf=CanvasWidget[BBox[fltag[2,-1]]],
+      et="E"//fltag},
+      CanvasWidget[Create$Text] = {
+        {bbf[[3]]+2,Max[bb[[2]],bbf[[2]]]-2},
+        Text->exps,Font->font,Tags->{et,FrameTag},
+        Anchor->"nw"};
+      If[CanvasWidget[BBox[et]][[4]]>=bb[[2]],
+        CanvasWidget[Move]={et,bb[[3]]-bbf[[3]],0}]
+      ];
 
   FrameTickX[yy_,anc_,Mt_,logdt_,fltag_,font_,fun_List,ful_]:=
     (Switch[First[Canvas$Axes],
@@ -1282,11 +1301,7 @@ CanvasGraphics=Class[{},
                 Anchor->anc,Text->s,Tags->{fltag,FrameTag},
                 Font->font]})&,Mt];
           If[exp<>1,
-            CanvasWidget[Create$Text] = {
-              {CanvasWidget[BBox[fltag]][[3]]+8,yy},
-              Text->exps//ful,
-              Font->font,Tags->{etag,FrameTag},
-              Anchor->anc//"w"},
+            UnitLabelX[exps//ful,fltag,font],
             UnitLabelX[ful,fltag,font]],
           Log,
           Scan[(
@@ -1311,7 +1326,7 @@ CanvasGraphics=Class[{},
   
   FrameTickY[x2_,anc_,Mt_,logdt_,fltag_,font_,fun_:({}&),ful_]:=
     Module[{fm,zero,s0,logt,s,sout,{texp,exps,exp}=TickExp[Mt],n=0},
-      exps=exps//ful//" ";
+      exps=exps//ful;
       Switch[Second[Canvas$Axes],
         Linear,
         logt=Ceiling[Log[10,Max[Abs[First[Mt]],

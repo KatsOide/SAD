@@ -177,6 +177,8 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
                 if(irad .ge. 12)then
                   beamsize(:,l)=beamsize(:,lx)
                 endif
+              elseif(rt)then
+                twiss(l,idp,mfitddp)=twiss(lx,idp,mfitddp)
               endif
             else
               if(lx .eq. fbound%lb)then
@@ -235,6 +237,8 @@ c     below is incorrect for fra <> 0
               codplt=cp0
               calint=int0
               call qfracsave(lx,vsave,nvar,.false.)
+c              write(*,*)'tturne0 ',lx,l,fbound%lb,fbound%le,idp,
+c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
               call tfsetplot(trans1,cod1,beam1,lx,
      $             l,iatr,iacod,
      $             l .ge. fbound%lb .and. l .le. fbound%le,idp,
@@ -242,7 +246,7 @@ c     below is incorrect for fra <> 0
             endif
           endif
         enddo
-      elseif(radtaper .and. codplt)then
+      elseif(radtaper .and. radcod)then
         if(fbound%le .eq. 1)then
           r=1.d0
         else
@@ -255,6 +259,7 @@ c     below is incorrect for fra <> 0
 
       subroutine tturne1(trans,cod,beam,
      $     iatr,iacod,iabmi,idp,plot,sol,rt,ibegin,iend)
+      use kyparam
       use tfstk
       use tffitcode
       use ffs, only: gettwiss
@@ -267,7 +272,7 @@ c     below is incorrect for fra <> 0
       parameter (codmax=1.d4,demax=.5d0)
       type (sad_comp), pointer :: cmp
       integer*8 iatr,iacod,iabmi,kbmz,kbmzi,lp
-      integer*4 idp,i
+      integer*4 idp,i,l1
       real*8 trans(6,12),cod(6),beam(42),bmir(6,6),
      $     bmi(21),bmh(21)
       real*8 psi1,psi2,apsi1,apsi2,alid,
@@ -332,7 +337,7 @@ c            write(*,'(a,i5,1p6g15.7)')'tturne1 ',l,twiss(l,idp,1:6)
 c            et=twiss(l,0,1:mfitzpy)
 c            call checketwiss(trans,et)
           endif
-        elseif(radtaper .and. codplt)then
+        elseif(radtaper .and. radcod)then
           if(l .eq. 1)then
             r=1.d0
           else
@@ -418,33 +423,34 @@ c        endif
         go to 1010
 1200    continue
         if(dir .gt. 0.d0)then
-          psi1=cmp%value(kytbl(kwE1,icBEND))
-          psi2=cmp%value(kytbl(kwE2,icBEND))
-          apsi1=cmp%value(kytbl(kwAE1,icBEND))
-          apsi2=cmp%value(kytbl(kwAE2,icBEND))
-          fb1=cmp%value(kytbl(kwF1,icBEND))
-     $         +cmp%value(kytbl(kwFB1,icBEND))
-          fb2=cmp%value(kytbl(kwF1,icBEND))
-     $         +cmp%value(kytbl(kwFB2,icBEND))
+          psi1=cmp%value(ky_E1_BEND)
+          psi2=cmp%value(ky_E2_BEND)
+          apsi1=cmp%value(ky_AE1_BEND)
+          apsi2=cmp%value(ky_AE2_BEND)
+          fb1=cmp%value(ky_F1_BEND)
+     $         +cmp%value(ky_FB1_BEND)
+          fb2=cmp%value(ky_F1_BEND)
+     $         +cmp%value(ky_FB2_BEND)
         else
-          psi1=cmp%value(kytbl(kwE2,icBEND))
-          psi2=cmp%value(kytbl(kwE1,icBEND))
-          apsi1=cmp%value(kytbl(kwAE2,icBEND))
-          apsi2=cmp%value(kytbl(kwAE1,icBEND))
-          fb2=cmp%value(kytbl(kwF1,icBEND))
-     $         +cmp%value(kytbl(kwFB1,icBEND))
-          fb1=cmp%value(kytbl(kwF1,icBEND))
-     $         +cmp%value(kytbl(kwFB2,icBEND))
+          psi1=cmp%value(ky_E2_BEND)
+          psi2=cmp%value(ky_E1_BEND)
+          apsi1=cmp%value(ky_AE2_BEND)
+          apsi2=cmp%value(ky_AE1_BEND)
+          fb2=cmp%value(ky_F1_BEND)
+     $         +cmp%value(ky_FB1_BEND)
+          fb1=cmp%value(ky_F1_BEND)
+     $         +cmp%value(ky_FB2_BEND)
         endif
-        dtheta=cmp%value(kytbl(kwDROT,icBEND))
-        theta0=cmp%value(kytbl(kwROT,icBEND))+dtheta
-        ak0=cmp%value(kytbl(kwK0,icBEND))
-     $       +cmp%value(kytbl(kwANGL,icBEND))
-        ak1=cmp%value(kytbl(kwK1,icBEND))
+        dtheta=cmp%value(ky_DROT_BEND)
+        theta0=cmp%value(ky_ROT_BEND)+dtheta
+        ak0=cmp%value(ky_K0_BEND)
+     $       +cmp%value(ky_ANGL_BEND)
+        ak1=cmp%value(ky_K1_BEND)
         if(radcod .and. radtaper)then
           if(rt)then
-            ak0=ak0*(4.d0+3.d0*cod(6)+gettwiss(mfitddp,l+1))*.25d0
-            ak1=ak1*(4.d0+3.d0*cod(6)+gettwiss(mfitddp,l+1))*.25d0
+            l1=nextl(l)
+            ak0=ak0*(4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0
+            ak1=ak1*(4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0
           else
             ak0=ak0*(1.d0+cod(6))
             ak1=ak1*(1.d0+cod(6))
@@ -452,50 +458,55 @@ c        endif
         endif
         call tbende(trans,cod,beam,al,
      1       min(pi2,max(-pi2,ak0)),
-     $       cmp%value(2),
+     $       cmp%value(ky_ANGL_BEND),
      $       psi1,psi2,apsi1,apsi2,ak1,
-     1       cmp%value(kytbl(kwDX,icBEND)),
-     $       cmp%value(kytbl(kwDY,icBEND)),theta0,dtheta,
+     1       cmp%value(ky_DX_BEND),
+     $       cmp%value(ky_DY_BEND),theta0,dtheta,
      $       fb1,fb2,
-     $       nint(cmp%value(kytbl(kwFRMD,icBEND))),
-     $       cmp%value(kytbl(kwFRIN,icBEND)) .eq. 0.d0,
-     $       cmp%value(kytbl(kwEPS,icBEND)),
-     1       cmp%value(kytbl(kwRAD,icBEND)) .eq. 0.d0,.true.,
+     $       nint(cmp%value(ky_FRMD_BEND)),
+     $       cmp%value(ky_FRIN_BEND) .eq. 0.d0,
+     $       cmp%value(ky_EPS_BEND),
+     1       cmp%value(ky_RAD_BEND) .eq. 0.d0,.true.,
      $       next,l,ld)
         go to 1010
 1400    continue
         if(dir .gt. 0.d0)then
-          mfr=nint(cmp%value(12))
+          mfr=nint(cmp%value(ky_FRMD_QUAD))
         else
-          mfr=nint(cmp%value(12))
+          mfr=nint(cmp%value(ky_FRMD_QUAD))
           mfr=mfr*(11+mfr*(2*mfr-9))/2
         endif
-        ak1=cmp%value(kytbl(kwK1,icQUAD))
+        ak1=cmp%value(ky_K1_QUAD)
         if(radcod .and. radtaper)then
           if(rt)then
-            ak1=ak1*(2.d0+cod(6)+gettwiss(mfitddp,l+1))*.5d0
+            l1=nextl(l)
+            ak1=ak1*(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0
           else
             ak1=ak1*(1.d0+cod(6))
           endif
         endif
         call tsetfringepe(cmp,icQUAD,dir,ftable)
-        call tquade(trans,cod,beam,al,
-     1       ak1,cmp%value(5),cmp%value(6),
-     1       cmp%value(4),cmp%value(kytbl(kwRAD,icQUAD)) .eq. 0.d0,
-     1       cmp%value(9) .eq. 0.d0,
+        call tquade(trans,cod,beam,al,ak1,
+     $       cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
+     1       cmp%value(ky_ROT_QUAD),
+     $       cmp%value(ky_RAD_QUAD) .eq. 0.d0,
+     1       cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $       ftable(1),ftable(2),ftable(3),ftable(4),
-     $       mfr,cmp%value(13),cmp%value(14) .eq. 0.d0,next,ld)
+     $       mfr,cmp%value(ky_EPS_QUAD),
+     $       cmp%value(ky_KIN_QUAD) .eq. 0.d0,next,ld)
         go to 1010
- 1600   ak1=cmp%value(2)
+ 1600   ak1=cmp%value(ky_K_THIN)
         if(radcod .and. radtaper)then
           if(rt)then
-            ak1=ak1*(2.d0+cod(6)+gettwiss(mfitddp,l+1))*.5d0
+            l1=nextl(l)
+            ak1=ak1*(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0
           else
             ak1=ak1*(1.d0+cod(6))
           endif
         endif
         call tthine(trans,cod,beam,lele,al,ak1,
-     1             cmp%value(5),cmp%value(6),cmp%value(4),.false.,ld)
+     1       cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
+     $       cmp%value(ky_ROT_THIN),.false.,ld)
         go to 1010
  3000   call tsole(trans,cod,beam,l,ke,sol,
      1       iatr,iacod,iabmi,idp,plot,rt)
@@ -503,83 +514,91 @@ c        endif
         go to 1010
  3100   write(*,*)'Use BEND with ANGLE=0 for ST.'
         call forcesf()
- 3200   phi=cmp%value(kytbl(kwANGL,icMULT))
-        mfr=nint(cmp%value(kytbl(kwFRMD,icMULT)))
+ 3200   phi=cmp%value(ky_ANGL_MULT)
+        mfr=nint(cmp%value(ky_FRMD_MULT))
         if(dir .gt. 0.d0)then
-          psi1=cmp%value(kytbl(kwE1,icMULT))
-          psi2=cmp%value(kytbl(kwE2,icMULT))
-          apsi1=cmp%value(kytbl(kwAE1,icMULT))
-          apsi2=cmp%value(kytbl(kwAE2,icMULT))
-          fb1=cmp%value(kytbl(kwFB1,icMULT))
-          fb2=cmp%value(kytbl(kwFB2,icMULT))
-          chi1=cmp%value(kytbl(kwCHI1,icMULT))
-          chi2=cmp%value(kytbl(kwCHI2,icMULT))
+          psi1=cmp%value(ky_E1_MULT)
+          psi2=cmp%value(ky_E2_MULT)
+          apsi1=cmp%value(ky_AE1_MULT)
+          apsi2=cmp%value(ky_AE2_MULT)
+          fb1=cmp%value(ky_FB1_MULT)
+          fb2=cmp%value(ky_FB2_MULT)
+          chi1=cmp%value(ky_CHI1_MULT)
+          chi2=cmp%value(ky_CHI2_MULT)
         else
           mfr=mfr*(11+mfr*(2*mfr-9))/2
-          psi1=cmp%value(kytbl(kwE2,icMULT))
-          psi2=cmp%value(kytbl(kwE1,icMULT))
-          apsi1=cmp%value(kytbl(kwAE2,icMULT))
-          apsi2=cmp%value(kytbl(kwAE1,icMULT))
-          fb2=cmp%value(kytbl(kwFB1,icMULT))
-          fb1=cmp%value(kytbl(kwFB2,icMULT))
-          chi1=-cmp%value(kytbl(kwCHI1,icMULT))
-          chi2=-cmp%value(kytbl(kwCHI2,icMULT))
+          psi1=cmp%value(ky_E2_MULT)
+          psi2=cmp%value(ky_E1_MULT)
+          apsi1=cmp%value(ky_AE2_MULT)
+          apsi2=cmp%value(ky_AE1_MULT)
+          fb2=cmp%value(ky_FB1_MULT)
+          fb1=cmp%value(ky_FB2_MULT)
+          chi1=-cmp%value(ky_CHI1_MULT)
+          chi2=-cmp%value(ky_CHI2_MULT)
         endif
         rtaper=1.d0
         if(radcod .and. radtaper)then
           if(rt)then
-            rtaper=(2.d0+cod(6)+gettwiss(mfitddp,l+1))*.5d0
+            l1=nextl(l)
+            rtaper=(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0
           else
             rtaper=1.d0+cod(6)
           endif
         endif
         call tsetfringepe(cmp,icMULT,dir,ftable)
         call tmulte(trans,cod,beam,l,al,
-     $       cmp%value(kytbl(kwK0,icMULT)),
+     $       cmp%value(ky_K0_MULT),
      $       0.d0,
      $       phi,psi1,psi2,apsi1,apsi2,
-     1       cmp%value(3),cmp%value(4),cmp%value(5),
-     $       chi1,chi2,cmp%value(8),
-     $       cmp%value(kytbl(kwDROT,icMULT)),
-     $       cmp%value(9),cmp%value(10) .eq. 0.d0,
-     $       cmp%value(11) .eq. 0.d0,
+     1       cmp%value(ky_DX_MULT),cmp%value(ky_DY_MULT),
+     $       cmp%value(ky_DZ_MULT),
+     $       chi1,chi2,cmp%value(ky_ROT_MULT),
+     $       cmp%value(ky_DROT_MULT),
+     $       cmp%value(ky_EPS_MULT),
+     $       cmp%value(ky_RAD_MULT) .eq. 0.d0,
+     $       cmp%value(ky_FRIN_MULT) .eq. 0.d0,
      $       ftable(1),ftable(2),ftable(3),ftable(4),
      $       mfr,fb1,fb2,
-     $       cmp%value(kytbl(kwK0FR,icMULT)) .eq. 0.d0,
-     $       cmp%value(15),cmp%value(16),cmp%value(17),cmp%value(18),
-     $       cmp%value(kytbl(kwW1,icMULT)),rtaper,
-     $       cmp%value(kytbl(kwAPHI,icMULT)) .ne. 0.d0,
+     $       cmp%value(ky_K0FR_MULT) .eq. 0.d0,
+     $       cmp%value(ky_VOLT_MULT),cmp%value(ky_HARM_MULT),
+     $       cmp%value(ky_PHI_MULT),cmp%value(ky_FREQ_MULT),
+     $       cmp%value(ky_W1_MULT),rtaper,
+     $       cmp%value(ky_APHI_MULT) .ne. 0.d0,
      $       ld)
         go to 1010
- 4100   mfr=nint(cmp%value(kytbl(kwFRMD,icCAVI)))
+ 4100   mfr=nint(cmp%value(ky_FRMD_CAVI))
         if(dir .gt. 0.d0)then
         else
           mfr=mfr*(11+mfr*(2*mfr-9))/2
         endif
 c        write(*,*)'tturne-tcave',cod
         call tcave(trans,cod,beam,l,al,
-     1       cmp%value(2),cmp%value(3),
-     1       cmp%value(4),cmp%value(5),
-     1       cmp%value(13),cmp%value(14),cmp%value(15),
-     $       cmp%value(16),cmp%value(17),cmp%value(18),cmp%value(19),
-     $       cmp%value(kytbl(kwFRIN,icCAVI)) .eq. 0.d0,mfr,
-     $       cmp%value(kytbl(kwAPHI,icCAVI)) .ne. 0.d0,
+     1       cmp%value(ky_VOLT_CAVI),cmp%value(ky_HARM_CAVI),
+     1       cmp%value(ky_PHI_CAVI),cmp%value(ky_FREQ_CAVI),
+     1       cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
+     $       cmp%value(ky_ROT_CAVI),
+     $       cmp%value(ky_V1_CAVI),cmp%value(ky_V20_CAVI),
+     $       cmp%value(ky_V11_CAVI),cmp%value(ky_V02_CAVI),
+     $       cmp%value(ky_FRIN_CAVI) .eq. 0.d0,mfr,
+     $       cmp%value(ky_APHI_CAVI) .ne. 0.d0,
      $       ld)
 c        write(*,*)'tturne-tcave-1',cod
         go to 1010
  4200   call ttcave(trans,cod,beam,al,
-     $       cmp%value(2),cmp%value(3),
-     1       cmp%value(4),cmp%value(5),
-     1       cmp%value(6),cmp%value(7),cmp%value(8),ld)
+     1       cmp%value(ky_K0_TCAV),cmp%value(ky_HARM_TCAV),
+     1       cmp%value(ky_PHI_TCAV),cmp%value(ky_FREQ_TCAV),
+     1       cmp%value(ky_DX_TCAV),cmp%value(ky_DY_TCAV),
+     $       cmp%value(ky_ROT_TCAV),ld)
         go to 1010
  4300   call temape(trans,cod,beam,l)
         go to 1010
- 4400   call tinse(trans,cod,beam,cmp%value(20),ld)
+ 4400   call tinse(trans,cod,beam,cmp%value(ky_DIR_INS+1),ld)
         go to 1010
  4500   call tcoorde(trans,cod,beam,
-     1       cmp%value(1),cmp%value(2),cmp%value(3),
-     1       cmp%value(4),cmp%value(5),cmp%value(6),
-     1       cmp%value(7) .eq. 0.d0,ld)
+     1       cmp%value(ky_DX_COORD),cmp%value(ky_DY_COORD),
+     $       cmp%value(ky_DZ_COORD),cmp%value(ky_CHI1_COORD),
+     $       cmp%value(ky_CHI2_COORD),cmp%value(ky_CHI3_COORD),
+     1       cmp%value(ky_DIR_COORD) .eq. 0.d0,ld)
         go to 1010
  5000   go to 1010
  1010   continue
@@ -667,7 +686,10 @@ c        write(*,*)'tturne-tcave-1',cod
       endif
       if(codplt)then
         call tsetetwiss(trans,cod,beam,lorg,l,idp,r)
-c        write(*,'(a,2i5,1p6g15.7)')'tsetplot  ',lorg,l,twiss(l,idp,1:6)
+c        write(*,'(a,2i5,1p6g15.7)')'tsetplot  ',lorg,l,
+c     $       twiss(l,idp,mfitzx:mfitzpy)
+      elseif(radcod .and. radtaper)then
+        twiss(l,idp,mfitddp)=cod(6)
       endif
       return
       end
@@ -715,6 +737,7 @@ c        write(*,'(a,2i5,1p6g15.7)')'tsetplot  ',lorg,l,twiss(l,idp,1:6)
         else
           twi(mfitny)=twiss(lorg,idp,mfitny)+twi(mfitny)
         endif
+        twi(mfitnz)=twiss(lorg,idp,mfitnz)+twi(mfitnz)
       endif
       twi(mfitdpx)=twi(mfitdpx)*rgb
       twi(mfitdpy)=twi(mfitdpy)*rgb
