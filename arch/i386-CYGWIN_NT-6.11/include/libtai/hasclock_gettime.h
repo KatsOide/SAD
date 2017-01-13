@@ -1,1 +1,0 @@
-#define HASCLOCK_GETTIME 1

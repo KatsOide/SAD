@@ -2,6 +2,7 @@
 *.~
 TclTk/*
 arch/*
+arch/i386-CYGWIN_NT-6.11
 obj/*
 sad/*
 .DS_Store
@@ -19,15 +20,4 @@ src/gdtoa/test/*
 Packages/Canvas.n_0
 Packages/#Canvas.n#
 *_*
-
-*.~
-
-*.~
-<<<<<<< HEAD
-<<<<<<< HEAD
-
 src/.DS_Store
-=======
->>>>>>> origin/master
-=======
->>>>>>> origin/master

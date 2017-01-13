@@ -3,6 +3,7 @@
 /map_double.h/1.1.2.1/Tue Sep 11 12:43:50 2012//Tk64-1-6
 /map_p_da.h/1.2.2.1/Tue Sep 11 12:43:50 2012//Tk64-1-6
 /p_da.h/1.1.2.1/Tue Sep 11 12:43:50 2012//Tk64-1-6
+<<<<<<< HEAD
 /Complex.h/1.1/Sun Jan  8 18:30:29 2017//Tk64-1-6
 /bb.h/1.1/Sun Jan  8 18:30:29 2017//Tk64-1-6
 /bend.h/1.1/Sun Jan  8 18:30:29 2017//Tk64-1-6
@@ -25,4 +26,28 @@
 /thin.h/1.1/Sun Jan  8 18:30:29 2017//Tk64-1-6
 /track.h/1.1/Sun Jan  8 18:30:29 2017//Tk64-1-6
 /wiggler.h/1.1/Sun Jan  8 18:30:29 2017//Tk64-1-6
+=======
+/Complex.h/1.1/Wed Oct  5 17:17:27 2016//Tk64-1-6
+/bb.h/1.1/Wed Oct  5 17:17:30 2016//Tk64-1-6
+/bend.h/1.1/Wed Oct  5 17:17:33 2016//Tk64-1-6
+/c_da.h/1.1/Wed Oct  5 17:17:36 2016//Tk64-1-6
+/c_p_da.h/1.1/Wed Oct  5 17:17:39 2016//Tk64-1-6
+/cavity.h/1.1/Wed Oct  5 17:17:42 2016//Tk64-1-6
+/impedance.h/1.1/Wed Oct  5 17:18:09 2016//Tk64-1-6
+/lie_da.h/1.1/Wed Oct  5 17:18:14 2016//Tk64-1-6
+/lin_map.h/1.2/Wed Oct  5 17:18:15 2016//Tk64-1-6
+/linelem.h/1.1/Wed Oct  5 17:18:18 2016//Tk64-1-6
+/map_da.h/1.1/Wed Oct  5 17:18:21 2016//Tk64-1-6
+/matrix.h/1.2/Wed Oct  5 17:18:24 2016//Tk64-1-6
+/ph_rot.h/1.1/Wed Oct  5 17:18:27 2016//Tk64-1-6
+/phys_const.h/1.1/Wed Oct  5 17:18:30 2016//Tk64-1-6
+/quad.h/1.1/Wed Oct  5 17:18:33 2016//Tk64-1-6
+/sadplus.h/1.2/Wed Oct  5 17:18:36 2016//Tk64-1-6
+/sext.h/1.1/Wed Oct  5 17:18:39 2016//Tk64-1-6
+/solenoid.h/1.1/Wed Oct  5 17:18:42 2016//Tk64-1-6
+/track.h/1.1/Wed Oct  5 17:18:48 2016//Tk64-1-6
+/wiggler.h/1.1/Wed Oct  5 17:18:51 2016//Tk64-1-6
+/element.h/1.1/Wed Oct  5 17:17:58 2016//Tk64-1-6
+/thin.h/1.1/Wed Oct  5 15:39:44 2016//Tk64-1-6
+>>>>>>> origin/master
 D
