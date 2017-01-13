@@ -939,10 +939,6 @@ c  for THIN
 
       do i=icSEXT,icDODECA,2
         kytbl(kwL,i)=ky_L_THIN
-<<<<<<< HEAD
-=======
-        kytbl(kwK2,i)=ky_K_THIN
->>>>>>> origin/master
 c     kytbl(kwDK2,i)=ky_DK2_THIN
         kytbl(kwROT,i)=ky_ROT_THIN
         kytbl(kwDX,i)=ky_DX_THIN
