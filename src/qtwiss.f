@@ -351,7 +351,7 @@ c     end   initialize for preventing compiler warning
           endif
           call qcav(trans,cod,l1,
      1         al,cmp%value(ky_VOLT_CAVI),cmp%value(ky_HARM_CAVI),
-     $         cmp%value(ky_HARM_CAVI),cmp%value(ky_FREQ_CAVI),
+     $         cmp%value(ky_PHI_CAVI),cmp%value(ky_FREQ_CAVI),
      $         cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
      $         cmp%value(ky_ROT_CAVI),
      $         cmp%value(ky_V1_CAVI),cmp%value(ky_V20_CAVI),

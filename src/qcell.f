@@ -279,7 +279,7 @@ c     (Note) Disperdion is defined in 2*2 world
       ie1=fbound%le
       if(optstat%over)then
         if(lfno .gt. 0)then
-          write(lfno,*)'***qtwiss---> Optstat%Overflow'
+          write(lfno,*)'***qtwiss---> Overflow'
           pri=.true.
         endif
         optstat%stabx=.false.
