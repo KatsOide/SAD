@@ -86,8 +86,8 @@ c     now read elemnt list
       ia=ktaloc(n+1)
       ilist(1,ia)=n
       ilist(2,ia)=0
-      klist(ia+1:ia+n)=ktastk(isp0+1:isp)
+      klist(ia+1:ia+n)=ktastk(isp0+1:isp0+n)
       idval(idxl)=ia
-c      write(*,*)'lread ',ia,n,pname(idxl)
+c      write(*,*)'lread ',ia,n,pname(idxl),idtype(idxl)
       return
       end

@@ -1902,15 +1902,21 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
       return
       end
 
-      subroutine tclrline(line)
+      recursive subroutine tclrline(line)
       use tfstk
+      use maccode
       implicit none
-      integer*4 i,n
-      integer*8 line,ip
+      integer*4 i,n,idx
+      integer*8 line
       do i=1,ilist(1,line)
-        ip=klist(line+i)
-        n=ilist(1,ip)+1
-        call tfreem(ip,n)
+        idx=ilist(2,line+i)
+        if(idx .gt. 0 .and. idx .le. HTMAX)then
+          if(idtype(idx) .eq. icLINE)then
+            call tclrline(idval(idx))
+          endif
+        else
+          write(*,*)'tclrline ',line,ilist(1,line),i,idx
+        endif
       enddo
       n=ilist(1,line)+1
       call tfreem(line,n)
