@@ -1,4 +1,5 @@
       subroutine tfwake(word,lfno,err)
+      use kyparam
       use tfstk
       use ffs
       use ffs_pointer
@@ -13,10 +14,10 @@
       call getwdl(word)
       if(abbrev(word,'L_ONGITUDINAL','_'))then
         lt=0
-        ioff=kytbl(kwLWAK,icCAVI)
+        ioff=ky_LWAK_CAVI
       elseif(abbrev(word,'T_RANSVERSE','_'))then
         lt=1
-        ioff=kytbl(kwTWAK,icCAVI)
+        ioff=ky_TWAK_CAVI
       else
         err=.true.
         return

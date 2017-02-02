@@ -1,4 +1,5 @@
       subroutine tfsetparam
+      use kyparam
       use tfstk
       use ffs
       use tffitcode
@@ -17,11 +18,11 @@
       dpmax =rfromd(kxsymbolv('DP',2))
       if(idtypec(1) .eq. icMARK)then
         ix=latt(1)
-        rlist(ix+kytbl(kwEMIX,icMARK))=emx
-        rlist(ix+kytbl(kwEMIY,icMARK))=emy
-        rlist(ix+kytbl(kwDP,icMARK))=dpmax
-        rlist(ix+kytbl(kwSIGZ,icMARK))=rgetgl1('SIGZ')
-        dp0=rlist(ix+kytbl(kwDDP,icMARK))
+        rlist(ix+ky_EMIX_MARK)=emx
+        rlist(ix+ky_EMIY_MARK)=emy
+        rlist(ix+ky_DP_MARK)=dpmax
+        rlist(ix+ky_SIGZ_MARK)=rgetgl1('SIGZ')
+        dp0=rlist(ix+ky_DDP_MARK)
       else
         dp0=0.d0
       endif

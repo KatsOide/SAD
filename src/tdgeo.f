@@ -1,4 +1,5 @@
       subroutine tdgeo(couple1,qu,kf,ne,k,ltyp,iv,nut,nfam)
+      use kyparam
       use tfstk
       use ffs
       use ffs_pointer
@@ -24,7 +25,7 @@
           qu=qu+s*geo(kf-mfitgx+1,3,k)
         endif
       elseif(ltyp .eq. icBEND)then
-        if(iv .eq. kytbl(kwANGL,icBEND))then
+        if(iv .eq. ky_ANGL_BEND)then
           ip=idelc(k)
           theta=rlist(idval(ip)+5)
           if(kf .ge. mfitgx .and. kf .le. mfitgz)then
@@ -83,7 +84,7 @@
      $             /(geo(3,1,ne)**2+geo(3,2,ne)**2)*s
             endif
           endif
-        elseif(iv .eq. kytbl(kwL,icBEND))then
+        elseif(iv .eq. ky_L_BEND)then
           if(kf .ge. mfitgx .and. kf .le. mfitgz)then
             qu=qu+s*geo(kf-mfitgx+1,3,k+1)
           endif

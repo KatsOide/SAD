@@ -1100,14 +1100,14 @@ c              1: current optics used
 c             -1: optics is fixed by FIX
       use ffs
       use tffitcode
+      use ffs_fit ,only: ffs_stat
       implicit real*8 (a-h,o-z)
       parameter (ddp=1d-6,epsdlt=1d-6)
-      logical*4 hstab,vstab,over
 c BOTH HP and DEC compiler allows dynamic array size if these arrays are
 c  automatic (NY )
+      type (ffs_stat) optstat(-1:1)
       integer*8 latt(nlat)
       real*8 twiss(nlat,-ndim:ndim,ntwissfun),gammab(nlat)
-      real*8 tracex(-ndim:ndim),tracey(-ndim:ndim)
       real*8 dp1(-ndim:ndim)
 c
 c     write(*,*) ' newcor in mcfix',newcor
@@ -1122,15 +1122,15 @@ c     write(*,*) ' newcor in mcfix',newcor
 c93/11/01
       do ip=-1,1,1
         if( cell ) then
-          hstab=.true.
-          vstab=.true.
-          call qcell(ip,
-     $         hstab,vstab,tracex(ip),tracey(ip),
-     $         .false.,over)
-          if( .not. hstab .or. .not. vstab ) then
+          optstat(ip)%stabx=.true.
+          optstat(ip)%staby=.true.
+          call qcell(ip,optstat(ip),.false.)
+          if( .not. optstat(ip)%stabx .or.
+     $         .not. optstat(ip)%staby ) then
             write(*,'(A,1PD12.5,A/2(A,F9.4))')
      z           '  Unstable orbit  dp=',dp1(ip)-1d0,' :',
-     z           '          tracex=',tracex(ip),' tracey=',tracey(ip)
+     z           '          tracex=',optstat(ip)%tracex,
+     $           ' tracey=',optstat(ip)%tracey
           endif
         else
           twiss(1,0,3)=0d0

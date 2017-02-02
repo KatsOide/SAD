@@ -1,4 +1,4 @@
-(* Canvas 9/10/2016 *)
+(* Canvas 2/2/2017 *)
 
 SetAttributes[{OutLine,Outline,UseBG,Permanent,Redraw},Constant];
 
@@ -40,7 +40,7 @@ CanvasGraphics=Class[{},
 
   {$DefaultWindowWidth=9.6,
     $DefaultWindowHeight=9.6/GoldenRatio,
-    $DefaultWindowOrigin={2.4,1.8},
+    $DefaultWindowOrigin={2,1.8},
     $DefaultCanvasSize={13,10},
     $DefaultCanvasAspectRatio=13/10,
     EPS=1e-300,
@@ -105,10 +105,14 @@ CanvasGraphics=Class[{},
     CanvasWidget,
     CanvasPathName,
     DefaultFont=$DefaultSansSerifFont,
+    FontScale=1,
+    TickFontScale=1,
+    FrameFontScale=1,
+    LegendFontScale=1,
     DefaultTitleSize=Switch[$FontSystem,
       "Xft",16,
       _,18],
-    FontFactor=Switch[$FontSystem,
+    FSFontScale=Switch[$FontSystem,
       "Xft",1.7,
       _,2.2]
     },
@@ -342,6 +346,10 @@ CanvasGraphics=Class[{},
     Alignment->Automatic,
     TickSize->Automatic,
     TickFont->Default,
+    Literal[FontScale]->1,
+    Literal[TickFontScale]->1,
+    Literal[FrameFontScale]->1,
+    Literal[LegendFontScale]->1,
     RemoveOverlap->"",
     PlotLabel->"",Background->"#ffffff"},    
     CanvasListVar:={EffectiveRange,EffectiveAxes,EffectiveGL,
@@ -353,10 +361,13 @@ CanvasGraphics=Class[{},
       {fl,pl,ft,wsx,wsy,wsfx,wsfy,det,wc,fr,tag,t1,t2,addtag,enc,glist,ws,
         pr,id,l1,align,up,ts,frid,fclk,dr,plr,sca,gr,ib,tkf,frt,frt1,rmo,
         op=Override[opt,def],wfr},
-      {tag,fl,pl,fr,wc,align,pr,fclk,dr,ft,frt,ts,ib,tkf,ful,rmo}=
+      {tag,fl,pl,fr,wc,align,pr,fclk,dr,ft,frt,ts,ib,tkf,ful,rmo,
+        FontScale,TickFontScale,FrameFontScale,LegendFontScale}=
         {Tags,FrameLabel,PlotLabel,Frame,Background,Alignment,
           PlotRegion,FrameClick,DataRange,FrameTicks,FrameThickness,TickSize,
-          InfoBind,TickFont,FrameUnitLabel,RemoveOverlap}/.op;
+          InfoBind,TickFont,FrameUnitLabel,RemoveOverlap,
+          Literal[FontScale],Literal[TickFontScale],
+          Literal[FrameFontScale],Literal[LegendFontScale]}/.op;
       If[w,
         If[ini,
           Canvas$Initialize=init;
@@ -440,12 +451,12 @@ CanvasGraphics=Class[{},
               Min[wsy/0.7,Max[wsy,wsx]]};
             frt1=frt/.(Automatic->Min[(Plus@@CanvGeo[])/500*Sqrt[wsfx*wsfy],2]);
             ful=Take[Join[ful,nullsl],4];
-            FrameX[First[ft],Third[ft],
-              First[ts]/.Automatic->Max[0.15,wsfy^(.4)],First[gr],Sqrt[wsfx],
-              tkf,frt1,ful];
             FrameY[Second[ft],ft[[4]],
               Second[ts]/.Automatic->Max[0.15,wsfx^(.4)],Second[gr],wsfy^0.4,
               tkf,frt1,ful,frid];
+            FrameX[First[ft],Third[ft],
+              First[ts]/.Automatic->Max[0.15,wsfy^(.4)],First[gr],Sqrt[wsfx],
+              tkf,frt1,ful];
             FrameBind[frid];
             fl=Take[Join[fl,nullsl],4];
             fl={fl,{"BOTTOM","LEFT CENTER","TOP","RIGHT CENTER"},
@@ -467,7 +478,7 @@ CanvasGraphics=Class[{},
        If[""<=>pl<=>nullsl2,
          If[Canvas$PlotLabel<=>0,
            CanvasWidget[Delete]=Canvas$PlotLabel];
-         MakeTitle[pl,Restrict[DefaultTitleSize*1.3*(wsx*wsy)^(.4),9,32],"TOP HIGH"];
+         MakeTitle[pl,Restrict[DefaultTitleSize*1.3*(wsx*wsy)^(.4),9,40],"TOP HIGH"];
          Canvas$PlotLabel=CanvasLastID
          ];
         If[wfr && StringQ[wc],
@@ -506,7 +517,8 @@ CanvasGraphics=Class[{},
           p=Rest[p],
           Break[]]]]];
 
-  DeleteOverlapLabel[]:=Module[{p=TickLabels,r,t,rt},
+  DeleteOverlapLabel[]:=Module[{p=Union[TickLabels],r,t,rt},
+    TickLabels=p;
     If[Length[p]>1,
       r={CanvasWidget[BBox[p[[1]]]]};
       p=Rest[p];
@@ -612,8 +624,8 @@ CanvasGraphics=Class[{},
   TitlePosition["TOP",t_:"L"]:=Module[
     {c=WindowCoord[
       {(Canvas$Window[[1,1]]+Canvas$Window[[1,2]])/2,Canvas$Window[[2,2]]}],
-      f=CanvasWidget[BBox[FrameTag]]},
-    If[f==={},{c+{0,-2},(Canvas$Window[[1,2]]-Canvas$Window[[1,1]])*DPI,"s"},
+      f=If[t==="",{},CanvasWidget[BBox[t//"F$X2"//Canvas$Frame]]]},
+    If[f==={},{c+{0,-1},(Canvas$Window[[1,2]]-Canvas$Window[[1,1]])*DPI,"s"},
       {{First[c],Min[Second[f],Second[c]]-1},Third[f]-First[f],"s"}]];
   TitlePosition["TOP HIGH",t_:"L"]:=Module[
     {f,c=WindowCoord[
@@ -645,36 +657,44 @@ CanvasGraphics=Class[{},
       s[p[[q-1,1]]+1,p[[q,1]]-1]];
     Max[StringLength[s1]-Length[StringPosition[s1,"`"]]*2,m]]);
 
+  FFont[x_,_]:=x;
+  FFont[x:{x1_},n_]:=x1;
+  FFont[x:{x1_,x2_},n_]:={x1,x2,x1,x2}[[n]];
+  FFont[x:{x1_,x2_,x3_},n_]:={x1,x2,x3,x2}[[n]];
+  FFont[x_List,n_]:=x[[n]];
+  FScale[x_Real,_]:=x;
+  FScale[x_List,n_]:=Join[x,{1,1,1,1}][[n]];
+
   DefaultSize[t_,w_,size_,pos_,"e"]:=Module[{fl=0,bl},
       Do[bl=CanvasWidget[BBox[{"LF$Y2"//i,"FL$Y2"//i,"F$Y2"//i}]];
         If[bl<=>{} && bl[[1]]<pos[[1]] && bl[[2]]<=pos[[2]]<=bl[[4]],
           fl=Max[fl,bl[[3]]]],
         {i,0,Canvas$Frame}];
-    Round[
-      Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FontFactor,pos[[1]]-fl-1,size*1.3]]]];
+    Round[FontScale*FScale[FrameFontScale,2]
+      *Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,pos[[1]]-fl-1,size*1.3]]]];
   DefaultSize[t_,w_,size_,pos_,"w"]:=Module[{wc=CanvasWidget[Width],bl,fl},
     fl=wc;
-      Do[bl=CanvasWidget[BBox[{"LF$Y1"//i,"FL$Y1"//i,"F$Y1"//i}]];
+      Do[bl=CanvasWidget[BBox[{"LF$Y2"//i,"FL$Y2"//i,"F$Y2"//i}]];
         If[bl<=>{} && bl[[3]]>pos[[1]] && bl[[2]]<=pos[[2]]<=bl[[4]],
           fl=Min[fl,bl[[1]]]],
         {i,0,Canvas$Frame}];
-    Round[
-      Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FontFactor,fl-pos[[1]]-1,size*1.3]]]];
+    Round[FontScale*FScale[FrameFontScale,4]
+      *Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,fl-pos[[1]]-1,size*1.3]]]];
   DefaultSize[t_,w_,size_,pos_,"n"]:=Module[{wc=CanvasWidget[Height],bl,fl},
     fl=wc;
       Do[bl=CanvasWidget[BBox[{"LF$X2"//i,"FL$X2"//i,"F$X2"//i}]];
         If[bl<=>{} && bl[[4]]>pos[[2]] && bl[[1]]<=pos[[1]]<=bl[[3]],
           fl=Min[fl,bl[[2]]]],
         {i,0,Canvas$Frame}];
-    Round[
-      Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FontFactor,fl-pos[[2]]-1,size*1.3]]]];
+    Round[FontScale*FScale[FrameFontScale,3]
+      *Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,fl-pos[[2]]-1,size*1.3]]]];
   DefaultSize[t_,w_,size_,pos_,"s"]:=Module[{fl=0,bl},
       Do[bl=CanvasWidget[BBox[{"LF$X1"//i,"FL$X1"//i,"F$X1"//i}]];
         If[bl<=>{} && bl[[2]]<pos[[2]] && bl[[1]]<=pos[[1]]<=bl[[3]],
             fl=Max[fl,bl[[4]]]],
         {i,0,Canvas$Frame}];
-    Round[
-      Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FontFactor,pos[[2]]-fl-1,size*1.3]]]];
+    Round[FontScale*FScale[FrameFontScale,1]
+      *Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,pos[[2]]-fl-1,size*1.3]]]];
 
   MakeTitle["",__]:=Null;
   MakeTitle[t_,size_,p_]:=Module[{{pos,w,anc}=TitlePosition[p],sz,it=0},
@@ -1004,9 +1024,9 @@ CanvasGraphics=Class[{},
       Scan[func[Canvas$FrameCallBack[frid, event, #]]&,
 	Canvas$FrameCallBack[frid, event]]];
 
-  DefaultTickFont[x_,y_]:=
-    TextFont[Restrict[Round[
-      Switch[$FontSystem,"Xft",15,_,16]*x^y],7,32],
+  DefaultTickFont[x_,y_,fr_]:=
+    TextFont[Round[FScale[TickFontScale,fr]*FontScale*Restrict[
+      Switch[$FontSystem,"Xft",15,_,16]*x^y,7,32]],
       DefaultFont];
 
   MinorGrid[`X,m_,yl_,tag_]:=Scan[
@@ -1071,10 +1091,13 @@ CanvasGraphics=Class[{},
         y,y1,tcs,yl,
         {ftag1,ftag2,grtag}={
           "F$X1"//Canvas$Frame,"F$X2"//Canvas$Frame,"G$X"//Canvas$Frame},
-        font=Switch[tkf,
-          _String,tkf,
-          _List,tkf[[1]],
-          _,Default]/.Default->DefaultTickFont[StandardScale*ws,0.5]},
+        {font1,font2}=Switch[tkf,
+          _String,{tkf,tkf},
+          _List,{FFont[tkf,1],FFont[tkf,3]},
+          _,Default]/.
+        Default->{
+          DefaultTickFont[StandardScale*ws,0.5,1],
+          DefaultTickFont[StandardScale*ws,0.5,3]}},
       If[tick<=>{},
         yl={y,y1}=Second[Canvas$PlotRange];
         DrawGrid[`X,gr,yl,Mt,mt,grtag];
@@ -1095,10 +1118,10 @@ CanvasGraphics=Class[{},
             Tags->{ftag2,FrameTag}}];
         Catch[
           FrameTickX[TitlePosition["BOTTOM",""][[1,2]],"n",
-            Mt,logdt,"L"//ftag1,font,TickFun[ftb,True|Both],ful[[1]]]];
+            Mt,logdt,"L"//ftag1,font1,TickFun[ftb,True|Both],ful[[1]]]];
         Catch[
           FrameTickX[TitlePosition["TOP",""][[1,2]],"s",
-            Mt,logdt,"L"//ftag2,font,TickFun[ftt,Both],ful[[3]]]];
+            Mt,logdt,"L"//ftag2,font2,TickFun[ftt,Both],ful[[3]]]];
         ]];
 
     FrameY[ftl_,ftr_,ts_,gr_,ws_,tkf_,frt_,ful_,n_]:=Module[
@@ -1106,10 +1129,12 @@ CanvasGraphics=Class[{},
         x,x1,tcs,pw=0,ftrx,ftlx,i,apr,xl,
         {ftag1,ftag2,grtag}={
           "F$Y1"//Canvas$Frame,"F$Y2"//Canvas$Frame,"G$Y"//Canvas$Frame},
-        font=Switch[tkf,
-          _String,tkf,
-          _List,tkf[[2]],
-          _,Default]/.Default->DefaultTickFont[StandardScale*ws,0.35]},
+        {font1,font2}=Switch[tkf,
+          _String,{tkf,tkf},
+          _List,{FFont[tkf,2],FFont[tkf,4]},
+          _,Default]/.Default->{
+            DefaultTickFont[StandardScale*ws,0.35,2],
+            DefaultTickFont[StandardScale*ws,0.35,4]}},
       {tick,Mt,mt,logdt}=CanvasDrawerTicks[
         pr=Second[Canvas$PlotRange],ts/Abs[First[Canvas$Scale]],
         StandardScale*ws*1.2,ax=Second[Canvas$Axes]];
@@ -1155,10 +1180,10 @@ CanvasGraphics=Class[{},
         ];
         Catch[
           FrameTickY[TitlePosition["LEFT CENTER",""][[1,1]],"e",
-            Mt,logdt,"L"//ftag1,font,TickFun[ftl,True|Both],ful[[2]]]];
+            Mt,logdt,"L"//ftag1,font1,TickFun[ftl,True|Both],ful[[2]]]];
         Catch[
           FrameTickY[TitlePosition["RIGHT CENTER",""][[1,1]],"w",
-            Mt,logdt,"L"//ftag2,font,TickFun[ftr,True|Both],ful[[4]]]];
+            Mt,logdt,"L"//ftag2,font2,TickFun[ftr,True|Both],ful[[4]]]];
       ];
     ];
 
@@ -1207,17 +1232,44 @@ CanvasGraphics=Class[{},
       s[1,2]==="-.","-0"//s[2,-1],
       True,s]]];
 
-  UnitLabelX["",__]=Null;
-  UnitLabelX[ful_,tag_,font_]:=With[{bb=CanvasWidget[BBox[tag]]},
-    CanvasWidget[Create$Text] = {{bb[[3]],(bb[[2]]+bb[[4]])/2},
-      Text->" "//ful,Anchor->"w",Tags->{tag,FrameTag},Font->font}];
-  UnitLabelY["",__]=Null;
-  UnitLabelY[exps_,fltag_,font_,anc_]:=Module[{bb=CanvasWidget[BBox[fltag]]},
-    CanvasWidget[Create$Text] = {
-      {bb[[Switch[anc,"e",3,_,1]]],bb[[2]]-2},
-      Text->exps,
-      Font->font,Tags->{"E"//fltag,FrameTag},
-      Anchor->"s"//anc}];
+  UnitLabelX[""|" ",__]=Null;
+  UnitLabelX[ful_,fltag_,font_,"n"]:=
+    Module[{bb=CanvasWidget[BBox[fltag]],bbfly2=CanvasWidget[BBox["LF$Y2"//Canvas$Frame]],
+      et="E"//fltag,dy},
+      CanvasWidget[Create$Text] = {{bb[[3]],(bb[[2]]+bb[[4]])/2},
+        Text->" "//ful,Anchor->"w",Tags->{et,FrameTag},Font->font};
+      If[bbfly2<=>{},
+        If[(dy=CanvasWidget[BBox[et]][[2]]-bbfly2[[4]])<=0,
+          CanvasWidget[Move]={et,0,1-dy}]]];
+  UnitLabelX[ful_,fltag_,font_,"s"]:=
+    Module[{bb=CanvasWidget[BBox[fltag]],bbfly2=CanvasWidget[BBox["LF$Y2"//Canvas$Frame]],
+      et="E"//fltag,dy},
+      CanvasWidget[Create$Text] = {{bb[[3]],(bb[[2]]+bb[[4]])/2},
+        Text->" "//ful,Anchor->"w",Tags->{et,FrameTag},Font->font};
+      If[bbfly2<=>{},
+        If[(dy=CanvasWidget[BBox[et]][[4]]-bbfly2[[2]])>=0,
+          CanvasWidget[Move]={et,0,-1-dy}]]];
+  UnitLabelY[""|" ",__]=Null;
+  UnitLabelY[exps_,fltag_,font_,"e"]:=
+    Module[{bb=CanvasWidget[BBox[fltag]],bbf=CanvasWidget[BBox[fltag[2,-1]]],
+      et="E"//fltag},
+      CanvasWidget[Create$Text] = {
+        {bbf[[1]]-2,Max[bb[[2]],bbf[[2]]]-2},
+        Text->exps,Font->font,Tags->{et,FrameTag},
+        Anchor->"ne"};
+      If[CanvasWidget[BBox[et]][[4]]>=bb[[2]],
+        CanvasWidget[Move]={et,bb[[1]]-bbf[[1]],0}]
+      ];
+  UnitLabelY[exps_,fltag_,font_,"w"]:=
+    Module[{bb=CanvasWidget[BBox[fltag]],bbf=CanvasWidget[BBox[fltag[2,-1]]],
+      et="E"//fltag},
+      CanvasWidget[Create$Text] = {
+        {bbf[[3]]+2,Max[bb[[2]],bbf[[2]]]-2},
+        Text->exps,Font->font,Tags->{et,FrameTag},
+        Anchor->"nw"};
+      If[CanvasWidget[BBox[et]][[4]]>=bb[[2]],
+        CanvasWidget[Move]={et,bb[[3]]-bbf[[3]],0}]
+      ];
 
   FrameTickX[yy_,anc_,Mt_,logdt_,fltag_,font_,fun_List,ful_]:=
     (Switch[First[Canvas$Axes],
@@ -1233,7 +1285,7 @@ CanvasGraphics=Class[{},
         Null@@Override[Null@@(FtOption/@Flatten[{##2}]),
           Anchor->anc,Tags->{fltag,FrameTag},
           Font->font]})&@@[fun,{1}]];
-      UnitLabelX[ful,fltag,font];
+      UnitLabelX[ful,fltag,font,anc];
       AppendTo[TickLabels,fltag]);
 
   FrameTickY[x2_,anc_,Mt_,logdt_,fltag_,font_,fun_List,ful_]:=
@@ -1274,12 +1326,8 @@ CanvasGraphics=Class[{},
                 Anchor->anc,Text->s,Tags->{fltag,FrameTag},
                 Font->font]})&,Mt];
           If[exp<>1,
-            CanvasWidget[Create$Text] = {
-              {CanvasWidget[BBox[fltag]][[3]]+8,yy},
-              Text->exps//ful,
-              Font->font,Tags->{etag,FrameTag},
-              Anchor->anc//"w"},
-            UnitLabelX[ful,fltag,font]],
+            UnitLabelX[exps//ful,fltag,font,anc],
+            UnitLabelX[ful,fltag,font,anc]],
           Log,
           Scan[(
             StandardForm[$FORM="";s="10`u"//#];
@@ -1288,7 +1336,7 @@ CanvasGraphics=Class[{},
               Null@@Override[Null@@fun[#,1,s],
                 Anchor->anc,Text->s,Tags->{fltag,FrameTag},
                 Font->font]})&,Mt];
-          UnitLabelX[ful,fltag,font],
+          UnitLabelX[ful,fltag,font,anc],
           Date,
           s0="";
           Scan[(s=DateString[#];
@@ -1303,7 +1351,7 @@ CanvasGraphics=Class[{},
   
   FrameTickY[x2_,anc_,Mt_,logdt_,fltag_,font_,fun_:({}&),ful_]:=
     Module[{fm,zero,s0,logt,s,sout,{texp,exps,exp}=TickExp[Mt],n=0},
-      exps=exps//ful//" ";
+      exps=exps//ful;
       Switch[Second[Canvas$Axes],
         Linear,
         logt=Ceiling[Log[10,Max[Abs[First[Mt]],
@@ -1819,13 +1867,13 @@ CanvasGraphics=Class[{},
           CanvasWidget[Create$Text] = {{x0+dx+d1,y},
             Text->tx,Anchor->"w",
             Font->TextFont[DefaultFont,
-              Round[Min[15*StandardScale,(wy-d2*2-3)/(Length[l]+1)/1.7]]],
+              Round[LegendFontScale*Min[15*StandardScale,(wy-d2*2-3)/(Length[l]+1)/1.7]]],
               legtag},
           _List,
           {txfont,txsize,txcol}={TextFont,TextSize,PlotColor}/.Rest[tx]/.txdef;
           CanvasWidget[Create$Text] = {{x0+dx+d1,y},
             Text->First[tx],Anchor->"w",Fill->txcol,
-            Font->TextFont[Null@@txfont,DefaultFont,Round[15*txsize*StandardScale]],
+            Font->TextFont[Null@@txfont,DefaultFont,Round[15*txsize*StandardScale*LegendFontScale]],
             legtag}
           ];
         y += (CanvasWidget[BBox[ls]][[4]] - y)*2;
@@ -1868,12 +1916,12 @@ CanvasGraphics=Class[{},
     LegendPos = p;
     ];
 
-  AdjustLegend1[ls_,r_,ida_]:=Module[{
+  AdjustLegend1[ls_,r_,r1_,ida_]:=Module[{
     id=Join[BGItems,ida],
     novmin=Infinity,zrmin,zr=CanvasWidget[BBox[ls]],ov,nov,d=10,dx,dy},
+    If[r<=>r1,
       zrmin=zr;
       While[ov=Complement[CanvasWidget[Find$Overlapping[zr]],id];
-!        Print[{zr,r,ov}];
         nov=Length[ov];
         nov>0,
         If[nov<novmin,
@@ -1888,14 +1936,34 @@ CanvasGraphics=Class[{},
             CanvasWidget[Move] = {ls, {dx,dy}},
             CanvasWidget[Move] = {ls, (zrmin-zr)[[{1,2}]]};
             zr=zrmin;
-            Break[]]]]];
+            Break[]]]],
+      CanvasWidget[Move]={ls,{r[[1,1]]+30-zr[[1]],0}};
+      zrmin=zr=CanvasWidget[BBox[ls]];
+      While[ov=Complement[CanvasWidget[Find$Overlapping[zr]],id];
+        nov=Length[ov];
+        nov>0,
+        If[nov<novmin,
+          novmin=nov;
+          zrmin=zr];
+        If[zr[[4]]<r[[2,2]]-30,
+          CanvasWidget[Move] = {ls, {0,d}};
+          zr+={0,d,0,d},
+          If[zr[[3]]<r[[2,1]]-30,
+            {dx,dy}={d,r[[1,2]]+10-zr[[2]]};
+            zr+={dx,dy,dx,dy};
+            CanvasWidget[Move] = {ls, {dx,dy}},
+            CanvasWidget[Move] = {ls, (zrmin-zr)[[{1,2}]]};
+            zr=zrmin;
+            Break[]]]]
+      ]];
 
-  AdjustLegend[]:=Module[{rl=Reverse[Legends],ida={}},
-!    Print["AL ",Legends];
-    AdjustLegend1@@[
-      Reverse[Thread[Append[Thread[Legends],(ida=Join[ida,CanvasWidget[Find$WithTag[#[[1]]]]])&/@Legends]]],{1}]];
-
-(AdjustLegend1@@[Reverse[Legends],{1}]);
+  AdjustLegend[]:=Module[{rl=Reverse[Legends],ida={},l,r,r1},
+    If[rl<=>{},
+      {l,r}=Thread[rl];
+      r1=RotateRight[r];
+      AdjustLegend1@@[
+        Thread[{l,r,r1,
+          (ida=Join[ida,CanvasWidget[Find$WithTag[#[[1]]]]])&/@rl}],{1}]]];
 
   Canvas$FrameClick[fr_, opt___] := Module[
     {d=4,sc,vperm,gr,xyr,r,ax1,ax2,ay1,ay2,gl},
@@ -1969,5 +2037,9 @@ The$CanvasObject:=StandardForm[
     Canvas$Widget=Canvas$Canvas,
     Canvas$Widget=The$Canvas];
   The$CanvasObject];
+If[RealQ[Default$CanvasFontScale],
+  The$CanvasObject@FontScale=Default$CanvasFontScale];
+If[RealQ[Default$CanvasTickFontScale],
+  The$CanvasObject@TickFontScale=Default$CanvasTickFontScale];
 
 Canvas::busy="Canvas `1` is busy";

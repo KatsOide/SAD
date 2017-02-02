@@ -115,7 +115,8 @@ c     $     beam(1)
         codplt=.false.
         int0=intra
         calint=.false.
-        call tturne1(trans,cod,beam,0,0,0,.false.,sol,.false.,k,k)
+        call tturne1(trans,cod,beam,
+     $       int8(0),int8(0),int8(0),0,.false.,sol,.false.,k,k)
         codplt=cp0
         calint=int0
         call qfracsave(k,vsave,nvar,.false.)

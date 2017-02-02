@@ -1,4 +1,5 @@
       subroutine tpara()
+      use kyparam
       use tfstk
       use tmacro
       use sad_main
@@ -7,7 +8,7 @@
       use wsbb, only:nblist
       implicit none
       type (sad_comp), pointer :: cmp
-      integer*4 lele,l
+      integer*4 lele,l,kyl
       integer*8 ib,id
       real*8 dir,phi,f1,al,psi1,psi2,theta,dtheta,w,akk,sk1
       if(tparaed)then
@@ -19,7 +20,12 @@
         call compelc(l,cmp)
         lele=idtype(cmp%id)
         dir=direlc(l)
-        al=cmp%value(kytbl(kwL,lele))
+        kyl=kytbl(kwL,lele)
+        if(kyl .ne. 0)then
+          al=cmp%value(kyl)
+        else
+          al=0.d0
+        endif
 c     go to (1010,1200,1010,1400,1010,1600,1010,1600,1010,1600,
 c     1         1010,1600,1010,1010,1010,1010,1010,1800,1900,1010,
 c     1         2100,2200,1010,1010,1010,1010,1010,1010,1010,1010,
@@ -30,30 +36,32 @@ c     go to 5000
         case (icBEND)
           ib=ktaloc(14)
           id=idvalc(l)
-          phi=cmp%value(kytbl(kwANGL,icBEND))
+          phi=cmp%value(ky_ANGL_BEND)
           cmp%param=ib
-          f1=cmp%value(15)
-          if(f1 .ne. 0.d0 .and. nint(cmp%value(16)) .ne. 0 .and.
+          f1=cmp%value(ky_F1_BEND)
+          if(f1 .ne. 0.d0 .and.
+     $         nint(cmp%value(ky_COUPLE_BEND)) .ne. 0 .and.
      1         al .ne. 0.d0 .and. phi .ne. 0.d0)then
             al=al
-     1           -(phi*f1)**2/cmp%value(1)/24.d0
-     1           *sin(.5d0*phi*(1.d0-cmp%value(3)-cmp%value(4)))
+     1           -(phi*f1)**2/cmp%value(ky_L_BEND)/24.d0
+     1           *sin(.5d0*phi*
+     $           (1.d0-cmp%value(ky_E1_BEND)-cmp%value(ky_E2_BEND)))
      $           /sin(.5d0*phi)
           endif
           rlist(ib  )=al
           if(dir .gt. 0.d0)then
-            psi1=cmp%value(kytbl(kwE1,icBEND))*phi
-     $           +cmp%value(kytbl(kwAE1,icBEND))
-            psi2=cmp%value(kytbl(kwE2,icBEND))*phi
-     $           +cmp%value(kytbl(kwAE2,icBEND))
+            psi1=cmp%value(ky_E1_BEND)*phi
+     $           +cmp%value(ky_AE1_BEND)
+            psi2=cmp%value(ky_E2_BEND)*phi
+     $           +cmp%value(ky_AE2_BEND)
           else
-            psi1=cmp%value(kytbl(kwE2,icBEND))*phi
-     $           +cmp%value(kytbl(kwAE2,icBEND))
-            psi2=cmp%value(kytbl(kwE1,icBEND))*phi
-     $           +cmp%value(kytbl(kwAE1,icBEND))
+            psi1=cmp%value(ky_E2_BEND)*phi
+     $           +cmp%value(ky_AE2_BEND)
+            psi2=cmp%value(ky_E1_BEND)*phi
+     $           +cmp%value(ky_AE1_BEND)
           endif
-          dtheta=cmp%value(kytbl(kwDROT,icBEND))
-          theta=cmp%value(kytbl(kwROT,icBEND))+dtheta
+          dtheta=cmp%value(ky_DROT_BEND)
+          theta=cmp%value(ky_ROT_BEND)+dtheta
           rlist(ib+1)=cos(psi1)
           rlist(ib+2)=sin(psi1)
           rlist(ib+3)=cos(psi2)
@@ -77,14 +85,14 @@ c     go to 5000
           ib=ktaloc(10)
           cmp%param=ib
           if(al .ne. 0.d0)then
-            akk=cmp%value(kytbl(kwK1,icQUAD))/al
+            akk=cmp%value(ky_K1_QUAD)/al
             rlist(ib)  =sqrt(abs(akk))
             call tsetfringep(cmp,icQUAD,dir,akk,rlist(ib+6:ib+9))
           else
             rlist(ib)=1.d100
             rlist(ib+6:ib+9)=0.d0
           endif
-          theta=cmp%value(4)
+          theta=cmp%value(ky_ROT_QUAD)
           rlist(ib+2)=cos(theta)
           rlist(ib+3)=sin(theta)
           rlist(ib+4)=theta
@@ -93,7 +101,7 @@ c     go to 5000
         case (icSEXT,icOCTU,icDECA,icDODECA)
           ib=ktaloc(5)
           cmp%param=ib
-          theta=cmp%value(4)
+          theta=cmp%value(ky_ROT_THIN)
           rlist(ib+2)=cos(theta)
           rlist(ib+3)=sin(theta)
           rlist(ib+4)=theta
@@ -106,23 +114,23 @@ c     go to 5000
         case (icWIG)
           call twigp()
 
-        case (icST)
-          ib=ktaloc(5)
-          cmp%param=ib
-          theta=cmp%value(3)
-          rlist(ib+2)=cos(theta)
-          rlist(ib+3)=sin(theta)
-          rlist(ib+4)=theta
+c$$$        case (icST)
+c$$$          ib=ktaloc(5)
+c$$$          cmp%param=ib
+c$$$          theta=cmp%value(3)
+c$$$          rlist(ib+2)=cos(theta)
+c$$$          rlist(ib+3)=sin(theta)
+c$$$          rlist(ib+4)=theta
 
         case (icMULT)
           ib=ktaloc(5)
           cmp%param=ib
           if(al .ne. 0.d0)then
-            sk1=cmp%value(kytbl(kwSK1,icMULT))
+            sk1=cmp%value(ky_SK1_MULT)
             if(sk1 .eq. 0.d0)then
-              akk=cmp%value(kytbl(kwK1,icMULT))/al
+              akk=cmp%value(ky_K1_MULT)/al
             else
-              akk=sqrt(cmp%value(kytbl(kwK1,icMULT))**2+sk1**2)/al
+              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
             endif
             call tsetfringep(cmp,icMULT,dir,akk,rlist(ib+1:ib+4))
           else

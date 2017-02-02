@@ -4,7 +4,9 @@
       use ffs
       use ffs_pointer
       use tffitcode
+      use ffs_fit, only:ffs_stat
       implicit none
+      type (ffs_stat) optstat
       integer*4 ndp,maxdp,ntmax
       real*8 dpstep,em0
       parameter (ndp=30,maxdp=ndp*2,dpstep=.001d0,ntmax=6100,em0=1.d-8)
@@ -15,11 +17,10 @@
       integer*4 mx(maxdp,ns),my(maxdp,ns),i,j,mdp,mdpx,
      $     ns,lfno,i1,k,n,nl,nsc
       character rad62
-      logical cell0,over,hstab,vstab
-      real*8 tracex,tracey
+      logical cell0,over
       cell0=cell
       cell=.true.
-      call qcell(0,hstab,vstab,tracex,tracey,.false.,over)
+      call qcell(0,optstat,.false.)
       cell=.false.
       do 1 i=11,ntwissfun
         twiss(1,0,i)=0.d0

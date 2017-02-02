@@ -4,6 +4,7 @@
       use ffs_flag
       use tmacro
       use ffs_pointer, only:inext,iprev
+      use tfstk, only:pxy2dpz,sqrt1
       implicit none
       logical*4 enarad,chro,fringe,kin
       integer*4 ndiv,np,l,i,mfring,n
@@ -12,6 +13,7 @@
      $     f1in,f1out,f2in,f2out,
      $     p,a,ea,b,pxi,pxf,pyf,b1,eps,akin,sqrtk,alx,dpz,r,xi,yi,akk,
      $     phi,s,t,th,u,a11,a12,b11,b12,a21,b21,aln,pti,ei
+      real*8, parameter :: ampmax=0.9999d0
       if(al .le. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,pz,4,l,0.d0,ak,
      $             dx,dy,theta,cost,sint, 1.d0,.false.)
@@ -94,10 +96,11 @@ c          p=(1.d0+g(i))**2
         endif
         if(ak .gt. 0.d0)then
           do 100 i=1,np
-            a=min(.99d0,px(i)**2+py(i)**2)
-            dpz=akin*a*(-.5d0-a*(.125d0+a*.0625d0))
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+            a=px(i)**2+py(i)**2
+            dpz=akin*sqrt1(-a)
+c            dpz=akin*a*(-.5d0-a*(.125d0+a*.0625d0))
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             r=-dpz/(1.d0+dpz)*alx
             xi  =x(i)+px(i)*r
             yi  =y(i)+py(i)*r
@@ -132,10 +135,11 @@ c     1           xi*x(i)*a21+yi*y(i)*b21)*.5d0
 100       continue
         else
           do 110 i=1,np
-            a=min(.99d0,px(i)**2+py(i)**2)
-            dpz=akin*a*(-.5d0-a*(.125d0+a*.0625d0))
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+            a=px(i)**2+py(i)**2
+            dpz=akin*sqrt1(-a)
+c            dpz=akin*a*(-.5d0-a*(.125d0+a*.0625d0))
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             r=-dpz/(1.d0+dpz)*alx
             xi  =x(i)+px(i)*r
             yi  =y(i)+py(i)*r
@@ -177,10 +181,11 @@ c      if(abs(x(1)) .gt. 0.05d0)then
 c        write(*,*)'tquad ',np,x(1),px(1)
 c      endif
       do 2050 i=1,np
-        a=min(.99d0,px(i)**2+py(i)**2)
-        dpz=akin*a*(-.5d0-a*(.125d0+a*.0625d0))
-        dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-        dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+        a=px(i)**2+py(i)**2
+        dpz=akin*sqrt1(-a)
+c        dpz=akin*a*(-.5d0-a*(.125d0+a*.0625d0))
+c        dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c        dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
         r=-dpz/(1.d0+dpz)*aln*.5d0
         x(i)=x(i)+px(i)*r
         y(i)=y(i)+py(i)*r
@@ -233,7 +238,7 @@ c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
       real*8 fact(0:nmult)
       real*8 thr,rhor,an,ur,dprad,theta,sint,cost,dx,dy,al,ak,
-     $     ala,alb,aki,akf,a,dpz,al1,sp,radlvl,brad,de,delp,dp,h1,hh,
+     $     ala,alb,aki,akf,dpz,al1,sp,radlvl,brad,de,delp,dp,h1,hh,
      $     f1,f2,f3,f4,f5,xi,yi,zi,pr,r,rcx1,p,pxi,rk1,rk
       complex*16 cx
       logical enarad,fringe
@@ -268,10 +273,11 @@ c     end   initialize for preventing compiler warning
         ala=al*alpha1
         alb=al*alpha
         do 10 i=1,np
-          a=px(i)**2+py(i)**2
-          dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c          a=px(i)**2+py(i)**2
+          dpz=pxy2dpz(px(i),py(i))
+c          dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
+c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
           al1=ala/(1.d0+dpz)
           x(i)=x(i)+px(i)*al1
           y(i)=y(i)+py(i)*al1
@@ -354,10 +360,11 @@ c            pr=(1.d0+g(i))**2
       if(al .gt. 0.d0)then
         if(kord .le. 0)then
           do 1030 i=1,np
-            a=px(i)**2+py(i)**2
-            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c            a=px(i)**2+py(i)**2
+            dpz=pxy2dpz(px(i),py(i))
+c            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             al1=alb/(1.d0+dpz)*2.d0
             x(i)=x(i)+px(i)*al1
             y(i)=y(i)+py(i)*al1
@@ -370,10 +377,11 @@ c            pr=(1.d0+g(i))**2
           f4=.5d0*beta*al
           f5=f2
           do 1031 i=1,np
-            a=px(i)**2+py(i)**2
-            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c            a=px(i)**2+py(i)**2
+            dpz=pxy2dpz(px(i),py(i))
+c            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             al1=alb/(1.d0+dpz)
             xi  =x(i)+px(i)*al1
             yi  =y(i)+py(i)*al1
@@ -391,10 +399,11 @@ c            pr=(1.d0+g(i))**2
      1        -aki*(f2*yi  *rcx1
      1             +f3*r*imag(cx)) )
             zi  =zi  +aki**2*r*(f4*r-f5*aki*rcx1)
-            a=px(i)**2+py(i)**2
-            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c            a=px(i)**2+py(i)**2
+            dpz=pxy2dpz(px(i),py(i))
+c            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             al1=alb/(1.d0+dpz)
             x(i)=xi  +px(i)*al1
             y(i)=yi  +py(i)*al1
@@ -406,10 +415,11 @@ c            pr=(1.d0+g(i))**2
           f4=.5d0*f1
           f5=f3
           do i=1,np
-            a=px(i)**2+py(i)**2
-            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c            a=px(i)**2+py(i)**2
+            dpz=pxy2dpz(px(i),py(i))
+c            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             al1=alb/(1.d0+dpz)
             xi  =x(i)+px(i)*al1
             yi  =y(i)+py(i)*al1
@@ -419,10 +429,11 @@ c            pr=(1.d0+g(i))**2
             px(i)=px(i)+aki**2*(f1-aki*f3)*xi
             py(i)=py(i)+aki**2*(f1+aki*f3)*yi
             zi  =zi  +aki**2*(f4*r-f5*aki*rcx1)
-            a=px(i)**2+py(i)**2
-            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c            a=px(i)**2+py(i)**2
+            dpz=pxy2dpz(px(i),py(i))
+c            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             al1=alb/(1.d0+dpz)
             x(i)=xi  +px(i)*al1
             y(i)=yi  +py(i)*al1
@@ -435,10 +446,11 @@ c            pr=(1.d0+g(i))**2
           f4=.5d0*beta*al
           f5=2.d0*gamma*kord*al**2
           do 1032 i=1,np
-            a=px(i)**2+py(i)**2
-            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c            a=px(i)**2+py(i)**2
+            dpz=pxy2dpz(px(i),py(i))
+c            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             al1=alb/(1.d0+dpz)
             xi  =x(i)+px(i)*al1
             yi  =y(i)+py(i)*al1
@@ -458,10 +470,11 @@ c            pr=(1.d0+g(i))**2
      1        -aki*(f2*rk1*yi  *rcx1
      1             +f3*rk*imag(cx)) )
             zi  =zi  +aki**2*rk*(f4*r-f5*aki*rcx1)
-            a=px(i)**2+py(i)**2
-            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c            a=px(i)**2+py(i)**2
+            dpz=pxy2dpz(px(i),py(i))
+c            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             al1=alb/(1.d0+dpz)
             x(i)=xi  +px(i)*al1
             y(i)=yi  +py(i)*al1
@@ -485,10 +498,11 @@ c            aki=akf/(1.d0+g(i))**2
 1040      continue
         endif
         do 1050 i=1,np
-          a=px(i)**2+py(i)**2
-          dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c          a=px(i)**2+py(i)**2
+          dpz=pxy2dpz(px(i),py(i))
+c          dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
+c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
           al1=ala/(1.d0+dpz)
           x(i)=x(i)+px(i)*al1
           y(i)=y(i)+py(i)*al1
@@ -517,7 +531,7 @@ c
       real*8 fact(0:nmult)
       real*8 dx,dy,theta,cost,sint,an,sp,akfl,akf,alsum,aln,
      $     al0,pr,thr,alx,al1,aki,dpx,dpy,alr,prob,bxa,bya,
-     $     delp,xi,pxi,ak,al,h1,a,dpz
+     $     delp,xi,pxi,ak,al,h1,dpz
       real*8 dprad,dpradx,dprady
       real*8 tran
       complex*16 cx
@@ -583,10 +597,11 @@ c        delp=g(i)*(2.d0+g(i))
         pr=1.d0+delp
         sp=sp-dprad
         if(alx .ne. 0.d0)then
-          a=px(i)**2+py(i)**2
-          dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c          a=px(i)**2+py(i)**2
+          dpz=pxy2dpz(px(i),py(i))
+c          dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
+c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
+c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
           al1=alx/(1.d0+dpz)
           x(i)=x(i)+px(i)*al1
           y(i)=y(i)+py(i)*al1

@@ -11,7 +11,7 @@
      $       anbunch,tdummy(6),zlost,alost,
      $       taurdx,taurdy,taurdz,fridiv,beamin(21),
      $       vccos,vcsin,vcphic,vcalpha,vceff,
-     $       vcacc,dvcacc,ddvcacc,
+     $       vcacc,dvcacc,ddvcacc,alphap,
      $       pspac_dx,pspac_dy,pspac_dz,dvfs,rcratio,rclassic,brhoz,
      $       bradprev
         integer*8 ilattp,lspect,ipoltr,ipolb,ipoll,ipolid,ipolo
@@ -170,12 +170,20 @@ c$$$  endif
      $     mfitdx=mfitdetr+1,mfitdpx=mfitdx+1,
      $     mfitdy=mfitdpx+1,mfitdpy=mfitdy+1,
      $     mfitdz=mfitdpy+1,mfitddp=mfitdz+1,
-     $     mfitpex=mfitddp+1,mfitpepx=mfitpex+1,
+     $     mfitaz=mfitddp+1,mfitbz=mfitaz+1,mfitnz=mfitbz+1,
+     $     mfitzx=mfitnz+1,mfitzpx=mfitzx+1,
+     $     mfitzy=mfitzpx+1,mfitzpy=mfitzy+1,
+     $     mfitpex=mfitzpy+1,
+     $     mfitpepx=mfitpex+1,
      $     mfitpey=mfitpepx+1,mfitpepy=mfitpey+1,
-     $     mfittrx=mfitpepy+1,mfittry=mfittrx+1,mfitleng=mfittry+1,
+     $     mfitpzx=mfitpepy+1,
+     $     mfitpzpx=mfitpzx+1,
+     $     mfitpzy=mfitpzpx+1,mfitpzpy=mfitpzy+1,
+     $     mfittrx=mfitpzpy+1,
+     $     mfittry=mfittrx+1,mfitleng=mfittry+1,
      $     mfitgx=mfitleng+1,mfitgy=mfitgx+1,mfitgz=mfitgy+1,
      $     mfitchi1=mfitgz+1,mfitchi2=mfitchi1+1,mfitchi3=mfitchi2+1,
-     $     ntwissfun=mfitddp,mfito=mfittry,mfit=mfitchi3,
+     $     ntwissfun=mfitzpy,mfito=mfittry,mfit=mfitchi3,
      $     mfit1=mfit+12
       end module
 
@@ -220,7 +228,7 @@ c$$$  endif
      $       rad,rfsw,radcod,calcod,
      $       intra,trpt,emiout,gauss,
      $       bipol,cell,ffsprmpt,dapert,
-     $       fseed,ideal,codplt,canon,
+     $       fseed,ideal,codplt,calc6d,
      $       calpol,rfluct,cmplot,fourie,
      $       trsize,simulate,absweit,jitter,
      $       trgauss,lwake,twake,smearp,
@@ -237,7 +245,7 @@ c$$$  endif
      $     'RAD     ','RFSW    ','RADCOD  ','COD     ',
      1     'INTRA   ','TRPT    ','EMIOUT  ','GAUSS   ',
      1     'BIPOL   ','CELL    ','FFSPRMPT','DAPERT  ',
-     1     'FIXSEED ','IDEAL   ','CODPLOT ','CANON   ',
+     1     'FIXSEED ','IDEAL   ','CODPLOT ','CALC6D  ',
      1     'POL     ','FLUC    ','CMPLOT  ','FOURIER ',
      1     'TRACKSIZ','SIMULATE','ABSW    ','JITTER  ',
      1     'TRGAUSS ','LWAKE   ','TWAKE   ','BARYCOD ',
@@ -250,7 +258,7 @@ c$$$  endif
      $     '        ','        ','        ','        ',
      1     '        ','RING    ','        ','UNIFORM ',
      1     'UNIPOL  ','INS     ','        ','        ',
-     1     'MOVESEED','REAL    ','        ','        ',
+     1     'MOVESEED','REAL    ','        ','CALC4D  ',
      1     '        ','DAMPONLY','        ','        ',
      1     '        ','OPERATE ','RELW    ','QUIET   ',
      1     'TRUNI   ','        ','        ','        ',
@@ -270,6 +278,12 @@ c$$$  endif
       integer*4, pointer :: ndim,ndima,nele,nfit,marki,iorgx,iorgy,
      $     iorgr,mfpnt,mfpnt1,id1,id2,nve
       logical*4 , pointer :: updatesize
+
+      type ffs_bound
+      sequence
+      integer*4 lb,le
+      real*8 fb,fe
+      end type
 
       contains
         subroutine tffsvinit
@@ -462,7 +476,7 @@ c$$$  endif
      $       rad,rfsw,radcod,calcod,
      $       intra,trpt,emiout,gauss,
      $       bipol,cell,ffsprmpt,dapert,
-     $       fseed,ideal,codplt,canon,
+     $       fseed,ideal,codplt,calc6d,
      $       calpol,rfluct,cmplot,fourie,
      $       trsize,simulate,absweit,jitter,
      $       trgauss,lwake,twake,smearp,
@@ -504,7 +518,7 @@ c$$$  endif
         twake=>fff%twake
         smearp=>fff%smearp
         bunchsta=>fff%bunchsta
-        canon=>fff%canon
+        calc6d=>fff%calc6d
         cellstab=>fff%cellstab
         spac=>fff%spac
         radlight=>fff%radlight
@@ -688,6 +702,30 @@ c$$$  endif
         return
         end subroutine
 
+        integer*4 function nextl(i)
+        use tmacro, only:nlat
+        use mackw
+        implicit none
+        integer*4 i,it,i1,k
+        type (sad_comp), pointer :: cmp
+        i1=i+1
+ 1      if(i1 .ge. nlat)then
+          nextl=nlat
+        else
+          it=idtypec(i1)
+          k=kytbl(kwOFFSET,it)
+          if(k .ne. 0)then
+            call loc_comp(elatt%comp(i1),cmp)
+            if(cmp%value(k) .ne. 0.d0)then
+              i1=i1+1
+              go to 1
+            endif
+          endif
+          nextl=i1
+        endif
+        return
+        end function
+
         subroutine tsetfringep(cmp,ic,dir,akk,table)
         use mackw
         implicit none
@@ -758,29 +796,37 @@ c$$$  endif
       module ffs_fit
       use ffs, only:ntwissfun,maxcond
       use tffitcode, only:mfit1
+      type ffs_stat
+        real*8 tracex,tracey,tracez
+        logical*4 stabx,staby,stabz,over
+      end type
       integer*4 , parameter :: ndimmax=500
+      type (ffs_stat) optstat(-ndimmax:ndimmax)
       integer*4 iuid(-ndimmax:ndimmax),
      $     jfam(-ndimmax:ndimmax),kfam(-ndimmax:ndimmax)
       real*8 dp(-ndimmax:ndimmax),scale(mfit1),
-     $     tracex(-ndimmax:ndimmax),tracey(-ndimmax:ndimmax),
      $     dfam(4,-ndimmax:ndimmax),residual(-ndimmax:ndimmax),
      $     uini(ntwissfun,-ndimmax:ndimmax),wfit(maxcond),
      $     wiq(maxcond)
-      logical*4 hstab(-ndimmax:ndimmax),vstab(-ndimmax:ndimmax)
       logical*4 fitflg,geomet,inicond,chgini
       integer*4 nut,nfam,nfam1,nfr,nqcol,nqcol1,nfcol,nfc0
       real*8 wexponent,offmw,etamax,avebeta,wsum
       character*8 , save :: nlist(1:mfit1)=(/
-     $     'AX      ','BX      ','NX      ','AY      ',
-     1     'BY      ','NY      ','EX      ','EPX     ',
-     1     'EY      ','EPY     ','R1      ','R2      ',
-     1     'R3      ','R4      ','DETR    ',
-     $     'DX      ','DPX     ',
-     1     'DY      ','DPY     ','DZ      ','DDP     ',
+     $     'AX      ','BX      ','NX      ',
+     $     'AY      ','BY      ','NY      ',
+     $     'EX      ','EPX     ','EY      ','EPY     ',
+     $     'R1      ','R2      ','R3      ','R4      ','DETR    ',
+     $     'DX      ','DPX     ','DY      ','DPY     ',
+     $     'DZ      ','DDP     ',
+     $     'AZ      ','BZ      ','NZ      ',
+     $     'ZX      ','ZPX     ','ZY      ','ZPY     ',
      1     'PEX     ','PEPX    ','PEY     ','PEPY    ',
-     $     'TRX     ','TRY     ','LENG    ','GX      ',
-     $     'GY      ','GZ      ','CHI1    ','CHI2    ',
-     $     'CHI3    ','DEX     ','DEPX    ','DEY     ',
+     1     'PZX     ','PZPX    ','PZY     ','PZPY    ',
+     $     'TRX     ','TRY     ',
+     $     'LENG    ',
+     $     'GX      ','GY      ','GZ      ',
+     $     'CHI1    ','CHI2    ','CHI3    ',
+     $     'DEX     ','DEPX    ','DEY     ',
      $     'DEPY    ','DDX     ','DDPX    ','DDY     ',
      $     'DDPY    ','PDEX    ','PDEPX   ','PDEY    ',
      $     'PDEPY   '/)
@@ -810,6 +856,7 @@ c$$$  endif
       end
 
       subroutine tffsinitparam
+      use kyparam
       use tfstk
       use ffs
       use ffs_pointer
@@ -820,19 +867,19 @@ c$$$  endif
       integer*8 j
       real*8 rgetgl1,sigz0
       j=idvalc(1)
-      emx=rlist(j+kytbl(kwEMIX,icMARK))
+      emx=rlist(j+ky_EMIX_MARK)
       if(emx .le. 0.d0)then
         emx=rgetgl1('EMITX')
       else
         call rsetgl1('EMITX',emx)
       endif
-      emy=rlist(j+kytbl(kwEMIY,icMARK))
+      emy=rlist(j+ky_EMIY_MARK)
       if(emy .le. 0.d0)then
         emy=rgetgl1('EMITY')
       else
         call rsetgl1('EMITY',emy)
       endif
-      dpmax=max(0.d0,rlist(j+kytbl(kwDP,icMARk)))
+      dpmax=max(0.d0,rlist(j+ky_DP_MARk))
       kdp=kxsymbolz('DP',2,symddp)
       if(dpmax .le. 1.d-30)then
         dpmax=rfromd(symddp%value)
@@ -841,13 +888,16 @@ c$$$  endif
         dpmax=0.01d0
       endif
       symddp%value=dfromr(dpmax)
-      if(rlist(latt(1)+kytbl(kwBX,icMARK)) .le. 0.d0)then
-        rlist(latt(1)+kytbl(kwBX,icMARK))=1.d0
+      if(rlist(latt(1)+ky_BX_MARK) .le. 0.d0)then
+        rlist(latt(1)+ky_BX_MARK)=1.d0
       endif
-      if(rlist(latt(1)+kytbl(kwBY,icMARK)) .le. 0.d0)then
-        rlist(latt(1)+kytbl(kwBY,icMARK))=1.d0
+      if(rlist(latt(1)+ky_BY_MARK) .le. 0.d0)then
+        rlist(latt(1)+ky_BY_MARK)=1.d0
       endif
-      sigz0=max(0.d0,rlist(j+kytbl(kwSIGZ,icMARk)))
+      if(rlist(latt(1)+ky_BZ_MARK) .le. 0.d0)then
+        rlist(latt(1)+ky_BZ_MARK)=1.d0
+      endif
+      sigz0=max(0.d0,rlist(j+ky_SIGZ_MARk))
       call rsetgl1('SIGZ',sigz0)
       return
       end

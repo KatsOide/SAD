@@ -1,4 +1,4 @@
-      recursive subroutine tbend(np,x,px,y,py,z,g,dv,pz,l,al,phib,phi0,
+      subroutine tbend(np,x,px,y,py,z,g,dv,pz,l,al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dphix,dphiy,cost,sint,
      1     fb1,fb2,mfring,fringe,
@@ -10,21 +10,18 @@
       use ffs_pointer, only:inext,iprev
       use multa, only:nmult
       implicit none
-      integer*4 np,mfring,i,l,ndiv,mfr1,mfr2,ndivmax
+      integer*4 np,mfring,i,l,ndiv,ndivmax
       parameter (ndivmax=1024)
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,ak,dx,dy,theta,
      $     dphix,dphiy,cost,sint,cosw,sinw,sqwh,sinwp1,eps,
      $     tanp1,tanp2,rhob,rho0,b,drhob,dp,p,
-     $     pinv,rhoe,pxi,pyi,s,dpzi,pzi,sp1,x1,dz1,y1,z1,px1,
+     $     pinv,rhoe,pxi,pyi,dpzi,pzi,sp1,x1,dz1,y1,z1,px1,
      $     py1,pv1sqi,f,ff,x2,py2,z2,dph2,ph2,dpx2,pz2,drho,
      $     t2,dpx3,px3,dpz3,pz3,t3,x3,da,y3,z3,pv2sqi,x4,py4,z4,dpz4,
      $     dz4,pr,xi,dxfr1,dyfr1,dzfr1,dxfr2,dyfr2,dzfr2,dpz32,
-     $     dyfra1,dyfra2,fa,t4,dpx3a,dpz2,t2t3,dcosp,px1px3,
-     $     psi1,psi2,wn1,wn2,wnc,aln,phibn,phi0n,alb,ale,ala,als,
-     $     fb1,fb2,eps1,f1r,f2r,
-     $     coswn1,sinwn1,sqwhn1,sinwp1n1,
-     $     coswnc,sinwnc,sqwhnc,sinwp1nc,
-     $     coswn2,sinwn2,sqwhn2,sinwp1n2
+     $     dyfra1,dyfra2,fa,t4,dpx3a,t2t3,dcosp,px1px3,
+     $     psi1,psi2,alb,ale,ala,als,
+     $     fb1,fb2,eps1,f1r,f2r
       real*8 a3,a5,a7,a9,a11,a13,a15
       parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
      1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
@@ -89,6 +86,8 @@
           py(i)=py(i)+dphiy/pr
         enddo
       endif
+      rhob=al/phib
+      rho0=al/phi0
       if(rad .and. enarad)then
         if(iprev(l) .eq. 0)then
           f1r=fb1
@@ -107,81 +106,13 @@
         ndiv=min(ndivmax,int(1+(abs(phi0)*
      $       max(h0/100.d0,1.d0/rphidiv)/eps1)))
         if(ndiv .gt. 1)then
-          aln=al/ndiv
-          phibn=phib/ndiv
-          phi0n=phi0/ndiv
-          psi1=atan2(sinp1,cosp1)
-          psi2=atan2(sinp2,cosp2)
-          wn1=phi0n-psi1
-          coswn1=cos(wn1)
-          sinwn1=sin(wn1)
-          if(coswn1 .gt. 0.d0)then
-            sqwhn1=sinwn1**2/(1.d0+coswn1)
-          else
-            sqwhn1=1.d0-coswn1
-          endif
-          sinwp1n1=sin(phi0n)
-          wn2=phi0n-psi2
-          coswn2=cos(wn2)
-          sinwn2=sin(wn2)
-          if(coswn2 .gt. 0.d0)then
-            sqwhn2=sinwn2**2/(1.d0+coswn2)
-          else
-            sqwhn2=1.d0-coswn2
-          endif
-          sinwp1n2=sinwn2
-          wnc=phi0n
-          coswnc=cos(wnc)
-          sinwnc=sin(wnc)
-          if(coswnc .gt. 0.d0)then
-            sqwhnc=sinwnc**2/(1.d0+coswnc)
-          else
-            sqwhnc=1.d0-coswnc
-          endif
-          sinwp1nc=sinwnc
-          if(mfring .gt. 0 .or. mfring .eq. -1)then
-            mfr1=-1
-          else
-            mfr1=0
-          endif
-          if(mfring .gt. 0 .or. mfring .eq. -2)then
-            mfr2=-2
-          else
-            mfr2=0
-          endif
-          als=alb+aln
-          call tbend(np,x,px,y,py,z,g,dv,pz,l,aln,phibn,phi0n,
-     1         cosp1,sinp1,1.d0,0.d0,
-     1         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
-     1         fb1,fb2,mfr1,fringe,coswn1,sinwn1,sqwhn1,sinwp1n1,
-     1         .true.,alb,als,ala,eps)
-          do i=2,ndiv-1
-            call tbend(np,x,px,y,py,z,g,dv,pz,l,aln,phibn,phi0n,
-     1           1.d0,0.d0,1.d0,0.d0,
-     1           0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
-     1           fb1,fb2,0,.false.,coswnc,sinwnc,sqwhnc,sinwp1nc,
-     1           .true.,als,als+aln,ala,eps)
-            als=als+aln
-          enddo
-          call tbend(np,x,px,y,py,z,g,dv,pz,l,aln,phibn,phi0n,
-     1         1.d0,0.d0,cosp2,sinp2,
-     1         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
-     1         fb1,fb2,mfr2,fringe,coswn2,sinwn2,sqwhn2,sinwp1n2,
-     1         .true.,als,ale,ala,eps)
-          if(dphiy .ne. 0.d0)then
-            do i=1,np
-              pr=1.d0+g(i)
-              px(i)=px(i)+dphix/pr
-              py(i)=py(i)+dphiy/pr
-            enddo
-          endif
-          include 'inc/TEXIT.inc'
+          call tbendr(np,x,px,y,py,z,g,dv,pz,l,al,phib,phi0,
+     1     cosp1,sinp1,cosp2,sinp2,
+     1     dx,dy,theta,dphix,dphiy,cost,sint,
+     1     fb1,fb2,mfring,fringe,
+     1     alb,ale,ala,eps,ndiv)
           return
         endif
-      endif
-      rhob=al/phib
-      rho0=al/phi0
-      if(rad .and. enarad)then
         tanp1=sinp1/cosp1
         b=brhoz/rhob
         if(alb .ne. 0.d0)then
@@ -234,9 +165,9 @@
         rhoe=rhob*p
         pxi=px(i)
         pyi=py(i)
-        s=min(smax,pxi**2+pyi**2)
+c        s=pxi**2+pyi**2
 c        dpzi=-s/(1.d0+sqrt(1.d0-s))
-        dpzi=sqrt1(-s)
+        dpzi=pxy2dpz(pxi,pyi)
         pzi=1.d0+dpzi
         sp1=sinp1/pzi
         x1=x(i)/(cosp1-pxi*sp1)
@@ -251,19 +182,19 @@ c        dpzi=-s/(1.d0+sqrt(1.d0-s))
         pv1sqi=1.d0/max(smin,1.d0-px1**2)
         fa=y1/rhoe*sqrt(pv1sqi)
         f=(1.d0-(y1/rhob)**2/6.d0)*fa
-        ff=(.5d0-(y1/rhob)**2/24.d0)*y1*fa*pv1sqi
+        ff=.25d0*(f+fa)*y1*pv1sqi
+c        ff=(.5d0-(y1/rhob)**2/24.d0)*y1*fa*pv1sqi
         x2=x1+ff
         py2=py1-px1*f
         z2=z1-px1*ff
-        s=min(smax,py2**2)
+c        s=py2**2
 c        dph2=-s/(1.d0+sqrt(1.d0-s))
-        dph2=sqrt1(-s)
+        dph2=pxy2dpz(0.d0,py2)
         ph2=1.d0+dph2
         dpx2=pxi*cosp1+(dpzi-dph2)*sinp1
-        s=min(smax,px1**2+py2**2)
+c        s=px1**2+py2**2
 c        dpz2=-s/(1.d0+sqrt(1.d0-s))
-        dpz2=sqrt1(-s)
-        pz2=1.d0+dpz2
+        pz2=1.d0+pxy2dpz(px1,py2)
 c        pz2=sqrt(max(smin,1.d0-py2**2-px1**2))
         drho=drhob+rhoe*dph2+rhob*dp
         t2=(px1+ph2*sinp1)/(pz2+ph2*cosp1)
@@ -271,9 +202,9 @@ c        pz2=sqrt(max(smin,1.d0-py2**2-px1**2))
         dpx3=dpx3a-dpx2*(cosw-sinw*t2)
         px3=ph2*sinp2+dpx3
         px1px3=ph2*(sinp2+sinp1)+dpx3a+dpx2*(sqwh+sinw*t2)
-        s=min(smax,px3**2+py2**2)
+c        s=px3**2+py2**2
 c        dpz3=-s/(1.d0+sqrt(1.d0-s))
-        dpz3=sqrt1(-s)
+        dpz3=pxy2dpz(px3,py2)
         pz3=1.d0+dpz3
         dpz32=px1px3*(px1-px3)/(pz2+pz3)
         t3=(px3+ph2*sinp2)/(pz3+ph2*cosp2)
@@ -310,17 +241,17 @@ c     1       +dpx3a*t4)/ph2**2)))
         pv2sqi=1.d0/max(smin,1.d0-px3**2)
         fa=y3/rhoe*sqrt(pv2sqi)
         f=(1.d0-(y3/rhob)**2/6.d0)*fa
-        ff=(.5d0-(y3/rhob)**2/24.d0)*y3*fa*pv2sqi
-        x4=x3-ff
+        ff=.25d0*(f+fa)*y3*pv2sqi
+c        ff=(.5d0-(y3/rhob)**2/24.d0)*y3*fa*pv2sqi
         py4=py2-px3*f
         z4=z3-px3*ff
-        x4=x4-dxfr2*dp*pinv
+        x4=x3-ff-dxfr2*dp*pinv
         py4=py4+(dyfr2-dyfra2*y3**2)*y3*pinv**2
         z4=z4+(dxfr2*px3+
      $       (.5d0*dyfr2-.25d0*dyfra2*y3**2)*y3**2*pinv)*pinv-dzfr2
-        s=min(smax,px3**2+py4**2)
+c        s=px3**2+py4**2
 c        dpz4=-s/(1.d0+sqrt(1.d0-s))
-        dpz4=sqrt1(-s)
+        dpz4=pxy2dpz(px3,py4)
         px(i)=-cosp2*dpx3+sinp2*(dpz4-dpz3-dpx3*t3)
         dz4=x4*sinp2/(cosp2*(1.d0+dpz4)+sinp2*px3)
         x(i)=x4*cosp2+px(i)*dz4
@@ -369,7 +300,7 @@ c        dpz4=-s/(1.d0+sqrt(1.d0-s))
       dl=rho0*xsin(phi0)
       do i=1,np
         xi=x(i)+dx
-        pzi=1.d0+sqrt1(-px(i)**2-py(i)**2)
+        pzi=1.d0+pxy2dpz(px(i),py(i))
 c        pzi=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
         pzf=pzi*cp-px(i)*sp
         x(i)=xi*pzi/pzf
@@ -392,6 +323,98 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
         px(i)=px(i)+phi0-phib/(1.d0+g(i))
         z(i)=z(i)-x(i)*phi0
 10    continue
+      include 'inc/TEXIT.inc'
+      return
+      end
+
+      subroutine tbendr(np,x,px,y,py,z,g,dv,pz,l,al,phib,phi0,
+     1     cosp1,sinp1,cosp2,sinp2,
+     1     dx,dy,theta,dphix,dphiy,cost,sint,
+     1     fb1,fb2,mfring,fringe,
+     1     alb,ale,ala,eps,ndiv)
+      use tfstk
+      use ffs_flag
+      use tmacro
+      implicit none
+      integer*4 np,mfring,i,l,ndiv,mfr1,mfr2,ndivmax
+      parameter (ndivmax=1024)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np)
+      real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,dx,dy,theta,
+     $     dphix,dphiy,cost,sint,eps,pr,
+     $     psi1,psi2,wn1,wn2,wnc,aln,phibn,phi0n,alb,ale,ala,als,
+     $     fb1,fb2,pxi,xi,
+     $     coswn1,sinwn1,sqwhn1,sinwp1n1,
+     $     coswnc,sinwnc,sqwhnc,sinwp1nc,
+     $     coswn2,sinwn2,sqwhn2,sinwp1n2
+      logical*4 fringe
+      aln=al/ndiv
+      phibn=phib/ndiv
+      phi0n=phi0/ndiv
+      psi1=atan2(sinp1,cosp1)
+      psi2=atan2(sinp2,cosp2)
+      wn1=phi0n-psi1
+      coswn1=cos(wn1)
+      sinwn1=sin(wn1)
+      if(coswn1 .gt. 0.d0)then
+        sqwhn1=sinwn1**2/(1.d0+coswn1)
+      else
+        sqwhn1=1.d0-coswn1
+      endif
+      sinwp1n1=sin(phi0n)
+      wn2=phi0n-psi2
+      coswn2=cos(wn2)
+      sinwn2=sin(wn2)
+      if(coswn2 .gt. 0.d0)then
+        sqwhn2=sinwn2**2/(1.d0+coswn2)
+      else
+        sqwhn2=1.d0-coswn2
+      endif
+      sinwp1n2=sinwn2
+      wnc=phi0n
+      coswnc=cos(wnc)
+      sinwnc=sin(wnc)
+      if(coswnc .gt. 0.d0)then
+        sqwhnc=sinwnc**2/(1.d0+coswnc)
+      else
+        sqwhnc=1.d0-coswnc
+      endif
+      sinwp1nc=sinwnc
+      if(mfring .gt. 0 .or. mfring .eq. -1)then
+        mfr1=-1
+      else
+        mfr1=0
+      endif
+      if(mfring .gt. 0 .or. mfring .eq. -2)then
+        mfr2=-2
+      else
+        mfr2=0
+      endif
+      als=alb+aln
+      call tbend(np,x,px,y,py,z,g,dv,pz,l,aln,phibn,phi0n,
+     1     cosp1,sinp1,1.d0,0.d0,
+     1     0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
+     1     fb1,fb2,mfr1,fringe,coswn1,sinwn1,sqwhn1,sinwp1n1,
+     1     .true.,alb,als,ala,eps)
+      do i=2,ndiv-1
+        call tbend(np,x,px,y,py,z,g,dv,pz,l,aln,phibn,phi0n,
+     1       1.d0,0.d0,1.d0,0.d0,
+     1       0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
+     1       fb1,fb2,0,.false.,coswnc,sinwnc,sqwhnc,sinwp1nc,
+     1       .true.,als,als+aln,ala,eps)
+        als=als+aln
+      enddo
+      call tbend(np,x,px,y,py,z,g,dv,pz,l,aln,phibn,phi0n,
+     1     1.d0,0.d0,cosp2,sinp2,
+     1     0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
+     1     fb1,fb2,mfr2,fringe,coswn2,sinwn2,sqwhn2,sinwp1n2,
+     1     .true.,als,ale,ala,eps)
+      if(dphiy .ne. 0.d0)then
+        do i=1,np
+          pr=1.d0+g(i)
+          px(i)=px(i)+dphix/pr
+          py(i)=py(i)+dphiy/pr
+        enddo
+      endif
       include 'inc/TEXIT.inc'
       return
       end

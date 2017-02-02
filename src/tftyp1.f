@@ -1,4 +1,5 @@
       subroutine tftyp1(kx,l,lp,kp,lt,lfno,lpw)
+      use kyparam
       use tfstk
       use ffs, only:emx,emy,dpmax
       use ffs_pointer
@@ -37,15 +38,17 @@
               if(ioff .eq. mfitax .or. ioff .eq. mfitay
      $             .or. ioff .eq. mfitepx .or. ioff .eq. mfitepy
      $             .or. ioff .eq. mfitr2 .or. ioff .eq. mfitr3
-     $             .or. ioff .eq. mfitdpx .or. ioff .eq. mfitdpy)then
+     $             .or. ioff .eq. mfitdpx .or. ioff .eq. mfitdpy
+     $             .or. ioff .eq. mfitaz .or. ioff .eq. mfitzpx
+     $             .or. ioff .eq. mfitzpy)then
                 v=v*direlc(l)
               endif
             endif
-          elseif(ioff .eq. kytbl(kwEMIX,icMARK))then
+          elseif(ioff .eq. ky_EMIX_MARK)then
             v=emx
-          elseif(ioff .eq. kytbl(kwEMIY,icMARK))then
+          elseif(ioff .eq. ky_EMIY_MARK)then
             v=emy
-          elseif(ioff .eq. kytbl(kwDP,icMARK))then
+          elseif(ioff .eq. ky_DP_MARK)then
             v=dpmax
           else
             v=rlist(lp+ioff)

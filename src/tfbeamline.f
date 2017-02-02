@@ -104,6 +104,7 @@
       end
 
       integer function itfdummyline()
+      use kyparam
       use tfstk
       use mackw
       implicit none
@@ -121,7 +122,7 @@
         idxm=hsrchz('$DUMMYMARK')
         idtype(idxm)=icMARK
         pname(idxm)='$DUMMYMARK'
-        n=kytbl(kwMAX,icMARK)
+        n=ky_MAX_MARK
         idxm1=ktaloc(n+1)
         idval(idxm)=idxm1
         ilist(1,idxm1)=n
@@ -130,7 +131,7 @@
         idxd=hsrchz('$DUMMYDRIFT')
         idtype(idxd)=icDRFT
         pname(idxd)='$DUMMYDRIFT'
-        n=kytbl(kwMAX,icDRFT)
+        n=ky_MAX_DRFT
         idxd1=ktaloc(n+1)
         idval(idxd)=idxd1
         ilist(1,idxd1)=n

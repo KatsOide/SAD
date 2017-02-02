@@ -1,0 +1,52 @@
+/* Template for DLSYM function wrapper */
+FUNC_T_ FUNC(void *handle, const char *symbol) {
+  DLSYM_T func =
+    handle == DYNL_NOHANDLE ? NULL :
+    handle == NULL         ? DLSYM(NULL,         symbol) :
+#ifdef RTLD_DEFAULT
+    handle == DYNL_DEFAULT ? DLSYM(RTLD_DEFAULT, symbol) :
+#else
+    handle == DYNL_DEFAULT ? NULL :
+#endif
+#ifdef RTLD_SELF
+    handle == DYNL_SELF    ? DLSYM(RTLD_SELF,    symbol) :
+#else
+    handle == DYNL_SELF    ? NULL :
+#endif
+#ifdef RTLD_NEXT
+    handle == DYNL_NEXT    ? DLSYM(RTLD_NEXT,    symbol) :
+#else
+    handle == DYNL_NEXT    ? NULL :
+#endif
+    DLSYM(handle, symbol);
+
+  if(handle == DYNL_NOHANDLE)
+    return (FUNC_T)NULL;
+
+  if(func == NULL && dynl_error_report_level > 0)
+    fprintf(stderr, FUNCNAME "[%s]: %s\n",
+	    handle == NULL         ? "local"   :
+	    handle == DYNL_DEFAULT ? "default" :
+	    handle == DYNL_SELF    ? "self"    :
+	    handle == DYNL_NEXT    ? "next"    :
+	    "handle",
+	    handle == NULL         ? dlerror() :
+#ifdef RTLD_DEFAULT
+	    handle == DYNL_DEFAULT ? dlerror() :
+#else
+	    handle == DYNL_NEXT    ? "Not suppotted" :
+#endif
+#ifdef RTLD_SELF
+	    handle == DYNL_SELF    ? dlerror() :
+#else
+	    handle == DYNL_NEXT    ? "Not suppotted" :
+#endif
+#ifdef RTLD_NEXT
+	    handle == DYNL_NEXT    ? dlerror() :
+#else
+	    handle == DYNL_NEXT    ? "Not suppotted" :
+#endif
+	    dlerror());
+
+  return (FUNC_T)func;
+}

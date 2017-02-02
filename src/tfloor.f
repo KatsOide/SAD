@@ -906,7 +906,8 @@ c     $       '"Real or List of Reals"')
       use tmacro
       implicit none
       type (sad_descriptor) kx
-      integer*4 isp1,irtc,infl0,itfopenread,itfmessage,lfn,ierrfl,ierr
+      integer*4 isp1,irtc,infl0,itfopenread,itfmessage,lfn,ierrfl,ierr,
+     $     nc
       ierr=0
       if(isp .eq. isp1+2)then
         ierr=int(rtastk(isp))
@@ -928,7 +929,7 @@ c      write(*,*)'tfmain-1 '
 c      write(*,*)'tfmain-2 '
       bypasstrack=.false.
       errfl=ierrfl
-      call tfreadbuf(irbclose,lfn,int8(0),int8(0),0,' ')
+      call tfreadbuf(irbclose,lfn,int8(0),int8(0),nc,' ')
       infl=infl0
       kx%k=ktfoper+mtfnull
       return

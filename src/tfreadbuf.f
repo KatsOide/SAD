@@ -258,7 +258,7 @@ c     $         buff(:min(nc,len(buff)))
       implicit none
       type (sad_descriptor) kx
       integer*8 ia
-      integer*4 isp1,irtc,itfmessage,n,m,iu
+      integer*4 isp1,irtc,itfmessage,n,m,iu,nc
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -284,7 +284,7 @@ c      write(*,*)'openshared ',ia,m
         irtc=0
         return
       endif
-      call tfreadbuf(irbopen,iu,ia,int8(4),0,' ')
+      call tfreadbuf(irbopen,iu,ia,int8(4),nc,' ')
       if(iu .le. 0)then
         call tfreeshared(ia)
         irtc=itfmessage(9,'General::fileopen','"(Shared)"')
@@ -297,7 +297,6 @@ c      write(*,*)'openshared ',ia,m
       return
       end
 
-
       subroutine tfreadshared(isp1,kx,irtc)
       use tfstk
       use tfrbuf
@@ -305,7 +304,7 @@ c      write(*,*)'openshared ',ia,m
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
       integer*8 ia
-      integer*4 isp1,irtc,itfmessage,isp0,iu
+      integer*4 isp1,irtc,itfmessage,isp0,iu,nc,ist
       logical*4 tfcheckelement
 c      call tfdebugprint(ktastk(isp),'readshard',3)
       if(isp .ne. isp1+1)then
@@ -317,14 +316,19 @@ c      call tfdebugprint(ktastk(isp),'readshard',3)
       endif
       irtc=0
       iu=int(rtastk(isp))
-      call tfreadbuf(irbibuf,iu,ia,int8(4),0,' ')
+      call tfreadbuf(irbibuf,iu,ia,int8(4),nc,' ')
       if(ia .eq. 0)then
         kx%k=kxeof
         return
       endif
-      do while(ilist(2,ia) .ne. 0)
-c        write(*,*)'readshared ',ilist(2,ia)
+      ist=ilist(2,ia)
+      do while(ist .ne. 0)
+        if(ist .ne. 1 .and. ist .ne. -1)then
+          write(*,*)'tfreadshared shared memory destructed ',ist,ia
+          call abort
+        endif
         call tpause(10000)
+        ist=ilist(2,ia)
       enddo
       ilist(2,ia)=1
       kx=dlist(ia+1)
@@ -366,7 +370,7 @@ c          write(*,*)'readshared-other '
       use tfrbuf
       implicit none
       integer*8 kx,kas,ka,kt,kap,k
-      integer*4 isp1,irtc,itfmessage,itfmessageexp,isp0,n,i,iu
+      integer*4 isp1,irtc,itfmessage,itfmessageexp,isp0,n,i,iu,nc,ist
       if(isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
@@ -375,14 +379,19 @@ c          write(*,*)'readshared-other '
         return
       endif
       iu=int(rtastk(isp1+1))
-      call tfreadbuf(irbibuf,iu,kas,int8(4),0,' ')
+      call tfreadbuf(irbibuf,iu,kas,int8(4),nc,' ')
       if(kas .eq. 0)then
         irtc=itfmessage(99,'Shared::notopen','""')
         return
       endif
-      do while(ilist(2,kas) .ne. 0)
-c        write(*,*)'writeshared ',ilist(2,kas)
+      ist=ilist(2,kas)
+      do while(ist .ne. 0)
+        if(ist .ne. 1 .and. ist .ne. -1)then
+          write(*,*)'writeshared shared memory destructed: ',ist,kas
+          call abort
+        endif
         call tpause(10000)
+        ist=ilist(2,kas)
       enddo
       ilist(2,kas)=-1
       k=ktastk(isp)

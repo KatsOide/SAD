@@ -321,9 +321,6 @@ CloseShared=Close;
 Parallelize[`f_,`n_,`lshare_,`npara_,`fcomp_:Identity]:=Module[{`shared,`sharedpid,`l={},`fk,`r,`k,`i,`np},
   np=OpenShared[16];
   Shared[np]=0;
-  shared[_]=Undefined;
-  shared[1]=OpenShared[lshare];
-  Shared[shared[1]]=Undefined;
   Do[
     While[Shared[np]>=npara,Sleep[1]];
     Shared[np]++;
@@ -343,7 +340,7 @@ Parallelize[`f_,`n_,`lshare_,`npara_,`fcomp_:Identity]:=Module[{`shared,`sharedp
     Close[shared[k]];
     AppendTo[l,r];
     fcomp[l];
-    If[k>1,Check[Wait[],]],
+    Check[Wait[],],
     {k,n}];
   Close[np];
   l];
@@ -456,6 +453,33 @@ FFS$Interrupt=3;
 FFS$InterruptMask=0;
 With[{FFS$SingleParameterCommands},
   SetAttributes[FFS$SingleParameterCommands,Constant]];
+
+FF$Cond[{p1_,"",fun:("AZ"|"NZ"|"ZX"|"ZPX"|"ZY"|"ZPY"|"PZX"|"PZPX"|"PZY"|"PZPY"),v_,_,s_}]:=
+  With[{pp1=LINE["POSITION",p1]},Hold[Twiss[fun,pp1]-v*s]];
+FF$Cond[{p1_,p2_,fun:("AZ"|"NZ"|"ZX"|"ZPX"|"ZY"|"ZPY"|"PZX"|"PZPX"|"PZY"|"PZPY"),v_,_,s_}]:=
+  With[{pp1=LINE["POSITION",p1],pp2=LINE["POSITION",p2]},Hold[Twiss[fun,pp2]-Twiss[fun,pp1]-v*s]];
+FF$Cond[{p1_,"",fun:("BZ"),v_,_,s_}]:=
+  With[{pp1=LINE["POSITION",p1]},Hold[Twiss[fun,pp1]/v/s-1]];
+FF$Cond[{p1_,p2_,fun:("BZ"),v_,_,s_}]:=
+  With[{pp1=LINE["POSITION",p1],pp2=LINE["POSITION",p2]},Hold[Twiss[fun,pp2]/Twiss[fun,pp1]/v/s-1]];
+FF$Cond[_]:=Null[];
+
+FF$Orig=?`FitFunction;
+FF$NCond=0;
+Setup$FF[]:=With[{f=FF$Cond/@FFS["SHOW"]},
+  If[FF$NCond=Length[f],
+    Module[{f0},
+      f0=If[Extract[FF$Orig=?`FitFunction,{1,1,2},Head]<=>List,
+        If[FF$Orig===Hold[{`FitFunction:=`FitFunction}],
+          Hold[`FitFunction:=f]/.Hold->Null;
+          Return[],
+          {Extract[FF$Orig,1,1,2,Hold]}],
+        (Hold/@[FF$Orig,{4}])[[1,1,2]]];
+      With[{fj=Join[f0,f]},
+        Hold[`FitFunction:=fj]/.Hold->Null]]]];
+Reset$FF[]:=(FF$Orig[[1,1]];FF$NCond);
+Protect[Setup$FF];
+
 ARRAY[x__]:=Table[0,Evaluate[##]]&@@List/@{x};
 Len[x_]:=StringLength[x];
 Protect[ARRAY,Len];

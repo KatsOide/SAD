@@ -1,0 +1,724 @@
+      subroutine qdtwis(dtwiss,ctrans,iclast,
+     $     k0,l,idp,iv,nfam,nut,disp,dzfit)
+      use tfstk
+      use ffs
+      use ffs_pointer
+      use tffitcode
+      implicit none
+      integer*4 nfam,nut,
+     $     iclast(-nfam:nfam),k0,k,ke,l,idp,iv,
+     $     iutk,iutl,i,k1
+      integer*8 lp
+      real*8 dtwiss(mfittry),dcod(6),dcod2(6),dtrans(4,5),
+     $     trans(4,5),trans1(4,5),dcod1(6),dtrans1(4,5),
+     $     ctrans(27,-nfam:nfam),g1,dir,psi1,psi2,dt1,dt2,
+     $     r,gr,detp,sqrdet,ddetp,dsqr,
+     $     x11,x12,x21,x22,dx11,dx12,dx21,dx22,
+     $     ax0,bx0,gx0,dax,dbx,
+     $     y11,y12,y21,y22,dy11,dy12,dy21,dy22,
+     $     ay0,by0,gy0,day,dby,
+     $     bxx,cosmx,sinmx,byy,cosmy,sinmy,
+     $     r1,r2,r3,r4,dr1,dr2,dr3,dr4
+      logical*4 nzcod,disp,dzfit,normal
+      k=k0
+      g1=gammab(1)
+      ke=idtype(ilist(2,latt(k)))
+      lp=latt(k)
+      dir=rlist(lp+ilist(1,lp))
+      iutk=itwissp(k)
+      iutl=itwissp(l)
+      dcod(5)=0.d0
+      go to (1110,1120,1900,1140,1900,1160,1900,1160,1900,1160,
+     $       1900,1160,1900,1900,1900,1900,1900,1900,1900,1320,
+     $       1900,1320,1900,1900,1900,1900,1900,1900,1900,1900,
+     $       1900,1900,1900,1900,1900,1900,1900,1900,1900,1900,
+     $       4100),ke
+ 1900 dtwiss=0.d0
+      go to 9000
+ 1110 call qddrif(dtrans,dcod,utwiss(1,idp,iutk))
+      go to 2001
+ 1120 continue
+      if(iv .eq. kytbl(kwANGL,icBEND) .or.
+     $     iv .eq. kytbl(kwK1,icBEND))then
+        if(dir .gt. 0.d0)then
+          psi1=rlist(lp+3)
+          psi2=rlist(lp+4)
+        else
+          psi1=rlist(lp+4)
+          psi2=rlist(lp+3)
+        endif
+        call qdbend(dtrans,dcod,rlist(lp+1),
+     1       rlist(lp+2)+rlist(lp+11),rlist(lp+2),
+     1       psi1,psi2,rlist(lp+8),
+     1       utwiss(1,idp,iutk),
+     1       rlist(lp+9),rlist(lp+10),
+     1       rlist(lp+5),iv)
+        dt1=dtrans(1,5)
+        dt2=dtrans(2,5)
+      else
+        call qdtrans(ke,iutk,k,k+1,
+     $       iv,dtrans,dcod,idp)
+      endif
+      go to 2001
+ 1140 if(iv .eq. kytbl(kwK1,icQUAD) .or.
+     $     iv .eq. kytbl(kwROT,icQUAD))then
+        call qdquad(dtrans,dcod,rlist(lp+1),rlist(lp+2),
+     $       k,idp,rlist(lp+5),rlist(lp+6),rlist(lp+4),iv,nfam,nut)
+        if(geocal .and.
+     $       rlist(lp+5) .ne. 0.d0 .or. rlist(lp+6) .ne. 0.d0)then
+          call qdquad(dtrans1,dcod1,rlist(lp+1),rlist(lp+2),
+     $         k,0,rlist(lp+5),rlist(lp+6),rlist(lp+4),iv,nfam,nut)
+          dcod(1)=dcod(1)-dcod1(1)
+          dcod(2)=dcod(2)-dcod1(2)
+          dcod(3)=dcod(3)-dcod1(3)
+          dcod(4)=dcod(4)-dcod1(4)
+        endif
+      else
+        call qdtrans(ke,iutk,k,k+1,
+     $       iv,dtrans,dcod,idp)
+      endif
+      go to 2001
+ 1160 if(iv .eq. 2 .or. iv .eq. 4)then
+        call qdthin(dtrans,dcod,ke,rlist(lp+1),rlist(lp+2),
+     1       k,idp,rlist(lp+5),rlist(lp+6),rlist(lp+4),iv,nfam,nut)
+      else
+        call qdtrans(ke,iutk,k,k+1,
+     $       iv,dtrans,dcod,idp)
+      endif
+      go to 2001
+ 1320 call qdtrans(ke,iutk,k,k+1,
+     $     iv,dtrans,dcod,idp)
+c      if(rlist(lp+3) .ne. 0.d0 .or. rlist(lp+4) .ne. 0.d0)then
+c        call qdtrans(nlat,ke,iutk,k,k+1,
+c     $       iv,dtrans1,dcod1,0,
+c     $       utwiss,gammab,nfam,nut)
+c        dcod(1)=dcod(1)-dcod1(1)
+c        dcod(2)=dcod(2)-dcod1(2)
+c        dcod(3)=dcod(3)-dcod1(3)
+c        dcod(4)=dcod(4)-dcod1(4)
+c      endif
+      go to 2001
+ 4100 if(k .eq. 1)then
+        if(iv .eq. mfitddp)then
+          call tftmatu(utwiss(1,idp,1),utwiss(1,idp,iutl),
+     $         0.d0,0.d0,dtrans,1,l,.false.,trpt)
+          r=sqrt(gammab(k)/gammab(l))
+          do i=mfitdx,mfitdpy
+            dtwiss(i)=dtrans(i-mfitdx+1,5)*r
+          enddo
+          go to 9000
+        elseif(.not. cell)then
+          k=min(nlat-1,max(2,1+int(
+     $         rlist(latt(1)+kytbl(kwOFFSET,icMARK)))))
+          gammab(1)=gammab(k)
+          iutk=itwissp(k)
+          call qdini(utwiss(1:ntwissfun,idp,1),
+     $         utwiss(1:ntwissfun,idp,iutk),k,dtrans,dcod,iv)
+          k1=k
+          go to 2002
+        else
+          go to 1900
+        endif
+      else
+        go to 1900
+      endif
+ 2001 k1=k+1
+ 2002 gr=sqrt(gammab(k1)/gammab(l))
+      dcod2(1:4)=dcod(1:4)*gr
+      dcod2(5)=dcod(5)
+      dcod2(6)=dcod(6)*gr**2
+      dtrans(1:4,5)=dtrans(1:4,5)/gr
+      call tftmatu(utwiss(1,idp,itwissp(k1)),
+     $     utwiss(1,idp,iutl),
+     $     utwiss(mfitnx,idp,nut),utwiss(mfitny,idp,nut),
+     $     trans,k1,l,.false.,trpt)
+      nzcod=.false.
+      do 10 i=1,4
+        trans1(i,1)= trans(i,1)*dtrans(1,1)+trans(i,2)*dtrans(2,1)
+     1              +trans(i,3)*dtrans(3,1)+trans(i,4)*dtrans(4,1)
+        trans1(i,2)= trans(i,1)*dtrans(1,2)+trans(i,2)*dtrans(2,2)
+     1              +trans(i,3)*dtrans(3,2)+trans(i,4)*dtrans(4,2)
+        trans1(i,3)= trans(i,1)*dtrans(1,3)+trans(i,2)*dtrans(2,3)
+     1              +trans(i,3)*dtrans(3,3)+trans(i,4)*dtrans(4,3)
+        trans1(i,4)= trans(i,1)*dtrans(1,4)+trans(i,2)*dtrans(2,4)
+     1              +trans(i,3)*dtrans(3,4)+trans(i,4)*dtrans(4,4)
+        trans1(i,5)= trans(i,1)*dtrans(1,5)+trans(i,2)*dtrans(2,5)
+     1              +trans(i,3)*dtrans(3,5)+trans(i,4)*dtrans(4,5)
+        dcod1(i)= trans(i,1)*dcod2(1)+trans(i,2)*dcod2(2)
+     1           +trans(i,3)*dcod2(3)+trans(i,4)*dcod2(4)
+        nzcod=nzcod .or. dcod1(i) .ne. 0.d0
+10    continue
+      dcod1(5)=dcod2(5)
+      if(dzfit .or. (nzcod .and. disp .and. .not. cell))then
+        call qddtwiss(k,k1,l,
+     $       trans,trans1,dcod,idp,
+     $       ctrans(1,idp),iclast(idp),trpt)
+        dcod1(5)=dcod(5)
+      endif
+      call qgettru(utwiss(1,idp,iutk),utwiss(1,idp,iutl),
+     $     utwiss(3,idp,nut),utwiss(6,idp,nut),
+     $     trans,k,l,.true.,.true.,trpt)
+      r1=utwiss(mfitr1,idp,iutl)
+      r2=utwiss(mfitr2,idp,iutl)
+      r3=utwiss(mfitr3,idp,iutl)
+      r4=utwiss(mfitr4,idp,iutl)
+      detp=r1*r4-r2*r3
+      sqrdet=sqrt(1.d0-detp)
+      ddetp=trans1(1,1)*trans(2,2)+trans(1,1)*trans1(2,2)
+     1     -trans1(1,2)*trans(2,1)-trans(1,2)*trans1(2,1)
+      normal=utwiss(mfitdetr,idp,iutl) .lt. 1.d0
+      if(normal)then
+        dsqr=.5d0*ddetp/sqrdet
+        x11=trans(1,1)/sqrdet
+        x12=trans(1,2)/sqrdet
+        x21=trans(2,1)/sqrdet
+        x22=trans(2,2)/sqrdet
+        dx11=(trans1(1,1)-x11*dsqr)/sqrdet
+        dx12=(trans1(1,2)-x12*dsqr)/sqrdet
+        dx21=(trans1(2,1)-x21*dsqr)/sqrdet
+        dx22=(trans1(2,2)-x22*dsqr)/sqrdet
+        dr1=-trans1(3,1)*x22-trans(3,1)*dx22
+     1       +trans1(3,2)*x21+trans(3,2)*dx21
+        dr2= trans1(3,1)*x12+trans(3,1)*dx12
+     1       -trans1(3,2)*x11-trans(3,2)*dx11
+        dr3=-trans1(4,1)*x22-trans(4,1)*dx22
+     1       +trans1(4,2)*x21+trans(4,2)*dx21
+        dr4= trans1(4,1)*x12+trans(4,1)*dx12
+     1       -trans1(4,2)*x11-trans(4,2)*dx11
+        dtwiss(mfitex)=trans(1,5)*dsqr+trans1(1,5)*sqrdet
+     1           -dr4*trans(3,5)-r4*trans1(3,5)
+     1           +dr2*trans(4,5)+r2*trans1(4,5)
+        dtwiss(mfitepx)=trans(2,5)*dsqr+trans1(2,5)*sqrdet
+     1           +dr3*trans(3,5)+r3*trans1(3,5)
+     1           -dr1*trans(4,5)-r1*trans1(4,5)
+        dtwiss(mfitdetr)=dr1*r4+r1*dr4-dr2*r3-r2*dr3
+      else
+        dsqr=-.5d0*ddetp/sqrdet
+        x11=trans(3,1)/sqrdet
+        x12=trans(3,2)/sqrdet
+        x21=trans(4,1)/sqrdet
+        x22=trans(4,2)/sqrdet
+        dx11=(trans1(3,1)-x11*dsqr)/sqrdet
+        dx12=(trans1(3,2)-x12*dsqr)/sqrdet
+        dx21=(trans1(4,1)-x21*dsqr)/sqrdet
+        dx22=(trans1(4,2)-x22*dsqr)/sqrdet
+        dr1=(-trans1(1,1)*x22-trans(1,1)*dx22
+     1       +trans1(1,2)*x21+trans(1,2)*dx21)
+        dr2=( trans1(1,1)*x12+trans(1,1)*dx12
+     1       -trans1(1,2)*x11-trans(1,2)*dx11)
+        dr3=(-trans1(2,1)*x22-trans(2,1)*dx22
+     1       +trans1(2,2)*x21+trans(2,2)*dx21)
+        dr4=( trans1(2,1)*x12+trans(2,1)*dx12
+     1       -trans1(2,2)*x11-trans(2,2)*dx11)
+        dtwiss(mfitex)=trans(3,5)*dsqr+trans1(3,5)*sqrdet
+     1       +(-dr4*trans(1,5)-r4*trans1(1,5)
+     1       +dr2*trans(2,5)+r2*trans1(2,5))
+        dtwiss(mfitepx)=trans(4,5)*dsqr+trans1(4,5)*sqrdet
+     1       +( dr3*trans(1,5)+r3*trans1(1,5)
+     1       -dr1*trans(2,5)-r1*trans1(2,5))
+        dtwiss(mfitdetr)=-dr1*r4-r1*dr4+dr2*r3+r2*dr3
+      endif
+      dtwiss(mfitr1)=dr1
+      dtwiss(mfitr2)=dr2
+      dtwiss(mfitr3)=dr3
+      dtwiss(mfitr4)=dr4
+      dtwiss(mfitpex) =trans1(1,5)
+      dtwiss(mfitpepx)=trans1(2,5)
+      ax0=utwiss(mfitax,idp,iutk)
+      bx0=utwiss(mfitbx,idp,iutk)
+      gx0=(1.d0+ax0**2)/bx0
+      dax      =(dx11*x22+x11*dx22+dx12*x21+x12*dx21)*ax0
+     1          -(dx11*x21+x11*dx21)*bx0-(dx12*x22+x12*dx22)*gx0
+      dtwiss(mfitax)=dax/(1.d0+utwiss(mfitax,idp,iutl)**2)
+      dbx      =2.d0*(-(dx11*x12+x11*dx12)*ax0
+     1               +dx11*x11*bx0+dx12*x12*gx0)
+c      write(*,*)'qdtwis ',dx11,dx12,x12,x11,ax0,bx0,gx0,dbx
+      dtwiss(mfitbx)=dbx/utwiss(mfitbx,idp,iutl)
+      dtwiss(mfitnx)=(dx12*(bx0*x11-ax0*x12)-x12*(bx0*dx11-ax0*dx12))
+     1          /(x12**2+(bx0*x11-ax0*x12)**2)
+      dtwiss(mfitdx)=dcod1(1)
+      dtwiss(mfitdpx)=dcod1(2)
+      if(normal)then
+        y11=trans(3,3)/sqrdet
+        y12=trans(3,4)/sqrdet
+        y21=trans(4,3)/sqrdet
+        y22=trans(4,4)/sqrdet
+        dy11=(trans1(3,3)-y11*dsqr)/sqrdet
+        dy12=(trans1(3,4)-y12*dsqr)/sqrdet
+        dy21=(trans1(4,3)-y21*dsqr)/sqrdet
+        dy22=(trans1(4,4)-y22*dsqr)/sqrdet
+        dtwiss(mfitey)=trans(3,5)*dsqr+trans1(3,5)*sqrdet
+     1            +dr1*trans(1,5)+r1*trans1(1,5)
+     1            +dr2*trans(2,5)+r2*trans1(2,5)
+        dtwiss(mfitepy)=trans(4,5)*dsqr+trans1(4,5)*sqrdet
+     1            +dr3*trans(1,5)+r3*trans1(1,5)
+     1            +dr4*trans(2,5)+r4*trans1(2,5)
+      else
+        y11=trans(1,3)/sqrdet
+        y12=trans(1,4)/sqrdet
+        y21=trans(2,3)/sqrdet
+        y22=trans(2,4)/sqrdet
+        dy11=(trans1(1,3)-y11*dsqr)/sqrdet
+        dy12=(trans1(1,4)-y12*dsqr)/sqrdet
+        dy21=(trans1(2,3)-y21*dsqr)/sqrdet
+        dy22=(trans1(2,4)-y22*dsqr)/sqrdet
+        dtwiss(mfitey)=trans(1,5)*dsqr+trans1(1,5)*sqrdet
+     1       +( dr1*trans(3,5)+r1*trans1(3,5)
+     1       +dr2*trans(4,5)+r2*trans1(4,5))
+        dtwiss(mfitepy)=trans(2,5)*dsqr+trans1(2,5)*sqrdet
+     1       +( dr3*trans(3,5)+r3*trans1(3,5)
+     1       +dr4*trans(4,5)+r4*trans1(4,5))
+      endif
+      dtwiss(mfitpey) =trans1(3,5)
+      dtwiss(mfitpepy)=trans1(4,5)
+      ay0=utwiss(mfitay,idp,iutk)
+      by0=utwiss(mfitby,idp,iutk)
+      gy0=(1.d0+ay0**2)/by0
+      day      =(dy11*y22+y11*dy22+dy12*y21+y12*dy21)*ay0
+     1          -(dy11*y21+y11*dy21)*by0-(dy12*y22+y12*dy22)*gy0
+      dtwiss(mfitay)=day/(1.d0+utwiss(mfitay,idp,iutl)**2)
+      dby      =2.d0*(-(dy11*y12+y11*dy12)*ay0
+     1               +dy11*y11*by0+dy12*y12*gy0)
+      dtwiss(mfitby)=dby/utwiss(mfitby,idp,iutl)
+      dtwiss(mfitny)=(dy12*(by0*y11-ay0*y12)-y12*(by0*dy11-ay0*dy12))
+     1          /(y12**2+(by0*y11-ay0*y12)**2)
+      dtwiss(mfitdy)=dcod1(3)
+      dtwiss(mfitdpy)=dcod1(4)
+      dtwiss(mfitdz)=dcod1(5)
+      if(l .eq. nlat)then
+        bxx=sqrt(utwiss(mfitbx,idp,iutl)/utwiss(mfitbx,idp,1))
+        cosmx=cos(utwiss(mfitnx,idp,iutl))
+        sinmx=sin(utwiss(mfitnx,idp,iutl))
+        dtwiss(mfittrx)=
+     $       bxx*(.5d0*(cosmx+utwiss(mfitax,idp,1)*sinmx)*
+     $         dtwiss(mfitbx)+
+     1       (-sinmx+utwiss(mfitax,idp,1)*cosmx)*dtwiss(mfitnx))+
+     1       (-.5d0*(cosmx-utwiss(mfitax,idp,iutl)*sinmx)*
+     $         dtwiss(mfitbx)+
+     1       (-sinmx-utwiss(mfitax,idp,iutl)*cosmx)*dtwiss(mfitnx)-
+     1         sinmx*dax)/bxx
+        byy=sqrt(utwiss(mfitby,idp,iutl)/utwiss(mfitby,idp,1))
+        cosmy=cos(utwiss(mfitny,idp,iutl))
+        sinmy=sin(utwiss(mfitny,idp,iutl))
+        dtwiss(mfittry)=
+     $       byy*(.5d0*(cosmy+utwiss(mfitay,idp,1)*sinmy)*
+     $         dtwiss(mfitby)+
+     1       (-sinmy+utwiss(mfitay,idp,1)*cosmy)*dtwiss(mfitny))+
+     1       (-.5d0*(cosmy-utwiss(mfitay,idp,iutl)*sinmy)*
+     $         dtwiss(mfitby)+
+     1       (-sinmy-utwiss(mfitay,idp,iutl)*cosmy)*dtwiss(mfitny)-
+     1       sinmy*day)/byy
+      endif
+c      write(*,*)'qdtwis ',k0,l,dtwiss(mfitey)
+ 9000 gammab(1)=g1
+      return
+      end
+
+      subroutine qdini(utwiss1,utwiss2,k2,dtrans,dcod,iv)
+      use tfstk
+      use ffs
+      use ffs_pointer
+      use tffitcode
+      implicit none
+      integer*4 iv,k2 
+      real*8 utwiss1(ntwissfun),utwiss2(ntwissfun),
+     $     trans(4,5),dtrans(4,5),dcod(6)
+      real*8 b,detr,damu,dir
+      dtrans=0.d0
+      dcod=0.d0
+      dir=rlist(latt(1)+ilist(1,latt(1)))
+      if(iv .ge. mfitr1 .and. iv .le. mfitr4)then
+        detr=utwiss1(mfitdetr)
+      else
+c     begin initialize for preventing compiler warning
+        detr=0
+c     end   initialize for preventing compiler warning
+        call qgettru(utwiss1,utwiss2,0.d0,0.d0,
+     $       trans,1,k2,.true.,.false.,.true.)
+      endif
+      go to (100,200,300,400,500,600,700,800,900,1000,
+     $     1100,1200,1300,1400,1500,1600,1700,1800,1900),iv
+      return
+ 100  b=-dir/utwiss1(2)
+      dtrans(1,1)= trans(1,2)*b
+      dtrans(2,1)= trans(2,2)*b
+      dtrans(3,1)= trans(3,2)*b
+      dtrans(4,1)= trans(4,2)*b
+      go to 5000
+ 200  b=.5d0/utwiss1(2)
+      dtrans(1,1)= trans(1,1)*b
+      dtrans(2,1)= trans(2,1)*b
+      dtrans(3,1)= trans(3,1)*b
+      dtrans(4,1)= trans(4,1)*b
+      dtrans(1,2)=-trans(1,2)*b
+      dtrans(2,2)=-trans(2,2)*b
+      dtrans(3,2)=-trans(3,2)*b
+      dtrans(4,2)=-trans(4,2)*b
+      go to 5000
+ 300  go to 5000
+ 400  b=-dir/utwiss1(5)
+      dtrans(1,3)= trans(1,4)*b
+      dtrans(2,3)= trans(2,4)*b
+      dtrans(3,3)= trans(3,4)*b
+      dtrans(4,3)= trans(4,4)*b
+      go to 5000
+ 500  b=.5d0/utwiss1(5)
+      dtrans(1,3)= trans(1,3)*b
+      dtrans(2,3)= trans(2,3)*b
+      dtrans(3,3)= trans(3,3)*b
+      dtrans(4,3)= trans(4,3)*b
+      dtrans(1,4)=-trans(1,4)*b
+      dtrans(2,4)=-trans(2,4)*b
+      dtrans(3,4)=-trans(3,4)*b
+      dtrans(4,4)=-trans(4,4)*b
+      go to 5000
+ 600  go to 5000
+ 700  dtrans(1,5)=trans(1,1)
+      dtrans(2,5)=trans(2,1)
+      dtrans(3,5)=trans(3,1)
+      dtrans(4,5)=trans(4,1)
+      go to 5000
+ 800  dtrans(1,5)=dir*trans(1,2)
+      dtrans(2,5)=dir*trans(2,2)
+      dtrans(3,5)=dir*trans(3,2)
+      dtrans(4,5)=dir*trans(4,2)
+      go to 5000
+ 900  dtrans(1,5)=trans(1,3)
+      dtrans(2,5)=trans(2,3)
+      dtrans(3,5)=trans(3,3)
+      dtrans(4,5)=trans(4,3)
+      go to 5000
+ 1000 dtrans(1,5)=dir*trans(1,4)
+      dtrans(2,5)=dir*trans(2,4)
+      dtrans(3,5)=dir*trans(3,4)
+      dtrans(4,5)=dir*trans(4,4)
+      go to 5000
+ 1100 if(detr .lt. 1.d0)then
+        damu=-.5d0*utwiss1(14)/sqrt(1.d0-detr)
+        dtrans(1,1)=damu
+        dtrans(3,1)=-1.d0
+        dtrans(2,2)=damu
+        dtrans(3,3)=damu
+        dtrans(2,4)=1.d0
+        dtrans(4,4)=damu
+      else
+      endif
+      go to 5000
+ 1200 if(detr .lt. 1.d0)then
+        damu= .5d0*dir*utwiss1(13)/sqrt(1.d0-detr)
+        dtrans(1,1)=damu
+        dtrans(3,2)=-dir
+        dtrans(2,2)=damu
+        dtrans(3,3)=damu
+        dtrans(1,4)=-dir
+        dtrans(4,4)=damu
+      else
+      endif
+      go to 5000
+ 1300 if(detr .lt. 1.d0)then
+        damu= .5d0*dir*utwiss1(12)/sqrt(1.d0-detr)
+        dtrans(1,1)=damu
+        dtrans(4,1)=-dir
+        dtrans(2,2)=damu
+        dtrans(3,3)=damu
+        dtrans(2,3)=-dir
+        dtrans(4,4)=damu
+      else
+      endif
+      go to 5000
+ 1400 if(detr .lt. 1.d0)then
+        damu=-.5d0*utwiss1(11)/sqrt(1.d0-detr)
+        dtrans(1,1)=damu
+        dtrans(4,2)=-1.d0
+        dtrans(2,2)=damu
+        dtrans(3,3)=damu
+        dtrans(1,3)=1.d0
+        dtrans(4,4)=damu
+      else
+      endif
+      go to 5000
+ 1500 dcod(1)=1.d0
+      go to 5000
+ 1600 dcod(2)=dir
+      go to 5000
+ 1700 dcod(3)=1.d0
+      go to 5000
+ 1800 dcod(4)=dir
+      go to 5000
+ 1900 dcod(5)=1.d0
+ 5000 dcod(6)=0.d0
+      return
+      end
+
+      subroutine nancheck(a,str)
+      implicit none
+      real*8 a(4,5)
+      character*(*) str
+      integer*4 i,j
+      logical*4 isnan
+      do i=1,5
+        do j=1,4
+          if(isnan(a(j,i)))then
+            write(*,*)str,' ',j,i
+            return
+          endif
+        enddo
+      enddo
+      return
+      end
+
+      subroutine qddtwiss(k,k1,l,trans,dtrans,dcod,idp,
+     $     ctrans,iclast,trpt)
+      use tfstk
+      use ffs_pointer
+      use ffs_fit, only:nut
+      use tffitcode
+      implicit none
+      include 'inc/MACCODE.inc'
+      include 'inc/MACKW.inc'
+      real*8 eps
+      parameter (eps=1.d-4)
+      integer*4 k,l,idp,itwk,itwl,
+     $     la1,lb1,iclast,k1,itwk1,ibg,ibe,itwe,ibe1,itwbe
+      real*8 dtrans(4,5),dcod(6),trans(20),trans2s(20),
+     $     trans2(4,5),trans3(4,5),trans1(4,5),transe(4,5),
+     $     transe2(4,5),cod2(6),code(6),dcode(6),
+     $     w,fra,frb,ctrans(27)
+      logical*4 over,trpt
+      equivalence (trans2,trans2s)
+      itwk=itwissp(k)
+      itwk1=itwissp(k1)
+      itwl=itwissp(l)
+      w=eps/(abs(dcod(1))+abs(dcod(2))+abs(dcod(3))+abs(dcod(4))
+     $     +abs(dcod(5)))
+      cod2(6)=utwiss(mfitddp,idp,itwk1)
+      call tfbndsol(k,ibg,ibe)
+      call tffsbound1(k1,l,la1,fra,lb1,frb)
+      if(iclast .gt. 0 .and. iclast .le. lb1 .and.
+     $     (iclast .ne. lb1 .or. ctrans(27) .le. frb))then
+        cod2(1)=ctrans(21)
+        cod2(2)=ctrans(22)
+        cod2(3)=ctrans(23)
+        cod2(4)=ctrans(24)
+        cod2(5)=ctrans(25)
+        call qcod(1,iclast,ctrans(27),lb1,frb,
+     $       trans3,cod2,.true.,over)
+        call tmultr45(ctrans,trans3,trans2)
+      else
+        cod2(1)=utwiss(mfitdx, idp,itwk1)+w*dcod(1)
+        cod2(2)=utwiss(mfitdpx,idp,itwk1)+w*dcod(2)
+        cod2(3)=utwiss(mfitdy, idp,itwk1)+w*dcod(3)
+        cod2(4)=utwiss(mfitdpy,idp,itwk1)+w*dcod(4)
+        cod2(5)=utwiss(mfitdz, idp,itwk1)+w*dcod(5)
+        if(ibg .eq. 0 .or. l .le. max(ibg,ibe))then
+          call qcod(1,la1,fra,lb1,frb,
+     $         trans2,cod2,.true.,over)
+        else
+          if(ibg .lt. ibe)then
+            ibe1=ibe+1
+            itwe=itwissp(ibe1)
+            code(2)=utwiss(mfitdpx,idp,itwe)
+            code(4)=utwiss(mfitdpy,idp,itwe)
+            call qcod(1,la1,fra,ibe1,0.d0,
+     $           transe,cod2,.true.,over)
+c            write(*,*)'qddtwis-0 ',transe(2,5),cod2(2),code(2)
+            transe(2,5)=transe(2,5)-cod2(2)+code(2)
+            transe(4,5)=transe(4,5)-cod2(4)+code(4)
+            call tftmatu(utwiss(1,idp,itwissp(ibe1)),
+     $           utwiss(1,idp,itwl),
+     $           0.d0,0.d0,
+     $           transe2,ibe1,l,.false.,trpt)
+            cod2(1)=utwiss(mfitdx, idp,itwk1)
+            cod2(2)=utwiss(mfitdpx,idp,itwk1)
+            cod2(3)=utwiss(mfitdy, idp,itwk1)
+            cod2(4)=utwiss(mfitdpy,idp,itwk1)
+            cod2(5)=utwiss(mfitdz, idp,itwk1)
+            call qcod(1,la1,fra,ibe1,0.d0,
+     $           trans3,cod2,.true.,over)
+            trans3(2,5)=trans3(2,5)-cod2(2)+code(2)
+            trans3(4,5)=trans3(4,5)-cod2(4)+code(4)
+            call tmultr45(trans3,transe2,trans)
+          else
+            itwbe=itwissp(ibe)
+            call tftmatu(utwiss(1,idp,itwk1),
+     $           utwiss(1,idp,itwbe),
+     $           0.d0,0.d0,
+     $           transe,k1,ibe,.false.,trpt)
+            dcode(1)=
+     $            transe(1,1)*dcod(1)+transe(1,2)*dcod(2)
+     $           +transe(1,3)*dcod(3)+transe(1,4)*dcod(4)
+            dcode(2)=
+     $            transe(2,1)*dcod(1)+transe(2,2)*dcod(2)
+     $           +transe(2,3)*dcod(3)+transe(2,4)*dcod(4)
+            dcode(3)=
+     $            transe(3,1)*dcod(1)+transe(3,2)*dcod(2)
+     $           +transe(3,3)*dcod(3)+transe(3,4)*dcod(4)
+            dcode(4)=
+     $            transe(4,1)*dcod(1)+transe(4,2)*dcod(2)
+     $           +transe(4,3)*dcod(3)+transe(4,4)*dcod(4)
+            cod2(1)=utwiss(mfitdx, idp,itwbe)-w*dcode(1)
+            cod2(2)=utwiss(mfitdpx,idp,itwbe)-w*dcode(2)
+            cod2(3)=utwiss(mfitdy, idp,itwbe)-w*dcode(3)
+            cod2(4)=utwiss(mfitdpy,idp,itwbe)-w*dcode(4)
+            cod2(5)=utwiss(mfitdz, idp,itwbe)
+            call qcod(1,ibe,0.d0,k1,0.d0,
+     $           trans2,cod2,.true.,over)
+            transe(2,5)=transe(2,5)-w*dcode(2)
+            transe(4,5)=transe(4,5)-w*dcode(4)
+            call tmultr45(transe,trans2,transe)
+            call tftmatu(utwiss(1,idp,itwk1),
+     $           utwiss(1,idp,itwl),
+     $           0.d0,0.d0,
+     $           transe2,k1,l,.false.,trpt)
+          endif
+          cod2(1)=utwiss(mfitdx, idp,itwl)
+          cod2(2)=utwiss(mfitdpx,idp,itwl)
+          cod2(3)=utwiss(mfitdy, idp,itwl)
+          cod2(4)=utwiss(mfitdpy,idp,itwl)
+          cod2(5)=utwiss(mfitdz, idp,itwl)
+          call tmultr45(transe,transe2,trans2)
+        endif
+      endif
+c      call tmov(trans,transe2,20)
+c      write(*,*)'qddtws-2 '
+c      write(*,'(1p5g13.5)')((transe2(i,j),j=1,5),i=1,4)
+c      write(*,'(1p5g13.5)')((trans2(i,j),j=1,5),i=1,4)
+      iclast=lb1
+      ctrans(27)=frb
+      ctrans(1:20)=trans2s(1:20)
+      trans2s(1:20)=(trans2s(1:20)-trans(1:20))/w
+c      do i=1,20
+c        ctrans(i)=trans2s(i)
+c        trans2s(i)=(trans2s(i)-trans(i))/w
+c      enddo
+      dcod(5)=(cod2(5)-utwiss(mfitdz,idp,itwl))/w
+      ctrans(21)=cod2(1)
+      ctrans(22)=cod2(2)
+      ctrans(23)=cod2(3)
+      ctrans(24)=cod2(4)
+      ctrans(25)=cod2(5)
+      ctrans(26)=cod2(6)
+      call qgettru(utwiss(1,idp,itwk),utwiss(1,idp,itwk1),
+     $     utwiss(3,idp,nut),utwiss(6,idp,nut),
+     $     trans1,k,k1,.true.,.true.,trpt)
+      call tmultr45(trans1,trans2,transe)
+      call tadd(transe,dtrans,dtrans,20)
+      return
+      end
+
+      subroutine qdtrans(ke,kk1,j,je,
+     $     iv,dtrans,dcod,idp)
+      use tfstk
+      use ffs_pointer
+      use tffitcode
+      implicit none
+      include 'inc/MACCODE.inc'
+      include 'inc/MACKW.inc'
+      real*8 eps,vmin
+      parameter (eps=1.d-6,vmin=1.d-6)
+      integer*4 ke,iv,idp,j,kk1,je
+      integer*8 lp
+      real*8 dtrans(4,5),dcod(6),v0,wv,dv,trans2(20),
+     $     cod2(20),trans1(20),cod1(20),trans(4,5),trans3(4,5)
+      equivalence (trans2,trans3)
+      logical*4 over
+      lp=latt(j)
+      v0=rlist(lp+iv)
+      wv=1.d0
+      go to (
+     $     4900, 200,4900, 400,4900, 600,4900, 600,4900, 600,
+     $      600,4900,4900,4900,4900,4900,4900,4900,4900,6000,
+     $     4900,2200,4900,4900,4900,4900,4900,4900,4900,4900,
+     $     4900,4900,4900,4900,4900,4900,4900,4900,4900,4900,
+     $     4900),ke
+ 4900 dtrans=0.d0
+      dcod=0.d0
+      return
+ 200  wv=1.d0
+      go to 6000
+ 400  wv=1.d0
+      go to 6000
+ 600  wv=1.d0
+      go to 6000
+ 2200 if(iv .ge. kytbl(kwK1,icMULT))then
+        wv=10.d0**((iv-kytbl(kwK1,icMULT))/2)
+      else
+        wv=1.d0
+      endif
+      go to 6000
+ 6000 dv=max(abs(eps*v0),abs(vmin*wv))
+      rlist(lp+iv)=v0+dv
+      cod2(1)=utwiss(mfitdx,idp,kk1)
+      cod2(2)=utwiss(mfitdpx,idp,kk1)
+      cod2(3)=utwiss(mfitdy,idp,kk1)
+      cod2(4)=utwiss(mfitdpy,idp,kk1)
+      cod2(5)=utwiss(mfitdz,idp,kk1)
+      cod2(6)=utwiss(mfitddp,idp,kk1)
+      call qtwiss1(0.d0,idp,j,je,trans2,cod2,.true.,over)
+      rlist(lp+iv)=v0-dv
+      cod1(1)=utwiss(mfitdx,idp,kk1)
+      cod1(2)=utwiss(mfitdpx,idp,kk1)
+      cod1(3)=utwiss(mfitdy,idp,kk1)
+      cod1(4)=utwiss(mfitdpy,idp,kk1)
+      cod1(5)=utwiss(mfitdz,idp,kk1)
+      cod1(6)=utwiss(mfitddp,idp,kk1)
+      call qtwiss1(0.d0,idp,j,je,trans1,cod1,.true.,over)
+      trans2(1:20)=(trans2(1:20)-trans1(1:20))/(2.d0*dv)
+      dcod(1)=(cod2(1)-cod1(1))/(2.d0*dv)
+      dcod(2)=(cod2(2)-cod1(2))/(2.d0*dv)
+      dcod(3)=(cod2(3)-cod1(3))/(2.d0*dv)
+      dcod(4)=(cod2(4)-cod1(4))/(2.d0*dv)
+      dcod(5)=(cod2(5)-cod1(5))/(2.d0*dv)
+      rlist(lp+iv)=v0
+c      write(*,'(a,1p8g15.7)')'qdtrans ',iv,dcod(1),dcod(2)
+      call qtentu(trans,cod1,utwiss(1,idp,kk1),.true.)
+      call tmultr45(trans,trans3,dtrans)
+      return
+      end
+
+      subroutine tmultr45(a,b,c)
+      implicit none
+      real*8 a(4,5),b(4,5),c(4,5)
+      real*8 v1,v2,v3,v4
+      v1=a(1,1)
+      v2=a(2,1)
+      v3=a(3,1)
+      v4=a(4,1)
+      c(1,1)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
+      c(2,1)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
+      c(3,1)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
+      c(4,1)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
+      v1=a(1,2)
+      v2=a(2,2)
+      v3=a(3,2)
+      v4=a(4,2)
+      c(1,2)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
+      c(2,2)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
+      c(3,2)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
+      c(4,2)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
+      v1=a(1,3)
+      v2=a(2,3)
+      v3=a(3,3)
+      v4=a(4,3)
+      c(1,3)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
+      c(2,3)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
+      c(3,3)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
+      c(4,3)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
+      v1=a(1,4)
+      v2=a(2,4)
+      v3=a(3,4)
+      v4=a(4,4)
+      c(1,4)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
+      c(2,4)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
+      c(3,4)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
+      c(4,4)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
+      v1=a(1,5)
+      v2=a(2,5)
+      v3=a(3,5)
+      v4=a(4,5)
+      c(1,5)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4+b(1,5)
+      c(2,5)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4+b(2,5)
+      c(3,5)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4+b(3,5)
+      c(4,5)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4+b(4,5)
+      return
+      end

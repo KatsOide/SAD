@@ -1,4 +1,5 @@
       subroutine tfgeo(calgeo0)
+      use kyparam
       use tfstk
       use ffs
       use ffs_flag
@@ -167,6 +168,7 @@
       end
 
       subroutine tfgeo1(istart0,istop,calgeo,acconly)
+      use kyparam
       use tfstk
       use ffs
       use ffs_pointer
@@ -246,7 +248,7 @@ c      h1=sqrt(1.d0+p1**2)
         if(calgeo)then
           if(k .eq. icMARK)then
             if(ke .ne. 0 .and. ke1 .ne. 0)then
-              if(rlist(idvalc(i)+kytbl(kwGEO,icMARK))
+              if(rlist(idvalc(i)+ky_GEO_MARK)
      $             .ne. 0)then
                 zetau=geo(1,3,ke1)*geo(1,1,i)+geo(2,3,ke1)*geo(2,1,i)
      1               +geo(3,3,ke1)*geo(3,1,i)
@@ -259,8 +261,8 @@ c                a=sqrt((1.d0-b)*(1.d0+b))
      1               +geo(3,1,ke1)*geo(3,1,i)
                 dchi3=atan2(a*etau-b*geo(3,3,ke1)*xiu,
      1                      a*xiu+b*geo(3,3,ke1)*etau)
-                rlist(latt(ke)+kytbl(kwCHI3,icSOL))=
-     $               rlist(latt(ke)+kytbl(kwCHI3,icSOL))+dchi3
+                rlist(latt(ke)+ky_CHI3_SOL)=
+     $               rlist(latt(ke)+ky_CHI3_SOL)+dchi3
                 coschi= cos(dchi3)
                 sinchi=-sin(dchi3)
                 call trotg(geo(1,1,ke1),geo(1,3,ke1),coschi,sinchi)
@@ -336,17 +338,17 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
             call tgmap(i)
           elseif(k .eq. icCOORD)then
             id=idvalc(i)
-            cchi1=cos(cmp%value(4))
-            schi1=sin(cmp%value(4))
-            cchi2=cos(cmp%value(5))
-            schi2=sin(cmp%value(5))
-            cchi3=cos(cmp%value(6))
-            schi3=sin(cmp%value(6))
-            dir=cmp%value(7) .eq. 0.d0
+            cchi1=cos(cmp%value(ky_CHI1_COORD))
+            schi1=sin(cmp%value(ky_CHI1_COORD))
+            cchi2=cos(cmp%value(ky_CHI2_COORD))
+            schi2=sin(cmp%value(ky_CHI2_COORD))
+            cchi3=cos(cmp%value(ky_CHI3_COORD))
+            schi3=sin(cmp%value(ky_CHI3_COORD))
+            dir=cmp%value(ky_DIR_COORD) .eq. 0.d0
             if(dir)then
-              dx=cmp%value(1)
-              dy=cmp%value(2)
-              dz=cmp%value(3)
+              dx=cmp%value(ky_DX_COORD)
+              dy=cmp%value(ky_DY_COORD)
+              dz=cmp%value(ky_DZ_COORD)
               r11= cchi1*cchi3+schi1*schi2*schi3
               r12=-cchi2*schi3
               r13= schi1*cchi3-cchi1*schi2*schi3
@@ -363,9 +365,9 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
               geo(3,4,i1)=geo(3,4,i)
      1                  +dx*geo(3,1,i)+dy*geo(3,2,i)+dz*geo(3,3,i)
             else
-              dx=-cmp%value(1)
-              dy= cmp%value(2)
-              dz= cmp%value(3)
+              dx=-cmp%value(ky_DX_COORD)
+              dy= cmp%value(ky_DY_COORD)
+              dz= cmp%value(ky_DZ_COORD)
               r11= cchi1*cchi3+schi1*schi2*schi3
               r21= cchi2*schi3
               r31=-schi1*cchi3+cchi1*schi2*schi3

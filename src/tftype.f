@@ -1,4 +1,5 @@
       subroutine tftype(lfno,word)
+      use kyparam
       use tfstk
       use ffs_pointer
       use tffitcode
@@ -44,7 +45,7 @@
       endif
       do j=1,ntyp
         lt=ltyp(j)
-        mulc=kytbl(kwMAX,lt) .gt. kytbl(kwMAX, icDRFT)
+        mulc=kytbl(kwMAX,lt) .gt. ky_MAX_DRFT
         start=.true.
         do kkk=1,nl
           k1=int(rlist(kavl+kkk))

@@ -1,4 +1,5 @@
       subroutine tsgeo(k,ke,ke1,sol)
+      use kyparam
       use tfstk
       use ffs
       use sad_main
@@ -70,9 +71,9 @@
         idir=-1
         ke1=ke+1
       endif
-      rlist(lp+kytbl(kwDZ,icSOL))=0.d0
-      chi1=rlist(lp+kytbl(kwDPX,icSOL))
-      chi2=rlist(lp+kytbl(kwDPY,icSOL))
+      rlist(lp+ky_DZ_SOL)=0.d0
+      chi1=rlist(lp+ky_DPX_SOL)
+      chi2=rlist(lp+ky_DPY_SOL)
       cschi1=cos(chi1)
       snchi1=sin(chi1)
       cschi2=cos(chi2)
@@ -94,7 +95,7 @@
           geo1(i,3)= g1*cschi1+geo1(i,1)*snchi1
           geo1(i,1)=-g1*snchi1+geo1(i,1)*cschi1
 110     continue
-        call tgrot(rlist(l1+kytbl(kwCHI1,icSOL)),geo(1,1,k),geo1)
+        call tgrot(rlist(l1+ky_CHI1_SOL),geo(1,1,k),geo1)
         pos0=0
         pos(k+1)=pos(k)
       else
@@ -116,18 +117,18 @@
         geo(1,4,ke)= 0.d0
         geo(2,4,ke)= 0.d0
         geo(3,4,ke)= 0.d0
-        call tgrot(rlist(l2+kytbl(kwCHI1,icSOL)),geo1,geo(1,1,ke))
+        call tgrot(rlist(l2+ky_CHI1_SOL),geo1,geo(1,1,ke))
         pos0=pos(k)
         pos(k1)=0.d0
       endif
-      xi=rlist(latt(k1)+kytbl(kwDX,icSOL))
-      yi=rlist(latt(k1)+kytbl(kwDY,icSOL))
+      xi=rlist(latt(k1)+ky_DX_SOL)
+      yi=rlist(latt(k1)+ky_DY_SOL)
       pxi=-snchi1*cschi2
       pyi=-snchi2
       led=idvalc(k2)
       ds=0.d0
       gi=0.d0
-      if(rlist(latt(k1)+kytbl(kwFRIN,icSOL)) .eq. 0.d0)then
+      if(rlist(latt(k1)+ky_FRIN_SOL) .eq. 0.d0)then
         call tsfrin(1,xi,pxi,yi,pyi,ds,gi,bzs)
         ds=-ds*dir
       endif
@@ -139,7 +140,7 @@
         lt=idtypec(i)
         call compelc(i,cmp)
         if(lt .eq. icDRFT)then
-          al=cmp%value(1)
+          al=cmp%value(ky_L_DRFT)
           pzi=1.d0
      1       -(pxi**2+pyi**2)/(1.d0+sqrt((1.d0-pyi)*(1.d0+pyi)-pxi**2))
           phi=al*bzs/pzi*dir
@@ -167,9 +168,9 @@ c            a14= 2.d0*sin(phi*.5d0)**2/ak
           xi=xi+dx
           yi=yi+dy
         elseif(lt .eq. icBEND)then
-          al=cmp%value(1)
-          phi=cmp%value(2)
-          theta=cmp%value(kytbl(kwROT,icBEND))
+          al=cmp%value(ky_L_BEND)
+          phi=cmp%value(ky_ANGL_BEND)
+          theta=cmp%value(ky_ROT_BEND)
           phiy=phi*cos(theta)
           phix=phi*sin(theta)
           f=.5d0*bzs
@@ -190,21 +191,21 @@ c            a14= 2.d0*sin(phi*.5d0)**2/ak
           xi=xf
           yi=yf
         elseif(lt .eq. icQUAD)then
-          al=cmp%value(1)
+          al=cmp%value(ky_L_QUAD)
           xf=xi
           f=.5d0*bzs
           pxf=(pxi-f*yi)*dir
           yf=yi
           pyf=(pyi+f*xi)*dir
           zf=0.d0
-          theta=cmp%value(4)
-          ak1=cmp%value(kytbl(kwK1,icQUAD))
+          theta=cmp%value(ky_ROT_QUAD)
+          ak1=cmp%value(ky_K1_QUAD)
           call setdirelc(i,direlc(i)*dir)
           dirf=direlc(i) .gt. 0.d0
           if(dirf)then
-            mfr=nint(cmp%value(12))
+            mfr=nint(cmp%value(ky_FRMD_QUAD))
           else
-            mfr=nint(cmp%value(12))
+            mfr=nint(cmp%value(ky_FRMD_QUAD))
             mfr=mfr*(11+mfr*(2*mfr-9))/2
           endif
           gf=0.d0
@@ -216,11 +217,11 @@ c            a14= 2.d0*sin(phi*.5d0)**2/ak
           endif
           call tquads(1,xf,pxf,yf,pyf,zf,gf,dvf,pzf,i,
      $         al,ak1,bzs*dir,
-     $         cmp%value(5),cmp%value(6),theta,
+     $         cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),theta,
      1         cos(theta),sin(theta),
-     1         1.d0,cmp%value(9) .eq. 0.d0,
+     1         1.d0,cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $         ftable(1),ftable(2),ftable(3),ftable(4),
-     $         mfr,cmp%value(13),i,dirf)
+     $         mfr,cmp%value(ky_EPS_QUAD),i,dirf)
           call setdirelc(i,direlc(i)*dir)
           pxf=pxf*dir+f*yf
           pyf=pyf*dir-f*xf
@@ -230,7 +231,7 @@ c            a14= 2.d0*sin(phi*.5d0)**2/ak
           xi=xf
           yi=yf
         elseif(lt .eq. icMULT)then
-          al=cmp%value(1)
+          al=cmp%value(ky_L_MULT)
           f=bzs*.5d0
           cod(1)=xi
           cod(2)=(pxi-f*yi)*dir
@@ -240,27 +241,27 @@ c            a14= 2.d0*sin(phi*.5d0)**2/ak
           cod(6)=0.d0
           call setdirelc(i,direlc(i)*dir)
           dirf=direlc(i) .gt. 0.d0
-          phi=cmp%value(kytbl(kwANGL,icMULT))
-          mfr=nint(cmp%value(kytbl(kwFRMD,icMULT)))
+          phi=cmp%value(ky_ANGL_MULT)
+          mfr=nint(cmp%value(ky_FRMD_MULT))
           if(dirf)then
-            psi1=cmp%value(kytbl(kwE1,icMULT))
-            psi2=cmp%value(kytbl(kwE2,icMULT))
-            apsi1=cmp%value(kytbl(kwAE1,icMULT))
-            apsi2=cmp%value(kytbl(kwAE2,icMULT))
-            fb1=cmp%value(kytbl(kwFB1,icMULT))
-            fb2=cmp%value(kytbl(kwFB2,icMULT))
-            chi1m=cmp%value(kytbl(kwCHI1,icMULT))
-            chi2m=cmp%value(kytbl(kwCHI2,icMULT))
+            psi1=cmp%value(ky_E1_MULT)
+            psi2=cmp%value(ky_E2_MULT)
+            apsi1=cmp%value(ky_AE1_MULT)
+            apsi2=cmp%value(ky_AE2_MULT)
+            fb1=cmp%value(ky_FB1_MULT)
+            fb2=cmp%value(ky_FB2_MULT)
+            chi1m=cmp%value(ky_CHI1_MULT)
+            chi2m=cmp%value(ky_CHI2_MULT)
           else
             mfr=mfr*(11+mfr*(2*mfr-9))/2
-            psi1=cmp%value(kytbl(kwE2,icMULT))
-            psi2=cmp%value(kytbl(kwE1,icMULT))
-            apsi1=cmp%value(kytbl(kwAE2,icMULT))
-            apsi2=cmp%value(kytbl(kwAE1,icMULT))
-            fb2=cmp%value(kytbl(kwFB1,icMULT))
-            fb1=cmp%value(kytbl(kwFB2,icMULT))
-            chi1m=-cmp%value(kytbl(kwCHI1,icMULT))
-            chi2m=-cmp%value(kytbl(kwCHI2,icMULT))
+            psi1=cmp%value(ky_E2_MULT)
+            psi2=cmp%value(ky_E1_MULT)
+            apsi1=cmp%value(ky_AE2_MULT)
+            apsi2=cmp%value(ky_AE1_MULT)
+            fb2=cmp%value(ky_FB1_MULT)
+            fb1=cmp%value(ky_FB2_MULT)
+            chi1m=-cmp%value(ky_CHI1_MULT)
+            chi2m=-cmp%value(ky_CHI2_MULT)
           endif
 c          if(chi1m .ne. 0.d0)then
 c            write(*,*)'tsgeo ',i,chi1m,dirf,dir
@@ -270,18 +271,20 @@ c          endif
           call tsetfringepe(cmp,icMULT,direlc(i),ftable)
           bzs=bzs*dir
           call tmulte(trans,cod,beam,i,
-     $         al,cmp%value(kytbl(kwK0,icMULT)),bzs,
+     $         al,cmp%value(ky_K0_MULT),bzs,
      $         phi,psi1,psi2,apsi1,apsi2,
-     $         cmp%value(3),cmp%value(4),cmp%value(5)*dir,
-     $         chi1m,chi2m,cmp%value(8),
+     $         cmp%value(ky_DX_MULT),cmp%value(ky_DY_MULT),
+     $         cmp%value(ky_DZ_MULT)*dir,
+     $         chi1m,chi2m,cmp%value(ky_ROT_MULT),
      $         0.d0,
-     1         cmp%value(9),.false.,cmp%value(11) .eq. 0.d0,
+     1         cmp%value(ky_EPS_MULT),.false.,
+     $         cmp%value(ky_FRIN_MULT) .eq. 0.d0,
      $         ftable(1),ftable(2),ftable(3),ftable(4),
      $         mfr,fb1,fb2,
-     $         rlist(lp+kytbl(kwK0FR,icMULT)) .eq. 0.d0,
-     $         cmp%value(15),cmp%value(16),
-     $         cmp%value(17),cmp%value(18),0.d0,1.d0,
-     $         0)
+     $         rlist(lp+ky_K0FR_MULT) .eq. 0.d0,
+     $         cmp%value(ky_VOLT_MULT),cmp%value(ky_HARM_MULT),
+     $         cmp%value(ky_PHI_MULT),cmp%value(ky_FREQ_MULT),
+     $         0.d0,1.d0,0)
           call setdirelc(i,direlc(i)*dir)
           xf=cod(1)
           yf=cod(3)
@@ -298,7 +301,7 @@ c          endif
           dx=0.d0
           dy=0.d0
           dl=0.d0
-          if(cmp%value(8) .eq. 0.d0)then
+          if(cmp%value(ky_BND_SOL) .eq. 0.d0)then
             bzs0=bzs
             if(idir .lt. 0)then
               bzs=tfbzs(i-1,kbz)
@@ -306,7 +309,7 @@ c          endif
               bzs=tfbzs(i,kbz)
             endif
             db=bzs-bzs0
-            if(cmp%value(kytbl(kwFRIN,icSOL)) .eq. 0.d0)then
+            if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
               pxf=pxi-yi*bzs0*.5d0
               pyf=pyi+xi*bzs0*.5d0
               gi=0.d0
@@ -324,11 +327,11 @@ c          endif
               pxf=pxi+yi*db*.5d0
               pyf=pyi-xi*db*.5d0
             endif
-            cmp%value(3:12)=0.d0
+            cmp%value(ky_DX_SOL:ky_GEO_SOL)=0.d0
           else
             pxf=pxi-yi*bzs*.5d0
             pyf=pyi+xi*bzs*.5d0
-            if(cmp%value(kytbl(kwFRIN,icSOL)) .eq. 0.d0)then
+            if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
               gi=0.d0
               xf=xi
               yf=yi
@@ -379,7 +382,7 @@ c        write(*,*)'tsgeo ',i1,geo(1,4,i1),geo(2,4,i1)
         cschi3= cos(chi3)
         snchi3= sin(chi3)
         call trotg(geo(1,1,ke1),geo(1,3,ke1),cschi3,snchi3)
-        call tgrot(rlist(l2+kytbl(kwCHI1,icSOL)),geo1,geo(1,1,ke1))
+        call tgrot(rlist(l2+ky_CHI1_SOL),geo1,geo(1,1,ke1))
       else
         s1=geo(1,1,ke)*geo(1,1,k)+geo(2,1,ke)*geo(2,1,k)
      1       +geo(3,1,ke)*geo(3,1,k)
@@ -448,7 +451,7 @@ c        snchi3=sin(chi3)
      1              +geo(1,3,k)*geo1(j,3)
 240     continue
         geo(:,:,k)=geos
-        call tgrot(rlist(l1+kytbl(kwCHI1,icSOL)),geos,geo1)
+        call tgrot(rlist(l1+ky_CHI1_SOL),geos,geo1)
         geo(:,:,ke+1)=geo(:,:,ke)
       endif
       return

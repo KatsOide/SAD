@@ -1,5 +1,5 @@
-Help$Update="$Date: 2016/10/05 06:19:08 $"[8,17];
-Help$Version="1.0.10.10.5k64";
+Help$Update="$Date: 2017/02/03 18:38:22 $"[8,17];
+Help$Version="1.1.0.3k64";
 
 Help$Messages=(Print["SAD/FFS Help Update: ",Help$Update];{
 {" ",
@@ -144,6 +144,12 @@ The flag TRPT must be on.",
       "DISP D displays all matching-functions in one line \n\
 suitable to be read by a spread-sheet program.",
       "optical-functions geometrical-functions matching-function-commands",
+      {}},
+
+      {"Z",
+       "DISP Z displays muatching functions related to the Z plane:\n\
+AZ BZ NZ DZ DDP ZX ZPX ZY ZPY , which are obtained by CALC/GO with CALC6D.",
+      "extended-twiss-parameters",
       {}},
 
      {"region",
@@ -347,8 +353,8 @@ OCT     K3               ROTATE\n\
 DECA    K4               ROTATE\n\
 DODECA  K5               ROTATE\n\
 MULT    K1               K0,K2..K21,SK0,SK1,SK2..SK21,ROTATE,ANGLE\n\
-MARK    -                AX,BX,EX,EPX,AY,BY,EY,EPY,R1,R2,R3,R4,DX,DPX,DY,DPY\n\
-                         DZ,DDP",
+MARK    -                AX,BX,EX,EPX,AY,BY,EY,EPY,R1,R2,R3,R4,DETR,\n\
+                         DX,DPX,DY,DPY,DZ,DDP,AZ,BZ,ZX,ZPX,ZY,ZPY",
       "keywords",
       {}}
     }},
@@ -583,8 +589,8 @@ CAVI    L ROTATE DX DY VOLT V1 V20 V11 V02 FREQ PHI HARM RANVOLT RANPHASE\n\
         DISFRIN FRINGE\n\
 TCAVI   L ROTATE DX DY K0 V1 FREQ PHI HARM RANKICK RANPHASE\n\
 COORD   DX DY CHI1 CHI2 CHI3 DIR\n\
-MARK    AX BX AY BY EX EPX EY EPY R1 R2 R3 R4 DX DPX DY DPY DZ DDP\n\
-        EMITX EMITY DP AZ SIGZ GEO OFFSET\n\
+MARK    AX BX AY BY EX EPX EY EPY R1 R2 R3 R4 DETR DX DPX DY DPY DZ DDP\n\
+        AZ BZ NZ ZX ZPX ZY ZPY EMITX EMITY DP AZ SIGZ GEO OFFSET\n\
 APERT   DX1 DX2 DY1 DY2 DP AX AY DX DY",
         "default-keyword set-value-of-element functions \
 FFS-dedicated-functions:Element",
@@ -1730,6 +1736,13 @@ DY      dy\n\
 DPY     dpy\n\
 DZ      dz\n\
 DDP     delta=dp/p0\n\
+AZ      alpha_Z\n\
+BZ      beta_Z\n\
+NZ      psi_Z, the default scale is 1/(2Pi)\n\
+ZX      zeta_X  (z-dispersion_X)\n\
+ZPX     zeta_Px (z-dispersion_PX) \n\
+ZY      zeta_Y  (z-dispersion_Y)\n\
+ZPY     zeta_Py (z-dispersion_PY)\n\
 PEX     eta_x   (dispersion_x)\n\
 PEPX    eta_px  (dispersion_px) \n\
 PEY     eta_y   (dispersion_y)\n\
@@ -1777,7 +1790,8 @@ of the extended Twiss parameters.   In 6 by 6 case, those are\n\n\
    R3  R4    PSIY ZPY EPY\n\
                    AZ  BZ\n\
                      PSIZ .\n\n\
-A(X,Y,Z), B(X,Y,Z) are alphas and betas in the usual sense, after a diagonalization to 2 by 2 submatrices.  PSI(X,Y,Z) are the rotation angle to set one\n\
+A(X,Y,Z), B(X,Y,Z) are alphas and betas in the usual sense, after a diagonalization\n\
+to 2 by 2 submatrices.  PSI(X,Y,Z) are the rotation angle to set one\n\
 the coordinate to parallel to the (X,Y,Z) axes.   R(1,2,3,4) are the\n\
 components of the x-y coupling matrix (see x-y-coupling).   E(X,PX,Y,PY) are\n\
 \"dispersions\" which decouples synchro-beta coupling terms together with\n\
@@ -1943,8 +1957,9 @@ number generator after the particle tracking.",
 
      {"CODPLOT",
       "CODPLOT lets the emittance calculation return the information on \n\
-the closed-orbit and the beam size along the beam line into the FFS optics\n\
-buffer, which can be shown by DISPLAY(DISP) or DRAW commands.",
+the closed-orbit, extended Twiss parameters, and the beam size along\n\
+the beam line into the FFS optics buffer, which can be shown by DISPLAY(DISP) or\n\
+DRAW commands as well as Twiss and OpticsPlot functions.",
       "EMITTANCE(EMIT) DISPLAY(DISP) DRAW WSPAC",
       {}},
 
@@ -2130,6 +2145,19 @@ distribution to be a uniform(square) within +-DP.",
      {"UNSTABLE",
       "UNSTABLE is the antonym of STABLE.",
       "STABLE",
+      {}},
+
+     {"CALC6D",
+      "If CALC6D is on, the optics calculation in CALC and GO performs full\n\
+6D calculation, which may takes RADCOD into account. The antonyms is CALC4D.\n\
+The Default is CALC4D.",
+      "CALC4D",
+      {}},
+
+     {"CALC4D",
+      "If CALC4D is on, the optics calculation in CALC and GO performs a 4x5\n\
+calculation (4D + dispersion). The antonyms is CALC6D. The Default is CALC4D.",
+      "CALC6D",
       {}},
 
      {"CONVCASE",
@@ -3527,7 +3555,16 @@ PlotRange        Automatic       {ymin,ymax} or {{xmin,xmax},{ymin,ymax}}\n\
 Prolog           {}              List of promitives\n\
 Scale            {Linear,Linear} Log, Date\n\
 TickSize         1               relative size of ticks.\n\
-FrameThickness   Automatic       thickness of the frame line incl. ticks.\n\n\
+FrameThickness   Automatic       thickness of the frame line incl. ticks.\n\
+Legend           \"\"              shows legend-string.\n\
+FontScale        1               Relative size of fonts for FrameLabel, FrameTicks.\n\
+FrameFontScale   1               Relative size of fonts for FrameLabel.\n\
+                                 If Real, applied to all frames. If List, applied to\n\
+                                 bottom, left, top, right, supplemented 1s to the right.\n\
+TickFontScale    1               Relative size of fonts for FrameTicks.\n\
+                                 If Real, applied to all frames. If List, applied to\n\
+                                 bottom, left, top, right, supplemented 1s to the right.\n\
+LegendFontScale  1               Relative size of fonts for Legend.\n\n\
 Options for primitives:\n\n\
 For Text:\n\
 option           default         optional values\n\
@@ -3775,6 +3812,8 @@ LatticeRegion Automatic           {low,high}, the region where lattice is drawn\
 FrameHeight   Automatic           List of relative heights of each frame\n\
 InfoLabel     False               If True, pressing Button shows Twiss, etc.\n\
 Names         \"*\"                 A pattern of component names to be plotted.\n\
+RemoveOverlap \"L$NAME\"            If not \"L$NAME\", overlapping of lattice names\n\
+                                  remain untouched.\n\
 Tags          False               True to attach tags \"C$\"//(component name)\n\
                                   to each rectangle for the lattice, and\n\
                                   \"L$\"//(component name) to the component \n\

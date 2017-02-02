@@ -39,7 +39,7 @@
       integer*4 lfnstk(maxlfn),lfret(maxlfn),
      $     lfrecl(maxlfn),lflinep(maxlfn),nrpt(maxrpt),
      $     irptp(maxrpt),df(maxcond)
-      real*8 chi0(3),trdtbl(3,6)
+      real*8 chi0(3),trdtbl(3,6),rfromk
       logical*4 err,new,cmd,open98,abbrev,ftest,
      $     frefix,exist,init,trpt0,expnd,chguse,visit,
      $     byeall,expndc,tfvcomp,tffsinitialcond,
@@ -105,11 +105,10 @@ c
         call tmast
         call twmov(1,twiss,nlat,ndim,.true.)
         if(.not. chguse)then
-          do i=1,mfit1
-            scale(i)=1.d0
-          enddo
+          scale=1.d0
           scale(mfitnx)=pi2
           scale(mfitny)=pi2
+          scale(mfitnz)=pi2
           scale(mfitchi1)=pi/180.d0
           scale(mfitchi2)=pi/180.d0
           scale(mfitchi3)=pi/180.d0
@@ -119,7 +118,6 @@ c
           convgo=.false.
           trsize=.false.
           cellstab=.true.
-          canon=.true.
           simulate=.true.
           absweit=.true.
           jitter=.true.
@@ -1401,6 +1399,7 @@ c        dpm2=rlist(ktlookup('DPM'))
         go to 8810
       endif
 c      write(*,*)'tffsa-1 ',flv%iut,%LOC(rlist(flv%iut)),busy
+      call tfevalb('Setup$FF[]',10,kx,irtc)
       call tffsmatch(df,dp0,r,nparallel,lfno,irtc)
       updatesize=.false.
       call tclrfpe
@@ -1411,8 +1410,9 @@ c      write(*,*)'tffsa-1 ',flv%iut,%LOC(rlist(flv%iut)),busy
         call tmunmapp(flv%iut)
         go to 8810
       endif
+      call tfevalb('Reset$FF[]',10,kx,irtc)
+      nqcol=nqcol-int(rfromk(kx))
       flv%nfc=nfc0
-c      write(*,*)'tffsa-2 ',flv%iut,%LOC(rlist(flv%iut)),busy
       call tfshow(cellstab,df,mfpnt,mfpnt1,
      $     kffs,irtcffs,lfnb .gt. 1,lfno)
       call tmunmapp(flv%iut)
@@ -1420,13 +1420,13 @@ c      write(*,*)'tffsa-2 ',flv%iut,%LOC(rlist(flv%iut)),busy
       if(cell)then
         str=' '
         do i=nfam1,nfam
-          if(.not. hstab(i))then
+          if(.not. optstat(i)%stabx)then
             str='Horizontal'
             exit
           endif
         enddo
         do i=nfam1,nfam
-          if(.not. vstab(i))then
+          if(.not. optstat(i)%staby)then
             if(str(1:1) .ne. ' ')then
               str='Horizontal/Vertical'
             else
@@ -1773,6 +1773,7 @@ c      call tfdebugprint(kx,'setupcoup',3)
           do j=1,me
             ie=int(kle%rbody(j))
             call tfkeya(ie,key,ik)
+c            write(*,*)'setupcouple ',j,ik,key(1:10)
             if(ik .lt. 0)then
               do k=1,nlat-1
                 if(ilist(k,ifele1) .eq. -ie)then
@@ -1783,6 +1784,7 @@ c      call tfdebugprint(kx,'setupcoup',3)
                     klist(ifele2+k-1)=iet
                   endif
                   nk=ilist(1,iet)+1
+c                  write(*,*)'setupcouple ',k,iet,ik,nk
                   ilist(1,iet+nk)=i
                   ilist(2,iet+nk)=-ik
                   ilist(1,iet)=nk
@@ -1900,15 +1902,21 @@ c      call tfdebugprint(kx,'setupcoup',3)
       return
       end
 
-      subroutine tclrline(line)
+      recursive subroutine tclrline(line)
       use tfstk
+      use maccode
       implicit none
-      integer*4 i,n
-      integer*8 line,ip
+      integer*4 i,n,idx
+      integer*8 line
       do i=1,ilist(1,line)
-        ip=klist(line+i)
-        n=ilist(1,ip)+1
-        call tfreem(ip,n)
+        idx=ilist(2,line+i)
+        if(idx .gt. 0 .and. idx .le. HTMAX)then
+          if(idtype(idx) .eq. icLINE)then
+            call tclrline(idval(idx))
+          endif
+        else
+          write(*,*)'tclrline ',line,ilist(1,line),i,idx
+        endif
       enddo
       n=ilist(1,line)+1
       call tfreem(line,n)

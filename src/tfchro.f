@@ -1,6 +1,7 @@
       subroutine tfchro(latt,
      1              alphax,betax,psix,dx,
      1              alphay,betay,psiy,lfno)
+      use kyparam
       use tfstk
       use ffs
       use tffitcode
@@ -29,12 +30,12 @@
             xix= (betax(i)*dx(i)+betax(i+1)*dx(i+1))*v*.5d0
             xiy=-(betay(i)*dx(i)+betay(i+1)*dx(i+1))*v*.5d0
           elseif(k .eq. icmult)then
-            v=rlist(latt(i)+kytbl(kwK1,icMULT))
+            v=rlist(latt(i)+ky_K1_MULT)
             xix=-( v*betax(i)+(1.d0+alphax(i)**2)/betax(i)*ali+
      1           alphax(i+1)-alphax(i))*.5d0
             xiy=-(-v*betay(i)+(1.d0+alphay(i)**2)/betay(i)*ali+
      1           alphay(i+1)-alphay(i))*.5d0
-            v=rlist(latt(i)+kytbl(kwK2,icMULT))
+            v=rlist(latt(i)+ky_K2_MULT)
             xix=xix+(betax(i)*dx(i)+betax(i+1)*dx(i+1))*v*.5d0
             xiy=xiy-(betay(i)*dx(i)+betay(i+1)*dx(i+1))*v*.5d0
           endif

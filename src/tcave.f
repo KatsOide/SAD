@@ -107,7 +107,7 @@ c          h1=sqrt(1.d0+p1**2)
           endif
           vcacc=vcacc-vcn*sp
           dh=max(oneev-h1,-va*(sp+offset1))
-c          write(*,'(a,i5,1p6g14.6)')'tcave ',n,dh,va,cod(6)
+c          write(*,'(a,1p6g14.6)')'tcave ',vcacc,vcn,sp
           h2=h1+dh
           p2=h2*sqrt(1.d0-1.d0/h2**2)
           pf    =(h2+h1)/(p2+p1)*dh
@@ -141,6 +141,7 @@ c          write(*,'(a,i5,1p6g14.6)')'tcave ',n,dh,va,cod(6)
           trans1(5,1)=-ddhdx*t/p2/h2**2
           trans1(5,3)=-ddhdy*t/p2/h2**2
           trans1(5,5)=v2/v1-ddhdz*t/p2/h2**2
+c          write(*,*)'tcave ',trans1(5,5),v1,v2
           trans1(5,6)=-t*p0*(ddhdp-dh*(h2*(h2+h1)+p1**2)/p1/h1**2)
      $         /p2/h2**2
 c          trans1(5,5)=(p2+a*t/p2/h2)/h2/v1
@@ -183,7 +184,9 @@ c        rg=sqrt(rg2)
         trans1(2,2)=rg2
         trans1(4,4)=rg2
         trans1(6,6)=rg2
-        call tmultr(trans,trans1,irad)
+        trans(2,1:irad)=trans(2,1:irad)*rg2
+        trans(4,1:irad)=trans(4,1:irad)*rg2
+        trans(6,1:irad)=trans(6,1:irad)*rg2
         if(irad .gt. 6 .or. calpol)then
           call tmulbs(beam,trans1,.true.,.true.)
         endif
@@ -195,6 +198,8 @@ c        rg=sqrt(rg2)
         call tesetdv(cod(6))
       endif
       call tchge(trans,cod,beam,dx,dy,-theta,.false.,ld)
+c      write(*,'(a,i5,1p6g15.7)')'tcave ',l+1,dhg,rg2,
+c     $     trans(5,5),trans(5,6),trans(6,5),trans(6,6)
       return
       end
 
@@ -222,6 +227,7 @@ c        rg=sqrt(rg2)
       sph=sin(ph)
       cph=cos(ph)
       dpt=vf*(sph+s0)
+c      write(*,'(a,1p6g15.7)')'tcavfrie ',dpt,ph,phic,w,t,dphis
       cod(2)=cod(2)+cod(1)*dpt
       cod(4)=cod(4)+cod(3)*dpt
       wc=-w*vf

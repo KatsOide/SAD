@@ -247,6 +247,13 @@ c      endif
                 istop=is1
                 return
               endif
+            elseif(jc .eq. mtfpower)then
+              if(is1 .ne. 1 .and. is1 .lt. l-1
+     $             .and. string(is1:is1+2) .eq. '^^^')then
+                irt=-2
+                istop=is1
+                return
+              endif
             elseif(jc .eq. mtfleftcomment)then
               istop=l+1
               if(is1 .lt. l-2)then
@@ -331,6 +338,7 @@ c          write(*,*)'kax ',kax
       endif
  9000 return
       end
+
       integer function itfopcode(oper)
       use ophash
       implicit none

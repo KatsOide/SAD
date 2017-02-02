@@ -23,6 +23,347 @@ c     Inverse matrix of r
      $     (/6, 7/))
 
       real(8), public :: emx, emy, emz
+      logical*4, public :: normali
+
+      public :: tfetwiss,etwiss2ri,tfnormalcoord
+      contains
+      subroutine tfetwiss(r,cod,twiss,normi)
+      use ffs
+      implicit none
+      real*8 r(6,6),twiss(ntwissfun),hi(6,6),cod(6)
+      real*8 ax,ay,az,axy,f,detm,his(4),
+     $     uz11,uz12,uz21,uz22,
+     $     hx11,hx12,hx21,hx22,
+     $     hy11,hy12,hy21,hy22,
+     $     r11,r12,r21,r22,
+     $     crx,cry,crz,cx,cy,cz,sx,sy,sz,
+     $     bx21,bx22,by21,by22,bz21,bz22
+      logical*4 normal,normi
+c      write(*,'(a,1p5g15.7)')'tfetwiss ',r(5,5),r(5,6),r(6,5),r(6,6),
+c     $     r(5,5)*r(6,6)-r(6,5)*r(5,6)
+      az=sqrt(r(5,5)*r(6,6)-r(6,5)*r(5,6))
+      uz11=r(5,5)/az
+      uz12=r(5,6)/az
+      uz21=r(6,5)/az
+      uz22=r(6,6)/az
+      hx11= r(6,2)*uz11-r(5,2)*uz21
+      hx12= r(6,2)*uz12-r(5,2)*uz22
+      hx21=-r(6,1)*uz11+r(5,1)*uz21
+      hx22=-r(6,1)*uz12+r(5,1)*uz22
+      hy11= r(6,4)*uz11-r(5,4)*uz21
+      hy12= r(6,4)*uz12-r(5,4)*uz22
+      hy21=-r(6,3)*uz11+r(5,3)*uz21
+      hy22=-r(6,3)*uz12+r(5,3)*uz22
+      f=1.d0/(1.d0+az)
+      ax=1.d0-(hx11*hx22-hx21*hx12)*f
+      ay=1.d0-(hy11*hy22-hy21*hy12)*f
+      hi(2,2)=ax
+      hi(1,2)=0.d0
+      hi(4,2)= (hx12*hy21-hx11*hy22)*f
+      hi(3,2)=-(-hx12*hy11+hx11*hy12)*f
+      hi(6,2)=-hx11
+      hi(5,2)= hx12
+      hi(2,1)= 0.d0
+      hi(1,1)= ax
+      hi(4,1)=-(hx22*hy21-hx21*hy22)*f
+      hi(3,1)=(-hx22*hy11+hx21*hy12)*f
+      hi(6,1)= hx21
+      hi(5,1)=-hx22
+      hi(2,4)= hi(3,1)
+      hi(1,4)=-hi(3,2)
+      hi(4,4)= ay
+      hi(3,4)= 0.d0
+      hi(6,4)=-hy11
+      hi(5,4)= hy12
+      hi(2,3)=-hi(4,1)
+      hi(1,3)= hi(4,2)
+      hi(4,3)= 0.d0
+      hi(3,3)= ay
+      hi(6,3)= hy21
+      hi(5,3)=-hy22
+      hi(2,6)= hx22
+      hi(1,6)= hx21
+      hi(4,6)= hy22
+      hi(3,6)= hy21
+      hi(6,6)= az
+      hi(5,6)= 0.d0
+      hi(2,5)= hx12
+      hi(1,5)= hx11
+      hi(4,5)= hy12
+      hi(3,5)= hy11
+      hi(6,5)= 0.d0
+      hi(5,5)= az
+      call tmultr(hi,r,6)
+      detm=(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2)
+     $     +hi(3,3)*hi(4,4)-hi(4,3)*hi(3,4))*.5d0
+c      write(*,'(a,1p6g15.7)')'tfetwiss ',detm,ax,ay,az,f,xyth
+      normal=detm .gt. xyth
+      if(.not. normal)then
+        his=hi(1,1:4)
+        hi(1,1:4)=hi(3,1:4)
+        hi(3,1:4)=his
+        his=hi(2,1:4)
+        hi(2,1:4)=hi(4,1:4)
+        hi(4,1:4)=his
+        detm=(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2)
+     $       +hi(3,3)*hi(4,4)-hi(4,3)*hi(3,4))*.5d0
+      endif
+      axy=sqrt(detm)
+      r11=( hi(4,4)*hi(3,1)-hi(3,4)*hi(4,1))/axy
+      r12=( hi(4,4)*hi(3,2)-hi(3,4)*hi(4,2))/axy
+      r21=(-hi(4,3)*hi(3,1)+hi(3,3)*hi(4,1))/axy
+      r22=(-hi(4,3)*hi(3,2)+hi(3,3)*hi(4,2))/axy
+      crx=sqrt(hi(1,2)**2+hi(2,2)**2)
+      cx= hi(2,2)/crx
+      sx=-hi(1,2)/crx
+      bx21=(-sx*hi(1,1)+cx*hi(2,1))/axy
+      bx22=crx/axy
+      cry=sqrt(hi(3,4)**2+hi(4,4)**2)
+      cy= hi(4,4)/cry
+      sy=-hi(3,4)/cry
+      by21=(-sy*hi(3,3)+cy*hi(4,3))/axy
+      by22=cry/axy
+      crz=sqrt(uz12**2+uz22**2)
+      cz= uz22/crz
+      sz=-uz12/crz
+      bz21=-sz*uz11+cz*uz21
+      bz22=crz
+      twiss(mfitr1)=r11
+      twiss(mfitr2)=r12
+      twiss(mfitr3)=r21
+      twiss(mfitr4)=r22
+      if(.not. normi)then
+        normal=.not. normal
+      endif
+      if(normal)then
+        twiss(mfitax)= bx21*bx22
+        twiss(mfitbx)= bx22**2
+        twiss(mfitnx)= atan2(sx,cx)
+        twiss(mfitay)= by21*by22
+        twiss(mfitby)= by22**2
+        twiss(mfitny)= atan2(sy,cy)
+        twiss(mfitex)= axy*hx12-r22*hy12+r12*hy22
+        twiss(mfitepx)= axy*hx22+r21*hy12-r11*hy22
+        twiss(mfitey) = axy*hy12+r11*hx12+r12*hx22
+        twiss(mfitepy)=axy*hy22+r21*hx12+r22*hx22
+        twiss(mfitdetr)=r11*r22-r12*r21
+        twiss(mfitzx) =axy*hx11-r22*hy11+r12*hy21
+        twiss(mfitzpx)=axy*hx21+r21*hy11-r11*hy21
+        twiss(mfitzy) =axy*hy11+r11*hx11+r12*hx21
+        twiss(mfitzpy)=axy*hy21+r21*hx11+r22*hx21
+      else
+        twiss(mfitay)= bx21*bx22
+        twiss(mfitby)= bx22**2
+        twiss(mfitny)= atan2(sx,cx)
+        twiss(mfitax)= by21*by22
+        twiss(mfitbx)= by22**2
+        twiss(mfitnx)= atan2(sy,cy)
+        twiss(mfitey)= axy*hx12-r22*hy12+r12*hy22
+        twiss(mfitepy)= axy*hx22+r21*hy12-r11*hy22
+        twiss(mfitex) = axy*hy12+r11*hx12+r12*hx22
+        twiss(mfitepx)=axy*hy22+r21*hx12+r22*hx22
+        twiss(mfitdetr)=1.d0+xyth-r11*r22+r12*r21
+        twiss(mfitzy) =axy*hx11-r22*hy11+r12*hy21
+        twiss(mfitzpy)=axy*hx21+r21*hy11-r11*hy21
+        twiss(mfitzx) =axy*hy11+r11*hx11+r12*hx21
+        twiss(mfitzpx)=axy*hy21+r21*hx11+r22*hx21
+      endif
+      twiss(mfitdx:mfitddp)=cod
+      twiss(mfitaz)=bz21*bz22
+      twiss(mfitbz)=bz22**2
+      twiss(mfitnz)=atan2(sz,cz)
+      return
+      end subroutine
+
+      subroutine etwiss2ri(twiss1,ria,normal)
+      use ffs
+      implicit none
+      real*8 twiss1(ntwissfun),ria(6,6),h(4,6),br(4,4),
+     $     hx11,hx12,hx21,hx22,
+     $     hy11,hy12,hy21,hy22,
+     $     ex,epx,ey,epy,zx,zpx,zy,zpy,
+     $     r1,r2,r3,r4,amu,detr,sqrbx,sqrby,sqrbz,aa,
+     $     ax,ay,az,dethx,dethy,amux,amuy,azz
+      logical*4 normal
+      r1=twiss1(mfitr1)
+      r2=twiss1(mfitr2)
+      r3=twiss1(mfitr3)
+      r4=twiss1(mfitr4)
+      detr=twiss1(mfitdetr)
+      normal=detr .lt. 1.d0
+      if(normal)then
+        amu=sqrt(1.d0-detr)
+        ex =twiss1(mfitex)
+        epx=twiss1(mfitepx)
+        ey =twiss1(mfitey)
+        epy=twiss1(mfitepy)
+        zx =twiss1(mfitzx)
+        zpx=twiss1(mfitzpx)
+        zy =twiss1(mfitzy)
+        zpy=twiss1(mfitzpy)
+        sqrbx=sqrt(twiss1(mfitbx))
+        ax=twiss1(mfitax)
+        sqrby=sqrt(twiss1(mfitby))
+        ay=twiss1(mfitay)
+      else
+        amu=sqrt(1.d0-r1*r4+r2*r3)
+        ey =twiss1(mfitex)
+        epy=twiss1(mfitepx)
+        ex =twiss1(mfitey)
+        epx=twiss1(mfitepy)
+        zy =twiss1(mfitzx)
+        zpy=twiss1(mfitzpx)
+        zx =twiss1(mfitzy)
+        zpx=twiss1(mfitzpy)
+        sqrby=sqrt(twiss1(mfitbx))
+        ay=twiss1(mfitax)
+        sqrbx=sqrt(twiss1(mfitby))
+        ax=twiss1(mfitay)
+      endif
+      sqrbz=sqrt(twiss1(mfitbz))
+      az=twiss1(mfitaz)
+      hx11=amu*zx -r2*zpy+r4*zy
+      hx12=amu*ex -r2*epy+r4*ey
+      hx21=amu*zpx+r1*zpy-r3*zy
+      hx22=amu*epx+r1*epy-r3*ey
+      hy11=amu*zy -r2*zpx-r1*zx
+      hy12=amu*ey -r2*epx-r1*ex
+      hy21=amu*zpy-r4*zpx-r3*zx
+      hy22=amu*epy-r4*epx-r3*ex
+      dethx=hx11*hx22-hx21*hx12
+      dethy=hy11*hy22-hy21*hy12
+      azz=sqrt(1.d0-dethx-dethy)
+      aa=1.d0/(1.d0+azz)
+      amux=1.d0-dethx*aa
+      amuy=1.d0-dethy*aa
+      h(1,1)=amux
+      h(1,2)=0.d0
+      h(1,3)=( hx12*hy21-hx11*hy22)*aa
+      h(1,4)=(-hx12*hy11+hx11*hy12)*aa
+      h(1,5)=-hx11
+      h(1,6)=-hx12
+      h(2,1)=0.d0
+      h(2,2)=amux
+      h(2,3)=( hx22*hy21-hx21*hy22)*aa
+      h(2,4)=(-hx22*hy11+hx21*hy12)*aa
+      h(2,5)=-hx21
+      h(2,6)=-hx22
+      h(3,1)= h(2,4)
+      h(3,2)=-h(1,4)
+      h(3,3)=amuy
+      h(3,4)=0.d0
+      h(3,5)=-hy11
+      h(3,6)=-hy12
+      h(4,1)=-h(2,3)
+      h(4,2)= h(1,3)
+      h(4,3)=0.d0
+      h(4,4)=amuy
+      h(4,5)=-hy21
+      h(4,6)=-hy22
+      ria(5,1)= hx22
+      ria(5,2)=-hx12
+      ria(5,3)= hy22
+      ria(5,4)=-hy12
+      ria(5,5)=azz
+      ria(5,6)=0.d0
+      ria(6,1)=-hx21
+      ria(6,2)= hx11
+      ria(6,3)=-hy21
+      ria(6,4)= hy11
+      ria(6,5)=0.d0
+      ria(6,6)=azz
+      br(1,1)= amu/sqrbx
+      br(1,2)=0.d0
+      br(1,3)=-r4/sqrbx
+      br(1,4)= r2/sqrbx
+      br(2,1)= amu*ax/sqrbx
+      br(2,2)= amu*sqrbx
+      br(2,3)= r3*sqrbx-r4*ax/sqrbx
+      br(2,4)= r2*ax/sqrbx-r1*sqrbx
+      br(3,1)= r1/sqrby
+      br(3,2)= r2/sqrby
+      br(3,3)= amu/sqrby
+      br(3,4)=0.d0
+      br(4,1)= r1*ay/sqrby+r3*sqrby
+      br(4,2)= r2*ay/sqrby+r4*sqrby
+      br(4,3)= amu*ay/sqrby
+      br(4,4)= amu*sqrby
+      ria(1,1)=br(1,1)*h(1,1)+br(1,2)*h(2,1)
+     $       +br(1,3)*h(3,1)+br(1,4)*h(4,1)
+      ria(1,2)=br(1,1)*h(1,2)+br(1,2)*h(2,2)
+     $       +br(1,3)*h(3,2)+br(1,4)*h(4,2)
+      ria(1,3)=br(1,1)*h(1,3)+br(1,2)*h(2,3)
+     $       +br(1,3)*h(3,3)+br(1,4)*h(4,3)
+      ria(1,4)=br(1,1)*h(1,4)+br(1,2)*h(2,4)
+     $       +br(1,3)*h(3,4)+br(1,4)*h(4,4)
+      ria(1,5)=br(1,1)*h(1,5)+br(1,2)*h(2,5)
+     $       +br(1,3)*h(3,5)+br(1,4)*h(4,5)
+      ria(1,6)=br(1,1)*h(1,6)+br(1,2)*h(2,6)
+     $       +br(1,3)*h(3,6)+br(1,4)*h(4,6)
+      ria(2,1)=br(2,1)*h(1,1)+br(2,2)*h(2,1)
+     $       +br(2,3)*h(3,1)+br(2,4)*h(4,1)
+      ria(2,2)=br(2,1)*h(1,2)+br(2,2)*h(2,2)
+     $       +br(2,3)*h(3,2)+br(2,4)*h(4,2)
+      ria(2,3)=br(2,1)*h(1,3)+br(2,2)*h(2,3)
+     $       +br(2,3)*h(3,3)+br(2,4)*h(4,3)
+      ria(2,4)=br(2,1)*h(1,4)+br(2,2)*h(2,4)
+     $       +br(2,3)*h(3,4)+br(2,4)*h(4,4)
+      ria(2,5)=br(2,1)*h(1,5)+br(2,2)*h(2,5)
+     $       +br(2,3)*h(3,5)+br(2,4)*h(4,5)
+      ria(2,6)=br(2,1)*h(1,6)+br(2,2)*h(2,6)
+     $       +br(2,3)*h(3,6)+br(2,4)*h(4,6)
+      ria(3,1)=br(3,1)*h(1,1)+br(3,2)*h(2,1)
+     $       +br(3,3)*h(3,1)+br(3,4)*h(4,1)
+      ria(3,2)=br(3,1)*h(1,2)+br(3,2)*h(2,2)
+     $       +br(3,3)*h(3,2)+br(3,4)*h(4,2)
+      ria(3,3)=br(3,1)*h(1,3)+br(3,2)*h(2,3)
+     $       +br(3,3)*h(3,3)+br(3,4)*h(4,3)
+      ria(3,4)=br(3,1)*h(1,4)+br(3,2)*h(2,4)
+     $       +br(3,3)*h(3,4)+br(3,4)*h(4,4)
+      ria(3,5)=br(3,1)*h(1,5)+br(3,2)*h(2,5)
+     $       +br(3,3)*h(3,5)+br(3,4)*h(4,5)
+      ria(3,6)=br(3,1)*h(1,6)+br(3,2)*h(2,6)
+     $       +br(3,3)*h(3,6)+br(3,4)*h(4,6)
+      ria(4,1)=br(4,1)*h(1,1)+br(4,2)*h(2,1)
+     $       +br(4,3)*h(3,1)+br(4,4)*h(4,1)
+      ria(4,2)=br(4,1)*h(1,2)+br(4,2)*h(2,2)
+     $       +br(4,3)*h(3,2)+br(4,4)*h(4,2)
+      ria(4,3)=br(4,1)*h(1,3)+br(4,2)*h(2,3)
+     $       +br(4,3)*h(3,3)+br(4,4)*h(4,3)
+      ria(4,4)=br(4,1)*h(1,4)+br(4,2)*h(2,4)
+     $       +br(4,3)*h(3,4)+br(4,4)*h(4,4)
+      ria(4,5)=br(4,1)*h(1,5)+br(4,2)*h(2,5)
+     $       +br(4,3)*h(3,5)+br(4,4)*h(4,5)
+      ria(4,6)=br(4,1)*h(1,6)+br(4,2)*h(2,6)
+     $       +br(4,3)*h(3,6)+br(4,4)*h(4,6)
+      ria(5,1:6)=ria(5,1:6)/sqrbz
+      ria(6,1:6)=ria(6,1:6)*sqrbz+ria(5,1:6)*az
+      return
+      end subroutine
+
+      subroutine tfnormalcoord(isp1,kx,irtc)
+      use tfstk
+      use ffs
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 isp1,irtc,itfmessage
+      real*8 rn(6,6)
+      logical*4 normal
+      type (sad_list), pointer :: kl
+      if(isp .ne. isp1+1)then
+        irtc=itfmessage(9,'General::narg','"1"')
+        return
+      endif
+      if(.not. tfnumlistqnk(dtastk(isp),ntwissfun,kl))then
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"Real List of Length 28"')
+        return
+      endif
+      call etwiss2ri(kl%rbody(1:ntwissfun),rn,normal)
+      kx=kxm2l(rn,6,6,6,.false.)
+      irtc=0
+      return
+      end subroutine
 
       end module temw
 
@@ -121,8 +462,8 @@ c     Table of loss-rate
       integer*8 iatr,iacod,iamat,iabmi
       integer*4 lfni,lfno,ia,it,i,j,k,k1,k2,k3,m,n,iret,l
       real*8 trans(6,12),cod(6),beam(42),emx0,emy0,emz0,dl,
-     $     heff,orf,phirf,alphap,omegaz,bh,so,s,
-     $     sr,sqr2,bb,sige,
+     $     heff,orf,phirf,omegaz,bh,so,s,
+     $     sr,sqr2,bb,bbv(21),sige,
      $     emxr,emyr,emzr,xxs,yys,btilt,
      $     sig1,sig2,sigx,sigy,tune,sigz,
      $     emxmin,emymin,emzmin,emxmax,emymax,emzmax,
@@ -133,7 +474,8 @@ c     Table of loss-rate
      1       beam2(21),params(npara),codold(6),ab(6)
       real*8 polsca(7),demin,rgetgl1
       character*10 label1(6),label2(6)
-      character*11 autofg,vout(9)
+      character*11 autofg,vout(28)
+      character*9 vout9(28)
       logical*4 plot,pri,fndcod,synchm,intend,stab,calem,
      $     epi,calcodr,cp0
       data label1/'        X ','       Px ','        Y ',
@@ -178,13 +520,10 @@ c
 c zero clear initial cod (comment out by Y.O, 2010/10/28)
 c
 c        call tclr(cod,6)
-        cp0=codplt
-        codplt=codplt .or. radtaper
         call tcod(trans,cod,beam,fndcod)
         if(.not. fndcod)then
           write(lfno,*)'???-Emittance[]-closed orbit not found.'
         endif
-        codplt=cp0
         codin=cod
 c        write(*,*)'temit-tcod ',trf0
         if(pri)then
@@ -245,7 +584,7 @@ c     call tsymp(trans)
       if(pri .and. emiout)then
         write(lfno,*)'   Symplectic part of the transfer matrix:'
         call tput(trans,label2,label2,'9.6',6,lfno)
-        call tinv(r,ri,6,6)
+        call tinv6(r,ri)
         call tmultr(ri,trans,6)
         call tput(ri,label2,label2,'9.6',6,lfno)
       endif
@@ -261,7 +600,8 @@ c     call tsymp(trans)
       call tnorm(r,ceig,lfno)
       call tsub(ceig,ceig0,dceig,12)
       ceig0=ceig
-      call tinv(r,ri,6,6)
+      call tsymp(r)
+      call tinv6(r,ri)
       call tmultr(trans,ri,6)
       call tmov(r,btr,36)
       call tmultr(btr,trans,6)
@@ -323,8 +663,28 @@ c     $          /pi2/abs(hvc0)/vcalpha*pgev/cos(phirf)*p0/h0
       params(14)=dleng
       params(15)=bh
       params(27)=heff
-      call tfetwiss(ri,cod,params(31),lfno,pri)
+      call tfetwiss(ri,cod,params(31),.true.)
       if(pri)then
+        if(lfno .gt. 0)then
+          do i=1,28
+            vout9(i)=autofg(params(30+i),'9.6')
+          enddo
+          write(lfno,9001)
+     $         vout9(1),vout9(2),vout9(25),vout9(7),
+     $         vout9(3),vout9(26),vout9(8),
+     $         vout9(11),vout9(12),vout9(4),vout9(5),vout9(27),vout9(9),
+     $         vout9(13),vout9(14),vout9(6),vout9(28),vout9(10),
+     $         vout9(22),vout9(23),vout9(24)
+ 9001     format('    Extended Twiss Parameters:',/,
+     $         'AX:',a,' BX:',a,              26x,'  ZX:',a,'  EX:',a,/
+     $         11x,'PSIX:',a,              26x,' ZPX:',a,' EPX:',a,/
+     $         'R1:',a,' R2:',a,' AY:',a,' BY:',a,'  ZY:',a,'  EY:',a,/
+     $         'R3:',a,' R4:',a,    12x,'PSIY:',a,' ZPY:',a,' EPY:',a,/
+     $         51x,'  AZ:',a,'  BZ:',a,/
+     $         65x,'PSIZ:',a,/
+     $         '    Units: B(X,Y,Z), E(X,Y), R2: m ',
+     $         '| PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m',/)
+        endif
         vout(1)=autofg(pgev/1.d9       ,'10.7')
         vout(2)=autofg(omega0/pi2      ,'10.7')
         vout(3)=autofg(u0*pgev/1.d6    ,'10.7')
@@ -498,22 +858,22 @@ c      call tclr(trans(1,7),36)
         k1=ia(i  ,i  )
         k2=ia(i+1,i+1)
         k3=ia(i  ,i+1)
-        do j=1,21
-          bb=btr(k1,j)
-          btr(k1,j)=( bb+btr(k2,j))*sqr2
-          btr(k2,j)=(-bb+btr(k2,j))*sqr2
-          btr(k3,j)=btr(k3,j)/sqr2
-        enddo
+c        do j=1,21
+          bbv=btr(k1,1:21)
+          btr(k1,1:21)=( bbv+btr(k2,1:21))*sqr2
+          btr(k2,1:21)=(-bbv+btr(k2,1:21))*sqr2
+          btr(k3,1:21)=btr(k3,1:21)/sqr2
+c        enddo
         bb=beam(k1)
         beam(k1)=( bb+beam(k2))*sqr2
         beam(k2)=(-bb+beam(k2))*sqr2
         beam(k3)=beam(k3)/sqr2
-        do j=1,21
-          bb=btr(j,k1)
-          btr(j,k1)=( bb+btr(j,k2))*sqr2
-          btr(j,k2)=(-bb+btr(j,k2))*sqr2
-          btr(j,k3)=btr(j,k3)*sqr2
-        enddo
+c        do j=1,21
+          bbv=btr(1:21,k1)
+          btr(1:21,k1)=( bbv+btr(1:21,k2))*sqr2
+          btr(1:21,k2)=(-bbv+btr(1:21,k2))*sqr2
+          btr(1:21,k3)=btr(1:21,k3)*sqr2
+c        enddo
       enddo
       do  i=1,21
         btr(i,i)=btr(i,i)+1.d0
@@ -537,10 +897,10 @@ c      call tclr(trans(1,7),36)
         k2=ia(i+1,i+1)
         if(btr(k2,k2) .ne. 0.d0 .and. btr(k1,k1) .ne. 0.d0)then
           ab(i)=sqrt(abs(btr(k1,k1)/btr(k2,k2)))
-          do j=1,21
-            btr(k1,j)=btr(k1,j)/ab(i)
-            btr(k2,j)=btr(k2,j)*ab(i)
-          enddo
+c          do j=1,21
+            btr(k1,1:21)=btr(k1,1:21)/ab(i)
+            btr(k2,1:21)=btr(k2,1:21)*ab(i)
+c          enddo
           beam(k1)=beam(k1)/ab(i)
           beam(k2)=beam(k2)*ab(i)
         else
@@ -708,11 +1068,7 @@ c        write(*,*)'temit-7101: ',emit1(6),emit1(27)
         call tmov(btr,r,78)
         if(iamat .eq. 0)then
           if(charge .lt. 0.d0)then
-            do i=1,nlat
-              do j=1,21
-                beamsize(j,i)=-beamsize(j,i)
-              enddo
-            enddo
+            beamsize=-beamsize
           endif
         endif
       endif
@@ -1023,22 +1379,12 @@ c     write(*,*)'temit ',emy,emy1
             emit(ia(5,5))=sigz**2
             emit(ia(5,6))=0.d0
             emit(ia(6,6))=sige**2
-            r(1,5)=0.d0
-            r(2,5)=0.d0
-            r(3,5)=0.d0
-            r(4,5)=0.d0
+            r(1:4,5)=0.d0
             r(5,5)=1.d0
             r(6,5)=0.d0
-            r(6,1)=0.d0
-            r(6,2)=0.d0
-            r(6,3)=0.d0
-            r(6,4)=0.d0
-            r(6,5)=0.d0
+            r(6,1:5)=0.d0
             r(6,6)=1.d0
-            r(5,1)=0.d0
-            r(5,2)=0.d0
-            r(5,3)=0.d0
-            r(5,4)=0.d0
+            r(5,1:4)=0.d0
             r(5,5)=1.d0
             r(5,6)=0.d0
           endif
@@ -1057,154 +1403,16 @@ c     write(*,*)'temit ',emy,emy1
       return
       end
 
-      subroutine tfetwiss(r,cod,twiss,lfno,pri)
-      implicit none
-      integer*4 lfno,i
-      real*8 r(6,6),twiss(28),h(6,6),hi(6,6),cod(6)
-      real*8 ax,ay,az,axy,f,
-     $     uz11,uz12,uz21,uz22,
-     $     hx11,hx12,hx21,hx22,
-     $     hy11,hy12,hy21,hy22,
-     $     r11,r12,r21,r22,
-     $     crx,cry,crz,cx,cy,cz,sx,sy,sz,
-     $     bx21,bx22,by21,by22,bz21,bz22
-      character*9 autofg,vout(28)
-      logical*4 pri
-      az=sqrt(r(5,5)*r(6,6)-r(6,5)*r(5,6))
-      uz11=r(5,5)/az
-      uz12=r(5,6)/az
-      uz21=r(6,5)/az
-      uz22=r(6,6)/az
-      hx11= r(6,2)*uz11-r(5,2)*uz21
-      hx12= r(6,2)*uz12-r(5,2)*uz22
-      hx21=-r(6,1)*uz11+r(5,1)*uz21
-      hx22=-r(6,1)*uz12+r(5,1)*uz22
-      hy11= r(6,4)*uz11-r(5,4)*uz21
-      hy12= r(6,4)*uz12-r(5,4)*uz22
-      hy21=-r(6,3)*uz11+r(5,3)*uz21
-      hy22=-r(6,3)*uz12+r(5,3)*uz22
-      f=1.d0/(1.d0+az)
-      ax=1.d0-(hx11*hx22-hx21*hx12)*f
-      ay=1.d0-(hy11*hy22-hy21*hy12)*f
-      h(1,1)=ax
-      h(1,2)=0.d0
-      h(1,3)= (hx12*hy21-hx11*hy22)*f
-      h(1,4)=(-hx12*hy11+hx11*hy12)*f
-      h(1,5)=-hx11
-      h(1,6)=-hx12
-      h(2,1)= 0.d0
-      h(2,2)= ax
-      h(2,3)= (hx22*hy21-hx21*hy22)*f
-      h(2,4)=(-hx22*hy11+hx21*hy12)*f
-      h(2,5)=-hx21
-      h(2,6)=-hx22
-      h(3,1)= h(2,4)
-      h(3,2)=-h(1,4)
-      h(3,3)= ay
-      h(3,4)= 0.d0
-      h(3,5)=-hy11
-      h(3,6)=-hy12
-      h(4,1)=-h(2,3)
-      h(4,2)= h(1,3)
-      h(4,3)= 0.d0
-      h(4,4)= ay
-      h(4,5)=-hy21
-      h(4,6)=-hy22
-      h(5,1)= hx22
-      h(5,2)=-hx21
-      h(5,3)= hy22
-      h(5,4)=-hy21
-      h(5,5)= az
-      h(5,6)= 0.d0
-      h(6,1)=-hx12
-      h(6,2)= hx11
-      h(6,3)=-hy12
-      h(6,4)= hy11
-      h(6,5)= 0.d0
-      h(6,6)= az
-      call tinv(h,hi,6,6)
-      call tmultr(hi,r,6)
-      axy=sqrt(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2))
-      r11=( hi(4,4)*hi(3,1)-hi(3,4)*hi(4,1))/axy
-      r12=( hi(4,4)*hi(3,2)-hi(3,4)*hi(4,2))/axy
-      r21=(-hi(4,3)*hi(3,1)+hi(3,3)*hi(4,1))/axy
-      r22=(-hi(4,3)*hi(3,2)+hi(3,3)*hi(4,2))/axy
-      crx=sqrt(hi(1,2)**2+hi(2,2)**2)
-      cx= hi(2,2)/crx
-      sx=-hi(1,2)/crx
-      bx21=(-sx*hi(1,1)+cx*hi(2,1))/axy
-      bx22=(-sx*hi(2,1)+cx*hi(2,2))/axy
-      cry=sqrt(hi(3,4)**2+hi(4,4)**2)
-      cy= hi(4,4)/cry
-      sy=-hi(3,4)/cry
-      by21=(-sy*hi(3,3)+cy*hi(4,3))/axy
-      by22=(-sy*hi(4,3)+cy*hi(4,4))/axy
-      crz=sqrt(uz12**2+uz22**2)
-      cz= uz22/crz
-      sz=-uz12/crz
-      bz21=-sz*uz11+cz*uz21
-      bz22=-sz*uz21+cz*uz22
-      twiss(1)= bx21*bx22
-      twiss(2)= bx22**2
-      twiss(3)= atan2(sx,cx)
-      twiss(4)= by21*by22
-      twiss(5)= by22**2
-      twiss(6)= atan2(sy,cy)
-      twiss(7)= axy*hx12-r22*hy12+r12*hy22
-      twiss(8)= axy*hx22+r21*hy12-r11*hy22
-      twiss(9)= axy*hy12+r11*hx12+r12*hx22
-      twiss(10)=axy*hy22+r21*hx12+r22*hx22
-      twiss(11)=r11
-      twiss(12)=r12
-      twiss(13)=r21
-      twiss(14)=r22
-      twiss(15)=r11*r22-r12*r21
-      twiss(16)=cod(1)
-      twiss(17)=cod(2)
-      twiss(18)=cod(3)
-      twiss(19)=cod(4)
-      twiss(20)=cod(5)
-      twiss(21)=cod(6)
-      twiss(22)=bz21*bz22
-      twiss(23)=bz22**2
-      twiss(24)=atan2(sz,cz)
-      twiss(25)=axy*hx11-r22*hy11+r12*hy21
-      twiss(26)=axy*hx21+r21*hy11-r11*hy21
-      twiss(27)=axy*hy11+r11*hx11+r12*hx21
-      twiss(28)=axy*hy21+r21*hx11+r22*hx21
-      if(lfno .gt. 0 .and. pri)then
-        do i=1,28
-          vout(i)=autofg(twiss(i),'9.6')
-        enddo
-        write(lfno,9001)
-     $       vout(1),vout(2),vout(25),vout(7),
-     $       vout(3),vout(26),vout(8),
-     $       vout(11),vout(12),vout(4),vout(5),vout(27),vout(9),
-     $       vout(13),vout(14),vout(6),vout(28),vout(10),
-     $       vout(22),vout(23),vout(24)
- 9001   format('    Extended Twiss Parameters:',/,
-     $       'AX:',a,' BX:',a,              26x,'  ZX:',a,'  EX:',a,/
-     $          11x,'PSIX:',a,              26x,' ZPX:',a,' EPX:',a,/
-     $       'R1:',a,' R2:',a,' AY:',a,' BY:',a,'  ZY:',a,'  EY:',a,/
-     $       'R3:',a,' R4:',a,    12x,'PSIY:',a,' ZPY:',a,' EPY:',a,/
-     $                                      51x,'  AZ:',a,'  BZ:',a,/
-     $                                                65x,'PSIZ:',a,/
-     $       '    Units: B(X,Y,Z), E(X,Y), R2: m ',
-     $       '| PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m',/)
-      endif
-      return
-      end
-
       subroutine tsymp(trans)
       implicit none
-      integer*4 i,j
+      integer*4 i
       real*8 trans(6,6),ri(6,7)
-      call tinv(trans,ri,6,6)
+      call tinv6(trans,ri)
       call tmultr(ri,trans,6)
       do 10 i=1,6
-        do 20 j=1,6
-          ri(j,i)=-ri(j,i)*.5d0
-20      continue
+c        do 20 j=1,6
+          ri(1:6,i)=-ri(1:6,i)*.5d0
+c20      continue
         ri(i,i)=ri(i,i)+1.5d0
 10    continue
       call tmultr(trans,ri,6)
@@ -1250,5 +1458,47 @@ c     write(*,*)'temit ',emy,emy1
           ri(i+1,j+1)= r(j  ,i  )
 20      continue
 10    continue
+      return
+      end
+
+      subroutine tinv6(r,ri)
+      implicit none
+      real*8 r(6,6),ri(6,6)
+      ri(1,1)= r(2,2)
+      ri(1,2)=-r(1,2)
+      ri(1,3)= r(4,2)
+      ri(1,4)=-r(3,2)
+      ri(1,5)= r(6,2)
+      ri(1,6)=-r(5,2)
+      ri(2,1)=-r(2,1)
+      ri(2,2)= r(1,1)
+      ri(2,3)=-r(4,1)
+      ri(2,4)= r(3,1)
+      ri(2,5)=-r(6,1)
+      ri(2,6)= r(5,1)
+      ri(3,1)= r(2,4)
+      ri(3,2)=-r(1,4)
+      ri(3,3)= r(4,4)
+      ri(3,4)=-r(3,4)
+      ri(3,5)= r(6,4)
+      ri(3,6)=-r(5,4)
+      ri(4,1)=-r(2,3)
+      ri(4,2)= r(1,3)
+      ri(4,3)=-r(4,3)
+      ri(4,4)= r(3,3)
+      ri(4,5)=-r(6,3)
+      ri(4,6)= r(5,3)
+      ri(5,1)= r(2,6)
+      ri(5,2)=-r(1,6)
+      ri(5,3)= r(4,6)
+      ri(5,4)=-r(3,6)
+      ri(5,5)= r(6,6)
+      ri(5,6)=-r(5,6)
+      ri(6,1)=-r(2,5)
+      ri(6,2)= r(1,5)
+      ri(6,3)=-r(4,5)
+      ri(6,4)= r(3,5)
+      ri(6,5)=-r(6,5)
+      ri(6,6)= r(5,5)
       return
       end

@@ -1,0 +1,142 @@
+NormalCoordinates[i_]:=NormalCoordimatesPrimitive[Twiss['*',i]];
+
+NormalCoordinates[i_,param_]:=NormalCoordimatesPrimitive[param[i]];
+
+NormalCoordimatesPrimitive[param_]:=Module[
+  {a1,f1,{r1,r2,r3,r4}=Take[param,{11,14}],detr,
+    xy=param[[15]],
+    rmatrix,bmatrix,hmatrix},
+  detr=r1*r4-r2*r3;
+  a1=Sqrt[1-detr];
+  rmatrix=
+    If[xy<1,
+      {{a1,0,-r4, r2,0,0},
+        {0,a1, r3,-r1,0,0},
+        {r1,r2,a1,0,0,0},
+        {r3,r4,0,a1,0,0},
+        {0,0,0,0,1,0},
+        {0,0,0,0,0,1}},
+      {{-r4,r2,a1,0,0,0},
+        { r3,-r1,0,a1,0,0},
+        {a1,0,r1,r2,0,0},
+        {0,a1,r3,r4,0,0},
+        {0,0,0,0,1,0},
+        {0,0,0,0,0,1}}];
+  bmatrix={{1/Sqrt[param[[2]]],0,0,0,0,0},
+    {param[[1]]/Sqrt[param[[2]]],Sqrt[param[[2]]],0,0,0,0},
+    {0,0,1/Sqrt[param[[5]]],0,0,0},
+    {0,0,param[[4]]/Sqrt[param[[5]]],Sqrt[param[[5]]],0,0},
+    {0,0,0,0,1,0},
+    {0,0,0,0,0,1}};
+  hmatrix={{1,0,0,0,0,-param[[7]]},
+    {0,1,0,0,0,-param[[8]]},
+    {0,0,1,0,0,-param[[9]]},
+    {0,0,0,1,0,-param[[10]]},
+    {param[[8]],-param[[7]],param[[10]],-param[[9]],1,0},
+    {0,0,0,0,0,1}};
+  {bmatrix.hmatrix.rmatrix,Take[param,{16,21}]}]
+
+BeamMatrix[i_]:=Module[
+  {r=SymplecticInverse[NormalCoordinates[i][1]],
+    d=LINE["GAMMABETA",1]/LINE["GAMMABETA",i]},
+  r.DiagonalMatrix[
+    {EMITX,EMITX,EMITY,EMITY,0,d*If[?GAUSS,DP,DP/Sqrt[3]]^2}*d].
+  Transpose[r]];
+
+TransferMatrix[from_,to_,param1_List,opt___]:=
+  TransferMatrixPrimitive[param1[[{from,to}]],{1,1},opt];
+
+TransferMatrix[from_,to_,opt___]:=
+  TransferMatrixPrimitive[Twiss["*",{from,to}],LINE["GAMMABETA",{from,to}],opt];
+
+TransferMatrixPrimitive[param_,g_List:LINE["GAMMABETA",{"^^^","$$$"}],opt___]:=Module[
+  {dpsix,dpsiy,cospsix,cospsiy,sinpsix,sinpsiy,m4,rmatrix,detr,a1,sqrdet,detr1,trr1,alambda,
+    fold=Fold/.opt/.{Fold->False}},
+  dpsix=param[[2,3]]-param[[1,3]];
+  dpsiy=param[[2,6]]-param[[1,6]];
+  If[fold,
+    If[dpsix<=0,
+      dpsix=dpsix+Twiss["NX","$$$"]];
+    If[dpsiy<=0,
+      dpsiy=dpsiy+Twiss["NY","$$$"]]];
+  cospsix=Cos[dpsix];
+  sinpsix=Sin[dpsix];
+  cospsiy=Cos[dpsiy];
+  sinpsiy=Sin[dpsiy];
+  m4={{Sqrt[param[[2,2]]/param[[1,2]]]*
+    (cospsix+param[[1,1]] sinpsix),
+    Sqrt[param[[2,2]] param[[1,2]]] sinpsix,0,0},
+    {-((param[[2,1]]-param[[1,1]])*
+      cospsix+(1+param[[2,1]] param[[1,1]]) sinpsix)/
+        Sqrt[param[[2,2]] param[[1,2]]],
+      Sqrt[param[[1,2]]/param[[2,2]]]*(cospsix-param[[2,1]] sinpsix),0,0},
+    {0,0,Sqrt[param[[2,5]]/param[[1,5]]]*
+      (cospsiy+param[[1,4]] sinpsiy),Sqrt[param[[2,5]] param[[1,5]]] sinpsiy},
+    {0,0,-((param[[2,4]]-param[[1,4]])*
+      cospsiy+(1+param[[2,4]] param[[1,4]]) sinpsiy)/
+        Sqrt[param[[2,5]] param[[1,5]]],
+      Sqrt[param[[1,5]]/param[[2,5]]]*(cospsiy-param[[2,4]] sinpsiy)}};
+  rmatrix=Map[
+    (detr=#[[11]]*#[[14]]-#[[12]]*#[[13]];
+      a1=Sqrt[1-detr];
+      If[#[[15]]<1,
+        {{a1,0, -#[[14]], #[[12]]},
+          {0,a1, #[[13]],-#[[11]]},
+          {#[[11]],#[[12]],a1,0},
+          {#[[13]],#[[14]],0,a1}},
+        {{-#[[14]], #[[12]],a1,0},
+          {#[[13]],-#[[11]],0,a1},
+          {a1,0,#[[11]],#[[12]]},
+          {0,a1,#[[13]],#[[14]]}}])&,param];
+  Sqrt[g[[1]]/g[[2]]]*SymplecticInverse[rmatrix[[2]]].m4.rmatrix[[1]]];
+
+PeriodicR[m_]:=Module[{a,d,P,T,S,Q,A,B,R,J={{0,1},{-1,0}},x,pq,ds,st},
+  {{P,T},{S,Q}}=Thread/@(Partition[#,2]&/@[Partition[m,2],{2}]);
+  d=(8 (ds=Det[S])+4 Tr[st=S.T]+(pq=Tr[P-Q])^2);
+  a=Sqrt[(1+Abs[pq]/Sqrt[d])/2];
+  R=(x=(2a^2-1)/a/pq)*(J.Transpose[T].J-S);
+  A=P+x/a*({{ds,0},{0,ds}}+T.S);
+  B=Q-x/a*({{ds,0},{0,ds}}+st);
+  {R,A,B}
+  ];
+
+With[{z9=Table[0,{9}]},
+  PeriodicOptics[m_,z_:{0,0,0,0}]:=Module[{{R,A,B}=PeriodicR[m],ax,bx,mux,ay,by,muy,c,s},
+    c=Tr[A]/2;
+    s=Sqrt[(1-c)(1+c)]*Sign[A[[1,2]]];
+    bx=A[[1,2]]/s;
+    ax=(A[[1,1]]-c)/s;
+    mux=ArcTan[c,s];
+    c=Tr[B]/2;
+    s=Sqrt[(1-c)(1+c)]*Sign[B[[1,2]]];
+    by=B[[1,2]]/s;
+    ay=(B[[1,1]]-c)/s;
+    muy=ArcTan[c,s];
+    {ax,bx,mux,ay,by,muy,0,0,0,0,R[[1,1]],R[[1,2]],R[[2,1]],R[[2,2]],Det[R],
+      Null@@LinearSolve[IdentityMatrix[4]-m,z],Null@@z9}]
+  ];
+
+(*
+g0 = {{0, -1, 0}, {0, 0, -1}, {1, 0, 0}},
+r1 = {{c1, 0, s1}, {0, 1, 0}, {-s1, 0, c1}},
+r2 = {{1, 0, 0}, {0, c2, s2}, {0, -s2, c2}},
+r3 = {{c3, -s3, 0}, {s3, c3, 0}, {0, 0, 1}}},
+r3.r2.r1.g0
+*)
+GeoBase[x:{chi1_Real,chi2_Real,chi3_Real}]:=Module[
+  {{c1,c2,c3}=Cos[x],{s1,s2,s3}=Sin[x]},
+  {{c3 s1 - c1 s2 s3, -c1 c3 - s1 s2 s3, c2 s3}, {c1 c3 s2 + s1 s3, 
+    c3 s1 s2 - c1 s3, -c2 c3}, {c1 c2, c2 s1, s2}}];
+GeoBase[x_List]:=GeoBase/@x;
+
+OrbitGeo[k___]:=Module[{g=LINE["GEO",k],dp=Twiss["DDP",k]},
+  If[Length[dp]>0,
+    g[[,1]]+Plus@@[GeoBase[g[[,2]]]*(Thread[{Twiss["DX",k],Twiss["DY",k],Table[0,{Length[dp]}]}]+
+      Thread[{Twiss["DPX",k],Twiss["DPY",k],
+        Sqrt[(1+dp)^2-Twiss["DPX",k]^2-Twiss["DPY",k]^2]}]/(1+dp)*Twiss["DZ",k]),{1}],
+    g[[1]]+Plus@@(GeoBase[g[[2]]]*({Twiss["DX",k],Twiss["DY",k],0}+
+      {Twiss["DPX",k],Twiss["DPY",k],
+        Sqrt[(1+dp)^2-Twiss["DPX",k]^2-Twiss["DPY",k]^2]}/(1+dp)*Twiss["DZ",k]))]];
+
+Protect[NormalCoordinates,NormalCoordinatesPrimitive,PeriodicR,PeriodicOptics,
+  TransferMatrix,TransferMatrixPrimitive,GeoBase,OrbitGeo];

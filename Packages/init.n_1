@@ -1,0 +1,683 @@
+SetAttributes[{Constant,HoldFirst,HoldAll,HoldRest,HoldNone},Constant];
+HoldPattern=Literal;
+SetAttributes[{Literal,HoldPattern},{HoldAll,Constant}];
+
+SetAttributes[{Real,String,BuiltinFunction,
+  Word,Expression,WordSeparator,ReadNewRecord,
+  NullWords,EndOfFile,$Failed,FormatType,
+  InputForm,HoldForm,GenericSymbolForm,
+  Automatic,Default,
+  None,Undefined},
+  Constant];
+
+! Protect constant symbols defined by src/tfinitn.f
+SetAttributes[{True,False,I,NaN,INF,Infinity,Pi,E,EulerGamma,
+  SpeedOfLight,SIMu0,MKSAMu0,SIEpsilon0,MKSAEpsilon0,
+  ElectronCharge,FineStructureConstant,
+  ElectronMass,ElectronRadius,ProtonMass,ProtonRadius},
+  Constant];
+
+GoldenRatio=(1+Sqrt[5])/2;
+Degree=Pi/180;
+SetAttributes[{GoldenRatio,Degree}, Constant];
+
+(* Option flags for DynamicLink[] *)
+DYNL$LAZY=1;
+DYNL$NOW=2;
+DYNL$GLOBAL=256;
+DYNL$LOCAL=0;
+SetAttributes[{DYNL$LAZY,DYNL$NOW,DYNL$GLOBAL,DYNL$LOCAL},Constant];
+
+(* Special handle for for DynamicCall[] *)
+DYNL$NEXT=-1;
+DYNL$DEFAULT=-2;
+DYNL$SELF=-3;
+SetAttributes[{DYNL$NEXT,DYNL$DEFAULT,DYNL$SELF},Constant];
+(* Option flags for Wait4[] *)
+WNOHANG=1;
+WUNTRACED=2;
+WCONTINUED=4;
+SetAttributes[{WNOHANG,WUNTRACED,WCONTINUED},Constant];
+
+(* Probably it is better to place Context as early as possible. *)
+Off[General::unprotconst];
+Unprotect[ToContext];
+!ToContext[`x_]:=x;
+!ToContext[x_String]:=ToExpression[x];
+$ContextStack={`};
+$PackageStack={{`,System`}};
+$Context=`;
+$ContextPath={`,System`};
+($Context=`a_)^:=With[{`b=Check[$SetContext[`a],$Context]},$Context:=`b];
+($Context=`a_String)^:=
+  With[{`b=Check[$SetContext[ToExpression[`a]],$Context]},
+    $Context:=`b];
+($ContextPath=a_)^:=With[
+  {`b=Check[$SetContextPath[ToContext/@a],$ContextPath]},
+  $ContextPath:=`b];
+
+Begin[a_]:=With[{`c=$Context,`b=Check[$SetContext[a],Return[]]},
+  AppendTo[$ContextStack,`c];$Context:=`b];
+End[___]:=With[{b=$SetContext[Last[$ContextStack]]},
+  If[Length[$ContextStack]>1,$ContextStack=Drop[$ContextStack,-1]];
+  $Context:=b];
+BeginPackage[a__]:=With[{`c=$ContextPath,
+  `b=Check[$SetContextPath[{a,System`}],Return[]]},
+  AppendTo[$PackageStack,`c];
+  `b];
+EndPackage[___]:=($SetContextPath[Last[$PackageStack]];
+  If[Length[$PackageStack]>1,$PackageStack=Drop[$PackageStack,-1]];
+  $ContextPath);
+SetAttributes[{Begin,End,BeginPackage,EndPackage,ToContext,Wrap},Constant];
+
+(* Signal numbers for Kill[] *)
+SIGHUP=1;
+SIGINT=2;
+SIGQUIT=3;
+SIGILL=4;
+SIGTRAP=5;
+SIGABRT=6;
+SIGIOT=SIGABRT;
+SIGEMT=7;
+SIGFPE=8;
+SIGKILL=9;
+SIGBUS=10;
+SIGSEGV=11;
+SIGSYS=12;
+SIGPIPE=13;
+SIGALRM=14;
+SIGTERM=15;
+SIGURG=16;
+SIGSTOP=17;
+SIGTSTP=18;
+SIGCONT=19;
+SIGCHLD=20;
+SIGTTIN=21;
+SIGTTOU=22;
+SIGIO=23;
+SIGXCPU=24;
+SIGXFSZ=25;
+SIGVTALRM=26;
+SIGPROF=27;
+SIGWINCH=28;
+SIGINFO=29;
+SIGUSR1=30;
+SIGUSR2=31;
+SIGTHR=32;
+SIGLWP=SIGTHR;
+SetAttributes[{SIGHUP,SIGINT,SIGQUIT,SIGILL,SIGTRAP,SIGABRT,SIGIOT,SIGEMT,
+  SIGFPE,SIGKILL,SIGBUS,SIGSEGV,SIGSYS,SIGPIPE,SIGALRM,SIGTERM,SIGURG,SIGSTOP,
+  SIGTSTP,SIGCONT,SIGCHLD,SIGTTIN,SIGTTOU,SIGIO,SIGXCPU,SIGXFSZ,SIGVTALRM,
+  SIGPROF,SIGWINCH,SIGINFO,SIGUSR1,SIGUSR2,SIGTHR,SIGLWP},Constant];
+
+If[FBoundQ$[SigAction$],
+  (* SigAction Flags *)
+  SA$ONSTACK=1;
+  SA$RESTART=2;
+  SA$RESETHAND=4;
+  SA$NOCLDSTOP=8;
+  SA$NODEFER=16;
+  SA$NOCLDWAIT=32;
+  SA$SIGINFO=64;
+  SetAttributes[{SA$ONSTACK,SA$RESTART,SA$RESETHAND,
+    SA$NOCLDSTOP,SA$NODEFER,SA$NOCLDWAIT,SA$SIGINFO}, Constant];
+  (* Signal handler *)
+  SigAction$Cmd[_] := Null;
+  SigAction$IDs = {};
+  $SignalAction[`act_, `opt___] := With[{$c = SigAction$Cmd[act]},
+    If[Head[$c] === RuleDelayed, Action[opt]/.$c]; Null];
+  Protect[SigAction$Cmd, SigAction$IDs, $SignalAction];
+  (* SigAction$Clean/Cmd* helper functions		*)
+  (* MUST be called in ``Signal Critical Section''	*)
+  SigAction$Clean[] := (		(* Clear All *)
+    Unprotect[SigAction$Cmd, SigAction$IDs];
+    Scan[(SigAction$Cmd[#]=.)&, SigAction$IDs];
+    SigAction$IDs = {};
+    Protect[SigAction$Cmd, SigAction$IDs]);
+  SigAction$CmdR[`i_Real] := (	(* Reset Command *)
+    Unprotect[SigAction$Cmd];
+    SigAction$Cmd[`i]=.;
+    Protect[SigAction$Cmd]);
+  SigAction$CmdM[`i_Real] := (	(* Mark Command *)
+    Unprotect[SigAction$IDs];
+    AppendTo[SigAction$IDs, `i];
+    Protect[SigAction$IDs]);
+  Protect[SigAction$Clean, SigAction$CmdR,  SigAction$CmdM];
+  (* SigAction wrapper *)
+  SigAction[`argv___] := Module[{`cmd, `act, `opt, `arg, `mask, `id, `ret},
+    {cmd, act, opt, arg} = SwitchCases[{argv},
+      {RuleDelayed[Action, _], Rule[Action, _], _Rule|_RuleDelayed, _}];
+    If[cmd <=> {},
+      mask = SigProcMask[Block, AllSignals]; (* Enter Signal Critical Section *)
+      id = 1; While[SigAction$Cmd[id] <=> Null, id += 1];
+      Unprotect[SigAction$Cmd];
+      SigAction$Cmd[id] = cmd[[1]];
+      Protect[SigAction$Cmd];
+      SigProcMask[Set, mask];		     (* Leave Signal Critical Section *)
+      act = {Action->id}];
+    SigAction$[Null@@`arg, Null@@act, Null@@opt]];
+  Protect[SigAction]];
+
+(* BuildInfo[] *)
+$BuiltDate = BuildInfo["Built:Date"];
+$MachineArch = BuildInfo["Target:MACH_ARCH"];
+SetAttributes[{$BuiltDate, $MachineArch}, {Constant}];
+(* Execve frontend *)
+Execvpe[`file_String, {`argv___String}, {`env___String},
+  `opt:((_Rule|_RuleDelayed)...)] := (If[StringPosition[file, "/"] === {},
+    Scan[If[FileQ[#//"/"//file],
+      Execve[#//"/"//file, {argv}, {env}, opt]]&,
+      With[{path = Environment["PATH"]},
+	If[path === "", {"/bin", "/usr/bin"},
+	  Map[path[#[[1]] + 1, #[[2]] - 1]&,
+	    Partition[Flatten[{0, StringPosition[path, ":"], 0}], 2]]]]],
+    Execve[file, {argv}, {env}, opt]]; Null);
+Execvp[`file_String, {`argv___String},
+  `opt:((_Rule|_RuleDelayed)...)] := Execvpe[file, {argv}, Environments[], opt];
+(* Save Command Path, Arguments & Environments for ReExec[] *)
+ReExec$Env = Environments[];
+ReExec$Dir = GetDirectory[];
+ReExec$Path = With[{exe = GetEnv["SAD_EXE"]},	(* StringQ is not defined yet *)
+  If[Head[exe] === String && StringLength[exe] > 0, exe,
+    StringJoin[BuildInfo["Target:SAD_ARCH_ROOT"], "/", $MachineArch, "/",
+      "bin/sad1.exe"]]];
+With[{cmd = ReExec$Path, argv = $GetCommandLine[]},
+  If[Length[argv] > 1 && argv[[1]] === "-c",
+    ReExec$Argv = Drop[argv, 2]; ReExec$Arg0 = {cmd, "-c", argv[[2]]},
+    ReExec$Argv =      argv;     ReExec$Arg0 = {cmd}]];
+SetAttributes[{ReExec$Env, ReExec$Dir, ReExec$Path,
+  ReExec$Argv, ReExec$Arg0},Constant];
+ReExec[] := ReExec[ReExec$Argv];
+ReExec[argv__String] := ReExec[{argv}];
+ReExec[argv_List] := (SetDirectory[ReExec$Dir];
+  Execve[ReExec$Path, Join[ReExec$Arg0, argv], ReExec$Env,
+    ForceCloseOnExec->True, CloseStd->False]);
+Protect[ReExec];
+$CommandLine=Module[{`s=$GetCommandLine[]},
+  Which[
+    s==={},
+    {},
+    s[[1]]==="*" || s[[1]]==="-c",
+    Rest[s],
+    True,
+    s]];
+NPARA=2;
+AutoLoad[`x__,`f_]:=(Scan[
+  Function[`a,`a:=(Unprotect[x];Clear[x];Get[f];`a)],{x}];
+  Protect[x]);
+AutoLoadSet[`x__,`f_]:=(Scan[
+  Function[`a,
+    (`a=`b_)^:=(Unprotect[x];Clear[x];Get[f];`a=`b);
+    `a:=(Unprotect[x];Clear[x];Get[f];`a)],
+  {x}];
+  Protect[x]);
+SetAttributes[{AutoLoad,AutoLoadSet},{HoldAll,Constant}];
+PackagesDirectory=GetEnv["SAD_PACKAGES"];
+If[PackagesDirectory=="",PackagesDirectory=GetEnv["SAD$PACKAGES"]];
+If[PackagesDirectory=="",PackagesDirectory=BuildInfo["Target:SAD_PKG_ROOT"]];
+If[PackagesDirectory=="",PackagesDirectory="/SAD/share/Packages/"];
+If[PackagesDirectory[-1]<=>"/",PackagesDirectory=PackagesDirectory//"/"];
+Get[PackagesDirectory//"functions.n"];
+Get[PackagesDirectory//"MessageName.n"];
+($Line=`x_Real)^:=With[{`n=Max[0,`x]},
+  Unprotect[$Line,Out];
+  Do[Out[`i]=.;MessageList[`i]=.,{`i,`n+1,$Line}];
+  $Line:=`n;
+  Protect[$Line,Out];
+  `x];
+Protect[$Line,Out];
+$MessageLast=Null;
+$MessageList={};
+$MessageCount[_]=0;
+MessageList[_]={};
+Add$Message[x_]:=(
+  $MessageList=ReplacePart[Hold@@Delete[x/.Hold[MessageString[`s_,a___]]->Null[a],3],Null,{2,0}];
+  If[~MemberQ[$MessageList,Second[x]],
+    AppendTo[$MessageList,Second[x]]];
+  Module[{`c=++$MessageCount[Second[x]]},
+    Which[
+      c<12,{,,Third[x],ReleaseHold[x[[4]]]},
+      c==12,Print["???",Third[x],
+        ":  Further output of this message will be suppressed."];First[x],
+      c<32,First[x],
+      True,9999]]);
+Set$MessageList:=(
+  If[$MessageList<=>{},MessageList[$Line]=$MessageList];
+  $MessageList={};
+  Clear[$MessageCount];
+  $MessageCount[_]=0;);
+Check$Message[_,`e__]:=Module[
+  {{`le,`lr}=SwitchCases[$MessageList,{Alternatives@@Hold/@Hold[e],_}]},
+  If[le<=>{},$MessageList=lr;True,False]];
+SetAttributes[Check$Message,HoldAll];
+SetAttributes[{Off,On},HoldAll];
+Off[x:(`a_::`b_)]:=(x=$Off[x]);
+Off[x_]:=Hold[x];
+Off[x__]:=Scan[Off,Hold[x]];
+On[x:(a_::b_)]:=(If[Head[x]===$Off,x=First[x]]);
+On[x_]:=Hold[x];
+On[x__]:=Scan[On,Hold[x]];
+SetAttributes[MessageString,HoldRest];
+MessageString[a_]:=a;
+MessageString[a_,`arg__]:=Module[
+  {`al,`r,`pw=PageWidth/2},
+  StandardForm[
+    al=Function[{b},ToString[b,HoldForm]]/@Hold[`arg];
+    al=If[StringLength[#]>pw,#[1,pw-4]//" ...",#]&/@al;
+    r=Table["`"//i//"`"->al[[i]],{i,Length[al]}];
+    StringReplace[a,r]]];
+SetAttributes[Message,HoldAll];
+Message[level_Real:9,a_::b_,`arg___]:=Module[
+  {l=Add$Message[{level,Hold[a::b],ToString[Unevaluated$[a::b],HoldForm],
+    Hold[MessageString[a::b,`arg]]}],
+    f=$FORM},
+  If[Head[l]===List,
+    $ErrorCount++;
+    $FORM="";
+    Print["???",Third[l],":  ",l[[4]]];
+    $FORM=f;];
+  Which[
+    level<10,,
+    level<1000,Abort[-2],
+    level<10000,Abort[-3]]
+  ];
+SetAttributes[{Add$Message,Set$MessageList,Check$Message,MessageString,
+  InputForm,HoldForm,GenericSymbolForm,StandardForm,
+  On,Off,$Off,Message},Constant];
+Sequence=Null;
+Protect[Sequence];
+Priority[x_]:=($Priority=True;
+  Check[x,];
+  $Priority=False);
+WithPriority[x_,`y_]:=With[x,
+  $Priority=True;
+  Check[y,];
+  $Priority=False];
+SetAttributes[{Priority,WithPriority},{HoldAll,Constant}];
+Close[x_]:=Close$[x];
+Close[x__]:=Close/@{x};
+Close[{x_,y_}]:=Close$/@Range[x,y];
+SetAttributes[Close,Constant];
+Shared[`n_Real]:=ReadShared[`n];
+(Shared[n_]=`v_)^:=WriteShared[n,v];
+(Shared[n_]:=v_)^:=WriteShared[n,Unevaluated$[v]];
+(Shared[n_]+=v_)^:=With[{x=ReadShared[n]+Unevaluated$[v]},
+  WriteShared[n,x];x];
+(Shared[n_]-=v_)^:=With[{x=ReadShared[n]-Unevaluated$[v]},
+  WriteShared[n,x];x];
+(Shared[n_]*=v_)^:=With[{x=ReadShared[n]*Unevaluated$[v]},
+  WriteShared[n,x];x];
+(Shared[n_]/=v_)^:=With[{x=ReadShared[n]/Unevaluated$[v]},
+  WriteShared[n,x];x];
+(Shared[n_]++)^:=With[{x=ReadShared[n]},
+  WriteShared[n,x+1];x];
+(Shared[n_]--)^:=With[{x=ReadShared[n]},
+  WriteShared[n,x-1];x];
+(++Shared[n_])^:=With[{x=ReadShared[n]+1},
+  WriteShared[n,x];x];
+(--Shared[n_])^:=With[{x=ReadShared[n]-1},
+  WriteShared[n,x];x];
+CloseShared=Close;
+Parallelize[`f_,`n_,`lshare_,`npara_,`fcomp_:Identity]:=Module[{`shared,`sharedpid,`l={},`fk,`r,`k,`i,`np},
+  np=OpenShared[16];
+  Shared[np]=0;
+  Do[
+    While[Shared[np]>=npara,Sleep[1]];
+    Shared[np]++;
+    shared[k]=OpenShared[lshare];
+    Shared[shared[k]]=Undefined;
+    If[fk=Fork[],
+      sharedpid[k]=fk;
+      Sleep[0.01],
+      FFS$InterruptMask=-1;
+      Shared[shared[k]]=Check[f[k],$Failed];
+      Shared[np]--;
+      Exit[]],
+    {k,n}];
+  Do[
+    r=Undefined;
+    Check[While[(r=Shared[shared[k]])===Undefined,Sleep[1]],];
+    Close[shared[k]];
+    AppendTo[l,r];
+    fcomp[l];
+    Check[Wait[],],
+    {k,n}];
+  Close[np];
+  l];
+SetAttributes[{Parallelize,CloseShared},{HoldFirst,Constant}];
+$WildCardID=0;
+$WildCard:=Switch[$WildCardID,
+  0,"SAD",
+  1,"RegExp",
+  _,"Unknown: "//$WildCardID];
+($WildCard=`s_)^:=(
+  $WildCardID=Switch[ToLowerCase[ToString[s]],
+    "regexp",1,
+    "sad",0,
+    _,Message[$WildCard::unknown,s];$WildCardID]);
+Protect[$WildCard];
+$SortMethodID=1;
+$SortMethod:=Switch[$SortMethodID,
+  0,"Quick",
+  1,"Merge",
+  _,"Unkown: "//$SortMethodID];
+($SortMethod=`s_)^:=(
+  $SortMethodID=Switch[ToLowerCase[ToString[s]],
+  "quick",0,
+  "merge",1,
+  _,Message[$SortMethod::unknown,s];$SortMethodID]
+  )
+Protect[$SortMethod];
+SymbolNameRoot[x_]:=Module[{n=SymbolName[x],p},
+  If[(p=StringPosition[n,"$"])<=>{},
+    If[StringPosition[n[p[[-1,1]]+1,-1],"{^0123456789}"]==={},
+      n[1,p[[-1,1]]-1],n],
+    n]];
+Protect[SymbolNameRoot];
+Vectorize[`a___,Vector[`x_],`b___]^:=Vectorize[`a,Vector$[`x],`b];
+ReleaseVector[Vector[{`x___}]]^:={`x};
+`f_[`a___,Vector[`x_],`b___,Vector[`y_],`c___]^:=
+  Vectorize[`f,`a,Vector$[`x],`b,Vector$[`y],`c];
+`f_[`a___,Vector[`x_],`b___]^:=(Vectorize[`f,`a,Vector$[`x],`b]);
+Protect[Vector];
+$FORM=" ";
+$Input=$Output=-1;
+(Environment[x_]=s_)^:=SetEnv[x,s];
+Environment[x_,s_]:=SetEnv[x,s];
+Environment[x_]:=GetEnv[x];
+Environment$[x_]:=GetEnv[x];
+HomeDirectory[]:=GetEnv["HOME"];
+(Directory[]=s_)^:=SetDirectory[s];
+Directory[s_]:=SetDirectory[s];
+Directory[]:=GetDirectory[];
+$MachineName=Environment$["HOST"];
+$MachineType=Environment$["MACHTYPE"];
+$System=$OperatingSystem=Environment$["OSTYPE"];
+Protect[$Input,$Output];
+SetAttrubutes[{Environment,Environment$,HomeDirectory,
+  $MachineName,$MachineType,$System,$OperatingSystem},Constant];
+(Element[x_List,y_,`op___]=`z_List)^:=
+  (ScanThread[Function[{a,b},Element[a,y,op]=b],{x,z}];
+    z);
+(Element[x_,y_String,`op___]=`z_)^:=
+  Module[{`k=ToUpperCase[x],`d=Element$["DEFAULT",y,op]},
+    If[k==d || k=="VALUE",
+      Element$[d,y,op]=z*LINE["DK",y];
+      Scan[(LINE[d,#]=z*LINE["DK",#])&,Flatten[{LINE["POSITION",y//".*"]}]],
+      Element$[k,y,op]=z;
+      If[k<>"GEO",
+	Scan[(LINE[k,#]=z)&,Flatten[{LINE["POSITION",y//".*"]}]]]];
+    z];
+(Element[x_,y_List,op___]=z_List)^:=(
+  ScanThread[Function[{a,b},Element[x,a,op]=b],{y,z}];z);
+(Element[x_,y_List,op___]=z_)^:=(Scan[Function[{a},Element[x,a,op]=z],y];z);
+(Element[x_,y_,op___]=z_)^:=
+  With[{n=Element$["NAME",y]},Element[x,n,op]=z];
+Element[x___]:=Element$[x];
+SetElement[x_?(Element["POSITION",#]<=>{}&),t:(_String|),k__]:=
+  Module[{v=SetElement$[x,t,k]},
+    Scan[(Element[#[[1]],x]=#[[2]])&,Flatten[{k}]];
+    v];
+SetElement[x__]:=SetElement$[x];
+ExternalMap[___]:=Null;
+InitLINE$P[]:=(
+  Clear[LINE$P,Element$P,Element$Key];
+  Module[{`n=LINE["NAME"]},
+    MapThread[(LINE$P[#]={#2})&,{n,Range[Length[n]]}]];
+  LINE$P[n_]:=(
+    LINE$P[n]=Flatten[{LINE["POSITION","@"//n]}]);
+  Module[{n=Element$["NAME"]},
+    MapThread[(Element$P[#]={#2})&,{n,Range[Length[n]]}]];
+  Element$P[n_]:=(
+    Element$P[n]=Flatten[{Element["POSITION",n]}]);
+  Element$Key[n_]:=(Element$Key[n]=Type$Key[Element$["TYPE",n]]);
+  Element$Key[n_,k_String]:=
+    (Element$Key[n,k]=(Position[Element$Key[n],k]/.{}->{{0}})[[1,1]]));
+
+Type$Key[n_]:=(Type$Key[n]=Type$Key$[n]);
+Type$Key[n_,k_String]:=
+    (Type$Key[n,k]=(Position[Type$Key[n],k|{___,k,___},1,1]/.{}->{{0}})[[1,1]]);
+
+Protect[Element,SetElement,InitLINE$P];
+FFS$SingleParameterCommands={
+  AXI,BXI,AYI,BYI,EXI,EPXI,EYI,EPYI,
+  R1I,R2I,R3I,R4I,DXI,DPXI,DYI,DPYI,DZI,DDPI,
+  MAXI,FITP,
+  axi,bxi,ayi,byi,exi,epxi,eyi,epyi,
+  r1i,r2i,r3i,r4i,dxi,dpxi,dyi,dpyi,dzi,ddpi,
+  maxi,fitp};
+Scan[With[{`v=#},(v=x_)^:=Module[{y=x},
+    FFS[v//" "//ToString[Unevaluated[y]]];x]]&,
+  FFS$SingleParameterCommands];
+FFS$Interrupt=3;
+FFS$InterruptMask=0;
+With[{FFS$SingleParameterCommands},
+  SetAttributes[FFS$SingleParameterCommands,Constant]];
+
+FF$Cond[{p1_,"",fun:("AZ"|"NZ"|"ZX"|"ZPX"|"ZY"|"ZPY"|"PZX"|"PZPX"|"PZY"|"PZPY"),v_,_,s_}]:=
+  With[{pp1=LINE["POSITION",p1]},Hold[Twiss[fun,pp1]-v*s]];
+FF$Cond[{p1_,p2_,fun:("AZ"|"ZX"|"ZPX"|"ZY"|"ZPY"|"PZX"|"PZPX"|"PZY"|"PZPY"),v_,_,s_}]:=
+  With[{pp1=LINE["POSITION",p1],pp2=LINE["POSITION",p2]},Hold[Twiss[fun,pp2]-Twiss[fun,pp1]*v]];
+FF$Cond[{p1_,p2_,fun:("NZ"),v_,_,s_}]:=
+  With[{pp1=LINE["POSITION",p1],pp2=LINE["POSITION",p2]},Hold[Twiss[fun,pp2]-Twiss[fun,pp1]-v*s]];
+FF$Cond[{p1_,"",fun:("BZ"),v_,_,s_}]:=
+  With[{pp1=LINE["POSITION",p1]},Hold[Twiss[fun,pp1]/v/s-1]];
+FF$Cond[{p1_,p2_,fun:("BZ"),v_,_,s_}]:=
+  With[{pp1=LINE["POSITION",p1],pp2=LINE["POSITION",p2]},Hold[Twiss[fun,pp2]/Twiss[fun,pp1]/v-1]];
+FF$Cond[_]:=Null[];
+
+FF$Orig=?`FitFunction;
+FF$NCond=0;
+Setup$FF[]:=With[{f=FF$Cond/@FFS["SHOW"]},
+  If[FF$NCond=Length[f],
+    Module[{f0},
+      f0=If[Extract[FF$Orig=?`FitFunction,{1,1,2},Head]<=>List,
+        If[FF$Orig===Hold[{`FitFunction:=`FitFunction}],
+          Hold[`FitFunction:=f]/.Hold->Null;
+          Return[],
+          {Extract[FF$Orig,1,1,2,Hold]}],
+        (Hold/@[FF$Orig,{4}])[[1,1,2]]];
+      With[{fj=Join[f0,f]},
+        Hold[`FitFunction:=fj]/.Hold->Null]]]];
+Reset$FF[]:=(FF$Orig[[1,1]];FF$NCond);
+Protect[Setup$FF];
+
+ARRAY[x__]:=Table[0,Evaluate[##]]&@@List/@{x};
+Len[x_]:=StringLength[x];
+Protect[ARRAY,Len];
+DateString$::use="Use DateString[] instead of DateString.";
+f_?(Switch[#,FFSFlag|Definition|Unprotect|Clear|SetDelayed,False,_,True]&)[a___,DateString,b___]^:=((* Message[DateString$::use];*)f[a,DateString$[],b]);
+DateString[x___]:=DateString$[x];
+SetAttributes[{DateString},Constant];
+TimeZoneOffset = +540;	(* SAD Default TimeZone: Asia/Tokyo[JST] *)
+(TimeZoneOffset = tz_) ^:= SetTimeZone[tz];
+TimeZoneOffset = 
+  Module[{f=OpenRead["!date +\\\"%z\\\""],s},
+    s=ReadString[f];
+    Close[f];
+    ToExpression[s]];
+Protect[TimeZoneOffset];
+	(* Switch to Local TimeZone *)
+MkSecureTemp[template_String:Null, op___Rule]:=Module[{prefix, suffix, dir},
+  {prefix, suffix, dir} = SwitchCases[Join[{op}, {}],
+    {Rule[Prefix, _String], Rule[Suffix, _String], Rule[Directory, _String]}];
+  prefix = If[StringQ[template], template,
+    StringJoin[If[dir <=> {}, dir[[1, 2]], Environment["TMPDIR"]/.""->"/tmp"],
+      "/", If[prefix <=> {}, prefix[[1, 2]], "mkstemp"], ".XXXXXXXXXX"]];
+  suffix = If[suffix <=> {}, "."//suffix[[1, 2]], ""];
+  MkSecureTemp$[prefix, suffix]];
+Protect[MkSecureTemp];
+(* BinaryIOQ/UnbufferedIOQ *)
+BinaryIOQ[] := Module[{`in, `out, `lout, `lin, `s},
+  Check[{in, out} = Pipe[], Return[False]];
+  lout = FromCharacterCode[Range[0, 255]]//"LF\nCR\rCRLF\r\nLFCR\n\r";
+  WriteString[out, lout]; Close[out];
+  lin = Table[If[(s = Read[in, Byte]) === EndOfFile, Break[], s], {Infinity}];
+  Close[in]; lout === FromCharacterCode[lin]];
+UnbufferedIOQ[] := Module[{`in, `out, l`out, `lin, `s},
+  Check[{in, out} = Pipe[], Return[False]];
+  lout = "Test"//ToString[Range[10]]//"Vector";
+  WriteString[out, lout]; Close[out];
+  If[SelectUnit[in, 0] <> StringLength[lout], Return[False]];
+  lin = "";
+  While[SelectUnit[in, 0] == StringLength[lout] - StringLength[lin],
+    If[(s = Read[in, Byte]) === EndOfFile, Break[]];
+    lin = lin//FromCharacterCode[s]];
+  If[lout === lin && SelectUnit[in, 0] == 0 && Read[in, String] === EndOfFile,
+    Close[in]; True, Close[in]; False]];
+Protect[BinaryIOQ,UnbufferedIOQ];
+(* BidirectionalPipe *)
+If[Not[FBoundQ$[BidirectionalPipe]],
+BDPipe[`argv___] = BidirectionalPipe[argv];	(* Alias *)
+BidirectionalPipe[`cmd_String, `argv___String,
+  `opt:((_Rule|_RuleDelayed)...)] := BidirectionalPipe[cmd, {argv}, opt];
+BidirectionalPipe[`cmd_String, {`argv___String},
+  `opt:((_Rule|_RuleDelayed)...)] := Module[{`env, `pid, `op, `p1, `p2, `$pid},
+    {env, pid, op} = SwitchCases[Override[opt, ForceCloseOnExec->False],
+      {Rule[Environment|Environments, {___String}], RuleDelayed[PID, _], _}];
+    env = If[env <=> {}, env[[1,2]], Environments[]];
+    Check[p1 = Pipe[],
+      Message[9, System::error, "Cannot create pipe"]; Return[$Failed]];
+    Check[p2 = Pipe[],
+      Message[9, System::error, "Cannot create pipe"]; Return[$Failed]];
+    Switch[$pid = Fork[],
+      -1, ( (* Error *)
+	Message[9, System::error, "Cannot fork process"];
+	Return[$Failed]),
+      0,  ( (* Child *)
+	Check[SetLUN2FD[p1[[1]], 0], Exit[127]];
+	Check[SetLUN2FD[p2[[2]], 1], Exit[127]];
+	Close/@p1; Close/@p2;
+	(* Force activate SIGPIPE *)
+	SigAction[SIGPIPE, Action->Default];
+	SigProcMask[UnBlock, SIGPIPE];
+	If[{argv} === {},
+	  Execvpe[cmd, {cmd},  env, Null@@op],
+	  Execvpe[cmd, {argv}, env, Null@@op]];
+	Exit[127]),
+      _,  ( (* Parent *)
+	If[pid <=> {},
+	  With[{PID = Extract[pid, {1,2}, Unevaluated$]}, PID = $pid]];
+	Close[p1[[1]]]; Close[p2[[2]]])];
+    {p2[[1]], p1[[2]]}];
+Protect[BidirectionalPipe, BDPipe];
+]; (* Not[FBoundQ$[BidirectionalPipe]] *)
+SetAttributes[{BoundQ, FBoundQ}, HoldFirst];
+BoundQ[s_] :=  FBoundQ$[s] || Depth[?s] < 4 ||
+  With[{def = List@@Hold/@First[Hold@@[?s, {1}]]},
+    Length[def] > 1 || UnsameQ@@Hold/@First[Hold@@[def[[1]],{1}]]];
+FBoundQ[s_] := FBoundQ$[s] || Depth[?s] > 3 &&
+  With[{def = List@@Hold/@First[Hold@@[?s, {1}]]},
+    Or@@Map[With[{op = #[[1, 0]], left = First[Hold/@First[Hold@@[#, {1}]]]},
+      op === SetDelayed &&
+	Depth[left] > 2 && Extract[left, {1, 0}, Hold] === Hold[s]]&, def]];
+Protect[BoundQ, FBoundQ];
+(* Protected constant symbol definitions *)
+Scan[With[{sym = #}, Unprotect[sym]; SetAttributes[sym, Constant]; Protect[sym]]&, {
+  ExpansionRatio, InitialSimplex, MaxIteration, MinimumSize,
+  OptimizeFunction, Output, Persistence, SimplexSize, Threshold, Tolerance,
+  Cutoff,
+  Null[]}];
+(* Unprotected constant symbol definitions *)
+Scan[With[{sym = #}, SetAttributes[sym, Constant]]&, {
+  Null[]}];
+On[General::unprotconst];
+(* Load PkgConfig function family *)
+Get[PackagesDirectory//"PkgConfig.n"];
+AutoLoad[FileNames, DirectoryName, ToFileName,
+  $HomeDirectory,
+  CreateDirectory, DeleteDirectory, RenameDirectory, CopyDirectory,
+  CopyFile, RenameFile, DeleteFile, SetFileDate,
+  FileDate, FileType, FileByteCount,
+  FileQ, DirectoryQ,
+  PackagesDirectory//"FileSystem.n"];
+AutoLoad[Class,This,Constructor,Destructor,Clone,Object,
+  PackagesDirectory//"Class.n"];
+AutoLoad[NearlySameQ,FixedPoint,FixedPoinstList,FunctionDefinition,
+  PackagesDirectory//"Misc.n"];
+AutoLoad[CaOpen,CaRead,CaWrite,CaGet,CaPut,CaClose,
+  PackagesDirectory//"CaSad.n"];
+AutoLoad[CaOpenMonitor,PackagesDirectory//"CaSad2.n"];
+AutoLoad[CaMonitor,PackagesDirectory//"CaSad2c.n"];
+AutoLoad[EPICSDB,PackagesDirectory//"CEPICSRecord.n"];
+$DisplayFunction=If[Check[System["/bin/csh -c 'which tdr' >/dev/null"],1],
+  If[Environment["DISPLAY"]<=>"",CanvasDrawer,TopDrawer],TopDrawer,TopDrawer];
+AutoLoad[ListPlot,Plot,Show,Graphics,Rectangle,
+  PackagesDirectory//"ListPlot.n"];
+AutoLoad[FitPlot,ListContourPlot,ListDensityPlot,
+  ColumnPlot,HistoPlot,PackagesDirectory//"Plots.n"];
+AutoLoad[TopDrawer,
+  PackagesDirectory//"TopDrawer.n"];
+AutoLoad[OpticsPlot,LatticePlot,BeamPlot,OP$S2Position,
+  PackagesDirectory//"OpticsPlot.n"];
+AutoLoad[GeometryPlot,
+  PackagesDirectory//"GeometryPlot.n"];
+AutoLoadSet[TclEval,Tk$Echo,Tk$EchoValue,Tcl$Interp,
+  Tk$FullVersion,Tk$Version,Tk$MajorVersion,Tk$MinorVersion,Tk$PatchLevel,
+  $FontSystem,$DefaultFont,$DefaultSansSerifFont,$DefaultSerifFont,
+  $DefaultFixedFont,$DefaultTerminalFont,$DefaultSymbolFont,
+  $DefaultFontWeight,$DefaultFontSlant,$DefaultFontSize,
+  PackagesDirectory//"TkinterCore.n"];
+AutoLoad[Button,Window,TextLabel,Entry,RadioButton,CheckButton,
+  TextMessage,TextEditor,ListBox,ScrollBar,Menu,MenuEntry,MenuButton,
+  OptionMenu,Image,BitmapImage,PhotoImage,ApplicationName,AppNames,
+  ApplicationNames,Bell,Wish,TclReturn,
+  Canvas,Python,After,AfterIdle,TkSense,TkWait,Wish,Update,
+  PackagesDirectory//"Tkinter.n"];
+AutoLoad[TkPhotoPutBlock,
+  PackagesDirectory//"TkPhoto.n"];
+AutoLoadSet[CanvasDrawer,Canvas$Widget,PackagesDirectory//"Canvas.n"];
+AutoLoad[KBMainFrame,KBF$ConfDir,PackagesDirectory//"KBMainFrame.n"];
+AutoLoad[KBFFileSelectionPanel,PackagesDirectory//"KBFFileSelectionPanel.n"];
+AutoLoad[KBFTabFrame,KBFToggleFrame,PackagesDirectory//"TabFrame.n"];
+AutoLoad[KBFOpenDialog,KBFSaveDialog,KBF$ListFiles,PackagesDirectory//"FileDialog.n"];
+AutoLoad[KBFOptionDialog,KBFMessageBox,PackagesDirectory//"OptionDialog.n"];
+AutoLoad[KBFrame,PackagesDirectory//"KBFrame.n"];
+AutoLoad[KBDigitalIndicator,PackagesDirectory//"EPICSComponents1.n"];
+AutoLoad[CaBinaryIndicator,PackagesDirectory//"CaBinaryIndicator.n"];
+AutoLoad[CheckEntryList,PackagesDirectory//"CheckEntryList.n"];
+AutoLoad[CursorEntry,CaCursorEntry,PackagesDirectory//"CursorEntry.n"];
+AutoLoad[SI$StartInspect,PackagesDirectory//"SADInspect.n"];
+AutoLoad[Speak,PackagesDirectory//"Speak.n"];
+AutoLoad[Fit,PolynomialFit,FindRoot,PackagesDirectory//"Fit.n"];
+AutoLoad[Rational,Nemerator,Denominator,FromRational,
+  ContinuedFractioin,FromContinuedFraction,PackagesDirectory//"rational.n"];
+AutoLoad[help,HELP,Help,PackagesDirectory//"help.n"];
+AutoLoad[Help$Messages,PackagesDirectory//"HelpMessages.n"];
+AutoLoad[TableForm,PackagesDirectory//"tableform.n"];
+AutoLoad[LinearSolve,Inverse,SingularValues,
+  MatrixBalance,LinearSolveComplex1,LinearSolveComplex2,
+  PackagesDirectory//"Matrix.n"];
+AutoLoad[Emittance,SynchroBetaEmittance,SymplecticJ,SymplecticInverse,
+  TouschekLifetime,TouschekF,
+  BeamstrahlungUpsilon,BeamstrahlungNGamma,BeamstrahlungDeltaGamma,
+  BeamstrahlungU0,BeamstrahlungU1,
+  PackagesDirectory//"emit.n"];
+AutoLoad[TransferMatrix,TransferMatrixPrimitive,
+  NormalCoordinates,BeamMatrix,PeriodicOptics,
+  GeoBase,OrbitGeo,
+  PackagesDirectory//"Optics.n"];
+AutoLoad[DynamicApertureSurvey,AccelerateParticles,
+  PackagesDirectory//"dapert.n"];
+AutoLoad[Amoebar,Amoeba,DownhillSimplex,Simplex,CalculateMatching,
+  OptimizeOptics,PackagesDirectory//"optimize.n"];
+AutoLoad[Monitor,Steer,
+  ReadMonitorData,ReadSteerData,WriteMonitorData,WriteSteerData,
+  PackagesDirectory//"correction.n"];
+AutoLoad[BeamLine,PrintBeamLine,WriteBeamLine,
+  PackagesDirectory//"beamline.n"];
+AutoLoad[SetCoupledElements,CouplingMatrix,`CoupledKeys,
+  PackagesDirectory//"Couple.n"];
+AutoLoad[D,Derivative,ReduceExpression,ReductionRule,Expand,
+  Spline,SplineData,Integrate,NIntegrate,LegendreP,BesselJZero,
+  PackagesDirectory//"D.n"];
+AutoLoad[LDSolve,PackagesDirectory//"LDSolve.n"];
+AutoLoad[TextTerminal,KBF$MakeSADTerminal,KBF$CloseSADTerminal,KBFSADTerminal,PackagesDirectory//"SADTerminal.n"];
+AutoLoad[ProcessStatus,PackagesDirectory//"ProcessStatus.n"];
+AutoLoad[Library,PackagesDirectory//"Library.n"];
+AutoLoad[CANVASDRAW,PackagesDirectory//"CANVASDRAW.n"];
+AutoLoad[NISTACK$OBJ,NISTACK$FIXSEED,PackagesDirectory//"NISTACK.n"];
+AutoLoad[LifeTrack,PackagesDirectory//"LifeTrack.n"];
+AutoLoad[CSR,CSRStability,PackagesDirectory//"CSR.n"];
+AutoLoad[WAKECOMMAND,PackagesDirectory//"WAKECOMMAND.n"];
+! End of File

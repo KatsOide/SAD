@@ -1,4 +1,5 @@
       subroutine tfsave(word,cmd0,ntouch)
+      use kyparam
       use tfstk
       use ffs
       use ffs_pointer
@@ -66,17 +67,20 @@ c     $             rlist(j+1),rlist(j+4)
               if(direlc(l) .lt. 0.d0)then
                 rlist(j+mfitax)=-rlist(j+mfitax)
                 rlist(j+mfitay)=-rlist(j+mfitay)
+                rlist(j+mfitaz)=-rlist(j+mfitaz)
                 rlist(j+mfitepx)=-rlist(j+mfitepx)
                 rlist(j+mfitepy)=-rlist(j+mfitepy)
+                rlist(j+mfitzpx)=-rlist(j+mfitzpx)
+                rlist(j+mfitzpy)=-rlist(j+mfitzpy)
                 rlist(j+mfitr2)=-rlist(j+mfitr2)
                 rlist(j+mfitr3)=-rlist(j+mfitr3)
                 rlist(j+mfitdpx)=-rlist(j+mfitdpx)
                 rlist(j+mfitdpy)=-rlist(j+mfitdpy)
               endif
             endif
-            rlist(j+kytbl(kwEMIX,icMARK))=emx
-            rlist(j+kytbl(kwEMIY,icMARK))=emy
-            rlist(j+kytbl(kwDP,icMARK))=dpmax
+            rlist(j+ky_EMIX_MARK)=emx
+            rlist(j+ky_EMIY_MARK)=emy
+            rlist(j+ky_DP_MARK)=dpmax
           elseif(ival(i) .gt. 0)then
             rlist(j+ival(i))=cmp%value(ival(i))/errk(1,l)
           endif

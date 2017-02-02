@@ -1,0 +1,3078 @@
+? test-SEGV-0.sad
+Index: src/spkick.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/spkick.f,v
+retrieving revision 1.20.2.7
+diff -d -u -r1.20.2.7 spkick.f
+--- src/spkick.f	10 Aug 2013 03:51:58 -0000	1.20.2.7
++++ src/spkick.f	17 Apr 2014 05:59:45 -0000
+@@ -1,20 +1,25 @@
+-      subroutine spkick(np,
+-     $     x,px,y,py,z,g,dv,zz,al,radius,alx,kptbl)
+-            use tfstk
++      subroutine spkick(np,x,px,y,py,z,g,dv,zz,al,
++     $     radius,alx,kturn,l,latt,kptbl)
++      use tfstk
+       use ffs
+       use tffitcode
+       implicit none
+       integer*4 nzmax,ntheta
+       parameter (nzmax=1000,ntheta=12)
+-      integer*4 np,i,itt,italoc,npz,nx,nz,
+-     $     nrho,irho,nphi,iex,iey,iez,iq,iphis,nq,
+-     $     iphi,nz1,nz2,nza,kptbl(np0,4)
+-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),zz(np)
+-      real*8 zc(nzmax),dx,dy,radius,al,zf(nzmax),v0,gamma0,alx
++      integer*4 np,kturn,l,latt(2,nlat),kptbl(np0,6)
++      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),zz(np0)
++      real*8 al,radius,alx
++      integer*4 italoc
++      integer*4 i,itt,npz,nx,nz,nz1,nz2,nza,nrho,nphi,nq,
++     $     irho,iphi,iphis,iq,iex,iey,iez
++      real*8 v0,gamma0,dx,dy,zc(nzmax),zf(nzmax)
+       if(radius .eq. 0.d0)then
+         return
+       endif
+-      call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
++c      call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
++      call tapert(l,latt,x,px,y,py,z,g,dv,zz,kptbl,np,kturn,
++     $     radius,radius,
++     $     0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
+       if(radius .le. 0.d0)then
+         return
+       endif
+@@ -128,11 +133,19 @@
+           i=itab(jj)
+           az=(zz(i)-zc(j))/dz
+           ax=(x(i)-x0)/dx
++<<<<<<< spkick.f
+           lx=int(ax)
++=======
++          lx=floor(ax)
++>>>>>>> 1.21
+           ax=ax-lx
+           lx=lx-nx
+           ay=(y(i)-y0)/dy
++<<<<<<< spkick.f
+           ly=int(ay)
++=======
++          ly=floor(ay)
++>>>>>>> 1.21
+           ay=ay-ly
+           ly=ly-nx
+           ax1=1.d0-ax
+@@ -549,10 +562,10 @@
+ c     $     itab(np),itab((nza-1)*npz+1)
+       dz1=zz(itab(npz+1))-zz(itab(1))
+       dz2=zz(itab(np))-zz(itab((nza-1)*npz+1))
+-      na1=int(max(1.d0,radius*3.d0/max(dz1,radius/10.d0)))
++      na1=max(1,floor(radius*3.d0/max(dz1,radius/10.d0)))
+       nz1=na1+1
+       nz2=nz1+nza
+-      na2=int(max(1.d0,radius*3.d0/max(dz2,radius/10.d0)))
++      na2=max(1,floor(radius*3.d0/max(dz2,radius/10.d0)))
+       nz=nz2+na2
+       if(nz .gt. nzmax)then
+         write(*,*)'spmesh-too large mesh'
+@@ -682,36 +695,122 @@
+       return
+       end
+ 
++<<<<<<< spkick.f
+       subroutine spdrift(np,
+      $     x,px,y,py,z,g,dv,zz,al,bz,ak0x,ak0y,radius,kptbl)
+             use tfstk
+       use ffs
+       use tffitcode
++=======
++c     drift in the free space
++      subroutine spdrift_free(np,x,px,y,py,z,g,dv,zz,al,
++     $     radius,kturn,l,latt,kptbl)
+       implicit none
++      include 'inc/TFMACRO1.inc'
+       integer*4 nzmax
+       real*8 alstep
+       parameter (nzmax=1000,alstep=0.05d0)
+-      integer*4 np,kptbl(np0,4),ndiv,i
+-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),zz(np)
+-      real*8 radius,al,alx,aln,ak0x,ak0y,bz,akxn,akyn
++      integer*4 np,kturn,l,latt(2,nlat),kptbl(np0,6)
++      real*8 x(np0),px(np0),y(np),py(np0),z(np0),g(np0),dv(np0),zz(np0)
++      real*8 al,radius
++      integer*4 ndiv,i
++      real*8 aln,alx
++      ndiv=max(1,nint(al/alstep))
++      aln=al/ndiv
++
++      call tdrift_free(np,x,px,y,py,z,g,dv,zz,aln*.5d0)
++
++      call spkick(np,x,px,y,py,z,g,dv,zz,aln,
++     $     radius,alx,kturn,l,latt,kptbl)
++      do i=2,ndiv
++        call tdrift_free(np,x,px,y,py,z,g,dv,zz,aln)
++        call spkick(np,x,px,y,py,z,g,dv,zz,aln,
++     $       radius,alx,kturn,l,latt,kptbl)
++      enddo
++
++      call tdrift_free(np,x,px,y,py,z,g,dv,zz,aln*.5d0)
++c      call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
++      if(radius .ne. 0.d0)then
++         call tapert(l,latt,x,px,y,py,z,g,dv,zz,kptbl,np,kturn,
++     $        radius,radius,
++     $        0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
++      endif
++      return
++      end
++
++c     drift in the parallel solenoid
++      subroutine spdrift_solenoid(np,x,px,y,py,z,g,dv,zz,al,
++     $     bz,radius,kturn,l,latt,kptbl)
++      implicit none
++      include 'inc/TFMACRO1.inc'
++      integer*4 nzmax
++      real*8 alstep
++      parameter (nzmax=1000,alstep=0.05d0)
++      integer*4 np,kturn,l,latt(2,nlat),kptbl(np0,6)
++      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),zz(np0)
++      real*8 al,bz,radius
++      integer*4 ndiv,i
++      real*8 aln,alx
++      ndiv=max(1,nint(al/alstep),nint(abs(bz*al)/1.5d0))
++      aln=al/ndiv
++
++      call tdrift_solenoid(np,x,px,y,py,z,g,dv,zz,aln*.5d0,bz)
++
++      call spkick(np,x,px,y,py,z,g,dv,zz,aln,
++     $     radius,alx,kturn,l,latt,kptbl)
++      do i=2,ndiv
++        call tdrift_solenoid(np,x,px,y,py,z,g,dv,zz,aln,bz)
++        call spkick(np,x,px,y,py,z,g,dv,zz,aln,
++     $       radius,alx,kturn,l,latt,kptbl)
++      enddo
++
++      call tdrift_solenoid(np,x,px,y,py,z,g,dv,zz,aln*.5d0,bz)
++c      call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
++      if(radius .ne. 0.d0)then
++         call tapert(l,latt,x,px,y,py,z,g,dv,zz,kptbl,np,kturn,
++     $        radius,radius,
++     $        0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
++      endif
++      return
++      end
++
++      subroutine spdrift(np,x,px,y,py,z,g,dv,zz,al,
++     $     bz,ak0x,ak0y,radius,kturn,l,latt,kptbl)
++>>>>>>> 1.21
++      implicit none
++      integer*4 nzmax
++      real*8 alstep
++      parameter (nzmax=1000,alstep=0.05d0)
++      integer*4 np,kturn,l,latt(2,nlat),kptbl(np0,6)
++      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),zz(np0)
++      real*8 al,bz,ak0x,ak0y,radius
++      integer*4 ndiv,i
++      real*8 aln,akxn,akyn,alx
+       ndiv=max(1,nint(al/alstep),nint(abs(bz*al)/1.5d0))
+       aln=al/ndiv
+       akxn=ak0x/ndiv
+       akyn=ak0y/ndiv
+-      do i=1,ndiv
+-        if(i .eq. 1)then
+-          call tdrift(np,x,px,y,py,z,g,dv,zz,aln*.5d0,
+-     $         bz,akxn*.5d0,akyn*.5d0)
+-        else
+-          call tdrift(np,x,px,y,py,z,g,dv,zz,aln,
+-     $         bz,akxn,akyn)
+-        endif
+-        call spkick(np,
+-     $       x,px,y,py,z,g,dv,zz,aln,radius,alx,kptbl)
++
++      call tdrift(np,x,px,y,py,z,g,dv,zz,
++     $     aln*.5d0,bz,akxn*.5d0,akyn*.5d0)
++
++      call spkick(np,x,px,y,py,z,g,dv,zz,aln,
++     $     radius,alx,kturn,l,latt,kptbl)
++      do i=2,ndiv
++        call tdrift(np,x,px,y,py,z,g,dv,zz,
++     $       aln,bz,akxn,akyn)
++        call spkick(np,x,px,y,py,z,g,dv,zz,aln,
++     $       radius,alx,kturn,l,latt,kptbl)
+       enddo
+-      call tdrift(np,x,px,y,py,z,g,dv,zz,aln*.5d0,
+-     $     bz,akxn*.5d0,akyn*.5d0)
+-      call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
++
++      call tdrift(np,x,px,y,py,z,g,dv,zz,
++     $     aln*.5d0,bz,akxn*.5d0,akyn*.5d0)
++c      call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
++      if(radius .ne. 0.d0)then
++         call tapert(l,latt,x,px,y,py,z,g,dv,zz,kptbl,np,kturn,
++     $        radius,radius,
++     $        0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
++      endif
+       return
+       end
+ 
+@@ -720,7 +819,7 @@
+       use ffs
+       use tffitcode
+       implicit none
+-      integer*4 np,kptbl(np0,4),i,j,k
++      integer*4 np,kptbl(np0,6),i,j,k
+       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+      $     radius,rsq,x1,px1,y1,py1,z1,g1,dv1
+       if(radius .eq. 0.d0)then
+Index: src/tapert.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tapert.f,v
+retrieving revision 1.21.2.1
+diff -d -u -r1.21.2.1 tapert.f
+--- src/tapert.f	31 Aug 2012 19:54:10 -0000	1.21.2.1
++++ src/tapert.f	17 Apr 2014 05:59:45 -0000
+@@ -5,18 +5,17 @@
+       use tfstk
+       implicit none
+       include 'inc/TMACRO1.inc'
++      integer, parameter :: nkptbl = 6
+       real*8 plimit,zlimit
+       parameter (plimit=0.99d0,zlimit=1.d10)
+-      integer*4 np,l,kturn
+-      integer*4 latt(2,nlat),kptbl(np0,4)
+-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
+-     $     ax,ay,dx,dy,xl,yl,xh,yh,pxj,pyj,dpj,theta
++      integer*4 l,latt(2,nlat)
++      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
++      integer*4 kptbl(np0,nkptbl),np,kturn
++      real*8 ax,ay,dx,dy,xl,yl,xh,yh,pxj,pyj,dpj,theta
+       real*8 xh1,xl1,yh1,yl1,ax1,ay1,xa,ya,cost,sint,
+      $     x1,px1,y1,py1,z1,g1,dv1,pz1,phi(2)
+-      integer*4 lenw
+-      integer*4 i,j,k
+-      logical eli, dodrop, dropmark(np)
+-      character*2 ord
++      integer*4 i,j,k,kptmp(nkptbl)
++      logical eli, dodrop
+ 
+ c     Shortcut case: pxj != 0.0 || pyj != 0.0
+       if(pxj .ne. 0.d0 .or. pyj .ne. 0.d0)then
+@@ -103,22 +102,30 @@
+           do i=1,np
+             xa = cost * (x(i) - dx) - sint * (y(i) - dy)
+             ya = sint * (x(i) - dx) + cost * (y(i) - dy)
+-            dropmark(i) = .not. (
++            if(.not. (
+      $           ((ax1 * xa)**2 + (ay1 * ya)**2 .le. 1.d0) .and.
+      $           (      xl1 .lt. xa .and. xa .lt. xh1
+-     $           .and.  yl1 .lt. ya .and. ya .lt. yh1))
+-            dodrop = dodrop .or. dropmark(i)
++     $           .and.  yl1 .lt. ya .and. ya .lt. yh1) .and.
++     $           abs(z(i)) .le. zlost))then
++              dodrop = .true.
++              kptbl(i,4) = l
++              kptbl(i,5) = kturn
++            endif
+           enddo
+         else
+ c     Case: eli && !(theta != 0.0)
+           do i=1,np
+             xa = (x(i) - dx)
+             ya = (y(i) - dy)
+-            dropmark(i) = .not. (
++            if(.not. (
+      $           ((ax1 * xa)**2 + (ay1 * ya)**2 .le. 1.d0) .and.
+      $           (      xl1 .lt. xa .and. xa .lt. xh1
+-     $           .and.  yl1 .lt. ya .and. ya .lt. yh1))
+-            dodrop = dodrop .or. dropmark(i)
++     $           .and.  yl1 .lt. ya .and. ya .lt. yh1) .and.
++     $           abs(z(i)) .le. zlost))then
++              dodrop = .true.
++              kptbl(i,4) = l
++              kptbl(i,5) = kturn
++            endif
+           enddo
+         endif
+       else
+@@ -127,20 +134,28 @@
+           do i=1,np
+             xa = cost * (x(i) - dx) - sint * (y(i) - dy)
+             ya = sint * (x(i) - dx) + cost * (y(i) - dy)
+-            dropmark(i) = .not. (
++            if(.not. (
+      $           (      xl1 .lt. xa .and. xa .lt. xh1
+-     $           .and.  yl1 .lt. ya .and. ya .lt. yh1))
+-            dodrop = dodrop .or. dropmark(i)
++     $           .and.  yl1 .lt. ya .and. ya .lt. yh1) .and.
++     $           abs(z(i)) .le. zlost))then
++              dodrop = .true.
++              kptbl(i,4) = l
++              kptbl(i,5) = kturn
++            endif
+           enddo
+         else
+ c     Case: !eli && !(theta != 0.0)
+           do i=1,np
+             xa = (x(i) - dx)
+             ya = (y(i) - dy)
+-            dropmark(i) = .not. (
++            if(.not. (
+      $           (      xl1 .lt. xa .and. xa .lt. xh1
+-     $           .and.  yl1 .lt. ya .and. ya .lt. yh1))
+-            dodrop = dodrop .or. dropmark(i)
++     $           .and.  yl1 .lt. ya .and. ya .lt. yh1) .and.
++     $           abs(z(i)) .le. zlost))then
++              dodrop = .true.
++              kptbl(i,4) = l
++              kptbl(i,5) = kturn
++            endif
+           enddo
+         endif
+       endif
+@@ -154,59 +169,58 @@
+       if(         (.not. dapert)
+      $     .and. (.not. trpt .or. idtype(latt(1,l)) .eq. icAprt)
+      $     .and. (outfl .ne. 0))then
+-        do i=1,np
+-          if(dropmark(i))then
+-            write(outfl,9010)'P. ',kptbl(i,3),' lost in',kturn,
+-     $            ord(kturn)//' turn at',l,' ('//
+-     $            pname(latt(1,l))(1:lenw(pname(latt(1,l))))//
+-     $            '), amplitudes: ',x(i),y(i)
+- 9010       format(1x,a,i5,a,i5,a,i5,a,2f8.3)
+-          endif
+-        enddo
++        call tapert_report_dropped(outfl,kturn,l,
++     $       latt,np,x,px,y,py,z,g,dv,pz,kptbl)
+       endif
+ 
+ c     Sweaping drop particles
+       i=1
+       do while(i .le. np)
+-        if(dropmark(i))then
++        if(kptbl(i,4) .ne. 0)then
+ c     Search alive particle from tail: (i, np]
+-          do while(i .lt. np .and. dropmark(np))
++          do while(i .lt. np .and. (kptbl(np,4) .ne. 0))
+             np=np-1
+           enddo
+-          if(.not. dropmark(np))then
+-c     Swap drop particle(i) with tail alive particle(np)
+-            j=kptbl(np,3)
+-            k=kptbl(i,3)
+-            kptbl(k,1)=np
+-            kptbl(j,1)=i
+-            kptbl(np,3)=k
+-            kptbl(i,3)=j
+-            x1=x(i)
+-            px1=px(i)
+-            y1=y(i)
+-            py1=py(i)
+-            z1=z(i)
+-            g1=g(i)
+-            dv1=dv(i)
+-            pz1=pz(i)
+-            x(i)=x(np)
+-            px(i)=px(np)
+-            y(i)=y(np)
+-            py(i)=py(np)
+-            z(i)=z(np)
+-            g(i)=g(np)
+-            dv(i)=dv(np)
+-            pz(i)=pz(np)
+-            x(np)=x1
+-            px(np)=px1
+-            y(np)=y1
+-            py(np)=py1
+-            z(np)=z1
+-            g(np)=g1
+-            dv(np)=dv1
+-            pz(np)=pz1
+-c            dropmark(i)=.false.
+-c            dropmark(np)=.true.
++          if(kptbl(np,4) .eq. 0)then
++c     Swap drop particlen slot[i] with tail alive particle slot[np]
++            j=kptbl(np,2)
++            k=kptbl(i, 2)
++c      - Update maps between partice ID and array index
++            kptbl(k, 1)=np
++            kptbl(j, 1)=i
++            kptbl(np,2)=k
++            kptbl(i, 2)=j
++c      - Swap kptbl except forward/backward[kptbl(*,1)/kptbl(*,2)]
++            kptmp(   3:nkptbl) = kptbl(np,3:nkptbl)
++            kptbl(np,3:nkptbl) = kptbl(i, 3:nkptbl)
++            kptbl(i, 3:nkptbl) = kptmp(   3:nkptbl)
++c      - Swap particle coordinates
++            x1  = x(i)
++            px1 = px(i)
++            y1  = y(i)
++            py1 = py(i)
++            z1  = z(i)
++            g1  = g(i)
++            dv1 = dv(i)
++            pz1 = pz(i)
++
++            x(i)  = x(np)
++            px(i) = px(np)
++            y(i)  = y(np)
++            py(i) = py(np)
++            z(i)  = z(np)
++            g(i)  = g(np)
++            dv(i) = dv(np)
++            pz(i) = pz(np)
++
++            x(np)  = x1
++            px(np) = px1
++            y(np)  = y1
++            py(np) = py1
++            z(np)  = z1
++            g(np)  = g1
++            dv(np) = dv1
++            pz(np) = pz1
+           endif
+           np=np-1
+         endif
+@@ -216,14 +230,15 @@
+       end
+ 
+       subroutine tapert1(l,latt,x,px,y,py,z,g,dv,pz,
+-     1       kptbl,np,n)        
++     $     kptbl,np,kturn)
+       use tfstk
+       implicit none
+       include 'inc/TMACRO1.inc'
+-      integer*4 np,l,lp,n
+-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
+-     $     dpxj,dpyj,ddp,dx1,dy1,dx2,dy2
+-      integer*4 kptbl(np0,4),latt(2,nlat)
++      integer*4 l,latt(2,nlat)
++      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
++      integer*4 kptbl(np0,6),np,kturn
++      integer*4 lp
++      real*8 dpxj,dpyj,ddp,dx1,dy1,dx2,dy2
+       lp=latt(2,l)
+       dpxj=rlist(lp+kytbl(kwJDPX,icAprt))
+       dpyj=rlist(lp+kytbl(kwJDPY,icAprt))
+@@ -242,7 +257,7 @@
+ c     $     rlist(lp+kytbl(kwDX,icAprt)),
+ c     $     rlist(lp+kytbl(kwDY,icAprt))
+       call tapert(l,latt,x,px,y,py,z,g,dv,pz,
+-     1     kptbl,np,n,
++     1     kptbl,np,kturn,
+      $     rlist(lp+kytbl(kwAX,icAprt)),
+      $     rlist(lp+kytbl(kwAY,icAprt)),
+      $     rlist(lp+kytbl(kwDX,icAprt)),
+@@ -251,3 +266,180 @@
+      $     rlist(lp+kytbl(kwROT,icAprt)))
+       return
+       end
++
++c     Helper functions for Aperture Handling in Tracking Modules
++
++c     Report new drop marked particles in alive area [1, np]
++      subroutine tapert_report_dropped(outfd,kturn,lbegin,
++     $     latt,np,x,px,y,py,z,g,dv,pz,kptbl)
++      implicit none
++      include 'inc/TMACRO1.inc'
++      integer*4 outfd,kturn,lbegin
++      integer*4 latt(2,nlat),np
++      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
++      integer*4 kptbl(np0,6)
++      integer*4 i,l,t
++      character*2 ord
++      integer*4 lenw
++
++      do i=1,np
++         l = kptbl(i,4)
++         t = kptbl(i,5)
++         if((l .ge. lbegin) .and. (l .gt. 0))then
++            if(l .le. nlat)then
++               write(outfd,'(1x,''P. '',i5,'' lost in '',i5,a,'' turn'',
++     $'' at '',i5,''('',a,''), amplitudes:'',3(1x,g13.7))')
++     $              kptbl(i,2), t, ord(t),
++     $              l, pname(latt(1,l))(1:lenw(pname(latt(1,l)))),
++     $              x(i),y(i),z(i)
++            else
++               write(outfd,'(1x,''P. '',i5,'' lost in '',i5,a,'' turn'',
++     $'' at '',i5,'', amplitudes:'',3(1x,g13.7))')
++     $              kptbl(i,2), t, ord(t),
++     $              l,
++     $              x(i),y(i),z(i)
++            endif
++         endif
++      enddo
++      return
++      end subroutine tapert_report_dropped
++
++c     Sweep new drop marked particles from alive area [1, np]
++c     This subroutine need exclusive access to given arguments
++      subroutine tapert_sweep_dropped(np0,np,x,px,y,py,z,g,dv,pz,kptbl)
++      implicit none
++      integer, parameter :: nkptbl = 6
++      integer(4), intent(in)    :: np0
++      integer(4), intent(inout) :: np
++      real(8),    intent(inout) :: x(np0), px(np0), y(np0), py(np0),
++     $     z(np0), g(np0), dv(np0), pz(np0)
++      integer(4), intent(inout) :: kptbl(np0,nkptbl)
++      integer(4) :: i, j, k, kptmp(nkptbl)
++      real(8) :: x1, px1, y1, py1, z1, g1, dv1, pz1
++
++c     Scan new drop marked particles from alive area [1, np]
++      i = 1
++      do while(i .le. np)
++         if(kptbl(i,4) .ne. 0)then
++c           Search alive particle from tail: (i, np]
++            do while((i .lt. np) .and. (kptbl(np,4) .ne. 0))
++               np = np - 1
++            enddo
++            if(kptbl(np,4) .eq. 0)then
++c              Swap dropped particlen slot[i] with tail alive particle slot[np]
++               j = kptbl(np,2)
++               k = kptbl(i, 2)
++c              Update maps between partice ID and array index
++               kptbl(k, 1) = np
++               kptbl(j, 1) = i
++               kptbl(np,2) = k
++               kptbl(i, 2) = j
++c              Swap kptbl except forward/backward[kptbl(*,1)/kptbl(*,2)]
++               kptmp(   3:nkptbl) = kptbl(np,3:nkptbl)
++               kptbl(np,3:nkptbl) = kptbl(i, 3:nkptbl)
++               kptbl(i, 3:nkptbl) = kptmp(   3:nkptbl)
++c              Swap particle coordinates
++               x1  = x (i)
++               px1 = px(i)
++               y1  = y (i)
++               py1 = py(i)
++               z1  = z (i)
++               g1  = g (i)
++               dv1 = dv(i)
++               pz1 = pz(i)
++
++               x (i) = x (np)
++               px(i) = px(np)
++               y (i) = y (np)
++               py(i) = py(np)
++               z (i) = z (np)
++               g (i) = g (np)
++               dv(i) = dv(np)
++               pz(i) = pz(np)
++
++               x (np) = x1
++               px(np) = px1
++               y (np) = y1
++               py(np) = py1
++               z (np) = z1
++               g (np) = g1
++               dv(np) = dv1
++               pz(np) = pz1
++            endif
++            np = np - 1
++         endif
++         i = i + 1
++      enddo
++      return
++      end subroutine tapert_sweep_dropped
++
++c     Sweep new inject marked particles from dead area (np, np0]
++c     This subroutine need exclusive access to given arguments
++      subroutine tapert_sweep_injected(np0,np,x,px,y,py,z,g,dv,pz,kptbl)
++      implicit none
++      integer, parameter :: nkptbl = 6
++      integer(4), intent(in)    :: np0
++      integer(4), intent(inout) :: np
++      real(8),    intent(inout) :: x(np0), px(np0), y(np0), py(np0),
++     $     z(np0), g(np0), dv(np0), pz(np0)
++      integer(4), intent(inout) :: kptbl(np0,nkptbl)
++      integer(4) :: i, j, k, m, kptmp(nkptbl)
++      real(8) :: x1, px1, y1, py1, z1, g1, dv1, pz1
++
++c     Scan dead particles from dead area (np, m = np0]
++      i = np + 1
++      m = np0
++      do while(i .le. m)
++         if(kptbl(i,4) .ne. 0)then
++c           Search injected particle from tail: (i, m]
++            do while((i .lt. m) .and. (kptbl(m,4) .ne. 0))
++               m = m - 1
++            enddo
++            if(kptbl(m,4) .eq. 0)then
++c              Swap dead particlen slot[i] with tail injected particle slot[m]
++               j = kptbl(m,2)
++               k = kptbl(i,2)
++c              Update maps between partice ID and array index
++               kptbl(k,1) = m
++               kptbl(j,1) = i
++               kptbl(m,2) = k
++               kptbl(i,2) = j
++c              Swap kptbl except forward/backward[kptbl(*,1)/kptbl(*,2)]
++               kptmp(  3:nkptbl) = kptbl(m,3:nkptbl)
++               kptbl(m,3:nkptbl) = kptbl(i,3:nkptbl)
++               kptbl(i,3:nkptbl) = kptmp(  3:nkptbl)
++c              Swap particle coordinates
++               x1  = x (i)
++               px1 = px(i)
++               y1  = y (i)
++               py1 = py(i)
++               z1  = z (i)
++               g1  = g (i)
++               dv1 = dv(i)
++               pz1 = pz(i)
++
++               x (i) = x (m)
++               px(i) = px(m)
++               y (i) = y (m)
++               py(i) = py(m)
++               z (i) = z (m)
++               g (i) = g (m)
++               dv(i) = dv(m)
++               pz(i) = pz(m)
++
++               x (m) = x1
++               px(m) = px1
++               y (m) = y1
++               py(m) = py1
++               z (m) = z1
++               g (m) = g1
++               dv(m) = dv1
++               pz(m) = pz1
++            endif
++            m = m - 1
++         endif
++         i = i + 1
++      enddo
++      np = m
++      return
++      end subroutine tapert_sweep_injected
+Index: src/tbend.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tbend.f,v
+retrieving revision 1.36.2.3
+diff -d -u -r1.36.2.3 tbend.f
+--- src/tbend.f	12 Sep 2012 03:03:19 -0000	1.36.2.3
++++ src/tbend.f	17 Apr 2014 05:59:45 -0000
+@@ -324,8 +324,7 @@
+         dcp=1.d0-cp
+       endif
+       rho0=al/phi0
+-      call tdrift(np,x,px,y,py,z,0.d0,dv,pz,rho0*sp,
+-     $     0.d0,0.d0,0.d0)
++      call tdrift_free(np,x,px,y,py,z,0.d0,dv,pz,rho0*sp)
+       dx=rho0*dcp
+       dl=rho0*xsin(phi0)
+       do i=1,np
+Index: src/tdrife.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tdrife.f,v
+retrieving revision 1.12.2.1
+diff -d -u -r1.12.2.1 tdrife.f
+--- src/tdrife.f	1 Aug 2013 21:58:16 -0000	1.12.2.1
++++ src/tdrife.f	17 Apr 2014 05:59:45 -0000
+@@ -1,5 +1,6 @@
+       subroutine tdrife(trans,cod,beam,al,bz,ak0x,ak0y,
+      $     dvon,enarad,calpol,irad,ld)
++      use element_drift_common
+       implicit none
+       integer*4 irad,ld,i,itmax
+       parameter (itmax=10)
+@@ -23,7 +24,7 @@
+       if(bz .eq. 0.d0 .and. ak0x .eq. 0.d0 .and. ak0y .eq. 0.d0)then
+         pxi=cod(2)
+         pyi=cod(4)
+-        a=min(.95d0,pxi**2+pyi**2)
++        a=min(ampmax,pxi**2+pyi**2)
+         pzi=pr*sqrt(1.d0-a/pr**2)
+         ale=al/pzi
+         alz=ale/pzi**2
+Index: src/tdrift.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tdrift.f,v
+retrieving revision 1.15
+diff -d -u -r1.15 tdrift.f
+--- src/tdrift.f	6 Feb 2012 20:53:35 -0000	1.15
++++ src/tdrift.f	17 Apr 2014 05:59:45 -0000
+@@ -1,51 +1,113 @@
++c     common module for drift element implementation
++      module element_drift_common
++      implicit none
++      private
++
++c     Maximum amplitude of (px/p0)^2 + (py/p0)^2
++      real(8), public, parameter :: ampmax = 0.9999d0
++
++      end module element_drift_common
++
++c     drift in the free space
++      subroutine tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
++      use element_drift_common
++      implicit none
++      integer*4 np
++      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
++      real*8 al
++      integer*4 i
++      real*8 s,dpzi,pzi,al1
++      do i=1,np
++         s=min(ampmax,px(i)**2+py(i)**2)
++         dpzi=-s/(1.d0+sqrt(1.d0-s))
++         pzi=1.d0+dpzi
++         al1=al/pzi
++         x(i)=x(i)+px(i)*al1
++         y(i)=y(i)+py(i)*al1
++         z(i)=z(i)+dpzi *al1-dv(i)*al
++      enddo
++      return
++      end
++
++c     drift in the parallel solenoid
++      subroutine tdrift_solenoid(np,x,px,y,py,z,g,dv,pz,al,bz)
++      use element_drift_common
++      implicit none
++      integer*4 np
++      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
++      real*8 al,bz
++      integer*4 i
++      real*8 pr,bzp,pxi,pyi
++      real*8 s,dpzi,pzi,al1
++      real*8 phi,a22,a24,a12,a14
++      do i=1,np
++c         pr=(1.d0+g(i))**2
++         pr=(1.d0+g(i))
++         bzp=bz/pr
++         pxi=px(i)+bzp*y(i)*.5d0
++         pyi=py(i)-bzp*x(i)*.5d0
++
++         s=min(ampmax,pxi**2+pyi**2)
++         dpzi=-s/(1.d0+sqrt(1.d0-s))
++         pzi=1.d0+dpzi
++         al1=al/pzi
++
++c         Definition of a* coefficient
++c         phi := al1 * bzp
++c         a22 := cos(phi)
++c         a24 := sin(phi)
++c         a12 := (sin(phi)       / phi) * al1
++c         a14 := ((1 - cos(phi)) / phi) * al1
++c              = (sin(phi)       / phi) * al1 * (sin(phi) / (1 + cos(phi)))
++c
++c         sin(phi) / phi = \sum_{i=0}^{N-1} (-1)^i \frac{x^{2i}}{(2i-1)!}
++c                          + R_2N(x) / x
++c         |R_2N(x) / x| =< \frac{x^{2N}}{(2N)!}
++c
++         phi=al1*bzp
++         a22=cos(phi)
++         a24=sin(phi)
++         if(abs(phi) .gt. 1.d-4)then
++            a12=a24/bzp
++         else
++            a12=(1.d0-(1.d0/6.d0)*phi*phi)*al1
++         endif
++         if(a22 .ge. 0.d0)then
++            a14=a12*a24/(1.d0+a22)
++         else
++            a14=(1.d0-a22)/bzp
++         endif
++
++         x(i) =x(i)+a12*pxi+a14*pyi
++         y(i) =y(i)-a14*pxi+a12*pyi
++         px(i)=     a22*pxi+a24*pyi-bzp*y(i)*.5d0
++         py(i)=    -a24*pxi+a22*pyi+bzp*x(i)*.5d0
++         z(i) =z(i)+dpzi *al1-dv(i)*al
++      enddo
++      return
++      end
++
+       subroutine tdrift(np,x,px,y,py,z,g,dv,pz,
+      $     al,bz,ak0x,ak0y)
++      use element_drift_common
+       implicit none
+       integer*4 np,i,j,itmax,ndiag
+-      real*8 conv,ampmax
+-      parameter (itmax=15,conv=1.d-15,ampmax=0.9999d0)
++      real*8 conv
++      parameter (itmax=15,conv=1.d-15)
+       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),pz(np),g(np)
+-      real*8 al,al1,a,dpz,bz,pr,pxi,pyi,bzp,s,dpzi,pzi,phi,
+-     $     sinphi,a12,a14,a22,a24,ak0x,ak0y,b,phix,phiy,phiz,
++      real*8 al,bz,pr,bzp,s,phi,
++     $     sinphi,ak0x,ak0y,b,phix,phiy,phiz,
+      $     dphizsq,dpz0,pz0,plx,ply,plz,ptx,pty,ptz,
+      $     pbx,pby,pbz,phi0,dphi,dcosphi,pl,dpl,alb,
+      $     xsinphi,xsin,r,bpr
+       data ndiag/15/
+       if(ak0x .eq. 0.d0 .and. ak0y .eq. 0.d0)then
+         if(bz .eq. 0.d0)then
+-          do i=1,np
+-            a=min(ampmax,px(i)**2+py(i)**2)
+-            dpz=-a/(1.d0+sqrt(1.d0-a))
+-            al1=al/(1.d0+dpz)
+-            x(i)=x(i)+px(i)*al1
+-            y(i)=y(i)+py(i)*al1
+-            z(i)=z(i)+dpz  *al1-dv(i)*al
+-          enddo
++          call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
++          return
+         else
+-          do i=1,np
+-c            pr=(1.d0+g(i))**2
+-            pr=(1.d0+g(i))
+-            bzp=bz/pr
+-            pxi=px(i)+bzp*y(i)*.5d0
+-            pyi=py(i)-bzp*x(i)*.5d0
+-            s=min(ampmax,pxi**2+pyi**2)
+-            dpzi=-s/(1.d0+sqrt(1.d0-s))
+-            pzi=1.d0+dpzi
+-            phi=al*bzp/pzi
+-            a24=sin(phi)
+-            a12=a24/bzp
+-            a22=cos(phi)
+-            if(a22 .ge. 0.d0)then
+-              a14=a24**2/(1.d0+a22)/bzp
+-            else
+-              a14=(1.d0-a22)/bzp
+-            endif
+-            x(i) =x(i)+a12*pxi+a14*pyi
+-            y(i) =y(i)-a14*pxi+a12*pyi
+-            px(i)=     a22*pxi+a24*pyi-bzp*y(i)*.5d0
+-            py(i)=    -a24*pxi+a22*pyi+bzp*x(i)*.5d0
+-            z(i) =z(i)+(dpzi/pzi-dv(i))*al
+-          enddo
++          call tdrift_solenoid(np,x,px,y,py,z,g,dv,pz,al,bz)
++          return
+         endif
+       else
+ c        b=hypot(hypot(ak0x,ak0y),bz*al)
+@@ -107,7 +169,7 @@
+      $         +dpz0*sinphi+pbz*dcosphi)*alb-dv(i)*al
+           px(i)=px(i)-ptx*dcosphi+pbx*sinphi-bzp*y(i)*.5d0
+           py(i)=py(i)-pty*dcosphi+pby*sinphi+bzp*x(i)*.5d0
+-        enddo    
++        enddo
+       endif
+       return
+       end
+Index: src/temap.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/temap.f,v
+retrieving revision 1.29.2.15
+diff -d -u -r1.29.2.15 temap.f
+--- src/temap.f	1 Aug 2013 22:22:13 -0000	1.29.2.15
++++ src/temap.f	17 Apr 2014 05:59:45 -0000
+@@ -1,6 +1,7 @@
+-      subroutine temap(np,np0,x,px,y,py,z,g,dv,l,nt,kptbl)
++      subroutine temap(np,np0,x,px,y,py,z,g,dv,pz,l,nt,kptbl)
+       use tfstk
+       implicit none
++<<<<<<< temap.f
+       type alist
+         type (sad_list), pointer :: p
+       end type
+@@ -13,6 +14,24 @@
+       real*8 xa(7), pr
+       integer*4 i,j,k,isp0,irtc, i1
+       integer*8,save:: iem=0,ifv
++=======
++      include 'inc/TFCBK.inc'
++      include 'inc/TFCODE.inc'
++      include 'inc/TFSTK.inc'
++      integer, parameter :: nkptbl = 6
++      integer*4 np,np0
++      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
++      integer*4 l,nt,kptbl(np0,nkptbl)
++      logical dodrop,doinject
++      integer*4 kptmp(nkptbl)
++      integer*4 i,j,k,m,isp0,itx,iax,iadx,ial,iak,iav(7),level,irtc
++      real*8 xa(7),vx,pr
++      integer*4 iem,ifv
++      save iem,ifv
++      data iem/0/
++      character*2 ord
++      integer*4 itfsymbol,itsalocb,itaaloc,itavaloc,itfdownlevel
++>>>>>>> 1.31
+       if(itfcontext .le. 0)then
+         return
+       endif
+@@ -38,7 +57,7 @@
+       enddo
+       do i=1,np0
+         j=kptbl(i,1)
+-        if(j .gt. np)then
++        if((j .gt. np) .or. (kptbl(j,4) .ne. 0))then
+           kav(1)%p%rbody(i)=0.d0
+           kav(2)%p%rbody(i)=0.d0
+           kav(3)%p%rbody(i)=0.d0
+@@ -81,8 +100,11 @@
+           endif
+           kav(k)%p=>klk
+         enddo
++        dodrop=.false.
++        doinject=.false.
+         do i=1,np0
+           j=kptbl(i,1)
++<<<<<<< temap.f
+           if(j .le. np)then
+             if(kav(7)%p%rbody(i) .ne. 0.d0)then
+               xa(1)=kav(1)%p%rbody(i)
+@@ -113,7 +135,14 @@
+               g(j)=g(np)
+               dv(j)=dv(np)
+               np=np-1
++=======
++          if(rlist(iav(7)+i) .ne. 0.d0)then
++            if(.not. (j .le. np)) then
++c           Case: dropped before MAP element
++              doinject=.true.
++>>>>>>> 1.31
+             endif
++<<<<<<< temap.f
+           elseif(kav(7)%p%rbody(i) .ne. 0.d0)then
+             np=np+1
+             i1=kptbl(np,3)
+@@ -127,16 +156,92 @@
+             xa(4)=kav(4)%p%rbody(i)
+             xa(5)=kav(5)%p%rbody(i)
+             xa(6)=kav(6)%p%rbody(i)
++=======
++c           Re-activate particle slot[j] if kptbl(j,4) != 0
++c           Note: kptbl(j,4) MUST be `0' for alive particles
++            kptbl(j,4)=0
++            kptbl(j,5)=nt+1
++c           Copy-in ExternalMap[] result for alive/reinject case
++            xa(1)=rlist(iav(1)+i)
++            xa(2)=rlist(iav(2)+i)
++            xa(3)=rlist(iav(3)+i)
++            xa(4)=rlist(iav(4)+i)
++            xa(5)=rlist(iav(5)+i)
++            xa(6)=rlist(iav(6)+i)
++>>>>>>> 1.31
+             call tconv(xa,xa,-1)
+-            x(j)=xa(1)
++            x (j)=xa(1)
+             px(j)=xa(2)
+-            y(j)=xa(3)
++            y (j)=xa(3)
+             py(j)=xa(4)
+-            z(j)=xa(5)
+-            g(j)=xa(6)
++            z (j)=xa(5)
++            g (j)=xa(6)
+             dv(j)=xa(7)
+-          endif
++          elseif((j .le. np) .and. (kptbl(j,4) .eq. 0))then
++c           Lose particle slot[j] at current MAP element[l]
++            dodrop=.true.
++            kptbl(j,4)=l
++            kptbl(j,5)=nt
++          endif              
+         enddo
++
++        if(doinject)then
++          i=np+1
++          m=np0
++          do while(i .le. m)
++             if(kptbl(i,4) .ne. 0)then
++c               Search alive paricle from tail: (i, m]
++                do while((i .lt. m) .and. (kptbl(m,4) .ne. 0))
++                   m=m-1
++                enddo
++                if(kptbl(m,4) .eq. 0)then
++c                  Swap dead particle slot[i] with tail alive particle slot[m]
++                   j=kptbl(m,2)
++                   k=kptbl(i,2)
++c                  - Update maps between particle ID and array index
++                   kptbl(k,1)=m
++                   kptbl(j,1)=i
++                   kptbl(m,2)=k
++                   kptbl(i,2)=j
++c                  - Swap kptbl except forward/backward[kptbl(*,1)/kptbl(*,2)]
++                   kptmp(  3:nkptbl) = kptbl(m,3:nkptbl)
++                   kptbl(m,3:nkptbl) = kptbl(i,3:nkptbl)
++                   kptbl(i,3:nkptbl) = kptmp(  3:nkptbl)
++c                  - Swap particle coordinates
++                   xa(1)=x (i)
++                   xa(2)=px(i)
++                   xa(3)=y (i)
++                   xa(4)=py(i)
++                   xa(5)=z(i)
++                   xa(6)=g (i)
++                   xa(7)=dv(i)
++
++                   x (i)=x (m)
++                   px(i)=px(m)
++                   y (i)=y (m)
++                   py(i)=py(m)
++                   z (i)=z (m)
++                   g (i)=g (m)
++                   dv(i)=dv(m)
++
++                   x (m)=xa(1)
++                   px(m)=xa(2)
++                   y (m)=xa(3)
++                   py(m)=xa(4)
++                   z (m)=xa(5)
++                   g (m)=xa(6)
++                   dv(m)=xa(7)
++                endif
++                m=m-1
++             endif
++             i=i+1
++          enddo
++          np=m
++        endif
++
++        if(dodrop)then
++        endif
++
+       endif
+  9000 levele=itfdownlevel()
+       isp=isp0
+Index: src/tfdapert.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tfdapert.f,v
+retrieving revision 1.12.2.7
+diff -d -u -r1.12.2.7 tfdapert.f
+--- src/tfdapert.f	13 Jan 2013 22:20:45 -0000	1.12.2.7
++++ src/tfdapert.f	17 Apr 2014 05:59:45 -0000
+@@ -85,6 +85,7 @@
+       call tfsetparam
+       dapert0=dapert
+       dapert=.true.
++<<<<<<< tfdapert.f
+       x(1)=range(1,1)
+       x(2)=range(2,1)
+       y(1)=range(1,2)
+@@ -95,6 +96,42 @@
+       call tspini(1,kptbl,.false.)
+       call trackd(latt,kptbl,x,px,y,py,z,g,dv,pz,
+      1     mturn,kzx,trval,phix,phiy,damp,lfno)
++=======
++      ix=italoc(np0)
++      ipx=italoc(np0)
++      iy=italoc(np0)
++      ipy=italoc(np0)
++      iz=italoc(np0)
++      ig=italoc(np0)
++      idv=italoc(np0)
++      ipz=italoc(np0)
++      imt=italoc((np0+1)/2)
++      ikptbl=italoc(np0*3)
++      ikzx=italoc(np0)
++      rlist(ix)=range(1,1)
++      rlist(ix+1)=range(2,1)
++      rlist(iy)=range(1,2)
++      rlist(iy+1)=range(2,2)
++      call tmov(rlist(ilist(2,iacx+1)+1),rlist(ig),nz)
++      rlist(ipz)=nz
++      call tspini(1,ilist(1,ikptbl),.false.)
++      call trackd(ilist(1,ilattp+1),ilist(1,ikptbl),
++     $     rlist(ix),rlist(ipx),rlist(iy),rlist(ipy),
++     $     rlist(iz),rlist(ig),rlist(idv),rlist(ipz),
++     $     ilist(1,imt),ilist(1,ikzx),vx,
++     $     phix,phiy,damp,lfno)
++      call tfree(ix)
++      call tfree(ipx)
++      call tfree(iy)
++      call tfree(ipy)
++      call tfree(iz)
++      call tfree(ig)
++      call tfree(idv)
++      call tfree(ipz)
++      call tfree(imt)
++      call tfree(ikptbl)
++      call tfree(ikzx)
++>>>>>>> 1.13
+       dapert=dapert0
+       if(itgetfpe() .ne. 0)then
+         write(*,*)'DynamicApertureSurvey-FPE ',itgetfpe()
+Index: src/tffs.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tffs.f,v
+retrieving revision 1.48.2.14
+diff -d -u -r1.48.2.14 tffs.f
+--- src/tffs.f	15 Dec 2012 05:59:22 -0000	1.48.2.14
++++ src/tffs.f	17 Apr 2014 05:59:45 -0000
+@@ -270,8 +270,8 @@
+      1     'BUNCHSTA','CONV    ','STABLE  ','SPAC    ',
+      $     'RADLIGHT','GEOCAL  ','PHOTONS ','WSPAC   ',
+      $     'SELFCOD ','PSPAC   ','CONVCASE','PRSVCASE',
+-     $     'ORBITCAL',
+-     $  23*'        '/
++     $     'LOSSMAP ','ORBITCAL','        ','        ',
++     $  20*'        '/
+       data sino  /
+      $     '        ','        ','        ','        ',
+      1     '        ','RING    ','        ','UNIFORM ',
+@@ -283,6 +283,6 @@
+      1     'BATCHSTA','        ','UNSTABLE','        ',
+      $     '        ','GEOFIX  ','        ','        ',
+      $     '        ','        ','        ','        ',
+-     $     '        ',
+-     $  23*'        '/
++     $     '        ','        ','        ','        ',
++     $  20*'        '/
+       end
+Index: src/tffsa.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tffsa.f,v
+retrieving revision 1.120.2.28
+diff -d -u -r1.120.2.28 tffsa.f
+--- src/tffsa.f	13 Jan 2013 22:20:45 -0000	1.120.2.28
++++ src/tffsa.f	17 Apr 2014 05:59:45 -0000
+@@ -21,7 +21,7 @@
+      $     trval,rese,v,wa,wd,wl,xa,ya,xxa,xya,yya,getva,rgetgl1,
+      $     wp,getvad,tgetgcut
+       parameter (rmax=1.d35,ndimmax=500)
+-      parameter (nflaga=41,nflagn=nflag-nflaga)
++      parameter (nflaga=42,nflagn=nflag-nflaga)
+       parameter (maxrpt=32,maxlfn=128)
+       character*255 word,wordp,title,case,tfgetstrv,tfgetstrs,tfgetstr
+       character*8 nlist(mfit1)
+Index: src/tftrack.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tftrack.f,v
+retrieving revision 1.45.2.20
+diff -d -u -r1.45.2.20 tftrack.f
+--- src/tftrack.f	15 Jan 2014 03:03:24 -0000	1.45.2.20
++++ src/tftrack.f	17 Apr 2014 05:59:45 -0000
+@@ -3,6 +3,7 @@
+       use ffs
+       use tffitcode
+       implicit none
++<<<<<<< tftrack.f
+       type (sad_descriptor) kx,kx1,kx2,ks,kp
+       type (sad_list), pointer :: klx,kl
+       integer*4, parameter :: npparamin=9,npnlatmin=30000
+@@ -15,30 +16,72 @@
+       integer*4 nwakep
+       real*8 trf00,p00,vcphic0,vcalpha0
+       logical*4 dapert0,wake
++=======
++      include 'inc/TFMACRO1.inc'
++      include 'inc/TFSTK.inc'
++      integer, parameter :: nkptbl = 6
++      integer*4 npparamin,npnlatmin
++      parameter (npparamin=9,npnlatmin=30000)
++      integer*4 isp1,itx,iax,irtc,narg,itfloc,outfl0,ld,ls,
++     $     itl,ial,itp,iap,its,iz,ias,
++     $     mc,npz,itfmalocp,ipz,npa,np00,iaxl,
++     $     itfresetparticles,itaaloc,iax1,iax2,italoc,
++     $     ipr(100),npr,np1,ipid,wait,fork_worker,iprid,isw,ne,
++     $     i,j,k,izp,npp,izf,ipn,iptbl(1),ikptblw,m,
++     $     itfmessage,itfcopy1,nt,nend,mt,kseed
++      integer*8 ikptblm,mapalloc8,icslfno
++      integer*4 mapfree,iwakeelm,iwakep,nwakep
++      real*8 vx,vs,vp,trf00,p00,vcphic0,vcalpha0,rgetgl1
++      logical*4 tflistq,dapert0,wake
++>>>>>>> 1.47
+       narg=isp-isp1
+       if(narg .gt. 4)then
+         irtc=itfmessage(9,'General::narg','"1, 2, 3, or 4"')
+         return
+       endif
+-      ld=nlat
++
+       nt=1
++      nend=nt
+       mt=1
+       if(narg .ge. 3)then
++<<<<<<< tftrack.f
+         if(ktastk(isp1+3) .eq. ktfoper+mtfnull)then
+         elseif(ktfrealq(ktastk(isp1+3)))then
+           nt=int(rtastk(isp1+3))
++=======
++        if(itastk(1,isp1+3) .eq. ntfoper
++     $         .and. itastk(2,isp1+3) .eq. mtfnull)then
++        elseif(itastk(1,isp1+3) .eq. ntfreal)then
++          nt=int(vstk(ivstkoffset+isp1+3))
++          nend=nt
++>>>>>>> 1.47
+         else
+           go to 9100
+         endif
+         if(narg .eq. 4)then
++<<<<<<< tftrack.f
+           if(ktastk(isp) .eq. ktfoper+mtfnull)then
+           elseif(ktfrealq(ktastk(isp)))then
+             mt=int(rtastk(isp))-nt+1
++=======
++          if(itastk(1,isp) .eq. ntfoper
++     $         .and. itastk(2,isp) .eq. mtfnull)then
++          elseif(itastk(1,isp) .eq. ntfreal)then
++            nend=int(vstk(ivstkoffset+isp))
++            if(nend .lt. nt)then
++              irtc=itfmessage(9,'General::wrongval',
++     $             '"#4 >= #3"')
++              return
++            endif
++            mt=nend-nt+1
++>>>>>>> 1.47
+           else
+             go to 9100
+           endif
+         endif
+       endif
++
++      ld=nlat
+       if(narg .ge. 2)then
+         if(ktastk(isp1+2) .eq. ktfoper+mtfnull)then
+         else
+@@ -70,7 +113,7 @@
+       if(irtc .ne. 0)then
+         return
+       endif
+-      if(mc .ne. 7)then
++      if(.not. ((mc .eq. 7) .or. (mc .eq. 8)))then
+         go to 9000
+       endif
+       if(npz .lt. 0)then
+@@ -94,7 +137,7 @@
+           nparallel=1
+         endif
+       endif
+-      iptblm=0
++      ikptblm=0
+       ipn=0
+       npr=0
+       npp=npz
+@@ -119,7 +162,11 @@
+         if(npz .gt. nparallel*npparamin
+      $       .and. npz*ne .gt. npnlatmin)then
+           irtc=1
++<<<<<<< tftrack.f
+           iptblm=ktfallocshared(npz*2)
++=======
++          ikptblm=mapalloc8(iptbl(1), npz*6, 4, irtc)
++>>>>>>> 1.47
+           npr=nparallel-1
+           np1=npz/nparallel+1
+           ipn=0
+@@ -151,16 +198,32 @@
+         vcphic=0.d0
+         vcalpha=1.d0
+       endif
++<<<<<<< tftrack.f
+       kpz=ktaloc(npp)
+       kpt=ktaloc(npp*2)
+       kzp=kz+ipn
+       kzf=kzp+npz*6
++=======
++      izp=iz+ipn
++      izf=izp+npz*6
++      if(mc .le. 7)then
++        ipz=italoc(npp)
++      else
++        ipz=izf+npz
++      endif
++      ikptblw=italoc(npp*3)
++>>>>>>> 1.47
+       p00=pgev
+       pgev=rlist(ifgamm+ls-1)*amass
+       call tphyzp
+       call tsetdvfs
++<<<<<<< tftrack.f
+       call tfsetparticles(rlist(kzp),rlist(kzf),rlist(kpz),
+      $     ilist(1,kpt),npp,npa,npz)
++=======
++      call tfsetparticles(rlist(izp),rlist(izf),rlist(ipz),
++     $     ilist(1,ikptblw),npp,npa,npz,mc,nlat,nt)
++>>>>>>> 1.47
+       if(npa .gt. 0)then
+         call tpara(ilist(1,ilattp+1))
+         outfl0=outfl
+@@ -171,10 +234,17 @@
+         np0=npp
+         if(mt .gt. 1)then
+           call tturn0(npa,ilist(1,ilattp+1),ls,nlat,
++<<<<<<< tftrack.f
+      $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
+      $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
+      $         rlist(kzp+npz*6),rlist(kpz),ilist(1,kpt),nt,
+      $         wake,ilist(1,kwakeelm),klist(kwakep),nwakep)
++=======
++     $         rlist(izp),      rlist(izp+npz),  rlist(izp+npz*2),
++     $         rlist(izp+npz*3),rlist(izp+npz*4),rlist(izp+npz*5),
++     $         rlist(izp+npz*6),rlist(ipz),ilist(1,ikptblw),nt,
++     $         wake,ilist(1,iwakeelm),ilist(1,iwakep),nwakep)
++>>>>>>> 1.47
+           nt=nt+1
+           mt=mt-1
+           ls=1
+@@ -191,44 +261,83 @@
+             exit
+           endif
+           call tturn0(npa,ilist(1,ilattp+1),1,nlat,
++<<<<<<< tftrack.f
+      $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
+      $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
+      $         rlist(kzp+npz*6),rlist(kpz),ilist(1,kpt),nt,
+      $         wake,ilist(1,kwakeelm),klist(kwakep),nwakep)
++=======
++     $         rlist(izp),      rlist(izp+npz),  rlist(izp+npz*2),
++     $         rlist(izp+npz*3),rlist(izp+npz*4),rlist(izp+npz*5),
++     $         rlist(izp+npz*6),rlist(ipz),ilist(1,ikptblw),nt,
++     $         wake,ilist(1,iwakeelm),ilist(1,iwakep),nwakep)
++>>>>>>> 1.47
+           nt=nt+1
+           mt=mt-1
+         enddo
+         if(mt .ge. 1 .and. npa .gt. 0 .and. ld .gt. ls)then
+           call tturn0(npa,ilist(1,ilattp+1),ls,ld,
++<<<<<<< tftrack.f
+      $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
+      $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
+      $         rlist(kzp+npz*6),rlist(kpz),ilist(1,kpt),nt,
+      $         wake,ilist(1,kwakeelm),klist(kwakep),nwakep)
++=======
++     $         rlist(izp),      rlist(izp+npz),  rlist(izp+npz*2),
++     $         rlist(izp+npz*3),rlist(izp+npz*4),rlist(izp+npz*5),
++     $         rlist(izp+npz*6),rlist(ipz),ilist(1,ikptblw),nt,
++     $         wake,ilist(1,iwakeelm),ilist(1,iwakep),nwakep)
++>>>>>>> 1.47
+         endif
+         np0=np00
+         outfl=outfl0
+         dapert=dapert0
++<<<<<<< tftrack.f
+         rlist(kzf:kzf+npa-1)=1.d0
+         rlist(kzf+npa:kzf+npp-1)=0.d0
++=======
++>>>>>>> 1.47
+       endif
+       trf0=trf00
+       vcphic=vcphic0
+       vcalpha=vcalpha0
+       irtc=0
+       if(npr .ne. 0)then
++<<<<<<< tftrack.f
+         iptbl(iptblm+ipn+1:iptblm+ipn+npp)=
+      $       ilist(1:npp,kpt)+ipn
+ c        do j=1,npp
+ c          iptbl(iptblm+ipn+j)=ilist(j,kpt)+ipn
+ c        enddo
++=======
++c       - Copy particle ID to array index map[kptbl(#,1)] with ipn offset
++        iptbl(ikptblm+ipn+1:ikptblm+ipn+npp)=ilist(1:npp,ikptblw)+ipn
++c       - Don't copy kptbl(#,2) becuase reversed map is not used at post process
++c       - Copy kptbl(*,3:nkptbl)
++        do j=3,nkptbl
++          iptbl(ikptblm+ipn+(j-1)*npz+1:ikptblm+ipn+(j-1)*npz+npp)=
++     $         ilist((j-1)*npp+1:(j-1)*npp+npp,ikptblw)
++        enddo
++>>>>>>> 1.47
+         call tffswait(iprid,npr+1,ipr,'tftrack',irtc)
++<<<<<<< tftrack.f
+         kaxl=ktfresetparticles(rlist(kz),iptbl(iptblm+1),npz)
+         call tfreeshared(iptblm)
+ c        if(mapfree(iptbl(iptblm+1)) .ne. 0)then
+ c          write(*,*)'???tftrack-munmap error.'
+ c        endif
++=======
++        iaxl=itfresetparticles(rlist(iz),iptbl(ikptblm+1),npz,nlat,nend)
++        if(mapfree(iptbl(ikptblm+1)) .ne. 0)then
++          write(*,*)'???tftrack-munmap error.'
++        endif
++>>>>>>> 1.47
+       else
++<<<<<<< tftrack.f
+         kaxl=ktfresetparticles(rlist(kz),ilist(1,kpt),npz)
++=======
++        iaxl=itfresetparticles(rlist(iz),ilist(1,ikptblw),npz,nlat,nend)
++>>>>>>> 1.47
+       endif
+       call tmunmapp(kz)
+       if(photons)then
+@@ -236,11 +345,22 @@
+       endif
+       pgev=p00
+       call tphyzp
++<<<<<<< tftrack.f
+       call tfree(kpt)
+       call tfree(kpz)
+       kx=kxadaloc(-1,2,klx)
+       klx%rbody(1)=dble(ld)
+       klx%body(2)=ktflist+ktfcopy1(kaxl)
++=======
++      call tfree(ikptblw)
++      if(mc .le. 7)then
++        call tfree(ipz)
++      endif
++      itx=ntflist
++      iax=itaaloc(-1,2)
++      call tfsetlist(ntfreal,0,dble(ld),iax,1)
++      call tfsetlist(ntflist,itfcopy1(iaxl),0.d0,iax,2)
++>>>>>>> 1.47
+       if(radlight)then
+         kx1=kx
+         kx=kxadaloc(-1,2,klx)
+@@ -255,7 +375,7 @@
+       return
+  9000 irtc=itfmessage(9,'General::wrongtype',
+      $     '"{loc,{{x1,..},{px1,..},{y1,..},{py1,..},'//
+-     $     '{z1,..},{dp1,..},{flg1,..}}} for #2"')
++     $     '{z1,..},{dp1,..},{flg1,..}[,{lost1,..}]}} for #2"')
+       return
+  9100 irtc=itfmessage(9,'General::wrongval',
+      $     '"[nbegin [, nend]] for #3 and #4"')
+@@ -339,9 +459,14 @@
+       return
+       end
+       
++<<<<<<< tftrack.f
+       integer*8 function ktfresetparticles(zx,iptbl,np)
+       use tfstk
++=======
++      integer*4 function itfresetparticles(zx,kptbl,np,nlati,tend)
++>>>>>>> 1.47
+       implicit none
++<<<<<<< tftrack.f
+       integer*8 ka,kaj(7)
+       integer*4 np,iptbl(np,4),i,j,k
+       real*8 zx(np,7)
+@@ -350,8 +475,31 @@
+       do j=1,7
+         kaj(j)=ktavaloc(0,np)
+         klist(ka+j)=ktflist+kaj(j)
++=======
++      include 'inc/TMACRO1.inc'
++      real(8),    intent(inout) :: zx(np,6)
++      integer(4), intent(in)    :: kptbl(np,6)
++      integer(4), intent(in)    :: np, nlati, tend
++      integer(4), external :: itaaloc, itavaloc
++      integer(4) :: nv, ia, iaj, iax(9), i, j, k
++
++      call tconvm(np,zx(1,2),zx(1,4),zx(1,6),0.d0,0.d0,1)
++
++      nv=7
++      if(lossmap)then
++        nv=9
++      endif
++
++      ia=itaaloc(-1,nv)
++      do j=1,nv
++        iaj=itavaloc(0,np)
++        iax(j)=iaj+1
++        call tfsetlist(ntflist,iaj,0.d0,ia,j)
++>>>>>>> 1.47
+       enddo
++
+       do i=1,np
++<<<<<<< tftrack.f
+         k=iptbl(i,1)
+         rlist(kaj(1)+i)=zx(k,1)
+         rlist(kaj(2)+i)=zx(k,2)
+@@ -360,16 +508,77 @@
+         rlist(kaj(5)+i)=zx(k,5)
+         rlist(kaj(6)+i)=zx(k,6)
+         rlist(kaj(7)+i)=zx(k,7)
++=======
++        k=kptbl(i,1)
++        rlist(iax(1)+i)=zx(k,1)
++        rlist(iax(2)+i)=zx(k,2)
++        rlist(iax(3)+i)=zx(k,3)
++        rlist(iax(4)+i)=zx(k,4)
++        rlist(iax(5)+i)=zx(k,5)
++        rlist(iax(6)+i)=zx(k,6)
++        if(kptbl(k,4) .eq. 0)then
++          rlist(iax(7)+i)=1.d0
++        else
++          rlist(iax(7)+i)=0.d0
++        endif
++>>>>>>> 1.47
+       enddo
++<<<<<<< tftrack.f
+       ktfresetparticles=ka
++=======
++
++      if(lossmap)then
++        do i=1,np
++          k=kptbl(kptbl(i,1),4)
++          if((-nlati .le. k) .and. (k .le. nlati))then
++            rlist(iax(8)+i)=dble(k)
++          else
++            rlist(iax(8)+i)=0.d0
++          endif
++          if(k .ne. 0)then
++            rlist(iax(9)+i)=dble(kptbl(kptbl(i,1),5))
++          else
++            rlist(iax(9)+i)=dble(tend+1)
++          endif
++        enddo
++      endif
++
++      itfresetparticles=ia
++>>>>>>> 1.47
+       return
+       end
+ 
++<<<<<<< tftrack.f
+       subroutine tfsetparticles(zx,dv,pz,iptbl,np,npa,npc)
++=======
++      subroutine tfsetparticles(zx,dv,pz,kptbl,np,npa,npc,mc,nlat,
++     $     tbegin)
++>>>>>>> 1.47
+       implicit none
++<<<<<<< tftrack.f
+       integer*4 np,iptbl(np,4),i,l,npa,npc
+       real*8 zx(npc,6),pz(np),dv(np),x
++=======
++      integer, parameter :: nkptbl = 6
++      real(8),    intent(inout) :: zx(npc,mc), dv(np), pz(np)
++      integer(4), intent(out)   :: kptbl(np,nkptbl)
++      integer(4), intent(in)    :: np
++      integer(4), intent(out)   :: npa
++      integer(4), intent(in)    :: npc, mc, nlat, tbegin
++      integer(4) :: i, p, kptmp(nkptbl)
++      real(8) :: x1, px1, y1, py1, z1, g1
++c     zx(npc,mc): Initial particle distribution
++c            npc: Number of particles
++c             mc: Number of rows
++c                 7: (x, x', y, y', z, delta, alive)
++c                 8: (x, x', y, y', z, delta, alive, lost-position)
++c                 9: (x, x', y, y', z, delta, alive, lost-position, lost-turns)
++
++c     Initialize kptbl
++      kptbl(1:np,1:nkptbl)=0
++>>>>>>> 1.47
+       do i=1,np
++<<<<<<< tftrack.f
+         iptbl(i,1)=i
+         iptbl(i,2)=0
+         iptbl(i,3)=i
+@@ -380,8 +589,21 @@
+         if(l .le. 0)then
+           npa=0
+           return
++=======
++c       Initialize map between particle ID and array index
++        kptbl(i,1)=i
++        kptbl(i,2)=i
++c       Initialize particle lost position[0:alive, -nlat-1:initial-dead]
++        if(zx(i,7) .eq. 0.d0)then
++          kptbl(i,4)=-nlat-1
++          kptbl(i,5)=tbegin-1
++        else
++          kptbl(i,4)=0
++          kptbl(i,5)=0
++>>>>>>> 1.47
+         endif
+       enddo
++<<<<<<< tftrack.f
+       do i=1,l
+         if(i .gt. l)then
+           exit
+@@ -415,9 +637,85 @@
+             l=l-1
+           enddo
+         endif
++=======
++
++c     Load particle lost position/turn from zx(#,8/9)
++      if(mc .ge. 8)then
++        do i=1,np
++          if(kptbl(i,4) .ne. 0)then
++            p=abs(nint(zx(i,8)))
++            if(p .gt. 0 .and. nlat .ge. p)then
++              kptbl(i,4)=-p
++            endif
++          endif
++        enddo
++      endif
++
++c     Load particle lost turn from zx(#,9)
++      if(mc .ge. 9)then
++        do i=1,np
++          if(kptbl(i,4) .ne. 0)then
++            kptbl(i,5)=nint(zx(i,9))
++          endif
++        enddo
++      endif
++
++c     Compact dead particles into list-tail
++      i=1
++      npa=np
++      do while(i .le. npa)
++         if(kptbl(i,4) .ne. 0)then
++c           Search avlive particle from tail: (i, npa]
++            do while((i .lt. npa) .and. (kptbl(npa,4) .ne. 0))
++               npa=npa-1
++            enddo
++            if(kptbl(npa,4) .eq. 0)then
++c              Swap dead particle slot[i] with tail alive particle slot[npa]
++c              - Update maps between partice ID and array index
++c                Note: maps is initialized and slot swapping MUST be once
++               kptbl(i,  1)=npa
++               kptbl(npa,1)=i
++               kptbl(npa,2)=i
++               kptbl(i,  2)=npa
++c              - Swap kptbl except forward/backward[kptbl(*,1)/kptbl(*,2)]
++               kptmp(    3:nkptbl) = kptbl(npa,3:nkptbl)
++               kptbl(npa,3:nkptbl) = kptbl(i,  3:nkptbl)
++               kptbl(i,  3:nkptbl) = kptmp(    3:nkptbl)
++c              - Swap particle coordinates
++               x1 =zx(i,1)
++               px1=zx(i,2)
++               y1 =zx(i,3)
++               py1=zx(i,4)
++               z1 =zx(i,5)
++               g1 =zx(i,6)
++ 
++               zx(i,1)=zx(npa,1)
++               zx(i,2)=zx(npa,2)
++               zx(i,3)=zx(npa,3)
++               zx(i,4)=zx(npa,4)
++               zx(i,5)=zx(npa,5)
++               zx(i,6)=zx(npa,6)
++ 
++               zx(npa,1)=x1
++               zx(npa,2)=px1
++               zx(npa,3)=y1
++               zx(npa,4)=py1
++               zx(npa,5)=z1
++               zx(npa,6)=g1
++            endif
++            npa=npa-1
++         endif
++         i=i+1
++>>>>>>> 1.47
+       enddo
++<<<<<<< tftrack.f
+       call tconvm(l,zx(1,2),zx(1,4),zx(1,6),dv,-1)
+       npa=l
++=======
++      if(npa .gt. 0)then
++         call tconvm(npa,zx(1,2),zx(1,4),zx(1,6),dv,pz,-1)
++      endif
++>>>>>>> 1.47
+       return
+       end
+ 
+Index: src/tftrad.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tftrad.f,v
+retrieving revision 1.4.2.5
+diff -d -u -r1.4.2.5 tftrad.f
+--- src/tftrad.f	11 Sep 2012 07:36:37 -0000	1.4.2.5
++++ src/tftrad.f	17 Apr 2014 05:59:45 -0000
+@@ -12,10 +12,10 @@
+       idv=italoc(np0)
+       ipz=italoc(np0)
+       imt=italoc((np0+1)/2)
+-      ikpt=italoc(np0*2)
+-      call tclr(rlist(ikpt),np0*2)
++      ikptbl=italoc(np0*3)
++      call tclr(rlist(ikptbl),np0*3)
+       ikzx=italoc(np0)
+-      call tspini(1,ilist(1,ikpt),.false.)
++      call tspini(1,ilist(1,ikptbl),.false.)
+       rlist(ix)=trdtbl(1,1)
+       rlist(ix+1)=trdtbl(2,1)
+       rlist(ix+2)=trdtbl(3,1)
+@@ -26,7 +26,7 @@
+       rlist(ig+1)=trdtbl(2,6)
+       rlist(ig+2)=trdtbl(3,6)
+       rlist(ipz)=0.d0
+-      call trackd(ilist(1,ilattp+1),ilist(1,ikpt),
++      call trackd(ilist(1,ilattp+1),ilist(1,ikptbl),
+      $     rlist(ix),rlist(ipx),rlist(iy),rlist(ipy),
+      $     rlist(iz),rlist(ig),rlist(idv),rlist(ipz),
+      $     ilist(1,imt),ilist(1,ikzx),trval,
+@@ -40,7 +40,7 @@
+       call tfree(int8(idv))
+       call tfree(int8(ipz))
+       call tfree(int8(imt))
+-      call tfree(int8(ikpt))
++      call tfree(int8(ikptbl))
+       call tfree(int8(ikzx))
+       return
+       end
+Index: src/tltrm.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tltrm.f,v
+retrieving revision 1.3.12.3
+diff -d -u -r1.3.12.3 tltrm.f
+--- src/tltrm.f	12 Sep 2012 03:03:20 -0000	1.3.12.3
++++ src/tltrm.f	17 Apr 2014 05:59:45 -0000
+@@ -3,13 +3,14 @@
+       implicit none
+       include 'inc/TMACRO1.inc'
+       integer*4 i
+-      integer*4 latt(2,nlat),kptbl(np0,2)
++      integer*4 latt(2,nlat),kptbl(np0,6)
+       call tclrpara(latt,nlat-1)
+       do i=1,np0
+-c        write(*,*)'tltrm ',i,np0,kptbl(i,2)
+-c     $       ilist(1,abs(kptbl(i,2)))
+-        if(kptbl(i,2) .ne. 0)then
+-          call tfree(int8(abs(kptbl(i,2))))
++c        write(*,*)'tltrm ',i,np0,kptbl(i,3)
++c     $       ilist(1,abs(kptbl(i,3)))
++        if(kptbl(i,3) .ne. 0)then
++          call tfree(int8(abs(kptbl(i,3))))
++          kptbl(i,3)=0
+         endif
+       enddo
+       return
+Index: src/tmulti.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tmulti.f,v
+retrieving revision 1.53.2.4
+diff -d -u -r1.53.2.4 tmulti.f
+--- src/tmulti.f	20 Jan 2013 23:28:59 -0000	1.53.2.4
++++ src/tmulti.f	17 Apr 2014 05:59:45 -0000
+@@ -1,40 +1,47 @@
+       subroutine tmulti(np,x,px,y,py,z,g,dv,pz,
+-     $     l,al,ak,bz,phia,
++     $     al,ak,bz,phia,
+      $     psi1,psi2,
+-     1     dx,dy,dz,chi1,chi2,theta,dtheta,
++     $     dx,dy,dz,chi1,chi2,theta,dtheta,
+      $     eps0,enarad,fringe,f1,f2,mfring,fb1,fb2,
+-     $     vc,harm,phirf,freq,dphirf,radius,kptbl)
++     $     vc,harm,phirf,freq,dphirf,radius,
++     $     kturn,l,latt,kptbl)
+       use tfstk
+       implicit none
+       include 'inc/TMACRO1.inc'
+       integer*4 nmult,itmax,ndivmax
+-      real*8 ampmax,conv,alstep,eps00,oneev
+-      parameter (nmult=21,itmax=10,ampmax=0.05d0,alstep=0.05d0,
+-     $     eps00=0.005d0,ndivmax=1000)
+-      parameter (conv=3.d-16)
++      real*8 conv,ampmax,alstep,eps00,oneev
++      parameter (nmult=21,itmax=10,ndivmax=1000,conv=3.d-16,
++     $     ampmax=0.05d0,alstep=0.05d0,eps00=0.005d0)
+ c      parameter (oneev=1.d0+3.83d-12)
+       parameter (oneev=1.d0+1.d-6)
+-      integer*4 nmmin
+-      integer*4 np,kptbl(np0,4),mfring,i,j,n,ndiv,nmmax,m,l
+-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
+-      complex*16 ak(0:nmult),akr(0:nmult),cr,cr1
+-      real*8 fact(0:nmult),an(0:nmult)
+-      real*8 pz0,s0,bxs,bys,bzs,vc,harm,phirf,freq,dphirf,radius,
+-     $     vnominal,theta1,theta2,phia,psi1,psi2,dtheta,fb1,fb2,
+-     $     al,bz,dx,dy,theta,dz,chi1,chi2,cchi1,schi1,b,
+-     $     phix,phiy,phiz,dphizsq,pr,ds1,ds2,pz1,eps0,
++      integer*4 np
++      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
++      real*8 al
++      complex*16 ak(0:nmult)
++      real*8 bz,phia,psi1,psi2,dx,dy,dz,chi1,chi2,theta,dtheta,eps0
++      logical*4 enarad,fringe
++      real*8 f1,f2
++      integer*4 mfring
++      real*8 fb1,fb2,vc,harm,phirf,freq,dphirf,radius
++      integer*4 kturn,l,latt(2,nlat),kptbl(np0,6)
++      logical acc,spac1,dofr(0:nmult)
++      integer*4 i,j,m,n,ndiv,nmmin,nmmax
++      real*8 pz0,s0,bxs,bys,bzs,
++     $     vnominal,theta1,theta2,
++     $     cchi1,schi1,b,
++     $     phix,phiy,phiz,dphizsq,pr,ds1,ds2,pz1,
+      $     dcchi1,cchi2,schi2,bzp,alb,s,dpz0,
+      $     dpl,pl,plx,ply,plz,ptx,pty,ptz,pbx,pby,pbz,phi,
+      $     sinphi,dcosphi,xsinphi,xsin,dphi,phi0,pz2,a,
+      $     fx,fy,cost,sint,x0,px0,bxs0,eps,w,wi,v,phis,r,wl,
+      $     dcchi2,radlvl,r1,we,wsn,phic,dphis,offset,offset1,
+-     $     tlim,ak1,al1,p,f1,ea,f2,pxf,pyf,sv,wsm,asinh,ws1,wm,
++     $     tlim,akr1,ak1,al1,p,ea,pxf,pyf,sv,wsm,asinh,ws1,wm,
+      $     h2,p2,dp2,pr2,dvn,dzn,dp1r,p1r,p1,h1,t,ph,dh,dpr,dp2r,p2r,
+      $     alx,pyi,pxi,y1,x1,a24,a12,a22,a14,dp2p2,dp,dp1,pr1,
+      $     he,vcorr,v20a,v02a,v1a,v11a,av,dpx,dpy,pe,ah,z00
+       real*8 ws(ndivmax)
+-      complex*16 cx,cx1,ak01
+-      logical*4 enarad,fringe,acc,dofr(0:nmult)
++      complex*16 akr(0:nmult),cr,cr1,cx,cx1,ak01
++      real*8 fact(0:nmult),an(0:nmult)
+       data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
+      1     720.d0,     5040.d0,     40320.d0,362880.d0,3628800.d0,
+      $     39916800.d0,479001600.d0,6227020800.d0,87178291200.d0,
+@@ -253,7 +260,10 @@
+         cr=cr*cr1
+         akr(n)=ak(n)*cr
+       enddo
+-      akr(1)=dble(akr(1))
++c     Im[ark(1)] MIGHT be 0, because akr(1) := ak(1)*cr1*cr1,
++c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
++      akr1=dble(akr(1))
++      akr(1)=akr1
+       if(eps0 .eq. 0.d0)then
+         eps=eps00
+       else
+@@ -349,7 +359,7 @@
+           ws(i)=wsn
+         enddo
+       endif
+-      ak1=dble(akr(1))*ws(1)*.5d0
++      ak1=akr1*ws(1)*.5d0
+       al1=al*ws(1)*.5d0
+       ak01=akr(0)*ws(1)*.5d0
+       if(al .gt. 0.d0)then
+@@ -401,6 +411,7 @@
+           endif
+         endif
+       endif
++      spac1 = spac .and. radius .ne. 0.d0
+       sv=0.d0
+       do m=1,ndiv
+         if(nmmin .eq. 2)then
+@@ -414,7 +425,7 @@
+           wm=(wsm+ws(m+1))*.5d0
+         endif
+         al1=al*wm
+-        ak1=dble(akr(1))*wm
++        ak1=akr1*wm
+         ak01=akr(0)*wm
+         if(nmmin .eq. 2)then
+           do i=1,np
+@@ -481,17 +492,20 @@
+             py(i)=(py(i)*p1r+dpy)/p2r
+           enddo
+         endif
+-        if(spac)then
+-          call spkick(np,
+-     $         x,px,y,py,z,g,dv,pz,al*wsm,radius,alx,kptbl)
++        if(spac1)then
++          call spkick(np,x,px,y,py,z,g,dv,pz,al*wsm,radius,alx,
++     $          kturn,l,latt,kptbl)
+         endif
+       enddo
+       if(nmmin .eq. 2)then
+         call tsolqu(np,x,px,y,py,z,g,dv,pz,al1,
+      $       ak1,bzs,dble(ak01),imag(ak01),eps0)
+       endif
+-      if(spac)then
+-        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
++      if(spac1)then
++c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
++        call tapert(l,latt,x,px,y,py,z,g,dv,pz,kptbl,np,kturn,
++     $       radius,radius,
++     $       0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
+       endif
+       if(al .gt. 0.d0)then
+         if(mfring .eq. 2 .or. mfring .eq. 3)then
+Index: src/tphplt.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tphplt.f,v
+retrieving revision 1.3
+diff -d -u -r1.3 tphplt.f
+--- src/tphplt.f	12 Apr 2008 14:28:57 -0000	1.3
++++ src/tphplt.f	17 Apr 2014 05:59:45 -0000
+@@ -1,7 +1,7 @@
+       subroutine tphplt(np,zbuf,lsp,x0,y0,xj,xnu,xphi,zwork,
+      1                  nturn,np0,kptbl,lfnplt)
+       implicit none
+-      integer*4 np,lsp,i,k,n,np0,kptbl(np0),lfnplt,nturn
++      integer*4 np,lsp,i,k,n,np0,kptbl(np0,6),lfnplt,nturn
+       integer*4 iyaxis(6),ixaxis(6),ix,iy,iyk
+       real*8 zbuf(2,lsp,3,np0),x0(3,np0),y0(3,np0),xj(3,np0),xnu(3,np0)
+       real*8 xphi(3,np0)
+@@ -23,7 +23,7 @@
+         iy=iyaxis(k)
+         iyk=2-(k-1)/3
+         do 110 i=1,np0
+-          if(kptbl(i) .le. np)then
++          if(kptbl(i,1) .le. np)then
+             do 120 n=1,nturn
+               x=zbuf(1,n,ix,i)
+               y=zbuf(iyk,n,iy,i)
+@@ -68,7 +68,7 @@
+         call tdterm
+ 10    continue
+       do 1110 i=1,np0
+-        if(kptbl(i) .le. np)then
++        if(kptbl(i,1) .le. np)then
+           do 1120 k=1,3
+ c           xnu(k,i)=wtune(zbuf(1,1,k,i),zwork,lsp)*
+ c    1               2.d0*3.14159265358939324d0
+@@ -112,7 +112,7 @@
+         ix=ixaxis(k+3)
+         iy=iyaxis(k+3)
+         do 1020 i=1,np0
+-          if(kptbl(i) .le. np)then
++          if(kptbl(i,1) .le. np)then
+             xa1=x0(ix,i)
+             ya1=y0(ix,i)
+             xj1=xj(ix,i)
+@@ -150,7 +150,7 @@
+         write(lfnplt,9001)sngl(xmin),sngl(xmax),sngl(ymin),sngl(ymax)
+         call tdinit(lfnplt,'PLOT',' ')
+         do 1230 i=1,np0
+-          if(kptbl(i) .le. np)then
++          if(kptbl(i,1) .le. np)then
+             xa1=x0(ix,i)
+             ya1=y0(ix,i)
+             xj1=xj(ix,i)
+Index: src/tquad.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tquad.f,v
+retrieving revision 1.32.2.2
+diff -d -u -r1.32.2.2 tquad.f
+--- src/tquad.f	12 Sep 2012 03:03:21 -0000	1.32.2.2
++++ src/tquad.f	17 Apr 2014 05:59:45 -0000
+@@ -11,8 +11,7 @@
+      $             dx,dy,theta,cost,sint, 1.d0,.false.)
+         return
+       elseif(ak .eq. 0.d0)then
+-        call tdrift(np,x,px,y,py,z,g,dv,pz,al,
+-     $       0.d0,0.d0,0.d0)
++        call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
+         return
+       endif
+       enarad=rad .and. radlvl .ne. 1.d0
+@@ -228,7 +227,7 @@
+       aki=0.d0
+ c     end   initialize for preventing compiler warning
+       if(ak .eq. 0.d0)then
+-        call tdrift(np,x,px,y,py,z,g,dv,pz,al,0.d0,0.d0,0.d0)
++        call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
+         return
+       endif
+       enarad=rad .and. radlvl .eq. 0.d0 .and. al .gt. 0.d0
+Index: src/track.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/track.f,v
+retrieving revision 1.60.2.14
+diff -d -u -r1.60.2.14 track.f
+--- src/track.f	1 May 2013 08:51:03 -0000	1.60.2.14
++++ src/track.f	17 Apr 2014 05:59:45 -0000
+@@ -6,7 +6,7 @@
+       use tffitcode
+       implicit none
+       type (sad_descriptor) kx
+-      integer*8 iptbl,ig,ipz,ix,ixx,iy,iyy,iz,izz,ifz,imt,kzx,
++      integer*8 ikptbl,ig,ipz,ix,ixx,iy,iyy,iz,izz,ifz,imt,kzx,
+      $     ktaloc
+       integer*4 irtc,latt,iparam,l,isp1,
+      $     nts,itfdownlevel,naz,lscal,ltpara,igetgl1
+@@ -152,9 +152,9 @@
+         trpt=.false.
+       endif
+       nturn=abs(nturn)
+-      iptbl=ktaloc(np0*2)
+-      call tspini(iparam+4,ilist(1,iptbl),.true.)
+-      call tplini(iparam+5,ilist(1,iptbl))
++      ikptbl=ktaloc(np0*3)
++      call tspini(iparam+4,ilist(1,ikptbl),.true.)
++      call tplini(iparam+5,ilist(1,ikptbl))
+       ig=ktaloc(np0)
+       ipz=ktaloc(np0)
+       if(.not. dapert .or. trpt)then
+@@ -193,7 +193,7 @@
+             ifz=0
+           endif
+         endif
+-        call tracka(rlist(ilattp+1),rlist(iptbl),
++        call tracka(rlist(ilattp+1),rlist(ikptbl),
+      1        rlist(ilist(2,iparam+16)),rlist(ilist(2,iparam+17)),
+      1        rlist(ilist(2,iparam+18)),rlist(ilist(2,iparam+19)),
+      1        rlist(ilist(2,iparam+20)),rlist(ilist(2,iparam+21)),
+@@ -217,7 +217,7 @@
+         kzx=ktaloc(np0)
+         trval=0.d0
+         rlist(ipz)=0.d0
+-        call trackd(ilist(1,ilattp+1),ilist(1,iptbl),
++        call trackd(ilist(1,ilattp+1),ilist(1,ikptbl),
+      1        rlist(ilist(2,iparam+16)),rlist(ilist(2,iparam+17)),
+      1        rlist(ilist(2,iparam+18)),rlist(ilist(2,iparam+19)),
+      1        rlist(ilist(2,iparam+20)),rlist(ilist(2,iparam+21)),
+@@ -228,7 +228,7 @@
+       endif
+       call tsptrm
+       call tfree(ig)
+-      call tfree(iptbl)
++      call tfree(ikptbl)
+       title='Tracking'
+  8001 call rsetgl1('LOSSAMPL',alost )
+       call rsetgl1('LOSSDZ',zlost )
+Index: src/tracka.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tracka.f,v
+retrieving revision 1.17.2.12
+diff -d -u -r1.17.2.12 tracka.f
+--- src/tracka.f	15 Dec 2012 05:59:23 -0000	1.17.2.12
++++ src/tracka.f	17 Apr 2014 05:59:45 -0000
+@@ -1,27 +1,51 @@
+       subroutine tracka(latt,kptbl,x,px,y,py,z,g,dv,pz,
+-     1                  sjx,sjxjx,sjy,sjyjy,sjz,sjzjz,zbuf,lsp,zbufa)
++     $                  sjx,sjxjx,sjy,sjyjy,sjz,sjzjz,zbuf,lsp,zbufa)
+       use tfstk
+       implicit none
+       include 'inc/TMACRO1.inc'
++<<<<<<< tracka.f
+       type (sad_symdef), pointer :: symd
+-      integer*4  latt(2,nlat),kptbl(np0,4)
+-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
+-     1          pz(np0)
+-      real*8  sjx(np0),sjxjx(np0),sjy(np0),sjyjy(np0),
+-     1          sjz(np0),sjzjz(np0)
+-      real*8  xa(8),sa(6),ss(6,6)
++      integer*4  latt(2,nlat),kptbl(np0,6)
++      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
++      real*8 sjx(np0),sjxjx(np0),sjy(np0),sjyjy(np0),sjz(np0),sjzjz(np0)
++      complex*16 zbuf(lsp,3,np0)
++      integer*4 lsp
++      logical zbufa
++
++      logical cmplot1,fourie1
+       integer*8 kal,kaf,
+      $     kv,kaj,ke,kax,ktaloc,ix0pl,iy0pl,ixjpl,ixnpl,ixppl,
+      $     izwrk,izexp,iajx,iaord,ib,iaexp,iiord,izwork
+-      integer*4 lsp,lp0,np,jpcm,level,itfuplevel,nsmear,
+-     $     n,j,i,ip,jp,irtc,itfdownlevel,nsm,lpa,k,
++      integer*4 lp0,np,jpcm,level,nsmear,
++     $     n,j,i,ip,jp,irtc,nsm,lpa,k,
+      $     kp,lpl,kpl,lfnplt,maxord,nres,ndim,lcoeff,lv
+       real*8 emx,rgetgl1,emz,es,ajx,ajy,ajyjy,ajz,ajxjx,ajzjz
++      real*8 xa(8),sa(6),ss(6,6)
++
++=======
++      integer*4  latt(2,nlat),kptbl(np0,6)
++      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
++      real*8 sjx(np0),sjxjx(np0),sjy(np0),sjyjy(np0),sjz(np0),sjzjz(np0)
+       complex*16 zbuf(lsp,3,np0)
+-      character*2 ord
++      integer*4 lsp
++      logical zbufa
++
++      logical cmplot1,fourie1
++      integer*4 i,j,k,n,
++     $     lp0,np,jpcm,level,
++     $     iv,it,ial,iaf,iax,nsmear,
++     $     iaj,ip,jp,ite,iae,irtc,nsm,lpa,
++     $     kp,lpl,kpl,lfnplt,ix0pl,iy0pl,ixjpl,ixnpl,ixppl,
++     $     izwrk,maxord,nres,ndim,lcoeff,lv,izexp,iajx,izwork,iaord,
++     $     ib,iaexp,iiord
++      real*8 emx,rgetgl1,emz,es,ajx,ajy,ajyjy,ajz,ajxjx,ajzjz,ve
++      real*8 xa(8),sa(6),ss(6,6)
++
++>>>>>>> 1.20
+       character*32 vname
+-      logical cmplot1,fourie1,zbufa
+       data vname/'RESULTSOFTRACKING'/
++      character*2 ord
++      integer*4 itfuplevel,itfdownlevel
+       lp0=latt(2,1)+kytbl(kwmax,idtype(latt(1,1)))+1
+       np=np0
+       emx=sqrt(abs(rgetgl1('EMITX')+rgetgl1('EMITY')))
+@@ -51,7 +75,7 @@
+         call tclr(sjz,np0)
+         call tclr(sjzjz,np0)
+       endif
+-      jpcm=abs(kptbl(1,2))
++      jpcm=abs(kptbl(1,3))
+       level= itfuplevel()
+       kaf=ktfsymbolz(vname,lnblnk(vname),symd)
+       kax=0
+@@ -96,9 +120,9 @@
+                 enddo
+               endif
+               call tsub(xa,codin,xa,6)
+-              jp=abs(kptbl(i,2))
++              jp=abs(kptbl(i,3))
+               if(jp .ne. 0)then
+-                if(kptbl(i,2) .lt. 0)then
++                if(kptbl(i,3) .lt. 0)then
+                   call liemap(-2,xa,rlist(jp+6),1023)
+                   call tmap(xa,xa,1)
+                 else
+@@ -163,11 +187,11 @@
+           if(kptbl(jp,1).le. np)then
+             k=ilist(1,lpa)
+             if(k .gt. 0)then
+-              kp=abs(kptbl(jp,2))+mod(k-1,3)*2
++              kp=abs(kptbl(jp,3))+mod(k-1,3)*2
+             else
+-              kp=abs(kptbl(jp,2))+mod(-k-1,3)*2+6
++              kp=abs(kptbl(jp,3))+mod(-k-1,3)*2+6
+             endif
+-c         write(*,*)jp,k,kptbl(jp,2),rlist(kp),rlist(kp+1)
++c         write(*,*)jp,k,kptbl(jp,3),rlist(kp),rlist(kp+1)
+             call tspect(i,n,rlist(kp))
+           endif
+ 7030    continue
+@@ -179,9 +203,9 @@
+               kpl=ilist(1,lplot+i)+(n-ilist(1,lpl+2)+1)*2-1
+               k=ilist(1,lpl)
+               if(k .gt. 0)then
+-                kp=abs(kptbl(jp,2))+mod(k-1,3)*2
++                kp=abs(kptbl(jp,3))+mod(k-1,3)*2
+               else
+-                kp=abs(kptbl(jp,2))+mod(-k-1,3)*2+6
++                kp=abs(kptbl(jp,3))+mod(-k-1,3)*2+6
+               endif
+               rlist(kpl  )=rlist(kp  )
+               rlist(kpl+1)=rlist(kp+1)
+Index: src/trackd.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/trackd.f,v
+retrieving revision 1.37.2.14
+diff -d -u -r1.37.2.14 trackd.f
+--- src/trackd.f	6 Feb 2013 06:56:54 -0000	1.37.2.14
++++ src/trackd.f	17 Apr 2014 05:59:45 -0000
+@@ -1,16 +1,17 @@
++c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
+       subroutine trackd(latt,kptbl,x,px,y,py,z,g,dv,pz,
+-     1     mturn,kzx,trval,phix,phiy,damp,lfno)
++     $     mturn,kzx,trval,phix,phiy,damp,lfno)
+       use tfstk
+       implicit none
+       include 'inc/TMACRO1.inc'
+       integer*4 nzp0,nxp
+       parameter (nzp0=200,nxp=51)
+-      integer*4 latt(2,nlat),kptbl(np0,4),lfno,
++      integer*4 latt(2,nlat),kptbl(np0,6),lfno,
+      $     mturn(np0),kzx(2,np0)
+       integer*8 ktfallocshared,intlm
+       integer*4 irtc
+-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
+-     1     pz(np0),trval,phix,phiy,damp
++      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
++      real*8 trval,phix,phiy,damp
+       irtc=1
+       intlm=ktfallocshared((nzp0*nxp+1)/2)
+       call trackd0(latt,kptbl,x,px,y,py,z,g,dv,pz,
+@@ -27,8 +28,10 @@
+       use tfstk
+       implicit none
+       include 'inc/TMACRO1.inc'
+-      integer*4 nzp0,nxp,lfno,ncons,nscore,maxturn,maxpara,nw
++
++      integer*4 nzp0,nxp,maxturn,maxpara,nw
+       parameter (nzp0=200,nxp=51,maxturn=2**30,maxpara=256,nw=16)
++<<<<<<< trackd.f
+       integer*8 kv,kax,kax11,kax12,kax13,kax2,
+      $     kaxi,kaxi3,kax1
+       integer*4 latt(2,nlat),kptbl(np0,4),nzp,lp0,nzp1,
+@@ -36,16 +39,40 @@
+      $     jj,ip,isw,kseed,npmax,npara,nxm(nzp0)
+       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
+      1     pz(np0)
++=======
++
++      integer, parameter :: nkptbl = 6
++      integer*4 latt(2,nlat),kptbl(np0,nkptbl)
++      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
++      integer*4 mturn(np0),kzx(2,np0)
++      real*8 trval,phix,phiy,damp
++      integer*4 ntloss(nzp0,nxp)
++      integer*4 lfno
++
++      logical ini,remain
++
++      integer*4 ncons,nscore,muls
++      integer*4 ipr,irw,isw,iw,ichpid(maxpara)
++      integer*4 i,irtc
++      integer*4 nzp,iv,
++     $     iax,iax1,iax11,iax12,iax13,iax2,lp0,nzp1,
++     $     j,n,jzout,np1,k,np,kp,kz,kx,nsc,
++     $     iaxi,iaxi3,jj,ip,kseed,npmax,npara,nxm(nzp0)
++>>>>>>> 1.41
+       real*8 xmin,xmax,ymin,ymax,zmin,zmax,xstep,ystep,zstep,
+-     $     emx,emz,trval,rgetgl1,phix,phiy,cx,cy,sx,sy,damp,
+-     $     dampx,dampy,dampz,t0
+-      character rad62
++     $     emx,emz,rgetgl1,cx,cy,sx,sy,dampx,dampy,dampz,t0
++      real*8 zi(nzp0)
+       character*14 vname
+       data vname /'ResultOfDAPERT'/
++<<<<<<< trackd.f
+       integer*4 ntloss(nzp0,nxp),mturn(np0),kzx(2,np0),muls,irtc
+       real*8 zi(nzp0)
+       integer*4 i,fork_worker,wait,ichpid(maxpara)
+       logical ini,remain
++=======
++      character rad62
++      integer*4 itraaloc,itaaloc,itfsymbol,fork_worker,wait
++>>>>>>> 1.41
+ c     begin initialize for preventing compiler warning
+       ipr=0
+ c     end   initialize for preventing compiler warning
+@@ -97,6 +124,7 @@
+         zmin=minval(zi(1:nzp))
+         zmax=maxval(zi(1:nzp))
+       endif
++<<<<<<< trackd.f
+       write(lfno,9101)xmin,xmax,ymin,ymax,zmin,zmax,muls
+  9101 format(
+      $     ' Range    Xmin:',f8.3,' Xmax:',f8.3,/
+@@ -123,6 +151,37 @@
+       rlist(kax13+2)=zmax
+       kax2=ktadalocnull(0,nzp)
+       klist(kax+2)=ktflist+kax2
++=======
++      write(lfno,'(
++     $     '' Range    Xmin:'',f8.3,'' Xmax:'',f8.3,/
++     $     ''         (Ymin:'',f8.3,'' Ymax:'',f8.3,'')'',/
++     $     ''          Zmin:'',f8.3,'' Zmax:'',f8.3,/
++     $     '' Display: '',i5,'' turns/character'')')
++     $     xmin,xmax,ymin,ymax,zmin,zmax,muls
++      write(lfno,*)
++     $'     NZ     0----!----1----!----2----!----3----!----4----!----5'
++      iv=itfsymbol(vname,len(vname),.false.)-4
++      call tfreev(ilist(1,iv-1),ilist(2,iv-1))
++      iax=itaaloc(0,2)
++      ilist(1,iv-1)=ntflist
++      ilist(2,iv-1)=iax
++      iax1=itaaloc(0,3)
++      call tfsetlist(ntflist,iax1,0.d0,iax,1)
++      iax11=itaaloc(0,2)
++      call tfsetlist(ntflist,iax11,0.d0,iax1,1)
++      call tfsetlist(ntfreal,0,xmin,iax11,1)
++      call tfsetlist(ntfreal,0,xmax,iax11,2)
++      iax12=itaaloc(0,2)
++      call tfsetlist(ntflist,iax12,0.d0,iax1,2)
++      call tfsetlist(ntfreal,0,ymin,iax12,1)
++      call tfsetlist(ntfreal,0,ymax,iax12,2)
++      iax13=itaaloc(0,2)
++      call tfsetlist(ntflist,iax13,0.d0,iax1,3)
++      call tfsetlist(ntfreal,0,zmin,iax13,1)
++      call tfsetlist(ntfreal,0,zmax,iax13,2)
++      iax2=itaaloc(0,nzp)
++      call tfsetlist(ntflist,iax2,0.d0,iax,2)
++>>>>>>> 1.41
+       lp0=latt(2,1)+kytbl(kwmax,idtype(latt(1,1)))+1
+       emx=sqrt(abs(rgetgl1('EMITX'))+abs(rgetgl1('EMITY')))
+       if(rfsw)then
+@@ -131,10 +190,21 @@
+         emz=abs(rgetgl1('SIGE'))
+       endif
+       call tpara(latt)
++<<<<<<< trackd.f
+       write(lfno,*)
+      1'     NZ     0----!----1----!----2----!----3----!----4----!----5'
+       ntloss(1:nzp,1:nxp)=maxturn
+       nxm(1:nzp)=nxp+1
++=======
++      do k=1,nxp
++        do i=1,nzp
++          ntloss(i,k)=maxturn
++        enddo
++      enddo
++      do i=1,nzp
++        nxm(i)=nxp+1
++      enddo
++>>>>>>> 1.41
+       npara=min(nparallel,maxpara)
+       ipr=1
+       if(npara .gt. 1)then
+@@ -168,7 +238,7 @@
+       sx=sin(phix)
+       cy=cos(phiy)
+       sy=sin(phiy)
+-      do 100 k=1,npmax
++      LOOP_K: do k=1,npmax
+         if(kzx(1,k) .eq. 0)then
+           ip=kptbl(k,1)
+           if(ip .le. np1)then
+@@ -192,24 +262,30 @@
+                     y(ip)=y(ip)*cy
+                     z(ip)=0.d0
+                     g(ip)=zi(i)
++c     Reinit kptbl(ip,4) to reuse particle array slot `ip'
++                    kptbl(ip,4)=0
+                     call tinip(1,
+-     1                   x(ip),px(ip),y(ip),py(ip),
+-     1                   z(ip),g(ip),dv(ip),
+-     1                   emx,emz,codin,dvfs,.false.)
++     $                   x(ip),px(ip),y(ip),py(ip),
++     $                   z(ip),g(ip),dv(ip),
++     $                   emx,emz,codin,dvfs,.false.)
+ c                    write(*,'(a,4i5,1p3g15.7)')
+ c     $                   ' trackd-Launch ',nzp1,i,j,
+ c     $                     nxm(i),x(ip),px(ip),g(ip)
+-                    go to 100
++                    cycle LOOP_K
+                   endif
+                 enddo
+               enddo
+             endif
+             remain=.false.
+-            j=kptbl(np1,3)
+-            kptbl(j,1)=ip
+-            kptbl(ip,3)=j
+-            kptbl(k,1)=np1
+-            kptbl(np1,3)=k
++c     Swap particle k <-> j[array index ip <-> np1]
++            j=kptbl(np1,2)
++c     - Update maps between partice ID and array index
++            kptbl(j,  1)=ip
++            kptbl(k,  1)=np1
++            kptbl(ip, 2)=j
++            kptbl(np1,2)=k
++c     - Overwrite slot[np1] to slot[ip](Drop particle[k] information)
++            kptbl(ip,3:nkptbl) = kptbl(np1,3:nkptbl)
+             x(ip)=x(np1)
+             px(ip)=px(np1)
+             y(ip)=y(np1)
+@@ -224,7 +300,7 @@
+             endif
+           endif
+         endif
+- 100  continue
++      enddo LOOP_K
+       np=np1
+  101  continue
+ c      write(*,'(a,2i5,14(i5,1pg12.5))')
+@@ -257,7 +333,7 @@
+           ntloss(kz,kx)=mturn(i)
+           kzx(1,i)=0
+ c          write(*,'(a,1x,9i6)')'trackd-Lost ',
+-c     1         kz,kx,nxr(kz),nxm(kz),mturn(i),i,np,np1,kp
++c     $         kz,kx,nxr(kz),nxm(kz),mturn(i),i,np,np1,kp
+           ini=.true.
+         endif
+       enddo
+@@ -290,16 +366,17 @@
+       enddo
+       do i=1,nzp
+         nsc=0
+-        do 430 k=1,nxp
++        do k=1,nxp
+           if(ntloss(i,k) .lt. nturn)then
+             nsc=k-1
+             go to 431
+           endif
+- 430    continue
++        enddo
+         nsc=nxp
+  431    nscore=nscore+nsc
+-        write(lfno,9001)zi(i),nsc,
++        write(lfno,'(1x,f8.2,i3,1x,51a1)')zi(i),nsc,
+      $       (rad62(ntloss(i,jj)/muls),jj=1,nxp)
++<<<<<<< trackd.f
+  9001   format(1x,f8.2,i3,1x,51a1,i3)
+         kaxi=ktadaloc(0,3)
+         klist(kax2+i)=ktflist+kaxi
+@@ -311,9 +388,20 @@
+ c        do jj=1,nxp
+ c          rlist(kaxi3+jj)=ntloss(i,jj)
+ c        enddo
++=======
++        iaxi=itaaloc(0,3)
++        call tfsetlist(ntflist,iaxi,0.d0,iax2,i)
++        call tfsetlist(ntfreal,0,zi(i),iaxi,1)
++        call tfsetlist(ntfreal,0,dble(nsc),iaxi,2)
++        iaxi3=itraaloc(0,nxp)
++        call tfsetlist(ntflist,iaxi3,0.d0,iaxi,3)
++        do jj=1,nxp
++          rlist(ilist(2,iaxi3+1)+jj)=ntloss(i,jj)
++        enddo
++>>>>>>> 1.41
+       enddo
+       write(lfno,*)
+-     1'     NZ     0----!----1----!----2----!----3----!----4----!----5'
++     $'     NZ     0----!----1----!----2----!----3----!----4----!----5'
+       write(lfno,'(a,i5)')'    Score: ',nscore
+       trval=nscore
+       call tltrm(latt,kptbl)
+@@ -329,7 +417,7 @@
+       dxi=rgetgl1('TDXI')
+       dyi=rgetgl1('TDYI')
+       dzi=rgetgl1('TDZI')
+-      do 10 i=1,np
++      do i=1,np
+         xa(1)=x(i) *emx
+         xa(2)=px(i)*emx
+         xa(3)=y(i) *emx
+@@ -354,7 +442,7 @@
+         z(i) =xa(5)+dzi
+         g(i) =xa(6)
+         dv(i)=xa(7)+dvfs
+-10    continue
++      enddo
+ c      write(*,*)'tinip ',np,(xa(i),i=1,6)
+       return
+       end
+Index: src/tracke.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tracke.f,v
+retrieving revision 1.12.2.6
+diff -d -u -r1.12.2.6 tracke.f
+--- src/tracke.f	13 Jan 2013 22:20:46 -0000	1.12.2.6
++++ src/tracke.f	17 Apr 2014 05:59:45 -0000
+@@ -27,13 +27,13 @@
+ c     DISP     :                        (NY)
+ c
+       implicit none
+-      integer*8 kx,ktaloc,ix,iptbl,ix1,ioff
++      integer*8 kx,ktaloc,ix,ikptbl,ix1,ioff
+       integer*4 latt(2,nlat),lfno,l20,np,nl0,l1,l2s,nb,npb,i,ns,l2
+       integer*4 irtc
+       real*8 sv(5),sa(6),ss(6,7),es,sb
+       save sa
+       character*(*) cmd,name
+-      common /tt/iptbl,ix,ix1,l1,l2s
++      common /tt/ikptbl,ix,ix1,l1,l2s
+ c
+ c     This routine is called from MEA_SURE/DRAW/TRC_OD command @ tffsa.f
+ c     (Subroutine call flow at 2008/01/25)
+@@ -54,8 +54,8 @@
+         novfl=0
+         ix=ktaloc(np0*8)
+         ix1=ktaloc(np0*8)
+-        iptbl=ktaloc(np0*2)
+-        call tspini(0,ilist(1,iptbl),.false.)
++        ikptbl=ktaloc(np0*3)
++        call tspini(0,ilist(1,ikptbl),.false.)
+         nl0=nlat
+         call tpara(latt)
+         call ttinit(latt,
+@@ -81,7 +81,7 @@
+      1          rlist(ix      ),rlist(ix+np0  ),
+      1          rlist(ix+np0*2),rlist(ix+np0*3),
+      1          rlist(ix+np0*4),rlist(ix+np0*5),
+-     1          rlist(ix+np0*6),rlist(ix+np0*7),rlist(iptbl),1,
++     1          rlist(ix+np0*6),rlist(ix+np0*7),ilist(1,ikptbl),1,
+      $         .false.,0,0,0)
+         endif
+         if(cmd .ne. 'PASS')then
+@@ -153,10 +153,10 @@
+         l1=l2s
+       else
+         nl0=nlat
+-        call tltrm(latt,rlist(iptbl))
++        call tltrm(latt,ilist(1,ikptbl))
+         call tfree(ix)
+         call tfree(ix1)
+-        call tfree(iptbl)
++        call tfree(ikptbl)
+       endif
+ c     Restore prior random seed from NISTACK$FIXSEED stack if needed
+       if(fseed)then
+Index: src/tsmear.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tsmear.f,v
+retrieving revision 1.1.1.1
+diff -d -u -r1.1.1.1 tsmear.f
+--- src/tsmear.f	13 Sep 1995 01:13:17 -0000	1.1.1.1
++++ src/tsmear.f	17 Apr 2014 05:59:45 -0000
+@@ -3,7 +3,7 @@
+       include 'inc/TMACRO.inc'
+       dimension sjx(np0),sjxjx(np0),sjy(np0),sjyjy(np0),
+      1          sjz(np0),sjzjz(np0)
+-      dimension kptbl(np0)
++      dimension kptbl(np0,6)
+       if(np .gt. 0)then
+         write(lfno,9002)n
+ 9002    format(' Smear at ',i6,'th turn:')
+@@ -14,8 +14,8 @@
+       ajx=0.d0
+       ajy=0.d0
+       ajz=0.d0
+-      do 10 i=1,np0
+-        ip=kptbl(i)
++      do i=1,np0
++        ip=kptbl(i,1)
+         if(ip .le. np)then
+           sx=sjx(i)/nsmear
+           if(sx .gt. 0.d0)then
+@@ -41,7 +41,7 @@
+           write(lfno,9001)i,sx,sy,sz,sxx,syy,szz
+ 9001      format(i6,1p,3g12.4,0p,3f10.6)
+         endif
+-10    continue
++      enddo
+       write(lfno,9003)ajx/np,ajy/np,ajz/np
+  9003 format(' Avrg ',:,1p,3g12.4)
+       return
+Index: src/tsol.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tsol.f,v
+retrieving revision 1.48.2.5
+diff -d -u -r1.48.2.5 tsol.f
+--- src/tsol.f	18 Jan 2014 04:46:06 -0000	1.48.2.5
++++ src/tsol.f	17 Apr 2014 05:59:45 -0000
+@@ -9,10 +9,10 @@
+       integer*4 la1,la
+       parameter (la1=15)
+       integer*4 k,kbz,np
+-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
++      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
+       real*8 tfbzs,fw,bzs,rho,al,theta,phi,phix,phiy,
+      $     psi1,psi2,bz1,rho1,dx,dy,rot,fb1,fb2
+-      integer*4 latt(2,nlat),kptbl(np0,4),
++      integer*4 latt(2,nlat),kptbl(np0,6),
+      $     nwakep,iwakeelm(nwakep),nwak,nextwake,n,
+      $     l1,i,ke,l,lt,lp,itp,mfr,itab(np),izs(np),
+      $     lenw,kdx,kdy,krot,kstop,kb,lwl,lwt
+@@ -116,12 +116,12 @@
+         al=rlist(lp+1)
+         if(lt .eq. icDRFT)then
+           if(spac)then
+-            call spdrift(np,x,px,y,py,z,g,dv,pz,al,bzs,0.d0,0.d0,
+-     $           rlist(lp+kytbl(kwRADI,icDRFT)),kptbl)
++            call spdrift_solenoid(np,x,px,y,py,z,g,dv,pz,al,bzs,
++     $           rlist(lp+kytbl(kwRADI,icDRFT)),n,l,latt,kptbl)
+           elseif(rad .and. trpt)then
+             call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
+           else
+-            call tdrift(np,x,px,y,py,z,g,dv,pz,al,bzs,0.d0,0.d0)
++            call tdrift_solenoid(np,x,px,y,py,z,g,dv,pz,al,bzs)
+           endif
+         elseif(lt .eq. icBEND)then
+           theta=rlist(lp+kytbl(kwROT,icBEND))
+@@ -168,7 +168,7 @@
+             fb1=rlist(lp+kytbl(kwFB2,icMULT))
+           endif
+           itp=ilist(2,lp)
+-          call tmulti(np,x,px,y,py,z,g,dv,pz,l,al,
++          call tmulti(np,x,px,y,py,z,g,dv,pz,al,
+      $         rlist(lp+kytbl(kwK0,icMULT)),bzs,
+      $         rlist(lp+kytbl(kwANGL,icMULT)),psi1,psi2,
+      1         rlist(lp+3),rlist(lp+4),rlist(lp+5),
+@@ -181,7 +181,7 @@
+      $         rlist(lp+17),rlist(lp+18),
+      $         rlist(lp+kytbl(kwDPHI,icMULT)),
+      $         rlist(lp+kytbl(kwRADI,icMULT)),
+-     $         kptbl)
++     $         n,l,latt,kptbl)
+         elseif(lt .eq. icSOL)then
+           if(l .eq. ke)then
+             fringe=rlist(lp+kytbl(kwFRIN,icSOL)) .eq. 0.d0      
+@@ -214,7 +214,7 @@
+             bzs=bz1
+           endif
+         elseif(lt .eq. icMAP)then
+-          call temap(np,np0,x,px,y,py,z,g,dv,l,n,kptbl)
++          call temap(np,np0,x,px,y,py,z,g,dv,pz,l,n,kptbl)
+         elseif(lt .eq. icAprt)then
+           call tapert1(l,latt,x,px,y,py,z,g,dv,pz,
+      1         kptbl,np,n)
+Index: src/tspini.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tspini.f,v
+retrieving revision 1.4.14.2
+diff -d -u -r1.4.14.2 tspini.f
+--- src/tspini.f	12 Sep 2012 03:03:21 -0000	1.4.14.2
++++ src/tspini.f	17 Apr 2014 05:59:45 -0000
+@@ -2,47 +2,52 @@
+       use tfstk
+       implicit none
+       include 'inc/TMACRO1.inc'
+-      integer*4 iparam,kptbl(np0,3),nexp2(16),i,j,
++      integer, parameter :: nkptbl = 6
++      integer*4 iparam,kptbl(np0,nkptbl),nexp2(16),i,j,
+      $     lp,lpa,itype,ip,kp,nt,nd1,m,italoc,ispp,nd
+       real*8 sp1,c1,phi
+       logical*4 spect
+       data nexp2  /1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,
+      1             16382,32768/
+-      do 10 i=1,np0
++
++      kptbl(1:np0,1:nkptbl)=0
++
++      do i=1,np0
+         kptbl(i,1)=i
+-        kptbl(i,3)=i
+-        kptbl(i,2)=0
+-10    continue
++        kptbl(i,2)=i
++      enddo
++
+       if(.not. spect)then
+         return
+       endif
++
+       lspect=ilist(2,iparam)
+       nspect=ilist(1,lspect)-1
+-      do 20 j=1,nspect
++      do j=1,nspect
+         lp=italoc(7)
+         lpa=ilist(2,lspect+j)
+         itype=ilist(1,lpa)
+         ip=ilist(1,lpa+1)
+-        if(kptbl(ip,2) .gt. 0)then
++        if(kptbl(ip,3) .gt. 0)then
+           if(itype .lt. 0)then
+-            kptbl(ip,2)=-kptbl(ip,2)
++            kptbl(ip,3)=-kptbl(ip,3)
+           endif
+-        elseif(kptbl(ip,2) .eq. 0)then
++        elseif(kptbl(ip,3) .eq. 0)then
+           kp=italoc(12)
+           if(itype .gt. 0)then
+-            kptbl(ip,2)=kp
++            kptbl(ip,3)=kp
+           else
+-            kptbl(ip,2)=-kp
++            kptbl(ip,3)=-kp
+           endif
+         endif
+         ilist(2,lpa)=lp
+         nt=nturn-ilist(1,lpa+2)+2
+         nd1=min(nint(rlist(lpa+3)),nt)
+-        do 30 i=1,16
++        do i=1,16
+           if(nexp2(i) .le. nd1)then
+             nd=nexp2(i)
+           endif
+-30      continue
++        enddo
+         ilist(1,lp)=nd
+         sp1=1.d0/nd
+         c1=mod(rlist(lpa+4)+sp1/2.d0,1.d0)
+@@ -60,7 +65,7 @@
+         ispp=italoc(nd)-1
+         ilist(1,lspect+j)=ispp
+         call tclr(rlist(ispp+1),nd)
+-20    continue
++      enddo
+       return
+       end
+ 
+@@ -68,30 +73,30 @@
+       use tfstk
+       implicit none
+       include 'inc/TMACRO1.inc'
+-      integer*4 iparam,kptbl(np0,2),j,itype,kp,
++      integer*4 iparam,kptbl(np0,6),j,itype,kp,
+      $     lpa,ip,nt,ispp,italoc
+       lplot=ilist(2,iparam)
+       nplot=ilist(1,lplot)-1
+-      do 20 j=1,nplot
++      do j=1,nplot
+         lpa=ilist(2,lplot+j)
+         itype=ilist(1,lpa)
+         ip=ilist(1,lpa+1)
+-        if(kptbl(ip,2) .gt. 0)then
++        if(kptbl(ip,3) .gt. 0)then
+           if(itype .lt. 0)then
+-            kptbl(ip,2)=-kptbl(ip,2)
++            kptbl(ip,3)=-kptbl(ip,3)
+           endif
+-        elseif(kptbl(ip,2) .eq. 0)then
++        elseif(kptbl(ip,3) .eq. 0)then
+           kp=italoc(12)
+           if(itype .gt. 0)then
+-            kptbl(ip,2)=kp
++            kptbl(ip,3)=kp
+           else
+-            kptbl(ip,2)=-kp
++            kptbl(ip,3)=-kp
+           endif
+         endif
+         nt=nturn-ilist(1,lpa+2)+2
+         ispp=italoc(nt*2)-1
+         call tclr(rlist(ispp+1),nt*2)
+         ilist(1,lplot+j)=ispp
+-20    continue
++      enddo
+       return
+       end
+Index: src/tsteer.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tsteer.f,v
+retrieving revision 1.18
+diff -d -u -r1.18 tsteer.f
+--- src/tsteer.f	28 Sep 2010 08:12:09 -0000	1.18
++++ src/tsteer.f	17 Apr 2014 05:59:45 -0000
+@@ -22,7 +22,7 @@
+      1             dx,dy,theta,cost,sint,1.d0,.false.)
+         return
+       elseif(phib .eq. 0.d0)then
+-        call tdrift(np,x,px,y,py,z,g,dv,pz,al,0.d0,0.d0,0.d0)
++        call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
+         return
+       endif
+       if(rad .and. trpt)then
+Index: src/tstrad.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tstrad.f,v
+retrieving revision 1.16.2.1
+diff -d -u -r1.16.2.1 tstrad.f
+--- src/tstrad.f	16 Jul 2012 04:37:35 -0000	1.16.2.1
++++ src/tstrad.f	17 Apr 2014 05:59:45 -0000
+@@ -16,7 +16,7 @@
+      1             dx,dy,theta,cost,sint,1.d0,.false.)
+         return
+       elseif(phib .eq. 0.d0)then
+-        call tdrift(np,x,px,y,py,z,g,dv,pz,al,0.d0,0.d0,0.d0)
++        call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
+         return
+       endif
+       include 'inc/TENT.inc'
+Index: src/ttcav.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/ttcav.f,v
+retrieving revision 1.6.2.1
+diff -d -u -r1.6.2.1 ttcav.f
+--- src/ttcav.f	31 Aug 2012 19:54:14 -0000	1.6.2.1
++++ src/ttcav.f	17 Apr 2014 05:59:45 -0000
+@@ -8,8 +8,7 @@
+       real*8 al,ak,harm,phi,freq,dx,dy,theta,cost,sint,w,phic,
+      $     dp1r,p1r,p1,h1,t,ph,dh,h2,a,dpr,dp2r,p2r,xi,pxi,v
+       if(al .ne. 0.d0)then
+-        call tdrift(np,x,px,y,py,z,g,dv,pz,
+-     1                 al*.5d0,0.d0,0.d0,0.d0)
++        call tdrift_free(np,x,px,y,py,z,g,dv,pz,al*.5d0)
+       endif
+       if(theta .ne. 0.d0)then
+         cost=cos(theta)
+@@ -58,8 +57,7 @@
+ 10    continue
+       include 'inc/TEXIT.inc'
+       if(al .ne. 0.d0)then
+-        call tdrift(np,x,px,y,py,z,g,dv,pz,
+-     1                 al*.5d0,0.d0,0.d0,0.d0)
++        call tdrift_free(np,x,px,y,py,z,g,dv,pz,al*.5d0)
+       endif
+       return
+       end
+Index: src/tturn.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/tturn.f,v
+retrieving revision 1.65.2.11
+diff -d -u -r1.65.2.11 tturn.f
+--- src/tturn.f	1 Mar 2013 22:19:05 -0000	1.65.2.11
++++ src/tturn.f	17 Apr 2014 05:59:45 -0000
+@@ -5,8 +5,8 @@
+       real*8 plimit,zlimit,vmax
+       parameter (plimit=0.7d0,zlimit=1.d10)
+       parameter (vmax=.9d0)
+-      integer*4 np,n,latt(2,nlat),kptbl(np0,3)
+-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
++      integer*4 np,n,latt(2,nlat),kptbl(np0,6)
++      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
+       call tturn0(np,latt,1,nlat,x,px,y,py,z,g,dv,pz,kptbl,n,
+      $     .false.,0,0,0)
+       return
+@@ -23,9 +23,9 @@
+       integer*4 np,n,la,ls,lbegin,lend,nvar,lb,le
+       integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
+       real*8 frbegin,frend,pgev00
+-      integer*4 latt(2,nlat),kptbl(np0,3),nwakep,iwakeelm(nwakep)
++      integer*4 latt(2,nlat),kptbl(np0,6),nwakep,iwakeelm(nwakep)
+       integer*8 kwaketbl(2,nwakep)
+-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
++      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
+       real*8 sa(6),ss(6,6),vsave(100)
+       logical*4 sol,chg,wake,tfinsol
+       pgev00=pgev
+@@ -106,8 +106,8 @@
+       parameter (plimit=0.7d0,zlimit=1.d10)
+       parameter (vmax=.9d0)
+       integer*4 np,n,la,lbegin,lend,kdx,kdy,krot
+-      integer*4 latt(2,nlat),kptbl(np0,3)
+-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
++      integer*4 latt(2,nlat),kptbl(np0,6)
++      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
+       real*8 sa(6),ss(6,6),phi,bz,
+      $     al,a,dpz,al1,ak,psi1,psi2,tgauss,ph,harmf,
+      $     sspac0,sspac,fw,dx,dy,rot,sspac1,sspac2,
+@@ -255,9 +255,8 @@
+      1      4100,1010,4300),lele
+        go to 1010
+  1100   if(spac)then
+-          call spdrift(np,x,px,y,py,z,g,dv,pz,rlist(lp+1),
+-     $         0.d0,0.d0,0.d0,
+-     $         rlist(lp+kytbl(kwRADI,icDRFT)),kptbl)
++          call spdrift_free(np,x,px,y,py,z,g,dv,pz,rlist(lp+1),
++     $         rlist(lp+kytbl(kwRADI,icDRFT)),n,l,latt,kptbl)
+           go to 1020
+         else
+           if(rlist(lp+2) .eq. 0.d0)then
+@@ -369,7 +368,7 @@
+           fb1=rlist(lp+kytbl(kwFB2,icMULT))
+         endif
+         bz=0.d0
+-        call tmulti(np,x,px,y,py,z,g,dv,pz,l,al,
++        call tmulti(np,x,px,y,py,z,g,dv,pz,al,
+      $       rlist(lp+kytbl(kwK0,icMULT)),
+      $       bz,
+      $       phi,psi1,psi2,
+@@ -382,7 +381,7 @@
+      $       rlist(lp+15),rlist(lp+16),rlist(lp+17),rlist(lp+18),
+      $       rlist(lp+kytbl(kwDPHI,icMULT)),
+      $       rlist(lp+kytbl(kwRADI,icMULT)),
+-     $       kptbl)
++     $       n,l,latt,kptbl)
+         go to 1020
+  3100     if(rlist(lp+9) .eq. 0.d0)then
+             ak=rlist(lp+2)
+@@ -456,12 +455,11 @@
+      1         ph,rlist(lp+5),
+      1         rlist(lp+6),rlist(lp+7),rlist(lp+8))
+         else
+-          call tdrift(np,x,px,y,py,z,g,dv,pz,al,
+-     $         0.d0,0.d0,0.d0)
++          call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
+         endif
+         go to 1020
+  3300   continue
+-        call temap(np,np0,x,px,y,py,z,g,dv,l,n,kptbl)
++        call temap(np,np0,x,px,y,py,z,g,dv,pz,l,n,kptbl)
+         go to 1010
+  3400   call tins(np,x,px,y,py,z,g,rlist(lp+20))
+         go to 1010
+Index: src/wjfit.f
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/wjfit.f,v
+retrieving revision 1.9.2.6
+diff -d -u -r1.9.2.6 wjfit.f
+--- src/wjfit.f	15 Dec 2012 05:59:23 -0000	1.9.2.6
++++ src/wjfit.f	17 Apr 2014 05:59:45 -0000
+@@ -6,7 +6,7 @@
+       integer*4 nbig,itmax,nfre
+       real*8 conv
+       parameter (nbig=16,conv=1.d-10,itmax=30,nfre=8)
+-      integer*4 np,lsp,lfno,i,j,k,l,n,np0,kptbl(np0),nres
++      integer*4 np,lsp,lfno,i,j,k,l,n,np0,kptbl(np0,6),nres
+       integer*4 maxord,lcoeff,lv,ll,kk,id,iter,ibigb(nbig),ndim
+       real*8 aord(3,*),ajx(lsp,3),sj(3),aj,s1,s2,s3,s,smax(3),srms(3)
+       real*8 b(lcoeff*2),bigb(nbig)
+@@ -46,8 +46,8 @@
+         else
+           iv=0
+         endif
+-        do 30 i=1,np0
+-          if(kptbl(i) .gt. np)then
++        do i=1,np0
++          if(kptbl(i,1) .gt. np)then
+             tag=',lost:'
+           else
+             tag=':     '
+@@ -61,7 +61,7 @@
+           if(iv .gt. 0)then
+             iai=ktadaloc(0,4)
+             klist(ial+i)=ktflist+iai
+-            if(kptbl(i) .gt. np)then
++            if(kptbl(i,1) .gt. np)then
+               rlist(iai+1)=0.d0
+             else
+               rlist(iai+1)=1.d0
+@@ -77,11 +77,11 @@
+               enddo
+             enddo
+           endif
+-30      continue
++        enddo
+         return
+       endif
+-      do 110 i=1,np0
+-        if(kptbl(i) .gt. np)then
++      do i=1,np0
++        if(kptbl(i,1) .gt. np)then
+           tag=',lost:'
+         else
+           tag=':     '
+@@ -96,14 +96,14 @@
+ 9204    format('          Tune = ',3f15.7,/,
+      1         ' Last variable = (',3i4,' )')
+         call tclr(b,lv)
+-        do 120 k=1,ndim
++        do k=1,ndim
+           zs=(0.d0,0.d0)
+-          do 122 n=1,lsp
++          do n=1,lsp
+             zs=zs+zbuf(n,k,i)
+-122       continue
++          enddo
+           zs=zs/lsp
+           zave(k)=zs
+-          do 130 n=1,lsp
++          do n=1,lsp
+             aj=abs(zbuf(n,k,i)-zs)
+             if(aj .eq. 0.d0)then
+               zexp(n,k)=(1.d0,0.d0)
+@@ -111,71 +111,71 @@
+               zexp(n,k)=(zbuf(n,k,i)-zs)/aj
+             endif
+             ajx(n,k)=aj**2
+-130       continue
+-120     continue
++          enddo
++        enddo
+         if(.not. rfsw)then
+           call tclr(ajx(1,3),lsp)
+           zs=(0.d0,0.d0)
+-          do 124 n=1,lsp
++          do n=1,lsp
+             zs=zs+zbuf(n,3,i)
+-124       continue
++          enddo
+           zave(3)=zs/lsp
+         endif
+         iter=0
+ 101     r=0.d0
+         s=0.d0
+-        do 140 l=1,ndim
++        do l=1,ndim
+           u=0.d0
+-          do 150 n=1,lsp
++          do n=1,lsp
+             u=u+ajx(n,l)
+-150       continue
++          enddo
+           u=u/lsp
+           b(l)=b(l)+u
+           r=r+u**2
+           s=s+b(l)**2
+-          do 151 n=1,lsp
++          do n=1,lsp
+             ajx(n,l)=ajx(n,l)-u
+-151       continue
+-140     continue
+-        do 160 n=1,lsp
++          enddo
++        enddo
++        do n=1,lsp
+           aexp(n)=(1.d0,0.d0)
+-160     continue
+-        do 170 l=ndim+1,lcoeff
++        enddo
++        do l=ndim+1,lcoeff
+           ll=2*l-ndim-1
+-          do 180 k=1,ndim
++          do k=1,ndim
+             id=iord(k,l)-iord(k,l-1)
+             if(id .eq. 0)then
+             elseif(id .eq. 1)then
+-              do 190 n=1,lsp
++              do n=1,lsp
+                 aexp(n)=aexp(n)*zexp(n,k)
+-190           continue
++              enddo
+             elseif(id .eq. -1)then
+-              do 191 n=1,lsp
++              do n=1,lsp
+                 aexp(n)=aexp(n)*conjg(zexp(n,k))
+-191           continue
++              enddo
+             elseif(id .gt. 0)then
+-              do 192 n=1,lsp
++              do n=1,lsp
+                 aexp(n)=aexp(n)*zexp(n,k)**id
+-192           continue
++              enddo
+             else
+-              do 193 n=1,lsp
++              do n=1,lsp
+                 aexp(n)=aexp(n)*conjg(zexp(n,k))**(-id)
+-193           continue
++              enddo
+             endif
+-180       continue
++          enddo
+           u1=0.d0
+           u2=0.d0
+           p1=0.d0
+           p2=0.d0
+           p3=0.d0
+-          do 200 n=1,lsp
++          do n=1,lsp
+             f=aord(1,l)*ajx(n,1)+aord(2,l)*ajx(n,2)+aord(3,l)*ajx(n,3)
+             p1=p1+imag(aexp(n))**2
+             u1=u1-f*imag(aexp(n))
+             p2=p2+dble (aexp(n))**2
+             u2=u2-f*dble (aexp(n))
+             p3=p3+dble (aexp(n))*imag(aexp(n))
+-200       continue
++          enddo
+           f=(aord(1,l)**2+aord(2,l)**2+aord(3,l)**2)*(p1*p2-p3**2)
+           u =(p2*u1-p3*u2)/f
+           u2=(p1*u2-p3*u1)/f
+@@ -184,13 +184,13 @@
+           b(ll+1)=b(ll+1)+u2
+           r=r+u1**2+u2**2
+           s=s+b(ll)**2+b(ll+1)**2
+-          do 210 n=1,lsp
++          do n=1,lsp
+             f=u1*imag(aexp(n))+u2*dble(aexp(n))
+             ajx(n,1)=ajx(n,1)+aord(1,l)*f
+             ajx(n,2)=ajx(n,2)+aord(2,l)*f
+             ajx(n,3)=ajx(n,3)+aord(3,l)*f
+-210       continue
+-170     continue
++          enddo
++        enddo
+         if(sqrt(r/s) .lt. conv)then
+         else
+           iter=iter+1
+@@ -199,9 +199,9 @@
+           endif
+         endif
+         call tclr(bigb,nbig)
+-        do 420 k=1,nbig
++        do k=1,nbig
+           ibigb(k)=0
+-420     continue
++        enddo
+         s1=b(1)
+         s2=b(2)
+         if(rfsw)then
+@@ -212,7 +212,7 @@
+         r1=0.d0
+         r2=0.d0
+         r3=0.d0
+-        do 410 l=ndim+1,lcoeff
++        LOOP_L: do l=ndim+1,lcoeff
+           ll=2*l-ndim-1
+           s=sqrt(b(ll)**2+b(ll+1)**2)
+           s1=s1+abs(aord(1,l)*s)
+@@ -222,18 +222,18 @@
+           r2=r2+(aord(2,l)*s)**2
+           r3=r3+(aord(3,l)*s)**2
+           s=s*(aord(1,l)**2+aord(2,l)**2+aord(3,l)**2)
+-          do 430 k=1,nbig
++          do k=1,nbig
+             if(s .ge. bigb(k))then
+-              do 440 kk=nbig,k+1,-1
++              do  kk=nbig,k+1,-1
+                 bigb(kk)=bigb(kk-1)
+                 ibigb(kk)=ibigb(kk-1)
+-440           continue
++              enddo
+               bigb(k)=s
+               ibigb(k)=l
+-              go to 410
++              cycle LOOP_L
+             endif
+-430       continue
+-410     continue
++          enddo
++        enddo LOOP_L
+         smax(1)=s1
+         smax(2)=s2
+         smax(3)=s3
+@@ -243,11 +243,11 @@
+         sj(1)=0.d0
+         sj(2)=0.d0
+         sj(3)=0.d0
+-        do 1110 n=1,lsp
++        do n=1,lsp
+           sj(1)=sj(1)+ajx(n,1)**2
+           sj(2)=sj(2)+ajx(n,2)**2
+           sj(3)=sj(3)+ajx(n,3)**2
+-1110    continue
++        enddo
+         sj(1)=sqrt(sj(1)/lsp)
+         sj(2)=sqrt(sj(2)/lsp)
+         sj(3)=sqrt(sj(3)/lsp)
+@@ -266,6 +266,6 @@
+      1                 b(2*ibigb(k)-ndim-1),b(2*ibigb(k)-ndim),k=1,nbig)
+ 9102    format(i4,2i4,1p,2g12.4,3i4,2g12.4)
+         call wjdraw(ajx,lsp,ndim,i,maxord)
+-110   continue
++      enddo
+       return
+       end
+Index: src/inc/TMACRO1.inc
+===================================================================
+RCS file: /SAD/cvsroot/oldsad/src/inc/TMACRO1.inc,v
+retrieving revision 1.26.2.4
+diff -d -u -r1.26.2.4 TMACRO1.inc
+--- src/inc/TMACRO1.inc	10 Nov 2012 06:55:53 -0000	1.26.2.4
++++ src/inc/TMACRO1.inc	17 Apr 2014 05:59:45 -0000
+@@ -19,7 +19,7 @@
+      $     simulate,absweit,jitter,trgauss,lwake,twake,smearp,
+      $     bunchsta,caltouck,canon,cellstab,spac,tparaed,radlight,
+      $     oldflagsdummy,geocal,photons,wspac,selfcod,pspac,
+-     $     convcase,preservecase,orbitcal
++     $     convcase,preservecase,lossmap,orbitcal
+       real*8
+      $     amass,charge,h0,p0,omega0,trf0,crad,erad,epsrad,
+      $     codin(6),dleng,anrad,urad,u0,vc0,hvc0,dp0,brho,
+@@ -70,4 +70,5 @@
+      $     (flags(31),cellstab),(flags(32),spac),(flags(33),radlight),
+      $     (flags(34),geocal),(flags(35),photons),(flags(36),wspac),
+      $     (flags(37),selfcod),(flags(38),pspac),(flags(39),convcase),
+-     $     (flags(40),preservecase),(flags(41),orbitcal)
++     $     (flags(40),preservecase),(flags(41),lossmap),
++     $     (flags(42),orbitcal)

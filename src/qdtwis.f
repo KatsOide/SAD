@@ -1,5 +1,6 @@
       subroutine qdtwis(dtwiss,ctrans,iclast,
      $     k0,l,idp,iv,nfam,nut,disp,dzfit)
+      use kyparam
       use tfstk
       use ffs
       use ffs_pointer
@@ -39,21 +40,22 @@
  1110 call qddrif(dtrans,dcod,utwiss(1,idp,iutk))
       go to 2001
  1120 continue
-      if(iv .eq. kytbl(kwANGL,icBEND) .or.
-     $     iv .eq. kytbl(kwK1,icBEND))then
+      if(iv .eq. ky_ANGL_BEND .or.
+     $     iv .eq. ky_K1_BEND)then
         if(dir .gt. 0.d0)then
-          psi1=cmp%value(3)
-          psi2=cmp%value(4)
+          psi1=cmp%value(ky_E1_BEND)
+          psi2=cmp%value(ky_E2_BEND)
         else
-          psi1=cmp%value(4)
-          psi2=cmp%value(3)
+          psi2=cmp%value(ky_E1_BEND)
+          psi1=cmp%value(ky_E2_BEND)
         endif
-        call qdbend(dtrans,dcod,cmp%value(1),
-     1       cmp%value(2)+cmp%value(11),cmp%value(2),
-     1       psi1,psi2,cmp%value(8),
+        call qdbend(dtrans,dcod,cmp%value(ky_L_BEND),
+     1       cmp%value(ky_ANGL_BEND)+cmp%value(ky_K0_BEND),
+     $       cmp%value(ky_ANGL_BEND),
+     1       psi1,psi2,cmp%value(ky_K1_BEND),
      1       utwiss(1,idp,iutk),
-     1       cmp%value(9),cmp%value(10),
-     1       cmp%value(5),iv)
+     1       cmp%value(ky_DX_BEND),cmp%value(ky_DY_BEND),
+     1       cmp%value(ky_ROT_BEND),iv)
         dt1=dtrans(1,5)
         dt2=dtrans(2,5)
       else
@@ -61,14 +63,18 @@
      $       iv,dtrans,dcod,idp)
       endif
       go to 2001
- 1140 if(iv .eq. kytbl(kwK1,icQUAD) .or.
-     $     iv .eq. kytbl(kwROT,icQUAD))then
-        call qdquad(dtrans,dcod,cmp%value(1),cmp%value(2),
-     $       k,idp,cmp%value(5),cmp%value(6),cmp%value(4),iv,nfam,nut)
-        if(geocal .and.
-     $       cmp%value(5) .ne. 0.d0 .or. cmp%value(6) .ne. 0.d0)then
-          call qdquad(dtrans1,dcod1,cmp%value(1),cmp%value(2),
-     $         k,0,cmp%value(5),cmp%value(6),cmp%value(4),iv,nfam,nut)
+ 1140 if(iv .eq. ky_K1_QUAD .or.
+     $     iv .eq. ky_ROT_QUAD)then
+        call qdquad(dtrans,dcod,
+     $       cmp%value(ky_L_QUAD),cmp%value(ky_K1_QUAD),
+     $       k,idp,cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
+     $       cmp%value(ky_ROT_QUAD),iv,nfam,nut)
+        if(geocal .and. cmp%value(ky_DX_QUAD) .ne. 0.d0
+     $       .or. cmp%value(ky_DY_QUAD) .ne. 0.d0)then
+          call qdquad(dtrans1,dcod1,
+     $         cmp%value(ky_L_QUAD),cmp%value(ky_K1_QUAD),
+     $         k,0,cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
+     $         cmp%value(ky_ROT_QUAD),iv,nfam,nut)
           dcod(1)=dcod(1)-dcod1(1)
           dcod(2)=dcod(2)-dcod1(2)
           dcod(3)=dcod(3)-dcod1(3)
@@ -80,15 +86,15 @@
       endif
       go to 2001
  1160 if(iv .eq. 2 .or. iv .eq. 4)then
-        call qdthin(dtrans,dcod,ke,cmp%value(1),cmp%value(2),
-     1       k,idp,cmp%value(5),cmp%value(6),cmp%value(4),iv,nfam,nut)
+        call qdthin(dtrans,dcod,ke,
+     $       cmp%value(ky_L_THIN),cmp%value(ky_K_THIN),
+     1       k,idp,cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
+     $       cmp%value(ky_ROT_THIN),iv,nfam,nut)
       else
-        call qdtrans(ke,iutk,k,k+1,
-     $       iv,dtrans,dcod,idp)
+        call qdtrans(ke,iutk,k,k+1,iv,dtrans,dcod,idp)
       endif
       go to 2001
- 1320 call qdtrans(ke,iutk,k,k+1,
-     $     iv,dtrans,dcod,idp)
+ 1320 call qdtrans(ke,iutk,k,k+1,iv,dtrans,dcod,idp)
 c      if(cmp%value(3) .ne. 0.d0 .or. cmp%value(4) .ne. 0.d0)then
 c        call qdtrans(nlat,ke,iutk,k,k+1,
 c     $       iv,dtrans1,dcod1,0,
@@ -110,7 +116,7 @@ c      endif
           go to 9000
         elseif(.not. cell)then
           k=min(nlat-1,max(2,1+int(
-     $         rlist(latt(1)+kytbl(kwOFFSET,icMARK)))))
+     $         rlist(latt(1)+ky_OFFSET_MARK))))
           gammab(1)=gammab(k)
           iutk=itwissp(k)
           call qdini(utwiss(1:ntwissfun,idp,1),
@@ -341,13 +347,13 @@ c     end   initialize for preventing compiler warning
       go to (100,200,300,400,500,600,700,800,900,1000,
      $     1100,1200,1300,1400,1500,1600,1700,1800,1900),iv
       return
- 100  b=-dir/utwiss1(2)
+ 100  b=-dir/utwiss1(mfitbx)
       dtrans(1,1)= trans(1,2)*b
       dtrans(2,1)= trans(2,2)*b
       dtrans(3,1)= trans(3,2)*b
       dtrans(4,1)= trans(4,2)*b
       go to 5000
- 200  b=.5d0/utwiss1(2)
+ 200  b=.5d0/utwiss1(mfitbx)
       dtrans(1,1)= trans(1,1)*b
       dtrans(2,1)= trans(2,1)*b
       dtrans(3,1)= trans(3,1)*b
@@ -358,13 +364,13 @@ c     end   initialize for preventing compiler warning
       dtrans(4,2)=-trans(4,2)*b
       go to 5000
  300  go to 5000
- 400  b=-dir/utwiss1(5)
+ 400  b=-dir/utwiss1(mfitby)
       dtrans(1,3)= trans(1,4)*b
       dtrans(2,3)= trans(2,4)*b
       dtrans(3,3)= trans(3,4)*b
       dtrans(4,3)= trans(4,4)*b
       go to 5000
- 500  b=.5d0/utwiss1(5)
+ 500  b=.5d0/utwiss1(mfitby)
       dtrans(1,3)= trans(1,3)*b
       dtrans(2,3)= trans(2,3)*b
       dtrans(3,3)= trans(3,3)*b
@@ -396,7 +402,7 @@ c     end   initialize for preventing compiler warning
       dtrans(4,5)=dir*trans(4,4)
       go to 5000
  1100 if(detr .lt. 1.d0)then
-        damu=-.5d0*utwiss1(14)/sqrt(1.d0-detr)
+        damu=-.5d0*utwiss1(mfitr4)/sqrt(1.d0-detr)
         dtrans(1,1)=damu
         dtrans(3,1)=-1.d0
         dtrans(2,2)=damu
@@ -407,7 +413,7 @@ c     end   initialize for preventing compiler warning
       endif
       go to 5000
  1200 if(detr .lt. 1.d0)then
-        damu= .5d0*dir*utwiss1(13)/sqrt(1.d0-detr)
+        damu= .5d0*dir*utwiss1(mfitr3)/sqrt(1.d0-detr)
         dtrans(1,1)=damu
         dtrans(3,2)=-dir
         dtrans(2,2)=damu
@@ -418,7 +424,7 @@ c     end   initialize for preventing compiler warning
       endif
       go to 5000
  1300 if(detr .lt. 1.d0)then
-        damu= .5d0*dir*utwiss1(12)/sqrt(1.d0-detr)
+        damu= .5d0*dir*utwiss1(mfitr2)/sqrt(1.d0-detr)
         dtrans(1,1)=damu
         dtrans(4,1)=-dir
         dtrans(2,2)=damu
@@ -429,7 +435,7 @@ c     end   initialize for preventing compiler warning
       endif
       go to 5000
  1400 if(detr .lt. 1.d0)then
-        damu=-.5d0*utwiss1(11)/sqrt(1.d0-detr)
+        damu=-.5d0*utwiss1(mfitr1)/sqrt(1.d0-detr)
         dtrans(1,1)=damu
         dtrans(4,2)=-1.d0
         dtrans(2,2)=damu
@@ -476,15 +482,17 @@ c     end   initialize for preventing compiler warning
       use ffs_pointer
       use ffs_fit, only:nut
       use tffitcode
+      use ffs, only:ffs_bound
       implicit none
+      type (ffs_bound) fbound,fbound1
       real*8 eps
       parameter (eps=1.d-4)
       integer*4 k,l,idp,itwk,itwl,
-     $     la1,lb1,iclast,k1,itwk1,ibg,ibe,itwe,ibe1,itwbe
+     $     iclast,k1,itwk1,ibg,ibe,itwe,ibe1,itwbe
       real*8 dtrans(4,5),dcod(6),trans(20),trans2s(20),
      $     trans2(4,5),trans3(4,5),trans1(4,5),transe(4,5),
      $     transe2(4,5),cod2(6),code(6),dcode(6),
-     $     w,fra,frb,ctrans(27)
+     $     w,ctrans(27)
       logical*4 over,trpt
       equivalence (trans2,trans2s)
       itwk=itwissp(k)
@@ -494,16 +502,18 @@ c     end   initialize for preventing compiler warning
      $     +abs(dcod(5)))
       cod2(6)=utwiss(mfitddp,idp,itwk1)
       call tfbndsol(k,ibg,ibe)
-      call tffsbound1(k1,l,la1,fra,lb1,frb)
-      if(iclast .gt. 0 .and. iclast .le. lb1 .and.
-     $     (iclast .ne. lb1 .or. ctrans(27) .le. frb))then
+      call tffsbound1(k1,l,fbound)
+      if(iclast .gt. 0 .and. iclast .le. fbound%le .and.
+     $     (iclast .ne. fbound%le .or. ctrans(27) .le. fbound%fe))then
         cod2(1)=ctrans(21)
         cod2(2)=ctrans(22)
         cod2(3)=ctrans(23)
         cod2(4)=ctrans(24)
         cod2(5)=ctrans(25)
-        call qcod(1,iclast,ctrans(27),lb1,frb,
-     $       trans3,cod2,.true.,over)
+        fbound1=fbound
+        fbound1%lb=iclast
+        fbound1%fb=ctrans(27)
+        call qcod(1,fbound1,trans3,cod2,.true.,over)
         call tmultr45(ctrans,trans3,trans2)
       else
         cod2(1)=utwiss(mfitdx, idp,itwk1)+w*dcod(1)
@@ -512,16 +522,17 @@ c     end   initialize for preventing compiler warning
         cod2(4)=utwiss(mfitdpy,idp,itwk1)+w*dcod(4)
         cod2(5)=utwiss(mfitdz, idp,itwk1)+w*dcod(5)
         if(ibg .eq. 0 .or. l .le. max(ibg,ibe))then
-          call qcod(1,la1,fra,lb1,frb,
-     $         trans2,cod2,.true.,over)
+          call qcod(1,fbound,trans2,cod2,.true.,over)
         else
           if(ibg .lt. ibe)then
             ibe1=ibe+1
             itwe=itwissp(ibe1)
             code(2)=utwiss(mfitdpx,idp,itwe)
             code(4)=utwiss(mfitdpy,idp,itwe)
-            call qcod(1,la1,fra,ibe1,0.d0,
-     $           transe,cod2,.true.,over)
+            fbound1=fbound
+            fbound1%le=ibe1
+            fbound1%fe=0.d0
+            call qcod(1,fbound1,transe,cod2,.true.,over)
             transe(2,5)=transe(2,5)-cod2(2)+code(2)
             transe(4,5)=transe(4,5)-cod2(4)+code(4)
             call tftmatu(utwiss(1,idp,itwissp(ibe1)),
@@ -533,8 +544,7 @@ c     end   initialize for preventing compiler warning
             cod2(3)=utwiss(mfitdy, idp,itwk1)
             cod2(4)=utwiss(mfitdpy,idp,itwk1)
             cod2(5)=utwiss(mfitdz, idp,itwk1)
-            call qcod(1,la1,fra,ibe1,0.d0,
-     $           trans3,cod2,.true.,over)
+            call qcod(1,fbound1,trans3,cod2,.true.,over)
             trans3(2,5)=trans3(2,5)-cod2(2)+code(2)
             trans3(4,5)=trans3(4,5)-cod2(4)+code(4)
             call tmultr45(trans3,transe2,trans)
@@ -561,8 +571,12 @@ c     end   initialize for preventing compiler warning
             cod2(3)=utwiss(mfitdy, idp,itwbe)-w*dcode(3)
             cod2(4)=utwiss(mfitdpy,idp,itwbe)-w*dcode(4)
             cod2(5)=utwiss(mfitdz, idp,itwbe)
-            call qcod(1,ibe,0.d0,k1,0.d0,
-     $           trans2,cod2,.true.,over)
+            fbound1=fbound
+            fbound1%lb=ibe
+            fbound1%fb=0.d0
+            fbound1%le=k1
+            fbound1%fe=0.d0
+            call qcod(1,fbound1,trans2,cod2,.true.,over)
             transe(2,5)=transe(2,5)-w*dcode(2)
             transe(4,5)=transe(4,5)-w*dcode(4)
             call tmultr45(transe,trans2,transe)
@@ -583,8 +597,8 @@ c      call tmov(trans,transe2,20)
 c      write(*,*)'qddtws-2 '
 c      write(*,'(1p5g13.5)')((transe2(i,j),j=1,5),i=1,4)
 c      write(*,'(1p5g13.5)')((trans2(i,j),j=1,5),i=1,4)
-      iclast=lb1
-      ctrans(27)=frb
+      iclast=fbound%le
+      ctrans(27)=fbound%fe
       ctrans(1:20)=trans2s(1:20)
       trans2s(1:20)=(trans2s(1:20)-trans(1:20))/w
 c      do i=1,20
@@ -608,6 +622,7 @@ c      enddo
 
       subroutine qdtrans(ke,kk1,j,je,
      $     iv,dtrans,dcod,idp)
+      use kyparam
       use tfstk
       use ffs_pointer
       use sad_main
@@ -640,8 +655,8 @@ c      enddo
       go to 6000
  600  wv=1.d0
       go to 6000
- 2200 if(iv .ge. kytbl(kwK1,icMULT))then
-        wv=10.d0**((iv-kytbl(kwK1,icMULT))/2)
+ 2200 if(iv .ge. ky_K1_MULT)then
+        wv=10.d0**((iv-ky_K1_MULT)/2)
       else
         wv=1.d0
       endif

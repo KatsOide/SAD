@@ -2,6 +2,7 @@
      1  (l,latt,x,px,y,py,z,g,dv,pz,kptbl,np,kturn,
      $     ax,ay,dx,dy,
      $     xl,yl,xh,yh,pxj,pyj,dpj,theta)
+      use kyparam
       use tfstk
       use ffs_flag
       use tmacro
@@ -234,6 +235,7 @@ c      - Swap particle coordinates
 
       subroutine tapert1(l,latt,x,px,y,py,z,g,dv,pz,
      $     kptbl,np,kturn)
+      use kyparam
       use tfstk
       use tmacro
       implicit none
@@ -244,30 +246,30 @@ c      - Swap particle coordinates
       integer*8 lp
       real*8 dpxj,dpyj,ddp,dx1,dy1,dx2,dy2
       lp=latt(l)
-      dpxj=rlist(lp+kytbl(kwJDPX,icAprt))
-      dpyj=rlist(lp+kytbl(kwJDPY,icAprt))
-      ddp=rlist(lp+kytbl(kwDP,icAprt))
-      dx1=min(rlist(lp+kytbl(kwDX1,icAprt)),
-     $        rlist(lp+kytbl(kwDX2,icAprt)))
-      dx2=max(rlist(lp+kytbl(kwDX1,icAprt)),
-     $        rlist(lp+kytbl(kwDX2,icAprt)))
-      dy1=min(rlist(lp+kytbl(kwDY1,icAprt)),
-     $        rlist(lp+kytbl(kwDY2,icAprt)))
-      dy2=max(rlist(lp+kytbl(kwDY1,icAprt)),
-     $        rlist(lp+kytbl(kwDY2,icAprt)))
+      dpxj=rlist(lp+ky_JDPX_Aprt)
+      dpyj=rlist(lp+ky_JDPY_Aprt)
+      ddp=rlist(lp+ky_DP_Aprt)
+      dx1=min(rlist(lp+ky_DX1_Aprt),
+     $        rlist(lp+ky_DX2_Aprt))
+      dx2=max(rlist(lp+ky_DX1_Aprt),
+     $        rlist(lp+ky_DX2_Aprt))
+      dy1=min(rlist(lp+ky_DY1_Aprt),
+     $        rlist(lp+ky_DY2_Aprt))
+      dy2=max(rlist(lp+ky_DY1_Aprt),
+     $        rlist(lp+ky_DY2_Aprt))
 c      write(*,*)'tapert1 ',l,
-c     $     rlist(lp+kytbl(kwAX,icAprt)),
-c     $     rlist(lp+kytbl(kwAY,icAprt)),
-c     $     rlist(lp+kytbl(kwDX,icAprt)),
-c     $     rlist(lp+kytbl(kwDY,icAprt))
+c     $     rlist(lp+ky_AX_Aprt),
+c     $     rlist(lp+ky_AY_Aprt),
+c     $     rlist(lp+ky_DX_Aprt),
+c     $     rlist(lp+ky_DY_Aprt)
       call tapert(l,latt,x,px,y,py,z,g,dv,pz,
      1     kptbl,np,kturn,
-     $     rlist(lp+kytbl(kwAX,icAprt)),
-     $     rlist(lp+kytbl(kwAY,icAprt)),
-     $     rlist(lp+kytbl(kwDX,icAprt)),
-     $     rlist(lp+kytbl(kwDY,icAprt)),
+     $     rlist(lp+ky_AX_Aprt),
+     $     rlist(lp+ky_AY_Aprt),
+     $     rlist(lp+ky_DX_Aprt),
+     $     rlist(lp+ky_DY_Aprt),
      $     dx1,dy1,dx2,dy2,dpxj,dpyj,ddp,
-     $     rlist(lp+kytbl(kwROT,icAprt)))
+     $     rlist(lp+ky_ROT_Aprt))
       return
       end
 

@@ -65,7 +65,7 @@ c      hi=sqrt(1.d0+(pr*p0)**2)
         call twspace(transsp,cod,al,bmi)
         call tmov(trans1,trans2,36)
         call tmultr(trans2,transsp,6)
-        call tinv(trans1,transa,6,6)
+        call tinv6(trans1,transa)
         call tmultr(trans2,transa,6)
         call tmultr(trans,trans2,irad)
         call tmulbs(beam,trans2,.false.,.false.)
@@ -156,7 +156,7 @@ c        call tmulbs(bmi,transa,.false.)
         if(vol .ne. 0.d0 .and. caltouck)then
           if(ptrans .ne. 0.d0)then
             call tmultr(transw,trans1,6)
-            call tinv(transw,trans2,6,6)
+            call tinv6(transw,trans2)
             extrans=(trans2(1,6)**2+trans2(2,6)**2)*ptrans**2
             eytrans=(trans2(3,6)**2+trans2(4,6)**2)*ptrans**2
             eztrans=(trans2(5,6)**2+trans2(6,6)**2)*ptrans**2
@@ -226,10 +226,10 @@ c     endif
         bmi(ia(4,4))=ci*pl(2,2)
         bmi(ia(6,4))=ci*pl(3,2)
         bmi(ia(6,6))=ci*pl(3,3)
-        call tinv(trans1,trans2,6,6)
+        call tinv6(trans1,trans2)
         call tmulbs(bmi,trans2,.false.,.false.)
         call tadd(beam,bmi,beam,21)
-        call tinv(trans,transa,6,6)
+        call tinv6(trans,transa)
         call tmulbs(bmi,transa,.false.,.false.)
       endif
       return

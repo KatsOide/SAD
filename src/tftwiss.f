@@ -129,26 +129,18 @@
       use tfstk
       use ffs
       use tffitcode
+      use ffs_fit, only:nlist
       implicit none
       type (sad_descriptor) kx
       type (sad_list), pointer :: klx
       integer*4 nkey
-      parameter (nkey=mfitpepy)
+      parameter (nkey=mfitpzpy)
       integer*8 ktatwissaloc,kax,kaxi,itoff
       integer*4 isp1,irtc,narg,i,m,nc,j,
      $     isp0,nd,kt,itfmessage
-      real*8 ftwiss(28),pe(4),tfgettwiss,tphysdisp
+      real*8 ftwiss(28),pe(4),tfgettwiss,tphysdisp,tphysdispz
       logical*4 over,ref
       character*(MAXPNAME+16) keyword,tfgetstrs
-      character*8 nlist(nkey)
-      data nlist /
-     $     'AX      ','BX      ','NX      ','AY      ',
-     1     'BY      ','NY      ','EX      ','EPX     ',
-     1     'EY      ','EPY     ','R1      ','R2      ',
-     1     'R3      ','R4      ','DETR    ',
-     $     'DX      ','DPX     ','DY      ','DPY     ',
-     $     'DZ      ','DDP     ',
-     $     'PEX     ','PEPX    ','PEY     ','PEPY    '/
       narg=isp-isp1
       keyword=tfgetstrs(ktastk(isp1+1),nc)
       if(nc .le. 0)then
@@ -245,6 +237,11 @@
               call tgetphysdisp(i,pe)
               rlist(kax+i)=pe(kt-mfitpex+1)
             enddo
+          elseif(kt .ge. mfitpzx .and. kt .le. mfitpzpy)then
+            do i=1,nlat
+              call tgetphysdispz(i,pe)
+              rlist(kax+i)=pe(kt-mfitpzx+1)
+            enddo
           endif
           kx%k=ktflist+kax
         elseif(narg .eq. 2)then
@@ -263,6 +260,9 @@
               elseif(kt .ge. mfitpex .and. kt .le. mfitpepy)then
                 call tgetphysdisp(itastk(2,isp),pe)
                 kx=dfromr(pe(kt-mfitpex+1))
+              elseif(kt .ge. mfitpzx .and. kt .le. mfitpzpy)then
+                call tgetphysdispz(itastk(2,isp),pe)
+                kx=dfromr(pe(kt-mfitpzx+1))
               endif
             else
               call qtwissfrac(ftwiss,itastk(2,isp),
@@ -294,6 +294,17 @@ c     $             itastk(2,isp),vstk2(isp)
                   call qtwissfrac(ftwiss,itastk(2,isp0+i),
      $                 vstk2(isp0+i),over)
                   rlist(kax+i)=tphysdisp(kt,ftwiss)
+                endif
+              enddo
+            elseif(kt .ge. mfitpzx .and. kt. le. mfitpzpy)then
+              do i=1,m
+                if(vstk2(isp0+i) .eq. 0.d0)then
+                  call tgetphysdispz(itastk(2,isp0+i),pe)
+                  rlist(kax+i)=pe(kt-mfitpzx+1)
+                else
+                  call qtwissfrac(ftwiss,itastk(2,isp0+i),
+     $                 vstk2(isp0+i),over)
+                  rlist(kax+i)=tphysdispz(kt,ftwiss)
                 endif
               enddo
             endif
@@ -343,12 +354,14 @@ c     $             itastk(2,isp),vstk2(isp)
       integer*4 kt
       real*8 rfromk
       logical*4 isnan
-      real*8 ftwiss(ntwissfun),tphysdisp
+      real*8 ftwiss(ntwissfun),tphysdisp,tphysdispz
       tfgettwiss=0.d0
       if(kt .le. ntwissfun)then
         tfgettwiss=ftwiss(kt)
       elseif(kt .ge. mfitpex .and. kt .le. mfitpepy)then
         tfgettwiss=tphysdisp(kt,ftwiss)
+      elseif(kt .ge. mfitpzx .and. kt .le. mfitpzpy)then
+        tfgettwiss=tphysdispz(kt,ftwiss)
       endif
       if(isnan(tfgettwiss))then
         tfgettwiss=rfromk(ktfnan)
@@ -669,7 +682,8 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
       elseif(keyword .eq. 'GAMMA')then
         kx=dfromr(sqrt(1.d0+(rlist(ifgamm+ia-1)*(1.d0-v)+
      $       rlist(ifgamm+min(nlat-1,ia))*v)**2))
-      elseif(keyword(1:3) .eq. 'SIG' .or. keyword(1:4) .eq. 'SIZE')then
+      elseif(keyword(1:3) .eq. 'SIG' .and. keyword(1:5) .ne. 'SIGMA'
+     $       .or. keyword(1:4) .eq. 'SIZE')then
         if(keyword(1:3) .eq. 'SIG')then
           call tfbeamfrac(ia,v,0.d0,beam)
           call tfbeamkey(keyword(4:),i,j,irtc)
@@ -1021,6 +1035,9 @@ c          call tmov(vtwiss(mfitdx),cod,4)
           irtc=itfmessage(9,'General::wrongnum',
      $         '"positive and less than length of beam line"')
         else
+          if(i .eq. nlat)then
+            r=0.d0
+          endif
           isp=isp+1
           itastk(1,isp)=ilist(i,ifele1)
           itastk(2,isp)=i

@@ -3,12 +3,13 @@
       use ffs
       use tffitcode
       use tfcsi, only:icslfno
+      use ffs_fit, only:ffs_stat
       implicit none
+      type (ffs_bound) fbound
+      type (ffs_stat) optstat
       integer*8 kx,kax,kax1,kax2,kax3,kaxi,kaini,itoff
-      integer*4 isp1,narg,irtc,idim,k,i,
-     $     itfloc,itfmessage,i1,i2,lout
-      logical*4 cell0,hstab,vstab,over,geo
-      real*8 tracex,tracey
+      integer*4 isp1,narg,irtc,idim,k,i,itfloc,itfmessage,lout
+      logical*4 cell0,geo
       narg=isp-isp1
       if(narg .ne. 5)then
         if(narg .ne. 6)then
@@ -52,45 +53,46 @@
      $       '"List of Reals for #3"')
         return
       endif
-      i1=itfloc(ktastk(isp1+1),irtc)
+      fbound%lb=itfloc(ktastk(isp1+1),irtc)
       if(irtc .ne. 0)then
         return
       endif
-      i2=itfloc(ktastk(isp1+2),irtc)
+      fbound%le=itfloc(ktastk(isp1+2),irtc)
       if(irtc .ne. 0)then
         return
       endif
       cell0=cell
       cell=rtastk(isp1+4) .ne. 0.d0
       do k=1,ntwissfun
-        itoff=(2*ndim+1)*nlat*(k-1)+ndim*nlat+iftwis+i1-1
+        itoff=(2*ndim+1)*nlat*(k-1)+ndim*nlat+iftwis+fbound%lb-1
         rlist(itoff)=rlist(kaini+k)
       enddo
       if(geo)then
         call tfgeo(.true.)
       endif
       lout=icslfno()
-      call qcell1(i1,0.d0,i2,0.d0,
-     $     0,hstab,vstab,tracex,tracey,.false.,over,.true.,lout)
+      fbound%fb=0.d0
+      fbound%fe=0.d0
+      call qcell1(fbound,0,optstat,.false.,.true.,lout)
       cell0=cell
       kax=ktadaloc(-1,3)
       kax2=ktraaloc(0,3)
       klist(kax+2)=ktflist+kax2
-      if(hstab)then
+      if(optstat%stabx)then
         rlist(kax2+1)=1.d0
       endif
-      if(vstab)then
+      if(optstat%staby)then
         rlist(kax2+2)=1.d0
       endif
       kax3=ktraaloc(0,3)
       klist(kax+3)=ktflist+kax3
-      rlist(kax3+1)=tracex
-      rlist(kax3+2)=tracey
-      kax1=ktadaloc(0,i2-i1+1)
+      rlist(kax3+1)=optstat%tracex
+      rlist(kax3+2)=optstat%tracey
+      kax1=ktadaloc(0,fbound%le-fbound%lb+1)
       klist(kax+1)=ktflist+kax1
-      do i=i1,i2
+      do i=fbound%lb,fbound%le
         kaxi=ktraaloc(0,28)
-        klist(kax1+i-i1+1)=ktflist+kaxi
+        klist(kax1+i-fbound%lb+1)=ktflist+kaxi
         do k=1,ntwissfun
           itoff=(2*ndim+1)*nlat*(k-1)+ndim*nlat+iftwis+i-1
           rlist(kaxi+k)=rlist(itoff)
