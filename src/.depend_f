@@ -75,7 +75,11 @@ eigs33.o: eigs33.f toplvl.o
 elname.o: elname.f tffs.o tfstk.o
 errmsg.o: errmsg.f toplvl.o
 expln.o: expln.f tffs.o tfstk.o toplvl.o
+<<<<<<< HEAD
 expln_a.o: expln_a.f inc/MACCODE.inc inc/MACexpn.inc inc/MACKW.inc inc/MACMISC.inc tfstk.o
+=======
+expln_a.o: expln_a.f inc/MACCODE.inc inc/MACKW.inc inc/MACMISC.inc inc/MACexpn.inc tfstk.o
+>>>>>>> origin/master
 fdate1.o: fdate1.f
 filaux.o: filaux.f tfstk.o toplvl.o
 filbuf.o: filbuf.f tfstk.o toplvl.o
@@ -341,7 +345,11 @@ tfgetr.o: tfgetr.f
 tfgetv.o: tfgetv.f csinit.o tffs.o tfstk.o tftwiss.o
 tfif.o: tfif.f
 tfinit.o: tfinit.f csinit.o initb1.o tffs.o tfstk.o
+<<<<<<< HEAD
 tfinitn.o: tfinitn.f csinit.o MAIN.o tfstk.o toplvl.o
+=======
+tfinitn.o: tfinitn.f MAIN.o csinit.o tfstk.o toplvl.o
+>>>>>>> origin/master
 tfkwrd.o: tfkwrd.f tfstk.o toplvl.o
 tflag.o: tflag.f tffs.o tfstk.o
 tflifetrack.o: tflifetrack.f tfstk.o
