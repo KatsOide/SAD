@@ -53,12 +53,12 @@
             endif
           endif
           if(codplt)then
-            if(l .eq. 1)then
-              r=1.d0
-            else
-              r=gammab(l)/gammab(l+1)
-            endif
-            call tsetetwiss(trans,cod,beam,0,l+1,idp,r)
+c            if(l .eq. 1)then
+c              r=1.d0
+c            else
+c              r=gammab(l)/gammab(l+1)
+c            endif
+            call tsetetwiss(trans,cod,beam,0,l+1,idp)
             if(irad .gt. 6)then
               beamsize(:,l+1)=beam
             endif

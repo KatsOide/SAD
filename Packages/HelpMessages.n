@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-Help$Update="$Date: 2017/02/03 18:38:22 $"[8,17];
+Help$Update="$Date: 2017/02/04 12:29:40 $"[8,17];
 Help$Version="1.1.0.3k64";
-=======
-Help$Update="$Date: 2017/01/08 18:38:22 $"[8,17];
-Help$Version="1.0.10.11k64";
->>>>>>> origin/master
 
 Help$Messages=(Print["SAD/FFS Help Update: ",Help$Update];{
 {" ",
@@ -587,10 +582,10 @@ OCT     L ROTATE DX DY K3 DISFRIN DISRAD\n\
 DECA    L ROTATE DX DY K4 DISFRIN DISRAD\n\
 DODECA  L ROTATE DX DY K5 DISFRIN DISRAD\n\
 MULT    L DX DY DZ CHI1 CHI2 ROTATE(=CHI3) K0..K21 SK0..SK21\n\
-        DISFRIN F1 F2 FRINGE DISRAD EPS VOLT HARM PHI DPHI FREQ\n\
+        DISFRIN F1 F2 FRINGE DISRAD EPS VOLT DVOLT HARM PHI DPHI FREQ\n\
         RADIUS ANGLE E1 E2 AE1 AE2 DROTATE\n\
 SOL     BZ DX DY DZ DPX DPY BOUND GEO CHI1 CHI2 CHI3 DBZ DISFRIN\n\
-CAVI    L ROTATE DX DY VOLT V1 V20 V11 V02 FREQ PHI HARM RANVOLT RANPHASE\n\
+CAVI    L ROTATE DX DY VOLT DVOLT V1 V20 V11 V02 FREQ PHI HARM RANVOLT RANPHASE\n\
         DISFRIN FRINGE\n\
 TCAVI   L ROTATE DX DY K0 V1 FREQ PHI HARM RANKICK RANPHASE\n\
 COORD   DX DY CHI1 CHI2 CHI3 DIR\n\
@@ -1186,23 +1181,31 @@ FRINGE=3    entr & exit            none",
          {"VOLT",
           "Accelerating peak voltage in Volt.\n"//
           (Acc$Message="The acceleration is given by \n\n\
-     dE = - e*(VOLT+V1 x+V20 x^2/2+V11 x y+V02 y^2/2)\n\
+     dE = - e*(VOLT+DVOLT+V1 x+V20 x^2/2+V11 x y+V02 y^2/2)\n\
                 *Sin[2 Pi FREQ (t-ts) + PHI +DPHI],\n\n\
 where ts is the equilibrium time determined by the valance between\n\
 the acceleration and the radiation loss around the ring.\n\
 (CAVI only) The non-relativistic corrections\n\n\
-     VOLT*(2 Pi FREQ/c)^2/(gamma beta)^2/4 are\n\n\
+     (VOLT+DVOLT)*(2 Pi FREQ/c)^2/(gamma beta)^2/4 are\n\n\
 automatically added to V20 and V02, respectively. The Lorentz factor\n\
 is evaluated as inverse of average of 1/(beta gamma) at the entrance\n\
 and the exit.\n\
    CAVI includes the edge effect at the lowest order, given by a Hamiltonian\n\
 at the entrance edge at s0:\n\n\
-   Hf = - (e VOLT/L)(Sin(omega t - dphi) + Sin(dphi) - offset) (x^2+y^2)/4 delta(s-s0)\n\n\
+   Hf = - (e (VOLT+DVOLT)/L)(Sin(omega t - dphi) + Sin(dphi) - offset) (x^2+y^2)/4 delta(s-s0)\n\n\
 where dphi and offset are determined by the cavity phase and the radiation loss,\n\
 which is nonzero only in the case of NORAD. The sign flips at the exit.\n\
 This Hamiltonian should be consistent with what Kiyoshi Kubo derived."),
-          "",
+          "DVOLT",
           {}},
+
+         {"DVOLT",
+          "\
+Additional accelerating voltage to be added to VOLT without affecting the design\n\
+momentum."
+          "VOLT",
+          {}},
+
 
          FREQ$Message={"FREQ",
           "\
@@ -1220,25 +1223,19 @@ A harmonic number.   This is valid only when FREQ is zero.",
          {"V1",
           "\
 The linear x-dependence of the acceleration. Tracking only.\n"//Acc$Message,
-          "VOLT V20 V11 V02",
-          {}},
-
-         {"V20",
-          "\
-The x^2-dependence of the acceleration. Tracking only.\n"//Acc$Message,
-          "VOLT V1 V11 V02",
+          "VOLT DVOLT V1 V11 V02",
           {}},
 
          {"V11",
           "\
 The xy-dependence of the acceleration. Tracking only.\n"//Acc$Message,
-          "VOLT V1 V20 V02",
+          "VOLT DVOLT V1 V20 V02",
           {}},
 
          {"V02",
           "\
 The y^2-dependence of the acceleration. Tracking only.\n"//Acc$Message,
-          "VOLT V1 V20 V11",
+          "VOLT DVOLT V1 V20 V11",
           {}},
 
          {"PHI",
@@ -1246,11 +1243,11 @@ The y^2-dependence of the acceleration. Tracking only.\n"//Acc$Message,
 Relative phase offset.   The stable synchrotron phase above the\n\
 transition is near PHI = 0.   \n\
 The acceleration is given as \n\n\
-     dE = - e*(VOLT+V1 x+V20 x^2/2+V11 x y+V02 y^2/2)\n\
+     dE = - e*(VOLT+DVOLT +V1 x+V20 x^2/2+V11 x y+V02 y^2/2)\n\
                 *Sin[2 Pi FREQ (t-ts) + PHI + DPHI],\n\n\
 where ts is the equilibrium time determined by the valance between\n\
 the acceleration and the radiation loss around the ring.",
-          "FREQ VOLT V1 V20 V11",
+          "FREQ VOLT DVOLT V1 V20 V11",
           {}},
 
          {"DPHI",
@@ -1258,12 +1255,12 @@ the acceleration and the radiation loss around the ring.",
 Relative phase offset.   The stable synchrotron phase above the\n\
 transition is near PHI = 0.   \n\
 The acceleration is given as \n\n\
-     dE = - e*(VOLT+V1 x+V20 x^2/2+V11 x y+V02 y^2/2)\n\
+     dE = - e*(VOLT+DVOLT+V1 x+V20 x^2/2+V11 x y+V02 y^2/2)\n\
                 *Sin[2 Pi FREQ (t-ts) + PHI + DPHI],\n\n\
 where ts is the equilibrium time determined by the valance between\n\
 the acceleration and the radiation loss around the ring.\n\
 DPHI is not taken into account to determine the design mementum p0(s).",
-          "FREQ VOLT V1 V20 V11",
+          "FREQ VOLT DVOLT V1 V20 V11",
           {}}
 
           }]},
@@ -1370,10 +1367,17 @@ ROTATE = (90/(n+1)) DEG .",
          {"VOLT",
           "Accelerating peak voltage in Volt.\n"//
           (Acc$Message="The acceleration is given by \n\n\
-     dE = - e * VOLT * Sin[2 Pi FREQ (t-ts) + PHI + DPHI],\n\n\
+     dE = - e * (VOLT+DVOLT) * Sin[2 Pi FREQ (t-ts) + PHI + DPHI],\n\n\
 where ts is the equilibrium time determined by the valance between\n\
 the acceleration and the radiation loss around the ring."),
-          "",
+          "DVOLT",
+          {}},
+
+         {"DVOLT",
+          "\
+Additional accelerating peak voltage to be added to Volt,\n\
+without affecting the design momentum p0(s).",
+          "VOLT",
           {}},
 
           FREQ$Message,
@@ -1385,7 +1389,7 @@ the acceleration and the radiation loss around the ring."),
 Relative phase offset.   The stable synchrotron phase above the\n\
 transition is near PHI = 0.   \n\
 The acceleration is given as \n\n\
-     dE = - e * VOLT * Sin[2 Pi FREQ (t-ts) + PHI],\n\n\
+     dE = - e * (VOLT+DVOLT) * Sin[2 Pi FREQ (t-ts) + PHI],\n\n\
 where ts is the equilibrium time determined by the valance between\n\
 the acceleration and the radiation loss around the ring.",
            "",
@@ -1396,12 +1400,12 @@ the acceleration and the radiation loss around the ring.",
 Relative phase offset.   The stable synchrotron phase above the\n\
 transition is near PHI = 0.   \n\
 The acceleration is given as \n\n\
-     dE = - e*(VOLT+V1 x+V20 x^2/2+V11 x y+V02 y^2/2)\n\
+     dE = - e*(VOLT+DVOLT+V1 x+V20 x^2/2+V11 x y+V02 y^2/2)\n\
                 *Sin[2 Pi FREQ (t-ts) + PHI + DPHI],\n\n\
 where ts is the equilibrium time determined by the valance between\n\
 the acceleration and the radiation loss around the ring.\n\
 DPHI is not taken into account to determine the design mementum p0(s).",
-          "FREQ VOLT V1 V20 V11",
+          "FREQ VOLT DVOLT V1 V20 V11",
           {}},
 
          FRINGEQ$Message,

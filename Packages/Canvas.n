@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 (* Canvas 2/2/2017 *)
-=======
-(* Canvas 12/14/2016 *)
->>>>>>> origin/master
 
 SetAttributes[{OutLine,Outline,UseBG,Permanent,Redraw},Constant];
 
@@ -111,11 +107,8 @@ CanvasGraphics=Class[{},
     DefaultFont=$DefaultSansSerifFont,
     FontScale=1,
     TickFontScale=1,
-<<<<<<< HEAD
     FrameFontScale=1,
     LegendFontScale=1,
-=======
->>>>>>> origin/master
     DefaultTitleSize=Switch[$FontSystem,
       "Xft",16,
       _,18],
@@ -355,11 +348,8 @@ CanvasGraphics=Class[{},
     TickFont->Default,
     Literal[FontScale]->1,
     Literal[TickFontScale]->1,
-<<<<<<< HEAD
     Literal[FrameFontScale]->1,
     Literal[LegendFontScale]->1,
-=======
->>>>>>> origin/master
     RemoveOverlap->"",
     PlotLabel->"",Background->"#ffffff"},    
     CanvasListVar:={EffectiveRange,EffectiveAxes,EffectiveGL,
@@ -370,7 +360,6 @@ CanvasGraphics=Class[{},
     CanvasDrawer[opt_,list_,init_,w_,rect_,last_,ini_]:=StandardForm[Module[
       {fl,pl,ft,wsx,wsy,wsfx,wsfy,det,wc,fr,tag,t1,t2,addtag,enc,glist,ws,
         pr,id,l1,align,up,ts,frid,fclk,dr,plr,sca,gr,ib,tkf,frt,frt1,rmo,
-<<<<<<< HEAD
         op=Override[opt,def],wfr},
       {tag,fl,pl,fr,wc,align,pr,fclk,dr,ft,frt,ts,ib,tkf,ful,rmo,
         FontScale,TickFontScale,FrameFontScale,LegendFontScale}=
@@ -379,16 +368,6 @@ CanvasGraphics=Class[{},
           InfoBind,TickFont,FrameUnitLabel,RemoveOverlap,
           Literal[FontScale],Literal[TickFontScale],
           Literal[FrameFontScale],Literal[LegendFontScale]}/.op;
-=======
-        op=Override[opt,def],wfr,ff,tff},
-      {tag,fl,pl,fr,wc,align,pr,fclk,dr,ft,frt,ts,ib,tkf,ful,rmo,ff,tff}=
-        {Tags,FrameLabel,PlotLabel,Frame,Background,Alignment,
-          PlotRegion,FrameClick,DataRange,FrameTicks,FrameThickness,TickSize,
-          InfoBind,TickFont,FrameUnitLabel,RemoveOverlap,
-          Literal[FontScale],Literal[TickFontScale]}/.op;
-      FontScale=ff;
-      TickFontScale=tff;
->>>>>>> origin/master
       If[w,
         If[ini,
           Canvas$Initialize=init;
@@ -645,11 +624,7 @@ CanvasGraphics=Class[{},
   TitlePosition["TOP",t_:"L"]:=Module[
     {c=WindowCoord[
       {(Canvas$Window[[1,1]]+Canvas$Window[[1,2]])/2,Canvas$Window[[2,2]]}],
-<<<<<<< HEAD
       f=If[t==="",{},CanvasWidget[BBox[t//"F$X2"//Canvas$Frame]]]},
-=======
-      f=CanvasWidget[BBox[FrameTag]]},
->>>>>>> origin/master
     If[f==={},{c+{0,-1},(Canvas$Window[[1,2]]-Canvas$Window[[1,1]])*DPI,"s"},
       {{First[c],Min[Second[f],Second[c]]-1},Third[f]-First[f],"s"}]];
   TitlePosition["TOP HIGH",t_:"L"]:=Module[
@@ -695,51 +670,31 @@ CanvasGraphics=Class[{},
         If[bl<=>{} && bl[[1]]<pos[[1]] && bl[[2]]<=pos[[2]]<=bl[[4]],
           fl=Max[fl,bl[[3]]]],
         {i,0,Canvas$Frame}];
-<<<<<<< HEAD
     Round[FontScale*FScale[FrameFontScale,2]
       *Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,pos[[1]]-fl-1,size*1.3]]]];
-=======
-    Round[
-      FontScale*Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,pos[[1]]-fl-1,size*1.3]]]];
->>>>>>> origin/master
   DefaultSize[t_,w_,size_,pos_,"w"]:=Module[{wc=CanvasWidget[Width],bl,fl},
     fl=wc;
       Do[bl=CanvasWidget[BBox[{"LF$Y2"//i,"FL$Y2"//i,"F$Y2"//i}]];
         If[bl<=>{} && bl[[3]]>pos[[1]] && bl[[2]]<=pos[[2]]<=bl[[4]],
           fl=Min[fl,bl[[1]]]],
         {i,0,Canvas$Frame}];
-<<<<<<< HEAD
     Round[FontScale*FScale[FrameFontScale,4]
       *Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,fl-pos[[1]]-1,size*1.3]]]];
-=======
-    Round[
-      FontScale*Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,fl-pos[[1]]-1,size*1.3]]]];
->>>>>>> origin/master
   DefaultSize[t_,w_,size_,pos_,"n"]:=Module[{wc=CanvasWidget[Height],bl,fl},
     fl=wc;
       Do[bl=CanvasWidget[BBox[{"LF$X2"//i,"FL$X2"//i,"F$X2"//i}]];
         If[bl<=>{} && bl[[4]]>pos[[2]] && bl[[1]]<=pos[[1]]<=bl[[3]],
           fl=Min[fl,bl[[2]]]],
         {i,0,Canvas$Frame}];
-<<<<<<< HEAD
     Round[FontScale*FScale[FrameFontScale,3]
       *Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,fl-pos[[2]]-1,size*1.3]]]];
-=======
-    Round[
-      FontScale*Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,fl-pos[[2]]-1,size*1.3]]]];
->>>>>>> origin/master
   DefaultSize[t_,w_,size_,pos_,"s"]:=Module[{fl=0,bl},
       Do[bl=CanvasWidget[BBox[{"LF$X1"//i,"FL$X1"//i,"F$X1"//i}]];
         If[bl<=>{} && bl[[2]]<pos[[2]] && bl[[1]]<=pos[[1]]<=bl[[3]],
             fl=Max[fl,bl[[4]]]],
         {i,0,Canvas$Frame}];
-<<<<<<< HEAD
     Round[FontScale*FScale[FrameFontScale,1]
       *Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,pos[[2]]-fl-1,size*1.3]]]];
-=======
-    Round[
-      FontScale*Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,pos[[2]]-fl-1,size*1.3]]]];
->>>>>>> origin/master
 
   MakeTitle["",__]:=Null;
   MakeTitle[t_,size_,p_]:=Module[{{pos,w,anc}=TitlePosition[p],sz,it=0},
@@ -1069,13 +1024,8 @@ CanvasGraphics=Class[{},
       Scan[func[Canvas$FrameCallBack[frid, event, #]]&,
 	Canvas$FrameCallBack[frid, event]]];
 
-<<<<<<< HEAD
   DefaultTickFont[x_,y_,fr_]:=
     TextFont[Round[FScale[TickFontScale,fr]*FontScale*Restrict[
-=======
-  DefaultTickFont[x_,y_]:=
-    TextFont[Round[TickFontScale*FontScale*Restrict[
->>>>>>> origin/master
       Switch[$FontSystem,"Xft",15,_,16]*x^y,7,32]],
       DefaultFont];
 
@@ -1283,11 +1233,7 @@ CanvasGraphics=Class[{},
       True,s]]];
 
   UnitLabelX[""|" ",__]=Null;
-<<<<<<< HEAD
   UnitLabelX[ful_,fltag_,font_,"n"]:=
-=======
-  UnitLabelX[ful_,fltag_,font_]:=
->>>>>>> origin/master
     Module[{bb=CanvasWidget[BBox[fltag]],bbfly2=CanvasWidget[BBox["LF$Y2"//Canvas$Frame]],
       et="E"//fltag,dy},
       CanvasWidget[Create$Text] = {{bb[[3]],(bb[[2]]+bb[[4]])/2},
@@ -1295,7 +1241,6 @@ CanvasGraphics=Class[{},
       If[bbfly2<=>{},
         If[(dy=CanvasWidget[BBox[et]][[2]]-bbfly2[[4]])<=0,
           CanvasWidget[Move]={et,0,1-dy}]]];
-<<<<<<< HEAD
   UnitLabelX[ful_,fltag_,font_,"s"]:=
     Module[{bb=CanvasWidget[BBox[fltag]],bbfly2=CanvasWidget[BBox["LF$Y2"//Canvas$Frame]],
       et="E"//fltag,dy},
@@ -1304,8 +1249,6 @@ CanvasGraphics=Class[{},
       If[bbfly2<=>{},
         If[(dy=CanvasWidget[BBox[et]][[4]]-bbfly2[[2]])>=0,
           CanvasWidget[Move]={et,0,-1-dy}]]];
-=======
->>>>>>> origin/master
   UnitLabelY[""|" ",__]=Null;
   UnitLabelY[exps_,fltag_,font_,"e"]:=
     Module[{bb=CanvasWidget[BBox[fltag]],bbf=CanvasWidget[BBox[fltag[2,-1]]],
@@ -1383,13 +1326,8 @@ CanvasGraphics=Class[{},
                 Anchor->anc,Text->s,Tags->{fltag,FrameTag},
                 Font->font]})&,Mt];
           If[exp<>1,
-<<<<<<< HEAD
             UnitLabelX[exps//ful,fltag,font,anc],
             UnitLabelX[ful,fltag,font,anc]],
-=======
-            UnitLabelX[exps//ful,fltag,font],
-            UnitLabelX[ful,fltag,font]],
->>>>>>> origin/master
           Log,
           Scan[(
             StandardForm[$FORM="";s="10`u"//#];

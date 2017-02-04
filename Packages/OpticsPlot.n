@@ -366,11 +366,7 @@ OpticsList[f_,i1_,i2_,dl_,off_,_,tags_,_]:=Module[{fun,ndiv},
     {i,i1,i2}],tags}];
 
 With[{def={Names->"*",Tags->False,NameFilter->Identity,
-<<<<<<< HEAD
   PlotRegion->{{0,1},{0,1}},ElementHeight->Automatic,RemoveOverlap->"L$NAME"}},
-=======
-  PlotRegion->{{0,1},{0,1}},ElementHeight->Automatic}},
->>>>>>> origin/master
   LatticePlot[{pr01_,pr02_},ss_,opt___]:=Module[
     {l,nlat=LINE["LENGTH"],s1=LINE["S",pr01],leng,
       {pr1,pr2}=LINE["POSITION",{pr01,pr02}],
@@ -396,11 +392,7 @@ With[{def={Names->"*",Tags->False,NameFilter->Identity,
     With[{s1,leng,ss}, Graphics[#,{DataRange->{{s1,s1+leng}*ss,{-1,1}},
       PlotRange:>With[{XRange=OP$XRange}, OP$XRange=.;
 	{If[Head[XRange]===List, XRange, ss*{s1-0.001, s1+leng+0.001}],{-1,1}}],
-<<<<<<< HEAD
       Frame->False,Background->Null,RemoveOverlap->ro}]&/@l]]];
-=======
-      Frame->False,Background->Null,RemoveOverlap->"L$NAME"}]&/@l]]];
->>>>>>> origin/master
 
 LatticeNames[{pr1_,pr2_},n_,off_,w_,yoff_,tag_,nf_,ss_]:=Module[
   {s,s0=LINE["S",pr1]+off,e=""},
