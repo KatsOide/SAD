@@ -18,7 +18,7 @@
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       real*8 tfbzs,fw,bzs,rho,al,theta,phi,phix,phiy,rhoe,
      $     psi1,psi2,bz1,rho1,dx,dy,rot,fb1,fb2,chi1m,chi2m,rtaper,
-     $     harm,w,ph
+     $     harm,w,ph,vnominal
       integer*8 latt(nlat),l1,lp
       integer*4 kptbl(np0,6),nwak,nextwake,n,
      $     i,ke,l,lt,mfr,itab(np),izs(np),
@@ -189,6 +189,12 @@
             chi1m=-cmp%value(ky_CHI1_MULT)
             chi2m=-cmp%value(ky_CHI2_MULT)
           endif
+          if(trpt)then
+            vnominal=cmp%value(ky_VOLT_MULT)
+     $           *sin(-cmp%value(ky_PHI_MULT)*sign(1.d0,charge))
+          else
+            vnominal=0.d0
+          endif
           harm=cmp%value(ky_HARM_MULT)
           if(harm .eq. 0.d0)then
             w=pi2*cmp%value(ky_FREQ_MULT)/c
@@ -218,6 +224,7 @@
      $         rlist(itp+3)*rtaper,rlist(itp+4)*rtaper,
      $         mfr,fb1,fb2,
      $         cmp%value(ky_VOLT_MULT),w,cmp%value(ky_PHI_MULT),ph,
+     $         vnominal,
      $         cmp%value(ky_RADI_MULT),rtaper,autophi,
      $         n,l,latt,kptbl)
         elseif(lt .eq. icSOL)then

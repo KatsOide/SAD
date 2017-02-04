@@ -598,7 +598,7 @@ AutoLoad[CaOpen,CaRead,CaWrite,CaGet,CaPut,CaClose,
 AutoLoad[CaOpenMonitor,PackagesDirectory//"CaSad2.n"];
 AutoLoad[CaMonitor,PackagesDirectory//"CaSad2c.n"];
 AutoLoad[EPICSDB,PackagesDirectory//"CEPICSRecord.n"];
-$DisplayFunction=If[Check[System["/bin/csh -c 'which tdr' >/dev/null"],1],
+$DisplayFunction=If[Check[System["which tdr >/dev/null"],1],
   If[Environment["DISPLAY"]<=>"",CanvasDrawer,TopDrawer],TopDrawer,TopDrawer];
 AutoLoad[ListPlot,Plot,Show,Graphics,Rectangle,
   PackagesDirectory//"ListPlot.n"];

@@ -4,7 +4,8 @@
      $     dx,dy,dz,chi1,chi2,theta,dtheta,
      $     eps0,enarad,fringe,f1in,f2in,f1out,f2out,
      $     mfring,fb1,fb2,
-     $     vc,w,phirf,dphirf,radius,rtaper,autophi,
+     $     vc,w,phirf,dphirf,vnominal,
+     $     radius,rtaper,autophi,
      $     kturn,l,latt,kptbl)
       use tfstk
       use ffs_flag
@@ -264,7 +265,6 @@ c     $     x(np),px(np),y(np),py(np),z(np),g(np)
         call tdrift(np,x,px,y,py,z,g,dv,pz,al,
      $       bzs,dble(akr(0)),imag(akr(0)))
       endif
-      vnominal=0.d0
       go to 1000
  1    cr=cr1*rtaper
 c     Zero-clear akr(1) for case: nmmax .eq. 0
@@ -301,10 +301,10 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
         endif
         v=vc*abs(charge)/amass
         if(trpt)then
-          vnominal=v*sin(-phirf*charge)
+c          vnominal=v*sin(-phirf*charge)
           phis=0.d0
         else
-          vnominal=0.d0
+c          vnominal=0.d0
           if(autophi)then
             phis=phic
           else
@@ -361,7 +361,7 @@ c     begin initialize for preventing compiler warning
         offset=0.d0
         offset1=0.d0
 c     end   initialize for preventing compiler warning
-        vnominal=0.d0
+c        vnominal=0.d0
         wsn=1.d0/ndiv
         do i=1,ndiv
           ws(i)=wsn

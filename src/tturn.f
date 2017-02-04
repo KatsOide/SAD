@@ -118,7 +118,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       real*8 sa(6),ss(6,6),phi,bz,harm,w,
      $     al,ak0,ak1,psi1,psi2,tgauss,ph,harmf,
      $     sspac0,sspac,fw,dx,dy,rot,sspac1,sspac2,
-     $     fb1,fb2,chi1,chi2,ak,rtaper
+     $     fb1,fb2,chi1,chi2,ak,rtaper,vnominal
       integer*4 l,lele,i,mfr,ke,lwl,lwt,lwlc,lwtc,
      $     nextwake,nwak,itab(np),izs(np)
       integer*8 iwpl,iwpt,iwplc,iwptc,itp
@@ -416,6 +416,12 @@ c            enddo
           chi2=-cmp%value(ky_CHI2_MULT)
         endif
         bz=0.d0
+        if(trpt)then
+          vnominal=cmp%value(ky_VOLT_MULT)
+     $         *sin(-cmp%value(ky_PHI_MULT)*sign(1.d0,charge))
+        else
+          vnominal=0.d0
+        endif
         harm=cmp%value(ky_HARM_MULT)
         if(harm .eq. 0.d0)then
           w=pi2*cmp%value(ky_FREQ_MULT)/c
@@ -445,8 +451,9 @@ c            enddo
      $       rlist(itp+1)*rtaper,rlist(itp+2)*rtaper,
      $       rlist(itp+3)*rtaper,rlist(itp+4)*rtaper,
      $       mfr,fb1,fb2,
-     $       cmp%value(ky_VOLT_MULT),w,
-     $       cmp%value(ky_PHI_MULT),ph,
+     $       cmp%value(ky_VOLT_MULT)+cmp%value(ky_DVOLT_MULT),
+     $       w,
+     $       cmp%value(ky_PHI_MULT),ph,vnominal,
      $       cmp%value(ky_RADI_MULT),rtaper,autophi,
      $       n,l,latt,kptbl)
         go to 1020
@@ -456,10 +463,15 @@ c            enddo
         else
           w=omega0*harm/c
         endif
-        if(cmp%value(ky_RANV_CAVI) .eq. 0.d0)then
-          ak=cmp%value(ky_VOLT_CAVI)
+        if(trpt)then
+          vnominal=cmp%value(ky_VOLT_CAVI)
+     $         *sin(-cmp%value(ky_PHI_CAVI)*sign(1.d0,charge))
         else
-          ak=cmp%value(ky_VOLT_CAVI)+cmp%value(ky_RANV_CAVI)*tgauss()
+          vnominal=0.d0
+        endif
+        ak=cmp%value(ky_VOLT_CAVI)+cmp%value(ky_DVOLT_CAVI)
+        if(cmp%value(ky_RANV_CAVI) .ne. 0.d0)then
+          ak=ak+cmp%value(ky_RANV_CAVI)*tgauss()
         endif
         if(cmp%value(ky_RANP_CAVI) .eq. 0.d0)then
           ph=cmp%value(ky_DPHI_CAVI)
@@ -470,7 +482,6 @@ c            enddo
         autophi=cmp%value(ky_APHI_CAVI) .ne. 0.d0
         if(autophi)then
           ph=ph+gettwiss(mfitdz,l)*w
-c          write(*,*)'tturn ',l,gettwiss(mfitdz,l),ph
         endif
         mfr=nint(cmp%value(ky_FRMD_CAVI))
         if(direlc(l) .gt. 0.d0)then
@@ -498,7 +509,7 @@ c              lwtc=(ilist(1,iwptc-1)-2)/2
 c            endif
           endif
           call tcav(np,x,px,y,py,z,g,dv,al,ak,
-     1         w,cmp%value(ky_PHI_CAVI),ph,
+     1         w,cmp%value(ky_PHI_CAVI),ph,vnominal,
      $         lwlc,rlist(iwplc+1),lwtc,rlist(iwptc+1),
      1         cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
      $         cmp%value(ky_ROT_CAVI),
@@ -507,7 +518,7 @@ c            endif
      $         cmp%value(ky_FRIN_CAVI) .eq. 0.d0,mfr,autophi)
         else
           call tcav(np,x,px,y,py,z,g,dv,al,ak,
-     1         w,cmp%value(ky_PHI_CAVI),ph,
+     1         w,cmp%value(ky_PHI_CAVI),ph,vnominal,
      $         0,0.d0,0,0.d0,
      1         cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
      $         cmp%value(ky_ROT_CAVI),
