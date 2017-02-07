@@ -16,8 +16,13 @@ Packages/CVS/Entries
 src/CVS/Entries
 src/inc/CVS/Entries
 src/gdtoa/*
+src/.DS_Store
 src/gdtoa/test/*
 Packages/Canvas.n_0
 Packages/#Canvas.n#
+*.~*
 *_*
 src/.DS_Store
+
+KBFrame/CVS/Root~
+*.~
