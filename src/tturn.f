@@ -417,7 +417,7 @@ c            enddo
         endif
         bz=0.d0
         if(trpt)then
-          vnominal=cmp%value(ky_VOLT_MULT)
+          vnominal=cmp%value(ky_VOLT_MULT)/amass*abs(charge)
      $         *sin(-cmp%value(ky_PHI_MULT)*sign(1.d0,charge))
         else
           vnominal=0.d0
@@ -464,7 +464,7 @@ c            enddo
           w=omega0*harm/c
         endif
         if(trpt)then
-          vnominal=cmp%value(ky_VOLT_CAVI)
+          vnominal=cmp%value(ky_VOLT_CAVI)/amass*abs(charge)
      $         *sin(-cmp%value(ky_PHI_CAVI)*sign(1.d0,charge))
         else
           vnominal=0.d0

@@ -193,6 +193,7 @@ c          dpz=-a/(1.d0+sqrt(1.d0-a))
         endif
       endif
       if(vnominal .ne. 0.d0)then
+c        write(*,*)'tcav ',vnominal,p0,pe
         do 210 i=1,np
           dp=g(i)
           dp1=dp*p0/pe-dpepe

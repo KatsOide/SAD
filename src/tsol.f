@@ -190,7 +190,7 @@
             chi2m=-cmp%value(ky_CHI2_MULT)
           endif
           if(trpt)then
-            vnominal=cmp%value(ky_VOLT_MULT)
+            vnominal=cmp%value(ky_VOLT_MULT)/amass*abs(charge)
      $           *sin(-cmp%value(ky_PHI_MULT)*sign(1.d0,charge))
           else
             vnominal=0.d0
