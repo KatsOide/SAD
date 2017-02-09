@@ -5,6 +5,7 @@ arch/*
 arch/i386-CYGWIN_NT-6.11
 obj/*
 sad/*
+src_1/*
 .DS_Store
 /CVS
 .#*
@@ -26,9 +27,3 @@ src/.DS_Store
 
 KBFrame/CVS/Root~
 *.~
-
-Packages/Optics.n~
-
-*.n_1~
-
-*.n~

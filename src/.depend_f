@@ -75,7 +75,11 @@ dummyroutCA.o: dummyroutCA.f
 eigs33.o: eigs33.f toplvl.o
 elname.o: elname.f tffs_conflict-20170109-035115.o tfstk.o
 errmsg.o: errmsg.f toplvl.o
+<<<<<<< HEAD
 expln.o: expln.f tffs_conflict-20170109-035115.o tfstk.o toplvl.o
+=======
+expln.o: expln.f tffs.o tfstk.o toplvl.o
+>>>>>>> origin/master
 expln_a.o: expln_a.f inc/MACCODE.inc inc/MACKW.inc inc/MACMISC.inc inc/MACexpn.inc tfstk.o
 fdate1.o: fdate1.f
 filaux.o: filaux.f tfstk.o toplvl.o
@@ -195,7 +199,11 @@ prnflg.o: prnflg.f tfstk.o toplvl.o
 pstati.o: pstati.f csinit.o tffs_conflict-20170109-035115.o tfstk.o
 pstati1.o: pstati1.f inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
 pstati2.o: pstati2.f
+<<<<<<< HEAD
 pstati3.o: pstati3.f inc/TFMACRO.inc inc/TFMACRO1.inc tffs_conflict-20170109-035115.o tfstk.o
+=======
+pstati3.o: pstati3.f inc/TFMACRO.inc inc/TFMACRO1.inc tffs.o tfstk.o
+>>>>>>> origin/master
 psub.o: psub.f
 ptimes.o: ptimes.f
 ptol.o: ptol.f inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
@@ -262,6 +270,7 @@ tcav.o: tcav.f inc/TENT.inc inc/TEXIT.inc tffs_conflict-20170109-035115.o tfstk.
 tcave.o: tcave.f tffs_conflict-20170109-035115.o tfstk.o
 tceigen.o: tceigen.f
 tcftr.o: tcftr.f
+<<<<<<< HEAD
 tchge.o: tchge.f tffs_conflict-20170109-035115.o tfstk.o
 tcod.o: tcod.f tffs_conflict-20170109-035115.o tfstk.o
 tcod_conflict-20161121-064133.o: tcod_conflict-20161121-064133.f tffs_conflict-20170109-035115.o tfstk.o
@@ -271,6 +280,15 @@ tconvm.o: tconvm.f tffs_conflict-20170109-035115.o tfstk.o
 tcoord.o: tcoord.f tffs_conflict-20170109-035115.o tfstk.o
 tcoorde.o: tcoorde.f tffs_conflict-20170109-035115.o tfstk.o
 tcorr.o: tcorr.f csinit.o tffs_conflict-20170109-035115.o tfstk.o
+=======
+tchge.o: tchge.f tffs.o tfstk.o
+tcod.o: tcod.f tffs.o tfstk.o
+tconv.o: tconv.f tffs.o tfstk.o
+tconvm.o: tconvm.f tffs.o tfstk.o
+tcoord.o: tcoord.f tffs.o tfstk.o
+tcoorde.o: tcoorde.f tffs.o tfstk.o
+tcorr.o: tcorr.f csinit.o tffs.o tfstk.o
+>>>>>>> origin/master
 tcsvdm.o: tcsvdm.f tfstk.o
 tday.o: tday.f
 tdcmd.o: tdcmd.f tfstk.o toplvl.o
@@ -345,8 +363,13 @@ tfgetm.o: tfgetm.f tffs_conflict-20170109-035115.o tfstk.o
 tfgetr.o: tfgetr.f
 tfgetv.o: tfgetv.f csinit.o tffs_conflict-20170109-035115.o tfstk.o tftwiss.o
 tfif.o: tfif.f
+<<<<<<< HEAD
 tfinit.o: tfinit.f csinit.o initb1.o tffs_conflict-20170109-035115.o tfstk.o
 tfinitn.o: tfinitn.f MAIN_conflict-20170109-034447.o csinit.o tfstk.o toplvl.o
+=======
+tfinit.o: tfinit.f csinit.o initb1.o tffs.o tfstk.o
+tfinitn.o: tfinitn.f MAIN.o csinit.o tfstk.o toplvl.o
+>>>>>>> origin/master
 tfkwrd.o: tfkwrd.f tfstk.o toplvl.o
 tflag.o: tflag.f tffs_conflict-20170109-035115.o tfstk.o
 tflifetrack.o: tflifetrack.f tfstk.o
@@ -427,6 +450,7 @@ tqente.o: tqente.f tfstk.o
 tqfrie.o: tqfrie.f tffs_conflict-20170109-035115.o tfstk.o
 tqlfre.o: tqlfre.f tffs_conflict-20170109-035115.o
 tqr.o: tqr.f
+<<<<<<< HEAD
 tqrad.o: tqrad.f inc/TENT.inc inc/TEXIT.inc tffs_conflict-20170109-035115.o
 tquad.o: tquad.f inc/TENT.inc inc/TEXIT.inc tffs_conflict-20170109-035115.o tfstk.o toplvl.o
 tquade.o: tquade.f tffs_conflict-20170109-035115.o tfstk.o
@@ -441,6 +465,21 @@ tracke.o: tracke.f tffs_conflict-20170109-035115.o tffsa.o tfstk.o
 trad.o: trad.f tffs_conflict-20170109-035115.o tfstk.o
 trade.o: trade.f tffs_conflict-20170109-035115.o tfstk.o
 trcoda.o: trcoda.f tffs_conflict-20170109-035115.o tfstk.o
+=======
+tqrad.o: tqrad.f inc/TENT.inc inc/TEXIT.inc tffs.o
+tquad.o: tquad.f inc/TENT.inc inc/TEXIT.inc tffs.o tfstk.o toplvl.o
+tquade.o: tquade.f tffs.o tfstk.o
+tquads.o: tquads.f tffs.o tfstk.o
+tquase.o: tquase.f tffs.o tfstk.o
+track.o: track.f temit.o tffs.o tfstk.o toplvl.o
+tracka.o: tracka.f tffs.o tfstk.o
+trackb.o: trackb.f tffs.o tffsa.o tfstk.o
+trackd.o: trackd.f tffs.o tfshared.o tfstk.o
+tracke.o: tracke.f tffs.o tffsa.o tfstk.o
+trad.o: trad.f tffs.o tfstk.o
+trade.o: trade.f tffs.o tfstk.o
+trcoda.o: trcoda.f tffs.o tfstk.o
+>>>>>>> origin/master
 trotg.o: trotg.f
 tscale.o: tscale.f tffs_conflict-20170109-035115.o
 tsconv.o: tsconv.f tffs_conflict-20170109-035115.o tfstk.o
