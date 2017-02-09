@@ -32,9 +32,11 @@
         wi=1.d0/w
       endif
       p0=gammab(l)
-      h0=p0*sqrt(1.d0+1.d0/p0**2)
+      h0=p2h(p0)
+c      h0=p0*sqrt(1.d0+1.d0/p0**2)
       p1=gammab(l+1)
-      h1=p1*sqrt(1.d0+1.d0/p1**2)
+      h1=p2h(p1)
+c      h1=p1*sqrt(1.d0+1.d0/p1**2)
 c      h1=sqrt(p1**2+1.d0)
       v=vc/amass*abs(charge)
       ndiv=1+int(min(abs(w*al),sqrt((v*(1.d0/h0+1.d0/h1))**2/3.d0/eps)))
@@ -42,7 +44,7 @@ c      h1=sqrt(p1**2+1.d0)
       vcn=vc/ndiv
       aln=al/ndiv
       phis=trf0*w
-      phic=phi*charge-vcphic
+      phic=phi*sign(1.d0,charge)-vcphic
 c      write(*,'(a,1p5g15.7)')'tcave ',phi,phis,phic,vcphic,trf0
       v10a=v10/ndiv/amass*abs(charge)
       v11a=v11/ndiv/amass*abs(charge)
@@ -87,7 +89,7 @@ c      endif
             endif
           endif
           p1=p0*(1.d0+cod(6))
-          h1=p1*sqrt(1.d0+1.d0/p1**2)
+          h1=p2h(p1)
 c          h1=sqrt(1.d0+p1**2)
           h1=p1+1.d0/(h1+p1)
           v1=p1/h1
@@ -109,7 +111,8 @@ c          h1=sqrt(1.d0+p1**2)
           dh=max(oneev-h1,-va*(sp+offset1))
 c          write(*,'(a,1p6g14.6)')'tcave ',vcacc,vcn,sp
           h2=h1+dh
-          p2=h2*sqrt(1.d0-1.d0/h2**2)
+          p2=h2p(h2)
+c          p2=h2*sqrt(1.d0-1.d0/h2**2)
           pf    =(h2+h1)/(p2+p1)*dh
           p2=p1+pf
           v2=p2/h2
@@ -205,6 +208,7 @@ c     $     trans(5,5),trans(5,6),trans(6,5),trans(6,6)
 
       subroutine tcavfrie(trans,cod,beam,al,v,w,phic,dphis,s0,p0,
      $     irad,calb,autophi)
+      use tfstk, only:p2h
       implicit none
       real*8 trans(6,12),cod(6),trans1(6,6),beam(42),
      $     v,al,p0,vf,dp1r,p1r,p1,h1,v1,t,phic,
@@ -216,7 +220,8 @@ c     $     trans(5,5),trans(5,6),trans(6,5),trans(6,6)
       dp1r=cod(6)
       p1r=1.d0+dp1r
       p1=p0*p1r
-      h1=p1*sqrt(1.d0+1.d0/p1**2)
+      h1=p2h(p1)
+c      h1=p1*sqrt(1.d0+1.d0/p1**2)
       v1=p1/h1
       t=-cod(5)/v1
       if(autophi)then

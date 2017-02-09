@@ -1177,7 +1177,7 @@ c     $     cmp%value(ky_K0_BEND)
         endif
       endif
       if(f2 .ne. 0.d0)then
-        if(cmp%value(ilist(1,ip)) .gt. 0.d0)then
+        if(direlc(l) .gt. 0.d0)then
           if(fr0 .eq. 3.d0 .or. fr0 .eq. 2.d0)then
             rlist(ifr)=rlist(ifr)+2.d0
           endif
