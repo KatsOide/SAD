@@ -6,14 +6,13 @@ BMAG.o: BMAG.f
 CM24.o: CM24.f
 DM42.o: DM42.f
 FMUL2.o: FMUL2.f
-INTGRL.o: INTGRL.f tffs_conflict-20170109-035115.o tfstk.o
+INTGRL.o: INTGRL.f tffs.o tfstk.o
 IPAK.o: IPAK.f
 IgetGL.o: IgetGL.f tfstk.o
 JNLPRM.o: JNLPRM.f
 LgetGL.o: LgetGL.f tfstk.o
 Lrdnum.o: Lrdnum.f tfstk.o toplvl.o
-MAIN.o: MAIN.f MAIN_conflict-20170109-034447.o tfstk.o
-MAIN_conflict-20170109-034447.o: MAIN_conflict-20170109-034447.f tfstk.o
+MAIN.o: MAIN.f tfstk.o
 MINV2.o: MINV2.f
 MMUL2.o: MMUL2.f
 MMUL4.o: MMUL4.f
@@ -29,7 +28,7 @@ TCAL.o: TCAL.f
 TEDGE.o: TEDGE.f
 TMATRS.o: TMATRS.f
 TROT.o: TROT.f
-TWTRANS.o: TWTRANS.f tffs_conflict-20170109-035115.o
+TWTRANS.o: TWTRANS.f tffs.o
 UNITM2.o: UNITM2.f
 UNITM4.o: UNITM4.f
 VMUL4.o: VMUL4.f
@@ -40,12 +39,12 @@ abbrev.o: abbrev.f
 actPlt.o: actPlt.f tfstk.o
 atof.o: atof.f
 autofg.o: autofg.f tfstk.o
-bb.o: bb.f bbstrhl.o tffs_conflict-20170109-035115.o tfstk.o
-bbstrhl.o: bbstrhl.f tffs_conflict-20170109-035115.o tfstk.o
+bb.o: bb.f bbstrhl.o tffs.o tfstk.o
+bbstrhl.o: bbstrhl.f tffs.o tfstk.o
 bbtool.o: bbtool.f
 bint.o: bint.f
-corfree.o: corfree.f inc/common.inc inc/coroper.inc tffs_conflict-20170109-035115.o tfstk.o
-corinit.o: corinit.f inc/common.inc inc/coroper.inc tffs_conflict-20170109-035115.o
+corfree.o: corfree.f inc/common.inc inc/coroper.inc tffs.o tfstk.o
+corinit.o: corinit.f inc/common.inc inc/coroper.inc tffs.o
 cputix.o: cputix.f toplvl.o
 csinit.o: csinit.f
 csroy.o: csroy.f tfstk.o
@@ -73,13 +72,9 @@ drwkwd.o: drwkwd.f tfstk.o
 dummyrout.o: dummyrout.f
 dummyroutCA.o: dummyroutCA.f
 eigs33.o: eigs33.f toplvl.o
-elname.o: elname.f tffs_conflict-20170109-035115.o tfstk.o
+elname.o: elname.f tffs.o tfstk.o
 errmsg.o: errmsg.f toplvl.o
-<<<<<<< HEAD
-expln.o: expln.f tffs_conflict-20170109-035115.o tfstk.o toplvl.o
-=======
 expln.o: expln.f tffs.o tfstk.o toplvl.o
->>>>>>> origin/master
 expln_a.o: expln_a.f inc/MACCODE.inc inc/MACKW.inc inc/MACMISC.inc inc/MACexpn.inc tfstk.o
 fdate1.o: fdate1.f
 filaux.o: filaux.f tfstk.o toplvl.o
@@ -89,19 +84,19 @@ frand.o: frand.f tfstk.o
 gamma.o: gamma.f tfstk.o toplvl.o
 gaus3.o: gaus3.f
 gaussn.o: gaussn.f
-geodrw.o: geodrw.f csinit.o tffs_conflict-20170109-035115.o tfstk.o
+geodrw.o: geodrw.f csinit.o tffs.o tfstk.o
 getbuf.o: getbuf.f csinit.o toplvl.o
 gettok.o: gettok.f tfstk.o toplvl.o
 getvad.o: getvad.f csinit.o tfstk.o
-getwrd.o: getwrd.f csinit.o tffs_conflict-20170109-035115.o tfstk.o
+getwrd.o: getwrd.f csinit.o tffs.o tfstk.o
 gftest.o: gftest.f
 hsrch.o: hsrch.f tfstk.o toplvl.o
 icsmrk.o: icsmrk.f
-ielm.o: ielm.f tffs_conflict-20170109-035115.o tfstk.o
+ielm.o: ielm.f tffs.o tfstk.o
 inifil.o: inifil.f tfstk.o toplvl.o
 initb1.o: initb1.f tfstk.o toplvl.o
 initbl.o: initbl.f tfstk.o toplvl.o
-initdainterface.o: initdainterface.f temit_conflict-20170109-034922.o tffs_conflict-20170109-035115.o tfstk.o
+initdainterface.o: initdainterface.f temit.o tffs.o tfstk.o
 italoc.o: italoc.f tfstk.o
 itfaloc.o: itfaloc.f tfstk.o toplvl.o
 itfcopy.o: itfcopy.f tfstk.o
@@ -110,7 +105,7 @@ itfgetbuf.o: itfgetbuf.f
 itfgetbuf_PPC.o: itfgetbuf_PPC.f
 itfgetbuf_f90.o: itfgetbuf_f90.f
 itfgeto.o: itfgeto.f csinit.o tfstk.o
-itfmaloc.o: itfmaloc.f tffs_conflict-20170109-035115.o tfshared.o tfstk.o
+itfmaloc.o: itfmaloc.f tffs.o tfshared.o tfstk.o
 itfmessage.o: itfmessage.f csinit.o tfstk.o
 itfopenread.o: itfopenread.f toplvl.o
 itfopenread_G77.o: itfopenread_G77.f tfstk.o toplvl.o
@@ -120,129 +115,124 @@ lread.o: lread.f tfstk.o toplvl.o
 lrflct.o: lrflct.f
 lstchk.o: lstchk.f
 matrix.o: matrix.f toplvl.o
-mbmp.o: mbmp.f inc/common.inc inc/coroper.inc tffs_conflict-20170109-035115.o tfstk.o
+mbmp.o: mbmp.f inc/common.inc inc/coroper.inc tffs.o tfstk.o
 mdpmax.o: mdpmax.f inc/common.inc
-metaer.o: metaer.f inc/common.inc tffs_conflict-20170109-035115.o
-mfdel.o: mfdel.f tffs_conflict-20170109-035115.o tfstk.o
-mfdel1.o: mfdel1.f tffs_conflict-20170109-035115.o tfstk.o
-mfdir.o: mfdir.f tffs_conflict-20170109-035115.o tfstk.o
-mfnst.o: mfnst.f inc/common.inc tffs_conflict-20170109-035115.o
+metaer.o: metaer.f inc/common.inc tffs.o
+mfdel.o: mfdel.f tffs.o tfstk.o
+mfdel1.o: mfdel1.f tffs.o tfstk.o
+mfdir.o: mfdir.f tffs.o tfstk.o
+mfnst.o: mfnst.f inc/common.inc tffs.o
 mhogal.o: mhogal.f
 mhogan.o: mhogan.f
 mkplst.o: mkplst.f tfstk.o toplvl.o
 monel.o: monel.f
-monqu.o: monqu.f tffs_conflict-20170109-035115.o tfstk.o
-mrecal.o: mrecal.f tffs_conflict-20170109-035115.o tfstk.o
-mrecal1.o: mrecal1.f inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
+monqu.o: monqu.f tffs.o tfstk.o
+mrecal.o: mrecal.f tffs.o tfstk.o
+mrecal1.o: mrecal1.f inc/common.inc tffs.o tfstk.o
 mrmb.o: mrmb.f
 mrqcof.o: mrqcof.f
 mrqcov.o: mrqcov.f
 mrqmin.o: mrqmin.f
-msolb.o: msolb.f inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
-msolv1.o: msolv1.f inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
-msolvg.o: msolvg.f tffs_conflict-20170109-035115.o tfstk.o
+msolb.o: msolb.f inc/common.inc tffs.o tfstk.o
+msolv1.o: msolv1.f inc/common.inc tffs.o tfstk.o
+msolvg.o: msolvg.f tffs.o tfstk.o
 msort.o: msort.f
 msortn.o: msortn.f
-mstack.o: mstack.f tffs_conflict-20170109-035115.o
-mstack1.o: mstack1.f tffs_conflict-20170109-035115.o tfstk.o
-mstack2.o: mstack2.f inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
+mstack.o: mstack.f tffs.o
+mstack1.o: mstack1.f tffs.o tfstk.o
+mstack2.o: mstack2.f inc/common.inc tffs.o tfstk.o
 mstat.o: mstat.f
 mstat2.o: mstat2.f
 mstatp.o: mstatp.f
-mstor1.o: mstor1.f inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
-mstore.o: mstore.f tffs_conflict-20170109-035115.o tfstk.o
-mwght.o: mwght.f inc/common.inc tffs_conflict-20170109-035115.o
-nalign.o: nalign.f tffs_conflict-20170109-035115.o tfstk.o
-ndelw.o: ndelw.f tffs_conflict-20170109-035115.o tfstk.o
+mstor1.o: mstor1.f inc/common.inc tffs.o tfstk.o
+mstore.o: mstore.f tffs.o tfstk.o
+mwght.o: mwght.f inc/common.inc tffs.o
+nalign.o: nalign.f tffs.o tfstk.o
+ndelw.o: ndelw.f tffs.o tfstk.o
 nlfit.o: nlfit.f
 openP.o: openP.f toplvl.o
 over.o: over.f
 pack.o: pack.f
 packpi.o: packpi.f
 padd.o: padd.f
-palgn.o: palgn.f csinit.o inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
+palgn.o: palgn.f csinit.o inc/common.inc tffs.o tfstk.o
 pfalloc.o: pfalloc.f tfstk.o toplvl.o
-pfcoup.o: pfcoup.f tffs_conflict-20170109-035115.o tfstk.o
+pfcoup.o: pfcoup.f tffs.o tfstk.o
 pgaussj.o: pgaussj.f
-pgflag.o: pgflag.f tffs_conflict-20170109-035115.o tfstk.o
-pgmast.o: pgmast.f tffs_conflict-20170109-035115.o tfstk.o
-pgrmat.o: pgrmat.f tffs_conflict-20170109-035115.o tfstk.o
+pgflag.o: pgflag.f tffs.o tfstk.o
+pgmast.o: pgmast.f tffs.o tfstk.o
+pgrmat.o: pgrmat.f tffs.o tfstk.o
 pgsolvcond.o: pgsolvcond.f tfstk.o
-phdrw.o: phdrw.f tffs_conflict-20170109-035115.o tfstk.o
+phdrw.o: phdrw.f tffs.o tfstk.o
 phdrwa.o: phdrwa.f toplvl.o
-phsrot.o: phsrot.f bbstrhl.o tffs_conflict-20170109-035115.o
+phsrot.o: phsrot.f bbstrhl.o tffs.o
 pinner.o: pinner.f
-pkill.o: pkill.f inc/common.inc tffs_conflict-20170109-035115.o
-pmbdata.o: pmbdata.f tffs_conflict-20170109-035115.o tfstk.o
-pmbdata1.o: pmbdata1.f tffs_conflict-20170109-035115.o
+pkill.o: pkill.f inc/common.inc tffs.o
+pmbdata.o: pmbdata.f tffs.o tfstk.o
+pmbdata1.o: pmbdata1.f tffs.o
 pmbdrw.o: pmbdrw.f
-pmbump.o: pmbump.f inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
-pmeas.o: pmeas.f tffs_conflict-20170109-035115.o tfstk.o
+pmbump.o: pmbump.f inc/common.inc tffs.o tfstk.o
+pmeas.o: pmeas.f tffs.o tfstk.o
 pmicad.o: pmicad.f
 pmovi.o: pmovi.f
-polpar.o: polpar.f tffs_conflict-20170109-035115.o tfstk.o
-ppair.o: ppair.f tffs_conflict-20170109-035115.o tfstk.o
-pqcell.o: pqcell.f tffs_conflict-20170109-035115.o
+polpar.o: polpar.f tffs.o tfstk.o
+ppair.o: ppair.f tffs.o tfstk.o
+pqcell.o: pqcell.f tffs.o
 prSad.o: prSad.f tfstk.o toplvl.o
 preabuf.o: preabuf.f
-preadmon.o: preadmon.f csinit.o inc/common.inc tffs_conflict-20170109-035115.o
-preadstr.o: preadstr.f csinit.o inc/common.inc inc/coroper.inc tffs_conflict-20170109-035115.o tfstk.o
+preadmon.o: preadmon.f csinit.o inc/common.inc tffs.o
+preadstr.o: preadstr.f csinit.o inc/common.inc inc/coroper.inc tffs.o tfstk.o
 prelem.o: prelem.f tfstk.o
 prelm0.o: prelm0.f tfstk.o toplvl.o
 prexln.o: prexln.f tfstk.o toplvl.o
-prkick.o: prkick.f tffs_conflict-20170109-035115.o tfstk.o
-prkick1.o: prkick1.f inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
+prkick.o: prkick.f tffs.o tfstk.o
+prkick1.o: prkick1.f inc/common.inc tffs.o tfstk.o
 prkwdv.o: prkwdv.f tfstk.o toplvl.o
 prline.o: prline.f tfstk.o toplvl.o
 prnGlb.o: prnGlb.f tfstk.o toplvl.o
 prnflg.o: prnflg.f tfstk.o toplvl.o
-pstati.o: pstati.f csinit.o tffs_conflict-20170109-035115.o tfstk.o
-pstati1.o: pstati1.f inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
+pstati.o: pstati.f csinit.o tffs.o tfstk.o
+pstati1.o: pstati1.f inc/common.inc tffs.o tfstk.o
 pstati2.o: pstati2.f
-<<<<<<< HEAD
-pstati3.o: pstati3.f inc/TFMACRO.inc inc/TFMACRO1.inc tffs_conflict-20170109-035115.o tfstk.o
-=======
 pstati3.o: pstati3.f inc/TFMACRO.inc inc/TFMACRO1.inc tffs.o tfstk.o
->>>>>>> origin/master
 psub.o: psub.f
 ptimes.o: ptimes.f
-ptol.o: ptol.f inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
+ptol.o: ptol.f inc/common.inc tffs.o tfstk.o
 ptrace.o: ptrace.f tfstk.o
-ptrim.o: ptrim.f inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
-pundo.o: pundo.f inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
+ptrim.o: ptrim.f inc/common.inc tffs.o tfstk.o
+pundo.o: pundo.f inc/common.inc tffs.o tfstk.o
 push.o: push.f
-putsti.o: putsti.f tffs_conflict-20170109-035115.o tfstk.o
-pvbump.o: pvbump.f inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
+putsti.o: putsti.f tffs.o tfstk.o
+pvbump.o: pvbump.f inc/common.inc tffs.o tfstk.o
 pvbump1.o: pvbump1.f
-pvbump2.o: pvbump2.f inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
-pvbump3.o: pvbump3.f tffs_conflict-20170109-035115.o tfstk.o
-pvert.o: pvert.f tffs_conflict-20170109-035115.o tfstk.o
-pwmatq.o: pwmatq.f tffs_conflict-20170109-035115.o tfstk.o
-pwrite.o: pwrite.f tffs_conflict-20170109-035115.o tfstk.o
-pwrlat.o: pwrlat.f tffs_conflict-20170109-035115.o tfstk.o
-pwrtmon.o: pwrtmon.f inc/common.inc tffs_conflict-20170109-035115.o
-pwrtstr.o: pwrtstr.f inc/common.inc inc/coroper.inc tffs_conflict-20170109-035115.o tfstk.o
-qcav.o: qcav.f tffs_conflict-20170109-035115.o tfstk.o
-qcell.o: qcell.f temit_conflict-20170109-034922.o tffs_conflict-20170109-035115.o tfstk.o
-qcell_conflict-20170109-034518.o: qcell_conflict-20170109-034518.f temit_conflict-20170109-034922.o tffs_conflict-20170109-035115.o tfstk.o
+pvbump2.o: pvbump2.f inc/common.inc tffs.o tfstk.o
+pvbump3.o: pvbump3.f tffs.o tfstk.o
+pvert.o: pvert.f tffs.o tfstk.o
+pwmatq.o: pwmatq.f tffs.o tfstk.o
+pwrite.o: pwrite.f tffs.o tfstk.o
+pwrlat.o: pwrlat.f tffs.o tfstk.o
+pwrtmon.o: pwrtmon.f inc/common.inc tffs.o
+pwrtstr.o: pwrtstr.f inc/common.inc inc/coroper.inc tffs.o tfstk.o
+qcav.o: qcav.f tffs.o tfstk.o
+qcell.o: qcell.f temit.o tffs.o tfstk.o
 qchg.o: qchg.f
-qcoord.o: qcoord.f tffs_conflict-20170109-035115.o tfstk.o
-qdbend.o: qdbend.f tffs_conflict-20170109-035115.o tfstk.o
-qdcell.o: qdcell.f tffs_conflict-20170109-035115.o tfstk.o
-qddrif.o: qddrif.f tffs_conflict-20170109-035115.o
+qcoord.o: qcoord.f tffs.o tfstk.o
+qdbend.o: qdbend.f tffs.o tfstk.o
+qdcell.o: qdcell.f tffs.o tfstk.o
+qddrif.o: qddrif.f tffs.o
 qdmdia.o: qdmdia.f
-qdquad.o: qdquad.f tffs_conflict-20170109-035115.o tfstk.o
+qdquad.o: qdquad.f tffs.o tfstk.o
 qdrift.o: qdrift.f tfstk.o
-qdthin.o: qdthin.f tffs_conflict-20170109-035115.o
-qdtwis.o: qdtwis.f initb1.o tffs_conflict-20170109-035115.o tfstk.o toplvl.o
-qgettr.o: qgettr.f tffs_conflict-20170109-035115.o tfstk.o
-qins.o: qins.f tffs_conflict-20170109-035115.o tfstk.o
+qdthin.o: qdthin.f tffs.o
+qdtwis.o: qdtwis.f initb1.o tffs.o tfstk.o toplvl.o
+qgettr.o: qgettr.f tffs.o tfstk.o
+qins.o: qins.f tffs.o tfstk.o
 qmdiag.o: qmdiag.f
-qmult.o: qmult.f tffs_conflict-20170109-035115.o tfstk.o
+qmult.o: qmult.f tffs.o tfstk.o
 qquad.o: qquad.f
-qtent.o: qtent.f tffs_conflict-20170109-035115.o tfstk.o
+qtent.o: qtent.f tffs.o tfstk.o
 qthin.o: qthin.f
-qtwiss.o: qtwiss.f initb1.o temit_conflict-20170109-034922.o tffs_conflict-20170109-035115.o tfstk.o toplvl.o
+qtwiss.o: qtwiss.f initb1.o temit.o tffs.o tfstk.o toplvl.o
 rdexpr.o: rdexpr.f tfstk.o toplvl.o
 rdkwdl.o: rdkwdl.f tfstk.o toplvl.o
 rdterm.o: rdterm.f tfstk.o toplvl.o
@@ -252,35 +242,24 @@ setdfl.o: setdfl.f tfstk.o toplvl.o
 sethtb.o: sethtb.f tfstk.o
 skipch.o: skipch.f
 sols33.o: sols33.f
-spkick.o: spkick.f tffs_conflict-20170109-035115.o tfstk.o
+spkick.o: spkick.f tffs.o tfstk.o
 spline.o: spline.f tfstk.o
 sprexl.o: sprexl.f tfstk.o toplvl.o
 sprlin.o: sprlin.f tfstk.o toplvl.o
-synradcl.o: synradcl.f tffs_conflict-20170109-035115.o
-talign.o: talign.f tffs_conflict-20170109-035115.o tfstk.o
-tapert.o: tapert.f initb1.o tffs_conflict-20170109-035115.o tfstk.o
+synradcl.o: synradcl.f tffs.o
+talign.o: talign.f tffs.o tfstk.o
+tapert.o: tapert.f initb1.o tffs.o tfstk.o
 tbal.o: tbal.f
 tbdecoup.o: tbdecoup.f
-tbend.o: tbend.f inc/TENT.inc inc/TEXIT.inc tffs_conflict-20170109-035115.o tfstk.o tmulta.o
-tbende.o: tbende.f tbendi.o tffs_conflict-20170109-035115.o tfstk.o tmulta.o
-tbendi.o: tbendi.f inc/TENT.inc inc/TEXIT.inc tffs_conflict-20170109-035115.o tfstk.o
-tbfrie.o: tbfrie.f tffs_conflict-20170109-035115.o tfstk.o
-tbrad.o: tbrad.f inc/TENT.inc inc/TEXIT.inc tbende.o tffs_conflict-20170109-035115.o tfstk.o toplvl.o
-tcav.o: tcav.f inc/TENT.inc inc/TEXIT.inc tffs_conflict-20170109-035115.o tfstk.o
-tcave.o: tcave.f tffs_conflict-20170109-035115.o tfstk.o
+tbend.o: tbend.f inc/TENT.inc inc/TEXIT.inc tffs.o tfstk.o tmulta.o
+tbende.o: tbende.f tbendi.o tffs.o tfstk.o tmulta.o
+tbendi.o: tbendi.f inc/TENT.inc inc/TEXIT.inc tffs.o tfstk.o
+tbfrie.o: tbfrie.f tffs.o tfstk.o
+tbrad.o: tbrad.f inc/TENT.inc inc/TEXIT.inc tbende.o tffs.o tfstk.o toplvl.o
+tcav.o: tcav.f inc/TENT.inc inc/TEXIT.inc tffs.o tfstk.o
+tcave.o: tcave.f tffs.o tfstk.o
 tceigen.o: tceigen.f
 tcftr.o: tcftr.f
-<<<<<<< HEAD
-tchge.o: tchge.f tffs_conflict-20170109-035115.o tfstk.o
-tcod.o: tcod.f tffs_conflict-20170109-035115.o tfstk.o
-tcod_conflict-20161121-064133.o: tcod_conflict-20161121-064133.f tffs_conflict-20170109-035115.o tfstk.o
-tcod_conflict-20170109-041233.o: tcod_conflict-20170109-041233.f tffs_conflict-20170109-035115.o tfstk.o
-tconv.o: tconv.f tffs_conflict-20170109-035115.o tfstk.o
-tconvm.o: tconvm.f tffs_conflict-20170109-035115.o tfstk.o
-tcoord.o: tcoord.f tffs_conflict-20170109-035115.o tfstk.o
-tcoorde.o: tcoorde.f tffs_conflict-20170109-035115.o tfstk.o
-tcorr.o: tcorr.f csinit.o tffs_conflict-20170109-035115.o tfstk.o
-=======
 tchge.o: tchge.f tffs.o tfstk.o
 tcod.o: tcod.f tffs.o tfstk.o
 tconv.o: tconv.f tffs.o tfstk.o
@@ -288,115 +267,106 @@ tconvm.o: tconvm.f tffs.o tfstk.o
 tcoord.o: tcoord.f tffs.o tfstk.o
 tcoorde.o: tcoorde.f tffs.o tfstk.o
 tcorr.o: tcorr.f csinit.o tffs.o tfstk.o
->>>>>>> origin/master
 tcsvdm.o: tcsvdm.f tfstk.o
 tday.o: tday.f
 tdcmd.o: tdcmd.f tfstk.o toplvl.o
 tdet.o: tdet.f
-tdfun.o: tdfun.f csinit.o tffs_conflict-20170109-035115.o tfstk.o toplvl.o
-tdgeo.o: tdgeo.f initb1.o tffs_conflict-20170109-035115.o tfstk.o
+tdfun.o: tdfun.f csinit.o tffs.o tfstk.o toplvl.o
+tdgeo.o: tdgeo.f initb1.o tffs.o tfstk.o
 tdinit.o: tdinit.f
 tdjin.o: tdjin.f tfstk.o toplvl.o
-tdlat.o: tdlat.f tffs_conflict-20170109-035115.o tfstk.o
+tdlat.o: tdlat.f tffs.o tfstk.o
 tdplt.o: tdplt.f
-tdrife.o: tdrife.f tdrift.o tffs_conflict-20170109-035115.o tfstk.o
+tdrife.o: tdrife.f tdrift.o tffs.o tfstk.o
 tdrift.o: tdrift.f tfstk.o
-tdrwdt.o: tdrwdt.f inc/common.inc tffs_conflict-20170109-035115.o tfstk.o
+tdrwdt.o: tdrwdt.f inc/common.inc tffs.o tfstk.o
 tedrawf.o: tedrawf.f
 teigen.o: teigen.f
-temap.o: temap.f tffs_conflict-20170109-035115.o tfstk.o
-temat.o: temat.f tffs_conflict-20170109-035115.o tfstk.o
-temit.o: temit.f temit_conflict-20170109-034922.o tffs_conflict-20170109-035115.o tfstk.o
-temit_conflict-20170109-034922.o: temit_conflict-20170109-034922.f tffs_conflict-20170109-035115.o tfstk.o
-temitf.o: temitf.f tffs_conflict-20170109-035115.o
-temits.o: temits.f temit_conflict-20170109-034922.o tffs_conflict-20170109-035115.o tfstk.o toplvl.o
+temap.o: temap.f tffs.o tfstk.o
+temat.o: temat.f tffs.o tfstk.o
+temit.o: temit.f tffs.o tfstk.o
+temitf.o: temitf.f tffs.o
+temits.o: temits.f temit.o tffs.o tfstk.o toplvl.o
 temp.o: temp.f toplvl.o
-termes.o: termes.f tffs_conflict-20170109-035115.o tfstk.o
-terror.o: terror.f tffs_conflict-20170109-035115.o tfstk.o
+termes.o: termes.f tffs.o tfstk.o
+terror.o: terror.f tffs.o tfstk.o
 test.o: test.f
 tfTclArg.o: tfTclArg.f tfstk.o tfstrbuf.o
-tfTclArg.f_0.o: tfTclArg.f_0.f tfstk.o tfstrbuf.o
-tfadjst.o: tfadjst.f tffs_conflict-20170109-035115.o tfstk.o
-tfaprt.o: tfaprt.f tffs_conflict-20170109-035115.o tfstk.o
-tfattr.o: tfattr.f tffs_conflict-20170109-035115.o tfstk.o
-tfbeam.o: tfbeam.f tffs_conflict-20170109-035115.o tfstk.o
-tfbeamline.o: tfbeamline.f initb1.o tffs_conflict-20170109-035115.o tfstk.o toplvl.o
+tfadjst.o: tfadjst.f tffs.o tfstk.o
+tfaprt.o: tfaprt.f tffs.o tfstk.o
+tfattr.o: tfattr.f tffs.o tfstk.o
+tfbeam.o: tfbeam.f tffs.o tfstk.o
+tfbeamline.o: tfbeamline.f initb1.o tffs.o tfstk.o toplvl.o
 tfbessel.o: tfbessel.f tfstk.o toplvl.o
-tfcalc.o: tfcalc.f tffs_conflict-20170109-035115.o tfstk.o
+tfcalc.o: tfcalc.f tffs.o tfstk.o
 tfcanvasclip.o: tfcanvasclip.f tfstk.o tfstrbuf.o
-tfchgv.o: tfchgv.f csinit.o tffs_conflict-20170109-035115.o tfstk.o
-tfchro.o: tfchro.f initb1.o tffs_conflict-20170109-035115.o tfstk.o
+tfchgv.o: tfchgv.f csinit.o tffs.o tfstk.o
+tfchro.o: tfchro.f initb1.o tffs.o tfstk.o
 tfconvstr.o: tfconvstr.f tfstk.o tfstrbuf.o
-tfcoup.o: tfcoup.f csinit.o tffs_conflict-20170109-035115.o tfstk.o
-tfdapert.o: tfdapert.f tffs_conflict-20170109-035115.o tfstk.o
-tfdbun.o: tfdbun.f tffs_conflict-20170109-035115.o
-tfdisp.o: tfdisp.f tffs_conflict-20170109-035115.o tfstk.o
+tfcoup.o: tfcoup.f csinit.o tffs.o tfstk.o
+tfdapert.o: tfdapert.f tffs.o tfstk.o
+tfdbun.o: tfdbun.f tffs.o
+tfdisp.o: tfdisp.f tffs.o tfstk.o
 tfdot.o: tfdot.f tfstk.o toplvl.o
 tfdset.o: tfdset.f tfstk.o
 tfearray.o: tfearray.f tfstk.o
 tfeeval.o: tfeeval.f tfstk.o toplvl.o
 tfeexpr.o: tfeexpr.f tfstk.o
 tfefun.o: tfefun.f csinit.o tfshared.o tfstk.o toplvl.o
-tfefun1.o: tfefun1.f temit_conflict-20170109-034922.o tfstk.o tftwiss.o
+tfefun1.o: tfefun1.f temit.o tfstk.o tftwiss.o
 tfefun2.o: tfefun2.f tfstk.o
 tfefun3ep.o: tfefun3ep.f tfstk.o
 tfematrix.o: tfematrix.f tfstk.o
-tfemit.o: tfemit.f csinit.o tffs_conflict-20170109-035115.o tfstk.o
+tfemit.o: tfemit.f csinit.o tffs.o tfstk.o
 tfepicsconstatcb.o: tfepicsconstatcb.f tfstk.o
 tfestk.o: tfestk.f csinit.o tfstk.o
-tfetok.o: tfetok.f tffs_conflict-20170109-035115.o tfstk.o tfstrbuf.o
+tfetok.o: tfetok.f tffs.o tfstk.o tfstrbuf.o
 tfeval.o: tfeval.f csinit.o tfstk.o
 tfeval1.o: tfeval1.f tfstk.o toplvl.o
-tffamsetup.o: tffamsetup.f tffs_conflict-20170109-035115.o tfstk.o
-tffile.o: tffile.f csinit.o tffs_conflict-20170109-035115.o tfstk.o
+tffamsetup.o: tffamsetup.f tffs.o tfstk.o
+tffile.o: tffile.f csinit.o tffs.o tfstk.o
 tffindroot.o: tffindroot.f tfstk.o
-tffs.o: tffs.f csinit.o initb1.o tffs_conflict-20170109-035115.o tfstk.o toplvl.o
-tffs_conflict-20170109-035115.o: tffs_conflict-20170109-035115.f csinit.o initb1.o tfstk.o toplvl.o
-tffsa.o: tffsa.f csinit.o tffs_conflict-20170109-035115.o tfstk.o toplvl.o
-tffscalc.o: tffscalc.f csinit.o tffs_conflict-20170109-035115.o tfshared.o tfstk.o toplvl.o
-tffsfreefix.o: tffsfreefix.f csinit.o tffs_conflict-20170109-035115.o tfstk.o toplvl.o
-tffsmatch.o: tffsmatch.f initb1.o tffs_conflict-20170109-035115.o tfshared.o tfstk.o toplvl.o
-tffswake.o: tffswake.f tffs_conflict-20170109-035115.o tfstk.o
-tfgeo.o: tfgeo.f initb1.o tffs_conflict-20170109-035115.o tfstk.o
+tffs.o: tffs.f csinit.o initb1.o tfstk.o toplvl.o
+tffsa.o: tffsa.f csinit.o tffs.o tfstk.o toplvl.o
+tffscalc.o: tffscalc.f csinit.o tffs.o tfshared.o tfstk.o toplvl.o
+tffsfreefix.o: tffsfreefix.f csinit.o tffs.o tfstk.o toplvl.o
+tffsmatch.o: tffsmatch.f initb1.o tffs.o tfshared.o tfstk.o toplvl.o
+tffswake.o: tffswake.f tffs.o tfstk.o
+tfgeo.o: tfgeo.f initb1.o tffs.o tfstk.o
 tfgeti.o: tfgeti.f
-tfgetm.o: tfgetm.f tffs_conflict-20170109-035115.o tfstk.o
+tfgetm.o: tfgetm.f tffs.o tfstk.o
 tfgetr.o: tfgetr.f
-tfgetv.o: tfgetv.f csinit.o tffs_conflict-20170109-035115.o tfstk.o tftwiss.o
+tfgetv.o: tfgetv.f csinit.o tffs.o tfstk.o tftwiss.o
 tfif.o: tfif.f
-<<<<<<< HEAD
-tfinit.o: tfinit.f csinit.o initb1.o tffs_conflict-20170109-035115.o tfstk.o
-tfinitn.o: tfinitn.f MAIN_conflict-20170109-034447.o csinit.o tfstk.o toplvl.o
-=======
 tfinit.o: tfinit.f csinit.o initb1.o tffs.o tfstk.o
 tfinitn.o: tfinitn.f MAIN.o csinit.o tfstk.o toplvl.o
->>>>>>> origin/master
 tfkwrd.o: tfkwrd.f tfstk.o toplvl.o
-tflag.o: tflag.f tffs_conflict-20170109-035115.o tfstk.o
+tflag.o: tflag.f tffs.o tfstk.o
 tflifetrack.o: tflifetrack.f tfstk.o
-tflogi.o: tflogi.f tffs_conflict-20170109-035115.o
-tfloor.o: tfloor.f tffs_conflict-20170109-035115.o tfstk.o toplvl.o
-tfltr1.o: tfltr1.f tffs_conflict-20170109-035115.o
-tfltra.o: tfltra.f tffs_conflict-20170109-035115.o tfstk.o
+tflogi.o: tflogi.f tffs.o
+tfloor.o: tfloor.f tffs.o tfstk.o toplvl.o
+tfltr1.o: tfltr1.f tffs.o
+tfltra.o: tfltra.f tffs.o tfstk.o
 tfmap.o: tfmap.f tfstk.o
-tfmat.o: tfmat.f temit_conflict-20170109-034922.o tffs_conflict-20170109-035115.o tfstk.o
+tfmat.o: tfmat.f temit.o tffs.o tfstk.o
 tfmemcheck.o: tfmemcheck.f tfstk.o
 tfmodule.o: tfmodule.f tfstk.o
-tfojit.o: tfojit.f tffs_conflict-20170109-035115.o
-tfoptics.o: tfoptics.f csinit.o tffs_conflict-20170109-035115.o tfstk.o
+tfojit.o: tfojit.f tffs.o
+tfoptics.o: tfoptics.f csinit.o tffs.o tfstk.o
 tfpart.o: tfpart.f tfstk.o
-tfprint.o: tfprint.f csinit.o tffs_conflict-20170109-035115.o tfstk.o toplvl.o
+tfprint.o: tfprint.f csinit.o tffs.o tfstk.o toplvl.o
 tfprinta.o: tfprinta.f csinit.o tfstk.o tfstrbuf.o
 tfreadbuf.o: tfreadbuf.f tfshared.o tfstk.o toplvl.o
-tfrej.o: tfrej.f tffs_conflict-20170109-035115.o tfstk.o
-tfrenumber_element.o: tfrenumber_element.f tffs_conflict-20170109-035115.o tfstk.o
+tfrej.o: tfrej.f tffs.o tfstk.o
+tfrenumber_element.o: tfrenumber_element.f tffs.o tfstk.o
 tfreplace.o: tfreplace.f tfstk.o
 tfsameq.o: tfsameq.f tfstk.o toplvl.o
-tfsave.o: tfsave.f csinit.o initb1.o tffs_conflict-20170109-035115.o tfstk.o
+tfsave.o: tfsave.f csinit.o initb1.o tffs.o tfstk.o
 tfsetlist.o: tfsetlist.f tfstk.o toplvl.o
-tfsetparam.o: tfsetparam.f initb1.o tffs_conflict-20170109-035115.o tfstk.o
-tfsetv.o: tfsetv.f csinit.o tffs_conflict-20170109-035115.o tfstk.o toplvl.o
+tfsetparam.o: tfsetparam.f initb1.o tffs.o tfstk.o
+tfsetv.o: tfsetv.f csinit.o tffs.o tfstk.o toplvl.o
 tfshared.o: tfshared.f tfstk.o
-tfshow.o: tfshow.f tffs_conflict-20170109-035115.o tfstk.o
+tfshow.o: tfshow.f tffs.o tfstk.o
 tfsize.o: tfsize.f
 tfsolvemember.o: tfsolvemember.f tfstk.o
 tfsort.o: tfsort.f
@@ -404,68 +374,52 @@ tfstk.o: tfstk.f
 tfstrbuf.o: tfstrbuf.f tfstk.o
 tftable.o: tftable.f tfstk.o
 tftake.o: tftake.f tfstk.o
-tftmat.o: tftmat.f tffs_conflict-20170109-035115.o tfstk.o
-tftrack.o: tftrack.f csinit.o tffs_conflict-20170109-035115.o tfshared.o tfstk.o
+tftmat.o: tftmat.f tffs.o tfstk.o
+tftrack.o: tftrack.f csinit.o tffs.o tfshared.o tfstk.o
 tftrad.o: tftrad.f tfstk.o
-tftrak.o: tftrak.f tffs_conflict-20170109-035115.o
-tftrb.o: tftrb.f tffs_conflict-20170109-035115.o
-tftwiss.o: tftwiss.f tffs_conflict-20170109-035115.o tfstk.o toplvl.o
-tftyp1.o: tftyp1.f initb1.o tffs_conflict-20170109-035115.o tfstk.o toplvl.o
-tftype.o: tftype.f initb1.o tffs_conflict-20170109-035115.o tfstk.o toplvl.o
-tfvars.o: tfvars.f csinit.o tffs_conflict-20170109-035115.o tfstk.o
+tftrak.o: tftrak.f tffs.o
+tftrb.o: tftrb.f tffs.o
+tftwiss.o: tftwiss.f tffs.o tfstk.o toplvl.o
+tftyp1.o: tftyp1.f initb1.o tffs.o tfstk.o toplvl.o
+tftype.o: tftype.f initb1.o tffs.o tfstk.o toplvl.o
+tfvars.o: tfvars.f csinit.o tffs.o tfstk.o
 tfvectorize.o: tfvectorize.f tfstk.o
-tfwake.o: tfwake.f initb1.o tffs_conflict-20170109-035115.o tfstk.o
+tfwake.o: tfwake.f initb1.o tffs.o tfstk.o
 tfwrite.o: tfwrite.f csinit.o tfstk.o tfstrbuf.o toplvl.o
-tfzap.o: tfzap.f tffs_conflict-20170109-035115.o
-tgetfv.o: tgetfv.f csinit.o tffs_conflict-20170109-035115.o tfstk.o
-tgfun.o: tgfun.f tffs_conflict-20170109-035115.o tfstk.o
+tfzap.o: tfzap.f tffs.o
+tgetfv.o: tgetfv.f csinit.o tffs.o tfstk.o
+tgfun.o: tgfun.f tffs.o tfstk.o
 tgrot.o: tgrot.f
 thess.o: thess.f
 tinitr.o: tinitr.f
-tins.o: tins.f tffs_conflict-20170109-035115.o
-tinse.o: tinse.f tffs_conflict-20170109-035115.o
-tintrb.o: tintrb.f temit_conflict-20170109-034922.o tffs_conflict-20170109-035115.o tfstk.o
+tins.o: tins.f tffs.o
+tinse.o: tinse.f tffs.o
+tintrb.o: tintrb.f temit.o tffs.o tfstk.o
 title.o: title.f toplvl.o
-tltrm.o: tltrm.f tffs_conflict-20170109-035115.o tfstk.o
+tltrm.o: tltrm.f tffs.o tfstk.o
 tlum.o: tlum.f tfstk.o
-tluma.o: tluma.f tffs_conflict-20170109-035115.o
-tmap.o: tmap.f temit_conflict-20170109-034922.o
-tmast.o: tmast.f tffs_conflict-20170109-035115.o tfstk.o
+tluma.o: tluma.f tffs.o
+tmap.o: tmap.f temit.o
+tmast.o: tmast.f tffs.o tfstk.o
 tmatch.o: tmatch.f tfstk.o
 tmov.o: tmov.f
-tmulbs.o: tmulbs.f tffs_conflict-20170109-035115.o tfstk.o
+tmulbs.o: tmulbs.f tffs.o tfstk.o
 tmuld.o: tmuld.f
-tmulta.o: tmulta.f inc/TENT.inc inc/TEXIT.inc tffs_conflict-20170109-035115.o tfstk.o
-tmulte.o: tmulte.f tffs_conflict-20170109-035115.o tfstk.o tmulta.o
-tmulti.o: tmulti.f tffs_conflict-20170109-035115.o tfstk.o
+tmulta.o: tmulta.f inc/TENT.inc inc/TEXIT.inc tffs.o tfstk.o
+tmulte.o: tmulte.f tffs.o tfstk.o tmulta.o
+tmulti.o: tmulti.f tffs.o tfstk.o
 tmultr.o: tmultr.f
 tnorm.o: tnorm.f
 toplvl.o: toplvl.f tfstk.o
-tpara.o: tpara.f bbstrhl.o initb1.o tffs_conflict-20170109-035115.o tfstk.o
+tpara.o: tpara.f bbstrhl.o initb1.o tffs.o tfstk.o
 tphplt.o: tphplt.f
-tprmpt.o: tprmpt.f tffs_conflict-20170109-035115.o tfstk.o
+tprmpt.o: tprmpt.f tffs.o tfstk.o
 tput.o: tput.f
 tputbs.o: tputbs.f
 tqente.o: tqente.f tfstk.o
-tqfrie.o: tqfrie.f tffs_conflict-20170109-035115.o tfstk.o
-tqlfre.o: tqlfre.f tffs_conflict-20170109-035115.o
+tqfrie.o: tqfrie.f tffs.o tfstk.o
+tqlfre.o: tqlfre.f tffs.o
 tqr.o: tqr.f
-<<<<<<< HEAD
-tqrad.o: tqrad.f inc/TENT.inc inc/TEXIT.inc tffs_conflict-20170109-035115.o
-tquad.o: tquad.f inc/TENT.inc inc/TEXIT.inc tffs_conflict-20170109-035115.o tfstk.o toplvl.o
-tquade.o: tquade.f tffs_conflict-20170109-035115.o tfstk.o
-tquads.o: tquads.f tffs_conflict-20170109-035115.o tfstk.o
-tquase.o: tquase.f tffs_conflict-20170109-035115.o tfstk.o
-track.o: track.f temit_conflict-20170109-034922.o tffs_conflict-20170109-035115.o tfstk.o toplvl.o
-track_conflict-20170109-033029.o: track_conflict-20170109-033029.f temit_conflict-20170109-034922.o tffs_conflict-20170109-035115.o tfstk.o toplvl.o
-tracka.o: tracka.f tffs_conflict-20170109-035115.o tfstk.o
-trackb.o: trackb.f tffs_conflict-20170109-035115.o tffsa.o tfstk.o
-trackd.o: trackd.f tffs_conflict-20170109-035115.o tfshared.o tfstk.o
-tracke.o: tracke.f tffs_conflict-20170109-035115.o tffsa.o tfstk.o
-trad.o: trad.f tffs_conflict-20170109-035115.o tfstk.o
-trade.o: trade.f tffs_conflict-20170109-035115.o tfstk.o
-trcoda.o: trcoda.f tffs_conflict-20170109-035115.o tfstk.o
-=======
 tqrad.o: tqrad.f inc/TENT.inc inc/TEXIT.inc tffs.o
 tquad.o: tquad.f inc/TENT.inc inc/TEXIT.inc tffs.o tfstk.o toplvl.o
 tquade.o: tquade.f tffs.o tfstk.o
@@ -479,47 +433,44 @@ tracke.o: tracke.f tffs.o tffsa.o tfstk.o
 trad.o: trad.f tffs.o tfstk.o
 trade.o: trade.f tffs.o tfstk.o
 trcoda.o: trcoda.f tffs.o tfstk.o
->>>>>>> origin/master
 trotg.o: trotg.f
-tscale.o: tscale.f tffs_conflict-20170109-035115.o
-tsconv.o: tsconv.f tffs_conflict-20170109-035115.o tfstk.o
-tsdrad.o: tsdrad.f tffs_conflict-20170109-035115.o
-tserad.o: tserad.f initb1.o tffs_conflict-20170109-035115.o tfstk.o
-tsgeo.o: tsgeo.f initb1.o tffs_conflict-20170109-035115.o tfstk.o
-tshow.o: tshow.f tffs_conflict-20170109-035115.o tfstk.o
-tsmear.o: tsmear.f tffs_conflict-20170109-035115.o
-tsol.o: tsol.f initb1.o tffs_conflict-20170109-035115.o tfstk.o
-tsole.o: tsole.f initb1.o tffs_conflict-20170109-035115.o tfstk.o
-tsole_conflict-20170109-035936.o: tsole_conflict-20170109-035936.f initb1.o tffs_conflict-20170109-035115.o tfstk.o
+tscale.o: tscale.f tffs.o
+tsconv.o: tsconv.f tffs.o tfstk.o
+tsdrad.o: tsdrad.f tffs.o
+tserad.o: tserad.f initb1.o tffs.o tfstk.o
+tsgeo.o: tsgeo.f initb1.o tffs.o tfstk.o
+tshow.o: tshow.f tffs.o tfstk.o
+tsmear.o: tsmear.f tffs.o
+tsol.o: tsol.f initb1.o tffs.o tfstk.o
+tsole.o: tsole.f initb1.o tffs.o tfstk.o
 tsolqu.o: tsolqu.f tfstk.o tsolque.o
-tsolque.o: tsolque.f tffs_conflict-20170109-035115.o tfstk.o
+tsolque.o: tsolque.f tffs.o tfstk.o
 tsolvg.o: tsolvg.f
 tsolvm.o: tsolvm.f
-tspac.o: tspac.f tffs_conflict-20170109-035115.o tfstk.o toplvl.o
-tspect.o: tspect.f tffs_conflict-20170109-035115.o tfstk.o
-tspini.o: tspini.f tffs_conflict-20170109-035115.o tfstk.o
-tsteee.o: tsteee.f tffs_conflict-20170109-035115.o tfstk.o
-tsteer.o: tsteer.f inc/TENT.inc inc/TEXIT.inc tffs_conflict-20170109-035115.o
-tstrad.o: tstrad.f inc/TENT.inc inc/TEXIT.inc tffs_conflict-20170109-035115.o
+tspac.o: tspac.f tffs.o tfstk.o toplvl.o
+tspect.o: tspect.f tffs.o tfstk.o
+tspini.o: tspini.f tffs.o tfstk.o
+tsteee.o: tsteee.f tffs.o tfstk.o
+tsteer.o: tsteer.f inc/TENT.inc inc/TEXIT.inc tffs.o
+tstrad.o: tstrad.f inc/TENT.inc inc/TEXIT.inc tffs.o
 tsvdm.o: tsvdm.f
-ttcav.o: ttcav.f inc/TENT.inc inc/TEXIT.inc tffs_conflict-20170109-035115.o tfstk.o
-ttcave.o: ttcave.f tffs_conflict-20170109-035115.o
+ttcav.o: ttcav.f inc/TENT.inc inc/TEXIT.inc tffs.o tfstk.o
+ttcave.o: ttcave.f tffs.o
 ttdr.o: ttdr.f csinit.o
-tthine.o: tthine.f temit_conflict-20170109-034922.o tffs_conflict-20170109-035115.o
-ttinit.o: ttinit.f initb1.o tffs_conflict-20170109-035115.o tfstk.o
-ttstat.o: ttstat.f tffs_conflict-20170109-035115.o tfstk.o
-tturn.o: tturn.f initb1.o tffs_conflict-20170109-035115.o tfstk.o
-tturne.o: tturne.f initb1.o temit_conflict-20170109-034922.o tffs_conflict-20170109-035115.o tfstk.o
-tturne_conflict-20170109-040348.o: tturne_conflict-20170109-040348.f initb1.o temit_conflict-20170109-034922.o tffs_conflict-20170109-035115.o tfstk.o
+tthine.o: tthine.f temit.o tffs.o
+ttinit.o: ttinit.f initb1.o tffs.o tfstk.o
+ttstat.o: ttstat.f tffs.o tfstk.o
+tturn.o: tturn.f initb1.o tffs.o tfstk.o
+tturne.o: tturne.f initb1.o temit.o tffs.o tfstk.o
 tvcorr.o: tvcorr.f toplvl.o
 twbuf.o: twbuf.f
-twelm.o: twelm.f tffs_conflict-20170109-035115.o
+twelm.o: twelm.f tffs.o
 twinil.o: twinil.f
 twinit.o: twinit.f
-twsdrw.o: twsdrw.f tffs_conflict-20170109-035115.o tfstk.o
-txcalc.o: txcalc.f tffs_conflict-20170109-035115.o tfstk.o
+twsdrw.o: twsdrw.f tffs.o tfstk.o
+txcalc.o: txcalc.f tffs.o tfstk.o
 txwake.o: txwake.f inc/TENT.inc inc/TEXIT.inc
-undulator.o: undulator.f inc/TENT.inc inc/TEXIT.inc tffs_conflict-20170109-035115.o
+undulator.o: undulator.f inc/TENT.inc inc/TEXIT.inc tffs.o
 wfbin.o: wfbin.f
 wfres.o: wfres.f
 wiord.o: wiord.f
