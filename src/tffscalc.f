@@ -599,73 +599,46 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
       use mackw
       implicit none
       type (ffs_bound) fbound
-      real*8 xnlat,offset,tffsmarkoffset
-      xnlat=nlat
-      if(idtypec(1) .eq. icMARK)then
-        offset=max(1.d0,min(xnlat,1.d0+tffsmarkoffset(1)))
-        fbound%lb=int(offset)
-        fbound%fb=offset-fbound%lb
-      else
-        fbound%lb=1
-        fbound%fb=0.d0
-      endif
-      if(idtypec(nlat-1) .eq. icMARK)then
-        offset=tffsmarkoffset(nlat-1)
-        if(offset .ne. 0.d0)then
-          offset=max(dble(fbound%lb+1),min(xnlat,xnlat-1.d0+offset))
-          fbound%le=int(offset)
-          fbound%fe=offset-fbound%le
-        else
-          fbound%le=nlat
-          fbound%fe=0.d0
-        endif
-      else
-        fbound%le=nlat
-        fbound%fe=0.d0
-      endif
+      call tffsbound1(1,nlat,fbound)
       return
       end
 
-      subroutine tffsbound1(la,lb,fbound)
+      subroutine tffsbound1(lb,le,fbound)
       use tfstk
       use ffs, only:nlat,ffs_bound
       use ffs_pointer
       use mackw
       implicit none
       type (ffs_bound) fbound
-      integer*4 la,lb,lb1
+      integer*4 lb,le,le1
       real*8 xnlat,offset,tffsmarkoffset
       xnlat=nlat
-      if(idtypec(la) .eq. icMARK)then
-        offset=max(1.d0,min(xnlat,la+tffsmarkoffset(la)))
+      offset=tffsmarkoffset(lb)
+      if(offset .ne. 0.d0)then
+        offset=max(1.d0,min(xnlat,lb+offset))
         fbound%lb=int(offset)
         fbound%fb=offset-fbound%lb
       else
-        fbound%lb=la
+        fbound%lb=lb
         fbound%fb=0.d0
       endif
-      lb1=lb
-      if(lb .eq. nlat)then
+      le1=le
+      if(le .eq. nlat)then
         if(idtypec(nlat-1) .eq. icMARK)then
-          lb1=lb1-1
+          le1=le1-1
         else
-          fbound%le=lb1
+          fbound%le=le1
           fbound%fe=0.d0
           return
         endif
       endif
-      if(idtypec(lb1) .eq. icMARK)then
-        offset=tffsmarkoffset(lb1)
-        if(offset .ne. 0.d0)then
-          offset=max(dble(fbound%lb+1),min(xnlat,lb1+offset))
-          fbound%le=int(offset)
-          fbound%fe=offset-fbound%le
-        else
-          fbound%le=lb1
-          fbound%fe=0.d0
-        endif
+      offset=tffsmarkoffset(le1)
+      if(offset .ne. 0.d0)then
+        offset=max(1.d0,min(xnlat,le1+offset))
+        fbound%le=int(offset)
+        fbound%fe=offset-fbound%le
       else
-        fbound%le=lb1
+        fbound%le=le1
         fbound%fe=0.d0
       endif
       return

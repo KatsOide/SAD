@@ -8,11 +8,13 @@
       integer*4 np,n,kptbl(np0,6)
       integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
-      call tturn0(np,latt,1,nlat,x,px,y,py,z,g,dv,pz,kptbl,n)
+      logical*4 normal
+      call tturn0(np,latt,1,nlat,x,px,y,py,z,g,dv,pz,kptbl,n,normal)
       return
       end
 
-      subroutine tturn0(np,latt,lb,le,x,px,y,py,z,g,dv,pz,kptbl,n)
+      subroutine tturn0(np,latt,lb,le,x,px,y,py,z,g,dv,pz,
+     $     kptbl,n,normal)
       use tfstk
       use ffs_flag
       use tmacro
@@ -29,7 +31,7 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
       integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       real*8 sa(6),ss(6,6),vsave(100)
-      logical*4 sol,chg,tfinsol
+      logical*4 sol,chg,tfinsol,normal
       pgev00=pgev
       sol=tfinsol(lb)
       novfl=0
@@ -39,27 +41,45 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
      $       p0/h0*c,dvfs,.true.)
       endif
       call tffsbound1(lb,le,fbound)
-      if(fbound%fb .ne. 0.d0)then
+      normal=fbound%lb .lt. fbound%le .or.
+     $     fbound%lb .eq. fbound%le .and. fbound%fb .le. fbound%fe
+      if(.not. normal)then
+        return
+      endif
+      write(*,*)'tturn0 ',fbound%lb,fbound%fb,fbound%le,fbound%fe
+      if(fbound%lb .eq. fbound%le)then
         call qfracsave(fbound%lb,vsave,nvar,.true.)
-        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
+        call qfraccomp(fbound%lb,fbound%fb,fbound%fe,ideal,chg)
         call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
      $       sol,la,fbound%lb,fbound%lb)
         if(chg)then
           call qfracsave(fbound%lb,vsave,nvar,.false.)
         endif
-        ls=fbound%lb+1
       else
-        ls=fbound%lb
-      endif
-      call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
-     $     sol,la,ls,fbound%le-1)
-      if(fbound%fe .ne. 0.d0)then
-        call qfracsave(fbound%le,vsave,nvar,.true.)
-        call qfraccomp(fbound%le,0.d0,fbound%fe,ideal,chg)
-        call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
-     $       sol,la,fbound%le,fbound%le)
-        if(chg)then
-          call qfracsave(fbound%le,vsave,nvar,.false.)
+        if(fbound%fb .ne. 0.d0)then
+          call qfracsave(fbound%lb,vsave,nvar,.true.)
+          call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
+          call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
+     $         sol,la,fbound%lb,fbound%lb)
+          if(chg)then
+            call qfracsave(fbound%lb,vsave,nvar,.false.)
+          endif
+          ls=fbound%lb+1
+        else
+          ls=fbound%lb
+        endif
+        if(fbound%le .gt. ls+1)then
+          call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
+     $         sol,la,ls,fbound%le-1)
+        endif
+        if(fbound%fe .ne. 0.d0)then
+          call qfracsave(fbound%le,vsave,nvar,.true.)
+          call qfraccomp(fbound%le,0.d0,fbound%fe,ideal,chg)
+          call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
+     $         sol,la,fbound%le,fbound%le)
+          if(chg)then
+            call qfracsave(fbound%le,vsave,nvar,.false.)
+          endif
         endif
       endif
       if(trpt .and. codplt)then
