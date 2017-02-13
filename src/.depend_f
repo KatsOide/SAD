@@ -292,7 +292,6 @@ termes.o: termes.f tffs.o tfstk.o
 terror.o: terror.f tffs.o tfstk.o
 test.o: test.f
 tfTclArg.o: tfTclArg.f tfstk.o tfstrbuf.o
-tfTclArg.f_0.o: tfTclArg.f_0.f tfstk.o tfstrbuf.o
 tfadjst.o: tfadjst.f tffs.o tfstk.o
 tfaprt.o: tfaprt.f tffs.o tfstk.o
 tfattr.o: tfattr.f tffs.o tfstk.o
