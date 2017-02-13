@@ -102,7 +102,7 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
       type (ffs_bound) fbound
       type (sad_list), pointer :: kli
       integer*8 iatr,iacod,iabmi
-      integer*4 ls,l,nvar,lx,idp
+      integer*4 ls,l,nvar,lx,idp,le1
       real*8 trans(6,12),cod(6),beam(42)
       real*8 trans1(6,12),cod1(6),beam1(42)
       real*8 vsave(kwMAX)
@@ -122,11 +122,12 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
         ls=fbound%lb
       endif
       if(fbound%fe .eq. 0.d0)then
+        le1=min(nlat-1,fbound%le)
         call tturne1(trans,cod,beam,
-     $       iatr,iacod,iabmi,idp,plot,sol,rt,ls,min(nlat-1,fbound%le))
+     $       iatr,iacod,iabmi,idp,plot,sol,rt,ls,le1)
         if(plot)then
           call tfsetplot(trans,cod,beam,0,
-     $         fbound%le,iatr,iacod,.false.,idp)
+     $         le1+1,iatr,iacod,.false.,idp)
         endif
       else
         call tturne1(trans,cod,beam,
