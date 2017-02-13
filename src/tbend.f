@@ -52,7 +52,7 @@
      $         eps,enarad,fringe,
      $         0.d0,0.d0,0.d0,0.d0,
      $         mfring,fb1,fb2,
-     $         0.d0,0.d0,0.d0,0.d0,0.d0,
+     $         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,
      $         .false.,.false.,
      $         int8(0),int8(0),int8(0),int8(0))
         endif

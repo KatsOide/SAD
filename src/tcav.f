@@ -1,5 +1,5 @@
       subroutine tcav(np,x,px,y,py,z,g,dv,al,vc,
-     $     w,phi,dphi,
+     $     w,phi,dphi,vnominal,
      $     lwl,wakel,lwt,waket,
      $     dx,dy,theta,v1,v20,v11,v02,
      $     fringe,mfring,autophi)
@@ -41,10 +41,10 @@
       v11a=v11/amass*abs(charge)
       v02a=.5d0*v02/amass*abs(charge)
       if(trpt)then
-        vnominal=v*sin(-phi*sign(1.d0,charge))
+c        vnominal=v*sin(-phi*sign(1.d0,charge))
         phis=0.d0
       else
-        vnominal=0.d0
+c        vnominal=0.d0
         if(autophi)then
           phis=phic
         else
@@ -193,6 +193,7 @@ c          dpz=-a/(1.d0+sqrt(1.d0-a))
         endif
       endif
       if(vnominal .ne. 0.d0)then
+c        write(*,*)'tcav ',vnominal,p0,pe
         do 210 i=1,np
           dp=g(i)
           dp1=dp*p0/pe-dpepe

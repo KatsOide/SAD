@@ -17,7 +17,7 @@
      $     npp,ipn,m,itfmessage,nt,mt,kseed,j
       integer*8 ikptblw,ikptblm
       real*8 trf00,p00,vcphic0,vcalpha0
-      logical*4 dapert0
+      logical*4 dapert0,normal
       narg=isp-isp1
       if(narg .gt. 4)then
         irtc=itfmessage(9,'General::narg','"1, 2, 3, or 4"')
@@ -183,7 +183,7 @@
           call tturn0(npa,latt,ls,nlat,
      $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
      $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
-     $         rlist(kzp+npz*6),rlist(kpz),ilist(1,ikptblw),nt)
+     $         rlist(kzp+npz*6),rlist(kpz),ilist(1,ikptblw),nt,normal)
           nt=nt+1
           mt=mt-1
           ls=1
@@ -202,15 +202,19 @@
           call tturn0(npa,latt,1,nlat,
      $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
      $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
-     $         rlist(kzp+npz*6),rlist(kpz),ilist(1,ikptblw),nt)
+     $         rlist(kzp+npz*6),rlist(kpz),ilist(1,ikptblw),nt,normal)
           nt=nt+1
           mt=mt-1
         enddo
-        if(mt .ge. 1 .and. npa .gt. 0 .and. ld .gt. ls)then
+        if(ld .le. ls)then
+          normal=.false.
+        elseif(mt .ge. 1 .and. npa .gt. 0)then
           call tturn0(npa,latt,ls,ld,
      $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
      $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
-     $         rlist(kzp+npz*6),rlist(kpz),ilist(1,ikptblw),nt)
+     $         rlist(kzp+npz*6),rlist(kpz),ilist(1,ikptblw),nt,normal)
+        else
+          normal=.true.
         endif
         np0=np00
         outfl=outfl0
@@ -249,7 +253,11 @@ c        endif
       call tfree(ikptblw)
       call tfree(kpz)
       kx=kxadaloc(-1,2,klx)
-      klx%rbody(1)=dble(ld)
+      if(normal)then
+        klx%rbody(1)=dble(ld)
+      else
+        klx%rbody(1)=dble(ls)
+      endif
       klx%body(2)=ktflist+ktfcopy1(kaxl)
       if(radlight)then
         kx1=kx

@@ -8,11 +8,13 @@
       integer*4 np,n,kptbl(np0,6)
       integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
-      call tturn0(np,latt,1,nlat,x,px,y,py,z,g,dv,pz,kptbl,n)
+      logical*4 normal
+      call tturn0(np,latt,1,nlat,x,px,y,py,z,g,dv,pz,kptbl,n,normal)
       return
       end
 
-      subroutine tturn0(np,latt,lb,le,x,px,y,py,z,g,dv,pz,kptbl,n)
+      subroutine tturn0(np,latt,lb,le,x,px,y,py,z,g,dv,pz,
+     $     kptbl,n,normal)
       use tfstk
       use ffs_flag
       use tmacro
@@ -29,7 +31,7 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
       integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       real*8 sa(6),ss(6,6),vsave(100)
-      logical*4 sol,chg,tfinsol
+      logical*4 sol,chg,tfinsol,normal
       pgev00=pgev
       sol=tfinsol(lb)
       novfl=0
@@ -39,27 +41,46 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
      $       p0/h0*c,dvfs,.true.)
       endif
       call tffsbound1(lb,le,fbound)
-      if(fbound%fb .ne. 0.d0)then
+      normal=fbound%lb .lt. fbound%le .or.
+     $     fbound%lb .eq. fbound%le .and. fbound%fb .le. fbound%fe
+      if(.not. normal)then
+        return
+      endif
+      if(fbound%lb .eq. fbound%le)then
         call qfracsave(fbound%lb,vsave,nvar,.true.)
-        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
+        call qfraccomp(fbound%lb,fbound%fb,fbound%fe,ideal,chg)
         call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
      $       sol,la,fbound%lb,fbound%lb)
         if(chg)then
           call qfracsave(fbound%lb,vsave,nvar,.false.)
         endif
-        ls=fbound%lb+1
       else
-        ls=fbound%lb
-      endif
-      call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
-     $     sol,la,ls,fbound%le-1)
-      if(fbound%fe .ne. 0.d0)then
-        call qfracsave(fbound%le,vsave,nvar,.true.)
-        call qfraccomp(fbound%le,0.d0,fbound%fe,ideal,chg)
-        call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
-     $       sol,la,fbound%le,fbound%le)
-        if(chg)then
-          call qfracsave(fbound%le,vsave,nvar,.false.)
+        if(fbound%fb .ne. 0.d0)then
+          call qfracsave(fbound%lb,vsave,nvar,.true.)
+          call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
+          call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
+     $         sol,la,fbound%lb,fbound%lb)
+          if(chg)then
+            call qfracsave(fbound%lb,vsave,nvar,.false.)
+          endif
+          ls=fbound%lb+1
+        else
+          ls=fbound%lb
+        endif
+c      write(*,*)'tturn0 ',fbound%lb,fbound%fb,fbound%le,fbound%fe,ls
+        if(fbound%le .gt. ls+1 .or.
+     $       fbound%le .eq. ls+1 .and. fbound%fe .eq. 0.d0)then
+          call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
+     $         sol,la,ls,fbound%le-1)
+        endif
+        if(fbound%fe .ne. 0.d0)then
+          call qfracsave(fbound%le,vsave,nvar,.true.)
+          call qfraccomp(fbound%le,0.d0,fbound%fe,ideal,chg)
+          call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
+     $         sol,la,fbound%le,fbound%le)
+          if(chg)then
+            call qfracsave(fbound%le,vsave,nvar,.false.)
+          endif
         endif
       endif
       if(trpt .and. codplt)then
@@ -118,7 +139,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       real*8 sa(6),ss(6,6),phi,bz,harm,w,
      $     al,ak0,ak1,psi1,psi2,tgauss,ph,harmf,
      $     sspac0,sspac,fw,dx,dy,rot,sspac1,sspac2,
-     $     fb1,fb2,chi1,chi2,ak,rtaper
+     $     fb1,fb2,chi1,chi2,ak,rtaper,vnominal
       integer*4 l,lele,i,mfr,ke,lwl,lwt,lwlc,lwtc,
      $     nextwake,nwak,itab(np),izs(np)
       integer*8 iwpl,iwpt,iwplc,iwptc,itp
@@ -155,9 +176,6 @@ c      isb=ilist(2,iwakepold+6)
       sspac0=rlist(ifpos+lbegin-1)
       call tsetdvfs
       do l=lbegin,lend
-c        if(mod(l,100) .eq. 1)then
-c          write(*,*)'ttrun1 ',l,z(1),dvfs
-c        endif
         if(trpt .and. codplt)then
           call ttstat(np,x,px,y,py,z,g,dv,0.d0,
      1         ' ',sa,ss,0.d0,
@@ -245,12 +263,6 @@ c     $              +l-1),
        else
          al=0.d0
        endif
-c        if(l .eq. lbegin .or. l .eq. lend)then
-c          write(*,'(1X,I5,I8,I5,I6,1X,A,1P7G11.3)')
-c     1       l,itp,lele,lp,pname(ilist(2,latt(l)))(1:8),
-c     $       x(4),px(4),y(4),py(4),
-c     1       z(4),g(4)*(2.d0+g(4))
-c        endif
        go to (1100,1200,1010,1400,1010,1600,1010,1600,1010,1600,
      1      1010,1600,1010,1010,1010,1010,1010,1800,1900,2000,
      1      2100,2200,1010,1010,1010,1010,1010,1010,1010,1010,
@@ -416,6 +428,12 @@ c            enddo
           chi2=-cmp%value(ky_CHI2_MULT)
         endif
         bz=0.d0
+        if(trpt)then
+          vnominal=cmp%value(ky_VOLT_MULT)/amass*abs(charge)
+     $         *sin(-cmp%value(ky_PHI_MULT)*sign(1.d0,charge))
+        else
+          vnominal=0.d0
+        endif
         harm=cmp%value(ky_HARM_MULT)
         if(harm .eq. 0.d0)then
           w=pi2*cmp%value(ky_FREQ_MULT)/c
@@ -445,8 +463,9 @@ c            enddo
      $       rlist(itp+1)*rtaper,rlist(itp+2)*rtaper,
      $       rlist(itp+3)*rtaper,rlist(itp+4)*rtaper,
      $       mfr,fb1,fb2,
-     $       cmp%value(ky_VOLT_MULT),w,
-     $       cmp%value(ky_PHI_MULT),ph,
+     $       cmp%value(ky_VOLT_MULT)+cmp%value(ky_DVOLT_MULT),
+     $       w,
+     $       cmp%value(ky_PHI_MULT),ph,vnominal,
      $       cmp%value(ky_RADI_MULT),rtaper,autophi,
      $       n,l,latt,kptbl)
         go to 1020
@@ -456,10 +475,15 @@ c            enddo
         else
           w=omega0*harm/c
         endif
-        if(cmp%value(ky_RANV_CAVI) .eq. 0.d0)then
-          ak=cmp%value(ky_VOLT_CAVI)
+        if(trpt)then
+          vnominal=cmp%value(ky_VOLT_CAVI)/amass*abs(charge)
+     $         *sin(-cmp%value(ky_PHI_CAVI)*sign(1.d0,charge))
         else
-          ak=cmp%value(ky_VOLT_CAVI)+cmp%value(ky_RANV_CAVI)*tgauss()
+          vnominal=0.d0
+        endif
+        ak=cmp%value(ky_VOLT_CAVI)+cmp%value(ky_DVOLT_CAVI)
+        if(cmp%value(ky_RANV_CAVI) .ne. 0.d0)then
+          ak=ak+cmp%value(ky_RANV_CAVI)*tgauss()
         endif
         if(cmp%value(ky_RANP_CAVI) .eq. 0.d0)then
           ph=cmp%value(ky_DPHI_CAVI)
@@ -470,7 +494,6 @@ c            enddo
         autophi=cmp%value(ky_APHI_CAVI) .ne. 0.d0
         if(autophi)then
           ph=ph+gettwiss(mfitdz,l)*w
-c          write(*,*)'tturn ',l,gettwiss(mfitdz,l),ph
         endif
         mfr=nint(cmp%value(ky_FRMD_CAVI))
         if(direlc(l) .gt. 0.d0)then
@@ -498,7 +521,7 @@ c              lwtc=(ilist(1,iwptc-1)-2)/2
 c            endif
           endif
           call tcav(np,x,px,y,py,z,g,dv,al,ak,
-     1         w,cmp%value(ky_PHI_CAVI),ph,
+     1         w,cmp%value(ky_PHI_CAVI),ph,vnominal,
      $         lwlc,rlist(iwplc+1),lwtc,rlist(iwptc+1),
      1         cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
      $         cmp%value(ky_ROT_CAVI),
@@ -507,7 +530,7 @@ c            endif
      $         cmp%value(ky_FRIN_CAVI) .eq. 0.d0,mfr,autophi)
         else
           call tcav(np,x,px,y,py,z,g,dv,al,ak,
-     1         w,cmp%value(ky_PHI_CAVI),ph,
+     1         w,cmp%value(ky_PHI_CAVI),ph,vnominal,
      $         0,0.d0,0,0.d0,
      1         cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
      $         cmp%value(ky_ROT_CAVI),

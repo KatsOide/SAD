@@ -37,6 +37,7 @@ c
       real*8 sv(5),sa(6),ss(6,7),es
       save sa
       character*(*) cmd,name
+      logical*4 normal
 c
 c     This routine is called from MEA_SURE/DRAW/TRC_OD command @ tffsa.f
 c     (Subroutine call flow at 2008/01/25)
@@ -84,7 +85,8 @@ c     Store current random seed into NISTACK$FIXSEED stack
      1          rlist(ix      ),rlist(ix+np0  ),
      1          rlist(ix+np0*2),rlist(ix+np0*3),
      1          rlist(ix+np0*4),rlist(ix+np0*5),
-     1          rlist(ix+np0*6),rlist(ix+np0*7),ilist(1,ikptbl),1)
+     1          rlist(ix+np0*6),rlist(ix+np0*7),ilist(1,ikptbl),1,
+     $         normal)
         endif
         if(cmd .ne. 'PASS')then
           if(np .le. 1)then

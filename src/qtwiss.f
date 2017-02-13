@@ -336,7 +336,8 @@ c     end   initialize for preventing compiler warning
      $         ftable(1),ftable(2),ftable(3),ftable(4),
      $         mfr,fb1,fb2,
      $         cmp%value(ky_K0FR_MULT) .eq. 0.d0,
-     $         cmp%value(ky_VOLT_MULT),cmp%value(ky_HARM_MULT),
+     $         cmp%value(ky_VOLT_MULT)+cmp%value(ky_DVOLT_MULT),
+     $         cmp%value(ky_HARM_MULT),
      $         cmp%value(ky_PHI_MULT),cmp%value(ky_FREQ_MULT),
      $         cmp%value(ky_W1_MULT),
      $         cmp%value(ky_APHI_MULT) .ne. 0.d0,
@@ -349,8 +350,9 @@ c     end   initialize for preventing compiler warning
           else
             mfr=mfr*(11+mfr*(2*mfr-9))/2
           endif
-          call qcav(trans,cod,l1,
-     1         al,cmp%value(ky_VOLT_CAVI),cmp%value(ky_HARM_CAVI),
+          call qcav(trans,cod,l1,al,
+     $         cmp%value(ky_VOLT_CAVI)+cmp%value(ky_DVOLT_CAVI),
+     $         cmp%value(ky_HARM_CAVI),
      $         cmp%value(ky_PHI_CAVI),cmp%value(ky_FREQ_CAVI),
      $         cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
      $         cmp%value(ky_ROT_CAVI),
@@ -912,7 +914,7 @@ c          enddo
       use temw, only:etwiss2ri,tfetwiss
       implicit none
       integer*4 l,nvar
-      real*8 fr,ftwiss(ntwissfun),trans(6,6),cod(6),gr,sgr,
+      real*8 fr,ftwiss(ntwissfun),trans(6,6),cod(6),gr,sgr,sgr2,gr1,
      $     vsave(kwMAX),tw1(ntwissfun),ri(6,6),beam(21)
       logical*4 over,sol,rt,chg,cp0,normal
       if(calc6d)then
@@ -935,13 +937,19 @@ c          enddo
         endif
         if(trpt)then
           gr=gammab(l+1)/gammab(l)
-          sgr=sqrt(1.d0+(gr-1.d0)*fr)
+          sgr2=1.d0+(gr-1.d0)*fr
+          sgr=sqrt(sgr2)
+          gr1=gr/sgr
           trans(1,:)=trans(1,:)*sgr
           trans(3,:)=trans(3,:)*sgr
           trans(5,:)=trans(5,:)*sgr
-          trans(2,:)=trans(2,:)*gr/sgr
-          trans(4,:)=trans(4,:)*gr/sgr
-          trans(6,:)=trans(6,:)*gr/sgr
+          trans(2,:)=trans(2,:)*gr1
+          trans(4,:)=trans(4,:)*gr1
+          trans(6,:)=trans(6,:)*gr1
+          cod(2)=cod(2)*gr/sgr2
+          cod(4)=cod(4)*gr/sgr2
+          cod(6)=(1.d0+cod(6))*gr/sgr2-1.d0
+c          write(*,'(a,1p8g15.7)')'qtwissfrac ',fr,sgr2,cod
         endif
 c        write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6)
         call tinv6(trans,ri)
@@ -1108,6 +1116,7 @@ c     $     cmp%value(ky_K0_BEND)
      $     +dl*(1.d0-cos(cmp%value(ky_CHI1_MULT))*
      $     cos(cmp%value(ky_CHI2_MULT)))
       cmp%value(ky_VOLT_MULT)=cmp%value(ky_VOLT_MULT)*r
+      cmp%value(ky_DVOLT_MULT)=cmp%value(ky_DVOLT_MULT)*r
       cmp%value(ky_W1_MULT)=cmp%value(ky_W1_MULT)*r
       if(cmp%value(ky_ANGL_MULT) .ne. 0.d0)then
         ifr=ip+kytbl(kwFRMD,lt)
@@ -1133,6 +1142,7 @@ c     $     cmp%value(ky_K0_BEND)
       endif
       go to 8000
  3100 cmp%value(ky_VOLT_CAVI)=cmp%value(ky_VOLT_CAVI)*r
+      cmp%value(ky_DVOLT_CAVI)=cmp%value(ky_DVOLT_CAVI)*r
       cmp%value(ky_RANV_CAVI)=cmp%value(ky_RANV_CAVI)*r
       cmp%value(ky_V1_CAVI)=cmp%value(ky_V1_CAVI)*r
       go to 8000
@@ -1167,7 +1177,7 @@ c     $     cmp%value(ky_K0_BEND)
         endif
       endif
       if(f2 .ne. 0.d0)then
-        if(cmp%value(ilist(1,ip)) .gt. 0.d0)then
+        if(direlc(l) .gt. 0.d0)then
           if(fr0 .eq. 3.d0 .or. fr0 .eq. 2.d0)then
             rlist(ifr)=rlist(ifr)+2.d0
           endif

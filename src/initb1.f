@@ -174,8 +174,9 @@ c
      $ky_F2K1F_MULT=82,
      $ky_F1K1B_MULT=83,
      $ky_F2K1B_MULT=84,
+     $ky_DVOLT_MULT=85,
 c
-     $ky_MAX_MULT=85,
+     $ky_MAX_MULT=86,
 c  for UNDULATOR
      $ky_L_UND=1,
      $ky_FBX_UND=2,
@@ -254,7 +255,8 @@ c
      $ky_AY_CAVI=25,
      $ky_LDEV_CAVI=26,
      $ky_APHI_CAVI=27,
-     $ky_MAX_CAVI=28,
+     $ky_DVOLT_CAVI=28,
+     $ky_MAX_CAVI=29,
 cc for t-Cavity
      $ky_L_TCAV=1,
      $ky_K0_TCAV=2,
@@ -660,6 +662,7 @@ c
        kytbl(kwDY  ,0)=sethtb('DY      ',icKWRD,kwDY  )
        kytbl(kwKICK,0)=sethtb('KICK    ',icKWRD,kwKICK)
        kytbl(kwVOLT,0)=sethtb('VOLT    ',icKWRD,kwVOLT)
+       kytbl(kwDVOLT,0)=sethtb('DVOLT   ',icKWRD,kwDVOLT)
        kytbl(kwPHI ,0)=sethtb('PHI     ',icKWRD,kwPHI )
        kytbl(kwDPHI,0)=sethtb('DPHI    ',icKWRD,kwDPHI)
        kytbl(kwFREQ,0)=sethtb('FREQ    ',icKWRD,kwFREQ )
@@ -978,6 +981,7 @@ c  for MULT
       kytbl(kwF2,icMULT)=ky_F2_MULT
       kytbl(kwFRMD,icMULT)=ky_FRMD_MULT
       kytbl(kwVOLT,icMULT)=ky_VOLT_MULT
+      kytbl(kwDVOLT,icMULT)=ky_DVOLT_MULT
       kytbl(kwHARM,icMULT)=ky_HARM_MULT
       kytbl(kwPHI,icMULT)=ky_PHI_MULT
       kytbl(kwFREQ,icMULT)=ky_FREQ_MULT
@@ -1117,6 +1121,7 @@ cc for Cavity
       kytbl(0,icCAVI)=sethtb('CAVI    ',icDEF,icCavi)
       kytbl(kwL,icCAVI)=ky_L_CAVI
       kytbl(kwVOLT,icCAVI)=ky_VOLT_CAVI
+      kytbl(kwDVOLT,icCAVI)=ky_DVOLT_CAVI
       kytbl(kwHARM,icCAVI)=ky_HARM_CAVI
       kytbl(kwPHI,icCAVI)=ky_PHI_CAVI
       kytbl(kwFREQ,icCAVI)=ky_FREQ_CAVI

@@ -682,7 +682,8 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
       elseif(keyword .eq. 'GAMMA')then
         kx=dfromr(sqrt(1.d0+(rlist(ifgamm+ia-1)*(1.d0-v)+
      $       rlist(ifgamm+min(nlat-1,ia))*v)**2))
-      elseif(keyword(1:3) .eq. 'SIG' .or. keyword(1:4) .eq. 'SIZE')then
+      elseif(keyword(1:3) .eq. 'SIG' .and. keyword(1:5) .ne. 'SIGMA'
+     $       .or. keyword(1:4) .eq. 'SIZE')then
         if(keyword(1:3) .eq. 'SIG')then
           call tfbeamfrac(ia,v,0.d0,beam)
           call tfbeamkey(keyword(4:),i,j,irtc)

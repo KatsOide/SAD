@@ -8,7 +8,7 @@
       use tfmem, only:tfree
       implicit none
       character*(MAXSTR) token
-      integer*8 incode,icode,idx1
+      integer*8 incode,icode,idx1,idm
       integer*4 index,idx,membas,lpname
       integer slen,ival,ttype,hsrchz,slen2,ttype2
       real*8 rval
@@ -56,10 +56,19 @@ c
           if(idx1 .ne. 0) then
             membas=ilist(2,idx1)
             if(membas .gt. 0) then
-              if(idval(membas) .ne. lattuse)then
-                call tclrline(idval(membas))
-              else
-                lattredef=lattuse
+              idm=idval(membas)
+              if(idtype(membas) .eq. icLine)then
+                if(idm .ne. lattuse)then
+                  call tclrline(idm)
+                  idtype(membas)=0
+                else
+                  lattredef=lattuse
+                endif
+              elseif(idtype(membas) .gt. 0)then
+c                write(*,*)'doline ',idm,idtype(membas)
+                ilist(1,idm)=ilist(1,idm)+1
+                call tfree(idm+1)
+                idtype(membas)=0
               endif
               ilist(2,idx1)=0
             endif

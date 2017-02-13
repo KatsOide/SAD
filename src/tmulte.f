@@ -104,9 +104,11 @@ c      write(*,*)'tmulte-2 ',cod(1),cod(2),cod(3),cod(4)
 c      write(*,*)'tmulte-ndiv ',ndiv
       acc=vc .ne. 0.d0 .and. rfsw
       p0=gammab(l)
-      h0=p0*sqrt(1.d0+1.d0/p0**2)
+      h0=p2h(p0)
       p1=gammab(l+1)
-      h1=p1*sqrt(1.d0+1.d0/p1**2)
+      h1=p2h(p1)
+c      write(*,'(a,1p6g15.7)')'tebnde ',al,
+c     $     p0*amass,p1*amass,cod(6)
 c      h1=sqrt(p1**2+1.d0)
       if(acc)then
         if(harm .eq. 0.d0)then
@@ -126,7 +128,7 @@ c      h1=sqrt(p1**2+1.d0)
         vn=v/ndiv
         vcn=vc/ndiv
         phis=trf0*w
-        phic=Sign(phi,charge)-vcphic
+        phic=phi*sign(1.d0,charge)-vcphic
         v10a=0.d0
         v11a=0.d0
         v20a=vn*(w*(.5d0/p0+.5d0/p1))**2/4.d0
@@ -237,7 +239,7 @@ c     end   initialize for preventing compiler warning
         cod(4)=cod(4)+imag(cx)+w1n*cod(3)
         if(acc)then
           p1=p0*(1.d0+cod(6))
-          h1=p1*sqrt(1.d0+1.d0/p1**2)
+          h1=p2h(p1)
 c          h1=sqrt(1.d0+p1**2)
           h1=p1+1.d0/(h1+p1)
           v1=p1/h1
@@ -257,13 +259,15 @@ c          h1=sqrt(1.d0+p1**2)
           va=vn+(v10a+v20a*cod(1)+v11a*cod(3))*cod(1)
      $           +v02a*cod(3)**2
           dh=max(oneev-h1,-va*(sp+offset1))
+c          write(*,*)'tmulte-dh ',dh*amass,phii,phic,phis
           veff=vcn
           vc0=vc0+veff
 c          if(omega0 .ne. 0.d0)then
 c            hvc0=hvc0+(c*w)/omega0*veff
 c          endif
           h2=h1+dh
-          p2=h2*sqrt(1.d0-1.d0/h2**2)
+          p2=h2p(h2)
+c          p2=h2*sqrt(1.d0-1.d0/h2**2)
           pf    =(h2+h1)/(p2+p1)*dh
           p2=p1+pf
           v2=p2/h2
@@ -376,8 +380,6 @@ c          endif
         endif
       endif
  1000 continue
-c      write(*,'(a,1p4g15.7)')
-c     $     'tmulte-3 ',cod(1),cod(2),cod(3),cod(4)
       call tsolrot(trans,cod,beam,al,bz,dx,dy,dz,
      $     chi1,chi2,theta+theta1,bxs,bys,bzs,.false.,ld)
       if(dhg .ne. 0.d0)then
@@ -395,6 +397,8 @@ c        rg=sqrt(rg2)
         cod(4)=cod(4)*rg2
         cod(6)=(cod(6)+1.d0)*rg2-1.d0
         pgev=gammab(l+1)*amass
+c        write(*,'(a,1p6g15.7)')'tmulte-8 ',p0*amass,
+c     $       gammab(l+1)*amass,cod(6)
         call tphyzp
         call tesetdv(cod(6))
       endif

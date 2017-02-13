@@ -102,7 +102,7 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
       type (ffs_bound) fbound
       type (sad_list), pointer :: kli
       integer*8 iatr,iacod,iabmi
-      integer*4 ls,l,nvar,lx,idp
+      integer*4 ls,l,nvar,lx,idp,le1
       real*8 trans(6,12),cod(6),beam(42)
       real*8 trans1(6,12),cod1(6),beam1(42)
       real*8 vsave(kwMAX)
@@ -122,12 +122,12 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
         ls=fbound%lb
       endif
       if(fbound%fe .eq. 0.d0)then
+        le1=min(nlat-1,fbound%le)
         call tturne1(trans,cod,beam,
-     $       iatr,iacod,iabmi,idp,plot,sol,rt,ls,min(nlat-1,fbound%le))
+     $       iatr,iacod,iabmi,idp,plot,sol,rt,ls,le1)
         if(plot)then
           call tfsetplot(trans,cod,beam,0,
-     $         fbound%le,iatr,iacod,.false.,idp,
-     $         gammab(fbound%le-1)/gammab(fbound%le))
+     $         le1+1,iatr,iacod,.false.,idp)
         endif
       else
         call tturne1(trans,cod,beam,
@@ -141,8 +141,7 @@ c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
         endif
         if(plot)then
           call tfsetplot(trans,cod,beam,0,
-     $         nlat,iatr,iacod,.false.,idp,
-     $         gammab(fbound%le)/gammab(nlat))
+     $         nlat,iatr,iacod,.false.,idp)
         endif
       endif
       if(plot)then
@@ -241,8 +240,7 @@ c              write(*,*)'tturne0 ',lx,l,fbound%lb,fbound%le,idp,
 c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
               call tfsetplot(trans1,cod1,beam1,lx,
      $             l,iatr,iacod,
-     $             l .ge. fbound%lb .and. l .le. fbound%le,idp,
-     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb))
+     $             l .ge. fbound%lb .and. l .le. fbound%le,idp)
             endif
           endif
         enddo
@@ -327,12 +325,12 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
             endif
           endif
           if(codplt)then
-            if(l .eq. 1)then
-              r=1.d0
-            else
-              r=gammab(l-1)/gammab(l)
-            endif
-            call tsetetwiss(trans,cod,beam,0,l,idp,r)
+c            if(l .eq. 1)then
+c              r=1.d0
+c            else
+c              r=gammab(l-1)/gammab(l)
+c            endif
+            call tsetetwiss(trans,cod,beam,0,l,idp)
 c            write(*,'(a,i5,1p6g15.7)')'tturne1 ',l,twiss(l,idp,1:6)
 c            et=twiss(l,0,1:mfitzpy)
 c            call checketwiss(trans,et)
@@ -560,7 +558,8 @@ c        endif
      $       ftable(1),ftable(2),ftable(3),ftable(4),
      $       mfr,fb1,fb2,
      $       cmp%value(ky_K0FR_MULT) .eq. 0.d0,
-     $       cmp%value(ky_VOLT_MULT),cmp%value(ky_HARM_MULT),
+     $       cmp%value(ky_VOLT_MULT)+cmp%value(ky_DVOLT_MULT),
+     $       cmp%value(ky_HARM_MULT),
      $       cmp%value(ky_PHI_MULT),cmp%value(ky_FREQ_MULT),
      $       cmp%value(ky_W1_MULT),rtaper,
      $       cmp%value(ky_APHI_MULT) .ne. 0.d0,
@@ -573,7 +572,8 @@ c        endif
         endif
 c        write(*,*)'tturne-tcave',cod
         call tcave(trans,cod,beam,l,al,
-     1       cmp%value(ky_VOLT_CAVI),cmp%value(ky_HARM_CAVI),
+     1       cmp%value(ky_VOLT_CAVI)+cmp%value(ky_DVOLT_CAVI),
+     $       cmp%value(ky_HARM_CAVI),
      1       cmp%value(ky_PHI_CAVI),cmp%value(ky_FREQ_CAVI),
      1       cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
      $       cmp%value(ky_ROT_CAVI),
@@ -657,7 +657,7 @@ c        write(*,*)'tturne-tcave-1',cod
       end
 
       subroutine tfsetplot(trans,cod,beam,lorg,
-     $     l,iatr,iacod,local,idp,r)
+     $     l,iatr,iacod,local,idp)
       use tfstk
       use ffs_pointer
       use ffs_flag
@@ -666,7 +666,7 @@ c        write(*,*)'tturne-tcave-1',cod
       implicit none
       integer*8 iatr,iacod
       integer*4 l,idp,lorg
-      real*8 trans(6,12),cod(6),beam(21),r
+      real*8 trans(6,12),cod(6),beam(21)
       logical*4 local
       if(iatr .ne. 0)then
         if(iatr .gt. 0)then
@@ -685,7 +685,7 @@ c        write(*,*)'tturne-tcave-1',cod
         endif
       endif
       if(codplt)then
-        call tsetetwiss(trans,cod,beam,lorg,l,idp,r)
+        call tsetetwiss(trans,cod,beam,lorg,l,idp)
 c        write(*,'(a,2i5,1p6g15.7)')'tsetplot  ',lorg,l,
 c     $       twiss(l,idp,mfitzx:mfitzpy)
       elseif(radcod .and. radtaper)then
@@ -694,7 +694,7 @@ c     $       twiss(l,idp,mfitzx:mfitzpy)
       return
       end
 
-      subroutine tsetetwiss(trans,cod,beam,lorg,l,idp,rgb)
+      subroutine tsetetwiss(trans,cod,beam,lorg,l,idp)
       use ffs
       use ffs_pointer
       use tffitcode
@@ -702,7 +702,7 @@ c     $       twiss(l,idp,mfitzx:mfitzpy)
       use temw
       implicit none
       integer*4 l,idp,lorg
-      real*8 trans(6,6),ti(6,6),twi(ntwissfun),cod(6),rgb,
+      real*8 trans(6,6),ti(6,6),twi(ntwissfun),cod(6),
      $     beam(21),ril(6,6),gr,tr0(6,6)
       logical*4 norm
       real*8,parameter :: toln=-2.d-9
@@ -739,9 +739,10 @@ c     $       twiss(l,idp,mfitzx:mfitzpy)
         endif
         twi(mfitnz)=twiss(lorg,idp,mfitnz)+twi(mfitnz)
       endif
-      twi(mfitdpx)=twi(mfitdpx)*rgb
-      twi(mfitdpy)=twi(mfitdpy)*rgb
-      twi(mfitddp)=twi(mfitddp)*rgb
+c      twi(mfitdpx)=twi(mfitdpx)*rgb
+c      twi(mfitdpy)=twi(mfitdpy)*rgb
+c      twi(mfitddp)=twi(mfitddp)*rgb
+c      write(*,*)'setetwiss ',twi(mfitddp),rgb
       twiss(l,idp,1:ntwissfun)=twi
       if(irad .ge. 12)then
         beamsize(:,l)=beam
