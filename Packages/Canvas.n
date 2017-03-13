@@ -1,4 +1,4 @@
-(* Canvas 2/2/2017 *)
+(* Canvas 2/17/2017 *)
 
 SetAttributes[{OutLine,Outline,UseBG,Permanent,Redraw},Constant];
 
@@ -1937,6 +1937,7 @@ CanvasGraphics=Class[{},
             CanvasWidget[Move] = {ls, (zrmin-zr)[[{1,2}]]};
             zr=zrmin;
             Break[]]]],
+
       CanvasWidget[Move]={ls,{r[[1,1]]+30-zr[[1]],0}};
       zrmin=zr=CanvasWidget[BBox[ls]];
       While[ov=Complement[CanvasWidget[Find$Overlapping[zr]],id];
@@ -1960,7 +1961,7 @@ CanvasGraphics=Class[{},
   AdjustLegend[]:=Module[{rl=Reverse[Legends],ida={},l,r,r1},
     If[rl<=>{},
       {l,r}=Thread[rl];
-      r1=RotateRight[r];
+      r1=Drop[Prepend[r,Null],-1];
       AdjustLegend1@@[
         Thread[{l,r,r1,
           (ida=Join[ida,CanvasWidget[Find$WithTag[#[[1]]]]])&/@rl}],{1}]]];

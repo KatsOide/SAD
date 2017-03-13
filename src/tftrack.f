@@ -167,12 +167,12 @@
       kzf=kzp+npz*6
       p00=pgev
       pgev=rlist(ifgamm+ls-1)*amass
+c      call tclrparaall
       call tphyzp
       call tsetdvfs
       call tfsetparticles(rlist(kzp),rlist(kzf),rlist(kpz),
      $     ilist(1,ikptblw),npp,npa,npz,mc,nlat,nt)
       if(npa .gt. 0)then
-        call tpara()
         outfl0=outfl
         outfl=0
         dapert0=dapert

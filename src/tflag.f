@@ -2,6 +2,7 @@
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer
       implicit none
       integer*4 i
       logical exist

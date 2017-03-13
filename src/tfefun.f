@@ -1409,7 +1409,6 @@ c            msgn TagS (*   *)   Hold z
      $       id .gt. 999 .and. id .le. 2000)then
           call tfefun1(isp1,id,kx,.false.,irtc)
           if(irtc .eq. 0 .and. tfrefq(kx))then
-            call tfclrtparaed
           else
             irtc=itfmessageexp(999,'General::invset',k1)
           endif

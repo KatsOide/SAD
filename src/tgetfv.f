@@ -161,7 +161,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
           elseif(mfitp(kp) .ne. 0 .and. i .le. mfit .and.
      1       (mfpnt .eq. mfpnt1 .or. .not. maxfit
      1        .or. i .eq. mfitnx .or. i .eq. mfitny .or.
-     1        (i .ge. mfitleng .and. i .le. mfitgz)))then
+     1        (i .ge. mfitleng .and. i .le. mfitchi3)))then
             call txcalc(icalc,ncalc,mfpnt,mfpnt1,i,.true.,err1)
           endif
           return

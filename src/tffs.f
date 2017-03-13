@@ -34,7 +34,8 @@
         type sad_comp
         sequence
         integer*4 ncomp2,id
-        integer*8 param
+        integer*4 nparam,update
+        real*8 orient
         real*8 value(1:2**31-2)
         end type
 
@@ -57,8 +58,8 @@
         integer*4 n
         integer*8 ktcaloc
         type (sad_comp), pointer, intent(out) :: cmp
-        kmcompaloc=ktcaloc(n+expnsize+2)
-        call c_f_pointer(c_loc(klist(kmcompaloc-1)),cmp)
+        kmcompaloc=ktcaloc(n+expnsize+2)+1
+        call c_f_pointer(c_loc(klist(kmcompaloc-2)),cmp)
         return
         end function
 
@@ -78,7 +79,7 @@
         implicit none
         integer*8 k
         type (sad_comp), pointer, intent(out) ::cmp
-        call c_f_pointer(c_loc(klist(k-1)),cmp)
+        call c_f_pointer(c_loc(klist(k-2)),cmp)
         return
         end subroutine
 
@@ -107,7 +108,7 @@ c$$$
         type (sad_el) :: el
         type (sad_comp), pointer :: cmp
         call loc_comp(el%comp(i),cmp)
-        dircomp=cmp%value(cmp%ncomp2-2)
+        dircomp=cmp%orient
         return
         end function
 
@@ -125,14 +126,7 @@ c        use maccbk, only:idtype,pname
           lp=el%comp(i)
           if(lp .gt. 0)then
             call loc_comp(lp,cmp)
-            if(cmp%param .gt. 0)then
-c              if(itfcbk(cmp%param) .eq. 0)then
-c                write(*,*)i,idtype(cmp%id),pname(cmp%id)
-c              else
-                call tfree(cmp%param)
-c              endif
-              cmp%param=0
-            endif
+            cmp%update=0
           endif
 c$$$  if(idtype(ilist(2,lp)) .eq. 31)then
 c$$$  iwpl=ilist(1,lp+kytbl(kwLWAK,icCAVI))
@@ -688,7 +682,7 @@ c$$$  endif
         integer*4 i
         type (sad_comp), pointer :: cmp
         call loc_comp(elatt%comp(i),cmp)
-        direlc=cmp%value(cmp%ncomp2-2)
+        direlc=cmp%orient
         return
         end function
 
@@ -698,7 +692,7 @@ c$$$  endif
         real*8 v
         type (sad_comp), pointer :: cmp
         call loc_comp(elatt%comp(i),cmp)
-        cmp%value(cmp%ncomp2-2)=v
+        cmp%orient=v
         return
         end subroutine
 
@@ -791,6 +785,13 @@ c$$$  endif
         endif
         return
         end subroutine
+
+        subroutine tclrparaall()
+        implicit none
+        call tclrpara(elatt,elatt%nlat1-2)
+        return
+        end subroutine
+
       end module
 
       module ffs_fit

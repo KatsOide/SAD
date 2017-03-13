@@ -45,13 +45,14 @@ c      write(*,*)'expnln-0.3 ',idxe,ia,n
       do j=1,n
         i=isp0+j
         idi=idval(itastk(1,i))
+        iti=idtype(itastk(1,i))
         plen=ilist(1,idi)
         orientation=sign(1,itastk(2,i))
-        kp=kmcompaloc(plen,cmp)
+        kp=kmcompaloc(plen+kytbl(kwNPARAM,iti),cmp)
         el%comp(j)=kp
         cmp%id=itastk(1,i)
-        cmp%param=0
-        cmp%value(cmp%ncomp2-2)=dble(orientation)
+        cmp%nparam=kytbl(kwNPARAM,iti)
+        cmp%orient=dble(orientation)
 c     set Nominal values
         cmp%value(1:plen)=rlist(idi+1:idi+plen)
 c     and then add statistical error
@@ -131,7 +132,6 @@ c     and then add statistical error
       use sad_main
       implicit none
       type (sad_el), pointer ::el
-      type (sad_comp), pointer ::cmp
       integer*4 i,idxe
       integer*8 k,ip
       ip=idval(idxe)
@@ -139,10 +139,10 @@ c     and then add statistical error
       idval(idxe)=0
       do i=1,el%nlat1-2
         k=el%comp(i)
-        call loc_comp(k,cmp)
-        if(cmp%param .gt. 0)then
-          call tfree(cmp%param)
-        endif
+c        call loc_comp(k,cmp)
+c        if(cmp%param .gt. 0)then
+c          call tfree(cmp%param)
+c        endif
         call tfree(k)
       enddo
       call tfree(ip)

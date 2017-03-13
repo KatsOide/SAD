@@ -13,7 +13,7 @@
      $     mm,lb,ip,j,nf,nl
       parameter (namel=11)
       integer*4 icalc1(3,ndim1)
-      real*8 df(nqcol),fm,x,tgfun
+      real*8 df(nqcol),fm,tgfun
       integer*4 jshow(64),itfgetrecl,irtc
       character*5 fun,form,forms
       character*31 name
@@ -229,7 +229,7 @@
         kpb=icalc1(2,i)
         k=icalc1(3,i)
         jm=0
-        fm=1.d38
+        fm=1.d100
         if(k .gt. 0)then
           do 20 j=1,flv%nfc
             if(flv%mfitp(j) .gt. 0)then

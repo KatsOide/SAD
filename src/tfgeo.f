@@ -228,13 +228,26 @@ c      h1=sqrt(1.d0+p1**2)
         if(kytbl(kwANGL,k) .ne. 0)then
           ali=cmp%value(kytbl(kwL,k))
           phi=cmp%value(kytbl(kwANGL,k))
-          if(cmp%value(kytbl(kwFRMD,k)) .ne. 0.d0 .and.
-     1       ali .ne. 0.d0 .and. phi .ne. 0.d0)then
-            fb1=cmp%value(kytbl(kwF1,k))+cmp%value(kytbl(kwFB1,k))
-            fb2=cmp%value(kytbl(kwF1,k))+cmp%value(kytbl(kwFB2,k))
-            ali=ali-((phi*fb1)**2+(phi*fb2)**2)/ali/48.d0
-     $           *sin(.5d0*phi*(1.d0-cmp%value(kytbl(kwE1,k))
-     $           -cmp%value(kytbl(kwE2,k))))/sin(.5d0*phi)
+          if(cmp%value(kytbl(kwFRMD,k)) .ne. 0.d0)then
+            if(phi*ali .ne. 0.d0)then
+              if(k .eq. icBEND)then
+                fb1=cmp%value(kytbl(kwF1,icBEND))
+     $               +cmp%value(kytbl(kwFB1,icBEND))
+                fb2=cmp%value(kytbl(kwF1,icBEND))
+     $               +cmp%value(kytbl(kwFB2,icBEND))
+              else
+                fb1=cmp%value(kytbl(kwFB1,k))
+                fb2=cmp%value(kytbl(kwFB2,k))
+              endif
+              if(fb1 .ne. 0.d0 .or. fb2 .ne. 0.d0)then
+                ali=ali-((phi*fb1)**2+(phi*fb2)**2)/ali/48.d0
+     $               *sin(.5d0*(phi*(1.d0-cmp%value(kytbl(kwE1,k))
+     $               -cmp%value(kytbl(kwE2,k)))
+     $               -cmp%value(kytbl(kwAE1,k))
+     $               -cmp%value(kytbl(kwAE2,k))))
+     $               /sin(.5d0*phi)
+              endif
+            endif
           endif
         elseif(k .eq. icSOL)then
           call tsgeo(i,ke,ke1,sol)
@@ -248,8 +261,7 @@ c      h1=sqrt(1.d0+p1**2)
         if(calgeo)then
           if(k .eq. icMARK)then
             if(ke .ne. 0 .and. ke1 .ne. 0)then
-              if(rlist(idvalc(i)+ky_GEO_MARK)
-     $             .ne. 0)then
+              if(rlist(idvalc(i)+ky_GEO_MARK) .ne. 0)then
                 zetau=geo(1,3,ke1)*geo(1,1,i)+geo(2,3,ke1)*geo(2,1,i)
      1               +geo(3,3,ke1)*geo(3,1,i)
                 b=min(1.d0,max(-1.d0,-zetau/geo(3,2,i)))

@@ -123,6 +123,62 @@
       return
       end subroutine
 
+      real*8 function tfkeyv(i,keyword,ia,cmp,saved)
+      use tfstk
+      use ffs
+      use tffitcode
+      use ffs_pointer, only:idelc,elatt,idtypec,idvalc,sad_comp,
+     $     compelc
+      implicit none
+      integer*4 i,it,kl,l,j
+      integer*8 ia
+      character*(*) keyword
+      logical*4 saved
+      type (sad_comp), pointer :: cmp
+c     begin initialize for preventing compiler warning
+      kl=0
+c     end   initialize for preventing compiler warning
+      if(i .gt. 0)then
+        call compelc(i,cmp)
+      else
+        kl=ilist(-i,ifklp)
+        call compelc(kl,cmp)
+      endif
+      it=idtype(cmp%id)
+      do l=1,kytbl(kwMAX,it)-1
+        j=kyindex(l,it)
+        if(j .gt. 0)then
+          if(pname(kytbl(j,0))(2:) .eq. keyword)then
+            go to 1
+          endif
+          j=kyindex1(l,it)
+          if(j .gt. 0)then
+            if(pname(kytbl(j,0))(2:) .eq. keyword)then
+              go to 1
+            endif
+          endif
+        endif
+      enddo
+      ia=0
+      tfkeyv=0.d0
+      return
+ 1    if(i .gt. 0)then
+        ia=elatt%comp(i)+l
+        tfkeyv=rlist(ia)
+      elseif(saved)then
+        ia=idvalc(kl)+l
+        tfkeyv=rlist(ia)
+      else
+        ia=elatt%comp(kl)+l
+        if(l .eq. ilist(-i,ifival))then
+          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
+        else
+          tfkeyv=rlist(ia)
+        endif
+      endif
+      return
+      end function
+
       end module
 
       subroutine tftwiss(isp1,kx,ref,irtc)
@@ -449,13 +505,14 @@ c     $             itastk(2,isp),vstk2(isp)
       use tfstk
       use ffs
       use tffitcode
-      use ffs_pointer, only:latt,idelc,idtypec,idvalc
+      use ffs_pointer, only:latt,idelc,idtypec,idvalc,sad_comp,
+     $     compelc
       use tflinepcom
       implicit none
       type (sad_descriptor) kx
+      type (sad_comp), pointer :: cmp
       integer*8 iax
       integer*4 irtc,id,lenw,it,ia,iv,isps,l,lpname
-      real*8 tfkeyv
       character*(*) keyword
       character*(MAXPNAME) key,tfkwrd
       logical*4 saved,ref
@@ -479,6 +536,8 @@ c     $             itastk(2,isp),vstk2(isp)
               kx=dfromr(rlist(iax)/rlist(iferrk+2*(ia-1)))
             else
               kx%k=ktfref+iax
+              call compelc(ia,cmp)
+              cmp%update=0
             endif
           endif
         else
@@ -508,9 +567,12 @@ c     $             itastk(2,isp),vstk2(isp)
       elseif(keyword .eq. 'POSITION')then
         kx=dfromr(dble(it))
       else
-        kx=dfromr(tfkeyv(-it,keyword,iax,saved))
+        kx=dfromr(tfkeyv(-it,keyword,iax,cmp,saved))
         if(.not. ref)then
           kx%k=ktfref+iax
+          if(.not. saved)then
+            cmp%update=0
+          endif
         endif
       endif
       return
@@ -655,12 +717,13 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
       use tffitcode
       use ffs_pointer, only:latt,idelc,idtypec,pnamec,compelc,direlc
       use sad_main
+      use tflinepcom
       implicit none
       type (sad_descriptor) kx
       type (sad_comp), pointer ::cmp
       integer*8 kax,ktfgeol,kai,j,i,ip,itoff
       integer*4 irtc,lenw,lxp,nv,lt,kk,ia,isp1,ibz
-      real*8 v,tfkeyv,beam(42),xp,fr,geo1(12),pos0,
+      real*8 v,beam(42),xp,fr,geo1(12),pos0,
      $     vsave(256),gam0,gv(3,4),ogv(3,4),cod(4),vtwiss(27),tfchi,
      $     tfbzs
       character*(*) keyword
@@ -916,8 +979,9 @@ c          call tmov(vtwiss(mfitdx),cod,4)
           if(ref)then
             kx=dfromr(direlc(ia))
           else
+            kx%k=ktfref+latt(ia)+1
             call compelc(ia,cmp)
-            kx%k=ktfref+latt(ia)+cmp%ncomp2-2
+            cmp%update=0
           endif
         else
           kx%k=ktftrue
@@ -928,6 +992,8 @@ c          call tmov(vtwiss(mfitdx),cod,4)
           kx=dfromr(rlist(kax))
         else
           kx%k=ktfref+kax
+          call compelc(ia,cmp)
+          cmp%update=0
         endif
       elseif(keyword .eq. 'BZS')then
         if(ref)then
@@ -937,8 +1003,9 @@ c          call tmov(vtwiss(mfitdx),cod,4)
         endif
       else
         if(ia .lt. nlat)then
-          kx=dfromr(tfkeyv(int(ia),keyword,ip,.false.))
+          kx=dfromr(tfkeyv(int(ia),keyword,ip,cmp,.false.))
           if(.not. ref)then
+            cmp%update=0
             kx%k=ktfref+ip
           endif
           tparaed=.false.
@@ -1209,59 +1276,6 @@ c            write(*,*)'linestk ',name(1:nc),r
       return
       end
 
-      real*8 function tfkeyv(i,keyword,ia,saved)
-      use tfstk
-      use ffs
-      use tffitcode
-      use ffs_pointer, only:idelc,elatt,idtypec,idvalc
-      implicit none
-      integer*4 i,it,kl,l,j
-      integer*8 ia
-      character*(*) keyword
-      logical*4 saved
-c     begin initialize for preventing compiler warning
-      kl=0
-c     end   initialize for preventing compiler warning
-      if(i .gt. 0)then
-        it=idtypec(i)
-      else
-        kl=ilist(-i,ifklp)
-        it=idtypec(kl)
-      endif
-      do l=1,kytbl(kwMAX,it)-1
-        j=kyindex(l,it)
-        if(j .gt. 0)then
-          if(pname(kytbl(j,0))(2:) .eq. keyword)then
-            go to 1
-          endif
-          j=kyindex1(l,it)
-          if(j .gt. 0)then
-            if(pname(kytbl(j,0))(2:) .eq. keyword)then
-              go to 1
-            endif
-          endif
-        endif
-      enddo
-      ia=0
-      tfkeyv=0.d0
-      return
- 1    if(i .gt. 0)then
-        ia=elatt%comp(i)+l
-        tfkeyv=rlist(ia)
-      elseif(saved)then
-        ia=idvalc(kl)+l
-        tfkeyv=rlist(ia)
-      else
-        ia=elatt%comp(kl)+l
-        if(l .eq. ilist(-i,ifival))then
-          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
-        else
-          tfkeyv=rlist(ia)
-        endif
-      endif
-      return
-      end
-      
       integer*4 function itfloc(k,irtc)
       use tfstk
       use ffs

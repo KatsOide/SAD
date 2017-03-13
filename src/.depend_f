@@ -39,8 +39,8 @@ abbrev.o: abbrev.f
 actPlt.o: actPlt.f tfstk.o
 atof.o: atof.f
 autofg.o: autofg.f tfstk.o
-bb.o: bb.f bbstrhl.o tffs.o tfstk.o
-bbstrhl.o: bbstrhl.f tffs.o tfstk.o
+bb.o: bb.f initb1.o tffs.o tfstk.o
+bbstrhl.o: bbstrhl.f initb1.o tffs.o tfstk.o
 bbtool.o: bbtool.f
 bint.o: bint.f
 corfree.o: corfree.f inc/common.inc inc/coroper.inc tffs.o tfstk.o
@@ -165,7 +165,7 @@ pgrmat.o: pgrmat.f tffs.o tfstk.o
 pgsolvcond.o: pgsolvcond.f tfstk.o
 phdrw.o: phdrw.f tffs.o tfstk.o
 phdrwa.o: phdrwa.f toplvl.o
-phsrot.o: phsrot.f bbstrhl.o tffs.o
+phsrot.o: phsrot.f initb1.o tffs.o
 pinner.o: pinner.f
 pkill.o: pkill.f inc/common.inc tffs.o
 pmbdata.o: pmbdata.f tffs.o tfstk.o
@@ -306,7 +306,7 @@ tfconvstr.o: tfconvstr.f tfstk.o tfstrbuf.o
 tfcoup.o: tfcoup.f csinit.o tffs.o tfstk.o
 tfdapert.o: tfdapert.f tffs.o tfstk.o
 tfdbun.o: tfdbun.f tffs.o
-tfdisp.o: tfdisp.f tffs.o tfstk.o
+tfdisp.o: tfdisp.f initb1.o tffs.o tfstk.o
 tfdot.o: tfdot.f tfstk.o toplvl.o
 tfdset.o: tfdset.f tfstk.o
 tfearray.o: tfearray.f tfstk.o
@@ -411,7 +411,7 @@ tmulti.o: tmulti.f tffs.o tfstk.o
 tmultr.o: tmultr.f
 tnorm.o: tnorm.f
 toplvl.o: toplvl.f tfstk.o
-tpara.o: tpara.f bbstrhl.o initb1.o tffs.o tfstk.o
+tpara.o: tpara.f initb1.o tffs.o tfstk.o
 tphplt.o: tphplt.f
 tprmpt.o: tprmpt.f tffs.o tfstk.o
 tput.o: tput.f
@@ -441,7 +441,7 @@ tserad.o: tserad.f initb1.o tffs.o tfstk.o
 tsgeo.o: tsgeo.f initb1.o tffs.o tfstk.o
 tshow.o: tshow.f tffs.o tfstk.o
 tsmear.o: tsmear.f tffs.o
-tsol.o: tsol.f initb1.o tffs.o tfstk.o
+tsol.o: tsol.f initb1.o tffs.o tfstk.o tpara.o
 tsole.o: tsole.f initb1.o tffs.o tfstk.o
 tsolqu.o: tsolqu.f tfstk.o tsolque.o
 tsolque.o: tsolque.f tffs.o tfstk.o
@@ -460,7 +460,7 @@ ttdr.o: ttdr.f csinit.o
 tthine.o: tthine.f temit.o tffs.o
 ttinit.o: ttinit.f initb1.o tffs.o tfstk.o
 ttstat.o: ttstat.f tffs.o tfstk.o
-tturn.o: tturn.f initb1.o tffs.o tfstk.o
+tturn.o: tturn.f initb1.o tffs.o tfstk.o tpara.o
 tturne.o: tturne.f initb1.o temit.o tffs.o tfstk.o
 tvcorr.o: tvcorr.f toplvl.o
 twbuf.o: twbuf.f

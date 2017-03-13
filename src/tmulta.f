@@ -104,12 +104,12 @@
       enddo
       ndiv=min(ndivmax,ndiv)
       aln=al/ndiv
-      if(fb1 .ne. 0.d0 .and. (mfring .eq. 1 .or. mfring .eq. 3))then
-        aln=aln-(phi*fb1)**2/al/24.d0
+      if(fb1 .ne. 0.d0)then
+        aln=aln-(phi*fb1)**2/al/48.d0
      1       *sin(.5d0*(phi-psi1-psi2))/sin(.5d0*phi)/ndiv
       endif
-      if(fb2 .ne. 0.d0 .and. (mfring .eq. 2 .or. mfring .eq. 3))then
-        aln=aln-(phi*fb2)**2/al/24.d0
+      if(fb2 .ne. 0.d0)then
+        aln=aln-(phi*fb2)**2/al/48.d0
      1       *sin(.5d0*(phi-psi1-psi2))/sin(.5d0*phi)/ndiv
       endif
       phib=phi+ak0r
@@ -306,12 +306,12 @@
       psi2n=2.d0*psi2*ndiv
       aln=al/ndiv
       if(fb1 .ne. 0.d0 .and. (mfring .eq. 1 .or. mfring .eq. 3))then
-        aln=aln-(phi*fb1)**2/al/24.d0
+        aln=aln-(phi*fb1)**2/al/48.d0
      1       *sin(.5d0*(phi*(1.d0-psi1-psi2)-apsi1-apsi2))
      $       /sin(.5d0*phi)/ndiv
       endif
       if(fb2 .ne. 0.d0 .and. (mfring .eq. 2 .or. mfring .eq. 3))then
-        aln=aln-(phi*fb2)**2/al/24.d0
+        aln=aln-(phi*fb2)**2/al/48.d0
      1       *sin(.5d0*(phi*(1.d0-psi1-psi2)-apsi1-apsi2))
      $       /sin(.5d0*phi)/ndiv
       endif

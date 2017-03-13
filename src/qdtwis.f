@@ -75,10 +75,7 @@
      $         cmp%value(ky_L_QUAD),cmp%value(ky_K1_QUAD),
      $         k,0,cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      $         cmp%value(ky_ROT_QUAD),iv,nfam,nut)
-          dcod(1)=dcod(1)-dcod1(1)
-          dcod(2)=dcod(2)-dcod1(2)
-          dcod(3)=dcod(3)-dcod1(3)
-          dcod(4)=dcod(4)-dcod1(4)
+          dcod(1:4)=dcod(1:4)-dcod1(1:4)
         endif
       else
         call qdtrans(ke,iutk,k,k+1,

@@ -149,7 +149,6 @@ c      lp0=latt(1)+kytbl(kwmax,idtype(idelc(1)))+1
       else
         emz=abs(rgetgl1('SIGE'))
       endif
-      call tpara()
       ntloss(1:n1p,1:n2p)=maxturn
       nxm(1:n1p)=n2p+1
       npara=min(nparallel,maxpara)

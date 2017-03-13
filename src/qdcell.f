@@ -9,7 +9,8 @@
       integer*4 iclast(-nfam:nfam)
       real*8 dtwiss(mfittry),ctrans(27,-nfam:nfam),
      $     dpsix,dpsiy,cosmux,cosmuy,sinmux,sinmuy,
-     $     bxr,byr,trx,try,akx,aky,
+     $     bxr,byr,trx,try,
+c     $     akx,aky,
      $     x11,x12,x21,x22,y11,y12,y21,y22,
      $     dx11,dx12,dx21,dx22,dy11,dy12,dy21,dy22,
      $     detr,r11,r12,r21,r22,c1,ddetr,ddetr0,
@@ -42,14 +43,15 @@
      $     dts13,dts23,dts33,dts43,dts14,dts24,dts34,dts44,
      $     tds13,tds23,tds33,tds43,tds14,tds24,tds34,tds44,
      $     ex,epx,ey,epy,pex,pepx,pey,pepy,dex,depx,dey,depy
-      logical*4 cell0,disp,nzcod,htrx,htry,normal
+c      logical*4 cell0,disp,nzcod,htrx,htry,normal
+      logical*4 cell0,disp,nzcod,normal,xstab,ystab
 c-deb
 c      print *,'--------- enter qdcell --k,l=',k,l,'-------'
 c          ------------------------------------
       k=itwissp(kk)
       l=itwissp(ll)
-      htrx=.false.
-      htry=.false.
+c      htrx=.false.
+c      htry=.false.
       cell0=cell
       if(cell)then
         dpsix = utwiss(mfitnx,idp,nut) - utwiss(mfitnx,idp,1)
@@ -62,21 +64,26 @@ c          ------------------------------------
         detimy = 4.d0*sin(.5d0*dpsiy)**2
         bxr=sqrt(utwiss(mfitbx,idp,nut)/utwiss(mfitbx,idp,1))
         trx=(bxr+1.d0/bxr)*cosmux
-     1      +(bxr*utwiss(1,idp,1)-utwiss(1,idp,nut)/bxr)*sinmux
+     1      +(bxr*utwiss(mfitax,idp,1)-utwiss(mfitax,idp,nut)/bxr)
+     $       *sinmux
         byr=sqrt(utwiss(mfitby,idp,nut)/utwiss(mfitby,idp,1))
         try=(byr+1.d0/byr)*cosmuy
      1      +(byr*utwiss(mfitay,idp,1)-utwiss(mfitay,idp,nut)/byr)
      $       *sinmuy
-        htrx=abs(trx) .ge. 2.d0
-        htry=abs(try) .ge. 2.d0
-        if(htrx)then
-          akx=(utwiss(1,idp,nut)-utwiss(1,idp,1))/utwiss(mfitbx,idp,1)
-        endif
-        if(htry)then
-          aky=(utwiss(mfitay,idp,nut)-utwiss(mfitay,idp,1))
-     $         /utwiss(mfitby,idp,1)
-        endif
-c        cell=.not. (htrx .or. htry)
+        xstab=abs(trx) .lt. 2.d0
+        ystab=abs(try) .lt. 2.d0
+        cell=xstab .and. ystab
+c$$$        htrx=abs(trx) .ge. 2.d0
+c$$$        htry=abs(try) .ge. 2.d0
+c$$$        if(htrx)then
+c$$$          akx=(utwiss(mfitax,idp,nut)-utwiss(mfitax,idp,1))
+c$$$     $         /utwiss(mfitbx,idp,1)
+c$$$        endif
+c$$$        if(htry)then
+c$$$          aky=(utwiss(mfitay,idp,nut)-utwiss(mfitay,idp,1))
+c$$$     $         /utwiss(mfitby,idp,1)
+c$$$        endif
+c$$$        cell=.not. (htrx .or. htry)
       else
         sinmux=0.d0
         cosmux=1.d0
@@ -98,11 +105,17 @@ c          ------------------------------------
 C====== Get Transfer Matrix tm**  =========================
       x11=cosmux+utwiss(mfitax,idp,l)*sinmux
       x22=cosmux-utwiss(mfitax,idp,l)*sinmux
-      y11=cosmuy+utwiss(mfitay,idp,l)*sinmuy
-      y22=cosmuy-utwiss(mfitay,idp,l)*sinmuy
       x12=utwiss(mfitbx,idp,l)*sinmux
       x21=-(1.d0+utwiss(mfitax,idp,l)**2)*sinmux/utwiss(mfitbx,idp,l)
+c      x21=-((utwiss(mfitax,idp,l)-utwiss(mfitax,idp,1))*cosmux
+c     $     +(1.d0+utwiss(mfitax,idp,1)*utwiss(mfitax,idp,l))*sinmux)
+c     $     /utwiss(mfitbx,idp,l)
+      y11=cosmuy+utwiss(mfitay,idp,l)*sinmuy
+      y22=cosmuy-utwiss(mfitay,idp,l)*sinmuy
       y12=utwiss(mfitby,idp,l)*sinmuy
+c      y21=-((utwiss(mfitay,idp,l)-utwiss(mfitay,idp,1))*cosmuy
+c     $     +(1.d0+utwiss(mfitay,idp,1)*utwiss(mfitay,idp,l))*sinmuy)
+c     $     /utwiss(mfitby,idp,l)
       y21=-(1.d0+utwiss(mfitay,idp,l)**2)*sinmuy/utwiss(mfitby,idp,l)
 C
 C   ( transformation matrix at point l )

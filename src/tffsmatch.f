@@ -17,6 +17,7 @@ c      include 'DEBUG.inc'
       parameter (flim1=-4.d0,flim2=-3.d0,aimp1=-1.8d0,aimp2=-.8d0,
      $     badc1=-3.5d0,badc2=-2.5d0,amedc1=-2.3d0,amedc2=-1.3d0,
      $     alit=0.75d0,wlmin=0.009d0,eps=1.d-5,eps1=1.d-8)
+      real*8, parameter :: aloadmax=2.d4
       integer*4 ibegin,lfno,irtc,nqumax,
      $     nqcol0,nparallel,nqcol00,
      $     nqcola1,nqcol1a1,nqcola2,nqcol1a2,lout
@@ -116,6 +117,7 @@ c     end   initialize for preventing compiler warning
         do 200: do kkk=1,1
           call tftclupdate(int(rlist(intffs)))
           dp0=rlist(latt(1)+mfitddp)
+c          write(*,*)'tffsmatch ',chgini,nstab,nderiv
           call tffscalc(flv%kdp,df,flv%iqcol,flv%lfp,
      $         nqcol,nqcol1,ibegin,
      $         r,rp,rstab,nstab,residual,
@@ -155,7 +157,7 @@ c     end   initialize for preventing compiler warning
             if(chgini .and. cell)then
               call twmov(1,twisss,1,0,.true.)
             endif
-            chgini=.true.
+c            chgini=.true.
             do1082: do kkkk=1,1
               iter=iter+1
               if(chgmod)then
@@ -220,10 +222,10 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                   elseif(max(smallf,badcnv,min(alate,amedcv))
      $                   .gt. .5d0)then
                     chgmod=.true.
-                    chgini=.true.
                     if(nretry .gt. 0)then
                       nretry=nretry-1
                     else
+                      chgini=.true.
                       fitflg=.false.
                     endif
                   else
@@ -289,7 +291,12 @@ c                    enddo
                   nderiv=idtypec(klp(i)) .eq. icSOL
                 endif
               enddo
+              nderiv=nderiv .or.
+     $             cell .and. nstab .gt. 0
+     $             .and. dble(nvar*nfam*nlat) .lt. aloadmax
               npa=min(nvar,nparallel)
+              chgini=(nstab .eq. 0) .or. nderiv
+c              chgini=.true.
               if(nderiv)then
                 call tffssetupqu(ifqu,ifqu0,nqumax,nqcol,nvar,lfno)
                 ipr=-1
@@ -341,12 +348,12 @@ c                    enddo
                     call tffsddf(ddf2,df,df2,flv%iqcol,iqcola2,flv%lfp,
      $                   lfpa2,flv%kdp,kdpa2,nqcol,nqcola2)
                   endif
-c                  ddf1(1:nqcol)=(ddf1(1:nqcol)-ddf2(1:nqcol))
-c     $                 /2.d0/dvkc/wvar(kc)
-                  do j=1,nqcol
-                    rlist((kc-1)*nqcol+j+ifqu-1)=
-     $                   (ddf1(j)-ddf2(j))/2.d0/dvkc/wvar(kc)
-                  enddo
+                  rlist((kc-1)*nqcol+ifqu:kc*nqcol+ifqu-1)=
+     $                 (ddf1(1:nqcol)-ddf2(1:nqcol))/2.d0/dvkc/wvar(kc)
+c                  do j=1,nqcol
+c                    rlist((kc-1)*nqcol+j+ifqu-1)=
+c     $                   (ddf1(j)-ddf2(j))/2.d0/dvkc/wvar(kc)
+c                  enddo
                 enddo
                 call tffswait(ipr,npa,npr,iuta1,
      $               'tffsmatch-NumDerv',irtc)
