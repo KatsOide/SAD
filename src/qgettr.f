@@ -30,6 +30,8 @@
       logical*4 disp,fold,trpt1
       real*8 sqrtb1,sqrtb2,dpsi1,cospsi,sinpsi,gr,
      $     detr,cc,r1,r2,r3,r4
+c      write(*,'(a,1p8g14.6)')'qgettru ',utwiss1(mfitr1:mfitr4),
+c     $     utwiss2(mfitr1:mfitr4)
       sqrtb1=sqrt(utwiss1(mfitbx))
       sqrtb2=sqrt(utwiss2(mfitbx))
       dpsi1=utwiss2(mfitnx)-utwiss1(mfitnx)
@@ -133,6 +135,5 @@ c      if(k2 .lt. k1)then
         trans1(3,5)=cc*trans(1,5)+r4*trans(3,5)-r2*trans(4,5)
         trans1(4,5)=cc*trans(2,5)-r3*trans(3,5)+r1*trans(4,5)
       endif
-c      write(*,*)'qgettru-1 ',trans1(1,1),trans1(2,1),trans1(3,1)
       return
       end

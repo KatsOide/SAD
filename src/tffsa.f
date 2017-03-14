@@ -1475,9 +1475,7 @@ c      write(*,*)'tffsa-1 ',flv%iut,%LOC(rlist(flv%iut)),busy
       integer*8 itmmapp
       real*8 tffsmarkoffset
       logical*4 nonl
-      do i=3,nlat-1
-        itwissp(i)=0
-      enddo
+      itwissp(3:nlat-1)=0
       if(idtypec(nlat-1) .eq. icMARK)then
         itwissp(nlat-1)=1
       endif
@@ -1486,6 +1484,14 @@ c      write(*,*)'tffsa-1 ',flv%iut,%LOC(rlist(flv%iut)),busy
           id=idtypec(i)
           if(id .ge. icSEXT .and. id .le. icDODECA
      $         .or. id .eq. icMULT .or. id .eq. icSOL)then
+            itwissp(i)=1
+            itwissp(i+1)=1
+          endif
+        enddo
+      else
+        do i=2,nlat-1
+          id=idtypec(i)
+          if(id .eq. icSOL)then
             itwissp(i)=1
             itwissp(i+1)=1
           endif
