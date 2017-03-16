@@ -100,7 +100,7 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
       parameter (maxgeneration=2**30-1,maxlevele=2**14,nsymhash=2047,
      $     nslots=32)
       integer*4 maxlbuf
-      parameter (maxlbuf=32768)
+      parameter (maxlbuf=2**22)
       real*8 dinfinity,dnotanumber
       integer*8
      $     itfcontroot,itfcontext,itfcontextpath,itflocal,

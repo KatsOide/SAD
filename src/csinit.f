@@ -1,5 +1,6 @@
       module tfcsi
-        integer*4, parameter :: nbmax=200000
+        use tfcbk, only:maxlbuf
+        integer*4, parameter :: nbmax=maxlbuf
         integer*4 ipoint,iconv,ios,lfn1,lfni,lfno,lrecl,ldel,
      $       lcmnt,linep,lastln,ibegt,lastt
         logical*4 rec
