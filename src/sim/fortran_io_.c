@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <sys/mman.h>
 
 #define	TEMP_TYPE_REGULAR	0
 #define	TEMP_TYPE_SPECIAL	1

@@ -105,6 +105,7 @@
       logical*4 dapert0
 c      write(*,*)'tfda1 ',phix,phiy,phiz,ivar1,ivar2
       call tfsetparam
+      call tclrparaall
       dapert0=dapert
       dapert=.true.
       x(1:2)=range(1:2,1)

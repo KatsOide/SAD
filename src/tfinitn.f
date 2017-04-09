@@ -479,7 +479,7 @@ c      call tmov(ktastk(isp0+1),klist(ka1),m)
       implicit none
       type (sad_descriptor) kx
       integer*4 isp1,irtc,narg,iargc,i,l,isp0
-      character*255 arg
+      character*256 arg
       narg=iargc()
       irtc=0
       if(narg .le. 0)then

@@ -9,7 +9,7 @@
       integer*8 ix,isa,isb,isc,is
       logical abbrev,exist,start,ghisto,lod,append
       character*(*) word,title,case
-      character*255 tfconvstr
+      character*256 tfconvstr
       dimension latt(*),twiss(*),imon(*),emon(*),istr(*)
      z,         xst(4,4),est(4,4)
       common /pstatis/na,nb,nc,isa,isb,isc,start

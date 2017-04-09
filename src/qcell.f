@@ -193,50 +193,34 @@ c     print *,tmd41,tmd42
      $       .and. optstat%tracey .le. 2.d0
         if(optstat%stabx)then
           cosmux=.5d0*optstat%tracex
+          sinmux=sign(sqrt(abs(-a12*a21-.25d0*(a11-a22)**2)),a12)
+          twiss(fbound%lb,idp,mfitax)=.5d0*(a11-a22)/sinmux
+          twiss(fbound%lb,idp,mfitbx)=a12/sinmux
         else
           cosmux=2.d0/optstat%tracex
-        endif
-        if(chgini .or. optstat%stabx)then
-          if(optstat%stabx)then
-            sinmux=sign(sqrt(abs(-a12*a21-.25d0*(a11-a22)**2)),a12)
-          else
-            sinmux=sign(sqrt(1.d0-cosmux**2),a12)
-          endif
-          amux=atan2(sinmux,cosmux)
-          dcosmux=2.d0*sin(.5d0*amux)**2
-          twiss(fbound%lb,idp,mfitax)=.5d0*(a11-a22)/sinmux
-          if(a12*a21 .lt. 0.d0)then
-            twiss(fbound%lb,idp,mfitbx)=sqrt(-a12/a21
-     $           *(1.d0+twiss(fbound%lb,idp,mfitax)**2))
-          else
+          sinmux=sign(sqrt(1.d0-cosmux**2),a12)
+          if(chgini)then
+            twiss(fbound%lb,idp,mfitax)=(a11-cosmux)/sinmux
             twiss(fbound%lb,idp,mfitbx)=a12/sinmux
           endif
-        else
-          dcosmux=1.d0-cosmux
         endif
+        amux=atan2(sinmux,cosmux)
+        dcosmux=2.d0*sin(.5d0*amux)**2
         if(optstat%staby)then
           cosmuy=.5d0*optstat%tracey
+          sinmuy=sign(sqrt(abs(-b12*b21-.25d0*(b11-b22)**2)),b12)
+          twiss(fbound%lb,idp,mfitay)=.5d0*(b11-b22)/sinmuy
+          twiss(fbound%lb,idp,mfitby)=b12/sinmuy
         else
           cosmuy=2.d0/optstat%tracey
-        endif
-        if(chgini .or. optstat%staby)then
-          if(optstat%staby)then
-            sinmuy=sign(sqrt(abs(-b12*b21-.25d0*(b11-b22)**2)),b12)
-          else
-            sinmuy=sign(sqrt(1.d0-cosmuy**2),b12)
-          endif
-          amuy=atan2(sinmuy,cosmuy)
-          dcosmuy=2.d0*sin(.5d0*amuy)**2
-          twiss(fbound%lb,idp,mfitay)=.5d0*(b11-b22)/sinmuy
-          if(b12*b21 .lt. 0.d0)then
-            twiss(fbound%lb,idp,mfitby)=sqrt(-b12/b21
-     $           *(1.d0+twiss(fbound%lb,idp,mfitay)**2))
-          else
+          sinmuy=sign(sqrt(1.d0-cosmuy**2),b12)
+          if(chgini)then
+            twiss(fbound%lb,idp,mfitay)=(b11-cosmuy)/sinmuy
             twiss(fbound%lb,idp,mfitby)=b12/sinmuy
           endif
-        else
-          dcosmuy=1.d0-cosmuy
         endif
+        amuy=atan2(sinmuy,cosmuy)
+        dcosmuy=2.d0*sin(.5d0*amuy)**2
 C--   deb
 c     print *,'   new parameters------'
 c     print *,'    axi,bxi  =',twiss(fbound%lb,idp,1),twiss(fbound%lb,idp,2)

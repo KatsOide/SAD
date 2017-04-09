@@ -122,6 +122,7 @@
         bx=b1*cod(3)
         by=b+b1*xe
         bxy=b1*dxe
+c        write(*,*)'tbende ',bxy,by,b1,xe
         call trade(trans,beam,cod,bx,by,0.d0,0.d0,
      $       0.d0,bxy,0.d0,fal,alnr,als,ala,fb1,fb2,prev,next)
         tbinit=tbinit .or. cod(6) .ne. dpini

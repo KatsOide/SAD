@@ -15,13 +15,15 @@
       real*8 trans(6,12),beam(42),cod(6)
       real*8 radi(6,6)
       logical*4 prev,next
+c      write(*,'(a,1p6g15.7)')'trade ',bx,by,bxx,bxy,byy,dldx
       pr=1.d0+cod(6)
       p1=p0*pr
       ar=.5d0*br
       pxi=(cod(2)+ar*cod(3))/pr
       pyi=(cod(4)-ar*cod(1))/pr
+      pzi=1.d0+pxy2dpz(pxi,pyi)
       sq=pxi**2+pyi**2
-      pzi=sqrtl(1.d0-sq)
+c      pzi=sqrtl(1.d0-sq)
       vx=pyi*bz-pzi*by
       vy=pzi*bx-pxi*bz
       vz=pxi*by-pyi*bx
@@ -71,7 +73,7 @@ c          write(*,'(a,1p7g15.7)')'trade ',al,f1r,f2r,s,ala,alr2,alr3
         radi(6,2)=(dp*dtds**2*pxi+htlc2*
      $       ((vx*by-vy*bx)*pxi/pzi-vy*bz+vz*by))/pr
         radi(6,3)=htlc2*
-     $       (pzi*(vx*byy-vy*bxy)+vz*(pxi*byy-pyi*bxy))
+     $       (pzi*(-vx*byy+vy*bxy)+vz*(pxi*byy-pyi*bxy))
         radi(6,4)=(dp*dtds**2*pyi+htlc2*
      $       ((-vx*by+vy*bx)*pyi/pzi+vx*bz-vz*bx))/pr
         radi(6,5)=0.d0

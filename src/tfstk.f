@@ -34,7 +34,7 @@ c Do not forget to update sim/MACCODE.h when you change this module!!!!
       integer*4 pagesz,inipage
       parameter(pagesz=4096/8,inipage=4)
       integer*4 MAXSTR,MAXMEM0,MAXMEM
-      parameter (MAXSTR=255)
+      parameter (MAXSTR=256)
       parameter (MAXMEM=2*inipage*pagesz)
       parameter (MAXMEM0=6*1024*pagesz)
       character*(MAXPNAME) pname(HTMAX)
@@ -100,7 +100,7 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
       parameter (maxgeneration=2**30-1,maxlevele=2**14,nsymhash=2047,
      $     nslots=32)
       integer*4 maxlbuf
-      parameter (maxlbuf=32768)
+      parameter (maxlbuf=2**22)
       real*8 dinfinity,dnotanumber
       integer*8
      $     itfcontroot,itfcontext,itfcontextpath,itflocal,

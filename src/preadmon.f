@@ -5,9 +5,9 @@
       logical lod,lex,stat,name
       character*(*) word
       character*80 outc,ename,en
-      character*255 tfconvstr
+      character*256 tfconvstr
 C*DEC
-      character*255 word2
+      character*256 word2
 C*DEC
       integer*8 latt(nlat)
       dimension twiss(nlat,-ndim:ndim,ntwissfun),mult(*),

@@ -2,32 +2,43 @@
       use tfstk
       use tfrbuf
       use tfshare
+      use tfcsi
       implicit none
-      integer*8 ib,is,ia
-      integer*4 icmd,lfn,nc,i,j,ls,ie,itfgetbuf,irtc
+      integer*8 ib,is,ia,ls,ie,i,ls1,mapresizefile,lenfile,ib1
+      integer*4 icmd,lfn,nc,j,itfgetbuf,irtc
       character*(*) buff
       select case (icmd)
       case (irbmovepoint)
         if(lfn .gt. 0)then
           mbuf(lfn)=min(lbuf(lfn),max(0,mbuf(lfn)+nc))
+          if(lfn .eq. icslfni())then
+            call cssetp(int(mbuf(lfn)))
+          endif
         endif
       case (irbbor)
         if(lfn .gt. 0)then
           mbuf(lfn)=lbuf(lfn)+1
+          if(lfn .eq. icslfni())then
+            call cssetp(int(mbuf(lfn)))
+          endif
         endif
       case (irbeor2bor)
         if(lfn .gt. 0)then
           if(mbuf(lfn) .eq. lbuf(lfn))then
             mbuf(lfn)=lbuf(lfn)+1
           endif
+          if(lfn .eq. icslfni())then
+            call cssetp(int(mbuf(lfn)))
+          endif
         endif
       case (irbgetpoint)
-        if(lfn .eq. 0)then
+        if(lfn .le. 0)then
           nc=-1
           return
-        elseif(ibuf(lfn) .eq. 0 .and. itbuf(lfn) .le. 1)then
+        elseif(ibuf(lfn) .eq. 0 .and. itbuf(lfn) .le. modewrite)then
           ibuf(lfn)=ktaloc(maxlbuf/8)
           ilist(2,ibuf(lfn)-1)=0
+          lenbuf(lfn)=maxlbuf
           lbuf(lfn)=0
           mbuf(lfn)=-1
         endif
@@ -37,16 +48,17 @@
      $         .or. mbuf(lfn) .lt. 0)then
           nc=-1
         else
-          nc=lbuf(lfn)-mbuf(lfn)
+          nc=int(lbuf(lfn)-mbuf(lfn))
           ib=ibuf(lfn)
           is=mbuf(lfn)+1
         endif
       case (irbinit)
         if(lfn .gt. 0)then
           itbuf(lfn)=ib
-          if(ib .le. 2)then
+          if(ib .le. modewrite)then
             if(ibuf(lfn) .eq. 0)then
               ibuf(lfn)=ktaloc(maxlbuf/8)
+              lenbuf(lfn)=maxlbuf
             endif
             ilist(2,ibuf(lfn)-1)=0
           endif
@@ -57,75 +69,72 @@
         endif
       case (irbreset)
         if(lfn .gt. 0)then
-          if(itbuf(lfn) .le. 2)then
+          if(itbuf(lfn) .le. modewrite)then
             lbuf(lfn)=0
             mbuf(lfn)=-1
           else
             mbuf(lfn)=lbuf(lfn)
+            if(lfn .eq. icslfni())then
+              call cssetp(int(mbuf(lfn)))
+            endif
           endif
         endif
       case (irbclose)
         if(lfn .gt. 0)then
-          if(itbuf(lfn) .le. 2)then
+          select case (itbuf(lfn))
+          case (modeclose,moderead,modewrite)
             close(lfn)
             if(ibuf(lfn) .gt. 0)then
               if(ilist(2,ibuf(lfn)-1) .ne. 0)then
                 call unixclose(ilist(2,ibuf(lfn)-1))
                 ilist(2,ibuf(lfn)-1)=0
               endif
+              call tfree(ibuf(lfn))
             endif
-          elseif(itbuf(lfn) .eq. 3)then
+          case (modestring)
             call tflocal1(ibuf(lfn)-1)
             ibuf(lfn)=0
-          elseif(itbuf(lfn) .eq. 4)then
+          case (modeshared)
             ia=ibuf(lfn)
             call tfreeshared(ia)
-c            irtc=mapfree(rlist(ia))
             ibuf(lfn)=0
-c            if(irtc .ne. 0)then
-c              go to 9000
-c            endif
-          endif
+          case default
+            call unmapfile(klist(ibuf(lfn)),lenbuf(lfn))
+            call unixclose(ifd(lfn))
+c            write(*,*)'irbclose ',ifd(lfn),ibuf(lfn)*8,lenbuf(lfn)
+          end select
           lbuf(lfn)=0
           mbuf(lfn)=-1
-          itbuf(lfn)=0
+          itbuf(lfn)=modeclose
         endif
       case (irbopen)
         do j=nbuf,11,-1
-          if(itbuf(j) .eq. 0)then
+          if(itbuf(j) .eq. modeclose)then
             lfn=j
-            itbuf(j)=is
-            if(is .eq. 3)then
-              ibuf(j)=ktfcopy1(ib)+1
-            elseif(is .eq. 4)then
-              ibuf(j)=ib
-            endif
-            lbuf(j)=0
-            mbuf(j)=-1
+            call irbopen1(lfn,ib,is,nc)
             return
           endif
         enddo
         lfn=0
         go to 9100
-      case (irbreadrecordbuf)
-        if(itbuf(lfn) .le. 2)then
-          if(lfn .gt. 0)then
+      case (irbreadrecordbuf,irbreadrecord)
+        if(lfn .le. 0)then
+          go to 9000
+        endif
+        if(itbuf(lfn) .le. modewrite)then
+          if(icmd .eq. irbreadrecordbuf)then
             nc=itfgetbuf(lfn,ilist(1,ibuf(lfn)),maxlbuf,irtc)
-            if(irtc .ne. 0)then
-              return
-            endif
-            nc=min(nc,len(buff))
-            lbuf(lfn)=nc
-            mbuf(lfn)=0
           else
             nc=itfgetbuf(lfn,buff,len(buff),irtc)
-            if(irtc .ne. 0)then
-              return
-            endif
-            nc=min(nc,len(buff))
           endif
+          if(irtc .ne. 0)then
+            return
+          endif
+          nc=min(nc,len(buff))
+          lbuf(lfn)=0
+          mbuf(lfn)=-1
         else
-          ls=ilist(1,ibuf(lfn)-1)
+ 11       ls=lenbuf(lfn)
           if(jlist(lbuf(lfn)+1,ibuf(lfn)) .eq. 10)then
             lbuf(lfn)=lbuf(lfn)+1
           endif
@@ -137,45 +146,29 @@ c            endif
               endif
             enddo
             ie=ls
- 10         nc=ie-lbuf(lfn)
+ 10         nc=int(ie-lbuf(lfn))
             mbuf(lfn)=lbuf(lfn)
             lbuf(lfn)=ie
+            if(icmd .eq. irbreadrecord)then
+              nc=min(nc,len(buff))
+              call tmovb(jlist(mbuf(lfn)+1,ibuf(lfn)),buff,nc)
+            endif
           else
-            go to 9000
-          endif
-        endif
-      case (irbreadrecord)
-        if(itbuf(lfn) .le. 2)then
-          nc=itfgetbuf(lfn,buff,len(buff),irtc)
-c          write(*,*)'tfreadbuf ',lfn,getfd(lfn),nc,irtc,buff(:nc)
-          if(irtc .ne. 0)then
-            return
-          endif
-c          read(lfn,'(q,a)',end=9000,err=9100)nc,
-c     $         buff(:min(nc,len(buff)))
-          nc=min(nc,len(buff))
-          if(lfn .gt. 0)then
-            lbuf(lfn)=0
-            mbuf(lfn)=-1
-          endif
-        else
-          ls=ilist(1,ibuf(lfn)-1)
-          if(jlist(lbuf(lfn)+1,ibuf(lfn)) .eq. 10)then
-            lbuf(lfn)=lbuf(lfn)+1
-          endif
-          if(lbuf(lfn) .lt. ls)then
-            do i=lbuf(lfn)+1,ls
-              if(jlist(i,ibuf(lfn)) .eq. 10)then
-                ie=i-1
-                go to 20
+            if(itbuf(lfn) .ge. modemapped)then
+              ls1=lenfile(ifd(lfn))
+              if(ls .lt. ls1)then
+                ib1=mapresizefile(klist(ibuf(lfn)),ifd(lfn),
+     $               ls,ls1)/8
+                if(ib1 .lt. 0)then
+                  go to 9000
+                endif
+                mbuf(lfn)=ls
+                ibuf(lfn)=ib1
+                lenbuf(lfn)=ls1
+                go to 11
               endif
-            enddo
-            ie=ls
- 20         nc=ie-lbuf(lfn)
-            mbuf(lfn)=lbuf(lfn)
-            lbuf(lfn)=ie
-            call tmovb(jlist(mbuf(lfn)+1,ibuf(lfn)),buff,nc)
-          else
+            endif
+            mbuf(lfn)=ls+1
             go to 9000
           endif
         endif
@@ -185,7 +178,7 @@ c     $         buff(:min(nc,len(buff)))
      $         mbuf(lfn) .ge. lbuf(lfn))then
             nc=0
           else
-            nc=lbuf(lfn)-mbuf(lfn)
+            nc=int(lbuf(lfn)-mbuf(lfn))
             call tmovb(jlist(mbuf(lfn)+1,ibuf(lfn)),buff,nc)
           endif
         else
@@ -204,7 +197,7 @@ c     $         buff(:min(nc,len(buff)))
       case (irbcloseinp)
         if(lfn .gt. 0)then
           if(itbuf(lfn) .le. 2)then
-            itbuf(lfn)=0
+            itbuf(lfn)=modeclose
             if(ibuf(lfn) .gt. 0)then
               if(ilist(2,ibuf(lfn)-1) .ne. 0)then
                 call unixclose(ilist(2,ibuf(lfn)-1))
@@ -215,7 +208,7 @@ c     $         buff(:min(nc,len(buff)))
         endif
       case (irbsetinp)
         if(lfn .gt. 0)then
-          if(itbuf(lfn) .le. 2)then
+          if(itbuf(lfn) .le. modewrite)then
             if(ibuf(lfn) .gt. 0)then
               ilist(2,ibuf(lfn)-1)=int(ib)
             endif
@@ -235,18 +228,59 @@ c     $         buff(:min(nc,len(buff)))
       return
       end
 
-      subroutine readstr(in,str,irtc)
+      subroutine irbopen1(j,ib,is,nc)
+      use tfrbuf
+      use tfstk
       implicit none
-      integer*4 in,irtc,nc,itfgetbuf
-      character*(*) str
-      nc=itfgetbuf(in,str,len(str),irtc)
-      if(irtc .ne. 0)then
+      integer*4 j,nc
+      integer*8 ib,is
+      if(itbuf(j) .eq. 0)then
+        itbuf(j)=is
+        lenbuf(j)=0
+        ifd(J)=0
+        select case (is)
+        case (moderead,modewrite)
+        case (modestring)
+          ibuf(j)=ktfcopy1(ib)+1
+          lenbuf(j)=ilist(1,ib-1)
+        case (modeshared)
+          ibuf(j)=ib
+          lenbuf(j)=ilist(1,ib-1)
+        case default
+          ibuf(j)=ib
+          lenbuf(j)=is-modemapped
+          ifd(j)=nc
+        end select
+        lbuf(j)=0
+        mbuf(j)=-1
         return
       endif
-      if(nc .gt. 0 .and. str(nc:nc) .eq. char(10))then
-        str(nc:)=' '
+      return
+      end
+ 
+      subroutine readstr(in,str,irtc)
+      use tfrbuf
+      implicit none
+      integer*4 in,irtc,nc
+      character*(*) str
+c      nc=itfgetbuf(in,str,len(str),irtc)
+c      if(irtc .ne. 0)then
+c        return
+c      endif
+      call tfreadbuf(irbreadrecord,in,int8(0),int8(0),nc,str)
+c      write(*,*)'readstr ',in,nc,':',str(1:nc)
+      irtc=0
+      if(nc .gt. 0)then
+        if(str(nc:nc) .eq. char(10))then
+          str(nc:)=' '
+        else
+          str(nc+1:)=' '
+        endif
       else
-        str(nc+1:)=' '
+        str=' '
+        if(nc .lt. 0)then
+          irtc=-1
+        endif
       endif
       return
       end
@@ -284,7 +318,7 @@ c      write(*,*)'openshared ',ia,m
         irtc=0
         return
       endif
-      call tfreadbuf(irbopen,iu,ia,int8(4),nc,' ')
+      call tfreadbuf(irbopen,iu,ia,modeshared,nc,' ')
       if(iu .le. 0)then
         call tfreeshared(ia)
         irtc=itfmessage(9,'General::fileopen','"(Shared)"')

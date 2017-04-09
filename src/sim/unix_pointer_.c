@@ -42,14 +42,14 @@ integer4 decloc_(void *var) {
 }
 
 /* setfnp(table, function pointer) */
-void setfnp_(integer4 *table, void (*func)(integer4 *)) {
+void setfnp_(integer8 *table, void (*func)(integer8 *)) {
   ptrdiff_t address = (ptrdiff_t)func;
-  integer4 decloc;
+  integer8 decloc;
 
   decloc = (integer8)address / sizeof(void*);
   if(sizeof(ptrdiff_t) != sizeof(integer4)){
-    if((integer8)decloc * sizeof(void*) != (integer8) address) {
-      fprintf(stderr, "setfnp: out of range  %x %x\n",(integer8)decloc * sizeof(void*),(integer8) address);
+    if((integer8) decloc * sizeof(void*) != (integer8) address) {
+      fprintf(stderr, "setfnp: out of range  %d %d\n",(integer8) decloc * sizeof(void*),(integer8) address);
       exit(1);
   }}
 

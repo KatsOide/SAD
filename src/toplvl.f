@@ -77,7 +77,7 @@
      $     kwF1K1F=kwAPHI+1, kwF2K1F=kwF1K1F+1,
      $     kwF1K1B=kwF2K1F+1,kwF2K1B=kwF1K1B+1,
      $     kwDVOLT=kwF2K1B+1,
-     $     kwMAX=kwDVOLT+1
+     $     kwNPARAM=kwDVOLT+1,kwMAX=kwNPARAM+1
 
       integer*4 ::  kytbl(0:kwMAX,0:icMXEL)=0
       integer*4, pointer :: kyindex(:,:),kyindex1(:,:)
@@ -131,7 +131,7 @@
 
       module macfile
         integer*4, parameter :: STDERR=6,STDIN=5,STDOUT=6,STDPLT=8,
-     $     STDLST=21, MAXLLEN=255
+     $     STDLST=21, MAXLLEN=256
 c
         integer*8 inflpt
         integer*4 errfl,infl,outfl,pltfl,msglvl,lstfl
@@ -316,25 +316,59 @@ c     PDG2014:         1.380 6488(13) x 10^-23 J/K
       end module
 
       module tfrbuf
-      integer*4 irbinit,irbopen,irbclose,irbreadrecord,irbreadbuf,
-     $     irbmovepoint,irbeor2bor,irbgetpoint,irbreset,
-     $     irbreadrecordbuf,irbbor,irbsetinp,irbcloseinp,
-     $     irbsetbuf,irbibuf
-      parameter (irbinit=1,irbopen=2,irbclose=3,irbreadrecord=4,
+      integer*4, parameter :: irbinit=1,irbopen=2,irbclose=3,
+     $     irbreadrecord=4,
      $     irbreadbuf=5,irbmovepoint=6,irbbor=7,irbgetpoint=8,
      $     irbreset=9,irbreadrecordbuf=10,irbeor2bor=11,
-     $     irbsetinp=12,irbcloseinp=13,irbsetbuf=14,irbibuf=15)
+     $     irbsetinp=12,irbcloseinp=13,irbsetbuf=14,irbibuf=15
+      integer*8 , parameter ::
+     $     modeclose=0,moderead=1,modewrite=2,modestring=3,
+     $     modeshared=4,modemapped=5
       integer*4 nbuf
       parameter (nbuf=1024)
       integer*4 ncprolog
       character*128 prolog
-      integer*4 lbuf(nbuf),mbuf(nbuf)
-      integer*8 ibuf(nbuf),itbuf(nbuf)
+      integer*4 ifd(nbuf)
+      integer*8 lbuf(nbuf),mbuf(nbuf),itbuf(nbuf)
+      integer*8 ibuf(nbuf),lenbuf(nbuf)
       data lbuf/nbuf*0/,ibuf/nbuf*0/,mbuf/nbuf*0/,itbuf/nbuf*0/
       type cbkshared
         integer*8, allocatable :: ca(:)
       end type
       type (cbkshared) rbshared(nbuf)
+
+      contains
+      integer*4 function nextfn(mode)
+      use macfile, only:MAXLLEN
+      implicit none
+      integer*8 mode
+      integer*4 ios,f,is
+      logical*4 od
+      character*(MAXLLEN) msg
+c
+      f=0
+      is=11
+      do f=is,nbuf
+        if(itbuf(f) .eq. modeclose)then
+          inquire(f,IOSTAT=ios,err=9000,OPENED=od)
+          if( .not. od) then
+            itbuf(f)=mode
+            ibuf(f)=0
+            nextfn=f
+            return
+          endif
+        endif
+      end do
+c
+ 1000 continue
+      nextfn=0
+      return
+c
+ 9000 continue
+      call perror(msg)
+      go to 1000
+c
+      end function
       end module
 
       module trackbypass

@@ -477,7 +477,7 @@ c     Table of loss-rate
       character*11 autofg,vout(28)
       character*9 vout9(28)
       logical*4 plot,pri,fndcod,synchm,intend,stab,calem,
-     $     epi,calcodr,cp0
+     $     epi,calcodr
       data label1/'        X ','       Px ','        Y ',
      1            '       Py ','        Z ','       Pz '/
       data label2/'        x ','    px/p0 ','        y ',

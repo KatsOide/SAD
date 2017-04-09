@@ -466,6 +466,7 @@ c            endif
       use ffs, only:emx,emy,dpmax,coumin
       use ffs_pointer
       use ffs_fit
+      use ffs_flag, only:cell
       use tffitcode
       implicit none
 c      include 'DEBUG.inc'
@@ -503,52 +504,54 @@ c      include 'DEBUG.inc'
         do i=1,nfcol
           k=kfit(kfitp(i))
           j=ifitp(kfitp(i))
-          if(k .eq. mfitex .or. k .eq. mfitpex)then
+          select case(k)
+          case (mfitex,mfitpex)
             wfit(i)=dpm/sqrt(emxx*twiss(j,0,mfitbx))
-          elseif(k .eq. mfitepx .or. k .eq. mfitpepx)then
+          case (mfitepx,mfitpepx)
             wfit(i)=dpm*sqrt(twiss(j,0,mfitbx)
      1           /(1.d0+twiss(j,0,mfitax)**2)/emxx)
-          elseif(k .eq. mfitey .or. k .eq. mfitpey)then
+          case (mfitey,mfitpey)
             wfit(i)=dpm/sqrt(emyy*twiss(j,0,mfitby))
-          elseif(k .eq. mfitepy .or. k .eq. mfitpepy)then
+          case (mfitepy,mfitpepy)
             wfit(i)=dpm*sqrt(twiss(j,0,mfitby)
      1           /(1.d0+twiss(j,0,mfitay)**2)/emyy)
-          elseif(k .eq. mfitr1)then
+          case (mfitr1)
             wfit(i)=coup*sqrt(twiss(j,0,mfitbx)/twiss(j,0,mfitby))
-          elseif(k .eq. mfitr2)then
+          case (mfitr2)
             wfit(i)=coup/sqrt(twiss(j,0,mfitbx)*twiss(j,0,mfitby))
-          elseif(k .eq. mfitr3)then
+          case (mfitr3)
             wfit(i)=coup*sqrt(twiss(j,0,mfitbx)*twiss(j,0,mfitby))
-          elseif(k .eq. mfitr4)then
+          case (mfitr4)
             wfit(i)=coup*sqrt(twiss(j,0,mfitby)/twiss(j,0,mfitbx))
-          elseif(k .eq. mfitdx)then
+          case (mfitdx)
             wfit(i)=1.d0/sqrt(twiss(j,0,mfitbx)*em)
-          elseif(k .eq. mfitdpx)then
+          case (mfitdpx)
             wfit(i)=sqrt(twiss(j,0,mfitbx)/
      $           (1.d0+twiss(j,0,mfitax)**2)/em)
-          elseif(k .eq. mfitdy)then
+          case (mfitdy)
             wfit(i)=1.d0/sqrt(twiss(j,0,mfitby)*em)
-          elseif(k .eq. mfitdpy)then
+          case (mfitdpy)
             wfit(i)=sqrt(twiss(j,0,mfitby)/
      $           (1.d0+twiss(j,0,mfitay)**2)/em)
-          elseif(k .eq. mfitleng)then
+          case (mfitleng)
             wfit(i)=1.d0/(pos(maxf)-pos(1))*
      $           max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
-          elseif(k .eq. mfitdz)then
+          case (mfitdz)
             wfit(i)=0.01d0*sqrt(
      $           max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
      $           /em/(pos(maxf)-pos(1)))
-          elseif(k .ge. mfitgx .and. k .le. mfitgz)then
+          case (mfitgx,mfitgy,mfitgz)
             wfit(i)=0.01d0*sqrt(
      $           max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
      $           /em/(pos(maxf)-pos(1)))
-          elseif(k .ge. mfitchi1 .and. k .le. mfitchi3)then
+          case (mfitchi1,mfitchi2,mfitchi3)
             wfit(i)=1.d3
-          else
+          case default
             wfit(i)=1.d0
-          endif
-          if(kfitp(i) .gt. nfc0)then
-            wfit(i)=wfit(i)
+          end select
+          if(cell .and.
+     $         kfitp(i) .gt. nfc0 .and. kfitp(i) .le. nfc0+4)then
+            wfit(i)=wfit(i)*0.7d0
           endif
         enddo
       endif

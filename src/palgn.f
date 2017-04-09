@@ -2701,7 +2701,7 @@ c    1          'before filtering'
       implicit real*8 (a-h,o-z)
       character*(*) fnam
 C*DEC
-      character*255 fnam2
+      character*256 fnam2
 C*DEC
 c
       DIMENSION COD1(400,2),S1(400),X1(400),Y1(400),istat(400,2)
@@ -2815,7 +2815,7 @@ c
       character*(*) word,title,case
       character name*12,observ*4
       character*8 nlist(mfit1)
-      character*255 tfconvstr
+      character*256 tfconvstr
       integer*8 latt(nlat)
       dimension twiss(*),mult(*),gammab(*),size(*),istr(*),
      $     estr(*)

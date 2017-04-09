@@ -1,4 +1,21 @@
+      module wsbb
+      implicit none
+      integer*4, parameter :: nslimax=500,nblist=1600
+      real*8, parameter:: re=2.81794092d-15, am_e=510999.06
+
+      type sbeam 
+      real*8 Benv(36),Benv5(25),v_cen(5),cod(6)
+      real*8 xangle(8)  !(8)
+      integer*4 nslice,bstrl
+      integer*8 iax
+      real*8 zslice(nslimax*2)   !(nslimax*2+2)
+!      real*8, pointer :: zslice(:)   !(nslimax*2+2)
+      real*8 gamma,gambet,ce,Luminosity
+      end type sbeam
+      end module wsbb
+
       module kyparam
+      use wsbb, only:nblist
       integer*4, parameter ::
      $ky_L_DRFT=1,
      $ky_KIN_DRFT=2,
@@ -43,6 +60,23 @@ c
      $ky_LRAD_BEND=27,
 c
      $ky_MAX_BEND=28,
+     $     p_L_BEND=ky_MAX_BEND+1,
+     $     p_COSPSI1_BEND=p_L_BEND+1,
+     $     p_SINPSI1_BEND=p_COSPSI1_BEND+1,
+     $     p_COSPSI2_BEND=p_SINPSI1_BEND+1,
+     $     p_SINPSI2_BEND=p_COSPSI2_BEND+1,
+     $     p_COSTHETA_BEND=p_SINPSI2_BEND+1,
+     $     p_SINTHETA_BEND=p_COSTHETA_BEND+1,
+     $     p_COSW_BEND=p_SINTHETA_BEND+1,
+     $     p_SINW_BEND=p_COSW_BEND+1,
+     $     p_SQWH_BEND=p_SINW_BEND+1,
+     $     p_SINWP1_BEND=p_SQWH_BEND+1,
+     $     p_DPHIX_BEND=p_SINWP1_BEND+1,
+     $     p_DPHIY_BEND=p_DPHIX_BEND+1,
+     $     p_THETA_BEND=p_DPHIY_BEND+1,
+     $     p_FB1_BEND=p_THETA_BEND+1,
+     $     p_FB2_BEND=p_FB1_BEND+1,
+     $     p_NPARAM_BEND=p_FB2_BEND-ky_MAX_BEND,
 c  for quad
      $ky_L_QUAD=1,
      $ky_K1_QUAD=2,
@@ -69,6 +103,16 @@ c     ky_DK1_QUAD=3,
      $ky_F1K1B_QUAD=23,
      $ky_F2K1B_QUAD=24,
      $ky_MAX_QUAD=25,
+     $     p_SQRTK_QUAD=ky_MAX_QUAD+1,
+     $     p_COSTHETA_QUAD=p_SQRTK_QUAD+1,
+     $     p_SINTHETA_QUAD=p_COSTHETA_QUAD+1,
+     $     p_THETA_QUAD=p_SINTHETA_QUAD+1,
+     $     p_AKF1F_QUAD=p_THETA_QUAD+1,
+     $     p_AKF2F_QUAD=p_AKF1F_QUAD+1,
+     $     p_AKF1B_QUAD=p_AKF2F_QUAD+1,
+     $     p_AKF2B_QUAD=p_AKF1B_QUAD+1,
+     $     p_FRMD_QUAD=p_AKF2B_QUAD+1,
+     $     p_NPARAM_QUAD=p_FRMD_QUAD-ky_MAX_QUAD,
 c  for THIN
      $ky_L_THIN=1,
      $ky_K_THIN=2,
@@ -86,6 +130,10 @@ c
      $ky_LRAD_THIN=14,
 c
      $ky_MAX_THIN=15,
+     $     p_COSTHETA_THIN=ky_MAX_THIN+1,
+     $     p_SINTHETA_THIN=p_COSTHETA_THIN+1,
+     $     p_THETA_THIN=p_SINTHETA_THIN+1,
+     $     p_NPARAM_THIN=p_THETA_THIN-ky_MAX_THIN,
 c  for MULT
      $ky_L_MULT=1,
      $ky_DX_MULT=3,
@@ -177,6 +225,22 @@ c
      $ky_DVOLT_MULT=85,
 c
      $ky_MAX_MULT=86,
+     $     p_L_MULT=ky_MAX_MULT+1,
+     $     p_ANGL_MULT=p_L_MULT+1,
+     $     p_AKF1F_MULT=p_ANGL_MULT+1,
+     $     p_AKF2F_MULT=p_AKF1F_MULT+1,
+     $     p_AKF1B_MULT=p_AKF2F_MULT+1,
+     $     p_AKF2B_MULT=p_AKF1B_MULT+1,
+     $     p_PSI1_MULT=p_AKF2B_MULT+1,
+     $     p_PSI2_MULT=p_PSI1_MULT+1,
+     $     p_FB1_MULT=p_PSI2_MULT+1,
+     $     p_FB2_MULT=p_FB1_MULT+1,
+     $     p_CHI1_MULT=p_FB2_MULT+1,
+     $     p_CHI2_MULT=p_CHI1_MULT+1,
+     $     p_W_MULT=p_CHI2_MULT+1,
+     $     p_VNOMINAL_MULT=p_W_MULT+1,
+     $     p_FRMD_MULT=p_VNOMINAL_MULT+1,
+     $     p_NPARAM_MULT=p_FRMD_MULT-ky_MAX_MULT,
 c  for UNDULATOR
      $ky_L_UND=1,
      $ky_FBX_UND=2,
@@ -188,6 +252,8 @@ c  for UNDULATOR
      $ky_Pole_UND=8,
      $ky_COUPLE_UND=9,
      $ky_MAX_UND=10,
+     $     p_PARAM_UND=ky_MAX_UND+1,
+     $     p_NPARAM_UND=20,
 c  for WIG
      $ky_L_WIG=1,
      $ky_BMAX_WIG=2,
@@ -205,6 +271,7 @@ c  for WIG
      $ky_A17_WIG=14,
      $ky_COUPLE_WIG=15,
      $ky_MAX_WIG=16,
+     $     p_PARAM_WIG=ky_MAX_WIG+1,
 c  for solenoid
      $ky_L_SOL=1,
      $ky_BZ_SOL=2,
@@ -257,6 +324,10 @@ c
      $ky_APHI_CAVI=27,
      $ky_DVOLT_CAVI=28,
      $ky_MAX_CAVI=29,
+     $     p_W_CAVI=ky_MAX_CAVI+1,
+     $     p_VNOMINAL_CAVI=p_W_CAVI+1,
+     $     p_FRMD_CAVI=p_VNOMINAL_CAVI+1,
+     $     p_NPARAM_CAVI=p_FRMD_CAVI-ky_MAX_CAVI,
 cc for t-Cavity
      $ky_L_TCAV=1,
      $ky_K0_TCAV=2,
@@ -368,6 +439,8 @@ cc for BEAMBEAM
      $ky_COUPLE_BEAM=52,
      $ky_BSTRL_BEAM=53,
      $ky_MAX_BEAM=54,
+     $     p_PARAM_BEAM=ky_MAX_BEAM+1,
+     $     p_NPARAM_BEAM=nblist,
 cc for PHSROT
      $ky_AX_Prot=1,
      $ky_BX_Prot=2,
@@ -457,6 +530,8 @@ cc for PHSROT
      $ky_B66_Prot=86,
      $ky_COUPLE_Prot=87,
      $ky_MAX_Prot=88,
+     $     p_PARAM_Prot=ky_MAX_Prot+1,
+     $     p_NPARAM_Prot=240,
 cc for MARK
      $ky_AX_Mark=1,
      $ky_BX_Mark=2,
@@ -566,7 +641,7 @@ c     external doline
        call IsetGL('$PLOT$',0,idummy)
        idummy=sethtb('PLOT   ',icACT,ktaloc(8))
        ilist(1,idval(idummy))=7
-       call setfnp(ilist(1,idval(idummy)+1),ActPlt)
+       call setfnp(klist(idval(idummy)+1),ActPlt)
        ilist(1,idval(idummy)+2)=hsrch('PTYPE')
        ilist(1,idval(idummy)+3)=hsrch('NPART')
        ilist(1,idval(idummy)+4)=hsrch('TURNS')
@@ -900,6 +975,7 @@ c
       kytbl(kwLRAD,icBEND)=ky_LRAD_BEND
 c
       kytbl(kwMAX,icBEND)=ky_MAX_BEND
+      kytbl(kwNPARAM,icBEND)=p_NPARAM_BEND
 c  for quad
       idummy=sethtb('quad    ',icDEF,icQUAD)
       kytbl(0,icQUAD)=sethtb('QUAD    ',icDEF,icQUAD)
@@ -930,6 +1006,7 @@ c
       kytbl(kwF2K1B,icQUAD)=ky_F2K1B_QUAD
 c
       kytbl(kwMAX,icQUAD)=ky_MAX_QUAD
+      kytbl(kwNPARAM,icQUAD)=p_NPARAM_QUAD
 c  for THIN
       idummy=sethtb('sext    ',icDEF,icsext)
       kytbl(0,icSEXT)=sethtb('SEXT    ',icDEF,icsext)
@@ -957,6 +1034,7 @@ c
         kytbl(kwLRAD,i)=ky_LRAD_THIN
 c     
         kytbl(kwMAX,i)=ky_MAX_THIN
+        kytbl(kwNPARAM,i)=p_NPARAM_THIN
       enddo
       kytbl(kwK2,icSEXT)=ky_K_THIN
       kytbl(kwK3,icOCTU)=ky_K_THIN
@@ -1056,6 +1134,7 @@ c
       kytbl(kwF2K1B,icMULT)=ky_F2K1B_MULT
 c
       kytbl(kwMAX,icMULT)=ky_MAX_MULT
+      kytbl(kwNPARAM,icMULT)=p_NPARAM_MULT
 c  for UNDULATOR
       idummy=sethtb('und     ',icDEF,icUND)
       kytbl(0,icUND)=sethtb('UND    ',icDEF,icUND)
@@ -1069,6 +1148,7 @@ c  for UNDULATOR
       kytbl(kwPole,icUND)=ky_Pole_UND
       kytbl(kwCOUPLE,icUND)=ky_COUPLE_UND
       kytbl(kwMAX,icUND)=ky_MAX_UND
+      kytbl(kwNPARAM,icUND)=p_NPARAM_UND
 c  for WIG
       idummy=sethtb('wig     ',icDEF,icWIG)
       kytbl(0,icWIG)=sethtb('WIG    ',icDEF,icWIG)
@@ -1146,6 +1226,7 @@ c
       kytbl(kwLDEV,icCAVI)=ky_LDEV_CAVI
       kytbl(kwAPHI,icCAVI)=ky_APHI_CAVI
       kytbl(kwMAX,icCAVI)=ky_MAX_CAVI
+      kytbl(kwNPARAM,icCAVI)=p_NPARAM_CAVI
 cc for t-Cavity
       idummy=sethtb('tcavi   ',icDEF,icTCAV)
       kytbl(0,icTCAV)=sethtb('TCAVI   ',icDEF,icTCAV)
@@ -1266,6 +1347,7 @@ cc for BEAMBEAM
       kytbl(kwCOUPLE,icBEAM)=ky_COUPLE_BEAM
       kytbl(kwBSTRL,icBEAM)=ky_BSTRL_BEAM
       kytbl(kwMAX,icBEAM)=ky_MAX_BEAM
+      kytbl(kwNPARAM,icBEAM)=p_NPARAM_BEAM
 cc for PHSROT
       idummy=sethtb('phsrot  ',icDEF,icProt)
       kytbl(0,icProt)=sethtb('PHSROT  ',icDEF,icProt)
@@ -1357,6 +1439,7 @@ cc for PHSROT
       kytbl(kwB66,icProt)=ky_B66_Prot
       kytbl(kwCOUPLE,icProt)=ky_COUPLE_Prot
       kytbl(kwMAX,icProt)=ky_MAX_Prot
+      kytbl(kwNPARAM,icProt)=p_NPARAM_Prot
 cc for MARK
       idummy=sethtb('mark    ',icDEF,icMark)
       kytbl(0,icMARK)=sethtb('MARK    ',icDEF,icMark)

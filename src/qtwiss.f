@@ -67,7 +67,6 @@ c     begin initialize for preventing compiler warning
       rr=0.d0
 c     end   initialize for preventing compiler warning
       call wspaccheck
-      call tfclrtparaed
       call tclrfpe
       irad=6
       trf00=trf0
@@ -1195,5 +1194,8 @@ c     $     cmp%value(ky_K0_BEND)
         cmp%value(kytbl(kwL,lt))=cmp%value(kytbl(kwL,lt))*r
       endif
       chg=.true.
+      if(.not. ideal)then
+        cmp%update=0
+      endif
  1010 return
       end

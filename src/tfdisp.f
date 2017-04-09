@@ -4,7 +4,9 @@
       use ffs_pointer
       use ffs_fit, only:scale
       use tffitcode
+      use kyparam
       implicit none
+      type (sad_comp), pointer:: cmp
       integer*4 idisp1,idisp2,lfno,mdisp,icolm,ifany,id0,id3,idstep,
      $     lines,l,id,ielm,i
       real*8 dp00,dgam,bx0,by0,bx1,by1,bx2,by2,r,sigpp,tfchi,detr,
@@ -15,10 +17,10 @@
       real*8 pe(4)
       real*8 og(3,4)
       character*(*) word
-      character*255 wordp,word1,name
+      character*256 wordp,word1,name
       character*(blen) buff
       character*16 autofg,vout
-      character*255 bname
+      character*256 bname
       character*1 dir,hc
       logical*4 tfinsol
       logical exist,dpeak,seldis,abbrev,temat,mat
@@ -128,20 +130,20 @@ c      write(*,*)'tfdisp ',word,wordp
           endif
         endif
         if(l .eq. nlat)then
-          id=41
+          id=icMARK
         else
           id=idtypec(l)
         endif
+        call compelc(l,cmp)
         if(iele1(iele((l))) .gt. 0 .and.
      $       id .ne. icMARK .and. id .ne. 34)then
           if(ival(iele1(iele(l))) .gt. 0)then
-            vout=autofg(rlist(latt(l)
-     $           +ival(iele1(iele(l)))),'10.7')
+            vout=autofg(cmp%value(ival(iele1(iele(l)))),'10.7')
           else
             vout=' 0'
           endif
         elseif(id .eq. icSOL)then
-          vout=autofg(rlist(latt(l)+2),'10.7')
+          vout=autofg(cmp%value(ky_BZ_SOL),'10.7')
         else
           vout=' 0'
         endif
@@ -167,8 +169,7 @@ c      write(*,*)'tfdisp ',word,wordp
           if(kytbl(kwL,id) .eq. 0)then
             buff(49:58)=autofg(0.d0,'10.6')
           else
-            buff(49:58)=autofg(
-     $           rlist(latt(l)+kytbl(kwL,id)),'10.6')
+            buff(49:58)=autofg(cmp%value(kytbl(kwL,id)),'10.6')
           endif
           if(id .ne. 41 .and. id .ne. 42 .and. id .ne. 34)then
             buff(59:69)=' '//vout(1:10)
@@ -366,8 +367,7 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             if(kytbl(kwL,id) .eq. 0)then
               buff(51:58)=autofg(0.d0,'8.5')
             else
-              buff(51:68)=autofg(
-     $             rlist(latt(l)+kytbl(kwL,id)),'8.5')
+              buff(51:68)=autofg(cmp%value(kytbl(kwL,id)),'8.5')
             endif
             if(id .ne. 41 .and. id .ne. 42 .and. id .ne. 34)then
               buff(59:68)=vout(1:10)

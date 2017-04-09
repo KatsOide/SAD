@@ -8,7 +8,6 @@
       integer*4 nvar
       integer*4 i,ie,iv,j,ii,ie1
       if(nvar .gt. 0)then
-        call tfclrtparaed
         do i=1,nlat-1
           call compelc(i,cmp)
           ii=iele(i)
@@ -19,10 +18,12 @@
             if(iv .eq. ival(ie) .and. ivarele(j) .eq. ie
      $           .and. (ivcomp(j) .eq. 0 .or. ivcomp(j) .eq. ii))then
               cmp%value(iv)=valvar(j)*errk(1,i)*couple(i)
+              cmp%update=0
             elseif(iv .ne. 0 .and. iv .ne. ival(ie) .and.
      $             ivarele(j) .eq. ie1
      $             .and. (ivcomp(j) .eq. 0 .or. ivcomp(j) .eq. i))then
               cmp%value(iv)=valvar(j)
+              cmp%update=0
             endif
             if(ivarele(j) .gt. ie)then
               exit
@@ -82,9 +83,9 @@
       use tffitcode
       use tfcsi, only:icslfno
       implicit none
+      type (sad_comp), pointer :: cmp
       integer*4 itv(ntouch+1),ite(nele+1)
       integer*4 ntouch,i,ie,j,irtc,ie1,ntv,k
-      call tfclrtparaed
       ite=0
       ntv=0
       do j=1,ntouch
@@ -98,9 +99,11 @@
         do i=1,nlat-1
           ie=iele1(iele(i))
           if(ie .ne. 0 .and. ival(ie) .ne. 0)then
-            rlist(latt(i)+ival(ie))
+            call compelc(i,cmp)
+            cmp%value(ival(ie))
      $           =rlist(latt(iele(i))+ival(ie))
      $           /errk(1,iele(i))*errk(1,i)*couple(i)
+            cmp%update=0
           endif
         enddo
       else
@@ -108,16 +111,20 @@
           ie=iele1(iele(i))
           ie1=iele1(i)
           if(ie .ne. 0 .and. ival(ie) .ne. 0)then
-            rlist(latt(i)+ival(ie))
+            call compelc(i,cmp)
+            cmp%value(ival(ie))
      $           =rlist(latt(iele(i))+ival(ie))
      $           /errk(1,iele(i))*errk(1,i)*couple(i)
+            cmp%update=0
           endif
           if(ite(ie1) .ne. 0)then
+            call compelc(i,cmp)
             do k=1,ntv
               j=itv(k)
               if(itouchele(j) .eq. ie1)then
-                rlist(latt(i)+itouchv(j))
+                cmp%value(itouchv(j))
      $               =rlist(latt(klp(ie1))+itouchv(j))
+                cmp%update=0
               endif
             enddo
           endif

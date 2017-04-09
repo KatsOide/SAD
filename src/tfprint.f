@@ -15,7 +15,7 @@
       character peekch
       integer*4 itfgetrecl,l,itfdownlevel,lenw
       real*8 , parameter :: amaxline=8
-      character*255 word0,word1
+      character*256 word0,word1
       itx=-1
       call unreadbuf(word)
       lpw=itfgetrecl()
@@ -241,7 +241,7 @@ c      endif
       implicit none
       integer*4 l,lenw,ip1,i
       character*(*) word
-      character*255 word1,word2
+      character*256 word1,word2
       l=lenw(word)
       if(l .le. 0)then
         return
@@ -251,14 +251,16 @@ c      endif
         call capita(word2(1:l))
       endif
       ip1=ipoint-l
-      do i=ip1,2,-1
+      do i=ip1,1,-1
         word1(1:l)=buffer(i:i+l-1)
         if(convcase)then
           call capita(word1(1:l))
         endif
         if(word1(1:l) .eq. word2(1:l))then
+c          write(*,*)'unreadbuf ',i,l,' ',buffer(i+l:i+l)
           if(index(delim(1:ldel),buffer(i+l:i+l)) .gt. 0 .and.
-     $         (index(delim(1:ldel),buffer(i-1:i-1)) .gt. 0 .or.
+     $         (i .eq. 1 .or.
+     $         index(delim(1:ldel),buffer(i-1:i-1)) .gt. 0 .or.
      $         index('0123456789.',buffer(i-1:i-1)) .gt. 0))then
             ipoint=i
             return
@@ -266,7 +268,7 @@ c      endif
         endif
       enddo
       write(*,*)'Buffer is damaged at unreadbuf. ',
-     $     ipoint,lrecl,' ',word(1:l)
+     $     ipoint,ip1,l,lrecl,' ',word(1:l)
       call skipline
       return
       end

@@ -8,6 +8,7 @@
       use ffs_pointer,
      $     only:idelc,direlc,elatt,idtypec,idvalc,pnamec,lpnamec
       use sad_main
+      use tparastat
       implicit none
       real*8 conv
       parameter (conv=3.d-16)
@@ -17,14 +18,13 @@
       integer*4 k,kbz,np
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       real*8 tfbzs,fw,bzs,rho,al,theta,phi,phix,phiy,rhoe,
-     $     psi1,psi2,bz1,rho1,dx,dy,rot,fb1,fb2,chi1m,chi2m,rtaper,
-     $     harm,w,ph,vnominal
+     $     bz1,rho1,dx,dy,rot,rtaper,ph
       integer*8 latt(nlat),l1,lp
       integer*4 kptbl(np0,6),nwak,nextwake,n,
-     $     i,ke,l,lt,mfr,itab(np),izs(np),
+     $     i,ke,l,lt,itab(np),izs(np),
      $     kdx,kdy,krot,kstop,kb,lwl,lwt
-      integer*8 iwpl,iwpt,itp
-      logical*4 sol,enarad,dir,out,fringe,autophi
+      integer*8 iwpl,iwpt
+      logical*4 sol,enarad,out,fringe,autophi
       l1=latt(k)
       if(sol)then
         kb=k
@@ -122,7 +122,8 @@
      $         fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
      $         p0,h0,itab,izs,.true.)
         endif
-        if(lt .eq. icDRFT)then
+        select case (lt)
+        case (icDRFT)
           al=cmp%value(ky_L_DRFT)
           if(spac)then
             call spdrift_solenoid(np,x,px,y,py,z,g,dv,pz,al,bzs,
@@ -132,7 +133,10 @@
           else
             call tdrift_solenoid(np,x,px,y,py,z,g,dv,pz,al,bzs)
           endif
-        elseif(lt .eq. icBEND)then
+        case (icBEND)
+          if(cmp%update .eq. 0)then
+            call tpara(cmp)
+          endif
           al=cmp%value(ky_L_BEND)
           theta=cmp%value(ky_ROT_BEND)
      $         +cmp%value(ky_DROT_BEND)
@@ -142,92 +146,64 @@
           enarad=rad .and. al .ne. 0.d0
      $         .and. cmp%value(ky_RAD_BEND) .eq. 0.d0
           call tdrift(np,x,px,y,py,z,g,dv,pz,al,bzs,phiy,phix)
-        elseif(lt .eq. icQUAD)then
-          al=cmp%value(ky_L_QUAD)
-          dir=direlc(l) .gt. 0.d0
-          if(dir)then
-            mfr=nint(cmp%value(ky_FRMD_QUAD))
-          else
-            mfr=nint(cmp%value(ky_FRMD_QUAD))
-            mfr=mfr*(11+mfr*(2*mfr-9))/2
+        case(icQUAD)
+          if(cmp%update .eq. 0)then
+            call tpara(cmp)
           endif
+          al=cmp%value(ky_L_QUAD)
           rtaper=1.d0
           if(rad .and. radcod .and. radtaper)then
             rtaper=1.d0+(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
           endif
-          itp=cmp%param
           call tquads(np,x,px,y,py,z,g,dv,pz,l,al,
      $         cmp%value(ky_K1_QUAD)*rtaper,bzs,
      $         cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
-     1         rlist(itp+4),rlist(itp+2),rlist(itp+3),
+     1         cmp%value(p_THETA_QUAD),
+     $         cmp%value(p_COSTHETA_QUAD),cmp%value(p_SINTHETA_QUAD),
      1         cmp%value(ky_RAD_QUAD),cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
-     $         rlist(itp+6)*rtaper,rlist(itp+7)*rtaper,
-     $         rlist(itp+8)*rtaper,rlist(itp+9)*rtaper,
-     $         mfr,cmp%value(ky_EPS_QUAD),l,dir)
-        elseif(lt .eq. icMULT)then
-          al=cmp%value(ky_L_MULT)
-          dir=direlc(l) .gt. 0.d0
-          if(dir)then
-            mfr=nint(cmp%value(ky_FRMD_MULT))
-            psi1=cmp%value(ky_ANGL_MULT)*
-     $           cmp%value(ky_E1_MULT)
-            psi2=cmp%value(ky_ANGL_MULT)*
-     $           cmp%value(ky_E2_MULT)
-            fb1=cmp%value(ky_FB1_MULT)
-            fb2=cmp%value(ky_FB2_MULT)
-            chi1m=cmp%value(ky_CHI1_MULT)
-            chi2m=cmp%value(ky_CHI2_MULT)
-          else
-            mfr=nint(cmp%value(ky_FRMD_MULT))
-            mfr=mfr*(11+mfr*(2*mfr-9))/2
-            psi1=cmp%value(ky_ANGL_MULT)*
-     $           cmp%value(ky_E2_MULT)
-            psi2=cmp%value(ky_ANGL_MULT)*
-     $           cmp%value(ky_E1_MULT)
-            fb2=cmp%value(ky_FB1_MULT)
-            fb1=cmp%value(ky_FB2_MULT)
-            chi1m=-cmp%value(ky_CHI1_MULT)
-            chi2m=-cmp%value(ky_CHI2_MULT)
-          endif
-          if(trpt)then
-            vnominal=cmp%value(ky_VOLT_MULT)/amass*abs(charge)
-     $           *sin(-cmp%value(ky_PHI_MULT)*sign(1.d0,charge))
-          else
-            vnominal=0.d0
-          endif
-          harm=cmp%value(ky_HARM_MULT)
-          if(harm .eq. 0.d0)then
-            w=pi2*cmp%value(ky_FREQ_MULT)/c
-          else
-            w=omega0*harm/c
+     $         cmp%value(p_AKF1F_QUAD)*rtaper,
+     $         cmp%value(p_AKF2F_QUAD)*rtaper,
+     $         cmp%value(p_AKF1B_QUAD)*rtaper,
+     $         cmp%value(p_AKF2B_QUAD)*rtaper,
+     $         int(cmp%value(p_FRMD_QUAD)),cmp%value(ky_EPS_QUAD),l,
+     $         direlc(i) .gt. 0)
+        case (icMULT)
+          if(tparacheck(icMULT,cmp))then
+            call tpara(cmp)
           endif
           autophi=cmp%value(ky_APHI_MULT) .ne. 0.d0
           ph=cmp%value(ky_DPHI_MULT)
           if(autophi)then
-            ph=ph+gettwiss(mfitdz,l)*w
+            ph=ph+gettwiss(mfitdz,l)*cmp%value(p_W_MULT)
           endif
           rtaper=1.d0
           if(rad .and. radcod .and. radtaper)then
             rtaper=1.d0+(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
           endif
-          itp=cmp%param
-          call tmulti(np,x,px,y,py,z,g,dv,pz,al,
+          call tmulti(np,x,px,y,py,z,g,dv,pz,
+     $         cmp%value(p_L_MULT),
      $         cmp%value(ky_K0_MULT),bzs,
-     $         cmp%value(ky_ANGL_MULT),psi1,psi2,
+     $         cmp%value(ky_ANGL_MULT),
+     $         cmp%value(p_PSI1_MULT),cmp%value(p_PSI2_MULT),
      1         cmp%value(ky_DX_MULT),cmp%value(ky_DY_MULT),
      $         cmp%value(ky_DZ_MULT),
-     $         chi1m,chi2m,cmp%value(ky_ROT_MULT),
+     $         cmp%value(p_CHI1_MULT),cmp%value(p_CHI2_MULT),
+     $         cmp%value(ky_ROT_MULT),
      $         cmp%value(ky_DROT_MULT),
      $         cmp%value(ky_EPS_MULT),cmp%value(ky_RAD_MULT) .eq. 0.d0,
      $         cmp%value(ky_FRIN_MULT) .eq. 0.d0,
-     $         rlist(itp+1)*rtaper,rlist(itp+2)*rtaper,
-     $         rlist(itp+3)*rtaper,rlist(itp+4)*rtaper,
-     $         mfr,fb1,fb2,
-     $         cmp%value(ky_VOLT_MULT),w,cmp%value(ky_PHI_MULT),ph,
-     $         vnominal,
+     $         cmp%value(p_AKF1F_MULT)*rtaper,
+     $         cmp%value(p_AKF2F_MULT)*rtaper,
+     $         cmp%value(p_AKF1B_MULT)*rtaper,
+     $         cmp%value(p_AKF2B_MULT)*rtaper,
+     $         int(cmp%value(p_FRMD_MULT)),
+     $         cmp%value(p_FB1_MULT),cmp%value(p_FB2_MULT),
+     $         cmp%value(ky_VOLT_MULT),cmp%value(p_W_MULT),
+     $         cmp%value(ky_PHI_MULT),ph,
+     $         cmp%value(p_VNOMINAL_MULT),
      $         cmp%value(ky_RADI_MULT),rtaper,autophi,
      $         n,l,latt,kptbl)
-        elseif(lt .eq. icSOL)then
+        case (icSOL)
           if(l .eq. ke)then
             fringe=cmp%value(ky_FRIN_SOL) .eq. 0.d0      
             if(fringe)then
@@ -266,21 +242,26 @@
               call tserad(np,x,px,y,py,g,dv,lp,rhoe)
             endif
           endif
-        elseif(lt .eq. icMAP)then
+        case(icMAP)
           call temap(np,np0,x,px,y,py,z,g,dv,l,n,kptbl)
-        elseif(lt .eq. icAprt)then
+        case(icAprt)
           call tapert1(l,latt,x,px,y,py,z,g,dv,pz,
      1         kptbl,np,n)
           if(np .le. 0)then
             return
           endif
-        elseif(out .and. lt .ne. icMARK .and. lt .ne. icMONI)then
-          out=.false.
-          write(*,*)
+        case(icMARK, icMONI)
+
+        case default
+          if(out)then
+            out=.false.
+            write(*,*)
      $'Only DRIFT, BEND, QUAD, SOL, MULT, MAP, APERT, MARK, MON '//
-     $         'are supported in SOL: ',
-     $         lt
-        endif
+     $'are supported in SOL: ',
+     $           lt
+          endif
+        end select
+
         if(l .eq. nextwake .and. l .ne. ke)then
           call txwake(np,x,px,y,py,z,g,dv,
      $         dx,dy,rot,

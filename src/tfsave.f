@@ -133,6 +133,10 @@ c     $             rlist(j+1),rlist(j+4)
           call cssetp(next)
           all=.true.
           go to 1
+        elseif(word .eq. 'TOTAL')then
+          call cssetp(next)
+          call tffsresetall
+          go to 9000
         endif
       endif
       do i=1,nele
@@ -212,6 +216,7 @@ c              enddo
         call compelc(l,cmp)
         cmp%value(1:kytbl(kwMAX,lt)-1)=
      $       rlist(j+1:j+kytbl(kwMAX,lt)-1)
+        cmp%update=0
 c        do k=1,kytbl(kwMAX,lt)-1
 c          rlist(m+1:m+kytbl(kwMAX,lt)-1)=
 c     $       rlist(j+1:j+kytbl(kwMAX,lt)-1)

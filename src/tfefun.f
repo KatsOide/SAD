@@ -792,7 +792,7 @@ c        go to 6900
         go to 6900
  1240   call tfreadstring(isp1,kx,.false.,.false.,irtc)
         go to 6900
- 1250   call tfopenread(isp1,kx,.false.,irtc)
+ 1250   call tfopenread(isp1,kx,irtc)
         go to 6900
  1260   call tftoexpression(isp1,kx,irtc)
         go to 6900
@@ -1409,7 +1409,6 @@ c            msgn TagS (*   *)   Hold z
      $       id .gt. 999 .and. id .le. 2000)then
           call tfefun1(isp1,id,kx,.false.,irtc)
           if(irtc .eq. 0 .and. tfrefq(kx))then
-            call tfclrtparaed
           else
             irtc=itfmessageexp(999,'General::invset',k1)
           endif

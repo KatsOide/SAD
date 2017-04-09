@@ -1202,7 +1202,7 @@ This Hamiltonian should be consistent with what Kiyoshi Kubo derived."),
          {"DVOLT",
           "\
 Additional accelerating voltage to be added to VOLT without affecting the design\n\
-momentum."
+momentum.",
           "VOLT",
           {}},
 

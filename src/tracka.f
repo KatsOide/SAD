@@ -48,7 +48,6 @@
       else
         call tinip(np,x,px,y,py,z,g,dv,emx,emz,codin,dvfs,cmplot)
       endif
-      call tpara()
       if(.not. trpt)then
         call tclr(sjx,np0)
         call tclr(sjxjx,np0)

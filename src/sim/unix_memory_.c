@@ -1,5 +1,6 @@
 #include <sim/sad_memory.h>
 #include <sim/sad_f2c.h>
+#include <sim/sad_api.h>
 
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -14,6 +15,8 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <sys/syscall.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 #if defined(UINT64_MAX) && !defined(PRIuSIZE_T)
 #if UINT_FAST64_MAX == SIZE_MAX
@@ -405,7 +408,6 @@ integer4 mapfree_(void *ptr) {
 
 SAD_OFFSET_T mapallocfixed_(void *base, const integer8 *usize,
 		  const integer4 *unit, integer4 *irtc) {
-  char align;
   size_t size, *map0;
   /*  integer8 map; */
 
@@ -455,4 +457,79 @@ void mapallocshared_(void *base, const integer8 *usize,
     *irtc=0;};
 
 }
+
+#ifndef caddr_t
+typedef char *caddr_t;
+#endif
+
+integer8 mapallocfile_(char *fname, int *fd, integer8 *size, integer4 *irtc) {
+  char *src, *rpath, *expt;
+  struct stat statbuf;
+
+  expt=expand_tilde(fname);
+  rpath = realpath(expt,NULL);
+  free(expt);
+
+
+  if((*fd = open(rpath, O_RDONLY)) < 0)
+    {free(rpath);
+     *irtc=1;
+      return 0;}
+
+  if ( fstat(*fd, &statbuf) < 0 )
+    {free(rpath);
+      *irtc=2;
+      return 0;}
+
+  if ((src = mmap(0, *size = statbuf.st_size, PROT_READ, MAP_SHARED, *fd, 0))
+      == (caddr_t) -1)
+    {free(rpath);
+      *irtc=3;
+      return 0;}
+
+  free(rpath);
+  *irtc=0;
+  return (integer8) src;
+
+}
+
+integer8 mapallocfd_(int *fd, integer8 *size, integer4 *irtc) {
+  char *src;
+  struct stat statbuf;
+
+  if ( fstat(*fd, &statbuf) < 0 )
+    {
+      *irtc=2;
+      return 0;}
+
+  if ((src = mmap(0, *size = statbuf.st_size, PROT_READ, MAP_SHARED, *fd, 0))
+      == (caddr_t) -1)
+    {
+      *irtc=3;
+      return 0;}
+
+  *irtc=0;
+  return (integer8) src;
+
+}
+
+integer4 unmapfile_(char *map,integer8 *size){
+  return munmap(map,*size);
+}
+
+integer8 lenfile_(int* fd){
+  struct stat statf;
+  if ( fstat(*fd, &statf) < 0 )
+    {
+      return -1;}
+return statf.st_size;}
+
+integer8 mapresizefile_(char *map, int* fd, integer8* size0, integer8 *size){
+  char *src;
+  munmap(map,*size0);
+  if((src = mmap(0,*size,PROT_READ,MAP_SHARED,*fd,0)) ==(caddr_t) -1)
+    return -1;
+  return (integer8) src;
+}
+
 /* End of File */

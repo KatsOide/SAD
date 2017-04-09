@@ -115,7 +115,7 @@
       subroutine mathexp(buf)
       implicit none
       character*(*) buf
-      character*255 buf1
+      character*256 buf1
       integer*4 lene,i,j
       buf1=buf
       buf=' '

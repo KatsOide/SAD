@@ -14,7 +14,7 @@
       logical*4 lfopen(maxlfn),init,exist,termin,rew,app,abbrev,
      $     clo,ret
       character*(*) word
-      character*255 tfconvstr
+      character*256 tfconvstr
       exist=.true.
       init=.false.
       clo=.false.
@@ -216,6 +216,7 @@ c
         call cssetp(lfret(lfnp1))
         call cssetl(lfrecl(lfnp1))
         call cssetlinep(lflinep(lfnp1))
+c        write(*,*)'tfclose ',lfnp1,lflinep(lfnp1)
       elseif(lfni0 .ne. lfni)then
         call skipline
       endif

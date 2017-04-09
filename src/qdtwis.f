@@ -75,10 +75,7 @@
      $         cmp%value(ky_L_QUAD),cmp%value(ky_K1_QUAD),
      $         k,0,cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      $         cmp%value(ky_ROT_QUAD),iv,nfam,nut)
-          dcod(1)=dcod(1)-dcod1(1)
-          dcod(2)=dcod(2)-dcod1(2)
-          dcod(3)=dcod(3)-dcod1(3)
-          dcod(4)=dcod(4)-dcod1(4)
+          dcod(1:4)=dcod(1:4)-dcod1(1:4)
         endif
       else
         call qdtrans(ke,iutk,k,k+1,
@@ -679,15 +676,13 @@ c      enddo
       cod1(6)=utwiss(mfitddp,idp,kk1)
       call qtwiss1(0.d0,idp,j,je,trans1,cod1,.true.,over)
       trans2(1:20)=(trans2(1:20)-trans1(1:20))/(2.d0*dv)
-      dcod(1)=(cod2(1)-cod1(1))/(2.d0*dv)
-      dcod(2)=(cod2(2)-cod1(2))/(2.d0*dv)
-      dcod(3)=(cod2(3)-cod1(3))/(2.d0*dv)
-      dcod(4)=(cod2(4)-cod1(4))/(2.d0*dv)
-      dcod(5)=(cod2(5)-cod1(5))/(2.d0*dv)
+      dcod(1:5)=(cod2(1:5)-cod1(1:5))/(2.d0*dv)
       cmp%value(iv)=v0
-c      write(*,'(a,1p8g15.7)')'qdtrans ',iv,dcod(1),dcod(2)
+c      write(*,'(a,1p8g15.7)')'qdtrans ',iv,cod1(1),cod2(1)
       call qtentu(trans,cod1,utwiss(1,idp,kk1),.true.)
       call tmultr45(trans,trans3,dtrans)
+c      write(*,'(a,1p12g13.5)')'qdtrans ',iv,
+c     $     trans(1,1:4),trans3(1,1:4),dtrans(1,1:4)
       return
       end
 

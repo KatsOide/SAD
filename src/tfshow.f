@@ -13,20 +13,20 @@
      $     mm,lb,ip,j,nf,nl
       parameter (namel=11)
       integer*4 icalc1(3,ndim1)
-      real*8 df(nqcol),fm,x,tgfun
+      real*8 df(nqcol),fm,tgfun
       integer*4 jshow(64),itfgetrecl,irtc
       character*5 fun,form,forms
       character*31 name
       character*15 name1,namea
       character*10 autofg
       character*11 vout
-      character*255 buf2
-      character*255 buf0,buf1
+      character*256 buf2
+      character*256 buf0,buf1
       character*2 label(6)
       logical*4 err,stab,trx,try,ret,tftype1fit
       external trim
       data label/'x1','x2','x3','y1','y2','y3'/
-      lw=max(79,min(255,itfgetrecl()))
+      lw=max(79,min(256,itfgetrecl()))
       lf=max(6,min(10,(lw-20)/(2*nfam+2)))
       if(lf .gt. 6)then
         lfs=max(6,min(8,lf,lw-lf*(2*nfam+1)-22))
@@ -229,7 +229,7 @@
         kpb=icalc1(2,i)
         k=icalc1(3,i)
         jm=0
-        fm=1.d38
+        fm=1.d100
         if(k .gt. 0)then
           do 20 j=1,flv%nfc
             if(flv%mfitp(j) .gt. 0)then

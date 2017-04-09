@@ -1,19 +1,3 @@
-      module wsbb
-      implicit none
-      integer*4, parameter :: nslimax=500,nblist=1600
-      real*8, parameter:: re=2.81794092d-15, am_e=510999.06
-
-      type sbeam 
-      real*8 Benv(36),Benv5(25),v_cen(5),cod(6)
-      real*8 xangle(8)  !(8)
-      integer*4 nslice,bstrl
-      integer*8 iax
-      real*8 zslice(nslimax*2)   !(nslimax*2+2)
-!      real*8, pointer :: zslice(:)   !(nslimax*2+2)
-      real*8 gamma,gambet,ce,Luminosity
-      end type sbeam
-      end module wsbb
-
       module besseltab
       integer,parameter :: lbtab=1000
       real*8, parameter :: hbar=6.58211928e-16 ! eV.s

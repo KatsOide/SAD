@@ -53,7 +53,7 @@ c
        idummy=sethtb8('LIE     ',icACT,ktcaloc(4))
        idummy1=sethtb8('lie     ',icACT,idval(idummy))
        ilist(1,idval(idummy)-1)=2
-       call setfnp(ilist(1,idval(idummy)+1),ActLie)
+       call setfnp(klist(idval(idummy)+1),ActLie)
        ilist(1,idval(idummy)+2)=hsrch('USE')
 c
        idummy=sethtb('OPTION  ',icVAR,VarStr)
@@ -90,7 +90,7 @@ c
        idummy=sethtb8('TRACK   ',icACT,ktcaloc(21))
        idummy1=sethtb8('track   ',icACT,idval(idummy))
        ilist(1,idval(idummy)-1)=20
-       call setfnp(ilist(1,idval(idummy)+1),ActTra)
+       call setfnp(klist(idval(idummy)+1),ActTra)
        ilist(1,idval(idummy)+2)=hsrch('USE     ')
        ilist(1,idval(idummy)+3)=hsrch('TURNS   ')
        ilist(1,idval(idummy)+4)=hsrch('NPART   ')
@@ -114,7 +114,7 @@ c
        idummy=sethtb8('FFS     ',icACT,ktcaloc(21))
        idummy1=sethtb8('ffs     ',icACT,idval(idummy))
        ilist(1,idval(idummy)-1)=20
-       call setfnp(ilist(1,idval(idummy)+1),ActTra)
+       call setfnp(klist(idval(idummy)+1),ActTra)
        ilist(1,idval(idummy)+2)=hsrch('USE     ')
        ilist(1,idval(idummy)+3)=hsrch('TURNS   ')
        ilist(1,idval(idummy)+4)=hsrch('NPART   ')
@@ -139,7 +139,7 @@ c
        idummy=sethtb8('QUICK   ',icACT,ktcaloc(21))
        idummy1=sethtb8('quick   ',icACT,idval(idummy))
        ilist(1,idval(idummy)-1)=20
-       call setfnp(ilist(1,idval(idummy)+1),ActTra)
+       call setfnp(klist(idval(idummy)+1),ActTra)
        ilist(1,idval(idummy)+2)=hsrch('USE     ')
        ilist(1,idval(idummy)+3)=hsrch('TURNS   ')
        ilist(1,idval(idummy)+4)=hsrch('NPART   ')
@@ -165,7 +165,7 @@ c
        idummy=sethtb8('EMIT    ',icACT,ktcaloc(21))
        idummy1=sethtb8('emit    ',icACT,idval(idummy))
        ilist(1,idval(idummy)-1)=20
-       call setfnp(ilist(1,idval(idummy)+1),ActTra)
+       call setfnp(klist(idval(idummy)+1),ActTra)
        ilist(1,idval(idummy)+2)=hsrch('USE     ')
        ilist(1,idval(idummy)+3)=hsrch('TURNS   ')
        ilist(1,idval(idummy)+4)=hsrch('NPART   ')

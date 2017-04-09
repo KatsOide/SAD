@@ -1,6 +1,6 @@
       subroutine twbuf(word,lfno,ilmgn,irmgn,itab,icmd)
       character*(*) word
-      character*255 buff
+      character*256 buff
       integer*4 ip
       save buff,ip
       if(icmd .eq. 0)then

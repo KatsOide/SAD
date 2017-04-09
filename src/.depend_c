@@ -52,8 +52,8 @@ sim/sad_signal.o: sim/sad_signal.c sim/sad_f2c.h sim/sad_signal.h
 sim/sad_tcltk.o: sim/sad_tcltk.c sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/sad_tcltk.h
 sim/sad_xlib.o: sim/sad_xlib.c sim/sad_f2c.h sim/sad_xlib.h
 sim/unix_fortran_.o: sim/unix_fortran_.c sim/sad_f2c.h
-sim/unix_memory8_.o: sim/unix_memory8_.c sim/sad_f2c.h sim/sad_memory.h sim/unix_memory_.c
-sim/unix_memory_.o: sim/unix_memory_.c sim/sad_f2c.h sim/sad_memory.h
+sim/unix_memory8_.o: sim/unix_memory8_.c sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/unix_memory_.c
+sim/unix_memory_.o: sim/unix_memory_.c sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
 sim/unix_pointer_.o: sim/unix_pointer_.c sim/sad_f2c.h
 gdtoa/arithchk.o: gdtoa/arithchk.c
 gdtoa/dmisc.o: gdtoa/dmisc.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h

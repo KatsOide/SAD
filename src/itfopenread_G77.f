@@ -1,10 +1,11 @@
       integer*4 function itfopenread(k,disp,irtc)
+      use tfrbuf
       use tfstk
       use tfrbuf
       implicit none
       integer*8 k,ka
-      integer*4 irtc,nc,system,itfmessage,nextfn,in,ir
-      character*255 fname,tfgetstr
+      integer*4 irtc,nc,system,itfmessage,in,ir
+      character*256 fname,tfgetstr
       logical*4 disp
       itfopenread=-1
       if(ktfnonstringq(k))then
@@ -17,7 +18,7 @@
       fname=tfgetstr(ka,nc)
       call texpfn(fname)
       nc=len_trim(fname)
-      in=nextfn(0)
+      in=nextfn(moderead)
       if(in .ne. 0)then
         if(disp)then
           open(in,file=fname(1:nc),status='OLD',err=9000)
@@ -26,7 +27,7 @@ c         Emulate disp='DELETE' in open statement
         else
           open(in,file=fname(1:nc),status='OLD',err=9000)
         endif
-        call tfreadbuf(irbinit,in,int8(2),int8(0),0,' ')
+        call tfreadbuf(irbinit,in,modewrite,int8(0),0,' ')
         itfopenread=in
         irtc=0
         return
@@ -37,12 +38,13 @@ c         Emulate disp='DELETE' in open statement
       end
 
       integer*4 function itfopenwrite(k,irtc)
+      use tfrbuf
       use tfstk
       use tfrbuf
       implicit none
       integer*8 k
-      integer*4 irtc,nc,i,itfmessage,nextfn
-      character*255 fname,tfgetstr
+      integer*4 irtc,nc,i,itfmessage
+      character*256 fname,tfgetstr
       itfopenwrite=-1
       if(ktfnonstringq(k))then
         itfopenwrite=-1
@@ -53,7 +55,7 @@ c         Emulate disp='DELETE' in open statement
       fname=tfgetstr(k,nc)
       call texpfn(fname)
       nc=len_trim(fname)
-      i=nextfn(0)
+      i=nextfn(modewrite)
       if(i .ne. 0)then
         open(i,file=fname(1:nc),status='UNKNOWN',
 c     $       buffercount=16,
@@ -68,12 +70,13 @@ c     $       buffercount=16,
       end
 
       integer*4 function itfopenappend(k,irtc)
+      use tfrbuf
       use tfstk
       use tfrbuf
       implicit none
       integer*8 k
-      integer*4 irtc,nc,i,itfmessage,nextfn
-      character*255 fname,tfgetstr
+      integer*4 irtc,nc,i,itfmessage
+      character*256 fname,tfgetstr
       itfopenappend=-1
       if(ktfnonstringq(k))then
         itfopenappend=-1
@@ -84,7 +87,7 @@ c     $       buffercount=16,
       fname=tfgetstr(k,nc)
       call texpfn(fname)
       nc=len_trim(fname)
-      i=nextfn(0)
+      i=nextfn(modewrite)
       if(i .ne. 0)then
         open(i,file=fname,status='UNKNOWN',access='APPEND',
 c     $       buffercount=16,

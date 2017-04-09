@@ -6,6 +6,7 @@
       use ffs_fit
       use tffitcode
       implicit none
+      real*8 ,parameter :: abmax=1.d-8
       real*8 factor,dmax
       integer*4 npeak
       parameter (factor=0.97d0,dmax=1.d10)
@@ -118,7 +119,7 @@ c                        write(*,*)'tdfun ',k,ip,kf,maxfit,vpeak(k),df(i)
                     endif
                   else
                     if(kf .le. mfitpzpy .or.
-     $                   (kf .ge. mfitleng .and. kf .le. mfitgz))then
+     $                   (kf .ge. mfitleng .and. kf .le. mfitchi3))then
                       maxfit=flv%mfitp(ka) .lt. 0
                       vb=tgfun(kf,kpb,idp)
                       ve=tgfun(kf,kpe,idp)
@@ -136,16 +137,18 @@ c                        write(*,*)kf,vb,ve,vf1
                         vf1=vf
                       endif
                       df1(i)=tdfun1(vf1,ve,kf,maxfit,idp,ttrans(idp))
-c                      if(tftype1fit(kf))then
-                        if(.not. maxfit)then
-                          if(kf .eq. mfitbx .or. kf .eq. mfitby
-     $                         .or. kf .eq. mfitbz)then
-                            df1(i)=log(vf)+df1(i)
-                          else
-                            df1(i)=vf+df1(i)
-                          endif
+                      if(cell .and. ka .gt. nfc0 .and. ka .le. nfc0+4
+     $                   .and. abs(df1(i)) .lt. abmax)then
+                        cycle
+                      endif
+                      if(.not. maxfit)then
+                        if(kf .eq. mfitbx .or. kf .eq. mfitby
+     $                       .or. kf .eq. mfitbz)then
+                          df1(i)=log(vf)+df1(i)
+                        else
+                          df1(i)=vf+df1(i)
                         endif
-c                      endif
+                      endif
                       iqcol(i)=j
                       lfp(1,i)=kpe
                       lfp(2,i)=kpb
@@ -335,21 +338,18 @@ c     Note: index(name1,'.') > 0 if kp1 != 0
       implicit none
       type (sad_list), pointer :: klx
       type (sad_descriptor) kx
-      integer*8 kff
+      integer*8 ,save :: kff=0
       integer*4 maxcond,nqcol,iqcol(maxcond),kdp(maxcond)
       real*8 df(maxcond)
       integer*4 l,itfuplevel,itfdownlevel,i,m,level,irtc
       logical*4 error
-      save kff
-      data kff/0/
       if(kff .eq. 0)then
-        kff=ktfcopy(ktfsymbolz('`FitFunction',12))
+        kff=ktfsymbolz('`FitFunction',12)
       endif
       l=itfuplevel()
       kx%k=0
       call tfsyeval(kff,kx,irtc)
 c      call tfdebugprint(kx,'fitfun',3)
-c      write(*,*)'with ',irtc
       if(irtc .ne. 0)then
         level=itfdownlevel()
         call tfaddmessage(' ',2,icslfno())
@@ -393,122 +393,110 @@ c      write(*,*)'with ',irtc
       integer*4 kf,kdp
       real*8 vf,v,vfa
       logical*4 maxfit,ttrans
-c      go to (
-c     $     1130,1110,1210,1130,1110,1210,1170,1190,1170,1190,
-c     $     1190,1190,1190,1190,1190,1190,1190,1190,1190,1190,
-c     $     1190,1190,1190,1190,1190,1190,1190,1190,1190,1190,
-c     $     1190,1410,1410,1410
-c     $     ),kf
-c      go to 1190
-c     $  'AX   ','BX   ','NX   ','AY   ','BY   ','NY   ','EX   ','EPX  ','EY   ','EPY  ',
-c     $  'R1   ','R2   ','R3   ','R4   ','DETR ','DX   ','DPX  ','DY   ','DPY  ','DZ   ',
-c     $  'DDP  ','PEX  ','PEPX ','PEY  ','PEPY ','TRX  ','TRY  ','LENG ','GX   ','GY   ',
-c     $  'GZ   ','CHI1 ','CHI2 ','CHI3 ','DEX  ','DEPX ','DEY  ','DEPY ','DDX  ','DDPX ',
-c     $  'DDY  ','DDPY ','PDEX ','PDEPX','PDEY ','PDEPY'/
       select case (kf)
       case (mfitbx,mfitby,mfitbz)
         if(maxfit)then
-        if(v .gt. vf)then
-          tdfun1=log(vf*factor/v)
+          if(v .gt. vf)then
+            tdfun1=log(vf*factor/v)
+          else
+            tdfun1=0.d0
+          endif
+          return
         else
-          tdfun1=0.d0
+          tdfun1=log(vf/v)
         endif
         return
-      else
-        tdfun1=log(vf/v)
-      endif
-      return
 
       case (mfitax,mfitay,mfitaz)
         if(maxfit)then
-        vfa=abs(vf)
-        if(v .gt. vfa)then
-          tdfun1=atan(vfa*factor)-atan(v)
-        elseif(v .lt. -vfa)then
-          tdfun1=-atan(vfa*factor)-atan(v)
+          vfa=abs(vf)
+          if(v .gt. vfa)then
+            tdfun1=atan(vfa*factor)-atan(v)
+          elseif(v .lt. -vfa)then
+            tdfun1=-atan(vfa*factor)-atan(v)
+          else
+            tdfun1=0.d0
+          endif
+          return
         else
-          tdfun1=0.d0
+          tdfun1=atan(vf)-atan(v)
         endif
         return
-      else
-        tdfun1=atan(vf)-atan(v)
-      endif
-      return
 
       case (mfitex,mfitey)
         if(maxfit)then
-        vfa=abs(vf)
-        if(v .gt. vfa)then
-          tdfun1=vfa-v
-        elseif(v .lt. -vfa)then
-          tdfun1=-vfa-v
+          vfa=abs(vf)
+          if(v .gt. vfa)then
+            tdfun1=vfa-v
+          elseif(v .lt. -vfa)then
+            tdfun1=-vfa-v
+          else
+            tdfun1=0.d0
+          endif
+          return
         else
-          tdfun1=0.d0
+          if(kdp .lt. 0)then
+            tdfun1=-vf-v
+          else
+            tdfun1=vf-v
+          endif
         endif
         return
-      else
-        if(kdp .lt. 0)then
-          tdfun1=-vf-v
-        else
-          tdfun1=vf-v
-        endif
-      endif
-      return
 
       case (mfitchi1,mfitchi2,mfitchi3)
         if(maxfit)then
-        vfa=abs(vf)
-        if(v .gt. vfa)then
-          tdfun1=vfa-v
-        elseif(v .lt. -vfa)then
-          tdfun1=-vfa-v
+          vfa=abs(vf)
+          if(v .gt. vfa)then
+            tdfun1=vfa-v
+          elseif(v .lt. -vfa)then
+            tdfun1=-vfa-v
+          else
+            tdfun1=0.d0
+          endif
+          return
         else
-          tdfun1=0.d0
+          tdfun1=vf-v
+        endif
+        do while(tdfun1 .lt. -pi)
+          tdfun1=tdfun1+pi2
+        enddo
+        do while(tdfun1 .gt. pi)
+          tdfun1=tdfun1-pi2
+        enddo
+        return
+        
+      case (mfitnx,mfitny,mfitnz)
+c     vf1=pi2*(anint(vf/pi2)+sign(.5d0*sin(.5d0*vf)**2,sin(vf)))
+c     v1=pi2*(anint(v/pi2)+sign(.5d0*sin(.5d0*v)**2,sin(v)))
+        if(maxfit)then
+          if(v .gt. vf)then
+            tdfun1=vf-v
+          else
+            tdfun1=0.d0
+          endif
+        else
+          tdfun1=vf-v
+        endif
+        if(ttrans)then
+          tdfun1=tdfun1-anint(tdfun1/pi2)*pi2
         endif
         return
-      else
-        tdfun1=vf-v
-      endif
-      do while(tdfun1 .lt. -pi)
-        tdfun1=tdfun1+pi2
-      enddo
-      do while(tdfun1 .gt. pi)
-        tdfun1=tdfun1-pi2
-      enddo
-      return
-      
-      case (mfitnx,mfitny,mfitnz)
-c      vf1=pi2*(anint(vf/pi2)+sign(.5d0*sin(.5d0*vf)**2,sin(vf)))
-c      v1=pi2*(anint(v/pi2)+sign(.5d0*sin(.5d0*v)**2,sin(v)))
-      if(maxfit)then
-        if(v .gt. vf)then
-          tdfun1=vf-v
-        else
-          tdfun1=0.d0
-        endif
-      else
-        tdfun1=vf-v
-      endif
-      if(ttrans)then
-        tdfun1=tdfun1-anint(tdfun1/pi2)*pi2
-      endif
-      return
 
       case default
         if(maxfit)then
-        vfa=abs(vf)
-        if(v .gt. vfa)then
-          tdfun1=vfa-v
-        elseif(v .lt. -vfa)then
-          tdfun1=-vfa-v
+          vfa=abs(vf)
+          if(v .gt. vfa)then
+            tdfun1=vfa-v
+          elseif(v .lt. -vfa)then
+            tdfun1=-vfa-v
+          else
+            tdfun1=0.d0
+          endif
+          return
         else
-          tdfun1=0.d0
+          tdfun1=vf-v
         endif
         return
-      else
-        tdfun1=vf-v
-      endif
-      return
       end select
       return
 

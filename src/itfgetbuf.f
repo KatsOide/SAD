@@ -3,6 +3,10 @@
       integer*4 lfn,limit,i,fgetc,irtc,nc
       character*(*) buf
       read(lfn,'(q,a)',end=9000,err=9100)nc,buf(:min(nc,limit))
+      if(nc .lt. limit)then
+        nc=nc+1
+        buf(nc)=char(10)
+      endif
       irtc=0
       itfgetbuf=nc
       return

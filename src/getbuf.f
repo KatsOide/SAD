@@ -22,6 +22,7 @@
         endif
         call tfreadbuf(irbreadrecord,lfni,int8(0),int8(0),
      $       lr,buffer(lrecl0:))
+c        write(*,*)'getbuf ',lfni,lrecl0,lr
         if(lr .eq. -99)then
           go to 20
         elseif(lr .eq.  -999)then
@@ -44,7 +45,7 @@
           lrecl=lrecl0
         else
           lrecl=len_trim(buffer(1:lrecl))
-          if(buffer(lrecl:lrecl) .eq. '\')then
+          if(buffer(lrecl:lrecl) .eq. '\')then !'
             lrecl0=lrecl
             go to 1
           endif
@@ -62,6 +63,7 @@
         ios=9999
       endif
       if(lfni .eq. 5)then
+        write(*,*)'???-getbuf-buffer overfolw for input stream'
         stop
       endif
       return
@@ -69,7 +71,7 @@
         ios=99999
       endif
       if(lfni .eq. 5)then
-        write(*,*)
+        write(*,*)'???-getbuf-end of input stream'
         stop
       endif
       return

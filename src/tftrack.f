@@ -16,7 +16,8 @@
      $     ipr(100),npr,np1,fork_worker,iprid, ne,nend,
      $     npp,ipn,m,itfmessage,nt,mt,kseed,j
       integer*8 ikptblw,ikptblm
-      real*8 trf00,p00,vcphic0,vcalpha0
+      real*8 trf00,p00,vcphic0,vcalpha0,rgetgl1
+
       logical*4 dapert0,normal
       narg=isp-isp1
       if(narg .gt. 4)then
@@ -166,13 +167,14 @@
       kzp=kz+ipn
       kzf=kzp+npz*6
       p00=pgev
+c      pgev=rgetgl1('MOMENTUM')
       pgev=rlist(ifgamm+ls-1)*amass
+c      call tclrparaall
       call tphyzp
       call tsetdvfs
       call tfsetparticles(rlist(kzp),rlist(kzf),rlist(kpz),
      $     ilist(1,ikptblw),npp,npa,npz,mc,nlat,nt)
       if(npa .gt. 0)then
-        call tpara()
         outfl0=outfl
         outfl=0
         dapert0=dapert

@@ -1,4 +1,5 @@
       subroutine doread(dummy)
+      use tfrbuf
       use maccbk
       use macttyp
       use macfile
@@ -12,7 +13,7 @@ c      character*(22) cfmsg
       integer*4 f,maxstk
       integer*8 flmgr,itemp
       parameter (maxstk=255)
-      integer*4 fstk(maxstk),stkpt,nextfn,ipak,i,dummy
+      integer*4 fstk(maxstk),stkpt,ipak,i,dummy
 c
 c      data cfmsg/'read data from file=**'/
 c     
@@ -32,8 +33,7 @@ c
       if(f .gt. 0 .and. f .lt. 99)then
          stkpt=stkpt+1
          if (stkpt .gt. maxstk) then
-            call errmsg('doread',
-     &           'stack over flow',0,0)
+            call errmsg('doread','stack over flow',0,0)
             stkpt=maxstk
          else
             fstk(stkpt)=f
@@ -48,7 +48,7 @@ c                                              EXIT
             if(ok) f=STDIN
          else
             if(ok) then
-               f=nextfn(0)
+               f=nextfn(moderead)
                if (f .ne. 0)
      $              open(f,file=token(:slen),status='OLD',err=9000)
 c     for debug
@@ -58,7 +58,7 @@ c     end debug
          endif
       else if(ttype .eq. ttypST) then
          if(ok) then
-            f=nextfn(0)
+            f=nextfn(moderead)
             if( f .ne. 0)
      $           open(f,file=token(:slen),status='OLD',err=9000)
 c     for debug
@@ -104,12 +104,13 @@ c
       end
 c
       subroutine redirectInput(fn,fd)
+      use tfrbuf, only:nextfn,moderead
       use macfile
-      character*255 fn
+      character*(MAXLLEN) fn
       integer fd
       integer*8 flmgr,f
 c
-      fd=nextfn(fd)
+      fd=nextfn(moderead)
       if (fd .eq. 0) then
          call errmsg('redirectInput','No more file descriptor',0,0)
          return 
@@ -124,32 +125,4 @@ c
       return
       end
 c     
-      integer*4 function nextfn(i)
-      use tfrbuf
-      implicit none
-      integer*4 i
-c
-      integer*4 ios,f, is,ie
-      logical*4 od
-      character*255 msg
-c
-      f=0
-      is=11
-      ie=nbuf
-      do f=is,ie
-         inquire(f,IOSTAT=ios,err=9000,OPENED=od)
-         if( .not. od) then
-            nextfn=f
-            return
-         endif
-      end do
-c
- 1000 continue
-      nextfn=0
-      return
-c
- 9000 continue
-      call perror(msg)
-      go to 1000
-c
-      end
+ 
