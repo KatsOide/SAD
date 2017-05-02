@@ -10,7 +10,11 @@
       use iso_c_binding
       use mackw
       implicit none
+<<<<<<< HEAD
 c      type (sad_descriptor) kx
+=======
+      type (sad_descriptor) kx
+>>>>>>> origin/master
 c      include 'DEBUG.inc'
       integer*8 ifqu,ifqu0,iuta1,kqu
       real*8 flim1,flim2,aimp1,aimp2,badc1,badc2,amedc1,amedc2,alit,
@@ -1213,7 +1217,7 @@ c        enddo
       integer*4 iqcol(*),kfitp(*),mfitp(*)
       real*8 b(nqcol),s,eps,dg,wexponent,wlimit(nvar)
       logical*4 fit(nqcol),again,allneg
-      integer*4 nagain,i,nj
+      integer*4 nagain,i,nj,irtc
       allneg=.true.
       do i=1,nqcol
         fit(i)=mfitp(kfitp(iqcol(i))) .gt. 0

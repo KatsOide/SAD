@@ -7,9 +7,9 @@ CM24.o: CM24.f
 DM42.o: DM42.f
 FMUL2.o: FMUL2.f
 INTGRL.o: INTGRL.f tffs.o tfstk.o
-IPAK.o: IPAK.f
+IPAK.o: IPAK.f toplvl.o
 IgetGL.o: IgetGL.f tfstk.o
-JNLPRM.o: JNLPRM.f
+JNLPRM.o: JNLPRM.f toplvl.o
 LgetGL.o: LgetGL.f tfstk.o
 Lrdnum.o: Lrdnum.f tfstk.o toplvl.o
 MAIN.o: MAIN.f tfstk.o
@@ -37,7 +37,7 @@ ZEROM4.o: ZEROM4.f
 ZEROV4.o: ZEROV4.f
 abbrev.o: abbrev.f
 actPlt.o: actPlt.f tfstk.o
-atof.o: atof.f
+atof.o: atof.f toplvl.o
 autofg.o: autofg.f tfstk.o
 bb.o: bb.f initb1.o tffs.o tfstk.o
 bbstrhl.o: bbstrhl.f initb1.o tffs.o tfstk.o
@@ -46,7 +46,7 @@ bint.o: bint.f
 corfree.o: corfree.f inc/common.inc inc/coroper.inc tffs.o tfstk.o
 corinit.o: corinit.f inc/common.inc inc/coroper.inc tffs.o
 cputix.o: cputix.f toplvl.o
-csinit.o: csinit.f
+csinit.o: csinit.f tfstk.o
 csroy.o: csroy.f tfstk.o
 csrtest.o: csrtest.f tfstk.o
 csrtest_4.o: csrtest_4.f inc/TFCBK.inc inc/TFCODE.inc inc/TFSTK.inc
@@ -356,7 +356,7 @@ tfoptics.o: tfoptics.f csinit.o tffs.o tfstk.o
 tfpart.o: tfpart.f tfstk.o
 tfprint.o: tfprint.f csinit.o tffs.o tfstk.o toplvl.o
 tfprinta.o: tfprinta.f csinit.o tfstk.o tfstrbuf.o
-tfreadbuf.o: tfreadbuf.f tfshared.o tfstk.o toplvl.o
+tfreadbuf.o: tfreadbuf.f csinit.o tfshared.o tfstk.o toplvl.o
 tfrej.o: tfrej.f tffs.o tfstk.o
 tfrenumber_element.o: tfrenumber_element.f tffs.o tfstk.o
 tfreplace.o: tfreplace.f tfstk.o
