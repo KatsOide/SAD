@@ -288,17 +288,17 @@ c          call tfstk2l(lista,lista)
             enddo
           endif
           go to 7000
- 1320     if(irtc .ge. -3)then
+ 1320     if(irtc .gt. irtcret)then
             go to 7000
           endif
-          call tfcatchreturn(2,kl,irtc)
+          call tfcatchreturn(irtcgoto,kl,irtc)
           l=itfdownlevel()
           if(irtc .ne. 0)then
             exit
           endif
           call tffindlabel(kls,ns,i1,kl)
           if(i1 .le. 0)then
-            call tfthrow(2,kl,irtc)
+            call tfthrow(irtcgoto,kl,irtc)
             exit
           endif
           i1=i1+1

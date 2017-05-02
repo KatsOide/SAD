@@ -338,21 +338,18 @@ c     Note: index(name1,'.') > 0 if kp1 != 0
       implicit none
       type (sad_list), pointer :: klx
       type (sad_descriptor) kx
-      integer*8 kff
+      integer*8 ,save :: kff=0
       integer*4 maxcond,nqcol,iqcol(maxcond),kdp(maxcond)
       real*8 df(maxcond)
       integer*4 l,itfuplevel,itfdownlevel,i,m,level,irtc
       logical*4 error
-      save kff
-      data kff/0/
       if(kff .eq. 0)then
-        kff=ktfcopy(ktfsymbolz('`FitFunction',12))
+        kff=ktfsymbolz('`FitFunction',12)
       endif
       l=itfuplevel()
       kx%k=0
       call tfsyeval(kff,kx,irtc)
 c      call tfdebugprint(kx,'fitfun',3)
-c      write(*,*)'with ',irtc
       if(irtc .ne. 0)then
         level=itfdownlevel()
         call tfaddmessage(' ',2,icslfno())

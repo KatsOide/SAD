@@ -473,12 +473,13 @@ Setup$FF[]:=With[{f=FF$Cond/@FFS["SHOW"]},
         If[FF$Orig===Hold[{`FitFunction:=`FitFunction}],
           Hold[`FitFunction:=f]/.Hold->Null;
           Return[],
-          {Extract[FF$Orig,1,1,2,Hold]}],
+          {Extract[FF$Orig,{1,1,2},Hold]}],
         (Hold/@[FF$Orig,{4}])[[1,1,2]]];
       With[{fj=Join[f0,f]},
-        Hold[`FitFunction:=fj]/.Hold->Null]]]];
+        Hold[`FitFunction:=fj]/.Hold->Null]],
+    FF$Orig=?`FitFunction]];
 Reset$FF[]:=(FF$Orig[[1,1]];FF$NCond);
-Protect[Setup$FF];
+Protect[Setup$FF,Reset$FF];
 
 ARRAY[x__]:=Table[0,Evaluate[##]]&@@List/@{x};
 Len[x_]:=StringLength[x];

@@ -573,7 +573,7 @@ c      call tfdebugprint(kx,'==>',3)
           endif
           if(kx%k .ne. kxundefined%k)then
             isp=isp0
-            call tfthrow(0,kx,irtc)
+            call tfthrow(irtcret,kx,irtc)
             l=itfdownlevel()
             return
           endif
@@ -599,7 +599,7 @@ c      call tfdebugprint(kx,'==>',3)
           endif
           if(kx%k .ne. kxundefined%k)then
             isp=isp0
-            call tfthrow(0,kx,irtc)
+            call tfthrow(irtcret,kx,irtc)
             l=itfdownlevel()
             return
           endif

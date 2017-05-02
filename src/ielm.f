@@ -127,7 +127,7 @@
       implicit none
       integer*4 ielm
       character*(*) word
-      character*255 wordp
+      character*256 wordp
       logical exist
       call getwdl2(word,wordp)
       igelm=ielm(wordp,exist)

@@ -205,7 +205,7 @@ c                  print  *,' doACT/real:', yyval
 c
  3000 continue
 c      write(*,*)'doAct ',argp
-        call funcall1(int8(ilist(1,argdfp+1)),argp)
+        call funcall1(klist(argdfp+1),argp)
 c for debug
 c        call ptrace('doAct '//pname(cmdidx)(2:)//'!',-1)
 c end debug

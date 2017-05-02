@@ -309,21 +309,21 @@
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
 
+      if(ak .eq. 0.d0)then
+        call tdrife(trans,cod,beam,al,
+     $       bz0,ak0x,ak0y,.true.,enarad,.false.,irad,ld)
+        return
+      endif
       if(ak*(1.d0+cod(6)) .lt. 0.d0)then
 c        write(*,'(a,1p8g13.5)')'tsolque-in  ',ak,bz,cod
-        call texchg(trans,cod,beam)
+        call texchg(trans,cod,beam,1.d0)
         call tsolque(trans,cod,beam,al,-ak,
-     $       -bz0,-ak0y,-ak0x,eps0,enarad,radcod,calpol,irad,ld)
-        call texchg(trans,cod,beam)
+     $       bz0,-ak0y,ak0x,eps0,enarad,radcod,calpol,irad,ld)
+        call texchg(trans,cod,beam,-1.d0)
 c        write(*,'(a,1p8g13.5)')'tsolque-out ',ak,bz,cod
         return
       endif
       bz=bz0
-      if(ak .eq. 0.d0)then
-        call tdrife(trans,cod,beam,al,
-     $       bz,ak0x,ak0y,.true.,enarad,.false.,irad,ld)
-        return
-      endif
       if(eps0 .eq. 0.d0)then
         eps=0.1d0
       else
@@ -549,73 +549,142 @@ c     $       'tsolque ',((trans1(i,j),j=1,6),i=1,6)
       return
       end
 
-      subroutine texchg(trans,cod,beam)
+      subroutine texchg(trans,cod,beam,s)
       implicit none
-      integer*4 i
-      real*8 trans(6,12),cod(6),beam(42),x0,px0,x
-      x0=cod(1)
-      cod(1)=cod(3)
-      cod(3)=x0
-      px0=cod(2)
-      cod(2)=cod(4)
-      cod(4)=px0
-      do i=1,12
-        x0=trans(1,i)
-        trans(1,i)=trans(3,i)
-        trans(3,i)=x0
-        px0=trans(2,i)
-        trans(2,i)=trans(4,i)
-        trans(4,i)=px0
-      enddo
-      x=beam(1)
-      beam(1)=beam(6)
-      beam(6)=x
-      x=beam(2)
-      beam(2)=beam(9)
-      beam(9)=x
-      x=beam(3)
-      beam(3)=beam(10)
-      beam(10)=x
-      x=beam(5)
-      beam(5)=beam(7)
-      beam(7)=x
-      x=beam(11)
-      beam(11)=beam(13)
-      beam(13)=x
-      x=beam(12)
-      beam(12)=beam(14)
-      beam(14)=x
-      x=beam(16)
-      beam(16)=beam(18)
-      beam(18)=x
-      x=beam(17)
-      beam(17)=beam(19)
-      beam(19)=x
+      real*8 trans(6,12),cod(6),beam(42),x0,px0,x,s,v(12)
+      if(s .gt. 0.d0)then
+        x0=cod(1)
+        cod(1)=-cod(3)
+        cod(3)=x0
+        px0=cod(2)
+        cod(2)=-cod(4)
+        cod(4)=px0
+        v=trans(1,:)
+        trans(1,:)=-trans(3,:)
+        trans(3,:)=v
+        v=trans(2,:)
+        trans(2,:)=-trans(4,:)
+        trans(4,:)=v
+        x=beam(1)
+        beam(1)=beam(6)
+        beam(6)=x
+        x=beam(2)
+        beam(2)=beam(9)
+        beam(9)=x
+        x=beam(3)
+        beam(3)=beam(10)
+        beam(10)=x
+        beam(4)=-beam(4)
+        x=beam(5)
+        beam(5)=-beam(7)
+        beam(7)=-x
+        beam(8)=-beam(8)
+        x=beam(11)
+        beam(11)=-beam(13)
+        beam(13)=x
+        x=beam(12)
+        beam(12)=-beam(14)
+        beam(14)=x
+        x=beam(16)
+        beam(16)=-beam(18)
+        beam(18)=x
+        x=beam(17)
+        beam(17)=-beam(19)
+        beam(19)=x
 
-      x=beam(21+1)
-      beam(21+1)=beam(21+6)
-      beam(21+6)=x
-      x=beam(21+2)
-      beam(21+2)=beam(21+9)
-      beam(21+9)=x
-      x=beam(21+3)
-      beam(21+3)=beam(21+10)
-      beam(21+10)=x
-      x=beam(21+5)
-      beam(21+5)=beam(21+7)
-      beam(21+7)=x
-      x=beam(21+11)
-      beam(21+11)=beam(21+13)
-      beam(21+13)=x
-      x=beam(21+12)
-      beam(21+12)=beam(21+14)
-      beam(21+14)=x
-      x=beam(21+16)
-      beam(21+16)=beam(21+18)
-      beam(21+18)=x
-      x=beam(21+17)
-      beam(21+17)=beam(21+19)
-      beam(21+19)=x
+        x=beam(21+1)
+        beam(21+1)=beam(21+6)
+        beam(21+6)=x
+        x=beam(21+2)
+        beam(21+2)=beam(21+9)
+        beam(21+9)=x
+        x=beam(21+3)
+        beam(21+3)=beam(21+10)
+        beam(21+10)=x
+        beam(21+4)=-beam(21+4)
+        x=beam(21+5)
+        beam(21+5)=-beam(21+7)
+        beam(21+7)=-x
+        beam(21+8)=-beam(21+8)
+        x=beam(21+11)
+        beam(21+11)=-beam(21+13)
+        beam(21+13)=x
+        x=beam(21+12)
+        beam(21+12)=-beam(21+14)
+        beam(21+14)=x
+        x=beam(21+16)
+        beam(21+16)=-beam(21+18)
+        beam(21+18)=x
+        x=beam(21+17)
+        beam(21+17)=-beam(21+19)
+        beam(21+19)=x
+      else
+        x0=cod(1)
+        cod(1)=cod(3)
+        cod(3)=-x0
+        px0=cod(2)
+        cod(2)=cod(4)
+        cod(4)=-px0
+        v=trans(1,:)
+        trans(1,:)=trans(3,:)
+        trans(3,:)=-v
+        v=trans(2,:)
+        trans(2,:)=trans(4,:)
+        trans(4,:)=-v
+        x=beam(1)
+        beam(1)=beam(6)
+        beam(6)=x
+        x=beam(2)
+        beam(2)=beam(9)
+        beam(9)=x
+        x=beam(3)
+        beam(3)=beam(10)
+        beam(10)=x
+        beam(4)=-beam(4)
+        x=beam(5)
+        beam(5)=-beam(7)
+        beam(7)=-x
+        beam(8)=-beam(8)
+        x=beam(11)
+        beam(11)=beam(13)
+        beam(13)=-x
+        x=beam(12)
+        beam(12)=beam(14)
+        beam(14)=-x
+        x=beam(16)
+        beam(16)=beam(18)
+        beam(18)=-x
+        x=beam(17)
+        beam(17)=beam(19)
+        beam(19)=-x
+
+        x=beam(21+1)
+        beam(21+1)=beam(21+6)
+        beam(21+6)=x
+        x=beam(21+2)
+        beam(21+2)=beam(21+9)
+        beam(21+9)=x
+        x=beam(21+3)
+        beam(21+3)=beam(21+10)
+        beam(21+10)=x
+        beam(21+4)=-beam(21+4)
+        x=beam(21+5)
+        beam(21+5)=-beam(21+7)
+        beam(21+7)=-x
+        beam(21+8)=-beam(21+8)
+        x=beam(21+11)
+        beam(21+11)=beam(21+13)
+        beam(21+13)=-x
+        x=beam(21+12)
+        beam(21+12)=beam(21+14)
+        beam(21+14)=-x
+        x=beam(21+16)
+        beam(21+16)=beam(21+18)
+        beam(21+18)=-x
+        x=beam(21+17)
+        beam(21+17)=beam(21+19)
+        beam(21+19)=-x
+      endif
       return
       end
 

@@ -333,12 +333,15 @@ c      call tfdebugprint(kerror,'addmessage',1)
         if(ierrorprint .ne. 0)then
           call tfaddmessage(' ',0,icslfno())
         endif
-      elseif(irtc .eq. -5 .and. rlist(ierrorgen) .eq. 0.d0)then
+      elseif(irtc .eq. irtcabort .and. rlist(ierrorgen) .eq. 0.d0)then
         irtc=itfmessage(999,'General::abort',' ')
+      elseif(irtc .le. irtcret)then
+        rlist(ierrorgen)=1.d0
       endif
       if(rlist(ierrorgen) .ne. 0.d0)then
-        if(irtc .lt. -6)then
+        if(irtc .le. irtcret)then
           call tfcatchreturn(modethrow,kx,irtc)
+c          write(*,*)'tfcheck-1 ',modethrow,irtc
         endif
         if(narg .gt. 2)then
           if(kxcheckmessage%k .eq. 0)then

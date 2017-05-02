@@ -39,7 +39,7 @@
         implicit none
         type (sad_comp), pointer :: cmp
         integer*4 ltyp
-        real*8 phi,f1,al,psi1,psi2,theta,dtheta,w,akk,sk1,
+        real*8 phi,al,psi1,psi2,theta,dtheta,w,akk,sk1,
      $       fb1,fb2,harm,vnominal,frmd
 
         cmp%update=1

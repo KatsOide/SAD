@@ -10,7 +10,7 @@ cccccc K. Oide 8/30/1999
 c
       integer fst
       character*(MAXLLEN) str
-      integer*4 ione,LL1, idummy,ii
+      integer*4 LL1,idummy,ii
       integer*4 lene,igetGL,irtc
       integer*8 flmgr
       logical at1st
@@ -21,8 +21,7 @@ cc
       if(at1st) then
         at1st=.false.
         LL1=MAXLLEN
-        ione=1
-        call JNLPRM(ione,buf,LL1,pbuf)
+        call JNLPRM(buf,LL1,pbuf)
         if(pbuf .ne. 0) go to 11
       end if
 c
@@ -60,7 +59,9 @@ c
 cccccccccccc   K. Oide 11/22/1997
 cccccccccccc   K. Oide 8/30/1999
 c        if (infl .eq. STDIN)then
-        if (infl .eq. STDIN .or. itbuf(infl) .eq. 2)then
+c        write(*,*)'filbuf ',infl,itbuf(infl)
+        if (infl .eq. STDIN .or. itbuf(infl) .eq. 2
+     $       .or. itbuf(infl) .ge. 5)then
 cccccccccccc   K. Oide end
           fst=ttypEF
           pbuf=MAXLLEN

@@ -30,7 +30,7 @@
      $     wp,getvad,tgetgcut
       parameter (rmax=1.d35)
       parameter (maxrpt=32,maxlfn=128)
-      character*255 word,wordp,title,case,tfgetstrv,tfgetstrs,tfgetstr
+      character*256 word,wordp,title,case,tfgetstrv,tfgetstrs,tfgetstr
       character*(MAXPNAME) ename
       character*(MAXPNAME+8) name
       character*16 autofg
@@ -873,6 +873,10 @@ c        flv%rsconv=rlist(ktlookup('CONVERGENCE'))
         else
           word=tfgetstr(kx,nc)
           exist=nc .eq. 0
+c          if(exist)then
+c            call cssetp(icsmrk()+1)
+c          endif
+c          write(*,*)'DRAW ',exist,nc,ios,' ',word(1:nc)
         endif
         go to 30
       elseif(word .eq. 'GEO')then
@@ -1398,7 +1402,7 @@ c        dpm2=rlist(ktlookup('DPM'))
      $       '?Too many off-momentum or fit points.',' ')
         go to 8810
       endif
-c      write(*,*)'tffsa-1 ',flv%iut,%LOC(rlist(flv%iut)),busy
+c      call tfevalb('Setup$FF[];Print["setupff ",FF$Orig]',36,kx,irtc)
       call tfevalb('Setup$FF[]',10,kx,irtc)
       call tffsmatch(df,dp0,r,nparallel,lfno,irtc)
       updatesize=.false.

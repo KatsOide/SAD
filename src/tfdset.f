@@ -467,7 +467,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
                   call tfpateval(kx,kx,irtc)
                 endif
                 if(irtc .ne. 0)then
-                  call tfcatchreturn(0,kx,irtc)
+                  call tfcatchreturn(irtcret,kx,irtc)
                 endif
               endif
               return
@@ -689,7 +689,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
             call tfeevalref(dtbl%bodyc%k,kx,irtc)
           endif
           if(irtc .ne. 0)then
-            call tfcatchreturn(0,kx,irtc)
+            call tfcatchreturn(irtcret,kx,irtc)
           endif
           isp=isp0
           return
@@ -728,7 +728,7 @@ c      endif
       else
         call tfeevalref(kx,kx,irtc)
       endif
-      call tfcatchreturn(0,kx,irtc)
+      call tfcatchreturn(irtcret,kx,irtc)
       isp=isp0
       return
       end

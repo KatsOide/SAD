@@ -641,7 +641,7 @@ c     external doline
        call IsetGL('$PLOT$',0,idummy)
        idummy=sethtb('PLOT   ',icACT,ktaloc(8))
        ilist(1,idval(idummy))=7
-       call setfnp(ilist(1,idval(idummy)+1),ActPlt)
+       call setfnp(klist(idval(idummy)+1),ActPlt)
        ilist(1,idval(idummy)+2)=hsrch('PTYPE')
        ilist(1,idval(idummy)+3)=hsrch('NPART')
        ilist(1,idval(idummy)+4)=hsrch('TURNS')

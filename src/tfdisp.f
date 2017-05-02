@@ -17,10 +17,10 @@
       real*8 pe(4)
       real*8 og(3,4)
       character*(*) word
-      character*255 wordp,word1,name
+      character*256 wordp,word1,name
       character*(blen) buff
       character*16 autofg,vout
-      character*255 bname
+      character*256 bname
       character*1 dir,hc
       logical*4 tfinsol
       logical exist,dpeak,seldis,abbrev,temat,mat

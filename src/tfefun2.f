@@ -423,7 +423,7 @@ c
       real*8 val,chid
       integer*4 etype,ecount,nc
       integer*4 itfmessage
-      character*255 str,tfgetstr
+      character*256 str,tfgetstr
 
       nfCaWrite=0.0d0
       if(ktfnonrealq(ktastk(isp1+1)))then
@@ -484,7 +484,7 @@ c
       real*8 chid
       integer*4 il,istatus,etype,ecount,nc
       integer*4 itfmessage
-      character*255 str,tfgetstr
+      character*256 str,tfgetstr
 
       kax=ktfaddr(kx)
       il=ilist(2,kax-1)

@@ -55,7 +55,7 @@ void execda_(integer4 *nord) {
   char str[256];
 
   fpin = popen("/proj/oldsad/bad", "r");
-  while(fgets(str, 255, fpin) != NULL) {
+  while(fgets(str, 256, fpin) != NULL) {
     printf("%s", str);
   }
   pclose(fpin);

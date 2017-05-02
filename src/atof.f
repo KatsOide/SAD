@@ -1,10 +1,10 @@
       real*8 function atof(token,slen)
+      use macfile, only:MAXLLEN
       implicit none
       character*(*) token
       integer*4 slen,m
       real*8 eval1
-      integer*4 MAXLLEN,LLEN
-      parameter(MAXLLEN=255)
+      integer*4 LLEN
       parameter(LLEN=MAXLLEN)
 c
       atof=0.d0

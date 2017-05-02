@@ -379,7 +379,7 @@ c      enddo
       isp0=isp
       isp=isp+1
       dtastk(isp)=k
-      call tfopenread(isp0,kfn,.true.,irtc)
+      call tfopenread(isp0,kfn,irtc)
       isp=isp0
       if(irtc .ne. 0)then
         return
@@ -423,7 +423,7 @@ c      enddo
       call cssetlinep(linep)
       call cssetrec(rec)
       if(itf .eq. -3)then
-        irtc=-6
+        irtc=irtcabort
       else
         irtc=0
       endif
@@ -802,7 +802,88 @@ c          enddo
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
       integer*8 ib,is
-      integer*4 irtc,nc,lfn,isw,next,nc1
+      integer*4 irtc,lfn,isw,next,nc1,nc
+      logical*4 char1
+      type(ropt) opts
+      irtc=0
+      isw=1
+      if(lfn .le. 0 .or. lfn .eq. icslfni())then
+        call tfreadstringfb(lfn,kx,char1,opts,irtc)
+        return
+      elseif(itbuf(lfn) .le. 2)then
+        call tfreadstringfb(lfn,kx,char1,opts,irtc)
+        return
+      endif
+ 20   call tfreadbuf(irbgetpoint,lfn,ib,is,nc,' ')
+ 10   if(nc .lt. 0)then
+        call tfreadbuf(irbreadrecordbuf,lfn,ib,is,nc,' ')
+        if(nc .ge. 0)then
+          go to 20
+        else
+          go to 101
+        endif
+      else
+        if(nc .eq. 0)then
+          if(lfn .eq. 0)then
+            kx%k=kxeof
+            return
+          endif
+          if(opts%new)then
+            if((opts%ndel .gt. 0 .and. .not. opts%null) .or. char1)then
+              nc=-1
+              go to 10
+            endif
+            call tfreadbuf(irbeor2bor,lfn,int8(0),int8(0),nc,' ')
+          endif
+          kx=dxnulls
+          return
+        else
+          isw=1
+          if(char1)then
+            nc1=1
+            next=2
+          elseif(opts%ndel .gt. 0)then
+            call tfword(jlist(is,ib),nc,opts%delim(1:opts%ndel),
+     $           opts%ndel,isw,nc1,next,opts%null)
+            if(nc1 .le. 0 .and. .not. opts%null)then
+              if(opts%new)then
+                nc=-1
+                go to 10
+              else
+                nc1=0
+                next=nc+1
+              endif
+            endif
+          else
+            nc1=nc
+            next=nc+1
+          endif
+          if(opts%new .and. next .gt. nc)then
+            call tfreadbuf(irbbor,lfn,int8(0),int8(0),nc,' ')
+          else
+            call tfreadbuf(irbmovepoint,lfn,int8(0),int8(0),next-1,' ')
+          endif
+          nc=nc1
+        endif
+        call loc_sad(ib-1,str)
+        kx=kxsalocb(-1,str%str(is+isw-1:is+isw-2+nc),nc)
+        return
+      endif
+      return
+ 101  kx%k=kxeof
+      return
+      end
+
+      subroutine tfreadstringfb(lfn,kx,char1,opts,irtc)
+      use tfstk
+      use tfrbuf
+      use tfcsi
+      use readopt
+      implicit none
+      type (sad_descriptor) kx
+      type (sad_string), pointer :: str
+      integer*8 ib,is
+      integer*4 irtc,lfn,isw,next,nc1,nc
       character*(maxlbuf) buff
       logical*4 char1
       type(ropt) opts
@@ -1079,16 +1160,16 @@ c     $         char(str(i)),'$'
       return
       end
 
-      subroutine tfopenread(isp1,kx,err,irtc)
+      subroutine tfopenread(isp1,kx,irtc)
       use tfstk
       use tfcsi
+      use tfrbuf
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
-      integer*8 ka,kfromr
-      integer*4 irtc,isp1,ifile,itfopenread,
-     $     itfmessage,nc
-      logical*4 err,disp
+      integer*8 ka,kfromr,kfile,mapallocfile,ksize
+      integer*4 irtc,isp1,ifile,lfn,itfmessage,nc
+      logical*4 disp
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -1109,7 +1190,12 @@ c     $         char(str(i)),'$'
             return
           endif
           disp=.true.
-          ka=ktfaddr(kx)
+c          if(str%str(nc:nc) .eq. '&')then
+c            lfn=itfopenread(kx,disp,irtc)
+c            kx%k=kfromr(dble(lfn))
+c            return
+c          endif
+          call loc_string(ktfaddr(kx),str)
         else
           if(nc .gt. 2) then
              if (str%str(nc-1:nc) .eq. '.z' .or.
@@ -1118,6 +1204,7 @@ c     $         char(str(i)),'$'
                if(irtc .ne. 0)then
                  return
                endif
+               call loc_string(ktfaddr(kx),str)
                disp=.true.
              endif
           endif
@@ -1127,6 +1214,7 @@ c     $         char(str(i)),'$'
                if(irtc .ne. 0)then
                  return
                endif
+               call loc_string(ktfaddr(kx),str)
                disp=.true.
              endif
           endif
@@ -1136,19 +1224,21 @@ c     $         char(str(i)),'$'
                if(irtc .ne. 0)then
                  return
                endif
+               call loc_string(ktfaddr(kx),str)
                disp=.true.
              endif
           endif
         endif
-        ifile=itfopenread(ktfstring+ka,disp,irtc)
-        if(ifile .eq. -2)then
-          kx%k=kxfailed
-          if(.not. err)then
-            call tfaddmessage(' ',0,icslfno())
-            irtc=0
-          endif
+        kfile=mapallocfile(str%str,ifile,ksize,irtc)
+        if(irtc .ne. 0)then
+          irtc=itfmessage(999,'General::fileopen',str%str(1:nc))
+          kx=dxfailed
         else
-          kx%k=kfromr(dble(ifile))
+          call tfreadbuf(irbopen,lfn,kfile/8,ksize+modemapped,ifile,' ')
+c          write(*,*)'tfopenread ',
+c     $         kfile,ifile,ksize,lfn,irtc,' ',
+c     $         str%str(1:nc)
+          kx%k=kfromr(dble(lfn))
         endif
       endif
       return
@@ -1190,17 +1280,18 @@ c     $     nc+15,itx,iax,vx,irtc)
       end
 
       subroutine tfsystemcommand(cmd,nc,kx,irtc)
+      use tfrbuf
       use tfstk
       implicit none
       type (sad_descriptor) kx
       type (sad_descriptor), save :: ntable(1000)
       integer*4 irtc,nc,system,itfsyserr,lw,ir,i,m
-      integer*4 l,nextfn
+      integer*4 l
       character post
       character*2048 cmd
       character*2048 buff,tfgetstr
       data ntable(:)%k /1000*0/
-      l=nextfn(0)
+      l=nextfn(moderead)
       if(ntable(l)%k .eq. 0)then
         call tftemporaryname(isp,kx,irtc)
         ntable(l)=dtfcopy(kx)
@@ -1222,14 +1313,14 @@ c     $     nc+15,itx,iax,vx,irtc)
         endif
       enddo
       ir=system(cmd(2:m)//' > '//buff(:lw)//' '//post)
-c      write(*,*)'tfsyscmd ',ir,' ',cmd(2:m)
+c      write(*,*)'tfsyscmd ',ir,' ',cmd(2:m),' ',buff(:lw)
       if(ir .lt. 0)then
         irtc=itfsyserr(999)
         return
       endif
       call tpause(10000)
       if(post .eq. '&')then
-        call tpause(100000)
+        call tpause(10000)
       endif
 c      ir=system('chmod 777 '//buff(:lw)//char(0))
 c      if(ir .lt. 0)then
@@ -1255,7 +1346,7 @@ c      endif
         return
       endif
       call tfreadbuf(irbopen,iu,ktfaddr(ktastk(isp)),
-     $     int8(3),nc,' ')
+     $     modestring,nc,' ')
       if(iu .le. 0)then
         irtc=itfmessage(9,'General::fileopen','"(String)"')
       else
@@ -1288,14 +1379,22 @@ c      endif
       type (sad_descriptor) kx
       type (sad_symdef), pointer :: symd
       type (sad_string), pointer :: str
-      integer*4 isp1,irtc,         lw,i,tftmpnam,
-     $     getpid,lm
+      integer*4 isp1,irtc,lw,i,tftmpnam,getpid,lm,itfmessage
       character*4096 buff
       character*256 machine
       data lm /0/
       save machine
       type (sad_descriptor) ixmachine
       data ixmachine%k /0/
+      if(isp .eq. isp1+1)then
+        if(ktastk(isp) .ne. kxnull)then
+          irtc=itfmessage(9,'General::wrongval','Null')
+          return
+        endif
+      elseif(isp1 .ne. isp)then
+        irtc=itfmessage(9,'General::narg','0')
+        return
+      endif
       if(ixmachine%k .eq. 0)then
         ixmachine=kxsymbolz('System`$MachineName',19)
       endif
@@ -1315,6 +1414,7 @@ c      endif
       buff(10:10+lm)=machine(:lm)//"_"
       write(buff(11+lm:18+lm),'(I8.8)')getpid()
       buff(19+lm:25+lm)='.XXXXXX'
+      buff(26+lm:26+lm)=char(0)
       lw=tftmpnam(buff)
       kx=kxsalocb(-1,buff,lw)
       irtc=0

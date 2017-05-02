@@ -20,13 +20,13 @@
       character*15 name1,namea
       character*10 autofg
       character*11 vout
-      character*255 buf2
-      character*255 buf0,buf1
+      character*256 buf2
+      character*256 buf0,buf1
       character*2 label(6)
       logical*4 err,stab,trx,try,ret,tftype1fit
       external trim
       data label/'x1','x2','x3','y1','y2','y3'/
-      lw=max(79,min(255,itfgetrecl()))
+      lw=max(79,min(256,itfgetrecl()))
       lf=max(6,min(10,(lw-20)/(2*nfam+2)))
       if(lf .gt. 6)then
         lfs=max(6,min(8,lf,lw-lf*(2*nfam+1)-22))

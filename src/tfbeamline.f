@@ -225,13 +225,14 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
       else
         kas=klist(ka1)
       endif
-      if(itype .eq. icNull)then
+      if(itype .eq. icNULL)then
         if(narg .gt. 2)then
           irtc=itfmessage(9,'General::narg','"1 or 2"')
           return
         endif
         kx=kxadaloc(-1,2,klx)
         klx%body(1)=ktfstring+ktfcopy1(kas)
+        klx%dbody(2)=dtfcopy1(dxnulls)
       else
         if(isp .gt. isp1+2)then
           call tfoverride(isp1+2,kr,irtc)

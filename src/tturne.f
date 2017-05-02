@@ -701,7 +701,7 @@ c     $       twiss(l,idp,mfitzx:mfitzpy)
       use tmacro
       use temw
       implicit none
-      integer*4 l,idp,lorg
+      integer*4 l,idp,lorg,l0
       real*8 trans(6,6),ti(6,6),twi(ntwissfun),cod(6),
      $     beam(21),ril(6,6),gr,tr0(6,6)
       logical*4 norm
@@ -716,7 +716,9 @@ c     $       twiss(l,idp,mfitzx:mfitzpy)
       if(lorg .eq. 0)then
         call tmultr(ti,ri,6)
         norm=normali
+        l0=1
       else
+        l0=lorg
         twi=twiss(lorg,idp,1:ntwissfun)
         call etwiss2ri(twi,ril,norm)
         call tmultr(ti,ril,6)
@@ -728,16 +730,18 @@ c     $       twiss(l,idp,mfitzx:mfitzpy)
         twi(mfitnz)=0.d0
       else
         if(twi(mfitnx) .lt. toln)then
-          twi(mfitnx)=twiss(lorg,idp,mfitnx)+twi(mfitnx)+pi2
+          twi(mfitnx)=twiss(l0,idp,mfitnx)+twi(mfitnx)+pi2
         else
-          twi(mfitnx)=twiss(lorg,idp,mfitnx)+twi(mfitnx)
+          twi(mfitnx)=twiss(l0,idp,mfitnx)+twi(mfitnx)
         endif
         if(twi(mfitny) .lt. toln)then
-          twi(mfitny)=twiss(lorg,idp,mfitny)+twi(mfitny)+pi2
+          twi(mfitny)=twiss(l0,idp,mfitny)+twi(mfitny)+pi2
         else
-          twi(mfitny)=twiss(lorg,idp,mfitny)+twi(mfitny)
+          twi(mfitny)=twiss(l0,idp,mfitny)+twi(mfitny)
         endif
-        twi(mfitnz)=twiss(lorg,idp,mfitnz)+twi(mfitnz)
+c        write(*,*)'setetwiss ',l,l0,idp,
+c     $       twi(mfitny),twiss(l0,idp,mfitny)
+        twi(mfitnz)=twiss(l0,idp,mfitnz)+twi(mfitnz)
       endif
 c      twi(mfitdpx)=twi(mfitdpx)*rgb
 c      twi(mfitdpy)=twi(mfitdpy)*rgb

@@ -361,16 +361,11 @@ c      call tfdebugprint(kx,'tfeval-9',3)
         if(irtc .eq. -1)then
           kx%k=ktfoper+mtfnull
           go to 9000
-        elseif(irtc .eq. -5)then
+        elseif(irtc .eq. irtcabort)then
           kx%k=ktfoper+mtfnull
           irtc=itfmessage(999,'General::abort',
      $         '"'//string(ist1:min(istop-1,l))//'"')
           go to 8900
-        elseif(irtc .eq. -6)then
-          kx%k=ktfoper+mtfnull
-          irtc=itfmessage(9999,'General::abort',
-     $         '"'//string(ist1:min(istop-1,l))//'"')
-          go to 8901
         elseif(irtc .ne. 0)then
           ist1=ist10
           go to 8900
@@ -413,9 +408,10 @@ c          call tfreseterror
 c        endif
         go to 8910
       endif
- 8900 if(irtc .lt. 0 .and. irtc .ne. -6)then
+ 8900 if(irtc .lt. -1 .and. irtc .gt. irtcabort)then
+        write(*,*)'tfeval ',irtc,modethrow
         modethrow=-1
-        if(irtc .lt. -6)then
+        if(irtc .le. irtcret)then
           call tfreseterror
         endif
         kx%k=ktfoper+mtfnull

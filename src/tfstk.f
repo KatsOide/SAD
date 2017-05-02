@@ -34,7 +34,7 @@ c Do not forget to update sim/MACCODE.h when you change this module!!!!
       integer*4 pagesz,inipage
       parameter(pagesz=4096/8,inipage=4)
       integer*4 MAXSTR,MAXMEM0,MAXMEM
-      parameter (MAXSTR=255)
+      parameter (MAXSTR=256)
       parameter (MAXMEM=2*inipage*pagesz)
       parameter (MAXMEM0=6*1024*pagesz)
       character*(MAXPNAME) pname(HTMAX)
@@ -492,6 +492,8 @@ c     endif
      $     iattrprotected=64,iattrconstant=128)
       real*8 rtfnull
       parameter (rtfnull=0.d0)
+      integer*4, parameter :: irtcret=-4,irtcthrow=-5,
+     $     irtcgoto=-6,irtcabort=-7
       integer*8 ktfoper,ktflist,ktfstring,ktfsymbol,ktfpat,ktfobj,
      $     ktfmask,ktamask,ktrmask,ktfnull,ktfnr,ktfref,ktfother,
      $     ktomask,ktftrue,ktfnan

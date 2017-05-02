@@ -287,7 +287,13 @@ c     end   initialize for preventing compiler warning
         if(narg .eq. 1)then
           kax=ktavaloc(-1,nlat)
           if(kt .le. ntwissfun)then
-            rlist(kax+1:kax+nlat)=rlist(itoff:itoff+nlat-1)
+            if(ref)then
+              rlist(kax+1:kax+nlat)=rlist(itoff:itoff+nlat-1)
+            else
+              do i=1,nlat
+                klist(kax+i)=ktfref+itoff+i-1
+              enddo
+            endif
           elseif(kt .ge. mfitpex .and. kt .le. mfitpepy)then
             do i=1,nlat
               call tgetphysdisp(i,pe)
@@ -320,6 +326,7 @@ c     end   initialize for preventing compiler warning
                 call tgetphysdispz(itastk(2,isp),pe)
                 kx=dfromr(pe(kt-mfitpzx+1))
               endif
+c              call tfdebugprint(kx,'tftwiss',1)
             else
               call qtwissfrac(ftwiss,itastk(2,isp),
      $             vstk2(isp),over)
@@ -332,15 +339,27 @@ c     $             itastk(2,isp),vstk2(isp)
             kax=ktavaloc(-1,m)
             kx%k=ktflist+kax
             if(kt .le. ntwissfun)then
-              do i=1,m
-                if(vstk2(isp0+i) .eq. 0.d0)then
-                  rlist(kax+i)=rlist(itoff+itastk(2,isp0+i)-1)
-                else
-                  call qtwissfrac(ftwiss,itastk(2,isp0+i),
-     $                 vstk2(isp0+i),over)
-                  rlist(kax+i)=ftwiss(kt)
-                endif
-              enddo
+              if(ref)then
+                do i=1,m
+                  if(vstk2(isp0+i) .eq. 0.d0)then
+                    rlist(kax+i)=rlist(itoff+itastk(2,isp0+i)-1)
+                  else
+                    call qtwissfrac(ftwiss,itastk(2,isp0+i),
+     $                   vstk2(isp0+i),over)
+                    rlist(kax+i)=ftwiss(kt)
+                  endif
+                enddo
+              else
+                do i=1,m
+                  if(vstk2(isp0+i) .eq. 0.d0)then
+                    klist(kax+i)=ktfref+itoff+itastk(2,isp0+i)-1
+                  else
+                    call qtwissfrac(ftwiss,itastk(2,isp0+i),
+     $                   vstk2(isp0+i),over)
+                    rlist(kax+i)=ftwiss(kt)
+                  endif
+                enddo
+              endif
             elseif(kt .ge. mfitpex .and. kt. le. mfitpepy)then
               do i=1,m
                 if(vstk2(isp0+i) .eq. 0.d0)then

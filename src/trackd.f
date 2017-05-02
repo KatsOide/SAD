@@ -37,7 +37,7 @@ c      endif
       integer*4 n1p0,n2p,maxturn,maxpara,nw,lfno,ncons,nscore,
      $     ivar1,ivar2,ivar3
       parameter (n1p0=200,n2p=51,maxturn=2**29,maxpara=256,nw=16)
-      integer, parameter :: nkptbl = 6
+      integer*4, parameter :: nkptbl = 6, minnp=16
       integer*8 kv,kax,kax11,kax12,kax13,kax2,
      $     kaxi,kaxi3,kax1,latt(nlat)
       integer*4 kptbl(np0,nkptbl),n1p,npr1,
@@ -151,7 +151,7 @@ c      lp0=latt(1)+kytbl(kwmax,idtype(idelc(1)))+1
       endif
       ntloss(1:n1p,1:n2p)=maxturn
       nxm(1:n1p)=n2p+1
-      npara=min(nparallel,maxpara)
+      npara=min(nparallel,maxpara,np0/minnp)
       ipr=1
       if(npara .gt. 1)then
         kseed=0

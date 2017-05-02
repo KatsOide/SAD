@@ -3,10 +3,11 @@
       use tfstk
       use ffs
       use tffitcode
-      use ffs_pointer, only:idelc,latt,idtypec
+      use ffs_pointer, only:idelc,latt,idtypec,gammab
       implicit none
       integer*8 ix
       real*8 rgetgl1,df
+      logical*4 calgeo
       emx   =rgetgl1('EMITX')
       emy   =rgetgl1('EMITY')
       if(emx .le. 1.d-30)then
@@ -52,6 +53,12 @@
       pspac_nturn =max(1,int(rgetgl1('PSPACNTURN')))
       pspac_nturncalc =max(0,int(rgetgl1('PSPACNTURNCALC')))
       call tphyzp
+c      write(*,*)'tfsetparam ',gammab(1),p0
+      if(gammab(1) .ne. p0 .and.  geocal)then
+        gammab(1)=p0
+        call tfgeo1(1,nlat,calgeo,.true.)
+c        write(*,*)'gammab(1): ',gammab(1)
+      endif
       call tsetgcut
       xixf  =rfromd(kxsymbolv('XIX',3))*pi2
       xiyf  =rfromd(kxsymbolv('XIY',3))*pi2

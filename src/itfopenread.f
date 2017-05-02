@@ -2,8 +2,9 @@
       use tfrbuf
       implicit none 
       type (sad_descriptor) k
-      integer*4 irtc,nc,itfmessage,nextfn,in
-      character*255 fname,tfgetstr
+      integer*4 irtc,nc,itfmessage,nextfn,in,ifd
+      integer*8 ka
+      character*256 fname,tfgetstr
       logical*4 disp
       itfopenread=-1
       if(.not. ktfstringqd(k))then
@@ -15,7 +16,7 @@
       fname=tfgetstr(k,nc)
       call texpfn(fname)
       nc=len_trim(fname)
-      in=nextfn(0)
+      in=nextfn(openread)
       if(in .ne. 0)then
         if(disp)then
           open(in,file=fname(1:nc),status='OLD',err=9000,
@@ -23,7 +24,7 @@
         else
           open(in,file=fname(1:nc),status='OLD',err=9000)
         endif
-        call tfreadbuf(irbinit,in,int8(2),int8(0),nc,' ')
+        call tfreadbuf(irbinit,in,modewrite,int8(0),nc,' ')
         itfopenread=in
         irtc=0
         return
@@ -38,7 +39,7 @@
       implicit none 
       type (sad_descriptor) k
       integer*4 irtc,nc,i,itfmessage,nextfn
-      character*255 fname,tfgetstr
+      character*256 fname,tfgetstr
       itfopenwrite=-1
       if(.not. ktfstringqd(k))then
         itfopenwrite=-1
@@ -49,7 +50,7 @@
       fname=tfgetstr(k,nc)
       call texpfn(fname)
       nc=len_trim(fname)
-      i=nextfn(0)
+      i=nextfn(openwrite)
       if(i .ne. 0)then
         open(i,file=fname(1:nc),status='UNKNOWN',
 c     $       buffercount=16,
@@ -68,7 +69,7 @@ c     $       buffercount=16,
       implicit none 
       type (sad_descriptor) k
       integer*4 irtc,nc,i,itfmessage,nextfn
-      character*255 fname,tfgetstr
+      character*256 fname,tfgetstr
       itfopenappend=-1
       if(.not. ktfstringq(k))then
         itfopenappend=-1
@@ -79,7 +80,7 @@ c     $       buffercount=16,
       fname=tfgetstr(k,nc)
       call texpfn(fname)
       nc=len_trim(fname)
-      i=nextfn(0)
+      i=nextfn(openwrite)
       if(i .ne. 0)then
         open(i,file=fname,status='UNKNOWN',access='APPEND',
 c     $       buffercount=16,
