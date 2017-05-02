@@ -36,3 +36,5 @@ Packages/Optics.n~
 src/depend-cache-rG3OJg0z7H6C
 
 src/depend-cache-Sa69PniUmxg3
+
+*.gitignore#
