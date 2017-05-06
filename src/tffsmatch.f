@@ -10,11 +10,7 @@
       use iso_c_binding
       use mackw
       implicit none
-<<<<<<< HEAD
 c      type (sad_descriptor) kx
-=======
-      type (sad_descriptor) kx
->>>>>>> origin/master
 c      include 'DEBUG.inc'
       integer*8 ifqu,ifqu0,iuta1,kqu
       real*8 flim1,flim2,aimp1,aimp2,badc1,badc2,amedc1,amedc2,alit,

@@ -1,24 +1,25 @@
 c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       subroutine trackd(latt,kptbl,x,px,y,py,z,g,dv,pz,
-     $     mturn,kzx,trval,phi,damp,dampenough,ivar1,ivar2,lfno)
+     $     kzx,mturn,trval,phi,damp,dampenough,ivar1,ivar2,lfno)
+      use iso_c_binding
       use tfstk
       use ffs_flag
       use tfshare
       use tmacro
       implicit none
       integer*4 n1p0,nxp
-      parameter (n1p0=200,nxp=51)
-      integer*4 kptbl(np0,6),lfno,
-     $     mturn(np0),kzx(2,np0)
+      parameter (n1p0=256,nxp=51)
+      integer*4, contiguous, pointer, dimension(:,:) :: ntloss
+      integer*4 kptbl(np0,6),mturn(np0),kzx(2,np0)
       integer*8 intlm,latt(nlat)
-      integer*4 irtc,ivar1,ivar2
+      integer*4 ivar1,ivar2,lfno
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       real*8 trval,phi(3),damp,dampenough
-      irtc=1
-      intlm=ktfallocshared((n1p0*nxp+1)/2)
+      intlm=ktfallocshared((n1p0*nxp+2)/2)
+      call c_f_pointer(c_loc(klist(intlm)),ntloss,[n1p0,nxp])
       call trackd0(latt,kptbl,x,px,y,py,z,g,dv,pz,
      1     mturn,kzx,trval,phi,
-     $     damp .ne. 0.d0,dampenough,ilist(1,intlm),ivar1,ivar2,lfno)
+     $     damp .ne. 0.d0,dampenough,ntloss,ivar1,ivar2,lfno)
       call tfreeshared(intlm)
 c      if(mapfree(ntloss(intlm+1)) .ne. 0)then
 c        write(*,*)'???trackd-error in munmap.'
@@ -53,7 +54,8 @@ c      endif
       real*8, parameter :: big=1.d300
       character*14 vname
       data vname /'ResultOfDAPERT'/
-      integer*4 ntloss(n1p0,n2p),mturn(np0),kzx(2,np0),muls,irtc
+      integer*4 ntloss(n1p0,n2p)
+      integer*4 mturn(np0),kzx(2,np0),muls,irtc
       integer*4 i,fork_worker,wait,ichpid(maxpara)
       logical*4 ini,remain,damp
       character label(3)
@@ -173,6 +175,11 @@ c      lp0=latt(1)+kytbl(kwmax,idtype(idelc(1)))+1
         npr1=1
         npmax=np0
       endif
+      kptbl=0
+      do i=1,npmax
+        kptbl(i,1)=i
+        kptbl(i,2)=i
+      enddo
       kzx(1,1:npmax)=0
       kzx(2,1:npmax)=0
       n=1
@@ -317,10 +324,10 @@ c     $     'trackd-tturn-2 ',n,np,(kptbl(i,1),y(i),i=1,14)
         else
           kz=kzx(1,i)
           kx=kzx(2,i)
+c          write(*,'(a,1x,7i10)')'trackd-Lost ',
+c     $         kz,kx,mturn(i),i,np,np1,kp
           ntloss(kz,kx)=mturn(i)
           kzx(1,i)=0
-c          write(*,'(a,1x,7i6)')'trackd-Lost ',
-c     $         kz,kx,mturn(i),i,np,np1,kp
           ini=.true.
         endif
       enddo
@@ -467,6 +474,7 @@ c      write(*,'(a,1p6g15.7)')'tinip ',xa(6),emx,emz
 c          write(*,'(a,2i5,1p6g15.7)')'tpdamp ',j,i,
 c     $xa(1),xa(2),xa(5),xa(6),aenox(j),aenoz(j)
           mturn(j)=nturn-1
+          write(*,*)'tpdamp ',j,nturn-1
         endif
         if(damp)then
           xa(1)=xa(1)*dampx
