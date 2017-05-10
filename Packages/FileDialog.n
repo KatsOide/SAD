@@ -277,8 +277,7 @@ KBF$$FileDialog=Class[{},{},
     If [w === Null, Return[Null]];
     frr = Frame[w, Side->"left", Fill->"both", PadX->10, PadY->5, Expand->1];
     fr1 = Frame[frr, PadX->7, PadY->2, Fill->"x"];
-    ldir = TextLabel[fr1, Width->12, TextAnchor->"w", Text->"Directory : ",
-      Side->"left"];
+    ldir = TextLabel[fr1, Width->12, TextAnchor->"w", Text->"Directory : ",Side->"left"];
     omt = OptionMenu[fr1, TextVariable:>omtv, Side->"left", Relief->"ridge"
       ,BG->"gray85"];
     omtm = Menu[omt];

@@ -2291,7 +2291,7 @@ Tk_KGComputeTextLayout(tkfont, string, numChars, wrapLength, justify, flags,
     fmPtr = &fontPtr->fm;
     height = fmPtr->ascent + fmPtr->descent;
     
-    /*    printf("hi,asc,des:%d %d %d\n",height,fmPtr->ascent,fmPtr->descent); */
+    /*printf("hi,asc,des:%d %d %d\n",height,fmPtr->ascent,fmPtr->descent);*/
     if (tkaltfont != NULL)
       Tk_GetFontMetrics(tkaltfont, &tkaltfm);
     if (tkscriptfont!=NULL)

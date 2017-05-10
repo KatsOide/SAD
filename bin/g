@@ -1,3 +1,0 @@
-#!/bin/tcsh
-setenv ftn88 $1
-sad1 'READ 88;' 

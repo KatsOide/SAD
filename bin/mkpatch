@@ -1,9 +1,0 @@
-#! /bin/csh
-#
-cd src
-pwd
-ls
-foreach f (*.{f,c,h} *.h make*)
-echo $f
-diff -c ../tmp/$f $f >../diff/$f.dif
-end
