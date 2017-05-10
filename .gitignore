@@ -7,9 +7,13 @@ arch/i386-CYGWIN_NT-6.11/*
 arch/AMD64-Linux3/*
 obj/*
 sad/*
+
 .DS_Store
+
 .svn/*
+
 /CVS
+
 .#*
 *.a
 *.so
