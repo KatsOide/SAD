@@ -240,7 +240,7 @@ c      call tplini(iparam+5,ilist(1,ikptbl))
      1        rlist(ilist(2,iparam+18)),rlist(ilist(2,iparam+19)),
      1        rlist(ilist(2,iparam+20)),rlist(ilist(2,iparam+21)),
      1        rlist(ig),rlist(ipz),
-     1        ilist(1,imt),ilist(1,kzx),trval,phi,0.d0,0.d0,3,1,outfl)
+     1        ilist(1,kzx),ilist(1,imt),trval,phi,0.d0,0.d0,3,1,outfl)
         call tfree(kzx)
         call tfree(imt)
       endif

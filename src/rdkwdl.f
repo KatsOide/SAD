@@ -57,8 +57,7 @@ c           print *,idtype(elmidx),kwMAX
 c for debug
 c             print *,'>>goto rdexpr '//token(:slen)//'!'
 c end debug
-              rlist(idval(elmidx)+offset)
-     &                =rdexpr(elmidx,idval(idx),token,slen,ttype)
+              rlist(idval(elmidx)+offset)=rdexpr(token,slen,ttype)
 c rdexpr  return next token in token(:slen)
             endif
           else

@@ -631,7 +631,7 @@ c            write(*,*)'irtc: ',irtc
  860    call tfwritestring(isp1,kx,irtc)
         go to 6900
  870    if(narg .eq. 1)then
-          call tfthrow(0,k,irtc)
+          call tfthrow(irtcret,k,irtc)
           return
         else
           go to 6810
@@ -653,7 +653,7 @@ c            write(*,*)'irtc: ',irtc
  900    call tfpartition(isp1,kx,irtc)
         go to 6900
  910    if(narg .eq. 1)then
-          call tfthrow(1,k,irtc)
+          call tfthrow(irtcthrow,k,irtc)
           return
         else
           go to 6810
@@ -806,7 +806,7 @@ c        go to 6900
  1310   call tfbreak(id-123,narg,kx,irtc)
         go to 6900
  1320   if(narg .eq. 1)then
-          call tfthrow(2,k,irtc)
+          call tfthrow(irtcgoto,k,irtc)
           return
         else
           go to 6810
@@ -976,7 +976,7 @@ c        go to 6900
         go to 6900
  2030   call tfstandardform(isp1,kx,irtc)
         go to 6900
- 2040   irtc=-5
+ 2040   irtc=-7
         if(narg .eq. 1)then
           if(ktfrealqd(k,v))then
             irtc=int(min(max(-3.d0,v),-1.d0)-3.d0)

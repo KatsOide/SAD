@@ -423,7 +423,7 @@ c      enddo
       call cssetlinep(linep)
       call cssetrec(rec)
       if(itf .eq. -3)then
-        irtc=-6
+        irtc=irtcabort
       else
         irtc=0
       endif

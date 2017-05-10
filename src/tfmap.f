@@ -666,7 +666,7 @@
       else
         call tflocal(kerror)
         kerror=ktfcopy(k%k)
-        irtc=-(mode+4)
+        irtc=mode
         modethrow=mode
       endif
       return
@@ -682,7 +682,7 @@
         return
       endif
       call tfeevalref(ktastk(isp),kx,irtc)
-      call tfcatchreturn(1,kx,irtc)
+      call tfcatchreturn(irtcthrow,kx,irtc)
       return
       end
 
@@ -692,6 +692,7 @@
       type (sad_descriptor) kx
       integer*4 mode,irtc
       if(irtc .lt. -1)then
+c        write(*,*)'tfcatchreturn ',mode,modethrow
         if(modethrow .eq. mode)then
           modethrow=-1
           kx%k=kerror

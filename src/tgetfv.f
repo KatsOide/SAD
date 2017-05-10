@@ -12,11 +12,11 @@
       real*8 sc,x1,x,getva
       character*8 name1
       character*(MAXPNAME) tname
-      character*(MAXPNAME+8) name4,name3
+      character*(MAXPNAME+8) name4,name3,namee
       character*(*) word
       character peekch,ch
       integer*4 kfit(*),mfitp(*),ifitp(*),ifitp1(*),
-     $     icalc(3,maxcond),lw
+     $     icalc(3,maxcond),lw,lnf,lne
       real*8 fitval(*)
       logical*4 exist,maxfit,err,err1,exist1
       exist=.true.
@@ -140,7 +140,11 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
 111       if(word .ne. '*')then
             if((i .eq. mfitbx .or. i .eq. mfitby)
      $           .and. x1 .le. 0.d0)then
-              call termes(lfno,'Non-positive value for',nlist(i))
+              lnf=len_trim(nlist(i))
+              call elname(ifitp(kp),namee)
+              lne=len_trim(namee)
+              call termes(lfno,'Non-positive value for',
+     $             nlist(i)(1:lnf)//" @ "//namee(1:lne))
               err=.true.
               return
             endif

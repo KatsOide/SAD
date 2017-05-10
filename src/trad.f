@@ -11,7 +11,7 @@
       parameter (gmin=-0.99d0)
       real*8 x(np),px(np),y(np),py(np),dv(np),g(np)
       call tradel(al,f1,f2,als,ala,alr,alr1)
-c        write(*,*)al,f1,als,ala,alr,alr1
+c      write(*,'(a,1p7g14.6)')'trad ',al,f1,f2,als,ala,alr,alr1
       alc=alr*crad
       ald=dir*al
       dldxx=dldx+dldxe
