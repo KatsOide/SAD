@@ -2093,7 +2093,7 @@ simulate misalignments within a solenoid, etc.",
      {"SORG",
       "SORG sets the origin of S (design orbit length) at the location\n\
 set by ORG.",
-      "ORG"
+      "ORG",
       {}},
 
      {"FFSPRMPT",

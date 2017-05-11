@@ -1,8 +1,8 @@
 #!/bin/sh
 
-SAD_PACKAGES="$HOME/SAD/oldsad/Packages/"; export SAD_PACKAGES
-SAD_ARCH=`$HOME/SAD/oldsad/bin/HostArch`
-SAD_EXE="$HOME/SAD/oldsad/obj/${SAD_ARCH}/sad1.exe"; export SAD_EXE
+SAD_PACKAGES="/Users/oide/SAD/oldsad/Packages/"; export SAD_PACKAGES
+SAD_ARCH=`/Users/oide/SAD/oldsad/bin/HostArch`
+SAD_EXE="/Users/oide/SAD/oldsad/obj/${SAD_ARCH}/sad1.exe"; export SAD_EXE
 
 # Set stack limit
 stacksize=8192		# Kbytes

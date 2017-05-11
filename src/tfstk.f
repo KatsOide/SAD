@@ -326,7 +326,7 @@ c     kcpklist0=0
         endif
         ktaloc=-1
         return
-        end
+        end function
 
         subroutine tsetindexhash(ip,m)
         use maccbk
@@ -350,7 +350,7 @@ c     kcpklist0=0
         ilist(1,ip-1)=m
 c     call tfsetlastp(ip+m-1)
         return
-        end
+        end subroutine
 
         subroutine tfree(ka)
         use maccbk
@@ -404,7 +404,7 @@ c     if(tfchecklastp(ix1))then
 c     endif
         call tsetindexhash(ix-2,m)
         return
-        end
+        end subroutine
 
       end module
 

@@ -2,11 +2,13 @@
 *.~
 TclTk/*
 arch/*
+arch/AMD64-Linux3
 arch/i386-CYGWIN_NT-6.11
 obj/*
 sad/*
 .DS_Store
 /CVS
+.svn/*
 .#*
 *.enc
 *.exe

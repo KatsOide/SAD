@@ -1,3 +1,0 @@
-#!/sur/bin/csh -f
-ssh -p 2422 $1
-#ssh 130.87.82.53 /SAD/cvsroot

@@ -1,4 +1,0 @@
-#!/bin/csh
-setenv ftn00 /dev/null
-set SADPATH="/usr/local/oldsad"
-${SADPATH}/sad1.exe $argv
