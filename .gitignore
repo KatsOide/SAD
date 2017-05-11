@@ -2,14 +2,30 @@
 *.~
 TclTk/*
 arch/*
+<<<<<<< HEAD
 arch/AMD64-Linux3
 arch/i386-CYGWIN_NT-6.11
+=======
+arch/i386-Darwin16/*
+arch/i386-CYGWIN_NT-6.11/*
+arch/AMD64-Linux3/*
+>>>>>>> origin/master
 obj/*
 sad/*
+
 .DS_Store
-/CVS
+
 .svn/*
+
+/CVS
+<<<<<<< HEAD
+.svn/*
+=======
+
+>>>>>>> origin/master
 .#*
+*.a
+*.so
 *.enc
 *.exe
 src/sim/CVS/Entries

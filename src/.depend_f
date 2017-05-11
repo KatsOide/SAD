@@ -49,7 +49,6 @@ cputix.o: cputix.f toplvl.o
 csinit.o: csinit.f tfstk.o
 csroy.o: csroy.f tfstk.o
 csrtest.o: csrtest.f tfstk.o
-csrtest_4.o: csrtest_4.f inc/TFCBK.inc inc/TFCODE.inc inc/TFSTK.inc
 csrtrack.o: csrtrack.f tfstk.o
 cssetp.o: cssetp.f
 dAssgn.o: dAssgn.f tfstk.o toplvl.o
@@ -75,7 +74,6 @@ eigs33.o: eigs33.f toplvl.o
 elname.o: elname.f tffs.o tfstk.o
 errmsg.o: errmsg.f toplvl.o
 expln.o: expln.f tffs.o tfstk.o toplvl.o
-expln_a.o: expln_a.f inc/MACCODE.inc inc/MACKW.inc inc/MACMISC.inc inc/MACexpn.inc tfstk.o
 fdate1.o: fdate1.f
 filaux.o: filaux.f tfstk.o toplvl.o
 filbuf.o: filbuf.f tfstk.o toplvl.o
@@ -89,7 +87,6 @@ getbuf.o: getbuf.f csinit.o toplvl.o
 gettok.o: gettok.f tfstk.o toplvl.o
 getvad.o: getvad.f csinit.o tfstk.o
 getwrd.o: getwrd.f csinit.o tffs.o tfstk.o
-gftest.o: gftest.f
 hsrch.o: hsrch.f tfstk.o toplvl.o
 icsmrk.o: icsmrk.f
 ielm.o: ielm.f tffs.o tfstk.o
@@ -290,7 +287,6 @@ temits.o: temits.f temit.o tffs.o tfstk.o toplvl.o
 temp.o: temp.f toplvl.o
 termes.o: termes.f tffs.o tfstk.o
 terror.o: terror.f tffs.o tfstk.o
-test.o: test.f
 tfTclArg.o: tfTclArg.f tfstk.o tfstrbuf.o
 tfadjst.o: tfadjst.f tffs.o tfstk.o
 tfaprt.o: tfaprt.f tffs.o tfstk.o
