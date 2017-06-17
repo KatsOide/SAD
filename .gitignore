@@ -2,9 +2,10 @@
 *.~
 TclTk/*
 arch/*
+arch/AMD64-Linux3/*
+arch/i386-CYGWIN_NT-6.11/*
 arch/i386-Darwin16/*
 arch/i386-CYGWIN_NT-6.11/*
-arch/AMD64-Linux3/*
 obj/*
 sad/*
 
@@ -13,7 +14,7 @@ sad/*
 .svn/*
 
 /CVS
-
+.svn/*
 .#*
 *.a
 *.so
