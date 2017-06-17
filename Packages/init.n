@@ -295,8 +295,8 @@ WithPriority[x_,`y_]:=With[x,
   $Priority=False];
 SetAttributes[{Priority,WithPriority},{HoldAll,Constant}];
 Close[x_]:=Close$[x];
-Close[x__]:=Close/@{x};
-Close[{x_,y_}]:=Close$/@Range[x,y];
+Close[x__]:=Scan[Close,{x}];
+Close[`l_List]:=Scan[Close,Flatten[l]];
 SetAttributes[Close,Constant];
 Shared[`n_Real]:=ReadShared[`n];
 (Shared[n_]=`v_)^:=WriteShared[n,v];

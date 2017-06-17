@@ -49,14 +49,14 @@ c          p=(1.d0+g(i))**2
           py(i)=pyf
 2110    continue
       endif
-      if(enarad)then
+      if(enarad .and. ak .ne. 0.d0)then
         if(iprev(l) .eq. 0)then
-          f1r=f1in
+          f1r=sqrt(abs(24.d0*f1in/ak*al))
         else
           f1r=0.d0
         endif
         if(inext(l) .eq. 0)then
-          f2r=f1out
+          f2r=sqrt(abs(24.d0*f1out/ak*al))
         else
           f2r=0.d0
         endif

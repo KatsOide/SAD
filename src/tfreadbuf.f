@@ -101,7 +101,6 @@
           case default
             call unmapfile(klist(ibuf(lfn)),lenbuf(lfn))
             call unixclose(ifd(lfn))
-c            write(*,*)'irbclose ',ifd(lfn),ibuf(lfn)*8,lenbuf(lfn)
           end select
           lbuf(lfn)=0
           mbuf(lfn)=-1
@@ -242,7 +241,7 @@ c            write(*,*)'irbclose ',ifd(lfn),ibuf(lfn)*8,lenbuf(lfn)
         case (moderead,modewrite)
         case (modestring)
           ibuf(j)=ktfcopy1(ib)+1
-          lenbuf(j)=ilist(1,ib-1)
+          lenbuf(j)=ilist(1,ib)
         case (modeshared)
           ibuf(j)=ib
           lenbuf(j)=ilist(1,ib-1)
@@ -268,7 +267,6 @@ c      if(irtc .ne. 0)then
 c        return
 c      endif
       call tfreadbuf(irbreadrecord,in,int8(0),int8(0),nc,str)
-c      write(*,*)'readstr ',in,nc,':',str(1:nc)
       irtc=0
       if(nc .gt. 0)then
         if(str(nc:nc) .eq. char(10))then
@@ -311,7 +309,6 @@ c      write(*,*)'readstr ',in,nc,':',str(1:nc)
       irtc=0
       ia=ktfallocshared(m+1)
 c      ia=mapallocfixed8(rlist(0), m+1, 8, irtc)
-c      write(*,*)'openshared ',ia,m
       if(irtc .ne. 0)then
         irtc=itfmessage(9,'General::mmap','""')
         kx%k=kxfailed
