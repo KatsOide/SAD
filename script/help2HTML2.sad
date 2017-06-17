@@ -121,7 +121,6 @@ FFS;
 Back to SAD Home Page</H4>\n\
 <A HREF=\"example/design_example.html\">\n<H4>\n\
 SAD/FFS Examples</H4></A>\n\
-
 <HR>\n"];
  Write[f,"<PRE>"];
  HH@WriteHTMLIndex[f,HH@help[[1]],""];
