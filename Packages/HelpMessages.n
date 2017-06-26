@@ -2142,6 +2142,12 @@ DAPWIDTH is the width of the x-amplitudes to quit the tracking to judge the aper
       "DynamicApertureSurvey",
       {}},
 
+      {"FFS$NumericalDerivative",
+        "\
+If True, performs numerical differentiation during the matching by GO. It is useful with some variables and matching functions in some cases. It is slow, so shouldbe avoided for off-momentum-matching. The default is False.",
+        "GO",
+        {}},
+
      {"MatchingAmplitude",
       "\
 MatchingAmplitude is a list of amplitudes for the finite-amplitude matching.\n\n\
