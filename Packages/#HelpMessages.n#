@@ -1944,13 +1944,13 @@ EMITX is a real variable for the horizontal physical emittance. It is automatica
 
      {"EMITY",
       "\
-EMITY is a real variable for the vertical physical emittance. It is automatically set by the keyword EMITY of the MARK element at the beginning of the beam line. The EMITTANCE(EMIT) command reôurns its calculated value in EMITY. The value of EMITY affects the default wei÷ht of variables in the matching. Accessible in MAIN.",
+EMITY is a real variable for the vertical physical emittance. It is automatically set by the keyword EMITY of the MARK element at the beginning of the beam line. The EMITTANCE(EMIT) command reÃ´urns its calculated value in EMITY. The value of EMITY affects the default weiÃ·ht of variables in the matching. Accessible in MAIN.",
       "EMITX EMITZ DP elements MARK",
       {}},
 
      {"EMITZ",
       "\
-EMITZ is a real variable for the longitudinal physical emittance. It is automatically set by the keyword EMITZ of the MARK element at the beginning of the beam line. The EMITTANCE(EMIT) command reôurns its calculated value in EMITZ. Accessible in MAIN.",
+EMITZ is a real variable for the longitudinal physical emittance. It is automatically set by the keyword EMITZ of the MARK element at the beginning of the beam line. The EMITTANCE(EMIT) command reÃ´urns its calculated value in EMITZ. Accessible in MAIN.",
       "EMITX EMITY DP elements MARK",
       {}},
 
@@ -1994,7 +1994,7 @@ CONVERGENCE is the goal of the convergence(==MatchingResidual) in the matching. 
       "\
 MatchingResidual holds the convergence in the last GO or CALCULATE(CAL) commands. It is calculated by\n\n\
      sw*(Sum[(w_i*df_i)^ExponentOfResidual,{i}]/sw)^(2/ExponentOfResidual)\n\
-     +penalty\n where w_i is the weight of the i-th condition, df_i is the differeþce of the i-th function from the goal, penalty is an additional big number  (typically 10), when the optics is unstable or closed orbit is not found in the case of CELL. The parameter sw is defined as\n\n\
+     +penalty\n where w_i is the weight of the i-th condition, df_i is the differeÃ¾ce of the i-th function from the goal, penalty is an additional big number  (typically 10), when the optics is unstable or closed orbit is not found in the case of CELL. The parameter sw is defined as\n\n\
      sw=Sum[(OffMomentumWeight/2/woff)^2,{i}]\n with\n\n\
      woff = 1                               for on-momentum optics\n\
           = Sqrt[number-of-momentum-points] for off-momentum optics.\n The weight of the function is lighter in the case of off-momentum-matching so that all off-momentum deviations functions weight equal to the on-momentum one. However, the relative weight for the off-momentum part can be changed by setting OffMomentumWeight. \n\
@@ -2664,8 +2664,7 @@ Example: StringPosition[\"abcbcbcbcb\",\"bcb\"] returns {{2,4},{4,6},{6,8},{8,10
        {"StringPart",
          "\
  s_String[n]      returns the n-th character in s.\n\
- s_String[n1, n2] returns the substring from n1-th through n2-th charactersof s.\n\n\
- If n1, n2 are negative, they count from the end of the string.",
+ s_String[n1, n2] returns the substring from n1-th to n2-th charactersof s.",
          "",
          {}},
 
@@ -3209,11 +3208,11 @@ resets $FORM and PageWidth to their defaults, then evaulate expr, returns the re
         {"MemoryCheck",
           "\
 MemoryCheck[n]\n\n\
-checks the consistency of the memory allocation by SAD. The range of the check and the output depend on n:\t\n\n\
+checks the consistency of the memory allocation by SAD. The range of the check and the output depend on n:\n\n\
 MemoryCheck[]  : checks the consistency of the free area and returns the allocation info,\n\
 MemoryCheck[1] : checks the consistensy of the free and used areas. Returns the allocaton info.\n\
-MemoryCheck[2] : checks the consistensy of the free and used areas. Returns the allocaton info. and a list of free segments.\t\n\n\
- The returned value is {used, allocated from system, # of free segments, missing size[, list of free segments]} in units of word (= 8 bytes).\n\
+MemoryCheck[2] : checks the consistensy of the free and used areas. Returns the allocaton info. and a list of free segments.\n\n\
+The returned value is {used, allocated from system, # of free segments, missing size[, list of free segments]} in units of word (= 8 bytes).\n\
  If an inconsistency is found, messages are printed out.",
           "",
           {}},
@@ -4299,8 +4298,7 @@ Examples:\n\n\
     SetElement[\"QF\",,{\"K1\"->0.1}]        "//
 "! set K1 of QF to 0.1 .\n\
     SetElement[\"QF\",\"QUAD\",{\"K1\"->0.1}]  "//
-"! same as above.\n\n\
- "//
+"! same as above.\n\n\"//
 "!Assuming QF1 and QF2 are undefined yet:\n\n\
     SetElement[\"QF1\",\"QUAD\",{\"K1\"->0.1}] "//
 "! create a new QUAD QF1 with K1=0.1 .\n\

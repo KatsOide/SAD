@@ -2,7 +2,7 @@ NormalCoordinates[i_]:=NormalCoordimatesPrimitive[Twiss['*',i]];
 
 NormalCoordinates[i_,param_]:=NormalCoordimatesPrimitive[param[i]];
 
-NormalCoordimatesPrimitive[param_]:=If[?Calc6D,
+NormalCoordimatesPrimitive[param_]:=If[?CALC6D,
   {NormalCoordinate6[param],Take[param,{16,21}]},
   Module[
   {a1,f1,{r1,r2,r3,r4}=Take[param,{11,14}],detr,

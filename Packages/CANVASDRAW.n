@@ -49,7 +49,7 @@ FFSCanvasDraw=Class[{},{},{},
           True,
           Lattice->False],
         Lattice->False];
-      opt=Flatten[{Region->{r1,r2},opt,GridLines->{None,Automatic},InfoLabel->True}];
+      opt=Override[Draw$Option,{Region->{r1,r2},opt,GridLines->{None,Automatic},InfoLabel->True}];
       OpticsPlot[list,Null@@opt,PlotLabel->TITLE];
       Update[];
 !      Print[{w,w1}];
@@ -69,4 +69,5 @@ FFSCanvasDraw=Class[{},{},{},
   ];
 
 FFS$CD=FFSCanvasDraw[];
+If[~ListQ[Draw$Option],Draw$Option={}];
 CANVASDRAW=FFS$CD@Draw;

@@ -461,6 +461,7 @@ CanvasGraphics=Class[{},
             fl=Take[Join[fl,nullsl],4];
             fl={fl,{"BOTTOM","LEFT CENTER","TOP","RIGHT CENTER"},
               DefaultTitleSize*(StandardScale*{wsfx,wsfy,wsfx,wsfy})^0.45};
+            fl000=fl;
             ScanThread[If[""<=>#<=>nullsl2,
               MakeTitle[#,Restrict[#3,9,28],#2]]&,fl]]
           ]];
@@ -620,13 +621,13 @@ CanvasGraphics=Class[{},
         {(Canvas$Window[[1,1]]+Canvas$Window[[1,2]])/2,
           Canvas$Window[[2,1]]-24/DPI}]},
     If[f==={},{c,(Canvas$Window[[1,2]]-Canvas$Window[[1,1]])*DPI,"n"},
-      {{First[c],f[[4]]-1},Third[f]-First[f],"n"}]];
+      {{First[c],f[[4]]-1},(Canvas$Window[[1,2]]-Canvas$Window[[1,1]])*DPI,"n"}]];
   TitlePosition["TOP",t_:"L"]:=Module[
     {c=WindowCoord[
       {(Canvas$Window[[1,1]]+Canvas$Window[[1,2]])/2,Canvas$Window[[2,2]]}],
       f=If[t==="",{},CanvasWidget[BBox[t//"F$X2"//Canvas$Frame]]]},
     If[f==={},{c+{0,-1},(Canvas$Window[[1,2]]-Canvas$Window[[1,1]])*DPI,"s"},
-      {{First[c],Min[Second[f],Second[c]]-1},Third[f]-First[f],"s"}]];
+      {{First[c],Min[Second[f],Second[c]]-1},(Canvas$Window[[1,2]]-Canvas$Window[[1,1]])*DPI,"s"}]];
   TitlePosition["TOP HIGH",t_:"L"]:=Module[
     {f,c=WindowCoord[
         {(Canvas$Window[[1,1]]+Canvas$Window[[1,2]])/2,
@@ -670,31 +671,31 @@ CanvasGraphics=Class[{},
         If[bl<=>{} && bl[[1]]<pos[[1]] && bl[[2]]<=pos[[2]]<=bl[[4]],
           fl=Max[fl,bl[[3]]]],
         {i,0,Canvas$Frame}];
-    Round[FontScale*FScale[FrameFontScale,2]
+    fl01=fl;fs01=FontScale*FScale[FrameFontScale,2];w01=w;
+    dsn01=Round[FontScale*FScale[FrameFontScale,2]
       *Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,pos[[1]]-fl-1,size*1.3]]]];
-  DefaultSize[t_,w_,size_,pos_,"w"]:=Module[{wc=CanvasWidget[Width],bl,fl},
-    fl=wc;
-      Do[bl=CanvasWidget[BBox[{"LF$Y2"//i,"FL$Y2"//i,"F$Y2"//i}]];
+  DefaultSize[t_,w_,size_,pos_,"w"]:=Module[{fl=CanvasWidget[Width],bl},
+      Do[bl=CanvasWidget[BBox[{"LF$Y1"//i,"FL$Y1"//i,"F$Y1"//i}]];
         If[bl<=>{} && bl[[3]]>pos[[1]] && bl[[2]]<=pos[[2]]<=bl[[4]],
           fl=Min[fl,bl[[1]]]],
         {i,0,Canvas$Frame}];
     Round[FontScale*FScale[FrameFontScale,4]
       *Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,fl-pos[[1]]-1,size*1.3]]]];
-  DefaultSize[t_,w_,size_,pos_,"n"]:=Module[{wc=CanvasWidget[Height],bl,fl},
-    fl=wc;
-      Do[bl=CanvasWidget[BBox[{"LF$X2"//i,"FL$X2"//i,"F$X2"//i}]];
-        If[bl<=>{} && bl[[4]]>pos[[2]] && bl[[1]]<=pos[[1]]<=bl[[3]],
-          fl=Min[fl,bl[[2]]]],
-        {i,0,Canvas$Frame}];
-    Round[FontScale*FScale[FrameFontScale,3]
-      *Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,fl-pos[[2]]-1,size*1.3]]]];
-  DefaultSize[t_,w_,size_,pos_,"s"]:=Module[{fl=0,bl},
+  DefaultSize[t_,w_,size_,pos_,"s"]:=Module[{bl,fl=0},
       Do[bl=CanvasWidget[BBox[{"LF$X1"//i,"FL$X1"//i,"F$X1"//i}]];
-        If[bl<=>{} && bl[[2]]<pos[[2]] && bl[[1]]<=pos[[1]]<=bl[[3]],
-            fl=Max[fl,bl[[4]]]],
+        If[bl<=>{} && bl[[4]]<pos[[2]] && bl[[1]]<=pos[[1]]<=bl[[3]],
+          fl=Max[fl,bl[[4]]]],
         {i,0,Canvas$Frame}];
-    Round[FontScale*FScale[FrameFontScale,1]
+    dsn01=Round[FontScale*FScale[FrameFontScale,3]
       *Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,pos[[2]]-fl-1,size*1.3]]]];
+  DefaultSize[t_,w_,size_,pos_,"n"]:=Module[{bl,fl=CanvasWidget[Height]},
+    Do[bl=CanvasWidget[BBox[{"LF$X2"//i,"FL$X2"//i,"F$X2"//i}]];
+      If[bl<=>{} && bl[[2]]>pos[[2]] && bl[[1]]<=pos[[1]]<=bl[[3]],
+        fl=Min[fl,bl[[2]]]],
+      {i,0,Canvas$Frame}];
+    fl00=fl;fs00=FontScale*FScale[FrameFontScale,1];w00=w;
+    dsn00=Round[FontScale*FScale[FrameFontScale,1]
+      *Max[9,size*0.7,Min[w/(effsl00=EffectiveStringLength[t,16])*FSFontScale,fl-pos[[2]]-1,size*1.3]]]];
 
   MakeTitle["",__]:=Null;
   MakeTitle[t_,size_,p_]:=Module[{{pos,w,anc}=TitlePosition[p],sz,it=0},

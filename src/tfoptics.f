@@ -9,7 +9,7 @@
       type (ffs_stat) optstat
       integer*8 kx,kax,kax1,kax2,kax3,kaxi,kaini,itoff
       integer*4 isp1,narg,irtc,idim,k,i,itfloc,itfmessage,lout
-      logical*4 cell0,geo
+      logical*4 cell0,geo,calc6d0
       narg=isp-isp1
       if(narg .ne. 5)then
         if(narg .ne. 6)then
@@ -30,8 +30,8 @@
         return
       endif
       idim=int(rtastk(isp1+5))
-      if(idim .ne. 2)then
-        irtc=itfmessage(9,'General::wrongnum','"IDIM must be 2"')
+      if(idim .ne. 2 .and. idim .ne. 3)then
+        irtc=itfmessage(9,'General::wrongnum','"IDIM must be 2 or 3"')
         return
       endif
       if(ktfnonrealq(ktastk(isp1+4)))then
@@ -73,8 +73,15 @@
       lout=icslfno()
       fbound%fb=0.d0
       fbound%fe=0.d0
+      calc6d0=calc6d
+      if(idim .eq. 2)then
+        calc6d=.false.
+      else
+        calc6d=.true.
+      endif
       call qcell1(fbound,0,optstat,.false.,.true.,lout)
-      cell0=cell
+      calc6d=calc6d0
+      cell=cell0
       kax=ktadaloc(-1,3)
       kax2=ktraaloc(0,3)
       klist(kax+2)=ktflist+kax2
@@ -84,10 +91,14 @@
       if(optstat%staby)then
         rlist(kax2+2)=1.d0
       endif
+      if(optstat%stabz)then
+        rlist(kax2+3)=1.d0
+      endif
       kax3=ktraaloc(0,3)
       klist(kax+3)=ktflist+kax3
       rlist(kax3+1)=optstat%tracex
       rlist(kax3+2)=optstat%tracey
+      rlist(kax3+3)=optstat%tracez
       kax1=ktadaloc(0,fbound%le-fbound%lb+1)
       klist(kax+1)=ktflist+kax1
       do i=fbound%lb,fbound%le

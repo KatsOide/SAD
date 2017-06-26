@@ -1,28 +1,61 @@
 FFS;
- SetDirectory[DocumentsDirectory];
- WriteHTML[f_,h_,ul_]:=Module[{},
-   If[h[[1]]=="example",Return[]];
-   If[ul<0,Write[f,"<LI>"]];
-   nlabel=nlabel+1;
-   Write[f,"<H3><A NAME=L",nlabel,">\n",h[[1]],"</A>\n</H3>"];
-   Write[f,"<PRE>",h[[2]],"\n</PRE>\n"];
-   If[Length[h[[4]]]>0,
-     If[ul<=0,Write[f,"<UL>"]];
-     Scan[WriteHTML[f,#,ul-1]&,h[[4]]];
-     If[ul<=0,Write[f,"</UL>"]]]];
- WriteHTMLIndex[f_,h_,tab_]:=Module[{tab1},
-   If[h[[1]]=="example",Return[]];
-   nlabel=nlabel+1;
-   Write[f,tab,"<A HREF=#L",nlabel,">",h[[1]],"</A>"];
-   If[Length[h[[4]]]>0,
-     tab1=tab//"   ";
-!     Write[f,"("];
-     Scan[WriteHTMLIndex[f,#,tab1]&,h[[4]]]
-!     Write[f,")"]
-     ]];
 
- h=Help$Messages;
- h[[1,2]]="";
+ Help2HTML=Class[{},{},{help=Help$Messages,nlabel=0,Labels},
+
+   Constructor[]:=(
+     SetDirectory[DocumentsDirectory];
+     help=Help$Messages;
+     help[[1,2]]="";
+     Labels[s_]:=s;
+     Labels[""]="");
+
+     WriteHTML[f_,h_,ul_]:=Module[{r},
+       If[h[[1]]=="example",Return[]];
+       If[ul<0,Write[f,"<LI>"]];
+       nlabel=nlabel+1;
+       Write[f,"<H3><A NAME=L",nlabel,">\n",h[[1]],"</A></H3>"];
+       Write[f,"<PRE>",h[[2]],"\n</PRE>\n"];
+       r=GetLabels[h[[3]]];
+       If[r<=>{},
+         Write[f,"<PRE>See also:"];
+         WriteString[f," ",Labels[#]]&/@r;
+         Write[f,"</PRE>"]
+         ];
+       If[Length[h[[4]]]>0,
+         If[ul<=0,Write[f,"<UL>"]];
+         Scan[WriteHTML[f,#,ul-1]&,h[[4]]];
+         If[ul<=0,Write[f,"</UL>"]]]];
+
+     GetLabel[""]={};
+     GetLabel[s_]:=Module[{p=StringPosition[s," "],w,p0=1},
+       If[p==={},
+         {s},
+         ({s[p0,#[[1]]-1],
+
+
+     LabelTitle[l_]:=Module[{p=StringPosition[l,"("]},
+       If[p==={},
+         {l},
+         p=p[[1,1]];
+         {l,l[1,p-1],l[p+1,-2]}]];
+
+     WriteHTMLIndex[f_,h_,tab_]:=Module[{tab1,lab},
+       If[h[[1]]=="example",Return[]];
+       nlabel=nlabel+1;
+       lab="<A HREF=#L"//nlabel//">"//h[[1]]//"</A>";
+       (Labels[#]=lab)&/@LabelTitle[h[[1]]];
+       Write[f,tab,lab];
+       If[Length[h[[4]]]>0,
+         tab1=tab//"   ";
+!     Write[f,"("];
+         Scan[WriteHTMLIndex[f,#,tab1]&,h[[4]]]
+!     Write[f,")"]
+         ]];
+
+   ];
+
+ HH=Help2HTML[];
+
  f=OpenWrite["SADHelp.html"];
  Write[f,"\
 <HEAD>\n<TITLE>\n\
@@ -37,14 +70,16 @@ Back to SAD Home Page</H4>\n\
 <A HREF=\"example/design_example.html\">\n<H4>\n\
 SAD/FFS Examples</H4></A>\n\
 <HR>\n"];
- nlabel=0;
  Write[f,"<PRE>"];
-
+ HH@WriteHTMLIndex[f,HH@help[[1]],""];
  Write[f,"</PRE><HR>"];
- nlabel=0;
- WriteHTML[f,h[[1]],1];
+ HH@nlabel=0;
+ HH@WriteHTML[f,HH@help[[1]],1];
  Write[f,"<HR>\n</BODY>"];
  Close[f]
+
+end
+
 !
  f=OpenWrite["../script/design_example.html"];
  fr=OpenRead[ExamplesDirectory//"design_example.sad.result"];
@@ -69,5 +104,6 @@ Cases[h,{"example",__},Infinity][1,2],
    ];
  Write[f,"</PRE><HR>\n</BODY>"];
  Close[f];
+
 end
 abort
