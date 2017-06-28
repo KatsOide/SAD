@@ -1379,7 +1379,7 @@ c      endif
       type (sad_descriptor) ixmachine
       data ixmachine%k /0/
       if(isp .eq. isp1+1)then
-        if(ktastk(isp) .ne. kxnull)then
+        if(ktastk(isp) .ne. ktfoper+mtfnull)then
           irtc=itfmessage(9,'General::wrongval','Null')
           return
         endif
