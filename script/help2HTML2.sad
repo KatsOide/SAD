@@ -30,6 +30,20 @@ FFS;
          {s2,s3}=If[Length[p]==1,{s[p1+1,-1],""},{s[p1+1,p[[2,1]]-1],s[p[[2,1]]+1,-1]}];
          WrapLine[s[1,p1-1],col]//SelfIndent[s2]//ReplaceIndent[s3]]];
 
+     ReplaceDraw[s_]:=Module[{p=StringPosition[s,"\n<",1],p1},
+       If[p=={},
+         ReplaceIndent[s],
+         p=p[[1,1]]+2;
+         p1=StringPosition[s[p,-1],"\n",1];
+         p1=If[p1==={},
+           StringLength[s],
+           p+p1[[1,1]]-2];
+         If[s[p1-3,p1]<=>".png" && s[p1-3,p1]<=>".jpg",
+           ReplaceIndent[s[1,p1]]//"\n",
+           ReplaceIndent[s[1,p-2]]//
+             "<IMG SRC=\""//s[p,p1]//"\" ALIGN=\"middle\" WIDTH=480>\n"]//
+               ReplaceDraw[s[p1+2,-1]]]];
+
      WrapLine[t_,n_]:=Module[{p=StringPosition[t,"\n",1],p1},
        If[p==={},
          If[StringLength[t]<=n,
@@ -54,7 +68,7 @@ FFS;
        If[ul<0,Write[f,"<LI>"]];
        nlabel=nlabel+1;
        Write[f,"<H3><A NAME=L",nlabel,">\n",h[[1]],"</A></H3>"];
-       Write[f,"<PRE>",ReplaceIndent[h[[2]]],"\n</PRE>\n"];
+       Write[f,"<PRE>",ReplaceDraw[h[[2]]],"\n</PRE>\n"];
        r=GetLabel[h[[3]]];
        If[r<=>{},
          Write[f,"<PRE>See also:"];
@@ -130,8 +144,6 @@ SAD/FFS Examples</H4></A>\n\
  Write[f,"<HR>\n</BODY>"];
  Close[f]
 
-end
-
 !
  f=OpenWrite["../script/design_example.html"];
  fr=OpenRead[ExamplesDirectory//"design_example.sad.result"];
@@ -146,7 +158,7 @@ Back to SAD Home Page</H4>\n\
 <A HREF=\"../SADHelp.html\">\n<H4>\n\
 Back to SAD/FFS Commands</H4></A>\n\
 <H3><A HREF=#result>Results</A></H3>\n<HR><PRE>",
-Cases[h,{"example",__},Infinity][1,2],
+Cases[HH@help,{"example",__},Infinity][[1,2]],
 "\n</PRE><HR>\n<H3><A NAME=result>Results:</A></H3><PRE>"];
  While[l=ReadString[fr];l<=>EndOfFile,
    Write[f,l];

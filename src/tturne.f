@@ -70,9 +70,11 @@ c          endif
           if(dvcacc .ne. 0.d0)then
             alambdarf=pi2/wrfeff
             dzmax=alambdarf*.24d0
+c            write(*,*)'tturne-1 ',trf0
             trf0=trf0+min(dzmax,max(-dzmax,
      $           (u0*pgev-charge*vcacc)/charge/dvcacc))
             trf0=mod(trf0+alambdarf*.5d0,alambdarf)-alambdarf*.5d0
+c            write(*,*)'tturne-2 ',trf0
           endif
 c          phis=asin(min(1.d0,max(-1.d0,u0*p0*amass/sign(vceff,vccos))))
 c          trf0=phis*c*p0/h0/omega0/hvc0*vceff

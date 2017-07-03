@@ -1381,10 +1381,22 @@ Usage: DRAW [begin end] fun1 [fun2..] [& fun11 [fun12..]] [element-pattern]\n\n\
 draws a plot of optical functions in multi columns. It calls OpticsPlot internally. Available functions are all matching-functions (except LENG, TRX, TRY, GX, GY, GZ, CHI1, CHI2, CHI3) and additional functions. If functions are separated by ampersand (&), these are plotted in a separated window.\n\
   If begin- and end-components are specified, the plot region is limited between them. If the end-component comes earlier than the begin-components, it wraps the plot around the beam line.\n\
   If the optional element-pattern is given, it draws the beam-line lattice with the labels for elements which match element-pattern. If LAT is specified for element-pattern, the lattice is drawn without label.\n\
- A character string assigned to TITLE is shown as the FrameLabel on the top of the plot. ",
+ A character string assigned to TITLE is shown as the FrameLabel on the top of the plot.\n\n\
+ Example:\n\
+   TITLE=\"FCCee_t_202_nosol_16_ipac.sad\";\n\
+   Draw$Option={Thickness->2};\n\
+   DRAW BX BY & EX EY Q*;\n\n\
+<DRAW.png",
     "OpticsPlot special-variables TITLE matching-function-commands OUTPUT(OUT) TERMINATE(TERM) GEO DISPLAY(DISP) wildcards",
-    {}},
-    
+    Sort[{
+      {"Draw$Option",
+        "\
+ Draw$Option is a list of rules to specify Graphics options for the entire DRAW. If you need option for each column, use OpticsPlot",
+        "DRAW OpticsPlot Graphics",
+        {}}
+
+      }]},
+
    {"GEO",
     "\
 prints out the TopDrawer commands for the geometric plot of the beam line.",
@@ -1493,8 +1505,7 @@ GX GY GZ CHI1 CHI2 CHI3",
 
     {"off-momentum-matching",
      "\
-FFS matches the optical functions for an orbit with finite momentum \n\
-deviation.\n\n\
+FFS matches the optical functions for an orbit with finite momentum deviation.\n\n\
 Example: \n\
    DP=0.01;      sets the range of momentum to DP0-0.01 < dp/p0 < DP0+0.01 .\n\
    BX 10 9;      sets the goal of betax to 10 m, at 9 points.\n\
@@ -1507,7 +1518,7 @@ As this example, the off-momentum points are chosen with equal separation. If th
      {}},
 
     {"optical-functions",
-     "Available optical functions for matching are:\n\n\
+     "Available optical functions for matching are:\t\n\n\
 AX      alpha_X\n\
 BX      beta_X\n\
 NX      psi_X, the default scale is 1/(2Pi)\n\
@@ -1542,7 +1553,7 @@ PEY     eta_y   (dispersion_y)\n\
 PEPY    eta_yy  (dispersion_py)\n\
 TRX     trace(T_X), only defined at the end of the beam line.\n\
 TRY     trace(T_Y), only defined at the end of the beam line.\n\
-LENG    length of the design orbit\n\n\
+LENG    length of the design orbit\t\n\n\
 In the above, upper case X, Px, Y, Py represents the x-y decoupled coordinate. EX, EPX, EY, EPY refer the decoupled coordinate, while PEX, PEPX, PEY, PEPY are in the physical coordinate. On the other hand,  DX, DPX, DY, DPY refer the physical coordinate.",
     "geometric-functions x-y-coupling matching-function-commands \
 GO CAL DISPLAY(DISP) SHOW",
@@ -2015,11 +2026,8 @@ Number of unstable planes in the optics calculations. Equal to zero if all x and
       {}},
 
      {"FFS$NumericalDerivative",
-      "If False (default), the calculation of response matrix for each matching\
-variables usus analytical expressions as much as possible. If True, it usse\
-numerical difference, which is faster than analytic especially when there\
-are many coupled variables defined by ElementValues.",
-      "GO ElementValues",
+      "If False (default), the calculation of response matrix for each matching variables usus analytical expressions as much as possible. If True, performs numerical differentiation during the matching by GO. It is useful for some variables and matching functions in some cases. It is slow, so should be avoided for off-momentum-matching for a large beam line.",
+      "GO off-momentum-matching",
       {}},
 
      {"CASE",
@@ -2659,6 +2667,14 @@ Example: StringPosition[\"abcbcbcbcb\",\"bcb\"] returns {{2,4},{4,6},{6,8},{8,10
          "(//)",
          {}},
 
+       {"StringPart",
+         "\
+ s_String[n]      returns the n-th character in s.\n\
+ s_String[n1, n2] returns the substring from n1-th through n2-th charactersof s.\n\n\
+ If n1, n2 are negative, they count from the end of the string.",
+         "",
+         {}},
+
        {"StringTrim",
          "\
  StringTrim[s] removes the leading and trailing spaces and tabs from s.",
@@ -3199,11 +3215,11 @@ resets $FORM and PageWidth to their defaults, then evaulate expr, returns the re
         {"MemoryCheck",
           "\
 MemoryCheck[n]\n\n\
-checks the consistency of the memory allocation by SAD. The range of the check and the output depend on n:\n\n\
+checks the consistency of the memory allocation by SAD. The range of the check and the output depend on n:\t\n\n\
 MemoryCheck[]  : checks the consistency of the free area and returns the allocation info,\n\
 MemoryCheck[1] : checks the consistensy of the free and used areas. Returns the allocaton info.\n\
-MemoryCheck[2] : checks the consistensy of the free and used areas. Returns the allocaton info. and a list of free segments.\n\n\
-The returned value is {used, allocated from system, # of free segments, missing size[, list of free segments]} in units of word (= 8 bytes).\n\
+MemoryCheck[2] : checks the consistensy of the free and used areas. Returns the allocaton info. and a list of free segments.\t\n\n\
+ The returned value is {used, allocated from system, # of free segments, missing size[, list of free segments]} in units of word (= 8 bytes).\n\
  If an inconsistency is found, messages are printed out.",
           "",
           {}},
@@ -3284,8 +3300,13 @@ where list contains data in the form as {{x1,y1}, ..} or {{x1,{y11, y12, ..}}, .
     sp[x]                     value of y at x.\n\
     Derivative[1][sp][x]      value of y' at x.\n\
     Derivative[2][sp][x]      value of y'' at x.\n\
-    Integrate[sp[x],{x, x0, x1}]   integral of sp[x] from x0 to x1.",
-         "",
+    Integrate[sp[x],{x, x0, x1}]   integral of sp[x] from x0 to x1.\n\n\
+Exapmple:\n\
+   sp=Spline[{{1,2},{3,5},{4,2},{5,7}}];\n\
+   Plot[{sp[x],Derivative[1][sp][x],Derivative[2][sp][x],Integrate[sp[y],{y,1,#}]&[x]}, {x,1,5}, FrameLabel->{\"x\"}, Thickness->2, Legend->{\"sp[x]\",\"sp'[x]\",\"sp''[x]\",\"Int sp[x]\"}];\n\
+   Update[];\n\n\
+<Spline.png",
+         "function-definition Plot NIntegrate",
          {}},
 
        {"NIntegrate",
@@ -3559,7 +3580,15 @@ PlotJoined       False           True\n\
                                  Step\n\
 StepRatio        1               ratio of stepping position\n\
                                  between two data points\n\n\
-Type ? to see other options for Graphics.",
+Type ? to see other options for Graphics.\n\n\
+Example:\n\
+  data1={{1,2},{3,5},{4,-1}};\n\
+  data2={{1,4},{2,-2},{3.5,3},{5,3}};\n\
+  g1=ListPlot[data1, PointColor->\"dark slate blue\",PlotJoined->True, Thickness->2, PlotColor->\"dark slate blue\", FrameLabel->{\"x\",\"y\"}, Legend->\"data1\", DisplayFunction->Identity];\n\
+  g2=ListPlot[data2, PointColor->\"tomato\", Legend->\"data2\", DisplayFunction->Identity];\n\
+  Show[g1,g2];\n\
+  Update[];\n\n\
+<ListPlot.png",
         "Graphics Plot",
         {}},
 
@@ -3585,7 +3614,11 @@ FillColor       color                           Colors to fill columns\n\
                 list of colors\n\
 MeshStyle       bitmap                          Bitmap to fill columns\n\
                 list of bitmaps                 to distinguish stacking\n\
-TextSize        positive number 1               relative label size",
+TextSize        positive number 1               relative label size\n\n\
+Example:\n\
+  g=ColumnPlot[{{{1,1,2},{2,2,3}}, {{1,4,2},{2,2,3}}, {{1,3,2},{2,2,3}}}, Orientation->Horizontal];\n\
+  Update[];\n\n\
+<ColumnPlot.png",
         "Graphics",
         {}},
 
@@ -3625,11 +3658,10 @@ ContourColorFunction\n\
                  Function or String\n\
                                 Automatic           Null or None to hide\n\n\
 Example:\n\
-  cf[x_]:=If[0.09<x<0.11,\"red\",Null,Null]; (* Draw red contour line only *)\n\
-                                           (* around x = 0.1 *)\n\
-  ListContourPlot[Table[-x^2+y^2,{x,-4,4,0.5},{y,-4,4,0.5}],\n\
-  MeshRange->{{-4,4},{-4,4}},ContourColorFunction->cf,\n\
-  ColorFunction->Automatic, FrameLabel->{\"x\",\"y\"}]",
+  cf[x_]:=If[0.09<x<0.11,\"red\",Null,Null]; (* Draw red contour line only around x = 0.1 *)\n\
+  ListContourPlot[Table[-x^2+y^2,{x,-4,4,0.5},{y,-4,4,0.5}], MeshRange->{{-4,4},{-4,4}},ContourColorFunction->cf, ColorFunction->Automatic, FrameLabel->{\"x\",\"y\"}];\n\
+  Update[];\n\n\
+<ListContourPlot.png",
         "Graphics ListPlot ListDensityPlot",
         {}},
 
@@ -3651,9 +3683,10 @@ MeshColor        Function or String\n\
 ColorScale       True or False  True                displays a color scale on the right\n\
 Smoothing        integer >= 0   1                   number of linear interpolations\n\n\
 Example:\n\
-data = Table[Sin[x]/Cos[x^2 + y^2], {x, -2, 2, 0.1}, {y, -2, 2, 0.1}];\n\
-   ListDensityPlot[data,PlotRange->{-5,5}, MeshRange->{{-2,2},{-2,2}},\n\
-   FrameLabel->{\"x\",\"y\"}]",
+   data = Table[Sin[x]/Cos[x^2 + y^2], {x, -2, 2, 0.1}, {y, -2, 2, 0.1}];\n\
+   ListDensityPlot[data,PlotRange->{-5,5}, MeshRange->{{-2,2},{-2,2}}, FrameLabel->{\"x\",\"y\"}];\n\
+   Update[];\n\n\
+<ListDensityPlot.png",
         "Graphics ListPlot ListContourPlot",
         {}},
 
@@ -3724,10 +3757,9 @@ FrameLabel    \"\"                 Left frame label.\n\
 Legend        False               If Automatic, Legend is composed from FrameLabel\n\
                                   Automatically.\n\n\
 Example:\n\
-  p2=OpticsPlot[\n\
-    {{\"BX\",\"BY\"},\n\
-     {\"DX\",{{{10,0.001},{20,0.002}},FrameLabel->\"DX meas.\",\n\
-    Unit->Meter}}}];",
+   p2=OpticsPlot[{{\"BX\",\"BY\"}, {\"DX\",{{{10,0.001},{20,0.002}}, FrameLabel->\"DX meas.\", Unit->Meter, Thickness->2, Names->\"Q*\"}}}];\n\
+   Update[];\n\n\
+<OpticsPlot.png",
          "Graphics ListPlot",
          {}},
 
@@ -3751,7 +3783,12 @@ Dashing        {\"1\",\"0.8 0.24\",\"0.4 0.12\",\"0.2 0.08\",\"0.1 0.08\",\n\
 Options for ListPlot and Graphics are also available\n\n\
 The independent variable should have been cleared (i.e., no value should\n\
 not be set) when Plot is called. \n\n\
-Example:  Plot[{Cos[x],Check[Sin[x]/x,1]}, {x,0,10}]",
+Example:\n\
+  ff[x_]:=Sin[x]/x;\n\
+  ff[0]=1;\n\
+  Plot[{Cos[x],ff[x]}, {x,0,10}, Thickness->2];\n\
+  Update[];\n\n\
+<Plot.png",
           "Graphics ListPlot",
           {}}
      }]},
@@ -3936,11 +3973,10 @@ The key-string is not case-sensitive. Available key-strings are:\t\n\n\
 \"SIZEab\"       Beam matrix component calculated by (CODPLOT;EMIT), where a and b are one of X, PX, Y, PY, Z, DP. If b is omitted it returns Sqrt[SIZEaa] is returned.- \"SIZE\" returns the entire 6 by 6 beam matrix.\n\
 \"MULT\"         The ordered number of each component belonging to the- same element, starting from 1.\n\
 keyword        The value of the keyword of the component (see below).\n\
-\"EXPAND\"       Distribute the value of the default-keywords and the keywords used in the matching to all components in the\n\
-               beam line. No second argument.\t\n\
+\"EXPAND\"       Distribute the value of the default-keywords and the keywords used in the matching to all components in the beam line. No second argument.\t\n\
 \"GX\", \"GY\", \"GZ\"  Geometric functions GX, GY, GZ.\n\
 \"GCHI1\", \"GCHI2\", \"GCHI3\"  Geometric functions CHI1, CHI2, CHI3\n\
-\"OGX\", \"OGY\", \"OGZ\", \"OCHI1\", \"OCHI2\", \"OCHI3\"  Geometrical functions at the orbit.\n\n\
+\"OGX\", \"OGY\", \"OGZ\", \"OCHI1\", \"OCHI2\", \"OCHI3\"  Geometrical functions at the orbit.\n\
  Setting by LINE[keyword,..] to the DEFAULT keyword for the FIRST component changes the current value of the corresponding element, because the value of an element is stored in the first component.",
           "components geometric-functions elements keywords default-keyword Element",
           {}}}},
@@ -4002,16 +4038,15 @@ reduces the weight of QF1:K1 to 1/10 of the default value.\n\n\
 
        {"FitWeight",
         "\
-A defined function to modify the weight of matching of particular function at particular component with particular momentum offset.\n\n\
+ A defined function to modify the weight of matching of particular function at particular component with particular momentum offset.\n\n\
 Usage:   FitWeight[component, function, {id_,dp_}, default_] := weight;\n\n\
-where\n\
+where\t\n\n\
 component  is the name of the location of the fit, like \"QF.2\", etc.\n\
 function   is the name of the matching-function, like \"BX\", \"LENG\", etc.\n\
-id_        is the id number of the orbit for MatchingAmplitude or \n\
-           InitialOrbits.\n\
+id_        is the id number of the orbit for MatchingAmplitude or InitialOrbits.\n\
 dp_        is a variable to receive the momentum deviation of the fit.\n\
 default_   is a variable to receive the default fit weight.\n\
-weight     is an expression which returns the desired weight.\n\n\
+weight     is an expression which returns the desired weight.\t\n\n\
 Example: FitWeight[\"$$$\",\"LENG\",{_,dp_},ws_]:=ws*10;\n\n\
 makes the weight of LENG at $$$ 10 times (100 times in MatchingResidual) bigger than the default.",
         "matching-function-commands special-variables MatchingResidual",
@@ -4022,45 +4057,36 @@ makes the weight of LENG at $$$ 10 times (100 times in MatchingResidual) bigger 
 Emittance[option] returns a set of rules as \n\n\
    {keyword1->value1, keyword2->value2, ..} .\n\n\
 Its options and default values are Matrix(False), Orbit(False), OneTurnInformation(False), Emittance(True), ExpandElementValues(True), SaveEMIT(False), InitialOrbit(Null), InitialBeamMatrix(Null), and Output(0).\n\n\
-If Emittance->False is specified, the resulting keywords are\n\n\
-Stable                  True if all modes are stable and the closed orbit\n\
-                        is found.\n\
+If Emittance->False is specified, the resulting keywords are:\t\n\n\
+Stable                  True if all modes are stable and the closed orbit is found.\n\
 Tunes                   {nux, nuy, nuz} .\n\
-EnergyLossU0\n\
-RfVoltageVc\n\
+EnergyLossU0            One turn energy loss in eV.\n\
+RfVoltageVc             The effective RF voltage (V).\n\
 EquilibriumPosition     dz in meter.\n\
-MomentumCompaction\n\
+MomentumCompaction      -dz/dp\n\
 OrbitDilation           ds in meter.\n\
 BucketHeight            dV/E0\n\
-HarmonicNumber\n\
-OrbitAtExit             physical c.o.d. at the end of line.\n\n\
-If None of the options is given, the following keywords are added:\n\n\
+HarmonicNumber          The effective harmonic number\n\
+OrbitAtExit             physical c.o.d. at the end of line.\t\n\n\
+If None of the options is given, the following keywords are added:\t\n\n\
 DampingRate             {T0/taux, T0/tauy, T0/tauz}\n\
 Emittances              {emitx, emity, emitz}\n\
 MomentumSpread          sigma p/p0\n\
 BunchLength             sigma_z\n\ 
-TuneShiftByRadiation    {dnux, dnuy, dnuz}\n\n\
-If OneTurnInformation->True, or Orbit->True, or Matrix->True, the followings\n\
-are added.\n\n\
+TuneShiftByRadiation    {dnux, dnuy, dnuz}\t\n\n\
+If OneTurnInformation->True, or Orbit->True, or Matrix->True, the followings are added.\t\n\n\
 OrbitAtEntrance         physical c.o.d. at the entrance of the ring.\n\
 OneTurnTransferMatrix   symplectic part of the one-turn transfer matrix.\n\
 OneTurnDampingMatrix    deviation of transfer matrix due to radiation.\n\
 NormalCoordinates       conversion matrix from physical to normal coords.\n\
 OneTurnExcitation       excitation matrix by radiation.\n\
 EquilibriumBeamMatrix   equilibrium beam matrix.\n\
-ExtendedTwissParameters list of rules giving the extended Twiss parameters\n\
-                        at the entrance of the ring.\n\n\
-If Orbit->True or Matrix->True,\n\n\
-ClosedOrbit             List of physical closed orbit at every element in the\n\
-			ring.\n\n\
-joins.\n\n\
-If Matrix->True,\n\n\
-TransferMatrices        List of physical transfer matrix from the beginning\n\
-                        of the beam line to all elements.\n\
-IntrabeamExcitation     List of the change of the 6 x 6 beam matrix due to\n\
-                        the intrabeam scattering (only when INTRA),\n\
-                        converted to the beginning of the beam line.\n\
-join the result.\n\n\
+ExtendedTwissParameters list of rules giving the extended Twiss parameters at the entrance of the ring.\t\n\n\
+If Orbit->True or Matrix->True, the following is addded:\t\n\n\
+ClosedOrbit             List of physical closed orbit at every element in the ring.\t\n\n\
+If Matrix->True, the followings are added:\t\n\n\
+TransferMatrices        List of physical transfer matrix from the beginning of the beam line to all elements.\n\
+IntrabeamExcitation     List of the change of the 6 x 6 beam matrix due to the intrabeam scattering (only when INTRA), converted to the beginning of the beam line.\t\n\n\
    If the flag TRPT or NORING is set, the calculation assumes a transport line so that several quantities such as damping rate, eigen modes, equilibrium beam matrix, etc. are meaningless. Use RING or NOTRPT for such calculation. In the case of TRPT or NORING, the incoming beam envelope must be given by the option InitialBeamMatrix with a 6 x 6 symmetric matrix. TRPT is useful for calculation of space charge and intrabeam in a transport line.\n\
    Please do not forget to put semicolon at the end of Emittance[] function, otherwise the output will be huge especially when Orbit or Matrix is True.\n If ExpandElementValues->False, calculation is made using the present values of each component (i.e., including machine errors).\n\n\
 If SaveEMIT->True, the calculated values of emittances are stored in variables EMITX, EMITY, EMITZ, SIGE, SIGZ. The default is SaveEMIT->False.\n\n\

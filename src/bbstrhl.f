@@ -94,14 +94,14 @@
 
       bstrhl=colb%bstrl
 
-      write(*,'(A,I6,1P,3E12.3)') 'Welcome to beambeam',
-     &     iturn,colb%ce,colb%gamma
-      write(*,'(4F10.5,I5)') colb%xangle(1),colb%xangle(2),
-     &     colb%xangle(3),colb%xangle(4),colb%nslice
+!      write(*,'(A,I6,1P,3E12.3)') 'Welcome to beambeam',
+!     &     iturn,colb%ce,colb%gamma
+!      write(*,'(4F10.5,I5)') colb%xangle(1),colb%xangle(2),
+!     &     colb%xangle(3),colb%xangle(4),colb%nslice
 !      write(*,'(5E12.4)') (p_in(i),i=1,30)
-      call m_print(colb%Benv,6)
-      call m_print(colb%Benv5,5)
-      write(*,'(1P,(4D12.5,A)/)') (colb%v_cen(i),i=1,4),' *z'
+!      call m_print(colb%Benv,6)
+!      call m_print(colb%Benv5,5)
+!      write(*,'(1P,(4D12.5,A)/)') (colb%v_cen(i),i=1,4),' *z'
       
 !     write(*,*) colb
 !     blist=>colb
@@ -498,7 +498,7 @@
 !!!!      iax=colb%iax
 !!!!      rlist(iax)=rlum_col
       call LumRead(rlum_col)
-       write(*,*) rlum_col
+!       write(*,*) rlum_col
 !
 
 
@@ -560,32 +560,32 @@
 !        emix  =p_in(22), emiy =(23),     dp=(24),  sigz=(27)
 !        nsli  =p_in(28), rne  =(29),     bstrl=(53)
 !---  |----1----|----2----|----3----|----4----|----5----|----6----|----7
-       write(*,'(//A)') 
-     &   '*** Strong Beam setup *****************************'
-       WRITE(*,'(A,1PD12.6)') 'Number of Particles= ',rne
-       WRITE(*,'(A,1PD12.6,A,D12.6,A)')
-     &    'betau      = ',p_in(2) ,'m   betav     = ',p_in(4) ,'m'
-       WRITE(*,'(A,1PD12.6,A,D12.6,A)')
-     &    'etaX       = ',p_in(9) ,'m   etaY      = ',p_in(11),'m'
-       WRITE(*,'(A,1PD12.6,A,D12.6,A)')
-     &    'emittance x= ',p_in(22),'m  emittance y= ',p_in(23),'m'
-       WRITE(*,'(A,1PD12.6,A,D12.6,A)')
-     &    'sigz       = ',p_in(27),'m  sigp       = ',p_in(24),'m'
-       WRITE(*,'(A,F10.2,A)') 'Crossing angle ',p_in(21)*1.D3,' mrad'
-       if(colb%bstrl.eq.1) then
-          WRITE(*,'(A)') 'Beam strahlung ON'
-       else
-          WRITE(*,'(A)') 'Beam strahlung OFF'
-       endif
+!       write(*,'(//A)') 
+!     &   '*** Strong Beam setup *****************************'
+!       WRITE(*,'(A,1PD12.6)') 'Number of Particles= ',rne
+!       WRITE(*,'(A,1PD12.6,A,D12.6,A)')
+!     &    'betau      = ',p_in(2) ,'m   betav     = ',p_in(4) ,'m'
+!       WRITE(*,'(A,1PD12.6,A,D12.6,A)')
+!     &    'etaX       = ',p_in(9) ,'m   etaY      = ',p_in(11),'m'
+!       WRITE(*,'(A,1PD12.6,A,D12.6,A)')
+!     &    'emittance x= ',p_in(22),'m  emittance y= ',p_in(23),'m'
+!       WRITE(*,'(A,1PD12.6,A,D12.6,A)')
+!     &    'sigz       = ',p_in(27),'m  sigp       = ',p_in(24),'m'
+!       WRITE(*,'(A,F10.2,A)') 'Crossing angle ',p_in(21)*1.D3,' mrad'
+!       if(colb%bstrl.eq.1) then
+!          WRITE(*,'(A)') 'Beam strahlung ON'
+!       else
+!          WRITE(*,'(A)') 'Beam strahlung OFF'
+!       endif
 !     
 !  Strong beam envelope calculation
 
       if(p_in(31).gt.0..and.p_in(37).gt.0..and.p_in(42).gt.0..and. 
      &     p_in(46).gt.0..and.p_in(49).gt.0..and.p_in(51).gt.0.) then
-         write(*,*) 'Strong beam is constructed from envelope matrix'
+!         write(*,*) 'Strong beam is constructed from envelope matrix'
       call m_symmet_set_6d(p_in(31),colb%Benv)
       else
-         write(*,*) 'Strong beam is constructed from twiss parameters'
+!         write(*,*) 'Strong beam is constructed from twiss parameters'
 !      p_in(25)=<z pz>
          emiz=p_in(24)**2*p_in(27)**2-p_in(25)**2
          if(emiz.le.0.) then
@@ -604,12 +604,12 @@
          call m_mul3_6d(m_H,m_R,m_B,m_HRB)
 !       call is_symplectic_6d(blist(m_HRB))
 
-         call m_print(m_HRB,6)
+!         call m_print(m_HRB,6)
          call m_sim_tr_6d(m_HRB,m_Emit,colb%Benv)
 !      call m_print(blist(m_Emit),6)
       endif
 !      write(*,*) ' Beam envelope matrix on the head on frame'
-      call m_print(colb%Benv,6)
+!      call m_print(colb%Benv,6)
 
       if(p_in(21).ne.0.) then
          call m_Crs_set_6d(p_in(21),m_Crs)
@@ -617,7 +617,7 @@
       endif
 
 !       write(*,*) ' Envelope of Strong beam at IP (Streak image)'
-      call m_print(colb%Benv,6)
+!      call m_print(colb%Benv,6)
 !       write(*,*) ' '
       dp=0.d0
       sigx=sqrt(colb%Benv(1))
@@ -649,7 +649,7 @@
       colb%xangle(3)=cos(p_in(21))
       colb%xangle(4)=tan(p_in(21))
       colb%ce=rne*re/colb%gamma
-      WRITE(*,'(A,1P,E12.4,A/)') 'Ne re/gamma ',colb%ce,' mrad'
+!      WRITE(*,'(A,1P,E12.4,A/)') 'Ne re/gamma ',colb%ce,' mrad'
 
 !  Closed orbit of strong beam
 
@@ -695,10 +695,10 @@
        call m_sim_tr_5d(m_sub5,colb%Benv5,colb%Benv5)
        call mv_mul_5d(colb%Benv5,v_sub5,colb%v_cen)
        call v_chg_sign(colb%v_cen,5)
-       write(*,*) 'Strong beam envelope of each slice'
-       call m_print(colb%Benv5,5)
-       write(*,*) 'Its center of mass'
-       write(*,'(1P,(4D12.5,A)/)') (colb%v_cen(i),i=1,4),' *z'
+!       write(*,*) 'Strong beam envelope of each slice'
+!       call m_print(colb%Benv5,5)
+!       write(*,*) 'Its center of mass'
+!       write(*,'(1P,(4D12.5,A)/)') (colb%v_cen(i),i=1,4),' *z'
        call benv_norm_axis(colb%Benv5,colb%v_cen,colb%xangle(5))
        colb%xangle(7)=cos(colb%xangle(5))
        colb%xangle(6)=sin(colb%xangle(5))
@@ -736,16 +736,16 @@
        endif
        colb%zslice(nslimax)=100.
        colb%zslice(nslimax+nsli)=100.
-       write(*,*)'************* Slice ***************'
-       write(*,'(A)')'Slice    zc           zboundary   (unit sigz)'
-       write(*,'(20X,F10.5)') colb%zslice(nslimax)
+!       write(*,*)'************* Slice ***************'
+!       write(*,'(A)')'Slice    zc           zboundary   (unit sigz)'
+!       write(*,'(20X,F10.5)') colb%zslice(nslimax)
        do i=1,nsli
           colb%zslice(i)=-colb%zslice(i)
           colb%zslice(i+nslimax)=-colb%zslice(i+nslimax)
-          write(*,'(I3,F10.5,10X,F10.5)') i,colb%zslice(i),1./dble(nsli)
-          write(*,'(20X,F10.5)') colb%zslice(i+nslimax)
+!          write(*,'(I3,F10.5,10X,F10.5)') i,colb%zslice(i),1./dble(nsli)
+!          write(*,'(20X,F10.5)') colb%zslice(i+nslimax)
        enddo
-       write(*,*)'***********************************'
+!       write(*,*)'***********************************'
 
        call mkbesseltab
 !
@@ -818,7 +818,7 @@ c      call tfdebugprint(kx,'LumRead',1)
       real*8 x,dx,xnu,ri,rk,rip,rkp,x0,x2,dx6,rk0,rk2
       real*8 Pgtot
 
-      write(*,*) 'Make S(x) table for radiation (beamstrahlung)'
+!      write(*,*) 'Make S(x) table for radiation (beamstrahlung)'
       dx=0.1d0
       xnu=5./3.
       x=1.1**40

@@ -335,7 +335,8 @@ KBF$$FileDialog=Class[{},{},
     mbrecent=MenuButton[frl,Picture->"kbfrec",Side->"top",BD->0,PadY->10];
     menurecent=Menu[mbrecent];
     addrecent[Directory[]//"/",""];
-    b = Button[frl, Width->8, Text->btext, Side->"bottom",
+    b = Button[frl, Width->8, Text->btext, Side->"bottom", BG->"light goldenrod yellow",
+      BorderWidth->3,BorderColor->"black",
       State->If[fn==0,"disabled","normal"],
       Command:>okordown[1]];
     c = Button[frl, Width->8, Text->"Cancel", Side->"bottom",
@@ -355,9 +356,9 @@ KBF$$FileDialog=Class[{},{},
     Bind[lb, "<Double-Button-1>", (dbflag=1; okordown[0])];
     dbflag = 0;
     Bind[lb, "<Key-Return>", okordown[0]];
+    Bind[lb, "<Key-Escape>", TkReturn[Null]];
     Bind[eflt, "<Key-Return>", changelist[]];
     Bind[eflt, "<Double-Button-1>", changelist[]];
-!  Bind[w, "<Key-Escape>", TkReturn[Null]];
     ];
 
   jumpto[dir_,file_:""]:=(

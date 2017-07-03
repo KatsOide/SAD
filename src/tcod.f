@@ -79,6 +79,7 @@ c     endif
         trf0=trf0*a+trf00*(1.d0-a)
       endif
       dtrf0=trf0-trf00
+      r=r+(dtrf0*c/codw(5))**2
 c      write(6,'(a,1p5g12.5)')' tcod ',r,r0,fact,trf0,trf00
 c      write(6,'(1p6g12.5)')codi,codf,dcod
       if(r .lt. conv)then
@@ -94,9 +95,9 @@ c        cod(5)=0.d0
       if(r .ge. r0 .or. isnan(r))then
         trf0=trf00
         fact=fact*.5d0
-        if(radcod .and. rfsw)then
-          cod(5)=cod(5)+dtrf0
-        endif
+c        if(radcod .and. rfsw)then
+c          cod(5)=cod(5)+dtrf0
+c        endif
         codi=cod+fact*dcod
         if(isnan(r))then
           go to 1
