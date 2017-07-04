@@ -15,7 +15,7 @@
       parameter (codmax=1.d4,demax=.5d0)
       integer*8 iatr,iacod,iabmi
       real*8 trans(6,12),cod(6),beam(42)
-      real*8 z0,pgev00,alambdarf,dzmax
+      real*8 z0,pgev00,alambdarf,dzmax,phi0acc
       logical*4 plot,update,rt
       pgev00=pgev
       vc0=0.d0
@@ -54,9 +54,6 @@ c      vcsin=0.d0
           wrfeff=abs(dvcacc/vc0)
         endif
         vceff=abs(dcmplx(vcacc,dvcacc/wrfeff))
-c        write(*,'(a,1p6g15.7)')'tturne ',wrfeff,dvcacc,vc0
-c        hvc0=vceff*(c*wrfeff)/omega0
-c        vceff=sign(abs(dcmplx(vccos,vcsin)),vc0)
         if(trpt)then
           trf0=0.d0
           vcphic=0.d0
@@ -67,14 +64,30 @@ c          if(abs(dvcphic) .lt. pi*.5d0)then
 c            vcphic=vcphic+dvcphic
 c          endif
           vcalpha=vceff/vc0
-          if(dvcacc .ne. 0.d0)then
+          if(vceff .ne. 0.d0)then
             alambdarf=pi2/wrfeff
             dzmax=alambdarf*.24d0
-c            write(*,*)'tturne-1 ',trf0
-            trf0=trf0+min(dzmax,max(-dzmax,
-     $           (u0*pgev-charge*vcacc)/charge/dvcacc))
-            trf0=mod(trf0+alambdarf*.5d0,alambdarf)-alambdarf*.5d0
-c            write(*,*)'tturne-2 ',trf0
+            phi0acc=asin(vcacc/vceff)
+            if(dvcacc .lt. 0.d0)then
+              phi0acc=sign(pi,dvcacc)-phi0acc
+            endif
+            if(vceff .gt. u0*pgev)then
+              if(trans(5,6) .lt. 0.d0)then
+                trf0=trf0+(asin(u0*pgev/vceff)-phi0acc)/wrfeff
+              else
+                trf0=trf0+
+     $                 (pi-asin(u0*pgev/vceff)-phi0acc)/wrfeff
+              endif
+            else
+              trf0=trf0+(.5*pi-phi0acc)/wrfeff
+            endif
+c              trf0=trf0+min(dzmax,max(-dzmax,
+c     $             (u0*pgev-charge*vcacc)/charge/dvcacc))
+          endif
+          if(trf0 .lt. 0.d0)then
+            trf0=-mod(-trf0+0.5d0*alambdarf,alambdarf)+alambdarf*0.5d0
+          else
+            trf0= mod(trf0-0.5d0*alambdarf,alambdarf)+alambdarf*0.5d0
           endif
 c          phis=asin(min(1.d0,max(-1.d0,u0*p0*amass/sign(vceff,vccos))))
 c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
