@@ -52,8 +52,14 @@ src/inc/.DS_Store
 
 >>>>>>> origin/master
 
+<<<<<<< HEAD
 *.html~
 
 Documents/SADHelp.html~
 
 Documents/SADHelp.html~
+=======
+a
+>>>>>>> origin/master
+
+script/help2HTML2.sad~
