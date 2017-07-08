@@ -5,7 +5,7 @@
       integer*4 nparam,ntitle
       parameter (nparam=59,ntitle=26)
       integer*4 lfni,lfno,i,in,lfnos,in1,lu,j,indexs,lene
-      real*8 scale(nparam),cod(6),circ,dps,dpsa,ddl,rgetgl1,v
+      real*8 scale(nparam),cod(6),dps,dpsa,ddl,rgetgl1,v
       real*8 sx(-2:2),sy(-2:2),stbl(4,nparam)
       real*8 trans(6,12),beam(21,2),ctrb(21,21),param(nparam,-2:2)
       character*24 title(nparam),unit

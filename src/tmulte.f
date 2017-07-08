@@ -143,9 +143,9 @@ c      h1=sqrt(p1**2+1.d0)
         vc0=vc0+vc
 c        vccos=vccos+vc*cos(phic)
 c        vcsin=vcsin+vc*sin(phic)
-c        if(omega0 .ne. 0.d0)then
-c          hvc0=hvc0+(c*w)/omega0*vc
-c        endif
+        if(omega0 .ne. 0.d0)then
+          hvc0=hvc0+(c*w)/omega0*vc
+        endif
       else
         aln=al/ndiv
 c     begin initialize for preventing compiler warning
@@ -262,9 +262,9 @@ c          h1=sqrt(1.d0+p1**2)
 c          write(*,*)'tmulte-dh ',dh*amass,phii,phic,phis
           veff=vcn
           vc0=vc0+veff
-c          if(omega0 .ne. 0.d0)then
-c            hvc0=hvc0+(c*w)/omega0*veff
-c          endif
+          if(omega0 .ne. 0.d0)then
+            hvc0=hvc0+(c*w)/omega0*veff
+          endif
           h2=h1+dh
           p2=h2p(h2)
 c          p2=h2*sqrt(1.d0-1.d0/h2**2)

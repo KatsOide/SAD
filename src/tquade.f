@@ -103,6 +103,9 @@
      $           0.d0,bxy,0.d0,0.d0,
      $           aln,als,al,f1r,f2r,prev,next)
           endif
+c          If(abs(cod(2)) .gt. 1.d0)then
+c            write(*,*)'tquade-trade-2 ',cod(2),cod(5),cod(6)
+c          endif
           als=als+aln
           if(radcod)then
             pr=1.d0+cod(6)

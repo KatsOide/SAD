@@ -1,5 +1,5 @@
 Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
-Help$Version="1.1.0.6k64";
+Help$Version=$Version;
 
 Help$Messages=(Print["SAD/FFS Help Update: ",Help$Update];{
 {" ",
@@ -485,10 +485,10 @@ Usage: (1) EMIT\n\
    df_rf/f_rf/alpha_p = -|dp|, -|dp|/2, 0, |dp|/2, |dp|,\n\n\
 then prints out a table of the dependences of various quantities on the frequency shift.\n\n\
    The results of EMITTANCE(EMIT) are affected by flags COD, RADCOD, RFSW, INTRA, WSPAC, EMIOUT, CODPLOT and special-variables MOMENTUM, CHARGE, FSHIFT, MINCOUP, PBUNCH. The flag TRPT or RING affects only Emittance[], as EMITTANCE(EMIT) automatically set RING.\n\
-   EMITTANCE(EMIT) returns the equilibrium emittaces in variables EMITX, EMITY, EMITZ, and the equilibrium bunch length in SIGZ, the relative momentum spread in SIGE.\n\n\
+   EMITTANCE(EMIT) returns the equilibrium emittaces in variables EMITX, EMITY, EMITZ, and the equilibrium bunch length in SIGZ, the relative momentum spread in SIGE, and the longitudinal equilibrium position DTSYNCH. \n\n\
    The map used in EMIT is slightly different from that used in the tracking. For instance, the edge angle of a bend is approximated by a thin quad. If the edge angle is large and the curvature is small, EMIT may give a wrong answer. This will be corrected in near future.",
     "multi-turn-tracking extended-Twiss-parameters COD RADCOD RFSW INTRA EMIOUT WSPAC \n\
- CODPLOT TRPT MOMENTUM CHARGE FSHIFT MINCOUP PBUNCH Emittance",
+ CODPLOT TRPT MOMENTUM CHARGE FSHIFT MINCOUP PBUNCH EMITX EMITY EMITZ SIGE SIGZ DTSYNCH Emittance",
     {}},
 
    {"multi-turn-tracking",
@@ -1939,20 +1939,38 @@ There are several variables which have special rolls in FFS. Some of them are al
     {{"EMITX",
       "\
 EMITX is a real variable for the horizontal physical emittance. It is automatically set by the keyword EMITX of the MARK element at the beginning of the beam line. The EMITTANCE(EMIT) command returns its calculated value in EMITX. The value of EMITX affects the default weight of variables in the matching. Accessible in MAIN.",
-      "EMITY EMITZ DP elements MARK",
+      "EMITY EMITZ SIGZ SIGE DP elements MARK",
       {}},
 
      {"EMITY",
       "\
 EMITY is a real variable for the vertical physical emittance. It is automatically set by the keyword EMITY of the MARK element at the beginning of the beam line. The EMITTANCE(EMIT) command reôurns its calculated value in EMITY. The value of EMITY affects the default wei÷ht of variables in the matching. Accessible in MAIN.",
-      "EMITX EMITZ DP elements MARK",
+      "EMITX EMITZ SIGZ SIGE DP elements MARK",
       {}},
 
      {"EMITZ",
       "\
 EMITZ is a real variable for the longitudinal physical emittance. It is automatically set by the keyword EMITZ of the MARK element at the beginning of the beam line. The EMITTANCE(EMIT) command reôurns its calculated value in EMITZ. Accessible in MAIN.",
-      "EMITX EMITY DP elements MARK",
+      "EMITX EMITY SIGZ SIGE DP elements MARK",
       {}},
+
+      {"SIGZ",
+        "\
+ SIGZ is the equilibrium bunch length at the entrance of the beam line calulated by EMIT/Emittance[SaveEMIT->True].",
+        "EMITX EMITY EMITZ SIGE EMIT Emittance",
+        {}},
+
+      {"SIGE",
+        "\
+ SIGE is the equilibrium momentum spread at the entrance of the beam line calulated by EMIT/Emittance[SaveEMIT->True].",
+        "EMITX EMITY EMITZ SIGZ EMIT Emittance",
+        {}},
+
+      {"DTSYNCH",
+        "\
+ DTSYNCH is the equilibrium longitudinal position (in meter) where the synchrotron radiation loss balances with the RF, calulated by EMIT/Emittance[SaveEMIT->True]. This corresponds to the origin of the RF phase. The default is zero.",
+        "EMITX EMITY EMITZ SIGZ SIGE EMIT Emittance",
+        {}},
 
      {"EMITXE",
       "\
@@ -2068,12 +2086,6 @@ OMEGA0 is 2*Pi*SpeedOfLight/LINE[\"s\",\"$$$\"] . Accessible in MAIN.",
       "SpeedOfLight functions LINE",
       {}},
 
-     {"DTSYNCH",
-      "\
-Shift of the origin of z of the closed orbit (default: 0). Set by EMITTANCE or Emittance[]. Effective with RING only.",
-      "",
-      {}},
-
      {"EFFVCRATIO",
       "\
 Ratio of (effective voltage)/(Sum[VOLT_k,{k}]) (default: 1), where effective voltage V_eff is defined as\n\n\
@@ -2141,12 +2153,6 @@ GCUT specifies the cut-off value of Gaussian distribution in unit of the standar
 DAPWIDTH is the width of the x-amplitudes to quit the tracking to judge the aperture is enough.",
       "DynamicApertureSurvey",
       {}},
-
-      {"FFS$NumericalDerivative",
-        "\
-If True, performs numerical differentiation during the matching by GO. It is useful with some variables and matching functions in some cases. It is slow, so shouldbe avoided for off-momentum-matching. The default is False.",
-        "GO",
-        {}},
 
      {"MatchingAmplitude",
       "\

@@ -58,9 +58,9 @@ c      write(*,'(a,1p5g15.7)')'tcave ',phi,phis,phic,vcphic,trf0
       vc0=vc0+vc
 c      vccos=vccos+vc*cos(phic)
 c      vcsin=vcsin+vc*sin(phic)
-c      if(omega0 .ne. 0.d0)then
-c        hvc0=hvc0+(c*w)/omega0*vc
-c      endif
+      if(omega0 .ne. 0.d0)then
+        hvc0=hvc0+(c*w)/omega0*vc
+      endif
       if(rfsw)then
         if(trpt .or. radcod .or. autophi)then
           offset1=0.d0

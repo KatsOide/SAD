@@ -20,7 +20,7 @@
       pgev00=pgev
       vc0=0.d0
       u0=0.d0
-c      hvc0=0.d0
+      hvc0=0.d0
 c      vccos=0.d0
 c      vcsin=0.d0
       vcacc=0.d0
@@ -53,24 +53,30 @@ c      vcsin=0.d0
         else
           wrfeff=abs(dvcacc/vc0)
         endif
-        vceff=abs(dcmplx(vcacc,dvcacc/wrfeff))
+        if(wrfeff .eq. 0.d0)then
+          wrfeff=hvc0/vc0*omega0/c
+        endif
+        if(wrfeff .ne. 0.d0)then
+          alambdarf=pi2/wrfeff
+          vceff=abs(dcmplx(vcacc,dvcacc/wrfeff))
+        else
+          alambdarf=circ
+        endif
+        if(vceff .eq. 0.d0)then
+          vceff=vc0
+        endif
+        if(vcacc .eq. 0.d0)then
+          vcacc=vc0*sin(trf0*wrfeff)
+        endif
         if(trpt)then
           trf0=0.d0
           vcphic=0.d0
           vcalpha=1.d0
         else
-c          dvcphic=atan2(vcsin,vccos)
-c          if(abs(dvcphic) .lt. pi*.5d0)then
-c            vcphic=vcphic+dvcphic
-c          endif
           vcalpha=vceff/vc0
           if(vceff .ne. 0.d0)then
-            alambdarf=pi2/wrfeff
             dzmax=alambdarf*.24d0
-            phi0acc=asin(vcacc/vceff)
-            if(dvcacc .lt. 0.d0)then
-              phi0acc=sign(pi,dvcacc)-phi0acc
-            endif
+            phi0acc=asin(abs(vcacc/vceff))
             if(vceff .gt. u0*pgev)then
               if(trans(5,6) .lt. 0.d0)then
                 trf0=trf0+(asin(u0*pgev/vceff)-phi0acc)/wrfeff
@@ -81,16 +87,12 @@ c          endif
             else
               trf0=trf0+(.5*pi-phi0acc)/wrfeff
             endif
-c              trf0=trf0+min(dzmax,max(-dzmax,
-c     $             (u0*pgev-charge*vcacc)/charge/dvcacc))
           endif
           if(trf0 .lt. 0.d0)then
             trf0=-mod(-trf0+0.5d0*alambdarf,alambdarf)+alambdarf*0.5d0
           else
             trf0= mod(trf0-0.5d0*alambdarf,alambdarf)+alambdarf*0.5d0
           endif
-c          phis=asin(min(1.d0,max(-1.d0,u0*p0*amass/sign(vceff,vccos))))
-c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
         endif
         call RsetGL1('DTSYNCH',trf0)
         call RsetGL1('PHICAV',vcphic)

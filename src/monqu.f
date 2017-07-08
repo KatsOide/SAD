@@ -5,7 +5,7 @@
       use ffs_pointer,only:idelc,idtypec
       integer*8 latt(nlat)
       dimension pos(nlat)
-      circ=pos(nlat)-pos(1)
+c      circ=pos(nlat)-pos(1)
       nq=n
       if( idtypec(n).ne.icquad .and.
      1    idtypec(n).ne.icsext ) then
