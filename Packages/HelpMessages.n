@@ -176,7 +176,7 @@ function-values: a list of length nc (== number of calculated items). Each eleme
    {"EXPAND",
      "\
  EXPAND distributes all variable keys to each correspoding components. Individual deviations (machine errors) are cleared.",
-     "GO CALC EMIT",
+     "GO CAL EMIT",
      {}},
 
   {"CALCULATE(CAL)",
@@ -1698,8 +1698,9 @@ RFSW turns on the acceleration by CAVI and TCAVI element in the particle-trackin
       {}},
 
      {"RADTAPER",
-      "Scale all magnets except for solenoids according to the local momentum (DDP) of the closed orbit. It uses the average of DDPs at the entrance and the exit. For tracking, RADCOD and ( CAL/GO with CALC6D or EMIT(Emittance[]) ) is necessary. CAL/GO with CALC4D will clear the necessary information for tracking with RADTAPER.",
-      "RADCOD CALC6D CALC4D EMIT CAL GO",
+      " Scales all magnets except for solenoids according to the local momentum (DDP) of the closed orbit. It uses the average of DDPs at the entrance and the exit. For tracking, RADCOD and ( CAL/GO with CALC6D or EMIT(Emittance[]) ) is necessary. CAL/GO with CALC4D will clear the necessary information for tracking with RADTAPER.\n\
+ RADTAPER sets the momentum diviation of the closed orbit to DP0, which is an arbitrary choice of an under-deterministic problem of tapering. Thus the difference in the path length around the ring is adjusted by automatically updatting FSHIFT.",
+      "RADCOD CALC6D CALC4D EMIT CAL GO DP0 FSHIFT",
        {}},
 
      {"COD",
@@ -1998,8 +1999,9 @@ DP represents the relative momentum spread of the beam. It is automatically set 
 
      {"DP0",
       "\
-DP0 represents the central value of the relative momentum offset in the optics calculation, or the center of the momentum distribution of the beam. The on-momentum optics has the relative momentum deviation dp/p0 == DP0, and the off-momentum calculation is done in the range DP0 - DP < dp/p0 < DP0 + DP.",
-      "DP off-momentum-matching matching-function-commands",
+ DP0 represents the central value of the relative momentum offset in the optics calculation, or the center of the momentum distribution of the beam. The on-momentum optics has the relative momentum deviation dp/p0 == DP0, and the off-momentum calculation is done in the range DP0 - DP < dp/p0 < DP0 + DP.\n\
+ DP0 sets the momentum deviation of the closed orbit at the entrance for EMIT with RADTAPER.",
+      "DP off-momentum-matching matching-function-commands EMIT RADTAPER",
       {}},
 
      {"CONVERGENCE",
@@ -2017,14 +2019,19 @@ MatchingResidual holds the convergence in the last GO or CALCULATE(CAL) commands
      woff = 1                               for on-momentum optics\n\
           = Sqrt[number-of-momentum-points] for off-momentum optics.\n The weight of the function is lighter in the case of off-momentum-matching so that all off-momentum deviations functions weight equal to the on-momentum one. However, the relative weight for the off-momentum part can be changed by setting OffMomentumWeight. \n\
    The weight of each function at each point with each momentum can be specified by defining the FitWeight function.",
-      "ExponentOfResidual CONVERGENCE OffMomentumWeight off-momentum-matching\
-functions FitWeight",
+      "ExponentOfResidual CONVERGENCE OffMomentumWeight off-momentum-matching FitWeight",
       {}},
+
+      {"ExponentOfResidual",
+        "\
+The exponent to calculate MatchinResidual. The default is 2.",
+        "MatchingResidual GO",
+        {}},
 
      {"NetResidual",
       "\
 The net residual of convergence except the penalty for unstable optics.",
-      "MatchingResidual StabliltyLevel",
+      "MatchingResidual StablilityLevel",
        {}},
 
      {"StabilityLevel",
@@ -2066,24 +2073,24 @@ CHARGE contains the charge of the particle. The default is +1.",
       
      {"MASS",
       "\
-MASS is the rest mass of the particle. The default is electron mass.",
+MASS is the rest mass of the particle in eV. The default is the electron mass.",
       "",
       {}},
       
      {"MOMENTUM",
-      "MOMENTUM is the nominal momentum of the beam line at the entrance in eV. Accessible in MAIN.",
+      "MOMENTUM is the nominal momentum of the beam line at the entrance in eV/c. Accessible in MAIN.",
       "",
       {}},
 
      {"NPARA",
       "NPARA specifies the maximum number of parallel processes for variaous calulations such as CALC, GO, TrackParticles, DynamicApertureSurve, etc.",
-      "",
+      "CAL GO TrackParticles DynamicApertureSurvey",
       {}},
 
      {"OMEGA0",
       "\
 OMEGA0 is 2*Pi*SpeedOfLight/LINE[\"s\",\"$$$\"] . Accessible in MAIN.",
-      "SpeedOfLight functions LINE",
+      "SpeedOfLight LINE",
       {}},
 
      {"EFFVCRATIO",
@@ -2110,18 +2117,18 @@ Effective with RING only.",
      {"PBUNCH",
       "\
 PBUNCH is the number of particles/bunch for the calculation of the intra-beam and space charge effects in EMITTANCE(EMIT), and WakeFunction. Accessible in MAIN.",
-      "EMITTANCE(EMIT) INTRA",
+      "EMITTANCE(EMIT) INTRA WSPAC WakeFunction",
       {}},
 
      {"NBUNCH",
       "\
 NBUNCH is the number of bunches for the calculation of WakeFunction. Accessible in MAIN.",
-      "",
+      "PBUNCH",
       {}},
 
      {"MINCOUP",
       "\
-MINCOUP is the minimum emittance ratio (EMITY/EMITX) to be assumed in the calculation of intra-beam effects in EMITTANCE(EMIT). Accessible in MAIN.",
+MINCOUP is the minimum emittance ratio (EMITY/EMITX) to be assumed in the calculation of intrabeam effects in EMITTANCE(EMIT). Accessible in MAIN.",
       "EMITTANCE(EMIT) INTRA",
       {}},
 
@@ -2138,8 +2145,8 @@ LOSSDZ is the longitudinal position z beyond which a particle is judged to have 
       {}},
 
      {"FSHIFT",
-      "FSHIFT is the relative shift df/f0 of the revolution (or rf) frequency in a ring. This is only valid in EMITTANCE(EMIT) or the particle-tracking. In the optics calculation DP0 should be used instead.",
-      "DP0",
+      "FSHIFT is the relative shift df/f0 of the revolution (or rf) frequency in a ring. This is valid in EMITTANCE(EMIT), the particle-tracking, and CAL/GO with CALC6D. For CAL/GO with CALC4D, DP0 should be used instead.",
+      "EMIT CAL GO CALC6D CALC4D DP0",
       {}},
 
      {"GCUT",
@@ -2662,21 +2669,28 @@ where pat1 [,pat2...] are patterns (including expressions).\n\
        {"StringPosition",
          "\
  StringPosition[s, subs] returns a list of positions of subs in string s.\n\
- StringPosition[s, subs, n] returns a list of firs n positions of subs in string s.\n\n\
+ StringPosition[s, subs, n] returns a list of first n positions of subs in string s.\n\n\
 Example: StringPosition[\"abcbcbcbcb\",\"bcb\"] returns {{2,4},{4,6},{6,8},{8,10}}.",
          "",
          {}},
 
+       {"StringFill",
+         "\
+ StringFill[s, sf, n]  with strings s and sf returns (s//sf//sf...)[1,n] .\n\
+ StringFill[s, sf, -n] with strings s and sf returns (...sf//sf//s)[-n,-1] .",
+         "StringJoin // StringPart",
+         {}},
+
        {"StringJoin",
          "\
- StringJoin[s1, s2, [,s3...]] ===> s1//s2[//s3...] concatenates strings s1, s2 [,s3...].",
-         "(//)",
+ StringJoin[s1, s2, [,s3...]] ===> s1 // s2 [//s3...] concatenates strings s1, s2 [,s3...].",
+         "//",
          {}},
 
        {"StringPart",
          "\
  s_String[n]      returns the n-th character in s.\n\
- s_String[n1, n2] returns the substring from n1-th through n2-th charactersof s.\n\n\
+ s_String[n1, n2] returns the substring from n1-th through n2-th characters of s.\n\n\
  If n1, n2 are negative, they count from the end of the string.",
          "",
          {}},
@@ -2738,7 +2752,8 @@ Pi             ArcSin[1]*2\n\
 E              Exp[1]\n\
 I              Complex[0,1]\n\
 Degree         Pi/180\n\
-GoldenRatio    (1+Sqrt[5])/2",
+GoldenRatio    (1+Sqrt[5])/2\n\
+EulerGamma     0.57721566490153286061",
     "special-variables physical-constants flags expression",
     {}},
 
@@ -2986,7 +3001,7 @@ returns a list {list1, .. }, where list1 is a list of subexpressions which makes
 operates f over each element of a list x and returns the result as a list:\n\n\
 f/@{a, b, c} ===> {f[a], f[b], f[c]}\n\n\
 An optional argument specifies the level-spec.",
-         "(@/) Scan Apply MapThread level-spec",
+         "@/ Scan Apply MapThread level-spec",
          {}},
 
        {"Scan",
@@ -3004,7 +3019,7 @@ An optional argument specifies the level-spec.",
 takes the bod of a list x as the argument sequence of f, and returns the result:\n\n\
 f@@{a, b, c} ===> f[a, b, c]\n\n\
 An optional argument specifies the level-spec.",
-         "Map Scan MapThread level-spec",
+         "@@ Map Scan MapThread level-spec",
          {}},
 
         {"Position",
@@ -3211,7 +3226,8 @@ resets $FORM and PageWidth to their defaults, then evaulate expr, returns the re
      {"Utilities",
        "",
        "",
-      {{"DateString",
+       Sort[{
+         {"DateString",
         "\
  DateString[] returns the current date and time as string  \"mm/dd/CCYY HH:MM:SS\".\n\
  DateString[date] converts date to string as above. The date can be either a real number (in second, date=0 is 1/1/1900 0:0:0) or a list of 6 reals {Y,m,d,H,M,S}.",
@@ -3249,12 +3265,13 @@ evaluates fun and returns {cputime, result}. cputime is in seconds.",
 TimeUsed[] returns the cputime since the start of SAD in seconds.",
           "Timing",
           {}}
-        }},
+        }]},
 
      {"Data-Manipulation",
        "",
        "",
-      {{"Fit",
+       Sort[{
+         {"Fit",
         "\
 Usage: Fit[data, expr, var, \n\
          {par1, ini1, [{min1, max1}] }, .. ,{parn, inin, [{minn, maxn}]},\n\
@@ -3327,7 +3344,7 @@ AccuracyGoal      1e-13        Relative accuracy\n\
 InitialPoints     20           Number of initial points where\n\
                                the function is evaluated.",
          "",
-         {}}}},
+         {}}}]},
 
      {"System-interface",
        "",
@@ -3832,8 +3849,8 @@ Examples:\n\
       "\
 Functions dedicated to the optics calculations and simulations in FFS.",
       "",
-      Sort[
-      {{"OptimizeOptics",
+      Sort[{
+        {"OptimizeOptics",
         "\
 Usage: OptimizeOptics[options]\n\n\
 optimizes (1 + MatchingResidual) or any function using DownhillSimplex with variables specified by FREE. Unlike GO, any keyword of any element can be a variable.\n\
@@ -4265,7 +4282,7 @@ options: Output->lfn : output to the unit lfn (see OpenWrite).\n\
 where score = Sum[scorei,{i,n}], scorei is the \"score\" of i-th momentum, and turni_j is the lossed turn of the particle with i-th momentum and j-th intial amplitude.\n\
    DynamicApertureSurvey tracks number of particles with different initial conditions in the range given by range. It outputs a z-x diagram of the dynamic aperture of the ring. Fifty one initial conditions are chosen in the range x-range for each point of z-range. The initial y-amplitude is linearly dependent on the x-amplitude. It tracks from xmax to downward for each z-amplitude zn, until the particles turns nturn with successive DAPWIDTH x-amplitudes. The default DAPWIDTH is 7.\n\
   DynamicApertureSurvey does parallel processing up to NPARA processes.",
-        "NPARA",
+        "NPARA DAPWIDTH",
         {}},
 
        {"BeamMatrix",

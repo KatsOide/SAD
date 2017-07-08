@@ -20,7 +20,7 @@
       pgev00=pgev
       vc0=0.d0
       u0=0.d0
-c      hvc0=0.d0
+      hvc0=0.d0
 c      vccos=0.d0
 c      vcsin=0.d0
       vcacc=0.d0
@@ -47,14 +47,27 @@ c      vcsin=0.d0
       call tffsbound(fbound)
       call tturne0(trans,cod,beam,fbound,
      $     iatr,iacod,iabmi,0,plot,rt)
-      if(rfsw .and. vc0 .ne. 0.d0 .and. update)then
+      if(vc0 .ne. 0.d0 .and. update)then
         if(vcacc .ne. 0.d0)then
           wrfeff=sqrt(abs(ddvcacc/vcacc))
         else
           wrfeff=abs(dvcacc/vc0)
         endif
-        alambdarf=pi2/wrfeff
-        vceff=abs(dcmplx(vcacc,dvcacc/wrfeff))
+        if(wrfeff .eq. 0.d0)then
+          wrfeff=hvc0/vc0*omega0/c
+        endif
+        if(wrfeff .ne. 0.d0)then
+          alambdarf=pi2/wrfeff
+          vceff=abs(dcmplx(vcacc,dvcacc/wrfeff))
+        else
+          alambdarf=circ
+        endif
+        if(vceff .eq. 0.d0)then
+          vceff=vc0
+        endif
+        if(vcacc .eq. 0.d0)then
+          vcacc=vc0*sin(trf0*wrfeff)
+        endif
         if(trpt)then
           trf0=0.d0
           vcphic=0.d0
@@ -74,16 +87,12 @@ c      vcsin=0.d0
             else
               trf0=trf0+(.5*pi-phi0acc)/wrfeff
             endif
-c              trf0=trf0+min(dzmax,max(-dzmax,
-c     $             (u0*pgev-charge*vcacc)/charge/dvcacc))
           endif
           if(trf0 .lt. 0.d0)then
             trf0=-mod(-trf0+0.5d0*alambdarf,alambdarf)+alambdarf*0.5d0
           else
             trf0= mod(trf0-0.5d0*alambdarf,alambdarf)+alambdarf*0.5d0
           endif
-c          phis=asin(min(1.d0,max(-1.d0,u0*p0*amass/sign(vceff,vccos))))
-c          trf0=phis*c*p0/h0/omega0/hvc0*vceff
         endif
         call RsetGL1('DTSYNCH',trf0)
         call RsetGL1('PHICAV',vcphic)

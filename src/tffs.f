@@ -13,7 +13,7 @@
      $       vccos,vcsin,vcphic,vcalpha,vceff,
      $       vcacc,dvcacc,ddvcacc,alphap,
      $       pspac_dx,pspac_dy,pspac_dz,dvfs,rcratio,rclassic,brhoz,
-     $       bradprev,amom0
+     $       bradprev,amom0,circ,hvc0
         integer*8 ilattp,lspect,ipoltr,ipolb,ipoll,ipolid,ipolo
         integer*4 nflag0,nlat,np0,nturn,isynch,nspect,
      $       lplot,nplot,nuse,nclas,irad,novfl,npelm,ipelm,

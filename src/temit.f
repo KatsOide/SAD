@@ -462,7 +462,7 @@ c     Table of loss-rate
       integer*8 iatr,iacod,iamat,iabmi
       integer*4 lfni,lfno,ia,it,i,j,k,k1,k2,k3,m,n,iret,l
       real*8 trans(6,12),cod(6),beam(42),emx0,emy0,emz0,dl,
-     $     heff,orf,phirf,omegaz,bh,so,s,
+     $     heff,phirf,omegaz,bh,so,s,
      $     sr,sqr2,bb,bbv(21),sige,
      $     emxr,emyr,emzr,xxs,yys,btilt,
      $     sig1,sig2,sigx,sigy,tune,sigz,
@@ -625,14 +625,10 @@ c     call tsymp(trans)
       else
         heff=0.d0
       endif
-      orf=wrfeff
-      phirf=abs(trf0*orf/c/p0*h0)
+      phirf=abs(trf0*wrfeff)
       synchm=rfsw .and. imag(cd(6)) .ne. 0.d0
       if(synchm)then
         if(wrfeff .ne. 0.d0)then
-c          alphap=imag(cd(6))**2/pi2/hvc0*pgev/cos(phirf)*p0/h0
-c          alphap=-imag(cd(6))*abs(imag(cd(6)))
-c     $          /pi2/abs(hvc0)/vcalpha*pgev/cos(phirf)*p0/h0
           alphap=-imag(cd(6))*abs(imag(cd(6)))/(c*pi2/omega0)
      $         /(dvcacc/pgev)
         else
@@ -644,6 +640,7 @@ c     $          /pi2/abs(hvc0)/vcalpha*pgev/cos(phirf)*p0/h0
         omegaz=sqrt(abs(alphap*pi2*heff*vceff/pgev*cos(phirf)))
      $       *omega0/pi2
       endif
+c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
       if(vceff .ne. 0.d0)then
         bh=sqrt(abs(vceff/pi/abs(alphap)/heff/pgev*
      1        (2.d0*cos(phirf)-(pi-2.d0*phirf)*u0*pgev/vceff)))

@@ -8,8 +8,7 @@
       implicit none
       integer*4 i,lxp,lt,nv,j,it
       real*8 geo1(3,4),vsave(256),dpos,offset,xp,fr,pos0,
-     $     dox,doy,doz,g1,tffsmarkoffset,g2,rgetgl1,poso,circ,
-     $     posi
+     $     dox,doy,doz,g1,tffsmarkoffset,g2,rgetgl1,poso,posi
       logical*4 calgeo,calgeo0,calpol0,chg
       call tfsetparam
       if(.not. geocal)then

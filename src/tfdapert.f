@@ -100,7 +100,7 @@
       use ffs_flag
       use tmacro
       implicit none
-      integer*4 n1,itgetfpe,ivar1,ivar2,lfno,i
+      integer*4 n1,itgetfpe,ivar1,ivar2,lfno
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       real*8 trval,phi(3),range(3,3),r1(n1),damp,dampenough
       integer*4 kzx(2,np0)
