@@ -127,11 +127,7 @@ c      write(6,'(1p6g12.5)')codi,codf,dcod
         dcod1(6)=0.d0
       elseif(radtaper)then
         trs(1:6,6)=0.d0
-<<<<<<< HEAD
         dcod1(5)=0.d0
-=======
-        dcod(5)=0.d0
->>>>>>> origin/master
       endif
       dcod0=dcod
       call tsolvg(trs,dcod1,dcod,im,6,6)
