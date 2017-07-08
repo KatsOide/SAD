@@ -47,7 +47,7 @@ c      vcsin=0.d0
       call tffsbound(fbound)
       call tturne0(trans,cod,beam,fbound,
      $     iatr,iacod,iabmi,0,plot,rt)
-      if(vc0 .ne. 0.d0 .and. update)then
+      if(rfsw .and. vc0 .ne. 0.d0 .and. update)then
         if(vcacc .ne. 0.d0)then
           wrfeff=sqrt(abs(ddvcacc/vcacc))
         else
