@@ -86,8 +86,8 @@ c      real*8 dzmax
       if(.not. radcod)then
         r=r+(dtrf0/trw)**2
       endif
-      write(6,'(a,1p7g12.5)')' tcod ',r,r0,fact,trf0,dtrf0,dleng
-      write(6,'(1p6g12.5)')codi,codf,dcod
+c      write(6,'(a,1p7g12.5)')' tcod ',r,r0,fact,trf0,dtrf0,dleng
+c      write(6,'(1p6g12.5)')codi,codf,dcod
       if(r .lt. conv)then
         return
       endif
@@ -127,7 +127,11 @@ c      real*8 dzmax
         dcod1(6)=0.d0
       elseif(radtaper)then
         trs(1:6,6)=0.d0
+<<<<<<< HEAD
         dcod1(5)=0.d0
+=======
+        dcod(5)=0.d0
+>>>>>>> origin/master
       endif
       dcod0=dcod
       call tsolvg(trs,dcod1,dcod,im,6,6)
