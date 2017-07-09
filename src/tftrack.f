@@ -16,7 +16,7 @@
      $     ipr(100),npr,np1,fork_worker,iprid, ne,nend,
      $     npp,ipn,m,itfmessage,nt,mt,kseed,j
       integer*8 ikptblw,ikptblm
-      real*8 trf00,p00,vcphic0,vcalpha0
+      real*8 trf00,p00,vcalpha0
 
       logical*4 dapert0,normal
       narg=isp-isp1
@@ -155,11 +155,9 @@
         endif
       endif
  10   trf00=trf0
-      vcphic0=vcphic
       vcalpha0=vcalpha
       if(trpt)then
         trf0=0.d0
-        vcphic=0.d0
         vcalpha=1.d0
       endif
       kpz=ktaloc(npp)
@@ -225,7 +223,6 @@ c      call tclrparaall
         rlist(kzf+npa:kzf+npp-1)=0.d0
       endif
       trf0=trf00
-      vcphic=vcphic0
       vcalpha=vcalpha0
       irtc=0
       if(npr .ne. 0)then

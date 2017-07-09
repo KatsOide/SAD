@@ -917,7 +917,6 @@ c     $         ilist(1,iwakepold)*8
         endif
         trpt=.true.
         trf0=0.d0
-        vcphic=0.d0
         vcalpha=1.d0
         title=tfgetstrv('TITLE')
         case=tfgetstrv('CASE')

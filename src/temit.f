@@ -485,7 +485,6 @@ c     Table of loss-rate
       ia(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       it=0
       trf0=0.d0
-      vcphic=0.d0
       vcalpha=1.d0
       epsrad=1.d-6
       demin=1.d100
@@ -548,7 +547,8 @@ c        write(*,*)'temit-tcod ',trf0
         endif
         call tinitr(trans)
         trans(:,7:12)=0.d0
-        call tturne(trans,cod,beam,0,0,0,.false.,.false.,.true.)
+        call tturne(trans,cod,beam,int8(0),int8(0),int8(0),
+     $       .false.,.false.,.true.)
       endif
       if(calpol .and. irad .eq. 6)then
         ipoltr=ktaloc(npelm*36)
@@ -565,7 +565,7 @@ c        call tclr(beam,21)
         call tinitr(trans)
         trans(:,7:12)=0.d0
 c        write(*,*)'temit ',trf0,cod
-        call tturne(trans,cod,beam,0,0,0,
+        call tturne(trans,cod,beam,int8(0),int8(0),int8(0),
      1       .false.,.false.,.true.)
       endif
 c     call tsymp(trans)

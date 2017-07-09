@@ -27,7 +27,6 @@ c      real*8 dzmax
       endif
       rtr=radcod .and. radtaper
       trf0=0.d0
-      vcphic=0.d0
       vcalpha=1.d0
       trf0s=0.d0
       v0=p0/h0
@@ -86,9 +85,10 @@ c      real*8 dzmax
       if(.not. radcod)then
         r=r+(dtrf0/trw)**2
       endif
-c      write(6,'(a,1p7g12.5)')' tcod ',r,r0,fact,trf0,dtrf0,dleng
-c      write(6,'(1p6g12.5)')codi,codf,dcod
+      write(6,'(a,1p7g12.5)')' tcod ',r,r0,fact,trf0,dtrf0,dleng
+      write(6,'(1p6g12.5)')codi,codf,dcod
       if(r .lt. conv)then
+        cod=codi
         return
       endif
       if(isnan(r))then

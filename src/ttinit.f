@@ -9,7 +9,6 @@
       integer*8 latt(nlat),kx
       dimension x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
       trf0=0.d0
-      vcphic=0.d0
       vcalpha=1.d0
       if(idtypec(1) .ne. icMARK)then
         write(*,*)'Missing entrance condition of beam.'

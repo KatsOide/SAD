@@ -10,8 +10,7 @@
      $       emidib,emidiq,emidis,ctouck,dvemit,h1emit,
      $       anbunch,tdummy(6),zlost,alost,
      $       taurdx,taurdy,taurdz,fridiv,beamin(21),
-     $       vccos,vcsin,vcphic,vcalpha,vceff,
-     $       vcacc,dvcacc,ddvcacc,alphap,
+     $       vcalpha,vceff,vcacc,dvcacc,ddvcacc,alphap,
      $       pspac_dx,pspac_dy,pspac_dz,dvfs,rcratio,rclassic,brhoz,
      $       bradprev,amom0,circ,hvc0
         integer*8 ilattp,lspect,ipoltr,ipolb,ipoll,ipolid,ipolo

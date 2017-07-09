@@ -70,11 +70,9 @@ c     end   initialize for preventing compiler warning
       call tclrfpe
       irad=6
       trf00=trf0
-      vcphic0=vcphic
       vcalpha0=vcalpha
       if(trpt)then
         trf0=0.d0
-        vcphic=0.d0
         vcalpha=1.d0
       endif
       calpol0=calpol
@@ -497,7 +495,6 @@ c     end   initialize for preventing compiler warning
       enddo
  9000 calpol=calpol0
       trf0=trf00
-      vcphic=vcphic0
       vcalpha=vcalpha0
       return
       end

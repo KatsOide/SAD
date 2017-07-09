@@ -83,7 +83,6 @@ c      l=itfdownlevel()
       alost =rgetgl1('LOSSAMPL')
       zlost =rgetgl1('LOSSDZ')
       trf0  =rgetgl1('DTSYNCH')
-      vcphic=rgetgl1('PHICAV')
       vcalpha=rgetgl1('EFFVCRATIO')
       nlat  =elatt%nlat1-1
 c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat

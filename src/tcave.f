@@ -44,8 +44,8 @@ c      h1=sqrt(p1**2+1.d0)
       vcn=vc/ndiv
       aln=al/ndiv
       phis=trf0*w
-      phic=phi*sign(1.d0,charge)-vcphic
-c      write(*,'(a,1p5g15.7)')'tcave ',phi,phis,phic,vcphic,trf0
+      phic=phi*sign(1.d0,charge)
+c      write(*,'(a,1p5g15.7)')'tcave ',phi,phis,phic,trf0
       v10a=v10/ndiv/amass*abs(charge)
       v11a=v11/ndiv/amass*abs(charge)
       v20a=v20/ndiv/amass*abs(charge)+vn*(w*(.5d0/p0+.5d0/p1))**2/4.d0
@@ -56,8 +56,6 @@ c      write(*,'(a,1p5g15.7)')'tcave ',phi,phis,phic,vcphic,trf0
         dhg=0.d0
       endif
       vc0=vc0+vc
-c      vccos=vccos+vc*cos(phic)
-c      vcsin=vcsin+vc*sin(phic)
       if(omega0 .ne. 0.d0)then
         hvc0=hvc0+(c*w)/omega0*vc
       endif

@@ -128,7 +128,7 @@ c      h1=sqrt(p1**2+1.d0)
         vn=v/ndiv
         vcn=vc/ndiv
         phis=trf0*w
-        phic=phi*sign(1.d0,charge)-vcphic
+        phic=phi*sign(1.d0,charge)
         v10a=0.d0
         v11a=0.d0
         v20a=vn*(w*(.5d0/p0+.5d0/p1))**2/4.d0
@@ -141,8 +141,6 @@ c      h1=sqrt(p1**2+1.d0)
           offset1=sin(phis)
         endif
         vc0=vc0+vc
-c        vccos=vccos+vc*cos(phic)
-c        vcsin=vcsin+vc*sin(phic)
         if(omega0 .ne. 0.d0)then
           hvc0=hvc0+(c*w)/omega0*vc
         endif

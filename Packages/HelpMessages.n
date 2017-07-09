@@ -1969,8 +1969,8 @@ EMITZ is a real variable for the longitudinal physical emittance. It is automati
 
       {"DTSYNCH",
         "\
- DTSYNCH is the equilibrium longitudinal position (in meter) where the synchrotron radiation loss balances with the RF, calulated by EMIT/Emittance[SaveEMIT->True]. This corresponds to the origin of the RF phase. The default is zero.",
-        "EMITX EMITY EMITZ SIGZ SIGE EMIT Emittance",
+ DTSYNCH is the equilibrium arrival time advance (= -c*delta t, in meter) where the synchrotron radiation loss balances with the RF, calulated by EMIT/Emittance[SaveEMIT->True]. This corresponds to the origin of the RF phase. The default is zero.",
+        "EMITX EMITY EMITZ SIGZ SIGE EMIT Emittance PHICAV",
         {}},
 
      {"EMITXE",
@@ -2095,18 +2095,32 @@ OMEGA0 is 2*Pi*SpeedOfLight/LINE[\"s\",\"$$$\"] . Accessible in MAIN.",
 
      {"EFFVCRATIO",
       "\
-Ratio of (effective voltage)/(Sum[VOLT_k,{k}]) (default: 1), where effective voltage V_eff is defined as\n\n\
- V_eff = Sqrt[(Sum[VOLT_k Cos[PHI_k],{k}])^2 + (Sum[VOLT_k Sin[PHI_k],{k}])^2] .\n\n\
-EFFVCRATIO is set by EMITTANCE(EMIT) or Emittance[]. Effective with RING only.",
-      "",
+ Ratio of (effective voltage)/(Sum[VOLT_k,{k}]) (default: 1). Set by EMITTANCE(EMIT) or Emittance[]. Effective with RING only.",
+      "PHICAV EFFVC",
        {}},
+
+      {"EFFVC",
+        "\
+ Effective peak rf voltage EFFVC is given by\n\n\
+  Abs[ weff Vcacc + I dVcacc/dt ] / weff ,\n\n\
+where Vcacc, weff are total acceleration voltage at the equilibrium phase PHICAV and the effective RF angular frequency (=2 Pi EFFRFFREQ). DVcacc/dt is the time derivative of Vcacc. The quantity Vcacc and its derivatives are summed over all CAVIs and MULTs.\n\
+ It is set by EMITTANCE(EMIT) or Emittance[]. The unit is Volt. Effective with RING only.",
+        "EFFVCRATIO EFFRFFREQ PHICAV",
+        {}},
+
+      {"EFFRFFREQ",
+        "\
+ The effective angular frequency weff (= 2 Pi EFFRFFREQ) is obtained using the second derivative\n\n\
+  d^2Vcacc/dt^2 == -weff^2 Vcacc ,\n\n\
+ehere Vcacc is the total acceleration voltage at the equilibrium phase PHICAV. These quantities Vcacc and its derivatives are summed over all CAVIs and MULTs.\n\
+ It is set by EMITTANCE(EMIT) or Emittance[]. Effective with RING only.",
+        "EFFVC PHICAV",
+        {}},
 
      {"PHICAV",
       "\
-Shift of cavity phase PHI when variation exists among cavities (default: 0). Set by EMITTANCE(EMIT) or Emittance[] as\n\n\
-{Cos[PHICAV], Sin[PHICAV]} == {Sum[VOLT_k Cos[PHI_k],{k}], Sum[VOLT_k Sin[PHI_k],{k}]} .\n\n\
-Effective with RING only.",
-      "CAVI MULT",
+The equilibrium RF phase (in radian, = 2 Pi EFFRFFREQ DTSYNCH/c) where the synchrotron radiation loss and acceleration balances. If there are phase, voltage, frequency variations in RF cavities, it is calculated based on \"effective voltage\". Effective with RING only.",
+      "EFFVC EFFRFFREQ DTSYNCH CAVI MULT",
       {}},
       
      {"SpeedOfLight",
