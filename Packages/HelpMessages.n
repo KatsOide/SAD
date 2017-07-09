@@ -2149,13 +2149,13 @@ MINCOUP is the minimum emittance ratio (EMITY/EMITX) to be assumed in the calcul
      {"LOSSAMPL",
       "\
 LOSSAMPL is the transverse amplitude beyond which a particle is judged to have been lost. The default is 1 m. Accessible in MAIN.",
-      "elements APERT",
+      "LOSSDZ APERT",
       {}},
 
      {"LOSSDZ",
       "\
 LOSSDZ is the longitudinal position z beyond which a particle is judged to have been lost. The default is 100 m. Accessible in MAIN. LOSSDZ is effective only when SPAC is ON.",
-      "elements APERT SPAC",
+      "LOSSAMPL APERT SPAC",
       {}},
 
      {"FSHIFT",
@@ -2166,12 +2166,12 @@ LOSSDZ is the longitudinal position z beyond which a particle is judged to have 
      {"GCUT",
       "\
 GCUT specifies the cut-off value of Gaussian distribution in unit of the standard deviation. Accessible in MAIN.",
-      "SEED GAUSS",
+      "SEED GAUSS GaussRandom",
       {}},
 
      {"DAPWIDTH",
       "\
-DAPWIDTH is the width of the x-amplitudes to quit the tracking to judge the aperture is enough.",
+DAPWIDTH is the successive width of the x-amplitudes to terminate the tracking assuming that the aperture is enough. The default is 7.",
       "DynamicApertureSurvey",
       {}},
 
@@ -2214,7 +2214,7 @@ Example:  ElementValues = \n\
             { \"DX\"[\"QF1\"] :> \"DX\"[\"QD1\"]-0.001,\n\
               \"DY\"[\"QF2.3\"] :> -\"DY\"[\"QD1.2\"],\n\
               \"ROTATE\"[\"QF*\"] :> f[x] }\n\n\
-Remarks:\t\n\
+Remarks:\n\t\n\
 1. Iff elem contains \".\", it is recognized as components, otherwise as elements.\n\
 2. In the r.h.s. of the rule, an expression like key[elem] is evaluated as either LINE[key, elem] or Element[key, elem], depending on elem has \".\".\n\
 3. The expression expr can be any expression returning a real number.\n\
@@ -2644,7 +2644,7 @@ g//:f[pat1 [,pat2...]] (:)= body;\n\n\
 where pat1 [,pat2...] are patterns (including expressions).\n\
  If UpSet(^=) or UpSetDelayed (^:=) is used, the definitioin is associated with the symbol in the first level of l.h.s.\n\
  If TagSet(//:) is used, the definition is associated with the symbol on the left of //: .\n\n\
- The patters can be an expression including constants. The definition with constant arguments can be accessed faster than searching a list, in general, so they are suitable for a data base.",
+ The patters can be an expression including constants. The definition with constant arguments can be accessed faster than searching a list, in general, so they are suitable for a data base. Definitions with contant arguments have higher priorities than with patterns.",
     "UpSet UpSetDelayed TagSet pattern",
     {}},
 

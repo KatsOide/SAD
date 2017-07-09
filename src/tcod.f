@@ -85,8 +85,8 @@ c      real*8 dzmax
       if(.not. radcod)then
         r=r+(dtrf0/trw)**2
       endif
-      write(6,'(a,1p7g12.5)')' tcod ',r,r0,fact,trf0,dtrf0,dleng
-      write(6,'(1p6g12.5)')codi,codf,dcod
+c      write(6,'(a,1p7g12.5)')' tcod ',r,r0,fact,trf0,dtrf0,dleng
+c      write(6,'(1p6g12.5)')codi,codf,dcod
       if(r .lt. conv)then
         cod=codi
         return
