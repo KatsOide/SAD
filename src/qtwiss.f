@@ -31,7 +31,7 @@
      $     ax0,ay0,al,pxi,pyi,pxisq,pyisq,pzi,ale,alz,psi1,psi2,
      $     theta0,x,px,y,dpsix,dpsiy,bz,
      $     pr,a,dpz,trf00,dtheta,phi,
-     $     apsi1,apsi2,sspc0,sspc,vcphic0,vcalpha0,fb1,fb2,
+     $     apsi1,apsi2,sspc0,sspc,vcalpha0,fb1,fb2,
      $     chi1m,chi2m,ak1,ftable(4),dir
       logical*4 over,coup,normal,mat,calpol0,insmat,err
       real*8 a11,a12,a13,a14,a21,a22,a23,a24,a31,a32,a33,

@@ -494,7 +494,7 @@ c     Table of loss-rate
       cod=codin
       beam(1:21)=beamin
       beam(22:42)=0.d0
-      call tfill(codold,10.d0,6)
+      codold=10.d0
       params=0.d0
       ceig0=(0.d0,0.d0)
       emxe=rgetgl1('EMITXE')
@@ -682,16 +682,17 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
      $         '    Units: B(X,Y,Z), E(X,Y), R2: m ',
      $         '| PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m',/)
         endif
-        vout(1)=autofg(pgev/1.d9       ,'10.7')
-        vout(2)=autofg(omega0/pi2      ,'10.7')
-        vout(3)=autofg(u0*pgev/1.d6    ,'10.7')
-        vout(4)=autofg(vceff/1.d6      ,'10.7')
-        vout(5)=autofg(trf0*1.d3       ,'10.7')
-        vout(6)=autofg(alphap          ,'10.7')
-        vout(7)=autofg(-dleng*1.d3     ,'10.7')
-        vout(8)=autofg(heff            ,'10.7')
-        vout(9)=autofg(bh              ,'10.7')
-        write(lfno,9101)(vout(i)(1:10),i=1,9)
+        vout(1) =autofg(pgev/1.d9       ,'10.7')
+        vout(2) =autofg(omega0/pi2      ,'10.7')
+        vout(3) =autofg(u0*pgev/1.d6    ,'10.7')
+        vout(4) =autofg(vceff/1.d6      ,'10.7')
+        vout(5) =autofg(trf0*1.d3       ,'10.7')
+        vout(6) =autofg(alphap          ,'10.7')
+        vout(7) =autofg(-dleng*1.d3     ,'10.7')
+        vout(8) =autofg(heff            ,'10.7')
+        vout(9) =autofg(bh              ,'10.7')
+        vout(10)=autofg(omegaz/pi2      ,'10.7')
+        write(lfno,9101)(vout(i)(1:10),i=1,10)
 9101    format(   'Design momentum      P0 =',a,' GeV',
      1         1x,'Revolution freq.     f0 =',a,' Hz '/
      1            'Energy loss per turn U0 =',a,' MV ',
@@ -700,7 +701,8 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
      1         1x,'Momentum compact. alpha =',a/
      1            'Orbit dilation       dl =',a,' mm ',
      1         1x,'Effective harmonic #  h =',a,/
-     1            'Bucket height     dV/P0 =',a/)
+     1            'Bucket height     dV/P0 =',a,'    ',
+     $         1x,'Synchrotron frequency   =',a,' Hz ',/)
         if(emiout)then
           write(lfno,*)'   Eigen values and eigen vectors:'
           write(lfno,*)

@@ -2637,7 +2637,7 @@ expression  matches expression.",
 
   {"function-definition",
     "\
- A function is defined by one of the forms:\n\n\
+ A function is defined by one of the following forms:\n\n\
 f[pat1 [,pat2...]] (:)= body;\n\
 f[pat1 [,pat2...]] ^(:)= body;\n\
 g//:f[pat1 [,pat2...]] (:)= body;\n\n\

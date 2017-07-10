@@ -45,13 +45,15 @@
       call tffsbound(fbound)
       call tturne0(trans,cod,beam,fbound,
      $     iatr,iacod,iabmi,0,plot,rt)
-      if(vc0 .ne. 0.d0 .and. update)then
+      if(update)then
         if(vcacc .ne. 0.d0)then
           wrfeff=sqrt(abs(ddvcacc/vcacc))
-        else
+        elseif(vc0 .ne. 0.d0)then
           wrfeff=abs(dvcacc/vc0)
+        else
+          wrfeff=0.d0
         endif
-        if(wrfeff .eq. 0.d0)then
+        if(wrfeff .eq. 0.d0 .and. vc0 .ne. 0.d0)then
           wrfeff=hvc0/vc0*omega0/c
         endif
         if(wrfeff .ne. 0.d0)then
@@ -59,18 +61,23 @@
           vceff=abs(dcmplx(vcacc,dvcacc/wrfeff))
         else
           alambdarf=circ
+          vceff=0.d0
         endif
         if(vceff .eq. 0.d0)then
           vceff=vc0
         endif
         if(vcacc .eq. 0.d0)then
-          vcacc=vc0*sin(trf0*wrfeff)
+          vcacc=vceff*sin(trf0*wrfeff)
         endif
         if(trpt)then
           trf0=0.d0
           vcalpha=1.d0
         else
-          vcalpha=vceff/vc0
+          if(vc0 .ne. 0.d0)then
+            vcalpha=vceff/vc0
+          else
+            vcalpha=0.d0
+          endif
           if(vceff .ne. 0.d0)then
             dzmax=alambdarf*.24d0
             phis=asin(abs(vcacc/vceff))
