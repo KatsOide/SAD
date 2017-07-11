@@ -38,36 +38,8 @@ Packages/Optics.n~
 src/depend-cache-rG3OJg0z7H6C
 src/depend-cache-Sa69PniUmxg3
 *.gitignore#
-<<<<<<< HEAD
-
 *.sad~
-
-script/help2HTML2.sad~
-=======
-script/help2HTML2.sad~
-src/.DS_Store
-src/inc/.DS_Store
-*.html#
-*.sad#
-
->>>>>>> origin/master
-
-<<<<<<< HEAD
-*.html~
-
-Documents/SADHelp.html~
-
-Documents/SADHelp.html~
-=======
-a
->>>>>>> origin/master
 
 script/help2HTML2.sad~
 
 Documents.zip
-
-src/.DS_Store
-
-*.sad~
-
-script/help2HTML2.sad~
