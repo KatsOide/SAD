@@ -34,7 +34,8 @@
       real*8 eps0
       parameter (nvmax=2048,maxi0=50,eps0=1.d-20)
       type (symv) sav(nvmax),sav0(nvmax)
-      type (sad_list), pointer :: klx,klo
+      type (sad_list), pointer :: klx
+      type (sad_rlist), pointer :: klo
       integer*8 ke,kdl(nvmax)
       integer*4 isp1,irtc,neq,nvar,itfmessage,isp2,i,maxi,ispv
       real*8 v0(nvmax),eps,vmin(nvmax),vmax(nvmax),d0

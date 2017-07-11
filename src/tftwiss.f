@@ -1248,7 +1248,7 @@ c            write(*,*)'linestk ',name(1:nc),r
       use tfstk
       implicit none
       type (sad_descriptor) kx,ks
-      type (sad_list), pointer ::klx
+      type (sad_rlist), pointer :: klr
       integer*8 kax
       integer*4 irtc,isp0,nl,mode
       call tfinitlinep(irtc)
@@ -1267,11 +1267,11 @@ c            write(*,*)'linestk ',name(1:nc),r
       dtastk(isp)=ks
       call tfefunref(isp0+1,kx,.false.,irtc)
       isp=isp0
-      if(.not. tfreallistqd(kx,klx))then
+      if(.not. tfreallistqd(kx,klr))then
         nl=0
       else
         kax=ktfaddr(kx)
-        nl=klx%nl
+        nl=klr%nl
       endif
       return
       end

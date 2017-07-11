@@ -7,7 +7,7 @@
       use tmacro
       use ffs_pointer, only:inext,iprev
       implicit none
-      type (sad_list), pointer :: klx
+      type (sad_rlist), pointer :: klr
       integer*4 np,ld,mfring,i,irtc,ld1,level,m,itfuplevel,
      $     itfdownlevel,l
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
@@ -103,8 +103,8 @@ c          p=(1.d0+g(i))**2
           write(*,*)' Error in '//vname//' at ',ld1,ord(ld1),
      $         ' element.'
           return
-        elseif(tfreallistq(kx,klx))then
-          m=klx%nl
+        elseif(tfreallistq(kx,klr))then
+          m=klr%nl
           if(m .le. 2)then
             write(*,*)' '//vname//' must have more than 2 numbers at ',
      $           ld1,ord(ld1)//' element.'
@@ -114,9 +114,9 @@ c          p=(1.d0+g(i))**2
           akm=ak/(m-1)
           do i=1,m
             if(forward)then
-              rb=klx%rbody(i)
+              rb=klr%rbody(i)
             else
-              rb=klx%rbody(m-i+1)
+              rb=klr%rbody(m-i+1)
             endif
             if(i .eq. 1 .or. i .eq. m)then
               ali=alm*.5d0

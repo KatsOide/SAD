@@ -323,7 +323,7 @@ c      write(*,*)'tflevel ',n1,n2
       subroutine tflevelspec(k,n1,n2,irtc)
       use tfstk
       implicit none
-      type (sad_list), pointer :: kl
+      type (sad_rlist), pointer :: kl
       type (sad_descriptor) k
       integer*4 n1,n2,irtc,ivl,maxlevel,m,itfmessage
       parameter (maxlevel=2**30)
@@ -333,29 +333,23 @@ c      write(*,*)'tflevel ',n1,n2
         ivl=int(max(-vlmax,min(vlmax,v)))
         n1=1
         n2=ivl
-      elseif(ktflistqd(k,kl))then
-        if(ktfnonreallistqo(kl))then
-          irtc=itfmessage(9,'General::wrongtype',
-     $         '"List of numbers for levelspec"')
-          return
-        else
-          m=kl%nl
-          if(m .eq. 1)then
-            n1=int(max(-vlmax,min(vlmax,kl%rbody(1))))
-            n2=n1
-          elseif(m .eq. 2)then
-            n1=int(max(-vlmax,min(vlmax,kl%rbody(1))))
-            n2=int(max(-vlmax,min(vlmax,kl%rbody(2))))
-          else
-            irtc=itfmessage(9,'General::wrongval',
-     $           '"n, {n}, or {n1, n2}","as level spec"')
-            return
-          endif
-        endif
-      else
+      elseif(.not. tfreallistq(k%k,kl))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List of numbers for levelspec"')
         return
+      else
+        m=kl%nl
+        if(m .eq. 1)then
+          n1=int(max(-vlmax,min(vlmax,kl%rbody(1))))
+          n2=n1
+        elseif(m .eq. 2)then
+          n1=int(max(-vlmax,min(vlmax,kl%rbody(1))))
+          n2=int(max(-vlmax,min(vlmax,kl%rbody(2))))
+        else
+          irtc=itfmessage(9,'General::wrongval',
+     $         '"n, {n}, or {n1, n2}","as level spec"')
+          return
+        endif
       endif
       irtc=0
       return

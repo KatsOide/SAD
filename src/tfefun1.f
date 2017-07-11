@@ -4,7 +4,8 @@
       use temw, only:tfnormalcoord
       implicit none
       type (sad_descriptor) kx,kxj,kispi
-      type (sad_list), pointer :: klx,kli
+      type (sad_list), pointer :: kli
+      type (sad_rlist), pointer :: klx
       integer*8 ka
       integer*4 isp1,id,irtc,na,i,ispi,m,j,narg,id0,
      $     itfmessage,l

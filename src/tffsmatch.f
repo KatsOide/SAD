@@ -644,7 +644,7 @@ c            call tfmemcheckprint('ffsmatch',.true.,irtc)
       use ffs
       use tffitcode
       implicit none
-      type (sad_list), pointer :: klx
+      type (sad_rlist), pointer :: klr
       integer*8 kx
       integer*4 ii,i,ld,nvar,ivvar(nvar),ival(nele),ltyp,irtc
       real*8 val,val0,vlim(nele,2),vl,vl1,vl0,vl2
@@ -693,11 +693,11 @@ c      call tfmemcheckprint('vlimit-0',.true.,irtc)
           vl=vl0
           go to 2009
         endif
-      elseif(tfreallistq(kx,klx))then
-        if(klx%nl .eq. 2)then
+      elseif(tfreallistq(kx,klr))then
+        if(klr%nl .eq. 2)then
           dlim=.true.
-          vl1=max(vl1,klx%rbody(1))
-          vl2=min(vl2,klx%rbody(2))
+          vl1=max(vl1,klr%rbody(1))
+          vl2=min(vl2,klr%rbody(2))
           if(vl .lt. vl1)then
             vl=vl1
             go to 2009

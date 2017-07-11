@@ -384,7 +384,8 @@ C
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer ::kl,kll,klx
+      type (sad_list), pointer ::kl
+      type (sad_rlist), pointer ::klr,kll
       integer*4 isp1,irtc,itfmessage,i1,i2,ih,n,i,m
       real*8 x
       if(isp1+2 .ne. isp)then
@@ -419,7 +420,7 @@ C
       elseif(tfreallistq(ktastk(isp),kll))then
         n=kll%nl
         m=kl%nl
-        kx=kxavaloc(-1,n,klx)
+        kx=kxavaloc(-1,n,klr)
         i1=1
         do i=1,n
           i2=min(i1+1,m)
@@ -444,7 +445,7 @@ C
               i1=ih
             endif
           enddo
-          klx%rbody(i)=min(i1,m-1)
+          klr%rbody(i)=min(i1,m-1)
         enddo
         irtc=0
       else

@@ -336,7 +336,7 @@ c     Note: index(name1,'.') > 0 if kp1 != 0
       use tfstk
       use tfcsi, only:icslfno
       implicit none
-      type (sad_list), pointer :: klx
+      type (sad_rlist), pointer :: klx
       type (sad_descriptor) kx
       integer*8 ,save :: kff=0
       integer*4 maxcond,nqcol,iqcol(maxcond),kdp(maxcond)

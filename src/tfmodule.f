@@ -437,7 +437,8 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
       use tfcode
       implicit none
       type (sad_descriptor) kx,k,k1,k2,kd,ks
-      type (sad_list), pointer :: list,klx
+      type (sad_list), pointer :: list
+      type (sad_rlist), pointer :: klr
       type (sad_symbol), pointer :: sym
       type (sad_pat), pointer :: pat
       integer*8 kas
@@ -458,9 +459,9 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
             kx=kxcomposev(isp0)
           endif
         elseif(rep)then
-          kx=kxavaloc(-1,list%nl,klx)
-          klx%head=ktfcopy(ktastk(isp0))
-          klx%body(1:list%nl)=list%body(1:list%nl)
+          kx=kxavaloc(-1,list%nl,klr)
+          klr%head=ktfcopy(ktastk(isp0))
+          klr%body(1:list%nl)=list%body(1:list%nl)
         endif
         isp=isp0-1
       elseif(ktfpatqd(k,pat))then

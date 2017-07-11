@@ -2,11 +2,12 @@
       use tfstk
       implicit none
       type alist
-        type (sad_list), pointer :: p
+        type (sad_rlist), pointer :: p
       end type
       type (alist), dimension(7) :: kav
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx,klk,kl
+      type (sad_list), pointer :: klx,kl
+      type (sad_rlist), pointer :: klrk
       integer, parameter :: nkptbl = 6
       integer*4 l,nt,np,np0,kptbl(np0,nkptbl),itfdownlevel
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
@@ -76,13 +77,13 @@
           go to 9000
         endif
         do k=1,7
-          if(.not. ktflistqd(klx%dbody(k),klk))then
+          if(.not. tfreallistqd(klx%dbody(k),klrk))then
             go to 9000
           endif
-          if(klk%nl .ne. np0 .or. ktfnonreallistqo(klk))then
+          if(klrk%nl .ne. np0)then
             go to 9000
           endif
-          kav(k)%p=>klk
+          kav(k)%p=>klrk
         enddo
         dodrop=.false.
         doinject=.false.

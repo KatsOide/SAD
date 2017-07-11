@@ -4,7 +4,8 @@
       integer*4 maxint
       parameter (maxint=2**31-1)
       type (sad_descriptor) kx,kj,kxlistcopied,ke,ki,k1,kl
-      type (sad_list), pointer :: listi,kle,klj,klx
+      type (sad_list), pointer :: listi,kle,klj
+      type (sad_rlist), pointer :: klr
       type (sad_symbol), pointer :: name
       type (sad_symdef), pointer :: symd
       integer*8 ls
@@ -176,8 +177,8 @@
             if(ktfrealqd(ke,ve))then
               irtc=0
               if(mode .eq. 1)then
-                kx=kxavaloc(-1,ns,klx)
-                klx%dbody(1:ns)=ke
+                kx=kxavaloc(-1,ns,klr)
+                klr%rbody(1:ns)=ve
               elseif(mode .eq. 2)then
                 kx=dfromr(ve*ns)
               elseif(mode .eq. 3)then
@@ -295,8 +296,8 @@
             if(ktfrealqd(ke,ve))then
               irtc=0
               if(mode .eq. 1)then
-                kx=kxavaloc(-1,ns,klx)
-                klx%dbody(1:ns)=ke
+                kx=kxavaloc(-1,ns,klr)
+                klr%rbody(1:ns)=ve
               elseif(mode .eq. 2)then
                 kx=dfromr(ve*ns)
               elseif(mode .eq. 3)then
@@ -425,6 +426,7 @@ c        call tfcatchreturn(0,kx,irtc)
       use tfstk
       implicit none
       type (sad_list), pointer ::klx
+      type (sad_rlist), pointer ::klr
       integer*4 isp1,i,n
       logical*4 nr,re
       if(isp1 .ge. isp)then
@@ -449,7 +451,8 @@ c        call tfcatchreturn(0,kx,irtc)
  10     if(nr)then
           kxlistcopied=kxadaloc(-1,n,klx)
         else
-          kxlistcopied=kxavaloc(-1,n,klx)
+          kxlistcopied=kxavaloc(-1,n,klr)
+          call descr_list(kxlistcopied,klx)
         endif
         klx%dbody(1:n)=dtastk(isp1+1:isp1+n)
       endif
@@ -460,7 +463,7 @@ c        call tfcatchreturn(0,kx,irtc)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kl
+      type (sad_rlist), pointer :: kl
       integer*8 n
       integer*4 isp1,irtc,narg,i,itfmessage
       real*8 x0,x1,xs,xi

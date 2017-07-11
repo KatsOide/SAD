@@ -745,10 +745,11 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       subroutine tfdiagonalmatrix(k,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kx
-      type (sad_list), pointer :: kl,klx,klxi
-      integer*8 ki
+      type (sad_descriptor) k,kx,ki
+      type (sad_list), pointer :: kl,klx
+      type (sad_rlist), pointer :: klri
       integer*4 irtc,m,i,itfmessage
+      real*8 x
       if(.not. tflistqd(k,kl))then
         irtc=itfmessage(9,'General::wrongtype','"List"')
         return
@@ -756,13 +757,13 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       m=kl%nl
       kx=kxadaloc(-1,m,klx)
       do i=1,m
-        klx%body(i)=ktflist+ktraaloc(0,m,klxi)
-        ki=kl%body(i)
-        if(ktfrealq(ki))then
-          klxi%body(i)=ki
+        klx%body(i)=ktflist+ktraaloc(0,m,klri)
+        ki=kl%dbody(i)
+        if(ktfrealqd(ki,x))then
+          klri%rbody(i)=x
         else
-          klxi%attr=ior(lnonreallist,klxi%attr)
-          klxi%body(i)=ktfcopy(ki)
+          klri%attr=ior(lnonreallist,klri%attr)
+          klri%dbody(i)=dtfcopy(ki)
         endif
       enddo
       irtc=0
@@ -773,7 +774,8 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       use tfstk
       implicit none
       type (sad_descriptor) k,kx
-      type (sad_list), pointer :: klx,klxi
+      type (sad_list), pointer :: klx
+      type (sad_rlist), pointer :: klri
       integer*4 irtc,m,i,itfmessage
       if(ktfnonrealqdi(k,m))then
         irtc=itfmessage(9,'General::wrongtype','"Real number"')
@@ -785,8 +787,8 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       endif
       kx=kxadaloc(-1,m,klx)
       do i=1,m
-        klx%body(i)=ktflist+ktraaloc(0,m,klxi)
-        klxi%rbody(i)=1.d0
+        klx%body(i)=ktflist+ktraaloc(0,m,klri)
+        klri%rbody(i)=1.d0
       enddo
       irtc=0
       return
@@ -941,7 +943,8 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       implicit none
       type (sad_descriptor) kx
       type (sad_list) :: kl
-      type (sad_list), pointer :: kli
+      type (sad_rlist), pointer :: kli
+      type (sad_complex), pointer :: klic
       integer*8 ktfc2l
       integer*4 m,n,irtc,i
       complex*16 cx(m),cy(m)
@@ -959,8 +962,8 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
         do i=1,m
           if(ktfrealq(kl%body(i)))then
             cx(i)=f*kl%rbody(i)
-          elseif(tfcomplexqk(kl%body(i),kli))then
-            cx(i)=f*dcmplx(kli%rbody(1),kli%rbody(2))
+          elseif(tfcomplexqx(kl%body(i),klic))then
+            cx(i)=f*klic%cx(1)
           else
             return
           endif

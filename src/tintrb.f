@@ -182,8 +182,8 @@ c        call tmulbs(bmi,transa,.false.)
             endif
           endif
         else
-          call tfill(touckl,1.d20,ntouckl)
-          call tfill(touckm,1.d20,ntouckx*ntouckz*3)
+          touckl=1.d20
+          touckm=1.d20
         endif
         a1=eig(1)/eig(2)
         a2=eig(1)/eig(3)

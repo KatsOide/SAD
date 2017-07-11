@@ -15,14 +15,12 @@
       parameter (codmax=1.d4,demax=.5d0)
       integer*8 iatr,iacod,iabmi
       real*8 trans(6,12),cod(6),beam(42)
-      real*8 z0,pgev00,alambdarf,dzmax,phi0acc
+      real*8 z0,pgev00,alambdarf,dzmax,phis
       logical*4 plot,update,rt
       pgev00=pgev
       vc0=0.d0
       u0=0.d0
       hvc0=0.d0
-c      vccos=0.d0
-c      vcsin=0.d0
       vcacc=0.d0
       dvcacc=0.d0
       ddvcacc=0.d0
@@ -47,13 +45,15 @@ c      vcsin=0.d0
       call tffsbound(fbound)
       call tturne0(trans,cod,beam,fbound,
      $     iatr,iacod,iabmi,0,plot,rt)
-      if(rfsw .and. vc0 .ne. 0.d0 .and. update)then
+      if(update)then
         if(vcacc .ne. 0.d0)then
           wrfeff=sqrt(abs(ddvcacc/vcacc))
-        else
+        elseif(vc0 .ne. 0.d0)then
           wrfeff=abs(dvcacc/vc0)
+        else
+          wrfeff=0.d0
         endif
-        if(wrfeff .eq. 0.d0)then
+        if(wrfeff .eq. 0.d0 .and. vc0 .ne. 0.d0)then
           wrfeff=hvc0/vc0*omega0/c
         endif
         if(wrfeff .ne. 0.d0)then
@@ -61,31 +61,35 @@ c      vcsin=0.d0
           vceff=abs(dcmplx(vcacc,dvcacc/wrfeff))
         else
           alambdarf=circ
+          vceff=0.d0
         endif
         if(vceff .eq. 0.d0)then
           vceff=vc0
         endif
         if(vcacc .eq. 0.d0)then
-          vcacc=vc0*sin(trf0*wrfeff)
+          vcacc=vceff*sin(trf0*wrfeff)
         endif
         if(trpt)then
           trf0=0.d0
-          vcphic=0.d0
           vcalpha=1.d0
         else
-          vcalpha=vceff/vc0
+          if(vc0 .ne. 0.d0)then
+            vcalpha=vceff/vc0
+          else
+            vcalpha=0.d0
+          endif
           if(vceff .ne. 0.d0)then
             dzmax=alambdarf*.24d0
-            phi0acc=asin(abs(vcacc/vceff))
+            phis=asin(abs(vcacc/vceff))
             if(vceff .gt. u0*pgev)then
               if(trans(5,6) .lt. 0.d0)then
-                trf0=trf0+(asin(u0*pgev/vceff)-phi0acc)/wrfeff
+                trf0=trf0+(asin(u0*pgev/vceff)-phis)/wrfeff
               else
                 trf0=trf0+
-     $                 (pi-asin(u0*pgev/vceff)-phi0acc)/wrfeff
+     $                 (pi-asin(u0*pgev/vceff)-phis)/wrfeff
               endif
             else
-              trf0=trf0+(.5*pi-phi0acc)/wrfeff
+              trf0=trf0+(.5*pi-phis)/wrfeff
             endif
           endif
           if(trf0 .lt. 0.d0)then
@@ -95,8 +99,10 @@ c      vcsin=0.d0
           endif
         endif
         call RsetGL1('DTSYNCH',trf0)
-        call RsetGL1('PHICAV',vcphic)
+        call RsetGL1('PHICAV',trf0*wrfeff)
         call RsetGL1('EFFVCRATIO',vcalpha)
+        call RsetGL1('EFFVC',vceff)
+        call RsetGL1('EFFRFFREQ',wrfeff*c/pi2)
       endif
       if(pgev00 .ne. pgev)then
         pgev=pgev00

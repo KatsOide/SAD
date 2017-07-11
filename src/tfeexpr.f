@@ -2,14 +2,15 @@
       use tfstk
       implicit none
       type (sad_descriptor) k1,k,ke,kx,ky,ky1,k2,kx2
-      type (sad_list), pointer :: listy,list1,listi,klx,kl1,kle
+      type (sad_list), pointer :: listy,list1,listi,klx,kl1
+      type (sad_rlist), pointer :: kle
       type (sad_symbol), pointer :: sym
       type (sad_string), pointer :: str
       type (sad_pat), pointer :: kp1
       type (sad_complex), pointer :: cx
       integer*8 ks
       integer*4 m,irtc,i,isp0,iopc1,iopc,itfcanonicalorder
-      real*8 vx1,vy,v2,vx
+      real*8 vx1,vy,v2,vx,x
       logical*4 eval
       iopc=iopc1
       ky=k
@@ -289,9 +290,9 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
 c        call tfdebugprint(k1,'eexpr',1)
 c        call tfdebugprint(ky,'@',1)
         if(ktfnonrealqd(k1))then
-          if(ktfrealqd(k))then
+          if(ktfrealqd(k,x))then
             ke=kxavaloc(-1,1,kle)
-            kle%dbody(1)=k
+            kle%rbody(1)=x
             kle%dbody(0)=dtfcopy(k1)
             return
           elseif((ktfsymbolqd(ky) .or. ktfoperqd(ky)) .and.
@@ -354,8 +355,9 @@ c      write(*,*)isp
         ke=kxavaloc(-1,1,kle)
         kle%dbody(1)=ky
       else
-        ke=kxadaloc(-1,1,kle)
-        kle%dbody(1)=dtfcopy(ky)
+        ke=kxadaloc(-1,1,klx)
+        call descr_rlist(ke,kle)
+        klx%dbody(1)=dtfcopy(ky)
       endif
       kle%head=ktfoper+iopc
       return
@@ -847,6 +849,7 @@ c          >    <    g    l    E    N    ~    &    o    c
       implicit none
       type (sad_descriptor) k,kx
       type (sad_list), pointer :: kl,klx
+      type (sad_rlist), pointer :: klr
       integer*4 m,i,mode,iaf,isp0
       if(tfnumberqd(k))then
         if(ktfrealqd(k))then
@@ -868,11 +871,11 @@ c          >    <    g    l    E    N    ~    &    o    c
           endif
         endif
         return
-      elseif(tfreallistqd(k,kl))then
+      elseif(tfreallistqd(k,klr))then
         if(mode .eq. 1 .or. mode .eq. 3)then
           kx=k
         else
-          kx%k=ktflist+ktraaloc(-1,kl%nl)
+          kx%k=ktflist+ktraaloc(-1,klr%nl)
         endif
         return
       elseif(ktflistqd(k,kl))then

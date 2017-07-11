@@ -541,6 +541,32 @@ c     endif
       integer*8 body(1:2**31-1)
       end type
 
+      type sad_dlist
+      sequence
+      integer*2 lenp,lena
+      integer*4 attr
+      integer*8 alloc
+      integer*4 ref,nl
+      integer*8 head
+      real*8 rbody(1:0)
+      complex*16 cbody(1:0)
+      integer*8 body(1:0)
+      type (sad_descriptor) dbody(1:2**31-1)
+      end type
+
+      type sad_rlist
+      sequence
+      integer*2 lenp,lena
+      integer*4 attr
+      integer*8 alloc
+      integer*4 ref,nl
+      integer*8 head
+      complex*16 cbody(1:0)
+      integer*8 body(1:0)
+      type (sad_descriptor) dbody(1:0)
+      real*8 rbody(1:2**31-1)
+      end type
+
       type sad_complex
       sequence
       integer*2 lenp,lena
@@ -548,9 +574,9 @@ c     endif
       integer*8 alloc
       integer*4 ref,nl
       integer*8 head
-      complex*16 cx(1:0)
       integer*8 body(1:0)
       type (sad_descriptor) dbody(1:0)
+      complex*16 cx(1:0)
       real*8 re,im
       end type
 
@@ -669,6 +695,14 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
 
       interface ktfaddr
         module procedure ktfaddrk,ktfaddrd
+      end interface
+
+      interface kxaaloc
+        module procedure kxaaloc_list,kxaaloc_dlist,kxaaloc_rlist
+      end interface
+
+      interface ktaaloc
+        module procedure ktaaloc_list,ktaaloc_dlist,ktaaloc_rlist
       end interface
 
       contains
@@ -872,11 +906,45 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         return
         end subroutine
 
+        subroutine loc_dlist(locp,dlist)
+        use iso_c_binding
+        implicit none
+        type (sad_dlist), pointer, intent(out) :: dlist
+        integer*8 locp
+        call c_f_pointer(c_loc(klist(locp-3)),dlist)
+        return
+        end subroutine
+
+        subroutine loc_rlist(locp,rlist)
+        use iso_c_binding
+        implicit none
+        type (sad_rlist), pointer, intent(out) :: rlist
+        integer*8 locp
+        call c_f_pointer(c_loc(klist(locp-3)),rlist)
+        return
+        end subroutine
+
         subroutine descr_list(dscr,list)
         implicit none
         type (sad_descriptor) dscr
         type (sad_list), pointer, intent(out) :: list
         call loc_list(ktfaddrd(dscr),list)
+        return
+        end subroutine
+
+        subroutine descr_rlist(dscr,list)
+        implicit none
+        type (sad_descriptor) dscr
+        type (sad_rlist), pointer, intent(out) :: list
+        call loc_rlist(ktfaddrd(dscr),list)
+        return
+        end subroutine
+
+        subroutine descr_dlist(dscr,dlist)
+        implicit none
+        type (sad_descriptor) dscr
+        type (sad_dlist), pointer, intent(out) :: dlist
+        call loc_dlist(ktfaddrd(dscr),dlist)
         return
         end subroutine
 
@@ -1280,8 +1348,8 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
 
         logical*4 function ktflistqd(k,kl)
         implicit none
-        type (sad_descriptor) k
         type (sad_list), pointer, optional, intent(out) :: kl
+        type (sad_descriptor), intent(in):: k
         if(iand(ktfmask,k%k) .eq. ktflist)then
           ktflistqd=.true.
           if(present(kl))then
@@ -1292,6 +1360,36 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         endif          
         return
         end function ktflistqd
+
+        logical*4 function ktfdlistq(k,dl)
+        implicit none
+        type (sad_dlist), pointer, optional, intent(out) :: dl
+        integer*8 k
+        if(iand(ktfmask,k) .eq. ktflist)then
+          ktfdlistq=.true.
+          if(present(dl))then
+            call loc_dlist(iand(ktamask,k),dl)
+          endif
+        else
+          ktfdlistq=.false.
+        endif          
+        return
+        end function ktfdlistq
+
+        logical*4 function ktfdlistqd(k,dl)
+        implicit none
+        type (sad_descriptor) k
+        type (sad_dlist), pointer, optional, intent(out) :: dl
+        if(iand(ktfmask,k%k) .eq. ktflist)then
+          ktfdlistqd=.true.
+          if(present(dl))then
+            call loc_dlist(iand(ktamask,k%k),dl)
+          endif
+        else
+          ktfdlistqd=.false.
+        endif          
+        return
+        end function ktfdlistqd
 
         logical*4 function ktfnonlistq(k,kl)
         implicit none
@@ -1326,13 +1424,13 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         logical*4 function tfreallistqd(k,kl)
         implicit none
         type (sad_descriptor) k
-        type (sad_list), pointer, optional, intent(out) :: kl
+        type (sad_rlist), pointer, optional, intent(out) :: kl
         type (sad_list), pointer :: kl1
         if(ktflistqd(k,kl1))then
           tfreallistqd=kl1%head .eq. ktfoper+mtflist
      $         .and. ktfreallistqo(kl1)
           if(tfreallistqd .and. present(kl))then
-            kl=>kl1
+            call descr_rlist(k,kl)
           endif
         else
           tfreallistqd=.false.
@@ -1341,15 +1439,16 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         end function
 
         logical*4 function tfreallistq(k,kl)
+        use iso_c_binding
         implicit none
-        type (sad_list), pointer, optional, intent(out) :: kl
+        type (sad_rlist), pointer, optional, intent(out) :: kl
         type (sad_list), pointer :: kl1
         integer*8 k
         if(ktflistq(k,kl1))then
           tfreallistq=kl1%head .eq. ktfoper+mtflist
      $         .and. ktfreallistqo(kl1)
           if(tfreallistq .and. present(kl))then
-            kl=>kl1
+            call c_f_pointer(c_loc(kl1),kl)
           endif
         else
           tfreallistq=.false.
@@ -1476,14 +1575,14 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         logical*4 function tfnumlistqnk(k,n,kl1)
         implicit none
         type (sad_descriptor) k
-        type (sad_list), pointer, optional, intent(out) :: kl1
+        type (sad_rlist), pointer, optional, intent(out) :: kl1
         type (sad_list), pointer :: kl
         integer*4 n 
         if(ktflistqd(k,kl))then
           tfnumlistqnk=kl%head .eq. ktfoper+mtflist
      $         .and. ktfreallistqo(kl) .and. kl%nl .eq. n
           if(present(kl1))then
-            kl1=>kl
+            call descr_rlist(k,kl1)
           endif
         else
           tfnumlistqnk=.false.
@@ -1756,15 +1855,16 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         end function
 
         logical*4 function tfcomplexqk(k,klx)
+        use iso_c_binding
         implicit none
         type (sad_list), pointer :: kl
-        type (sad_list), pointer, optional, intent(out) :: klx
+        type (sad_rlist), pointer, optional, intent(out) :: klx
         integer*8 k
         tfcomplexqk= ktflistq(k,kl) .and.
      $       kl%head .eq. ktfoper+mtfcomplex
      $       .and. kl%nl .eq. 2 .and. ktfreallistqo(kl)
         if(tfcomplexqk .and. present(klx))then
-          klx=>kl
+          call c_f_pointer(c_loc(kl),klx)
         endif
         return
         end function
@@ -1780,6 +1880,20 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
      $       iand(lnonreallist,c%attr) .eq. 0
         if(tfcomplexqx .and. present(cx))then
           cx=>c
+        endif
+        return
+        end function
+
+        logical*4 function tfcomplexqc(k,cx)
+        implicit none
+        type (sad_rlist), pointer :: c
+        complex*16 , optional :: cx
+        integer*8 k
+        tfcomplexqc=tfreallistq(k,c) .and.
+     $       c%head .eq. ktfoper+mtfcomplex
+     $       .and. c%nl .eq. 2
+        if(tfcomplexqc .and. present(cx))then
+          cx=c%cbody(1)
         endif
         return
         end function
@@ -1965,11 +2079,27 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end subroutine
 
-        type (sad_descriptor) function kxaaloc(mode,nd,kl)
+        type (sad_descriptor) function kxaaloc_list(mode,nd,kl)
         implicit none
         type (sad_list), pointer, optional, intent(out) :: kl
         integer*4 mode,nd
-        kxaaloc%k=ktflist+ktaaloc(mode,nd,kl)
+        kxaaloc_list%k=ktflist+ktaaloc_list(mode,nd,kl)
+        return
+        end function
+
+        type (sad_descriptor) function kxaaloc_dlist(mode,nd,kl)
+        implicit none
+        type (sad_dlist), pointer, intent(out) :: kl
+        integer*4 mode,nd
+        kxaaloc_dlist%k=ktflist+ktaaloc_dlist(mode,nd,kl)
+        return
+        end function
+
+        type (sad_descriptor) function kxaaloc_rlist(mode,nd,kl)
+        implicit none
+        type (sad_rlist), pointer, intent(out) :: kl
+        integer*4 mode,nd
+        kxaaloc_rlist%k=ktflist+ktaaloc_rlist(mode,nd,kl)
         return
         end function
 
@@ -1991,7 +2121,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
 
         type (sad_descriptor) function kxavaloc(mode,nd,kl)
         implicit none
-        type (sad_list), pointer, optional, intent(out) :: kl
+        type (sad_rlist), pointer, optional, intent(out) :: kl
         integer*4 mode,nd
         kxavaloc%k=ktflist+ktavaloc(mode,nd,kl)
         return
@@ -2337,7 +2467,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
 
         integer*8 function ktcalocv(mode,x,y)
         implicit none
-        type (sad_list), pointer :: kl
+        type (sad_rlist), pointer :: kl
         integer*4 mode
         real*8 x,y
         ktcalocv=ktavaloc(mode,2,kl)
@@ -2361,7 +2491,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end function
 
-        integer*8 function ktaaloc(mode,nd,kl)
+        integer*8 function ktaaloc_list(mode,nd,kl)
         implicit none
         type (sad_list), pointer, optional, intent(out) :: kl
         integer*8 ka,ktfaloc
@@ -2370,16 +2500,44 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         ilist(1,ka-3)=0
         ilist(2,ka-1)=nd
         klist(ka)=ktfoper+mtflist
-        ktaaloc=ka
+        ktaaloc_list=ka
         if(present(kl))then
           call loc_list(ka,kl)
         endif
         return
         end function
 
+        integer*8 function ktaaloc_dlist(mode,nd,kl)
+        implicit none
+        type (sad_dlist), pointer, intent(out) :: kl
+        integer*8 ka,ktfaloc
+        integer*4 nd,mode
+        ka=ktfaloc(mode,ktflist,nd+1)
+        ilist(1,ka-3)=0
+        ilist(2,ka-1)=nd
+        klist(ka)=ktfoper+mtflist
+        ktaaloc_dlist=ka
+        call loc_dlist(ka,kl)
+        return
+        end function
+
+        integer*8 function ktaaloc_rlist(mode,nd,kl)
+        implicit none
+        type (sad_rlist), pointer, intent(out) :: kl
+        integer*8 ka,ktfaloc
+        integer*4 nd,mode
+        ka=ktfaloc(mode,ktflist,nd+1)
+        ilist(1,ka-3)=0
+        ilist(2,ka-1)=nd
+        klist(ka)=ktfoper+mtflist
+        ktaaloc_rlist=ka
+        call loc_rlist(ka,kl)
+        return
+        end function
+
         integer*8 function ktavaloc(mode,nd,kl)
         implicit none
-        type (sad_list), pointer, optional, intent(out) :: kl
+        type (sad_rlist), pointer, optional, intent(out) :: kl
         integer*4 mode,nd
         integer*8 k1,itfroot
         k1=ktaloc(nd+3)
@@ -2397,7 +2555,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         klist(k1+2)=ktfoper+mtflist
         ktavaloc=k1+2
         if(present(kl))then
-          call loc_list(k1+2,kl)
+          call loc_rlist(k1+2,kl)
         endif
         return
         end function
@@ -2445,11 +2603,15 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
 
         integer*8 function ktraaloc(mode,nd,kl)
         implicit none
-        type (sad_list), pointer, optional, intent(out) :: kl
+        type (sad_rlist), pointer, optional, intent(out) :: kl
+        type (sad_rlist), pointer :: kl1
         integer*4 mode,nd
         integer*8 ka
-        ka=ktavaloc(mode,nd,kl)
-        klist(ka+1:ka+nd)=0
+        ka=ktavaloc(mode,nd,kl1)
+        kl1%rbody(1:nd)=0.d0
+        if(present(kl))then
+          kl=>kl1
+        endif
         ktraaloc=ka
         return
         end function
@@ -2576,14 +2738,17 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         implicit none
         type (sad_descriptor) k
         type (sad_list), pointer :: klx
-        if(ktfrealqd(k))then
-          kxpfaloc=kxavaloc(-1,1,klx)
-          klx%dbody(1)=k
+        type (sad_rlist), pointer :: klr
+        real*8 x
+        if(ktfrealqd(k,x))then
+          kxpfaloc=kxavaloc(-1,1,klr)
+          klr%rbody(1)=x
+          klr%head=ktfoper+mtffun
         else
           kxpfaloc=kxadaloc(-1,1,klx)
           klx%dbody(1)=dtfcopy(k)
+          klx%head=ktfoper+mtffun
         endif
-        klx%head=ktfoper+mtffun
         return
         end function
 
@@ -2849,33 +3014,35 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         type (sad_descriptor) function kxm2l(a,n,m,nd,trans)
         implicit none
         type (sad_descriptor) kx,ki
-        type (sad_list), pointer :: kli,klx
+        type (sad_list), pointer :: klx
+        type (sad_rlist), pointer :: klr,klri
         integer*4 n,m,nd,i
         logical*4 trans
         real*8 a(nd,m)
         if(n .eq. 0)then
-          kx=kxavaloc(-1,m,klx)
-          klx%rbody(1:m)=a(1:m,1)
+          kx=kxavaloc(-1,m,klr)
+          klr%rbody(1:m)=a(1:m,1)
+          klr%attr=ior(klr%attr,lconstlist)
         else
           if(trans)then
             kx=kxadaloc(-1,m,klx)
             do i=1,m
-              ki=kxavaloc(0,n,kli)
-              kli%rbody(1:n)=a(1:n,i)
-              kli%attr=ior(lconstlist,kli%attr)
+              ki=kxavaloc(0,n,klri)
+              klri%rbody(1:n)=a(1:n,i)
+              klri%attr=ior(lconstlist,klri%attr)
               klx%dbody(i)=ki
             enddo
           else
             kx=kxadaloc(-1,n,klx)
             do i=1,n
-              ki=kxavaloc(0,m,kli)
-              kli%rbody(1:m)=a(i,:)
-              kli%attr=ior(lconstlist,kli%attr)
+              ki=kxavaloc(0,m,klri)
+              klri%rbody(1:m)=a(i,:)
+              klri%attr=ior(lconstlist,klri%attr)
               klx%dbody(i)=ki
             enddo
           endif
+          klx%attr=ior(klx%attr,lconstlist)
         endif
-        klx%attr=ior(klx%attr,lconstlist)
         kxm2l=kx
         return
         end function

@@ -136,6 +136,7 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
       implicit none
       type (sad_descriptor) kx
       type (sad_list), pointer :: klx
+      type (sad_rlist), pointer :: klr
       type (sad_symdef), pointer :: symd
       type (sad_namtbl), pointer ::loc
       type (sad_strbuf), pointer :: strb
@@ -313,9 +314,10 @@ c      endif
             elseif(notany1(string(it1+1:it2),max(0,it2-it1),
      $             '0123456789',1) .le. 0)then
               irt=0
-              kx=kxavaloc(-1,1,klx)
+              kx=kxavaloc(-1,1,klr)
+              call descr_list(kx,klx)
               klx%head=ktfsymbol+ktfcopy1(iaxout)
-              klx%rbody(1)=ifromstr(string(it1+1:it2))
+              klr%rbody(1)=ifromstr(string(it1+1:it2))
               go to 9000
             endif
           endif

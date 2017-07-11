@@ -239,7 +239,8 @@
       use tfstk
       implicit none
       type (sad_descriptor) kf,kx,ki,kl
-      type (sad_list), pointer :: kla,klx,kll,kli
+      type (sad_list), pointer :: kla,klx,kll
+      type (sad_rlist), pointer :: klir
       integer*4 maxind
       parameter (maxind=4096)
       real*8 rind(maxind)
@@ -365,8 +366,8 @@
                   iordless=iop
                   call tflocal(kf%k)
  200              if(icases .eq. 0)then
-                    ki=kxavaloc(0,1,kli)
-                    kli%rbody(1)=dble(ii)
+                    ki=kxavaloc(0,1,klir)
+                    klir%rbody(1)=dble(ii)
                   else
                     ki=dtfcopy(kll%dbody(ii))
                   endif

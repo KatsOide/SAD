@@ -34,7 +34,7 @@
         sint=0.0d0
       endif
       include 'inc/TENT.inc'
-      phic=(phi+dphi)*charge-vcphic
+      phic=(phi+dphi)*charge
       v=vc/amass*abs(charge)
       v1a=v1/amass*abs(charge)
       v20a=.5d0*v20/amass*abs(charge)

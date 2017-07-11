@@ -2,7 +2,8 @@
       use tfstk
       implicit none
       type (sad_descriptor) k,kn,kx
-      type (sad_list), pointer :: kl,kln,klx
+      type (sad_list), pointer :: kl,klx
+      type (sad_rlist), pointer :: klr,kln
       integer*4 irtc,m,iv,n1,n2,mn,mx,itfmessage,i
       logical*4 take0,take,eval,list,d
       if(ktfnonlistqd(k,kl))then
@@ -112,27 +113,28 @@
         kx=k
         return
       elseif(mx .gt. 0)then
-        kx=kxavaloc(-1,mx,klx)
+        kx=kxavaloc(-1,mx,klr)
+        call descr_list(kx,klx)
         if(take)then
           if(ktfreallistqo(kl))then
-            klx%body(1:mx)=kl%body(n1:n1+mx-1)
-            klx%attr=ior(kl%attr,kconstarg)
+            klr%rbody(1:mx)=kl%rbody(n1:n1+mx-1)
+            klr%attr=ior(kl%attr,kconstarg)
           else
             d=.false.
             do i=1,mx
-              klx%body(i)=ktfcopy(kl%body(n1+i-1))
-              d=d .or. ktfnonrealq(klx%body(i))
+              klr%body(i)=ktfcopy(kl%body(n1+i-1))
+              d=d .or. ktfnonrealq(klr%body(i))
             enddo
             if(d)then
-              klx%attr=ior(iand(kl%attr,kconstarg+lconstlist),
+              klr%attr=ior(iand(kl%attr,kconstarg+lconstlist),
      $             lnonreallist)
             endif
           endif
         else
           if(ktfreallistqo(kl))then
-            klx%body(1:n1-1)=kl%body(1:n1-1)
-            klx%body(n1:m+n1-n2-1)=kl%body(n2+1:m)
-            klx%attr=ior(kl%attr,kconstarg)
+            klr%rbody(1:n1-1)=kl%rbody(1:n1-1)
+            klr%body(n1:m+n1-n2-1)=kl%body(n2+1:m)
+            klr%attr=ior(kl%attr,kconstarg)
           else
             d=.false.
             do i=1,n1-1
@@ -208,6 +210,7 @@
       implicit none
       type (sad_descriptor) kx
       type (sad_list), pointer :: kl,klx
+      type (sad_rlist), pointer :: klr
       integer*4 isp1,irtc,i,m,itfmessage,n
       if(isp .ne. isp1+1 .and. isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"1 or 2"')
@@ -239,9 +242,10 @@
         go to 8000
       endif
       if(ktfreallistqo(kl))then
-        kx=kxavaloc(-1,m,klx)
-        klx%body(1:n)=kl%body(m-n+1:m)
-        klx%body(n+1:m)=kl%body(1:m-n)
+        kx=kxavaloc(-1,m,klr)
+        call descr_list(kx,klx)
+        klr%rbody(1:n)=kl%rbody(m-n+1:m)
+        klr%rbody(n+1:m)=kl%rbody(1:m-n)
       else
         kx=kxadaloc(-1,m,klx)
         do i=1,n
@@ -262,9 +266,11 @@
 
       subroutine tfdifference(isp1,kx,irtc)
       use tfstk
+      use iso_c_binding
       implicit none
       type (sad_descriptor) kx,k0,k1,ks
       type (sad_list), pointer :: klx,kl
+      type (sad_rlist), pointer :: klr
       integer*4 isp1,irtc,i,m,itfmessage,isp0
       real*8 cv
       cv=-1.d0
@@ -290,13 +296,14 @@
         return
       endif
       if(ktfreallistqo(kl))then
-        kx=kxavaloc(-1,m-1,klx)
+        kx=kxavaloc(-1,m-1,klr)
+        call c_f_pointer(c_loc(klr),klx)
         if(cv .eq. -1.d0)then
-          klx%rbody(1:m-1)=kl%rbody(2:m)-kl%rbody(1:m-1)
+          klr%rbody(1:m-1)=kl%rbody(2:m)-kl%rbody(1:m-1)
         elseif(cv .eq. 1.d0)then
-          klx%rbody(1:m-1)=kl%rbody(2:m)+kl%rbody(1:m-1)
+          klr%rbody(1:m-1)=kl%rbody(2:m)+kl%rbody(1:m-1)
         else
-          klx%rbody(1:m-1)=kl%rbody(2:m)+cv*kl%rbody(1:m-1)
+          klr%rbody(1:m-1)=kl%rbody(2:m)+cv*kl%rbody(1:m-1)
         endif
       else
         isp0=isp

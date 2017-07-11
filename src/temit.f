@@ -349,7 +349,7 @@ c      write(*,'(a,1p6g15.7)')'tfetwiss ',detm,ax,ay,az,f,xyth
       integer*4 isp1,irtc,itfmessage
       real*8 rn(6,6)
       logical*4 normal
-      type (sad_list), pointer :: kl
+      type (sad_rlist), pointer :: kl
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -485,7 +485,6 @@ c     Table of loss-rate
       ia(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       it=0
       trf0=0.d0
-      vcphic=0.d0
       vcalpha=1.d0
       epsrad=1.d-6
       demin=1.d100
@@ -495,7 +494,7 @@ c     Table of loss-rate
       cod=codin
       beam(1:21)=beamin
       beam(22:42)=0.d0
-      call tfill(codold,10.d0,6)
+      codold=10.d0
       params=0.d0
       ceig0=(0.d0,0.d0)
       emxe=rgetgl1('EMITXE')
@@ -548,7 +547,8 @@ c        write(*,*)'temit-tcod ',trf0
         endif
         call tinitr(trans)
         trans(:,7:12)=0.d0
-        call tturne(trans,cod,beam,0,0,0,.false.,.false.,.true.)
+        call tturne(trans,cod,beam,int8(0),int8(0),int8(0),
+     $       .false.,.false.,.true.)
       endif
       if(calpol .and. irad .eq. 6)then
         ipoltr=ktaloc(npelm*36)
@@ -565,7 +565,7 @@ c        call tclr(beam,21)
         call tinitr(trans)
         trans(:,7:12)=0.d0
 c        write(*,*)'temit ',trf0,cod
-        call tturne(trans,cod,beam,0,0,0,
+        call tturne(trans,cod,beam,int8(0),int8(0),int8(0),
      1       .false.,.false.,.true.)
       endif
 c     call tsymp(trans)
@@ -625,13 +625,10 @@ c     call tsymp(trans)
       else
         heff=0.d0
       endif
-      phirf=abs(trf0*wrfeff/p0*h0)
+      phirf=abs(trf0*wrfeff)
       synchm=rfsw .and. imag(cd(6)) .ne. 0.d0
       if(synchm)then
         if(wrfeff .ne. 0.d0)then
-c          alphap=imag(cd(6))**2/pi2/hvc0*pgev/cos(phirf)*p0/h0
-c          alphap=-imag(cd(6))*abs(imag(cd(6)))
-c     $          /pi2/abs(hvc0)/vcalpha*pgev/cos(phirf)*p0/h0
           alphap=-imag(cd(6))*abs(imag(cd(6)))/(c*pi2/omega0)
      $         /(dvcacc/pgev)
         else
@@ -685,16 +682,17 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
      $         '    Units: B(X,Y,Z), E(X,Y), R2: m ',
      $         '| PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m',/)
         endif
-        vout(1)=autofg(pgev/1.d9       ,'10.7')
-        vout(2)=autofg(omega0/pi2      ,'10.7')
-        vout(3)=autofg(u0*pgev/1.d6    ,'10.7')
-        vout(4)=autofg(vceff/1.d6      ,'10.7')
-        vout(5)=autofg(trf0*1.d3       ,'10.7')
-        vout(6)=autofg(alphap          ,'10.7')
-        vout(7)=autofg(-dleng*1.d3     ,'10.7')
-        vout(8)=autofg(heff            ,'10.7')
-        vout(9)=autofg(bh              ,'10.7')
-        write(lfno,9101)(vout(i)(1:10),i=1,9)
+        vout(1) =autofg(pgev/1.d9       ,'10.7')
+        vout(2) =autofg(omega0/pi2      ,'10.7')
+        vout(3) =autofg(u0*pgev/1.d6    ,'10.7')
+        vout(4) =autofg(vceff/1.d6      ,'10.7')
+        vout(5) =autofg(trf0*1.d3       ,'10.7')
+        vout(6) =autofg(alphap          ,'10.7')
+        vout(7) =autofg(-dleng*1.d3     ,'10.7')
+        vout(8) =autofg(heff            ,'10.7')
+        vout(9) =autofg(bh              ,'10.7')
+        vout(10)=autofg(omegaz/pi2      ,'10.7')
+        write(lfno,9101)(vout(i)(1:10),i=1,10)
 9101    format(   'Design momentum      P0 =',a,' GeV',
      1         1x,'Revolution freq.     f0 =',a,' Hz '/
      1            'Energy loss per turn U0 =',a,' MV ',
@@ -703,7 +701,8 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
      1         1x,'Momentum compact. alpha =',a/
      1            'Orbit dilation       dl =',a,' mm ',
      1         1x,'Effective harmonic #  h =',a,/
-     1            'Bucket height     dV/P0 =',a/)
+     1            'Bucket height     dV/P0 =',a,'    ',
+     $         1x,'Synchrotron frequency   =',a,' Hz ',/)
         if(emiout)then
           write(lfno,*)'   Eigen values and eigen vectors:'
           write(lfno,*)
@@ -1105,7 +1104,8 @@ c        write(*,*)'temit-7101: ',emit1(6),emit1(27)
       use touschek_table
       use tmacro
       implicit none
-      type (sad_list), pointer :: klx,klx1,klx2,klx1d,klx1l
+      type (sad_list), pointer :: klx,klx1,klx2
+      type (sad_rlist), pointer :: klx1d,klx1l
       integer*4 itmax,ia,m,n
       real*8 resib,dcmin
       parameter (itmax=100,resib=3.d-6,dcmin=0.06d0)

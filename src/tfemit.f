@@ -7,7 +7,8 @@
       use tfcsi, only:icslfno
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kl,kl1,kl2,klx
+      type (sad_list), pointer :: kl,klx
+      type (sad_rlist), pointer :: kl1,kl2
       integer*8 iatr,iacod,iamat,kaparam,iabmi
       integer*4 isp1,irtc,narg,mode,itgetfpe,nparam,
      $     itfmessage,lno

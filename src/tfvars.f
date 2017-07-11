@@ -6,7 +6,8 @@
       use tfcsi,only:cssetp
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kli,kla
+      type (sad_list), pointer :: kli
+      type (sad_rlist), pointer :: kla
       integer*8 kxr
       integer*4 lfno,i,iv,kk,level, itfuplevel,itfdownlevel,
      $     isp1,next,ifany

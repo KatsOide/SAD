@@ -917,7 +917,6 @@ c     $         ilist(1,iwakepold)*8
         endif
         trpt=.true.
         trf0=0.d0
-        vcphic=0.d0
         vcalpha=1.d0
         title=tfgetstrv('TITLE')
         case=tfgetstrv('CASE')
@@ -1657,7 +1656,8 @@ c          write(*,*)'tffssave -2: ',isave,ilattp
       use ffs_fit
       use tffitcode
       implicit none
-      type (sad_list), pointer :: klx,klj
+      type (sad_list), pointer :: klx
+      type (sad_rlist), pointer :: klj
       integer*8 kx
       integer*4 irtc,lfno,n,i,j,nfr1
       logical*4 err

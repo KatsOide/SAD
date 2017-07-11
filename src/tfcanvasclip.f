@@ -2,7 +2,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx
+      type (sad_rlist), pointer :: klr
       integer*8 ka,ka1,ka2,kal,kadash,kaxi
       integer*4 isp1,irtc,i,j,na,np,isp0,n,
      $     itfmessage,narg,ispa,ndash,k,isp2,isp3,ignore
@@ -363,8 +363,8 @@ c        write(*,*)na,isp-isp0
         if(na .le. 1)then
           kx=dxnulll
         else
-          kx=kxavaloc(-1,na,klx)
-          klx%body(1:na)=ktastk(isp0+1:isp0+na)
+          kx=kxavaloc(-1,na,klr)
+          klr%rbody(1:na)=rtastk(isp0+1:isp0+na)
         endif
       endif
       isp=isp0
@@ -381,7 +381,8 @@ c        write(*,*)na,isp-isp0
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx,klxi,klxj
+      type (sad_list), pointer :: klx,klxi
+      type (sad_rlist), pointer :: klxj
       integer*8 ka,kas,kac,kai,kavc,kavs
       integer*4 isp1,irtc,iav(3),nt,m,itfmessage,isp0,j,i,ii
       real*8 xs,ys,zs,xc,yc,zc

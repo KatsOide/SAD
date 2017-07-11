@@ -340,7 +340,7 @@ c        pe=sqrt((he-1.d0)*(he+1.d0))
             ws(i)=wsn
           enddo
         endif            
-        phic=(phirf+dphirf)*charge-vcphic
+        phic=(phirf+dphirf)*charge
         dphis=phis-phic
         if(rad .or. trpt .or. autophi)then
           offset=sin(dphis)

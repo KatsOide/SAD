@@ -281,7 +281,8 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       use tfstk
       implicit none
       type (sad_descriptor) kx,k
-      type (sad_list), pointer :: list,klx
+      type (sad_list), pointer :: list
+      type (sad_rlist), pointer :: klr
       type (sad_symbol), pointer :: ks,ks1
       integer*4 i,isp0,m
       logical*4 rep,rep1,sym
@@ -298,9 +299,9 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
         m=list%nl
         if(ktfreallistqo(list))then
           if(rep)then
-            kx=kxavaloc(-1,m,klx)
-            klx%head=ktfcopy(ktastk(isp))
-            klx%body(1:m)=list%body(1:m)
+            kx=kxavaloc(-1,m,klr)
+            klr%head=ktfcopy(ktastk(isp))
+            klr%rbody(1:m)=list%rbody(1:m)
           elseif(.not. sym)then
             list%attr=ior(lnodefsymbol,list%attr)
           endif
@@ -913,6 +914,7 @@ c      call tfdebugprint(kx,'tfreparg-out',1)
       implicit none
       type (sad_descriptor) k,ks,kx,kh,kp(0:2)
       type (sad_list), pointer :: list,klx,klh
+      type (sad_rlist), pointer :: klr
       type (sad_pat), pointer :: pat
       type (sad_symdef), pointer :: symd
       integer*8 kah
@@ -939,9 +941,9 @@ c      call tfdebugprint(kx,'tfreparg-out',1)
           endif
           if(rep)then
             m=list%nl
-            kx=kxavaloc(-1,m,klx)
-            klx%body(1:m)=list%body(1:m)
-            klx%dbody(0)=dtfcopy(kh)
+            kx=kxavaloc(-1,m,klr)
+            klr%rbody(1:m)=list%rbody(1:m)
+            klr%dbody(0)=dtfcopy(kh)
           endif
  10       isp=isp1+1
           dtastk(isp)=kx
@@ -1386,6 +1388,7 @@ c        call tfdebugprint(kx,'setarg-const',3)
       implicit none
       type (sad_descriptor) k,kx,ki,k1,ks,kd
       type (sad_list), pointer :: list,klx
+      type (sad_rlist), pointer :: klr
       type (sad_pat), pointer :: pat
       integer*8 ka1
       integer*4 irtc,i,m,isp1,ispr,nrule2,itfmessageexp,j
@@ -1407,14 +1410,14 @@ c        call tfdebugprint(kx,'setarg-const',3)
         endif
         m=list%nl
         if(rep .and. ktfreallistqo(list))then
-          kx=kxavaloc(-1,m,klx)
-          klx%body(1:m)=list%body(1:m)
-          klx%attr=ior(larglist,list%attr)
-          klx%dbody(0)=dtfcopy(k1)
+          kx=kxavaloc(-1,m,klr)
+          klr%rbody(1:m)=list%rbody(1:m)
+          klr%attr=ior(larglist,list%attr)
+          klr%dbody(0)=dtfcopy(k1)
           if(member)then
-            klx%attr=ior(lmemberlist,klx%attr)
+            klr%attr=ior(lmemberlist,klr%attr)
           else
-            klx%attr=iand(-lmemberlist-1,klx%attr)
+            klr%attr=iand(-lmemberlist-1,klr%attr)
           endif
           return
         endif
@@ -1504,6 +1507,7 @@ c        call tfdebugprint(kx,'setarg-const',3)
       implicit none
       type (sad_descriptor) kx,k,k1,k2,kd
       type (sad_list), pointer :: list,klx
+      type (sad_rlist), pointer :: klr
       type (sad_pat), pointer :: pat
       type (sad_symbol), pointer :: sym2
       integer*8 ka1
@@ -1524,11 +1528,11 @@ c        call tfdebugprint(kx,'setarg-const',3)
         if(ktfreallistqo(list))then
           if(rep)then
             m=list%nl
-            kx=kxavaloc(-1,m,klx)
-            klx%body(1:m)=list%body(1:m)
+            kx=kxavaloc(-1,m,klr)
+            klr%rbody(1:m)=list%rbody(1:m)
 c            call tmov(rlist(ka+1),rlist(kax+1),m)
-            klx%attr=ior(larglist,list%attr)
-            klx%dbody(0)=dtfcopy(k1)
+            klr%attr=ior(larglist,list%attr)
+            klr%dbody(0)=dtfcopy(k1)
           endif
           return
         endif

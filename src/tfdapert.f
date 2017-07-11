@@ -4,7 +4,8 @@
       use tmacro
       implicit none
       type (sad_descriptor) :: kmode,kc,kx
-      type (sad_list), pointer :: kml,klc,klcx,klp,klc1,klar
+      type (sad_list), pointer :: klc
+      type (sad_rlist), pointer :: klar,klc1,klp,kml,klcx
       integer*4 isp1,irtc,narg,i,lfno,n1,itfmessage,np00,iv(3)
       real*8 range(3,3),damp,rgetgl1,phi(3),codsave(6),dampenough
       narg=isp-isp1

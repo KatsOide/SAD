@@ -2,7 +2,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx,klz,klp,klzl,kll
+      type (sad_rlist), pointer :: klr,klz,klp,klzl,kll
       integer*4 isp1,irtc,np,nr,itfmessage,nt,ndiv
       real*8 dz,aw,r56,r65,damp,sigmae,frf,phirf
       if(isp .ne. isp1+5)then
@@ -41,10 +41,10 @@
         go to 9010
       endif
       nt=int(rtastk(isp1+5))
-      kx=kxavaloc(-1,nt*2,klx)
+      kx=kxavaloc(-1,nt*2,klr)
       call csrtrack(klz%rbody(1),klp%rbody(1),np,klzl%rbody(1),nr,
      $     dz,aw,r56,r65,frf,phirf,damp,sigmae,
-     $     klx%rbody(1),ndiv,nt)
+     $     klr%rbody(1),ndiv,nt)
 c
 c This function returns {sigz1, sigdp1, ... }. When diverged, zeros are returned in sigz and sigdp.
 c
@@ -81,7 +81,7 @@ c
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx,klzl,kll
+      type (sad_rlist), pointer :: klr,klzl,kll
       integer*4 isp1,irtc,nr,itfmessage
       real*8 dz,aw,sigz,r65
       if(isp .ne. isp1+2)then
@@ -101,8 +101,8 @@ c
       r65=kll%rbody(3)
       sigz=kll%rbody(4)
       aw=kll%rbody(2)/r65/sigz**2
-      kx=kxavaloc(-1,nr,klx)
-      call csrhaissin(klx%rbody(1),
+      kx=kxavaloc(-1,nr,klr)
+      call csrhaissin(klr%rbody(1),
      $     klzl%rbody(1),nr,aw,dz,sigz,irtc)
       if(irtc .ne. 0)then
         go to 9020

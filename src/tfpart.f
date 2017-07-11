@@ -828,7 +828,8 @@ c        enddo
       use tfstk
       implicit none
       type (sad_descriptor) kx,k,kh,kf,ki,kj
-      type (sad_list), pointer :: list,klj,klx,kli
+      type (sad_list), pointer :: list,klx,kli
+      type (sad_rlist), pointer :: klj
       integer*8 kai
       integer*4 isp1,irtc,narg,mode,
      $     i,j,n,m,itfmessage,isp0,isp2,isp3

@@ -106,7 +106,8 @@
       use iso_c_binding
       implicit none
       type (sad_descriptor) kp,k,kx,ki,k1,kir,ks,kd
-      type (sad_list), pointer :: klir,kl,klx
+      type (sad_list), pointer :: klir,kl
+      type (sad_rlist), pointer :: klr
       type (sad_pat), pointer :: pat
       integer*8 kair
       integer*4 irtc,i,m,isp1,ispr,nrule,isp0,isp2,
@@ -166,9 +167,9 @@
             return
           endif
           m=kl%nl
-          kx=kxavaloc(-1,m,klx)
-          klx%dbody(0)=dtfcopy(k1)
-          klx%body(1:m)=kl%body(1:m)
+          kx=kxavaloc(-1,m,klr)
+          klr%dbody(0)=dtfcopy(k1)
+          klr%rbody(1:m)=kl%rbody(1:m)
         else
           isp1=isp
           isp=isp+1
@@ -270,7 +271,8 @@
       implicit none
       type (sad_descriptor) k,kx,kd,k1,ki,ks
       type (sad_pat), pointer :: pat
-      type (sad_list), pointer :: kl,kli,klx
+      type (sad_list), pointer :: kl,kli
+      type (sad_rlist), pointer :: klr
       integer*8 ka1,kas
       integer*4 irtc,i,m,isp1,j, ispr,nrule,itfmessageexp, id
       logical*4 rep,rep1,scope,tfmatchsymstk,tfsymbollistqo
@@ -290,9 +292,9 @@ c     call tfdebugprint(ktflist+ktfaddr(k),'repsymstk',3)
         endif
         if(ktfreallistqo(kl))then
           if(rep)then
-            kx=kxavaloc(-1,m,klx)
-            klx%body(1:m)=kl%body(1:m)
-            klx%dbody(0)=dtfcopy(k1)
+            kx=kxavaloc(-1,m,klr)
+            klr%rbody(1:m)=kl%rbody(1:m)
+            klr%dbody(0)=dtfcopy(k1)
           endif
         else
           isp1=isp

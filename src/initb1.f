@@ -1681,8 +1681,10 @@ c
        call RsetGL('PHICAV',0.0d0,idummy)
        call defglb('EFFVCRATIO',icGLR,idummy)
        call RsetGL('EFFVCRATIO',1.0d0,idummy)
-       call defglb('HRF',icGLR,idummy)
-       call RsetGL('HRF',5120.0D0,idummy)
+       call defglb('EFFVC',icGLR,idummy)
+       call RsetGL('EFFVC',1.0d0,idummy)
+       call defglb('EFFRFFREQ',icGLR,idummy)
+       call RsetGL('EFFRFFREQ',1.0d0,idummy)
        call defglb('FSHIFT',icGLR,idummy)
        call RsetGL('FSHIFT',0.0d0,idummy)
        call defglb('PSPAN',icGLR,idummy)
@@ -1703,8 +1705,8 @@ c
        call RsetGL('PHSPLOTS',0.D00,idummy)
        call defglb('DAPWIDTH',icGLR,idummy)
        call RsetGL('DAPWIDTH',7.D00,idummy)
-       call defglb('RADIAT',icGLI,idummy)
-       call IsetGL('RADIAT',-1,idummy)
+c       call defglb('RADIAT',icGLI,idummy)
+c       call IsetGL('RADIAT',-1,idummy)
        call defglb('PSPACNX',icGLR,idummy)
        call RsetGL('PSPACNX',128.0D0,idummy)
        call defglb('PSPACNY',icGLR,idummy)
@@ -1723,6 +1725,8 @@ c
        call RsetGL('PSPACNTURNCALC',0.0D0,idummy)
        call defglb('BSTRL',icGLR,idummy)
        call RsetGL('BSTRL',0.d0,idummy)
+       call defglb('NPARA',icGLR,idummy)
+       call RsetGL('NPARA',1.d0,idummy)
 c
 c      call defglb('$RADIZZZ',icGLI,idummy)
 c      call IsetGL('$RADIZZZ',-1,idummy)
@@ -1755,8 +1759,6 @@ c
        call defflg('HALFRES',FLAGON)
        call defflg('SUMRES',FLAGON)
        call defflg('DIFFRES',FLAGOF)
-       call defglb('NPARA',icGLR,idummy)
-       call RsetGL('NPARA',1.d0,idummy)
        msglvl=0
        return
        end

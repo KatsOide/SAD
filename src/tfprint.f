@@ -101,7 +101,7 @@ c      endif
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer ::klarg
+      type (sad_rlist), pointer ::klarg
       type (sad_symdef), pointer :: sdout
       integer*8 karg,kh,ktdhtaloc,kad,kan,ktdaloc
       integer*4 lfno,irtc,itfhasharg

@@ -2,7 +2,8 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kl,klpipe,klx,klxi,kli
+      type (sad_list), pointer :: kl,klx
+      type (sad_rlist), pointer :: klpipe,klr,kli,klxi
       integer*4, allocatable :: ind(:)
       integer*4 isp1,irtc,m1,n1,i,j,jm,mm,itfmessage
       real*8 an
@@ -25,7 +26,7 @@
 c      kaind=ktaloc(((n1+2)*(m1+2)+1)/2+1)
       call csrind(ind,klpipe%rbody(1:m1),m1,n1,mm)
       if(kl%nl .eq. m1)then
-        kx=kxavaloc(-1,mm,klx)
+        kx=kxavaloc(-1,mm,klr)
         do i=1,m1
           if(.not. tfreallistqd(kl%dbody(i),kli))then
             deallocate(ind)
@@ -34,7 +35,7 @@ c      kaind=ktaloc(((n1+2)*(m1+2)+1)/2+1)
           do j=1,n1
             jm=ind(j*(m1+2)+i+1)
             if(jm .ne. 0)then
-              klx%rbody(jm)=kli%rbody(j)
+              klr%rbody(jm)=kli%rbody(j)
             endif
           enddo
         enddo
@@ -69,7 +70,7 @@ c      kaind=ktaloc(((n1+2)*(m1+2)+1)/2+1)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klpipe,klp
+      type (sad_rlist), pointer :: klpipe,klp
       integer*4, allocatable :: ind(:)
       integer*4 isp1,irtc,i,ic,m1,n1,itfmessage,mm,mode,nm
       real*8 dx,dy,omega,rho,an,fudge0,fudge1,fudge2,fudge3,
@@ -372,7 +373,8 @@ c 32: Er -> Ey
       use tfstk
       implicit none
       type (sad_descriptor) kx,kex,key
-      type (sad_list), pointer :: kl1,kl11,klprof,klx
+      type (sad_list), pointer :: kl1,klx
+      type (sad_rlist), pointer :: klprof,kl11
       integer*4 isp1,irtc,nphimax,mx,my,nphi,m,itfmessage,ic
       parameter (nphimax=16384)
       real*8 dx,dy,rho
