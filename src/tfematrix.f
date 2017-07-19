@@ -14,7 +14,7 @@
           return
         endif
         call descr_sad(kl1%dbody(2),kb1)
-        if(ktflistqd(kx1,klx1) .and. klx1%nl .eq. kb1%nl)then
+        if(ktflistq(kx1,klx1) .and. klx1%nl .eq. kb1%nl)then
           kx%k=ktflist+ktadaloc(-1,2,klx)
           klx%head=ktfcopy1(kl1%head)
           klx%dbody(1)=dtfcopy1(kl1%dbody(1))

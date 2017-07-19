@@ -71,7 +71,7 @@
         write(*,*)' Error in ExternalMap of ',l,ord(l),' element at ',
      $       nt,ord(nt),' turn.'
         return
-      elseif(ktflistqd(kx,klx))then
+      elseif(ktflistq(kx,klx))then
         if(klx%head .ne. ktfoper+mtflist .or.
      $       klx%nl .ne. 7 .or. ktfreallistqo(klx))then
           go to 9000

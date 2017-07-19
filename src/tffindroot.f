@@ -239,7 +239,7 @@ c      enddo
       if(irtc .ne. 0)then
         go to 9000
       endif
-      if(.not. tflistqk(kx))then
+      if(.not. tflistq(kx))then
         irtc=itfmessage(9,'General::wrongval','"Result of eqs","List"')
         go to 9000
       endif
@@ -305,7 +305,7 @@ c      enddo
       j=0
       do i=isp1,isp2
         ki=dtastk(i)
-        if(.not. tflistqd(ki,kli))then
+        if(.not. tflistq(ki,kli))then
           go to 8900
         endif
         if(kli%nl .eq. 3)then
@@ -313,7 +313,7 @@ c      enddo
           if(irtc .ne. 0)then
             go to 9000
           endif
-          if(.not. tflistqd(k3,kl3))then
+          if(.not. tflistq(k3,kl3))then
             go to 8900
           endif
           if(ktfnonreallistqo(kl3) .or. kl3%nl .ne. 2)then
@@ -345,7 +345,7 @@ c        ktastk(isp)=ig
         if(irtc .ne. 0)then
           go to 9000
         endif
-        if(ktfnonrealqd(kv,v0(j)))then
+        if(ktfnonrealq(kv,v0(j)))then
           irtc=itfmessage(9,'General::wrongval',
      $         '"initial value","Real"')
           go to 9000
@@ -461,7 +461,7 @@ c        call tfstk2l(lista,list)
         if(irtc .ne. 0)then
           return
         endif
-        if(ktfrealqdi(kx,maxi))then
+        if(ktfrealq(kx,maxi))then
           ispv=i-1
           cycle
         endif
@@ -469,7 +469,7 @@ c        call tfstk2l(lista,list)
         if(irtc .ne. 0)then
           return
         endif
-        if(ktfrealqd(kx,vx))then
+        if(ktfrealq(kx,vx))then
           ispv=i-1
           used=vx .ne. 0.d0
           cycle
@@ -478,7 +478,7 @@ c        call tfstk2l(lista,list)
         if(irtc .ne. 0)then
           return
         endif
-        if(ktfrealqd(kx))then
+        if(ktfrealq(kx))then
           ispv=i-1
           cutoff=abs(rfromk(kx%k))
           cycle
@@ -911,7 +911,7 @@ c            enddo
           go to 9000
         endif
         if(ktfnonrealq(kx))then
-          if(tfcomplexqk(kx))then
+          if(tfcomplexq(kx))then
             if(deriv)then
               df(i)=0.d0
             else

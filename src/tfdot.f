@@ -6,8 +6,7 @@
       integer*4 irtc,i,itfmessage,isp0,m,n
       real*8 xr,xi
       complex*16 cx,cx1,cx2
-      logical*4 tfgetcomplex
-      if(.not. tflistqd(k1,kl1) .or. .not. tflistqd(k2,kl2))then
+      if(.not. tflistq(k1,kl1) .or. .not. tflistq(k2,kl2))then
         irtc=itfmessage(9,'General::wrongtype','"List"')
         return
       endif
@@ -17,7 +16,7 @@
         return
       endif
       isp0=isp
-      if(tflistqk(kl1%body(1)))then
+      if(tflistq(kl1%body(1)))then
         do i=1,n
           isp=isp+1
           call tfdot(kl1%dbody(i),k2,dtastk(isp),irtc)
@@ -43,7 +42,7 @@
           kx=dfromr(xr)
           return
         else
-          if(tflistqk(kl2%body(1),kl2i))then
+          if(tflistq(kl2%body(1),kl2i))then
             m=kl2i%nl
             isp=isp+m
             call tfloadrcstk(isp0,kl2i,kl1%rbody(1),irtc)
@@ -51,7 +50,7 @@
               go to 3000
             endif
             do i=2,n
-              if(tflistqk(kl2%body(i),kl2i))then
+              if(tflistq(kl2%body(i),kl2i))then
                 if(kl2i%nl .ne. m)then
                   irtc=itfmessage(9,'General::equalleng',
      $                 '"elements of matrix"')
@@ -73,7 +72,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
             do i=1,n
               if(ktfrealq(kl2%body(i)))then
                 xr=xr+kl1%rbody(i)*kl2%rbody(i)
-              elseif(tfgetcomplex(kl2%body(i),cx))then
+              elseif(tfcomplexq(kl2%body(i),cx))then
                 xr=xr+kl1%rbody(i)*dble(cx)
                 xi=xi+kl1%rbody(i)*imag(cx)
               else
@@ -91,7 +90,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
           do i=1,n
             if(ktfrealq(kl1%body(i)))then
               xr=xr+kl1%rbody(i)*kl2%rbody(i)
-            elseif(tfgetcomplex(kl1%body(i),cx))then
+            elseif(tfcomplexq(kl1%body(i),cx))then
               xr=xr+dble(cx)*kl2%rbody(i)
               xi=xi+imag(cx)*kl2%rbody(i)
             else
@@ -101,7 +100,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
           kx=kxcalocv(-1,xr,xi)
           return
         else
-          if(tflistqk(kl2%body(1),kl2i))then
+          if(tflistq(kl2%body(1),kl2i))then
             m=kl2i%nl
             isp=isp+m
             rtastk (isp0+1:isp0+m)=0.d0
@@ -119,7 +118,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
                 if(irtc .ne. 0)then
                   go to 3000
                 endif
-              elseif(tfgetcomplex(kl1%body(i),cx))then
+              elseif(tfcomplexq(kl1%body(i),cx))then
                 call tfaddccstk(isp0,kl2i,cx,irtc)
                 if(irtc .ne. 0)then
                   go to 3000
@@ -134,15 +133,15 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
               if(ktfrealq(kl1%body(i)))then
                 if(ktfrealq(kl2%body(i)))then
                   cx=cx+kl1%rbody(i)*kl2%rbody(i)
-                elseif(tfgetcomplex(kl2%body(i),cx1))then
+                elseif(tfcomplexq(kl2%body(i),cx1))then
                   cx=cx+kl1%rbody(i)*cx1
                 else
                   go to 3000
                 endif
-              elseif(tfgetcomplex(kl1%body(i),cx1))then
+              elseif(tfcomplexq(kl1%body(i),cx1))then
                 if(ktfrealq(kl2%body(i)))then
                   cx=cx+cx1*kl2%rbody(i)
-                elseif(tfgetcomplex(kl2%body(i),cx2))then
+                elseif(tfcomplexq(kl2%body(i),cx2))then
                   cx=cx+cx1*cx2
                 else
                   go to 3000
@@ -175,7 +174,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       integer*4 irtc,isp0,i
       real*8 x
       complex*16 c
-      logical*4 tfgetcomplex
+      logical*4 tfcomplexq
       if(ktfreallistqo(kl))then
         rtastk (isp0+1:isp0+kl%nl)=x*kl%rbody(1:kl%nl)
         rtastk2(isp0+1:isp0+kl%nl)=0.d0
@@ -184,7 +183,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
           if(ktfrealq(kl%body(i)))then
             rtastk (isp0+i)=x*kl%rbody(i)
             rtastk2(isp0+i)=0.d0
-          elseif(tfgetcomplex(kl%body(i),c))then
+          elseif(tfcomplexq(kl%body(i),c))then
             rtastk (isp0+i)=x*dble(c)
             rtastk2(isp0+i)=x*imag(c)
           else
@@ -204,7 +203,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       integer*4 irtc,isp0,i
       real*8 x
       complex*16 c
-      logical*4 tfgetcomplex
+      logical*4 tfcomplexq
       if(ktfreallistqo(kl))then
         rtastk(isp0+1:isp0+kl%nl)=
      $       rtastk(isp0+1:isp0+kl%nl)+x*kl%rbody(1:kl%nl)
@@ -212,7 +211,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
         do i=1,kl%nl
           if(ktfrealq(kl%body(i)))then
             rtastk(isp0+i)=rtastk(isp0+i)+x*kl%rbody(i)
-          elseif(tfgetcomplex(kl%body(i),c))then
+          elseif(tfcomplexq(kl%body(i),c))then
             rtastk (isp0+i)=rtastk(isp0+i) +x*dble(c)
             rtastk2(isp0+i)=rtastk2(isp0+i)+x*imag(c)
           else
@@ -231,7 +230,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       type (sad_list) kl
       integer*4 irtc,isp0,i
       complex*16 c,cx,cx1
-      logical*4 tfgetcomplex
+      logical*4 tfcomplexq
       if(ktfreallistqo(kl))then
         rtastk(isp0+1:isp0+kl%nl)=
      $       rtastk (isp0+1:isp0+kl%nl)+dble(cx)*kl%rbody(1:kl%nl)
@@ -242,7 +241,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
           if(ktfrealq(kl%body(i)))then
             rtastk (isp0+i)=rtastk (isp0+i)+dble(cx)*kl%rbody(i)
             rtastk2(isp0+i)=rtastk2(isp0+i)+imag(cx)*kl%rbody(i)
-          elseif(tfgetcomplex(kl%body(i),c))then
+          elseif(tfcomplexq(kl%body(i),c))then
             cx1=cx*c
             rtastk (isp0+i)=rtastk (isp0+i)+dble(cx1)
             rtastk2(isp0+i)=rtastk2(isp0+i)+imag(cx1)
@@ -267,7 +266,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
         return
       endif
       m1=kl1%nl
-      if(ktfnonreallistqo(kl1) .and. tflistqk(kl1%head))then
+      if(ktfnonreallistqo(kl1) .and. tflistq(kl1%head))then
         kx=kxaaloc(-1,m1,klx)
         do i=1,m1
           k1i=kl1%dbody(i)
@@ -280,7 +279,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
             endif
             return
           endif
-          if(ktfnonrealqd(ki))then
+          if(ktfnonrealq(ki))then
             klx%dbody(i)=dtfcopy1(ki)
             klx%attr=ior(klx%attr,lnonreallist)
           else
@@ -398,16 +397,16 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       integer*8 kij
       integer*4 irtc,m,n,i,j,itfmessage
       logical*4 d
-      if(.not. tflistqd(k,kl))then
+      if(.not. tflistq(k,kl))then
         go to 9000
       endif
-      if(tfnonlistqk(kl%body(1),kl1))then
+      if(tfnonlistq(kl%body(1),kl1))then
         go to 9000
       endif
       m=kl%nl
       n=kl1%nl
       do i=2,m
-        if(tfnonlistqk(kl%body(i),kli))then
+        if(tfnonlistq(kl%body(i),kli))then
           go to 9000
         endif
         if(kli%nl .ne. n)then
@@ -464,7 +463,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
         if(realm)then
           s=0.d0
           do i=1,nm
-            if(ktflistqd(kl%dbody(i),kli))then
+            if(ktflistq(kl%dbody(i),kli))then
               s=s+kli%rbody(i)
             else
               go to 9000
@@ -477,7 +476,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
           isp=isp+1
           ktastk(isp)=ktfoper+mtfplus
           do i=1,nm
-            if(ktflistqd(kl%dbody(i),kli))then
+            if(ktflistq(kl%dbody(i),kli))then
               isp=isp+1
               dtastk(isp)=kli%dbody(i)
             else
@@ -493,7 +492,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
         isp=isp+1
         dtastk(isp)=dtastk(isp1+2)
         do i=1,nm
-          if(ktflistqd(kl%dbody(i),kli))then
+          if(ktflistq(kl%dbody(i),kli))then
             isp=isp+1
             dtastk(isp)=kli%dbody(i)
           else
@@ -590,7 +589,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
         irtc=itfmessage(9,'General::narg','"3"')
         return
       endif
-      if(ktfnonrealqd(dtastk(isp)) .or. ktfnonrealqd(dtastk(isp-1)))then
+      if(ktfnonrealq(dtastk(isp)) .or. ktfnonrealq(dtastk(isp-1)))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"Real number for #2 and #3"')
         return
@@ -750,7 +749,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       type (sad_rlist), pointer :: klri
       integer*4 irtc,m,i,itfmessage
       real*8 x
-      if(.not. tflistqd(k,kl))then
+      if(.not. tflistq(k,kl))then
         irtc=itfmessage(9,'General::wrongtype','"List"')
         return
       endif
@@ -759,7 +758,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       do i=1,m
         klx%body(i)=ktflist+ktraaloc(0,m,klri)
         ki=kl%dbody(i)
-        if(ktfrealqd(ki,x))then
+        if(ktfrealq(ki,x))then
           klri%rbody(i)=x
         else
           klri%attr=ior(lnonreallist,klri%attr)
@@ -777,7 +776,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       type (sad_list), pointer :: klx
       type (sad_rlist), pointer :: klri
       integer*4 irtc,m,i,itfmessage
-      if(ktfnonrealqdi(k,m))then
+      if(ktfnonrealq(k,m))then
         irtc=itfmessage(9,'General::wrongtype','"Real number"')
         return
       endif
@@ -914,7 +913,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       type (sad_list), pointer :: kl
       integer*4 irtc, m, itfmessage
       logical*4 inv
-      if(.not. tflistqd(k,kl))then
+      if(.not. tflistq(k,kl))then
         irtc=itfmessage(9,'General::wrongtype','"List"')
         return
       endif
@@ -943,7 +942,6 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       implicit none
       type (sad_descriptor) kx
       type (sad_list) :: kl
-      type (sad_rlist), pointer :: kli
       type (sad_complex), pointer :: klic
       integer*8 ktfc2l
       integer*4 m,n,irtc,i
@@ -962,7 +960,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
         do i=1,m
           if(ktfrealq(kl%body(i)))then
             cx(i)=f*kl%rbody(i)
-          elseif(tfcomplexqx(kl%body(i),klic))then
+          elseif(tfcomplexq(kl%body(i),klic))then
             cx(i)=f*klic%cx(1)
           else
             return

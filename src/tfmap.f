@@ -110,7 +110,7 @@
         do i=isp0+1,isp2-1
           isp=isp+1
           ki=dtastk(i)
-          if(ktflistqd(ki,kli))then
+          if(ktflistq(ki,kli))then
             if(kli%head .eq. ktfoper+mtfnull)then
               isp=isp-1
               call tfgetllstkall(kli)
@@ -166,7 +166,7 @@
       narg=isp-isp1
       if(narg .eq. 2)then
         kx=dtastk(isp)
-        if(ktflistqd(kx,klx))then
+        if(ktflistq(kx,klx))then
           isp=isp-1
           ispf=isp
           call tfgetllstkall(klx)
@@ -208,7 +208,7 @@
         return
       endif
       kr=dtastk(isp1+2)
-      if(tfruleqk(kr%k))then
+      if(tfruleq(kr%k))then
         ktastk(isp1+2)=klist(ktfaddrd(kr)+1)
         itr=1
       else
@@ -273,9 +273,9 @@
         ispmax=mstk
         ispf=ispa
       else
-        if(tfruleqd(dtastk(ispa),kla))then
+        if(tfruleq(dtastk(ispa),kla))then
           call tfgetoption1(kxheads,kla,kx,rep)
-          if(rep .and. ktfrealqd(kx))then
+          if(rep .and. ktfrealq(kx))then
             ispa=ispa-1
             if(kx%k .eq. 0)then
               ihead=1
@@ -301,10 +301,10 @@
             if(n1 .eq. 1 .and. n2 .eq. 1 .and. icases .ne. 2)then
               if(ispb .eq. isp+1)then
                 kl=dtastk(ispf-1)
-                if(ktflistqd(kl,kll))then
+                if(ktflistq(kl,kll))then
                   kf=dtastk(ispf)
                   nl=kll%nl
-                  if(.not. ktflistqd(kf) .and. .not. ktfpatqd(kf))then
+                  if(.not. ktflistq(kf) .and. .not. ktfpatqd(kf))then
                     if(ihead .eq. 0)then
                       ki=kll%dbody(0)
                       if(tfsameqd(ki,kf))then
@@ -313,7 +313,7 @@
                       endif
                     endif
                     if(ktfreallistqo(kll))then
-                      if(ktfrealqd(kf))then
+                      if(ktfrealq(kf))then
                         do i=1,nl
                           if(kll%body(i) .eq. kf%k)then
                             ii=i
@@ -432,7 +432,7 @@
       if(narg .eq. 1)then
         level=-1
       else
-        if(ktfnonrealqd(dtastk(isp1+2)))then
+        if(ktfnonrealq(dtastk(isp1+2)))then
           irtc=itfmessage(9,'General::wrongtype','"Real number"')
           return
         endif
@@ -720,7 +720,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
         return
       endif
       k=dtastk(isp1+1)
-      if(.not. ktflistqd(k,kl))then
+      if(.not. ktflistq(k,kl))then
         irtc=itfmessage(9,'General::wrongtype','"List or composition"')
         return
       endif
@@ -797,7 +797,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
      $       '"List or composition for #1"')
         return
       endif
-      if(tflistqd(dtastk(isp),kl))then
+      if(tflistq(dtastk(isp),kl))then
         isp=isp2
         call tfgetllstkall(kl)
       else

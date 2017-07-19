@@ -1673,7 +1673,7 @@ c          write(*,*)'tffssave -2: ',isave,ilattp
         call tfemes(irtc,'InitialOrbits',1,lfno)
         return
       endif
-      if(tflistqk(kx,klx))then
+      if(tflistq(kx,klx))then
         n=klx%nl
         if(n .le. 0)then
           return
@@ -1757,7 +1757,7 @@ c            call tclr(uini(1,0),28)
         go to 9010
       endif
 c      call tfdebugprint(kx,'setupcoup',3)
-      if(.not. tflistqd(kx,klx))then
+      if(.not. tflistq(kx,klx))then
         if(ktfsymbolqdef(kx%k,symd) .and. symd%value%k .eq. kx%k)then
           return
         endif
@@ -1766,7 +1766,7 @@ c      call tfdebugprint(kx,'setupcoup',3)
       m=klx%nl
       do i=1,m
         ki=klx%dbody(i)
-        if(.not. tflistqd(ki,kli))then
+        if(.not. tflistq(ki,kli))then
           go to 9000
         endif
         kk=kli%dbody(1)
@@ -1775,7 +1775,7 @@ c      call tfdebugprint(kx,'setupcoup',3)
         endif
         key=tfgetstrs(kk,nc)
         ke=kli%dbody(2)
-        if(.not. tflistqd(ke,kle))then
+        if(.not. tflistq(ke,kle))then
           go to 9000
         endif
         me=kle%nl

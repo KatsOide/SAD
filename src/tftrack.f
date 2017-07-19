@@ -61,7 +61,7 @@
           endif
         endif
       endif
-      if(.not. tflistqd(dtastk(isp1+1),kl))then
+      if(.not. tflistq(dtastk(isp1+1),kl))then
         go to 9000
       endif
       ks=kl%dbody(1)
@@ -76,7 +76,7 @@
         mt=mt+1
       endif
       kp=kl%dbody(2)
-      if(.not. tflistqd(kp))then
+      if(.not. tflistq(kp))then
         go to 9000
       endif
       call tfmsize(kp,mc,npz,irtc)
@@ -294,7 +294,7 @@ c        endif
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
-      if(.not. tflistqd(dtastk(isp),kll))then
+      if(.not. tflistq(dtastk(isp),kll))then
         go to 9000
       endif
       if(kll%nl .ne. 7)then
@@ -558,7 +558,7 @@ c              - Swap particle coordinates
       endif
 c      call tfdebugprint(kx,'tfaddseed',1)
       kn=klx%dbody(2)
-      if(ktfnonrealqd(kn,vn))then
+      if(ktfnonrealq(kn,vn))then
         irtc=-1
         return
       endif

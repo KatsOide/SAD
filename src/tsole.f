@@ -3,7 +3,7 @@
       use kyparam
       use tfstk
       use tffitcode
-      use ffs, only:gettwiss
+      use ffs, only:gettwiss,mfitddp
       use ffs_pointer
       use sad_main
       use ffs_flag
@@ -88,26 +88,27 @@ c            endif
       use tfstk
       use ffs_pointer
       use ffs_flag
+      use ffs, only:mfitddp,gettwiss
       use tmacro
       use sad_main
       implicit none
-      integer*4 l,ld,lt,mfr,kb,kyl
+      integer*4 l,ld,lt,mfr,kb,irtc
       integer*8 lp
       type (sad_comp), pointer ::cmp
+      type (sad_rlist), pointer :: lal
       real*8 trans(6,12),cod(6),beam(42),al,theta,
      $     phi,phix,phiy,bzs,cod1(6),trans1(6,6),trans2(6,6),
-     $     tfbzs,radlvl,bzs0,fb1,fb2,chi1,chi2,
-     $     psi1,psi2,apsi1,apsi2,f1,rtaper,ftable(4),ak1
-      logical*4 enarad,dir,ent,qsol,coup,err,enarad1
+     $     tfbzs,radlvl,bzs0,
+     $     f1,rtaper,ftable(4),ak1
+      logical*4 enarad,dir,ent,qsol,coup,err,enarad1,seg
       ld=idelc(l)
       lt=idtype(ld)
       lp=elatt%comp(l)
       call loc_comp(lp,cmp)
-      kyl=kytbl(kwL,lt)
-      if(kyl .eq. 0)then
-        al=0.d0
-      else
-        al=cmp%value(kyl)
+      seg=tcheckseg(cmp,lt,al,lal,irtc)
+      if(irtc .ne. 0)then
+        call tffserrorhandle(l,irtc)
+        return
       endif
       bzs=tfbzs(l,kb)
       if(lt .eq. icDRFT)then
@@ -148,48 +149,11 @@ c            endif
      $       ftable(1),ftable(2),ftable(3),ftable(4),
      $       mfr,cmp%value(ky_EPS_QUAD),l,dir,ld)
       elseif(lt .eq. icMULT)then
-        dir=direlc(l).gt. 0.d0
-        phi=cmp%value(ky_ANGL_MULT)
-        mfr=nint(cmp%value(ky_FRMD_MULT))
-        if(dir)then
-          psi1=cmp%value(ky_E1_MULT)
-          psi2=cmp%value(ky_E2_MULT)
-          apsi1=cmp%value(ky_AE1_MULT)
-          apsi2=cmp%value(ky_AE2_MULT)
-          fb1=cmp%value(ky_FB1_MULT)
-          fb2=cmp%value(ky_FB2_MULT)
-          chi1=cmp%value(ky_CHI1_MULT)
-          chi2=cmp%value(ky_CHI2_MULT)
+        if(seg)then
+          call tmulteseg(trans,cod,beam,l,cmp,bzs,lal,rtaper,ld)
         else
-          mfr=mfr*(11+mfr*(2*mfr-9))/2
-          psi1=cmp%value(ky_E2_MULT)
-          psi2=cmp%value(ky_E1_MULT)
-          apsi1=cmp%value(ky_AE2_MULT)
-          apsi2=cmp%value(ky_AE1_MULT)
-          fb2=cmp%value(ky_FB1_MULT)
-          fb1=cmp%value(ky_FB2_MULT)
-          chi1=-cmp%value(ky_CHI1_MULT)
-          chi2=-cmp%value(ky_CHI2_MULT)
+          call tmulte1(trans,cod,beam,l,cmp,bzs,rtaper,ld)
         endif
-        call tsetfringepe(cmp,icMULT,direlc(l),ftable)
-        call tmulte(trans,cod,beam,l,al,
-     $       cmp%value(ky_K0_MULT),bzs,
-     $       phi,psi1,psi2,apsi1,apsi2,
-     1       cmp%value(ky_DX_MULT),cmp%value(ky_DY_MULT),
-     $       cmp%value(ky_DZ_MULT),
-     $       chi1,chi2,cmp%value(ky_ROT_MULT),
-     $       cmp%value(ky_DROT_MULT),
-     $       cmp%value(ky_EPS_MULT),
-     $       cmp%value(ky_RAD_MULT) .eq. 0.d0 .and. enarad,
-     $       cmp%value(ky_FRIN_MULT) .eq. 0.d0,
-     $       ftable(1),ftable(2),ftable(3),ftable(4),
-     $       mfr,fb1,fb2,
-     $       cmp%value(ky_K0FR_MULT) .eq. 0.d0,
-     $       cmp%value(ky_VOLT_MULT),cmp%value(ky_HARM_MULT),
-     $       cmp%value(ky_PHI_MULT),cmp%value(ky_FREQ_MULT),
-     $       cmp%value(ky_W1_MULT),rtaper,
-     $       cmp%value(ky_APHI_MULT) .ne. 0.d0,
-     $       ld)
       elseif(lt .eq. icSOL)then
         enarad1=enarad .and. cmp%value(ky_RAD_SOL) .eq. 0.d0
         if(rlist(idval(ld)+ky_BND_SOL) .ne. 0.d0)then

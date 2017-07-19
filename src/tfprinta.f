@@ -74,7 +74,7 @@
       if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
         call tfreseterror
         itfgetrecl=131
-      elseif(ktfnonrealqdi(ks,itfgetrecl))then
+      elseif(ktfnonrealq(ks,itfgetrecl))then
         itfgetrecl=131
       else
         if(itfgetrecl .le. 0)then

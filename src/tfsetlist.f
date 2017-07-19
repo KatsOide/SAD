@@ -6,7 +6,7 @@
       integer*4 i
       call descr_sad(kl,kll)
       kll%dbody(i)=k
-      if(ktfnonrealqd(k))then
+      if(ktfnonrealq(k))then
         kll%attr=ior(kll%attr,lnonreallist)
       endif
       return

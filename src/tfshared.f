@@ -157,7 +157,7 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       implicit none
       type (sad_descriptor) kx,k,k0,ki
       type (sad_string), pointer :: str
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       integer*8 kax
       integer*4 isp0,m,irtc,itfmessage,i
       logical*4 tfcheckelement
@@ -176,7 +176,7 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
           return
         endif
         kx=k
-      elseif(ktflistqd(k,kl))then
+      elseif(ktflistq(k,kl))then
 c        call tfdebugprint(k,'recallshared',3)
         k0=kl%dbody(0)
         if(ktfobjqd(k0))then
@@ -188,7 +188,7 @@ c        call tfdebugprint(k,'recallshared',3)
         m=kl%nl
         if(kl%ref .eq. 0)then
           kax=ktavaloc(-1,m)
-          klist(kax+1:kax+m)=kl%body(1:m)
+          dlist(kax+1:kax+m)=kl%dbody(1:m)
         else
           kax=ktadaloc(-1,m)
           do i=1,m

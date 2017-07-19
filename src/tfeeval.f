@@ -22,7 +22,7 @@
       integer*4 irtc
       kx=k
       irtc=0
-      if(ktflistqd(k,list))then
+      if(ktflistq(k,list))then
         if(iand(lconstlist,list%attr) .eq. 0)then
           call tfleval(list,kx,.true.,irtc)
         endif
@@ -275,7 +275,7 @@ c          call tfstk2l(lista,lista)
             irtc=0
             do i=i1,ns
               kx%k=kls%body(i)
-              if(ktflistqd(kx,list))then
+              if(ktflistq(kx,list))then
                 call tfleval(list,kx,.true.,irtc)
               elseif(ktfsymbolqd(kx))then
                 call tfsyeval(kx,kx,irtc)
@@ -1027,7 +1027,7 @@ c        call tmov(klist(ka+1),ktastk(isp+1),m)
       type (sad_list), pointer :: list
       type (sad_symbol), pointer :: sym
       integer*4 irtc
-      if(ktflistqd(k,list))then
+      if(ktflistq(k,list))then
         if(iand(lconstlist,list%attr) .eq. 0)then
           call tfleval(list,kx,.false.,irtc)
           return
@@ -1073,7 +1073,7 @@ c        call tmov(klist(ka+1),ktastk(isp+1),m)
             irtc=itfmessage(999,'General::invop',' ')
             return
           endif
-        elseif(ktfrealqdi(ka,ind))then
+        elseif(ktfrealq(ka,ind))then
         elseif(ktfsymbolqd(ka,sym) .and. kopc .eq. mtfslot)then
           call sym_namtbl(sym,nam)
           nc=nam%str%nch+1

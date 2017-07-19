@@ -287,7 +287,7 @@ c      write(*,*)'tfinitn 1.1 ',itfcontroot
             cycle LOOP_I
           endif
           call loc_symstr(klist(klist(ifunbase+kai)),str)
-        elseif(ktflistqd(ki,kl))then
+        elseif(ktflistq(ki,kl))then
           if(kl%head .eq. ktfoper+mtfslot)then
             call tfslot(int8(mtfslot),kl,k,.false.,irtc)
             if(irtc .ne. 0)then
@@ -387,7 +387,7 @@ c        write(*,*)'tftocontext ',str%str(1:nc)
         return
       endif
       k=dtastk(isp)
-      if(.not. tflistqd(k,kl))then
+      if(.not. tflistq(k,kl))then
         go to 9000
       endif
       if(ktfreallistqo(kl))then
@@ -455,7 +455,7 @@ c      call tmov(ktastk(isp0+1),klist(ka1),m)
         kxsymbol=kxsymbolz('Symbol',6,symd)
         kxsymbol=symd%value
       endif
-      if(ktfrealqd(k))then
+      if(ktfrealq(k))then
         kx=kxreal
       else
         select case (ktftype(k%k))

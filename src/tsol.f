@@ -13,18 +13,19 @@
       real*8 conv
       parameter (conv=3.d-16)
       type (sad_comp), pointer::cmp
+      type (sad_rlist), pointer :: lal
       integer*4 la1,la
       parameter (la1=15)
       integer*4 k,kbz,np
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       real*8 tfbzs,fw,bzs,rho,al,theta,phi,phix,phiy,rhoe,
-     $     bz1,rho1,dx,dy,rot,rtaper,ph
+     $     bz1,rho1,dx,dy,rot,rtaper
       integer*8 latt(nlat),l1,lp
       integer*4 kptbl(np0,6),nwak,nextwake,n,
      $     i,ke,l,lt,itab(np),izs(np),
-     $     kdx,kdy,krot,kstop,kb,lwl,lwt
+     $     kdx,kdy,krot,kstop,kb,lwl,lwt,irtc
       integer*8 iwpl,iwpt
-      logical*4 sol,enarad,out,fringe,autophi
+      logical*4 sol,enarad,out,fringe,seg
       l1=latt(k)
       if(sol)then
         kb=k
@@ -84,6 +85,11 @@
         lt=idtypec(l)
         lp=elatt%comp(l)
         call loc_comp(lp,cmp)
+        seg=tcheckseg(cmp,lt,al,lal,irtc)
+        if(irtc .ne. 0)then
+          call tffserrorhandle(l,irtc)
+          return
+        endif
         if(l .eq. nextwake)then
           iwpl=abs(kwaketbl(1,nwak))
           if(iwpl .ne. 0)then
@@ -168,41 +174,17 @@
      $         int(cmp%value(p_FRMD_QUAD)),cmp%value(ky_EPS_QUAD),l,
      $         direlc(i) .gt. 0)
         case (icMULT)
-          if(tparacheck(icMULT,cmp))then
-            call tpara(cmp)
-          endif
-          autophi=cmp%value(ky_APHI_MULT) .ne. 0.d0
-          ph=cmp%value(ky_DPHI_MULT)
-          if(autophi)then
-            ph=ph+gettwiss(mfitdz,l)*cmp%value(p_W_MULT)
-          endif
           rtaper=1.d0
           if(rad .and. radcod .and. radtaper)then
             rtaper=1.d0+(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
           endif
-          call tmulti(np,x,px,y,py,z,g,dv,pz,
-     $         cmp%value(p_L_MULT),
-     $         cmp%value(ky_K0_MULT),bzs,
-     $         cmp%value(ky_ANGL_MULT),
-     $         cmp%value(p_PSI1_MULT),cmp%value(p_PSI2_MULT),
-     1         cmp%value(ky_DX_MULT),cmp%value(ky_DY_MULT),
-     $         cmp%value(ky_DZ_MULT),
-     $         cmp%value(p_CHI1_MULT),cmp%value(p_CHI2_MULT),
-     $         cmp%value(ky_ROT_MULT),
-     $         cmp%value(ky_DROT_MULT),
-     $         cmp%value(ky_EPS_MULT),cmp%value(ky_RAD_MULT) .eq. 0.d0,
-     $         cmp%value(ky_FRIN_MULT) .eq. 0.d0,
-     $         cmp%value(p_AKF1F_MULT)*rtaper,
-     $         cmp%value(p_AKF2F_MULT)*rtaper,
-     $         cmp%value(p_AKF1B_MULT)*rtaper,
-     $         cmp%value(p_AKF2B_MULT)*rtaper,
-     $         int(cmp%value(p_FRMD_MULT)),
-     $         cmp%value(p_FB1_MULT),cmp%value(p_FB2_MULT),
-     $         cmp%value(ky_VOLT_MULT),cmp%value(p_W_MULT),
-     $         cmp%value(ky_PHI_MULT),ph,
-     $         cmp%value(p_VNOMINAL_MULT),
-     $         cmp%value(ky_RADI_MULT),rtaper,autophi,
-     $         n,l,latt,kptbl)
+          if(seg)then
+            call tmultiseg(np,x,px,y,py,z,g,dv,pz,
+     $           l,cmp,lal,bzs,rtaper,n,latt,kptbl)
+          else
+            call tmulti1(np,x,px,y,py,z,g,dv,pz,
+     $           l,cmp,bzs,rtaper,n,latt,kptbl)
+          endif
         case (icSOL)
           if(l .eq. ke)then
             fringe=cmp%value(ky_FRIN_SOL) .eq. 0.d0      

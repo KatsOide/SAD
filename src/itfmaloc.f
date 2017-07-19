@@ -22,7 +22,7 @@
 c
       ktfmalocp=-9999
 c
-      if(.not. tflistqd(k,kl))then
+      if(.not. tflistq(k,kl))then
         go to 9100
       endif
       if(vec)then
@@ -45,14 +45,14 @@ c          call tmov(rlist(ka+1),rlist(kap),n)
           go to 9000
         endif
       elseif(ktfreallistqo(kl)
-     $       .or. tfnonlistqk(kl%body(1),kl1))then
+     $       .or. tfnonlistq(kl%body(1),kl1))then
         go to 9000
       endif
       irtc=0
       n=kl%nl
       m=kl1%nl
       do i=1,n
-        if(tfnonlistqk(kl%body(i),kli))then
+        if(tfnonlistq(kl%body(i),kli))then
           go to 9000
         endif
         if(kli%nl .ne. m)then
@@ -150,7 +150,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
             kij=kli%body(j)
             if(ktfrealq(kij))then
               c(j,i)=kli%rbody(j)
-            elseif(tfcomplexqx(kij,cx))then
+            elseif(tfcomplexq(kij,cx))then
               c(j,i)=cx%cx(1)
             else
               irtc=-1
@@ -165,7 +165,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
             kij=kli%body(j)
             if(ktfrealq(kij))then
               c(i,j)=kli%rbody(j)
-            elseif(tfcomplexqx(kij,cx))then
+            elseif(tfcomplexq(kij,cx))then
               c(i,j)=cx%cx(1)
             else
               irtc=-1
@@ -184,7 +184,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       type (sad_descriptor) k
       type (sad_list), pointer ::kl,kl1,kli
       integer*4 n,m,irtc,i,itfmessage
-      if(.not. tflistqd(k,kl))then
+      if(.not. tflistq(k,kl))then
         irtc=itfmessage(9,'General::wrongtype','"List"')
         return
       endif
@@ -194,13 +194,13 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
         irtc=0
         return
       endif
-      if(tfnonlistqk(kl%body(1),kl1))then
+      if(tfnonlistq(kl%body(1),kl1))then
         go to 9000
       endif
       n=kl%nl
       m=kl1%nl
       do i=1,n
-        if(tfnonlistqk(kl%body(i),kli))then
+        if(tfnonlistq(kl%body(i),kli))then
           go to 9000
         endif
         if(kli%nl .ne. m)then
@@ -227,7 +227,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       integer*4 n,m,irtc,i,j,itfmessage
       logical*4 vec,trans,err
       ktfcmaloc=0
-      if(.not. tflistqd(k,kl))then
+      if(.not. tflistq(k,kl))then
         go to 9100
       endif
       irtc=0
@@ -250,7 +250,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
               klist(kap+i*2-2)=ki
               klist(kap+i*2-1)=0
             else
-              if(tfcomplexqx(ki,cxi))then
+              if(tfcomplexq(ki,cxi))then
                 rlist(kap+i*2-2)=cxi%re
                 rlist(kap+i*2-1)=cxi%im
               else
@@ -264,7 +264,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       elseif(ktfreallistqo(kl) .or. tfnumberqd(kl%dbody(1)))then
         go to 9000
       endif
-      if(tfnonlistqk(kl%body(1),kl1))then
+      if(tfnonlistq(kl%body(1),kl1))then
         ktfcmaloc=-1
         go to 9000
       endif
@@ -272,7 +272,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       n=kl%nl
       m=kl1%nl
       do i=1,n
-        if(tfnonlistqk(kl%body(i),kli))then
+        if(tfnonlistq(kl%body(i),kli))then
           ktfcmaloc=-1
           go to 9000
         endif

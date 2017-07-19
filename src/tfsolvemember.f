@@ -122,7 +122,7 @@ c        write(*,*)'with: ',irtc,i
         k2%k=ktfsymbol+klist(ifunbase+ka2)
       endif
       if(ktfsymbolqd(k2))then
-        if(ktflistqd(k1,kl1))then
+        if(ktflistq(k1,kl1))then
           k11=kl1%head
           if(ktfsymbolqdef(k11,symd))then
             if(symd%sym%gen .eq. -3)then
@@ -141,7 +141,7 @@ c        write(*,*)'with: ',irtc,i
           endif
         elseif(ktfsymbolqdef(k1%k,symd) .and.
      $         symd%sym%override .ne. 0)then
-          if(ktflistqd(symd%value,kl1) .and.
+          if(ktflistq(symd%value,kl1) .and.
      $         ktfsymbolq(kl1%head,symh))then
             if(symh%gen .eq. -3)then
               go to 10
@@ -188,7 +188,7 @@ c      write(*,*)'with: ',irtc,ev,eval
           l=itfdownlevel()
           return
         endif
-        if(ktflistqd(kx,klx))then
+        if(ktflistq(kx,klx))then
           if(klx%head .eq. ktfoper+mtfhold)then
             kx=klx%dbody(1)
           endif
@@ -290,7 +290,7 @@ c      call tfdebugprint(kx,'==>',3)
       endif
       rep=.false.
       kx=k
-      if(ktflistqd(k,kl))then
+      if(ktflistq(k,kl))then
         k1=kl%dbody(0)
         n=kl%nl
         rule=.false.
@@ -336,13 +336,13 @@ c      call tfdebugprint(kx,'==>',3)
           if(i .le. m .and. i .ne. m0)then
             ki=kl%dbody(i)
             m01=0
-            if(rule .and. ktflistqd(ki,kli))then
+            if(rule .and. ktflistq(ki,kli))then
               if(kli%head .eq. ktfoper+mtfrule .or.
      $             kli%head .eq. ktfoper+mtfruledelayed)then
                 m01=1
               endif
             endif
-            if(.not. ktfstringqd(ki) .and. ktfnonrealqd(ki))then
+            if(.not. ktfstringqd(ki) .and. ktfnonrealq(ki))then
               call tfreplacememberstk(isp1,isp2,isp3,nrule1,nrule2,
      $             ki,dtastk(isp),m01,rep1)
               rep=rep .or. rep1
@@ -498,7 +498,7 @@ c      call tfdebugprint(kx,'==>',3)
       type (sad_list), pointer ::list
       type (sad_symdef), pointer ::symd
       lx=.false.
-      if(ktflistqd(k,list))then
+      if(ktflistq(k,list))then
         k1=list%dbody(0)
         if(ktfsymbolqdef(k1%k,symd) .and. list%nl .eq. 1)then
           if(symd%sym%gen .eq. -3)then
@@ -511,7 +511,7 @@ c      call tfdebugprint(kx,'==>',3)
         endif
       elseif(ktfsymbolqdef(k%k,symd))then
         if(symd%sym%override .ne. 0 .and.
-     $       ktflistqd(symd%value))then
+     $       ktflistq(symd%value))then
           lx=tfclassq(symd%value)
         endif
       endif

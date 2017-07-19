@@ -231,7 +231,7 @@
       implicit none
       type (sad_descriptor) k1,k2,kx
       type (sad_list), pointer :: klx,kl1,kl2
-      type (sad_rlist), pointer :: klr,kl1r,kl2r
+      type (sad_rlist), pointer :: klr
       integer*8 ka1,ka2
       integer*4 irtc,i,n1,n2,itfmessage,isp0,isp2,mode
       real*8 v1,v2,vx,tfloor
@@ -306,8 +306,8 @@ c     end   initialize for preventing compiler warning
           irtc=-1
           return
         endif
-      elseif(tfcomplexnumlistqk(k2%k,kl2) .and. (tfcomplexqk(k1%k) .or.
-     $       tfnonlistqk(k1%k)))then
+      elseif(tfcomplexnumlistqk(k2%k,kl2) .and. (tfcomplexq(k1) .or.
+     $       tfnonlistq(k1)))then
         n2=kl2%nl
         isp0=isp
         call tfgetllstkall(kl2)
@@ -322,8 +322,8 @@ c     end   initialize for preventing compiler warning
         enddo
         kx=kxmakelist(isp2)
         isp=isp0
-      elseif(ktfrealqd(k1,v1))then
-        if(ktfrealqd(k2,v2))then
+      elseif(ktfrealq(k1,v1))then
+        if(ktfrealq(k2,v2))then
           if(mode .eq. 0)then
             if(k2%k .eq. 0)then
               irtc=itfmessage(9,'General::wrongval','"#2","nonzero"')
@@ -338,8 +338,7 @@ c     end   initialize for preventing compiler warning
             vx=ieor(int8(v1),int8(v2))
           endif
           kx=dfromr(vx)
-        elseif(tfcomplexqk(k2%k,kl2r))then
-          c2=dcmplx(kl2r%rbody(1),kl2r%rbody(2))
+        elseif(tfcomplexq(k2,c2))then
           if(mode .eq. 0)then
             cx=v1-tcfloor(v1/c2)*c2
           elseif(mode .eq. 1)then
@@ -357,9 +356,8 @@ c     end   initialize for preventing compiler warning
           irtc=-1
           return
         endif
-      elseif(tfcomplexqk(k1%k,kl1r))then
-        c1=dcmplx(kl1r%rbody(1),kl1r%rbody(2))
-        if(ktfrealqd(k2,v2))then
+      elseif(tfcomplexq(k1,c1))then
+        if(ktfrealq(k2,v2))then
           if(mode .eq. 0)then
             if(v2 .eq. 0.d0)then
               irtc=itfmessage(9,'General::wrongval','"#2","nonzero"')
@@ -376,8 +374,7 @@ c     end   initialize for preventing compiler warning
             cx=dcmplx(dble(ieor(int8(dble(c1)),int8(v2))),
      $           dble(ieor(int8(imag(c1)),int8(v2))))
           endif
-        elseif(tfcomplexqk(k2%k,kl2r))then
-          c2=dcmplx(kl2r%rbody(1),kl2r%rbody(2))
+        elseif(tfcomplexq(k2,c2))then
           if(mode .eq. 0)then
             cx=c1-tcfloor(c1/c2)*c2
           elseif(mode .eq. 1)then
@@ -395,9 +392,9 @@ c     end   initialize for preventing compiler warning
           return
         endif
         go to 10
-      elseif(tflistqk(k1%k,kl1))then
+      elseif(tflistq(k1%k,kl1))then
         n1=kl1%nl
-        if(tflistqk(k2%k,kl2))then
+        if(tflistq(k2%k,kl2))then
           if(n1 .ne. kl2%nl)then
             irtc=itfmessage(9,'General::equalleng','"#1 and #2"')
             return
@@ -532,7 +529,7 @@ c     end   initialize for preventing compiler warning
       implicit none
       type (sad_descriptor) ki
       type (sad_list), pointer :: kl,kli
-      type (sad_rlist), pointer :: klir
+      type (sad_complex), pointer :: klic
       integer*8 ka,i
       integer*4 irtc,n
       real*8 xmin,xmax,ymin,ymax
@@ -546,17 +543,16 @@ c     end   initialize for preventing compiler warning
         else
           do i=1,n
             ki=kl%dbody(i)
-            if(ktfrealqd(ki))then
+            if(ktfrealq(ki))then
               xmin=min(xmin,kl%rbody(i))
               xmax=max(xmax,kl%rbody(i))
-            elseif(ktflistqd(ki,kli))then
-              if(tfcomplexqd(ki))then
-                call c_f_pointer(c_loc(kli),klir)
+            elseif(ktflistq(ki,kli))then
+              if(tfcomplexq(ki,klic))then
                 cpx=.true.
-                xmin=min(xmin,klir%rbody(1))
-                xmax=max(xmax,klir%rbody(1))
-                ymin=min(ymin,klir%rbody(2))
-                ymax=max(ymax,klir%rbody(2))
+                xmin=min(xmin,klic%re)
+                xmax=max(xmax,klic%re)
+                ymin=min(ymin,klic%im)
+                ymax=max(ymax,klic%im)
               elseif(kli%head .eq. ktfoper+mtflist)then
                 call tfminandmaxl(ksad_loc(kli%head),
      $               xmin,xmax,ymin,ymax,cpx,irtc)
@@ -605,9 +601,9 @@ c        irtc=itfmessage(9,'General::wrongtype','"x, min, max"')
       integer*4 irtc,i,isp0,n
       real*8 x1,x2,v
       irtc=0
-      if(ktfrealqd(k,v))then
+      if(ktfrealq(k,v))then
         kx=dfromr(min(x2,max(x1,v)))
-      elseif(tflistqd(k,kl))then
+      elseif(tflistq(k,kl))then
         n=kl%nl
         if(n .eq. 0)then
           kx=k
@@ -737,7 +733,7 @@ c     $       '"Real or List of Reals"')
       logical*4 cmpl
       external fun,cfun
       ir=0
-      if(ktfrealqd(k,v))then
+      if(ktfrealq(k,v))then
         if(v .lt. rmin .or. v .gt. rmax)then
           cv=cfun(dcmplx(v,0.d0))
           if(imag(cv) .ne. 0.d0)then
@@ -762,7 +758,7 @@ c     $       '"Real or List of Reals"')
           kx=dfromr(dble(cfun(cv)))
           ir=icrtc
         endif
-      elseif(ktflistqd(k,kl))then
+      elseif(ktflistq(k,kl))then
         if(kl%head .eq. ktfoper+mtflist)then
           m=kl%nl
           if(ktfreallistqo(kl))then
@@ -817,7 +813,7 @@ c     $       '"Real or List of Reals"')
                 else
                   rtastk(isp)=dble(cfun(cv))
                 endif
-              elseif(tflistqk(kl%body(i)))then
+              elseif(tflistq(kl%body(i)))then
                 call tfeintf(fun,cfun,kl%dbody(i),
      $               dtastk(isp),cmpl,rmin,rmax,ir)
                 if(ir .ne. 0.d0)then
@@ -857,7 +853,7 @@ c     $       '"Real or List of Reals"')
       complex*16 cv,cv1,cfun
       
       ir=0
-      if(ktfrealqd(k,v) .and. ktfrealqd(k1,v1))then
+      if(ktfrealq(k,v) .and. ktfrealq(k1,v1))then
         kx=dfromr(fun(v,v1))
       elseif(tfnumberqd(k,cv) .and. tfnumberqd(k1,cv1))then
         if(cmpl)then
@@ -873,7 +869,7 @@ c     $       '"Real or List of Reals"')
           kx=dfromr(dble(cfun(cv,cv1)))
           ir=icrtc
         endif
-      elseif(ktflistqd(k,kl) .and. ktflistqd(k1,kl1))then
+      elseif(tflistq(k,kl) .and. tflistq(k1,kl1))then
         m=kl%nl
         m1=kl1%nl
         if(m .ne. m1)then
@@ -893,10 +889,10 @@ c     $       '"Real or List of Reals"')
           do i=1,m
             ki=kl%dbody(i)
             k1i=kl1%dbody(i)
-            if(ktfrealqd(ki) .and.
-     $           ktfrealqd(k1i))then
+            if(ktfrealq(ki) .and.
+     $           ktfrealq(k1i))then
               rtastk(isp)=fun(kl%rbody(i),kl1%rbody(i))
-            elseif(ktflistqd(ki) .and. ktflistqd(k1i))then
+            elseif(tflistq(ki) .and. tflistq(k1i))then
               call tfeintf2(fun,cfun,ki,k1i,cmpl,dtastk(isp),ir)
               if(ir .ne. 0.d0)then
                 return
@@ -935,7 +931,7 @@ c      lfn=itfopenread(ktastk(isp1+1),.false.,irtc)
       if(irtc .ne. 0)then
         return
       endif
-      if(.not. ktfrealqdi(kx,lfn))then
+      if(.not. ktfrealq(kx,lfn))then
         irtc=itfmessage(9,'General::wonrgtype','"Real"')
         return
       endif
@@ -997,7 +993,7 @@ c      write(*,*)'tfmain-2 '
      $     'F0','F1','F2','F3','F4','F5','F6','F7',
      $     'F8','F9','FA','FB','FC','FD','FE','FF'/
       if(isp .eq. isp1+1)then
-        if(.not. tflistqk(ktastk(isp)))then
+        if(.not. tflistq(ktastk(isp)))then
           go to 9000
         endif
         ka=iand(ktamask,ktastk(isp))
@@ -1007,7 +1003,7 @@ c      write(*,*)'tfmain-2 '
         endif
         isp0=isp
         do i=1,n
-          if(.not. tfnumlistqnk(dlist(ka+i),3,kl))then
+          if(.not. tfnumlistqn(dlist(ka+i),3,kl))then
             go to 9100
           endif
           isp2=isp

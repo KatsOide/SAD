@@ -18,7 +18,7 @@
         return
       endif
       take=take0
-      if(ktfrealqdi(kn,iv))then
+      if(ktfrealq(kn,iv))then
         if(iv .lt. 0)then
           n1=m+iv+1
           n2=m
@@ -269,13 +269,14 @@
       use iso_c_binding
       implicit none
       type (sad_descriptor) kx,k0,k1,ks
-      type (sad_list), pointer :: klx,kl
+      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: kl
       type (sad_rlist), pointer :: klr
       integer*4 isp1,irtc,i,m,itfmessage,isp0
       real*8 cv
       cv=-1.d0
       if(isp .eq. isp1+2)then
-        if(.not. ktfrealqd(dtastk(isp),cv))then
+        if(.not. ktfrealq(dtastk(isp),cv))then
           irtc=itfmessage(9,'General::wrongtype',
      $         '"Real for #2"')
           return
@@ -284,7 +285,7 @@
         irtc=itfmessage(9,'General::narg','"1 or 2"')
         return
       endif
-      if(.not. ktflistqd(dtastk(isp1+1),kl))then
+      if(.not. ktflistq(dtastk(isp1+1),kl))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List or composition for #1"')
         return
@@ -368,7 +369,7 @@
           endif
           call sym_symdef(sym,symd)
           call tfdelete(symd,.false.,.false.)
-        elseif(ktflistqd(ki,kl))then
+        elseif(ktflistq(ki,kl))then
           ki=dtfcopy1(ki)
           call tfcleardef(kl,irtc)
           call tflocal1(ki%k)
@@ -411,7 +412,7 @@ c      include 'DEBUG.inc'
         return
       endif
       kh=kl%dbody(0)
-      do while(ktflistqd(kh,klh))
+      do while(ktflistq(kh,klh))
         kh=klh%dbody(0)
       enddo
       if(ktfsymbolqdef(kh%k,def))then
@@ -675,7 +676,7 @@ c      include 'DEBUG.inc'
           ka=ksad_loc(sym%loc)
         endif
         kv=dtastk(isp)
-        if(tflistqd(kv,kl))then
+        if(tflistq(kv,kl))then
           isp0=isp
           do i=1,kl%nl
             isp=isp0+1
@@ -731,7 +732,7 @@ c      include 'DEBUG.inc'
           go to 9100
         endif
         sym%attr=iattrib
-      elseif(tflistqd(k,kl))then
+      elseif(tflistq(k,kl))then
         isp0=isp
         do i=1,kl%nl
           isp=isp+1
@@ -794,7 +795,7 @@ c      include 'DEBUG.inc'
       do i=isp1+1,isp2
         isp=isp+1
         dtastk(isp)=dtastk(i)
-        if(ktflistqd(dtastk(i),kli))then
+        if(ktflistq(dtastk(i),kli))then
           isp=isp-1
           if(kli%head .eq. ktfoper+mtfhold)then
             call tfevallstkall(kli,.true.,.true.,irtc)

@@ -635,7 +635,7 @@ c      enddo
       equivalence (trans2,trans3)
       logical*4 over
       call compelc(j,cmp)
-      v0=cmp%value(iv)
+      v0=tfvalvar(j,iv)
       wv=1.d0
       go to (
      $     4900, 200,4900, 400,4900, 600,4900, 600,4900, 600,
@@ -659,7 +659,8 @@ c      enddo
       endif
       go to 6000
  6000 dv=max(abs(eps*v0),abs(vmin*wv))
-      cmp%value(iv)=v0+dv
+      call tfsetcmp(v0+dv,cmp,iv)
+c      cmp%value(iv)=v0+dv
       cod2(1)=utwiss(mfitdx,idp,kk1)
       cod2(2)=utwiss(mfitdpx,idp,kk1)
       cod2(3)=utwiss(mfitdy,idp,kk1)
@@ -667,7 +668,8 @@ c      enddo
       cod2(5)=utwiss(mfitdz,idp,kk1)
       cod2(6)=utwiss(mfitddp,idp,kk1)
       call qtwiss1(0.d0,idp,j,je,trans2,cod2,.true.,over)
-      cmp%value(iv)=v0-dv
+      call tfsetcmp(v0-dv,cmp,iv)
+c      cmp%value(iv)=v0-dv
       cod1(1)=utwiss(mfitdx,idp,kk1)
       cod1(2)=utwiss(mfitdpx,idp,kk1)
       cod1(3)=utwiss(mfitdy,idp,kk1)
@@ -675,14 +677,14 @@ c      enddo
       cod1(5)=utwiss(mfitdz,idp,kk1)
       cod1(6)=utwiss(mfitddp,idp,kk1)
       call qtwiss1(0.d0,idp,j,je,trans1,cod1,.true.,over)
+c      write(*,'(a,1p12g13.5)')'qdtrans ',iv,trans2(1:4),trans1(1:4)
       trans2(1:20)=(trans2(1:20)-trans1(1:20))/(2.d0*dv)
       dcod(1:5)=(cod2(1:5)-cod1(1:5))/(2.d0*dv)
-      cmp%value(iv)=v0
+      call tfsetcmp(v0,cmp,iv)
+c      cmp%value(iv)=v0
 c      write(*,'(a,1p8g15.7)')'qdtrans ',iv,cod1(1),cod2(1)
       call qtentu(trans,cod1,utwiss(1,idp,kk1),.true.)
       call tmultr45(trans,trans3,dtrans)
-c      write(*,'(a,1p12g13.5)')'qdtrans ',iv,
-c     $     trans(1,1:4),trans3(1,1:4),dtrans(1,1:4)
       return
       end
 

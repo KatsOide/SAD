@@ -38,7 +38,7 @@
       itfpmat=-1
       if(ktfpatqd(kp,pat))then
         itfpmat=itfpatmat(k,pat)
-      elseif(ktflistqd(kp,list))then
+      elseif(ktflistq(kp,list))then
         if(ktfnonlistqd(k) .and. iand(list%attr,lsimplepat) .ne. 0)then
           return
         endif
@@ -53,7 +53,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kph,k,ki,kc,kh,kf,k1,kp1
-      type (sad_list) listp
+      type (sad_dlist) listp
       type (sad_list), pointer :: lista,kl1
       integer*8 kpp,ierrorth0
       integer*4 i,itfpmat,isp3,irtc,isp1,itfseqmatseq,isp0,
@@ -176,7 +176,7 @@
         select case (kph%k)
         case (ktfoper+mtfalt)
           if(ktfreallistqo(listp))then
-            if(ktfrealqd(k))then
+            if(ktfrealq(k))then
               do i=1,listp%nl
                 if(k%k .eq. listp%body(i))then
                   itflistmat=1
@@ -188,7 +188,7 @@
             ra=.true.
             do i=1,listp%nl
               ki=listp%dbody(i)
-              if(ktfpatqd(ki) .or. ktflistqd(ki))then
+              if(ktfpatqd(ki) .or. ktflistq(ki))then
                 ra=.false.
               endif
               itflistmat=itfpmat(k,ki)
@@ -230,7 +230,7 @@
                     call tfreseterror
                   endif
                   go to 2010
-                elseif(ktfnonrealqd(kf))then
+                elseif(ktfnonrealq(kf))then
                   go to 2010
                 elseif(kf%k .eq. 0)then
                   go to 2010
@@ -261,7 +261,7 @@
               kp1=listp%dbody(1)
  101          k1=k
               itflistmat=itfpmat(k1,kp1)
-              if(itflistmat .lt. 0 .and. ktflistqd(k1,kl1))then
+              if(itflistmat .lt. 0 .and. ktflistq(k1,kl1))then
                 k1=kl1%dbody(0)
                 go to 101
               endif
@@ -307,7 +307,7 @@
           ki=list%dbody(i)
           if(ktfpatqd(ki))then
             list%attr=ior(knofixedarg,list%attr)
-          elseif(ktflistqd(ki))then
+          elseif(ktflistq(ki))then
             if(tfconstpatternqk(ki))then
               itfconstpart=i
               kx=ki
@@ -345,7 +345,7 @@
       if(pat%mat .eq. 0)then
         itfpatmat=itfsinglepat(k,pat)
       elseif(ktfrefqd(kv1,kav1) .and. kav1 .gt. 3)then
-        if(ktflistqd(k,list))then
+        if(ktflistq(k,list))then
           if(list%head .eq. ktfoper+mtfnull)then
             isp1=isp
             call tfgetllstkall(list)
@@ -777,7 +777,7 @@ c          write(*,*)'==> ',ix
                 call tfreseterror
               endif
               go to 301
-            elseif(ktfnonrealqd(kf))then
+            elseif(ktfnonrealq(kf))then
               go to 301
             elseif(kf%k .eq. 0)then
               go to 301
@@ -922,7 +922,7 @@ c          write(*,*)'==> ',ix
       type (sad_list), pointer :: klp
       integer*4 mstk0,itfpatmat,iop,isp0,itfpmatcl
       logical*4 tfsameqd
-      if(ktflistqd(kp,klp))then
+      if(ktflistq(kp,klp))then
         itfpmatc=itfpmatcl(k,klp)
       elseif(ktfpatqd(kp,pat))then
         iop=iordless
@@ -980,7 +980,7 @@ c          write(*,*)'==> ',ix
       type (sad_descriptor) k
       type (sad_pat), pointer :: pat
       type (sad_list), pointer :: klp
-      if(ktflistqd(k,klp))then
+      if(ktflistq(k,klp))then
         call tfunsetpatlist(klp)
       elseif(ktfpatqd(k,pat))then
         pat%mat=0
@@ -1015,7 +1015,7 @@ c          write(*,*)'==> ',ix
       type (sad_descriptor) kp
       type (sad_pat), pointer :: pat
       type (sad_list), pointer :: list
-      if(ktflistqd(kp,list))then
+      if(ktflistq(kp,list))then
         call tfresetpatlist(list)
       elseif(ktfpatqd(kp,pat))then
         call tfresetpatpat(pat)
@@ -1067,7 +1067,7 @@ c          write(*,*)'==> ',ix
       type (sad_pat), pointer :: pat
       integer*8 kas
       integer*4 i, isp0
-      if(ktflistqd(k,kl))then
+      if(ktflistq(k,kl))then
         call tfinitpatlist(isp0,kl)
       elseif(ktfpatqd(k,pat))then
         if(.not. associated(pat%equiv))then
@@ -1131,7 +1131,7 @@ c          write(*,*)'==> ',ix
       tfconstpatternqk=.true.
       if(ktfpatqd(k))then
         tfconstpatternqk=.false.
-      elseif(ktflistqd(k,kl))then
+      elseif(ktflistq(k,kl))then
         tfconstpatternqk=tfconstpatternheadqk(kl%dbody(0)) .and.
      $       tfconstpatternlistbodyqo(kl)
       endif
@@ -1151,7 +1151,7 @@ c          write(*,*)'==> ',ix
       elseif(ktfoperqd(k,ka))then
         lx=ka .ne. mtfalt .and. ka .ne. mtfrepeated .and.
      $       ka .ne. mtfrepeatednull
-      elseif(ktflistqd(k,kl))then
+      elseif(ktflistq(k,kl))then
         lx=tfconstpatternheadqk(kl%dbody(0)) .and.
      $       tfconstpatternlistbodyqo(kl)
       elseif(ktfsymbolqd(k))then
@@ -1181,7 +1181,7 @@ c          write(*,*)'==> ',ix
           ki=list%dbody(i)
           if(ktfpatqd(ki))then
             tfconstpatternlistbodyqo=.false.
-          elseif(ktflistqd(ki))then
+          elseif(ktflistq(ki))then
             tfconstpatternlistbodyqo=tfconstpatternqk(ki)
           endif
           if(.not. tfconstpatternlistbodyqo)then

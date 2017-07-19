@@ -325,7 +325,7 @@ C
             if(ka1 .ne. mtfnull)then
               go to 9100
             endif
-          elseif(ktfnonrealqd(k1,dy(1)))then
+          elseif(ktfnonrealq(k1,dy(1)))then
             go to 9100
           else
             mode=1
@@ -335,7 +335,7 @@ C
             if(ka2 .ne. mtfnull)then
               go to 9100
             endif
-          elseif(ktfnonrealqd(k2,dy(2)))then
+          elseif(ktfnonrealq(k2,dy(2)))then
             go to 9100
           else
             mode=mode+2
@@ -392,7 +392,7 @@ C
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
-      if(.not. tflistqd(dtastk(isp1+1),kl))then
+      if(.not. tflistq(dtastk(isp1+1),kl))then
         irtc=itfmessage(9,'General::wrongval','"#1","List"')
         return
       endif

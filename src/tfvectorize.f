@@ -11,10 +11,10 @@
      $       .or. kaf .eq. mtfpower .or. kaf .eq. mtfrevpower)then
           nv=0
           do i=isp1+2,isp
-            if(ktflistqd(dtastk(i),kli) .and. (kli%head .eq. kxvect
+            if(ktflistq(dtastk(i),kli) .and. (kli%head .eq. kxvect
      $           .or. kli%head .eq. kxvect1))then
               ktastk(i)=kli%body(1)
-              if(tflistqd(dtastk(i),kli1))then
+              if(tflistq(dtastk(i),kli1))then
                 if(nv .eq. 0)then
                   nv=kli1%nl
                 elseif(nv .ne. kli1%nl)then
@@ -30,7 +30,7 @@
             return
           endif
 c          call tfdebugprint(kx1,'vectorize',1)
-          if(tflistqd(kx1,klx1) .and. klx1%nl .eq. nv)then
+          if(tflistq(kx1,klx1) .and. klx1%nl .eq. nv)then
             go to 9000
           endif
           kx=kx1
@@ -52,7 +52,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
      $         isp .eq. isp1+2 .and. ktflistq(ktastk(isp),kl) .and.
      $         (kl%head .eq. kxvect .or. kl%head .eq. kxvect1))then
             ktastk(isp)=kl%body(1)
-            if(tflistqk(ktastk(isp)))then
+            if(tflistq(ktastk(isp)))then
               call tfefunref(isp1+1,kx1,.false.,irtc)
               go to 9000
             else
@@ -66,10 +66,10 @@ c          call tfdebugprint(kx1,'vectorize',1)
       nv=0
       do i=isp1+2,isp
         ki=dtastk(i)
-        if(ktflistqd(ki,kli) .and.
+        if(ktflistq(ki,kli) .and.
      $       (kli%head .eq. kxvect .or. kli%head .eq. kxvect1))then
           k1=kli%dbody(1)
-          if(tflistqd(k1,kli1))then
+          if(tflistq(k1,kli1))then
             if(nv .gt. 0)then
               if(nv .ne. kli1%nl)then
                 irtc=itfmessage(999,'General::equalleng',

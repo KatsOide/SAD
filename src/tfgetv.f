@@ -6,6 +6,7 @@
       use tfcsi,only:cssetp
       use tflinepcom
       implicit none
+      type (sad_comp), pointer :: cmpd
       integer*8 kav
       integer*4 ii,i,id,iv,next,lfno,j,ivi,kv,next1,lw1
       real*8 v,getva,va,vx
@@ -128,12 +129,14 @@ c
         endif
         var=ivi .eq. ival(i)
         if(rel)then
-          va=rlist(idvalc(ii)+ivi)*(1.d0+v)
+          call loc_comp(idvalc(ii),cmpd)
+          va=tfvcmp(cmpd,ivi)*(1.d0+v)
         else
           va=v
         endif
+        call compelc(ii,cmpd)
         if(var)then
-          vx=rlist(latt(ii)+ivi)/errk(1,ii)
+          vx=tfvcmp(cmpd,ivi)/errk(1,ii)
           if(minf)then
             if(maxf)then
               vlim(i,1)=-abs(va)
@@ -149,10 +152,12 @@ c
           else
             vx=va
           endif
-          rlist(latt(ii)+ivi)=vx*errk(1,ii)
+          call tfsetcmp(vx*errk(1,ii),cmpd,ivi)
+c          rlist(latt(ii)+ivi)=vx*errk(1,ii)
         else
           vx=va
-          rlist(latt(ii)+ivi)=vx
+          call tfsetcmp(vx,cmpd,ivi)
+c          rlist(latt(ii)+ivi)=vx
           if(.not. vcomp)then
             do j=1,ntouch
               if(itouchele(j) .eq. i .and. itouchv(j) .eq. ivi)then

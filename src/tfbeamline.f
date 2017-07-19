@@ -10,7 +10,7 @@
       use maccbk, only:MAXPNAME
       implicit none
       type (sad_descriptor) k,ki,k1
-      type (sad_list), pointer :: kl,kli
+      type (sad_dlist), pointer :: kl,kli
       integer*8 kfromr,kdx1
       integer*4 irtc,hsrchz,lid,idx,n,lenw,idxi,
      $     i,idir,idti,nc,itfmessage
@@ -26,7 +26,7 @@
       endif
       idx=0
       ename=' '
-      if(ktfnonlistqd(k,kl))then
+      if(ktfnonlistq(k,kl))then
         go to 9900
       endif
       if(.not. tfsameqk(kl%head,kxbl))then
@@ -42,10 +42,10 @@
       do i=1,n
         ki=kl%dbody(i)
         idir=1
- 1      if(ktflistqd(ki,kli))then
+ 1      if(ktflistq(ki,kli))then
           if(kli%head .eq. ktfoper+mtfmult)then
             k1=kli%dbody(1)
-            if(ktfrealqd(k1))then
+            if(ktfrealq(k1))then
               if(k1%k .eq. kfromr(-1.d0))then
                 idir=-idir
                 ki=kli%dbody(2)
@@ -153,10 +153,11 @@
       use mackw
       implicit none
       type (sad_descriptor) kx,kr
-      type (sad_list), pointer :: klxi,klx
+      type (sad_dlist), pointer :: klxi,klx
       integer*8 ka1,kas,kdx1
       integer*4 isp1,irtc,nc,lenw,narg,idx,itype,
-     $     idt,n,i,nce,m,hsrchz,isp0, itfmessage
+     $     idt,n,i,nce,m,hsrchz,isp0, itfmessage,
+     $     itfdownlevel,l
       character*(MAXPNAME) ename,type,tfgetstrs,key,tfkwrd
       ename=tfgetstrs(ktastk(isp1+1),nce)
       if(nce .lt. 0)then
@@ -239,7 +240,9 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
           if(irtc .ne. 0)then
             return
           endif
-          call tfsetelementkey(idx,kr%k,irtc)
+          levele=levele+1
+          call tfsetelementkey(idx,kr,irtc)
+          l=itfdownlevel()
           if(irtc .ne. 0)then
             return
           endif
@@ -257,7 +260,7 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
               dtastk(isp)=kxadaloc(-1,2,klxi)
               klxi%head=ktfoper+mtfrule
               klxi%dbody(1)=kxsalocb(0,key,lenw(key))
-              klxi%rbody(2)=rlist(idval(idx)+i)
+              klxi%dbody(2)=dlist(idval(idx)+i)
             endif
           enddo
           klx%dbody(3)=dtfcopy1(kxmakelist(isp0))
@@ -272,22 +275,23 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
       use tfstk
       use mackw
       implicit none
-      type (sad_list), pointer :: kl
-      integer*8 k,ki,kk,kv
+      type (sad_list), pointer :: kr
+      type (sad_dlist), pointer :: kl
+      type (sad_descriptor) k,ki,kk,kv
       integer*4 irtc,idx,i,idt,ioff,nc,itfmessage
       character*(MAXPNAME) tfgetstrs,key
-      if(tfruleqk(k,kl))then
-        if(tflistqk(k))then
+      if(tfruleq(k,kr))then
+        if(tflistq(k,kl))then
           do i=1,kl%nl
-            ki=kl%body(i)
+            ki=kl%dbody(i)
             call tfsetelementkey(idx,ki,irtc)
             if(irtc .ne. 0)then
               return
             endif
           enddo
         else
-          kk=kl%body(1)
-          key=tfgetstrs(kk,nc)
+          kk=kr%dbody(1)
+          key=tfgetstrs(kk%k,nc)
           if(nc .le. 0)then
             irtc=itfmessage(9,'General::wrongtype','"Character-string"')
             return
@@ -309,19 +313,20 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
           irtc=itfmessage(9,'FFS::undefkey',
      $         '"'//key(1:nc)//'"')
           return
- 10       kv=kl%body(2)
-          if(kl%head .eq. ktfoper+mtfruledelayed)then
+ 10       kv=kr%dbody(2)
+          if(kr%head .eq. ktfoper+mtfruledelayed)then
             call tfeevalref(kv,kv,irtc)
             if(irtc .ne. 0)then
               return
             endif
           endif
-          if(ktfnonrealq(kv))then
+          if(ktfnonrealq(kv) .and. tfnonreallistq(kv))then
             irtc=itfmessage(9,'General::wrongtype',
      $           '"Keyword -> value"')
             return
           endif
-          klist(idval(idx)+ioff)=kv
+          call tflocald(dlist(idval(idx)+ioff))
+          dlist(idval(idx)+ioff)=dtfcopy(kv)
         endif
       else
         irtc=itfmessage(9,'General::wrongtype',

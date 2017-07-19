@@ -23,12 +23,12 @@
         return
       endif
       ki=dtastk(isp2)
-      if(ktflistqd(ki,listi))then
+      if(ktflistq(ki,listi))then
         if(listi%head .eq. ktfoper+mtflist)then
           m=listi%nl
           if(m .eq. 1)then
             call tfeevalref(listi%body(1),kl,irtc)
-            if(.not. ktfrealqd(kl,x1))then
+            if(.not. ktfrealq(kl,x1))then
               irtc=itfmessage(9,'General::wrongtype','"Real number"')
               return
             endif
@@ -49,7 +49,7 @@
             if(irtc .ne. 0)then
               return
             endif
-            if(ktfnonrealqd(k1,x1))then
+            if(ktfnonrealq(k1,x1))then
               go to 9500
             endif
             if(m .eq. 2)then
@@ -61,7 +61,7 @@
               if(irtc .ne. 0)then
                 return
               endif
-              if(ktfnonrealqd(k1,x1))then
+              if(ktfnonrealq(k1,x1))then
                 go to 9500
               endif
               if(m .eq. 3)then
@@ -71,7 +71,7 @@
                 if(irtc .ne. 0)then
                   return
                 endif
-                if(ktfnonrealqd(k1,xstep))then
+                if(ktfnonrealq(k1,xstep))then
                   go to 9500
                 endif
               endif
@@ -142,7 +142,7 @@
         ke=dtfcopy(dtastk(isp1+1))
         if(var)then
           if(mode .eq. 0)then
-            if(ktflistqd(ke,kle))then
+            if(ktflistq(ke,kle))then
               do j=1,ns
                 levele=levele+1
                 call tfleval(kle,kj,.true.,irtc)
@@ -174,7 +174,7 @@
               enddo
             endif
           else
-            if(ktfrealqd(ke,ve))then
+            if(ktfrealq(ke,ve))then
               irtc=0
               if(mode .eq. 1)then
                 kx=kxavaloc(-1,ns,klr)
@@ -188,7 +188,7 @@
               call tfdelete(symd,.true.,.false.)
               return
             else
-              if(ktflistqd(ke,kle))then
+              if(ktflistq(ke,kle))then
                 do j=1,ns
                   levele=levele+1
                   call tfleval(kle,kj,.true.,irtc)
@@ -205,7 +205,7 @@
                   endif
                   kj=dtfcopy(kj)
                   lv=itfdownlevel()
-                  if(ktflistqd(kj,klj))then
+                  if(ktflistq(kj,klj))then
                     if(klj%head .eq. ktfoper+mtfnull)then
                       isp0=isp
                       call tfgetllstkall(klj)
@@ -241,7 +241,7 @@
                   endif
                   kj=dtfcopy(kj)
                   lv=itfdownlevel()
-                  if(ktflistqd(kj,klj))then
+                  if(ktflistq(kj,klj))then
                     if(klj%head .eq. ktfoper+mtfnull)then
                       isp0=isp
                       call tfgetllstkall(klj)
@@ -265,7 +265,7 @@
           endif
         else
           if(mode .eq. 0)then
-            if(ktflistqd(ke,kle))then
+            if(ktflistq(ke,kle))then
               do j=1,ns
                 levele=levele+1
                 call tfleval(kle,kj,.true.,irtc)
@@ -293,7 +293,7 @@
               enddo
             endif
           else
-            if(ktfrealqd(ke,ve))then
+            if(ktfrealq(ke,ve))then
               irtc=0
               if(mode .eq. 1)then
                 kx=kxavaloc(-1,ns,klr)
@@ -306,7 +306,7 @@
               isp=ispb-1
               return
             else
-              if(ktflistqd(ke,kle))then
+              if(ktflistq(ke,kle))then
                 do j=1,ns
                   levele=levele+1
                   call tfleval(kle,kj,.true.,irtc)
@@ -323,7 +323,7 @@
                   endif
                   kj=dtfcopy(kj)
                   lv=itfdownlevel()
-                  if(ktflistqd(kj,klj))then
+                  if(ktflistq(kj,klj))then
                     if(klj%head .eq. ktfoper+mtfnull)then
                       isp0=isp
                       call tfgetllstkall(klj)
@@ -357,7 +357,7 @@
                   endif
                   kj=dtfcopy(kj)
                   lv=itfdownlevel()
-                  if(ktflistqd(kj,klj))then
+                  if(ktflistq(kj,klj))then
                     if(klj%head .eq. ktfoper+mtfnull)then
                       isp0=isp
                       call tfgetllstkall(klj)
@@ -436,7 +436,7 @@ c        call tfcatchreturn(0,kx,irtc)
         nr=.false.
         re=.false.
         do i=isp1+1,isp
-          if(ktfrealqd(dtastk(i)))then
+          if(ktfrealq(dtastk(i)))then
             re=.true.
             if(nr)then
               go to 10

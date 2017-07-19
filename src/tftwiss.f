@@ -26,7 +26,7 @@
       if(irtc .ne. 0)then
         call tfreseterror
         itftypekey=0
-      elseif(.not. ktfrealqd(kx))then
+      elseif(.not. ktfrealq(kx))then
         itftypekey=0
       else
         itftypekey=ifromd(kx)
@@ -53,7 +53,7 @@
       if(irtc .ne. 0)then
         call tfreseterror
         itfelementkey=0
-      elseif(.not. ktfrealqd(kx))then
+      elseif(.not. ktfrealq(kx))then
         itfelementkey=0
       else
         itfelementkey=ifromd(kx)
@@ -74,7 +74,7 @@
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
-      if(.not. ktfrealqd(dtastk(isp),c))then
+      if(.not. ktfrealq(dtastk(isp),c))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"Typecode for #1"')
         return
@@ -123,17 +123,20 @@
       return
       end subroutine
 
-      real*8 function tfkeyv(i,keyword,ia,cmp,saved)
+      type (sad_descriptor) function tfkeyv(i,keyword,ia,cmp,saved)
       use tfstk
       use ffs
       use tffitcode
       use ffs_pointer, only:idelc,elatt,idtypec,idvalc,sad_comp,
      $     compelc
       implicit none
-      integer*4 i,it,kl,l,j
+      type (sad_rlist), pointer :: kld,klr
+      integer*4 i,it,kl,l,j,lk,lenw
       integer*8 ia
       character*(*) keyword
-      logical*4 saved
+      character*128 key
+      logical*4 saved,sum
+      real*8 s
       type (sad_comp), pointer :: cmp
 c     begin initialize for preventing compiler warning
       kl=0
@@ -144,37 +147,62 @@ c     end   initialize for preventing compiler warning
         kl=ilist(-i,ifklp)
         call compelc(kl,cmp)
       endif
+      sum=.false.
+      lk=lenw(keyword)
+      if(lk .gt. 4 .and. keyword(lk-3:lk) .eq. '$SUM')then
+        sum=.true.
+        lk=lk-4
+      endif
+      key(1:lk)=keyword(1:lk)
       it=idtype(cmp%id)
       do l=1,kytbl(kwMAX,it)-1
         j=kyindex(l,it)
         if(j .gt. 0)then
-          if(pname(kytbl(j,0))(2:) .eq. keyword)then
+          if(pname(kytbl(j,0))(2:) .eq. key(1:lk))then
             go to 1
           endif
           j=kyindex1(l,it)
           if(j .gt. 0)then
-            if(pname(kytbl(j,0))(2:) .eq. keyword)then
+            if(pname(kytbl(j,0))(2:) .eq. key(1:lk))then
               go to 1
             endif
           endif
         endif
       enddo
       ia=0
-      tfkeyv=0.d0
+      tfkeyv%k=0
       return
  1    if(i .gt. 0)then
         ia=elatt%comp(i)+l
-        tfkeyv=rlist(ia)
+        tfkeyv=dlist(ia)
       elseif(saved)then
         ia=idvalc(kl)+l
-        tfkeyv=rlist(ia)
+        tfkeyv=dlist(ia)
       else
         ia=elatt%comp(kl)+l
         if(l .eq. ilist(-i,ifival))then
-          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
+          if(tfreallistq(dlist(ia),klr))then
+            tfkeyv=kxavaloc(-1,klr%nl,kld)
+            kld%rbody(1:klr%nl)=klr%rbody(1:klr%nl)
+     $           /rlist(iferrk+(kl-1)*2)
+c            write(*,*)'tfkeyv ',i,l,ia,l,kl,ilist(-i,ifival),
+c     $           klr%nl,rlist(iferrk+(kl-1)*2)
+c            call tfdebugprint(dlist(ia),'tfkeyv-s',1)
+c            call tfdebugprint(tfkeyv,'tfkeyv-d',2)
+c          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
+          else
+            tfkeyv=dlist(ia)
+          endif
         else
-          tfkeyv=rlist(ia)
+          tfkeyv=dlist(ia)
         endif
+      endif
+      if(sum .and. tfreallistq(tfkeyv,klr))then
+        s=klr%rbody(1)
+        do i=2,klr%nl
+          s=s+klr%rbody(i)
+        enddo
+        tfkeyv=dfromr(s)
       endif
       return
       end function
@@ -193,7 +221,7 @@ c     end   initialize for preventing compiler warning
       parameter (nkey=mfitpzpy)
       integer*8 ktatwissaloc,kax,kaxi,itoff
       integer*4 isp1,irtc,narg,i,m,nc,j,
-     $     isp0,nd,kt,itfmessage
+     $     isp0,nd,kt,itfmessage,lenw
       real*8 ftwiss(28),pe(4),tfgettwiss,tphysdisp,tphysdispz
       logical*4 over,ref
       character*(MAXPNAME+16) keyword,tfgetstrs
@@ -238,6 +266,7 @@ c     end   initialize for preventing compiler warning
                 rlist(kax+j)=rlist(itoff)
               enddo
             else
+              write(*,*)'tftwiss-1 '
               call qtwissfrac(rlist(kax+1),itastk(2,isp),
      $             vstk2(isp),over)
             endif
@@ -254,6 +283,7 @@ c     end   initialize for preventing compiler warning
                   rlist(kaxi+j+1)=rlist(itoff)
                 enddo
               else
+                write(*,*)'tftwiss-2 '
                 call qtwissfrac(rlist(kaxi+1),itastk(2,isp0+i),
      $               vstk2(isp0+i),over)
               endif
@@ -279,7 +309,7 @@ c     end   initialize for preventing compiler warning
           call tfline(isp1,kx,ref,irtc)
         else
           irtc=itfmessage(9,'General::wrongval',
-     $         '"#1 ('//keyword(1:len_trim(keyword))//
+     $         '"#1 ('//keyword(1:lenw(keyword))//
      $         ') is","to be name of optical function"')
         endif
         return
@@ -344,6 +374,7 @@ c     $             itastk(2,isp),vstk2(isp)
                   if(vstk2(isp0+i) .eq. 0.d0)then
                     rlist(kax+i)=rlist(itoff+itastk(2,isp0+i)-1)
                   else
+                    write(*,*)'tftwiss-4 '
                     call qtwissfrac(ftwiss,itastk(2,isp0+i),
      $                   vstk2(isp0+i),over)
                     rlist(kax+i)=ftwiss(kt)
@@ -354,6 +385,7 @@ c     $             itastk(2,isp),vstk2(isp)
                   if(vstk2(isp0+i) .eq. 0.d0)then
                     klist(kax+i)=ktfref+itoff+itastk(2,isp0+i)-1
                   else
+                    write(*,*)'tftwiss-5 '
                     call qtwissfrac(ftwiss,itastk(2,isp0+i),
      $                   vstk2(isp0+i),over)
                     rlist(kax+i)=ftwiss(kt)
@@ -366,6 +398,7 @@ c     $             itastk(2,isp),vstk2(isp)
                   call tgetphysdisp(itastk(2,isp0+i),pe)
                   rlist(kax+i)=pe(kt-mfitpex+1)
                 else
+                  write(*,*)'tftwiss-6 '
                   call qtwissfrac(ftwiss,itastk(2,isp0+i),
      $                 vstk2(isp0+i),over)
                   rlist(kax+i)=tphysdisp(kt,ftwiss)
@@ -377,6 +410,7 @@ c     $             itastk(2,isp),vstk2(isp)
                   call tgetphysdispz(itastk(2,isp0+i),pe)
                   rlist(kax+i)=pe(kt-mfitpzx+1)
                 else
+                  write(*,*)'tftwiss-7 '
                   call qtwissfrac(ftwiss,itastk(2,isp0+i),
      $                 vstk2(isp0+i),over)
                   rlist(kax+i)=tphysdispz(kt,ftwiss)
@@ -396,7 +430,7 @@ c     $             itastk(2,isp),vstk2(isp)
           if(kt .le. ntwissfun)then
             if(keyword .eq. 'SET')then
               kx=dtastk(isp)
-              if(ktflistqd(kx,klx))then
+              if(ktflistq(kx,klx))then
                 nd=min(klx%nl,nlat)
                 rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
                 return
@@ -484,7 +518,7 @@ c     $             itastk(2,isp),vstk2(isp)
             if(irtc .ne. 0)then
               return
             endif
-            if(ktfrealqd(kx))then
+            if(ktfrealq(kx))then
               saved=kx%k .ne. 0
               narg=2
             else
@@ -570,6 +604,15 @@ c     $             itastk(2,isp),vstk2(isp)
           key=tfkwrd(idtypec(ia),iv)
         endif
         Kx=kxsalocb(-1,key,lenw(key))
+      elseif(keyword .eq. 'DEFAULT$SUM')then
+        iv=ilist(it,ifival)
+        if(iv .eq. 0)then
+          key=' '
+        else
+          key=tfkwrd(idtypec(ia),iv)
+          key=key(1:lenw(key))//"$SUM"
+        endif
+        Kx=kxsalocb(-1,key,lenw(key))
       elseif(keyword .eq. 'KEYWORDS' .or.
      $       keyword .eq. 'KEYWORDS_ALL')then
         l=0
@@ -586,7 +629,7 @@ c     $             itastk(2,isp),vstk2(isp)
       elseif(keyword .eq. 'POSITION')then
         kx=dfromr(dble(it))
       else
-        kx=dfromr(tfkeyv(-it,keyword,iax,cmp,saved))
+        kx=tfkeyv(-it,keyword,iax,cmp,saved)
         if(.not. ref)then
           kx%k=ktfref+iax
           if(.not. saved)then
@@ -608,7 +651,7 @@ c     $             itastk(2,isp),vstk2(isp)
       character*1024 name
       logical*4 tmatch
       isp0=isp
-      if(ktfrealqdi(k,iv) .and. narg .eq. 2)then
+      if(ktfrealq(k,iv) .and. narg .eq. 2)then
         if(iv .lt. 0)then
           iv=nele+iv+1
         endif
@@ -743,11 +786,11 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
       integer*8 kax,ktfgeol,kai,j,i,ip,itoff
       integer*4 irtc,lenw,lxp,nv,lt,kk,ia,isp1,ibz
       real*8 v,beam(42),xp,fr,geo1(12),pos0,
-     $     vsave(256),gam0,gv(3,4),ogv(3,4),cod(4),vtwiss(27),tfchi,
-     $     tfbzs
+     $     gam0,gv(3,4),ogv(3,4),cod(4),vtwiss(27),tfchi,tfbzs
+      type (sad_descriptor) dsave(kwMAX)
       character*(*) keyword
       character*64 name
-      integer*4 iaa
+      integer*4 iaa,lv,itfdownlevel
       integer*8 n,m
       logical*4 chg,over,ref
       iaa(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
@@ -835,9 +878,11 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
           lt=idtypec(lxp)
           call compelc(lxp,cmp)
           nv=kytbl(kwMAX,lt)-1
-          vsave(1:nv)=cmp%value(1:nv)
-c          call tmov(rlist(latt(lxp)+1),vsave,nv)
-          call qfraccomp(lxp,0.d0,fr,.false.,chg)
+          dsave(1:nv)=cmp%dvalue(1:nv)
+c          call tmov(rlist(latt(lxp)+1),dsave,nv)
+          levele=levele+1
+          call qfracseg(cmp,0.d0,fr,dsave,chg)
+c          call qfraccomp(lxp,0.d0,fr,.false.,chg)
           if(chg)then
             geo1=rlist(j+1:j+12)
             pos0=rlist(ifpos+lxp)
@@ -850,7 +895,8 @@ c          call tmov(rlist(latt(lxp)+1),vsave,nv)
           else
             kax=ktfgeol(rlist(j+12))
           endif
-          cmp%value(1:nv)=vsave(1:nv)
+          cmp%dvalue(1:nv)=dsave(1:nv)
+          lv=itfdownlevel()
 c          call tmov(vsave,rlist(latt(lxp)+1),nv)
         endif
         kx%k=ktflist+kax
@@ -867,15 +913,17 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
           lt=idtypec(lxp)
           call compelc(lxp,cmp)
           nv=kytbl(kwmax,lt)-1
-          vsave(1:nv)=cmp%value(1:nv)
-c          call tmov(rlist(latt(lxp)+1),vsave,nv)
-          call qfraccomp(lxp,0.d0,fr,.false.,chg)
+          dsave(1:nv)=cmp%dvalue(1:nv)
+c          call tmov(rlist(latt(lxp)+1),dsave,nv)
+          levele=levele+1
+          call qfracseg(cmp,0.d0,fr,dsave,chg)
+c          call qfraccomp(lxp,0.d0,fr,.false.,chg)
           if(chg)then
             call tmov(rlist(j+12),geo1,12)
             pos0=rlist(ifpos+lxp)
             gam0=rlist(ifgamm+lxp)
-            call tfgeo1(rlist(ifgeo),rlist(ifpos),rlist(ifgamm),
-     $           lxp,lxp+1,.true.,.false.)
+c            write(*,*)'tftwiss-gx ',lxp,v,ia
+            call tfgeo1(lxp,lxp+1,.true.,.false.)
             call tmov(rlist(j+12),gv,12)
             rlist(ifgamm+lxp)=gam0
             call tmov(geo1,rlist(j+12),12)
@@ -883,7 +931,8 @@ c          call tmov(rlist(latt(lxp)+1),vsave,nv)
           else
             call tmov(rlist(j+12),gv,12)
           endif
-          cmp%value(1:nv)=vsave(1:nv)
+          cmp%dvalue(1:nv)=dsave(1:nv)
+          lv=itfdownlevel()
 c          call tmov(vsave,rlist(latt(lxp)+1),nv)
         endif
         if(keyword .eq. 'GX')then
@@ -914,15 +963,16 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
           lt=idtypec(lxp)
           call compelc(lxp,cmp)
           nv=kytbl(kwmax,lt)-1
-          vsave(1:nv)=cmp%value(1:nv)
+          dsave(1:nv)=cmp%dvalue(1:nv)
 c          call tmov(rlist(latt(lxp)+1),vsave,nv)
-          call qfraccomp(lxp,0.d0,fr,.false.,chg)
+          levele=levele+1
+          call qfracseg(cmp,0.d0,fr,dsave,chg)
+c          call qfraccomp(lxp,0.d0,fr,.false.,chg)
           if(chg)then
             call tmov(rlist(j+12),geo1,12)
             pos0=rlist(ifpos+lxp)
             gam0=rlist(ifgamm+lxp)
-            call tfgeo1(rlist(ifgeo),rlist(ifpos),rlist(ifgamm),
-     $           lxp,lxp+1,.true.,.false.)
+            call tfgeo1(lxp,lxp+1,.true.,.false.)
             call tmov(rlist(j+12),gv,12)
             rlist(ifgamm+lxp)=gam0
             call tmov(geo1,rlist(j+12),12)
@@ -930,11 +980,12 @@ c          call tmov(rlist(latt(lxp)+1),vsave,nv)
           else
             call tmov(rlist(j+12),gv,12)
           endif
-          cmp%value(1:nv)=vsave(1:nv)
+          cmp%dvalue(1:nv)=dsave(1:nv)
 c          call tmov(vsave,rlist(latt(lxp)+1),nv)
           call qtwissfrac(vtwiss,lxp,fr,over)
           cod(1:4)=vtwiss(mfitdx:mfitdpy)
 c          call tmov(vtwiss(mfitdx),cod,4)
+          lv=itfdownlevel()
         endif
         call tforbitgeo(ogv,gv,cod(1),cod(2),cod(3),cod(4))
         kx%k=ktflist+ktfgeol(ogv)
@@ -956,16 +1007,16 @@ c          call tmov(vtwiss(mfitdx),cod,4)
           lt=idtypec(lxp)
           call compelc(lxp,cmp)
           nv=kytbl(kwmax,lt)-1
-          vsave(1:nv)=cmp%value(1:nv)
+          dsave(1:nv)=cmp%dvalue(1:nv)
 c          call tmov(rlist(latt(lxp)+1),vsave,nv)
-          call qfraccomp(lxp,0.d0,fr,.false.,chg)
+          levele=levele+1
+          call qfracseg(cmp,0.d0,fr,dsave,chg)
+c          call qfraccomp(lxp,0.d0,fr,.false.,chg)
           if(chg)then
             call tmov(rlist(j+12),geo1,12)
             pos0=rlist(ifpos+lxp)
             gam0=rlist(ifgamm+lxp)
-            call tfgeo1(
-     $           rlist(ifgeo),rlist(ifpos),rlist(ifgamm),
-     $           lxp,lxp+1,.true.,.false.)
+            call tfgeo1(lxp,lxp+1,.true.,.false.)
             call tmov(rlist(j+12),gv,12)
             rlist(ifgamm+lxp)=gam0
             call tmov(geo1,rlist(j+12),12)
@@ -973,11 +1024,12 @@ c          call tmov(rlist(latt(lxp)+1),vsave,nv)
           else
             call tmov(rlist(j+12),gv,12)
           endif
-          cmp%value(1:nv)=vsave(1:nv)
+          cmp%dvalue(1:nv)=dsave(1:nv)
 c          call tmov(vsave,rlist(latt(lxp)+1),nv)
           call qtwissfrac(vtwiss,lxp,fr,over)
           cod(1:4)=vtwiss(mfitdx:mfitdpy)
 c          call tmov(vtwiss(mfitdx),cod,4)
+          lv=itfdownlevel()
         endif
         call tforbitgeo(ogv,gv,cod(1),cod(2),cod(3),cod(4))
         if(keyword .eq. 'OGX')then
@@ -1022,7 +1074,7 @@ c          call tmov(vtwiss(mfitdx),cod,4)
         endif
       else
         if(ia .lt. nlat)then
-          kx=dfromr(tfkeyv(int(ia),keyword,ip,cmp,.false.))
+          kx=tfkeyv(int(ia),keyword,ip,cmp,.false.)
           if(.not. ref)then
             cmp%update=0
             kx%k=ktfref+ip
@@ -1106,7 +1158,7 @@ c          call tmov(vtwiss(mfitdx),cod,4)
       logical*4 exist,temat
       integer*4 nl
       isp0=isp
-      if(ktfrealqd(k) .and. narg .eq. 2)then
+      if(ktfrealq(k) .and. narg .eq. 2)then
         i=int(rtastk(isp))
         if(i .lt. 0)then
           r=1.d0+rtastk(isp)-i
@@ -1305,7 +1357,7 @@ c            write(*,*)'linestk ',name(1:nc),r
       character*(MAXPNAME+16) tfgetstrs,name
       logical*4 exist
       irtc=0
-      if(ktfrealqdi(k,itfloc))then
+      if(ktfrealq(k,itfloc))then
         if(itfloc .le. 0 .or. itfloc .gt. nlat)then
           irtc=itfmessage(9,'General::wrongval',
      $         '"Component number",'//

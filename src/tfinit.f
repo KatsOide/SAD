@@ -5,6 +5,7 @@
       use ffs_pointer
       use tffitcode
       implicit none
+      type (sad_comp), pointer :: cmps
       integer*4 i,l,j,ikx,lele,ib,ibz,ibznext,ibzb,k,ibg,ibb
       real*8 v
       do i=1,nele
@@ -58,9 +59,12 @@
             go to 10
           endif
  200      if(ival(ikx) .gt. 0)then
-            v=rlist(idvalc(klp(ikx))+ival(ikx))
+            call loc_comp(idvalc(klp(ikx)),cmps)
+            v=tfvcmp(cmps,ival(ikx))
+c            v=rlist(idvalc(klp(ikx))+ival(ikx))
             if(v .ne. 0.d0)then
-              errk(1,l)=rlist(latt(l)+ival(ikx))/v
+              errk(1,l)=tfvalvar(l,ival(ikx))/v
+c              errk(1,l)=rlist(latt(l)+ival(ikx))/v
             endif
           endif
         endif

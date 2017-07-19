@@ -114,7 +114,7 @@ c     $     vstk(ivstkoffset+isp1+2)),f,1,tr)
         go to 9000
       endif
       do i=isp1+1,isp
-        if(ktfnonrealqd(dtastk(i)))then
+        if(ktfnonrealq(dtastk(i)))then
           go to 9000
         endif
       enddo
@@ -137,7 +137,7 @@ c     $     vstk(ivstkoffset+isp1+2)),f,1,tr)
         go to 9000
       endif
       do i=isp1+1,isp
-        if(ktfnonrealqd(dtastk(i)))then
+        if(ktfnonrealq(dtastk(i)))then
           go to 9000
         endif
       enddo

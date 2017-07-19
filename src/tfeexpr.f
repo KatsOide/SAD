@@ -22,7 +22,7 @@
         else
           kx=k1
         endif
-        if(ktflistqd(ky,listy))then
+        if(ktflistq(ky,listy))then
           if(listy%head .eq. ktfoper+iopc)then
             call tfjoine(kx,ky,ke,irtc)
             if(irtc .ne. -1)then
@@ -37,7 +37,7 @@
                   ke%k=ktfoper+mtfnull
                   return
                 endif
-                if(ktfrealqd(ky1))then
+                if(ktfrealq(ky1))then
                   if(iopc .eq. mtfplus)then
                     if(ky1%k .eq. 0)then
                       if(m .eq. 2)then
@@ -72,7 +72,7 @@
               endif
               return
             endif
-            if(ktfrealqd(kx))then
+            if(ktfrealq(kx))then
               if(iopc .eq. mtfplus .and. kx%k .eq. 0)then
                 ke=ky
                 return
@@ -90,12 +90,12 @@
             return
           endif
         endif
-        if(ktflistqd(kx,klx))then
+        if(ktflistq(kx,klx))then
           if(klx%head .eq. ktfoper+iopc)then
             call tfinsertsort(klx,ky,ke)
             return
           endif
-        elseif(ktfrealqd(kx))then
+        elseif(ktfrealq(kx))then
           if(iopc .eq. mtfplus .and. kx%k .eq. 0)then
             ke=ky
             return
@@ -122,7 +122,7 @@
         isp=isp-3
         return
       case (mtfnot)
-        if(ktflistqd(ky,listy))then
+        if(ktflistq(ky,listy))then
           if(listy%head .eq. ktfoper+mtfnot)then
             ke=listy%dbody(1)
             return
@@ -130,7 +130,7 @@
         endif
         go to 5000
       case (mtfslot,mtfslotseq)
-        if(ktfrealqd(ky,vy))then
+        if(ktfrealq(ky,vy))then
           ks=int8(vy)
 c          write(*,*)'tfeexpr-slot ',vy,ks
           if(dble(ks) .ne. vy) then
@@ -154,9 +154,9 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
       case (mtfflag)
         go to 5000
       case (mtfcomp,mtfconcat,mtfand,mtfor,mtfalt,mtfmessagename)
-        if(ktflistqd(k1,list1))then
+        if(ktflistq(k1,list1))then
           if(list1%head .eq. ktfoper+iopc)then
-            if(ktflistqd(ky,listy))then
+            if(ktflistq(ky,listy))then
               if(listy%head .eq. ktfoper+iopc)then
                 call tfjoin2(k1,ky,ke,.false.,irtc)
                 return
@@ -166,21 +166,21 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
             return
           endif
         endif
-        if(ktflistqd(ky,listy))then
+        if(ktflistq(ky,listy))then
           if(listy%head .eq. ktfoper+iopc)then
             call tfappend(ky,k1,ke,.false.,1,irtc)
             return
           endif
         endif
       case (mtfset,mtfpower)
-        if(ktflistqd(ky,listy))then
+        if(ktflistq(ky,listy))then
           if(listy%head .eq. ktfoper+iopc)then
             call tfappend(ky,k1,ke,.false.,1,irtc)
             return
           endif
         endif
         if(iopc .eq. mtfpower)then
-          if(ktfrealqd(ky))then
+          if(ktfrealq(ky))then
             if(ky%k .eq. ktftrue)then
               ke=k1
               return
@@ -189,7 +189,7 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
               return
             endif
           endif
-          if(ktflistqd(k1,list1))then
+          if(ktflistq(k1,list1))then
             if(list1%head .eq. ktfoper+mtfpower)then
               m=list1%nl
               if(m .eq. 1)then
@@ -200,7 +200,7 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
                 else
                   call tftake(k1,dble(-m+1),k2,.true.,.false.,irtc)
                 endif
-                if(ktfrealqd(k2,v2) .and. ktfrealqd(ky,vy))then
+                if(ktfrealq(k2,v2) .and. ktfrealq(ky,vy))then
                   kx=dfromr(v2*vy)
                 else
                   call tfeexpr(k2,ky,kx,mtftimes)
@@ -210,7 +210,7 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
               call tfeexpr(ky,kx,ke,mtfpower)
               return
             elseif(list1%head .eq. ktfoper+mtftimes
-     $             .and. ktfrealqd(ky))then
+     $             .and. ktfrealq(ky))then
               vx1=1.d0
               kx2%k=ktftrue
               m=list1%nl
@@ -226,7 +226,7 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
                 elseif(ktflistq(ktastk(isp),listi))then
                   if(listi%head .eq. ktfoper+mtfcomplex)then
                     call tfeexpr(dtastk(isp),ky,kx,mtfpower)
-                    if(ktfrealqd(kx,vx))then
+                    if(ktfrealq(kx,vx))then
                       vx1=vx1*vx
                     else
                       call tfeexpr(kx2,kx,kx2,mtftimes)
@@ -245,7 +245,7 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
                 endif
                 isp=isp0
                 call tfeexpr(kx,ky,ke,mtfpower)
-                if(ktfrealqd(kx2,v2))then
+                if(ktfrealq(kx2,v2))then
                   vx1=vx1*v2
                 else
                   call tfeexpr(kx2,ke,ke,mtftimes)
@@ -259,7 +259,7 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
                 isp=isp0
               endif
             endif
-          elseif(ktfrealqd(k1))then
+          elseif(ktfrealq(k1))then
             if(k1%k .eq. ktftrue .and. redmath%value%k .ne. 0)then
               ke%k=ktftrue
               return
@@ -267,7 +267,7 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
           endif
         endif
       case (mtfreplace,mtfreplacerepeated)
-        if(ktflistqd(k1,kl1))then
+        if(ktflistq(k1,kl1))then
           if(kl1%head .eq. ktfoper+iopc)then
             call tfappend(k1,ky,ke,.false.,0,irtc)
             return
@@ -289,17 +289,17 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
       case (mtfatt)
 c        call tfdebugprint(k1,'eexpr',1)
 c        call tfdebugprint(ky,'@',1)
-        if(ktfnonrealqd(k1))then
-          if(ktfrealqd(k,x))then
+        if(ktfnonrealq(k1))then
+          if(ktfrealq(k,x))then
             ke=kxavaloc(-1,1,kle)
             kle%rbody(1)=x
             kle%dbody(0)=dtfcopy(k1)
             return
           elseif((ktfsymbolqd(ky) .or. ktfoperqd(ky)) .and.
-     $           (ktfsymbolqd(k1) .or. ktflistqd(k1)) .or.
+     $           (ktfsymbolqd(k1) .or. ktflistq(k1)) .or.
      $           ktfpatqd(ky))then
             go to 4900
-          elseif(ktflistqd(k1,kl1) .and.
+          elseif(ktflistq(k1,kl1) .and.
      $           kl1%head .eq. ktfoper+mtfatt)then
             isp=isp+1
             isp0=isp
@@ -320,16 +320,16 @@ c        call tfdebugprint(ky,'@',1)
           endif
         endif
       case (mtfcomplex)
-        if(ktfrealqd(k))then
+        if(ktfrealq(k))then
           if(k%k .eq. 0)then
             ke=k1
             return
           endif
-        elseif(tfcomplexqx(k%k,cx))then
+        elseif(tfcomplexq(k,cx))then
           call tfeexpr(cx%dbody(1),k1,ky,mtfplus)
           call tfeexpr(ky,cx%dbody(2),ke,mtfcomplex)
           return
-        elseif(tfcomplexqx(k1%k,cx))then
+        elseif(tfcomplexq(k1,cx))then
           call tfeexpr(cx%dbody(2),k,ky,mtfplus)
           call tfeexpr(cx%dbody(1),ky,ke,mtfcomplex)
           return
@@ -351,7 +351,7 @@ c      write(*,*)isp
       ke=kxcompose(isp-2)
       isp=isp-3
       return
- 5000 if(ktfrealqd(ky))then
+ 5000 if(ktfrealq(ky))then
         ke=kxavaloc(-1,1,kle)
         kle%dbody(1)=ky
       else
@@ -416,7 +416,7 @@ c      enddo
       complex*16 c1
       irtc=0
       if(iopc .eq. mtfnot)then
-        if(ktfrealqd(k2))then
+        if(ktfrealq(k2))then
           if(k2%k .eq. 0)then
             kx%k=ktftrue
           else
@@ -427,8 +427,8 @@ c      enddo
         endif
         return
       endif
-      if(ktfrealqd(k1,v1))then
-        if(ktfrealqd(k2,v2))then
+      if(ktfrealq(k1,v1))then
+        if(ktfrealq(k2,v2))then
           if(iopc .eq. mtfcomplex)then
             if(k2%k .ne. 0)then
               kx=kxcalocv(-1,v1,v2)
@@ -471,18 +471,18 @@ c      enddo
             kx=dfromr(tfenum(k1,k2,iopc,irtc))
           endif
           return
-         elseif(tfcomplexqx(k2%k,cx2))then
+         elseif(tfcomplexq(k2,cx2))then
           call tfcmplxmath(dcmplx(v1,0.d0),cx2%cx,kx,iopc,irtc)
           return
         else
           go to 8000
         endif
-      elseif(tfcomplexqx(k1%k,cx1))then
-        if(ktfrealqd(k2,v2))then
+      elseif(tfcomplexq(k1,cx1))then
+        if(ktfrealq(k2,v2))then
           call tfcmplxmath(cx1%cx,dcmplx(v2,0.d0),
      $         kx,iopc,irtc)
           return
-        elseif(tfcomplexqx(k2%k,cx2))then
+        elseif(tfcomplexq(k2,cx2))then
           call tfcmplxmath(cx1%cx,cx2%cx,kx,iopc,irtc)
           return
         endif
@@ -655,7 +655,7 @@ c          >    <    g    l    E    N    ~    &    o    c
         if(irtc .ne. 0)then
           return
         endif
-        if(ktfrealqd(ky1))then
+        if(ktfrealq(ky1))then
           if(iopc .eq. mtfplus)then
             if(ky1%k .eq. 0)then
               m=m-1
@@ -787,7 +787,7 @@ c          >    <    g    l    E    N    ~    &    o    c
       type (sad_list), pointer :: list,listx
       integer*4 irtc,m,itfmessage,mode,i
       logical*4 eval,ev,tfconstqk
-      if(.not. ktflistqd(kl,list))then
+      if(.not. ktflistq(kl,list))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List or composition for #1"')
         return
@@ -801,7 +801,7 @@ c          >    <    g    l    E    N    ~    &    o    c
       if(ktfreallistqo(list))then
         if(mode .eq. 0)then
           listx%body(1:m)=list%body(1:m)
-          if(ktfrealqd(k))then
+          if(ktfrealq(k))then
             listx%dbody(m+1)=k
           else
             listx%dbody(m+1)=dtfcopy(k)
@@ -809,7 +809,7 @@ c          >    <    g    l    E    N    ~    &    o    c
           endif
         else
           listx%body(2:m+1)=list%body(1:m)
-          if(ktfrealqd(k))then
+          if(ktfrealq(k))then
             listx%dbody(1)=k
           else
             listx%dbody(1)=dtfcopy(k)
@@ -852,7 +852,7 @@ c          >    <    g    l    E    N    ~    &    o    c
       type (sad_rlist), pointer :: klr
       integer*4 m,i,mode,iaf,isp0
       if(tfnumberqd(k))then
-        if(ktfrealqd(k))then
+        if(ktfrealq(k))then
           if(mode .eq. 1)then
             kx=k
           elseif(mode .eq. 2)then
@@ -878,7 +878,7 @@ c          >    <    g    l    E    N    ~    &    o    c
           kx%k=ktflist+ktraaloc(-1,klr%nl)
         endif
         return
-      elseif(ktflistqd(k,kl))then
+      elseif(ktflistq(k,kl))then
         m=kl%nl
         if(mode .eq. 3 .or. kl%head .eq. ktfoper+mtflist)then
           isp0=isp

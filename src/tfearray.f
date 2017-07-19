@@ -34,8 +34,8 @@ c$$$      endif
       if(iopc1 .ge. mtfgreater .and. iopc1 .le. mtfnot)then
         go to 101
       endif
-      if(ktflistqd(k1,kl1))then
-        if(tfcomplexqd(k1))then
+      if(ktflistq(k1,kl1))then
+        if(tfcomplexq(k1))then
           ne1=0
           list1=.false.
         else
@@ -49,8 +49,8 @@ c$$$      endif
         ne1=0
         list1=.false.
       endif
-      if(ktflistqd(k,kl))then
-        if(tfcomplexqd(k))then
+      if(ktflistq(k,kl))then
+        if(tfcomplexq(k))then
           list=.false.
           ne=0
         else
@@ -90,7 +90,7 @@ c$$$      endif
               if(ky%k .eq. 0)then
                 kx%k=0
                 return
-              elseif(.not. ktfrealqd(ky))then
+              elseif(.not. ktfrealq(ky))then
                 go to 101
               endif
             enddo
@@ -105,7 +105,7 @@ c$$$      endif
               if(ky%k .eq. ktftrue)then
                 kx%k=ktftrue
                 return
-              elseif(.not. ktfrealqd(ky))then
+              elseif(.not. ktfrealq(ky))then
                 go to 101
               endif
             enddo
@@ -166,14 +166,14 @@ c$$$      endif
       implicit none
       type (sad_descriptor) k1,k2,kx,kxi,k2i,k1i
       type (sad_list), pointer :: kl1,kl2,klx,kl10
-      type (sad_rlist), pointer :: klr,kl1r
+      type (sad_rlist), pointer :: klr
       integer*8 ir,ix1,ix2
       integer*4 irtc,m1,m2,i,iopc1,iopc2
       real*8 v1,v2i
       complex*16 c1,cx,cx1,cx2,tfcmplxmathv
       logical*4 d,c,tfconstqk
-      if(ktfrealqd(k1,v1))then
-        if(tflistqd(k2,kl2))then
+      if(ktfrealq(k1,v1))then
+        if(tflistq(k2,kl2))then
           m2=kl2%nl
           if(m2 .eq. 0)then
             kx=dxnulll
@@ -247,14 +247,14 @@ c                  m    i    +    -    *    /    v    ^
                     klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
                     d=.true.
                   endif
-                elseif(tflistqd(k2i))then
+                elseif(tflistq(k2i))then
                   call tfecmplxl(k1,k2i,kxi,mtfplus)
                   d=.true.
                   c=c .and. tfconstqk(kxi%k)
                   klx%dbody(i)=dtfcopy(kxi)
                 else
                   call tfeexpr(k1,k2i,kxi,mtfplus)
-                  if(ktfnonrealqd(kxi))then
+                  if(ktfnonrealq(kxi))then
                     c=c .and. tfconstqk(kxi%k)
                     d=.true.
                     kxi=dtfcopy(kxi)                  
@@ -274,14 +274,14 @@ c                  m    i    +    -    *    /    v    ^
                     klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
                     d=.true.
                   endif
-                elseif(tflistqd(k2i))then
+                elseif(tflistq(k2i))then
                   call tfecmplxl(k1,k2i,kxi,mtftimes)
                   d=.true.
                   c=c .and. tfconstqk(kxi%k)
                   klx%dbody(i)=dtfcopy(kxi)
                 else
                   call tfeexpr(k1,k2i,kxi,mtftimes)
-                  if(ktfnonrealqd(kxi))then
+                  if(ktfnonrealq(kxi))then
                     c=c .and. tfconstqk(kxi%k)
                     d=.true.
                     kxi=dtfcopy(kxi)                  
@@ -304,14 +304,14 @@ c                  m    i    +    -    *    /    v    ^
                         klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
                         d=.true.
                       endif
-                    elseif(tflistqd(k2i))then
+                    elseif(tflistq(k2i))then
                       call tfecmplxl(k1,k2i,kxi,mtfrevpower)
                       d=.true.
                       c=c .and. tfconstqk(kxi%k)
                       klx%dbody(i)=dtfcopy(kxi)
                     else
                       call tfeexpr(k1,k2i,kxi,mtfrevpower)
-                      if(ktfnonrealqd(kxi))then
+                      if(ktfnonrealq(kxi))then
                         c=c .and. tfconstqk(kxi%k)
                         d=.true.
                         kxi=dtfcopy(kxi)                  
@@ -331,14 +331,14 @@ c                  m    i    +    -    *    /    v    ^
                         klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
                         d=.true.
                       endif
-                    elseif(tflistqd(k2i))then
+                    elseif(tflistq(k2i))then
                       call tfecmplxl(k1,k2i,kxi,mtfrevpower)
                       d=.true.
                       c=c .and. tfconstqk(kxi%k)
                       klx%dbody(i)=dtfcopy(kxi)
                     else
                       call tfeexpr(k1,k2i,kxi,mtfrevpower)
-                      if(ktfnonrealqd(kxi))then
+                      if(ktfnonrealq(kxi))then
                         c=c .and. tfconstqk(kxi%k)
                         d=.true.
                         kxi=dtfcopy(kxi)                  
@@ -359,14 +359,14 @@ c                  m    i    +    -    *    /    v    ^
                       klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
                       d=.true.
                     endif
-                  elseif(tflistqd(k2i))then
+                  elseif(tflistq(k2i))then
                     call tfecmplxl(k1,k2i,kxi,mtfrevpower)
                     d=.true.
                     c=c .and. tfconstqk(kxi%k)
                     klx%dbody(i)=dtfcopy(kxi)
                   else
                     call tfeexpr(k1,k2i,kxi,mtfrevpower)
-                    if(ktfnonrealqd(kxi))then
+                    if(ktfnonrealq(kxi))then
                       c=c .and. tfconstqk(kxi%k)
                       d=.true.
                       kxi=dtfcopy(kxi)                  
@@ -400,14 +400,14 @@ c                  m    i    +    -    *    /    v    ^
                     klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
                     d=.true.
                   endif
-                elseif(tflistqd(k2i))then
+                elseif(tflistq(k2i))then
                   call tfecmplxl(k1,k2i,kxi,mtfpower)
                   d=.true.
                   c=c .and. tfconstqk(kxi%k)
                   klx%dbody(i)=dtfcopy(kxi)
                 else
                   call tfeexpr(k1,k2i,kxi,mtfpower)
-                  if(ktfnonrealqd(kxi))then
+                  if(ktfnonrealq(kxi))then
                     c=c .and. tfconstqk(kxi%k)
                     d=.true.
                     kxi=dtfcopy(kxi)                  
@@ -427,14 +427,14 @@ c                  m    i    +    -    *    /    v    ^
                     klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
                     d=.true.
                   endif
-                elseif(tflistqd(k2i))then
+                elseif(tflistq(k2i))then
                   call tfecmplxl(k1,k2i,kxi,mtfcomplex)
                   d=.true.
                   c=c .and. tfconstqk(kxi%k)
                   klx%dbody(i)=dtfcopy(kxi)
                 else
                   call tfeexpr(k1,k2i,kxi,mtfcomplex)
-                  if(ktfnonrealqd(kxi))then
+                  if(ktfnonrealq(kxi))then
                     c=c .and. tfconstqk(kxi%k)
                     d=.true.
                     kxi=dtfcopy(kxi)                  
@@ -451,10 +451,9 @@ c                  m    i    +    -    *    /    v    ^
         else
           call tfeexpr(k1,k2,kx,iopc1)
         endif
-      elseif(tfcomplexqk(k1%k,kl1r))then
-        if(tflistqd(k2,kl2))then
+      elseif(tfcomplexq(k1,c1))then
+        if(tflistq(k2,kl2))then
           m2=kl2%nl
-          c1=kl1r%cbody(1)
           kx=kxadaloc(-1,m2,klx)
           c=.true.
           d=.false.
@@ -480,14 +479,14 @@ c                  m    i    +    -    *    /    v    ^
                   klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
                   d=.true.
                 endif
-              elseif(tflistqd(k2i))then
+              elseif(tflistq(k2i))then
                 call tfecmplxl(k1,k2i,kxi,iopc1)
                 d=.true.
                 c=c .and. tfconstqk(kxi%k)
                 klx%dbody(i)=dtfcopy(kxi)
               else
                 call tfeexpr(k1,k2i,kxi,iopc1)
-                if(ktfnonrealqd(kxi))then
+                if(ktfnonrealq(kxi))then
                   c=c .and. tfconstqk(kxi%k)
                   d=.true.
                   kxi=dtfcopy(kxi)                  
@@ -501,8 +500,8 @@ c                  m    i    +    -    *    /    v    ^
           call tfeexpr(k1,k2,kx,iopc1)
           return
         endif
-      elseif(tflistqd(k1,kl1))then
-        if(.not. tflistqd(k2,kl2))then
+      elseif(tflistq(k1,kl1))then
+        if(.not. tflistq(k2,kl2))then
           if(iopc1 .eq. mtfpower)then
             call tfecmplxl(k2,k1,kx,mtfrevpower)
           elseif(iopc1 .eq. mtfrevpower)then
@@ -595,12 +594,12 @@ c                  m    i    +    -    *    /    v    ^
                   d=.true.
                 endif
                 cycle
-              elseif(tflistqd(k1i) .or. tflistqd(k2i))then
+              elseif(tflistq(k1i) .or. tflistq(k2i))then
                 call tfecmplxl(k1i,k2i,kxi,mtfplus)
               else
                 call tfeexpr(k1i,k2i,kxi,mtfplus)
               endif
-              if(ktfnonrealqd(kxi))then
+              if(ktfnonrealq(kxi))then
                 c=c .and. tfconstqk(kxi%k)
                 d=.true.
                 kxi=dtfcopy(kxi)                  
@@ -623,12 +622,12 @@ c                  m    i    +    -    *    /    v    ^
                   d=.true.
                 endif
                 cycle
-              elseif(tflistqd(k1i) .or. tflistqd(k2i))then
+              elseif(tflistq(k1i) .or. tflistq(k2i))then
                 call tfecmplxl(k1i,k2i,kxi,mtftimes)
               else
                 call tfeexpr(k1i,k2i,kxi,mtftimes)
               endif
-              if(ktfnonrealqd(kxi))then
+              if(ktfnonrealq(kxi))then
                 c=c .and. tfconstqk(kxi%k)
                 d=.true.
                 kxi=dtfcopy(kxi)                  
@@ -664,12 +663,12 @@ c                  m    i    +    -    *    /    v    ^
                   d=.true.
                 endif
                 cycle
-              elseif(tflistqd(k1i) .or. tflistqd(k2i))then
+              elseif(tflistq(k1i) .or. tflistq(k2i))then
                 call tfecmplxl(k1i,k2i,kxi,mtfrevpower)
               else
                 call tfeexpr(k1i,k2i,kxi,mtfrevpower)
               endif
-              if(ktfnonrealqd(kxi))then
+              if(ktfnonrealq(kxi))then
                 c=c .and. tfconstqk(kxi%k)
                 d=.true.
                 kxi=dtfcopy(kxi)                  
@@ -697,12 +696,12 @@ c                  m    i    +    -    *    /    v    ^
                   klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
                 endif
                 cycle
-              elseif(tflistqd(k1i) .or. tflistqd(k2i))then
+              elseif(tflistq(k1i) .or. tflistq(k2i))then
                 call tfecmplxl(k1i,k2i,kxi,mtfcomplex)
               else
                 call tfeexpr(k1i,k2i,kxi,mtfcomplex)
               endif
-              if(ktfnonrealqd(kxi))then
+              if(ktfnonrealq(kxi))then
                 c=c .and. tfconstqk(kxi%k)
                 d=.true.
                 kxi=dtfcopy(kxi)                  
@@ -724,21 +723,6 @@ c                  m    i    +    -    *    /    v    ^
       endif
       if(c)then
         klx%attr=ior(klx%attr,lconstlist)
-      endif
-      return
-      end
-
-      logical*4 function tfgetcomplex(k,c)
-      use tfstk
-      implicit none
-      type (sad_descriptor) k
-      type (sad_complex), pointer :: cx
-      complex*16 c
-      tfgetcomplex=ktflistqx(k%k,cx) .and.
-     $     cx%head .eq. ktfoper+mtfcomplex .and.
-     $     iand(lnonreallist,cx%attr) .eq. 0 .and. cx%nl .eq. 2 
-      if(tfgetcomplex)then
-        c=cx%cx(1)
       endif
       return
       end

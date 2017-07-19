@@ -4,7 +4,7 @@
       type (sad_descriptor) k
       type (sad_list), pointer ::kl
       integer*4 i
-      if(ktflistqd(k,kl))then
+      if(ktflistq(k,kl))then
         if(ktfreallistqo(kl))then
           id=2
         else
@@ -57,7 +57,7 @@ c          Positio   Cases DeCases
       ind1=ind
 c      call tfdebugprint(k,'tflevelstk',1)
 c      write(*,*)mode,n1,n2,ihead,indf
-      if(n2 .ne. 0 .and. ktflistqd(k,kl))then
+      if(n2 .ne. 0 .and. ktflistq(k,kl))then
         isp1=isp
         m=kl%nl
         if(stack .and. ihead .eq. 1)then
@@ -133,7 +133,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
             endif
             do i=1,m
               ki=kl%dbody(i)
-              if(ktflistqd(ki))then
+              if(ktflistq(ki))then
                 idi=itfdepth(ki)
               else
                 idi=1
@@ -177,7 +177,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
           endif
           do i=1,m
             ki=kl%dbody(i)
-            if(ktflistqd(ki))then
+            if(ktflistq(ki))then
               idi=itfdepth(ki)
             else
               idi=1
@@ -245,7 +245,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
             dtastk(ispf)=kf
             call tfefunrefc(ispf,kx%k,irtc)
           elseif(mode .eq. 2)then
-            if(ktflistqd(kx,klx))then
+            if(ktflistq(kx,klx))then
               isp=ispf
               call tfgetllstkall(klx)
               dtastk(ispf)=kf
@@ -329,7 +329,7 @@ c      write(*,*)'tflevel ',n1,n2
       parameter (maxlevel=2**30)
       real*8 vlmax,v
       parameter (vlmax=1.d8)
-      if(ktfrealqd(k,v))then
+      if(ktfrealq(k,v))then
         ivl=int(max(-vlmax,min(vlmax,v)))
         n1=1
         n2=ivl

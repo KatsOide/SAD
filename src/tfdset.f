@@ -289,7 +289,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       rep=.false.
       sym=.false.
       kx=k
-      if(ktflistqd(k,list))then
+      if(ktflistq(k,list))then
         if(iand(lnodefsymbol,list%attr) .ne. 0)then
           return
         endif
@@ -460,7 +460,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
               endif
               kx=dtbl%bodyc
               if(dtbl%pat .ne. -1)then
-                if(ktflistqd(kx,klx))then
+                if(ktflistq(kx,klx))then
                   call tfleval(klx,kx,.true.,irtc)
                 elseif(ktfsymbolqd(kx))then
                   call tfsyeval(kx,kx,irtc)
@@ -502,7 +502,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       real*8 x,ha
       parameter (ha=7.d0**5+1.d0/7.d0**5)
       equivalence (h,ih),(x,ix),(h1,ih1)
-      if(ktflistqd(k,kl))then
+      if(ktflistq(k,kl))then
         m=kl%nl
         if(m .eq. 0)then
           ih=0
@@ -549,11 +549,11 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       real*8 x,ha,v
       parameter (ha=7.d0**5+1.d0/7.d0**5)
       equivalence (h,ih1),(x,ix)
-      if(ktfrealqd(k,v))then
+      if(ktfrealq(k,v))then
         ih=int(v*ha)
       elseif(ktfoperqd(k,ka))then
         ih=int(ka)
-      elseif(ktflistqd(k,kl))then
+      elseif(ktflistq(k,kl))then
         m=kl%nl
         if(m .eq. 0)then
           ih=0
@@ -603,11 +603,11 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       real*8 x,ha,v
       parameter (ha=7.d0**5+1.d0/7.d0**5)
       equivalence (x,ix)
-      if(ktfrealqd(k,v))then
+      if(ktfrealq(k,v))then
         ih=int(v*ha)
       elseif(ktfoperqd(k,ka))then
         ih=int(ka)
-      elseif(ktflistqd(k,kl))then
+      elseif(ktflistq(k,kl))then
         ih=itfhash1(kl%dbody(0))+kl%nl
       elseif(ktfrefqd(k,ka))then
         if(ka .eq. 0)then
@@ -748,13 +748,13 @@ c      endif
       logical*4 rep,rep1,tfreplacearg,tfreplaceargstk, av
       irtc=0
       kx=k
-      if(ktflistqd(k,list))then
+      if(ktflistq(k,list))then
         kx%k=ktfref
         m=list%nl
         isp1=isp
         kh=list%dbody(0)
         if(ktfreallistqo(list))then
-          if(ktflistqd(kh,klh))then
+          if(ktflistq(kh,klh))then
             if(iand(larglist,klh%attr) .eq. 0)then
               kx=k
               return
@@ -771,7 +771,7 @@ c      endif
           av=.true.
           return
         else
-          if(ktflistqd(kh,klh))then
+          if(ktflistq(kh,klh))then
             if(iand(larglist,klh%attr) .eq. 0)then
               go to 20
             endif
@@ -923,12 +923,12 @@ c      call tfdebugprint(kx,'tfreparg-out',1)
       irtc=0
       rep=.false.
       lx=.false.
-      if(ktflistqd(k,list))then
+      if(ktflistq(k,list))then
         kx=k
         isp1=isp
         kh=list%dbody(0)
         if(ktfreallistqo(list))then
-          if(ktflistqd(kh,klh))then
+          if(ktflistq(kh,klh))then
             if(iand(larglist,klh%attr) .eq. 0)then
               go to 10
             endif
@@ -949,7 +949,7 @@ c      call tfdebugprint(kx,'tfreparg-out',1)
           dtastk(isp)=kx
           return
         else
-          if(ktflistqd(kh,klh))then
+          if(ktflistq(kh,klh))then
             if(iand(larglist,klh%attr) .eq. 0)then
               go to 20
             endif
@@ -1009,7 +1009,7 @@ c              call tfdebugprint(list%body(i),'==>',3)
               endif
               if(irtc .eq. 0)then
                 lx=.true.
-                if(ktflistqd(kx,klx))then
+                if(ktflistq(kx,klx))then
                   if(klx%head .eq. ktfoper+mtfnull)then
                     isp=isp1
                     call tfgetllstkall(klx)
@@ -1088,7 +1088,7 @@ c          endif
           ks=symd%value
 c          call tfdebugprint(k,'tfrepargstk-symbol',1)
 c          call tfdebugprint(ks,':= ',1)
-          if(ktflistqd(ks) .or. ktfrefqd(ks))then
+          if(ktflistq(ks) .or. ktfrefqd(ks))then
             call tfgetstkstk(ks,rep)
           else
             isp=isp+1
@@ -1125,7 +1125,7 @@ c          write(*,*)'with ',symd%sym%override
             ki=dtastk(i)
             if(ktfrefqd(ki))then
               call tfgetstkstk(ki,rep1)
-            elseif(ktflistqd(ki,kli))then
+            elseif(ktflistq(ki,kli))then
               if(kli%head .eq. ktfoper+mtfnull)then
                 call tfgetllstkall(kli)
               else
@@ -1142,7 +1142,7 @@ c          write(*,*)'with ',symd%sym%override
         isp=isp+1
         dtastk(isp)=dxnull
         return
-      elseif(ktflistqd(ks,kl))then
+      elseif(ktflistq(ks,kl))then
         if(kl%head .eq. ktfoper+mtfnull)then
           call tfgetllstkall(kl)
           rep=.true.
@@ -1313,7 +1313,7 @@ c          write(*,*)'with ',symd%sym%override
       logical*4 rep,member,tfconstqk,tfsymbollistqo
       irtc=0
       kx=dtbl%bodyc
-      if(ktflistqd(kx,klx))then
+      if(ktflistq(kx,klx))then
         if(.not. tfsymbollistqo(klx))then
           dtbl%compile=1.d100
           return
@@ -1344,7 +1344,7 @@ c        call tfdebugprint(kx,'setarg-const',3)
         endif
         if(member)then
           dtbl%compile=rlist(levelcompile)
-          if(ktflistqd(kx,klx))then
+          if(ktflistq(kx,klx))then
             if(iand(lmemberlist,klx%attr) .ne. 0)then
               call tfrecompilearg(kx,kx,rep,irtc)
               if(irtc .ne. 0)then
@@ -1361,7 +1361,7 @@ c        call tfdebugprint(kx,'setarg-const',3)
           dtbl%compile=1.d100
         endif
       else
-        if(ktflistqd(kx,klx))then
+        if(ktflistq(kx,klx))then
           if(iand(lmemberlist,klx%attr) .ne. 0)then
             call tfrecompilearg(kx,kx,rep,irtc)
             if(irtc .ne. 0)then
@@ -1403,7 +1403,7 @@ c        call tfdebugprint(kx,'setarg-const',3)
           rep=.true.
         endif
         return
-      elseif(ktflistqd(k,list))then
+      elseif(ktflistq(k,list))then
         call tfsetuparg(list%dbody(0),ispr,nrule2,k1,rep,member,irtc)
         if(irtc .ne. 0)then
           return
@@ -1516,7 +1516,7 @@ c        call tfdebugprint(kx,'setarg-const',3)
       irtc=0
       rep=.false.
       kx=k
-      if(ktflistqd(k,list))then
+      if(ktflistq(k,list))then
         if(iand(list%attr,lmemberlist) .eq. 0)then
           return
         endif

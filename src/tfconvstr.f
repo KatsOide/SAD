@@ -159,7 +159,7 @@
       endif
       if(.not. ktfstringqd(dtastk(isp1+1),str1) .or.
      $     .not. ktfstringqd(dtastk(isp-1),str2) .or.
-     $     .not. ktfrealqd(dtastk(isp)))then
+     $     .not. ktfrealq(dtastk(isp)))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"[String, String, Real]"')
         return
@@ -375,7 +375,7 @@ c      include 'DEBUG.inc'
             istandf=kxsymbolz('StandardForm',12)
           endif
           do i=isp,isp1+2,-1
-            if(ktflistqd(dtastk(i)))then
+            if(ktflistq(dtastk(i)))then
               call tfgetoption('FormatType',dtastk(i),k1,irtc)
             else
               k1=dtastk(i)
@@ -589,7 +589,7 @@ c      include 'DEBUG.inc'
         return
       endif
       if(isp .eq. isp1+3)then
-        if(.not. ktfrealqd(dtastk(isp)))then
+        if(.not. ktfrealq(dtastk(isp)))then
           irtc=itfmessage(9,'General::wrongtype',
      $         '"Real for #3"')
           return
@@ -617,7 +617,7 @@ c      include 'DEBUG.inc'
             endif
           enddo
         endif
-      elseif(tflistqd(dtastk(isp1+2),kl))then
+      elseif(ktflistq(dtastk(isp1+2),kl))then
         LOOP_I: do i=1,kl%nl
           ki=kl%dbody(i)
           if(.not. ktfstringqd(ki,stri))then

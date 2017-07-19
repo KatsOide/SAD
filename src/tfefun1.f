@@ -19,7 +19,7 @@
       do i=1,min(na,isp-isp1)
         ispi=isp1+i
         if(ilist(1,ka+i) .ne. 0)then
-          if(tflistqk(ktastk(ispi),kli))then
+          if(tflistq(ktastk(ispi),kli))then
             kispi=dtastk(ispi)
             m=kli%nl
             kx=kxaaloc(-1,m,klx)

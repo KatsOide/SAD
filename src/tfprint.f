@@ -70,7 +70,7 @@ c          call tfdebugprint(kx,'tfprint',1)
                 go to 9000
               endif
             endif
-          elseif(ktflistqd(kx,klx))then
+          elseif(ktflistq(kx,klx))then
             if(klx%head .ne. ktfoper+mtfcomplex .and.
      $           klx%head .ne. ktfoper+mtflist .and.
      $           ktfoperqd(klx%dbody(0)) .and. klx%ref .le. 0)then

@@ -354,7 +354,7 @@ c      write(*,'(a,1p6g15.7)')'tfetwiss ',detm,ax,ay,az,f,xyth
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
-      if(.not. tfnumlistqnk(dtastk(isp),ntwissfun,kl))then
+      if(.not. tfnumlistqn(dtastk(isp),ntwissfun,kl))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"Real List of Length 28"')
         return
@@ -1104,7 +1104,8 @@ c        write(*,*)'temit-7101: ',emit1(6),emit1(27)
       use touschek_table
       use tmacro
       implicit none
-      type (sad_list), pointer :: klx,klx1,klx2
+      type (sad_list), pointer :: klx1
+      type (sad_dlist), pointer :: klx2,klx
       type (sad_rlist), pointer :: klx1d,klx1l
       integer*4 itmax,ia,m,n
       real*8 resib,dcmin

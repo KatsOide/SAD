@@ -4,6 +4,7 @@
       use ffs_pointer
       use tffitcode
       implicit none
+      type (sad_comp), pointer :: cmp
       integer*4 lfno,kk1,k1,i,kk2,k2,ielm,lenw
       real*8 co,v,getva
       character*(MAXPNAME+16) ele1,ele2,name
@@ -60,7 +61,8 @@
           couple(kk2)=1.d0
         endif
       endif
-      v=rlist(latt(kk2)+ival(k2))/errk(1,kk2)
+      v=tfvalvar(kk2,ival(k2))/errk(1,kk2)
+c      v=rlist(latt(kk2)+ival(k2))/errk(1,kk2)
       if(comp)then
         if(kk1 .eq. kk2 .and. klp(iele1(kk1)) .eq. kk1)then
           co=1.d0
@@ -76,21 +78,21 @@
         else
           do i=1,nlat-1
             if(iele(i) .eq. kk1 .and. i .ne. kk1)then
-              call tfdecoupcomp(i,lfno,iele,iele1,
-     $             mult,klp,couple)
+              call tfdecoupcomp(i,lfno)
             endif
           enddo
         endif
         iele(kk1)=kk2
         couple(kk1)=co
-        rlist(latt(kk1)+ival(k1))=v*errk(1,kk1)*co
+        call compelc(kk1,cmp)
+        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
+c        rlist(latt(kk1)+ival(k1))=v*errk(1,kk1)*co
       else
         if(k1 .ne. k2)then
           do i=1,nlat-1
             if(iele1(i) .ne. k1)then
               if(iele1(iele(i)) .eq. k1)then
-                call tfdecoupcomp(
-     $               i,lfno,iele,iele1,mult,klp,couple)
+                call tfdecoupcomp(i,lfno)
               endif
             else
               iele(i)=kk2

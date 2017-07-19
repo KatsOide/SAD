@@ -1330,7 +1330,7 @@ c        endif
       if(irtc .ne. 0)then
         go to 9010
       endif
-      if(.not. tflistqk(km))then
+      if(.not. tflistq(km))then
         go to 9000
       endif
       kam=ktfaddr(km)

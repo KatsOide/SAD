@@ -19,7 +19,7 @@
       codin=0.d0
       beamin=0.d0
       if(narg .eq. 3)then
-        if(tflistqk(ktastk(isp),kl))then
+        if(tflistq(ktastk(isp),kl))then
           if(tfreallistqd(kl%dbody(1),kl1))then
             if(kl1%nl .ne. 6)then
               irtc=itfmessage(9,'General::wrongval',

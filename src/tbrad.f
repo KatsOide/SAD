@@ -612,7 +612,7 @@ c     end   initialize for preventing compiler warning
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
-      if(.not. tflistqk(ktastk(isp1+1),klp))then
+      if(.not. tflistq(ktastk(isp1+1),klp))then
         irtc=itfmessage(9,'General::wrongtype','"List for #1"')
         return
       endif

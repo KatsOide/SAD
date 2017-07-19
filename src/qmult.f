@@ -3,7 +3,7 @@
      1     dx,dy,dz,chi1,chi2,theta,dtheta,
      $     eps0,fringe,f1in,f2in,f1out,f2out,
      $     mfring,fb1,fb2,bfrm,
-     $     vc,harm,phi,freq,wakew1,autophi,coup)
+     $     vc,harm,phi,freq,wakew1,autophi,ini,coup)
       use tfstk
       use ffs
       use tffitcode
@@ -16,10 +16,12 @@
      $     vc,harm,phi,freq,wakew1,
      $     psi1,psi2,phi0,dtheta,apsi1,apsi2,fb1,fb2
       complex*16 ak(0:nmult)
-      logical*4 fringe,coup,rfsw0,bfrm,autophi
+      logical*4 fringe,coup,rfsw0,bfrm,autophi,ini
       rfsw0=rfsw
       rfsw=rfsw .and. trpt
-      call tinitr(transe)
+      if(ini)then
+        call tinitr(transe)
+      endif
       call tmulte(transe,cod,beam,k,al,ak,bz,
      $     phi0,psi1,psi2,apsi1,apsi2,
      1     dx,dy,dz,chi1,chi2,theta,dtheta,

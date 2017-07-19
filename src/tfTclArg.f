@@ -129,7 +129,7 @@ c        write(*,*)'unicode ',buf(1:m)
             isp0=isp
             isp=isp+1
             ktastk(isp)=klist(kai+2)
-            list=tflistqk(ktastk(isp))
+            list=tflistq(ktastk(isp))
             if(list)then
               call putstringbufb1(strb,'{')
             endif
@@ -206,7 +206,7 @@ c        write(*,*)'unicode ',buf(1:m)
           if(irtc .ne. 0)then
             go to 9000
           endif
-        elseif(ktfrealqd(ki))then
+        elseif(ktfrealq(ki))then
           call tfconvreal(strb,rtastk(i))
         elseif(ki%k .eq. ktfoper+mtfnull)then
           cycle LOOP_I
@@ -317,8 +317,8 @@ c        write(*,*)'unicode ',buf(1:m)
         k1=kl%dbody(1)
         if(ktfsymbolqd(k1) .or. ktfoperqd(k1))then
           k2=kl%dbody(2)
-          if(ktfrealqd(k2) .or. ktfstringqd(k2) .or.
-     $         ktflistqd(k2,k2l) .and.
+          if(ktfrealq(k2) .or. ktfstringqd(k2) .or.
+     $         ktflistq(k2,k2l) .and.
      $         k2l%head .eq. ktfoper+mtflist)then
             isp3=isp
             isp=isp+1
@@ -336,9 +336,9 @@ c            call tfdebugprint(kx,'TkOptionLabel',2)
               call putstringbufb(strb,str%str(2:str%nch-1),
      $             str%nch-2,full)
               dtastk(isp3+1)=kxstringbuftostring(strb)
-              if(ktfrealqd(k2,x))then
+              if(ktfrealq(k2,x))then
                 k2%k=ktfstring+ktrsaloc(-1,x)
-              elseif(ktflistqd(k2,k2l))then
+              elseif(ktflistq(k2,k2l))then
                 call getstringbuf(strb,0,.true.)
                 do i=1,k2l%nl
                   k2i=k2l%dbody(i)

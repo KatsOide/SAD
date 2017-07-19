@@ -156,7 +156,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
             ivi=iv
           endif
           ivvar(i)=ivi
-          valvar2(i,1)=rlist(latt(k)+ivi)
+          valvar2(i,1)=tfvalvar(k,ivi)
           ivcomp(i)=ivck
           if(ivi .eq. ival(kk))then
             if(comp)then

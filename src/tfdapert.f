@@ -25,7 +25,7 @@
       iv(1:2)=int(kml%rbody(1:2))
       iv(3)=6-iv(1)-iv(2)
       kc=dtastk(isp1+1)
-      if(.not. tflistqd(kc,klc))then
+      if(.not. tflistq(kc,klc))then
         irtc=itfmessage(9,'General::wrongtype','"List for #1"')
         return
       endif
@@ -49,7 +49,7 @@
         return
       endif
       n1=min(200,klc1%nl)
-      if(ktfnonrealqdi(dtastk(isp1+2),lfno))then
+      if(ktfnonrealq(dtastk(isp1+2),lfno))then
         return
       endif
       if(.not. tfreallistqd(dtastk(isp1+4),klp))then
@@ -63,12 +63,12 @@
         return
       endif
       phi=klp%rbody(1:3)
-      if(ktfnonrealqd(dtastk(isp1+5),damp))then
+      if(ktfnonrealq(dtastk(isp1+5),damp))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"Real for #5"')
         return
       endif
-      if(ktfnonrealqd(dtastk(isp1+6),dampenough))then
+      if(ktfnonrealq(dtastk(isp1+6),dampenough))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"Real for #6"')
         return

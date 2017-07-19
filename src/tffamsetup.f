@@ -36,7 +36,7 @@ c      parameter (sqrt3=sqrt(3.d0))
         go to 9100
       endif
 c      call tfdebugprint(kx,'famsetup',1)
-      if(.not. tflistqk(kx,kl))then
+      if(.not. tflistq(kx,kl))then
         go to 9100
       endif
       m=kl%nl

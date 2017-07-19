@@ -44,7 +44,7 @@
         endif
       endif
       if(eval)then
-        if(ktflistqd(ke,kle))then
+        if(ktflistq(ke,kle))then
 c          call tfdebugprint(ke,'tfmodule',1)
           call tfleval(kle,kx,.true.,irtc)
 c          call tfdebugprint(kx,'tfmodule-1',1)
@@ -117,7 +117,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
             isp=isp+2
             dtastk(isp-1)=ki
             dtastk(isp  )=kxnaloc1(lg,symi%loc)
-          elseif(ktflistqd(ki,kli))then
+          elseif(ktflistq(ki,kli))then
             if(kli%head .ne. ktfoper+mtfset .and.
      $           kli%head .ne. ktfoper+mtfsetdelayed)then
               go to 100
@@ -128,7 +128,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
             ki1=kli%dbody(1)
             ki2=kli%dbody(2)
             if(kli%head .eq. ktfoper+mtfset)then
-              if(ktflistqd(ki2,kli2))then
+              if(ktflistq(ki2,kli2))then
                 isps=isp
                 call tfleval(kli2,ki2,.true.,irtc)
                 if(irtc .ne. 0)then
@@ -142,10 +142,10 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
                 endif
               endif
             endif
-            if(ktflistqd(ki1,kli1))then
+            if(ktflistq(ki1,kli1))then
               if(kli1%head .eq. ktfoper+mtflist)then
                 mi=kli1%nl
-                if(tflistqd(ki2,kli2))then
+                if(tflistq(ki2,kli2))then
                   if(kli2%nl .ne. mi)then
                     irtc=itfmessage(9,'General::equalleng',
      $                   'lhs and rhs of Set')
@@ -206,7 +206,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
             isp=isp+2
             dtastk(isp-1)=ki
             dtastk(isp  )=dxsycopy(symi)
-          elseif(ktflistqd(ki,kli))then
+          elseif(ktflistq(ki,kli))then
             if(kli%head .ne. ktfoper+mtfset .and.
      $           kli%head .ne. ktfoper+mtfsetdelayed)then
               go to 100
@@ -215,7 +215,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
               go to 100
             endif
             ki1=kli%dbody(1)
-            if(tflistqd(ki1,kli1))then
+            if(tflistq(ki1,kli1))then
               if(ktfreallistqo(kli1))then
                 go to 100
               endif
@@ -276,11 +276,11 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
               exit
             endif
           enddo
-        elseif(ktflistqd(kj,klj))then
+        elseif(ktflistq(kj,klj))then
           isp=isp+1
           ktastk(isp)=klj%head
           k1=klj%dbody(1)
-          if(ktflistqd(k1,kl1))then
+          if(ktflistq(k1,kl1))then
             call tfredefslist(isp1,isp2,kl1,k11)
             isp=isp+1
             dtastk(isp)=k11
@@ -317,7 +317,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
-      if(.not. tflistqk(ktastk(isp1+1),list))then
+      if(.not. tflistq(ktastk(isp1+1),list))then
         irtc=itfmessage(9,'General::wrongtype','"List"')
         return
       endif
@@ -329,7 +329,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
         do i=1,list%nl
           isp=isp+2
           ki=list%dbody(i)
-          if(ktflistqd(ki,listi))then
+          if(ktflistq(ki,listi))then
             if(listi%head .eq. ktfoper+mtfset .or.
      $           listi%head .eq. ktfoper+mtfsetdelayed)then
               k1=listi%dbody(1)
@@ -337,7 +337,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
               if(eval)then
                 if(.not. tfconstpatternqk(k1%k))then
                   ivstk2(2,isp-1)=1
-                elseif(.not. ktfrealqd(k1))then
+                elseif(.not. ktfrealq(k1))then
                   ivstk2(2,isp-1)=0
                 endif
                 symbol=symbol .and. ktfsymbolqd(k1)
@@ -360,7 +360,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
             symbol=symbol .and. ktfsymbolqd(ki)
             if(.not. tfconstpatternqk(ki%k))then
               ivstk2(2,isp-1)=1
-            elseif(.not. ktfrealqd(ki))then
+            elseif(.not. ktfrealq(ki))then
               ivstk2(2,isp-1)=0
             endif
             dtastk(isp-1)=ki
@@ -369,7 +369,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
             cycle
           endif
  30       if(eval)then
-            if(ktflistqd(ki,listi))then
+            if(ktflistq(ki,listi))then
               call tfleval(listi,kxi,.true.,irtc)
             else
               call tfeevalref(ki,kxi,irtc)
@@ -422,7 +422,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
         endif
       endif
       if(eval)then
-        if(ktflistqd(kx,klx))then
+        if(ktflistq(kx,klx))then
           call tfleval(klx,kx,.true.,irtc)
         elseif(ktfsymbolqd(kx) .or. ktfpatqd(kx))then
           call tfeevalref(kx,kx,irtc)
@@ -445,7 +445,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
       integer*4 isp1,isp2,i,isp0
       logical*4 rep,rep1
       rep=.false.
-      if(ktflistqd(k,list))then
+      if(ktflistq(k,list))then
         isp=isp+1
         isp0=isp
         call tfredefsymbol(isp1,isp2,list%dbody(0),dtastk(isp),rep)

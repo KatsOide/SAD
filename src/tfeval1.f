@@ -21,7 +21,7 @@
           call tfcmplx(k1,k2,kx,iopc1,irtc)
           return
         endif
-        if(tflistqd(k2) .or. tflistqd(k1))then
+        if(tflistq(k2) .or. tflistq(k1))then
           call tfearray(k1,k2,kx,iopc1,irtc)
         else
           call tfeexpr(k1,k2,kx,iopc1)
@@ -79,7 +79,7 @@
       type (sad_list), pointer :: kl1
       integer*4 iopc,irtc
       logical*4 old
-      if(ktflistqd(k1,kl1))then
+      if(ktflistq(k1,kl1))then
         call tfleval(kl1,kv,.true.,irtc)
         if(irtc .ne. 0)then
           return
@@ -154,7 +154,7 @@
         if(irtc .gt. 0)then
           return
         endif
-        if(ktflistqd(k10,kl))then
+        if(ktflistq(k10,kl))then
           if(kl%head .eq. ktfoper+mtfpart)then
             call tfleval(kl,kx,.false.,irtc)
             if(irtc .ne. 0)then
@@ -283,7 +283,7 @@
       irtc=0
       tfgetstoredp=.false.
       ks=ks0
-      do while(ktflistqd(ks,lists))
+      do while(ktflistq(ks,lists))
         def=.true.
         ks=lists%dbody(0)
       enddo
@@ -326,7 +326,7 @@
       k1=k10
       k2=k20
       kx=k2
-      if(ktflistqd(k1,list))then
+      if(ktflistq(k1,list))then
         ka=list%dbody(0)
         if(ktfoperqd(ka,kaa))then
           select case (kaa)
@@ -346,7 +346,7 @@
           go to 9900
         elseif(ktfsymbolqdef(ka%k,symd))then
           if(symd%sym%override .eq. -2)then
-            if(ktflistqd(symd%value,kls1) .and.
+            if(ktflistq(symd%value,kls1) .and.
      $           kls1%head .eq. ktfoper+mtflist)then
               kas=ktadaloc(-1,list%nl+1,kls)
               kls%head=ktfoper+mtfpart
@@ -360,8 +360,8 @@
           else
             go to 9900
           endif
-        elseif(ktflistqd(ka,kla))then
-          do while(ktflistqd(ka,kla))
+        elseif(ktflistq(ka,kla))then
+          do while(ktflistq(ka,kla))
             ka=kla%dbody(0)
           enddo
           if(.not. ktfsymbolqdef(ka%k,symd))then
@@ -390,7 +390,7 @@
         endif
         call sym_symdef(sym,symd)
         if(ktfrefqd(symd%value,kar))then
-          if(ktfrealqd(k2))then
+          if(ktfrealq(k2))then
             dlist(kar)=k2
             kx=k2
             return
@@ -407,8 +407,10 @@
         call tflocald(symd%value)
         symd%value=ks
       elseif(ktfrefqd(k1,ka1))then
-        if(ka1 .gt. 0 .and. ktfrealqd(k2))then
-          dlist(ka1)=k2
+c        if(ka1 .gt. 0 .and. ktfrealq(k2))then
+        if(ka1 .gt. 0)then
+          call tflocald(dlist(ka1))
+          dlist(ka1)=dtfcopy(k2)
         else
           irtc=itfmessage(999,'General::invset',
      $         '"Illegal Momory Location"')
@@ -435,7 +437,7 @@
       if(irtc .ne. 0)then
         return
       endif
-      do while(ktflistqd(ks,kls))
+      do while(ktflistq(ks,kls))
         ks=kls%dbody(0)
       enddo
       if(.not. ktfsymbolqd(ks,syms))then
@@ -458,13 +460,13 @@
           irtc=itfmessage(9,'General::samesymbol',' ')
           return
         endif
-      elseif(ktflistqd(kl,kll))then
+      elseif(ktflistq(kl,kll))then
         if(ktfprotectedqo(syms) .and. syms%gen .ne. -3)then
           irtc=itfmessage(9,'General::protect','""')
           return
         endif
         kh=kll%dbody(0)
-        do while(ktflistqd(kh,klh))
+        do while(ktflistq(kh,klh))
           kh=klh%dbody(0)
         enddo
         call sym_symdef(syms,symd)
@@ -497,11 +499,11 @@
       do i=1,list%nl
         ki=list%dbody(i)
         ki0=ki
-        if(ktflistqd(ki,kli))then
+        if(ktflistq(ki,kli))then
           ki=kli%dbody(0)
-          if(ktflistqd(ki))then
+          if(ktflistq(ki))then
             ki0=ki
-            do while(ktflistqd(ki,kli))
+            do while(ktflistq(ki,kli))
               ki=kli%dbody(0)
             enddo
           endif

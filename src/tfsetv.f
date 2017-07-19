@@ -17,12 +17,14 @@
             iv=ivvar(j)
             if(iv .eq. ival(ie) .and. ivarele(j) .eq. ie
      $           .and. (ivcomp(j) .eq. 0 .or. ivcomp(j) .eq. ii))then
-              cmp%value(iv)=valvar(j)*errk(1,i)*couple(i)
+              call tfsetcmp(valvar(j)*errk(1,i)*couple(i),cmp,iv)
+c              cmp%value(iv)=valvar(j)*errk(1,i)*couple(i)
               cmp%update=0
             elseif(iv .ne. 0 .and. iv .ne. ival(ie) .and.
      $             ivarele(j) .eq. ie1
      $             .and. (ivcomp(j) .eq. 0 .or. ivcomp(j) .eq. i))then
-              cmp%value(iv)=valvar(j)
+              call tfsetcmp(valvar(j),cmp,iv)
+c              cmp%value(iv)=valvar(j)
               cmp%update=0
             endif
             if(ivarele(j) .gt. ie)then
@@ -54,9 +56,9 @@
           k=klp(ie)
         endif
         if(iv .eq. ival(ie))then
-          valvar(i)=rlist(latt(k)+iv)/errk(1,k)
+          valvar(i)=tfvalvar(k,iv)/errk(1,k)
         else
-          valvar(i)=rlist(latt(k)+iv)
+          valvar(i)=tfvalvar(k,iv)
         endif
       enddo
       return
@@ -65,12 +67,15 @@
       subroutine tfsavevar(ie,ntouch)
       use tfstk
       use ffs_pointer
+      use sad_main
       implicit none
+      type (sad_comp), pointer :: cmps,cmpd
       integer*4 ntouch,i,ie
       do i=1,ntouch
         if(itouchele(i) .eq. ie)then
-          rlist(idvalc(klp(ie))+itouchv(i))=
-     $         rlist(latt(klp(ie))+itouchv(i))
+          call loc_comp(latt(klp(ie)),cmps)
+          call loc_comp(idvalc(klp(ie)),cmpd)
+          call tfvcopycmp(cmps,cmpd,itouchv(i),1.d0)
         endif
       enddo
       return
@@ -83,11 +88,11 @@
       use tffitcode
       use tfcsi, only:icslfno
       implicit none
-      type (sad_comp), pointer :: cmp
       integer*4 itv(ntouch+1),ite(nele+1)
       integer*4 ntouch,i,ie,j,irtc,ie1,ntv,k
       ite=0
       ntv=0
+c      write(*,*)'tffsadjust ',ntouch
       do j=1,ntouch
         if(ival(itouchele(j)) .ne. itouchv(j))then
           ntv=ntv+1
@@ -98,33 +103,24 @@
       if(ntv .eq. 0)then
         do i=1,nlat-1
           ie=iele1(iele(i))
-          if(ie .ne. 0 .and. ival(ie) .ne. 0)then
-            call compelc(i,cmp)
-            cmp%value(ival(ie))
-     $           =rlist(latt(iele(i))+ival(ie))
-     $           /errk(1,iele(i))*errk(1,i)*couple(i)
-            cmp%update=0
+          if(iele(i) .ne. i .and. ie .ne. 0 .and. ival(ie) .ne. 0)then
+            call tfvcopy(iele(i),i,ival(ie),
+     $           errk(1,i)*couple(i)/errk(1,iele(i)))
           endif
         enddo
       else
         do i=1,nlat-1
           ie=iele1(iele(i))
           ie1=iele1(i)
-          if(ie .ne. 0 .and. ival(ie) .ne. 0)then
-            call compelc(i,cmp)
-            cmp%value(ival(ie))
-     $           =rlist(latt(iele(i))+ival(ie))
-     $           /errk(1,iele(i))*errk(1,i)*couple(i)
-            cmp%update=0
+          if(ie .ne. 0 .and. i .ne. iele(i) .and. ival(ie) .ne. 0)then
+            call tfvcopy(iele(i),i,ival(ie),
+     $           errk(1,i)*couple(i)/errk(1,iele(i)))
           endif
           if(ite(ie1) .ne. 0)then
-            call compelc(i,cmp)
             do k=1,ntv
               j=itv(k)
-              if(itouchele(j) .eq. ie1)then
-                cmp%value(itouchv(j))
-     $               =rlist(latt(klp(ie1))+itouchv(j))
-                cmp%update=0
+              if(itouchele(j) .eq. ie1 .and. klp(ie1) .ne. i)then
+                call tfvcopy(klp(ie1),i,itouchv(j),1.d0)
               endif
             enddo
           endif
@@ -153,7 +149,7 @@
       endif
       irtc=0
       k=symdcoupv%value
-      if(tflistqd(k,kl))then
+      if(tflistq(k,kl))then
         if(kl%nl .eq. 0)then
           return
         endif

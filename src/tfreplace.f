@@ -8,7 +8,7 @@
       irtc=0
       isp1=isp
       symbol=.true.
-      if(tflistqd(kr,klr))then
+      if(tflistq(kr,klr))then
         call tfflattenstk(klr,-1,ktfoper+mtflist,irtc)
         if(irtc .ne. 0)then
           go to 9000
@@ -16,7 +16,7 @@
         nrule=isp-isp1
         do i=isp,isp1+1,-1
           ki=dtastk(i)
-          if(tfruleqk(ki%k,lri))then
+          if(tfruleq(ki%k,lri))then
             j=i+i-isp1
             ktastk(j-1:j)=lri%body(1:2)
             if(.not. tfconstpatternqk(ktastk(j-1)))then
@@ -36,7 +36,7 @@
           endif
         enddo
         isp=isp+nrule
-      elseif(tfruleqk(kr%k,lr))then
+      elseif(tfruleq(kr%k,lr))then
         call tfgetllstkall(lr)
         if(.not. tfconstpatternqk(ktastk(isp-1)))then
           ivstk2(2,isp-1)=1
@@ -78,7 +78,7 @@
       integer*4 ispr,nrule,i,isp0
       do i=ispr+1,ispr+nrule*2,2
         kp=dtastk(i)
-        if(ktfnonrealqd(kp) .and. ivstk2(2,i) .eq. 1)then
+        if(ktfnonrealq(kp) .and. ivstk2(2,i) .eq. 1)then
           isp0=isp
           call tfinitpat(isp0,kp)
           ivstk2(1,i)=isp0
@@ -93,7 +93,7 @@
       implicit none
       integer*4 ispr,nrule,i
       do i=ispr+1,ispr+nrule*2,2
-        if(ktfpatqd(dtastk(i)) .or. ktflistqd(dtastk(i)))then
+        if(ktfpatqd(dtastk(i)) .or. ktflistq(dtastk(i)))then
           call tfresetpat(dtastk(i))
         endif
       enddo
@@ -121,7 +121,7 @@
         kp=dtastk(i)
         noreal=noreal .and. ktfnonrealq(kp%k) .and.
      $       ivstk2(2,i) .eq. 0
-        if(ktfnonrealqd(kp) .and. ivstk2(2,i) .ne. 0)then
+        if(ktfnonrealq(kp) .and. ivstk2(2,i) .ne. 0)then
           iop=iordless
           iordless=0
           m=itfpmat(k,kp)
@@ -155,7 +155,7 @@
         kx=k
         return
       endif
-      if(ktflistqd(k,kl))then
+      if(ktflistq(k,kl))then
         if(noreal .and. ktfreallistqo(kl))then
           ki=kl%dbody(0)
           call tfreplacestk(ki,ispr,nrule,k1,.true.,rep,irtc)
@@ -189,7 +189,7 @@
             endif
             rep=rep .or. rep1
             dtastk(isp)=kir
-            if(ktflistqd(kir,klir))then
+            if(ktflistq(kir,klir))then
               kair=ktfaddrd(kir)
               if(klir%head .eq. ktfoper+mtfnull)then
                 if(ktastk(isp1+1) .ne. ktfoper+mtffun)then
@@ -279,7 +279,7 @@
       irtc=0
       rep=.false.
       kx=k
-      if(ktflistqd(k,kl))then
+      if(ktflistq(k,kl))then
         if(.not. tfsymbollistqo(kl))then
 c     call tfdebugprint(ktflist+ktfaddr(k),'repsymstk',3)
           return
@@ -614,7 +614,7 @@ c        endif
         return
       endif
       ki=list%dbody(1)
-      if(ktfrealqd(ki) .or. ktfstringqd(ki) .or. ktfoperqd(ki))then
+      if(ktfrealq(ki) .or. ktfstringqd(ki) .or. ktfoperqd(ki))then
         isp=isp+1
         dtastk(isp)=ki
       else
@@ -645,7 +645,7 @@ c        endif
         j=isp+1
         if(i .le. list%nl)then
           ki=list%dbody(i)
-          if(ktfrealqd(ki) .or. ktfstringqd(ki) .or. ktfoperqd(ki))then
+          if(ktfrealq(ki) .or. ktfstringqd(ki) .or. ktfoperqd(ki))then
             kx=ki
           else
             call tfreplacesymbolstk1(ki,ispr,nrule,kr,scope,rep1,irtc)
@@ -668,7 +668,7 @@ c        endif
       endif
       do i=2,list%nl
         ki=list%dbody(i)
-        if(ktfrealqd(ki) .or. ktfstringqd(ki) .or. ktfoperqd(ki))then
+        if(ktfrealq(ki) .or. ktfstringqd(ki) .or. ktfoperqd(ki))then
           isp=isp+1
           dtastk(isp)=ki
         else
@@ -702,7 +702,7 @@ c        endif
       ispa=isp
       k1=list%dbody(1)
       rep=.false.
-      if(tflistqd(k1,kl1))then
+      if(tflistq(k1,kl1))then
         ktastk(ispa+1:ispa+nrule*2)=ktastk(ispr+1:ispr+nrule*2)
         ktastk2(ispa+1:ispa+nrule*2)=ktastk2(ispr+1:ispr+nrule*2)
 c        do i=1,nrule*2
@@ -778,7 +778,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
         list%head=ktfoper+mtfhold
         call tfreplacesymbolstk1(ktflist+ksad_loc(list%head),ispa,nrule,
      $       kx,.true.,rep,irtc)
-        if(irtc .eq. 0 .and. ktflistqd(kx,klx))then
+        if(irtc .eq. 0 .and. ktflistq(kx,klx))then
           klx%head=ksave
         endif
         list%head=ksave
@@ -799,7 +799,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       irtc=0
       isp1=isp
       k1=list%dbody(1)
-      if(tflistqd(k1,kl1))then
+      if(tflistq(k1,kl1))then
         do i=1,kl1%nl
           ki=kl1%body(i)
           if(ktfsymbolq(ki))then
@@ -829,7 +829,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       list%head=ktfoper+mtfhold
       call tfreplacesymbolstk1(ktflist+ksad_loc(list%head),ispr,nrule,
      $     kx,.true.,rep1,irtc)
-      if(irtc .eq. 0 .and. ktflistqd(kx,klx))then
+      if(irtc .eq. 0 .and. ktflistq(kx,klx))then
         klx%head=ksave
       endif
       list%head=ksave
@@ -873,7 +873,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       integer*4 irtc
       character*(*) symbol
       logical*4 rep
-      if(tfruleqk(kr%k,lr))then
+      if(tfruleq(kr%k,lr))then
         call tfgetoption1(ktfsymbolz(symbol,len(symbol)),lr,kx,rep)
         irtc=0
         if(.not. rep)then
@@ -929,7 +929,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
         enddo
       endif
       do i=isp0,isp1,-1
-        if(.not. tfruleqk(ktastk(i)))then
+        if(.not. tfruleq(ktastk(i)))then
           ispopt=i+1
           go to 1
         endif

@@ -36,7 +36,7 @@
           endif
         endif
       endif
-      if(.not. tflistqk(ktastk(isp1+2)))then
+      if(.not. tflistq(ktastk(isp1+2)))then
         write(*,*)'canvasclip-1'
         irtc=itfmessage(9,'General::wrongtype','"List for #2"')
         return
@@ -67,7 +67,7 @@
       ymax=rlist(ka2+2)
       isp0=isp
       ka=ktfaddr(ktastk(isp1+1))
-      if(.not. tflistqk(ktastk(isp1+1)))then
+      if(.not. tflistq(ktastk(isp1+1)))then
         go to 9100
       endif
       if(ilist(2,ka-1) .ne. 2)then
@@ -391,17 +391,17 @@ c        write(*,*)na,isp-isp0
         return
       endif
       kas=ktfaddr(ktastk(isp1+2))
-      if(.not. tfnumlistqnk(dtastk(isp1+2),3))then
+      if(.not. tfnumlistqn(dtastk(isp1+2),3))then
         go to 9000
       endif
       kavs=ktfaddr(klist(kas+1))
       kac=ktfaddr(ktastk(isp1+3))
-      if(.not. tfnumlistqnk(dtastk(isp1+3),3))then
+      if(.not. tfnumlistqn(dtastk(isp1+3),3))then
         go to 9000
       endif
       kavc=ktfaddr(klist(kac+1))
       ka=ktfaddr(ktastk(isp1+1))
-      if(.not. tflistqk(ktastk(isp1+1)))then
+      if(.not. tflistq(ktastk(isp1+1)))then
         go to 9000
       endif
       if(ilist(2,ka-1) .ne. 3)then
@@ -625,7 +625,7 @@ c        write(*,*)na,isp-isp0
         return
       endif
       kat=ktfaddr(ktastk(isp1+1))
-      if(.not. tflistqk(ktastk(isp1+1)))then
+      if(.not. tflistq(ktastk(isp1+1)))then
         go to 9000
       endif
       nt=ilist(2,kat-1)
@@ -638,7 +638,7 @@ c        write(*,*)na,isp-isp0
         go to 9000
       endif
       kac=ktfaddr(ktastk(isp))
-      if(.not. tflistqk(ktastk(isp1+1)))then
+      if(.not. tflistq(ktastk(isp1+1)))then
         go to 9100
       endif
       if(ktfreallistq(kac))then
@@ -650,15 +650,15 @@ c        write(*,*)na,isp-isp0
       endif
       isp0=isp
       do i=1,nc
-        if(.not. tflistqk(klist(kac+i)))then
+        if(.not. tflistq(klist(kac+i)))then
           go to 9110
         endif
         kaci=ktfaddr(klist(kac+i))
         if(ktfreallistq(kaci) .or. ilist(2,kaci-1) .ne. 2)then
           go to 9110
         endif
-        if(.not. tfnumlistqnk(dlist(kaci+1),3) .or.
-     $       .not. tfnumlistqnk(dlist(kaci+2),3))then
+        if(.not. tfnumlistqn(dlist(kaci+1),3) .or.
+     $       .not. tfnumlistqn(dlist(kaci+2),3))then
           go to 9110
         endif
         kaci1=ktfaddr(klist(kaci+1))
@@ -702,16 +702,16 @@ c        write(*,*)na,isp-isp0
           rgb(1,i)=0.d0
           rgb(2,i)=0.d0
           rgb(3,i)=0.d0
-          if(.not. tflistqk(klist(kat+i)))then
+          if(.not. tflistq(klist(kat+i)))then
             exit do9000
           endif
           kati=ktfaddr(klist(kat+i))
           if(ilist(2,kati-1) .ne. 3 .or. ktfreallistq(kati))then
             exit do9000
           endif
-          if(.not. tfnumlistqnk(dlist(kati+1),3)
-     $         .or. .not. tfnumlistqnk(dlist(kati+2),3)
-     $         .or. .not. tfnumlistqnk(dlist(kati+3),3))then
+          if(.not. tfnumlistqn(dlist(kati+1),3)
+     $         .or. .not. tfnumlistqn(dlist(kati+2),3)
+     $         .or. .not. tfnumlistqn(dlist(kati+3),3))then
             exit do9000
           endif
           kati1=ktfaddr(klist(kati+1))
@@ -780,19 +780,19 @@ c        write(*,*)na,isp-isp0
         irtc=itfmessage(9,'General::narg','"5"')
         return
       endif
-      if(.not. tfnumlistqnk(dtastk(isp1+2),3))then
+      if(.not. tfnumlistqn(dtastk(isp1+2),3))then
         go to 9000
       endif
       kae=ktfaddr(ktastk(isp1+2))
-      if(.not. tfnumlistqnk(dtastk(isp1+3),3))then
+      if(.not. tfnumlistqn(dtastk(isp1+3),3))then
         go to 9000
       endif
       kapx=ktfaddr(ktastk(isp1+3))
-      if(.not. tfnumlistqnk(dtastk(isp1+4),3))then
+      if(.not. tfnumlistqn(dtastk(isp1+4),3))then
         go to 9000
       endif
       kapy=ktfaddr(ktastk(isp1+4))
-      if(.not. tfnumlistqnk(dtastk(isp),2))then
+      if(.not. tfnumlistqn(dtastk(isp),2))then
         go to 9000
       endif
       kaoff=ktfaddr(ktastk(isp))
@@ -820,7 +820,7 @@ c        write(*,*)na,isp-isp0
       integer*4 irtc,itfmessage,n,isp0,i
       real*8 e(3),px(3),py(3),d,x,y,z,p,a,ed,ux,uy,uz,xp,yp,
      $     offset(2)
-      if(.not. tflistqk(k))then
+      if(.not. tflistq(k))then
         go to 9000
       endif
       ka=ktfaddr(k)
@@ -834,7 +834,7 @@ c        write(*,*)na,isp-isp0
         ed=1.d300
         do i=1,n
           kai=ktfaddr(klist(ka+i))
-          if(.not. tfnumlistqnk(dlist(ka+i),3))then
+          if(.not. tfnumlistqn(dlist(ka+i),3))then
             go to 9100
           endif
           x=rlist(kai+1)

@@ -30,7 +30,7 @@
       kl=dtastk(isp1+1)
       isp0=isp
       irtc=0
-      if(ktfrealqdi(kl,iv))then
+      if(ktfrealq(kl,iv))then
         if(iv .lt. 0)then
           iv=ma+iv+1
           if(iv .lt. 0)then
@@ -43,7 +43,7 @@
         endif
         kx=list%dbody(iv)
         if(narg .ne. 1)then
-          if(ktflistqd(kx,listi))then
+          if(ktflistq(kx,listi))then
             call tfpart1(listi,isp1+1,isp2,kx,err,irtc)
           else
             go to 9040
@@ -51,7 +51,7 @@
         endif
         return
       endif
-      if(tflistqd(kl,listl))then
+      if(tflistq(kl,listl))then
         if(ktfnonreallistqo(listl))then
           if(err)then
             irtc=itfmessage(9,'General::wrongtype',
@@ -74,7 +74,7 @@
               go to 9030
             endif
             ki=list%dbody(ivi)
-            if(ktflistqd(ki,listi))then
+            if(ktflistq(ki,listi))then
               isp=isp+1
               call tfpart1(listi,isp1+1,isp2,dtastk(isp),err,irtc)
               if(irtc .ne. 0)then
@@ -166,7 +166,7 @@
         return
       endif
       kl=dtastk(isp1+1)
-      if(ktfrealqdi(kl,iv))then
+      if(ktfrealq(kl,iv))then
         if(iv .lt. 0)then
           iv=ma+iv+1
           if(iv .lt. 0)then
@@ -180,7 +180,7 @@
         endif
         if(narg .gt. 1)then
           k1=lar%dbody(iv)
-          if(ktflistqd(k1,lari))then
+          if(ktflistq(k1,lari))then
             if(write)then
               call tfclonelist(lari,lari)
               call tfreplist(lar,iv,
@@ -205,7 +205,7 @@
       else
         list=.true.
         isp0=isp
-        if(tflistqd(kl,listl))then
+        if(tflistq(kl,listl))then
           if(ktfnonreallistqo(listl))then
             if(err)then
               irtc=itfmessage(9,'General::wrongtype',
@@ -230,7 +230,7 @@
                 go to 9030
               endif
               ki=lar%dbody(ivi)
-              if(ktflistqd(ki,lari))then
+              if(ktflistq(ki,lari))then
                 if(write)then
                   call tfclonelist(lari,lari)
                   call tfreplist(lar,ivi,
@@ -298,7 +298,7 @@
           else
             do i=1,ma
               ki=lar%dbody(i)
-              if(ktflistqd(ki,lari))then
+              if(ktflistq(ki,lari))then
                 if(write)then
                   call tfclonelist(lari,lari)
                   call tfreplist(lar,i,
@@ -399,7 +399,7 @@
       endif
       k=dtastk(isp1+1)
       kind=dtastk(isp1+2)
-      if(.not. ktflistqd(k,kl) .or. .not. tflistqd(kind,klind))then
+      if(.not. ktflistq(k,kl) .or. .not. tflistq(kind,klind))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List or composition for #1, List for #2"')
         return
@@ -529,9 +529,9 @@ c        enddo
         endif
       endif
       call tfclonelist(list,list)
-      if(ktfrealqd(kn))then
+      if(ktfrealq(kn))then
         single=.true.
-      elseif(tflistqd(kn,kln))then
+      elseif(tflistq(kn,kln))then
         k1=kln%dbody(1)
         single=ktfnonlistqd(k1)
       else
@@ -574,10 +574,10 @@ c        enddo
       integer*4 mode,irtc,isp0,ivi,itfmessage,isp2,isp3,i
       logical*4 list,seq,seq1
       isp0=isp
-      if(ktfrealqd(kn))then
+      if(ktfrealq(kn))then
         isp=isp+1
         dtastk(isp)=kn
-      elseif(tflistqd(kn,kl))then
+      elseif(tflistq(kn,kl))then
         call tfgetllstkall(kl)
         if(isp .eq. isp0)then
           irtc=0
@@ -660,7 +660,7 @@ c        enddo
           call loc_list(ktastk(i),kli)
           ivi=itastk2(1,i)
           ki=kli%dbody(ivi)
-          if(ktflistqd(ki,kl))then
+          if(ktflistq(ki,kl))then
             call tfgetllstkall(kl)
             kxi=kxmakelist(isp3,klxi)
             klxi%head=ktfoper+mtfnull
@@ -689,12 +689,12 @@ c        enddo
       endif
       kp=dtastk(isp1+2)
       if(narg .eq. 2)then
-        if(ktfrealqdi(kp,itastk(1,isp+1)))then
+        if(ktfrealq(kp,itastk(1,isp+1)))then
           isp=isp+1
           itastk(2,isp)=itastk(1,isp)
           call tfpartitionstk(isp,isp,kl,kx,irtc)
           isp=isp1+2
-        elseif(tflistqd(kp,klp) .and. ktfreallistqo(klp))then
+        elseif(tflistq(kp,klp) .and. ktfreallistqo(klp))then
           do i=1,klp%nl
             isp=isp+1
             itastk(1,isp)=int(klp%rbody(i))
@@ -709,23 +709,23 @@ c        enddo
         return
       elseif(narg .eq. 3)then
         ks=dtastk(isp)
-        if(ktfrealqd(kp,vp) .and. ktfrealqd(ks,vs))then
+        if(ktfrealq(kp,vp) .and. ktfrealq(ks,vs))then
           isp=isp+1
           itastk(1,isp)=int(vp)
           itastk(2,isp)=int(vs)
           call tfpartitionstk(isp,isp,kl,kx,irtc)
           isp=isp1+3
           return
-        elseif(tflistqd(kp,klp) .and. ktfreallistqo(klp))then
+        elseif(tflistq(kp,klp) .and. ktfreallistqo(klp))then
           m=klp%nl
-          if(tflistqd(ks,kls) .and. ktfreallistqo(kls) .and.
+          if(tflistq(ks,kls) .and. ktfreallistqo(kls) .and.
      $         kls%nl .eq. m)then
             do i=1,m
               isp=isp+1
               itastk(1,isp)=int(klp%rbody(i))
               itastk(2,isp)=int(kls%rbody(i))
             enddo
-          elseif(ktfrealqdi(ks,id))then
+          elseif(ktfrealq(ks,id))then
             do i=1,m
               isp=isp+1
               itastk(1,isp)=int(klp%rbody(i))
@@ -875,7 +875,7 @@ c        enddo
           isp=isp+1
           ktastk(isp)=ktfref
           ki=list%dbody(i)
-          if(ktflistqd(ki,kli) .and. kli%head .eq. kh%k)then
+          if(ktflistq(ki,kli) .and. kli%head .eq. kh%k)then
             ktastk(isp)=ktfaddr(ki)
             if(n .lt. 0)then
               n=kli%nl
@@ -1024,7 +1024,7 @@ c        enddo
       endif
       if(mode .eq. 0)then
         if(list)then
-          if(tflistqd(k2,list2))then
+          if(tflistq(k2,list2))then
             n=list2%nl
             if(n .eq. isp-isp2)then
               do i=1,n
@@ -1049,7 +1049,7 @@ c        enddo
       else
         app=mode .eq. 1
         if(list)then
-          if(tflistqd(k2,list2))then
+          if(tflistq(k2,list2))then
             n=list2%nl
             if(n .eq. isp-isp2)then
               do i=1,n
@@ -1120,7 +1120,7 @@ c        enddo
         list%dbody(0)=dtfcopy(k)
         list%attr=iand(list%attr,lnonreallist+ktoberebuilt)
       elseif(ktfreallistqo(list))then
-        if(ktfrealqd(k))then
+        if(ktfrealq(k))then
           list%dbody(iv)=k
           list%attr=ior(list%attr,ktoberebuilt)-ktoberebuilt
         else
@@ -1134,7 +1134,7 @@ c        enddo
         endif
       else
         call tflocal(list%body(iv))
-        if(ktfnonrealqd(k))then
+        if(ktfnonrealq(k))then
           list%dbody(iv)=dtfcopy(k)
           eval=ktfsequenceq(k%k)
           lattr=iand(list%attr,ktoberebuilt)+lnonreallist

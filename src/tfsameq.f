@@ -223,7 +223,7 @@
       implicit none
       type (sad_descriptor) k
       type (sad_list), pointer :: kl
-      tfexprqk=ktflistqd(k,kl) .and. kl%head .ne. ktfoper+mtflist
+      tfexprqk=ktflistq(k,kl) .and. kl%head .ne. ktfoper+mtflist
       return
       end
 
@@ -249,7 +249,7 @@
         lx=ktfconstantsymq(symd%sym) .and.
      $       symd%value%k .eq. ktfsymbol+ktfaddrd(k)
      $       .and. symd%upval .eq. 0
-      elseif(ktflistqd(k,kl))then
+      elseif(ktflistq(k,kl))then
         lx=tfconstlistqo(kl)
       elseif(ktfpatqd(k,pat))then
         lx=tfconstqk(pat%expr)
@@ -326,7 +326,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
         tfconstheadqk=ktfconstantsymq(symd%sym) .and.
      $       symd%value%k .eq. ktfsymbol+ka
      $       .and. symd%downval .eq. 0
-      elseif(ktflistqd(k,list))then
+      elseif(ktflistq(k,list))then
         if(list%head .eq. ktfoper+mtflist .or.
      $       list%head .eq. ktfoper+mtffun)then
           tfconstheadqk=.false.
@@ -410,7 +410,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       integer*8 kh
       integer*4 i
       lx=.false.
-      if(ktflistqd(k,kl))then
+      if(ktflistq(k,kl))then
         kh=kl%head
         if(iand(kl%attr,lnonreallist) .eq. 0)then
           if(kh .eq. ktfoper+mtfcomplex .and.
@@ -488,7 +488,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
           if(m .ne. 0)then
             if(ktfnonreallistqo(kl))then
               do i=1,m
-                if(tflistqk(kl%body(i)))then
+                if(tflistq(kl%body(i)))then
                   kx%k=0
                   return
                 endif
@@ -509,7 +509,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
             do i=1,m
               isp=ispf+1
               ktastk(isp)=kl%body(i)
-              if(tflistqk(ktastk(ispf+1)))then
+              if(tflistq(ktastk(ispf+1)))then
                 isp=ispf-1
                 kx%k=0
                 go to 100
@@ -519,7 +519,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
               if(irtc .ne. 0)then
                 go to 100
               endif
-              if(ktfnonrealqd(kxi) .or. kxi%k .ne. 0)then
+              if(ktfnonrealq(kxi) .or. kxi%k .ne. 0)then
                 kx%k=0
                 go to 100
               endif
@@ -558,7 +558,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       type (sad_list) , pointer :: kl
       logical*4 null
       tfrepeatedqk=.false.
-      if(ktflistqd(k,kl))then
+      if(ktflistq(k,kl))then
         if(kl%head .eq. ktfoper+mtfrepeated)then
           tfrepeatedqk=.true.
           null=.false.
@@ -575,7 +575,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       implicit none
       type (sad_descriptor) k
       type (sad_list), pointer :: kl
-      tfinequalityqk=ktflistqd(k,kl) .and.
+      tfinequalityqk=ktflistq(k,kl) .and.
      $     kl%head .eq. ktfoper+mtfinequality
       return
       end
@@ -599,7 +599,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
         l=.true.
       else
         l=.false.
-        if(tflistqd(k,kl))then
+        if(tflistq(k,kl))then
           if(kl%nl .gt. 0)then
             do i=1,kl%nl
               if(.not. tfrefq(kl%dbody(i)))then
