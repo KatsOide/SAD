@@ -15,9 +15,9 @@
       use mackw
       implicit none
       type (sad_el), pointer :: el
-      type (sad_comp), pointer :: cmp
+      type (sad_comp), pointer :: cmp,cmps
       integer*4 idxl,isp0,i,iti,plen,orientation,
-     $     idxerr,n,j,hsrchz,idxe,lpname
+     $     idxerr,n,j,hsrchz,idxe,lpname,k
       integer*8 kp,idxpar,ia,idx0,idi
       real*8 frand
 c      write(*,*)'expnln-0 ',idxl
@@ -53,8 +53,13 @@ c      write(*,*)'expnln-0.3 ',idxe,ia,n
         cmp%id=itastk(1,i)
         cmp%nparam=kytbl(kwNPARAM,iti)
         cmp%orient=dble(orientation)
+        call loc_comp(idi,cmps)
 c     set Nominal values
-        cmp%value(1:plen)=rlist(idi+1:idi+plen)
+        call tfvcopycmpall(cmps,cmp,plen)
+c        do k=1,plen
+c          call tfvcopycmp(cmps,cmp,k,1.d0)
+c        enddo
+c        cmp%value(1:plen)=rlist(idi+1:idi+plen)
 c     and then add statistical error
         idxerr=ilist(2,idi)
         do while(idxerr .ne. 0)
@@ -128,22 +133,24 @@ c     and then add statistical error
 
       subroutine tfreeln(idxe)
       use maccbk
-      use tfstk, only:ilist,klist,tfree
+      use mackw
+      use tfstk, only:ilist,klist,tfree,tflocald
       use sad_main
       implicit none
-      type (sad_el), pointer ::el
-      integer*4 i,idxe
+      type (sad_el), pointer :: el
+      type (sad_comp), pointer :: cmp
+      integer*4 i,idxe,j
       integer*8 k,ip
       ip=idval(idxe)
       call loc_el(ip,el)
       idval(idxe)=0
       do i=1,el%nlat1-2
         k=el%comp(i)
-c        call loc_comp(k,cmp)
-c        if(cmp%param .gt. 0)then
-c          call tfree(cmp%param)
-c        endif
-        call tfree(k)
+        call loc_comp(k,cmp)
+        do j=1,kytbl(kwMAX,idtype(cmp%id))-1
+          call tflocald(cmp%dvalue(j))
+        enddo
+        call tfree(k-1)
       enddo
       call tfree(ip)
       return

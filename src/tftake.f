@@ -2,7 +2,8 @@
       use tfstk
       implicit none
       type (sad_descriptor) k,kn,kx
-      type (sad_list), pointer :: kl,kln,klx
+      type (sad_list), pointer :: kl,klx
+      type (sad_rlist), pointer :: klr,kln
       integer*4 irtc,m,iv,n1,n2,mn,mx,itfmessage,i
       logical*4 take0,take,eval,list,d
       if(ktfnonlistqd(k,kl))then
@@ -17,7 +18,7 @@
         return
       endif
       take=take0
-      if(ktfrealqdi(kn,iv))then
+      if(ktfrealq(kn,iv))then
         if(iv .lt. 0)then
           n1=m+iv+1
           n2=m
@@ -56,7 +57,7 @@
      $       '"Real number or a list of reals for #2"')
         return
       endif
-      list=kl%head .eq. ktfoper+mtflist
+      list=kl%head%k .eq. ktfoper+mtflist
       if(n1 .lt. 1 .or. n2 .lt. 1 .or.
      $     n1 .gt. m .or. n2 .gt. m)then
         if(take)then
@@ -112,27 +113,28 @@
         kx=k
         return
       elseif(mx .gt. 0)then
-        kx=kxavaloc(-1,mx,klx)
+        kx=kxavaloc(-1,mx,klr)
+        call descr_list(kx,klx)
         if(take)then
-          if(ktfreallistqo(kl))then
-            klx%body(1:mx)=kl%body(n1:n1+mx-1)
-            klx%attr=ior(kl%attr,kconstarg)
+          if(ktfreallistq(kl))then
+            klr%rbody(1:mx)=kl%rbody(n1:n1+mx-1)
+            klr%attr=ior(kl%attr,kconstarg)
           else
             d=.false.
             do i=1,mx
-              klx%body(i)=ktfcopy(kl%body(n1+i-1))
-              d=d .or. ktfnonrealq(klx%body(i))
+              klr%body(i)=ktfcopy(kl%body(n1+i-1))
+              d=d .or. ktfnonrealq(klr%body(i))
             enddo
             if(d)then
-              klx%attr=ior(iand(kl%attr,kconstarg+lconstlist),
+              klr%attr=ior(iand(kl%attr,kconstarg+lconstlist),
      $             lnonreallist)
             endif
           endif
         else
-          if(ktfreallistqo(kl))then
-            klx%body(1:n1-1)=kl%body(1:n1-1)
-            klx%body(n1:m+n1-n2-1)=kl%body(n2+1:m)
-            klx%attr=ior(kl%attr,kconstarg)
+          if(ktfreallistq(kl))then
+            klr%rbody(1:n1-1)=kl%rbody(1:n1-1)
+            klr%body(n1:m+n1-n2-1)=kl%body(n2+1:m)
+            klr%attr=ior(kl%attr,kconstarg)
           else
             d=.false.
             do i=1,n1-1
@@ -159,7 +161,7 @@
       if(list)then
         return
       endif
- 1    klx%head=ktfcopy(kl%head)
+ 1    klx%head=dtfcopy(kl%head)
       if(eval)then
         call tfleval(klx,kx,.true.,irtc)
       endif      
@@ -196,7 +198,7 @@
           listx%body(m-i+1)=ktfcopy(list%body(i))
         enddo
       endif
-      listx%head=ktfcopy(list%head)
+      listx%head=dtfcopy(list%head)
       listx%attr=list%attr
       irtc=0
       call tfleval(listx,kx,.true.,irtc)
@@ -208,6 +210,7 @@
       implicit none
       type (sad_descriptor) kx
       type (sad_list), pointer :: kl,klx
+      type (sad_rlist), pointer :: klr
       integer*4 isp1,irtc,i,m,itfmessage,n
       if(isp .ne. isp1+1 .and. isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"1 or 2"')
@@ -238,10 +241,11 @@
       if(n .eq. 0)then
         go to 8000
       endif
-      if(ktfreallistqo(kl))then
-        kx=kxavaloc(-1,m,klx)
-        klx%body(1:n)=kl%body(m-n+1:m)
-        klx%body(n+1:m)=kl%body(1:m-n)
+      if(ktfreallistq(kl))then
+        kx=kxavaloc(-1,m,klr)
+        call descr_list(kx,klx)
+        klr%rbody(1:n)=kl%rbody(m-n+1:m)
+        klr%rbody(n+1:m)=kl%rbody(1:m-n)
       else
         kx=kxadaloc(-1,m,klx)
         do i=1,n
@@ -251,7 +255,7 @@
           klx%body(i)=ktfcopy(kl%body(i-n))
         enddo
       endif
-      klx%head=ktfcopy(kl%head)
+      klx%head=dtfcopy(kl%head)
       klx%attr=kl%attr
       call tfleval(klx,kx,.true.,irtc)
       return
@@ -262,14 +266,17 @@
 
       subroutine tfdifference(isp1,kx,irtc)
       use tfstk
+      use iso_c_binding
       implicit none
       type (sad_descriptor) kx,k0,k1,ks
-      type (sad_list), pointer :: klx,kl
+      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: kl
+      type (sad_rlist), pointer :: klr
       integer*4 isp1,irtc,i,m,itfmessage,isp0
       real*8 cv
       cv=-1.d0
       if(isp .eq. isp1+2)then
-        if(.not. ktfrealqd(dtastk(isp),cv))then
+        if(.not. ktfrealq(dtastk(isp),cv))then
           irtc=itfmessage(9,'General::wrongtype',
      $         '"Real for #2"')
           return
@@ -278,7 +285,7 @@
         irtc=itfmessage(9,'General::narg','"1 or 2"')
         return
       endif
-      if(.not. ktflistqd(dtastk(isp1+1),kl))then
+      if(.not. ktflistq(dtastk(isp1+1),kl))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List or composition for #1"')
         return
@@ -289,14 +296,15 @@
      $       '"#1","longer than 1"')
         return
       endif
-      if(ktfreallistqo(kl))then
-        kx=kxavaloc(-1,m-1,klx)
+      if(ktfreallistq(kl))then
+        kx=kxavaloc(-1,m-1,klr)
+        call c_f_pointer(c_loc(klr),klx)
         if(cv .eq. -1.d0)then
-          klx%rbody(1:m-1)=kl%rbody(2:m)-kl%rbody(1:m-1)
+          klr%rbody(1:m-1)=kl%rbody(2:m)-kl%rbody(1:m-1)
         elseif(cv .eq. 1.d0)then
-          klx%rbody(1:m-1)=kl%rbody(2:m)+kl%rbody(1:m-1)
+          klr%rbody(1:m-1)=kl%rbody(2:m)+kl%rbody(1:m-1)
         else
-          klx%rbody(1:m-1)=kl%rbody(2:m)+cv*kl%rbody(1:m-1)
+          klr%rbody(1:m-1)=kl%rbody(2:m)+cv*kl%rbody(1:m-1)
         endif
       else
         isp0=isp
@@ -311,7 +319,7 @@
         kx=kxmakelist(isp0,klx)
         isp=isp0
       endif
-      klx%head=ktfcopy(kl%head)
+      klx%head=dtfcopy(kl%head)
       call tfleval(klx,kx,.true.,irtc)
       return
       isp=isp0
@@ -361,7 +369,7 @@
           endif
           call sym_symdef(sym,symd)
           call tfdelete(symd,.false.,.false.)
-        elseif(ktflistqd(ki,kl))then
+        elseif(ktflistq(ki,kl))then
           ki=dtfcopy1(ki)
           call tfcleardef(kl,irtc)
           call tflocal1(ki%k)
@@ -382,7 +390,7 @@
       implicit none
       type (sad_descriptor) kh,kx
       type (sad_list) kl
-      type (sad_list), pointer :: klh
+      type (sad_dlist), pointer :: klh
       type (sad_symbol), pointer :: symh
       type (sad_symdef), pointer :: def
       type (sad_deftbl), pointer :: dtbl
@@ -395,7 +403,7 @@ c      include 'DEBUG.inc'
       isp=isp+1
       ktastk(isp)=ktfoper+mtfset
       isp=isp+1
-      ktastk(isp)=ktflist+ksad_loc(kl%head)
+      ktastk(isp)=ktflist+ksad_loc(kl%head%k)
       isp=isp+1
       ktastk(isp)=ktfref
       call tfset(isp0+1,kx,.false.,irtc)
@@ -403,9 +411,9 @@ c      include 'DEBUG.inc'
       if(irtc .ne. 0)then
         return
       endif
-      kh=kl%dbody(0)
-      do while(ktflistqd(kh,klh))
-        kh=klh%dbody(0)
+      kh=kl%head
+      do while(ktflistq(kh,klh))
+        kh=klh%head
       enddo
       if(ktfsymbolqdef(kh%k,def))then
         if(def%sym%override .eq. 0)then
@@ -668,7 +676,7 @@ c      include 'DEBUG.inc'
           ka=ksad_loc(sym%loc)
         endif
         kv=dtastk(isp)
-        if(tflistqd(kv,kl))then
+        if(tflistq(kv,kl))then
           isp0=isp
           do i=1,kl%nl
             isp=isp0+1
@@ -724,7 +732,7 @@ c      include 'DEBUG.inc'
           go to 9100
         endif
         sym%attr=iattrib
-      elseif(tflistqd(k,kl))then
+      elseif(tflistq(k,kl))then
         isp0=isp
         do i=1,kl%nl
           isp=isp+1
@@ -767,7 +775,7 @@ c      include 'DEBUG.inc'
           kx=dtastk(isp)
         else
           kx=kxcompose(isp0,klx)
-          klx%head=ktfoper+mtfnull
+          klx%head%k=ktfoper+mtfnull
         endif
       endif
       isp=isp0
@@ -787,9 +795,9 @@ c      include 'DEBUG.inc'
       do i=isp1+1,isp2
         isp=isp+1
         dtastk(isp)=dtastk(i)
-        if(ktflistqd(dtastk(i),kli))then
+        if(ktflistq(dtastk(i),kli))then
           isp=isp-1
-          if(kli%head .eq. ktfoper+mtfhold)then
+          if(kli%head%k .eq. ktfoper+mtfhold)then
             call tfevallstkall(kli,.true.,.true.,irtc)
             if(irtc .ne. 0)then
               isp=isp0
@@ -799,14 +807,14 @@ c      include 'DEBUG.inc'
             isp4=isp
             call tfgetllstkall(kli)
             isp=isp+1
-            ktastk(isp)=kli%head
+            dtastk(isp)=kli%head
             isp3=isp
             call tfreleaseholdstk(isp4,isp-1,irtc)
             if(irtc .ne. 0)then
               isp=isp0
               return
             endif
-            if(kli%head .eq. ktfoper+mtfnull)then
+            if(kli%head%k .eq. ktfoper+mtfnull)then
               do j=isp3+1,isp
                 isp=isp4+j-isp3
                 ktastk(isp)=ktastk(j)

@@ -358,7 +358,7 @@ c'\
             call putstringbufp(strb,')',lfno,irtc)
             nc=nc+nc1+1
           endif
-        elseif(ktflistqd(k))then
+        elseif(ktflistq(k))then
           nc0=strb%nch
           call tfconvstrl(strb,ktfaddr(k),lfno,form,gens,irtc)
           nc=strb%nch-nc0
@@ -367,7 +367,7 @@ c'\
         elseif(isnan(rfromk(k%k)))then
           nc=3
           call putstringbufpb(strb,'NaN',nc,.true.,lfno,irtc)        
-        elseif(ktfrealqd(k,v))then
+        elseif(ktfrealq(k,v))then
           if(form .eq. '*')then
             form1=tfgetform()
           else
@@ -482,7 +482,7 @@ c
               return
             case (mtfmult)
               k1=dlist(ka+1)
-              if(ktfrealqd(k1,v1))then
+              if(ktfrealq(k1,v1))then
                 if(v1 .eq. -1.d0)then
                   call putstringbufp(strb,'(-',lfno,irtc)
                   if(irtc .ne. 0)then
@@ -578,9 +578,9 @@ c
         do i=i1,nd,istep
           strb%llevel=llevel
           ki=list%dbody(i)
-          if(ktflistqd(ki,listi))then
+          if(ktflistq(ki,listi))then
             kai=ktfaddrd(ki)
-            if(opcx .ne. ',' .and. ktfoperq(listi%head))then
+            if(opcx .ne. ',' .and. ktfoperq(listi%head%k))then
               iaaf1=int(ktfaddr(listi%head))
               if(iaaf1 .le. mtfend .and. iaaf1 .ne. mtflist)then
                 if(iprior(iaaf1) .ge. iprior(iaaf))then
@@ -947,9 +947,9 @@ c            enddo
             n1=n/8
             l=n1+5
             n1=(n1+1)*8
-            do i=n+1,n1
-              jlist(i,kbuf+1)=0
-            enddo
+c            do i=n+1,n1
+            jlist(n+1:n1,kbuf+1)=int(0,1)
+c            enddo
             if(ilist(1,kbuf-3)-l .ge. 4)then
               kp=kbuf+l-3
               ilist(1,kp)=ilist(1,kbuf-3)-l

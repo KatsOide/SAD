@@ -72,13 +72,13 @@
       if(ktfrealq(ktastk(isp1+1)))then
         itfgetlfn=int(rtastk(isp1+1))
         go to 100
-      elseif(tflistqd(dtastk(isp1+1),kl))then
+      elseif(tflistq(dtastk(isp1+1),kl))then
         if(read)then
           k=kl%dbody(1)
         else
           k=kl%dbody(2)
         endif
-        if(ktfrealqdi(k,itfgetlfn))then
+        if(ktfrealq(k,itfgetlfn))then
           go to 100
         endif
       endif
@@ -272,7 +272,7 @@ c      enddo
         ispv=isp
       elseif(irtc .ne. 0)then
         return
-      elseif(ktfrealqd(kx))then
+      elseif(ktfrealq(kx))then
         if(kx%k .ne. 0)then
           icomp=1
         endif
@@ -303,7 +303,7 @@ c      enddo
         isp=isp+1
         if(ka0 .ne. 0)then
           dtastk(isp)=kxadaloc(-1,2,klh)
-          klh%head=ktfoper+mtfsetdelayed
+          klh%head%k=ktfoper+mtfsetdelayed
           klh%body(1)=ktfsymbol+ktfcopy1(ka0+6)
           klh%dbody(2)=dtfcopy(k)
           do kk=1,0,-1
@@ -320,7 +320,7 @@ c      enddo
                   do while(kadi .ne. 0)
                     isp=isp+1
                     dtastk(isp)=kxadaloc(-1,2,kli)
-                    kli%head=ktfoper+iop
+                    kli%head%k=ktfoper+iop
                     kli%body(1)=ktfcopy1(klist(kadi+3+icomp))
                     kli%body(2)=ktfcopy(klist(kadi+5+icomp))
                     if(kli%body(2) .eq. ktfref)then
@@ -332,7 +332,7 @@ c      enddo
               else
                 isp=isp+1
                 dtastk(isp)=kxadaloc(-1,2,kli)
-                kli%head=ktfoper+iop
+                kli%head%k=ktfoper+iop
                 kli%body(1)=ktfcopy1(klist(kad+3+icomp))
                 kli%body(2)=ktfcopy(klist(kad+5+icomp))
                 if(kli%body(2) .eq. ktfref)then
@@ -350,7 +350,7 @@ c      enddo
         dtastk(isp)=ki
       enddo
       kx=kxmakelist(isp00,klx)
-      klx%head=ktfoper+mtfhold
+      klx%head%k=ktfoper+mtfhold
       isp=isp00
       irtc=0
       return
@@ -510,7 +510,7 @@ c      enddo
       integer*4 isp1,irtc,i,narg,isp0,nrpt
       narg=isp-isp1
       if(narg .ge. 3 .and.
-     $     ktfrealqdi(dtastk(isp1+3),nrpt))then
+     $     ktfrealq(dtastk(isp1+3),nrpt))then
         isp0=isp
         do i=1,nrpt
           ktastk(isp0+1)=ktastk(isp1+1)
@@ -641,13 +641,13 @@ c          enddo
           else
             go to 9000
           endif
-        elseif(ktflistqd(k2,list))then
-          if(list%head .eq. ktfoper+mtflist)then
+        elseif(ktflistq(k2,list))then
+          if(list%head%k .eq. ktfoper+mtflist)then
             call tfreadfm(lfn,list,list%nl,opts,.false.,kx,irtc)
-          elseif(list%head .eq. ktfoper+mtftimes .and.
+          elseif(list%head%k .eq. ktfoper+mtftimes .and.
      $           list%nl .eq. 2)then
             k1=list%dbody(1)
-            if(ktfnonrealqdi(k1,i1))then
+            if(ktfnonrealq(k1,i1))then
               go to 9000
             endif
             call tfreadfm(lfn,list,i1,opts,.true.,kx,irtc)
@@ -701,7 +701,7 @@ c          enddo
       enddo
       kx=kxmakelist0(isp2,klx)
       if(mult)then
-        klx%head=ktfoper+mtfnull
+        klx%head%k=ktfoper+mtfnull
       endif
       irtc=0
       return
@@ -1350,13 +1350,13 @@ c      endif
       end
 
       subroutine tfclosef(k,irtc)
-      use tfstk, only:ktfnonrealqdi
+      use tfstk, only:ktfnonrealq
       use tfcode
       use tfrbuf
       implicit none
       type (sad_descriptor) k
       integer*4 irtc,iu,itfmessage,nc
-      if(ktfnonrealqdi(k,iu))then
+      if(ktfnonrealq(k,iu))then
         irtc=itfmessage(9,'General::wrongtype','"Real number"')
         return
       endif
@@ -1446,8 +1446,8 @@ c      endif
           go to 9000
         endif
       endif
-      if(.not. ktfrealqd(dtastk(isp1+1)) .or.
-     $     .not. ktfrealqd(dtastk(isp1+2)))then
+      if(.not. ktfrealq(dtastk(isp1+1)) .or.
+     $     .not. ktfrealq(dtastk(isp1+2)))then
         go to 9000
       endif
       lfn=int(rtastk(isp1+1))

@@ -87,8 +87,10 @@ c     $     beam(1)
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 k,nvar
-      real*8 f,beam(42),trans(6,12),cod(6),vsave(256)
+      type (sad_comp), pointer ::cmp
+      type (sad_descriptor) :: dsave(kwMAX)
+      integer*4 k,nvar,le,itfdownlevel
+      real*8 f,beam(42),trans(6,12),cod(6)
       logical*4 chg,sol,cp0,int0
       if(.not. updatesize .or. sizedp .ne. dpmax)then
         call tfsize
@@ -97,9 +99,12 @@ c     $     beam(1)
       beam(1:21)=beamsize(:,k)
       beam(22:42)=beam(1:21)
       if(f .ne. 0.d0)then
-        call qfracsave(k,vsave,nvar,.true.)
-        call qfraccomp(k,0.d0,f,ideal,chg)
+        levele=levele+1
+        call qfracsave(k,dsave,nvar,.true.)
+        call compelc(k,cmp)
+        call qfracseg(cmp,0.d0,f,dsave,chg)
         if(.not. chg)then
+          le=itfdownlevel()
           return
         endif
         cod(1)=gettwiss(mfitdx,k)
@@ -119,7 +124,8 @@ c     $     beam(1)
      $       int8(0),int8(0),int8(0),0,.false.,sol,.false.,k,k)
         codplt=cp0
         calint=int0
-        call qfracsave(k,vsave,nvar,.false.)
+        call qfracsave(k,dsave,nvar,.false.)
+        le=itfdownlevel()
       endif
       return
       end

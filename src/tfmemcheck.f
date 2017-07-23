@@ -3,7 +3,8 @@
       use tfmem
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx,klx5,klxi
+      type (sad_list), pointer :: klx5,kld
+      type (sad_rlist), pointer :: klri,klr
       integer*8 ip1,ip0,ip,ix,i,j, i1, ki,m,ih,mf
       integer*4 isp1,irtc,l,nf,isp0,itfmessage
       real*8 xnmem,xnnet
@@ -89,21 +90,22 @@
       xnnet=nnet
       xnmem=nmem
       if(freel)then
-        kx=kxadaloc(-1,5,klx)
-        klx%dbody(5)=kxadaloc(0,nf,klx5)
+        kx=kxadaloc(-1,5,kld)
+        call descr_rlist(kx,klr)
+        kld%dbody(5)=kxadaloc(0,nf,klx5)
         do i=1,nf*2,2
-          klx5%dbody((i+1)/2)=kxavaloc(0,2,klxi)
-          klxi%rbody(1)=ktastk(isp0+i)
-          klxi%rbody(2)=ktastk(isp0+i+1)
+          klx5%dbody((i+1)/2)=kxavaloc(0,2,klri)
+          klri%rbody(1)=ktastk(isp0+i)
+          klri%rbody(2)=ktastk(isp0+i+1)
         enddo
         isp=isp0
       else
-        kx=kxavaloc(-1,4,klx)
+        kx=kxavaloc(-1,4,klr)
       endif
-      klx%rbody(1)=xnnet
-      klx%rbody(2)=xnmem
-      klx%rbody(3)=dble(nf)
-      klx%rbody(4)=mf+xnnet-xnmem
+      klr%rbody(1)=xnnet
+      klr%rbody(2)=xnmem
+      klr%rbody(3)=dble(nf)
+      klr%rbody(4)=mf+xnnet-xnmem
       irtc=0
       return
  9100 write(*,*)'Level = ',l,

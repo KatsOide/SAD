@@ -1,7 +1,10 @@
       subroutine pwrlat(word,wordp,latt,mult,lfno)
       use tfstk
       use ffs
+      use sad_main
+      use ffs_pointer, only:compelc
       use tffitcode
+      type (sad_comp), pointer ::cmp
       character*(*) word,wordp
       character*(MAXPNAME) name
       character cline*130,patt*80
@@ -56,13 +59,14 @@ c     print *,ni,nf
       noel=0
       do 21 l=1,2
         do 20 i=ls(l),lf(l)
-          if(i.eq.nlat) then
+          call compelc(i,cmp)
+          if(i .eq. nlat) then
             patfit='***'.eq.patt
      $           .or. patt .eq. '$$$' .or. patt.eq.'*'
           elseif(i .eq. 1)then
-            patfit=tmatch(pname(latt(1,i)),patt) .or. patt .eq. '^^^'
+            patfit=tmatch(pname(cmp%id),patt) .or. patt .eq. '^^^'
           else
-            patfit=tmatch(pname(latt(1,i)),patt)
+            patfit=tmatch(pname(cmp%id),patt)
           endif
           if( patfit ) then
             noel=noel+1
@@ -70,7 +74,7 @@ c     print *,ni,nf
               name='$$$'
             else
               if(psname) then
-                name=pname(latt(1,i))
+                name=pname(cmp%id)
               else
                 call elname(i,name)
               endif

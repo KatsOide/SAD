@@ -159,7 +159,7 @@
       endif
       if(.not. ktfstringqd(dtastk(isp1+1),str1) .or.
      $     .not. ktfstringqd(dtastk(isp-1),str2) .or.
-     $     .not. ktfrealqd(dtastk(isp)))then
+     $     .not. ktfrealq(dtastk(isp)))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"[String, String, Real]"')
         return
@@ -375,7 +375,7 @@ c      include 'DEBUG.inc'
             istandf=kxsymbolz('StandardForm',12)
           endif
           do i=isp,isp1+2,-1
-            if(ktflistqd(dtastk(i)))then
+            if(ktflistq(dtastk(i)))then
               call tfgetoption('FormatType',dtastk(i),k1,irtc)
             else
               k1=dtastk(i)
@@ -487,7 +487,7 @@ c      include 'DEBUG.inc'
       use strbuf
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kl
+      type (sad_rlist), pointer :: kl
       type (sad_string), pointer :: str
       integer*4 isp1,narg,irtc,i,m,itfmessage
       narg=isp-isp1
@@ -518,7 +518,7 @@ c      include 'DEBUG.inc'
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
-      type (sad_list), pointer :: klx
+      type (sad_rlist), pointer :: klr
       integer*4 isp1,narg,irtc,i,m,itfmessage
       narg=isp-isp1
       if(narg .ne. 1)then
@@ -530,10 +530,10 @@ c      include 'DEBUG.inc'
         return
       endif
       m=str%nch
-      kx=kxavaloc(-1,m,klx)
+      kx=kxavaloc(-1,m,klr)
       if(m .gt. 0)then
         do i=1,m
-          klx%rbody(i)=iachar(str%str(i:i))
+          klr%rbody(i)=iachar(str%str(i:i))
         enddo
       endif
       irtc=0
@@ -576,7 +576,8 @@ c      include 'DEBUG.inc'
       use strbuf
       implicit none
       type (sad_descriptor) kx,ki
-      type (sad_list), pointer ::kl,klx,kli
+      type (sad_list), pointer ::kl,klx
+      type (sad_rlist), pointer ::kli
       type (sad_string), pointer :: str,strp,stri
       integer*4 isp1,irtc,nc,nc1,i,j,
      $     i1,ip,isp0,l,itfmessage,indexb
@@ -588,7 +589,7 @@ c      include 'DEBUG.inc'
         return
       endif
       if(isp .eq. isp1+3)then
-        if(.not. ktfrealqd(dtastk(isp)))then
+        if(.not. ktfrealq(dtastk(isp)))then
           irtc=itfmessage(9,'General::wrongtype',
      $         '"Real for #3"')
           return
@@ -616,7 +617,7 @@ c      include 'DEBUG.inc'
             endif
           enddo
         endif
-      elseif(tflistqd(dtastk(isp1+2),kl))then
+      elseif(ktflistq(dtastk(isp1+2),kl))then
         LOOP_I: do i=1,kl%nl
           ki=kl%dbody(i)
           if(.not. ktfstringqd(ki,stri))then

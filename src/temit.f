@@ -349,12 +349,12 @@ c      write(*,'(a,1p6g15.7)')'tfetwiss ',detm,ax,ay,az,f,xyth
       integer*4 isp1,irtc,itfmessage
       real*8 rn(6,6)
       logical*4 normal
-      type (sad_list), pointer :: kl
+      type (sad_rlist), pointer :: kl
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
-      if(.not. tfnumlistqnk(dtastk(isp),ntwissfun,kl))then
+      if(.not. tfnumlistqn(dtastk(isp),ntwissfun,kl))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"Real List of Length 28"')
         return
@@ -1104,7 +1104,9 @@ c        write(*,*)'temit-7101: ',emit1(6),emit1(27)
       use touschek_table
       use tmacro
       implicit none
-      type (sad_list), pointer :: klx,klx1,klx2,klx1d,klx1l
+      type (sad_list), pointer :: klx1
+      type (sad_dlist), pointer :: klx2,klx
+      type (sad_rlist), pointer :: klx1d,klx1l
       integer*4 itmax,ia,m,n
       real*8 resib,dcmin
       parameter (itmax=100,resib=3.d-6,dcmin=0.06d0)
@@ -1197,9 +1199,9 @@ c factor: tf for toucke(#dp/p0,#element)
             klx2%dbody(3)=dtfcopy1(kxm2l(touckm(1,1,2),
      $           ntouckz,ntouckx,ntouckz,.true.))
 c set list for toucke
-            klx%rbody(1)=id
-            klx%body(2)=ktflist+kax1
-            klx%body(3)=ktflist+kax2
+            klx%rbody(1)=dble(id)
+            klx%dbody(2)%k=ktflist+kax1
+            klx%dbody(3)%k=ktflist+kax2
             klx%dbody(4)=dtfcopy1(
      $           kxm2l(toucke,ntouckl,nlat,ntouckl,.true.))
             call tflocal(klist(itoul))

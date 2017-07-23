@@ -2690,8 +2690,8 @@ Example: StringPosition[\"abcbcbcbcb\",\"bcb\"] returns {{2,4},{4,6},{6,8},{8,10
 
        {"StringFill",
          "\
- StringFill[s, sf, n]  with strings s and sf returns (s//sf//sf...)[1,n] .\n\
- StringFill[s, sf, -n] with strings s and sf returns (...sf//sf//s)[-n,-1] .",
+ StringFill[s, sf, n]  with strings s and sf, n > 0, returns (s//sf//sf...)[1,n] .\n\
+ StringFill[s, sf, -n] with strings s and sf, n > 0, returns (...sf//sf//s)[-n,-1] .",
          "StringJoin // StringPart",
          {}},
 

@@ -6,9 +6,9 @@
       use tffitcode
       use tfcsi,only:cssetp
       implicit none
-      type (sad_comp), pointer ::cmp
+      type (sad_comp), pointer ::cmp,cmpd
       integer*8 j
-      integer*4 i,l,lt,next
+      integer*4 i,l,lt,next,itfdownlevel
       integer*4 ntouch
       character*(*) word
       logical*4 cmd,cmd0,exist,tmatch,exist1,all
@@ -29,6 +29,7 @@
           go to 1
         endif
       endif
+      levele=levele+1
       do i=1,nele
         l=klp(i)
         if(.not. cmd .or. tmatch(pnamec(l),word))then
@@ -40,13 +41,9 @@
           j=idvalc(l)
           lt=idtypec(l)
           call compelc(l,cmp)
+          call loc_comp(j,cmpd)
           if(all)then
-c            do k=1,kytbl(kwMAX,lt)-1
-              rlist(j+1:j+kytbl(kwMAX,lt)-1)=
-     $           cmp%value(1:kytbl(kwMAX,lt)-1)
-c     $           rlist(latt(l)+1:latt(l)+kytbl(kwMAX,lt)-1)
-c              rlist(j+k)=rlist(latt(l)+k)
-c            enddo
+            call tfvcopycmpall(cmp,cmpd,kytbl(kwMAX,lt)-1)
           endif
           call tfsavevar(i,ntouch)
           if(lt .eq. icMARK)then
@@ -82,10 +79,13 @@ c     $             rlist(j+1),rlist(j+4)
             rlist(j+ky_EMIY_MARK)=emy
             rlist(j+ky_DP_MARK)=dpmax
           elseif(ival(i) .gt. 0)then
-            rlist(j+ival(i))=cmp%value(ival(i))/errk(1,l)
+c            write(*,*)'tfsave ',l,errk(1,l)
+            call tfvcopycmp(cmp,cmpd,ival(i),1.d0/errk(1,l))
+c            rlist(j+ival(i))=cmp%value(ival(i))/errk(1,l)
           endif
         endif
       enddo
+      l=itfdownlevel()
       if(cmd)then
         if(exist)then
           if(exist1)then
@@ -112,9 +112,9 @@ c     $             rlist(j+1),rlist(j+4)
       use tffitcode
       use tfcsi,only:cssetp
       implicit none
-      type (sad_comp), pointer :: cmp
+      type (sad_comp), pointer :: cmp,cmps
       integer*8 j
-      integer*4 l,i,lt,k,next
+      integer*4 l,i,lt,k,next,itfdownlevel
       integer*4 nvar,ntouch
       character*(*) word
       logical*4 cmd,cmd0,exist,tmatch,exist1,all
@@ -139,6 +139,7 @@ c     $             rlist(j+1),rlist(j+4)
           go to 9000
         endif
       endif
+      levele=levele+1
       do i=1,nele
         l=klp(i)
         if(.not. cmd .or. tmatch(pnamec(l),word))then
@@ -150,36 +151,35 @@ c     $             rlist(j+1),rlist(j+4)
           lt=idtypec(l)
           call compelc(l,cmp)
           j=idvalc(l)
+          call loc_comp(j,cmps)
           if(lt .eq. icMARK)then
             if(l .eq. 1)then
-              cmp%value(1:ntwissfun)=rlist(j+1:j+ntwissfun)
-c              call tmov(rlist(idvalc(1)+1),
-c     $             rlist(latt(1)+1),ntwissfun)
+              cmp%value(1:ntwissfun)=cmps%value(1:ntwissfun)
             endif
           else
             if(all)then
-              cmp%value(1:kytbl(kwMAX,lt)-1)=
-     $             rlist(j+1:j+kytbl(kwMAX,lt)-1)
-c              do k=1,kytbl(kwMAX,lt)-1
-c                rlist(latt(l)+k)=rlist(j+k)
-c              enddo
+              call tfvcopycmpall(cmps,cmp,kytbl(kwMAX,lt)-1)
             endif
             do k=1,nvar
               if(ivarele(k) .eq. i)then
-                valvar(k)=rlist(j+ivvar(k))
+                valvar(k)=tfvalvar(l,ivvar(k))
+c                valvar(k)=rlist(j+ivvar(k))
               endif
             enddo
             do k=1,ntouch
               if(itouchele(k) .eq. i)then
-                cmp%value(itouchv(k))=rlist(j+itouchv(k))
+                call tfvcopycmp(cmps,cmp,itouchv(k),1.d0)
+c                cmp%value(itouchv(k))=rlist(j+itouchv(k))
               endif
             enddo
             if(ival(i) .gt. 0)then
-              cmp%value(ival(i))=rlist(j+ival(i))*errk(1,l)
+              call tfvcopycmp(cmps,cmp,ival(i),errk(1,l))
+c              cmp%value(ival(i))=rlist(j+ival(i))*errk(1,l)
             endif
           endif
         endif
       enddo
+      l=itfdownlevel()
       if(cmd)then
         if(exist)then
           if(exist1)then
@@ -207,21 +207,17 @@ c              enddo
       use ffs_pointer
       use tffitcode
       implicit none
-      type (sad_comp), pointer :: cmp
+      type (sad_comp), pointer :: cmp,cmps
       integer*8 j
       integer*4 l,lt
       do l=1,nlat-1
         j=idvalc(l)
         lt=idtypec(l)
         call compelc(l,cmp)
-        cmp%value(1:kytbl(kwMAX,lt)-1)=
-     $       rlist(j+1:j+kytbl(kwMAX,lt)-1)
-        cmp%update=0
-c        do k=1,kytbl(kwMAX,lt)-1
-c          rlist(m+1:m+kytbl(kwMAX,lt)-1)=
+        call loc_comp(j,cmps)
+        call tfvcopycmpall(cmps,cmp,kytbl(kwMAX,lt)-1)
+c        cmp%value(1:kytbl(kwMAX,lt)-1)=
 c     $       rlist(j+1:j+kytbl(kwMAX,lt)-1)
-c          rlist(m+k)=rlist(j+k)
-c        enddo
       enddo
       return
       end

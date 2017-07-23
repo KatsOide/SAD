@@ -318,7 +318,7 @@
 c        write(*,'(a,1p8g13.5)')'tsolque-in  ',ak,bz,cod
         call texchg(trans,cod,beam,1.d0)
         call tsolque(trans,cod,beam,al,-ak,
-     $       bz0,-ak0y,ak0x,eps0,enarad,radcod,calpol,irad,ld)
+     $       bz0,ak0y,-ak0x,eps0,enarad,radcod,calpol,irad,ld)
         call texchg(trans,cod,beam,-1.d0)
 c        write(*,'(a,1p8g13.5)')'tsolque-out ',ak,bz,cod
         return

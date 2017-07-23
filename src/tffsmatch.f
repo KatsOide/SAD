@@ -644,7 +644,7 @@ c            call tfmemcheckprint('ffsmatch',.true.,irtc)
       use ffs
       use tffitcode
       implicit none
-      type (sad_list), pointer :: klx
+      type (sad_rlist), pointer :: klr
       integer*8 kx
       integer*4 ii,i,ld,nvar,ivvar(nvar),ival(nele),ltyp,irtc
       real*8 val,val0,vlim(nele,2),vl,vl1,vl0,vl2
@@ -693,11 +693,11 @@ c      call tfmemcheckprint('vlimit-0',.true.,irtc)
           vl=vl0
           go to 2009
         endif
-      elseif(tfreallistq(kx,klx))then
-        if(klx%nl .eq. 2)then
+      elseif(tfreallistq(kx,klr))then
+        if(klr%nl .eq. 2)then
           dlim=.true.
-          vl1=max(vl1,klx%rbody(1))
-          vl2=min(vl2,klx%rbody(2))
+          vl1=max(vl1,klr%rbody(1))
+          vl2=min(vl2,klr%rbody(2))
           if(vl .lt. vl1)then
             vl=vl1
             go to 2009
@@ -717,17 +717,20 @@ c      call tfmemcheckprint('vlimit-0',.true.,irtc)
       use tfstk
       use ffs
       use tffitcode
+      use iso_c_binding
       implicit none
       type (sad_string), pointer, save :: svarn, skey
+      type (sad_descriptor) , save ::ifvr,ifvw
+      data ifvr%k/0/
       integer*8 kx
       integer*4 id,ld,irtc,isp1,level,itfuplevel,ltyp,
      $     itfdownlevel,k
       real*8 x
       character*(MAXPNAME) vn,tfkwrd
-      integer*8, save :: ifvr=0,ifvw,ifvvarn,ifvkey
-      if(ifvr .eq. 0)then
-        ifvr=ktfsymbolz('`VariableRange',14)
-        ifvw=ktfsymbolz('`VariableWeight',15)
+      integer*8, save :: ifvvarn,ifvkey
+      if(ifvr%k .eq. 0)then
+        ifvr=dtfcopy1(kxsymbolz('`VariableRange',14))
+        ifvw=dtfcopy1(kxsymbolz('`VariableWeight',15))
         ifvvarn=ktsalocb(0,'        ',MAXPNAME+16)
         ifvkey=ktsalocb(0,'        ',MAXPNAME)
         call loc_string(ifvvarn,svarn)
@@ -735,30 +738,33 @@ c      call tfmemcheckprint('vlimit-0',.true.,irtc)
       endif
 c      write(*,*)'vf-0 ',id,ld,k,x
 c      call tfmemcheckprint('varfun-0',.true.,irtc)
-      ltyp=idtype(ld)
-      svarn%nch=len_trim(pname(ld))
-      svarn%str(1:svarn%nch+1)=pname(ld)(1:svarn%nch+1)//char(0)
-      vn=tfkwrd(ltyp,k)
-      skey%nch=len_trim(vn)
-      skey%str(1:skey%nch+1)=vn(1:skey%nch+1)//char(0)
-      isp1=isp+1
+      isp=isp+1
+      isp1=isp
       if(id .eq. 1)then
-        ktastk(isp1)=ktfsymbol+ifvr
+        call tfsyeval(ifvr,dtastk(isp1),irtc)
       elseif(id .eq. 2)then
-        ktastk(isp1)=ktfsymbol+ifvw
+        call tfsyeval(ifvw,dtastk(isp1),irtc)
       endif
-      isp=isp1+1
-      ktastk(isp)=ktfstring+ifvvarn
-      isp=isp+1
-      ktastk(isp)=ktfstring+ifvkey
-      isp=isp+1
-      rtastk(isp)=x
-      call tclrfpe
-      level=itfuplevel()
-c      call tfmemcheckprint('varfun',.true.,irtc)
-      call tfefunref(isp1,kx,.false.,irtc)
-c      call tfdebugprint(kx,'varfun',1)
-      isp=isp1-1
+      if(irtc .eq. 0)then
+        ltyp=idtype(ld)
+        svarn%nch=len_trim(pname(ld))
+        svarn%str(1:svarn%nch+1)=pname(ld)(1:svarn%nch+1)//char(0)
+        vn=tfkwrd(ltyp,k)
+        skey%nch=len_trim(vn)
+        skey%str(1:skey%nch+1)=vn(1:skey%nch+1)//char(0)
+        isp=isp+1
+        ktastk(isp)=ktfstring+ifvvarn
+        isp=isp+1
+        ktastk(isp)=ktfstring+ifvkey
+        isp=isp+1
+        rtastk(isp)=x
+        call tclrfpe
+        level=itfuplevel()
+c     call tfmemcheckprint('varfun',.true.,irtc)
+        call tfefunref(isp1,kx,.false.,irtc)
+c     call tfdebugprint(kx,'varfun',1)
+        isp=isp1-1
+      endif
       if(irtc .ne. 0)then
         level=itfdownlevel()
         if(ierrorprint .ne. 0)then
@@ -1330,7 +1336,7 @@ c        endif
       if(irtc .ne. 0)then
         go to 9010
       endif
-      if(.not. tflistqk(km))then
+      if(.not. tflistq(km))then
         go to 9000
       endif
       kam=ktfaddr(km)

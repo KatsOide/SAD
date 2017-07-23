@@ -379,7 +379,7 @@ c          write(*,*)'readshared-symbol '
 c          call tfdebugprint(kx,'readshared-string',1)
 c          write(*,*)'at ',ia
           kx=kxsalocb(-1,str%str(1:str%nch),str%nch)
-        elseif(ktflistqd(kx))then
+        elseif(ktflistq(kx))then
 c          write(*,*)'readshared-list '
           isp0=isp
           call tfrecallshared(isp0,ktflist+ia+3,kx,irtc)

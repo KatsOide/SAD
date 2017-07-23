@@ -114,7 +114,7 @@ c     $     vstk(ivstkoffset+isp1+2)),f,1,tr)
         go to 9000
       endif
       do i=isp1+1,isp
-        if(ktfnonrealqd(dtastk(i)))then
+        if(ktfnonrealq(dtastk(i)))then
           go to 9000
         endif
       enddo
@@ -130,23 +130,23 @@ c     $     vstk(ivstkoffset+isp1+2)),f,1,tr)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx
+      type (sad_rlist), pointer :: klr
       integer*4 isp1,irtc,i,itfmessage
       real*8 fx,fy,fu
       if(isp .ne. isp1+4)then
         go to 9000
       endif
       do i=isp1+1,isp
-        if(ktfnonrealqd(dtastk(i)))then
+        if(ktfnonrealq(dtastk(i)))then
           go to 9000
         endif
       enddo
       call twspfu(rtastk(isp1+1),rtastk(isp1+2),
      $     rtastk(isp-1),rtastk(isp),fx,fy,fu)
-      kx=kxavaloc(-1,3,klx)
-      klx%rbody(1)=fx
-      klx%rbody(2)=fy
-      klx%rbody(3)=fu
+      kx=kxavaloc(-1,3,klr)
+      klr%rbody(1)=fx
+      klr%rbody(2)=fy
+      klr%rbody(3)=fu
       irtc=0
       return
  9000 irtc=itfmessage(9,'General::wrongtype','"x, y, sigx, sigy"')

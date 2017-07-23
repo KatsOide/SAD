@@ -25,13 +25,13 @@
         kf%k=ktfref
       endif
       isp0=isp
-      call tfsortl(kl,ktfreallistqo(kl),m,mode,kf,.false.,irtc)
+      call tfsortl(kl,ktfreallistq(kl),m,mode,kf,.false.,irtc)
       if(irtc .ne. 0)then
         isp=isp0
         return
       endif
       kx%k=ktflist+ktfmakelist(isp0,klx)
-      klx%head=ktfcopy(kl%head)
+      klx%head=dtfcopy(kl%head)
       isp=isp0
       return
       end
@@ -436,6 +436,7 @@ c            1 Merge union
 c            2 Merge union with dropped index list (for Override[])
       subroutine tfsortml(itab,kl,av,n,mode,kf,irtc)
       use tfstk
+      use iso_c_binding
       implicit none
       type (sad_descriptor) kf
       type (sad_list) kl
@@ -641,7 +642,7 @@ c     Special version of tfsortml for Real List
       subroutine tfsortmrl(itab,kl,n,mode)
       use tfstk
       implicit none
-      type (sad_list) kl
+      type (sad_rlist) kl
       integer*4 n,mode
       integer*4 itab(n)
       integer*4 isp0,m,im,is,i1,i2,l1,l2,j1,j2,p0,p1,p2
@@ -881,7 +882,7 @@ c        enddo
       call tfgetllstkall(klr)
       isp2=isp
       if(mode .eq. 0)then
-        if(ktfreallistqo(kl1))then
+        if(ktfreallistq(kl1))then
           LOOP_J_1: do j=1,m
             vj=kl1%rbody(j)
             il=isp0+1
@@ -954,7 +955,7 @@ c        enddo
           enddo LOOP_J_2
         endif
       elseif(mode .eq. 1)then
-        if(ktfreallistqo(kl1))then
+        if(ktfreallistq(kl1))then
           LOOP_J_3: do j=1,m
             vj=kl1%rbody(j)
             il=isp0+1
@@ -1026,7 +1027,7 @@ c        enddo
         endif
       endif
       kax=ktfmakelist(isp2)
-      klist(kax)=ktfcopy(kl1%head)
+      dlist(kax)=dtfcopy(kl1%head)
       kx%k=ktflist+kax
       isp=isp0+1
       dtastk(isp)=kx
@@ -1077,7 +1078,7 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
           itforderl=-1
           return
         endif
-        if(ktfnonrealqd(kx))then
+        if(ktfnonrealq(kx))then
           itforderl=-1
           irtc=itfmessage(9,'General::wrongval',
      $         '"Real number","as the result of order-function"')
@@ -1095,7 +1096,7 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
           itforderl=-1
           return
         endif
-        if(ktfnonrealqd(kx1))then
+        if(ktfnonrealq(kx1))then
           irtc=itfmessage(9,'General::wrongval',
      $         '"Real number","as the result of order-function"')
           itforderl=-1
@@ -1143,8 +1144,8 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
       integer*4 m1,m2,l,i,itfstringorder,itfpatorder
       real*8 d,v1,v2
       ix=-1
-      if(ktfrealqd(k1,v1))then
-        if(ktfrealqd(k2,v2))then
+      if(ktfrealq(k1,v1))then
+        if(ktfrealq(k2,v2))then
           if(v1 .gt. v2)then
             ix=1
           elseif(v1 .eq. v2)then
@@ -1152,7 +1153,7 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
           endif
         endif
         return
-      elseif(ktfrealqd(k2))then
+      elseif(ktfrealq(k2))then
         ix=1
         return
       endif
@@ -1160,12 +1161,12 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
         ix=0
         return
       endif
-      if(ktflistqd(k1,kl1))then
-        if(kl1%head .eq. ktfoper+mtfcomplex .and.
+      if(ktflistq(k1,kl1))then
+        if(kl1%head%k .eq. ktfoper+mtfcomplex .and.
      $       kl1%nl .eq. 2 .and. 
      $       iand(kl1%attr,lnonreallist) .eq. 0)then
-          if(ktflistqd(k2,kl2))then
-            if(kl2%head .eq. ktfoper+mtfcomplex .and.
+          if(ktflistq(k2,kl2))then
+            if(kl2%head%k .eq. ktfoper+mtfcomplex .and.
      $           kl2%nl .eq. 2 .and.
      $           iand(kl2%attr,lnonreallist) .eq. 0)then
               d=kl1%rbody(1)-kl2%rbody(1)
@@ -1184,8 +1185,8 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
           return
         endif
       endif
-      if(ktflistqd(k2,kl2))then
-        if(kl2%head .eq. ktfoper+mtfcomplex .and.
+      if(ktflistq(k2,kl2))then
+        if(kl2%head%k .eq. ktfoper+mtfcomplex .and.
      $       kl2%nl .eq. 2 .and.
      $       iand(kl2%attr,lnonreallist) .eq. 0)then
            ix=1
@@ -1195,7 +1196,7 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
       if(ktfstringqd(k1,str1))then
         if(ktfstringqd(k2,str2))then
           ix=itfstringorder(str1,str2)
-        elseif(ktfrealqd(k2))then
+        elseif(ktfrealq(k2))then
           ix=1
         endif
         return
@@ -1226,10 +1227,10 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
         endif
       elseif(ktfsymbolqd(k2c))then
         ix=1
-      elseif(ktflistqd(k1c,kl1c))then
-        if(ktflistqd(k2c,kl2c))then
-          if(kl1c%head .ne. kl2c%head)then
-            l=itfcanonicalorder(kl1c%dbody(0),kl2c%dbody(0))
+      elseif(ktflistq(k1c,kl1c))then
+        if(ktflistq(k2c,kl2c))then
+          if(kl1c%head%k .ne. kl2c%head%k)then
+            l=itfcanonicalorder(kl1c%head,kl2c%head)
             if(l .ne. 0)then
               ix=l
               return
@@ -1240,8 +1241,8 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
           if(m1 .gt. m2)then
             ix=1
           elseif(m1 .eq. m2)then
-            if(ktfreallistqo(kl1c))then
-              if(ktfreallistqo(kl2c))then
+            if(ktfreallistq(kl1c))then
+              if(ktfreallistq(kl2c))then
                 do i=1,m1
                   if(kl1c%rbody(i) .gt. kl2c%rbody(i))then
                     ix=1
@@ -1254,7 +1255,7 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
                 ix=0
               endif
             else
-              if(ktfreallistqo(kl2c))then
+              if(ktfreallistq(kl2c))then
                 ix=1
               else
                 do i=1,m1
@@ -1271,7 +1272,7 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
         else
           ix=1
         endif
-      elseif(ktflistqd(k2c))then
+      elseif(ktflistq(k2c))then
         ix=1
       elseif(ktfpatqd(k1c,pat1))then
         if(ktfpatqd(k2c,pat2))then

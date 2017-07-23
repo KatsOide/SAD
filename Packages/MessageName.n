@@ -68,7 +68,9 @@
     FFS::undefcomp="Undefined component `1`";
     FFS::undefflag="Undefined flag";
     FFS::undefkey="Undefined keyword `1`";
-    FFS::interrupt="Interrupted"];
+    FFS::interrupt="Interrupted";
+    FFS::unequalkeyleng="Unequal length of key segments for `1`";
+    FFS::wrongkeyval="Neither Real or Real List for a key for `1`"]
 
   $WildCard::unknown="Unknown wild card scheme `1`";
 

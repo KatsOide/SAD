@@ -10,7 +10,7 @@
       use maccbk, only:MAXPNAME
       implicit none
       type (sad_descriptor) k,ki,k1
-      type (sad_list), pointer :: kl,kli
+      type (sad_dlist), pointer :: kl,kli
       integer*8 kfromr,kdx1
       integer*4 irtc,hsrchz,lid,idx,n,lenw,idxi,
      $     i,idir,idti,nc,itfmessage
@@ -26,7 +26,7 @@
       endif
       idx=0
       ename=' '
-      if(ktfnonlistqd(k,kl))then
+      if(ktfnonlistq(k,kl))then
         go to 9900
       endif
       if(.not. tfsameqk(kl%head,kxbl))then
@@ -42,10 +42,10 @@
       do i=1,n
         ki=kl%dbody(i)
         idir=1
- 1      if(ktflistqd(ki,kli))then
-          if(kli%head .eq. ktfoper+mtfmult)then
+ 1      if(ktflistq(ki,kli))then
+          if(kli%head%k .eq. ktfoper+mtfmult)then
             k1=kli%dbody(1)
-            if(ktfrealqd(k1))then
+            if(ktfrealq(k1))then
               if(k1%k .eq. kfromr(-1.d0))then
                 idir=-idir
                 ki=kli%dbody(2)
@@ -153,10 +153,11 @@
       use mackw
       implicit none
       type (sad_descriptor) kx,kr
-      type (sad_list), pointer :: klxi,klx
+      type (sad_dlist), pointer :: klxi,klx
       integer*8 ka1,kas,kdx1
       integer*4 isp1,irtc,nc,lenw,narg,idx,itype,
-     $     idt,n,i,nce,m,hsrchz,isp0, itfmessage
+     $     idt,n,i,nce,m,hsrchz,isp0, itfmessage,
+     $     itfdownlevel,l
       character*(MAXPNAME) ename,type,tfgetstrs,key,tfkwrd
       ename=tfgetstrs(ktastk(isp1+1),nce)
       if(nce .lt. 0)then
@@ -239,7 +240,9 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
           if(irtc .ne. 0)then
             return
           endif
-          call tfsetelementkey(idx,kr%k,irtc)
+          levele=levele+1
+          call tfsetelementkey(idx,kr,irtc)
+          l=itfdownlevel()
           if(irtc .ne. 0)then
             return
           endif
@@ -255,9 +258,9 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
             if(key .ne. ' ' .and. key .ne. '-')then
               isp=isp+1
               dtastk(isp)=kxadaloc(-1,2,klxi)
-              klxi%head=ktfoper+mtfrule
+              klxi%head%k=ktfoper+mtfrule
               klxi%dbody(1)=kxsalocb(0,key,lenw(key))
-              klxi%rbody(2)=rlist(idval(idx)+i)
+              klxi%dbody(2)=dlist(idval(idx)+i)
             endif
           enddo
           klx%dbody(3)=dtfcopy1(kxmakelist(isp0))
@@ -272,22 +275,23 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
       use tfstk
       use mackw
       implicit none
-      type (sad_list), pointer :: kl
-      integer*8 k,ki,kk,kv
+      type (sad_list), pointer :: kr
+      type (sad_dlist), pointer :: kl
+      type (sad_descriptor) k,ki,kk,kv
       integer*4 irtc,idx,i,idt,ioff,nc,itfmessage
       character*(MAXPNAME) tfgetstrs,key
-      if(tfruleqk(k,kl))then
-        if(tflistqk(k))then
+      if(tfruleq(k,kr))then
+        if(tflistq(k,kl))then
           do i=1,kl%nl
-            ki=kl%body(i)
+            ki=kl%dbody(i)
             call tfsetelementkey(idx,ki,irtc)
             if(irtc .ne. 0)then
               return
             endif
           enddo
         else
-          kk=kl%body(1)
-          key=tfgetstrs(kk,nc)
+          kk=kr%dbody(1)
+          key=tfgetstrs(kk%k,nc)
           if(nc .le. 0)then
             irtc=itfmessage(9,'General::wrongtype','"Character-string"')
             return
@@ -309,19 +313,20 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
           irtc=itfmessage(9,'FFS::undefkey',
      $         '"'//key(1:nc)//'"')
           return
- 10       kv=kl%body(2)
-          if(kl%head .eq. ktfoper+mtfruledelayed)then
+ 10       kv=kr%dbody(2)
+          if(kr%head%k .eq. ktfoper+mtfruledelayed)then
             call tfeevalref(kv,kv,irtc)
             if(irtc .ne. 0)then
               return
             endif
           endif
-          if(ktfnonrealq(kv))then
+          if(ktfnonrealq(kv) .and. tfnonreallistq(kv))then
             irtc=itfmessage(9,'General::wrongtype',
      $           '"Keyword -> value"')
             return
           endif
-          klist(idval(idx)+ioff)=kv
+          call tflocald(dlist(idval(idx)+ioff))
+          dlist(idval(idx)+ioff)=dtfcopy(kv)
         endif
       else
         irtc=itfmessage(9,'General::wrongtype',
@@ -414,14 +419,14 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
       call loc_el(idx,el)
       n=el%nlat1-2
       kx=kxadaloc(-1,n,klx)
-      klx%dbody(0)=dtfcopy1(kxsymbolz('BeamLine',8))
+      klx%head=dtfcopy1(kxsymbolz('BeamLine',8))
       do i=1,n
         ename=pname(idcomp(el,i))
         if(dircomp(el,i) .ge. 0.d0)then
           klx%dbody(i)=dtfcopy1(kxsymbolf(ename,lenw(ename),.true.))
         else
           klx%dbody(i)=kxadaloc(0,2,kli)
-          kli%head=ktfoper+mtftimes
+          kli%head%k=ktfoper+mtftimes
           kli%rbody(1)=-1.d0
           kli%dbody(2)=dtfcopy1(kxsymbolf(ename,lenw(ename),.true.))
         endif
@@ -450,7 +455,7 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
       LOOP_I: do i=isp1+1,isp
         if(ktflistq(ktastk(i),kl))then
           m=kl%nl
-          if(m .eq. 2 .and. kl%head .eq. ktfoper+mtftimes)then
+          if(m .eq. 2 .and. kl%head%k .eq. ktfoper+mtftimes)then
             if(ktfnonreallistqo(kl))then
               do j=1,2
                 if(ktfrealq(kl%body(j)))then
@@ -464,7 +469,7 @@ c                    write(*,*)'expandbeamline ',j,kl%rbody(j),n
                       enddo
                     else
                       kal=ktadaloc(-1,2,kll)
-                      kll%head=ktfoper+mtftimes
+                      kll%head%k=ktfoper+mtftimes
                       kll%rbody(1)=-1.d0
                       kll%body(2)=ktfcopy(kl%body(3-j))
                       do k=1,-n
@@ -477,7 +482,7 @@ c                    write(*,*)'expandbeamline ',j,kl%rbody(j),n
                 endif
               enddo
             endif
-          elseif(kl%head .eq. ktfsymbol+ifbeamline)then
+          elseif(kl%head%k .eq. ktfsymbol+ifbeamline)then
             isp2=isp
             call tfgetllstkall(kl)
             call tfexpandbeamline(isp2,kx1,irtc)
@@ -496,7 +501,7 @@ c                    write(*,*)'expandbeamline ',j,kl%rbody(j),n
       enddo LOOP_I
       kx=kxmakelist(isp0,klx)
       isp=isp0
-      klx%head=ktfsymbol+ktfcopy1(ifbeamline)
+      klx%head%k=ktfsymbol+ktfcopy1(ifbeamline)
       irtc=0
       return
       end

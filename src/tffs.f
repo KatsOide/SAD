@@ -22,6 +22,7 @@
       end module
 
       module sad_main
+        use tfstk, only:sad_descriptor
         integer*4, parameter ::expnsize=7
 
         type sad_el
@@ -35,6 +36,8 @@
         integer*4 ncomp2,id
         integer*4 nparam,update
         real*8 orient
+        type (sad_descriptor) dvalue(1:0)
+        integer*8 kvalue(1:0)
         real*8 value(1:2**31-2)
         end type
 
@@ -145,6 +148,140 @@ c$$$  endif
 c$$$  endif
         enddo
         tparaed=.false.
+        return
+        end subroutine
+
+        logical*4 function tcheckseg(cmp,ltyp,al,lal,irtc) result(seg)
+        use tfstk
+        use mackw
+        implicit none
+        type (sad_descriptor) :: kal
+        type (sad_comp) ::cmp
+        type (sad_rlist) , pointer ::lal
+        real*8 al
+        integer*4 lk,irtc,ltyp,itfmessage,lp,i
+        lk=kytbl(kwL,ltyp)
+        if(lk .gt. 0)then
+          kal=cmp%dvalue(lk)
+          seg=ktfnonrealq(kal,al)
+          if(seg)then
+            if(tfnonreallistq(kal,lal))then
+              lp=len_trim(pname(cmp%id))
+              irtc=itfmessage(999,'FFS::wrongkeyval',
+     $             '"'//pname(cmp%id)(1:lp)//'"')
+              return
+            else
+              al=lal%rbody(1)
+              do i=2,lal%nl
+                al=al+lal%rbody(i)
+              enddo
+            endif
+          endif
+        else
+          seg=.false.
+          al=0.d0
+        endif
+        irtc=0
+        return
+        end function
+
+        subroutine tfvcopycmp(cmps,cmpd,k,coeff)
+        use tfstk
+        use ffs
+        implicit none
+        type (sad_comp) :: cmps,cmpd
+        type (sad_rlist), pointer :: las,lad,lasl,ladl
+        real*8 coeff
+        integer*4 k,ky
+        if(ktfrealq(cmps%dvalue(k)))then
+          cmpd%value(k)=cmps%value(k)*coeff
+        elseif(tfreallistq(cmps%dvalue(k),las))then
+          if(tfnonreallistq(cmpd%dvalue(k),lad)
+     $         .or. lad%nl .ne. las%nl)then
+            call tflocald(cmpd%dvalue(k))
+            cmpd%dvalue(k)=kxavaloc(0,las%nl,lad)
+          endif
+          lad%rbody(1:las%nl)=las%rbody(1:las%nl)*coeff
+          ky=kytbl(kwL,idtype(cmpd%id))
+          if(ky .ne. 0 .and. ky .ne. k)then
+            if(tfnonreallistq(cmpd%dvalue(ky)) .and.
+     $           tfreallistq(cmps%dvalue(ky),lasl))then
+              call tflocald(cmpd%dvalue(ky))
+              cmpd%dvalue(ky)=kxavaloc(0,las%nl,ladl)
+              ladl%rbody(1:lasl%nl)=las%rbody(1:lasl%nl)
+            endif
+          endif
+        endif
+        cmpd%update=0
+        return
+        end subroutine
+
+        subroutine tfvcopycmpall(cmps,cmpd,n)
+        use tfstk
+        use ffs
+        implicit none
+        type (sad_comp) :: cmps,cmpd
+        type (sad_rlist), pointer :: las,lad
+        integer*4 k,n
+        do k=1,n
+          if(ktfrealq(cmps%dvalue(k)))then
+            cmpd%value(k)=cmps%value(k)
+          elseif(tfreallistq(cmps%dvalue(k),las))then
+            if(tfnonreallistq(cmpd%dvalue(k),lad)
+     $           .or. lad%nl .ne. las%nl)then
+              call tflocald(cmpd%dvalue(k))
+              cmpd%dvalue(k)=kxavaloc(0,las%nl,lad)
+            endif
+            lad%rbody(1:las%nl)=las%rbody(1:las%nl)
+          endif
+        enddo
+        cmpd%update=0
+        return
+        end subroutine
+
+        real*8 function tfvcmp(cmps,k) result(v)
+        use ffs
+        use tfstk
+        implicit none
+        type (sad_comp) :: cmps
+        type (sad_rlist), pointer :: las
+        integer*4 j,k
+        if(ktfnonrealq(cmps%dvalue(k),v))then
+          if(tfreallistq(cmps%dvalue(k),las))then
+            v=las%rbody(1)
+            do j=2,las%nl
+              v=v+las%rbody(j)
+            enddo
+          endif
+        endif
+        return
+        end function
+
+        subroutine tfsetcmp(v,cmpd,i)
+        use ffs
+        use tfstk
+        implicit none
+        type (sad_comp) :: cmpd
+        type (sad_rlist), pointer :: lad
+        integer*4 i,k
+        real*8 r0,v
+        if(ktfrealq(cmpd%dvalue(i)))then
+c     write(*,*)'tfsetcmp-0 ',i,v
+          cmpd%value(i)=v
+        elseif(tfreallistq(cmpd%dvalue(i),lad))then
+          r0=lad%rbody(1)
+          do k=2,lad%nl
+            r0=r0+lad%rbody(k)
+          enddo
+c     write(*,*)'tfsetcmp-1 ',i,r0,v
+          if(r0 .ne. 0.d0)then
+            lad%rbody(1:lad%nl)=v/r0*lad%rbody(1:lad%nl)
+          else
+            do k=1,lad%nl
+              lad%rbody(k)=v/lad%nl
+            enddo
+          endif
+        endif
         return
         end subroutine
 
@@ -716,6 +853,26 @@ c$$$  endif
           endif
           nextl=i1
         endif
+        return
+        end function
+
+        subroutine tfvcopy(is,id,k,coeff)
+        implicit none
+        type (sad_comp), pointer :: cmps,cmpd
+        real*8 coeff
+        integer*4 is,id,k
+        call compelc(id,cmpd)
+        call compelc(is,cmps)
+        call tfvcopycmp(cmps,cmpd,k,coeff)
+        return
+        end subroutine
+
+        real*8 function tfvalvar(i,k) result(v)
+        implicit none
+        type (sad_comp), pointer :: cmps
+        integer*4 i,k
+        call compelc(i,cmps)
+        v=tfvcmp(cmps,k)
         return
         end function
 

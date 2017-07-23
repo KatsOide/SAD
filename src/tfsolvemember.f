@@ -8,9 +8,9 @@
         subroutine tfcxinit
         use tfstk
         implicit none
-        type (sad_list), pointer :: kl
+        type (sad_dlist), pointer :: kl
         icx=ktadaloc(0,1,kl)
-        kl%dbody(0)=dtfcopy1(kxsymbolz('Class`cx$',9))
+        kl%head=dtfcopy1(kxsymbolz('Class`cx$',9))
         kl%dbody(1)=dtfcopy1(kxsymbolz('Class`x$',8))
         ithis=ktfsymbolz('System`This',11)
         ithisloc=klist(ithis)
@@ -32,15 +32,15 @@
       integer*4 irtc
       logical*4 eval,reps
       irtc=-1
-      kx%k=ktflist+ksad_loc(list%head)
+      kx%k=ktflist+ksad_loc(list%head%k)
       reps=.false.
-      if(list%head .eq. ktfoper+mtfatt)then
+      if(list%head%k .eq. ktfoper+mtfatt)then
         if(list%nl .eq. 2 .and. ktfnonreallistqo(list))then
           call tfclassmember(list%dbody(1),list%dbody(2),kx,
      $         .false.,irtc)
         endif
         return
-      elseif(list%head .eq. ktfoper+mtfslot)then
+      elseif(list%head%k .eq. ktfoper+mtfslot)then
         call tfslot(int8(mtfslot),list,kx,.false.,irtc)
         if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
           call tfreseterror
@@ -63,7 +63,7 @@
 c        call tfloadlstk(list,listx)
 c        listx%head=k1
 c        call tfstk2l(listx,listx)
-        kx%k=ktflist+ksad_loc(listx%head)
+        kx%k=ktflist+ksad_loc(listx%head%k)
       endif
       return
       end
@@ -112,7 +112,7 @@ c        write(*,*)'with: ',irtc,i
       type (sad_descriptor) k10,k20,kx,k1,k2,ks
       type (sad_symdef), pointer :: symd
       type (sad_symbol), pointer :: symh
-      type (sad_list), pointer :: kl1,klx
+      type (sad_dlist), pointer :: kl1,klx
       integer*8 ka2,k11,kv
       integer*4 irtc,isp1,l,itfdownlevel
       logical*4 ev,eval
@@ -122,8 +122,8 @@ c        write(*,*)'with: ',irtc,i
         k2%k=ktfsymbol+klist(ifunbase+ka2)
       endif
       if(ktfsymbolqd(k2))then
-        if(ktflistqd(k1,kl1))then
-          k11=kl1%head
+        if(ktflistq(k1,kl1))then
+          k11=kl1%head%k
           if(ktfsymbolqdef(k11,symd))then
             if(symd%sym%gen .eq. -3)then
               go to 10
@@ -141,8 +141,8 @@ c        write(*,*)'with: ',irtc,i
           endif
         elseif(ktfsymbolqdef(k1%k,symd) .and.
      $         symd%sym%override .ne. 0)then
-          if(ktflistqd(symd%value,kl1) .and.
-     $         ktfsymbolq(kl1%head,symh))then
+          if(ktflistq(symd%value,kl1) .and.
+     $         ktfsymbolq(kl1%head%k,symh))then
             if(symh%gen .eq. -3)then
               go to 10
             endif
@@ -176,7 +176,7 @@ c        write(*,*)'with: ',irtc,i
         ks=kxmemberobject2
       endif
       isp=isp1+1
-      dtastk(isp)=kl1%dbody(0)
+      dtastk(isp)=kl1%head
       isp=isp+1
       dtastk(isp)=k2
       call tfdeval(isp1,ks,kx,1,.false.,ev,irtc)
@@ -188,8 +188,8 @@ c      write(*,*)'with: ',irtc,ev,eval
           l=itfdownlevel()
           return
         endif
-        if(ktflistqd(kx,klx))then
-          if(klx%head .eq. ktfoper+mtfhold)then
+        if(ktflistq(kx,klx))then
+          if(klx%head%k .eq. ktfoper+mtfhold)then
             kx=klx%dbody(1)
           endif
         elseif(kx%k .eq. kxundefined%k)then
@@ -290,8 +290,8 @@ c      call tfdebugprint(kx,'==>',3)
       endif
       rep=.false.
       kx=k
-      if(ktflistqd(k,kl))then
-        k1=kl%dbody(0)
+      if(ktflistq(k,kl))then
+        k1=kl%head
         n=kl%nl
         rule=.false.
         if(k1%k .eq. ktfoper+mtfatt)then
@@ -315,17 +315,17 @@ c      call tfdebugprint(kx,'==>',3)
               call tfreplacememberstk(isp1,isp2,isp3,
      $             nrule1,nrule2,k1,dtastk(isp),0,rep)
             else
-              ktastk(isp)=kl%head
+              dtastk(isp)=kl%head
             endif
           endif
         endif
         isp0=isp
-        if(ktfreallistqo(kl))then
+        if(ktfreallistq(kl))then
           if(rep)then
             call loc_list(ktavaloc(-1,n),klx)
-            klx%head=ktfcopy(ktastk(isp0))
+            klx%head=dtfcopy(dtastk(isp0))
             klx%body(1:n)=kl%body(1:n)
-            kx%k=ktflist+ksad_loc(klx%head)
+            kx%k=ktflist+ksad_loc(klx%head%k)
           endif
           isp=isp0-1
           return
@@ -336,13 +336,13 @@ c      call tfdebugprint(kx,'==>',3)
           if(i .le. m .and. i .ne. m0)then
             ki=kl%dbody(i)
             m01=0
-            if(rule .and. ktflistqd(ki,kli))then
-              if(kli%head .eq. ktfoper+mtfrule .or.
-     $             kli%head .eq. ktfoper+mtfruledelayed)then
+            if(rule .and. ktflistq(ki,kli))then
+              if(kli%head%k .eq. ktfoper+mtfrule .or.
+     $             kli%head%k .eq. ktfoper+mtfruledelayed)then
                 m01=1
               endif
             endif
-            if(.not. ktfstringqd(ki) .and. ktfnonrealqd(ki))then
+            if(.not. ktfstringqd(ki) .and. ktfnonrealq(ki))then
               call tfreplacememberstk(isp1,isp2,isp3,nrule1,nrule2,
      $             ki,dtastk(isp),m01,rep1)
               rep=rep .or. rep1
@@ -404,7 +404,7 @@ c      call tfdebugprint(kx,'==>',3)
      $     .and. tfmatchsymstk(ka,isp2,nrule2,j))then
         kaj=ktfaddr(ktastk(ivstk2(1,j)))
         kx=kxadaloc(-1,2,klx)
-        klx%head=ktfoper+mtfatt
+        klx%head%k=ktfoper+mtfatt
         klx%body(1)=ktflist+ktfcopy1(icx)
         klx%body(2)=ktfsymbol+ktfcopy1(kaj)
         tfrepsymstk=.true.
@@ -420,7 +420,7 @@ c      call tfdebugprint(kx,'==>',3)
       type (sad_descriptor) k,kx,kx1
       type (sad_list), pointer :: kl,klx
       integer*4 itfmessage,irtc
-      if(ktfnonlistqd(k,kl) .or. kl%head .ne. ktfoper+mtfhold
+      if(ktfnonlistqd(k,kl) .or. kl%head%k .ne. ktfoper+mtfhold
      $     .or. kl%nl .ne. 1)then
         go to 9000
       endif
@@ -429,7 +429,7 @@ c      call tfdebugprint(kx,'==>',3)
         return
       endif
       kx=kxadaloc(-1,1,klx)
-      klx%head=ktfoper+mtfhold
+      klx%head%k=ktfoper+mtfhold
       klx%dbody(1)=dtfcopy(kx1)
       return
  9000 irtc=itfmessage(9,'General::wrongtype',
@@ -444,7 +444,7 @@ c      call tfdebugprint(kx,'==>',3)
       type (sad_list), pointer :: kl1,klx1
       integer*8 ka
       integer*4 itfmessage,irtc,id
-      if(ktfnonlistqd(k1,kl1) .or. ktfnonoperqd(kl1%dbody(0),ka))then
+      if(ktfnonlistqd(k1,kl1) .or. ktfnonoperqd(kl1%head,ka))then
         go to 9100
       endif
       select case (int(ka))
@@ -463,7 +463,7 @@ c      call tfdebugprint(kx,'==>',3)
           return
         endif
         kx=kxadaloc(-1,2,klx1)
-        klx1%head=ktfoper+ka
+        klx1%head%k=ktfoper+ka
         klx1%dbody(1)=dtfcopy(kargr)
         klx1%dbody(2)=dtfcopy(kr)
       case default
@@ -477,7 +477,7 @@ c      call tfdebugprint(kx,'==>',3)
             return
           endif
           kx=kxadaloc(-1,2,klx1)
-          klx1%head=ktfoper+ka
+          klx1%head%k=ktfoper+ka
           klx1%dbody(1)=dtfcopy(kl1%dbody(1))
           klx1%dbody(2)=dtfcopy(kx1)
         else
@@ -498,8 +498,8 @@ c      call tfdebugprint(kx,'==>',3)
       type (sad_list), pointer ::list
       type (sad_symdef), pointer ::symd
       lx=.false.
-      if(ktflistqd(k,list))then
-        k1=list%dbody(0)
+      if(ktflistq(k,list))then
+        k1=list%head
         if(ktfsymbolqdef(k1%k,symd) .and. list%nl .eq. 1)then
           if(symd%sym%gen .eq. -3)then
             if(ktfnonreallistqo(list))then
@@ -511,7 +511,7 @@ c      call tfdebugprint(kx,'==>',3)
         endif
       elseif(ktfsymbolqdef(k%k,symd))then
         if(symd%sym%override .ne. 0 .and.
-     $       ktflistqd(symd%value))then
+     $       ktflistq(symd%value))then
           lx=tfclassq(symd%value)
         endif
       endif

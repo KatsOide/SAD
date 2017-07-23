@@ -1,3 +1,144 @@
+
+      module ophash
+      use tfstk
+      implicit none
+      integer*4 nhash
+      parameter (nhash=4)
+      integer*4 iophash(nhash,0:63)
+      logical*4 , save :: opini=.true.
+      integer*8 ktfcode(0:ntfarg)
+      character*4, save :: opcode(0:mtfnopc) =(/
+     $     '    ','    ','    ','+   ','-   ',
+     $     '*   ','/   ','    ','^   ','==  ',
+
+     $     '<>  ','>   ','<   ','>=  ','<=  ',
+     $     '=== ','<=> ','~   ','&&  ','||  ',
+
+     $     '//  ','[   ',']   ','{   ','}   ',
+     $     ':=  ','=   ','    ','(   ',')   ',
+
+     $     ',   ',';   ','&   ',':   ','->  ',
+     $     ':>  ','/.  ','//. ','^=  ','^:= ',
+
+     $     '=.  ','?   ','?   ','#   ','##  ',
+     $     '.   ','|   ','/@  ','//@ ','@@  ',
+
+     $     '..  ','... ','    ','+=  ','-=  ',
+     $     '*=  ','/=  ','++  ','--  ','[[  ',
+
+     $     '@   ','::  ','/:  ','(*  ','*)  ',
+     $     '    ','    '/)
+      logical*4 :: constop(0:mtfnopc) = (/
+     $     .false.,.false.,.false.,.false.,.false.,
+     $     .false.,.false.,.false.,.false.,.false.,
+
+     $     .false.,.false.,.false.,.false.,.false.,
+     $     .false.,.false.,.false.,.false.,.false.,
+
+     $     .false.,.false.,.false.,.true. ,.false.,
+     $     .false.,.false.,.true., .false.,.false.,
+
+     $     .false.,.false.,.true. ,.true., .true.,
+     $     .true., .false.,.false.,.false.,.false.,
+
+     $     .false.,.true. ,.false.,.false.,.false.,
+     $     .false.,.false. ,.false.,.false.,.false.,
+c Alternatives is temporarily set .false. due to possible reducution.
+
+     $     .true. ,.true. ,.false.,.false.,.false.,
+     $     .false.,.false.,.false.,.false.,.false.,
+
+     $     .false.,.true., .true. ,.false.,.false.,
+     $     .true., .false.
+     $     /)
+
+      contains
+        subroutine tfopcodehash
+        integer*4 i,j,k
+        character*4 oper1
+        do i=0,63
+          do k=1,nhash
+            iophash(k,i)=-1
+          enddo
+        enddo
+        LOOP_I: do i=0,mtfnopc
+          if(opcode(i) .ne. ' ')then
+            oper1=opcode(i)
+            j=ichar(oper1(1:1))+ichar(oper1(2:2))
+     $           +ichar(oper1(3:3))+ichar(oper1(4:4))
+            j=iand(j,63)
+            do k=1,nhash
+              if(iophash(k,j) .lt. 0)then
+                iophash(k,j)=i
+                cycle LOOP_I
+              endif
+            enddo
+            write(*,*)'tfopcode hash implementation error. ',opcode(i)
+            stop
+          endif
+        enddo LOOP_I
+        opini=.false.
+        return
+        end subroutine
+
+      end module
+
+      module opdata
+      use tfstk
+      implicit none
+      integer*4 :: iprior(0:mtfnopc) = (/
+     $     9999,
+     $     10,  20,  50,  50,  40,  40,  15,  15,  100, 100,
+     $     100, 100, 100, 100, 120, 120, 150, 160, 170, 80,
+     $     6,   3000,9999,3000,250, 250, 7000,9999,8000,9000,
+     $     1000,220, 180, 190, 190, 200, 200, 250, 250, 900,
+     $     4,   3,   3,   3,   10,  175, 9,   9,   9,   172,
+     $     172, 130, 210, 210, 210, 210, 7,   7,   6,   5,
+     $     2,   240, 9999,9999,1,   9999/)
+c          null
+c          m    i    +    -    *    /    v    ^    ==   <>
+c          >    <    >=   <=   ===  <=>  ~    &&   ||   //
+c          [    ]    {    }    :=   =    C    (    )    ,
+c          ;    &    :    ->   :>   /.   //.  ^=   ^:=  =.
+c          ?    flg  #    ##   .    |    /@   //@  @@   .. 
+c          ...  ineq +=   -=   *=   /=   ++   --   [[   @
+c          msgn /:   (*   *)   Hold z
+      logical*4, parameter :: T=.true.,F=.false.
+      logical*4 :: nullfirst(0:mtfnopc) = (/
+     $     T,
+     $     T,   T,   F,   F,   F,   F,   F,   F,   F,   F,   
+     $     F,   F,   F,   F,   F,   F,   T,   F,   F,   F,   
+     $     T,   T,   T,   T,   F,   F,   F,   T,   T,   T,
+     $     T,   F,   F,   F,   F,   F,   F,   F,   F,   F,   
+     $     T,   T,   T,   T,   F,   F,   F,   F,   F,   F,   
+     $     F,   F,   F,   F,   F,   F,   T,   T,   F,   F,
+     $     F,   F,   F,   F,   F,   F/)
+      logical*4 :: lastfirst(0:mtfnopc) = (/
+     $     F,
+     $     F,   F,   F,   F,   F,   F,   F,   T,   F,   F,   
+     $     F,   F,   F,   F,   F,   F,   F,   F,   F,   F,   
+     $     F,   F,   F,   F,   T,   T,   F,   F,   F,   F,
+     $     F,   F,   F,   T,   T,   F,   F,   F,   F,   F,   
+     $     F,   F,   F,   F,   F,   F,   T,   T,   T,   F,   
+     $     F,   F,   F,   F,   F,   F,   F,   F,   F,   F,
+     $     F,   F,   F,   F,   F,   F/)
+
+      end module
+
+      module tfform
+      use tfstk
+      integer*8, save :: iaxform=0,iaxpagewidth=0
+      type (sad_symbol), pointer, save :: symform,sympw
+      contains
+        subroutine tfforminit
+        implicit none
+        iaxform=ktfsymbolz('System`$FORM',12)
+        iaxpagewidth=ktfsymbolz('System`PageWidth',16)
+        call loc_sym(iaxform,symform)
+        call loc_sym(iaxpagewidth,sympw)
+        end subroutine
+      end module
+
       subroutine tfestk(isp0,iprior,lastfirst,irtc)
       use tfstk
       use ophash
@@ -24,7 +165,7 @@
                 if(itastk2(1,i) .eq. mtfpart)then
                   isp1=i
                   kx=kxmakelist(isp1-1,klx)
-                  klx%head=ktfoper+mtfpart
+                  klx%head%k=ktfoper+mtfpart
                   iop=mtfnull
                   go to 1010
                 endif
@@ -148,7 +289,8 @@
       use tfstk
       implicit none
       type (sad_descriptor) k1,k2,kx
-      type (sad_list), pointer :: kl1,kl2,klx
+      type (sad_list), pointer :: kl1,kl2
+      type (sad_dlist), pointer :: klx
       integer*4 iop1,i,m1,m2,irtc
       logical*4 tfinequalityqk,nextrel,tfconstlistqo
       if(tfinequalityqk(k1%k))then
@@ -158,7 +300,7 @@
           call loc_sad(ktfaddrd(k2),kl2)
           m2=kl2%nl
           kx=kxadaloc(-1,m1+m2+1,klx)
-          klx%head=ktfoper+mtfinequality
+          klx%head%k=ktfoper+mtfinequality
           do i=1,m1
             klx%body(i)=ktfcopy(kl1%body(i))
           enddo
@@ -168,9 +310,9 @@
           enddo
         else
           kx=kxadaloc(-1,m1+2,klx)
-          klx%head=ktfoper+mtfinequality
+          klx%head%k=ktfoper+mtfinequality
           do i=1,m1
-            klx%body(i)=ktfcopy(kl1%body(i))
+            klx%dbody(i)=dtfcopy(kl1%dbody(i))
           enddo
           klx%body(m1+1)=ktfoper+iop1
           klx%dbody(m1+2)=dtfcopy(k2)
@@ -178,23 +320,24 @@
       else
         if(tfinequalityqk(k2%k))then
           call loc_sad(ktfaddrd(k2),kl2)
+          m2=kl2%nl
           kx=kxadaloc(-1,m2+2,klx)
-          klx%head=ktfoper+mtfinequality
+          klx%head%k=ktfoper+mtfinequality
           klx%dbody(1)=dtfcopy(k1)
           klx%body(2)=ktfoper+iop1
           do i=1,m2
-            klx%body(i+2)=ktfcopy(kl2%body(i))
+            klx%dbody(i+2)=dtfcopy(kl2%dbody(i))
           enddo
         else
           if(nextrel)then
             kx=kxadaloc(-1,3,klx)
-            klx%head=ktfoper+mtfinequality
+            klx%head%k=ktfoper+mtfinequality
             klx%dbody(1)=dtfcopy(k1)
             klx%body(2)=ktfoper+iop1
             klx%dbody(3)=dtfcopy(k2)
           else
             kx=kxadaloc(-1,2,klx)
-            klx%head=ktfoper+iop1
+            klx%head%k=ktfoper+iop1
             klx%dbody(1)=dtfcopy(k1)
             klx%dbody(2)=dtfcopy(k2)
           endif
@@ -237,7 +380,7 @@
           endif
           if(kx%k .eq. 0)then
             return
-          elseif(ktfnonrealqd(kx))then
+          elseif(ktfnonrealq(kx))then
             irtc=-1
             return
           endif
@@ -266,8 +409,8 @@ c      include 'DEBUG.inc'
           endif
         elseif(ktfstringqd(kh))then
           if(isp .eq. isp1+1 .or. isp .eq. isp1+2)then
-            if(ktfrealqd(dtastk(isp1+1)) .and.
-     $           ktfrealqd(dtastk(isp)))then
+            if(ktfrealq(dtastk(isp1+1)) .and.
+     $           ktfrealq(dtastk(isp)))then
               kx=kxsubstring(kh,isp1+1,isp)
               irtc=0
               return
@@ -547,7 +690,7 @@ c          write(*,*)'with ',irtc
       select case (iah)
       case (mtfpart)
         if(tfconstqk(ktastk(isp1+1)))then
-          if(tflistqk(ktastk(isp1+1)))then
+          if(tflistq(ktastk(isp1+1)))then
             do i=isp1+2,isp
               if(ktfnonrealq(ktastk(i)))then
                 if(ktastk(i) .ne. ktfoper+mtfnull)then
@@ -686,11 +829,11 @@ c          write(*,*)'with ',irtc
  110  irtc=0
       if(isp .eq. isp0+1)then
         kx=dtastk(isp)
-        if(ktfrealqd(kx))then
+        if(ktfrealq(kx))then
           isp=isp00
           return
-        elseif(ktflistqd(kx,klx))then
-          if(klx%head .eq. ktfoper+mtfcomplex)then
+        elseif(ktflistq(kx,klx))then
+          if(klx%head%k .eq. ktfoper+mtfcomplex)then
             isp=isp00
             return
           endif
@@ -698,7 +841,7 @@ c          write(*,*)'with ',irtc
       endif
       if(comp)then
         kx=kxmakelist(isp0,klx)
-        klx%head=ktfoper+iah
+        klx%head%k=ktfoper+iah
         isp=isp00
       else
         kx%k=ktfref
@@ -706,10 +849,10 @@ c          write(*,*)'with ',irtc
       return
       end
 
-      subroutine tfcomposefun(isp1,iah,kx,full,irtc)
+      recursive subroutine tfcomposefun(isp1,iah,kx,full,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) kx,dh
       integer*8 ka,kti,kai,i
       integer*4 isp1,iah,irtc,narg,id
       real*8 rimmediate0
@@ -737,7 +880,7 @@ c          write(*,*)'with ',irtc
         return
       case (nfunmodule)
         if(full)then
-          if(isp .eq. isp1+2)then
+ 11       if(isp .eq. isp1+2)then
             call tfmodule(isp1,kx,.true.,.false.,irtc)
             if(irtc .ne. 0)then
               if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
@@ -746,9 +889,49 @@ c          write(*,*)'with ',irtc
               irtc=1
             endif
             isp=isp1+2
+          elseif(isp .gt. isp1+2)then
+            dh=dtastk(isp1+1)
+            dtastk(isp1+1)=dtastk(isp1)
+            call tfcomposefun(isp1+1,iah,kx,.true.,irtc)
+            dtastk(isp1+1)=dh
+            if(irtc .ne. 0)then
+              if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+                call tfreseterror
+              endif
+              irtc=1
+              return
+            endif
+            isp=isp1+2
+            dtastk(isp)=kx
+            go to 11
           endif
         endif
         return
+
+      case (nfunwith)
+        if(full)then
+ 21       if(isp .eq. isp1+2)then
+            kx=kxcompose(isp1)
+            irtc=0
+          elseif(isp .gt. isp1+2)then
+            dh=dtastk(isp1+1)
+            dtastk(isp1+1)=dtastk(isp1)
+            call tfcomposefun(isp1+1,iah,kx,.true.,irtc)
+            dtastk(isp1+1)=dh
+            if(irtc .ne. 0)then
+              if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+                call tfreseterror
+              endif
+              irtc=1
+              return
+            endif
+            isp=isp1+2
+            dtastk(isp)=kx
+            go to 21
+          endif
+          return
+        endif
+
       case (nfunlength)
         if(isp .eq. isp1+1)then
           if(ktftype(ktastk(isp)) .eq. ktflist)then
@@ -915,8 +1098,8 @@ c      call tfdebugprint(kx,'==>',1)
       implicit none
       type (sad_descriptor) k
       type (sad_list), pointer :: kl
-      tfheldqd=ktflistqd(k,kl) .and.
-     $     kl%head .eq. ktfoper+mtfhold
+      tfheldqd=ktflistq(k,kl) .and.
+     $     kl%head%k .eq. ktfoper+mtfhold
       return
       end
 

@@ -6,6 +6,7 @@
       use ffs_pointer
       use tffitcode
       implicit none
+      type (sad_comp), pointer :: cmp
       integer*4 i,lxp,lt,nv,j,it
       real*8 geo1(3,4),vsave(256),dpos,offset,xp,fr,pos0,
      $     dox,doy,doz,g1,tffsmarkoffset,g2,rgetgl1,poso,posi
@@ -61,7 +62,8 @@
               else
                 call tmov(rlist(latt(lxp)+1),vsave,nv)
               endif
-              call qfraccomp(lxp,0.d0,fr,ideal,chg)
+              call compelc(lxp,cmp)
+              call qfraccomp(cmp,0.d0,fr,ideal,chg)
               if(chg)then
                 call tmov(geo(1,1,lxp+1),geo1,12)
                 pos0=pos(lxp+1)
@@ -173,9 +175,12 @@
       use ffs_pointer
       use tffitcode
       use sad_main
+      use tfcsi, only:icslfno
       implicit none
       type (sad_comp), pointer :: cmp
-      integer*4 istart,istop,ke,ke1,i,k,i1,istart0
+      type (sad_rlist), pointer :: lal
+      integer*4 istart,istop,ke,ke1,i,k,i1,istart0,
+     $     itfmessage,ll,lp
       integer*8 id
       real*8 p1,h1,ali,v,zetau,b,a,xiu,dchi3,coschi,sinchi,
      $     x1,x2,x3,y1,y2,y3,rho0,sp0,cp0,r1,r2,cchi1,schi1,
@@ -195,6 +200,7 @@ c     end   initialize for preventing compiler warning
       istart=istart0
  1    ke=0
       ke1=0
+c      write(*,*)'tfgeo',istart
       p1=gammab(istart)
       h1=p2h(p1)
 c      h1=p1*sqrt(1.d0+1.d0/p1**2)
@@ -225,7 +231,20 @@ c      h1=sqrt(1.d0+p1**2)
         endif
         call loc_comp(id,cmp)
         if(kytbl(kwANGL,k) .ne. 0)then
-          ali=cmp%value(kytbl(kwL,k))
+          if(ktfnonrealq(cmp%dvalue(kytbl(kwl,k)),ali))then
+            if(tfreallistq(cmp%dvalue(kytbl(kwl,k)),lal))then
+              ali=0.d0
+              do ll=1,lal%nl
+                ali=ali+lal%rbody(ll)
+              enddo
+            else
+              lp=len_trim(pname(cmp%id))
+              call tffserrorhandle(i,
+     $             itfmessage(999,'FFS::wrongkeyval',
+     $             '"'//pname(cmp%id)(1:lp)//'"'))
+              return
+            endif
+          endif
           phi=cmp%value(kytbl(kwANGL,k))
           if(cmp%value(kytbl(kwFRMD,k)) .ne. 0.d0)then
             if(phi*ali .ne. 0.d0)then
@@ -251,8 +270,21 @@ c      h1=sqrt(1.d0+p1**2)
         elseif(k .eq. icSOL)then
           call tsgeo(i,ke,ke1,sol)
           go to 10
-        elseif(kytbl(kwL,k) .ne. 0)then
-          ali=cmp%value(kytbl(kwL,k))
+        elseif(kytbl(kwL,k) .gt. 0)then
+          if(ktfnonrealq(cmp%dvalue(kytbl(kwl,k)),ali))then
+            if(tfreallistq(cmp%dvalue(kytbl(kwl,k)),lal))then
+              ali=0.d0
+              do ll=1,lal%nl
+                ali=ali+lal%rbody(ll)
+              enddo
+            else
+              lp=len_trim(pname(cmp%id))
+              call tffserrorhandle(i,
+     $             itfmessage(999,'FFS::wrongkeyval',
+     $             '"'//pname(cmp%id)(1:lp)//'"'))
+              return
+            endif
+          endif
         else
           ali=0.d0
         endif

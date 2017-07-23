@@ -75,9 +75,9 @@
         klx%dbody(2)=kxadaloc(0,1,klhm)
         klx%dbody(3)=kxsalocb(0,mess,l)
         klx%dbody(4)=kxadaloc(0,1,klhms)
-        klhm%head=ktfoper+mtfhold
+        klhm%head%k=ktfoper+mtfhold
         klhm%dbody(1)=dm
-        klhms%head=ktfoper+mtfhold
+        klhms%head%k=ktfoper+mtfhold
         isp0=isp
         isp=isp+1
         dtastk(isp)=mn
@@ -87,7 +87,7 @@
         klhms%dbody(1)=dtfcopy1(kxcomposev(isp0+1))
         isp=isp0
         rlist(ierrorgen)=rlist(ierrorgen)+1.d0
-        ierrorprint=sad_loc(klx%head)
+        ierrorprint=sad_loc(klx%head%k)
         itfmessage=1
       else
         call tflocal1(dm%k)
@@ -174,8 +174,28 @@ c     Search '"' from string(is+1:l) with backslash escape
       if(ierrorprint .ne. 0)then
         ierrorf=kx%k
         if(irtc .gt. 0)then
-          if(tflistqk(kerror))then
+          if(tflistq(kerror))then
             call tfaddmessage(' ',0,icslfno())
+          endif
+        endif
+        ierrorprint=0
+      endif
+      return
+      end
+      
+      subroutine tferrorhandles(kx,str,irtc)
+      use tfstk
+      use tfcsi
+      implicit none
+      type (sad_descriptor) kx
+      character*(*) str
+      integer*4 irtc
+      if(ierrorprint .ne. 0)then
+        ierrorf=kx%k
+        if(irtc .gt. 0)then
+          if(tflistq(kerror))then
+            call tfaddmessage(str(1:len_trim(str)),
+     $           len_trim(str),icslfno())
           endif
         endif
         ierrorprint=0
@@ -196,7 +216,7 @@ c     Search '"' from string(is+1:l) with backslash escape
         call tfdebugprint(kerror,'???Error in error handling.',10)
         return
       endif
-      if(.not. ktflistq(kerror,kle))then
+      if(.not. tflistq(kerror,kle))then
         return
       endif
       iter=.true.
@@ -211,9 +231,10 @@ c     Search '"' from string(is+1:l) with backslash escape
       ktastk(isp)=kerror
 c      call tfdebugprint(kerror,'addmessage',1)
       call tfefunref(isp1,kx,.false.,irtc)
+c      call tfdebugprint(kx,'addmessage',1)
       isp=isp1-1
       if(irtc .eq. 0)then
-        if(ktflistqd(kx))then
+        if(ktflistq(kx))then
           call tfemes(kx,str,ip,lfno)
         else
           call tflocal(kerror)
@@ -240,7 +261,7 @@ c      call tfdebugprint(kerror,'addmessage',1)
       if(ktfaddr(k) .eq. 0 .or. ierrorprint .eq. 0)then
         ierrorf=0
         return
-      elseif(tflistqd(k,kl))then
+      elseif(tflistq(k,kl))then
         buff(1:3)='???'
         buff(4:)=tfgetstr(kl%dbody(3),nc)
         buff(nc+4:nc+6)=': '
@@ -349,7 +370,7 @@ c          write(*,*)'tfcheck-1 ',modethrow,irtc
           endif
           dtastk(isp1+1)=kxcheckmessage
           call tfefunref(isp1+1,kf,.false.,irtc1)
-          if(irtc1 .eq. 0 .and. ktfrealqd(kf) .and. kf%k .ne. 0)then
+          if(irtc1 .eq. 0 .and. ktfrealq(kf) .and. kf%k .ne. 0)then
             rlist(ierrorgen)=0.d0
             call tfeevalref(ktastk(isp1+2),kx,irtc)
           endif
@@ -377,5 +398,15 @@ c          write(*,*)'tfcheck-1 ',modethrow,irtc
       if(ierrorprint .ne. 0)then
         ierrorprint=0
       endif
+      return
+      end
+
+      subroutine tffserrorhandle(l,irtc)
+      use tfstk
+      implicit none
+      integer*4 l,irtc
+      character*2 ord
+      call tferrorhandle(dble(l),irtc)
+      call tfreseterror
       return
       end

@@ -4,7 +4,8 @@
       integer*4 maxint
       parameter (maxint=2**31-1)
       type (sad_descriptor) kx,kj,kxlistcopied,ke,ki,k1,kl
-      type (sad_list), pointer :: listi,kle,klj,klx
+      type (sad_list), pointer :: listi,kle,klj
+      type (sad_rlist), pointer :: klr
       type (sad_symbol), pointer :: name
       type (sad_symdef), pointer :: symd
       integer*8 ls
@@ -22,12 +23,12 @@
         return
       endif
       ki=dtastk(isp2)
-      if(ktflistqd(ki,listi))then
-        if(listi%head .eq. ktfoper+mtflist)then
+      if(ktflistq(ki,listi))then
+        if(listi%head%k .eq. ktfoper+mtflist)then
           m=listi%nl
           if(m .eq. 1)then
             call tfeevalref(listi%body(1),kl,irtc)
-            if(.not. ktfrealqd(kl,x1))then
+            if(.not. ktfrealq(kl,x1))then
               irtc=itfmessage(9,'General::wrongtype','"Real number"')
               return
             endif
@@ -37,7 +38,7 @@
           elseif(m .gt. 4)then
             go to 9500
           else
-            if(ktfreallistqo(listi))then
+            if(ktfreallistq(listi))then
               go to 9500
             endif
             k1=listi%dbody(1)
@@ -48,7 +49,7 @@
             if(irtc .ne. 0)then
               return
             endif
-            if(ktfnonrealqd(k1,x1))then
+            if(ktfnonrealq(k1,x1))then
               go to 9500
             endif
             if(m .eq. 2)then
@@ -60,7 +61,7 @@
               if(irtc .ne. 0)then
                 return
               endif
-              if(ktfnonrealqd(k1,x1))then
+              if(ktfnonrealq(k1,x1))then
                 go to 9500
               endif
               if(m .eq. 3)then
@@ -70,7 +71,7 @@
                 if(irtc .ne. 0)then
                   return
                 endif
-                if(ktfnonrealqd(k1,xstep))then
+                if(ktfnonrealq(k1,xstep))then
                   go to 9500
                 endif
               endif
@@ -141,7 +142,7 @@
         ke=dtfcopy(dtastk(isp1+1))
         if(var)then
           if(mode .eq. 0)then
-            if(ktflistqd(ke,kle))then
+            if(ktflistq(ke,kle))then
               do j=1,ns
                 levele=levele+1
                 call tfleval(kle,kj,.true.,irtc)
@@ -173,11 +174,11 @@
               enddo
             endif
           else
-            if(ktfrealqd(ke,ve))then
+            if(ktfrealq(ke,ve))then
               irtc=0
               if(mode .eq. 1)then
-                kx=kxavaloc(-1,ns,klx)
-                klx%dbody(1:ns)=ke
+                kx=kxavaloc(-1,ns,klr)
+                klr%rbody(1:ns)=ve
               elseif(mode .eq. 2)then
                 kx=dfromr(ve*ns)
               elseif(mode .eq. 3)then
@@ -187,7 +188,7 @@
               call tfdelete(symd,.true.,.false.)
               return
             else
-              if(ktflistqd(ke,kle))then
+              if(ktflistq(ke,kle))then
                 do j=1,ns
                   levele=levele+1
                   call tfleval(kle,kj,.true.,irtc)
@@ -204,8 +205,8 @@
                   endif
                   kj=dtfcopy(kj)
                   lv=itfdownlevel()
-                  if(ktflistqd(kj,klj))then
-                    if(klj%head .eq. ktfoper+mtfnull)then
+                  if(ktflistq(kj,klj))then
+                    if(klj%head%k .eq. ktfoper+mtfnull)then
                       isp0=isp
                       call tfgetllstkall(klj)
                       call tflocal1d(kj)
@@ -240,8 +241,8 @@
                   endif
                   kj=dtfcopy(kj)
                   lv=itfdownlevel()
-                  if(ktflistqd(kj,klj))then
-                    if(klj%head .eq. ktfoper+mtfnull)then
+                  if(ktflistq(kj,klj))then
+                    if(klj%head%k .eq. ktfoper+mtfnull)then
                       isp0=isp
                       call tfgetllstkall(klj)
                       call tflocal1d(kj)
@@ -264,7 +265,7 @@
           endif
         else
           if(mode .eq. 0)then
-            if(ktflistqd(ke,kle))then
+            if(ktflistq(ke,kle))then
               do j=1,ns
                 levele=levele+1
                 call tfleval(kle,kj,.true.,irtc)
@@ -292,11 +293,11 @@
               enddo
             endif
           else
-            if(ktfrealqd(ke,ve))then
+            if(ktfrealq(ke,ve))then
               irtc=0
               if(mode .eq. 1)then
-                kx=kxavaloc(-1,ns,klx)
-                klx%dbody(1:ns)=ke
+                kx=kxavaloc(-1,ns,klr)
+                klr%rbody(1:ns)=ve
               elseif(mode .eq. 2)then
                 kx=dfromr(ve*ns)
               elseif(mode .eq. 3)then
@@ -305,7 +306,7 @@
               isp=ispb-1
               return
             else
-              if(ktflistqd(ke,kle))then
+              if(ktflistq(ke,kle))then
                 do j=1,ns
                   levele=levele+1
                   call tfleval(kle,kj,.true.,irtc)
@@ -322,8 +323,8 @@
                   endif
                   kj=dtfcopy(kj)
                   lv=itfdownlevel()
-                  if(ktflistqd(kj,klj))then
-                    if(klj%head .eq. ktfoper+mtfnull)then
+                  if(ktflistq(kj,klj))then
+                    if(klj%head%k .eq. ktfoper+mtfnull)then
                       isp0=isp
                       call tfgetllstkall(klj)
                       call tflocal1d(kj)
@@ -356,8 +357,8 @@
                   endif
                   kj=dtfcopy(kj)
                   lv=itfdownlevel()
-                  if(ktflistqd(kj,klj))then
-                    if(klj%head .eq. ktfoper+mtfnull)then
+                  if(ktflistq(kj,klj))then
+                    if(klj%head%k .eq. ktfoper+mtfnull)then
                       isp0=isp
                       call tfgetllstkall(klj)
                       call tflocal1d(kj)
@@ -425,6 +426,7 @@ c        call tfcatchreturn(0,kx,irtc)
       use tfstk
       implicit none
       type (sad_list), pointer ::klx
+      type (sad_rlist), pointer ::klr
       integer*4 isp1,i,n
       logical*4 nr,re
       if(isp1 .ge. isp)then
@@ -434,7 +436,7 @@ c        call tfcatchreturn(0,kx,irtc)
         nr=.false.
         re=.false.
         do i=isp1+1,isp
-          if(ktfrealqd(dtastk(i)))then
+          if(ktfrealq(dtastk(i)))then
             re=.true.
             if(nr)then
               go to 10
@@ -449,7 +451,8 @@ c        call tfcatchreturn(0,kx,irtc)
  10     if(nr)then
           kxlistcopied=kxadaloc(-1,n,klx)
         else
-          kxlistcopied=kxavaloc(-1,n,klx)
+          kxlistcopied=kxavaloc(-1,n,klr)
+          call descr_list(kxlistcopied,klx)
         endif
         klx%dbody(1:n)=dtastk(isp1+1:isp1+n)
       endif
@@ -460,7 +463,7 @@ c        call tfcatchreturn(0,kx,irtc)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kl
+      type (sad_rlist), pointer :: kl
       integer*8 n
       integer*4 isp1,irtc,narg,i,itfmessage
       real*8 x0,x1,xs,xi

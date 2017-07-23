@@ -508,13 +508,13 @@ c
         return
       endif
       irtc=0
-      if(ktfrealqd(kv)) then
+      if(ktfrealq(kv)) then
         call CaPutRealNowait(chid, kv, irtc)
       else if(ktfstringqd(kv)) then
         str=tfgetstr(kv,nc)
         nc=len_trim(str)
         call CaPutStringNowait(chid,str(:nc),nc,irtc)
-      else if(ktflistqd(kv)) then
+      else if(ktflistq(kv)) then
         kav=ktfaddr(kv)
         call CaGetType(chid,etype,ecount)
         ecount=min(ecount,ilist(2,kav-1))

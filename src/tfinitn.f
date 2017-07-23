@@ -46,7 +46,7 @@
       dxnulll=kxaaloc(0,0)
       kxnulll=dxnulll%k
       dxnull=kxaaloc(0,0,klx)
-      klx%head=ktfoper+mtfnull
+      klx%head%k=ktfoper+mtfnull
       kxnull=dxnull%k
       dxnulls=kxsalocb(0,'  ',2,str)
       str%str(1:2)=char(0)//char(0)
@@ -72,7 +72,7 @@
       iaxslotpart=ktaloc(nslots+3)
       do i=-2,nslots
         dlist(iaxslotpart+i+2)=kxadaloc(0,2,klx)
-        klx%head=ktfoper+mtfpart
+        klx%head%k=ktfoper+mtfpart
         klx%body(1)=ktfcopy1(klist(iaxslotnull))
         klx%rbody(2)=dble(i)
       enddo
@@ -287,8 +287,8 @@ c      write(*,*)'tfinitn 1.1 ',itfcontroot
             cycle LOOP_I
           endif
           call loc_symstr(klist(klist(ifunbase+kai)),str)
-        elseif(ktflistqd(ki,kl))then
-          if(kl%head .eq. ktfoper+mtfslot)then
+        elseif(ktflistq(ki,kl))then
+          if(kl%head%k .eq. ktfoper+mtfslot)then
             call tfslot(int8(mtfslot),kl,k,.false.,irtc)
             if(irtc .ne. 0)then
               return
@@ -387,10 +387,10 @@ c        write(*,*)'tftocontext ',str%str(1:nc)
         return
       endif
       k=dtastk(isp)
-      if(.not. tflistqd(k,kl))then
+      if(.not. tflistq(k,kl))then
         go to 9000
       endif
-      if(ktfreallistqo(kl))then
+      if(ktfreallistq(kl))then
         go to 9000
       endif
       m=kl%nl
@@ -455,7 +455,7 @@ c      call tmov(ktastk(isp0+1),klist(ka1),m)
         kxsymbol=kxsymbolz('Symbol',6,symd)
         kxsymbol=symd%value
       endif
-      if(ktfrealqd(k))then
+      if(ktfrealq(k))then
         kx=kxreal
       else
         select case (ktftype(k%k))

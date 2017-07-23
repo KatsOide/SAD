@@ -70,10 +70,10 @@ c          call tfdebugprint(kx,'tfprint',1)
                 go to 9000
               endif
             endif
-          elseif(ktflistqd(kx,klx))then
-            if(klx%head .ne. ktfoper+mtfcomplex .and.
-     $           klx%head .ne. ktfoper+mtflist .and.
-     $           ktfoperqd(klx%dbody(0)) .and. klx%ref .le. 0)then
+          elseif(ktflistq(kx,klx))then
+            if(klx%head%k .ne. ktfoper+mtfcomplex .and.
+     $           klx%head%k .ne. ktfoper+mtflist .and.
+     $           ktfoperqd(klx%head) .and. klx%ref .le. 0)then
               call getwrd(word)
               exist=word(1:1) .eq. ' '
               go to 9000
@@ -101,7 +101,7 @@ c      endif
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer ::klarg
+      type (sad_rlist), pointer ::klarg
       type (sad_symdef), pointer :: sdout
       integer*8 karg,kh,ktdhtaloc,kad,kan,ktdaloc
       integer*4 lfno,irtc,itfhasharg
@@ -109,7 +109,7 @@ c      endif
       al=rlist(iaxline)+1.d0
       rlist(iaxline)=al
       karg=ktavaloc(-1,1,klarg)
-      klarg%head=ktfsymbol+ktfcopy1(iaxout)
+      klarg%head%k=ktfsymbol+ktfcopy1(iaxout)
       klarg%rbody(1)=al
       call loc_symdef(iaxout,sdout)
       kad=sdout%downval
@@ -166,7 +166,7 @@ c      endif
             k=klist(kad+6)
             ka=ktfaddr(k)
             kt=k-ka
-            if(ktflistq(k,kl) .and. ktfsymbolq(kl%head,sym) .and.
+            if(ktflistq(k,kl) .and. ktfsymbolq(kl%head%k,sym) .and.
      $           sym%gen .eq. -3)then
               call tfclassmember(k,iaxshort,k1,.true.,irtc)
               if(irtc .gt. 0)then

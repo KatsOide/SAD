@@ -85,24 +85,21 @@
         enddo
         kx=kxmakelist(isp2)
         isp=isp0
-      elseif(ktfrealqd(k1,x1))then
-        if(ktfrealqd(k2,x2))then
+      elseif(ktfrealq(k1,x1))then
+        if(ktfrealq(k2,x2))then
           kx=dfromr(dble(cfun(dcmplx(x2,0.d0),
      $         dcmplx(x2,0.d0))))
-        elseif(tfcomplexqk(k2%k,kl2))then
-          c2=dcmplx(kl2%rbody(1),kl2%rbody(2))
+        elseif(tfcomplexq(k2,c2))then
           cx=cfun(dcmplx(x1,0.d0),c2)
           go to 10
         else
           irtc=-1
           return
         endif
-      elseif(tfcomplexqk(k1%k,kl1))then
-        c1=dcmplx(kl1%rbody(1),kl1%rbody(2))
-        if(ktfrealqd(k2,x2))then
+      elseif(tfcomplexq(k1,c1))then
+        if(ktfrealq(k2,x2))then
           cx=cfun(c1,dcmplx(x2,0.d0))
-        elseif(tfcomplexqk(k2%k,kl2))then
-          cx=dcmplx(kl2%rbody(1),kl2%rbody(2))
+        elseif(tfcomplexq(k2,c2))then
           cx=cfun(c1,c2)
         else
           irtc=-1

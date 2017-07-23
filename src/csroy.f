@@ -1,7 +1,7 @@
       subroutine tfcsroysetup(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_list), pointer :: lazl,lal
+      type (sad_rlist), pointer :: lazl,lal
       type (sad_descriptor) kx
       integer*8 kawi,kaaj,kaomega,kazjn,kadpjn,karhoj,karho,
      $     kax
@@ -82,7 +82,8 @@ c
       subroutine tfcsroymat(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_list), pointer :: las,lawi,laomega,lazj,larhoj,lal
+      type (sad_dlist), pointer :: las
+      type (sad_rlist), pointer :: lawi,laomega,lazj,larhoj,lal
       type (sad_descriptor) kx
       integer*8 kax
       integer*4 isp1,irtc,itfmessage,nr,nj,nphi,mm
@@ -91,7 +92,7 @@ c
       if(isp .ne. isp1+2)then
         go to 9000
       endif
-      if(.not. tflistqd(dtastk(isp1+1),las))then
+      if(.not. tflistq(dtastk(isp1+1),las))then
         go to 9010
       endif
       if(las%nl .ne. 6)then

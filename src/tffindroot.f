@@ -16,7 +16,7 @@
         kx=kxadaloc(-1,nvar,klx)
         do i=1,nvar
           klx%dbody(i)=kxadaloc(0,2,kli)
-          kli%head=ktfoper+mtfrule
+          kli%head%k=ktfoper+mtfrule
           kli%body(1)=ktfcopy1(ktfsymbol+sad_loc(sav0(i)%p%sym%loc))
           kli%rbody(2)=v0(i)
         enddo
@@ -34,7 +34,8 @@
       real*8 eps0
       parameter (nvmax=2048,maxi0=50,eps0=1.d-20)
       type (symv) sav(nvmax),sav0(nvmax)
-      type (sad_list), pointer :: klx,klo
+      type (sad_list), pointer :: klx
+      type (sad_rlist), pointer :: klo
       integer*8 ke,kdl(nvmax)
       integer*4 isp1,irtc,neq,nvar,itfmessage,isp2,i,maxi,ispv
       real*8 v0(nvmax),eps,vmin(nvmax),vmax(nvmax),d0
@@ -147,7 +148,7 @@
           return
         endif
         if(ktflistq(kx,klx))then
-          if(klx%nl .eq. neq*2 .and. ktfreallistqo(klx))then
+          if(klx%nl .eq. neq*2 .and. ktfreallistq(klx))then
             do j=1,neq
               a(j,i)=klx%rbody(j*2-1)-klx%rbody(j*2)
             enddo
@@ -238,7 +239,7 @@ c      enddo
       if(irtc .ne. 0)then
         go to 9000
       endif
-      if(.not. tflistqk(kx))then
+      if(.not. tflistq(kx))then
         irtc=itfmessage(9,'General::wrongval','"Result of eqs","List"')
         go to 9000
       endif
@@ -304,7 +305,7 @@ c      enddo
       j=0
       do i=isp1,isp2
         ki=dtastk(i)
-        if(.not. tflistqd(ki,kli))then
+        if(.not. tflistq(ki,kli))then
           go to 8900
         endif
         if(kli%nl .eq. 3)then
@@ -312,7 +313,7 @@ c      enddo
           if(irtc .ne. 0)then
             go to 9000
           endif
-          if(.not. tflistqd(k3,kl3))then
+          if(.not. tflistq(k3,kl3))then
             go to 8900
           endif
           if(ktfnonreallistqo(kl3) .or. kl3%nl .ne. 2)then
@@ -344,7 +345,7 @@ c        ktastk(isp)=ig
         if(irtc .ne. 0)then
           go to 9000
         endif
-        if(ktfnonrealqd(kv,v0(j)))then
+        if(ktfnonrealq(kv,v0(j)))then
           irtc=itfmessage(9,'General::wrongval',
      $         '"initial value","Real"')
           go to 9000
@@ -375,22 +376,22 @@ c      endif
       if(ktfnonlistq(kl,list))then
         go to 9000
       endif
-      if(list%head .eq. ktfoper+mtfequal)then
+      if(list%head%k .eq. ktfoper+mtfequal)then
         neq=1
         call tfduplist(list,list)
         call tfreplist(list,0,ktfoper+mtflist,eval)
 c        call tfloadlstk(list,lista)
 c        lista%head=ktfoper+mtflist
 c        call tfstk2l(lista,list)
-        kae=ksad_loc(list%head)
+        kae=ksad_loc(list%head%k)
         irtc=0
-      elseif(list%head .eq. ktfoper+mtflist)then
+      elseif(list%head%k .eq. ktfoper+mtflist)then
         neq=list%nl
         kae=ktadaloc(-1,neq*2,liste)
         do i=1,neq
           kei=list%body(i)
           if(ktflistq(kei,listi))then
-            if(listi%head .eq. ktfoper+mtfequal)then
+            if(listi%head%k .eq. ktfoper+mtfequal)then
               liste%body(i*2-1)=ktfcopy(listi%body(1))
               liste%body(i*2  )=ktfcopy(listi%body(2))
               cycle
@@ -460,7 +461,7 @@ c        call tfstk2l(lista,list)
         if(irtc .ne. 0)then
           return
         endif
-        if(ktfrealqdi(kx,maxi))then
+        if(ktfrealq(kx,maxi))then
           ispv=i-1
           cycle
         endif
@@ -468,7 +469,7 @@ c        call tfstk2l(lista,list)
         if(irtc .ne. 0)then
           return
         endif
-        if(ktfrealqd(kx,vx))then
+        if(ktfrealq(kx,vx))then
           ispv=i-1
           used=vx .ne. 0.d0
           cycle
@@ -477,7 +478,7 @@ c        call tfstk2l(lista,list)
         if(irtc .ne. 0)then
           return
         endif
-        if(ktfrealqd(kx))then
+        if(ktfrealq(kx))then
           ispv=i-1
           cutoff=abs(rfromk(kx%k))
           cycle
@@ -565,7 +566,7 @@ c        call tfstk2l(lista,list)
       type (sad_list), pointer :: kl1
       isp=isp+1
       ktastk(isp)=ktflist+ktadaloc(-1,2,kl1)
-      kl1%head=ktfoper+mtfrule
+      kl1%head%k=ktfoper+mtfrule
       kl1%dbody(1)=dtfcopy1(ks)
       kl1%dbody(2)=dtfcopy(kx)
       return
@@ -857,7 +858,7 @@ c            enddo
         return
       endif
       if(ktflistq(kx,klx))then
-        if(klx%head .eq. kxvect .and. klx%nl .eq. 1)then
+        if(klx%head%k .eq. kxvect .and. klx%nl .eq. 1)then
           k1=klx%body(1)
           if(tfcomplexnumlistqk(k1,kl1) .and. kl1%nl .eq. m)then
             if(deriv)then
@@ -910,7 +911,7 @@ c            enddo
           go to 9000
         endif
         if(ktfnonrealq(kx))then
-          if(tfcomplexqk(kx))then
+          if(tfcomplexq(kx))then
             if(deriv)then
               df(i)=0.d0
             else

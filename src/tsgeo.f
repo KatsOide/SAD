@@ -9,20 +9,21 @@
       real*8 conv
       parameter (conv=3.d-16)
       type (sad_comp), pointer :: cmp
+      type (sad_rlist), pointer :: lal
       integer*4 i,kg,k1,k2,idir,i0,i1,lt,mfr,j,kbz
       real*8 geo1(3,3),geos(3,4),
      $     pzf,trans(6,12),cod(6),beam(42),
-     $     db,bzs,bzs0,psi1,psi2,phi,apsi1,apsi2,
+     $     db,bzs,bzs0,phi,
      $     chi1,chi2,cschi1,snchi1,cschi2,snchi2,chi3,
-     $     cschi3,snchi3,g1,xi,yi,pxi,pyi,al,pzi,fb1,fb2,
+     $     cschi3,snchi3,g1,xi,yi,pxi,pyi,al,pzi,
      $     ak,sinphi,a22,a12,a14,a24,dx,pxf,dy,pyf,zf,
      $     theta,gf,dvf,dl,f,dir,tfbzs,pos0,
      $     chi2i,cchi2i,schi2i,chi1i,cchi1i,schi1i,ds,
      $     s1,s2,s3,u,v,w,phix,phiy,xf,yf,g2,tfchi,gi,
-     $     chi1m,chi2m,ftable(4),ak1
-      integer*4 k,ke,ke1
+     $     ftable(4),ak1
+      integer*4 k,ke,ke1,irtc
       integer*8 l1,l2,lp,le,led
-      logical*4 sol,dirf
+      logical*4 sol,dirf,seg
       sol=.true.
       l1=latt(k)
       kg=0
@@ -139,8 +140,12 @@
         i1=2*i+1-i0
         lt=idtypec(i)
         call compelc(i,cmp)
+        seg=tcheckseg(cmp,lt,al,lal,irtc)
+        if(irtc .ne. 0)then
+          call tffserrorhandle(i,irtc)
+          return
+        endif
         if(lt .eq. icDRFT)then
-          al=cmp%value(ky_L_DRFT)
           pzi=1.d0
      1       -(pxi**2+pyi**2)/(1.d0+sqrt((1.d0-pyi)*(1.d0+pyi)-pxi**2))
           phi=al*bzs/pzi*dir
@@ -168,7 +173,6 @@ c            a14= 2.d0*sin(phi*.5d0)**2/ak
           xi=xi+dx
           yi=yi+dy
         elseif(lt .eq. icBEND)then
-          al=cmp%value(ky_L_BEND)
           phi=cmp%value(ky_ANGL_BEND)
           theta=cmp%value(ky_ROT_BEND)
           phiy=phi*cos(theta)
@@ -191,7 +195,6 @@ c            a14= 2.d0*sin(phi*.5d0)**2/ak
           xi=xf
           yi=yf
         elseif(lt .eq. icQUAD)then
-          al=cmp%value(ky_L_QUAD)
           xf=xi
           f=.5d0*bzs
           pxf=(pxi-f*yi)*dir
@@ -231,7 +234,6 @@ c            a14= 2.d0*sin(phi*.5d0)**2/ak
           xi=xf
           yi=yf
         elseif(lt .eq. icMULT)then
-          al=cmp%value(ky_L_MULT)
           f=bzs*.5d0
           cod(1)=xi
           cod(2)=(pxi-f*yi)*dir
@@ -241,56 +243,16 @@ c            a14= 2.d0*sin(phi*.5d0)**2/ak
           cod(6)=0.d0
           call setdirelc(i,direlc(i)*dir)
           dirf=direlc(i) .gt. 0.d0
-          phi=cmp%value(ky_ANGL_MULT)
-          mfr=nint(cmp%value(ky_FRMD_MULT))
-          if(dirf)then
-            psi1=cmp%value(ky_E1_MULT)
-            psi2=cmp%value(ky_E2_MULT)
-            apsi1=cmp%value(ky_AE1_MULT)
-            apsi2=cmp%value(ky_AE2_MULT)
-            fb1=cmp%value(ky_FB1_MULT)
-            fb2=cmp%value(ky_FB2_MULT)
-            chi1m=cmp%value(ky_CHI1_MULT)
-            chi2m=cmp%value(ky_CHI2_MULT)
+          if(seg)then
+            call tmulteseg(trans,cod,beam,i,cmp,bzs*dir,lal,1.d0,i)
           else
-            mfr=mfr*(11+mfr*(2*mfr-9))/2
-            psi1=cmp%value(ky_E2_MULT)
-            psi2=cmp%value(ky_E1_MULT)
-            apsi1=cmp%value(ky_AE2_MULT)
-            apsi2=cmp%value(ky_AE1_MULT)
-            fb2=cmp%value(ky_FB1_MULT)
-            fb1=cmp%value(ky_FB2_MULT)
-            chi1m=-cmp%value(ky_CHI1_MULT)
-            chi2m=-cmp%value(ky_CHI2_MULT)
+            call tmulte1(trans,cod,beam,i,cmp,bzs*dir,1.d0,i)
           endif
-c          if(chi1m .ne. 0.d0)then
-c            write(*,*)'tsgeo ',i,chi1m,dirf,dir
-c          endif
-          beam(1:21)=0.d0
-          trans(:,1:6)=0.d0
-          call tsetfringepe(cmp,icMULT,direlc(i),ftable)
-          bzs=bzs*dir
-          call tmulte(trans,cod,beam,i,
-     $         al,cmp%value(ky_K0_MULT),bzs,
-     $         phi,psi1,psi2,apsi1,apsi2,
-     $         cmp%value(ky_DX_MULT),cmp%value(ky_DY_MULT),
-     $         cmp%value(ky_DZ_MULT)*dir,
-     $         chi1m,chi2m,cmp%value(ky_ROT_MULT),
-     $         0.d0,
-     1         cmp%value(ky_EPS_MULT),.false.,
-     $         cmp%value(ky_FRIN_MULT) .eq. 0.d0,
-     $         ftable(1),ftable(2),ftable(3),ftable(4),
-     $         mfr,fb1,fb2,
-     $         rlist(lp+ky_K0FR_MULT) .eq. 0.d0,
-     $         cmp%value(ky_VOLT_MULT),cmp%value(ky_HARM_MULT),
-     $         cmp%value(ky_PHI_MULT),cmp%value(ky_FREQ_MULT),
-     $         0.d0,1.d0,0)
           call setdirelc(i,direlc(i)*dir)
           xf=cod(1)
           yf=cod(3)
           pxf=cod(2)*dir+f*yf
           pyf=cod(4)*dir-f*xf
-          bzs=bzs*dir
           dl=-cod(5)
           dx=xf-xi
           dy=yf-yi

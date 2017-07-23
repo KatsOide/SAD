@@ -470,7 +470,8 @@ c        write(*,*)'tlspect ',ltbl,np0,ltbl*8*np0
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx,klij,kli
+      type (sad_list), pointer :: klx,kli
+      type (sad_rlist), pointer :: klrij
       integer*8 katbl,kati
       integer*4 np0,ltbl,lpoint,i,j
       real*8 geo0(3,4),tax,tay,taz,t0,gx,gy,gz,gt
@@ -482,8 +483,8 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
         kati=katbl+ltbl*4*(i-1)
         klx%dbody(i)=kxadaloc(0,4,kli)
         do j=1,4
-          kli%dbody(j)=kxavaloc(0,lpoint,klij)
-          call tmov(rlist(kati+(j-1)*ltbl),klij%rbody(1),lpoint)
+          kli%dbody(j)=kxavaloc(0,lpoint,klrij)
+          call tmov(rlist(kati+(j-1)*ltbl),klrij%rbody(1),lpoint)
         enddo
       enddo
       call tfree(katbl)
@@ -493,7 +494,7 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
       subroutine tlfield(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_list), pointer :: klt
+      type (sad_rlist), pointer :: klt
       integer*8 kx, ke
       integer*4 isp1,irtc,n,m,itfmessage
       real*8 tx,ty,tz
@@ -589,7 +590,8 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
       use tfstk
       use macphys
       implicit none
-      type (sad_list), pointer :: klp,kl1,kl2,klt,klx
+      type (sad_list), pointer :: klp,klx
+      type (sad_rlist), pointer :: kl1,kl2,klt
       real*8 speedoflight
       parameter (speedoflight=cveloc)
       integer*8 kx,k1,k2,kac,kas,kal,kack,kad
@@ -610,7 +612,7 @@ c     end   initialize for preventing compiler warning
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
-      if(.not. tflistqk(ktastk(isp1+1),klp))then
+      if(.not. tflistq(ktastk(isp1+1),klp))then
         irtc=itfmessage(9,'General::wrongtype','"List for #1"')
         return
       endif
@@ -920,7 +922,8 @@ c     end   initialize for preventing compiler warning
       use tfstk
       use tmacro
       implicit none
-      type (sad_list), pointer ::kli,klx
+      type (sad_list), pointer ::klx
+      type (sad_rlist), pointer ::klri
       integer*4 nitem
       parameter (nitem=12)
       integer*8 kax, kp,kt
@@ -949,22 +952,22 @@ c     end   initialize for preventing compiler warning
             kt=kphtable(itp)
           endif
           kp=kt+(ilp-1)*10
-          klx%body(i)=ktflist+ktavaloc(0,nitem,kli)
-          kli%attr=lconstlist
+          klx%body(i)=ktflist+ktavaloc(0,nitem,klri)
+          klri%attr=lconstlist
           dp=sqrt(rlist(kp+4)**2+rlist(kp+5)**2
      $         +rlist(kp+6)**2)
-          kli%rbody(1)=dp*amass
-          kli%rbody(2)=rlist(kp+1)
-          kli%rbody(3)=rlist(kp+2)
-          kli%rbody(4)=rlist(kp+3)
-          kli%rbody(5)=rlist(kp+4)/dp
-          kli%rbody(6)=rlist(kp+5)/dp
-          kli%rbody(7)=rlist(kp+6)/dp
-          kli%rbody(8)=rlist(kp+7)
-          kli%rbody(9)=rlist(kp+8)
-          kli%rbody(10)=rlist(kp+9)
-          kli%rbody(11)=ilist(1,kp)
-          kli%rbody(12)=ilist(2,kp)
+          klri%rbody(1)=dp*amass
+          klri%rbody(2)=rlist(kp+1)
+          klri%rbody(3)=rlist(kp+2)
+          klri%rbody(4)=rlist(kp+3)
+          klri%rbody(5)=rlist(kp+4)/dp
+          klri%rbody(6)=rlist(kp+5)/dp
+          klri%rbody(7)=rlist(kp+6)/dp
+          klri%rbody(8)=rlist(kp+7)
+          klri%rbody(9)=rlist(kp+8)
+          klri%rbody(10)=rlist(kp+9)
+          klri%rbody(11)=ilist(1,kp)
+          klri%rbody(12)=ilist(2,kp)
         enddo
         do i=1,itp
           if(kphtable(i) .ne. 0)then

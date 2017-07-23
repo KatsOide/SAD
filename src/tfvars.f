@@ -6,7 +6,9 @@
       use tfcsi,only:cssetp
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kli,kla
+      type (sad_list), pointer :: kli
+      type (sad_rlist), pointer :: kla
+      type (sad_comp), pointer :: cmps
       integer*8 kxr
       integer*4 lfno,i,iv,kk,level, itfuplevel,itfdownlevel,
      $     isp1,next,ifany
@@ -57,7 +59,9 @@
           call cssetp(next)
           v1=autofg(valvar2(i,1),'15.12')
           v2=autofg(valvar2(i,2),'12.9')
-          x3=rlist(idval(k)+ivvar(i))
+          call loc_comp(idval(k),cmps)
+          x3=tfvcmp(cmps,ivvar(i))
+c          x3=rlist(idval(k)+ivvar(i))
           v3=autofg(x3,'12.9')
           key=tfkwrd(idtype(k),ivvar(i))
           if(ivvar(i) .eq. ival(iv))then

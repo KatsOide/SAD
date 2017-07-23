@@ -59,7 +59,7 @@
      1       .or. word .eq. 'READ')then
         rew=word .eq. 'READ'
         itype=itfpeeko(kx,next)
-        if(ktfrealqd(kx,vx))then
+        if(ktfrealq(kx,vx))then
           lfni1=int(vx+.5d0)
           call cssetp(next)
           write(word,'(''ftn'',i2.2)')lfni1
@@ -143,7 +143,7 @@
         app=abbrev(word,'APP_END','_')
         itype=itfpeeko(kx,next)
 c        write(*,*)'tffile-0 ',itype,ia
-        if(ktfrealqd(kx,vx))then
+        if(ktfrealq(kx,vx))then
           lfno1=int(vx+.5d0)
           call cssetp(next)
         elseif(ktfstringqd(kx))then

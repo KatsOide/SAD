@@ -48,7 +48,7 @@
           ist1=1
           call tfeval(ordw,lenw(ordw),ist1,m,kx,.false.,irtc)
           iord=int(rfromd(kx))
-          if(irtc .ne. 0 .or. ktfnonrealqd(kx))then
+          if(irtc .ne. 0 .or. ktfnonrealq(kx))then
             if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
               call tfreseterror
             endif
@@ -80,7 +80,7 @@
       ielmf=0
       if(ipm .ne. 0)then
         call tfevals(word(ipm:lw),kx%k,irtc)
-        if(irtc .ne. 0 .or. ktfnonrealqd(kx))then
+        if(irtc .ne. 0 .or. ktfnonrealq(kx))then
           if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
             call tfreseterror
           endif

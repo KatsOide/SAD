@@ -286,7 +286,7 @@ c      write(*,*)'kp: ',kp,'kp1: ',kp1
         call termes(6,
      $       'Error in FitValue '//
      $       funname//' at '//name,' ')
-      elseif(ktfrealqd(kx,vf1))then
+      elseif(ktfrealq(kx,vf1))then
       elseif(kx%k .eq. ktfoper+mtfnull)then
         irtc=-1
       elseif(retry)then
@@ -336,7 +336,7 @@ c     Note: index(name1,'.') > 0 if kp1 != 0
       use tfstk
       use tfcsi, only:icslfno
       implicit none
-      type (sad_list), pointer :: klx
+      type (sad_rlist), pointer :: klx
       type (sad_descriptor) kx
       integer*8 ,save :: kff=0
       integer*4 maxcond,nqcol,iqcol(maxcond),kdp(maxcond)
@@ -356,9 +356,10 @@ c      call tfdebugprint(kx,'fitfun',3)
         call termes(6,'Error in FitFunction ',' ')
         error=.true.
         return
-      elseif(ktfrealqd(kx,df(nqcol+1)))then
+      elseif(ktfrealq(kx,df(nqcol+1)))then
         if(nqcol .ge. maxcond)then
           error=.true.
+          level=itfdownlevel()
           return
         endif
         nqcol=nqcol+1
@@ -369,6 +370,7 @@ c      call tfdebugprint(kx,'fitfun',3)
         if(m .gt. 0)then
           if(m+nqcol .gt. maxcond)then
             error=.true.
+            level=itfdownlevel()
             return
           endif
           df(nqcol+1:nqcol+m)=klx%rbody(1:m)

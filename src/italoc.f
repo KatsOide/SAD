@@ -171,7 +171,7 @@ c      write(*,*)'talocp ',ip1,ip1+na
       integer*4 isp1,irtc,i,itfmessage,m,ir
       kx%k=ktfoper+mtfnull
       do i=isp1+1,isp
-        if(ktfnonrealqdi(dtastk(i),ir))then
+        if(ktfnonrealq(dtastk(i),ir))then
           irtc=itfmessage(9,'General::wrongtype','"Real"')
           return
         endif

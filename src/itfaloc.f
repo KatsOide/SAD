@@ -379,7 +379,7 @@ c            write(*,*)' : ',idx
         kl%alloc=ktflist
         kl%ref=1
         kl%nl=2
-        kl%head=ktfoper+mtfcomplex
+        kl%head%k=ktfoper+mtfcomplex
       enddo
       ktcalocm=k
       return

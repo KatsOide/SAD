@@ -6,7 +6,7 @@
       use ffs_flag
       use tmacro
       implicit none
-      type (sad_list), pointer :: klx
+      type (sad_rlist), pointer :: klr
       integer*8 ifvh,kx
       integer*4 level,irtc
       real*8 trans(1,12),cod(6),beam(21),al,ak,bz,
@@ -63,8 +63,8 @@ c        ilist(1,ifvh-2)=-1
           write(*,*)' Error in '//vname//' at ',l1,ord(l1),
      $         ' element.'
           return
-        elseif(tfreallistq(kx,klx))then
-          m=klx%nl
+        elseif(tfreallistq(kx,klr))then
+          m=klr%nl
           if(m .le. 2)then
             write(*,*)' '//vname//' must have more than 2 numbers at ',
      $           l1,ord(l1)//' element.'
@@ -74,9 +74,9 @@ c        ilist(1,ifvh-2)=-1
           akm=ak/(m-1)
           do i=1,m
             if(forward)then
-              rb=klx%rbody(i)
+              rb=klr%rbody(i)
             else
-              rb=klx%rbody(m-i+1)
+              rb=klr%rbody(m-i+1)
             endif
             if(i .eq. 1 .or. i .eq. m)then
               ali=alm*.5d0

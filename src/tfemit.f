@@ -7,7 +7,8 @@
       use tfcsi, only:icslfno
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kl,kl1,kl2,klx
+      type (sad_list), pointer :: kl,klx
+      type (sad_rlist), pointer :: kl1,kl2
       integer*8 iatr,iacod,iamat,kaparam,iabmi
       integer*4 isp1,irtc,narg,mode,itgetfpe,nparam,
      $     itfmessage,lno
@@ -18,7 +19,7 @@
       codin=0.d0
       beamin=0.d0
       if(narg .eq. 3)then
-        if(tflistqk(ktastk(isp),kl))then
+        if(tflistq(ktastk(isp),kl))then
           if(tfreallistqd(kl%dbody(1),kl1))then
             if(kl1%nl .ne. 6)then
               irtc=itfmessage(9,'General::wrongval',
@@ -35,11 +36,10 @@
         irtc=itfmessage(9,'General::narg','"2 or 3"')
         return
       endif
-      if(ktfnonrealq(ktastk(isp1+1)))then
+      if(ktfnonrealq(ktastk(isp1+1),mode))then
         irtc=itfmessage(9,'General::wrongtype','"Real for #1"')
         return
       endif
-      mode=int(rtastk(isp1+1))
       if(mode .lt. -1 .or. mode .gt. 3)then
         irtc=itfmessage(9,'General::wrongnum','"-1, 0, 1, 2, or, 3"')
         return

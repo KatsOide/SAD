@@ -67,7 +67,7 @@ c
                   if(itastk2(1,i) .eq. mtfpart)then
                     isp=isp-1
                     dtastk(i)=kxmakelist(i-1,klx)
-                    klx%head=ktfoper+mtfpart
+                    klx%head%k=ktfoper+mtfpart
                     itastk2(1,i)=mtfnull
                     isp=i
                     go to 910
@@ -184,7 +184,7 @@ c
      $           mtfincrement,mtfdecrement)
             if(ktastk(isp) .ne. ktfoper+mtfnull)then
               dtastk(isp)=kxmakelist(isp-1,kla)
-              kla%head=ktfoper+mopc
+              kla%head%k=ktfoper+mopc
               itastk2(1,isp)=mtfnull
             endif
           case default

@@ -4,8 +4,8 @@
       type (sad_descriptor) k
       type (sad_list), pointer ::kl
       integer*4 i
-      if(ktflistqd(k,kl))then
-        if(ktfreallistqo(kl))then
+      if(ktflistq(k,kl))then
+        if(ktfreallistq(kl))then
           id=2
         else
           id=2
@@ -57,12 +57,12 @@ c          Positio   Cases DeCases
       ind1=ind
 c      call tfdebugprint(k,'tflevelstk',1)
 c      write(*,*)mode,n1,n2,ihead,indf
-      if(n2 .ne. 0 .and. ktflistqd(k,kl))then
+      if(n2 .ne. 0 .and. ktflistq(k,kl))then
         isp1=isp
         m=kl%nl
         if(stack .and. ihead .eq. 1)then
           isp=isp+1
-          ktastk(isp)=kl%head
+          dtastk(isp)=kl%head
         endif
         if(isp .ge. ispmax)then
           go to 4000
@@ -72,11 +72,11 @@ c      write(*,*)mode,n1,n2,ihead,indf
             if(ihead .eq. 0)then
               if(indf)then
                 rind(ind+1)=0.d0
-                call tflevelstk(kl%dbody(0),kf,kxi,
+                call tflevelstk(kl%head,kf,kxi,
      $               max(0,n1-1),n2-1,mode,ind+1,rind,
      $               0,ispmax,irtc)
               else
-                call tflevelstk(kl%dbody(0),kf,kxi,
+                call tflevelstk(kl%head,kf,kxi,
      $               max(0,n1-1),n2-1,mode,0,rind,0,ispmax,irtc)
               endif
             endif
@@ -112,12 +112,12 @@ c      write(*,*)mode,n1,n2,ihead,indf
           else
             ind1=ind+1
             if(ihead .eq. 0)then
-              idi=itfdepth(kl%dbody(0))
+              idi=itfdepth(kl%head)
               if(idi .ge. -n2)then
                 if(indf)then
                   rind(ind1)=0.d0
                 endif
-                call tflevelstk(kl%dbody(0),kf,kxi,
+                call tflevelstk(kl%head,kf,kxi,
      $             max(0,n1-1),n2,mode,ind1,rind,ihead,
      $               ispmax,irtc)
                 if(irtc .ne. 0)then
@@ -125,7 +125,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
                 endif
               elseif(stack)then
                 isp=isp+1
-                ktastk(isp)=kl%head
+                dtastk(isp)=kl%head
               endif
             endif
             if(isp .ge. ispmax)then
@@ -133,7 +133,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
             endif
             do i=1,m
               ki=kl%dbody(i)
-              if(ktflistqd(ki))then
+              if(ktflistq(ki))then
                 idi=itfdepth(ki)
               else
                 idi=1
@@ -160,7 +160,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
         else
           ind1=ind+1
           if(ihead .eq. 0)then
-            ki=kl%dbody(0)
+            ki=kl%head
             idi=itfdepth(ki)
             if(indf)then
               rind(ind1)=0.d0
@@ -177,7 +177,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
           endif
           do i=1,m
             ki=kl%dbody(i)
-            if(ktflistqd(ki))then
+            if(ktflistq(ki))then
               idi=itfdepth(ki)
             else
               idi=1
@@ -245,7 +245,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
             dtastk(ispf)=kf
             call tfefunrefc(ispf,kx%k,irtc)
           elseif(mode .eq. 2)then
-            if(ktflistqd(kx,klx))then
+            if(ktflistq(kx,klx))then
               isp=ispf
               call tfgetllstkall(klx)
               dtastk(ispf)=kf
@@ -323,39 +323,33 @@ c      write(*,*)'tflevel ',n1,n2
       subroutine tflevelspec(k,n1,n2,irtc)
       use tfstk
       implicit none
-      type (sad_list), pointer :: kl
+      type (sad_rlist), pointer :: kl
       type (sad_descriptor) k
       integer*4 n1,n2,irtc,ivl,maxlevel,m,itfmessage
       parameter (maxlevel=2**30)
       real*8 vlmax,v
       parameter (vlmax=1.d8)
-      if(ktfrealqd(k,v))then
+      if(ktfrealq(k,v))then
         ivl=int(max(-vlmax,min(vlmax,v)))
         n1=1
         n2=ivl
-      elseif(ktflistqd(k,kl))then
-        if(ktfnonreallistqo(kl))then
-          irtc=itfmessage(9,'General::wrongtype',
-     $         '"List of numbers for levelspec"')
-          return
-        else
-          m=kl%nl
-          if(m .eq. 1)then
-            n1=int(max(-vlmax,min(vlmax,kl%rbody(1))))
-            n2=n1
-          elseif(m .eq. 2)then
-            n1=int(max(-vlmax,min(vlmax,kl%rbody(1))))
-            n2=int(max(-vlmax,min(vlmax,kl%rbody(2))))
-          else
-            irtc=itfmessage(9,'General::wrongval',
-     $           '"n, {n}, or {n1, n2}","as level spec"')
-            return
-          endif
-        endif
-      else
+      elseif(.not. tfreallistq(k%k,kl))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List of numbers for levelspec"')
         return
+      else
+        m=kl%nl
+        if(m .eq. 1)then
+          n1=int(max(-vlmax,min(vlmax,kl%rbody(1))))
+          n2=n1
+        elseif(m .eq. 2)then
+          n1=int(max(-vlmax,min(vlmax,kl%rbody(1))))
+          n2=int(max(-vlmax,min(vlmax,kl%rbody(2))))
+        else
+          irtc=itfmessage(9,'General::wrongval',
+     $         '"n, {n}, or {n1, n2}","as level spec"')
+          return
+        endif
       endif
       irtc=0
       return

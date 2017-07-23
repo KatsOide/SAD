@@ -22,7 +22,7 @@
       integer*4 irtc
       kx=k
       irtc=0
-      if(ktflistqd(k,list))then
+      if(ktflistq(k,list))then
         if(iand(lconstlist,list%attr) .eq. 0)then
           call tfleval(list,kx,.true.,irtc)
         endif
@@ -44,7 +44,7 @@
       integer*8 kaa
       integer*4 irtc
       logical*4 ref,tfconstlistqo
-      kaa=ksad_loc(list%head)
+      kaa=ksad_loc(list%head%k)
       kx%k=ktflist+kaa
       irtc=0
       if(iand(lconstlist,list%attr) .ne. 0)then
@@ -56,8 +56,8 @@
         endif
       endif
       list%ref=list%ref+1
-      call tfseval(kaa,list%nl,list%head,kx,.false.,
-     $     ktfreallistqo(list),ref,irtc)
+      call tfseval(kaa,list%nl,list%head%k,kx,.false.,
+     $     ktfreallistq(list),ref,irtc)
       call tflocal1(kaa)
       return
       end
@@ -155,7 +155,7 @@
             endif
           endif
         elseif(ktflistq(kf,klf))then
-          if(klf%head .eq. ktfoper+mtfnull)then
+          if(klf%head%k .eq. ktfoper+mtfnull)then
             if(klf%nl .eq. 1)then
               kf=klf%body(1)
               cycle
@@ -164,8 +164,8 @@
               evalh=.true.
               exit
             endif
-          elseif(ktfsymbolq(klf%head,sym) .and. .not. ref)then
-            if(sym%gen .eq. -3 .and. ktfreallistqo(klf))then
+          elseif(ktfsymbolqd(klf%head,sym) .and. .not. ref)then
+            if(sym%gen .eq. -3 .and. ktfreallistq(klf))then
               ev=.false.
               iaat=0
             endif
@@ -206,12 +206,12 @@ c          msgn TagS (*   *)   Hold z
           if(tfonstackq(ks) .or. kls%ref .gt. 0)then
             call tfduplist(kls,kls)
           endif
-          kls%head=ktfoper+kaf
+          kls%head%k=ktfoper+kaf
 c          call tfloadlstk(lista,lista)
 c          lista%head=ktfoper+kaf
 c          call tfstk2l(lista,lista)
           if(ref .and. tfconstlistqo(kls))then
-            kx%k=ktflist+ksad_loc(kls%head)
+            kx%k=ktflist+ksad_loc(kls%head%k)
             irtc=0
             go to 8000
           endif
@@ -275,7 +275,7 @@ c          call tfstk2l(lista,lista)
             irtc=0
             do i=i1,ns
               kx%k=kls%body(i)
-              if(ktflistqd(kx,list))then
+              if(ktflistq(kx,list))then
                 call tfleval(list,kx,.true.,irtc)
               elseif(ktfsymbolqd(kx))then
                 call tfsyeval(kx,kx,irtc)
@@ -460,7 +460,7 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
                 call tflocalrel(list%dbody(kk),ka)
               enddo
             endif
-            call tflocalrel(list%dbody(0),ka)
+            call tflocalrel(list%head,ka)
             i=i-list%lenp
             ilist(1,i-1)=list%lenp+list%lena+list%nl+4
           elseif(kt .eq. ktfpat)then
@@ -595,12 +595,12 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
       type (sad_list) , pointer :: kl
       integer*4 irtc
       logical*4 ref
-      if(list%head .eq. ktfoper+mtfnull)then
+      if(list%head%k .eq. ktfoper+mtfnull)then
         call tfevallstkall(list,ref,ref,irtc)
       else
         isp=isp+1
         if(iand(lconstlist,list%attr) .ne. 0)then
-          ktastk(isp)=ktflist+ksad_loc(list%head)
+          ktastk(isp)=ktflist+ksad_loc(list%head%k)
           irtc=0
         else
           call tfleval(list,ktastk(isp),ref,irtc)     
@@ -637,9 +637,9 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
           do i=1,m
             ki=list%body(i)
             if(ktflistq(ki,kli))then
-              if(kli%head .eq. ktfoper+mtfnull)then
+              if(kli%head%k .eq. ktfoper+mtfnull)then
                 call tfargevalstk(isp0,kli,kli%nl,iaat,mf,
-     $               ktfreallistqo(kli),irtc)
+     $               ktfreallistq(kli),irtc)
                 if(irtc .ne. 0)then
                   return
                 endif
@@ -774,15 +774,15 @@ c                endif
       integer*8 ki,kai,ki0
       integer*4 irtc,i,isp1
       logical*4 ev
-      if(ktfreallistqo(list) .or. iand(list%attr,kconstarg) .ne. 0)then
-        kx%k=ktflist+ksad_loc(list%head)
+      if(ktfreallistq(list) .or. iand(list%attr,kconstarg) .ne. 0)then
+        kx%k=ktflist+ksad_loc(list%head%k)
         irtc=0
         return
       endif
       ev=.false.
       isp=isp+1
       isp1=isp
-      ktastk(isp)=list%head
+      dtastk(isp)=list%head
       do i=1,list%nl
         ki=list%body(i)
         kai=ktfaddr(ki)
@@ -823,7 +823,7 @@ c                endif
       if(ev)then
         kx=kxcompose(isp1)
       else
-        kx%k=ktflist+ksad_loc(list%head)
+        kx%k=ktflist+ksad_loc(list%head%k)
       endif
       irtc=0
  9000 isp=isp1-1
@@ -861,7 +861,7 @@ c                endif
       integer*4 irtc,i,isp0,m
       logical*4 ref,ref1
       m=list%nl
-      if(ktfreallistqo(list))then
+      if(ktfreallistq(list))then
         isp0=isp
         ktastk(isp0+1:isp0+m)=list%body(1:m)
         isp=isp0+m
@@ -915,42 +915,6 @@ c                endif
           call tfgetllstkall(kl)
         endif
       enddo
-      return
-      end
-
-      recursive subroutine tfgetllstkall(list)
-      use tfstk
-      implicit none
-      type (sad_list) list
-      type (sad_list),pointer :: listi
-      integer*4 i,m
-      logical*4 noseq
-      m=list%nl
-      if(iand(list%attr,lnoseqlist) .ne. 0)then
-        ktastk(isp+1:isp+m)=list%body(1:m)
-c        call tmov(klist(ka+1),ktastk(isp+1),m)
-        isp=isp+m
-        return
-      endif
-      noseq=.true.
-      if(ktfreallistqo(list))then
-        ktastk(isp+1:isp+m)=list%body(1:m)
-        isp=isp+m
-      else
-        do i=1,m
-          isp=isp+1
-          ktastk(isp)=list%body(i)
-          if(ktfsequenceq(ktastk(isp)))then
-            noseq=.false.
-            isp=isp-1
-            call loc_list(ktfaddr(list%body(i)),listi)
-            call tfgetllstkall(listi)
-          endif
-        enddo
-      endif
-      if(noseq)then
-        list%attr=ior(list%attr,lnoseqlist)
-      endif
       return
       end
 
@@ -1027,7 +991,7 @@ c        call tmov(klist(ka+1),ktastk(isp+1),m)
       type (sad_list), pointer :: list
       type (sad_symbol), pointer :: sym
       integer*4 irtc
-      if(ktflistqd(k,list))then
+      if(ktflistq(k,list))then
         if(iand(lconstlist,list%attr) .eq. 0)then
           call tfleval(list,kx,.false.,irtc)
           return
@@ -1073,7 +1037,7 @@ c        call tmov(klist(ka+1),ktastk(isp+1),m)
             irtc=itfmessage(999,'General::invop',' ')
             return
           endif
-        elseif(ktfrealqdi(ka,ind))then
+        elseif(ktfrealq(ka,ind))then
         elseif(ktfsymbolqd(ka,sym) .and. kopc .eq. mtfslot)then
           call sym_namtbl(sym,nam)
           nc=nam%str%nch+1
@@ -1174,7 +1138,7 @@ c        write(*,*)'at ',kae
       do j=1,m
         if(ktflistq(list%body(j),listj))then
           if(listj%nl .eq. 1)then
-            if(tfsameqk(kxlabel,listj%head))then
+            if(tfsameqk(kxlabel,listj%head%k))then
               if(tfsameqd(kr,listj%dbody(1)))then
                 i=j
                 return

@@ -2,14 +2,16 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kl,klpipe,klx,klxi,kli
+      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: klx
+      type (sad_rlist), pointer :: klpipe,klr,kli,klxi
       integer*4, allocatable :: ind(:)
       integer*4 isp1,irtc,m1,n1,i,j,jm,mm,itfmessage
       real*8 an
       if(isp .ne. isp1+2)then
         go to 9000
       endif
-      if(.not. tflistqd(dtastk(isp1+1),kl))then
+      if(.not. tflistq(dtastk(isp1+1),kl))then
         go to 9010
       endif
       if(.not. tfreallistqd(dtastk(isp1+2),klpipe))then
@@ -25,7 +27,7 @@
 c      kaind=ktaloc(((n1+2)*(m1+2)+1)/2+1)
       call csrind(ind,klpipe%rbody(1:m1),m1,n1,mm)
       if(kl%nl .eq. m1)then
-        kx=kxavaloc(-1,mm,klx)
+        kx=kxavaloc(-1,mm,klr)
         do i=1,m1
           if(.not. tfreallistqd(kl%dbody(i),kli))then
             deallocate(ind)
@@ -34,7 +36,7 @@ c      kaind=ktaloc(((n1+2)*(m1+2)+1)/2+1)
           do j=1,n1
             jm=ind(j*(m1+2)+i+1)
             if(jm .ne. 0)then
-              klx%rbody(jm)=kli%rbody(j)
+              klr%rbody(jm)=kli%rbody(j)
             endif
           enddo
         enddo
@@ -69,7 +71,7 @@ c      kaind=ktaloc(((n1+2)*(m1+2)+1)/2+1)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klpipe,klp
+      type (sad_rlist), pointer :: klpipe,klp
       integer*4, allocatable :: ind(:)
       integer*4 isp1,irtc,i,ic,m1,n1,itfmessage,mm,mode,nm
       real*8 dx,dy,omega,rho,an,fudge0,fudge1,fudge2,fudge3,
@@ -372,7 +374,8 @@ c 32: Er -> Ey
       use tfstk
       implicit none
       type (sad_descriptor) kx,kex,key
-      type (sad_list), pointer :: kl1,kl11,klprof,klx
+      type (sad_dlist), pointer :: klx,kl1
+      type (sad_rlist), pointer :: klprof,kl11
       integer*4 isp1,irtc,nphimax,mx,my,nphi,m,itfmessage,ic
       parameter (nphimax=16384)
       real*8 dx,dy,rho
@@ -380,7 +383,7 @@ c 32: Er -> Ey
       if(isp .ne. isp1+1)then
         go to 9030
       endif
-      if(.not. tflistqd(dtastk(isp1+1),kl1))then
+      if(.not. tflistq(dtastk(isp1+1),kl1))then
         go to 9000
       endif
       if(kl1%nl .ne. 4)then
@@ -392,7 +395,7 @@ c 32: Er -> Ey
         endif
         dx=kl11%rbody(1)
         dy=kl11%rbody(2)
-      elseif(ktfnonrealqd(kl1%dbody(1)))then
+      elseif(ktfnonrealq(kl1%dbody(1)))then
         go to 9000
       else
         dy=dx
@@ -400,13 +403,13 @@ c 32: Er -> Ey
       if(dx .le. 0.d0 .or. dy .le. 0.d0)then
         go to 9000
       endif
-      if(ktfnonrealqdi(kl1%dbody(2),ic))then
+      if(ktfnonrealq(kl1%dbody(2),ic))then
         go to 9000
       endif
       if(ic .le. 0)then
         go to 9000
       endif
-      if(ktfnonrealqd(kl1%dbody(3),rho))then
+      if(ktfnonrealq(kl1%dbody(3),rho))then
         go to 9000
       endif
       if(.not. tfreallistqd(kl1%dbody(4),klprof))then

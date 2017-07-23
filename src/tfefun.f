@@ -33,8 +33,8 @@
       if(irtc .ne. 0)then
         return
       endif
-      if(ktflistqd(kx,kl))then
-        if(kl%head .eq. ktfoper+mtfnull)then
+      if(ktflistq(kx,kl))then
+        if(kl%head%k .eq. ktfoper+mtfnull)then
           isp=isp2-1
           call tfgetllstkall(kl)
           return
@@ -117,11 +117,11 @@ c      endif
       if(upvalue)then
         LOOP_I: do i=isp1+1,isp
           k1=dtastk(i)
- 12       if(ktflistqd(k1,kl1))then
+ 12       if(ktflistq(k1,kl1))then
             klh=>kl1
-            k1=kl1%dbody(0)
-            do while(ktflistqd(k1,kl1))
-              k1=kl1%dbody(0)
+            k1=kl1%head
+            do while(ktflistq(k1,kl1))
+              k1=kl1%head
             enddo
             if(k1%k .eq. ktfoper+mtfatt .or.
      $           k1%k .eq. ktfoper+mtfslot)then
@@ -372,7 +372,7 @@ c            write(*,*)'irtc: ',irtc
  300    if(narg .ne. 1)then
           go to 6810
         endif
-        if(ktflistqd(k,kl))then
+        if(ktflistq(k,kl))then
           kx=dfromr(dble(kl%nl))
         else
           kx%k=0
@@ -428,7 +428,7 @@ c            write(*,*)'irtc: ',irtc
         go to 6900
  410    if(narg .ne. 1)then
           go to 6810
-        elseif(ktfnonrealqd(k))then
+        elseif(ktfnonrealq(k))then
           irtc=itfmessage(9,'General::wrongtype','"Real number"')
         else
           ka=int8(rtastk(isp))
@@ -723,8 +723,8 @@ c        go to 6900
  1100   call tfvectorqf(isp1,kx,irtc)
         go to 6900
  1110   if(narg .eq. 1)then
-          if(ktflistqd(k,kl))then
-            if(kl%head .eq. ktfoper+mtfcomplex)then
+          if(ktflistq(k,kl))then
+            if(kl%head%k .eq. ktfoper+mtfcomplex)then
               kx%k=ktftrue
             else
               kx%k=0
@@ -742,8 +742,8 @@ c        go to 6900
  1130   call tfmatchqf(isp1,kx,irtc)
         go to 6900
  1140   if(narg .eq. 1)then
-          if(ktflistqd(k,kl))then
-            if(kl%head .ne. ktfoper+mtfcomp)then
+          if(ktflistq(k,kl))then
+            if(kl%head%k .ne. ktfoper+mtfcomp)then
               call tfprint1(k,
      $             6,-itfgetrecl(),4,.true.,.true.,irtc)
             endif
@@ -978,7 +978,7 @@ c        go to 6900
         go to 6900
  2040   irtc=-7
         if(narg .eq. 1)then
-          if(ktfrealqd(k,v))then
+          if(ktfrealq(k,v))then
             irtc=int(min(max(-3.d0,v),-1.d0)-3.d0)
           endif
         endif
@@ -1009,7 +1009,7 @@ c        go to 6900
         go to 6900
  2190   if(narg .eq. 1)then
           kx=k
-          if(ktflistqd(k))then
+          if(ktflistq(k))then
             kx=kxcopylist(k)
           endif
           irtc=0
@@ -1030,8 +1030,8 @@ c        go to 6900
  2250   if(narg .ne. 4)then
           go to 6814
         endif
-        if(ktfnonrealqd(dtastk(isp-1)) .or.
-     $       ktfnonrealqd(dtastk(isp)))then
+        if(ktfnonrealq(dtastk(isp-1)) .or.
+     $       ktfnonrealq(dtastk(isp)))then
           irtc=itfmessage(9,'General::wrongarg',
      $         '"$NearlySameQ[a,b,relthre,absthre]"')
           go to 7000
@@ -1289,15 +1289,15 @@ c            msgn TagS (*   *)   Hold z
         else
           go to 6800
         endif
-      elseif(ktflistqd(k1,kl1))then
+      elseif(ktflistq(k1,kl1))then
         kx=k1
-        if(kl1%head .eq. ktfoper+mtffun)then
+        if(kl1%head%k .eq. ktfoper+mtffun)then
           call tfpuref(isp1,kl1,kx,irtc)
           go to 6900
-        elseif(kl1%head .eq. ktfoper+mtfnull)then
+        elseif(kl1%head%k .eq. ktfoper+mtfnull)then
           if(kl1%nl .eq. 0)then
             call tfsequence(isp1,isp,kx)
-            if(ktflistqd(kx,klx))then
+            if(ktflistq(kx,klx))then
               call tfleval(klx,kx,.true.,irtc)
             elseif(ktfsymbolqd(kx) .or. ktfpatqd(kx))then
               call tfeevalref(kx,kx,irtc)
@@ -1307,14 +1307,14 @@ c            msgn TagS (*   *)   Hold z
      $           ktfnonreallistqo(kl1))then
             kx=kxmakelist(isp1,klx)
             kh=klx%dbody(1)
-            klx%dbody(0)=dtfcopy(kh)
+            klx%head=dtfcopy(kh)
             irtc=0
             return
           endif
-        elseif(kl1%head .eq. ktfoper+mtflist)then
+        elseif(kl1%head%k .eq. ktfoper+mtflist)then
           call tfpart(isp1,kx,.true.,irtc)
           if(irtc .eq. 0)then
-            if(ktflistqd(kx,klx))then
+            if(ktflistq(kx,klx))then
               call tfleval(klx,kx,.true.,irtc)
             elseif(ktfsymbolqd(kx) .or. ktfpatqd(kx))then
               call tfeevalref(kx,kx,irtc)
@@ -1322,8 +1322,8 @@ c            msgn TagS (*   *)   Hold z
           endif
           go to 6900
         else
-          do while(ktflistqd(kx,klx))
-            kx=klx%dbody(0)
+          do while(ktflistq(kx,klx))
+            kx=klx%head
           enddo
           if(ktfsymbolqdef(kx%k,symd))then
             if(symd%sym%override .ne. 0 .and. symd%downval .ne. 0)then
@@ -1428,15 +1428,15 @@ c            msgn TagS (*   *)   Hold z
           endif
         endif
         go to 7000
-      elseif(ktflistqd(k1,kl))then
+      elseif(ktflistq(k1,kl))then
         kx=k1
-        if(kl%head .eq. ktfoper+mtffun)then
+        if(kl%head%k .eq. ktfoper+mtffun)then
           call tfpuref(isp1,kl,kx,irtc)
           go to 6900
-        elseif(kl%head .eq. ktfoper+mtfnull)then
+        elseif(kl%head%k .eq. ktfoper+mtfnull)then
           if(kl%nl .eq. 0)then
             call tfsequence(isp1,isp,kx)
-            if(ktflistqd(kx,klx))then
+            if(ktflistq(kx,klx))then
               call tfleval(klx,kx,.false.,irtc)
             elseif(ktfsymbolqd(kx,sym))then
               if(sym%override .eq. 0)then
@@ -1448,10 +1448,10 @@ c            msgn TagS (*   *)   Hold z
           elseif(kl%nl .eq. 1 .and.
      $           ktfnonreallistqo(kl))then
             kx=kxmakelist(isp1,klx)
-            klx%head=ktfcopy(kl%head)
+            klx%head=dtfcopy(kl%head)
             return
           endif
-        elseif(kl%head .eq. ktfoper+mtflist)then
+        elseif(kl%head%k .eq. ktfoper+mtflist)then
           go to 6900
         elseif(ktflistq(kl%head,kli))then
           call tfsolvemember(kli,k1,rep,irtc)
@@ -1514,7 +1514,7 @@ c            msgn TagS (*   *)   Hold z
           dtastk(isp+1)=ka
           isp=isp+2
           dtastk(isp)=dtastk(isp1+1)
-        elseif(tflistqd(ka,kla))then
+        elseif(tflistq(ka,kla))then
           m=kla%nl
           if(m .ne. narg)then
             irtc=itfmessage(9,'General::narg',
@@ -1522,7 +1522,7 @@ c            msgn TagS (*   *)   Hold z
             return
           endif
           if(m .ne. 0)then
-            if(ktfreallistqo(kla))then
+            if(ktfreallistq(kla))then
               irtc=itfmessage(9,'General::wrongtype',
      $             '"List of symbols"')
               return
@@ -1573,7 +1573,7 @@ c          write(*,*)irtc
       if(narg .eq. 2)then
         k1=dtastk(isp1+1)
         k =dtastk(isp)
-        if(ktfrealqd(k1,v1) .and. ktfrealqd(k,v))then
+        if(ktfrealq(k1,v1) .and. ktfrealq(k,v))then
           if(iopc .eq. mtfplus)then
             kx=dfromr(v1+v)
           else
@@ -1583,7 +1583,7 @@ c          write(*,*)irtc
         else
           if(tfnumberqd(k) .and. tfnumberqd(k1))then
             call tfcmplx(k1,k,kx,iopc,irtc)
-          elseif(tflistqd(k1) .or. tflistqd(k))then
+          elseif(tflistq(k1) .or. tflistq(k))then
             call tfecmplxl(k1,k,kx,iopc)
             irtc=0
           else
@@ -1602,7 +1602,7 @@ c          write(*,*)irtc
         if(ktfsymbolqd(dtastk(isp)) .or.
      $       ktfpatqd(dtastk(isp)))then
           kx=kxmakelist(isp1,klx)
-          klx%head=ktfoper+iopc
+          klx%head%k=ktfoper+iopc
         else
           kx=dtastk(isp1+1)
         endif          
@@ -1612,7 +1612,7 @@ c          write(*,*)irtc
         irtc=0
         do i=isp1+2,isp
           ki=dtastk(i)
-          if(ktfrealqd(ki,vi) .and. ktfrealqd(kx,vx))then
+          if(ktfrealq(ki,vi) .and. ktfrealq(kx,vx))then
             if(iopc .eq. mtfplus)then
               kx=dfromr(vx+vi)
             else
@@ -1625,7 +1625,7 @@ c          write(*,*)irtc
               if(irtc .ne. 0)then
                 return
               endif
-            elseif(tflistqd(k1) .or. tflistqd(ki))then
+            elseif(tflistq(k1) .or. tflistq(ki))then
               call tfecmplxl(k1,ki,kx,iopc)
               if(irtc .ne. 0)then
                 return
@@ -1661,7 +1661,7 @@ c          write(*,*)irtc
           if(irtc .ne. 0)then
             return
           endif
-        elseif(tflistqd(k1) .or. tflistqd(ki))then
+        elseif(tflistq(k1) .or. tflistq(ki))then
           call tfecmplxl(ki,k1,kx,mtfpower)
           irtc=0
         else
@@ -1693,7 +1693,7 @@ c          write(*,*)irtc
           if(irtc .ne. 0)then
             return
           endif
-        elseif(tflistqd(k1) .or. tflistqd(ki))then
+        elseif(tflistq(k1) .or. tflistq(ki))then
           call tfecmplxl(ki,k1,kx,mtfpower)
           irtc=0
         else
@@ -1724,7 +1724,7 @@ c          write(*,*)irtc
             call tfsydef(sym,sym)
             k1%k=ktfsymbol+ksad_loc(sym%loc)
           endif
-        elseif(ktflistqd(k1))then
+        elseif(ktflistq(k1))then
           call tfeevaldef(k1,k1,irtc)
           if(irtc .ne. 0)then
             return
@@ -1733,12 +1733,12 @@ c          write(*,*)irtc
         if(k1%k .ne. ktastk(isp1+1) .and. upvalue)then
           k11=k1
           k110=k1
-          if(ktflistqd(k11,kl11))then
-            k11=kl11%dbody(0)
-            if(ktflistqd(k11))then
+          if(ktflistq(k11,kl11))then
+            k11=kl11%head
+            if(ktflistq(k11))then
               k110=k11
-              do while(ktflistqd(k11,kl11))
-                k11=kl11%dbody(0)
+              do while(ktflistq(k11,kl11))
+                k11=kl11%head
               enddo
             endif
           endif
@@ -1836,8 +1836,8 @@ c          write(*,*)irtc
         if(tfnumberqd(dtastk(isp1+1)) .and.
      $       tfnumberqd(dtastk(isp)))then
           call tfcmplx(ktastk(isp1+1),ktastk(isp),kx,iopc,irtc)
-        elseif(tflistqd(dtastk(isp1+1))
-     $         .or. tflistqd(dtastk(isp)))then
+        elseif(tflistq(dtastk(isp1+1))
+     $         .or. tflistq(dtastk(isp)))then
           call tfearray(ktastk(isp1+1),ktastk(isp),kx,iopc,irtc)
         else
           call tfeexpr(ktastk(isp1+1),ktastk(isp),kx,iopc)
@@ -1853,7 +1853,7 @@ c          write(*,*)irtc
           if(irtc .ne. 0)then
             isp=isp0
             return
-          elseif(ktfnonrealqd(kx))then
+          elseif(ktfnonrealq(kx))then
             irtc=-1
             return
           endif
@@ -1930,7 +1930,7 @@ c          write(*,*)irtc
       endif
       if(tfnumberqd(dtastk(isp)))then
         call tfcmplx(0.d0,ktastk(isp),kx,iopc,irtc)
-      elseif(tflistqd(dtastk(isp)))then
+      elseif(tflistq(dtastk(isp)))then
         call tfearray(0.d0,ktastk(isp),kx,iopc,irtc)
       else
         call tfeexpr(0.d0,ktastk(isp),kx,iopc)
@@ -1964,8 +1964,8 @@ c          write(*,*)irtc
       karg=kxcompose(isp1)
       LOOP_I: do i=isp1+1,isp
         ki=dtastk(i)
-        do while(ktflistqd(ki,kli))
-          ki=kli%dbody(0)
+        do while(ktflistq(ki,kli))
+          ki=kli%head
         enddo
         if(ktfsymbolqdef(ki%k,symd))then
           if(symd%sym%override .ne. 0)then

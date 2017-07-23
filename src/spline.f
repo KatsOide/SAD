@@ -325,7 +325,7 @@ C
             if(ka1 .ne. mtfnull)then
               go to 9100
             endif
-          elseif(ktfnonrealqd(k1,dy(1)))then
+          elseif(ktfnonrealq(k1,dy(1)))then
             go to 9100
           else
             mode=1
@@ -335,7 +335,7 @@ C
             if(ka2 .ne. mtfnull)then
               go to 9100
             endif
-          elseif(ktfnonrealqd(k2,dy(2)))then
+          elseif(ktfnonrealq(k2,dy(2)))then
             go to 9100
           else
             mode=mode+2
@@ -384,14 +384,15 @@ C
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer ::kl,kll,klx
+      type (sad_list), pointer ::kl
+      type (sad_rlist), pointer ::klr,kll
       integer*4 isp1,irtc,itfmessage,i1,i2,ih,n,i,m
       real*8 x
       if(isp1+2 .ne. isp)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
-      if(.not. tflistqd(dtastk(isp1+1),kl))then
+      if(.not. tflistq(dtastk(isp1+1),kl))then
         irtc=itfmessage(9,'General::wrongval','"#1","List"')
         return
       endif
@@ -419,7 +420,7 @@ C
       elseif(tfreallistq(ktastk(isp),kll))then
         n=kll%nl
         m=kl%nl
-        kx=kxavaloc(-1,n,klx)
+        kx=kxavaloc(-1,n,klr)
         i1=1
         do i=1,n
           i2=min(i1+1,m)
@@ -444,7 +445,7 @@ C
               i1=ih
             endif
           enddo
-          klx%rbody(i)=min(i1,m-1)
+          klr%rbody(i)=min(i1,m-1)
         enddo
         irtc=0
       else

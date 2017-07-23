@@ -6,7 +6,7 @@
       integer*4 i
       call descr_sad(kl,kll)
       kll%dbody(i)=k
-      if(ktfnonrealqd(k))then
+      if(ktfnonrealq(k))then
         kll%attr=ior(kll%attr,lnonreallist)
       endif
       return
@@ -32,7 +32,7 @@
       integer*4 i,m
       integer*8 ks(m)
       logical*4 d,di
-      list%dbody(0)=dtfcopy(kh)
+      list%head=dtfcopy(kh)
       d=.false.
       do i=1,m
         list%body(i)=ktfcopyd(ks(i),di)
@@ -48,7 +48,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx
+      type (sad_rlist), pointer :: klr
       integer*4 isp1,irtc,isp0,i,m,itfmessage
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
@@ -61,9 +61,9 @@
         isp0=isp
         call tfdimensionsstk(dtastk(isp),dtastk(isp))
         m=isp-isp0
-        kx=kxavaloc(-1,m,klx)
+        kx=kxavaloc(-1,m,klr)
         do i=1,m
-          klx%rbody(i)=dble(itastk(1,isp0+i))
+          klr%rbody(i)=dble(itastk(1,isp0+i))
         enddo
       endif
       return
