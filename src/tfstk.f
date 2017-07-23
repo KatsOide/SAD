@@ -1735,6 +1735,10 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         if(ktflistq(k,kl1))then
           tfreallistqk=kl1%head%k .eq. ktfoper+mtflist
      $         .and. ktfreallistq(kl1)
+=======
+          tfreallistqk=kl1%head .eq. ktfoper+mtflist
+     $         .and. ktfreallistqo(kl1)
+>>>>>>> origin/master
           if(tfreallistqk .and. present(kl))then
             call c_f_pointer(c_loc(kl1),kl)
           endif
