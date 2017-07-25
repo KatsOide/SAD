@@ -341,6 +341,7 @@ c                enddo
         optstat%stabx=optstat%stabx .and. stab .and. (codfnd .or. fam)
         optstat%staby=optstat%staby .and. stab .and. (codfnd .or. fam)
       endif
+      optstat%tracez=0.d0
       if(pri)then
         lfno=0
       endif
