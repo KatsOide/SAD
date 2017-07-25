@@ -3,6 +3,7 @@
       use ffs
       use tffitcode
       implicit none
+      type (sad_rlist) , pointer :: kl
       integer*8 kx,kax,kax1,kaxfirst,kaxlast,kfirst,klast,kam,kaxi,
      $     ka1,kaa1,ka,kaa
       logical*4 normalmode,xplane,angle,periodic
@@ -16,7 +17,7 @@
         irtc=itfmessage(9,'General::narg','"6 or 7"')
         return
       endif
-      if(ktflistq(ktastk(isp1+1)))then
+      if(Xtflistq(ktastk(isp1+1)))then
         irtc=itfmessage(9,'General::wrongtype','"non-List for #1"')
         return
       endif
@@ -26,7 +27,7 @@
         return
       endif
 
-      if(ktfnonlistq(ktastk(isp1+4)))then
+      if(tfnonlistq(ktastk(isp1+4)))then
         irtc=itfmessage(9,'General::wrongtype','"List for #4"')
         return
       endif
@@ -83,19 +84,16 @@
       psix=0.d0
       psiy=0.d0
       if(narg .eq. 7)then
-        if(ktfnonlistq(ktastk(isp1+7)))then
-          irtc=itfmessage(9,'General::wrongtype','"List for #7"')
+        if(tfnonreallistq(dtastk(isp1+7),kl))then
+          irtc=itfmessage(9,'General::wrongtype','"Real List for #7"')
           return
         endif
-        kax=ktfaddr(ktastk(isp1+7))
-        if(ilist(2,kax-1) .ne. 2)then
-          irtc=itfmessage(9,'General::wrongleng',
-     $         '"#7","2"')
+        if(kl%nl .ne. 2)then
+          irtc=itfmessage(9,'General::wrongleng','"#7","2"')
           return
         endif
-        kax1=ktfaddr(klist(kax+1))
-        psix=rlist(kax1+1)*pi2
-        psiy=rlist(kax1+2)*pi2
+        psix=kl%rbody(1)*pi2
+        psiy=kl%rbody(2)*pi2
       endif
 
 c     dp00=rlist(ifirst+20)+1.d0
@@ -120,8 +118,8 @@ c     dp00=rlist(ifirst+20)+1.d0
      $       rtastk(isp1+2),rtastk(isp1+3),1,
      $       rlist(kam+1),kax1,kx,psix,psiy,psix0,psiy0,
      $       periodic,normalmode,angle,xplane)
-      elseif(ktflistq(ktastk(isp1+2)))then
-        if(ktfnonlistq(ktastk(isp1+3)))then
+      elseif(tflistq(ktastk(isp1+2)))then
+        if(tfnonlistq(ktastk(isp1+3)))then
           irtc=itfmessage(9,'General::wrongtype','"List for #3"')
           return
         endif
@@ -179,7 +177,7 @@ c----- Ring ------------------------------------------------------------
       fx=0.5d0/sin(pinx)
       fy=0.5d0/sin(piny)
       do 101 i=1,ns
-        js=st(i)
+        js=int(st(i))
         if(idtypec(js) .eq. icbend) then
           rotation=-rlist(idvalc(js)+5)
           cost=cos(rotation)
@@ -195,7 +193,7 @@ c----- Ring ------------------------------------------------------------
         endif
         ar(i)=0.d0
         do 100 i1=1,2
-          if(i1.eq.2) js=stt(i)+1
+          if(i1.eq.2) js=int(stt(i))+1
           entrance=im.eq.js .and. i1.eq.1
           iaxj=ilist(2,kax1+js)
           ias=ilist(2,iaxj+1)
@@ -350,7 +348,7 @@ c     write(*,'(a,1p,4e15.7)') 'response=',v
  199  continue
 c----- Transport line --------------------------------------------------
       do 201 i=1,ns
-        js=st(i)
+        js=int(st(i))
         if(idtypec(js) .eq. icbend) then
           rotation=-rlist(idvalc(js)+5)
           cost=cos(rotation)
@@ -366,7 +364,7 @@ c----- Transport line --------------------------------------------------
         endif
         ar(i)=0.d0
         do 200 i1=1,2
-          if(i1.eq.2) js=stt(i)+1
+          if(i1.eq.2) js=int(stt(i))+1
           entrance=im.eq.js .and. i1.eq.1
           iaxj=ilist(2,kax1+js)
           ias=ilist(2,iaxj+1)
