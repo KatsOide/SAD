@@ -798,13 +798,14 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       integer*4 itmax
       parameter (conv=1.d-20,itmax=15)
       integer*4 idp,it
-      real*8 r
+      real*8 r,fact
       real*8 trans(4,5),cod(6),cod0(6),trans1(4,5),transb(4,5),
      $     transe(4,5),ftwiss(ntwissfun),trans2(4,5),cod00(6)
       logical*4 over,codfnd
       it=0
       r0=1.d100
       cod00=cod0
+      fact=.5d0
       do while(it .le. itmax)
         cod=cod0
         if(fbound%fb .gt. 0.d0)then
@@ -873,10 +874,13 @@ c          enddo
           codfnd=.true.
           return
         endif
+c        write(*,'(a,i5,1p6g14.6)')'qcod ',it,r,r0,cod0(1:4)
         it=it+1
         if(r .gt. r0)then
-          cod0=.5d0*(cod00+cod0)
+          cod0=(1.d0-fact)*cod00+fact*cod0
+          fact=fact*.5d0
         else
+          fact=min(0.5d0,fact*2.d0)
           r0=r
           cod00=cod0
           cod(1)=-cod(1)+trans(1,1)*cod0(1)+trans(1,2)*cod0(2)

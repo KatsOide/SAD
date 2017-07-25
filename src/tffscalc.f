@@ -25,7 +25,7 @@ c      include 'DEBUG.inc'
       logical*4 zcal,wcal,error,parallel
       real*8 anux0,anuy0,anux0h,anuy0h,anuxi,anuyi,anuxih,anuyih,
      $     rw,drw,rstab,
-     $     anusumi,anusum0,anudiffi,anudiff0,physd(4)
+     $     anusumi,anusum0,anudiffi,anudiff0,physd(4),physd1(4)
       logical*4 fam,beg,zerores
       integer*4 irw,isw,ipr,ifb,ife,idir,
      $     jjfam(-nfam:nfam),ivoid,ifpe,ntfun
@@ -193,12 +193,14 @@ c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
                     twiss(1,1,mfitdx:mfitdpy )=
      $                   utwiss(mfitdx:mfitdpy ,i2,1)+dfam(1:4,ii)
                   else
-                    if(dp(i2) .eq. dp(i3))then
-                      call tgetphysdispu(utwiss(1,i2,1),physd)
-                    else
-                      physd=(utwiss(mfitdx:mfitdpy,i2,1)
+                    call tgetphysdispu(utwiss(1,i2,1),physd)
+                    physd1=(utwiss(mfitdx:mfitdpy,i2,1)
      $                     -utwiss(mfitdx:mfitdpy,i3,1))/(dp(i2)-dp(i3))
-                    endif
+                    do i=1,4
+                      if(abs(physd(i)) .gt. abs(physd1(i)))then
+                        physd(i)=physd1(i)
+                      endif
+                    enddo
                     twiss(1,1,mfitdx:mfitdpy)=
      $                   utwiss(mfitdx:mfitdpy,i2,1)
      $                   +(dp(ii)-dp(i2))*physd

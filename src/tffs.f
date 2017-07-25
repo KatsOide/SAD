@@ -187,7 +187,7 @@ c$$$  endif
 
         subroutine tfvcopycmp(cmps,cmpd,k,coeff)
         use tfstk
-        use ffs
+        use mackw
         implicit none
         type (sad_comp) :: cmps,cmpd
         type (sad_rlist), pointer :: las,lad,lasl,ladl
@@ -218,7 +218,7 @@ c$$$  endif
 
         subroutine tfvcopycmpall(cmps,cmpd,n)
         use tfstk
-        use ffs
+        use mackw
         implicit none
         type (sad_comp) :: cmps,cmpd
         type (sad_rlist), pointer :: las,lad
@@ -240,7 +240,7 @@ c$$$  endif
         end subroutine
 
         real*8 function tfvcmp(cmps,k) result(v)
-        use ffs
+        use mackw
         use tfstk
         implicit none
         type (sad_comp) :: cmps
@@ -258,7 +258,7 @@ c$$$  endif
         end function
 
         subroutine tfsetcmp(v,cmpd,i)
-        use ffs
+        use mackw
         use tfstk
         implicit none
         type (sad_comp) :: cmpd
