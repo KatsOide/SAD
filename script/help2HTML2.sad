@@ -1,6 +1,6 @@
 FFS;
 
- Help2HTML=Class[{},{},{help=Help$Messages,nlabel=0,Labels,col=80},
+ Help2HTML=Class[{},{},{help=Help$Messages,nlabel=0,Labels,col=96},
 
    Constructor[]:=(
      SetDirectory[DocumentsDirectory];
@@ -41,7 +41,7 @@ FFS;
          If[s[p1-3,p1]<=>".png" && s[p1-3,p1]<=>".jpg",
            ReplaceIndent[s[1,p1]]//"\n",
            ReplaceIndent[s[1,p-2]]//
-             "<IMG SRC=\""//s[p,p1]//"\" ALIGN=\"middle\" WIDTH=480>\n"]//
+             "<IMG SRC=\""//s[p,p1]//"\" ALIGN=\"middle\" WIDTH=540>\n"]//
                ReplaceDraw[s[p1+2,-1]]]];
 
      WrapLine[t_,n_]:=Module[{p=StringPosition[t,"\n",1],p1},

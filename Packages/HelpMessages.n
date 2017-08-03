@@ -3682,22 +3682,34 @@ FitParameters   args for FitPlot in a list",
         "\
 Usage:  ListContourPlot[list, options, ...]\n\n\
 plots a coutour plot by list which is a 2D List of Real data.\n\n\
-Option           Value          Default             Action\n\
+Option           Value            Default         Action\n\
 ---------------------------------------------------------------------------\n\
-Contours         Real           10                  number of contoure\n\
-PlotRange        {min,max}      Automatic           depth of contours\n\
-MeshRange        {{x0,x1},{y0,y1}}\n\
-                                Automatic           Range of x and y axes\n\
-AspectRatio      Real           1\n\
-ColorFunction    Function or String\n\
-                                Automatic           Null or None means \"white\"\n\
+Contours         Real             10              number of contoure\n\
+PlotRange        {min,max}, {prxy, prz}, or {prx, pry, prz}\n\
+                                  Automatic       depth of contours (prz) and PlotRange for x-y (prxy)\n\
+AspectRatio      Real             1\n\
+MeshRange        ({x1,xn},{y1,yn}} or {{x1,..,xn},{y1,..,y1n}}\n\
+                                  Automatic       Range of x and y axes\n\
+ColorFunction    Color scheme (Blue, Purple, Pink, Yellow, Green, Cyan),Function, or String\n\
+                                  Blue            Null or None means \"white\"\n\
 ContourColorFunction\n\
                  Function or String\n\
-                                Automatic           Null or None to hide\n\n\
+                                  Automatic       Null or None to hide\n\
+ColorScale       True or False    True            displays a color scale on the right\n\
+Smoothing        integer >= 0     1               number of linear interpolations\n\n\
 Example:\n\
-  cf[x_]:=If[0.09<x<0.11,\"red\",Null,Null]; (* Draw red contour line only around x = 0.1 *)\n\
-  ListContourPlot[Table[-x^2+y^2,{x,-4,4,0.5},{y,-4,4,0.5}], MeshRange->{{-4,4},{-4,4}},ContourColorFunction->cf, ColorFunction->Automatic, FrameLabel->{\"x\",\"y\"}];\n\
-  Update[];\n\n\
+ xr0=0;xr=Table[xr0+=Sin[i*Pi/21],{i,20}];xr-=(xr[[1]]+xr[[-1]])/2;\n\
+ yr=xr;\n\
+ table=Outer[Cos[Sqrt[(#^2+#2^2)/2]]&,xr,yr];\n\n\
+ gc=Graphics[MapThread[\n\
+  Rectangle[#2,#3,\n\
+    ListContourPlot[table, MeshRange->{xr, yr}, AspectRatio->1,\n\
+      DisplayFunction->Identity, ColorFunction->#,\n\
+      FrameLabel->{\"x\", \"y\", ToString[#]}]]&,\n\
+   {{ Blue,        Pink,       Green,      Purple,      Yellow,     Cyan},\n\
+     {{-0.15,0.65},{0.25,0.65},{0.65,0.65},{-0.15,0   },{0.25,0   },{0.65,0}},\n\
+     {{ 0.2, 1.1 },{0.6, 1.1 },{1,   1.1 },{ 0.2, 0.45},{0   ,0.45},{1.0, 0.45}}}]];\n\
+ Show[gc];Update[];\n\
 <ListContourPlot.png",
         "Graphics ListPlot ListDensityPlot",
         {}},
@@ -3706,19 +3718,20 @@ Example:\n\
         "\
 Usage:  ListDensityPlot[list, options, ...]\n\n\
 plots a density plot by list which is a 2D List of Real data.\n\n\
-Option           Value          Default             Action\n\
+Option           Value            Default         Action\n\
 ---------------------------------------------------------------------------\n\
-PlotRange        {min,max}      Automatic           depth of density\n\
-MeshRange        {{x0,x1},{y0,y1}}\n\
-                                Automatic           Range of x and y axes\n\
-AspectRatio      Real           1\n\
-ColorFunction    Function or String\n\
-                                Automatic           Null or None means \"white\"\n\
-Mesh             True or False  False               True to draw mesh\n\
+PlotRange        {min,max}, {prxy, prz}, or {prx, pry, prz}\n\
+                                  Automatic       depth of contours (prz) and PlotRange for x-y (prxy)\n\
+AspectRatio      Real             1\n\
+MeshRange        ({x1,xn},{y1,yn}} or {{x1,..,xn},{y1,..,y1n}}\n\
+                                  Automatic       Range of x and y axes\n\
+ColorFunction    Color scheme (Blue, Purple, Pink, Yellow, Green, Cyan),Function, or String\n\
+                                  Blue            Null or None means \"white\"\n\
+Mesh             True or False    False           True to draw mesh\n\
 MeshColor        Function or String\n\
-                                Automatic           Null or None to hide\n\
-ColorScale       True or False  True                displays a color scale on the right\n\
-Smoothing        integer >= 0   1                   number of linear interpolations\n\n\
+                                  Automatic       Null or None to hide\n\
+ColorScale       True or False    True            displays a color scale on the right\n\
+Smoothing        integer >= 0     1               number of linear interpolations\n\n\
 Example:\n\
    data = Table[Sin[x]/Cos[x^2 + y^2], {x, -2, 2, 0.1}, {y, -2, 2, 0.1}];\n\
    ListDensityPlot[data,PlotRange->{-5,5}, MeshRange->{{-2,2},{-2,2}}, FrameLabel->{\"x\",\"y\"}];\n\

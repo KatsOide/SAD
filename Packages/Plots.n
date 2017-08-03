@@ -6,7 +6,7 @@ Off[General::unprotconst];
 Unprotect[GoodnessOfFit,ChiSquare,ConfidenceInterval];
 On[General::unprotconst];
 SetAttributes[{Contours,MeshRange,ColorFunction,ColorFunctionScaling,
-  ContourColorFunction,ColorScale,Smoothing,Green,
+  ContourColorFunction,ColorScale,Smoothing,Blue,Green,Cyan,Yellow,Pink,Purple,
   MaxBend,PlotPoints,PlotDivision,FunctionLabel,ResultLabel,RaiseFit,
   Signal,GoodnessOfFit,ChiSquare,ConfidenceInterval,ColumnTags,MeshStyle,
   PlotStyle,Columns,ColumnOffset,Bins,BinRange,ColumnLabel,Mesh,MeshColor,
@@ -322,58 +322,6 @@ FitPlot[data_,fun_,x_,par0__]:=
       Show[g,g1,g3,Null@@opt]]}];
 SetAttributes[FitPlot,HoldRest];
 
-!CP$CSPosition[ar_]:={{Min[ar/2/GoldenRatio,1]-0.24,0},{Min[ar/2/GoldenRatio+1.28,1.9],1}}
-!CP$CSPosition[ar_]:={{Min[ar/2/GoldenRatio,1],0},{Min[ar/2/GoldenRatio,1],1+}}
-
-With[{def={PlotRange->Automatic,MeshRange->Default,
-  ColorFunction->Automatic,
-  ColorFunctionScaling->True,
-  ColorScale->True,
-  Smoothing->0,
-  DisplayFunction->Default,
-  AspectRatio->1,ContourColorFunction->Automatic,
-  Contours->10,Prolog->{},Epilog->{}},
-  ncs=16},
-
-  ListContourPlot[l0_,opt___]:=Module[{
-    gr,op,gs,prg,l=l0,
-    {pr,mr,lc,cf,cfs,cs,df,nc,ar,sm}={PlotRange,MeshRange,ContourColorFunction,
-      ColorFunction,ColorFunctionScaling,ColorScale,
-      DisplayFunction,Contours,AspectRatio,Smoothing}/.{opt}/.def},
-    Do[l=LDP$Smooth[l],{sm}];
-    Block[{nx,ny,mesh},
-      {nx,ny}=Dimensions[l];
-      {prg,pr}=CP$PlotRangeG[pr];
-      pr=CP$PlotRange[pr,l];
-      mr=mr/.Automatic->Default;
-      If[ListQ[mr] && sm,
-        Do[mr=LDP$Smooth1/@mr,{sm}]];
-      CP$DefMesh[mr];
-      Switch[cf,
-        _String,
-        cf=With[{cf},cf&],
-        Null|None|False,
-        cf="white"&,
-        Green,
-        cf=CP$ColorGreen,
-        Automatic,
-        cf=CP$Color
-        ];
-      Switch[lc,
-        _String,
-        lc=With[{lc},lc&],
-        Null|None|False,
-        lc=Null,
-        Automatic,
-        lc=CP$ContourColor[cf[#]]&];
-      gs=CP$ColorScale[cs,cf,cfs,pr,ar,ncs,opt];
-      op=Override[AspectRatio->ar,PlotRange->prg,
-        DataRange->Thread[{mesh[{1,1}],mesh[{nx,ny}]}],opt,def];
-      gr=Graphics[Flatten[{Prolog/.op,CP$FindContour[l,pr,nc,cf,cfs,lc],gs,Epilog/.op}],op];
-      ];
-    If[df===Default,Show[gr,op]];
-    gr]];
-
 CP$ColorScale[False,__]:=Unevaluated$[Null[]];
 CP$ColorScale[cs_,cf_,cfs_,pr_,ar_,ncs_,opt___]:=
   Module[{cr,dcr},
@@ -418,6 +366,54 @@ LDP$Smooth1[l_List]:=With[{l1=Rest[l]},
 LDP$Smooth1[Default]=Default;
 
 With[{def={PlotRange->Automatic,MeshRange->Default,
+  ColorFunction->Automatic,
+  ColorFunctionScaling->True,
+  ColorScale->True,
+  Smoothing->0,
+  DisplayFunction->Default,
+  AspectRatio->1,ContourColorFunction->Automatic,
+  Contours->10,Prolog->{},Epilog->{}},
+  ncs=16},
+
+  ListContourPlot[l0_,opt___]:=Module[{
+    gr,op,gs,prg,l=l0,
+    {pr,mr,lc,cf,cfs,cs,df,nc,ar,sm}={PlotRange,MeshRange,ContourColorFunction,
+      ColorFunction,ColorFunctionScaling,ColorScale,
+      DisplayFunction,Contours,AspectRatio,Smoothing}/.{opt}/.def},
+    Do[l=LDP$Smooth[l],{sm}];
+    Block[{nx,ny,mesh},
+      {nx,ny}=Dimensions[l];
+      mr=mr/.Automatic->Default;
+      If[ListQ[mr] && sm,
+        Do[mr=LDP$Smooth1/@mr,{sm}]];
+      CP$DefMesh[mr];
+      {prg,pr}=CP$PlotRangeG[pr];
+      pr=CP$PlotRange[pr,l];
+      Switch[cf,
+        _String,
+        cf=With[{cf},cf&],
+        Null|None|False,
+        cf="white"&,
+        _Symbol,
+        cf=CP$Color[cf]
+        ];
+      Switch[lc,
+        _String,
+        lc=With[{lc},lc&],
+        Null|None|False,
+        lc=Null,
+        Automatic,
+        lc=CP$ContourColor[cf[#]]&];
+      gs=CP$ColorScale[cs,cf,cfs,pr,ar,ncs,opt];
+      op=Override[AspectRatio->ar,PlotRange->prg,
+        DataRange->Thread[{mesh[{1,1}],mesh[{nx,ny}]}],opt,def];
+      gr=Graphics[Flatten[{Prolog/.op,CP$FindContour[l,pr,nc,cf,cfs,lc],gs,Epilog/.op}],op];
+      ];
+    If[df===Default,Show[gr,op]];
+    gr]];
+
+
+With[{def={PlotRange->Automatic,MeshRange->Default,
   ColorFunction->Automatic,DisplayFunction->Default,
   ColorFunctionScaling->True,
   Smoothing->1,
@@ -434,21 +430,19 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
     Do[l=LDP$Smooth[l],{sm}];
     Block[{nx,ny,mesh},
       {nx,ny}=Dimensions[l];
-      {prg,pr}=CP$PlotRangeG[pr];
-      pr=CP$PlotRange[pr,l];
       mr=mr/.Automatic->Default;
       If[ListQ[mr] && sm,
         Do[mr=LDP$Smooth1/@mr,{sm}]];
       DP$DefMesh[mr];
+      {prg,pr}=CP$PlotRangeG[pr];
+      pr=CP$PlotRange[pr,l];
       Switch[cf,
         _String,
         cf=cf&,
         Null|None|False,
         cf=Null,
-        Green,
-        cf=CP$ColorGreen,
-        Automatic,
-        cf=CP$Color
+        _Symbol,
+        cf=CP$Color[cf]
         ];
       Switch[mc,
         _String,
@@ -724,8 +718,13 @@ DP$Mesh1[x_,_]:=Module[{d=(Drop[x,-1]+Rest[x])/2},
 DP$Mesh1[{x1_,x2_},n_]:=(x1+(Range[0,n]-0.5)*(x2-x1)/(n-1));
 DP$Mesh1[{x1_,x1_},1]:={x1-0.5,x1+0.5};
 
-CP$Color[x_]:=RGBColor[Restrict[x*3-2,0,1],Restrict[x*3-1,0,1],Restrict[x*3,0,1]];
-CP$ColorGreen[x_]:=RGBColor[Restrict[x*3-1,0,1],Restrict[x*3,0,1],Restrict[x*3-2,0,1]];
+CP$Color[Blue][x_]  :=RGBColor[Restrict[x*3-2,0,1],Restrict[x*3-1,0,1],Restrict[x*3-0,0,1]];
+CP$Color[Green][x_] :=RGBColor[Restrict[x*3-1,0,1],Restrict[x*3-0,0,1],Restrict[x*3-2,0,1]];
+CP$Color[Pink][x_]  :=RGBColor[Restrict[x*3-0,0,1],Restrict[x*3-2,0,1],Restrict[x*3-1,0,1]];
+CP$Color[Cyan][x_]  :=RGBColor[Restrict[x*3-2,0,1],Restrict[x*3-0,0,1],Restrict[x*3-1,0,1]];
+CP$Color[Purple][x_]:=RGBColor[Restrict[x*3-1,0,1],Restrict[x*3-2,0,1],Restrict[x*3-0,0,1]];
+CP$Color[Yellow][x_]:=RGBColor[Restrict[x*3-0,0,1],Restrict[x*3-1,0,1],Restrict[x*3-2,0,1]];
+CP$Color[_][x_]     :=CP$Color[Blue][x];
 CP$ContourColor[x_String]:=RGBColor@@[{1,1,1}-
   {ToExpression["0x"//x[2,3]],ToExpression["0x"//x[4,5]],ToExpression["0x"//x[6,7]]}/255];
 
