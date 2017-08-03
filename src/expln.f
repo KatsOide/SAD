@@ -18,7 +18,7 @@
       type (sad_el), pointer :: el
       type (sad_comp), pointer :: cmp,cmps
       integer*4 idxl,isp0,i,iti,plen,orientation,
-     $     idxerr,n,j,hsrchz,idxe,lpname
+     $     idxerr,n,j,hsrchz,idxe,lpname,k
       integer*8 kp,idxpar,ia,idx0,idi
       real*8 frand
       idx0=idval(idxl)

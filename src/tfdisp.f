@@ -5,6 +5,7 @@
       use ffs_fit, only:scale
       use tffitcode
       use kyparam
+      use ffs_seg
       implicit none
       type (sad_comp), pointer:: cmp
       integer*4 idisp1,idisp2,lfno,mdisp,icolm,ifany,id0,id3,idstep,
@@ -138,7 +139,7 @@ c      write(*,*)'tfdisp ',word,wordp
         if(iele1(iele((l))) .gt. 0 .and.
      $       id .ne. icMARK .and. id .ne. 34)then
           if(ival(iele1(iele(l))) .gt. 0)then
-            vout=autofg(cmp%value(ival(iele1(iele(l)))),'10.7')
+            vout=autofg(tfvcmp(cmp,ival(iele1(iele(l)))),'10.7')
           else
             vout=' 0'
           endif
@@ -169,7 +170,7 @@ c      write(*,*)'tfdisp ',word,wordp
           if(kytbl(kwL,id) .eq. 0)then
             buff(49:58)=autofg(0.d0,'10.6')
           else
-            buff(49:58)=autofg(cmp%value(kytbl(kwL,id)),'10.6')
+            buff(49:58)=autofg(tfvcmp(cmp,kytbl(kwL,id)),'10.6')
           endif
           if(id .ne. 41 .and. id .ne. 42 .and. id .ne. 34)then
             buff(59:69)=' '//vout(1:10)
@@ -367,7 +368,7 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             if(kytbl(kwL,id) .eq. 0)then
               buff(51:58)=autofg(0.d0,'8.5')
             else
-              buff(51:68)=autofg(cmp%value(kytbl(kwL,id)),'8.5')
+              buff(51:68)=autofg(tfvcmp(cmp,kytbl(kwL,id)),'8.5')
             endif
             if(id .ne. 41 .and. id .ne. 42 .and. id .ne. 34)then
               buff(59:68)=vout(1:10)

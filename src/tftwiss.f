@@ -778,6 +778,7 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
           endif
           call qfracsave(lxp,dsave,nv,.false.)
           lv=itfdownlevel()
+          lv=itfdownlevel()
         endif
         call tforbitgeo(ogv,gv,cod(1),cod(2),cod(3),cod(4))
         kx%k=ktflist+ktfgeol(ogv)
@@ -821,6 +822,7 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
             cod(1:4)=vtwiss(mfitdx:mfitdpy)
           endif
           call qfracsave(lxp,dsave,nv,.false.)
+          lv=itfdownlevel()
           lv=itfdownlevel()
         endif
         call tforbitgeo(ogv,gv,cod(1),cod(2),cod(3),cod(4))
