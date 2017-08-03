@@ -6,7 +6,7 @@ Off[General::unprotconst];
 Unprotect[GoodnessOfFit,ChiSquare,ConfidenceInterval];
 On[General::unprotconst];
 SetAttributes[{Contours,MeshRange,ColorFunction,ColorFunctionScaling,
-  ContourColorFunction,ColorScale,Smoothing,Gold,
+  ContourColorFunction,ColorScale,Smoothing,Green,
   MaxBend,PlotPoints,PlotDivision,FunctionLabel,ResultLabel,RaiseFit,
   Signal,GoodnessOfFit,ChiSquare,ConfidenceInterval,ColumnTags,MeshStyle,
   PlotStyle,Columns,ColumnOffset,Bins,BinRange,ColumnLabel,Mesh,MeshColor,
