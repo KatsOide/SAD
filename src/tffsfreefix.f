@@ -1,4 +1,4 @@
-      subroutine tffsfreefix(frefix,nvar,ntouch,lfno)
+      subroutine tffsfreefix(frefix,nvar,lfno)
       use tfstk
       use ffs, only:nve,nele,nlat
       use ffs_pointer
@@ -6,9 +6,10 @@
       use tffitcode
       use mackw
       use tfcsi,only:cssetp
+      use tflinepcom, only:tftouch
       implicit none
       integer*8 kal
-      integer*4 nvar,lfno,l,ntouch,ifany,
+      integer*4 nvar,lfno,l,ifany,
      $     i,j,k,it,iv,ivi,next,itk,ivk,lenw,kk,jj,ivck,
      $     irtc,nl,kkk
       logical*4 frefix,tmatch,wild,found,comp,temat
@@ -195,15 +196,7 @@ c     where klp(iele1(k)) == k
           else
             valvar2(i,2)=valvar2(i,1)
             if(.not. comp)then
-              do j=1,ntouch
-                if(itouchele(j) .eq. kk .and.
-     $               itouchv(j) .eq. ivi)then
-                  go to 10
-                endif
-              enddo
-              ntouch=ntouch+1
-              itouchele(ntouch)=kk
-              itouchv(ntouch)=ivi
+              call tftouch(kk,ivi)
             endif
           endif
 c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)

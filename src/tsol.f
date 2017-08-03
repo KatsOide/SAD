@@ -9,11 +9,12 @@
      $     only:idelc,direlc,elatt,idtypec,idvalc,pnamec,lpnamec
       use sad_main
       use tparastat
+      use ffs_seg
       implicit none
       real*8 conv
       parameter (conv=3.d-16)
       type (sad_comp), pointer::cmp
-      type (sad_rlist), pointer :: lal
+      type (sad_dlist), pointer :: lsegp
       integer*4 la1,la
       parameter (la1=15)
       integer*4 k,kbz,np
@@ -85,7 +86,7 @@
         lt=idtypec(l)
         lp=elatt%comp(l)
         call loc_comp(lp,cmp)
-        seg=tcheckseg(cmp,lt,al,lal,irtc)
+        seg=tcheckseg(cmp,lt,al,lsegp,irtc)
         if(irtc .ne. 0)then
           call tffserrorhandle(l,irtc)
           return
@@ -140,7 +141,7 @@
             call tdrift_solenoid(np,x,px,y,py,z,g,dv,pz,al,bzs)
           endif
         case (icBEND)
-          if(cmp%update .eq. 0)then
+          if(iand(cmp%update,1) .eq. 0)then
             call tpara(cmp)
           endif
           al=cmp%value(ky_L_BEND)
@@ -153,7 +154,7 @@
      $         .and. cmp%value(ky_RAD_BEND) .eq. 0.d0
           call tdrift(np,x,px,y,py,z,g,dv,pz,al,bzs,phiy,phix)
         case(icQUAD)
-          if(cmp%update .eq. 0)then
+          if(iand(cmp%update,1) .eq. 0)then
             call tpara(cmp)
           endif
           al=cmp%value(ky_L_QUAD)
@@ -180,7 +181,7 @@
           endif
           if(seg)then
             call tmultiseg(np,x,px,y,py,z,g,dv,pz,
-     $           l,cmp,lal,bzs,rtaper,n,latt,kptbl)
+     $           l,cmp,lsegp,bzs,rtaper,n,latt,kptbl)
           else
             call tmulti1(np,x,px,y,py,z,g,dv,pz,
      $           l,cmp,bzs,rtaper,n,latt,kptbl)

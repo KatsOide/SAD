@@ -122,7 +122,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      tgetfv.o    thess.o     tins.o     tinse.o \
      tlum.o      tmov.o       tmulbs.o   tmulte.o \
      tmulti.o    tmulta.o    tdrift.o     trackd.o \
-     tmultr.o    tnorm.o     tpara.o      tqr.o \
+     tmultr.o    tnorm.o     tqr.o \
      tqrad.o     tquade.o    tquads.o     tquase.o   track.o \
      tracka.o    trade.o     tsconv.o     tsgeo.o \
      tshow.o     tsol.o      tsole.o      tsolvg.o \

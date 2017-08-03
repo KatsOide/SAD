@@ -4,6 +4,7 @@
       use ffs_pointer
       use tffitcode
       use tfcsi,only:cssetp
+      use ffs_seg
       implicit none
       type (sad_descriptor) kx
       type (sad_list), pointer :: kli

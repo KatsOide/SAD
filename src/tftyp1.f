@@ -6,11 +6,14 @@
       use tffitcode
       use sad_main
       use mackw
+      use strbuf
       implicit none
       type (sad_comp) , pointer ::cmp
-      type (sad_rlist), pointer :: klv
+      type (sad_dlist), pointer :: klv
+      type (sad_strbuf), pointer :: strb
       integer*8 lp
-      integer*4 ioff,kx,l,kp,lt,lfno,lv,lene,lenw,lpw,lpname,i
+      integer*4 ioff,kx,l,kp,lt,lfno,lv,lene,lenw,lpw,lpname,
+     $     irtc,nc,j,j1
       real*8 v,coeff
       character*32 autos
       character*132 vout
@@ -93,37 +96,35 @@
               call twbuf(vout,lfno,10,lpw-2,5,1)
             endif
           endif
-        else
-          if(tfreallistq(cmp%dvalue(ioff),klv))then
-            do i=1,klv%nl
-              if(i .eq. 1)then
-                if(start)then
-                  vout=pname(kp)(1:max(8,lpname(kp)))//
-     $                 '=('//kw(1:lenw(kw))//' ={'//
-     $                 autos(klv%rbody(i)*coeff)
-                else
-                  vout=kw(1:lenw(kw))//' ={'//
-     $                 autos(klv%rbody(i)*coeff)
-                endif
+        elseif(ioff .eq. kytbl(kwPROF,lt))then
+          if(tflistq(cmp%dvalue(ioff),klv))then
+            if(start)then
+              vout=pname(kp)(1:max(8,lpname(kp)))//
+     $             '=('//kw(1:lenw(kw))//' ='
+            else
+              vout='  '//kw(1:lenw(kw))//' ='
+            endif
+            if(start)then
+              call twbuf(vout,lfno,7,lpw-2,7,1)
+              start=.false.
+            else
+              call twbuf(vout,lfno,10,lpw-2,1,1)
+            endif
+            call getstringbuf(strb,0,.true.)
+            call tfconvstrb(strb,cmp%dvalue(ioff),nc,
+     $           .false.,.false.,-1,'*',irtc)
+            j=1
+            do while(j .le. nc)
+              j1=index(strb%str(j:nc),',')
+              if(j1 .eq. 0)then
+                call twbuf(strb%str(j:nc),lfno,10,lpw-2,1,1)
+                j=nc+1
               else
-                vout=autos(klv%rbody(i)*coeff)
+                call twbuf(strb%str(j:j+j1-1),lfno,10,lpw-2,1,1)
+                j=j+j1
               endif
-              lv=lene(vout)
-              if(i .ne. klv%nl)then
-                vout(lv+1:lv+1)=','
-              else
-                vout(lv+1:lv+1)='}'
-              endif
-              if(start)then
-                call twbuf(vout,lfno,7,lpw-2,7,1)
-                start=.false.
-              elseif(i .eq. 1)then
-                call twbuf(vout,lfno,10,lpw-2,5,1)
-              else
-                call twbuf(vout,lfno,10,lpw-2,1,1)
-              endif
-            enddo
-            call twbuf(unit(1:lene(unit)),lfno,10,lpw-2,1,1)
+            enddo                
+            call tfreestringbuf(strb)
           endif
         endif
       enddo

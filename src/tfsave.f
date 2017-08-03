@@ -1,15 +1,16 @@
-      subroutine tfsave(word,cmd0,ntouch)
+      subroutine tfsave(word,cmd0,ntou)
       use kyparam
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
       use tfcsi,only:cssetp
+      use ffs_seg
       implicit none
       type (sad_comp), pointer ::cmp,cmpd
       integer*8 j
       integer*4 i,l,lt,next,itfdownlevel
-      integer*4 ntouch
+      integer*4 ntou
       character*(*) word
       logical*4 cmd,cmd0,exist,tmatch,exist1,all
       call tfsetparam
@@ -45,7 +46,7 @@
           if(all)then
             call tfvcopycmpall(cmp,cmpd,kytbl(kwMAX,lt)-1)
           endif
-          call tfsavevar(i,ntouch)
+          call tfsavevar(i,ntou)
           if(lt .eq. icMARK)then
             if(l .eq. 1)then
 c              do 30 k=1,ntwissfun
@@ -79,7 +80,6 @@ c     $             rlist(j+1),rlist(j+4)
             rlist(j+ky_EMIY_MARK)=emy
             rlist(j+ky_DP_MARK)=dpmax
           elseif(ival(i) .gt. 0)then
-c            write(*,*)'tfsave ',l,errk(1,l)
             call tfvcopycmp(cmp,cmpd,ival(i),1.d0/errk(1,l))
 c            rlist(j+ival(i))=cmp%value(ival(i))/errk(1,l)
           endif
@@ -105,17 +105,17 @@ c            rlist(j+ival(i))=cmp%value(ival(i))/errk(1,l)
       return
       end
 
-      subroutine tfrst(word,cmd0,nvar,ntouch)
+      subroutine tfrst(word,cmd0)
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
       use tfcsi,only:cssetp
+      use ffs_seg
       implicit none
       type (sad_comp), pointer :: cmp,cmps
       integer*8 j
       integer*4 l,i,lt,k,next,itfdownlevel
-      integer*4 nvar,ntouch
       character*(*) word
       logical*4 cmd,cmd0,exist,tmatch,exist1,all
       call tfsetparam
@@ -150,6 +150,7 @@ c            rlist(j+ival(i))=cmp%value(ival(i))/errk(1,l)
           endif
           lt=idtypec(l)
           call compelc(l,cmp)
+          cmp%update=0
           j=idvalc(l)
           call loc_comp(j,cmps)
           if(lt .eq. icMARK)then
@@ -160,13 +161,13 @@ c            rlist(j+ival(i))=cmp%value(ival(i))/errk(1,l)
             if(all)then
               call tfvcopycmpall(cmps,cmp,kytbl(kwMAX,lt)-1)
             endif
-            do k=1,nvar
+            do k=1,flv%nvar
               if(ivarele(k) .eq. i)then
                 valvar(k)=tfvalvar(l,ivvar(k))
 c                valvar(k)=rlist(j+ivvar(k))
               endif
             enddo
-            do k=1,ntouch
+            do k=1,flv%ntouch
               if(itouchele(k) .eq. i)then
                 call tfvcopycmp(cmps,cmp,itouchv(k),1.d0)
 c                cmp%value(itouchv(k))=rlist(j+itouchv(k))
@@ -196,8 +197,8 @@ c              cmp%value(ival(i))=rlist(j+ival(i))*errk(1,l)
           go to 1
         endif
       endif
- 9000 call tffsadjust(ntouch)
-      call tfinitvar(nvar)
+ 9000 call tffsadjust
+      call tfinitvar
       return
       end
 
@@ -206,6 +207,7 @@ c              cmp%value(ival(i))=rlist(j+ival(i))*errk(1,l)
       use ffs
       use ffs_pointer
       use tffitcode
+      use ffs_seg
       implicit none
       type (sad_comp), pointer :: cmp,cmps
       integer*8 j
@@ -216,6 +218,10 @@ c              cmp%value(ival(i))=rlist(j+ival(i))*errk(1,l)
         call compelc(l,cmp)
         call loc_comp(j,cmps)
         call tfvcopycmpall(cmps,cmp,kytbl(kwMAX,lt)-1)
+        cmp%update=0
+        if(ival(l) .gt. 0)then
+          cmp%value(ival(l))=cmp%value(ival(l))*errk(1,l)
+        endif
 c        cmp%value(1:kytbl(kwMAX,lt)-1)=
 c     $       rlist(j+1:j+kytbl(kwMAX,lt)-1)
       enddo

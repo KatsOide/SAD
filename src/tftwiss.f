@@ -1,214 +1,3 @@
-      module tflinepcom
-      use tfstk
-      implicit none
-      integer*8, save :: iflinep=0,ifinitlinep=0,ifelementp=0,
-     $     ifelementkeyp=0,iftypekeyp=0
-      type (sad_descriptor) ksdumm
-
-      contains
-
-      integer*4 function itftypekey(i,word1,lw1)
-      use tfstk
-      implicit none
-      type (sad_descriptor) kx,ks
-      integer*4 i,isp0,lw1,irtc
-      character*(lw1) word1
-      isp0=isp
-      ktastk(isp0+1)=iftypekeyp
-      rtastk(isp0+2)=dble(i)
-      isp=isp0+3
-      ks=kxsalocb(-1,word1,lw1)
-      dtastk(isp)=ks
-      levele=levele+1
-      call tfefunref(isp0+1,kx,.false.,irtc)
-      call tfconnect(kx,irtc)
-      isp=isp0
-      if(irtc .ne. 0)then
-        call tfreseterror
-        itftypekey=0
-      elseif(.not. ktfrealq(kx))then
-        itftypekey=0
-      else
-        itftypekey=ifromd(kx)
-      endif        
-      return
-      end function
-
-      integer*4 function itfelementkey(i,word1,lw1)
-      use tfstk
-      implicit none
-      type (sad_descriptor) kx,ks
-      integer*4 i,isp0,lw1,irtc
-      character*(lw1) word1
-      isp0=isp
-      ktastk(isp0+1)=ifelementkeyp
-      rtastk(isp0+2)=dble(i)
-      isp=isp0+3
-      ks=kxsalocb(-1,word1,lw1)
-      dtastk(isp)=ks
-      levele=levele+1
-      call tfefunref(isp0+1,kx,.false.,irtc)
-      call tfconnect(kx,irtc)
-      isp=isp0
-      if(irtc .ne. 0)then
-        call tfreseterror
-        itfelementkey=0
-      elseif(.not. ktfrealq(kx))then
-        itfelementkey=0
-      else
-        itfelementkey=ifromd(kx)
-      endif        
-      return
-      end function
-
-      subroutine tftypekey(isp1,kx,irtc)
-      use tfstk
-      use maccbk
-      use maccode
-      use mackw
-      implicit none
-      type (sad_descriptor) kx
-      real*8 c
-      integer*4 ic,isp0,isp1,irtc,itfmessage
-      if(isp .ne. isp1+1)then
-        irtc=itfmessage(9,'General::narg','"1"')
-        return
-      endif
-      if(.not. ktfrealq(dtastk(isp),c))then
-        irtc=itfmessage(9,'General::wrongtype',
-     $       '"Typecode for #1"')
-        return
-      endif
-      ic=int(c)
-      if(ic .lt. 0 .or. ic .gt. icMXEL)then
-        irtc=itfmessage(9,'General::wrongval',
-     $       '"Typecode out of range"')
-        return
-      endif
-      isp0=isp
-      call tftypekeystk(ic,.true.)
-      kx=kxmakelist(isp0)
-      isp=isp0
-      irtc=0
-      return
-      end subroutine
-
-      subroutine tftypekeystk(ic,all)
-      use tfstk
-      use mackw
-      implicit none
-      type (sad_descriptor) kx
-      integer*4 ic,lenw,i
-      logical*4 all
-      character*(MAXPNAME) key,tfkwrd,tfkwrd1
-      do i=1,kytbl(kwMAX,ic)-1
-        key=tfkwrd(ic,i)
-        if(all .or. key .ne. '-')then
-          isp=isp+1
-          if(key .eq. '-')then
-            dtastk(isp)=ksdumm
-          else
-            dtastk(isp)=kxsalocb(-1,key,lenw(key))
-            if(kyindex1(i,ic) .ne. 0)then
-              key=tfkwrd1(ic,i)
-              isp=isp+1
-              dtastk(isp)=kxsalocb(-1,key,lenw(key))
-              kx=kxmakelist(isp-2)
-              isp=isp-1
-              dtastk(isp)=kx
-            endif
-          endif
-        endif
-      enddo
-      return
-      end subroutine
-
-      type (sad_descriptor) function tfkeyv(i,keyword,ia,cmp,saved)
-      use tfstk
-      use ffs
-      use tffitcode
-      use ffs_pointer, only:idelc,elatt,idtypec,idvalc,sad_comp,
-     $     compelc
-      implicit none
-      type (sad_rlist), pointer :: kld,klr
-      integer*4 i,it,kl,l,j,lk,lenw
-      integer*8 ia
-      character*(*) keyword
-      character*128 key
-      logical*4 saved,sum
-      real*8 s
-      type (sad_comp), pointer :: cmp
-c     begin initialize for preventing compiler warning
-      kl=0
-c     end   initialize for preventing compiler warning
-      if(i .gt. 0)then
-        call compelc(i,cmp)
-      else
-        kl=ilist(-i,ifklp)
-        call compelc(kl,cmp)
-      endif
-      sum=.false.
-      lk=lenw(keyword)
-      if(lk .gt. 4 .and. keyword(lk-3:lk) .eq. '$SUM')then
-        sum=.true.
-        lk=lk-4
-      endif
-      key(1:lk)=keyword(1:lk)
-      it=idtype(cmp%id)
-      do l=1,kytbl(kwMAX,it)-1
-        j=kyindex(l,it)
-        if(j .gt. 0)then
-          if(pname(kytbl(j,0))(2:) .eq. key(1:lk))then
-            go to 1
-          endif
-          j=kyindex1(l,it)
-          if(j .gt. 0)then
-            if(pname(kytbl(j,0))(2:) .eq. key(1:lk))then
-              go to 1
-            endif
-          endif
-        endif
-      enddo
-      ia=0
-      tfkeyv%k=0
-      return
- 1    if(i .gt. 0)then
-        ia=elatt%comp(i)+l
-        tfkeyv=dlist(ia)
-      elseif(saved)then
-        ia=idvalc(kl)+l
-        tfkeyv=dlist(ia)
-      else
-        ia=elatt%comp(kl)+l
-        if(l .eq. ilist(-i,ifival))then
-          if(tfreallistq(dlist(ia),klr))then
-            tfkeyv=kxavaloc(-1,klr%nl,kld)
-            kld%rbody(1:klr%nl)=klr%rbody(1:klr%nl)
-     $           /rlist(iferrk+(kl-1)*2)
-c            write(*,*)'tfkeyv ',i,l,ia,l,kl,ilist(-i,ifival),
-c     $           klr%nl,rlist(iferrk+(kl-1)*2)
-c            call tfdebugprint(dlist(ia),'tfkeyv-s',1)
-c            call tfdebugprint(tfkeyv,'tfkeyv-d',2)
-c          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
-          else
-            tfkeyv=dlist(ia)
-          endif
-        else
-          tfkeyv=dlist(ia)
-        endif
-      endif
-      if(sum .and. tfreallistq(tfkeyv,klr))then
-        s=klr%rbody(1)
-        do i=2,klr%nl
-          s=s+klr%rbody(i)
-        enddo
-        tfkeyv=dfromr(s)
-      endif
-      return
-      end function
-
-      end module
-
       subroutine tftwiss(isp1,kx,ref,irtc)
       use tfstk
       use ffs
@@ -509,7 +298,7 @@ c     $             itastk(2,isp),vstk2(isp)
         if(narg .ne. 1)then
           go to 9010
         endif
-        call tffsadjust(flv%ntouch)
+        call tffsadjust
         kx%k=ktfoper+mtfnull
       else
         if(narg .gt. 2)then
@@ -629,7 +418,7 @@ c     $             itastk(2,isp),vstk2(isp)
       elseif(keyword .eq. 'POSITION')then
         kx=dfromr(dble(it))
       else
-        kx=tfkeyv(-it,keyword,iax,cmp,saved)
+        kx=tfkeyv(-it,keyword,iax,cmp,ref,saved)
         if(.not. ref)then
           kx%k=ktfref+iax
           if(.not. saved)then
@@ -777,7 +566,8 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
       use tfstk
       use ffs
       use tffitcode
-      use ffs_pointer, only:latt,idelc,idtypec,pnamec,compelc,direlc
+      use ffs_pointer, only:latt,idelc,idtypec,pnamec,compelc,
+     $     direlc
       use sad_main
       use tflinepcom
       implicit none
@@ -877,25 +667,27 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
         else
           lt=idtypec(lxp)
           call compelc(lxp,cmp)
-          nv=kytbl(kwMAX,lt)-1
-          dsave(1:nv)=cmp%dvalue(1:nv)
-c          call tmov(rlist(latt(lxp)+1),dsave,nv)
+          call qfracsave(lxp,dsave,nv,.true.)
           levele=levele+1
-          call qfracseg(cmp,0.d0,fr,dsave,chg)
-c          call qfraccomp(lxp,0.d0,fr,.false.,chg)
-          if(chg)then
-            geo1=rlist(j+1:j+12)
-            pos0=rlist(ifpos+lxp)
-            gam0=rlist(ifgamm+lxp)
-            call tfgeo1(lxp,lxp+1,.true.,.false.)
-            kax=ktfgeol(rlist(j+12))
-            rlist(ifgamm+lxp)=gam0
-            rlist(j+1:j+12)=geo1
-            rlist(ifpos+lxp)=pos0
+          call qfracseg(cmp,cmp,0.d0,fr,chg,irtc)
+          if(irtc .ne. 0)then
+            call tffserrorhandle(lxp,irtc)
+            kax=ktfgeol(rlist(j))
           else
-            kax=ktfgeol(rlist(j+12))
+            if(chg)then
+              geo1=rlist(j+1:j+12)
+              pos0=rlist(ifpos+lxp)
+              gam0=rlist(ifgamm+lxp)
+              call tfgeo1(lxp,lxp+1,.true.,.false.)
+              kax=ktfgeol(rlist(j+12))
+              rlist(ifgamm+lxp)=gam0
+              rlist(j+1:j+12)=geo1
+              rlist(ifpos+lxp)=pos0
+            else
+              kax=ktfgeol(rlist(j+12))
+            endif
           endif
-          cmp%dvalue(1:nv)=dsave(1:nv)
+          call qfracsave(lxp,dsave,nv,.false.)
           lv=itfdownlevel()
 c          call tmov(vsave,rlist(latt(lxp)+1),nv)
         endif
@@ -912,26 +704,27 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
         else
           lt=idtypec(lxp)
           call compelc(lxp,cmp)
-          nv=kytbl(kwmax,lt)-1
-          dsave(1:nv)=cmp%dvalue(1:nv)
-c          call tmov(rlist(latt(lxp)+1),dsave,nv)
           levele=levele+1
-          call qfracseg(cmp,0.d0,fr,dsave,chg)
-c          call qfraccomp(lxp,0.d0,fr,.false.,chg)
-          if(chg)then
-            call tmov(rlist(j+12),geo1,12)
-            pos0=rlist(ifpos+lxp)
-            gam0=rlist(ifgamm+lxp)
-c            write(*,*)'tftwiss-gx ',lxp,v,ia
-            call tfgeo1(lxp,lxp+1,.true.,.false.)
-            call tmov(rlist(j+12),gv,12)
-            rlist(ifgamm+lxp)=gam0
-            call tmov(geo1,rlist(j+12),12)
-            rlist(ifpos+lxp)=pos0
+          call qfracsave(lxp,dsave,nv,.true.)
+          call qfracseg(cmp,cmp,0.d0,fr,chg,irtc)
+          if(irtc .ne. 0)then
+            call tffserrorhandle(lxp,irtc)
           else
-            call tmov(rlist(j+12),gv,12)
+            if(chg)then
+              call tmov(rlist(j+12),geo1,12)
+              pos0=rlist(ifpos+lxp)
+              gam0=rlist(ifgamm+lxp)
+c     write(*,*)'tftwiss-gx ',lxp,v,ia
+              call tfgeo1(lxp,lxp+1,.true.,.false.)
+              call tmov(rlist(j+12),gv,12)
+              rlist(ifgamm+lxp)=gam0
+              call tmov(geo1,rlist(j+12),12)
+              rlist(ifpos+lxp)=pos0
+            else
+              call tmov(rlist(j+12),gv,12)
+            endif
           endif
-          cmp%dvalue(1:nv)=dsave(1:nv)
+          call qfracsave(lxp,dsave,nv,.false.)
           lv=itfdownlevel()
 c          call tmov(vsave,rlist(latt(lxp)+1),nv)
         endif
@@ -962,29 +755,28 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
         else
           lt=idtypec(lxp)
           call compelc(lxp,cmp)
-          nv=kytbl(kwmax,lt)-1
-          dsave(1:nv)=cmp%dvalue(1:nv)
-c          call tmov(rlist(latt(lxp)+1),vsave,nv)
           levele=levele+1
-          call qfracseg(cmp,0.d0,fr,dsave,chg)
-c          call qfraccomp(lxp,0.d0,fr,.false.,chg)
-          if(chg)then
-            call tmov(rlist(j+12),geo1,12)
-            pos0=rlist(ifpos+lxp)
-            gam0=rlist(ifgamm+lxp)
-            call tfgeo1(lxp,lxp+1,.true.,.false.)
-            call tmov(rlist(j+12),gv,12)
-            rlist(ifgamm+lxp)=gam0
-            call tmov(geo1,rlist(j+12),12)
-            rlist(ifpos+lxp)=pos0
+          call qfracsave(lxp,dsave,nv,.true.)
+          call qfracseg(cmp,cmp,0.d0,fr,chg,irtc)
+          if(irtc .ne. 0)then
+            call tffserrorhandle(lxp,irtc)
           else
-            call tmov(rlist(j+12),gv,12)
+            if(chg)then
+              call tmov(rlist(j+12),geo1,12)
+              pos0=rlist(ifpos+lxp)
+              gam0=rlist(ifgamm+lxp)
+              call tfgeo1(lxp,lxp+1,.true.,.false.)
+              call tmov(rlist(j+12),gv,12)
+              rlist(ifgamm+lxp)=gam0
+              call tmov(geo1,rlist(j+12),12)
+              rlist(ifpos+lxp)=pos0
+            else
+              call tmov(rlist(j+12),gv,12)
+            endif
+            call qtwissfrac(vtwiss,lxp,fr,over)
+            cod(1:4)=vtwiss(mfitdx:mfitdpy)
           endif
-          cmp%dvalue(1:nv)=dsave(1:nv)
-c          call tmov(vsave,rlist(latt(lxp)+1),nv)
-          call qtwissfrac(vtwiss,lxp,fr,over)
-          cod(1:4)=vtwiss(mfitdx:mfitdpy)
-c          call tmov(vtwiss(mfitdx),cod,4)
+          call qfracsave(lxp,dsave,nv,.false.)
           lv=itfdownlevel()
         endif
         call tforbitgeo(ogv,gv,cod(1),cod(2),cod(3),cod(4))
@@ -1007,28 +799,28 @@ c          call tmov(vtwiss(mfitdx),cod,4)
           lt=idtypec(lxp)
           call compelc(lxp,cmp)
           nv=kytbl(kwmax,lt)-1
-          dsave(1:nv)=cmp%dvalue(1:nv)
-c          call tmov(rlist(latt(lxp)+1),vsave,nv)
           levele=levele+1
-          call qfracseg(cmp,0.d0,fr,dsave,chg)
-c          call qfraccomp(lxp,0.d0,fr,.false.,chg)
-          if(chg)then
-            call tmov(rlist(j+12),geo1,12)
-            pos0=rlist(ifpos+lxp)
-            gam0=rlist(ifgamm+lxp)
-            call tfgeo1(lxp,lxp+1,.true.,.false.)
-            call tmov(rlist(j+12),gv,12)
-            rlist(ifgamm+lxp)=gam0
-            call tmov(geo1,rlist(j+12),12)
-            rlist(ifpos+lxp)=pos0
+          call qfracsave(lxp,dsave,nv,.true.)
+          call qfracseg(cmp,cmp,0.d0,fr,chg,irtc)
+          if(irtc .ne. 0)then
+            call tffserrorhandle(lxp,irtc)
           else
-            call tmov(rlist(j+12),gv,12)
+            if(chg)then
+              call tmov(rlist(j+12),geo1,12)
+              pos0=rlist(ifpos+lxp)
+              gam0=rlist(ifgamm+lxp)
+              call tfgeo1(lxp,lxp+1,.true.,.false.)
+              call tmov(rlist(j+12),gv,12)
+              rlist(ifgamm+lxp)=gam0
+              call tmov(geo1,rlist(j+12),12)
+              rlist(ifpos+lxp)=pos0
+            else
+              call tmov(rlist(j+12),gv,12)
+            endif
+            call qtwissfrac(vtwiss,lxp,fr,over)
+            cod(1:4)=vtwiss(mfitdx:mfitdpy)
           endif
-          cmp%dvalue(1:nv)=dsave(1:nv)
-c          call tmov(vsave,rlist(latt(lxp)+1),nv)
-          call qtwissfrac(vtwiss,lxp,fr,over)
-          cod(1:4)=vtwiss(mfitdx:mfitdpy)
-c          call tmov(vtwiss(mfitdx),cod,4)
+          call qfracsave(lxp,dsave,nv,.false.)
           lv=itfdownlevel()
         endif
         call tforbitgeo(ogv,gv,cod(1),cod(2),cod(3),cod(4))
@@ -1074,7 +866,7 @@ c          call tmov(vtwiss(mfitdx),cod,4)
         endif
       else
         if(ia .lt. nlat)then
-          kx=tfkeyv(int(ia),keyword,ip,cmp,.false.)
+          kx=tfkeyv(int(ia),keyword,ip,cmp,ref,.false.)
           if(.not. ref)then
             cmp%update=0
             kx%k=ktfref+ip

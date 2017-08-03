@@ -358,6 +358,9 @@ c     call tfsetlastp(ip+m-1)
         integer*8 ka,ix,ik,ik0,ip,ix1
         integer*4 m,mx
         m=ilist(1,ka-1)
+        if(ka .gt. 577719944 .and. ka .lt. 577719964)then
+          write(*,*)'tfree ',ka,m
+        endif
         if(m .lt. 4)then
           if(m .ne. 0)then
             write(*,*)'tfree-too small segment: ',ka,m
@@ -690,7 +693,8 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
 
       interface descr_sad
         module procedure descr_list,descr_sym,descr_string,
-     $     descr_pat,descr_obj,descr_complex,descr_symdef
+     $     descr_pat,descr_obj,descr_complex,descr_symdef,
+     $     descr_dlist,descr_rlist
       end interface
 
       interface ktfaddr
@@ -785,6 +789,10 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
 
       interface tfgetdefargp
         module procedure tfgetdefargp_list,tfgetdefargp_dlist
+      end interface
+
+      interface ktfstringq
+        module procedure ktfstringqk,ktfstringqd
       end interface
 
       contains
@@ -1414,16 +1422,16 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         return
         end function ktfnonoperqd
 
-        logical*4 function ktfstringq(k,str)
+        logical*4 function ktfstringqk(k,str)
         implicit none
         type (sad_string), pointer, optional, intent(out) :: str
         integer*8 k
-        ktfstringq=iand(ktfmask,k) .eq. ktfstring
-        if(present(str) .and. ktfstringq)then
+        ktfstringqk=iand(ktfmask,k) .eq. ktfstring
+        if(present(str) .and. ktfstringqk)then
           call loc_string(ktfaddr(k),str)
         endif
         return
-        end function ktfstringq
+        end function ktfstringqk
 
         logical*4 function ktfstringqd(k,str)
         implicit none

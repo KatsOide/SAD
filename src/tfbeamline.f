@@ -154,7 +154,7 @@
       implicit none
       type (sad_descriptor) kx,kr
       type (sad_dlist), pointer :: klxi,klx
-      integer*8 ka1,kas,kdx1
+      integer*8 ka1,kas,kdx1,ktcaloc
       integer*4 isp1,irtc,nc,lenw,narg,idx,itype,
      $     idt,n,i,nce,m,hsrchz,isp0, itfmessage,
      $     itfdownlevel,l
@@ -168,7 +168,6 @@
       narg=isp-isp1
       idx=hsrchz(ename)
       itype=idtype(idx)
-c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
       if(narg .le. 1)then
         if(itype .eq. icNULL)then
           type=' '
@@ -205,11 +204,11 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
             idtype(idx)=itype
             if(itype .ne. icNULL)then
               n=kytbl(kwMAX,itype)
-              kdx1=ktaloc(n+1)
+              kdx1=ktcaloc(n+1)
               idval(idx)=kdx1
+              ilist(2,kdx1-1)=idx
               ilist(1,kdx1)=n
               ilist(2,kdx1)=0
-              rlist(kdx1+1:kdx1+n)=0.d0
             endif
           elseif(idval(idt) .ne. itype)then
             irtc=itfmessage(9,'FFS::equaltype',
@@ -260,7 +259,7 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
               dtastk(isp)=kxadaloc(-1,2,klxi)
               klxi%head%k=ktfoper+mtfrule
               klxi%dbody(1)=kxsalocb(0,key,lenw(key))
-              klxi%dbody(2)=dlist(idval(idx)+i)
+              klxi%dbody(2)=dtfcopy(dlist(idval(idx)+i))
             endif
           enddo
           klx%dbody(3)=dtfcopy1(kxmakelist(isp0))
@@ -320,13 +319,17 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
               return
             endif
           endif
-          if(ktfnonrealq(kv) .and. tfnonreallistq(kv))then
+          if(ktfrealq(kv))then
+            call tflocald(dlist(idval(idx)+ioff))
+            dlist(idval(idx)+ioff)=kv
+          elseif(tfnonlistq(kv))then
             irtc=itfmessage(9,'General::wrongtype',
      $           '"Keyword -> value"')
             return
+          else
+            call tflocald(dlist(idval(idx)+ioff))
+            dlist(idval(idx)+ioff)=dtfcopy(kv)
           endif
-          call tflocald(dlist(idval(idx)+ioff))
-          dlist(idval(idx)+ioff)=dtfcopy(kv)
         endif
       else
         irtc=itfmessage(9,'General::wrongtype',

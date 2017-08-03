@@ -405,7 +405,6 @@ c          write(*,*)'tfcheck-1 ',modethrow,irtc
       use tfstk
       implicit none
       integer*4 l,irtc
-      character*2 ord
       call tferrorhandle(dble(l),irtc)
       call tfreseterror
       return

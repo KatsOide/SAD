@@ -6,6 +6,7 @@
       use tffitcode
       use sad_main
       use ffs_pointer, only:elatt
+      use tparastat
       implicit none
       type (sad_descriptor) kx
       integer*8 ikptbl,ig,ipz,ix,ixx,iy,iyy,iz,izz,ifz,imt,kzx,

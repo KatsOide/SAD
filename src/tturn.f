@@ -31,7 +31,7 @@
       integer*4 np,n,la,ls,nvar,lb,le
 c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
       real*8 pgev00
-      integer*4 kptbl(np0,6),lv,itfdownlevel
+      integer*4 kptbl(np0,6),lv,itfdownlevel,irtc
       integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       real*8 sa(6),ss(6,6)
@@ -52,11 +52,15 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
       endif
       levele=levele+1
       if(fbound%lb .eq. fbound%le)then
-        call qfracsave(fbound%lb,dsave,nvar,.true.)
         call compelc(fbound%lb,cmp)
-        call qfracseg(cmp,fbound%fb,fbound%fe,dsave,chg)
-        call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
-     $       sol,la,fbound%lb,fbound%lb)
+        call qfracsave(fbound%lb,dsave,nvar,.true.)
+        call qfracseg(cmp,cmp,fbound%fb,fbound%fe,chg,irtc)
+        if(irtc .ne. 0)then
+          call tffserrorhandle(fbound%lb,irtc)
+        else
+          call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
+     $         sol,la,fbound%lb,fbound%lb)
+        endif
         if(chg)then
           call qfracsave(fbound%lb,dsave,nvar,.false.)
         endif
@@ -64,10 +68,13 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
         call compelc(fbound%lb,cmp)
         if(fbound%fb .ne. 0.d0)then
           call qfracsave(fbound%lb,dsave,nvar,.true.)
-          call qfracseg(cmp,fbound%fb,1.d0,dsave,chg)
-c          call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
-          call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
-     $         sol,la,fbound%lb,fbound%lb)
+          call qfracseg(cmp,cmp,fbound%fb,1.d0,chg,irtc)
+          if(irtc .ne. 0)then
+            call tffserrorhandle(fbound%lb,irtc)
+          else
+            call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
+     $           sol,la,fbound%lb,fbound%lb)
+          endif
           if(chg)then
             call qfracsave(fbound%lb,dsave,nvar,.false.)
           endif
@@ -84,7 +91,7 @@ c      write(*,*)'tturn0 ',fbound%lb,fbound%fb,fbound%le,fbound%fe,ls
         if(fbound%fe .ne. 0.d0)then
           call qfracsave(fbound%le,dsave,nvar,.true.)
           call compelc(fbound%le,cmp)
-          call qfracseg(cmp,0.d0,fbound%fe,dsave,chg)
+          call qfracseg(cmp,cmp,0.d0,fbound%fe,chg)
 c          call qfraccomp(fbound%le,0.d0,fbound%fe,ideal,chg)
           call tturn1(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n,
      $         sol,la,fbound%le,fbound%le)
@@ -137,6 +144,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       use ffs_pointer, only: direlc,compelc
       use tparastat
       use tfcsi, only:icslfno
+      use ffs_seg
       implicit none
       integer*4 la1
       parameter (la1=15)
@@ -144,7 +152,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       parameter (plimit=0.7d0,zlimit=1.d10,ampmax=0.9999d0)
       parameter (vmax=.9d0)
       type (sad_comp), pointer:: cmp
-      type (sad_rlist) , pointer ::lal
+      type (sad_dlist) , pointer ::lsegp
       integer*4 np,n,la,lbegin,lend,kdx,kdy,krot
       integer*4 kptbl(np0,6)
       integer*8 latt(nlat)
@@ -268,7 +276,7 @@ c     $              +l-1),
           endif
           sspac0=sspac
        endif
-       seg=tcheckseg(cmp,lele,al,lal,irtc)
+       seg=tcheckseg(cmp,lele,al,lsegp,irtc)
        if(irtc .ne. 0)then
          call tffserrorhandle(l,irtc)
          go to 1010
@@ -298,7 +306,7 @@ c     $              +l-1),
          endif
 
         case (icBEND)
-        if(cmp%update .eq. 0)then
+        if(iand(cmp%update,1) .eq. 0)then
           call tpara(cmp)
         endif
         if(cmp%value(ky_RANK_BEND) .ne. 0.d0)then
@@ -334,7 +342,7 @@ c     $              +l-1),
      1       cmp%value(ky_EPS_BEND))
 
         case (icQUAD)
-        if(cmp%update .eq. 0)then
+        if(iand(1,cmp%update) .eq. 0)then
           call tpara(cmp)
         endif
         rtaper=1.d0
@@ -357,7 +365,7 @@ c     $              +l-1),
      $       cmp%value(ky_KIN_QUAD) .eq. 0.d0)
 
       case (icSEXT,icOCTU,icDECA,icDODECA)
-        if(cmp%update .eq. 0)then
+        if(iand(cmp%update,1) .eq. 0)then
           call tpara(cmp)
         endif
         ak1=cmp%value(ky_K_THIN)
@@ -372,7 +380,7 @@ c     $              +l-1),
      1       cmp%value(ky_FRIN_THIN) .eq. 0.d0)
 
         case (icUND)
-        if(cmp%update .eq. 0)then
+        if(iand(cmp%update,1) .eq. 0)then
           call tpara(cmp)
         endif
         call undulator(np,x,px,y,py,z,g,dv,pz,cmp%value(p_PARAM_UND))
@@ -402,7 +410,7 @@ c     $              +l-1),
         bz=0.d0
         if(seg)then
           call tmultiseg(np,x,px,y,py,z,g,dv,pz,
-     $         l,cmp,lal,bz,rtaper,n,latt,kptbl)
+     $         l,cmp,lsegp,bz,rtaper,n,latt,kptbl)
         else
           call tmulti1(np,x,px,y,py,z,g,dv,pz,
      $         l,cmp,bz,rtaper,n,latt,kptbl)
@@ -509,7 +517,7 @@ c        write(*,*)'ttrun1-temaxp ',np,np0,i,n
         go to 1010
 
         case (icBEAM)
-          if(cmp%update .eq. 0)then
+          if(iand(cmp%update,1) .eq. 0)then
             call tpara(cmp)
           endif
           call beambeam(np,x,px,y,py,z,g,dv,pz,cmp%value(1),
@@ -518,7 +526,7 @@ c     write(*,*)'beambeam-end ',cmp%param
           go to 1010
 
         case (icProt)
-          if(cmp%update .eq. 0)then
+          if(iand(cmp%update,1) .eq. 0)then
             call tpara(cmp)
           endif
           call phsrot(np,x,px,y,py,z,g,dv,pz,cmp%value(p_PARAM_Prot))
@@ -634,12 +642,13 @@ c     $             +lend-1),
       end
 
       subroutine tmultiseg(np,x,px,y,py,z,g,dv,pz,
-     $     l,cmp,lal,bz,rtaper,n,latt,kptbl)
+     $     l,cmp,lsegp,bz,rtaper,n,latt,kptbl)
       use kyparam
       use tfstk
       use ffs
       use tffitcode
       use sad_main
+      use ffs_seg
       implicit none
       type (sad_comp) :: cmp
       integer*4 np,n,l
@@ -648,15 +657,16 @@ c     $             +lend-1),
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),
      $     g(np0),dv(np0),pz(np0)
       real*8 bz,rtaper
-      type (sad_rlist) :: lal
+      type (sad_dlist) :: lsegp
       type (sad_rlist), pointer :: lak
-      type (sad_descriptor) :: dsave(cmp%ncomp2)
-      integer*4 i,nseg,irtc,i1,i2,istep,k,itfmessage,nc,nc1,
-     $     kseg(cmp%ncomp2),lp
-      nc=kytbl(kwMAX,icMULT)-1
-      nseg=lal%nl
+      real*8 :: vsave(cmp%ncomp2)
+      integer*4 i,nseg,irtc,i1,i2,istep,k,nc,nc1,
+     $     kseg(cmp%ncomp2)
+      nc=kytbl(kwPROF,icMULT)-1
+      call descr_sad(lsegp%dbody(ky_L_MULT),lak)
+      nseg=lak%nl
       irtc=0
-      dsave(1:nc)=cmp%dvalue(1:nc)
+      vsave(1:nc)=cmp%value(1:nc)
       if(cmp%orient .gt. 0.d0)then
         i1=1
         i2=nseg
@@ -668,36 +678,22 @@ c     $             +lend-1),
       endif
       nc1=0
       do k=1,nc
-c        call tfdebugprint(dsave(k),'tmultseg',1)
-        if(.not. ktfrealq(dsave(k)))then
-          if(tfreallistq(dsave(k),lak))then
-            if(lak%nl .ne. nseg)then
-              lp=len_trim(pname(cmp%id))
-              irtc=itfmessage(99,'FFS::unequalkeyleng',
-     $             '"'//pname(cmp%id)(1:lp)//'"')
-              return
-            endif
-          elseif(ktfnonrealq(dsave(k)))then
-            lp=len_trim(pname(cmp%id))
-            irtc=itfmessage(999,'FFS::wrongkeyval',
-     $           '"'//pname(cmp%id)(1:lp)//'"')
-            return
-          endif
+        if(lsegp%dbody(k)%k .ne. ktfoper+mtfnull)then
           nc1=nc1+1
           kseg(nc1)=k
         endif
       enddo
       do i=i1,i2,istep
         do k=1,nc1
-          call descr_rlist(dsave(kseg(k)),lak)
-          cmp%value(kseg(k))=lak%rbody(i)
+          call descr_rlist(lsegp%dbody(kseg(k)),lak)
+          cmp%value(kseg(k))=lak%rbody(i)*vsave(kseg(k))
         enddo
-        cmp%update=0
+        cmp%update=iand(2,cmp%update)
         call tmulti1(np,x,px,y,py,z,g,dv,pz,
      $     l,cmp,bz,rtaper,n,latt,kptbl)
       enddo
-      cmp%dvalue(1:nc)=dsave(1:nc)
-      cmp%update=0
+      cmp%value(1:nc)=vsave(1:nc)
+      cmp%update=iand(2,cmp%update)
       return
       end
 

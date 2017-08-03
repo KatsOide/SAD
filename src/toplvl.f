@@ -76,8 +76,8 @@
      $     kwLDEV=kwFB2+1,kwLRAD=kwLDEV+1,kwFL=kwLRAD+1,kwAPHI=kwFL+1,
      $     kwF1K1F=kwAPHI+1, kwF2K1F=kwF1K1F+1,
      $     kwF1K1B=kwF2K1F+1,kwF2K1B=kwF1K1B+1,
-     $     kwDVOLT=kwF2K1B+1,
-     $     kwNPARAM=kwDVOLT+1,kwMAX=kwNPARAM+1
+     $     kwDVOLT=kwF2K1B+1,kwPROF=kwDVOLT+1,
+     $       kwNPARAM=kwPROF+1,kwMAX=kwNPARAM+1
 
       integer*4 ::  kytbl(0:kwMAX,0:icMXEL)=0
       integer*4, pointer :: kyindex(:,:),kyindex1(:,:)

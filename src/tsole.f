@@ -8,6 +8,7 @@
       use sad_main
       use ffs_flag
       use tmacro
+      use ffs_seg
       implicit none
       real*8 conv
       parameter (conv=3.d-16)
@@ -91,11 +92,12 @@ c            endif
       use ffs, only:mfitddp,gettwiss
       use tmacro
       use sad_main
+      use ffs_seg
       implicit none
       integer*4 l,ld,lt,mfr,kb,irtc
       integer*8 lp
       type (sad_comp), pointer ::cmp
-      type (sad_rlist), pointer :: lal
+      type (sad_dlist), pointer :: lsegp
       real*8 trans(6,12),cod(6),beam(42),al,theta,
      $     phi,phix,phiy,bzs,cod1(6),trans1(6,6),trans2(6,6),
      $     tfbzs,radlvl,bzs0,
@@ -105,7 +107,7 @@ c            endif
       lt=idtype(ld)
       lp=elatt%comp(l)
       call loc_comp(lp,cmp)
-      seg=tcheckseg(cmp,lt,al,lal,irtc)
+      seg=tcheckseg(cmp,lt,al,lsegp,irtc)
       if(irtc .ne. 0)then
         call tffserrorhandle(l,irtc)
         return
@@ -150,7 +152,7 @@ c            endif
      $       mfr,cmp%value(ky_EPS_QUAD),l,dir,ld)
       elseif(lt .eq. icMULT)then
         if(seg)then
-          call tmulteseg(trans,cod,beam,l,cmp,bzs,lal,rtaper,ld)
+          call tmulteseg(trans,cod,beam,l,cmp,bzs,lsegp,rtaper,ld)
         else
           call tmulte1(trans,cod,beam,l,cmp,bzs,rtaper,ld)
         endif

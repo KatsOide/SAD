@@ -223,8 +223,9 @@ c
      $ky_F1K1B_MULT=83,
      $ky_F2K1B_MULT=84,
      $ky_DVOLT_MULT=85,
+     $     ky_PROF_MULT=86,
 c
-     $ky_MAX_MULT=86,
+     $ky_MAX_MULT=ky_PROF_MULT+1,
      $     p_L_MULT=ky_MAX_MULT+1,
      $     p_ANGL_MULT=p_L_MULT+1,
      $     p_AKF1F_MULT=p_ANGL_MULT+1,
@@ -240,7 +241,8 @@ c
      $     p_W_MULT=p_CHI2_MULT+1,
      $     p_VNOMINAL_MULT=p_W_MULT+1,
      $     p_FRMD_MULT=p_VNOMINAL_MULT+1,
-     $     p_NPARAM_MULT=p_FRMD_MULT-ky_MAX_MULT,
+     $     p_PROF_MULT=p_FRMD_MULT+1,
+     $     p_NPARAM_MULT=p_PROF_MULT-ky_MAX_MULT,
 c  for UNDULATOR
      $ky_L_UND=1,
      $ky_FBX_UND=2,
@@ -925,6 +927,7 @@ c
        kytbl(kwLRAD,0) =sethtb('LRAD    ',icKWRD,kwLRAD)
        kytbl(kwFL,0)   =sethtb('FLAT    ',icKWRD,kwLRAD)
        kytbl(kwAPHI,0) =sethtb('AUTOPHI ',icKWRD,kwAPHI)
+       kytbl(kwPROF,0) =sethtb('PROFILE ',icKWRD,kwPROF)
 c  for drift 
       idummy=sethtb('drift   ',icDEF,icDRFT)
       kytbl(0,icDRFT)=sethtb('DRIFT   ',icDEF,icDRFT)
@@ -1132,6 +1135,7 @@ c
       kytbl(kwF2K1F,icMULT)=ky_F2K1F_MULT
       kytbl(kwF1K1B,icMULT)=ky_F1K1B_MULT
       kytbl(kwF2K1B,icMULT)=ky_F2K1B_MULT
+      kytbl(kwPROF,icMULT)=ky_PROF_MULT
 c
       kytbl(kwMAX,icMULT)=ky_MAX_MULT
       kytbl(kwNPARAM,icMULT)=p_NPARAM_MULT

@@ -2,6 +2,7 @@
       use tfstk
       use ffs_flag
       use tmacro
+      use tparastat
       implicit none
       type (sad_descriptor) :: kmode,kc,kx
       type (sad_list), pointer :: klc
@@ -100,6 +101,7 @@
       use ffs_pointer
       use ffs_flag
       use tmacro
+      use tparastat
       implicit none
       integer*4 n1,itgetfpe,ivar1,ivar2,lfno
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)

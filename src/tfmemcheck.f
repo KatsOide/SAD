@@ -111,8 +111,8 @@
  9100 write(*,*)'Level = ',l,
      $     ', root =',j,
      $     ', temporary element =',i,
-     $     ', previous =',i1,
-     $     ', next =',ktfaddr(klist(i)),
+     $     ', previous =',i1
+      write(*,*)', next =',ktfaddr(klist(i)),
      $     ', type = ',tftypename(klist(i)),
      $     ', size =',ilist(1,i-1)
  9200 irtc=itfmessage(999,'General::memory',' ')
