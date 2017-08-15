@@ -6,11 +6,7 @@ Off[General::unprotconst];
 Unprotect[GoodnessOfFit,ChiSquare,ConfidenceInterval];
 On[General::unprotconst];
 SetAttributes[{Contours,MeshRange,ColorFunction,ColorFunctionScaling,
-<<<<<<< HEAD
   ContourColorFunction,ColorScale,Smoothing,Blue,Green,Cyan,Yellow,Pink,Purple,Rainbow,
-=======
-  ContourColorFunction,ColorScale,Smoothing,Blue,Green,Cyan,Yellow,Pink,Purple,
->>>>>>> origin/master
   MaxBend,PlotPoints,PlotDivision,FunctionLabel,ResultLabel,RaiseFit,
   Signal,GoodnessOfFit,ChiSquare,ConfidenceInterval,ColumnTags,MeshStyle,
   PlotStyle,Columns,ColumnOffset,Bins,BinRange,ColumnLabel,Mesh,MeshColor,
@@ -728,14 +724,11 @@ CP$Color[Pink][x_]  :=RGBColor[Restrict[x*3-0,0,1],Restrict[x*3-2,0,1],Restrict[
 CP$Color[Cyan][x_]  :=RGBColor[Restrict[x*3-2,0,1],Restrict[x*3-0,0,1],Restrict[x*3-1,0,1]];
 CP$Color[Purple][x_]:=RGBColor[Restrict[x*3-1,0,1],Restrict[x*3-2,0,1],Restrict[x*3-0,0,1]];
 CP$Color[Yellow][x_]:=RGBColor[Restrict[x*3-0,0,1],Restrict[x*3-1,0,1],Restrict[x*3-2,0,1]];
-<<<<<<< HEAD
 With[{rb=0.33,rg=0.45,rr=0.75},
   CP$Color[Rainbow][x_]:=RGBColor[
     Restrict[(x<rg)*(0.5-Abs[x-rb/2]/rb)+(x=>rg)*(x-rg)/((2*rr+rg)/3-rg),0,1],
     Restrict[(x<rg)*(x-rb)/(rg-rb)+(rg<=x<rr)*(rr-x)/(rr-(2*rr+rg)/3)+(x>=rr)*(x-rr)/(1-rr),0,1],
     Restrict[(x<rb)*x/rb+(rb<=x<rr)*(rg-x)/(rg-rb)+(x>rr)*(x-rr)/(1-rr),0,1]]];
-=======
->>>>>>> origin/master
 CP$Color[_][x_]     :=CP$Color[Blue][x];
 CP$ContourColor[x_String]:=RGBColor@@[{1,1,1}-
   {ToExpression["0x"//x[2,3]],ToExpression["0x"//x[4,5]],ToExpression["0x"//x[6,7]]}/255];

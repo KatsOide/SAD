@@ -376,7 +376,7 @@ c            write(*,*)' : ',idx
         kl%lenp=int2(0)
         kl%lena=int2(0)
         kl%attr=0
-        kl%alloc=ktflist
+        kl%alloc%k=ktflist
         kl%ref=1
         kl%nl=2
         kl%head%k=ktfoper+mtfcomplex

@@ -537,9 +537,10 @@ c     endif
       type sad_object
       sequence
       integer*4 len,attr
-      integer*8 alloc
+      type (sad_descriptor) alloc
       integer*4 ref,nl
-      integer*8 body(0:2**31-1)
+      integer*8 body(1:0)
+      type (sad_descriptor) dbody(0:2**31-1)
       end type
 
       type sad_list
@@ -560,7 +561,7 @@ c     endif
       type (sad_list) list(1:0)
       integer*2 lenp,lena
       integer*4 attr
-      integer*8 alloc
+      type (sad_descriptor) alloc
       integer*4 ref,nl
       type (sad_descriptor) head
       real*8 rbody(1:0)
@@ -574,7 +575,7 @@ c     endif
       type (sad_dlist) dlist(1:0)
       integer*2 lenp,lena
       integer*4 attr
-      integer*8 alloc
+      type (sad_descriptor) alloc
       integer*4 ref,nl
       type (sad_descriptor) head
       complex*16 cbody(1:0)
@@ -2460,7 +2461,7 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
             obj%ref=0
             if(ktfaddr(obj%alloc) .eq. 0)then
               itfroot=itflocal+levele
-              obj%alloc=obj%alloc+ktfaddr(klist(itfroot))
+              obj%alloc%k=obj%alloc%k+ktfaddr(klist(itfroot))
               klist(itfroot)=ktfaddr(k%k)-2
             endif
           endif
@@ -2480,7 +2481,7 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
           obj%ref=0
           if(ktfaddr(obj%alloc) .eq. 0)then
             itfroot=itflocal+levele
-            obj%alloc=obj%alloc+ktfaddr(klist(itfroot))
+            obj%alloc%k=obj%alloc%k+ktfaddr(klist(itfroot))
             klist(itfroot)=ka-2
           endif
         endif
@@ -2511,7 +2512,7 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
             call tflocal1(ka)
             if(ktfaddr(obj%alloc) .eq. 0)then
               j=itflocal+levele
-              obj%alloc=ktftype(obj%alloc)+klist(j)
+              obj%alloc%k=ktftype(obj%alloc%k)+klist(j)
               klist(j)=sad_loc(obj%alloc)
             endif
 c     call tfdebugprint(ktftype(klist(ka-2))+ka,'tfconnectk',1)
@@ -3071,7 +3072,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         kl%lenp=lp
         kl%lena=la
         kl%attr=0
-        kl%alloc=ktflist
+        kl%alloc%k=ktflist
         kl%ref=1
         kl%nl=nd
         call tflocal1(ka)

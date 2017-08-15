@@ -503,8 +503,8 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
         obj%ref=obj%ref-1
         if(obj%ref .le. 0)then
           obj%ref=0
-          if(ktfaddr(obj%alloc) .eq. 0)then
-            obj%alloc=ktftype(obj%alloc)+kan
+          if(ktfaddr(obj%alloc%k) .eq. 0)then
+            obj%alloc%k=ktftype(obj%alloc%k)+kan
             kan=ktfaddr(k%k)-2
           endif
         endif
@@ -553,7 +553,7 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
           obj%ref=0
           if(ktfaddr(obj%alloc) .eq. 0)then
             itfroot=itflocal+levele
-            obj%alloc=obj%alloc+ktfaddr(klist(itfroot))
+            obj%alloc%k=obj%alloc%k+ktfaddr(klist(itfroot))
             klist(itfroot)=ka-2
           endif
         endif
@@ -573,7 +573,7 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
         obj%ref=0
         if(ktfaddr(obj%alloc) .eq. 0)then
           itfroot=itflocal+levele
-          obj%alloc=obj%alloc+ktfaddr(klist(itfroot))
+          obj%alloc%k=obj%alloc%k+ktfaddr(klist(itfroot))
           klist(itfroot)=ka-2
         endif
       endif
@@ -978,8 +978,8 @@ c                endif
         if(ktfobjqd(kx,obj))then
           if(ktfaddr(obj%alloc) .eq. 0)then
             j=itflocal+levele
-            obj%alloc=ktftype(obj%alloc)+klist(j)
-            klist(j)=ksad_loc(obj%alloc)
+            obj%alloc%k=ktftype(obj%alloc%k)+klist(j)
+            klist(j)=ksad_loc(obj%alloc%k)
           endif
         endif
       endif
