@@ -2,7 +2,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) k1,k2,kx
-      type (sad_list), pointer :: kl1,kl2,kl2i
+      type (sad_dlist), pointer :: kl1,kl2,kl2i
       integer*4 irtc,i,itfmessage,isp0,m,n
       real*8 xr,xi
       complex*16 cx,cx1,cx2
@@ -16,7 +16,7 @@
         return
       endif
       isp0=isp
-      if(tflistq(kl1%body(1)))then
+      if(tflistq(kl1%dbody(1)))then
         do i=1,n
           isp=isp+1
           call tfdot(kl1%dbody(i),k2,dtastk(isp),irtc)
@@ -39,10 +39,10 @@
           do i=2,n
             xr=xr+kl1%rbody(i)*kl2%rbody(i)
           enddo
-          kx=dfromr(xr)
+          kx=sad_descr(xr)
           return
         else
-          if(tflistq(kl2%body(1),kl2i))then
+          if(tflistq(kl2%dbody(1),kl2i))then
             m=kl2i%nl
             isp=isp+m
             call tfloadrcstk(isp0,kl2i,kl1%rbody(1),irtc)
@@ -50,7 +50,7 @@
               go to 3000
             endif
             do i=2,n
-              if(tflistq(kl2%body(i),kl2i))then
+              if(tflistq(kl2%dbody(i),kl2i))then
                 if(kl2i%nl .ne. m)then
                   irtc=itfmessage(9,'General::equalleng',
      $                 '"elements of matrix"')
@@ -70,9 +70,9 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
             xr=0.d0
             xi=0.d0
             do i=1,n
-              if(ktfrealq(kl2%body(i)))then
+              if(ktfrealq(kl2%dbody(i)))then
                 xr=xr+kl1%rbody(i)*kl2%rbody(i)
-              elseif(tfcomplexq(kl2%body(i),cx))then
+              elseif(tfcomplexq(kl2%dbody(i),cx))then
                 xr=xr+kl1%rbody(i)*dble(cx)
                 xi=xi+kl1%rbody(i)*imag(cx)
               else
@@ -88,9 +88,9 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
           xr=0.d0
           xi=0.d0
           do i=1,n
-            if(ktfrealq(kl1%body(i)))then
+            if(ktfrealq(kl1%dbody(i)))then
               xr=xr+kl1%rbody(i)*kl2%rbody(i)
-            elseif(tfcomplexq(kl1%body(i),cx))then
+            elseif(tfcomplexq(kl1%dbody(i),cx))then
               xr=xr+dble(cx)*kl2%rbody(i)
               xi=xi+imag(cx)*kl2%rbody(i)
             else
@@ -100,25 +100,25 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
           kx=kxcalocv(-1,xr,xi)
           return
         else
-          if(tflistq(kl2%body(1),kl2i))then
+          if(tflistq(kl2%dbody(1),kl2i))then
             m=kl2i%nl
             isp=isp+m
             rtastk (isp0+1:isp0+m)=0.d0
             rtastk2(isp0+1:isp0+m)=0.d0
             do i=1,n
-              call loc_list(ktfaddr(kl2%body(i)),kl2i)
+              call descr_sad(kl2%dbody(i),kl2i)
               if(kl2i%nl .ne. m)then
                 irtc=itfmessage(9,'General::equalleng',
      $               '"elements of matrix"')
                 isp=isp0
                 return
               endif
-              if(ktfrealq(kl1%body(i)))then
+              if(ktfrealq(kl1%dbody(i)))then
                 call tfaddrcstk(isp0,kl2i,kl1%rbody(i),irtc)
                 if(irtc .ne. 0)then
                   go to 3000
                 endif
-              elseif(tfcomplexq(kl1%body(i),cx))then
+              elseif(tfcomplexq(kl1%dbody(i),cx))then
                 call tfaddccstk(isp0,kl2i,cx,irtc)
                 if(irtc .ne. 0)then
                   go to 3000
@@ -130,18 +130,18 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
           else
             cx=(0.d0,0.d0)
             do i=1,n
-              if(ktfrealq(kl1%body(i)))then
-                if(ktfrealq(kl2%body(i)))then
+              if(ktfrealq(kl1%dbody(i)))then
+                if(ktfrealq(kl2%dbody(i)))then
                   cx=cx+kl1%rbody(i)*kl2%rbody(i)
-                elseif(tfcomplexq(kl2%body(i),cx1))then
+                elseif(tfcomplexq(kl2%dbody(i),cx1))then
                   cx=cx+kl1%rbody(i)*cx1
                 else
                   go to 3000
                 endif
-              elseif(tfcomplexq(kl1%body(i),cx1))then
-                if(ktfrealq(kl2%body(i)))then
+              elseif(tfcomplexq(kl1%dbody(i),cx1))then
+                if(ktfrealq(kl2%dbody(i)))then
                   cx=cx+cx1*kl2%rbody(i)
-                elseif(tfcomplexq(kl2%body(i),cx2))then
+                elseif(tfcomplexq(kl2%dbody(i),cx2))then
                   cx=cx+cx1*cx2
                 else
                   go to 3000
@@ -163,14 +163,15 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       irtc=0
       return
  3000 isp=isp0
-      call tfinner(k1,k2,kx,ktfoper+mtfplus,ktfoper+mtftimes,irtc)
+      call tfinner(k1,k2,kx,sad_descr(ktfoper+mtfplus),
+     $     sad_descr(ktfoper+mtftimes),irtc)
       return
       end
 
       subroutine tfloadrcstk(isp0,kl,x,irtc)
       use tfstk
       implicit none
-      type (sad_list) kl
+      type (sad_dlist) kl
       integer*4 irtc,isp0,i
       real*8 x
       complex*16 c
@@ -180,10 +181,10 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
         rtastk2(isp0+1:isp0+kl%nl)=0.d0
       else
         do i=1,kl%nl
-          if(ktfrealq(kl%body(i)))then
+          if(ktfrealq(kl%dbody(i)))then
             rtastk (isp0+i)=x*kl%rbody(i)
             rtastk2(isp0+i)=0.d0
-          elseif(tfcomplexq(kl%body(i),c))then
+          elseif(tfcomplexq(kl%dbody(i),c))then
             rtastk (isp0+i)=x*dble(c)
             rtastk2(isp0+i)=x*imag(c)
           else
@@ -199,7 +200,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       subroutine tfaddrcstk(isp0,kl,x,irtc)
       use tfstk
       implicit none
-      type (sad_list) kl
+      type (sad_dlist) kl
       integer*4 irtc,isp0,i
       real*8 x
       complex*16 c
@@ -209,9 +210,9 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
      $       rtastk(isp0+1:isp0+kl%nl)+x*kl%rbody(1:kl%nl)
       else
         do i=1,kl%nl
-          if(ktfrealq(kl%body(i)))then
+          if(ktfrealq(kl%dbody(i)))then
             rtastk(isp0+i)=rtastk(isp0+i)+x*kl%rbody(i)
-          elseif(tfcomplexq(kl%body(i),c))then
+          elseif(tfcomplexq(kl%dbody(i),c))then
             rtastk (isp0+i)=rtastk(isp0+i) +x*dble(c)
             rtastk2(isp0+i)=rtastk2(isp0+i)+x*imag(c)
           else
@@ -227,7 +228,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       subroutine tfaddccstk(isp0,kl,cx,irtc)
       use tfstk
       implicit none
-      type (sad_list) kl
+      type (sad_dlist) kl
       integer*4 irtc,isp0,i
       complex*16 c,cx,cx1
       logical*4 tfcomplexq
@@ -238,10 +239,10 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
      $       rtastk2(isp0+1:isp0+kl%nl)+imag(cx)*kl%rbody(1:kl%nl)
       else
         do i=1,kl%nl
-          if(ktfrealq(kl%body(i)))then
+          if(ktfrealq(kl%dbody(i)))then
             rtastk (isp0+i)=rtastk (isp0+i)+dble(cx)*kl%rbody(i)
             rtastk2(isp0+i)=rtastk2(isp0+i)+imag(cx)*kl%rbody(i)
-          elseif(tfcomplexq(kl%body(i),c))then
+          elseif(tfcomplexq(kl%dbody(i),c))then
             cx1=cx*c
             rtastk (isp0+i)=rtastk (isp0+i)+dble(cx1)
             rtastk2(isp0+i)=rtastk2(isp0+i)+imag(cx1)
@@ -259,9 +260,9 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       use tfstk
       implicit none
       type (sad_descriptor) k1,k2,kx,ki,ks,kp,k1i
-      type (sad_list), pointer :: kl1,kl2,klx
+      type (sad_dlist), pointer :: kl1,kl2,klx
       integer*4 irtc,m1,i,m2,isp0,itfmessage
-      if(ktfnonlistqd(k1,kl1) .or. ktfnonlistqd(k2,kl2))then
+      if(ktfnonlistq(k1,kl1) .or. ktfnonlistq(k2,kl2))then
         irtc=itfmessage(9,'General::wrongtype','"List"')
         return
       endif
@@ -273,9 +274,9 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
           call tfinner(k1i,k2,ki,ks,kp,irtc)
           if(irtc .ne. 0)then
             if(ktfnonreallistqo(klx))then
-              klx%body(1:m1)=ktfoper+mtfnull
+              klx%dbody(1:m1)%k=ktfoper+mtfnull
             else
-              klx%body(i:m1)=0
+              klx%dbody(i:m1)%k=0
             endif
             return
           endif
@@ -297,8 +298,8 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       isp0=isp
       do i=1,m1
         dtastk(isp-2)=kp
-        ktastk(isp-1)=kl1%body(i)
-        ktastk(isp  )=kl2%body(i)
+        dtastk(isp-1)=kl1%dbody(i)
+        dtastk(isp  )=kl2%dbody(i)
         call tfefunref(isp-2,ki,.true.,irtc)
         isp=isp0
         if(irtc .ne. 0)then
@@ -392,21 +393,20 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       subroutine tftranspose(k,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kx
-      type (sad_list), pointer :: kl,kl1,kli,klj,klx,klxi
-      integer*8 kij
+      type (sad_descriptor) k,kx,kij
+      type (sad_dlist), pointer :: kl,kl1,kli,klj,klx,klxi
       integer*4 irtc,m,n,i,j,itfmessage
       logical*4 d
       if(.not. tflistq(k,kl))then
         go to 9000
       endif
-      if(tfnonlistq(kl%body(1),kl1))then
+      if(tfnonlistq(kl%dbody(1),kl1))then
         go to 9000
       endif
       m=kl%nl
       n=kl1%nl
       do i=2,m
-        if(tfnonlistq(kl%body(i),kli))then
+        if(tfnonlistq(kl%dbody(i),kli))then
           go to 9000
         endif
         if(kli%nl .ne. n)then
@@ -419,13 +419,13 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
         klx%dbody(i)=kxaaloc(0,m,klxi)
         d=.false.
         do j=1,m
-          call loc_sad(ktfaddr(kl%body(j)),klj)
-          kij=klj%body(i)
+          call loc_sad(ktfaddr(kl%dbody(j)),klj)
+          kij=klj%dbody(i)
           if(ktfrealq(kij))then
-            klxi%body(j)=kij
+            klxi%dbody(j)=kij
           else
             d=.true.
-            klxi%body(j)=ktfcopy(kij)
+            klxi%dbody(j)=dtfcopy(kij)
           endif
         enddo
         if(d)then
@@ -444,7 +444,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kl,kli
+      type (sad_dlist), pointer :: kl,kli
       integer*4 isp1,irtc,n,m,narg,itfmessage,i,isp0,nm
       real*8 s
       logical*4 cmplm,realm,vec
@@ -512,7 +512,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       integer*4 isp1,irtc,n,m,narg,itfmessage
       logical*4 cmplm,realm,vec
       narg=isp-isp1
@@ -546,7 +546,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list) kl
+      type (sad_dlist) kl
       integer*4 n
       real*8 a(n,n),tdet
       call tfl2m(kl,a,n,n,.false.)
@@ -558,7 +558,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list) kl
+      type (sad_dlist) kl
       integer*4 n,irtc
       complex*16 c(n,n),cx,tcdet
       call tfl2cm(kl,c,n,n,.false.,irtc)
@@ -578,7 +578,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       use tfstk
       implicit none
       type (sad_descriptor) kx,k
-      type (sad_list), pointer :: kl,klx
+      type (sad_dlist), pointer :: kl,klx
       integer*8 kux,kvx,kwx
       integer*4 isp1,irtc,n,m,narg,itfmessage
       real*8 eps
@@ -618,16 +618,16 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
         return
       endif
       kx=kxadaloc(-1,3,klx)
-      klx%body(1)=ktflist+ktfcopy1(kux)
-      klx%body(2)=ktflist+ktfcopy1(kwx)
-      klx%body(3)=ktflist+ktfcopy1(kvx)
+      klx%dbody(1)%k=ktflist+ktfcopy1(kux)
+      klx%dbody(2)%k=ktflist+ktfcopy1(kwx)
+      klx%dbody(3)%k=ktflist+ktfcopy1(kvx)
       return
       end
 
       subroutine tcsvdma(kl,kux,kvx,kwx,m,n,eps,inv,irtc)
       use tfstk
       implicit none
-      type (sad_list) kl
+      type (sad_dlist) kl
       integer*8 kux,kvx,kwx,ktfcm2l
       integer*4 n,m,mn,irtc
       real*8 w(m),eps
@@ -649,7 +649,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       subroutine tsvdma(kl,kux,kvx,kwx,m,n,eps,inv)
       use tfstk
       implicit none
-      type (sad_list) kl
+      type (sad_dlist) kl
       integer*8 kux,kvx,kwx
       integer*4 n,m,mn
       real*8 a(n,m),w(m),eps,u(n,n)
@@ -668,7 +668,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       use tfstk
       implicit none
       type (sad_descriptor) kx,k,kb
-      type (sad_list), pointer :: kl,klb
+      type (sad_dlist), pointer :: kl,klb
       integer*4 isp1,irtc,narg,nb,mb,n,m,itfmessage,mx
       real*8 eps
       logical*4 cmplm,realm,vec
@@ -723,7 +723,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list) kl,klb
+      type (sad_dlist) kl,klb
       integer*4 n,m,mb,mx
       real*8 eps,a(n,m),b(n,mx),x(m,mx)
       call tfl2m(kl,a,n,m,.false.)
@@ -745,7 +745,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       use tfstk
       implicit none
       type (sad_descriptor) k,kx,ki
-      type (sad_list), pointer :: kl,klx
+      type (sad_dlist), pointer :: kl,klx
       type (sad_rlist), pointer :: klri
       integer*4 irtc,m,i,itfmessage
       real*8 x
@@ -756,7 +756,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       m=kl%nl
       kx=kxadaloc(-1,m,klx)
       do i=1,m
-        klx%body(i)=ktflist+ktraaloc(0,m,klri)
+        klx%dbody(i)%k=ktflist+ktraaloc(0,m,klri)
         ki=kl%dbody(i)
         if(ktfrealq(ki,x))then
           klri%rbody(i)=x
@@ -773,7 +773,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       use tfstk
       implicit none
       type (sad_descriptor) k,kx
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: klri
       integer*4 irtc,m,i,itfmessage
       if(ktfnonrealq(k,m))then
@@ -786,7 +786,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       endif
       kx=kxadaloc(-1,m,klx)
       do i=1,m
-        klx%body(i)=ktflist+ktraaloc(0,m,klri)
+        klx%dbody(i)%k=ktflist+ktraaloc(0,m,klri)
         klri%rbody(i)=1.d0
       enddo
       irtc=0
@@ -797,7 +797,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       use tfstk
       implicit none
       type (sad_descriptor) k,kx
-      type (sad_list), pointer :: kl,klx
+      type (sad_dlist), pointer :: kl,klx
       integer*8 kex,kvx
       integer*4 irtc,n,m,itfmessage
       logical*4 realm,cmplm,vec
@@ -816,8 +816,8 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
         go to 9000
       endif
       kx=kxadaloc(-1,2,klx)
-      klx%body(1)=ktflist+ktfcopy1(kex)
-      klx%body(2)=ktflist+ktfcopy1(kvx)
+      klx%dbody(1)%k=ktflist+ktfcopy1(kex)
+      klx%dbody(2)%k=ktflist+ktfcopy1(kvx)
       irtc=0
       return
  9000 irtc=itfmessage(9,'General::wrongtype',
@@ -828,7 +828,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       subroutine tfceigen(kl,m,kvx,kex,irtc)
       use tfstk
       implicit none
-      type (sad_list) kl
+      type (sad_dlist) kl
       integer*8 kvx,kex,ktfcm2l,ktfc2l
       complex*16 c(m,m),cw(m,m),ce(m)
       integer*4 irtc,m
@@ -848,7 +848,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       subroutine tfreigen(kl,m,kvx,kex)
       use tfstk
       implicit none
-      type (sad_list) kl
+      type (sad_dlist) kl
       integer*8 kvx,kex,kvxkvr,kvxkvi,
      $     kzi1,kzi2,ktfc2l
       integer*4 m,i,j
@@ -910,7 +910,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       use macmath
       implicit none
       type (sad_descriptor) k,kx
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       integer*4 irtc, m, itfmessage
       logical*4 inv
       if(.not. tflistq(k,kl))then
@@ -941,7 +941,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       use macmath
       implicit none
       type (sad_descriptor) kx
-      type (sad_list) :: kl
+      type (sad_dlist) :: kl
       type (sad_complex), pointer :: klic
       integer*8 ktfc2l
       integer*4 m,n,irtc,i
@@ -958,9 +958,9 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       if(ktfnonreallistqo(kl))then
         f=1.d0/sqrt(dble(m))
         do i=1,m
-          if(ktfrealq(kl%body(i)))then
+          if(ktfrealq(kl%dbody(i)))then
             cx(i)=f*kl%rbody(i)
-          elseif(tfcomplexq(kl%body(i),klic))then
+          elseif(tfcomplexq(kl%dbody(i),klic))then
             cx(i)=f*klic%cx(1)
           else
             return
@@ -980,7 +980,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
         return
       elseif(even)then
         a(1:m)=kl%rbody(1:m)
-c        call tmov(kl%body(1),a,m)
+c        call tmov(kl%dbody(1),a,m)
         if(power2)then
           if(m .ge. 4)then
             call trftr(a,m,inv)

@@ -1,26 +1,3 @@
-      module tmacro
-        use mackw
-        use macphys
-        use macfile
-        real*8, parameter :: c=cveloc,hp=plankr,e=elemch
-        real*8
-     $       amass,charge,h0,p0,omega0,trf0,crad,erad,epsrad,
-     $       codin(6),dleng,anrad,urad,u0,vc0,wrfeff,dp0,brho,
-     $       ccintr,cintrb,pbunch,coumin,re0,pgev,emidiv,
-     $       emidib,emidiq,emidis,ctouck,dvemit,h1emit,
-     $       anbunch,tdummy(6),zlost,alost,
-     $       taurdx,taurdy,taurdz,fridiv,beamin(21),
-     $       vcalpha,vceff,vcacc,dvcacc,ddvcacc,alphap,
-     $       pspac_dx,pspac_dy,pspac_dz,dvfs,rcratio,rclassic,brhoz,
-     $       bradprev,amom0,circ,hvc0
-        integer*8 ilattp,lspect,ipoltr,ipolb,ipoll,ipolid,ipolo
-        integer*4 nflag0,nlat,np0,nturn,isynch,nspect,
-     $       lplot,nplot,nuse,nclas,irad,novfl,npelm,ipelm,
-     $       nparallel,pspac_nx,pspac_ny,pspac_nz,
-     $       pspac_nturn,pspac_nturncalc
-        logical*4 oldflagsdummy,calint,caltouck,tparaed
-      end module
-
       module sad_main
         use tfstk, only:sad_descriptor
         integer*4, parameter ::expnsize=7
@@ -114,178 +91,31 @@ c$$$
         return
         end function
 
-        subroutine tclrpara(el,nl)
-        use tmacro
-c        use maccbk, only:idtype,pname
-        use tfstk, only:itfcbk
-        use tfmem, only:tfree
-        implicit none
-        type (sad_el), pointer :: el
-        type (sad_comp), pointer :: cmp
-        integer*4 nl,i
-        integer*8 lp
-        do i=1,nl
-          lp=el%comp(i)
-          if(lp .gt. 0)then
-            call loc_comp(lp,cmp)
-            cmp%update=0
-          endif
-c$$$  if(idtype(ilist(2,lp)) .eq. 31)then
-c$$$  iwpl=ilist(1,lp+kytbl(kwLWAK,icCAVI))
-c$$$  if(iwpl .gt. 0)then
-c$$$  if(ilist(2,iwpl) .gt. 0)then
-c$$$  call tfree(int8(ilist(2,iwpl)))
-c$$$  ilist(2,iwpl)=0
-c$$$  endif
-c$$$  endif
-c$$$  iwpt=ilist(1,lp+kytbl(kwTWAK,icCAVI))
-c$$$  if(iwpt .gt. 0)then
-c$$$  if(ilist(2,iwpt) .gt. 0)then
-c$$$  call tfree(int8(ilist(2,iwpt)))
-c$$$  ilist(2,iwpt)=0
-c$$$  endif
-c$$$  endif
-c$$$  endif
-        enddo
-        tparaed=.false.
-        return
-        end subroutine
-
-        logical*4 function tcheckseg(cmp,ltyp,al,lal,irtc) result(seg)
-        use tfstk
-        use mackw
-        implicit none
-        type (sad_descriptor) :: kal
-        type (sad_comp) ::cmp
-        type (sad_rlist) , pointer ::lal
-        real*8 al
-        integer*4 lk,irtc,ltyp,itfmessage,lp,i
-        lk=kytbl(kwL,ltyp)
-        if(lk .gt. 0)then
-          kal=cmp%dvalue(lk)
-          seg=ktfnonrealq(kal,al)
-          if(seg)then
-            if(tfnonreallistq(kal,lal))then
-              lp=len_trim(pname(cmp%id))
-              irtc=itfmessage(999,'FFS::wrongkeyval',
-     $             '"'//pname(cmp%id)(1:lp)//'"')
-              return
-            else
-              al=lal%rbody(1)
-              do i=2,lal%nl
-                al=al+lal%rbody(i)
-              enddo
-            endif
-          endif
-        else
-          seg=.false.
-          al=0.d0
-        endif
-        irtc=0
-        return
-        end function
-
-        subroutine tfvcopycmp(cmps,cmpd,k,coeff)
-        use tfstk
-        use mackw
-        implicit none
-        type (sad_comp) :: cmps,cmpd
-        type (sad_rlist), pointer :: las,lad,lasl,ladl
-        real*8 coeff
-        integer*4 k,ky
-        if(ktfrealq(cmps%dvalue(k)))then
-          cmpd%value(k)=cmps%value(k)*coeff
-        elseif(tfreallistq(cmps%dvalue(k),las))then
-          if(tfnonreallistq(cmpd%dvalue(k),lad)
-     $         .or. lad%nl .ne. las%nl)then
-            call tflocald(cmpd%dvalue(k))
-            cmpd%dvalue(k)=kxavaloc(0,las%nl,lad)
-          endif
-          lad%rbody(1:las%nl)=las%rbody(1:las%nl)*coeff
-          ky=kytbl(kwL,idtype(cmpd%id))
-          if(ky .ne. 0 .and. ky .ne. k)then
-            if(tfnonreallistq(cmpd%dvalue(ky)) .and.
-     $           tfreallistq(cmps%dvalue(ky),lasl))then
-              call tflocald(cmpd%dvalue(ky))
-              cmpd%dvalue(ky)=kxavaloc(0,las%nl,ladl)
-              ladl%rbody(1:lasl%nl)=las%rbody(1:lasl%nl)
-            endif
-          endif
-        endif
-        cmpd%update=0
-        return
-        end subroutine
-
-        subroutine tfvcopycmpall(cmps,cmpd,n)
-        use tfstk
-        use mackw
-        implicit none
-        type (sad_comp) :: cmps,cmpd
-        type (sad_rlist), pointer :: las,lad
-        integer*4 k,n
-        do k=1,n
-          if(ktfrealq(cmps%dvalue(k)))then
-            cmpd%value(k)=cmps%value(k)
-          elseif(tfreallistq(cmps%dvalue(k),las))then
-            if(tfnonreallistq(cmpd%dvalue(k),lad)
-     $           .or. lad%nl .ne. las%nl)then
-              call tflocald(cmpd%dvalue(k))
-              cmpd%dvalue(k)=kxavaloc(0,las%nl,lad)
-            endif
-            lad%rbody(1:las%nl)=las%rbody(1:las%nl)
-          endif
-        enddo
-        cmpd%update=0
-        return
-        end subroutine
-
-        real*8 function tfvcmp(cmps,k) result(v)
-        use mackw
-        use tfstk
-        implicit none
-        type (sad_comp) :: cmps
-        type (sad_rlist), pointer :: las
-        integer*4 j,k
-        if(ktfnonrealq(cmps%dvalue(k),v))then
-          if(tfreallistq(cmps%dvalue(k),las))then
-            v=las%rbody(1)
-            do j=2,las%nl
-              v=v+las%rbody(j)
-            enddo
-          endif
-        endif
-        return
-        end function
-
-        subroutine tfsetcmp(v,cmpd,i)
-        use mackw
-        use tfstk
-        implicit none
-        type (sad_comp) :: cmpd
-        type (sad_rlist), pointer :: lad
-        integer*4 i,k
-        real*8 r0,v
-        if(ktfrealq(cmpd%dvalue(i)))then
-c     write(*,*)'tfsetcmp-0 ',i,v
-          cmpd%value(i)=v
-        elseif(tfreallistq(cmpd%dvalue(i),lad))then
-          r0=lad%rbody(1)
-          do k=2,lad%nl
-            r0=r0+lad%rbody(k)
-          enddo
-c     write(*,*)'tfsetcmp-1 ',i,r0,v
-          if(r0 .ne. 0.d0)then
-            lad%rbody(1:lad%nl)=v/r0*lad%rbody(1:lad%nl)
-          else
-            do k=1,lad%nl
-              lad%rbody(k)=v/lad%nl
-            enddo
-          endif
-        endif
-        return
-        end subroutine
-
       end module
+
+
+      module tmacro
+        use mackw
+        use macphys
+        use macfile
+        real*8, parameter :: c=cveloc,hp=plankr,e=elemch
+        real*8 amass,charge,h0,p0,omega0,trf0,crad,erad,epsrad,
+     $       codin(6),dleng,anrad,urad,u0,vc0,wrfeff,dp0,brho,
+     $       ccintr,cintrb,pbunch,coumin,re0,pgev,emidiv,
+     $       emidib,emidiq,emidis,ctouck,dvemit,h1emit,
+     $       anbunch,tdummy(6),zlost,alost,
+     $       taurdx,taurdy,taurdz,fridiv,beamin(21),
+     $       vcalpha,vceff,vcacc,dvcacc,ddvcacc,alphap,
+     $       pspac_dx,pspac_dy,pspac_dz,dvfs,rcratio,rclassic,brhoz,
+     $       bradprev,amom0,circ,hvc0
+        integer*8 ilattp,lspect,ipoltr,ipolb,ipoll,ipolid,ipolo
+        integer*4 nflag0,nlat,np0,nturn,isynch,nspect,
+     $       lplot,nplot,nuse,nclas,irad,novfl,npelm,ipelm,
+     $       nparallel,pspac_nx,pspac_ny,pspac_nz,
+     $       pspac_nturn,pspac_nturncalc
+        logical*4 oldflagsdummy,calint,caltouck,tparaed
+      end module
+
 
       module tffitcode
       implicit none
@@ -406,7 +236,7 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       real*8, pointer :: emx,emy,dpmax,xixf,xiyf,sizedp
       real*8, pointer, dimension(:,:) :: geo0
       integer*4, pointer :: ndim,ndima,nele,nfit,marki,iorgx,iorgy,
-     $     iorgr,mfpnt,mfpnt1,id1,id2,nve
+     $     iorgr,mfpnt,mfpnt1,id1,id2,nve,ntouch
       logical*4 , pointer :: updatesize
 
       type ffs_bound
@@ -467,6 +297,7 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
         nve=>ffv%nve
         ielmhash=>ffv%ielmhash
         updatesize=>ffv%updatesize
+        ntouch=>ffv%ntouch
         flv=>ffv
         return
         end subroutine
@@ -676,6 +507,7 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
         use ffs_flag
       end module
 
+
       module ffs_pointer
       use sad_main
       implicit none
@@ -798,6 +630,7 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
         end function
 
         subroutine compelc(i,cmp)
+        use sad_main
         implicit none
         type (sad_comp),pointer, intent(out) :: cmp
         integer*4 i
@@ -856,23 +689,12 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
         return
         end function
 
-        subroutine tfvcopy(is,id,k,coeff)
-        implicit none
-        type (sad_comp), pointer :: cmps,cmpd
-        real*8 coeff
-        integer*4 is,id,k
-        call compelc(id,cmpd)
-        call compelc(is,cmps)
-        call tfvcopycmp(cmps,cmpd,k,coeff)
-        return
-        end subroutine
-
         real*8 function tfvalvar(i,k) result(v)
         implicit none
         type (sad_comp), pointer :: cmps
         integer*4 i,k
         call compelc(i,cmps)
-        v=tfvcmp(cmps,k)
+        v=cmps%value(k)
         return
         end function
 
@@ -942,7 +764,272 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
         return
         end subroutine
 
+      end module
+
+      module tparastat
+        use sad_main
+        use tmacro
+        real*8, save :: rstat(2,icMARK)=0.d0
+        logical*4, save :: lstat(2,icMARK)=.true.
+
+        contains
+        logical*4 function tparacheck(l,cmp)
+        use ffs_flag
+        implicit none
+        type (sad_comp) :: cmp
+        integer*4 l
+
+        select case (l)
+        case (icMULT,icCAVI)
+          tparacheck=rstat(1,l) .ne. amass .or.
+     $         rstat(2,l) .ne. charge .or.
+     $         lstat(1,l) .neqv. trpt
+          if(tparacheck)then
+            rstat(1,l)=amass
+            rstat(2,l)=charge
+            lstat(1,l)=trpt
+          else
+            tparacheck=iand(cmp%update,1) .eq. 0
+          endif
+
+        case default
+          tparacheck=iand(cmp%update,1) .eq. 0 
+
+        end select
+        return
+        end function
+
+        subroutine tpara(cmp)
+        use kyparam
+        use tfstk
+        use ffs_pointer, only:idelc,idvalc,compelc,tsetfringep
+        use ffs_flag, only:trpt
+        implicit none
+        type (sad_comp) :: cmp
+        integer*4 ltyp
+        real*8 phi,al,psi1,psi2,theta,dtheta,w,akk,sk1,
+     $       fb1,fb2,harm,vnominal,frmd
+
+        cmp%update=ior(cmp%update,1)
+        ltyp=idtype(cmp%id)
+        if(kytbl(kwNPARAM,ltyp) .eq. 0)then
+          return
+        endif
+        select case (ltyp)
+        case (icBEND)
+          phi=cmp%value(ky_ANGL_BEND)
+          if(cmp%orient .gt. 0.d0)then
+            psi1=cmp%value(ky_E1_BEND)*phi+cmp%value(ky_AE1_BEND)
+            psi2=cmp%value(ky_E2_BEND)*phi+cmp%value(ky_AE2_BEND)
+            fb1=cmp%value(ky_F1_BEND)+cmp%value(ky_FB1_BEND)
+            fb2=cmp%value(ky_F1_BEND)+cmp%value(ky_FB2_BEND)
+          else
+            psi1=cmp%value(ky_E2_BEND)*phi+cmp%value(ky_AE2_BEND)
+            psi2=cmp%value(ky_E1_BEND)*phi+cmp%value(ky_AE1_BEND)
+            fb2=cmp%value(ky_F1_BEND)+cmp%value(ky_FB1_BEND)
+            fb1=cmp%value(ky_F1_BEND)+cmp%value(ky_FB2_BEND)
+          endif
+          if(cmp%value(ky_FRMD_BEND) .eq. 0.d0)then
+            fb1=0.d0
+            fb2=0.d0
+          endif
+          al=cmp%value(ky_L_BEND)
+          w=phi-psi1-psi2
+          if((fb1 .ne. 0.d0 .or. fb2 .ne. 0.d0) .and.
+     1         al .ne. 0.d0 .and. phi .ne. 0.d0)then
+            al=al-((phi*fb1)**2+(phi*fb2)**2)/al/48.d0
+     1           *sin(.5d0*w)/sin(.5d0*phi)
+          endif
+          cmp%value(p_L_BEND)=al
+          dtheta=cmp%value(ky_DROT_BEND)
+          theta=cmp%value(ky_ROT_BEND)+dtheta
+          cmp%value(p_COSPSI1_BEND)=cos(psi1)
+          cmp%value(p_SINPSI1_BEND)=sin(psi1)
+          cmp%value(p_COSPSI2_BEND)=cos(psi2)
+          cmp%value(p_SINPSI2_BEND)=sin(psi2)
+          cmp%value(p_COSTHETA_BEND)=cos(theta)
+          cmp%value(p_SINTHETA_BEND)=sin(theta)
+          cmp%value(p_COSW_BEND)=cos(w)
+          cmp%value(p_SINW_BEND)=sin(w)
+          if(cmp%value(p_COSW_BEND) .ge. 0.d0)then
+            cmp%value(p_SQWH_BEND)=cmp%value(p_SINW_BEND)**2
+     $           /(1.d0+cmp%value(p_COSW_BEND))
+          else
+            cmp%value(p_SQWH_BEND)=1.d0-cmp%value(p_COSW_BEND)
+          endif
+          cmp%value(p_SINWP1_BEND)=sin(phi-psi2)
+          cmp%value(p_DPHIX_BEND)=phi*sin(.5d0*dtheta)**2
+          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
+          cmp%value(p_THETA_BEND)=theta
+          cmp%value(p_FB1_BEND)=fb1
+          cmp%value(p_FB2_BEND)=fb2
+
+        case (icQUAD)
+          al=cmp%value(ky_L_QUAD)
+          if(al .ne. 0.d0)then
+            akk=cmp%value(ky_K1_QUAD)/al
+            cmp%value(p_SQRTK_QUAD)  =sqrt(abs(akk))
+            call tsetfringep(cmp,icQUAD,cmp%orient,akk,
+     $           cmp%value(p_AKF1F_QUAD:p_AKF2B_QUAD))
+          else
+            cmp%value(p_SQRTK_QUAD)=1.d100
+            cmp%value(p_AKF1F_QUAD:p_AKF2B_QUAD)=0.d0
+          endif
+          theta=cmp%value(ky_ROT_QUAD)
+          cmp%value(p_COSTHETA_QUAD)=cos(theta)
+          cmp%value(p_SINTHETA_QUAD)=sin(theta)
+          cmp%value(p_THETA_QUAD)=theta
+          frmd=cmp%value(ky_FRMD_QUAD)
+          if(cmp%orient .lt. 0.d0)then
+            frmd=frmd*(11.d0+frmd*(2.d0*frmd-9.d0))/2.d0
+          endif
+          cmp%value(p_FRMD_QUAD)=frmd
+
+        case (icSEXT,icOCTU,icDECA,icDODECA)
+          theta=cmp%value(ky_ROT_THIN)
+          cmp%value(p_COSTHETA_THIN)=cos(theta)
+          cmp%value(p_SINTHETA_THIN)=sin(theta)
+          cmp%value(p_THETA_THIN)=theta
+
+        case (icUND)
+          call undinit(cmp%value(1),cmp%value(p_PARAM_UND))
+
+        case (icWIG)
+          call twigp()
+
+        case (icMULT)
+          al=cmp%value(ky_L_MULT)
+          phi=cmp%value(ky_ANGL_MULT)
+          if(cmp%orient .gt. 0.d0)then
+            psi1=cmp%value(ky_E1_MULT)*phi+cmp%value(ky_AE1_MULT)
+            psi2=cmp%value(ky_E2_MULT)*phi+cmp%value(ky_AE2_MULT)
+            fb1=cmp%value(ky_FB1_MULT)
+            fb2=cmp%value(ky_FB2_MULT)
+          else
+            psi1=cmp%value(ky_E2_MULT)*phi+cmp%value(ky_AE2_MULT)
+            psi2=cmp%value(ky_E1_MULT)*phi+cmp%value(ky_AE1_MULT)
+            fb2=cmp%value(ky_FB1_MULT)
+            fb1=cmp%value(ky_FB2_MULT)
+          endif
+          frmd=cmp%value(ky_FRMD_MULT)
+          if(cmp%orient .lt. 0.d0)then
+            frmd=frmd*(11.d0+frmd*(2.d0*frmd-9.d0))/2.d0
+          endif
+          cmp%value(p_FRMD_MULT)=frmd
+          if(frmd .ne. 3.d0 .and. frmd .ne. 1.d0)then
+            fb1=0.d0
+          endif
+          if(frmd .ne. 3.d0 .and. frmd .ne. 2.d0)then
+            fb2=0.d0
+          endif
+          w=phi-psi1-psi2
+          if((fb1 .ne. 0.d0 .or. fb2 .ne. 0.d0) .and.
+     1         al .ne. 0.d0 .and. phi .ne. 0.d0)then
+            al=al-((phi*fb1)**2+(phi*fb2)**2)/al/48.d0
+     $           *sin(.5d0*w)/sin(.5d0*phi)
+          endif
+          cmp%value(p_L_MULT)=al
+          cmp%value(p_PSI1_MULT)=psi1
+          cmp%value(p_PSI2_MULT)=psi2
+          cmp%value(p_FB1_MULT)=fb1
+          cmp%value(p_FB2_MULT)=fb2
+          if(al .ne. 0.d0)then
+            sk1=cmp%value(ky_SK1_MULT)
+            if(sk1 .eq. 0.d0)then
+              akk=cmp%value(ky_K1_MULT)/al
+            else
+              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
+            endif
+            call tsetfringep(cmp,icMULT,cmp%orient,akk,
+     $           cmp%value(p_AKF1F_MULT:p_AKF2B_MULT))
+          else
+            cmp%value(p_AKF1F_MULT:p_AKF2B_MULT)=0.d0
+          endif
+          harm=cmp%value(ky_HARM_MULT)
+          if(harm .eq. 0.d0)then
+            w=pi2*cmp%value(ky_FREQ_MULT)/c
+          else
+            w=omega0*harm/c
+          endif
+          if(trpt)then
+            vnominal=cmp%value(ky_VOLT_MULT)/amass*abs(charge)
+     $           *sin(-cmp%value(ky_PHI_MULT)*sign(1.d0,charge))
+          else
+            vnominal=0.d0
+          endif
+          cmp%value(p_W_MULT)=w
+          cmp%value(p_VNOMINAL_MULT)=vnominal
+
+        case (icCAVI)
+          frmd=cmp%value(ky_FRMD_CAVI)
+          if(cmp%orient .lt. 0.d0)then
+            frmd=frmd*(11.d0+frmd*(2.d0*frmd-9.d0))/2.d0
+          endif
+          cmp%value(p_FRMD_CAVI)=frmd
+          harm=cmp%value(ky_HARM_CAVI)
+          if(harm .eq. 0.d0)then
+            w=pi2*cmp%value(ky_FREQ_CAVI)/c
+          else
+            w=omega0*harm/c
+          endif
+          if(trpt)then
+            vnominal=cmp%value(ky_VOLT_CAVI)/amass*abs(charge)
+     $           *sin(-cmp%value(ky_PHI_CAVI)*sign(1.d0,charge))
+          else
+            vnominal=0.d0
+          endif
+          cmp%value(p_W_CAVI)=w
+          cmp%value(p_VNOMINAL_CAVI)=vnominal
+
+        case (icBEAM)
+          call bbinit(cmp%value(1),cmp%value(p_PARAM_BEAM))
+
+        case (icPROT)
+          call phsinit(cmp%value(1),cmp%value(p_PARAM_Prot))
+
+        case default
+        end select
+        return
+        end subroutine
+
+        subroutine tclrpara(el,nl)
+        use tmacro
+        use tfstk, only:itfcbk
+        use tfmem, only:tfree
+        implicit none
+        type (sad_el), pointer :: el
+        type (sad_comp), pointer :: cmp
+        integer*4 nl,i
+        integer*8 lp
+        do i=1,nl
+          lp=el%comp(i)
+          if(lp .gt. 0)then
+            call loc_comp(lp,cmp)
+            cmp%update=0
+          endif
+c$$$  if(idtype(ilist(2,lp)) .eq. 31)then
+c$$$  iwpl=ilist(1,lp+kytbl(kwLWAK,icCAVI))
+c$$$  if(iwpl .gt. 0)then
+c$$$  if(ilist(2,iwpl) .gt. 0)then
+c$$$  call tfree(int8(ilist(2,iwpl)))
+c$$$  ilist(2,iwpl)=0
+c$$$  endif
+c$$$  endif
+c$$$  iwpt=ilist(1,lp+kytbl(kwTWAK,icCAVI))
+c$$$  if(iwpt .gt. 0)then
+c$$$  if(ilist(2,iwpt) .gt. 0)then
+c$$$  call tfree(int8(ilist(2,iwpt)))
+c$$$  ilist(2,iwpt)=0
+c$$$  endif
+c$$$  endif
+c$$$  endif
+        enddo
+        tparaed=.false.
+        return
+        end subroutine
+
         subroutine tclrparaall()
+        use ffs_pointer
         implicit none
         call tclrpara(elatt,elatt%nlat1-2)
         return
@@ -995,6 +1082,490 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       logical*4 wake
       integer*8 , pointer :: kwaketbl(:,:)
       integer*4 , pointer :: iwakeelm(:)
+      end module
+
+      module tflinepcom
+      use tfstk
+      implicit none
+      integer*8, save :: iflinep=0,ifinitlinep=0,ifelementp=0,
+     $     ifelementkeyp=0,iftypekeyp=0
+      type (sad_descriptor) ksdumm
+
+      contains
+
+      integer*4 function itftypekey(i,word1,lw1)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx,ks
+      integer*4 i,isp0,lw1,irtc
+      character*(lw1) word1
+      isp0=isp
+      ktastk(isp0+1)=iftypekeyp
+      rtastk(isp0+2)=dble(i)
+      isp=isp0+3
+      ks=kxsalocb(-1,word1,lw1)
+      dtastk(isp)=ks
+      levele=levele+1
+      call tfefunref(isp0+1,kx,.false.,irtc)
+      call tfconnect(kx,irtc)
+      isp=isp0
+      if(irtc .ne. 0)then
+        call tfreseterror
+        itftypekey=0
+      elseif(.not. ktfrealq(kx))then
+        itftypekey=0
+      else
+        itftypekey=ifromd(kx)
+      endif        
+      return
+      end function
+
+      integer*4 function itfelementkey(i,word1,lw1)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx,ks
+      integer*4 i,isp0,lw1,irtc
+      character*(lw1) word1
+      isp0=isp
+      ktastk(isp0+1)=ifelementkeyp
+      rtastk(isp0+2)=dble(i)
+      isp=isp0+3
+      ks=kxsalocb(-1,word1,lw1)
+      dtastk(isp)=ks
+      levele=levele+1
+      call tfefunref(isp0+1,kx,.false.,irtc)
+      call tfconnect(kx,irtc)
+      isp=isp0
+      if(irtc .ne. 0)then
+        call tfreseterror
+        itfelementkey=0
+      elseif(.not. ktfrealq(kx))then
+        itfelementkey=0
+      else
+        itfelementkey=ifromd(kx)
+      endif        
+      return
+      end function
+
+      subroutine tftypekey(isp1,kx,irtc)
+      use tfstk
+      use maccbk
+      use maccode
+      use mackw
+      implicit none
+      type (sad_descriptor) kx
+      real*8 c
+      integer*4 ic,isp0,isp1,irtc,itfmessage
+      if(isp .ne. isp1+1)then
+        irtc=itfmessage(9,'General::narg','"1"')
+        return
+      endif
+      if(.not. ktfrealq(dtastk(isp),c))then
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"Typecode for #1"')
+        return
+      endif
+      ic=int(c)
+      if(ic .lt. 0 .or. ic .gt. icMXEL)then
+        irtc=itfmessage(9,'General::wrongval',
+     $       '"Typecode out of range"')
+        return
+      endif
+      isp0=isp
+      call tftypekeystk(ic,.true.)
+      kx=kxmakelist(isp0)
+      isp=isp0
+      irtc=0
+      return
+      end subroutine
+
+      subroutine tftypekeystk(ic,all)
+      use tfstk
+      use mackw
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 ic,lenw,i
+      logical*4 all
+      character*(MAXPNAME) key,tfkwrd,tfkwrd1
+      do i=1,kytbl(kwMAX,ic)-1
+        key=tfkwrd(ic,i)
+        if(all .or. key .ne. '-')then
+          isp=isp+1
+          if(key .eq. '-')then
+            dtastk(isp)=ksdumm
+          else
+            dtastk(isp)=kxsalocb(-1,key,lenw(key))
+            if(kyindex1(i,ic) .ne. 0)then
+              key=tfkwrd1(ic,i)
+              isp=isp+1
+              dtastk(isp)=kxsalocb(-1,key,lenw(key))
+              kx=kxmakelist(isp-2)
+              isp=isp-1
+              dtastk(isp)=kx
+            endif
+          endif
+        endif
+      enddo
+      return
+      end subroutine
+
+      type (sad_descriptor) function tfkeyv(i,keyword,ia,cmp,ref,saved)
+      use tfstk
+      use ffs
+      use tffitcode
+      use ffs_pointer, only:idelc,elatt,idtypec,idvalc,sad_comp,
+     $     compelc
+      implicit none
+      type (sad_rlist), pointer :: kld,klr
+      integer*4 i,it,kl,l,j,lk,lenw
+      integer*8 ia
+      character*(*) keyword
+      character*128 key
+      logical*4 saved,sum,ref
+      real*8 s
+      type (sad_comp), pointer :: cmp
+c     begin initialize for preventing compiler warning
+      kl=0
+c     end   initialize for preventing compiler warning
+      if(i .gt. 0)then
+        call compelc(i,cmp)
+      else
+        kl=ilist(-i,ifklp)
+        call compelc(kl,cmp)
+      endif
+      sum=.false.
+      lk=lenw(keyword)
+      if(lk .gt. 4 .and. keyword(lk-3:lk) .eq. '$SUM')then
+        sum=.true.
+        lk=lk-4
+      endif
+      key(1:lk)=keyword(1:lk)
+      it=idtype(cmp%id)
+      do l=1,kytbl(kwMAX,it)-1
+        j=kyindex(l,it)
+        if(j .gt. 0)then
+          if(pname(kytbl(j,0))(2:) .eq. key(1:lk))then
+            go to 1
+          endif
+          j=kyindex1(l,it)
+          if(j .gt. 0)then
+            if(pname(kytbl(j,0))(2:) .eq. key(1:lk))then
+              go to 1
+            endif
+          endif
+        endif
+      enddo
+      ia=0
+      tfkeyv%k=0
+      return
+ 1    if(i .gt. 0)then
+        ia=elatt%comp(i)+l
+        tfkeyv=dlist(ia)
+        if(.not. ref)then
+          call tftouch(i,l)
+        endif
+      elseif(saved)then
+        ia=idvalc(kl)+l
+        tfkeyv=dlist(ia)
+      else
+        ia=elatt%comp(kl)+l
+        if(l .eq. ilist(-i,ifival))then
+          if(tfreallistq(dlist(ia),klr))then
+            tfkeyv=kxavaloc(-1,klr%nl,kld)
+            kld%rbody(1:klr%nl)=klr%rbody(1:klr%nl)
+     $           /rlist(iferrk+(kl-1)*2)
+c            write(*,*)'tfkeyv ',i,l,ia,l,kl,ilist(-i,ifival),
+c     $           klr%nl,rlist(iferrk+(kl-1)*2)
+c            call tfdebugprint(dlist(ia),'tfkeyv-s',1)
+c            call tfdebugprint(tfkeyv,'tfkeyv-d',2)
+c          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
+          else
+            tfkeyv=dlist(ia)
+          endif
+        else
+          tfkeyv=dlist(ia)
+        endif
+        if(.not. ref)then
+          call tftouch(kl,l)
+        endif
+      endif
+      if(sum .and. tfreallistq(tfkeyv,klr))then
+        s=klr%rbody(1)
+        do i=2,klr%nl
+          s=s+klr%rbody(i)
+        enddo
+        tfkeyv=dfromr(s)
+      endif
+      return
+      end function
+
+      subroutine tftouch(i,iv)
+      use ffs
+      use ffs_pointer
+      implicit none
+      integer*4 iv,j,i
+      do j=1,flv%ntouch
+        if(itouchele(j) .eq. i .and. itouchv(j) .eq. iv)then
+          return
+        endif
+      enddo
+      if(flv%ntouch .lt. flv%nve*2)then
+        flv%ntouch=flv%ntouch+1
+        itouchele(flv%ntouch)=i
+        itouchv(flv%ntouch)=iv
+      endif
+      return
+      end subroutine
+
+      end module
+
+      module ffs_seg
+      contains
+        logical*4 function tcheckseg(cmp,ltyp,al,lsegp,irtc) result(seg)
+        use tfstk
+        use mackw
+        use tparastat, only:tpara
+        use sad_main
+        use kyparam
+        implicit none
+        type (sad_comp) ::cmp
+        type (sad_dlist) , pointer :: lprof,lsegp
+c        type (sad_rlist) , pointer :: llp
+        real*8 al
+        integer*4 irtc,ltyp,kl,kprof
+        irtc=0
+        seg=.false.
+        kl=kytbl(kwL,ltyp)
+        if(kl .eq. 0)then
+          al=0.d0
+        else
+          al=cmp%value(kl)
+        endif
+        kprof=kytbl(kwPROF,ltyp)
+        if(kprof .eq. 0 .or. tfnonlistq(cmp%dvalue(kprof),lprof))then
+          return
+        endif
+        if(iand(cmp%update,2) .eq. 0)then
+          call tsetupseg(cmp,lprof,lsegp,irtc)
+          if(irtc .ne. 0)then
+            return
+          endif
+        else
+          call descr_sad(cmp%dvalue(p_PROF_MULT),lsegp)
+        endif
+c        call descr_sad(lsegp%dbody(kytbl(kwL,ltyp)),llp)
+c        sl=llp%rbody(1)
+c        do i=2,llp%nl
+c          sl=sl+llp%rbody(i)
+c        enddo
+c        al=al*sl
+        seg=.true.
+        return
+        end function
+
+        subroutine tsetupseg(cmp,lprof,lsegp,irtc)
+        use tfstk
+        use kyparam
+        use mackw
+        use tflinepcom
+        use sad_main
+        implicit none
+        type (sad_comp) ::cmp
+        type (sad_rlist) , pointer :: lvi,lvl,lpvi
+        type (sad_dlist) , pointer :: lsegp,lpi,lprof
+        type (sad_string), pointer :: stri
+        integer*4 ltyp,lls,i,nseg,irtc,ki,itfmessage,l,itfdownlevel
+        irtc=0
+        ltyp=idtype(cmp%id)
+        select case (ltyp)
+        case (icMULT)
+          lls=0
+          do i=1,lprof%nl
+            if(tfnonlistq(lprof%dbody(i),lpi) .or. lpi%nl .lt. 2)then
+              irtc=itfmessage(99,"FFS::wrongkeylist",'""')
+              return
+            endif
+            if(.not. ktfstringq(lpi%dbody(1),stri))then
+              irtc=itfmessage(99,"FFS::wrongkeylist",'""')
+              return
+            endif
+            if(stri%str(1:stri%nch) .eq. 'L')then
+              if(tfnonreallistq(lpi%dbody(2),lvl))then
+                irtc=itfmessage(99,"FFS::wrongkeylist",'""')
+                return
+              endif
+              lls=i
+            endif
+          enddo
+          if(lls .eq. 0)then
+            irtc=itfmessage(99,"FFS::noLseg",'""')
+            return
+          endif
+          nseg=lvl%nl
+          levele=levele+1
+          if(tfnonlistq(cmp%dvalue(p_PROF_MULT),lsegp) .or.
+     $         lsegp%nl .ne. ky_MAX_MULT)then
+            call tflocald(cmp%dvalue(p_PROF_MULT))
+            cmp%dvalue(p_PROF_MULT)=kxadaloc(0,ky_MAX_MULT,lsegp)
+            lsegp%dbody(1:ky_MAX_MULT-1)%k=ktfoper+mtfnull
+          endif
+          do i=1,lprof%nl
+            call descr_sad(lprof%dbody(i),lpi)
+            call descr_sad(lpi%dbody(1),stri)
+            call descr_sad(lpi%dbody(2),lpvi)
+            ki=itftypekey(icMULT,stri%str,stri%nch)
+            if(ki .eq. 0)then
+              irtc=itfmessage(99,"FFS::wrongkey",'""')
+              go to 9000
+            endif
+            if(lpvi%nl .ne. nseg)then
+              irtc=itfmessage(99,"FFS::unequalkeyleng",'""')
+              go to 9000
+            endif
+            if(tfnonreallistq(lsegp%dbody(ki),lvi) .or.
+     $           lvi%nl .ne. nseg)then
+              call tflocald(lsegp%dbody(ki))
+              lsegp%dbody(ki)%k=ktavaloc(0,nseg,lvi)
+            endif
+            lvi%rbody(1:nseg)=lpvi%rbody(1:nseg)
+          enddo
+          cmp%update=ior(cmp%update,2)
+        case default
+          cmp%update=ior(cmp%update,2)
+          return
+        end select
+ 9000   l=itfdownlevel()
+        return
+        end
+
+        subroutine tfvcopycmp(cmps,cmpd,k,coeff)
+        use tfstk
+        use mackw
+        use sad_main
+        implicit none
+        type (sad_comp) :: cmps,cmpd
+        real*8 coeff
+        integer*4 k
+        if(ktfrealq(cmps%dvalue(k)))then
+          if(ktfnonrealq(cmpd%dvalue(k)))then
+            call tflocald(cmpd%dvalue(k))
+          endif
+          cmpd%value(k)=cmps%value(k)*coeff
+        elseif(tflistq(cmps%dvalue(k)))then
+          if(ktfnonrealq(cmpd%dvalue(k)))then
+            call tflocald(cmpd%dvalue(k))
+          endif
+          cmpd%dvalue(k)=dtfcopy1(cmps%dvalue(k))
+c$$$           if(tfnonlistq(cmpd%dvalue(k),lad)
+c$$$     $         .or. lad%nl .ne. las%nl)then
+c$$$            if(ktfnonrealq(cmpd%dvalue(k)))then
+c$$$c              call tflocald(cmpd%dvalue(k))
+c$$$            endif
+c$$$            cmpd%dvalue(k)=kxadaloc(0,las%nl,lad)
+c$$$            lad%dbody(1:lad%nl)%k=ktfoper+mtfnull
+c$$$          endif
+c$$$          do i=1,las%nl
+c$$$            if(tflistq(las%dbody(i),lasi))then
+c$$$              if(tfnonlistq(lad%dbody(i),ladi) .or.
+c$$$     $             lasi%nl .ne. ladi%nl)then
+c$$$                call tflocald(lad%dbody(i))
+c$$$                lad%dbody(i)=kxadaloc(0,lasi%nl,ladi)
+c$$$                ladi%dbody(1:ladi%nl)%k=ktfoper+mtfnull
+c$$$              endif
+c$$$              do j=1,lasi%nl
+c$$$                if(tfreallistq(lasi%dbody(j),lvsi))then
+c$$$                  if(tfnonreallistq(ladi%dbody(j),lvdi) .or.
+c$$$     $                 lvsi%nl .ne. lvdi%nl)then
+c$$$                    call tflocald(ladi%dbody(j))
+c$$$                    ladi%dbody(j)=kxavaloc(0,lvsi%nl,lvdi)
+c$$$                  endif
+c$$$                  lvdi%rbody(1:lvdi%nl)=lvsi%rbody(1:lvsi%nl)
+c$$$                else
+c$$$                  call tflocald(ladi%dbody(j))
+c$$$                  ladi%dbody(j)=dtfcopy(lasi%dbody(j))
+c$$$                endif
+c$$$              enddo
+c            endif
+c          enddo
+        endif
+        return
+        end subroutine
+
+        subroutine tfvcopy(is,id,k,coeff)
+        use sad_main
+        use ffs_pointer
+        implicit none
+        type (sad_comp), pointer :: cmps,cmpd
+        real*8 coeff
+        integer*4 is,id,k
+        call compelc(id,cmpd)
+        call compelc(is,cmps)
+        call tfvcopycmp(cmps,cmpd,k,coeff)
+        cmpd%update=iand(2,cmpd%update)
+        return
+        end subroutine
+
+        subroutine tfvcopycmpall(cmps,cmpd,n)
+        use tfstk
+        use mackw
+        use sad_main
+        implicit none
+        type (sad_comp) :: cmps,cmpd
+        integer*4 k,n
+        do k=1,n
+          call tfvcopycmp(cmps,cmpd,k,1.d0)
+        enddo
+        return
+        end subroutine
+
+        real*8 function tfvcmp(cmps,k) result(v)
+        use mackw
+        use tfstk
+        use sad_main
+        implicit none
+        type (sad_comp) :: cmps
+        type (sad_rlist), pointer :: las
+        integer*4 j,k
+        if(ktfnonrealq(cmps%dvalue(k),v))then
+          if(tfreallistq(cmps%dvalue(k),las))then
+            v=las%rbody(1)
+            do j=2,las%nl
+              v=v+las%rbody(j)
+            enddo
+          endif
+        endif
+        return
+        end function
+
+        subroutine tfsetcmp(v,cmpd,i)
+        use mackw
+        use tfstk
+        use sad_main
+        implicit none
+        type (sad_comp) :: cmpd
+        type (sad_rlist), pointer :: lad
+        integer*4 i,k
+        real*8 r0,v
+        if(ktfrealq(cmpd%dvalue(i)))then
+c     write(*,*)'tfsetcmp-0 ',i,v
+          cmpd%value(i)=v
+        elseif(tfreallistq(cmpd%dvalue(i),lad))then
+          r0=lad%rbody(1)
+          do k=2,lad%nl
+            r0=r0+lad%rbody(k)
+          enddo
+c     write(*,*)'tfsetcmp-1 ',i,r0,v
+          if(r0 .ne. 0.d0)then
+            lad%rbody(1:lad%nl)=v/r0*lad%rbody(1:lad%nl)
+          else
+            do k=1,lad%nl
+              lad%rbody(k)=v/lad%nl
+            enddo
+          endif
+        endif
+        return
+        end subroutine
+
       end module
 
       subroutine tffs

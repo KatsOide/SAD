@@ -3,7 +3,7 @@
       use tfcode
       implicit none
       type (sad_descriptor) k,kx,kr,karg,kargr
-      type (sad_list), pointer :: larg,largl,largd,largr
+      type (sad_dlist), pointer :: larg,largl,largd,largr
       type (sad_deftbl), pointer :: dtbl
       type (sad_defhash), pointer :: dhash
       integer*8 ktdaloc,kap,kadi,
@@ -16,7 +16,7 @@
 c     Initialize to avoid compiler warning
       kad0=0
 c
-      call descr_list(karg,larg)
+      call descr_sad(karg,larg)
       kad1=ksad_loc(kadi)
       kad=kadi
       if(tfconstpatternqk(karg%k))then
@@ -25,9 +25,9 @@ c
             ihash=itfhasharg(karg,minhash)
             kih=ktdhtaloc(kad1,kad,minhash)
             call loc_defhash(kih,dhash)
-            kad1=ksad_loc(dhash%hash(ihash))
-            kap=ktdaloc(int8(0),kad1,int8(0),
-     $           ktfref,karg,k,karg,.false.)
+            kad1=sad_loc(dhash%dhash(ihash))
+            kap=ktdaloc(int8(0),kad1,int8(0),sad_descr(ktfref),
+     $           karg,k,karg,.false.)
             dhash%attr=ior(dhash%attr,1)
             kx=k
           else
@@ -38,18 +38,18 @@ c
           ihash=itfhasharg(karg,ilist(2,kad+2))
           call loc_defhash(kad,dhash)
           dhash%attr=ior(dhash%attr,1)
-          kad1=ksad_loc(dhash%hash(ihash))
+          kad1=sad_loc(dhash%dhash(ihash))
           kad=klist(kad1)
           do while(kad .ne. 0)
             call loc_deftbl(kad,dtbl)
-            call descr_list(dtbl%arg,largd)
+            call descr_sad(dtbl%arg,largd)
             if(larg%nl .eq.largd%nl)then
               if(tfsamelistqo(larg,largd))then
                 if(k%k .eq. ktfref)then
                   go to 8000
                 else
                   kan=ktdaloc(kad,int8(0),int8(0),
-     $                 ktfref,karg,k,karg,.false.)
+     $                 sad_descr(ktfref),karg,k,karg,.false.)
                   kx=k
                   return
                 endif
@@ -60,7 +60,8 @@ c
           enddo
           if(k%k .ne. ktfref)then
             kad=klist(kad1)
-            kan=ktdaloc(int8(0),kad1,kad,ktfref,karg,k,karg,.false.)
+            kan=ktdaloc(int8(0),
+     $           kad1,kad,sad_descr(ktfref),karg,k,karg,.false.)
             kx=k
           else
             kx%k=ktfoper+mtfnull
@@ -78,14 +79,14 @@ c
       if(irtc .ne. 0)then
         return
       endif
-      call descr_list(kargr,largr)
+      call descr_sad(kargr,largr)
       if(rlist(iaxpriority) .eq. 0.d0)then
         mstk0=mstk
         iop0=iordless
         iordless=0
         do while(kad .gt. 0)
           call loc_deftbl(kad,dtbl)
-          call descr_list(dtbl%argc,largl)
+          call descr_sad(dtbl%argc,largl)
           m=itflistmat(kargr,largl)
           isp=isp0
           if(m .ge. 0)then
@@ -99,8 +100,7 @@ c          call tfdebugprint(ktflist+kal  ,'=?=   ',1)
               iordless=iop0
               go to 8000
             else
-              kan=ktdaloc(kad,int8(0),int8(0),
-     $             k,karg,kr,kargr,.true.)
+              kan=ktdaloc(kad,int8(0),int8(0),k,karg,kr,kargr,.true.)
             endif
             iordless=iop0
             mstk=mstk0
@@ -159,8 +159,8 @@ c        call tfdebugprint(kr,':= ',3)
       call loc_deftbl(kad,dtbl)
       call tflocal1d(dtbl%arg)
       call tflocal1d(dtbl%argc)
-      call tflocal(dtbl%body%k)
-      call tflocal(dtbl%bodyc%k)
+      call tflocald(dtbl%body)
+      call tflocald(dtbl%bodyc)
       return
       end
 
@@ -216,8 +216,8 @@ c        call tfdebugprint(kr,':= ',3)
       use tfstk
       use tfcode
       implicit none
-      type (sad_descriptor) k,kr,kx,karg,kargr,karg1
-      type (sad_list), pointer :: klx
+      type (sad_descriptor) kr,kx,karg,kargr,karg1,k
+      type (sad_dlist), pointer :: klx
       type (sad_deftbl), pointer :: dtbl
       integer*8 kb0,kn0,kan,kan0,ktalocr,kb,kn
       integer*4 npat,isp0,i
@@ -226,7 +226,7 @@ c        call tfdebugprint(kr,':= ',3)
       if(tbl)then
         call tfdefsymbol(kargr,kx,rep,sym)
         karg1=kx
-        call descr_list(karg1,klx)
+        call descr_sad(karg1,klx)
         call tfinitpatlist(isp0,klx)
         npat=(isp-isp0)/2
       else
@@ -259,7 +259,7 @@ c        call tfdebugprint(kr,':= ',3)
       dtbl%argc=dtfcopy1(karg1)   ! replaced arg
       dtbl%body=dtfcopy(k)       ! original body
       dtbl%pat=-1
-      if(.not. ktfobjqd(kr))then
+      if(.not. ktfobjq(kr))then
         dtbl%bodyc=kr
       else
         dtbl%bodyc=dtfcopy1(kr)    ! replaced body
@@ -281,7 +281,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       use tfstk
       implicit none
       type (sad_descriptor) kx,k
-      type (sad_list), pointer :: list
+      type (sad_dlist), pointer :: list
       type (sad_rlist), pointer :: klr
       type (sad_symbol), pointer :: ks,ks1
       integer*4 i,isp0,m
@@ -325,7 +325,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
           sym=.true.
           if(ks%gen .ne. maxgeneration)then
             call tfsydef(ks,ks1)
-            kx%k=ktfsymbol+ksad_loc(ks1%loc)
+            kx=sad_descr(ks1)
             rep=.true.
           endif
         endif
@@ -348,7 +348,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       dhash%prev=kad1
       dhash%gen=maxgeneration
       dhash%nhash=nhash
-      dhash%hash(0:nhash)=0
+      dhash%dhash(0:nhash)%k=0
       klist(kad1 )=kan
       if(kad .ne. 0)then
         klist(kad+1)=kan
@@ -362,7 +362,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       use tfcode
       implicit none
       type (sad_descriptor) kx,kad00
-      type (sad_list), pointer :: larg,klx
+      type (sad_dlist), pointer :: larg,klx
       type (sad_deftbl), pointer :: dtbl
       type (sad_defhash), pointer :: dhash
       integer*8 kad0,kad,kadv,kadv0,kap,ktfrehash,khash
@@ -384,7 +384,8 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
         endif
         nh=dhash%nhash
         itastk2(1,isp1)=isp
-        khash=ksad_loc(dhash%hash(itfhasharg(ktfref+isp1+ispbase,nh)))
+        khash=sad_loc(dhash%dhash(
+     $       itfhasharg(dfromk(ktfref+isp1+ispbase),nh)))
         kadv=klist(khash)
         if(kadv .ne. 0)then
           is=1
@@ -393,7 +394,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
           do while(kadv .ne. 0)
             call loc_deftbl(kadv,dtbl)
             kap=ktfaddr(dtbl%arg)
-            call loc_list(kap,larg)
+            call loc_sad(kap,larg)
             m=larg%nl
             if(m .eq. isp-isp1)then
               if(.not. tfsameqd(dtastk(isp1),larg%head))then
@@ -404,8 +405,8 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
                   iord0=iordless
                   iordless=0
                   mstk0=mstk
-                  if(.not. itfseqmatstk(im,isp0,larg%body(1),
-     $                 m,is,ktftype(larg%body(1)) .eq. ktfoper,
+                  if(.not. itfseqmatstk(im,isp0,larg%dbody(1)%k,
+     $                 m,is,ktftype(larg%dbody(1)%k) .eq. ktfoper,
      $                 kap) .ge. 0)then
                     iordless=iord0
                     mstk=mstk0
@@ -417,7 +418,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
                 else
                   if(ktfreallistq(larg))then
                     do i=1,m
-                      if(ktastk(isp1+i) .ne. larg%body(i))then
+                      if(ktastk(isp1+i) .ne. larg%dbody(i)%k)then
                         go to 10
                       endif
                     enddo
@@ -496,7 +497,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       use tfstk
       implicit none
       type (sad_descriptor) k
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       integer*8 ka
       integer*4 ih,m,itfhash,nh,ix(2),ih1
       integer*2 h(2),h1(2)
@@ -542,7 +543,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       use tfstk
       implicit none
       type (sad_descriptor) k
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       type (sad_symbol), pointer :: sym
       integer*8 ka
       integer*4 m,itfhash1,nh,ix(2),ih1
@@ -597,7 +598,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       use tfstk
       implicit none
       type (sad_descriptor) k
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       type (sad_symbol), pointer :: sym
       integer*8 ka
       integer*4 ix(2)
@@ -633,7 +634,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       use tfcode
       implicit none
       type (sad_descriptor) kx,kh,kal
-      type (sad_list), pointer :: larg
+      type (sad_dlist), pointer :: larg
       type (sad_deftbl), pointer :: dtbl
       integer*8 kad0,kad,kap,kpp
       integer*4 isp1,irtc,mstk0,mat,im,itfpmat,itfseqmatstk,isp0,
@@ -650,12 +651,12 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
         call loc_deftbl(kad,dtbl)
         mat=-1
         kap=ktfaddr(dtbl%argc)
-        call loc_list(kap,larg)
+        call loc_sad(kap,larg)
         kh=larg%head
         mat=itfpmat(ktastk(isp1),kh)
         if(mat .ge. 0)then
           if(larg%nl .eq. 1)then
-            if(itfseqmatstk1(im,isp0,larg%body(1)) .lt. 0)then
+            if(itfseqmatstk1(im,isp0,larg%dbody(1)) .lt. 0)then
               go to 30
             endif
           else
@@ -664,7 +665,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
             else
               kpp=0
             endif
-            if(itfseqmatstk(im,isp0,larg%body(1),
+            if(itfseqmatstk(im,isp0,larg%dbody(1),
      $           larg%nl,1,ktfreallistq(larg),kpp)
      $           .lt. 0)then
               go to 30
@@ -741,7 +742,7 @@ c      endif
       use iso_c_binding
       implicit none
       type (sad_descriptor) kx,k,kh,kp(0:2),ksy
-      type (sad_list), pointer :: list,klh
+      type (sad_dlist), pointer :: list,klh
       type (sad_pat), pointer :: pat
       type (sad_symdef), pointer :: symdef
       integer*8 i,kts,kah,ks1,ks
@@ -857,7 +858,7 @@ c            call tfdebugprint(list%body(i),'==> ',3)
           return
         endif
         rep=rep .or. rep1
-        rep1=tfreplacearg(pat%head%k,kp(1),irtc)
+        rep1=tfreplacearg(pat%head,kp(1),irtc)
         if(irtc .ne. 0)then
           return
         endif
@@ -914,7 +915,7 @@ c      call tfdebugprint(kx,'tfreparg-out',1)
       use iso_c_binding
       implicit none
       type (sad_descriptor) k,ks,kx,kh,kp(0:2)
-      type (sad_list), pointer :: list,klx,klh
+      type (sad_dlist), pointer :: list,klx,klh
       type (sad_rlist), pointer :: klr
       type (sad_pat), pointer :: pat
       type (sad_symdef), pointer :: symd
@@ -1115,7 +1116,7 @@ c          write(*,*)'with ',symd%sym%override
       use tfstk
       implicit none
       type (sad_descriptor) ks,ki
-      type (sad_list), pointer :: kl,kli
+      type (sad_dlist), pointer :: kl,kli
       integer*8 i,ka
       logical*4 rep,rep1
       if(ktfrefqd(ks,ka))then
@@ -1160,8 +1161,8 @@ c          write(*,*)'with ',symd%sym%override
       use tfstk
       implicit none
       type (sad_descriptor) kx,ki
-      type (sad_list) list
-      type (sad_list), pointer :: klx
+      type (sad_dlist) list
+      type (sad_dlist), pointer :: klx
       integer*4 irtc,i,isp1,j
       logical*4 rep,rep1,tfreplaceargstk
       irtc=0
@@ -1171,7 +1172,7 @@ c          write(*,*)'with ',symd%sym%override
           kx=kxaaloc(-1,0,klx)
           klx%head=dtastk(isp1)
         else
-          kx%k=ktflist+ksad_loc(list%head%k)
+          kx=sad_descr(list)
         endif
         return
       endif
@@ -1282,7 +1283,7 @@ c          write(*,*)'with ',symd%sym%override
       if(rep)then
         call tfcompose(isp1,list%head%k,kx,irtc)
       else
-        kx%k=ktflist+ksad_loc(list%head%k)
+        kx=sad_descr(list)
       endif
       return
       end
@@ -1308,7 +1309,7 @@ c          write(*,*)'with ',symd%sym%override
       implicit none
       type (sad_descriptor) kx
       type (sad_deftbl) dtbl
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       type (sad_pat), pointer :: pat
       integer*4 isp0,i,irtc,nrule1
       logical*4 rep,member,tfconstqk,tfsymbollistqo
@@ -1331,7 +1332,7 @@ c        call tfdebugprint(kx,'setarg-const',3)
             call descr_pat(dtbl%pattbl(i),pat)
             isp=isp+2
             ktastk(isp-1)=ktfaddr(pat%sym%alloc%k)
-            ktastk(isp  )=ktfsymbol+ksad_loc(pat%sym%loc)
+            dtastk(isp  )=sad_descr(pat%sym)
           enddo
           call tfsortsymbolstk(isp0,dtbl%npat,nrule1)
           call tfsetuparg(dtbl%bodyc,isp0,nrule1*2,
@@ -1378,7 +1379,7 @@ c        call tfdebugprint(kx,'setarg-const',3)
           dtbl%compile=rlist(levelcompile)
         endif
       endif
-      call tflocal(dtbl%bodyc%k)
+      call tflocald(dtbl%bodyc)
       dtbl%bodyc=dtfcopy(kx)
       return
       end
@@ -1388,7 +1389,7 @@ c        call tfdebugprint(kx,'setarg-const',3)
       use tfcode
       implicit none
       type (sad_descriptor) k,kx,ki,k1,ks,kd
-      type (sad_list), pointer :: list,klx
+      type (sad_dlist), pointer :: list,klx
       type (sad_rlist), pointer :: klr
       type (sad_pat), pointer :: pat
       integer*8 ka1
@@ -1507,7 +1508,7 @@ c        call tfdebugprint(kx,'setarg-const',3)
       use tfcode
       implicit none
       type (sad_descriptor) kx,k,k1,k2,kd
-      type (sad_list), pointer :: list,klx
+      type (sad_dlist), pointer :: list,klx
       type (sad_rlist), pointer :: klr
       type (sad_pat), pointer :: pat
       type (sad_symbol), pointer :: sym2
@@ -1605,10 +1606,10 @@ c                call tfdebugprint(kx,'==>',3)
       use tfstk
       use tfcode
       implicit none
-      type (sad_descriptor) karg
+      type (sad_descriptor) karg,ka
       type (sad_deftbl), pointer :: dtbl
       type (sad_defhash), pointer :: dhash0,dhash
-      integer*8 ktdhtaloc,kad,kad0,ka,ka0,kas,i
+      integer*8 ktdhtaloc,kad,kad0,ka0,kas,i
       integer*4 iup,n,n0,ih,itfhasharg
       integer*4 maxhash
       parameter (maxhash=32767)
@@ -1624,19 +1625,19 @@ c                call tfdebugprint(kx,'==>',3)
       call loc_defhash(kad,dhash)
       dhash%attr=dhash0%attr
       do i=0,dhash0%nhash
-        ka=dhash0%hash(i)
-        do while(ka .ne. 0)
-          call loc_deftbl(ka,dtbl)
+        ka=dhash0%dhash(i)
+        do while(ka%k .ne. 0)
+          call loc_deftbl(ka%k,dtbl)
           karg=dtbl%arg
           ih=itfhasharg(karg,n)
           ka0=dtbl%next
-          dtbl%next=dhash%hash(ih)
+          dtbl%next=dhash%dhash(ih)%k
           if(dtbl%next .ne. 0)then
-            klist(dtbl%next+1)=ka
+            dlist(dtbl%next+1)=ka
           endif
-          dtbl%prev=ksad_loc(dhash%hash(ih))
-          dhash%hash(ih)=ka
-          ka=ka0
+          dtbl%prev=sad_loc(dhash%dhash(ih))
+          dhash%dhash(ih)=ka
+          ka%k=ka0
         enddo
       enddo
       call tfree(kad0)

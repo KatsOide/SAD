@@ -1,4 +1,4 @@
-(* Canvas 2/17/2017 *)
+(* Canvas 7/31/2017 *)
 
 SetAttributes[{OutLine,Outline,UseBG,Permanent,Redraw},Constant];
 
@@ -87,6 +87,7 @@ CanvasGraphics=Class[{},
     StandardScale,
     PlotSymbolSize,
     WindowCoord,
+    ToWindowCoord,
     Canvas$Range,
     RawWindowAspectRatio=GoldenRatio,
     CanvasAspectRatio=13/10,
@@ -208,6 +209,8 @@ CanvasGraphics=Class[{},
     Canvas$Coord1[x_]:=Round[Canvas$Offset+x*Canvas$Scale];
     WindowCoord[{x_,y_}]:=
       Round[{x,YOrg-y}*DPI];
+    ToWindowCoord[{x_,y_}]:=
+      {x/DPI, YOrg-y/DPI};
     Clear[Canvas$GCoord];
     Switch[Canvas$Axes,
       {Linear|Date,Linear|Date},
@@ -307,6 +310,12 @@ CanvasGraphics=Class[{},
     AppendTo[WindowList,Canvas$Window];
     Abs[{wx2-wx1,wy2-wy1}/$DefaultWindowWidth]];
 
+  WindowRatio[w_]:=With[{rw=Canvas$RawWindow,pr=Canvas$PlotRegion},
+    {{w[[1,1]]-rw[[1,1]],w[[1,2]]-rw[[1,1]]},
+     {w[[2,1]]-rw[[2,1]],w[[2,2]]-rw[[2,1]]}}/
+       {rw[[1,2]]-rw[[1,1]],rw[[2,2]]-rw[[2,1]]}/{pr[[1,2]]-pr[[1,1]],pr[[2,2]]-pr[[2,1]]}
+    +pr[[,1]]];
+
   MakeWindow[{{x1_,y1_},{x2_,y2_}},ar_]:=Module[
     {wxc,wyc,
       {wx1,wx2}=Canvas$RawWindow[[1]],
@@ -337,6 +346,7 @@ CanvasGraphics=Class[{},
     FrameLabel->{},
     FrameUnitLabel->{},
     Frame->True,
+    FrameColor->"black",
     Scale->{Linear,Linear},
     FrameTicks->{True,True,Ticks,Ticks},
     FrameClick->True,
@@ -360,11 +370,12 @@ CanvasGraphics=Class[{},
     CanvasDrawer[opt_,list_,init_,w_,rect_,last_,ini_]:=StandardForm[Module[
       {fl,pl,ft,wsx,wsy,wsfx,wsfy,det,wc,fr,tag,t1,t2,addtag,enc,glist,ws,
         pr,id,l1,align,up,ts,frid,fclk,dr,plr,sca,gr,ib,tkf,frt,frt1,rmo,
-        op=Override[opt,def],wfr},
-      {tag,fl,pl,fr,wc,align,pr,fclk,dr,ft,frt,ts,ib,tkf,ful,rmo,
+        op=Override[opt,def],wfr,ftc},
+      {tag,fl,pl,fr,wc,align,pr,fclk,dr,ft,frt,ftc,ts,ib,tkf,ful,rmo,
         FontScale,TickFontScale,FrameFontScale,LegendFontScale}=
         {Tags,FrameLabel,PlotLabel,Frame,Background,Alignment,
-          PlotRegion,FrameClick,DataRange,FrameTicks,FrameThickness,TickSize,
+          PlotRegion,FrameClick,DataRange,FrameTicks,FrameThickness,
+          FrameColor,TickSize,
           InfoBind,TickFont,FrameUnitLabel,RemoveOverlap,
           Literal[FontScale],Literal[TickFontScale],
           Literal[FrameFontScale],Literal[LegendFontScale]}/.op;
@@ -443,7 +454,7 @@ CanvasGraphics=Class[{},
       If[w,
         If[wfr=(Canvas$PlotRange[[1,1]]<Canvas$PlotRange[[1,2]] && 
           Canvas$PlotRange[[2,1]]<Canvas$PlotRange[[2,2]]),
-          If[fr,
+          If[fr<=>False,
             ft=ExpandFrameTicks[ft];
             ts=Take[Flatten[{ts,ts}],2];
             {wsfx,wsfy}={
@@ -453,15 +464,14 @@ CanvasGraphics=Class[{},
             ful=Take[Join[ful,nullsl],4];
             FrameY[Second[ft],ft[[4]],
               Second[ts]/.Automatic->Max[0.15,wsfx^(.4)],Second[gr],wsfy^0.4,
-              tkf,frt1,ful,frid];
+              tkf,frt1,ful,frid,ftc];
             FrameX[First[ft],Third[ft],
               First[ts]/.Automatic->Max[0.15,wsfy^(.4)],First[gr],Sqrt[wsfx],
-              tkf,frt1,ful];
+              tkf,frt1,ful,ftc];
             FrameBind[frid];
             fl=Take[Join[fl,nullsl],4];
             fl={fl,{"BOTTOM","LEFT CENTER","TOP","RIGHT CENTER"},
               DefaultTitleSize*(StandardScale*{wsfx,wsfy,wsfx,wsfy})^0.45};
-            fl000=fl;
             ScanThread[If[""<=>#<=>nullsl2,
               MakeTitle[#,Restrict[#3,9,28],#2]]&,fl]]
           ]];
@@ -483,7 +493,7 @@ CanvasGraphics=Class[{},
          Canvas$PlotLabel=CanvasLastID
          ];
         If[wfr && StringQ[wc],
-          WindowBG[frid,wc,fr,ib]]
+          WindowBG[frid,wc,fr,ib,ftc]]
         ];
       If[Length[Canvas$IDList[[frid]]]>=id,
         Canvas$IDList[[frid,id]]={StartID,CanvasLastID},
@@ -625,9 +635,11 @@ CanvasGraphics=Class[{},
   TitlePosition["TOP",t_:"L"]:=Module[
     {c=WindowCoord[
       {(Canvas$Window[[1,1]]+Canvas$Window[[1,2]])/2,Canvas$Window[[2,2]]}],
-      f=If[t==="",{},CanvasWidget[BBox[t//"F$X2"//Canvas$Frame]]]},
-    If[f==={},{c+{0,-1},(Canvas$Window[[1,2]]-Canvas$Window[[1,1]])*DPI,"s"},
-      {{First[c],Min[Second[f],Second[c]]-1},(Canvas$Window[[1,2]]-Canvas$Window[[1,1]])*DPI,"s"}]];
+      f=If[t==="",{},
+        CanvasWidget[BBox[{t//"F$X2"//Canvas$Frame,"LF$Y1"//Canvas$Frame,"LF$Y2"//Canvas$Frame}]]]},
+    {If[f==={},c+{0,-1},
+      {First[c],Min[Second[f],Second[c]]-1}],
+      (Canvas$Window[[1,2]]-Canvas$Window[[1,1]])*DPI,"s"}];
   TitlePosition["TOP HIGH",t_:"L"]:=Module[
     {f,c=WindowCoord[
         {(Canvas$Window[[1,1]]+Canvas$Window[[1,2]])/2,
@@ -693,8 +705,7 @@ CanvasGraphics=Class[{},
       If[bl<=>{} && bl[[2]]>pos[[2]] && bl[[1]]<=pos[[1]]<=bl[[3]],
         fl=Min[fl,bl[[2]]]],
       {i,0,Canvas$Frame}];
-    fl00=fl;fs00=FontScale*FScale[FrameFontScale,1];w00=w;
-    dsn00=Round[FontScale*FScale[FrameFontScale,1]
+    Round[FontScale*FScale[FrameFontScale,1]
       *Max[9,size*0.7,Min[w/(effsl00=EffectiveStringLength[t,16])*FSFontScale,fl-pos[[2]]-1,size*1.3]]]];
 
   MakeTitle["",__]:=Null;
@@ -705,19 +716,26 @@ CanvasGraphics=Class[{},
       {pos,w,anc}=TitlePosition[p]];
     sz=DefaultSize[t,w,size,pos,anc];
     CanvasWidget[Create$Text]={pos,Text->t,
+      Anchor->anc,
       Justify->"center",
       Tags->TitleTag[p],
       Font->TextFont[sz,DefaultFont,
         If[sz<10,Null[],"bold"]],
       Null@@TitleRotate[p],
       UseBG->False}];
-  MakeTitle[Text[{t_String,___},opt:((_Rule|_RuleDelayed)...)],size_,p_]:=
-    Primitive[Text[{t,CanvasScaled/@(TitlePosition[p][[1]])},opt,
+  MakeTitle[Text[{t_String,___},opt:((_Rule|_RuleDelayed)...)],size_,p_]:=Module[
+    {{pos,w,anc}=TitlePosition[p]},
+    While[~RealQ[w],
+      If[it++ > 10, Return[]];
+      Sleep[0.3];
+      {pos,w,anc}=TitlePosition[p]];
+    Primitive[Text[{t,CanvasScaled/@pos},opt,
       TextFont:>{Round[size],DefaultFont,If[size<10,Null[],"bold"]},
+      Anchor->anc,
       Justify->"center",
       Tags->TitleTag[p],
       Null@@(TitleRotate[p]/.Rotation->TextRotate),
-      UseBG->False]];
+      UseBG->False]]];
   MakeTitle[t_List,size_,p_]:=MakeTitle[First[t],size,p];
 
   With[{def={Dashing->{1},Plot->False,ErrorBarTickSize->1,
@@ -895,20 +913,20 @@ CanvasGraphics=Class[{},
       CanvasDrawClipLine[{x+{dx2,dx2,dx2,-dx1,-dx1,-dx1},y+{-ebl,ebl,0,0,-ebl,ebl}},cmd]
     ];
 
-  WindowBG[frid_,wc_,fr_,ib_]:=Module[
-    {p=Thread[WindowCoord[Canvas$Window]],frc=If[fr,"black",wc],
+  WindowBG[frid_,wc_,fr_,ib_,ftc_]:=Module[
+    {p=Thread[WindowCoord[Canvas$Window]],frc=If[fr,"black",wc,ftc],
       t="BG$"//frid},
-    CanvasWidget[Create$Rectangle]={p,Fill->wc,OutLine->frc,Width->1,Tags->t};
+    CanvasWidget[Create$Rectangle]={p,Fill->wc,OutLine->ftc,Width->1,Tags->t};
     If[ib && ~CanvasBind[frid],
       Bind[CanvasWidget,"<Button-1>",CanvasInfo[frid],Tags->t];
       CanvasBind[frid]=True];
     If[FirstBG==="",FirstBG=t];
     AppendTo[BGItems,CanvasLastID];
     CanvasWidget[Lower] = t];
-  WindowBG[_,,0,_]=Null;
-  WindowBG[_,,fr_,_]:=(
+  WindowBG[_,,0,__]=Null;
+  WindowBG[_,,fr_,_,ftc_]:=(
     The$Canvas[Create$Rectangle]={Thread[WindowCoord[Canvas$Window]],
-      OutLine->"black",Width->1,Tags->"BG$0"};
+      OutLine->ftc,Width->1,Tags->"BG$0"};
     If[FirstBG==="",FirstBG="BG$0"];
     AppendTo[BGItems,CanvasLastID];
     CanvasWidget[Lower] = "BG$0");
@@ -1085,7 +1103,7 @@ CanvasGraphics=Class[{},
       _,
       Throw[]]},
 
-    FrameX[ftb_,ftt_,ts_,gr_,ws_,tkf_,frt_,ful_]:=Module[
+    FrameX[ftb_,ftt_,ts_,gr_,ws_,tkf_,frt_,ful_,ftc_]:=Module[
       {{tick,Mt,mt,logdt}=
         CanvasDrawerTicks[First[Canvas$PlotRange],ts/Abs[Second[Canvas$Scale]],
           StandardScale*ws,First[Canvas$Axes]],
@@ -1109,13 +1127,13 @@ CanvasGraphics=Class[{},
         Switch[ftb,
           True|Ticks|False|Both|{Ticks,___},
           CanvasWidget[Create$Line]={Thread[Canvas$Coord1[tcs+{0,y}]],
-            Width->frt,
+            Width->frt,Fill->ftc,
             Tags->{ftag1,FrameTag}}];
         Switch[ftt,
           True|Ticks|Both|{Ticks,___},
           CanvasWidget[Create$Line]={
             Thread[Canvas$Coord1[tcs*{1,-1}+{0,y1}]],
-            Width->frt,
+            Width->frt,Fill->ftc,
             Tags->{ftag2,FrameTag}}];
         Catch[
           FrameTickX[TitlePosition["BOTTOM",""][[1,2]],"n",
@@ -1125,7 +1143,7 @@ CanvasGraphics=Class[{},
             Mt,logdt,"L"//ftag2,font2,TickFun[ftt,Both],ful[[3]]]];
         ]];
 
-    FrameY[ftl_,ftr_,ts_,gr_,ws_,tkf_,frt_,ful_,n_]:=Module[
+    FrameY[ftl_,ftr_,ts_,gr_,ws_,tkf_,frt_,ful_,n_,ftc_]:=Module[
       {tick,Mt,mt,logdt,pr,ax,
         x,x1,tcs,pw=0,ftrx,ftlx,i,apr,xl,
         {ftag1,ftag2,grtag}={
@@ -1158,13 +1176,13 @@ CanvasGraphics=Class[{},
           {tcs[[-2]],{pr[[2]],0}}]]];
         If[ftlx,
           CanvasWidget[Create$Line]={Thread[Canvas$Coord1[tcs+{x,0}]],
-            Width->frt,
+            Width->frt,Fill->ftc,
             Tags->{ftag1,FrameTag}};
           TickListY[[n]]={YOrg-(Canvas$Offset[[2]]+Mt*Canvas$Scale[[2]])/DPI}];
         If[ftrx,
           CanvasWidget[Create$Line]={
             Thread[Canvas$Coord1[tcs*{-1,1}+{x1,0}]],
-            Width->frt,
+            Width->frt,Fill->ftc,
             Tags->{ftag2,FrameTag}}],
 
         apr=AltPlotRange[pr,TickListY[[pw,1]],WindowList[[n,2]],ax];
@@ -1176,7 +1194,7 @@ CanvasGraphics=Class[{},
           {tcs[[-2]],{apr[[2]],0}}]]];
         CanvasWidget[Create$Line]={
           Thread[Canvas$Coord1[tcs*{-1,1}+{x1,0}]],
-          Width->frt,
+          Width->frt,Fill->ftc.
           Tags->{ftag2,FrameTag}}
         ];
         Catch[
@@ -1693,11 +1711,31 @@ CanvasGraphics=Class[{},
             {{FillColor,MeshStyle,PlotColor,Tags}/.Override[opt,def],
               {Fill,Stipple,OutLine,Tag}}]})];
 
+  With[{def={Position->Default}},
+    Primitive[Rectangle[min0_,max0_,g__,opt:((_Rule|_RuleDelayed)..)]]:=
+      (Show1$[False,RectPosition[min0,max0,Position/.{opt}/.def],g];
+        {Canvas$Axes,Canvas$PlotRegion,Canvas$PlotRange,Canvas$Window}=#;
+        SetCanvas$Scale[Automatic])&[
+          {Canvas$Axes,Canvas$PlotRegion,Canvas$PlotRange,Canvas$Window}]];
+
   Primitive[Rectangle[min_,max_,g__]]:=
     (Show1$[False,{min,max},g];
       {Canvas$Axes,Canvas$PlotRegion,Canvas$PlotRange,Canvas$Window}=#;
       SetCanvas$Scale[Automatic])&[
         {Canvas$Axes,Canvas$PlotRegion,Canvas$PlotRange,Canvas$Window}];
+
+  RectPosition[min_,max_,Default|Null]:={min,max};
+  RectPosition[min_,max_,Right[sep_:0]]:=With[{w=WindowRatio[Canvas$Window]},
+    {{w[[1,2]]+sep,w[[2,1]]},{w[[1,2]]+sep+max[[1]]-min[[1]],w[[2,2]]}}];
+
+  RectPosition[min_,max_,Left[sep_:0]]:=With[{w=WindowRatio[Canvas$Window]},
+    {{min[[1]]-max[[1]]-sep+w[[1,1]],w[[2,1]]},{w[[1,1]]-sep,w[[2,2]]}}];
+
+  RectPosition[min_,max_,Above[sep_:0]]:=With[{w=WindowRatio[Canvas$Window]},
+    {{w[[1,1]],w[[2,2]]+sep},{w[[1,2]],w[[2,2]]+sep+max[[2]]-min[[2]]}}];
+
+  RectPosition[min_,max_,Below[sep_:0]]:=With[{w=WindowRatio[Canvas$Window]},
+    {{w[[1,1]],w[[2,1]]-sep+min[[2]]-max[[2]]},{w[[1,2]],w[[2,1]]-sep}}];
 
   With[{def={PlotColor->Null,FillColor->Null,MeshStyle->Null,Tags->False,
     Thickness->Null}},
@@ -1884,7 +1922,7 @@ CanvasGraphics=Class[{},
         CanvasWidget[Move] = {ls, {dx,dy}};
         zr+={dx,dy,dx,dy}];
       {x1,y1,x2,y2}=zr;
-      CanvasWidget[Create$Rectangle]={x1-d1,y1-d3,x2+d1,y2+d2,legtagfr,Outline->"gray40"};
+      CanvasWidget[Create$Rectangle]={x1-d1,y1-d3,x2+d1,y2+d2,legtagfr,Outline->"gray40",Fill->"white"};
       CanvasWidget[Create$Line]={x1-d1+1,y2+d2+1,x2+d1+1,y2+d2+1,x2+d1+1,y1-d3+1,
         Fill->"gray60",legtagfr};
       If[FirstBG<=>"",

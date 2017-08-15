@@ -89,7 +89,7 @@
         loc%symdef=0
         loc%cont=icont
         loc%str%len=nc/8+5
-        loc%str%alloc=ktfstring+sad_loc(loc%str%nch)
+        loc%str%alloc=sad_descr(loc%str)
         loc%str%ref=1
         loc%str%gen=0
         loc%str%nch=nc
@@ -367,12 +367,12 @@ c            write(*,*)' : ',idx
       integer*8 function ktcalocm(n)
       use tfstk
       implicit none
-      type(sad_list), pointer :: kl
+      type(sad_dlist), pointer :: kl
       integer*4 n,i
       integer*8 k
       k=ktaloc(n*6-1)+2
       do i=1,n
-        call loc_list(k+(i-1)*6,kl)
+        call loc_sad(k+(i-1)*6,kl)
         kl%lenp=int2(0)
         kl%lena=int2(0)
         kl%attr=0

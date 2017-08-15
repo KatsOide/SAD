@@ -124,11 +124,11 @@
       use sad_main
       implicit none
       type (ffs_bound) fbound
-      type (sad_list), pointer :: kli
+      type (sad_dlist), pointer :: kli
       type (sad_rlist), pointer :: klir
       type (sad_comp) , pointer :: cmp
       integer*8 iatr,iacod,iabmi
-      integer*4 ls,l,nvar,lx,idp,le1,lv,itfdownlevel
+      integer*4 ls,l,nvar,lx,idp,le1,lv,itfdownlevel,irtc
       real*8 trans(6,12),cod(6),beam(42)
       real*8 trans1(6,12),cod1(6),beam1(42)
       type (sad_descriptor) dsave(kwMAX)
@@ -137,12 +137,16 @@
       sol=.false.
       levele=levele+1
       if(fbound%fb .ne. 0.d0)then
-        call qfracsave(fbound%lb,dsave,nvar,.true.)
         call compelc(fbound%lb,cmp)
-        call qfracseg(cmp,fbound%fb,1.d0,dsave,chg)
+        call qfracsave(fbound%lb,dsave,nvar,.true.)
+        call qfracseg(cmp,cmp,fbound%fb,1.d0,chg,irtc)
+        if(irtc .ne. 0)then
+          call tffserrorhandle(l,irtc)
+        else
 c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
-        call tturne1(trans,cod,beam,
-     $       iatr,iacod,iabmi,idp,plot,sol,rt,fbound%lb,fbound%lb)
+          call tturne1(trans,cod,beam,
+     $         iatr,iacod,iabmi,idp,plot,sol,rt,fbound%lb,fbound%lb)
+        endif
         if(chg)then
           call qfracsave(fbound%lb,dsave,nvar,.false.)
         endif
@@ -161,12 +165,15 @@ c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
       else
         call tturne1(trans,cod,beam,
      $       iatr,iacod,iabmi,idp,plot,sol,rt,ls,fbound%le-1)
-        call qfracsave(fbound%le,dsave,nvar,.true.)
         call compelc(fbound%le,cmp)
-        call qfracseg(cmp,0.d0,fbound%fe,dsave,chg)
-c        call qfraccomp(fbound%le,0.d0,fbound%fe,ideal,chg)
-        call tturne1(trans,cod,beam,
-     $       iatr,iacod,iabmi,idp,plot,sol,rt,fbound%le,nlat-1)
+        call qfracsave(fbound%le,dsave,nvar,.true.)
+        call qfracseg(cmp,cmp,0.d0,fbound%fe,chg,irtc)
+        if(irtc .ne. 0)then
+          call tffserrorhandle(fbound%le,irtc)
+        else
+          call tturne1(trans,cod,beam,
+     $         iatr,iacod,iabmi,idp,plot,sol,rt,fbound%le,nlat-1)
+        endif
         if(chg)then
           call qfracsave(fbound%le,dsave,nvar,.false.)
         endif
@@ -226,48 +233,51 @@ c        call qfraccomp(fbound%le,0.d0,fbound%fe,ideal,chg)
                 go to 8101
               endif
 c     below is incorrect for fra <> 0
-              call qfracsave(lx,dsave,nvar,.true.)
               call compelc(lx,cmp)
-              call qfracseg(cmp,fra,frb,dsave,chg)
-c              call qfraccomp(lx,fra,frb,ideal,chg)
-              if(.not. chg)then
-                fr=0.d0
-                go to 8101
-              endif
-              cod1=0.d0
-              if(iatr .ne. 0)then
-                if(iatr .gt. 0 .and. ktflistq(dlist(iatr+lx),kli))then
-                  call tfl2m(kli,trans1,6,6,.false.)
+              call qfracsave(lx,dsave,nvar,.true.)
+              call qfracseg(cmp,cmp,fra,frb,chg,irtc)
+              if(irtc .ne. 0)then
+                call tffserrorhandle(l,irtc)
+              else
+                if(.not. chg)then
+                  fr=0.d0
+                  go to 8101
+                endif
+                cod1=0.d0
+                if(iatr .ne. 0)then
+                  if(iatr .gt. 0 .and. ktflistq(dlist(iatr+lx),kli))then
+                    call tfl2m(kli,trans1,6,6,.false.)
+                  else
+                    call tinitr(trans1)
+                  endif
+                  if(iacod .gt. 0 .and.
+     $                 tfreallistq(dlist(iacod+lx),klir))then
+                    cod1=klir%rbody(1:6)
+                  endif
                 else
                   call tinitr(trans1)
                 endif
-                if(iacod .gt. 0 .and.
-     $               tfreallistq(dlist(iacod+lx),klir))then
-                  cod1=klir%rbody(1:6)
-                endif
-              else
-                call tinitr(trans1)
-              endif
-              trans1(:,7:12)=0.d0
-              if(codplt)then
-                cod1=twiss(lx,idp,mfitdx:mfitddp)
-                if(irad .ge. 12)then
-                  beam1(1:21)=beamsize(:,lx)
-                  if(calint)then
-                    beam1(22:42)=beamsize(:,lx)
+                trans1(:,7:12)=0.d0
+                if(codplt)then
+                  cod1=twiss(lx,idp,mfitdx:mfitddp)
+                  if(irad .ge. 12)then
+                    beam1(1:21)=beamsize(:,lx)
+                    if(calint)then
+                      beam1(22:42)=beamsize(:,lx)
+                    endif
                   endif
                 endif
+                sol1=.false.
+                cp0=codplt
+                codplt=.false.
+                int0=calint
+                calint=.false.
+                call tturne1(trans1,cod1,beam1,
+     $               int8(0),int8(0),int8(0),idp,.false.,sol1,rt,
+     $               lx,lx)
+                codplt=cp0
+                calint=int0
               endif
-              sol1=.false.
-              cp0=codplt
-              codplt=.false.
-              int0=calint
-              calint=.false.
-              call tturne1(trans1,cod1,beam1,
-     $             int8(0),int8(0),int8(0),idp,.false.,sol1,rt,
-     $             lx,lx)
-              codplt=cp0
-              calint=int0
               call qfracsave(lx,dsave,nvar,.false.)
 c              write(*,*)'tturne0 ',lx,l,fbound%lb,fbound%le,idp,
 c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
@@ -300,11 +310,12 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       use tmacro
       use sad_main
       use tfcsi, only:icslfno
+      use ffs_seg
       implicit none
       real*8 codmax,demax
       parameter (codmax=1.d4,demax=.5d0)
       type (sad_comp), pointer :: cmp
-      type (sad_rlist), pointer :: lal
+      type (sad_dlist), pointer :: lsegp
       integer*8 iatr,iacod,iabmi,kbmz,kbmzi,lp
       integer*4 idp,i,l1
       real*8 trans(6,12),cod(6),beam(42),bmir(6,6),
@@ -387,21 +398,14 @@ c            call checketwiss(trans,et)
           lp=elatt%comp(l)
         endif
         call loc_comp(lp,cmp)
-        seg=tcheckseg(cmp,lele,al,lal,irtc)
+        seg=tcheckseg(cmp,lele,al,lsegp,irtc)
         if(irtc .ne. 0)then
           call tffserrorhandle(l,irtc)
           go to 1010
         endif
         dir=direlc(l)
         if(calint)then
-          if(seg)then
-            als=0.d0
-            do i=1,lal%nl
-              als=als+lal%rbody(i)
-            enddo
-          else
-            als=al
-          endif
+          als=al
           if(als .ne. 0.d0)then
             if(lele .eq. icDRFT)then
               alib=als*.25d0+alid
@@ -572,7 +576,7 @@ c        go to 5000
             endif
           endif
           if(seg)then
-            call tmulteseg(trans,cod,beam,l,cmp,0.d0,lal,rtaper,ld)
+            call tmulteseg(trans,cod,beam,l,cmp,0.d0,lsegp,rtaper,ld)
           else
             call tmulte1(trans,cod,beam,l,cmp,0.d0,rtaper,ld)
           endif
@@ -851,7 +855,7 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
       return
       end
 
-      subroutine tmulteseg(trans,cod,beam,l,cmp,bzs,lal,rtaper,ld)
+      subroutine tmulteseg(trans,cod,beam,l,cmp,bzs,lsegp,rtaper,ld)
       use kyparam
       use tfstk
       use ffs
@@ -860,16 +864,17 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
       use sad_main
       implicit none
       type (sad_comp) :: cmp
-      type (sad_rlist) :: lal
+      type (sad_dlist) :: lsegp
       type (sad_rlist), pointer :: lak
-      type (sad_descriptor) :: dsave(cmp%ncomp2)
+      real*8 :: vsave(cmp%ncomp2)
       real*8 trans(6,12),cod(6),beam(42),rtaper,bzs
-      integer*4 i,nseg,irtc,i1,i2,istep,k,itfmessage,nc,nc1,l,ld,
-     $     kseg(cmp%ncomp2),lp
-      nc=kytbl(kwMAX,icMULT)-1
-      nseg=lal%nl
+      integer*4 i,nseg,irtc,i1,i2,istep,k,nc,nc1,l,ld,
+     $     kseg(cmp%ncomp2)
+      nc=kytbl(kwPROF,icMULT)-1
+      call descr_sad(lsegp%dbody(ky_L_MULT),lak)
+      nseg=lak%nl
       irtc=0
-      dsave(1:nc)=cmp%dvalue(1:nc)
+      vsave(1:nc)=cmp%value(1:nc)
       if(cmp%orient .gt. 0.d0)then
         i1=1
         i2=nseg
@@ -881,33 +886,19 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
       endif
       nc1=0
       do k=1,nc
-c        call tfdebugprint(dsave(k),'tmultseg',1)
-        if(.not. ktfrealq(dsave(k)))then
-          if(tfreallistq(dsave(k),lak))then
-            if(lak%nl .ne. nseg)then
-              lp=len_trim(pname(cmp%id))
-              irtc=itfmessage(99,'FFS::unequalkeyleng',
-     $           '"'//pname(cmp%id)(1:lp)//'"')
-              return
-            endif
-          elseif(ktfnonrealq(dsave(k)))then
-            lp=len_trim(pname(cmp%id))
-            irtc=itfmessage(99,'FFS::wrongkeyval',
-     $           '"'//pname(cmp%id)(1:lp)//'"')
-            return
-          endif
+        if(lsegp%dbody(k)%k .ne. ktfoper+mtfnull)then
           nc1=nc1+1
           kseg(nc1)=k
         endif
       enddo
       do i=i1,i2,istep
         do k=1,nc1
-          call descr_rlist(dsave(kseg(k)),lak)
-          cmp%value(kseg(k))=lak%rbody(i)
+          call descr_rlist(lsegp%dbody(kseg(k)),lak)
+          cmp%value(kseg(k))=lak%rbody(i)*vsave(kseg(k))
         enddo
         call tmulte1(trans,cod,beam,l,cmp,bzs,rtaper,ld)
       enddo
-      cmp%dvalue(1:nc)=dsave(1:nc)
+      cmp%value(1:nc)=vsave(1:nc)
       return
       end
 

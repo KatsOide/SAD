@@ -1,16 +1,17 @@
-      subroutine tfgetv(word,ntouch,lfno,next,exist)
+      subroutine tfgetv(word,lfno,next,exist)
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
       use tfcsi,only:cssetp
       use tflinepcom
+      use ffs_seg
       implicit none
       type (sad_comp), pointer :: cmpd
       integer*8 kav
-      integer*4 ii,i,id,iv,next,lfno,j,ivi,kv,next1,lw1
+      integer*4 ii,i,id,iv,next,lfno,ivi,kv,next1,lw1
       real*8 v,getva,va,vx
-      integer*4 ntouch,nl,irtc,lw,iii,lenw
+      integer*4 nl,irtc,lw,iii,lenw
       character*(*) word
       character*128 word1
       logical*4 exist,get,rel,maxf,minf,
@@ -93,7 +94,7 @@ c
           if(.not. exist1)then
             if(cont)then
               if(.not. vcomp)then
-                call tffsadjust(ntouch)
+                call tffsadjust
               endif
             else
               call termes(lfno,'?Missing value for ',word)
@@ -130,13 +131,13 @@ c
         var=ivi .eq. ival(i)
         if(rel)then
           call loc_comp(idvalc(ii),cmpd)
-          va=tfvcmp(cmpd,ivi)*(1.d0+v)
+          va=cmpd%value(ivi)*(1.d0+v)
         else
           va=v
         endif
         call compelc(ii,cmpd)
         if(var)then
-          vx=tfvcmp(cmpd,ivi)/errk(1,ii)
+          vx=cmpd%value(ivi)/errk(1,ii)
           if(minf)then
             if(maxf)then
               vlim(i,1)=-abs(va)
@@ -152,21 +153,16 @@ c
           else
             vx=va
           endif
-          call tfsetcmp(vx*errk(1,ii),cmpd,ivi)
+c          call tfsetcmp(vx*errk(1,ii),cmpd,ivi)
+          cmpd%value(ivi)=vx*errk(1,ii)
 c          rlist(latt(ii)+ivi)=vx*errk(1,ii)
         else
           vx=va
-          call tfsetcmp(vx,cmpd,ivi)
+c          call tfsetcmp(vx,cmpd,ivi)
+          cmpd%value(ivi)=vx
 c          rlist(latt(ii)+ivi)=vx
           if(.not. vcomp)then
-            do j=1,ntouch
-              if(itouchele(j) .eq. i .and. itouchv(j) .eq. ivi)then
-                cycle LOOP_II
-              endif
-            enddo
-            ntouch=ntouch+1
-            itouchele(ntouch)=i
-            itouchv(ntouch)=ivi
+            call tftouch(i,ivi)
           endif
         endif
       enddo LOOP_II
@@ -175,7 +171,7 @@ c          rlist(latt(ii)+ivi)=vx
         go to 1
       endif
  9000 if(exist .and. .not. vcomp)then
-        call tffsadjust(ntouch)
+        call tffsadjust
       endif
       return
       end

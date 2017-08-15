@@ -292,7 +292,7 @@ C
       use tfstk
       implicit none
       type (sad_descriptor) kx,kd,k1,k2
-      type (sad_list), pointer :: klx,kld
+      type (sad_dlist), pointer :: klx,kld
       integer*8 ka1,ka2,ix,iy,iddy,ka
       integer*4 isp1,irtc,itfmessage,n,m,mode
       real*8 dy(2)
@@ -314,7 +314,7 @@ C
         if(tfsameqd(kd,kxperiodic))then
           mode=4
         else
-          if(ktfnonlistqd(kd,kld))then
+          if(ktfnonlistq(kd,kld))then
             go to 9100
           endif
           if(kld%nl .ne. 2)then
@@ -356,13 +356,13 @@ C
       iy=ktfaddr(klist(ka+2))
       iddy=ktavaloc(0,max(m,3))+1
       call spline2(m,
-     $     rlist(ix+1),
-     $     rlist(iy+1),
-     $     rlist(iddy),mode,dy)
+     $     rlist(ix+1:ix+m),
+     $     rlist(iy+1:iy+m),
+     $     rlist(iddy:iddy+m-1),mode,dy)
       kx=kxadaloc(-1,3,klx)
-      klx%body(1)=ktflist+ktfcopy1(ix)
-      klx%body(2)=ktflist+ktfcopy1(iy)
-      klx%body(3)=ktflist+iddy-1
+      klx%dbody(1)%k=ktflist+ktfcopy1(ix)
+      klx%dbody(2)%k=ktflist+ktfcopy1(iy)
+      klx%dbody(3)%k=ktflist+iddy-1
       irtc=0
       return
  9000 irtc=itfmessage(9,'General::wrongval',
@@ -384,7 +384,7 @@ C
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer ::kl
+      type (sad_dlist), pointer ::kl
       type (sad_rlist), pointer ::klr,kll
       integer*4 isp1,irtc,itfmessage,i1,i2,ih,n,i,m
       real*8 x

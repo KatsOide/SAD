@@ -142,7 +142,6 @@
      1       .or. abbrev(word,'APP_END','_'))then
         app=abbrev(word,'APP_END','_')
         itype=itfpeeko(kx,next)
-c        write(*,*)'tffile-0 ',itype,ia
         if(ktfrealq(kx,vx))then
           lfno1=int(vx+.5d0)
           call cssetp(next)
@@ -151,9 +150,7 @@ c        write(*,*)'tffile-0 ',itype,ia
           close(lfno1)
           call cssetp(next)
           word=tfconvstr(kx,nc,'*')
-c          write(*,*)'tffile-1 ',word(1:len_trim(word))
           call texpfn(word)
-c          write(*,*)'tffile-2 ',word(1:len_trim(word))
           if(app)then
             open(lfno1,file=word,status='UNKNOWN',
      1           access='APPEND',ERR=6101)

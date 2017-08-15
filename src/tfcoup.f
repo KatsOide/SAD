@@ -3,6 +3,7 @@
       use ffs
       use ffs_pointer
       use tffitcode
+      use ffs_seg
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 lfno,kk1,k1,i,kk2,k2,ielm,lenw
@@ -85,8 +86,8 @@ c      v=rlist(latt(kk2)+ival(k2))/errk(1,kk2)
         iele(kk1)=kk2
         couple(kk1)=co
         call compelc(kk1,cmp)
-        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
-c        rlist(latt(kk1)+ival(k1))=v*errk(1,kk1)*co
+c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
+        cmp%value(ival(k1))=v*errk(1,kk1)*co
       else
         if(k1 .ne. k2)then
           do i=1,nlat-1

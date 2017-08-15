@@ -89,7 +89,7 @@ c     $     beam(1)
       implicit none
       type (sad_comp), pointer ::cmp
       type (sad_descriptor) :: dsave(kwMAX)
-      integer*4 k,nvar,le,itfdownlevel
+      integer*4 k,nvar,le,itfdownlevel,irtc
       real*8 f,beam(42),trans(6,12),cod(6)
       logical*4 chg,sol,cp0,int0
       if(.not. updatesize .or. sizedp .ne. dpmax)then
@@ -102,28 +102,32 @@ c     $     beam(1)
         levele=levele+1
         call qfracsave(k,dsave,nvar,.true.)
         call compelc(k,cmp)
-        call qfracseg(cmp,0.d0,f,dsave,chg)
-        if(.not. chg)then
-          le=itfdownlevel()
-          return
+        call qfracseg(cmp,cmp,0.d0,f,chg,irtc)
+        if(irtc .ne. 0)then
+          call tffserrorhandle(k,irtc)
+        else
+          if(.not. chg)then
+            le=itfdownlevel()
+            return
+          endif
+          cod(1)=gettwiss(mfitdx,k)
+          cod(2)=gettwiss(mfitdpx,k)
+          cod(3)=gettwiss(mfitdy,k)
+          cod(4)=gettwiss(mfitdpy,k)
+          cod(5)=gettwiss(mfitdz,k)
+          cod(6)=gettwiss(mfitddp,k)
+          call tinitr(trans)
+          trans(:,7:12)=0.d0
+          sol=.false.
+          cp0=codplt
+          codplt=.false.
+          int0=intra
+          calint=.false.
+          call tturne1(trans,cod,beam,
+     $         int8(0),int8(0),int8(0),0,.false.,sol,.false.,k,k)
+          codplt=cp0
+          calint=int0
         endif
-        cod(1)=gettwiss(mfitdx,k)
-        cod(2)=gettwiss(mfitdpx,k)
-        cod(3)=gettwiss(mfitdy,k)
-        cod(4)=gettwiss(mfitdpy,k)
-        cod(5)=gettwiss(mfitdz,k)
-        cod(6)=gettwiss(mfitddp,k)
-        call tinitr(trans)
-        trans(:,7:12)=0.d0
-        sol=.false.
-        cp0=codplt
-        codplt=.false.
-        int0=intra
-        calint=.false.
-        call tturne1(trans,cod,beam,
-     $       int8(0),int8(0),int8(0),0,.false.,sol,.false.,k,k)
-        codplt=cp0
-        calint=int0
         call qfracsave(k,dsave,nvar,.false.)
         le=itfdownlevel()
       endif

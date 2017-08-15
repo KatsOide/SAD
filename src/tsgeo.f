@@ -5,11 +5,12 @@
       use sad_main
       use ffs_pointer
       use tffitcode
+      use ffs_seg
       implicit none
       real*8 conv
       parameter (conv=3.d-16)
       type (sad_comp), pointer :: cmp
-      type (sad_rlist), pointer :: lal
+      type (sad_dlist), pointer :: lsegp
       integer*4 i,kg,k1,k2,idir,i0,i1,lt,mfr,j,kbz
       real*8 geo1(3,3),geos(3,4),
      $     pzf,trans(6,12),cod(6),beam(42),
@@ -140,7 +141,7 @@
         i1=2*i+1-i0
         lt=idtypec(i)
         call compelc(i,cmp)
-        seg=tcheckseg(cmp,lt,al,lal,irtc)
+        seg=tcheckseg(cmp,lt,al,lsegp,irtc)
         if(irtc .ne. 0)then
           call tffserrorhandle(i,irtc)
           return
@@ -244,7 +245,7 @@ c            a14= 2.d0*sin(phi*.5d0)**2/ak
           call setdirelc(i,direlc(i)*dir)
           dirf=direlc(i) .gt. 0.d0
           if(seg)then
-            call tmulteseg(trans,cod,beam,i,cmp,bzs*dir,lal,1.d0,i)
+c            call tmulteseg(trans,cod,beam,i,cmp,bzs*dir,lal,1.d0,i)
           else
             call tmulte1(trans,cod,beam,i,cmp,bzs*dir,1.d0,i)
           endif

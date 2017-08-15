@@ -4,7 +4,7 @@
       integer*4 maxint
       parameter (maxint=2**31-1)
       type (sad_descriptor) kx,kj,kxlistcopied,ke,ki,k1,kl
-      type (sad_list), pointer :: listi,kle,klj
+      type (sad_dlist), pointer :: listi,kle,klj
       type (sad_rlist), pointer :: klr
       type (sad_symbol), pointer :: name
       type (sad_symdef), pointer :: symd
@@ -27,7 +27,7 @@
         if(listi%head%k .eq. ktfoper+mtflist)then
           m=listi%nl
           if(m .eq. 1)then
-            call tfeevalref(listi%body(1),kl,irtc)
+            call tfeevalref(listi%dbody(1),kl,irtc)
             if(.not. ktfrealq(kl,x1))then
               irtc=itfmessage(9,'General::wrongtype','"Real number"')
               return
@@ -45,7 +45,7 @@
             if(.not. ktfsymbolqd(k1,name))then
               go to 9500
             endif
-            call tfeevalref(listi%body(2),k1,irtc)
+            call tfeevalref(listi%dbody(2),k1,irtc)
             if(irtc .ne. 0)then
               return
             endif
@@ -57,7 +57,7 @@
               xstep=1.d0
             else
               x0=x1
-              call tfeevalref(listi%body(3),k1,irtc)
+              call tfeevalref(listi%dbody(3),k1,irtc)
               if(irtc .ne. 0)then
                 return
               endif
@@ -67,7 +67,7 @@
               if(m .eq. 3)then
                 xstep=1.d0
               else
-                call tfeevalref(listi%body(4),k1,irtc)
+                call tfeevalref(listi%dbody(4),k1,irtc)
                 if(irtc .ne. 0)then
                   return
                 endif
@@ -425,7 +425,7 @@ c        call tfcatchreturn(0,kx,irtc)
       type (sad_descriptor) function kxlistcopied(isp1)
       use tfstk
       implicit none
-      type (sad_list), pointer ::klx
+      type (sad_dlist), pointer ::klx
       type (sad_rlist), pointer ::klr
       integer*4 isp1,i,n
       logical*4 nr,re
@@ -452,7 +452,7 @@ c        call tfcatchreturn(0,kx,irtc)
           kxlistcopied=kxadaloc(-1,n,klx)
         else
           kxlistcopied=kxavaloc(-1,n,klr)
-          call descr_list(kxlistcopied,klx)
+          call descr_sad(kxlistcopied,klx)
         endif
         klx%dbody(1:n)=dtastk(isp1+1:isp1+n)
       endif

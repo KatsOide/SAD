@@ -1,4 +1,4 @@
-(* Plots 5/1/2015 *)
+(* Plots 7/31/2017 *)
 
 Show;
 
@@ -6,7 +6,7 @@ Off[General::unprotconst];
 Unprotect[GoodnessOfFit,ChiSquare,ConfidenceInterval];
 On[General::unprotconst];
 SetAttributes[{Contours,MeshRange,ColorFunction,ColorFunctionScaling,
-  ContourColorFunction,ColorScale,
+  ContourColorFunction,ColorScale,Smoothing,Blue,Green,Cyan,Yellow,Pink,Purple,Rainbow,
   MaxBend,PlotPoints,PlotDivision,FunctionLabel,ResultLabel,RaiseFit,
   Signal,GoodnessOfFit,ChiSquare,ConfidenceInterval,ColumnTags,MeshStyle,
   PlotStyle,Columns,ColumnOffset,Bins,BinRange,ColumnLabel,Mesh,MeshColor,
@@ -17,7 +17,7 @@ BeginPackage[Plots`]
 
 Begin[Plots`]
 
-contl;contb;nx;ny;fc;bc;m0;m1;m2;m3;q0;q1;q2;q3;
+contl;contb;nx;ny;fc;bc;m0;m1;m2;m3;q0;q1;q2;q3;mesh;i;j;i0;j0;pr;
 
 EndPackage[]
 
@@ -322,54 +322,96 @@ FitPlot[data_,fun_,x_,par0__]:=
       Show[g,g1,g3,Null@@opt]]}];
 SetAttributes[FitPlot,HoldRest];
 
-With[{def={PlotRange->Automatic,MeshRange->Default,
-  ColorFunction->Automatic,
-  ColorFunctionScaling->True,
-  DisplayFunction->Default,
-  AspectRatio->1,ContourColorFunction->Automatic,
-  Contours->10,Prolog->{},Epilog->{}}},
+CP$ColorScale[False,__]:=Unevaluated$[Null[]];
+CP$ColorScale[cs_,cf_,cfs_,pr_,ar_,ncs_,opt___]:=
+  Module[{cr,dcr},
+    cr=If[cfs,
+      {0,1},
+      pr];
+    dcr=cr[[2]]-cr[[1]];
+    Rectangle[{0,0},{1/ncs,1},
+      ListDensityPlot[
+        {(Range[ncs+1]-1)*dcr/ncs+cr[[1]]},
+        PlotRange->{pr,cr},
+        Smoothing->0,
+        ColorScale->False,
+        ColorFunction->cf,
+        DisplayFunction->Identity,
+        AspectRatio->1/ncs,
+        FrameTicks->{None,None,None,True},
+        FrameLabel->{"",""},
+        FrameColor->"white",
+        TickSize->-0.1,
+        MeshRange->{Default,pr},opt],Position->Right[]]];
 
-  ListContourPlot[l_,opt___]:=Module[{
-    m0,m1,mesh,x,gr,op,
-    {pr,mr,lc,cf,cfs,df,nc,ar}={PlotRange,MeshRange,ContourColorFunction,
-      ColorFunction,
-      ColorFunctionScaling,
-      DisplayFunction,Contours,AspectRatio}/.opt/.def},
-    {nx,ny}=Dimensions[l];
-    pr=CP$PlotRange[pr,l];
-    mr=mr/.Automatic->Default;
-    If[mr===Default,
-      mr=CP$MeshRange[mr];
-      mesh=Identity,
-      mr=CP$MeshRange[mr];
-      {m0,m1}=Thread[mr];
-      m1=(m1-m0)/({nx,ny}-1);
-      mesh[x_]=m0+(x-1)*m1];
-    Switch[cf,
-      _String,
-      cf=With[{cf},cf&],
-      Null|None|False,
-      cf="white"&,
-      Automatic,
-      cf=CP$Color
-      ];
-    Switch[lc,
-      _String,
-      lc=With[{lc},lc&],
-      Null|None|False,
-      lc=Null,
-      Automatic,
-      lc=CP$ContourColor];
-    op=DeleteCases[Override[AspectRatio->ar,DataRange->mr,opt,def],_[PlotRange,_],1];
-    gr=Graphics[Flatten[{Prolog/.op,CP$FindContour[l,pr,nc,mesh,cf,cfs,lc],Epilog/.op}],op];
-    If[df===Default,Show[gr,op]];
-    gr]];
+CP$PlotRangeG[Automatic]={Automatic,Automatic};
+CP$PlotRangeG[pr:{_Real|Automatic,_Real|Automatic}]:={Automatic,pr};
+CP$PlotRangeG[{x_,y_,pr:{_Real|Automatic,_Real|Automatic}}]:={{x,y},pr};
+CP$PlotRangeG[{x_,pr:{_Real|Automatic,_Real|Automatic}}]:={x,pr};
+
+CP$PlotRange[Automatic,l_]:=MinMax[l];
+CP$PlotRange[{Automatic,Automatic},l_]:=MinMax[l];
+CP$PlotRange[{Automatic,max_},l_]:={Min[l],max};
+CP$PlotRange[{min_,Automatic},l_]:={min,Max[l]};
+CP$PlotRange[x_,_]:=x;
 
 LDP$Smooth[l_]:=Module[{l1,l2},
   l2=Transpose[(l1=Rest[#];
     Flatten[{#[[1]],Thread[{(l1+Drop[#,-1])/2,l1}]}])&/@l];
   Transpose[(l1=Rest[#];
     Flatten[{#[[1]],Thread[{(l1+Drop[#,-1])/2,l1}]}])&/@l2]];
+LDP$Smooth1[x:{_,_}]:=x
+LDP$Smooth1[l_List]:=With[{l1=Rest[l]},
+  Flatten[{l[[1]],Thread[{(l1+Drop[l,-1])/2,l1}]}]];
+LDP$Smooth1[Default]=Default;
+
+With[{def={PlotRange->Automatic,MeshRange->Default,
+  ColorFunction->Automatic,
+  ColorFunctionScaling->True,
+  ColorScale->True,
+  Smoothing->0,
+  DisplayFunction->Default,
+  AspectRatio->1,ContourColorFunction->Automatic,
+  Contours->10,Prolog->{},Epilog->{}},
+  ncs=16},
+
+  ListContourPlot[l0_,opt___]:=Module[{
+    gr,op,gs,prg,l=l0,
+    {pr,mr,lc,cf,cfs,cs,df,nc,ar,sm}={PlotRange,MeshRange,ContourColorFunction,
+      ColorFunction,ColorFunctionScaling,ColorScale,
+      DisplayFunction,Contours,AspectRatio,Smoothing}/.{opt}/.def},
+    Do[l=LDP$Smooth[l],{sm}];
+    Block[{nx,ny,mesh},
+      {nx,ny}=Dimensions[l];
+      mr=mr/.Automatic->Default;
+      If[ListQ[mr] && sm,
+        Do[mr=LDP$Smooth1/@mr,{sm}]];
+      CP$DefMesh[mr];
+      {prg,pr}=CP$PlotRangeG[pr];
+      pr=CP$PlotRange[pr,l];
+      Switch[cf,
+        _String,
+        cf=With[{cf},cf&],
+        Null|None|False,
+        cf="white"&,
+        _Symbol,
+        cf=CP$Color[cf]
+        ];
+      Switch[lc,
+        _String,
+        lc=With[{lc},lc&],
+        Null|None|False,
+        lc=Null,
+        Automatic,
+        lc=CP$ContourColor[cf[#]]&];
+      gs=CP$ColorScale[cs,cf,cfs,pr,ar,ncs,opt];
+      op=Override[AspectRatio->ar,PlotRange->prg,
+        DataRange->Thread[{mesh[{1,1}],mesh[{nx,ny}]}],opt,def];
+      gr=Graphics[Flatten[{Prolog/.op,CP$FindContour[l,pr,nc,cf,cfs,lc],gs,Epilog/.op}],op];
+      ];
+    If[df===Default,Show[gr,op]];
+    gr]];
+
 
 With[{def={PlotRange->Automatic,MeshRange->Default,
   ColorFunction->Automatic,DisplayFunction->Default,
@@ -380,133 +422,114 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
   ncs=16},
 
   ListDensityPlot[l0_,opt___]:=Module[{l=l0,
-    m0,m1,mesh,x,gr,op,l1,g,gs,cr,dcr,nx,ny,
+    gr,op,l1,g,gs,prg,
     {pr,mr,cf,cfs,df,ar,ms,mc,cs,sm}={PlotRange,MeshRange,
       ColorFunction,ColorFunctionScaling,
       DisplayFunction,AspectRatio,Mesh,MeshColor,
       ColorScale,Smoothing}/.opt/.def},
     Do[l=LDP$Smooth[l],{sm}];
-    {nx,ny}=Dimensions[l];
-    pr=CP$PlotRange[pr,l];
-    mr=mr/.Automatic->Default;
-    If[mr===Default,
-      mesh[x_]=x-0.5,
-      mr=CP$MeshRange[mr];
-      {m0,m1}=Thread[mr];
-      m1=(m1-m0)/({Max[nx,2],Max[ny,2]}-1);
-      mesh[x_]=m0+(x-1.5)*m1];
-    Switch[cf,
-      _String,
-      cf=cf&,
-      Null|None|False,
-      cf=Null,
-      Automatic,
-      cf=CP$Color
+    Block[{nx,ny,mesh},
+      {nx,ny}=Dimensions[l];
+      mr=mr/.Automatic->Default;
+      If[ListQ[mr] && sm,
+        Do[mr=LDP$Smooth1/@mr,{sm}]];
+      DP$DefMesh[mr];
+      {prg,pr}=CP$PlotRangeG[pr];
+      pr=CP$PlotRange[pr,l];
+      Switch[cf,
+        _String,
+        cf=cf&,
+        Null|None|False,
+        cf=Null,
+        _Symbol,
+        cf=CP$Color[cf]
+        ];
+      Switch[mc,
+        _String,
+        mc=mc&,
+        Null|None|False,
+        mc=cf,
+        Automatic,
+        mc=CP$ContourColor
+        ];
+      l1=If[cfs,
+        l1=Restrict[(l-pr[[1]])/(pr[[2]]-pr[[1]]),0,1],
+        l1=l-pr[[1]]];
+      g=If[ms===True,
+        Table[
+          Rectangle[mesh[{i,j}],mesh[{i+1,j+1}],FillColor->cf[l1[[i,j]]],
+            PlotColor->mc[l1[[i,j]]]],
+          {i,nx},{j,ny}],
+        Table[
+          Rectangle[mesh[{i,j}],mesh[{i+1,j+1}],FillColor->cf[l1[[i,j]]],
+            PlotColor->cf[l1[[i,j]]]],
+          {i,nx},{j,ny}]];
+      gs=CP$ColorScale[cs,cf,cfs,pr,ar,ncs,opt];
+      op=Override[AspectRatio->ar,PlotRange->prg,DataRange->Thread[{mesh[{1,1}],mesh[{nx,ny}+1]}],opt,def]
       ];
-    Switch[mc,
-      _String,
-      mc=mc&,
-      Null|None|False,
-      mc=cf,
-      Automatic,
-      mc=CP$ContourColor
-      ];
-    l1=If[cfs,
-      l1=Restrict[(l-pr[[1]])/(pr[[2]]-pr[[1]]),0,1],
-      l1=l-pr[[1]]];
-    g=If[ms===True,
-      Table[
-        Rectangle[mesh[{i,j}],mesh[{i+1,j+1}],FillColor->cf[l1[[i,j]]],
-          PlotColor->mc[l1[[i,j]]]],
-        {i,nx-1},{j,ny-1}],
-      Table[
-        Rectangle[mesh[{i,j}],mesh[{i+1,j+1}],FillColor->cf[l1[[i,j]]],
-          PlotColor->cf[l1[[i,j]]]],
-        {i,nx},{j,ny}]];
-    If[cs,
-      cr=If[cfs,
-        {0,1},
-        pr];
-      dcr=cr[[2]]-cr[[1]];
-      gs=Rectangle[{Min[ar/2/GoldenRatio,1]+0.03,0},{Min[ar/2/GoldenRatio+1.03,1.43],1},
-        ListDensityPlot[
-          {(Range[ncs+1]-1)*dcr/ncs+cr[[1]]},
-          PlotRange->cr,
-          Smoothing->0,
-          ColorScale->False,
-          DisplayFunction->Identity,
-          AspectRatio->1/ncs,
-          FrameTicks->{None,None,None,True},
-          FrameLabel->{"",""},
-          TickSize->-0.1,
-          MeshRange->{{0,1},{pr[[1]],pr[[2]]}},opt]],
-      gs:=Null[]];
-    op=DeleteCases[
-      Override[AspectRatio->ar,DataRange->Thread[{mesh[{1,1}],mesh[{nx,ny}+1]}],opt,def],
-      _[PlotRange,_],1];
     g=Graphics[Flatten[{Prolog/.op,g,gs,Epilog/.op}],op];
     If[df===Default,Show[g,op]];
     g]];
 
-CP$FindContour[l_,pr_,n_,mesh_,cf_,cfs_,lc_]:=Module[
-  {l1,l1f,i,j,k,dl,min,max,g,ml,gp,gl,b,
-    i1,j1,f0,f1,f2,f3},
-  l1=Restrict[(l-pr[[1]])/(pr[[2]]-pr[[1]])*n+0.5,0.5,n+0.5];
+CP$FindContour[l_,pr_,n_,cf_,cfs_,lc_]:=Module[
+  {l1f,i,j,k,dl,min,max,g,ml,gp,gl,b,
+    i1,j1,f0,f1,f2,f3,
+    l1=Restrict[(l-pr[[1]])/(pr[[2]]-pr[[1]])*n+0.5,0.5,n+0.5]},
   l1f=Floor[l1];
-  With[{l1},
-    q0:={i,j+(k-l1[[i,j]])/(l1[[i,j1]]-l1[[i,j]])};
-    q1:={i+(k-l1[[i,j1]])/(l1[[i1,j1]]-l1[[i,j1]]),j1};
-    q2:={i+(k-l1[[i,j]])/(l1[[i1,j]]-l1[[i,j]]),j};
-    q3:={i1,j+(k-l1[[i1,j]])/(l1[[i1,j1]]-l1[[i1,j]])}];
-  Clear[contl,contb];
-  contl[_][_]={{}};
-  contb[_][_]={};
-  Table[
-    i1=i+1;
-    j1=j+1;
-    {min,max}=MinMax[{f0,f1,f2,f3}={l1f[[i,j]],l1f[[i,j1]],l1f[[i1,j]],l1f[[i1,j1]]}];
-    {m0,m1,m2,m3}={{i,j},{i,j1},{i1,j},{i1,j1}};
-    If[cf<=>Null,
-      b=False;
-      If[i==1,
-        b=True;
-        Do[CP$AddBorder[{m0,m1},k],{k,min}]];
-      If[i1==nx,
-        b=True;
-        Do[CP$AddBorder[{m3,m2},k],{k,min}]];
-      If[j==1,
-        b=True;
-        Do[CP$AddBorder[{m2,m0},k],{k,min}]];
-      If[j1==ny,
-        b=True;
-        Do[CP$AddBorder[{m1,m3},k],{k,min}]];
-      If[b,
-        Do[
-          CP$AddBorder[#,k]&/@bc[f0>=k,f1>=k,f2>=k,f3>=k];
-          CP$AddLine[#,k]&/@fc[f0>=k,f1>=k,f2>=k,f3>=k],
-          {k,min+1,max}],
+  Block[{contl,contb,q0,q1,q2,q3},
+    With[{l1},
+      q0:={i,j+(k-l1[[i,j]])/(l1[[i,j1]]-l1[[i,j]])};
+      q1:={i+(k-l1[[i,j1]])/(l1[[i1,j1]]-l1[[i,j1]]),j1};
+      q2:={i+(k-l1[[i,j]])/(l1[[i1,j]]-l1[[i,j]]),j};
+      q3:={i1,j+(k-l1[[i1,j]])/(l1[[i1,j1]]-l1[[i1,j]])}];
+    contl[_][_]={{}};
+    contb[_][_]={};
+    Table[
+      i1=i+1;
+      j1=j+1;
+      {min,max}=MinMax[{f0,f1,f2,f3}={l1f[[i,j]],l1f[[i,j1]],l1f[[i1,j]],l1f[[i1,j1]]}];
+      {m0,m1,m2,m3}={{i,j},{i,j1},{i1,j},{i1,j1}};
+      If[cf<=>Null,
+        b=False;
+        If[i==1,
+          b=True;
+          Do[CP$AddBorder[{m0,m1},k],{k,min}]];
+        If[i1==nx,
+          b=True;
+          Do[CP$AddBorder[{m3,m2},k],{k,min}]];
+        If[j==1,
+          b=True;
+          Do[CP$AddBorder[{m2,m0},k],{k,min}]];
+        If[j1==ny,
+          b=True;
+          Do[CP$AddBorder[{m1,m3},k],{k,min}]];
+        If[b,
+          Do[
+            CP$AddBorder[#,k]&/@bc[f0>=k,f1>=k,f2>=k,f3>=k];
+            CP$AddLine[#,k]&/@fc[f0>=k,f1>=k,f2>=k,f3>=k],
+            {k,min+1,max}],
+          Do[
+            CP$AddLine[#,k]&/@fc[f0>=k,f1>=k,f2>=k,f3>=k],
+            {k,min+1,max}]],
         Do[
           CP$AddLine[#,k]&/@fc[f0>=k,f1>=k,f2>=k,f3>=k],
           {k,min+1,max}]],
-      Do[
-        CP$AddLine[#,k]&/@fc[f0>=k,f1>=k,f2>=k,f3>=k],
-        {k,min+1,max}]],
-    {i,nx-1},{j,ny-1}];
-  {gp,gl}=CP$GetLine[l1,n,cf];
-  g=Flatten[{
-    If[cf<=>Null,
-      {Rectangle[mesh[{1,1}],mesh[{nx,ny}],PlotColor->"",FillColor->cf[0]],
-        Polygon[Thread[mesh[Thread[#2]]],
-          PlotColor->"",FillColor->If[cfs,cf[#/n],cf[#/n*(pr[[2]]-pr[[1]])+pr[[1]]]]]&@@[gp,{1}]},
-      Null[]],
-    If[lc<=>Null,
-      With[{c=lc[#2/n]},
-        If[Head[c]===String,
-          Line[Thread[mesh[Thread[First[#]]]],PlotColor->lc[#2/n]],
-          Null[]]]&@@[gl,{1}],
-      Null[]]
-    }];
-  Clear[contl,contb,q0,q1,q2,q3,m0,m1,m2,m3];
+      {i,nx-1},{j,ny-1}];
+    {gp,gl}=CP$GetLine[l1,n,cf];
+    g=Flatten[{
+      If[cf<=>Null,
+        {Rectangle[mesh[{1,1}],mesh[{nx,ny}],PlotColor->"",FillColor->cf[0]],
+          Polygon[Thread[mesh[Thread[#2]]],
+            PlotColor->"",FillColor->If[cfs,cf[#/n],cf[#/n*(pr[[2]]-pr[[1]])+pr[[1]]]]]&@@[gp,{1}]},
+        Null[]],
+      If[lc<=>Null,
+        With[{c=lc[#2/n]},
+          If[Head[c]===String,
+            Line[Thread[mesh[Thread[First[#]]]],PlotColor->lc[#2/n]],
+            Null[]]]&@@[gl,{1}],
+        Null[]]
+      }]
+    ];
   g];
 
 fc[1,0,0,0]:={{m0,q0,q2}};
@@ -640,9 +663,11 @@ CP$FindNest[lc_,ls0_]:=Module[{u,p,k,l,ls=ls0},
   Scan[(
     {k,u}=#;
     With[{u1=First[u]},
-      p=Position[ls[[k]],_?(CP$Inside[u1,Second[#]]&),1,1][[1,1]]];
-    l=ls[[k,p,2]];
-    ls[[k,p,2]]=Join[l,u,{Last[l]}])&,lc];
+      p=Position[ls[[k]],_?(CP$Inside[u1,Second[#]]&),1,1]];
+    If[p<=>{},
+      p=p[[1,1]];
+      l=ls[[k,p,2]];
+      ls[[k,p,2]]=Join[l,u,{Last[l]}]])&,lc];
   Flatten[ls,1]];
 
 CP$Parity[l_]:=With[{
@@ -661,17 +686,52 @@ CP$ReduceLine[l_]:=Module[{dl,dl1,g},
   If[g==={},{l[[1]],l[[1]]},
     Append[g,First[g]]]];
 
-CP$PlotRange[Automatic,l_]:=MinMax[l];
-CP$PlotRange[{Automatic,Automatic},l_]:=MinMax[l];
-CP$PlotRange[{Automatic,max_},l_]:={Min[l],max};
-CP$PlotRange[{min_,Automatic},l_]:={min,Max[l]};
-CP$PlotRange[x_,_]:=x;
+CP$DefMesh[Default]:=(mesh[x_]:=x);
+CP$DefMesh[{Default,Default}]:=(mesh[x_]:=x);
+CP$DefMesh[{x_,y_}]:=With[{meshx=CP$Mesh1[x,nx],meshy=CP$Mesh1[y,ny]},
+  With[{dmx=Append[Difference[meshx],0],dmy=Append[Difference[meshy],0]},
+    mesh[{i_,j_}]:=With[{i0=Floor[i],j0=Floor[j]},
+      {meshx[[i0]]+dmx[[i0]]*(i-i0),meshy[[j0]]+dmy[[j0]]*(j-j0)}]]];
+CP$DefMesh[{x_,Default}]:=With[{meshx=CP$Mesh1[x,nx]},
+  With[{dmx=Append[Difference[meshx],0]},
+    mesh[{i_,j_}]:=With[{i0=Floor[i]},
+      {meshx[[i0]]+dmx[[i0]]*(i-i0),j}]]];
+CP$DefMesh[{Default,y_}]:=With[{meshy=CP$Mesh1[y,ny]},
+  With[{dmy=Append[Difference[meshy],0]},
+    mesh[{i_,j_}]:=With[{i0=Floor[i],j0=Floor[j]},
+      {i,meshy[[j0]]+dmy[[j0]]*(j-j0)}]]];
 
-CP$MeshRange[Default]:={{1,nx},{1,ny}};
-CP$MeshRange[x_]:=x;
+CP$Mesh1[x_,_]:=x;
+CP$Mesh1[{x1_,x2_},n_]:=(x1+Range[0,n-1]*(x2-x1)/(n-1));
 
-CP$Color[x_]:=RGBColor[Restrict[x*3-2,0,1],Restrict[x*3-1,0,1],Restrict[x*3,0,1]];
-CP$ContourColor[x_]:=RGBColor[1-Restrict[x*3-2,0,1],1-Restrict[x*3-1,0,1],1-Restrict[x*3,0,1]];
+DP$DefMesh[Default]:=(mesh[x_]:=x-0.5);
+DP$DefMesh[{Default,Default}]:=(mesh[x_]:=x-0.5);
+DP$DefMesh[{x_,y_}]:=With[{meshx=DP$Mesh1[x,nx],meshy=DP$Mesh1[y,ny]},
+  mesh[{i_,j_}]:={meshx[[i]],meshy[[j]]}];
+DP$DefMesh[{x_,Default}]:=With[{meshx=DP$Mesh1[x,nx]},
+  mesh[{i_,j_}]:={meshx[[i]],j-0.5}];
+DP$DefMesh[{Default,y_}]:=With[{meshy=DP$Mesh1[y,ny]},
+  mesh[{i_,j_}]:={i-0.5,meshy[[j]]}];
+
+DP$Mesh1[x_,_]:=Module[{d=(Drop[x,-1]+Rest[x])/2},
+  Flatten[{2*x[[1]]-d[[1]],d,2*x[[-1]]-d[[-1]]}]];
+DP$Mesh1[{x1_,x2_},n_]:=(x1+(Range[0,n]-0.5)*(x2-x1)/(n-1));
+DP$Mesh1[{x1_,x1_},1]:={x1-0.5,x1+0.5};
+
+CP$Color[Blue][x_]  :=RGBColor[Restrict[x*3-2,0,1],Restrict[x*3-1,0,1],Restrict[x*3-0,0,1]];
+CP$Color[Green][x_] :=RGBColor[Restrict[x*3-1,0,1],Restrict[x*3-0,0,1],Restrict[x*3-2,0,1]];
+CP$Color[Pink][x_]  :=RGBColor[Restrict[x*3-0,0,1],Restrict[x*3-2,0,1],Restrict[x*3-1,0,1]];
+CP$Color[Cyan][x_]  :=RGBColor[Restrict[x*3-2,0,1],Restrict[x*3-0,0,1],Restrict[x*3-1,0,1]];
+CP$Color[Purple][x_]:=RGBColor[Restrict[x*3-1,0,1],Restrict[x*3-2,0,1],Restrict[x*3-0,0,1]];
+CP$Color[Yellow][x_]:=RGBColor[Restrict[x*3-0,0,1],Restrict[x*3-1,0,1],Restrict[x*3-2,0,1]];
+With[{rb=0.33,rg=0.45,rr=0.75},
+  CP$Color[Rainbow][x_]:=RGBColor[
+    Restrict[(x<rg)*(0.5-Abs[x-rb/2]/rb)+(x=>rg)*(x-rg)/((2*rr+rg)/3-rg),0,1],
+    Restrict[(x<rg)*(x-rb)/(rg-rb)+(rg<=x<rr)*(rr-x)/(rr-(2*rr+rg)/3)+(x>=rr)*(x-rr)/(1-rr),0,1],
+    Restrict[(x<rb)*x/rb+(rb<=x<rr)*(rg-x)/(rg-rb)+(x>rr)*(x-rr)/(1-rr),0,1]]];
+CP$Color[_][x_]     :=CP$Color[Blue][x];
+CP$ContourColor[x_String]:=RGBColor@@[{1,1,1}-
+  {ToExpression["0x"//x[2,3]],ToExpression["0x"//x[4,5]],ToExpression["0x"//x[6,7]]}/255];
 
 CP$NullColor[x_]:=RGBColor[Restrict[x*3-2,0,1],Restrict[x*3-1,0,1],Restrict[x*3,0,1]];
 

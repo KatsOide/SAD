@@ -7,7 +7,7 @@
       use tfcsi, only:icslfno
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kl,klx
+      type (sad_dlist), pointer :: kl,klx
       type (sad_rlist), pointer :: kl1,kl2
       integer*8 iatr,iacod,iamat,kaparam,iabmi
       integer*4 isp1,irtc,narg,mode,itgetfpe,nparam,
@@ -92,15 +92,15 @@ c        ilist(2,iwakepold+6)=ifsize
       endif
 c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparam
       klx%rbody(1)=sx
-      klx%body(2)=ktflist+ktfcopy1(kaparam)
+      klx%dbody(2)%k=ktflist+ktfcopy1(kaparam)
       if(mode .ge. 1)then
-        klx%body(3)=ktflist+ktfcopy1(iamat)
+        klx%dbody(3)%k=ktflist+ktfcopy1(iamat)
         if(mode .ge. 2)then
-          klx%body(4)=ktflist+ktfcopy1(iacod)
+          klx%dbody(4)%k=ktflist+ktfcopy1(iacod)
           if(mode .eq. 3)then
-            klx%body(5)=ktflist+ktfcopy1(iatr)
+            klx%dbody(5)%k=ktflist+ktfcopy1(iatr)
             if(intra)then
-              klx%body(6)=ktflist+ktfcopy1(iabmi)
+              klx%dbody(6)%k=ktflist+ktfcopy1(iabmi)
             endif
           endif
         endif

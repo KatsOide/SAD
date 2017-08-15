@@ -4,7 +4,7 @@
       use iso_c_binding
       use tfcsi,only:cssetp
       implicit none
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       type (sad_symdef), pointer :: symd
       type (sad_namtbl),pointer :: loc
       type (sad_descriptor) kx
@@ -134,7 +134,7 @@ c      endif
       use tfrbuf
       use ffs_flag
       implicit none
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       type (sad_symbol), pointer :: sym
       integer*8 kad,kah,ka,k,kt,kx,k1
       integer*4 irtc,l,lenw,itfhasharg,isp0

@@ -413,14 +413,14 @@ c      include 'DEBUG.inc'
           do i=itfcontextpath,
      $         itfcontextpath+ilist(2,itfcontextpath-1)-1
             if(klist(i) .eq. ic)then
-              kx%k=ktfstring+sad_loc(loc%str%nch)
+              kx=sad_descr(loc%str)
               return
             endif
           enddo
         endif
       elseif(ktfoperqd(k,ka))then
         call loc_namtbl(klist(klist(ifunbase+ka)),loc)
-        kx%k=loc%str%alloc
+        kx=loc%str%alloc
         return
       elseif(symb)then
         irtc=itfmessage(9,'General::wrongtype','"Symbol"')
@@ -464,14 +464,14 @@ c      include 'DEBUG.inc'
           do i=itfcontextpath,
      $         itfcontextpath+ilist(2,itfcontextpath-1)-1
             if(klist(i) .eq. ic)then
-              kx%k=loc%str%alloc
+              kx=loc%str%alloc
               return
             endif
           enddo
         endif  
       elseif(ktfoperqd(k,ka))then
         call loc_namtbl(klist(ifunbase+ka),loc)
-        kx%k=loc%str%alloc
+        kx=loc%str%alloc
         return
       endif
       isp0=isp
@@ -576,7 +576,7 @@ c      include 'DEBUG.inc'
       use strbuf
       implicit none
       type (sad_descriptor) kx,ki
-      type (sad_list), pointer ::kl,klx
+      type (sad_dlist), pointer ::kl,klx
       type (sad_rlist), pointer ::kli
       type (sad_string), pointer :: str,strp,stri
       integer*4 isp1,irtc,nc,nc1,i,j,

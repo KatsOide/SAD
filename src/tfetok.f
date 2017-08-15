@@ -120,7 +120,7 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
           call putstringbufb1(strb,ch)
         enddo
         ii=i
-        kxmakestring%k=ktfstring+sad_loc(strb%nch)
+        kxmakestring=sad_descr(strb%string(1))
         return
         end function 
 
@@ -135,7 +135,7 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
       use iso_c_binding
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: klr
       type (sad_symdef), pointer :: symd
       type (sad_namtbl), pointer ::loc
@@ -309,13 +309,13 @@ c      endif
               irt=0
               kx=kxadaloc(-1,1,klx)
               klx%head%k=ktfsymbol+ktfcopy1(iaxout)
-              klx%body(1)=ktfsymbol+ktfcopy1(iaxline+4)
+              klx%dbody(1)%k=ktfsymbol+ktfcopy1(iaxline+4)
               go to 9000
             elseif(notany1(string(it1+1:it2),max(0,it2-it1),
      $             '0123456789',1) .le. 0)then
               irt=0
               kx=kxavaloc(-1,1,klr)
-              call descr_list(kx,klx)
+              call descr_sad(kx,klx)
               klx%head%k=ktfsymbol+ktfcopy1(iaxout)
               klr%rbody(1)=ifromstr(string(it1+1:it2))
               go to 9000
@@ -420,7 +420,7 @@ c          write(*,*)'kax ',kax
       use tmacro
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx,klxi
+      type (sad_dlist), pointer :: klx,klxi
       type (sad_string), pointer :: str
       integer*4 irtc,i,lenw,isp1,itfmessage
       if(isp .gt. isp1+1)then
@@ -432,7 +432,7 @@ c          write(*,*)'kax ',kax
         klx%dbody(i)=kxadaloc(0,2,klxi)
         klxi%dbody(1)=kxsalocb(0,fname(i),lenw(fname(i)),str)
         if(fff%flags(i))then
-          klxi%body(2)=ktftrue
+          klxi%dbody(2)%k=ktftrue
         else
           klxi%rbody(2)=0.d0
         endif

@@ -23,7 +23,8 @@
         dvdp=0.d0
       endif
       pr=1.d0+cod(6)
-      if(bz .eq. 0.d0 .and. ak0x .eq. 0.d0 .and. ak0y .eq. 0.d0)then
+      if(abs(bz) .eq. 0.d0 .and.
+     $     abs(ak0x) .eq. 0.d0 .and. abs(ak0y) .eq. 0.d0)then
         pxi=cod(2)
         pyi=cod(4)
         a=min(ampmax,pxi**2+pyi**2)

@@ -300,17 +300,6 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
           wi=1.d0/w
         endif
         v=vc*abs(charge)/amass
-        if(trpt)then
-c          vnominal=v*sin(-phirf*charge)
-          phis=0.d0
-        else
-c          vnominal=0.d0
-          if(autophi)then
-            phis=phic
-          else
-            phis=w*trf0
-          endif
-        endif
         he=h0+vnominal
         pe=h2p(he)
 c        pe=sqrt((he-1.d0)*(he+1.d0))
@@ -341,6 +330,17 @@ c        pe=sqrt((he-1.d0)*(he+1.d0))
           enddo
         endif            
         phic=(phirf+dphirf)*charge
+        if(trpt)then
+c          vnominal=v*sin(-phirf*charge)
+          phis=0.d0
+        else
+c          vnominal=0.d0
+          if(autophi)then
+            phis=phic
+          else
+            phis=w*trf0
+          endif
+        endif
         dphis=phis-phic
         if(rad .or. trpt .or. autophi)then
           offset=sin(dphis)

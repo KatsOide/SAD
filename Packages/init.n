@@ -65,7 +65,8 @@ BeginPackage[a__]:=With[{`c=$ContextPath,
   `b=Check[$SetContextPath[{a,System`}],Return[]]},
   AppendTo[$PackageStack,`c];
   `b];
-EndPackage[___]:=($SetContextPath[Last[$PackageStack]];
+EndPackage[___]:=(
+  $SetContextPath[Last[$PackageStack]];
   If[Length[$PackageStack]>1,$PackageStack=Drop[$PackageStack,-1]];
   $ContextPath);
 SetAttributes[{Begin,End,BeginPackage,EndPackage,ToContext,Wrap},Constant];
@@ -396,6 +397,23 @@ $System=$OperatingSystem=Environment$["OSTYPE"];
 Protect[$Input,$Output];
 SetAttrubutes[{Environment,Environment$,HomeDirectory,
   $MachineName,$MachineType,$System,$OperatingSystem},Constant];
+
+(Element["PROFILE"[`key_],y_,`op___]=`z:{__Real})^:=With[{`e=Element$["POSITION",y,op]},
+  If[ListQ[e],
+    With[{`p=Element$["PROFILE",#,op]},
+      If[RealQ[p],Element$["PROFILE",#]={{key,z}},
+        Element$["PROFILE",#]=Prepend[DeleteCases[p,{key,__},1],{key,z}]]]&/@e,
+    With[{p=Element$["PROFILE",e,op]},
+      If[RealQ[p],Element$["PROFILE",e]={{key,z}},
+        Element$["PROFILE",e]=Prepend[DeleteCases[p,{key,__},1],{key,z}]]]]];
+(Element["PROFILE",y_,op___]=z:{key_String,{__Real},___})^:=With[{e=Element$["POSITION",y,op]},
+  If[ListQ[e],
+    With[{p=Element$["PROFILE",#,op]},
+      If[RealQ[p],Element$["PROFILE",#]={z},
+        Element$["PROFILE",#]=Prepend[DeleteCases[p,{key,__},1],z]]]&/@e,
+    With[{p=Element$["PROFILE",e,op]},
+      If[RealQ[p],Element$["PROFILE",e]={z},
+        Element$["PROFILE",e]=Prepend[DeleteCases[p,{key,__},1],z]]]]];
 (Element[x_List,y_,`op___]=`z_List)^:=
   (ScanThread[Function[{a,b},Element[a,y,op]=b],{x,z}];
     z);
@@ -413,12 +431,17 @@ SetAttrubutes[{Environment,Environment$,HomeDirectory,
 (Element[x_,y_List,op___]=z_)^:=(Scan[Function[{a},Element[x,a,op]=z],y];z);
 (Element[x_,y_,op___]=z_)^:=
   With[{n=Element$["NAME",y]},Element[x,n,op]=z];
+Element["PROFILE"[key_String],y_,op___]:=With[{e=Element$["POSITION",y,op]},
+  If[ListQ[e],
+    Level[Cases[Element$["PROFILE",#,op],{key,__},1,1],{2}]&/@e,
+    Level[Cases[Element$["PROFILE",e,op],{key,__},1,1],{2}]]/.({key,x_}:>x)];
 Element[x___]:=Element$[x];
 SetElement[x_?(Element["POSITION",#]<=>{}&),t:(_String|),k__]:=
   Module[{v=SetElement$[x,t,k]},
     Scan[(Element[#[[1]],x]=#[[2]])&,Flatten[{k}]];
     v];
 SetElement[x__]:=SetElement$[x];
+
 ExternalMap[___]:=Null;
 InitLINE$P[]:=(
   Clear[LINE$P,Element$P,Element$Key];

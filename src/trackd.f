@@ -474,7 +474,7 @@ c      write(*,'(a,1p6g15.7)')'tinip ',xa(6),emx,emz
 c          write(*,'(a,2i5,1p6g15.7)')'tpdamp ',j,i,
 c     $xa(1),xa(2),xa(5),xa(6),aenox(j),aenoz(j)
           mturn(j)=nturn-1
-          write(*,*)'tpdamp ',j,nturn-1
+c          write(*,*)'tpdamp ',j,nturn-1
         endif
         if(damp)then
           xa(1)=xa(1)*dampx

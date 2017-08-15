@@ -5,6 +5,7 @@
       use ffs_fit, only:scale
       use tffitcode
       use kyparam
+      use ffs_seg
       implicit none
       type (sad_comp), pointer:: cmp
       integer*4 idisp1,idisp2,lfno,mdisp,icolm,ifany,id0,id3,idstep,

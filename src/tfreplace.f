@@ -2,7 +2,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) k,kr,kx,ki
-      type (sad_list), pointer :: lri,lr,klr
+      type (sad_dlist), pointer :: lri,lr,klr
       integer*4 irtc,i,nrule,isp1,j,itfmessage
       logical*4 all,eval,rep,rule,symbol,tfconstpatternqk
       irtc=0
@@ -18,7 +18,7 @@
           ki=dtastk(i)
           if(tfruleq(ki%k,lri))then
             j=i+i-isp1
-            ktastk(j-1:j)=lri%body(1:2)
+            dtastk(j-1:j)=lri%dbody(1:2)
             if(.not. tfconstpatternqk(ktastk(j-1)))then
               ivstk2(2,j-1)=1
             else
@@ -106,7 +106,7 @@
       use iso_c_binding
       implicit none
       type (sad_descriptor) kp,k,kx,ki,k1,kir,ks,kd
-      type (sad_list), pointer :: klir,kl
+      type (sad_dlist), pointer :: klir,kl
       type (sad_rlist), pointer :: klr
       type (sad_pat), pointer :: pat
       integer*8 kair
@@ -271,7 +271,7 @@
       implicit none
       type (sad_descriptor) k,kx,kd,k1,ki,ks
       type (sad_pat), pointer :: pat
-      type (sad_list), pointer :: kl,kli
+      type (sad_dlist), pointer :: kl,kli
       type (sad_rlist), pointer :: klr
       integer*8 ka1,kas
       integer*4 irtc,i,m,isp1,j, ispr,nrule,itfmessageexp, id
@@ -329,7 +329,7 @@ c     call tfdebugprint(ktflist+ktfaddr(k),'repsymstk',3)
             endif
           endif
           do i=1,m
-c            call tfdebugprint(kl%body(i),'repsymstk',1)
+c            call tfdebugprint(kl%dbody(i),'repsymstk',1)
             call tfreplacesymbolstk1(kl%dbody(i),ispr,nrule,ki,
      $         scope,rep1,irtc)
             if(irtc .ne. 0)then
@@ -598,8 +598,8 @@ c        endif
       use tfstk
       implicit none
       type (sad_descriptor) kx,ki,kr
-      type (sad_list) list
-      type (sad_list), pointer :: klx
+      type (sad_dlist) list
+      type (sad_dlist), pointer :: klx
       integer*4 ispr,nrule,irtc,i,isp1,j
       logical*4 rep,rep1,rep2,scope
       irtc=0
@@ -609,7 +609,7 @@ c        endif
           kx=kxaaloc(-1,0,klx)
           klx%head%k=ktfoper+ktfaddr(ktastk(isp1))
         else
-          kx%k=ktflist+ksad_loc(list%head%k)
+          kx=sad_descr(list)
         endif
         return
       endif
@@ -684,7 +684,7 @@ c        endif
       if(rep)then
         call tfcompose(isp1,ktastk(isp1),kx,irtc)
       else
-        kx%k=ktflist+ksad_loc(list%head%k)
+        kx=sad_descr(list)
       endif
       return
       end
@@ -692,10 +692,10 @@ c        endif
       subroutine tfreplacewithstk(list,ispr,nrule,kx,rep,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k1,k2
-      type (sad_list) list
-      type (sad_list), pointer :: kl1,kli,klx,klx1
-      integer*8 kai,ki,ki1,ka1,kai1,ki2,ksave
+      type (sad_descriptor) kx,k1,k2,ki
+      type (sad_dlist) list
+      type (sad_dlist), pointer :: kl1,kli,klx,klx1
+      integer*8 kai,ki1,ka1,kai1,ki2,ksave
       integer*4 ispr,nrule,irtc,i, ispj,ispa,ispb
       logical*4 rep,rep1,tfmatchsymstk
       irtc=0
@@ -713,18 +713,18 @@ c        enddo
         ispb=isp
         ka1=ktfaddrd(k1)
         do i=1,kl1%nl
-          ki=kl1%body(i)
+          ki=kl1%dbody(i)
           if(ktflistq(ki,kli))then
             kai=ktfaddr(ki)
             if((kli%head%k .eq. ktfoper+mtfset .or.
      $           kli%head%k .eq. ktfoper+mtfsetdelayed) .and.
      $           kli%nl .eq. 2)then
-              ki1=kli%body(1)
+              ki1=kli%dbody(1)%k
               if(ktfsymbolq(ki1))then
                 kai1=ktfaddr(ki1)
                 if(tfmatchsymstk(kai1,ispa,nrule,ispj))then
                   ivstk2(2,ispj)=min(-ivstk2(2,ispj)-1,ivstk2(2,ispj))
-                  call tfreplacesymbolstk1(kli%body(2),ispr,nrule,ki2,
+                  call tfreplacesymbolstk1(kli%dbody(2),ispr,nrule,ki2,
      $                 .true.,rep1,irtc)
                   if(irtc .ne. 0)then
                     isp=ispa
@@ -734,8 +734,8 @@ c        enddo
                   if(rep1)then
                     dtastk(isp)=kxadaloc(-1,2,klx1)
                     klx1%head=dlist(kai)
-                    klx1%body(1)=ktfcopy1(ki1)
-                    klx1%body(2)=ktfcopy(ki2)
+                    klx1%dbody(1)%k=ktfcopy1(ki1)
+                    klx1%dbody(2)%k=ktfcopy(ki2)
                     rep=.true.
                   else
                     ktastk(isp)=ki1
@@ -757,7 +757,7 @@ c        enddo
         if(rep)then
           k1=kxmakelist(ispb)
         endif
-        call tfreplacesymbolstk1(list%body(2),ispa,nrule,k2,
+        call tfreplacesymbolstk1(list%dbody(2),ispa,nrule,k2,
      $     .true.,rep1,irtc)
         if(irtc .ne. 0)then
           isp=ispa
@@ -771,12 +771,12 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
           klx%dbody(1)=dtfcopy1(k1)
           klx%dbody(2)=dtfcopy(k2)
         else
-          kx%k=ktflist+ksad_loc(list%head%k)
+          kx=sad_descr(list)
         endif
       else
         ksave=list%head%k
         list%head%k=ktfoper+mtfhold
-        call tfreplacesymbolstk1(ktflist+ksad_loc(list%head%k),
+        call tfreplacesymbolstk1(sad_descr(list),
      $       ispa,nrule,kx,.true.,rep,irtc)
         if(irtc .eq. 0 .and. ktflistq(kx,klx))then
           klx%head%k=ksave
@@ -790,10 +790,10 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       subroutine tfreplacefunstk(list,ispr,nrule,kx,rep,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k1
-      type (sad_list) list
-      type (sad_list), pointer :: kl1,klx
-      integer*8 kai,ki,ka1,ksave
+      type (sad_descriptor) kx,k1,ki
+      type (sad_dlist) list
+      type (sad_dlist), pointer :: kl1,klx
+      integer*8 kai,ka1,ksave
       integer*4 ispr,nrule,irtc,i,isp1,j,ispi
       logical*4 rep,rep1,rej,tfmatchsymstk1
       irtc=0
@@ -801,7 +801,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       k1=list%dbody(1)
       if(tflistq(k1,kl1))then
         do i=1,kl1%nl
-          ki=kl1%body(i)
+          ki=kl1%dbody(i)
           if(ktfsymbolq(ki))then
             kai=ktfaddr(ki)
             isp=isp+1
@@ -827,7 +827,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       endif
       ksave=list%head%k
       list%head%k=ktfoper+mtfhold
-      call tfreplacesymbolstk1(ktflist+ksad_loc(list%head%k),ispr,nrule,
+      call tfreplacesymbolstk1(sad_descr(list),ispr,nrule,
      $     kx,.true.,rep1,irtc)
       if(irtc .eq. 0 .and. ktflistq(kx,klx))then
         klx%head%k=ksave
@@ -869,7 +869,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       use tfstk
       implicit none
       type (sad_descriptor) kr,kx
-      type (sad_list), pointer :: lr
+      type (sad_dlist), pointer :: lr
       integer*4 irtc
       character*(*) symbol
       logical*4 rep
@@ -889,23 +889,23 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list) list
-      type (sad_list), pointer :: listi
+      type (sad_dlist) list
+      type (sad_dlist), pointer :: listi
       integer*8 ka
       integer*4 i
       logical*4 rep,tfsamesymbolqk
       rep=.false.
       if(list%head%k .eq. ktfoper+mtflist)then
         do i=1,list%nl
-          call loc_list(ktfaddr(list%body(i)),listi)
+          call descr_sad(list%dbody(i),listi)
           call tfgetoption1(ka,listi,kx,rep)
           if(rep)then
             return
           endif
         enddo
       elseif(ktfnonreallistqo(list))then
-        if(ktfsymbolq(list%body(1)))then
-          rep=tfsamesymbolqk(ka,list%body(1))
+        if(ktfsymbolq(list%dbody(1)))then
+          rep=tfsamesymbolqk(ka,list%dbody(1))
           if(rep)then
             kx=list%dbody(2)
           endif
@@ -917,7 +917,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       subroutine tfgetoptionstk(isp1,kaopt,optname,nopt,ispopt,irtc)
       use tfstk
       implicit none
-      type (sad_list), pointer :: lri
+      type (sad_dlist), pointer :: lri
       type (sad_descriptor) kaopt(nopt)
       integer*4 isp1,nopt,ispopt,i,j,isp0,irtc,lenw
       logical*4 rep
@@ -943,8 +943,8 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       endif
       LOOP_J: do j=1,nopt
         do i=ispopt,isp0
-          call loc_list(ktfaddr(ktastk(i)),lri)
-          call tfgetoption1(kaopt(j),lri,dtastk(isp0+j),rep)
+          call loc_sad(ktfaddr(ktastk(i)),lri)
+          call tfgetoption1(kaopt(j)%k,lri,dtastk(isp0+j),rep)
           if(rep)then
             cycle LOOP_J
           endif
@@ -957,7 +957,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       subroutine tfoverride(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_list), pointer :: kli
+      type (sad_dlist), pointer :: kli
       integer*8 kx,ki,k1
       integer*4 isp1,irtc,isp0,isp2,n,itfmessage,isp3,isp4,i,j
       if(isp1 .eq. isp)then
@@ -995,9 +995,9 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       do i=isp0+1,isp2
         isp=isp+1
         if(ktflistq(ktastk(i),kli))then
-          ktastk(isp)=kli%body(1)
+          dtastk(isp)=kli%dbody(1)
         else
-          ktastk(isp)=ktastk(i)
+          dtastk(isp)=dtastk(i)
         endif
       enddo
       n=isp-isp2

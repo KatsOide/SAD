@@ -32,14 +32,14 @@
       implicit none
       type (sad_descriptor) k,kp
       type (sad_pat), pointer :: pat
-      type (sad_list), pointer :: list
+      type (sad_dlist), pointer :: list
       integer*4 itfpatmat,itflistmat
       logical*4 tfsameqd
       itfpmat=-1
       if(ktfpatqd(kp,pat))then
         itfpmat=itfpatmat(k,pat)
       elseif(ktflistq(kp,list))then
-        if(ktfnonlistqd(k) .and. iand(list%attr,lsimplepat) .ne. 0)then
+        if(ktfnonlistq(k) .and. iand(list%attr,lsimplepat) .ne. 0)then
           return
         endif
         itfpmat=itflistmat(k,list)
@@ -54,7 +54,7 @@
       implicit none
       type (sad_descriptor) kph,k,ki,kc,kh,kf,k1,kp1
       type (sad_dlist) listp
-      type (sad_list), pointer :: lista,kl1
+      type (sad_dlist), pointer :: lista,kl1
       integer*8 kpp,ierrorth0
       integer*4 i,itfpmat,isp3,irtc,isp1,itfseqmatseq,isp0,
      $     itfseqmatstk,iop,isp2,ic,itfconstpart,icm,
@@ -64,7 +64,7 @@
       itflistmat=-1
       kph=listp%head
  1    if(iand(lsimplepat,listp%attr) .ne. 0)then
-        if(ktfnonlistqd(k,lista))then
+        if(ktfnonlistq(k,lista))then
           return
         endif
         isp0=isp
@@ -125,7 +125,7 @@
             do i=1,np
               if(ktfnonrealq(ktastk(isp1+i)))then
                 go to 9000
-              elseif(ktastk(isp1+i) .ne. listp%body(i))then
+              elseif(ktastk(isp1+i) .ne. listp%dbody(i)%k)then
                 go to 9000
               endif
             enddo
@@ -136,7 +136,7 @@
               go to 9000
             endif
             do i=1,np
-              if(.not. tfsameqk(ktastk(isp1+i),listp%body(i)))then
+              if(.not. tfsameqk(ktastk(isp1+i),listp%dbody(i)%k))then
                 go to 9000
               endif
             enddo
@@ -178,7 +178,7 @@
           if(ktfreallistq(listp))then
             if(ktfrealq(k))then
               do i=1,listp%nl
-                if(k%k .eq. listp%body(i))then
+                if(k%k .eq. listp%dbody(i)%k)then
                   itflistmat=1
                   return
                 endif
@@ -205,11 +205,11 @@
           endif
         case (ktfoper+mtfpattest)
           if(listp%nl .eq. 2)then
-            itflistmat=itfpmat(k,listp%body(1))
+            itflistmat=itfpmat(k,listp%dbody(1))
             if(itflistmat .ge. 0)then
               isp3=isp
               isp=isp+1
-              call tfeevalref(listp%body(2),ktastk(isp),irtc)
+              call tfeevalref(listp%dbody(2),dtastk(isp),irtc)
               if(irtc .ne. 0)then
                 if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
                   call tfreseterror
@@ -246,7 +246,7 @@
           if(ktfsequenceq(k%k))then
             isp1=isp
             isp=isp+1
-            ktastk(isp)=lista%body(1)
+            dtastk(isp)=lista%dbody(1)
             isp2=isp
             itflistmat=itfseqmatseq(isp1+1,isp2,listp,1)
             if(itflistmat .lt. 0)then
@@ -294,7 +294,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx,ki
-      type (sad_list) list
+      type (sad_dlist) list
       integer*4 n,m,i,is,n1
       logical*4 tfconstpatternqk
       itfconstpart=0
@@ -335,7 +335,7 @@
       type (sad_descriptor) k,kv1
       type (sad_pat) pat0
       type (sad_pat), pointer :: pat
-      type (sad_list), pointer :: list
+      type (sad_dlist), pointer :: list
       integer*8 kav1
       integer*4 itfsinglepat,isp1,isp2,i,np,iss
       logical*4 tfsameqd
@@ -372,12 +372,12 @@
       integer*4 function itfseqmatseq(isp1,isp2,kl,mp1)
       use tfstk
       implicit none
-      type (sad_list) kl
+      type (sad_dlist) kl
       integer*4 isp1,isp2,mp1,itfseqmatstk
       if(isp1 .gt. isp2 .and. mp1 .gt. kl%nl)then
         itfseqmatseq=0
       else
-        itfseqmatseq=itfseqmatstk(isp1,isp2,kl%body(1),
+        itfseqmatseq=itfseqmatstk(isp1,isp2,kl%dbody(1),
      $       kl%nl,mp1,ktfreallistq(kl),int8(0))
       endif
       return
@@ -641,7 +641,7 @@ c     write(*,*)'at ',ispp,' with ',mop,np
       implicit none
       type (sad_descriptor) kp1,kp0,kp,kd,k2,kf
       type (sad_pat), pointer :: pat,pat0
-      type (sad_list), pointer :: listp
+      type (sad_dlist), pointer :: listp
       integer*8 ka2,kad,ierrorth0
       integer*4 isp1,isp2,ispf,itfpmat,m,isps,iss,isp0,irtc,
      $     itfseqmatseq,itflistmat,ispt,itfsinglepat,ireppat
@@ -702,7 +702,7 @@ c     write(*,*)'at ',ispp,' with ',mop,np
           elseif(ispt .ge. isp1-int(kad)+2)then
             if(pat%head%k .ne. ktfref)then
               itastk2(1,isp1-1)=ispt
-              ix=itfsinglepat(ktfref+isp1-1+ispbase,pat)
+              ix=itfsinglepat(sad_descr(ktfref+isp1-1+ispbase),pat)
               if(ix .lt. 0)then
                 return
               endif
@@ -714,7 +714,7 @@ c     write(*,*)'at ',ispp,' with ',mop,np
         endif
         return
       endif
-      if(ktfnonlistqd(kp,listp))then
+      if(ktfnonlistq(kp,listp))then
         if(isp1 .le. isp2)then
           isps=isp1+1
           if(tfsameqd(dtastk(isp1),kp))then
@@ -757,7 +757,7 @@ c          write(*,*)'==> ',ix
               return
             endif
             isp0=isp
-            call tfevalstk(listp%body(2),.true.,irtc)
+            call tfevalstk(listp%dbody(2),.true.,irtc)
             if(irtc .ne. 0)then
               if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
                 call tfreseterror
@@ -919,7 +919,7 @@ c          write(*,*)'==> ',ix
       implicit none
       type (sad_descriptor) kp,k
       type (sad_pat), pointer :: pat
-      type (sad_list), pointer :: klp
+      type (sad_dlist), pointer :: klp
       integer*4 mstk0,itfpatmat,iop,isp0,itfpmatcl
       logical*4 tfsameqd
       if(ktflistq(kp,klp))then
@@ -948,9 +948,9 @@ c          write(*,*)'==> ',ix
       use tfstk
       implicit none
       type (sad_descriptor) k
-      type (sad_list) klp
+      type (sad_dlist) klp
       integer*4 mstk0,itflistmat,iop,isp0
-      if(ktfnonlistqd(k) .and. iand(klp%attr,lsimplepat) .ne. 0)then
+      if(ktfnonlistq(k) .and. iand(klp%attr,lsimplepat) .ne. 0)then
         itfpmatcl=-1
         return
       endif
@@ -979,7 +979,7 @@ c          write(*,*)'==> ',ix
       implicit none
       type (sad_descriptor) k
       type (sad_pat), pointer :: pat
-      type (sad_list), pointer :: klp
+      type (sad_dlist), pointer :: klp
       if(ktflistq(k,klp))then
         call tfunsetpatlist(klp)
       elseif(ktfpatqd(k,pat))then
@@ -993,7 +993,7 @@ c          write(*,*)'==> ',ix
       subroutine tfunsetpatlist(klp)
       use tfstk
       implicit none
-      type (sad_list) klp
+      type (sad_dlist) klp
       integer*4 i
       if(iand(klp%attr,lnopatlist) .ne. 0)then
         return
@@ -1014,7 +1014,7 @@ c          write(*,*)'==> ',ix
       implicit none
       type (sad_descriptor) kp
       type (sad_pat), pointer :: pat
-      type (sad_list), pointer :: list
+      type (sad_dlist), pointer :: list
       if(ktflistq(kp,list))then
         call tfresetpatlist(list)
       elseif(ktfpatqd(kp,pat))then
@@ -1041,7 +1041,7 @@ c          write(*,*)'==> ',ix
       subroutine tfresetpatlist(list)
       use tfstk
       implicit none
-      type (sad_list) list
+      type (sad_dlist) list
       integer*4 i
       if(iand(list%attr,lnopatlist) .ne. 0)then
         return
@@ -1063,7 +1063,7 @@ c          write(*,*)'==> ',ix
       use iso_c_binding
       implicit none
       type (sad_descriptor) k
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       type (sad_pat), pointer :: pat
       integer*8 kas
       integer*4 i, isp0
@@ -1095,7 +1095,7 @@ c          write(*,*)'==> ',ix
       subroutine tfinitpatlist(isp0,kl)
       use tfstk
       implicit none
-      type (sad_list) kl
+      type (sad_dlist) kl
       integer*4 isp1,m,i,isp0
       if(iand(kl%attr,lnopatlist) .ne. 0)then
         return
@@ -1126,7 +1126,7 @@ c          write(*,*)'==> ',ix
       use tfstk
       implicit none
       type (sad_descriptor) k
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       logical*4 tfconstpatternheadqk,tfconstpatternlistbodyqo
       tfconstpatternqk=.true.
       if(ktfpatqd(k))then
@@ -1143,7 +1143,7 @@ c          write(*,*)'==> ',ix
       use tfstk
       implicit none
       type (sad_descriptor) k
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       integer*8 ka
       logical*4 tfconstpatternlistbodyqo,tfsamesymbolqk
       if(ktfpatqd(k))then
@@ -1166,7 +1166,7 @@ c          write(*,*)'==> ',ix
       use tfstk
       implicit none
       type (sad_descriptor) ki
-      type (sad_list) list
+      type (sad_dlist) list
       integer*4 i
       logical*4 tfconstpatternqk
       tfconstpatternlistbodyqo=.true.

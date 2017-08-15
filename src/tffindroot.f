@@ -9,7 +9,8 @@
         subroutine tfassignrules(sav0,v0,nvar,klx)
         implicit none
         type (sad_descriptor) kx
-        type (sad_list), pointer ::klx,kli
+        type (sad_dlist), pointer ::klx
+        type (sad_dlist), pointer ::kli
         integer*4 nvar,i
         type (symv) sav0(nvar)
         real*8 v0(nvar)
@@ -17,7 +18,7 @@
         do i=1,nvar
           klx%dbody(i)=kxadaloc(0,2,kli)
           kli%head%k=ktfoper+mtfrule
-          kli%body(1)=ktfcopy1(ktfsymbol+sad_loc(sav0(i)%p%sym%loc))
+          kli%dbody(1)=dtfcopy1(sad_descr(sav0(i)%p%sym))
           kli%rbody(2)=v0(i)
         enddo
         return
@@ -29,14 +30,14 @@
       use tfstk
       use findr
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) kx,ke
       integer*4 nvmax,maxi0
       real*8 eps0
       parameter (nvmax=2048,maxi0=50,eps0=1.d-20)
       type (symv) sav(nvmax),sav0(nvmax)
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: klo
-      integer*8 ke,kdl(nvmax)
+      integer*8 kdl(nvmax)
       integer*4 isp1,irtc,neq,nvar,itfmessage,isp2,i,maxi,ispv
       real*8 v0(nvmax),eps,vmin(nvmax),vmax(nvmax),d0
       logical*4 trace,used
@@ -64,11 +65,11 @@
           used=klo%rbody(4) .ne. 0.d0
         endif          
       endif
- 1    if(ispv .lt. isp1+2)then
+      if(ispv .lt. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2 or more"')
         return
       endif
-      call tfsetupeqs(ktastk(isp1+1),ke,neq,irtc)
+      call tfsetupeqs(ktastk(isp1+1),ke%k,neq,irtc)
       if(irtc .ne. 0)then
         return
       endif
@@ -77,25 +78,25 @@
       if(irtc .ne. 0)then
         return
       endif
-      ke=ktfcopy(ke)
+      ke=dtfcopy(ke)
       kdl(1:nvar)=ktfoper+mtfnull
       if(used)then
         call tfderiv(ke,nvar,sav,kdl,irtc)
         if(irtc .ne. 0)then
-          call tflocal1(ke)
+          call tflocal1(ke%k)
           go to 9000
         endif
       endif
-      call tfnewton(ke,sav,v0,d0,kdl,
+      call tfnewton(ke%k,sav,v0,d0,kdl,
      $     vmin,vmax,neq,nvar,maxi,eps,trace,irtc)
-      call tflocal1(ke)
+      call tflocal1(ke%k)
       if(irtc .ne. 0)then
         go to 9000
       endif
       call tfassignrules(sav0,v0,nvar,klx)
       isp2=isp
       call tfgetllstkall(klx)
-      call tfmakerulestk(ktfsymbol+itfres,d0)
+      call tfmakerulestk(sad_descr(ktfsymbol+itfres),d0)
       kx=kxmakelist(isp2)
  9000 do i=1,nvar
         call tflocal(kdl(i))
@@ -110,7 +111,7 @@
       use tfstk
       use findr
       implicit none
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       type (symv) sav(nvar)
       integer*8 ke,kdl(nvar),kx
       integer*4 nvar,neq,maxi,irtc,i,j,iter
@@ -292,7 +293,7 @@ c      enddo
       implicit none
       type (sad_descriptor) k1,ki,kv,k3
       type (sad_symbol), pointer :: sym1
-      type (sad_list), pointer :: kli,kl3
+      type (sad_dlist), pointer :: kli,kl3
       integer*4 isp1,nvar,nvmax,i,j,isp0,isp2,irtc,ig,itfmessage
       type (symv) sav(nvmax),sav0(nvmax)
       real*8 v0(nvmax),vmin(nvmax),vmax(nvmax)
@@ -369,8 +370,9 @@ c      endif
       subroutine tfsetupeqs(kl,ke,neq,irtc)
       use tfstk
       implicit none
-      type (sad_list), pointer :: list,listi,liste
-      integer*8 kl,kae,ke,kei
+      type (sad_dlist), pointer :: list,listi,liste
+      type (sad_descriptor) kei
+      integer*8 kl,kae,ke
       integer*4 irtc,neq,i,itfmessage
       logical*4 eval
       if(ktfnonlistq(kl,list))then
@@ -379,7 +381,7 @@ c      endif
       if(list%head%k .eq. ktfoper+mtfequal)then
         neq=1
         call tfduplist(list,list)
-        call tfreplist(list,0,ktfoper+mtflist,eval)
+        call tfreplist(list%list(1),0,ktfoper+mtflist,eval)
 c        call tfloadlstk(list,lista)
 c        lista%head=ktfoper+mtflist
 c        call tfstk2l(lista,list)
@@ -389,15 +391,15 @@ c        call tfstk2l(lista,list)
         neq=list%nl
         kae=ktadaloc(-1,neq*2,liste)
         do i=1,neq
-          kei=list%body(i)
+          kei=list%dbody(i)
           if(ktflistq(kei,listi))then
             if(listi%head%k .eq. ktfoper+mtfequal)then
-              liste%body(i*2-1)=ktfcopy(listi%body(1))
-              liste%body(i*2  )=ktfcopy(listi%body(2))
+              liste%dbody(i*2-1)=dtfcopy(listi%dbody(1))
+              liste%dbody(i*2  )=dtfcopy(listi%dbody(2))
               cycle
             endif
           endif
-          liste%body(i*2-1:neq*2)=ktfoper+mtfnull
+          liste%dbody(i*2-1:neq*2)%k=ktfoper+mtfnull
           go to 9000
         enddo
         irtc=0
@@ -418,7 +420,7 @@ c        call tfstk2l(lista,list)
       type (sad_descriptor) kx,ke
       type (sad_symbol), pointer :: sym
       type (sad_symdef), pointer :: symdv
-      type (sad_list), pointer :: klr
+      type (sad_dlist), pointer :: klr
       integer*4 nvmax,maxi0,irtc
       real*8 eps0
       parameter (nvmax=1024,maxi0=40,eps0=1.d-9)
@@ -541,13 +543,13 @@ c        call tfstk2l(lista,list)
       call tfmakerulestk(itfchisq,r)
       if(n .eq. 2)then
         call tfmakerulestk(itfgood,
-     $       gammaq(dble(m-nvar)*.5d0,dble(m-nvar)*.5d0))
+     $       sad_descr(gammaq(dble(m-nvar)*.5d0,dble(m-nvar)*.5d0)))
       else
         call tfmakerulestk(itfgood,
-     $       gammaq(dble(m-nvar)*.5d0,r*.5d0))
+     $       sad_descr(gammaq(dble(m-nvar)*.5d0,r*.5d0)))
       endif
-      call tfmakerulestk(itfconf,ktflist+kci)
-      call tfmakerulestk(itfcov,ktflist+kcv)
+      call tfmakerulestk(itfconf,sad_descr(ktflist+kci))
+      call tfmakerulestk(itfcov,sad_descr(ktflist+kcv))
       kx=kxmakelist(isp2)
       isp=isp2-1
  9200 call tfree(kdp)
@@ -556,19 +558,6 @@ c        call tfstk2l(lista,list)
       enddo
  9000 call tfdelete(symdv,.true.,.false.)
       call tclrfpe
-      return
-      end
-
-      subroutine tfmakerulestk(ks,kx)
-      use tfstk
-      implicit none
-      type (sad_descriptor) kx,ks
-      type (sad_list), pointer :: kl1
-      isp=isp+1
-      ktastk(isp)=ktflist+ktadaloc(-1,2,kl1)
-      kl1%head%k=ktfoper+mtfrule
-      kl1%dbody(1)=dtfcopy1(ks)
-      kl1%dbody(2)=dtfcopy(kx)
       return
       end
 
@@ -835,11 +824,12 @@ c            enddo
       use findr
       implicit none
       type (sad_symdef) symdv
-      type (sad_list), pointer :: klx,kl1
+      type (sad_dlist), pointer :: klx,kl1
+      type (sad_descriptor) k1
       integer*4 n,m,nvar,irtc,i,itfuplevel,itfdownlevel,l,
      $     itfmessage
       type (symv) sav(nvar)
-      integer*8 ke,kx,kavvec,k1,kaxvec
+      integer*8 ke,kx,kavvec,kaxvec
       real*8 a(n,m),v(nvar),df(m),cutoff,r,vx,rfromk
       logical*4 deriv
       l=itfuplevel()
@@ -859,12 +849,12 @@ c            enddo
       endif
       if(ktflistq(kx,klx))then
         if(klx%head%k .eq. kxvect .and. klx%nl .eq. 1)then
-          k1=klx%body(1)
-          if(tfcomplexnumlistqk(k1,kl1) .and. kl1%nl .eq. m)then
+          k1=klx%dbody(1)
+          if(tfcomplexnumlistqk(k1%k,kl1) .and. kl1%nl .eq. m)then
             if(deriv)then
               if(ktfnonreallistqo(kl1))then
                 do i=1,m
-                  if(ktfrealq(kl1%body(i)))then
+                  if(ktfrealq(kl1%dbody(i)))then
                     df(i)=kl1%rbody(i)
                   else
                     df(i)=0.d0
@@ -878,7 +868,7 @@ c            enddo
             else
               if(ktfnonreallistqo(kl1))then
                 do i=1,m
-                  if(ktfrealq(kl1%body(i)))then
+                  if(ktfrealq(kl1%dbody(i)))then
                     df(i)=kl1%rbody(i)-a(2,i)
                   else
                     df(i)=1.d300
@@ -893,9 +883,8 @@ c            enddo
             go to 1000
           endif
         endif
-      elseif(ktfrealq(kx))then
+      elseif(ktfrealq(kx,vx))then
         if(deriv)then
-          vx=rfromk(kx)
           df=vx
         else
           do i=1,m
@@ -1006,7 +995,7 @@ c            enddo
         iader=ktfsymbolz('CheckDerivative',15)
       endif
       do i=1,nvar
-        sav(i)%p%value%k=ktfsymbol+sad_loc(sav(i)%p%sym%loc)
+        sav(i)%p%value=sad_descr(sav(i)%p%sym)
       enddo
       isp0=isp
       isp=isp0+1
@@ -1015,7 +1004,7 @@ c            enddo
         isp=isp0+2
         dtastk(isp)=ke
         isp=isp+1
-        ktastk(isp)=ktfsymbol+sad_loc(sav(i)%p%sym%loc)
+        dtastk(isp)=sad_descr(sav(i)%p%sym)
         ierr0=ierrorexp
         ierrorexp=1
 c        call tfdebugprint(ke,'tfderiv D',2)
@@ -1076,3 +1065,12 @@ c        write(*,*)'tinvgr ',x0,dfdx,df
       tinvgr=x0*2.d0
       return
       end
+
+      subroutine tfmakerulestk(k1,k2)
+      use tfstk, only:mrs=>tfmakerulestk_dd,sad_descriptor
+      implicit none
+      type (sad_descriptor) k1,k2
+      call mrs(k1,k2)
+      return
+      end
+

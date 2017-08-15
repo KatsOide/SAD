@@ -3,6 +3,7 @@
       use ffs, only:nlat
       use ffs_pointer
       use mackw
+      use ffs_seg
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 nvar
@@ -17,38 +18,39 @@
             iv=ivvar(j)
             if(iv .eq. ival(ie) .and. ivarele(j) .eq. ie
      $           .and. (ivcomp(j) .eq. 0 .or. ivcomp(j) .eq. ii))then
-              call tfsetcmp(valvar(j)*errk(1,i)*couple(i),cmp,iv)
-c              cmp%value(iv)=valvar(j)*errk(1,i)*couple(i)
-              cmp%update=0
+c              call tfsetcmp(valvar(j)*errk(1,i)*couple(i),cmp,iv)
+              cmp%value(iv)=valvar(j)*errk(1,i)*couple(i)
+              cmp%update=iand(cmp%update,2)
             elseif(iv .ne. 0 .and. iv .ne. ival(ie) .and.
      $             ivarele(j) .eq. ie1
      $             .and. (ivcomp(j) .eq. 0 .or. ivcomp(j) .eq. i))then
-              call tfsetcmp(valvar(j),cmp,iv)
-c              cmp%value(iv)=valvar(j)
-              cmp%update=0
+c              call tfsetcmp(valvar(j),cmp,iv)
+              cmp%value(iv)=valvar(j)
+              cmp%update=iand(cmp%update,2)
             endif
             if(ivarele(j) .gt. ie)then
               exit
             endif
           enddo
         enddo
-        call tfinitvar(nvar)
+        call tfinitvar
       endif
       return
       end
 
-      subroutine tfinitvar(nvar)
+      subroutine tfinitvar
       use tfstk
+      use ffs, only: flv
       use ffs_pointer
       use tfcsi, only:icslfno
       implicit none
-      integer*4 nvar,k,irtc
+      integer*4 k,irtc
       integer*4 i,ie,iv
       call tffscoupledvar(irtc)
       if(irtc .ne. 0)then
         call termes(icslfno(),'?Error in CoupledVariables',' ')
       endif
-      do i=1,nvar
+      do i=1,flv%nvar
         ie=ivarele(i)
         iv=ivvar(i)
         k=ivcomp(i)
@@ -64,14 +66,15 @@ c              cmp%value(iv)=valvar(j)
       return
       end
 
-      subroutine tfsavevar(ie,ntouch)
+      subroutine tfsavevar(ie,ntou)
       use tfstk
       use ffs_pointer
       use sad_main
+      use ffs_seg
       implicit none
       type (sad_comp), pointer :: cmps,cmpd
-      integer*4 ntouch,i,ie
-      do i=1,ntouch
+      integer*4 ntou,i,ie
+      do i=1,ntou
         if(itouchele(i) .eq. ie)then
           call loc_comp(latt(klp(ie)),cmps)
           call loc_comp(idvalc(klp(ie)),cmpd)
@@ -81,19 +84,19 @@ c              cmp%value(iv)=valvar(j)
       return
       end
 
-      subroutine tffsadjust(ntouch)
+      subroutine tffsadjust
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
       use tfcsi, only:icslfno
+      use ffs_seg
       implicit none
-      integer*4 itv(ntouch+1),ite(nele+1)
-      integer*4 ntouch,i,ie,j,irtc,ie1,ntv,k
+      integer*4 itv(nve*2),ite(nve*2)
+      integer*4 i,ie,j,irtc,ie1,ntv,k
       ite=0
       ntv=0
-c      write(*,*)'tffsadjust ',ntouch
-      do j=1,ntouch
+      do j=1,flv%ntouch
         if(ival(itouchele(j)) .ne. itouchv(j))then
           ntv=ntv+1
           itv(ntv)=j
@@ -138,7 +141,7 @@ c      write(*,*)'tffsadjust ',ntouch
       use tfcsi, only:icslfno
       implicit none
       integer*4 ia,irtc,itfdownlevel,irtc1
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       type (sad_descriptor) ifcoupv,ifsetcoup,k,kx
       type (sad_symdef), pointer, save :: symdcoupv
       data ifcoupv%k,ifsetcoup%k /0,0/

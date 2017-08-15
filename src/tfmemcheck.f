@@ -3,7 +3,7 @@
       use tfmem
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx5,kld
+      type (sad_dlist), pointer :: klx5,kld
       type (sad_rlist), pointer :: klri,klr
       integer*8 ip1,ip0,ip,ix,i,j, i1, ki,m,ih,mf
       integer*4 isp1,irtc,l,nf,isp0,itfmessage
@@ -111,8 +111,8 @@
  9100 write(*,*)'Level = ',l,
      $     ', root =',j,
      $     ', temporary element =',i,
-     $     ', previous =',i1,
-     $     ', next =',ktfaddr(klist(i)),
+     $     ', previous =',i1
+      write(*,*)', next =',ktfaddr(klist(i)),
      $     ', type = ',tftypename(klist(i)),
      $     ', size =',ilist(1,i-1)
  9200 irtc=itfmessage(999,'General::memory',' ')
@@ -577,7 +577,7 @@ c        call tfdebugprint(it,ia,v,tag,3)
       subroutine tfmemcheckprint(tag,pri,irtc)
       use tfstk
       implicit none
-      integer*8 k1
+      type (sad_descriptor) k1
       integer*4 isp0,irtc,itfdownlevel,i
       character*(*) tag
       logical*4 pri

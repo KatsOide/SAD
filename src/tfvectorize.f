@@ -2,7 +2,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx,kx1,kf,ki,k1
-      type (sad_list), pointer :: kli,kli1,klx1,kl,klx
+      type (sad_dlist), pointer :: kli,kli1,klx1,kl,klx
       integer*8 kaf,kaf1,kai
       integer*4 isp1,irtc,i,j,isp0,isp2,nv,idsp,itfmessage
       kf=dtastk(isp1+1)
@@ -13,7 +13,7 @@
           do i=isp1+2,isp
             if(ktflistq(dtastk(i),kli) .and. (kli%head%k .eq. kxvect
      $           .or. kli%head%k .eq. kxvect1))then
-              ktastk(i)=kli%body(1)
+              dtastk(i)=kli%dbody(1)
               if(tflistq(dtastk(i),kli1))then
                 if(nv .eq. 0)then
                   nv=kli1%nl
@@ -52,7 +52,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
           if(ilist(1,kaf1) .eq. 1 .and. ilist(1,kaf1+1) .ne. 0 .and.
      $         isp .eq. isp1+2 .and. ktflistq(ktastk(isp),kl) .and.
      $         (kl%head%k .eq. kxvect .or. kl%head%k .eq. kxvect1))then
-            ktastk(isp)=kl%body(1)
+            dtastk(isp)=kl%dbody(1)
             if(tflistq(ktastk(isp)))then
               call tfefunref(isp1+1,kx1,.false.,irtc)
               go to 9000

@@ -2,7 +2,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) k
-      type (sad_list), pointer ::kl
+      type (sad_dlist), pointer ::kl
       integer*4 i
       if(ktflistq(k,kl))then
         if(ktfreallistq(kl))then
@@ -10,7 +10,7 @@
         else
           id=2
           do i=1,kl%nl
-            if(ktflistq(kl%body(i)))then
+            if(ktflistq(kl%dbody(i)))then
               id=max(id,itfdepth(kl%dbody(i))+1)
             endif
           enddo
@@ -26,7 +26,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) k,kx,kxi,ki,kf
-      type (sad_list), pointer :: klx,kl
+      type (sad_dlist), pointer :: klx,kl
       integer*4 maxlevel,mode,m,n1,n2,irtc,i,isp1,
      $     idi,ispf,itfdepth,id,ind,ind1,
      $     itfpmatc,ihead,ispmax,ioff(0:7)
@@ -308,7 +308,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
       endif
 c      write(*,*)'tflevel ',n1,n2
       isp1=isp
-      call tflevelstk(k,ktfoper+mtfnull,kx,n1,n2,
+      call tflevelstk(k,sad_descr(ktfoper+mtfnull),kx,n1,n2,
      $     0,0,rind,1,mstk,irtc)
       if(isp .le. isp1)then
         kx=dxnulll
@@ -334,6 +334,8 @@ c      write(*,*)'tflevel ',n1,n2
         n1=1
         n2=ivl
       elseif(.not. tfreallistq(k%k,kl))then
+        n1=0
+        n2=0
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List of numbers for levelspec"')
         return
@@ -346,6 +348,8 @@ c      write(*,*)'tflevel ',n1,n2
           n1=int(max(-vlmax,min(vlmax,kl%rbody(1))))
           n2=int(max(-vlmax,min(vlmax,kl%rbody(2))))
         else
+          n1=0
+          n2=0
           irtc=itfmessage(9,'General::wrongval',
      $         '"n, {n}, or {n1, n2}","as level spec"')
           return

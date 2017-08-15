@@ -25,7 +25,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) k1,k2,kx
-      type (sad_list), pointer :: kl1,kl2
+      type (sad_dlist), pointer :: kl1,kl2
       integer*4 irtc,itfmessage,n1,n2,isp0,isp2,i
       real*8 x1,x2
       complex*16 cfun,cx,c1,c2

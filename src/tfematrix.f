@@ -2,8 +2,8 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx,kx1
-      type (sad_list) kl1,kl2
-      type (sad_list), pointer :: kind1,kind2,kb1,klx,klx1
+      type (sad_dlist) kl1,kl2
+      type (sad_dlist), pointer :: kind1,kind2,kb1,klx,klx1
       integer*4 iopc1,irtc
       logical*4 tfsamelistqo
       call descr_sad(kl1%dbody(1),kind1)

@@ -1,7 +1,9 @@
       module strbuf
+      use tfstk
 
       type sad_strbuf
       sequence
+      type (sad_string) string(1:0)
       integer*4 indw,llevel,remlines,maxllevel,column,lexp,nch,maxnch
       integer*1 istr(1:0)
       character*(2**31-1) str
@@ -9,7 +11,6 @@
 
       contains
         subroutine strbuf_loc(locp,loc)
-        use tfstk
         use iso_c_binding
         implicit none
         type (sad_strbuf), pointer, intent(out) :: loc
@@ -19,7 +20,6 @@
         end subroutine
 
         subroutine descr_strbuf(k,strb)
-        use tfstk
         use iso_c_binding
         implicit none
         type (sad_descriptor) k
@@ -29,7 +29,6 @@
         end subroutine
 
         subroutine getstringbuf(strb,n,stk)
-        use tfstk
         implicit none
         type (sad_strbuf), pointer, intent(out) :: strb
         integer*8 ktzaloc,kbuf
@@ -84,7 +83,6 @@ c     ilist(2,kbuf-3)=0       ! llevel
 
         subroutine tfquotestring(strb,string,l,lfno,irtc)
         use ISO_C_BINDING
-        use tfstk
         implicit none
         type (sad_strbuf), pointer :: strb
         integer*4 l,lfno,irtc,i,jp
@@ -217,7 +215,6 @@ c'\
  
         recursive subroutine tfconvstrb(strb,
      $     k,nc,str,gens,lfno,form,irtc)
-        use tfstk
         use tfcode
         use iso_c_binding
         implicit none
@@ -385,12 +382,11 @@ c'\
         end subroutine
 
         recursive subroutine tfconvstrl(strb,ka,lfno,form,gens,irtc)
-        use tfstk
         use ophash
         use opdata
         implicit none
         type (sad_descriptor) k1,ki
-        type (sad_list), pointer ::list,listi
+        type (sad_dlist), pointer ::list,listi
         type (sad_strbuf), pointer :: strb
         integer*8 ka,kt,kai
         integer*4 lfno,nd,iaaf,ncx,nc,i,irtc,i1,llevel,lenw,le,istep,
@@ -574,7 +570,7 @@ c
           endif
         endif
  101    llevel=llevel+1
-        call loc_list(ka,list)
+        call loc_sad(ka,list)
         do i=i1,nd,istep
           strb%llevel=llevel
           ki=list%dbody(i)
@@ -677,7 +673,6 @@ c
         end subroutine
 
         subroutine extendstringbuf(strb,lnew)
-        use tfstk
         implicit none
         type (sad_strbuf), pointer :: strb
         integer*8 i,ktzaloc
@@ -897,7 +892,6 @@ c
         end subroutine
 
         type (sad_descriptor) function kxstringbuftostring(strb)
-        use tfstk
         implicit none
         type (sad_strbuf) strb
         type (sad_string), pointer :: str
@@ -942,7 +936,7 @@ c            enddo
             str%len=strb%maxnch/8+5
             str%override=-1
             str%ref=1
-            str%alloc=ktfstring
+            str%alloc%k=ktfstring
             str%gen=0
             n1=n/8
             l=n1+5

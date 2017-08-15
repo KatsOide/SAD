@@ -15,7 +15,7 @@
       use tmacro
       implicit none
       type (sad_descriptor) k
-      type (sad_list), pointer :: kl,kl1,kli
+      type (sad_dlist), pointer :: kl,kl1,kli
       integer*8 kap,i0,ip,ip0
       integer*4 n,m,irtc,i,j,itfmessage
       logical*4 vec,trans,map,err
@@ -45,14 +45,14 @@ c          call tmov(rlist(ka+1),rlist(kap),n)
           go to 9000
         endif
       elseif(ktfreallistq(kl)
-     $       .or. tfnonlistq(kl%body(1),kl1))then
+     $       .or. tfnonlistq(kl%dbody(1),kl1))then
         go to 9000
       endif
       irtc=0
       n=kl%nl
       m=kl1%nl
       do i=1,n
-        if(tfnonlistq(kl%body(i),kli))then
+        if(tfnonlistq(kl%dbody(i),kli))then
           go to 9000
         endif
         if(kli%nl .ne. m)then
@@ -80,13 +80,13 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       endif
       if(trans)then
         do i=1,n
-          i0=ktfaddr(kl%body(i))
+          i0=ktfaddr(kl%dbody(i)%k)
           ip0=kap+(i-1)*m-1
           rlist(ip0+1:ip0+m)=rlist(i0+1:i0+m)
         enddo
       else
         do i=1,n
-          i0=ktfaddr(kl%body(i))
+          i0=ktfaddr(kl%dbody(i)%k)
           do j=1,m
             ip=kap+(j-1)*n+i-1
             rlist(ip)=rlist(i0+j)
@@ -114,19 +114,19 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       subroutine tfl2m(kl,a,n,m,trans)
       use tfstk
       implicit none
-      type (sad_list) kl
-      type (sad_list), pointer :: kli
+      type (sad_dlist) kl
+      type (sad_dlist), pointer :: kli
       integer*4 n,m,i
       real*8 a(n,m)
       logical*4 trans
       if(trans)then
         do i=1,m
-          call loc_list(ktfaddr(kl%body(i)),kli)
+          call loc_sad(ktfaddr(kl%dbody(i)%k),kli)
           a(:,i)=kli%rbody(1:n)
         enddo
       else
         do i=1,n
-          call loc_list(ktfaddr(kl%body(i)),kli)
+          call loc_sad(ktfaddr(kl%dbody(i)%k),kli)
           a(i,:)=kli%rbody(1:m)
         enddo
       endif
@@ -136,8 +136,8 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       subroutine tfl2cm(kl,c,n,m,trans,irtc)
       use tfstk
       implicit none
-      type (sad_list) kl
-      type (sad_list), pointer :: kli
+      type (sad_dlist) kl
+      type (sad_dlist), pointer :: kli
       type (sad_complex), pointer :: cx
       integer*8 kij
       integer*4 n,m,irtc,i,j
@@ -145,9 +145,9 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       logical*4 trans
       if(trans)then
         do i=1,m
-          call loc_sad(ktfaddr(kl%body(i)),kli)
+          call loc_sad(ktfaddr(kl%dbody(i)%k),kli)
           do j=1,n
-            kij=kli%body(j)
+            kij=kli%dbody(j)%k
             if(ktfrealq(kij))then
               c(j,i)=kli%rbody(j)
             elseif(tfcomplexq(kij,cx))then
@@ -160,9 +160,9 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
         enddo
       else
         do i=1,n
-          call loc_sad(ktfaddr(kl%body(i)),kli)
+          call loc_sad(ktfaddr(kl%dbody(i)%k),kli)
           do j=1,m
-            kij=kli%body(j)
+            kij=kli%dbody(j)%k
             if(ktfrealq(kij))then
               c(i,j)=kli%rbody(j)
             elseif(tfcomplexq(kij,cx))then
@@ -182,7 +182,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       use tfstk
       implicit none
       type (sad_descriptor) k
-      type (sad_list), pointer ::kl,kl1,kli
+      type (sad_dlist), pointer ::kl,kl1,kli
       integer*4 n,m,irtc,i,itfmessage
       if(.not. tflistq(k,kl))then
         irtc=itfmessage(9,'General::wrongtype','"List"')
@@ -194,13 +194,13 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
         irtc=0
         return
       endif
-      if(tfnonlistq(kl%body(1),kl1))then
+      if(tfnonlistq(kl%dbody(1),kl1))then
         go to 9000
       endif
       n=kl%nl
       m=kl1%nl
       do i=1,n
-        if(tfnonlistq(kl%body(i),kli))then
+        if(tfnonlistq(kl%dbody(i),kli))then
           go to 9000
         endif
         if(kli%nl .ne. m)then
@@ -222,7 +222,8 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       implicit none
       type (sad_descriptor) k
       type (sad_complex), pointer :: cxi
-      type (sad_list), pointer :: kl,kl1,kli,klj
+      type (sad_dlist), pointer :: kl,kl1,kli
+      type (sad_rlist), pointer :: klj
       integer*8 kap,ki,ip0,kj,kaj
       integer*4 n,m,irtc,i,j,itfmessage
       logical*4 vec,trans,err
@@ -245,7 +246,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
         elseif(tfnumberqd(kl%dbody(1)))then
           kap=ktaloc(n*2)
           do i=1,n
-            ki=kl%body(i)
+            ki=kl%dbody(i)%k
             if(ktfrealq(ki))then
               klist(kap+i*2-2)=ki
               klist(kap+i*2-1)=0
@@ -264,7 +265,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       elseif(ktfreallistq(kl) .or. tfnumberqd(kl%dbody(1)))then
         go to 9000
       endif
-      if(tfnonlistq(kl%body(1),kl1))then
+      if(tfnonlistq(kl%dbody(1),kl1))then
         ktfcmaloc=-1
         go to 9000
       endif
@@ -272,7 +273,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       n=kl%nl
       m=kl1%nl
       do i=1,n
-        if(tfnonlistq(kl%body(i),kli))then
+        if(tfnonlistq(kl%dbody(i)%k,kli))then
           ktfcmaloc=-1
           go to 9000
         endif
@@ -284,7 +285,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       kap=ktaloc(m*n*2)
       if(trans)then
         do i=1,n
-          call loc_sad(ktfaddr(kl%body(i)),kli)
+          call loc_sad(ktfaddr(kl%dbody(i)%k),kli)
           ip0=kap+(i-1)*2*m-2
           if(ktfreallistq(kli))then
             do j=1,m
@@ -293,15 +294,15 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
             enddo
           else
             do j=1,m
-              kj=kli%body(j)
+              kj=kli%dbody(j)%k
               if(ktfrealq(kj))then
                 klist(ip0+j*2  )=kj
                 klist(ip0+j*2+1)=0
               else
                 kaj=ktfaddr(kj)
-                if(ktflistq(kj,klj)  .and.
-     $               klj%head%k .eq. ktfoper+mtfcomplex .and.
-     $               ktfreallistq(klj) .and. klj%nl .eq. 2)then
+                if(ktfreallistq(kj,klj) .and.
+     $               klj%head%k .eq. ktfoper+mtfcomplex
+     $               .and. klj%nl .eq. 2)then
                   rlist(ip0+j*2  )=klj%rbody(1)
                   rlist(ip0+j*2+1)=klj%rbody(2)
                 else
@@ -315,7 +316,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
         enddo
       else
         do i=1,n
-          call loc_sad(ktfaddr(kl%body(i)),kli)
+          call loc_sad(ktfaddr(kl%dbody(i)%k),kli)
           if(ktfreallistq(kli))then
             do j=1,m
               ip0=kap+(j-1)*2*n+i*2-2
@@ -324,16 +325,16 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
             enddo
           else
             do j=1,m
-              kj=kli%body(j)
+              kj=kli%dbody(j)%k
               ip0=kap+(j-1)*2*n+i*2-2
               if(ktfrealq(kj))then
                 klist(ip0  )=kj
                 klist(ip0+1)=0
               else
                 kaj=ktfaddr(kj)
-                if(ktflistq(kj,klj)  .and.
-     $               klj%head%k .eq. ktfoper+mtfcomplex .and.
-     $               ktfreallistq(klj) .and. klj%nl .eq. 2)then
+                if(ktfreallistq(kj,klj)  .and.
+     $               klj%head%k .eq. ktfoper+mtfcomplex
+     $               .and. klj%nl .eq. 2)then
                   rlist(ip0  )=rlist(kaj+1)
                   rlist(ip0+1)=rlist(kaj+2)
                 else
@@ -402,7 +403,8 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       integer*8 function ktfcm2l(a,n,m,nd,trans,conj)
       use tfstk
       implicit none
-      type (sad_list), pointer :: kl,klx,klxi,klj
+      type (sad_dlist), pointer :: klx,klxi
+      type (sad_rlist), pointer :: klj,kl
       integer*8 kax,kaxi,ktcalocm,kai,kc,kaj
       integer*4 n,m,nd,i,j
       logical*4 trans,conj,c
@@ -429,10 +431,10 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
               kc=ktcalocm(m-i+1)-(i-1)*6
             endif
             kai=kc+(i-1)*6
-            call loc_list(kai,kl)
+            call loc_sad(kai,kl)
             kl%rbody(1)=dble(a(1,i))
             kl%rbody(2)=imag_sign*imag(a(1,i))
-            klx%body(i)=ktflist+kai
+            klx%dbody(i)%k=ktflist+kai
 c            klist(kax+i)=ktflist+ktcalocv(0,dble(a(1,i)),
 c     $           imag_sign*imag(a(1,i)))
             c=.true.
@@ -462,10 +464,10 @@ c     $           imag_sign*imag(a(1,i)))
                   kc=ktcalocm(n-j+1)-(j-1)*6
                 endif
                 kaj=kc+(j-1)*6
-                call loc_list(kaj,klj)
+                call loc_sad(kaj,klj)
                 klj%rbody(1)=dble(a(j,i))
                 klj%rbody(2)=imag_sign*imag(a(j,i))
-                klxi%body(j)=ktflist+kaj
+                klxi%dbody(j)%k=ktflist+kaj
                 c=.true.
               endif
             enddo
@@ -474,7 +476,7 @@ c     $           imag_sign*imag(a(1,i)))
             else
               klxi%attr=lconstlist
             endif
-            klx%body(i)=ktflist+kaxi
+            klx%dbody(i)%k=ktflist+kaxi
           enddo
           klxi%attr=ior(klxi%attr,lconstlist)
         else
@@ -495,10 +497,10 @@ c     $           imag_sign*imag(a(1,i)))
                   kc=ktcalocm(m-j+1)-(j-1)*6
                 endif
                 kaj=kc+(j-1)*6
-                call loc_list(kaj,klj)
+                call loc_sad(kaj,klj)
                 klj%rbody(1)=dble(a(i,j))
                 klj%rbody(2)=imag_sign*imag(a(i,j))
-                klxi%body(j)=ktflist+kaj
+                klxi%dbody(j)%k=ktflist+kaj
                 c=.true.
               endif
             enddo
@@ -507,7 +509,7 @@ c     $           imag_sign*imag(a(1,i)))
             else
               klxi%attr=lconstlist
             endif
-            klx%body(i)=ktflist+kaxi
+            klx%dbody(i)%k=ktflist+kaxi
           enddo
           klxi%attr=ior(klxi%attr,lconstlist)
         endif

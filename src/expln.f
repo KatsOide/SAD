@@ -13,20 +13,18 @@
       use maccbk
       use sad_main
       use mackw
+      use ffs_seg
       implicit none
       type (sad_el), pointer :: el
       type (sad_comp), pointer :: cmp,cmps
       integer*4 idxl,isp0,i,iti,plen,orientation,
-     $     idxerr,n,j,hsrchz,idxe,lpname,k
+     $     idxerr,n,j,hsrchz,idxe,lpname
       integer*8 kp,idxpar,ia,idx0,idi
       real*8 frand
-c      write(*,*)'expnln-0 ',idxl
       idx0=idval(idxl)
-c      write(*,*)'expnln-0.1 ',pname(idxl)
       if(ilist(2,idx0) .gt. 0)then
         call tfreeln(ilist(2,idx0))
       endif
-c      write(*,*)'expnln-0.2 ',ilist(2,idx0)
       ilist(2,idx0)=0
       isp0=isp
 c     first stage
@@ -39,7 +37,6 @@ c
       idxe=hsrchz(pname(idxl)(:lpname(idxl))//"$EXPND")
       ia=kmelaloc(n,el)
       idval(idxe)=ia
-c      write(*,*)'expnln-0.3 ',idxe,ia,n
       el%aux=0
       ilist(2,idx0)=idxe
       do j=1,n
@@ -48,7 +45,7 @@ c      write(*,*)'expnln-0.3 ',idxe,ia,n
         iti=idtype(itastk(1,i))
         plen=ilist(1,idi)
         orientation=sign(1,itastk(2,i))
-        kp=kmcompaloc(plen+kytbl(kwNPARAM,iti),cmp)
+        kp=kmcompaloc(plen+kytbl(kwNPARAM,iti)+1,cmp)
         el%comp(j)=kp
         cmp%id=itastk(1,i)
         cmp%nparam=kytbl(kwNPARAM,iti)
@@ -56,10 +53,7 @@ c      write(*,*)'expnln-0.3 ',idxe,ia,n
         call loc_comp(idi,cmps)
 c     set Nominal values
         call tfvcopycmpall(cmps,cmp,plen)
-c        do k=1,plen
-c          call tfvcopycmp(cmps,cmp,k,1.d0)
-c        enddo
-c        cmp%value(1:plen)=rlist(idi+1:idi+plen)
+        cmp%update=0
 c     and then add statistical error
         idxerr=ilist(2,idi)
         do while(idxerr .ne. 0)
@@ -134,24 +128,27 @@ c     and then add statistical error
       subroutine tfreeln(idxe)
       use maccbk
       use mackw
-      use tfstk, only:ilist,klist,tfree,tflocald
+      use tfstk, only:ilist,klist,tfree,tflocald,levele
       use sad_main
       implicit none
       type (sad_el), pointer :: el
       type (sad_comp), pointer :: cmp
-      integer*4 i,idxe,j
+      integer*4 i,idxe,j,l,itfdownlevel,lt
       integer*8 k,ip
+      levele=levele+1
       ip=idval(idxe)
       call loc_el(ip,el)
       idval(idxe)=0
       do i=1,el%nlat1-2
         k=el%comp(i)
         call loc_comp(k,cmp)
-        do j=1,kytbl(kwMAX,idtype(cmp%id))-1
+        lt=idtype(cmp%id)
+        do j=1,kytbl(kwMAX,lt)+kytbl(kwNPARAM,lt)
           call tflocald(cmp%dvalue(j))
         enddo
         call tfree(k-1)
       enddo
       call tfree(ip)
+      l=itfdownlevel()
       return
       end

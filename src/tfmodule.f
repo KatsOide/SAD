@@ -2,7 +2,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx,ke,kxl1
-      type (sad_list), pointer :: lvlist,kle
+      type (sad_dlist), pointer :: lvlist,kle
       type (sad_symdef), pointer :: symdi
       integer*4 irtc,i, isp0,isp1,isp2, itfmessage
       logical*4 module,rep,eval
@@ -58,7 +58,7 @@ c          call tfdebugprint(ktflist+ksad_loc(lvlist%head),'module-1',2)
           call tfredefslist(isp0,isp2,lvlist,kxl1)
 c          call tfdebugprint(ktflist+kal1,'==>',2)
         else
-          kxl1%k=ktflist+sad_loc(lvlist%head%k)
+          kxl1=sad_descr(lvlist)
         endif
         isp=isp0+1
         ktastk(isp)=ktastk(isp1)
@@ -75,6 +75,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
         return
       endif
  9200 do i=isp,isp0+2,-2
+c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
         call descr_sad(dtastk(i),symdi)
         call tfdelete(symdi,.true.,.true.)
       enddo
@@ -86,8 +87,8 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
       use tfstk
       implicit none
       type (sad_descriptor) ki,ki1i,ki1,ki2
-      type (sad_list) list
-      type (sad_list), pointer :: kli1,kli2,kli
+      type (sad_dlist) list
+      type (sad_dlist), pointer :: kli1,kli2,kli
       type (sad_symbol), pointer :: symi1i,symi,symi1
       type (sad_symdef), pointer :: symdi1,symdv
       integer*4 m,mi,lgi,ii,i,irtc,itfmessage,lg,isps
@@ -168,7 +169,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
                       dtastk(isp  )=kxnaloc1(lg,symi1i%loc)
                       call descr_sad(dtastk(isp),symdv)
                       isps=isp
-                      symdv%value%k=ktfcopy(kli2%body(ii))
+                      symdv%value=dtfcopy(kli2%dbody(ii))
                       symdv%sym%ref=1
                     else
                       go to 100
@@ -255,13 +256,13 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
       use tfstk
       implicit none
       type (sad_descriptor) kx,k11,kj,k1
-      type (sad_list) lvlist
-      type (sad_list), pointer :: kl1,klj
+      type (sad_dlist) lvlist
+      type (sad_dlist), pointer :: kl1,klj
       integer*4 isp1,isp2,i,isp0,m,j
       logical*4 tfsamesymbolqd
       m=lvlist%nl
       if(m .eq. 0)then
-        kx%k=ktflist+sad_loc(lvlist%head%k)
+        kx=sad_descr(lvlist)
         return
       endif
       isp=isp+1
@@ -309,7 +310,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
       use tfstk
       implicit none
       type (sad_descriptor) kx,ki,k1,kxi
-      type (sad_list), pointer :: list,listi,klx
+      type (sad_dlist), pointer :: list,listi,klx
       type (sad_symbol), pointer :: symi
       integer*4 isp1,irtc,isp2,i,itfmessage,lg0,n
       logical*4 rep,symbol,tfconstpatternqk,eval
@@ -342,7 +343,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
                 endif
                 symbol=symbol .and. ktfsymbolqd(k1)
                 if(listi%head%k .eq. ktfoper+mtfsetdelayed)then
-                  ktastk(isp)=listi%body(2)
+                  dtastk(isp)=listi%dbody(2)
                   cycle
                 else
                   ki=listi%dbody(2)
@@ -437,7 +438,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
       use tfcode
       implicit none
       type (sad_descriptor) kx,k,k1,k2,kd,ks
-      type (sad_list), pointer :: list
+      type (sad_dlist), pointer :: list
       type (sad_rlist), pointer :: klr
       type (sad_symbol), pointer :: sym
       type (sad_pat), pointer :: pat
@@ -461,7 +462,7 @@ c          call tfdebugprint(ktflist+kal1,'==>',2)
         elseif(rep)then
           kx=kxavaloc(-1,list%nl,klr)
           klr%head=dtfcopy(dtastk(isp0))
-          klr%body(1:list%nl)=list%body(1:list%nl)
+          klr%dbody(1:list%nl)=list%dbody(1:list%nl)
         endif
         isp=isp0-1
       elseif(ktfpatqd(k,pat))then

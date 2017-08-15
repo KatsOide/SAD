@@ -13,6 +13,7 @@
       use sad_main
       use tfcsi
       use track_tt
+      use tparastat
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 maxrpt,maxlfn,hsrchz
@@ -227,7 +228,6 @@ c
       endif
       call cssets(0)
       call tfprint(word,lfno,.false.,itt,nextt,exist)
-c      write(*,*)'tffsa-1 ',word(1:lenw(word)),exist,itt,ios
       if(exist .or. ios .ne. 0)then
         go to 10
       endif
@@ -466,7 +466,7 @@ c          call cssetlinep(icslrecl())
         call tffsadjustvar
         call tfsave(word,.true.,flv%ntouch)
       elseif(word .eq. 'RESET')then
-        call tfrst(word,.true.,flv%nvar,flv%ntouch)
+        call tfrst(word,.true.)
       elseif(word .eq. 'FREE' .or. word .eq. 'FIX')then
         frefix=word .eq. 'FREE'
         call peekwd(word,next)
@@ -481,7 +481,7 @@ ckikuchi ... next 5 lines added     (8/17/'90)
           endif
           go to 10
         endif
-        call tffsfreefix(frefix,flv%nvar,flv%ntouch,lfno)
+        call tffsfreefix(frefix,flv%nvar,lfno)
       elseif(word .eq. 'FIT')then
         call getwdl2(word,wordp)
         if(word .eq. 'ALL')then
@@ -603,7 +603,6 @@ c     Next several lines are added by N. Yamamoto Apr. 25,'93
 C     23/06/92 212101550  MEMBER NAME  TRCOD    *.FORT     M  E2FORT
       else if(abbrev(word,'TRC_OD','_'))then
          call getwdl2(word,wordp)
-c     write(6,*)'trcod scan ', word ,abbrev(word,'FIXCOD','_')
          if(abbrev(word,'FIXCOD','_')) then
             call getwdl2(word,wordp)
             meas0=ielm(wordp,exist)
@@ -713,7 +712,7 @@ c End of the lines added by N. Yamamoto Apr. 25, '93
       cmd=.false.
       if(word .eq. 'VARY')then
         call tfchgv(lfno)
-        call tfinitvar(flv%nvar)
+        call tfinitvar
         go to 10
       elseif(abbrev(word,'REJ_ECT','_'))then
         call tfrej
@@ -844,7 +843,7 @@ c        flv%rsconv=rlist(ktlookup('CONVERGENCE'))
         call twbuf(word,lfno,1,lpw,8,-1)
         go to 10
       elseif(abbrev(word,'VAR_IABLES','_') .or. word .eq. 'VARS')then
-        call tfinitvar(flv%nvar)
+        call tfinitvar
         call tfvars(flv%nvar,kffs,irtcffs,lfnb .gt. 1,lfno)
         go to 10
       elseif(abbrev(word,'RENUM_BER','_'))then
@@ -1238,8 +1237,7 @@ c        rlist(itlookup('DP',ivtype))=dpmax
         call talign(latt,word,wordp,pos,lfno,exist)
         go to 30
       endif
- 7000 call tfgetv(word,flv%ntouch,lfno,nextt,exist)
-c      write(*,*)'tffsa ',nextt,exist,itt
+ 7000 call tfgetv(word,lfno,nextt,exist)
       if(.not. exist)then
         if(itt .ge. 0)then
           call cssetp(nextt)
@@ -1282,7 +1280,6 @@ c        go to 8900
       nfc0=flv%nfc
       if(cell)then
         call tfsetupcell(nlat,maxcond)
-c        write(*,*)'tffsa ',flv%nfc,nfc0
       endif
       geomet=.false.
       do i=1,flv%ncalc
@@ -1646,8 +1643,8 @@ c          write(*,*)'tffssave -2: ',isave,ilattp
       use ffs
       use tffitcode
       implicit none
-      call tffsadjust(flv%ntouch)
-      call tfinitvar(flv%nvar)
+      call tffsadjust
+      call tfinitvar
       return
       end
 
@@ -1656,7 +1653,7 @@ c          write(*,*)'tffssave -2: ',isave,ilattp
       use ffs_fit
       use tffitcode
       implicit none
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: klj
       integer*8 kx
       integer*4 irtc,lfno,n,i,j,nfr1
@@ -1693,7 +1690,7 @@ c            call tclr(uini(1,0),28)
             iuid(0)=0
           else
             j=j+1
-            if(tfreallistq(klx%body(j),klj))then
+            if(tfreallistq(klx%dbody(j),klj))then
               if(klj%nl .eq. 6)then
                 uini(mfitdx:mfitdx+5,i)=klj%rbody(1:6)
                 uini(1,i)=-1.d0
@@ -1738,7 +1735,7 @@ c            call tclr(uini(1,0),28)
       use ffs
       use tffitcode
       implicit none
-      type (sad_list), pointer :: klx,kli,kle
+      type (sad_dlist), pointer :: klx,kli,kle
       type (sad_symdef), pointer :: symd
       integer*8 iet
       integer*4 lfno,i,j,k,nk,m,me,nc, ie,ik,irtc

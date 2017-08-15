@@ -19,10 +19,11 @@
      $     tsetfringepe
       use tffitcode
       use sad_main
+      use ffs_seg
       use tfcsi, only:icslfno
       implicit none
       type (sad_comp), pointer :: cmp
-      type (sad_rlist), pointer :: lal
+      type (sad_dlist), pointer :: lsegp
       integer*4 idp,la,lb,ip0,l1,i,l,ip1,ip,ltyp,
      $     j,mfr,itgetfpe,k,ibb,ibg,ntfun,ipa,irtc
       integer*8 le,lp,ld
@@ -180,7 +181,11 @@ c     end   initialize for preventing compiler warning
             lp=le
           endif
           call loc_comp(lp,cmp)
-          seg=tcheckseg(cmp,ltyp,al,lal,irtc)
+          seg=tcheckseg(cmp,ltyp,al,lsegp,irtc)
+c          write(*,*)'qtwiss ',seg,ltyp,al,irtc
+c          if(seg)then
+c            write(*,*)'qtwiss-seg ',cmp%value(1),cmp%value(ky_K1_MULT)
+c          endif
           if(irtc .ne. 0)then
             call tffserrorhandle(l,irtc)
             go to 1010
@@ -316,8 +321,9 @@ c          go to 1010
 
           case (icMULT)
             bz=0.d0
+c            write(*,*)'qtwiss-mult ',cmp%value(1),cmp%value(ky_K1_MULT)
             if(seg)then
-              call qmultseg(trans,cod,l1,cmp,lal,bz,coup,irtc)
+              call qmultseg(trans,cod,l1,cmp,lsegp,bz,coup)
             else
               call qmult1(trans,cod,l1,cmp,bz,.true.,coup)
             endif
@@ -912,7 +918,7 @@ c        write(*,'(a,i5,1p6g14.6)')'qcod ',it,r,r0,cod0(1:4)
       implicit none
       type (sad_descriptor) dsave(kwMAX)
       type (sad_comp) , pointer :: cmp
-      integer*4 l,nvar,le,itfdownlevel
+      integer*4 l,nvar,le,itfdownlevel,irtc
       real*8 fr,ftwiss(ntwissfun),trans(6,6),cod(6),gr,sgr,sgr2,gr1,
      $     tw1(ntwissfun),ri(6,6),beam(21)
       logical*4 over,sol,rt,chg,cp0,normal
@@ -925,14 +931,18 @@ c        write(*,'(a,i5,1p6g14.6)')'qcod ',it,r,r0,cod0(1:4)
         levele=levele+1
         call qfracsave(l,dsave,nvar,.true.)
         call compelc(l,cmp)
-        call qfracseg(cmp,0.d0,fr,dsave,chg)
-        tw1=twiss(l,0,1:ntwissfun)
-        cod=tw1(mfitdx:mfitddp)
-        call etwiss2ri(tw1,ri,normal)
-        call tinv6(ri,trans)
-        call tturne1(trans,cod,beam,
-     $     int8(0),int8(0),int8(0),0,
-     $       .false.,sol,rt,l,l)
+        call qfracseg(cmp,cmp,0.d0,fr,chg,irtc)
+        if(irtc .ne. 0)then
+          call tffserrorhandle(l,irtc)
+        else
+          tw1=twiss(l,0,1:ntwissfun)
+          cod=tw1(mfitdx:mfitddp)
+          call etwiss2ri(tw1,ri,normal)
+          call tinv6(ri,trans)
+          call tturne1(trans,cod,beam,
+     $         int8(0),int8(0),int8(0),0,
+     $         .false.,sol,rt,l,l)
+        endif
         if(chg)then
           call qfracsave(l,dsave,nvar,.false.)
         endif
@@ -977,18 +987,19 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
       use tffitcode
       implicit none
       type (sad_descriptor) dsave(kwMAX)
-      type (sad_comp) ,pointer :: cmp
-      integer*4 idp,l,nvar,le,itfdownlevel
+      type (sad_comp) ,pointer :: cmp,cmp0
+      integer*4 idp,l,nvar,le,itfdownlevel,irtc
       real*8 twisss(ntwissfun),ftwiss(ntwissfun),
      $     trans(4,5),cod(6),fr1,fr2,gb0,gb1,dgb
       logical*4 over,chg,mat,force
       levele=levele+1
       call qfracsave(l,dsave,nvar,.true.)
       call compelc(l,cmp)
+      cmp0=>cmp
       if(ideal)then
         call loc_comp(idval(cmp%id),cmp)
       endif
-      call qfracseg(cmp,fr1,fr2,dsave,chg)
+      call qfracseg(cmp,cmp0,fr1,fr2,chg,irtc)
       gb0=gammab(l)
       gb1=gammab(l+1)
       dgb=gb1-gb0
@@ -1025,9 +1036,10 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
       use mackw
       use ffs_flag
       use ffs_pointer, only:idelc,elatt,idtypec,idvalc
+      use kyparam
       implicit none
       type (sad_descriptor) dsave(*)
-      integer*4 nvar,l
+      integer*4 nvar,l,lt
       integer*8 i
       logical*4 save
       if(ideal)then
@@ -1035,11 +1047,21 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
       else
         i=elatt%comp(l)
       endif
+      lt=idtypec(l)
       if(save)then
-        nvar=kytbl(kwMAX,idtypec(l))-1
+        nvar=kytbl(kwMAX,lt)-1
         dsave(1:nvar)=dlist(i+1:i+nvar)
+        if(lt .eq. icMULT)then
+          dsave(nvar+1)=dlist(i+p_PROF_MULT)
+        endif
       else
-        dlist(i+1:i+nvar)=dsave(1:nvar)
+        dlist(i+1:nvar)=dsave(1:nvar)
+        if(lt .eq. icMULT)then
+          if(dlist(i+p_PROF_MULT)%k .ne. dsave(nvar+1)%k)then
+            call tflocald(dlist(i+p_PROF_MULT))
+            dlist(i+p_PROF_MULT)=dsave(nvar+1)
+          endif
+        endif
       endif
       return
       end
@@ -1071,86 +1093,101 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
         f2=0.d0
       endif
       lt=idtype(cmp%id)
-      go to (1100,1200,1010,1400,1010,1600,1010,1600,1010,1600,
-     1       1010,1600,1010,1010,1010,1010,1010,1010,1010,1010,
-     1       1600,2200,1010,1010,1010,1010,1010,1010,1010,1010,
-     1       3100,3200),lt
-      go to 1010
- 1100 go to 9000
- 1200 if(cmp%value(ky_FRMD_BEND) .eq. 0)then
-        cmp%value(ky_F1_BEND)=0.d0
-      endif
-      cmp%value(ky_FRMD_BEND)=-f1-2.d0*f2
-      if(r .ne. 0.d0)then
-        if(cmp%orient .gt. 0.d0)then
-          cmp%value(ky_E1_BEND)=
-     $         cmp%value(ky_E1_BEND)*f1/r
-          cmp%value(ky_E2_BEND)=
-     $         cmp%value(ky_E2_BEND)*f2/r
-        else
-          cmp%value(ky_E1_BEND)=
-     $         cmp%value(ky_E1_BEND)*f2/r
-          cmp%value(ky_E2_BEND)=
-     $         cmp%value(ky_E2_BEND)*f1/r
+c      go to (1100,1200,1010,1400,1010,1600,1010,1600,1010,1600,
+c     1       1010,1600,1010,1010,1010,1010,1010,1010,1010,1010,
+c     1       1600,2200,1010,1010,1010,1010,1010,1010,1010,1010,
+c     1       3100,3200),lt
+      select case (lt)
+
+      case (icDRFT)
+        go to 9000
+        
+      case (icBEND)
+        if(cmp%value(ky_FRMD_BEND) .eq. 0)then
+          cmp%value(ky_F1_BEND)=0.d0
         endif
-      endif
-      cmp%value(ky_ANGL_BEND)=
-     $     cmp%value(ky_ANGL_BEND)*r
-      cmp%value(ky_K1_BEND)=cmp%value(ky_K1_BEND)*r
-      cmp%value(ky_K0_BEND)=cmp%value(ky_K0_BEND)*r
-c      write(*,*)'qfraccomp ',r,
+        cmp%value(ky_FRMD_BEND)=-f1-2.d0*f2
+        if(r .ne. 0.d0)then
+          if(cmp%orient .gt. 0.d0)then
+            cmp%value(ky_E1_BEND)=
+     $           cmp%value(ky_E1_BEND)*f1/r
+            cmp%value(ky_E2_BEND)=
+     $           cmp%value(ky_E2_BEND)*f2/r
+          else
+            cmp%value(ky_E1_BEND)=
+     $           cmp%value(ky_E1_BEND)*f2/r
+            cmp%value(ky_E2_BEND)=
+     $           cmp%value(ky_E2_BEND)*f1/r
+          endif
+        endif
+        cmp%value(ky_ANGL_BEND)=
+     $       cmp%value(ky_ANGL_BEND)*r
+        cmp%value(ky_K1_BEND)=cmp%value(ky_K1_BEND)*r
+        cmp%value(ky_K0_BEND)=cmp%value(ky_K0_BEND)*r
+c     write(*,*)'qfraccomp ',r,
 c     $     cmp%value(ky_ANGL_BEND),
 c     $     cmp%value(ky_K1_BEND),
 c     $     cmp%value(ky_K0_BEND)
-      go to 9000
- 1400 cmp%value(ky_K1_QUAD)=cmp%value(ky_K1_QUAD)*r
-      go to 8000
- 1600 cmp%value(ky_K_THIN)=cmp%value(ky_K_THIN)*r
-      go to 9000
- 2200 cmp%value(ky_K0_MULT:ky_MAX_MULT-1)=
-     $       cmp%value(ky_K0_MULT:ky_MAX_MULT-1)*r
-      dl=(1.d0-r)*cmp%value(ky_L_MULT)*.5d0
-      cmp%value(ky_DX_MULT)=
-     $     cmp%value(ky_DX_MULT)-dl*sin(cmp%value(ky_CHI1_MULT))
-      cmp%value(ky_DY_MULT)=
-     $     cmp%value(ky_DY_MULT)-dl*sin(cmp%value(ky_CHI2_MULT))
-      cmp%value(ky_DZ_MULT)=cmp%value(ky_DZ_MULT)
-     $     +dl*(2.d0*sin(.5d0*cmp%value(ky_CHI1_MULT))**2*
-     $     cos(cmp%value(ky_CHI2_MULT)))
-      cmp%value(ky_VOLT_MULT)=cmp%value(ky_VOLT_MULT)*r
-      cmp%value(ky_DVOLT_MULT)=cmp%value(ky_DVOLT_MULT)*r
-      cmp%value(ky_W1_MULT)=cmp%value(ky_W1_MULT)*r
-      if(cmp%value(ky_ANGL_MULT) .ne. 0.d0)then
-        if(cmp%value(ky_FRMD_MULT) .eq. 0.d0)then
-          cmp%value(ky_FB1_MULT)=0.d0
-          cmp%value(ky_FB2_MULT)=0.d0
-        endif
-        cmp%value(ky_FRMD_BEND)=-f1-2.d0*f2
-        if(cmp%orient .gt. 0.d0)then
-          cmp%value(ky_E1_MULT)=
-     $         cmp%value(ky_E1_MULT)*f1/r
-          cmp%value(ky_E2_MULT)=
-     $         cmp%value(ky_E2_MULT)*f2/r
-        else
-          cmp%value(ky_E1_MULT)=
-     $         cmp%value(ky_E1_MULT)*f2/r
-          cmp%value(ky_E2_MULT)=
-     $         cmp%value(ky_E2_MULT)*f1/r
-        endif
-        cmp%value(ky_ANGL_MULT)=
-     $       cmp%value(ky_ANGL_MULT)*r
         go to 9000
-      endif
-      go to 8000
- 3100 cmp%value(ky_VOLT_CAVI)=cmp%value(ky_VOLT_CAVI)*r
-      cmp%value(ky_DVOLT_CAVI)=cmp%value(ky_DVOLT_CAVI)*r
-      cmp%value(ky_RANV_CAVI)=cmp%value(ky_RANV_CAVI)*r
-      cmp%value(ky_V1_CAVI)=cmp%value(ky_V1_CAVI)*r
-      go to 8000
- 3200 cmp%value(ky_K0_TCAV)=cmp%value(ky_K0_TCAV)*r
-      cmp%value(ky_RANK_TCAV)=cmp%value(ky_RANK_TCAV)*r
-      go to 9000
- 8000 fr0=cmp%value(kytbl(kwFRMD,lt))
+
+      case (icQUAD)
+        cmp%value(ky_K1_QUAD)=cmp%value(ky_K1_QUAD)*r
+
+      case (icSEXT,icOCTU,icDECA,icDODECA)
+        cmp%value(ky_K_THIN)=cmp%value(ky_K_THIN)*r
+        go to 9000
+
+      case (icMULT)
+        cmp%value(ky_K0_MULT:ky_SK21_MULT-1)=
+     $       cmp%value(ky_K0_MULT:ky_SK21_MULT-1)*r
+        dl=(1.d0-r)*cmp%value(ky_L_MULT)*.5d0
+        cmp%value(ky_DX_MULT)=
+     $       cmp%value(ky_DX_MULT)-dl*sin(cmp%value(ky_CHI1_MULT))
+        cmp%value(ky_DY_MULT)=
+     $       cmp%value(ky_DY_MULT)-dl*sin(cmp%value(ky_CHI2_MULT))
+        cmp%value(ky_DZ_MULT)=cmp%value(ky_DZ_MULT)
+     $       +dl*(2.d0*sin(.5d0*cmp%value(ky_CHI1_MULT))**2*
+     $       cos(cmp%value(ky_CHI2_MULT)))
+        cmp%value(ky_VOLT_MULT)=cmp%value(ky_VOLT_MULT)*r
+        cmp%value(ky_DVOLT_MULT)=cmp%value(ky_DVOLT_MULT)*r
+        cmp%value(ky_W1_MULT)=cmp%value(ky_W1_MULT)*r
+        if(cmp%value(ky_ANGL_MULT) .ne. 0.d0)then
+          if(cmp%value(ky_FRMD_MULT) .eq. 0.d0)then
+            cmp%value(ky_FB1_MULT)=0.d0
+            cmp%value(ky_FB2_MULT)=0.d0
+          endif
+          cmp%value(ky_FRMD_BEND)=-f1-2.d0*f2
+          if(cmp%orient .gt. 0.d0)then
+            cmp%value(ky_E1_MULT)=
+     $           cmp%value(ky_E1_MULT)*f1/r
+            cmp%value(ky_E2_MULT)=
+     $           cmp%value(ky_E2_MULT)*f2/r
+          else
+            cmp%value(ky_E1_MULT)=
+     $           cmp%value(ky_E1_MULT)*f2/r
+            cmp%value(ky_E2_MULT)=
+     $           cmp%value(ky_E2_MULT)*f1/r
+          endif
+          cmp%value(ky_ANGL_MULT)=
+     $         cmp%value(ky_ANGL_MULT)*r
+          go to 9000
+        endif
+
+      case (icCAVI)
+        cmp%value(ky_VOLT_CAVI)=cmp%value(ky_VOLT_CAVI)*r
+        cmp%value(ky_DVOLT_CAVI)=cmp%value(ky_DVOLT_CAVI)*r
+        cmp%value(ky_RANV_CAVI)=cmp%value(ky_RANV_CAVI)*r
+        cmp%value(ky_V1_CAVI)=cmp%value(ky_V1_CAVI)*r
+
+      case(icTCAV)
+        cmp%value(ky_K0_TCAV)=cmp%value(ky_K0_TCAV)*r
+        cmp%value(ky_RANK_TCAV)=cmp%value(ky_RANK_TCAV)*r
+        go to 9000
+
+      case default
+        return
+      end select
+      fr0=cmp%value(kytbl(kwFRMD,lt))
       if(fr0 .eq. 0.d0 .or. fr0 .eq. 2)then
         if(kytbl(kwFB1,lt) .ne. 0)then
           cmp%value(kytbl(kwFB1,lt))=0.d0
@@ -1190,235 +1227,55 @@ c     $     cmp%value(ky_K0_BEND)
       if(cmp%value(kytbl(kwFRMD,lt)) .eq. 0.d0)then
         cmp%value(kytbl(kwFRMD,lt))=-4.d0
       endif
-      go to 9000
  9000 if(kytbl(kwL,lt) .ne. 0)then
         cmp%value(kytbl(kwL,lt))=cmp%value(kytbl(kwL,lt))*r
       endif
       chg=.true.
       if(.not. ideal)then
-        cmp%update=0
-      endif
- 1010 return
-      end
-
-      subroutine qfraccompseg(cmp,dsave,i1,rx1,i2,rx2,ideal,chg)
-      use kyparam
-      use tfstk
-      use sad_main
-      use ffs_pointer, only:idelc,direlc,idtypec,idvalc
-      use mackw
-      implicit none
-      type (sad_comp) :: cmp
-      type (sad_descriptor) :: dsave(*)
-      type (sad_rlist), pointer ::kl
-      integer*4 i1,i2,k,nseg,i
-      real*8 rx1,rx2,f1,f2,value(ky_MAX_MULT),r1,r2
-      logical*4 ideal,chg,nonzeroa
-      call tmov(dsave,value,ky_MAX_MULT-1)
-      if(i1 .eq. i2)then
-        if(rx1 .eq. 0.d0)then
-          f1=1.d0
-        else
-          f1=0.d0
-        endif
-        if(rx2 .eq. 1.d0)then
-          f2=1.d0
-        else
-          f2=0.d0
-        endif
-        call qfracseg1(cmp,i1,rx2-rx1,f1,f2,
-     $       dsave,cmp%value(1:ky_MAX_MULT))
-      else
-        nseg=i2-i1+1
-        nonzeroa=tflistq(dsave(ky_ANGL_MULT)) .or.
-     $       rfromd(dsave(ky_ANGL_MULT)) .ne. 0.d0
-        do k=1,ky_MAX_MULT-1
-          if(tfreallistq(dsave(k),kl) .and. kl%nl .ne. nseg .or.
-     $         k .ge. ky_k0_MULT .and. k. le. ky_MAX_MULT-1 .or.
-     $         k .eq. ky_DX_MULT .or. k .eq. ky_DY_MULT .or.
-     $         k .eq. ky_DZ_MULT .or. k .eq. ky_L_MULT .or.
-     $         k .eq. ky_VOLT_MULT .or. k .eq. ky_DVOLT_MULT .or.
-     $         k .eq. ky_W1_MULT .or.
-     $         nonzeroa .and. (k .eq. ky_FRMD_MULT .or.
-     $           k .eq. ky_FB1_MULT .or. k .eq. ky_FB2_MULT .or.
-     $           k .eq. ky_E1_MULT .or. k .eq. ky_E2_MULt))then
-            cmp%dvalue(k)=kxavaloc(-1,nseg)
-          endif
-        enddo
-        do i=i1,i2
-          if(i .eq. i1)then
-            r1=rx1
-            if(r1 .eq. 0.d0)then
-              f1=1.d0
-            else
-              f1=0.d0
-            endif
-            r2=1.d0
-          elseif(i .eq. i2)then
-            r1=0.d0
-            r2=rx2
-            if(r2 .eq. 1.d0)then
-              f2=1.d0
-            else
-              f2=0.d0
-            endif
-          else
-            r1=0.d0
-            r2=1.d0
-          endif
-          call qfracseg1(cmp,i,r2-r1,f1,f2,dsave,value(1:ky_MAX_MULT))
-          call qputfracseg(cmp,i-i1+1,value(1:ky_MAX_MULT))
-        enddo
-c        call tfdebugprint(cmp%dvalue(ky_L_MULT),'qfraccompseg-L',1)
-c        call tfdebugprint(cmp%dvalue(ky_K1_MULT),'qfraccompseg-K1',1)
-      endif
-      chg=.true.
-      if(.not. ideal)then
-        cmp%update=0
+        cmp%update=iand(cmp%update,2)
       endif
       return
       end
 
-      subroutine qputfracseg(cmp,i,value)
+      subroutine qfracseg(cmp,cmp0,fr1,fr2,chg,irtc)
       use ffs
       use sad_main
       use tfstk
       use kyparam
+      use ffs_seg
       implicit none
-      type (sad_comp) :: cmp
+      type (sad_comp) cmp,cmp0
+      type (sad_dlist), pointer :: lprof,lsegp
       type (sad_rlist), pointer :: kl
-      real*8 value(*)
-      integer*4 k,i
-      do k=1,ky_MAX_MULT-1
-        if(tfreallistq(cmp%dvalue(k),kl))then
-          kl%rbody(i)=value(k)
-c        else
-c          cmp%value(k)=value(k)
-        endif
-      enddo
-      return
-      end
-
-      subroutine qfracseg1(cmp,i1,r,f1,f2,dsave,value)
-      use ffs
-      use sad_main
-      use kyparam
-      implicit none
-      type (sad_comp) :: cmp
-      type (sad_descriptor) :: dsave(*)
-      real*8 value(*),r,angle,dl,f1,f2,qsegval,chi1,chi2,al,fr0
-      integer*4 i1,k
-      al=qsegval(dsave,ky_L_MULT,i1)
-      value(ky_L_MULT)=al*r
-      do k=ky_K0_MULT,ky_MAX_MULT-1
-        value(k)=qsegval(dsave,k,i1)*r
-      enddo
-      dl=(1.d0-r)*al*.5d0
-      chi1=qsegval(dsave,ky_CHI1_MULT,i1)
-      chi2=qsegval(dsave,ky_CHI2_MULT,i1)
-      value(ky_DX_MULT)=qsegval(dsave,ky_DX_MULT,i1)
-     $     -dl*sin(chi1)
-      value(ky_DY_MULT)=qsegval(dsave,ky_DY_MULT,i1)
-     $     -dl*sin(chi2)
-      value(ky_DZ_MULT)=qsegval(dsave,ky_DZ_MULT,i1)
-     $     +dl*(2.d0*sin(.5d0*chi1)**2*cos(chi2))
-      value(ky_VOLT_MULT)=qsegval(dsave,ky_VOLT_MULT,i1)*r
-      value(ky_DVOLT_MULT)=qsegval(dsave,ky_DVOLT_MULT,i1)*r
-      value(ky_W1_MULT)=qsegval(dsave,ky_W1_MULT,i1)*r
-      angle=qsegval(dsave,ky_ANGL_MULT,i1)
-      if(angle .ne. 0.d0)then
-        if(qsegval(dsave,ky_FRMD_MULT,i1) .eq. 0.d0)then
-          value(ky_FB1_MULT)=0.d0
-          value(ky_FB2_MULT)=0.d0
-        endif
-        value(ky_FRMD_MULT)=-f1-2.d0*f2
-        if(cmp%orient .gt. 0.d0)then
-          value(ky_E1_MULT)=
-     $         qsegval(dsave,ky_E1_MULT,i1)*f1/r
-          value(ky_E2_MULT)=
-     $         qsegval(dsave,ky_E2_MULT,i1)*f2/r
-        else
-          value(ky_E1_MULT)=
-     $         qsegval(dsave,ky_E1_MULT,i1)*f2/r
-          value(ky_E2_MULT)=
-     $         qsegval(dsave,ky_E2_MULT,i1)*f1/r
-        endif
-        value(ky_ANGL_MULT)=angle*r
-      else
-        fr0=qsegval(dsave,ky_FRMD_MULT,i1)
-        if(fr0 .eq. 0.d0 .or. fr0 .eq. 2)then
-          value(ky_FB1_MULT)=0.d0
-        endif
-        if(fr0 .eq. 0.d0 .or. fr0 .eq. 1)then
-          value(ky_FB2_MULT)=0.d0
-        endif
-        if(fr0 .eq. 0)then
-          fr0=3.d0
-        endif
-        value(ky_FRMD_MULT)=0.d0
-        if(qsegval(dsave,ky_F1_MULT,i1) .ne. 0.d0)then
-          if(cmp%orient .gt. 0.d0)then
-            if(fr0 .eq. 3.d0 .or. fr0 .eq. 1.d0)then
-              value(ky_FRMD_MULT)=1.d0
-            endif
-          else
-            if(fr0 .eq. 3.d0 .or. fr0 .eq. 2.d0)then
-              value(ky_FRMD_MULT)=2.d0
-            endif
-          endif
-        endif
-        if(qsegval(dsave,ky_F2_MULT,i1) .ne. 0.d0)then
-          if(cmp%orient .gt. 0.d0)then
-            if(fr0 .eq. 3.d0 .or. fr0 .eq. 2.d0)then
-              value(ky_FRMD_MULT)=value(ky_FRMD_MULT)+2.d0
-            endif
-          else
-            if(fr0 .eq. 3.d0 .or. fr0 .eq. 1.d0)then
-              value(ky_FRMD_MULT)=value(ky_FRMD_MULT)+1.d0
-            endif
-          endif
-        endif
-        if(value(ky_FRMD_MULT) .eq. 0.d0)then
-          value(ky_FRMD_MULT)=-4.d0
-        endif
-      endif
-      return
-      end
-
-      real*8 function qsegval(dsave,k,i) result(v)
-      use ffs
-      use sad_main
-      use tfstk
-      implicit none
-      type (sad_descriptor) :: dsave(*)
-      type (sad_rlist), pointer :: kl
-      integer*4 k,i
-      v=0.d0
-      if(ktfnonrealq(dsave(k),v) .and.
-     $     tfreallistq(dsave(k),kl))then
-        v=kl%rbody(i)
-      endif
-      return
-      end
-
-      subroutine qfracseg(cmp,fr1,fr2,dsave,chg)
-      use ffs
-      use sad_main
-      use tfstk
-      implicit none
-      type (sad_comp) cmp
-      type (sad_rlist) , pointer :: kl
-      type (sad_descriptor) :: dsave(*)
-      real*8 fr1,fr2,df1,df2,al1,al2,s,al
-      integer*4 i1,i2,k,i,n
-      logical*4 chg
+      real*8 fr1,fr2,df1,df2,al1,al2,s,al,al0
+      integer*4 i1,i2,k,i,n,irtc,lt
+      logical*4 chg,chg1
+      chg=.false.
+      irtc=0
       i1=0
       i2=0
       df1=fr1
       df2=fr2
-      k=kytbl(kwL,idtype(cmp%id))
-      if(ktfrealq(cmp%dvalue(k)) .or.
-     $     tfnonreallistq(cmp%dvalue(k),kl))then
+      lt=idtype(cmp%id)
+      k=kytbl(kwPROF,lt)
+      if(k .eq. 0 .or. .not. tflistq(cmp%dvalue(k),lprof))then
+        go to 100
+      endif
+      al0=cmp%value(kytbl(kwL,lt))
+      if(al0 .eq. 0.d0)then
+        go to 100
+      endif
+      if(ideal)then
+        chg=.true.
+        cmp0%dvalue(p_PROF_MULT)%k=ktfoper+mtfnull
+        call tsetupseg(cmp0,lprof,lsegp,irtc)
+        if(irtc .ne. 0)then
+          return
+        endif
+      else
+        call descr_sad(cmp%dvalue(p_PROF_MULT),lsegp)
+      endif
+      if(.not. tfreallistq(lsegp%dbody(kytbl(kwL,lt)),kl))then
         go to 100
       endif
       n=kl%nl
@@ -1431,18 +1288,19 @@ c          cmp%value(k)=value(k)
       do i=2,n
         al=al+kl%rbody(i)
       enddo
+      al=al*al0
       al1=al*fr1
       al2=al*fr2
       s=0.d0
       do i=1,n
-        s=s+kl%rbody(i)
+        s=s+kl%rbody(i)*al0
         if(i1 .eq. 0 .and. s .ge. al1)then
           i1=i
-          df1=1.d0-(s-al1)/kl%rbody(i)
+          df1=1.d0-(s-al1)/(kl%rbody(i)*al0)
         endif
         if(s .ge. al2)then
           i2=i
-          df2=1.d0-(s-al2)/kl%rbody(i)
+          df2=1.d0-(s-al2)/(kl%rbody(i)*al0)
           if(i1 .eq. 0)then
             i1=i2
             df1=df2
@@ -1457,14 +1315,103 @@ c          cmp%value(k)=value(k)
       i2=n
       df2=1.d0
  100  if(i1 .eq. 0)then
-        call qfraccomp(cmp,fr1,fr2,ideal,chg)
+        call qfraccomp(cmp,fr1,fr2,ideal,chg1)
       else
-        call qfraccompseg(cmp,dsave,i1,df1,i2,df2,ideal,chg)
+        call qfraccompseg(cmp,cmp0,i1,df1,i2,df2,lsegp,ideal,chg1)
+      endif
+      chg=chg .or. chg1
+      return
+      end
+
+      subroutine qfraccompseg(cmp,cmp0,i1,rx1,i2,rx2,lsegp,ideal,chg)
+      use kyparam
+      use tfstk
+      use sad_main
+      use ffs_pointer, only:idelc,direlc,idtypec,idvalc
+      use mackw
+      implicit none
+      type (sad_comp) :: cmp,cmp0
+      type (sad_descriptor) :: dsave(ky_MAX_MULT)
+      type (sad_dlist) lsegp
+      type (sad_dlist), pointer:: lsegp1
+      integer*4 i1,i2,k,nseg,i
+      real*8 rx1,rx2,f1,f2,r1,r2
+      logical*4 ideal,chg
+      nseg=i2-i1+1
+      dsave(1:ky_MAX_MULT-1)=lsegp%dbody(1:ky_MAX_MULT-1)
+      cmp0%dvalue(p_PROF_MULT)=kxadaloc(-1,ky_PROF_MULT-1,lsegp1)
+      do k=1,ky_PROF_MULT-1
+        if(tfreallistq(lsegp%dbody(k)))then
+          lsegp1%dbody(k)=kxavaloc(-1,nseg)
+        else
+          lsegp1%dbody(k)%k=ktfoper+mtfnull
+        endif
+      enddo
+      do i=i1,i2
+        if(i1 .eq. i2)then
+          if(rx1 .eq. 0.d0)then
+            f1=1.d0
+          else
+            f1=0.d0
+          endif
+          if(rx2 .eq. 1.d0)then
+            f2=1.d0
+          else
+            f2=0.d0
+          endif
+          r1=rx1
+          r2=rx2
+        elseif(i .eq. i1)then
+          r1=rx1
+          if(r1 .eq. 0.d0)then
+            f1=1.d0
+          else
+            f1=0.d0
+          endif
+          r2=1.d0
+        elseif(i .eq. i2)then
+          r1=0.d0
+          r2=rx2
+          if(r2 .eq. 1.d0)then
+            f2=1.d0
+          else
+            f2=0.d0
+          endif
+        else
+          r1=0.d0
+          r2=1.d0
+        endif
+        call qputfracseg(lsegp1,i-i1+1,r2-r1,dsave,i)
+c fringes are not taken into account yet...
+      enddo
+      chg=.true.
+      if(.not. ideal)then
+        cmp%update=iand(cmp%update,2)
       endif
       return
       end
 
-      subroutine qmultseg(trans,cod,l1,cmp,lal,bz,coup,irtc)
+      subroutine qputfracseg(larg,i1,r,dsave,i)
+      use ffs
+      use sad_main
+      use tfstk
+      use kyparam
+      implicit none
+      type (sad_dlist) :: larg
+      type (sad_descriptor) :: dsave(*)
+      type (sad_rlist), pointer :: kl,kl1
+      real*8 r
+      integer*4 k,i,i1
+      do k=1,ky_MAX_MULT-1
+        if(tfreallistq(larg%dbody(k),kl) .and.
+     $       tfreallistq(dsave(k),kl1))then
+          kl%rbody(i1)=r*kl1%rbody(i)
+        endif
+      enddo
+      return
+      end
+
+      subroutine qmultseg(trans,cod,l1,cmp,lsegp,bz,coup)
       use kyparam
       use tfstk
       use ffs
@@ -1473,19 +1420,27 @@ c          cmp%value(k)=value(k)
       use sad_main
       implicit none
       type (sad_comp) :: cmp
-      type (sad_rlist) :: lal
+      type (sad_dlist) :: lsegp
       type (sad_rlist), pointer :: lak
-      type (sad_descriptor) :: dsave(cmp%ncomp2)
+      real*8 :: rsave(cmp%ncomp2)
       real*8 trans(4,5),cod(6),bz
-      integer*4 l1,i,nseg,irtc,i1,i2,istep,k,itfmessage,nc,nc1,
-     $     kseg(cmp%ncomp2),lp
+      integer*4 l1,i,nseg,i1,i2,istep,k,nc,nc1,
+     $     kseg(cmp%ncomp2)
       logical*4 coup,coup1
 c      nc=cmp%ncomp2-cmp%nparam
-      nc=kytbl(kwMAX,icMULT)-1
-      nseg=lal%nl
+      nc=ky_PROF_MULT-1
       coup=.false.
-      irtc=0
-      dsave(1:nc)=cmp%dvalue(1:nc)
+      rsave(1:nc)=cmp%value(1:nc)
+      nc1=0
+      do k=1,nc
+        if(lsegp%dbody(k)%k .ne. ktfoper+mtfnull)then
+          nc1=nc1+1
+          kseg(nc1)=k
+c          write(*,*)'qmultseg',nc1,k,rsave(k),cmp%value(k)
+        endif
+      enddo
+      call descr_sad(lsegp%dbody(kseg(1)),lak)
+      nseg=lak%nl
       if(cmp%orient .gt. 0.d0)then
         i1=1
         i2=nseg
@@ -1495,40 +1450,19 @@ c      nc=cmp%ncomp2-cmp%nparam
         i2=1
         istep=-1
       endif
-      nc1=0
-      do k=1,nc
-        if(.not. ktfrealq(dsave(k)))then
-c          call tfdebugprint(dsave(k),'qmultseg',1)
-          if(tfreallistq(dsave(k),lak))then
-            if(lak%nl .ne. nseg)then
-              lp=len_trim(pname(cmp%id))
-              irtc=itfmessage(99,'FFS::unequalkeyleng',
-     $             '"'//pname(cmp%id)(1:lp)//'"')
-              call tferrorhandle(dsave(k),irtc)
-              call tfreseterror
-              return
-            endif
-          else
-            lp=len_trim(pname(cmp%id))
-            irtc=itfmessage(999,'FFS::wrongkeyval',
-     $           '"'//pname(cmp%id)(1:lp)//'"')
-            call tferrorhandle(dsave(k),irtc)
-            call tfreseterror
-            return
-          endif
-          nc1=nc1+1
-          kseg(nc1)=k
-        endif
-      enddo
       do i=i1,i2,istep
         do k=1,nc1
-          call descr_rlist(dsave(kseg(k)),lak)
-          cmp%value(kseg(k))=lak%rbody(i)
+          call descr_sad(lsegp%dbody(kseg(k)),lak)
+          cmp%value(kseg(k))=lak%rbody(i)*rsave(kseg(k))
+c          if(kseg(k) .eq. ky_K1_MULT)then
+c            write(*,*)'qmultseg ',k,i,kseg(k),rsave(kseg(k)),
+c     $           cmp%value(kseg(k))     
+c          endif
         enddo
-        call qmult1(trans,cod,l1,cmp,bz,i .eq. 1,coup1)
+        call qmult1(trans,cod,l1,cmp,bz,i .eq. i1,coup1)
         coup=coup .or. coup1
       enddo
-      cmp%dvalue(1:nc)=dsave(1:nc)
+      cmp%value(1:nc)=rsave(1:nc)
       return
       end
 

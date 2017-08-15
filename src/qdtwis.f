@@ -502,22 +502,14 @@ c     end   initialize for preventing compiler warning
       call tffsbound1(k1,l,fbound)
       if(iclast .gt. 0 .and. iclast .le. fbound%le .and.
      $     (iclast .ne. fbound%le .or. ctrans(27) .le. fbound%fe))then
-        cod2(1)=ctrans(21)
-        cod2(2)=ctrans(22)
-        cod2(3)=ctrans(23)
-        cod2(4)=ctrans(24)
-        cod2(5)=ctrans(25)
+        cod2(1:5)=ctrans(21:25)
         fbound1=fbound
         fbound1%lb=iclast
         fbound1%fb=ctrans(27)
         call qcod(1,fbound1,trans3,cod2,.true.,over)
         call tmultr45(ctrans,trans3,trans2)
       else
-        cod2(1)=utwiss(mfitdx, idp,itwk1)+w*dcod(1)
-        cod2(2)=utwiss(mfitdpx,idp,itwk1)+w*dcod(2)
-        cod2(3)=utwiss(mfitdy, idp,itwk1)+w*dcod(3)
-        cod2(4)=utwiss(mfitdpy,idp,itwk1)+w*dcod(4)
-        cod2(5)=utwiss(mfitdz, idp,itwk1)+w*dcod(5)
+        cod2(1:5)=utwiss(mfitdx:mfitdz, idp,itwk1)+w*dcod(1:5)
         if(ibg .eq. 0 .or. l .le. max(ibg,ibe))then
           call qcod(1,fbound,trans2,cod2,.true.,over)
         else
@@ -536,11 +528,7 @@ c     end   initialize for preventing compiler warning
      $           utwiss(1,idp,itwl),
      $           0.d0,0.d0,
      $           transe2,ibe1,l,.false.,trpt)
-            cod2(1)=utwiss(mfitdx, idp,itwk1)
-            cod2(2)=utwiss(mfitdpx,idp,itwk1)
-            cod2(3)=utwiss(mfitdy, idp,itwk1)
-            cod2(4)=utwiss(mfitdpy,idp,itwk1)
-            cod2(5)=utwiss(mfitdz, idp,itwk1)
+            cod2(1:5)=utwiss(mfitdx:mfitdz, idp,itwk1)
             call qcod(1,fbound1,trans3,cod2,.true.,over)
             trans3(2,5)=trans3(2,5)-cod2(2)+code(2)
             trans3(4,5)=trans3(4,5)-cod2(4)+code(4)
@@ -563,10 +551,7 @@ c     end   initialize for preventing compiler warning
             dcode(4)=
      $            transe(4,1)*dcod(1)+transe(4,2)*dcod(2)
      $           +transe(4,3)*dcod(3)+transe(4,4)*dcod(4)
-            cod2(1)=utwiss(mfitdx, idp,itwbe)-w*dcode(1)
-            cod2(2)=utwiss(mfitdpx,idp,itwbe)-w*dcode(2)
-            cod2(3)=utwiss(mfitdy, idp,itwbe)-w*dcode(3)
-            cod2(4)=utwiss(mfitdpy,idp,itwbe)-w*dcode(4)
+            cod2(1:4)=utwiss(mfitdx:mfitdpy, idp,itwbe)-w*dcode(1:4)
             cod2(5)=utwiss(mfitdz, idp,itwbe)
             fbound1=fbound
             fbound1%lb=ibe
@@ -582,11 +567,7 @@ c     end   initialize for preventing compiler warning
      $           0.d0,0.d0,
      $           transe2,k1,l,.false.,trpt)
           endif
-          cod2(1)=utwiss(mfitdx, idp,itwl)
-          cod2(2)=utwiss(mfitdpx,idp,itwl)
-          cod2(3)=utwiss(mfitdy, idp,itwl)
-          cod2(4)=utwiss(mfitdpy,idp,itwl)
-          cod2(5)=utwiss(mfitdz, idp,itwl)
+          cod2(1:5)=utwiss(mfitdx:mfitdz, idp,itwl)
           call tmultr45(transe,transe2,trans2)
         endif
       endif
@@ -603,12 +584,7 @@ c        ctrans(i)=trans2s(i)
 c        trans2s(i)=(trans2s(i)-trans(i))/w
 c      enddo
       dcod(5)=(cod2(5)-utwiss(mfitdz,idp,itwl))/w
-      ctrans(21)=cod2(1)
-      ctrans(22)=cod2(2)
-      ctrans(23)=cod2(3)
-      ctrans(24)=cod2(4)
-      ctrans(25)=cod2(5)
-      ctrans(26)=cod2(6)
+      ctrans(21:26)=cod2(1:6)
       call qgettru(utwiss(1,idp,itwk),utwiss(1,idp,itwk1),
      $     utwiss(3,idp,nut),utwiss(6,idp,nut),
      $     trans1,k,k1,.true.,.true.,trpt)
@@ -625,6 +601,7 @@ c      enddo
       use sad_main
       use tffitcode
       use mackw
+      use ffs_seg
       implicit none
       type (sad_comp), pointer :: cmp
       real*8 eps,vmin
@@ -659,29 +636,19 @@ c      enddo
       endif
       go to 6000
  6000 dv=max(abs(eps*v0),abs(vmin*wv))
-      call tfsetcmp(v0+dv,cmp,iv)
-c      cmp%value(iv)=v0+dv
-      cod2(1)=utwiss(mfitdx,idp,kk1)
-      cod2(2)=utwiss(mfitdpx,idp,kk1)
-      cod2(3)=utwiss(mfitdy,idp,kk1)
-      cod2(4)=utwiss(mfitdpy,idp,kk1)
-      cod2(5)=utwiss(mfitdz,idp,kk1)
-      cod2(6)=utwiss(mfitddp,idp,kk1)
+c      call tfsetcmp(v0+dv,cmp,iv)
+      cmp%value(iv)=v0+dv
+      cod2(1:6)=utwiss(mfitdx:mfitddp,idp,kk1)
       call qtwiss1(0.d0,idp,j,je,trans2,cod2,.true.,over)
-      call tfsetcmp(v0-dv,cmp,iv)
-c      cmp%value(iv)=v0-dv
-      cod1(1)=utwiss(mfitdx,idp,kk1)
-      cod1(2)=utwiss(mfitdpx,idp,kk1)
-      cod1(3)=utwiss(mfitdy,idp,kk1)
-      cod1(4)=utwiss(mfitdpy,idp,kk1)
-      cod1(5)=utwiss(mfitdz,idp,kk1)
-      cod1(6)=utwiss(mfitddp,idp,kk1)
+c      call tfsetcmp(v0-dv,cmp,iv)
+      cmp%value(iv)=v0-dv
+      cod1(1:6)=utwiss(mfitdx:mfitddp,idp,kk1)
       call qtwiss1(0.d0,idp,j,je,trans1,cod1,.true.,over)
 c      write(*,'(a,1p12g13.5)')'qdtrans ',iv,trans2(1:4),trans1(1:4)
       trans2(1:20)=(trans2(1:20)-trans1(1:20))/(2.d0*dv)
       dcod(1:5)=(cod2(1:5)-cod1(1:5))/(2.d0*dv)
-      call tfsetcmp(v0,cmp,iv)
-c      cmp%value(iv)=v0
+c      call tfsetcmp(v0,cmp,iv)
+      cmp%value(iv)=v0
 c      write(*,'(a,1p8g15.7)')'qdtrans ',iv,cod1(1),cod2(1)
       call qtentu(trans,cod1,utwiss(1,idp,kk1),.true.)
       call tmultr45(trans,trans3,dtrans)

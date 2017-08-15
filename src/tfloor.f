@@ -230,7 +230,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) k1,k2,kx
-      type (sad_list), pointer :: klx,kl1,kl2
+      type (sad_dlist), pointer :: klx,kl1,kl2
       type (sad_rlist), pointer :: klr
       integer*8 ka1,ka2
       integer*4 irtc,i,n1,n2,itfmessage,isp0,isp2,mode
@@ -252,7 +252,7 @@ c     end   initialize for preventing compiler warning
           isp0=isp
           if(ktfreallistq(kl1) .and. ktfreallistq(kl2))then
             kx=kxavaloc(-1,n1,klr)
-            call descr_list(kx,klx)
+            call descr_sad(kx,klx)
             klr%attr=ior(klr%attr,lconstlist)
             if(mode .eq. 0)then
               do i=1,n1
@@ -449,7 +449,7 @@ c     end   initialize for preventing compiler warning
       use iso_c_binding
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kli,klx
+      type (sad_dlist), pointer :: kli,klx
       type (sad_rlist), pointer :: klr,klir
       integer*4 isp1,irtc,mode,i
       real*8 xmin,xmax,ymin,ymax
@@ -499,7 +499,7 @@ c     end   initialize for preventing compiler warning
           klx%dbody(2)=kxcalocv(0,xmax,ymax)
         else
           kx=kxavaloc(-1,2,klr)
-          call descr_list(kx,klx)
+          call descr_sad(kx,klx)
           klr%rbody(1)=xmin
           klr%rbody(2)=xmax
         endif
@@ -528,7 +528,7 @@ c     end   initialize for preventing compiler warning
       use iso_c_binding
       implicit none
       type (sad_descriptor) ki
-      type (sad_list), pointer :: kl,kli
+      type (sad_dlist), pointer :: kl,kli
       type (sad_complex), pointer :: klic
       integer*8 ka,i
       integer*4 irtc,n
@@ -536,7 +536,7 @@ c     end   initialize for preventing compiler warning
       logical*4 cpx
       n=ilist(2,ka-1)
       if(n .ne. 0)then
-        call loc_list(ka,kl)
+        call loc_sad(ka,kl)
         if(ktfreallistq(kl))then
           xmin=min(xmin,minval(kl%rbody(1:n)))
           xmax=max(xmax,maxval(kl%rbody(1:n)))
@@ -596,7 +596,7 @@ c        irtc=itfmessage(9,'General::wrongtype','"x, min, max"')
       use tfstk
       implicit none
       type (sad_descriptor) k,kx
-      type (sad_list), pointer :: kl,klx
+      type (sad_dlist), pointer :: kl,klx
       type (sad_rlist), pointer :: klr
       integer*4 irtc,i,isp0,n
       real*8 x1,x2,v
@@ -611,7 +611,7 @@ c        irtc=itfmessage(9,'General::wrongtype','"x, min, max"')
         endif
         if(ktfreallistq(kl))then
           kx=kxavaloc(-1,n,klr)
-          call descr_list(kx,klx)
+          call descr_sad(kx,klx)
           klr%attr=ior(klr%attr,lconstlist)
           klr%rbody(1:n)=min(x2,max(x1,kl%rbody(1:n)))
 c          do i=1,n
@@ -724,7 +724,7 @@ c     $       '"Real or List of Reals"')
       use tmacro
       implicit none
       type (sad_descriptor) k,kx
-      type (sad_list), pointer ::klx,kl
+      type (sad_dlist), pointer ::klx,kl
       type (sad_rlist), pointer ::klr
       integer*4 ir,i,m,isp0
       real*8 fun,rmin,rmax
@@ -781,7 +781,7 @@ c     $       '"Real or List of Reals"')
               isp=isp0
             else
               kx=kxavaloc(-1,m,klr)
-              call descr_list(kx,klx)
+              call descr_sad(kx,klx)
               klr%attr=ior(klr%attr,lconstlist)
               do i=1,m
                 klr%rbody(i)=fun(kl%rbody(i))
@@ -791,7 +791,7 @@ c     $       '"Real or List of Reals"')
             isp0=isp
             do i=1,m
               isp=isp+1
-              if(ktfrealq(kl%body(i)))then
+              if(ktfrealq(kl%dbody(i)))then
                 if(kl%rbody(i) .lt. rmin .or. kl%rbody(i) .gt. rmax)then
                   cv=cfun(dcmplx(kl%rbody(i),0.d0))
                   if(imag(cv) .eq. 0.d0)then
@@ -813,7 +813,7 @@ c     $       '"Real or List of Reals"')
                 else
                   rtastk(isp)=dble(cfun(cv))
                 endif
-              elseif(tflistq(kl%body(i)))then
+              elseif(tflistq(kl%dbody(i)))then
                 call tfeintf(fun,cfun,kl%dbody(i),
      $               dtastk(isp),cmpl,rmin,rmax,ir)
                 if(ir .ne. 0.d0)then
@@ -844,7 +844,7 @@ c     $       '"Real or List of Reals"')
       use tmacro
       implicit none
       type (sad_descriptor) kx,k,k1,ki,k1i
-      type (sad_list), pointer ::klx,kl,kl1
+      type (sad_dlist), pointer ::klx,kl,kl1
       type (sad_rlist), pointer ::klr
       integer*4 ir,i,m,m1,isp0
       logical*4 cmpl
@@ -879,7 +879,7 @@ c     $       '"Real or List of Reals"')
         if(iand(kl%attr,lnonreallist) .eq. 0 .and.
      $       iand(kl1%attr,lnonreallist) .eq. 0)then
           kx=kxavaloc(-1,m,klr)
-          call descr_list(kx,klx)
+          call descr_sad(kx,klx)
           klr%attr=ior(klr%attr,lconstlist)
           do i=1,m
             klr%rbody(i)=fun(kl%rbody(i),kl1%rbody(i))

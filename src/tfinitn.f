@@ -6,7 +6,7 @@
       use version
       implicit none
       type (sad_symdef), pointer :: contd
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       type (sad_string), pointer :: str
       character(len=1024) :: pkg
       character(len=64) :: env
@@ -73,7 +73,7 @@
       do i=-2,nslots
         dlist(iaxslotpart+i+2)=kxadaloc(0,2,klx)
         klx%head%k=ktfoper+mtfpart
-        klx%body(1)=ktfcopy1(klist(iaxslotnull))
+        klx%dbody(1)=dtfcopy1(dlist(iaxslotnull))
         klx%rbody(2)=dble(i)
       enddo
       call tsvaloc('$Version',versionid)
@@ -217,7 +217,7 @@ c      write(*,*)'tfinitn 1.1 ',itfcontroot
         call loc_string(j,str)
         str%len=5
         str%override=-1
-        str%alloc=ktfstring
+        str%alloc%k=ktfstring
         str%ref=1
         str%gen=0
         str%nch=1
@@ -262,7 +262,7 @@ c      write(*,*)'tfinitn 1.1 ',itfcontroot
       type (sad_symbol), pointer :: sym
       type (sad_symdef), pointer :: symd
       type (sad_string), pointer :: str
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       integer*8 kai,ktsydefc,ks,ktfsymbolc,ktcontaloc,ic,kaopt(1)
       integer*4 isp1,irtc,itfmessage,i,isp0,nc,ispopt,isp2
       character*4 optname(1)
@@ -325,7 +325,7 @@ c        write(*,*)'tftocontext ',str%str(1:nc)
           call loc_sad(ks,symd)
           symd%sym%gen=-3
           kc=symd%value
-          if(ktfnonlistqd(kc))then
+          if(ktfnonlistq(kc))then
             call tflocald(kc)
             ic=ktcontaloc(ks)
           else
@@ -376,10 +376,10 @@ c        write(*,*)'tftocontext ',str%str(1:nc)
       subroutine tfsetcontextpath(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k
-      type (sad_list), pointer :: kl
+      type (sad_descriptor) kx,k,ki
+      type (sad_dlist), pointer :: kl
       type (sad_symdef), pointer :: symd
-      integer*8 ka1,ki
+      integer*8 ka1
       integer*4 isp1,irtc,itfmessage,m,i,isp0
       logical*4 tfcontextqk
       if(isp1+1 .ne. isp)then
@@ -387,21 +387,18 @@ c        write(*,*)'tftocontext ',str%str(1:nc)
         return
       endif
       k=dtastk(isp)
-      if(.not. tflistq(k,kl))then
-        go to 9000
-      endif
-      if(ktfreallistq(kl))then
+      if(.not. tflistq(k,kl) .or. ktfreallistq(kl))then
         go to 9000
       endif
       m=kl%nl
       isp0=isp
       do i=1,m
-        ki=kl%body(i)
+        ki=kl%dbody(i)
         if(.not. tfcontextqk(ki))then
           isp=isp0
           go to 9000
         endif
-        call loc_sad(ktfaddr(ki),symd)
+        call descr_sad(ki,symd)
         isp=isp+1
         ktastk(isp)=ktfaddrd(symd%value)
       enddo

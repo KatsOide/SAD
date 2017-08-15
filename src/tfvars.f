@@ -4,9 +4,10 @@
       use ffs_pointer
       use tffitcode
       use tfcsi,only:cssetp
+      use ffs_seg
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kli
+      type (sad_dlist), pointer :: kli
       type (sad_rlist), pointer :: kla
       type (sad_comp), pointer :: cmps
       integer*8 kxr
@@ -109,7 +110,7 @@ c          x3=rlist(idval(k)+ivvar(i))
             kli%rbody(5)=x3
             kli%rbody(6)=vmin
             kli%rbody(7)=vmax
-            kli%body(8)=ktfstring+ktsalocb(0,ncoup,lenw(ncoup))
+            kli%dbody(8)%k=ktfstring+ktsalocb(0,ncoup,lenw(ncoup))
             kli%rbody(9)=coup
           endif
 c     Note:

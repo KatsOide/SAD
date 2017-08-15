@@ -154,7 +154,7 @@
       implicit none
       type (sad_descriptor) kx,kr
       type (sad_dlist), pointer :: klxi,klx
-      integer*8 ka1,kas,kdx1
+      integer*8 ka1,kas,kdx1,ktcaloc
       integer*4 isp1,irtc,nc,lenw,narg,idx,itype,
      $     idt,n,i,nce,m,hsrchz,isp0, itfmessage,
      $     itfdownlevel,l
@@ -168,7 +168,6 @@
       narg=isp-isp1
       idx=hsrchz(ename)
       itype=idtype(idx)
-c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
       if(narg .le. 1)then
         if(itype .eq. icNULL)then
           type=' '
@@ -205,11 +204,11 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
             idtype(idx)=itype
             if(itype .ne. icNULL)then
               n=kytbl(kwMAX,itype)
-              kdx1=ktaloc(n+1)
+              kdx1=ktcaloc(n+1)
               idval(idx)=kdx1
+              ilist(2,kdx1-1)=idx
               ilist(1,kdx1)=n
               ilist(2,kdx1)=0
-              rlist(kdx1+1:kdx1+n)=0.d0
             endif
           elseif(idval(idt) .ne. itype)then
             irtc=itfmessage(9,'FFS::equaltype',
@@ -232,7 +231,7 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
           return
         endif
         kx=kxadaloc(-1,2,klx)
-        klx%body(1)=ktfstring+ktfcopy1(kas)
+        klx%dbody(1)%k=ktfstring+ktfcopy1(kas)
         klx%dbody(2)=dtfcopy1(dxnulls)
       else
         if(isp .gt. isp1+2)then
@@ -249,7 +248,7 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
         endif
         m=kytbl(kwMAX,itype)-1
         kx=kxadaloc(-1,max(2,min(3,2+m)),klx)
-        klx%body(1)=ktfstring+ktfcopy1(kas)
+        klx%dbody(1)%k=ktfstring+ktfcopy1(kas)
         klx%dbody(2)=kxsalocb(0,type,lenw(type))
         if(m .gt. 0)then
           isp0=isp
@@ -260,7 +259,7 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
               dtastk(isp)=kxadaloc(-1,2,klxi)
               klxi%head%k=ktfoper+mtfrule
               klxi%dbody(1)=kxsalocb(0,key,lenw(key))
-              klxi%dbody(2)=dlist(idval(idx)+i)
+              klxi%dbody(2)=dtfcopy(dlist(idval(idx)+i))
             endif
           enddo
           klx%dbody(3)=dtfcopy1(kxmakelist(isp0))
@@ -275,7 +274,7 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
       use tfstk
       use mackw
       implicit none
-      type (sad_list), pointer :: kr
+      type (sad_dlist), pointer :: kr
       type (sad_dlist), pointer :: kl
       type (sad_descriptor) k,ki,kk,kv
       integer*4 irtc,idx,i,idt,ioff,nc,itfmessage
@@ -320,13 +319,17 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
               return
             endif
           endif
-          if(ktfnonrealq(kv) .and. tfnonreallistq(kv))then
+          if(ktfrealq(kv))then
+            call tflocald(dlist(idval(idx)+ioff))
+            dlist(idval(idx)+ioff)=kv
+          elseif(tfnonlistq(kv))then
             irtc=itfmessage(9,'General::wrongtype',
      $           '"Keyword -> value"')
             return
+          else
+            call tflocald(dlist(idval(idx)+ioff))
+            dlist(idval(idx)+ioff)=dtfcopy(kv)
           endif
-          call tflocald(dlist(idval(idx)+ioff))
-          dlist(idval(idx)+ioff)=dtfcopy(kv)
         endif
       else
         irtc=itfmessage(9,'General::wrongtype',
@@ -374,7 +377,7 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
       use mackw
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx,kli
+      type (sad_dlist), pointer :: klx,kli
       type (sad_el), pointer ::el
       integer*8 itfilattp,idx
       integer*4 isp1,irtc,
@@ -439,7 +442,7 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
       use tfstk
       implicit none
       type (sad_descriptor) kx,kx1
-      type (sad_list), pointer :: kl,kll,klx,klx1
+      type (sad_dlist), pointer :: kl,kll,klx,klx1
       integer*8 kal
       integer*4 isp1,irtc,i,j,k,isp0,m,n,isp2
       integer*8 ifbeamline
@@ -458,20 +461,20 @@ c      write(*,*)'tfsetelement ',ename,itype,idx,icNULL
           if(m .eq. 2 .and. kl%head%k .eq. ktfoper+mtftimes)then
             if(ktfnonreallistqo(kl))then
               do j=1,2
-                if(ktfrealq(kl%body(j)))then
+                if(ktfrealq(kl%dbody(j)))then
                   if(kl%rbody(j) .ne. -1.d0)then
                     n=int(kl%rbody(j))
 c                    write(*,*)'expandbeamline ',j,kl%rbody(j),n
                     if(n .gt. 0)then
                       do k=1,n
                         isp=isp+1
-                        ktastk(isp)=kl%body(3-j)
+                        dtastk(isp)=kl%dbody(3-j)
                       enddo
                     else
                       kal=ktadaloc(-1,2,kll)
                       kll%head%k=ktfoper+mtftimes
                       kll%rbody(1)=-1.d0
-                      kll%body(2)=ktfcopy(kl%body(3-j))
+                      kll%dbody(2)=dtfcopy(kl%dbody(3-j))
                       do k=1,-n
                         isp=isp+1
                         ktastk(isp)=ktflist+kal

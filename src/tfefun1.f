@@ -4,7 +4,7 @@
       use temw, only:tfnormalcoord
       implicit none
       type (sad_descriptor) kx,kxj,kispi
-      type (sad_list), pointer :: kli
+      type (sad_dlist), pointer :: kli
       type (sad_rlist), pointer :: klx
       integer*8 ka
       integer*4 isp1,id,irtc,na,i,ispi,m,j,narg,id0,
@@ -25,7 +25,7 @@
             kx=kxaaloc(-1,m,klx)
             irtc=0
             do j=1,m
-              ktastk(ispi)=kli%body(j)
+              dtastk(ispi)=kli%dbody(j)
               call tfefun1(isp1,id0,kxj,ref,irtc)
               if(irtc .ne. 0)then
                 do l=j,m

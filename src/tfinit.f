@@ -7,6 +7,7 @@
       implicit none
       type (sad_comp), pointer :: cmps
       integer*4 i,l,j,ikx,lele,ib,ibz,ibznext,ibzb,k,ibg,ibb
+      integer*8 idv
       real*8 v
       do i=1,nele
         klp(i)=mult(i)
@@ -40,8 +41,10 @@
             ival(ikx)=2
           elseif(lele .eq. 32)then
             ival(ikx)=2
-          elseif(lele .eq. 41)then
+          elseif(lele .eq. icMARK)then
             ival(ikx)=0
+            idv=idvalc(l)
+            twiss(l,0,1:ntwissfun)=rlist(idv+1:idv+ntwissfun)
           elseif(lele .eq. icMONI)then
             ival(ikx)=0
           elseif(lele .eq. 43)then
@@ -60,7 +63,7 @@
           endif
  200      if(ival(ikx) .gt. 0)then
             call loc_comp(idvalc(klp(ikx)),cmps)
-            v=tfvcmp(cmps,ival(ikx))
+            v=cmps%value(ival(ikx))
 c            v=rlist(idvalc(klp(ikx))+ival(ikx))
             if(v .ne. 0.d0)then
               errk(1,l)=tfvalvar(l,ival(ikx))/v
