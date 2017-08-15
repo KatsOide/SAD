@@ -1454,10 +1454,15 @@ c          write(*,*)'qmultseg',nc1,k,rsave(k),cmp%value(k)
         do k=1,nc1
           call descr_sad(lsegp%dbody(kseg(k)),lak)
           cmp%value(kseg(k))=lak%rbody(i)*rsave(kseg(k))
+<<<<<<< HEAD
 c          if(kseg(k) .eq. ky_K1_MULT)then
 c            write(*,*)'qmultseg ',k,i,kseg(k),rsave(kseg(k)),
 c     $           cmp%value(kseg(k))     
 c          endif
+=======
+c          write(*,*)'qmultseg ',k,i,kseg(k),rsave(kseg(k)),
+c     $    cmp%value(kseg(k))     
+>>>>>>> origin/master
         enddo
         call qmult1(trans,cod,l1,cmp,bz,i .eq. i1,coup1)
         coup=coup .or. coup1

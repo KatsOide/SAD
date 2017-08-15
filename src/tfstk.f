@@ -373,6 +373,9 @@ c     call tfsetlastp(ip+m-1)
         integer*8 ka,ix,ik,ik0,ip,ix1
         integer*4 m,mx
         m=ilist(1,ka-1)
+        if(ka .gt. 577719944 .and. ka .lt. 577719964)then
+          write(*,*)'tfree ',ka,m
+        endif
         if(m .lt. 4)then
           if(m .ne. 0)then
             write(*,*)'tfree-too small segment: ',ka,m
@@ -704,7 +707,11 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
       end interface
 
       interface descr_sad
+<<<<<<< HEAD
         module procedure descr_sym,descr_string,
+=======
+        module procedure descr_list,descr_sym,descr_string,
+>>>>>>> origin/master
      $     descr_pat,descr_obj,descr_complex,descr_symdef,
      $     descr_dlist,descr_rlist
       end interface
@@ -845,6 +852,10 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
 
       interface tfmakerulestk
         module procedure tfmakerulestk_dd,tfmakerulestk_dr
+      end interface
+
+      interface ktfstringq
+        module procedure ktfstringqk,ktfstringqd
       end interface
 
       contains
