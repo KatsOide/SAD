@@ -18,7 +18,7 @@
       type (sad_el), pointer :: el
       type (sad_comp), pointer :: cmp,cmps
       integer*4 idxl,isp0,i,iti,plen,orientation,
-     $     idxerr,n,j,hsrchz,idxe,lpname
+     $     idxerr,n,j,hsrchz,idxe
       integer*8 kp,idxpar,ia,idx0,idi
       real*8 frand
       idx0=idval(idxl)
@@ -84,7 +84,7 @@ c     and then add statistical error
       implicit none
       integer*8 idx,i1,i2,i
       integer*4 idxl
-      integer*4 direct,idxi2,dir,j,lpname
+      integer*4 direct,idxi2,dir,j
       idx=idval(idxl)
       if(direct .gt. 0)then
         i1=idx+1

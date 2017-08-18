@@ -13,7 +13,7 @@
       integer*8 kxr
       integer*4 lfno,i,iv,kk,level, itfuplevel,itfdownlevel,
      $     isp1,next,ifany
-      integer*4 nvar,irtc,lenw,lpname
+      integer*4 nvar,irtc,lenw
       real*8 x3,vmin,vmax,coup
       integer*4 k
       logical*4 ret,exist,tmatch

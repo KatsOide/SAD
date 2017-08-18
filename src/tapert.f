@@ -282,7 +282,7 @@ c     Report new drop marked particles in alive area [1, np]
       use tmacro
       use ffs_pointer, only:idvalc,idtypec,idelc
       implicit none
-      integer*4 outfd,kturn,lbegin,lpname
+      integer*4 outfd,kturn,lbegin
       integer*8 latt(nlat)
       integer*4 np
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)

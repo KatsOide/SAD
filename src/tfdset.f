@@ -874,6 +874,7 @@ c            call tfdebugprint(list%body(i),'==> ',3)
       elseif(ktfsymbolqdef(k%k,symdef))then
         if(symdef%sym%override .eq. 1)then
           kx=symdef%value
+c          call tfdebugprint(kx,'evalwarg-symdef',1)
           kts=ktftype(kx%k)
           if(kts .eq. ktflist .or. kts .eq. ktfref)then
             call tfgetstkstk(kx,rep)
@@ -994,7 +995,7 @@ c              call tfdebugprint(list%body(i),'repargstk',3)
               if(irtc .ne. 0)then
                 return
               endif
-c              call tfdebugprint(list%body(i),'==>',3)
+c              call tfdebugprint(list%dbody(i),'==>',3)
               rep=rep .or. rep1
             enddo
           endif
@@ -1306,6 +1307,7 @@ c          write(*,*)'with ',symd%sym%override
       subroutine tfsetarg(dtbl,irtc)
       use tfstk
       use tfcode
+      use tfpmat
       implicit none
       type (sad_descriptor) kx
       type (sad_deftbl) dtbl
@@ -1330,6 +1332,10 @@ c        call tfdebugprint(kx,'setarg-const',3)
           isp0=isp
           do i=1,dtbl%npat
             call descr_pat(dtbl%pattbl(i),pat)
+            do while(associated(pat%equiv))
+              pat=>pat%equiv
+            enddo
+c            call tflinkedpat(pat0,pat)
             isp=isp+2
             ktastk(isp-1)=ktfaddr(pat%sym%alloc%k)
             dtastk(isp  )=sad_descr(pat%sym)

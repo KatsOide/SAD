@@ -507,7 +507,6 @@ c$$$
         use ffs_flag
       end module
 
-
       module ffs_pointer
       use sad_main
       implicit none
@@ -623,8 +622,9 @@ c$$$
         end function
 
         integer*4 function lpnamec(i)
+        use maccbk
         implicit none
-        integer*4 i,lpname
+        integer*4 i
         lpnamec=lpname(idcomp(elatt,i))
         return
         end function
@@ -773,6 +773,7 @@ c$$$
         logical*4, save :: lstat(2,icMARK)=.true.
 
         contains
+
         logical*4 function tparacheck(l,cmp)
         use ffs_flag
         implicit none
@@ -1007,22 +1008,6 @@ c$$$
             call loc_comp(lp,cmp)
             cmp%update=0
           endif
-c$$$  if(idtype(ilist(2,lp)) .eq. 31)then
-c$$$  iwpl=ilist(1,lp+kytbl(kwLWAK,icCAVI))
-c$$$  if(iwpl .gt. 0)then
-c$$$  if(ilist(2,iwpl) .gt. 0)then
-c$$$  call tfree(int8(ilist(2,iwpl)))
-c$$$  ilist(2,iwpl)=0
-c$$$  endif
-c$$$  endif
-c$$$  iwpt=ilist(1,lp+kytbl(kwTWAK,icCAVI))
-c$$$  if(iwpt .gt. 0)then
-c$$$  if(ilist(2,iwpt) .gt. 0)then
-c$$$  call tfree(int8(ilist(2,iwpt)))
-c$$$  ilist(2,iwpt)=0
-c$$$  endif
-c$$$  endif
-c$$$  endif
         enddo
         tparaed=.false.
         return
@@ -1328,9 +1313,9 @@ c          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
         use sad_main
         use kyparam
         implicit none
+        type (sad_descriptor) kxx
         type (sad_comp) ::cmp
         type (sad_dlist) , pointer :: lprof,lsegp
-c        type (sad_rlist) , pointer :: llp
         real*8 al
         integer*4 irtc,ltyp,kl,kprof
         irtc=0
@@ -1353,12 +1338,6 @@ c        type (sad_rlist) , pointer :: llp
         else
           call descr_sad(cmp%dvalue(p_PROF_MULT),lsegp)
         endif
-c        call descr_sad(lsegp%dbody(kytbl(kwL,ltyp)),llp)
-c        sl=llp%rbody(1)
-c        do i=2,llp%nl
-c          sl=sl+llp%rbody(i)
-c        enddo
-c        al=al*sl
         seg=.true.
         return
         end function
@@ -1371,76 +1350,123 @@ c        al=al*sl
         use sad_main
         implicit none
         type (sad_comp) ::cmp
-        type (sad_rlist) , pointer :: lvi,lvl,lpvi
-        type (sad_dlist) , pointer :: lsegp,lpi,lprof
-        type (sad_string), pointer :: stri
-        integer*4 ltyp,lls,i,nseg,irtc,ki,itfmessage,l,itfdownlevel
+        type (sad_rlist) , pointer :: lvl
+        type (sad_dlist) , pointer :: lsegp,lpi,lprof,lpi1,lk1
+        type (sad_string), pointer :: stri1,stri2
+        integer*4 ltyp,lls,i,nseg,irtc,itfmessage,l,itfdownlevel,
+     $       isp0,i1,nk
+        integer*4 ,parameter :: nc=ky_PROF_MULT-1
+        logical*4 defk(nc,nc)
         irtc=0
         ltyp=idtype(cmp%id)
+        isp0=isp
         select case (ltyp)
         case (icMULT)
+          defk=.false.
+          nseg=0
           lls=0
+          levele=levele+1
           do i=1,lprof%nl
             if(tfnonlistq(lprof%dbody(i),lpi) .or. lpi%nl .lt. 2)then
-              irtc=itfmessage(99,"FFS::wrongkeylist",'""')
-              return
+              go to 9100
             endif
-            if(.not. ktfstringq(lpi%dbody(1),stri))then
-              irtc=itfmessage(99,"FFS::wrongkeylist",'""')
-              return
-            endif
-            if(stri%str(1:stri%nch) .eq. 'L')then
-              if(tfnonreallistq(lpi%dbody(2),lvl))then
-                irtc=itfmessage(99,"FFS::wrongkeylist",'""')
-                return
+            if(tflistq(lpi%dbody(1),lpi1))then
+              if(lpi1%nl .gt. 2 .or. lpi1%nl .le. 0)then
+                go to 9100
               endif
-              lls=i
+              if(.not. ktfstringq(lpi1%dbody(1),stri1))then
+                go to 9100
+              endif
+              if(lpi1%nl .eq. 1)then
+                stri2=>stri1
+              elseif(.not. ktfstringq(lpi1%dbody(2),stri2))then
+                go to 9100
+              endif
+            elseif(ktfstringq(lpi%dbody(1),stri1))then
+              stri2=>stri1
+            else
+              go to 9100
+            endif
+            if(tfnonreallistq(lpi%dbody(2),lvl))then
+              go to 9100
+            endif
+            if(nseg .eq. 0)then
+              nseg=lvl%nl
+            elseif(lvl%nl .ne. nseg)then
+              irtc=itfmessage(99,"FFS::unequalkeyleng",'""')
+              go to 9000
+            endif
+            isp=isp+1
+            itastk(1,isp)=itftypekey(icMULT,stri1%str,stri1%nch)
+            itastk(2,isp)=itftypekey(icMULT,stri2%str,stri2%nch)
+            if(itastk(1,isp) .le. 0 .or. itastk(1,isp) .gt. nc .or.
+     $           itastk(2,isp) .le. 0 .or. itastk(2,isp) .gt. nc)then
+              irtc=itfmessage(99,"FFS::wrongkey",'""')
+              go to 9000
+            elseif(defk(itastk(1,isp),itastk(2,isp)))then
+              call tfdebugprint(lprof%dbody(i),
+     $             'Dupricated Key in '//
+     $             pname(cmp%id)(1:lpname(cmp%id)),3)
+              irtc=itfmessage(99,"FFS::dupkey",'""')
+              go to 9000
+            endif
+            defk(itastk(1,isp),itastk(2,isp))=.true.
+            dtastk2(isp)=lpi%dbody(2)
+            if(stri1%str(1:stri1%nch) .eq. 'L')then
+              lls=isp
             endif
           enddo
           if(lls .eq. 0)then
             irtc=itfmessage(99,"FFS::noLseg",'""')
-            return
+            go to 9000
           endif
-          nseg=lvl%nl
-          levele=levele+1
+          nk=isp-isp0
           if(tfnonlistq(cmp%dvalue(p_PROF_MULT),lsegp) .or.
-     $         lsegp%nl .ne. ky_MAX_MULT)then
+     $         lsegp%nl .ne. nk)then
             call tflocald(cmp%dvalue(p_PROF_MULT))
-            cmp%dvalue(p_PROF_MULT)=kxadaloc(0,ky_MAX_MULT,lsegp)
-            lsegp%dbody(1:ky_MAX_MULT-1)%k=ktfoper+mtfnull
+            cmp%dvalue(p_PROF_MULT)=kxadaloc(0,nk,lsegp)
+            lsegp%dbody(1:nk)%k=ktfoper+mtfnull
           endif
-          do i=1,lprof%nl
-            call descr_sad(lprof%dbody(i),lpi)
-            call descr_sad(lpi%dbody(1),stri)
-            call descr_sad(lpi%dbody(2),lpvi)
-            ki=itftypekey(icMULT,stri%str,stri%nch)
-            if(ki .eq. 0)then
-              irtc=itfmessage(99,"FFS::wrongkey",'""')
-              go to 9000
+          call tflocald(lsegp%dbody(1))
+          lsegp%dbody(1)=kxadaloc(0,2,lk1)
+          lk1%dbody(1)=dtastk(lls)
+          lk1%dbody(2)=dtfcopy(dtastk2(lls))
+          i1=1
+          do i=isp0+1,isp
+            if(i .ne. lls .and. itastk(1,i) .eq. itastk(2,i))then
+              i1=i1+1
+              call tflocald(lsegp%dbody(i1))
+              lsegp%dbody(i1)=kxadaloc(0,2,lk1)
+              lk1%dbody(1)=dtastk(i)
+              lk1%dbody(2)=dtfcopy(dtastk2(i))
             endif
-            if(lpvi%nl .ne. nseg)then
-              irtc=itfmessage(99,"FFS::unequalkeyleng",'""')
-              go to 9000
+          enddo
+          do i=isp0+1,isp
+            if(i .ne. lls .and. itastk(1,i) .ne. itastk(2,i))then
+              i1=i1+1
+              call tflocald(lsegp%dbody(i1))
+              lsegp%dbody(i1)=kxadaloc(0,2,lk1)
+              lk1%dbody(1)=dtastk(i)
+              lk1%dbody(2)=dtfcopy(dtastk2(i))
             endif
-            if(tfnonreallistq(lsegp%dbody(ki),lvi) .or.
-     $           lvi%nl .ne. nseg)then
-              call tflocald(lsegp%dbody(ki))
-              lsegp%dbody(ki)%k=ktavaloc(0,nseg,lvi)
-            endif
-            lvi%rbody(1:nseg)=lpvi%rbody(1:nseg)
           enddo
           cmp%update=ior(cmp%update,2)
+ 9000     l=itfdownlevel()
+          isp=isp0
+          return
+ 9100     l=itfdownlevel()
+          isp=isp0
+          irtc=itfmessage(99,"FFS::wrongkeylist",'""')
         case default
           cmp%update=ior(cmp%update,2)
-          return
         end select
- 9000   l=itfdownlevel()
         return
         end
 
         subroutine tfvcopycmp(cmps,cmpd,k,coeff)
         use tfstk
         use mackw
+        use kyparam
         use sad_main
         implicit none
         type (sad_comp) :: cmps,cmpd
@@ -1456,42 +1482,18 @@ c        al=al*sl
             call tflocald(cmpd%dvalue(k))
           endif
           cmpd%dvalue(k)=dtfcopy1(cmps%dvalue(k))
-c$$$           if(tfnonlistq(cmpd%dvalue(k),lad)
-c$$$     $         .or. lad%nl .ne. las%nl)then
-c$$$            if(ktfnonrealq(cmpd%dvalue(k)))then
-c$$$c              call tflocald(cmpd%dvalue(k))
-c$$$            endif
-c$$$            cmpd%dvalue(k)=kxadaloc(0,las%nl,lad)
-c$$$            lad%dbody(1:lad%nl)%k=ktfoper+mtfnull
-c$$$          endif
-c$$$          do i=1,las%nl
-c$$$            if(tflistq(las%dbody(i),lasi))then
-c$$$              if(tfnonlistq(lad%dbody(i),ladi) .or.
-c$$$     $             lasi%nl .ne. ladi%nl)then
-c$$$                call tflocald(lad%dbody(i))
-c$$$                lad%dbody(i)=kxadaloc(0,lasi%nl,ladi)
-c$$$                ladi%dbody(1:ladi%nl)%k=ktfoper+mtfnull
-c$$$              endif
-c$$$              do j=1,lasi%nl
-c$$$                if(tfreallistq(lasi%dbody(j),lvsi))then
-c$$$                  if(tfnonreallistq(ladi%dbody(j),lvdi) .or.
-c$$$     $                 lvsi%nl .ne. lvdi%nl)then
-c$$$                    call tflocald(ladi%dbody(j))
-c$$$                    ladi%dbody(j)=kxavaloc(0,lvsi%nl,lvdi)
-c$$$                  endif
-c$$$                  lvdi%rbody(1:lvdi%nl)=lvsi%rbody(1:lvsi%nl)
-c$$$                else
-c$$$                  call tflocald(ladi%dbody(j))
-c$$$                  ladi%dbody(j)=dtfcopy(lasi%dbody(j))
-c$$$                endif
-c$$$              enddo
-c            endif
-c          enddo
+          if(idtype(cmpd%id) .eq. icMULT .and.
+     $         k .eq. ky_PROF_MULT)then
+            cmpd%update=0
+          endif
         endif
         return
         end subroutine
 
         subroutine tfvcopy(is,id,k,coeff)
+        use tfstk
+        use mackw
+        use kyparam
         use sad_main
         use ffs_pointer
         implicit none
@@ -1501,7 +1503,12 @@ c          enddo
         call compelc(id,cmpd)
         call compelc(is,cmps)
         call tfvcopycmp(cmps,cmpd,k,coeff)
-        cmpd%update=iand(2,cmpd%update)
+        if(idtype(cmpd%id) .eq. icMULT .and.
+     $       k .eq. ky_PROF_MULT)then
+          cmpd%update=0
+        else
+          cmpd%update=iand(2,cmpd%update)
+        endif
         return
         end subroutine
 

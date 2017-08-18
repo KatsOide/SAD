@@ -280,14 +280,3 @@ c
       return
 c
       end
-
-      integer*4 function lpname(idx)
-      use maccbk
-      implicit none
-      integer*4 idx
-      integer*4 lenw
-      
-      lpname=lenw(pname(idx))
-      return
-
-      end

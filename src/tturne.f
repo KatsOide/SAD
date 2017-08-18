@@ -314,6 +314,7 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       implicit none
       real*8 codmax,demax
       parameter (codmax=1.d4,demax=.5d0)
+      type (sad_descriptor) kxx
       type (sad_comp), pointer :: cmp
       type (sad_dlist), pointer :: lsegp
       integer*8 iatr,iacod,iabmi,kbmz,kbmzi,lp
@@ -576,7 +577,11 @@ c        go to 5000
             endif
           endif
           if(seg)then
+c            call tfevals('Print["PROF-TTE-0: ",LINE["PROFILE","Q1"]]',
+c     $       kxx,irtc)
             call tmulteseg(trans,cod,beam,l,cmp,0.d0,lsegp,rtaper,ld)
+c            call tfevals('Print["PROF-TTE-1: ",LINE["PROFILE","Q1"]]',
+c     $       kxx,irtc)
           else
             call tmulte1(trans,cod,beam,l,cmp,0.d0,rtaper,ld)
           endif
@@ -865,16 +870,18 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
       implicit none
       type (sad_comp) :: cmp
       type (sad_dlist) :: lsegp
-      type (sad_rlist), pointer :: lak
-      real*8 :: vsave(cmp%ncomp2)
+      type (sad_dlist), pointer :: lal,lk
+      type (sad_rlist), pointer :: lak,lkv
+      real*8 :: rsave(cmp%ncomp2)
       real*8 trans(6,12),cod(6),beam(42),rtaper,bzs
-      integer*4 i,nseg,irtc,i1,i2,istep,k,nc,nc1,l,ld,
-     $     kseg(cmp%ncomp2)
-      nc=kytbl(kwPROF,icMULT)-1
-      call descr_sad(lsegp%dbody(ky_L_MULT),lak)
+      integer*4 i,nseg,i1,i2,istep,k,l,ld,k1,k2,nk
+      integer*8 kk
+      integer*4 , parameter :: nc=ky_PROF_MULT-1
+      rsave(1:nc)=cmp%value(1:nc)
+      nk=lsegp%nl
+      call descr_sad(lsegp%dbody(1),lal)
+      call descr_sad(lal%dbody(2),lak)
       nseg=lak%nl
-      irtc=0
-      vsave(1:nc)=cmp%value(1:nc)
       if(cmp%orient .gt. 0.d0)then
         i1=1
         i2=nseg
@@ -884,21 +891,26 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
         i2=1
         istep=-1
       endif
-      nc1=0
-      do k=1,nc
-        if(lsegp%dbody(k)%k .ne. ktfoper+mtfnull)then
-          nc1=nc1+1
-          kseg(nc1)=k
-        endif
-      enddo
       do i=i1,i2,istep
-        do k=1,nc1
-          call descr_rlist(lsegp%dbody(kseg(k)),lak)
-          cmp%value(kseg(k))=lak%rbody(i)*vsave(kseg(k))
+        do k=1,nc
+          if(integv(k,icMULT))then
+            cmp%value(k)=rsave(k)*lak%rbody(i)
+          endif
+        enddo
+        do k=1,nk
+          call descr_sad(lsegp%dbody(k),lk)
+          call descr_sad(lk%dbody(2),lkv)
+          kk=ktfaddr(lsegp%dbody(k))
+          k1=ilist(1,kk+1)
+          k2=ilist(2,kk+1)
+          if(k1 .eq. k2)then
+            cmp%value(k1)=0.d0
+          endif
+          cmp%value(k1)=cmp%value(k1)+rsave(k2)*lkv%rbody(i)
         enddo
         call tmulte1(trans,cod,beam,l,cmp,bzs,rtaper,ld)
       enddo
-      cmp%value(1:nc)=vsave(1:nc)
+      cmp%value(1:nc)=rsave(1:nc)
       return
       end
 

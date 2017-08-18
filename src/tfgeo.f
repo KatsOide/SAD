@@ -238,7 +238,7 @@ c      h1=sqrt(1.d0+p1**2)
                 ali=ali+lal%rbody(ll)
               enddo
             else
-              lp=len_trim(pname(cmp%id))
+              lp=lpname(cmp%id)
               call tffserrorhandle(i,
      $             itfmessage(999,'FFS::wrongkeyval',
      $             '"'//pname(cmp%id)(1:lp)//'"'))
@@ -278,7 +278,7 @@ c      h1=sqrt(1.d0+p1**2)
                 ali=ali+lal%rbody(ll)
               enddo
             else
-              lp=len_trim(pname(cmp%id))
+              lp=lpname(cmp%id)
               call tffserrorhandle(i,
      $             itfmessage(999,'FFS::wrongkeyval',
      $             '"'//pname(cmp%id)(1:lp)//'"'))

@@ -8,20 +8,20 @@
       implicit none
       type (sad_pat), target :: pat0
       type (sad_pat), pointer, intent(out):: pat
-      logical*4 rep
-      rep=.false.
+c      logical*4 rep
+c      rep=.false.
       pat=>pat0
       do while(associated(pat%equiv))
         pat=>pat%equiv
-        rep=.true.
+c        rep=.true.
       enddo
-      if(rep .and. pat%mat .eq. 0)then
-        pat%equiv=>pat0
-        pat=>pat0
-        pat%mat=0
-        pat%value%k=ktfref
-        nullify(pat%equiv)
-      endif
+c      if(rep .and. pat%mat .eq. 0)then
+c        pat%equiv=>pat0
+c        pat=>pat0
+c        pat%mat=0
+c        pat%value%k=ktfref
+c        nullify(pat%equiv)
+c      endif
       return
       end subroutine
 
@@ -342,8 +342,11 @@
       itfpatmat=-1
       call tflinkedpat(pat0,pat)
       kv1=pat%value
+c      call tfdebugprint(sad_descr(pat),'patmat',1)
+c      call tfdebugprint(kv1,'value:',1)
       if(pat%mat .eq. 0)then
         itfpatmat=itfsinglepat(k,pat)
+c        write(*,*)'patmat-result ',itfpatmat,pat%mat
       elseif(ktfrefqd(kv1,kav1) .and. kav1 .gt. 3)then
         if(ktflistq(k,list))then
           if(list%head%k .eq. ktfoper+mtfnull)then
@@ -650,8 +653,14 @@ c     write(*,*)'at ',ispp,' with ',mop,np
       ix=-1
       kp=kp0
       if(ktfpatqd(kp,pat0))then
-        call tflinkedpat(pat0,pat)
+        pat=>pat0
+        do while(associated(pat%equiv))
+          pat=>pat%equiv
+        enddo
+c        call tflinkedpat(pat0,pat)
         k2=pat%value
+c        call tfdebugprint(sad_descr(pat),'seqm-pat',1)
+c        call tfdebugprint(k2,':=',1)
         if(k2%k .ne. ktfref)then
           ispf=isp1-2
           if(ktfrefqd(k2,ka2) .and. ka2 .gt. 3)then
@@ -890,6 +899,9 @@ c          write(*,*)'==> ',ix
       if(pat%sym%loc .ne. 0)then
         pat%mat=1
         pat%value=k
+c        call tfdebugprint(sad_descr(pat),'singlepat',1)
+c        call tfdebugprint(k,':=',1)
+c        write(*,*)'at ',sad_loc(pat%value)
       endif
       return
       end
@@ -906,6 +918,9 @@ c          write(*,*)'==> ',ix
           pat%value=dxnull
         elseif(isp2 .eq. isp1+1)then
           pat%value%k=ktastk(isp2)
+c          call tfdebugprint(sad_descr(pat),'stkstk',1)
+c          call tfdebugprint(ktastk(isp),'stkstk',1)
+c          write(*,*)'at ',sad_loc(pat%value)
         else
           pat%value%k=ktfref+isp1+ispbase
           itastk2(1,isp1)=isp2
@@ -983,6 +998,12 @@ c          write(*,*)'==> ',ix
       if(ktflistq(k,klp))then
         call tfunsetpatlist(klp)
       elseif(ktfpatqd(k,pat))then
+        do while(associated(pat%equiv))
+          pat%mat=0
+          pat%value%k=ktfref
+          call tfunsetpat(pat%expr)
+          pat=>pat%equiv
+        enddo
         pat%mat=0
         pat%value%k=ktfref
         call tfunsetpat(pat%expr)
@@ -1084,7 +1105,6 @@ c          write(*,*)'==> ',ix
             ktastk(isp  )=kas
           endif
           pat%value%k=ktfref
-          nullify(pat%equiv)
         endif
  10     call tfinitpat(isp0,pat%expr)
         pat%mat=0

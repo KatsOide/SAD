@@ -6,7 +6,7 @@
       use macmisc
       implicit none
       character*(MAXSTR) token
-      integer*4 slen,ival,ttype,hsrch,lpname
+      integer*4 slen,ival,ttype,hsrch
       real*8 rval,dummy
       logical*4 skipch
       logical*4 Ldump,Lline,Lelem(icMXEL),Lcmd,Lmem

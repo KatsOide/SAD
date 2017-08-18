@@ -574,13 +574,6 @@ c          endif
         do while(associated(pat%equiv))
           pat=>pat%equiv
         enddo
-c 1      k2=klist(kap+2)
-c        ka2=ktfaddr(k2)
-c        kt2=k2-ka2
-c        if(iand(ktfmask,klist(kap+2)) .eq. ktfpat)then
-c          kap=ktfaddr(klist(kap+2))
-c          go to 1
-c        endif
         ispb=isp
         call tfgetstkstk(pat%value,rep)
         ispe=isp

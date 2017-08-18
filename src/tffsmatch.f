@@ -747,7 +747,7 @@ c      call tfmemcheckprint('varfun-0',.true.,irtc)
       endif
       if(irtc .eq. 0)then
         ltyp=idtype(ld)
-        svarn%nch=len_trim(pname(ld))
+        svarn%nch=lpname(ld)
         svarn%str(1:svarn%nch+1)=pname(ld)(1:svarn%nch+1)//char(0)
         vn=tfkwrd(ltyp,k)
         skey%nch=len_trim(vn)

@@ -38,6 +38,7 @@ c Do not forget to update sim/MACCODE.h when you change this module!!!!
       parameter (MAXMEM=2*inipage*pagesz)
       parameter (MAXMEM0=6*1024*pagesz)
       character*(MAXPNAME) pname(HTMAX)
+      integer*4 lpname(HTMAX)
       integer*4 idtype(HTMAX)
       integer*8 idval(HTMAX)
       integer*8 ilistroot
@@ -818,7 +819,7 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
 
       interface sad_descr
         module procedure list_descr,rlist_descr,dlist_descr,
-     $     symbol_descr,dfromr,dfromk,string_descr
+     $     symbol_descr,dfromr,dfromk,string_descr,pat_descr
       end interface
 
       interface ktfpatq
@@ -1346,6 +1347,13 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         implicit none
         type (sad_string) s
         string_descr%k=ktfstring+sad_loc(s%nch)
+        return
+        end
+
+        type (sad_descriptor) function pat_descr(p)
+        implicit none
+        type (sad_pat) p
+        pat_descr%k=ktfpat+sad_loc(p%len)+3
         return
         end
 

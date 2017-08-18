@@ -1107,7 +1107,7 @@ c      call tfdebugprint(kx,'puref',1)
       kx%k=ktfpat+ka
       irtc=0
       ke=pat%expr
-      kae=ktfaddrd(ke)
+      kae=ktfaddr(ke)
       kte=ke%k-kae
       if(kte .ne. ktfref)then
 c        call tfdebugprint(ke,'pateval',1)
@@ -1116,7 +1116,7 @@ c        write(*,*)'at ',kae
         if(irtc .ne. 0)then
           return
         endif
-        kae=ktfaddrd(ke)
+        kae=ktfaddr(ke)
         kte=ke%k-kae
       endif
       if(ke%k .ne. pat%expr%k)then

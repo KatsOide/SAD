@@ -9,7 +9,7 @@
       implicit none
       character*(MAXSTR) token
       integer*8 incode,icode,idx1,idm
-      integer*4 index,idx,membas,lpname
+      integer*4 index,idx,membas
       integer slen,ival,ttype,hsrchz,slen2,ttype2
       real*8 rval
       logical skipch

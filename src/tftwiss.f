@@ -279,7 +279,7 @@ c     $             itastk(2,isp),vstk2(isp)
       keyword=tfgetstrs(ktastk(isp1+1),nc)
       if(nc .le. 0)then
         irtc=itfmessage(9,'General::wrongtype',
-     $       '"List for #1"')
+     $       '"Keyword for #1"')
         return
       endif
       call capita(keyword(1:nc))
@@ -342,13 +342,14 @@ c     $             itastk(2,isp),vstk2(isp)
       use ffs
       use tffitcode
       use ffs_pointer, only:latt,idelc,idtypec,idvalc,sad_comp,
-     $     compelc
+     $     compelc,iele1
       use tflinepcom
       implicit none
       type (sad_descriptor) kx
       type (sad_comp), pointer :: cmp
       integer*8 iax
-      integer*4 irtc,id,lenw,it,ia,iv,isps,l,lpname
+      integer*4 irtc,id,lenw,it,ia,iv,isps,l,isp0,i
+
       character*(*) keyword
       character*(MAXPNAME) key,tfkwrd
       logical*4 saved,ref
@@ -411,6 +412,16 @@ c     $             itastk(2,isp),vstk2(isp)
         kx=kxsalocb(-1,key(2:),lenw(key)-1)
       elseif(keyword .eq. 'POSITION')then
         kx=dfromr(dble(it))
+      elseif(keyword .eq. 'COMPONENT')then
+        isp0=isp
+        do i=1,nlat-1
+          if(iele1(i) .eq. it)then
+            isp=isp+1
+            vstk(isp)=dble(i)
+          endif
+        enddo
+        kx=kxmakelist(isp0)
+        isp=isp0
       else
         kx=tfkeyv(-it,keyword,iax,cmp,ref,saved)
         if(.not. ref)then
