@@ -6,7 +6,7 @@
       use tffitcode
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx,klxi
+      type (sad_dlist), pointer :: klx,klxi
       integer*4 lfno,nc,i,j,kf,irtc
       real*8 x
       logical*4 ret

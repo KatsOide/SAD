@@ -620,6 +620,21 @@ cc for spch
      $ky_ZPY_SPCH=18,
      $ky_MAX_SPCH=19
 
+      contains
+        logical*4 function integv(k,ic)
+        use maccode
+        implicit none
+        integer*4 k,ic
+        select case (ic)
+        case (icMULT)
+          integv=k. eq. ky_L_MULT .or. k .eq. ky_ANGL_MULT .or.
+     $         k .eq. ky_VOLT_MULT .or. k .eq. ky_DVOLT_MULT .or.
+     $         k .ge. ky_K0_MULT .and. k .le. ky_SK21_MULT
+        case default
+          integv=.false.
+        end select
+        return
+        end function
       end module
 
       subroutine initb1
@@ -1139,6 +1154,7 @@ c
 c
       kytbl(kwMAX,icMULT)=ky_MAX_MULT
       kytbl(kwNPARAM,icMULT)=p_NPARAM_MULT
+c
 c  for UNDULATOR
       idummy=sethtb('und     ',icDEF,icUND)
       kytbl(0,icUND)=sethtb('UND    ',icDEF,icUND)

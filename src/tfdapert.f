@@ -5,7 +5,7 @@
       use tparastat
       implicit none
       type (sad_descriptor) :: kmode,kc,kx
-      type (sad_list), pointer :: klc
+      type (sad_dlist), pointer :: klc
       type (sad_rlist), pointer :: klar,klc1,klp,kml,klcx
       integer*4 isp1,irtc,narg,i,lfno,n1,itfmessage,np00,iv(3)
       real*8 range(3,3),damp,rgetgl1,phi(3),codsave(6),dampenough
@@ -87,7 +87,7 @@
       np0=max(2000,n1,n1*min(51,nint(rgetgl1('DAPWIDTH'))))
       call rsetgl1('NP',dble(np0))
       call tfdapert1(range,klc1%rbody(1),
-     $     n1,kx,phi,damp,dampenough,iv(1),iv(2),lfno)
+     $     n1,kx%x(1),phi,damp,dampenough,iv(1),iv(2),lfno)
       np0=np00
       call rsetgl1('NP',dble(np0))
       irtc=0
@@ -141,6 +141,6 @@ c      call tspini(int8(1),kptbl,.false.)
       r1=trdtbl(1:3,6)
       phi(1:2)=0.d0
       phi(3)=-0.5d0*pi
-      call tfdapert1(range,r1,3,trval,phi,0.d0,3,1,lfno)
+      call tfdapert1(range,r1,3,trval,phi,0.d0,0.d0,3,1,lfno)
       return
       end

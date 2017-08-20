@@ -2,11 +2,11 @@
       use tfstk
       implicit none
       type (sad_descriptor) k,kn,kx
-      type (sad_list), pointer :: kl,klx
+      type (sad_dlist), pointer :: kl,klx
       type (sad_rlist), pointer :: klr,kln
       integer*4 irtc,m,iv,n1,n2,mn,mx,itfmessage,i
       logical*4 take0,take,eval,list,d
-      if(ktfnonlistqd(k,kl))then
+      if(ktfnonlistq(k,kl))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List or composition for #1"')
         return
@@ -114,7 +114,7 @@
         return
       elseif(mx .gt. 0)then
         kx=kxavaloc(-1,mx,klr)
-        call descr_list(kx,klx)
+        call descr_sad(kx,klx)
         if(take)then
           if(ktfreallistq(kl))then
             klr%rbody(1:mx)=kl%rbody(n1:n1+mx-1)
@@ -122,8 +122,8 @@
           else
             d=.false.
             do i=1,mx
-              klr%body(i)=ktfcopy(kl%body(n1+i-1))
-              d=d .or. ktfnonrealq(klr%body(i))
+              klr%dbody(i)=dtfcopy(kl%dbody(n1+i-1))
+              d=d .or. ktfnonrealq(klr%dbody(i))
             enddo
             if(d)then
               klr%attr=ior(iand(kl%attr,kconstarg+lconstlist),
@@ -133,17 +133,17 @@
         else
           if(ktfreallistq(kl))then
             klr%rbody(1:n1-1)=kl%rbody(1:n1-1)
-            klr%body(n1:m+n1-n2-1)=kl%body(n2+1:m)
+            klr%dbody(n1:m+n1-n2-1)=kl%dbody(n2+1:m)
             klr%attr=ior(kl%attr,kconstarg)
           else
             d=.false.
             do i=1,n1-1
-              klx%body(i)=ktfcopy(kl%body(i))
-              d=d .or. ktfnonrealq(klx%body(i))
+              klx%dbody(i)=dtfcopy(kl%dbody(i))
+              d=d .or. ktfnonrealq(klx%dbody(i))
             enddo
             do i=1,m-n2
-              klx%body(n1+i-1)=ktfcopy(kl%body(n2+i))
-              d=d .or. ktfnonrealq(kl%body(n2+i))
+              klx%dbody(n1+i-1)=dtfcopy(kl%dbody(n2+i))
+              d=d .or. ktfnonrealq(kl%dbody(n2+i))
             enddo
             if(d)then
               klx%attr=ior(iand(kl%attr,kconstarg+lconstlist),
@@ -172,7 +172,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: list,listx
+      type (sad_dlist), pointer :: list,listx
       integer*4 isp1,irtc,i,m,itfmessage
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
@@ -188,14 +188,14 @@
         return
       endif
       if(iand(list%attr,lnonreallist) .eq. 0)then
-        call loc_list(ktavaloc(-1,m),listx)
+        call loc_sad(ktavaloc(-1,m),listx)
         do i=1,m
-          listx%body(m-i+1)=list%body(i)
+          listx%dbody(m-i+1)=list%dbody(i)
         enddo
       else
-        call loc_list(ktadaloc(-1,m),listx)
+        call loc_sad(ktadaloc(-1,m),listx)
         do i=1,m
-          listx%body(m-i+1)=ktfcopy(list%body(i))
+          listx%dbody(m-i+1)=dtfcopy(list%dbody(i))
         enddo
       endif
       listx%head=dtfcopy(list%head)
@@ -209,7 +209,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kl,klx
+      type (sad_dlist), pointer :: kl,klx
       type (sad_rlist), pointer :: klr
       integer*4 isp1,irtc,i,m,itfmessage,n
       if(isp .ne. isp1+1 .and. isp .ne. isp1+2)then
@@ -220,7 +220,7 @@
      $       '"List or composition for #1"')
         return
       endif
-      call loc_list(ktfaddr(ktastk(isp1+1)),kl)
+      call loc_sad(ktfaddr(ktastk(isp1+1)),kl)
       m=kl%nl
       if(m .le. 1)then
         go to 8000
@@ -243,16 +243,16 @@
       endif
       if(ktfreallistq(kl))then
         kx=kxavaloc(-1,m,klr)
-        call descr_list(kx,klx)
+        call descr_sad(kx,klx)
         klr%rbody(1:n)=kl%rbody(m-n+1:m)
         klr%rbody(n+1:m)=kl%rbody(1:m-n)
       else
         kx=kxadaloc(-1,m,klx)
         do i=1,n
-          klx%body(i)=ktfcopy(kl%body(m-n+i))
+          klx%dbody(i)=dtfcopy(kl%dbody(m-n+i))
         enddo
         do i=n+1,m
-          klx%body(i)=ktfcopy(kl%body(i-n))
+          klx%dbody(i)=dtfcopy(kl%dbody(i-n))
         enddo
       endif
       klx%head=dtfcopy(kl%head)
@@ -269,7 +269,7 @@
       use iso_c_binding
       implicit none
       type (sad_descriptor) kx,k0,k1,ks
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       type (sad_dlist), pointer :: kl
       type (sad_rlist), pointer :: klr
       integer*4 isp1,irtc,i,m,itfmessage,isp0
@@ -330,22 +330,15 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list) ,pointer :: kl
-      integer*4 isp1,irtc,m,itfmessage
+      integer*4 isp1,irtc,itfmessage
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
-      elseif(ktfnonlistq(ktastk(isp),kl))then
+      elseif(ktfnonlistq(ktastk(isp)))then
         irtc=itfmessage(9,'General::wrongtype','"List or composition"')
         return
       endif
-      m=kl%nl
-      if(m .le. 1)then
-        kx=dxnulll
-        irtc=0
-      else
-        call tftake(dtastk(isp),1.d0,kx,.false.,.true.,irtc)
-      endif
+      call tftake(dtastk(isp),sad_descr(1.d0),kx,.false.,.true.,irtc)
       return
       end
 
@@ -355,7 +348,7 @@
       type (sad_descriptor) kx,ki
       type (sad_symbol), pointer :: sym
       type (sad_symdef), pointer :: symd
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       integer*4 isp1,irtc,i,itfmessage
       LOOP_I: do i=isp1+1,isp
         ki=dtastk(i)
@@ -389,7 +382,7 @@
       use iso_c_binding
       implicit none
       type (sad_descriptor) kh,kx
-      type (sad_list) kl
+      type (sad_dlist) kl
       type (sad_dlist), pointer :: klh
       type (sad_symbol), pointer :: symh
       type (sad_symdef), pointer :: def
@@ -403,7 +396,7 @@ c      include 'DEBUG.inc'
       isp=isp+1
       ktastk(isp)=ktfoper+mtfset
       isp=isp+1
-      ktastk(isp)=ktflist+ksad_loc(kl%head%k)
+      dtastk(isp)=sad_descr(kl)
       isp=isp+1
       ktastk(isp)=ktfref
       call tfset(isp0+1,kx,.false.,irtc)
@@ -429,7 +422,7 @@ c      include 'DEBUG.inc'
             discard1=.true.
             if(dhash%gen .eq. maxgeneration)then
               do i=0,dhash%nhash
-                kadi=dhash%hash(i)
+                kadi=dhash%dhash(i)%k
                 do while(kadi .ne. 0)
                   call loc_deftbl(kadi,dtbl)
                   kadi1=dtbl%next
@@ -483,12 +476,12 @@ c      include 'DEBUG.inc'
       use tfstk
       implicit none
       type (sad_descriptor) k
-      type (sad_list) listp
-      type (sad_list), pointer :: kli,kla1,kla
+      type (sad_dlist) listp
+      type (sad_dlist), pointer :: kli,kla1,kla
       integer*4 i
       logical*4 tfsamelistqo
       tfdefheadq=.true.
-      call descr_list(k,kla)
+      call descr_sad(k,kla)
       if(tfsamelistqo(kla,listp))then
         return
       endif
@@ -499,7 +492,7 @@ c      include 'DEBUG.inc'
         endif
       enddo
       do i=1,kla%nl
-        if(ktflistq(kla%body(i),kli))then
+        if(ktflistq(kla%dbody(i),kli))then
           if(tfsamelistqo(kli,listp))then
             return
           endif
@@ -651,7 +644,7 @@ c      include 'DEBUG.inc'
       use tfcode
       implicit none
       type (sad_descriptor) kx,k,kv
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       type (sad_symbol), pointer :: sym
       integer*8 ka
       integer*4 isp1,irtc,narg,iattrib,i,itfmessage,isp0,
@@ -736,7 +729,7 @@ c      include 'DEBUG.inc'
         isp0=isp
         do i=1,kl%nl
           isp=isp+1
-          ktastk(isp)=kl%body(i)
+          dtastk(isp)=kl%dbody(i)
           isp=isp+1
           ktastk(isp)=ktastk(isp0)
           call tfsetattributes(isp0,kx,irtc)
@@ -762,7 +755,7 @@ c      include 'DEBUG.inc'
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer ::klx
+      type (sad_dlist), pointer ::klx
       integer*4 isp1,irtc,isp0
       irtc=-1
       if(isp .le. isp1)then
@@ -785,7 +778,7 @@ c      include 'DEBUG.inc'
       recursive subroutine tfreleaseholdstk(isp1,isp2,irtc)
       use tfstk
       implicit none
-      type (sad_list), pointer :: kli
+      type (sad_dlist), pointer :: kli
       integer*4 isp1,irtc,i,isp0,isp2,isp3,j,isp4
       if(isp .le. isp1)then
         irtc=0

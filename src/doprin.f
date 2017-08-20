@@ -7,7 +7,7 @@
       implicit none
       real*8  dummy
       character*(MAXSTR) token
-      integer*4 slen,ival,ttype,hsrchz,hsrch,lpname
+      integer*4 slen,ival,ttype,hsrchz,hsrch
       real*8 rval
       logical skipch
 c     

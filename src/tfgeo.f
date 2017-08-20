@@ -178,9 +178,7 @@
       use tfcsi, only:icslfno
       implicit none
       type (sad_comp), pointer :: cmp
-      type (sad_rlist), pointer :: lal
-      integer*4 istart,istop,ke,ke1,i,k,i1,istart0,
-     $     itfmessage,ll,lp
+      integer*4 istart,istop,ke,ke1,i,k,i1,istart0
       integer*8 id
       real*8 p1,h1,ali,v,zetau,b,a,xiu,dchi3,coschi,sinchi,
      $     x1,x2,x3,y1,y2,y3,rho0,sp0,cp0,r1,r2,cchi1,schi1,
@@ -229,22 +227,17 @@ c      h1=sqrt(1.d0+p1**2)
         else
           id=elatt%comp(i)
         endif
-        call loc_comp(id,cmp)
+        if(k .eq. icSOL)then
+          call tsgeo(i,ke,ke1,sol)
+          go to 10
+        endif
+        call compelc(i,cmp)
+        if(kytbl(kwL,k) .gt. 0)then
+          ali=cmp%value(kytbl(kwL,k))
+        else
+          ali=0.d0
+        endif
         if(kytbl(kwANGL,k) .ne. 0)then
-          if(ktfnonrealq(cmp%dvalue(kytbl(kwl,k)),ali))then
-            if(tfreallistq(cmp%dvalue(kytbl(kwl,k)),lal))then
-              ali=0.d0
-              do ll=1,lal%nl
-                ali=ali+lal%rbody(ll)
-              enddo
-            else
-              lp=len_trim(pname(cmp%id))
-              call tffserrorhandle(i,
-     $             itfmessage(999,'FFS::wrongkeyval',
-     $             '"'//pname(cmp%id)(1:lp)//'"'))
-              return
-            endif
-          endif
           phi=cmp%value(kytbl(kwANGL,k))
           if(cmp%value(kytbl(kwFRMD,k)) .ne. 0.d0)then
             if(phi*ali .ne. 0.d0)then
@@ -267,26 +260,6 @@ c      h1=sqrt(1.d0+p1**2)
               endif
             endif
           endif
-        elseif(k .eq. icSOL)then
-          call tsgeo(i,ke,ke1,sol)
-          go to 10
-        elseif(kytbl(kwL,k) .gt. 0)then
-          if(ktfnonrealq(cmp%dvalue(kytbl(kwl,k)),ali))then
-            if(tfreallistq(cmp%dvalue(kytbl(kwl,k)),lal))then
-              ali=0.d0
-              do ll=1,lal%nl
-                ali=ali+lal%rbody(ll)
-              enddo
-            else
-              lp=len_trim(pname(cmp%id))
-              call tffserrorhandle(i,
-     $             itfmessage(999,'FFS::wrongkeyval',
-     $             '"'//pname(cmp%id)(1:lp)//'"'))
-              return
-            endif
-          endif
-        else
-          ali=0.d0
         endif
         pos(i1)=pos(i)+ali
         if(calgeo)then

@@ -27,7 +27,7 @@ c end debug
       character*(*) token
       character wtoken*(MAXPNAME)
 c
-      integer*4 loopc,slen,slenw,iw,isum,i,lpname
+      integer*4 loopc,slen,slenw,iw,isum,i
       integer*4 lenw
 c
       slen=lenw(token)
@@ -50,6 +50,7 @@ c       write(*,*)'@hsrchz ',token(:slen),slen," -> ", hsrchz
          slenw=lpname(hsrchz)
          if(slenw .le. 0) then
             pname(hsrchz)=wtoken(:slen)
+            lpname(hsrchz)=slen
 c            print *,"@hsrchz insert ",pname(hsrchz)
 c     $           ,hsrchz, slen, slenw,loopc
             return
@@ -77,7 +78,7 @@ c
       character*(*) token
       character wtoken*(MAXPNAME)
 c     
-      integer*4 loopc,slen,slenw,iw,isum,i,lpname
+      integer*4 loopc,slen,slenw,iw,isum,i
       integer*4 lenw
 c     
       slen=lenw(token)

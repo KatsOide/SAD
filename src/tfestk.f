@@ -144,7 +144,7 @@ c          msgn /:   (*   *)   Hold z
       use ophash
       implicit none
       type (sad_descriptor) kx,kh
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       integer*4 isp0,iprior(0:mtfnopc),irtc
       integer*4 iop,iop1,isp1,i,itgetfpe,itfmessage
       logical*4 tfconstqk,tfheldqd,lastfirst(0:mtfnopc)
@@ -289,7 +289,7 @@ c          msgn /:   (*   *)   Hold z
       use tfstk
       implicit none
       type (sad_descriptor) k1,k2,kx
-      type (sad_list), pointer :: kl1,kl2
+      type (sad_dlist), pointer :: kl1,kl2
       type (sad_dlist), pointer :: klx
       integer*4 iop1,i,m1,m2,irtc
       logical*4 tfinequalityqk,nextrel,tfconstlistqo
@@ -302,11 +302,11 @@ c          msgn /:   (*   *)   Hold z
           kx=kxadaloc(-1,m1+m2+1,klx)
           klx%head%k=ktfoper+mtfinequality
           do i=1,m1
-            klx%body(i)=ktfcopy(kl1%body(i))
+            klx%dbody(i)=dtfcopy(kl1%dbody(i))
           enddo
-          klx%body(m1+1)=ktfoper+iop1
+          klx%dbody(m1+1)%k=ktfoper+iop1
           do i=1,m2
-            klx%body(i+m1+1)=ktfcopy(kl2%body(i))
+            klx%dbody(i+m1+1)=dtfcopy(kl2%dbody(i))
           enddo
         else
           kx=kxadaloc(-1,m1+2,klx)
@@ -314,7 +314,7 @@ c          msgn /:   (*   *)   Hold z
           do i=1,m1
             klx%dbody(i)=dtfcopy(kl1%dbody(i))
           enddo
-          klx%body(m1+1)=ktfoper+iop1
+          klx%dbody(m1+1)%k=ktfoper+iop1
           klx%dbody(m1+2)=dtfcopy(k2)
         endif
       else
@@ -324,7 +324,7 @@ c          msgn /:   (*   *)   Hold z
           kx=kxadaloc(-1,m2+2,klx)
           klx%head%k=ktfoper+mtfinequality
           klx%dbody(1)=dtfcopy(k1)
-          klx%body(2)=ktfoper+iop1
+          klx%dbody(2)%k=ktfoper+iop1
           do i=1,m2
             klx%dbody(i+2)=dtfcopy(kl2%dbody(i))
           enddo
@@ -333,7 +333,7 @@ c          msgn /:   (*   *)   Hold z
             kx=kxadaloc(-1,3,klx)
             klx%head%k=ktfoper+mtfinequality
             klx%dbody(1)=dtfcopy(k1)
-            klx%body(2)=ktfoper+iop1
+            klx%dbody(2)%k=ktfoper+iop1
             klx%dbody(3)=dtfcopy(k2)
           else
             kx=kxadaloc(-1,2,klx)
@@ -499,7 +499,7 @@ c      include 'DEBUG.inc'
       use ophash
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       integer*8 iee0
       integer*4 isp1,iah,irtc,isp0,i,iy,isp00,iv
       logical*4 tfconstqk,tfsameqk,tfsamestringqk,comp
@@ -1097,7 +1097,7 @@ c      call tfdebugprint(kx,'==>',1)
       use tfstk
       implicit none
       type (sad_descriptor) k
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       tfheldqd=ktflistq(k,kl) .and.
      $     kl%head%k .eq. ktfoper+mtfhold
       return

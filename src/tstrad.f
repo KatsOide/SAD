@@ -13,7 +13,7 @@
       real*8 dprad,dpradx,dprady,bya,alr,
      1     cosp1,sinp1,cosp2,sinp2
       real*8 tran
-      if(al .le. 0.d0)then
+      if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,pz,2,l,al,-phib,
      1             dx,dy,theta,cost,sint,1.d0,.false.)
         return

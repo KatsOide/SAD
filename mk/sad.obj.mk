@@ -101,7 +101,7 @@ OBJ5=trcoda.o    nalign.o    ndelw.o    pwrtstr.o \
 OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      doACT.o     eval1_.o    getbuf.o     getwrd.o    \
      ielm.o      itfgeto.o   \
-     pfalloc.o   pgflag.o    pgmast.o     pgrmat.o \
+     pgflag.o    pgmast.o     pgrmat.o \
      pgsolvcond.o            qcell.o      qdbend.o     qdcell.o \
      qddrif.o    qdmdia.o    qdquad.o     qdthin.o   qdtwis.o \
      qgettr.o    qins.o      qmult.o      qquad.o \

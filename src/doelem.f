@@ -42,13 +42,13 @@ c end debug
         if (idtype(idx) .eq. icNULL) then
           idtype(idx)=int(elmcd)
           idval(idx)=ktcaloc(kytbl(kwMAX,elmcd)+1)
-          if(elmcd .eq. icMARK)then
-            write(*,*)'doelem ',idx,idval(idx)
-          endif
+c          if(elmcd .eq. icMARK)then
+c            write(*,*)'doelem ',idx,idval(idx)
+c          endif
           call rdkwdl(idx)
-          if(elmcd .eq. icMARK)then
-            write(*,*)'doelem-read ',rlist(idval(idx)+1)
-          endif
+c          if(elmcd .eq. icMARK)then
+c            write(*,*)'doelem-read ',rlist(idval(idx)+1)
+c          endif
           
 c for debug
 c      print *,'doelem:',idtype(idx),elmcd,pname(kytbl(0,elmcd))

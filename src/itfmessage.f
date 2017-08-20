@@ -37,7 +37,7 @@
       use tfcsi
       implicit none
       type (sad_descriptor) dm,ks,mn
-      type (sad_list), pointer :: klx,klm,klhm,klhms
+      type (sad_dlist), pointer :: klx,klm,klhm,klhms
       integer*4 level,irtc,ltr0,l,la,isp0
       character*(*) mess0,arg0
       character*256 mess,arg
@@ -207,7 +207,7 @@ c     Search '"' from string(is+1:l) with backslash escape
       use tfstk
       implicit none
       type (sad_descriptor) kx,kxaddmess
-      type (sad_list), pointer :: kle
+      type (sad_dlist), pointer :: kle
       integer*4 irtc,isp1,ip,lfno,ltr0
       character*(*) str
       logical*4 iter
@@ -253,7 +253,7 @@ c      call tfdebugprint(kx,'addmessage',1)
       use tfstk
       implicit none
       type (sad_descriptor) k
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       character*(*) string
       integer*4 ip,lfno,ls,ifchar,is,i,lb,nc,itfgetrecl,nc1
       character*10 autofg
@@ -405,7 +405,7 @@ c          write(*,*)'tfcheck-1 ',modethrow,irtc
       use tfstk
       implicit none
       integer*4 l,irtc
-      call tferrorhandle(dble(l),irtc)
+      call tferrorhandle(sad_descr(dble(l)),irtc)
       call tfreseterror
       return
       end

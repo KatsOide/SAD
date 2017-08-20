@@ -8,7 +8,7 @@
       use tfcsi
       implicit none
       type (sad_descriptor) kx,kx1,kx2,ks,kp
-      type (sad_list), pointer :: klx,kl
+      type (sad_dlist), pointer :: klx,kl
       integer, parameter :: nkptbl = 6
       integer*4, parameter :: npparamin=9,npnlatmin=30000
       integer*8 kz,kzp,kpz,kzf,kaxl,ktfmalocp,ktfresetparticles
@@ -257,7 +257,7 @@ c        endif
       else
         klx%rbody(1)=dble(ls)
       endif
-      klx%body(2)=ktflist+ktfcopy1(kaxl)
+      klx%dbody(2)%k=ktflist+ktfcopy1(kaxl)
       if(radlight)then
         kx1=kx
         kx=kxadaloc(-1,2,klx)
@@ -287,7 +287,7 @@ c        endif
       end type
       type (llist) klxi(7), kli(7)
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kll,klx
+      type (sad_dlist), pointer :: kll,klx
       type (sad_rlist), pointer :: klf
       integer*4 isp1,irtc,npx,i,j,itfmessage,np,ii
       if(isp .ne. isp1+1)then
@@ -303,7 +303,7 @@ c        endif
       if(ktfreallistq(kll))then
         go to 9000
       endif
-      if(.not. tfreallistq(kll%body(7),klf))then
+      if(.not. tfreallistq(kll%dbody(7),klf))then
         go to 9000
       endif
       np=klf%nl
@@ -539,7 +539,7 @@ c              - Swap particle coordinates
       use tfstk
       implicit none
       type (sad_descriptor) kx,kn
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       integer*4 kseed,isp1,irtc
       real*8 vn
       isp1=isp
@@ -548,7 +548,7 @@ c              - Swap particle coordinates
       call SeedRandom(isp1,kx,irtc)
       if(irtc .ne. 0)then
         return
-      elseif(ktfnonlistqd(kx,klx))then
+      elseif(ktfnonlistq(kx,klx))then
         irtc=-1
         return
       endif

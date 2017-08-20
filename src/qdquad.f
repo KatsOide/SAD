@@ -13,7 +13,7 @@
       if(iv .eq. 4)then
         call qdrotate(dtrans,dcod,k1,itwissp(k1),idp,dx,dy,nut)
       elseif(iv .eq. 2)then
-        if(al .le. 0.d0)then
+        if(al .eq. 0.d0)then
           call qdthin(dtrans,dcod,4,al,ak,
      $         k1,idp,dx,dy,theta,iv,nfam,nut)
           return
@@ -25,9 +25,9 @@
         pxi=cod(2)
         yi=cod(3)
         pyi=cod(4)
-        akk=sqrt(abs(ak/pr)/al)
+        akk=sqrt(abs(ak/pr/al))
         phi=akk*al
-        if(ak*pr .gt. 0.d0)then
+        if(ak*al*pr .gt. 0.d0)then
           dphi=.5d0*phi/ak
           sinphi=sin(phi)
           cosphi=cos(phi)
@@ -47,7 +47,7 @@
           a26= .25d0/pr*((a2+3.d0*cosphi)*xi/pr+a1*al*pxi)
           b16=-.25d0*al/pr*(b1*yi/pr-(-b2+chphi)/ak*pyi)
           b26=-.25d0/pr*((b2+3.d0*chphi)*yi/pr+b1*al*pyi)
-        elseif(ak*pr .lt. 0.d0)then
+        elseif(ak*al*pr .lt. 0.d0)then
           dphi=.5d0*phi/ak
           sinphi=sin(phi)
           cosphi=cos(phi)

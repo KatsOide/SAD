@@ -285,11 +285,11 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       ndiv=1
       do n=2,nmmax
         ndiv=max(ndiv,
-     $int(sqrt(ampmax**(n-1)/6.d0/fact(n-1)/eps*abs(akr(n))*al))+1)
+     $int(sqrt(ampmax**(n-1)/6.d0/fact(n-1)/eps*abs(akr(n)*al)))+1)
       enddo
       ndiv=min(ndivmax,ndiv)
       if(spac)then
-        ndiv=max(ndiv,nint(al/(alstep*eps/eps00)),
+        ndiv=max(ndiv,nint(abs(al)/(alstep*eps/eps00)),
      $       nint(eps00/eps*abs(bzs*al)/1.5d0))
       endif
       acc=(trpt .or. rfsw) .and. vc .ne. 0.d0
@@ -300,17 +300,6 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
           wi=1.d0/w
         endif
         v=vc*abs(charge)/amass
-        if(trpt)then
-c          vnominal=v*sin(-phirf*charge)
-          phis=0.d0
-        else
-c          vnominal=0.d0
-          if(autophi)then
-            phis=phic
-          else
-            phis=w*trf0
-          endif
-        endif
         he=h0+vnominal
         pe=h2p(he)
 c        pe=sqrt((he-1.d0)*(he+1.d0))
@@ -341,6 +330,17 @@ c        pe=sqrt((he-1.d0)*(he+1.d0))
           enddo
         endif            
         phic=(phirf+dphirf)*charge
+        if(trpt)then
+c          vnominal=v*sin(-phirf*charge)
+          phis=0.d0
+        else
+c          vnominal=0.d0
+          if(autophi)then
+            phis=phic
+          else
+            phis=w*trf0
+          endif
+        endif
         dphis=phis-phic
         if(rad .or. trpt .or. autophi)then
           offset=sin(dphis)
@@ -370,12 +370,12 @@ c        vnominal=0.d0
       ak1=akr1*ws(1)*.5d0
       al1=al*ws(1)*.5d0
       ak01=akr(0)*ws(1)*.5d0
-      if(al .gt. 0.d0)then
+      if(al .ne. 0.d0)then
         nmmin=2
       else
         nmmin=1
       endif
-      if(al .gt. 0.d0)then
+      if(al .ne. 0.d0)then
         if(fringe)then
           if(mfring .ne. 2 .and. acc)then
             call tcavfrin(np,x,px,y,py,z,g,dv,al,v,w,p0,h0,
@@ -537,7 +537,7 @@ c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
      $       radius,radius,
      $       0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
       endif
-      if(al .gt. 0.d0)then
+      if(al .ne. 0.d0)then
         if(radlvl .eq. 0.d0)then
           call trad(np,x,px,y,py,g,dv,dble(b0),-imag(b0),
      1         b1,0.d0,0.d0,.5d0*al,

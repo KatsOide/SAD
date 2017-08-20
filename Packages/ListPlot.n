@@ -140,7 +140,7 @@ With[{
       If[df===CanvasDrawer,
         After[0,The$CanvasObject@AdjustLegend[]]]
       ];
-    gl
+    Append[gl,opt]
     ]];
 
 PR$$[{x_List,y_List}]:={x,y};

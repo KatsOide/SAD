@@ -15,7 +15,7 @@
           isp=isp+1
           ktastk(isp)=ktfoper+mtfunset
           isp=isp+1
-          ktastk(isp)=ktfsymbol+ksad_loc(def%sym%loc)
+          dtastk(isp)=sad_descr(def%sym)
           call tfefunref(isp0+1,kx,.true.,irtc)
           if(irtc .ne. 0 .and. ierrorprint .ne. 0)then
             call tfreseterror
@@ -31,7 +31,7 @@
           ka10=dhash%next
           if(dhash%gen .eq. maxgeneration)then
             do i=0,dhash%nhash
-              kadi=dhash%hash(i)
+              kadi=dhash%dhash(i)%k
               do while(kadi .ne. 0)
                 kadi0=klist(kadi)
                 call tfcleardaloc(kadi)
@@ -67,7 +67,7 @@
         call tfree(sad_loc(def%next))
         call tflocal1(sad_loc(def%sym%loc))
       else
-        def%value%k=ktfcopy1(ktfsymbol+sad_loc(def%sym%loc))
+        def%value=dtfcopy1(sad_descr(def%sym))
       endif
       return
       end

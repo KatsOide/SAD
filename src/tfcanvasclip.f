@@ -381,7 +381,7 @@ c        write(*,*)na,isp-isp0
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx,klxi
+      type (sad_dlist), pointer :: klx,klxi
       type (sad_rlist), pointer :: klxj
       integer*8 ka,kas,kac,kai,kavc,kavs
       integer*4 isp1,irtc,iav(3),nt,m,itfmessage,isp0,j,i,ii

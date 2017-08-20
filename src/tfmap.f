@@ -48,10 +48,10 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx,k,ki,kf
-      type (sad_list), pointer :: kl,kli
+      type (sad_dlist), pointer :: kl,kli
       integer*4 isp1,isp0,isp2,mode,irtc,l,i,itfdownlevel
       k=dtastk(isp)
-      if(ktfnonlistqd(k,kl))then
+      if(ktfnonlistq(k,kl))then
         if(mode .eq. 1)then
           kx%k=ktfoper+mtfnull
         else
@@ -161,7 +161,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx,kf,kl
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       integer*4 isp1,narg,irtc,n1,n2,ispf,itfmessage
       narg=isp-isp1
       if(narg .eq. 2)then
@@ -200,7 +200,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx,kr
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       integer*4 isp1,irtc,narg,isp0,i,itfmessage,itr
       narg=isp-isp1
       if(narg .lt. 2 .or. narg .gt. 4)then
@@ -208,7 +208,7 @@
         return
       endif
       kr=dtastk(isp1+2)
-      if(tfruleq(kr%k))then
+      if(tfruleq(kr))then
         ktastk(isp1+2)=klist(ktfaddrd(kr)+1)
         itr=1
       else
@@ -218,13 +218,13 @@
       if(itr .lt. 0 .or. irtc .ne. 0)then
         return
       endif
-      if(ktfnonlistqd(kx,klx))then
+      if(ktfnonlistq(kx,klx))then
         return
       endif
       isp0=isp
       do i=1,klx%nl
         isp=isp+1
-        call tfreplace(klx%body(i),kr,ktastk(isp),
+        call tfreplace(klx%dbody(i),kr,ktastk(isp),
      $       .true.,.true.,.false.,irtc)
         if(irtc .ne. 0)then
           go to 100
@@ -239,7 +239,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kf,kx,ki,kl
-      type (sad_list), pointer :: kla,klx,kll
+      type (sad_dlist), pointer :: kla,klx,kll
       type (sad_rlist), pointer :: klir
       integer*4 maxind
       parameter (maxind=4096)
@@ -315,7 +315,7 @@
                     if(ktfreallistq(kll))then
                       if(ktfrealq(kf))then
                         do i=1,nl
-                          if(kll%body(i) .eq. kf%k)then
+                          if(kll%dbody(i)%k .eq. kf%k)then
                             ii=i
                             go to 200
                           endif
@@ -413,7 +413,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx,kh,kh0
-      type (sad_list), pointer :: klx,kl
+      type (sad_dlist), pointer :: klx,kl
       integer*4 isp1,narg,level,irtc,itfmessage
       real*8 amaxl
       parameter (amaxl=1.d9)
@@ -456,11 +456,11 @@
       use tfstk
       implicit none
       type (sad_descriptor) kh
-      type (sad_list) kl
-      type (sad_list), pointer :: list,kli
+      type (sad_dlist) kl
+      type (sad_dlist), pointer :: list,kli
       integer*4 level,irtc,i,m,i0,level0,itfmessage,mstk0
       logical*4 tfsameqd
-      call list_list(kl,list)
+      call dlist_dlist(kl,list)
       mstk0=mstk
       level=level0
       i0=1
@@ -472,12 +472,12 @@
         return
       endif
       if(ktfreallistq(list))then
-        ktastk(isp+i0:isp+m)=list%body(i0:m)
+        dtastk(isp+i0:isp+m)=list%dbody(i0:m)
         isp=isp+m-i0+1
       else
         LOOP_I: do i=i0,m
           isp=isp+1
-          ktastk(isp)=list%body(i)
+          dtastk(isp)=list%dbody(i)
           if(ktflistq(ktastk(isp),kli))then
             if(.not. tfsameqd(kli%head,kh))then
               go to 10
@@ -494,7 +494,7 @@
       endif
       if(mstk .ne. mstk0)then
         mstk=mstk+1
-        call loc_list(ktastk(mstk),list)
+        call loc_dlist(ktastk(mstk),list)
         i0=itastk2(1,mstk)+1
         level=level+1
         go to 1
@@ -709,7 +709,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
       use tfstk
       implicit none
       type (sad_descriptor) kx,k,kf,ki,kxi
-      type (sad_list), pointer ::kl
+      type (sad_dlist), pointer ::kl
       integer*4 isp1,irtc,narg, m,nmax,n,
      $ isp0,isp2,i,isp00, itfmessage
       real*8 amaxl
@@ -783,7 +783,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kl,kl2,klx
+      type (sad_dlist), pointer :: kl,kl2,klx
       integer*8 kak(4096)
       integer*4 isp1,irtc,mk(0:4096),km,mode,isp4,
      $     i,j,isp2,isp3,m,itfpmatc,kelm,isp0,itfmessage
@@ -792,7 +792,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
         return
       endif
       isp2=isp1+1
-      if(ktfnonlistqd(dtastk(isp2),kl2))then
+      if(ktfnonlistq(dtastk(isp2),kl2))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List or composition for #1"')
         return
@@ -861,7 +861,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
         else
           kak(km)=ktaaloc(0,mk(km))
         endif
-        klx%body(km)=ktflist+kak(km)
+        klx%dbody(km)%k=ktflist+kak(km)
         mk(km)=1
       enddo
       do i=1,m
@@ -905,7 +905,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
               vname=loc%str%str(1:nv)
               if(loc%symdef .ne. 0)then
                 isp=isp+1
-                ktastk(isp)=loc%str%alloc
+                dtastk(isp)=loc%str%alloc
               endif
               i=klist(i)
             enddo
@@ -921,7 +921,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
               if(loc%symdef .ne. 0 .and.
      $             tmatch(vname(1:nv),pat(1:npat)))then
                 isp=isp+1
-                ktastk(isp)=loc%str%alloc
+                dtastk(isp)=loc%str%alloc
               endif
               i=klist(i)
             enddo

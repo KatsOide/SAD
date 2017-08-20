@@ -572,7 +572,7 @@ c     print *,'tturn l sspac2',l,sspac2
           if(lele .eq. icBEND)then
           elseif(lele .eq. icMULT .and.
      $           cmp%value(ky_ANGL_MULT) .ne. 0.d0)then
-          elseif(lele .lt. 32 .and. al .gt. 0.d0)then
+          elseif(lele .lt. 32 .and. al .ne. 0.d0)then
             call tlstore(np,x,y,z,dv,0.d0,al,0.d0,0.d0,
      $           p0/h0*c,dvfs,.true.)
           endif
@@ -658,15 +658,17 @@ c     $             +lend-1),
      $     g(np0),dv(np0),pz(np0)
       real*8 bz,rtaper
       type (sad_dlist) :: lsegp
-      type (sad_rlist), pointer :: lak
-      real*8 :: vsave(cmp%ncomp2)
-      integer*4 i,nseg,irtc,i1,i2,istep,k,nc,nc1,
-     $     kseg(cmp%ncomp2)
-      nc=kytbl(kwPROF,icMULT)-1
-      call descr_sad(lsegp%dbody(ky_L_MULT),lak)
+      type (sad_dlist), pointer :: lal,lk
+      type (sad_rlist), pointer :: lak,lkv
+      real*8 :: rsave(cmp%ncomp2)
+      integer*4 i,nseg,i1,i2,istep,k,k1,k2,nk
+      integer*8 kk
+      integer*4 , parameter :: nc=ky_PROF_MULT-1
+      rsave(1:nc)=cmp%value(1:nc)
+      nk=lsegp%nl
+      call descr_sad(lsegp%dbody(1),lal)
+      call descr_sad(lal%dbody(2),lak)
       nseg=lak%nl
-      irtc=0
-      vsave(1:nc)=cmp%value(1:nc)
       if(cmp%orient .gt. 0.d0)then
         i1=1
         i2=nseg
@@ -676,24 +678,28 @@ c     $             +lend-1),
         i2=1
         istep=-1
       endif
-      nc1=0
-      do k=1,nc
-        if(lsegp%dbody(k)%k .ne. ktfoper+mtfnull)then
-          nc1=nc1+1
-          kseg(nc1)=k
-        endif
-      enddo
       do i=i1,i2,istep
-        do k=1,nc1
-          call descr_rlist(lsegp%dbody(kseg(k)),lak)
-          cmp%value(kseg(k))=lak%rbody(i)*vsave(kseg(k))
+        do k=1,nc
+          if(integv(k,icMULT))then
+            cmp%value(k)=rsave(k)*lak%rbody(i)
+          endif
+        enddo
+        do k=1,nk
+          call descr_sad(lsegp%dbody(k),lk)
+          call descr_sad(lk%dbody(2),lkv)
+          kk=ktfaddr(lsegp%dbody(k))
+          k1=ilist(1,kk+1)
+          k2=ilist(2,kk+1)
+          if(k1 .eq. k2)then
+            cmp%value(k1)=0.d0
+          endif
+          cmp%value(k1)=cmp%value(k1)+rsave(k2)*lkv%rbody(i)
         enddo
         cmp%update=iand(2,cmp%update)
         call tmulti1(np,x,px,y,py,z,g,dv,pz,
-     $     l,cmp,bz,rtaper,n,latt,kptbl)
+     $       l,cmp,bz,rtaper,n,latt,kptbl)
       enddo
-      cmp%value(1:nc)=vsave(1:nc)
-      cmp%update=iand(2,cmp%update)
+      cmp%value(1:nc)=rsave(1:nc)
       return
       end
 

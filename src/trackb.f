@@ -12,7 +12,7 @@ ckikuchi ... 1 line modified
       logical print, exist
 ckikuchi ... 1 line added
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx,klx2
+      type (sad_dlist), pointer :: klx,klx2
       type (sad_rlist), pointer :: klx1,klxi
       integer*4 irtc,lfno,nlat1,i,np
       real*8 result(6,7),xa,ya,xxa,xya,yya

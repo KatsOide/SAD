@@ -27,7 +27,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       integer*4 isp1,irtc,isp2
       call tfefunref(isp1,kx,.true.,irtc)
       if(irtc .ne. 0)then
@@ -52,7 +52,7 @@
       use tfcsi
       implicit none
       type (sad_descriptor) kx,k1,k,kh
-      type (sad_list), pointer :: kl,kl1,klx,klh
+      type (sad_dlist), pointer :: kl,kl1,klx,klh
       type (sad_symbol), pointer :: sym1
       type (sad_symdef), pointer :: symd
       type (sad_string), pointer :: str
@@ -438,8 +438,8 @@ c            write(*,*)'irtc: ',irtc
           else
             kx=kxadaloc(-1,4,klx)
             klx%rbody(1)=dble(klist(ka))
-            klx%rbody(2)=ilist(1,ka)
-            klx%rbody(3)=ilist(2,ka)
+            klx%rbody(2)=dble(ilist(1,ka))
+            klx%rbody(3)=dble(ilist(2,ka))
             klx%dbody(4)=kxsalocb(0,transfer(klist(ka),char8),8)
             irtc=0
           endif
@@ -1394,7 +1394,7 @@ c            msgn TagS (*   *)   Hold z
       use tfstk
       implicit none
       type (sad_descriptor) kx,k1
-      type (sad_list), pointer :: kl,kli,klx
+      type (sad_dlist), pointer :: kl,kli,klx
       type (sad_symbol), pointer :: sym
       type (sad_symdef), pointer :: symd
       integer*8 ka1
@@ -1441,7 +1441,7 @@ c            msgn TagS (*   *)   Hold z
             elseif(ktfsymbolqd(kx,sym))then
               if(sym%override .eq. 0)then
                 call tfsydef(sym,sym)
-                kx%k=ktfsymbol+ksad_loc(sym%loc)
+                kx=sad_descr(sym)
               endif
             endif
             go to 6900
@@ -1484,11 +1484,12 @@ c            msgn TagS (*   *)   Hold z
       use tfstk
       implicit none
       type (sad_descriptor) kx,ki,ka
-      type (sad_list) kf
-      type (sad_list), pointer :: kla
-      integer*4 isp1,irtc,itfmessage,narg,m,j,i,ipf0,nap0
+      type (sad_dlist) kf
+      type (sad_dlist), pointer :: kla
+      integer*4 isp1,irtc,itfmessage,narg,m,j,i,ipf0,nap0,isp0
       logical*4 rep
       if(kf%nl .eq. 1)then
+        isp0=isp
         do i=isp1+1,isp
           dtastk(i)=dtfcopy(dtastk(i))
         enddo
@@ -1496,12 +1497,16 @@ c            msgn TagS (*   *)   Hold z
         nap0=napuref
         ipurefp=isp1
         napuref=isp-isp1
+        isp=isp+1
+        itastk(1,isp)=ipf0
+        itastk(2,isp)=nap0
         call tfeevalref(kf%dbody(1),kx,irtc)
         ipurefp=ipf0
         napuref=nap0
-        do i=isp1+1,isp
+        do i=isp1+1,isp0
           call tflocald(dtastk(i))
         enddo
+        isp=isp0
       elseif(kf%nl .eq. 2)then
         narg=isp-isp1
         ka=kf%dbody(1)
@@ -1566,7 +1571,7 @@ c          write(*,*)irtc
       use tfstk
       implicit none
       type (sad_descriptor) kx,k1,k,ki
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       integer*4 isp1,irtc,i,iopc,narg
       real*8 v,v1,vx,vi
       narg=isp-isp1
@@ -1709,7 +1714,7 @@ c          write(*,*)irtc
       type (sad_descriptor) kx,k1,k2,k110,k11
       type (sad_symbol), pointer :: sym
       type (sad_symdef), pointer :: symd
-      type (sad_list), pointer :: kl11
+      type (sad_dlist), pointer :: kl11
       integer*4 isp1,irtc,i,itfmessage,isp11,isp0
       logical*4 euv,upvalue
       if(isp1+1 .ge. isp)then
@@ -1722,7 +1727,7 @@ c          write(*,*)irtc
         if(ktfsymbolqd(k1,sym))then
           if(sym%override .eq. 0)then
             call tfsydef(sym,sym)
-            k1%k=ktfsymbol+ksad_loc(sym%loc)
+            k1=sad_descr(sym)
           endif
         elseif(ktflistq(k1))then
           call tfeevaldef(k1,k1,irtc)
@@ -1943,12 +1948,12 @@ c          write(*,*)irtc
       use tfstk
       implicit none
       type (sad_descriptor) k1,k2,kx,ki,karg
-      type (sad_list), pointer :: kl,kli
+      type (sad_dlist), pointer :: kl,kli
       type (sad_symbol), pointer :: symi
       type (sad_symdef), pointer :: symd
       integer*8 kas
       integer*4 irtc,i,isp0,isp1,m,itfmessage
-      if(ktfnonlistqd(k1,kl))then
+      if(ktfnonlistq(k1,kl))then
         irtc=itfmessage(999,'General::wrongtype','"Expression"')
         return
       endif

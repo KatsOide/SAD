@@ -329,7 +329,7 @@ c        write(*,*)'tbende ',bxy,by,b1,xe
      $       irad,calpol,ld)
         call tchge(trans,cod,beam,dx,dy,-theta,.false.,ld)
         return
-      elseif(al .le. 0.d0)then
+      elseif(al .eq. 0.d0)then
         call tbthie(trans,cod,beam,phib,phi0,dx,dy,theta,ld)
         return
       endif
@@ -382,7 +382,7 @@ c        write(*,*)'tbende ',bxy,by,b1,xe
         ndiv=1+int(abs(phi0/eps))
       endif
       if(enarad)then
-        nrad=int(al/epsrad*crad*(h0*b)**2)
+        nrad=int(abs(al/epsrad*crad*(h0*b)**2))
         ndiv=max(ndiv,int(nrad*emidiv*emidib),
      1       int(min(pi2,abs(phib))/epsrad/1.d3*emidiv*emidib))
       endif
@@ -411,7 +411,7 @@ c        write(*,*)'tbende ',bxy,by,b1,xe
       call tbedge(trans,cod,beam,al,phib,psi1*phi0+apsi1,.true.,ld)
       akn=ak/ndiv
       aln=al/ndiv
-      phin=phi0/ndiv
+      phin=aln/rho0
       als=0.d0
       if(ak .eq. 0.d0)then
         trans1(3,3)=1.d0
@@ -573,7 +573,7 @@ c      pzi=sqrt(max(1.d-4,(pr-pxi)*(pr+pxi)-pyi**2))
      1     al0,phib,phi0,psi1,psi2,apsi1,apsi2,ak,
      1     dx,dy,theta,dtheta,fb1,fb2,mfring,fringe,eps0,coup)
       implicit none
-      integer*4 mfring
+      integer*4 mfring,ld
       real*8 trans(4,5),cod(6),transe(6,12),beam(42),
      $     dx,dy,theta,fb1,fb2,al0,phib,phi0,
      $     psi1,psi2,ak,dtheta,eps0,apsi1,apsi2
@@ -582,7 +582,7 @@ c      pzi=sqrt(max(1.d-4,(pr-pxi)*(pr+pxi)-pyi**2))
       call tbende(transe,cod,beam,al0,phib,phi0,
      $     psi1,psi2,apsi1,apsi2,ak,
      1     dx,dy,theta,dtheta,
-     $     fb1,fb2,mfring,fringe,eps0,.false.,.true.,.false.,1)
+     $     fb1,fb2,mfring,fringe,eps0,.false.,.true.,.false.,1,ld)
       call qcopymat(trans,transe,.false.)
 c      write(*,*)'qbend ',cod,al0,phi0,phib
       coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.

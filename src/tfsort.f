@@ -2,7 +2,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx,kf
-      type (sad_list), pointer :: kl,klx
+      type (sad_dlist), pointer :: kl,klx
       integer*4 isp1,mode,irtc,narg,m,isp0,itfmessage
       narg=isp-isp1
       if(narg .gt. 2)then
@@ -40,7 +40,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kf
-      type (sad_list) kl
+      type (sad_dlist) kl
       integer*8 isort
       integer*4 n,mode,irtc,itab(n),i,j,isp0
       logical*4 av,ins
@@ -63,7 +63,7 @@
       if(mode .eq. 0)then
         do i=1,n
           j=itab(i)
-          ktastk(isp0+i)=kl%body(j)
+          dtastk(isp0+i)=kl%dbody(j)
         enddo
         isp=isp0+n
       elseif(ins)then
@@ -81,7 +81,7 @@
           j=itab(i)
           if(j .ge. 0)then
             isp=isp+1
-            ktastk(isp)=kl%body(j)
+            dtastk(isp)=kl%dbody(j)
           endif
         enddo
       endif
@@ -92,7 +92,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kf
-      type (sad_list) kl
+      type (sad_dlist) kl
       integer*4 n,itab(n),mode,irtc,itforderl,
      $     ip1,ip2,m,i1,i2,im,is,l1,l2,l
       real*8 v1,v2
@@ -439,7 +439,8 @@ c            2 Merge union with dropped index list (for Override[])
       use iso_c_binding
       implicit none
       type (sad_descriptor) kf
-      type (sad_list) kl
+      type (sad_dlist) kl
+      type (sad_rlist), pointer :: klr
       integer*4 n,mode,irtc
       integer*4 itab(n)
       integer*4 isp0,l,m,im,is,i1,i2,l1,l2,j1,j2,p0,p1,p2
@@ -453,7 +454,8 @@ c            2 Merge union with dropped index list (for Override[])
 
 c     Special case: real list
       if(av .and. kf%k .eq. ktfref)then
-        call tfsortmrl(itab,kl,n,mode)
+        call dlist_rlist(kl,klr)
+        call tfsortmrl(itab,klr,n,mode)
         return
       endif
 
@@ -826,7 +828,7 @@ c        enddo
       use tfstk
       implicit none
       type (sad_descriptor) kx,kj,kr
-      type (sad_list), pointer :: kl1,klr
+      type (sad_dlist), pointer :: kl1,klr
       integer*8 ka1,kax
       integer*4 isp1,mode,irtc,i,j,kk,isp0,
      $     isp2,itfcanonicalorder,il,ih,m,narg,itfmessage
@@ -845,7 +847,7 @@ c        enddo
         endif
       enddo
       ka1=ktfaddr(ktastk(isp1+1))
-      call loc_list(ka1,kl1)
+      call loc_sad(ka1,kl1)
       m=kl1%nl
       kx%k=ktflist+ka1
       if(m .eq. 0)then
@@ -1040,7 +1042,7 @@ c        enddo
       use tfstk
       implicit none
       type (sad_descriptor) k1,k2,kf,kx,kx1
-      type (sad_list) kl
+      type (sad_dlist) kl
       integer*4 irtc,itfmessage,itfcanonicalorder,isp1,i1,i2
       real*8 v1,v2
       logical*4 av
@@ -1135,11 +1137,12 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
       use iso_c_binding
       implicit none
       type (sad_descriptor) k1,k2,k1c,k2c
-      type (sad_list), pointer :: kl1c,kl2c,kl1,kl2
+      type (sad_dlist), pointer :: kl1c,kl2c
       type (sad_symbol), pointer :: sym1c,sym2c
       type (sad_string), pointer :: str1,str2
       type (sad_namtbl), pointer :: loc1,loc2
       type (sad_pat), pointer :: pat1,pat2
+      type (sad_complex), pointer :: cx1,cx2
       integer*8 icont1,icont2
       integer*4 m1,m2,l,i,itfstringorder,itfpatorder
       real*8 d,v1,v2
@@ -1161,37 +1164,24 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
         ix=0
         return
       endif
-      if(ktflistq(k1,kl1))then
-        if(kl1%head%k .eq. ktfoper+mtfcomplex .and.
-     $       kl1%nl .eq. 2 .and. 
-     $       iand(kl1%attr,lnonreallist) .eq. 0)then
-          if(ktflistq(k2,kl2))then
-            if(kl2%head%k .eq. ktfoper+mtfcomplex .and.
-     $           kl2%nl .eq. 2 .and.
-     $           iand(kl2%attr,lnonreallist) .eq. 0)then
-              d=kl1%rbody(1)-kl2%rbody(1)
-              if(d .gt. 0.d0)then
-                ix=1
-              elseif(d .eq. 0.d0)then
-                d=kl1%rbody(2)-kl2%rbody(2)
-                if(d .gt. 0.d0)then
-                  ix=1
-                elseif(d .eq. 0.d0)then
-                  ix=0
-                endif
-              endif
+      if(tfcomplexq(k1,cx1))then
+        if(tfcomplexq(k2,cx2))then
+          d=cx1%re-cx2%re
+          if(d .gt. 0.d0)then
+            ix=1
+          elseif(d .eq. 0.d0)then
+            d=cx1%im-cx2%im
+            if(d .gt. 0.d0)then
+              ix=1
+            elseif(d .eq. 0.d0)then
+              ix=0
             endif
           endif
-          return
         endif
-      endif
-      if(ktflistq(k2,kl2))then
-        if(kl2%head%k .eq. ktfoper+mtfcomplex .and.
-     $       kl2%nl .eq. 2 .and.
-     $       iand(kl2%attr,lnonreallist) .eq. 0)then
-           ix=1
-          return
-        endif
+        return
+      elseif(tfcomplexq(k2))then
+        ix=1
+        return
       endif
       if(ktfstringqd(k1,str1))then
         if(ktfstringqd(k2,str2))then

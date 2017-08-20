@@ -5,7 +5,7 @@
       use tfcsi
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kla,klx
+      type (sad_dlist), pointer :: kla,klx
       logical*4 re
       character*1023 string
       integer*4 istart,istop,irtc,isp0,ist10,iop1,
@@ -418,7 +418,7 @@ c        endif
         irtc=itfmessage(999,'General::unexpbreak',
      $       '"'//string(ist1:min(l,ist1+20))//'"')
       endif
- 8901 if(ierrorprint .ne. 0)then
+      if(ierrorprint .ne. 0)then
         kx%k=ktfoper+mtfnull
         ierrorf=0
         if(kerror .ne. 0)then

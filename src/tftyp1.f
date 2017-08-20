@@ -12,8 +12,7 @@
       type (sad_dlist), pointer :: klv
       type (sad_strbuf), pointer :: strb
       integer*8 lp
-      integer*4 ioff,kx,l,kp,lt,lfno,lv,lene,lenw,lpw,lpname,
-     $     irtc,nc,j,j1
+      integer*4 ioff,kx,l,kp,lt,lfno,lv,lene,lenw,lpw,irtc,nc,j,j1
       real*8 v,coeff
       character*32 autos
       character*132 vout

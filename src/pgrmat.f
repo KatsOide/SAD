@@ -4,7 +4,7 @@
       use tffitcode
       implicit none
       type (sad_rlist) , pointer :: kl
-      type (sad_list) , pointer :: klopt,klopt1,klst,klstt
+      type (sad_dlist) , pointer :: klopt,klopt1,klst,klstt
       integer*8 kx,kax,kax1,kaxfirst,kaxlast,kam,kaa1,kaa
       logical*4 normalmode,xplane,angle,periodic
       integer*4 isp1,irtc
@@ -32,14 +32,14 @@
         return
       endif
       kax=ktfaddr(ktastk(isp1+4))
-      if(tfnonlistq(klopt%body(1),klopt1))then
+      if(tfnonlistq(klopt%dbody(1),klopt1))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List for #4[[1]]"')
         return
       endif
-      kax1=ktfaddr(klopt%body(1))
-      kaxfirst=ktfaddr(klopt1%body(1))
-      kaxlast=ktfaddr(klopt1%body(klopt1%nl))
+      kax1=ktfaddr(klopt%dbody(1)%k)
+      kaxfirst=ktfaddr(klopt1%dbody(1)%k)
+      kaxlast=ktfaddr(klopt1%dbody(klopt1%nl)%k)
 
       if(ktfnonrealq(ktastk(isp1+5)))then
         irtc=itfmessage(9,'General::wrongtype','"Real for #5"')
@@ -111,7 +111,7 @@ c      write(*,*)'pgrmat-7 ',psix0,psiy0
         psiy=psiy0
       endif
 
-      kam=ktfaddr(klopt1%body(im))
+      kam=ktfaddr(klopt1%dbody(im)%k)
       if(ktfrealq(ktastk(isp1+2)))then
         if(ktfnonrealq(ktastk(isp1+3)))then
           irtc=itfmessage(9,'General::wrongtype','"Real for #3"')
@@ -129,10 +129,10 @@ c      write(*,*)'pgrmat-8.2 '
           irtc=itfmessage(9,'General::wrongtype','"List for #3"')
           return
         endif
-        kaa=sad_loc(klst%body(0))
+        kaa=sad_loc(klst%head)
         m=klst%nl
 c       print *,'length=',m
-        kaa1=sad_loc(klstt%body(0))
+        kaa1=sad_loc(klstt%head)
         if(klstt%nl .lt. m)then
           irtc=itfmessage(9,'General::equalleng','"#2 and #3"')
           return
@@ -158,7 +158,7 @@ c      write(*,*)'pgrmat-9.3 '
       use ffs_pointer, only:idelc,idtypec,idvalc
       use kyparam
       implicit none
-      type (sad_list) klopt1
+      type (sad_dlist) klopt1
       type (sad_rlist), pointer :: kls
       logical*4 periodic,normalmode,angle,xplane,entrance
       integer*4 im,js,ns,i,i1
@@ -204,7 +204,7 @@ c----- Ring ------------------------------------------------------------
         do 100 i1=1,2
           if(i1.eq.2) js=int(stt(i))+1
           entrance=im.eq.js .and. i1.eq.1
-          if(.not. tfreallistq(klopt1%body(js),kls))then
+          if(.not. tfreallistq(klopt1%dbody(js),kls))then
             cycle
           endif
 c          iaxj=klist(kax1+js)
@@ -374,7 +374,7 @@ c----- Transport line --------------------------------------------------
         do 200 i1=1,2
           if(i1.eq.2) js=int(stt(i))+1
           entrance=im.eq.js .and. i1.eq.1
-          if(.not. tfreallistq(klopt1%body(js),kls))then
+          if(.not. tfreallistq(klopt1%dbody(js),kls))then
             cycle
           endif
 c          ias=ktfaddr(klopt1%body(js))

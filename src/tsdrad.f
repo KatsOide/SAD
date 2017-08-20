@@ -24,7 +24,7 @@ cvs $Hearder$
         endif
         rhor=brhoz/max(1.d-20,sqrt(brad))
         al1=.1d0*rhor/anrad/p0
-        ndiv=1+int(al/al1)
+        ndiv=1+int(abs(al/al1))
         alx=al/ndiv
         prob=.1d0*alx/al1
         ep=urad/rhor*p0**3

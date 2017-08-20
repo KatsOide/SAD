@@ -7,9 +7,9 @@
       real*8 sqrt3
 c      parameter (sqrt3=sqrt(3.d0))
       parameter (sqrt3=1.732050807568877d0)
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       type (sad_rlist), pointer :: kli
-      integer*8 kx,ki
+      type (sad_descriptor) kx,ki
       integer*8 lp
       real*8 twissi(50),em,trans(4,4),dx(4,6),dxp(4,6)
       integer*4 m,nfa,i,j,irtc,itfdownlevel,l,k,ll
@@ -74,7 +74,7 @@ c      call tfdebugprint(kx,'famsetup',1)
      $       +trans(4,3)*dx(3,i)+trans(4,4)*dx(4,i)
       enddo
       do i=1,m
-        ki=kl%body(i)
+        ki=kl%dbody(i)
         if(.not. tfreallistq(ki,kli))then
           go to 9000
         endif

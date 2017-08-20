@@ -98,7 +98,7 @@ c      write(*,*)'tmulte-2 ',cod(1),cod(2),cod(3),cod(4)
       do n=2,nmmax
         ndiv=max(ndiv,
      $       int(sqrt(ampmax**(n-1)
-     $       /6.d0/fact(n-1)/eps*abs(ak(n))*al))+1)
+     $       /6.d0/fact(n-1)/eps*abs(ak(n)*al)))+1)
       enddo
       ndiv=min(ndiv,ndivmax)
 c      write(*,*)'tmulte-ndiv ',ndiv
@@ -122,7 +122,7 @@ c      h1=sqrt(p1**2+1.d0)
           wi=1.d0/w
         endif
         v=vc/amass*abs(charge)
-        ndiv=max(ndiv,1+int(min(w*al,
+        ndiv=max(ndiv,1+int(min(abs(w*al),
      $       sqrt((v*(1.d0/h0+1.d0/h1))**2/3.d0/eps))))
         aln=al/ndiv
         vn=v/ndiv
@@ -173,7 +173,7 @@ c     end   initialize for preventing compiler warning
       ak1=dble(akn(1))*.5d0
       al1=aln*.5d0
       ak0n=akn(0)*.5d0
-      if(abs(al) .ne. 0.d0)then
+      if(al .ne. 0.d0)then
         if(fringe .and. mfring .ne. 2)then
           if(acc)then
             call tcavfrie(trans,cod,beam,al,v,w,phic,phis-phic,s0,p0,

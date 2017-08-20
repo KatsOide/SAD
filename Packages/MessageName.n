@@ -71,9 +71,11 @@
     FFS::interrupt="Interrupted";
     FFS::unequalkeyleng="Unequal length of key segments for `1`";
     FFS::noLseg="No L segment for `1`";
-    FFS::wrongkey="Wrong kye name for `1'";
-    FFS::wrongkeylist="Not {key, {value ...}} for `1`";
-    FFS::wrongkeyval="Neither Real or Real List for a key for `1`"]
+    FFS::indepL="L segment must be independent `1`";
+    FFS::wrongkey="Wrong kye name for `1`";
+    FFS::dupkey="Duplicated Key for PROFILE `1`";
+    FFS::wrongkeylist="Not {{key, master}, {value ...}} for `1`";
+    FFS::wrongkeyval="Neither Real nor Real List for a key for `1`"]
 
   $WildCard::unknown="Unknown wild card scheme `1`";
 

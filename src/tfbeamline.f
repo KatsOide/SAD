@@ -231,7 +231,7 @@
           return
         endif
         kx=kxadaloc(-1,2,klx)
-        klx%body(1)=ktfstring+ktfcopy1(kas)
+        klx%dbody(1)%k=ktfstring+ktfcopy1(kas)
         klx%dbody(2)=dtfcopy1(dxnulls)
       else
         if(isp .gt. isp1+2)then
@@ -248,7 +248,7 @@
         endif
         m=kytbl(kwMAX,itype)-1
         kx=kxadaloc(-1,max(2,min(3,2+m)),klx)
-        klx%body(1)=ktfstring+ktfcopy1(kas)
+        klx%dbody(1)%k=ktfstring+ktfcopy1(kas)
         klx%dbody(2)=kxsalocb(0,type,lenw(type))
         if(m .gt. 0)then
           isp0=isp
@@ -274,7 +274,7 @@
       use tfstk
       use mackw
       implicit none
-      type (sad_list), pointer :: kr
+      type (sad_dlist), pointer :: kr
       type (sad_dlist), pointer :: kl
       type (sad_descriptor) k,ki,kk,kv
       integer*4 irtc,idx,i,idt,ioff,nc,itfmessage
@@ -377,7 +377,7 @@
       use mackw
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx,kli
+      type (sad_dlist), pointer :: klx,kli
       type (sad_el), pointer ::el
       integer*8 itfilattp,idx
       integer*4 isp1,irtc,
@@ -442,7 +442,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx,kx1
-      type (sad_list), pointer :: kl,kll,klx,klx1
+      type (sad_dlist), pointer :: kl,kll,klx,klx1
       integer*8 kal
       integer*4 isp1,irtc,i,j,k,isp0,m,n,isp2
       integer*8 ifbeamline
@@ -461,20 +461,20 @@
           if(m .eq. 2 .and. kl%head%k .eq. ktfoper+mtftimes)then
             if(ktfnonreallistqo(kl))then
               do j=1,2
-                if(ktfrealq(kl%body(j)))then
+                if(ktfrealq(kl%dbody(j)))then
                   if(kl%rbody(j) .ne. -1.d0)then
                     n=int(kl%rbody(j))
 c                    write(*,*)'expandbeamline ',j,kl%rbody(j),n
                     if(n .gt. 0)then
                       do k=1,n
                         isp=isp+1
-                        ktastk(isp)=kl%body(3-j)
+                        dtastk(isp)=kl%dbody(3-j)
                       enddo
                     else
                       kal=ktadaloc(-1,2,kll)
                       kll%head%k=ktfoper+mtftimes
                       kll%rbody(1)=-1.d0
-                      kll%body(2)=ktfcopy(kl%body(3-j))
+                      kll%dbody(2)=dtfcopy(kl%dbody(3-j))
                       do k=1,-n
                         isp=isp+1
                         ktastk(isp)=ktflist+kal

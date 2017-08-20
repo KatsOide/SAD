@@ -35,7 +35,7 @@
       integer*4 np,mfring,i,n,mfr,ndiv,nmmax,m,m1,k,nmmin,l
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
      $     al,phi,psi1,psi2,bz,dx,dy,theta,eps0,fb1,fb2,
-     $     dphix,dphiy,dtheta,pr,cost,sint,rho0,
+     $     dphix,dphiy,dtheta,pr,cost,sint,rho0,rhob,
      $     sinp1,sinp2,cosp1,cosp2,phin,aln,cosw,sinw,sqwh,sinwp1,
      $     eps,xi,pxi,w,r,rk(0:nmult),als,ak0r,ak1r,ak1n,
      $     phib,phibn
@@ -100,7 +100,7 @@
       ndiv=1
       do n=nmmin,nmmax
         ndiv=max(ndiv,
-     $int(sqrt(ampmax**(n-1)/6.d0/fact(n-1)/eps*abs(ak(n))*al))+1)
+     $int(sqrt(ampmax**(n-1)/6.d0/fact(n-1)/eps*abs(ak(n)*al)))+1)
       enddo
       ndiv=min(ndivmax,ndiv)
       aln=al/ndiv
@@ -113,6 +113,8 @@
      1       *sin(.5d0*(phi-psi1-psi2))/sin(.5d0*phi)/ndiv
       endif
       phib=phi+ak0r
+      rho0=al/phi
+      rhob=al/phib
       phin=phi/ndiv
       phibn=phib/ndiv
       ak1n=ak1r/ndiv
@@ -120,7 +122,6 @@
       cosp1=cos(psi1)
       sinp2=sin(psi2)
       cosp2=cos(psi2)
-      rho0=aln/phin
       do m=nmmin,nmmax
         akn(m)=ak(m)/(fact(m+1)*ndiv)
       enddo
@@ -299,7 +300,7 @@
       ndiv=1
       do n=nmmin,nmmax
         ndiv=max(ndiv,
-     $int(sqrt(ampmax**(n-1)/6.d0/fact(n-1)/eps*abs(ak(n))*al))+1)
+     $int(sqrt(ampmax**(n-1)/6.d0/fact(n-1)/eps*abs(ak(n)*al)))+1)
       enddo
       ndiv=min(ndivmax,ndiv)
       psi1n=2.d0*psi1*ndiv

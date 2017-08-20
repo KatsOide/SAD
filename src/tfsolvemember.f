@@ -27,12 +27,12 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx,k1
-      type (sad_list) list
-      type (sad_list), pointer :: listx
+      type (sad_dlist) list
+      type (sad_dlist), pointer :: listx
       integer*4 irtc
       logical*4 eval,reps
       irtc=-1
-      kx%k=ktflist+ksad_loc(list%head%k)
+      kx=sad_descr(list)
       reps=.false.
       if(list%head%k .eq. ktfoper+mtfatt)then
         if(list%nl .eq. 2 .and. ktfnonreallistqo(list))then
@@ -63,7 +63,7 @@
 c        call tfloadlstk(list,listx)
 c        listx%head=k1
 c        call tfstk2l(listx,listx)
-        kx%k=ktflist+ksad_loc(listx%head%k)
+        kx=sad_descr(listx)
       endif
       return
       end
@@ -218,7 +218,7 @@ c      write(*,*)'with: ',irtc,ev,eval
       use tfstk
       implicit none
       type (sad_descriptor) kx,ka,ki
-      type (sad_list), pointer :: klm
+      type (sad_dlist), pointer :: klm
       type (sad_symbol), pointer :: sym
       type (sad_string), pointer :: str
       integer*4 isp1,irtc,itfmessage,ispa,ispb,i,ispc,nrule1,nrule2
@@ -243,7 +243,7 @@ c      write(*,*)'with: ',irtc,ev,eval
 c      call tfdebugprint(ka,'repmember',3)
       do i=1,klm%nl
         isp=isp+2
-        ktastk(isp-1)=klm%body(i)
+        dtastk(isp-1)=klm%dbody(i)
       enddo
       ispb=isp
       do i=ispa+1,ispb,2
@@ -280,7 +280,7 @@ c      call tfdebugprint(kx,'==>',3)
       implicit none
       type (sad_descriptor) k,kx,k1,ki,kd
       type (sad_pat), pointer :: pat
-      type (sad_list), pointer :: kl,klx,kli
+      type (sad_dlist), pointer :: kl,klx,kli
       type (sad_symbol), pointer :: sym
       integer*8 ka
       integer*4 isp1,isp2,isp3,i,m,isp0,n,m0,m01,nrule1,nrule2
@@ -322,10 +322,10 @@ c      call tfdebugprint(kx,'==>',3)
         isp0=isp
         if(ktfreallistq(kl))then
           if(rep)then
-            call loc_list(ktavaloc(-1,n),klx)
+            call loc_sad(ktavaloc(-1,n),klx)
             klx%head=dtfcopy(dtastk(isp0))
-            klx%body(1:n)=kl%body(1:n)
-            kx%k=ktflist+ksad_loc(klx%head%k)
+            klx%dbody(1:n)=kl%dbody(1:n)
+            kx=sad_descr(klx)
           endif
           isp=isp0-1
           return
@@ -392,7 +392,7 @@ c      call tfdebugprint(kx,'==>',3)
       implicit none
       type (sad_descriptor) kx
       type (sad_symbol) sym
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       type (sad_namtbl), pointer :: loc
       integer*8 kaj,ka
       integer*4 isp1,isp2,j,nrule1,nrule2
@@ -405,8 +405,8 @@ c      call tfdebugprint(kx,'==>',3)
         kaj=ktfaddr(ktastk(ivstk2(1,j)))
         kx=kxadaloc(-1,2,klx)
         klx%head%k=ktfoper+mtfatt
-        klx%body(1)=ktflist+ktfcopy1(icx)
-        klx%body(2)=ktfsymbol+ktfcopy1(kaj)
+        klx%dbody(1)%k=ktflist+ktfcopy1(icx)
+        klx%dbody(2)%k=ktfsymbol+ktfcopy1(kaj)
         tfrepsymstk=.true.
       else
         tfrepsymstk=.false.
@@ -418,9 +418,9 @@ c      call tfdebugprint(kx,'==>',3)
       use tfstk
       implicit none
       type (sad_descriptor) k,kx,kx1
-      type (sad_list), pointer :: kl,klx
+      type (sad_dlist), pointer :: kl,klx
       integer*4 itfmessage,irtc
-      if(ktfnonlistqd(k,kl) .or. kl%head%k .ne. ktfoper+mtfhold
+      if(ktfnonlistq(k,kl) .or. kl%head%k .ne. ktfoper+mtfhold
      $     .or. kl%nl .ne. 1)then
         go to 9000
       endif
@@ -441,10 +441,10 @@ c      call tfdebugprint(kx,'==>',3)
       use tfstk
       implicit none
       type (sad_descriptor) k1,kx,kx1,kargr,kr
-      type (sad_list), pointer :: kl1,klx1
+      type (sad_dlist), pointer :: kl1,klx1
       integer*8 ka
       integer*4 itfmessage,irtc,id
-      if(ktfnonlistqd(k1,kl1) .or. ktfnonoperqd(kl1%head,ka))then
+      if(ktfnonlistq(k1,kl1) .or. ktfnonoperqd(kl1%head,ka))then
         go to 9100
       endif
       select case (int(ka))
@@ -495,7 +495,7 @@ c      call tfdebugprint(kx,'==>',3)
       use tfstk
       implicit none
       type (sad_descriptor) k,k1
-      type (sad_list), pointer ::list
+      type (sad_dlist), pointer ::list
       type (sad_symdef), pointer ::symd
       lx=.false.
       if(ktflistq(k,list))then
@@ -503,7 +503,7 @@ c      call tfdebugprint(kx,'==>',3)
         if(ktfsymbolqdef(k1%k,symd) .and. list%nl .eq. 1)then
           if(symd%sym%gen .eq. -3)then
             if(ktfnonreallistqo(list))then
-              if(list%body(1) .eq. k1%k)then
+              if(list%dbody(1)%k .eq. k1%k)then
                 lx=.true.
               endif
             endif
@@ -523,7 +523,7 @@ c      call tfdebugprint(kx,'==>',3)
       use tfcx
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: listpc
+      type (sad_dlist), pointer :: listpc
       integer*8 kcv,kam,kc
       integer*4 isp1,irtc,l,itfmessage,n,isp0,i,itfdownlevel
       logical*4 ev
@@ -534,7 +534,7 @@ c      call tfdebugprint(kx,'==>',3)
         irtc=itfmessage(9,'General::narg','"4"')
         return
       endif
-      call loc_list(ktfaddr(ktastk(isp-1)),listpc)
+      call loc_sad(ktfaddr(ktastk(isp-1)),listpc)
       n=listpc%nl
       irtc=0
       if(n .le. 0)then
@@ -549,7 +549,7 @@ c      call tfdebugprint(kx,'==>',3)
           isp=isp0+1
           dtastk(isp)=kxmemberobject
           isp=isp+1
-          ktastk(isp)=listpc%body(i)
+          dtastk(isp)=listpc%dbody(i)
           isp=isp+1
           ktastk(isp)=kcv
           call tftocontext(isp-2,kc,irtc)
@@ -564,7 +564,7 @@ c      call tfdebugprint(kx,'==>',3)
           ktastk(isp-1)=ktflist+kam
           ktastk(isp)=ktastk(isp1+1)
           isp=isp+1
-          ktastk(isp)=listpc%body(i)
+          dtastk(isp)=listpc%dbody(i)
           call tfdeval(isp-2,kxmemberobject,kx,1,.false.,ev,irtc)
           if(irtc .ne. 0)then
             l=itfdownlevel()
@@ -590,7 +590,7 @@ c      call tfdebugprint(kx,'==>',3)
           isp=isp+1
           ktastk(isp)=ktastk(isp1+1)
           isp=isp+1
-          ktastk(isp)=listpc%body(i)
+          dtastk(isp)=listpc%dbody(i)
           call tfdeval(isp-2,kxmemberobject,kx,1,.false.,ev,irtc)
           if(irtc .ne. 0)then
             l=itfdownlevel()

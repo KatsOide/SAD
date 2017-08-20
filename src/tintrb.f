@@ -31,7 +31,7 @@ c     real*8  vmin/0.d0/
      1         7, 8, 9,10,14,19,
      1        11,12,13,14,15,20,
      1        16,17,18,19,20,21/
-      if(al .le. 0.d0)then
+      if(al .eq. 0.d0)then
         bmi=0.d0
         return
       endif

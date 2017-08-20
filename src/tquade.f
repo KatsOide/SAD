@@ -16,7 +16,7 @@
      $     zx,zy,zxp,zyp,x,y,sinc,sinhc,xsin,xsinh,pramin
       logical*4 enarad,fringe,kin,next,prev
       parameter (pramin=1.d-4)
-      if(al .le. 0.d0)then
+      if(al .eq. 0.d0)then
         call tthine(trans,cod,beam,4,
      $       al,ak,dx,dy,theta,.false.,ld)
         return

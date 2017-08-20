@@ -6,7 +6,7 @@
       end type
       type (alist), dimension(7) :: kav
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx,kl
+      type (sad_dlist), pointer :: klx,kl
       type (sad_rlist), pointer :: klrk
       integer, parameter :: nkptbl = 6
       integer*4 l,nt,np,np0,kptbl(np0,nkptbl),itfdownlevel

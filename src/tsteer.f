@@ -19,7 +19,7 @@
      $     dpz1,pz1,dpz2,pz2,phsq,u,w,dl,brad,dpx,pyi,xi,pxf,d,
      $     cosp1,sinp1,cosp2,sinp2,tanp1,tanp2,fb1,fb2
       logical*4 fringe
-      if(al .le. 0.d0)then
+      if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,pz,2,l,al,-phib,
      1             dx,dy,theta,cost,sint,1.d0,.false.)
         return

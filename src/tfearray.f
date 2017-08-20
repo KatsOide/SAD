@@ -2,7 +2,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) k,k1,kx,ky
-      type (sad_list), pointer :: kl,kl1
+      type (sad_dlist), pointer :: kl,kl1
       integer*4 irtc,ne,ne1,i,iopc1,isp0
       logical*4 tfexprqk,list1,list
 c     begin initialize for preventing compiler warning
@@ -83,7 +83,7 @@ c$$$      endif
           if(iopc1 .eq. mtfequal)then
             kx%k=ktftrue
             do i=1,ne
-              call tfcmplx(kl1%body(i),kl%body(i),ky,iopc1,irtc)
+              call tfcmplx(kl1%dbody(i),kl%dbody(i),ky,iopc1,irtc)
               if(irtc .ne. 0)then
                 return
               endif
@@ -98,7 +98,7 @@ c$$$      endif
           elseif(iopc1 .eq. mtfunequal)then
             kx%k=0
             do i=1,ne
-              call tfcmplx(kl1%body(i),kl%body(i),ky,iopc1,irtc)
+              call tfcmplx(kl1%dbody(i),kl%dbody(i),ky,iopc1,irtc)
               if(irtc .ne. 0)then
                 return
               endif
@@ -114,7 +114,7 @@ c$$$      endif
             isp0=isp
             do i=1,ne
               isp=isp+1
-              call tfcmplx(kl1%body(i),kl%body(i),dtastk(isp),
+              call tfcmplx(kl1%dbody(i),kl%dbody(i),dtastk(isp),
      $             iopc1,irtc)
               if(irtc .ne. 0)then
                 isp=isp0
@@ -131,7 +131,7 @@ c$$$      endif
           isp0=isp
           do i=1,ne
             isp=isp+1
-            call tfcmplx(kl1%body(i),k,dtastk(isp),iopc1,irtc)
+            call tfcmplx(kl1%dbody(i),k,dtastk(isp),iopc1,irtc)
             if(irtc .ne. 0)then
               isp=isp0
               return
@@ -165,7 +165,7 @@ c$$$      endif
       use tfstk
       implicit none
       type (sad_descriptor) k1,k2,kx,kxi,k2i,k1i
-      type (sad_list), pointer :: kl1,kl2,klx,kl10
+      type (sad_dlist), pointer :: kl1,kl2,klx,kl10
       type (sad_rlist), pointer :: klr
       integer*8 ir,ix1,ix2
       integer*4 irtc,m1,m2,i,iopc1,iopc2
@@ -214,7 +214,7 @@ c$$$      endif
             case (mtfcomplex)
               d=.false.
               do i=1,m2
-                if(kl2%body(i) .eq. 0)then
+                if(kl2%dbody(i)%k .eq. 0)then
                   klr%dbody(i)=k1
                 else
                   klr%dbody(i)=kxcalocv(0,v1,kl2%rbody(i))

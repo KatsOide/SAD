@@ -141,7 +141,7 @@ c              call tfsetcmp(valvar(j),cmp,iv)
       use tfcsi, only:icslfno
       implicit none
       integer*4 ia,irtc,itfdownlevel,irtc1
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       type (sad_descriptor) ifcoupv,ifsetcoup,k,kx
       type (sad_symdef), pointer, save :: symdcoupv
       data ifcoupv%k,ifsetcoup%k /0,0/

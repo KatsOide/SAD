@@ -283,7 +283,7 @@ c              call tfgetllstkall(klist(kai-3))
       type (sad_descriptor) :: k1,k2,kx,k2i
       type (sad_strbuf), pointer :: strb
       type (sad_string), pointer :: str
-      type (sad_list), pointer ::kl,k2l
+      type (sad_dlist), pointer ::kl,k2l
       integer*8 ktrsaloc,ka,ki,kai
       integer*4 n,i,isp3,irtc,nc
       logical*4 ev,full
@@ -301,7 +301,7 @@ c              call tfgetllstkall(klist(kai-3))
           isp=isp+n
         else
           do i=1,n
-            ki=kl%body(i)
+            ki=kl%dbody(i)%k
             if(ktfrealq(ki))then
               isp=isp+1
               ktastk(isp)=ki

@@ -25,9 +25,9 @@ c
      &       'Expanding '//pname(nidx)//' now.',0,0)
         call expnln(nidx)
       endif
-      call pr_mem_map
+c      call pr_mem_map
 c     call prexln(nidx,'            ')
       call AAALIE(nidx)
-      call pr_mem_map
+c      call pr_mem_map
       return
       end

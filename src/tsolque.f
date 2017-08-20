@@ -309,12 +309,12 @@
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
 
-      if(abs(ak) .eq. 0.d0)then
+      if(ak .eq. 0.d0)then
         call tdrife(trans,cod,beam,al,
      $       bz0,ak0x,ak0y,.true.,enarad,.false.,irad,ld)
         return
       endif
-      if(ak*(1.d0+cod(6)) .lt. 0.d0)then
+      if(al*ak .lt. 0.d0)then
 c        write(*,'(a,1p8g13.5)')'tsolque-in  ',ak,bz,cod
         call texchg(trans,cod,beam,1.d0)
         call tsolque(trans,cod,beam,al,-ak,
@@ -698,7 +698,7 @@ c     $       'tsolque ',((trans1(i,j),j=1,6),i=1,6)
       xpd=max(1.d-6,abs(cod(2))+abs(cod(4)))
       a=min(1.d-2,abs(ak)*xd+xpd)
       b=brhoz*a/al
-      nrad=int(al*crad/epsrad*(h0*b)**2)
+      nrad=int(abs(al*crad/epsrad*(h0*b)**2))
       itgetqraddiv=max(int(emidiv*emidiq*nrad),
      1     int(abs(a)/epsrad/1.d3*emidiv*emidiq))
       return

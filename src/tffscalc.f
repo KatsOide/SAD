@@ -106,7 +106,9 @@ c     end   initialize for preventing compiler warning
       if(wake)then
         call tffswake(ibound,beg)
       else
+c        call tfevals('Print["PROF-1: ",LINE["PROFILE","Q1"]]',kxx,irtc)
         call qcell1(ibound,0,optstat(0),.false.,chgini,lout)
+c        call tfevals('Print["PROF-2: ",LINE["PROFILE","Q1"]]',kxx,irtc)
         call tffssetutwiss(0,nlat,fbound,beg,.true.,.true.)
         if(cell)then
           anux0=aint(twiss(nlat,0,mfitnx)/pi2)
@@ -301,6 +303,7 @@ c            endif
           endif
         endif
       endif
+c      call tfevals('Print["PROF-3: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       call tdfun(iqcol,lfp,nqcola,nqcola1,kdp,df,error)
       if(error)then
         call termes(lfno,
@@ -457,6 +460,7 @@ c            endif
         endif
         error=.true.
       endif
+c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       call tsetfpe(ifpe)
       return
       end associate

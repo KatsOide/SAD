@@ -7,7 +7,7 @@
       implicit none
       type (ffs_bound) fbound
       type (ffs_stat) optstat
-      type (sad_list), pointer :: klx1,klx
+      type (sad_dlist), pointer :: klx1,klx
       type (sad_rlist), pointer :: klx2,klx3,klxi
       integer*8 kx,kax,kax1,kax2,kax3,kaxi,kaini,itoff
       integer*4 isp1,narg,irtc,idim,k,i,itfloc,itfmessage,lout
@@ -86,7 +86,7 @@
       cell=cell0
       kax=ktadaloc(-1,3,klx)
       kax2=ktraaloc(0,3,klx2)
-      klx%body(2)=ktflist+kax2
+      klx%dbody(2)%k=ktflist+kax2
       if(optstat%stabx)then
         klx2%rbody(1)=1.d0
       endif
@@ -97,15 +97,15 @@
         klx2%rbody(3)=1.d0
       endif
       kax3=ktraaloc(0,3,klx3)
-      klx%body(3)=ktflist+kax3
+      klx%dbody(3)%k=ktflist+kax3
       klx3%rbody(1)=optstat%tracex
       klx3%rbody(2)=optstat%tracey
       klx3%rbody(3)=optstat%tracez
       kax1=ktadaloc(0,fbound%le-fbound%lb+1,klx1)
-      klx%body(1)=ktflist+kax1
+      klx%dbody(1)%k=ktflist+kax1
       do i=fbound%lb,fbound%le
         kaxi=ktraaloc(0,ntwissfun,klxi)
-        klx1%body(i-fbound%lb+1)=ktflist+kaxi
+        klx1%dbody(i-fbound%lb+1)%k=ktflist+kaxi
         do k=1,ntwissfun
           itoff=(2*ndim+1)*nlat*(k-1)+ndim*nlat+iftwis+i-1
           klxi%rbody(k)=rlist(itoff)

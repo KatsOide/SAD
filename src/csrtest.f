@@ -2,7 +2,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: klpipe,klr,kli,klxi
       integer*4, allocatable :: ind(:)

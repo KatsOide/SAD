@@ -1194,7 +1194,7 @@ CanvasGraphics=Class[{},
           {tcs[[-2]],{apr[[2]],0}}]]];
         CanvasWidget[Create$Line]={
           Thread[Canvas$Coord1[tcs*{-1,1}+{x1,0}]],
-          Width->frt,Fill->ftc.
+          Width->frt,Fill->ftc,
           Tags->{ftag2,FrameTag}}
         ];
         Catch[
@@ -1922,7 +1922,7 @@ CanvasGraphics=Class[{},
         CanvasWidget[Move] = {ls, {dx,dy}};
         zr+={dx,dy,dx,dy}];
       {x1,y1,x2,y2}=zr;
-      CanvasWidget[Create$Rectangle]={x1-d1,y1-d3,x2+d1,y2+d2,legtagfr,Outline->"gray40",Fill->"white"};
+      CanvasWidget[Create$Rectangle]={x1-d1,y1-d3,x2+d1,y2+d2,legtagfr,Outline->"gray40"};
       CanvasWidget[Create$Line]={x1-d1+1,y2+d2+1,x2+d1+1,y2+d2+1,x2+d1+1,y1-d3+1,
         Fill->"gray60",legtagfr};
       If[FirstBG<=>"",

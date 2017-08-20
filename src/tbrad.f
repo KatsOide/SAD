@@ -83,7 +83,7 @@ c        g(i)=g(i)*(2.d0+g(i))
       ur=urad*p0**3
       an=anrad*p0
       ndiv=1+int(sqrt(abs(ak*al)/eps/12.d0))
-      nx=int(al/abs(rhob)*an/.18d0)+1
+      nx=int(abs(al/rhob)*an/.18d0)+1
       ndiv=max(ndiv,nx)
       if(radlight)then
         ngamma=int(h0*abs(phib)*1.d-2*anrad/eps)+1
@@ -470,7 +470,7 @@ c        write(*,*)'tlspect ',ltbl,np0,ltbl*8*np0
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx,kli
+      type (sad_dlist), pointer :: klx,kli
       type (sad_rlist), pointer :: klrij
       integer*8 katbl,kati
       integer*4 np0,ltbl,lpoint,i,j
@@ -590,7 +590,7 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
       use tfstk
       use macphys
       implicit none
-      type (sad_list), pointer :: klp,klx
+      type (sad_dlist), pointer :: klp,klx
       type (sad_rlist), pointer :: kl1,kl2,klt
       real*8 speedoflight
       parameter (speedoflight=cveloc)
@@ -620,8 +620,8 @@ c     end   initialize for preventing compiler warning
         irtc=itfmessage(9,'General::wrongleng','"#1","2"')
         return
       endif
-      k1=klp%body(1)
-      k2=klp%body(2)
+      k1=klp%dbody(1)%k
+      k2=klp%dbody(2)%k
       if(.not. tfreallistq(k1,kl1) .or. .not. tfreallistq(k2,kl2))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List of List of Reals for #1"')
@@ -741,9 +741,9 @@ c     end   initialize for preventing compiler warning
         endif
       endif
       kx=ktflist+ktadaloc(-1,3,klx)
-      klx%body(1)=ktflist+kal
-      klx%body(2)=ktflist+kac
-      klx%body(3)=ktflist+kas
+      klx%dbody(1)%k=ktflist+kal
+      klx%dbody(2)%k=ktflist+kac
+      klx%dbody(3)%k=ktflist+kas
       return
       end
 
@@ -847,7 +847,7 @@ c     end   initialize for preventing compiler warning
         z2=geo1(2,3)
         z3=geo1(3,3)
       else
-        rho0=al/phi
+        rho0=abs(al)/phi
         sp0=sin(phi)
         cp0=cos(phi)
         r1=rho0*sp0
@@ -922,7 +922,7 @@ c     end   initialize for preventing compiler warning
       use tfstk
       use tmacro
       implicit none
-      type (sad_list), pointer ::klx
+      type (sad_dlist), pointer ::klx
       type (sad_rlist), pointer ::klri
       integer*4 nitem
       parameter (nitem=12)
@@ -952,7 +952,7 @@ c     end   initialize for preventing compiler warning
             kt=kphtable(itp)
           endif
           kp=kt+(ilp-1)*10
-          klx%body(i)=ktflist+ktavaloc(0,nitem,klri)
+          klx%dbody(i)%k=ktflist+ktavaloc(0,nitem,klri)
           klri%attr=lconstlist
           dp=sqrt(rlist(kp+4)**2+rlist(kp+5)**2
      $         +rlist(kp+6)**2)

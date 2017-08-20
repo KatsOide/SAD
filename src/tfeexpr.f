@@ -2,7 +2,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) k1,k,ke,kx,ky,ky1,k2,kx2
-      type (sad_list), pointer :: listy,list1,listi,klx,kl1
+      type (sad_dlist), pointer :: listy,list1,listi,klx,kl1
       type (sad_rlist), pointer :: kle
       type (sad_symbol), pointer :: sym
       type (sad_string), pointer :: str
@@ -66,7 +66,7 @@
                 endif
                 call tfclonelist(listy,listy)
                 call tfreplist(listy,1,ky1,eval)
-                ke%k=ktflist+ksad_loc(listy%head%k)
+                ke=sad_descr(listy)
               else
                 call tfinsertsort(listy,kx,ke)
               endif
@@ -219,7 +219,7 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
               ktastk(isp)=ktfoper+mtftimes
               do i=1,m
                 isp=isp+1
-                ktastk(isp)=list1%body(i)
+                dtastk(isp)=list1%dbody(i)
                 if(ktfrealq(ktastk(isp)))then
                   vx1=vx1*rtastk(isp)
                   isp=isp-1
@@ -251,7 +251,7 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
                   call tfeexpr(kx2,ke,ke,mtftimes)
                 endif
                 if(vx1 .ne. 1.d0)then
-                  call tfcmplx(vx1,ky,kx,mtfpower,irtc)
+                  call tfcmplx(sad_descr(vx1),ky,kx,mtfpower,irtc)
                   call tfeexpr(kx,ke,ke,mtftimes)
                 endif
                 return
@@ -367,7 +367,7 @@ c      write(*,*)isp
       use tfstk
       implicit none
       type (sad_descriptor) ki,kx
-      type (sad_list) kl
+      type (sad_dlist) kl
       integer*4 isp0,isp1,isp2,i,ispm,itfcanonicalorder,isp3
       isp0=isp
       call tfgetllstkall(kl)
@@ -408,11 +408,11 @@ c      enddo
       subroutine tfcmplx(k1,k2,kx,iopc,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k1,k2,kx
+      type (sad_descriptor) k1,k2,kx,tfenum
       type (sad_complex), pointer :: cx1,cx2
       integer*8 ki1,ki2
       integer*4 irtc,iopc
-      real*8 v1,v2,tfenum
+      real*8 v1,v2
       complex*16 c1
       irtc=0
       if(iopc .eq. mtfnot)then
@@ -441,7 +441,7 @@ c      enddo
               if(ki2 .ne. v2)then 
                 c1=dcmplx(v1,0.d0)**v2
                 if(imag(c1) .eq. 0.d0)then
-                  kx=dfromr(dble(c1))
+                  kx=sad_descr(dble(c1))
                 else
                   kx=kxcalocv(-1,dble(c1),imag(c1))
                 endif
@@ -450,25 +450,25 @@ c      enddo
               endif
               return
             endif
-            kx=dfromr(tfenum(k1,k2,mtfpower,irtc))
+            kx=tfenum(k1%x(1),k2%x(1),mtfpower,irtc)
           elseif(iopc .eq. mtfrevpower)then
             if(k2%k .lt. 0)then
               ki1=int(v1)
               if(ki1 .ne. v1)then 
                 c1=dcmplx(v2,0.d0)**v1
                 if(imag(c1) .eq. 0.d0)then
-                  kx=dfromr(dble(c1))
+                  kx=sad_descr(dble(c1))
                 else
                   kx=kxcalocv(-1,dble(c1),imag(c1))
                 endif
               else
-                kx=dfromr(v2**ki1)
+                kx=sad_descr(v2**ki1)
               endif
               return
             endif
-            kx=dfromr(tfenum(v2,v1,mtfpower,irtc))
+            kx=tfenum(v2,v1,mtfpower,irtc)
           else
-            kx=dfromr(tfenum(k1,k2,iopc,irtc))
+            kx=tfenum(k1%x(1),k2%x(1),iopc,irtc)
           endif
           return
          elseif(tfcomplexq(k2,cx2))then
@@ -491,132 +491,136 @@ c      enddo
       return
       end
 
-      real*8 function tfenum(v1,v,iopc1,irtc)
+      type (sad_descriptor) function tfenum(v1,v,iopc1,irtc)
       use tfstk
       implicit none
-      real*8 v1,v
+      real*8 v1,v,x1
       integer*4 ix,iopc1,irtc,itfmessage
       irtc=0
-      go to (
-     $     2000,
-     $     1010,1020,1030,2000,1050,2000,1070,1080,1090,1100,
-     $     1110,1120,1130,1140,1090,1100,1170,1180,1190),iopc1+1
+c      go to (
+c     $     2000,
+c     $     1010,1020,1030,2000,1050,2000,1070,1080,1090,1100,
+c     $     1110,1120,1130,1140,1090,1100,1170,1180,1190),iopc1+1
 c          m    i    +    -    *    /    v    ^    e    n    
 c          >    <    g    l    E    N    ~    &    o    c
-      go to 2000
- 1010 tfenum=-v
-      return
- 1020 tfenum=1.d0/v
-      return
- 1030 tfenum=v1+v
-      return
- 1050 if(abs(v) .eq. dinfinity .or. abs(v1) .eq. dinfinity)then
-        if(v .eq. 0.d0 .or. v1 .eq. 0.d0)then
-          tfenum=v*v1
-        elseif(v .gt. 0.d0 .and. v1 .gt. 0.d0 .or.
-     $         v .lt. 0.d0 .and. v1 .lt. 0.d0)then
-          tfenum=dinfinity
+c      go to 2000
+      select case (iopc1)
+      case (mtfneg)
+        x1=-v
+      case (mtfinv)
+        x1=1.d0/v
+      case (mtfplus)
+        x1=v1+v
+      case (mtftimes)
+        if(abs(v) .eq. dinfinity .or. abs(v1) .eq. dinfinity)then
+          if(v .eq. 0.d0 .or. v1 .eq. 0.d0)then
+            x1=v*v1
+          elseif(v .gt. 0.d0 .and. v1 .gt. 0.d0 .or.
+     $           v .lt. 0.d0 .and. v1 .lt. 0.d0)then
+            x1=dinfinity
+          else
+            x1=-dinfinity
+          endif
         else
-          tfenum=-dinfinity
+          x1=v1*v
         endif
-      else
-        tfenum=v1*v
-      endif
-      return
- 1080 if(v .eq. -1.d0)then
-        if(abs(v1) .eq. dinfinity)then
-          tfenum=0.d0
+      case (mtfpower)
+        if(v .eq. -1.d0)then
+          if(abs(v1) .eq. dinfinity)then
+            x1=0.d0
+          else
+            x1=1.d0/v1
+          endif
+        elseif(v .eq. 2.d0)then
+          x1=v1**2
+        elseif(v .eq. .5d0)then
+          x1=sqrt(v1)
+        elseif(v .eq. 0.d0 .and. redmath%value%k .ne. 0)then
+          x1=1.d0
         else
-          tfenum=1.d0/v1
+          ix=int(v)
+          if(ix .eq. v)then
+            x1=v1**ix
+          else
+            x1=v1**v
+          endif
         endif
-      elseif(v .eq. 2.d0)then
-        tfenum=v1**2
-      elseif(v .eq. .5d0)then
-        tfenum=sqrt(v1)
-      elseif(v .eq. 0.d0 .and. redmath%value%k .ne. 0)then
-        tfenum=1.d0
-      else
-        ix=int(v)
-        if(ix .eq. v)then
-          tfenum=v1**ix
+      case (mtfrevpower)
+        if(v1 .eq. -1.d0)then
+          x1=1.d0/v
+        elseif(v1 .eq. 2.d0)then
+          x1=v**2
+        elseif(v1 .eq. .5d0)then
+          x1=sqrt(v)
+        elseif(v1 .eq. 0.d0 .and. redmath%value%k .ne. 0)then
+          x1=1.d0
         else
-          tfenum=v1**v
+          ix=int(v1)
+          if(ix .eq. v1)then
+            x1=v**ix
+          else
+            x1=v**v1
+          endif
         endif
-      endif
-      return
- 1070 if(v1 .eq. -1.d0)then
-        tfenum=1.d0/v
-      elseif(v1 .eq. 2.d0)then
-        tfenum=v**2
-      elseif(v1 .eq. .5d0)then
-        tfenum=sqrt(v)
-      elseif(v1 .eq. 0.d0 .and. redmath%value%k .ne. 0)then
-        tfenum=1.d0
-      else
-        ix=int(v1)
-        if(ix .eq. v1)then
-          tfenum=v**ix
+      case (mtfequal)
+        if(v1 .eq. v)then
+          x1=1.d0
         else
-          tfenum=v**v1
+          x1=0.d0
         endif
-      endif
-      return
- 1090 if(v1 .eq. v)then
-        tfenum=1.d0
-      else
-        tfenum=0.d0
-      endif
-      return
- 1100 if(v1 .ne. v)then
-        tfenum=1.d0
-      else
-        tfenum=0.d0
-      endif
-      return
- 1110 if(v1 .gt. v)then
-        tfenum=1.d0
-      else
-        tfenum=0.d0
-      endif
-      return
- 1120 if(v1 .lt. v)then
-        tfenum=1.d0
-      else
-        tfenum=0.d0
-      endif
-      return
- 1130 if(v1 .ge. v)then
-        tfenum=1.d0
-      else
-        tfenum=0.d0
-      endif
-      return
- 1140 if(v1 .le. v)then
-        tfenum=1.d0
-      else
-        tfenum=0.d0
-      endif
-      return
- 1170 if(v .eq. 0.d0)then
-        tfenum=1.d0
-      else
-        tfenum=0.d0
-      endif
-      return
- 1180 if(v1 .ne. 0.d0 .and. v .ne. 0.d0)then
-        tfenum=1.d0
-      else
-        tfenum=0.d0
-      endif
-      return
- 1190 if(v1 .ne. 0.d0 .or. v .ne. 0.d0)then
-        tfenum=1.d0
-      else
-        tfenum=0.d0
-      endif
-      return
- 2000 irtc=itfmessage(999,'General::invop',' ')
-      tfenum=0.d0
+      case (mtfunequal)
+        if(v1 .ne. v)then
+          x1=1.d0
+        else
+          x1=0.d0
+        endif
+      case (mtfgreater)
+        if(v1 .gt. v)then
+          x1=1.d0
+        else
+          x1=0.d0
+        endif
+      case (mtfless)
+        if(v1 .lt. v)then
+          x1=1.d0
+        else
+          x1=0.d0
+        endif
+      case (mtfgeq)
+        if(v1 .ge. v)then
+          x1=1.d0
+        else
+          x1=0.d0
+        endif
+      case (mtfleq)
+        if(v1 .le. v)then
+          x1=1.d0
+        else
+          x1=0.d0
+        endif
+      case (mtfnot)
+        if(v .eq. 0.d0)then
+          x1=1.d0
+        else
+          x1=0.d0
+        endif
+      case (mtfand)
+        if(v1 .ne. 0.d0 .and. v .ne. 0.d0)then
+          x1=1.d0
+        else
+          x1=0.d0
+        endif
+      case (mtfor)
+        if(v1 .ne. 0.d0 .or. v .ne. 0.d0)then
+          x1=1.d0
+        else
+          x1=0.d0
+        endif
+      case default
+        irtc=itfmessage(999,'General::invop',' ')
+        x1=0.d0
+      end select
+      tfenum%x(1)=x1
       return
       end
 
@@ -624,10 +628,10 @@ c          >    <    g    l    E    N    ~    &    o    c
       use tfstk
       implicit none
       type (sad_descriptor) k1,k2,kx,k10,k20,ky1
-      type (sad_list), pointer ::kl1,kl2
+      type (sad_dlist), pointer ::kl1,kl2
       integer*4 irtc,ma1,ma2,m,iopc,isp1
       logical*4 tfsameheadqk
-      if(ktfnonlistqd(k1,kl1) .or. ktfnonlistqd(k2,kl2))then
+      if(ktfnonlistq(k1,kl1) .or. ktfnonlistq(k2,kl2))then
         irtc=-1
         return
       endif
@@ -716,7 +720,7 @@ c          >    <    g    l    E    N    ~    &    o    c
       use tfstk
       implicit none
       type (sad_descriptor) kx,kf
-      type (sad_list), pointer :: kl1,kli
+      type (sad_dlist), pointer :: kl1,kli
       integer*4 isp1,irtc,itfmessage,i,narg,isp0
       logical*4 tfsameqk,eval,ev
       narg=isp-isp1
@@ -784,7 +788,7 @@ c          >    <    g    l    E    N    ~    &    o    c
       use tfstk
       implicit none
       type (sad_descriptor) kl,k,kx
-      type (sad_list), pointer :: list,listx
+      type (sad_dlist), pointer :: list,listx
       integer*4 irtc,m,itfmessage,mode,i
       logical*4 eval,ev,tfconstqk
       if(.not. ktflistq(kl,list))then
@@ -796,11 +800,11 @@ c          >    <    g    l    E    N    ~    &    o    c
      $     list%head%k .ne. ktfoper+mtfalt .and.
      $     list%head%k .ne. ktfoper+mtfnull
       m=list%nl
-      call loc_list(ktaaloc(-1,m+1),listx)
+      call loc_sad(ktaaloc(-1,m+1),listx)
       listx%attr=list%attr
       if(ktfreallistq(list))then
         if(mode .eq. 0)then
-          listx%body(1:m)=list%body(1:m)
+          listx%dbody(1:m)=list%dbody(1:m)
           if(ktfrealq(k))then
             listx%dbody(m+1)=k
           else
@@ -808,7 +812,7 @@ c          >    <    g    l    E    N    ~    &    o    c
             listx%attr=ior(listx%attr,lnonreallist)
           endif
         else
-          listx%body(2:m+1)=list%body(1:m)
+          listx%dbody(2:m+1)=list%dbody(1:m)
           if(ktfrealq(k))then
             listx%dbody(1)=k
           else
@@ -819,12 +823,12 @@ c          >    <    g    l    E    N    ~    &    o    c
       else
         if(mode .eq. 0)then
           do i=1,m
-            listx%body(i)=ktfcopy(list%body(i))
+            listx%dbody(i)=dtfcopy(list%dbody(i))
           enddo
           listx%dbody(m+1)=dtfcopy(k)
         else
           do i=1,m
-            listx%body(i+1)=ktfcopy(list%body(i))
+            listx%dbody(i+1)=dtfcopy(list%dbody(i))
           enddo
           listx%dbody(1)=dtfcopy(k)
         endif
@@ -838,7 +842,7 @@ c          >    <    g    l    E    N    ~    &    o    c
       if(ev)then
         call tfleval(listx,kx,.true.,irtc)
       else
-        kx%k=ktflist+sad_loc(listx%head%k)
+        kx=sad_descr(listx)
         irtc=0
       endif
       return
@@ -848,7 +852,7 @@ c          >    <    g    l    E    N    ~    &    o    c
       use tfstk
       implicit none
       type (sad_descriptor) k,kx
-      type (sad_list), pointer :: kl,klx
+      type (sad_dlist), pointer :: kl,klx
       type (sad_rlist), pointer :: klr
       integer*4 m,i,mode,iaf,isp0
       if(tfnumberqd(k))then
@@ -861,7 +865,7 @@ c          >    <    g    l    E    N    ~    &    o    c
             kx=k
           endif
         else
-          call loc_list(ktfaddrd(k),kl)
+          call loc_sad(ktfaddrd(k),kl)
           if(mode .eq. 1)then
             kx=kl%dbody(1)
           elseif(mode .eq. 2)then
@@ -871,7 +875,7 @@ c          >    <    g    l    E    N    ~    &    o    c
           endif
         endif
         return
-      elseif(tfreallistqd(k,klr))then
+      elseif(tfreallistq(k,klr))then
         if(mode .eq. 1 .or. mode .eq. 3)then
           kx=k
         else

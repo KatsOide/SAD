@@ -6,7 +6,7 @@
       use macmisc
       implicit none
       character*(MAXSTR) token
-      integer*4 slen,ival,ttype,hsrch,lpname
+      integer*4 slen,ival,ttype,hsrch
       real*8 rval,dummy
       logical*4 skipch
       logical*4 Ldump,Lline,Lelem(icMXEL),Lcmd,Lmem
@@ -128,7 +128,7 @@ c
      $     '(1H ,''used Hash table='',I5,''/'',I5)')
      $     used, HTMAX
       if (Lmem) then
-         call pr_mem_map
+c         call pr_mem_map
       endif
       return
       end

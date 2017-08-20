@@ -1104,7 +1104,7 @@ c        write(*,*)'temit-7101: ',emit1(6),emit1(27)
       use touschek_table
       use tmacro
       implicit none
-      type (sad_list), pointer :: klx1
+      type (sad_dlist), pointer :: klx1
       type (sad_dlist), pointer :: klx2,klx
       type (sad_rlist), pointer :: klx1d,klx1l
       integer*4 itmax,ia,m,n
@@ -1183,8 +1183,8 @@ c factor: tf for toucke(#dp/p0,#element)
                 toucke(i,j)=toucke(i,j)*tf
               enddo
             enddo
-            klx1%body(1)=ktflist+kax1d
-            klx1%body(2)=ktflist+kax1l
+            klx1%dbody(1)%k=ktflist+kax1d
+            klx1%dbody(2)%k=ktflist+kax1l
             kax2=ktadaloc(0,3,klx2)
             klx2%dbody(1)=
      $           dtfcopy1(kxm2l(tampl,ntouckx,3,ntouckx,.true.))

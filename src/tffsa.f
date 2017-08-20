@@ -1653,7 +1653,7 @@ c          write(*,*)'tffssave -2: ',isave,ilattp
       use ffs_fit
       use tffitcode
       implicit none
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: klj
       integer*8 kx
       integer*4 irtc,lfno,n,i,j,nfr1
@@ -1690,7 +1690,7 @@ c            call tclr(uini(1,0),28)
             iuid(0)=0
           else
             j=j+1
-            if(tfreallistq(klx%body(j),klj))then
+            if(tfreallistq(klx%dbody(j),klj))then
               if(klj%nl .eq. 6)then
                 uini(mfitdx:mfitdx+5,i)=klj%rbody(1:6)
                 uini(1,i)=-1.d0
@@ -1735,7 +1735,7 @@ c            call tclr(uini(1,0),28)
       use ffs
       use tffitcode
       implicit none
-      type (sad_list), pointer :: klx,kli,kle
+      type (sad_dlist), pointer :: klx,kli,kle
       type (sad_symdef), pointer :: symd
       integer*8 iet
       integer*4 lfno,i,j,k,nk,m,me,nc, ie,ik,irtc

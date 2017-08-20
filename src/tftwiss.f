@@ -5,7 +5,7 @@
       use ffs_fit, only:nlist
       implicit none
       type (sad_descriptor) kx
-      type (sad_list), pointer :: klx
+      type (sad_dlist), pointer :: klx
       integer*4 nkey
       parameter (nkey=mfitpzpy)
       integer*8 ktatwissaloc,kax,kaxi,itoff
@@ -35,7 +35,7 @@
           kax=ktadaloc(-1,nlat,klx)
           do i=1,nlat
             kaxi=ktatwissaloc(0)
-            klx%body(i)=ktflist+kaxi
+            klx%dbody(i)%k=ktflist+kaxi
             do j=1,ntwissfun
               itoff=((2*ndim+1)*(j-1)+ndim)*nlat+iftwis+i-1
               rlist(kaxi+i)=rlist(itoff)
@@ -55,7 +55,6 @@
                 rlist(kax+j)=rlist(itoff)
               enddo
             else
-              write(*,*)'tftwiss-1 '
               call qtwissfrac(rlist(kax+1),itastk(2,isp),
      $             vstk2(isp),over)
             endif
@@ -64,7 +63,7 @@
             kax=ktadaloc(-1,m,klx)
             do i=1,m
               kaxi=ktatwissaloc(0)
-              klx%body(i)=ktflist+kaxi
+              klx%dbody(i)%k=ktflist+kaxi
               if(vstk2(isp0+i) .eq. 0.d0)then
                 do j=1,ntwissfun
                   itoff=(2*ndim+1)*nlat*(j-1)+ndim*nlat+iftwis
@@ -72,7 +71,6 @@
                   rlist(kaxi+j+1)=rlist(itoff)
                 enddo
               else
-                write(*,*)'tftwiss-2 '
                 call qtwissfrac(rlist(kaxi+1),itastk(2,isp0+i),
      $               vstk2(isp0+i),over)
               endif
@@ -163,7 +161,6 @@ c     $             itastk(2,isp),vstk2(isp)
                   if(vstk2(isp0+i) .eq. 0.d0)then
                     rlist(kax+i)=rlist(itoff+itastk(2,isp0+i)-1)
                   else
-                    write(*,*)'tftwiss-4 '
                     call qtwissfrac(ftwiss,itastk(2,isp0+i),
      $                   vstk2(isp0+i),over)
                     rlist(kax+i)=ftwiss(kt)
@@ -174,7 +171,6 @@ c     $             itastk(2,isp),vstk2(isp)
                   if(vstk2(isp0+i) .eq. 0.d0)then
                     klist(kax+i)=ktfref+itoff+itastk(2,isp0+i)-1
                   else
-                    write(*,*)'tftwiss-5 '
                     call qtwissfrac(ftwiss,itastk(2,isp0+i),
      $                   vstk2(isp0+i),over)
                     rlist(kax+i)=ftwiss(kt)
@@ -187,7 +183,6 @@ c     $             itastk(2,isp),vstk2(isp)
                   call tgetphysdisp(itastk(2,isp0+i),pe)
                   rlist(kax+i)=pe(kt-mfitpex+1)
                 else
-                  write(*,*)'tftwiss-6 '
                   call qtwissfrac(ftwiss,itastk(2,isp0+i),
      $                 vstk2(isp0+i),over)
                   rlist(kax+i)=tphysdisp(kt,ftwiss)
@@ -199,7 +194,6 @@ c     $             itastk(2,isp),vstk2(isp)
                   call tgetphysdispz(itastk(2,isp0+i),pe)
                   rlist(kax+i)=pe(kt-mfitpzx+1)
                 else
-                  write(*,*)'tftwiss-7 '
                   call qtwissfrac(ftwiss,itastk(2,isp0+i),
      $                 vstk2(isp0+i),over)
                   rlist(kax+i)=tphysdispz(kt,ftwiss)
@@ -285,7 +279,7 @@ c     $             itastk(2,isp),vstk2(isp)
       keyword=tfgetstrs(ktastk(isp1+1),nc)
       if(nc .le. 0)then
         irtc=itfmessage(9,'General::wrongtype',
-     $       '"List for #1"')
+     $       '"Keyword for #1"')
         return
       endif
       call capita(keyword(1:nc))
@@ -348,13 +342,14 @@ c     $             itastk(2,isp),vstk2(isp)
       use ffs
       use tffitcode
       use ffs_pointer, only:latt,idelc,idtypec,idvalc,sad_comp,
-     $     compelc
+     $     compelc,iele1
       use tflinepcom
       implicit none
       type (sad_descriptor) kx
       type (sad_comp), pointer :: cmp
       integer*8 iax
-      integer*4 irtc,id,lenw,it,ia,iv,isps,l,lpname
+      integer*4 irtc,id,lenw,it,ia,iv,isps,l,isp0,i
+
       character*(*) keyword
       character*(MAXPNAME) key,tfkwrd
       logical*4 saved,ref
@@ -417,6 +412,16 @@ c     $             itastk(2,isp),vstk2(isp)
         kx=kxsalocb(-1,key(2:),lenw(key)-1)
       elseif(keyword .eq. 'POSITION')then
         kx=dfromr(dble(it))
+      elseif(keyword .eq. 'COMPONENT')then
+        isp0=isp
+        do i=1,nlat-1
+          if(iele1(i) .eq. it)then
+            isp=isp+1
+            vstk(isp)=dble(i)
+          endif
+        enddo
+        kx=kxmakelist(isp0)
+        isp=isp0
       else
         kx=tfkeyv(-it,keyword,iax,cmp,ref,saved)
         if(.not. ref)then

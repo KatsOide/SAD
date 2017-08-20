@@ -61,7 +61,7 @@
       use tfcsi
       implicit none
       type (sad_descriptor) k
-      type (sad_list), pointer :: kl
+      type (sad_dlist), pointer :: kl
       integer*4 isp1,irtc,itfmessage
       logical*4 read
       itfgetlfn=0
@@ -263,7 +263,7 @@ c      enddo
       type (sad_descriptor) kx,ki,k
       type (sad_symbol), pointer ::sym
       type (sad_symdef), pointer ::symd
-      type (sad_list), pointer :: klh,kli,klx
+      type (sad_dlist), pointer :: klh,kli,klx
       integer*8 ii,ka0,kadi,kad,ka
       integer*4 isp1,irtc,i,isp00,isp0,kk,iop,ispv,icomp
       icomp=0
@@ -304,7 +304,7 @@ c      enddo
         if(ka0 .ne. 0)then
           dtastk(isp)=kxadaloc(-1,2,klh)
           klh%head%k=ktfoper+mtfsetdelayed
-          klh%body(1)=ktfsymbol+ktfcopy1(ka0+6)
+          klh%dbody(1)%k=ktfsymbol+ktfcopy1(ka0+6)
           klh%dbody(2)=dtfcopy(k)
           do kk=1,0,-1
             if(kk .eq. 1)then
@@ -321,10 +321,10 @@ c      enddo
                     isp=isp+1
                     dtastk(isp)=kxadaloc(-1,2,kli)
                     kli%head%k=ktfoper+iop
-                    kli%body(1)=ktfcopy1(klist(kadi+3+icomp))
-                    kli%body(2)=ktfcopy(klist(kadi+5+icomp))
-                    if(kli%body(2) .eq. ktfref)then
-                      kli%body(2)=ktfcopy(klist(kadi+6))
+                    kli%dbody(1)=dtfcopy1(dlist(kadi+3+icomp))
+                    kli%dbody(2)=dtfcopy(dlist(kadi+5+icomp))
+                    if(kli%dbody(2)%k .eq. ktfref)then
+                      kli%dbody(2)=dtfcopy(dlist(kadi+6))
                     endif
                     kadi=klist(kadi)
                   enddo
@@ -333,10 +333,10 @@ c      enddo
                 isp=isp+1
                 dtastk(isp)=kxadaloc(-1,2,kli)
                 kli%head%k=ktfoper+iop
-                kli%body(1)=ktfcopy1(klist(kad+3+icomp))
-                kli%body(2)=ktfcopy(klist(kad+5+icomp))
-                if(kli%body(2) .eq. ktfref)then
-                  kli%body(2)=ktfcopy(klist(kad+6))
+                kli%dbody(1)=dtfcopy1(dlist(kad+3+icomp))
+                kli%dbody(2)=dtfcopy(dlist(kad+5+icomp))
+                if(kli%dbody(2)%k .eq. ktfref)then
+                  kli%dbody(2)=dtfcopy(dlist(kad+6))
                 endif
               endif
               kad=klist(kad)
@@ -567,7 +567,7 @@ c          enddo
       use readopt
       implicit none
       type (sad_descriptor) kx,k1,k2
-      type (sad_list), pointer :: list
+      type (sad_dlist), pointer :: list
       integer*4 isp1,irtc,isp0,n1,narg,itfmessage,lfn,i1
       logical*4 tfsamesymbolqd
       type(ropt) opts
@@ -671,8 +671,8 @@ c          enddo
       use readopt
       implicit none
       type (sad_descriptor) kx
-      type (sad_list) list
-      type (sad_list), pointer ::kl,klx
+      type (sad_dlist) list
+      type (sad_dlist), pointer ::kl,klx
       integer*8 kxi
       integer*4 lfn,irtc,isp0,isp2,kk,m
       logical*4 mult
@@ -682,9 +682,9 @@ c          enddo
         isp0=isp
         isp=isp0+2
         if(mult)then
-          ktastk(isp)=list%body(2)
+          dtastk(isp)=list%dbody(2)
         else
-          ktastk(isp)=list%body(kk)
+          dtastk(isp)=list%dbody(kk)
         endif
         call tfreadfs(isp0,lfn,opts,kxi,irtc)
         if(irtc .ne. 0)then

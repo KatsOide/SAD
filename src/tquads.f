@@ -27,7 +27,7 @@
 c        ilist(1,ifvh-2)=-1
         klist(ifv)=ktfsymbol+ktfcopy1(ifvh)
       endif
-      if(al .le. 0.d0)then
+      if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,pz,4,ld,0.d0,ak,
      $             dx,dy,theta,cost,sint, 1.d0,.false.)
         return

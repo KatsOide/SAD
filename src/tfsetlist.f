@@ -2,7 +2,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) k,kl
-      type (sad_list), pointer :: kll
+      type (sad_dlist), pointer :: kll
       integer*4 i
       call descr_sad(kl,kll)
       kll%dbody(i)=k
@@ -16,7 +16,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kh
-      type (sad_list), pointer ::kl
+      type (sad_dlist), pointer ::kl
       integer*4 m
       integer*8 ks(m)
       ktfcrelistr=ktaalocr(-1,m,kl)
@@ -28,14 +28,14 @@
       use tfstk
       implicit none
       type (sad_descriptor) kh
-      type (sad_list) list
+      type (sad_dlist) list
       integer*4 i,m
       integer*8 ks(m)
       logical*4 d,di
       list%head=dtfcopy(kh)
       d=.false.
       do i=1,m
-        list%body(i)=ktfcopyd(ks(i),di)
+        list%dbody(i)%k=ktfcopyd(ks(i),di)
         d=d .or. di
       enddo
       if(d)then
@@ -73,10 +73,10 @@
       use tfstk
       implicit none
       type (sad_descriptor) k,ka0
-      type (sad_list), pointer :: list
+      type (sad_dlist), pointer :: list
       integer*4 isp1,isp2,i,j,m,n1
       logical*4 tfsameheadqk
-      if(ktfnonlistqd(k,list))then
+      if(ktfnonlistq(k,list))then
         return
       elseif(.not. tfsameheadqk(k%k,ka0%k))then
         return

@@ -47,7 +47,7 @@
         call tmultr5(trans,trans1,irad)
       endif
       call tmulbs(beam ,trans1,.true.,.true.)
-      if(enarad .and. al .gt. 0.d0)then
+      if(enarad .and. al .ne. 0.d0)then
         bx=-b1*imag(cx)
         by= b1*dble(cx)
         bxx=-b1*imag(cx1)

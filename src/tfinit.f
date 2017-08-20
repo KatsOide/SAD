@@ -9,10 +9,10 @@
       integer*4 i,l,j,ikx,lele,ib,ibz,ibznext,ibzb,k,ibg,ibb
       integer*8 idv
       real*8 v
-      do i=1,nele
-        klp(i)=mult(i)
-        ival(i)=0
-      enddo
+c      do i=1,nele
+        klp(1:nele)=mult(1:nele)
+        ival(1:nele)=0
+c      enddo
       do 10 l=1,nlat-1
         ikx=iele1(l)
         couple(l)=1.d0

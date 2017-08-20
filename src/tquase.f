@@ -30,7 +30,7 @@ c
 c        ilist(1,ifvh-2)=-1
         klist(ifv)=ktfsymbol+ktfcopy1(ifvh)
       endif
-      if(al .le. 0.d0)then
+      if(al .eq. 0.d0)then
         call tthine(trans,cod,beam,4,
      $       al,ak,dx,dy,theta,.false.,ld)
         return
