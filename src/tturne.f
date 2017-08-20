@@ -314,6 +314,7 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       implicit none
       real*8 codmax,demax
       parameter (codmax=1.d4,demax=.5d0)
+      type (sad_descriptor) kxx
       type (sad_comp), pointer :: cmp
       type (sad_dlist), pointer :: lsegp
       integer*8 iatr,iacod,iabmi,kbmz,kbmzi,lp

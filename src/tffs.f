@@ -1313,6 +1313,7 @@ c          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
         use sad_main
         use kyparam
         implicit none
+        type (sad_descriptor) kxx
         type (sad_comp) ::cmp
         type (sad_dlist) , pointer :: lprof,lsegp
         real*8 al

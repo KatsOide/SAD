@@ -14,6 +14,7 @@
       use macmath
       implicit none
 c      include 'DEBUG.inc'
+      type (sad_descriptor) kxx
       type (ffs_bound) fbound,ibound
       integer*8 kx
       integer*4 ibegin,nqcola,lfno,irtc
