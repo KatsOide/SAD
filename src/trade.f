@@ -120,10 +120,16 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
       return
       end
 
-      subroutine tradel(al,f1,f2,s,ala,alr,alr1)
+      recursive subroutine tradel(al,f1,f2,s,ala,alr,alr1)
       implicit none
       real*8 al,f1,f2,s,ala,alr,alr1,sc
       real*8 sa,sb,s1,s2,ra,rb,r1,r2,da1,d12,d2b,r0,dl
+      if(al .lt. 0.d0)then
+        call tradel(-al,f1,f2,s,-ala,alr,alr1)
+        alr=-alr
+        alr1=-alr1
+        return
+      endif
       alr=al
       alr1=al
       if(s .eq. 0.d0)then

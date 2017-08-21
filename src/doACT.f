@@ -95,7 +95,7 @@ c               membas=mfalloc(restme)
                   call errmsg('doact'//pname(cmdidx)(2:),
      &                 ' break memory area.',0,0)
 c     stop 9999
-                  call pr_mem_map
+c                  call pr_mem_map
                endif
                ilist(1,membas)=memuse
                if(restme .gt. memuse+3)then

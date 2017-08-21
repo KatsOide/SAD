@@ -94,7 +94,7 @@ c      endif
             endif
             return
           else
-            kpp=ksad_loc(listp%head%k)
+            kpp=sad_loc(listp%head)
           endif
           icm=isp1
           call tfgetllstkall(lista)
@@ -695,7 +695,7 @@ c        call tfdebugprint(k2,':=',1)
         if(.not. ktfrefqd(kd,kad) .or. kad .gt. 3)then
           ix=itfseqm(isp1,isp2,kd,ispf,isps,ispt)
           if(ix .ge. 0)then
-            call tfstkstk(isp1-1,isps-1,pat)
+            call tfstkpat(isp1-1,isps-1,pat)
           endif
         elseif(kad .eq. 1)then
           ispf=min(ispt,isp1)-1
@@ -718,7 +718,7 @@ c        call tfdebugprint(k2,':=',1)
             else
               ix=0
             endif
-            call tfstkstk(isp1-1,ispt,pat)
+            call tfstkpat(isp1-1,ispt,pat)
           endif
         endif
         return
@@ -836,8 +836,8 @@ c          write(*,*)'==> ',ix
       type (sad_descriptor) k,kx,ke,k1,kv,kh
       type (sad_pat) pat
       type (sad_pat), pointer :: pata
-      integer*8 kax,ka,ka1,i
-      integer*4 isp3,irtc,isp1,itfpmat
+      integer*8 kax,ka,ka1
+      integer*4 isp3,irtc,isp1,itfpmat,i
       logical*4 tfsameqd
       itfsinglepat=-1
       kx=pat%expr
@@ -906,7 +906,7 @@ c        write(*,*)'at ',sad_loc(pat%value)
       return
       end
 
-      subroutine tfstkstk(isp1,isp2,pat)
+      subroutine tfstkpat(isp1,isp2,pat)
       use tfstk
       use tfcode
       implicit none
@@ -917,7 +917,10 @@ c        write(*,*)'at ',sad_loc(pat%value)
         if(isp1 .ge. isp2)then
           pat%value=dxnull
         elseif(isp2 .eq. isp1+1)then
-          pat%value%k=ktastk(isp2)
+          pat%value=dtastk(isp2)
+c          call tfdebugprint(sad_descr(pat),'stkstk',1)
+c          call tfdebugprint(ktastk(isp),'stkstk',1)
+c          write(*,*)'at ',sad_loc(pat%value)
 c          call tfdebugprint(sad_descr(pat),'stkstk',1)
 c          call tfdebugprint(ktastk(isp),'stkstk',1)
 c          write(*,*)'at ',sad_loc(pat%value)
@@ -1054,7 +1057,7 @@ c          write(*,*)'at ',sad_loc(pat%value)
         pat%mat=0
         pat%value%k=ktfref
         nullify(pat%equiv)
-        call tfresetpat(pat%expr%k)
+        call tfresetpat(pat%expr)
       endif
       return
       end
@@ -1091,21 +1094,21 @@ c          write(*,*)'at ',sad_loc(pat%value)
       if(ktflistq(k,kl))then
         call tfinitpatlist(isp0,kl)
       elseif(ktfpatqd(k,pat))then
-        if(.not. associated(pat%equiv))then
-          if(pat%sym%loc .ne. 0)then
-            kas=ktfaddr(pat%sym%alloc)
-            do i=isp0+1,isp-1,2
-              if(kas .eq. ktastk(i+1))then
-                call loc_pat(ktfaddr(ktastk(i)),pat%equiv)
-                go to 10
-              endif
-            enddo
-            isp=isp+2
-            dtastk(isp-1)=k
-            ktastk(isp  )=kas
-          endif
-          pat%value%k=ktfref
+        if(associated(pat%equiv))then
         endif
+        if(pat%sym%loc .ne. 0)then
+          kas=ktfaddr(pat%sym%alloc)
+          do i=isp0+1,isp-1,2
+            if(kas .eq. ktastk(i+1))then
+              call loc_pat(ktfaddr(ktastk(i)),pat%equiv)
+              go to 10
+            endif
+          enddo
+          isp=isp+2
+          dtastk(isp-1)=k
+          ktastk(isp  )=kas
+        endif
+        pat%value%k=ktfref
  10     call tfinitpat(isp0,pat%expr)
         pat%mat=0
       endif
@@ -1168,7 +1171,7 @@ c          write(*,*)'at ',sad_loc(pat%value)
       logical*4 tfconstpatternlistbodyqo,tfsamesymbolqk
       if(ktfpatqd(k))then
         lx=.false.
-      elseif(ktfoperqd(k,ka))then
+      elseif(ktfoperq(k,ka))then
         lx=ka .ne. mtfalt .and. ka .ne. mtfrepeated .and.
      $       ka .ne. mtfrepeatednull
       elseif(ktflistq(k,kl))then
@@ -1222,7 +1225,7 @@ c          write(*,*)'at ',sad_loc(pat%value)
       type (sad_descriptor) k
       type (sad_funtbl), pointer ::fun
       type (sad_symbol), pointer ::sym
-      if(ktfoperqd(k))then
+      if(ktfoperq(k))then
         call c_f_pointer(c_loc(klist(klist(ifunbase+ktfaddrd(k))-9)),
      $       fun)
         tfordlessq=iand(iattrorderless,fun%def%sym%attr) .ne. 0

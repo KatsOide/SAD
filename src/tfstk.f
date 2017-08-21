@@ -852,6 +852,14 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         module procedure tfmakerulestk_dd,tfmakerulestk_dr
       end interface
 
+      interface ktfnonoperq
+        module procedure ktfnonoperqk,ktfnonoperqd
+      end interface
+
+      interface ktfoperq
+        module procedure ktfoperqk,ktfoperqd
+      end interface
+
       contains
         subroutine tfinitstk
         use iso_c_binding
@@ -1511,19 +1519,27 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         return
         end function ktfnonrealq_di
 
-        logical*4 function ktfoperq(k)
+        logical*4 function ktfoperqk(k,ka)
         implicit none
         integer*8 k
-        ktfoperq=iand(ktfmask,k) .eq. ktfoper
+        integer*8 , optional, intent(out) :: ka
+        ktfoperqk=iand(ktfmask,k) .eq. ktfoper
+        if(ktfoperqk .and. present(ka))then
+          ka=ktfaddr(k)
+        endif
         return
-        end function ktfoperq
+        end function ktfoperqk
 
-        logical*4 function ktfnonoperq(k)
+        logical*4 function ktfnonoperqk(k,ka)
         implicit none
         integer*8 k
-        ktfnonoperq=iand(ktfmask,k) .ne. ktfoper
+        integer*8 , optional, intent(out) :: ka
+        ktfnonoperqk=iand(ktfmask,k) .ne. ktfoper
+        if(.not. ktfnonoperqk .and. present(ka))then
+          ka=ktfaddr(k)
+        endif
         return
-        end function ktfnonoperq
+        end function ktfnonoperqk
 
         logical*4 function ktfoperqd(k,ka)
         implicit none
@@ -1531,7 +1547,7 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         integer*8, optional, intent(out) :: ka
         ktfoperqd=iand(ktfmask,k%k) .eq. ktfoper
         if(ktfoperqd .and. present(ka))then
-          ka=ktfaddr(k%k)
+          ka=ktfaddr(k)
         endif
         return
         end function ktfoperqd
@@ -1542,7 +1558,7 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         integer*8, optional, intent(out) :: ka
         ktfnonoperqd=iand(ktfmask,k%k) .ne. ktfoper
         if(.not. ktfnonoperqd .and. present(ka))then
-          ka=ktfaddr(k%k)
+          ka=ktfaddr(k)
         endif
         return
         end function ktfnonoperqd

@@ -70,12 +70,12 @@ c      write(*,'(a,1p5g15.7)')'tcave ',phi,phis,phic,trf0
         if(al .ne. 0.d0 .and. fringe
      $       .and. mfring .ge. 0 .and. mfring .ne. 2)then
           call tcavfrie(trans,cod,beam,al,v,w,phic,phis-phic,s0,p0,
-     $     irad,irad .gt. 6 .or. calpol,autophi)
+     $         irad,irad .gt. 6 .or. calpol,autophi)
         endif
         call tinitr(trans1)
         dgb=0.d0
         do n=1,ndiv
-         if(al .gt. 0.d0)then
+         if(al .ne. 0.d0)then
             if(n .eq. 1)then
               call tdrife(trans,cod,beam,aln*.5d0,
      $             0.d0,0.d0,0.d0,.true.,.false.,calpol,irad,ld)
@@ -162,7 +162,7 @@ c          trans1(6,6)=(p1-a*t/p1/h1)/h1/v2
           endif
           dgb=dgb+dhg
         enddo
-        if(al .gt. 0.d0)then
+        if(al .ne. 0.d0)then
           call tdrife(trans,cod,beam,aln*.5d0,
      $         0.d0,0.d0,0.d0,.true.,.false.,calpol,irad,ld)
           call tgetdvh(dgb,dv)
@@ -173,7 +173,7 @@ c          trans1(6,6)=(p1-a*t/p1/h1)/h1/v2
           endif
         endif
       else
-        if(al .gt. 0.d0)then
+        if(al .ne. 0.d0)then
           call tdrife(trans,cod,beam,al,
      $         0.d0,0.d0,0.d0,.true.,.false.,calpol,irad,ld)
         endif

@@ -307,9 +307,9 @@ c          go to 1010
             go to 20
 
           case (icSEXT, icOCTU, icDECA, icDODECA)
-          call qthin(trans,cod,ltyp,al,cmp%value(ky_K_THIN),
-     1         cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
-     $         cmp%value(ky_ROT_THIN),coup)
+            call qthin(trans,cod,ltyp,al,cmp%value(ky_K_THIN),
+     1           cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
+     $           cmp%value(ky_ROT_THIN),coup)
           go to 20
 
           case (icSOL)
@@ -1342,7 +1342,6 @@ c     $     cmp%value(ky_K0_BEND)
       type (sad_comp) :: cmp,cmp0
       type (sad_dlist) lsegp
       type (sad_dlist), pointer:: lsegp1,lk,lk0
-      integer*8 kk
       integer*4 i1,i2,k,nseg,i,nk,is,j
       real*8 rx1,rx2,f1,f2,r1,r2
       logical*4 ideal,chg
@@ -1446,7 +1445,7 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
       real*8 :: rsave(cmp%ncomp2)
       real*8 trans(4,5),cod(6),bz
       integer*8 kk
-      integer*4 l1,i,nseg,i1,i2,istep,k,nk,k1,k2,irtc
+      integer*4 l1,i,nseg,i1,i2,istep,k,nk,k1,k2
       logical*4 coup,coup1
       integer*4 , parameter :: nc=ky_PROF_MULT-1
       coup=.false.
@@ -1482,9 +1481,6 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
             cmp%value(k1)=0.d0
           endif
           cmp%value(k1)=cmp%value(k1)+rsave(k2)*lkv%rbody(i)
-c          write(*,'(a,4i5,l4,1p3g15.7)')'qmultseg ',
-c     $         k,i,k1,k2,integv(k1,icMULT),
-c     $         cmp%value(k1),rsave(k2),lkv%rbody(i)
         enddo
         call qmult1(trans,cod,l1,cmp,bz,i .eq. i1,coup1)
         coup=coup .or. coup1

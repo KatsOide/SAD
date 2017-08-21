@@ -810,7 +810,6 @@ c$$$
         integer*4 ltyp
         real*8 phi,al,psi1,psi2,theta,dtheta,w,akk,sk1,
      $       fb1,fb2,harm,vnominal,frmd
-
         cmp%update=ior(cmp%update,1)
         ltyp=idtype(cmp%id)
         if(kytbl(kwNPARAM,ltyp) .eq. 0)then
@@ -818,6 +817,7 @@ c$$$
         endif
         select case (ltyp)
         case (icBEND)
+          al=cmp%value(ky_L_BEND)
           phi=cmp%value(ky_ANGL_BEND)
           if(cmp%orient .gt. 0.d0)then
             psi1=cmp%value(ky_E1_BEND)*phi+cmp%value(ky_AE1_BEND)
@@ -834,7 +834,6 @@ c$$$
             fb1=0.d0
             fb2=0.d0
           endif
-          al=cmp%value(ky_L_BEND)
           w=phi-psi1-psi2
           if((fb1 .ne. 0.d0 .or. fb2 .ne. 0.d0) .and.
      1         al .ne. 0.d0 .and. phi .ne. 0.d0)then
@@ -930,6 +929,7 @@ c$$$
      $           *sin(.5d0*w)/sin(.5d0*phi)
           endif
           cmp%value(p_L_MULT)=al
+          cmp%value(p_ANGL_MULT)=phi
           cmp%value(p_PSI1_MULT)=psi1
           cmp%value(p_PSI2_MULT)=psi2
           cmp%value(p_FB1_MULT)=fb1

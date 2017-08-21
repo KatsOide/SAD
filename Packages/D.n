@@ -1,4 +1,4 @@
-(* D.n 4/23/2011 *)
+(* D.n 8/19/2017 *)
 
 With[{ReductionRule:={
   ((a_^z_)*b___)^y_:>a^(z*y)*Times[b]^y,
@@ -12,11 +12,16 @@ With[{ReductionRule:={
   -Sin[x_]^2+Cos[x_]^2+a___:>a+Cos[2x],
   Sin[x_]^2-Cos[x_]^2+a___:>a-Cos[2x],
   1+a___-Cos[x_]:>a+2*Sin[x/2]^2,
-  b___*Sin[x_]*Cos[x_]:>b Sin[2x]/2,
+  -1+a___+Cos[x_]:>a-2*Sin[x/2]^2,
+  b___*Sin[x_]*Cos[x_]:>(b Sin[2x]/2),
   a___+x_-Sin[x_]:>a+XSin[x],
+  a___-x_+Sin[x_]:>a-XSin[x],
   XSin[x_]+Sin[x_]+a___:>a+x,
+  -XSin[x_]-Sin[x_]+a___:>a-x,
+  Exp[x_]^(n_):>Exp[n*x],
   Exp[x_]*Exp[y_]*a___:>Exp[x+y]*a,
   Log[x_]+Log[y_]+a___:>Log[x*y]+a,
+  Log[x_]-Log[y_]+a___:>Log[x/y]+a,
   Log[Exp[x_]*(y__:1)|Exp[x_]]:>x+Log[Times[y]],
   Log[x_^y_]:>y*Log[x],
   Exp[(x__:0)+Log[y_]|Log[y_]]:>y*Exp[Plus[x]],

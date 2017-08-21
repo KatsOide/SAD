@@ -572,7 +572,7 @@ c     print *,'tturn l sspac2',l,sspac2
           if(lele .eq. icBEND)then
           elseif(lele .eq. icMULT .and.
      $           cmp%value(ky_ANGL_MULT) .ne. 0.d0)then
-          elseif(lele .lt. 32 .and. al .gt. 0.d0)then
+          elseif(lele .lt. 32 .and. al .ne. 0.d0)then
             call tlstore(np,x,y,z,dv,0.d0,al,0.d0,0.d0,
      $           p0/h0*c,dvfs,.true.)
           endif

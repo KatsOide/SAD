@@ -640,16 +640,15 @@ c      call tfsetcmp(v0+dv,cmp,iv)
       cmp%value(iv)=v0+dv
       cod2(1:6)=utwiss(mfitdx:mfitddp,idp,kk1)
       call qtwiss1(0.d0,idp,j,je,trans2,cod2,.true.,over)
-c      call tfsetcmp(v0-dv,cmp,iv)
+c      write(*,'(a,i5,1p12g13.5)')'qdtrans ',iv,v0+dv,trans2(1:4)
       cmp%value(iv)=v0-dv
       cod1(1:6)=utwiss(mfitdx:mfitddp,idp,kk1)
       call qtwiss1(0.d0,idp,j,je,trans1,cod1,.true.,over)
-c      write(*,'(a,1p12g13.5)')'qdtrans ',iv,trans2(1:4),trans1(1:4)
+c      write(*,'(a,i5,1p12g13.5)')'qdtrans ',iv,trans1(1:4)
       trans2(1:20)=(trans2(1:20)-trans1(1:20))/(2.d0*dv)
       dcod(1:5)=(cod2(1:5)-cod1(1:5))/(2.d0*dv)
-c      call tfsetcmp(v0,cmp,iv)
       cmp%value(iv)=v0
-c      write(*,'(a,1p8g15.7)')'qdtrans ',iv,cod1(1),cod2(1)
+c      write(*,'(a,i5,1p8g15.7)')'qdtrans ',iv,dv,trans2(1:4)
       call qtentu(trans,cod1,utwiss(1,idp,kk1),.true.)
       call tmultr45(trans,trans3,dtrans)
       return

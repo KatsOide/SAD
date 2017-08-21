@@ -14,7 +14,7 @@
      $     p,a,ea,b,pxi,pxf,pyf,b1,eps,akin,sqrtk,alx,dpz,r,xi,yi,akk,
      $     phi,s,t,th,u,a11,a12,b11,b12,a21,b21,aln,pti,ei
       real*8, parameter :: ampmax=0.9999d0
-      if(al .le. 0.d0)then
+      if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,pz,4,l,0.d0,ak,
      $             dx,dy,theta,cost,sint, 1.d0,.false.)
         return
@@ -94,7 +94,7 @@ c          p=(1.d0+g(i))**2
         else
           alx=aln
         endif
-        if(ak .gt. 0.d0)then
+        if(ak*al .gt. 0.d0)then
           do 100 i=1,np
             a=px(i)**2+py(i)**2
             dpz=akin*sqrt1(-a)
@@ -257,7 +257,7 @@ c     end   initialize for preventing compiler warning
         call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
         return
       endif
-      enarad=rad .and. radlvl .eq. 0.d0 .and. al .gt. 0.d0
+      enarad=rad .and. radlvl .eq. 0.d0 .and. al .ne. 0.d0
       if(enarad .and. trpt .and. rfluct)then
         call tthinrad(np,x,px,y,py,z,g,dv,pz,nord,l,al,ak,
      1                 dx,dy,theta,cost,sint,fringe)
@@ -269,7 +269,7 @@ c     end   initialize for preventing compiler warning
       endif
       kord=nord/2-1
       akf=ak/fact(kord)
-      if(al .gt. 0.d0)then
+      if(al .ne. 0.d0)then
         ala=al*alpha1
         alb=al*alpha
         do 10 i=1,np
@@ -357,7 +357,7 @@ c            pr=(1.d0+g(i))**2
 1020      continue
         endif
       endif
-      if(al .gt. 0.d0)then
+      if(al .ne. 0.d0)then
         if(kord .le. 0)then
           do 1030 i=1,np
 c            a=px(i)**2+py(i)**2

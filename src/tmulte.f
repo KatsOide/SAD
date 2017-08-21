@@ -98,7 +98,7 @@ c      write(*,*)'tmulte-2 ',cod(1),cod(2),cod(3),cod(4)
       do n=2,nmmax
         ndiv=max(ndiv,
      $       int(sqrt(ampmax**(n-1)
-     $       /6.d0/fact(n-1)/eps*abs(ak(n))*al))+1)
+     $       /6.d0/fact(n-1)/eps*abs(ak(n)*al)))+1)
       enddo
       ndiv=min(ndiv,ndivmax)
 c      write(*,*)'tmulte-ndiv ',ndiv
@@ -122,7 +122,7 @@ c      h1=sqrt(p1**2+1.d0)
           wi=1.d0/w
         endif
         v=vc/amass*abs(charge)
-        ndiv=max(ndiv,1+int(min(w*al,
+        ndiv=max(ndiv,1+int(min(abs(w*al),
      $       sqrt((v*(1.d0/h0+1.d0/h1))**2/3.d0/eps))))
         aln=al/ndiv
         vn=v/ndiv

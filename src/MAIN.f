@@ -1,8 +1,8 @@
       module version
         character*19, parameter ::
 c                     /'1234567890123456789'/
-     $     versionid  ='1.1.1k64_pre08     ',
-     $     versiondate='8/15/2017 00:00:00 '
+     $     versionid  ='1.1.1k64_pre10     ',
+     $     versiondate='8/21/2017 00:00:00 '
         character*25 builtdate
         character*30 startdat
       end module
@@ -10,6 +10,7 @@ c                     /'1234567890123456789'/
       program MAIN
       use version
       use maccbk
+      use tfmem, only:talocinit
       implicit none
 c
 c
@@ -21,7 +22,7 @@ c
      $     ' built at ',builtdate(1:len_trim(builtdate)),' ***'
       write(*,*)'*** Today: ',startdat(1:len_trim(startdat)),' ***'
 c
-      call inimem
+      call talocinit
       call inifil
       call initbl
       call tftokinit

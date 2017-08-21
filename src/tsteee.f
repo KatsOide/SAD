@@ -19,7 +19,7 @@
      $     dyfra1,dyfra2,apsi1,apsi2,tanp1,tanp2,als
       real*8 trans1(6,6)
       logical*4 enarad,fringe,next,prev
-      if(al .le. 0.d0)then
+      if(al .eq. 0.d0)then
         call tthine(trans,cod,beam,2,al,-phib,dx,dy,theta,
      $       .false.,ld)
         return
@@ -54,7 +54,7 @@
         tanp1=tan(apsi1)
         tanp2=tan(apsi2)
         b=-brhoz/rhob
-        nrad=int(al/epsrad*crad*(h0*b)**2)
+        nrad=int(abs(al/epsrad*crad*(h0*b)**2))
         ndiv=1+max(int(nrad*emidiv*emidib),
      1       int(abs(phib)/epsrad/1.d3*emidiv*emidib))
       else

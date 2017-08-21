@@ -128,7 +128,7 @@ c
      $     '(1H ,''used Hash table='',I5,''/'',I5)')
      $     used, HTMAX
       if (Lmem) then
-         call pr_mem_map
+c         call pr_mem_map
       endif
       return
       end

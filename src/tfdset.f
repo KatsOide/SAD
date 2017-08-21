@@ -553,7 +553,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       equivalence (h,ih1),(x,ix)
       if(ktfrealq(k,v))then
         ih=int(v*ha)
-      elseif(ktfoperqd(k,ka))then
+      elseif(ktfoperq(k,ka))then
         ih=int(ka)
       elseif(ktflistq(k,kl))then
         m=kl%nl
@@ -607,7 +607,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       equivalence (x,ix)
       if(ktfrealq(k,v))then
         ih=int(v*ha)
-      elseif(ktfoperqd(k,ka))then
+      elseif(ktfoperq(k,ka))then
         ih=int(ka)
       elseif(ktflistq(k,kl))then
         ih=itfhash1(kl%head)+kl%nl
@@ -784,7 +784,7 @@ c      endif
           if(irtc .ne. 0)then
             return
           endif
- 20       if(ktfoperqd(kh))then
+ 20       if(ktfoperq(kh))then
             kah=ktfaddrd(kh)
             if(iget_fun_id(ktfaddrd(kh)) .eq. nfunif)then
               call tfreplaceifarg(list,kx,rep,irtc)
@@ -808,7 +808,7 @@ c            call tfdebugprint(list%body(i),'==> ',3)
             endif
           enddo
           if(rlist(iaximmediate) .ne. 0.d0)then
-            if(ktfoperqd(kh))then
+            if(ktfoperq(kh))then
               if(kah .gt. mtfend)then
                 ks1=isp+ispbase
                 call tfcomposefun(isp1+1,kah,kx,.false.,irtc)
@@ -965,7 +965,7 @@ c      call tfdebugprint(kx,'tfreparg-out',1)
           endif
  20       isp=isp1+1
           dtastk(isp)=kh
-          if(ktfoperqd(kh,kah))then
+          if(ktfoperq(kh,kah))then
             if(iget_fun_id(kah) .eq. nfunif)then
               call tfreplaceifarg(list,kx,rep,irtc)
               isp=isp1+1
@@ -1004,7 +1004,7 @@ c              call tfdebugprint(list%dbody(i),'==>',3)
             return
           endif
           if(rlist(iaximmediate) .ne. 0.d0)then
-            if(ktfoperqd(kh))then
+            if(ktfoperq(kh))then
               if(kah .gt. mtfend)then
                 call tfcomposefun(isp1+1,kah,kx,.false.,irtc)
               else
@@ -1294,11 +1294,15 @@ c          write(*,*)'with ',symd%sym%override
       use tfcode
       implicit none
       type (sad_deftbl) dtbl
+      type (sad_pat), pointer :: pat
       integer*4 np,i
       np=dtbl%npat
       if(np .ne. maxgeneration)then
         do i=1,np
-          call tfunsetpat(dtbl%pattbl(i))
+          call descr_sad(dtbl%pattbl(i),pat)
+          pat%mat=0
+          pat%value%k=ktfref
+c          call tfunsetpat(dtbl%pattbl(i))
         enddo
       endif
       return
@@ -1332,9 +1336,9 @@ c        call tfdebugprint(kx,'setarg-const',3)
           isp0=isp
           do i=1,dtbl%npat
             call descr_pat(dtbl%pattbl(i),pat)
-            do while(associated(pat%equiv))
-              pat=>pat%equiv
-            enddo
+c            do while(associated(pat%equiv))
+c              pat=>pat%equiv
+c            enddo
 c            call tflinkedpat(pat0,pat)
             isp=isp+2
             ktastk(isp-1)=ktfaddr(pat%sym%alloc%k)

@@ -83,7 +83,7 @@ c        g(i)=g(i)*(2.d0+g(i))
       ur=urad*p0**3
       an=anrad*p0
       ndiv=1+int(sqrt(abs(ak*al)/eps/12.d0))
-      nx=int(al/abs(rhob)*an/.18d0)+1
+      nx=int(abs(al/rhob)*an/.18d0)+1
       ndiv=max(ndiv,nx)
       if(radlight)then
         ngamma=int(h0*abs(phib)*1.d-2*anrad/eps)+1
@@ -847,7 +847,7 @@ c     end   initialize for preventing compiler warning
         z2=geo1(2,3)
         z3=geo1(3,3)
       else
-        rho0=al/phi
+        rho0=abs(al)/phi
         sp0=sin(phi)
         cp0=cos(phi)
         r1=rho0*sp0

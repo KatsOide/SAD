@@ -895,6 +895,8 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
         do k=1,nc
           if(integv(k,icMULT))then
             cmp%value(k)=rsave(k)*lak%rbody(i)
+          else
+            cmp%value(k)=rsave(k)
           endif
         enddo
         do k=1,nk

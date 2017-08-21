@@ -705,7 +705,7 @@ c     drift in the free space
       real*8 al,radius
       integer*4 ndiv,i
       real*8 aln,alx
-      ndiv=max(1,nint(al/alstep))
+      ndiv=max(1,nint(abs(al)/alstep))
       aln=al/ndiv
 
       call tdrift_free(np,x,px,y,py,z,g,dv,zz,aln*.5d0)
@@ -744,7 +744,7 @@ c     drift in the parallel solenoid
       real*8 al,bz,radius
       integer*4 ndiv,i
       real*8 aln,alx
-      ndiv=max(1,nint(al/alstep),nint(abs(bz*al)/1.5d0))
+      ndiv=max(1,nint(abs(al)/alstep),nint(abs(bz*al)/1.5d0))
       aln=al/ndiv
 
       call tdrift_solenoid(np,x,px,y,py,z,g,dv,zz,aln*.5d0,bz)
@@ -783,7 +783,7 @@ cProbably obsolete
       real*8 al,bz,ak0x,ak0y,radius
       integer*4 ndiv,i
       real*8 aln,akxn,akyn,alx
-      ndiv=max(1,nint(al/alstep),nint(abs(bz*al)/1.5d0))
+      ndiv=max(1,nint(abs(al)/alstep),nint(abs(bz*al)/1.5d0))
       aln=al/ndiv
       akxn=ak0x/ndiv
       akyn=ak0y/ndiv

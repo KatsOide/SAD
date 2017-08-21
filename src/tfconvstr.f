@@ -351,8 +351,8 @@
       type (sad_strbuf), pointer :: strb
       type (sad_symbol), pointer :: sym
       type (sad_string), pointer :: str
-      integer*8 ka,ic,i
-      integer*4 isp1,irtc,nc1,narg,isp0,itfmessage
+      integer*8 ka,ic,icp
+      integer*4 isp1,irtc,nc1,narg,isp0,itfmessage,i
       character*32 form
       logical*4 infm,tfsamesymbolqd,symb,hold,gens
       type (sad_descriptor), save :: inputf,iholdf,igenf,istandf
@@ -410,9 +410,9 @@ c      include 'DEBUG.inc'
      $       .or. sym%gen .eq. maxgeneration)then
           call sym_namtbl(sym,loc)
           ic=loc%cont
-          do i=itfcontextpath,
+          do icp=itfcontextpath,
      $         itfcontextpath+ilist(2,itfcontextpath-1)-1
-            if(klist(i) .eq. ic)then
+            if(klist(icp) .eq. ic)then
               kx=sad_descr(loc%str)
               return
             endif
