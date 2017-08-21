@@ -173,7 +173,7 @@ c     end   initialize for preventing compiler warning
       ak1=dble(akn(1))*.5d0
       al1=aln*.5d0
       ak0n=akn(0)*.5d0
-      if(abs(al) .ne. 0.d0)then
+      if(al .ne. 0.d0)then
         if(fringe .and. mfring .ne. 2)then
           if(acc)then
             call tcavfrie(trans,cod,beam,al,v,w,phic,phis-phic,s0,p0,

@@ -309,7 +309,7 @@
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
 
-      if(abs(ak) .eq. 0.d0)then
+      if(ak .eq. 0.d0)then
         call tdrife(trans,cod,beam,al,
      $       bz0,ak0x,ak0y,.true.,enarad,.false.,irad,ld)
         return

@@ -921,9 +921,6 @@ c        write(*,*)'at ',sad_loc(pat%value)
 c          call tfdebugprint(sad_descr(pat),'stkstk',1)
 c          call tfdebugprint(ktastk(isp),'stkstk',1)
 c          write(*,*)'at ',sad_loc(pat%value)
-c          call tfdebugprint(sad_descr(pat),'stkstk',1)
-c          call tfdebugprint(ktastk(isp),'stkstk',1)
-c          write(*,*)'at ',sad_loc(pat%value)
         else
           pat%value%k=ktfref+isp1+ispbase
           itastk2(1,isp1)=isp2
@@ -1095,6 +1092,10 @@ c          write(*,*)'at ',sad_loc(pat%value)
         call tfinitpatlist(isp0,kl)
       elseif(ktfpatqd(k,pat))then
         if(associated(pat%equiv))then
+<<<<<<< HEAD
+=======
+          nullify(pat%equiv)
+>>>>>>> origin/master
         endif
         if(pat%sym%loc .ne. 0)then
           kas=ktfaddr(pat%sym%alloc)
