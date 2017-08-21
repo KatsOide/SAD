@@ -84,7 +84,7 @@ gaus3.o: gaus3.f
 gaussn.o: gaussn.f
 geodrw.o: geodrw.f csinit.o tffs.o tfstk.o
 getbuf.o: getbuf.f csinit.o toplvl.o
-gettok.o: gettok.f tfstk.o toplvl.o
+gettok.o: gettok.f toplvl.o
 getvad.o: getvad.f csinit.o tfstk.o
 getwrd.o: getwrd.f csinit.o tffs.o tfstk.o
 hsrch.o: hsrch.f tfstk.o toplvl.o
@@ -304,7 +304,7 @@ tfdapert.o: tfdapert.f tffs.o tfstk.o
 tfdbun.o: tfdbun.f tffs.o
 tfdisp.o: tfdisp.f initb1.o tffs.o tfstk.o
 tfdot.o: tfdot.f tfstk.o toplvl.o
-tfdset.o: tfdset.f tfstk.o
+tfdset.o: tfdset.f itfpmat.o tfstk.o
 tfearray.o: tfearray.f tfstk.o
 tfeeval.o: tfeeval.f tfstk.o toplvl.o
 tfeexpr.o: tfeexpr.f tfstk.o
@@ -365,7 +365,7 @@ tfshared.o: tfshared.f tfstk.o
 tfshow.o: tfshow.f tffs.o tfstk.o
 tfsize.o: tfsize.f
 tfsolvemember.o: tfsolvemember.f tfstk.o
-tfsort.o: tfsort.f
+tfsort.o: tfsort.f tfetok.o tfstk.o
 tfstk.o: tfstk.f
 tfstrbuf.o: tfstrbuf.f tfestk.o tfstk.o
 tftable.o: tftable.f tfstk.o

@@ -1092,7 +1092,6 @@ c          write(*,*)'at ',sad_loc(pat%value)
         call tfinitpatlist(isp0,kl)
       elseif(ktfpatqd(k,pat))then
         if(associated(pat%equiv))then
-          nullify(pat%equiv)
         endif
         if(pat%sym%loc .ne. 0)then
           kas=ktfaddr(pat%sym%alloc)
