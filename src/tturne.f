@@ -314,7 +314,6 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       implicit none
       real*8 codmax,demax
       parameter (codmax=1.d4,demax=.5d0)
-      type (sad_descriptor) kxx
       type (sad_comp), pointer :: cmp
       type (sad_dlist), pointer :: lsegp
       integer*8 iatr,iacod,iabmi,kbmz,kbmzi,lp
@@ -497,11 +496,13 @@ c        go to 5000
           if(radcod .and. radtaper)then
             if(rt)then
               l1=nextl(l)
-              ak0=ak0*(4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0
-              ak1=ak1*(4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0
+              ak0=ak0*
+     $             ((4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0-dp0)
+              ak1=ak1*
+     $             ((4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0-dp0)
             else
-              ak0=ak0*(1.d0+cod(6))
-              ak1=ak1*(1.d0+cod(6))
+              ak0=ak0*(1.d0-dp0+cod(6))
+              ak1=ak1*(1.d0-dp0+cod(6))
             endif
           endif
           call tbende(trans,cod,beam,al,
@@ -528,9 +529,9 @@ c        go to 5000
           if(radcod .and. radtaper)then
             if(rt)then
               l1=nextl(l)
-              ak1=ak1*(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0
+              ak1=ak1*((2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0)
             else
-              ak1=ak1*(1.d0+cod(6))
+              ak1=ak1*(1.d0-dp0+cod(6))
             endif
           endif
           call tsetfringepe(cmp,icQUAD,dir,ftable)
@@ -548,9 +549,9 @@ c        go to 5000
           if(radcod .and. radtaper)then
             if(rt)then
               l1=nextl(l)
-              ak1=ak1*(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0
+              ak1=ak1*((2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0)
             else
-              ak1=ak1*(1.d0+cod(6))
+              ak1=ak1*(1.d0-dp0+cod(6))
             endif
           endif
           call tthine(trans,cod,beam,lele,al,ak1,
@@ -571,9 +572,9 @@ c        go to 5000
           if(radcod .and. radtaper)then
             if(rt)then
               l1=nextl(l)
-              rtaper=(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0
+              rtaper=(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0
             else
-              rtaper=1.d0+cod(6)
+              rtaper=1.d0-dp0+cod(6)
             endif
           endif
           if(seg)then

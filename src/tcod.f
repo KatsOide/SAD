@@ -6,16 +6,15 @@
       use ffs, only:mfitddp
       use tmacro
       implicit none
-      integer*4 im,lmax
-      real*8 conv0,epsr0,epsrr,rmax,fmin,a,ddpmax,red
-c      real*8 dzmax
+      integer*4 im
       logical fndcod
-      parameter (lmax=100,
+      integer*4 , parameter :: lmax=100
+      real*8, parameter :: 
      $     conv0=1.d-10,epsr0=1.d-6,ddpmax=3.e-5,
-     1     epsrr=1.d-4,rmax=1.d200,fmin=1.d-4,a=0.25d0)
+     1     epsrr=1.d-4,rmax=1.d200,fmin=1.d-4,a=0.25d0, dpthre=3.e-4
       real*8 trans(6,12),cod(6),codi(6),codf(6),dcod(6),beam(42),
      1     r0,fact,trf00,dtrf0,r,dcod1(6),codw(6),conv,trs(6,6),
-     $     dcod0(6),s,trw,dz,alambdarf,trf0s,v0
+     $     dcod0(6),s,trw,dz,alambdarf,trf0s,v0,red,ddp
       integer*4 loop,i
       logical*4 isnan,rt,rtr
       real*8 , parameter :: codw0(6) =
@@ -30,7 +29,7 @@ c      real*8 dzmax
       vcalpha=1.d0
       trf0s=0.d0
       v0=p0/h0
-      dp0=rlist(latt(1)+mfitddp)
+c      write(*,*)'tcod-dp0 ',dp0
       rt=.false.
  10   dcod=0.d0
       dcod0=0.d0
@@ -54,6 +53,7 @@ c      real*8 dzmax
         trw=codw(5)
         codi(6)=dp0
       endif
+      conv=1.d0
  1    loop=loop-1
       if(loop .le. 0)then
         if(rtr)then
@@ -73,8 +73,11 @@ c      real*8 dzmax
       rt=radtaper
       dcod1=codi-codf
       if(radtaper)then
-        dleng=dleng+dcod1(5)
-        call rsetgl1('FSHIFT',-dleng/circ)
+c        write(*,*)'tcod-dleng ',dcod1(5),dleng
+        if(.not. isnan(dcod1(5)))then
+          dleng=dleng+dcod1(5)
+          call rsetgl1('FSHIFT',-dleng/circ)
+        endif
         dcod1(5)=0.d0
       endif
       r=0.d0
@@ -130,6 +133,7 @@ c      write(6,'(1p6g12.5)')codi,codf,dcod
         dcod1(5)=0.d0
       endif
       dcod0=dcod
+      ddp=dcod1(6)
       call tsolvg(trs,dcod1,dcod,im,6,6)
       if(radcod)then
         codi(5)=codi(5)-dz-dtrf0*v0
@@ -139,6 +143,10 @@ c      write(6,'(1p6g12.5)')codi,codf,dcod
           trf0=-mod(-trf0+0.5d0*alambdarf,alambdarf)+alambdarf*0.5d0
         else
           trf0= mod(trf0-0.5d0*alambdarf,alambdarf)+alambdarf*0.5d0
+        endif
+c        write(*,*)'tcod-dz ',dz,dvcacc,dz*dvcacc/pgev,ddp
+        if(abs((dz-dtrf0*v0)*dvcacc/pgev)+abs(ddp) .gt. dpthre)then
+          dcod(1:4)=0.d0
         endif
       endif
       cod=codi

@@ -7,12 +7,10 @@
       use tfstk, only:pxy2dpz,sqrt1
       implicit none
       logical*4 enarad,chro,fringe,kin
-      integer*4 ndiv,np,l,i,mfring,n
+      integer*4 np,l,i,mfring
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
      $     f1r,f2r,al,ak,dx,dy,theta,cost,sint,radlvl,eps0,
-     $     f1in,f1out,f2in,f2out,
-     $     p,a,ea,b,pxi,pxf,pyf,b1,eps,akin,sqrtk,alx,dpz,r,xi,yi,akk,
-     $     phi,s,t,th,u,a11,a12,b11,b12,a21,b21,aln,pti,ei
+     $     f1in,f1out,f2in,f2out,p,a,ea,b,pxi,pxf,pyf,b1,xi
       real*8, parameter :: ampmax=0.9999d0
       if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,pz,4,l,0.d0,ak,
@@ -49,7 +47,7 @@ c          p=(1.d0+g(i))**2
           py(i)=pyf
 2110    continue
       endif
-      if(enarad .and. ak .ne. 0.d0)then
+      if(enarad)then
         if(iprev(l) .eq. 0)then
           f1r=sqrt(abs(24.d0*f1in/ak*al))
         else
@@ -65,132 +63,11 @@ c          p=(1.d0+g(i))**2
      1       b1,0.d0,0.d0,.5d0*al,
      $       f1r,f2r,0.d0,al,1.d0)
       endif
-      if(eps0 .eq. 0.d0)then
-        eps=.1d0
+      if(ak*al .ge. 0.d0)then
+        call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,0.d0,0.d0,0.d0,eps0)
       else
-        eps=.1d0*eps0
+        call tsolqu(np,y,py,x,px,z,g,dv,pz,al,-ak,0.d0,0.d0,0.d0,eps0)
       endif
-      if(kin)then
-        akin=1.d0
-        ndiv=1+int(abs(ak*al)/eps)
-      else
-        akin=0.d0
-        ndiv=1
-      endif
-      aln=al/ndiv
-      if(chro)then
-        do i=1,np
-          pz(i)=sqrt(abs(ak/al)/(1.d0+g(i)))
-        enddo
-      else
-        sqrtk=sqrt(abs(ak/al))
-        do i=1,np
-          pz(i)=sqrtk
-        enddo
-      endif
-      do 310 n=1,ndiv
-        if(n .eq. 1)then
-          alx=aln*.5d0
-        else
-          alx=aln
-        endif
-        if(ak*al .gt. 0.d0)then
-          do 100 i=1,np
-            a=px(i)**2+py(i)**2
-            dpz=akin*sqrt1(-a)
-c            dpz=akin*a*(-.5d0-a*(.125d0+a*.0625d0))
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-            r=-dpz/(1.d0+dpz)*alx
-            xi  =x(i)+px(i)*r
-            yi  =y(i)+py(i)*r
-            z(i)=z(i)-(3.d0+dpz)*a/2.d0/(2.d0+dpz)*r
-            akk=pz(i)
-            phi=akk*aln*.5d0
-            s=phi**2
-            t=1.d0-s/(3.d0-s/(5.d0-s/(7.d0-s/9.d0)))
-            th=1.d0+s/(3.d0+s/(5.d0+s/(7.d0+s/9.d0)))
-            u=t**2+s
-            a11=(t-phi)*(t+phi)/u
-            a12=2.d0*t*phi/u
-            u=(th-phi)*(th+phi)
-            b11=(th**2+s)/u
-            b12=2.d0*th*phi/u
-            a21=-a12*akk
-            a12=a12/akk
-            b21=b12*akk
-            b12=b12/akk
-            x(i)=a11*xi+a12*px(i)
-            y(i)=b11*yi+b12*py(i)
-c            z(i)=z(i)-dv(i)*aln-
-c     1         (((px(i)**2+(xi*akk)**2)*(aln+a11*a12)+
-c     1           (py(i)-yi*akk)*(py(i)+yi*akk)*(aln+b11*b12))*.5d0+
-c     1           xi*x(i)*a21+yi*y(i)*b21)*.5d0
-            pti=xi*px(i)+yi*py(i)
-            ei=.5d0*(px(i)**2+py(i)**2+akk**2*(xi-yi)*(xi+yi))
-            px(i)=a21*xi+a11*px(i)
-            py(i)=b21*yi+b11*py(i)
-            z(i)=z(i)-(dv(i)+.5d0*ei)*aln-
-     $           .25d0*(x(i)*px(i)+y(i)*py(i)-pti)
-100       continue
-        else
-          do 110 i=1,np
-            a=px(i)**2+py(i)**2
-            dpz=akin*sqrt1(-a)
-c            dpz=akin*a*(-.5d0-a*(.125d0+a*.0625d0))
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-            r=-dpz/(1.d0+dpz)*alx
-            xi  =x(i)+px(i)*r
-            yi  =y(i)+py(i)*r
-            z(i)=z(i)-(3.d0+dpz)*a/2.d0/(2.d0+dpz)*r
-            akk=pz(i)
-            phi=akk*aln*.5d0
-            s=phi**2
-            t=1.d0-s/(3.d0-s/(5.d0-s/(7.d0-s/9.d0)))
-            th=1.d0+s/(3.d0+s/(5.d0+s/(7.d0+s/9.d0)))
-            u=t**2+s
-            b11=(t-phi)*(t+phi)/u
-            b12=2.d0*t*phi/u
-            u=(th-phi)*(th+phi)
-            a11=(th**2+s)/u
-            a12=2.d0*th*phi/u
-            b21=-b12*akk
-            b12=b12/akk
-            a21=a12*akk
-            a12=a12/akk
-            x(i)=xi*a11+px(i)*a12
-            y(i)=yi*b11+py(i)*b12
-c            z(i)=z(i)-dv(i)*aln-
-c     1         (((px(i)-xi*akk)*(px(i)+xi*akk)*(aln+a11*a12)+
-c     1           (py(i)**2+(yi*akk)**2)*(aln+b11*b12))*.5d0+
-c     1           xi*x(i)*a21+yi*y(i)*b21)*.5d0
-            pti=xi*px(i)+yi*py(i)
-            ei=.5d0*(px(i)**2+py(i)**2-akk**2*(xi-yi)*(xi+yi))
-c            if(i .eq. 10)then
-c              write(*,'(1p5g15.7)')akk,a21,xi,a11,px(i)
-c            endif
-            px(i)=a21*xi+a11*px(i)
-            py(i)=b21*yi+b11*py(i)
-            z(i)=z(i)-(dv(i)+.5d0*ei)*aln-
-     $           .25d0*(x(i)*px(i)+y(i)*py(i)-pti)
-110       continue
-        endif
-310   continue
-c      if(abs(x(1)) .gt. 0.05d0)then
-c        write(*,*)'tquad ',np,x(1),px(1)
-c      endif
-      do 2050 i=1,np
-        a=px(i)**2+py(i)**2
-        dpz=akin*sqrt1(-a)
-c        dpz=akin*a*(-.5d0-a*(.125d0+a*.0625d0))
-c        dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-c        dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-        r=-dpz/(1.d0+dpz)*aln*.5d0
-        x(i)=x(i)+px(i)*r
-        y(i)=y(i)+py(i)*r
-        z(i)=z(i)-(3.d0+dpz)*a/2.d0/(2.d0+dpz)*r
-2050  continue
       if(enarad)then
         call trad(np,x,px,y,py,g,dv,0.d0,0.d0,
      1       b1,0.d0,0.d0,.5d0*al,

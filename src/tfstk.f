@@ -374,9 +374,6 @@ c     call tfsetlastp(ip+m-1)
         integer*8 ka,ix,ik,ik0,ip,ix1
         integer*4 m,mx
         m=ilist(1,ka-1)
-        if(ka .gt. 577719944 .and. ka .lt. 577719964)then
-          write(*,*)'tfree ',ka,m
-        endif
         if(m .lt. 4)then
           if(m .ne. 0)then
             write(*,*)'tfree-too small segment: ',ka,m

@@ -319,7 +319,8 @@ c     $              +l-1),
         endif
         ak1=cmp%value(ky_K1_BEND)
         if(rad .and. radcod .and. radtaper)then
-          rtaper=1.d0+(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+          rtaper=1.d0-dp0
+     $         +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
           ak0=ak0*rtaper
           ak1=ak1*rtaper
         endif
@@ -348,6 +349,7 @@ c     $              +l-1),
         rtaper=1.d0
         if(rad .and. radcod .and. radtaper)then
           rtaper=(2.d0+gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+     $         -dp0
         endif
         call tquad(np,x,px,y,py,z,g,dv,pz,l,al,
      1       cmp%value(ky_K1_QUAD)*rtaper,
@@ -370,7 +372,8 @@ c     $              +l-1),
         endif
         ak1=cmp%value(ky_K_THIN)
         if(rad .and. radcod .and. radtaper)then
-          ak1=ak1*(2.d0+gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+          ak1=ak1*((
+     $         2.d0+gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0-dp0)
         endif
         call tthin(np,x,px,y,py,z,g,dv,pz,lele,l,al,ak1,
      1       cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
@@ -405,7 +408,8 @@ c     $              +l-1),
       case (icMULT)
         rtaper=1.d0
         if(rad .and. radcod .and. radtaper)then
-          rtaper=1.d0+(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+          rtaper=1.d0-dp0
+     $         +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
         endif
         bz=0.d0
         if(seg)then

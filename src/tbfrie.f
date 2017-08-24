@@ -322,9 +322,6 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       cod(2)=pxi*cosp+pzi*sinp
       cod(3)=cod(3)+pyi/pzi*sx
       cod(5)=cod(5)-pr/pzi*sx
-      if(isnan(cod(2)))then
-        write(*,*)'edgedrift-1 ',cod(2),s,pxi,pyi,pzi,pr
-      endif
       phsq=pzi**2+pxi**2
       trans(1,1)=1.d0/f
       trans(1,2)=phsq*sxa

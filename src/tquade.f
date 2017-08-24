@@ -16,6 +16,7 @@
      $     zx,zy,zxp,zyp,x,y,sinc,sinhc,xsin,xsinh,pramin
       logical*4 enarad,fringe,kin,next,prev
       parameter (pramin=1.d-4)
+      integer*4 , parameter :: ndivmax=512
       if(al .eq. 0.d0)then
         call tthine(trans,cod,beam,4,
      $       al,ak,dx,dy,theta,.false.,ld)
@@ -53,7 +54,7 @@
       endif
       if(enarad)then
         b1=brhoz*ak/al
-        ndiv=max(ndiv,itgetqraddiv(cod,ak,al))
+        ndiv=min(ndivmax,max(ndiv,itgetqraddiv(cod,ak,al)))
       endif
       akn=ak/ndiv
       aln=al/ndiv

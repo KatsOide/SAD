@@ -34,9 +34,9 @@
         rtaper=1.d0
         if(radtaper)then
           if(rt)then
-            rtaper=(2.d0+cod(6)+gettwiss(mfitddp,nextl(l)))*.5d0
+            rtaper=(2.d0+cod(6)+gettwiss(mfitddp,nextl(l)))*.5d0-dp0
           else
-            rtaper=(1.d0+cod(6))
+            rtaper=(1.d0-dp0+cod(6))
           endif
         endif
         call tsole1(trans,cod,beam,l,rtaper,.true.,.false.)

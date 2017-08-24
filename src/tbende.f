@@ -122,7 +122,6 @@
         bx=b1*cod(3)
         by=b+b1*xe
         bxy=b1*dxe
-c        write(*,*)'tbende ',bxy,by,b1,xe
         call trade(trans,beam,cod,bx,by,0.d0,0.d0,
      $       0.d0,bxy,0.d0,fal,alnr,als,ala,fb1,fb2,prev,next)
         tbinit=tbinit .or. cod(6) .ne. dpini
@@ -287,7 +286,7 @@ c        write(*,*)'tbende ',bxy,by,b1,xe
      $     dxfr1,dyfr1,dxfr2,dyfr2,
      $     eps,f1r,f2r,akn,tanp1,tanp2,
      $     f,xe,bx,by,bxy,xf,xfr,dxe,
-     $     dphiy,dyfra1,dyfra2,apsi1,apsi2,
+     $     dphiy,dyfra1,dyfra2,apsi1,apsi2,cod11,
      $     csphin,snphin,sinsqn,phin,aln
       real*8 trans(6,12),cod(6),beam(42)
       complex*16 akm(0:nmult)
@@ -409,6 +408,7 @@ c        write(*,*)'tbende ',bxy,by,b1,xe
       tanp2=tan(psi2*phi0+apsi2)
       f=1.d0/rho0
       call tbedge(trans,cod,beam,al,phib,psi1*phi0+apsi1,.true.,ld)
+      cod11=cod(1)
       akn=ak/ndiv
       aln=al/ndiv
       phin=aln/rho0
@@ -478,10 +478,6 @@ c        write(*,*)'tbende ',bxy,by,b1,xe
         bradprev=0.d0
       endif
       call tbedge(trans,cod,beam,al,phib,psi2*phi0+apsi2,.false.,ld)
-c      if(isnan(cod(3)) .or. isnan(cod(1)) .or.
-c     $     isnan(cod(2)) .or. isnan(cod(4)))then
-c        write(*,*)'tbende-edge1 ',cod
-c      endif
       if(fb2 .ne. 0.d0)then
         if(mfring .gt. 0 .or. mfring .eq. -2)then
           dxfr2=-fb2**2/rhob/24.d0

@@ -173,3 +173,31 @@ c              call tfsetcmp(valvar(j),cmp,iv)
       endif
       return
       end
+
+      subroutine tffsadjust1(isp0)
+      use tfstk
+      use ffs
+      use ffs_pointer
+      use tffitcode
+      use tfcsi, only:icslfno
+      use ffs_seg
+      implicit none
+      integer*4 i,j,isp0,irtc,ie,ie1
+      do i=1,nlat-1
+        ie=iele1(iele(i))
+        ie1=iele1(i)
+        if(klp(ie1) .ne. i)then
+          do j=isp0+1,isp
+            if(ie1 .eq. itastk(1,j))then
+              call tfvcopy(klp(ie1),i,itastk(2,j),1.d0)
+            endif
+          enddo
+        endif
+      enddo
+      call tffscoupledvar(irtc)
+      if(irtc .ne. 0)then
+        call termes(icslfno(),'?Error in CoupledVariables',' ')
+      endif
+      return
+      end
+

@@ -23,7 +23,8 @@
      $     dhg,rg2,dgb,wakew1,w1n,theta1,phia,psi1,psi2,
      $     apsi1,apsi2,bz0,v10a,v11a,v20a,v02a,offset1,va,sp,cp,
      $     av,dpxa,dpya,dpx,dpy,dav,davdz,davdp,ddhdx,ddhdy,ddhdp,
-     $     ddhdz,wi,dv,s0,fb1,fb2,rtaper
+     $     ddhdz,wi,dv,s0,fb1,fb2,rtaper,cod60,cod10,cod30,
+     $     trans10(6,6)
       real*8 trans(6,12),trans1(6,6),cod(6),beam(42)
       complex*16 cx,cx0,cx2,cr,cr1
       real*8 fact(0:nmult),an(0:nmult)
@@ -68,10 +69,8 @@
       else
         theta1=atan2(imag(ak(1)),dble(ak(1)))*.5d0
       endif
-c      write(*,*)'tmulte-1 ',cod(1),cod(2),cod(3),cod(4)
       call tsolrot(trans,cod,beam,al,bz0,dx,dy,dz,
      $     chi1,chi2,theta+theta1,bxs,bys,bzs,.true.,ld)
-c      write(*,*)'tmulte-2 ',cod(1),cod(2),cod(3),cod(4)
       cr1=dcmplx(cos(theta1),-sin(theta1))
       akn(0)=(ak(0)*cr1+dcmplx(bys,bxs)*al)*rtaper
       bz=bz0
@@ -202,11 +201,22 @@ c     end   initialize for preventing compiler warning
       dgb=0.d0
       do m=1,ndiv
         if(nmmin .eq. 2)then
+          cod10=cod(1)
+          cod30=cod(3)
+          cod60=cod(6)
+          trans10=trans(:,1:6)
           call tsolque(trans,cod,beam,al1,ak1,
      $         bzs,dble(ak0n),imag(ak0n),
      $         eps0,enarad,radcod,calpol,irad,ld)
           call tgetdvh(dgb,dv)
           cod(5)=cod(5)+dv*al1
+c          if(abs(trans(2,3)).gt. 2.d0 .or.
+c     $         abs(trans(1,3)) .gt. 2.d0)then
+c            write(*,'(a,i5,1p8g14.6)')'tmulte-02 ',m,
+c     $           cod(1),cod(3),cod(6),dy,ak1,ak(2)
+c            write(*,'(1p6g14.6)')trans(:,1:6)
+c            write(*,'(1p6g14.6)')trans10
+c          endif
         endif
         ak1=dble(akn(1))
         al1=aln
@@ -395,8 +405,6 @@ c        rg=sqrt(rg2)
         cod(4)=cod(4)*rg2
         cod(6)=(cod(6)+1.d0)*rg2-1.d0
         pgev=gammab(l+1)*amass
-c        write(*,'(a,1p6g15.7)')'tmulte-8 ',p0*amass,
-c     $       gammab(l+1)*amass,cod(6)
         call tphyzp
         call tesetdv(cod(6))
       endif
