@@ -161,7 +161,7 @@ c$$$
       type ffsv
         sequence
         integer*8 ifaux,ifibzl,ifmult,ifklp,ifival,iftwissp,
-     $       iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifele,ifcoup,
+     $       iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifdcomp,ifele,ifcoup,
      $       iferrk,ifvarele,ifvvar,ifvalvar,ifele1,ifele2,
      $       ifmast,iftouchele,iftouchv,lfnp,iffserr,
      $       ifivcomp,ifvlim,iffssave,iut,ifiprev,ifinext,
@@ -229,7 +229,7 @@ c$$$
      $     '        ','        ','        ','        '/)
 
       integer*8, pointer :: ifvlim,ifibzl,ifmult,ifklp,ifival,iftwissp,
-     $     iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifele,ifcoup,
+     $     iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifdcomp,ifele,ifcoup,
      $     iferrk,ifvarele,ifvvar,ifvalvar,ifele1,ifele2,
      $     ifmast,iftouchele,iftouchv,lfnp,iffserr,ifivcomp,iffssave,
      $     ifiprev,ifinext,ielmhash
@@ -258,6 +258,7 @@ c$$$
         ifgeo=>ffv%ifgeo
         ifsize=>ffv%ifsize
         ifgamm=>ffv%ifgamm
+        ifdcomp=>ffv%ifdcomp
         ifele=>ffv%ifele
         ifcoup=>ffv%ifcoup
         iferrk=>ffv%iferrk
@@ -510,6 +511,7 @@ c$$$
       module ffs_pointer
       use sad_main
       implicit none
+      type (sad_descriptor) , pointer :: dcomp(:)
       real*8 , pointer, contiguous :: errk(:,:),couple(:),
      $     valvar(:),valvar2(:,:)
       integer*8, pointer, dimension(:) :: iele2 
@@ -537,6 +539,7 @@ c$$$
         call c_f_pointer(c_loc(ilist(1,ifmult)),mult,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifmast)),master,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifival)),ival,[nele])
+        call c_f_pointer(c_loc(dlist(ifdcomp)),dcomp,[nele])
         call c_f_pointer(c_loc(ilist(1,ifele)),iele,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifele1)),iele1,[nlat])
         call c_f_pointer(c_loc(klist(ifele2)),iele2,[nlat])
@@ -1302,6 +1305,29 @@ c          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
       return
       end subroutine
 
+      subroutine elcompl(i,kl)
+      use tfstk
+      use ffs
+      use ffs_pointer
+      implicit none
+      type (sad_rlist), pointer :: kl
+      integer*4 i,l,isp1
+      if(dcomp(i)%k .eq. 0)then
+        isp1=isp
+        do l=1,nlat-1
+          if(iele1(l) .eq. i)then
+            isp=isp+1
+            rtastk(isp)=dble(l)
+          endif
+        enddo
+        dcomp(i)=dtfcopy(kxmakelist(isp1,kl))
+        isp=isp1
+      else
+        call descr_sad(dcomp(i),kl)
+      endif
+      return
+      end subroutine
+
       end module
 
       module ffs_seg
@@ -1313,7 +1339,6 @@ c          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
         use sad_main
         use kyparam
         implicit none
-        type (sad_descriptor) kxx
         type (sad_comp) ::cmp
         type (sad_dlist) , pointer :: lprof,lsegp
         real*8 al
@@ -1679,6 +1704,8 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       iferrk=ktaloc(nlat*2)
       ifmast =ktaloc(nlat/2+1)
       ifival=ktaloc(nele/2+1)
+      ifdcomp=ktaloc(nele)
+      klist(ifdcomp:ifdcomp+nele-1)=int8(0)
       ifele =ktaloc(nlat/2+1)
       ifele2=ktaloc(nlat)
       ifklp =ktaloc(nele/2+1)
@@ -1723,7 +1750,10 @@ c      ilist(2,iwakepold+6)=int(ifsize)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer, only:dcomp
       implicit none
+      integer*4 l,itfdownlevel,i
+      levele=levele+1
       call tfresethash
 c      call tfree(ilist(2,ifwakep))
 c      call tfree(ilist(2,ifwakep+2))
@@ -1755,9 +1785,14 @@ c      call tfree(ifibzl)
       call tfree(ifele2)
       call tfree(ifele1)
       call tfree(ifele)
+      do i=1,nele
+        call tflocald(dcomp(i))
+      enddo
+      call tfree(ifdcomp)
       call tfree(iferrk)
       call tfree(ifibzl)
       call tfree(ifgamm)
+      l=itfdownlevel()
       return
       end
 

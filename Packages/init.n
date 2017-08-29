@@ -404,12 +404,14 @@ SetAttrubutes[{Environment,Environment$,HomeDirectory,
 ExternalMap[___]:=Null;
 InitLINE$P[]:=(
   Clear[LINE$P,Element$P,Element$Key];
-  Module[{`n=LINE["NAME"]},
-    MapThread[(LINE$P[#]={#2})&,{n,Range[Length[n]]}]];
-  LINE$P[n_]:=(
+!  With[{`n=LINE["NAME"]},
+!    ScanThread[(LINE$P[#]={#2})&,{n,Range[Length[n]]}]];
+  LINE$P[n_String]:=(
     LINE$P[n]=Flatten[{LINE["POSITION","@"//n]}]);
-  Module[{n=Element$["NAME"]},
-    MapThread[(Element$P[#]={#2})&,{n,Range[Length[n]]}]];
+  LINE$P[n_]:=(
+    LINE$P[n]=Flatten[{LINE["POSITION",n]}]);
+!  With[{n=Element$["NAME"]},
+!    ScanThread[(Element$P[#]={#2})&,{n,Range[Length[n]]}]];
   Element$P[n_]:=(
     Element$P[n]=Flatten[{Element$["POSITION",n]}]);
   Element$Key[n_]:=(Element$Key[n]=Type$Key[Element$["TYPE",n]]);

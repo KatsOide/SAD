@@ -24,7 +24,6 @@
       implicit none
       type (sad_comp), pointer :: cmp
       type (sad_dlist), pointer :: lsegp
-      type (sad_descriptor) kxx
       integer*4 idp,la,lb,ip0,l1,i,l,ip1,ip,ltyp,
      $     j,mfr,itgetfpe,k,ibb,ibg,ntfun,ipa,irtc
       integer*8 le,lp,ld

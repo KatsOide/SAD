@@ -92,7 +92,7 @@ c              call tfsetcmp(valvar(j),cmp,iv)
       use tfcsi, only:icslfno
       use ffs_seg
       implicit none
-      integer*4 itv(nve*2),ite(nve*2)
+      integer*4 itv(flv%ntouch),ite(nve*2)
       integer*4 i,ie,j,irtc,ie1,ntv,k
       ite=0
       ntv=0
@@ -170,6 +170,56 @@ c              call tfsetcmp(valvar(j),cmp,iv)
           endif
         endif
         return
+      endif
+      return
+      end
+
+      subroutine tffsadjust1(isp0,var,nv)
+      use tfstk
+      use ffs
+      use ffs_pointer
+      use tflinepcom
+      use tfcsi
+      use ffs_seg
+      implicit none
+      type (sad_rlist), pointer ::kl
+      integer*4 i,j,isp0,isp1,l,irtc,k,k1,ie1
+      logical*4 var,nv
+      if(nv)then
+        do i=1,nele
+          k1=klp(i)
+          do j=isp0+1,isp
+            if(itastk(1,j) .eq. i)then
+              call elcompl(i,kl)
+              do l=1,kl%nl
+                k=int(kl%rbody(l))
+                if(k .ne. k1 .and. iele(k) .eq. k1
+     $               .and. itastk(2,j) .ne. ival(i))then
+                  call tfvcopy(k1,k,itastk(2,j),1.d0)
+                endif
+              enddo
+            endif
+          enddo
+        enddo
+      endif
+      if(var)then
+        isp1=isp
+        isp=isp+1
+        do l=1,nlat-1
+          ie1=iele1(iele(l))
+          itastk(1,isp)=ie1
+          itastk(2,isp)=ival(ie1)
+          do j=isp0+1,isp1
+            if(ktastk(j) .eq. ktastk(isp))then
+              call tfvcopy(klp(ie1),l,ival(ie1),couple(l))
+            endif
+          enddo
+        enddo
+        isp=isp1
+      endif
+      call tffscoupledvar(irtc)
+      if(irtc .ne. 0)then
+        call termes(icslfno(),'?Error in CoupledVariables',' ')
       endif
       return
       end

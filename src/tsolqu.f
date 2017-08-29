@@ -72,30 +72,22 @@ c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
             z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
             xi=x(i)+dx0
             yi=y(i)+dy0
-            a=  xi
-            bw= px(i)/w1
-            b=bw*w1
-            c=  py(i)/akkp
-            dw= yi/w1
-            d=dw*w1
-            u1w= a*dc1+bw*s1
-            u1=u1w*w1
-            u2w=-a*s1 +bw*dc1
-            u2=u2w*w1
-            v1w= c*dch2+dw*sh2
-            v1=v1w*w1
-            v2w= c*sh2 +dw*dch2
-            v2=v2w*w1
-            x(i) =x(i) +u1w
+            b=px(i)
+            d=py(i)
+            u1 =   xi*dc1 +b*s1/w1
+            u2 =-xi*w1*s1 +b*dc1
+            v1 =   yi*dch2+d*sh2/w1
+            v2 = yi*w1*sh2+d*dch2
+            x(i) =x(i) +u1
             px(i)=px(i)+u2 
-            y(i) =y(i) +w1*v2w
-            py(i)=py(i)+w1*v1
+            y(i) =y(i) +v1
+            py(i)=py(i)+v2 
             z(i) =z(i)-0.25d0*(
-     $       +(b**2*aln+(u1w*(u2+b)+a*b*dc1)
-     $         +a**2*w1*xs1)
-     $       +(c**2*akkp**2*aln+((v1w+c)*v2+c*d*dch2)*akkp
-     $         -d**2*w1*xsh2))
-     $       -dv(i)*aln
+     $           w1*(xi**2*xs1-yi**2*xsh2)
+     $           +(b**2+d**2)*aln
+     $           +u1*(u2+b)+xi*b*dc1
+     $           +v1*(v2+d)+yi*d*dch2)
+     $           -dv(i)*aln
           enddo
           ap=min(smax,px(i)**2+py(i)**2)
           dpz=sqrt1(-ap)

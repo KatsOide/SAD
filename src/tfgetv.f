@@ -11,20 +11,23 @@
       integer*8 kav
       integer*4 ii,i,id,iv,next,lfno,ivi,kv,next1,lw1
       real*8 v,getva,va,vx
-      integer*4 nl,irtc,lw,iii,lenw
+      integer*4 nl,irtc,lw,iii,lenw,isp0
       character*(*) word
       character*128 word1
       logical*4 exist,get,rel,maxf,minf,
-     $     abbrev,var,exist1,diff,vcomp, cont
+     $     abbrev,var,exist1,diff,vcomp, cont,vs,nvs
 
 c     Initialize to avoid compiler warning
       if(iflinep .eq. 0)then
         call tfinitlinep(irtc)
       endif
+      vs=.false.
+      nvs=.false.
       v=0
       kv=-1
       iv=-1
       id=0
+      isp0=isp
 c
       vcomp=index(word,'.') .gt. 0
       cont=.false.
@@ -73,7 +76,8 @@ c
               go to 9000
             else
               call termes(lfno,'?Missing value for ',word)
-              return
+              exist=.false.
+              exit
             endif
           else
             kv=itftypekey(id,word1,lw1)
@@ -88,18 +92,17 @@ c
           exist=.true.
  912      if(iv .eq. 0)then
             call termes(lfno,'?No default keyword for ',word)
-            return
+            exist=.false.
+            exit
           endif
           v=getva(exist1)
           if(.not. exist1)then
             if(cont)then
-              if(.not. vcomp)then
-                call tffsadjust
-              endif
             else
               call termes(lfno,'?Missing value for ',word)
             endif
-            return
+            exist=.false.
+            exit
           endif
         endif
         if(idtypec(ii) .ne. id)then
@@ -126,7 +129,8 @@ c
         endif
         if(ivi .eq. 0)then
           call termes(lfno,'?No default keyword for ',word)
-          return
+          exist=.false.
+          exit
         endif
         var=ivi .eq. ival(i)
         if(rel)then
@@ -165,13 +169,21 @@ c          rlist(latt(ii)+ivi)=vx
             call tftouch(i,ivi)
           endif
         endif
+        if(.not. vcomp)then
+          isp=isp+1
+          itastk(1,isp)=i
+          itastk(2,isp)=ivi
+          vs=vs .or. var
+          nvs=nvs .or. .not. var
+        endif
       enddo LOOP_II
       if(exist)then
         cont=.true.
         go to 1
       endif
- 9000 if(exist .and. .not. vcomp)then
-        call tffsadjust
+ 9000 if(isp .gt. isp0)then
+        call tffsadjust1(isp0,vs,nvs)
       endif
+      isp=isp0
       return
       end

@@ -28,7 +28,7 @@ c      pzi=sqrtl(1.d0-sq)
       vy=pzi*bx-pxi*bz
       vz=pxi*by-pyi*bx
       brad2=vx**2+vy**2+vz**2
-      alr=al+cod(1)*dldx
+      alr=max(0.d0,al+cod(1)*dldx)
       brad=sqrt(brad2)
       brad3=brad2*brad
       if(prev .and. s .eq. 0.d0)then
@@ -50,7 +50,6 @@ c      pzi=sqrtl(1.d0-sq)
           call tradel(al,f1r,f2r,s,ala,alr2,alr3)
           brad2=brad2*alr2/al
           brad3=brad3*alr3/al
-c          write(*,'(a,1p7g15.7)')'trade ',al,f1r,f2r,s,ala,alr2,alr3
         endif
       endif
       bradprev=brad

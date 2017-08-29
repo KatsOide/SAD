@@ -160,7 +160,8 @@
           al=cmp%value(ky_L_QUAD)
           rtaper=1.d0
           if(rad .and. radcod .and. radtaper)then
-            rtaper=1.d0+(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+            rtaper=1.d0-dp0
+     $           +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
           endif
           call tquads(np,x,px,y,py,z,g,dv,pz,l,al,
      $         cmp%value(ky_K1_QUAD)*rtaper,bzs,
@@ -177,7 +178,8 @@
         case (icMULT)
           rtaper=1.d0
           if(rad .and. radcod .and. radtaper)then
-            rtaper=1.d0+(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+            rtaper=1.d0-dp0
+     $           +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
           endif
           if(seg)then
             call tmultiseg(np,x,px,y,py,z,g,dv,pz,
