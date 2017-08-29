@@ -127,11 +127,14 @@
         if(ne .le. 0)then
           ne=ne+nlat
         endif
+c        write(*,*)'tftrack ',nparallel,npz,npparamin,
+c     $       ne,npnlatmin
         if(npz .gt. nparallel*npparamin
-     $       .and. npz*ne .gt. npnlatmin)then
+     $       .and. npz .gt. npnlatmin/ne)then
           irtc=1
           ikptblm=ktfallocshared(npz*((nkptbl+1)/2))
           npr=nparallel-1
+c          write(*,*)'tftrack ',npr
           np1=npz/nparallel+1
           ipn=0
           npr=0

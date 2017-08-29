@@ -811,7 +811,7 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
       end interface
 
       interface kxmakelist
-        module procedure kxmakelist_dlist
+        module procedure kxmakelist_dlist,kxmakelist_rlist
       end interface
 
       interface sad_descr
@@ -838,7 +838,7 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
       end interface
 
       interface ktfmakelist
-        moduleprocedure ktfmakelist_dlist
+        moduleprocedure ktfmakelist_dlist,ktfmakelist_rlist
       end interface
 
       interface ktfobjq
@@ -2614,6 +2614,14 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end function
 
+        type (sad_descriptor) function kxmakelist_rlist(isp1,kl)
+        implicit none
+        type (sad_rlist), pointer, intent(out) :: kl
+        integer*4 isp1
+        kxmakelist_rlist%k=ktflist+ktfmakelist(isp1,kl)
+        return
+        end function
+
         type (sad_descriptor) function kxmakelist0(isp1,kl)
         implicit none
         type (sad_dlist), pointer, optional, intent(out) :: kl
@@ -3145,6 +3153,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         endif
         return
         end function
+
         integer*8 function ktfmakelist_dlist(isp1,kl)
         implicit none
         type (sad_dlist), pointer, optional, intent(out) :: kl
@@ -3162,6 +3171,24 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         if(present(kl))then
           call loc_dlist(ktfmakelist_dlist,kl)
         endif
+        return
+        end function
+
+        integer*8 function ktfmakelist_rlist(isp1,kl)
+        implicit none
+        type (sad_rlist), pointer, intent(out) :: kl
+        integer*4 isp1,narg
+        narg=isp-isp1
+        if(narg .eq. 1)then
+          if(ktastk(isp) .eq. ktfoper+mtfnull)then
+            ktfmakelist_rlist=ktavaloc(-1,0,kl)
+            return
+          endif
+        endif
+        ktfmakelist_rlist=
+     $       ktfaddr(kxcrelistm(narg,ktastk(isp1+1:isp1+narg),
+     $       k_descr(ktfoper+mtfleftbrace)))
+        call loc_rlist(ktfmakelist_rlist,kl)
         return
         end function
 
