@@ -167,6 +167,9 @@ c          call tfsetcmp(vx,cmpd,ivi)
 c          rlist(latt(ii)+ivi)=vx
           if(.not. vcomp)then
             call tftouch(i,ivi)
+            isp=isp+1
+            itastk(1,isp)=i
+            itastk(2,isp)=iv
           endif
         endif
         if(.not. vcomp)then
