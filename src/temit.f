@@ -621,11 +621,12 @@ c     call tsymp(trans)
         cd(i+3)=log(cc(i*2-1))
       enddo
       if(vceff .ne. 0.d0)then
+        phirf=asin(u0*pgev/vceff)
         heff=wrfeff*c/omega0
       else
+        phirf=0.d0
         heff=0.d0
       endif
-      phirf=abs(trf0*wrfeff)
       synchm=rfsw .and. imag(cd(6)) .ne. 0.d0
       if(synchm)then
         if(wrfeff .ne. 0.d0)then

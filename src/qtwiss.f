@@ -1436,7 +1436,6 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
       use tffitcode
       use sad_main
       implicit none
-      type (sad_descriptor) kxx
       type (sad_comp) :: cmp
       type (sad_dlist) :: lsegp
       type (sad_dlist) , pointer :: lk
