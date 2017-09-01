@@ -520,7 +520,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
               if(irtc .ne. 0)then
                 go to 100
               endif
-              if(ktfnonrealq(kxi) .or. kxi%k .ne. 0)then
+              if(ktfnonrealq(kxi) .or. kxi%k .eq. 0)then
                 kx%k=0
                 go to 100
               endif
