@@ -75,10 +75,9 @@
       type (sad_descriptor) k,ka0
       type (sad_dlist), pointer :: list
       integer*4 isp1,isp2,i,j,m,n1
-      logical*4 tfsameheadqk
       if(ktfnonlistq(k,list))then
         return
-      elseif(.not. tfsameheadqk(k%k,ka0%k))then
+      elseif(.not. tfsameheadq(k,ka0))then
         return
       else
         isp=isp+1

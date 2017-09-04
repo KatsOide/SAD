@@ -833,7 +833,6 @@ c        enddo
       integer*4 isp1,mode,irtc,i,j,kk,isp0,
      $     isp2,itfcanonicalorder,il,ih,m,narg,itfmessage
       real*8 vj
-      logical*4 tfsameheadqk
       narg=isp-isp1
       if(narg .eq. 1)then
         call tfsort(isp1,kx,1,irtc)
@@ -869,7 +868,7 @@ c        enddo
         enddo
         return
       endif
-      if(.not. tfsameheadqk(ka1,ktfaddr(ktastk(isp1+2))))then
+      if(.not. tfsameheadq(ka1,ktastk(isp1+2)))then
         irtc=itfmessage(9,'General::samehead',' ')
         return
       endif
@@ -1183,22 +1182,22 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
         ix=1
         return
       endif
-      if(ktfstringqd(k1,str1))then
-        if(ktfstringqd(k2,str2))then
+      if(ktfstringq(k1,str1))then
+        if(ktfstringq(k2,str2))then
           ix=itfstringorder(str1,str2)
         elseif(ktfrealq(k2))then
           ix=1
         endif
         return
-      elseif(ktfstringqd(k2))then
+      elseif(ktfstringq(k2))then
         ix=1
         return
       endif
       call tfcanonicalconv(k1,k1c)
       call tfcanonicalconv(k2,k2c)
-      if(ktfsymbolqd(k1c,sym1c))then
+      if(ktfsymbolq(k1c,sym1c))then
         call loc_namtbl(sym1c%loc,loc1)
-        if(ktfsymbolqd(k2c,sym2c))then
+        if(ktfsymbolq(k2c,sym2c))then
           call loc_namtbl(sym2c%loc,loc2)
           icont1=loc1%cont
           icont2=loc2%cont
@@ -1215,7 +1214,7 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
             ix=itfcanonicalorder(dlist(icont1),dlist(icont2))
           endif
         endif
-      elseif(ktfsymbolqd(k2c))then
+      elseif(ktfsymbolq(k2c))then
         ix=1
       elseif(ktflistq(k1c,kl1c))then
         if(ktflistq(k2c,kl2c))then
@@ -1264,13 +1263,13 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
         endif
       elseif(ktflistq(k2c))then
         ix=1
-      elseif(ktfpatqd(k1c,pat1))then
-        if(ktfpatqd(k2c,pat2))then
+      elseif(ktfpatq(k1c,pat1))then
+        if(ktfpatq(k2c,pat2))then
           ix=itfpatorder(pat1,pat2)
         else
           ix=1
         endif
-      elseif(ktfpatqd(k2c))then
+      elseif(ktfpatq(k2c))then
         ix=1
       else
         if(ktftype(k1c%k) .gt. ktftype(k2c%k))then
@@ -1287,7 +1286,7 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
       implicit none
       type (sad_descriptor) k,kx
       integer*8 ka
-      if(ktfoperqd(k,ka))then
+      if(ktfoperq(k,ka))then
 c        write(*,*)'canonicalconv ',ktfaddr(k)
         kx%k=ktfsymbol+klist(ifunbase+ka)
       else

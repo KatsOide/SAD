@@ -98,7 +98,7 @@
         kyindex=0
         kyindex1=0
         do i=icDRFT,icMXEL
-          do k=1,kwMAX-1
+          do k=1,kwMAX-2
             id=kytbl(k,i)
             if(id .ne. 0)then
               if(kyindex(id,i) .eq. 0)then

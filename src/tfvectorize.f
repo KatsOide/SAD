@@ -6,7 +6,7 @@
       integer*8 kaf,kaf1,kai
       integer*4 isp1,irtc,i,j,isp0,isp2,nv,idsp,itfmessage
       kf=dtastk(isp1+1)
-      if(ktfoperqd(kf,kaf))then
+      if(ktfoperq(kf,kaf))then
         if(kaf .eq. mtfplus .or. kaf .eq. mtftimes
      $       .or. kaf .eq. mtfpower .or. kaf .eq. mtfrevpower)then
           nv=0
@@ -99,7 +99,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
         dtastk(isp0)=kf
         do i=isp1+2,isp2
           ki=dtastk(i)
-          if(ktfrefqd(ki,kai))then
+          if(ktfrefq(ki,kai))then
             ktastk(idsp+i)=klist(kai+j)
           else
             ktastk(idsp+i)=ktastk(i)

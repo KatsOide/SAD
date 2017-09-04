@@ -510,7 +510,7 @@ c
       irtc=0
       if(ktfrealq(kv)) then
         call CaPutRealNowait(chid, kv, irtc)
-      else if(ktfstringqd(kv)) then
+      else if(ktfstringq(kv)) then
         str=tfgetstr(kv,nc)
         nc=len_trim(str)
         call CaPutStringNowait(chid,str(:nc),nc,irtc)

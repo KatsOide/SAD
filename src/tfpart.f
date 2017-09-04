@@ -1112,7 +1112,7 @@ c        enddo
       type (sad_descriptor) k
       type (sad_dlist) list
       integer*4 iv,i,lattr
-      logical*4 eval,tfconstqk,tfconstlistqo
+      logical*4 eval,tfconstlistqo
       eval=.false.
       if(iv .eq. 0)then
         call tflocald(list%head)
@@ -1138,7 +1138,7 @@ c        enddo
           eval=ktfsequenceq(k)
           lattr=iand(list%attr,ktoberebuilt)+lnonreallist
           if(tfconstlistqo(list))then
-            if(.not. tfconstqk(k%k) .or. eval)then
+            if(.not. tfconstq(k%k) .or. eval)then
               list%attr=lattr
             endif
           else

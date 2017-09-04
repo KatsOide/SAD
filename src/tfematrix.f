@@ -5,7 +5,6 @@
       type (sad_dlist) kl1,kl2
       type (sad_dlist), pointer :: kind1,kind2,kb1,klx,klx1
       integer*4 iopc1,irtc
-      logical*4 tfsamelistqo
       call descr_sad(kl1%dbody(1),kind1)
       call descr_sad(kl2%dbody(1),kind2)
       if(tfsamelistqo(kind1,kind2))then

@@ -364,9 +364,9 @@ c      call tfdebugprint(ktastk(isp),'readshard',3)
       ilist(2,ia)=1
       kx=dlist(ia+1)
 c      write(*,*)'readshared ',ia,kx%k
-      if(ktfobjqd(kx))then
+      if(ktfobjq(kx))then
 c        write(*,*)'readshared-obj '
-        if(ktfsymbolqd(kx))then
+        if(ktfsymbolq(kx))then
 c          write(*,*)'readshared-symbol '
           if( .not. tfcheckelement(kx,.false.))then
             irtc=itfmessage(99,'General::wrongtype',
@@ -375,7 +375,7 @@ c          write(*,*)'readshared-symbol '
             ilist(2,ia)=0
             return
           endif
-        elseif(ktfstringqd(kx,str))then
+        elseif(ktfstringq(kx,str))then
 c          call tfdebugprint(kx,'readshared-string',1)
 c          write(*,*)'at ',ia
           kx=kxsalocb(-1,str%str(1:str%nch),str%nch)

@@ -65,7 +65,7 @@
           write(word,'(''ftn'',i2.2)')lfni1
           lfnp=lfnp+1
           lfopen(lfnp)=.false.
-        elseif(ktfstringqd(kx))then
+        elseif(ktfstringq(kx))then
           call cssetp(next)
           word=tfconvstr(kx,nc,'*')
           do 8020 j=51,97
@@ -115,7 +115,7 @@
       elseif(abbrev(word,'EXE_CUTE','_'))then
         ret=.true.
         itype=itfpeeko(kx,next)
-        if(.not. ktfstringqd(kx,str))then
+        if(.not. ktfstringq(kx,str))then
           call termes(lfno,'?Missing string for EXE_CUTE.',' ')
           init=.true.
           return
@@ -145,7 +145,7 @@
         if(ktfrealq(kx,vx))then
           lfno1=int(vx+.5d0)
           call cssetp(next)
-        elseif(ktfstringqd(kx))then
+        elseif(ktfstringq(kx))then
           lfno1=98
           close(lfno1)
           call cssetp(next)

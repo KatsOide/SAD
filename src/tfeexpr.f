@@ -16,7 +16,7 @@
       ky=k
       select case (iopc)
       case(mtfplus,mtftimes)
-        if(.not. tfnumberqd(k1) .and. tfnumberqd(ky))then
+        if(.not. tfnumberq(k1) .and. tfnumberq(ky))then
           kx=ky
           ky=k1
         else
@@ -30,8 +30,8 @@
             endif
             irtc=0
             m=listy%nl
-            if(tfnumberqd(listy%dbody(1)))then
-              if(tfnumberqd(kx))then
+            if(tfnumberq(listy%dbody(1)))then
+              if(tfnumberq(kx))then
                 call tfcmplx(listy%dbody(1),kx,ky1,iopc,irtc)
                 if(irtc .ne. 0)then
                   ke%k=ktfoper+mtfnull
@@ -274,11 +274,11 @@ c        call tfdebugprint(ke,'tfeexpr-slot-end',3)
           endif
         endif
       case (mtfcolon)
-        if(ktfsymbolqd(k1,sym))then
+        if(ktfsymbolq(k1,sym))then
           call sym_symstr(sym,str)
           ke=kxpalocb(str%str,str%nch,ky,transfer(ktfref,k))
           return
-        elseif(ktfpatqd(k1,kp1))then
+        elseif(ktfpatq(k1,kp1))then
           kp1%default=dtfcopy(ky)
           ke%k=ktfpat+ktfaddrd(k1)
           return
@@ -295,9 +295,9 @@ c        call tfdebugprint(ky,'@',1)
             kle%rbody(1)=x
             kle%head=dtfcopy(k1)
             return
-          elseif((ktfsymbolqd(ky) .or. ktfoperqd(ky)) .and.
-     $           (ktfsymbolqd(k1) .or. ktflistq(k1)) .or.
-     $           ktfpatqd(ky))then
+          elseif((ktfsymbolq(ky) .or. ktfoperq(ky)) .and.
+     $           (ktfsymbolq(k1) .or. ktflistq(k1)) .or.
+     $           ktfpatq(ky))then
             go to 4900
           elseif(ktflistq(k1,kl1) .and.
      $           kl1%head%k .eq. ktfoper+mtfatt)then
@@ -630,23 +630,22 @@ c      go to 2000
       type (sad_descriptor) k1,k2,kx,k10,k20,ky1
       type (sad_dlist), pointer ::kl1,kl2
       integer*4 irtc,ma1,ma2,m,iopc,isp1
-      logical*4 tfsameheadqk
       if(ktfnonlistq(k1,kl1) .or. ktfnonlistq(k2,kl2))then
         irtc=-1
         return
       endif
-      if( .not. tfsameheadqk(k1,k2))then
+      if( .not. tfsameheadq(k1,k2))then
         irtc=-1
         return
       endif
       irtc=0
       iopc=int(ktfaddr(kl1%head%k))
       if(iopc .eq. mtfplus .or. iopc .eq. mtftimes)then
-        if(.not. tfnumberqd(kl1%dbody(1)))then
+        if(.not. tfnumberq(kl1%dbody(1)))then
           call tfjoin2(k2,k1,kx,.false.,irtc)
           go to 1000
         endif
-        if(.not. tfnumberqd(kl2%dbody(1)))then
+        if(.not. tfnumberq(kl2%dbody(1)))then
           call tfjoin2(k1,k2,kx,.false.,irtc)
           go to 1000
         endif
@@ -722,7 +721,7 @@ c      go to 2000
       type (sad_descriptor) kx,kf
       type (sad_dlist), pointer :: kl1,kli
       integer*4 isp1,irtc,itfmessage,i,narg,isp0
-      logical*4 tfsameqk,eval,ev
+      logical*4 eval,ev
       narg=isp-isp1
       if(ktfnonlistq(ktastk(isp1+1),kl1))then
         go to 9010
@@ -749,7 +748,7 @@ c      go to 2000
           isp=isp0-1
           go to 9000
         endif
-        if(.not. tfsameqk(kli%head%k,kf))then
+        if(.not. tfsameq(kli%head,kf))then
           go to 9100
         endif
         call tfgetllstkall(kli)
@@ -790,7 +789,7 @@ c      go to 2000
       type (sad_descriptor) kl,k,kx
       type (sad_dlist), pointer :: list,listx
       integer*4 irtc,m,itfmessage,mode,i
-      logical*4 eval,ev,tfconstqk
+      logical*4 eval,ev
       if(.not. ktflistq(kl,list))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List or composition for #1"')
@@ -835,7 +834,7 @@ c      go to 2000
       endif
       listx%head=dtfcopy(list%head)
       if(iand(list%attr,kconstarg) .ne. 0)then
-        if(.not. tfconstqk(k%k))then
+        if(.not. tfconstq(k%k))then
           listx%attr=ior(listx%attr-kconstarg,knoconstarg+lnoconstlist)
         endif
       endif
@@ -855,7 +854,7 @@ c      go to 2000
       type (sad_dlist), pointer :: kl,klx
       type (sad_rlist), pointer :: klr
       integer*4 m,i,mode,iaf,isp0
-      if(tfnumberqd(k))then
+      if(tfnumberq(k))then
         if(ktfrealq(k))then
           if(mode .eq. 1)then
             kx=k

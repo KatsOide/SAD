@@ -1766,7 +1766,7 @@ c
        call defflg('POL'  ,FLAGOF)
        call defflg('DAPERT',FLAGOF)
        call defflg('FLUC',FLAGON)
-       call defflg('CMPLOT',FLAGOF)
+       call defflg('K64' ,FLAGON)
        call defflg('FOURIE',FLAGOF)
        call defflg('SMEAR',FLAGON)
        call defflg('GEOCAL',FLAGON)

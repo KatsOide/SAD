@@ -108,7 +108,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       if(eval)then
         do i=1,m
           ki=list%dbody(i)
-          if(ktfsymbolqd(ki,symi))then
+          if(ktfsymbolq(ki,symi))then
             lgi=symi%gen
             if(module)then
               lg=lgeneration
@@ -135,7 +135,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
                 if(irtc .ne. 0)then
                   go to 200
                 endif
-              elseif(ktfsymbolqd(ki2) .or. ktfpatqd(ki2))then
+              elseif(ktfsymbolq(ki2) .or. ktfpatq(ki2))then
                 isps=isp
                 call tfeevalref(ki2,ki2,irtc)
                 if(irtc .ne. 0)then
@@ -157,7 +157,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
                   endif
                   do ii=1,mi
                     ki1i=kli1%dbody(ii)
-                    if(ktfsymbolqd(ki1i,symi1i))then
+                    if(ktfsymbolq(ki1i,symi1i))then
                       lgi=symi1i%gen
                       if(module)then
                         lg=lgeneration
@@ -203,7 +203,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       else
         do i=1,m
           ki=list%dbody(i)
-          if(ktfsymbolqd(ki,symi))then
+          if(ktfsymbolq(ki,symi))then
             isp=isp+2
             dtastk(isp-1)=ki
             dtastk(isp  )=dxsycopy(symi)
@@ -223,7 +223,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
               mi=kli1%nl
               do ii=1,mi
                 ki1i=kli1%dbody(ii)
-                if(ktfsymbolqd(ki1i,symi1i))then
+                if(ktfsymbolq(ki1i,symi1i))then
                   isp=isp+2
                   dtastk(isp-1)=ki1i
                   dtastk(isp  )=dxsycopy(symi1i)
@@ -231,7 +231,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
                   go to 100
                 endif
               enddo
-            elseif(ktfsymbolqd(ki1,symi1))then
+            elseif(ktfsymbolq(ki1,symi1))then
               isp=isp+2
               dtastk(isp-1)=ki1
               dtastk(isp  )=dxsycopy(symi1)
@@ -259,7 +259,6 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       type (sad_dlist) lvlist
       type (sad_dlist), pointer :: kl1,klj
       integer*4 isp1,isp2,i,isp0,m,j
-      logical*4 tfsamesymbolqd
       m=lvlist%nl
       if(m .eq. 0)then
         kx=sad_descr(lvlist)
@@ -269,9 +268,9 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       isp0=isp
       do j=1,m
         kj=lvlist%dbody(j)
-        if(ktfsymbolqd(kj))then
+        if(ktfsymbolq(kj))then
           do i=isp1+1,isp2,2
-            if(tfsamesymbolqd(dtastk(i),kj))then
+            if(tfsamesymbolq(dtastk(i),kj))then
               isp=isp+1
               dtastk(isp)=dtastk(i+1)
               exit
@@ -287,7 +286,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
             dtastk(isp)=k11
           else
             do i=isp1+1,isp2,2
-              if(tfsamesymbolqd(dtastk(i),k1))then
+              if(tfsamesymbolq(dtastk(i),k1))then
                 isp=isp+1
                 dtastk(isp)=dtastk(i+1)
                 exit
@@ -313,7 +312,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       type (sad_dlist), pointer :: list,listi,klx
       type (sad_symbol), pointer :: symi
       integer*4 isp1,irtc,isp2,i,itfmessage,lg0,n
-      logical*4 rep,symbol,tfconstpatternqk,eval
+      logical*4 rep,symbol,eval
       if(isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
@@ -336,19 +335,19 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
               k1=listi%dbody(1)
               dtastk(isp-1)=k1
               if(eval)then
-                if(.not. tfconstpatternqk(k1%k))then
+                if(.not. tfconstpatternq(k1))then
                   ivstk2(2,isp-1)=1
                 elseif(.not. ktfrealq(k1))then
                   ivstk2(2,isp-1)=0
                 endif
-                symbol=symbol .and. ktfsymbolqd(k1)
+                symbol=symbol .and. ktfsymbolq(k1)
                 if(listi%head%k .eq. ktfoper+mtfsetdelayed)then
                   dtastk(isp)=listi%dbody(2)
                   cycle
                 else
                   ki=listi%dbody(2)
                 endif
-              elseif(ktfsymbolqd(k1,symi))then
+              elseif(ktfsymbolq(k1,symi))then
                 ivstk2(2,isp-1)=0
               else
                 isp=isp-2
@@ -358,8 +357,8 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
             endif
           endif
           if(eval)then
-            symbol=symbol .and. ktfsymbolqd(ki)
-            if(.not. tfconstpatternqk(ki%k))then
+            symbol=symbol .and. ktfsymbolq(ki)
+            if(.not. tfconstpatternq(ki))then
               ivstk2(2,isp-1)=1
             elseif(.not. ktfrealq(ki))then
               ivstk2(2,isp-1)=0
@@ -425,7 +424,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       if(eval)then
         if(ktflistq(kx,klx))then
           call tfleval(klx,kx,.true.,irtc)
-        elseif(ktfsymbolqd(kx) .or. ktfpatqd(kx))then
+        elseif(ktfsymbolq(kx) .or. ktfpatq(kx))then
           call tfeevalref(kx,kx,irtc)
         endif
       endif
@@ -465,7 +464,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
           klr%dbody(1:list%nl)=list%dbody(1:list%nl)
         endif
         isp=isp0-1
-      elseif(ktfpatqd(k,pat))then
+      elseif(ktfpatq(k,pat))then
         call tfredefsymbol(isp1,isp2,pat%expr,k1,rep)
         call tfredefsymbol(isp1,isp2,pat%head,k2,rep1)
         rep=rep .or. rep1
@@ -488,7 +487,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
         if(rep)then
           kx=kxpcopyss(k1,k2,ks,kd)
         endif
-      elseif(ktfsymbolqd(k,sym))then
+      elseif(ktfsymbolq(k,sym))then
         do i=isp1,isp2-1,2
           if(ilist(2,ktastk(i+1)-1) .eq. sym%gen .and.
      $         klist(ktastk(i+1)) .eq. sym%loc)then

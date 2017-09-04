@@ -324,9 +324,10 @@ c     $             itastk(2,isp),vstk2(isp)
           m=isp-isp0
           ispa=isp
           do i=1,m
-            isp=isp+1
             call tfelement1(itastk(1,isp0+i),itastk(2,isp0+i),
-     $           dtastk(isp),keyword,saved,ref,irtc)
+     $           kx,keyword,saved,ref,irtc)
+            isp=isp+1
+            dtastk(isp)=kx
           enddo
           kx=kxmakelist(ispa)
         endif
@@ -342,13 +343,14 @@ c     $             itastk(2,isp),vstk2(isp)
       use ffs
       use tffitcode
       use ffs_pointer, only:latt,idelc,idtypec,idvalc,sad_comp,
-     $     compelc,iele1
+     $     compelc
       use tflinepcom
       implicit none
       type (sad_descriptor) kx
       type (sad_comp), pointer :: cmp
+      type (sad_rlist), pointer :: kl
       integer*8 iax
-      integer*4 irtc,id,lenw,it,ia,iv,isps,l,isp0,i
+      integer*4 irtc,id,lenw,it,ia,iv,isps,l
 
       character*(*) keyword
       character*(MAXPNAME) key,tfkwrd
@@ -396,7 +398,7 @@ c     $             itastk(2,isp),vstk2(isp)
           key=tfkwrd(idtypec(ia),iv)
           key=key(1:lenw(key))//"$SUM"
         endif
-        Kx=kxsalocb(-1,key,lenw(key))
+        kx=kxsalocb(-1,key,lenw(key))
       elseif(keyword .eq. 'KEYWORDS' .or.
      $       keyword .eq. 'KEYWORDS_ALL')then
         l=0
@@ -413,15 +415,8 @@ c     $             itastk(2,isp),vstk2(isp)
       elseif(keyword .eq. 'POSITION')then
         kx=dfromr(dble(it))
       elseif(keyword .eq. 'COMPONENT')then
-        isp0=isp
-        do i=1,nlat-1
-          if(iele1(i) .eq. it)then
-            isp=isp+1
-            vstk(isp)=dble(i)
-          endif
-        enddo
-        kx=kxmakelist(isp0)
-        isp=isp0
+        call elcompl(it,kl)
+        kx=sad_descr(kl)
       else
         kx=tfkeyv(-it,keyword,iax,cmp,ref,saved)
         if(.not. ref)then
@@ -1118,7 +1113,7 @@ c            write(*,*)'linestk ',name(1:nc),r
       dtastk(isp)=ks
       call tfefunref(isp0+1,kx,.false.,irtc)
       isp=isp0
-      if(.not. tfreallistqd(kx,klr))then
+      if(.not. tfreallistq(kx,klr))then
         nl=0
       else
         kax=ktfaddr(kx)

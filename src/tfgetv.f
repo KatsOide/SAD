@@ -15,12 +15,14 @@
       character*(*) word
       character*128 word1
       logical*4 exist,get,rel,maxf,minf,
-     $     abbrev,var,exist1,diff,vcomp, cont
+     $     abbrev,var,exist1,diff,vcomp, cont,vs,nvs
 
 c     Initialize to avoid compiler warning
       if(iflinep .eq. 0)then
         call tfinitlinep(irtc)
       endif
+      vs=.false.
+      nvs=.false.
       v=0
       kv=-1
       iv=-1
@@ -96,9 +98,6 @@ c
           v=getva(exist1)
           if(.not. exist1)then
             if(cont)then
-              if(.not. vcomp)then
-                call tffsadjust
-              endif
             else
               call termes(lfno,'?Missing value for ',word)
             endif
@@ -173,13 +172,20 @@ c          rlist(latt(ii)+ivi)=vx
             itastk(2,isp)=iv
           endif
         endif
+        if(.not. vcomp)then
+          isp=isp+1
+          itastk(1,isp)=i
+          itastk(2,isp)=ivi
+          vs=vs .or. var
+          nvs=nvs .or. .not. var
+        endif
       enddo LOOP_II
       if(exist)then
         cont=.true.
         go to 1
       endif
  9000 if(isp .gt. isp0)then
-        call tffsadjust1(isp0)
+        call tffsadjust1(isp0,vs,nvs)
       endif
       isp=isp0
       return

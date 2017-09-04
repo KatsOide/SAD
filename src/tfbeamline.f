@@ -15,7 +15,6 @@
       integer*4 irtc,hsrchz,lid,idx,n,lenw,idxi,
      $     i,idir,idti,nc,itfmessage
       character*(MAXPNAME) tfgetstrs,ename
-      logical*4 tfsameqk
       type (sad_descriptor) kxbl
       save kxbl
       data kxbl%k /0/
@@ -29,7 +28,7 @@
       if(ktfnonlistq(k,kl))then
         go to 9900
       endif
-      if(.not. tfsameqk(kl%head,kxbl))then
+      if(.not. tfsameq(kl%head,kxbl))then
         go to 9900
       endif
       n=kl%nl

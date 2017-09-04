@@ -217,7 +217,7 @@ c      enddo
       type (sad_descriptor) k,kxlongstr,ks,kr
       type (sad_strbuf), pointer :: strb
       integer*4 lfno,irtc,nc,lrec,nret,irtc1,isp0
-      logical*4 cr,str,tfsameqd
+      logical*4 cr,str
       save kxlongstr
       data kxlongstr%k /0/
       isp0=isp
@@ -246,7 +246,7 @@ c      enddo
           endif
           kxlongstr=dtfcopy1(ks)
         endif
-        if(tfsameqd(kr,kxlongstr))then
+        if(tfsameq(kr,kxlongstr))then
           call tfreseterror
           irtc=0
         endif
@@ -284,15 +284,15 @@ c      enddo
       do i=isp1+1,ispv
         isp0=isp
         k=dtastk(i)
-        if(ktfoperqd(k,ka))then
+        if(ktfoperq(k,ka))then
           ka=klist(ifunbase+ka)
           k%k=ktfsymbol+ka
         endif
-        if(ktfsymbolqd(k,sym))then
+        if(ktfsymbolq(k,sym))then
           call tfsydef(sym,sym)
           call sym_symdef(sym,symd)
           ka0=ksad_loc(symd%upval)
-          if(ktfrefqd(symd%value,ka))then
+          if(ktfrefq(symd%value,ka))then
             k=dlist(ka)
           else
             k=symd%value
@@ -569,7 +569,6 @@ c          enddo
       type (sad_descriptor) kx,k1,k2
       type (sad_dlist), pointer :: list
       integer*4 isp1,irtc,isp0,n1,narg,itfmessage,lfn,i1
-      logical*4 tfsamesymbolqd
       type(ropt) opts
       type (sad_descriptor)
      $     itfexprs,itfstrs,itfwords,itfreals,itfchars,
@@ -596,14 +595,14 @@ c          enddo
           itfbindble=kxsymbolf('BinaryDouble',12,.true.)
         endif
         k2=dtastk(isp1+2)
-        if(ktfsymbolqd(k2))then
-          if(tfsamesymbolqd(k2,itfexprs))then
+        if(ktfsymbolq(k2))then
+          if(tfsamesymbolq(k2,itfexprs))then
             isp0=isp
             isp=isp+1
             ktastk(isp)=ktastk(isp1+1)
             call tfread1(isp0,lfn,kx,irtc)
             isp=isp0
-          elseif(tfsamesymbolqd(k2,itfstrs))then
+          elseif(tfsamesymbolq(k2,itfstrs))then
             isp0=isp
             isp=isp+1
             ktastk(isp)=ktastk(isp1+1)
@@ -612,31 +611,31 @@ c          enddo
             call tfreadstringf(lfn,kx,.false.,opts,irtc)
             opts%ndel=n1
             isp=isp0
-          elseif(tfsamesymbolqd(k2,itfwords))then
+          elseif(tfsamesymbolq(k2,itfwords))then
             call tfreadstringf(lfn,kx,.false.,opts,irtc)
-          elseif(tfsamesymbolqd(k2,itfchars))then
+          elseif(tfsamesymbolq(k2,itfchars))then
             call tfreadstringf(lfn,kx,.true.,opts,irtc)
-          elseif(tfsamesymbolqd(k2,itfreals))then
+          elseif(tfsamesymbolq(k2,itfreals))then
             call tfreadstringf(lfn,kx,.false.,opts,irtc)
             if(irtc .ne. 0)then
               return
             endif
-            if(ktfstringqd(kx))then
+            if(ktfstringq(kx))then
               isp0=isp
               isp=isp+1
               dtastk(isp)=kx
               call tftoexpression(isp0,kx,irtc)
               isp=isp0
             endif
-          elseif(tfsamesymbolqd(k2,itfbyte))then
+          elseif(tfsamesymbolq(k2,itfbyte))then
             call tfreadbyte(isp1,lfn,kx,1,irtc)
-          elseif(tfsamesymbolqd(k2,itfbinsint))then
+          elseif(tfsamesymbolq(k2,itfbinsint))then
             call tfreadbyte(isp1,lfn,kx,2,irtc)
-          elseif(tfsamesymbolqd(k2,itfbinint))then
+          elseif(tfsamesymbolq(k2,itfbinint))then
             call tfreadbyte(isp1,lfn,kx,3,irtc)
-          elseif(tfsamesymbolqd(k2,itfbinreal))then
+          elseif(tfsamesymbolq(k2,itfbinreal))then
             call tfreadbyte(isp1,lfn,kx,4,irtc)
-          elseif(tfsamesymbolqd(k2,itfbindble))then
+          elseif(tfsamesymbolq(k2,itfbindble))then
             call tfreadbyte(isp1,lfn,kx,5,irtc)
           else
             go to 9000
@@ -998,7 +997,7 @@ c        kx=kxsalocb(-1,jlist(is+isw-1,ib),nc)
       real*4 sbuf(2)
       character bbuf(8)
       equivalence (bbuf,rbuf),(rbuf,ibuf),(rbuf,jbuf),(rbuf,sbuf)
-      logical*4 opt,little,tfsamesymbolqd
+      logical*4 opt,little
       integer*4 nopt
       parameter (nopt=1)
       integer*8 kaopt(nopt)
@@ -1032,10 +1031,10 @@ c        kx=kxsalocb(-1,jlist(is+isw-1,ib),nc)
         endif
         opt=.false.
         if(iand(ktfmask,ktastk(isp0+1)) .eq. ktfsymbol)then
-          if(tfsamesymbolqd(dtastk(isp0+1),itflittle))then
+          if(tfsamesymbolq(dtastk(isp0+1),itflittle))then
             little=.true.
             opt=.true.
-          elseif(tfsamesymbolqd(dtastk(isp0+1),itfbig))then
+          elseif(tfsamesymbolq(dtastk(isp0+1),itfbig))then
             little=.false.
             opt=.true.
           else
@@ -1140,7 +1139,7 @@ c        kx=kxsalocb(-1,jlist(is+isw-1,ib),nc)
         return
       endif
       if(isp .gt. isp1+1 .or.
-     $     .not. ktfstringqd(dtastk(isp),str))then
+     $     .not. ktfstringq(dtastk(isp),str))then
         kx=dtastk(isp)
         irtc=itfmessage(9,'General::wrongtype','"Character-string"')
         return
@@ -1418,7 +1417,6 @@ c      endif
       implicit none
       type (sad_descriptor) kx,k1
       integer*4 isp1,irtc,lfn,ioff,ls,   ierr
-      logical*4 tfsamesymbolqd,tfsamesymbolqk
       integer*4 fseek,itfmessage,itfsyserr
       external fseek
       type (sad_descriptor), save :: iabof,iacp
@@ -1433,14 +1431,14 @@ c      endif
         go to 9000
       else
         k1=dtastk(isp)
-        if(.not. ktfsymbolqd(k1))then
+        if(.not. ktfsymbolq(k1))then
           go to 9000
         endif
-        if(tfsamesymbolqk(k1,kxeof))then
+        if(tfsamesymbolq(k1%k,kxeof))then
           ls=2
-        elseif(tfsamesymbolqd(k1,iabof))then
+        elseif(tfsamesymbolq(k1,iabof))then
           ls=0
-        elseif(tfsamesymbolqd(k1,iacp))then
+        elseif(tfsamesymbolq(k1,iacp))then
           ls=1
         else
           go to 9000

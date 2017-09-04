@@ -16,8 +16,8 @@
       case (mtfnull:mtfdiv,mtfpower,mtfgreater:mtfleq,mtfnot:mtfor,
      $       mtfleftbra:mtfrightbrace,mtfcomplex:mtfcomma,
      $       mtfdot,mtfend)
-        if(tfnumberqd(k2) .and.
-     $     (tfnumberqd(k1) .or. iopc1 .eq. mtfnot))then
+        if(tfnumberq(k2) .and.
+     $     (tfnumberq(k1) .or. iopc1 .eq. mtfnot))then
           call tfcmplx(k1,k2,kx,iopc1,irtc)
           return
         endif
@@ -54,7 +54,7 @@
         call tfdefinition(isp1,kx,irtc)
         return
       endif
-      if(ktfsymbolqd(dtastk(isp),sym))then
+      if(ktfsymbolq(dtastk(isp),sym))then
         call sym_symstr(sym,str)
         nc=min(8,str%nch)
         name(1:nc)=str%str(1:nc)
@@ -84,12 +84,12 @@
         if(irtc .ne. 0)then
           return
         endif
-      elseif(ktfsymbolqd(k1))then
+      elseif(ktfsymbolq(k1))then
         call tfsyeval(k1,kv,irtc)
         if(irtc .ne. 0)then
           return
         endif
-      elseif(ktfpatqd(k1))then
+      elseif(ktfpatq(k1))then
         call tfpateval(k1,kv,irtc)
         if(irtc .ne. 0)then
           return
@@ -328,7 +328,7 @@
       kx=k2
       if(ktflistq(k1,list))then
         ka=list%head
-        if(ktfoperqd(ka,kaa))then
+        if(ktfoperq(ka,kaa))then
           select case (kaa)
           case (mtflist)
             call tfearray(k1,k2,kx,mtfset,irtc)
@@ -380,7 +380,7 @@
         else
           go to 9900
         endif
-      elseif(ktfsymbolqd(k1,sym))then
+      elseif(ktfsymbolq(k1,sym))then
         if(sym%override .eq. 0)then
           call tfsydef(sym,sym)
         endif
@@ -389,7 +389,7 @@
           return
         endif
         call sym_symdef(sym,symd)
-        if(ktfrefqd(symd%value,kar))then
+        if(ktfrefq(symd%value,kar))then
           if(ktfrealq(k2))then
             dlist(kar)=k2
             kx=k2
@@ -406,7 +406,7 @@
         endif
         call tflocald(symd%value)
         symd%value=ks
-      elseif(ktfrefqd(k1,ka1))then
+      elseif(ktfrefq(k1,ka1))then
 c        if(ka1 .gt. 0 .and. ktfrealq(k2))then
         if(ka1 .gt. 0)then
           call tflocald(dlist(ka1))
@@ -440,7 +440,7 @@ c        if(ka1 .gt. 0 .and. ktfrealq(k2))then
       do while(ktflistq(ks,kls))
         ks=kls%head
       enddo
-      if(.not. ktfsymbolqd(ks,syms))then
+      if(.not. ktfsymbolq(ks,syms))then
         irtc=itfmessage(9,'General::wrongtype','"Symbol"')
         return
       endif
@@ -448,7 +448,7 @@ c        if(ka1 .gt. 0 .and. ktfrealq(k2))then
       if(irtc .ne. 0)then
         return
       endif
-      if(ktfsymbolqd(kl))then
+      if(ktfsymbolq(kl))then
         if(ktfprotectedqo(syms))then
           irtc=itfmessage(9,'General::protect','""')
           return
@@ -508,7 +508,7 @@ c        if(ka1 .gt. 0 .and. ktfrealq(k2))then
             enddo
           endif
         endif
-        if(ktfsymbolqd(ki,symi))then
+        if(ktfsymbolq(ki,symi))then
 c          write(*,*)'dsethead ',symi%loc,symi%gen
           if(symi%loc .eq. sym%loc
      $         .and. max(0,symi%gen) .eq. max(0,sym%gen))then

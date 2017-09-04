@@ -247,7 +247,7 @@
       integer*4 isp1,narg,irtc,n1,n2,ispf,ind,isp0,
      $     ihead,ispmax,icases,itfmessage,ispa,
      $     i,ii,nl,ispb,itfpmat,mstk0,iop
-      logical*4 tfsameqd,rep
+      logical*4 rep
       integer*4, parameter :: maxlevel=100000000
       type (sad_descriptor), save :: kxheads
       data kxheads%k /0/
@@ -304,10 +304,10 @@
                 if(ktflistq(kl,kll))then
                   kf=dtastk(ispf)
                   nl=kll%nl
-                  if(.not. ktflistq(kf) .and. .not. ktfpatqd(kf))then
+                  if(.not. ktflistq(kf) .and. .not. ktfpatq(kf))then
                     if(ihead .eq. 0)then
                       ki=kll%head
-                      if(tfsameqd(ki,kf))then
+                      if(tfsameq(ki,kf))then
                         ii=0
                         go to 200
                       endif
@@ -323,7 +323,7 @@
                       endif
                     else
                       LOOP_I: do i=1,nl
-                        if(tfsameqd(kll%dbody(i),kf))then
+                        if(tfsameq(kll%dbody(i),kf))then
                           ii=i
                           go to 200
                         endif
@@ -459,7 +459,6 @@
       type (sad_dlist) kl
       type (sad_dlist), pointer :: list,kli
       integer*4 level,irtc,i,m,i0,level0,itfmessage,mstk0
-      logical*4 tfsameqd
       call dlist_dlist(kl,list)
       mstk0=mstk
       level=level0
@@ -479,7 +478,7 @@
           isp=isp+1
           dtastk(isp)=list%dbody(i)
           if(ktflistq(ktastk(isp),kli))then
-            if(.not. tfsameqd(kli%head,kh))then
+            if(.not. tfsameq(kli%head,kh))then
               go to 10
             endif
             if(level .ne. 0)then

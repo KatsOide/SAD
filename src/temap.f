@@ -77,7 +77,7 @@
           go to 9000
         endif
         do k=1,7
-          if(.not. tfreallistqd(klx%dbody(k),klrk))then
+          if(.not. tfreallistq(klx%dbody(k),klrk))then
             go to 9000
           endif
           if(klrk%nl .ne. np0)then

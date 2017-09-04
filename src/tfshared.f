@@ -167,9 +167,9 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
           return
         endif
       enddo
-      if(ktfstringqd(k,str))then
+      if(ktfstringq(k,str))then
         kx=kxsalocb(-1,str%str,str%nch)
-      elseif(ktfsymbolqd(k))then
+      elseif(ktfsymbolq(k))then
         if( .not. tfcheckelement(k,.false.))then
           irtc=itfmessage(9,'General::wrongtype',
      $         '"defined symbol returned in Shared"')
@@ -179,7 +179,7 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       elseif(ktflistq(k,kl))then
 c        call tfdebugprint(k,'recallshared',3)
         k0=kl%head
-        if(ktfobjqd(k0))then
+        if(ktfobjq(k0))then
           call tfrecallshared(isp0,k0,k0,irtc)
           if(irtc .ne. 0)then
             return
@@ -193,7 +193,7 @@ c        call tfdebugprint(k,'recallshared',3)
           kax=ktadaloc(-1,m)
           do i=1,m
             ki=kl%dbody(i)
-            if(ktfobjqd(ki))then
+            if(ktfobjq(ki))then
               call tfrecallshared(isp0,ki,ki,irtc)
               if(irtc .ne. 0)then
                 klist(kax+1:kax+m)=ktfoper+mtfnull

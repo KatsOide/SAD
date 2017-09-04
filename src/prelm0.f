@@ -21,7 +21,7 @@ c end debug
         call prkwnm(
      &        pname(kytbl(0,idtype(idxe)))(2:),
      &        pname(idxe))
-        do 1000 i=1,kwMAX-1
+        do 1000 i=1,kwMAX-2
         if (kytbl(i,idtype(idxe)) .gt. 0) then
           call prkwdv(head,pname(kytbl(i,0))(2:),
      &           rlist(idxl+kytbl(i,idtype(idxe))))

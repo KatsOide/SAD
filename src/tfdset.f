@@ -11,7 +11,7 @@
       integer*4 m,ihash,itfhasharg,isp0,
      $     mstk0,iop0,itflistmat,irtc,minhash,maxhash
       parameter (minhash=7,maxhash=32767)
-      logical*4 tfconstpatternqk,tfsamelistqo,tfmaxgenerationq
+      logical*4 tfmaxgenerationq
 
 c     Initialize to avoid compiler warning
       kad0=0
@@ -19,7 +19,7 @@ c
       call descr_sad(karg,larg)
       kad1=ksad_loc(kadi)
       kad=kadi
-      if(tfconstpatternqk(karg%k))then
+      if(tfconstpatternq(karg%k))then
         if(.not. tfmaxgenerationq(kad))then
           if(k%k .ne. ktfref)then
             ihash=itfhasharg(karg,minhash)
@@ -221,7 +221,7 @@ c        call tfdebugprint(kr,':= ',3)
       type (sad_deftbl), pointer :: dtbl
       integer*8 kb0,kn0,kan,kan0,ktalocr,kb,kn
       integer*4 npat,isp0,i
-      logical*4 tbl,rep,tfconstqk,sym
+      logical*4 tbl,rep,sym
       isp0=isp
       if(tbl)then
         call tfdefsymbol(kargr,kx,rep,sym)
@@ -263,7 +263,7 @@ c        call tfdebugprint(kr,':= ',3)
         dtbl%bodyc=kr
       else
         dtbl%bodyc=dtfcopy1(kr)    ! replaced body
-        if(.not. tfconstqk(kr%k))then
+        if(.not. tfconstq(kr%k))then
           dtbl%pat=0
         endif
       endif
@@ -320,7 +320,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
         endif
         isp=isp0
         return
-      elseif(ktfsymbolqd(k,ks))then
+      elseif(ktfsymbolq(k,ks))then
         if(ks%override .eq. 0)then
           sym=.true.
           if(ks%gen .ne. maxgeneration)then
@@ -368,8 +368,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       integer*8 kad0,kad,kadv,kadv0,kap,ktfrehash,khash
       integer*4 isp1,iup,irtc,is,itfhasharg,
      $     m,mstk0,im,i,itfseqmatstk,isp0,ns,nh,iord0
-      logical*4 ev,ordless,tfsameqk,def,tfmaxgenerationq,tfordlessq,
-     $     tfsameqd
+      logical*4 ev,ordless,def,tfmaxgenerationq,tfordlessq
       ev=.false.
       im=isp1+1
       ordless=iup .eq. 0 .and. tfordlessq(ktastk(isp1))
@@ -397,7 +396,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
             call loc_sad(kap,larg)
             m=larg%nl
             if(m .eq. isp-isp1)then
-              if(.not. tfsameqd(dtastk(isp1),larg%head))then
+              if(.not. tfsameq(dtastk(isp1),larg%head))then
                 go to 10
               endif
               if(m .ne. 0)then
@@ -424,7 +423,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
                     enddo
                   else
                     do i=1,m
-                      if(.not. tfsameqk(ktastk(isp1+i),
+                      if(.not. tfsameq(ktastk(isp1+i),
      $                     larg%body(i)))then
                         go to 10
                       endif
@@ -464,9 +463,9 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
               if(dtbl%pat .ne. -1)then
                 if(ktflistq(kx,klx))then
                   call tfleval(klx,kx,.true.,irtc)
-                elseif(ktfsymbolqd(kx))then
+                elseif(ktfsymbolq(kx))then
                   call tfsyeval(kx,kx,irtc)
-                elseif(ktfpatqd(kx))then
+                elseif(ktfpatq(kx))then
                   call tfpateval(kx,kx,irtc)
                 endif
                 if(irtc .ne. 0)then
@@ -514,7 +513,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
           ih=itfhash(kl%dbody(1),nh)+itfhash(kl%dbody(m),nh)
         endif
         ih=ih+m
-      elseif(ktfrefqd(k,ka))then
+      elseif(ktfrefq(k,ka))then
         if(ka .eq. 0)then
           ih=0
         else
@@ -565,7 +564,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
           ih=itfhash1(kl%dbody(1))+itfhash1(kl%dbody(m))
         endif
         ih=ih+itfhash(kl%head,nh)+m
-      elseif(ktfrefqd(k,ka))then
+      elseif(ktfrefq(k,ka))then
         if(ka .eq. 0)then
           ih=0
         else
@@ -580,9 +579,9 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
           endif
           ih=ih+itfhash(dtastk(ka),nh)+m
         endif
-      elseif(ktfsymbolqd(k,sym))then
+      elseif(ktfsymbolq(k,sym))then
         ih=int(sym%loc)
-      elseif(ktfstringqd(k))then
+      elseif(ktfstringq(k))then
         ka=ktfaddrd(k)
         ih=ilist(1,ka)+ilist(1,ka+1)+ilist(2,ka+1)
       else
@@ -611,16 +610,16 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
         ih=int(ka)
       elseif(ktflistq(k,kl))then
         ih=itfhash1(kl%head)+kl%nl
-      elseif(ktfrefqd(k,ka))then
+      elseif(ktfrefq(k,ka))then
         if(ka .eq. 0)then
           ih=0
         else
           ka=ka-ispbase
           ih=itfhash1(dtastk(ka))+itastk2(1,ka)-int(ka)
         endif
-      elseif(ktfsymbolqd(k,sym))then
+      elseif(ktfsymbolq(k,sym))then
         ih=int(sym%loc)
-      elseif(ktfstringqd(k))then
+      elseif(ktfstringq(k))then
         ka=ktfaddrd(k)
         ih=ilist(1,ka)+ilist(1,ka+1)+ilist(2,ka+1)
       else
@@ -761,7 +760,7 @@ c      endif
               kx=k
               return
             endif
-          elseif(ktfnonsymbolqd(kh) .and. .not. ktfpatqd(kh))then
+          elseif(ktfnonsymbolq(kh) .and. .not. ktfpatq(kh))then
             kx=k
             return
           endif
@@ -777,7 +776,7 @@ c      endif
             if(iand(larglist,klh%attr) .eq. 0)then
               go to 20
             endif
-          elseif(ktfnonsymbolqd(kh) .and. .not. ktfpatqd(kh))then
+          elseif(ktfnonsymbolq(kh) .and. .not. ktfpatq(kh))then
             go to 20
           endif
           rep=tfreplacearg(kh,kh,irtc)
@@ -839,14 +838,14 @@ c            call tfdebugprint(list%body(i),'==> ',3)
           enddo
           return
         endif
-      elseif(ktfpatqd(k,pat))then
+      elseif(ktfpatq(k,pat))then
         rep=.false.
         if(pat%sym%loc .ne. 0)then
           rep=tfreplacearg(pat%sym%alloc,ksy,irtc)
           if(irtc .ne. 0)then
             return
           endif
-          if(rep .and. ktfnonsymbolqd(ksy))then
+          if(rep .and. ktfnonsymbolq(ksy))then
             irtc=itfmessageexp(999,'General::reppat',ksy)
             return
           endif
@@ -935,7 +934,7 @@ c      call tfdebugprint(kx,'tfreparg-out',1)
             if(iand(larglist,klh%attr) .eq. 0)then
               go to 10
             endif
-          elseif(ktfnonsymbolqd(kh) .and. .not. ktfpatqd(kh))then
+          elseif(ktfnonsymbolq(kh) .and. .not. ktfpatq(kh))then
             go to 10
           endif
           rep=tfreplacearg(kh,kh,irtc)
@@ -956,7 +955,7 @@ c      call tfdebugprint(kx,'tfreparg-out',1)
             if(iand(larglist,klh%attr) .eq. 0)then
               go to 20
             endif
-          elseif(ktfnonsymbolqd(kh) .and. .not. ktfpatqd(kh))then
+          elseif(ktfnonsymbolq(kh) .and. .not. ktfpatq(kh))then
             go to 20
           endif
           rep=tfreplacearg(kh,kh,irtc)
@@ -1025,7 +1024,7 @@ c              call tfdebugprint(list%dbody(i),'==>',3)
               elseif(irtc .gt. 1)then
                 return
               endif
-            elseif(ktfstringqd(kh))then
+            elseif(ktfstringq(kh))then
               if(isp .eq. isp1+1 .or. isp .eq. isp1+2)then
                 if(ktfrealq(ktastk(isp1+1)) .and.
      $               ktfrealq(ktastk(isp)))then
@@ -1046,7 +1045,7 @@ c          write(*,*)isp-isp1-1
           lx=.true.
           return
         endif
-      elseif(ktfpatqd(k,pat))then
+      elseif(ktfpatq(k,pat))then
         rep=.false.
         kx=k
         if(pat%sym%loc .ne. 0)then
@@ -1054,7 +1053,7 @@ c          write(*,*)isp-isp1-1
           if(irtc .ne. 0)then
             return
           endif
-          if(rep .and. ktfnonsymbolqd(ks))then
+          if(rep .and. ktfnonsymbolq(ks))then
             irtc=itfmessageexp(999,'General::reppat',ks)
             return
           endif
@@ -1091,7 +1090,7 @@ c          endif
           ks=symd%value
 c          call tfdebugprint(k,'tfrepargstk-symbol',1)
 c          call tfdebugprint(ks,':= ',1)
-          if(ktflistq(ks) .or. ktfrefqd(ks))then
+          if(ktflistq(ks) .or. ktfrefq(ks))then
             call tfgetstkstk(ks,rep)
           else
             isp=isp+1
@@ -1120,13 +1119,13 @@ c          write(*,*)'with ',symd%sym%override
       type (sad_dlist), pointer :: kl,kli
       integer*8 i,ka
       logical*4 rep,rep1
-      if(ktfrefqd(ks,ka))then
+      if(ktfrefq(ks,ka))then
         rep=.true.
         if(ka .gt. 3)then
           ka=ka-ispbase
           do i=ka+1,itastk2(1,ka)
             ki=dtastk(i)
-            if(ktfrefqd(ki))then
+            if(ktfrefq(ki))then
               call tfgetstkstk(ki,rep1)
             elseif(ktflistq(ki,kli))then
               if(kli%head%k .eq. ktfoper+mtfnull)then
@@ -1318,7 +1317,7 @@ c          call tfunsetpat(dtbl%pattbl(i))
       type (sad_dlist), pointer :: klx
       type (sad_pat), pointer :: pat
       integer*4 isp0,i,irtc,nrule1
-      logical*4 rep,member,tfconstqk,tfsymbollistqo
+      logical*4 rep,member,tfsymbollistqo
       irtc=0
       kx=dtbl%bodyc
       if(ktflistq(kx,klx))then
@@ -1326,7 +1325,7 @@ c          call tfunsetpat(dtbl%pattbl(i))
           dtbl%compile=1.d100
           return
         endif
-      elseif(tfconstqk(kx%k))then
+      elseif(tfconstq(kx%k))then
 c        call tfdebugprint(kx,'setarg-const',3)
         dtbl%compile=1.d100
         return
@@ -1363,7 +1362,7 @@ c            call tflinkedpat(pat0,pat)
                 return
               endif
             endif
-          elseif(ktfpatqd(kx))then
+          elseif(ktfpatq(kx))then
             call tfrecompilearg(kx,kx,rep,irtc)
             if(irtc .ne. 0)then
               return
@@ -1381,7 +1380,7 @@ c            call tflinkedpat(pat0,pat)
             endif
             dtbl%compile=rlist(levelcompile)
           endif
-        elseif(ktfpatqd(kx))then
+        elseif(ktfpatq(kx))then
           call tfrecompilearg(kx,kx,rep,irtc)
           if(irtc .ne. 0)then
             return
@@ -1472,7 +1471,7 @@ c            call tflinkedpat(pat0,pat)
           klx%attr=iand(-lmemberlist-1,klx%attr)
         endif
         isp=isp1
-      elseif(ktfpatqd(k,pat))then
+      elseif(ktfpatq(k,pat))then
         rep=.false.
         if(pat%sym%loc .ne. 0)then
           call tfsetuparg(pat%sym%alloc,ispr,nrule2,ks,rep,member,irtc)
@@ -1489,7 +1488,7 @@ c            call tflinkedpat(pat0,pat)
           ks%k=0
         endif
         k1=pat%expr
-        if(.not. ktfrefqd(k1,ka1) .or. ka1 .gt. 3)then
+        if(.not. ktfrefq(k1,ka1) .or. ka1 .gt. 3)then
           call tfsetuparg(k1,ispr,nrule2,k1,rep1,member1,irtc)
           member=member .or. member1
           if(irtc .ne. 0)then
@@ -1564,7 +1563,7 @@ c            call tmov(rlist(ka+1),rlist(kax+1),m)
         if(list%head%k .eq. ktfoper+mtfatt)then
           if(isp .eq. isp1+3)then
             k2=dtastk(isp1+2)
-            if(ktfsymbolqd(k2,sym2))then
+            if(ktfsymbolq(k2,sym2))then
               if(sym2%override .ne. 0)then
                 if(iand(sym2%attr,iattrdynamic) .ne. 0)then
                   go to 120
@@ -1591,9 +1590,9 @@ c                call tfdebugprint(kx,'==>',3)
           rep=.true.
         endif
         isp=isp1
-      elseif(ktfpatqd(k,pat))then
+      elseif(ktfpatq(k,pat))then
         k1=pat%expr
-        if(ktfrefqd(k1,ka1) .and. ka1 .gt. 3)then
+        if(ktfrefq(k1,ka1) .and. ka1 .gt. 3)then
           call tfrecompilearg(k1,k1,rep,irtc)
           if(irtc .ne. 0)then
             return

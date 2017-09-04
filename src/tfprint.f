@@ -40,7 +40,7 @@
           exist=.true.
         else
 c          call tfdebugprint(kx,'tfprint',1)
-          if(ktfoperqd(kx,kax))then
+          if(ktfoperq(kx,kax))then
             if(kx%k .eq. ktfoper+mtfnull)then
               go to 8000
             endif
@@ -73,7 +73,7 @@ c          call tfdebugprint(kx,'tfprint',1)
           elseif(ktflistq(kx,klx))then
             if(klx%head%k .ne. ktfoper+mtfcomplex .and.
      $           klx%head%k .ne. ktfoper+mtflist .and.
-     $           ktfoperqd(klx%head) .and. klx%ref .le. 0)then
+     $           ktfoperq(klx%head) .and. klx%ref .le. 0)then
               call getwrd(word)
               exist=word(1:1) .eq. ' '
               go to 9000

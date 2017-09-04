@@ -1015,7 +1015,7 @@ c      parameter (a=sqrt(0.75d0))
      $     kavx,kavy,ktrsaloc,ka2
       integer*4 isp1,irtc,itfmessage,isp0,m,i
       real*8 x,y,s,a,xmin,xmax,ymin,ymax,yoff,wmin
-      logical*4 tfsamesymbolqk,ol
+      logical*4 ol
       type (sad_descriptor), save ::
      $     ioutline,ifill,itag,iwidth,ibar
       data ioutline%k,ifill%k,itag%k,iwidth%k,ibar%k /0,0,0,0,0/
@@ -1041,7 +1041,7 @@ c      parameter (a=sqrt(0.75d0))
           call tmovb(ilist(1,ks+1),sym,2)
         endif
       elseif(ktfsymbolq(ktastk(isp1+4)))then
-        if(tfsamesymbolqk(ibar,ktastk(isp1+4)))then
+        if(tfsamesymbolq(ibar,dtastk(isp1+4)))then
           sym="BA"
         endif
       endif

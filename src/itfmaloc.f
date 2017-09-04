@@ -41,7 +41,7 @@ c          call tmov(rlist(ka+1),rlist(kap),n)
           ktfmalocp=kap
           irtc=0
           return
-        elseif(tfnumberqd(kl%dbody(1)))then
+        elseif(tfnumberq(kl%dbody(1)))then
           go to 9000
         endif
       elseif(ktfreallistq(kl)
@@ -243,7 +243,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
           enddo
           ktfcmaloc=kap
           return
-        elseif(tfnumberqd(kl%dbody(1)))then
+        elseif(tfnumberq(kl%dbody(1)))then
           kap=ktaloc(n*2)
           do i=1,n
             ki=kl%dbody(i)%k
@@ -262,7 +262,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
           ktfcmaloc=kap
           return
         endif
-      elseif(ktfreallistq(kl) .or. tfnumberqd(kl%dbody(1)))then
+      elseif(ktfreallistq(kl) .or. tfnumberq(kl%dbody(1)))then
         go to 9000
       endif
       if(tfnonlistq(kl%dbody(1),kl1))then

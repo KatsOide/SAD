@@ -14,7 +14,7 @@
       if(.not. tflistq(dtastk(isp1+1),kl))then
         go to 9010
       endif
-      if(.not. tfreallistqd(dtastk(isp1+2),klpipe))then
+      if(.not. tfreallistq(dtastk(isp1+2),klpipe))then
         go to 9010
       endif
       m1=klpipe%nl
@@ -29,7 +29,7 @@ c      kaind=ktaloc(((n1+2)*(m1+2)+1)/2+1)
       if(kl%nl .eq. m1)then
         kx=kxavaloc(-1,mm,klr)
         do i=1,m1
-          if(.not. tfreallistqd(kl%dbody(i),kli))then
+          if(.not. tfreallistq(kl%dbody(i),kli))then
             deallocate(ind)
             go to 9010
           endif
@@ -79,10 +79,10 @@ c      kaind=ktaloc(((n1+2)*(m1+2)+1)/2+1)
       if(isp .ne. isp1+6)then
         go to 9000
       endif
-      if(.not. tfreallistqd(dtastk(isp1+1),klpipe))then
+      if(.not. tfreallistq(dtastk(isp1+1),klpipe))then
         go to 9010
       endif
-      if(tfreallistqd(dtastk(isp1+2),klp))then
+      if(tfreallistq(dtastk(isp1+2),klp))then
         if(klp%nl .ne. 7)then
           go to 9010
         endif
@@ -389,7 +389,7 @@ c 32: Er -> Ey
       if(kl1%nl .ne. 4)then
         go to 9000
       endif
-      if(tfreallistqd(kl1%dbody(1),kl11))then
+      if(tfreallistq(kl1%dbody(1),kl11))then
         if(kl11%nl .ne. 2)then
           go to 9000
         endif
@@ -412,7 +412,7 @@ c 32: Er -> Ey
       if(ktfnonrealq(kl1%dbody(3),rho))then
         go to 9000
       endif
-      if(.not. tfreallistqd(kl1%dbody(4),klprof))then
+      if(.not. tfreallistq(kl1%dbody(4),klprof))then
         go to 9000
       endif
       mx=klprof%nl

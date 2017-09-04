@@ -330,7 +330,6 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       type (sad_descriptor) kx
       integer*8 kh,kai
       integer*4 isp1,irtc,narg,i,mi,ispi,isp0,j,mn,itfmessage
-      logical*4 tfsameheadqk
       narg=isp-isp1
       if(narg .lt. 3)then
         irtc=itfmessage(9,'General::narg','"3 or more"')
@@ -343,7 +342,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       itastk2(1,isp1+2)=1
       do i=isp1+3,isp
         if(ktfnonlistq(ktastk(i)) .or.
-     $       .not. tfsameheadqk(ktastk(isp1+2),ktastk(i)))then
+     $       .not. tfsameheadq(ktastk(isp1+2),ktastk(i)))then
           irtc=itfmessage(9,'General::samehead',' ')
           return
         endif

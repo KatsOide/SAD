@@ -15,7 +15,7 @@
         return
       endif
       kmode=dtastk(isp1+7)
-      if(.not. tfreallistqd(kmode,kml))then
+      if(.not. tfreallistq(kmode,kml))then
         irtc=itfmessage(9,'General::wrongtype','"{v1, v2} for #7"')
         return
       endif
@@ -35,7 +35,7 @@
         return
       endif
       do i=2,3
-        if(.not. tfreallistqd(klc%dbody(iv(i)),klcx))then
+        if(.not. tfreallistq(klc%dbody(iv(i)),klcx))then
           irtc=itfmessage(9,'General::wrongtype','Real List'," ")
           return
         endif
@@ -45,7 +45,7 @@
         endif
         range(1:2,i-1)=klcx%rbody(1:2)
       enddo
-      if(.not. tfreallistqd(klc%dbody(iv(1)),klc1))then
+      if(.not. tfreallistq(klc%dbody(iv(1)),klc1))then
         irtc=itfmessage(9,'General::wrongtype','Real List'," ")
         return
       endif
@@ -53,7 +53,7 @@
       if(ktfnonrealq(dtastk(isp1+2),lfno))then
         return
       endif
-      if(.not. tfreallistqd(dtastk(isp1+4),klp))then
+      if(.not. tfreallistq(dtastk(isp1+4),klp))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"{PhaseX, PhaseY, PhaseZ} for #4"')
         return
@@ -75,7 +75,7 @@
         return
       endif
       codsave=codin
-      if(tfreallistqd(dtastk(isp1+3),klar))then
+      if(tfreallistq(dtastk(isp1+3),klar))then
         if(klar%nl .ne. 6 )then
           irtc=itfmessage(9,'General::wrongtype',
      $         '"{x0, px0, y0, py0, z0, dp0} for #3"')
@@ -119,7 +119,6 @@ c      write(*,*)'tfda1 ',phix,phiy,phiz,ivar1,ivar2
       y(1:2)=range(1:2,2)
       g(1:n1)=r1
       pz(1)=dble(n1)
-c      call tspini(int8(1),kptbl,.false.)
       call trackd(latt,kptbl,x,px,y,py,z,g,dv,pz,
      1     kzx,mturn,trval,phi,damp,dampenough,ivar1,ivar2,lfno)
       dapert=dapert0

@@ -59,7 +59,7 @@ c     Store current random seed into NISTACK$FIXSEED stack
         ix=ktaloc(np0*8)
         ix1=ktaloc(np0*8)
         ikptbl=ktaloc(np0*3)
-        call tspini(0,ilist(1,ikptbl),.false.)
+        call tkptblini(ilist(1,ikptbl))
         nl0=nlat
         call ttinit(latt,
      1        rlist(ix      ),rlist(ix+np0  ),

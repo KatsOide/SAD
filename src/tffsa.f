@@ -1725,24 +1725,29 @@ c            call tclr(uini(1,0),28)
       do i=1,nlat-1
         if(iele2(i) .ne. 0)then
           call tfree(iele2(i))
+          iele2(i)=0
         endif
       enddo
+      iele2(nlat)=0
       return
       end
 
       subroutine tffssetupcouple(lfno)
       use tfstk
       use ffs
+      use ffs_pointer, only: iele2
       use tffitcode
       implicit none
-      type (sad_dlist), pointer :: klx,kli,kle
+      type (sad_dlist), pointer :: klx,kli
+      type (sad_rlist), pointer :: kle
       type (sad_symdef), pointer :: symd
       integer*8 iet
       integer*4 lfno,i,j,k,nk,m,me,nc, ie,ik,irtc
       character*(MAXPNAME) key,tfgetstrs
-      type (sad_descriptor) itfelv,itfcoupk,kx,ki,kk,ke
+      type (sad_descriptor) kx,ki,kk,ke
+      type (sad_descriptor) , save :: itfelv,itfcoupk
       data itfelv%k,itfcoupk%k /0,0/
-      klist(ifele2:ifele2+nlat-1)=0
+      iele2(1:nlat)=0
       if(itfelv%k .eq. 0)then
         itfelv=kxsymbolz('`ElementValues',14)
         itfcoupk=kxsymbolz('`CoupledKeys',12)
@@ -1767,16 +1772,13 @@ c      call tfdebugprint(kx,'setupcoup',3)
           go to 9000
         endif
         kk=kli%dbody(1)
-        if(.not. ktfstringqd(kk))then
+        if(.not. ktfstringq(kk))then
           go to 9000
         endif
         key=tfgetstrs(kk,nc)
         ke=kli%dbody(2)
-        if(.not. tflistq(ke,kle))then
-          go to 9000
-        endif
-        me=kle%nl
-        if(ktfreallistq(kle))then
+        if(tfreallistq(ke,kle))then
+          me=kle%nl
           do j=1,me
             ie=int(kle%rbody(j))
             call tfkeya(ie,key,ik)
@@ -1784,32 +1786,38 @@ c            write(*,*)'setupcouple ',j,ik,key(1:10)
             if(ik .lt. 0)then
               do k=1,nlat-1
                 if(ilist(k,ifele1) .eq. -ie)then
-                  iet=klist(ifele2+k-1)
+                  iet=iele2(k)
+c                  iet=klist(ifele2+k-1)
                   if(iet .eq. 0)then
                     iet=ktaloc(m+1)
                     ilist(1,iet)=0
-                    klist(ifele2+k-1)=iet
+                    iele2(k)=iet
+c                    klist(ifele2+k-1)=iet
                   endif
                   nk=ilist(1,iet)+1
 c                  write(*,*)'setupcouple ',k,iet,ik,nk
                   ilist(1,iet+nk)=i
                   ilist(2,iet+nk)=-ik
                   ilist(1,iet)=nk
-                  klist(ifele2+nlat-1)=1
+                  iele2(nlat)=1
+c                  klist(ifele2+nlat-1)=1
                 endif
               enddo
             elseif(ik .gt. 0)then
-              iet=klist(ifele2+ie-1)
+              iet=iele2(ie)
+c              iet=klist(ifele2+ie-1)
               if(iet .eq. 0)then
                 iet=ktaloc(m+1)
                 ilist(1,iet)=0
-                klist(ifele2+ie-1)=iet
+                iele2(ie)=iet
+c                klist(ifele2+ie-1)=iet
               endif
               nk=ilist(1,iet)+1
               ilist(1,iet+nk)=i
               ilist(2,iet+nk)=ik
               ilist(1,iet)=nk
-              klist(ifele2+nlat-1)=1
+              iele2(nlat)=1
+c              klist(ifele2+nlat-1)=1
             endif
           enddo
         endif

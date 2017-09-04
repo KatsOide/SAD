@@ -481,7 +481,7 @@ c          write(*,*)'kax ',kax
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
-      if(.not. ktfstringqd(dtastk(isp),str))then
+      if(.not. ktfstringq(dtastk(isp),str))then
         irtc=itfmessage(9,'General::wrongtype','"Character-string"')
         return
       endif
