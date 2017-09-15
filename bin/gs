@@ -1,8 +1,8 @@
 #!/bin/sh
 
-SAD_PACKAGES="~/SAD/oldsad/Packages/"; export SAD_PACKAGES
-SAD_ARCH=`~/SAD/oldsad/bin/HostArch`
-SAD_EXE="~/SAD/oldsad/obj/${SAD_ARCH}/sad1.exe"; export SAD_EXE
+SAD_PACKAGES="/Users/oide/SAD/oldsad/Packages/"; export SAD_PACKAGES
+SAD_ARCH=`/Users/oide/SAD/oldsad/bin/HostArch`
+SAD_EXE="/Users/oide/SAD/oldsad/obj/${SAD_ARCH}/sad1.exe"; export SAD_EXE
 
 # Set stack limit
 stacksize=8192		# Kbytes
@@ -83,10 +83,10 @@ esac
 # Set library path for dynamic link library
 case ${SAD_ARCH} in
 *-CYGWIN*)
-    PATH=~/SAD/oldsad/obj/AMD64-Linux4/arch/${SAD_ARCH}/bin:${PATH}
+    PATH=/Users/oide/SAD/oldsad/obj/i386-Darwin16/arch/${SAD_ARCH}/bin:${PATH}
     ;;
 *-Darwin)
-    DYLD_LIBRARY_PATH=~/SAD/oldsad/obj/i386-Darwin16/arch/${SAD_ARCH}/lib ; export DYLD_LIBRARY_PATH
+    DYLD_LIBRARY_PATH=/Users/oide/SAD/oldsad/obj/i386-Darwin16/arch/${SAD_ARCH}/lib ; export DYLD_LIBRARY_PATH
     ;;
 *)
     ;;

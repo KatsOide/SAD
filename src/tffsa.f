@@ -1138,7 +1138,7 @@ ckiku   call tfstr(word,latt,ist,nstr)
      $         gammab,pos,rlist(itmon),nmon)
         elseif(abbrev(word,'LAT_TICE','_').or.
      1         abbrev(word,'PS_NAME','_')) then
-          call pwrlat(word,wordp,latt,mult,lfno)
+          call pwrlat(word,wordp,lfno)
         endif
         goto 12
       else

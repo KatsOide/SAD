@@ -168,8 +168,7 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
         use iso_c_binding
         implicit none
         integer*4, target:: i
-        integer*8 k
-        isad_loc=(transfer(c_loc(i),k)-kcpklist0)/8
+        isad_loc=(transfer(c_loc(i),int8(0))-kcpklist0)/8
         return
         end function
 
@@ -986,18 +985,14 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
               if(kcbk(1,k) .eq. kcbk(2,j)+1)then
                 if(k .lt. j)then
                   kcbk(1,k)=kcbk(1,j)
-                  kcbk(1,j)=0
-                  kcbk(2,j)=0
-                  kcbk(3,j)=0
+                  kcbk(:,j)=0
                   if(j .eq. jcbk)then
                     jcbk=jcbk-1
                   endif
                 else
                   kcbk(2,j)=kcbk(2,k)
                   kcbk(3,j)=kcbk(2,k)
-                  kcbk(1,k)=0
-                  kcbk(2,k)=0
-                  kcbk(3,k)=0
+                  kcbk(:,k)=0
                 endif
                 return
               endif
@@ -1009,17 +1004,13 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
                 if(k .lt. j)then
                   kcbk(2,k)=kcbk(2,j)
                   kcbk(3,k)=kcbk(3,j)
-                  kcbk(1,j)=0
-                  kcbk(2,j)=0
-                  kcbk(3,j)=0
+                  kcbk(:,j)=0
                   if(j .eq. jcbk)then
                     jcbk=jcbk-1
                   endif
                 else
                   kcbk(1,j)=kcbk(1,k)
-                  kcbk(1,k)=0
-                  kcbk(2,k)=0
-                  kcbk(3,k)=0
+                  kcbk(:,k)=0
                 endif
                 return
               endif

@@ -669,10 +669,10 @@ c     write(*,*)'tturne-tcave-1',cod
       use tffitcode
       use ffs_pointer, only:twiss
       use tmacro
+      use temw, only:toln
       implicit none
       integer*4 idp,m,l
       real*8 phi0
-      real*8,parameter :: toln=2.d-9
       phi0=0.d0
       do l=2,nlat
         twiss(l,idp,m)=twiss(l,idp,m)+phi0
@@ -733,7 +733,6 @@ c     $       twiss(l,idp,mfitzx:mfitzpy)
       real*8 trans(6,6),ti(6,6),twi(ntwissfun),cod(6),
      $     beam(21),ril(6,6),gr,tr0(6,6)
       logical*4 norm
-      real*8,parameter :: toln=-2.d-9
       if(trpt)then
         gr=gammab(l)/gammab(max(1,lorg-1))
         tr0=trans*sqrt(gr)
@@ -757,12 +756,12 @@ c     $       twiss(l,idp,mfitzx:mfitzpy)
         twi(mfitny)=0.d0
         twi(mfitnz)=0.d0
       else
-        if(twi(mfitnx) .lt. toln)then
+        if(twi(mfitnx) .lt. -toln)then
           twi(mfitnx)=twiss(l0,idp,mfitnx)+twi(mfitnx)+pi2
         else
           twi(mfitnx)=twiss(l0,idp,mfitnx)+twi(mfitnx)
         endif
-        if(twi(mfitny) .lt. toln)then
+        if(twi(mfitny) .lt. -toln)then
           twi(mfitny)=twiss(l0,idp,mfitny)+twi(mfitny)+pi2
         else
           twi(mfitny)=twiss(l0,idp,mfitny)+twi(mfitny)
