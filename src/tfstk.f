@@ -904,11 +904,11 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         subroutine tfinitstk
         use iso_c_binding
         implicit none
-        integer*4 igetgl1
+        real*8 rgetgl1
         if(tfstkinit)then
           return
         endif
-        mstk=max(2**18,igetgl1('STACKSIZ'))
+        mstk=max(2**18,int(rgetgl1('STACKSIZ')))
         ispbase=ktaloc(mstk*2)-1
         if(ispbase .le. 0)then
           write(*,*)'Stack allocation failed: ',mstk,ispbase

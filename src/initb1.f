@@ -647,8 +647,9 @@ cc for spch
       use tfmem, only:ktaloc
       implicit none
 c
-      integer*4 idummy,idummy1,hsrch,i
+      integer*4 idummy,idummy1,hsrch,i,iss
       integer*8 ktcaloc
+      character*132 stacksiz
 c     external doline
       external doprin, doexpn, doread, dolist, docod, dostop, dotwis
       external dooffl, doonfl,dorvrs
@@ -1626,8 +1627,10 @@ c
        idummy=sethtb('uniform ',icRAND,2 )
        idummy=sethtb('UNIFORM ',icRAND,2 )
 c
-       call defglb('STACKSIZ',icGLI,idummy)
-       call IsetGL('STACKSIZ',2**21,idummy)
+       call defglb('STACKSIZ',icGLR,idummy)
+       call get_environment_variable('SAD_STACKSIZ',stacksiz)
+       read(stacksiz,'(i20)')iss
+       call RsetGL('STACKSIZ',max(2.d0**21,dble(iss)),idummy)
        call defglb('$SEED',icGLR,idummy)
        call RsetGL('$SEED',17.d0,idummy)
        call defglb('SEED',icGLR,idummy)

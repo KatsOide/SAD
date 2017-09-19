@@ -441,6 +441,7 @@ c     print *,token(:slen)
            call tfinitstk
            call dolin2(index,slen,ttype)
          else
+            call tfinitstk
            call dAssgn(token,slen,status)
            if (status .ne. 0) call errmsg('toplvl',
      &          'Unsupported function '//token(:slen)//'!',
