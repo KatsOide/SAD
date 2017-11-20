@@ -119,7 +119,7 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
 
       module tfmem
       implicit none
-      integer*8, parameter :: mpsize=2**22,kcpklist0=0
+      integer*8, parameter :: mpsize=2**22,kcpklist0=0,maxstack=2**25
       integer*4, parameter :: nindex=64,mhash=32767,
      $     minseg0=9,minseg1=16,minseg2=16
       integer*8 :: icp=0,nmem=0,nnet=0,ich=0,maxic=3,
@@ -318,7 +318,7 @@ c     kcpklist0=0
             nnet=nnet+m
             ktaloc=i
             return
-          elseif(m1 .ge. m+minseg2)then
+          elseif(m1-minseg2 .ge. m)then
             klist(i1)=klist(i)
             klist(klist(i)+1)=i1
             j=ich+iand(i+m1+2,mhash)
@@ -903,17 +903,24 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
       contains
         subroutine tfinitstk
         use iso_c_binding
+        use tfmem, only:maxstack
         implicit none
-        real*8 rgetgl1
+        integer*4 idummy
         if(tfstkinit)then
           return
         endif
-        mstk=max(2**18,int(rgetgl1('STACKSIZ')))
-        ispbase=ktaloc(mstk*2)-1
-        if(ispbase .le. 0)then
-          write(*,*)'Stack allocation failed: ',mstk,ispbase
-          call abort
-        endif
+c        mstk=max(2**18,int(rgetgl1('STACKSIZ')))
+        mstk=int(maxstack*2)
+        ispbase=0
+        do while (ispbase .le. 0)
+          mstk=mstk/2
+          if(mstk .lt. 2**18)then
+            write(*,*)'Stack allocation failed: ',mstk,ispbase
+            call abort
+          endif
+          ispbase=ktaloc(mstk*2)-1
+        enddo
+        call rsetGL('STACKSIZ',dble(mstk/2),idummy)
         isp=0
         isporg=isp+1
         ivstkoffset=mstk
@@ -952,9 +959,10 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         do i=icbk+1,ncbk
           allocate(sadalloc(i)%ca(n),stat=istat)
           if(istat .ne. 0)then
-            write(*,*)'ktfsadalloc allocation error in ALLOCATE: ',
-     $           istat,n
-            call abort
+c            write(*,*)'ktfsadalloc allocation error in ALLOCATE: ',
+c     $           n,i,istat
+            ktfsadalloc=-1
+            return
           endif
           icbk=icbk+1
           ktfsadalloc=sad_loc(sadalloc(i)%ca(1))

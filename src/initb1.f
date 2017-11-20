@@ -645,6 +645,7 @@ cc for spch
       use macvar
       use macfile
       use tfmem, only:ktaloc
+      use tfmem, only:maxstack
       implicit none
 c
       integer*4 idummy,idummy1,hsrch,i,iss
@@ -1628,9 +1629,10 @@ c
        idummy=sethtb('UNIFORM ',icRAND,2 )
 c
        call defglb('STACKSIZ',icGLR,idummy)
-       call get_environment_variable('SAD_STACKSIZ',stacksiz)
-       read(stacksiz,'(i20)')iss
-       call RsetGL('STACKSIZ',max(2.d0**21,dble(iss)),idummy)
+c       call get_environment_variable('SAD_STACKSIZ',stacksiz)
+c       read(stacksiz,'(i20)')iss
+c       call RsetGL('STACKSIZ',max(2d0**18,dble(iss)),idummy)
+       call rsetGL('STACKSIZ',dble(maxstack),idummy)
        call defglb('$SEED',icGLR,idummy)
        call RsetGL('$SEED',17.d0,idummy)
        call defglb('SEED',icGLR,idummy)

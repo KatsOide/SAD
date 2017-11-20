@@ -80,6 +80,7 @@
       endif
       ke=dtfcopy(ke)
       kdl(1:nvar)=ktfoper+mtfnull
+c      write(*,*)'findroot-D ',used
       if(used)then
         call tfderiv(ke,nvar,sav,kdl,irtc)
         if(irtc .ne. 0)then

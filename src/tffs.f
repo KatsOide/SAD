@@ -430,6 +430,19 @@ c$$$
         return
         end subroutine
 
+        integer*8 function ktatwissaloc(mode,kl)
+        use tfstk
+        use tffitcode
+        implicit none
+        type (sad_rlist), pointer::kl
+        integer*8 kax
+        integer*4 mode
+        kax=ktraaloc(mode,28,kl)
+        kl%rbody(mfitbz)=1.d0
+        ktatwissaloc=kax
+        return
+        end
+
       end module
 
       module ffs_flag

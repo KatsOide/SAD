@@ -624,7 +624,8 @@ AutoLoad[CheckEntryList,PackagesDirectory//"CheckEntryList.n"];
 AutoLoad[CursorEntry,CaCursorEntry,PackagesDirectory//"CursorEntry.n"];
 AutoLoad[SI$StartInspect,PackagesDirectory//"SADInspect.n"];
 AutoLoad[Speak,PackagesDirectory//"Speak.n"];
-AutoLoad[Fit,PolynomialFit,FindRoot,PackagesDirectory//"Fit.n"];
+AutoLoad[Fit,PolynomialFit,FindRoot,FitGaussian,FitEmit,CreateBin,
+  PackagesDirectory//"Fit.n"];
 AutoLoad[Rational,Nemerator,Denominator,FromRational,
   ContinuedFractioin,FromContinuedFraction,PackagesDirectory//"rational.n"];
 AutoLoad[help,HELP,Help,PackagesDirectory//"help.n"];

@@ -23,8 +23,9 @@ c      include 'DEBUG.inc'
       real*8 df(maxcond),r,rp,wi,
      $     residual1(-ndimmax:ndimmax)
       logical*4 zcal,wcal,error,parallel
+      external tfloor
       real*8 anux0,anuy0,anux0h,anuy0h,anuxi,anuyi,anuxih,anuyih,
-     $     rw,drw,rstab,
+     $     rw,drw,rstab,tfloor,
      $     anusumi,anusum0,anudiffi,anudiff0,physd(4),physd1(4)
       logical*4 fam,beg,zerores
       integer*4 irw,isw,ipr,ifb,ife,idir,
@@ -116,10 +117,12 @@ c        call tfevals('Print["PROF-2: ",LINE["PROFILE","Q1"]]',kxx,irtc)
           anux0h=aint(twiss(nlat,0,mfitnx)/pi)
           anuy0h=aint(twiss(nlat,0,mfitny)/pi)
           anusum0=aint((twiss(nlat,0,mfitnx)+twiss(nlat,0,mfitny))/pi2)
-          anudiff0=twiss(nlat,0,mfitnx)/pi2-
-     $         aint(twiss(nlat,0,mfitnx)/pi2)-
-     $         twiss(nlat,0,mfitny)/pi2+
-     $         aint(twiss(nlat,0,mfitny)/pi2)
+          anudiff0=tfloor(
+     $         (twiss(nlat,0,mfitnx)-twiss(nlat,0,mfitny))/pi2)
+c          anudiff0=twiss(nlat,0,mfitnx)/pi2-
+c     $         aint(twiss(nlat,0,mfitnx)/pi2)-
+c     $         twiss(nlat,0,mfitny)/pi2+
+c     $         aint(twiss(nlat,0,mfitny)/pi2)
           if(optstat(0)%stabx .and. optstat(0)%staby
      $         .and. optstat(0)%stabz .or. chgini)then
             call twmov(1,twiss,nlat,ndim,.false.)
@@ -231,10 +234,13 @@ c                    endif
               anuyi=aint(twiss(nlat,1,mfitny)/pi2)
               anusumi=aint((twiss(nlat,1,mfitnx)
      $             +twiss(nlat,1,mfitny))/pi2)
-              anudiffi=twiss(nlat,1,mfitnx)/pi2-
-     $             aint(twiss(nlat,1,mfitnx)/pi2)-
-     $             twiss(nlat,1,mfitny)/pi2+
-     $             aint(twiss(nlat,1,mfitny)/pi2)
+              anudiffi=tfloor((twiss(nlat,1,mfitnx)
+     $             -twiss(nlat,1,mfitny))/pi2)
+c              anudiffi=twiss(nlat,1,mfitnx)/pi2-
+c     $             aint(twiss(nlat,1,mfitnx)/pi2)-
+c     $             twiss(nlat,1,mfitny)/pi2+
+c     $             aint(twiss(nlat,1,mfitny)/pi2)
+c              write(*,*)'tffscalc ',anudiffi,anudiff0
               optstat(ii)%stabx=optstat(ii)%stabx .and. (fam .or.
      $             (.not. intres .or. anuxi .eq. anux0) .and.
      $             (.not. halfres .or. anuxih .eq. anux0h) .and.

@@ -1016,7 +1016,7 @@ c                endif
       type (sad_dlist) kls
       type (sad_symbol), pointer :: sym
       type (sad_namtbl), pointer :: nam
-      integer*8 kaa,kopc,kax
+      integer*8 kaa,kopc
       integer*4 ind,irtc,nc,isp1,isps,
      $     itfmessage,ns,ipf0,naf0,ls,isp2
       real*8 ffval,vx
@@ -1046,7 +1046,7 @@ c                endif
           name(2:nc)=nam%str%str(1:nc-1)
           name(1:1)='#'
           call capita(name(1:nc))
-          vx=ffval(name(1:nc),kax,exist)
+          vx=ffval(name(1:nc),exist)
           if(exist)then
             kx=dfromr(vx)
             irtc=0

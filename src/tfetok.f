@@ -441,15 +441,14 @@ c          write(*,*)'kax ',kax
       return
       end
       
-      real*8 function ffval(name,ia,exist)
+      real*8 function ffval(name,exist)
       use tfstk
+      use sad_main
       use ffs
-      use tffitcode
-      use ffs_pointer, only:latt
+      use ffs_pointer, only:klp,errk,tfvalvar,ival,pnamec
       implicit none
       logical*4 exist
       integer*4 i,lenw
-      integer*8 ia
       character*(*) name
       character*(MAXPNAME) name1
       ffval=0.d0
@@ -459,11 +458,9 @@ c          write(*,*)'kax ',kax
       endif
       name1=name(2:lenw(name))
       do i=1,nele
-        if(pname(ilist(2,latt(ilist(i,ifklp)))) .eq. name1)then
+        if(pnamec(klp(i)) .eq. name1)then
           exist=.true.
-          ia=latt(ilist(i,ifklp))+ilist(i,ifival)
-          ffval=rlist(ia)
-     $         /rlist(iferrk+(ilist(i,ifklp))*2)
+          ffval=tfvalvar(klp(i),ival(i))/errk(1,klp(i))
           return
         endif
       enddo

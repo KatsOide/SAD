@@ -3327,6 +3327,27 @@ where c0 .. cn are the coefficients of the fitted polynomial, y = c0 + c1 x + ..
       "FitPlot",
        {}},
 
+       {"FitGaussian",
+         "\
+Performs Gaussian fit of 1D list data:\n\n\
+  FitGaussian[data, [opt, ...]]\n\n\
+returns a list\n\n\
+  {sigma, mean, {sigma_conf, mean_conf}, chisq} ,\n\n\
+where sigma_conf and mean_conf are the confidence interval of the results sigma and mean, respectively. The arguments opt... are options for Fit. If Plot -> True is specified as the option, a plot of the fitting will be made.",
+       "Fit FitEmit",
+         {}},
+
+       {"FitEmit",
+         "\
+Obtain the emittance, beta, alpha, etc. from data of particles x and px using FitGaussian.\n\n\
+  FitEmit[x, px] ,\n\n\
+where x and px are the lists of data of the particles in the phase space, returns a list\n\n\
+  {{xmean, pxmean, alpha, beta, emittance},\n\
+   {xmean, pxmean, alpha, beta, emittance}_conf},\n\n\
+where the second component is the confidence intervals of the results.",
+         "FitGaussian",
+         {}},
+
        {"Spline",
          "\
 Spline returns data for cubic-spline interpolation.\n\n\

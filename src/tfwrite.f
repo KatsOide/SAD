@@ -744,8 +744,8 @@ c          enddo
       opts%null=.false.
       opts%new=.true.
       if(del)then
-        opts%ndel=3
-        opts%delim=' ,'//char(9)
+        opts%ndel=4
+        opts%delim=' ,'//char(9)//char(13)
       else
         opts%ndel=0
       endif

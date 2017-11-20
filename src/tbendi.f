@@ -2,8 +2,9 @@
       use tfstk
       implicit none
       real*8 xi,pxi,yi,pyi,zi,p,dp,rhoe,rho0,rhob,drhob,drhop,
-     $     drhopak,rhosq,
-     $     akk,akxsq,akysq,akx,aky,dcx,aksx,dcy,aksy,phix,phiy
+     $     rhosq,
+     $     akk,akxsq,akysq,akx,aky,dcx,aksx,dcy,aksy,phix,phiy,
+     $     sx,sy,sxkx,syky,dcxkx,xsxkx
       real*8 a3,a5,a7,a9,a11,a13,a15,psqmax,epsbend
       parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
      1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
@@ -15,33 +16,61 @@
       subroutine tbendiinit(ak1,al)
       implicit none
       real*8, intent (in):: ak1,al
+      real*8 xsin,xsinh
       rhosq=rho0*rhoe
       drhop=(rhoe-rho0)/rhosq
       akk=ak1/al
-      akxsq=(-p/rhosq-akk)/p
-      drhopak=drhop/akxsq
+      akxsq=-1.d0/rhosq-akk/p
       akysq=akk/p
-      if(akxsq .ge. 0.d0)then
+      if(akxsq .gt. 0.d0)then
         akx=sqrt(akxsq)
         phix=akx*al
         dcx=2.d0*sinh(.5d0*phix)**2
-        aksx=akx*sinh(phix)
-      else
+        sx=sinh(phix)
+        aksx=akx*sx
+        dcxkx=dcx/akxsq
+        sxkx=sx/akx
+        xsxkx=xsinh(phix)/akx/akxsq
+      elseif(akxsq .lt. 0.d0)then
         akx=sqrt(-akxsq)
         phix=akx*al
         dcx=-2.d0*sin(.5d0*phix)**2
-        aksx=-akx*sin(phix)
+        sx=sin(phix)
+        aksx=-akx*sx
+        dcxkx=dcx/akxsq
+        sxkx=sx/akx
+        xsxkx=-xsin(phix)/akx/akxsq
+      else
+        akx=0.d0
+        phix=0.d0
+        dcx=0.d0
+        sx=0.d0
+        aksx=0.d0
+        dcxkx=0.5d0*al**2
+        sxkx=al
+        xsxkx=-1.d0/6.d0*al**3
       endif
-      if(akysq .ge. 0.d0)then
+      if(akysq .gt. 0.d0)then
         aky=sqrt(akysq)
         phiy=aky*al
         dcy=2.d0*sinh(.5d0*phiy)**2
-        aksy=aky*sinh(phiy)
-      else
+        sy=sinh(phiy)
+        aksy=aky*sy
+        syky=sy/aky
+      elseif(akysq .lt. 0.d0)then
         aky=sqrt(-akysq)
         phiy=aky*al
         dcy=-2.d0*sin(.5d0*phiy)**2
-        aksy=-aky*sin(phiy)
+        sy=sin(phiy)
+        aksy=-aky*sy
+        syky=sy/aky
+      else
+        aky=0.d0
+        phiy=0.d0
+        dcy=0.d0
+        sy=0.d0
+        aksy=0.d0
+        syky=al
       endif
       return
       end subroutine
@@ -65,16 +94,21 @@
       subroutine tbendibody(al)
       implicit none
       real*8, intent(in):: al
-      real*8 dxf,dpxf,dyf,dpyf,hi
-      dxf =(drhopak+xi)*dcx+aksx/akxsq*pxi
-      dpxf= aksx*(drhopak+xi)+pxi*dcx
-      dyf = dcy*yi+aksy/akysq*pyi
-      dpyf=aksy*yi+dcy*pyi
+      real*8 dxf,dpxf,dyf,dpyf,hi,xiksq
+c      dxf =(drhopak+xi)*dcx+aksx/akxsq*pxi
+c      dpxf= aksx*(drhopak+xi)+pxi*dcx
+c      dyf = dcy*yi+aksy/akysq*pyi
+c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
+      xiksq = drhop    +akxsq*xi
+      dxf = dcxkx*xiksq+sxkx*pxi
+      dpxf= sxkx*xiksq +dcx*pxi
+      dyf = dcy*yi     +syky*pyi
+      dpyf= aksy*yi    +dcy*pyi
       hi=.5d0*(pxi**2+pyi**2-akxsq*xi**2-akysq*yi**2)
      $     -drhop*xi
       zi =zi-.25d0*(dxf*pxi+xi*dpxf+dxf*dpxf
      $     +dyf*pyi+yi*dpyf+dyf*dpyf
-     $     -(5.d0/rho0-1.d0/rhoe)*(drhopak*al-dpxf/akxsq))
+     $     -(5.d0/rho0-1.d0/rhoe)*(drhop*xsxkx-sxkx*xi-dcxkx*pxi))
      $     -hi*al*.5d0
       xi =xi +dxf
       pxi=pxi+dpxf
