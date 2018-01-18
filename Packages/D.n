@@ -214,7 +214,7 @@ NIntegrate[a:(Spline[_][_]),y_,___]:=Integrate[a,y];
 
 With[{def={AccuracyGoal->1e-13,InitialPoints->20,Spline->True}},
   NIntegrate[f_,{x_Symbol,x0_,x1_},opt___]:=
-    Module[{eps,n,d,u,v,smax,sp,s,u1,v1,ds,w,fa,spl},
+    Module[{eps,n,d,u,v,smax,sp,s,u1,v1,ds,w,fa,spl,s1},
       {eps,n,spl}={AccuracyGoal,InitialPoints,Spline}/.{opt}/.def;
       fa[y_]:=With[{x=Vector[y]},Check[ReleaseVector[f],y*0]];
       d=(x1-x0)/n;
