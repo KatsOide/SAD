@@ -1,6 +1,7 @@
       subroutine temitf(plot,lfni,lfno)
       use ffs_pointer
       use tmacro
+      use tffitcode
       implicit none
       integer*4 nparam,ntitle
       parameter (nparam=59,ntitle=26)
@@ -47,7 +48,7 @@
         in=indexs(title(i),',',in+1)
         read(title(i)(in+1:),*)scale(i)
 10    continue
-      codin=0.d0
+      codin=twiss(1,0,mfitdx:mfitddp)
       beamin=0.d0
       call temit(trans,cod,beam,ctrb,
      1     .true.,int8(0),int8(0),int8(0),int8(0),

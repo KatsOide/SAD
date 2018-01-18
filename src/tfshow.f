@@ -22,10 +22,9 @@
       character*11 vout
       character*256 buf2
       character*256 buf0,buf1
-      character*2 label(6)
+      character*3 famlabel
       logical*4 err,stab,trx,try,ret,tftype1fit
       external trim
-      data label/'x1','x2','x3','y1','y2','y3'/
       lw=max(79,min(256,itfgetrecl()))
       lf=max(6,min(10,(lw-20)/(2*nfam+2)))
       if(lf .gt. 6)then
@@ -91,11 +90,7 @@
         write(lfno,'(A)')buf1(1:len_trim(buf1))
         if(nfam .gt. nfr)then
           do m=1,nn
-            if(kfam(jshow(m)) .eq. 0)then
-              buf0((m-1)*lf+1:m*lf)=' '
-            else
-              buf0((m-1)*lf+1:m*lf)='   '//label(kfam(jshow(m)))
-            endif
+            buf0((m-1)*lf+1:m*lf)='   '//famlabel(kfam(jshow(m)))
           enddo
           vout(1:lfs+3)=' '
           if(lfs .gt. 6)then
@@ -413,5 +408,22 @@ c            endif
       integer*4 k
       tftype1fit=k .eq. mfitnx .or. k .eq. mfitny .or.
      $     (k .ge. mfitleng .and. k .le. mfitgz)
+      return
+      end
+
+      character*3 function famlabel(k)
+      implicit none
+      integer*4 k
+      if(k .eq. 0)then
+        famlabel='   '
+      elseif(k .gt. 9)then
+        write(famlabel,'(a,i2)')'x',k
+      elseif(k .gt. 0)then
+        write(famlabel,'(a,i1,a)')'x',k,' '
+      elseif(k .gt. -10)then
+        write(famlabel,'(a,i1,a)')'y',-k,' '
+      else
+        write(famlabel,'(a,i2)')'y',-k
+      endif
       return
       end

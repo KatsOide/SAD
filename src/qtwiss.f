@@ -803,20 +803,21 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       use tffitcode
       implicit none
       type (ffs_bound) fbound
-      real*8 conv,cx,bx,cy,by,r0
+      real*8 conv,cx,sx,ax,bx,cy,sy,ay,by,r0,dcod(6)
       integer*4 itmax
       parameter (conv=1.d-20,itmax=15)
       integer*4 idp,it
       real*8 r,fact
       real*8 trans(4,5),cod(6),cod0(6),trans1(4,5),transb(4,5),
      $     transe(4,5),ftwiss(ntwissfun),trans2(4,5),cod00(6)
-      logical*4 over,codfnd
+      logical*4 over,codfnd,stab
       it=0
       r0=1.d100
       cod00=cod0
       fact=.5d0
+      stab=.false.
       do while(it .le. itmax)
-        cod=cod0
+ 1      cod=cod0
         if(fbound%fb .gt. 0.d0)then
           call qtwissfrac1(ftwiss,transb,cod,idp,
      $         fbound%lb,fbound%fb,1.d0,.true.,.true.,over)
@@ -874,11 +875,34 @@ c          enddo
           return
         endif
         cx=.5d0*(trans(1,1)+trans(2,2))
-        bx=abs(trans(1,2)/sqrt(max(1.d-6,abs(1.d0-cx**2))))
         cy=.5d0*(trans(3,3)+trans(4,4))
-        by=abs(trans(3,4)/sqrt(max(1.d-6,abs(1.d0-cy**2))))
-        r=(cod(1)-cod0(1))**2/bx+bx*(cod(2)-cod0(2))**2
-     $       +(cod(3)-cod0(3))**2/by+by*(cod(4)-cod0(4))**2
+        if(abs(cx) .gt. 1.d0)then
+c          if(stab)then
+c            it=it+1
+c            cod0=(2.d0*cod0+cod00)/3.d0
+c            cycle
+c          endif
+          cx=1.d0/cx
+        endif
+        if(abs(cy) .gt. 1.d0)then
+c          if(stab)then
+c            it=it+1
+c            cod0=(2.d0*cod0+cod00)/3.d0
+c            cycle
+c          endif
+          cy=1.d0/cy
+        else
+          stab=abs(cx) .le. 1.d0
+        endif
+        sx=sign(sqrt(max(1.d-6,1.d0-cx**2)),trans(1,2))
+        ax=.5d0*(trans(1,1)-trans(2,2))/sx
+        bx=trans(1,2)/sx
+        sy=sign(sqrt(max(1.d-6,1.d0-cy**2)),trans(3,4))
+        ay=.5d0*(trans(3,3)-trans(4,4))/sy
+        by=trans(3,4)/sy
+        dcod=cod-cod0
+        r=dcod(1)**2/bx+bx*(dcod(2)+ax/bx*dcod(1))**2
+     $       +dcod(3)**2/by+by*(dcod(4)+ay/by*dcod(3))**2
         if(r .le. conv)then
           codfnd=.true.
           return

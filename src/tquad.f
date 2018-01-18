@@ -9,7 +9,8 @@
       logical*4 enarad,chro,fringe,kin
       integer*4 np,l,i,mfring
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
-     $     f1r,f2r,al,ak,dx,dy,theta,cost,sint,radlvl,eps0,
+     $     px0(np),py0(np),
+     $     f1r,f2r,al,ak,dx,dy,theta,cost,sint,radlvl,eps0,alr,
      $     f1in,f1out,f2in,f2out,p,a,ea,b,pxi,pxf,pyf,b1,xi
       real*8, parameter :: ampmax=0.9999d0
       if(al .eq. 0.d0)then
@@ -27,6 +28,10 @@
         return
       endif
       include 'inc/TENT.inc'
+      if(enarad)then
+        px0=px
+        py0=py
+      endif
       if(fringe .and. mfring .gt. -4 .and. mfring .ne. 2)then
         call ttfrin(np,x,px,y,py,z,g,4,ak,al,0.d0)
       endif
@@ -47,31 +52,27 @@ c          p=(1.d0+g(i))**2
           py(i)=pyf
 2110    continue
       endif
+c$$$      if(enarad)then
+c$$$        if(iprev(l) .eq. 0)then
+c$$$          f1r=sqrt(abs(24.d0*f1in/ak*al))
+c$$$        else
+c$$$          f1r=0.d0
+c$$$        endif
+c$$$        if(inext(l) .eq. 0)then
+c$$$          f2r=sqrt(abs(24.d0*f1out/ak*al))
+c$$$        else
+c$$$          f2r=0.d0
+c$$$        endif
+c$$$        b1=brho*ak/al
+c$$$        call trad(np,x,px,y,py,g,dv,0.d0,0.d0,
+c$$$     1       b1,0.d0,0.d0,.5d0*al,
+c$$$     $       f1r,f2r,0.d0,al,1.d0)
+c$$$      endif
       if(enarad)then
-        if(iprev(l) .eq. 0)then
-          f1r=sqrt(abs(24.d0*f1in/ak*al))
-        else
-          f1r=0.d0
-        endif
-        if(inext(l) .eq. 0)then
-          f2r=sqrt(abs(24.d0*f1out/ak*al))
-        else
-          f2r=0.d0
-        endif
-        b1=brho*ak/al
-        call trad(np,x,px,y,py,g,dv,0.d0,0.d0,
-     1       b1,0.d0,0.d0,.5d0*al,
-     $       f1r,f2r,0.d0,al,1.d0)
-      endif
-      if(ak*al .ge. 0.d0)then
-        call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,0.d0,0.d0,0.d0,eps0)
+        call tsolqur(np,x,px,y,py,z,g,dv,pz,al,ak,
+     $       0.d0,0.d0,0.d0,eps0,px0,py0,alr)
       else
-        call tsolqu(np,y,py,x,px,z,g,dv,pz,al,-ak,0.d0,0.d0,0.d0,eps0)
-      endif
-      if(enarad)then
-        call trad(np,x,px,y,py,g,dv,0.d0,0.d0,
-     1       b1,0.d0,0.d0,.5d0*al,
-     $       f1r,f2r,al,al,-1.d0)
+        call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,0.d0,0.d0,0.d0,eps0)
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
         do 2120 i=1,np
@@ -93,6 +94,9 @@ c          p=(1.d0+g(i))**2
       if(fringe .and. mfring .gt. -4 .and. mfring .ne. 1)then
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
       endif
+      if(enarad)then
+        call tradk(np,x,px,y,py,px0,py0,g,dv,alr)
+      endif
       include 'inc/TEXIT.inc'
       return
       end
@@ -112,7 +116,8 @@ c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
      1           gamma=9.43738783765593145d-4,
      1           alpha1=.5d0-alpha)
       integer*4 l,nord,np,kord,i
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
+     $     px0(np),py0(np)
       real*8 fact(0:nmult)
       real*8 thr,rhor,an,ur,dprad,theta,sint,cost,dx,dy,al,ak,
      $     ala,alb,aki,akf,dpz,al1,sp,radlvl,brad,de,delp,dp,h1,hh,
@@ -141,6 +146,10 @@ c     end   initialize for preventing compiler warning
         return
       endif
       include 'inc/TENT.inc'
+      if(enarad)then
+        px0=px
+        py0=py
+      endif
       if(fringe)then
         call ttfrin(np,x,px,y,py,z,g,nord,ak,al,0.d0)
       endif
@@ -162,77 +171,22 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
 10      continue
         akf=akf*.5d0
       endif
-      if(enarad)then
-        if(rfluct)then
-          call tran_array(dv(1),np)
-          do i=1,np
-            dv(i)=(dv(i)-.5d0)*3.46410161513775461d0
-          enddo
-        endif
-        ur=urad*p0**3
-        an=anrad*p0
-        sp=0.d0
-        do 1010 i=1,np
-c          pr=(1.d0+g(i))**2
+      if(kord .eq. 2)then
+        do 1210 i=1,np
+c     aki=akf/(1.d0+g(i))**2
+          aki=akf/(1.d0+g(i))
+          px(i)=px(i)-aki*(x(i)-y(i))*(x(i)+y(i))
+          py(i)=py(i)+2.d0*aki*x(i)*y(i)
+ 1210   continue
+      else
+        do 1020 i=1,np
+c     pr=(1.d0+g(i))**2
           pr=1.d0+g(i)
           aki=akf/pr
           cx=dcmplx(x(i),-y(i))**kord
           px(i)=px(i)-aki*dble(cx)
           py(i)=py(i)-aki*imag(cx)
-          thr=2.d0*abs(akf)*abs(cx)
-          if(thr .ne. 0.d0)then
-            rhor=al/thr
-            if(rfluct)then
-              p=p0*pr
-              brad=(brhoz/rhor)**2
-              hh=1.d0+p**2
-              dp=-hh*brad*al*crad*(1.d0+(px(i)**2+py(i)**2)*.5d0)
-              de  =erad*dp*hh*c*sqrt(hh*brad)/p/amass
-              dprad=-dp-sqrt(-de)*dv(i)
-            else
-              p=p0*pr
-              brad=(brhoz/rhor)**2
-              hh=1.d0+p**2
-              dprad=hh*brad*al*crad*(1.d0+(px(i)**2+py(i)**2)*.5d0)
-            endif
-c            delp=(2.d0+g(i))*g(i)-dprad
-            delp=g(i)-dprad
-            pr=1.d0+delp
-c            h1=sqrt(1.d0+(p0*pr)**2)
-            h1=p2h(p0*pr)
-c            g(i)=delp/(1.d0+sqrt(max(.01d0,pr)))
-            g(i)=delp
-            dv(i)=-delp*(1.d0+pr)/h1/(h1+pr*h0)+dvfs
-            sp=sp-dprad
-          endif
-1010    continue
-        if(.not. radcod .and. trpt)then
-          sp=sp/np
-          do 1110 i=1,np
-c            dp=(2.d0+g(i))*g(i)-sp
-c            g(i)=dp/(1.d0+sqrt(1.d0+dp))
-            g(i)=g(i)-sp
-c           Change of dv(i) is ignored here.
-1110      continue
-        endif
-      else
-        if(kord .eq. 2)then
-          do 1210 i=1,np
-c            aki=akf/(1.d0+g(i))**2
-            aki=akf/(1.d0+g(i))
-            px(i)=px(i)-aki*(x(i)-y(i))*(x(i)+y(i))
-            py(i)=py(i)+2.d0*aki*x(i)*y(i)
-1210      continue
-        else
-          do 1020 i=1,np
-c            pr=(1.d0+g(i))**2
-            pr=1.d0+g(i)
-            aki=akf/pr
-            cx=dcmplx(x(i),-y(i))**kord
-            px(i)=px(i)-aki*dble(cx)
-            py(i)=py(i)-aki*imag(cx)
-1020      continue
-        endif
+ 1020   continue
       endif
       if(al .ne. 0.d0)then
         if(kord .le. 0)then
@@ -388,6 +342,9 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
       endif
       if(fringe)then
         call ttfrin(np,x,px,y,py,z,g,nord,-ak,al,0.d0)
+      endif
+      if(enarad)then
+        call tradk(np,x,px,y,py,px0,py0,g,dv,al)
       endif
       include 'inc/TEXIT.inc'
       return

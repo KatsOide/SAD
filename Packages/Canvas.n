@@ -706,7 +706,7 @@ CanvasGraphics=Class[{},
         fl=Min[fl,bl[[2]]]],
       {i,0,Canvas$Frame}];
     Round[FontScale*FScale[FrameFontScale,1]
-      *Max[9,size*0.7,Min[w/(effsl00=EffectiveStringLength[t,16])*FSFontScale,fl-pos[[2]]-1,size*1.3]]]];
+      *Max[9,size*0.7,Min[w/(EffectiveStringLength[t,16])*FSFontScale,fl-pos[[2]]-1,size*1.3]]]];
 
   MakeTitle["",__]:=Null;
   MakeTitle[t_,size_,p_]:=Module[{{pos,w,anc}=TitlePosition[p],sz,it=0},

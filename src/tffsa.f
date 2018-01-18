@@ -390,10 +390,14 @@ c          call cssetlinep(icslrecl())
             call tfblocksym('`FitFunction',12)
             call tfblocksym('`FitValue',9)
             call tfblocksym('`ElementValues',14)
+            call tfblocksym('`OpticsProlog',13)
+            call tfblocksym('`OpticsEpilog',13)
           else
             call tfunblocksym('`FitFunction',12,.false.)
             call tfunblocksym('`FitValue',9,.false.)
             call tfunblocksym('`ElementValues',14,.false.)
+            call tfunblocksym('`OpticsProlog',13,.false.)
+            call tfunblocksym('`OpticsEpilog',13,.false.)
             call tffsfree
             if(lattuse .eq. lattredef)then
               call tclrline(lattredef)
@@ -450,6 +454,8 @@ c          call cssetlinep(icslrecl())
         call tfunblocksym('`FitFunction',12,.true.)
         call tfunblocksym('`FitValue',9,.true.)
         call tfunblocksym('`ElementValues',14,.true.)
+        call tfunblocksym('`OpticsProlog',13,.true.)
+        call tfunblocksym('`OpticsEpilog',13,.true.)
       elseif(word .eq. 'SPLIT')then
         call termes(lfno,
      $       'SPLIT is obsolete.   Use OFFSET of a marker.',' ')
@@ -1372,7 +1378,7 @@ c        dpm2=rlist(ktlookup('DPM'))
         enddo
         em=abs(emx)+abs(emy)
         call tffamsetup(1,em)
-        if(nfam .gt. nfr .and. kfam(-nfam) .le. 0)then
+        if(nfam .gt. nfr .and. kfam(-nfam) .eq. 0)then
           nfam1=1-nfam
         else
           nfam1=-nfam

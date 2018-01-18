@@ -299,6 +299,7 @@ c                    enddo
               chgini=(nstab .eq. 0) .or. nderiv
 c              chgini=.true.
               if(nderiv)then
+c                write(*,*)'tffsmatch-setupqu ',nqcol,nvar
                 call tffssetupqu(ifqu,ifqu0,nqumax,nqcol,nvar,lfno)
                 ipr=-1
                 if(npa .gt. 1)then
@@ -334,12 +335,14 @@ c              chgini=.true.
      $                 ra1,rpa1,rstaba1,nstaba1,residuala1,
      $                 zcal1,wcal1,.false.,lfno,error)
                   valvar(kc)=valvar0-dvkc
+c                  write(*,*)'tffsmatch-calc ',nqcol,nvar
                   call tfsetv(nvar)
                   call tffscalc(kdpa2,df2,iqcola2,lfpa2,
      $                 nqcola2,nqcol1a2,ibegin,
      $                 ra1,rpa1,rstaba1,nstaba1,residuala1,
      $                 zcal1,wcal1,.false.,lfno,error2)
                   valvar(kc)=valvar0
+c                  write(*,*)'tffsmatch-calc1 ',nqcol,nvar
 c                  call tfmemcheckprint('ffsmatch-nderiv-2',.true.,irtc)
                   if(error .or. error2)then
                     ddf1(1:nqcol)=0.d0
@@ -358,8 +361,10 @@ c                    rlist((kc-1)*nqcol+j+ifqu-1)=
 c     $                   (ddf1(j)-ddf2(j))/2.d0/dvkc/wvar(kc)
 c                  enddo
                 enddo
+c                write(*,*)'tffsmatch-nderiv-wait ',nqcol
                 call tffswait(ipr,npa,npr,iuta1,
      $               'tffsmatch-NumDerv',irtc)
+c                call tfmemcheckprint('ffsmatch-nderiv-4',.true.,irtc)
               else
                 call tffsqu(nqcol,nqcol1,nvar,nqumax,ifqu0,ifqu,
      $               free,nlat,nele,nfam,nfam1,nut,
@@ -373,6 +378,7 @@ c                  enddo
                     kqu=(kc-1)*nqcol+j+ifqu-1
                     rlist(kqu)=rlist(kqu)*wiq(j)/wvar(kc)
                   enddo
+c                  write(*,'(a,1p10g12.4)')'tffsqu ',rlist(kqu:kqu+9)
                 enddo
                 if(nqcol .gt. nqcol1)then
                   ipr=-1
@@ -602,6 +608,7 @@ c            call tfmemcheckprint('ffsmatch',.true.,irtc)
           go to 9000
         endif
         nqumax=nqu
+c        write(*,*)'setupqu ',nqu,nqcol,nvar,nqumax,ifqu0
       endif
       return
  9000 call termes(lfno,'?Too many conditions*variables.',' ')
@@ -1219,7 +1226,7 @@ c        enddo
       integer*4 iqcol(*),kfitp(*),mfitp(*)
       real*8 b(nqcol),s,eps,dg,wexponent,wlimit(nvar)
       logical*4 fit(nqcol),again,allneg
-      integer*4 nagain,i,nj
+      integer*4 nagain,i,nj,irtc
       allneg=.true.
       do i=1,nqcol
         fit(i)=mfitp(kfitp(iqcol(i))) .gt. 0

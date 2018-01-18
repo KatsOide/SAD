@@ -65,6 +65,8 @@ c      write(*,*)'tcod-dp0 ',dp0
         return
       endif
       call tinitr(trans)
+c      trf0=trf0+codi(5)
+c      codi(5)=0
       codf=codi
       trf00=trf0
       call tturne(trans,codf,beam,

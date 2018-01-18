@@ -11,7 +11,8 @@
       integer*4 np,ld,mfring,i,irtc,ld1,level,m,itfuplevel,
      $     itfdownlevel,l
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
-     $     al,bz,ak,dx,dy,theta,cost,sint,radlvl,
+     $     pxr0(np),pyr0(np),
+     $     al,bz,ak,dx,dy,theta,cost,sint,radlvl,alr,
      $     f1in,f2in,f1out,f2out,f1r,f2r,eps0,
      $     a,aki,akm,ali,alm,b,b1,ea,fx,fy,p,pr,px0,pxf,pyf,rb,x0
       logical*4 enarad,fringe,forward
@@ -53,6 +54,10 @@ c        pr=(1.d0+g(i))**2
           py(i)=sint*px0+cost*py(i)
         enddo
       endif
+      if(enarad)then
+        pxr0=px
+        pyr0=py
+      endif
       if(fringe .and. mfring .ne. 2)then
         call ttfrin(np,x,px,y,py,z,g,4,ak,al,bz)
       endif
@@ -73,23 +78,28 @@ c          p=(1.d0+g(i))**2
           py(i)=pyf
 2110    continue
       endif
-      if(enarad)then
-        if(iprev(l) .eq. 0)then
-          f1r=f1in
-        else
-          f1r=0.d0
-        endif
-        if(inext(l) .eq. 0)then
-          f2r=f1out
-        else
-          f2r=0.d0
-        endif
-        b1=brhoz*ak/al
-        call trad(np,x,px,y,py,g,dv,0.d0,
-     1       b1,0.d0,0.d0,.5d0*al,f1r,f2r,0.d0,al,1.d0)
-      endif
+c$$$      if(enarad)then
+c$$$        if(iprev(l) .eq. 0)then
+c$$$          f1r=f1in
+c$$$        else
+c$$$          f1r=0.d0
+c$$$        endif
+c$$$        if(inext(l) .eq. 0)then
+c$$$          f2r=f1out
+c$$$        else
+c$$$          f2r=0.d0
+c$$$        endif
+c$$$        b1=brhoz*ak/al
+c$$$        call trad(np,x,px,y,py,g,dv,0.d0,
+c$$$     1       b1,0.d0,0.d0,.5d0*al,f1r,f2r,0.d0,al,1.d0)
+c$$$      endif
       if(ifv .eq. 0)then
-        call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,bz,0.d0,0.d0,eps0)
+        if(enarad)then
+          call tsolqur(np,x,px,y,py,z,g,dv,pz,al,ak,bz,0.d0,0.d0,eps0,
+     $         pxr0,pyr0,alr)
+        else
+          call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,bz,0.d0,0.d0,eps0)
+        endif
       else
         level=itfuplevel()
         ld1=ld
@@ -125,8 +135,13 @@ c          p=(1.d0+g(i))**2
               ali=alm
               aki=akm
             endif
-            call tsolqu(np,x,px,y,py,z,g,dv,pz,ali,aki,
-     $           bz*rb,0.d0,0.d0,eps0)
+            if(enarad)then
+              call tsolqu(np,x,px,y,py,z,g,dv,pz,ali,aki,
+     $             bz*rb,0.d0,0.d0,eps0,pxr0,pyr0,alr)
+            else
+              call tsolqu(np,x,px,y,py,z,g,dv,pz,ali,aki,
+     $             bz*rb,0.d0,0.d0,eps0)
+            endif
           enddo
           level=itfdownlevel()
         else
@@ -135,15 +150,20 @@ c          p=(1.d0+g(i))**2
             go to 1
           else
             level=itfdownlevel()
-            call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,
-     $           bz,0.d0,0.d0,eps0)
+            if(enarad)then
+              call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,
+     $             bz,0.d0,0.d0,eps0,pxr0,pyr0,alr)
+            else
+              call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,
+     $             bz,0.d0,0.d0,eps0)
+            endif
           endif
         endif
       endif
-      if(enarad)then
-        call trad(np,x,px,y,py,g,dv,0.d0,
-     1       b1,0.d0,0.d0,.5d0*al,f1r,f2r,al,al,-1.d0)
-      endif
+c      if(enarad)then
+c        call trad(np,x,px,y,py,g,dv,0.d0,
+c     1       b1,0.d0,0.d0,.5d0*al,f1r,f2r,al,al,-1.d0)
+c      endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
         do 2120 i=1,np
 c          p=(1.d0+g(i))**2
@@ -163,6 +183,9 @@ c          p=(1.d0+g(i))**2
       endif
       if(fringe .and. mfring .ne. 1)then
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,bz)
+      endif
+      if(enarad)then
+        call tradk(np,x,px,y,py,pxr0,pyr0,g,dv,alr)
       endif
       if(theta .ne. 0.d0)then
         do i=1,np

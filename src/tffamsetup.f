@@ -1,6 +1,7 @@
       subroutine tffamsetup(ll,em)
       use tfstk
       use tffitcode
+      use ffs, only:pi2
       use ffs_fit
       use ffs_pointer, only:elatt
       implicit none
@@ -9,33 +10,31 @@ c      parameter (sqrt3=sqrt(3.d0))
       parameter (sqrt3=1.732050807568877d0)
       type (sad_dlist), pointer :: kl
       type (sad_rlist), pointer :: kli
-      type (sad_descriptor) kx,ki
+      type (sad_descriptor) kx,ki,kxnfam
+      type (sad_descriptor) , save :: kxmamp,kxnfamp
+      integer*4, parameter :: ivoid=9999,maxnfp=12
       integer*8 lp
-      real*8 twissi(50),em,trans(4,4),dx(4,6),dxp(4,6)
-      integer*4 m,nfa,i,j,irtc,itfdownlevel,l,k,ll
-      real*8 dpw,x0,px0,y0,py0,dpi,x,y,dp0
-      type (sad_descriptor) kxmamp
+      real*8 twissi(50),em,trans(4,4),
+     $     dx(4,maxnfp*2),dxp(4,maxnfp*2)
+      integer*4 m,nfa,i,j,irtc,itfdownlevel,l,ll,nfp
+      real*8 dpw,x0,px0,y0,py0,dpi,x,y,dp0,c,s
       data kxmamp%k /0/
-      integer*4 ivoid
-      parameter (ivoid=9999)
       lp=elatt%comp(ll)
-      do i=-nfr,nfr
-        kfam(i)=0
-        jfam(i)=ivoid
-      enddo
+      kfam(-nfr:nfr)=0
+      jfam(-nfr:nfr)=ivoid
       jfam(0)=0
       nfam=nfr
       if(kxmamp%k .eq. 0)then
         kxmamp=kxsymbolz('`MatchingAmplitude',18)
+        kxnfamp=kxsymbolz('`NFAMP',6)
       endif
       call tclrfpe
       levele=levele+1
       call tfeeval(kxmamp,kx,.true.,irtc)
       if(irtc .ne. 0)then
         write(*,*)'Error in MatchingAmplitude, code =',irtc
-        go to 9100
+        go to 9000
       endif
-c      call tfdebugprint(kx,'famsetup',1)
       if(.not. tflistq(kx,kl))then
         go to 9100
       endif
@@ -43,27 +42,32 @@ c      call tfdebugprint(kx,'famsetup',1)
       if(m .le. 0)then
         go to 9100
       endif
+      call tfeeval(kxnfamp,kxnfam,.true.,irtc)
+      if(ktfnonrealq(kxnfam,nfp) .or. nfp .le. 0)then
+        call tfdebugprint(kxnfam,
+     $       'Non-positive NFAMP - FAM is skipped:',1)
+        go to 9100
+      endif
+      nfp=min(maxnfp,nfp)
       nfa=nfr+1
       dpw=dp(nfr)-dp(-nfr)
       dp0=(dp(nfr)+dp(-nfr))*.5d0
       call twmov(ll,twissi,1,0,.true.)
-      x0=sqrt(twissi(mfitbx)*em)
-      px0=sqrt(em/twissi(mfitbx))
-      y0=sqrt(twissi(mfitby)*em)
-      py0=sqrt(em/twissi(mfitby))
+      x0 =sqrt(twissi(mfitbx)*em)
+      px0=x0/twissi(mfitbx)
+      y0 =sqrt(twissi(mfitby)*em)
+      py0=y0/twissi(mfitby)
       call tfnormaltophysical(twissi,trans)
-      dx=0.d0
-      dx(1,1)=x0
-      dx(1,2)=-.5d0*x0
-      dx(2,2)=( px0*sqrt3-twissi(mfitax)/twissi(mfitbx)*(-x0))*.5d0
-      dx(1,3)=-.5d0*x0
-      dx(2,3)=(-px0*sqrt3-twissi(mfitax)/twissi(mfitbx)*(-x0))*.5d0
-      dx(3,4)=y0
-      dx(3,5)=-.5d0*y0
-      dx(4,5)=( py0*sqrt3-twissi(mfitay)/twissi(mfitby)*(-y0))*.5d0
-      dx(3,6)=-.5d0*y0
-      dx(4,6)=(-py0*sqrt3-twissi(mfitay)/twissi(mfitby)*(-y0))*.5d0
-      do i=1,6
+      dx(:,1:nfp*2)=0.d0
+      do i=1,nfp
+        c=Cos(pi2/nfp*(i-1))
+        s=Sin(pi2/nfp*(i-1))
+        dx(1,i)=c*x0
+        dx(2,i)=s*px0-twissi(mfitax)/twissi(mfitbx)*dx(1,i)
+        dx(3,i+nfp)=c*y0
+        dx(4,i+nfp)=s*py0-twissi(mfitay)/twissi(mfitby)*dx(3,i+nfp)
+      enddo
+      do i=1,nfp*2
         dxp(1,i)=trans(1,1)*dx(1,i)+trans(1,2)*dx(2,i)
      $       +trans(1,3)*dx(3,i)+trans(1,4)*dx(4,i)
         dxp(2,i)=trans(2,1)*dx(1,i)+trans(2,2)*dx(2,i)
@@ -75,10 +79,7 @@ c      call tfdebugprint(kx,'famsetup',1)
       enddo
       do i=1,m
         ki=kl%dbody(i)
-        if(.not. tfreallistq(ki,kli))then
-          go to 9000
-        endif
-        if(kli%nl .ne. 3)then
+        if(.not. tfreallistq(ki,kli) .or. kli%nl .ne. 3)then
           go to 9000
         endif
         dpi=kli%rbody(1)+dp0
@@ -86,15 +87,13 @@ c      call tfdebugprint(kx,'famsetup',1)
           x=kli%rbody(2)
           y=kli%rbody(3)
           if(x .ne. 0.d0)then
-            do j=1,3
+            do j=1,nfp
               if(dpw .eq. 0.d0)then
                 jfam(nfa)=0
               else
                 jfam(nfa)=nint(2*nfr*(dpi-dp(-nfr))/dpw-nfr)
               endif
-              do k=1,4
-                dfam(k,nfa)=dxp(k,j)*x
-              enddo
+              dfam(1:4,nfa)=dxp(1:4,j)*x
               dp(nfa)=dp(jfam(nfa))
               kfam(nfa)=j
               if(nfa .ge. 0)then
@@ -105,17 +104,15 @@ c      call tfdebugprint(kx,'famsetup',1)
             enddo
           endif
           if(y .ne. 0.d0)then
-            do j=4,6
+            do j=nfp+1,nfp*2
               if(dpw .eq. 0.d0)then
                 jfam(nfa)=0
               else
                 jfam(nfa)=nint(2*nfr*(dpi-dp(-nfr))/dpw-nfr)
               endif
-              do k=1,4
-                dfam(k,nfa)=dxp(k,j)*y
-              enddo
+              dfam(1:4,nfa)=dxp(1:4,j)*y
               dp(nfa)=dp(jfam(nfa))
-              kfam(nfa)=j
+              kfam(nfa)=nfp-j
               if(nfa .ge. 0)then
                 nfa=-nfa
               else
@@ -133,7 +130,7 @@ c      call tfdebugprint(kx,'famsetup',1)
         nfam=nfa-1
       endif
       go to 9100
- 9000 write(*,*)'MatchingAmplitude should be {{dp,xamp,yamp},...}.'
+ 9000 write(*,*)'MatchingAmplitude must be {{dp,xamp,yamp},...}.'
  9100 l=itfdownlevel()
       return
       end

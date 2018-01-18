@@ -19,7 +19,8 @@
 c      parameter (oneev=1.d0+3.83d-12)
       parameter (oneev=1.d0+1.d-6)
       integer*4 np
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
+     $     pxr0(np),pyr0(np)
       real*8 al,f1r,f2r,f1in,f2in,f1out,f2out
       complex*16 ak(0:nmult)
       real*8 bz,phia,psi1,psi2,dx,dy,dz,chi1,chi2,theta,dtheta,eps0
@@ -28,7 +29,7 @@ c      parameter (oneev=1.d0+3.83d-12)
       real*8 fb1,fb2,vc,phirf,dphirf,radius
       integer*8 latt(nlat)
       integer*4 kturn,l,kptbl(np0,6)
-      logical acc,spac1,dofr(0:nmult)
+      logical*4 acc,spac1,dofr(0:nmult),krad
       integer*4 i,j,m,n,ndiv,nmmin,nmmax
       real*8 pz0,s0,bxs,bys,bzs,
      $     vnominal,theta1,theta2,
@@ -292,7 +293,12 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
         ndiv=max(ndiv,nint(abs(al)/(alstep*eps/eps00)),
      $       nint(eps00/eps*abs(bzs*al)/1.5d0))
       endif
+      krad=rad .and. enarad .and. al .ne. 0.d0
       acc=(trpt .or. rfsw) .and. vc .ne. 0.d0
+      if(krad)then
+        pxr0=px
+        pyr0=py
+      endif
       if(acc)then
         if(w .eq. 0.d0)then
           wi=0.d0
@@ -418,25 +424,6 @@ c        vnominal=0.d0
             enddo
           endif
         endif
-        if(rad .and. enarad .and.
-     $       (akr1 .ne. 0.d0 .or. akr(0) .ne. (0.d0,0.d0)))then
-          if(iprev(l) .eq. 0)then
-            f1r=fb1
-          else
-            f1r=0.d0
-          endif
-          if(inext(l) .eq. 0)then
-            f2r=fb2
-          else
-            f2r=0.d0
-          endif
-          radlvl=0.d0
-          b1=brhoz*akr1/al
-          b0=brhoz*akr(0)/al
-          call trad(np,x,px,y,py,g,dv,dble(b0),-imag(b0),
-     1         b1,0.d0,0.d0,.5d0*al,
-     $         f1r,f2r,0.d0,al,1.d0)
-        endif
       endif
       spac1 = spac .and. radius .ne. 0.d0
       sv=0.d0
@@ -444,6 +431,11 @@ c        vnominal=0.d0
         if(nmmin .eq. 2)then
           call tsolqu(np,x,px,y,py,z,g,dv,pz,al1,ak1,
      $         bzs,dble(ak01),imag(ak01),eps0)
+          if(krad)then
+            call tradk(np,x,px,y,py,pxr0,pyr0,g,dv,al1)
+            pxr0=px
+            pyr0=py
+          endif
         endif
         wsm=ws(m)
         if(m .eq. ndiv)then
@@ -538,11 +530,6 @@ c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
      $       0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
       endif
       if(al .ne. 0.d0)then
-        if(radlvl .eq. 0.d0)then
-          call trad(np,x,px,y,py,g,dv,dble(b0),-imag(b0),
-     1         b1,0.d0,0.d0,.5d0*al,
-     $         f1r,f1r,al,al,-1.d0)
-        endif
         if(mfring .eq. 2 .or. mfring .eq. 3)then
           if(f1out .ne. 0.d0 .or. f2out .ne. 0.d0)then
             do i=1,np
@@ -575,6 +562,9 @@ c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
             call tcavfrin(np,x,px,y,py,z,g,dv,al,-v,w,p0,h0,
      $         dphis,dvfs,offset)
           endif
+        endif
+        if(krad)then
+          call tradk(np,x,px,y,py,pxr0,pyr0,g,dv,al1)
         endif
       endif
  1000 if(theta2 .ne. 0.d0)then

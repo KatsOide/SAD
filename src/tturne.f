@@ -82,8 +82,10 @@
           if(vceff .ne. 0.d0)then
             dzmax=alambdarf*.24d0
             phis=asin(abs(vcacc/vceff))
+c            write(*,*)'ttrune ',u0*pgev,vcacc,dvcacc,trf0
             if(vceff .gt. u0*pgev)then
               if(trans(5,6) .lt. 0.d0)then
+c                trf0=trf0+(u0*pgev-vcacc)/dvcacc
                 trf0=trf0+(asin(u0*pgev/vceff)-phis)/wrfeff
               else
                 trf0=trf0+
@@ -159,7 +161,7 @@ c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
         call tturne1(trans,cod,beam,
      $       iatr,iacod,iabmi,idp,plot,sol,rt,ls,le1)
         if(plot)then
-          call tfsetplot(trans,cod,beam,0,
+          call tfsetplot(trans,cod,beam,fbound%lb,
      $         le1+1,iatr,iacod,.false.,idp)
         endif
       else
@@ -377,7 +379,7 @@ c              r=1.d0
 c            else
 c              r=gammab(l-1)/gammab(l)
 c            endif
-            call tsetetwiss(trans,cod,beam,0,l,idp)
+            call tsetetwiss(trans,cod,beam,ibegin,l,idp)
 c            write(*,'(a,i5,1p6g15.7)')'tturne1 ',l,twiss(l,idp,1:6)
 c            et=twiss(l,0,1:mfitzpy)
 c            call checketwiss(trans,et)
@@ -740,7 +742,7 @@ c     $       twiss(l,idp,mfitzx:mfitzpy)
       else
         call tinv6(trans,ti)
       endif
-      if(lorg .eq. 0)then
+      if(lorg .le. 1)then
         call tmultr(ti,ri,6)
         norm=normali
         l0=1
@@ -756,6 +758,10 @@ c     $       twiss(l,idp,mfitzx:mfitzpy)
         twi(mfitny)=0.d0
         twi(mfitnz)=0.d0
       else
+c        if(l .gt. 64 .and. l .lt. 66)then
+c          write(*,*)'setetwiss ',l0,l,lorg,
+c     $         twiss(l0,idp,mfitnx),twi(mfitnx)
+c        endif
         if(twi(mfitnx) .lt. -toln)then
           twi(mfitnx)=twiss(l0,idp,mfitnx)+twi(mfitnx)+pi2
         else
@@ -766,8 +772,6 @@ c     $       twiss(l,idp,mfitzx:mfitzpy)
         else
           twi(mfitny)=twiss(l0,idp,mfitny)+twi(mfitny)
         endif
-c        write(*,*)'setetwiss ',l,l0,idp,
-c     $       twi(mfitny),twiss(l0,idp,mfitny)
         twi(mfitnz)=twiss(l0,idp,mfitnz)+twi(mfitnz)
       endif
 c      twi(mfitdpx)=twi(mfitdpx)*rgb

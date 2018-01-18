@@ -7,8 +7,7 @@
       use tffitcode
       use ffs_seg
       implicit none
-      real*8 conv
-      parameter (conv=3.d-16)
+      real*8, parameter:: conv=3.d-16
       integer*4 i,kg,k1,k2,idir,j,kbz
       real*8 geo1(3,3),geos(3,4),bzs,
      $     chi1,chi2,cschi1,snchi1,cschi2,snchi2,chi3,
@@ -16,21 +15,29 @@
      $     dir,tfbzs,pos0,ds,
      $     s1,s2,s3,u,v,w,g2,tfchi,gi
       integer*4 k,ke,ke1
-      integer*8 l1,l2,lp,le,led
+      integer*8 led
       logical*4 sol
+      type (sad_comp),pointer :: cmp,cmp1,cmp2,cmpp,cmpe
       sol=.true.
-      l1=latt(k)
+      call compelc(k,cmp1)
       kg=0
-      if(rlist(latt(k)+8) .eq. 0.d0)then
+      if(cmp1%value(ky_BND_SOL) .eq. 0.d0)then
         go to 12
       endif
-      if(rlist(latt(k)+12) .ne. 0.d0)then
+      if(cmp1%value(ky_GEO_SOL) .ne. 0.d0)then
         kg=k
       endif
       do 10 i=k+1,nlat-1
         if(idtypec(i) .eq. icSOL)then
-          if(rlist(latt(i)+8) .ne. 0.d0)then
-            if(rlist(latt(i)+12) .ne. 0.d0)then
+          call compelc(i,cmp)
+          if(cmp%value(ky_BND_SOL) .ne. 0.d0)then
+            if(cmp%value(ky_GEO_SOL) .ne. 0.d0)then
+              if(kg .ne. 0)then
+                write(*,*)' Duplicated GEO of Solenoid ',
+     $               pname(idelc(k))(1:lpnamec(k))
+                sol=.false.
+                return
+              endif
               kg=i
             endif
             ke=i
@@ -48,27 +55,28 @@
         sol=.false.
         return
       endif
-      l2=latt(ke)
+      call compelc(ke,cmp2)
       if(kg .eq. k)then
         k1=k
         k2=ke
-        lp=l1
-        le=l2
+        cmpp=>cmp1
+        cmpe=>cmp2
         dir=1.d0
         idir=1
         ke1=ke+1
       else
         k1=ke
         k2=k
-        lp=l2
-        le=l1
+        cmpp=>cmp2
+        cmpe=>cmp1
         dir=-1.d0
         idir=-1
         ke1=ke+1
       endif
-      rlist(lp+ky_DZ_SOL)=0.d0
-      chi1=rlist(lp+ky_DPX_SOL)
-      chi2=rlist(lp+ky_DPY_SOL)
+      cmpp%value(ky_DZ_SOL)=0.d0
+      chi1=cmpp%value(ky_DPX_SOL)
+      chi2=cmpp%value(ky_DPY_SOL)
+c      write(*,*)'tsgeo ',chi1
       cschi1=cos(chi1)
       snchi1=sin(chi1)
       cschi2=cos(chi2)
@@ -90,7 +98,7 @@
           geo1(i,3)= g1*cschi1+geo1(i,1)*snchi1
           geo1(i,1)=-g1*snchi1+geo1(i,1)*cschi1
 110     continue
-        call tgrot(rlist(l1+ky_CHI1_SOL),geo(1,1,k),geo1)
+        call tgrot(cmp1%value(ky_CHI1_SOL),geo(1,1,k),geo1)
         pos0=0
         pos(k+1)=pos(k)
       else
@@ -112,18 +120,18 @@
         geo(1,4,ke)= 0.d0
         geo(2,4,ke)= 0.d0
         geo(3,4,ke)= 0.d0
-        call tgrot(rlist(l2+ky_CHI1_SOL),geo1,geo(1,1,ke))
+        call tgrot(cmp2%value(ky_CHI1_SOL),geo1,geo(1,1,ke))
         pos0=pos(k)
         pos(k1)=0.d0
       endif
-      xi=rlist(latt(k1)+ky_DX_SOL)
-      yi=rlist(latt(k1)+ky_DY_SOL)
+      xi=cmpp%value(ky_DX_SOL)
+      yi=cmpp%value(ky_DY_SOL)
       pxi=-snchi1*cschi2
       pyi=-snchi2
       led=idvalc(k2)
       ds=0.d0
       gi=0.d0
-      if(rlist(latt(k1)+ky_FRIN_SOL) .eq. 0.d0)then
+      if(cmpp%value(ky_FRIN_SOL) .eq. 0.d0)then
         call tsfrin(1,xi,pxi,yi,pyi,ds,gi,bzs)
         ds=-ds*dir
       endif
@@ -135,15 +143,15 @@
       rlist(led+3)=xi
       rlist(led+4)=yi
       rlist(led+5)=ds
-      rlist(le+3)=xi
-      rlist(le+4)=yi
-      rlist(le+5)=ds
+      cmpe%value(ky_DX_SOL)=xi
+      cmpe%value(ky_DY_SOL)=yi
+      cmpe%value(ky_DZ_SOL)=ds
       if(idir .gt. 0)then
         chi3=tfchi(geo(1,1,ke1),3)
         cschi3= cos(chi3)
         snchi3= sin(chi3)
         call trotg(geo(1,1,ke1),geo(1,3,ke1),cschi3,snchi3)
-        call tgrot(rlist(l2+ky_CHI1_SOL),geo1,geo(1,1,ke1))
+        call tgrot(cmp2%value(ky_CHI1_SOL),geo1,geo(1,1,ke1))
       else
         s1=geo(1,1,ke)*geo(1,1,k)+geo(2,1,ke)*geo(2,1,k)
      1       +geo(3,1,ke)*geo(3,1,k)
@@ -212,7 +220,7 @@ c        snchi3=sin(chi3)
      1              +geo(1,3,k)*geo1(j,3)
 240     continue
         geo(:,:,k)=geos
-        call tgrot(rlist(l1+ky_CHI1_SOL),geos,geo1)
+        call tgrot(cmp1%value(ky_CHI1_SOL),geos,geo1)
         geo(:,:,ke+1)=geo(:,:,ke)
       endif
       return
@@ -273,7 +281,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         xi=xi+dx
         yi=yi+dy
       elseif(lt .eq. icBEND)then
-        phi=cmp%value(ky_ANGL_BEND)
+        phi=cmp%value(ky_ANGL_BEND)+cmp%value(ky_K0_BEND)
         theta=cmp%value(ky_ROT_BEND)
         phiy=phi*cos(theta)
         phix=phi*sin(theta)

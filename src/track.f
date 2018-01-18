@@ -41,6 +41,7 @@ c        write(*,*)'track-0.4'
      $       'NetResidual=0;StabilityLevel=0;'//
      $       'FFS$NumericalDerivative=False;'//
      $       'DP=0.01;DPM=0;XIX=0;XIY=0;TITLE="";CASE="";'//
+     $       'NFAMP=3;'//
      $       'DP0:=LINE["DDP",1];(DP0=v_)^:=(LINE["DDP",1]=v);'//
      $       'Protect[DP0];'//
      $       'System$Names=Select[Names["*"],'//

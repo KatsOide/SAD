@@ -13,11 +13,16 @@
       logical*4 exist,force,pri
       character*(*) word
       character peekch
-      integer*4 itfgetrecl,l,itfdownlevel,lenw
+      integer*4 itfgetrecl,l,itfdownlevel,lenw,irtc
       real*8 , parameter :: amaxline=8
       character*256 word0,word1
       itx=-1
-      call unreadbuf(word)
+      call unreadbuf(word,irtc)
+      if(irtc .ne. 0)then
+        call cssetp(next)
+        exist=.true.
+        go to 9100
+      endif
       lpw=itfgetrecl()
  1    levele=levele+1
       itx=itfpeeko(kx,next)
@@ -233,15 +238,16 @@ c      endif
       enddo
       end
           
-      subroutine unreadbuf(word)
+      subroutine unreadbuf(word,irtc)
       use tfstk
       use ffs_flag
       use tmacro
       use tfcsi
       implicit none
-      integer*4 l,lenw,ip1,i
+      integer*4 l,lenw,ip1,i,irtc
       character*(*) word
       character*256 word1,word2
+      irtc=0
       l=lenw(word)
       if(l .le. 0)then
         return
@@ -270,5 +276,6 @@ c          write(*,*)'unreadbuf ',i,l,' ',buffer(i+l:i+l)
       write(*,*)'Buffer is damaged at unreadbuf. ',
      $     ipoint,ip1,l,lrecl,' ',word(1:l)
       call skipline
+      irtc=-1
       return
       end
