@@ -1226,7 +1226,7 @@ c        enddo
       integer*4 iqcol(*),kfitp(*),mfitp(*)
       real*8 b(nqcol),s,eps,dg,wexponent,wlimit(nvar)
       logical*4 fit(nqcol),again,allneg
-      integer*4 nagain,i,nj,irtc
+      integer*4 nagain,i,nj
       allneg=.true.
       do i=1,nqcol
         fit(i)=mfitp(kfitp(iqcol(i))) .gt. 0

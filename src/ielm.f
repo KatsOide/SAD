@@ -4,17 +4,27 @@
       character*(*) word
       real*8 frac
       logical*4 exist
-      ielm=ielmf(word,frac,exist)
+      ielm=ielmf(word,frac,exist,0)
       return
       end
 
-      integer*4 function ielmf(word,frac,exist)
+      integer*4 function ielme(word,exist,lfn)
+      implicit none
+      integer*4 ielmf,lfn
+      character*(*) word
+      real*8 frac
+      logical*4 exist
+      ielme=ielmf(word,frac,exist,lfn)
+      return
+      end
+
+      integer*4 function ielmf(word,frac,exist,lfn)
       use tfstk
       use ffs
       use tffitcode
       implicit none
       type (sad_descriptor) kx
-      integer*4 lw,iord,ln,i,j,lenw,ip,im
+      integer*4 lw,iord,ln,i,j,lenw,ip,im,lfn
       character*(*) word
       character*64 ordw
       character*(MAXPNAME) name
@@ -101,6 +111,10 @@
       else
         i=ielmh(name,iord)
         if(i .eq. 0)then
+          if(lfn .ne. 0 .and. idot .gt. 0)then
+            call termes(lfn,'?Undefined location ',
+     $           word(1:lw))
+          endif
           ielmf=nlat
           exist=.false.
           return
@@ -119,7 +133,7 @@
       return
       end
 
-      integer function igelm(word,exist)
+      integer*4 function igelm(word,exist)
       use tfstk
       use ffs
       use ffs_pointer
@@ -131,6 +145,21 @@
       logical exist
       call getwdl2(word,wordp)
       igelm=ielm(wordp,exist)
+      return
+      end
+
+      integer*4 function igelme(word,exist,lfn)
+      use tfstk
+      use ffs
+      use ffs_pointer
+      use tffitcode
+      implicit none
+      integer*4 ielme,lfn
+      character*(*) word
+      character*256 wordp
+      logical exist
+      call getwdl2(word,wordp)
+      igelme=ielme(wordp,exist,lfn)
       return
       end
 

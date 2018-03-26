@@ -22,7 +22,7 @@ c     Initialize memory block list root node
       implicit none
 c      integer*4 memsize
 
-      call talocinit
+c      call talocinit
 c      call lminit(klist(0), 8)
 
 c      if(MAXMEM0 .gt. 2) then

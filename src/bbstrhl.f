@@ -772,7 +772,7 @@ c     In the case of only one real variable.
 
       subroutine LumRead(rlum_col)
       use tfstk
-      use tfcbk
+c      use tfcbk
       implicit none
       type (sad_descriptor) kx,kem
       integer*4 irtc,level,itfdownlevel,isp0

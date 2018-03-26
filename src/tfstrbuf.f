@@ -6,7 +6,7 @@
       type (sad_string) string(1:0)
       integer*4 indw,llevel,remlines,maxllevel,column,lexp,nch,maxnch
       integer*1 istr(1:0)
-      character*(2**31-1) str
+      character*(2**30) str
       end type
 
       contains
@@ -29,9 +29,10 @@
         end subroutine
 
         subroutine getstringbuf(strb,n,stk)
+        use tfmem
         implicit none
         type (sad_strbuf), pointer, intent(out) :: strb
-        integer*8 ktzaloc,kbuf
+        integer*8 kbuf
         integer*4 n,m,minsize,mexp,l,maxint
         logical*4 stk
         parameter (minsize=1024,maxint=1073741823)
@@ -673,9 +674,10 @@ c
         end subroutine
 
         subroutine extendstringbuf(strb,lnew)
+        use tfmem
         implicit none
         type (sad_strbuf), pointer :: strb
-        integer*8 i,ktzaloc
+        integer*8 i
         integer*4 lnew,l
         if(strb%lexp .ge. lnew .or. strb%lexp .eq. -1)then
           l=lnew/8+2

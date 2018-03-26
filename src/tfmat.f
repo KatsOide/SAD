@@ -4,7 +4,7 @@
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 lfno,lenw,idp,l1,ielm,l2,i,j,lene
+      integer*4 lfno,lenw,idp,l1,ielme,l2,i,j,lene
       real*8 r
       real*8 trans(4,5),trans6(6,6)
       character*(*) word,wordp
@@ -24,13 +24,13 @@
         title='Physical'
         call getwdl2(word,wordp)
       endif
-      l1=ielm(wordp,exist)
+      l1=ielme(wordp,exist,lfno)
       if(.not. exist)then
         l1=1
         l2=nlat
       else
         call getwdl2(word,wordp)
-        l2=ielm(wordp,exist)
+        l2=ielme(wordp,exist,lfno)
         if(.not. exist)then
           l2=nlat
         endif

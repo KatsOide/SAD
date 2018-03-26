@@ -19,9 +19,10 @@
       itx=-1
       call unreadbuf(word,irtc)
       if(irtc .ne. 0)then
-        call cssetp(next)
+c        write(*,*)'tfprint-unreadbuf ',irtc,next
+        call skipline
         exist=.true.
-        go to 9100
+        return
       endif
       lpw=itfgetrecl()
  1    levele=levele+1
@@ -164,7 +165,7 @@ c      endif
         kad=klist(kad+kah+3)
         n=autofg(al,'S10.0')
         l=lenw(n)
-        write(prolog,'($,''Out['',a,'']:= '')')n(1:l)
+        write(prolog,'(''Out['',a,'']:= '',$)')n(1:l)
         ncprolog=l+8
         do while(kad .ne. 0)
           if(al .eq. rlist(ktfaddr(klist(kad+3))+1))then
@@ -263,11 +264,13 @@ c      endif
           call capita(word1(1:l))
         endif
         if(word1(1:l) .eq. word2(1:l))then
-c          write(*,*)'unreadbuf ',i,l,' ',buffer(i+l:i+l)
+c          write(*,*)'unreadbuf ',i,l,' ',buffer(i+l:i+l),
+c     $         ' ',word(1:l)
           if(index(delim(1:ldel),buffer(i+l:i+l)) .gt. 0 .and.
      $         (i .eq. 1 .or.
      $         index(delim(1:ldel),buffer(i-1:i-1)) .gt. 0 .or.
-     $         index('0123456789.',buffer(i-1:i-1)) .gt. 0))then
+     $         index('0123456789.',buffer(i-1:i-1)) .gt. 0 .or.
+     $         word(1:1) .eq. '.'))then
             ipoint=i
             return
           endif
@@ -275,7 +278,6 @@ c          write(*,*)'unreadbuf ',i,l,' ',buffer(i+l:i+l)
       enddo
       write(*,*)'Buffer is damaged at unreadbuf. ',
      $     ipoint,ip1,l,lrecl,' ',word(1:l)
-      call skipline
       irtc=-1
       return
       end

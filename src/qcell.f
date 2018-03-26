@@ -403,7 +403,7 @@ c        write(*,*)'qcell61 ',fbound%lb,tw1(mfitnx),tw1(mfitny)
       codplt=.true.
       call tinitr(trans)
       call tturne0(trans,cod,beam,fbound,
-     $     int8(0),int8(0),int8(0),idp,.true.,rt)
+     $     int8(0),int8(0),int8(0),idp,.true.,rt,.true.)
 c      write(*,*)'qcell61-1 ',twiss(fbound%lb,idp,mfitnx),
 c     $     twiss(fbound%lb,idp,mfitny)
       calint=ci0

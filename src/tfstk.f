@@ -37,10 +37,22 @@ c Do not forget to update sim/MACCODE.h when you change this module!!!!
       parameter (MAXSTR=256)
       parameter (MAXMEM=2*inipage*pagesz)
       parameter (MAXMEM0=6*1024*pagesz)
-      character*(MAXPNAME) pname(HTMAX)
-      integer*4 lpname(HTMAX)
-      integer*4 idtype(HTMAX)
-      integer*8 idval(HTMAX)
+c$$$      character*(MAXPNAME) pname(HTMAX)
+c$$$      integer*4 lpname(HTMAX)
+c$$$      integer*4 idtype(HTMAX)
+c$$$      integer*8 idval(HTMAX)
+      character*(MAXPNAME), dimension(:), 
+     $     allocatable, target:: pname
+      integer*4 , dimension(:), 
+     $     allocatable, target :: lpname
+      integer*4 , dimension(:), 
+     $     allocatable, target :: idtype
+      integer*8 , dimension(:), 
+     $     allocatable, target :: idval
+c$$$      character*(MAXPNAME), pointer, dimension(:) :: ppname
+c$$$      integer*4 , pointer, dimension(:) :: plpname(:)
+c$$$      integer*4 , pointer, dimension(:) :: pidtype(:)
+c$$$      integer*8 , pointer, dimension(:) :: pidval(:)
       integer*8 ilistroot
       integer*4, parameter :: klistlen=16
       integer*8, pointer, dimension(:) :: klist
@@ -97,11 +109,8 @@ c Do not forget to update sim/MACCODE.h when you change this module!!!!
 
 c     Don't confuse, Emacs. This is -*- fortran -*- mode!
       module tfcbk
-      integer*4 maxgeneration,maxlevele,nsymhash,nslots
-      parameter (maxgeneration=2**30-1,maxlevele=2**14,nsymhash=2047,
-     $     nslots=32)
-      integer*4 maxlbuf
-      parameter (maxlbuf=2**22)
+      integer*4, parameter:: maxgeneration=2**30-1,maxlevele=2**14,
+     $     nsymhash=2047,nslots=32,maxlbuf=2**22
       real*8 dinfinity,dnotanumber
       integer*8
      $     itfcontroot,itfcontext,itfcontextpath,itflocal,
@@ -122,25 +131,24 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
       integer*8, parameter :: mpsize=2**22,kcpklist0=0,maxstack=2**25
       integer*4, parameter :: nindex=64,mhash=32767,
      $     minseg0=9,minseg1=16,minseg2=16
-      integer*8 :: icp=0,nmem=0,nnet=0,ich=0,maxic=3,
-     $     minic,icsep,nitaloc
-      integer*8 kfirstalloc
-
+      integer*4, parameter :: ncbk = 2**16
+      integer*8, parameter :: kcpoffset = 0*2**28,
+     $     kcpthre  = 2**34, nlarge = 2**30, nitaloc0 = 2**24
       type cbkalloc
         integer*8, allocatable :: ca(:)
       end type
 
-      integer*4, parameter :: ncbk = 2**16
-      integer*8, parameter :: kcpoffset = 0*2**28,
-     $     kcpthre  = 2**34, nlarge = 2**30, nitaloc0 = 2**24
-      integer*4 icbk,jcbk
-      type (cbkalloc), target :: sadalloc(ncbk)
-      integer*8 kcbk(3,ncbk)
+      type (cbkalloc), target, allocatable :: sadalloc(:)
+      integer*8 ,allocatable :: kcbk(:,:)
+      integer*8 :: icp=0,nmem=0,nnet=0,ich=0,maxic=3,
+     $     minic,icsep,nitaloc
+      integer*8 kfirstalloc
+      integer*4 :: icbk=1,jcbk=1
 
       type sad_descriptor
-      sequence
-      real*8 x(1:0)
-      integer*8 k
+        sequence
+        real*8 x(1:0)
+        integer*8 k
       end type
 
       interface sad_loc
@@ -193,8 +201,16 @@ c        kcpklist0=transfer(c_loc(kdummy),int8(0))-kcpoffset-8
         if(lps .eq. 0)then
           lps=getpagesize()
         endif
+        allocate(pname(HTMAX))
+        allocate(lpname(HTMAX))
+        allocate(idtype(HTMAX))
+        allocate(idval(HTMAX))
+c$$$        ppname=>pname
+c$$$        plpname=>lpname
+c$$$        pidtype=>idtype
+c$$$        pidval=>idval
         call c_f_pointer(transfer(kcpklist0+8,cp),klist,[klistlen])
-        call lminit(klist(0),lps)
+        call lminit(klist(0),lps,pname(0),lpname(0),idtype(0),idval(0))
         call c_f_pointer(c_loc(klist(1)),rlist,[klistlen])
         call c_f_pointer(c_loc(klist(1)),ilist,[2,klistlen])
         call c_f_pointer(c_loc(klist(1)),jlist,[8,klistlen])
@@ -203,17 +219,17 @@ c        kcpklist0=transfer(c_loc(kdummy),int8(0))-kcpoffset-8
 
         subroutine talocinit
         use maccbk
-        use iso_c_binding
+        use iso_c_binding, only:c_loc
         implicit none
         integer*8 ka,ic
+        allocate(sadalloc(ncbk))
         allocate(sadalloc(1)%ca(nindex*2+mhash+16))
         ka=transfer(c_loc(sadalloc(1)%ca(1)),int8(0))
         kfirstalloc=ka
 c     kcpklist0=0
         call tfcbkinit
         icp=ksad_loc(sadalloc(1)%ca(1))
-        icbk=1
-        jcbk=1
+        allocate (kcbk(3,ncbk))
         kcbk(1,1)=icp
         kcbk(2,1)=icp+nindex*2+mhash+15
         kcbk(3,1)=kcbk(2,1)
@@ -420,13 +436,25 @@ c     endif
         call tsetindexhash(ix-2,m)
         return
         end subroutine
+      
+        integer*8 function ktzaloc(ktype,nw)
+        use maccbk
+        implicit none
+        integer*4 nw
+        integer*8 ktype,k1
+        k1=ktaloc(nw+2)
+        ilist(2,k1-1)=0
+        klist(k1)=ktype
+        ilist(1,k1+1)=0
+        ktzaloc=k1+2
+        return
+        end function
 
       end module
 
       module tfcode
       use tfmem, only:sad_descriptor
-      real*8 xinfinity
-      parameter (xinfinity=1.7976931348623157D308)
+      real*8, parameter :: xinfinity=1.7976931348623157D308
       integer*4 ntfoper,ntfreal,ntflist,ntflistr,ntfdef,ntfstkseq,
      $     ntfstring,ntfsymbol,ntfpat,ntffun,ntfstk,ntfarg
       parameter (ntfoper=0,ntfreal=1,ntflist=3,ntflistr=4,ntfstkseq=5,
@@ -537,7 +565,7 @@ c     endif
       type (sad_descriptor) alloc
       integer*4 ref,nl
       integer*8 body(1:0)
-      type (sad_descriptor) dbody(0:2**31-1)
+      type (sad_descriptor) dbody(0:2**31-2)
       end type
 
       type sad_list
@@ -636,7 +664,8 @@ c     endif
       integer*4 nch,nc
       integer*1 istr(1:0)
       integer*8 kstr(1:0)
-      character*(2**31-1) str
+c size limitation due to gfortran 7 on macOS ???
+      character*(2**30) str
       end type
 
       type sad_namtbl

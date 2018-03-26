@@ -1,4 +1,4 @@
-(* OpticsPlot 11/5/2016 *)
+(* OpticsPlot 2/6/2018 *)
 
 PkgConfig$DefaultList["OpticsPlot"->{
   "PlotDivision"->80,
@@ -282,7 +282,6 @@ OpticsList1$[{pr1_,pr2_},f_,opt___]:=Module[
   {l,t}=If[pr2<=pr1,
     ndiv=Min[2048,Max[ndiv,nlat+pr2-pr1]];
     leng=LINE["S",nlat]-LINE["S","^^^"]+LINE["S",pr2]-LINE["S",pr1];
-    Print["OL1$ ",leng];
     dl=Max[1e-6,leng/ndiv];
     x0=LINE["S",pr1]-LINE["S",nlat]+LINE["S","^^^"];
     If[MatchQ[tags,{_,_String,___}],

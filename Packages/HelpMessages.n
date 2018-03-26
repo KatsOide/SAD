@@ -3966,7 +3966,7 @@ Example:\n\n\
 3) Optics\n\
 In FFS, define the function ExternalMap as\n\n\
     ExternalMap[\"OPTICS\",n,cod_]:=body;\n\n\
-The second argument n is the position of MAP counting from the beginning, which can be obtained using LINE[\"POSITION\",\"name.m\"]. The last argument cod_ is used to receive the orbit at the entrance of the element, as a list of 6 real numbers. ExternalMap must return a list {cod1, trans}, where cod1 is the orbit at the exit and trans is the 6 by 6 transfer matrix of this element. So far only the 4 by 5 transfer matrix is effective.\n\n\
+The second argument n is the position of MAP counting from the beginning, which can be obtained using LINE[\"POSITION\",\"name.m\"]. The last argument cod_ is used to receive the orbit at the entrance of the element, as a list of 6 real numbers. ExternalMap must return a list {cod1, trans}, where cod1 is the orbit at the exit and trans is the 6 by 6 transfer matrix of this element. In the case of CACL4D (== ~CALC6D), only the 4 by 5 transfer matrix is effective.\n\n\
 Example:\n\n\
     ExternalMap[\"OPTICS\",LINE[\"POSITION\",\"P1\"],cod_]:=(\n\
       Print[cod];\n\
@@ -3979,7 +3979,7 @@ Example:\n\n\
     ExternalMap[\"GEO\",LINE[\"POSITION\",\"P1\"],geo_,pos_]:=(\n\
       Print[cod];\n\
       { {geo[[1]]+{1,0,0}, geo[[2]]}, pos+0.1})",
-        "MAP",
+        "MAP CALC4D",
         {}},
 
        {"Element",

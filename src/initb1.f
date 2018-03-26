@@ -648,13 +648,16 @@ cc for spch
       use tfmem, only:maxstack
       implicit none
 c
-      integer*4 idummy,idummy1,hsrch,i,iss
+      integer*4 idummy,idummy1,hsrch,i
       integer*8 ktcaloc
-      character*132 stacksiz
+c      character*132 stacksiz
 c     external doline
       external doprin, doexpn, doread, dolist, docod, dostop, dotwis
       external dooffl, doonfl,dorvrs
       external ActLie,ActTra,ActPlt,ActGRA
+
+      allocate(kytbl(0:kwMAX,0:icMXEL))
+      kytbl=0
 
        call defglb('$PLOT$',icGLI,idummy)
        call IsetGL('$PLOT$',0,idummy)

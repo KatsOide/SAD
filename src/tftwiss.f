@@ -1020,7 +1020,7 @@ c          enddo
           enddo
           irtc=0
         else
-          i=ielmf(name(1:nc),r,exist)
+          i=ielmf(name(1:nc),r,exist,0)
           if(exist)then
             isp=isp+1
             itastk(1,isp)=ilist(i,ifele1)

@@ -216,7 +216,8 @@ c            endif
         endif
       elseif(lt .eq. icMAP)then
         if(qsol)then
-          call qemap(trans,cod,l,coup,err)
+          call qemap(trans1,cod,l,coup,err)
+          call tmultr(trans,trans1,6)
         else
           call temape(trans,cod,beam,l)
         endif

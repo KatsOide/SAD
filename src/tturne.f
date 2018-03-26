@@ -45,7 +45,7 @@
       normali=.true.
       call tffsbound(fbound)
       call tturne0(trans,cod,beam,fbound,
-     $     iatr,iacod,iabmi,0,plot,rt)
+     $     iatr,iacod,iabmi,0,plot,rt,.false.)
       if(update)then
         if(vcacc .ne. 0.d0)then
           wrfeff=sqrt(abs(ddvcacc/vcacc))
@@ -115,7 +115,7 @@ c                trf0=trf0+(u0*pgev-vcacc)/dvcacc
       end
 
       subroutine tturne0(trans,cod,beam,fbound,
-     $     iatr,iacod,iabmi,idp,plot,rt)
+     $     iatr,iacod,iabmi,idp,plot,rt,optics)
       use touschek_table
       use tfstk
       use tffitcode
@@ -135,7 +135,7 @@ c                trf0=trf0+(u0*pgev-vcacc)/dvcacc
       real*8 trans1(6,12),cod1(6),beam1(42)
       type (sad_descriptor) dsave(kwMAX)
       real*8 r,xp,xb,xe,fr,fra,frb,tffselmoffset
-      logical*4 sol,plot,chg,sol1,cp0,int0,rt
+      logical*4 sol,plot,chg,sol1,cp0,int0,rt,optics
       sol=.false.
       levele=levele+1
       if(fbound%fb .ne. 0.d0)then
@@ -147,7 +147,8 @@ c                trf0=trf0+(u0*pgev-vcacc)/dvcacc
         else
 c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
           call tturne1(trans,cod,beam,
-     $         iatr,iacod,iabmi,idp,plot,sol,rt,fbound%lb,fbound%lb)
+     $         iatr,iacod,iabmi,idp,plot,sol,rt,optics,
+     $         fbound%lb,fbound%lb)
         endif
         if(chg)then
           call qfracsave(fbound%lb,dsave,nvar,.false.)
@@ -159,14 +160,16 @@ c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
       if(fbound%fe .eq. 0.d0)then
         le1=min(nlat-1,fbound%le)
         call tturne1(trans,cod,beam,
-     $       iatr,iacod,iabmi,idp,plot,sol,rt,ls,le1)
+     $       iatr,iacod,iabmi,idp,plot,sol,rt,optics,
+     $       ls,le1)
         if(plot)then
           call tfsetplot(trans,cod,beam,fbound%lb,
      $         le1+1,iatr,iacod,.false.,idp)
         endif
       else
         call tturne1(trans,cod,beam,
-     $       iatr,iacod,iabmi,idp,plot,sol,rt,ls,fbound%le-1)
+     $       iatr,iacod,iabmi,idp,plot,sol,rt,optics,
+     $       ls,fbound%le-1)
         call compelc(fbound%le,cmp)
         call qfracsave(fbound%le,dsave,nvar,.true.)
         call qfracseg(cmp,cmp,0.d0,fbound%fe,chg,irtc)
@@ -174,7 +177,8 @@ c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
           call tffserrorhandle(fbound%le,irtc)
         else
           call tturne1(trans,cod,beam,
-     $         iatr,iacod,iabmi,idp,plot,sol,rt,fbound%le,nlat-1)
+     $         iatr,iacod,iabmi,idp,plot,sol,rt,optics,
+     $         fbound%le,nlat-1)
         endif
         if(chg)then
           call qfracsave(fbound%le,dsave,nvar,.false.)
@@ -276,6 +280,7 @@ c     below is incorrect for fra <> 0
                 calint=.false.
                 call tturne1(trans1,cod1,beam1,
      $               int8(0),int8(0),int8(0),idp,.false.,sol1,rt,
+     $               optics,
      $               lx,lx)
                 codplt=cp0
                 calint=int0
@@ -302,7 +307,8 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       end
 
       subroutine tturne1(trans,cod,beam,
-     $     iatr,iacod,iabmi,idp,plot,sol,rt,ibegin,iend)
+     $     iatr,iacod,iabmi,idp,plot,sol,rt,optics,
+     $     ibegin,iend)
       use kyparam
       use tfstk
       use tffitcode
@@ -321,12 +327,13 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       integer*8 iatr,iacod,iabmi,kbmz,kbmzi,lp
       integer*4 idp,i,l1
       real*8 trans(6,12),cod(6),beam(42),bmir(6,6),
-     $     bmi(21),bmh(21)
+     $     bmi(21),bmh(21),trans1(6,6)
       real*8 psi1,psi2,apsi1,apsi2,alid,
      $     r,dir,al,alib,dtheta,theta0,ftable(4),
      $     fb1,fb2,ak0,ak1,rtaper,als
       integer*4 l,ld,lele,mfr,ibegin,iend,ke,irtc
-      logical*4 sol,plot,bmaccum,plotib,isnan,rt,next,seg
+      logical*4 sol,plot,bmaccum,plotib,isnan,rt,next,seg,
+     $     optics,coup,err
       save kbmz
       data kbmz /0/
       if(kbmz .eq. 0)then
@@ -617,7 +624,12 @@ c     write(*,*)'tturne-tcave-1',cod
      $         cmp%value(ky_ROT_TCAV),ld)
 
         case (icMAP)
-          call temape(trans,cod,beam,l)
+          if(optics)then
+            call qemap(trans1,cod,l,coup,err)
+            call tmultr(trans,trans1,6)
+          else
+            call temape(trans,cod,beam,l)
+          endif
 
         case(icINS)
           call tinse(trans,cod,beam,cmp%value(ky_DIR_INS+1),ld)

@@ -19,7 +19,7 @@
       integer*4 maxrpt,maxlfn,hsrchz
       integer*8 kffs,k,kx,itwisso,
      $     ifvalvar2,iparams,kax,iutwiss
-      integer*4 kk,i,lfnb,ia,iflevel,j,ielm,igelm,k1,
+      integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,
      $     ii,irtc0,it,itemon,itmon,itestr,itstr,itt,
      $     iuse,l,itfuplevel,
      $     levelr,lfnl0,lpw,meas0,mfpnta,igetgl1,lenw,
@@ -494,13 +494,13 @@ ckikuchi ... next 5 lines added     (8/17/'90)
           mfpnt=1
           mfpnt1=nlat
         else
-          mfpnt=ielm(wordp,exist)
+          mfpnt=ielme(wordp,exist,lfno)
           if(.not. exist)then
             mfpnt1=mfpnt
             go to 12
           endif
           call getwdl2(word,wordp)
-          mfpnta=ielm(wordp,exist)
+          mfpnta=ielme(wordp,exist,lfno)
           if(exist)then
             mfpnt1=max(mfpnt,mfpnta)
             mfpnt=min(mfpnt,mfpnta)
@@ -766,7 +766,7 @@ c        endif
 c        ilist(1,iwakepold+2)=ns
 c        go to 31
       elseif(abbrev(word,'ORI_GIN','_') .or. word .eq. 'ORG')then
-        iorgr=igelm(word,exist)
+        iorgr=igelme(word,exist,lfno)
         if(.not. exist)then
           iorgr=1
           go to 12
@@ -1244,6 +1244,7 @@ c        rlist(itlookup('DP',ivtype))=dpmax
         go to 30
       endif
  7000 call tfgetv(word,lfno,nextt,exist)
+c      write(*,*)'tffsa-getv ',exist,nextt,itt,word(1:lenw(word))
       if(.not. exist)then
         if(itt .ge. 0)then
           call cssetp(nextt)

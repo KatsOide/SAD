@@ -9,7 +9,7 @@
       implicit none
       type (sad_comp), pointer:: cmp
       integer*4 idisp1,idisp2,lfno,mdisp,icolm,ifany,id0,id3,idstep,
-     $     lines,l,id,ielm,i
+     $     lines,l,id,ielme,i
       real*8 dp00,dgam,bx0,by0,bx1,by1,bx2,by2,r,sigpp,tfchi,detr,
      $     etaxp,etapxp,sigxxp,sigxpxp,sigpxpxp,emixp,
      $     etayp,etapyp,sigyyp,sigypyp,sigpypyp,emiyp
@@ -77,7 +77,7 @@ c      write(*,*)'tfdisp ',word,wordp
         dpeak=.true.
         go to 270
       endif
-      id0=ielm(wordp,exist)
+      id0=ielme(wordp,exist,lfno)
       if(exist)then
         idisp1=id0
       else
@@ -87,7 +87,7 @@ c      write(*,*)'tfdisp ',word,wordp
         go to 250
       endif
       call getwdl2(word,wordp)
-      id0=ielm(wordp,exist)
+      id0=ielme(wordp,exist,lfno)
       if(exist)then
         idisp2=id0
       else

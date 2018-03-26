@@ -29,7 +29,7 @@
       integer*8 le,lp,ld
       real*8 twiss(nlat*(2*ndim+1),ntwissfun),epschop
       parameter (epschop=1.d-30)
-      real*8 trans(4,5),cod(6),tr(4,5),rxy(4,5),
+      real*8 trans(4,5),cod(6),tr(4,5),rxy(4,5),trans6(6,6),
      $     r1,r2,r3,r4,detr,rr,sqrdet,trtr,bx0,by0,
      $     ax0,ay0,al,pxi,pyi,pxisq,pyisq,pzi,ale,alz,psi1,psi2,
      $     theta0,x,px,y,dpsix,dpsiy,bz,
@@ -364,10 +364,11 @@ c     $             kxx,irtc)
             go to 20
 
           case (icMAP)
-            call qemap(trans,cod,l1,coup,err)
+            call qemap(trans6,cod,l1,coup,err)
             if(err)then
               go to 1010
             endif
+            call qcopymat(trans,trans6,.false.)
             go to 20
 
           case (icINS)
@@ -817,7 +818,7 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       fact=.5d0
       stab=.false.
       do while(it .le. itmax)
- 1      cod=cod0
+        cod=cod0
         if(fbound%fb .gt. 0.d0)then
           call qtwissfrac1(ftwiss,transb,cod,idp,
      $         fbound%lb,fbound%fb,1.d0,.true.,.true.,over)
@@ -968,7 +969,7 @@ c        write(*,'(a,i5,1p6g14.6)')'qcod ',it,r,r0,cod0(1:4)
           call tinv6(ri,trans)
           call tturne1(trans,cod,beam,
      $         int8(0),int8(0),int8(0),0,
-     $         .false.,sol,rt,l,l)
+     $         .false.,sol,rt,.true.,l,l)
         endif
         if(chg)then
           call qfracsave(l,dsave,nvar,.false.)

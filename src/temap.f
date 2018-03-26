@@ -194,8 +194,7 @@ c        call tfdebugprint(kx,'temap',1)
       integer*4 l,isp0,itfdownlevel,n,m,irtc,i,j,ia
       real*8 trans(6,12),cod(6),beam(42)
       character*2 ord
-      integer*8 ifv,iem
-      data ifv,iem/0,0/
+      integer*8 , save :: ifv=0,iem=0
       ia(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       if(iem .eq. 0)then
         iem=ktfsymbolz('ExternalMap',11)
@@ -310,13 +309,14 @@ c        call tfdebugprint(kx,'temap',1)
       use tfstk
       use tmacro
       implicit none
-      integer*8 ktfmalocp, k1,k2,kx,kax,kat1,ka1
+      type (sad_descriptor) :: kx
+      type (sad_dlist), pointer :: kxl, k2l
+      type (sad_rlist), pointer :: k1l
       integer*4 l,isp0,itfdownlevel,n,m,irtc
-      real*8 trans(4,5),cod(6)
+      real*8 trans(6,6),cod(6)
       character*2 ord
       logical*4 err,coup
-      integer*8 ifv,iem
-      data ifv,iem/0,0/
+      integer*8, save:: ifv=0,iem=0
       if(iem .eq. 0)then
         iem=ktfsymbolz('ExternalMap',11)
         ifv=ktsalocb(0,'OPTICS',6)
@@ -345,40 +345,28 @@ c      itastk(2,isp)=iat
         isp=isp0
         return
       endif
-      if(ktfnonlistq(kx))then
+      if(ktfnonlistq(kx,kxl))then
         go to 9000
       endif
-      kax=ktfaddr(kx)
-      if(ilist(2,kax-1) .eq. 3 .and.
-     $     klist(kax) .eq. ktfsymbol+iem)then
+      if(kxl%nl .eq. 3 .and.
+     $     kxl%body(0) .eq. ktfsymbol+iem)then
         go to 9000
       endif
-      if(ilist(2,kax-1) .ne. 2)then
+      if(kxl%nl .ne. 2)then
         go to 9100
       endif
-      k1=klist(kax+1)
-      if(ktfnonlistq(k1))then
+      if(tfnonreallistq(kxl%dbody(1),k1l) .or. k1l%nl .ne. 6)then
         go to 9100
       endif
-      ka1=ktfaddr(k1)
-      if(ilist(2,ka1-1) .ne. 6 .or. ktfnonreallistq(ka1))then
+      cod=k1l%rbody(1:6)
+      call tfmsize(kxl%dbody(2),n,m,irtc)
+      if(irtc .ne. 0 .or. n .ne. 6 .or. m .ne. 6)then
         go to 9100
       endif
-      cod=rlist(ka1+1:ka1+6)
-      k2=klist(kax+2)
-      kat1=ktfmalocp(k2,n,m,.false.,.false.,
-     $     .false.,.false.,irtc)
-      if(irtc .ne. 0)then
-        go to 9100
-      endif
-      if(n .ne. 6 .or. m .ne. 6)then
-        call tfree(kat1)
-        go to 9100
-      endif
-      call qcopymat(trans,rlist(kat1),.false.)
+      call descr_sad(kxl%dbody(2),k2l)
+      call tfl2m(k2l,trans,6,6,.false.)
       coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
      $     trans(2,3) .ne. 0.d0 .or. trans(2,4) .ne. 0.d0
-      call tfree(kat1)
       err=.false.
  9000 levele=itfdownlevel()
       isp=isp0
