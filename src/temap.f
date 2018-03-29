@@ -346,11 +346,11 @@ c      itastk(2,isp)=iat
         return
       endif
       if(ktfnonlistq(kx,kxl))then
-        go to 9000
+        go to 9200
       endif
       if(kxl%nl .eq. 3 .and.
      $     kxl%body(0) .eq. ktfsymbol+iem)then
-        go to 9000
+        go to 9200
       endif
       if(kxl%nl .ne. 2)then
         go to 9100
@@ -374,6 +374,8 @@ c      itastk(2,isp)=iat
  9100 write(*,*)'ExternalMap(OPTICS) of ',l,ord(l),
      $     ' element did not return ',
      $     '{cod(6), trans(6,6)}.'
+      go to 9000
+ 9200 call tinitr(trans,6)
       go to 9000
       end
 

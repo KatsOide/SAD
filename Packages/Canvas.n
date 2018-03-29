@@ -1,4 +1,4 @@
-(* Canvas 7/31/2017 *)
+(* Canvas 3/28/2018 *)
 
 SetAttributes[{OutLine,Outline,UseBG,Permanent,Redraw},Constant];
 
@@ -2072,8 +2072,8 @@ The$CanvasObject:=StandardForm[
       Canvas$Window=KBSubFrame["Canvas_"//GetPID[],DefauleCanvas$Frame],
       Canvas$Window=KBMainFrame["Canvas_"//GetPID[],DefaultCanvas$Frame]];
     Canvas$Canvas=Canvas[DefaultCanvas$Frame,
-      Width->Default$CanvasWidth,
-      Height->Default$CanvasHeight];
+      Width->Min[Default$CanvasWidth,WidgetInformation[DefaultCanvas$Frame,ScreenWidth]*0.9],
+      Height->Min[Default$CanvasHeight,WidgetInformation[DefaultCanvas$Frame,ScreenHeight]-80]];
     Canvas$Widget=Canvas$Canvas,
     Canvas$Widget=The$Canvas];
   The$CanvasObject];

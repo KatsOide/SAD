@@ -85,7 +85,7 @@
       damp=params(18)
 c      conv=1.d-4*abs(damp)
       conv=1.d-7
-c      write(*,*)damp
+c      write(*,*)'emits ',damp,sige
       sigea=sqrt(12.d0)*sige
       dpndim=sigea/ndims
       calint=intra
@@ -100,8 +100,8 @@ c      write(*,*)damp
         call tinitr(trans)
         call tclr(trans(1,7),36)
         call tclr(beam,21)
-        call tturne(trans,cod,beam,0,0,0,
-     $       ndim,.false.,.false.,.false.)
+        call tturne(trans,cod,beam,int8(0),int8(0),int8(0),
+     $       .false.,.false.,.false.)
         call tmultr(trans,rxi,12)
         call tmov(rx,rm,36)
         call tmultr(rm,trans,6)
@@ -204,7 +204,7 @@ c          write(*,'(1p4g15.7)')(hc(i,3,10),i=1,4)
           res=((emx-emx0)**2+(emy-emy0)**2)/(emx+emy)**2
           emx0=emx
           emy0=emy
-c         write(*,*)it,emx,emy,res
+c         write(*,*)'synchrob ',it,emx,emy,res
           it=it+1
           if((it .gt. itmax .and. res .gt. conv)
      $         .or. it .gt. 1. and.
