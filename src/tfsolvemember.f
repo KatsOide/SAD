@@ -118,10 +118,10 @@ c        write(*,*)'with: ',irtc,i
       logical*4 ev,eval
       k1=k10
       k2=k20
-      if(ktfoperqd(k2,ka2))then
+      if(ktfoperq(k2,ka2))then
         k2%k=ktfsymbol+klist(ifunbase+ka2)
       endif
-      if(ktfsymbolqd(k2))then
+      if(ktfsymbolq(k2))then
         if(ktflistq(k1,kl1))then
           k11=kl1%head%k
           if(ktfsymbolqdef(k11,symd))then
@@ -198,7 +198,7 @@ c      write(*,*)'with: ',irtc,ev,eval
           return
         endif
         if(eval)then
-          if(ktfsymbolqd(kx))then
+          if(ktfsymbolq(kx))then
             call tfsyeval(kx,kx,irtc)
             if(irtc .ne. 0)then
               l=itfdownlevel()
@@ -249,7 +249,7 @@ c      call tfdebugprint(ka,'repmember',3)
       do i=ispa+1,ispb,2
         isp=isp+2
         ki=dtastk(i)
-        if(.not. ktfsymbolqd(ki,sym))then
+        if(.not. ktfsymbolq(ki,sym))then
           go to 9000
         endif
         call sym_symstr(sym,str)
@@ -311,7 +311,7 @@ c      call tfdebugprint(kx,'==>',3)
               return
             endif
             isp=isp+1
-            if(.not. ktfstringqd(k1))then
+            if(.not. ktfstringq(k1))then
               call tfreplacememberstk(isp1,isp2,isp3,
      $             nrule1,nrule2,k1,dtastk(isp),0,rep)
             else
@@ -342,7 +342,7 @@ c      call tfdebugprint(kx,'==>',3)
                 m01=1
               endif
             endif
-            if(.not. ktfstringqd(ki) .and. ktfnonrealq(ki))then
+            if(.not. ktfstringq(ki) .and. ktfnonrealq(ki))then
               call tfreplacememberstk(isp1,isp2,isp3,nrule1,nrule2,
      $             ki,dtastk(isp),m01,rep1)
               rep=rep .or. rep1
@@ -354,15 +354,15 @@ c      call tfdebugprint(kx,'==>',3)
         endif
         isp=isp0-1
         return
-      elseif(ktfpatqd(k,pat))then
+      elseif(ktfpatq(k,pat))then
         rep=.false.
         k1=pat%expr
-        if(ktfobjqd(k1))then
+        if(ktfobjq(k1))then
           call tfreplacememberstk(isp1,isp2,isp3,
      $         nrule1,nrule2,k1,k1,0,rep)
         endif
         kd=pat%default
-        if(ktfobjqd(kd))then
+        if(ktfobjq(kd))then
           call tfreplacememberstk(isp1,isp2,isp3,
      $         nrule1,nrule2,kd,kd,0,rep1)
           rep=rep .or. rep1
@@ -371,9 +371,9 @@ c      call tfdebugprint(kx,'==>',3)
           kx=kxpcopyss(k1,pat%head,pat%sym%alloc,kd)
         endif
       else
-        if(ktfoperqd(k,ka))then
+        if(ktfoperq(k,ka))then
           call loc_sad(klist(ifunbase+ka),sym)
-        elseif(ktfnonsymbolqd(k,sym))then
+        elseif(ktfnonsymbolq(k,sym))then
           return
         endif
         if(sym%loc .eq. ithisloc .and. sym%gen .le. 0)then
@@ -444,7 +444,7 @@ c      call tfdebugprint(kx,'==>',3)
       type (sad_dlist), pointer :: kl1,klx1
       integer*8 ka
       integer*4 itfmessage,irtc,id
-      if(ktfnonlistq(k1,kl1) .or. ktfnonoperqd(kl1%head,ka))then
+      if(ktfnonlistq(k1,kl1) .or. ktfnonoperq(kl1%head,ka))then
         go to 9100
       endif
       select case (int(ka))

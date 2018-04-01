@@ -296,7 +296,6 @@ C
       integer*8 ka1,ka2,ix,iy,iddy,ka
       integer*4 isp1,irtc,itfmessage,n,m,mode
       real*8 dy(2)
-      logical*4 tfsameqd
       type (sad_descriptor), save :: kxperiodic
       data kxperiodic%k /0/
       if(kxperiodic%k .eq. 0)then
@@ -311,7 +310,7 @@ C
           endif
           return
         endif
-        if(tfsameqd(kd,kxperiodic))then
+        if(tfsameq(kd,kxperiodic))then
           mode=4
         else
           if(ktfnonlistq(kd,kld))then
@@ -321,7 +320,7 @@ C
             go to 9100
           endif
           k1=kld%dbody(1)
-          if(ktfoperqd(k1,ka1))then
+          if(ktfoperq(k1,ka1))then
             if(ka1 .ne. mtfnull)then
               go to 9100
             endif
@@ -331,7 +330,7 @@ C
             mode=1
           endif
           k2=kld%dbody(2)
-          if(ktfoperqd(k2,ka2))then
+          if(ktfoperq(k2,ka2))then
             if(ka2 .ne. mtfnull)then
               go to 9100
             endif

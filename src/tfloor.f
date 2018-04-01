@@ -288,7 +288,7 @@ c     end   initialize for preventing compiler warning
             kx=kxmakelist(isp2)
             isp=isp0
           endif
-        elseif(tfnumberqd(k2))then
+        elseif(tfnumberq(k2))then
           isp0=isp
           call tfgetllstkall(kl1)
           isp2=isp
@@ -744,7 +744,7 @@ c     $       '"Real or List of Reals"')
         else
           kx=dfromr(fun(v))
         endif
-      elseif(tfnumberqd(k,cv))then
+      elseif(tfnumberq(k,cv))then
         if(cmpl)then
           cv=cfun(cv)
           if(imag(cv) .ne. 0.d0)then
@@ -802,7 +802,7 @@ c     $       '"Real or List of Reals"')
                 else
                   rtastk(isp)=fun(kl%rbody(i))
                 endif
-              elseif(tfnumberqd(kl%dbody(i),cv))then
+              elseif(tfnumberq(kl%dbody(i),cv))then
                 if(cmpl)then
                   cv=cfun(cv)
                   if(imag(cv) .ne. 0.d0)then
@@ -855,7 +855,7 @@ c     $       '"Real or List of Reals"')
       ir=0
       if(ktfrealq(k,v) .and. ktfrealq(k1,v1))then
         kx=dfromr(fun(v,v1))
-      elseif(tfnumberqd(k,cv) .and. tfnumberqd(k1,cv1))then
+      elseif(tfnumberq(k,cv) .and. tfnumberq(k1,cv1))then
         if(cmpl)then
           cv=cfun(cv,cv1)
           if(imag(cv) .ne. 0.d0)then

@@ -56,7 +56,7 @@
       used=.true.
       ispv=isp
       if(isp .ge. isp1+3)then
-        if(tfreallistqd(dtastk(isp),klo)
+        if(tfreallistq(dtastk(isp),klo)
      $       .and. klo%nl .ge. 4)then
           ispv=isp-1
           maxi=int(klo%rbody(1))
@@ -80,6 +80,7 @@
       endif
       ke=dtfcopy(ke)
       kdl(1:nvar)=ktfoper+mtfnull
+c      write(*,*)'findroot-D ',used
       if(used)then
         call tfderiv(ke,nvar,sav,kdl,irtc)
         if(irtc .ne. 0)then
@@ -330,7 +331,7 @@ c      enddo
           vmax(j+1)=1.d300
         endif
         k1=kli%dbody(1)
-        if(ktfnonsymbolqd(k1,sym1))then
+        if(ktfnonsymbolq(k1,sym1))then
           go to 8900
         endif
         j=j+1

@@ -329,7 +329,7 @@ c        endif
         return
       endif
       do i=1,7
-        if(.not. tfreallistqd(kll%dbody(i),kli(i)%kl))then
+        if(.not. tfreallistq(kll%dbody(i),kli(i)%kl))then
           go to 8900
         endif
         if(kli(i)%kl%nl .ne. np)then

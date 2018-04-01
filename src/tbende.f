@@ -4,8 +4,8 @@
       implicit none
       logical*4 tbinit
       real*8 als,al,b1,b,aind,trans1(6,13),cx,cy,
-     $     drhopp,rhosqp,akxsqp,dcxp,aksxp,dcyp,aksyp,phixp,phiyp,
-     $     drhopakp,akysqp
+     $     drhopp,akxsqp,dcxp,sxkxp,dcyp,sykyp,phixp,phiyp,
+     $     akysqp,dcxkxp,aksxp,aksyp,xsxkxp
 
       contains
       subroutine tbendeinit(ak1,al)
@@ -16,16 +16,41 @@
       cx=1.d0+dcx
       cy=1.d0+dcy
       drhopp=1.d0/rhoe/p
-      rhosqp=rhosq/p
       akxsqp=-akxsq/p
-      drhopakp=(drhopp-drhopak*akxsqp)/akxsq
-      phixp=-0.5d0*phixp/p
-      dcxp=phixp*aksx/akx
-      aksxp=-0.5d0*aksx/p+akx*cx*phixp
+      phixp=-0.5d0*phix/p
+      if(akxsq .gt. 0.d0)then
+        dcxp=sx*phixp
+        dcxkxp=dcxp/akxsq+dcxkx/p
+        sxkxp= 0.5d0*sxkx/p+cx*phixp/akx
+        xsxkxp=(-dcx*phixp/akxsq-1.5d0*xsxkx/p)/akx
+        aksxp=-0.5d0*aksx/p+akx*cx*phixp
+      elseif(akxsq .lt. 0.d0)then
+        dcxp=-sx*phixp
+        dcxkxp=dcxp/akxsq+dcxkx/p
+        sxkxp= 0.5d0*sxkx/p+cx*phixp/akx
+        xsxkxp=(-dcx*phixp/akxsq-1.5d0*xsxkx/p)/akx
+        aksxp=-0.5d0*aksx/p-akx*cx*phixp
+      else
+        dcxp=0.d0
+        dcxkxp=0.d0
+        sxkxp=0.d0
+        xsxkxp=0.d0
+        aksxp=0.d0
+      endif
       akysqp=-akysq/p
-      phiyp=-0.5d0*phiyp/p
-      dcyp=phiyp*aksy/aky
-      aksyp=-0.5d0*aksy/p+aky*cy*phiyp
+      phiyp=-0.5d0*phiy/p
+      if(akysq .gt. 0.d0)then
+        dcyp=phiyp*sy
+        sykyp= 0.5d0*syky/p+cy*phiyp/aky
+        aksyp=-0.5d0*aksy/p+aky*cy*phiyp
+      elseif(akysq .lt. 0.d0)then
+        dcyp=-phiyp*sy
+        sykyp= 0.5d0*syky/p+cy*phiyp/aky
+        aksyp=-0.5d0*aksy/p-aky*cy*phiyp
+      else
+        dcyp=0.d0
+        sykyp=0.d0
+      endif
       tbinit=.false.
       return
       end subroutine
@@ -112,7 +137,7 @@
       real*8 trans(6,12),cod(6),beam(42)
       real*8 bx,by,bxy,xr,xe,dxe,pxf,xf,phin,dxpx,
      $     dxf,dpxf,dyf,dpyf,hi,hip,pyf,yf,zf,dpini,
-     $     ala,fb2
+     $     ala,fb2,xiksq
       logical*4 enarad,prev,next
       if(enarad)then
         dpini=cod(6)
@@ -137,33 +162,41 @@
       if(tbinit)then
         call tbendeinit(ak1,al)
       endif
-      dxf =(drhopak+xi)*dcx+aksx/akxsq*pxi
-      dpxf= aksx*(drhopak+xi)+pxi*dcx
-      dyf = dcy*yi+aksy/akysq*pyi
-      dpyf=aksy*yi+dcy*pyi
+c      dxf =(drhopak+xi)*dcx+aksx/akxsq*pxi
+c      dpxf= aksx*(drhopak+xi)+pxi*dcx
+c      dyf = dcy*yi+aksy/akysq*pyi
+c      dpyf=aksy*yi+dcy*pyi
+      xiksq=drhop+akxsq*xi
+      dxf = dcxkx*xiksq+sxkx*pxi
+      dpxf= sxkx*xiksq +dcx*pxi
+      dyf = dcy*yi     +syky*pyi
+      dpyf= aksy*yi    +dcy*pyi
       hi=.5d0*(pxi**2+pyi**2-akxsq*xi**2-akysq*yi**2)
      $     -drhop*xi
       hip=.5d0*(-2.d0*(pxi**2+pyi**2)/p-akxsqp*xi**2-akysqp*yi**2)
      $     -drhopp*xi
       dxpx=dxf*pxi+xi*dpxf+dxf*dpxf+dyf*pyi+yi*dpyf+dyf*dpyf
       zf =zi-.25d0*(dxpx
-     $     -(5.d0/rho0-1.d0/rhoe)*(drhopak*al-dpxf/akxsq))
+c     $     -(5.d0/rho0-1.d0/rhoe)*(drhopak*al-dpxf/akxsq))
+     $     -(5.d0/rho0-1.d0/rhoe)*(drhop*xsxkx-sxkx*xi-dcxkx*pxi))
      $     -hi*al*.5d0
       xf =xi +dxf
       pxf=pxi+dpxf
       yf =yi +dyf
       pyf=pyi+dpyf
       trans1(1,1)=cx
-      trans1(1,2)=aksx/akxsq/p
-      trans1(1,6)=drhopakp*dcx+(drhopak+xi)*dcxp
-     $     -0.5d0*aksx/akxsq/p*pxi
+      trans1(1,2)=sxkx/p
+      trans1(1,6)=drhopp*dcxkx+drhop*dcxkxp
+     $     +xi*dcxp+(sxkxp-0.5d0*sxkx/p)*pxi
       trans1(2,1)=aksx*p
       trans1(2,2)=cx
-      trans1(2,6)=aksxp*(drhopak+xi)*p
-     $     +aksx*(drhopakp*p+drhopak+xi)+pxi*dcxp
+c      trans1(2,6)=aksxp*(drhopak+xi)*p
+c     $     +aksx*(drhopakp*p+drhopak+xi)+pxi*dcxp
+      trans1(2,6)=p*(drhopp*sxkx+drhop*sxkxp)+drhop*sxkx
+     $     +(p*aksxp+aksx)*xi+dcxp*pxi
       trans1(3,3)=cy
-      trans1(3,4)=aksy/akysq/p
-      trans1(3,6)=yi*dcyp-0.5d0*aksy/akysq/p*pyi
+      trans1(3,4)=syky/p
+      trans1(3,6)=yi*dcyp+(sykyp-0.5d0*syky/p)*pyi
       trans1(4,3)=aksy*p
       trans1(4,4)=cy
       trans1(4,6)=(aksyp*p+aksy)*yi+pyi*dcyp
@@ -174,10 +207,12 @@
       trans1(5,6)=-0.25d0*(-dxpx/p
      $     +trans1(1,6)*pxf+trans1(2,6)/p*xf
      $     +trans1(3,6)*pyf+trans1(4,6)/p*yf
-     $     -1.d0/rhoe/p*(drhopak*al-dpxf/akxsq)
+     $     -1.d0/rhoe/p*(drhop*xsxkx-sxkx*xi-dcxkx*pxi)
      $     -(5.d0/rho0-1.d0/rhoe)
-     $     *(drhopakp*al-trans1(2,6)/akxsq))
+     $     *(drhopp*xsxkx+drhop*xsxkxp-sxkxp*xi-dcxkxp*pxi))
      $     -hip*al*.5d0+h0/h1emit**3*al
+c      write(*,'(a,1p8g15.7)')'tmulte ',drhopp,drhop,xsxkx,xsxkxp,
+c     $     sxkxp,dcxkxp
       call tmultr5(trans,trans1,irad)
       call tmulbs(beam ,trans1,.true.,.true.)
       cod(1)=xf

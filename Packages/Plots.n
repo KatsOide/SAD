@@ -26,7 +26,7 @@ BeginPackage[Plots`,Global`]
 With[{CP$def={Scale->{Linear,Linear},
   AspectRatio->Automatic,
   Frame->True,Tags->False,
-  FillColor->{"black","red","blue","green","gray","magenta","cyan",
+  FillColor->{"black","red","blue","green","gray85","magenta","cyan",
     "yellow"},
   MeshStyle->{None,"gray25","gray50"},
   GridLines->{None,Automatic},

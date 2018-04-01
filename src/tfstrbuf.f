@@ -6,7 +6,7 @@
       type (sad_string) string(1:0)
       integer*4 indw,llevel,remlines,maxllevel,column,lexp,nch,maxnch
       integer*1 istr(1:0)
-      character*(2**31-1) str
+      character*(2**30) str
       end type
 
       contains
@@ -29,9 +29,10 @@
         end subroutine
 
         subroutine getstringbuf(strb,n,stk)
+        use tfmem
         implicit none
         type (sad_strbuf), pointer, intent(out) :: strb
-        integer*8 ktzaloc,kbuf
+        integer*8 kbuf
         integer*4 n,m,minsize,mexp,l,maxint
         logical*4 stk
         parameter (minsize=1024,maxint=1073741823)
@@ -233,7 +234,7 @@ c'\
         character*3 patstr
         data patstr/'___'/
         logical*4 str,gens
-        if(ktfstringqd(k,strx))then
+        if(ktfstringq(k,strx))then
           nc=strx%nch
           if(str)then
             nc0=strb%nch
@@ -245,7 +246,7 @@ c'\
           else
             call putstringbufpb(strb,strx%str,nc,.false.,lfno,irtc)
           endif
-        elseif(ktfsymbolqd(k,sym))then
+        elseif(ktfsymbolq(k,sym))then
           call loc_namtbl(sym%loc,loc)
           ic=loc%cont
           do i=itfcontextpath,
@@ -280,11 +281,11 @@ c'\
               nc=nc+nc1
             endif
           endif
-        elseif(ktfoperqd(k))then
+        elseif(ktfoperq(k))then
           call loc_namtbl(klist(klist(ifunbase+ktfaddr(k))),loc)
           nc=loc%str%nch
           call putstringbufpb(strb,loc%str%str,nc,.true.,lfno,irtc)
-        elseif(ktfpatqd(k,pat))then
+        elseif(ktfpatq(k,pat))then
           kv=pat%expr%k
           kav=ktfaddr(kv)
           ktv=kv-kav
@@ -359,7 +360,7 @@ c'\
           nc0=strb%nch
           call tfconvstrl(strb,ktfaddr(k),lfno,form,gens,irtc)
           nc=strb%nch-nc0
-        elseif(ktfrefqd(k))then
+        elseif(ktfrefq(k))then
           nc=0
         elseif(isnan(rfromk(k%k)))then
           nc=3
@@ -395,7 +396,7 @@ c'\
         character*(*) form
         character*4 opcx
         character*2 opce
-        logical*4 tfexprqk,gens
+        logical*4 gens
         data llevel/0/
 c     Initialize to avoid compiler warning
         ncx=-1
@@ -403,7 +404,7 @@ c
         istep=1
         nd=ilist(2,ka-1)
         i1=1
-        if(tfexprqk(ktflist+ka))then
+        if(tfexprq(ktflist+ka))then
           iaaf=int(ktfaddr(klist(ka)))
           kt=klist(ka)-iaaf
           if(kt .eq. ktfoper .and. iaaf .le. mtfend
@@ -673,9 +674,10 @@ c
         end subroutine
 
         subroutine extendstringbuf(strb,lnew)
+        use tfmem
         implicit none
         type (sad_strbuf), pointer :: strb
-        integer*8 i,ktzaloc
+        integer*8 i
         integer*4 lnew,l
         if(strb%lexp .ge. lnew .or. strb%lexp .eq. -1)then
           l=lnew/8+2

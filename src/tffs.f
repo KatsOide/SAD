@@ -189,7 +189,7 @@ c$$$
      $       intra,trpt,emiout,gauss,
      $       bipol,cell,ffsprmpt,dapert,
      $       fseed,ideal,codplt,calc6d,
-     $       calpol,rfluct,cmplot,fourie,
+     $       calpol,rfluct,k64,fourie,
      $       trsize,simulate,absweit,jitter,
      $       trgauss,lwake,twake,smearp,
      $       bunchsta,convgo,cellstab,spac,
@@ -206,7 +206,7 @@ c$$$
      1     'INTRA   ','TRPT    ','EMIOUT  ','GAUSS   ',
      1     'BIPOL   ','CELL    ','FFSPRMPT','DAPERT  ',
      1     'FIXSEED ','IDEAL   ','CODPLOT ','CALC6D  ',
-     1     'POL     ','FLUC    ','CMPLOT  ','FOURIER ',
+     1     'POL     ','FLUC    ','K64     ','FOURIER ',
      1     'TRACKSIZ','SIMULATE','ABSW    ','JITTER  ',
      1     'TRGAUSS ','LWAKE   ','TWAKE   ','BARYCOD ',
      1     'BUNCHSTA','CONV    ','STABLE  ','SPAC    ',
@@ -219,7 +219,7 @@ c$$$
      1     '        ','RING    ','        ','UNIFORM ',
      1     'UNIPOL  ','INS     ','        ','        ',
      1     'MOVESEED','REAL    ','        ','CALC4D  ',
-     1     '        ','DAMPONLY','        ','        ',
+     1     '        ','DAMPONLY','LEGACY  ','        ',
      1     '        ','OPERATE ','RELW    ','QUIET   ',
      1     'TRUNI   ','        ','        ','        ',
      1     'BATCHSTA','        ','UNSTABLE','        ',
@@ -430,6 +430,19 @@ c$$$
         return
         end subroutine
 
+        integer*8 function ktatwissaloc(mode,kl)
+        use tfstk
+        use tffitcode
+        implicit none
+        type (sad_rlist), pointer::kl
+        integer*8 kax
+        integer*4 mode
+        kax=ktraaloc(mode,28,kl)
+        kl%rbody(mfitbz)=1.d0
+        ktatwissaloc=kax
+        return
+        end
+
       end module
 
       module ffs_flag
@@ -439,7 +452,7 @@ c$$$
      $       intra,trpt,emiout,gauss,
      $       bipol,cell,ffsprmpt,dapert,
      $       fseed,ideal,codplt,calc6d,
-     $       calpol,rfluct,cmplot,fourie,
+     $       calpol,rfluct,k64,fourie,
      $       trsize,simulate,absweit,jitter,
      $       trgauss,lwake,twake,smearp,
      $       bunchsta,convgo,cellstab,spac,
@@ -468,7 +481,7 @@ c$$$
         convgo=>fff%convgo
         calpol=>fff%calpol
         rfluct=>fff%rfluct
-        cmplot=>fff%cmplot
+        k64=>fff%k64
         fourie=>fff%fourie
         ffsprmpt=>fff%ffsprmpt
         trsize=>fff%trsize
@@ -1172,7 +1185,7 @@ c$$$
       use mackw
       implicit none
       type (sad_descriptor) kx
-      integer*4 ic,lenw,i
+      integer*4 ic,i,isp0
       logical*4 all
       character*(MAXPNAME) key,tfkwrd,tfkwrd1
       do i=1,kytbl(kwMAX,ic)-1
@@ -1182,13 +1195,14 @@ c$$$
           if(key .eq. '-')then
             dtastk(isp)=ksdumm
           else
-            dtastk(isp)=kxsalocb(-1,key,lenw(key))
+            dtastk(isp)=kxsalocb(-1,key,len_trim(key))
             if(kyindex1(i,ic) .ne. 0)then
               key=tfkwrd1(ic,i)
+              isp0=isp
               isp=isp+1
-              dtastk(isp)=kxsalocb(-1,key,lenw(key))
-              kx=kxmakelist(isp-2)
-              isp=isp-1
+              dtastk(isp)=kxsalocb(-1,key,len_trim(key))
+              kx=kxmakelist(isp0-1)
+              isp=isp0
               dtastk(isp)=kx
             endif
           endif
@@ -1202,7 +1216,7 @@ c$$$
       use ffs
       use tffitcode
       use ffs_pointer, only:idelc,elatt,idtypec,idvalc,sad_comp,
-     $     compelc
+     $     compelc,iele1
       implicit none
       type (sad_rlist), pointer :: kld,klr
       integer*4 i,it,kl,l,j,lk,lenw
@@ -1213,14 +1227,12 @@ c$$$
       real*8 s
       type (sad_comp), pointer :: cmp
 c     begin initialize for preventing compiler warning
-      kl=0
-c     end   initialize for preventing compiler warning
       if(i .gt. 0)then
-        call compelc(i,cmp)
+        kl=i
       else
         kl=ilist(-i,ifklp)
-        call compelc(kl,cmp)
       endif
+      call compelc(kl,cmp)
       sum=.false.
       lk=lenw(keyword)
       if(lk .gt. 4 .and. keyword(lk-3:lk) .eq. '$SUM')then
@@ -1250,7 +1262,7 @@ c     end   initialize for preventing compiler warning
         ia=elatt%comp(i)+l
         tfkeyv=dlist(ia)
         if(.not. ref)then
-          call tftouch(i,l)
+          call tftouch(iele1(i),l)
         endif
       elseif(saved)then
         ia=idvalc(kl)+l
@@ -1274,7 +1286,7 @@ c          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
           tfkeyv=dlist(ia)
         endif
         if(.not. ref)then
-          call tftouch(kl,l)
+          call tftouch(iele1(kl),l)
         endif
       endif
       if(sum .and. tfreallistq(tfkeyv,klr))then
@@ -1299,6 +1311,7 @@ c          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
       enddo
       if(flv%ntouch .lt. flv%nve*2)then
         flv%ntouch=flv%ntouch+1
+c        write(*,*)'tftouch ',flv%ntouch,i,iv
         itouchele(flv%ntouch)=i
         itouchv(flv%ntouch)=iv
       endif
@@ -1813,7 +1826,7 @@ c      call tfree(ifibzl)
         irtc=itfmessage(9,'General::narg','"1 or 2"')
         return
       endif
-      if(.not. ktfstringqd(dtastk(isp1+1),str))then
+      if(.not. ktfstringq(dtastk(isp1+1),str))then
         irtc=itfmessage(9,'General::wrongtype','"String for #1"')
         return
       endif

@@ -32,3 +32,36 @@ C  CPU-TIME: 4.9*N+5.6 (MICRO SEC) ON M200H.OPT(3) (1984.4.24)
      %  ((T-225.45670D0)*T-692.23986D0)+T
       RETURN
       END
+
+      real*8 function tdusr(anp)
+c a random energy loss of SR using drndsr
+c anp: expected number of photons
+c returns: a random energy loss due to SR in unit of uc
+c cutoff: threshold to ingnore multiple photons beyond this probability 
+c npmax: the maximum number of photons to try
+      implicit none
+      real*8 anp,p,p0,pn,tran,drndsr,an,x
+      real*8 , parameter :: cutoff=0.9999d0
+      integer*4 np
+      integer*4, parameter:: npmax=10000
+      p0=exp(-anp)
+      pn=p0
+      p=tran()
+      tdusr=0.d0
+      an=0.d0
+      x=1.d0
+      do np=1,npmax
+        if(p .le. pn)then
+c          write(*,*)'tdusr ',np,p,pn,tdusr
+          return
+        endif
+        tdusr=tdusr+drndsr()
+        an=an+1.d0
+        x=x*anp/an
+        pn=pn+x*p0
+        if(pn .gt. cutoff)then
+          return
+        endif
+      enddo
+      return
+      end

@@ -56,7 +56,7 @@
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
-      if(.not. ktfstringqd(dtastk(isp1+1),str))then
+      if(.not. ktfstringq(dtastk(isp1+1),str))then
         irtc=itfmessage(9,'General::wrongtype','"Character-string"')
         return
       endif
@@ -72,7 +72,7 @@
         return
       endif
       do i=isp0+1,isp,2
-        if(.not. ktfstringqd(dtastk(i)))then
+        if(.not. ktfstringq(dtastk(i)))then
           irtc=itfmessage(9,'General::wrongtype',
      $         '"String -> String"')
           return
@@ -102,12 +102,12 @@
         elseif(imin .gt. ir)then
           call putstringbufb(strb,str%str(ir:imin-1),imin-ir,full)
         endif
-        if(.not. ktfstringqd(dtastk(j+1)))then
+        if(.not. ktfstringq(dtastk(j+1)))then
           call tfeevalref(dtastk(j+1),kr,irtc)
           if(irtc .ne. 0)then
             go to 9000
           endif
-          if(.not. ktfstringqd(kr))then
+          if(.not. ktfstringq(kr))then
             irtc=itfmessage(9,'General::wrongtype',
      $           '"List of (String -> String)"')
             go to 9000
@@ -157,8 +157,8 @@
         irtc=itfmessage(9,'General::narg','"3"')
         return
       endif
-      if(.not. ktfstringqd(dtastk(isp1+1),str1) .or.
-     $     .not. ktfstringqd(dtastk(isp-1),str2) .or.
+      if(.not. ktfstringq(dtastk(isp1+1),str1) .or.
+     $     .not. ktfstringq(dtastk(isp-1),str2) .or.
      $     .not. ktfrealq(dtastk(isp)))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"[String, String, Real]"')
@@ -215,7 +215,7 @@
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
-      if(.not. ktfstringqd(dtastk(isp),str))then
+      if(.not. ktfstringq(dtastk(isp),str))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"Character-string"')
         return
@@ -259,7 +259,7 @@
       endif
       l=0
       do i=isp1+1,isp
-        if(ktfstringqd(dtastk(i),ksi))then
+        if(ktfstringq(dtastk(i),ksi))then
           l=l+ksi%nch
         else
           l=0
@@ -354,7 +354,7 @@
       integer*8 ka,ic,icp
       integer*4 isp1,irtc,nc1,narg,isp0,itfmessage,i
       character*32 form
-      logical*4 infm,tfsamesymbolqd,symb,hold,gens
+      logical*4 infm,symb,hold,gens
       type (sad_descriptor), save :: inputf,iholdf,igenf,istandf
       data inputf%k /0/
 c      include 'DEBUG.inc'
@@ -380,17 +380,17 @@ c      include 'DEBUG.inc'
             else
               k1=dtastk(i)
             endif
-            if(ktfsymbolqd(k1))then
-              if(tfsamesymbolqd(k1,inputf))then
+            if(ktfsymbolq(k1))then
+              if(tfsamesymbolq(k1,inputf))then
                 infm=.true.
-              elseif(tfsamesymbolqd(k1,iholdf))then
+              elseif(tfsamesymbolq(k1,iholdf))then
                 hold=.true.
-              elseif(tfsamesymbolqd(k1,igenf))then
+              elseif(tfsamesymbolq(k1,igenf))then
                 gens=.true.
-              elseif(tfsamesymbolqd(k1,istandf))then
+              elseif(tfsamesymbolq(k1,istandf))then
                 form=' '
               endif
-            elseif(ktfstringqd(k1,str))then
+            elseif(ktfstringq(k1,str))then
               form=str%str(1:str%nch)
             endif
           enddo
@@ -405,7 +405,7 @@ c      include 'DEBUG.inc'
           return
         endif
       endif
-      if(ktfsymbolqd(k,sym))then
+      if(ktfsymbolq(k,sym))then
         if(gens .or. sym%gen .le. 0
      $       .or. sym%gen .eq. maxgeneration)then
           call sym_namtbl(sym,loc)
@@ -418,14 +418,14 @@ c      include 'DEBUG.inc'
             endif
           enddo
         endif
-      elseif(ktfoperqd(k,ka))then
+      elseif(ktfoperq(k,ka))then
         call loc_namtbl(klist(klist(ifunbase+ka)),loc)
         kx=loc%str%alloc
         return
       elseif(symb)then
         irtc=itfmessage(9,'General::wrongtype','"Symbol"')
         return
-      elseif(ktfstringqd(k) .and. .not. infm)then
+      elseif(ktfstringq(k) .and. .not. infm)then
         kx=k
         return
       endif
@@ -456,7 +456,7 @@ c      include 'DEBUG.inc'
       endif
       k=dtastk(isp)
       irtc=0
-      if(ktfsymbolqd(k,sym))then
+      if(ktfsymbolq(k,sym))then
         if(sym%gen .le. 0
      $       .or. sym%gen .eq. maxgeneration)then
           call sym_namtbl(sym,loc)
@@ -469,7 +469,7 @@ c      include 'DEBUG.inc'
             endif
           enddo
         endif  
-      elseif(ktfoperqd(k,ka))then
+      elseif(ktfoperq(k,ka))then
         call loc_namtbl(klist(ifunbase+ka),loc)
         kx=loc%str%alloc
         return
@@ -551,8 +551,8 @@ c      include 'DEBUG.inc'
       if(isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
-      elseif(.not. ktfstringqd(dtastk(isp1+1),stra)
-     $     .or. .not. ktfstringqd(dtastk(isp),strp))then
+      elseif(.not. ktfstringq(dtastk(isp1+1),stra)
+     $     .or. .not. ktfstringq(dtastk(isp),strp))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"[String, Pattern-string]"')
         return
@@ -584,7 +584,7 @@ c      include 'DEBUG.inc'
       if(isp .eq. isp1+1 .or. isp .gt. isp1+3)then
         irtc=itfmessage(9,'General::narg','"2 or 3"')
         return
-      elseif(.not. ktfstringqd(dtastk(isp1+1),str))then
+      elseif(.not. ktfstringq(dtastk(isp1+1),str))then
         irtc=itfmessage(9,'General::wrongtype','"Character-string"')
         return
       endif
@@ -600,7 +600,7 @@ c      include 'DEBUG.inc'
       endif
       nc=str%nch
       isp0=isp
-      if(ktfstringqd(dtastk(isp1+2), strp))then
+      if(ktfstringq(dtastk(isp1+2), strp))then
         nc1=strp%nch
         if(nc1 .gt. 0)then
           i1=1
@@ -620,7 +620,7 @@ c      include 'DEBUG.inc'
       elseif(ktflistq(dtastk(isp1+2),kl))then
         LOOP_I: do i=1,kl%nl
           ki=kl%dbody(i)
-          if(.not. ktfstringqd(ki,stri))then
+          if(.not. ktfstringq(ki,stri))then
             isp=isp0
             return
           endif
@@ -681,7 +681,7 @@ c      include 'DEBUG.inc'
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
-      elseif(.not. ktfstringqd(dtastk(isp),str))then
+      elseif(.not. ktfstringq(dtastk(isp),str))then
         irtc=itfmessage(9,'General::wrongtype','"Character-string"')
         return
       endif
@@ -782,7 +782,7 @@ c      include 'DEBUG.inc'
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
-      elseif(.not. ktfstringqd(dtastk(isp),str))then
+      elseif(.not. ktfstringq(dtastk(isp),str))then
         irtc=itfmessage(9,'General::wrongtype','"Character-string"')
         return
       endif
@@ -807,7 +807,7 @@ c      include 'DEBUG.inc'
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
-      elseif(.not. ktfstringqd(dtastk(isp),str))then
+      elseif(.not. ktfstringq(dtastk(isp),str))then
         irtc=itfmessage(9,'General::wrongtype','"Character-string"')
         return
       endif

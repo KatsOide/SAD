@@ -26,11 +26,11 @@
         if(iand(lconstlist,list%attr) .eq. 0)then
           call tfleval(list,kx,.true.,irtc)
         endif
-      elseif(ktfsymbolqd(k))then
+      elseif(ktfsymbolq(k))then
         call tfsyeval(k,kx,irtc)
-      elseif(ktfpatqd(k))then
+      elseif(ktfpatq(k))then
         call tfpateval(k,kx,irtc)
-      elseif(ktfrefqd(k,ka))then
+      elseif(ktfrefq(k,ka))then
         kx=dlist(ka)
       endif
       return
@@ -164,7 +164,7 @@
               evalh=.true.
               exit
             endif
-          elseif(ktfsymbolqd(klf%head,sym) .and. .not. ref)then
+          elseif(ktfsymbolq(klf%head,sym) .and. .not. ref)then
             if(sym%gen .eq. -3 .and. ktfreallistq(klf))then
               ev=.false.
               iaat=0
@@ -278,9 +278,9 @@ c          call tfstk2l(lista,lista)
               kx=kls%dbody(i)
               if(ktflistq(kx,list))then
                 call tfleval(list,kx,.true.,irtc)
-              elseif(ktfsymbolqd(kx))then
+              elseif(ktfsymbolq(kx))then
                 call tfsyeval(kx,kx,irtc)
-              elseif(ktfpatqd(kx))then
+              elseif(ktfpatq(kx))then
                 call tfpateval(kx,kx,irtc)
               endif
               if(irtc .ne. 0)then
@@ -499,7 +499,7 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
       type (sad_descriptor) k
       type (sad_object), pointer :: obj
       integer*8 kan
-      if(ktfobjqd(k,obj))then
+      if(ktfobjq(k,obj))then
         obj%ref=obj%ref-1
         if(obj%ref .le. 0)then
           obj%ref=0
@@ -975,7 +975,7 @@ c                endif
         endif
         call tfeevalref(kx,kx,irtc)
         level=level-1
-        if(ktfobjqd(kx,obj))then
+        if(ktfobjq(kx,obj))then
           if(ktfaddr(obj%alloc) .eq. 0)then
             j=itflocal+levele
             obj%alloc%k=ktftype(obj%alloc%k)+klist(j)
@@ -998,7 +998,7 @@ c                endif
           call tfleval(list,kx,.false.,irtc)
           return
         endif
-      elseif(ktfsymbolqd(k,sym) .and. sym%override .eq. 0)then
+      elseif(ktfsymbolq(k,sym) .and. sym%override .eq. 0)then
         call tfsydef(sym,sym)
         kx=sad_descr(sym)
         irtc=0
@@ -1016,7 +1016,7 @@ c                endif
       type (sad_dlist) kls
       type (sad_symbol), pointer :: sym
       type (sad_namtbl), pointer :: nam
-      integer*8 kaa,kopc,kax
+      integer*8 kaa,kopc
       integer*4 ind,irtc,nc,isp1,isps,
      $     itfmessage,ns,ipf0,naf0,ls,isp2
       real*8 ffval,vx
@@ -1032,7 +1032,7 @@ c                endif
         ind=1
       else
         ka=kls%dbody(1)
-        if(ktfoperqd(ka,kaa))then
+        if(ktfoperq(ka,kaa))then
           if(kaa .eq. mtfnull)then
             ind=1
           else
@@ -1040,13 +1040,13 @@ c                endif
             return
           endif
         elseif(ktfrealq(ka,ind))then
-        elseif(ktfsymbolqd(ka,sym) .and. kopc .eq. mtfslot)then
+        elseif(ktfsymbolq(ka,sym) .and. kopc .eq. mtfslot)then
           call sym_namtbl(sym,nam)
           nc=nam%str%nch+1
           name(2:nc)=nam%str%str(1:nc-1)
           name(1:1)='#'
           call capita(name(1:nc))
-          vx=ffval(name(1:nc),kax,exist)
+          vx=ffval(name(1:nc),exist)
           if(exist)then
             kx=dfromr(vx)
             irtc=0
@@ -1133,7 +1133,6 @@ c        write(*,*)'at ',kae
       type (sad_dlist) list
       type (sad_dlist), pointer :: listj
       integer*4 i,j,m
-      logical*4 tfsameqd,tfsameqk
       type (sad_descriptor), save :: kxlabel
       data kxlabel%k /0/
       if(kxlabel%k .eq. 0)then
@@ -1142,8 +1141,8 @@ c        write(*,*)'at ',kae
       do j=1,m
         if(ktflistq(list%dbody(j),listj))then
           if(listj%nl .eq. 1)then
-            if(tfsameqk(kxlabel,listj%head%k))then
-              if(tfsameqd(kr,listj%dbody(1)))then
+            if(tfsameq(kxlabel,listj%head))then
+              if(tfsameq(kr,listj%dbody(1)))then
                 i=j
                 return
               endif

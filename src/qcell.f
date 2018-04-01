@@ -395,15 +395,17 @@ c        write(*,'(1p6g15.7)')(r(i,1:6),i=1,6)
 c       write(*,'(1p6g15.7)')(ri(i,1:6),i=1,6)
        normali=.true.
       else
-        tw1=twiss(1,idp,1:ntwissfun)
+        tw1=twiss(fbound%lb,idp,1:ntwissfun)
+c        write(*,*)'qcell61 ',fbound%lb,tw1(mfitnx),tw1(mfitny)
         call etwiss2ri(tw1,ri,normali)
         call tinv6(ri,r)
       endif
       codplt=.true.
       call tinitr(trans)
       call tturne0(trans,cod,beam,fbound,
-     $     int8(0),int8(0),int8(0),idp,.true.,rt)
-c        write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6)
+     $     int8(0),int8(0),int8(0),idp,.true.,rt,.true.)
+c      write(*,*)'qcell61-1 ',twiss(fbound%lb,idp,mfitnx),
+c     $     twiss(fbound%lb,idp,mfitny)
       calint=ci0
       codplt=codplt0
       cell=cell0

@@ -352,7 +352,7 @@
       integer*4 isp1,irtc,i,itfmessage
       LOOP_I: do i=isp1+1,isp
         ki=dtastk(i)
-        if(ktfsymbolqd(ki,sym))then
+        if(ktfsymbolq(ki,sym))then
           if(sym%override .eq. 0)then
             call tfsydef(sym,sym)
           endif
@@ -479,7 +479,6 @@ c      include 'DEBUG.inc'
       type (sad_dlist) listp
       type (sad_dlist), pointer :: kli,kla1,kla
       integer*4 i
-      logical*4 tfsamelistqo
       tfdefheadq=.true.
       call descr_sad(k,kla)
       if(tfsamelistqo(kla,listp))then
@@ -519,10 +518,10 @@ c      include 'DEBUG.inc'
       irtc=0
       LOOP_I: do i=isp1+1,isp
         k=dtastk(i)
-        if(ktfoperqd(k,ka))then
+        if(ktfoperq(k,ka))then
           k%k=ktfsymbol+klist(ifunbase+ka)
         endif
-        if(ktfsymbolqd(k,sym))then
+        if(ktfsymbolq(k,sym))then
           if(sym%override .eq. 0)then
             call tfsydef(sym,sym)
           endif
@@ -584,8 +583,8 @@ c      include 'DEBUG.inc'
         return
       endif
       k=dtastk(isp)
-      If(.not. ktfsymbolqd(k,sym))then
-        if(ktfoperqd(k,ka))then
+      If(.not. ktfsymbolq(k,sym))then
+        if(ktfoperq(k,ka))then
           call loc_sad(klist(ifunbase+ka),sym)
         else
           irtc=itfmessage(9,'General::wrongtype','"Symbol or Operator"')
@@ -649,7 +648,7 @@ c      include 'DEBUG.inc'
       integer*8 ka
       integer*4 isp1,irtc,narg,iattrib,i,itfmessage,isp0,
      $     itfmessageexp
-      logical*4 tfsamesymbolqd,prot
+      logical*4 prot
       if(iaxnone%k .eq. 0)then
         call tfattrinit
       endif
@@ -660,10 +659,10 @@ c      include 'DEBUG.inc'
       endif
       k=dtastk(isp1+1)
       irtc=0
-      if(ktfoperqd(k,ka))then
+      if(ktfoperq(k,ka))then
         k%k=ktfsymbol+klist(ifunbase+ka)
       endif
-      if(ktfsymbolqd(k,sym))then
+      if(ktfsymbolq(k,sym))then
         if(sym%override .eq. 0 .or. sym%override .eq. 1)then
           call tfsydef(sym,sym)
           ka=ksad_loc(sym%loc)
@@ -685,38 +684,38 @@ c      include 'DEBUG.inc'
           isp=isp0
           return
         endif
-        if(.not. ktfsymbolqd(kv))then
+        if(.not. ktfsymbolq(kv))then
           go to 9000
         endif
         prot=ktfprotectedq(ktfaddrd(k)) .and. sym%override .ne. -3
         iattrib=sym%attr
-        if(tfsamesymbolqd(kv,iaxnone))then
+        if(tfsamesymbolq(kv,iaxnone))then
           iattrib=0
-        elseif(tfsamesymbolqd(kv,iaxholdall))then
+        elseif(tfsamesymbolq(kv,iaxholdall))then
           iattrib=ior(iattrib,iattrholdall)
-        elseif(tfsamesymbolqd(kv,iaxholdfirst))then
+        elseif(tfsamesymbolq(kv,iaxholdfirst))then
           iattrib=iand(-iattrholdall-1,iattrib)+iattrholdfirst
-        elseif(tfsamesymbolqd(kv,iaxholdrest))then
+        elseif(tfsamesymbolq(kv,iaxholdrest))then
           iattrib=iand(-iattrholdall-1,iattrib)+iattrholdrest
-        elseif(tfsamesymbolqd(kv,iaxholdnone))then
+        elseif(tfsamesymbolq(kv,iaxholdnone))then
           iattrib=iand(-iattrholdall-1,iattrib)
-        elseif(tfsamesymbolqd(kv,iaxconstant))then
+        elseif(tfsamesymbolq(kv,iaxconstant))then
           if(sym%gen .gt. 0)then
             irtc=itfmessage(9,'General::localconst',' ')
             return
           endif
           prot=prot .and. iand(iattrib,iattrconstant) .eq. 0
           iattrib=ior(iattrib,iattrconstant+iattrprotected)
-        elseif(tfsamesymbolqd(kv,iaxprotected))then
+        elseif(tfsamesymbolq(kv,iaxprotected))then
           prot=prot .and. iand(iattrib,iattrprotected) .eq. 0
           iattrib=ior(iattrib,iattrprotected)
-        elseif(tfsamesymbolqd(kv,iaximmediate1))then
+        elseif(tfsamesymbolq(kv,iaximmediate1))then
           iattrib=ior(iattrib,iattrimmediate)
-        elseif(tfsamesymbolqd(kv,iaxnumeric))then
+        elseif(tfsamesymbolq(kv,iaxnumeric))then
           iattrib=ior(iattrib,iattrnumeric)
-        elseif(tfsamesymbolqd(kv,iaxdynamic))then
+        elseif(tfsamesymbolq(kv,iaxdynamic))then
           iattrib=ior(iattrib,iattrdynamic)
-        elseif(tfsamesymbolqd(kv,iaxordless))then
+        elseif(tfsamesymbolq(kv,iaxordless))then
           iattrib=ior(iattrib,iattrorderless)
         else
           go to 9000

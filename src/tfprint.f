@@ -13,11 +13,17 @@
       logical*4 exist,force,pri
       character*(*) word
       character peekch
-      integer*4 itfgetrecl,l,itfdownlevel,lenw
+      integer*4 itfgetrecl,l,itfdownlevel,lenw,irtc
       real*8 , parameter :: amaxline=8
       character*256 word0,word1
       itx=-1
-      call unreadbuf(word)
+      call unreadbuf(word,irtc)
+      if(irtc .ne. 0)then
+c        write(*,*)'tfprint-unreadbuf ',irtc,next
+        call skipline
+        exist=.true.
+        return
+      endif
       lpw=itfgetrecl()
  1    levele=levele+1
       itx=itfpeeko(kx,next)
@@ -40,7 +46,7 @@
           exist=.true.
         else
 c          call tfdebugprint(kx,'tfprint',1)
-          if(ktfoperqd(kx,kax))then
+          if(ktfoperq(kx,kax))then
             if(kx%k .eq. ktfoper+mtfnull)then
               go to 8000
             endif
@@ -73,7 +79,7 @@ c          call tfdebugprint(kx,'tfprint',1)
           elseif(ktflistq(kx,klx))then
             if(klx%head%k .ne. ktfoper+mtfcomplex .and.
      $           klx%head%k .ne. ktfoper+mtflist .and.
-     $           ktfoperqd(klx%head) .and. klx%ref .le. 0)then
+     $           ktfoperq(klx%head) .and. klx%ref .le. 0)then
               call getwrd(word)
               exist=word(1:1) .eq. ' '
               go to 9000
@@ -159,7 +165,7 @@ c      endif
         kad=klist(kad+kah+3)
         n=autofg(al,'S10.0')
         l=lenw(n)
-        write(prolog,'($,''Out['',a,'']:= '')')n(1:l)
+        write(prolog,'(''Out['',a,'']:= '',$)')n(1:l)
         ncprolog=l+8
         do while(kad .ne. 0)
           if(al .eq. rlist(ktfaddr(klist(kad+3))+1))then
@@ -233,15 +239,16 @@ c      endif
       enddo
       end
           
-      subroutine unreadbuf(word)
+      subroutine unreadbuf(word,irtc)
       use tfstk
       use ffs_flag
       use tmacro
       use tfcsi
       implicit none
-      integer*4 l,lenw,ip1,i
+      integer*4 l,lenw,ip1,i,irtc
       character*(*) word
       character*256 word1,word2
+      irtc=0
       l=lenw(word)
       if(l .le. 0)then
         return
@@ -257,11 +264,13 @@ c      endif
           call capita(word1(1:l))
         endif
         if(word1(1:l) .eq. word2(1:l))then
-c          write(*,*)'unreadbuf ',i,l,' ',buffer(i+l:i+l)
+c          write(*,*)'unreadbuf ',i,l,' ',buffer(i+l:i+l),
+c     $         ' ',word(1:l)
           if(index(delim(1:ldel),buffer(i+l:i+l)) .gt. 0 .and.
      $         (i .eq. 1 .or.
      $         index(delim(1:ldel),buffer(i-1:i-1)) .gt. 0 .or.
-     $         index('0123456789.',buffer(i-1:i-1)) .gt. 0))then
+     $         index('0123456789.',buffer(i-1:i-1)) .gt. 0 .or.
+     $         word(1:1) .eq. '.'))then
             ipoint=i
             return
           endif
@@ -269,6 +278,6 @@ c          write(*,*)'unreadbuf ',i,l,' ',buffer(i+l:i+l)
       enddo
       write(*,*)'Buffer is damaged at unreadbuf. ',
      $     ipoint,ip1,l,lrecl,' ',word(1:l)
-      call skipline
+      irtc=-1
       return
       end

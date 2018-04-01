@@ -7,7 +7,7 @@
       character*256 fname,tfgetstr
       logical*4 disp
       itfopenread=-1
-      if(.not. ktfstringqd(k))then
+      if(.not. ktfstringq(k))then
         itfopenread=-1
         irtc=itfmessage(9,'General::wrongval',
      $       '"Filename","argument"')
@@ -41,7 +41,7 @@
       integer*4 irtc,nc,i,itfmessage,nextfn
       character*256 fname,tfgetstr
       itfopenwrite=-1
-      if(.not. ktfstringqd(k))then
+      if(.not. ktfstringq(k))then
         itfopenwrite=-1
         irtc=itfmessage(9,'General::wrongval',
      $       '"Filename","argument"')

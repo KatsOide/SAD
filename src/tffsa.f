@@ -19,7 +19,7 @@
       integer*4 maxrpt,maxlfn,hsrchz
       integer*8 kffs,k,kx,itwisso,
      $     ifvalvar2,iparams,kax,iutwiss
-      integer*4 kk,i,lfnb,ia,iflevel,j,ielm,igelm,k1,
+      integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,
      $     ii,irtc0,it,itemon,itmon,itestr,itstr,itt,
      $     iuse,l,itfuplevel,
      $     levelr,lfnl0,lpw,meas0,mfpnta,igetgl1,lenw,
@@ -390,10 +390,14 @@ c          call cssetlinep(icslrecl())
             call tfblocksym('`FitFunction',12)
             call tfblocksym('`FitValue',9)
             call tfblocksym('`ElementValues',14)
+            call tfblocksym('`OpticsProlog',13)
+            call tfblocksym('`OpticsEpilog',13)
           else
             call tfunblocksym('`FitFunction',12,.false.)
             call tfunblocksym('`FitValue',9,.false.)
             call tfunblocksym('`ElementValues',14,.false.)
+            call tfunblocksym('`OpticsProlog',13,.false.)
+            call tfunblocksym('`OpticsEpilog',13,.false.)
             call tffsfree
             if(lattuse .eq. lattredef)then
               call tclrline(lattredef)
@@ -450,6 +454,8 @@ c          call cssetlinep(icslrecl())
         call tfunblocksym('`FitFunction',12,.true.)
         call tfunblocksym('`FitValue',9,.true.)
         call tfunblocksym('`ElementValues',14,.true.)
+        call tfunblocksym('`OpticsProlog',13,.true.)
+        call tfunblocksym('`OpticsEpilog',13,.true.)
       elseif(word .eq. 'SPLIT')then
         call termes(lfno,
      $       'SPLIT is obsolete.   Use OFFSET of a marker.',' ')
@@ -488,13 +494,13 @@ ckikuchi ... next 5 lines added     (8/17/'90)
           mfpnt=1
           mfpnt1=nlat
         else
-          mfpnt=ielm(wordp,exist)
+          mfpnt=ielme(wordp,exist,lfno)
           if(.not. exist)then
             mfpnt1=mfpnt
             go to 12
           endif
           call getwdl2(word,wordp)
-          mfpnta=ielm(wordp,exist)
+          mfpnta=ielme(wordp,exist,lfno)
           if(exist)then
             mfpnt1=max(mfpnt,mfpnta)
             mfpnt=min(mfpnt,mfpnta)
@@ -760,7 +766,7 @@ c        endif
 c        ilist(1,iwakepold+2)=ns
 c        go to 31
       elseif(abbrev(word,'ORI_GIN','_') .or. word .eq. 'ORG')then
-        iorgr=igelm(word,exist)
+        iorgr=igelme(word,exist,lfno)
         if(.not. exist)then
           iorgr=1
           go to 12
@@ -1138,7 +1144,7 @@ ckiku   call tfstr(word,latt,ist,nstr)
      $         gammab,pos,rlist(itmon),nmon)
         elseif(abbrev(word,'LAT_TICE','_').or.
      1         abbrev(word,'PS_NAME','_')) then
-          call pwrlat(word,wordp,latt,mult,lfno)
+          call pwrlat(word,wordp,lfno)
         endif
         goto 12
       else
@@ -1238,6 +1244,7 @@ c        rlist(itlookup('DP',ivtype))=dpmax
         go to 30
       endif
  7000 call tfgetv(word,lfno,nextt,exist)
+c      write(*,*)'tffsa-getv ',exist,nextt,itt,word(1:lenw(word))
       if(.not. exist)then
         if(itt .ge. 0)then
           call cssetp(nextt)
@@ -1372,7 +1379,7 @@ c        dpm2=rlist(ktlookup('DPM'))
         enddo
         em=abs(emx)+abs(emy)
         call tffamsetup(1,em)
-        if(nfam .gt. nfr .and. kfam(-nfam) .le. 0)then
+        if(nfam .gt. nfr .and. kfam(-nfam) .eq. 0)then
           nfam1=1-nfam
         else
           nfam1=-nfam
@@ -1772,7 +1779,7 @@ c      call tfdebugprint(kx,'setupcoup',3)
           go to 9000
         endif
         kk=kli%dbody(1)
-        if(.not. ktfstringqd(kk))then
+        if(.not. ktfstringq(kk))then
           go to 9000
         endif
         key=tfgetstrs(kk,nc)

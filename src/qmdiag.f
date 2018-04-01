@@ -16,8 +16,16 @@ c     r*   ; transformation matrix( output )
 c     S = (c, J.(r)t.J)
 c     (r,    c    )
 c---------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      logical stab
+      implicit none
+      real*8 tm11,tm12,tm13,tm14,
+     1     tm21,tm22,tm23,tm24,
+     1     tm31,tm32,tm33,tm34,
+     1     tm41,tm42,tm43,tm44,
+     1     r1,r2,r3,r4,c,trpq,trab2,c2,aa,
+     $     detn,trqk,trqj,aaa,bbb,ccc,p1,p2,p3,p4,trp,trqkj2,
+     $     trql,xx11,xx12,xx21,xx22,yy11,yy12,yy21,yy22
+      integer*4 lfno
+      logical*4 stab,isnan
       stab=.true.
 c     
       trpq = tm11 + tm22 - tm33 - tm44
@@ -32,7 +40,15 @@ c     1     +trpq*trpq
 c.....trab2=(TrA-TrB)**2 should be positive or zero.
 c     ::::::::::::::::
 C--   deb
-c     print *,'===qmdiag=== trab2 =',trab2
+c      print *,'===qmdiag=== trab2 =',trab2
+      if(isnan(trab2))then
+        write(lfno,'(a,1p5g15.7)')
+     $       '***qmdiag---> Matrix not a number: ',trab2,
+     $       tm11,tm22,tm33,tm44
+        lfno=0
+        stab=.false.
+        return
+      endif
       if( trab2.ge.1.d-14 ) then
 c     +++++++++++++++++++++
 c==   > +  (TrA-TrB)^2 > 0  +

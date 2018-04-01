@@ -104,6 +104,9 @@
       na=mpsize*np
       ip1=ktfsadalloc(na)+1
 c      write(*,*)'talocp ',ip1,ip1+na
+      if(ip1 .le. 0)then
+        return
+      endif
       nmem=nmem+na
       nnet=nnet+na
       j=klist(icsep)
@@ -127,8 +130,7 @@ c      write(*,*)'talocp ',ip1,ip1+na
       ics=ip1+na-4
       klist(ics)=klist(icsep)
       klist(icsep)=ics
-      ilist(1,ics-1)=4
-      ilist(2,ics-1)=4
+      ilist(:,ics-1)=4
       return
       end
 

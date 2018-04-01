@@ -147,7 +147,7 @@ c          msgn /:   (*   *)   Hold z
       type (sad_dlist), pointer :: klx
       integer*4 isp0,iprior(0:mtfnopc),irtc
       integer*4 iop,iop1,isp1,i,itgetfpe,itfmessage
-      logical*4 tfconstqk,tfheldqd,lastfirst(0:mtfnopc)
+      logical*4 lastfirst(0:mtfnopc)
       irtc=0
       do while(isp .gt. isp0)
         iop=itastk2(1,isp)
@@ -254,9 +254,9 @@ c          msgn /:   (*   *)   Hold z
               go to 9030
             endif
           endif
-          if(tfconstqk(ktastk(isp1)) .and.
+          if(tfconstq(ktastk(isp1)) .and.
      $         .not. tfheldqd(dtastk(isp1)) .and.
-     $         tfconstqk(ktastk(isp)) .and.
+     $         tfconstq(ktastk(isp)) .and.
      $         .not. tfheldqd(dtastk(isp)) .and.
      $         ktfimmediateq(klist(ifunbase+iop1)))then
             call tfeval1(ktastk(isp1),ktastk(isp),kx%k,iop1,irtc)
@@ -292,11 +292,11 @@ c          msgn /:   (*   *)   Hold z
       type (sad_dlist), pointer :: kl1,kl2
       type (sad_dlist), pointer :: klx
       integer*4 iop1,i,m1,m2,irtc
-      logical*4 tfinequalityqk,nextrel,tfconstlistqo
-      if(tfinequalityqk(k1%k))then
+      logical*4 nextrel,tfconstlistqo
+      if(tfinequalityq(k1))then
         call loc_sad(ktfaddrd(k1),kl1)
         m1=kl1%nl
-        if(tfinequalityqk(k2))then
+        if(tfinequalityq(k2))then
           call loc_sad(ktfaddrd(k2),kl2)
           m2=kl2%nl
           kx=kxadaloc(-1,m1+m2+1,klx)
@@ -318,7 +318,7 @@ c          msgn /:   (*   *)   Hold z
           klx%dbody(m1+2)=dtfcopy(k2)
         endif
       else
-        if(tfinequalityqk(k2%k))then
+        if(tfinequalityq(k2))then
           call loc_sad(ktfaddrd(k2),kl2)
           m2=kl2%nl
           kx=kxadaloc(-1,m2+2,klx)
@@ -368,7 +368,7 @@ c          msgn /:   (*   *)   Hold z
           return
         endif
         if(i .gt. isp1+1)then
-          if(ktfnonoperqd(dtastk(i-1),ka) .or.
+          if(ktfnonoperq(dtastk(i-1),ka) .or.
      $         ka .lt. mtfequal .or. ka .gt. mtfunsame)then
             irtc=itfmessage(9,'General::wrongtype',
      $           '"==, <>, <, >, <=, >=, ===, <=>"')
@@ -397,7 +397,7 @@ c      include 'DEBUG.inc'
       integer*8 kah
       integer*4 isp1,irtc,iah,isp0
       if(rlist(iaximmediate) .ne. 0.d0)then
-        if(ktfoperqd(kh,kah))then
+        if(ktfoperq(kh,kah))then
           iah=int(kah)
           if(iah .gt. mtfend)then
             call tfcomposefun(isp1,iah,kx,.false.,irtc)
@@ -407,7 +407,7 @@ c      include 'DEBUG.inc'
           if(irtc .eq. 0)then
             return
           endif
-        elseif(ktfstringqd(kh))then
+        elseif(ktfstringq(kh))then
           if(isp .eq. isp1+1 .or. isp .eq. isp1+2)then
             if(ktfrealq(dtastk(isp1+1)) .and.
      $           ktfrealq(dtastk(isp)))then
@@ -429,9 +429,8 @@ c      include 'DEBUG.inc'
       type (sad_descriptor) kh,kx
       integer*8 kah
       integer*4 isp1,i,irtc,isp0,iah
-      logical*4 tfconstqk,tfheldqd
       if(isp .ne. isp1 .and. rlist(iaximmediate) .ne. 0.d0)then
-        if(ktfoperqd(kh,kah))then
+        if(ktfoperq(kh,kah))then
           iah=int(kah)
           if(iah .gt. mtfend)then
             call tfcomposefun(isp1,iah,kx,.true.,irtc)
@@ -454,7 +453,7 @@ c      include 'DEBUG.inc'
               go to 10
             endif
           endif
-        elseif(ktfstringqd(kh))then
+        elseif(ktfstringq(kh))then
           if(isp .eq. isp1+1 .or. isp .eq. isp1+2)then
             if(ktfrealq(ktastk(isp1+1)) .and. ktfrealq(ktastk(isp)))then
               kx=kxsubstring(kh,isp1+1,isp)
@@ -470,7 +469,7 @@ c      include 'DEBUG.inc'
         isp=isp+1
         dtastk(isp)=kh
         do i=isp1+1,isp0
-          if(tfconstqk(ktastk(i)))then
+          if(tfconstq(ktastk(i)))then
             if(ktastk(i) .eq. ktfoper+mtfnull)then
               isp=isp0
               go to 10
@@ -502,7 +501,7 @@ c      include 'DEBUG.inc'
       type (sad_dlist), pointer :: klx
       integer*8 iee0
       integer*4 isp1,iah,irtc,isp0,i,iy,isp00,iv
-      logical*4 tfconstqk,tfsameqk,tfsamestringqk,comp
+      logical*4 comp
       real*8 vx,x,y
       irtc=1
       if(constop(iah))then
@@ -510,8 +509,8 @@ c      include 'DEBUG.inc'
       elseif(isp1+2 .eq. isp)then
         select case (iah)
         case (mtfplus,mtftimes)
-          if(tfconstqk(ktastk(isp1+1)))then
-            if(tfconstqk(ktastk(isp)))then
+          if(tfconstq(ktastk(isp1+1)))then
+            if(tfconstq(ktastk(isp)))then
               call tfplus(isp1,kx,iah,irtc)
               return
             endif
@@ -565,7 +564,7 @@ c      include 'DEBUG.inc'
             return
           elseif(ktftype(ktastk(isp1+1)) .eq. ktfstring .and.
      $           ktftype(ktastk(isp)) .eq. ktfstring)then
-            if(tfsamestringqk(ktastk(isp1+1),ktastk(isp)))then
+            if(tfsamestringq(ktastk(isp1+1),ktastk(isp)))then
               kx%k=ktftrue
             else
               kx%k=0
@@ -585,7 +584,7 @@ c      include 'DEBUG.inc'
             return
           elseif(ktftype(ktastk(isp1+1)) .eq. ktfstring .and.
      $           ktftype(ktastk(isp)) .eq. ktfstring)then
-            if(tfsamestringqk(ktastk(isp1+1),ktastk(isp)))then
+            if(tfsamestringq(ktastk(isp1+1),ktastk(isp)))then
               kx%k=0
             else
               kx%k=ktftrue
@@ -594,8 +593,8 @@ c      include 'DEBUG.inc'
             return
           endif
         case (mtfsame)
-          if(tfconstqk(ktastk(isp1+1)) .and. tfconstqk(ktastk(isp)))then
-            if(tfsameqk(ktastk(isp1+1),ktastk(isp)))then
+          if(tfconstq(ktastk(isp1+1)) .and. tfconstq(ktastk(isp)))then
+            if(tfsameq(ktastk(isp1+1),ktastk(isp)))then
               kx%k=ktftrue
             else
               kx%k=0
@@ -604,8 +603,8 @@ c      include 'DEBUG.inc'
             return
           endif
         case (mtfunsame)
-          if(tfconstqk(ktastk(isp1+1)) .and. tfconstqk(ktastk(isp)))then
-            if(tfsameqk(ktastk(isp1+1),ktastk(isp)))then
+          if(tfconstq(ktastk(isp1+1)) .and. tfconstq(ktastk(isp)))then
+            if(tfsameq(ktastk(isp1+1),ktastk(isp)))then
               kx%k=0
             else
               kx%k=ktftrue
@@ -689,7 +688,7 @@ c          write(*,*)'with ',irtc
       endif
       select case (iah)
       case (mtfpart)
-        if(tfconstqk(ktastk(isp1+1)))then
+        if(tfconstq(ktastk(isp1+1)))then
           if(tflistq(ktastk(isp1+1)))then
             do i=isp1+2,isp
               if(ktfnonrealq(ktastk(i)))then
@@ -856,7 +855,7 @@ c          write(*,*)'with ',irtc
       integer*8 ka,kti,kai,i
       integer*4 isp1,iah,irtc,narg,id
       real*8 rimmediate0
-      logical*4 tfconstqk,full,re
+      logical*4 full,re
       irtc=1
       id=iget_fun_id(int8(iah))
       select case (id)
@@ -965,7 +964,7 @@ c          write(*,*)'with ',irtc
         if(isp .eq. isp1+1)then
           if(ktfrealq(ktastk(isp)))then
             call tfefunref(isp1,kx,.false.,irtc)
-          elseif(tfconstqk(ktastk(isp)))then
+          elseif(tfconstq(ktastk(isp)))then
             if(ktflistq(ktastk(isp)))then
               if(ilist(2,ktfaddr(ktastk(isp))-1) .le. 15)then
 c                call tfdebugprint(ktastk(isp),'composefun-a',1)
@@ -982,7 +981,7 @@ c          call tfdebugprint(ktastk(isp1),'composefun-c',1)
 c          write(*,*)'with ',isp1,isp
           do i=isp1+1,isp
             if(ktfrealq(ktastk(i)))then
-            elseif(tfconstqk(ktastk(i)))then
+            elseif(tfconstq(ktastk(i)))then
 c              call tfdebugprint(ktastk(i),'composefun-c-i',1)
               re=.true.
             else
@@ -1090,16 +1089,6 @@ c      call tfdebugprint(kx,'==>',1)
           tfkname='Unknown'
         end select
       endif
-      return
-      end
-
-      logical*4 function tfheldqd(k)
-      use tfstk
-      implicit none
-      type (sad_descriptor) k
-      type (sad_dlist), pointer :: kl
-      tfheldqd=ktflistq(k,kl) .and.
-     $     kl%head%k .eq. ktfoper+mtfhold
       return
       end
 

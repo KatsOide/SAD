@@ -33,6 +33,10 @@
               write(*,*)'Wrong temporary element:',i
               go to 9100
             endif
+            if(klist(i) .le. 0)then
+              write(*,*)'Wrong temporary element pointed:',i,klist(i)
+              go to 9100
+            endif
             ki=iand(ktfmask,klist(i))+i+2
             if(.not. tfcheckelement(ki,.true.))then
               write(*,*)' Error in a temporary element:'

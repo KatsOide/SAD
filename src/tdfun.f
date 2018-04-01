@@ -190,7 +190,7 @@ c                  write(*,*)'tdfun ',vf1,v,df(i)
  10   continue
       nqcola=i-1
       nqcola1=nqcola
-      call tffsfitfun(nqcol,df1,iqcol,kdp,maxcond,error)
+      call tffsfitfun(nqcola,df1,iqcol,kdp,maxcond,error)
       return
       end
 
@@ -341,12 +341,12 @@ c     Note: index(name1,'.') > 0 if kp1 != 0
       integer*8 ,save :: kff=0
       integer*4 maxcond,nqcol,iqcol(maxcond),kdp(maxcond)
       real*8 df(maxcond)
-      integer*4 l,itfuplevel,itfdownlevel,i,m,level,irtc
+      integer*4 itfuplevel,itfdownlevel,i,m,level,irtc
       logical*4 error
       if(kff .eq. 0)then
         kff=ktfsymbolz('`FitFunction',12)
       endif
-      l=itfuplevel()
+      level=itfuplevel()
       kx%k=0
       call tfsyeval(kff,kx,irtc)
 c      call tfdebugprint(kx,'fitfun',3)
@@ -381,6 +381,7 @@ c      call tfdebugprint(kx,'fitfun',3)
           nqcol=nqcol+m
         endif
       endif
+c      call tfmemcheckprint('FitFunction-end',.true.,irtc)
       level=itfdownlevel()
       error=.false.
       return

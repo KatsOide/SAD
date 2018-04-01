@@ -23,18 +23,18 @@ c      include 'DEBUG.inc'
       real*8 df(maxcond),r,rp,wi,
      $     residual1(-ndimmax:ndimmax)
       logical*4 zcal,wcal,error,parallel
+      external tfloor
       real*8 anux0,anuy0,anux0h,anuy0h,anuxi,anuyi,anuxih,anuyih,
-     $     rw,drw,rstab,
-     $     anusumi,anusum0,anudiffi,anudiff0,physd(4),physd1(4)
+     $     rw,drw,rstab,tfloor,
+     $     anusumi,anusum0,anudiffi,anudiff0
       logical*4 fam,beg,zerores
       integer*4 irw,isw,ipr,ifb,ife,idir,
-     $     jjfam(-nfam:nfam),ivoid,ifpe,ntfun
+     $     jjfam(-nfam:nfam),ifpe,ntfun
       integer*4, external :: fork_worker,wait,itfdownlevel,itfuplevel,
      $     itgetfpe
       integer*8 iutm,jb
-      parameter (ivoid=9999)
-      integer*8 iprolog,iepilog,imr,inr,isl
-      data iprolog,iepilog,imr,inr,isl/0,0,0,0,0/
+      integer*4 , parameter:: ivoid=9999
+      integer*8 ,save :: iprolog=0,iepilog=0,imr=0,inr=0,isl=0
       associate (nvar=>flv%nvar)
 c     begin initialize for preventing compiler warning
       anux0=0.d0
@@ -55,6 +55,7 @@ c     end   initialize for preventing compiler warning
       endif
       ifpe=itgetfpe()
       call tclrfpe
+c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
       l=itfuplevel()
       call tfeeval(ktfsymbol+iprolog,kx,.true.,irtc)
       l=itfdownlevel()
@@ -116,10 +117,12 @@ c        call tfevals('Print["PROF-2: ",LINE["PROFILE","Q1"]]',kxx,irtc)
           anux0h=aint(twiss(nlat,0,mfitnx)/pi)
           anuy0h=aint(twiss(nlat,0,mfitny)/pi)
           anusum0=aint((twiss(nlat,0,mfitnx)+twiss(nlat,0,mfitny))/pi2)
-          anudiff0=twiss(nlat,0,mfitnx)/pi2-
-     $         aint(twiss(nlat,0,mfitnx)/pi2)-
-     $         twiss(nlat,0,mfitny)/pi2+
-     $         aint(twiss(nlat,0,mfitny)/pi2)
+          anudiff0=tfloor(
+     $         (twiss(nlat,0,mfitnx)-twiss(nlat,0,mfitny))/pi2)
+c          anudiff0=twiss(nlat,0,mfitnx)/pi2-
+c     $         aint(twiss(nlat,0,mfitnx)/pi2)-
+c     $         twiss(nlat,0,mfitny)/pi2+
+c     $         aint(twiss(nlat,0,mfitny)/pi2)
           if(optstat(0)%stabx .and. optstat(0)%staby
      $         .and. optstat(0)%stabz .or. chgini)then
             call twmov(1,twiss,nlat,ndim,.false.)
@@ -195,17 +198,17 @@ c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
                     twiss(1,1,mfitdx:mfitdpy )=
      $                   utwiss(mfitdx:mfitdpy ,i2,1)+dfam(1:4,ii)
                   else
-                    call tgetphysdispu(utwiss(1,i2,1),physd)
-                    physd1=(utwiss(mfitdx:mfitdpy,i2,1)
-     $                     -utwiss(mfitdx:mfitdpy,i3,1))/(dp(i2)-dp(i3))
-                    do i=1,4
-                      if(abs(physd(i)) .gt. abs(physd1(i)))then
-                        physd(i)=physd1(i)
-                      endif
-                    enddo
+c                    call tgetphysdispu(utwiss(1,i2,1),physd)
+c                    physd1=(utwiss(mfitdx:mfitdpy,i2,1)
+c     $                     -utwiss(mfitdx:mfitdpy,i3,1))/(dp(i2)-dp(i3))
+c                    do i=1,4
+c                      if(abs(physd(i)) .gt. abs(physd1(i)))then
+c                        physd(i)=physd1(i)
+c                      endif
+c                    enddo
                     twiss(1,1,mfitdx:mfitdpy)=
      $                   utwiss(mfitdx:mfitdpy,i2,1)
-     $                   +(dp(ii)-dp(i2))*physd
+c     $                   +(dp(ii)-dp(i2))*physd
 c                    if(ii .eq. nfr)then
 c                      write(*,'(a,1p10g12.4)')'tffscalc ',
 c     $                     twiss(1,1,mfitdx:mfitdpy),
@@ -231,10 +234,13 @@ c                    endif
               anuyi=aint(twiss(nlat,1,mfitny)/pi2)
               anusumi=aint((twiss(nlat,1,mfitnx)
      $             +twiss(nlat,1,mfitny))/pi2)
-              anudiffi=twiss(nlat,1,mfitnx)/pi2-
-     $             aint(twiss(nlat,1,mfitnx)/pi2)-
-     $             twiss(nlat,1,mfitny)/pi2+
-     $             aint(twiss(nlat,1,mfitny)/pi2)
+              anudiffi=tfloor((twiss(nlat,1,mfitnx)
+     $             -twiss(nlat,1,mfitny))/pi2)
+c              anudiffi=twiss(nlat,1,mfitnx)/pi2-
+c     $             aint(twiss(nlat,1,mfitnx)/pi2)-
+c     $             twiss(nlat,1,mfitny)/pi2+
+c     $             aint(twiss(nlat,1,mfitny)/pi2)
+c              write(*,*)'tffscalc ',anudiffi,anudiff0
               optstat(ii)%stabx=optstat(ii)%stabx .and. (fam .or.
      $             (.not. intres .or. anuxi .eq. anux0) .and.
      $             (.not. halfres .or. anuxih .eq. anux0h) .and.

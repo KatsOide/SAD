@@ -113,7 +113,8 @@ struct LM_TABLE *lm_table = NULL;
 
 /* allocator initializer MUST be called with rlist(0) at first */
 /* call lminit(rlist(0), alignment_size) */
-void lminit_(real8 *rlist0, const integer4 *align) {
+void lminit_(real8 *rlist0, const integer4 *align, char *pname0, integer4 *lpname0, 
+             integer4 *idtype0, integer8 *idval0) {
   size_t bits;
 
   if(lm_table != NULL) {
@@ -152,6 +153,11 @@ void lminit_(real8 *rlist0, const integer4 *align) {
   lm_table->bits   = sizeof(ptrdiff_t) * CHAR_BIT - bits;
   lm_table->offset = ((const char *)rlist0 - (const char *)lm_table);
   lm_table->offset &= (lm_table->align - 1);
+
+  lm_table->pname0 = pname0; /* Copy reference pointer */
+  lm_table->lpname0 = lpname0; /* Copy reference pointer */
+  lm_table->idtype0 = idtype0; /* Copy reference pointer */
+  lm_table->idval0 = idval0; /* Copy reference pointer */
 
   DB1(fprintf(stderr, "lminit: rlist0=%p align=%"PRIuSIZE_T" bits=%"PRIuSIZE_T" offset=%"PRIuPTR"\n",
 	      (void*)lm_table->rlist0, lm_table->align,

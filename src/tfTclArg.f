@@ -78,7 +78,7 @@ c        write(*,*)'unicode ',buf(1:m)
       type (sad_string), pointer :: str,stri,strj
       integer*8 kai,kti,kih,kaih,kaj
       integer*4 isp1,irtc,i,isp0,nc,j,isp3,isp00,isp2
-      logical*4 tfsamesymbolqk,single,full,ev,list,ini
+      logical*4 single,full,ev,list,ini
       save isp00
       integer*8 ifwidget,iftkpathname,iflabel,ifstring
       data ifwidget,iftkpathname,iflabel,ifstring/0,0,0,0/
@@ -122,7 +122,7 @@ c        write(*,*)'unicode ',buf(1:m)
             isp=isp3
             if(irtc .ne. 0)then
               go to 9000
-            elseif(.not. ktfstringqd(kx,str))then
+            elseif(.not. ktfstringq(kx,str))then
               irtc=-1
               go to 9000
             endif
@@ -159,7 +159,7 @@ c              call tfgetllstkall(klist(kai-3))
               isp=isp0
             endif
           elseif(ktfsymbolq(kih))then
-            if(tfsamesymbolqk(kih,ifwidget))then
+            if(tfsamesymbolq(kih,ifwidget))then
               isp0=isp
               isp=isp+1
               ktastk(isp)=ktfsymbol+iftkpathname
@@ -176,7 +176,7 @@ c              call tfgetllstkall(klist(kai-3))
                 go to 9000
               endif
               isp=isp0
-            elseif(tfsamesymbolqk(kih,ifstring))then
+            elseif(tfsamesymbolq(kih,ifstring))then
               isp0=isp
               call loc_dlist(kai,kl)
               call tfgetllstkall(kl)
@@ -320,9 +320,9 @@ c              call tfgetllstkall(klist(kai-3))
      $       kl%head%k .eq. ktfoper+mtfruledelayed) .and. 
      $       n .eq. 2)then
         k1=kl%dbody(1)
-        if(ktfsymbolqd(k1) .or. ktfoperqd(k1))then
+        if(ktfsymbolq(k1) .or. ktfoperq(k1))then
           k2=kl%dbody(2)
-          if(ktfrealq(k2) .or. ktfstringqd(k2) .or.
+          if(ktfrealq(k2) .or. ktfstringq(k2) .or.
      $         ktflistq(k2,k2l) .and.
      $         k2l%head%k .eq. ktfoper+mtflist)then
             isp3=isp
@@ -335,7 +335,7 @@ c              call tfgetllstkall(klist(kai-3))
               return
             endif
 c            call tfdebugprint(kx,'TkOptionLabel',2)
-            if(ktfstringqd(kx,str))then
+            if(ktfstringq(kx,str))then
               isp=isp3+1
               call getstringbuf(strb,0,.true.)
               call putstringbufb(strb,str%str(2:str%nch-1),
@@ -347,7 +347,7 @@ c            call tfdebugprint(kx,'TkOptionLabel',2)
                 call getstringbuf(strb,0,.true.)
                 do i=1,k2l%nl
                   k2i=k2l%dbody(i)
-                  if(ktfstringqd(k2i,str))then
+                  if(ktfstringq(k2i,str))then
                     call tftclstringbuf(strb,str%str,str%nch,full)
                   else
                     call tfconvstrb(strb,k2i,nc,
@@ -393,14 +393,14 @@ c              call tfdebugprint(k2,'== ',2)
       logical*4 function tfxftq()
       use tfstk
       implicit none
-      logical*4 tfsameqk,xft
+      logical*4 xft
       integer*8 kaxfs,kxxft
       save kaxfs,kxxft,xft
       data kaxfs /0/
       if(kaxfs .eq. 0)then
         kaxfs=ktfsymbolz('$FontSystem',11)-4
         kxxft=ktfstring+ktsalocb(0,'Xft',3)
-        xft=tfsameqk(klist(kaxfs),kxxft)
+        xft=tfsameq(klist(kaxfs),kxxft)
       endif
       tfxftq=xft
       return

@@ -50,10 +50,10 @@ c      write(*,*)'with ',irtc,kerror
       type (sad_namtbl), pointer :: nam
       type (sad_string), pointer :: str
       integer*4 nc
-      if(ktfsymbolqd(k,sym))then
+      if(ktfsymbolq(k,sym))then
         call sym_namtbl(sym,nam)
         str=>nam%str
-      elseif(.not. ktfstringqd(k,str))then
+      elseif(.not. ktfstringq(k,str))then
         tfgetstrs=' '
         nc=-1
         return
@@ -77,8 +77,8 @@ c      write(*,*)'with ',irtc,kerror
       type (sad_namtbl), pointer :: nam
       integer*4 nc
       character*(*) str
-      if(ktfstringqd(k,ks))then
-      elseif(ktfsymbolqd(k,sym))then
+      if(ktfstringq(k,ks))then
+      elseif(ktfsymbolq(k,sym))then
         call loc_namtbl(sym%loc,nam)
         ks=>nam%str
       else
@@ -119,7 +119,7 @@ c      write(*,*)'with ',irtc,kerror
       type (sad_string), pointer :: str
       character*(*) name
       k=kxsymbolv(name,len_trim(name))
-      if(ktfstringqd(k,str))then
+      if(ktfstringq(k,str))then
         tfgetstrv(1:str%nch)=str%str(1:str%nch)
         tfgetstrv(str%nch+1:)=' '
       else
@@ -158,7 +158,7 @@ c     $     buffer(istop-nc:istop-1)
       if(nc .le. 0)then
         go to 1
       endif
-      if(ktfstringqd(kx,str))then
+      if(ktfstringq(kx,str))then
         nc=min(str%nch,len(word))
         word(1:nc)=str%str(1:nc)
       else

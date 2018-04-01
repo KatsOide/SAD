@@ -46,7 +46,7 @@
      1              'Entrance',sa,ss,es,
      $              .false.,.true.,outfl)
       else
-        call tinip(np,x,px,y,py,z,g,dv,emx,emz,codin,dvfs,cmplot)
+        call tinip(np,x,px,y,py,z,g,dv,emx,emz,codin,dvfs,.false.)
       endif
       if(.not. trpt)then
         call tclr(sjx,np0)
@@ -67,7 +67,7 @@
         kal=ktadaloc(0,2)
         klist(kal)=ktfsymbol+ktfcopy1(kaf)
       endif
-      cmplot1=cmplot .and. jpcm .ne. 0
+      cmplot1=jpcm .ne. 0
       fourie1=fourie .and. lsp .gt. 1
       nsmear=max(100,nturn/50)/100*100
       do n=1,nturn+1

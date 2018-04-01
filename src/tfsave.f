@@ -169,6 +169,7 @@ c                valvar(k)=rlist(j+ivvar(k))
             enddo
             do k=1,flv%ntouch
               if(itouchele(k) .eq. i)then
+c                write(*,*)'tfrst-itouch ',k,i,itouchv(k)
                 call tfvcopycmp(cmps,cmp,itouchv(k),1.d0)
 c                cmp%value(itouchv(k))=rlist(j+itouchv(k))
               endif

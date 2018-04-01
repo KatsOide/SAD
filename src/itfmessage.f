@@ -16,7 +16,7 @@
       isp1=isp+1
       ktastk(isp1)=ktfoper+mtfmessagename
       k1=kxsymbolz(mess(1:i-1),i-1,symd)
-      if(ktfoperqd(symd%value))then
+      if(ktfoperq(symd%value))then
         dtastk(isp1+1)=symd%value
       else
         dtastk(isp1+1)=k1
@@ -68,7 +68,7 @@
         endif
         itfmessage=-1
         call tflocal1(dm%k)
-      elseif(ktfstringqd(ks))then
+      elseif(ktfstringq(ks))then
         call tflocal(kerror)
         kerror=ktflist+ktadaloc(0,4,klx)
         klx%rbody(1)=dble(level)

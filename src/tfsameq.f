@@ -1,164 +1,3 @@
-      recursive logical*4 function tfsameqk(ka,kp) result(lx)
-      use tfstk
-      use tfcode
-      use iso_c_binding
-      implicit none
-      type (sad_dlist), pointer :: kla,klp
-      type (sad_symbol), pointer :: syma,symp
-      type (sad_string), pointer :: stra,strp
-      type (sad_pat), pointer :: pata,patp
-      integer*8 nc,ka,kp
-      logical*4 tfsamelistqo,tfsamesymbolqk,tfsamesymbolqo
-      if(ka .eq. kp)then
-        lx=.true.
-        return
-      endif
-      lx=.false.
-      if(ktfrealq(ka) .or. ktfoperq(ka) .or.
-     $     ktftype(ka) .ne. ktftype(kp))then
-        return
-      endif
-      if(ktfsymbolq(ka,syma))then
-        call loc_sad(ktfaddr(kp),symp)
-        lx=tfsamesymbolqo(syma,symp)
-      elseif(ktfstringq(ka,stra))then
-        call loc_sad(ktfaddr(kp),strp)
-        nc=stra%nch
-        if(nc .eq. strp%nch)then
-          lx=stra%str(1:nc) .eq. strp%str(1:nc)
-        endif
-      elseif(ktflistq(ka,kla))then
-        call loc_sad(ktfaddr(kp),klp)
-        if(kla%nl .eq. klp%nl)then
-          lx=tfsamelistqo(kla,klp)
-        endif
-      elseif(ktfpatq(ka,pata))then
-        call loc_sad(ktfaddr(kp),patp)
-        if(.not. tfsameqk(pata%expr%k,patp%expr%k))then
-          return
-        endif
-        if(.not. tfsameqk(pata%head%k,patp%head%k))then
-          return
-        endif
-        if(.not. tfsameqk(pata%default%k,patp%default%k))then
-          return
-        endif
-        lx=tfsamesymbolqk(ktfaddr(pata%sym%alloc),
-     $       ktfaddr(patp%sym%alloc))
-      endif
-      return
-      end
-
-      logical*4 function tfsameqd(ka,kp)
-      use tfstk
-      implicit none
-      type (sad_descriptor) ka,kp
-      logical*4 tfsameqk
-      tfsameqd=tfsameqk(ka%k,kp%k)
-      return
-      end
-
-      logical*4 function tfsamestringqk(ka1,kp1)
-      use tfstk
-      implicit none
-      type (sad_string), pointer :: stra,strp
-      integer*8 ka1,kp1
-      logical*4 tfsamestringqo
-      if(ktfaddr(ka1) .eq. ktfaddr(kp1))then
-        tfsamestringqk=.true.
-      else
-        call loc_sad(ktfaddr(ka1),stra)
-        call loc_sad(ktfaddr(kp1),strp)
-        tfsamestringqk=tfsamestringqo(stra,strp)
-      endif
-      return
-      end
-
-      logical*4 function tfsamesymbolqk(ka1,kp1)
-      use tfstk
-      implicit none
-      type (sad_symbol) ,pointer :: syma,symp
-      integer*8 ka1,kp1,ka,kp
-      logical*4 tfsamesymbolqo
-      ka=ktfaddr(ka1)
-      kp=ktfaddr(kp1)
-      if(ka .eq. kp)then
-        tfsamesymbolqk=.true.
-      elseif(ka .eq. 0 .or. kp .eq. 0)then
-        tfsamesymbolqk=.false.
-      else
-        call loc_sad(ka,syma)
-        call loc_sad(kp,symp)
-        tfsamesymbolqk=tfsamesymbolqo(syma,symp)
-      endif
-      return
-      end
-
-      logical*4 function tfsamesymbolqd(k1,k2)
-      use tfstk
-      implicit none
-      type (sad_descriptor) k1,k2
-      logical*4 tfsamesymbolqk
-      tfsamesymbolqd=tfsamesymbolqk(k1%k,k2%k)
-      return
-      end
-
-      logical*4 function tfsamestringqo(sa,sp)
-      use tfcode
-      implicit none
-      type(sad_string) sa,sp
-      tfsamestringqo=sa%nch .eq. sp%nch .and.
-     $     sa%str(:sa%nch) .eq. sp%str(:sp%nch)
-      return
-      end
-
-      logical*4 function tfsamesymbolqo(sa,sp)
-      use tfcode
-      implicit none
-      type(sad_symbol) sa,sp
-      tfsamesymbolqo=sa%loc .eq. sp%loc .and.
-     $     max(0,sa%gen) .eq. max(0,sp%gen)
-      return
-      end
-
-      logical*4 function tfsamelistqo(lista,listp)
-      use tfstk
-      implicit none
-      type (sad_dlist) lista,listp
-      type (sad_descriptor) kai,kpi
-      integer*8 kaai,kapi
-      integer*4 i,m
-      logical*4 tfsameqk
-      tfsamelistqo=.false.
-      m=lista%nl
-      if(m .ne. listp%nl)then
-        return
-      endif
-      do i=0,m
-        kai=lista%dbody(i)
-        kpi=listp%dbody(i)
-        if(kai%k .ne. kpi%k)then
-          if(ktfobjq(kai))then
-            if(tfsameqk(kai,kpi))then
-              kaai=ktfaddr(kai%k)
-              kapi=ktfaddr(kpi%k)
-              if(ilist(1,kapi-1) .ge. ilist(1,kaai-1))then
-                call tflocal1(kai)
-                lista%dbody(i)=dtfcopy1(kpi)
-              else
-                call tflocal1(kpi)
-                listp%dbody(i)=dtfcopy1(kai)
-              endif
-              cycle
-            endif
-          endif
-          return
-        endif
-      enddo
-      tfsamelistqo=.true.
-      return
-      end
-
       recursive logical*4 function tfnearlysameqf(k1,k2,re,ae)
      $     result(lx)
       use tfstk
@@ -168,20 +7,19 @@
       integer*4 i,n1
       real*8 re,ae,s,d
       complex*16 cx1,cx2
-      logical*4 tfsameqd
       lx=.false.
-      if(tfnumberqd(k1,cx1))then
-        if(tfnumberqd(k2,cx2))then
+      if(tfnumberq(k1,cx1))then
+        if(tfnumberq(k2,cx2))then
           s=abs(cx1)+abs(cx2)
           d=abs(cx2-cx1)
           if(d .le. s*re .or. d .le. ae)then
             lx=.true.
           endif
         endif
-      elseif(tfnumberqd(k2))then
+      elseif(tfnumberq(k2))then
       elseif(k1%k .ne. k2%k)then
       elseif(ktfnonlistq(k1,kl1))then
-        lx=tfsameqd(k1,k2)
+        lx=tfsameq(k1,k2)
       elseif(ktfnonlistq(k2,kl2))then
       else
         n1=kl1%nl
@@ -219,52 +57,13 @@
       return
       end
 
-      logical*4 function tfexprqk(k)
-      use tfstk
-      implicit none
-      type (sad_descriptor) k
-      type (sad_dlist), pointer :: kl
-      tfexprqk=ktflistq(k,kl) .and. kl%head%k .ne. ktfoper+mtflist
-      return
-      end
-
-      logical*4 function tfsameheadqk(k1,k2)
-      use tfstk
-      implicit none
-      integer*8 k1,k2
-      logical*4 tfsameqk
-      tfsameheadqk=tfsameqk(klist(ktfaddr(k1)),klist(ktfaddr(k2)))
-      return
-      end
-
-      recursive logical*4 function tfconstqk(k) result(lx)
-      use tfstk
-      implicit none
-      type (sad_descriptor) k
-      type (sad_dlist), pointer :: kl
-      type (sad_symdef), pointer ::symd
-      type (sad_pat), pointer :: pat
-      logical*4 tfconstlistqo
-      lx=.true.
-      if(ktfsymbolqdef(k%k,symd))then
-        lx=ktfconstantsymq(symd%sym) .and.
-     $       symd%value%k .eq. ktfsymbol+ktfaddrd(k)
-     $       .and. symd%upval .eq. 0
-      elseif(ktflistq(k,kl))then
-        lx=tfconstlistqo(kl)
-      elseif(ktfpatqd(k,pat))then
-        lx=tfconstqk(pat%expr)
-      endif
-      return
-      end
-
       logical*4 function tfconstlistqo(list)
       use tfstk
       implicit none
       type (sad_dlist) list
       type (sad_descriptor) kh
       integer*4 i
-      logical*4 tfconstqk,tfconstheadqk,tfseqqo,nr
+      logical*4 tfconstheadqk,tfseqqo,nr
       if(iand(lnoconstlist,list%attr) .ne. 0)then
         tfconstlistqo=.false.
         return
@@ -285,7 +84,7 @@
       elseif(nr)then
         if(iand(kconstarg,list%attr) .eq. 0)then
           do i=1,list%nl
-            if(.not. tfconstqk(list%dbody(i)%k))then
+            if(.not. tfconstq(list%dbody(i)%k))then
               tfconstlistqo=.false.
               list%attr=ior(lnoconstlist,list%attr)
               return
@@ -313,15 +112,15 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       type (sad_pat), pointer :: pat
       type (sad_symdef), pointer :: symd
       integer*8 ka
-      logical*4 tfconstlistqo,tfconstqk
+      logical*4 tfconstlistqo
       tfconstheadqk=.true.
-      if(ktfoperqd(k,ka))then
+      if(ktfoperq(k,ka))then
         if(ka .le. mtfend)then
           tfconstheadqk=constop(ka)
         else
           tfconstheadqk=.false.
         endif
-      elseif(ktfstringqd(k))then
+      elseif(ktfstringq(k))then
         tfconstheadqk=.false.
       elseif(ktfsymbolqdef(k%k,symd))then
         tfconstheadqk=ktfconstantsymq(symd%sym) .and.
@@ -338,8 +137,8 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
             tfconstheadqk=.false.
           endif
         endif
-      elseif(ktfpatqd(k,pat))then
-        tfconstheadqk=tfconstqk(pat%expr%k)
+      elseif(ktfpatq(k,pat))then
+        tfconstheadqk=tfconstq(pat%expr%k)
       endif
       return
       end
@@ -381,7 +180,6 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       list%attr=ior(iadv,knoseqarg)
       return
       end
-
 
       subroutine tfcomplexlistqkf(isp1,vx,irtc)
       use tfstk
@@ -571,22 +369,12 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       return
       end
 
-      logical function tfinequalityqk(k)
-      use tfstk
-      implicit none
-      type (sad_descriptor) k
-      type (sad_dlist), pointer :: kl
-      tfinequalityqk=ktflistq(k,kl) .and.
-     $     kl%head%k .eq. ktfoper+mtfinequality
-      return
-      end
-
       logical*4 function tfcontextqk(k)
       use tfstk
       implicit none
       type (sad_descriptor) k
       type (sad_symbol), pointer :: sym
-      tfcontextqk=ktfsymbolqd(k,sym) .and. sym%gen .eq. -3
+      tfcontextqk=ktfsymbolq(k,sym) .and. sym%gen .eq. -3
       return
       end
 
@@ -596,21 +384,26 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       type (sad_descriptor) k
       type (sad_dlist), pointer ::kl
       integer*4 i
-      if(ktfrefq(k%k))then
+      if(ktfrefq(k))then
         l=.true.
       else
         l=.false.
-        if(tflistq(k,kl))then
-          if(kl%nl .gt. 0)then
-            do i=1,kl%nl
-              if(.not. tfrefq(kl%dbody(i)))then
-                return
-              endif
-            enddo
-            l=.true.
-          endif
+        if(tflistq(k,kl) .and. kl%nl .gt. 0)then
+          do i=1,kl%nl
+            if(.not. tfrefq(kl%dbody(i)))then
+              return
+            endif
+          enddo
+          l=.true.
         endif
       endif
+      return
+      end
+
+      logical*4 function tfsamesymbolqk(k1,k2)
+      use tfstk, tf => tfsamesymbolqk
+      integer*8 k1,k2
+      tfsamesymbolqk=tf(k1,k2)
       return
       end
 

@@ -20,7 +20,7 @@
       beamin=0.d0
       if(narg .eq. 3)then
         if(tflistq(ktastk(isp),kl))then
-          if(tfreallistqd(kl%dbody(1),kl1))then
+          if(tfreallistq(kl%dbody(1),kl1))then
             if(kl1%nl .ne. 6)then
               irtc=itfmessage(9,'General::wrongval',
      $      '"{x, px, y, py, z, dp} for InitialOrbit"')
@@ -28,7 +28,7 @@
             endif
             codin=kl1%rbody(1:6)
           endif
-          if(tfreallistqd(kl%dbody(2),kl2))then
+          if(tfreallistq(kl%dbody(2),kl2))then
             beamin=kl2%rbody(1:21)
           endif
         endif

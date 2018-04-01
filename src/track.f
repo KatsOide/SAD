@@ -41,6 +41,7 @@ c        write(*,*)'track-0.4'
      $       'NetResidual=0;StabilityLevel=0;'//
      $       'FFS$NumericalDerivative=False;'//
      $       'DP=0.01;DPM=0;XIX=0;XIY=0;TITLE="";CASE="";'//
+     $       'NFAMP=3;'//
      $       'DP0:=LINE["DDP",1];(DP0=v_)^:=(LINE["DDP",1]=v);'//
      $       'Protect[DP0];'//
      $       'System$Names=Select[Names["*"],'//
@@ -98,7 +99,7 @@ c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       emiout=igetgl1('$EMIOUT$') .ne. 0
       dapert=igetgl1('$DAPERT$') .ne. 0
       rfluct=igetgl1('$FLUC$'  ) .ne. 0
-      cmplot=igetgl1('$CMPLOT$') .ne. 0
+      k64   =igetgl1('$K64$'   ) .ne. 0
       fourie=igetgl1('$FOURIE$') .ne. 0
       smearp=igetgl1('$SMEAR$' ) .ne. 0
       geocal=igetgl1('$GEOCAL$' ) .ne. 0
@@ -139,10 +140,10 @@ c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       call tclrpara(elatt,nlat-1)
       call tclrfpe
       write(*,'(a)')
-     1' RFSW RADCOD RAD   FLUC INTRA '//
-     1' POL   COD  DAPER EMIOU CMPLO FOURI SMEAR'
+     1' RFSW RADCOD RAD  FLUC  INTRA'//
+     1' POL   COD  DAPER EMIOU K64   FOURI SMEAR'
       write(*,9001)rfsw,radcod,rad,rfluct,
-     1             intra,calpol,calcod,dapert,emiout,cmplot,fourie,
+     1             intra,calpol,calcod,dapert,emiout,k64,fourie,
      1             smearp
 9001  format(1x,12(L3,3X))
       if(nturn .eq. 0)then
@@ -170,8 +171,7 @@ c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       endif
       nturn=abs(nturn)
       ikptbl=ktaloc(np0*3)
-      call tspini(iparam+4,ilist(1,ikptbl),.true.)
-c      call tplini(iparam+5,ilist(1,ikptbl))
+      call tkptblini(ilist(1,ikptbl))
       ig=ktaloc(np0)
       ipz=ktaloc(np0)
       if(.not. dapert .or. trpt)then
@@ -259,7 +259,7 @@ c      call tplini(iparam+5,ilist(1,ikptbl))
       call isetgl1('$EMIOUT$',emiout)
       call isetgl1('$DAPERT$',dapert)
       call isetgl1('$FLUC$',rfluct)
-      call isetgl1('$CMPLOT$',cmplot)
+      call isetgl1('$K64$',k64)
       call isetgl1('$FOURIE$',fourie)
       call isetgl1('$SMEAR$',smearp)
       call isetgl1('$GEOCAL$',geocal)

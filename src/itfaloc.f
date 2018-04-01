@@ -35,19 +35,6 @@
       ktfalocr=k1+2
       return
       end
-      
-      integer*8 function ktzaloc(ktype,nw)
-      use tfstk
-      implicit none
-      integer*4 nw
-      integer*8 ktype,k1
-      k1=ktaloc(nw+2)
-      ilist(2,k1-1)=0
-      klist(k1)=ktype
-      ilist(1,k1+1)=0
-      ktzaloc=k1+2
-      return
-      end
 
       integer*8 function ktlookupc(name,nc,icont,cre)
       use tfstk

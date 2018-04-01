@@ -42,7 +42,7 @@
               go to 9500
             endif
             k1=listi%dbody(1)
-            if(.not. ktfsymbolqd(k1,name))then
+            if(.not. ktfsymbolq(k1,name))then
               go to 9500
             endif
             call tfeevalref(listi%dbody(2),k1,irtc)

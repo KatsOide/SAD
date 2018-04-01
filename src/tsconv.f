@@ -78,10 +78,14 @@ c        pzi=p-(pxi**2+pyi**2)/(p+sqrt((p-pyi)*(p+pyi)-pxi**2))
       trans1(5,4)= zf/pzf*(           -p  /pzf*dpzfdpy)
       trans1(5,6)= zf/pzf*(1.d0       -p  /pzf*dpzfdp )
       if(ent)then
+c        write(*,'(a,1p4g15.7)')'tsconv-in  ',
+c     $       xi,zf,trans1(4,4),trans1(3,4)
         cod(1)=xf-pxf/pzf*zf+rlist(l1+3)
         cod(3)=yf-pyf/pzf*zf+rlist(l1+4)
         cod(5)=cod(5)+p/pzf*zf+rlist(l1+5)
       else
+c        write(*,'(a,1p4g15.7)')'tsconv-out ',
+c     $       xi,zf,trans1(4,4),trans1(3,4)
         cod(1)=xf-pxf/pzf*zf
         cod(3)=yf-pyf/pzf*zf
         cod(5)=cod(5)+p/pzf*zf+ds-dvemit*ds

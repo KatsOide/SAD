@@ -32,9 +32,10 @@ c
         if (ttype .eq. ttypID) then
           idx=hsrchz(token(:slen))
           if (idtype(idx) .eq. icLINE) then
-            if (ilist(2,idval(idx)) .le. 0) then
-              call expnln(idx)
-            endif
+            call expln(idx)
+c            if (ilist(2,idval(idx)) .le. 0) then
+c              call expnln(idx)
+c            endif
               call temp(ilist(2,idval(idx)))
           else
             call errmsg('dotemp',

@@ -65,15 +65,16 @@ c     begin initialize for preventing compiler warning
       ipr=0
 c     end   initialize for preventing compiler warning
       if(damp)then
-        dampx=1.d0
-        dampy=1.d0
-        dampz=1.d0
-      else
         t0=pi2/omega0
         dampx=exp(-t0/taurdx)
         dampy=exp(-t0/taurdy)
         dampz=exp(-t0/taurdz)
+      else
+        dampx=1.d0
+        dampy=1.d0
+        dampz=1.d0
       endif
+c      write(*,*)'trackd0 ',damp,dampx,t0,omega0,taurdx
       ncons=max(1,nint(rgetgl1('DAPWIDTH')))
       trpt=.false.
       call tsetdvfs

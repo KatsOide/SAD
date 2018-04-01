@@ -109,9 +109,10 @@ c.......for debug
 c     print *,'argument for track',pname(lptr),ilist(2,idval(lptr))
 c.......end debug
 c      write(*,*)'ActTra-2.2 ',lptr,ilist(2,idval(lptr))
-         if (ilist(2,idval(lptr)) .le. 0) then
-            call expnln(lptr)
-         endif
+        call expln(lptr)
+c         if (ilist(2,idval(lptr)) .le. 0) then
+c            call expnln(lptr)
+c         endif
 c       write(*,*)'ActTra-2.3 ',lptr,idval(ilist(2,idval(lptr)))
          call filaux(lptr)
          pexln=idval(ilist(2,idval(lptr)))

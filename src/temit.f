@@ -1,5 +1,6 @@
       module temw
       implicit none
+
       private
 
       real(8), public :: r(6, 6) = RESHAPE((/
@@ -25,7 +26,9 @@ c     Inverse matrix of r
       real(8), public :: emx, emy, emz
       logical*4, public :: normali
 
-      public :: tfetwiss,etwiss2ri,tfnormalcoord
+      real*8 , parameter :: toln=0.1d0
+      public :: tfetwiss,etwiss2ri,tfnormalcoord,toln
+
       contains
       subroutine tfetwiss(r,cod,twiss,normi)
       use ffs

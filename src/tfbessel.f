@@ -52,7 +52,7 @@
           enddo
           kx=kxmakelist(isp2)
           isp=isp0
-        elseif(tfnumberqd(k2))then
+        elseif(tfnumberq(k2))then
           isp0=isp
           call tfgetllstkall(kl1)
           isp2=isp

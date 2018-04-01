@@ -645,14 +645,19 @@ cc for spch
       use macvar
       use macfile
       use tfmem, only:ktaloc
+      use tfmem, only:maxstack
       implicit none
 c
       integer*4 idummy,idummy1,hsrch,i
       integer*8 ktcaloc
+c      character*132 stacksiz
 c     external doline
       external doprin, doexpn, doread, dolist, docod, dostop, dotwis
       external dooffl, doonfl,dorvrs
       external ActLie,ActTra,ActPlt,ActGRA
+
+      allocate(kytbl(0:kwMAX,0:icMXEL))
+      kytbl=0
 
        call defglb('$PLOT$',icGLI,idummy)
        call IsetGL('$PLOT$',0,idummy)
@@ -1626,8 +1631,11 @@ c
        idummy=sethtb('uniform ',icRAND,2 )
        idummy=sethtb('UNIFORM ',icRAND,2 )
 c
-       call defglb('STACKSIZ',icGLI,idummy)
-       call IsetGL('STACKSIZ',2**21,idummy)
+       call defglb('STACKSIZ',icGLR,idummy)
+c       call get_environment_variable('SAD_STACKSIZ',stacksiz)
+c       read(stacksiz,'(i20)')iss
+c       call RsetGL('STACKSIZ',max(2d0**18,dble(iss)),idummy)
+       call rsetGL('STACKSIZ',dble(maxstack),idummy)
        call defglb('$SEED',icGLR,idummy)
        call RsetGL('$SEED',17.d0,idummy)
        call defglb('SEED',icGLR,idummy)
@@ -1766,7 +1774,7 @@ c
        call defflg('POL'  ,FLAGOF)
        call defflg('DAPERT',FLAGOF)
        call defflg('FLUC',FLAGON)
-       call defflg('CMPLOT',FLAGOF)
+       call defflg('K64' ,FLAGON)
        call defflg('FOURIE',FLAGOF)
        call defflg('SMEAR',FLAGON)
        call defflg('GEOCAL',FLAGON)

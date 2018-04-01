@@ -1,7 +1,7 @@
       module multa
         integer*4, parameter :: nmult=21
         logical*4 :: gknini=.true.
-        real*8 gkn(0:nmult,0:nmult)
+        real*8 :: gkn(0:nmult,0:nmult)=0.d0
 
         contains
         subroutine gkninit
@@ -13,7 +13,6 @@
             gkn(n,k)=gkn(n,k-1)
      $           *dble((2*k-3)*(2*k+1))/8.d0/dble(k*(k+n+1))
           enddo
-          gkn(n,nmult-n+1:nmult)=0.d0
         enddo
         gknini=.false.
         return
@@ -127,6 +126,7 @@
       enddo
       als=0.d0
       do n=1,ndiv
+c        write(*,*)'tmulta-1 ',n,x(1),px(1)
         if(n .eq. 1)then
           w=phin*.5d0-psi1
           cosw=cos(w)
@@ -168,13 +168,14 @@
      1         enarad,als,als+aln,al,eps0)
           als=als+aln
         endif
+c        write(*,*)'tmulta-2 ',n,x(1),px(1)
         do i=1,np
           pr=(1.d0+g(i))
           cx1=dcmplx(x(i),y(i))
           csl=(0.d0,0.d0)
           csr=(0.d0,0.d0)
           r=rho0+x(i)
-          rk(0)=sqrt(r/rho0)
+          rk(0)=1.d0+sqrt1(x(i)/rho0)
           do k=1,nmult-nmmin
             rk(k)=rk(k-1)/r
           enddo
@@ -185,7 +186,7 @@
               m1=m-k
               cg=gkn(m1,k)*rk(k)*akn(m1)
               cl=cl+(m+1)*cg
-              cr=cr+(.5-k)*cg
+              cr=cr+(.5d0-k)*cg
             enddo
             csl=csl*cx1+cl
             csr=csr*cx1+cr

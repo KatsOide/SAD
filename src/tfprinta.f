@@ -46,7 +46,7 @@
         call tfreseterror
         tfgetform=' '
       else
-        if(ktfstringqd(ks,str))then
+        if(ktfstringq(ks,str))then
           if(str%nch .le. 0)then
             tfgetform=' '
           else

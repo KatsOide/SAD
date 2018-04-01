@@ -243,9 +243,9 @@ c      write(*,*)'tfinitn 1.1 ',itfcontroot
         return
       endif
       k=dtastk(isp)
-      if(ktfoperqd(k,ka))then
+      if(ktfoperq(k,ka))then
         call loc_sad(klist(ifunbase+ka),sym)
-      elseif(.not. ktfsymbolqd(k,sym))then
+      elseif(.not. ktfsymbolq(k,sym))then
         irtc=itfmessage(9,'General::wrongtype','"Symbol"')
         return
       endif
@@ -276,10 +276,10 @@ c      write(*,*)'tfinitn 1.1 ',itfcontroot
       isp2=ispopt-1
       LOOP_I: do i=isp1+1,isp2
         ki=dtastk(i)
-        if(ktfsymbolqd(ki,sym))then
+        if(ktfsymbolq(ki,sym))then
           call sym_symstr(sym,str)
-        elseif(ktfstringqd(ki,str))then
-        elseif(ktfoperqd(ki,kai))then
+        elseif(ktfstringq(ki,str))then
+        elseif(ktfoperq(ki,kai))then
           if(kai .eq. mtfnull)then
             if(i .eq. isp1+1)then
               ic=0
@@ -293,9 +293,9 @@ c      write(*,*)'tfinitn 1.1 ',itfcontroot
             if(irtc .ne. 0)then
               return
             endif
-            if(ktfsymbolqd(k,sym))then
+            if(ktfsymbolq(k,sym))then
               call sym_symstr(sym,str)
-            elseif(ktfoperqd(ki,kai))then
+            elseif(ktfoperq(ki,kai))then
               if(kai .eq. mtfnull)then
                 if(i .eq. isp1+1)then
                   ic=0
@@ -303,7 +303,7 @@ c      write(*,*)'tfinitn 1.1 ',itfcontroot
                 cycle LOOP_I
               endif
               call loc_symstr(klist(klist(ifunbase+kai)),str)
-            elseif(.not. ktfstringqd(k,str))then
+            elseif(.not. ktfstringq(k,str))then
               go to 9000
             endif
           else

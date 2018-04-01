@@ -79,7 +79,7 @@
      $     kwDVOLT=kwF2K1B+1,kwPROF=kwDVOLT+1,
      $       kwNPARAM=kwPROF+1,kwMAX=kwNPARAM+1
 
-      integer*4 ::  kytbl(0:kwMAX,0:icMXEL)=0
+      integer*4 , allocatable :: kytbl(:,:)
       integer*4, pointer :: kyindex(:,:),kyindex1(:,:)
       integer*4 INDMAX
 
@@ -98,7 +98,7 @@
         kyindex=0
         kyindex1=0
         do i=icDRFT,icMXEL
-          do k=1,kwMAX-1
+          do k=1,kwMAX-2
             id=kytbl(k,i)
             if(id .ne. 0)then
               if(kyindex(id,i) .eq. 0)then
@@ -328,10 +328,9 @@ c     PDG2014:         1.380 6488(13) x 10^-23 J/K
       parameter (nbuf=1024)
       integer*4 ncprolog
       character*128 prolog
-      integer*4 ifd(nbuf)
-      integer*8 lbuf(nbuf),mbuf(nbuf),itbuf(nbuf)
-      integer*8 ibuf(nbuf),lenbuf(nbuf)
-      data lbuf/nbuf*0/,ibuf/nbuf*0/,mbuf/nbuf*0/,itbuf/nbuf*0/
+      integer*4 :: ifd(nbuf)=0
+      integer*8 :: lbuf(nbuf)=0,mbuf(nbuf)=0,itbuf(nbuf)=0,
+     $     ibuf(nbuf)=0,lenbuf(nbuf)=0
       type cbkshared
         integer*8, allocatable :: ca(:)
       end type
@@ -441,6 +440,7 @@ c     print *,token(:slen)
            call tfinitstk
            call dolin2(index,slen,ttype)
          else
+            call tfinitstk
            call dAssgn(token,slen,status)
            if (status .ne. 0) call errmsg('toplvl',
      &          'Unsupported function '//token(:slen)//'!',

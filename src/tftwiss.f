@@ -3,14 +3,15 @@
       use ffs
       use tffitcode
       use ffs_fit, only:nlist
+      use ffs_pointer, only:twiss
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: klx
+      type (sad_rlist), pointer :: ktl,kll
       integer*4 nkey
       parameter (nkey=mfitpzpy)
-      integer*8 ktatwissaloc,kax,kaxi,itoff
-      integer*4 isp1,irtc,narg,i,m,nc,j,
-     $     isp0,nd,kt,itfmessage,lenw
+      integer*8 kax,kaxi,itoff
+      integer*4 isp1,irtc,narg,i,m,nc,isp0,nd,kt,itfmessage,lenw
       real*8 ftwiss(28),pe(4),tfgettwiss,tphysdisp,tphysdispz
       logical*4 over,ref
       character*(MAXPNAME+16) keyword,tfgetstrs
@@ -34,12 +35,13 @@
         if(narg .eq. 1)then
           kax=ktadaloc(-1,nlat,klx)
           do i=1,nlat
-            kaxi=ktatwissaloc(0)
+            kaxi=ktatwissaloc(0,ktl)
             klx%dbody(i)%k=ktflist+kaxi
-            do j=1,ntwissfun
-              itoff=((2*ndim+1)*(j-1)+ndim)*nlat+iftwis+i-1
-              rlist(kaxi+i)=rlist(itoff)
-            enddo
+            ktl%rbody(1:ntwissfun)=twiss(i,0,1:ntwissfun)
+c            do j=1,ntwissfun
+c              itoff=((2*ndim+1)*(j-1)+ndim)*nlat+iftwis+i-1
+c              rlist(kaxi+j)=rlist(itoff)
+c            enddo
           enddo
         elseif(narg .eq. 2)then
           call tflinestk(dtastk(isp),narg,isp0,irtc)
@@ -47,13 +49,14 @@
             return
           endif
           if(isp .eq. isp0+1)then
-            kax=ktatwissaloc(-1)
+            kax=ktatwissaloc(-1,ktl)
             if(vstk2(isp) .eq. 0.d0)then
-              do j=1,ntwissfun
-                itoff=(2*ndim+1)*nlat*(j-1)+ndim*nlat+iftwis
-     $               +itastk(2,isp)-1
-                rlist(kax+j)=rlist(itoff)
-              enddo
+              ktl%rbody(1:ntwissfun)=twiss(itastk(2,isp),0,1:ntwissfun)
+c              do j=1,ntwissfun
+c                itoff=((2*ndim+1)*(j-1)+ndim)*nlat+iftwis
+c     $               +itastk(2,isp)-1
+c                rlist(kax+j)=rlist(itoff)
+c              enddo
             else
               call qtwissfrac(rlist(kax+1),itastk(2,isp),
      $             vstk2(isp),over)
@@ -62,14 +65,16 @@
             m=isp-isp0
             kax=ktadaloc(-1,m,klx)
             do i=1,m
-              kaxi=ktatwissaloc(0)
+              kaxi=ktatwissaloc(0,ktl)
               klx%dbody(i)%k=ktflist+kaxi
               if(vstk2(isp0+i) .eq. 0.d0)then
-                do j=1,ntwissfun
-                  itoff=(2*ndim+1)*nlat*(j-1)+ndim*nlat+iftwis
-     $                 +itastk(2,isp0+i)-1
-                  rlist(kaxi+j+1)=rlist(itoff)
-                enddo
+                ktl%rbody(1:ntwissfun)=
+     $               twiss(itastk(2,isp0+i),0,1:ntwissfun)
+c                do j=1,ntwissfun
+c                  itoff=((2*ndim+1)*(j-1)+ndim)*nlat+iftwis
+c     $                 +itastk(2,isp0+i)-1
+c                  rlist(kaxi+j+1)=rlist(itoff)
+c                enddo
               else
                 call qtwissfrac(rlist(kaxi+1),itastk(2,isp0+i),
      $               vstk2(isp0+i),over)
@@ -100,13 +105,14 @@
      $         ') is","to be name of optical function"')
         endif
         return
- 110    itoff=(2*ndim+1)*nlat*(kt-1)+ndim*nlat+iftwis
-        if(narg .eq. 1)then
-          kax=ktavaloc(-1,nlat)
+ 110    if(narg .eq. 1)then
+          kax=ktavaloc(-1,nlat,kll)
           if(kt .le. ntwissfun)then
             if(ref)then
-              rlist(kax+1:kax+nlat)=rlist(itoff:itoff+nlat-1)
+              kll%rbody(1:nlat)=twiss(1:nlat,0,kt)
+c              rlist(kax+1:kax+nlat)=rlist(itoff:itoff+nlat-1)
             else
+              itoff=((2*ndim+1)*(kt-1)+ndim)*nlat+iftwis
               do i=1,nlat
                 klist(kax+i)=ktfref+itoff+i-1
               enddo
@@ -114,12 +120,14 @@
           elseif(kt .ge. mfitpex .and. kt .le. mfitpepy)then
             do i=1,nlat
               call tgetphysdisp(i,pe)
-              rlist(kax+i)=pe(kt-mfitpex+1)
+              kll%rbody(i)=pe(kt-mfitpex+1)
+c              rlist(kax+i)=pe(kt-mfitpex+1)
             enddo
           elseif(kt .ge. mfitpzx .and. kt .le. mfitpzpy)then
             do i=1,nlat
               call tgetphysdispz(i,pe)
-              rlist(kax+i)=pe(kt-mfitpzx+1)
+              kll%rbody(i)=pe(kt-mfitpzx+1)
+c              rlist(kax+i)=pe(kt-mfitpzx+1)
             enddo
           endif
           kx%k=ktflist+kax
@@ -132,8 +140,10 @@
             if(vstk2(isp) .eq. 0.d0)then
               if(kt .le. ntwissfun)then
                 if(ref)then
-                  kx%k=klist(itoff+itastk(2,isp)-1)
+                  kx%x(1)=twiss(itastk(2,isp),0,kt)
+c                  kx%k=klist(itoff+itastk(2,isp)-1)
                 else
+                  itoff=((2*ndim+1)*(kt-1)+ndim)*nlat+iftwis
                   kx%k=ktfref+itoff+itastk(2,isp)-1
                 endif
               elseif(kt .ge. mfitpex .and. kt .le. mfitpepy)then
@@ -153,20 +163,23 @@ c     $             itastk(2,isp),vstk2(isp)
             endif
           else
             m=isp-isp0
-            kax=ktavaloc(-1,m)
+            kax=ktavaloc(-1,m,kll)
             kx%k=ktflist+kax
             if(kt .le. ntwissfun)then
               if(ref)then
                 do i=1,m
                   if(vstk2(isp0+i) .eq. 0.d0)then
-                    rlist(kax+i)=rlist(itoff+itastk(2,isp0+i)-1)
+                    kll%rbody(i)=twiss(itastk(2,isp0+i),0,kt)
+c                    rlist(kax+i)=rlist(itoff+itastk(2,isp0+i)-1)
                   else
                     call qtwissfrac(ftwiss,itastk(2,isp0+i),
      $                   vstk2(isp0+i),over)
-                    rlist(kax+i)=ftwiss(kt)
+                    kll%rbody(i)=ftwiss(kt)
+c                    rlist(kax+i)=ftwiss(kt)
                   endif
                 enddo
               else
+                itoff=((2*ndim+1)*(kt-1)+ndim)*nlat+iftwis
                 do i=1,m
                   if(vstk2(isp0+i) .eq. 0.d0)then
                     klist(kax+i)=ktfref+itoff+itastk(2,isp0+i)-1
@@ -181,22 +194,26 @@ c     $             itastk(2,isp),vstk2(isp)
               do i=1,m
                 if(vstk2(isp0+i) .eq. 0.d0)then
                   call tgetphysdisp(itastk(2,isp0+i),pe)
-                  rlist(kax+i)=pe(kt-mfitpex+1)
+                  kll%rbody(i)=pe(kt-mfitpex+1)
+c                  rlist(kax+i)=pe(kt-mfitpex+1)
                 else
                   call qtwissfrac(ftwiss,itastk(2,isp0+i),
      $                 vstk2(isp0+i),over)
-                  rlist(kax+i)=tphysdisp(kt,ftwiss)
+                  kll%rbody(i)=tphysdisp(kt,ftwiss)
+c                  rlist(kax+i)=tphysdisp(kt,ftwiss)
                 endif
               enddo
             elseif(kt .ge. mfitpzx .and. kt. le. mfitpzpy)then
               do i=1,m
                 if(vstk2(isp0+i) .eq. 0.d0)then
                   call tgetphysdispz(itastk(2,isp0+i),pe)
-                  rlist(kax+i)=pe(kt-mfitpzx+1)
+                  kll%rbody(i)=pe(kt-mfitpzx+1)
+c                  rlist(kax+i)=pe(kt-mfitpzx+1)
                 else
                   call qtwissfrac(ftwiss,itastk(2,isp0+i),
      $                 vstk2(isp0+i),over)
-                  rlist(kax+i)=tphysdispz(kt,ftwiss)
+                  kll%rbody(i)=tphysdispz(kt,ftwiss)
+c                  rlist(kax+i)=tphysdispz(kt,ftwiss)
                 endif
               enddo
             endif
@@ -215,27 +232,14 @@ c     $             itastk(2,isp),vstk2(isp)
               kx=dtastk(isp)
               if(ktflistq(kx,klx))then
                 nd=min(klx%nl,nlat)
-                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
+                twiss(1:nd,0,kt)=klx%rbody(1:nd)
+c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
                 return
               endif
             endif
           endif
         endif
       endif
-      return
-      end
-
-      integer*8 function ktatwissaloc(mode)
-      use tfstk
-      use ffs
-      use tffitcode
-      implicit none
-      integer*8 kax
-      integer*4 mode
-      kax=ktavaloc(mode,28)
-      rlist(kax+ntwissfun+1:kax+28)=0.d0
-      rlist(kax+23)=1.d0
-      ktatwissaloc=kax
       return
       end
 
@@ -567,16 +571,16 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
       use ffs
       use tffitcode
       use ffs_pointer, only:latt,idelc,idtypec,pnamec,compelc,
-     $     direlc
+     $     direlc,twiss
       use sad_main
       use tflinepcom
       implicit none
       type (sad_descriptor) kx
       type (sad_comp), pointer ::cmp
-      integer*8 kax,ktfgeol,kai,j,i,ip,itoff
+      integer*8 kax,ktfgeol,kai,i,ip,j
       integer*4 irtc,lenw,lxp,nv,lt,kk,ia,isp1,ibz
-      real*8 v,beam(42),xp,fr,geo1(12),pos0,
-     $     gam0,gv(3,4),ogv(3,4),cod(4),vtwiss(27),tfchi,tfbzs
+      real*8 v,beam(42),xp,fr,
+     $     gv(3,4),ogv(3,4),cod(6),vtwiss(27),tfchi,tfbzs
       type (sad_descriptor) dsave(kwMAX)
       character*(*) keyword
       character*64 name
@@ -675,14 +679,8 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
             kax=ktfgeol(rlist(j))
           else
             if(chg)then
-              geo1=rlist(j+1:j+12)
-              pos0=rlist(ifpos+lxp)
-              gam0=rlist(ifgamm+lxp)
-              call tfgeo1(lxp,lxp+1,.true.,.false.)
-              kax=ktfgeol(rlist(j+12))
-              rlist(ifgamm+lxp)=gam0
-              rlist(j+1:j+12)=geo1
-              rlist(ifpos+lxp)=pos0
+              call tfgeofrac(lxp,gv)
+              kax=ktfgeol(gv)
             else
               kax=ktfgeol(rlist(j+12))
             endif
@@ -711,15 +709,7 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
             call tffserrorhandle(lxp,irtc)
           else
             if(chg)then
-              call tmov(rlist(j+12),geo1,12)
-              pos0=rlist(ifpos+lxp)
-              gam0=rlist(ifgamm+lxp)
-c     write(*,*)'tftwiss-gx ',lxp,v,ia
-              call tfgeo1(lxp,lxp+1,.true.,.false.)
-              call tmov(rlist(j+12),gv,12)
-              rlist(ifgamm+lxp)=gam0
-              call tmov(geo1,rlist(j+12),12)
-              rlist(ifpos+lxp)=pos0
+              call tfgeofrac(lxp,gv)
             else
               call tmov(rlist(j+12),gv,12)
             endif
@@ -747,10 +737,13 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
         fr=xp-lxp
         j=ifgeo+(lxp-1)*12
         if(fr .eq. 0.d0)then
-          do kk=mfitdx,mfitdpy
-            itoff=(2*ndim+1)*nlat*(kk-1)+ndim*nlat+iftwis+lxp-1
-            cod(kk-mfitdx+1)=rlist(itoff)
+          do kk=mfitdx,mfitddp
+            cod(kk-mfitdx+1)=twiss(lxp,0,kk)
           enddo
+c          do kk=mfitdx,mfitdpy
+c            itoff=((2*ndim+1)*(kk-1)+ndim)*nlat+iftwis+lxp-1
+c            cod(kk-mfitdx+1)=rlist(itoff)
+c          enddo
           call tmov(rlist(j),gv,12)
         else
           lt=idtypec(lxp)
@@ -762,14 +755,7 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
             call tffserrorhandle(lxp,irtc)
           else
             if(chg)then
-              call tmov(rlist(j+12),geo1,12)
-              pos0=rlist(ifpos+lxp)
-              gam0=rlist(ifgamm+lxp)
-              call tfgeo1(lxp,lxp+1,.true.,.false.)
-              call tmov(rlist(j+12),gv,12)
-              rlist(ifgamm+lxp)=gam0
-              call tmov(geo1,rlist(j+12),12)
-              rlist(ifpos+lxp)=pos0
+              call tfgeofrac(lxp,gv)
             else
               call tmov(rlist(j+12),gv,12)
             endif
@@ -791,11 +777,13 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
         j=ifgeo+(lxp-1)*12
         if(fr .eq. 0.d0)then
           call tmov(rlist(j),gv,12)
-          do kk=mfitdx,mfitdpy
-            itoff=(2*ndim+1)*nlat*(kk-1)+ndim*nlat+iftwis
-     $           +lxp-1
-            cod(kk-mfitdx+1)=rlist(itoff)
+          do kk=mfitdx,mfitddp
+            cod(kk-mfitdx+1)=twiss(lxp,0,kk)
           enddo
+c          do kk=mfitdx,mfitdpy
+c            itoff=((2*ndim+1)*(kk-1)+ndim)*nlat+iftwis+lxp-1
+c            cod(kk-mfitdx+1)=rlist(itoff)
+c          enddo
         else
           lt=idtypec(lxp)
           call compelc(lxp,cmp)
@@ -807,14 +795,7 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
             call tffserrorhandle(lxp,irtc)
           else
             if(chg)then
-              call tmov(rlist(j+12),geo1,12)
-              pos0=rlist(ifpos+lxp)
-              gam0=rlist(ifgamm+lxp)
-              call tfgeo1(lxp,lxp+1,.true.,.false.)
-              call tmov(rlist(j+12),gv,12)
-              rlist(ifgamm+lxp)=gam0
-              call tmov(geo1,rlist(j+12),12)
-              rlist(ifpos+lxp)=pos0
+              call tfgeofrac(lxp,gv)
             else
               call tmov(rlist(j+12),gv,12)
             endif
@@ -1039,7 +1020,7 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
           enddo
           irtc=0
         else
-          i=ielmf(name(1:nc),r,exist)
+          i=ielmf(name(1:nc),r,exist,0)
           if(exist)then
             isp=isp+1
             itastk(1,isp)=ilist(i,ifele1)
@@ -1113,7 +1094,7 @@ c            write(*,*)'linestk ',name(1:nc),r
       dtastk(isp)=ks
       call tfefunref(isp0+1,kx,.false.,irtc)
       isp=isp0
-      if(.not. tfreallistqd(kx,klr))then
+      if(.not. tfreallistq(kx,klr))then
         nl=0
       else
         kax=ktfaddr(kx)

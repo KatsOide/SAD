@@ -15,10 +15,10 @@
       endif
       karho=ktfaddr(ktastk(isp1+1))
       nr=ilist(2,karho-1)
-      if(.not. tfreallistqd(dtastk(isp1+2),lazl))then
+      if(.not. tfreallistq(dtastk(isp1+2),lazl))then
         go to 9010
       endif
-      if(.not. tfreallistqd(dtastk(isp1+3),lal))then
+      if(.not. tfreallistq(dtastk(isp1+3),lal))then
         go to 9010
       endif
       if(lal%nl .ne. 7)then
@@ -98,22 +98,22 @@ c
       if(las%nl .ne. 6)then
         go to 9010
       endif
-      if(.not. tfreallistqd(las%dbody(1),lawi))then
+      if(.not. tfreallistq(las%dbody(1),lawi))then
         go to 9010
       endif
-      if(.not. tfreallistqd(las%dbody(3),laomega))then
+      if(.not. tfreallistq(las%dbody(3),laomega))then
         go to 9010
       endif
-      if(.not. tfreallistqd(las%dbody(4),lazj))then
+      if(.not. tfreallistq(las%dbody(4),lazj))then
         go to 9010
       endif
-      if(.not. tfreallistqd(las%dbody(6),larhoj))then
+      if(.not. tfreallistq(las%dbody(6),larhoj))then
         go to 9010
       endif
       nr=lawi%nl
       nj=laomega%nl
       nphi=lazj%nl/nj/16
-      if(.not. tfreallistqd(dtastk(isp1+2),lal))then
+      if(.not. tfreallistq(dtastk(isp1+2),lal))then
         go to 9010
       endif
       if(lal%nl .ne. 5)then

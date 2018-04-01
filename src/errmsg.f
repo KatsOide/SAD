@@ -25,12 +25,12 @@ c
          return
       else if (erlvl .lt. 32) then
          write(errfl,*) '16<= error level < 32'
-         stop 8000
+         call exit(8000)
 c         call myfflush
 c         call toplvl
       else 
          write(errfl,*) 'error level >=32.'
-         stop 9000
+         call exit(9000)
       endif
       return
       end

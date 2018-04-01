@@ -2,6 +2,7 @@
 #include <sim/MACTTYP.h>
 #include <sim/MACCODE.h>
 #include <sim/MACCBK.h>
+#include <sim/sad_memory.h>
 
 #include <string.h>
 #include <stdlib.h>

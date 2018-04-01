@@ -10,7 +10,7 @@
      $     p1,brad,dtds,h1sq,alr,tlc,dp,tlc1,
      $     dp1,de,sq,fact,fact1,brad2,brad3,dbrad2,
      $     vx,vy,vz,qx,qy,qzi,pzi,htlc,htlc2,
-     $     s,ala,f2,alr2,alr3,f1r,f2r
+     $     s,ala,f2,alr2,alr3,f1r,f2r,alr1
       real*8 , parameter :: pmax=0.9999d0, pmin=0.99999d0
       real*8 trans(6,12),beam(42),cod(6)
       real*8 radi(6,6)
@@ -47,7 +47,7 @@ c      pzi=sqrtl(1.d0-sq)
           f2r=f2
         endif
         if(f1r .ne. 0.d0 .or. f2r .ne. 0.d0)then
-          call tradel(al,f1r,f2r,s,ala,alr2,alr3)
+          call tradel(al,f1r,f2r,s,ala,alr1,alr2,alr3)
           brad2=brad2*alr2/al
           brad3=brad3*alr3/al
         endif
@@ -119,31 +119,41 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
       return
       end
 
-      recursive subroutine tradel(al,f1,f2,s,ala,alr,alr1)
+      recursive subroutine tradel(al,f1,f2,s,ala,alr1,alr2,alr3)
       implicit none
-      real*8 al,f1,f2,s,ala,alr,alr1,sc
+      real*8 al,f1,f2,s,ala,alr1,alr2,alr3,sc
       real*8 sa,sb,s1,s2,ra,rb,r1,r2,da1,d12,d2b,r0,dl
       if(al .lt. 0.d0)then
-        call tradel(-al,f1,f2,s,-ala,alr,alr1)
-        alr=-alr
+        call tradel(-al,f1,f2,s,-ala,alr1,alr2,alr3)
         alr1=-alr1
+        alr2=-alr2
+        alr3=-alr3
         return
       endif
-      alr=al
       alr1=al
+      alr2=al
+      alr3=al
       if(s .eq. 0.d0)then
         if(f1 .ne. 0.d0)then
           r0=min(.5d0+al/f1,1.d0)
+          alr1=r0**2/2.d0*f1
+          alr2=alr1*r0/1.5d0
+          alr3=alr2*r0*.75d0
           dl=max(al-f1*.5d0,0.d0)
-          alr=r0**3/3.d0*f1+dl
-          alr1=alr*r0*.75d0+dl
+          alr1=alr1+dl
+          alr2=alr2+dl
+          alr3=alr3+dl
         endif
       elseif(s .eq. ala)then
         if(f2 .ne. 0.d0)then
           r0=min(.5d0+al/f2,1.d0)
+          alr1=r0**2/2.d0*f1
+          alr2=alr1*r0/1.5d0
+          alr3=alr2*r0*.75d0
           dl=max(al-f2*.5d0,0.d0)
-          alr=r0**3/3.d0*f2+dl
-          alr1=alr*r0*.75d0+dl
+          alr1=alr1+dl
+          alr2=alr2+dl
+          alr3=alr3+dl
         endif
       else
         if(f1 .ne. 0.d0 .or. f2 .ne. 0.d0)then
@@ -173,10 +183,13 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
           da1=max(s1-sa,0.d0)
           d12=max(s2-s1,0.d0)
           d2b=max(sb-s2,0.d0)
-          alr=(da1*(ra*(ra+r1)+r1**2)+
+          alr1=(da1*(ra+r1)+
+     $          d12*(r1+r2)+
+     $          d2b*(r2+rb))/2.d0
+          alr2=(da1*(ra*(ra+r1)+r1**2)+
      $         d12*(r1*(r1+r2)+r2**2)+
      $         d2b*(r2*(r2+rb)+rb**2))/3.d0
-          alr1=(da1*(ra**2+r1**2)*(ra+r1)+
+          alr3=(da1*(ra**2+r1**2)*(ra+r1)+
      $         d12*(r1**2+r2**2)*(r1+r2)+
      $         d2b*(r2**2+rb**2)*(r2+rb))/4.d0
         endif
