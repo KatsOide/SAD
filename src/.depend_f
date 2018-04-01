@@ -364,6 +364,7 @@ tfsetv.o: tfsetv.f csinit.o tffs.o tfstk.o toplvl.o
 tfshared.o: tfshared.f tfstk.o
 tfshow.o: tfshow.f tffs.o tfstk.o
 tfsize.o: tfsize.f
+tfsk.o: tfsk.f
 tfsolvemember.o: tfsolvemember.f tfstk.o
 tfsort.o: tfsort.f tfetok.o tfstk.o
 tfstk.o: tfstk.f
@@ -377,7 +378,7 @@ tftrak.o: tftrak.f tffs.o
 tftrb.o: tftrb.f tffs.o
 tftwiss.o: tftwiss.f tffs.o tfstk.o
 tftyp1.o: tftyp1.f initb1.o tffs.o tfstk.o tfstrbuf.o toplvl.o
-tftype.o: tftype.f initb1.o tffs.o tfstk.o toplvl.o
+tftype.o: tftype.f initb1.o tffs.o tfstk.o tfstrbuf.o toplvl.o
 tfvars.o: tfvars.f csinit.o tffs.o tfstk.o
 tfvectorize.o: tfvectorize.f tfstk.o
 tfwake.o: tfwake.f initb1.o tffs.o tfstk.o
@@ -385,7 +386,7 @@ tfwrite.o: tfwrite.f csinit.o tfstk.o tfstrbuf.o toplvl.o
 tfzap.o: tfzap.f tffs.o
 tgetfv.o: tgetfv.f csinit.o tffs.o tfstk.o
 tgfun.o: tgfun.f tffs.o tfstk.o
-tgrot.o: tgrot.f
+tgrot.o: tgrot.f initb1.o tffs.o tfstk.o
 thess.o: thess.f
 tinitr.o: tinitr.f
 tins.o: tins.f tffs.o
