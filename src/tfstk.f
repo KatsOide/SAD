@@ -2335,7 +2335,7 @@ c     $           n,i,istat
         integer*8 k
         v=iand(ktfmask,k) .eq. ktflist .and.
      $       klist(iand(ktamask,k)) .eq. ktfoper+mtfnull
-        if(v)then
+        if(v .and. present(kl))then
           call loc_dlist(iand(ktamask,k),kl)
         endif
         return

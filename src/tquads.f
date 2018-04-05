@@ -5,7 +5,7 @@
       use tfstk
       use ffs_flag
       use tmacro
-      use ffs_pointer, only:inext,iprev
+c      use ffs_pointer, only:inext,iprev
       implicit none
       type (sad_rlist), pointer :: klr
       integer*4 np,ld,mfring,i,irtc,ld1,level,m,itfuplevel,
@@ -13,8 +13,8 @@
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
      $     pxr0(np),pyr0(np),
      $     al,bz,ak,dx,dy,theta,cost,sint,radlvl,alr,
-     $     f1in,f2in,f1out,f2out,f1r,f2r,eps0,
-     $     a,aki,akm,ali,alm,b,b1,ea,fx,fy,p,pr,px0,pxf,pyf,rb,x0
+     $     f1in,f2in,f1out,f2out,eps0,
+     $     a,aki,akm,ali,alm,b,ea,fx,fy,p,pr,px0,pxf,pyf,rb,x0
       logical*4 enarad,fringe,forward
       character*13 vname
       character*2 ord

@@ -3,15 +3,15 @@
      1                 fringe,f1in,f2in,f1out,f2out,mfring,eps0,kin)
       use ffs_flag
       use tmacro
-      use ffs_pointer, only:inext,iprev
+c      use ffs_pointer, only:inext,iprev
       use tfstk, only:pxy2dpz,sqrt1
       implicit none
       logical*4 enarad,chro,fringe,kin
       integer*4 np,l,i,mfring
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
      $     px0(np),py0(np),
-     $     f1r,f2r,al,ak,dx,dy,theta,cost,sint,radlvl,eps0,alr,
-     $     f1in,f1out,f2in,f2out,p,a,ea,b,pxi,pxf,pyf,b1,xi
+     $     al,ak,dx,dy,theta,cost,sint,radlvl,eps0,alr,
+     $     f1in,f1out,f2in,f2out,p,a,ea,b,pxi,pxf,pyf,xi
       real*8, parameter :: ampmax=0.9999d0
       if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,pz,4,l,0.d0,ak,
@@ -119,9 +119,9 @@ c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
      $     px0(np),py0(np)
       real*8 fact(0:nmult)
-      real*8 thr,rhor,an,ur,dprad,theta,sint,cost,dx,dy,al,ak,
-     $     ala,alb,aki,akf,dpz,al1,sp,radlvl,brad,de,delp,dp,h1,hh,
-     $     f1,f2,f3,f4,f5,xi,yi,zi,pr,r,rcx1,p,pxi,rk1,rk
+      real*8 theta,sint,cost,dx,dy,al,ak,
+     $     ala,alb,aki,akf,dpz,al1,radlvl,
+     $     f1,f2,f3,f4,f5,xi,yi,zi,pr,r,rcx1,pxi,rk1,rk
       complex*16 cx
       logical enarad,fringe
       data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
@@ -640,9 +640,7 @@ c        theta=pi/nord
             px(i)= cost*px0-sint*py(i)
             py(i)= sint*px0+cost*py(i)
           enddo
-        endif
-        call ttfrin(np,x,px,y,py,z,g,nord,aka,al,bz)
-        if(theta .ne. 0.d0)then
+          call ttfrin(np,x,px,y,py,z,g,nord,aka,al,bz)
           do i=1,np
             x0   =x(i)
             x(i) = cost*x0 +sint*y(i)
@@ -651,6 +649,8 @@ c        theta=pi/nord
             px(i)= cost*px0+sint*py(i)
             py(i)=-sint*px0+cost*py(i)
           enddo
+        else
+          call ttfrin(np,x,px,y,py,z,g,nord,aka,al,bz)
         endif
       endif
       return

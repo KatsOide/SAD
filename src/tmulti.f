@@ -10,7 +10,7 @@
       use tfstk
       use ffs_flag
       use tmacro
-      use ffs_pointer, only:inext,iprev
+c      use ffs_pointer, only:inext,iprev
       implicit none
       integer*4 nmult,itmax,ndivmax
       real*8 conv,ampmax,alstep,eps00,oneev,pmin
@@ -21,7 +21,7 @@ c      parameter (oneev=1.d0+3.83d-12)
       integer*4 np
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
      $     pxr0(np),pyr0(np)
-      real*8 al,f1r,f2r,f1in,f2in,f1out,f2out
+      real*8 al,f1in,f2in,f1out,f2out
       complex*16 ak(0:nmult)
       real*8 bz,phia,psi1,psi2,dx,dy,dz,chi1,chi2,theta,dtheta,eps0
       logical*4 enarad,fringe,autophi
@@ -33,7 +33,7 @@ c      parameter (oneev=1.d0+3.83d-12)
       integer*4 i,j,m,n,ndiv,nmmin,nmmax
       real*8 pz0,s0,bxs,bys,bzs,
      $     vnominal,theta1,theta2,
-     $     cchi1,schi1,b,b1,
+     $     cchi1,schi1,b,
      $     phix,phiy,phiz,dphizsq,pr,ds1,ds2,pz1,
      $     dcchi1,cchi2,schi2,bzp,alb,s,dpz0,
      $     dpl,pl,plx,ply,plz,ptx,pty,ptz,pbx,pby,pbz,phi,

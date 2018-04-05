@@ -411,11 +411,8 @@
      $           '"'//ename(1:lenw(ename))//'"')
             return
           endif
+          call expln(idl)
           idx=idval(ilist(2,idval(idl)))
-          if(idx .le. 0)then
-            call expnln(idl)
-            idx=idval(ilist(2,idval(idl)))
-          endif
         endif
       endif
       call loc_el(idx,el)
