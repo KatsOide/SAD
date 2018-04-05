@@ -7,9 +7,11 @@
       use ffs_pointer
       use ffs_flag
       use tmacro
-      implicit real*8(a-h,o-z)
+      implicit none
       integer*8 kx
-      integer*4 ntwissfun,irtc
+      integer*4 ntwissfun,irtc,ndim,mphi2,lfni,lfno,mphiz,ndims,
+     $     ndps,nzz
+      real*8 amus0,amus1,amusstep,emx,emy,res,size
       real*8 params(59)
       logical*4 trpt0,stab
       trpt0=trpt
@@ -36,10 +38,14 @@
       use ffs_flag
       use temw, only: r, ri
       use tmacro
-      implicit real*8(a-h,o-z)
-      parameter (npara=59,itmax=1000)
+      implicit none
+      integer*4 , parameter:: npara=59,itmax=1000
       integer*8 kx,kax,kai
-      integer*4 ntwissfun,irtc
+      integer*4 ndim,ntwissfun,mphi,mphi2,ndims,
+     $     lfni,lfno,irtc,ndp,i,k,kk,ns,it,j,nz
+      real*8 amus0,amus1,amusstep, emx,emy,res0,
+     $     amus,amuss,damp,dj,dpf,dpndim,emx0,emy0,eps,
+     $     fz,phi0s,pa,res,sige,sigea,vx,vy,w,dpi
       real*8 beam(42),trans(6,12),cod(6),
      $     beams(10,-ndims:ndims),
      $     trads(5,5,-ndims:ndims),
@@ -53,9 +59,7 @@
      $     bfx(20*mphi2),bfb(20*mphi2),
      $     hff(8*mphi2,8*mphi2),
      $     hfx(8*mphi2),hfb(8*mphi2),
-      
      $     dbc(10,mphi2,ndp),dbs(10,mphi2,ndp),
-      
      $     dhc(4,mphi2,ndp),dhs(4,mphi2,ndp),
      $     amuj(ndp)
       real*8 params(npara),twiss(nlat,-ndim:ndim,ntwissfun),
