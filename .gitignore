@@ -52,4 +52,8 @@ Documents.zip
 
 %B4%BF.
 
-*.f~
+src/cod.sad
+
+src/errmsg,f
+
+src/tfsk.f
