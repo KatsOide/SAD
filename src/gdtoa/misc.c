@@ -1,1 +1,1 @@
-/home/oide/SAD/oldsad/contrib/gdtoa/misc.c
+/Users/oide/SAD/oldsad/contrib/gdtoa/misc.c

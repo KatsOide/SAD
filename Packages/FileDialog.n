@@ -1,3 +1,4 @@
+!!! File Dialog 4/5/2018
 !!! File Dialog 4/21/2008
 !!! File Dialog 3/15/2005
 
@@ -25,7 +26,7 @@ KBF$ListFiles[pwd_,currfilter0_,wl_,fork_:False] := Module[
     ];
   If[currfilter=="",currfilter = "*"];
   Check[
-    If[(f = OpenRead["!unset LANG LC_TIME;cd "//pwd//";ls -lnt"])<=>$Failed,
+    If[(f = OpenRead["!unset LANG LC_TIME;cd "//pwd//";ls -lstL"])<=>$Failed,
       l=Table[
         c=Read[f,Word];
         If[c===EndOfFile,Break[]];

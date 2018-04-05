@@ -18,12 +18,12 @@ LIST_PACKAGES=init.n init.local.n.example \
 	Canvas.n Canvas3D.n CanvasCM.n CANVASDRAW.n \
 	CheckEntryList.n ChooseAxis.n Class.n Couple.n \
 	CursorEntry.n CSR.n D.n EPICSComponents1.n \
-	FileDialog.n FileSystem.n Fit.n \
+	element.n FileDialog.n FileSystem.n Fit.n \
 	GeometryPlot.n HelpMessages.n \
 	KBFFileSelectionPanel.n KBFrame.n KBMainFrame.n LDSolve.n \
 	Library.n LifeTrack.n ListPlot.n Matrix.n MessageName.n Misc.n \
 	NISTACK.n Optics.n OpticsPlot.n \
-	OptionDialog.n PkgConfig.n Plots.n ProcessStatus.n \
+	OptionDialog.n PkgConfig.n Plots.n ProcessStatus.n rational.n \
 	SADInspect.n SADInspect.sad SADTerminal.n Speak.n TabFrame.n \
 	TkinterCore.n Tkinter.n TkPhoto.n TopDrawer.n \
 	beamline.n bump.n corutility.n correction.n \
