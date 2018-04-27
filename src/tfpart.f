@@ -391,6 +391,9 @@
         kh%k=ktfref
       elseif(narg .eq. 3)then
         kh=dtastk(isp)
+      elseif(narg .eq. 1)then
+        irtc=-1
+        return
       else
         irtc=itfmessage(9,'General::narg','"2 or 3"')
         return
@@ -494,13 +497,25 @@ c        enddo
       subroutine tfreplacepart(isp1,kx,mode,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k,kn,k1,kf
-      type (sad_dlist), pointer :: list,kln
-      type (sad_dlist), pointer :: klx
-      integer*4 irtc,isp1,narg,i,mode,itfmessage
-      logical*4 single,seq,rep
+      type (sad_descriptor) kx,k,kn,kf
+      type (sad_dlist), pointer :: klx,list
+      integer*4 irtc,isp1,narg,i,mode,itfmessage,isp0
+      logical*4 seq,rep,rule
       narg=isp-isp1
-      if(mode .lt. 3)then
+      if(narg .eq. 1 .and. (mode .eq. 0 .or. mode .eq. 3)
+     $     .or. narg .eq. 2 .and. mode .eq. 2)then
+        irtc=-1
+        return
+      endif
+      rule=.false.
+      if(mode .eq. 0)then
+        if(narg .eq. 2)then
+          rule=.true.
+        elseif(narg .ne. 3)then
+          irtc=itfmessage(9,'General::narg','"3"')
+          return
+        endif
+      elseif(mode .lt. 3)then
         if(narg .ne. 3)then
           irtc=itfmessage(9,'General::narg','"3"')
           return
@@ -512,14 +527,25 @@ c        enddo
         endif
       endif
       kn=dtastk(isp)
+      isp0=isp
+      if(rule)then
+        call tfreprulestk(kn,irtc)
+        if(irtc .ne. 0)then
+          isp=isp0
+          return
+        elseif(isp .eq. isp0)then
+          kx=dtastk(isp0-1)
+          return
+        endif
+      endif
       if(mode .eq. 1)then
-        k=dtastk(isp-1)
+        k=dtastk(isp0-1)
         if(ktfnonlistq(k,list))then
           irtc=itfmessage(9,'General::wrongtype',
      $         '"List or composition"')
           return
         endif
-        kf=dtfcopy(dtastk(isp-2))
+        kf=dtfcopy(dtastk(isp0-2))
       else
         k=dtastk(isp1+1)
         if(ktfnonlistq(k,list))then
@@ -529,28 +555,25 @@ c        enddo
         endif
       endif
       call tfclonelist(list,list)
-      if(ktfrealq(kn))then
-        single=.true.
-      elseif(tflistq(kn,kln))then
-        k1=kln%dbody(1)
-        single=ktfnonlistq(k1)
-      else
-        irtc=itfmessage(9,'General::wrongtype',
-     $       '"Real or List of Reals for index"')
-        go to 9000
-      endif
-      if(single)then
-        call tfreplacepart1(mode,list,kn,kf,seq,irtc)
-        if(irtc .ne. 0)then
-          go to 9000
-        endif
-      else
-        do i=1,kln%nl
-          call tfreplacepart1(mode,list,kln%dbody(i),kf,seq,irtc)
+      if(rule)then
+        do i=isp0+1,isp
+c          call tfdebugprint(dtastk(i),'reppart',1)
+c          call tfdebugprint(dtastk2(i),' -> ',1)
+          call tfreplacepart0(mode,list,dtastk(i),dtastk2(i),seq,irtc)
           if(irtc .ne. 0)then
+            isp=isp0
             go to 9000
           endif
         enddo
+        isp=isp0
+      else
+        if(mode .eq. 0)then
+          kf=dtastk(isp0-1)
+        endif
+        call tfreplacepart0(mode,list,kn,kf,seq,irtc)
+        if(irtc .ne. 0)then
+          go to 9000
+        endif
       endif
       if(seq)then
         call tfrebuildl(list,klx,rep)
@@ -561,6 +584,37 @@ c        enddo
       call tfleval(klx,kx,.true.,irtc)
  9000 if(mode .eq. 1)then
         call tflocald(kf)
+      endif
+      return
+      end
+
+      subroutine tfreplacepart0(mode,list,kn,kf,seq,irtc)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kn,k1,kf
+      type (sad_dlist) :: list
+      type (sad_dlist), pointer :: kln
+      integer*4 itfmessage,i,mode,irtc
+      logical*4 single,seq
+      if(ktfrealq(kn))then
+        single=.true.
+      elseif(tflistq(kn,kln))then
+        k1=kln%dbody(1)
+        single=ktfnonlistq(k1)
+      else
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"Real or List of Reals for index"')
+        return
+      endif
+      if(single)then
+        call tfreplacepart1(mode,list,kn,kf,seq,irtc)
+      else
+        do i=1,kln%nl
+          call tfreplacepart1(mode,list,kln%dbody(i),kf,seq,irtc)
+          if(irtc .ne. 0)then
+            return
+          endif
+        enddo
       endif
       return
       end
@@ -598,7 +652,7 @@ c        enddo
       if(mode .eq. 0)then
         do i=isp2+1,isp
           call loc_sad(ktastk(i),kli)
-          call tfreplist(kli,itastk2(1,i),dtastk(isp0-1),seq1)
+          call tfreplist(kli,itastk2(1,i),kf,seq1)
           seq=seq .or. seq1
         enddo
       elseif(mode .eq. 1)then
@@ -671,6 +725,40 @@ c        enddo
         enddo
       endif
  9000 isp=isp0
+      return
+      end
+
+      recursive subroutine tfreprulestk(kn,irtc)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kn
+      type (sad_dlist) , pointer :: knl
+      integer*4 irtc,itfmessage,i
+      if(ktfnonlistq(kn,knl))then
+        go to 9000
+      endif
+      irtc=0
+      select case (knl%head%k)
+        case (ktfoper+mtflist)
+          do i=1,knl%nl
+            call tfreprulestk(knl%dbody(i),irtc)
+            if(irtc .ne. 0)then
+              return
+            endif
+          enddo
+        case (ktfoper+mtfrule,ktfoper+mtfruledelayed)
+          if(knl%nl .ne. 2)then
+            go to 9000
+          endif
+          isp=isp+1
+          dtastk(isp)=knl%dbody(1)
+          dtastk2(isp)=knl%dbody(2)
+        case default
+          go to 9000
+      end select
+      return
+ 9000 irtc=itfmessage(9,'General::wrongtype',
+     $     '"Rule or List of rules for #2"')
       return
       end
 

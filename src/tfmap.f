@@ -22,8 +22,19 @@
           return
         endif
         ispf=isp-2
+      elseif(narg .eq. 1)then
+        if(mode .ne. 0 .and. mode .ne. 4)then
+          irtc=-1
+        else
+          irtc=itfmessage(9,'General::narg','"2 or 3"')
+        endif
+        return
       else
-        irtc=itfmessage(9,'General::narg','"2 or 3"')
+        if(mode .ne. 0 .and. mode .ne. 4)then
+          irtc=itfmessage(9,'General::narg','"2 or 3"')
+        else
+          irtc=itfmessage(9,'General::narg','"1 or 2 or 3"')
+        endif
         return
       endif
       kf=dtfcopy(dtastk(ispf))
@@ -184,6 +195,9 @@
           return
         endif
         ispf=isp-2
+      elseif(narg .eq. 1)then
+        irtc=-1
+        return
       else
         irtc=itfmessage(9,'General::narg','"2 or 3"')
         return
@@ -203,7 +217,10 @@
       type (sad_dlist), pointer :: klx
       integer*4 isp1,irtc,narg,isp0,i,itfmessage,itr
       narg=isp-isp1
-      if(narg .lt. 2 .or. narg .gt. 4)then
+      if(narg .eq. 1)then
+        irtc=-1
+        return
+      elseif(narg .lt. 2 .or. narg .gt. 4)then
         irtc=itfmessage(9,'General::narg','"2, 3, or 4"')
         return
       endif
@@ -255,6 +272,10 @@
         kxheads=kxsymbolz('Heads',5)
       endif
       narg=isp-isp1
+      if(narg .eq. 1)then
+        irtc=-1
+        return
+      endif
       if(icases .eq. 0)then
         ihead=0
       else
@@ -714,8 +735,11 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
       real*8 amaxl
       parameter (amaxl=1.d10)
       narg=isp-isp1
-      if(narg .le. 1 .or. narg .gt. 3)then
-        irtc=itfmessage(9,'General::narg','"2 or 3"')
+      if(narg .eq. 1)then
+        irtc=-1
+        return
+      elseif(narg .eq. 0 .or. narg .gt. 3)then
+        irtc=itfmessage(9,'General::narg','"1 or 2 or 3"')
         return
       endif
       k=dtastk(isp1+1)
@@ -786,7 +810,10 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
       integer*8 kak(4096)
       integer*4 isp1,irtc,mk(0:4096),km,mode,isp4,
      $     i,j,isp2,isp3,m,itfpmatc,kelm,isp0,itfmessage
-      if(isp .ne. isp1+2)then
+      if(isp .eq. isp1+1)then
+        irtc=-1
+        return
+      elseif(isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif

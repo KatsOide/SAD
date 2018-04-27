@@ -1,8 +1,10 @@
       subroutine tqlfre(trans,cod,beam,al,ak,f1,f2,bz,ld)
       use ffs_flag
       use tmacro
-      implicit real*8 (a-h,o-z)
-      integer*4 i
+      implicit none
+      integer*4 i,ld
+      real*8 al,ak,f1,f2,bz,af1,af2,p,a,b,ea,bzph,bp,
+     $     xf,yf,pxf,pyf,f,fdp,bb
       real*8 trans(6,12),cod(6),beam(21),trans1(6,13)
 c      write(*,*)'tflfre ',f1,f2
       af1=-ak/al*f1*abs(f1)/24.d0

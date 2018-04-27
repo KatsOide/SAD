@@ -3,10 +3,15 @@
       use ffs_flag
       use tmacro
       use tfstk, only: sqrtl
-      implicit real*8(a-h,o-z)
-      dimension trans(6,12),cod(6),beam(42)
-      real*8 a
-      logical dir
+      implicit none
+      integer*4 ld,i
+      real*8 dx,dy,dz,chi1,chi2,chi3,cchi1,schi1,
+     $     cchi2,schi2,cchi3,schi3,dx0,dy0,dz0,dx1,dy1,dz1,
+     $     r11,r12,r13,r21,r22,r23,r31,r32,r33,
+     $     pxi,pyi,a,pzi,zi,yi,xi,xf,yf,zf,
+     $     pzf,p,z,pxf,pyf,u,v,x,y
+      real*8 trans(6,12),cod(6),beam(42)
+      logical*4 dir
       real*8 trans1(6,6),trans2(6,6)
       cchi1=cos(chi1)
       schi1=sin(chi1)

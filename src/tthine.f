@@ -3,10 +3,13 @@
       use ffs_flag
       use tmacro
       use temw
-      implicit real*8 (a-h,o-z)
-      dimension trans(6,12),cod(6),beam(42)
+      implicit none
+      integer*4 ld,kord,nord
+      real*8 al,ak,dx,dy,theta,b1,aki,ala,alb,bx,by,bxx,bxy,
+     $     ak0,ak1
+      real*8 trans(6,12),cod(6),beam(42)
       complex*16 cx,cx1
-      dimension fact(0:10)
+      real*8 fact(0:10)
       logical*4 enarad
       data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
      1          720.d0,5040.d0,40320.d0,362880.d0,3628800.d0 /

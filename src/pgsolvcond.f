@@ -131,8 +131,8 @@ c
             if(x(i).ne.0d0)then
               m1=m1+1
               mm(m1)=i
-              call tmov(aa(i,1),a(1,m1),na)
-              call tmov(cc(i,1),c(1,m1),nc)
+              call tmov(aa(1,i),a(1,m1),na)
+              call tmov(cc(1,i),c(1,m1),nc)
             endif
           enddo
           call tmov(bb,b,n)
