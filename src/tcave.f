@@ -173,6 +173,12 @@ c          trans1(6,6)=(p1-a*t/p1/h1)/h1/v2
           endif
         endif
       else
+        phii=phic
+        sp=sin(phii)
+        cp=cos(phii)
+        dvcacc=dvcacc+vc*cp*w
+        ddvcacc=ddvcacc+vc*sp*w**2
+        vcacc=vcacc-vc*sp
         if(al .ne. 0.d0)then
           call tdrife(trans,cod,beam,al,
      $         0.d0,0.d0,0.d0,.true.,.false.,calpol,irad,ld)

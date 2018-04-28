@@ -56,7 +56,7 @@
       type (sad_symbol), pointer :: sym1
       type (sad_symdef), pointer :: symd
       type (sad_string), pointer :: str
-      integer*8 ka1,ka,kax,km
+      integer*8 ka1,ka,kax,km,kop
       integer*4 isp1,irtc,i,id,narg,nc,isp2,itfdepth,
      $     itfgetrecl,ltr0,iaf,itfopenwrite,itfmessage,
      $     itfopenappend,itfopcode,isp0,nsize
@@ -476,16 +476,16 @@ c            write(*,*)'irtc: ',irtc
         go to 6900
  530    call tfjoin(isp1,kx,.true.,irtc)
         go to 6900
- 540    if(narg .ne. 2)then
-          go to 6812
-        else
+ 540    if(narg .eq. 2)then
           call tfappend(ktastk(isp1+1),k,kx,.true.,0,irtc)
+        elseif(narg .ne. 1)then
+          go to 6812
         endif
         go to 6900
- 550    if(narg .ne. 2)then
-          go to 6812
-        else
+ 550    if(narg .eq. 2)then
           call tfappend(ktastk(isp1+1),k,kx,.true.,1,irtc)
+        elseif(narg .ne. 1)then
+          go to 6812
         endif
         go to 6900
  560    call tfclear(isp1,kx,irtc)
@@ -1291,45 +1291,88 @@ c            msgn TagS (*   *)   Hold z
         endif
       elseif(ktflistq(k1,kl1))then
         kx=k1
-        if(kl1%head%k .eq. ktfoper+mtffun)then
-          call tfpuref(isp1,kl1,kx,irtc)
-          go to 6900
-        elseif(kl1%head%k .eq. ktfoper+mtfnull)then
-          if(kl1%nl .eq. 0)then
-            call tfsequence(isp1,isp,kx)
-            if(ktflistq(kx,klx))then
-              call tfleval(klx,kx,.true.,irtc)
-            elseif(ktfsymbolq(kx) .or. ktfpatq(kx))then
-              call tfeevalref(kx,kx,irtc)
+        if(ktfoperq(kl1%head,kop))then
+          id=iget_fun_id(kop)
+          select case (id)
+          case (-mtffun)
+            call tfpuref(isp1,kl1,kx,irtc)
+            go to 6900
+          case (-mtfnull)
+            if(kl1%nl .eq. 0)then
+              call tfsequence(isp1,isp,kx)
+              if(ktflistq(kx,klx))then
+                call tfleval(klx,kx,.true.,irtc)
+              elseif(ktfsymbolq(kx) .or. ktfpatq(kx))then
+                call tfeevalref(kx,kx,irtc)
+              endif
+              go to 6900
+            elseif(kl1%nl .eq. 1 .and.
+     $             ktfnonreallistqo(kl1))then
+              kx=kxmakelist(isp1,klx)
+              kh=klx%dbody(1)
+              klx%head=dtfcopy(kh)
+              irtc=0
+              return
+            endif
+          case (-mtflist)
+            call tfpart(isp1,kx,.true.,irtc)
+            if(irtc .eq. 0)then
+              if(ktflistq(kx,klx))then
+                call tfleval(klx,kx,.true.,irtc)
+              elseif(ktfsymbolq(kx) .or. ktfpatq(kx))then
+                call tfeevalref(kx,kx,irtc)
+              endif
             endif
             go to 6900
-          elseif(kl1%nl .eq. 1 .and.
-     $           ktfnonreallistqo(kl1))then
-            kx=kxmakelist(isp1,klx)
-            kh=klx%dbody(1)
-            klx%head=dtfcopy(kh)
-            irtc=0
-            return
-          endif
-        elseif(kl1%head%k .eq. ktfoper+mtflist)then
-          call tfpart(isp1,kx,.true.,irtc)
-          if(irtc .eq. 0)then
-            if(ktflistq(kx,klx))then
-              call tfleval(klx,kx,.true.,irtc)
-            elseif(ktfsymbolq(kx) .or. ktfpatq(kx))then
-              call tfeevalref(kx,kx,irtc)
-            endif
-          endif
-          go to 6900
-        else
-          do while(ktflistq(kx,klx))
-            kx=klx%head
-          enddo
-          if(ktfsymbolqdef(kx%k,symd))then
-            if(symd%sym%override .ne. 0 .and. symd%downval .ne. 0)then
-              call tfdeval(isp1,ktfaddrd(kx),kx,1,.false.,euv,irtc)
+          case (-mtfmap,-mtfapply)
+            if(kl1%nl .eq. 1)then
+              isp2=isp+1
+              dtastk(isp2)=kl1%head
+              dtastk(isp2+1)=kl1%dbody(1)
+              dtastk(isp2+2:isp2+isp-isp1+1)=dtastk(isp1+1:isp)
+              isp=isp+isp2-isp1+1
+              call tfefunref(isp2,kx,upvalue,irtc)
+              isp=isp2
               go to 6900
             endif
+          case (nfunappend,nfunprepend,nfuncases,nfundelcases,
+     $           nfunselcases,nfundelete,nfunposition,nfunselect,
+     $           nfunreppart,nfunextract,nfunswicases)
+            if(kl1%nl .eq. 1)then
+              isp2=isp+1
+              dtastk(isp2)=kl1%head
+              dtastk(isp2+1)=dtastk(isp1+1)
+              dtastk(isp2+2)=kl1%dbody(1)
+              if(isp .gt. isp1+1)then
+                dtastk(isp2+3:isp2+isp-isp1+1)=dtastk(isp1+2:isp)
+              endif
+              isp=isp2+isp-isp1+1
+              call tfefunref(isp2,kx,upvalue,irtc)
+              isp=isp2
+              go to 6900
+            endif
+          case (nfuninsert)
+            if(kl1%nl .eq. 2)then
+              isp2=isp+1
+              dtastk(isp2)=kl1%head
+              dtastk(isp2+1)=dtastk(isp1+1)
+              dtastk(isp2+2)=kl1%dbody(1)
+              dtastk(isp2+3)=kl1%dbody(2)
+              isp=isp2+3
+              call tfefunref(isp2,kx,upvalue,irtc)
+              isp=isp2
+              go to 6900
+            endif
+          end select
+          go to 6800
+        endif
+        do while(ktflistq(kx,klx))
+          kx=klx%head
+        enddo
+        if(ktfsymbolqdef(kx%k,symd))then
+          if(symd%sym%override .ne. 0 .and. symd%downval .ne. 0)then
+            call tfdeval(isp1,ktfaddrd(kx),kx,1,.false.,euv,irtc)
+            go to 6900
           endif
         endif
         go to 6800

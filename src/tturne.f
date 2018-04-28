@@ -16,7 +16,7 @@
       parameter (codmax=1.d4,demax=.5d0)
       integer*8 iatr,iacod,iabmi
       real*8 trans(6,12),cod(6),beam(42)
-      real*8 z0,pgev00,alambdarf,dzmax,phis
+      real*8 z0,pgev00,alambdarf,dzmax,phis,vcacc1
       logical*4 plot,update,rt
       pgev00=pgev
       vc0=0.d0
@@ -67,8 +67,9 @@
         if(vceff .eq. 0.d0)then
           vceff=vc0
         endif
-        if(vcacc .eq. 0.d0)then
-          vcacc=vceff*sin(trf0*wrfeff)
+        vcacc1=vcacc
+        if(vcacc1 .eq. 0.d0)then
+          vcacc1=vceff*sin(trf0*wrfeff)
         endif
         if(trpt)then
           trf0=0.d0
@@ -81,24 +82,28 @@
           endif
           if(vceff .ne. 0.d0)then
             dzmax=alambdarf*.24d0
-            phis=asin(abs(vcacc/vceff))
+            phis=asin(abs(vcacc1/vceff))
 c            write(*,*)'ttrune ',u0*pgev,vcacc,dvcacc,trf0
-            if(vceff .gt. u0*pgev)then
-              if(trans(5,6) .lt. 0.d0)then
-c                trf0=trf0+(u0*pgev-vcacc)/dvcacc
-                trf0=trf0+(asin(u0*pgev/vceff)-phis)/wrfeff
-              else
-                trf0=trf0+
-     $                 (pi-asin(u0*pgev/vceff)-phis)/wrfeff
-              endif
+            if(radcod)then
+c              trf0=-(cod(5)+z0)*0.5d0
             else
-              trf0=trf0+(.5*pi-phis)/wrfeff
+              if(vceff .gt. u0*pgev)then
+                if(trans(5,6) .lt. 0.d0)then
+                  trf0=(asin(u0*pgev/vceff))/wrfeff
+                else
+                  trf0=(pi-asin(u0*pgev/vceff))/wrfeff
+                endif
+              else
+                trf0=(.5*pi)/wrfeff
+              endif
+              if(trf0 .lt. 0.d0)then
+                trf0=-mod(-trf0+0.5d0*alambdarf,alambdarf)
+     $               +alambdarf*0.5d0
+              else
+                trf0= mod(trf0-0.5d0*alambdarf,alambdarf)
+     $               +alambdarf*0.5d0
+              endif
             endif
-          endif
-          if(trf0 .lt. 0.d0)then
-            trf0=-mod(-trf0+0.5d0*alambdarf,alambdarf)+alambdarf*0.5d0
-          else
-            trf0= mod(trf0-0.5d0*alambdarf,alambdarf)+alambdarf*0.5d0
           endif
         endif
         call RsetGL1('DTSYNCH',trf0)

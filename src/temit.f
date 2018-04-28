@@ -480,7 +480,7 @@ c     Table of loss-rate
       character*11 autofg,vout(28)
       character*9 vout9(28)
       logical*4 plot,pri,fndcod,synchm,intend,stab,calem,
-     $     epi,calcodr
+     $     epi,calcodr,rt
       data label1/'        X ','       Px ','        Y ',
      1            '       Py ','        Z ','       Pz '/
       data label2/'        x ','    px/p0 ','        y ',
@@ -517,6 +517,7 @@ c     Table of loss-rate
       caltouck=.false.
       calcodr=.not. trpt .and. calcod
       pri=lfno .gt. 0
+      rt=radcod .and. radtaper
       if(calcodr)then
 c
 c zero clear initial cod (comment out by Y.O, 2010/10/28)
@@ -551,7 +552,7 @@ c        write(*,*)'temit-tcod ',trf0
         call tinitr(trans)
         trans(:,7:12)=0.d0
         call tturne(trans,cod,beam,int8(0),int8(0),int8(0),
-     $       .false.,.false.,.true.)
+     $       .false.,.false.,rt)
       endif
       if(calpol .and. irad .eq. 6)then
         ipoltr=ktaloc(npelm*36)
@@ -569,7 +570,7 @@ c        call tclr(beam,21)
         trans(:,7:12)=0.d0
 c        write(*,*)'temit ',trf0,cod
         call tturne(trans,cod,beam,int8(0),int8(0),int8(0),
-     1       .false.,.false.,.true.)
+     1       .false.,.false.,rt)
       endif
 c     call tsymp(trans)
       params(1:6)=cod
@@ -1061,7 +1062,7 @@ c        call tclr(trans(1,7),36)
         emit1(22:42)=beam(22:42)
 c        write(*,*)'temit-7101: ',emit1(6),emit1(27)
         call tturne(trans,cod,emit1,
-     $       iatr,iacod,iabmi,.true.,.false.,.true.)
+     $       iatr,iacod,iabmi,.true.,.false.,rt)
         if(iamat .gt. 0)then
           dlist(iamat+2)=
      $         dtfcopy1(kxm2l(trans,6,6,6,.false.))

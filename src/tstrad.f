@@ -4,14 +4,18 @@
      $     fb1,fb2,mfring,eps0)
       use ffs_flag
       use tmacro
-      implicit real*8 (a-h,o-z)
-      integer*4 l,np
-      parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
+      implicit none
+      integer*4 l,np,mfring,i,nx,ngamma,n
+      real*8 al,phib,dx,dy,theta,cost,sint,
+     1     cosp1,sinp1,cosp2,sinp2,fb1,fb2,
+     $     eps0,rhob,dxfr1,dyfr1,dxfr2,dyfr2,tanp1,tanp2,
+     $     dp,p,rhoe,f,ff,rhoba,eps,aln,phin,ur,an,sp,
+     $     dpz1,pz1,dpx,pxf,s,dpz2,pz2,d,phsq,u,w,dl,
+     $     dprad,dpradx,dprady,bya,h,alr,p1,prob,pyi,pxi,xi
+      real*8, parameter :: a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
      1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
-     1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
+     1           a13=231.d0/13312.d0,a15=143.d0/10240.d0
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np)
-      real*8 dprad,dpradx,dprady,bya,alr,
-     1     cosp1,sinp1,cosp2,sinp2
       real*8 tran
       if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,pz,2,l,al,-phib,

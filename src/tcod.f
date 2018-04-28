@@ -1,4 +1,4 @@
-      subroutine tcod(trans,cod,beam,fndcod)
+      recursive subroutine tcod(trans,cod,beam,fndcod)
       use tfstk
       use ffs_flag
       use ffs_pointer
@@ -19,15 +19,23 @@
       logical*4 isnan,rt,rtr
       real*8 , parameter :: codw0(6) =
      $     [1.d-6,1.d-5,1.d-6,1.d-5,1.d-5,1.d-6]
+      vcalpha=1.d0
+      trf0=0.d0
       if(rfsw)then
+        rfsw=.false.
+        call tcod(trans,cod,beam,fndcod)
+        rfsw=.true.
+        if(fndcod .and. vceff .ne. 0.d0)then
+          cod(5)=asin(min(1.d0,max(-1.d0,(u0*pgev-vcacc)/vceff)))
+     $         /wrfeff-trf0
+        endif
+c          write(*,*)'tcod ',trf0,vcacc,u0*pgev,cod(5)
         im=6
       else
         im=5
       endif
       rtr=radcod .and. radtaper
-      trf0=0.d0
-      vcalpha=1.d0
-      trf0s=0.d0
+      trf0s=trf0
       v0=p0/h0
 c      write(*,*)'tcod-dp0 ',dp0
       rt=.false.
@@ -42,13 +50,10 @@ c      write(*,*)'tcod-dp0 ',dp0
       codw=codw0
       conv=conv0
       trw=codw(5)
-      if(radtaper)then
+      if(radcod .and. radtaper)then
         if(rtr)then
-          codw(6)=codw(6)*10.d0
-          conv=conv*1.d3
         else
-          codw(6)=codw(6)*10.d0
-          conv=conv*1.d5
+          conv=conv*1.d2
         endif
         trw=codw(5)
         codi(6)=dp0
@@ -65,8 +70,6 @@ c      write(*,*)'tcod-dp0 ',dp0
         return
       endif
       call tinitr(trans)
-c      trf0=trf0+codi(5)
-c      codi(5)=0
       codf=codi
       trf00=trf0
       call tturne(trans,codf,beam,

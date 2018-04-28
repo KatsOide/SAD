@@ -106,10 +106,7 @@ c      write(*,*)'tmulte-ndiv ',ndiv
       h0=p2h(p0)
       p1=gammab(l+1)
       h1=p2h(p1)
-c      write(*,'(a,1p6g15.7)')'tebnde ',al,
-c     $     p0*amass,p1*amass,cod(6)
-c      h1=sqrt(p1**2+1.d0)
-      if(acc)then
+      if(vc .ne. 0.d0)then
         if(harm .eq. 0.d0)then
           w=pi2*freq/c
         else
@@ -120,28 +117,37 @@ c      h1=sqrt(p1**2+1.d0)
         else
           wi=1.d0/w
         endif
-        v=vc/amass*abs(charge)
-        ndiv=max(ndiv,1+int(min(abs(w*al),
-     $       sqrt((v*(1.d0/h0+1.d0/h1))**2/3.d0/eps))))
-        aln=al/ndiv
-        vn=v/ndiv
-        vcn=vc/ndiv
-        phis=trf0*w
-        phic=phi*sign(1.d0,charge)
-        v10a=0.d0
-        v11a=0.d0
-        v20a=vn*(w*(.5d0/p0+.5d0/p1))**2/4.d0
-        v02a=vn*(w*(.5d0/p0+.5d0/p1))**2/4.d0
-        if(trpt .or. radcod .or. autophi)then
-          s0=0.d0
-          offset1=0.d0
-        else
-          s0=sin(phis)
-          offset1=sin(phis)
-        endif
         vc0=vc0+vc
         if(omega0 .ne. 0.d0)then
           hvc0=hvc0+(c*w)/omega0*vc
+        endif
+        if(rfsw)then
+          v=vc/amass*abs(charge)
+          ndiv=max(ndiv,1+int(min(abs(w*al),
+     $         sqrt((v*(1.d0/h0+1.d0/h1))**2/3.d0/eps))))
+          aln=al/ndiv
+          vn=v/ndiv
+          vcn=vc/ndiv
+          phis=trf0*w
+          phic=phi*sign(1.d0,charge)
+          v10a=0.d0
+          v11a=0.d0
+          v20a=vn*(w*(.5d0/p0+.5d0/p1))**2/4.d0
+          v02a=vn*(w*(.5d0/p0+.5d0/p1))**2/4.d0
+          if(trpt .or. radcod .or. autophi)then
+            s0=0.d0
+            offset1=0.d0
+          else
+            s0=sin(phis)
+            offset1=sin(phis)
+          endif
+        else
+          phii=phic
+          sp=sin(phii)
+          cp=cos(phii)
+          dvcacc=dvcacc+vc*cp*w
+          ddvcacc=ddvcacc+vc*sp*w**2
+          vcacc=vcacc-vc*sp
         endif
       else
         aln=al/ndiv

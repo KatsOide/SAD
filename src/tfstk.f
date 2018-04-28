@@ -455,31 +455,19 @@ c     endif
       module tfcode
       use tfmem, only:sad_descriptor
       real*8, parameter :: xinfinity=1.7976931348623157D308
-      integer*4 ntfoper,ntfreal,ntflist,ntflistr,ntfdef,ntfstkseq,
-     $     ntfstring,ntfsymbol,ntfpat,ntffun,ntfstk,ntfarg
-      parameter (ntfoper=0,ntfreal=1,ntflist=3,ntflistr=4,ntfstkseq=5,
-     $     ntfstk=6,
-     $     ntfstring=101,ntfsymbol=201,ntfpat=203,ntfarg=205,
-     $     ntffun=ntfoper,ntfdef=ntfsymbol)
-      integer*4 nfunif,nfunlength,nfundo,nfunmodule,nfunblock,
-     $     nfununeval,nfunwith,nfunthread
-      parameter (nfunif=39,nfunlength=20,nfundo=29,nfunmodule=34,
-     $     nfunblock=35,nfununeval=132,nfunwith=141,nfunthread=83)
-      integer*4 mtfnull,mtfneg,mtfinv,mtfplus,mtfminus,mtfmult,mtfdiv,
-     $     mtfdot,mtfpower,mtfequal,mtfunequal,mtfgreater,mtfless,
-     $     mtfgeq,mtfleq,mtfsame,mtfunsame,mtfnot,mtfand,mtfor,
-     $     mtfconcat,mtfleftbra,mtfrightbra,mtfleftbrace,
-     $     mtfrightbrace,mtfsetdelayed,mtfset,mtfcomplex,mtfleftparen,
-     $     mtfrightparen,mtfcomma,mtftimes,
-     $     mtfcomp,mtffun,mtfcolon,mtfrule,mtfruledelayed,mtfreplace,
-     $     mtfreplacerepeated,mtfupset,mtfupsetdelayed,mtfunset,
-     $     mtfpattest,mtfflag,mtfslot,mtfslotseq,mtfrevpower,mtfalt,
-     $     mtflist,mtfmap,mtfmapall,mtfapply,mtfrepeated,
-     $     mtfrepeatednull,mtfinequality,mtfaddto,mtfsubtractfrom,
-     $     mtftimesby,mtfdivideby,mtfincrement,mtfdecrement,
-     $     mtfpart,mtfatt,mtfmessagename,mtftagset,
-     $     mtfleftcomment,mtfrightcomment,mtfhold,mtfend
-      parameter (
+      integer*4, parameter :: ntfoper=0,ntfreal=1,ntflist=3,ntflistr=4,
+     $     ntfstkseq=5,
+     $     ntfstk=6,ntfstring=101,ntfsymbol=201,ntfpat=203,ntfarg=205,
+     $     ntffun=ntfoper,ntfdef=ntfsymbol
+      integer*4, parameter :: nfunif=39,nfunlength=20,nfunreppart=22,
+     $     nfundo=29,
+     $     nfunmodule=34,nfunblock=35,nfunswicases=37,
+     $     nfunselect=41,nfunappend=44,
+     $     nfunprepend=45,nfunposition=59,nfunthread=83,nfunscan=96,
+     $     nfununeval=132,nfuncases=133,nfundelcases=134,
+     $     nfunwith=141,nfunselcases=142,nfunextract=154,
+     $     nfuninsert=177,nfundelete=178
+      integer*4, parameter ::
      $     mtfnull=0,
      $     mtfneg=1,mtfinv=2,mtfplus=3,mtfminus=4,mtfmult=5,mtfdiv=6,
      $     mtfrevpower=7,mtfpower=8,mtfequal=9,mtfunequal=10,
@@ -500,7 +488,7 @@ c     endif
      $     mtfpart=59,mtfatt=60,mtfmessagename=61,mtftagset=62,
      $     mtfleftcomment=63,mtfrightcomment=64,mtfhold=65,
      $     mtfend=66,
-     $     mtflist=mtfleftbrace,mtftimes=mtfmult)
+     $     mtflist=mtfleftbrace,mtftimes=mtfmult
       integer*4 mtfnopc
       parameter (mtfnopc=mtfend)
       integer*4 lsimplepat,lsimplepatlist,lconstlist,lnoconstlist,
