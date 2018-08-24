@@ -45,7 +45,7 @@
       return
       end
 
-      subroutine tfefunref(isp1,kx,upvalue,irtc)
+      recursive subroutine tfefunref(isp1,kx,upvalue,irtc)
       use tfstk
       use tfmem
       use tfshare

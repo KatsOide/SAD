@@ -26,9 +26,10 @@ KBF$ListFiles[pwd_,currfilter0_,wl_,fork_:False] := Module[
     ];
   If[currfilter=="",currfilter = "*"];
   Check[
-    If[(f = OpenRead["!unset LANG LC_TIME;cd "//pwd//";ls -lstL"])<=>$Failed,
+    If[(f = OpenRead["!unset LANG LC_TIME;cd "//pwd//";ls -ltL"])<=>$Failed,
       l=Table[
         c=Read[f,Word];
+!        Print["LF: ",c];
         If[c===EndOfFile,Break[]];
         lmode=StringLength[c];
         c=c[1];

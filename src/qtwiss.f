@@ -805,8 +805,8 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       implicit none
       type (ffs_bound) fbound
       real*8 conv,cx,sx,ax,bx,cy,sy,ay,by,r0,dcod(6)
-      integer*4 itmax
-      parameter (conv=1.d-20,itmax=15)
+      integer*4 , parameter :: itmax=15
+      real*8 , parameter :: conv0=1.d-19,conv1=1.d-10
       integer*4 idp,it
       real*8 r,fact
       real*8 trans(4,5),cod(6),cod0(6),trans1(4,5),transb(4,5),
@@ -816,6 +816,7 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       r0=1.d100
       cod00=cod0
       fact=.5d0
+      conv=min(conv1,conv0*(1.d0+(cod0(6)/0.001d0)**2))
       stab=.false.
       do while(it .le. itmax)
         cod=cod0

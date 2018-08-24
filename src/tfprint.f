@@ -2,7 +2,7 @@
       use tfstk
       use tfcode
       use iso_c_binding
-      use tfcsi,only:cssetp
+      use tfcsi,only:cssetp,ios,icsmrk
       implicit none
       type (sad_dlist), pointer :: klx
       type (sad_symdef), pointer :: symd
@@ -17,9 +17,9 @@
       real*8 , parameter :: amaxline=8
       character*256 word0,word1
       itx=-1
+c      write(*,*)'tfprint ',icsmrk()
       call unreadbuf(word,irtc)
       if(irtc .ne. 0)then
-c        write(*,*)'tfprint-unreadbuf ',irtc,next
         call skipline
         exist=.true.
         return
@@ -266,6 +266,9 @@ c      endif
         if(word1(1:l) .eq. word2(1:l))then
 c          write(*,*)'unreadbuf ',i,l,' ',buffer(i+l:i+l),
 c     $         ' ',word(1:l)
+c          if(i .gt. 1)then
+c            write(*,*)'pre-delim: ',buffer(i-1:i-1)
+c          endif
           if(index(delim(1:ldel),buffer(i+l:i+l)) .gt. 0 .and.
      $         (i .eq. 1 .or.
      $         index(delim(1:ldel),buffer(i-1:i-1)) .gt. 0 .or.

@@ -31,15 +31,14 @@
       use findr
       implicit none
       type (sad_descriptor) kx,ke
-      integer*4 nvmax,maxi0
-      real*8 eps0
-      parameter (nvmax=2048,maxi0=50,eps0=1.d-20)
+      real*8 , parameter :: eps0=1.d-20, frac0=1.d-7
+      integer*4 , parameter :: nvmax=2048, maxi0=50
       type (symv) sav(nvmax),sav0(nvmax)
       type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: klo
       integer*8 kdl(nvmax)
       integer*4 isp1,irtc,neq,nvar,itfmessage,isp2,i,maxi,ispv
-      real*8 v0(nvmax),eps,vmin(nvmax),vmax(nvmax),d0
+      real*8 v0(nvmax),eps,vmin(nvmax),vmax(nvmax),d0,frac
       logical*4 trace,used
       integer*8 itfres
       data itfres /0/
@@ -62,8 +61,15 @@
           maxi=int(klo%rbody(1))
           eps=klo%rbody(2)
           trace=klo%rbody(3) .ne. 0.d0
-          used=klo%rbody(4) .ne. 0.d0
+          used=klo%rbody(4) .ge. 1.d0
         endif          
+      endif
+      if(.not. used)then
+        if(klo%rbody(4) .gt. 0.d0)then
+          frac=klo%rbody(4)
+        else
+          frac=frac0
+        endif
       endif
       if(ispv .lt. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2 or more"')
@@ -89,7 +95,7 @@ c      write(*,*)'findroot-D ',used
         endif
       endif
       call tfnewton(ke%k,sav,v0,d0,kdl,
-     $     vmin,vmax,neq,nvar,maxi,eps,trace,irtc)
+     $     vmin,vmax,neq,nvar,maxi,eps,trace,frac,irtc)
       call tflocal1(ke%k)
       if(irtc .ne. 0)then
         go to 9000
@@ -108,7 +114,7 @@ c      write(*,*)'findroot-D ',used
       end
 
       subroutine tfnewton(ke,sav,v0,d0,kdl,vmin,vmax,
-     $     neq,nvar,maxi,eps,trace,irtc)
+     $     neq,nvar,maxi,eps,trace,frac,irtc)
       use tfstk
       use findr
       implicit none
@@ -120,8 +126,8 @@ c      write(*,*)'findroot-D ',used
      $     v(nvar),a0(neq,nvar),fact,fact1,fact2,d0,d,d1,d2,
      $     dg,am,sv,goal,s,tffsfmin,svi,vmin(nvar),vmax(nvar)
       logical*4 trace
-      real*8 frac,factmin,svmin
-      parameter (frac=1.d-7,factmin=1.d-4,svmin=1.d-7)
+      real*8 frac
+      real*8 , parameter :: factmin=1.d-4,svmin=1.d-7
       iter=0
       call tfevalresidual(sav,v0,ke,f0,am,d0,nvar,neq,trace,irtc)
       goal=am*eps

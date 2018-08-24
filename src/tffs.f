@@ -1809,7 +1809,7 @@ c      call tfree(ifibzl)
       return
       end
 
-      subroutine tfffs(isp1,kx,irtc)
+      recursive subroutine tfffs(isp1,kx,irtc)
       use tfstk
       use ffs
       use tffitcode
@@ -1817,7 +1817,7 @@ c      call tfree(ifibzl)
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
-      integer*4 outfl1,irtc,narg,
+      integer*4 outfl1,irtc,narg,llinep,
      $     lfno1,lfni1,lfn11,lfret,lfrecl,
      $     isp1,itfmessage
       character*10 strfromis
@@ -1851,6 +1851,7 @@ c      call tfree(ifibzl)
       lfn11=icslfn1()
       lfret=icsmrk()
       lfrecl=icslrecl()
+      llinep=icslinep()
       call cssetp(lfrecl)
       call setbuf(str%str,str%nch)
       call cssetp(lfrecl)
@@ -1858,9 +1859,11 @@ c      call tfree(ifibzl)
       call tclrfpe
       call cssetp(lfret)
       call cssetl(lfrecl)
+      call cssetlinep(llinep)
       call cssetlfno(lfno1)
       call cssetlfni(lfni1)
       call cssetlfn1(lfn11)
+c      write(*,*)'tfffs ',lfret,lfrecl
       outfl=outfl1
       if(irtc .eq. 0 .and. iffserr .ne. 0)then
         irtc=itfmessage(9,'FFS::error',strfromis(iffserr))

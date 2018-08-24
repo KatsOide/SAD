@@ -218,6 +218,7 @@ c
         ios=0
       endif
       call getwrd(word)
+c      write(*,*)'tffa ',ios,' ',word(1:lenw(word))
       if(ios .ne. 0)then
         go to 10
       endif

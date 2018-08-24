@@ -1,4 +1,4 @@
-(* emit.n 6/1/2007 *)
+(* emit.n 6/23/2018 *)
 
 With[{default={OneTurnInformation->False,
   Orbit->False,Matrix->False,ExpandElementValues->True,
@@ -100,7 +100,7 @@ Touschek=Class[{},{},{id,sp,spz,spxz,spyz,zl,
   With[{eeuler=7.982212789187259,a=5.62966,b=0.75159},
     TouschekF[x_]:=(Log[1/x/eeuler+1]*Exp[-x]*(b+eeuler*x)/(b+x*(a+2*x)))/x];
 
-  TouschekLifetime[INF,INF,nz_]:=(Setup[TouschekTable];
+  TouschekLifetime[INF,INF,nz_Real]:=(Setup[TouschekTable];
     Module[{sz=nz*SIGE},
       Which[
         sz<dpmin,
@@ -108,7 +108,7 @@ Touschek=Class[{},{},{id,sp,spz,spxz,spyz,zl,
         True,
         1/spz[sz]]]);
 
-  TouschekLifetime[nx_,INF,nz_]:=(Setup[TouschekTable];
+  TouschekLifetime[nx_Real,INF,nz_Real]:=(Setup[TouschekTable];
     Which[
       nz<nzmin,
       (nz/nzmin)^2*TouschekLifetime[nx,INF,nzmin],
@@ -118,9 +118,11 @@ Touschek=Class[{},{},{id,sp,spz,spxz,spyz,zl,
       1/Spline[
         Thread[{zl,spxz[Min[nx,nxmax]]}]][Min[nz,nzmax]]]);
 
-  TouschekLifetime[INF,ny_,nz_]:=(Setup[TouschekTable];1/Spline[
+  TouschekLifetime[INF,ny_Real,nz_Real]:=(Setup[TouschekTable];1/Spline[
     Thread[{zl,spyz[Restrict[ny,nymin,nymax]]}]][Restrict[nz,nzmin,nzmax]]);
-  
+
+  TouschekLifetime[__]=NaN;
+
   ];
 
 The$Touschek=Touschek[];
