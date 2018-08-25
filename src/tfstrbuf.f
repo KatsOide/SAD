@@ -6,7 +6,7 @@
       type (sad_string) string(1:0)
       integer*4 indw,llevel,remlines,maxllevel,column,lexp,nch,maxnch
       integer*1 istr(1:0)
-      character*(2**30) str
+      character*(mbody) str
       end type
 
       contains

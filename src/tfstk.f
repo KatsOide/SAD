@@ -24,6 +24,7 @@ c Do not forget to update sim/MACCODE.h when you change this module!!!!
 
       module maccbk
       implicit none
+      public
       integer*4 FLAGON,FLAGOF
       parameter (FLAGON=-1,FLAGOF=0)
       integer*4 HTMAX,MAXPNAME,LILISTDUMMY
@@ -128,12 +129,12 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
 
       module tfmem
       implicit none
-      integer*8, parameter :: mpsize=2**22,kcpklist0=0,maxstack=2**25
+      integer*8, parameter :: mpsize=2**22,kcpklist0=0,maxstack=2**25,
+     $     minstack=2**18
       integer*4, parameter :: nindex=64,mhash=32767,
      $     minseg0=9,minseg1=16,minseg2=16
       integer*4, parameter :: ncbk = 2**16
-      integer*8, parameter :: kcpoffset = 0*2**28,
-     $     kcpthre  = 2**34, nlarge = 2**30, nitaloc0 = 2**24
+      integer*8, parameter :: kcpoffset = 0
       type cbkalloc
         integer*8, allocatable :: ca(:)
       end type
@@ -546,6 +547,7 @@ c     endif
      $     ktamask  =int8(z'0001ffffffffffff'),
      $     ktftrue  =int8(z'3ff0000000000000'),
      $     ktfnan   =int8(z'fff8000000000000'))
+      integer*4 , parameter :: mbody = 2**12
 
       type sad_object
       sequence
@@ -553,7 +555,7 @@ c     endif
       type (sad_descriptor) alloc
       integer*4 ref,nl
       integer*8 body(1:0)
-      type (sad_descriptor) dbody(0:2**31-2)
+      type (sad_descriptor) dbody(0:mbody)
       end type
 
       type sad_list
@@ -566,7 +568,7 @@ c     endif
       real*8 rbody(1:0)
       complex*16 cbody(1:0)
       type (sad_descriptor) dbody(1:0)
-      integer*8 body(1:2**31-1)
+      integer*8 body(1:mbody)
       end type
 
       type sad_dlist
@@ -580,7 +582,7 @@ c     endif
       real*8 rbody(1:0)
       complex*16 cbody(1:0)
       integer*8 body(1:0)
-      type (sad_descriptor) dbody(1:2**31-1)
+      type (sad_descriptor) dbody(1:mbody)
       end type
 
       type sad_rlist
@@ -594,7 +596,7 @@ c     endif
       complex*16 cbody(1:0)
       integer*8 body(1:0)
       type (sad_descriptor) dbody(1:0)
-      real*8 rbody(1:2**31-1)
+      real*8 rbody(1:mbody)
       end type
 
       type sad_complex
@@ -653,7 +655,7 @@ c     endif
       integer*1 istr(1:0)
       integer*8 kstr(1:0)
 c size limitation due to gfortran 7 on macOS ???
-      character*(2**30) str
+      character*(mbody) str
       end type
 
       type sad_namtbl
@@ -689,6 +691,7 @@ c size limitation due to gfortran 7 on macOS ???
       use tfcode
       use maccbk
       use tfmem, only:sad_loc,ksad_loc,ktaloc,tfree
+      public
       integer*8 ispbase
       integer*4 mstk,isp,ivstkoffset,ipurefp,napuref,isporg
       integer*4, pointer, dimension(:,:) :: ivstk,itastk,ivstk2,itastk2
@@ -920,7 +923,7 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
       contains
         subroutine tfinitstk
         use iso_c_binding
-        use tfmem, only:maxstack
+        use tfmem, only:maxstack,minstack
         implicit none
         integer*4 idummy
         if(tfstkinit)then
@@ -931,7 +934,7 @@ c        mstk=max(2**18,int(rgetgl1('STACKSIZ')))
         ispbase=0
         do while (ispbase .le. 0)
           mstk=mstk/2
-          if(mstk .lt. 2**18)then
+          if(mstk .lt. minstack)then
             write(*,*)'Stack allocation failed: ',mstk,ispbase
             call abort
           endif

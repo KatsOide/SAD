@@ -1,5 +1,5 @@
       function Lrdnum(idxl,token,slen,ttype)
-c     $Header: /SAD/work/cvsclone/oldsad/src/Lrdnum.f,v 1.2.14.5 2016-09-09 12:08:57 oide Exp $
+c     $Header: /SAD/cvsroot/oldsad/src/Lrdnum.f,v 1.2.14.5 2016/09/09 12:08:57 oide Exp $
       use maccbk
       use maccode
       use macttyp

@@ -1,11 +1,11 @@
       module sad_main
-        use tfstk, only:sad_descriptor
+        use tfstk, only:sad_descriptor,mbody
         integer*4, parameter ::expnsize=7
 
         type sad_el
         sequence
         integer*4 nlat1,dum1
-        integer*8 aux,comp(1:2**31-2)
+        integer*8 aux,comp(1:mbody)
         end type
 
         type sad_comp
@@ -15,7 +15,7 @@
         real*8 orient
         type (sad_descriptor) dvalue(1:0)
         integer*8 kvalue(1:0)
-        real*8 value(1:2**31-2)
+        real*8 value(1:mbody)
         end type
 
         contains

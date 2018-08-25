@@ -2,7 +2,7 @@
 ! TaylorMap(Differential Algebra) Support Library
 !
 ! Maintainor: A.Morita(4794)
-! Revision:   $Id: TaylorMap.n,v 1.1 2006-09-12 04:30:27 amorita Exp $
+! Revision:   $Id: TaylorMap.n,v 1.1 2006/09/12 04:30:27 amorita Exp $
 ! Style:      Class Module
 ! Require:    
 !

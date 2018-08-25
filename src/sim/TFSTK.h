@@ -31,8 +31,8 @@ extern integer8		__tfstk_MOD_ispbase;
 #define  ivstk(off, index)	ilist(off, index+ispbase)
 #define rtastk(     index)	rlist(     index+ispbase)
 #define itastk(off, index)	ilist(off, index+ispbase)
-#define jtastk(off, index)	\
-	(((integer2*)(lm_table->rlist0 + (index+ispbase)))[(off) - 1])
+/* #define jtastk(off, index)                                            \
+   (((integer2*)(lm_table->rlist0 + (index+ispbase)))[(off) - 1]) */
 #define ktastk(     index)      klist(     index+ispbase)
 
 /* tfstk common block macro */

@@ -1,5 +1,13 @@
+<<<<<<< .mine
+Help$Update="$Date: 2017/04/11 06:33:31 $"[8,17];
+Help$Version="1.1.0.3k64";
+||||||| .r6119
+Help$Update="$Date: 2017-04-11 06:33:31 $"[8,17];
+Help$Version="1.1.0.3k64";
+=======
 Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
 Help$Version=$Version;
+>>>>>>> .r6187
 
 Help$Messages=(Print["SAD/FFS Help Update: ",Help$Update];{
 {" ",

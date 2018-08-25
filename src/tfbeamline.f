@@ -413,13 +413,16 @@
           endif
           call expln(idl)
           idx=idval(ilist(2,idval(idl)))
+          idx=idval(ilist(2,idval(idl)))
         endif
       endif
       call loc_el(idx,el)
+c      write(*,*)'extractbeamline-0 ',idx,idl,el%comp(1),el%comp(2),ename
       n=el%nlat1-2
       kx=kxadaloc(-1,n,klx)
       klx%head=dtfcopy1(kxsymbolz('BeamLine',8))
       do i=1,n
+c        write(*,*)'extractbeamline ',i,n,el%comp(i)
         ename=pname(idcomp(el,i))
         if(dircomp(el,i) .ge. 0.d0)then
           klx%dbody(i)=dtfcopy1(kxsymbolf(ename,lenw(ename),.true.))
