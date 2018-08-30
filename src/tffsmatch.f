@@ -208,8 +208,6 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                   endif
                   rp0=rp
                   r0=r
-                else
-                  crate=1.d-300
                 endif
                 alate=fuzz(dble(iter),aitm1,aitm2)
                 smallf=1.d0-fuzz(log10(fact),flim1,flim2)
@@ -1258,6 +1256,7 @@ c            call tfmemcheckprint('solv-i-2',.true.,irtc)
         endif
       enddo
 c      call tfmemcheckprint('solv-2',.true.,irtc)
+c      write(*,'(1p4g15.7)')((qu0(i,j),j=1,nvar),i=1,nj)
       call tsolva(qu0,b,dval,nj,nvar,nqcol,eps)
 c      call tfmemcheckprint('solv-3',.true.,irtc)
       again=.false.
