@@ -132,7 +132,7 @@ c     $     vstk(ivstkoffset+isp1+2)),f,1,tr)
       type (sad_descriptor) kx
       type (sad_rlist), pointer :: klr
       integer*4 isp1,irtc,i,itfmessage
-      real*8 fx,fy,fu
+      real*8 fx,fy,fu,fxx,fyy,fxy
       if(isp .ne. isp1+4)then
         go to 9000
       endif
@@ -142,11 +142,14 @@ c     $     vstk(ivstkoffset+isp1+2)),f,1,tr)
         endif
       enddo
       call twspfu(rtastk(isp1+1),rtastk(isp1+2),
-     $     rtastk(isp-1),rtastk(isp),fx,fy,fu)
-      kx=kxavaloc(-1,3,klr)
+     $     rtastk(isp-1),rtastk(isp),fx,fy,fu,fxx,fyy,fxy)
+      kx=kxavaloc(-1,6,klr)
       klr%rbody(1)=fx
       klr%rbody(2)=fy
       klr%rbody(3)=fu
+      klr%rbody(4)=fxx
+      klr%rbody(5)=fyy
+      klr%rbody(6)=fxy
       irtc=0
       return
  9000 irtc=itfmessage(9,'General::wrongtype','"x, y, sigx, sigy"')

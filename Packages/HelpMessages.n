@@ -1,4 +1,5 @@
-Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
+Help$Update="$Date: 2018/10/05 23:30:00 $"[8,17];
+!Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
 Help$Version=$Version;
 
 Help$Messages=(Print["SAD/FFS Help Update: ",Help$Update];{
@@ -2625,7 +2626,7 @@ pattern:v   a pattern which has a default value v when matching is failed.\n\
 pattern..   a non-null sequence of arguments each of which matches pattern.\n\
 pattern...  a sequence, which can be null, of arguments each of which matches pattern.\n\
 expression  matches expression.",
-     "MatchQ function-definition rules",
+     "MatchQ defining-functions rules",
 
      Sort[{
        {"MatchQ",
@@ -2635,7 +2636,7 @@ expression  matches expression.",
          {}}
        }]},
 
-  {"function-definition",
+  {"defining-functions",
     "\
  A function is defined by one of the following forms:\n\n\
 f[pat1 [,pat2...]] (:)= body;\n\
@@ -2875,7 +2876,7 @@ FFS-dedicated-functions:\n\
    BeamMatrix CalculateOptics DynamicApertureSurvey Element Emittance FFS\n\
    FitValue FitWeight GeoBase LINE OptimizeOptics OrbitGeo RadiationField\n\
    RadiationSpectrum SymplecticJ SetElement TrackParticles Twiss VariableRange\n\
-   TouschekLifetime WakeFunction\n\
+   SynchroBetaEmittance TouschekLifetime WakeFunction\n\
 Beam-line-functions:\n\
    BeamLine BeamLineName ExtractBeamLine PrintBeamLine WriteBeamLine",
     "expression constants physical-constants beam-line-functions",
@@ -3364,7 +3365,7 @@ Exapmple:\n\
    Plot[{sp[x],Derivative[1][sp][x],Derivative[2][sp][x],Integrate[sp[y],{y,1,#}]&[x]}, {x,1,5}, FrameLabel->{\"x\"}, Thickness->2, Legend->{\"sp[x]\",\"sp'[x]\",\"sp''[x]\",\"Int sp[x]\"}];\n\
    Update[];\n\n\
 <Spline.png",
-         "function-definition Plot NIntegrate",
+         "defining-functions Plot NIntegrate",
          {}},
 
        {"NIntegrate",
@@ -4207,8 +4208,8 @@ Usage:\n\n\
 or\n\n\
    SynchroBetaEmittance[nus0,options]\n\n\
 where nus0, nus1, and dnus are the starting, ending and step size of synchrotron tune, respectively. If only nus0 is given, calculation is done only for nus0. The returned value is a list:\n\n\
-   {{nus, emitx, emity, conv}, ... }\n\n\
-where nus, emitx, emity, conv are the synchrotron tune, equilibrium horizontal and vertical emittance, and the convergence. When conv is negative, calculation failed to converge, and the returned emittances are not reliable.\n\n\
+   {{nus, emitx, emity, emitxp, emityp, conv}, ... }\n\n\
+where nus, emitx, emity, emitxp, emityp, conv are the synchrotron tune, equilibrium horizontal and vertical emittances, horizontal and vertical projected emittances, and the convergence, respectively. When conv is negative, calculation failed to converge, and the returned emittances are not reliable.\n\n\
 Options               Type        Default     Meaning\n\
 -----------------------------------------------------------\n\
 AzimuthalModes        Real        9           Number of azimuthal modes",

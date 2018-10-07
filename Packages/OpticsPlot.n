@@ -174,7 +174,7 @@ With[{tdr:=TopDrawer,cdr:=CanvasDrawer},
   SetAttributes[PlotColorDefault,HoldAll];
   PlotColorDefault[tdr]={"black"};
   PlotColorDefault[cdr]=
-    {"dark slate blue","red3","green","violet red","purple"};
+    {"dark slate blue","red3","forest green","goldenrod","purple"};
   SetAttributes[PlotColorDefault,HoldNone]];
 
 With[{def={PlotRange->Automatic,

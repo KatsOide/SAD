@@ -1,1 +1,1 @@
-/Users/oide/SAD/oldsad/contrib/gdtoa/strtord.c
+/home/oide/SAD/oldsad/contrib/gdtoa/strtord.c

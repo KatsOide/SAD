@@ -356,7 +356,7 @@ c      h1=sqrt(1.d0+p1**2)
      $     al,cod(6),beam(42),
      $     xx1,yy1,xy1,a,c1,s1,sx,sy,p1,h1,f,dx,dy,
      $     dx1,dy1,dpx,dpy,pr,u,v,theta,sigzsq,
-     $     az,dg,dpr,pr1,fx,fy,fu,xc,yc,zc
+     $     az,dg,dpr,pr1,fx,fy,fu,xc,yc,zc,fxx,fyy,fxy
       integer*4 ia(6,6)
       data ia/ 1, 2, 4, 7,11,16,
      1         2, 3, 5, 8,12,17,
@@ -404,7 +404,7 @@ c      h1=p1*sqrt(1.d0+1.d0/p1**2)
         dx1= dx*c1+dy*s1
         dy1=-dx*s1+dy*c1
         az=f*exp(-.5d0*(z(i)-zc)**2/sigzsq)
-        call twspfu(dx1,dy1,sx,sy,fx,fy,fu)
+        call twspfu(dx1,dy1,sx,sy,fx,fy,fu,fxx,fyy,fxy)
 c        bb=bbkick1(dx1,dy1,sx,sy)
 c        call bbkick(dcmplx(sx,sy),dcmplx(dx1,dy1),
 c     $       bb,1,tr)
@@ -524,12 +524,12 @@ c     $       epslon,epsabs,8)+rlog
       return
       end
 
-      subroutine twspfu(x,y,sigx,sigy,fx,fy,fu)
+      subroutine twspfu(x,y,sigx,sigy,fx,fy,fu,fxx,fyy,fxy)
       use tfstk
       implicit none
       integer*8 iu
       integer*4 nr,nx,ny,m
-      real*8 x,y,sigy,sigx,fx,fy,fu
+      real*8 x,y,sigy,sigx,fx,fy,fu,fxx,fyy,fxy
       parameter (nr=20,nx=60,ny=60,m=(nr+1)*(nx+1)*(ny+1))
       data iu /0/
       if(iu .eq. 0)then
@@ -540,12 +540,12 @@ c     $       epslon,epsabs,8)+rlog
      $       rlist(iu+6*m),rlist(iu+7*m))
       endif
       if(sigx .lt. sigy)then
-        call twspfu0(y,x,sigy,sigx,fy,fx,fu,
+        call twspfu0(y,x,sigy,sigx,fy,fx,fu,fxx,fyy,fxy,
      $       rlist(iu),rlist(iu+m),rlist(iu+2*m),
      $       rlist(iu+3*m),rlist(iu+4*m),rlist(iu+5*m),
      $       rlist(iu+6*m),rlist(iu+7*m))
       else
-        call twspfu0(x,y,sigx,sigy,fx,fy,fu,
+        call twspfu0(x,y,sigx,sigy,fx,fy,fu,fxx,fyy,fxy,
      $       rlist(iu),rlist(iu+m),rlist(iu+2*m),
      $       rlist(iu+3*m),rlist(iu+4*m),rlist(iu+5*m),
      $       rlist(iu+6*m),rlist(iu+7*m))
@@ -553,11 +553,11 @@ c     $       epslon,epsabs,8)+rlog
       return
       end
 
-      subroutine twspfu0(x,y,sigx,sigy,fx,fy,fu,
+      subroutine twspfu0(x,y,sigx,sigy,fx,fy,fu,fxx,fyy,fxy,
      $     u,uxx,uyy,uxxyy,urr,uxxrr,uyyrr,uxxyyrr)
       implicit none
       integer*4 nr,nx,i,j,n,ny
-      real*8 xm,xstep,x,y,r,sigy,sigx,fx,fy,fu,
+      real*8 xm,xstep,x,y,r,sigy,sigx,fx,fy,fu,fxx,fyy,fxy,
      $     rstep,rm,ym,ystep
       parameter (nr=20,nx=60,ny=60,xm=15.d0,ym=30.d0,rm=5.d0)
       parameter (xstep=xm/nx,rstep=rm/nr**2,ystep=ym/ny)
@@ -566,7 +566,8 @@ c     $       epslon,epsabs,8)+rlog
       real*8 urr(0:nx,0:ny,0:nr),uxxrr(0:nx,0:ny,0:nr),
      $     uyyrr(0:nx,0:ny,0:nr),uxxyyrr(0:nx,0:ny,0:nr)
       real*8 rl,ax,ay,aax,aay,ar,bax,bay,aax2,aay2,ar2,
-     $     br,br2,bax2,bay2,u0,u1,u2,u3,twspu,
+     $     br,br2,bax2,bay2,u0,u1,u2,u3,twspu,dxs,dys,
+     $     aax23,bax23,aay23,bay23,
      $     uxx0,uxx1,uxx2,uxx3,uyy0,uyy1,uyy2,uyy3,
      $     uxxyy0,uxxyy1,uxxyy2,uxxyy3,
      $     up,uq,ur,us,uyyp,uyyq,uxxr,uxxs
@@ -578,12 +579,14 @@ c     $       epslon,epsabs,8)+rlog
       if(n .ge. nr)then
         go to 9000
       endif
-      ax=abs(x)/sigx/xstep
+      dxs=xstep*sigx
+      dys=ystep*sigy
+      ax=abs(x)/dxs
       i=int(ax)
       if(i .ge. nx)then
         go to 9000
       endif
-      ay=abs(y)/sigy/ystep
+      ay=abs(y)/dys
       j=int(ay)
       if(j .ge. ny)then
         go to 9000
@@ -603,6 +606,8 @@ c     $       epslon,epsabs,8)+rlog
       bax2=-aax*(bax+1.d0)
       aay2=-bay*(aay+1.d0)
       bay2=-aay*(bay+1.d0)
+c      daay2=-(aay+1.d0)+bay=-aay-aay=-2*aay
+c      dbay2=-(bay+1)+aay=-bay-bay=-2*bay
 c      write(*,*)'twspfu ',sigx,sigy
       u0=ar*(u(i,j,n)+ar2*urr(i,j,n))+
      $     br*(u(i,j,n1)+br2*urr(i,j,n1))
@@ -641,26 +646,40 @@ c      write(*,*)'twspfu ',sigx,sigy
       uyyp=aax*(uyy0+aax2*uxxyy0)+bax*(uyy1+bax2*uxxyy1)
       uyyq=aax*(uyy2+aax2*uxxyy2)+bax*(uyy3+bax2*uxxyy3)
       fu=aay*(up+aay2*uyyp)+bay*(uq+bay2*uyyq)
-      fy=((uq-up)-(3.d0*aay2+2.d0)*uyyp+(3.d0*bay2+2.d0)*uyyq)
-     $     /ystep/sigy
+      aax23=3.d0*aax2+2.d0
+      bax23=3.d0*bax2+2.d0
+      aay23=3.d0*aay2+2.d0
+      bay23=3.d0*bay2+2.d0
+      fy=((uq-up)-aay23*uyyp+bay23*uyyq)/dys
+      fyy=-6.d0*(aay*uyyp+bay*uyyq)/dys**2
+c      daay2=-(aay+1.d0)+bay=-aay-aay=-2*aay
 c      write(*,*)'twspfu ',ay,j,fy,uyy0,uyy2,uyyp,uyyq
       ur=aay*(u0+aay2*uyy0)+bay*(u2+bay2*uyy2)
       us=aay*(u1+aay2*uyy1)+bay*(u3+bay2*uyy3)
       uxxr=aay*(uxx0+aay2*uxxyy0)+bay*(uxx2+bay2*uxxyy2)
       uxxs=aay*(uxx1+aay2*uxxyy1)+bay*(uxx3+bay2*uxxyy3)
-      fx=((us-ur)-(3.d0*aax2+2.d0)*uxxr+(3.d0*bax2+2.d0)*uxxs)
-     $     /xstep/sigx
+      fx=((us-ur)-aax23*uxxr+bax23*uxxs)/dxs
+      fxx=-6.d0*(aax*uxxr+bax*uxxs)/dxs**2
+      fxy=(aax23* (uxx2 - uxx0 + bay23*uxxyy2 - aay23*uxxyy0)
+     $     - bax23* (uxx3 - uxx1 + bay23*uxxyy3 - aay23*uxxyy1)
+     $     + ((u2 - u0 + bay23*uyy2 - aay23*uyy0)
+     $     - (u3 - u1 + bay23*uyy3 - aay23*uyy1)))/dxs/dys
       if(x .gt. 0.d0)then
         fx=-fx
+        fxy=-fxy
       endif
       if(y .gt. 0.d0)then
         fy=-fy
+        fxy=-fxy
       endif
       return
  9000 z=bbkick1(x,y,sigx,sigy)
       fx=dble(z)
       fy=dimag(z)
       fu=twspu(x,y,sigx,sigy,1.d-8,1.d-11)
+      fxx=0.d0
+      fyy=0.d0
+      fxy=0.d0
 c      write(*,*)'twspfu ',x,y,sigx,sigy
       return
       end

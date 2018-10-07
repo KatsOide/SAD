@@ -36,6 +36,7 @@ c        write(*,*)'track-0.2 ',klist( 1621700052)
 c        write(*,*)'track-0.3 ',klist( 1621700052)
         call tfinitn
 c        write(*,*)'track-0.4'
+        call tfinittws
         call tfevals('CONVERGENCE=1E-9;ExponentOfResidual=2;'//
      $       'OffMomentumWeight=1;MatchingResidual=0;'//
      $       'NetResidual=0;StabilityLevel=0;'//

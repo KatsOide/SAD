@@ -138,7 +138,7 @@ C     if(j .lt. ndim+2)then
         endif
  10   continue
       anorm=0.d0
-      xmin=1.d38
+      xmin=1.d300
       do 20 i=1,mn
         p=sqrt(v(i))
         v(i+mn)=x(i)
@@ -345,9 +345,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
  1610         continue
               do 1710 i=iend,ibegin+1,-1
                 p=v(i+mn)*v(i-1)/v(i-1+mn)/x(i)
-c                do 1730 j=1,m
-                  a(i-1,1:m)=a(i-1,1:m)-p*a(i,1:m)
-c 1730           continue
+                a(i-1,1:m)=a(i-1,1:m)-p*a(i,1:m)
                 b(i-1)=b(i-1)-p*b(i)
                 v(i-1)=0.d0
  1710         continue

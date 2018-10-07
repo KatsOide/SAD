@@ -600,3 +600,18 @@ c        call tfdebugprint(it,ia,v,tag,3)
       isp=isp0
       return
       end
+
+      subroutine tfprintnan
+      use tfstk,only:dnotanumber
+      implicit none
+      integer*8 kfromr
+      real*8 x0,x1
+      x1=-1.d0
+      x0=0.d0
+      write(*,'(a,8('' '',z16))')'NaN: ',
+     $     kfromr(dnotanumber),kfromr(x0/(x1-x1)),
+     $     kfromr(sqrt(x1)),kfromr(log(x1)),kfromr(x0*(x1/x0)),
+     $     kfromr((-x0)*((-x1)/x0)),kfromr(x1/x0)
+      write(*,*)x0/x0,x1/x0,x0/(x1-x1)
+      return
+      end

@@ -45,7 +45,7 @@
       return
       end
 
-      subroutine tfefunref(isp1,kx,upvalue,irtc)
+      recursive subroutine tfefunref(isp1,kx,upvalue,irtc)
       use tfstk
       use tfmem
       use tfshare
@@ -214,7 +214,7 @@ c              Fit  Symb SyNm Extr Read Skip TmpN Exit StrF Rstr
 c              MM   Shrt Fork Dir  SDir Wait BesJ BesY BesI BesK
 c              BasF StrT S2S  Even OddQ DatS Inst Delt FlAt Repl
 c              SetE Spl$ FInd SCnt SCnP ToCt Ctxt BAnd BOr  BXor
-c              RepM MSca StdF Abrt ChkA RelH FrDS MapT ScaT Last
+c              RepM MSca StdF Abrt ChkA RelH NaNQ MapT ScaT Last
 c
 c              Frst Scnd Thrd ObjS PrdL GauC ClMO MAll Dupl GCLn
 c              Seek DigQ LetQ ReaQ NSmQ OpSh RdSh WrSh ShSz FBuQ
@@ -986,7 +986,7 @@ c        go to 6900
  2050   go to 6900
  2060   call tfreleasehold(isp1,kx,irtc)
         go to 6900
- 2070   irtc=itfmessage(999,'General::unregister',' ')
+ 2070   call tfnanqk(isp1,kx,irtc)
         go to 6900
  2080   call tfthread(isp1,kx,id-197,irtc)
         go to 6900

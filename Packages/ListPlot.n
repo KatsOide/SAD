@@ -4,7 +4,7 @@ Off[General::unprotconst];
 Unprotect[Scale,Tags,Text,Above,Below,Right,Left];
 On[General::unprotconst];
 SetAttributes[{Graphics,AspectRatio,PlotRange,
-  PlotRegion,PlotLabel,TickSize,Tags,Anchor,
+  PlotRegion,PlotLabel,TickSize,Tags,Anchor,TickColor,
   PlotJoined,StepRatio,PointSize,PointSymbol,PlotColor,Dashing,
   ErrorBarTickSize,ErrorBarThickness,PointColor,PointBorderColor,PointTags,
   LineTags,Thickness,FrameTicks,Initialize,FrameLabel,DisplayFunction,
@@ -20,7 +20,7 @@ SetAttributes[{Graphics,AspectRatio,PlotRange,
 Graphics$Options=AspectRatio|FrameLabel|PlotRange|GridLines|Alignment|DataRange|
   PlotRegion|PlotLabel|FrameTicks|TickSize|TickFont|Tags|Background|Frame|FrameClick|
     InfoBind|FrameUnitLabel|FontScale|TickFontScale|FrameFontScale|LegendFontScale|
-      FrameColor;
+      FrameColor|TickColor;
 
 With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
   AspectRatio->Automatic,PlotJoined->False,StepRatio->1,
@@ -32,6 +32,7 @@ With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
   PointTags->Null,LineTags->Null,Thickness->1,
   FrameTicks->{True,True,Ticks,Ticks},Initialize->True,
   FrameLabel->{"","","",""},FrameUnitLabel->{},FrameColor->"black",
+  TickColor->Null,
   FontScale->1,TickFontScale->1,FrameFontScale->1,LegendFontScale->1,
   DisplayFunction:>$DisplayFunction,RemoveOverlap->"",
   PlotLabel->"",Prolog->{},Epilog->{},Legend->False,

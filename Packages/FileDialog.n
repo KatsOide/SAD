@@ -1,3 +1,4 @@
+!!! File Dialog 10/5/2018
 !!! File Dialog 4/5/2018
 !!! File Dialog 4/21/2008
 !!! File Dialog 3/15/2005
@@ -26,9 +27,10 @@ KBF$ListFiles[pwd_,currfilter0_,wl_,fork_:False] := Module[
     ];
   If[currfilter=="",currfilter = "*"];
   Check[
-    If[(f = OpenRead["!unset LANG LC_TIME;cd "//pwd//";ls -lstL"])<=>$Failed,
+    If[(f = OpenRead["!unset LANG LC_TIME;cd "//pwd//";ls -lnatL"])<=>$Failed,
       l=Table[
         c=Read[f,Word];
+!        Print["LF: ",c];
         If[c===EndOfFile,Break[]];
         lmode=StringLength[c];
         c=c[1];
@@ -67,7 +69,7 @@ KBF$ListFiles[pwd_,currfilter0_,wl_,fork_:False] := Module[
   If[fork && KBF$LFPid===0,
     If[KBF$LFShare<=>$Failed,
       Check[Shared[KBF$LFShare]=l, Shared[KBF$LFShare]={}]]; 
-        Print["Exit Fork"];Exit[],
+        (* Print["Exit Fork"] *);Exit[],
     Scan[(#[Cursor]="left_ptr")&, wl]; Return[l]];
   ];
 

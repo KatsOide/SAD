@@ -24,6 +24,7 @@ c Do not forget to update sim/MACCODE.h when you change this module!!!!
 
       module maccbk
       implicit none
+      public
       integer*4 FLAGON,FLAGOF
       parameter (FLAGON=-1,FLAGOF=0)
       integer*4 HTMAX,MAXPNAME,LILISTDUMMY
@@ -128,12 +129,12 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
 
       module tfmem
       implicit none
-      integer*8, parameter :: mpsize=2**22,kcpklist0=0,maxstack=2**25
+      integer*8, parameter :: mpsize=2**22,kcpklist0=0,maxstack=2**25,
+     $     minstack=2**18
       integer*4, parameter :: nindex=64,mhash=32767,
      $     minseg0=9,minseg1=16,minseg2=16
       integer*4, parameter :: ncbk = 2**16
-      integer*8, parameter :: kcpoffset = 0*2**28,
-     $     kcpthre  = 2**34, nlarge = 2**30, nitaloc0 = 2**24
+      integer*8, parameter :: kcpoffset = 0
       type cbkalloc
         integer*8, allocatable :: ca(:)
       end type
@@ -528,7 +529,7 @@ c     endif
      $     irtcgoto=-6,irtcabort=-7
       integer*8 ktfoper,ktflist,ktfstring,ktfsymbol,ktfpat,ktfobj,
      $     ktfmask,ktamask,ktrmask,ktfnull,ktfnr,ktfref,ktfother,
-     $     ktomask,ktftrue,ktfnan
+     $     ktomask,ktftrue,ktfnan,ktfenan
       parameter (
      $     ktfnull  =int8(z'fff0000000000000'),
      $     ktfother =int8(z'fff2000000000000'),
@@ -545,7 +546,11 @@ c     endif
      $     ktfmask  =int8(z'fffe000000000000'),
      $     ktamask  =int8(z'0001ffffffffffff'),
      $     ktftrue  =int8(z'3ff0000000000000'),
-     $     ktfnan   =int8(z'fff8000000000000'))
+     $     ktfnan   =int8(z'fff8000000000000'),
+     $     ktfenan  =int8(z'7ff0000000000000'),
+     $     ktfenanb =int8(z'000fffffffffffff')
+     $     )
+      integer*4 , parameter :: mbody = 2**12
 
       type sad_object
       sequence
@@ -553,7 +558,7 @@ c     endif
       type (sad_descriptor) alloc
       integer*4 ref,nl
       integer*8 body(1:0)
-      type (sad_descriptor) dbody(0:2**31-2)
+      type (sad_descriptor) dbody(0:mbody)
       end type
 
       type sad_list
@@ -566,7 +571,7 @@ c     endif
       real*8 rbody(1:0)
       complex*16 cbody(1:0)
       type (sad_descriptor) dbody(1:0)
-      integer*8 body(1:2**31-1)
+      integer*8 body(1:mbody)
       end type
 
       type sad_dlist
@@ -580,7 +585,7 @@ c     endif
       real*8 rbody(1:0)
       complex*16 cbody(1:0)
       integer*8 body(1:0)
-      type (sad_descriptor) dbody(1:2**31-1)
+      type (sad_descriptor) dbody(1:mbody)
       end type
 
       type sad_rlist
@@ -594,7 +599,7 @@ c     endif
       complex*16 cbody(1:0)
       integer*8 body(1:0)
       type (sad_descriptor) dbody(1:0)
-      real*8 rbody(1:2**31-1)
+      real*8 rbody(1:mbody)
       end type
 
       type sad_complex
@@ -653,7 +658,7 @@ c     endif
       integer*1 istr(1:0)
       integer*8 kstr(1:0)
 c size limitation due to gfortran 7 on macOS ???
-      character*(2**30) str
+      character*(mbody) str
       end type
 
       type sad_namtbl
@@ -689,6 +694,7 @@ c size limitation due to gfortran 7 on macOS ???
       use tfcode
       use maccbk
       use tfmem, only:sad_loc,ksad_loc,ktaloc,tfree
+      public
       integer*8 ispbase
       integer*4 mstk,isp,ivstkoffset,ipurefp,napuref,isporg
       integer*4, pointer, dimension(:,:) :: ivstk,itastk,ivstk2,itastk2
@@ -920,7 +926,7 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
       contains
         subroutine tfinitstk
         use iso_c_binding
-        use tfmem, only:maxstack
+        use tfmem, only:maxstack,minstack
         implicit none
         integer*4 idummy
         if(tfstkinit)then
@@ -931,7 +937,7 @@ c        mstk=max(2**18,int(rgetgl1('STACKSIZ')))
         ispbase=0
         do while (ispbase .le. 0)
           mstk=mstk/2
-          if(mstk .lt. 2**18)then
+          if(mstk .lt. minstack)then
             write(*,*)'Stack allocation failed: ',mstk,ispbase
             call abort
           endif
@@ -1479,6 +1485,24 @@ c     $           n,i,istat
         ktfnonobjq=iand(ktomask,ka) .ne. ktfobj
         return
         end function ktfnonobjq
+
+        logical*4 function ktfnanq(x)
+        implicit none
+        real*8 x
+        integer*8 kfromr
+        ktfnanq=kfromr(x) .eq. ktfnan
+        return
+        end
+
+        logical*4 function ktfenanq(x)
+        implicit none
+        real*8 x
+        integer*8 kfromr,k
+        k=kfromr(x)
+        ktfenanq=iand(k,ktfenan) .eq. ktfenan .and.
+     $       iand(k,ktfenanb) .ne. 0
+        return
+        end
 
         logical*4 function ktfrealq_k(k,v)
         implicit none
@@ -4108,7 +4132,7 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         real*8 a(:)
         integer*4 i
         do i=1,size(a)
-          if(isnan(a(i)))then
+          if(ktfenanq(a(i)))then
             a(i)=0.d0
           endif
         enddo

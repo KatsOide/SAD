@@ -155,12 +155,12 @@ With[{ylim=0.9999},
   FitEmit[x_,px_]:=Module[{
     x1,px1,sigx,sigpx,xm,pxm,xm1,pxm1,sigx1,sigpx1,
     cx,rx,cpx,rpx,cx1,rx1,cpx1,rpx1,em,beta,dsigx1,dsigpx1,demr,sr},
-    f001={sigx,xm,cx,rx}=FitGaussian[x];
-    f002={sigpx,pxm,cpx,rpx}=FitGaussian[px];
+    {sigx,xm,cx,rx}=FitGaussian[x];
+    {sigpx,pxm,cpx,rpx}=FitGaussian[px];
     x1=(x-xm)/sigx;
     px1=(px-pxm)/sigpx;
-    f003={sigx1,xm1,cx1,rx1}=FitGaussian[x1+px1];
-    f004={sigpx1,pxm1,cpx1,rpx1}=FitGaussian[x1-px1];
+    {sigx1,xm1,cx1,rx1}=FitGaussian[x1+px1];
+    {sigpx1,pxm1,cpx1,rpx1}=FitGaussian[x1-px1];
     em=sigx1*sigpx1*sigx*sigpx/2;
     beta=sigx^2/em;
     dsigx1=cx1[[1]]/sigx1;

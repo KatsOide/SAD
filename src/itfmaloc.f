@@ -384,14 +384,14 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       end
 
       subroutine nanchecka(a,n,m,ndim,tag,k)
+      use tfstk, only:ktfenanq
       implicit none
       integer*4 n,m,ndim,i,j,k
       real*8 a(ndim,m)
       character*(*) tag
-      logical*4 isnan
       do i=1,m
         do j=1,n
-          if(isnan(a(j,i)))then
+          if(ktfenanq(a(j,i)))then
             write(*,'(2a,3i6,Z18)')'nanchecka ',tag,k,j,i,a(j,i)
             return
           endif

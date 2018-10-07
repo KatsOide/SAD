@@ -1,10 +1,10 @@
-      subroutine tedrawf(lfno,bc,bs,hc,hs,pa,
+      subroutine tedrawf(lfno,bc,bs,hc,hs,
      $     sige,anuz,mphi,mphi2,ndp)
       implicit none
       integer*4 mphi,mphi2,ndp,lfno,i,lene
-      real*8 bc(10,mphi,ndp),bs(10,mphi,ndp),
-     $     hc(4,mphi,ndp),hs(4,mphi,ndp),
-     $     pa(ndp),sige,anuz
+      real*8 bc(10,mphi2,ndp),bs(10,mphi2,ndp),
+     $     hc(4,mphi2,ndp),hs(4,mphi2,ndp),
+     $     sige,anuz
       character*32 buf,autofg
       write(lfno,'(a,i5,a)')'mphi2=',mphi2,';',
      $     'ndp=',ndp,';'
@@ -14,15 +14,10 @@
       buf=autofg(anuz,'12.9')
       call mathexp(buf)
       write(lfno,'(a)')'nuz='//buf(1:lene(buf))//';'
-      call mathinit(lfno,'pa={')
-      do i=1,ndp
-        call mathput(lfno,pa(i))
-      enddo
-      call mathterm(lfno,'};')
-      call matharray(bc,10,mphi,ndp,mphi2,'bc=',lfno)
-      call matharray(bs,10,mphi,ndp,mphi2,'bs=',lfno)
-      call matharray(hc,4,mphi,ndp,mphi2,'hc=',lfno)
-      call matharray(hs,4,mphi,ndp,mphi2,'hs=',lfno)
+      call matharray(bc,10,mphi2,ndp,mphi2,'bc=',lfno)
+      call matharray(bs,10,mphi2,ndp,mphi2,'bs=',lfno)
+      call matharray(hc,4,mphi2,ndp,mphi2,'hc=',lfno)
+      call matharray(hs,4,mphi2,ndp,mphi2,'hs=',lfno)
       return
       end
 

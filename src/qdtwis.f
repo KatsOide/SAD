@@ -456,14 +456,14 @@ c     end   initialize for preventing compiler warning
       end
 
       subroutine nancheck(a,str)
+      use tfstk, only: ktfenanq
       implicit none
       real*8 a(4,5)
       character*(*) str
       integer*4 i,j
-      logical*4 isnan
       do i=1,5
         do j=1,4
-          if(isnan(a(j,i)))then
+          if(ktfenanq(a(j,i)))then
             write(*,*)str,' ',j,i
             return
           endif

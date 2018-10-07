@@ -514,7 +514,7 @@ c      go to 2000
       case (mtftimes)
         if(abs(v) .eq. dinfinity .or. abs(v1) .eq. dinfinity)then
           if(v .eq. 0.d0 .or. v1 .eq. 0.d0)then
-            x1=v*v1
+            x1=dnotanumber
           elseif(v .gt. 0.d0 .and. v1 .gt. 0.d0 .or.
      $           v .lt. 0.d0 .and. v1 .lt. 0.d0)then
             x1=dinfinity

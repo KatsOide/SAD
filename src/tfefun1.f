@@ -1,7 +1,7 @@
       recursive subroutine tfefun1(isp1,id0,kx,ref,irtc)
       use tfstk
       use tflinepcom
-      use temw, only:tfnormalcoord
+      use temw, only:tfnormalcoord,tfinitemip
       implicit none
       type (sad_descriptor) kx,kxj,kispi
       type (sad_dlist), pointer :: kli
@@ -103,7 +103,8 @@ c-------Kikuchi addition end-----
       return
  5230 call tfnormalcoord(isp1,kx,irtc)
       return
- 5240 irtc=itfmessage(999,'General::unregister',' ')
+ 5240 call tfinitemip
+      irtc=0
       return
  5250 irtc=itfmessage(999,'General::unregister',' ')
       return

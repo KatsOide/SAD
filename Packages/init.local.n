@@ -4,11 +4,11 @@ Environment@@[{
   {"UNIX95",""},
   {"TCL_LIBRARY",""},
   {"TK_LIBRARY",""},
-  {"KBFRAMEDIR","/Users/oide/SAD/oldsad/KBFrame"},
-  {"PYTHONPATH","/Users/oide/SAD/oldsad/Packages/"}
+  {"KBFRAMEDIR","~/SAD/oldsad/KBFrame"},
+  {"PYTHONPATH","~/SAD/oldsad/Packages/"}
   },{1}];
 
-DocumentsDirectory="/Users/oide/SAD/oldsad/Documents/";
-ExamplesDirectory="/Users/oide/SAD/oldsad/script/";
+DocumentsDirectory="~/SAD/oldsad/Documents/";
+ExamplesDirectory="~/SAD/oldsad/script/";
 
 ! End of File

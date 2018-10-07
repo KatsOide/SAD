@@ -9,7 +9,7 @@
       type (sad_rlist), pointer :: klr
       integer*8 ifvh,kx
       integer*4 level,irtc
-      real*8 trans(1,12),cod(6),beam(21),al,ak,bz,
+      real*8 trans(6,12),cod(6),beam(21),al,ak,bz,
      $    dx,dy,theta,radlvl,f1in,f2in,f1out,f2out,eps0
       integer*4 mfring,l,ld
       logical*4 fringe,forward

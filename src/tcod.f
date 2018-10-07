@@ -16,7 +16,7 @@
      1     r0,fact,trf00,dtrf0,r,dcod1(6),codw(6),conv,trs(6,6),
      $     dcod0(6),s,trw,dz,alambdarf,trf0s,v0,red,ddp
       integer*4 loop,i
-      logical*4 isnan,rt,rtr
+      logical*4 rt,rtr
       real*8 , parameter :: codw0(6) =
      $     [1.d-6,1.d-5,1.d-6,1.d-5,1.d-5,1.d-6]
       vcalpha=1.d0
@@ -48,6 +48,9 @@ c      write(*,*)'tcod-dp0 ',dp0
       codi=cod
       fndcod=.true.
       codw=codw0
+      if(.not. rfsw)then
+        codw=codw*0.01d0
+      endif
       conv=conv0
       trw=codw(5)
       if(radcod .and. radtaper)then
@@ -77,12 +80,16 @@ c      write(*,*)'tcod-dp0 ',dp0
       dz=(codi(5)+codf(5))*0.5d0
       rt=radtaper
       dcod1=codi-codf
-      if(radtaper)then
-c        write(*,*)'tcod-dleng ',dcod1(5),dleng
-        if(.not. isnan(dcod1(5)))then
-          dleng=dleng+dcod1(5)
-          call rsetgl1('FSHIFT',-dleng/circ)
+      if(rfsw)then
+        if(radtaper)then
+c     write(*,*)'tcod-dleng ',dcod1(5),dleng
+          if(.not. ktfenanq(dcod1(5)))then
+            dleng=dleng+dcod1(5)
+            call rsetgl1('FSHIFT',-dleng/circ)
+          endif
+          dcod1(5)=0.d0
         endif
+      else
         dcod1(5)=0.d0
       endif
       r=0.d0
@@ -99,7 +106,7 @@ c      write(6,'(1p6g12.5)')codi,codf,dcod
         cod=codi
         return
       endif
-      if(isnan(r))then
+      if(ktfenanq(r))then
         trf0=trf0s
         loop=0
         go to 1
@@ -113,15 +120,15 @@ c      write(6,'(1p6g12.5)')codi,codf,dcod
         endif
         go to 1
       endif
+      red=r/r0
       trf0s=trf0
       r0=r
       s=0.d0
       do i=1,6
         s=s+dcod(i)*dcod0(i)/codw(i)**2
       enddo
-      red=r/r0
-      if(red .lt. 0.7d0)then
-        fact=min(fact*2.d0,1.d0)
+      if(red .lt. 1.0d0)then
+        fact=min(fact*(2.d0-max(red-0.7d0,0.d0)/0.3d0),1.d0)
       elseif(s .lt. 0.d0)then
         fact=max(fact*0.5d0,fmin)
       endif
@@ -131,8 +138,9 @@ c      write(6,'(1p6g12.5)')codi,codf,dcod
       enddo
       if(.not. rfsw)then
         trs(1:6,5)=0.d0
-        trs(6,6)=0.d0
+        trs(1:6,6)=0.d0
         dcod1(6)=0.d0
+        dcod1(5)=0.d0
       elseif(radtaper)then
         trs(1:6,6)=0.d0
         dcod1(5)=0.d0

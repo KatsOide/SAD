@@ -29,13 +29,14 @@
 void tfinfinit_(void) {
   /* NAN & INFINITY float constant are supplied by math.h since C99 */
   dinfinity   = INFINITY; /* Convert float Infinity  constant to Real*8 */
-  dnotanumber = 0.0/0.0;	  /* Convert float quite NaN constant to Real*8 */
+  /* dnotanumber = 0.0/0.0;	  /* Convert float quite NaN constant to Real*8 */
+  dnotanumber = NAN;	  /* Convert float quite NaN constant to Real*8 */
 }
 
-/* stub routines for Fortran function call */
+/* stub routines for Fortran function call 
 integer4 isnan_(real8 *vx) {
   return isnan(*vx);
-}
+  }*/
 
 real8 second_() {
   struct rusage u_ru;

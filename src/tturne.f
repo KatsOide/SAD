@@ -337,7 +337,7 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
      $     r,dir,al,alib,dtheta,theta0,ftable(4),
      $     fb1,fb2,ak0,ak1,rtaper,als
       integer*4 l,ld,lele,mfr,ibegin,iend,ke,irtc
-      logical*4 sol,plot,bmaccum,plotib,isnan,rt,next,seg,
+      logical*4 sol,plot,bmaccum,plotib,rt,next,seg,
      $     optics,coup,err
       save kbmz
       data kbmz /0/
@@ -356,11 +356,11 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       bradprev=0.d0
       do l=ibegin,iend
         next=inext(l) .ne. 0
-        if(isnan(cod(1)) .or. isnan(cod(3)))then
-          if(isnan(cod(1)))then
+        if(ktfenanq(cod(1)) .or. ktfenanq(cod(3)))then
+          if(ktfenanq(cod(1)))then
             cod(1)=0.d0
           endif
-          if(isnan(cod(3)))then
+          if(ktfenanq(cod(3)))then
             cod(3)=0.d0
           endif
           call tinitr(trans)

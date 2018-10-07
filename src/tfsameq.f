@@ -57,6 +57,24 @@
       return
       end
 
+      subroutine tfnanqk(isp1,kx,irtc)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 isp1,irtc,itfmessage
+      if(isp .ne. isp1+1)then
+        irtc=itfmessage(9,'General::narg','"1"')
+        return
+      endif
+      irtc=0
+      if(ktfrealq(ktastk(isp)) .and. ktfenanq(rtastk(isp)))then
+        kx%k=ktftrue
+      else
+        kx%k=0
+      endif
+      return
+      end
+
       logical*4 function tfconstlistqo(list)
       use tfstk
       implicit none

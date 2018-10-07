@@ -289,6 +289,7 @@ c     Peek character from input buffer with case normalization
       integer*4 ipoint1,ifchar
       if(ipoint .ge. lrecl)then
         ipoint=lrecl+1
+        buffer(lrecl:lrecl)=char(10)
       else
         ipoint1=ifchar(buffer(1:lrecl),char(10),ipoint)+1
         if(ipoint1 .le. 1)then

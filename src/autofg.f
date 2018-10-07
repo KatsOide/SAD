@@ -1,5 +1,6 @@
       character*(*) function autofg(x,form1)
       use tfcbk
+      use tfstk, only:ktfenanq
       implicit none
       character*(*) form1
       character*16 form
@@ -9,7 +10,7 @@
       parameter (zero='0000000000000000000000000000000')
       character*32 ovfl
       parameter (ovfl='$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-      logical*4 tzero,math,isnan,canv
+      logical*4 tzero,math,canv
       integer*4 idot,lf1,notspace,lenw,lc2,
      $     lf,lc,lc1,lm,i,li1,is,iexp,ifromstr,isign
       real*8 x,ax
@@ -63,7 +64,7 @@
           autofg(lc+1:)=' '
         endif
         return
-      elseif(isnan(x))then
+      elseif(ktfenanq(x))then
         if(tzero)then
           autofg='NaN'
         else

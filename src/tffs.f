@@ -1,11 +1,11 @@
       module sad_main
-        use tfstk, only:sad_descriptor
+        use tfstk, only:sad_descriptor,mbody
         integer*4, parameter ::expnsize=7
 
         type sad_el
         sequence
         integer*4 nlat1,dum1
-        integer*8 aux,comp(1:2**31-2)
+        integer*8 aux,comp(1:mbody)
         end type
 
         type sad_comp
@@ -15,7 +15,7 @@
         real*8 orient
         type (sad_descriptor) dvalue(1:0)
         integer*8 kvalue(1:0)
-        real*8 value(1:2**31-2)
+        real*8 value(1:mbody)
         end type
 
         contains
@@ -93,7 +93,6 @@ c$$$
 
       end module
 
-
       module tmacro
         use mackw
         use macphys
@@ -115,7 +114,6 @@ c$$$
      $       pspac_nturn,pspac_nturncalc
         logical*4 oldflagsdummy,calint,caltouck,tparaed
       end module
-
 
       module tffitcode
       implicit none
@@ -145,6 +143,71 @@ c$$$
      $     mfitchi1=mfitgz+1,mfitchi2=mfitchi1+1,mfitchi3=mfitchi2+1,
      $     ntwissfun=mfitzpy,mfito=mfittry,mfit=mfitchi3,
      $     mfit1=mfit+12
+      logical*4 :: inittws=.true.
+
+      contains
+      subroutine tfinittws
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 irtc
+      character*2 strfromis
+      if( .not. inittws)then
+        return
+      endif
+      call tfevals('BeginPackage[tws$`];Begin[tws$`]',kx,irtc)
+      call tfevals(
+     $     ' mfax='//strfromis(mfitax)//
+     $     ';mfbx='//strfromis(mfitbx)//
+     $     ';mfnx='//strfromis(mfitnx)//
+     $     ';mfay='//strfromis(mfitay)//
+     $     ';mfby='//strfromis(mfitby)//
+     $     ';mfny='//strfromis(mfitny)//
+     $     ';mfex='//strfromis(mfitex)//
+     $     ';mfepx='//strfromis(mfitepx)//
+     $     ';mfey='//strfromis(mfitey)//
+     $     ';mfepy='//strfromis(mfitepy)//
+     $     ';mfr1='//strfromis(mfitr1)//
+     $     ';mfr2='//strfromis(mfitr2)//
+     $     ';mfr3='//strfromis(mfitr3)//
+     $     ';mfr4='//strfromis(mfitr4)//
+     $     ';mfdetr='//strfromis(mfitdetr)//
+     $     ';mfdx='//strfromis(mfitdx)//
+     $     ';mfdpx='//strfromis(mfitdpx)//
+     $     ';mfdy='//strfromis(mfitdy)//
+     $     ';mfdpy='//strfromis(mfitdpy)//
+     $     ';mfdz='//strfromis(mfitdz)//
+     $     ';mfddp='//strfromis(mfitddp)//
+     $     ';mfaz='//strfromis(mfitaz)//
+     $     ';mfbz='//strfromis(mfitbz)//
+     $     ';mfnz='//strfromis(mfitnz)//
+     $     ';mfzx='//strfromis(mfitzx)//
+     $     ';mfzpx='//strfromis(mfitzpx)//
+     $     ';mfzy='//strfromis(mfitzy)//
+     $     ';mfzpy='//strfromis(mfitzpy)//
+     $     ';mfpex='//strfromis(mfitpex)//
+     $     ';mfpepx='//strfromis(mfitpepx)//
+     $     ';mfpey='//strfromis(mfitpey)//
+     $     ';mfpepy='//strfromis(mfitpepy)//
+     $     ';mfpzx='//strfromis(mfitpzx)//
+     $     ';mfpzpx='//strfromis(mfitpzpx)//
+     $     ';mfpzy='//strfromis(mfitpzy)//
+     $     ';mfpzpy='//strfromis(mfitpzpy)//
+     $     ';mftrx='//strfromis(mfittrx)//
+     $     ';mftry='//strfromis(mfittry)//
+     $     ';mfleng='//strfromis(mfitleng)//
+     $     ';mfgx='//strfromis(mfitgx)//
+     $     ';mfgy='//strfromis(mfitgy)//
+     $     ';mfgz='//strfromis(mfitgz)//
+     $     ';mfchi1='//strfromis(mfitchi1)//
+     $     ';mfchi2='//strfromis(mfitchi2)//
+     $     ';mfchi3='//strfromis(mfitchi3)//
+     $     ';ntwissfun='//strfromis(ntwissfun)//
+     $     ";End[];EndPackage[]",kx,irtc)
+      inittws=.false.
+      return
+      end subroutine
+
       end module
 
       module ffs0
@@ -1809,7 +1872,7 @@ c      call tfree(ifibzl)
       return
       end
 
-      subroutine tfffs(isp1,kx,irtc)
+      recursive subroutine tfffs(isp1,kx,irtc)
       use tfstk
       use ffs
       use tffitcode
@@ -1817,7 +1880,7 @@ c      call tfree(ifibzl)
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
-      integer*4 outfl1,irtc,narg,
+      integer*4 outfl1,irtc,narg,llinep,
      $     lfno1,lfni1,lfn11,lfret,lfrecl,
      $     isp1,itfmessage
       character*10 strfromis
@@ -1851,6 +1914,7 @@ c      call tfree(ifibzl)
       lfn11=icslfn1()
       lfret=icsmrk()
       lfrecl=icslrecl()
+      llinep=icslinep()
       call cssetp(lfrecl)
       call setbuf(str%str,str%nch)
       call cssetp(lfrecl)
@@ -1858,9 +1922,11 @@ c      call tfree(ifibzl)
       call tclrfpe
       call cssetp(lfret)
       call cssetl(lfrecl)
+      call cssetlinep(llinep)
       call cssetlfno(lfno1)
       call cssetlfni(lfni1)
       call cssetlfn1(lfn11)
+c      write(*,*)'tfffs ',lfret,lfrecl
       outfl=outfl1
       if(irtc .eq. 0 .and. iffserr .ne. 0)then
         irtc=itfmessage(9,'FFS::error',strfromis(iffserr))

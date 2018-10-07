@@ -1,6 +1,7 @@
       subroutine txwake(np,x,px,y,py,z,g,dv,
      $     dx,dy,theta,nb,
      $     fw,lwl,wakel,lwt,waket,p0,h0,itab,izs,init)
+      use tfstk, only: ktfenanq
       implicit none
       integer*4 np,ns,lwl,lwt,i,n,k,l,m,nb
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
@@ -22,7 +23,7 @@
       if(init)then
         do i=1,np
           itab(i)=i
-          if(isnan(z(i)))then
+          if(ktfenanq(z(i)))then
             z(i)=zmin
           endif
         enddo

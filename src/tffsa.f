@@ -14,6 +14,7 @@
       use tfcsi
       use track_tt
       use tparastat
+      use temw, only:nparams
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 maxrpt,maxlfn,hsrchz
@@ -218,6 +219,7 @@ c
         ios=0
       endif
       call getwrd(word)
+c      write(*,*)'tffa ',ios,' ',word(1:lenw(word))
       if(ios .ne. 0)then
         go to 10
       endif
@@ -1210,14 +1212,13 @@ c        rlist(itlookup('DP',ivtype))=dpmax
         endif
         call tfgeo(.true.)
         mphi2=9
-        iparams=ktaloc(59)
+        iparams=ktaloc(nparams)
         codin=0.d0
         if(codplt)then
           call ffs_init_sizep
 c          ilist(2,iwakepold+6)=int(ifsize)
         endif
-        call temits(ndim,ntwissfun,mphi2,
-     $     amus0,amus1,amusstep,
+        call temits(mphi2,amus0,amus1,amusstep,
      $     emxe,emye,rese,rlist(iparams),
      $     lfni,lfno,int8(0),irtc)
         call tfree(iparams)

@@ -16,6 +16,7 @@ c     r*   ; transformation matrix( output )
 c     S = (c, J.(r)t.J)
 c     (r,    c    )
 c---------------------------------------------------
+      use tfstk, only: ktfenanq
       implicit none
       real*8 tm11,tm12,tm13,tm14,
      1     tm21,tm22,tm23,tm24,
@@ -25,7 +26,7 @@ c---------------------------------------------------
      $     detn,trqk,trqj,aaa,bbb,ccc,p1,p2,p3,p4,trp,trqkj2,
      $     trql,xx11,xx12,xx21,xx22,yy11,yy12,yy21,yy22
       integer*4 lfno
-      logical*4 stab,isnan
+      logical*4 stab
       stab=.true.
 c     
       trpq = tm11 + tm22 - tm33 - tm44
@@ -41,7 +42,7 @@ c.....trab2=(TrA-TrB)**2 should be positive or zero.
 c     ::::::::::::::::
 C--   deb
 c      print *,'===qmdiag=== trab2 =',trab2
-      if(isnan(trab2))then
+      if(ktfenanq(trab2))then
         write(lfno,'(a,1p5g15.7)')
      $       '***qmdiag---> Matrix not a number: ',trab2,
      $       tm11,tm22,tm33,tm44

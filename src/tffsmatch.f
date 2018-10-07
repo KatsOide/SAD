@@ -13,11 +13,10 @@
 c      type (sad_descriptor) kx
 c      include 'DEBUG.inc'
       integer*8 ifqu,ifqu0,iuta1,kqu
-      real*8 flim1,flim2,aimp1,aimp2,badc1,badc2,amedc1,amedc2,alit,
-     $     wlmin,eps,eps1
-      parameter (flim1=-4.d0,flim2=-3.d0,aimp1=-1.8d0,aimp2=-.8d0,
-     $     badc1=-3.5d0,badc2=-2.5d0,amedc1=-2.3d0,amedc2=-1.3d0,
-     $     alit=0.75d0,wlmin=0.009d0,eps=1.d-5,eps1=1.d-8)
+      real*8 , parameter :: flim1=-4.d0,flim2=-3.d0,aimp1=-1.8d0,
+     $     aimp2=-.8d0,badc1=-3.5d0,badc2=-2.5d0,amedc1=-2.3d0,
+     $     amedc2=-1.3d0,alit=0.75d0,wlmin=0.009d0,eps=1.d-5,
+     $     eps1=1.d-8,rtol=1.05d0,rtol1=1.05d0
       real*8, parameter :: aloadmax=2.d4
       integer*4 ibegin,lfno,irtc,nqumax,
      $     nqcol0,nparallel,nqcol00,
@@ -170,16 +169,15 @@ c            chgini=.true.
                 crate=1.d0
                 r0=r
                 rp0=rp
-                r00=r0*1.06d0
+                r00=r0
                 ra=r0*1.000000001d0
-                bestval(1:nvar)=valvar(1:nvar)
                 if(cell)then
                   call twmov(1,twisss,1,0,.true.)
                 endif
               else
                 imprv=r .lt. r0
                 if(imprv)then
-                  if(r .lt. r00*.95d0)then
+                  if(r .lt. r00/rtol1)then
                     lout=lfno
                     if(outt)then
                       write(lfno,*)
@@ -220,6 +218,9 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                 else
                   if(aimprv .gt. .5d0)then
                     chgmod=.true.
+                  elseif(iter .gt. flv%itmax*10)then
+                    fitflg=.false.
+                    chgmod=.true.
                   elseif(max(smallf,badcnv,min(alate,amedcv))
      $                   .gt. .5d0)then
                     chgmod=.true.
@@ -232,6 +233,9 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                   else
                     chgmod=.false.
                   endif
+c                  write(*,'(a,2l2,i5,1p5g15.7)')'tffsmatch ',
+c     $                 fitflg,chgmod,nretry,
+c     $                 aimprv,smallf,badcnv,alate,amedcv
                 endif
                 if(chgmod)then
                   r=r0
@@ -1252,6 +1256,7 @@ c            call tfmemcheckprint('solv-i-2',.true.,irtc)
         endif
       enddo
 c      call tfmemcheckprint('solv-2',.true.,irtc)
+c      write(*,'(1p4g15.7)')((qu0(i,j),j=1,nvar),i=1,nj)
       call tsolva(qu0,b,dval,nj,nvar,nqcol,eps)
 c      call tfmemcheckprint('solv-3',.true.,irtc)
       again=.false.

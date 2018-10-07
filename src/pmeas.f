@@ -13,7 +13,7 @@ c----- Measure luminosity and store data (if sto). ------
       dimension twiss(nlat,-ndim:ndim,ntwissfun),gammab(*),
      $     size(21,nlat)
       dimension iobs(*),datas(itemn,2,*)
-      dimension params(npara),paramss(npara),x(21),u(21)
+      dimension params(npara),paramss(npara),x(42),u(42)
 c
       save
 c
@@ -38,7 +38,7 @@ c     end   initialize for preventing compiler warning
       call tclr(codin,6)
       call tclr(beamin,21)
       call temit(rlist(itr),codin,rlist(ibeam),rlist(ictrb),
-     $     .true.,0,0,0,0,
+     $     .true.,int8(0),int8(0),int8(0),int8(0),
      $     .true.,params,stab,15,0)
       if(.not.stab) then
         call permes(' ','pmeas(temit) --> Unstable orbit.',' ',lfno)

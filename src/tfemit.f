@@ -5,6 +5,7 @@
       use tffitcode
       use iso_c_binding
       use tfcsi, only:icslfno
+      use temw, only:tfinitemip
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: kl,klx
@@ -15,6 +16,7 @@
       parameter (nparam=59)
       real*8 param(nparam),trans(6,12),cod(6),beam(42),btr(441),sx
       logical*4 stab
+      call tfinitemip
       narg=isp-isp1
       codin=0.d0
       beamin=0.d0
@@ -112,11 +114,13 @@ c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparam
       use tfstk
       use ffs
       use tffitcode
+      use temw, only:nparams,tfinitemip
       implicit none
       type (sad_descriptor) kx
       integer*8 kparams
       integer*4 isp1,irtc,mphi2,i,itfmessage,lfni
       real*8 arg(4),emxe,emye,rese
+      call tfinitemip
       if(isp .ne. isp1+4)then
         go to 9001
       endif
@@ -128,7 +132,7 @@ c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparam
       enddo
       mphi2=max(1.d0,min(32.d0,arg(4)))
       call tfgeo(.true.)
-      kparams=ktaloc(59)
+      kparams=ktaloc(nparams)
       codin=0.d0
       if(ifsize .eq. 0 .and. codplt)then
         ifsize=ktaloc(nlat*21)
@@ -136,7 +140,6 @@ c        ilist(2,iwakepold+6)=ifsize
       endif
       kx%k=ktfoper+mtfnull
       call temits(
-     $     ndim,ntwissfun,
      $     mphi2,
      $     arg(1)*pi2,arg(2)*pi2,arg(3)*pi2,
      $     emxe,emye,rese,rlist(kparams),

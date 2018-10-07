@@ -1,4 +1,5 @@
       subroutine tqr(a,w,eig,ibtab,vx,n,ndim)
+      use tfstk, only: ktfenanq
       implicit none
       integer*4 itmax
       parameter (itmax=30)
@@ -14,7 +15,7 @@
       real*8 anorm,c,s,p,q,v1,v2,am,am1,w1,w2,w3,aa,ww,
      $     dec,sqrd,r,da,pk,pl,u,v,pm,pn,a1,a2,x,y,ee,sa,
      $     r1,r2,s1,aa1
-      logical*4 paired,jordan,isnan
+      logical*4 paired,jordan
       complex*16 ca,cc,cu,cr,ck,cm
       equivalence (ck,px),(cm,py)
       equivalence (px,pk),(px(2),pl),(py,pm),(py(2),pn)
@@ -286,14 +287,14 @@ c       write(*,'(1P4G15.7)')((vx(ii)/vx(j)*a(ii,j),j=1,4),ii=1,4)
      1  '        Lower right corner =',
      1  a(ie-1,ie-1),vx(ie)/vx(ie-1)*a(ie,ie-1),a(ie,ie)
         a(ie,ie-1)=0.d0
-        if(isnan(a(ie,ie)))then
+        if(ktfenanq(a(ie,ie)))then
           a(ie,ie)=0.d0
           a(ie-1,ie-1)=0.d0
         endif
-        if(isnan(vx(ie)))then
+        if(ktfenanq(vx(ie)))then
           vx(ie)=1.d0
         endif
-        if(isnan(vx(ie-1)))then
+        if(ktfenanq(vx(ie-1)))then
           vx(ie-1)=1.d0
         endif
         iter=0

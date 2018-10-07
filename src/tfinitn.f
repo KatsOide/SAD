@@ -15,6 +15,7 @@
      $     iaxsys,loc,ktcvaloc,kax,k1,k2,i
       integer*4 lpw
       integer*4 lenw,ifromstr
+      real*8 x0,x1
       call tfinfinit
       call tfsinglechar
       levele=1
@@ -376,7 +377,7 @@ c        write(*,*)'tftocontext ',str%str(1:nc)
       subroutine tfsetcontextpath(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k,ki
+      type (sad_descriptor) kx,ki
       type (sad_dlist), pointer :: kl
       type (sad_symdef), pointer :: symd
       integer*8 ka1
@@ -386,8 +387,8 @@ c        write(*,*)'tftocontext ',str%str(1:nc)
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
-      k=dtastk(isp)
-      if(.not. tflistq(k,kl) .or. ktfreallistq(kl))then
+      kx=dtastk(isp)
+      if(.not. tflistq(kx,kl) .or. ktfreallistq(kl))then
         go to 9000
       endif
       m=kl%nl
@@ -409,7 +410,7 @@ c      call tmov(ktastk(isp0+1),klist(ka1),m)
       isp=isp0
       call tfree(itfcontextpath)
       itfcontextpath=ka1
-      kx=k
+c      call tfdebugprint(kx,'setcontextpath',1)
       irtc=0
       return
  9000 irtc=itfmessage(9,'General::wrongtype','"List of Contexts"')
@@ -1039,7 +1040,7 @@ c      i=itfunaloc('SetEnv',181,2,map,ieval,0)
       ieval(4)=0
       ieval(5)=0
       i=itfunaloc('ReleaseHold',196,1,map,ieval,0)
-c      i=itfunaloc('FromDateString',197,1,map,ieval,2)
+      i=itfunaloc('NaNQ',197,1,map,ieval,0)
       i=itfunaloc('MapThread',198,2,map,ieval,0)
       i=itfunaloc('ScanThread',199,2,map,ieval,0)
       i=itfunaloc('Last',200,1,map,ieval,2)
@@ -1141,7 +1142,7 @@ c-----Kikuchi addition end-----
       i=itfunaloc('SetElement$',1021,1,map,ieval,0)
       i=itfunaloc('Type$Key$',1022,1,map,ieval,0)
       i=itfunaloc('NormalCoordinate6',1023,1,map,ieval,0)
-c      i=itfunaloc('Tcl',1024,1,map,ieval,0)
+      i=itfunaloc('InitEmit',1024,0,map,ieval,0)
 c      i=itfunaloc('CanvasClipLine',1025,2,map,ieval,0)
 c      ieval(1)=1
 c      ieval(2)=1

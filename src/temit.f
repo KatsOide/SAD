@@ -3,6 +3,17 @@
 
       private
 
+      integer*4 , public, parameter ::
+     $     nparams=59,
+     $     ipdx=1,ipdpx=2,ipdy=3,ipdpy=4,ipdz=5,ipddp=6,
+     $     ipnx=7,ipny=8,ipnz=9,
+     $     ipu0=10,ipvceff=11,iptrf0=12,ipalphap=13,ipdleng=14,
+     $     ipbh=15,ipheff=27,iptwiss=31,iptws0=30,
+     $     ipdampx=16,ipdampy=17,ipdampz=18,
+     $     ipdnux=28,ipdnuy=29,ipdnuz=30,
+     $     ipjx=19,ipjy=20,ipjz=21,
+     $     ipemx=22,ipemy=23,ipemz=24,ipsige=25,ipsigz=26
+
       real(8), public :: r(6, 6) = RESHAPE((/
      $     1.d0, 0.d0, 0.d0, 0.d0, 0.d0, 0.d0,
      $     0.d0, 1.d0, 0.d0, 0.d0, 0.d0, 0.d0,
@@ -13,23 +24,80 @@
      $     (/6, 6/))
 
 c     Inverse matrix of r
-      real(8), public :: ri(6, 7) = RESHAPE((/
+      real(8), public :: ri(6, 6) = RESHAPE((/
      $     1.d0, 0.d0, 0.d0, 0.d0, 0.d0, 0.d0,
      $     0.d0, 1.d0, 0.d0, 0.d0, 0.d0, 0.d0,
      $     0.d0, 0.d0, 1.d0, 0.d0, 0.d0, 0.d0,
      $     0.d0, 0.d0, 0.d0, 1.d0, 0.d0, 0.d0,
      $     0.d0, 0.d0, 0.d0, 0.d0, 1.d0, 0.d0,
-     $     0.d0, 0.d0, 0.d0, 0.d0, 0.d0, 1.d0,
-     $     0.d0, 0.d0, 0.d0, 0.d0, 0.d0, 0.d0/),
-     $     (/6, 7/))
+     $     0.d0, 0.d0, 0.d0, 0.d0, 0.d0, 1.d0/),
+     $     (/6, 6/))
 
       real(8), public :: emx, emy, emz
-      logical*4, public :: normali
+      logical*4, public :: normali, initemip=.true.
 
       real*8 , parameter :: toln=0.1d0
-      public :: tfetwiss,etwiss2ri,tfnormalcoord,toln
+      public :: tfetwiss,etwiss2ri,tfnormalcoord,toln,
+     $     tfinitemip
 
       contains
+      subroutine tfinitemip
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 irtc
+      character*2 strfromis
+      if( .not. initemip)then
+        return
+      endif
+      call tfevals('BeginPackage[emit$`];Begin[emit$`]',kx,irtc)
+      call tfevals(
+     $'nparams='//strfromis(nparams)//
+     $';ipdx='//strfromis(ipdx)//
+     $';ipdpx='//strfromis(ipdpx)//
+     $';ipdy='//strfromis(ipdy)//
+     $';ipdpy='//strfromis(ipdpy)//
+     $';ipdz='//strfromis(ipdz)//
+     $';ipddp='//strfromis(ipddp)//
+     $';ipnx='//strfromis(ipnx)//
+     $';ipny='//strfromis(ipny)//
+     $';ipnz='//strfromis(ipnz)//
+     $';ipu0='//strfromis(ipu0)//
+     $';ipvceff='//strfromis(ipvceff)//
+     $';iptrf0='//strfromis(iptrf0)//
+     $';ipalphap='//strfromis(ipalphap)//
+     $';ipdleng='//strfromis(ipdleng)//
+     $';ipbh='//strfromis(ipbh)//
+     $';ipheff='//strfromis(ipheff)//
+     $';iptwiss='//strfromis(iptwiss)//
+     $';iptws0='//strfromis(iptws0)//
+     $';ipdampx='//strfromis(ipdampx)//
+     $';ipdampy='//strfromis(ipdampy)//
+     $';ipdampz='//strfromis(ipdampz)//
+     $';ipdnux='//strfromis(ipdnux)//
+     $';ipdnuy='//strfromis(ipdnuy)//
+     $';ipdnuz='//strfromis(ipdnuz)//
+     $';ipjx='//strfromis(ipjx)//
+     $';ipjy='//strfromis(ipjy)//
+     $';ipjz='//strfromis(ipjz)//
+     $';ipemx='//strfromis(ipemx)//
+     $';ipemy='//strfromis(ipemy)//
+     $';ipemz='//strfromis(ipemz)//
+     $';ipsige='//strfromis(ipsige)//
+     $';ipsigz='//strfromis(ipsigz)//
+     $';SetAttributes[{'//
+     $ 'nparams,ipdx,ipdpx,ipdy,ipdpy,ipdz,ipddp,'//
+     $ 'ipnx,ipny,ipnz,'//
+     $ 'ipu0,ipvceff,iptrf0,ipalphap,ipdleng,'//
+     $ 'ipbh,ipheff,iptwiss,ipdampx,ipdampy,ipdampz,'//
+     $ 'ipdnux,ipdnuy,ipdnuz,ipjx,ipjy,ipjz,'//
+     $ 'ipemx,ipemy,ipemz,ipsige,ipsigz},Constant];'//
+     $ 'End[];EndPackage[];',kx,irtc)
+c      call tfdebugprint(kx,'initemip',1)
+      initemip=.false.
+      return
+      end subroutine
+
       subroutine tfetwiss(r,cod,twiss,normi)
       use ffs
       implicit none
@@ -457,10 +525,9 @@ c     Table of loss-rate
       use ffs_flag
       use ffs_pointer
       use tmacro
+      use tffitcode
       implicit none
-      integer*4 npara
       real*8 conv
-      parameter (npara=59)
       parameter (conv=1.d-12)
       integer*8 iatr,iacod,iamat,iabmi
       integer*4 lfni,lfno,ia,it,i,j,k,k1,k2,k3,m,n,iret,l
@@ -474,7 +541,7 @@ c     Table of loss-rate
      $     transs(6,12),beams(21)
       complex*16 cc(6),cd(6),ceig(6),ceig0(6),dceig(6)
       real*8 btr(21,21),emit(21),emit1(42),beam1(42),
-     1       beam2(21),params(npara),codold(6),ab(6)
+     1       beam2(21),params(nparams),codold(6),ab(6)
       real*8 polsca(7),demin,rgetgl1
       character*10 label1(6),label2(6)
       character*11 autofg,vout(28)
@@ -573,7 +640,7 @@ c        write(*,*)'temit ',trf0,cod
      1       .false.,.false.,rt)
       endif
 c     call tsymp(trans)
-      params(1:6)=cod
+      params(ipdx:ipddp)=cod
       if(pri)then
         call tput(cod,label2,'     Exit ','9.6',1,lfno)
         write(lfno,*)
@@ -655,28 +722,28 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
       stab=(abs(dble(cd(4))) .lt. 1.d-6
      $     .and. abs(dble(cd(5))) .lt. 1.d-6
      1     .and. abs(dble(cd(6))) .lt. 1.d-6) .and. fndcod
-      params(7)=imag(cd(4))/pi2
-      params(8)=imag(cd(5))/pi2
-      params(9)=imag(cd(6))/pi2
-      params(10)=u0*pgev
-      params(11)=vceff
-      params(12)=trf0
-      params(13)=alphap
-      params(14)=dleng
-      params(15)=bh
-      params(27)=heff
-      call tfetwiss(ri,cod,params(31),.true.)
+      params(ipnx:ipnz)=imag(cd(4:6))/pi2
+      params(ipu0)=u0*pgev
+      params(ipvceff)=vceff
+      params(iptrf0)=trf0
+      params(ipalphap)=alphap
+      params(ipdleng)=dleng
+      params(ipbh)=bh
+      params(ipheff)=heff
+      call tfetwiss(ri,cod,params(iptwiss),.true.)
       if(pri)then
         if(lfno .gt. 0)then
-          do i=1,28
-            vout9(i)=autofg(params(30+i),'9.6')
+          do i=1,ntwissfun
+            vout9(i)=autofg(params(iptws0+i),'9.6')
           enddo
           write(lfno,9001)
-     $         vout9(1),vout9(2),vout9(25),vout9(7),
-     $         vout9(3),vout9(26),vout9(8),
-     $         vout9(11),vout9(12),vout9(4),vout9(5),vout9(27),vout9(9),
-     $         vout9(13),vout9(14),vout9(6),vout9(28),vout9(10),
-     $         vout9(22),vout9(23),vout9(24)
+     $         vout9(mfitax),vout9(mfitbx),vout9(mfitzx),vout9(mfitex),
+     $         vout9(mfitnx),vout9(mfitzpx),vout9(mfitey),
+     $         vout9(mfitr1),vout9(mfitr2),vout9(mfitay),vout9(mfitby),
+     $         vout9(mfitzy),vout9(mfitey),
+     $         vout9(mfitr3),vout9(mfitr4),vout9(mfitny),
+     $         vout9(mfitzpy),vout9(mfitepy),
+     $         vout9(mfitaz),vout9(mfitbz),vout9(mfitnz)
  9001     format('    Extended Twiss Parameters:',/,
      $         'AX:',a,' BX:',a,              26x,'  ZX:',a,'  EX:',a,/
      $         11x,'PSIX:',a,              26x,' ZPX:',a,' EPX:',a,/
@@ -781,23 +848,15 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
           taurdz=0.d0
         endif
       endif
-      params(16)=dble(cd(1))
-      params(17)=dble(cd(2))
-      params(18)=dble(cd(3))
-      params(28)=imag(cd(1))
-      params(29)=imag(cd(2))
-      params(30)=imag(cd(3))
-      sr=(dble(cd(1))+dble(cd(2))+dble(cd(3)))
+      params(ipdampx:ipdampz)=dble(cd(1:3))
+      params(ipdnux:ipdnuz)=imag(cd(1:3))
+      sr=params(ipdampx)+params(ipdampy)+params(ipdampz)
       if(sr .ne. 0.d0)then
         sr=4.d0/sr
-        params(19)=params(16)*sr
-        params(20)=params(17)*sr
-        params(21)=params(18)*sr
+        params(ipjx:ipjz)=params(ipdampx:ipdampz)*sr
       else
         sr=0.d0
-        params(19)=0.d0
-        params(20)=0.d0
-        params(21)=0.d0
+        params(ipjx:ipjz)=0.d0
       endif
       if(pri)then
         if(emiout)then
@@ -953,11 +1012,11 @@ c          enddo
         endif
         emz=sigz*sige
       endif
-      params(22)=emx
-      params(23)=emy
-      params(24)=emz
-      params(25)=sige
-      params(26)=sigz
+      params(ipemx)=emx
+      params(ipemy)=emy
+      params(ipemz)=emz
+      params(ipsige)=sige
+      params(ipsigz)=sigz
       call rsetgl1('EMITX',emx)
       call rsetgl1('EMITY',emy)
       call rsetgl1('EMITZ',emz)

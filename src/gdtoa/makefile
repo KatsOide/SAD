@@ -1,1 +1,1 @@
-/Users/oide/SAD/oldsad/contrib/gdtoa/makefile
+/home/oide/SAD/oldsad/contrib/gdtoa/makefile

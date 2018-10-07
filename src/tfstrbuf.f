@@ -6,7 +6,7 @@
       type (sad_string) string(1:0)
       integer*4 indw,llevel,remlines,maxllevel,column,lexp,nch,maxnch
       integer*1 istr(1:0)
-      character*(2**30) str
+      character*(mbody) str
       end type
 
       contains
@@ -362,7 +362,7 @@ c'\
           nc=strb%nch-nc0
         elseif(ktfrefq(k))then
           nc=0
-        elseif(isnan(rfromk(k%k)))then
+        elseif(ktfenanq(rfromk(k%k)))then
           nc=3
           call putstringbufpb(strb,'NaN',nc,.true.,lfno,irtc)        
         elseif(ktfrealq(k,v))then
