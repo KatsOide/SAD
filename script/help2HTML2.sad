@@ -41,7 +41,7 @@ FFS;
          If[s[p1-3,p1]<=>".png" && s[p1-3,p1]<=>".jpg",
            ReplaceIndent[s[1,p1]]//"\n",
            ReplaceIndent[s[1,p-2]]//
-             "<IMG SRC=\""//s[p,p1]//"\" ALIGN=\"middle\" WIDTH=540>\n"]//
+             "<IMG SRC=\"SADHelp_img/"//s[p,p1]//"\" ALIGN=\"middle\" WIDTH=540>\n"]//
                ReplaceDraw[s[p1+2,-1]]]];
 
      WrapLine[t_,n_]:=Module[{p=StringPosition[t,"\n",1],p1},
@@ -131,7 +131,7 @@ FFS;
  The notation ===> reads \"equivalent to\" below.",HH@col]//"\
 </PRE>\n\
 <A HREF=\"http://acc-physics.kek.jp/SAD/\">\n<H4>\n\
-<IMG SRC=\"SAD.jpg\" ALIGN=\"middle\" ALT=\"SAD\" WIDTH=90></A>\n\
+<IMG SRC=\"SADHelp_img/SAD.jpg\" ALIGN=\"middle\" ALT=\"SAD\" WIDTH=90></A>\n\
 Back to SAD Home Page</H4>\n\
 <A HREF=\"example/design_example.html\">\n<H4>\n\
 SAD/FFS Examples</H4></A>\n\

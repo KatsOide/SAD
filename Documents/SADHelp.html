@@ -5,7 +5,7 @@
 <BODY>
 <CENTER><H2>Welcome to SAD/FFS & SADScript
 </H2></CENTER>
-<CENTER> SAD/FFS SADScript Version: 1.1.1.4.4k64,      Updated: 2018/10/05</CENTER>
+<CENTER> SAD/FFS SADScript Version: 1.1.1.5k64,      Updated: 2018/10/05</CENTER>
 
 <PRE> Please use browser's search to find out an item.
 
@@ -15,7 +15,7 @@ shown in [].
  The notation ===> reads "equivalent to" below.</PRE>
 <A HREF="http://acc-physics.kek.jp/SAD/">
 <H4>
-<IMG SRC="SAD.jpg" ALIGN="middle" ALT="SAD" WIDTH=90></A>
+<IMG SRC="SADHelp_img/SAD.jpg" ALIGN="middle" ALT="SAD" WIDTH=90></A>
 Back to SAD Home Page</H4>
 <A HREF="example/design_example.html">
 <H4>
@@ -1182,7 +1182,7 @@ label.
    Draw$Option={Thickness->2};
    DRAW BX BY & EX EY Q*;
 
-<IMG SRC="DRAW.png" ALIGN="middle" WIDTH=540>
+<IMG SRC="SADHelp_img/DRAW.png" ALIGN="middle" WIDTH=540>
 
 </PRE>
 <PRE>See also:
@@ -4449,7 +4449,7 @@ Exapmple:
 FrameLabel->{"x"}, Thickness->2, Legend->{"sp[x]","sp'[x]","sp''[x]","Int sp[x]"}];
    Update[];
 
-<IMG SRC="Spline.png" ALIGN="middle" WIDTH=540>
+<IMG SRC="SADHelp_img/Spline.png" ALIGN="middle" WIDTH=540>
 
 </PRE>
 <PRE>See also:
@@ -5726,7 +5726,7 @@ Example:
 
  Update[];
 
-<IMG SRC="ColumnPlot.png" ALIGN="middle" WIDTH=540>
+<IMG SRC="SADHelp_img/ColumnPlot.png" ALIGN="middle" WIDTH=540>
 
 </PRE>
 <PRE>See also:
@@ -5815,7 +5815,7 @@ Example:
      {{-0.15,0.65},{0.25,0.65},{0.65,0.65},{-0.15,0   },{0.25,0   },{0.65,0}},
      {{ 0.2, 1.1 },{0.6, 1.1 },{1,   1.1 },{ 0.2, 0.45},{0.6 ,0.45},{1.0, 0.45}}}]];
  Show[gc];Update[];
-<IMG SRC="ListContourPlot.png" ALIGN="middle" WIDTH=540>
+<IMG SRC="SADHelp_img/ListContourPlot.png" ALIGN="middle" WIDTH=540>
 
 </PRE>
 <PRE>See also:
@@ -5848,7 +5848,7 @@ Example:
    ListDensityPlot[data,PlotRange->{-5,5}, MeshRange->{{-2,2},{-2,2}}, FrameLabel->{"x","y"}];
    Update[];
 
-<IMG SRC="ListDensityPlot.png" ALIGN="middle" WIDTH=540>
+<IMG SRC="SADHelp_img/ListDensityPlot.png" ALIGN="middle" WIDTH=540>
 
 </PRE>
 <PRE>See also:
@@ -5881,7 +5881,7 @@ slate blue", FrameLabel->{"x","y"}, Legend->"data1", DisplayFunction->Identity];
   Show[g1,g2];
   Update[];
 
-<IMG SRC="ListPlot.png" ALIGN="middle" WIDTH=540>
+<IMG SRC="SADHelp_img/ListPlot.png" ALIGN="middle" WIDTH=540>
 
 </PRE>
 <PRE>See also:
@@ -5937,7 +5937,7 @@ Example:
 Thickness->2, Names->"Q*"}}}];
    Update[];
 
-<IMG SRC="OpticsPlot.png" ALIGN="middle" WIDTH=540>
+<IMG SRC="SADHelp_img/OpticsPlot.png" ALIGN="middle" WIDTH=540>
 
 </PRE>
 <PRE>See also:
@@ -5963,11 +5963,12 @@ not be set) when Plot is called.
 
 Example:
   ff[x_]:=Sin[x]/x;
+
   ff[0]=1;
   Plot[{Cos[x],ff[x]}, {x,0,10}, Thickness->2];
   Update[];
 
-<IMG SRC="Plot.png" ALIGN="middle" WIDTH=540>
+<IMG SRC="SADHelp_img/Plot.png" ALIGN="middle" WIDTH=540>
 
 </PRE>
 <PRE>See also:
