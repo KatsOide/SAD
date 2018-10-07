@@ -28,7 +28,8 @@ src/gdtoa/test/*
 Packages/Canvas.n_0
 Packages/#Canvas.n#
 *.~*
-*_*
+*_0
+*_0.f
 src/.DS_Store
 KBFrame/CVS/Root~
 *.~
