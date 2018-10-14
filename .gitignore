@@ -2,10 +2,6 @@
 *.~
 TclTk/*
 arch/*
-arch/AMD64-Linux3/*
-arch/i386-CYGWIN_NT-6.11/*
-arch/i386-Darwin16/*
-arch/i386-CYGWIN_NT-6.11/*
 obj/*
 sad/*
 .DS_Store
@@ -25,7 +21,6 @@ src/inc/CVS/Entries
 src/gdtoa/*
 src/.DS_Store
 src/gdtoa/test/*
-Packages/Canvas.n_0
 Packages/#Canvas.n#
 *.~*
 *_0
@@ -36,18 +31,12 @@ KBFrame/CVS/Root~
 Packages/Optics.n~
 *.n_1~
 *.n~
-src/depend-cache-rG3OJg0z7H6C
-src/depend-cache-Sa69PniUmxg3
 *.gitignore#
 *.sad~
 
 script/help2HTML2.sad~
 
 Documents.zip
-
-S%A6Yj%B8%D8
-
-%B4%BF.
 
 src/cod.sad
 

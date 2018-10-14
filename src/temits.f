@@ -229,6 +229,7 @@ c       write(*,'(a,2i5,1p7g12.4)')'temits1 ',i,i1,cod
         vy=beamr(6)*beamr(10)-beamr(9)**2
         emix0=sign(sqrt(abs(vx)),vx)
         emiy0=sign(sqrt(abs(vy)),vy)
+c        write(*,*)'temits1a ',emix0,emiy0
         res0=1.d100
         res=1.d0
         it=0
@@ -855,7 +856,7 @@ c          enddo
         call tmov(bfx,bc(1,1,j),nsb)
         call tmov(bfx(nsb+1),bs(1,1,j),nsb)
       enddo
-      write(*,'(a,1p10g11.3)')'tesolvd ',bs(:,1,ndp)
+c      write(*,'(a,1p10g11.3)')'tesolvd ',bs(:,1,ndp)
       return
       end
 
@@ -1044,41 +1045,30 @@ c              enddo
       integer*4 ndp,mphi2,nd
       real*8 bx(nd,mphi2,ndp),bddx(nd),bdx(nd),dj,e,damp
       real*8 ajj1,ajj2
-      integer*4 m,j0
-      real*8 c1,dy1(nd),d,ajj,f1,f2
+      integer*4 m,j0,j1
+      real*8 c1,dy1(nd),d,ajj,f1,f2,bx2(nd)
       parameter (c1=11.d0/60.d0)
-      d=-2.d0*damp
+      d=abs(2.d0*damp)
       ajj=(j0-.5d0)*dj
-      f1=d*e*.5d0
       f2=d*.5d0
+      f1=e*f2
+      ajj1=ajj-dj
+      ajj2=ajj+dj
       if(j0 .eq. 1)then
-c        ajj2=ajj+dj
-        bdx=0.d0
-        bddx=0.d0
-c        do i=1,nd
-c          bdx(i)=0.d0
-cc          bddx(i)=f2*(
-cc     $         e*(-ajj*bx(i,m,j0)+ajj2*bx(i,m,j0+1))/dj**2)
-c          bddx(i)=0.d0
-c        enddo
+        j1=1
+        bx2=bx(:,m,2)
       elseif(j0 .eq. ndp)then
-c        ajj1=ajj-dj
-        bdx=0.d0
-        bddx=0.d0
-c        do i=1,nd
-c          bdx(i)=0.d0
-cc          bddx(i)=f2*(
-cc     $         e*(ajj1*bx(i,m,j0-1)-ajj*bx(i,m,j0))/dj**2)
-c          bddx(i)=0.d0
-c        enddo
+        j1=j0-1
+        bx2=0.d0
       else
-        ajj1=ajj-dj
-        ajj2=ajj+dj
-        dy1=(bx(:,m,j0+1)-bx(:,m,j0-1))/dj*.5d0
-        bdx=f1*dy1
-        bddx=f2*(-(e+ajj)*dy1
-     $       +e*(ajj1*bx(:,m,j0-1)-2.d0*ajj*bx(:,m,j0)
-     $       +ajj2*bx(:,m,j0+1))/dj**2)
+        j1=j0-1
+        bx2=bx(:,m,j0+1)
+      endif
+      dy1=(bx2-bx(:,m,j1))/dj*.5d0
+      bdx=f1*dy1
+      bddx=f2*(-(e+ajj)*dy1
+     $     +e*(ajj1*bx(:,m,j1)-2.d0*ajj*bx(:,m,j0)
+     $     +ajj2*bx2)/dj**2)
 c        do i=1,nd
 c          dy1=(bx(i,m,j0+1)-bx(i,m,j0-1))/dj*.5d0
 c          bdx(i)=f1*dy1
@@ -1086,7 +1076,6 @@ c          bddx(i)=f2*(-(e+ajj)*dy1
 c     $         +e*(ajj1*bx(i,m,j0-1)-2.d0*ajj*bx(i,m,j0)
 c     $         +ajj2*bx(i,m,j0+1))/dj**2)
 c        enddo
-      endif
 c$$$      if(up)then
 c$$$        do j=1,j0-1
 c$$$          do i=1,nd

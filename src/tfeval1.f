@@ -413,7 +413,7 @@ c        if(ka1 .gt. 0 .and. ktfrealq(k2))then
           dlist(ka1)=dtfcopy(k2)
         else
           irtc=itfmessage(999,'General::invset',
-     $         '"Illegal Momory Location"')
+     $         '"Illegal Memory Location"')
           return
         endif
       else
