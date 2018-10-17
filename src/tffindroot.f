@@ -243,7 +243,9 @@ c      enddo
         sav(i)%p%value=dfromr(v(i))
       enddo
       l=itfuplevel()
+c      call tfdebugprint(ke,'evalres-1',1)
       call tfleval(klist(ktfaddr(ke)-3),kx,.true.,irtc)
+c      call tfdebugprint(kx,'evalres-2',1)
       if(irtc .ne. 0)then
         go to 9000
       endif

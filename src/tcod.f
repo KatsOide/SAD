@@ -75,8 +75,10 @@ c      write(*,*)'tcod-dp0 ',dp0
       call tinitr(trans)
       codf=codi
       trf00=trf0
+c      write(*,*)'tcod-tturne-0'
       call tturne(trans,codf,beam,
      $     int8(0),int8(0),int8(0),.false.,.true.,rt)
+c      write(*,*)'tcod-tturne-1'
       dz=(codi(5)+codf(5))*0.5d0
       rt=radtaper
       dcod1=codi-codf

@@ -590,7 +590,9 @@ c
 c zero clear initial cod (comment out by Y.O, 2010/10/28)
 c
 c        call tclr(cod,6)
+c        write(*,*)'temit-cod-0'
         call tcod(trans,cod,beam,fndcod)
+c        write(*,*)'temit-cod-1 ',fndcod
         if(.not. fndcod)then
           write(lfno,*)'???-Emittance[]-closed orbit not found.'
         endif
