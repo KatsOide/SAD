@@ -15,6 +15,7 @@
       real*8 amus0,amus1,amusstep,emix,emiy,res
       real*8 params(nparams)
       logical*4 trpt0,stab,radcod0,radtaper0,rfsw0,intra0
+      integer*4 , parameter :: ndpmin=15
       radcod0=radcod
       radtaper0=radtaper
       rfsw0=rfsw
@@ -27,7 +28,7 @@
       intra=.false.
       mphiz=mphi2*2-1
       ndims=mphiz
-      ndps=mphiz
+      ndps=max(ndpmin,mphiz)
       nzz=mphiz*2+1
       call temits1(
      $     .false.,stab,ndps,nzz,mphiz,mphi2,ndims,
@@ -163,7 +164,7 @@ c      h0+x == h1+tr1.x
 c      h0-h1 == (tr1-1).x
           write(*,'(a,i5,1p6g12.4)')'temits1-no cod ',i,cod(1:6)
         endif
-c       write(*,'(a,2i5,1p7g12.4)')'temits1 ',i,i1,cod
+c        write(*,'(a,2i5,1p7g12.4)')'temits1-cod ',i,i1,cod
         rm=rx
         call tmultr(rm,trans(:,7:12),6)
         call tmultr(rm,rxi,6)
@@ -307,6 +308,7 @@ c            endif
       if(kx .ne. 0)then
         kx=ktflist+kax
       endif
+c      call tfdebugprint(kx,'temits1',1)
       irtc=0
       return
       end
@@ -328,75 +330,15 @@ c            endif
      $     dj,damp,sige,eps
       integer*4 j,m,mb,ms,nsb,k1,k2,m1,m2,i1,nsbp
       real*8 diff,diff1,diff2,aj,bci1,bsi1,
-     $     diff3,damp0,d,dcb(nd),dsb(nd),
-     $     fbc(nd),dfbc(nd),fbs(nd),dfbs(nd)
+     $     diff3,damp0,d,dcb(nd),dsb(nd)
       character*(*) tag
       nsb=nd*mphi2
       nsbp=nsb*ndp
       eps=sige**2
       damp=damp0*.5d0
       d=2.d0*damp
-c      call tmov(bc,dbc,nsbp)
-c      call tmov(bs,dbs,nsbp)
-      do j=1,ndp
-        do m=1,mphi2
-          call tespl(bc,fbc,dfbc,ndp,mphi2,nd,dj,eps,damp,j,m)
-          call tespl(bs,fbs,dfbs,ndp,mphi2,nd,dj,eps,damp,j,m)
-          if(m .eq. 1)then
-            bc(:,m,j)=bc(:,m,j)+2.d0*dfbc
-c            do i=1,nd
-c              bc(i,m,j)=bc(i,m,j)+2.d0*dfbc(i)
-c            enddo
-          else
-            bc(:,m,j)=bc(:,m,j)+dfbc
-            bs(:,m,j)=bs(:,m,j)+dfbs
-c            do i=1,nd
-c              bc(i,m,j)=bc(i,m,j)+dfbc(i)
-c              bs(i,m,j)=bs(i,m,j)+dfbs(i)
-c            enddo
-          endif
-          m1=m+2
-          if(m1 .le. mphi2)then
-            bc(:,m1,j)=bc(:,m1,j)+dfbc-m*fbc
-            bs(:,m1,j)=bs(:,m1,j)+dfbs-m*fbs
-c            do i=1,nd
-c              bc(i,m1,j)
-c     $             =bc(i,m1,j)+dfbc(i)-m*fbc(i)
-c              bs(i,m1,j)
-c     $             =bs(i,m1,j)+dfbs(i)-m*fbs(i)
-c            enddo
-          endif
-        enddo
-      enddo
-      do j=ndp,1,-1
-        do m=mphi2,1,-1
-          call tespl(bc,fbc,dfbc,ndp,mphi2,nd,dj,eps,damp,j,m)
-          call tespl(bs,fbs,dfbs,ndp,mphi2,nd,dj,eps,damp,j,m)
-          m2=m-2
-          if(m .eq. 3)then
-            bc(:,m2,j)=bc(:,m2,j)+dfbc+2.d0*fbc
-c            do i=1,nd
-c              bc(i,m2,j)
-c     $             =bc(i,m2,j)+dfbc(i)+2.d0*fbc(i)
-c            enddo
-          elseif(m .gt. 3)then
-            bc(:,m2,j)=bc(:,m2,j)+dfbc+m2*fbc
-            bs(:,m2,j)=bs(:,m2,j)+dfbs+m2*fbs
-c            do i=1,nd
-c              bc(i,m2,j)
-c     $             =bc(i,m2,j)+dfbc(i)+(m-2)*fbc(i)
-c              bs(i,m2,j)
-c     $             =bs(i,m2,j)+dfbs(i)+(m-2)*fbs(i)
-c            enddo
-          endif
-          bc(:,m,j)=bc(:,m,j)+dfbc
-          bs(:,m,j)=bs(:,m,j)+dfbs
-c          do i=1,nd
-c            bc(i,m,j)=bc(i,m,j)+dfbc(i)
-c            bs(i,m,j)=bs(i,m,j)+dfbs(i)
-c          enddo
-        enddo
-      enddo
+      call tevdifj (bc,bs,ndp,mphi2,nd,dj,eps,damp)
+      call tevdifj1(bc,bs,ndp,mphi2,nd,dj,eps,damp)
       do j=1,ndp
         aj=(j-.5d0)*dj
         m=2
@@ -578,35 +520,17 @@ c            bs(i,m,j)=diff*bs(i,m,j)
 c          enddo
         enddo
       enddo
-      do j=ndp,1,-1
-        do m=mphi2,1,-1
-          call tespl(bc,fbc,dfbc,ndp,mphi2,nd,dj,eps,damp,j,m)
-          call tespl(bs,fbs,dfbs,ndp,mphi2,nd,dj,eps,damp,j,m)
-          m2=m-2
-          if(m .eq. 3)then
-            bc(:,m2,j)=bc(:,m2,j)+dfbc+2.d0*fbc
-c            do i=1,nd
-c              bc(i,m2,j)
-c     $             =bc(i,m2,j)+dfbc(i)+2.d0*fbc(i)
-c            enddo
-          elseif(m .gt. 3)then
-            bc(:,m2,j)=bc(:,m2,j)+dfbc+(m-2)*fbc
-            bs(:,m2,j)=bs(:,m2,j)+dfbs+(m-2)*fbs
-c            do i=1,nd
-c              bc(i,m2,j)
-c     $             =bc(i,m2,j)+dfbc(i)+(m-2)*fbc(i)
-c              bs(i,m2,j)
-c     $             =bs(i,m2,j)+dfbs(i)+(m-2)*fbs(i)
-c            enddo
-          endif
-          bc(:,m,j)=bc(:,m,j)+dfbc
-          bs(:,m,j)=bs(:,m,j)+dfbs
-c          do i=1,nd
-c            bc(i,m,j)=bc(i,m,j)+dfbc(i)
-c            bs(i,m,j)=bs(i,m,j)+dfbs(i)
-c          enddo
-        enddo
-      enddo
+      call tevdifj1(bc,bs,ndp,mphi2,nd,dj,eps,damp)
+      call tevdifj (bc,bs,ndp,mphi2,nd,dj,eps,damp)
+      return
+      end
+
+      subroutine tevdifj(bc,bs,ndp,mphi2,nd,dj,eps,damp)
+      implicit none
+      integer*4 j,m,nd,mphi2,m1,ndp
+      real*8 eps,damp,dj,
+     $     bc(nd,mphi2,ndp),bs(nd,mphi2,ndp),
+     $     fbc(nd),fbs(nd),dfbc(nd),dfbs(nd)
       do j=1,ndp
         do m=1,mphi2
           call tespl(bc,fbc,dfbc,ndp,mphi2,nd,dj,eps,damp,j,m)
@@ -635,6 +559,44 @@ c              bs(i,m1,j)
 c     $             =bs(i,m1,j)+dfbs(i)-m*fbs(i)
 c            enddo
           endif
+        enddo
+      enddo
+      return
+      end
+
+      subroutine tevdifj1(bc,bs,ndp,mphi2,nd,dj,eps,damp)
+      implicit none
+      integer*4 j,m,nd,mphi2,m2,ndp
+      real*8 eps,damp,dj,
+     $     bc(nd,mphi2,ndp),bs(nd,mphi2,ndp),
+     $     fbc(nd),fbs(nd),dfbc(nd),dfbs(nd)
+      do j=ndp,1,-1
+        do m=mphi2,1,-1
+          call tespl(bc,fbc,dfbc,ndp,mphi2,nd,dj,eps,damp,j,m)
+          call tespl(bs,fbs,dfbs,ndp,mphi2,nd,dj,eps,damp,j,m)
+          m2=m-2
+          if(m .eq. 3)then
+            bc(:,m2,j)=bc(:,m2,j)+dfbc+2.d0*fbc
+c            do i=1,nd
+c              bc(i,m2,j)
+c     $             =bc(i,m2,j)+dfbc(i)+2.d0*fbc(i)
+c            enddo
+          elseif(m .gt. 3)then
+            bc(:,m2,j)=bc(:,m2,j)+dfbc+(m-2)*fbc
+            bs(:,m2,j)=bs(:,m2,j)+dfbs+(m-2)*fbs
+c            do i=1,nd
+c              bc(i,m2,j)
+c     $             =bc(i,m2,j)+dfbc(i)+(m-2)*fbc(i)
+c              bs(i,m2,j)
+c     $             =bs(i,m2,j)+dfbs(i)+(m-2)*fbs(i)
+c            enddo
+          endif
+          bc(:,m,j)=bc(:,m,j)+dfbc
+          bs(:,m,j)=bs(:,m,j)+dfbs
+c          do i=1,nd
+c            bc(i,m,j)=bc(i,m,j)+dfbc(i)
+c            bs(i,m,j)=bs(i,m,j)+dfbs(i)
+c          enddo
         enddo
       enddo
       return
@@ -851,12 +813,13 @@ c            bfb(mc+i)= cmu(m)*dc+smu(m)*ds
 c            bfb(ms+i)=-smu(m)*dc+cmu(m)*ds
 c          enddo
         enddo
+c        write(*,'(a,1p10g11.3)')'tesolvd-8 '
         call tsolva(bff,bfb,bfx,2*nsb,2*nsb,2*nsb,1.d-20)
         call resetnan(bfx)
         call tmov(bfx,bc(1,1,j),nsb)
         call tmov(bfx(nsb+1),bs(1,1,j),nsb)
       enddo
-c      write(*,'(a,1p10g11.3)')'tesolvd ',bs(:,1,ndp)
+c      write(*,'(a,1p10g11.3)')'tesolvd-9 ',bs(:,1,ndp)
       return
       end
 
@@ -1042,12 +1005,10 @@ c              enddo
 
       subroutine tespl(bx,bdx,bddx,ndp,mphi2,nd,dj,e,damp,j0,m)
       implicit none
-      integer*4 ndp,mphi2,nd
+      integer*4 ndp,mphi2,nd,m,j0
       real*8 bx(nd,mphi2,ndp),bddx(nd),bdx(nd),dj,e,damp
-      real*8 ajj1,ajj2
-      integer*4 m,j0,j1
-      real*8 c1,dy1(nd),d,ajj,f1,f2,bx2(nd)
-      parameter (c1=11.d0/60.d0)
+      real*8 ajj1,ajj2,dy1(nd),d,ajj,f1,f2,bx1(nd),bx2(nd)
+      real*8 , parameter :: c1=11.d0/60.d0
       d=abs(2.d0*damp)
       ajj=(j0-.5d0)*dj
       f2=d*.5d0
@@ -1055,20 +1016,19 @@ c              enddo
       ajj1=ajj-dj
       ajj2=ajj+dj
       if(j0 .eq. 1)then
-        j1=1
+        bx1=bx(:,m,1)
         bx2=bx(:,m,2)
       elseif(j0 .eq. ndp)then
-        j1=j0-1
+        bx1=bx(:,m,j0-1)
         bx2=0.d0
       else
-        j1=j0-1
+        bx1=bx(:,m,j0-1)
         bx2=bx(:,m,j0+1)
       endif
-      dy1=(bx2-bx(:,m,j1))/dj*.5d0
+      dy1=(bx2-bx1)/dj*.5d0
       bdx=f1*dy1
       bddx=f2*(-(e+ajj)*dy1
-     $     +e*(ajj1*bx(:,m,j1)-2.d0*ajj*bx(:,m,j0)
-     $     +ajj2*bx2)/dj**2)
+     $     +e*(ajj1*bx1-2.d0*ajj*bx(:,m,j0)+ajj2*bx2)/dj**2)
 c        do i=1,nd
 c          dy1=(bx(i,m,j0+1)-bx(i,m,j0-1))/dj*.5d0
 c          bdx(i)=f1*dy1

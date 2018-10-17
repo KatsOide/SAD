@@ -325,8 +325,8 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       use tfcsi, only:icslfno
       use ffs_seg
       implicit none
-      real*8 codmax,demax
-      parameter (codmax=1.d4,demax=.5d0)
+      real*8 , parameter:: codmax=1.d4,demax=.5d0,dpmin=-0.9999d0,
+     $     tapmax=0.3d0
       type (sad_comp), pointer :: cmp
       type (sad_dlist), pointer :: lsegp
       integer*8 iatr,iacod,iabmi,kbmz,kbmzi,lp
@@ -355,6 +355,9 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       call tesetdv(cod(6))
       bradprev=0.d0
       do l=ibegin,iend
+c        if(l .ge. 13136 .and. l .lt. 14000)then
+c          write(*,*)'tturne1 ',l
+c        endif
         next=inext(l) .ne. 0
         if(ktfenanq(cod(1)) .or. ktfenanq(cod(3)))then
           if(ktfenanq(cod(1)))then
@@ -368,6 +371,7 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
             return
           endif
         endif
+        cod(6)=max(dpmin,cod(6))
         if(sol)then
           sol=l .lt. ke
           alid=0.d0
@@ -507,17 +511,19 @@ c        go to 5000
           ak0=cmp%value(ky_K0_BEND)
      $         +cmp%value(ky_ANGL_BEND)
           ak1=cmp%value(ky_K1_BEND)
+c          if(l .eq. 13136)then
+c            write(*,*)'ttrune-2 ',ak0,cod(6),gettwiss(mfitddp,nextl(l))
+c          endif
           if(radcod .and. radtaper)then
             if(rt)then
               l1=nextl(l)
-              ak0=ak0*
-     $             ((4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0-dp0)
-              ak1=ak1*
-     $             ((4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0-dp0)
+              rtaper=((4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0-dp0)
             else
-              ak0=ak0*(1.d0-dp0+cod(6))
-              ak1=ak1*(1.d0-dp0+cod(6))
+              rtaper=(1.d0-dp0+cod(6))
             endif
+            rtaper=min(1.d0+tapmax,max(1.d0-tapmax,rtaper))
+            ak0=ak0*rtaper
+            ak1=ak1*rtaper
           endif
           call tbende(trans,cod,beam,al,
      1         min(pi2,max(-pi2,ak0)),
@@ -531,6 +537,9 @@ c        go to 5000
      $         cmp%value(ky_EPS_BEND),
      1         cmp%value(ky_RAD_BEND) .eq. 0.d0,.true.,
      $         next,l,ld)
+c          if(l .eq. 13136)then
+c            write(*,*)'tturne1-bend-1 ',l
+c          endif
 
         case (icQUAD)
           if(dir .gt. 0.d0)then
@@ -543,10 +552,11 @@ c        go to 5000
           if(radcod .and. radtaper)then
             if(rt)then
               l1=nextl(l)
-              ak1=ak1*((2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0)
+              rtaper=((2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0)
             else
-              ak1=ak1*(1.d0-dp0+cod(6))
+              rtaper=1.d0-dp0+cod(6)
             endif
+            ak1=ak1*min(1.d0+tapmax,max(1.d0-tapmax,rtaper))
           endif
           call tsetfringepe(cmp,icQUAD,dir,ftable)
           call tquade(trans,cod,beam,al,ak1,
@@ -563,10 +573,11 @@ c        go to 5000
           if(radcod .and. radtaper)then
             if(rt)then
               l1=nextl(l)
-              ak1=ak1*((2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0)
+              rtaper=((2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0)
             else
-              ak1=ak1*(1.d0-dp0+cod(6))
+              rtaper=(1.d0-dp0+cod(6))
             endif
+            ak1=ak1*min(1.d0+tapmax,max(1.d0-tapmax,rtaper))
           endif
           call tthine(trans,cod,beam,lele,al,ak1,
      1         cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
@@ -591,6 +602,7 @@ c        go to 5000
               rtaper=1.d0-dp0+cod(6)
             endif
           endif
+          rtaper=min(1.d0+tapmax,max(1.d0-tapmax,rtaper))
           if(seg)then
 c            call tfevals('Print["PROF-TTE-0: ",LINE["PROFILE","Q1"]]',
 c     $       kxx,irtc)
