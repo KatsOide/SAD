@@ -1,8 +1,14 @@
 #!/bin/sh
 
-SAD_PACKAGES="~/SAD/oldsad/Packages/"; export SAD_PACKAGES
-SAD_ARCH=`~/SAD/oldsad/bin/HostArch`
-SAD_EXE="~/SAD/oldsad/obj/${SAD_ARCH}/sad1.exe"; export SAD_EXE
+JOB_DIR="$(pwd)"
+SAD_ROOTPATH="$(cd "$(dirname "$0")"; pwd)"
+#echo $SAD_ROOTPATH
+#echo $JOB_DIR
+cd $JOB_DIR
+
+SAD_PACKAGES="$SAD_ROOTPATH/../Packages/"; export SAD_PACKAGES
+SAD_ARCH=`$SAD_ROOTPATH/HostArch`
+SAD_EXE="$SAD_ROOTPATH/../obj/${SAD_ARCH}/sad1.exe"; export SAD_EXE
 
 # Set stack limit
 stacksize=8192		# Kbytes
