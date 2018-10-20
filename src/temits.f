@@ -1005,6 +1005,7 @@ c              enddo
 
       subroutine tespl(bx,bdx,bddx,ndp,mphi2,nd,dj,e,damp,j0,m)
       implicit none
+
       integer*4 ndp,mphi2,nd,m,j0
       real*8 bx(nd,mphi2,ndp),bddx(nd),bdx(nd),dj,e,damp
       real*8 ajj1,ajj2,dy1(nd),d,ajj,f1,f2,bx1(nd),bx2(nd)
