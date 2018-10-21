@@ -265,7 +265,7 @@ c            endif
             res0=-res
             res=0.d0
           else
-            res0=res
+            res0=res  
           endif
         enddo
         if(kx .eq. 0)then
@@ -312,7 +312,7 @@ c      call tfdebugprint(kx,'temits1',1)
       irtc=0
       return
       end
-
+      
       subroutine tevdif(bfb,bb,bc,bs,ba,amuj,cmu,smu,
      $     bd,hc,hs,
      $     ndp,mphi2,mphi,nd,
@@ -601,7 +601,7 @@ c          enddo
       enddo
       return
       end
-
+      
       subroutine tesolvd(bff,bfb,bfx,
      $     bb,bc,bs,ba,amuj,cmu,smu,
      $     bd,hc,hs,
@@ -890,7 +890,7 @@ c            enddo
       use tffitcode,only:ntwissfun
       implicit none
       integer*4 mphi,mphi2,nz,ndp,i,j,k,l,m,ndims
-      real*8
+      real*8 
      $     beams(10,-ndims:ndims),
      $     trads(5,5,-ndims:ndims),
      $     tws(ntwissfun,-ndims:ndims),tw0(ntwissfun),
@@ -1131,7 +1131,7 @@ c        enddo
       beam(21)=e
       return
       end
-
+      
       subroutine teintb(ip,f,beams,beama,ndims)
       implicit none
       integer*4 ip,ip1,ndims
@@ -1145,7 +1145,7 @@ c      enddo
 c     write(*,'(1p10g12.4)')beama
       return
       end
-
+      
       subroutine teintm(ip,f,trads,trd,ndims,wd)
       implicit none
       integer*4 ip,ndims
@@ -1165,7 +1165,7 @@ c        trd(5,i)=f1*trads(5,i,ip)+f0*trads(5,i,ip1)
 c      enddo
       return
       end
-
+      
       subroutine teintp(ip,f,tws,tr1,h1,rs,ndims)
       use tfstk, only:ktfenanq
       use tffitcode
@@ -1248,7 +1248,7 @@ c      enddo
       tr1(5,5)=1.d0
       return
       end
-
+      
       subroutine teintp1(ip,f,tws,tr1,h1,tw0,ndims)
       use tfstk, only:ktfenanq
       use temw, only:etwiss2ri,ri
