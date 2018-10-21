@@ -15,10 +15,7 @@
       real*8 amus0,amus1,amusstep,emix,emiy,res
       real*8 params(nparams)
       logical*4 trpt0,stab,radcod0,radtaper0,rfsw0,intra0
-<<<<<<< Updated upstream
-=======
       integer*4 , parameter :: ndpmin=15
->>>>>>> Stashed changes
       radcod0=radcod
       radtaper0=radtaper
       rfsw0=rfsw
@@ -31,7 +28,7 @@
       intra=.false.
       mphiz=mphi2*2-1
       ndims=mphiz
-      ndps=min(ndpmin,mphiz)
+      ndps=max(ndpmin,mphiz)
       nzz=mphiz*2+1
       call temits1(
      $     .false.,stab,ndps,nzz,mphiz,mphi2,ndims,
@@ -167,11 +164,7 @@ c      h0+x == h1+tr1.x
 c      h0-h1 == (tr1-1).x
           write(*,'(a,i5,1p6g12.4)')'temits1-no cod ',i,cod(1:6)
         endif
-<<<<<<< Updated upstream
-c       write(*,'(a,2i5,1p7g12.4)')'temits1 ',i,i1,cod
-=======
 c        write(*,'(a,2i5,1p7g12.4)')'temits1-cod ',i,i1,cod
->>>>>>> Stashed changes
         rm=rx
         call tmultr(rm,trans(:,7:12),6)
         call tmultr(rm,rxi,6)
@@ -237,10 +230,7 @@ c        write(*,'(a,2i5,1p7g12.4)')'temits1-cod ',i,i1,cod
         vy=beamr(6)*beamr(10)-beamr(9)**2
         emix0=sign(sqrt(abs(vx)),vx)
         emiy0=sign(sqrt(abs(vy)),vy)
-<<<<<<< Updated upstream
-=======
 c        write(*,*)'temits1a ',emix0,emiy0
->>>>>>> Stashed changes
         res0=1.d100
         res=1.d0
         it=0
@@ -275,7 +265,7 @@ c            endif
             res0=-res
             res=0.d0
           else
-            res0=res  
+            res0=res
           endif
         enddo
         if(kx .eq. 0)then
@@ -318,14 +308,11 @@ c            endif
       if(kx .ne. 0)then
         kx=ktflist+kax
       endif
-<<<<<<< Updated upstream
-=======
 c      call tfdebugprint(kx,'temits1',1)
->>>>>>> Stashed changes
       irtc=0
       return
       end
-      
+
       subroutine tevdif(bfb,bb,bc,bs,ba,amuj,cmu,smu,
      $     bd,hc,hs,
      $     ndp,mphi2,mphi,nd,
@@ -343,84 +330,15 @@ c      call tfdebugprint(kx,'temits1',1)
      $     dj,damp,sige,eps
       integer*4 j,m,mb,ms,nsb,k1,k2,m1,m2,i1,nsbp
       real*8 diff,diff1,diff2,aj,bci1,bsi1,
-<<<<<<< Updated upstream
-     $     diff3,damp0,d,dcb(nd),dsb(nd),
-     $     fbc(nd),dfbc(nd),fbs(nd),dfbs(nd)
-=======
      $     diff3,damp0,d,dcb(nd),dsb(nd)
->>>>>>> Stashed changes
       character*(*) tag
       nsb=nd*mphi2
       nsbp=nsb*ndp
       eps=sige**2
       damp=damp0*.5d0
       d=2.d0*damp
-<<<<<<< Updated upstream
-c      call tmov(bc,dbc,nsbp)
-c      call tmov(bs,dbs,nsbp)
-      do j=1,ndp
-        do m=1,mphi2
-          call tespl(bc,fbc,dfbc,ndp,mphi2,nd,dj,eps,damp,j,m)
-          call tespl(bs,fbs,dfbs,ndp,mphi2,nd,dj,eps,damp,j,m)
-          if(m .eq. 1)then
-            bc(:,m,j)=bc(:,m,j)+2.d0*dfbc
-c            do i=1,nd
-c              bc(i,m,j)=bc(i,m,j)+2.d0*dfbc(i)
-c            enddo
-          else
-            bc(:,m,j)=bc(:,m,j)+dfbc
-            bs(:,m,j)=bs(:,m,j)+dfbs
-c            do i=1,nd
-c              bc(i,m,j)=bc(i,m,j)+dfbc(i)
-c              bs(i,m,j)=bs(i,m,j)+dfbs(i)
-c            enddo
-          endif
-          m1=m+2
-          if(m1 .le. mphi2)then
-            bc(:,m1,j)=bc(:,m1,j)+dfbc-m*fbc
-            bs(:,m1,j)=bs(:,m1,j)+dfbs-m*fbs
-c            do i=1,nd
-c              bc(i,m1,j)
-c     $             =bc(i,m1,j)+dfbc(i)-m*fbc(i)
-c              bs(i,m1,j)
-c     $             =bs(i,m1,j)+dfbs(i)-m*fbs(i)
-c            enddo
-          endif
-        enddo
-      enddo
-      do j=ndp,1,-1
-        do m=mphi2,1,-1
-          call tespl(bc,fbc,dfbc,ndp,mphi2,nd,dj,eps,damp,j,m)
-          call tespl(bs,fbs,dfbs,ndp,mphi2,nd,dj,eps,damp,j,m)
-          m2=m-2
-          if(m .eq. 3)then
-            bc(:,m2,j)=bc(:,m2,j)+dfbc+2.d0*fbc
-c            do i=1,nd
-c              bc(i,m2,j)
-c     $             =bc(i,m2,j)+dfbc(i)+2.d0*fbc(i)
-c            enddo
-          elseif(m .gt. 3)then
-            bc(:,m2,j)=bc(:,m2,j)+dfbc+m2*fbc
-            bs(:,m2,j)=bs(:,m2,j)+dfbs+m2*fbs
-c            do i=1,nd
-c              bc(i,m2,j)
-c     $             =bc(i,m2,j)+dfbc(i)+(m-2)*fbc(i)
-c              bs(i,m2,j)
-c     $             =bs(i,m2,j)+dfbs(i)+(m-2)*fbs(i)
-c            enddo
-          endif
-          bc(:,m,j)=bc(:,m,j)+dfbc
-          bs(:,m,j)=bs(:,m,j)+dfbs
-c          do i=1,nd
-c            bc(i,m,j)=bc(i,m,j)+dfbc(i)
-c            bs(i,m,j)=bs(i,m,j)+dfbs(i)
-c          enddo
-        enddo
-      enddo
-=======
       call tevdifj (bc,bs,ndp,mphi2,nd,dj,eps,damp)
       call tevdifj1(bc,bs,ndp,mphi2,nd,dj,eps,damp)
->>>>>>> Stashed changes
       do j=1,ndp
         aj=(j-.5d0)*dj
         m=2
@@ -600,38 +518,6 @@ c          do i=1,nd
 c            bc(i,m,j)=diff*bc(i,m,j)
 c            bs(i,m,j)=diff*bs(i,m,j)
 c          enddo
-<<<<<<< Updated upstream
-        enddo
-      enddo
-      do j=ndp,1,-1
-        do m=mphi2,1,-1
-          call tespl(bc,fbc,dfbc,ndp,mphi2,nd,dj,eps,damp,j,m)
-          call tespl(bs,fbs,dfbs,ndp,mphi2,nd,dj,eps,damp,j,m)
-          m2=m-2
-          if(m .eq. 3)then
-            bc(:,m2,j)=bc(:,m2,j)+dfbc+2.d0*fbc
-c            do i=1,nd
-c              bc(i,m2,j)
-c     $             =bc(i,m2,j)+dfbc(i)+2.d0*fbc(i)
-c            enddo
-          elseif(m .gt. 3)then
-            bc(:,m2,j)=bc(:,m2,j)+dfbc+(m-2)*fbc
-            bs(:,m2,j)=bs(:,m2,j)+dfbs+(m-2)*fbs
-c            do i=1,nd
-c              bc(i,m2,j)
-c     $             =bc(i,m2,j)+dfbc(i)+(m-2)*fbc(i)
-c              bs(i,m2,j)
-c     $             =bs(i,m2,j)+dfbs(i)+(m-2)*fbs(i)
-c            enddo
-          endif
-          bc(:,m,j)=bc(:,m,j)+dfbc
-          bs(:,m,j)=bs(:,m,j)+dfbs
-c          do i=1,nd
-c            bc(i,m,j)=bc(i,m,j)+dfbc(i)
-c            bs(i,m,j)=bs(i,m,j)+dfbs(i)
-c          enddo
-=======
->>>>>>> Stashed changes
         enddo
       enddo
       call tevdifj1(bc,bs,ndp,mphi2,nd,dj,eps,damp)
@@ -715,7 +601,7 @@ c          enddo
       enddo
       return
       end
-      
+
       subroutine tesolvd(bff,bfb,bfx,
      $     bb,bc,bs,ba,amuj,cmu,smu,
      $     bd,hc,hs,
@@ -933,11 +819,7 @@ c        write(*,'(a,1p10g11.3)')'tesolvd-8 '
         call tmov(bfx,bc(1,1,j),nsb)
         call tmov(bfx(nsb+1),bs(1,1,j),nsb)
       enddo
-<<<<<<< Updated upstream
-      write(*,'(a,1p10g11.3)')'tesolvd ',bs(:,1,ndp)
-=======
 c      write(*,'(a,1p10g11.3)')'tesolvd-9 ',bs(:,1,ndp)
->>>>>>> Stashed changes
       return
       end
 
@@ -1008,7 +890,7 @@ c            enddo
       use tffitcode,only:ntwissfun
       implicit none
       integer*4 mphi,mphi2,nz,ndp,i,j,k,l,m,ndims
-      real*8 
+      real*8
      $     beams(10,-ndims:ndims),
      $     trads(5,5,-ndims:ndims),
      $     tws(ntwissfun,-ndims:ndims),tw0(ntwissfun),
@@ -1123,63 +1005,17 @@ c              enddo
 
       subroutine tespl(bx,bdx,bddx,ndp,mphi2,nd,dj,e,damp,j0,m)
       implicit none
-<<<<<<< Updated upstream
-      integer*4 ndp,mphi2,nd
-      real*8 bx(nd,mphi2,ndp),bddx(nd),bdx(nd),dj,e,damp
-      real*8 ajj1,ajj2
-      integer*4 m,j0
-      real*8 c1,dy1(nd),d,ajj,f1,f2
-      parameter (c1=11.d0/60.d0)
-      d=-2.d0*damp
-=======
       integer*4 ndp,mphi2,nd,m,j0
       real*8 bx(nd,mphi2,ndp),bddx(nd),bdx(nd),dj,e,damp
       real*8 ajj1,ajj2,dy1(nd),d,ajj,f1,f2,bx1(nd),bx2(nd)
       real*8 , parameter :: c1=11.d0/60.d0
       d=abs(2.d0*damp)
->>>>>>> Stashed changes
       ajj=(j0-.5d0)*dj
       f2=d*.5d0
       f1=e*f2
       ajj1=ajj-dj
       ajj2=ajj+dj
       if(j0 .eq. 1)then
-<<<<<<< Updated upstream
-c        ajj2=ajj+dj
-        bdx=0.d0
-        bddx=0.d0
-c        do i=1,nd
-c          bdx(i)=0.d0
-cc          bddx(i)=f2*(
-cc     $         e*(-ajj*bx(i,m,j0)+ajj2*bx(i,m,j0+1))/dj**2)
-c          bddx(i)=0.d0
-c        enddo
-      elseif(j0 .eq. ndp)then
-c        ajj1=ajj-dj
-        bdx=0.d0
-        bddx=0.d0
-c        do i=1,nd
-c          bdx(i)=0.d0
-cc          bddx(i)=f2*(
-cc     $         e*(ajj1*bx(i,m,j0-1)-ajj*bx(i,m,j0))/dj**2)
-c          bddx(i)=0.d0
-c        enddo
-      else
-        ajj1=ajj-dj
-        ajj2=ajj+dj
-        dy1=(bx(:,m,j0+1)-bx(:,m,j0-1))/dj*.5d0
-        bdx=f1*dy1
-        bddx=f2*(-(e+ajj)*dy1
-     $       +e*(ajj1*bx(:,m,j0-1)-2.d0*ajj*bx(:,m,j0)
-     $       +ajj2*bx(:,m,j0+1))/dj**2)
-c        do i=1,nd
-c          dy1=(bx(i,m,j0+1)-bx(i,m,j0-1))/dj*.5d0
-c          bdx(i)=f1*dy1
-c          bddx(i)=f2*(-(e+ajj)*dy1
-c     $         +e*(ajj1*bx(i,m,j0-1)-2.d0*ajj*bx(i,m,j0)
-c     $         +ajj2*bx(i,m,j0+1))/dj**2)
-c        enddo
-=======
         bx1=bx(:,m,1)
         bx2=bx(:,m,2)
       elseif(j0 .eq. ndp)then
@@ -1188,7 +1024,6 @@ c        enddo
       else
         bx1=bx(:,m,j0-1)
         bx2=bx(:,m,j0+1)
->>>>>>> Stashed changes
       endif
       dy1=(bx2-bx1)/dj*.5d0
       bdx=f1*dy1
@@ -1296,7 +1131,7 @@ c        enddo
       beam(21)=e
       return
       end
-      
+
       subroutine teintb(ip,f,beams,beama,ndims)
       implicit none
       integer*4 ip,ip1,ndims
@@ -1310,7 +1145,7 @@ c      enddo
 c     write(*,'(1p10g12.4)')beama
       return
       end
-      
+
       subroutine teintm(ip,f,trads,trd,ndims,wd)
       implicit none
       integer*4 ip,ndims
@@ -1330,7 +1165,7 @@ c        trd(5,i)=f1*trads(5,i,ip)+f0*trads(5,i,ip1)
 c      enddo
       return
       end
-      
+
       subroutine teintp(ip,f,tws,tr1,h1,rs,ndims)
       use tfstk, only:ktfenanq
       use tffitcode
@@ -1413,7 +1248,7 @@ c      enddo
       tr1(5,5)=1.d0
       return
       end
-      
+
       subroutine teintp1(ip,f,tws,tr1,h1,tw0,ndims)
       use tfstk, only:ktfenanq
       use temw, only:etwiss2ri,ri
