@@ -15,7 +15,6 @@
      $     iaxsys,loc,ktcvaloc,kax,k1,k2,i
       integer*4 lpw
       integer*4 lenw,ifromstr
-      real*8 x0,x1
       call tfinfinit
       call tfsinglechar
       levele=1
