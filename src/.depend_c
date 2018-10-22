@@ -6,11 +6,7 @@ PySad.o: PySad.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCBK.h sim/TF
 autos_.o: autos_.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h sim/sad_f2c.h sim/TFCBK.h
 buildinfo.o: buildinfo.c buildinfo.h feature.h
 buildinfo_.o: buildinfo_.c buildinfo.h sim/sad_f2c.h
-buildinfo.o: buildinfo.c buildinfo.h feature.h
 calc.o: calc.c sim/sad_f2c.h
-CaSearch2.o: CaSearch2.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/sad_tcltk.h sim/TFCODE.h sim/TFSTK.h
-CaSearch_.o: CaSearch_.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCODE.h sim/TFSTK.h
-DbStatic.o: DbStatic.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCODE.h sim/TFSTK.h
 eval1_.o: eval1_.c sim/sad_f2c.h
 feature.o: feature.c feature.h
 ft.o: ft.c ft.h
@@ -19,8 +15,6 @@ itfgetbuf_.o: itfgetbuf_.c sim/sad_f2c.h
 netSemaphore.o: netSemaphore.c netSemaphore.h
 nfgetm.o: nfgetm.c sim/sad_f2c.h
 psn.o: psn.c ft.h psn.h
-PyConfig.o: PyConfig.c
-PySad.o: PySad.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h
 random_driver.o: random_driver.c feature.h random_driver.h
 random_plugin_sad.o: random_plugin_sad.c feature.h random_driver.h
 spch.o: spch.c
@@ -73,27 +67,17 @@ gdtoa/g_xLfmt.o: gdtoa/g_xLfmt.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoa
 gdtoa/g_xfmt.o: gdtoa/g_xfmt.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/gdtoa.o: gdtoa/gdtoa.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/gethex.o: gdtoa/gethex.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/g_ffmt.o: gdtoa/g_ffmt.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/g__fmt.o: gdtoa/g__fmt.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/gmisc.o: gdtoa/gmisc.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/g_Qfmt.o: gdtoa/g_Qfmt.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/g_xfmt.o: gdtoa/g_xfmt.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/g_xLfmt.o: gdtoa/g_xLfmt.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/hd_init.o: gdtoa/hd_init.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/hexnan.o: gdtoa/hexnan.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/misc.o: gdtoa/misc.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/qnan.o: gdtoa/qnan.c
 gdtoa/smisc.o: gdtoa/smisc.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtod.o: gdtoa/strtod.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtodg.o: gdtoa/strtodg.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtodI.o: gdtoa/strtodI.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtodnrp.o: gdtoa/strtodnrp.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtof.o: gdtoa/strtof.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
+gdtoa/strtoIQ.o: gdtoa/strtoIQ.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtoId.o: gdtoa/strtoId.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtoIdd.o: gdtoa/strtoIdd.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtoIf.o: gdtoa/strtoIf.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtoIg.o: gdtoa/strtoIg.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtoIQ.o: gdtoa/strtoIQ.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtoIx.o: gdtoa/strtoIx.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtoIxL.o: gdtoa/strtoIxL.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtod.o: gdtoa/strtod.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
@@ -111,7 +95,6 @@ gdtoa/strtorQ.o: gdtoa/strtorQ.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtord.o: gdtoa/strtord.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtordd.o: gdtoa/strtordd.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtorf.o: gdtoa/strtorf.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtorQ.o: gdtoa/strtorQ.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtorx.o: gdtoa/strtorx.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtorxL.o: gdtoa/strtorxL.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/sum.o: gdtoa/sum.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h

@@ -5,9 +5,10 @@
 
 #include <sys/types.h>
 #include <unistd.h>
-#if defined(__CYGWIN__)
-#include <crypt.h>
+#if __has_include("crypt.h")
+# include <crypt.h>
 #endif
+
 #include <pwd.h>
 
 /* SADScript function definition */
