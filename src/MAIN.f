@@ -14,7 +14,6 @@ c      use tfmem, only:talocinit
       use tfmem
       implicit none
 c
-c
       call fdate1(startdat)
       call buildinfo_get_string('Built:Date', builtdate)
 c
