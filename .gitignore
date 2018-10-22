@@ -1,5 +1,5 @@
 *.orig
-*.~
+*.*~
 TclTk/*
 arch/*
 obj/*
@@ -14,13 +14,12 @@ sad/*
 *.enc
 *.exe
 src/sim/CVS/Entries
-mk/CVS/Entries
 Packages/CVS/Entries
 src/CVS/Entries
 src/inc/CVS/Entries
-src/gdtoa/*
+src/gdtoa
 src/.DS_Store
-src/gdtoa/test/*
+mk/CVS/Entries
 Packages/#Canvas.n#
 *.~*
 *_0
@@ -33,13 +32,8 @@ Packages/Optics.n~
 *.n~
 *.gitignore#
 *.sad~
-
 script/help2HTML2.sad~
-
 Documents.zip
-
 src/cod.sad
-
 src/errmsg,f
-
 src/tfsk.f
