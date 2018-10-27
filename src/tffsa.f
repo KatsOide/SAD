@@ -219,7 +219,7 @@ c
         ios=0
       endif
       call getwrd(word)
-c      write(*,*)'tffa ',ios,' ',word(1:lenw(word))
+c      write(*,*)'tffa-getwrd ',ios,' ',word(1:lenw(word))
       if(ios .ne. 0)then
         go to 10
       endif
@@ -1691,6 +1691,7 @@ c          write(*,*)'tffssave -2: ',isave,ilattp
         nfr1=-(n/2)
         iuid(-nfr)=-1
         j=0
+        uini(mfitbx,nfr1:nfr)=0.d0
         do i=nfr1,nfr
           if(i .eq. 0)then
             uini(:,0)=0.d0
@@ -1700,8 +1701,8 @@ c            call tclr(uini(1,0),28)
             j=j+1
             if(tfreallistq(klx%dbody(j),klj))then
               if(klj%nl .eq. 6)then
-                uini(mfitdx:mfitdx+5,i)=klj%rbody(1:6)
-                uini(1,i)=-1.d0
+                uini(mfitdx:mfitddp,i)=klj%rbody(1:6)
+                uini(mfitbx,i)=0.d0
                 iuid(i)=j
               elseif(klj%nl .eq. ntwissfun)then
                 uini(mfitax:mfitax+ntwissfun-1,i)=klj%rbody(1:ntwissfun)

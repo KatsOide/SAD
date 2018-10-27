@@ -368,7 +368,7 @@ c      enddo
       return
       end
 
-      subroutine tfget(k,kx,irtc)
+      recursive subroutine tfget(k,kx,irtc)
       use tfstk
       use tfrbuf
       use tfcsi
@@ -391,6 +391,10 @@ c      enddo
       lr0=icslrecl()
       rec=csrec()
       linep=icslinep()
+c      if(index(delim(1:ldel),buffer(lr0:lr0)) .le. 0)then
+c        buffer(lr0:lr0)=char(10)
+c        lr0=lr0+1
+c      endif
       call cssetrec(.false.)
       call cssetlinep(lr0)
       call cssetp(lr0)

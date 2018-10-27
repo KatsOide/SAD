@@ -1,4 +1,4 @@
-(* D.n 10/26/2017 *)
+(* D.n 10/27/2018 *)
 
 With[{ReductionRule:={
   ((a_^z_)*b___)^y_:>a^(z*y)*Times[b]^y,
@@ -75,7 +75,8 @@ D$[If[a_,b___],x_]:=With[{v=Null@@(D$[#,x]&/@{b})},If[a,v]];
 D$[Re[f_],x_]:=Re[D$[f,x]];
 D$[Im[f_],x_]:=Im[D$[f,x]];
 D$[Conjugate[f_],x_]:=Conjugate[D$[f,x]];
-D$[Rational[n_,d_],x_]:=Rational[D[n,x] d-n D[d,x], d^2];
+D$[Unevaluated$[Rational][n_,d_],x_]:=Rational[D[n,x] d-n D[d,x], d^2];
+!D$[Rational[n_,d_],x_]:=Rational[D[n,x] d-n D[d,x], d^2];
 
 Derivative[1][Sqrt]=(#^-(1/2))/2&;
 Derivative[1][Sin]=Cos;
@@ -293,3 +294,4 @@ Protect[ReduceExpression,D$,Expand,CheckDerivative,LegendreP,
   Integrate,Integrate$a,Spline,SplineData,SplineIntegrate,
   SplineIntegrate1,SplineIntegrate2,SplineIntegrateAll,NIntegrate
   ];
+
