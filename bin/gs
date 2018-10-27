@@ -89,12 +89,9 @@ esac
 # Set library path for dynamic link library
 case ${SAD_ARCH} in
 *-CYGWIN*)
-#    PATH=/Users/oide/SAD/oldsad/obj/i386-Darwin18/arch/${SAD_ARCH}/bin:${PATH}
-    PATH=$SAD_ROOTPATH/obj/${SAD_ARCH}/bin:${PATH}
+    PATH=$SAD_ROOTPATH/obj/i386-Darwin18/arch/${SAD_ARCH}/bin:${PATH}
     ;;
-*-Darwin)
-#    DYLD_LIBRARY_PATH=/Users/oide/SAD/oldsad/obj/i386-Darwin18/arch/${SAD_ARCH}/lib ; export DYLD_LIBRARY_PATH
-    DYLD_LIBRARY_PATH=$SAD_ROOTPATH/obj/${SAD_ARCH}/lib ; export DYLD_LIBRARY_PATH
+    DYLD_LIBRARY_PATH=$SAD_ROOTPATH/obj/i386-Darwin18/arch/${SAD_ARCH}/lib ; export DYLD_LIBRARY_PATH
     ;;
 *)
     ;;
