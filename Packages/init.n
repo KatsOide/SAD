@@ -455,7 +455,7 @@ FF$Cond[_]:=Null[];
 
 FF$Orig=?`FitFunction;
 FF$NCond=0;
-Setup$FF[]:=With[{f=FF$Cond/@FFS["SHOW;"]},
+Setup$FF[]:=With[{f=FF$Cond/@FFS$SHOW[]},
   If[FF$NCond=Length[f],
     Module[{f0},
       f0=If[Extract[FF$Orig=?`FitFunction,{1,1,2},Head]<=>List,
