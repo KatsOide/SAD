@@ -1,10 +1,10 @@
 #!/bin/sh
 
-pushd .
+JOB_DIR=$(pwd)
 SAD_ROOTPATH="$(cd "$(dirname "$0")";cd ..; pwd)"
 #echo $SAD_ROOTPATH
-popd
 export SAD_ROOTPATH
+cd $JOB_DIR
 
 SAD_PACKAGES="$SAD_ROOTPATH/Packages/"; export SAD_PACKAGES
 SAD_ARCH=`$SAD_ROOTPATH/bin/HostArch`
