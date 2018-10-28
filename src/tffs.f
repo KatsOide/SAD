@@ -1925,6 +1925,7 @@ c      call tfree(ifibzl)
       call cssetlfno(lfno1)
       call cssetlfni(lfni1)
       call cssetlfn1(lfn11)
+c      write(*,*)'FFS ',lfrecl,llinep
       outfl=outfl1
       if(irtc .eq. 0 .and. iffserr .ne. 0)then
         irtc=itfmessage(9,'FFS::error',strfromis(iffserr))
