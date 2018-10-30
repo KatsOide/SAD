@@ -115,10 +115,6 @@ Derivative[n__][Derivative[m__][f]]:=Derivative[##][f]&@@({n}+{m});
 
 CheckDerivative[f_]:=Position[f,Derivative,{0,Infinity},1]<=>{};
 
-Expand[Times[a__,(c:_Plus)]]:=(Expand[Times[a,Expand[#]]])&/@c;
-Expand[c:_Plus]:=Expand/@c;
-Expand[a_]:=a;
-
 Spline[l:{{_Real,_List},___},opt___]:=
   Module[{{x,y}=Thread[l],z},
     z=Spline[Thread[{x,#}],opt]&/@Thread[y];
@@ -290,8 +286,7 @@ BesselJZero[n_,k_]:=Module[{x=(k+n/2-0.25)*Pi,y},
   BesselJZero[n,k]=
     y/.FindRoot$[BesselJ[n,y]==0,{y,x-(2n+1)(2n-1)/x*(0.125+(28n^2-31)/384/x^2)}]];
 
-Protect[ReduceExpression,D$,Expand,CheckDerivative,LegendreP,
+Protect[ReduceExpression,D$,XSCheckDerivative,LegendreP,
   Integrate,Integrate$a,Spline,SplineData,SplineIntegrate,
   SplineIntegrate1,SplineIntegrate2,SplineIntegrateAll,NIntegrate
   ];
-

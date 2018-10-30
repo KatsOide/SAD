@@ -379,6 +379,7 @@ c      enddo
       isp0=isp
       isp=isp+1
       dtastk(isp)=k
+c      call tfdebugprint(k,'tfget',1)
       call tfopenread(isp0,kfn,irtc)
       isp=isp0
       if(irtc .ne. 0)then
