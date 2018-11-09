@@ -62,11 +62,10 @@ End[___]:=With[{b=$SetContext[Last[$ContextStack]]},
   If[Length[$ContextStack]>1,$ContextStack=Drop[$ContextStack,-1]];
   $Context:=b];
 BeginPackage[a__]:=With[{`c=$ContextPath,
-  `b=Check[$ContextPath={a,System`},Return[]]},
+  `b=Check[$SetContextPath[{a,System`}],Return[]]},
   AppendTo[$PackageStack,`c];
   `b];
-EndPackage[___]:=(
-  $ContextPath=Last[$PackageStack];
+EndPackage[___]:=($SetContextPath[Last[$PackageStack]];
   If[Length[$PackageStack]>1,$PackageStack=Drop[$PackageStack,-1]];
   $ContextPath);
 SetAttributes[{Begin,End,BeginPackage,EndPackage,ToContext,Wrap},Constant];
@@ -208,8 +207,6 @@ AutoLoad[`x__,`f_]:=(Scan[
   Protect[x]);
 AutoLoadSet[`x__,`f_]:=(Scan[
   Function[`a,
-    (`a[`z___]:=`b_)^:=(Unprotect[x];Clear[x];Get[f];`a[`z]:=`b);
-    (`a[`z___]=`b_)^:=(Unprotect[x];Clear[x];Get[f];`a[`z]=`b);
     (`a=`b_)^:=(Unprotect[x];Clear[x];Get[f];`a=`b);
     `a:=(Unprotect[x];Clear[x];Get[f];`a)],
   {x}];
@@ -298,8 +295,8 @@ WithPriority[x_,`y_]:=With[x,
   $Priority=False];
 SetAttributes[{Priority,WithPriority},{HoldAll,Constant}];
 Close[x_]:=Close$[x];
-Close[x__]:=Scan[Close,{x}];
-Close[`l_List]:=Scan[Close,Flatten[l]];
+Close[x__]:=Close/@{x};
+Close[{x_,y_}]:=Close$/@Range[x,y];
 SetAttributes[Close,Constant];
 Shared[`n_Real]:=ReadShared[`n];
 (Shared[n_]=`v_)^:=WriteShared[n,v];
@@ -399,25 +396,40 @@ $System=$OperatingSystem=Environment$["OSTYPE"];
 Protect[$Input,$Output];
 SetAttrubutes[{Environment,Environment$,HomeDirectory,
   $MachineName,$MachineType,$System,$OperatingSystem},Constant];
-
-Expand[Times[a__,(c:_Plus)]]:=(Expand[Times[a,Expand[#]]])&/@c;
-Expand[c:_Plus]:=Expand/@c;
-Expand[a_]:=a;
-SetAttributes[Expand,Constant];
-
+(Element[x_List,y_,`op___]=`z_List)^:=
+  (ScanThread[Function[{a,b},Element[a,y,op]=b],{x,z}];
+    z);
+(Element[x_,y_String,`op___]=`z_)^:=
+  Module[{`k=ToUpperCase[x],`d=Element$["DEFAULT",y,op]},
+    If[k==d || k=="VALUE",
+      Element$[d,y,op]=z*LINE["DK",y];
+      Scan[(LINE[d,#]=z*LINE["DK",#])&,Flatten[{LINE["POSITION",y//".*"]}]],
+      Element$[k,y,op]=z;
+      If[k<>"GEO",
+	Scan[(LINE[k,#]=z)&,Flatten[{LINE["POSITION",y//".*"]}]]]];
+    z];
+(Element[x_,y_List,op___]=z_List)^:=(
+  ScanThread[Function[{a,b},Element[x,a,op]=b],{y,z}];z);
+(Element[x_,y_List,op___]=z_)^:=(Scan[Function[{a},Element[x,a,op]=z],y];z);
+(Element[x_,y_,op___]=z_)^:=
+  With[{n=Element$["NAME",y]},Element[x,n,op]=z];
+Element[x___]:=Element$[x];
+SetElement[x_?(Element["POSITION",#]<=>{}&),t:(_String|),k__]:=
+  Module[{v=SetElement$[x,t,k]},
+    Scan[(Element[#[[1]],x]=#[[2]])&,Flatten[{k}]];
+    v];
+SetElement[x__]:=SetElement$[x];
 ExternalMap[___]:=Null;
 InitLINE$P[]:=(
   Clear[LINE$P,Element$P,Element$Key];
-!  With[{`n=LINE["NAME"]},
-!    ScanThread[(LINE$P[#]={#2})&,{n,Range[Length[n]]}]];
-  LINE$P[n_String]:=(
-    LINE$P[n]=Flatten[{LINE["POSITION","@"//n]}]);
+  Module[{`n=LINE["NAME"]},
+    MapThread[(LINE$P[#]={#2})&,{n,Range[Length[n]]}]];
   LINE$P[n_]:=(
-    LINE$P[n]=Flatten[{LINE["POSITION",n]}]);
-!  With[{n=Element$["NAME"]},
-!    ScanThread[(Element$P[#]={#2})&,{n,Range[Length[n]]}]];
+    LINE$P[n]=Flatten[{LINE["POSITION","@"//n]}]);
+  Module[{n=Element$["NAME"]},
+    MapThread[(Element$P[#]={#2})&,{n,Range[Length[n]]}]];
   Element$P[n_]:=(
-    Element$P[n]=Flatten[{Element$["POSITION",n]}]);
+    Element$P[n]=Flatten[{Element["POSITION",n]}]);
   Element$Key[n_]:=(Element$Key[n]=Type$Key[Element$["TYPE",n]]);
   Element$Key[n_,k_String]:=
     (Element$Key[n,k]=(Position[Element$Key[n],k]/.{}->{{0}})[[1,1]]));
@@ -426,18 +438,13 @@ Type$Key[n_]:=(Type$Key[n]=Type$Key$[n]);
 Type$Key[n_,k_String]:=
     (Type$Key[n,k]=(Position[Type$Key[n],k|{___,k,___},1,1]/.{}->{{0}})[[1,1]]);
 
-Protect[InitLINE$P];
-FFS$TwissFuns={AX,BX,PSIX,AY,BY,PSIY,EX,EPX,EY,EPY,R1,R2,R3,R4,DETR,
-  DX,DPX,DY,DPY,DZ,DDP,AZ,BZ,PSIZ,ZX,ZPX,ZY,ZPY};
-With[{FFS$TwissFuns},SetAttributes[FFS$TwissFuns,Constant]];
+Protect[Element,SetElement,InitLINE$P];
 FFS$SingleParameterCommands={
   AXI,BXI,AYI,BYI,EXI,EPXI,EYI,EPYI,
-  AZI,BZI,ZXI,ZPXI,ZYI,ZPYI,
   R1I,R2I,R3I,R4I,DXI,DPXI,DYI,DPYI,DZI,DDPI,
   MAXI,FITP,
   axi,bxi,ayi,byi,exi,epxi,eyi,epyi,
   r1i,r2i,r3i,r4i,dxi,dpxi,dyi,dpyi,dzi,ddpi,
-  azi,bzi,zxi,zpxi,zyi,zpyi,
   maxi,fitp};
 Scan[With[{`v=#},(v=x_)^:=Module[{y=x},
     FFS[v//" "//ToString[Unevaluated[y]]];x]]&,
@@ -459,20 +466,19 @@ FF$Cond[_]:=Null[];
 
 FF$Orig=?`FitFunction;
 FF$NCond=0;
-Setup$FF[]:=With[{f=FF$Cond/@FFS$SHOW[]},
+Setup$FF[]:=With[{f=FF$Cond/@FFS["SHOW"]},
   If[FF$NCond=Length[f],
     Module[{f0},
       f0=If[Extract[FF$Orig=?`FitFunction,{1,1,2},Head]<=>List,
         If[FF$Orig===Hold[{`FitFunction:=`FitFunction}],
           Hold[`FitFunction:=f]/.Hold->Null;
           Return[],
-          {Extract[FF$Orig,{1,1,2},Hold]}],
+          {Extract[FF$Orig,1,1,2,Hold]}],
         (Hold/@[FF$Orig,{4}])[[1,1,2]]];
       With[{fj=Join[f0,f]},
-        Hold[`FitFunction:=fj]/.Hold->Null]],
-    FF$Orig=?`FitFunction]];
+        Hold[`FitFunction:=fj]/.Hold->Null]]]];
 Reset$FF[]:=(FF$Orig[[1,1]];FF$NCond);
-Protect[Setup$FF,Reset$FF];
+Protect[Setup$FF];
 
 ARRAY[x__]:=Table[0,Evaluate[##]]&@@List/@{x};
 Len[x_]:=StringLength[x];
@@ -576,8 +582,6 @@ Scan[With[{sym = #}, SetAttributes[sym, Constant]]&, {
 On[General::unprotconst];
 (* Load PkgConfig function family *)
 Get[PackagesDirectory//"PkgConfig.n"];
-
-AutoLoadSet[Element,SetElement,PackagesDirectory//"element.n"];
 AutoLoad[FileNames, DirectoryName, ToFileName,
   $HomeDirectory,
   CreateDirectory, DeleteDirectory, RenameDirectory, CopyDirectory,
@@ -594,17 +598,14 @@ AutoLoad[CaOpen,CaRead,CaWrite,CaGet,CaPut,CaClose,
 AutoLoad[CaOpenMonitor,PackagesDirectory//"CaSad2.n"];
 AutoLoad[CaMonitor,PackagesDirectory//"CaSad2c.n"];
 AutoLoad[EPICSDB,PackagesDirectory//"CEPICSRecord.n"];
-
-$DisplayFunction=If[Environment["DISPLAY"]<=>"",CanvasDrawer,Identity,Identiy];
-Check[`f=OpenRead["!command -v tdr"];
-  Close[`f];
-  AutoLoad[TopDrawer,
-    PackagesDirectory//"TopDrawer.n"],];
-
+$DisplayFunction=If[Check[System["which tdr >/dev/null"],1],
+  If[Environment["DISPLAY"]<=>"",CanvasDrawer,TopDrawer],TopDrawer,TopDrawer];
 AutoLoad[ListPlot,Plot,Show,Graphics,Rectangle,
   PackagesDirectory//"ListPlot.n"];
 AutoLoad[FitPlot,ListContourPlot,ListDensityPlot,
   ColumnPlot,HistoPlot,PackagesDirectory//"Plots.n"];
+AutoLoad[TopDrawer,
+  PackagesDirectory//"TopDrawer.n"];
 AutoLoad[OpticsPlot,LatticePlot,BeamPlot,OP$S2Position,
   PackagesDirectory//"OpticsPlot.n"];
 AutoLoad[GeometryPlot,
@@ -636,8 +637,7 @@ AutoLoad[CheckEntryList,PackagesDirectory//"CheckEntryList.n"];
 AutoLoad[CursorEntry,CaCursorEntry,PackagesDirectory//"CursorEntry.n"];
 AutoLoad[SI$StartInspect,PackagesDirectory//"SADInspect.n"];
 AutoLoad[Speak,PackagesDirectory//"Speak.n"];
-AutoLoad[Fit,PolynomialFit,FindRoot,FitGaussian,FitEmit,CreateBin,
-  PackagesDirectory//"Fit.n"];
+AutoLoad[Fit,PolynomialFit,FindRoot,PackagesDirectory//"Fit.n"];
 AutoLoad[Rational,Nemerator,Denominator,FromRational,
   ContinuedFractioin,FromContinuedFraction,PackagesDirectory//"rational.n"];
 AutoLoad[help,HELP,Help,PackagesDirectory//"help.n"];
@@ -666,7 +666,7 @@ AutoLoad[BeamLine,PrintBeamLine,WriteBeamLine,
   PackagesDirectory//"beamline.n"];
 AutoLoad[SetCoupledElements,CouplingMatrix,`CoupledKeys,
   PackagesDirectory//"Couple.n"];
-AutoLoad[D,Derivative,ReduceExpression,ReductionRule,
+AutoLoad[D,Derivative,ReduceExpression,ReductionRule,Expand,
   Spline,SplineData,Integrate,NIntegrate,LegendreP,BesselJZero,
   PackagesDirectory//"D.n"];
 AutoLoad[LDSolve,PackagesDirectory//"LDSolve.n"];

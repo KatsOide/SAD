@@ -1,4 +1,4 @@
-(* rational.n 10/27/2018 *)
+(* rational.n 7/6/2015 *)
 
 $NPrime=1000;
 SmallPrime[n_]:=(SmallPrime[n]=

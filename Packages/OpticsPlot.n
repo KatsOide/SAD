@@ -1,4 +1,4 @@
-(* OpticsPlot 2/6/2018 *)
+(* OpticsPlot 11/5/2016 *)
 
 PkgConfig$DefaultList["OpticsPlot"->{
   "PlotDivision"->80,
@@ -94,14 +94,14 @@ OP$Element[s_]:=If[s<LINE["S","^^^"],
   Position[LINE["S"],_?(#>=s&),1,1]];
 OP$S2Position[s1$_Real, s2$_Real:Null] := Module[{length, pos, tbl},
   length = LINE["LENGTH"];
-  pos = Select[Range[1, length], (LINE["L", #] > 0)&];
+  pos = Select[Range[1, length], LINE["L", #] > 0&];
   tbl = Reverse[Thread[{LINE["S", pos], pos}]];
   length = LINE["S", "$$$"]-LINE["S","^^^"];
 
   Which[
     Not[RealQ[s2$]],	With[{s = Mod[s1$, length]},
       pos = Select[tbl, #[[1]] =< s&, 1][[1, 2]];
-      pos + (s - LINE["S", pos]) / (LINE["L", pos])],
+      pos + (s - LINE["S", pos]) / LINE["L", pos]],
 
     s1$ === s2$,	With[{s = Mod[s1$, length]},
       pos = Select[tbl, #[[1]] =< s&, 1][[1, 2]];
@@ -111,7 +111,7 @@ OP$S2Position[s1$_Real, s2$_Real:Null] := Module[{length, pos, tbl},
       Max[1, Floor[
 	With[{s = Mod[s1$, length]},
 	  pos = Select[tbl, #[[1]] =< s&, 1][[1, 2]];
-	  pos + (s - LINE["S", pos]) / LINE["L",pos]]]],
+	  pos + (s - LINE["S", pos]) / LINE["L", pos]]]],
       Min[LINE["LENGTH"], Ceiling[
 	With[{s = Mod[s2$, length]},
 	  pos = Select[tbl, #[[1]] =< s&, 1][[1, 2]];
@@ -174,7 +174,7 @@ With[{tdr:=TopDrawer,cdr:=CanvasDrawer},
   SetAttributes[PlotColorDefault,HoldAll];
   PlotColorDefault[tdr]={"black"};
   PlotColorDefault[cdr]=
-    {"dark slate blue","red3","forest green","goldenrod","purple"};
+    {"dark slate blue","red3","green","violet red","purple"};
   SetAttributes[PlotColorDefault,HoldNone]];
 
 With[{def={PlotRange->Automatic,
@@ -361,8 +361,8 @@ OpticsList[f_,i1_,i2_,dl_,off_,_,tags_,_]:=Module[{fun,ndiv},
     ];
   {Table[
     ndiv=If[LINE["TYPENAME",i]==="MARK", 0,
-      Floor[(LINE["L",i])/dl]+1];
-    Null@@Table[{LINE["S",i]+(LINE["L",i])*j/ndiv+off,fun[i+j/ndiv]},{j,0,ndiv-1}],
+      Floor[(LINE["S",Min[i2,i+1]]-LINE["S",i])/dl]+1];
+    Null@@Table[{LINE["S",i]+LINE["L",i]*j/ndiv+off,fun[i+j/ndiv]},{j,0,ndiv-1}],
     {i,i1,i2}],tags}];
 
 With[{def={Names->"*",Tags->False,NameFilter->Identity,
@@ -419,7 +419,7 @@ With[{yoff0=0.1},
         _Real,eh[i],
         _,Element$Height[type]];
       si=LINE["S",i];
-      si1=LINE["S",i+1];
+      si1=LINE["S",i] + LINE["L",i];
       If[type==4 || type == 22 || si1>s1+ds || h>h1,
         With[{default = Element["DEFAULT",LINE["ELEMENT",i]]},
           v=If[default==="",0,LINE[default,i]]];

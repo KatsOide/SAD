@@ -1,0 +1,50 @@
+!
+! RepeatGO function with Interactive Dialog
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: RepeatGO.n,v 1.3 2007/07/06 06:29:19 amorita Exp $
+! Style:      Global Function Library
+! Require:    Prog/QFunctions
+!
+
+Library@Require["Prog/QFunctions"];
+
+RepeatGO[op___Rule] := Module[{opt, maxIter, maxCount, useDialog,
+  w, f, cf, sIter, residual,
+  stopQ, prev, iter, count},
+
+  opt = Override[{op}/.{MaxIter->MaxIteration},
+    {MaxIteration->20, MaxCount->5, Dialog->True}];
+  {maxIter, maxCount, useDialog} = {MaxIteration, MaxCount, Dialog}/.opt;
+
+  useDialog = useDialog && TkinterQ[];
+
+  FFS["CALC"]; residual = MatchingResidual;
+  sIter = StandardForm[StringJoin[0, "/", maxIter]];
+  stopQ = False; iter = 0; count = 0;
+
+  If[useDialog,
+    w = KBDialogFrame["RepeatGO", f, Title->"Repeat GO"];
+    cf = KBFComponentFrame[f, Add->{
+      KBFString[Text->"Iterations:", Variable:>sIter,
+	WidgetOption->{Justify->"right"}],
+      KBFNumber[Text->"Residual:", Variable:>residual,
+	NumberForm->"14.7"],
+      KBFButton[Text->"STOP", Command:>(stopQ = True)],
+      }]];
+
+  While[iter < maxIter && Not[stopQ],
+    iter += 1; prev = MatchingResidual;
+    FFS["GO"]; residual = MatchingResidual;
+    sIter = StandardForm[StringJoin[iter, "/", maxIter]];
+    Which[
+      MatchingResidual >  prev, Break[],
+      MatchingResidual == prev, If[count += 1; count > maxCount, Break[]],
+      True, count = 0]];
+
+  cf =.;
+  w =.;
+
+  FFS["CALC"]];
+
+! End of File

@@ -943,23 +943,24 @@ KBFMakePDF[s$_,l$_:Null] := Module[{l,ld,s,n,fn,fns,lid,tn,
   l = If [l$===Null, KBF$FrameList, l$];
   n = Length[l];
   lid = Map[(If[Head[#]===Widget,WidgetInfo[#,ID],#[$Frame$WindowID]])&,l];
-  Scan[If[~RealQ[#],Print["can't get window id."]; Return[]]&,lid];
-  ld=Table[
-    KBFRaise[l[[i]]];
-    Update[WindowTasks,IdleTasks];
-    fn = StandardForm[tn//"_xwd_"//i//".xwd"];
-    System[StringJoin[KBF$xwd," -id ",lid[[i]]," -out ",fn]];
-    " "//fn,
-    {i,n}];
+  Do[If[~RealQ[lid[[i]]],Print["can't get window id."]; Return[]],{i,n}];
+  ld = {tn};
+  Do[
+	KBFRaise[l[[i]]];
+	Update[WindowTasks,IdleTasks];
+	fn = StandardForm[tn//"_xwd_"//i];
+	AppendTo[ld, " "//fn];
+	System[StringJoin[KBF$xwd," -id ",lid[[i]]," -out ",fn]];
+  ,{i,n}];
   fns = StringJoin@@ld;
-  cmd = StringJoin[convert,(*" -density 80x80 -page 842x595+30+30 ", *)
-    fns," ",s,".pdf; rm",fns," ",tn];
+  cmd = StringJoin[convert," -density 80x80 -page 842x595+30+30 ",
+    fns," ",s//".pdf","; rm ",fns];
   If[convhost=="",
     System[cmd],
     System["rsh "//convhost//" 'setenv DISPLAY "
       //If[#[1]<=>":", #, KBF$HostFullName[]//#]&[Environment["DISPLAY"]]
       //";"//cmd//"'"]];
-  ];
+];
 
 KBF$MakeWindowMenu[x_] := (
   x[$Menu$Window][Delete] = {1,"last"};

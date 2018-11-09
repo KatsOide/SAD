@@ -1,0 +1,46 @@
+!
+! Uniq Identify Number Class Library
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: UniqID.n,v 1.1 2005/06/28 02:33:02 amorita Exp $
+! Style:      Class Library
+! Require:    
+!
+
+! <<< UniqID class >>>
+UniqID=Class[{},
+  {
+    },
+  { ReUse, LastID, FreeID, ActiveID
+    },
+
+  Constructor[reuse_Real:True] := (
+    ReUse = (reuse === True);
+    FreeID = {};
+    ActiveID = {};
+    LastID = 0);
+
+  Allocate[] := Module[{id},
+    If[Length[FreeID] < 1,
+      LastID += 1; id = LastID,
+      id = First[FreeID]; FreeID = Rest[FreeID]];
+    If[Not[ReUse], AppendTo[ActiveID, id]];
+    id];
+
+  Release[id_Real] := If[ReUse,
+    AppendTo[FreeID, id], ActiveID = Select[ActiveID, # <=> id&]];
+
+  Active[] := If[ReUse, Complement[Range[LastID], FreeID], ActiveID];
+
+  Packing[] := Module[{i, n},
+    ActiveID = Sort[ActiveID];
+    FreeID = Sort[FreeID];
+
+    n = Length[FreeID]; i = 0;
+    While[i < n && FreeID[[n - i]] === LastID - i,
+      i += 1];
+    FreeID = Drop[FreeID, -i]; LastID -= i];
+
+];
+! >>> UniqID class <<<
+! End of File

@@ -70,7 +70,7 @@
         theta1=atan2(imag(ak(1)),dble(ak(1)))*.5d0
       endif
       call tsolrot(trans,cod,beam,al,bz0,dx,dy,dz,
-     $     chi1,chi2,theta+theta1,bxs,bys,bzs,.true.,ld)
+     $     chi1,chi2,theta+dtheta+theta1,bxs,bys,bzs,.true.,ld)
       cr1=dcmplx(cos(theta1),-sin(theta1))
       akn(0)=(ak(0)*cr1+dcmplx(bys,bxs)*al)*rtaper
       bz=bz0
@@ -395,7 +395,7 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
       endif
  1000 continue
       call tsolrot(trans,cod,beam,al,bz,dx,dy,dz,
-     $     chi1,chi2,theta+theta1,bxs,bys,bzs,.false.,ld)
+     $     chi1,chi2,theta+dtheta+theta1,bxs,bys,bzs,.false.,ld)
       if(dhg .ne. 0.d0)then
         rg2=p0/gammab(l+1)
 c        rg=sqrt(rg2)

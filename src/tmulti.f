@@ -228,7 +228,7 @@ c     end   initialize for preventing compiler warning
       else
         theta1=atan2(imag(ak(1)),dble(ak(1)))*.5d0
       endif
-      theta2=theta+theta1
+      theta2=theta+dtheta+theta1
       if(theta2 .ne. 0.d0)then
         cost=cos(theta2)
         sint=sin(theta2)

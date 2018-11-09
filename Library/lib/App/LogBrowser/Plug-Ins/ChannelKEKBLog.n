@@ -1,0 +1,221 @@
+!
+! LogBrowser Channel$KEKBLog Plugin Class
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: ChannelKEKBLog.n,v 1.46 2006/04/26 07:03:53 amorita Exp $
+! Style:      Plugin Class Library
+! Require:    Log/KEKBLog.n
+!             Prog/QFunctions.n
+!             App/LogBrowser/ChannelTimeRange.n
+!             App/LogBrowser/PanelLogCatalog.n
+!
+Library@Require["Log/KEKBLog", "Prog/QFunctions"];
+Library@Require["App/LogBrowser/ChannelTimeRange",
+  "App/LogBrowser/PanelLogCatalog"];
+
+! <<< LogBrowser Channel$KEKBLog plugin class >>>
+Channel$KEKBLog=Class[{ChannelTimeRange, Channel},
+  { ModuleFile = "LogBrowser/Plug-Ins/ChannelKEKBLog.n",
+    ModuleClassName = "Channel$KEKBLog",
+    RevisionID = "$Revision: 1.46 $"[12, -3],
+    ChannelCategory = "Archived Record", ChannelType = "KEKBLog",
+    defProperty,
+    cKEKBLog, rKEKBLog, nKEKBLog = 0
+    },
+  { RecordPath
+    },
+
+  Initialize$KEKBLog[] := (
+    rKEKBLog = KEKBLog$Retrieve[];
+    cKEKBLog = KEKBLog$Catalog[]);
+
+  Destructor[] := (
+    If[nKEKBLog -= 1; nKEKBLog < 0,
+      Debug[PANIC, "Destructor", "detect exceeded Destructor calls"]];
+
+    cKEKBLog@SaveCache[];
+    ChannelTimeRange`Destructor[];
+    Channel`Destructor[]);
+
+  Constructor[path_String] := Module[{},
+    Channel`Constructor[];
+    ChannelTimeRange`Constructor[];
+
+    If[Not[BoundQ[defProperty]], defProperty = Override[
+      "Index"->1, "Resolution"->0, Channel`defProperty]];
+
+    nKEKBLog += 1;
+    RecordPath = path;
+    SetInstDefProperty["URL":>ChannelType//"://"//RecordPath,
+      "SystemLabel":>DefaultLabel[], "MaxIndex":>DefaultMaxIndex[],
+      "TimeRange":>DefaultTimeRange[],
+      "Discriminator":>DefaultDiscriminator[],
+      Null[]];
+    RegisterNotifyProperty["List", {"URL", "Index"}];
+    RegisterNotifyProperty["Information", {"URL", "Index"}];
+
+    Notify["Channel:Construct", "URL"->ChannelType//"://"//RecordPath];
+    SetProperty@@Select[Options, StringQ[#[[1]]]&]];
+
+  ValidRecordQ[path_] := If[StringQ[path], With[{l = cKEKBLog@ls[path]},
+    If[l === {path} && StringPosition[path, "/"] <=> {}, True, False]], False];
+
+  (* Local default functions... *)
+  DefaultLabel[] := With[{pos = StringPosition[RecordPath, "/"],
+    index = DefaultIndex[], maxIndex = DefaultMaxIndex[]},
+    StringJoin[
+      KEKBLog$Encode@Decode[
+	If[Length[pos] > 0, RecordPath[pos[[-1, 2]] + 1, -1], RecordPath]],
+      If[Not[RealQ[maxIndex] && maxIndex > 1], Null[],
+	StandardForm[StringJoin["[", index, "]"]]],
+      Null[]]];
+
+  DefaultIndex[] := With[{index = ExtractProperty["Index"]},
+    If[RealQ[index] && index >= 1, index, 1]];
+
+  DefaultMaxIndex[] := With[{l = cKEKBLog@cat[RecordPath]},
+    If[l === {}, Undefined, Max@@Map[Length/.#&, l]]];
+
+  (* Channel Plugin API functions *)
+  (* Override Property functions *)
+  SetProperty[prop:((Rule[_String, _]|RuleDelayed[_String, _])...)] := Module[{
+    rem, url, timerange, path},
+    {url, timerange, rem} = SwitchCases[{prop}, {
+      Rule["URL", _]|RuleDelayed["URL", _],
+      Rule["TimeRange", _]|RuleDelayed["TimeRange", _],
+      _}];
+
+    If[Length[url] > 0, url = url[[1,2]]; If[ValidURLMethodQ[url],
+      If[path = StripURLMethod[url]; ValidRecordQ[path],
+	RecordPath = path;
+	Notify["Channel:Property:Set", "URL"->ChannelType//"://"//RecordPath],
+	Debug[ERROR, "SetProperty",
+	  "Invalid record[", path, "] is requested"]],
+      AppendTo[rem, "URL"->url]]];
+
+    ChannelTimeRange`SetProperty@@timerange;
+
+    Channel`SetProperty@@rem];
+
+  UnsetProperty[prop___String] := Module[{special, rem},
+    {special, rem} = SwitchCases[{prop}, {
+      "TimeRange", _}];
+
+    Channel`UnsetProperty@@rem];
+
+  (* Information API family *)
+  Information["Provide"] := {"Type", "Source", "TimeRange"};
+
+  Information["Type"] := With[{maxIndex = DefaultMaxIndex[]},
+    StringJoin["Archived ",
+      Switch[maxIndex,
+	Undefined, "",
+	1, "Single ",
+	_, "Waveform "], "Record",
+      If[Not[RealQ[maxIndex] && maxIndex > 1], Null[],
+	StandardForm[StringJoin[": ",
+	  Restrict[DefaultIndex[], 1, maxIndex], "/", maxIndex]]]]];
+
+  Information["Source"] := StringJoin[ChannelType, "://", RecordPath];
+
+  (* Retrieve* backend control API *)
+  RetrieveStrategy[] := If[nKEKBLog > 0, rKEKBLog@Strategy[]];
+
+  RetrieveProcess[] := If[nKEKBLog > 0, rKEKBLog@ProcessIO[]];
+
+  (* Retrieve* API family *)
+  RetrieveQueue[cbuf_] := Module[{path, opt},
+    path = RecordPath;
+    opt = Property["TimeRange", "Resolution"]/.{
+      "TimeRange"->Range, "Resolution"->Resolution};
+    cbuf@request[cID] = If[path <=> Undefined, {{path}, Null@@opt}, $Failed];
+    cbuf@retrieveoption[cID] = Append[Property["MaxIndex", "Discriminator"],
+      "Index"->DefaultIndex[]];
+    cbuf@Activate[cID]];
+
+  RetrieveRequest[cbuf_] := If[ListQ[cbuf@request[cID]],
+    cbuf@requestID[cID] = rKEKBLog@Request[Null@@(cbuf@request[cID])],
+    cbuf@requestID[cID] = $Failed];
+
+  RetrievePoll[cbuf_] := If[RealQ[cbuf@requestID[cID]],
+    rKEKBLog@Poll[cbuf@requestID[cID]], 1];
+
+  RetrieveUpdate[cbuf_, timestamp_Real] := With[{id = cbuf@requestID[cID]},
+    If[timestamp > cbuf@updatestamp[cID], cbuf@updatestamp[cID] = timestamp;
+      If[id === $Failed, (* Updating buffer *)
+	cbuf@buffer[cID] = {},
+	With[{index = 1 + ("Index"/.cbuf@retrieveoption[cID]),
+	  maxIndex = ("MaxIndex"/.cbuf@retrieveoption[cID]),
+	  disc = ("Discriminator"/.cbuf@retrieveoption[cID])},
+	  cbuf@buffer[cID] = Check[Switch[{maxIndex, FunctionQ[disc]},
+	    {1,  True}, Map[disc, First[rKEKBLog@Retrieve[id]]],
+
+	    {1, False}, First[rKEKBLog@Retrieve[id]],
+
+	    {_,  True}, Map[If[Not[RuleQ[#]], #,
+	      disc[#[[1]]->Map[#[[{1, Min[index, Length[#]]}]]&, #[[2]]]]]&,
+	      First[rKEKBLog@Retrieve[id]]],
+
+	    {_, False}, Map[If[Not[RuleQ[#]], #,
+	      #[[1]]->Map[#[[{1, Min[index, Length[#]]}]]&, #[[2]]]]&,
+	      First[rKEKBLog@Retrieve[id]]],
+
+	    _, {}], {}]];
+
+	If[rKEKBLog@Poll[cbuf@requestID[cID]] === 1,
+	  cbuf@updatestamp[cID] = INF]]]];
+
+  RetrieveRelease[cbuf_] := (
+    cbuf@Inactivate[cID];
+    If[RealQ[cbuf@requestID[cID]], rKEKBLog@Release[cbuf@requestID[cID]]];
+    cbuf@Clear[cID]);
+
+  (* Interface bottom half API family *)
+  Interface["Provide"] := Join[{
+    "Channel:Create", "Channel:Create:Panel",
+    Null[]}, Channel`Interface["Provide"]];
+
+  Interface["PopupMenu:Provide"] := Join[{
+    "Index", "Edit/Discriminator", "Edit/TimeRange", "Edit/Resolution",
+    Null[]}, Channel`Interface["PopupMenu:Provide"]];
+
+  Interface["Channel:Create", opt:((_Rule|_RuleDelayed)...)] := Module[{rem,
+    url, path},
+    {url, rem} = SwitchCases[Override[opt],
+      {Rule["URL", _]|RuleDelayed["URL", _], _}];
+    If[Length[url] > 0, url = url[[1, 2]];
+      If[ValidURLMethodQ[url]
+	&& (path = StripURLMethod[url]; ValidRecordQ[path]),
+	Channel$KEKBLog[path, Null@@rem],
+	Debug[ERROR, "Interface[Channel:Create]",
+	  "Invalid record[", path, "] is requested"]; $Failed],
+      Debug[ERROR, "Interface[Channel:Create]",
+	"\"URL\" property MUST be specified for creating KEKBLog Channel"];
+      $Failed]];
+
+  Interface["Channel:Create:Panel", clObj_, stat_:{}] := 
+    Panel$LogCatalog@CatalogDialog[cKEKBLog, clObj, stat,
+      Prefix->ChannelType//"://", Title->ChannelType//" Channel Selector"];
+
+  (* Interface[PopupMenu] *)
+  Interface["PopupMenu:Template:Edit/Resolution", {cid__}, Variable:>v_] := With[{
+    ids = {cid}, ch = Channel$Object, mch = Channel$Object[First[{cid}]]},
+    {1500, (* Preference *)
+      Cascade[Text->"Edit", Add->{
+	Button[Text->"Resolution: "//mch@ExtractProperty["Resolution"],
+	  Command:>Interface["Dialog:Resolution", ids]],
+	Separator[]}],
+      Separator[]}];
+
+  (* Interface[Dialog] *)
+  Interface["Dialog:Resolution", {ids__Real}] := Interface["Dialog:Number",
+    {ids}, "Resolution", Title->"Retrieving Resolution",
+    Range->{0, INF}, Resolution->1];
+
+  ];
+Channel$KEKBLog@Initialize$KEKBLog[];
+! >>> LogBrowser Channel$KEKBLog plugin class <<<
+
+LogBrowser@RegisterModule["Plugin", Channel$KEKBLog];
+
+! End of File

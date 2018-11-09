@@ -1,0 +1,40 @@
+!
+! Stack Class Library
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: Stack.n,v 1.4 2004/01/23 04:16:25 amorita Exp $
+! Style:      Class Library
+! Require:    None
+
+! <<< Stack class >>>
+Stack=Class[{},
+  {
+    },
+  { pointer, stack, ErrorSymbol = $Failed
+    },
+
+  Destructor[] := Clear[];
+
+  Constructor[entry___] := (Clear[]; Scan[Push, {entry}]);
+
+  (* Public API *)
+  Push[entry__] := Scan[(stack[pointer++] = #)&, {entry}];
+
+  Pop[] := If[pointer < 1, ErrorSymbol,
+    With[{entry = stack[--pointer]}, stack[pointer] =.; entry]];
+
+  Pop[n_Real] := If[Not[Floor[n] > 0 && pointer >= Floor[n]], ErrorSymbol,
+    With[{entry = Table[stack[--pointer], {i, 1, Floor[n]}]},
+      Table[stack[i] =., {i, pointer, pointer + Floor[n] - 1}];
+      entry]];
+
+  Height[] := pointer;
+
+  Dump[] := Table[stack[i], {i, 0, pointer - 1}];
+
+  Clear[] := (pointer = 0; Literal[Clear][stack]);
+
+  ];
+! >>> Stack class <<<
+
+! End of File
