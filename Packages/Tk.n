@@ -1,0 +1,339 @@
+Pack$Options={After,Anchor,Before,Expand,Fill,In,IPadx,IPady,Padx,Pady,Side};
+AltPack$Options=ReplacePart[Pack$Options,Alternatives,0];
+
+OpenTk:=StandardForm[Module[{fn},
+  fn=GetPID[]//"";
+!  SAD$Tk="/tmp/sadTk"//fn;Tk$SAD="/tmp/Tksad"//fn;
+!  System["mkfifo -m 666 "//SAD$Tk//";mkfifo -m 666 "//Tk$SAD];
+!  SAD$Tk$fn=OpenWrite[SAD$Tk];
+!  Tk$SAD$fn=OpenRead[Tk$SAD];
+!  System["exec wish < "//SAD$Tk//" >> "//Tk$SAD//" &"];
+  {Tk$SAD$fn,SAD$Tk$fn}=BDPipe["/usr/local/bin/wish"];
+!  SAD$Tk$fn=6;
+  TkWrite[
+    "history keep 1\n\
+    tk_setPalette activeBackground black activeForeground #e0e0e0 \
+    background #e0e0e0 disabledForeground #b0b0b0 foreground black \
+    highlightBackground #e0e0e0 highlightColor black \
+    insertBackground black selectColor #ff7070 \
+    selectBackground black selectForeground white \
+    troughColor #a0a0a0\n\
+    bind Entry <Delete> {\
+    if [%W selection present] {\
+	%W delete sel.first sel.last \
+    } else {%W delete [expr [%W index insert] - 1] insert}}"];
+  TkWrite[
+    "wm protocol . WM_DELETE_WINDOW {puts {CloseTk}\nflush stdout\nexit}"];
+  TkWrite[
+    "wm protocol . WM_SAVE_YOURSELF {puts {CloseTk}\nflush stdout\nexit}"];
+  TkWrite["wm title . SAD/Tk"];
+  TkWidget["",Button[Name->"stop",Text->"STOP SAD/Tk",Command->CloseTk,
+    Side->"top",BackGround->"#ffe0c0"]];
+  TkWrite["puts \"Tk\$PID = [pid]\"\nflush stdout"];
+  ]];
+
+
+TkWait:=While[c=Read[Tk$SAD$fn,String];Print[c];c<=>EndOfFile,
+  If[c[1,7]=="unknown" || c[1,7]=="invalid" || c[1,8]=="expected",Print[c]];
+  Check[ToExpression[c],]];
+
+!CloseTk:=(Close[SAD$Tk$fn];Close[Tk$SAD$fn];
+!  SAD$Tk$fn=0;Tk$SAD$fn=0;System["sleep 1;kill -9 "//Tk$PID];
+!  System["rm "//SAD$Tk//" "//Tk$SAD]);
+CloseTk:=(SAD$Tk$fn=0;Tk$SAD$fn=0;System["sleep 1;kill -9 "//Tk$PID]);
+
+!(x_=Button[a__?FreeQ[Name->_]])^:=
+!  (Clear[x];x=Button[a,Name->ToLowerCase[""//x]]);
+
+TkFlush[s__]:=(Write[SAD$Tk$fn,s];Flush[SAD$Tk$fn]);
+TkWrite[s__]:=Write[SAD$Tk$fn,s];
+
+TkVariable[c_,opt_]:=Module[{var},
+  var=Cases[opt,(p:(Variable->v_))->Hold[v]];
+  If[var<=>{},
+      TkVariable1[c,var[1]],
+    {},{}]];
+
+TkVarName[Hold[v_]]:=Module[{vn=(Hold[v]//"")[6,-2]},{vn,vn}];
+
+TkVarName[Hold[v_[k__]]]:=Module[{vn=(Hold[v]//"")[6,-2]//"["//
+  Apply[StringJoin,Map[StringJoin[#,","]&,{k}]][1,-2]//"]"},
+  {vn,StringReplace[vn,{"["->"(","]"->")"}]}];
+
+TkVariable1[c_,Hold[v_]]:=Module[
+  {var=TkVarName[Hold[v]]},
+  TkVariable2[c,Hold[v],var[2]];
+  v=v;
+  var];
+
+TkVariable1[c_,Hold[v_[k__]]]:=Module[
+  {var=TkVarName[Hold[v[k]]]},
+  TkVariable2[c,Hold[v],var[2],k];
+  v[k]=v[k];
+  var];
+
+TkVariable2[c_,Hold[v_],vn_]:=(
+  TkWrite[" -",c,"variable ",vn];
+  (v=a_)^:=(TkWrite["set ",vn," \"",a,"\""];v:=a));
+
+TkVariable2[c_,Hold[v_],vn_,k__]:=(
+  TkWrite[" -",c,"variable ",vn];
+  (v[k]=a_)^:=(
+    TkWrite["set ",vn," \"",If[Length[a]==0,a,0,0],"\""];v[k]:=a));
+
+TkCommand[c_,opt_,v_]:=Module[{cmd,var,vf},
+  cmd=Cases[opt,(p:(Command->cm_))->Hold[cm]];
+  var=If[v,Cases[opt,(p:(Variable->va_))->Hold[va]],{}];
+  vf=var<=>{};
+  If[vf,,var={Hold[Null]}];
+  If[cmd<=>{},
+    TkCommand1[c,cmd[1],vf,var[1]];True,
+    If[vf,
+      TkCommand1[c,Hold[Null],vf,var[1]];False,
+      False],
+    False]];
+
+TkCommand1[c_,cm_,v_,Hold[va_]]:=Module[{var=TkVarName[Hold[va]]},
+  If[v,
+    TkWrite[" -",c,
+      " {puts [concat {",var[1],":=","} $",var[2],
+      " {;",(""//cm)[6,-2],"}]\nflush stdout} \\"],
+    TkWrite[" -",c," {puts {",(""//cm)[6,-2],"}\nflush stdout} \\"],
+    TkWrite[" -",c," {puts {",(""//cm)[6,-2],"}\nflush stdout} \\"]]];
+
+TkBind[name_,opt_]:=Module[{cmd},
+  cmd=Cases[opt,(p:(Bind->cm_))->Hold[cm]];
+  If[Length[cmd]<>0,
+    cmd=Map[Hold,cmd[1],{3}][1];
+    Scan[TkBind1[name[2,-1],#[1],#[2]]&,cmd]]];
+
+TkBind1[name_,Hold[ev_],Hold[cmd_]]:=BindWidget[name,ev,cmd];
+
+HeldOption[option_,op_,def___]:=option/.Cases[op,(p:(option->_))]/.{def};
+
+TkOptions[op_,e_:{},def_:{},pack_:True]:=Module[{opt,ex},
+  ex=If[pack,Join[e,Pack$Options],e];
+  opt={ReleaseHold[TkDeleteOptions[op,ex]]};
+  opt=Map[{#,#/.opt/.def}&,Union[Map[#[1]&,opt],Map[#[1]&,def]]];
+  Scan[TkWrite[ToLowerCase[" -"//#[1]]," ",#[2]," \\"]&,opt]];
+
+TkDeleteOptions[op_,ex_]:=(
+  DeleteCases[op,ReplacePart[ex,Alternatives,0]->_]);
+!  Scan[(opt=DeleteCases[opt,#->_])&,ex];opt];
+
+TkPackOptions[op_,e_:{},def_:{}]:=Module[{opt},
+  opt=Apply[Hold,Cases[op,p:(AltPack$Options->_)]];
+  TkOptions[opt,e,def,False]];
+
+TkOptionsPack[n_,op_,ex_:{},def_:{}]:=Module[{opt,dopt,exb=Append[ex,Bind]},
+  TkWrite["\n",n," configure \\"];
+  TkOptions[op,exb,def];
+  TkWrite[""];
+  TkBind[n,op];
+  TkWrite[""];
+  opt=Apply[Hold,Cases[op,p:(AltPack$Options->_)]];
+  dopt=Cases[def,p:(AltPack$Options->_)];
+  If[(Length[opt]>0 || Length[dopt]>0) && n<>"",
+    TkWrite["pack ",n," \\"];
+    TkOptions[opt,exb,dopt,False];
+    TkFlush[""]]];
+
+TkCommandName[name_,cmd_,opt_]:=Module[{n},
+  n=name//"."//ToLowerCase[Cases[opt,(p:(Name->n_))->n,1,1][1]];
+  WriteString[SAD$Tk$fn,cmd," ",n];
+  n];
+
+TkButton[name_,op_,cmd_,m_,v_]:=Module[{n},
+  If[m,n=TkCommandName[name,cmd,op],
+    n="";WriteString[SAD$Tk$fn,name," add ",cmd];
+    TkOptions[op,{Text,Name,Variable,Command}]];
+  TkWrite[" -",If[m,"text","label"]," \"",
+    HeldOption[Text,op],"\" \\"];
+  TkCommand["command",op,v];
+  If[v,TkVariable["",op]];
+  If[m,TkOptionsPack[n,op,{Text,Name,Variable,Command}]];
+  TkWrite[""]];
+
+TkWidget[name_,Button[opt__],m_:True]:=
+  TkButton[name,Hold[opt],If[m,"button","command"],m,False];
+SetAttributes[Button,HoldAll];
+
+TkWidget[name_,CheckButton[opt__],m_:True]:=
+  TkButton[name,Hold[opt],"checkbutton",m,True];
+SetAttributes[CheckButton,HoldAll];
+
+TkWidget[name_,RadioButton[opt__],m_:True]:=
+  TkButton[name,Hold[opt],"radiobutton",m,True];
+SetAttributes[RadioButton,HoldAll];
+
+TkWidget[name_,Separator[___],m_:True]:=TkWrite[name," add separator"];
+
+TkWidget[name_,Menu[w__]]:=Module[{a,wi,op,n,def=Hold[Name->"menu"]},
+  a=Flatten[{w},1,List];
+  wi=DeleteCases[a,_->_];
+  op=Join[ReplacePart[Complement[a,wi],Hold,0],def];
+  n=TkCommandName[name,"menu",op];
+  TkWrite["\n"];
+  Scan[TkWidget[n,#,False]&,wi]];
+
+TkWidget[name_,Cascade[w__],m_:True]:=Module[{a,wi,op,def=Hold[]},
+  a=Flatten[{w},1,List];
+  wi=DeleteCases[a,_->_];
+  op=Join[ReplacePart[Complement[a,wi],Hold,0],def];
+  wi=Cases[wi,Menu[__]][1];
+  TkWrite[name," add cascade -label ",HeldOption[Text,op]," \\"];
+  TkOptions[op,{Text}];
+  WriteString[SAD$Tk$fn," -menu "];WriteWidgetName[n,wi];
+  TkWrite["\n"];
+  TkWidget[name,wi]];
+
+TkWidget[name_,MenuButton[w__]]:=Module[{a,wi,op,n},
+  a=Flatten[{w},1,List];
+  wi=DeleteCases[a,_->_];
+  op=ReplacePart[Complement[a,wi],Hold,0];
+  wi=Cases[wi,Menu[__]][1];
+  n=TkCommandName[name,"menubutton",op];
+  TkWrite[" -text \"",HeldOption[Text,op],"\" \\"];
+  WriteString[SAD$Tk$fn," -menu "];WriteWidgetName[n,wi];
+  TkWrite["\n"];
+  TkOptionsPack[n,op,{Name,Menu,Text}];
+  TkWidget[n,wi]];
+
+TkWidget[name_,MenuBar[w__]]:=Module[{a,wi,op,n,def={Relief->"raised"}},
+  a=Flatten[{w},1,List];
+  wi=DeleteCases[a,_->_];
+  op=ReplacePart[Complement[a,wi],Hold,0];
+  n=TkCommandName[name,"frame",op];
+  TkOptionsPack[n,op,{Name},def];
+  TkWrite["\n"];
+  Scan[TkWidget[n,#]&,wi];
+!  TkWrite["tk_menuBar ",n," \\"];
+!  WriteWidgetName[n,wi,True,MenuButton];
+  TkWrite["\nfocus "//n]];
+
+TkWidget[name_,ListBox[opt__]]:=Module[{op,n,nl,ny,var,
+  def={Relief->"raised",SelectMode->"single"}},
+  op=Hold[opt];
+  n=TkCommandName[name,"frame",op];
+  nl=n//".lb";
+  TkOptionsPack[n,op,{Text,Name,YScroll,Variable,SelectMode},def];
+  TkWrite["\n listbox ",nl," \\"];
+  TkWrite[" -selectmode ",HeldOption[SelectMode,op,def],"\\"];
+  If[HeldOption[YScroll,op],
+      ny=n//".yscroll";
+      TkWrite[" -yscrollcommand \"",ny," set\"\n",
+        "pack ",nl," -side left\n",
+        "scrollbar ",ny," -command \"",nl," yview\"\n",
+        "pack ",ny," -side right -fill y"],
+    TkWrite["pack ",nl]];
+  Scan[TkWrite[nl," insert end \"",#,"\""]&,HeldOption[Text,op]];
+  var=Cases[op,(p:(Variable->v_))->Hold[v]];
+  If[var<=>{},
+      TkWrite["bind ",nl,
+        " <Any-ButtonRelease-1> {puts ",(var[1]//"")[6,-2],
+        "=\{\"[join [selection get] \"\\\",\\\"\"]\"\}\nflush stdout}"]];
+  TkWrite[""]];
+SetAttributes[ListBox,HoldAll];
+
+TkWidget[name_,Title[opt__]]:=
+  Module[{n,op},
+    op=Hold[opt];
+    n=TkCommandName[name,"label",op];
+    If[TkVariable["text",op]==={},
+        TkWrite[" -text [string range {",
+          HeldOption[Text,op],"} 0 10000]"]];
+    TkOptionsPack[n,op,{Name,Text,Variable}];
+    TkWrite[""]];
+SetAttributes[Title,HoldAll];
+
+TkWidget[name_,Entry[opt__]]:=
+  Module[{op,w,def={Relief->"sunken"},n},
+    op=Hold[opt];
+    n=TkCommandName[name,"entry",op];
+    If[var=TkVariable["text",op];var<=>{},
+        TkWrite["bind ",n,
+          " <Any-KeyRelease> {puts [join [concat {",var[1],
+          ":=\\\"","} $",var[2]," {\\\"}] \"\"]\nflush stdout}\nbind ",n,
+          " <Any-Return> {focus .\nputs [join [concat {",var[1],
+          ":=\\\"","} $",var[2]," {\\\"}] \"\"]\nflush stdout}"]];
+    TkOptionsPack[n,op,{Name,Variable},def];
+    TkWrite[""]];
+SetAttributes[Entry,HoldAll];
+
+TkWidget[name_,Message[opt__]]:=
+  Module[{op,n,def={Width->5}},
+  op=Hold[opt];
+  n=TkCommandName[name,"message",op];
+  If[TkVariable["text",op]==={},
+      TkWrite[" -text [string range {",
+        HeldOption[Text,op],"} 0 10000]"]];
+  TkOptionsPack[n,op,{Name,Variable,Text}];
+  TkWrite[""]];
+SetAttributes[Message,HoldAll];
+
+TkWidget[name_,Pack[w__]]:=Module[{a,wi,op},
+  a=Flatten[{w},1,List];
+  wi=DeleteCases[a,_->_];
+  op=Complement[a,wi];
+  Scan[TkWidget[name,#]&,wi];
+  WriteString[SAD$Tk$fn,"pack "];
+  Scan[WriteWidgetName[name,#]&,wi];
+  TkPackOptions[ReplacePart[op,Hold,0]];
+  TkWrite["\n"]];
+
+WriteWidgetName[name_,Pack[w__],p_:False,h_:True]:=
+  If[p,Scan[WriteWidgetName[name,#,p,h]&,{w}]];
+WriteWidgetName[name_,w_,_:True,h_:True]:=Module[{n},
+  n=ToLowerCase[HeldOption[Name,w]];
+  If[h || Head[w]===h,
+    If[Not[StringQ[n]],n=ToLowerCase[Head[w]//""]];
+      WriteString[SAD$Tk$fn,name,".",n," "]]];
+
+TkWidget[name_,Frame[w__]]:=StandardForm[Module[{a,wi,op,fn},
+  a=Flatten[{w},1,List];
+  wi=DeleteCases[a,_->_];
+  op=Complement[a,wi];
+  fn=TkCommandName[name,"frame",op];
+  TkOptionsPack[fn,ReplacePart[op,Hold,0],{Name}];
+  TkWrite["\n"];
+  Scan[TkWidget[fn,#]&,wi];
+  ]];
+
+TkWidget[x__]:=Print["Undefined Widget: ",x];
+
+BindWidget[name_String,event_,command_]:=StandardForm[Module[{},
+  TkWrite["bind .",ToLowerCase[name]," <",event,"> \\\n",
+    "{puts {Module[{$x=%x,$y=%y,$X=%X,$Y=%Y,\
+      $W=\"%W\"[2,-1],$K=\"%K\",$A=\"%A\"},\\\n",
+    (Hold[command]//"")[6,-2],"];}\nflush stdout}"]]];
+SetAttributes[BindWidget,HoldRest];
+
+FocusWidget[name_String]:=TkWrite["focus .",ToLowerCase[name]];
+
+CreateWindow[name_,w__]:=StandardForm[Module[{a,wi,op,p},
+  Print["Window ",name," creating.... ",TimeUsed[]," ",MemoryCheck[]];
+  a=Flatten[{w},1,List];
+  wi=DeleteCases[a,_->_];
+  op=Complement[a,wi];
+  TkWrite["toplevel .",name];
+  If[OverrideRedirect/.op,
+    TkWrite["wm overrideredirect .",name," true"]];
+  If[p=(Position/.op);(Length[p]==2 && RealQ[p[1]+p[2]]),
+    TkWrite["wm geometry .",name," ",
+      If[p[1]>=0,"+",""],p[1],If[p[2]>=0,"+",""],p[2]]];
+  TkWrite[
+    "wm protocol .",name,
+    " WM_DELETE_WINDOW {puts {DeletedWindow[\"",
+    name,"\"]}\nflush stdout\nexit}"];
+  Scan[TkWidget["."//name,#]&,wi];
+  TkFlush["raise .",name];
+  Print["Window ",name," created. ",TimeUsed[]," ",MemoryCheck[]];
+  ]];
+
+KillWindow[name_]:=TkFlush["destroy .",ToLowerCase[name]];
+WithdrawWindow[name_]:=TkFlush["wm withdraw .",ToLowerCase[name]];
+RedrawWindow[name_]:=TkFlush["wm deiconify .",ToLowerCase[name]];
+RaiseWindow[name_]:=TkFlush["raise .",ToLowerCase[name]];
+LowerWindow[name_]:=TkFlush["lower withdraw .",ToLowerCase[name]];
+
+CreateWindow[Name->name_,w__]:=CreateWindow[name,w];

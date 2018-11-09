@@ -489,6 +489,9 @@ c     $             kxx,irtc)
             endif
           else
             call qmat2twiss(trans,ip,l,twiss,dpsix,dpsiy,coup,normal)
+c        if(ktfenanq(twiss(ip,mfitbx)))then
+c          write(*,*)'qtwiss-qmat ',l,ip,ltyp,trans(1,2)
+c        endif
           endif
           if(.not. mat)then
             if(orbitcal)then

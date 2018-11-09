@@ -1,0 +1,189 @@
+!
+! Error Free Transformation Library
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: EFT.n,v 1.1 2010/03/19 05:41:12 amorita Exp $
+! Style:      Mix-in Class Library
+! Require:    None
+!
+
+! <<< SumOf object >>>
+SumOf[x___, SumOf[y___], z___] ^:= SumOf@@Select[
+  Flatten[{x, y, z}, Infinity, SumOf], # <=> 0&];
+
+Protect[SumOf];
+! >>> SumOf object <<<
+
+! <<< EFT class >>>
+EFT = Class[{},
+  { base = 2, t = 53,
+    SplitN, TwoSum},
+
+  {
+    },
+
+  Initialize[] := (
+    SplitN = base^Ceiling[t / 2] + 1;
+    TwoSum = FastTwoSum;
+    );
+
+  (* ULP *)
+  ULP$[-INF] := Module[{eps = 1},
+    While[eps / base > 0, eps /= base];
+    With[{eps}, ULP$[-INF] := eps]];
+
+  ULP$[d_Real] := Module[{x, ulp},
+    ulp = x = If[d < 0, Power[1 / base, -d], Power[base, d]];
+    While[x + ulp / base > x, ulp /= base];
+    With[{ulp}, ULP$[d] := ulp]];
+
+  ULP[x$_Real:1] := With[{x = Abs[x$], d = Floor[Log[base, Abs[x$]]]},
+    With[{xU = If[d < 0, Power[1 / base, -d], Power[base, d]]}, Which[
+      x > xU,		ULP$[d - 1],
+      x / base >= xU,	ULP$[d + 1],
+      True,		ULP$[d]]]];
+
+  (* Knuth's two-sum *)
+  KnuthTwoSum[x:(_Real|_Complex), y:(_Real|_Complex)] := Module[{
+    s, ya, xa, dx, dy},
+    s = x + y;
+    ya = s - x;
+    xa = s- ya;
+    dy = y - ya;
+    dx = x - xa;
+    {s, dx + dy}];
+
+  (* Dekker's fast-two-sum *)
+  FastTwoSum[x_Real, y_Real] := Module[{s, ya, xa},
+  If[Abs[x] > Abs[y],
+    ( (* |x| >  |y| *)
+      s = x +y;
+      ya = s - x;
+      {s, y - ya}),
+    ( (* |y| >= |x| *)
+      s = x + y;
+      xa = s - y;
+      {s, x - xa})]];
+
+  FastTwoSum[x_Complex, y_Real] := MapThread[Complex[#1, #2]&,
+    {FastTwoSum[Re[x], y], {Im[x], 0}}];
+
+  FastTwoSum[x_Real, y_Complex] := MapThread[Complex[#1, #2]&,
+    {FastTwoSum[x, Re[y]], {Im[y], 0}}];
+
+  FastTwoSum[x_Complex, y_Complex] := MapThread[Complex[#1, #2]&,
+    {FastTwoSum[Re[x], Re[y]], FastTwoSum[Im[x], Im[y]]}];
+
+  (* Dekker's split *)
+  Split[a_Real] := Module[{aH, c, d},
+    c  = SplitN * a;
+    d  = c - a;
+    aH = c - d;
+    {aH, a - aH}];
+
+  (* Dekker's two-product *)
+  TwoProduct[x_Real, y_Real] := Module[{p, r, xH, xL, yH, yL},
+    {xH, xL} = Split[x];
+    {yH, yL} = Split[y];
+    p = x * y;
+    r = p - xH * yH;
+    r = r - xL * yH;
+    r = r - xH * yL;
+    {p, xL * yL - r}];
+
+  TwoProduct[x_Complex, y_Real] := MapThread[Complex[#1, #2]&,
+    {TwoProduct[Re[x], y], TwoProduct[Im[x], y]}];
+
+  TwoProduct[x_Real, y_Complex] := MapThread[Complex[#1, #2]&,
+    {TwoProduct[x, Re[y]], TwoProduct[x, Im[y]]}];
+
+  TwoProduct[x_Complex, y_Complex] := MapThread[Complex[#1, #2]&,
+    Flatten/@{
+      Apply[TwoSum,
+	Thread[{TwoProduct[ Re[x], Re[y]], TwoProduct[-Im[x], Im[y]]}], {1}],
+      Apply[TwoSum,
+	Thread[{TwoProduct[ Re[x], Im[y]], TwoProduct[ Im[x], Re[y]]}], {1}],
+      Null[]}];
+
+  (* Vector sum *)
+  VecSum[SumOf[]] := SumOf[];
+
+  VecSum[SumOf[arg1_Real, argv___Real]] := Module[{s = arg1, r},
+    SumOf@@Append[({s, r} = TwoSum[s, #]; r)&/@{argv}, s]];
+
+  VecSum[argv:SumOf[(_Real|_Complex)...]] := Module[{re, im},
+    re = VecSum[Re/@argv];
+    im = VecSum[Im/@SumOf@@Select[argv, ComplexQ]];
+
+    SumOf@@MapThread[Complex[#1, #2]&,
+      {List@@re, Join[Table[0, {Length[re] - Length[im]}], List@@im]}]];
+
+  VecSumK[v_SumOf, k_Real:Infinity] := Module[{re, im, rem, i, s, r, p, break},
+    {re, im, rem} = SwitchCases[v, {_Real, _Complex, _}];
+
+!    If[rem <=> {}, Return[Unevaluated[VecSumK[v, k]]]];
+
+    re = Join[re, Re/@im]; im = Im/@im;
+
+    If[Length[re] > 1,
+      i = 0;
+      While[k > i,
+	s = p = First[re]; break = True;
+	re = Append[({s, r} = TwoSum[s, #];
+	  If[p <=> r, break = False, p = #];
+	  If[r === 0, Null[], r])&/@Rest[re], s];
+	If[break && p === s, Break[]];
+	i += 1];];
+
+    If[Length[im] > 1,
+      i = 0;
+      While[k > i,
+	s = p = First[im]; break = True;
+	im = Append[({s, r} = TwoSum[s, #];
+	  If[p <=> r, break = False, p = #];
+	  If[r === 0, Null[], r])&/@Rest[im], s];
+	If[break && p === s, Break[]];
+	i += 1];];
+
+    SumOf@@MapThread[Complex[#1, #2]&, {
+      Join[Table[0, {Length[im] - Length[re]}], re],
+      Join[Table[0, {Length[re] - Length[im]}], im],
+      Null[]}]];
+
+  (* SumK *)
+  SumK[v_List, k_Real:Infinity] := SumK[SumOf@@v];
+
+  SumK[v_SumOf, k_Real:Infinity] := Module[{re, im, rem, i, s, r, p, break},
+    {re, im, rem} = SwitchCases[v, {_Real, _Complex, _}];
+
+!    If[rem <=> {}, Return[Unevaluated[SumK[v, k]]]];
+
+    re = Join[re, Re/@im]; im = Im/@im;
+
+    If[Length[re] > 1,
+      i = 0;
+      While[k > i,
+	s = p = First[re]; break = True;
+	re = Append[({s, r} = TwoSum[s, #];
+	  If[p <=> r, break = False, p = #];
+	  If[r === 0, Null[], r])&/@Rest[re], s];
+	If[break && p === s, Break[]];
+	i += 1];];
+
+    If[Length[im] > 1,
+      i = 0;
+      While[k > i,
+	s = p = First[im]; break = True;
+	im = Append[({s, r} = TwoSum[s, #];
+	  If[p <=> r, break = False, p = #];
+	  If[r === 0, Null[], r])&/@Rest[im], s];
+	If[break && p === s, Break[]];
+	i += 1];];
+
+    Complex[Plus@@re, Plus@@im]];
+
+  ];
+EFT@Initialize[];
+! >>> EFT class <<<
+
+! End of File

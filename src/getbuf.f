@@ -15,6 +15,13 @@
           lrecl0=lrecl+1
         endif
         ipoint=lrecl0
+        if(lrecl0 .gt. 1 .and.
+     $       index(delim(1:ldel),buffer(lrecl0-1:lrecl0-1)) .le. 0)then
+          write(*,*)'getbuf-unusual record ',rec,lrecl0,
+     $         buffer(max(1,lrecl0-32):lrecl0)
+          buffer(lrecl0:lrecl0)=char(10)
+          lrecl0=lrecl0+1
+        endif
  1      ios=-999
         if(lrecl0 .gt. nbmax-256)then
           ios=999999
@@ -22,7 +29,6 @@
         endif
         call tfreadbuf(irbreadrecord,lfni,int8(0),int8(0),
      $       lr,buffer(lrecl0:))
-c        write(*,*)'getbuf ',lfni,lrecl0,lr
         if(lr .eq. -99)then
           go to 20
         elseif(lr .eq.  -999)then
@@ -33,6 +39,7 @@ c        write(*,*)'getbuf ',lfni,lrecl0,lr
         else
           lrecl=len_trim(buffer(1:lrecl0+lr-1))
         endif
+c        write(*,*)'getbuf ',lfni,lrecl0,lr,buffer(lrecl0:lrecl)
         if(lfn1 .gt. 0)then
           write(lfn1,'(1X,A)')buffer(lrecl0:lrecl)
         endif
@@ -109,11 +116,13 @@ c        write(*,*)'getbuf ',lfni,lrecl0,lr
       integer*4 nc
       character*(nc) string
       ipoint=lrecl+1
+      linep=ipoint
       lrecl=ipoint+nc
       buffer(ipoint:lrecl-1)=string
       call removetab(buffer(ipoint:lrecl))
       call removecomment(buffer(ipoint:lrecl),cmnt(1:lcmnt),'''"')
       buffer(lrecl:lrecl)=char(10)
+c      write(*,*)'setbuf ',ipoint,lrecl,string
       return
       end
 

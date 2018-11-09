@@ -1,0 +1,252 @@
+!
+! Minimize Library
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: Minimize.n,v 1.7 2005/06/02 03:10:59 amorita Exp $
+! Style:      Mix-in Class Library
+! Require:    None
+!
+
+! <<< Minimize class >>>
+Minimize=Class[{}, {}, {},
+
+  (* Generate three point region containing local minimum
+    Argument:
+      func: Function to evaluate
+      A:    seed point A
+      B:    seed point B
+      Note: A and B MUST satisfy |A - B| > 0
+    Result:    List of three point position and function value
+    {{xa, func[xa]}, {xb, func[xb]}, {xc, func[xc]}}
+    *)
+  Mnbrak[func_, A_Real, B_Real, op:((_Rule|_RuleDelayed)...)] := Module[{
+    def={ExtentionLimit->100, Epsilon->1e-20}, exLimit, eps,
+    xa, xb, xc, xu, fa, fb, fc, fu, ulim, q, r},
+
+    {exLimit, eps} = {ExtentionLimit, Epsilon}/.Override[op, def];
+    If[Not[RealQ[exLimit]] || exLimit =< 0, exLimit = ExtentionLimit/.def];
+    If[Not[RealQ[eps]], eps = Epsilon/.def];
+
+    {xa, xb} = {A, B}; fa = func[xa]; fb = func[xb];
+    If[fb > fa, {xa, xb} = {xb, xa}; {fa, fb} = {fb, fa}];
+    xc = xb + GoldenRatio * (xb - xa); fc = func[xc];
+
+    While[fb > fc,
+      ulim = xb + exLimit * (xc - xb);
+      r = (xb - xa) * (fb - fc);
+      q = (xb - xc) * (fb - fa);
+      xu = xb - 0.5 * ((xb - xc) * q - (xb - xa) * r)
+      / If[q - r > 0, Max[q - r, eps], Min[q - r, -eps]];
+      If[(xb - xu) * (xu - xc) > 0, fu = func[xu];
+	If[fu < fc, (xa = xb; fa = fb;  xb = xu; fb = fu); Break[]];
+	If[fu > fb, (xc = xu; fc = fu); Break[]];
+	xu = xc + GoldenRatio * (xc - xb); fu = func[xu],
+	If[(xc - xu) * (xu - ulim) > 0,  fu = func[xu];
+	  If[fu < fc, (xb = xc; fb = fc;  xc = xu;  fc = fu);
+	    xu  = xc + GoldenRatio * (xc - xb); fu = func[xu]],
+	  xu = If[(xu - ulim) * (ulim - xc) >= 0,
+	    ulim, xc + GoldenRatio * (xc - xb)]; fu = func[xu]];
+	];
+      (xa = xb; fa = fb;  xb = xc; fb = fc;  xc = xu; fc = fu)];
+    Return[{{xa, fa}, {xb, fb}, {xc, fc}}]
+    ];
+
+  (* Brent's minimize
+  Argument:
+    func: Function to minimize
+    A:    seed point A
+    B:    seed point B
+    C:    seed point C
+    Options: MaximumIteration, Tolerance
+    Note: A, B and C MUST satisfy both (B - A) * (B - C) < 0
+          and func[B] < func[A], func[C]
+    Result: {xmin, func[xmin], Convergence->Boolean}
+  *)
+  Brent[func_, A_Real, B_Real, C_Real, op:((_Rule|_RuleDelayed)...)] := Module[{
+    def={MaximumIteration->100, Tolerance->3e-8, Epsilon->1e-10},
+    maxIter, tol, eps, tol1, tol2,
+    a, b, x, w, v, fx, fv, fw,
+    xm, p, q, r, u, fu, dx1, dx2},
+
+    {maxIter, tol, eps} =
+      {MaximumIteration, Tolerance, Epsilon}/.Override[op, def];
+    If[Not[RealQ[maxIter]], maxIter = MaximumIteration/.def];
+    If[Not[RealQ[tol]] || tol =< 0, tol = Tolerance/.def];
+    If[Not[RealQ[eps]] || eps =< 0, eps = Epsilon/.def];
+
+    {a, b} = If[A < C, {A, C}, {C, A}];
+    x = w = v = B; fx = fv = fw = func[x];
+    dx1 = dx2 = 0;
+
+    While[maxIter > 0,
+      tol1 = Min[eps, Abs[x] * tol]; tol2 = 2 * tol1;
+      xm = 0.5 * (a + b);
+      If[Abs[x - xm] =< (tol2 - 0.5 * (b - a)), Break[]];
+
+      If[Abs[dx2] > tol1,
+	r = (x - w) * (fx - fv);
+	q = (x - v) * (fx - fw);
+	p = (x - v) * q - (x - w) * r;
+	q = 2 * (q - r);
+	If[q > 0, p = -p]; q = Abs[q];
+
+	If[Abs[p] >= Abs[0.5 * q * dx2]
+	  || p =< q * (a - x) || q * (b - x) =< p,
+	  dx2 = If[x >= xm, a - x, b - x]; dx1 = dx2 * (1 - 1 / GoldenRatio),
+	  dx2 = dx1; dx1 = p / q;
+	  u = x + dx1;
+	  If[(u - a) < tol2 || (b - u) < tol2, dx1 = If[xm > x, tol1, -tol1]]],
+	  dx2 = If[x >= xm, a - x, b - x]; dx1 = dx2 * (1 - 1 / GoldenRatio)];
+
+      u = x + If[dx1 > 0, Max[dx1, tol1], Min[dx1, -tol1]]; fu = func[u];
+      If[fu =< fx,
+	If[u >= x, a = x, b = x];
+	(v = w; fv = fw;  w = x; fw = fx;  x = u; fx = fu),
+	If[u < x, a = u, b = u];
+	If[fu <= fw || w == x,
+	  (v = w; fv = fw;  w = u; fw = fu),
+	  If[fu =< fv || v == x || v == w, (v = u; fv = fu)]];
+	];
+      maxIter -= 1];
+    {x, fx, Convergence->(maxIter > 0)}];
+
+  (* Modified Powell's direction set method
+    Argument:
+      func:   Function to minimize
+      p$:     Initial point
+      Options:
+	MaximumIteration	Maximum number of iterations
+        Tolerance1		Tolerance for 1D minimize
+	Tolerance		Tolerance for function value
+	VectorTolerance		Tolerance for vector
+        DirectionSet		List of Direction Vector
+	ProgressCommand	Command to evaluate in iteration loop
+			Command[residual, vector, residual0, vector0]
+    Result: {p, func[p], Convergence->Boolean,
+      DirectionSet->List of Direction Vector}
+    *)
+  Powell[func_, p$_, opt:((_Rule|_RuleDelayed)...)] := Module[{
+    def={MaximumIteration->200, Tolerance1->2e-4,
+      Tolerance->1e-17, VectorTolerance->0,
+      DirectionSet->Undefined},
+    N = Length[p$],
+    maxIter, tol, ftol, vtol, dirSet,
+    iteration, newDir,
+    p0, fp0, p, fp, fpTmp,
+    iBig, del
+
+    },
+
+    {maxIter, tol, ftol, vtol, dirSet} = {MaximumIteration, Tolerance1,
+      Tolerance, VectorTolerance, DirectionSet}/.Override[opt, def];
+    If[Not[RealQ[maxIter]], maxIter = MaximumIteration/.def];
+    If[Not[RealQ[tol]]  ||  tol =< 0,  tol = Tolerance1/.def];
+    If[Not[RealQ[ftol]] || ftol =< 0, ftol = Tolerance/.def];
+    If[Not[RealQ[vtol]] || vtol  < 0, vtol = VectorTolerance/.def];
+    If[dirSet === Undefined, dirSet = IdentityMatrix[N]];
+
+    p0 = p$;
+    p = p0; fp = func@@p;
+
+    iteration = 0;
+    While[maxIter > iteration,
+      iBig = 0; del = 0; fp0 = fp;
+      Do[With[{brent = With[{p, i, dirSet}, Brent[func@@(p + # * dirSet[[i]])&,
+	Null@@(Mnbrak[func@@(p + # * dirSet[[i]])&, 0, 1,
+	  Tolerance->tol][[,1]])]]},
+	fpTmp = fp; fp = brent[[2]]; p += brent[[1]] * dirSet[[i]];
+	If[Abs[fpTmp - fp] > del,
+	  iBig = i; del = Abs[fpTmp - fp]];
+	], {i, N}];
+
+      With[{fp, p, fp0, p0}, ProgressCommand[fp, p, fp0, p0]/.{opt}];
+
+      If[2 * Abs[fp0 - fp]  =< ftol * (Abs[fp0] + Abs[fp]), Break[]];
+
+      If[vtol > 0 &&
+	2 * Plus@@((p - p0)^2) =< vtol^2 * (Plus@@(p^2 + p0^2)), Break[]];
+
+      newDir = p - p0; p0 = p;
+      fpTmp = func@@(p + newDir);
+
+      If[fpTmp < fp0 && 2 * (fp0 - 2 * fp + fpTmp) * (fp0 - fp - del)^2
+	< del * (fp0 - fpTmp)^2, With[{brent = With[{p, newDir},
+	  Brent[func@@(p + # * newDir)&,
+	    Null@@(Mnbrak[func@@(p + # * newDir)&, 0, 1,
+	      Tolerance->tol][[,1]])]]},
+	  fp = brent[[2]]; p += brent[[1]] * newDir;
+	  dirSet[[iBig]] = dirSet[[N]];
+	  dirSet[[N]] = brent[[1]] * newDir;
+	  ]];
+      iteration += 1];
+    {p, fp, Convergence->(maxIter > iteration), Iterations->iteration,
+      DirectionSet->dirSet}];
+
+  (* Polak-Ribiere conjugate gradient method
+    Argument:
+      func:   Function to minimize
+      p$:     Initial point
+      Options:
+	MaximumIteration	Maximum number of iterations
+        Tolerance1		Tolerance for 1D minimize
+	Tolerance		Tolerance for function value
+	VectorTolerance		Tolerance for vector
+        Derivative		Derivative of func[p]
+	Epsilon			Step size of numerical derivative
+	ProgressCommand	Command to evaluate in iteration loop
+			Command[residual, vector, residual0, vector0]
+    Result: {p, func[p], Convergence->Boolean}
+    *)
+  CGPR[func_, p$_, opt:((_Rule|_RuleDelayed)...)] := Module[{
+    def={MaximumIteration->200, Tolerance1->2e-4,
+      Tolerance->1e-17, VectorTolerance->0,
+      Derivative->Undefined, Epsilon->1e-7},
+    maxIter, tol, ftol, vtol, deriv, eps,
+    iteration, p, pPrev, fp, fpPrev, dp, g, h, gg, dgg},
+
+    {maxIter, tol, ftol, vtol, deriv, eps} = {MaximumIteration, Tolerance1,
+      Tolerance, VectorTolerance,
+      Derivative, Epsilon}/.Override[opt, def];
+    If[Not[RealQ[maxIter]], maxIter = MaximumIteration/.def];
+    If[Not[RealQ[tol]]  ||  tol =< 0,  tol = Tolerance1/.def];
+    If[Not[RealQ[ftol]] || ftol =< 0, ftol = Tolerance/.def];
+    If[Not[RealQ[vtol]] || vtol  < 0, vtol = VectorTolerance/.def];
+    If[deriv === Undefined, With[{func, N = Length[p$],
+      dpMat = eps * IdentityMatrix[Length[p$]]}, deriv =.;
+      deriv[p__] := With[{p0 = Table[{p}, {i, N}]}, MapThread[
+	(func@@#1 - func@@#2)&, {p0 + dpMat, p0 - dpMat}] / 2 / eps]]];
+
+    p = p$; fp = func@@p;
+    g = h = dp = -deriv@@p;
+
+    iteration = 0;
+    While[maxIter > iteration,
+      With[{brent = With[{p, dp}, Brent[func@@(p + # * dp)&,
+	Null@@(Mnbrak[func@@(p + # * dp)&, 0, 1, Tolerance->tol][[,1]])]]},
+	fpPrev = fp; fp = brent[[2]]; pPrev = p; p += brent[[1]] * dp];
+
+      With[{fp, p, fpPrev, pPrev},
+	ProgressCommand[fp, p, fpPrev, pPrev]/.{opt}];
+
+      If[2 * Abs[fp - fpPrev] =< ftol * (Abs[fp] + Abs[fpPrev] + 1e-10),
+	Break[]];
+
+      If[vtol > 0 &&
+	2 * Plus@@((p - pPrev)^2) =< vtol^2 * (Plus@@(p^2 + pPrev^2) + 1e-10),
+	Break[]];
+
+      dp = deriv@@p;
+      gg = g.g;
+      dgg = dp.(dp + g);
+
+      If[gg == 0, Break[]];
+
+      g = -dp;
+      dp = h = g + (dgg / gg) * h;
+
+      iteration += 1];
+    {p, fp, Convergence->(maxIter > iteration), Iterations->iteration}];
+
+  ];
+! >>> Minimize class <<<
+! End of File

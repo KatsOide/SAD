@@ -1,0 +1,415 @@
+!
+! LogBrowser Channel$CaMon Plugin Class
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: ChannelCaMon.n,v 1.11 2005/11/25 07:36:51 amorita Exp $
+! Style:      Plugin Class Library
+! Require:    Prog/QFunctions.n
+!             Widget/DateChooser.n
+!             Widget/PeriodChooser.n
+!             App/LogBrowser/TimeRange.n
+!
+Library@Require["Prog/QFunctions",
+  "Widget/DateChooser", "Widget/PeriodChooser"];
+Library@Require["App/LogBrowser/TimeRange"];
+
+! <<< LogBrowser Channel$CaMon plugin class >>>
+Channel$CaMon=Class[{ChannelTimeRange, Channel},
+  { ModuleFile = "LogBrowser/Plug-Ins/ChannelCaMon.n",
+    ModuleClassName = "Channel$CaMon",
+    RevisionID = "$Revision: 1.11 $"[12, -3],
+    ChannelCategory = "Live Record", ChannelType = "CaMonitor",
+    defProperty,
+    MaxBufferLength = 1000,
+    CS$DisConn = -1,
+    CS$NeverConn = 0, CS$PrevConn = 1, CS$Conn = 2, CS$Closed = 3
+    },
+  { RecordName, RecordGeneration, MaxIndex, ConnectState, TruncateLock,
+    ca, timestamp, buffer, count, lastupdate,
+    begin, current, newbuffer, closed
+    },
+
+  Destructor[] := (
+    StopMonitor[];
+    );
+
+  Constructor[record_String] := Module[{},
+    Channel`Constructor[];
+    ChannelTimeRange`Constructor[];
+    ConnectState = CS$DisConn; TruncateLock = 0;
+
+    If[Not[BoundQ[defProperty]], defProperty = Override[
+      "Index"->1, Channel`defProperty]];
+
+    RecordGeneration = 0;
+    InitializeBuffer[]; RecordName = record; StartMonitor[];
+
+    SetInstDefProperty["URL":>ChannelType//"://"//RecordName,
+      "SystemLabel":>DefaultLabel[], "MaxIndex":>DefaultMaxIndex[],
+      "TimeRange":>DefaultTimeRange[],
+      "Discriminator":>DefaultDiscriminator[],
+      Null[]];
+    RegisterNotifyProperty["List", {"URL", "Index"}];
+    RegisterNotifyProperty["Information", {"URL", "Index"}];
+
+    Notify["Channel:Construct", "URL"->ChannelType//"://"//RecordName];
+    SetProperty@@Select[Options, StringQ[#[[1]]]&]];
+
+  InitializeBuffer[] := (
+    MaxIndex = 0;
+    Clear[timestamp, buffer, count];
+    timestamp[_, 2] := FromDate[];
+    buffer[_] := {}; count[_] := 0;
+    begin = 1; current = 0; lastupdate = 0;
+    newbuffer = True; closed = True);
+
+  StopMonitor[] := Module[{now = FromDate[]},
+    ca =.;
+    ConnectState = CS$DisConn; ChangeState[]];
+
+  StartMonitor[] := (
+    ConnectState = CS$NeverConn; ChangeState[];
+    ca = CaMonitor[RecordName, ValueCommand:>StoreValue[],
+      ConStatCommand:>StoreState[]]);
+
+  ChangeState[] := (
+    If[ConnectState <=> CS$Conn && Not[closed], With[{now = FromDate[]},
+      timestamp[current, 2] = If[count[current] > 0,
+	Max[now, buffer[current][[-1, 1]] + 1e-3], now]; (* Close buffer *)
+      lastupdate = now; newbuffer = True; closed = True; TruncateBuffer[]]];
+    Notify["Channel:Update:Information"]);
+
+  StoreState[] := Module[{update = True},
+    Switch[ca@ConStat[],
+      CaMonitor@CS$NeverConn, ConnectState = CS$NeverConn,
+      CaMonitor@CS$PrevConn,  ConnectState = CS$PrevConn,
+      CaMonitor@CS$Conn,      ConnectState = CS$Conn,
+      CaMonitor@CS$Closed,    ConnectState = CS$Closed,
+      _, update = False];
+    If[update, (* Notify ConnectState change *) ChangeState[]]];
+
+  StoreValue[] := Module[{t, val, len},
+    t = ca@TimeStamp[]; val = ca@Value[];
+
+    If[newbuffer,
+      If[Not[closed], timestamp[current, 2] = t]; (* Close previous buffer *)
+      current += 1; timestamp[current, 1] = t; (* Open new buffer *)
+      newbuffer = False; closed = False];
+    count[current] += 1; len = If[ListQ[val], (* Store to buffer *)
+      AppendTo[buffer[current], {t, Null@@val}]; Length[val],
+      AppendTo[buffer[current], {t,       val}]; 1];
+    lastupdate = t;
+    If[len > MaxIndex, (* Update Maximum Index *)
+      Notify["Channel:Update:Information"]; (* Notify MaxIndex change *)
+      MaxIndex = len];
+
+    If[count[current] >= MaxBufferLength, newbuffer = True; TruncateBuffer[]]];
+
+  TruncateBuffer[] := With[{tmin = First[DefaultTimeRange[]]},
+    If[TruncateLock > 0, Return[]];
+    If[current - begin + 1 < 3, Return[]]; (* Skip if short data store *)
+
+    (* Try to truncate both 1st and 2nd data acquisition buffer *)
+    Do[With[{begin0 = begin}, If[timestamp[begin, 2] =< tmin,
+      begin += 1; (* Unlink buffer *)
+      timestamp[begin0, 1] =.; timestamp[begin0, 2] =.;
+      buffer[begin0] =.; count[begin0] =.]], {i, 2}];
+    ];
+
+  ValidRecordQ[path_] := StringQ[path];
+
+  (* Local default functions... *)
+  DefaultLabel[] := With[{index = DefaultIndex[],
+    maxIndex = DefaultMaxIndex[]},
+    StringJoin[RecordName,
+      If[Not[RealQ[maxIndex] && maxIndex > 1], Null[],
+	StandardForm[StringJoin["[", index, "]"]]]]];
+
+  DefaultIndex[] := With[{index = ExtractProperty["Index"]},
+    If[RealQ[index] && index >= 1, index, 1]];
+
+  DefaultMaxIndex[] := If[MaxIndex > 0, MaxIndex, Undefined];
+
+  (* Channel Plugin API functions *)
+  (* Override Property functions *)
+  SetProperty[prop:((Rule[_String, _]|RuleDelayed[_String, _])...)] := Module[{
+    rem, url, timerange, path},
+    {url, timerange, rem} = SwitchCases[{prop}, {
+      Rule["URL", _]|RuleDelayed["URL", _],
+      Rule["TimeRange", _]|RuleDelayed["TimeRange", _],
+      _}];
+
+    If[Length[url] > 0, url = url[[1,2]]; If[ValidURLMethodQ[url],
+      If[path = StripURLMethod[url]; ValidRecordQ[path],
+	If[RecordName <=> path,
+	  StopMonitor[]; RecordGeneration += 1;
+	  InitializeBuffer[]; RecordName = path; StartMonitor[]];
+	Notify["Channel:Property:Set", "URL"->ChannelType//"://"//RecordName],
+	Debug[ERROR, "SetProperty",
+	  "Invalid record[", path, "] is requested"]],
+      AppendTo[rem, "URL"->url]]];
+
+    ChannelTimeRange`SetProperty@@timerange;
+
+    Channel`SetProperty@@rem];
+
+  UnsetProperty[prop___String] := Module[{special, rem},
+    {special, rem} = SwitchCases[{prop}, {
+      "TimeRange", _}];
+
+    Channel`UnsetProperty@@rem];
+
+  (* Information API family *)
+  Information["Provide"] := {"Type", "Source", "TimeRange"};
+
+  Information["Type"] := With[{maxIndex = DefaultMaxIndex[]},
+    StringJoin["Live ",
+      Switch[maxIndex,
+	Undefined, "",
+	1, "Single ",
+	_, "Waveform "], "Record",
+      If[Not[RealQ[maxIndex] && maxIndex > 1], Null[],
+	StandardForm[StringJoin[": ",
+	  Restrict[DefaultIndex[], 1, maxIndex], "/", maxIndex]]],
+      Switch[ConnectState,
+	CS$DisConn,	" <Disconnected>",
+	CS$NeverConn,	" <Not Connected>",
+	CS$PrevConn,	" <Connection Lost>",
+	CS$Conn,	" <Connected>",
+	CS$Closed,	" <Channel Closed>",
+	_,		""],
+      Null[]]];
+
+  Information["Source"] := StringJoin[ChannelType, "://", RecordName];
+
+  (* Retrieve* API family *)
+  RetrieveQueue[cbuf_] := (
+    cbuf@request[cID] = RecordGeneration;
+    cbuf@retrieveoption[cID] = Append[Property["TimeRange",
+      "Discriminator", "MaxIndex"], "Index"->DefaultIndex[]];
+    cbuf@Activate[cID]);
+
+  RetrieveRequest[cbuf_] := (
+    TruncateLock += 1;
+    RetrieveUpdate[cbuf, FromDate[]]);
+
+  RetrievePoll[cbuf_] := 1;
+
+  RetrieveUpdate[cbuf_, timestamp$_Real] := Module[{table}, With[{
+    index = 1 + ("Index"/.cbuf@retrieveoption[cID]),
+    maxIndex = ("MaxIndex"/.cbuf@retrieveoption[cID]),
+    disc = ("Discriminator"/.cbuf@retrieveoption[cID]),
+    range = ("TimeRange"/.cbuf@retrieveoption[cID])},
+
+    If[cbuf@updatestamp[cID] >= lastupdate
+      || cbuf@updatestamp[cID] >= timestamp$, Return[]]; (* Skip update *)
+
+    If[cbuf@request[cID] <=> RecordGeneration,
+      If[cbuf@updatestamp[cID] =< 0, cbuf@buffer[cID] = {}];
+      cbuf@updatestamp[cID] = INF; Return[]];
+
+    table = Table[Which[
+      timestamp[i,2] =< range[[1]] || range[[2]] < timestamp[i,1], Null[],
+
+      timestamp[i,1] < range[[1]] || range[[2]] < timestamp[i,2],
+      {Max[range[[1]], timestamp[i,1]], Min[timestamp[i,2], range[[2]]]}->
+	Select[buffer[i], range[[1]] =< #[[1]] < range[[2]]&],
+
+      True, {timestamp[i,1], timestamp[i,2]}->buffer[i]], {i, begin, current}];
+
+    cbuf@buffer[cID] = Check[Switch[{maxIndex, FunctionQ[disc]},
+      {1,  True}, disc/@table,
+
+      {1, False}, table,
+ 
+      {_,  True}, Map[If[Not[RuleQ[#]], #,
+	disc[#[[1]]->Map[#[[{1, Min[index, Length[#]]}]]&, #[[2]]]]]&, table],
+
+      {_, False}, Map[If[Not[RuleQ[#]], #,
+	#[[1]]->Map[#[[{1, Min[index, Length[#]]}]]&, #[[2]]]]&, table],
+
+      _, {}], {}];
+
+    cbuf@updatestamp[cID] = lastupdate;
+    ]];
+
+  RetrieveRelease[cbuf_] := (
+    cbuf@Inactivate[cID];
+    cbuf@Clear[cID];
+    TruncateLock -= 1; If[TruncateLock < 1, TruncateBuffer[]]);
+
+  (* Interface bottom half API family *)
+  Interface["Provide"] := Join[{
+    "Channel:Create", "Channel:Create:Panel",
+    Null[]}, Channel`Interface["Provide"]];
+
+  Interface["PopupMenu:Provide"] := Join[{
+    "Index", "Edit/Discriminator", "Edit/TimeRange",
+    Null[]}, Channel`Interface["PopupMenu:Provide"]];
+
+  Interface["Channel:Create", opt:((_Rule|_RuleDelayed)...)] := Module[{rem,
+    url, path},
+    {url, rem} = SwitchCases[Override[opt],
+      {Rule["URL", _]|RuleDelayed["URL", _], _}];
+    If[Length[url] > 0, url = url[[1, 2]];
+      If[ValidURLMethodQ[url]
+	&& (path = StripURLMethod[url]; ValidRecordQ[path]),
+	Channel$CaMon[path, Null@@rem],
+	Debug[ERROR, "Interface[Channel:Create]",
+	  "Invalid record[", path, "] is requested"]; $Failed],
+      Debug[ERROR, "Interface[Channel:Create]",
+	"\"URL\" property MUST be specified for creating CaMonitor Channel"];
+      $Failed]];
+
+  Interface["Channel:Create:Panel", clObj_, stat$_:{}] := Module[{stat,
+    tabname, tr$change,
+    w, f, cf, entry, bAdd,
+    record,
+    fTimeRange, oTimeRange, tTimeRange, mTimeRange,
+    fixedBegin, fixedEnd, expandBegin, movingPeriod,
+    tid, type, begin, end,
+    def = {"Record"->"",
+      "TimeRangeID"->0, "TimeRegionType"->"Expand",
+      "TimeRegion"->With[{now = Floor[FromDate[] / 60] * 60},
+	{now, now + 3600}],
+      Null[]},
+    r},
+
+    tabname[t_String] := t;
+
+    tabname["Fixed"]  = "Fixed Range";
+    tabname["Expand"] = "Auto Expand Trend";
+    tabname["Moving"] = "Moving Trend";
+
+    tr$change["Text"] := StandardForm[
+      If[tid > 0,
+	type = TimeRange@TimeRange$Object[tid]@Type[];
+	{begin, end} = TimeRange@TimeRange$Object[tid]@Range[];
+	With[{pos = Position[{"Fixed", "Expand", "Moving"}, type]},
+	  fTimeRange@SelectTab$[If[pos <=> {}, pos[[1,1]], 1]]]];
+      tTimeRange = If[tid > 0,
+	tid//": "//TimeRange@TimeRange$Object[tid]@Label[], "New Time Range"]];
+
+    tr$change["Menu"] := StandardForm[
+      DeleteWidget[mTimeRange];
+      mTimeRange = Menu[oTimeRange, Add->Append[
+	Map[With[{j = #,
+	  text = #//": "//TimeRange@TimeRange$Object[#]@Label[]},
+	  RadioButton[Text->text, Value->j, Variable:>tid,
+	    Command:>(tr$change["Text"];
+	      {begin, end} = TimeRange@TimeRange$Object[tid]@Range[];
+	      )]]&, TimeRange@Active[]],
+	RadioButton[Text->"New Time Range", Value->0, Variable:>tid,
+	  Command:>(tr$change["Text"];
+	    )]]];
+      tr$change["Text"]];
+
+    stat = Override[Select[stat$, RuleQ], def];
+    tid = "TimeRangeID"/.stat;
+    If[Position[TimeRange@Active[], tid] <=> {},
+      type = TimeRange@TimeRange$Object[tid]@Type[];
+      {begin, end} = TimeRange@TimeRange$Object[tid]@Range[],
+      tid = 0; type = "TimeRegionType"/.stat;
+      {begin, end} = "TimeRegion"/.stat];
+
+    w = KBDialogFrame["Channel:Create:Panel", f,
+      Title->"CaMonitor Channel Creator"];
+    w[State] = "withdraw"; (* Hide dialog window under construction... *)
+    cf = KBFComponentFrame[f, Add->{
+      KBFGroup[Text->"EPICS Record to Monitor"],
+      KBFString[Text->"Record:",
+	Variable:>record, WidgetVariable:>entry,
+	WidgetOption->{Width->32}],
+      KBFHook[Command:>(
+	entry[Focus$Set];
+	Bind[entry, "<Key-Return>", bAdd[Invoke]];
+	record = "Record"/.stat)],
+
+      KBFGroup[Text->"TimeRange"],
+      KBFOptionMenu[WidgetVariable:>oTimeRange, Variable:>tTimeRange,
+	WidgetOption->{Justify->"left", Width->48}],
+      KBFHook[Command:>(tr$change["Menu"])],
+      KBFFrameTabed[InitialTab->tabname[type], Add->{
+	KBFTab[TabName->tabname["Fixed"],
+	  Command:>(type = "Fixed";
+	    fixedBegin = begin; fixedEnd = end),
+	  DeselectCommand:>(begin = fixedBegin; end = fixedEnd),
+	  Add->{
+	    KBFText[Text->"Fixed Time Range from Begin to End"],
+	    KBFComponent[ComponentName:>DateChooser,
+	      WidgetOption->{Variable:>fixedBegin, Text->"Begin: "}],
+	    KBFComponent[ComponentName:>DateChooser,
+	      WidgetOption->{Variable:>fixedEnd,   Text->"End:   "}],
+	    }],
+
+	KBFTab[TabName->tabname["Expand"],
+	  Command:>(type = "Expand";
+	    expandBegin = begin),
+	  DeselectCommand:>(begin = expandBegin),
+	  Add->{
+	    KBFText[Text->"Auto Expand Time Range from Begin to Now"],
+	    KBFComponent[ComponentName:>DateChooser,
+	      WidgetOption->{Variable:>expandBegin, Text->"Begin: "}],
+	    }],
+
+	KBFTab[TabName->tabname["Moving"],
+	  Command:>(type = "Moving";
+	    movingPeriod = Abs[end - begin]),
+	  DeselectCommand:>(begin = end - movingPeriod),
+	  Add->{
+	    KBFText[Text->"Moving Trend Range"],
+	    KBFComponent[ComponentName:>PeriodChooser,
+	      WidgetOption->{Variable:>movingPeriod, Text->"Width: "}],
+	    }],
+	}, WidgetVariable:>fTimeRange],
+
+      KBFFrame[Add->{
+	KBFButton[Text->"Add",    WidgetOption->{Width->8}, NextColumn->True,
+	  WidgetVariable:>bAdd,
+	  Command:>(
+	    If[record === "", Return[]]; (* Skip nil *)
+	    If[tid < 1,
+	      tid = TimeRange@Create[type, Switch[type,
+		"Fixed",  Range->Sort[{fixedBegin, fixedEnd}],
+		"Expand", Begin->expandBegin,
+		"Moving", Period->movingPeriod,
+		_, Null[]]],
+	      TimeRange@TimeRange$Object[tid]@Config[Type->type, Switch[type,
+		"Fixed",  Range->Sort[{fixedBegin, fixedEnd}],
+		"Expand", Begin->expandBegin,
+		"Moving", Period->movingPeriod,
+		_, Null[]]]];
+	    tr$change["Menu"];
+	    clObj@AddChannel["URL"->ChannelType//"://"//record,
+	      "TimeRangeID"->tid, "ShowLegend"->True])],
+	KBFButton[Text->"Close", WidgetOption->{Width->8}, NextColumn->True,
+	  Command:>(TkReturn[0])],
+	}],
+      }];
+    w[Close] := TkReturn[0]; (* Bind Close event as Cancel Button *)
+
+    (* Waiting construction of complex widget: KBFTabFrame *)
+    Do[(Pause[0.01]; Update[TimerTasks]; (* Invoke After[] events *)
+      Update[IdleTasks]), {loop, 5}];
+    w[State] = "normal"; (* Show dialog window *)
+    r = TkWait[]; w[State] = "withdraw";
+
+    stat = {"Record"->record,
+      "TimeRangeID"->tid, "TimeRegionType"->type,
+      Switch[type,
+	"Fixed",  "TimeRegion"->Sort[{fixedBegin, fixedEnd}],
+	"Expand", "TimeRegion"->{expandBegin, end},
+	"Moving", "TimeRegion"->{end - movingPeriod, end},
+	_, Null[]],
+	Null[]};
+
+    cf =.; w[Close] := None; w[Close];
+
+    stat];
+
+  ];
+! >>> LogBrowser Channel$CaMon plugin class <<<
+
+LogBrowser@RegisterModule["Plugin", Channel$CaMon];
+
+! End of File

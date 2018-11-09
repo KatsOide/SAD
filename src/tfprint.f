@@ -264,10 +264,12 @@ c      endif
           call capita(word1(1:l))
         endif
         if(word1(1:l) .eq. word2(1:l))then
-c          write(*,*)'unreadbuf ',i,l,' ',buffer(i+l:i+l),
-c     $         ' ',word(1:l)
+c          write(*,*)'unreadbuf ',i,l,ip1,' ',buffer(i+l:i+l),
+c     $         ' ',word(1:l),
+c     $         index(delim(1:ldel),buffer(i+l:i+l))
 c          if(i .gt. 1)then
-c            write(*,*)'pre-delim: ',buffer(i-1:i-1)
+c            write(*,*)'pre-delim: ',buffer(max(i-32,1):i-1),
+c     $           index(delim(1:ldel),buffer(i-1:i-1))
 c          endif
           if(index(delim(1:ldel),buffer(i+l:i+l)) .gt. 0 .and.
      $         (i .eq. 1 .or.

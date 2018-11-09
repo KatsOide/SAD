@@ -129,46 +129,5 @@ With[{tol=1e-4,rmin=1d-4},
     ];
   ];
 
-With[{ylim=0.9999},
-  FitGaussian[d_,opt___]:=Module[{data=CreateBin[d],a,b,x,f,g1,g2},
-    f={a/Sqrt[2],b,ConfidenceInterval*{1/Sqrt[2],1},ChiSquare}/.Fit[data,a InverseErf[x]+b,x,
-      {a,(data[[-1,2]]-data[[1,2]])/4},{b,(data[[1,2]]+data[[-1,2]])/2},opt];
-    If[Plot/.{opt},
-      With[{f},
-        g1=Plot[InverseErf[x] f[[1]] Sqrt[2]+f[[2]],{x,-ylim,ylim},DisplayFunction->Identity]];
-      g2=ListPlot[data,DisplayFunction->Identity];
-      Append[f,Show[g1,g2,opt]],
-      f,
-      f]]];
-
-  CreateBin[x_]:=Module[{xs=Sort[x],n=Length[x],x0,x1,nb,xp,lxp,ym,yms,sn=0,xm},
-    nb=Floor[Sqrt[n]];
-    {x0,x1}=xs[[{1,-1}]];
-    xp=Partition[xs,nb];
-    ym=Plus@@[xp,{1}]/(lxp=Length/@xp);
-    yms=Sqrt[Plus@@[(xp-ym)^2,{1}]]/lxp;
-    xm=(sn+=#&)/@lxp;
-    xm=(2*(xm-xm[[1]]/2)/sn-1);
-    Thread[{xm,ym,yms}]
-    ];
-
-  FitEmit[x_,px_]:=Module[{
-    x1,px1,sigx,sigpx,xm,pxm,xm1,pxm1,sigx1,sigpx1,
-    cx,rx,cpx,rpx,cx1,rx1,cpx1,rpx1,em,beta,dsigx1,dsigpx1,demr,sr},
-    {sigx,xm,cx,rx}=FitGaussian[x];
-    {sigpx,pxm,cpx,rpx}=FitGaussian[px];
-    x1=(x-xm)/sigx;
-    px1=(px-pxm)/sigpx;
-    {sigx1,xm1,cx1,rx1}=FitGaussian[x1+px1];
-    {sigpx1,pxm1,cpx1,rpx1}=FitGaussian[x1-px1];
-    em=sigx1*sigpx1*sigx*sigpx/2;
-    beta=sigx^2/em;
-    dsigx1=cx1[[1]]/sigx1;
-    dsigpx1=cpx1[[1]]/sigpx1;
-    demr=Sqrt[(cx[[1]]/sigx)^2+(cpx[[1]]/sigpx)^2+dsigx1^2+dsigpx1^2];
-    sr=sigpx1/sigx1;
-    {{xm,pxm,(sr-1/sr)/2,beta,em},
-      {cx[[2]],cpx[[2]],(sr+1/sr) Sqrt[dsigx1^2+dsigpx1^2]/4,beta demr,demr*em}}];
-
 SetAttributes[{FindRoot,FindRoot$$,FRN$Eval,FR$Newton,FRN$D},{HoldAll,Constant}];
-SetAttributes[{FRN$Reduction,FitGaussian,FitEmit,CreateBin},Constant];
+SetAttributes[FRN$Reduction,Constant];

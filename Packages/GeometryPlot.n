@@ -100,8 +100,8 @@ With[{def={Region:>{1, LINE["LENGTH"]}, Names->"*",
     geometries=Module[{n, angle, length, dir},
       Map[With[{name=#[[1]], geo=#[[2, 1]], chi=#[[2,2]], hasAngle=#[[3]]},
 	n=If[Not[hasAngle], 1,
-	  angle=Element["ANGLE$SUM", LINE["ELEMENT", name]];
-	  {length, dir}=LINE[{"L$SUM", "DIR"}, name];
+	  angle=Element["ANGLE", LINE["ELEMENT", name]];
+	  {length, dir}=LINE[{"L", "DIR"}, name];
 	  n=If[Abs[angle]<1e-3, 1, Min[100, Ceiling[Abs[angle] / 1e-3]]]];
 	Map[ConvGtoScr[geo + #]&, 
 	  Prepend[Table[With[{th=angle*i/n, l=length*i/n},
@@ -117,7 +117,7 @@ With[{def={Region:>{1, LINE["LENGTH"]}, Names->"*",
 
     (* Create element polygons *)
     geometries=Select[Map[LINE[{"NAME", "TYPENAME",
-      "S", "L$SUM", "DIR", "GEO"}, #]&, Drop[region, -1]],
+      "S", "L", "DIR", "GEO"}, #]&, Drop[region, -1]],
       StringMatchQ[#[[1]], pattern]&];
 
     Module[{elm, n, avg, sigma},
@@ -125,7 +125,7 @@ With[{def={Region:>{1, LINE["LENGTH"]}, Names->"*",
       sigma=0.0;
       scale=0.0;
 
-      elm=Select[Map[LINE[{"L$SUM", "TYPENAME"}, #]&, region],
+      elm=Select[Map[LINE[{"L", "TYPENAME"}, #]&, region],
 	(#[[2]]==="BEND" || #[[2]]==="QUAD")&];
 
       n=Length[elm];
@@ -140,11 +140,11 @@ With[{def={Region:>{1, LINE["LENGTH"]}, Names->"*",
       avg=0.0;
       sigma=0.0;
 
-      elm=Select[Map[LINE[{"L$SUM", "NAME", "TYPENAME"}, #]&, region],
+      elm=Select[Map[LINE[{"L", "NAME", "TYPENAME"}, #]&, region],
 	(#[[3]]==="BEND")&];
 
       n=0;
-      Scan[With[{l=#[[1]], angle=Element["ANGLE$SUM", LINE["ELEMENT", #[[2]]]]},
+      Scan[With[{l=#[[1]], angle=Element["ANGLE", LINE["ELEMENT", #[[2]]]]},
 	If[Abs[angle]>1e-3, n+=1; avg+=Abs[l / angle]]]&, elm];
       If[n>1, avg/=n];
 
@@ -217,7 +217,7 @@ With[{def={Region:>{1, LINE["LENGTH"]}, Names->"*",
 
       polygon=Switch[type,
 	"BEND"|"MULT", Module[{angle, n},
-	  angle=Element["ANGLE$SUM", LINE["ELEMENT", name]];
+	  angle=Element["ANGLE", LINE["ELEMENT", name]];
 	  n=If[Abs[angle]<1e-3, 0, Min[100, Floor[Abs[angle] / 1e-3]]];
 	  If[n>0, Join[
 	    Prepend[Table[With[{th=angle*i/n, l=(length - width * angle)*i/n},

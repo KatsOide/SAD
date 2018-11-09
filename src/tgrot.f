@@ -65,6 +65,7 @@
       pos0=pos(lxp+1)
       gam0=gammab(lxp+1)
       lxs=ibzl(2,lxp)
+c      write(*,*)'tfgeofrac ',lxs
       if(lxs .eq. 0)then
         call tfgeo1(lxp,lxp+1,.true.,.false.)
       else

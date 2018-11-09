@@ -26,7 +26,7 @@ ClearEV[]:=(ElementValues=EVActive={};EVFun=.;EVMatrix=.;EVCompiled=EVSetFun=EVS
 
 EVCompile[]:=If[ElementValues===EVActive,
   Return[EVKeys],
-  Module[{x,y,l=ElementValues,f},
+  Module[{x,y,l=ElementValues},
     If[Head[ElementValues]<=>List,Return[ClearEV[]]];
     Check[{x,y}=Thread[Cases[l,_RuleDelayed|_Rule,1][[,{1,2}]]],Return[ClearEV[]]];
     If[Length[x]<=0 || Length[y]<=0, Return[ClearEV[]]];

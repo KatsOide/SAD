@@ -1,0 +1,368 @@
+!
+! Simplex Library
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: Simplex.n,v 1.5 2010/06/25 19:05:33 amorita Exp $
+! Style:      Minimize engine by downhill simplex algorism
+! Require:    Math/EFT
+!
+
+! <<< NewSimplex class >>>
+With[{
+  eftQ = Library@Require["Math/EFT"]},
+
+  NewSimplex = Class[{},
+    { ExpansionCheckCount = 0
+      },
+
+    { CurrentSimplex,	(* {{_Real, {__Real}}, ...} Order: Best -> Worst *)
+
+      func,	(* Target function to minimize *)
+
+      output,	(* Output:		_Real *)
+      verbose,	(* Verbose:		_Real *)
+
+      limit,	(* VariableRange:	{{min__Real}, {max__Real}} *)
+      minSize,	(* MinimumSize:		_Real|{__Real} *)
+      extL,	(* ExtendLevel:		_Real [1, Length[_Simplex]] *)
+      expand,	(* ExpansionRatio:	_Real (1, INF) *)
+      contL,	(* ContractLevel:	_Real [1, Length[_Simplex]] *)
+      contR,	(* ContractRatio:	_Real (0, 1) *)
+      tryRef,	(* TryReflect:		_Real [1, Length[_Simplex]] *)
+      quick,	(* QuickShrink:		_Bool *)
+      persist,	(* Persistence:		_Real [0, 1] *)
+      (* 1 =< TryReflect *)
+      (* 1 =< ExtendLevel < Length[CurrentSimplex] - TryReflect *)
+      
+      (* Statistics counter *)
+      ExpansionTrial,
+      ExpansionSuccess,
+      ExpansionGain,
+
+      ContractTrial,
+      ContractSuccess,
+      ContractGain,
+
+      (* Status notify string *)
+      Status = "Stop"},
+
+    Amoebar[pc_List, p_List, k_Real, r_Real] := Module[{pr, fr},
+      pr = (1 - r) * pc + r * p[[k,2]];
+      fr = func[pr];
+      (* Boundary penalty *)
+      With[{weight = 10 * Abs[p[[-1, 1]] - p[[1, 1]]]},
+	fr +=  weight * Plus@@MapThread[Which[
+	  #1 < #2,	1 + (#2 - #1)^2,
+	  #3 < #1,	1 + (#1 - #3)^2,
+	  True,		0]&, {pr, Null@@limit}]];
+      If[fr < p[[k, 1]], {fr, pr}, Null]];
+
+    ReflectAction[p_List, pc_List, action_List] := MapThread[Module[{
+      k = #1, kth = nth[#1],
+      contL0 = Min[#1 + contL,     Length[p]],
+      contL1 = Min[#1 + contL,     Length[p]],
+      r1, r2, doReflect = #2},
+      Which[
+	Not[doReflect], (
+	  Status = "Skip "//kth;
+	  If[output > 0 && verbose > 0, Write[output, Status]];
+	  Null),
+
+	Status = "Reflect "//kth;
+	If[output > 0 && verbose > 0, Write[output, Status]];
+	r1 = Amoebar[pc, p, -k, -1];
+	r1 === Null, (
+	  Status = "Contract- "//kth;
+	  If[output > 0 && verbose > 0, Write[output, Status]];
+	  ContractTrial += 1;
+	  r2 = Amoebar[pc, p, -k, contR];
+	  If[r2 <=> Null && r2[[1]] < p[[-contL0, 1]],
+	    ContractGain += (r2[[1]] - p[[-k, 1]]) / (p[[1, 1]] - p[[-k, 1]]);
+	    ContractSuccess += 1;
+	    r2, Null]),
+
+	p[[extL, 1]] < r1[[1]] < p[[-contL1, 1]], (
+	  (* Better than next good point *)
+	  r1),
+
+	p[[extL, 1]] < r1[[1]], (
+	  (* Worse than ExtendLevel point *)
+	  Status = "Contract+ "//kth;
+	  If[output > 0 && verbose > 0, Write[output, Status]];
+	  ContractTrial += 1;
+	  r2 = Amoebar[pc, ReplacePart[p, Take[r1, 2], -k], -k, contR];
+	  If[r2 <=> Null && r2[[1]] < p[[-contL0, 1]],
+	    ContractGain += (r2[[1]] - p[[-k, 1]]) / (p[[1, 1]] - p[[-k, 1]]);
+	    ContractSuccess += 1;
+	    r2, Null]),
+
+	Status = "Expand "//kth;
+	If[output > 0 && verbose > 0, Write[output, Status]];
+	If[ExpansionCheckCount > 0 && ExpansionTrial > ExpansionCheckCount,
+	  With[{expand0 = expand,
+	    prob = ExpansionSuccess / ExpansionTrial,
+	    gain = ExpansionGain / Max[1, ExpansionSuccess]},
+	    Which[
+	      prob < 0.8, ( (* Shrink ExpansionRatio *)
+		expand = Max[1 + ULP[], (1 + expand) / 2];
+		If[output > 0 && verbose > 1,
+		  Write[output, "Shrink ExpansionRatio: ",
+		    expand0, " -> ", expand]];
+		ClearExpansionStatistics[]),
+
+	      gain < 0.8, ( (* Shrink ExpansionRatio *)
+		expand = Max[1 + ULP[],
+		  ((0.8 - gain) + (0.8 + gain) * expand) / 0.8 / 2];
+		If[output > 0 && verbose > 1,
+		  Write[output, "Extend ExpansionRatio: ",
+		    expand0, " -> ", expand]];
+		ClearExpansionStatistics[]),
+
+	      gain > 0.9, ( (* Extend ExpansionRatio *)
+		expand *= Sqrt[1 + (gain - 0.9)];
+		If[output > 0 && verbose > 1,
+		  Write[output, "Extend ExpansionRatio: ",
+		    expand0, " -> ", expand]];
+		ClearExpansionStatistics[]),
+
+	      True, (* Nothing *)]]];
+	ExpansionTrial += 1;
+	r2 = Amoebar[pc, p, -k, -expand];
+	r2 === Null, (
+	  r1),
+
+	ExpansionSuccess += 1;
+	ExpansionGain += (p[[-k, 1]] - r2[[1]]) / (p[[-k, 1]] - r1[[1]]);
+	True, (
+	  r2)]]&, {Range[tryRef], action}];
+
+    Amoeba[p_List, Null, Null] := Amoeba[p,
+      Centroid[p, tryRef], Table[True, {tryRef}]];
+
+    Amoeba[p_List, pc_List, action_List] := With[{
+      reflect = ReflectAction[p, pc, action]},
+
+      If[Select[reflect, # <=> Null&, 1] <=> {}, With[{
+	ChangeCentroidQ = With[{reference = p[[-tryRef - 1, 1]]},
+	  Select[reflect, # <=> Null && #[[1]] < reference&, 1] <=> {}],
+	next = Sort[Join[Drop[p, -tryRef],
+	  MapThread[If[# === Null, #2, #1]&, {reflect, Take[p, -tryRef]}]]]},
+	Return[If[ChangeCentroidQ,
+	  {next, Centroid[next, tryRef], Table[True, {tryRef}]},
+	  {next, pc, Map[# <=> Null&, reflect]}]]]];
+
+      (* Try to shrink current simplex `p' *)
+      Module[{break = False},
+	With[{best = p[[1, 2]]}, With[{shrink = Map[MapThread[Which[
+	  Or[#2 + #3 < #, # < #2 - #3],	#,
+	  #2 < #,			#2 + #3,
+	  True,				#2 - #3]&,
+	  {#, best, minSize}]&,
+	  Map[(best + #) / 2&, Rest[p][[, 2]]]], N = Length[p]},
+	  With[{next = MapThread[With[{k = #, pk = #2, prev = #3,
+	    kth = nth[N - # + 1]},
+	    If[break, prev,
+	      Status = "Shrink "//kth;
+	      If[output > 0 && verbose > 0, Write[output, Status]];
+	      With[{fk = func[pk]}, Which[
+		quick && (fk < p[[k - 1, 1]] || fk > p[[-1, 1]]), (
+		  break = True; {fk, pk}),
+
+		True, {fk, pk}]]]]&,
+	    {Range[Length[p], 2, -1], Reverse[shrink], Reverse[Rest[p]]}]},
+	    {Sort[Append[next, If[persist == 1, First[p],
+	      {persist * p[[1, 1]] + (1 - persist) * f[best], best}]]],
+	      Null, Null}]]]]];
+
+    DownhillSimplex[p0_, f_, opt:((_Rule|_RuleDelayed)...)] := Module[{
+      p, pc = Null, action = Null,
+      maxIter, ftol},
+
+      Status = "Initialize";
+
+      p = Sort[p0];
+
+      With[{M = Length[p], N = Length[p[[1, 2]]], rule = (Rule|RuleDelayed)},
+	{ maxIter, ftol,
+	  output, verbose,
+	  limit, minSize, extL, expand, contL, contR, tryRef,
+	  quick, persist} = SwitchCases[{opt,
+	    MaxIteration->Max[100, 10 * (N + 1)],
+	    Tolerance->1e-6,
+	    Output->6,
+	    Verbose->-1,
+	    VariableRange->{Table[Max[], {N}], Table[Min[], {N}]},
+	    MinimumSize->0,
+	    ExtendLevel->1,
+	    ExpansionRatio->Sqrt[GoldenRatio],
+	    ContractLevel->1,
+	    ContractRatio->1 / GoldenRatio,
+	    TryReflect->1,
+	    QuickShrink->False,
+	    Persistence->1,
+	    Null[]}, {
+	      Rule[MaxIteration, _Real], Rule[Tolerance, _Real],
+	      Rule[Output, _Real], Rule[Verbose, _Real],
+	      Rule[VariableRange, {{__Real}, {__Real}}],
+	      Rule[MinimumSize, _Real|{__Real}],
+	      Rule[ExtendLevel, _Real],
+	      Rule[ExpansionRatio, _Real],
+	      Rule[ContractLevel, _Real],
+	      Rule[ContractRatio, _Real],
+	      Rule[TryReflect, _Real],
+	      Rule[QuickShrink, _Real],
+	      Rule[Persistence, _Real],
+	      Null[]}];
+
+	maxIter = Max[1, maxIter[[1, 2]]];
+	ftol    = Restrict[ftol[[1, 2]], ULP[], 1];
+
+	(* Initialize instance environment *)
+	With[{f}, func = f];
+
+	output   = output[[1, 2]];
+	verbose  = Max[-1, verbose[[1, 2]]];
+	limit    = limit[[1, 2]];
+	minSize  = minSize[[1, 2]];
+	extL     = Restrict[extL[[1, 2]], 1, M];
+	expand   = Max[1 + 2 * ULP[], expand[[1, 2]]];
+	contL    = Restrict[contL[[1, 2]], 1, M - 1];
+	contR    = Restrict[contR[[1, 2]], 2 * ULP[], 1 - 2 * ULP[]];
+	tryRef   = Restrict[tryRef[[1, 2]], 1, M];
+	quick    = (False <=> quick[[1, 2]]);
+	persist  = persist[[1, 2]];
+
+	minSize  = If[RealQ[minSize],
+	  Table[Max[0, minSize], {N}],
+	  Take[Join[Max[0, #]&/@minSize, Table[0, {N}]], N]];
+
+	While[extL + tryRef > M,
+	  With[{dN = extL + tryRef - M}, Which[
+	    dN > 2, (
+	      extL   -= Floor[dN * extL   / (extL + tryRef)];
+	      tryRef -= Floor[dN * tryRef / (extL + tryRef)]),
+	  
+	    dN > 1 && Min[extL, tryRef] > 1, (
+	      extL -= 1;
+	      tryRef -= 1),
+
+	    True, If[tryRef > extL, tryRef -= 1, extL -= 1]]]];
+
+	];
+
+      (* Main loop *)
+      With[{$form = "10.6", width = 10 + 1, tailing = ", ..."}, With[{
+	nc = If[Length[p] > Floor[(PageWidth - 2) / width],
+	  Floor[(PageWidth - 2 - StringLength[tailing]) / width],
+	  Length[p]],
+	last = Restrict[Min[
+	  Floor[(PageWidth - 2 - StringLength[tailing]) / width / 2.2],
+	  Floor[Length[p] / 2.2]],  2, 5],
+	trimQ = Length[p] > Floor[(PageWidth - 2) / width]},
+	ClearExpansionStatistics[];
+	ClearContractStatistics[];
+	CurrentSimplex = p;
+	While[maxIter > 0, With[{f0 = p[[, 1]],
+	  v0 = With[{best = p[[1, 2]]}, (# - best)&/@Rest[p[[,2]]]]},
+	  {p, pc, action} = Amoeba[p, pc, action];
+	  CurrentSimplex = p;
+
+	  If[output > 0, StandardForm[$FORM = $form;
+	    Write[output, Which[
+	      Not[trimQ], Take[p, nc][[, 1]],
+
+	      nc >= 1 + 2 * last, StringJoin[
+		ToString[Take[p, nc - last][[, 1]]][1,-2],
+		tailing, ",", ToString[Take[p, -last][[, 1]]][2,-1]],
+
+	      True, StringJoin[
+		ToString[Take[p, nc][[, 1]]][1,-2], tailing, "}"]]]]];
+
+	  With[{f1 = p[[, 1]],
+ 	    v1 = With[{best = p[[1, 2]]}, (# - best)&/@Rest[p[[,2]]]]},
+	    Which[
+	      (* Break condition by bad-simplex *)
+	      Plus@@(Plus@@Abs[#] > 0&/@v1) < Plus@@(Plus@@Abs[#] > 0&/@v0),
+	      If[output > 0 && verbose > 1, Write[output,
+		"simplex is degenerated"]]; Break[],
+
+	      Sort[v1] === Sort[v0],
+	      If[output > 0 && verbose > 1, Write[output,
+		"simplex is frozen"]]; Break[],
+
+	      (* Continue condition by un-converged function *)
+	      2 * Abs[f1[[-1]] - f1[[1]]] / (Abs[f1[[-1]]] + Abs[f1[[1]]]) > ftol,
+	      If[output > 0 && verbose > 1, Write[output,
+		"f[simplex] is not converged"]],
+
+	      2 * Abs[f1[[-1]] - f0[[-1]]] / (Abs[f1[[-1]]] + Abs[f0[[-1]]]) > ftol,
+	      If[output > 0 && verbose > 1, Write[output,
+		"f[worst] is not converged"]],
+
+	      2 * Abs[f1[[1]] - f0[[1]]] / (Abs[f1[[1]]] + Abs[f0[[1]]]) > ftol,
+	      If[output > 0 && verbose > 1, Write[output,
+		"f[best] is not converged"]],
+
+	      (* Normal termination *)
+	      True,
+	      If[output > 0 && verbose > 1, Write[output,
+		"f is converged"]]; Break[]]]];
+	  maxIter -= 1]]];
+      Status = "Stop";
+      p];
+
+    (* Helper functions *)
+    ClearExpansionStatistics[] := (
+      ExpansionTrial   = 0;
+      ExpansionSuccess = 0;
+      ExpansionGain    = 0;
+      );
+
+    ClearContractStatistics[] := (
+      ContractTrial   = 0;
+      ContractSuccess = 0;
+      ContractGain    = 0;
+      );
+
+    nth[n_Real] := StandardForm[StringJoin[n, Switch[n,
+      1, "st",
+      2, "nd",
+      3, "rd",
+      _, "th"]]];
+
+    (* Average of List of Reals *)
+    If[eftQ,
+      Average[l:{__Real}] := EFT@SumK[l] / Length[l],
+      Average[l:{__Real}] := Plus@@l / Length[l]];
+
+    If[eftQ,
+      ULP[] := EFT@ULP[],
+      ULP[] := 2^-50];
+
+    (* Centroid point of simplex `p' excepts `k' worse points *)
+    Centroid[p_List, k_Real:1] := Average/@Thread[Drop[p, -k][[,2]]];
+
+    (* Check limit boundary of `r' for `(1 - r) * p0 + r * p1' *)
+    CheckLimit[p0_List, p1_List, limit_List] := With[{eps = 1e-17},
+      {Min[#1], Max[#2]}&@@Thread[MapThread[With[{
+	v0 = #1, v1 = #2, min = #3[[1]], max = #3[[2]]},
+	Which[
+	  Abs[v1 - v0] < eps * Abs[max - min], {-INF, INF},
+	  True, 	MinMax[{min - v0, max - v0} / (v1 - v0)]]]&,
+	{p0, p1, limit}]]];
+
+    ]; (* End of NewSimplex class definition *)
+
+  ];
+! >>> NewSimplex class <<<
+
+! Replacing DownhillSimplex[]
+SetAtributes[{DownhillSimplex},Dynamic];
+
+DownhillSimplex = Block[{The$Simplex},
+  The$Simplex = NewSimplex[];
+  The$Simplex@DownhillSimplex[Unevaluated[#1], ##2]]&;
+
+SetAtributes[{DownhillSimplex,NewSimplex},Constant];
+
+! End of File

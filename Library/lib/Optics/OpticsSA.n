@@ -1,0 +1,136 @@
+!
+! Simulated Annealing for Optics Function
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: OpticsSA.n,v 1.2 2005/10/14 02:17:11 amorita Exp $
+! Style:      Class Library
+! Require:    Math/OptimizeSA.n
+!
+Library@Require["Math/OptimizeSA"];
+
+! <<< OpticsSA class >>>
+OpticsSA=Class[{},
+  {
+    },
+  { 
+    },
+
+  DefaultOpticsFunction[] := (FFS["CALC"]; MatchingResidual);
+
+  Annealing[opt:((_Rule|_RuleDelayed)...)] := Module[{
+    varlist, variables, range, x0, e0,
+    f, func, sa},
+
+    varlist = Transpose[Select[FFS["VAR"],
+      Or[#[[8]] === "", #[[8]] === #[[1]], #[[8]] === #[[1]]//".1"]&]];
+
+    variables = Transpose[{varlist[[1]], varlist[[2]]}];
+    range = Transpose[{varlist[[6]], varlist[[7]]}];
+    x0 = varlist[[3]];
+
+    {f} = SwitchCases[Override[opt, OpticsFunction->DefaultOpticsFunction],
+      { (Rule|RuleDelayed)[OpticsFunction, _]}];
+
+    With[{variables, range, f}, (* Define target function *)
+      func[x__Real] := (
+	ScanThread[(Element[#[[2]], #[[1]]] = #2)&,
+	  {variables, {x}}];
+	OpticsFunction[]/.f)];
+
+    e0 = func@@x0;
+
+    sa = OptimizeSA$TPAN@Annealing[x0, ParameterRange->range,
+      TargetFunction->func, TargetFunctionValue->e0,
+      opt];
+
+    x0 = First[sa];
+    ScanThread[(Element[#[[2]], #[[1]]] = #2)&, {variables, x0}];
+
+    Rest[sa]];
+
+  ];
+! <<< OpticsSA class >>>
+
+! >>> ChromaSA class <<<
+ChromaSA=Class[{},
+  {
+    },
+  {
+    },
+
+  Setup[] := (
+    Switch[ring@RingID,
+      "LER", (
+	chrodp@Goal  = 0.022;
+	chrodpw@Goal = 0.016;
+	xchro@Goal   = 0.7;
+	ychro@Goal   = 1.8;
+	),
+
+      "HER", (
+	chrodp@Goal  = 0.018;
+	chrodpw@Goal = 0.016;
+	xchro@Goal   = 0.7;
+	ychro@Goal   = 1.8;
+	),
+
+      _, (* *)];
+
+    MatchingAmplitude = Switch[ring@RingID,
+      "LER", {
+	{-0.010, 20, 20/3}, {+0.010, 20, 20/3},
+	{-0.005, 33, 33/3}, {+0.005, 33, 33/3},
+	Null[]},
+
+      "HER", {
+	{-0.010,  5,  5/3}, {+0.010,  5,  5/3},
+	{-0.005, 10, 10/3}, {+0.005, 10, 10/3},
+	Null[]},
+
+      _, {}];
+    );
+
+  Condition[op:((_Rule|_RuleDelayed)...)] := Module[{opt},
+    opt = Override[op, FixSL->False, LimitSF->True, LimitKnob->True];
+
+    chro@MatchPanel@SetCond[];
+    ring@SetChromaVar[];
+    Switch[ring@RingID,
+      "LER", (
+	If[LimitKnob/.opt,
+	  FFS["SD{357}T{LR}P MAX -2.5; SD7NRP MAX -2.5; SD7OLP MAX -2.5;"]];
+	If[LimitSF/.opt, FFS["SF*P MAX 2.5;"]];
+	If[FixSL/.opt, FFS["FIX SL*P"]];
+	),
+
+      "HER", (
+	If[LimitKnob/.opt,
+	If[LimitSF/.opt, FFS["SF*E MAX 3.0;"]];
+	  FFS["SD{357}T{LR}E MAX -5.0; SD7NRE MAX -5.0; SD7OLE MAX -5.0;"]];
+	),
+
+      _, (* *)];
+
+    CONVERGENCE = 2e-4 / 10^(Max[1, 0.01 / ring@DP]);
+    DP = ring@DP;
+    StandardForm[FFS["FITP "//Max[6, Ceiling[DP / 0.001] * 2]]];
+    ToExpression["With[{XIX=ring@XIX,XIY=ring@XIY,DPW=ring@DPW},\
+        FitValue[\"$$$\",\"NX\",{_,dp_},v_,v1_]:=\
+          v+2*Pi*("//ring@ChromaGoalX//")[dp];\
+        FitValue[\"$$$\",\"NY\",{_,dp_},v_,v1_]:=\
+          v+2*Pi*("//ring@ChromaGoalY//")[dp]]"];
+    Clear[FitWeight];
+    FitWeight["$$$","NX"|"NY",{_,dp_},w_]:=10*w/(1+Abs[dp/ring@DPW]);
+    ];
+
+  Annealing[opt:((_Rule|_RuleDelayed)...)] := (
+    Condition[opt]; (* Setup chromaticity matching *)
+    OpticsSA@Annealing[opt,
+      NeighborhoodResolution->3e-5, (* 15bit resolution *)
+      NeighborhoodScalingInterval->7,
+      MarkovChains->7*6]);
+
+  ];
+! <<< ChromaSA class >>>
+
+! End of File

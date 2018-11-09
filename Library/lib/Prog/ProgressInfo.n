@@ -1,0 +1,56 @@
+!
+! Prograss Infomation Announcer
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: ProgressInfo.n,v 1.9 2005/08/04 10:59:08 amorita Exp $
+! Style:      Wrapper Class
+! Require:    None
+!
+
+! <<< ProgressInfo class >>>
+ProgressInfo=Class[{}, (* Progress Information Announcer *)
+  { TextAnimation = {
+    {""},
+    {"-", "\ ", "|", "/"},
+    {"[===]", "[>==]", "[=>=]", "[==>]",
+      "[===]", "[==<]", "[=<=]", "[<==]"}
+    }
+    },
+  { MessageString, AnimationType, AnimationLength, AnimationPointer, wvopt
+    },
+
+  Constructor[] := (
+    {wvopt} = SwitchCases[Options, {RuleDelayed[WidgetVariable, _]}];
+    MessageString = Null;
+    AnimationPointer = 0;
+    animation[1]);
+
+  animation[type$_Real] := (
+    AnimationType = Restrict[Round[1 + type$], 1, Length[TextAnimation]];
+    AnimationLength = Length[TextAnimation[[AnimationType]]]);
+
+  tick[] :=  With[{kbf = WidgetVariable/.wvopt},
+    AnimationPointer = Mod[AnimationPointer, AnimationLength] + 1;
+    If[StringQ[MessageString], kbf[StatusLine] = StringJoin[MessageString,
+      TextAnimation[[AnimationType, AnimationPointer]]]];
+    Update[IdleTasks]];
+
+  message[msg___] := With[{kbf = WidgetVariable/.wvopt},
+    MessageString = If[Length[{msg}] < 1, Null, StandardForm[StringJoin[msg]]];
+    If[StringQ[MessageString],
+      kbf[StatusLine] = MessageString,
+      kbf[FreeStatusLine]];
+    Update[IdleTasks]];
+
+  progress[] := With[{kbf = WidgetVariable/.wvopt},
+    kbf[ProgressBar] = Null;
+    If[StringQ[MessageString], kbf[StatusLine] = MessageString];
+    Update[IdleTasks]];
+
+  progress[i_Real] := With[{kbf = WidgetVariable/.wvopt},
+    kbf[ProgressBar] = i; tick[]];
+
+  ];
+! >>> ProgressInfo class <<<
+
+! End of File

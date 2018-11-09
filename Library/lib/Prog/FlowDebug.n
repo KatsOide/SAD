@@ -1,0 +1,36 @@
+!
+! Flow Debug Logger Library
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: FlowDebug.n,v 1.4 2005/05/23 05:01:15 amorita Exp $
+! Style:      Class Library
+! Require:    Prog/DebugLog.n
+!
+Library@Require["Prog/DebugLog"];
+
+! <<< Prog$FlowDebug >>>
+Prog$FlowDebug=Class[{},
+  { depth = 0
+    },
+  { ScoopName
+    },
+
+  Constructor[argv__] := StandardForm[
+    ScoopName = ToString[argv];
+    Enter[ScoopName]];
+
+  Destructor[] := Leave[ScoopName];
+
+  Enter[msg_String:"Nameless"] := StandardForm[
+    depth += 1;
+    DebugLog@Debug$[DebugLog@PROF, "Prog$FlowDebug", "Enter",
+      "FlowDebug: Enter["//depth//"] "//msg]];
+
+  Leave[msg_String:"Nameless"] := StandardForm[
+    DebugLog@Debug$[DebugLog@PROF, "Prog$FlowDebug", "Leave",
+      "FlowDebug: Leave["//depth//"] "//msg];
+    depth -= 1];
+  ];
+! >>> Prog$FlowDebug <<<
+DebugLog@LogProfile["Prog$FlowDebug", _] := True;
+! End of File

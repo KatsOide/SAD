@@ -1,26 +1,25 @@
-(* ListPlot V1.1.1k64 7/31/2017 *)
+(* ListPlot V1.0.10.6.6k64 2/20/2013 *)
 
 Off[General::unprotconst];
-Unprotect[Scale,Tags,Text,Above,Below,Right,Left];
+Unprotect[Scale,Tags,Text];
 On[General::unprotconst];
 SetAttributes[{Graphics,AspectRatio,PlotRange,
-  PlotRegion,PlotLabel,TickSize,Tags,Anchor,TickColor,
+  PlotRegion,PlotLabel,TickSize,Tags,Anchor,
   PlotJoined,StepRatio,PointSize,PointSymbol,PlotColor,Dashing,
   ErrorBarTickSize,ErrorBarThickness,PointColor,PointBorderColor,PointTags,
   LineTags,Thickness,FrameTicks,Initialize,FrameLabel,DisplayFunction,
   DataRange,Reference,FillColor,Arrow,Clip,FrameUnitLabel,
   Orientation,Line,Point,Rectangle,Circle,Polygon,Hook,Linear,Bar,Text,
   TextSize,TextRotate,TextAlign,Scaled,GridLines,WindowScaled,CanvasScaled,
-  RectScaled,AboveTags,BelowTags,Right,Left,Above,Below,
+  RectScaled,AboveTags,BelowTags,
   TextCases,TextPosition,Prolog,Epilog,Vertical,Alignment,Legend,
-  Scale,Weight,FrameClick,InfoBind,TickFont,RemoveOverlap,FrameColor,
+  Scale,Weight,FrameClick,InfoBind,TickFont,RemoveOverlap,
   FontScale,TickFontScale,FrameFontScale,LegendFontScale,
   Major,Minor,Both,Ticks},Constant];
 
 Graphics$Options=AspectRatio|FrameLabel|PlotRange|GridLines|Alignment|DataRange|
   PlotRegion|PlotLabel|FrameTicks|TickSize|TickFont|Tags|Background|Frame|FrameClick|
-    InfoBind|FrameUnitLabel|FontScale|TickFontScale|FrameFontScale|LegendFontScale|
-      FrameColor|TickColor;
+    InfoBind|FrameUnitLabel|FontScale|TickFontScale|FrameFontScale|LegendFontScale;
 
 With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
   AspectRatio->Automatic,PlotJoined->False,StepRatio->1,
@@ -31,8 +30,7 @@ With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
   PointBorderColor->Automatic,GridLines->{Automatic,Automatic},
   PointTags->Null,LineTags->Null,Thickness->1,
   FrameTicks->{True,True,Ticks,Ticks},Initialize->True,
-  FrameLabel->{"","","",""},FrameUnitLabel->{},FrameColor->"black",
-  TickColor->Null,
+  FrameLabel->{"","","",""},FrameUnitLabel->{},
   FontScale->1,TickFontScale->1,FrameFontScale->1,LegendFontScale->1,
   DisplayFunction:>$DisplayFunction,RemoveOverlap->"",
   PlotLabel->"",Prolog->{},Epilog->{},Legend->False,
@@ -141,7 +139,7 @@ With[{
       If[df===CanvasDrawer,
         After[0,The$CanvasObject@AdjustLegend[]]]
       ];
-    Append[gl,opt]
+    gl
     ]];
 
 PR$$[{x_List,y_List}]:={x,y};

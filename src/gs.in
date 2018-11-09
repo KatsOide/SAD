@@ -1,8 +1,14 @@
 #!/bin/sh
 
-SAD_PACKAGES="xSAD_SHARE_ROOT/Packages/"; export SAD_PACKAGES
-SAD_ARCH=`xSADROOT/bin/HostArch`
-SAD_EXE="xSAD_EXE_ROOT/${SAD_ARCH}/xSADEXE"; export SAD_EXE
+JOB_DIR=$(pwd)
+SAD_ROOTPATH="$(cd "$(dirname "$0")";cd ..; pwd)"
+#echo $SAD_ROOTPATH
+export SAD_ROOTPATH
+cd $JOB_DIR
+
+SAD_PACKAGES="$SAD_ROOTPATH/Packages/"; export SAD_PACKAGES
+SAD_ARCH=`$SAD_ROOTPATH/bin/HostArch`
+SAD_EXE="$SAD_ROOTPATH/obj/${SAD_ARCH}/sad1.exe"; export SAD_EXE
 
 # Set stack limit
 stacksize=8192		# Kbytes
@@ -83,10 +89,12 @@ esac
 # Set library path for dynamic link library
 case ${SAD_ARCH} in
 *-CYGWIN*)
-    PATH=xSAD_ARCH_ROOT/${SAD_ARCH}/bin:${PATH}
+#    PATH=xSAD_ARCH_ROOT/${SAD_ARCH}/bin:${PATH}
+    PATH=$SAD_ROOTPATH/obj/${SAD_ARCH}/bin:${PATH}
     ;;
 *-Darwin)
-    DYLD_LIBRARY_PATH=xSAD_ARCH_ROOT/${SAD_ARCH}/lib ; export DYLD_LIBRARY_PATH
+#    DYLD_LIBRARY_PATH=xSAD_ARCH_ROOT/${SAD_ARCH}/lib ; export DYLD_LIBRARY_PATH
+    DYLD_LIBRARY_PATH=$SAD_ROOTPATH/obj/${SAD_ARCH}/lib ; export DYLD_LIBRARY_PATH
     ;;
 *)
     ;;

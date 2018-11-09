@@ -1,0 +1,793 @@
+!
+! Global Beta Analysis Tool for KEKB
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: BetaAnalysis.n,v 1.46 2008/12/08 08:44:48 amorita Exp $
+! Style:      Class Library
+! Require:    LEROptics/HEROptics@KEKBOptics.n
+!             Math/Minimize.n
+!             Prog/QFunctions.n
+!
+Library@Require["Math/Minimize", "Prog/QFunctions"];
+
+! <<< BetaAnalysis class >>>
+BetaAnalysis=Class[{KEKBOrbitUtil,Minimize}, (* Global Beta Analysis Library *)
+  {
+    },
+  { Ring, OpticsName, dp0,
+    symB, symN, symE, nu0, sterring, monitor, cell, sign, nu, orbit, flag,
+    adjustTune, Reference, initVector
+    },
+
+  Destructor[] := Module[{},
+    ];
+
+  Constructor[] := Module[{},
+    Reference[x_] := Reference$[x];
+    initVector[_] := Null;
+    ];
+
+  (* Initialize *)
+  (*
+    Arguments:
+      dx	 Set of closed orbit response
+      flg	 Set of closed orbit validity flags
+      opt	 Options
+    Options:
+      Tune	 Measured horizontal & vertical tune
+      Steering	 Used steering list
+      Monitor	 Used beam position monitor list
+      Axis	 ("X" or "Y")
+      AdjustTune Apply AdjustTune[] at referring optics
+      Optics	 Given optics parameter by table
+		 Format: {{name, [S/POS,] BX, NX, EX, BY, NY, EY}, ...}
+      Cell	 Periodic condition
+    *)
+  Initialize[dx_List, flg_List, opt:((_Rule|_RuleDelayed)...)] := Module[{rem,
+    adjusttune, tune, steer, mon, axis, optics, cellFlag,
+    Lm, Ls, updateOptics = False},
+    {adjusttune, tune, steer, mon, axis, optics, cellFlag, rem} = SwitchCases[
+      Override[opt, AdjustTune->False, Axis->"X", Cell->True],
+      {
+	Rule[AdjustTune, _Real],	Rule[Tune, {_Real, _Real}],
+	Rule[Steering, _List],		Rule[Monitor|Monitors, _List],
+	Rule[Axis, "X"|"Y"],		Rule[Optics, _List],
+	Rule[Cell, _Real],
+	_}];
+
+    (* Cell mode check and Tune hack *)
+    cell       = If[cellFlag   === {}, False, cellFlag[[1,2]]];
+    If[Not[cell], tune = {Tune->{0.5, 0.5}}];
+
+    (* Checking options *)
+    adjustTune = If[adjusttune === {}, False, adjusttune[[1,2]]];
+    optics     = If[optics     === {},    {}, optics[[1,2]]];
+
+    If[tune  === {}, Return[False], tune  = tune[[1,2]]];
+    If[steer === {}, Return[False], steer = steer[[1,2]]];
+    If[mon   === {}, Return[False], mon   = mon[[1,2]]];
+    If[axis  === {}, Return[False], axis  = axis[[1,2]]];
+
+    (* Checking list length *)
+    If[Ls = Length[steer]; Ls < 1, Return[False]];
+    If[Lm = Length[mon];   Lm < 1, Return[False]];
+    If[Dimensions[dx]  <=> {Ls, Lm}, Return[False]];
+    If[Dimensions[flg] <=> {Ls, Lm}
+      && Dimensions[flg] <=> {Lm}, Return[False]];
+
+    (* Checking given optics parameter table *)
+    If[optics <=> {}, (
+      (* Checking table dimensions *)
+      Switch[Dimensions[optics],
+	{_, 8}, ( (* Table dimeisions is valid with S/POS *)
+!	  optics = Sort[optics, #1[[2]] < #2[[2]]&];
+	  optics = Thread[optics];
+	  optics = Prepend[Drop[optics, 2], First[optics]];
+	  ),
+
+	{_, 7}, ( (* Table dimeisions is valid without S/POS *)
+	  optics = Thread[optics];
+	  ),
+
+	_, Return[False]];
+
+      (* Checking mon/steer *)
+      If[Complement[Union[mon, steer], First[optics]] <=> {},
+	Print["Error: Elements[", Complement[Union[mon, steer], First[optics]],
+	  "] are not found in given optics parameter table!"];
+	Return[False]];
+
+      )];
+
+    (* Initialize analysis engine *)
+    symB = "B"//axis;
+    symN = "N"//axis;
+    symE = "E"//axis;
+
+    (* Check optics updates *)
+    If[optics === {},
+      ( (* Use SAD optics model as Reference *)
+	If[OpticsName <=> Ring@OpticsName, OpticsName = Ring@OpticsName;
+	  updateOptics = True];
+	If[dp0 <=> DP0,  dp0 = DP0;  updateOptics = True];
+	If[nu0 <=> tune, nu0 = tune; updateOptics = True];
+
+	(* Setup reference optics *)
+	If[updateOptics,
+	  Clear[Reference];
+	  Reference[x_] := Reference$[x]];
+
+	(* Generate sign table *)
+	sign = With[{SignFunc = If[cell, Sign, If[# > 0, 2, 0]&]},
+	  Outer[SignFunc[#2 - #1]&,     Twiss[symN, steer], Twiss[symN, mon]]];
+	),
+      Module[{pos}, (* Use given optics parameter table as Reference *)
+	OpticsName = Null;
+	dp0 = 0.0;
+	nu0 = tune;
+
+	(* Setup reference optics *)
+	pos = mon/.Thread[First[optics]->Range[Length[First[optics]]]];
+	Clear[Reference];
+	Reference["BX"] = optics[[2, pos]];
+	Reference["NX"] = optics[[3, pos]];
+	Reference["EX"] = optics[[4, pos]];
+	Reference["BY"] = optics[[5, pos]];
+	Reference["NY"] = optics[[6, pos]];
+	Reference["EY"] = optics[[7, pos]];
+
+	(* Generate sign table *)
+	pos = steer/.Thread[First[optics]->Range[Length[First[optics]]]];
+	sign = With[{SignFunc = If[cell, Sign, If[# > 0, 2, 0]&]},
+	  Outer[SignFunc[#2 - #1]&,
+	    optics[[If[axis === "X", 3, 6], pos]], Reference[symN]]];
+	]];
+
+    steering = steer;
+    monitor  = mon;
+    nu       = If[axis === "X", nu0[[1]], nu0[[2]]];
+    orbit    = dx;
+    flag     = Switch[Dimensions[flg],
+      {Ls, Lm}, flg,
+      {Lm}, Table[flg, {i, Ls}],
+      _, Return[$Failed]];
+
+    (* Clear references *)
+    Clear[initVector];
+    initVector[_] := Null;
+
+    True];
+
+  (* Beta function solver
+    Arguments:
+      method	Solver method
+      bcos0	Initial Sqrt[Beta] * Cos[Phi] vector(optional)
+      bsin0	Initial Sqrt[Beta] * Sin[Phi] vector(optional)
+      opt	Solver options
+	Tune		Fit tune
+	Beta		Initial beta function
+	Phase		Initial phase advance
+	Tolerance	Tolerance for RMS residual
+	VectorTolerance	Tolerance for vector
+	ProgressCommand	Command to evaluate in iteration loop
+			Command[residual, vector, residual0, vector0]
+
+    Results:	{{beta functions, phase advances}, options}
+      options...
+      Convergence	Convergence of iterations(Boolean)
+      Iterations	Number of iterations
+      Residual		RMS fitting residual
+      AxisSymbol	Twiss symbol to refer phase, beta, and dispersion
+      Vector		{Sqrt[Beta] * Cos[Phi], Sqrt[Beta] * Sin[Phi]}
+    *)
+  Solve[method_String, bcos0_List:Null, bsin0_List:Null,
+    opt:((_Rule|_RuleDelayed)...)] := Module[{bcos, bsin, beta, phase},
+      (* Initialize monitor vector *)
+      {bcos, bsin} = InitialVector$Monitor[];
+      {beta, phase} = {Beta, Phase}/.Override[opt, Beta->Null, Phase->Null];
+      If[Not[ListQ[beta]  && Length[beta]  == Length[bcos]], beta  = Null];
+      If[Not[ListQ[phase] && Length[phase] == Length[bcos]], phase = Null];
+      Switch[{beta, phase}, (* fill missing part *)
+	{_List, Null}, Print["FillP"]; phase = MapThread[ArcTan, {bcos, bsin}],
+	{Null, _List}, Print["FillB"]; beta  = bcos^2 + bsin^2];
+      Which[
+	Length[bcos] === Length[bcos0] && Length[bsin] === Length[bsin0], (
+	  Print["Load Beta/Phase from arguments"];
+	  bcos = bcos0; bsin = bsin0),
+	ListQ[beta] && ListQ[phase], (
+	  Print["Load Beta/Phase from options"];
+	  bcos = bsin = Sqrt[beta];
+	  bcos *= Cos[phase]; bsin *= Sin[phase])];
+
+      Solve$[method, bcos, bsin, opt]];
+
+  (* Simulated Annealing Solver *)
+  Solve$["SA", bcos0_List, bsin0_List, opt___] := Module[{
+    {bcos, bsin} = {bcos0, bsin0},
+    len, fp, opts, range, sa},
+
+    Library@Require["Math/OptimizeSA"];
+
+    (* Decode options *)
+    opts = Select[Override[opt], #[[1]] <=> ProgressCommand&];
+
+    {fp, bcos, bsin} = Fit$Steering[bcos, bsin, opt];
+    len = Length[bcos];
+
+    range = MapThread[With[{amp = Sqrt[#1^2 + #2^2], scale = 1.41},
+      scale * {-amp, amp}]&, {bcos, bsin}];
+
+    sa = OptimizeSA$TPAN@Annealing[Join[bcos, bsin],
+      TargetFunction:>With[{len, opts},
+	First[Fit$Monitor[Null@@Partition[{##}, len], Null@@opts]]&],
+      ParameterRange->range,
+      Temperature->{1000e-6, 0.001e-6}, NumberOfTemperature->7 * 2 - 1,
+      MarkovChains->5*7, Exchanges->200,
+      Null[]];
+
+    {fp, bcos, bsin} = Fit$Monitor[Null@@Partition[First[sa], len], opt];
+
+    Solve$["BruteForce2", bcos, bsin, opt]];
+
+  (* SA-Hybrid Solver *)
+  Solve$[method:("SA-NewtonRaphson"|"SA-CGPR"|"SA-BruteForce2"), bcos0_List, bsin0_List, opt___] := Module[{
+    {bcos, bsin} = {bcos0, bsin0},
+    len, f, fp, opts, range, sa},
+
+    Library@Require["Math/OptimizeSA"];
+
+    (* Decode options *)
+    opts = Select[Override[opt], #[[1]] <=> ProgressCommand&];
+
+    {fp, bcos, bsin} = Fit$Steering[bcos, bsin, opt];
+    len = Length[bcos];
+
+    range = MapThread[With[{amp = Sqrt[#1^2 + #2^2], scale = 1.41},
+      scale * {-amp, amp}]&, {bcos, bsin}];
+
+    sa = OptimizeSA$TPAN@Annealing[Join[bcos, bsin],
+      TargetFunction:>With[{len, opts}, Residual/.Rest[Solve$[
+	method[4, -1],
+	Take[{##}, len], Take[{##}, -len],
+	SolverModel->"Steering$", Null@@opts]]&],
+      ParameterRange->range,
+      Temperature->{50e-6, 0.5e-6}, NumberOfTemperature->3 * 2 - 1,
+      MarkovChains->7, Exchanges->10,
+      Null[]];
+
+    {fp, bcos, bsin} = Fit$Monitor[Null@@Partition[First[sa], len], opt];
+
+    Solve$[method[4, -1], bcos, bsin, opt]];
+
+  (* Brute Force Solver *)
+  Solve$["BruteForce", bcos0_List, bsin0_List, opt___] := Module[{
+    def = {MaximumIteration->10000, Tolerance->1e-7, VectorTolerance->0},
+    {bcos, bsin} = {bcos0, bsin0},
+    maxIter, ftol, vtol, p0, fp0, p, fp, iteration},
+
+    (* Decode options *)
+    {maxIter, ftol, vtol} = {MaximumIteration,
+      Tolerance, VectorTolerance}/.Override[opt, def];
+    If[Not[RealQ[maxIter]], maxIter = MaximumIteration/.def];
+    If[Not[RealQ[ftol]] || ftol =< 0, ftol = Tolerance/.def];
+    If[Not[RealQ[vtol]] || vtol  < 0, vtol = VectorTolerance/.def];
+
+    (* Do two iteration for getting reference residual *)
+    {fp, bcos, bsin} = Map$M2M$[bcos, bsin, opt];
+    p = Join[bcos, bsin];
+
+    iteration = 1;
+    While[maxIter > iteration,
+      fp0 = fp; p0 = p;
+      {fp, bcos, bsin} = Map$M2M$[bcos, bsin, opt];
+      p = Join[bcos, bsin];
+
+      With[{fp, p, fp0, p0}, ProgressCommand[fp, p, fp0, p0]/.{opt}];
+
+      If[2 * (fp0 - fp) =< ftol * (fp + fp0 + 1e-10), Break[]];
+
+      If[vtol > 0 &&
+	2 * Plus@@((p - p0)^2) =< vtol^2 * Plus@@(p^2 + p0^2), Break[]];
+
+      iteration += 1];
+
+    {DecodeVector$Monitor[bcos, bsin, opt],
+      Convergence->(maxIter > iteration), Iterations->iteration,
+      Residual->fp, AxisSymbol->{symN, symB, symE},
+      Vector->{bcos, bsin}}];
+
+  (* Brute Force Solver Type.2 *)
+  Solve$["BruteForce2", bcos0_List, bsin0_List, opt___] := Module[{
+    def = {MaximumIteration->10000, Tolerance1->2e-4,
+      Tolerance->1e-7, VectorTolerance->0, SolverModel->"Steering"},
+    {bcos, bsin} = {bcos0, bsin0},
+    maxIter, tol, ftol, vtol, model,
+    len, f, fm, p0, fp0, p, fp, dp, iteration},
+
+    (* Decode options *)
+    {maxIter, tol, ftol, vtol, model} = {MaximumIteration, Tolerance1,
+      Tolerance, VectorTolerance, SolverModel}/.Override[opt, def];
+    If[Not[RealQ[maxIter]], maxIter = MaximumIteration/.def];
+    If[Not[RealQ[tol]]  ||  tol =< 0,  tol = Tolerance1/.def];
+    If[Not[RealQ[ftol]] || ftol =< 0, ftol = Tolerance/.def];
+    If[Not[RealQ[vtol]] || vtol  < 0, vtol = VectorTolerance/.def];
+
+    (* Define optimize function *)
+    Switch[model,
+      "Steering", (
+	{fp, bcos, bsin} = Fit$Steering[bcos, bsin, opt];
+	len = Length[bcos];
+	f[x___] := First[Fit$Monitor[Null@@Partition[{x}, len], opt]];
+	fm = Map$S2S$;
+	),
+      "Monitor", (
+	len = Length[bcos];
+	f[x___] := First[Fit$Steering[Null@@Partition[{x}, len], opt]];
+	fm = Map$M2M$;
+	),
+      "Steering$", (
+	len = Length[bcos];
+	f[x___] := First[Fit$Monitor[Null@@Partition[{x}, len], opt]];
+	fm = Map$S2S$;
+	),
+      _, (
+	len = Length[bcos];
+	f[x___] := First[Fit$Steering[Null@@Partition[{x}, len], opt]];
+	fm = Map$M2M$;
+	)];
+
+    (* Do two iteration for getting reference residual *)
+    {fp, bcos, bsin} = fm[bcos, bsin, opt];
+    p = Join[bcos, bsin];
+
+    iteration = 0;
+    While[maxIter > iteration,
+      fp0 = fp; p0 = p;
+      {fp, bcos, bsin} = fm[bcos, bsin, opt];
+      p = Join[bcos, bsin]; dp = p - p0;
+
+      With[{brent = With[{p0, dp}, Brent[f@@(p0 + # * dp)&,
+	Null@@(Mnbrak[f@@(p0 + # * dp)&, 0, 1, Tolerance->tol][[,1]])]]},
+	fp = brent[[2]]; p = p0 + brent[[1]] * dp;
+	{bcos, bsin} = Partition[p, len]];
+
+      With[{fp, p, fp0, p0}, ProgressCommand[fp, p, fp0, p0]/.{opt}];
+
+      If[2 * (fp0 - fp) =< ftol * (fp + fp0 + 1e-10), Break[]];
+
+      If[vtol > 0 &&
+	2 * Plus@@((p - p0)^2) =< vtol^2 * Plus@@(p^2 + p0^2), Break[]];
+
+      iteration += 1];
+
+    Switch[model,
+      "Steering", (
+	{fp, bcos, bsin} = Fit$Monitor[bcos, bsin, opt];
+	),
+      _, (* Nothing to do *)];
+
+    {If[model === "Steering$",
+      Join[bcos, bsin], DecodeVector$Monitor[bcos, bsin, opt]],
+      Convergence->(maxIter > iteration), Iterations->iteration,
+      Residual->fp, AxisSymbol->{symN, symB, symE},
+      Vector->{bcos, bsin}}];
+
+  (* Pseudo CG Solver *)
+  Solve$["PseudoCG", bcos0_List, bsin0_List, opt___] := Module[{
+    def = {MaximumIteration->10000, Tolerance1->2e-4,
+      Tolerance->1e-7, VectorTolerance->0, SolverModel->"Steering"},
+    {bcos, bsin} = {bcos0, bsin0},
+    maxIter, tol, ftol, vtol, model,
+    len, f, fm, p0, fp0, p, fp, dp, g, h, iteration},
+
+    (* Decode options *)
+    {maxIter, tol, ftol, vtol, model} = {MaximumIteration, Tolerance1,
+      Tolerance, VectorTolerance, SolverModel}/.Override[opt, def];
+    If[Not[RealQ[maxIter]], maxIter = MaximumIteration/.def];
+    If[Not[RealQ[tol]]  ||  tol =< 0,  tol = Tolerance1/.def];
+    If[Not[RealQ[ftol]] || ftol =< 0, ftol = Tolerance/.def];
+    If[Not[RealQ[vtol]] || vtol  < 0, vtol = VectorTolerance/.def];
+
+    (* Define optimize function *)
+    Switch[model,
+      "Steering", (
+	{fp, bcos, bsin} = Fit$Steering[bcos, bsin, opt];
+	len = Length[bcos];
+	f[x___] := First[Fit$Monitor[Null@@Partition[{x}, len], opt]];
+	fm = Map$S2S$;
+	),
+      "Monitor", (
+	len = Length[bcos];
+	f[x___] := First[Fit$Steering[Null@@Partition[{x}, len], opt]];
+	fm = Map$M2M$;
+	),
+      "Steering$", (
+	len = Length[bcos];
+	f[x___] := First[Fit$Monitor[Null@@Partition[{x}, len], opt]];
+	fm = Map$S2S$;
+	),
+      _, (
+	len = Length[bcos];
+	f[x___] := First[Fit$Steering[Null@@Partition[{x}, len], opt]];
+	fm = Map$M2M$;
+	)];
+
+    (* Do two iteration for getting reference residual *)
+    {fp, bcos, bsin} = fm[bcos, bsin, opt];
+    p = Join[bcos, bsin];
+    g = h = dp = p - Join@@Rest[fm[bcos, bsin, opt]];
+
+    iteration = 0;
+    While[maxIter > iteration,
+      With[{brent = With[{p, dp}, Brent[f@@(p + # * dp)&,
+	Null@@(Mnbrak[f@@(p + # * dp)&, 0, 1, Tolerance->tol][[,1]])]]},
+	fp0 = fp; fp = brent[[2]]; p0 = p; p += brent[[1]] * dp];
+
+      With[{fp, p, fp0, p0}, ProgressCommand[fp, p, fp0, p0]/.{opt}];
+
+      If[2 * (fp0 - fp) =< ftol * (fp + fp0 + 1e-10), Break[]];
+
+      If[vtol > 0 &&
+	2 * Plus@@((p - p0)^2) =< vtol^2 * Plus@@(p^2 + p0^2), Break[]];
+
+      dp = p - Join@@Rest[fm[Null@@Partition[p, len], opt]];
+      gg = g.g;
+      dgg = dp.(dp + g);
+
+      If[gg == 0, Break[]];
+
+      g = -dp;
+      dp = h = g + (dgg / gg) * h;
+
+      iteration += 1];
+
+    {bcos, bsin} = Partition[p, len];
+
+    Switch[model,
+      "Steering", (
+	{fp, bcos, bsin} = Fit$Monitor[bcos, bsin, opt];
+	),
+      _, (* Nothing to do *)];
+
+    {If[model === "Steering$",
+      Join[bcos, bsin], DecodeVector$Monitor[bcos, bsin, opt]],
+      Convergence->(maxIter > iteration), Iterations->iteration,
+      Residual->fp, AxisSymbol->{symN, symB, symE},
+      Vector->{bcos, bsin}}];
+
+  (* Powell Solver *)
+  Solve$["Powell", bcos0_List, bsin0_List, opt___] := Module[{
+    {bcos, bsin} = {bcos0, bsin0}, len, f, res, r, convergence, iterations},
+
+    (* Monitor -> Steering *)
+    {r, bcos, bsin} = Fit$Steering[bcos, bsin, opt];
+
+    (* Define optimize function *)
+    len = Length[bcos];
+    f[x___] := First[Fit$Monitor[Null@@Partition[{x}, len], opt]];
+
+    res = Powell[f, Join[bcos, bsin], opt];
+    {bcos, bsin} = Partition[First[res], len];
+    {convergence, iterations} = {Convergence, Iterations}/.Drop[res, 2];
+
+    (* Steering -> Monitor *)
+    {r, bcos, bsin} = Fit$Monitor[bcos, bsin, opt];
+
+    {DecodeVector$Monitor[bcos, bsin, opt],
+      Convergence->convergence, Iterations->iterations,
+      Residual->r, AxisSymbol->{symN, symB, symE},
+      Vector->{bcos, bsin}}];
+
+  (* Polak-Ribiere conjugate gradient Solver *)
+  Solve$["CGPR", bcos0_List, bsin0_List, opt___] := Module[{
+    def = {SolverModel->"Steering"}, model,
+    {bcos, bsin} = {bcos0, bsin0}, len, f, res, r, convergence, iterations},
+
+    {model} = {SolverModel}/.Override[opt, def];
+
+    (* Monitor -> Steering *)
+    If[model <=> "Steering$",
+      {r, bcos, bsin} = Fit$Steering[bcos, bsin, opt]];
+
+    (* Define optimize function *)
+    len = Length[bcos];
+    f[x___] := First[Fit$Monitor[Null@@Partition[{x}, len], opt]];
+
+    res = CGPR[f, Join[bcos, bsin], opt];
+    {bcos, bsin} = Partition[First[res], len];
+
+    (* Steering -> Monitor *)
+    {r, bcos, bsin} = Fit$Monitor[bcos, bsin, opt];
+    {convergence, iterations} = {Convergence, Iterations}/.Drop[res, 2];
+
+    {If[model === "Steering$",
+      Join[bcos, bsin], DecodeVector$Monitor[bcos, bsin, opt]],
+      Convergence->convergence, Iterations->iterations,
+      Residual->r, AxisSymbol->{symN, symB, symE},
+      Vector->{bcos, bsin}}];
+
+  (* Newton-Raphson Solver *)
+  Solve$["NewtonRaphson", bcos0_List, bsin0_List, opt___] := Module[{
+    def = {MaximumIteration->200, Tolerance1->2e-4,
+      Tolerance->1e-17, VectorTolerance->0,
+      Derivative->Undefined, Epsilon->1e-7,Debug->False,
+      SolverModel->"Steering"},
+    maxIter, tol, ftol, vtol, deriv, eps, model, debug,
+    dfunc, iteration, len, func, f, dfp0, fp0, p0, dp0, dfp, fp, p, dp,
+    break, useBrent, dirCount,
+    {bcos, bsin} = {bcos0, bsin0}},
+
+    {maxIter, tol, ftol, vtol, deriv, eps, model, debug} = {MaximumIteration,
+      Tolerance1, Tolerance, VectorTolerance,
+      Derivative, Epsilon, SolverModel, Debug}/.Override[opt, def];
+    If[Not[RealQ[maxIter]], maxIter = MaximumIteration/.def];
+    If[Not[RealQ[tol]]  ||  tol =< 0,  tol = Tolerance1/.def];
+    If[Not[RealQ[ftol]] || ftol  < 0, ftol = Tolerance/.def];
+    If[Not[RealQ[vtol]] || vtol  < 0, vtol = VectorTolerance/.def];
+
+    (* Define optimize function *)
+    Switch[model,
+      "Steering", (
+	{fp, bcos, bsin} = Fit$Steering[bcos, bsin, opt];
+	len = Length[bcos];
+	f[x_] := First[Fit$Monitor[Null@@Partition[x, len], opt]];
+	func[x_] := Join@@Map$S2S[Null@@Partition[x, len], opt] - x;
+	),
+      "Monitor", (
+	len = Length[bcos];
+	f[x_] := First[Fit$Steering[Null@@Partition[x, len], opt]];
+	func[x_] := Join@@Map$M2M[Null@@Partition[x, len], opt] - x;
+	),
+      "Steering$", (
+	len = Length[bcos];
+	f[x_] := First[Fit$Monitor[Null@@Partition[x, len], opt]];
+	func[x_] := Join@@Map$S2S[Null@@Partition[x, len], opt] - x;
+	),
+      _, (
+	len = Length[bcos];
+	f[x_] := First[Fit$Steering[Null@@Partition[x, len], opt]];
+	func[x_] := Join@@Map$M2M[Null@@Partition[x, len], opt] - x;
+	)];
+
+    dfunc[x_] := Sqrt[Norm$L2[func[x]] / Norm$L2[x]];
+
+    p = Join[bcos, bsin];
+    fp = f[p]; dfp = dfunc[p]; dp0 = Table[0, {i, Length[p]}];
+
+    (* Define default derivative *)
+    If[deriv === Undefined, With[{func, N = Length[p],
+      dpMat = eps * IdentityMatrix[Length[p]]}, deriv =.;
+      deriv[p_] := With[{p0 = Table[p, {i, N}]}, Transpose[MapThread[
+	(func[#1] - func[#2])&, {p0 + dpMat, p0 - dpMat}] / 2 / eps]]]];
+
+    iteration = 0; break = False; useBrent = False; dirCount = 0;
+    While[maxIter > iteration,
+      p0 = p; fp0 = fp; dfp0 = dfp;
+      dp = LinearSolve[deriv[p0], func[p0], Tolerance->1e-8];
+
+      p = p0 - dp;
+
+      fp = f[p]; dfp = dfunc[p];
+      If[debug, StandardForm[$FORM = "10.8";
+	Print["Debug: Newton {fp, dfp, 1-dp.dp0} = ",
+	  {fp, dfp, 1 + dp.dp0 / Sqrt[dp.dp]}]]];
+
+      Switch[{dfp >= dfp0, 1 + dp.dp0 / Sqrt[dp.dp] < 1e-3},
+	{True, _}, useBrent = True,
+	{_, True}, If[++dirCount > 2, dirCount = 0; useBrent = True],
+	_, (* Nothing to do *)];
+
+      If[useBrent, useBrent = False; (* Wrong case hacks... *)
+	With[{brent = With[{p0, dp}, Brent[dfunc[p0 - # * dp]&,
+	  Null@@(Mnbrak[dfunc[p0 - # * dp]&, 0, 1, Tolerance->tol][[,1]])]]},
+	  If[debug, StandardForm[$FORM = "";
+	    Print["Debug: Newton Brent = ", brent[[1]]]]];
+	  dfp = brent[[2]]; p = p0 - brent[[1]] * dp; fp = f[p]];
+	];
+
+      With[{fp, p, fp0, p0}, ProgressCommand[fp, p, fp0, p0]/.{opt}];
+
+      If[2 * (fp0 - fp) < -1e-9 * (fp + fp0 + 1e-10), break = True; Break[]];
+
+      If[ftol > 0 &&
+	0 =< 2 * (fp0 - fp) =< ftol * (fp + fp0 + 1e-10), Break[]];
+
+      If[2 * Norm$L2[p - p0] =< vtol^2 * Plus@@Norm$L2/@{p, p0}, Break[]];
+
+      dp0 = (p - p0) / Sqrt[Norm$L2[p - p0]];
+
+      iteration += 1];
+
+    {bcos, bsin} = Partition[p, len];
+
+    Switch[model,
+      "Steering", (
+	{fp, bcos, bsin} = Fit$Monitor[bcos, bsin, opt];
+	),
+      _, (* Nothing to do *)];
+
+    {If[model === "Steering$",
+      Join[bcos, bsin], DecodeVector$Monitor[bcos, bsin, opt]],
+      Convergence->(Not[break] && maxIter > iteration), Iterations->iteration,
+      Residual->fp, AxisSymbol->{symN, symB, symE},
+      Vector->{bcos, bsin}}];
+
+  (* Internal functions *)
+  Norm$L2[x_] := Plus@@(x^2);
+
+  (* Reference optics functions *)
+  Reference$[sym_] := Module[{qn, dpBak, elBak, elBakQ},
+    qn = Ring@NormalizeElementName[Element["NAME",
+      Ring@ElementPattern$NormalQuad]];
+
+    dpBak = DP0;
+    elBak = With[{l = Ring@DefaultKeyList}, (* GetElementList wo Choose[] *)
+      Thread[{l[[,1]],
+	Thread/@Thread[l[[,2]]->Ring@GetElementValue@@[l,{1}]]}]];
+    elBakQ = {#, Ring@GetElementValue[#, "K1"]}&/@qn;
+
+    If[adjustTune, Ring@AdjustTune[nu0, False], With[{CellQ=?CELL},
+      FFS[If[cell,  "CELL", "INS"]];  FFS["CALC NOEXPAND"];
+      FFS[If[CellQ, "CELL", "INS"]]]];
+
+    Scan[(Reference[#] = Twiss[#, monitor])&,
+      {"BX", "BY", "NX", "NY", "EX", "EY"}];
+
+    If[adjustTune,
+      Scan[Ring@SetElementValue[#[[1]], "K1"->#[[2]]]&, elBakQ];
+      Ring@SetElementList[elBak];
+      DP0 = dpBak; FFS["CELL; CALC NOEXPAND"]];
+
+    Reference[sym]];
+
+  (* Initial vector *)
+  InitialVector$Monitor[] := (If[initVector["Monitor"] === Null, With[{
+    beta = Reference[symB], phi = Reference[symN]},
+    initVector["Monitor"] = {Sqrt[beta] * Cos[phi], Sqrt[beta] * Sin[phi]}]];
+    initVector["Monitor"]);
+
+  InitialVector$Steering[] := (If[initVector["Steering"] === Null, 
+    initVector["Steering"] = Rest[Fit$Steering[InitialVector$Monitor[]]]];
+    initVector["Steering"]);
+
+  (* Vector decorder *)
+  DecodeVector$Monitor[bcos_List, bsin_List, opt:((_Rule|_RuleDelayed)...)] := Module[{
+    eps = 1e-3, th,
+    beta = (bcos^2 + bsin^2), phi = MapThread[ArcTan, {bcos, bsin}],
+    mask = MapThread[And, flag], norm0, norm, prev},
+
+    (* Masking zero-beta point *)
+    mask = MapThread[And, {mask, # <> 0&/@beta}];
+
+    (* Decode options *)
+    th = Abs[ReverseThreshold/.Override[opt, ReverseThreshold->0]];
+
+    (* Normalize beta function *)
+    Switch["Oide",
+      "Oide", (
+	mask=MapThread[And,{mask,beta}];
+	beta=(1-mask)+beta;
+	norm0=Plus@@(Log[Reference[symB]]*mask);
+	norm=Plus@@(Log[beta]*mask);
+	beta *= Exp[(norm0-norm)/Plus@@mask]*mask;
+	),
+
+      "Orig", (
+	norm0 = Plus@@MapThread[If[#, 1 / #2, 0]&, {mask, Reference[symB]}];
+	norm  = Plus@@MapThread[If[#, 1 / #2, 0]&, {mask, beta}];
+	If[norm0 > 0, beta *= (norm / norm0)];
+	)];
+
+    (* Interpolate phase advance *)
+    With[{pos = Position[mask, True]},
+      prev = If[Length[pos] > 0, phi[[pos[[1, 1]]]], 0.0];
+      phi = MapThread[If[#2, prev = #1, prev]&, {phi, mask}]];
+
+    (* Normalize sign of phase advance *)
+    With[{dphi = Difference[phi],
+      tune = Tune/.Override[opt, Tune->nu]},
+      If[Length[Select[dphi, # < 0&]] / Length[dphi] > 3 / 5,
+	phi *= -1.0;
+	If[tune > 0, Print["Detect ``reversed phase advance''"]],
+	If[tune < 0, Print["Detect ``reversed phase advance''"]]]];
+
+    (**
+      * Reconstruct phase by using phase advance monotonicity and
+      * assumption that relative phase advance between neighborhood monitors
+      * don't exceed 2Pi
+      **)
+    With[{dphi = Map[Which[
+      # >=  0.0, #,
+      # >= -eps, #,
+      # >= -th,  #,
+      # <  -1/4, # - Floor[#],
+      # <  -eps, # - Floor[#],
+      True     , 0.0]&, Difference[phi] / (2 * Pi)] * (2 * Pi)},
+      prev = 0.0;
+      phi = Map[prev += #&, Prepend[dphi, First[phi]]]];
+
+    (* Normalize relative phase average to zero *)
+    With[{sel = Select[Thread[{phi - Reference[symN], mask}], #[[2]]&][[,1]]},
+      If[Length[sel] > 0, phi -= Plus@@sel / Length[sel]]];
+
+    {beta, phi}];
+
+  (* Normalize vector norm *)
+  Normalize$Monitor[bcos_List, bsin_List] := With[{
+    initVec = InitialVector$Monitor[]},
+    {bcos, bsin} * Plus@@Plus@@(initVec^2) / Plus@@(bcos^2+bsin^2)];
+
+  Normalize$Steering[bcos_List, bsin_List] := With[{
+    initVec = InitialVector$Steering[]},
+    {bcos, bsin} * Plus@@Plus@@(initVec^2) / Plus@@(bcos^2+bsin^2)];
+
+  (* Basic fitting engines *)
+  (*
+    Arguments:
+      bcos	Sqrt[Beta]*Cos[Phi] vector
+      bsin	Sqrt[Beta]*Sin[Phi] vector
+      opt	Option for LinearSolve
+      Options:
+      FittingTolerance	Global tolerance for orbit fitting
+      MonitorTolerance	Tolerance for orbit fitting at monitor
+      SteeringTolerance	Tolerance for orbit fitting at steering
+
+    Results:	{residual, bcos, bsin}
+      residual	root mean square of fitting residual
+      bcos	Sqrt[Beta]*Cos[Phi] vector
+      bsin	Sqrt[Beta]*Sin[Phi] vector
+    *)
+  Fit$Monitor[bcos_List, bsin_List, opt:((_Rule|_RuleDelayed)...)]  := Module[{
+    tol, solv, w, b, m, x, r, cn, sn},
+    tol = MonitorTolerance/.Override[{opt}/.Rule[FittingTolerance->x_,
+      MonitorTolerance->x], MonitorTolerance->1e-18];
+    {cn, sn} = With[{tune = Tune/.Override[opt, Tune->nu]},
+      {Cos[Pi * tune], Sin[Pi * tune]}];
+
+    solv = Thread[MapThread[With[{Sj = #1, dXj = #2, Fj = #3},
+      w = (# === True)&/@Fj;
+      b = dXj;
+      m = Transpose[{cn * bcos - sn * Sj * bsin, cn * bsin + sn * Sj * bcos}];
+
+      x = LinearSolve[w * m, w * b, Tolerance->tol]; r = b - m.x;
+
+      {Null@@x, Norm$L2[w * r], Count[w, True]}]&,
+      {Thread[sign], Thread[orbit], Thread[flag]}]];
+
+    {Sqrt[Plus@@solv[[3]] / Plus@@solv[[4]]], solv[[1]], solv[[2]]}];
+
+  Fit$Steering[bcos_List, bsin_List, opt:((_Rule|_RuleDelayed)...)] := Module[{
+    tol, solv, w, b, m, x, r, cn, sn},
+    tol = SteeringTolerance/.Override[{opt}/.Rule[FittingTolerance->x_,
+      SteeringTolerance->x], SteeringTolerance->1e-18];
+    {cn, sn} = With[{tune = Tune/.Override[opt, Tune->nu]},
+      {Cos[Pi * tune], Sin[Pi * tune]}];
+
+    solv = Thread[MapThread[With[{Si = #1, dXi = #2, Fi = #3},
+      w = (# === True)&/@Fi;
+      b = dXi;
+      m = Transpose[{cn * bcos + sn * Si * bsin, cn * bsin - sn * Si * bcos}];
+
+      x = LinearSolve[w * m, w * b, Tolerance->tol]; r = b - m.x;
+
+      {Null@@x, Norm$L2[w * r], Count[w, True]}]&,
+      {sign, orbit, flag}]];
+
+    {Sqrt[Plus@@solv[[3]] / Plus@@solv[[4]]], solv[[1]], solv[[2]]}];
+
+  (* Map functions *)
+  Map$M2M[bcos_List, bsin_List, opt:((_Rule|_RuleDelayed)...)] := Rest[
+    Fit$Monitor[Null@@Rest[Fit$Steering[bcos, bsin, opt]], opt]];
+
+  Map$M2M$[bcos_List, bsin_List, opt:((_Rule|_RuleDelayed)...)] :=
+    Fit$Monitor[Null@@Rest[Fit$Steering[bcos, bsin, opt]], opt];
+
+  Map$S2S[bcos_List, bsin_List, opt:((_Rule|_RuleDelayed)...)] := Rest[
+    Fit$Steering[Null@@Rest[Fit$Monitor[bcos, bsin, opt]], opt]];
+
+  Map$S2S$[bcos_List, bsin_List, opt:((_Rule|_RuleDelayed)...)] :=
+    Fit$Steering[Null@@Rest[Fit$Monitor[bcos, bsin, opt]], opt];
+
+  ];
+! >>> BetaAnalysis class <<<
+! End of File

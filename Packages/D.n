@@ -1,4 +1,4 @@
-(* D.n 10/26/2017 *)
+(* D.n 4/23/2011 *)
 
 With[{ReductionRule:={
   ((a_^z_)*b___)^y_:>a^(z*y)*Times[b]^y,
@@ -12,16 +12,11 @@ With[{ReductionRule:={
   -Sin[x_]^2+Cos[x_]^2+a___:>a+Cos[2x],
   Sin[x_]^2-Cos[x_]^2+a___:>a-Cos[2x],
   1+a___-Cos[x_]:>a+2*Sin[x/2]^2,
-  -1+a___+Cos[x_]:>a-2*Sin[x/2]^2,
-  b___*Sin[x_]*Cos[x_]:>(b Sin[2x]/2),
+  b___*Sin[x_]*Cos[x_]:>b Sin[2x]/2,
   a___+x_-Sin[x_]:>a+XSin[x],
-  a___-x_+Sin[x_]:>a-XSin[x],
   XSin[x_]+Sin[x_]+a___:>a+x,
-  -XSin[x_]-Sin[x_]+a___:>a-x,
-  Exp[x_]^(n_):>Exp[n*x],
   Exp[x_]*Exp[y_]*a___:>Exp[x+y]*a,
   Log[x_]+Log[y_]+a___:>Log[x*y]+a,
-  Log[x_]-Log[y_]+a___:>Log[x/y]+a,
   Log[Exp[x_]*(y__:1)|Exp[x_]]:>x+Log[Times[y]],
   Log[x_^y_]:>y*Log[x],
   Exp[(x__:0)+Log[y_]|Log[y_]]:>y*Exp[Plus[x]],
@@ -75,7 +70,7 @@ D$[If[a_,b___],x_]:=With[{v=Null@@(D$[#,x]&/@{b})},If[a,v]];
 D$[Re[f_],x_]:=Re[D$[f,x]];
 D$[Im[f_],x_]:=Im[D$[f,x]];
 D$[Conjugate[f_],x_]:=Conjugate[D$[f,x]];
-D$[Rational[n_,d_],x_]:=Rational[D[n,x] d-n D[d,x], d^2];
+D$[Rational[n_,d_],x_]:=Rationa[D[n,x] d-n D[d,x], d^2];
 
 Derivative[1][Sqrt]=(#^-(1/2))/2&;
 Derivative[1][Sin]=Cos;
@@ -214,7 +209,7 @@ NIntegrate[a:(Spline[_][_]),y_,___]:=Integrate[a,y];
 
 With[{def={AccuracyGoal->1e-13,InitialPoints->20,Spline->True}},
   NIntegrate[f_,{x_Symbol,x0_,x1_},opt___]:=
-    Module[{eps,n,d,u,v,smax,sp,s,u1,v1,ds,w,fa,spl,s1},
+    Module[{eps,n,d,u,v,smax,sp,s,u1,v1,ds,w,fa,spl},
       {eps,n,spl}={AccuracyGoal,InitialPoints,Spline}/.{opt}/.def;
       fa[y_]:=With[{x=Vector[y]},Check[ReleaseVector[f],y*0]];
       d=(x1-x0)/n;
