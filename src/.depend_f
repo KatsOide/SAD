@@ -191,7 +191,7 @@ prnflg.o: prnflg.f tfstk.o toplvl.o
 pstati.o: pstati.f csinit.o tffs.o tfstk.o
 pstati1.o: pstati1.f inc/common.inc tffs.o tfstk.o
 pstati2.o: pstati2.f
-pstati3.o: pstati3.f inc/TFMACRO1.inc inc/TFMACRO.inc tffs.o tfstk.o
+pstati3.o: pstati3.f inc/TFMACRO.inc inc/TFMACRO1.inc tffs.o tfstk.o
 psub.o: psub.f
 ptimes.o: ptimes.f
 ptol.o: ptol.f inc/common.inc tffs.o tfstk.o
@@ -336,7 +336,7 @@ tfgetr.o: tfgetr.f
 tfgetv.o: tfgetv.f csinit.o tffs.o tfstk.o
 tfif.o: tfif.f
 tfinit.o: tfinit.f csinit.o initb1.o tffs.o tfstk.o
-tfinitn.o: tfinitn.f csinit.o MAIN.o tfstk.o toplvl.o
+tfinitn.o: tfinitn.f MAIN.o csinit.o tfstk.o toplvl.o
 tfkwrd.o: tfkwrd.f tfstk.o toplvl.o
 tflag.o: tflag.f tffs.o tfstk.o
 tflifetrack.o: tflifetrack.f tfstk.o
@@ -424,9 +424,9 @@ tquads.o: tquads.f tffs.o tfstk.o
 tquase.o: tquase.f tffs.o tfstk.o
 track.o: track.f temit.o tffs.o tfstk.o toplvl.o
 tracka.o: tracka.f tffs.o tfstk.o
-trackb.o: trackb.f tffsa.o tffs.o tfstk.o
+trackb.o: trackb.f tffs.o tffsa.o tfstk.o
 trackd.o: trackd.f tffs.o tfshared.o tfstk.o
-tracke.o: tracke.f tffsa.o tffs.o tfstk.o
+tracke.o: tracke.f tffs.o tffsa.o tfstk.o
 trad.o: trad.f tffs.o tfstk.o
 trade.o: trade.f tffs.o tfstk.o
 trcoda.o: trcoda.f tffs.o tfstk.o
