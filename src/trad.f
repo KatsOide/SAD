@@ -138,3 +138,72 @@ c            write(*,*)'tradk ',i,dg,rhoinv,anp,uc
       endif
       return
       end
+
+      subroutine tradki(np,x,px,y,py,px0,py0,g,dv,al)
+      use tfstk
+      use ffs_flag
+      use tmacro
+      implicit none
+      integer*4 np,i
+      real*8 tdusr,pr,p,al1,cuc,uc,anp,
+     $     dpx,dpy,pxm,pym,theta,dg,h1,ddpx,ddpy
+      real*8, parameter:: gmin=-0.9999d0,
+     $     cave=8.d0/15.d0/sqrt(3.d0)
+      real*8 x(np),px(np),y(np),py(np),dv(np),g(np),
+     $     px0(np),py0(np),al(np)
+      cuc=1.5d0*rclassic/rcratio
+      if(rfluct)then
+        do i=1,np
+          dpx=px(i)-px0(i)
+          dpy=py(i)-py0(i)
+          theta=abs(dcmplx(dpx,dpy))
+          pr=1.d0+g(i)
+          p=p0*pr
+          anp=anrad*p*theta
+          dg=tdusr(anp)
+          if(dg .ne. 0.d0)then
+            pxm=px0(i)+dpx*.5d0
+            pym=py0(i)+dpy*.5d0
+            al1=al(i)*(1.d0+(pxm**2+pym**2)*.5d0)
+            uc=cuc*(1.d0+p**2)*theta/al1*pr
+            dg=-dg*uc
+c            write(*,*)'tradk ',i,dg,rhoinv,anp,uc
+            g(i)=max(gmin,g(i)+dg)
+            ddpx=-.5d0*dpx*dg
+            ddpy=-.5d0*dpy*dg
+            x(i)=x(i)+.5d0*ddpx*al(i)
+            y(i)=y(i)+.5d0*ddpy*al(i)
+            px(i)=px(i)+ddpx
+            py(i)=py(i)+ddpy
+            pr=1.d0+g(i)
+            h1=p2h(p0*pr)
+            dv(i)=-g(i)*(1.d0+pr)/h1/(h1+pr*h0)+dvfs
+          endif
+        enddo
+      else
+        do i=1,np
+          dpx=px(i)-px0(i)
+          dpy=py(i)-py0(i)
+          theta=abs(dcmplx(dpx,dpy))
+          pxm=px0(i)+dpx*.5d0
+          pym=py0(i)+dpy*.5d0
+          pr=1.d0+g(i)
+          p=p0*pr
+          al1=al(i)*(1.d0+(pxm**2+pym**2)*.5d0)
+          anp=anrad*p*theta
+          uc=cuc*(1.d0+p**2)*theta/al1*pr
+          dg=-cave*anp*uc
+          g(i)=max(gmin,g(i)+dg)
+          ddpx=-.5d0*dpx*dg
+          ddpy=-.5d0*dpy*dg
+          x(i)=x(i)+.5d0*ddpx*al(i)
+          y(i)=y(i)+.5d0*ddpy*al(i)
+          px(i)=px(i)+ddpx
+          py(i)=py(i)+ddpy
+          pr=1.d0+g(i)
+          h1=p2h(p0*pr)
+          dv(i)=-g(i)*(1.d0+pr)/h1/(h1+pr*h0)+dvfs
+        enddo
+      endif
+      return
+      end

@@ -1,4 +1,5 @@
-(* Fit.n 7/11/2015 *)
+(* Fit.n 10/27/2018 *)
+{MaxIterations,AccuracyGoal,D};
 
 Fit[`data:{{{__},_,_},___},`fun_,{`v__},`para__]:=Module[
   {{`x$,`y$,`z$}=Thread[data],`ff,`k,`l=Length[data]},
@@ -25,43 +26,45 @@ FindRoot[eq_,vars__List,opt:(_Rule|_RuleDelayed)...]:=Module[{vlist,vs,def,blk},
   def=Definition/@vs;
   blk=Extract[def,{,1,1,1},Hold]<=>Extract[def,{,1,1,2},Hold];
   With[{vlist,vs},
-    FindRoot$$[eq,vlist,vs,blk,{opt},vars]]];
+    FindRoot$$[eq,vlist,vs,blk,{opt},vars]]
+  ];
 
 With[{def={MaxIterations->50,AccuracyGoal->1.d-20,Trace->False,D->True,Complex->False}},
-  FindRoot$$[eqs:((eq1_==eq2_)|(eql_List)),vlist_,Hold[vs__],blk_,opt_,vars__]:=Module[
-    {{mi,ag,tr,d,cmpl}={MaxIterations,AccuracyGoal,Trace,D,Complex}/.opt/.def,vl,leq=0,eq,df,res},
-    With[{ba=If[blk,Unevaluated$[{vs}],{}]},
-      Block[ba,
-        With[{var=(With[{v=##},Hold[Set[v]]]&@@[vlist[[,{1,2}]],{1}])},
-          If[Length[Hold[eql]]==0,
-            vl=ReleaseHold[Hold[Unevaluated$[Block[var,{eq1,eq2}]]/.Hold->Null]];
-            If[List===Head[vl[[1]]]===Head[vl[[2]]] && (leq=Length[vl[[1]]])<>Length[vl[[2]]],
-              Message[General::equalleng,"both sides of eqs"];
-              Return[]],
-            eq=Hold[eql]/.Equal->Subtract;
-            With[{eq},
-              vl=Unevaluated$[Block[var,eq]]/.Hold->Null];
-            leq=-1]];
-        If[~cmpl && (RealListQ[vl] || RealQ[vl]),
-          Return[If[leq<=0,
-            FindRoot$[eqs,vars,{mi,ag,tr,d,cmpl}],
-            With[{eq=Thread[eq1==eq2]},
-              FindRoot$[eq,vars,{mi,ag,tr,d,cmpl}]]]]];
-        Which[
-          leq<0,eq=ReleaseHold[eq],
-          leq,eq:=eq1-eq2,
-          True,eq:={eq1-eq2}];
-        With[{vlist,mi,ag,tr,df=If[d,Outer[D,eq,{vs}],False]},
-          res=FR$Newton[eq,{vs},vlist[[,2]],vlist[[,3]],mi,ag,df,tr]];
-          FRN$Eval[eq,{vs},res[[2]]];
-        ]];
-    If[blk,
-      Block[{vs},
-        Append[MapThread[Rule,{{vs},res[[2]]}],Residual->res[[3]]]],
-      Unset/@Hold[vs];
-      Append[MapThread[Rule,{{vs},res[[2]]}],Residual->res[[3]]]]
-    ];
- ]; 
+  FindRoot$$[eqs:((eq1_==eq2_)|(eql_List)),vlist_,Hold[vs__],blk_,opt_,vars__]:=
+    Module[
+      {vl,leq=0,eq,df,res,{mi,ag,tr,d,cmpl}={MaxIterations,AccuracyGoal,Trace,D,Complex}/.opt/.def},
+      With[{ba=If[blk,Unevaluated$[{vs}],{}]},
+        Block[ba,
+          With[{var=(With[{v=##},Hold[Set[v]]]&@@[vlist[[,{1,2}]],{1}])},
+            If[Length[Hold[eql]]==0,
+              vl=ReleaseHold[Hold[Unevaluated$[Block[var,{eq1,eq2}]]/.Hold->Null]];
+              If[List===Head[vl[[1]]]===Head[vl[[2]]] && (leq=Length[vl[[1]]])<>Length[vl[[2]]],
+                Message[General::equalleng,"both sides of eqs"];
+                Return[]],
+              eq=Hold[eql]/.Equal->Subtract;
+              With[{eq},
+                vl=Unevaluated$[Block[var,eq]]/.Hold->Null];
+              leq=-1]];
+          If[~cmpl && (RealListQ[vl] || RealQ[vl]),
+            Return[If[leq<=0,
+              FindRoot$[eqs,vars,{mi,ag,tr,d,cmpl}],
+              With[{eq=Thread[eq1==eq2]},
+                FindRoot$[eq,vars,{mi,ag,tr,d,cmpl}]]]]];
+          Which[
+            leq<0,eq=ReleaseHold[eq],
+            leq,eq:=eq1-eq2,
+            True,eq:={eq1-eq2}];
+          With[{vlist,mi,ag,tr,df=If[d,Outer[D,eq,{vs}],False]},
+            res=FR$Newton[eq,{vs},vlist[[,2]],vlist[[,3]],mi,ag,df,tr]];
+          FRN$Eval[eq,{vs},res[[2]]]
+          ]];
+      If[blk,
+        Block[{vs},
+          Append[MapThread[Rule,{{vs},res[[2]]}],Residual->res[[3]]]],
+        Unset/@Hold[vs];
+        Append[MapThread[Rule,{{vs},res[[2]]}],Residual->res[[3]]]]
+      ]
+  ];
 
 FRN$Eval[f_,var_,v_]:=Module[{v1=v,f1},
   With[{v1},
@@ -129,5 +132,46 @@ With[{tol=1e-4,rmin=1d-4},
     ];
   ];
 
+With[{ylim=0.9999},
+  FitGaussian[d_,opt___]:=Module[{data=CreateBin[d],a,b,x,f,g1,g2},
+    f={a/Sqrt[2],b,ConfidenceInterval*{1/Sqrt[2],1},ChiSquare}/.Fit[data,a InverseErf[x]+b,x,
+      {a,(data[[-1,2]]-data[[1,2]])/4},{b,(data[[1,2]]+data[[-1,2]])/2},opt];
+    If[Plot/.{opt},
+      With[{f},
+        g1=Plot[InverseErf[x] f[[1]] Sqrt[2]+f[[2]],{x,-ylim,ylim},DisplayFunction->Identity]];
+      g2=ListPlot[data,DisplayFunction->Identity];
+      Append[f,Show[g1,g2,opt]],
+      f,
+      f]]];
+
+CreateBin[x_]:=Module[{xs=Sort[x],n=Length[x],x0,x1,nb,xp,lxp,ym,yms,sn=0,xm},
+  nb=Floor[Sqrt[n]];
+  {x0,x1}=xs[[{1,-1}]];
+  xp=Partition[xs,nb];
+  ym=Plus@@[xp,{1}]/(lxp=Length/@xp);
+  yms=Sqrt[Plus@@[(xp-ym)^2,{1}]]/lxp;
+  xm=(sn+=#&)/@lxp;
+  xm=(2*(xm-xm[[1]]/2)/sn-1);
+  Thread[{xm,ym,yms}]
+  ];
+
+FitEmit[x_,px_]:=Module[{
+  x1,px1,sigx,sigpx,xm,pxm,xm1,pxm1,sigx1,sigpx1,
+  cx,rx,cpx,rpx,cx1,rx1,cpx1,rpx1,em,beta,dsigx1,dsigpx1,demr,sr},
+  {sigx,xm,cx,rx}=FitGaussian[x];
+  {sigpx,pxm,cpx,rpx}=FitGaussian[px];
+  x1=(x-xm)/sigx;
+  px1=(px-pxm)/sigpx;
+  {sigx1,xm1,cx1,rx1}=FitGaussian[x1+px1];
+  {sigpx1,pxm1,cpx1,rpx1}=FitGaussian[x1-px1];
+  em=sigx1*sigpx1*sigx*sigpx/2;
+  beta=sigx^2/em;
+  dsigx1=cx1[[1]]/sigx1;
+  dsigpx1=cpx1[[1]]/sigpx1;
+  demr=Sqrt[(cx[[1]]/sigx)^2+(cpx[[1]]/sigpx)^2+dsigx1^2+dsigpx1^2];
+  sr=sigpx1/sigx1;
+  {{xm,pxm,(sr-1/sr)/2,beta,em},
+    {cx[[2]],cpx[[2]],(sr+1/sr) Sqrt[dsigx1^2+dsigpx1^2]/4,beta demr,demr*em}}];
+
 SetAttributes[{FindRoot,FindRoot$$,FRN$Eval,FR$Newton,FRN$D},{HoldAll,Constant}];
-SetAttributes[FRN$Reduction,Constant];
+SetAttributes[{FRN$Reduction,FitGaussian,FitEmit,CreateBin},Constant];

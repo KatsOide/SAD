@@ -1,4 +1,4 @@
-(* Couple 12/28/2015 *)
+(* Couple 10/27/2018 *)
 
 With[{r=Rule|RuleDelayed},
   SetCoupledElements:=If[Length[EVCompile[]]>0,
@@ -26,7 +26,7 @@ ClearEV[]:=(ElementValues=EVActive={};EVFun=.;EVMatrix=.;EVCompiled=EVSetFun=EVS
 
 EVCompile[]:=If[ElementValues===EVActive,
   Return[EVKeys],
-  Module[{x,y,l=ElementValues},
+  Module[{x,y,l=ElementValues,f},
     If[Head[ElementValues]<=>List,Return[ClearEV[]]];
     Check[{x,y}=Thread[Cases[l,_RuleDelayed|_Rule,1][[,{1,2}]]],Return[ClearEV[]]];
     If[Length[x]<=0 || Length[y]<=0, Return[ClearEV[]]];
