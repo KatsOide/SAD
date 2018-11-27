@@ -1142,7 +1142,7 @@ c-----Kikuchi addition end-----
       i=itfunaloc('Type$Key$',1022,1,map,ieval,0)
       i=itfunaloc('NormalCoordinate6',1023,1,map,ieval,0)
       i=itfunaloc('InitEmit',1024,0,map,ieval,0)
-c      i=itfunaloc('CanvasClipLine',1025,2,map,ieval,0)
+      i=itfunaloc('FFS$SHOW',1025,0,map,ieval,0)
 c      ieval(1)=1
 c      ieval(2)=1
       i=itfunaloc('ExpandBeamLine',1026,1,map,ieval,0)

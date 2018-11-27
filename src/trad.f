@@ -77,9 +77,10 @@ c          endif
       implicit none
       integer*4 np,i
       real*8 al,tdusr,pr,p,al1,cuc,uc,anp,
-     $     dpx,dpy,pxm,pym,theta,dg,h1,ddpx,ddpy
+     $     dpx,dpy,pxm,pym,theta,dg,h1,ddpx,ddpy,
+     $     pz,pz0,ppx,ppy,ppz
       real*8, parameter:: gmin=-0.9999d0,
-     $     cave=8.d0/15.d0/sqrt(3.d0)
+     $     cave=8.d0/15.d0/sqrt(3.d0),thetamax=0.005d0
       real*8 x(np),px(np),y(np),py(np),dv(np),g(np),
      $     px0(np),py0(np)
       cuc=1.5d0*rclassic/rcratio
@@ -88,6 +89,14 @@ c          endif
           dpx=px(i)-px0(i)
           dpy=py(i)-py0(i)
           theta=abs(dcmplx(dpx,dpy))
+          if(theta .gt. thetamax)then
+            pz=1.d0+pxy2dpz(px(i),py(i))
+            pz0=1.d0+pxy2dpz(px0(i),py0(i))
+            ppx=py0(i)*pz-pz0*py(i)
+            ppy=pz*px(i)-px0(i)*pz
+            ppz=px0(i)*py(i)-py0(i)*px(i)
+            theta=sqrt(ppx**2+ppy**2+ppz**2)
+          endif
           pr=1.d0+g(i)
           p=p0*pr
           anp=anrad*p*theta
@@ -116,6 +125,14 @@ c            write(*,*)'tradk ',i,dg,rhoinv,anp,uc
           dpx=px(i)-px0(i)
           dpy=py(i)-py0(i)
           theta=abs(dcmplx(dpx,dpy))
+          if(theta .gt. thetamax)then
+            pz=1.d0+pxy2dpz(px(i),py(i))
+            pz0=1.d0+pxy2dpz(px0(i),py0(i))
+            ppx=py0(i)*pz-pz0*py(i)
+            ppy=pz*px(i)-px0(i)*pz
+            ppz=px0(i)*py(i)-py0(i)*px(i)
+            theta=sqrt(ppx**2+ppy**2+ppz**2)
+          endif
           pxm=px0(i)+dpx*.5d0
           pym=py0(i)+dpy*.5d0
           pr=1.d0+g(i)
@@ -129,6 +146,90 @@ c            write(*,*)'tradk ',i,dg,rhoinv,anp,uc
           ddpy=-.5d0*dpy*dg
           x(i)=x(i)+.5d0*ddpx*al
           y(i)=y(i)+.5d0*ddpy*al
+          px(i)=px(i)+ddpx
+          py(i)=py(i)+ddpy
+          pr=1.d0+g(i)
+          h1=p2h(p0*pr)
+          dv(i)=-g(i)*(1.d0+pr)/h1/(h1+pr*h0)+dvfs
+        enddo
+      endif
+      return
+      end
+
+      subroutine tradki(np,x,px,y,py,px0,py0,g,dv,al)
+      use tfstk
+      use ffs_flag
+      use tmacro
+      implicit none
+      integer*4 np,i
+      real*8 tdusr,pr,p,al1,cuc,uc,anp,
+     $     dpx,dpy,pym,theta,dg,h1,ddpx,ddpy,
+     $     pz,pz0,ppx,ppy,ppz
+      real*8, parameter:: gmin=-0.9999d0,
+     $     cave=8.d0/15.d0/sqrt(3.d0),thetamax=0.005d0
+      real*8 x(np),px(np),y(np),py(np),dv(np),g(np),
+     $     px0(np),py0(np),al(np)
+      cuc=1.5d0*rclassic/rcratio
+      if(rfluct)then
+        do i=1,np
+          dpx=px(i)-px0(i)
+          dpy=py(i)-py0(i)
+          theta=abs(dcmplx(dpx,dpy))
+          if(theta .gt. thetamax)then
+            pz=1.d0+pxy2dpz(px(i),py(i))
+            pz0=1.d0+pxy2dpz(px0(i),py0(i))
+            ppx=py0(i)*pz-pz0*py(i)
+            ppy=pz*px(i)-px0(i)*pz
+            ppz=px0(i)*py(i)-py0(i)*px(i)
+            theta=sqrt(ppx**2+ppy**2+ppz**2)
+          endif
+          pr=1.d0+g(i)
+          p=p0*pr
+          anp=anrad*p*theta
+          dg=tdusr(anp)
+          if(dg .ne. 0.d0)then
+            pym=py0(i)+dpy*.5d0
+            al1=al(i)*(1.d0+pym**2*.5d0)
+            uc=cuc*(1.d0+p**2)*theta/al1*pr
+            dg=-dg*uc
+c            write(*,*)'tradk ',i,dg,rhoinv,anp,uc
+            g(i)=max(gmin,g(i)+dg)
+            ddpx=-.5d0*dpx*dg
+            ddpy=-.5d0*dpy*dg
+            x(i)=x(i)+.5d0*ddpx*al(i)
+            y(i)=y(i)+.5d0*ddpy*al(i)
+            px(i)=px(i)+ddpx
+            py(i)=py(i)+ddpy
+            pr=1.d0+g(i)
+            h1=p2h(p0*pr)
+            dv(i)=-g(i)*(1.d0+pr)/h1/(h1+pr*h0)+dvfs
+          endif
+        enddo
+      else
+        do i=1,np
+          dpx=px(i)-px0(i)
+          dpy=py(i)-py0(i)
+          theta=abs(dcmplx(dpx,dpy))
+          if(theta .gt. thetamax)then
+            pz=1.d0+pxy2dpz(px(i),py(i))
+            pz0=1.d0+pxy2dpz(px0(i),py0(i))
+            ppx=py0(i)*pz-pz0*py(i)
+            ppy=pz*px(i)-px0(i)*pz
+            ppz=px0(i)*py(i)-py0(i)*px(i)
+            theta=sqrt(ppx**2+ppy**2+ppz**2)
+          endif
+          pym=py0(i)+dpy*.5d0
+          pr=1.d0+g(i)
+          p=p0*pr
+          al1=al(i)*(1.d0+pym**2*.5d0)
+          anp=anrad*p*theta
+          uc=cuc*(1.d0+p**2)*theta/al1*pr
+          dg=-cave*anp*uc
+          g(i)=max(gmin,g(i)+dg)
+          ddpx=-.5d0*dpx*dg
+          ddpy=-.5d0*dpy*dg
+          x(i)=x(i)+.5d0*ddpx*al(i)
+          y(i)=y(i)+.5d0*ddpy*al(i)
           px(i)=px(i)+ddpx
           py(i)=py(i)+ddpy
           pr=1.d0+g(i)

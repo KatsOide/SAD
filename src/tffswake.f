@@ -19,18 +19,13 @@
       itp1=itwissp(fbound%lb)
       if(.not. beg)then
         do j=nfam1,nfam
-          if(uini(1,j) .le. 0.d0)then
-            do i=1,mfitdetr
-              utwiss(i,j,itp1)=twiss(fbound%lb,0,i)
-            enddo
+          if(uini(mfitbx,j) .le. 0.d0)then
+            utwiss(:,j,itp1)=twiss(fbound%lb,0,:)
           else
-            do i=1,mfitdetr
-              utwiss(i,j,itp1)=uini(i,j)
-            enddo
+            utwiss(:,j,itp1)=uini(:,j)
           endif
-          do i=mfitdx,mfitddp
-            utwiss(i,j,itp1)=twiss(fbound%lb,0,i)+uini(i,j)
-          enddo
+          utwiss(mfitdx:mfitddp,j,itp1)=
+     $         twiss(fbound%lb,0,mfitdx:mfitddp)+uini(mfitdx:mfitddp,j)
         enddo
       endif
       iwsl=0
@@ -59,11 +54,8 @@
      $         ibound%le .eq. ibound%lb .and. ibound%fe .ne. 0.d0)then
           do i=nfam1,nfam
             ii=min(1,abs(i))
-            do j=1,ntwissfun
-              twiss(ibound%lb,ii,j)=utwiss(j,i,itp1)
-            enddo
-            call qcell1(ibound,ii,optstat(i),
-     $           i .ne. 0,.true.,0)
+            twiss(ibound%lb,ii,:)=utwiss(:,i,itp1)
+            call qcell1(ibound,ii,optstat(i),i .ne. 0,.true.,0)
             call tffssetutwiss(i,nlat,ibound,beg,
      $           ibound%lb .eq. fbound%lb,ibound%le .eq. fbound%le)
           enddo
@@ -72,12 +64,12 @@
           if(idtypec(nlat-1) .eq. icMARK)then
             iutp=itwissp(nlat-1)
             call tmov(utwiss(1,nfam1,itp1),
-     $           utwiss(1,nfam1,iutp),np)
+     $           utwiss(1,nfam1,iutp),npf)
           endif
           if(ibound%lb .lt. nlat)then
             iutp=itwissp(nlat)
             call tmov(utwiss(1,nfam1,itp1),
-     $           utwiss(1,nfam1,iutp),np)
+     $           utwiss(1,nfam1,iutp),npf)
           endif
           return
         endif
@@ -106,12 +98,11 @@
           ibound1%le=ibound%le+1
           do i=nfam1,nfam
             ii=min(1,abs(i))
-            twiss(ibound%le,ii,1:ntwissfun)=utwiss1(1:ntwissfun,i)
-            call qcell1(ibound1,ii,optstat(i),
-     $           i .ne. 0,.true.,0)
-            utwiss1(1:ntwissfun,i)=twiss(ibound%le+1,ii,1:ntwissfun)
+            twiss(ibound1%lb,ii,:)=utwiss1(:,i)
+            call qcell1(ibound1,ii,optstat(i),i .ne. 0,.true.,0)
+            utwiss1(:,i)=twiss(ibound1%le,ii,:)
           enddo
-          iutp1=itwissp(ibound%le+1)
+          iutp1=itwissp(ibound1%le)
           call tffswakekick(utwiss1,
      $         utwiss(1:ntwissfun,-nfam,iutp1),
      $         iwl,iwt,rlist(iwl),rlist(iwt),
@@ -147,11 +138,10 @@
      $     wbufxyl(nfam1:nfam,nfam1:nfam),
      $     wzl(nfam1:nfam),wzt(nfam1:nfam),
      $     wakel(2,*),waket(2,*),sigz,
-     $     zi,dz,w,sigg,a,p,fact,dz0,xi,yi,cp0,dsig,ddz0,
+     $     zi,dz,w,sigg,a,p,dz0,xi,yi,cp0,dsig,ddz0,
      $     dx,dy,z1,z2,d
       logical*4 re
-c      parameter (fact=1.d0/sqrt(pi2))
-      parameter (fact=.398942280401433d0)
+      real*8 , parameter :: fact=.398942280401433d0
       np=nfam-nfam1+1
       call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
       cp0=abs(charge*e*pbunch/np/p)
@@ -213,9 +203,7 @@ c      parameter (fact=1.d0/sqrt(pi2))
             enddo
           enddo
         endif
-        do i=nfam1,nfam
-          ut1(mfitddp,i)=ut0(mfitddp,i)-cp0*wbuf(i)
-        enddo
+        ut1(mfitddp,:)=ut0(mfitddp,:)-cp0*wbuf
       endif
       if(iwt .ne. 0)then
         re=.false.
@@ -229,20 +217,18 @@ c      parameter (fact=1.d0/sqrt(pi2))
             endif
           enddo
         endif
-        call tclr(wbufx,np)
-        call tclr(wbufy,np)
-        call tclr(wbufxl,np)
-        call tclr(wbufyl,np)
+        wbufx=0.d0
+        wbufy=0.d0
+        wbufxl=0.d0
+        wbufyl=0.d0
         if(re)then
           do i=nfam1,nfam
             xi=ut0(mfitdx,i)-dx
             yi=ut0(mfitdy,i)-dy
-            do j=nfam1,nfam
-              wbufx(j)=wbufx(j)+xi*wbufxy(i,j)
-              wbufy(j)=wbufy(j)+yi*wbufxy(i,j)
-              wbufxl(j)=wbufxl(j)-xi*wbufxyl(i,j)
-              wbufyl(j)=wbufyl(j)-yi*wbufxyl(i,j)
-            enddo
+            wbufx=wbufx+xi*wbufxy(i,:)
+            wbufy=wbufy+yi*wbufxy(i,:)
+            wbufxl=wbufxl-xi*wbufxyl(i,:)
+            wbufyl=wbufyl-yi*wbufxyl(i,:)
           enddo
         else
           iwst=iwt
@@ -288,6 +274,7 @@ c      parameter (fact=1.d0/sqrt(pi2))
                 wbufxyl(i,j)=d
               else
                 wbufxy(i,j)=0.d0
+                wbufxyl(i,j)=0.d0
               endif
             enddo
           enddo

@@ -368,17 +368,18 @@ c      enddo
       return
       end
 
-      subroutine tfget(k,kx,irtc)
+      recursive subroutine tfget(k,kx,irtc)
       use tfstk
       use tfrbuf
       use tfcsi
       implicit none
       type (sad_descriptor) k,kx,kf,kfn
       integer*4 irtc,itfgeto,lfni0,lfn10,ip0,lr0,
-     $     lfn,isp0,itf,nc
+     $     lfn,isp0,itf,nc,lp0
       isp0=isp
       isp=isp+1
       dtastk(isp)=k
+c      call tfdebugprint(k,'tfget',1)
       call tfopenread(isp0,kfn,irtc)
       isp=isp0
       if(irtc .ne. 0)then
@@ -390,7 +391,11 @@ c      enddo
       ip0=icsmrk()
       lr0=icslrecl()
       rec=csrec()
-      linep=icslinep()
+      lp0=icslinep()
+c      if(index(delim(1:ldel),buffer(lr0:lr0)) .le. 0)then
+c        buffer(lr0:lr0)=char(10)
+c        lr0=lr0+1
+c      endif
       call cssetrec(.false.)
       call cssetlinep(lr0)
       call cssetp(lr0)
@@ -420,7 +425,7 @@ c      enddo
       call cssetlfn1(lfn10)
       call cssetl(lr0)
       call cssetp(ip0)
-      call cssetlinep(linep)
+      call cssetlinep(lp0)
       call cssetrec(rec)
       if(itf .eq. -3)then
         irtc=irtcabort

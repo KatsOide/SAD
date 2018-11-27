@@ -675,7 +675,7 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
           call qfracseg(cmp,cmp,0.d0,fr,chg,irtc)
           if(irtc .ne. 0)then
             call tffserrorhandle(lxp,irtc)
-            kax=ktfgeol(rlist(j))
+            kx%k=ktflist+ktfgeol(rlist(j))
           else
             if(chg)then
               call tfgeofrac(lxp,gv)
@@ -683,12 +683,11 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
             else
               kax=ktfgeol(rlist(j+12))
             endif
+            kx%k=ktflist+kax
           endif
           call qfracsave(lxp,dsave,nv,.false.)
-          lv=itfdownlevel()
-c          call tmov(vsave,rlist(latt(lxp)+1),nv)
+          call tfconnect(kx,irtc)
         endif
-        kx%k=ktflist+kax
       elseif(keyword .eq. 'GX' .or. keyword .eq. 'GY' .or.
      $       keyword .eq. 'GZ' .or. keyword .eq. 'GCHI1' .or.
      $       keyword .eq. 'GCHI2' .or. keyword .eq. 'GCHI3')then
@@ -762,7 +761,6 @@ c          enddo
             cod(1:4)=vtwiss(mfitdx:mfitdpy)
           endif
           call qfracsave(lxp,dsave,nv,.false.)
-          lv=itfdownlevel()
           lv=itfdownlevel()
         endif
         call tforbitgeo(ogv,gv,cod(1),cod(2),cod(3),cod(4))
@@ -1165,18 +1163,19 @@ c            write(*,*)'linestk ',name(1:nc),r
       integer*8 function ktfgeol(geo)
       use tfstk
       implicit none
+      type (sad_dlist), pointer :: kl
+      type (sad_rlist), pointer :: klv,klv2
       integer*8 kax,kax1,kax2
       real*8 geo(3,4),tfchi
-      kax=ktadaloc(-1,2)
-      kax1=ktavaloc(0,3)
-      rlist(kax1+1:kax1+3)=geo(1:3,4)
-c      call tmov(geo(1,4),rlist(kax1+1),3)
-      klist(kax+1)=ktflist+kax1
-      kax2=ktavaloc(0,3)
-      rlist(kax2+1)=tfchi(geo,1)
-      rlist(kax2+2)=tfchi(geo,2)
-      rlist(kax2+3)=tfchi(geo,3)
-      klist(kax+2)=ktflist+kax2
+      kax=ktadaloc(-1,2,kl)
+      kax1=ktavaloc(0,3,klv)
+      klv%rbody(1:3)=geo(1:3,4)
+      kl%body(1)=ktflist+kax1
+      kax2=ktavaloc(0,3,klv2)
+      klv2%rbody(1)=tfchi(geo,1)
+      klv2%rbody(2)=tfchi(geo,2)
+      klv2%rbody(3)=tfchi(geo,3)
+      kl%body(2)=ktflist+kax2
       ktfgeol=kax
       return
       end

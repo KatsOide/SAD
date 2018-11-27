@@ -60,6 +60,7 @@
         subroutine cssetlinep(ip)
         implicit none
         integer*4 ip
+c        write(*,*)'setlinep ',ip,linep,lrecl
         linep=ip
         return
         end subroutine

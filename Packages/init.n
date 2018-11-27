@@ -400,6 +400,10 @@ Protect[$Input,$Output];
 SetAttrubutes[{Environment,Environment$,HomeDirectory,
   $MachineName,$MachineType,$System,$OperatingSystem},Constant];
 
+Expand[Times[a__,(c:_Plus)]]:=(Expand[Times[a,Expand[#]]])&/@c;
+Expand[c:_Plus]:=Expand/@c;
+Expand[a_]:=a;
+SetAttributes[Expand,Constant];
 
 ExternalMap[___]:=Null;
 InitLINE$P[]:=(
@@ -455,7 +459,7 @@ FF$Cond[_]:=Null[];
 
 FF$Orig=?`FitFunction;
 FF$NCond=0;
-Setup$FF[]:=With[{f=FF$Cond/@FFS["SHOW;"]},
+Setup$FF[]:=With[{f=FF$Cond/@FFS$SHOW[]},
   If[FF$NCond=Length[f],
     Module[{f0},
       f0=If[Extract[FF$Orig=?`FitFunction,{1,1,2},Head]<=>List,
@@ -590,14 +594,17 @@ AutoLoad[CaOpen,CaRead,CaWrite,CaGet,CaPut,CaClose,
 AutoLoad[CaOpenMonitor,PackagesDirectory//"CaSad2.n"];
 AutoLoad[CaMonitor,PackagesDirectory//"CaSad2c.n"];
 AutoLoad[EPICSDB,PackagesDirectory//"CEPICSRecord.n"];
-$DisplayFunction=If[Check[System["which tdr >/dev/null"],1],
-  If[Environment["DISPLAY"]<=>"",CanvasDrawer,TopDrawer],TopDrawer,TopDrawer];
+
+$DisplayFunction=If[Environment["DISPLAY"]<=>"",CanvasDrawer,Identity,Identiy];
+Check[`f=OpenRead["!command -v tdr"];
+  Close[`f];
+  AutoLoad[TopDrawer,
+    PackagesDirectory//"TopDrawer.n"],];
+
 AutoLoad[ListPlot,Plot,Show,Graphics,Rectangle,
   PackagesDirectory//"ListPlot.n"];
 AutoLoad[FitPlot,ListContourPlot,ListDensityPlot,
   ColumnPlot,HistoPlot,PackagesDirectory//"Plots.n"];
-AutoLoad[TopDrawer,
-  PackagesDirectory//"TopDrawer.n"];
 AutoLoad[OpticsPlot,LatticePlot,BeamPlot,OP$S2Position,
   PackagesDirectory//"OpticsPlot.n"];
 AutoLoad[GeometryPlot,
@@ -659,7 +666,7 @@ AutoLoad[BeamLine,PrintBeamLine,WriteBeamLine,
   PackagesDirectory//"beamline.n"];
 AutoLoad[SetCoupledElements,CouplingMatrix,`CoupledKeys,
   PackagesDirectory//"Couple.n"];
-AutoLoad[D,Derivative,ReduceExpression,ReductionRule,Expand,
+AutoLoad[D,Derivative,ReduceExpression,ReductionRule,
   Spline,SplineData,Integrate,NIntegrate,LegendreP,BesselJZero,
   PackagesDirectory//"D.n"];
 AutoLoad[LDSolve,PackagesDirectory//"LDSolve.n"];

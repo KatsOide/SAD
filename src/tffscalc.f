@@ -185,10 +185,10 @@ c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
                 twiss(ibegin,1,1:ntfun)
      $               =utwiss(1:ntfun,ii,itwissp(ibegin))
               else
-                twiss(1,1,1:mfitdetr)=utwiss(1:mfitdetr,0,1)
+                twiss(1,1,:)=utwiss(:,0,1)
                 if(inicond)then
-                  if(uini(1,ii) .ge. 0.d0)then
-                    twiss(1,1,1:mfitdetr)=uini(1:mfitdetr,ii)
+                  if(uini(mfitbx,ii) .gt. 0.d0)then
+                    twiss(1,1,:)=uini(:,ii)
                   endif
                   twiss(1,1,mfitdx:mfitddp)=
      $                 utwiss(mfitdx:mfitddp,0,1)+

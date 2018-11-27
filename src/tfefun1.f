@@ -49,7 +49,7 @@ c-------next 4 lines were modified by Kikuchi---------------
      $     ),id
 c            ELEM TWIS LINE CalE TraP CalO DyAp RspM Mast FLAG
 c            Mcad exDA InDA MAP  FFS  RadF RadS Flag ExBL BLNm
-c            SetE TKey NCD6 Tcl  ClLi ExpB GetM ClTr LiTr RGBC
+c            SetE TKey NCD6 Tcl  FFSH ExpB GetM ClTr LiTr RGBC
 c            CPro TcA1 CaSy TkOA CaSD TcSR LifT SyBE CSRI CSRM
 c            CSRC CSRT CSRH CSOS CSOM AliP
       write(*,*)
@@ -106,7 +106,11 @@ c-------Kikuchi addition end-----
  5240 call tfinitemip
       irtc=0
       return
- 5250 irtc=itfmessage(999,'General::unregister',' ')
+ 5250 if(isp .gt. isp1+1)then
+        irtc=itfmessage(99,'General::narg','"0"')
+      else
+        call tshow(kx,irtc,.true.,.false.)
+      endif
       return
  5260 call tfexpandbeamline(isp1,kx,irtc)
       return

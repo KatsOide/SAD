@@ -134,7 +134,7 @@
         lfrecl(lfnp)=icslrecl()
         lflinep(lfnp)=icslinep()
         call cssetp(lfrecl(lfnp))
-        call cssetlinep(lfrecl(lfnp))
+c        call cssetlinep(lfrecl(lfnp))
         call setbuf(str%str,str%nch)
         init=.false.
         return

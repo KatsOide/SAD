@@ -147,7 +147,7 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
           call tbend(np,x,px,y,py,z,g,dv,pz,l,aln*.5d0,
      $         phibn*.5d0,phin*.5d0,
      1         cosp1,sinp1,1.d0,0.d0,
-     1         ak1n,0.d0,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
+     1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $         fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
      1         enarad,0.d0,als,al,eps0)
           w=phin
@@ -163,7 +163,7 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
           call tbend(np,x,px,y,py,z,g,dv,pz,l,aln,
      $         phibn,phin,
      1         1.d0,0.d0,1.d0,0.d0,
-     1         ak1n,0.d0,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
+     1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $         0.d0,0.d0,0,.false.,cosw,sinw,sqwh,sinwp1,
      1         enarad,als,als+aln,al,eps0)
           als=als+aln
@@ -213,7 +213,7 @@ c        write(*,*)'tmulta-2 ',n,x(1),px(1)
       call tbend(np,x,px,y,py,z,g,dv,pz,l,aln*.5d0,
      $     phibn*.5d0,phin*.5d0,
      1     1.d0,0.d0,cosp2,sinp2,
-     1     ak1n,0.d0,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
+     1     ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $     fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
      1     enarad,als,al,al,eps0)
       if(dtheta .ne. 0.d0)then

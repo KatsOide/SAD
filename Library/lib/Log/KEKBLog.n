@@ -1,0 +1,1813 @@
+!
+! KEKBLog Access Library
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: KEKBLog.n,v 1.127 2010/05/11 17:36:29 amorita Exp $
+! Style:      Class Library
+! Require:    Prog/DebugLog.n
+!             Prog/QFunctions.n
+!             Unix/Shell.n
+!             Misc/Convert.n
+!             Log/CatalogFind.n
+!             Remote Shell Access to SAD cluster
+!
+Library@Require["Prog/DebugLog", "Prog/QFunctions",
+  "Unix/Shell", "Misc/Convert"];
+Library@Require["Log/CatalogFind"];
+
+! <<< KEKBLog$Config class >>> (* KEKBLog Configuration *)
+KEKBLog$Config=Class[{}, (* KEKBLog configuration mix-in class *)
+  { KEKBLog$BaseDir     = "/KEKBLog",
+    KEKBLog$CatalogDir  = "SYS/CATALOG",
+    KEKBLog$CacheDir    = ".kekblog/cache",
+    KEKBLog$NegativeTTL = 10 * 60,
+    KEKBLog$CacheTTL    = 30 * 60,
+    KEKBLog$GroupTTL    = 14 * 24 * 3600,
+    KEKBLog$CatalogTTL  = 14 * 24 * 3600,
+    KEKBLog$LogDelay    = 15 * 60,
+    KEKBLog$TimeSlice   =  2 * 3600,
+    KEKBLog$MaxSlices   = 1000,
+    KEKBLog$IOPeriod    = 0.3,
+    KEKBLog$SplitRetrieve  = True, (* Split Retriever Flag *)
+    KEKBLog$FetchQueueSize = 5,
+    KEKBLog$LogReadCmd   = "/usr/local/bin/kblogrd",
+    KEKBLog$LogReadHosts = {{
+!!      "amsad1.kek.jp", "amsad6.kek.jp",
+!!      "amsad8.kek.jp", "amsad9.kek.jp",
+      "amsadb.kek.jp", "amsadc.kek.jp", "amsadd.kek.jp",
+!!      "amsad4.kek.jp", "amsad5.kek.jp",
+      "afsad1.kek.jp",
+      Null[]},
+      "acsad{0345}.kek.jp",
+      "amsad{145689}.kek.jp", "amsad{bcd}.kek.jp",
+      "amsad{a}.kek.jp",
+      "afsad{1}.kek.jp",
+      Null[]},
+    KEKBLog$CatalogHosts = {{
+!!      "amsad1.kek.jp", "amsad6.kek.jp",
+!!      "amsad8.kek.jp", "amsad9.kek.jp",
+      "amsadb.kek.jp", "amsadc.kek.jp", "amsadd.kek.jp",
+!!      "amsad4.kek.jp", "amsad5.kek.jp",
+      "afsad1.kek.jp",
+      Null[]},
+      "acsad{0345}.kek.jp",
+      "amsad{145689}.kek.jp", "amsad{bcd}.kek.jp",
+      "amsad{a}.kek.jp",
+      "afsad{1}.kek.jp",
+      Null[]},
+    },
+  {
+    },
+  (* class variable only *)
+  ];
+! >>> KEKBLog$Config class <<<
+
+! <<< KEKBLog$Common class >>> (* KEKBLog Common Variable & Method *)
+KEKBLog$Common=Class[{}, (* KEKBLog common variable & method mix-in class *)
+  { RevisionID = "$Revision: 1.127 $"[12, -3],
+    KEKBLog$HostProbability, (* Host selection probability table *)
+    Rsh, RshOpt = {}, RshInitialized = False
+    },
+  {
+    },
+
+  RshInitialize[] := If[Not[RshInitialized], RshInitialized = True;
+    With[{config = Environment/@{"KEKBLOG_RSH", "KBLOG_RSH"}},
+      Rsh = Switch[config,
+	{"", ""}, "rsh",
+	{"",  _}, config[[2]],
+	{_,   _}, config[[1]],
+	_, "rsh"]];
+    If[Rsh[1,3] === "ssh", RshOpt = Join[RshOpt, {"-x", "-a"}]];
+    KEKBLog$HostProbability[_, _] := 1;
+    ];
+
+  CheckQueryHost[hosts_List] := Module[{candidate, probability}, With[{
+    wc0 = $WildCard, hlist = First[hosts], host = HostName[]},
+    If[KEKBLog$HostProbability[hlist, host] > 0, (* Try to use localhost *)
+      $WildCard = "SAD";
+      Scan[If[StringMatchQ[host, #],
+	$WildCard = wc0; Return[host]]&, Rest[hosts]];
+      $WildCard = wc0];
+
+    (* Aging probability table *)
+    KEKBLog$HostProbability[hlist, Count] += 1;
+    If[KEKBLog$HostProbability[hlist, Count] > 20,
+      Scan[(probability = KEKBLog$HostProbability[hlist, #];
+	probability = If[probability < 0, probability * (1 - 1 / 1000),
+	  1 + (probability - 1) *
+	    (1 - 1 / (1 + If[probability > 1, 10, 20] * Length[hlist]))];
+	KEKBLog$HostProbability[hlist, #] = probability)&, hlist];
+      KEKBLog$HostProbability[hlist, Count] =.];
+
+    (* Host selection by probability *)
+    candidate = {#, KEKBLog$HostProbability[hlist, #]}&/@hlist;
+
+    candidate = If[Or@@(Positive/@candidate[[,2]]),
+      Select[candidate, #[[2]] > 0&], {#[[1]], 1 / (1 - #[[2]])}&/@candidate];
+
+    With[{total = Plus@@candidate[[,2]]}, (* normalize probability*)
+      candidate = {#[[1]], #[[2]] / total}&/@candidate];
+
+    probability = 1; (* convert to integral format *)
+    candidate = {#[[1]], probability -= #[[2]]}&/@candidate;
+    candidate[[-1,2]] = -1; (* for safety *)
+
+    probability = Random[]; (* [0, 1) random number *)
+    Select[candidate, probability >= #[[2]]&, 1][[1,1]]]];
+
+  KEKBLogTime[time_Real] := With[{date = ToDate[time, Tick->1]},
+    StringJoin@@MapThread[Convert@Dec2Str, {date, {4, 2, 2, 2, 2, 2}}]];
+
+  OverlapQ$[{}, _] := False; OverlapQ$[_, {}] := False; 
+  OverlapQ$[{low1_Real, high1_Real}, {low2_Real, high2_Real}] := With[{
+    range = Max[low1, low2], Min[high1, high2]}, LessEqual@@range];
+
+  OverlapQ[{}, _] := False; OverlapQ[_, {}] := False; 
+  OverlapQ[{low1_Real, high1_Real}, {low2_Real, high2_Real}] := With[{
+    range = Max[low1, low2], Min[high1, high2]}, Less@@range];
+
+  OverlapAnd$[{}, _] := {}; OverlapAnd$[_, {}] := {};
+  OverlapAnd$[{low1_Real, high1_Real}, {low2_Real, high2_Real}] := With[{
+    range = {Max[low1, low2], Min[high1, high2]}},
+    If[LessEqual@@range, range, {}]];
+
+  OverlapAnd[{}, _] := {}; OverlapAnd[_, {}] := {};
+  OverlapAnd[{low1_Real, high1_Real}, {low2_Real, high2_Real}] := With[{
+    range = {Max[low1, low2], Min[high1, high2]}},
+    If[Less@@range, range, {}]];
+
+  ];
+! >>> KEKBLog$Common class <<<
+
+! <<< KEKBLog$Encode class >>> (* KEKBLog Location Encode *)
+KEKBLog$Encode=Class[{}, (* KEKBLog Location Encode mix-in class *)
+  {
+    },
+  {
+    },
+
+  Encode[uri_String] := StringReplace[uri, {
+    "%"->"%25",
+    "/"->"%2F"}];
+
+  Decode[uri_String] := StringReplace[uri, {
+    "%25"->"%",
+    "%2F"->"/", "%2f"->"/"}];
+
+  ];
+! >>> KEKBLog$Encode class <<<
+
+! <<< KEKBLog$Catalog class >>> (* KEKBLog Catalog Access class *)
+KEKBLog$Catalog=Class[{KEKBLog$Config, KEKBLog$Common, KEKBLog$Encode,
+  Unix$Shell, Log$CatalogFind},
+  { Initialized = False, DebugMode = False,
+    CacheFileMagic = "# KEKBLog$Catalog Cache 1.0.0",
+    CatalogCacheFile = "catalog",
+    CacheDir, CatalogDir, CacheUpdate,
+    FileList = 0, ChannelList = 1, AuxList = 2, (* DataBase Index Constant *)
+    CatalogDB, GroupDB, HashWeight, HashSize = 1021,
+
+    Error$NotFound = -1,      Error$ReadFailed = -2,
+    Error$FormatUnkown = -3,  Error$BrokenCatalog = -4
+    },
+  { errorNumber, errorMessage
+    },
+
+  Initialize[] := If[Not[Initialized], Initialized = True;
+    RshInitialize[];
+    HashInitialize[];
+    CatalogDir = KEKBLog$BaseDir//"/"//KEKBLog$CatalogDir;
+    CacheDir   = HomeDirectory[]//"/"//KEKBLog$CacheDir;
+    LoadCache[]];
+
+  HashInitialize[] := Module[{i = 1, char = 128, len = 10},
+    HashWeight = Table[i = Mod[i * char, HashSize], {n, len}]];
+
+  InitCache[] := With[{FileList, ChannelList, AuxList},
+    CacheUpdate = False;
+    GroupDB[_] := Undefined;
+    GroupDB[_String] := {};
+    CatalogDB[_, _, _] := Undefined;
+    CatalogDB[_, AuxList, List] := {};
+    CatalogDB[_, ChannelList, _] := {};
+    CatalogDB[x_, ChannelList, y_String] := Rest/@Select[
+      CatalogDB[x, ChannelList, KEKBLog$Catalog@ChannelHash[y]],
+      First[#] === y&]];
+
+  ClearCache[] := (Clear[GroupDB, CatalogDB]; InitCache[]);
+
+  SaveCache[] := If[CacheUpdate, CacheUpdate = False; SaveCache$[]];
+
+  SaveCache$[] := Module[{fp, tmpFile  = CacheDir//"/"//CatalogCacheFile
+    //"-"//GetPID[]//Environment["HOST"]},
+    System["mkdir -p "//CacheDir];
+    If[fp = OpenWrite[tmpFile];fp <=> $Failed,
+      StandardForm[PageWidth = 80; Write[fp, CacheFileMagic];
+	Write[fp, {?GroupDB/.GroupDB->"GroupDB",
+	  ?CatalogDB/.{CatalogDB->"CatalogDB",
+	    KEKBLog$Catalog@ChannelHash->"ChannelHash"}}]];
+      Close[fp];
+      System["mv "//tmpFile//" "//CacheDir//"/"//CatalogCacheFile]]];
+
+  LoadCache[] := Module[{fp, tmp},
+    Clear[GroupDB, CatalogDB];
+    If[FileQ[CacheDir//"/"//CatalogCacheFile],
+      fp = OpenRead[CacheDir//"/"//CatalogCacheFile];
+      If[fp <=> $Failed, Switch[Check[Read[fp, String], $Failed],
+	CacheFileMagic,
+	Check[ReleaseHold[Read[fp]
+	  /.{"GroupDB"->GroupDB, "CatalogDB"->CatalogDB,
+	    "ChannelHash"->KEKBLog$Catalog@ChannelHash}], ],
+
+	_, (* Unkown Format *)]; Close[fp]];
+      ];
+    InitCache[]];
+
+  Destructor[] := SaveCache[];
+
+  Constructor[] := (Initialize[]; ClearErrorStatus[]);
+
+  (* Error Status Access Functions *)
+  ClearErrorStatus[] := (errorNumber = 0; errorMessage = "");
+  ErrorStatus[] := (errorNumber <=> 0);
+  errno[] := errorNumber;
+  ErrorMessage[] := errorMessage;
+
+  Error[id_Real, msg_String] := (errorNumber = id; errorMessage = msg);
+
+  (* Public Interface *)
+  ls[] := (GetGroupList[]; GroupDB[""]);
+  ls[path$_String] := Module[{path, result, wc0 = $WildCard},
+    $WildCard = "SAD"; (* Require SAD WildCard matching *)
+    path = Map[path$[First[#] + 1, Second[#] -1]&,
+      Partition[Join[{0}, Flatten[StringPosition[path$, "/"]], {0}], 2]];
+    If[First[path] === "", path = Drop[path, 1]];
+    If[Length[path] > 0 && Last[path] === "", path[[-1]] = "*"];
+    result = If[Not[GetGroupList[]], {}, Switch[Length[path],
+      0, GroupDB[""],
+      1, If[StringMatchQ[StringJoin@@path, "*}*|*{{%*}*"],
+	Select[GroupDB[""], StringMatchQ[#[1,-2], path[[1]]]&],
+	GroupDB[path[[1]]//"/"]],
+      2, If[StringMatchQ[StringJoin@@path, "*}*|*{{%*}*"],
+	Select[GroupDB[List],
+	  StringMatchQ[#[1,-2], path[[1]]//"/"//path[[2]]]&],
+	If[Select[GroupDB[List],
+	  #[1,-2] === path[[1]]//"/"//path[[2]]&] === {}, {},
+	  GetCatalog[path[[2]]]; CatalogDB[path[[2]], AuxList, List]]],
+      3, (path = If[# === "", "*", #]&/@path;
+	Join@@Map[With[{index = #[StringPosition[#,"/"][[1,2]]+1,-2],
+	  prefix = #}, GetCatalog[index];
+	  prefix//#&/@Select[CatalogDB[index, AuxList, List],
+	    StringMatchQ[#, path[[3]]]&]]&, GetGroupList[];
+	  Select[GroupDB[List],
+	    StringMatchQ[#[1,-2], path[[1]]//"/"//path[[2]]]&]]),
+
+      _, {}]];
+    $WildCard = wc0; (* Restore WildCard *)
+    result];
+
+  cat[path_String] := Module[{match, pos = StringPosition[path, "/"]},
+    If[Length[pos] <=> 2, Return[{}]];
+    If[Not[GetGroupList[]], Return[{}]];
+    If[Select[GroupDB[List], # === path[1,pos[[2,1]]]&] === {}, {},
+      If[Not[GetCatalog[path[pos[[1,2]]+1,pos[[2,1]]-1]]], Return[{}]];
+      match = CatalogDB[path[pos[[1,2]]+1,pos[[2,1]]-1], ChannelList,
+	path[pos[[2,2]]+1,-1]];
+      match = Map[With[{type = #[[1]], length = #[[2]], fileList = #[[3]]},
+	If[type === -1 && length === -1, Null[], {Type->type, Length->length,
+	  File->Join@@Map[CatalogDB[path[pos[[1,2]]+1,pos[[2,1]]-1],
+	    FileList, #]&, fileList]}]]&, match]; match]];
+
+  (* Internal Function *)
+  ChannelHash[ch_String] := Module[{code = ToCharacterCode[ch]},
+    If[Length[code] > Length[HashWeight],
+      code = Take[code, Length[HashWeight]]];
+    Mod[Plus@@(Take[HashWeight, Length[code]] * code), HashSize]];
+
+  GetGroupList[] := Module[{fp, line, catalog,
+    cmd, host = CheckQueryHost[KEKBLog$CatalogHosts], isLocal},
+    ClearErrorStatus[]; isLocal = (host === HostName[]);
+
+    (* Check DateBase TTL *)
+    If[RealQ[GroupDB[Date]] && Not[DebugMode],
+      (* Check Cache TTL *)
+      If[If[isLocal, KEKBLog$CacheTTL, KEKBLog$GroupTTL / 2]
+	> FromDate[] - GroupDB[Last], Return[True]];
+
+      (* Check Catalog Directory Timestamp in local case *)
+      If[isLocal
+	&& Not[GroupDB[Date] < Max@@Join[{FromFileDate[CatalogDir]},
+	  FromFileDate[CatalogDir//"/"//#]&/@GroupDB[""]]],
+	GroupDB[Last] = FromDate[]; Return[True]];
+      ];
+
+    (* Fetch new catalog list *)
+    cmd = Shell["{", "cd", CatalogDir, "&&", "ls", "*/*.ctlg", ";", "}",
+      "2>/dev/null", "||", "echo", "\\\"@CmdFailed:$?@\\\""];
+
+    cmd = If[Not[isLocal], Shell[Rsh, Null@@RshOpt, host,
+      "sh", "-c", Shell[Shell[cmd, Escape->True], Escape->True]],
+      Shell["{", cmd, ";}"]];
+
+    fp = OpenRead["!"//cmd];
+    If[fp === $Failed, Error[Error$ReadFailed,
+      "Can't open Catalog list"]; Return[False],
+      catalog = {};
+      While[line = Check[Read[fp, String], $Failed]; StringQ[line],
+	If[line[-5, -1] === ".ctlg", AppendTo[catalog, line[1, -6]]]];
+      If[line === $Failed, Error[Error$ReadFailed,
+	"Read error in Catalog list"]; Return[False]];
+      Close[fp]];
+
+    (* Generate group list *)
+    GroupDB[Date] = GroupDB[Last] = FromDate[];
+    GroupDB[List] = #//"/"&/@catalog;
+    GroupDB[""] = Union[Map[#[1, StringPosition[#, "/"][[1, 1]]]&, catalog]];
+    Scan[With[{group = #, len = StringLength[#]},
+      GroupDB[group] = #[len + 1, -1]&/@Select[GroupDB[List],
+	#[1, len] === group&]]&, GroupDB[""]];
+
+    If[isLocal, GroupDB[Date] = Max@@Join[{FromFileDate[CatalogDir]},
+      FromFileDate[CatalogDir//"/"//#]&/@GroupDB[""]]];
+
+    CacheUpdate = True];
+
+  GetCatalog[index_String] := Module[{fp,
+    catalogFile = CatalogDir//"/"//index//".ctlg",
+    cmd, host = CheckQueryHost[KEKBLog$CatalogHosts], isLocal},
+    ClearErrorStatus[]; isLocal = (host === HostName[]);
+
+    (* Check Database TTL *)
+    If[RealQ[CatalogDB[index, AuxList, Date]] && Not[DebugMode],
+      (* Check Cache TTL *)
+      If[If[isLocal, KEKBLog$CacheTTL, KEKBLog$CatalogTTL / 2]
+	> FromDate[] - CatalogDB[index, AuxList, Last],	Return[True]];
+
+      (* Check Catalog Timestamp *)
+      If[isLocal
+	&& Not[CatalogDB[index, AuxList, Date] < FromFileDate[catalogFile]],
+	CatalogDB[indexp, AuxList, Last] = FromDate[];
+	Return[True]];
+      ];
+
+    (* Fetch new catalog *)
+    cmd = Shell["cat", catalogFile, "2>/dev/null",
+      "||", "echo", "\\\"@CmdFailed:$?@\\\""];
+
+    If[Not[isLocal], cmd = Shell[Rsh, Null@@RshOpt, host,
+      "sh", "-c", Shell[Shell[cmd, Escape->True], Escape->True]]];
+
+    fp = OpenRead[If[isLocal, catalogFile, "!"//cmd]];
+    If[fp === $Failed, Error[Error$ReadFailed,
+      "Can't open Catalog"]; Return[False],
+      LoadCatalog[index, fp,
+	Timestamp->If[isLocal, FromFileDate[catalogFile], FromDate[]]];
+      Close[fp]];
+
+    Not[ErrorStatus[]]];
+
+  (* DataBase loader & Parser *)
+  LoadCatalog[index_, fp_Real, opt___Rule] := Module[{magic},
+    ClearErrorStatus[];
+
+    (* Check file magic *)
+    Switch[magic = Check[Read[fp, String], $Failed]; magic,
+      $Failed, Error[Error$ReadFailed,
+	"Can't read catalog file"]; Return[$Failed],
+
+      EndOfFile, Error[Error$ReadFailed,
+	"Catalog file is empty"]; Return[$Failed],
+
+      "# KEKBLog-log1catalog 1.0",
+      ParseCatalog["1.0", index, fp, opt],
+
+      _, Error[Error$FormatUnkown,
+	"Unkown header ["//magic//"]"]; Return[$Failed]];
+    If[ErrorStatus[], $Failed, True]];
+
+  ParseCatalog["1.0", index_, fp_Real, opt___Rule] := Module[{line, pos,
+    file, key, date, name, type, len,
+    fileList, channelList, timestamp},
+    ClearErrorStatus[];
+
+    (* Check Timestamp *)
+    timestamp = Timestamp/.Override[opt, Timestamp->FromDate[]];
+
+    (* Read File List block *)
+    fileList = {}; break = False;
+    While[Not[break], fileList = Join[fileList, Table[
+      line = Check[Read[fp, String], $Failed];
+
+      (* Detect separator between File List and Channel List block *)
+      If[Not[StringQ[line]] || line === "", break = True; Break[]];
+      If[line[1] === "#", Continue[]]; (* Skip comment *)
+
+      pos = StringPosition[line, " "];
+      If[Length[pos] <=> 2, Error[Error$BrokenCatalog,
+	"Detect broken File List entry"]; Return[$Failed]];
+
+      file = line[1, pos[[1, 1]] - 1];
+      key = line[pos[[2, 2]] + 1, -1];
+      line = line[pos[[1, 2]] + 1, pos[[2, 1]] - 1];
+
+      If[line[1] === "(" && line[-1] === ")", line = "{"//line[2, -2]//"}",
+	Error[Error$BrokenCatalog,
+	  "Detect broken File List flag"]; Return[$Failed]];
+
+      (* Convert Key number and AUX Infomation *)
+      (* Caution: lexical check is not implemented *)
+      key = Check[ToExpression[key], $Failed];
+      line = Check[ToExpression[line], $Failed];
+
+      If[Not[RealQ[key]], Error[Error$BrokenCatalog,
+	"Detect broken Key Number"]; Return[$Failed]];
+
+      If[Not[Length[line] == 3 && And@@RealQ/@line], Error[Error$BrokenCatalog,
+	"Detext broken AUX flags"]; Return[$Failed]];
+
+      (* Generate SAD time window *)
+      date = Check[FromDate[ToExpression[
+	"{"//file[-14,-11]//","//file[-10,-9]//","//file[-8,-7]//","
+	   //file[-6,-5]//","//file[-4,-3]//","//file[-2,-1]//"}"]], $Failed];
+
+      If[file[-15] <=> "_" || Not[RealQ[date]], Error[Error$BrokenCatalog,
+	"Detect broken Log File Name"]; Return[$Failed]];
+
+      date = {date, If[line[[3]] == 0, 0, date + line[[3]] / 100 - 1e7]};
+
+      {key, file, date, line}, {i, 1000}]]];
+
+    Switch[line,
+      $Failed, Error[Error$ReadFailed,
+	"Read error in File List block"]; Return[$Failed],
+
+      EndOfFile, Error[Error$BrokenCatalog,
+	"Detect unexpected EOF in File List block"]; Return[$Failed],
+
+      _, (* Successful *)];
+
+    (* Read Channel List block *)
+    channelList = {}; break = False;
+    While[Not[break], channelList = Join[channelList, Table[
+      line = Check[Read[fp, String], $Failed];
+
+      (* Detect separator between File List and Channel List block *)
+      If[Not[StringQ[line]] || line === "", break = True; Break[]];
+      If[line[1] === "#", Continue[]]; (* Skip comment *)
+
+      pos = StringPosition[line, " "];
+      If[Length[pos] < 3, Error[Error$BrokenCatalog,
+	"Detect broken Channel List entry"]; Return[$Failed]];
+
+      name = line[1, pos[[1, 1]] - 1];
+      type = Check[ToExpression[line[pos[[1, 2]] + 1, pos[[2, 1]] - 1]], NaN];
+      len  = Check[ToExpression[line[pos[[2, 2]] + 1, pos[[3, 1]] - 1]], NaN];
+
+      If[Not[RealQ[type]], Error[Error$BrokenCatalog,
+	"Detect broken Channel Type"]; Return[$Failed]];
+
+      If[Not[RealQ[len]], Error[Error$BrokenCatalog,
+	"Detect broken Channel Length"]; Return[$Failed]];
+
+      key = Map[Check[ToExpression[line[#[[1]] + 1, #[[2]] - 1]], NaN]&,
+	Partition[Append[Drop[Flatten[pos], 5], 0], 2]];
+
+      If[Not[And@@RealQ/@key], Error[Error$BrokenCatalog,
+	"Detect broken Channel Tuple Set"]; Return[$Failed]];
+
+      name = Encode[name];
+
+      {ChannelHash[name], name, type, len, Union[key]}, {i, 1000}]]];
+
+    Switch[line,
+      $Failed, Error[Error$ReadFailed,
+	"Read error in File List block"]; Return[$Failed],
+
+      EndOfFile, Error[Error$BrokenCatalog,
+	"Detect unexpected EOF in Channel List block"]; Return[$Failed],
+
+      _, (* Successful *)];
+
+    (* Cure File List *)
+    date = Null;
+    fileList = Reverse[Map[If[Not[RealQ[date]], date = #[[3, 1]]; #,
+      If[#[[3, 2]] <> 0, date = #[[3, 1]]; #, With[{next = date},
+	date = #[[3, 1]];
+	{#[[1]], #[[2]], {#[[3, 1]], next}, #[[4]]}]]]&, Reverse[fileList]]];
+
+    (* Check catalog consistency *)
+    If[Length[Complement[Union[Flatten[Union[channelList[[,5]]]]],
+      Union[fileList[[,1]]]]] > 0,
+      Error[Error$BrokenCatalog,
+	"Detect undefined Key Number in Channel List block"]; Return[$Failed]];
+
+    (* Register DataBase *)
+    Scan[(CatalogDB[index, FileList, #] = {})&, Union[fileList[[,1]]]];
+    Scan[(AppendTo[CatalogDB[index, FileList, First[#]], Rest[#]])&, fileList];
+
+    key = Union[channelList[[,1]]];
+    Scan[With[{hash = #},
+      CatalogDB[index, ChannelList, hash] = Rest/@Select[channelList,
+	First[#] == hash&]]&, key];
+    Scan[(CatalogDB[index, ChannelList, #] =.)&,
+      Complement[Range[0, HashSize - 1], key]]; (* Clean Up Empty Hash Key *)
+
+    CatalogDB[index, AuxList, Last] = FromDate[];
+    CatalogDB[index, AuxList, List] = Union[channelList[[,2]]];
+    CatalogDB[index, AuxList, Date] = timestamp;
+    CacheUpdate = True];
+  ];
+! >>> KEKBLog$Catalog class <<<
+
+! <<< KEKBLog$CacheCommon class >>> (* KEKBLog Cache Common mix-in *)
+KEKBLog$CacheCommon=Class[{},
+  { def = {Resolution->0, Format->Format$KBLog, Compress->""}
+    }, {},
+
+  FormatSymbols[] := Characters["KU"];
+  FormatSymbol[format_] := Switch[format,
+    Format$KBLog, "K",
+    _, "U"];
+  FormatTypes[] := First[ToCharacterCode[#]]&/@FormatSymbols[];
+  FormatType[format_String] := First[ToCharacterCode[format]];
+  FormatType[format_] := First[ToCharacterCode[FormatSymbol[format]]];
+
+  CompressType[comp_String] := Switch[ToLowerCase[comp],
+      ".gz"|"gzip", ".gz",
+      ".bz2"|"bzip2"|".bz"|"bzip", ".bz2",
+      _, ""];
+  ];
+! >>> KEKBLog$CacheCommon class <<<
+
+! <<< KEKBLog$Cache class >>> (* KEKBLog Cache Frontend class *)
+KEKBLog$Cache=Class[{KEKBLog$Config, KEKBLog$Common, Unix$Shell},
+  { Initialized = False, debugLog,
+    SwapThreshold = 4 * 1800,
+    GCFragment = 100, GCTrafic = 4 * 4 * 3600,
+    Fragment, Trafic
+    },
+  {
+    },
+
+  Initialize[] := If[Not[Initialized], Initialized = True;
+    debugLog = DebugLog["KEKBLog$Cache"];
+    KEKBLog$CacheDB@Initialize[];
+    KEKBLog$CacheFile@Initialize[];
+    Fragment = 0; Trafic = 0];
+
+  Lookup[path$_String, {from_Real, to_Real}, op___Rule] := Module[{
+    res = Resolution/.Override[op, {Resolution->0}],
+    pos = StringPosition[path$, "/"]},
+    If[Length[pos] <=> 2 || from > to || res < 0, Return[$Failed]];
+
+    Map[If[ListQ[#], Null@@KEKBLog$CacheFile@Lookup[path$, #, op], #]&,
+      KEKBLog$CacheDB@Lookup[path$, {from, to}, op]]];
+
+  Lookup[path$_String, {to_Real}, op___Rule] := Module[{
+    res = Resolution/.Override[op, {Resolution->0}],
+    pos = StringPosition[path$, "/"],
+    tmp},
+    If[Length[pos] <=> 2 || from > to || res < 0, Return[$Failed]];
+
+    tmp = Lookup[path$, {to, to}, Resolution->1, op];
+
+    If[RuleListQ[tmp], Return[{{to}->tmp[[1,2]]}]];
+
+    KEKBLog$CacheDB@GarbageCollection[]; (* GC to merge small chunk *)
+    tmp = Join[
+      KEKBLog$CacheDB@LookupIndex[path$, {to, to}, Resolution->0, op],
+      KEKBLog$CacheFile@LookupIndex[path$, {to, to}, Resolution->0, op]];
+
+    If[Length[tmp] < 1, Return[{{to}}]];
+
+    Scan[If[Not[RuleQ[#]], Return[{{to}}], If[Length[Second[#]] > 0,
+	Return[{{to}->{Prepend[Rest[#[[2, -1]]], to]}}]]]&,
+      Reverse[Lookup[path$, {Min[tmp[[,1]]], to}, Resolution->0, op]]];
+
+    {{to}}];
+
+  Store[path$_String, {to_Real}, op___Rule, d_] := Store[
+    path$, {to, to}, op, d];
+
+  Store[path$_String, {from_Real, to_Real}, op___Rule, $Failed] := Check[
+    KEKBLog$CacheDB@Store[path$, {from, to}, op, $Failed],
+    debugLog@Debug[DebugLog@ERROR, "Store", "Failed in Negative Cache Store"];
+    debugLog@DebugLog$LogDump[]];
+
+  Store[path$_String, {from_Real, to_Real}, op___Rule, d_List] := Module[{
+    size = Times@@Dimensions[d], temp, fp},
+
+    If[from === to || size < SwapThreshold, Check[
+      Fragment += 1; Trafic += size;
+      KEKBLog$CacheDB@Store[path$, {from, to}, op, d],
+      debugLog@Debug[DebugLog@ERROR, "Store",
+	"Failed in Cache Store"];
+      debugLog@DebugLog$LogDump[]],
+      temp = KEKBLog$CacheFile@Create[path$, {from, to}, op];
+      fp = If[temp === $Failed, $Failed, OpenWrite[temp]];
+      If[fp <=> $Failed, StandardFrom[PageWidth = 133;
+	Check[Write[fp, d], Close[fp]; fp = $Failed;
+	  debugLog@Debug[DebugLog@ERROR, "Store",
+	    "Failed in Direct FileCache Store"];
+	  debugLog@DebugLog$LogDump[]]]];
+      If[fp <=> $Failed, Close[fp];
+	KEKBLog$CacheFile@Commit[temp],
+	KEKBLog$CacheFile@Cancel[temp];
+	Check[
+	KEKBLog$CacheDB@Store[path$, {from, to}, op, d];
+	, debugLog@Debug[DebugLog@ERROR, "Store",
+	  "Failed in Cache Store(FileCache failed)"];
+	debugLog@DebugLog$LogDump[]];
+	Fragment += 1; Trafic += size]];
+
+    debugLog@Debug[debugLog@PROF3, "Store", "Commit: ", size,
+      "  Fragment: ", Fragment, " / ", GCFragment,
+      "  Trafic: ", Trafic, " / ", GCTrafic];
+
+    If[Fragment > GCFragment || Trafic > GCTrafic,
+      If[Fragment > GCFragment, Fragment = 0];
+      If[Trafic > GCTrafic, Trafic = 0];
+      KEKBLog$CacheDB@GarbageCollection[]];
+    ];
+
+  ];
+! >>> KEKBLog$Cache class <<<
+
+! <<< KEKBLog$CacheDB class >>> (* KEKBLog CacheDB Support class *)
+KEKBLog$CacheDB=Class[{KEKBLog$Config, KEKBLog$Common, KEKBLog$CacheCommon,
+  Unix$Shell},
+  { Initialized = False, debugLog,
+    GenerationThreshold = 5, MergeSize = 2 * 3600,
+    GCThreshold = 2 * 3600, GCFragment = 100,
+    PurgeThreshold = 16 * 2 * 3600,
+    SwapFailed,
+    ActiveDB, ActiveList, CacheDB, CacheSize, GenerationDB, GenerationID
+    },
+  {
+    },
+
+  Initialize[] := If[Not[Initialized], Initialized = True;
+    debugLog = DebugLog["KEKBLog$CacheDB"];
+    SwapFailed = False;
+    ActiveList = {};
+    GenerationID[_] = 0; GenerationDB[_, _, _, _] := 0;
+    CacheDB[_, _, _, List] := {};
+    CacheDB[_, _, _, Length] := 0;
+    CacheDB[_, _, _, _List] := {};
+    CacheSize[s_String] := CacheSize[First[ToCharacterCode[s]]];
+    CacheSize[_Real] := 0];
+
+  Lookup[path$_String, {from_Real, to_Real}, op___Rule] := Module[{
+    {res, format} = {Resolution, Format}/.Override[op, def],
+    pos = StringPosition[path$, "/"], path, sel},
+
+    If[Length[pos] <=> 2 || from > to || res < 0, Return[$Failed]];
+
+    path = path$[pos[[1,2]] + 1, -1];
+    format = FormatSymbol[format];
+
+    (* Pick up fragment *)
+    sel = Map[With[{range = OverlapAnd$[{from, to}, #]},
+      If[range <=> {}, {range, #}, Null[]]]&,
+      CacheDB[path, First[ToCharacterCode[format]], res, List]];
+
+    (* Sort fragment by overlapped range *)
+    sel = Sort[sel, #1[[1,1]] < #2[[1,1]]
+      || (#1[[1,1]] == #2[[1,1]] && #1[[1,2]] > #2[[1,2]])&];
+    GetFragment[format, path, res, {from, to}, sel[[,2]]]];
+
+  LookupIndex[path$_String, {from_Real, to_Real}, op___Rule] := Module[{
+    {res, format} = {Resolution, Format}/.Override[op, def],
+    pos = StringPosition[path$, "/"], path, sel},
+
+    If[Length[pos] <=> 2 || from > to || res < 0, Return[{}]];
+
+    path = path$[pos[[1,2]] + 1, -1];
+    format = FormatSymbol[format];
+
+    (* Pick up fragment *)
+    sel = Map[With[{range = OverlapAnd$[{from, to}, #]},
+      If[range <=> {}, {range, #}, Null[]]]&,
+      CacheDB[path, First[ToCharacterCode[format]], res, List]];
+
+    (* Sort fragment by overlapped range *)
+    sel = Sort[sel, #1[[1,1]] < #2[[1,1]]
+      || (#1[[1,1]] == #2[[1,1]] && #1[[1,2]] > #2[[1,2]])&];
+
+    sel[[,2]]];
+
+  Store[path$_String, {from_Real, to_Real}, op___Rule, d_] := Module[{
+    {res, format} = {Resolution, Format}/.Override[op, def],
+    size = Times@@Dimensions[d],
+    pos = StringPosition[path$, "/"], path},
+
+    If[Length[pos] <=> 2 || from > to || res < 0, Return[]];
+
+    path = path$[pos[[1,2]] + 1, -1];
+    format = FormatType[format];
+
+    StoreCache[path, format, res, {from, to}, d]];
+
+  GarbageCollection[] := Module[{commit, genList = GetGenerationList[]},
+    UpdateActiveList[];
+    debugLog@Debug[DebugLog@PROF, "GarbageCollection",
+      "ActiveList Length:", Length[ActiveList], "  Cache Size:",
+      Plus@@Map[CacheSize[#]&, FormatSymbols[]], " / ", PurgeThreshold];
+    debugLog@Debug[DebugLog@PROF, "GarbageCollection",
+      "GenerationList Length[Before]:", Length[genList]];
+    Scan[With[{format = #}, If[CacheSize[format] > GCThreshold
+      || Length[Select[genList, #[[1, 2]] === format&]] > GCFragment,
+      GarbageCollection[format]]]&, FormatSymbols[]];
+    genList = GetGenerationList[];
+    debugLog@Debug[DebugLog@PROF, "GarbageCollection",
+      "GenerationList  Length[After]:", Length[genList]];
+
+    commit = Plus@@Map[CacheSize[#]&, FormatSymbols[]] / PurgeThreshold;
+    If[commit > 1, (* Remove old generation entry *)
+      Scan[With[{{path, format, res, key} = #[[1]], gID = #[[2]]},
+	If[GenerationID[format] - gID > GenerationThreshold,
+	  DropCache[path, format, res, key]];
+	]&, genList];
+
+      commit = 1 - PurgeThreshold / (1 + Plus@@Map[CacheSize[#]&, FormatSymbols[]]);
+      If[commit > 0, (* Swap out active entry *)
+	Scan[Swapper[#, commit]&, FormatSymbols[]]];
+      ];
+    ];
+
+  (* Format depend support *)
+  GetFragment["K", path_String, res_Real, unread$_List, sel_List] := Module[{
+    format = FormatType["K"], unread = unread$, range, chunk, out = {}},
+
+    Scan[With[{r = OverlapAnd$[unread, #], fr = #}, If[r <=> {}
+      && ListQ[chunk = CacheDB[path, format, res, fr]],
+      If[chunk === $Failed, chunk = {}, (* Negative Cache *)
+	GenerationDB[path, format, res, fr] = GenerationID[format]];
+      If[unread[[1]] < r[[1]], AppendTo[out, {unread[[1]], r[[1]]}]];
+      unread = If[r[[2]] < unread[[2]], {r[[2]], unread[[2]]}, {}];
+      AppendTo[out, r -> Switch[{r[[1]] == fr[[1]], r[[2]] == fr[[2]]},
+	{True, True}, chunk,
+	{True, False}, Select[chunk, #[[1]] =< r[[2]]&],
+	{False, True}, Select[chunk, r[[1]] =< #[[1]]&],
+	_, Select[chunk, r[[1]] =< #[[1]] =< r[[2]]&]]];
+      ]]&, sel];
+
+    If[unread === {}, out, Append[out, unread]]];
+
+  Swapper["K", commit$_Real] := Module[{commit = commit$ * PurgeThreshold,
+    targetList, path, format = FormatType["K"], res, key, temp, fp},
+
+    targetList = Select[GetGenerationList[][[,1]], #[[2]] == format&];
+    targetList = Sort[Map[{#, Times@@Dimensions[CacheDB@@#]}&, targetList],
+      #1[[2]] > #2[[2]]&];
+
+    Scan[({path, format, res, key} = #[[1]]; size = #[[2]];
+      If[commit > 0, commit -= size, Break[]];
+
+      If[Length[key] < 2 || First[key] === Second[key],
+	debugLog@Debug[DebugLog@INFO, "Swapper[\"K\"]",
+	  "Drop Single Point Cache: ", {path, format, res, key}];
+	DropCache[path, format, res, key]; Continue[]];
+
+      If[CacheDB[path, format, res, key] === $Failed,
+	debugLog@Debug[DebugLog@INFO, "Swapper[\"K\"]",
+	  "Drop Negative Cache: ", {path, format, res, key}];
+	DropCache[path, format, res, key]; Continue[]];
+
+      debugLog@Debug[DebugLog@INFO, "Swapper[\"K\"]",
+	"Page Out: ", {path, format, res, key}, " ", size, "elements"];
+      temp = KEKBLog$CacheFile@Create["Swap/"//path, key, Resolution->res,
+	Format->Format$KBLog, Compress->""];
+      fp = If[temp === $Failed, $Failed, OpenWrite[temp]];
+      If[fp <=> $Failed, StandardFrom[PageWidth = 133;
+	Check[Write[fp, DropCache[path, format, res, key]],
+	  debugLog@Debug[DebugLog@INFO, "Swapper[\"K\"]",
+	    "Failed in Swap-Out Page Store"]]]; Close[fp];
+	SwapFailed = False;
+	KEKBLog$CacheFile@Commit[temp],
+	If[Not[SwapFailed], SwapFailed = True, DropCache[path, format, res, key]];
+	KEKBLog$CacheFile@Cancel[temp]];
+      )&, targetList];
+    ];
+
+  GarbageCollection["K"] := Module[{format = FormatType["K"], activeList,
+    nkeys, keys, key, next, chunk, gID},
+    activeList = Select[ActiveList, #[[2]] == format&];
+
+    debugLog@Debug[DebugLog@PROF, "GarbageCollection[K]",
+      "ActiveList Length:", Length[activeList]];
+
+    Scan[With[{path = #[[1]], res = #[[3]]},
+      keys = Sort[CacheDB[path, format, res, List],
+	#1[[1]] < #2[[1]] || (#1[[1]] == #2[[1]] && #1[[2]] > #2[[2]])&];
+      keys = Select[keys, $Failed <=> CacheDB[path, format, res, #]&];
+
+      While[Length[keys] > 1, key = First[keys]; keys = Rest[keys];
+	While[Length[keys] > 0, next = First[keys];
+	  If[key[[2]] < next[[1]], Break[]]; (* Split *)
+	  If[next[[2]] =< key[[2]], (* Override? *)
+	    DropCache[path, format, res, next],
+	    Switch[{Times@@Dimensions[CacheDB[path, format, res, key]] > MergeSize,
+	      Times@@Dimensions[CacheDB[path, format, res, next]] > MergeSize},
+	      {False, False},
+	      gID = Max[GenerationDB[path, format, res, key],
+		GenerationDB[path, format, res, next]];
+	      chunk = DropCache[path, format, res, key];
+	      chunk = If[Length[chunk] < 1, DropCache[path, format, res, next],
+		With[{t0 = chunk[[-1,1]]}, Join[chunk,
+		  Select[DropCache[path, format, res, next], #[[1]] > t0&]]]];
+	      key = {key[[1]], next[[2]]};
+	      StoreCache[path, format, res, key, chunk];
+	      GenerationDB[path, format, res, key] = gID,
+
+	      {_, True}, keys = Rest[keys]; Break[],
+	      _, Break[]]];
+	  keys = Rest[keys]]];
+
+      keys = Sort[CacheDB[path, format, res, List],
+	#1[[1]] < #2[[1]] || (#1[[1]] == #2[[1]] && #1[[2]] > #2[[2]])&];
+      nkeys = Select[keys, $Failed === CacheDB[path, format, res, #]&];
+      keys = Select[keys, $Failed <=> CacheDB[path, format, res, #]&];
+
+      (* Remove Negative Cahce overlapped with real cache chunk *)
+      nkeys = Map[With[{key = #}, If[Or@@(OverlapQ[key, #]&/@keys),
+	DropCache[path, format, res, key]; Null[], key]]&, nkeys];
+
+      While[Length[nkeys] > 1, key = First[nkeys]; nkeys = Rest[nkeys];
+	While[Length[nkeys] > 0, next = First[nkeys];
+	  If[key[[2]] < next[[1]], Break[]]; (* Split *)
+	  If[next[[2]] =< key[[2]], (* Override? *)
+	    DropCache[path, format, res, next],
+	    gID = Max[GenerationDB[path, format, res, key],
+	      GenerationDB[path, format, res, next]];
+	    DropCache[path, format, res, key];
+	    DropCache[path, format, res, next];
+	    key = {key[[1]], next[[2]]};
+	    StoreCache[path, format, res, key, $Failed];
+	    GenerationDB[path, format, res, key] = gID];
+	  keys = Rest[keys]]];
+
+      ]&, activeList];
+    GenerationID[format] += 1];
+
+  (* Internal database *)
+  GetGenerationList[] := With[{l = Take[Extract[?GenerationDB, {,,1}, Hold], {2,-2}],
+    d = Take[Extract[?GenerationDB, {1,,2}, Null], {2,-2}]},
+    If[Length[l] < 1, {}, Thread[{ReleaseHold[ReplacePart[l, List, {,1,0}]], d}]]];
+
+  GetActiveList[] := With[{l = Drop[Extract[?ActiveDB, {1,,1}, Hold], 1]},
+    If[Length[l] < 1, {}, ReleaseHold[ReplacePart[l, List, {,1,0}]]]];
+
+  UpdateActiveList[] := (ActiveList = Union[ActiveList, GetActiveList[]];
+    Clear[ActiveDB]; ActiveList);
+
+  StoreCache[path_String, format_Real, res_Real, key_List, d_] := With[{
+    size = Times@@Dimensions[d]},
+    ActiveDB[path, format, res] = True;
+    GenerationDB[path, format, res, key] = GenerationID[format];
+    CacheSize[format] += size;
+    CacheDB[path, format, res, Length] += size;
+    AppendTo[CacheDB[path, format, res, List], key];
+    CacheDB[path, format, res, key] = d];
+
+  DropCache[path_String, format_Real, res_Real, key_List] := With[{
+    d = CacheDB[path, format, res, key]},
+    GenerationDB[path, format, res, key] =.;
+    CacheDB[path, format, res, key] =.;
+    CacheDB[path, format, res, List] =
+      Complement[CacheDB[path, format, res, List], {key}];
+    With[{size = Times@@Dimensions[d]}, CacheSize[format] -= size;
+      CacheDB[path, format, res, Length] -= size];
+    If[CacheDB[path, format, res, Length] == 0,
+      CacheDB[path, format, res, Length] =.;
+      CacheDB[path, format, res, List] =.;
+      ActiveList = Complement[ActiveList, {{path, format, res}}]];
+    d];
+
+  ];
+! >>> KEKBLog$CacheDB class <<<
+
+! <<< KEKBLog$CacheFile class >>> (* KEKBLog CacheFile Support class *)
+KEKBLog$CacheFile=Class[{KEKBLog$Config, KEKBLog$Common, KEKBLog$CacheCommon,
+  Unix$Shell},
+  { Initialized = False, CacheDir, CleanUpMark, PurgeMark,
+    CleanUpPeriod = 8 * 3600,
+    Temporary, CacheFileDB,
+    TemporaryID = 0, TemporaryIDs = {}, RunningIDs = {}
+    },
+  {
+    },
+
+  Initialize[] := If[Not[Initialized], Initialized = True;
+    CacheDir = StringJoin[$HomeDirectory, "/", KEKBLog$CacheDir, "/log"];
+    CleanUpMark = CacheDir//"/.cleanup";
+    PurgeMark = CacheDir//"/.purgedate";
+
+    If[DirectoryQ[CacheDir], Module[{cmd, t},
+      (* Clean up old temporary files *)
+      t = FromFileDate[CleanUpMark];
+      If[Not[RealQ[t]] || FromDate[] - t > CleanUpPeriod,
+	System[Shell["touch", CleanUpMark, "2>/dev/null"]];
+	cmd = Shell["find", CacheDir, "-type f", "-name .t\\*", "-mtime +2",
+	  "-exec rm -f {} \\;"];
+	cmd = Shell["nohup", "nice -n 15", cmd];
+	System[cmd//" >/dev/null 2>&1 &"]];
+
+      (* Purge untouched cache files *)
+      t = FromFileDate[PurgeMark];
+      If[Not[RealQ[t]] || FromDate[] - t > CleanUpPeriod,
+	System[Shell["touch", PurgeMark, "2>/dev/null"]];
+	cmd = Shell["find", CacheDir, "-type f", "-atime +7",
+	  "-exec rm -f {} \\;"];
+	cmd = Shell["nohup", "nice -n 15", cmd];
+	System[cmd//" >/dev/null 2>&1 &"];
+	cmd = Shell["find", CacheDir, "-type d", "-empty", "-mtime +2",
+	  "-exec rmdir {} \\;"];
+	cmd = Shell["nohup", "nice -n 18", cmd];
+	System[cmd//" >/dev/null 2>&1 &"]];
+      ]];
+
+    Temporary[_] := Undefined;
+    CacheFileDB[_, List] := {};
+    CacheFileDB[_, Date] := Undefined;
+    CacheFileDB[_, Last] := Undefined;
+    ];
+
+  Lookup[path$_String, {from_Real, to_Real}, op___Rule] := Module[{
+    {res, format} = {Resolution, Format}/.Override[op, def],
+    pos = StringPosition[path$, "/"], path, sel},
+
+    If[Length[pos] <=> 2 || from > to || res < 0, Return[$Failed]];
+
+    path = path$[pos[[1,2]] + 1, -1];
+    format = FormatSymbol[format];
+
+    If[Not[GetCacheFileList[path$]], Return[{{from, to}}]];
+
+    (* Pick up fragment *)
+    sel = Map[With[{range = OverlapAnd$[{from, to}, #[[2]]]},
+      If[range <=> {}, {range, #[[2]], #[[1]]}, Null[]]]&, Select[
+	CacheFileDB[path, List], #[[3]] === res && #[[1]][1] === format&]];
+
+    (* Sort fragment by overlapped range *)
+    sel = Sort[sel, #1[[1,1]] < #2[[1,1]]
+      || (#1[[1,1]] == #2[[1,1]] && #1[[1,2]] > #2[[1,2]])&];
+    GetFragment[format, path, {from, to}, sel[[,{2,3}]]]];
+
+  LookupIndex[path$_String, {from_Real, to_Real}, op___Rule] := Module[{
+    {res, format} = {Resolution, Format}/.Override[op, def],
+    pos = StringPosition[path$, "/"], path, sel},
+
+    If[Length[pos] <=> 2 || from > to || res < 0, Return[{}]];
+
+    path = path$[pos[[1,2]] + 1, -1];
+    format = FormatSymbol[format];
+
+    If[Not[GetCacheFileList[path$]], Return[{{from, to}}]];
+
+    (* Pick up fragment *)
+    sel = Map[With[{range = OverlapAnd$[{from, to}, #[[2]]]},
+      If[range <=> {}, {range, #[[2]], #[[1]]}, Null[]]]&, Select[
+	CacheFileDB[path, List], #[[3]] === res && #[[1]][1] === format&]];
+
+    (* Sort fragment by overlapped range *)
+    sel = Sort[sel, #1[[1,1]] < #2[[1,1]]
+      || (#1[[1,1]] == #2[[1,1]] && #1[[1,2]] > #2[[1,2]])&];
+    sel[[,2]]];
+
+  Create[path$_String, {from_Real, to_Real}, op___Rule] := Module[{
+    {res, format, comp} = {Resolution, Format, Compress}/.Override[op, def],
+    pos = StringPosition[path$, "/"], dir, entry, temp, id},
+
+    If[Length[pos] <=> 2 || from > to || res < 0, Return[$Failed]];
+
+    comp = CompressType[comp];
+    format = FormatSymbol[format];
+
+    dir = path$[pos[[1,2]] + 1, -1];
+    entry = StandardForm[StringJoin[format, res, "d", from, "-", to]];
+
+    If[Not[DirectoryQ[CacheDir//"/"//dir]], If[0 <=>
+      System[Shell["mkdir -p", CacheDir//"/"//dir]], Return[$Failed]]];
+
+    (* Generate temporary file name under cache directory *)
+    (* Will be replaced by mkstemp *)
+    RunningIDs = Map[With[{id = First[#], hash = Second[#], file = #[[3]]},
+      If[FileQ[file], {id, hash, file},
+	Temporary[hash] =.; AppendTo[TemporaryIDs, id]; Null[]]]&, RunningIDs];
+
+    If[Length[TemporaryIDs] < 1, id = TemporaryID; TemporaryID += 1,
+      id = First[TemporaryIDs]; TemporaryIDs = Drop[TemporaryIDs, 1]];
+    temp = StandardForm[StringJoin[dir,
+      "/", ".t", id, "p", GetPID[], HostName[]]];
+
+    Temporary[temp] = {dir, {entry, comp, {from, to}, res}, id};
+    CacheDir//"/"//temp];
+
+  Commit[cache_String] := Module[{len = StringLength[CacheDir],
+    temp, dir, entry, id},
+    If[cache[1, len] <=> CacheDir, Return[$Failed]];
+
+    temp = Temporary[cache[len + 2, -1]];
+    If[temp === Undefined, Return[$Failed]];
+
+    {dir, entry, id} = temp;
+
+    With[{store = CacheDir//"/"//dir//"/"//entry[[1]]},
+      System[Switch[entry[[2]],
+
+	".gz",  Shell["{", "gzip -9", cache, ";",
+	  "mv -f", cache//".gz", store//".gz", ";", "}"],
+
+	".bz2", Shell["{", "bzip2", cache, ";",
+	  "mv -f", cache//".bz2", store//".bz2", ";", "}"],
+
+	_,      Shell["mv -f", cache, store]]//" 2>/dev/null &"]];
+
+    AppendTo[CacheFileDB[dir, List],
+      Prepend[Drop[entry, 2], StringJoin@@Take[entry, 2]]];
+
+    AppendTo[RunningIDs, {id, cache[len + 2, -1], cache}]];
+
+  Cancel[cache_String] := Module[{len = StringLength[CacheDir],
+    temp, dir, entry, id},
+
+    If[cache[1, len] <=> CacheDir, Return[$Failed]];
+
+    temp = Temporary[cache[len + 2, -1]];
+    If[temp === Undefined, Return[$Failed]];
+
+    {dir, entry, id} = temp;
+
+    System[Shell["rm -f", cache, "2>/dev/null"]];
+
+    AppendTo[TemporaryIDs, id];
+    Temporary[cache[len + 2, -1]] =.];
+
+  (* Internal Function *)
+  GetCacheFileList[path$_String] := Module[{
+    pos = StringPosition[path$, "/"], path,
+    fp, break, list, line, pos1, pos2, pos3, date},
+
+    If[Length[pos] <=> 2, Return[False]]; path = path$[pos[[1,2]] + 1, -1];
+
+    (* Check Database TTL *)
+    If[RealQ[CacheFileDB[path, Date]],
+      (* Check Cache TTL *)
+      If[KEKBLog$CacheTTL > FromDate[] - CacheFileDB[path, Last],
+	Return[True]];
+
+      (* Check CacheFile Directory Timestamp *)
+      If[Not[CacheFileDB[path, Date] < FromFileDate[CacheDir//"/"//path]],
+	CacheFileDB[path, Last] = FromDate[]; Return[True]];
+      ];
+
+    (* Check CacheFile directory *)
+    With[{dir = StringJoin[CacheDir, "/", path]}, If[DirectoryQ[dir],
+      date = FromFileDate[dir];
+      If[fp = OpenRead["!"//Shell["{", "cd", dir, ";",
+	"ls", ";", "}", "2>/dev/null"]]; fp === $Failed, Return[False]],
+      Return[True]]];
+    
+    (* Check directory entries *)
+    list = {}; break = False;
+    While[Not[break], list = Join[list, Table[
+      line = Check[Read[fp, String], $Failed];
+      If[Not[StringQ[line]], break = True; Break[]];
+      pos1 = StringPosition[line, "d"];
+      pos2 = StringPosition[line, "-"];
+      pos3 = StringPosition[line, "."];
+      pos3 = If[Length[pos3] < 1 || {} <=> StringPosition["0123456789",
+	line[Last[pos3][[2]] + 1]], -1, Last[pos3][[1]] - 1];
+      If[Length[pos1] <=> 1 || Length[pos2] <=> 1, Continue[]];
+      Check[{line, ToExpression["{"//line[pos1[[1,2]] + 1, pos2[[1,1]] - 1]
+	//","//line[pos2[[1,2]] + 1, pos3]//"}"],
+	ToExpression[line[2, pos1[[1,1]] - 1]]}, Continue[]], {i, 1000}]]];
+    Close[fp];
+
+    CacheFileDB[path, List] = list;
+    CacheFileDB[path, Date] = date;
+    CacheFileDB[path, Last] = FromDate[];
+    True];
+
+  GetFragment["K", path$_String, unread$_List, sel_List] := Module[{
+    dir = StringJoin[CacheDir, "/", path$, "/"], unread = unread$,
+    range, chunk, out = {}},
+
+    Scan[With[{r = OverlapAnd$[unread, #[[1]]], fr = #[[1]], fn = #[[2]]},
+      If[r <=> {}, If[chunk = Check[Get[dir//fn], $Failed];
+	chunk <=> $Failed && ListQ[chunk],
+	If[unread[[1]] < r[[1]], AppendTo[out, {unread[[1]], r[[1]]}]];
+	unread = If[r[[2]] < unread[[2]], {r[[2]], unread[[2]]}, {}];
+	AppendTo[out, r -> Switch[{r[[1]] == fr[[1]], r[[2]] == fr[[2]]},
+	  {True, True}, chunk,
+	  {True, False}, Select[chunk, #[[1]] =< r[[2]]&],
+	  {False, True}, Select[chunk, r[[1]] =< #[[1]]&],
+	  _, Select[chunk, r[[1]] =< #[[1]] =< r[[2]]&]]];
+	]]]&, sel];
+
+    If[unread === {}, out, Append[out, unread]]];
+
+  ];
+! >>> KEKBLog$CacheFile class <<<
+
+! <<< KEKBLog$Retrieve class >>> (* KEKBLog DB Access class *)
+KEKBLog$Retrieve=Class[{KEKBLog$Config, KEKBLog$Common, KEKBLog$Encode,
+  Unix$Shell, DebugLog},
+  { Initialized = False, catalog, CacheDir,
+    CacheFileMagic = "# KEKBLog$Retrieve Cache 0.9.1",
+
+    (* 1st level order queue: Request/Strategy *)
+    RequestQueue, FreeRequestQueueIDs, MaxRequestQueueID,
+    DiscardQueueIDs = {},
+    Queue$Free = -2, Queue$Completed = -1,
+    Queue$Queued = 0, Queue$Issued = 1,
+
+    (* 2nd level order queue: iFetchRequest *)
+    FetchRequests, QueuedIO, FetchQueueTypes = {},
+    UncompletedIO = {},
+
+    (* I/O backend *)
+    ActiveBackendIO = Null
+    },
+  {
+    },
+
+  Initialize[] := If[Not[Initialized], Initialized = True;
+    RshInitialize[];
+    CacheDir = HomeDirectory[]//"/"//KEKBLog$CacheDir//"/raw";
+    catalog = KEKBLog$Catalog[];
+
+    (* Initialize 1st Level Queue *)
+    MaxRequestQueueID = 0; FreeRequestQueueIDs = {};
+    RequestQueue[_, Range] := {};
+    RequestQueue[_, Command] := {};
+    RequestQueue[_, Date] := INF;
+    RequestQueue[_, Priority] := 0;
+    RequestQueue[_, Status] := Queue$Free;
+
+    (* Initialize 2nd Level Queue *)
+    QueuedIO[_] = {};
+    FetchRequests[_] = 0;
+    (FetchRequests[sym_] += val_) ^:=
+      (FetchRequests[sym] = FetchRequests[sym] + val);
+    (FetchRequests[sym_] -= val_) ^:=
+      (FetchRequests[sym] = FetchRequests[sym] - val);
+    ];
+
+  Destructor[] := (catalog@SaveCache[];
+    DebugLog`Destructor[]);
+
+  Constructor[] := (DebugLog`Constructor["KEKBLog$Retrieve"]; Initialize[]);
+
+  Request[{paths__String}, op:((_Rule|_RuleDelayed)...)] := Module[{
+    opt = Override[op, {Range->FromDate[], Resolution->0, Timeout->0}],
+    range, res, timeout, priority, callback,
+    id, buf, filled, msec = TimeUsed[]},
+
+    (* Check argument *)
+    {range, res, timeout} = {Range, Resolution, Timeout}/.opt;
+    {priority, callback} = SwitchCases[opt,
+      {Rule[Priority, _], RuleDelayed[Command, _]}];
+    If[Length[range] == 0, range = {range}];
+    If[Length[range] > 1 && Equal@@range, range = Take[range, 1]];
+    If[Length[range] < 2, res = 1; range = Round/@range];
+    If[Not[Length[range] < 3 && And@@RealQ/@range], Return[$Failed]];
+    If[Length[range] > 1 && Greater@@range, Return[$Failed]];
+    res = Floor[res]; If[res < 0, Return[$Failed]];
+
+    range = With[{now = FromDate[]}, Min[now, #]&/@range];
+
+    (* Allocate new queue ID *)
+    If[Length[FreeRequestQueueIDs] < 1, id = ++MaxRequestQueueID,
+      id = First[FreeRequestQueueIDs];
+      FreeRequestQueueIDs = Rest[FreeRequestQueueIDs]];
+
+    RequestQueue[id, Path] = {paths};
+    RequestQueue[id, Range] = range;
+    RequestQueue[id, Resolution] = res;
+    If[callback <=> {}, RequestQueue[id, Command] = callback];
+    If[priority <=> {}, RequestQueue[id, Priority] = priority[[1, 2]]];
+    If[timeout > 0, RequestQueue[id, Date] = FromDate[] + timeout];
+    RequestQueue[id, Status] = Queue$Queued;
+
+    filled = True;
+    RequestQueue[id, List] = Map[With[{path = #}, (* Cache Lookup *)
+      If[KEKBLog$SplitRetrieve,
+	buf = Lookup[path, range, Resolution->res],
+	buf = KEKBLog$Cache@Lookup[path, range, Resolution->res]];
+      If[buf === $Failed, {},
+	If[Not[RuleListQ[buf]], filled = False]; buf]]&, {paths}];
+
+    If[filled, RequestQueue[id, Status] = Queue$Completed];
+
+    Debug[PROF, "Request", "Queuing Request: ",
+      (TimeUsed[] - msec) * 1e3, "msec"]; msec = TimeUsed[];
+
+    id];
+
+  Retrieve[id_Real, op:((_Rule|_RuleDelayed)...)] := Module[{ret,
+    epoch = FromDate[{1970, 1, 1, 9, 0, 0}], opt = Override[op,
+      {Blocking->False, Literal[Release]->False, Reconstruct->False}],
+    step = RequestQueue[id, Resolution], last, msec = TimeUsed[]},
+
+    If[Blocking/.opt, Wait[id]]; (* Wait data transfer finished *)
+    If[RequestQueue[id, Status] === Queue$Free, Return[{}]];
+
+    ret = RequestQueue[id, List];
+
+    If[Length[RequestQueue[id, Range]] < 2,
+      PrependTo[opt, Reconstruct->False]];
+
+    If[Reconstruct/.opt, ret = MapThread[With[{d = #2, l = catalog@cat[#1]},
+      (* Reconstruct chunk *)
+      last = Prepend[Table[0, {i, Check[Max@@(Length/.#&/@l), 1]}], 0];
+      Map[With[{sel = #}, If[RuleQ[sel], sel[[1]]->If[Length[sel[[2]]] < 1,
+	If[step == 0, {}, Table[(last[[1]] = i; last), {i,
+	  epoch + step * Ceiling[(Max[last[[1]], sel[[1, 1]]] - epoch)/ step],
+	  epoch + step * Floor[(sel[[1, 2]] - epoch) / step], step}]],
+	If[sel[[2, 1, 1]] =< last[[1]], last = sel[[2, -1]]; Drop[sel[[2]], 1],
+	  last = sel[[2, -1]]; sel[[2]]]],
+	sel->If[step == 0, {}, Table[(last[[1]] = i; last), {i,
+	  epoch + step * Ceiling[(Max[last[[1]], sel[[1]]] - epoch)/ step],
+	  epoch + step * Floor[(sel[[2]] - epoch) / step], step}]]]]&, d]]&,
+      {RequestQueue[id, Path], ret}];
+      ret = Map[If[Length[#] < 1, {},
+	{Flatten[#[[,1]]][[{1, -1}]]->Join@@#[[,2]]}]&, ret]];
+
+    If[Literal[Release]/.opt, Release$[id]]; (* Release queue *)
+
+    Debug[PROF2, "Retrieve", "Generate Response: ",
+      (TimeUsed[] - msec) * 1e3, "msec"]; msec = TimeUsed[];
+
+    ret];
+
+  Release[id__Real] := Release$/@{id};
+
+  Release$[id_Real] := Switch[RequestQueue[id, Status],
+    Queue$Free, (* Nothing to do *),
+    Queue$Completed|Queue$Queued, (* Release Queue *)
+    RequestQueue[id, Path] =.;
+    RequestQueue[id, Range] =.;
+    RequestQueue[id, Resolution] =.;
+    RequestQueue[id, Command] =.;
+    RequestQueue[id, Date] =.;
+    RequestQueue[id, Priority] =.;
+    RequestQueue[id, Status] =.;
+    RequestQueue[id, List] =.;
+    AppendTo[FreeRequestQueueIDs, id],
+    _, AppendTo[DiscardQueueIDs, id]];
+
+  Wait[] := While[{} <=> Select[
+    Complement[Range[MaxRequestQueueID], FreeRequestQueueIDs],
+    Switch[RequestQueue[#, Status], Queue$Issued, True, _, False]&, 1],
+    Strategy[]; Pause[KEKBLog$IOPeriod]; ProcessIO[]];
+
+  Wait[id__Real] := While[{} <=> Select[{id},
+    Switch[RequestQueue[#, Status], Queue$Issued, True, _, False]&, 1],
+    Strategy[]; Pause[KEKBLog$IOPeriod]; ProcessIO[]];
+
+  Poll[] := With[{status = Select[Poll/@Complement[
+    Range[MaxRequestQueueID], FreeRequestQueueIDs], 0 =< # =< 1&]},
+    If[Length[status] > 0, Plus@@status / Length[status], 1]];
+
+  Poll[id__Real] := With[{status = Select[Poll$/@{id}, 0 =< # =< 1&]},
+    If[Length[status] > 0, Plus@@status / Length[status], 1]];
+
+  Poll$[id_Real] := Module[{completed = True, length, total, loaded},
+    Switch[RequestQueue[id, Status],
+      Queue$Free,      Return[-1],
+      Queue$Queued,    Return[ 0],
+      Queue$Completed, Return[ 1]];
+
+    length = If[Length[#] < 2, 1, #[[2]] - #[[1]]]&[RequestQueue[id, Range]];
+    total = length * Length[RequestQueue[id, Path]];
+    loaded = 0;
+    Scan[With[{buf = #}, If[buf === {}, loaded += length, Scan[
+      If[RuleQ[#], loaded += If[Length[#[[1]]] < 2, 1, #[[1, 2]] - #[[1, 1]]],
+	completed = False]&, buf]]]&, RequestQueue[id, List]];
+    If[completed, RequestQueue[id, Status] = Queue$Completed];
+    If[completed, 1, Restrict[loaded / total, 0, 0.99]]];
+
+  (* I/O Strategy & Processor *)
+  ProcessIO[] := If[ActiveBackendIO === Null, ProcessIO$[]];
+
+  ProcessIO$[] := (Prog$FlowDebug@Enter["KEKBLog$Retrieve@ProcessIO$"];
+    iProcessIO[]; iProcessQueue[];
+    Debug[DEBUG4, "ProcessIO", "Queue:", StringJoin@@Flatten[Map[With[{lv = #},
+      StringJoin[" ", lv, ":", Length[QueuedIO[lv]], "/", FetchRequests[lv]]]&,
+      Union[FetchQueueTypes]]]];
+
+    (* Sanity check for consistency between RequestQueue and UncompletedIO *)
+    If[Plus@@Map[With[{lv = #}, Length[QueuedIO[lv]] + FetchRequests[lv]]&,
+      Union[FetchQueueTypes]] == 0 && {} <=> Select[
+	Complement[Range[MaxRequestQueueID], FreeRequestQueueIDs],
+	Switch[RequestQueue[#, Status], Queue$Issued, True, _, False]&, 1],
+      Debug[ERROR, "ProcessIO$",
+	"detect inconsistency between high level and low level I/O queue!",
+	" force flush high level queue"];
+      Scan[With[{id = #},
+	Debug[INFO, "ProcessIO$", "flush Request ID: ", id,
+	  " Status: ", Switch[RequestQueue[id, Status],
+	    Queue$Free, "free", Queue$Completed, "complete",
+	    Queue$Queued, "queue", Queue$Issued, "issue",
+	    _, RequestQueue[id, Status]],
+	  " Path: ", RequestQueue[id, Path],
+	  " Range: ", RequestQueue[id, Range],
+	  " Resolution: ", RequestQueue[id, Resolution],
+	  " Bad Chunk: ", MapThread[Null[#1, Select[#2, ListQ]]&,
+	    {RequestQueue[id, Path], RequestQueue[id, List]}]];
+	RequestQueue[id, Status] = Queue$Completed;
+	]&, Select[Complement[Range[MaxRequestQueueID], FreeRequestQueueIDs],
+	  Switch[RequestQueue[#, Status], Queue$Issued, True, _, False]&]];
+      ];
+
+    With[{idl = Union[DiscardQueueIDs]}, DiscardQueueIDs = {}; Release$/@idl];
+    If[ActiveBackendIO <=> Null,
+      If[{} <=> Select[
+	Complement[Range[MaxRequestQueueID], FreeRequestQueueIDs],
+	Switch[RequestQueue[#, Status], Queue$Issued, True, _, False]&, 1],
+	AfterCancel[ActiveBackendIO];
+	ActiveBackendIO = After[KEKBLog$IOPeriod, ProcessIO$[]],
+	ActiveBackendIO = Null]];
+    Prog$FlowDebug@Leave["KEKBLog$Retrieve@ProcessIO$"];
+    );
+
+  Strategy[] := Module[{jobs, regions, res, pos, group, path, status},
+    jobs = {};
+    (* Extract Job List *)
+    Scan[With[{id = #}, Switch[RequestQueue[id, Status],
+      Queue$Free | Queue$Completed, (* Nothing TODO *),
+
+      Queue$Issued, (* Already Issued *),
+
+      _,
+      res = RequestQueue[id, Resolution];
+      regions = Map[With[{buf = #}, Map[If[ListQ[#], #, Null[]]&, buf]]&,
+	RequestQueue[id, List]];
+      MapThread[If[Length[#3] > 0, pos = StringPosition[#2, "/"];
+	group = #2[1, pos[[-1,1]] - 1]; path = #2[pos[[-1,2]] + 1, -1];
+	pos = #1;
+	AppendTo[jobs, Map[{{group, res}, path, #, id, pos}&, #3]];
+	]&, {Range[Length[RequestQueue[id, Path]]], RequestQueue[id, Path],
+	  regions}];
+
+      ]]&, Complement[Range[MaxRequestQueueID], FreeRequestQueueIDs]];
+    If[Length[jobs] > 0, jobs = Join@@jobs];
+
+    (* Sort Job List *)
+    jobs = Map[With[{sel = #}, sel->Sort[Rest/@Select[jobs, sel === First[#]&],
+      #1[[2,-1]] - #1[[2,1]] > #2[[2,-1]] - #2[[2,1]]&]]&, Union[jobs[[,1]]]];
+
+    (* Gather Request *)
+    jobs = Map[Module[{sel = First[#], request = Second[#], queue = {},
+      target, region, length},
+
+      While[Length[request] > 0,
+	target = Take[request, 1]; request = Rest[request];
+	region = target[[1, 2]];
+	If[Length[region] < 2, region = Join[region, region]];
+	length = region[[2]] - region[[1]];
+	Scan[With[{entry = #, range = {First[Second[#]], Last[Second[#]]}},
+	  tmp = {Min[#1], Max[#2]}&@@Thread[{region, range}];
+	  If[tmp[[2]] - tmp[[1]] < 3600
+	    || tmp[[2]] - tmp[[1]] < 1.2 * length,
+	    region = tmp; length = tmp[[2]] - tmp[[1]];
+	    AppendTo[target, entry]]]&, request];
+
+	AppendTo[queue,
+	  {sel[[1]], Union[target[[,1]]], region, sel[[2]]}->target];
+	request = Complement[request, target]];
+      queue]&, jobs];
+    If[Length[jobs] > 0, jobs = Join@@jobs];
+
+    (* Issue *)
+    Scan[With[{queue = Second[#], group = #[[1,1]], record = #[[1,2]],
+      range = #[[1,3]], res = #[[1,4]], pos = StringLength[#[[1,1]]] + 2},
+
+      Scan[With[{id = #[[3]]},
+	Switch[RequestQueue[id, Status],
+	  Queue$Completed, (* Skip completed *),
+	  Queue$Free, Debug[PANIC, "Strategy",
+	    "Detect inconsistent queue status:free for id=", id],
+	  _, RequestQueue[id, Status] = Queue$Issued]]&, queue];
+
+      status = iFetchRequest[group, record, Range->range, Resolution->res,
+	RequestID->0,
+	QueueLevel->Max@@Map[RequestQueue[#[[3]], Priority]&, queue],
+	Command:>(StrategyCallback[#2, #3, queue, range, Resolution->res]&)];
+      If[status === $Failed,
+	Check[StrategyCallback[$Failed, {}, queue, range, Resolution->res],
+	  Debug[PANIC, "Strategy", "StrategyCallback is failed!"]]];
+      ]&, jobs];
+
+    If[TkinterQ[] && ActiveBackendIO === Null,
+      ActiveBackendIO = After[KEKBLog$IOPeriod, ProcessIO$[]]];
+    ];
+
+  StrategyCallback[chunk_, copt_, queue_, region_, opt___Rule] := Module[{pos,
+    record, empty = Length[chunk] <  1, negativeCache = False,
+    logEnd = (IssueDate/.Override[copt,
+      IssueDate->FromDate[]]) - KEKBLog$LogDelay, msec = TimeUsed[]},
+    If[Not[ListQ[chunk]], Switch[chunk,
+      $Failed, empty = Ture; negativeCache = True, (* Retrieve error handler *)
+      _, Debug[ERROR, "StrategyCallback",
+	"Detect invalid callback. Discard callback event:",
+	" chunk=",chunk, " copt=", copt, " queue=", queue,
+	" region=", region, " opt=", {opt}]; Return[]]];
+
+    If[empty, (* Empty result handler *)
+      Scan[With[{range = #[[2]], id = #[[3]], cid = #[[4]],
+	path = RequestQueue[#[[3]], Path][[#[[4]]]]},
+	With[{d = If[negativeCache, $Failed, {}]}, Which[
+	  Last[range]  < logEnd, KEKBLog$Cache@Store[path, range, opt, d],
+	  First[range] < logEnd, KEKBLog$Cache@Store[path,
+	    {First[range], logEnd}, opt, d]]];
+	pos = Length[RequestQueue[id, List][[cid]]];
+	While[pos > 0, If[range === RequestQueue[id, List][[cid, pos]],
+	  Break[], pos -= 1]];
+	If[pos > 0, RequestQueue[id, List] = ReplacePart[
+	  RequestQueue[id, List], range->{}, {cid, pos}]];
+	]&, queue]];
+    If[Not[empty], Scan[With[{path = First[#],
+      d = Select[Second[#], First[#] =< Last[region]&]},
+      If[Last[region] < logEnd, KEKBLog$Cache@Store[path, region, opt, d],
+	If[Length[d] > 0 || First[region] < logEnd, KEKBLog$Cache@Store[path,
+	  {First[region], If[Length[d] > 0, d[[-1, 1]], logEnd]}, opt, d]]];
+      pos = StringPosition[path, "/"]; record = path[pos[[-1,2]] + 1, -1];
+      Scan[With[{range = #[[2]], id = #[[3]], cid = #[[4]]},
+	pos = Length[RequestQueue[id, List][[cid]]];
+	While[pos > 0, If[range === RequestQueue[id, List][[cid, pos]],
+	  Break[], pos -= 1]];
+	If[pos > 0, RequestQueue[id, List] = ReplacePart[
+	  RequestQueue[id, List], range->Select[d,
+	    First[range] =< First[#] =< Last[range]&], {cid, pos}]];
+	]&, Select[queue, record === First[#]&]];
+      ]&, chunk]];
+
+    (* Update RequestQueue status *)
+    Scan[With[{id = #},
+      If[And@@((Length[#] < 1 || RuleListQ[#])&/@RequestQueue[id, List]),
+	RequestQueue[id, Status] = Queue$Completed]]&,
+      Select[Union[queue[[, 3]]], Switch[RequestQueue[#, Status],
+	Queue$Free|Queue$Completed, False, _, True]&]];
+
+    Debug[PROF3, "StrategyCallback", "Process Callback: ",
+      (TimeUsed[] - msec) * 1e3, "msec"]; msec = TimeUsed[];
+    ];
+
+  (* Support Function *)
+  Pause[sec_Real] := (Prog$FlowDebug@Enter["KEKBLog$Retrieve@Pause"];
+    If[TkinterQ[], TkSense[sec], Literal[Pause][sec]];
+    Prog$FlowDebug@Leave["KEKBLog$Retrieve@Pause"]);
+
+  ProcessRunningQ[pid_Real] := Module[{status = $Failed, fp, retry = 5},
+    While[retry-- > 0 && status === $Failed,
+      fp = OpenRead["!"//Shell["ps", "-p", StandardForm[ToString[pid]]]];
+      If[fp <=> $Failed, status = Check[Read[fp, String];
+	Read[fp, Real] <=> EndOfFile, $Failed];	Close[fp]]];
+    status === True];
+
+  Inode[fn_String] := Module[{inode = $Failed, fp, retry = 5},
+    While[retry-- > 0 && inode === $Failed,
+      fp = OpenRead["!"//Shell["ls", "-i", fn]];
+      If[fp <=> $Failed, inode = Check[Read[fp, Real], $Failed]; Close[fp]]];
+    inode];
+
+  GenerateTimeSlice[{from_Real, to_Real}] := Module[{now = FromDate[],
+    out ={}, slice, timeslice},
+    timeslice = KEKBLog$TimeSlice * Ceiling[(Min[to, now] - from)
+      / (KEKBLog$MaxSlices * KEKBLog$TimeSlice)];
+
+    If[now =< from, AppendTo[out, {from, to}->{}], (* Future empty region *)
+      If[Min[to, now] - from < 2 * KEKBLog$TimeSlice, (* Short time slice *)
+	AppendTo[out, {from, Min[to, now]}],
+	(* Long time slice Split it *)
+	slice = Partition[Flatten[{from, timeslice * Table[{i, i},
+	  {i, Ceiling[from / timeslice], Floor[Min[to, now] / timeslice]}],
+	  Min[to, now]}], 2];
+	(* Merge short slice *)
+	If[slice[[ 1, 2]] - slice[[ 1, 1]] < 0.49 * timeslice,
+	  slice = Prepend[Drop[slice,  2], {slice[[ 1, 1]], slice[[ 2, 2]]}]];
+	If[slice[[-1, 2]] - slice[[-1, 1]] < 0.49 * timeslice,
+	  slice =  Append[Drop[slice, -2], {slice[[-2, 1]], slice[[-1, 2]]}]];
+	out = Join[out, slice];
+	]; If[now < to, AppendTo[out, {now, to}->{}]]];
+    out];
+
+  (* Internal API *)
+  Lookup[path$_String, {to_Real}, op___Rule] := KEKBLog$Cache@Lookup[
+    path$, {to}, op];
+
+  Lookup[path$_String, {from_Real, to_Real}, op___Rule] := Map[
+    If[ListQ[#], Null@@GenerateTimeSlice[#], #]&,
+    KEKBLog$Cache@Lookup[path$, {from, to}, op]];
+
+  iProcessQueue[] := Module[{qIO, status, msec = TimeUsed[]},
+    $WildCard = "SAD"; (* Require SAD WildCard matching *)
+    Scan[With[{level = #},
+    qIO = Sort[QueuedIO[level], #1[[3]] > #2[[3]]&]; QueuedIO[level] = {};
+    Scan[With[{id = #[[1]], callback = #[[2]], priority = #[[3]],
+      request = #[[4]], group = #[[4,1]], opt = Drop[#[[4]], 2],
+      copt = SwitchCases[Drop[#[[4]], 2], {Rule[IssueDate, _]}]},
+      status = iFetchRequest[group, request[[2]], Null@@opt];
+      If[status === $Failed && callback <=> {},
+	Check[Command[id, $Failed, copt]/.callback,
+	  Debug[PANIC, "iProcessQueue",
+	    "Queuing failed callback[", callback, "] is failed!"]]];
+      ]&, qIO]]&, Union[FetchQueueTypes]];
+    FetchQueueTypes = Union[FetchQueueTypes];
+
+    Debug[PROF4, "iProcessQueue", "Fill Issue Request Slot: ",
+      (TimeUsed[] - msec) * 1e3, "msec"]; msec = TimeUsed[];
+    ];
+
+  iQueue[l_] := Sort/@(l[[, -1]]//.{(Retry->_Real)->Retry,
+    (IssueDate->_Real)->IssueDate});
+
+  iProcessIO[] := Module[{wc0 = $WildCard, msec = TimeUsed[],
+    cIO = {}, aIO = {}, qIO = {}, uIO, d, records, retry, reason, status},
+
+  (* Check completed or aborted I/O *)
+  uIO = UncompletedIO; UncompletedIO = {};
+  Scan[With[{entry = #,
+    id = #[[1]], qlevel = #[[2]], callback = #[[3]],
+    buf = #[[4]], stamp = #[[5]], inode = #[[6]], pid = #[[7]],
+    request = #[[8]],
+    group = #[[8,1]], paths = #[[8,2]], opt = Drop[#[[8]], 2],
+    copt = SwitchCases[Drop[#[[8]], 2], {Rule[IssueDate, _]}]},
+    FetchRequests[qlevel] -= 1;
+    If[Inode[stamp] === inode, AppendTo[cIO, entry],
+      If[Not[ProcessRunningQ[pid]] && Inode[stamp] <=> inode,
+	System[Shell["rm", "-f", buf, stamp]]; (* Unlink temporary file *)
+	retry = Retry/.Override[opt, Retry->1]; retry -= 1;
+	RankDownHost[opt, 0.05];
+	reason = "External command aborted";
+	If[retry > 0,
+	  Debug[WARN,  "iProcessIO", "Request[", request,
+	    "] is retried[", retry, "] by ", reason];
+	  Switch[status = iFetchRequest[group, paths, Retry->retry, Null@@opt];
+	    status,
+	    True, (* Reinjection is succeeded *),
+	    False, AppendTo[qIO, entry], (* Reinject to request queue *)
+	    $Failed, Debug[ERROR, "iProcessIO",
+	      "Failed to reinject quest[", request, "]"];
+	    AppendTo[aIO, entry];
+	    If[callback <=> {}, Check[Command[id, $Failed, copt]/.callback,
+	      Debug[PANIC, "iProcessIO",
+		"Retry failed callback[", callback, "] is failed!"]]],
+	    _, Debug[PANIC, "iProcessIO",
+	      "Detect invalid return code from iFetchRequest[", ,"]"]],
+	  Debug[ERROR, "iProcessIO", "Request[", request,
+	    "] exceeds maximum retry count by ", reason];
+	  AppendTo[aIO, entry];
+	  If[callback <=> {}, Check[Command[id, $Failed, copt]/.callback,
+	    Debug[PANIC, "iProcessIO",
+	      "Retry abort callback[", callback, "] is failed!"]]]],
+	AppendTo[UncompletedIO, entry]; FetchRequests[qlevel] += 1]]]&, uIO];
+
+  Debug[PROF4, "iProcessIO", "Check I/O Completion: ",
+    (TimeUsed[] - msec) * 1e3, "msec"]; msec = TimeUsed[];
+
+  (* Sanity check for complete & abort check against UncompletedIO *)
+  (* Check Intersection between cIO and UncompletedIO *)
+  If[status = Intersection[iQueue[cIO], iQueue[UncompletedIO]];
+    status <=> {}, Debug[PANIC, "iProcessIO",
+      "Detect wrong intersection between completed and uncompleted I/O: ",
+      status]];
+  (* Check consistency between old and new completed I/O list *)
+  If[status = Complement[iQueue[uIO], iQueue[UncompletedIO],
+    iQueue[cIO], iQueue[qIO], iQueue[aIO]];
+    status <=> {}, Debug[PANIC, "iProcessIO",
+      Debug[INFO, "iProcessIO",	"uIO: ", iQueue[uIO]];
+      Debug[INFO, "iProcessIO", "UncompletedIO: ", iQueue[UncompletedIO]];
+      Debug[INFO, "iProcessIO", "cIO: ", iQueue[cIO]];
+      Debug[INFO, "iProcessIO", "qIO: ", iQueue[qIO]];
+      Debug[INFO, "iProcessIO", "aIO: ", iQueue[aIO]];
+      "Detect lost low level I/O requests: ", status]];
+
+  Debug[PROF4, "iProcessIO", "Sanity Check: ",
+    (TimeUsed[] - msec) * 1e3, "msec"]; msec = TimeUsed[];
+
+  (* Process completed I/O *)
+  Scan[With[{id = #[[1]], qlevel = #[[2]], callback = #[[3]],
+    buf = #[[4]], stamp = #[[5]], inode = #[[6]], pid = #[[7]],
+    request = #[[8]],
+    group = #[[8,1]], paths = #[[8,2]], opt = Drop[#[[8]], 2],
+    copt = SwitchCases[Drop[#[[8]], 2], {Rule[IssueDate, _]}]},
+    d = Check[Block[{nan = NaN}, Get[buf]], "@ReadFailed:Broken@"];
+    System[Shell["rm", "-f", buf, stamp]];
+    Switch[{Depth[d], Dimensions[d]},
+      {4, {_, 3}}, (* Raw Format *)
+      Check[records = Union[d[[,2]]];
+	d = Join[Map[With[{record = #}, {group//"/"//Encode[record],
+	  Flatten/@(Select[d, record === Second[#]&][[,{1,3}]])}]&, records],
+	  {group//"/"//Encode[#], {}}&/@Complement[paths, records]],
+	d = "@ReadFailed:Broken@"],
+
+      {4, _}, (* Sampled Format *)
+      Check[records = Map[group//"/"//Encode[#]&, First[d]];
+	d = Thread[Rest[d]];
+	d = Thread[{records, Map[Flatten/@Thread[{First[d], #}]&, Rest[d]]}],
+	d = "@ReadFailed:Broken@"],
+
+      {3, _}, (* Empty Sampled Format *)
+      d = If[Length[First[d]] < 1, (* Record is not found? *)
+	Switch[Dimensions[Rest[d]],
+	  {1}, If[Rest[d] === {Null}, {}, "@ReadFailed:Broken@"],
+	  {_, 2}, If[{} === Select[Rest[d], Not[
+	    RealQ[#[[1]]] && #[[2]] === Null]&], {}, "@ReadFailed:Broken@"],
+	  _,  "@ReadFailed:Broken@"],
+	If[And@@StringQ/@First[d] && Length[Rest[d]] == 1,
+	  {}, "@ReadFailed:Broken@"]],
+
+      {2, _}, If[d <=> {}, d = "@ReadFailed:Broken@"],
+
+      {1, _}, Switch[Head[d],
+	String, (* Script Handled Error Status *),
+	Symbol, d = StandardForm[ToString[d]];
+	Which[(* Unkown External Command Error *)
+	  StringMatchQ[d, "Segmentation"], d = "@ReadFailed:SEGV@",
+	  StringMatchQ[d, "Terminated"], d = "@ReadFailed:TERM@",
+	  True, (* Nothing to do *)],
+	_, d = "@ReadFailed:Broken@"],
+
+      _,  d = "@ReadFailed:Broken@"];
+
+    Debug[DEBUG3, "iProcessIO",
+      "Processing Completed I/O[", Head[d], "]: ", #];
+
+    Switch[Head[d],
+      List, (* Complete I/O *)
+      RankUpHost[opt, 0.02];
+      Check[Command[id, d, copt]/.callback,
+	Debug[PANIC, "iProcessIO",
+	  "Retrieve complete callback[", callback, "] is failed!",
+	  " ID:", id, " Chunk:", d, " Options:", copt]],
+
+      String, retry = Retry/.Override[opt, Retry->1]; retry -= 1;
+      RankDownHost[opt, 0.05];
+      reason = "Unkown"; Switch[d, (* Retry I/O *)
+	"@ReadFailed:Broken@", retry -= 2;
+	RankDownHost[opt, 0.45];
+	reason = "Broken return value",
+
+	"@ReadFailed:SEGV@",
+	RankDownHost[opt, 0.20];
+	reason = "Segmentation fault in external command",
+
+	"@CmdFailed:143@",
+	reason = "Log Read terminated by TERM signal(probably Watch Dog)",
+
+	"@ReadFailed:TERM@"|"@CmdFailed:137@"|"@CmdFailed:139@",
+	reason = "External command terminated by signal",
+
+	"@CmdFailed:1@",
+	RankDownHost[opt, 0.20];
+	reason = "Log Read command failed",
+
+	"@RshFailed:1@"|"@RshFailed:255@",
+	reason = "Remote shell timed-out",
+
+	_,  reason = "Unkown String["//d//"]"];
+      If[retry > 0,
+	Debug[WARN,  "iProcessIO", "Request[", request,
+	  "] is retried[", retry, "] by ", reason];
+	status = iFetchRequest[group, paths, Retry->retry, Null@@opt];
+	If[status === $Failed && callback <=> {},
+	  Check[Command[id, $Failed, copt]/.callback,
+	    Debug[PANIC, "iProcessIO",
+	      "Retry failed callback[", callback, "] is failed!"]]],
+	Debug[ERROR, "iProcessIO", "Request[", request,
+	  "] exceeds maximum retry count by ", reason];
+	Check[Command[id, $Failed, copt]/.callback,
+	  Debug[PANIC, "iProcessIO",
+	    "Retry abort callback[", callback, "] is failed!"]]],
+
+      _, Debug[PANIC, "iProcessIO",
+	"detect invalid completed I/O result: ", Head[d], "[", d, "]"]];
+    ]&, cIO];
+
+    Debug[PROF4, "iProcessIO", "Process Completed I/O: ",
+      (TimeUsed[] - msec) * 1e3, "msec"]; msec = TimeUsed[];
+
+    $WildCard = wc0; (* Restore WildCard *)
+    ];
+
+  (* Host selection probability operator *)
+  RankUpHost[opt_List, dprob_Real] := With[{
+    hlist = HostList/.opt, host = Host/.opt},
+    If[KEKBLog$HostProbability[hlist, host] >= 1,
+      KEKBLog$HostProbability[hlist, host] += Abs[dprob],
+      KEKBLog$HostProbability[hlist, host] =.]];
+
+  RankDownHost[opt_List, dprob_Real] := With[{
+    hlist = HostList/.opt, host = Host/.opt},
+    KEKBLog$HostProbability[hlist, host] -= Abs[dprob]];
+
+  iFetchPriority[group_String, {records__String}, {to_Real}] := (
+    Length[{records}] * 0.2
+    + Floor[to / KEKBLog$TimeSlice]
+    + Switch[group, (* KEKBLog record group coefficient *)
+      "LERMagnets"|"HERMagnets", 10,
+      "AnalogData", 20,
+      _, 0]);
+
+  iFetchPriority[group_String, {records__String}, {from_Real, to_Real}] := (
+    Length[{records}] * 0.2
+    + Floor[to / KEKBLog$TimeSlice]
+    + Floor[(to - from) / KEKBLog$TimeSlice] * 0.1
+    + Switch[group, (* KEKBLog record group coefficient *)
+      "LERMagnets"|"HERMagnets", 10,
+      "AnalogData", 20,
+      _, 0]);
+
+  iFetchRequest[group_String, {records__String}, op:((_Rule|_RuleDelayed)...)]
+  := Module[{opt = Override[op, {RequestID->Null, Retry->5, QueueLevel->0,
+    Range->FromDate[], Resolution->0, Format->"sad"}],
+    range, res, format, id, qlevel, callback,
+    buf, stamp, inode, pid, execDate = FromDate[],
+    cmd, isLocal, hostlist = First[KEKBLog$LogReadHosts],
+    host = CheckQueryHost[KEKBLog$LogReadHosts]},
+    isLocal = (host === HostName[]);
+
+    (* Decode Options *)
+    {range, res, format} = {Range, Resolution, Format}/.opt;
+    {id, qlevel} = {RequestID, QueueLevel}/.opt;
+    {callback} = SwitchCases[opt, {RuleDelayed[Command, _]}];
+    If[id === Null || callback === {}, Return[$Failed]];
+    If[Length[range] == 0, range = {range}];
+    If[Length[range] > 1 && Equal@@range, range = Take[range, 1]];
+    If[Not[Length[range] < 3 && And@@RealQ/@range], Return[$Failed]];
+    If[Length[range] > 1 && Greater@@range, Return[$Failed]];
+    res = Floor[res]; If[res < 0, Return[$Failed]];
+
+    AppendTo[FetchQueueTypes, qlevel];
+
+    (* Check FetchQueue size *)
+    If[FetchRequests[qlevel] >= KEKBLog$FetchQueueSize,
+      AppendTo[QueuedIO[qlevel], {id, callback,
+	iFetchPriority[group, {records}, range],
+	{group, {records}, Null@@Override[IssueDate->execDate, opt]}}];
+      Return[False]];
+
+    (* Create Temporary File *)
+    buf = MkSecureTemp[Prefix->"buffer", Suffix->HostName[]];
+    If[buf === $Failed,
+      Debug[WARN, "iFetchRequest", "Failed to allocate buffer file"];
+      Return[$Failed]];
+
+    stamp = MkSecureTemp[Prefix->"stamp", Suffix->HostName[]];
+    If[stamp === $Failed,
+      Debug[WARN, "iFetchRequest", "Failed to allocate stamp file"];
+      System[Shell["rm", "-f", buf]]; Return[$Failed]];
+
+    (* Check i-node number of buffer file *)
+    If[inode = Inode[buf]; inode === $Failed,
+      Debug[WARN, "iFetchRequest",
+	"Failed in checking i-node number of buffer file[", buf, "]"];
+      System[Shell["rm", "-f", buf, stamp]]; Return[$Failed]];
+
+    cmd = Shell[KEKBLog$LogReadCmd,
+      "-f", format,
+      "-r", Shell[StringJoin["^(",
+	Null@@Rest[Flatten[Thread[{"|", Decode/@{records}}]]],
+	")$-"], Escape->True],
+      "-t", If[Length[range] < 2, KEKBLogTime[First[range]]//"d1",
+	KEKBLogTime[First[range]]//"-"//KEKBLogTime[Second[range]]
+	//If[res > 0, StandardForm["d"//ToString[res]], ""]],
+      group, Escape->True];
+    cmd = Shell[cmd, "||", "echo", "\\\"@CmdFailed:$?@\\\""];
+
+    cmd = If[Not[isLocal], Shell["{", Shell[Rsh, Null@@RshOpt, host,
+      Shell["sh", "-c",  cmd, Escape->True], Escape->True],
+      "||", "echo", "\\\"@RshFailed:$?@\\\"", ";", "}"],
+      Shell["{", cmd, ";", "}"]];
+
+    cmd = Shell["{",
+      cmd, ">>", buf, ";", "ln", "-f", buf, stamp, ";", "}",
+      "&", "echo", "$!"];
+
+    pid = $Failed; With[{fp = OpenRead["!"//cmd]},
+      If[fp <=> $Failed, pid = Check[Read[fp, Real], $Failed]; Close[fp]]];
+    If[pid === $Failed,
+      Debug[WARN, "iFetchRequest",
+	"Failed in forking external command: ", cmd];
+      (* RankDownHost[{HostList->hostlist, Host->host}, 0.75]; *)
+      System[Shell["rm", "-f", buf, stamp]]; Return[$Failed]];
+
+    (* Append uncompleted I/O list *)
+    FetchRequests[qlevel] += 1;
+    AppendTo[UncompletedIO, {id, qlevel, callback, buf, stamp, inode, pid,
+      {group, {records}, Null@@Override[IssueDate->execDate,
+	HostList->hostlist, Host->host, opt]}}];
+    Debug[DEBUG3, "iFetchRequest", "Order: ", Last[UncompletedIO]];
+
+    True];
+
+  ];
+! >>> KEKBLog$Retrieve class <<<
+
+KEKBLog$Cache@Initialize[];
+! End of File

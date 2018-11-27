@@ -1,4 +1,4 @@
-Help$Update="$Date: 2018/10/05 23:30:00 $"[8,17];
+Help$Update="$Date: 11/01/2018 23:00:00 $"[8,17];
 !Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
 Help$Version=$Version;
 
@@ -1355,13 +1355,13 @@ sets the value of the default-keyword of slave-element to be equal to coefficien
     "ATTRIBUTE(ATTR) FREE ElementValues",
     {}},
 
+   SHOW$message="   FFS[\"SHOW\"] or FFS$SHOW[] returns the current matching conditions as a list. Each element has a form of\n\n\
+{component1, component2, function, goal-value, number-of-momentums, scale},\n\n\
+which corresponds to the format of the print-out by SHOW.";
    {"SHOW",
     "\
-SHOW prints out the current matching conditions.\n\n\
-   FFS[\"SHOW\"] returns the current matching conditions as a list. Each element has a form of\n\n\
-{component1, component2, function, goal-value, number-of-momentums, scale},\n\n\
-which corresponds to the new format of the print-out by SHOW.",
-    "matching-function-commands FIT FFS",
+SHOW prints out the current matching conditions.\n\n"//SHOW$message,
+    "matching-function-commands FIT FFS FFS$SHOW",
     {}},
 
    {"STATUS(STAT)",
@@ -3929,6 +3929,11 @@ FFS[command-string] executes command-string as FFS commands. Any commands can be
    The IF structure and REPEAT(REP) loop must complete within a single FFS.",
         "Input/Output OpenWrite OpenAppend",
         {}},
+
+       {"FFS$SHOW",
+         SHOW$message,
+         "SHOW",
+         {}},
 
        {"ExternalMap",
         "\

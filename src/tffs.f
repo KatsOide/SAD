@@ -921,7 +921,7 @@ c$$$
           endif
           cmp%value(p_L_BEND)=al
           dtheta=cmp%value(ky_DROT_BEND)
-          theta=cmp%value(ky_ROT_BEND)+dtheta
+          theta=cmp%value(ky_ROT_BEND)
           cmp%value(p_COSPSI1_BEND)=cos(psi1)
           cmp%value(p_SINPSI1_BEND)=sin(psi1)
           cmp%value(p_COSPSI2_BEND)=cos(psi2)
@@ -937,8 +937,8 @@ c$$$
             cmp%value(p_SQWH_BEND)=1.d0-cmp%value(p_COSW_BEND)
           endif
           cmp%value(p_SINWP1_BEND)=sin(phi-psi2)
-          cmp%value(p_DPHIX_BEND)=phi*sin(.5d0*dtheta)**2
-          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
+c          cmp%value(p_DPHIX_BEND)=phi*sin(.5d0*dtheta)**2
+c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
           cmp%value(p_THETA_BEND)=theta
           cmp%value(p_FB1_BEND)=fb1
           cmp%value(p_FB2_BEND)=fb2
@@ -1915,8 +1915,7 @@ c      call tfree(ifibzl)
       lfret=icsmrk()
       lfrecl=icslrecl()
       llinep=icslinep()
-      call cssetp(lfrecl)
-      call setbuf(str%str,str%nch)
+      call setbuf(str%str(1:str%nch)//char(10),str%nch+1)
       call cssetp(lfrecl)
       call tffsa(lfnp+1,kx,irtc)
       call tclrfpe
@@ -1926,7 +1925,7 @@ c      call tfree(ifibzl)
       call cssetlfno(lfno1)
       call cssetlfni(lfni1)
       call cssetlfn1(lfn11)
-c      write(*,*)'tfffs ',lfret,lfrecl
+c      write(*,*)'FFS ',lfrecl,llinep
       outfl=outfl1
       if(irtc .eq. 0 .and. iffserr .ne. 0)then
         irtc=itfmessage(9,'FFS::error',strfromis(iffserr))

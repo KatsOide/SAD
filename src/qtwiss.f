@@ -273,7 +273,7 @@ c          go to 1010
      $             +cmp%value(ky_FB2_BEND)
             endif
             dtheta=cmp%value(ky_DROT_BEND)
-            theta0=cmp%value(ky_ROT_BEND)+dtheta
+            theta0=cmp%value(ky_ROT_BEND)
             cod1=cod
             call qbend(trans,cod,al,
      $           cmp%value(ky_ANGL_BEND)+cmp%value(ky_K0_BEND),
@@ -489,6 +489,9 @@ c     $             kxx,irtc)
             endif
           else
             call qmat2twiss(trans,ip,l,twiss,dpsix,dpsiy,coup,normal)
+c        if(ktfenanq(twiss(ip,mfitbx)))then
+c          write(*,*)'qtwiss-qmat ',l,ip,ltyp,trans(1,2)
+c        endif
           endif
           if(.not. mat)then
             if(orbitcal)then

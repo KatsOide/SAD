@@ -1,0 +1,117 @@
+!
+! CCC Client Library for KEKB
+!
+! Maintainor: A.Morita(4794)
+! Revision:   $Id: KEKBCCC.n,v 1.4 2004/05/13 06:40:18 amorita Exp $
+! Style:      Class Library
+! Require:    Initialized Tkinter
+!             Prog/DebugLog.n
+!
+Library@Require["Prog/DebugLog"];
+
+! <<< KEKBCCC >>>
+KEKBCCC=Class[{DebugLog},
+  { Initialized = False,
+    caState, caRequest, waitLock, waitCCC
+    },
+  { SimulationMode = False,
+    RingID = "LER",
+    RequestID
+    },
+
+  Initialize[] := If[Not[Initialized], Initialized = True;
+    waitLock = KEKBCCC;
+    waitCCC[_, _] = False;
+    caState = CaMonitor[{"CGLOBT:CCC:STATE", "CGHOBT:CCC:STATE"}];
+    caRequest[_] = Null];
+
+  Constructor[id_Real:6] := If[Not[SimulationMode],
+    DebugLog`Constructor["KEKBCCC"];
+    Initialize[];
+    With[{id, suffix = Switch[id,
+      6, "06",
+      _,  Debug[PANIC, "Constructor",
+	"Request ID[", id, "] is not available!"]]},
+
+      RequestID = id;
+      If[caRequest[id] === Null, caRequest[id] = CaMonitor[
+	{"CGLOBT:CCC:REQUEST"//suffix, "CGHOBT:CCC:REQUEST"//suffix},
+	ValueCommand:>RequestCallback[id, caRequest[id]@PositionL[]]]];
+      ];
+    ];
+
+  Lock[] := If[waitLock === KEKBCCC, waitLock = This,
+    Debug[PANIC, "Lock", "Recursive lock: ", waitLock, " -> ", This]];
+
+  Unlock[] := If[waitLock === This, waitLock = KEKBCCC,
+    Debug[PANIC, "Unlock", "Instance[", This, "]",
+     " try to unlock mutex of Instance[", waitLock, "]"]];
+
+  RequestCallback[reqID_Real, ringID_Real] := If[waitCCC[reqID, ringID]
+    && caRequest[reqID]@Value[ringID] === 2,
+    Debug[DEBUG2, "RequestCallback",
+      "HL"[ringID], "ER Request[", reqID, "] Acknowledged"];
+    waitCCC[reqID, ringID] =.];
+
+  Decode[cmd___String] := Module[{her = False, ler = False},
+    Scan[Switch[#,
+      "BOTH", ler = True; her = True,
+      "LER", ler = True,
+      "HER", her = True,
+      _, ]&, ToUpperCase/@{cmd, RingID}];
+    Switch[{ler, her},
+      {True, False}, 1,
+      {False, True}, 2,
+      {True, True}, 3,
+      _, 0]];
+
+  RunningQ[cmd___String] := RunningQ[Decode[cmd]];
+  RunningQ[id_Real] := If[SimulationMode, Return[True], Switch[id,
+    1, caState@Value[1] <=> Undefined && caState@Value[1] <=> -1,
+    2, caState@Value[2] <=> Undefined && caState@Value[2] <=> -1,
+    3, caState@Value[1] <=> Undefined && caState@Value[1] <=> -1
+    && caState@Value[2] <=> Undefined && caState@Value[2] <=> -1,
+      _, False]];
+
+  Suspend[cmd___String] := Suspend[Decode[cmd]];
+  Suspend[id_Real] := If[SimulationMode, Return[], Lock[]; Switch[id,
+    1, caRequest[RequestID]@Put[1, 1];
+    waitCCC[RequestID, 1] = True;
+    While[waitCCC[RequestID, 1], TkSense[10e-3]],
+
+    2, caRequest[RequestID]@Put[2, 1];
+    waitCCC[RequestID, 2] = True;
+    While[waitCCC[RequestID, 2], TkSense[10e-3]],
+
+    3, caRequest[RequestID]@Put[1, 1]; caRequest[RequestID]@Put[2, 1];
+    waitCCC[RequestID, 1] = True; waitCCC[RequestID, 2] = True;
+    While[waitCCC[RequestID, 1] && waitCCC[RequestID, 2], TkSense[10e-3]],
+
+    _, ]; Unlock[]];
+
+  Resume[cmd___String] := Resume[Decode[cmd]];
+  Resume[id_Real] := If[SimulationMode, Return[], Lock[]; Switch[id,
+    1, caRequest[RequestID]@Put[1, 0],
+    2, caRequest[RequestID]@Put[2, 0],
+    3, caRequest[RequestID]@Put[1, 0]; caRequest[RequestID]@Put[2, 0],
+
+    _, ]; Unlock[]];
+
+  SetBump[] := RequestBump[];
+
+  RequestBump[cmd___String] := RequestBump[Decode[cmd]];
+  RequestBump[id_Real] := If[SimulationMode, Return[], Switch[id,
+    1, caState@Put[1,  RequestID],
+    2, caState@Put[2,  RequestID],
+    3, caState@Put[1,  RequestID]; caState@Put[2,  RequestID]]];
+
+  SetReferenceHere[cmd___String] := SetReferenceHere[Decode[cmd]];
+  SetReferenceHere[id_Real] := If[SimulationMode, Return[], Switch[id,
+    1, caState@Put[1, -RequestID],
+    2, caState@Put[2, -RequestID],
+    3, caState@Put[1, -RequestID]; caState@Put[2, -RequestID]]];
+
+  ];
+! >>> KEKBCCC <<<
+
+! End of File
