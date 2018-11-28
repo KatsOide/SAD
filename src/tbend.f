@@ -1,3 +1,24 @@
+      module multa
+        integer*4, parameter :: nmult=21
+        logical*4 :: gknini=.true.
+        real*8 :: gkn(0:nmult,0:nmult)=0.d0
+
+        contains
+        subroutine gkninit
+        implicit none
+        integer*4 n,k
+        do n=0,nmult
+          gkn(n,0)=1.d0
+          do k=1,nmult-n
+            gkn(n,k)=gkn(n,k-1)
+     $           *dble((2*k-3)*(2*k+1))/8.d0/dble(k*(k+n+1))
+          enddo
+        enddo
+        gknini=.false.
+        return
+        end subroutine
+      end module
+
       module tbendcom
         real*8 rho0,rhob,f1r,f2r,fb1,fb2
 
@@ -6,46 +27,98 @@
         use tfstk
         implicit none
         integer*4 np,i
-        real*8 phi0,dtheta,pxi,pyi,pzi,pxf,pzf,pxa,pya,
-     $       xf,yf,xa,ya,dz,dza,pxb,pzb,cphi0,sphi0,cdt,sdt
+        real*8 phi0,dtheta,
+     $       r11,r12,r13,r21,r22,r23,r31,r32,r33,
+     $       pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf,
+     $       cphi0,sphi0,cdt,sdt,sdth2
         real*8 x(np),px(np),y(np),py(np),z(np)
         cphi0=cos(phi0*.5d0)
         sphi0=sin(phi0*.5d0)
-        cdt=cos(dtheta)
+        sdth2=sin(dtheta*.5d0)**2
+        cdt=1.d0-2.d0*sdth2
         sdt=sin(dtheta)
+        r11=cdt*cphi0**2+sphi0**2
+        r12=-cphi0*sdt
+        r13=-sdth2*sphi0
+        r21=-r12
+        r22=cdt
+        r23=sphi0*sdt
+        r31=r13
+        r32=-r23
+        r33=cdt*sphi0**2+cphi0**2
         do i=1,np
+          xi=x(i)
+          yi=y(i)
           pxi=px(i)
           pyi=py(i)
           pzi=1.d0+pxy2dpz(pxi,pyi)
-          pxf= pxi*cphi0+pzi*sphi0
-          pzf=-pxi*sphi0+pzi*cphi0
-          dz=x(i)*sphi0
-          xf=x(i)*cphi0+dz*pxf/pzf
-          yf=y(i)+dz*pyi/pzf
-          xa=xf*cdt-yf*sdt
-          ya=xf*sdt+yf*cdt
-          pxa=pxf*cdt-pyi*sdt
-          pya=pxf*sdt+pyi*cdt
-          pxb=pxa*cphi0-pzf*sphi0
-          pzb=pxa*sphi0+pzf*cphi0
-          dza=xa*sphi0
-          x(i)=xa*cphi0-dza*pxb/pzb
-          y(i)=ya-dza*pya/pzb
-          z(i)=z(i)-dz/pzf+dza/pzb
-          px(i)=pxb
-          py(i)=pya
+          xf =r11*xi +r12*yi
+          yf =r21*xi +r22*yi
+          zf =r31*xi +r32*yi
+          pxf=r11*pxi+r12*pyi+r13*pzi
+          pyf=r21*pxi+r22*pyi+r23*pzi
+          pzf=r31*pxi+r32*pyi+r33*pzi
+          px(i)=pxf
+          py(i)=pyf
+          x(i)=xf-pxf/pzf*zf
+          y(i)=yf-pyf/pzf*zf
+          z(i)=z(i)+zf/pzf         
+c          pxf= pxi*cphi0+pzi*sphi0
+c          pzf=-pxi*sphi0+pzi*cphi0
+c          dz=x(i)*sphi0
+c          xf=x(i)*cphi0+dz*pxf/pzf
+c          yf=y(i)+dz*pyi/pzf
+c          xa=xf*cdt-yf*sdt
+c          ya=xf*sdt+yf*cdt
+c          pxa=pxf*cdt-pyi*sdt
+c          pya=pxf*sdt+pyi*cdt
+c          pxb=pxa*cphi0-pzf*sphi0
+c          pzb=pxa*sphi0+pzf*cphi0
+c          dza=xa*sphi0
+c          x(i)=xa*cphi0-dza*pxb/pzb
+c          y(i)=ya-dza*pya/pzb
+c          z(i)=z(i)-dz/pzf+dza/pzb
+c          px(i)=pxb
+c          py(i)=pya
         enddo
         return
         end subroutine
 
       end module
 
-      subroutine tbend(np,x,px,y,py,z,g,dv,pz,l,al,phib,phi0,
+      subroutine tbend(np,x,px,y,py,z,g,dv,pz,
+     $     l,al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb10,fb20,mfring,fringe,
      $     cosw,sinw,sqwh,sinwp1,
      1     enarad,alb,ale,ala,eps)
+      implicit none
+      integer*4 np,mfring,l
+      real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,ak,dx,dy,theta,
+     $     cost,sint,cosw,sinw,sqwh,sinwp1,eps,
+     $     alb,ale,ala,
+     $     fb10,fb20,eps1,dtheta
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
+     $     px0(np),py0(np)
+      logical*4 enarad,fringe
+      call tbend0(np,x,px,y,py,z,g,dv,pz,px0,py0,
+     $     l,al,phib,phi0,
+     1     cosp1,sinp1,cosp2,sinp2,
+     1     ak,dx,dy,theta,dtheta,cost,sint,
+     1     fb10,fb20,mfring,fringe,
+     $     cosw,sinw,sqwh,sinwp1,
+     1     enarad,alb,ale,ala,eps,.true.)
+      return
+      end
+
+      subroutine tbend0(np,x,px,y,py,z,g,dv,pz,px0,py0,
+     $     l,al,phib,phi0,
+     1     cosp1,sinp1,cosp2,sinp2,
+     1     ak,dx,dy,theta,dtheta,cost,sint,
+     1     fb10,fb20,mfring,fringe,
+     $     cosw,sinw,sqwh,sinwp1,
+     1     enarad,alb,ale,ala,eps,ini)
       use tfstk
       use ffs_flag
       use tmacro
@@ -57,7 +130,7 @@
       parameter (ndivmax=1024)
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,ak,dx,dy,theta,
      $     cost,sint,cosw,sinw,sqwh,sinwp1,eps,
-     $     pr,xi,pxi,psi1,psi2,alb,ale,ala,
+     $     xi,pxi,psi1,psi2,alb,ale,ala,
      $     fb10,fb20,eps1,dtheta
       real*8 a3,a5,a7,a9,a11,a13,a15
       parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
@@ -68,7 +141,7 @@
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
      $     px0(np),py0(np)
       complex*16 akm(0:nmult)
-      logical*4 enarad,fringe
+      logical*4 enarad,fringe,ini
       if(phi0 .eq. 0.d0)then
         if(ak .eq. 0.d0)then
           call tsteer(np,x,px,y,py,z,g,dv,pz,l,al,-phib,
@@ -133,8 +206,10 @@ c      endif
       fb1=fb10
       fb2=fb20
       if(rad .and. enarad)then
-        px0=px
-        py0=py
+        if(ini)then
+          px0=px
+          py0=py
+        endif
         if(iprev(l) .eq. 0)then
           f1r=fb1
         else

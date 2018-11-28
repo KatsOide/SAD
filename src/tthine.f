@@ -19,7 +19,7 @@
      $       0.d0,0.d0,0.d0,.true.,enarad,calpol,irad,ld)
         return
       endif
-      call tchge(trans,cod,beam,-dx,-dy,theta,.true.,ld)
+      call tchge(trans,cod,beam,-dx,-dy,theta,0.d0,0.d0,.true.,ld)
       kord=nord/2-1
       b1=0.d0
       aki=ak/fact(kord)
@@ -124,6 +124,6 @@
      $       0.d0,0.d0,0.d0,.true.,enarad,calpol,irad,ld)
       endif
       bradprev=0.d0
-      call tchge(trans,cod,beam,dx,dy,-theta,.false.,ld)
+      call tchge(trans,cod,beam,dx,dy,-theta,0.d0,0.d0,.false.,ld)
       return
       end

@@ -1,46 +1,28 @@
-      module multa
-        integer*4, parameter :: nmult=21
-        logical*4 :: gknini=.true.
-        real*8 :: gkn(0:nmult,0:nmult)=0.d0
-
-        contains
-        subroutine gkninit
-        implicit none
-        integer*4 n,k
-        do n=0,nmult
-          gkn(n,0)=1.d0
-          do k=1,nmult-n
-            gkn(n,k)=gkn(n,k-1)
-     $           *dble((2*k-3)*(2*k+1))/8.d0/dble(k*(k+n+1))
-          enddo
-        enddo
-        gknini=.false.
-        return
-        end subroutine
-      end module
-
       subroutine tmulta(
      $     np,x,px,y,py,z,g,dv,pz,l,al,ak0,phi,
      $     psi1,psi2,bz,
      1     dx,dy,theta,dtheta,
      $     eps0,enarad,fb1,fb2,mfring,fringe)
       use tfstk
+      use ffs_flag, only:rad
       use tmacro
       use multa
+      use tbendcom, only:tbrot
       implicit none
       integer*4 ndivmax
       real*8 ampmax,eps00
       parameter (ampmax=0.05d0,eps00=0.005d0,ndivmax=2000)
       integer*4 np,mfring,i,n,mfr,ndiv,nmmax,m,m1,k,nmmin,l
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
+     $     px0(np),py0(np),
      $     al,phi,psi1,psi2,bz,dx,dy,theta,eps0,fb1,fb2,
-     $     dphix,dphiy,dtheta,pr,cost,sint,rho0,rhob,
+     $     dtheta,pr,cost,sint,rho0,rhob,
      $     sinp1,sinp2,cosp1,cosp2,phin,aln,cosw,sinw,sqwh,sinwp1,
      $     eps,xi,pxi,w,r,rk(0:nmult),als,ak0r,ak1r,ak1n,
      $     phib,phibn
       complex*16 ak0(0:nmult),ak(0:nmult),akn(0:nmult),
      $     cx1,csl,csr,cl,cr,cg
-      logical*4 enarad,fringe
+      logical*4 enarad,fringe,enrad
       real*8 fact(0:nmult+1)
       data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
      1     720.d0,     5040.d0,     40320.d0,362880.d0,3628800.d0,
@@ -57,21 +39,24 @@
       if(gknini)then
         call gkninit
       endif
-      cost=cos(theta+dtheta)
-      sint=sin(theta+dtheta)
+      cost=cos(theta)
+      sint=sin(theta)
       include 'inc/TENT.inc'
       if(dtheta .ne. 0.d0)then
-        dphix=phi*sin(.5d0*dtheta)**2
-        dphiy=.5d0*phi*sin(dtheta)
-        do i=1,np
-          pr=1.d0+g(i)
-          px(i)=px(i)+dphix/pr
-          py(i)=py(i)+dphiy/pr
-        enddo
-      else
-        dphix=0.d0
-        dphiy=0.d0
+        call tbrot(np,x,px,y,py,z,phi,dtheta)
       endif
+c      if(dtheta .ne. 0.d0)then
+c        dphix=phi*sin(.5d0*dtheta)**2
+c        dphiy=.5d0*phi*sin(dtheta)
+c        do i=1,np
+c          pr=1.d0+g(i)
+c          px(i)=px(i)+dphix/pr
+c          py(i)=py(i)+dphiy/pr
+c        enddo
+c      else
+c        dphix=0.d0
+c        dphiy=0.d0
+c      endif
       if(eps0 .eq. 0.d0)then
         eps=eps00
       else
@@ -96,6 +81,7 @@
           exit
         endif
       enddo
+      enrad=rad .and. enarad
       ndiv=1
       do n=nmmin,nmmax
         ndiv=max(ndiv,
@@ -125,6 +111,10 @@
         akn(m)=ak(m)/(fact(m+1)*ndiv)
       enddo
       als=0.d0
+      if(enrad)then
+        px0=px
+        py0=py
+      endif
       do n=1,ndiv
 c        write(*,*)'tmulta-1 ',n,x(1),px(1)
         if(n .eq. 1)then
@@ -144,12 +134,13 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
             mfr=-1
           endif
           als=aln*.5d0
-          call tbend(np,x,px,y,py,z,g,dv,pz,l,aln*.5d0,
+          call tbend0(np,x,px,y,py,z,g,dv,pz,px0,py0,
+     $         l,aln*.5d0,
      $         phibn*.5d0,phin*.5d0,
      1         cosp1,sinp1,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $         fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
-     1         enarad,0.d0,als,al,eps0)
+     1         enarad,0.d0,als,al,eps0,.false.)
           w=phin
           cosw=cos(w)
           sinw=sin(w)
@@ -160,12 +151,13 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
           endif
           sinwp1=sinw
         else
-          call tbend(np,x,px,y,py,z,g,dv,pz,l,aln,
+          call tbend0(np,x,px,y,py,z,g,dv,pz,px0,py0,
+     $         l,aln,
      $         phibn,phin,
      1         1.d0,0.d0,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $         0.d0,0.d0,0,.false.,cosw,sinw,sqwh,sinwp1,
-     1         enarad,als,als+aln,al,eps0)
+     1         enarad,als,als+aln,al,eps0,.false.)
           als=als+aln
         endif
 c        write(*,*)'tmulta-2 ',n,x(1),px(1)
@@ -194,6 +186,10 @@ c        write(*,*)'tmulta-2 ',n,x(1),px(1)
           px(i)=px(i)-(dble(csr*cx1)/r+dble(csl))/pr
           py(i)=py(i)+imag(csl)/pr
         enddo
+        if(enrad)then
+          px0=px
+          py0=py
+        endif
       enddo
       w=phin*.5d0-psi2
       cosw=cos(w)
@@ -210,18 +206,22 @@ c        write(*,*)'tmulta-2 ',n,x(1),px(1)
       elseif(mfring .ne. 0)then
         mfr=-2
       endif
-      call tbend(np,x,px,y,py,z,g,dv,pz,l,aln*.5d0,
+      call tbend0(np,x,px,y,py,z,g,dv,pz,px0,py0,
+     $     l,aln*.5d0,
      $     phibn*.5d0,phin*.5d0,
      1     1.d0,0.d0,cosp2,sinp2,
      1     ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $     fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
-     1     enarad,als,al,al,eps0)
+     1     enarad,als,al,al,eps0,.false.)
+c      if(dtheta .ne. 0.d0)then
+c        do i=1,np
+c          pr=(1.d0+g(i))
+c          px(i)=px(i)+dphix/pr
+c          py(i)=py(i)+dphiy/pr
+c        enddo
+c      endif
       if(dtheta .ne. 0.d0)then
-        do i=1,np
-          pr=(1.d0+g(i))
-          px(i)=px(i)+dphix/pr
-          py(i)=py(i)+dphiy/pr
-        enddo
+        call tbrot(np,x,px,y,py,z,-phi,-dtheta)
       endif
       include 'inc/TEXIT.inc'
       return
@@ -264,7 +264,7 @@ c        write(*,*)'tmulta-2 ',n,x(1),px(1)
       if(gknini)then
         call gkninit
       endif
-      call tchge(trans,cod,beam,-dx,-dy,theta+dtheta,.true.,ld)
+      call tchge(trans,cod,beam,-dx,-dy,theta,dtheta,phi,.true.,ld)
       if(dtheta .ne. 0.d0)then
         dphix=      phi*sin(.5d0*dtheta)**2
         dphiy= .5d0*phi*sin(dtheta)
@@ -408,6 +408,6 @@ c        write(*,*)'tmultae ',dble(csr*cx1)/r,dble(csl),nmmin
         cod(2)=cod(2)+dphix
         cod(4)=cod(4)+dphiy
       endif
-      call tchge(trans,cod,beam,dx,dy,-theta-dtheta,.false.,ld)
+      call tchge(trans,cod,beam,dx,dy,-theta,-dtheta,-phi,.false.,ld)
       return
       end
