@@ -273,7 +273,7 @@ c          go to 1010
      $             +cmp%value(ky_FB2_BEND)
             endif
             dtheta=cmp%value(ky_DROT_BEND)
-            theta0=cmp%value(ky_ROT_BEND)+dtheta
+            theta0=cmp%value(ky_ROT_BEND)
             cod1=cod
             call qbend(trans,cod,al,
      $           cmp%value(ky_ANGL_BEND)+cmp%value(ky_K0_BEND),

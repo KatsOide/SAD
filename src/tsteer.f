@@ -1,7 +1,7 @@
       subroutine tsteer(np,x,px,y,py,z,g,dv,pz,l,al,phib,dx,dy,
      1     theta,cost,sint,
      1     cosp1,sinp1,cosp2,sinp2,
-     $     fb1,fb2,mfring,fringe,eps0)
+     $     fb1,fb2,mfring,fringe,enarad,eps0)
       use ffs_flag
       use tmacro
       use ffs_pointer, only:inext,iprev
@@ -11,14 +11,16 @@
      1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
      1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
       integer*4 np,mfring,i,l
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
+     $     px0(np),py0(np),ds(np)
       real*8 al,phib,dx,dy,theta,cost,sint,eps0,rhob,
      $     dxfr1,dyfr1,dyfra1,f1r,f2r,
      $     dxfr2,dyfr2,dyfra2,
      $     dp,p,rhoe,pxi,s,dpv1,pv1,dpv2,pv2,fa,f,ff,
      $     dpz1,pz1,dpz2,pz2,phsq,u,w,dl,brad,dpx,pyi,xi,pxf,d,
      $     cosp1,sinp1,cosp2,sinp2,tanp1,tanp2,fb1,fb2
-      logical*4 fringe
+      logical*4 fringe,enarad,enrad
+      enrad=enarad .and. rad
       if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,pz,2,l,al,-phib,
      1             dx,dy,theta,cost,sint,1.d0,.false.)
@@ -27,7 +29,7 @@
         call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
         return
       endif
-      if(rad .and. trpt)then
+      if(enrad .and. trpt)then
         call tstrad(np,x,px,y,py,z,g,dv,pz,l,al,phib,dx,dy,
      1       theta,cost,sint,
      1       cosp1,sinp1,cosp2,sinp2,
@@ -38,21 +40,23 @@
       tanp1=sinp1/cosp1
       tanp2=sinp2/cosp2
       rhob=al/phib
-      if(rad)then
-        if(iprev(l) .eq. 0)then
-          f1r=fb1
-        else
-          f1r=0.d0
-        endif
-        if(inext(l) .eq. 0)then
-          f2r=fb2
-        else
-          f2r=0.d0
-        endif
-        brad=brhoz/rhob
-        call trad(np,x,px,y,py,g,dv,brad,0.d0,0.d0,
-     1             0.d0,-tanp1*2.d0/al,.5d0*al,
-     $       f1r,f2r,0.d0,al,1.d0)
+      if(enrad)then
+        px0=px
+        py0=py
+c        if(iprev(l) .eq. 0)then
+c          f1r=fb1
+c        else
+c          f1r=0.d0
+c        endif
+c        if(inext(l) .eq. 0)then
+c          f2r=fb2
+c        else
+c          f2r=0.d0
+c        endif
+c        brad=brhoz/rhob
+c        call trad(np,x,px,y,py,g,dv,brad,0.d0,0.d0,
+c     1             0.d0,-tanp1*2.d0/al,.5d0*al,
+c     $       f1r,f2r,0.d0,al,1.d0)
       endif
       dxfr1=0.d0
       dyfr1=0.d0
@@ -132,6 +136,9 @@ c        dp=g(i)*(2.d0+g(i))
           endif
         endif
         x(i)=xi+al*(pxf+pxi)/(pz2+pz1)
+        if(enrad)then
+          ds(i)=al+dl
+        endif
         y(i)=y(i)+pyi*(al+dl)
         s=min(.9d0,pxf**2)
         dpv2=s*(-.5d0-s*(.125d0+s*.0625d0))
@@ -150,10 +157,11 @@ c        dp=g(i)*(2.d0+g(i))
         z(i)=z(i)-(dxfr2*pxf-
      $       (.5d0*dyfr2-.25d0*dyfra2*y(i)**2)*y(i)**2/p)/p
 100   continue
-      if(rad)then
-        call trad(np,x,px,y,py,g,dv,brad,0.d0,0.d0,
-     1            0.d0,-tanp2*2.d0/al,.5d0*al,
-     $       f1r,f2r,al,al,-1.d0)
+      if(enrad)then
+        call tradki(np,x,px,y,py,px0,py0,g,dv,ds)
+c        call trad(np,x,px,y,py,g,dv,brad,0.d0,0.d0,
+c     1            0.d0,-tanp2*2.d0/al,.5d0*al,
+c     $       f1r,f2r,al,al,-1.d0)
       endif
       include 'inc/TEXIT.inc'
       return

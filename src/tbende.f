@@ -303,6 +303,23 @@ c     $     sxkxp,dcxkxp
       cod(5)=cod(5)-phi0n*(dp*rhob+drhob)+da*rhoe-dvemit*aln
       return
       end subroutine
+
+      subroutine tbrote(trans1,cod,phi0,dtheta)
+      implicit none
+      real*8 trans1(6,6),cod(6),phi0,dtheta,chi1,chi2,chi3,sphi0,
+     $     coschi2,sdt,cphi0
+      cphi0=cos(phi0*.5d0)
+      sphi0=sin(phi0*.5d0)
+      sdt=sin(dtheta)
+      chi2=asin(sdt*sphi0)
+      coschi2=cos(chi2)
+      chi1=asin(sin(dtheta*.5d0)**2*2.d0*sphi0*cphi0/coschi2)
+      chi3=asin(sdt*cphi0/coschi2)
+c      write(*,*)'tbrote ',chi1,chi2,chi3
+      call tsrote(trans1,cod,chi1,chi2,chi3)
+      return
+      end
+
       end module
 
       subroutine tbende(trans,cod,beam,al0,phib,phi0,
@@ -317,11 +334,11 @@ c     $     sxkxp,dcxkxp
       implicit none
       integer*4 ld,mfring,ndiv,nrad,n,l
       real*8 al0,phib,phi0,psi1,psi2,ak,dx,dy,theta,dtheta,
-     $     fb1,fb2,eps0,dphix,phibl,
+     $     fb1,fb2,eps0,phibl,
      $     dxfr1,dyfr1,dxfr2,dyfr2,
      $     eps,f1r,f2r,akn,tanp1,tanp2,
      $     f,xe,bx,by,bxy,xf,xfr,dxe,
-     $     dphiy,dyfra1,dyfra2,apsi1,apsi2,cod11,
+     $     dyfra1,dyfra2,apsi1,apsi2,cod11,
      $     csphin,snphin,sinsqn,phin,aln
       real*8 trans(6,12),cod(6),beam(42)
       complex*16 akm(0:nmult)
@@ -358,25 +375,26 @@ c     $     sxkxp,dcxkxp
         endif
         return
       elseif(phib .eq. 0.d0)then
-        call tchge(trans,cod,beam,-dx,-dy,theta,.true.,ld)
+        call tchge(trans,cod,beam,-dx,-dy,theta,dtheta,phi0,.true.,ld)
         call tbdrifte(trans,cod,beam,al,phi0,h0,h1emit,dvemit,
      $       irad,calpol,ld)
-        call tchge(trans,cod,beam,dx,dy,-theta,.false.,ld)
+        call tchge(trans,cod,beam,dx,dy,-theta,-dtheta,-phi0,.false.,ld)
         return
       elseif(al .eq. 0.d0)then
-        call tbthie(trans,cod,beam,phib,phi0,dx,dy,theta,ld)
+        call tbthie(trans,cod,beam,phib,phi0,dx,dy,theta,dtheta,ld)
         return
       endif
-      call tchge(trans,cod,beam,-dx,-dy,theta,.true.,ld)
-      if(dtheta .ne. 0.d0)then
-        dphix=      phi0*sin(.5d0*dtheta)**2
-        dphiy= .5d0*phi0*sin(dtheta)
-        cod(2)=cod(2)+dphix
-        cod(4)=cod(4)+dphiy
-      else
-        dphix=0.d0
-        dphiy=0.d0
-      endif
+      call tchge(trans,cod,beam,-dx,-dy,theta,dtheta,phi0,.true.,ld)
+c      write(*,'(a,1p6g15.7)')'tbende-1 ',cod
+c      if(dtheta .ne. 0.d0)then
+c        dphix=      phi0*sin(.5d0*dtheta)**2
+c        dphiy= .5d0*phi0*sin(dtheta)
+c        cod(2)=cod(2)+dphix
+c        cod(4)=cod(4)+dphiy
+c      else
+c        dphix=0.d0
+c        dphiy=0.d0
+c      endif
       phibl=phib/al
       rhob=1.d0/phibl
       rho0=al/phi0
@@ -525,11 +543,13 @@ c     $     sxkxp,dcxkxp
           call tblfre(trans,cod,beam,dxfr2,dyfr2,dyfra2,ld)
         endif
       endif
-      if(dtheta .ne. 0.d0)then
-        cod(2)=cod(2)+dphix
-        cod(4)=cod(4)+dphiy
-      endif
-      call tchge(trans,cod,beam,dx,dy,-theta,.false.,ld)
+c      if(dtheta .ne. 0.d0)then
+c        cod(2)=cod(2)+dphix
+c        cod(4)=cod(4)+dphiy
+c      endif
+c      write(*,'(a,1p6g15.7)')'tbende-8 ',cod
+      call tchge(trans,cod,beam,dx,dy,-theta,-dtheta,-phi0,.false.,ld)
+c      write(*,'(a,1p6g15.7)')'tbende-9 ',cod
       return
       end
 
@@ -564,7 +584,6 @@ c      pzi=sqrt(max(1.d-4,(pr-pxi)*(pr+pxi)-pyi**2))
       pzf=pzi*cp-pxi*sp
       pxf=pzi*sp+pxi*cp
       xf=xi*pzi/pzf
-      call tinitr(trans1)
       dpzipxi=-pxi/pzi
       dpzfpxi= cp*dpzipxi-sp
       dpzipyi=-pyi/pzi
@@ -573,17 +592,22 @@ c      pzi=sqrt(max(1.d-4,(pr-pxi)*(pr+pxi)-pyi**2))
       dpzfp  = cp*dpzip
       trans1(1,1)=pzi/pzf
       trans1(1,2)=(dpzipxi-dpzfpxi*pzi/pzf)/pzf*xi
+      trans1(1,3)=0.d0
       trans1(1,4)=(dpzipyi-dpzfpyi*pzi/pzf)/pzf*xi
       trans1(1,6)=(dpzip  -dpzfp  *pzi/pzf)/pzf*xi
+      trans1(2,1)=0.d0
       trans1(2,2)=cp+sp*dpzipxi
+      trans1(2,3)=0.d0
       trans1(2,4)=   sp*dpzipyi
       trans1(2,6)=   sp*dpzip
       trans1(3,1)=sp*pyi/pzf
       trans1(3,2)=-xi*sp*pyi/pzf**2*dpzfpxi
+      trans1(3,3)=1.d0
       trans1(3,4)= xi*sp*(1.d0-pyi*dpzfpyi/pzf)/pzf
       trans1(3,6)=-xi*sp*pyi/pzf**2*dpzfp
       trans1(5,1)=-pr/pzf*sp
       trans1(5,2)= pr/pzf**2*xi*sp*dpzfpxi
+      trans1(5,3)=0.d0
       trans1(5,4)= pr/pzf**2*xi*sp*dpzfpyi
       dl=rho0*xsin(phi0)
       trans1(5,6)=-xi*sp*(1.d0-pr*dpzfp  /pzf)/pzf
@@ -653,15 +677,15 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       end
 
       subroutine tbthie(trans,cod,beam,phib,phi0,
-     1                 dx,dy,theta,ld)
+     1                 dx,dy,theta,dtheta,ld)
       use tfstk
       use ffs_flag
       use tmacro
       implicit none
       integer*4 ld
       real*8 trans(6,12),cod(6),beam(42),phib,phi0,dx,dy,theta,
-     $     trans1(6,13)
-      call tchge(trans,cod,beam,-dx,-dy,theta,.true.,ld)
+     $     trans1(6,13),dtheta
+      call tchge(trans,cod,beam,-dx,-dy,theta,dtheta,phi0,.true.,ld)
       call tinitr(trans1)
       trans1(2,6)=phi0
       trans1(5,1)=-phi0
@@ -672,6 +696,6 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       endif
       cod(2)=cod(2)+(phi0-phib)+cod(6)*phi0
       cod(5)=cod(5)-phi0*cod(1)
-      call tchge(trans,cod,beam,dx,dy,-theta,.false.,ld)
+      call tchge(trans,cod,beam,dx,dy,-theta,-dtheta,-phi0,.false.,ld)
       return
       end

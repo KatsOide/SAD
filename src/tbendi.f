@@ -121,8 +121,9 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
 
       subroutine tbendi(np,x,px,y,py,z,g,dv,pz,l,al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
-     1     ak,dx,dy,theta,dphix,dphiy,cost,sint,
+     1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb1,fb2,mfring,enarad,fringe,eps0)
+      use tbendcom, only:tbrot
       use bendib
       use tfstk
       use ffs_flag
@@ -132,20 +133,23 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       integer*4 np,mfring,i,ndiv,n,l
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
      $     al,phib,phi0,cosp1,sinp1,cosp2,sinp2,
-     1     ak,dx,dy,theta,dphix,dphiy,cost,sint,fb1,fb2,eps0,
+     1     ak,dx,dy,theta,cost,sint,fb1,fb2,eps0,
      $     tanp1,tanp2,aind,b,dxfr1,dyfr1,dyfra1,pr,eps,
      $     af,f,fpx,ff,akn,aln,phin,f1r,f2r,
-     $     dxfr2,dyfr2,dyfra2
+     $     dxfr2,dyfr2,dyfra2,dtheta
       logical*4 enarad,fringe
       include 'inc/TENT.inc'
-      if(dphiy .ne. 0.d0)then
-        do i=1,np
-c          pr=(1.d0+g(i))**2
-          pr=1.d0+g(i)
-          px(i)=px(i)+dphix/pr
-          py(i)=py(i)+dphiy/pr
-        enddo
+      if(dtheta .ne. 0.d0)then
+        call tbrot(np,x,px,y,py,z,phi0,dtheta)
       endif
+c      if(dphiy .ne. 0.d0)then
+c        do i=1,np
+cc          pr=(1.d0+g(i))**2
+c          pr=1.d0+g(i)
+c          px(i)=px(i)+dphix/pr
+c          py(i)=py(i)+dphiy/pr
+c        enddo
+c      endif
       tanp1=sinp1/cosp1
       tanp2=sinp2/cosp2
       rhob=al/phib
@@ -253,13 +257,16 @@ c            dp=g(i)*(2.d0+g(i))
       if(fringe .and. mfring .gt. -4 .and. mfring .ne. 1)then
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
       endif
-      if(dphiy .ne. 0.d0)then
-        do i=1,np
+c      if(dphiy .ne. 0.d0)then
+c        do i=1,np
 c          pr=(1.d0+g(i))**2
-          pr=1.d0+g(i)
-          px(i)=px(i)+dphix/pr
-          py(i)=py(i)+dphiy/pr
-        enddo
+c          pr=1.d0+g(i)
+c          px(i)=px(i)+dphix/pr
+c          py(i)=py(i)+dphiy/pr
+c        enddo
+c      endif
+      if(dtheta .ne. 0.d0)then
+        call tbrot(np,x,px,y,py,z,-phi0,-dtheta)
       endif
       include 'inc/TEXIT.inc'
       return

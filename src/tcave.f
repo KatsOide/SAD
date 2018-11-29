@@ -20,7 +20,7 @@
      $     wi,offset1,va,sp,cp,av,dpxa,dpya,dav,davdz,davdp,
      $     dpx,dpy,dv,s0
       logical*4 fringe,autophi
-      call tchge(trans,cod,beam,-dx,-dy,theta,.true.,ld)
+      call tchge(trans,cod,beam,-dx,-dy,theta,0.d0,0.d0,.true.,ld)
       if(harm .eq. 0.d0)then
         w=pi2*freq/c
       else
@@ -204,7 +204,7 @@ c        rg=sqrt(rg2)
         call tphyzp
         call tesetdv(cod(6))
       endif
-      call tchge(trans,cod,beam,dx,dy,-theta,.false.,ld)
+      call tchge(trans,cod,beam,dx,dy,-theta,0.d0,0.d0,.false.,ld)
 c      write(*,'(a,i5,1p6g15.7)')'tcave ',l+1,dhg,rg2,
 c     $     trans(5,5),trans(5,6),trans(6,5),trans(6,6)
       return

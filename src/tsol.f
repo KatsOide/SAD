@@ -303,7 +303,7 @@ c      h1=p0*pr*sqrt(1.d0+1.d0/(p0*pr)**2)
      $     chi1,chi2,chi3,
      $     cchi1,schi1,cchi2,schi2,cchi3,schi3,
      $     r11,r12,r13,r21,r22,r23,r31,r32,r33,
-     $     pr,pxi,pyi,a,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf,
+     $     pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf,
      $     dx,dy,dz
       logical*4 ent
       cchi1=cos(chi1)
@@ -323,11 +323,11 @@ c      h1=p0*pr*sqrt(1.d0+1.d0/(p0*pr)**2)
       r33= cchi1*cchi2
       if(ent)then
         do i=1,np
-          pr=1.d0+g(i)
           pxi=px(i)
           pyi=py(i)
-          a=min(.9999d0,pxi**2+pyi**2)
-          pzi=1.d0+sqrt1(-a)
+          pzi=1.d0+pxy2dpz(pxi,pyi)
+c          a=min(.9999d0,pxi**2+pyi**2)
+c          pzi=1.d0+sqrt1(-a)
 c          pzi=1.d0-a/(sqrt(1.d0-a)+1.d0)
           xi=x(i)
           yi=y(i)
@@ -345,11 +345,11 @@ c          pzi=1.d0-a/(sqrt(1.d0-a)+1.d0)
         enddo
       else
         do i=1,np
-          pr=(1.d0+g(i))
           pxi=px(i)
           pyi=py(i)
-          a=min(.9999d0,pxi**2+pyi**2)
-          pzi=1.d0+sqrt1(-a)
+          pzi=1.d0+pxy2dpz(pxi,pyi)
+c          a=min(.9999d0,pxi**2+pyi**2)
+c          pzi=1.d0+sqrt1(-a)
 c          pzi=1.d0-a/(sqrt(1.d0-a)+1.d0)
           xi=x(i)-dx
           yi=y(i)-dy

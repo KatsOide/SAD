@@ -28,7 +28,7 @@
      $         0.d0,0.d0,0.d0,.true.,enarad,calpol,irad,ld)
         return
       endif
-      call tchge(trans,cod,beam,-dx,-dy,theta,.true.,ld)
+      call tchge(trans,cod,beam,-dx,-dy,theta,0.d0,0.d0,.true.,ld)
       rhob=al/phib
       prev=bradprev .ne. 0.d0
       if(fb1 .ne. 0.d0 .and. (mfring .gt. 0 .or. mfring .eq. -1))then
@@ -178,6 +178,6 @@ c        call tbfrie(trans,cod,beam, rhob,0.d0,.false.,ld)
         endif
         call tblfre(trans,cod,beam,dxfr2,dyfr2,dyfra2,ld)
       endif
-      call tchge(trans,cod,beam,dx,dy,-theta,.false.,ld)
+      call tchge(trans,cod,beam,dx,dy,-theta,0.d0,0.d0,.false.,ld)
       return
       end

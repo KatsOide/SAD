@@ -507,7 +507,7 @@ c        go to 5000
      $           +cmp%value(ky_FB2_BEND)
           endif
           dtheta=cmp%value(ky_DROT_BEND)
-          theta0=cmp%value(ky_ROT_BEND)+dtheta
+          theta0=cmp%value(ky_ROT_BEND)
           ak0=cmp%value(ky_K0_BEND)
      $         +cmp%value(ky_ANGL_BEND)
           ak1=cmp%value(ky_K1_BEND)
