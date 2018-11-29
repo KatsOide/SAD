@@ -9,7 +9,7 @@ c      use ffs_pointer, only:inext,iprev
       logical*4 enarad,chro,fringe,kin
       integer*4 np,l,i,mfring
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
-     $     px0(np),py0(np),
+     $     px0(np),py0(np),bsi(np),
      $     al,ak,dx,dy,theta,cost,sint,radlvl,eps0,alr,
      $     f1in,f1out,f2in,f2out,p,a,ea,b,pxi,pxf,pyf,xi
       real*8, parameter :: ampmax=0.9999d0
@@ -18,7 +18,7 @@ c      use ffs_pointer, only:inext,iprev
      $             dx,dy,theta,cost,sint, 1.d0,.false.)
         return
       elseif(ak .eq. 0.d0)then
-        call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
+        call tdrift_free(np,x,px,y,py,z,dv,al)
         return
       endif
       enarad=rad .and. radlvl .ne. 1.d0
@@ -52,27 +52,11 @@ c          p=(1.d0+g(i))**2
           py(i)=pyf
 2110    continue
       endif
-c$$$      if(enarad)then
-c$$$        if(iprev(l) .eq. 0)then
-c$$$          f1r=sqrt(abs(24.d0*f1in/ak*al))
-c$$$        else
-c$$$          f1r=0.d0
-c$$$        endif
-c$$$        if(inext(l) .eq. 0)then
-c$$$          f2r=sqrt(abs(24.d0*f1out/ak*al))
-c$$$        else
-c$$$          f2r=0.d0
-c$$$        endif
-c$$$        b1=brho*ak/al
-c$$$        call trad(np,x,px,y,py,g,dv,0.d0,0.d0,
-c$$$     1       b1,0.d0,0.d0,.5d0*al,
-c$$$     $       f1r,f2r,0.d0,al,1.d0)
-c$$$      endif
       if(enarad)then
-        call tsolqur(np,x,px,y,py,z,g,dv,pz,al,ak,
+        call tsolqur(np,x,px,y,py,z,g,dv,bsi,al,ak,
      $       0.d0,0.d0,0.d0,eps0,px0,py0,alr)
       else
-        call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,0.d0,0.d0,0.d0,eps0)
+        call tsolqu(np,x,px,y,py,z,g,dv,bsi,al,ak,0.d0,0.d0,0.d0,0,eps0)
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
         do 2120 i=1,np
@@ -136,7 +120,7 @@ c     begin initialize for preventing compiler warning
       aki=0.d0
 c     end   initialize for preventing compiler warning
       if(ak .eq. 0.d0)then
-        call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
+        call tdrift_free(np,x,px,y,py,z,dv,al)
         return
       endif
       enarad=rad .and. radlvl .eq. 0.d0 .and. al .ne. 0.d0
@@ -681,5 +665,17 @@ c        p=(1.d0+g(i))**2
         x(i)=xf
         y(i)=yf
       enddo
+      return
+      end
+
+      subroutine zcheck(x,tag)
+      implicit none
+      real*8 x
+      character*(*) tag
+      write(*,*)'zcheck-0 ',tag
+      if(x .ne. 0.d0)then
+        write(*,*)'zcheck-x ',x
+        stop
+      endif
       return
       end

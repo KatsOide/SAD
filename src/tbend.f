@@ -271,7 +271,7 @@ c      endif
         dcp=1.d0-cp
       endif
       rho0=al/phi0
-      call tdrift_free(np,x,px,y,py,z,0.d0,dv,pz,rho0*sp)
+      call tdrift_free(np,x,px,y,py,z,dv,rho0*sp)
       dx=rho0*dcp
       dl=rho0*xsin(phi0)
       do i=1,np

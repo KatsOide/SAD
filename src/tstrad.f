@@ -22,7 +22,7 @@
      1             dx,dy,theta,cost,sint,1.d0,.false.)
         return
       elseif(phib .eq. 0.d0)then
-        call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
+        call tdrift_free(np,x,px,y,py,z,dv,al)
         return
       endif
       include 'inc/TENT.inc'

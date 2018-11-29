@@ -708,17 +708,17 @@ c     drift in the free space
       ndiv=max(1,nint(abs(al)/alstep))
       aln=al/ndiv
 
-      call tdrift_free(np,x,px,y,py,z,g,dv,zz,aln*.5d0)
+      call tdrift_free(np,x,px,y,py,z,dv,aln*.5d0)
 
       call spkick(np,x,px,y,py,z,g,dv,zz,aln,
      $     radius,alx,kturn,l,latt,kptbl)
       do i=2,ndiv
-        call tdrift_free(np,x,px,y,py,z,g,dv,zz,aln)
+        call tdrift_free(np,x,px,y,py,z,dv,aln)
         call spkick(np,x,px,y,py,z,g,dv,zz,aln,
      $       radius,alx,kturn,l,latt,kptbl)
       enddo
 
-      call tdrift_free(np,x,px,y,py,z,g,dv,zz,aln*.5d0)
+      call tdrift_free(np,x,px,y,py,z,dv,aln*.5d0)
 c      call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
       if(radius .ne. 0.d0)then
          call tapert(l,latt,x,px,y,py,z,g,dv,zz,kptbl,np,kturn,

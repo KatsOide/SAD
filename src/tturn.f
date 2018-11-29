@@ -500,7 +500,7 @@ c     endif
      1         cmp%value(ky_DX_TCAV),cmp%value(ky_DY_TCAV),
      $         cmp%value(ky_ROT_TCAV))
         else
-          call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
+          call tdrift_free(np,x,px,y,py,z,dv,al)
         endif
 
         case (icMAP)

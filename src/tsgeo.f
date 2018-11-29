@@ -293,8 +293,8 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         zf=0.d0
         gf=0.d0
         dvf=0.d0
-        call tdrift(1,xf,pxf,yf,pyf,zf,gf,dvf,pzf,al,bzs*dir,
-     $       phiy,phix)
+        call tdrift(1,xf,pxf,yf,pyf,zf,gf,dvf,pzf,
+     $       al,bzs*dir,phiy,phix)
         pxf=pxf*dir+f*yf
         pyf=pyf*dir-f*xf
         dl=-zf

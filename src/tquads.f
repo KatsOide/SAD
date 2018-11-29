@@ -11,7 +11,7 @@ c      use ffs_pointer, only:inext,iprev
       integer*4 np,ld,mfring,i,irtc,ld1,level,m,itfuplevel,
      $     itfdownlevel,l
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
-     $     pxr0(np),pyr0(np),
+     $     pxr0(np),pyr0(np),bsi(np),
      $     al,bz,ak,dx,dy,theta,cost,sint,radlvl,alr,
      $     f1in,f2in,f1out,f2out,eps0,
      $     a,aki,akm,ali,alm,b,ea,fx,fy,p,pr,px0,pxf,pyf,rb,x0
@@ -95,10 +95,10 @@ c$$$     1       b1,0.d0,0.d0,.5d0*al,f1r,f2r,0.d0,al,1.d0)
 c$$$      endif
       if(ifv .eq. 0)then
         if(enarad)then
-          call tsolqur(np,x,px,y,py,z,g,dv,pz,al,ak,bz,0.d0,0.d0,eps0,
+          call tsolqur(np,x,px,y,py,z,g,dv,bsi,al,ak,bz,0.d0,0.d0,eps0,
      $         pxr0,pyr0,alr)
         else
-          call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,bz,0.d0,0.d0,eps0)
+          call tsolqu(np,x,px,y,py,z,g,dv,bsi,al,ak,bz,0.d0,0.d0,0,eps0)
         endif
       else
         level=itfuplevel()
@@ -136,11 +136,11 @@ c$$$      endif
               aki=akm
             endif
             if(enarad)then
-              call tsolqu(np,x,px,y,py,z,g,dv,pz,ali,aki,
+              call tsolqu(np,x,px,y,py,z,g,dv,bsi,ali,aki,
      $             bz*rb,0.d0,0.d0,eps0,pxr0,pyr0,alr)
             else
-              call tsolqu(np,x,px,y,py,z,g,dv,pz,ali,aki,
-     $             bz*rb,0.d0,0.d0,eps0)
+              call tsolqu(np,x,px,y,py,z,g,dv,bsi,ali,aki,
+     $             bz*rb,0.d0,0.d0,0,eps0)
             endif
           enddo
           level=itfdownlevel()
@@ -151,11 +151,11 @@ c$$$      endif
           else
             level=itfdownlevel()
             if(enarad)then
-              call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,
+              call tsolqu(np,x,px,y,py,z,g,dv,bsi,al,ak,
      $             bz,0.d0,0.d0,eps0,pxr0,pyr0,alr)
             else
-              call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,
-     $             bz,0.d0,0.d0,eps0)
+              call tsolqu(np,x,px,y,py,z,g,dv,bsi,al,ak,
+     $             bz,0.d0,0.d0,0,eps0)
             endif
           endif
         endif

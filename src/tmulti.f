@@ -20,7 +20,7 @@ c      parameter (oneev=1.d0+3.83d-12)
       parameter (oneev=1.d0+1.d-6)
       integer*4 np
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
-     $     pxr0(np),pyr0(np)
+     $     pxr0(np),pyr0(np),bsi(np)
       real*8 al,f1in,f2in,f1out,f2out
       complex*16 ak(0:nmult)
       real*8 bz,phia,psi1,psi2,dx,dy,dz,chi1,chi2,theta,dtheta,eps0
@@ -30,7 +30,7 @@ c      parameter (oneev=1.d0+3.83d-12)
       integer*8 latt(nlat)
       integer*4 kturn,l,kptbl(np0,6)
       logical*4 acc,spac1,dofr(0:nmult),krad
-      integer*4 i,j,m,n,ndiv,nmmin,nmmax
+      integer*4 i,j,m,n,ndiv,nmmin,nmmax,ibsi
       real*8 pz0,s0,bxs,bys,bzs,
      $     vnominal,theta1,theta2,
      $     cchi1,schi1,b,
@@ -263,7 +263,7 @@ c     $     x(np),px(np),y(np),py(np),z(np),g(np)
         nmmax=0
         go to 1
       else
-        call tdrift(np,x,px,y,py,z,g,dv,pz,al,
+        call tdrift(np,x,px,y,py,z,g,dv,bsi,al,
      $       bzs,dble(akr(0)),imag(akr(0)))
       endif
       go to 1000
@@ -427,15 +427,18 @@ c        vnominal=0.d0
       endif
       spac1 = spac .and. radius .ne. 0.d0
       sv=0.d0
+      ibsi=1
       do m=1,ndiv
         if(nmmin .eq. 2)then
-          call tsolqu(np,x,px,y,py,z,g,dv,pz,al1,ak1,
-     $         bzs,dble(ak01),imag(ak01),eps0)
+          call tsolqu(np,x,px,y,py,z,g,dv,bsi,al1,ak1,
+     $         bzs,dble(ak01),imag(ak01),ibsi,eps0)
           if(krad)then
+c            write(*,'(a,1p7g12.4)')'tmulti-1 ',bsi(1:7)
             call tradk(np,x,px,y,py,pxr0,pyr0,g,dv,al1)
             pxr0=px
             pyr0=py
           endif
+          ibsi=0
         endif
         wsm=ws(m)
         if(m .eq. ndiv)then
@@ -520,8 +523,9 @@ c            dpr=ah/(1.d0+sqrt(1.d0+ah))
         endif
       enddo
       if(nmmin .eq. 2)then
-        call tsolqu(np,x,px,y,py,z,g,dv,pz,al1,
-     $       ak1,bzs,dble(ak01),imag(ak01),eps0)
+        call tsolqu(np,x,px,y,py,z,g,dv,bsi,al1,
+     $       ak1,bzs,dble(ak01),imag(ak01),2,eps0)
+c        write(*,'(a,1p7g12.4)')'tmulti-2 ',bsi(1:7)
       endif
       if(spac1)then
 c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)

@@ -9,19 +9,15 @@ c     Maximum amplitude of (px/p0)^2 + (py/p0)^2
       end module element_drift_common
 
 c     drift in the free space
-      subroutine tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
+      subroutine tdrift_free(np,x,px,y,py,z,dv,al)
       use element_drift_common
       use tfstk
       implicit none
       integer*4 np,i
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np)
       real*8 al,al1,dpz
       do i=1,np
-c        s=px(i)**2+py(i)**2
         dpz=pxy2dpz(px(i),py(i))
-c        dpz=s*(-.5d0-s*(.125d0+s*.0625d0))
-c        dpz=(dpz**2-s)/(2.d0+2.d0*dpz)
-c        dpz=(dpz**2-s)/(2.d0+2.d0*dpz)
         al1=al/(1.d0+dpz)
         x(i)=x(i)+px(i)*al1
         y(i)=y(i)+py(i)*al1
@@ -31,12 +27,12 @@ c        dpz=(dpz**2-s)/(2.d0+2.d0*dpz)
       end
 
 c     drift in the parallel solenoid
-      subroutine tdrift_solenoid(np,x,px,y,py,z,g,dv,pz,al,bz)
+      subroutine tdrift_solenoid(np,x,px,y,py,z,g,dv,bsi,al,bz)
       use tfstk, only: sqrtl
       use element_drift_common
       implicit none
       integer*4 np
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),bsi(np)
       real*8 al,bz
       integer*4 i
       real*8 pr,bzp,pxi,pyi
@@ -89,7 +85,7 @@ c
       return
       end
 
-      subroutine tdrift(np,x,px,y,py,z,g,dv,pz,
+      subroutine tdrift(np,x,px,y,py,z,g,dv,bsi,
      $     al,bz,ak0x,ak0y)
       use element_drift_common
       use tfstk, only:sqrtl
@@ -97,7 +93,7 @@ c
       integer*4 np,i,j,itmax,ndiag
       real*8 conv
       parameter (itmax=15,conv=1.d-15)
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),pz(np),g(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),bsi(np),g(np)
       real*8 al,bz,pr,bzp,s,phi,
      $     sinphi,ak0x,ak0y,b,phix,phiy,phiz,
      $     dphizsq,dpz0,pz0,plx,ply,plz,ptx,pty,ptz,
@@ -106,10 +102,10 @@ c
       data ndiag/15/
       if(ak0x .eq. 0.d0 .and. ak0y .eq. 0.d0)then
         if(bz .eq. 0.d0)then
-          call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
+          call tdrift_free(np,x,px,y,py,z,dv,al)
           return
         else
-          call tdrift_solenoid(np,x,px,y,py,z,g,dv,pz,al,bz)
+          call tdrift_solenoid(np,x,px,y,py,z,g,dv,bsi,al,bz)
           return
         endif
       else
@@ -124,6 +120,8 @@ c          pr=(1.d0+g(i))**2
           pr=(1.d0+g(i))
           alb=al*pr/b
           bzp=bz/pr
+c          bsi(i)=bzp*al
+c%%%%%%%%%
           px(i)=px(i)+bzp*y(i)*.5d0
           py(i)=py(i)-bzp*x(i)*.5d0
           s=min(ampmax,px(i)**2+py(i)**2)

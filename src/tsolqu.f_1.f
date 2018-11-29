@@ -207,7 +207,7 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
       integer*4 np,i,n,ndiv
       real*8 smax
       parameter (smax=0.99d0)
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),pz(np),
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),
      $     px0(np),py0(np),bsi(np)
       real*8 al,ak,eps0,bz,a,b,c,d,akk,eps,alr,
      $     bw,dw,r,ap,dpz,ak0x,ak0y,bz0,
@@ -293,15 +293,14 @@ c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
      $           +u1*(u2+b)+xi*b*dc1
      $           +v1*(v2+d)+yi*d*dch2)
      $           -dv(i)*aln
-            if(n .eq. ndiv)then
-              bsi(i)=-akk*(x(i)+dx0)*(y(i)+dy0)
-            endif
           enddo
           alr=aln
           if(n .ne. ndiv)then
             call tradk(np,x,px,y,py,px0,py0,gp,dv,alr)
             px0=px
             py0=py
+          else
+            bsi(i)=-akk*(x(i)+dx0)*(y(i)+dy0)
           endif
         enddo
         do i=1,np
@@ -324,9 +323,9 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           do i=1,np
             call tzsetparam(tz,gp(i),akk,bz)
             if(n .eq. 1)then
-              bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)+bzp*alr
+c              bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)+bzp*alr
             else
-              bsi(i)=bzp*alr
+c              bsi(i)=bzp*alr
             endif
             ap=min(smax,px(i)**2+py(i)**2)
             dpz=sqrt1(-ap)
@@ -379,15 +378,14 @@ c            dpz=-ap/(1.d0+sqrt(1.d0-ap))
      $           bzp*(-((awu*dwu*dxs**2)/akkp) +
      $           ca1*pxi*pyi*wss)
      $           +dz1+dz2-aln*dv(i)
-            if(n .eq. ndiv)then
-              bsi(i)=-akk*(x(i)+dx0)*(y(i)+dy0)+bzp*aln*.5d0
-            endif
           enddo
           alr=aln
           if(n .ne. ndiv)then
             call tradk(np,x,px,y,py,px0,py0,gp,dv,alr)
             px0=px
             py0=py
+          else
+c            bsi(i)=-akk*(x(i)+dx0)*(y(i)+dy0)+bzp*aln*.5d0
           endif
         enddo
         do i=1,np
