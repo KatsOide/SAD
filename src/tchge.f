@@ -16,6 +16,7 @@
         th=theta
         dth=dtheta
       endif
+c      write(*,*)'tchge-0 ',cod(1),cod(2),cod(5)
       if(ent)then
         cod(1)=cod(1)+dx
         cod(3)=cod(3)+dy
@@ -44,6 +45,7 @@
         endif
         call tmultr(trans,trans1,irad)
         call tmulbs(beam,trans1,.true.,.true.)
+c        write(*,*)'tchge-1 ',cod(1),cod(2),cod(5)
       else
         if(th .ne. 0.d0 .or. dth .ne. 0.d0)then
           if(dth .ne. 0.d0)then
@@ -81,6 +83,7 @@
         endif
         cod(1)=cod(1)+dx
         cod(3)=cod(3)+dy
+c        write(*,*)'tchge-9 ',cod(1),cod(2),cod(5)
       endif
       return
       end

@@ -307,13 +307,15 @@ c     $     sxkxp,dcxkxp
       subroutine tbrote(trans1,cod,phi0,dtheta)
       implicit none
       real*8 trans1(6,6),cod(6),phi0,dtheta,chi1,chi2,chi3,sphi0,
-     $     coschi2,sdt
+     $     coschi2,sdt,cphi0
+      cphi0=cos(phi0*.5d0)
       sphi0=sin(phi0*.5d0)
       sdt=sin(dtheta)
       chi2=asin(sdt*sphi0)
       coschi2=cos(chi2)
-      chi1=asin(sin(dtheta*.5d0)**2*sphi0/coschi2)
-      chi3=asin(cos(phi0*.5d0)*sdt/coschi2)
+      chi1=asin(sin(dtheta*.5d0)**2*2.d0*sphi0*cphi0/coschi2)
+      chi3=asin(sdt*cphi0/coschi2)
+c      write(*,*)'tbrote ',chi1,chi2,chi3
       call tsrote(trans1,cod,chi1,chi2,chi3)
       return
       end
@@ -341,7 +343,7 @@ c     $     sxkxp,dcxkxp
       real*8 trans(6,12),cod(6),beam(42)
       complex*16 akm(0:nmult)
       logical*4 enarad,alcorr,fringe,next,prev
-      if(alcorr .and. 
+      if(alcorr .and.
      $     mfring .ne. 0 .and. al0 .ne. 0.d0
      $     .and. phi0 .ne. 0.d0)then
         al=al0-((phi0*fb1)**2+(phi0*fb2)**2)/48.d0/al0

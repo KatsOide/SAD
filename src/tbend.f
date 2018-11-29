@@ -39,7 +39,7 @@
         sdt=sin(dtheta)
         r11=cdt*cphi0**2+sphi0**2
         r12=-cphi0*sdt
-        r13=-sdth2*sphi0
+        r13=-2.d0*sdth2*sphi0*cphi0
         r21=-r12
         r22=cdt
         r23=sphi0*sdt
@@ -62,7 +62,7 @@
           py(i)=pyf
           x(i)=xf-pxf/pzf*zf
           y(i)=yf-pyf/pzf*zf
-          z(i)=z(i)+zf/pzf         
+          z(i)=z(i)+zf/pzf
 c          pxf= pxi*cphi0+pzi*sphi0
 c          pzf=-pxi*sphi0+pzi*cphi0
 c          dz=x(i)*sphi0
