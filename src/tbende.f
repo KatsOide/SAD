@@ -343,7 +343,7 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
       real*8 trans(6,12),cod(6),beam(42)
       complex*16 akm(0:nmult)
       logical*4 enarad,alcorr,fringe,next,prev
-      if(alcorr .and. 
+      if(alcorr .and.
      $     mfring .ne. 0 .and. al0 .ne. 0.d0
      $     .and. phi0 .ne. 0.d0)then
         al=al0-((phi0*fb1)**2+(phi0*fb2)**2)/48.d0/al0

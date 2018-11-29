@@ -62,7 +62,7 @@
           py(i)=pyf
           x(i)=xf-pxf/pzf*zf
           y(i)=yf-pyf/pzf*zf
-          z(i)=z(i)+zf/pzf         
+          z(i)=z(i)+zf/pzf
 c          pxf= pxi*cphi0+pzi*sphi0
 c          pzf=-pxi*sphi0+pzi*cphi0
 c          dz=x(i)*sphi0
