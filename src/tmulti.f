@@ -1,4 +1,4 @@
-      subroutine tmulti(np,x,px,y,py,z,g,dv,pz,
+      subroutine tmulti(np,x,px,y,py,z,g,dv,sp,
      $     al,ak,bz,phia,
      $     psi1,psi2,
      $     dx,dy,dz,chi1,chi2,theta,dtheta,
@@ -10,6 +10,7 @@
       use tfstk
       use ffs_flag
       use tmacro
+      use tspin
 c      use ffs_pointer, only:inext,iprev
       implicit none
       integer*4 nmult,itmax,ndivmax
@@ -19,8 +20,9 @@ c      use ffs_pointer, only:inext,iprev
 c      parameter (oneev=1.d0+3.83d-12)
       parameter (oneev=1.d0+1.d-6)
       integer*4 np
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
      $     pxr0(np),pyr0(np),bsi(np)
+      type (spin) sp(np)
       real*8 al,f1in,f2in,f1out,f2out
       complex*16 ak(0:nmult)
       real*8 bz,phia,psi1,psi2,dx,dy,dz,chi1,chi2,theta,dtheta,eps0
@@ -47,7 +49,7 @@ c      parameter (oneev=1.d0+3.83d-12)
      $     rtaper
       real*8 ws(ndivmax)
       complex*16 akr(0:nmult),cr,cr1,cx,cx1,ak01,b0
-      real*8 fact(0:nmult),an(0:nmult)
+      real*8 fact(0:nmult),an(0:nmult+1)
       data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
      1     720.d0,     5040.d0,     40320.d0,362880.d0,3628800.d0,
      $     39916800.d0,479001600.d0,6227020800.d0,87178291200.d0,
@@ -74,10 +76,11 @@ c      parameter (oneev=1.d0+3.83d-12)
      $0.055555555555555555556d0,
      $0.052631578947368421053d0,
      $0.05d0,
-     $0.047619047619047619048d0/
+     $0.047619047619047619048d0,
+     $0.045454545454545454545d0/
       if(phia .ne. 0.d0)then
         call tmulta(
-     $       np,x,px,y,py,z,g,dv,pz,
+     $       np,x,px,y,py,z,g,dv,sp,
      $       l,al,ak,phia,
      $       psi1,psi2,bz,
      1       dx,dy,theta,dtheta,
@@ -405,7 +408,7 @@ c        vnominal=0.d0
         endif
         if(mfring .eq. 1 .or. mfring .eq. 3)then
           if(akr(0) .ne. (0.d0,0.d0) .and. fb1 .ne. 0.d0)then
-            call tblfri(np,x,px,y,py,z,g,al,dble(akr(0)),fb1)
+            call tblfri(np,x,px,y,py,z,g,al,akr(0),fb1)
           endif
           if(f1in .ne. 0.d0 .or. f2in .ne. 0.d0)then
             do i=1,np
@@ -433,8 +436,18 @@ c        vnominal=0.d0
           call tsolqu(np,x,px,y,py,z,g,dv,bsi,al1,ak1,
      $         bzs,dble(ak01),imag(ak01),ibsi,eps0)
           if(krad)then
-c            write(*,'(a,1p7g12.4)')'tmulti-1 ',bsi(1:7)
-            call tradk(np,x,px,y,py,pxr0,pyr0,g,dv,al1)
+            if(m .eq. 1)then
+              do i=1,np
+                cx1=dcmplx(x(i),y(i))
+                cx=0.d0
+                do n=nmmax,2,-1
+                  cx=(cx+akr(n))*cx1*an(n+1)
+                enddo
+                cx=.5d0*cx*cx1**2
+                bsi(i)=bsi(i)+imag(cx)/al
+              enddo
+            endif
+            call tradk(np,x,px,y,py,z,g,dv,sp,pxr0,pyr0,bsi,al1)
             pxr0=px
             pyr0=py
           endif
@@ -518,7 +531,7 @@ c            dpr=ah/(1.d0+sqrt(1.d0+ah))
           enddo
         endif
         if(spac1)then
-          call spkick(np,x,px,y,py,z,g,dv,pz,al*wsm,radius,alx,
+          call spkick(np,x,px,y,py,z,g,dv,sp,al*wsm,radius,alx,
      $          kturn,l,latt,kptbl)
         endif
       enddo
@@ -529,7 +542,7 @@ c        write(*,'(a,1p7g12.4)')'tmulti-2 ',bsi(1:7)
       endif
       if(spac1)then
 c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
-        call tapert(l,latt,x,px,y,py,z,g,dv,pz,kptbl,np,kturn,
+        call tapert(l,latt,x,px,y,py,z,g,dv,sp,kptbl,np,kturn,
      $       radius,radius,
      $       0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
       endif
@@ -552,7 +565,7 @@ c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
             enddo
           endif
           if(fb2 .ne. 0.d0 .and. akr(0) .ne. (0.d0,0.d0))then
-            call tblfri(np,x,px,y,py,z,g,al,-dble(akr(0)),fb2)
+            call tblfri(np,x,px,y,py,z,g,al,-akr(0),fb2)
           endif
         endif
         if(fringe .and. mfring .ne. 1)then
@@ -568,7 +581,16 @@ c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
           endif
         endif
         if(krad)then
-          call tradk(np,x,px,y,py,pxr0,pyr0,g,dv,al1)
+          do i=1,np
+            cx1=dcmplx(x(i),y(i))
+            cx=0.d0
+            do n=nmmax,2,-1
+              cx=(cx+akr(n))*cx1*an(n+1)
+            enddo
+            cx=.5d0*cx*cx1**2
+            bsi(i)=bsi(i)-imag(cx)/al
+          enddo
+          call tradk(np,x,px,y,py,z,g,dv,sp,pxr0,pyr0,bsi,al1)
         endif
       endif
  1000 if(theta2 .ne. 0.d0)then

@@ -1,10 +1,11 @@
-      subroutine tquads(np,x,px,y,py,z,g,dv,pz,l,al,ak,bz,
+      subroutine tquads(np,x,px,y,py,z,g,dv,sp,l,al,ak,bz,
      1     dx,dy,theta,cost,sint,radlvl,
      1     fringe,f1in,f2in,f1out,f2out,
      $     mfring,eps0,ld,forward)
       use tfstk
       use ffs_flag
       use tmacro
+      use tspin
 c      use ffs_pointer, only:inext,iprev
       implicit none
       type (sad_rlist), pointer :: klr
@@ -15,6 +16,7 @@ c      use ffs_pointer, only:inext,iprev
      $     al,bz,ak,dx,dy,theta,cost,sint,radlvl,alr,
      $     f1in,f2in,f1out,f2out,eps0,
      $     a,aki,akm,ali,alm,b,ea,fx,fy,p,pr,px0,pxf,pyf,rb,x0
+      type (spin) sp(np)
       logical*4 enarad,fringe,forward
       character*13 vname
       character*2 ord
@@ -95,7 +97,8 @@ c$$$     1       b1,0.d0,0.d0,.5d0*al,f1r,f2r,0.d0,al,1.d0)
 c$$$      endif
       if(ifv .eq. 0)then
         if(enarad)then
-          call tsolqur(np,x,px,y,py,z,g,dv,bsi,al,ak,bz,0.d0,0.d0,eps0,
+          call tsolqur(np,x,px,y,py,z,g,dv,sp,bsi,
+     $         al,ak,bz,0.d0,0.d0,eps0,
      $         pxr0,pyr0,alr)
         else
           call tsolqu(np,x,px,y,py,z,g,dv,bsi,al,ak,bz,0.d0,0.d0,0,eps0)
@@ -185,7 +188,7 @@ c          p=(1.d0+g(i))**2
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,bz)
       endif
       if(enarad)then
-        call tradk(np,x,px,y,py,pxr0,pyr0,g,dv,alr)
+        call tradk(np,x,px,y,py,z,g,dv,sp,pxr0,pyr0,bsi,alr)
       endif
       if(theta .ne. 0.d0)then
         do i=1,np

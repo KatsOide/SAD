@@ -198,17 +198,20 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
       end associate
       end
 
-      recursive subroutine tsolqur(np,x,px,y,py,z,gp,dv,bsi,al,ak,
+      recursive subroutine tsolqur(np,x,px,y,py,z,gp,dv,sp,bsi,al,ak,
      $     bz0,ak0x,ak0y,eps0,px0,py0,alr)
       use tsolz
       use tfstk
+      use tspin
+      use ffs_flag, only:calpol
       implicit none
       type (tzparam) tz
       integer*4 np,i,n,ndiv
       real*8 smax
       parameter (smax=0.99d0)
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),pz(np),
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),
      $     px0(np),py0(np),bsi(np)
+      type (spin) sp(np)
       real*8 al,ak,eps0,bz,a,b,c,d,akk,eps,alr,
      $     bw,dw,r,ap,dpz,ak0x,ak0y,bz0,
      $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
@@ -237,8 +240,14 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
       if(ak*al .lt. 0.d0)then
-        call tsolqur(np,y,py,x,px,z,gp,dv,bsi,al,-ak,
+        if(calpol)then
+          call texspin(np,sp)
+        endif
+        call tsolqur(np,y,py,x,px,z,gp,dv,sp,bsi,al,-ak,
      $       -bz0,-ak0y,-ak0x,eps0,py0,px0,alr)
+        if(calpol)then
+          call texspin(np,sp)
+        endif
         return
       endif
       bz=bz0
@@ -299,7 +308,7 @@ c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
           enddo
           alr=aln
           if(n .ne. ndiv)then
-            call tradk(np,x,px,y,py,px0,py0,gp,dv,alr)
+            call tradk(np,x,px,y,py,z,gp,dv,sp,px0,py0,bsi,alr)
             px0=px
             py0=py
           endif
@@ -385,7 +394,7 @@ c            dpz=-ap/(1.d0+sqrt(1.d0-ap))
           enddo
           alr=aln
           if(n .ne. ndiv)then
-            call tradk(np,x,px,y,py,px0,py0,gp,dv,alr)
+            call tradk(np,x,px,y,py,z,gp,dv,sp,px0,py0,bsi,alr)
             px0=px
             py0=py
           endif

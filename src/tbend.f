@@ -86,23 +86,29 @@ c          py(i)=pya
 
       end module
 
-      subroutine tbend(np,x,px,y,py,z,g,dv,pz,
+      subroutine tbend(np,x,px,y,py,z,g,dv,sp,
      $     l,al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb10,fb20,mfring,fringe,
      $     cosw,sinw,sqwh,sinwp1,
      1     enarad,alb,ale,ala,eps)
+      use ffs_flag,only:rad
+      use tspin
       implicit none
       integer*4 np,mfring,l
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,ak,dx,dy,theta,
      $     cost,sint,cosw,sinw,sqwh,sinwp1,eps,
      $     alb,ale,ala,
      $     fb10,fb20,eps1,dtheta
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
-     $     px0(np),py0(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
+     $     px0(np),py0(np),bsi(np)
+      type (spin) sp(np)
       logical*4 enarad,fringe
-      call tbend0(np,x,px,y,py,z,g,dv,pz,px0,py0,
+      if(rad .and. enarad)then
+        bsi=0.d0
+      endif
+      call tbend0(np,x,px,y,py,z,g,dv,sp,px0,py0,bsi,
      $     l,al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
@@ -112,7 +118,7 @@ c          py(i)=pya
       return
       end
 
-      subroutine tbend0(np,x,px,y,py,z,g,dv,pz,px0,py0,
+      subroutine tbend0(np,x,px,y,py,z,g,dv,sp,px0,py0,bsi,
      $     l,al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
@@ -125,6 +131,7 @@ c          py(i)=pya
       use ffs_pointer, only:inext,iprev
       use multa, only:nmult
       use tbendcom
+      use tspin
       implicit none
       integer*4 np,mfring,i,l,ndiv,ndivmax
       parameter (ndivmax=1024)
@@ -138,18 +145,19 @@ c          py(i)=pya
      1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
       real*8 smax,smin,rphidiv
       parameter (smax=0.99d0,smin=0.01d0,rphidiv=3e-3)
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
-     $     px0(np),py0(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
+     $     px0(np),py0(np),bsi(np)
+      type (spin) sp(np)
       complex*16 akm(0:nmult)
       logical*4 enarad,fringe,ini
       if(phi0 .eq. 0.d0)then
         if(ak .eq. 0.d0)then
-          call tsteer(np,x,px,y,py,z,g,dv,pz,l,al,-phib,
+          call tsteer(np,x,px,y,py,z,g,dv,sp,l,al,-phib,
      1         dx,dy,theta+dtheta,cos(theta+dtheta),sin(theta+dtheta),
      1         cosp1,sinp1,cosp2,sinp2,
      $         fb10,fb20,mfring,fringe,enarad,eps)
         elseif(phib .eq. phi0)then
-          call tquad(np,x,px,y,py,z,g,dv,pz,l,al,ak,
+          call tquad(np,x,px,y,py,z,g,dv,sp,l,al,ak,
      1         dx,dy,theta+dtheta,
      $         cos(theta+dtheta),sin(theta+dtheta),0.d0,.true.,
      1         fringe,0.d0,0.d0,0,eps,.true.)
@@ -157,7 +165,7 @@ c          py(i)=pya
           akm=0.d0
           akm(0)=phib-phi0
           akm(1)=ak
-          call tmulti(np,x,px,y,py,z,g,dv,pz,
+          call tmulti(np,x,px,y,py,z,g,dv,sp,
      $         al,ak,0.d0,0.d0,
      $         psi1,psi2,
      $         dx,dy,0.d0,0.d0,0.d0,theta+dtheta,0.d0,
@@ -170,21 +178,21 @@ c          py(i)=pya
         endif
         return
       elseif(phib .eq. 0.d0)then
-        call tbdrift(np,x,px,y,py,z,dv,pz,al,phi0)
+        call tbdrift(np,x,px,y,py,z,dv,sp,al,phi0)
         return
       elseif(al .eq. 0.d0)then
-        call tbthin(np,x,px,y,py,z,g,pz,phib,phi0,dx,dy,
+        call tbthin(np,x,px,y,py,z,g,sp,phib,phi0,dx,dy,
      1              theta,dtheta,cost,sint)
         return
       elseif(rad .and. enarad .and. trpt)then
-        call tbrad(np,x,px,y,py,z,g,dv,pz,l,al,phib,phi0,
+        call tbrad(np,x,px,y,py,z,g,dv,sp,l,al,phib,phi0,
      1       cosp1,sinp1,cosp2,sinp2,
      1       ak,dx,dy,theta,dtheta,cost,sint,
      1       fb10,fb20,mfring,
      1       fringe,eps)
         return
       elseif(ak .ne. 0.d0)then
-        call tbendi(np,x,px,y,py,z,g,dv,pz,l,al,phib,phi0,
+        call tbendi(np,x,px,y,py,z,g,dv,sp,l,al,phib,phi0,
      1       cosp1,sinp1,cosp2,sinp2,
      1       ak,dx,dy,theta,dtheta,cost,sint,
      1       fb10,fb20,mfring,enarad,fringe,eps)
@@ -230,26 +238,19 @@ c      endif
         ndiv=1
       endif
       if(ndiv .gt. 1)then
-        call tbendr(np,x,px,y,py,z,g,dv,px0,py0,
+        call tbendr(np,x,px,y,py,z,g,dv,sp,px0,py0,bsi,
      $       al,phib,phi0,
      1       cosp1,sinp1,cosp2,sinp2,
      1       mfring,fringe,
      1       alb,ale,ala,ndiv)
       else
-        call tbendcore(np,x,px,y,py,z,g,dv,px0,py0,
+        call tbendcore(np,x,px,y,py,z,g,dv,sp,px0,py0,bsi,
      $       al,phi0,
      1       cosp1,sinp1,cosp2,sinp2,
      1       mfring,fringe,
      $       cosw,sinw,sqwh,sinwp1,
-     1       enarad,alb,ale,ala)
+     1       enarad,alb,ale,ala,1.d0,1.d0)
       endif
-c      if(dphiy .ne. 0.d0)then
-c        do i=1,np
-c          pr=1.d0+g(i)
-c          px(i)=px(i)+dphix/pr
-c          py(i)=py(i)+dphiy/pr
-c        enddo
-c      endif
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,-phi0,-dtheta)
       endif
@@ -310,7 +311,7 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
       return
       end
 
-      subroutine tbendr(np,x,px,y,py,z,g,dv,px0,py0,
+      subroutine tbendr(np,x,px,y,py,z,g,dv,sp,px0,py0,bsi,
      $     al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     mfring,fringe,
@@ -318,11 +319,13 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
       use tfstk
       use ffs_flag
       use tmacro
+      use tspin
       implicit none
       integer*4 np,mfring,i,ndiv,mfr1,mfr2,ndivmax
       parameter (ndivmax=1024)
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     px0(np),py0(np)
+     $     px0(np),py0(np),bsi(np)
+      type (spin) sp
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,
      $     psi1,psi2,wn1,wn2,wnc,aln,phibn,phi0n,alb,ale,ala,als,
      $     coswn1,sinwn1,sqwhn1,sinwp1n1,
@@ -372,41 +375,42 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
         mfr2=0
       endif
       als=alb+aln
-      call tbendcore(np,x,px,y,py,z,g,dv,px0,py0,
+      call tbendcore(np,x,px,y,py,z,g,dv,sp,px0,py0,bsi,
      $     aln,phi0n,
      1     cosp1,sinp1,1.d0,0.d0,
      1     mfr1,fringe,
      $     coswn1,sinwn1,sqwhn1,sinwp1n1,
-     1     .true.,alb,als,ala)
+     1     .true.,alb,als,ala,1.d0,0.d0)
       do i=2,ndiv-1
-        call tbendcore(np,x,px,y,py,z,g,dv,px0,py0,
+        call tbendcore(np,x,px,y,py,z,g,dv,sp,px0,py0,bsi,
      $       aln,phi0n,
      1       1.d0,0.d0,1.d0,0.d0,
      1       0,.false.,
      $       coswnc,sinwnc,sqwhnc,sinwp1nc,
-     1       .true.,als,als+aln,ala)
+     1       .true.,als,als+aln,ala,0.d0,0.d0)
         als=als+aln
       enddo
-      call tbendcore(np,x,px,y,py,z,g,dv,px0,py0,
+      call tbendcore(np,x,px,y,py,z,g,dv,sp,px0,py0,bsi,
      $     aln,phi0n,
      1     1.d0,0.d0,cosp2,sinp2,
      1     mfr2,fringe,
      $     coswn2,sinwn2,sqwhn2,sinwp1n2,
-     1     .true.,als,ale,ala)
+     1     .true.,als,ale,ala,0.d0,1.d0)
       return
       end
 
-      subroutine tbendcore(np,x,px,y,py,z,g,dv,px0,py0,
+      subroutine tbendcore(np,x,px,y,py,z,g,dv,sp,px0,py0,bsi,
      $     al,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     mfring,fringe,
      $     cosw,sinw,sqwh,sinwp1,
-     1     enarad,alb,ale,ala)
+     1     enarad,alb,ale,ala,bsi1,bsi2)
       use tfstk
       use ffs_flag
       use tmacro
       use multa, only:nmult
       use tbendcom
+      use tspin
       implicit none
       integer*4 np,mfring,i
       real*8 al,phi0,cosp1,sinp1,cosp2,sinp2,
@@ -417,27 +421,18 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
      $     t2,dpx3,px3,dpz3,pz3,t3,x3,da,y3,z3,pv2sqi,x4,py4,z4,dpz4,
      $     dz4,dxfr1,dyfr1,dzfr1,dxfr2,dyfr2,dzfr2,dpz32,
      $     dyfra1,dyfra2,fa,t4,dpx3a,t2t3,dcosp,px1px3,
-     $     alb,ale,ala,als,phi0a,cphi0,sphi0
+     $     alb,ale,ala,als,phi0a,cphi0,sphi0,bsi1,bsi2
       real*8, parameter :: smax=0.99d0,smin=0.01d0,rphidiv=3e-3
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     px0(np),py0(np),ds(np)
+     $     px0(np),py0(np),ds(np),bsi(np)
+      type (spin) sp(np)
       logical*4 enarad,fringe,enrad
       enrad=rad .and. enarad
       if(enrad)then
         cphi0=cos(phi0)
         sphi0=sin(phi0)
-c        tanp1=sinp1/cosp1
-c        b=brhoz/rhob
-c        if(alb .ne. 0.d0)then
-c          als=alb+al*.25d0
-c        else
-c          als=0.d0
-c        endif
-c        call trad(np,x,px,y,py,g,dv,b,0.d0,0.d0,
-c     1       1.d0/rho0,-tanp1*2.d0/al,.5d0*al,
-c     $       f1r,f2r,als,ala,1.d0)
       endif
-      if(fb1 .ne. 0.d0 .and. (mfring .gt. 0 .or. mfring .eq. -1))then
+      if((mfring .gt. 0 .or. mfring .eq. -1) .and. fb1 .ne. 0.d0)then
         dxfr1=fb1**2/rhob/24.d0
         dyfr1=fb1/rhob**2/6.d0
         dzfr1=dxfr1*sinp1
@@ -452,7 +447,7 @@ c     $       f1r,f2r,als,ala,1.d0)
         dyfra1=0.d0
         dzfr1=0.d0
       endif
-      if(fb2 .ne. 0.d0 .and. (mfring .gt. 0 .or. mfring .eq. -2))then
+      if((mfring .gt. 0 .or. mfring .eq. -2) .and. fb2 .ne. 0.d0)then
         dxfr2=fb2**2/rhob/24.d0
         dyfr2=fb2/rhob**2/6.d0
         dzfr2=dxfr2*sinp2
@@ -474,6 +469,7 @@ c     $       f1r,f2r,als,ala,1.d0)
       endif
       drhob=rhob-rho0
       do 100 i=1,np
+        bsi(i)=bsi(i)+bsi1*y(i)/rhob
         dp=g(i)
         p=1.d0+dp
         pinv=1.d0/p
@@ -580,11 +576,13 @@ c        dpz4=-s/(1.d0+sqrt(1.d0-s))
         py(i)=py4
         y(i)=y3+py4*dz4
         z(i)=z4-dz4
+        bsi(i)=bsi(i)-bsi2*y(i)/rhob
 100   continue
       if(enrad)then
-        call tradki(np,x,px,y,py,px0,py0,g,dv,ds)
+        call tradki(np,x,px,y,py,z,g,dv,sp,px0,py0,bsi,ds)
         px0=px
         py0=py
+        bsi=0.d0
 c        tanp2=sinp2/cosp2
 c        if(ale .eq. ala)then
 c          als=ale

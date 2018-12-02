@@ -14,14 +14,14 @@
       parameter (ampmax=0.05d0,eps00=0.005d0,ndivmax=2000)
       integer*4 np,mfring,i,n,mfr,ndiv,nmmax,m,m1,k,nmmin,l
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
-     $     px0(np),py0(np),
+     $     px0(np),py0(np),bsi(np),
      $     al,phi,psi1,psi2,bz,dx,dy,theta,eps0,fb1,fb2,
      $     dtheta,pr,cost,sint,rho0,rhob,
      $     sinp1,sinp2,cosp1,cosp2,phin,aln,cosw,sinw,sqwh,sinwp1,
      $     eps,xi,pxi,w,r,rk(0:nmult),als,ak0r,ak1r,ak1n,
-     $     phib,phibn
+     $     phib,phibn,an(0:nmult+1)
       complex*16 ak0(0:nmult),ak(0:nmult),akn(0:nmult),
-     $     cx1,csl,csr,cl,cr,cg
+     $     cx1,csl,csr,cl,cr,cg,cx
       logical*4 enarad,fringe,enrad
       real*8 fact(0:nmult+1)
       data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
@@ -31,6 +31,28 @@
      $     6402373705728000.d0,121645100408832000.d0,
      $     2432902008176640000.d0,51090942171709440000.d0,
      $     1124000727777607680000.d0/
+      data an/1.d0,1.d0,
+     $0.5d0,
+     $0.33333333333333333333d0,
+     $0.25d0,
+     $0.2d0,
+     $0.166666666666666666667d0,
+     $0.142857142857142857143d0,
+     $0.125d0,
+     $0.111111111111111111111d0,
+     $0.1d0,
+     $0.090909090909090909091d0,
+     $0.083333333333333333333d0,
+     $0.076923076923076923077d0,
+     $0.071428571428571428571d0,
+     $0.066666666666666666667d0,
+     $0.0625d0,
+     $0.058823529411764705882d0,
+     $0.055555555555555555556d0,
+     $0.052631578947368421053d0,
+     $0.05d0,
+     $0.047619047619047619048d0,
+     $0.045454545454545454545d0/
       if(bz .ne. 0.d0)then
         write(*,*)
      $       'MULT with nonzero ANGLE and BZ is not yet supported.'
@@ -45,18 +67,6 @@
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,phi,dtheta)
       endif
-c      if(dtheta .ne. 0.d0)then
-c        dphix=phi*sin(.5d0*dtheta)**2
-c        dphiy=.5d0*phi*sin(dtheta)
-c        do i=1,np
-c          pr=1.d0+g(i)
-c          px(i)=px(i)+dphix/pr
-c          py(i)=py(i)+dphiy/pr
-c        enddo
-c      else
-c        dphix=0.d0
-c        dphiy=0.d0
-c      endif
       if(eps0 .eq. 0.d0)then
         eps=eps00
       else
@@ -114,6 +124,7 @@ c      endif
       if(enrad)then
         px0=px
         py0=py
+        bsi=0.d0
       endif
       do n=1,ndiv
 c        write(*,*)'tmulta-1 ',n,x(1),px(1)
@@ -133,10 +144,20 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
           elseif(mfring .ne. 0)then
             mfr=-1
           endif
+          if(enrad)then
+            do i=1,np
+              cx1=dcmplx(x(i),y(i))
+              cx=0.d0
+              do k=nmmax,2,-1
+                cx=(cx+ak(k))*cx1*an(k+1)
+              enddo
+              cx=.5d0*cx*cx1**2
+              bsi(i)=imag(cx)/al
+            enddo
+          endif
           als=aln*.5d0
-          call tbend0(np,x,px,y,py,z,g,dv,pz,px0,py0,
-     $         l,aln*.5d0,
-     $         phibn*.5d0,phin*.5d0,
+          call tbend0(np,x,px,y,py,z,g,dv,pz,px0,py0,bsi,
+     $         l,als,phibn*.5d0,phin*.5d0,
      1         cosp1,sinp1,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $         fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
@@ -151,9 +172,8 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
           endif
           sinwp1=sinw
         else
-          call tbend0(np,x,px,y,py,z,g,dv,pz,px0,py0,
-     $         l,aln,
-     $         phibn,phin,
+          call tbend0(np,x,px,y,py,z,g,dv,pz,px0,py0,bsi,
+     $         l,aln,phibn,phin,
      1         1.d0,0.d0,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $         0.d0,0.d0,0,.false.,cosw,sinw,sqwh,sinwp1,
@@ -206,20 +226,23 @@ c        write(*,*)'tmulta-2 ',n,x(1),px(1)
       elseif(mfring .ne. 0)then
         mfr=-2
       endif
-      call tbend0(np,x,px,y,py,z,g,dv,pz,px0,py0,
-     $     l,aln*.5d0,
-     $     phibn*.5d0,phin*.5d0,
+      if(enrad)then
+        do i=1,np
+          cx1=dcmplx(x(i),y(i))
+          cx=0.d0
+          do k=nmmax,2,-1
+            cx=(cx+ak(k))*cx1*an(k+1)
+          enddo
+          cx=.5d0*cx*cx1**2
+          bsi(i)=-imag(cx)/al
+        enddo
+      endif
+      call tbend0(np,x,px,y,py,z,g,dv,pz,px0,py0,bsi,
+     $     l,aln*.5d0,phibn*.5d0,phin*.5d0,
      1     1.d0,0.d0,cosp2,sinp2,
      1     ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $     fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
      1     enarad,als,al,al,eps0,.false.)
-c      if(dtheta .ne. 0.d0)then
-c        do i=1,np
-c          pr=(1.d0+g(i))
-c          px(i)=px(i)+dphix/pr
-c          py(i)=py(i)+dphiy/pr
-c        enddo
-c      endif
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,-phi,-dtheta)
       endif

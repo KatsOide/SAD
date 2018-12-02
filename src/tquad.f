@@ -1,20 +1,22 @@
-      subroutine tquad(np,x,px,y,py,z,g,dv,pz,l,al,ak,
+      subroutine tquad(np,x,px,y,py,z,g,dv,sp,l,al,ak,
      1                 dx,dy,theta,cost,sint,radlvl,chro,
      1                 fringe,f1in,f2in,f1out,f2out,mfring,eps0,kin)
       use ffs_flag
       use tmacro
 c      use ffs_pointer, only:inext,iprev
       use tfstk, only:pxy2dpz,sqrt1
+      use tspin
       implicit none
       logical*4 enarad,chro,fringe,kin
       integer*4 np,l,i,mfring
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     px0(np),py0(np),bsi(np),
      $     al,ak,dx,dy,theta,cost,sint,radlvl,eps0,alr,
      $     f1in,f1out,f2in,f2out,p,a,ea,b,pxi,pxf,pyf,xi
+      type (spin) sp(np)
       real*8, parameter :: ampmax=0.9999d0
       if(al .eq. 0.d0)then
-        call tthin(np,x,px,y,py,z,g,dv,pz,4,l,0.d0,ak,
+        call tthin(np,x,px,y,py,z,g,dv,sp,4,l,0.d0,ak,
      $             dx,dy,theta,cost,sint, 1.d0,.false.)
         return
       elseif(ak .eq. 0.d0)then
@@ -23,7 +25,7 @@ c      use ffs_pointer, only:inext,iprev
       endif
       enarad=rad .and. radlvl .ne. 1.d0
       if(trpt .and. enarad)then
-        call tqrad(np,x,px,y,py,z,g,dv,pz,l,al,ak,dx,dy,theta,
+        call tqrad(np,x,px,y,py,z,g,dv,sp,l,al,ak,dx,dy,theta,
      1             cost,sint,radlvl,f1in,f2in,f1out,f2out,mfring)
         return
       endif
@@ -53,7 +55,7 @@ c          p=(1.d0+g(i))**2
 2110    continue
       endif
       if(enarad)then
-        call tsolqur(np,x,px,y,py,z,g,dv,bsi,al,ak,
+        call tsolqur(np,x,px,y,py,z,g,dv,sp,bsi,al,ak,
      $       0.d0,0.d0,0.d0,eps0,px0,py0,alr)
       else
         call tsolqu(np,x,px,y,py,z,g,dv,bsi,al,ak,0.d0,0.d0,0.d0,0,eps0)
@@ -79,17 +81,18 @@ c          p=(1.d0+g(i))**2
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
       endif
       if(enarad)then
-        call tradk(np,x,px,y,py,px0,py0,g,dv,alr)
+        call tradk(np,x,px,y,py,z,g,dv,sp,px0,py0,bsi,alr)
       endif
       include 'inc/TEXIT.inc'
       return
       end
 c
-      subroutine tthin(np,x,px,y,py,z,g,dv,pz,nord,l,al,ak,
+      subroutine tthin(np,x,px,y,py,z,g,dv,sp,nord,l,al,ak,
      1                 dx,dy,theta,cost,sint,radlvl,fringe)
       use tfstk
       use ffs_flag
       use tmacro
+      use tspin
       implicit none
 c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
       integer*4 nmult
@@ -100,8 +103,9 @@ c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
      1           gamma=9.43738783765593145d-4,
      1           alpha1=.5d0-alpha)
       integer*4 l,nord,np,kord,i
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
-     $     px0(np),py0(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+     $     px0(np),py0(np),bsi(np)
+      type (spin) sp(np)
       real*8 fact(0:nmult)
       real*8 theta,sint,cost,dx,dy,al,ak,
      $     ala,alb,aki,akf,dpz,al1,radlvl,
@@ -125,7 +129,7 @@ c     end   initialize for preventing compiler warning
       endif
       enarad=rad .and. radlvl .eq. 0.d0 .and. al .ne. 0.d0
       if(enarad .and. trpt .and. rfluct)then
-        call tthinrad(np,x,px,y,py,z,g,dv,pz,nord,l,al,ak,
+        call tthinrad(np,x,px,y,py,z,g,dv,sp,nord,l,al,ak,
      1                 dx,dy,theta,cost,sint,fringe)
         return
       endif
@@ -133,6 +137,7 @@ c     end   initialize for preventing compiler warning
       if(enarad)then
         px0=px
         py0=py
+        bsi=0.d0
       endif
       if(fringe)then
         call ttfrin(np,x,px,y,py,z,g,nord,ak,al,0.d0)
@@ -328,7 +333,7 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
         call ttfrin(np,x,px,y,py,z,g,nord,-ak,al,0.d0)
       endif
       if(enarad)then
-        call tradk(np,x,px,y,py,px0,py0,g,dv,al)
+        call tradk(np,x,px,y,py,z,g,dv,sp,px0,py0,bsi,al)
       endif
       include 'inc/TEXIT.inc'
       return
