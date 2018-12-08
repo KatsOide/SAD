@@ -1,5 +1,5 @@
       subroutine tmulta(
-     $     np,x,px,y,py,z,g,dv,pz,l,al,ak0,phi,
+     $     np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,ak0,phi,
      $     psi1,psi2,bz,
      1     dx,dy,theta,dtheta,
      $     eps0,enarad,fb1,fb2,mfring,fringe)
@@ -13,13 +13,14 @@
       real*8 ampmax,eps00
       parameter (ampmax=0.05d0,eps00=0.005d0,ndivmax=2000)
       integer*4 np,mfring,i,n,mfr,ndiv,nmmax,m,m1,k,nmmin,l
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
      $     px0(np),py0(np),bsi(np),
      $     al,phi,psi1,psi2,bz,dx,dy,theta,eps0,fb1,fb2,
      $     dtheta,pr,cost,sint,rho0,rhob,
      $     sinp1,sinp2,cosp1,cosp2,phin,aln,cosw,sinw,sqwh,sinwp1,
      $     eps,xi,pxi,w,r,rk(0:nmult),als,ak0r,ak1r,ak1n,
      $     phib,phibn,an(0:nmult+1)
+      real*8 sx(np),sy(np),sz(np)
       complex*16 ak0(0:nmult),ak(0:nmult),akn(0:nmult),
      $     cx1,csl,csr,cl,cr,cg,cx
       logical*4 enarad,fringe,enrad
@@ -65,7 +66,7 @@
       sint=sin(theta)
       include 'inc/TENT.inc'
       if(dtheta .ne. 0.d0)then
-        call tbrot(np,x,px,y,py,z,phi,dtheta)
+        call tbrot(np,x,px,y,py,z,sx,sy,sz,phi,dtheta)
       endif
       if(eps0 .eq. 0.d0)then
         eps=eps00
@@ -156,7 +157,7 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
             enddo
           endif
           als=aln*.5d0
-          call tbend0(np,x,px,y,py,z,g,dv,pz,px0,py0,bsi,
+          call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,bsi,
      $         l,als,phibn*.5d0,phin*.5d0,
      1         cosp1,sinp1,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
@@ -172,7 +173,7 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
           endif
           sinwp1=sinw
         else
-          call tbend0(np,x,px,y,py,z,g,dv,pz,px0,py0,bsi,
+          call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,bsi,
      $         l,aln,phibn,phin,
      1         1.d0,0.d0,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
@@ -180,7 +181,6 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
      1         enarad,als,als+aln,al,eps0,.false.)
           als=als+aln
         endif
-c        write(*,*)'tmulta-2 ',n,x(1),px(1)
         do i=1,np
           pr=(1.d0+g(i))
           cx1=dcmplx(x(i),y(i))
@@ -237,14 +237,14 @@ c        write(*,*)'tmulta-2 ',n,x(1),px(1)
           bsi(i)=-imag(cx)/al
         enddo
       endif
-      call tbend0(np,x,px,y,py,z,g,dv,pz,px0,py0,bsi,
+      call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,bsi,
      $     l,aln*.5d0,phibn*.5d0,phin*.5d0,
      1     1.d0,0.d0,cosp2,sinp2,
      1     ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $     fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
      1     enarad,als,al,al,eps0,.false.)
       if(dtheta .ne. 0.d0)then
-        call tbrot(np,x,px,y,py,z,-phi,-dtheta)
+        call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi,-dtheta)
       endif
       include 'inc/TEXIT.inc'
       return

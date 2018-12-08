@@ -154,11 +154,8 @@ c          trans1(6,6)=(p1-a*t/p1/h1)/h1/v2
           cod(6)=cod(6)+pf/p0
           cod(5)=-t*v2
           call tmultr(trans,trans1,irad)
-          if(irad .gt. 6 .or. calpol)then
+          if(irad .gt. 6)then
             call tmulbs(beam,trans1,.true.,.true.)
-          endif
-          if(calpol)then
-            call polpar(310,ld,vcn,0.d0,0.d0,0.d0,0.d0,cod)
           endif
           dgb=dgb+dhg
         enddo
@@ -194,7 +191,7 @@ c        rg=sqrt(rg2)
         trans(2,1:irad)=trans(2,1:irad)*rg2
         trans(4,1:irad)=trans(4,1:irad)*rg2
         trans(6,1:irad)=trans(6,1:irad)*rg2
-        if(irad .gt. 6 .or. calpol)then
+        if(irad .gt. 6)then
           call tmulbs(beam,trans1,.true.,.true.)
         endif
         cod(2)=cod(2)*rg2

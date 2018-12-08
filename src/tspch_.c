@@ -13,7 +13,7 @@ extern double **SpaceChargeParamSet(int nlatend,int isp);
 //extern void SpaceChargeMapping(double** SP,int isp,double* x,int np,
 //			       double TravelLength);
 extern void SpaceChargeMapping(double** SP,int isp,double* x,double* px,
-			       double* y, double* py, double* z,double* pz,
+			       double* y, double* py, double* z, double* g,
 			       int np,double TravelLength);
 extern void PotentialSolverPrint(void);
 extern void epotkick(double* x,double* px,double* y,double* py,
@@ -22,7 +22,8 @@ extern void epotkick(double* x,double* px,double* y,double* py,
 
 
 void tpspac_(int* nn, double* x, double *px, double* y, double* py,
-	     double* z, double* g, double* dv, double* pz,
+	     double* z, double* g, double* dv, 
+             double* sx, double* sy, double* sz,
 	     double* rnp_, double* Mass, double* P0_, 
 	     double* Gamma, double* Length,
 	     int* pspac_nx, int* pspac_ny, int* pspac_nz,

@@ -623,13 +623,6 @@ c        write(*,*)'temit-tcod ',trf0
         call tturne(trans,cod,beam,int8(0),int8(0),int8(0),
      $       .false.,.false.,rt)
       endif
-      if(calpol .and. irad .eq. 6)then
-        ipoltr=ktaloc(npelm*36)
-        ipolb=ktaloc(npelm*21)
-        ipolo=ktaloc(npelm*6)
-        ipoll=ktaloc(npelm)
-        ipolid=ktaloc(npelm)
-      endif
       irad=12
  4001 if(calem)then
         cod=codin
@@ -1121,9 +1114,10 @@ c        call tclr(trans(1,7),36)
           emit1(1:21)=beam(22:42)
         endif
         emit1(22:42)=beam(22:42)
-c        write(*,*)'temit-7101: ',emit1(6),emit1(27)
+c        call tfmemcheckprint('temit-3',0,.true.,iret)
         call tturne(trans,cod,emit1,
      $       iatr,iacod,iabmi,.true.,.false.,rt)
+c        call tfmemcheckprint('temit-4',0,.true.,iret)
         if(iamat .gt. 0)then
           dlist(iamat+2)=
      $         dtfcopy1(kxm2l(trans,6,6,6,.false.))
@@ -1137,23 +1131,6 @@ c        write(*,*)'temit-7101: ',emit1(6),emit1(27)
           endif
         endif
       endif
-      if(.not. calpol)then
-        return
-      endif
-      polsca(1)=imag(cd(4))/pi2
-      polsca(2)=imag(cd(5))/pi2
-      polsca(3)=imag(cd(6))/pi2
-      polsca(4)=emx
-      polsca(5)=emy
-      polsca(6)=emz
-      polsca(7)=pgev
-      call pol(npelm,rlist(ipolid),rlist(ipoll),rlist(ipolo),
-     1         rlist(ipoltr),rlist(ipolb),polsca,r,pname,lfni,lfno)
-      call tfree(ipoltr)
-      call tfree(ipolb)
-      call tfree(ipolo)
-      call tfree(ipoll)
-      call tfree(ipolid)
       return
       end
 

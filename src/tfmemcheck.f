@@ -578,11 +578,11 @@ c        call tfdebugprint(it,ia,v,tag,3)
       return
       end
 
-      subroutine tfmemcheckprint(tag,pri,irtc)
+      subroutine tfmemcheckprint(tag,k,pri,irtc)
       use tfstk
       implicit none
       type (sad_descriptor) k1
-      integer*4 isp0,irtc,itfdownlevel,i
+      integer*4 isp0,irtc,itfdownlevel,i,k
       character*(*) tag
       logical*4 pri
       isp0=isp
@@ -591,10 +591,10 @@ c        call tfdebugprint(it,ia,v,tag,3)
       levele=levele+1
       call tfmemcheck(isp0,k1,irtc)
       if(irtc .ne. 0)then
-        write(*,*)'memcheck-error: ',tag
+        write(*,*)'memcheck-error: ',tag,' ',k
         call tfreseterror
       elseif(pri)then
-        write(*,*)'memcheck-ok: ',tag
+        write(*,*)'memcheck-ok: ',tag,' ',k
       endif
       i=itfdownlevel()
       isp=isp0

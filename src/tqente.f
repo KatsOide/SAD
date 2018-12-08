@@ -138,7 +138,7 @@ c      write(*,'(a/,6(1p6g11.4/))')
 c     $     'tqente-2 ',((trans2(i,j),j=1,6),i=1,6)
         call tmultr5(trans,trans2,irad)
       endif
-      if(irad .gt. 6 .or. calpol)then
+      if(irad .gt. 6)then
         call tmulbs(beam,trans2,.true.,.true.)
       endif
       return

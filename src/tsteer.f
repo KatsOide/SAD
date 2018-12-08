@@ -1,4 +1,4 @@
-      subroutine tsteer(np,x,px,y,py,z,g,dv,sp,l,al,phib,dx,dy,
+      subroutine tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,phib,dx,dy,
      1     theta,cost,sint,
      1     cosp1,sinp1,cosp2,sinp2,
      $     fb1,fb2,mfring,fringe,enarad,eps0)
@@ -14,7 +14,7 @@
       integer*4 np,mfring,i,l
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     px0(np),py0(np),ds(np),bsi(np)
-      type (spin) sp(np)
+      real*8 sx(np),sy(np),sz(np)
       real*8 al,phib,dx,dy,theta,cost,sint,eps0,rhob,
      $     dxfr1,dyfr1,dyfra1,f1r,f2r,dyi,
      $     dxfr2,dyfr2,dyfra2,
@@ -24,7 +24,7 @@
       logical*4 fringe,enarad,enrad
       enrad=enarad .and. rad
       if(al .eq. 0.d0)then
-        call tthin(np,x,px,y,py,z,g,dv,sp,2,l,al,-phib,
+        call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,2,l,al,-phib,
      1             dx,dy,theta,cost,sint,1.d0,.false.)
         return
       elseif(phib .eq. 0.d0)then
@@ -32,7 +32,7 @@
         return
       endif
       if(enrad .and. trpt)then
-        call tstrad(np,x,px,y,py,z,g,dv,sp,l,al,phib,dx,dy,
+        call tstrad(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,phib,dx,dy,
      1       theta,cost,sint,
      1       cosp1,sinp1,cosp2,sinp2,
      $       fb1,fb2,mfring,eps0)
@@ -162,7 +162,7 @@ c        dp=g(i)*(2.d0+g(i))
      $       (.5d0*dyfr2-.25d0*dyfra2*y(i)**2)*y(i)**2/p)/p
 100   continue
       if(enrad)then
-        call tradki(np,x,px,y,py,z,g,dv,sp,px0,py0,bsi,ds)
+        call tradki(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,bsi,ds)
 c        call trad(np,x,px,y,py,g,dv,brad,0.d0,0.d0,
 c     1            0.d0,-tanp2*2.d0/al,.5d0*al,
 c     $       f1r,f2r,al,al,-1.d0)

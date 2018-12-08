@@ -49,9 +49,6 @@
       endif
       b1=0.d0
       ndiv=1+min(10000,int(abs(ak*al)/eps))
-      if(calpol)then
-        ndiv=max(ndiv,int(emidiv*emidiq*100.d0*abs(ak)*sqrt(abs(al))))
-      endif
       if(enarad)then
         b1=brhoz*ak/al
         ndiv=min(ndivmax,max(ndiv,itgetqraddiv(cod,ak,al)))
@@ -220,13 +217,6 @@ c          endif
      $         +trans1(4,6)*trans(6,i)
         enddo
         call tmulbs(beam ,trans1,.true.,.true.)
-        if(calpol)then
-          if(n .eq. 1)then
-            call polpar(41,ld,aln,0.d0,0.d0,akn,0.d0,cod)
-          else
-            call polpar(42,ld,aln,0.d0,0.d0,akn,0.d0,cod)
-          endif
-        endif
         cod(1)= xf
         cod(3)= yf
         cod(5)=cod(5)-dvemit*aln-
@@ -236,16 +226,6 @@ c          endif
         cod(2)=pxf*pr
         cod(4)=pyf*pr
 100   continue
-      if(calpol)then
-        if(irad .eq. 6)then
-          npelm=npelm+1
-        else
-          ipelm=ipelm+1
-          call tinitr(trans1)
-          call tmov(trans1,rlist(ipoltr+(ipelm-1)*36),36)
-          call polpar(43,ld,aln,0.d0,0.d0,akn,0.d0,cod)
-        endif
-      endif
       if(kin)then
         call tqente(trans,cod,beam,aln*.5d0,0.d0,
      $       calpol,irad,ld)

@@ -355,8 +355,9 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       call tesetdv(cod(6))
       bradprev=0.d0
       do l=ibegin,iend
-c        if(l .ge. 13136 .and. l .lt. 14000)then
-c          write(*,*)'tturne1 ',l
+c        if(l .gt. 6900 .and. l .lt. 6905)then
+c          write(*,*)'tturne ',l
+c          call tfmemcheckprint('tturne',l,.true.,irtc)
 c        endif
         next=inext(l) .ne. 0
         if(ktfenanq(cod(1)) .or. ktfenanq(cod(3)))then
@@ -662,6 +663,7 @@ c     write(*,*)'tturne-tcave-1',cod
         end select
  1010   continue
       enddo
+c      call tfmemcheckprint('tturne-end0',0,.true.,irtc)
       if(calint)then
         if(alid .ne. 0.d0)then
           call tintrb(trans,cod,beam,bmi,alid,alid,l)
@@ -678,6 +680,7 @@ c     write(*,*)'tturne-tcave-1',cod
      $         dtfcopy1(kxm2l(bmir,6,6,6,.false.))
         endif
       endif
+c      call tfmemcheckprint('tturne-end1',0,.true.,irtc)
       return
       end
 

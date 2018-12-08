@@ -1,5 +1,5 @@
 C   18/01/93 303061342  MEMBER NAME  UNDULATOR *.FORT     M  E2FORT
-        subroutine undulator(np,x,px,y,py,z,g,dv,pz,ulist)
+        subroutine undulator(np,x,px,y,py,z,g,dv,sx,sy,sz,ulist)
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c                                                                 c
 c  Undulator tracking subroutine.                                 c
@@ -15,7 +15,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c      implicit none
       parameter (nsli=1,npole=2,len=3,i_F0=4,i_G0=5,i_dph=6,
      &   i_Kz=7,i_Kx=8,i_Ky=9,i_Qx=10,i_Qy=11,lambda=12,i_ds=13)
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+     $     sx(np),sy(np),sz(np)
       real*8 ulist(*)
       real*8 sinkz,sinkzp
       real*8 kx1,kx2,kx3,kx4,ff,gg,fx,fy,gx,gy,dpds

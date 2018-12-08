@@ -33,7 +33,7 @@ C  CPU-TIME: 4.9*N+5.6 (MICRO SEC) ON M200H.OPT(3) (1984.4.24)
       RETURN
       END
 
-      real*8 function tdusr(anp)
+      real*8 function tdusr(anp,an)
 c a random energy loss of SR using drndsr
 c anp: expected number of photons
 c returns: a random energy loss due to SR in unit of uc

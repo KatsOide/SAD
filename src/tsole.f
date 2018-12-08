@@ -161,9 +161,6 @@ c            endif
         if(rlist(idval(ld)+ky_BND_SOL) .ne. 0.d0)then
           ent=direlc(l) .gt. 0.d0 .and. l .eq. kb
      $         .or. direlc(l) .lt. 0.d0 .and. l .ne. kb
-          if(calpol)then
-            cod1=cod
-          endif
           bzs0=tfbzs(l-1,kb)
           if(enarad1 .and. .not. ent)then
             f1=cmp%value(ky_F1_SOL)
@@ -185,9 +182,6 @@ c            endif
           endif            
           call tmultr5(trans,trans1,irad)
           call tmulbs(beam ,trans1,.true.,.true.)
-          if(calpol)then
-            call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod1)
-          endif
           if(enarad1 .and. ent)then
             f1=cmp%value(ky_F1_SOL)
             if(f1 .ne. 0.d0)then
@@ -209,9 +203,6 @@ c            endif
             call tsfrie(trans1,cod,bzs-bzs0)
             call tmultr5(trans,trans1,irad)
             call tmulbs(beam ,trans1,.true.,.true.)
-            if(calpol)then
-              call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod1)
-            endif
           endif
         endif
       elseif(lt .eq. icMAP)then

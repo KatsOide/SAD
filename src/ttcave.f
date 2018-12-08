@@ -58,9 +58,6 @@ c      p2=sqrt((h2-1.d0)*(h2+1.d0))
       trans1(6,6)=(p1-a*t/p1/h1)/h1/v2
       call tmultr(trans,trans1,irad)
       call tmulbs(beam,trans1,.true.,.true.)
-      if(calpol)then
-        call polpar(320,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod)
-      endif
       cod(6)=pf
       cod(5)=-t*v2
       cod(2)=cod(2)-ak*sinp

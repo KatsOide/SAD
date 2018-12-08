@@ -138,9 +138,6 @@ c      write(*,*)'tflfre ',f1,f2
       trans1(6,5)=0.d0
       trans1(6,6)=1.d0
       call tmulbs(beam ,trans1,.true.,.true.)
-      if(calpol)then
-        call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod)
-      endif
       cod(5)=cod(5)-((a*ea*cod(1)+bp*ea*(1.d0+.5d0*a)*pxf)*pxf
      $     -(a*cod(3)/ea+bp/ea*(1.d0-.5d0*a)*pyf)*pyf)/p
       cod(2)=pxf-bzph*cod(3)

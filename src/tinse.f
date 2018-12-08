@@ -9,9 +9,6 @@
       trans1(:,1:6)=trx(:,1:6)
       call tmultr(trans,trans1,irad)
       call tmulbs(beam ,trans1,.true.,.true.)
-      if(calpol)then
-        call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod)
-      endif
        x1=trans1(1,1)*cod(1)+trans1(1,2)*cod(2)+
      $    trans1(1,3)*cod(3)+trans1(1,4)*cod(4)+trans1(1,6)*cod(6)+
      $    trans1(1,7)

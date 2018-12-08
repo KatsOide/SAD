@@ -1,4 +1,4 @@
-      subroutine tsol(np,x,px,y,py,z,g,dv,pz,
+      subroutine tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     latt,k,kstop,ke,sol,kptbl,la,n,
      $     nwak,nextwake,out)
       use kyparam
@@ -19,7 +19,7 @@
       parameter (la1=15)
       integer*4 k,kbz,np
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
-     $     pz(np0),bsi(np)
+     $     sx(np0),sy(np0),sz(np0),bsi(np)
       real*8 tfbzs,fw,bzs,rho,al,theta,phi,phix,phiy,rhoe,
      $     bz1,rho1,dx,dy,rot,rtaper
       integer*8 latt(nlat),l1,lp
@@ -74,7 +74,8 @@
       iwpl=0
       do l=kb,min(ke,kstop)
         if(la .le. 0)then
-          call tapert(l,latt,x,px,y,py,z,g,dv,pz,kptbl,np,n,
+          call tapert(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         kptbl,np,n,
      $         0.d0,0.d0,0.d0,0.d0,
      $         -alost,-alost,alost,alost,0.d0,0.d0,0.d0,0.d0)
           if(np .le. 0)then
@@ -134,12 +135,12 @@
         case (icDRFT)
           al=cmp%value(ky_L_DRFT)
           if(spac)then
-            call spdrift_solenoid(np,x,px,y,py,z,g,dv,pz,al,bzs,
+            call spdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,al,bzs,
      $           cmp%value(ky_RADI_DRFT),n,l,latt,kptbl)
-          elseif(rad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0)then
-            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
           else
-            call tdrift_solenoid(np,x,px,y,py,z,g,dv,bsi,al,bzs)
+            call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+     $           al,bzs,rad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0)
+c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
           endif
         case (icBEND)
           if(iand(cmp%update,1) .eq. 0)then
@@ -153,7 +154,8 @@
           phix= phi*sin(theta)
           enarad=rad .and. al .ne. 0.d0
      $         .and. cmp%value(ky_RAD_BEND) .eq. 0.d0
-          call tdrift(np,x,px,y,py,z,g,dv,bsi,al,bzs,phiy,phix)
+          call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+     $         al,bzs,phiy,phix,enarad)
         case(icQUAD)
           if(iand(cmp%update,1) .eq. 0)then
             call tpara(cmp)
@@ -164,7 +166,7 @@
             rtaper=1.d0-dp0
      $           +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
           endif
-          call tquads(np,x,px,y,py,z,g,dv,pz,l,al,
+          call tquads(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,
      $         cmp%value(ky_K1_QUAD)*rtaper,bzs,
      $         cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1         cmp%value(p_THETA_QUAD),
@@ -183,10 +185,10 @@
      $           +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
           endif
           if(seg)then
-            call tmultiseg(np,x,px,y,py,z,g,dv,pz,
+            call tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           l,cmp,lsegp,bzs,rtaper,n,latt,kptbl)
           else
-            call tmulti1(np,x,px,y,py,z,g,dv,pz,
+            call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           l,cmp,bzs,rtaper,n,latt,kptbl)
           endif
         case (icSOL)
@@ -231,7 +233,7 @@
         case(icMAP)
           call temap(np,np0,x,px,y,py,z,g,dv,l,n,kptbl)
         case(icAprt)
-          call tapert1(l,latt,x,px,y,py,z,g,dv,pz,
+          call tapert1(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
      1         kptbl,np,n)
           if(np .le. 0)then
             return

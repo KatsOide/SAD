@@ -48,11 +48,8 @@
           trans(5,i)=trans(5,i)+trans1(5,2)*trans(2,i)
      $         +trans1(5,4)*trans(4,i)+trans1(5,6)*trans(6,i)
         enddo
-        if(irad .gt. 6 .or. calpol)then
+        if(irad .gt. 6)then
           call tmulbs(beam ,trans1,.true.,.true.)
-        endif
-        if(calpol)then
-          call polpar(10,ld,al,0.d0,0.d0,0.d0,0.d0,cod)
         endif
         cod(1)=cod(1)+pxi/pzi*al
         cod(3)=cod(3)+pyi/pzi*al
@@ -101,11 +98,8 @@ c   dl/dx is temporarily set to zero, of course it is wrong...
      $         0.d0,0.d0,0.d0,0.d0,
      $         al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
         endif
-        if(irad .gt. 6 .or. calpol)then
+        if(irad .gt. 6)then
           call tmulbs(beam ,trans1,.true.,.true.)
-        endif
-        if(calpol)then
-          call polpar(10,ld,al,0.d0,0.d0,0.d0,0.d0,cod)
         endif
       endif
       bradprev=0.d0

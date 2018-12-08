@@ -59,19 +59,6 @@
      $       bxx,bxy,0.d0,0.d0,0.d0,
      $       al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
       endif
-      if(calpol)then
-        if(nord .eq. 2)then
-          ak0=ak
-          ak1=0.d0
-        elseif(nord .lt. 8)then
-          ak0=0.d0
-          ak1=ak
-        else
-          ak0=0.d0
-          ak1=0.d0
-        endif
-        call polpar(nord*10,ld,0.d0,0.d0,ak0,ak1,0.d0,cod)
-      endif
       cod(2)=cod(2)-aki*dble(cx)
       cod(4)=cod(4)-aki*imag(cx)
       if(al .ne. 0.d0)then
@@ -104,19 +91,6 @@
           call trade(trans,beam,cod,bx,by,0.d0,0.d0,
      $         bxx,bxy,0.d0,0.d0,0.d0,
      $         al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
-        endif
-        if(calpol)then
-          if(nord .eq. 2)then
-            ak0=ak
-            ak1=0.d0
-          elseif(nord .lt. 8)then
-            ak0=0.d0
-            ak1=ak
-          else
-            ak0=0.d0
-            ak1=0.d0
-          endif
-          call polpar(nord*10,ld,0.d0,0.d0,ak0,ak1,0.d0,cod)
         endif
         cod(2)=cod(2)-aki*dble(cx)
         cod(4)=cod(4)-aki*imag(cx)

@@ -227,9 +227,6 @@ c          endif
         ak1=dble(akn(1))
         al1=aln
         ak0n=akn(0)
-        if(calpol)then
-          call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod)
-        endif
         cx0=dcmplx(cod(1),cod(3))
         cx=(0.d0,0.d0)
         cx2=(0.d0,0.d0)
@@ -358,11 +355,8 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
      $           +trans1(4,3)*trans(3,i)
           enddo
         endif
-        if(irad .gt. 6 .or. calpol)then
+        if(irad .gt. 6)then
           call tmulbs(beam ,trans1,.true.,.true.)
-        endif
-        if(calpol)then
-          call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod)
         endif
       enddo
       if(nmmin .eq. 2)then
@@ -389,7 +383,7 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
           endif
           if(acc)then
             call tcavfrie(trans,cod,beam,al,-v,w,phic,phis-phic,s0,p0,
-     $           irad,irad .gt. 6 .or. calpol,autophi)
+     $           irad,irad .gt. 6,autophi)
           endif
         endif
       endif
@@ -404,7 +398,7 @@ c        rg=sqrt(rg2)
         trans1(4,4)=rg2
         trans1(6,6)=rg2
         call tmultr(trans,trans1,irad)
-        if(irad .gt. 6 .or. calpol)then
+        if(irad .gt. 6)then
           call tmulbs(beam,trans1,.true.,.true.)
         endif
         cod(2)=cod(2)*rg2

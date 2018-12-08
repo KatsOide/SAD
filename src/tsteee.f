@@ -132,28 +132,11 @@ c        call tbfrie(trans,cod,beam,-rhob,0.d0,.true.,ld)
         trans1(5,6)=trans1(5,6)-(aln+dl)/pr+h0/h1emit**3*aln
         call tmultr5(trans,trans1,irad)
         call tmulbs(beam ,trans1,.true.,.true.)
-        if(calpol)then
-          if(n .eq. 1)then
-            call polpar(21,ld,aln,0.d0,-phin,0.d0,0.d0,cod)
-          else
-            call polpar(22,ld,aln,0.d0,-phin,0.d0,0.d0,cod)
-          endif
-        endif
         cod(1)=cod(1)+aln*spx/spz
         cod(2)=pxf*pr
         cod(3)=cod(3)+pyi*(aln+dl)
         cod(5)=cod(5)-(dl+dvemit*aln)
         if(n .eq. ndiv)then
-          if(calpol)then
-            if(irad .eq. 6)then
-              npelm=npelm+1
-            else
-              ipelm=ipelm+1
-              call tinitr(trans1)
-              call tmov(trans1,rlist(ipoltr+(ipelm-1)*36),36)
-              call polpar(23,ld,aln,0.d0,-phin,0.d0,0.d0,cod)
-            endif
-          endif
           if(enarad)then
             call trade(trans,beam,cod,0.d0,b,0.d0,0.d0,
      $           0.d0,0.d0,0.d0,-tanp2,

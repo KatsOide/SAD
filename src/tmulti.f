@@ -1,4 +1,4 @@
-      subroutine tmulti(np,x,px,y,py,z,g,dv,sp,
+      subroutine tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     al,ak,bz,phia,
      $     psi1,psi2,
      $     dx,dy,dz,chi1,chi2,theta,dtheta,
@@ -22,7 +22,7 @@ c      parameter (oneev=1.d0+3.83d-12)
       integer*4 np
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
      $     pxr0(np),pyr0(np),bsi(np)
-      type (spin) sp(np)
+      real*8 sx(np),sy(np),sz(np)
       real*8 al,f1in,f2in,f1out,f2out
       complex*16 ak(0:nmult)
       real*8 bz,phia,psi1,psi2,dx,dy,dz,chi1,chi2,theta,dtheta,eps0
@@ -80,13 +80,14 @@ c      parameter (oneev=1.d0+3.83d-12)
      $0.045454545454545454545d0/
       if(phia .ne. 0.d0)then
         call tmulta(
-     $       np,x,px,y,py,z,g,dv,sp,
+     $       np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       l,al,ak,phia,
      $       psi1,psi2,bz,
      1       dx,dy,theta,dtheta,
      $       eps0,enarad,fb1,fb2,mfring,fringe)
         return
       endif
+      krad=rad .and. enarad .and. al .ne. 0.d0
       dphis=0.d0
       radlvl=1.d0
       b0=0.d0
@@ -266,8 +267,8 @@ c     $     x(np),px(np),y(np),py(np),z(np),g(np)
         nmmax=0
         go to 1
       else
-        call tdrift(np,x,px,y,py,z,g,dv,bsi,al,
-     $       bzs,dble(akr(0)),imag(akr(0)))
+        call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+     $       al,bzs,dble(akr(0)),imag(akr(0)),krad)
       endif
       go to 1000
  1    cr=cr1*rtaper
@@ -296,7 +297,6 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
         ndiv=max(ndiv,nint(abs(al)/(alstep*eps/eps00)),
      $       nint(eps00/eps*abs(bzs*al)/1.5d0))
       endif
-      krad=rad .and. enarad .and. al .ne. 0.d0
       acc=(trpt .or. rfsw) .and. vc .ne. 0.d0
       if(krad)then
         pxr0=px
@@ -447,7 +447,7 @@ c        vnominal=0.d0
                 bsi(i)=bsi(i)+imag(cx)/al
               enddo
             endif
-            call tradk(np,x,px,y,py,z,g,dv,sp,pxr0,pyr0,bsi,al1)
+            call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,pxr0,pyr0,bsi,al1)
             pxr0=px
             pyr0=py
           endif
@@ -531,7 +531,7 @@ c            dpr=ah/(1.d0+sqrt(1.d0+ah))
           enddo
         endif
         if(spac1)then
-          call spkick(np,x,px,y,py,z,g,dv,sp,al*wsm,radius,alx,
+          call spkick(np,x,px,y,py,z,g,dv,sx,sy,sz,al*wsm,radius,alx,
      $          kturn,l,latt,kptbl)
         endif
       enddo
@@ -542,7 +542,8 @@ c        write(*,'(a,1p7g12.4)')'tmulti-2 ',bsi(1:7)
       endif
       if(spac1)then
 c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
-        call tapert(l,latt,x,px,y,py,z,g,dv,sp,kptbl,np,kturn,
+        call tapert(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       kptbl,np,kturn,
      $       radius,radius,
      $       0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
       endif
@@ -590,7 +591,7 @@ c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
             cx=.5d0*cx*cx1**2
             bsi(i)=bsi(i)-imag(cx)/al
           enddo
-          call tradk(np,x,px,y,py,z,g,dv,sp,pxr0,pyr0,bsi,al1)
+          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,pxr0,pyr0,bsi,al1)
         endif
       endif
  1000 if(theta2 .ne. 0.d0)then

@@ -554,7 +554,7 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
         trans1(5,6)=trans1(5,6)
      $       -(pxi*trans1(5,2)+pyi*trans1(5,4))
         call tmultr5(trans,trans1,irad)
-        if(irad .gt. 6 .or. calpol)then
+        if(irad .gt. 6)then
           call tmulbs(beam ,trans1,.false.,.true.)
         endif
       enddo

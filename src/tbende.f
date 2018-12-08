@@ -19,13 +19,13 @@
       akxsqp=-akxsq/p
       phixp=-0.5d0*phix/p
       if(akxsq .gt. 0.d0)then
-        dcxp=sx*phixp
+        dcxp=spx*phixp
         dcxkxp=dcxp/akxsq+dcxkx/p
         sxkxp= 0.5d0*sxkx/p+cx*phixp/akx
         xsxkxp=(-dcx*phixp/akxsq-1.5d0*xsxkx/p)/akx
         aksxp=-0.5d0*aksx/p+akx*cx*phixp
       elseif(akxsq .lt. 0.d0)then
-        dcxp=-sx*phixp
+        dcxp=-spx*phixp
         dcxkxp=dcxp/akxsq+dcxkx/p
         sxkxp= 0.5d0*sxkx/p+cx*phixp/akx
         xsxkxp=(-dcx*phixp/akxsq-1.5d0*xsxkx/p)/akx
@@ -40,11 +40,11 @@
       akysqp=-akysq/p
       phiyp=-0.5d0*phiy/p
       if(akysq .gt. 0.d0)then
-        dcyp=phiyp*sy
+        dcyp=phiyp*spy
         sykyp= 0.5d0*syky/p+cy*phiyp/aky
         aksyp=-0.5d0*aksy/p+aky*cy*phiyp
       elseif(akysq .lt. 0.d0)then
-        dcyp=-phiyp*sy
+        dcyp=-phiyp*spy
         sykyp= 0.5d0*syky/p+cy*phiyp/aky
         aksyp=-0.5d0*aksy/p-aky*cy*phiyp
       else
@@ -614,9 +614,6 @@ c      pzi=sqrt(max(1.d-4,(pr-pxi)*(pr+pxi)-pyi**2))
      $     +h0/h1emit**3*dl
       call tmultr5(trans,trans1,irad)
       call tmulbs(beam ,trans1,.true.,.true.)
-      if(calpol)then
-        call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod)
-      endif
       cod(1)=xf
       cod(2)=pxf
       cod(3)=cod(3)+xi*sp*pyi/pzf
@@ -666,9 +663,6 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
      $     (dyfr-.5d0*dyfraysq)*ysq)/pr**3
       call tmultr5(trans,trans1,irad)
       call tmulbs(beam,trans1,.true.,.true.)
-      if(calpol)then
-        call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod)
-      endif
       cod(1)=cod(1)+dxfr*cod(6)/pr
       cod(4)=cod(4)+(dyfr-dyfraysq)*cod(3)/pr
       cod(5)=cod(5)+(dxfr*cod(2)+
@@ -691,9 +685,6 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       trans1(5,1)=-phi0
       call tmultr(trans,trans1,irad)
       call tmulbs(beam ,trans1,.true.,.true.)
-      if(calpol)then
-        call polpar(20,ld,0.d0,phi0,phib,0.d0,0.d0,cod)
-      endif
       cod(2)=cod(2)+(phi0-phib)+cod(6)*phi0
       cod(5)=cod(5)-phi0*cod(1)
       call tchge(trans,cod,beam,dx,dy,-theta,-dtheta,-phi0,.false.,ld)
