@@ -46,7 +46,8 @@ With[{default={OneTurnInformation->False,
         r=Join[r,
           {DampingRate->e[[2,{ipdampx,ipdampy,ipdampz}]],Emittances->e[[2,{ipemx,ipemy,ipemz}]],
             MomentumSpread->e[[2,ipsige]],BunchLength->e[[2,ipsigz]],
-            TuneShiftByRadiation->e[[2,{ipdnux,ipdnuy,ipdnuz}]]/Pi/2}]];
+            TuneShiftByRadiation->e[[2,{ipdnux,ipdnuy,ipdnuz}]]/Pi/2,
+            NominalSpinTune->e[[2,ipnup]],NominalPolarizationTime->e[[2,iptaup]]}]];
       If[mode>0,
         r=Join[r,{
           OrbitAtEntrance->e[[3,1]],OneTurnTransferMatrix->e[[3,2]],

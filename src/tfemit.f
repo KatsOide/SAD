@@ -46,7 +46,7 @@
         irtc=itfmessage(9,'General::wrongnum','"-1, 0, 1, 2, or, 3"')
         return
       endif
-      lno=rtastk(isp1+2)
+      lno=int(rtastk(isp1+2))
       if(lno .eq. -1)then
         lno=icslfno()
       endif
@@ -76,7 +76,7 @@ c        ilist(2,iwakepold+6)=ifsize
       endif
       call temit(trans,cod,beam,btr,
      $     mode .ge. 0,iatr,iacod,iabmi,iamat,
-     $     .true.,param,stab,0,lno)
+     $     .true.,param,stab,lno)
       if(mode .eq. 3 .and. intra)then
         kx=kxadaloc(-1,6,klx)
       else
@@ -118,7 +118,7 @@ c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparam
       implicit none
       type (sad_descriptor) kx
       integer*8 kparams
-      integer*4 isp1,irtc,mphi2,i,itfmessage,lfni
+      integer*4 isp1,irtc,mphi2,i,itfmessage
       real*8 arg(4),emxe,emye,rese
       call tfinitemip
       if(isp .ne. isp1+4)then
@@ -130,7 +130,7 @@ c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparam
         endif
         arg(i)=rtastk(isp1+i)
       enddo
-      mphi2=max(1.d0,min(32.d0,arg(4)))
+      mphi2=int(max(1.d0,min(32.d0,arg(4))))
       call tfgeo(.true.)
       kparams=ktaloc(nparams)
       codin=0.d0
@@ -143,7 +143,7 @@ c        ilist(2,iwakepold+6)=ifsize
      $     mphi2,
      $     arg(1)*pi2,arg(2)*pi2,arg(3)*pi2,
      $     emxe,emye,rese,rlist(kparams),
-     $     lfni,0,kx,irtc)
+     $     0,kx,irtc)
       call tfree(kparams)
       if(.not. codplt)then
         call tfgeo(.true.)

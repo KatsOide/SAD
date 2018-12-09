@@ -5,8 +5,7 @@
       use temw
       implicit none
       integer*4 ld,kord,nord
-      real*8 al,ak,dx,dy,theta,b1,aki,ala,alb,bx,by,bxx,bxy,
-     $     ak0,ak1
+      real*8 al,ak,dx,dy,theta,b1,aki,ala,alb,bx,by,bxx,bxy
       real*8 trans(6,12),cod(6),beam(42)
       complex*16 cx,cx1
       real*8 fact(0:10)

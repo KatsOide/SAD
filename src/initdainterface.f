@@ -62,7 +62,7 @@ c
       subroutine mkmachinef(nord)
       use tfstk
       use ffs
-      use temw, only: rr=>r, rri=>ri
+      use temw, only: rri=>ri
       use tffitcode
       use ffs_pointer, only:latt,idelc
       implicit real*8 (a-h,o-z)

@@ -1,7 +1,7 @@
       subroutine temits(
      $     mphi2,amus0,amus1,amusstep,
      $     emix,emiy,res,params,
-     $     lfni,lfno,kx,irtc)
+     $     lfno,kx,irtc)
       use tfstk
       use ffs_pointer
       use ffs
@@ -10,7 +10,7 @@
       use temw, only:nparams
       implicit none
       integer*8 kx
-      integer*4 irtc,mphi2,lfni,lfno,mphiz,ndims,
+      integer*4 irtc,mphi2,lfno,mphiz,ndims,
      $     ndps,nzz
       real*8 amus0,amus1,amusstep,emix,emiy,res
       real*8 params(nparams)
@@ -34,7 +34,7 @@
      $     .false.,stab,ndps,nzz,mphiz,mphi2,ndims,
      $     amus0,amus1,amusstep,
      $     emix,emiy,res,params,
-     $     lfni,lfno,kx,irtc)
+     $     lfno,kx,irtc)
       radcod=radcod0
       radtaper=radtaper0
       rfsw=rfsw0
@@ -47,7 +47,7 @@
      $     plot,stab,ndp,nz,mphi,mphi2,ndims,
      $     amus0,amus1,amusstep,
      $     emix,emiy,res0,params,
-     $     lfni,lfno,kx,irtc)
+     $     lfno,kx,irtc)
       use tfstk
       use ffs
       use temw
@@ -59,7 +59,7 @@
       real*8 , parameter :: resconv=1.d-4,minconv=1.d-7
       integer*8 kx,kax,kai
       integer*4 mphi,mphi2,ndims,i1,
-     $     lfni,lfno,irtc,ndp,i,k,kk,ns,it,j,nz
+     $     lfno,irtc,ndp,i,k,kk,ns,it,j,nz
       real*8 amus0,amus1,amusstep, emix,emiy,res0,
      $     amus,damp,dj,dpndim,emix0,emiy0,
      $     fz,phi0s,res,sige,sigea,vx,vy,w,
@@ -93,7 +93,7 @@ c     $     dhc(4,mphi2,ndp),dhs(4,mphi2,ndp),
       beamin(1:21)=0.d0
       call temit(trans,cod,beamr,btr,
      $     .true.,int8(0),int8(0),int8(0),int8(0),
-     $     plot,params,stab,lfni,lfno)
+     $     plot,params,stab,lfno)
       dispp=r(:,6)
       call tinitr(rx)
       rxi=rx

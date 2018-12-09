@@ -1,18 +1,20 @@
       module temw
+      use tffitcode
       implicit none
 
       private
 
       integer*4 , public, parameter ::
-     $     nparams=59,
      $     ipdx=1,ipdpx=2,ipdy=3,ipdpy=4,ipdz=5,ipddp=6,
      $     ipnx=7,ipny=8,ipnz=9,
      $     ipu0=10,ipvceff=11,iptrf0=12,ipalphap=13,ipdleng=14,
-     $     ipbh=15,ipheff=27,iptwiss=31,iptws0=30,
-     $     ipdampx=16,ipdampy=17,ipdampz=18,
-     $     ipdnux=28,ipdnuy=29,ipdnuz=30,
+     $     ipbh=15,ipdampx=16,ipdampy=17,ipdampz=18,
      $     ipjx=19,ipjy=20,ipjz=21,
-     $     ipemx=22,ipemy=23,ipemz=24,ipsige=25,ipsigz=26
+     $     ipemx=22,ipemy=23,ipemz=24,ipsige=25,ipsigz=26,
+     $     ipheff=27,ipdnux=28,ipdnuy=29,ipdnuz=30,
+     $     iptwiss=31,iptws0=iptwiss-1,
+     $     ipnup=iptwiss+ntwissfun,iptaup=ipnup+1,
+     $     nparams=iptaup
 
       real(8), public :: r(6, 6) = RESHAPE((/
      $     1.d0, 0.d0, 0.d0, 0.d0, 0.d0, 0.d0,
@@ -85,13 +87,15 @@ c     Inverse matrix of r
      $';ipemz='//strfromis(ipemz)//
      $';ipsige='//strfromis(ipsige)//
      $';ipsigz='//strfromis(ipsigz)//
+     $';ipnup='//strfromis(ipnup)//
+     $';iptaup='//strfromis(iptaup)//
      $';SetAttributes[{'//
      $ 'nparams,ipdx,ipdpx,ipdy,ipdpy,ipdz,ipddp,'//
      $ 'ipnx,ipny,ipnz,'//
      $ 'ipu0,ipvceff,iptrf0,ipalphap,ipdleng,'//
      $ 'ipbh,ipheff,iptwiss,ipdampx,ipdampy,ipdampz,'//
      $ 'ipdnux,ipdnuy,ipdnuz,ipjx,ipjy,ipjz,'//
-     $ 'ipemx,ipemy,ipemz,ipsige,ipsigz},Constant];'//
+     $ 'ipemx,ipemy,ipemz,ipsige,ipsigz,iptaup,ipnup},Constant];'//
      $ 'End[];EndPackage[];',kx,irtc)
 c      call tfdebugprint(kx,'initemip',1)
       initemip=.false.
@@ -519,7 +523,7 @@ c     Table of loss-rate
 
       subroutine temit(trans,cod,beam,btr,
      $     calem,iatr,iacod,iabmi,iamat,
-     $     plot,params,stab,lfni,lfno)
+     $     plot,params,stab,lfno)
       use tfstk
       use temw
       use ffs_flag
@@ -530,7 +534,7 @@ c     Table of loss-rate
       real*8 conv
       parameter (conv=1.d-12)
       integer*8 iatr,iacod,iamat,iabmi
-      integer*4 lfni,lfno,ia,it,i,j,k,k1,k2,k3,m,n,iret,l
+      integer*4 lfno,ia,it,i,j,k,k1,k2,k3,m,n,iret,l
       real*8 trans(6,12),cod(6),beam(42),emx0,emy0,emz0,dl,
      $     heff,phirf,omegaz,bh,so,s,
      $     sr,sqr2,bb,bbv(21),sige,
@@ -542,10 +546,10 @@ c     Table of loss-rate
       complex*16 cc(6),cd(6),ceig(6),ceig0(6),dceig(6)
       real*8 btr(21,21),emit(21),emit1(42),beam1(42),
      1       beam2(21),params(nparams),codold(6),ab(6)
-      real*8 polsca(7),demin,rgetgl1
+      real*8 demin,rgetgl1
       character*10 label1(6),label2(6)
-      character*11 autofg,vout(28)
-      character*9 vout9(28)
+      character*11 autofg,vout(nparams)
+      character*9 vout9(nparams)
       logical*4 plot,pri,fndcod,synchm,intend,stab,calem,
      $     epi,calcodr,rt
       data label1/'        X ','       Px ','        Y ',
@@ -688,7 +692,7 @@ c     call tsymp(trans)
       enddo
       if(vceff .ne. 0.d0)then
         phirf=asin(u0*pgev/vceff)
-        heff=wrfeff*c/omega0
+        heff=wrfeff*cveloc/omega0
       else
         phirf=0.d0
         heff=0.d0
@@ -703,7 +707,7 @@ c     call tsymp(trans)
         endif
         omegaz=abs(imag(cd(6)))*omega0/pi2
       else
-        alphap=-dl/pi2/c/p0*h0*omega0
+        alphap=-dl/pi2/cveloc/p0*h0*omega0
         omegaz=sqrt(abs(alphap*pi2*heff*vceff/pgev*cos(phirf)))
      $       *omega0/pi2
       endif
@@ -729,7 +733,7 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
       if(pri)then
         if(lfno .gt. 0)then
           do i=1,ntwissfun
-            vout9(i)=autofg(params(iptws0+i),'9.6')
+            vout9(i)=autofg(params(iptws0+i),'9.6')(1:9)
           enddo
           write(lfno,9001)
      $         vout9(mfitax),vout9(mfitbx),vout9(mfitzx),vout9(mfitex),
@@ -759,7 +763,7 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
         vout(8) =autofg(heff            ,'10.7')
         vout(9) =autofg(bh              ,'10.7')
         vout(10)=autofg(omegaz/pi2      ,'10.7')
-        write(lfno,9101)(vout(i)(1:10),i=1,10)
+        write(lfno,9101)vout(1:10)(1:10)
 9101    format(   'Design momentum      P0 =',a,' GeV',
      1         1x,'Revolution freq.     f0 =',a,' Hz '/
      1            'Energy loss per turn U0 =',a,' MV ',
@@ -769,7 +773,7 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
      1            'Orbit dilation       dl =',a,' mm ',
      1         1x,'Effective harmonic #  h =',a,/
      1            'Bucket height     dV/P0 =',a,'    ',
-     $         1x,'Synchrotron frequency   =',a,' Hz ',/)
+     $         1x,'Synchrotron frequency   =',a,' Hz '/)
         if(emiout)then
           write(lfno,*)'   Eigen values and eigen vectors:'
           write(lfno,*)
@@ -806,7 +810,7 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
         endif
       endif
       if(.not. calem)then
-        go to 7010
+        return
       endif
       do i=1,6
         do j=1,6
@@ -819,7 +823,7 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
       enddo
       call tmultr(trans,ri,6)
       do i=1,5,2
-        cd(i/2+1)=dcmplx((trans(i,i)+trans(i+1,i+1))*.5d0,
+        cd(int(i/2)+1)=dcmplx((trans(i,i)+trans(i+1,i+1))*.5d0,
      1                   (trans(i,i+1)-trans(i+1,i))*.5d0)/cc(i)
       enddo
       if(trpt)then
@@ -893,7 +897,7 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
 c      call tclr(btr,441)
 c      call tclr(trans(1,7),36)
       do i=1,5,2
-        tune=imag(cd(i/2+4))
+        tune=imag(cd(int(i/2)+4))
         trans(i  ,i+6)= cos(tune)
         trans(i  ,i+7)= sin(tune)
         trans(i+1,i+6)=-sin(tune)
@@ -1001,7 +1005,7 @@ c          enddo
         sigz=sqrt(abs(emit1(15)))
       else
         if(omegaz .ne. 0.d0)then
-          sigz=abs(alphap)*sige*c*p0/h0/omegaz
+          sigz=abs(alphap)*sige*cveloc*p0/h0/omegaz
         else
           sigz=0.d0
         endif
@@ -1012,6 +1016,9 @@ c          enddo
       params(ipemz)=emz
       params(ipsige)=sige
       params(ipsigz)=sigz
+      params(ipnup)=h0*gspin
+      params(iptaup)=33275.d0/36864.d0/finest**2
+     $     *h0*elradi/cveloc/(params(ipjz)*sige**2*p0/h0)**3
       call rsetgl1('EMITX',emx)
       call rsetgl1('EMITY',emy)
       call rsetgl1('EMITZ',emz)
@@ -1042,6 +1049,8 @@ c          enddo
         vout(3)=autofg(emz             ,'11.8')
         vout(4)=autofg(sige            ,'11.8')
         vout(5)=autofg(sigz*1.d3       ,'11.8')
+        vout(9)=autofg(params(ipnup)   ,'11.7')
+        vout(10)=autofg(params(iptaup)/60.d0,'11.7')
 ckiku <------------------
         xxs=emit1(1)-emit1(6)
         yys=-2.d0*emit1(4)
@@ -1057,7 +1066,7 @@ ckiku <------------------
         vout(6)=autofg(btilt,'11.8')
         vout(7)=autofg(sigx*1.d3  ,'11.8')
         vout(8)=autofg(sigy*1.d3  ,'11.8')
-        write(lfno,9102)(vout(i)     ,i=1,8)
+        write(lfno,9102)vout(1:10)
 9102    format(   'Emittance X            =',a,' m  ',
      1         1x,'Emittance Y            =',a,' m'/
      1            'Emittance Z            =',a,' m  ',
@@ -1065,7 +1074,9 @@ ckiku <------------------
      1            'Bunch Length           =',a,' mm ',
      1         1X,'Beam tilt              =',a,' rad'/
      1            'Beam size xi           =',a,' mm ',
-     1         1X,'Beam size eta          =',a,' mm'/)
+     1         1X,'Beam size eta          =',a,' mm'/
+     $           ,'Nominal spin tune      =',a,'    ',
+     $         1x,'Nominal pol. time      =',a,' min'/)
 c9103   format(3X,'Beam dimension along principal axis:'/
         call putsti(emx,emy,emz,sige,sigz,btilt,sigx,sigy,
      1              calint,fndcod)
@@ -1211,7 +1222,7 @@ c        call tfmemcheckprint('temit-4',0,.true.,iret)
             itoul=ktfsymbolz('TouschekTable',13)-4
           endif
           intend=.true.
-          tf=rclassic**2*c*pbunch*sqrt(pi)/h0*omega0/2.d0/pi/c/p0*h0
+          tf=rclassic**2*pbunch*sqrt(pi)/h0*omega0/2.d0/pi/p0*h0
           if(caltouck)then
             id=id+1
             kax=ktadaloc(0,4,klx)
@@ -1257,7 +1268,7 @@ c            endif
           if(pri)then
             if(caltouck)then
               write(lfno,*)
-              do iii=0,(ntouckl-1)/5
+              do iii=0,int((ntouckl-1)/5)
                 write(lfno,9104)((5*iii+i+1)*0.2d0,i=1,5)
  9104           format(
      1               ' Momentum acceptance:  ',5(f8.1,2x),'  %')
