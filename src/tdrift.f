@@ -36,7 +36,7 @@ c     drift in the parallel solenoid
       implicit none
       integer*4 np
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),bsi(np),
-     $     sx(np),sy(np),sz(np),px0,py0,px1,py1
+     $     sx(np),sy(np),sz(np),zr0,px1,py1
       real*8 al,bz
       integer*4 i
       real*8 pr,bzp,pxi,pyi
@@ -50,10 +50,9 @@ c     drift in the parallel solenoid
 c         pr=(1.d0+g(i))**2
          pr=(1.d0+g(i))
          bzp=bz/pr
-         px0=px(i)
-         py0=py(i)
-         pxi=px0+bzp*y(i)*.5d0
-         pyi=py0-bzp*x(i)*.5d0
+         pxi=px(i)+bzp*y(i)*.5d0
+         pyi=py(i)-bzp*x(i)*.5d0
+         zr0=z(i)
 
          s=min(ampmax,pxi**2+pyi**2)
          dpzi=-s/(1.d0+sqrtl(1.d0-s))
@@ -95,11 +94,11 @@ c
            if(rfluct)then
              call tradkf1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $            sx(i),sy(i),sz(i),
-     $            px0,py0,bsi(i),al,1.d0)
+     $            pxi,pyi,zr0,bsi(i),al)
            else
              call tradk1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $            sx(i),sy(i),sz(i),
-     $            px0,py0,bsi(i),al,1.d0)
+     $            pxi,pyi,zr0,bsi(i),al)
            endif
          endif
          px(i)=px1-bzp*y(i)*.5d0
@@ -119,7 +118,7 @@ c
       real*8 conv
       parameter (itmax=15,conv=1.d-15)
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     sx(np),sy(np),sz(np),px0,py0,bsi(np)
+     $     sx(np),sy(np),sz(np),px0,py0,zr0,bsi(np)
       real*8 al,bz,pr,bzp,s,phi,px1,py1,
      $     sinphi,ak0x,ak0y,b,phix,phiy,phiz,
      $     dphizsq,dpz0,pz0,plx,ply,plz,ptx,pty,ptz,
@@ -152,10 +151,11 @@ c          pr=(1.d0+g(i))**2
           pr=(1.d0+g(i))
           alb=al*pr/b
           bzp=bz/pr
+          px(i)=px(i)+bzp*y(i)*.5d0
+          py(i)=py(i)-bzp*x(i)*.5d0
           px0=px(i)
           py0=py(i)
-          px(i)=px0+bzp*y(i)*.5d0
-          py(i)=py0-bzp*x(i)*.5d0
+          zr0=z(i)
           s=min(ampmax,px(i)**2+py(i)**2)
           dpz0=-s/(1.d0+sqrtl(1.d0-s))
           pz0=1.d0+dpz0
@@ -207,11 +207,11 @@ c          pr=(1.d0+g(i))**2
             if(rfluct)then
               call tradkf1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $         sx(i),sy(i),sz(i),
-     $         px0,py0,bsi(i),al,1.d0)
+     $         px0,py0,zr0,bsi(i),al)
             else
               call tradk1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $         sx(i),sy(i),sz(i),
-     $         px0,py0,bsi(i),al,1.d0)
+     $         px0,py0,zr0,bsi(i),al)
             endif
           endif
           px(i)=px1-bzp*y(i)*.5d0

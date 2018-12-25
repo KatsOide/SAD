@@ -72,7 +72,7 @@ c      write(*,*)'tcod-dp0 ',dp0
         endif
         return
       endif
-      call tinitr(trans)
+      call tinitr12(trans)
       codf=codi
       trf00=trf0
 c      write(*,*)'tcod-tturne-0'

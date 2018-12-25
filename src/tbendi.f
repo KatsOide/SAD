@@ -133,7 +133,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       implicit none
       integer*4 np,mfring,i,ndiv,n,l
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     sx(np),sy(np),sz(np),px0(np),py0(np),bsi(np),
+     $     sx(np),sy(np),sz(np),px0(np),py0(np),zr0(np),bsi(np),
      $     al,phib,phi0,cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,cost,sint,fb1,fb2,eps0,
      $     tanp1,tanp2,aind,b,dxfr1,dyfr1,dyfra1,pr,eps,
@@ -153,6 +153,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       if(krad)then
         px0=px
         py0=py
+        zr0=z
         bsi=0.d0
         if(iprev(l) .eq. 0)then
           f1r=fb1
@@ -227,13 +228,14 @@ c            dp=g(i)*(2.d0+g(i))
           sz(i)=-sx0*sphin+sz(i)*cphin
           if(rfluct)then
             call tradkf1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
-     $           px0(i),py0(i),bsi(i),aln,0.d0)
+     $           px0(i),py0(i),zr0(i),bsi(i),aln)
           else
             call tradk1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
-     $           px0(i),py0(i),bsi(i),aln,0.d0)
+     $           px0(i),py0(i),zr0(i),bsi(i),aln)
           endif
           px0(i)=pxi
           py0(i)=pyi
+          zr0(i)=zi
           bsi(i)=0.d0
         endif
         do n=2,ndiv
@@ -246,13 +248,14 @@ c            dp=g(i)*(2.d0+g(i))
             sz(i)=-sx0*sphin+sz(i)*cphin
             if(rfluct)then
               call tradkf1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
-     $             px0(i),py0(i),bsi(i),aln,0.d0)
+     $             px0(i),py0(i),zr0(i),bsi(i),aln)
             else
               call tradk1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
-     $             px0(i),py0(i),bsi(i),aln,0.d0)
+     $             px0(i),py0(i),zr0(i),bsi(i),aln)
             endif
             px0(i)=pxi
             py0(i)=pyi
+            zr0(i)=zi
           endif
         enddo
         call tbendicorr(akn*.5d0,aln*.5d0,phin*.5d0)
@@ -295,7 +298,7 @@ c     $       f1r,f2r,al,al,-1.d0)
           sx(i)= sx0*cphin+sz(i)*sphin
           sz(i)=-sx0*sphin+sz(i)*cphin
         enddo
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,bsi,aln)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,aln)
       endif
 c      if(dphiy .ne. 0.d0)then
 c        do i=1,np

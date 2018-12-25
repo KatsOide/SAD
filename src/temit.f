@@ -36,13 +36,27 @@ c     Inverse matrix of r
      $     (/6, 6/))
 
       real(8), public :: emx, emy, emz
+      real*8 , public :: transr(6,6),codr0(6),bzhr0,bsi
+
       logical*4, public :: normali, initemip=.true.
+      logical*4 , public :: initr
 
       real*8 , parameter :: toln=0.1d0
+
+
       public :: tfetwiss,etwiss2ri,tfnormalcoord,toln,
-     $     tfinitemip
+     $     tfinitemip,tsetr0
 
       contains
+      subroutine tsetr0(trans,cod,bzh)
+      implicit none
+      real*8 ,intent(in)::trans(6,6),cod(6),bzh
+      codr0=cod
+      transr=trans
+      bzhr0=bzh
+      return
+      end subroutine
+
       subroutine tfinitemip
       use tfstk
       implicit none
@@ -622,8 +636,7 @@ c        write(*,*)'temit-tcod ',trf0
           write(lfno,'(10X,6A)')label2
           call tput(cod,label2,' Entrance ','9.6',1,lfno)
         endif
-        call tinitr(trans)
-        trans(:,7:12)=0.d0
+        call tinitr12(trans)
         call tturne(trans,cod,beam,int8(0),int8(0),int8(0),
      $       .false.,.false.,rt)
       endif
@@ -632,8 +645,7 @@ c        write(*,*)'temit-tcod ',trf0
         cod=codin
         beam(1:21)=beamin
 c        call tclr(beam,21)
-        call tinitr(trans)
-        trans(:,7:12)=0.d0
+        call tinitr12(trans)
 c        write(*,*)'temit ',trf0,cod
         call tturne(trans,cod,beam,int8(0),int8(0),int8(0),
      1       .false.,.false.,rt)
@@ -1114,8 +1126,7 @@ c        write(*,*)'temit-intraconv ',iret,beam(27)
           dlist(iamat+6)=
      $         dtfcopy1(kxm2l(emit1,0,21,1,.false.))
         endif
-        call tinitr(trans)
-        trans(:,7:12)=0.d0
+        call tinitr12(trans)
 c        call tclr(trans(1,7),36)
         cod=codin
         call tmov(r,btr,78)
@@ -1518,7 +1529,8 @@ c20      continue
 
       subroutine tinv6(r,ri)
       implicit none
-      real*8 r(6,6),ri(6,6)
+      real*8, intent(in):: r(6,6)
+      real*8 ,intent(out)::ri(6,6)
       ri(1,1)= r(2,2)
       ri(1,2)=-r(1,2)
       ri(1,3)= r(4,2)

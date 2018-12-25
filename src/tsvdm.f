@@ -10,6 +10,7 @@ c               V is returned in a .
 c               a=U^T.W.V .
 c    
 c
+      use tfstk, only:ktfenanq
       implicit none
       integer*4 nmax,itmax
       parameter (nmax=100000,itmax=256)
@@ -348,8 +349,17 @@ c                enddo
         enddo
         write(*,*)' TSVDM convergence fail. ',iend,v(iend-1),
      $       x(iend-1),x(iend)
-        iend=iend-1
         v(iend)=0.d0
+        if(ktfenanq(x(iend)))then
+          x(iend)=0.d0
+        endif
+        iend=iend-1
+        if(ktfenanq(x(iend)))then
+          x(iend)=0.d0
+        endif
+        if(ktfenanq(v(iend)))then
+          v(iend)=0.d0
+        endif
       enddo do3001
       anorm=abs(x(1))
       do 3010 i=2,mn

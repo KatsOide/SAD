@@ -3,6 +3,7 @@
       use tfstk
       use ffs_flag
       use tmacro
+      use temw, only:tsetr0
       implicit none
       real*8 epslon,a3,a5,a7,a9,a11,a13,a15
       parameter (epslon=1.d-6)
@@ -18,7 +19,7 @@
      $     pz1,dpx,pxf,d,w,u,spz,spx,phsq,dl,dpz2,pz2,
      $     dyfra1,dyfra2,apsi1,apsi2,tanp1,tanp2,als
       real*8 trans1(6,6)
-      logical*4 enarad,fringe,next,prev
+      logical*4 enarad,fringe,next,prev,krad
       if(al .eq. 0.d0)then
         call tthine(trans,cod,beam,2,al,-phib,dx,dy,theta,
      $       .false.,ld)
@@ -29,6 +30,10 @@
         return
       endif
       call tchge(trans,cod,beam,-dx,-dy,theta,0.d0,0.d0,.true.,ld)
+      krad=enarad .and. al .ne. 0.d0
+      if(krad)then
+        call tsetr0(trans(:,1:6),cod(1:6),0.d0)
+      endif
       rhob=al/phib
       prev=bradprev .ne. 0.d0
       if(fb1 .ne. 0.d0 .and. (mfring .gt. 0 .or. mfring .eq. -1))then
@@ -73,18 +78,18 @@ c        call tbfrie(trans,cod,beam,-rhob,0.d0,.true.,ld)
       call tinitr(trans1)
       als=0.d0
       do 100 n=1,ndiv
-        if(enarad)then
-          if(n .eq. 1)then
-            call trade(trans,beam,cod,0.d0,b,0.d0,0.d0,
-     $           0.d0,0.d0,0.d0,-tanp1,
-     $           .5d0*aln,als,al,f1r,f2r,prev,next)
-          else
-            call trade(trans,beam,cod,0.d0,b,0.d0,0.d0,
-     $           0.d0,0.d0,0.d0,0.d0,
-     $           aln,als,al,f1r,f2r,prev,next)
-          endif
-          als=als+aln
-        endif
+c        if(enarad)then
+c          if(n .eq. 1)then
+c            call trade(trans,beam,cod,0.d0,b,0.d0,0.d0,
+c     $           0.d0,0.d0,0.d0,-tanp1,
+c     $           .5d0*aln,als,al,f1r,f2r,prev,next)
+c          else
+c            call trade(trans,beam,cod,0.d0,b,0.d0,0.d0,
+c     $           0.d0,0.d0,0.d0,0.d0,
+c     $           aln,als,al,f1r,f2r,prev,next)
+c          endif
+c          als=als+aln
+c        endif
         pr=1.d0+cod(6)
         pxi=cod(2)/pr
         pyi=cod(4)/pr
@@ -136,12 +141,11 @@ c        call tbfrie(trans,cod,beam,-rhob,0.d0,.true.,ld)
         cod(2)=pxf*pr
         cod(3)=cod(3)+pyi*(aln+dl)
         cod(5)=cod(5)-(dl+dvemit*aln)
-        if(n .eq. ndiv)then
-          if(enarad)then
-            call trade(trans,beam,cod,0.d0,b,0.d0,0.d0,
-     $           0.d0,0.d0,0.d0,-tanp2,
-     $           .5d0*aln,al,al,f1r,f2r,prev,next)
-          endif
+        if(n .ne. ndiv .and. krad)then
+c     call trade(trans,beam,cod,0.d0,b,0.d0,0.d0,
+c     $           0.d0,0.d0,0.d0,-tanp2,
+c     $           .5d0*aln,al,al,f1r,f2r,prev,next)
+          call tradke(trans,cod,beam,aln,0.d0,0.d0)
         endif
 100   continue
       if(.not. next)then
@@ -160,6 +164,9 @@ c        call tbfrie(trans,cod,beam, rhob,0.d0,.false.,ld)
           dyfra2=0.d0
         endif
         call tblfre(trans,cod,beam,dxfr2,dyfr2,dyfra2,ld)
+      endif
+      if(krad)then
+        call tradke(trans,cod,beam,aln,0.d0,0.d0)
       endif
       call tchge(trans,cod,beam,dx,dy,-theta,0.d0,0.d0,.false.,ld)
       return

@@ -31,22 +31,26 @@ c
 c
       use tfstk, only : forcesf
       implicit none
-      integer*4 nmax,itmax,n,m,ndim,ndimb
+      integer*4 nmax,itmax
+      integer*4 ,intent(in)::n,m,ndim,ndimb
       parameter (nmax=100000,itmax=256)
-      complex*16 a(ndim,m),b(ndimb,n)
+      complex*16 ,intent(inout)::a(ndim,m),b(ndimb,n)
       complex*16 p,cp,q,zc,zs,a1,aa,bb,r1,r2
-      real*8 x(m),v(0:nmax)
-      real*8 anorm,epslon
+      real*8 ,intent(out)::x(m)
+      real*8 ,allocatable::v(:)
+      real*8 anorm
+      real*8 ,intent(in)::epslon
       real*8 g,s,r,w,h,xmin,z,c,y,an,aa1,r1a,r2a,ap,f
       real*8 h1,h2,t,vv
-      integer*4 lsep(nmax),i,j,k,mn,it,isep,ibegin,iend,i1,i1mn,
-     $     n1,kkk
-      logical*4 inv
+      integer*4 i,j,k,mn,it,isep,ibegin,iend,i1,i1mn,n1,kkk
+      integer*4 ,allocatable::lsep(:)
+      logical*4 ,intent(in)::inv
       mn=min(n,m)
       if(max(mn+m,n) .gt. nmax)then
         write(*,*)' TCSVDM Too large matrix. ',n,m
         return
       endif
+      allocate (v(0:nmax),lsep(nmax))
       n1=min(ndimb,n)
       do 1 i=1,n
         v(i)=1.d0
@@ -67,7 +71,7 @@ c
             if(abs(a(i,i)) .gt. abs(a(j,i)))then
               p=a(j,i)/a(i,i)
               cp=conjg(p)
-              h1=v(i)+v(j)*p*cp
+              h1=v(i)+v(j)*dble(p*cp)
               q=v(j)*cp/h1
               v(j)=v(i)*v(j)/h1
               v(i)=h1
@@ -83,7 +87,7 @@ c
             elseif(a(j,i) .ne. 0.d0)then
               p=a(i,i)/a(j,i)
               cp=conjg(p)
-              h1=v(j)+v(i)*p*cp
+              h1=v(j)+v(i)*dble(p*cp)
               q=v(i)*cp/h1
               v(j)=v(i)*v(j)/h1
               v(i)=h1
@@ -453,5 +457,6 @@ c     write(*,*)it,ibegin,iend,v(iend-1)
           a(j,i)=0.d0
         enddo
       enddo
+      deallocate (v,lsep)
       return
       end

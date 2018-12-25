@@ -201,8 +201,8 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
       end
 
       recursive subroutine tsolqur(np,x,px,y,py,z,gp,dv,sx,sy,sz,
-     $     bsi,al,ak,
-     $     bz0,ak0x,ak0y,eps0,px0,py0,alr)
+     $     px0,py0,zr0,bsi,al,ak,
+     $     bz0,ak0x,ak0y,eps0,alr)
       use tsolz
       use tfstk
       use tspin
@@ -212,7 +212,7 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
       real*8 smax
       parameter (smax=0.99d0)
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),
-     $     px0(np),py0(np),bsi(np)
+     $     px0(np),py0(np),zr0(np),bsi(np)
       real*8 sx(np),sy(np),sz(np)
       real*8 al,ak,eps0,bz,a,b,c,d,akk,eps,alr,
      $     bw,dw,r,ap,dpz,ak0x,ak0y,bz0,
@@ -242,8 +242,9 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
       if(ak*al .lt. 0.d0)then
-        call tsolqur(np,y,py,x,px,z,gp,dv,sy,sx,sz,bsi,al,-ak,
-     $       -bz0,-ak0y,-ak0x,eps0,py0,px0,alr)
+        call tsolqur(np,y,py,x,px,z,gp,dv,sy,sx,sz,
+     $       py0,px0,zr0,bsi,al,-ak,
+     $       -bz0,-ak0y,-ak0x,eps0,alr)
         return
       endif
       bz=bz0
@@ -305,9 +306,11 @@ c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
           enddo
           alr=aln
           if(n .ne. ndiv)then
-            call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,px0,py0,bsi,alr)
+            call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,
+     $           px0,py0,zr0,bsi,alr)
             px0=px
             py0=py
+            zr0=z
           endif
         enddo
         do i=1,np
@@ -391,9 +394,11 @@ c            dpz=-ap/(1.d0+sqrt(1.d0-ap))
           enddo
           alr=aln
           if(n .ne. ndiv)then
-            call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,px0,py0,bsi,alr)
+            call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,
+     $           px0,py0,zr0,bsi,alr)
             px0=px
             py0=py
+            zr0=z
           endif
         enddo
         do i=1,np

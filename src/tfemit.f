@@ -5,16 +5,14 @@
       use tffitcode
       use iso_c_binding
       use tfcsi, only:icslfno
-      use temw, only:tfinitemip
+      use temw, only:tfinitemip,nparams
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: kl,klx
       type (sad_rlist), pointer :: kl1,kl2
       integer*8 iatr,iacod,iamat,kaparam,iabmi
-      integer*4 isp1,irtc,narg,mode,itgetfpe,nparam,
-     $     itfmessage,lno
-      parameter (nparam=59)
-      real*8 param(nparam),trans(6,12),cod(6),beam(42),btr(441),sx
+      integer*4 isp1,irtc,narg,mode,itgetfpe,itfmessage,lno
+      real*8 param(nparams),trans(6,12),cod(6),beam(42),btr(441),sx
       logical*4 stab
       call tfinitemip
       narg=isp-isp1
@@ -82,7 +80,7 @@ c        ilist(2,iwakepold+6)=ifsize
       else
         kx=kxadaloc(-1,2+max(0,mode),klx)
       endif
-      kaparam=ktfaddr(kxm2l(param,0,nparam,1,.false.))
+      kaparam=ktfaddr(kxm2l(param,0,nparams,1,.false.))
       if(itgetfpe() .gt. 0)then
         stab=.false.
         call tclrfpe
@@ -92,7 +90,7 @@ c        ilist(2,iwakepold+6)=ifsize
       else
         sx=0.d0
       endif
-c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparam
+c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparams
       klx%rbody(1)=sx
       klx%dbody(2)%k=ktflist+ktfcopy1(kaparam)
       if(mode .ge. 1)then

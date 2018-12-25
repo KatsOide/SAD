@@ -93,16 +93,17 @@ c            endif
       use tmacro
       use sad_main
       use ffs_seg
+      use temw, only:tsetr0
       implicit none
       integer*4 l,ld,lt,mfr,kb,irtc
       integer*8 lp
       type (sad_comp), pointer ::cmp
       type (sad_dlist), pointer :: lsegp
       real*8 trans(6,12),cod(6),beam(42),al,theta,
-     $     phi,phix,phiy,bzs,cod1(6),trans1(6,6),trans2(6,6),
+     $     phi,phix,phiy,bzs,trans1(6,6),trans2(6,6),
      $     tfbzs,radlvl,bzs0,
      $     f1,rtaper,ftable(4),ak1
-      logical*4 enarad,dir,ent,qsol,coup,err,enarad1,seg
+      logical*4 enarad,dir,ent,qsol,coup,err,krad,seg
       ld=idelc(l)
       lt=idtype(ld)
       lp=elatt%comp(l)
@@ -157,52 +158,66 @@ c            endif
           call tmulte1(trans,cod,beam,l,cmp,bzs,rtaper,ld)
         endif
       elseif(lt .eq. icSOL)then
-        enarad1=enarad .and. cmp%value(ky_RAD_SOL) .eq. 0.d0
-        if(rlist(idval(ld)+ky_BND_SOL) .ne. 0.d0)then
+        f1=cmp%value(ky_F1_SOL)
+        krad=enarad .and. cmp%value(ky_RAD_SOL) .eq. 0.d0
+     $       .and. f1 .ne. 0.d0
+        if(cmp%value(ky_BND_SOL) .ne. 0.d0)then
           ent=direlc(l) .gt. 0.d0 .and. l .eq. kb
      $         .or. direlc(l) .lt. 0.d0 .and. l .ne. kb
           bzs0=tfbzs(l-1,kb)
-          if(enarad1 .and. .not. ent)then
-            f1=cmp%value(ky_F1_SOL)
-            if(f1 .ne. 0.d0)then
-              call trades(trans,beam,cod,-bzs0,0.d0,f1,brhoz)
-            endif
-          endif
-          if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
+          if(krad)then
             if(ent)then
               call tsconv(trans1,cod,lp,.true.)
-              call tsfrie(trans2,cod,bzs)
+              call tmultr5(trans,trans1,irad)
+              call tmulbs(beam,trans1,.false.,.true.)
+              call tsetr0(trans(:,1:6),cod(1:6),0.d0)
+              if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
+                call tsfrie(trans1,cod,bzs)
+                call tmultr5(trans,trans1,irad)
+                call tmulbs(beam,trans1,.false.,.true.)
+              endif
+              call tradke(trans,cod,beam,f1,0.d0,bzs*.5d0)
             else
-              call tsfrie(trans1,cod,-bzs0)
-              call tsconv(trans2,cod,lp,.false.)
+              call tsetr0(trans(:,1:6),cod(1:6),bzs0*.5d0)
+              if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
+                call tsfrie(trans1,cod,-bzs0)
+                call tmultr5(trans,trans1,irad)
+                call tmulbs(beam,trans1,.false.,.true.)
+              endif
+              call tradke(trans,cod,beam,f1,0.d0,0.d0)
+              call tsconv(trans1,cod,lp,.false.)
+              call tmultr5(trans,trans1,irad)
+              call tmulbs(beam,trans1,.false.,.true.)
             endif
-            call tmultr5(trans1,trans2,6)
           else
-            call tsconv(trans1,cod,lp,ent)
-          endif            
-          call tmultr5(trans,trans1,irad)
-          call tmulbs(beam ,trans1,.true.,.true.)
-          if(enarad1 .and. ent)then
-            f1=cmp%value(ky_F1_SOL)
-            if(f1 .ne. 0.d0)then
-              call trades(trans,beam,cod,0.d0,bzs,f1,brhoz)
+            if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
+              if(ent)then
+                call tsconv(trans1,cod,lp,.true.)
+                call tsfrie(trans2,cod,bzs)
+              else
+                call tsfrie(trans1,cod,-bzs0)
+                call tsconv(trans2,cod,lp,.false.)
+              endif
+              call tmultr5(trans1,trans2,6)
+            else
+              call tsconv(trans1,cod,lp,ent)
             endif
+            call tmultr5(trans,trans1,irad)
+            call tmulbs(beam ,trans1,.true.,.true.)
           endif
         else
           bzs0=tfbzs(l-1,kb)
-          if(enarad1)then
-            f1=cmp%value(ky_F1_SOL)
-            if(f1 .ne. 0.d0)then
-              call trades(trans,beam,cod,bzs0,bzs,f1,brhoz)
-            endif
+          if(krad)then
+            call tsetr0(trans(:,1:6),cod(1:6),bzs0*.5d0)
+c              call trades(trans,beam,cod,bzs0,bzs,f1,brhoz)
           endif
           if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
-            if(calpol)then
-              cod1=cod
-            endif
             call tsfrie(trans1,cod,bzs-bzs0)
             call tmultr5(trans,trans1,irad)
             call tmulbs(beam ,trans1,.true.,.true.)
+          endif
+          if(krad)then
+            call tradke(trans,cod,beam,f1,0.d0,bzs*.5d0)
           endif
         endif
       elseif(lt .eq. icMAP)then
@@ -229,7 +244,7 @@ c            endif
       call tinitr(transe)
       call tsole1(transe,cod,beam,k,1.d0,.false.,.true.)
       radtaper=radtaper0
-      call qcopymat(trans,transe,.false.)
+      call qcopymatg(trans,transe,k)
       coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
      $     trans(2,3) .ne. 0.d0 .or. trans(2,4) .ne. 0.d0
       return

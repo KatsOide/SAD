@@ -4,7 +4,6 @@
      $     fb1,fb2,mfring,fringe,enarad,eps0)
       use ffs_flag
       use tmacro
-      use ffs_pointer, only:inext,iprev
       use tspin
       implicit none
       real*8 a3,a5,a7,a9,a11,a13,a15
@@ -13,13 +12,13 @@
      1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
       integer*4 np,mfring,i,l
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     px0(np),py0(np),ds(np),bsi(np)
+     $     px0(np),py0(np),zr0(np),bsi(np)
       real*8 sx(np),sy(np),sz(np)
       real*8 al,phib,dx,dy,theta,cost,sint,eps0,rhob,
-     $     dxfr1,dyfr1,dyfra1,f1r,f2r,dyi,
+     $     dxfr1,dyfr1,dyfra1,dyi,
      $     dxfr2,dyfr2,dyfra2,
      $     dp,p,rhoe,pxi,s,dpv1,pv1,dpv2,pv2,fa,f,ff,
-     $     dpz1,pz1,dpz2,pz2,phsq,u,w,dl,brad,dpx,pyi,xi,pxf,d,
+     $     dpz1,pz1,dpz2,pz2,phsq,u,w,dl,dpx,pyi,xi,pxf,d,
      $     cosp1,sinp1,cosp2,sinp2,tanp1,tanp2,fb1,fb2
       logical*4 fringe,enarad,enrad
       enrad=enarad .and. rad
@@ -45,6 +44,7 @@
       if(enrad)then
         px0=px
         py0=py
+        zr0=z
 c        if(iprev(l) .eq. 0)then
 c          f1r=fb1
 c        else
@@ -138,9 +138,6 @@ c        dp=g(i)*(2.d0+g(i))
           endif
         endif
         x(i)=xi+al*(pxf+pxi)/(pz2+pz1)
-        if(enrad)then
-          ds(i)=al+dl
-        endif
         dyi=pyi*(al+dl)
         bsi(i)=-dyi/rhob
         y(i)=y(i)+dyi
@@ -162,7 +159,7 @@ c        dp=g(i)*(2.d0+g(i))
      $       (.5d0*dyfr2-.25d0*dyfra2*y(i)**2)*y(i)**2/p)/p
 100   continue
       if(enrad)then
-        call tradki(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,bsi,ds)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,al)
 c        call trad(np,x,px,y,py,g,dv,brad,0.d0,0.d0,
 c     1            0.d0,-tanp2*2.d0/al,.5d0*al,
 c     $       f1r,f2r,al,al,-1.d0)

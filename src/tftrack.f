@@ -26,7 +26,7 @@
         return
       endif
       nt=1
-      nend=nt
+      nend=1
       mt=1
       if(narg .ge. 3)then
         if(ktastk(isp1+3) .eq. ktfoper+mtfnull)then
@@ -70,8 +70,15 @@
       if(irtc .ne. 0)then
         return
       endif
-      if(ls .eq. nlat)then
-        ls=1
+      if(ls .gt. 0)then
+        ls=mod(ls-1,nlat-1)+1
+      else
+        ls=nlat-mod(1-ls,nlat-1)
+      endif
+      if(ld .gt. 1)then
+        ld=mod(ld-2,nlat-1)+2
+      else
+        ld=nlat+1-mod(2-ld,nlat-1)
       endif
       if(ld .le. ls)then
         mt=mt+1
@@ -314,15 +321,16 @@ c        endif
 
       subroutine tfsurvivedparticles(isp1,kx,irtc)
       use tfstk
+      use ffs_flag, only:calpol
       implicit none
       type llist
         type (sad_rlist), pointer :: kl
       end type
-      type (llist) klxi(7), kli(7)
+      type (llist) klxi(10), kli(10)
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: kll,klx
       type (sad_rlist), pointer :: klf
-      integer*4 isp1,irtc,npx,i,j,itfmessage,np,ii
+      integer*4 isp1,irtc,npx,i,j,k,itfmessage,np,ii,kcf
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -330,13 +338,21 @@ c        endif
       if(.not. tflistq(dtastk(isp),kll))then
         go to 9000
       endif
-      if(kll%nl .ne. 7)then
-        go to 9000
+      if(calpol)then
+        if(kll%nl .ne. 9 .and. kll%nl .ne. 10)then
+          go to 9000
+        endif
+        kcf=9
+      else
+        if(kll%nl .ne. 7 .and. kll%nl .ne. 8)then
+          go to 9000
+        endif
+        kcf=7
       endif
       if(ktfreallistq(kll))then
         go to 9000
       endif
-      if(.not. tfreallistq(kll%dbody(7),klf))then
+      if(.not. tfreallistq(kll%dbody(kcf),klf))then
         go to 9000
       endif
       np=klf%nl
@@ -351,14 +367,14 @@ c        endif
         kx=dtastk(isp)
         return
       endif
-      kx=kxadalocnull(-1,7,klx)
+      kx=kxadalocnull(-1,kll%nl,klx)
       if(npx .eq. 0)then
-        do i=1,7
+        do i=1,kll%nl
           klx%dbody(i)=dtfcopy1(dxnulll)
         enddo
         return
       endif
-      do i=1,7
+      do i=1,kll%nl
         if(.not. tfreallistq(kll%dbody(i),kli(i)%kl))then
           go to 8900
         endif
@@ -371,13 +387,10 @@ c        endif
       do i=1,np
         if(klf%rbody(i) .ne. 0.d0)then
           j=j+1
-          klxi(1)%kl%rbody(j)=kli(1)%kl%rbody(i)
-          klxi(2)%kl%rbody(j)=kli(2)%kl%rbody(i)
-          klxi(3)%kl%rbody(j)=kli(3)%kl%rbody(i)
-          klxi(4)%kl%rbody(j)=kli(4)%kl%rbody(i)
-          klxi(5)%kl%rbody(j)=kli(5)%kl%rbody(i)
-          klxi(6)%kl%rbody(j)=kli(6)%kl%rbody(i)
-          klxi(7)%kl%rbody(j)=1.d0
+          do k=1,kll%nl
+            klxi(k)%kl%rbody(j)=kli(k)%kl%rbody(i)
+          enddo
+          klxi(kcf)%kl%rbody(j)=1.d0
         endif
       enddo
       return

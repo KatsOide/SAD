@@ -227,6 +227,7 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
       real*8 trans(6,12),beam(42),cod(6),bxr,byr,bzs0,bzs1,
      $             bxx,f1,bzr,brhoz
       bzr=(bzs1-bzs0)*brhoz
+      return
       if(bzr .eq. 0.d0)then
         return
       endif
@@ -247,5 +248,141 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
      $     bxx,0.d0,bxx,0.d0,
      $     f1*.25d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
       bradprev=0.d0
+      return
+      end
+
+      subroutine tradke(trans,cod,beam,al,phir0,bzh)
+      use tmacro
+      use temw
+      use tfstk, only:pxy2dpz,p2h
+      use ffs_flag,only:radcod
+      implicit none
+      real*8 , intent(inout)::trans(6,12),cod(9),beam(42)
+      real*8 , intent(in)::al,bzh,phir0
+      real*8 transi(6,6),tr1(6,6),dppasq(6),
+     $     ddpz(6),dal(6),duc(6),dddpx(6),dddpy(6),ddg(6),
+     $     dtheta(6),danp(6),dbeam(21),
+     $     c1,c3,dpx,dpy,ddpx,ddpy,pxr0,
+     $     pr,px,py,pz,pz0,ppx,ppy,ppz,ppa,theta,
+     $     p,h1,al1,anp,uc,dg,g,pr1,pxi,pyi,
+     $     p2,h2,de,cp,sp,b,pxm,pym,gi
+      real*8, parameter:: gmin=-0.9999d0,
+     $     cave=8.d0/15.d0/sqrt(3.d0),cuu=11.d0/27.d0
+      gi=codr0(6)
+      pr=1.d0+gi
+      cp=cos(phir0)
+      sp=sin(phir0)
+      pxi=codr0(2)+bzhr0*codr0(3)
+      pyi=codr0(4)-bzhr0*codr0(1)
+      pz0=pr*(1.d0+pxy2dpz(pxi/pr,pyi/pr))
+      pxr0= cp*pxi+sp*pz0
+      pz0 =-sp*pxi+cp*pz0
+      px=cod(2)+bzh*cod(3)
+      py=cod(4)-bzh*cod(1)
+      pz=pr*(1.d0+pxy2dpz(px/pr,py/pr))
+      dpx=px-pxr0
+      dpy=py-pyi
+      ppx=py*pz0 -pz*pyi
+      ppy=pz*pxr0-px*pz0
+      ppz=px*pyi-py*pxr0
+      ppa=abs(dcmplx(ppx,abs(dcmplx(ppy,ppz))))
+      if(ppa .eq. 0.d0)then
+        go to 1000
+      endif
+      theta=asin(min(1.d0,max(-1.d0,ppa)))
+      p=p0*pr
+      h1=p2h(p)
+      al1=al-cod(5)+codr0(5)
+      anp=anrad*p0*theta
+      uc=cuc*(1.d0+p**2)*theta/al1
+      dg=-cave*anp*uc
+      u0=u0-dg
+      g=max(gmin,gi+dg)
+      pr1=1.d0+g
+      ddpx=-.5d0*dpx*dg
+      ddpy=-.5d0*dpy*dg
+      c1=al/pr/3.d0
+      if(radcod)then
+        cod(1)=cod(1)+ddpx*c1
+        cod(3)=cod(3)+ddpy*c1
+        cod(2)=px*pr1/pr+ddpx-bzh*cod(3)
+        cod(4)=py*pr1/pr+ddpy+bzh*cod(1)
+        cod(6)=g
+        p2=p0*pr1
+        h2=p2h(p2)
+        cod(5)=cod(5)*p2/h2*h1/p
+        call tesetdv(g)
+      endif
+      if(irad .gt. 6)then
+        call tinv6(transr,transi)
+        call tmultr(transi,trans(:,1:6),6)
+        ddpz=(transi(6,1:6)*pr-transi(2,1:6)*px-transi(4,1:6)*py)/pz
+        dppasq=ppx*(transi(4,1:6)*pz0-ddpz*pyi)
+     $       +ppy*(ddpz*pxr0-transi(2,1:6)*pz0)
+     $       +ppz*(transi(2,1:6)*pyi-transi(4,1:6)*pxr0)
+        c3=(ppx*py-ppy*px)/pz0
+        dppasq(2)=dppasq(2)-c3*pxr0+ppy*pz-ppz*py
+        dppasq(4)=dppasq(4)-c3*pyi+ppz*px-ppx*pz
+        dppasq(6)=dppasq(6)+c3*pr
+        dal=-transi(5,1:6)
+        dal(5)=dal(5)+1.d0
+        dtheta=.5d0*dppasq/ppa/sqrt(1.d0-ppa**2)
+        danp=anrad*p0*dtheta
+        duc=cuc*((1.d0+p**2)*(dtheta-theta/al1*dal)/al1)
+        duc(6)=duc(6)+2.d0*cuc*p*p0*theta/al1
+        ddg=-cave*(danp*uc+anp*duc)
+        dddpx=-.5d0*(transi(2,1:6)*dg+ddpx*ddg)
+        dddpx(2)=dddpx(2)+.5d0*dg
+        dddpy=-.5d0*(transi(4,1:6)*dg+ddpy*ddg)
+        dddpy(4)=dddpy(4)+.5d0*dg
+        tr1(1,1:6)=dddpx*c1
+        tr1(1,6)=tr1(1,6)-ddpx*c1/pr
+        tr1(3,1:6)=dddpy*c1
+        tr1(3,6)=tr1(3,6)-ddpy*c1/pr
+        tr1(2,1:6)=transi(2,1:6)*dg/pr+px*ddg/pr+dddpx
+        tr1(2,6)=tr1(2,6)-px*dg/pr**2
+        tr1(4,1:6)=transi(4,1:6)*dg/pr+py*ddg/pr+dddpy
+        tr1(4,6)=tr1(4,6)-py*dg/pr**2
+c     derivative of dz has been ignored.
+        tr1(5,1:6)=0.d0
+        tr1(6,1:6)=ddg
+        if(bzhr0 .ne. 0.d0)then
+          tr1(:,3)=tr1(:,3)+bzhr0*tr1(:,2)
+          tr1(:,1)=tr1(:,1)-bzhr0*tr1(:,4)
+        endif
+        if(bzh .ne. 0.d0)then
+          tr1(2,:)=tr1(2,:)-bzh  *tr1(3,:)
+          tr1(4,:)=tr1(4,:)+bzh  *tr1(1,:)
+        endif
+        call tmuld6(trans,tr1)
+        tr1(1,1)=tr1(1,1)+1.d0
+        tr1(2,2)=tr1(2,2)+1.d0
+        tr1(3,3)=tr1(3,3)+1.d0
+        tr1(4,4)=tr1(4,4)+1.d0
+        tr1(5,5)=tr1(5,5)+1.d0
+        tr1(6,6)=tr1(6,6)+1.d0
+        call tmulbs(beam,tr1,.false.,calint)
+        de=anp*uc**2*cuu
+        pxm=pxi+px
+        pym=pyi+py
+        b=bzh*.5d0
+        dbeam=0.d0
+        dbeam(3)=(beam(3)+b*(2.d0*beam(5)+b*beam(6))
+     $       +(pxm**2+pxi**2+px**2)/6.d0)*de
+        dbeam(8) =(beam(8)-b*(beam(2)-beam(10)+b*beam(4))
+     $       +(pxm*pym+pxi*pyi+px*py)/6.d0)*de
+        dbeam(10)=(beam(10)+b*(-2.d0*beam(7)+b*beam(1))
+     $       +(pym**2+pyi**2+py**2)/6.d0)*de
+        dbeam(17)=.5d0*pxm*de
+        dbeam(19)=.5d0*pym*de
+        dbeam(21)=de
+        beam(1:21)=beam(1:21)+dbeam
+        if(calint)then
+          beam(22:42)=beam(22:42)+dbeam
+        endif
+      endif
+ 1000 codr0(1:6)=cod(1:6)
+      transr=trans(:,1:6)
+      bzhr0=bzh
       return
       end

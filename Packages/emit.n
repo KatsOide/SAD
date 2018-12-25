@@ -1,4 +1,4 @@
-(* emit.n 9/8/2018 *)
+(* emit.n 12/10/2018 *)
 InitEmit[];
 InitTwiss[];
 EMITX;EMITY;EMITZ;SIGE;SIGZ;?INTRA;
@@ -11,6 +11,7 @@ SetAttributes[{OneTurnInformation,Orbit,Matrix,ExpandElementValues,
   TuneShiftByRadiation,OrbitAtEntrance,OneTurnTransferMatrix,
   OneTurnDampingMatrix,ExtendedTwissParameters,
   OneTurnExcitation,EquilibriumBeamMatrix,ClosedOrbit,
+  NominalSpinTune,NominalPolarizationTime,
   TransferMatrices,IntrabeamExcitation,SaveEMIT,AzimuthalModes},
   Constant];
 

@@ -4,7 +4,7 @@
       use tspin
       implicit none
       real*8 plimit,zlimit,vmax
-      parameter (plimit=0.7d0,zlimit=1.d10)
+      parameter (plimit=0.9d0,zlimit=1.d10)
       parameter (vmax=.9d0)
       integer*4 np,n,kptbl(np0,6)
       integer*8 latt(nlat)
@@ -30,7 +30,7 @@
       type (sad_comp), pointer ::cmp
       type (sad_descriptor) :: dsave(kwMAX)
       real*8 plimit,zlimit,vmax
-      parameter (plimit=0.7d0,zlimit=1.d10)
+      parameter (plimit=0.9d0,zlimit=1.d10)
       parameter (vmax=.9d0)
       integer*4 np,n,la,ls,nvar,lb,le
 c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
@@ -96,7 +96,7 @@ c      write(*,*)'tturn0 ',fbound%lb,fbound%fb,fbound%le,fbound%fe,ls
         if(fbound%fe .ne. 0.d0)then
           call qfracsave(fbound%le,dsave,nvar,.true.)
           call compelc(fbound%le,cmp)
-          call qfracseg(cmp,cmp,0.d0,fbound%fe,chg)
+          call qfracseg(cmp,cmp,0.d0,fbound%fe,chg,irtc)
 c          call qfraccomp(fbound%le,0.d0,fbound%fe,ideal,chg)
           call tturn1(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
      $         sol,la,fbound%le,fbound%le)
@@ -155,7 +155,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       integer*4 la1
       parameter (la1=15)
       real*8 xlimit,plimit,zlimit,vmax,ampmax
-      parameter (plimit=0.7d0,zlimit=1.d10,ampmax=0.9999d0)
+      parameter (plimit=0.9d0,zlimit=1.d10,ampmax=0.9999d0)
       parameter (vmax=.9d0)
       type (sad_comp), pointer:: cmp
       type (sad_dlist) , pointer ::lsegp
@@ -202,7 +202,9 @@ c      isb=ilist(2,iwakepold+6)
       xlimit=alost*3.d0
       sspac0=rlist(ifpos+lbegin-1)
       call tsetdvfs
+c      call tfmemcheckprint('tturn',0,.false.,irtc)
       do l=lbegin,lend
+c        call tfmemcheckprint('tturn',l,.false.,irtc)
         if(trpt .and. codplt)then
           call ttstat(np,x,px,y,py,z,g,dv,0.d0,
      1         ' ',sa,ss,0.d0,
@@ -312,278 +314,279 @@ c     $              +l-1),
            go to 1011
          endif
 
-        case (icBEND)
-        if(iand(cmp%update,1) .eq. 0)then
-          call tpara(cmp)
-        endif
-        if(cmp%value(ky_RANK_BEND) .ne. 0.d0)then
-          ak0=cmp%value(ky_ANGL_BEND)
-     $         +cmp%value(ky_K0_BEND)
-     $         +cmp%value(ky_RANK_BEND)*tgauss()
-        else
-          ak0=cmp%value(ky_ANGL_BEND)
-     $         +cmp%value(ky_K0_BEND)
-        endif
-        ak1=cmp%value(ky_K1_BEND)
-        if(rad .and. radcod .and. radtaper)then
-          rtaper=1.d0-dp0
-     $         +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
-          ak0=ak0*rtaper
-          ak1=ak1*rtaper
-        endif
-          
-        call tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       l,cmp%value(p_L_BEND),ak0,
-     $       cmp%value(ky_ANGL_BEND),
-     1       cmp%value(p_COSPSI1_BEND),cmp%value(p_SINPSI1_BEND),
-     1       cmp%value(p_COSPSI2_BEND),cmp%value(p_SINPSI2_BEND),
-     1       ak1,
-     1       cmp%value(ky_DX_BEND),cmp%value(ky_DY_BEND),
-     1       cmp%value(p_THETA_BEND),cmp%value(ky_DROT_BEND),
+       case (icBEND)
+         if(iand(cmp%update,1) .eq. 0)then
+           call tpara(cmp)
+         endif
+         if(cmp%value(ky_RANK_BEND) .ne. 0.d0)then
+           ak0=cmp%value(ky_ANGL_BEND)
+     $          +cmp%value(ky_K0_BEND)
+     $          +cmp%value(ky_RANK_BEND)*tgauss()
+         else
+           ak0=cmp%value(ky_ANGL_BEND)
+     $          +cmp%value(ky_K0_BEND)
+         endif
+         ak1=cmp%value(ky_K1_BEND)
+         if(rad .and. radcod .and. radtaper)then
+           rtaper=1.d0-dp0
+     $          +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+           ak0=ak0*rtaper
+           ak1=ak1*rtaper
+         endif
+         
+         call tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $        l,cmp%value(p_L_BEND),ak0,
+     $        cmp%value(ky_ANGL_BEND),
+     1        cmp%value(p_COSPSI1_BEND),cmp%value(p_SINPSI1_BEND),
+     1        cmp%value(p_COSPSI2_BEND),cmp%value(p_SINPSI2_BEND),
+     1        ak1,
+     1        cmp%value(ky_DX_BEND),cmp%value(ky_DY_BEND),
+     1        cmp%value(p_THETA_BEND),cmp%value(ky_DROT_BEND),
 c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
-     1       cmp%value(p_COSTHETA_BEND),cmp%value(p_SINTHETA_BEND),
-     $       cmp%value(p_FB1_BEND),cmp%value(p_FB2_BEND),
-     $       int(cmp%value(ky_FRMD_BEND)),
-     $       cmp%value(ky_FRIN_BEND) .eq. 0.d0,
-     1       cmp%value(p_COSW_BEND),cmp%value(p_SINW_BEND),
-     $       cmp%value(p_SQWH_BEND),cmp%value(p_SINWP1_BEND),
-     1       cmp%value(ky_RAD_BEND) .eq. 0.d0,
-     $       0.d0,al,al,
-     1       cmp%value(ky_EPS_BEND))
+     1        cmp%value(p_COSTHETA_BEND),cmp%value(p_SINTHETA_BEND),
+     $        cmp%value(p_FB1_BEND),cmp%value(p_FB2_BEND),
+     $        int(cmp%value(ky_FRMD_BEND)),
+     $        cmp%value(ky_FRIN_BEND) .eq. 0.d0,
+     1        cmp%value(p_COSW_BEND),cmp%value(p_SINW_BEND),
+     $        cmp%value(p_SQWH_BEND),cmp%value(p_SINWP1_BEND),
+     1        cmp%value(ky_RAD_BEND) .eq. 0.d0,
+     $        0.d0,al,al,
+     1        cmp%value(ky_EPS_BEND))
 
-        case (icQUAD)
-        if(iand(1,cmp%update) .eq. 0)then
-          call tpara(cmp)
-        endif
-        rtaper=1.d0
-        if(rad .and. radcod .and. radtaper)then
-          rtaper=(2.d0+gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
-     $         -dp0
-        endif
-        call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       l,al,
-     1       cmp%value(ky_K1_QUAD)*rtaper,
-     $       cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
-     1       cmp%value(p_THETA_QUAD),
-     $       cmp%value(p_COSTHETA_QUAD),cmp%value(p_SINTHETA_QUAD),
-     1       cmp%value(ky_RAD_QUAD),
-     $       cmp%value(ky_CHRO_QUAD) .eq. 0.d0,
-     1       cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
-     $       cmp%value(p_AKF1F_QUAD)*rtaper,
-     $       cmp%value(p_AKF2F_QUAD)*rtaper,
-     $       cmp%value(p_AKF1B_QUAD)*rtaper,
-     $       cmp%value(p_AKF2B_QUAD)*rtaper,
-     1       int(cmp%value(p_FRMD_QUAD)),cmp%value(ky_EPS_QUAD),
-     $       cmp%value(ky_KIN_QUAD) .eq. 0.d0)
+       case (icQUAD)
+         if(iand(1,cmp%update) .eq. 0)then
+           call tpara(cmp)
+         endif
+         rtaper=1.d0
+         if(rad .and. radcod .and. radtaper)then
+           rtaper=(2.d0+gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+     $          -dp0
+         endif
+         call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $        l,al,
+     1        cmp%value(ky_K1_QUAD)*rtaper,
+     $        cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
+     1        cmp%value(p_THETA_QUAD),
+     $        cmp%value(p_COSTHETA_QUAD),cmp%value(p_SINTHETA_QUAD),
+     1        cmp%value(ky_RAD_QUAD),
+     $        cmp%value(ky_CHRO_QUAD) .eq. 0.d0,
+     1        cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
+     $        cmp%value(p_AKF1F_QUAD)*rtaper,
+     $        cmp%value(p_AKF2F_QUAD)*rtaper,
+     $        cmp%value(p_AKF1B_QUAD)*rtaper,
+     $        cmp%value(p_AKF2B_QUAD)*rtaper,
+     1        int(cmp%value(p_FRMD_QUAD)),cmp%value(ky_EPS_QUAD),
+     $        cmp%value(ky_KIN_QUAD) .eq. 0.d0)
 
-      case (icSEXT,icOCTU,icDECA,icDODECA)
-        if(iand(cmp%update,1) .eq. 0)then
-          call tpara(cmp)
-        endif
-        ak1=cmp%value(ky_K_THIN)
-        if(rad .and. radcod .and. radtaper)then
-          ak1=ak1*((
-     $         2.d0+gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0-dp0)
-        endif
-        call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       lele,l,al,ak1,
-     1       cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
-     1       cmp%value(p_THETA_THIN),
-     $       cmp%value(p_COSTHETA_THIN),cmp%value(p_SINTHETA_THIN),
-     $       cmp%value(ky_RAD_THIN),
-     1       cmp%value(ky_FRIN_THIN) .eq. 0.d0)
+       case (icSEXT,icOCTU,icDECA,icDODECA)
+         if(iand(cmp%update,1) .eq. 0)then
+           call tpara(cmp)
+         endif
+         ak1=cmp%value(ky_K_THIN)
+         if(rad .and. radcod .and. radtaper)then
+           ak1=ak1*((
+     $          2.d0+gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))
+     $          *.5d0-dp0)
+         endif
+         call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $        lele,l,al,ak1,
+     1        cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
+     1        cmp%value(p_THETA_THIN),
+     $        cmp%value(p_COSTHETA_THIN),cmp%value(p_SINTHETA_THIN),
+     $        cmp%value(ky_RAD_THIN),
+     1        cmp%value(ky_FRIN_THIN) .eq. 0.d0)
 
-      case (icUND)
-        if(iand(cmp%update,1) .eq. 0)then
-          call tpara(cmp)
-        endif
-        call undulator(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       cmp%value(p_PARAM_UND))
+       case (icUND)
+         if(iand(cmp%update,1) .eq. 0)then
+           call tpara(cmp)
+         endif
+         call undulator(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $        cmp%value(p_PARAM_UND))
+         
+       case (icWIG)
+         call twig(np,x,px,y,py,z,g,dv,al,cmp%value(ky_BMAX_WIG),
+     1        int(cmp%value(ky_PRD_WIG)),
+     $        cmp%value(ky_DX_WIG),cmp%value(ky_DY_WIG),
+     1        cmp%value(ky_ROT_WIG),cmp%value(p_PARAM_WIG))
 
-      case (icWIG)
-        call twig(np,x,px,y,py,z,g,dv,al,cmp%value(ky_BMAX_WIG),
-     1       int(cmp%value(ky_PRD_WIG)),
-     $       cmp%value(ky_DX_WIG),cmp%value(ky_DY_WIG),
-     1       cmp%value(ky_ROT_WIG),cmp%value(p_PARAM_WIG))
+       case (icSOL)
+         call tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $        latt,l,lend,
+     $        ke,sol,kptbl,la,n,nwak,nextwake,out)
+         if(np .le. 0)then
+           return
+         endif
 
-      case (icSOL)
-        call tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       latt,l,lend,
-     $       ke,sol,kptbl,la,n,nwak,nextwake,out)
-        if(np .le. 0)then
-          return
-        endif
+       case (icST)
+         write(*,*)'Use BEND with ANGLE=0 for STEER.'
+         call abort
+         
+       case (icMULT)
+         rtaper=1.d0
+         if(rad .and. radcod .and. radtaper)then
+           rtaper=1.d0-dp0
+     $          +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+         endif
+         bz=0.d0
+         if(seg)then
+           call tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $          l,cmp,lsegp,bz,rtaper,n,latt,kptbl)
+         else
+           call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $          l,cmp,bz,rtaper,n,latt,kptbl)
+         endif
 
-      case (icST)
-        write(*,*)'Use BEND with ANGLE=0 for STEER.'
-        call abort
-
-      case (icMULT)
-        rtaper=1.d0
-        if(rad .and. radcod .and. radtaper)then
-          rtaper=1.d0-dp0
-     $         +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
-        endif
-        bz=0.d0
-        if(seg)then
-          call tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         l,cmp,lsegp,bz,rtaper,n,latt,kptbl)
-        else
-          call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         l,cmp,bz,rtaper,n,latt,kptbl)
-        endif
-
-      case (icCAVI)
-        if(tparacheck(icCAVI,cmp))then
-          call tpara(cmp)
-        endif
-        ak=cmp%value(ky_VOLT_CAVI)+cmp%value(ky_DVOLT_CAVI)
-        if(cmp%value(ky_RANV_CAVI) .ne. 0.d0)then
-          ak=ak+cmp%value(ky_RANV_CAVI)*tgauss()
-        endif
-        if(cmp%value(ky_RANP_CAVI) .eq. 0.d0)then
-          ph=cmp%value(ky_DPHI_CAVI)
-        else
-          ph=cmp%value(ky_DPHI_CAVI)+
-     $         cmp%value(ky_RANP_CAVI)*tgauss()
-        endif
-        autophi=cmp%value(ky_APHI_CAVI) .ne. 0.d0
-        if(autophi)then
-          ph=ph+gettwiss(mfitdz,l)*cmp%value(p_W_CAVI)
-        endif
-        if(twake .or. lwake)then
-          if(l .eq. nextwake)then
-            iwplc=max(iwpl-1,0)
-            iwptc=max(iwpt-1,0)
-            lwlc=lwl
-            lwtc=lwt
-          else
+       case (icCAVI)
+         if(tparacheck(icCAVI,cmp))then
+           call tpara(cmp)
+         endif
+         ak=cmp%value(ky_VOLT_CAVI)+cmp%value(ky_DVOLT_CAVI)
+         if(cmp%value(ky_RANV_CAVI) .ne. 0.d0)then
+           ak=ak+cmp%value(ky_RANV_CAVI)*tgauss()
+         endif
+         if(cmp%value(ky_RANP_CAVI) .eq. 0.d0)then
+           ph=cmp%value(ky_DPHI_CAVI)
+         else
+           ph=cmp%value(ky_DPHI_CAVI)+
+     $          cmp%value(ky_RANP_CAVI)*tgauss()
+         endif
+         autophi=cmp%value(ky_APHI_CAVI) .ne. 0.d0
+         if(autophi)then
+           ph=ph+gettwiss(mfitdz,l)*cmp%value(p_W_CAVI)
+         endif
+         if(twake .or. lwake)then
+           if(l .eq. nextwake)then
+             iwplc=max(iwpl-1,0)
+             iwptc=max(iwpt-1,0)
+             lwlc=lwl
+             lwtc=lwt
+           else
 c     iwplc=abs(ilist(1,lp+ky_LWAK_CAVI))
 c     if(iwplc .eq. 0 .or. .not. lwake)then
-            lwlc=0
+             lwlc=0
 c     else
 c     lwlc=(ilist(1,iwplc-1)-2)/2
 c     endif
 c     iwptc=abs(ilist(1,lp+ky_TWAK_CAVI))
 c     if(iwptc .eq. 0 .or. .not. twake)then
-            lwtc=0
+             lwtc=0
 c     else
 c     lwtc=(ilist(1,iwptc-1)-2)/2
 c     endif
-          endif
-          call tcav(np,x,px,y,py,z,g,dv,al,ak,
-     1         cmp%value(p_W_CAVI),cmp%value(ky_PHI_CAVI),ph,
-     $         cmp%value(p_VNOMINAL_CAVI),
-     $         lwlc,rlist(iwplc+1),lwtc,rlist(iwptc+1),
-     1         cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
-     $         cmp%value(ky_ROT_CAVI),
-     $         cmp%value(ky_V1_CAVI),cmp%value(ky_V20_CAVI),
-     $         cmp%value(ky_V11_CAVI),cmp%value(ky_V02_CAVI),
-     $         cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
-     $         int(cmp%value(p_FRMD_CAVI)),autophi)
-        else
-          call tcav(np,x,px,y,py,z,g,dv,al,ak,
-     1         cmp%value(p_W_CAVI),cmp%value(ky_PHI_CAVI),ph,
-     $         cmp%value(p_VNOMINAL_CAVI),
-     $         0,0.d0,0,0.d0,
-     1         cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
-     $         cmp%value(ky_ROT_CAVI),
-     $         cmp%value(ky_V1_CAVI),cmp%value(ky_V20_CAVI),
-     $         cmp%value(ky_V11_CAVI),cmp%value(ky_V02_CAVI),
-     $         cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
-     $         int(cmp%value(p_FRMD_CAVI)),autophi)
-        endif
+           endif
+           call tcav(np,x,px,y,py,z,g,dv,al,ak,
+     1          cmp%value(p_W_CAVI),cmp%value(ky_PHI_CAVI),ph,
+     $          cmp%value(p_VNOMINAL_CAVI),
+     $          lwlc,rlist(iwplc+1),lwtc,rlist(iwptc+1),
+     1          cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
+     $          cmp%value(ky_ROT_CAVI),
+     $          cmp%value(ky_V1_CAVI),cmp%value(ky_V20_CAVI),
+     $          cmp%value(ky_V11_CAVI),cmp%value(ky_V02_CAVI),
+     $          cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
+     $          int(cmp%value(p_FRMD_CAVI)),autophi)
+         else
+           call tcav(np,x,px,y,py,z,g,dv,al,ak,
+     1          cmp%value(p_W_CAVI),cmp%value(ky_PHI_CAVI),ph,
+     $          cmp%value(p_VNOMINAL_CAVI),
+     $          0,0.d0,0,0.d0,
+     1          cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
+     $          cmp%value(ky_ROT_CAVI),
+     $          cmp%value(ky_V1_CAVI),cmp%value(ky_V20_CAVI),
+     $          cmp%value(ky_V11_CAVI),cmp%value(ky_V02_CAVI),
+     $          cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
+     $          int(cmp%value(p_FRMD_CAVI)),autophi)
+         endif
 
-        case (icTCAV)
-        if(rfsw)then
-          if(cmp%value(ky_RANK_TCAV) .eq. 0.d0)then
-            ak=cmp%value(ky_K0_TCAV)
-          else
-            ak=cmp%value(ky_K0_TCAV)+cmp%value(ky_RANK_TCAV)*tgauss()
-          endif
-          if(cmp%value(ky_RANP_TCAV) .eq. 0.d0)then
-            ph=cmp%value(ky_PHI_TCAV)
-          else
-            ph=cmp%value(ky_PHI_TCAV)+cmp%value(ky_RANP_TCAV)*tgauss()
-          endif
-          harmf=cmp%value(ky_HARM_TCAV)-int(cmp%value(ky_HARM_TCAV))
-          ph=ph+harmf*(n-1)*pi2
-          call ttcav(np,x,px,y,py,z,g,dv,al,ak,
-     $         cmp%value(ky_HARM_TCAV),ph,cmp%value(ky_FREQ_TCAV),
-     1         cmp%value(ky_DX_TCAV),cmp%value(ky_DY_TCAV),
-     $         cmp%value(ky_ROT_TCAV))
-        else
-          call tdrift_free(np,x,px,y,py,z,dv,al)
-        endif
+       case (icTCAV)
+         if(rfsw)then
+           if(cmp%value(ky_RANK_TCAV) .eq. 0.d0)then
+             ak=cmp%value(ky_K0_TCAV)
+           else
+             ak=cmp%value(ky_K0_TCAV)+cmp%value(ky_RANK_TCAV)*tgauss()
+           endif
+           if(cmp%value(ky_RANP_TCAV) .eq. 0.d0)then
+             ph=cmp%value(ky_PHI_TCAV)
+           else
+             ph=cmp%value(ky_PHI_TCAV)+cmp%value(ky_RANP_TCAV)*tgauss()
+           endif
+           harmf=cmp%value(ky_HARM_TCAV)-int(cmp%value(ky_HARM_TCAV))
+           ph=ph+harmf*(n-1)*pi2
+           call ttcav(np,x,px,y,py,z,g,dv,al,ak,
+     $          cmp%value(ky_HARM_TCAV),ph,cmp%value(ky_FREQ_TCAV),
+     1          cmp%value(ky_DX_TCAV),cmp%value(ky_DY_TCAV),
+     $          cmp%value(ky_ROT_TCAV))
+         else
+           call tdrift_free(np,x,px,y,py,z,dv,al)
+         endif
 
-        case (icMAP)
-        call temap(np,np0,x,px,y,py,z,g,dv,l,n,kptbl)
-        go to 1010
+       case (icMAP)
+         call temap(np,np0,x,px,y,py,z,g,dv,l,n,kptbl)
+         go to 1010
 
-        case (icINS)
-          call tins(np,x,px,y,py,z,g,cmp%value(ky_DIR_INS+1))
-          go to 1010
+       case (icINS)
+         call tins(np,x,px,y,py,z,g,cmp%value(ky_DIR_INS+1))
+         go to 1010
 
-        case (icCOORD)
-          call tcoord(np,x,px,y,py,z,
-     1       cmp%value(ky_DX_COORD),cmp%value(ky_DY_COORD),
-     $       cmp%value(ky_DZ_COORD),cmp%value(ky_CHI1_COORD),
-     $       cmp%value(ky_CHI2_COORD),cmp%value(ky_CHI3_COORD),
-     1       cmp%value(ky_DIR_COORD) .eq. 0.d0)
-        go to 1010
+       case (icCOORD)
+         call tcoord(np,x,px,y,py,z,
+     1        cmp%value(ky_DX_COORD),cmp%value(ky_DY_COORD),
+     $        cmp%value(ky_DZ_COORD),cmp%value(ky_CHI1_COORD),
+     $        cmp%value(ky_CHI2_COORD),cmp%value(ky_CHI3_COORD),
+     1        cmp%value(ky_DIR_COORD) .eq. 0.d0)
+         go to 1010
 
-        case (icBEAM)
-          if(iand(cmp%update,1) .eq. 0)then
-            call tpara(cmp)
-          endif
-          call beambeam(np,x,px,y,py,z,g,dv,sx,sy,sz,cmp%value(1),
-     $         cmp%value(p_PARAM_BEAM),n)
-          go to 1010
+       case (icBEAM)
+         if(iand(cmp%update,1) .eq. 0)then
+           call tpara(cmp)
+         endif
+c     call tfmemcheckprint('beambeam-0',l,.false.,irtc)
+         call beambeam(np,x,px,y,py,z,g,dv,sx,sy,sz,cmp%value(1),
+     $        cmp%value(p_PARAM_BEAM),n)
+c     call tfmemcheckprint('beambeam-1',l,.false.,irtc)
+         go to 1020
 
-        case (icProt)
-          if(iand(cmp%update,1) .eq. 0)then
-            call tpara(cmp)
-          endif
-          call phsrot(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         cmp%value(p_PARAM_Prot))
-          go to 1010
+       case (icProt)
+         if(iand(cmp%update,1) .eq. 0)then
+           call tpara(cmp)
+         endif
+         call phsrot(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $        cmp%value(p_PARAM_Prot))
+         go to 1010
 
-        case (icSPCH)
-        if(pspac) then
-          sspac2=(rlist(ifpos+l-1)+rlist(ifpos+l))*.5d0
+       case (icSPCH)
+         if(pspac) then
+           sspac2=(rlist(ifpos+l-1)+rlist(ifpos+l))*.5d0
 c     print *,'tturn l sspac2',l,sspac2
-          call tpspac(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         pbunch, amass, p0, h0, sspac2-sspac1,
-     $         pspac_nx,pspac_ny,pspac_nz,
-     $         pspac_dx,pspac_dy,pspac_dz,l,lend,
-     $         pspac_nturn,pspac_nturncalc)
-          sspac1=sspac2
-        endif
-        go to 1010
+           call tpspac(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $          pbunch, amass, p0, h0, sspac2-sspac1,
+     $          pspac_nx,pspac_ny,pspac_nz,
+     $          pspac_dx,pspac_dy,pspac_dz,l,lend,
+     $          pspac_nturn,pspac_nturncalc)
+           sspac1=sspac2
+         endif
+         go to 1020
 
-        case (icMARK)
-          go to 1010
+       case (icMARK)
+         go to 1010
 
-        case (icAPRT)
-          call tapert1(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
-     1         kptbl,np,n)
-          if(np .le. 0)then
-            return
-          endif
-          la=la1
-          go to 1010
+       case (icAPRT)
+         call tapert1(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+     1        kptbl,np,n)
+         if(np .le. 0)then
+           return
+         endif
+         la=la1
+         go to 1010
 
-        case default
-          go to 1010
-        end select
+       case default
+         go to 1010
+       end select
  1020   la=la-1
-        do i=1,np
-          x(i)=min(xlimit,max(-xlimit,x(i)))
-          y(i)=min(xlimit,max(-xlimit,y(i)))
-          px(i)=min(plimit,max(-plimit,px(i)))
-          py(i)=min(plimit,max(-plimit,py(i)))
-          z(i)=min(zlimit,max(-zlimit,z(i)))
-        enddo
+        call limitnan(x(1:np),-xlimit,xlimit,xlimit)
+        call limitnan(px(1:np),-plimit,plimit,plimit)
+        call limitnan(y(1:np),-xlimit,xlimit,xlimit)
+        call limitnan(py(1:np),-plimit,plimit,plimit)
+        call limitnan(z(1:np),-zlimit,zlimit,zlimit)
  1011   if(radlight)then
           if(lele .eq. icBEND)then
           elseif(lele .eq. icMULT .and.
@@ -609,6 +612,20 @@ c     print *,'tturn l sspac2',l,sspac2
           endif
         endif
       enddo
+      call limitnan(x(1:np),-xlimit,xlimit,xlimit)
+      call limitnan(px(1:np),-plimit,plimit,plimit)
+      call limitnan(y(1:np),-xlimit,xlimit,xlimit)
+      call limitnan(py(1:np),-plimit,plimit,plimit)
+      call limitnan(z(1:np),-zlimit,zlimit,zlimit)
+      call tapert(lend,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+     1     kptbl,np,n,
+     $     0.d0,0.d0,0.d0,0.d0,
+     $     -alost,-alost,alost,alost,0.d0,0.d0,0.d0,0.d0)
+      if(np .le. 0)then
+        return
+      endif
+      la=la1
+c      call tfmemcheckprint('tturn',1,.false.,irtc)
       if(wspac.or.pspac)then
         sspac=rlist(ifpos+lend-1)
         if(sspac .ne. sspac0)then

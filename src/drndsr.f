@@ -65,3 +65,49 @@ c          write(*,*)'tdusr ',np,p,pn,tdusr
       enddo
       return
       end
+
+      subroutine tdusrn(anp,dph,r1,r2,an)
+c a random energy loss of SR using drndsr
+c anp: expected number of photons
+c returns: dph = sum of photon energies/uc, 
+c  r1 = sum(r_n u_n)/sum(u_n), r2 = sum(r_n^2 u_n)/sum(r_n u_n)/2
+c  an = number of actually emitted photons
+c cutoff: threshold to ingnore multiple photons beyond this probability 
+c npmax: the maximum number of photons to try
+      implicit none
+      real*8 , intent(in)::anp
+      real*8 ,intent(out)::dph,an,r1,r2
+      real*8 p,p0,pn,tran,drndsr,x,r,dph1
+      real*8 , parameter :: cutoff=0.9999d0
+      integer*4 , parameter :: npmax=10000
+      integer*4 k
+      p0=exp(-anp)
+      pn=p0
+      p=tran()
+      r1=0.d0
+      r2=0.d0
+      an=0.d0
+      x=1.d0
+      dph=0.d0
+      do k=1,npmax
+        if(p .le. pn)then
+          exit
+        endif
+        an=an+1.d0
+        x=x*anp/an
+        pn=pn+x*p0
+        dph1=drndsr()
+        dph=dph+dph1
+        r=tran()
+        r1=r1+r*dph1
+        r2=r2+r**2*dph1
+        if(pn .gt. cutoff)then
+          exit
+        endif
+      enddo
+      if(r1 .ne. 0.d0)then
+        r2=r2/r1*.5d0
+        r1=r1/dph
+      endif
+      return
+      end

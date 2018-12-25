@@ -5,17 +5,21 @@
       use tfstk
       use ffs_flag
       use tmacro
+      use temw, only:tsetr0
       implicit none
       type (sad_rlist), pointer :: klr
       integer*8 ifvh,kx
       integer*4 level,irtc
       real*8 trans(6,12),cod(6),beam(21),al,ak,bz,
-     $    dx,dy,theta,radlvl,f1in,f2in,f1out,f2out,eps0
+     $    dx,dy,theta,radlvl,f1in,f2in,f1out,f2out,eps0,
+     $     aln,akn
       integer*4 mfring,l,ld
       logical*4 fringe,forward
       real*8 bxs,bys,bzs,ali,alm,aki,akm,rb
-      integer*4 i,l1,m
-      logical*4 enarad
+      integer*4 itgetqraddiv
+      integer*4 i,l1,m,ndiv
+      integer*4 , parameter :: ndivmax=1000
+      logical*4 enarad,krad
       character*13 vname
       data vname/'SolenoidShape'/
       integer*8 ifv
@@ -36,10 +40,14 @@ c        ilist(1,ifvh-2)=-1
         return
       endif
       enarad=radlvl .ne. 1.d0
+      krad=enarad .and. al .ne. 0.d0
       cod(2)=cod(2)+.5d0*bz*dy
       cod(4)=cod(4)-.5d0*bz*dx
       call tsolrot(trans,cod,beam,al,0.d0,dx,dy,0.d0,
      $     0.d0,0.d0,theta,bxs,bys,bzs,.true.,ld)
+      if(krad)then
+        call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0)
+      endif
       if(fringe .and. mfring .ge. 0 .and. mfring .ne. 2)then
         call tqfrie(trans,cod,beam,ak,al,ld,bz)
       endif
@@ -47,9 +55,23 @@ c        ilist(1,ifvh-2)=-1
         call tqlfre(trans,cod,beam,al,ak,f1in,f2in,bz,ld)
       endif
       if(ifv .eq. 0)then
-        call tsolque(trans,cod,beam,al,ak,
-     $       bz,0.d0,0.d0,eps0,enarad,radcod,
-     $       calpol,irad,ld)
+        if(krad)then
+          if(eps0 .eq. 0.d0)then
+            ndiv=max(1,itgetqraddiv(cod,ak,al,bzs*.5d0))
+          else
+            ndiv=max(1,int(dble(itgetqraddiv(cod,ak,al,bzs*.5d0))/eps0))
+          endif
+          ndiv=min(ndivmax,ndiv)
+        else
+          ndiv=1
+        endif
+        aln=al/ndiv
+        akn=ak/ndiv
+        do i=1,ndiv
+          call tsolque(trans,cod,beam,aln,akn,
+     $         bz,0.d0,0.d0,eps0,krad .and. i .ne.ndiv,radcod,
+     $         calpol,irad,ld)
+        enddo
       else
         level=itfuplevel()
         l1=l
@@ -87,7 +109,7 @@ c        ilist(1,ifvh-2)=-1
             endif
             call tsolque(trans,cod,beam,ali,aki,
      $           bz*rb,0.d0,0.d0,
-     $           eps0,enarad,radcod,calpol,irad,ld)
+     $           eps0,krad .and. i .ne. m,radcod,calpol,irad,ld)
           enddo
           level=itfdownlevel()
         else
@@ -98,7 +120,7 @@ c        ilist(1,ifvh-2)=-1
             level=itfdownlevel()
             call tsolque(trans,cod,beam,al,ak,
      $           bz,0.d0,0.d0,
-     $           eps0,enarad,radcod,calpol,irad,ld)
+     $           eps0,.false.,radcod,calpol,irad,ld)
           endif
         endif
       endif
@@ -107,6 +129,9 @@ c        ilist(1,ifvh-2)=-1
       endif
       if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
         call tqfrie(trans,cod,beam,-ak,al,ld,bz)
+      endif
+      if(krad)then
+        call tradke(trans,cod,beam,al,0.d0,bzs*.5d0)
       endif
       call tsolrot(trans,cod,beam,al,0.d0,dx,dy,0.d0,
      $     0.d0,0.d0,theta,bxs,bys,bzs,.false.,ld)

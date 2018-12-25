@@ -144,11 +144,13 @@ With[{ylim=0.9999},
       f,
       f]]];
 
-CreateBin[x_]:=Module[{xs=Sort[x],n=Length[x],x0,x1,nb,xp,lxp,ym,yms,sn=0,xm},
+CreateBin[x_]:=Module[
+  {xs=Sort[x],n=Length[x],x0,x1,nb,xp,lxp,ym,yms,sn=0,xm},
   nb=Floor[Sqrt[n]];
   {x0,x1}=xs[[{1,-1}]];
   xp=Partition[xs,nb];
-  ym=Plus@@[xp,{1}]/(lxp=Length/@xp);
+  lxp=Length/@xp;
+  ym=Plus@@[xp,{1}]/lxp;
   yms=Sqrt[Plus@@[(xp-ym)^2,{1}]]/lxp;
   xm=(sn+=#&)/@lxp;
   xm=(2*(xm-xm[[1]]/2)/sn-1);

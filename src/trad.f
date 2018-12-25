@@ -11,48 +11,47 @@ c      end type
 
       contains
         subroutine tradkf1(x,px,y,py,z,g,dv,sx,sy,sz,
-     $     px0,py0,bsi,al,dldx)
+     $     px0,py0,zr0,bsi,al)
         use tfstk, only:pxy2dpz,p2h
         use ffs_flag
         use tmacro
         implicit none
-        real*8 x,px,y,py,z,g,dv,px0,py0,bsi,al,dldx,
-     $       dpx,dpy,pz,pz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
-     $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,tdusr,sx,sy,sz,
-     $       ppa,an,a
         real*8, parameter:: gmin=-0.9999d0,
-     $       cave=8.d0/15.d0/sqrt(3.d0),thetamax=0.005d0
+     $       cave=8.d0/15.d0/sqrt(3.d0)
+        real*8 x,px,y,py,z,g,dv,px0,py0,zr0,bsi,al,
+     $       dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
+     $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,sx,sy,sz,
+     $       ppa,an,a,dph,r1,r2
         dpx=px-px0
         dpy=py-py0
-        pz=1.d0+pxy2dpz(px,py)
-        pz0=1.d0+pxy2dpz(px0,py0)
-        ppx=py*pz0-pz*py0
-        ppy=pz*px0-px*pz0
+        dpz=pxy2dpz(px,py)
+        dpz0=pxy2dpz(px0,py0)
+        ppx=py*dpz0-dpz*py0+dpy
+        ppy=dpz*px0-px*dpz0-dpx
         ppz=px*py0-py*px0
         ppa=abs(dcmplx(ppx,abs(dcmplx(ppy,ppz))))
         theta=asin(min(1.d0,max(-1.d0,ppa)))
         pr=1.d0+g
         p=p0*pr
-        h1=p2h(p)
         anp=anrad*p*theta
-        dg=tdusr(anp,an)
-        if(dg .ne. 0.d0)then
-          pxm=px0+dpx*.5d0
-          pym=py0+dpy*.5d0
-          al1=al*(1.d0+(dldx*pxm**2+pym**2)*.5d0)
+        call tdusrn(anp,dph,r1,r2,an)
+        if(an .ne. 0.d0)then
+          al1=al-z+zr0
+c          al1=al*(1.d0+(dldx*pxm**2+pym**2)*.5d0)
           uc=cuc*(1.d0+p**2)*theta/al1*pr
-          dg=-dg*uc
+          dg=-dph*uc
           g=max(gmin,g+dg)
-          ddpx=-.5d0*dpx*dg
-          ddpy=-.5d0*dpy*dg
-          x=x+.5d0*ddpx*al
-          y=y+.5d0*ddpy*al
+          ddpx=-r1*dpx*dg
+          ddpy=-r1*dpy*dg
+          x=x+r2*ddpx*al
+          y=y+r2*ddpy*al
           px=px+ddpx
           py=py+ddpy
           pr=1.d0+g
           p2=p0*pr
           h2=p2h(p2)
           dv=-g*(1.d0+pr)/h2/(h2+p2)+dvfs
+          h1=p2h(p)
           z=z*p2/h2*h1/p
           if(calpol)then
             if(ppa .ne. 0.d0)then
@@ -60,10 +59,14 @@ c      end type
             else
               a=0.d0
             endif
-            call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,a,
+            pxm=px0+dpx*.5d0
+            pym=py0+dpy*.5d0
+            call sprot(sx,sy,sz,pxm,pym,
+     $           ppx,ppy,ppz,bsi,a,
      $           al1,p2,h2,an)
           endif
         elseif(calpol)then
+          h1=p2h(p)
           if(ppa .ne. 0.d0)then
             a=theta/ppa
           else
@@ -77,39 +80,38 @@ c      end type
         return
         end subroutine
 
-        subroutine tradk1(x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,bsi,al,dldx)
+        subroutine tradk1(x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,al)
         use tfstk, only:pxy2dpz,p2h
         use ffs_flag
         use tmacro
         implicit none
-        real*8 x,px,y,py,z,g,dv,px0,py0,bsi,al,dldx,a,
-     $       pz,pz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
+        real*8 x,px,y,py,z,g,dv,px0,py0,zr0,bsi,al,a,
+     $       dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
      $       pxm,pym,al1,uc,ddpx,ddpy,h2,h1,sx,sy,sz,ppa,p2
         real*8, parameter:: gmin=-0.9999d0,
-     $       cave=8.d0/15.d0/sqrt(3.d0),thetamax=0.005d0
+     $       cave=8.d0/15.d0/sqrt(3.d0)
         dpx=px-px0
         dpy=py-py0
-        pz=1.d0+pxy2dpz(px,py)
-        pz0=1.d0+pxy2dpz(px0,py0)
-        ppx=py*pz0-pz*py0
-        ppy=pz*px0-px*pz0
+        dpz=pxy2dpz(px,py)
+        dpz0=pxy2dpz(px0,py0)
+        ppx=py*dpz0-dpz*py0+dpy
+        ppy=dpz*px0-px*dpz0-dpx
         ppz=px*py0-py*px0
         ppa=abs(dcmplx(ppx,abs(dcmplx(ppy,ppz))))
         theta=asin(min(1.d0,max(-1.d0,ppa)))
-        pxm=px0+dpx*.5d0
-        pym=py0+dpy*.5d0
         pr=1.d0+g
         p=p0*pr
         h1=p2h(p)
-        al1=al*(1.d0+(dldx*pxm**2+pym**2)*.5d0)
+        al1=al-z+zr0
+c        al1=al*(1.d0+(dldx*pxm**2+pym**2)*.5d0)
         anp=anrad*p*theta
         uc=cuc*(1.d0+p**2)*theta/al1*pr
         dg=-cave*anp*uc
         g=max(gmin,g+dg)
         ddpx=-.5d0*dpx*dg
         ddpy=-.5d0*dpy*dg
-        x=x+.5d0*ddpx*al
-        y=y+.5d0*ddpy*al
+        x=x+ddpx*al/3.d0
+        y=y+ddpy*al/3.d0
         px=px+ddpx
         py=py+ddpy
         pr=1.d0+g
@@ -123,6 +125,8 @@ c      end type
           else
             a=0.d0
           endif
+          pxm=px0+dpx*.5d0
+          pym=py0+dpy*.5d0
           call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,a,
      $         al1,p2,h2,anp)
         endif
@@ -277,7 +281,7 @@ c          endif
       return
       end
 
-      subroutine tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,bsi,al)
+      subroutine tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,al)
       use tfstk
       use ffs_flag
       use tmacro
@@ -285,45 +289,19 @@ c          endif
       implicit none
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),dv(np),z(np),g(np),
-     $     px0(np),py0(np),bsi(np),al
+     $     px0(np),py0(np),zr0(np),bsi(np),al
       real*8 sx(np),sy(np),sz(np)
-      if(rfluct .and. al .gt. 0.d0)then
+      if(rfluct .and. al .ne. 0.d0)then
         do i=1,np
           call tradkf1(x(i),px(i),y(i),py(i),z(i),g(i),dv(i),
      $         sx(i),sy(i),sz(i),
-     $         px0(i),py0(i),bsi(i),al,1.d0)
+     $         px0(i),py0(i),zr0(i),bsi(i),al)
         enddo
       else
         do i=1,np
           call tradk1(x(i),px(i),y(i),py(i),z(i),g(i),dv(i),
      $         sx(i),sy(i),sz(i),
-     $         px0(i),py0(i),bsi(i),al,1.d0)
-        enddo
-      endif
-      return
-      end
-
-      subroutine tradki(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,bsi,al)
-      use tfstk
-      use ffs_flag
-      use tmacro
-      use tspin
-      implicit none
-      integer*4 np,i
-      real*8 x(np),px(np),y(np),py(np),dv(np),z(np),g(np),
-     $     px0(np),py0(np),bsi(np),al(np)
-      real*8 sx(np),sy(np),sz(np)
-      if(rfluct)then
-        do i=1,np
-          call tradkf1(x(i),px(i),y(i),py(i),z(i),g(i),dv(i),
-     $         sx(i),sy(i),sz(i),
-     $         px0(i),py0(i),bsi(i),al(i),0.d0)
-        enddo
-      else
-        do i=1,np
-          call tradk1(x(i),px(i),y(i),py(i),z(i),g(i),dv(i),
-     $         sx(i),sy(i),sz(i),
-     $         px0(i),py0(i),bsi(i),al(i),0.d0)
+     $         px0(i),py0(i),zr0(i),bsi(i),al)
         enddo
       endif
       return

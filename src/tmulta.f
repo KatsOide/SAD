@@ -14,7 +14,7 @@
       parameter (ampmax=0.05d0,eps00=0.005d0,ndivmax=2000)
       integer*4 np,mfring,i,n,mfr,ndiv,nmmax,m,m1,k,nmmin,l
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
-     $     px0(np),py0(np),bsi(np),
+     $     px0(np),py0(np),zr0(np),bsi(np),
      $     al,phi,psi1,psi2,bz,dx,dy,theta,eps0,fb1,fb2,
      $     dtheta,pr,cost,sint,rho0,rhob,
      $     sinp1,sinp2,cosp1,cosp2,phin,aln,cosw,sinw,sqwh,sinwp1,
@@ -23,7 +23,7 @@
       real*8 sx(np),sy(np),sz(np)
       complex*16 ak0(0:nmult),ak(0:nmult),akn(0:nmult),
      $     cx1,csl,csr,cl,cr,cg,cx
-      logical*4 enarad,fringe,enrad
+      logical*4 enarad,fringe,krad
       real*8 fact(0:nmult+1)
       data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
      1     720.d0,     5040.d0,     40320.d0,362880.d0,3628800.d0,
@@ -92,7 +92,7 @@
           exit
         endif
       enddo
-      enrad=rad .and. enarad
+      krad=rad .and. enarad
       ndiv=1
       do n=nmmin,nmmax
         ndiv=max(ndiv,
@@ -122,9 +122,10 @@
         akn(m)=ak(m)/(fact(m+1)*ndiv)
       enddo
       als=0.d0
-      if(enrad)then
+      if(krad)then
         px0=px
         py0=py
+        zr0=z
         bsi=0.d0
       endif
       do n=1,ndiv
@@ -145,7 +146,7 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
           elseif(mfring .ne. 0)then
             mfr=-1
           endif
-          if(enrad)then
+          if(krad)then
             do i=1,np
               cx1=dcmplx(x(i),y(i))
               cx=0.d0
@@ -157,7 +158,8 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
             enddo
           endif
           als=aln*.5d0
-          call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,bsi,
+          call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         px0,py0,zr0,bsi,
      $         l,als,phibn*.5d0,phin*.5d0,
      1         cosp1,sinp1,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
@@ -173,7 +175,8 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
           endif
           sinwp1=sinw
         else
-          call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,bsi,
+          call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         px0,py0,zr0,bsi,
      $         l,aln,phibn,phin,
      1         1.d0,0.d0,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
@@ -206,9 +209,10 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
           px(i)=px(i)-(dble(csr*cx1)/r+dble(csl))/pr
           py(i)=py(i)+imag(csl)/pr
         enddo
-        if(enrad)then
+        if(krad)then
           px0=px
           py0=py
+          zr0=z
         endif
       enddo
       w=phin*.5d0-psi2
@@ -226,7 +230,7 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
       elseif(mfring .ne. 0)then
         mfr=-2
       endif
-      if(enrad)then
+      if(krad)then
         do i=1,np
           cx1=dcmplx(x(i),y(i))
           cx=0.d0
@@ -237,7 +241,8 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
           bsi(i)=-imag(cx)/al
         enddo
       endif
-      call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,bsi,
+      call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $     px0,py0,zr0,bsi,
      $     l,aln*.5d0,phibn*.5d0,phin*.5d0,
      1     1.d0,0.d0,cosp2,sinp2,
      1     ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,

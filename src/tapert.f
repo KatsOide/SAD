@@ -233,10 +233,10 @@ c      - Swap particle coordinates
             sx(np) = sx1
             sy(np) = sy1
             sz(np) = sz1
-            if(ktfenanq(sy(np)))then
-              write(*,'(a,2i5,1p8g12.4)')'tapert-i ',i,np,
-     $           sx(i),sy(i),sz(i),sx1,sy1,sz1
-            endif
+c            if(ktfenanq(sy(np)))then
+c              write(*,'(a,2i5,1p8g12.4)')'tapert-i ',i,np,
+c     $           sx(i),sy(i),sz(i),sx1,sy1,sz1
+c            endif
           endif
           np=np-1
         endif

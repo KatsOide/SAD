@@ -302,7 +302,9 @@ c          go to 1010
      $           cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $           ftable(1),ftable(2),ftable(3),ftable(4),
      $           mfr,cmp%value(ky_EPS_QUAD),
-     $           cmp%value(ky_KIN_QUAD) .eq. 0.d0,coup)
+     $           cmp%value(ky_KIN_QUAD) .eq. 0.d0,
+     $           cmp%value(ky_CHRO_QUAD) .ne. 0.d0,
+     $           coup)
             go to 20
 
           case (icSEXT, icOCTU, icDECA, icDODECA)

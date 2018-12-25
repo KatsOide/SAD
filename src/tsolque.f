@@ -275,7 +275,7 @@
       use tmacro, only:bradprev
       implicit none
       type(tzparam) tz
-      integer*4 n,ndiv,ld,itgetqraddiv,irad
+      integer*4 n,ndiv,ld,irad
       real*8 trans(6,12),cod(6),beam(42),trans1(6,6)
       real*8 al,ak,eps0,bz,a,b,c,d,akk,eps,bzh,
      $     bw,dw,ak0x,ak0y,dx0,dy0,
@@ -292,7 +292,7 @@
      $     tbrhoz,bx,by,bxy,b1,br,bz0,cw,phieps,
      $     awu,dwu,awup,dwup,dz1,dz2,dz1p,dz2p
       logical*4 enarad,calpol,radcod
-      external itgetqraddiv,tbrhoz
+      external tbrhoz
       parameter (phieps=1.d-2)
         associate (
      $       w1=>tz%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
@@ -336,9 +336,9 @@ c        write(*,'(a,1p8g13.5)')'tsolque-out ',ak,bz,cod
         eps=0.1d0*eps0
       endif
       ndiv=1+int(sqrt((ak*al)**2+(bz*al)**2)/eps)
-      if(enarad)then
-        ndiv=max(ndiv,itgetqraddiv(cod,ak,al))
-      endif
+c      if(enarad)then
+c        ndiv=max(ndiv,itgetqraddiv(cod,ak,al))
+c      endif
       aln=al/ndiv
       dx0=ak0x/ak
       dy0=ak0y/ak
@@ -347,26 +347,10 @@ c        write(*,'(a,1p8g13.5)')'tsolque-out ',ak,bz,cod
       b1=br*akk
       call tinitr(trans1)
 c     end   initialize for preventing compiler warning
+      call tzsetparam(tz,cod(6),akk,bz)
+      call tgetdv(cod(6),dv,dvdp)
+      call tzsetparamp(tz)
       do n=1,ndiv
-        if(enarad .and. radcod .or. n .eq. 1)then
-          call tzsetparam(tz,cod(6),akk,bz)
-          call tgetdv(cod(6),dv,dvdp)
-          call tzsetparamp(tz)
-        endif
-        if(enarad)then
-          bx= b1*(cod(3)+dy0)
-          by= b1*(cod(1)+dx0)
-          bxy=b1
-          if(n .eq. 1)then
-            call trade(trans,beam,cod,bx,by,bz*br,bz,
-     $           0.d0,bxy,0.d0,0.d0,
-     $           .5d0*aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
-          else
-            call trade(trans,beam,cod,bx,by,bz*br,bz,
-     $           0.d0,bxy,0.d0,0.d0,
-     $           aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
-          endif
-        endif
         if(n .eq. 1)then
           call tqente(trans,cod,beam,aln*.5d0,bz,calpol,irad,ld)
         else
@@ -560,12 +544,13 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
       enddo
       call tqente(trans,cod,beam,aln*.5d0,bz,calpol,irad,ld)
       if(enarad)then
-        bx= b1*cod(3)
-        by= b1*cod(1)
-        bxy= b1
-        call trade(trans,beam,cod,bx,by,bz*br,bz,
-     $       0.d0,bxy,0.d0,0.d0,
-     $       .5d0*aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
+c        bx= b1*cod(3)
+c        by= b1*cod(1)
+c        bxy= b1
+c        call trade(trans,beam,cod,bx,by,bz*br,bz,
+c     $       0.d0,bxy,0.d0,0.d0,
+c     $       .5d0*aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
+        call tradke(trans,cod,beam,al,0.d0,bzh)
       endif
       bradprev=0.d0
       return
@@ -580,8 +565,10 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
       end
 
       subroutine texchg(trans,cod,beam,s)
+      use temw, only:codr0,transr
       implicit none
-      real*8 trans(6,12),cod(6),beam(42),x0,px0,x,s,v(12)
+      real*8 trans(6,12),cod(6),beam(42),x0,px0,x,s,v(12),
+     $     u(6)
       if(s .gt. 0.d0)then
         x0=cod(1)
         cod(1)=-cod(3)
@@ -589,12 +576,24 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
         px0=cod(2)
         cod(2)=-cod(4)
         cod(4)=px0
+        x0=codr0(1)
+        codr0(1)=-codr0(3)
+        codr0(3)=x0
+        px0=codr0(2)
+        codr0(2)=-codr0(4)
+        codr0(4)=px0
         v=trans(1,:)
         trans(1,:)=-trans(3,:)
         trans(3,:)=v
         v=trans(2,:)
         trans(2,:)=-trans(4,:)
         trans(4,:)=v
+        u=transr(1,:)
+        transr(1,:)=-transr(3,:)
+        transr(3,:)=u
+        u=transr(2,:)
+        transr(2,:)=-transr(4,:)
+        transr(4,:)=u
         x=beam(1)
         beam(1)=beam(6)
         beam(6)=x
@@ -621,6 +620,7 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
         x=beam(17)
         beam(17)=-beam(19)
         beam(19)=x
+        
 
         x=beam(21+1)
         beam(21+1)=beam(21+6)
@@ -655,12 +655,24 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
         px0=cod(2)
         cod(2)=cod(4)
         cod(4)=-px0
+        x0=codr0(1)
+        codr0(1)=codr0(3)
+        codr0(3)=-x0
+        px0=codr0(2)
+        codr0(2)=codr0(4)
+        codr0(4)=-px0
         v=trans(1,:)
         trans(1,:)=trans(3,:)
         trans(3,:)=-v
         v=trans(2,:)
         trans(2,:)=trans(4,:)
         trans(4,:)=-v
+        u=transr(1,:)
+        transr(1,:)=transr(3,:)
+        transr(3,:)=-u
+        u=transr(2,:)
+        transr(2,:)=transr(4,:)
+        transr(4,:)=-u
         x=beam(1)
         beam(1)=beam(6)
         beam(6)=x
@@ -718,16 +730,16 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
       return
       end
 
-      integer*4 function itgetqraddiv(cod,ak,al)
+      integer*4 function itgetqraddiv(cod,ak,al,bzh)
       use tfstk
       use tmacro
       implicit none
       integer*4 nrad
-      real*8 cod(6),ak,xd,xpd,a,b,al
+      real*8 cod(6),ak,xd,xpd,a,b,al,bzh
       xd=max(1.d-6,abs(cod(1))+abs(cod(3)))
       xpd=max(1.d-6,abs(cod(2))+abs(cod(4)))
       a=min(1.d-2,abs(ak)*xd+xpd)
-      b=brhoz*a/abs(al)
+      b=brhoz*(a*abs(bzh)+a/abs(al))
       nrad=int(abs(al*crad/epsrad*(h0*b)**2))
       itgetqraddiv=max(int(emidiv*emidiq*nrad),
      1     int(abs(a)/epsrad/1.d3*emidiv*emidiq))

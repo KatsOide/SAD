@@ -789,7 +789,7 @@ cProbably obsolete
       integer*8 latt(nlat)
       integer*4 np,kturn,l,kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
-     $     zz(np0),sx(np0),sy(np0),sz(np0),bsi(np0)
+     $     sx(np0),sy(np0),sz(np0),bsi(np0)
       real*8 al,bz,ak0x,ak0y,radius
       integer*4 ndiv,i
       real*8 aln,akxn,akyn,alx

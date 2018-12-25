@@ -10,7 +10,7 @@ c      use ffs_pointer, only:inext,iprev
       logical*4 enarad,chro,fringe,kin
       integer*4 np,l,i,mfring
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     px0(np),py0(np),bsi(np),
+     $     px0(np),py0(np),zr0(np),bsi(np),
      $     al,ak,dx,dy,theta,cost,sint,radlvl,eps0,alr,
      $     f1in,f1out,f2in,f2out,p,a,ea,b,pxi,pxf,pyf,xi
       real*8 sx(np),sy(np),sz(np)
@@ -33,6 +33,7 @@ c      use ffs_pointer, only:inext,iprev
       if(enarad)then
         px0=px
         py0=py
+        zr0=z
       endif
       if(fringe .and. mfring .gt. -4 .and. mfring .ne. 2)then
         call ttfrin(np,x,px,y,py,z,g,4,ak,al,0.d0)
@@ -55,8 +56,9 @@ c          p=(1.d0+g(i))**2
 2110    continue
       endif
       if(enarad)then
-        call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,al,ak,
-     $       0.d0,0.d0,0.d0,eps0,px0,py0,alr)
+        call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       px0,py0,zr0,bsi,al,ak,
+     $       0.d0,0.d0,0.d0,eps0,alr)
       else
         call tsolqu(np,x,px,y,py,z,g,dv,bsi,al,ak,0.d0,0.d0,0.d0,0,eps0)
       endif
@@ -81,7 +83,7 @@ c          p=(1.d0+g(i))**2
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
       endif
       if(enarad)then
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,bsi,alr)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,alr)
       endif
       include 'inc/TEXIT.inc'
       return
@@ -105,7 +107,7 @@ c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
      1           alpha1=.5d0-alpha)
       integer*4 l,nord,np,kord,i
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
-     $     px0(np),py0(np),bsi(np)
+     $     px0(np),py0(np),zr0(np),bsi(np)
       real*8 sx(np),sy(np),sz(np)
       real*8 fact(0:nmult)
       real*8 theta,sint,cost,dx,dy,al,ak,
@@ -138,6 +140,7 @@ c     end   initialize for preventing compiler warning
       if(enarad)then
         px0=px
         py0=py
+        zr0=z
         bsi=0.d0
       endif
       if(fringe)then
@@ -334,7 +337,7 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
         call ttfrin(np,x,px,y,py,z,g,nord,-ak,al,0.d0)
       endif
       if(enarad)then
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,bsi,al)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,al)
       endif
       include 'inc/TEXIT.inc'
       return

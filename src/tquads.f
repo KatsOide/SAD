@@ -12,7 +12,7 @@ c      use ffs_pointer, only:inext,iprev
       integer*4 np,ld,mfring,i,irtc,ld1,level,m,itfuplevel,
      $     itfdownlevel,l
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     pxr0(np),pyr0(np),bsi(np),
+     $     pxr0(np),pyr0(np),zr0(np),bsi(np),
      $     al,bz,ak,dx,dy,theta,cost,sint,radlvl,alr,
      $     f1in,f2in,f1out,f2out,eps0,
      $     a,aki,akm,ali,alm,b,ea,fx,fy,p,pr,px0,pxf,pyf,rb,x0
@@ -60,6 +60,7 @@ c        pr=(1.d0+g(i))**2
       if(enarad)then
         pxr0=px
         pyr0=py
+        zr0=z
       endif
       if(fringe .and. mfring .ne. 2)then
         call ttfrin(np,x,px,y,py,z,g,4,ak,al,bz)
@@ -98,9 +99,10 @@ c$$$     1       b1,0.d0,0.d0,.5d0*al,f1r,f2r,0.d0,al,1.d0)
 c$$$      endif
       if(ifv .eq. 0)then
         if(enarad)then
-          call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+          call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         pxr0,pyr0,zr0,bsi,
      $         al,ak,bz,0.d0,0.d0,eps0,
-     $         pxr0,pyr0,alr)
+     $         alr)
         else
           call tsolqu(np,x,px,y,py,z,g,dv,bsi,al,ak,bz,0.d0,0.d0,0,eps0)
         endif
@@ -140,8 +142,9 @@ c$$$      endif
               aki=akm
             endif
             if(enarad)then
-              call tsolqu(np,x,px,y,py,z,g,dv,bsi,ali,aki,
-     $             bz*rb,0.d0,0.d0,eps0,pxr0,pyr0,alr)
+              call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $             pxr0,pyr0,zr0,bsi,ali,aki,
+     $             bz*rb,0.d0,0.d0,eps0,alr)
             else
               call tsolqu(np,x,px,y,py,z,g,dv,bsi,ali,aki,
      $             bz*rb,0.d0,0.d0,0,eps0)
@@ -155,8 +158,9 @@ c$$$      endif
           else
             level=itfdownlevel()
             if(enarad)then
-              call tsolqu(np,x,px,y,py,z,g,dv,bsi,al,ak,
-     $             bz,0.d0,0.d0,eps0,pxr0,pyr0,alr)
+              call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $             pxr0,pyr0,zr0,bsi,al,ak,
+     $             bz,0.d0,0.d0,eps0,alr)
             else
               call tsolqu(np,x,px,y,py,z,g,dv,bsi,al,ak,
      $             bz,0.d0,0.d0,0,eps0)
@@ -189,7 +193,7 @@ c          p=(1.d0+g(i))**2
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,bz)
       endif
       if(enarad)then
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,pxr0,pyr0,bsi,alr)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,pxr0,pyr0,zr0,bsi,alr)
       endif
       if(theta .ne. 0.d0)then
         do i=1,np

@@ -21,7 +21,7 @@ c      parameter (oneev=1.d0+3.83d-12)
       parameter (oneev=1.d0+1.d-6)
       integer*4 np
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
-     $     pxr0(np),pyr0(np),bsi(np)
+     $     pxr0(np),pyr0(np),zr0(np),bsi(np)
       real*8 sx(np),sy(np),sz(np)
       real*8 al,f1in,f2in,f1out,f2out
       complex*16 ak(0:nmult)
@@ -301,6 +301,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       if(krad)then
         pxr0=px
         pyr0=py
+        zr0=z
       endif
       if(acc)then
         if(w .eq. 0.d0)then
@@ -447,9 +448,11 @@ c        vnominal=0.d0
                 bsi(i)=bsi(i)+imag(cx)/al
               enddo
             endif
-            call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,pxr0,pyr0,bsi,al1)
+            call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $           pxr0,pyr0,zr0,bsi,al1)
             pxr0=px
             pyr0=py
+            zr0=z
           endif
           ibsi=0
         endif
@@ -591,7 +594,7 @@ c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
             cx=.5d0*cx*cx1**2
             bsi(i)=bsi(i)-imag(cx)/al
           enddo
-          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,pxr0,pyr0,bsi,al1)
+          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,pxr0,pyr0,zr0,bsi,al1)
         endif
       endif
  1000 if(theta2 .ne. 0.d0)then
