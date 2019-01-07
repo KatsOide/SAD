@@ -954,7 +954,7 @@ c        write(*,'(a,i5,1p6g14.6)')'qcod ',it,r,r0,cod0(1:4)
       type (sad_comp) , pointer :: cmp
       integer*4 l,nvar,le,itfdownlevel,irtc
       real*8 fr,ftwiss(ntwissfun),trans(6,6),cod(6),gr,sgr,sgr2,gr1,
-     $     tw1(ntwissfun),ri(6,6),beam(21)
+     $     tw1(ntwissfun),ri(6,6),beam(21),srot(3,3)
       logical*4 over,sol,rt,chg,cp0,normal
       if(calc6d)then
         cp0=codplt
@@ -973,7 +973,7 @@ c        write(*,'(a,i5,1p6g14.6)')'qcod ',it,r,r0,cod0(1:4)
           cod=tw1(mfitdx:mfitddp)
           call etwiss2ri(tw1,ri,normal)
           call tinv6(ri,trans)
-          call tturne1(trans,cod,beam,
+          call tturne1(trans,cod,beam,srot,
      $         int8(0),int8(0),int8(0),0,
      $         .false.,sol,rt,.true.,l,l)
         endif

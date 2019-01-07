@@ -255,10 +255,10 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
       return
       end
 
-      subroutine tmultae(trans,cod,beam,al,ak0,
+      subroutine tmultae(trans,cod,beam,srot,al,ak0,
      $     phi,psi1,psi2,apsi1,apsi2,bz,
      1     dx,dy,theta,dtheta,
-     $     eps0,enarad,fringe,fb1,fb2,mfring,l,ld)
+     $     eps0,enarad,fringe,fb1,fb2,mfring,l)
       use tfstk
       use tmacro
       use multa
@@ -266,8 +266,8 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
       integer*4 ndivmax
       real*8 ampmax,eps00
       parameter (ampmax=0.05d0,eps00=0.005d0,ndivmax=2000)
-      integer*4 mfring,n,mfr,ndiv,nmmax,m,m1,k,nmmin,ld,l
-      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),
+      integer*4 mfring,n,mfr,ndiv,nmmax,m,m1,k,nmmin,l
+      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,9),
      $     al,phi,psi1,psi2,bz,dx,dy,theta,eps0,fb1,fb2,
      $     dphix,dphiy,dtheta,rho0,
      $     phin,aln,eps,r,rk(0:nmult),apsi1,apsi2,
@@ -292,7 +292,8 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
       if(gknini)then
         call gkninit
       endif
-      call tchge(trans,cod,beam,-dx,-dy,theta,dtheta,phi,.true.,ld)
+      call tchge(trans,cod,beam,srot,
+     $     -dx,-dy,theta,dtheta,phi,.true.)
       if(dtheta .ne. 0.d0)then
         dphix=      phi*sin(.5d0*dtheta)**2
         dphiy= .5d0*phi*sin(dtheta)
@@ -362,15 +363,15 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
           elseif(mfring .ne. 0)then
             mfr=-1
           endif
-          call tbende(trans,cod,beam,aln*.5d0,phibn*.5d0,phin*.5d0,
+          call tbende(trans,cod,beam,srot,aln*.5d0,phibn*.5d0,phin*.5d0,
      $         psi1n,0.d0,apsi1,0.d0,ak1n*.5d0,
      $         0.d0,0.d0,0.d0,0.d0,
-     1         fb1,fb2,mfr,fringe,eps0,enarad,.false.,.false.,l,ld)
+     1         fb1,fb2,mfr,fringe,eps0,enarad,.false.,.false.,l)
         else
-          call tbende(trans,cod,beam,aln,phibn,phin,
+          call tbende(trans,cod,beam,srot,aln,phibn,phin,
      $         0.d0,0.d0,0.d0,0.d0,ak1n,
      $         0.d0,0.d0,0.d0,0.d0,
-     1         0.d0,0.d0,0,.false.,eps0,enarad,.false.,.false.,l,ld)
+     1         0.d0,0.d0,0,.false.,eps0,enarad,.false.,.false.,l)
         endif
         cx1=dcmplx(cod(1),cod(3))
         csl=(0.d0,0.d0)
@@ -428,14 +429,15 @@ c        write(*,*)'tmultae ',dble(csr*cx1)/r,dble(csl),nmmin
       elseif(mfring .ne. 0)then
         mfr=-2
       endif
-      call tbende(trans,cod,beam,aln*.5d0,phibn*.5d0,phin*.5d0,
+      call tbende(trans,cod,beam,srot,aln*.5d0,phibn*.5d0,phin*.5d0,
      $     0.d0,psi2n,0.d0,apsi2,ak1n*.5d0,
      $     0.d0,0.d0,0.d0,0.d0,
-     1     fb1,fb2,mfr,fringe,eps0,enarad,.false.,.false.,l,ld)
+     1     fb1,fb2,mfr,fringe,eps0,enarad,.false.,.false.,l)
       if(dtheta .ne. 0.d0)then
         cod(2)=cod(2)+dphix
         cod(4)=cod(4)+dphiy
       endif
-      call tchge(trans,cod,beam,dx,dy,-theta,-dtheta,-phi,.false.,ld)
+      call tchge(trans,cod,beam,srot,
+     $     dx,dy,-theta,-dtheta,-phi,.false.)
       return
       end

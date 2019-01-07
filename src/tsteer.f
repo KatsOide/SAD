@@ -159,7 +159,8 @@ c        dp=g(i)*(2.d0+g(i))
      $       (.5d0*dyfr2-.25d0*dyfra2*y(i)**2)*y(i)**2/p)/p
 100   continue
       if(enrad)then
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,al)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       px0,py0,zr0,1.d0,0.d0,bsi,al)
 c        call trad(np,x,px,y,py,g,dv,brad,0.d0,0.d0,
 c     1            0.d0,-tanp2*2.d0/al,.5d0*al,
 c     $       f1r,f2r,al,al,-1.d0)

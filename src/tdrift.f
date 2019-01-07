@@ -94,11 +94,11 @@ c
            if(rfluct)then
              call tradkf1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $            sx(i),sy(i),sz(i),
-     $            pxi,pyi,zr0,bsi(i),al)
+     $            pxi,pyi,zr0,1.d0,0.d0,bsi(i),al)
            else
              call tradk1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $            sx(i),sy(i),sz(i),
-     $            pxi,pyi,zr0,bsi(i),al)
+     $            pxi,pyi,zr0,1.d0,0.d0,bsi(i),al)
            endif
          endif
          px(i)=px1-bzp*y(i)*.5d0
@@ -207,11 +207,11 @@ c          pr=(1.d0+g(i))**2
             if(rfluct)then
               call tradkf1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $         sx(i),sy(i),sz(i),
-     $         px0,py0,zr0,bsi(i),al)
+     $         px0,py0,zr0,1.d0,0.d0,bsi(i),al)
             else
               call tradk1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $         sx(i),sy(i),sz(i),
-     $         px0,py0,zr0,bsi(i),al)
+     $         px0,py0,zr0,1.d0,0.d0,bsi(i),al)
             endif
           endif
           px(i)=px1-bzp*y(i)*.5d0

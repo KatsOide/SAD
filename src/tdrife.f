@@ -1,16 +1,16 @@
-      subroutine tdrife(trans,cod,beam,al,bz,ak0x,ak0y,
-     $     dvon,enarad,calpol,irad,ld)
+      subroutine tdrife(trans,cod,beam,srot,al,bz,ak0x,ak0y,alr,
+     $     dvon,enarad,irad)
       use tfstk, only: sqrtl
       use element_drift_common
       use tmacro, only:bradprev
-      use temw, only:tsetr0
+      use temw, only:tsetr0,bsi
       implicit none
-      integer*4 irad,ld,i,itmax
+      integer*4 irad,i,itmax
       parameter (itmax=10)
-      real*8 trans(6,12),cod(6),beam(42),trans1(6,6)
+      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,3)
       real*8 al,bz,ak0x,ak0y,pr,pxi,pyi,pzi,a,ale,alz,
-     $     dv,dvdp,bzh,bx,by,br,tbrhoz
-      logical*4 dvon,calpol,enarad
+     $     dv,dvdp,bzh,alr
+      logical*4 dvon,enarad
       if(al .eq. 0.d0)then
         cod(2)=cod(2)-ak0x
         cod(4)=cod(4)+ak0y
@@ -69,7 +69,7 @@ c          br=0.d0
 c        endif
         bzh=bz*.5d0
         if(enarad)then
-          call tsetr0(trans(:,1:6),cod(1:6),bzh)
+          call tsetr0(trans(:,1:6),cod(1:6),bzh,0.d0)
         endif
         cod(2)=cod(2)+bzh*cod(3)
         cod(4)=cod(4)-bzh*cod(1)
@@ -85,7 +85,7 @@ c        endif
           call tmulbs(beam ,trans1,.false.,.true.)
         endif
         if(enarad)then
-          call tradke(trans,cod,beam,al,0.d0,bzh)
+          call tradke(trans,cod,beam,srot,alr,0.d0,bzh)
         endif
 c        if(enarad)then
 c          call trade(trans,beam,cod,bx,by,bz*br,bz,

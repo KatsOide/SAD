@@ -1,4 +1,4 @@
-      subroutine tsole(trans,cod,beam,k,ke,sol,
+      subroutine tsole(trans,cod,beam,srot,k,ke,sol,
      1     iatr,iacod,iabmi,idp,plot,rt)
       use kyparam
       use tfstk
@@ -14,7 +14,7 @@
       parameter (conv=3.d-16)
       integer*8 iatr,iacod,iabmi,iatrl,iacodl,iabmilz
       integer*4 k,ke,i,l,idp
-      real*8 trans(6,12),cod(6),beam(42),bmir(6,6),rtaper
+      real*8 trans(6,12),cod(6),beam(42),bmir(6,6),srot(3,9),rtaper
       real*8 r
       logical*4 sol,plot,rt
       save iabmilz
@@ -39,7 +39,7 @@
             rtaper=(1.d0-dp0+cod(6))
           endif
         endif
-        call tsole1(trans,cod,beam,l,rtaper,.true.,.false.)
+        call tsole1(trans,cod,beam,srot,l,rtaper,.true.,.false.)
         if(plot)then
           if(iatr .ne. 0)then
             if(iatr .gt. 0)then
@@ -84,7 +84,7 @@ c            endif
       return
       end
 
-      subroutine tsole1(trans,cod,beam,l,rtaper,enarad,qsol)
+      subroutine tsole1(trans,cod,beam,srot,l,rtaper,enarad,qsol)
       use kyparam
       use tfstk
       use ffs_pointer
@@ -94,12 +94,14 @@ c            endif
       use sad_main
       use ffs_seg
       use temw, only:tsetr0
+      use tspin, only:tsrot
       implicit none
       integer*4 l,ld,lt,mfr,kb,irtc
       integer*8 lp
       type (sad_comp), pointer ::cmp
       type (sad_dlist), pointer :: lsegp
-      real*8 trans(6,12),cod(6),beam(42),al,theta,
+      real*8 trans(6,12),cod(6),beam(42),srot(3,9),
+     $     rr(3,3),al,theta,
      $     phi,phix,phiy,bzs,trans1(6,6),trans2(6,6),
      $     tfbzs,radlvl,bzs0,
      $     f1,rtaper,ftable(4),ak1
@@ -115,20 +117,20 @@ c            endif
       endif
       bzs=tfbzs(l,kb)
       if(lt .eq. icDRFT)then
-        call tdrife(trans,cod,beam,al,
-     $       bzs,0.d0,0.d0,.true.,
+        call tdrife(trans,cod,beam,srot,al,
+     $       bzs,0.d0,0.d0,al,.true.,
      $       enarad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0,
-     $       calpol,irad,ld)
+     $       irad)
       elseif(lt .eq. icBEND)then
         theta=cmp%value(ky_ROT_BEND)
      $       +cmp%value(ky_DROT_BEND)
         phi=cmp%value(ky_ANGL_BEND)+cmp%value(ky_K0_BEND)
         phiy= phi*cos(theta)
         phix= phi*sin(theta)
-        call tdrife(trans,cod,beam,al,
-     $       bzs,phiy,phix,.true.,
+        call tdrife(trans,cod,beam,srot,al,
+     $       bzs,phiy,phix,al,.true.,
      $       enarad .and. cmp%value(ky_RAD_BEND) .eq. 0.d0,
-     $       calpol,irad,ld)
+     $       irad)
       elseif(lt .eq. icQUAD)then
         dir=direlc(l) .gt. 0.d0
         if(dir)then
@@ -150,12 +152,12 @@ c            endif
      $       cmp%value(ky_ROT_QUAD),
      1       radlvl,cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $       ftable(1),ftable(2),ftable(3),ftable(4),
-     $       mfr,cmp%value(ky_EPS_QUAD),l,dir,ld)
+     $       mfr,cmp%value(ky_EPS_QUAD),l,dir)
       elseif(lt .eq. icMULT)then
         if(seg)then
-          call tmulteseg(trans,cod,beam,l,cmp,bzs,lsegp,rtaper,ld)
+          call tmulteseg(trans,cod,beam,srot,l,cmp,bzs,lsegp,rtaper)
         else
-          call tmulte1(trans,cod,beam,l,cmp,bzs,rtaper,ld)
+          call tmulte1(trans,cod,beam,srot,l,cmp,bzs,rtaper)
         endif
       elseif(lt .eq. icSOL)then
         f1=cmp%value(ky_F1_SOL)
@@ -167,48 +169,57 @@ c            endif
           bzs0=tfbzs(l-1,kb)
           if(krad)then
             if(ent)then
-              call tsconv(trans1,cod,lp,.true.)
+              call tsconv(trans1,cod,rr,lp,.true.)
               call tmultr5(trans,trans1,irad)
               call tmulbs(beam,trans1,.false.,.true.)
-              call tsetr0(trans(:,1:6),cod(1:6),0.d0)
+              if(calpol)then
+                call tsrot(srot,rr)
+              endif
+              call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
               if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
                 call tsfrie(trans1,cod,bzs)
                 call tmultr5(trans,trans1,irad)
                 call tmulbs(beam,trans1,.false.,.true.)
               endif
-              call tradke(trans,cod,beam,f1,0.d0,bzs*.5d0)
+              call tradke(trans,cod,beam,srot,f1,0.d0,bzs*.5d0)
             else
-              call tsetr0(trans(:,1:6),cod(1:6),bzs0*.5d0)
+              call tsetr0(trans(:,1:6),cod(1:6),bzs0*.5d0,0.d0)
               if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
                 call tsfrie(trans1,cod,-bzs0)
                 call tmultr5(trans,trans1,irad)
                 call tmulbs(beam,trans1,.false.,.true.)
               endif
-              call tradke(trans,cod,beam,f1,0.d0,0.d0)
-              call tsconv(trans1,cod,lp,.false.)
+              call tradke(trans,cod,beam,srot,f1,0.d0,0.d0)
+              call tsconv(trans1,cod,rr,lp,.false.)
               call tmultr5(trans,trans1,irad)
               call tmulbs(beam,trans1,.false.,.true.)
+              if(calpol)then
+                call tsrot(srot,rr)
+              endif
             endif
           else
             if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
               if(ent)then
-                call tsconv(trans1,cod,lp,.true.)
+                call tsconv(trans1,cod,rr,lp,.true.)
                 call tsfrie(trans2,cod,bzs)
               else
                 call tsfrie(trans1,cod,-bzs0)
-                call tsconv(trans2,cod,lp,.false.)
+                call tsconv(trans2,cod,rr,lp,.false.)
               endif
               call tmultr5(trans1,trans2,6)
             else
-              call tsconv(trans1,cod,lp,ent)
+              call tsconv(trans1,cod,rr,lp,ent)
             endif
             call tmultr5(trans,trans1,irad)
             call tmulbs(beam ,trans1,.true.,.true.)
+            if(calpol)then
+              call tsrot(srot,rr)
+            endif
           endif
         else
           bzs0=tfbzs(l-1,kb)
           if(krad)then
-            call tsetr0(trans(:,1:6),cod(1:6),bzs0*.5d0)
+            call tsetr0(trans(:,1:6),cod(1:6),bzs0*.5d0,0.d0)
 c              call trades(trans,beam,cod,bzs0,bzs,f1,brhoz)
           endif
           if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
@@ -217,7 +228,7 @@ c              call trades(trans,beam,cod,bzs0,bzs,f1,brhoz)
             call tmulbs(beam ,trans1,.true.,.true.)
           endif
           if(krad)then
-            call tradke(trans,cod,beam,f1,0.d0,bzs*.5d0)
+            call tradke(trans,cod,beam,srot,f1,0.d0,bzs*.5d0)
           endif
         endif
       elseif(lt .eq. icMAP)then
@@ -237,13 +248,17 @@ c              call trades(trans,beam,cod,bzs0,bzs,f1,brhoz)
       use tffitcode
       implicit none
       integer*4 k
-      real*8 trans(4,5),cod(6),transe(6,12),beam(42)
-      logical*4 coup,radtaper0
+      real*8 trans(4,5),cod(6),transe(6,12),beam(42),
+     $     srot(3,9)
+      logical*4 coup,radtaper0,calpol0
       radtaper0=radtaper
       radtaper=.false.
+      calpol0=calpol
+      calpol=.false.
       call tinitr(transe)
-      call tsole1(transe,cod,beam,k,1.d0,.false.,.true.)
+      call tsole1(transe,cod,beam,srot,k,1.d0,.false.,.true.)
       radtaper=radtaper0
+      calpol=calpol0
       call qcopymatg(trans,transe,k)
       coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
      $     trans(2,3) .ne. 0.d0 .or. trans(2,4) .ne. 0.d0

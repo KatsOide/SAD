@@ -449,7 +449,7 @@ c        vnominal=0.d0
               enddo
             endif
             call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           pxr0,pyr0,zr0,bsi,al1)
+     $           pxr0,pyr0,zr0,1.d0,0.d0,bsi,al1)
             pxr0=px
             pyr0=py
             zr0=z
@@ -594,7 +594,8 @@ c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
             cx=.5d0*cx*cx1**2
             bsi(i)=bsi(i)-imag(cx)/al
           enddo
-          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,pxr0,pyr0,zr0,bsi,al1)
+          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         pxr0,pyr0,zr0,1.d0,0.d0,bsi,al1)
         endif
       endif
  1000 if(theta2 .ne. 0.d0)then

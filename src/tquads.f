@@ -193,7 +193,8 @@ c          p=(1.d0+g(i))**2
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,bz)
       endif
       if(enarad)then
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,pxr0,pyr0,zr0,bsi,alr)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       pxr0,pyr0,zr0,1.d0,0.d0,bsi,alr)
       endif
       if(theta .ne. 0.d0)then
         do i=1,np

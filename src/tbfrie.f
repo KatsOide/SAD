@@ -1,9 +1,9 @@
-      subroutine tbfrie(trans,cod,beam,rhob,ak,ent,ld)
+      subroutine tbfrie(trans,cod,beam,rhob,ak,ent)
       use tfstk
       use ffs_flag
       use tmacro
       implicit none
-      integer*4 i,ld
+      integer*4 i
       real*8 trans(6,12),cod(6),beam(42),trans1(6,6),
      $     yi,pr,rho,ak,rhob,pxi
       logical*4 ent
@@ -120,12 +120,11 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       return
       end
 
-      subroutine tbedge(trans0,cod,beam,al,phib,psi,ent,ld)
+      subroutine tbedge(trans0,cod,beam,al,phib,psi,ent)
       use tfstk
       use ffs_flag
       use tmacro
       implicit none
-      integer*4 ld
       real*8 trans0(6,12),cod(6),beam(42),phib,psi,al,
      $     trans(6,6),trans1(6,6),rhob
       logical*4 ent
@@ -357,12 +356,11 @@ c      trans(3,6)=-pr*pyi*sxa*(f+pxi*sinp/pzi)
       return
       end
 
-      subroutine tbfrme(trans,cod,beam,ak,fb1,ent,ld)
+      subroutine tbfrme(trans,cod,beam,ak,fb1,ent)
       use tfstk
       use ffs_flag
       use tmacro
       implicit none
-      integer*4 ld
       real*8 trans(6,6),trans1(6,6),cod(6),beam(42),ak(2),pr,
      $     akx,aky,xi,pxi,yi,pyi,y1,px1,a,dx,dpx,dy,dpy,dz,fb1,
      $     dxfrx,dyfrx,dyfrax,

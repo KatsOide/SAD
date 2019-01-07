@@ -251,50 +251,55 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
       return
       end
 
-      subroutine tradke(trans,cod,beam,al,phir0,bzh)
+      subroutine tradke(trans,cod,beam,srot,al,phir0,bzh)
       use tmacro
       use temw
       use tfstk, only:pxy2dpz,p2h
-      use ffs_flag,only:radcod
+      use ffs_flag,only:radcod,calpol
+      use tspin,only:sprotm
       implicit none
-      real*8 , intent(inout)::trans(6,12),cod(9),beam(42)
+      real*8 , intent(inout)::trans(6,12),cod(6),beam(42),
+     $     srot(3,9)
       real*8 , intent(in)::al,bzh,phir0
-      real*8 transi(6,6),tr1(6,6),dppasq(6),
+      real*8 transi(6,6),tr1(6,6),dppa(6),tr2(6,6),
      $     ddpz(6),dal(6),duc(6),dddpx(6),dddpy(6),ddg(6),
-     $     dtheta(6),danp(6),dbeam(21),
-     $     c1,c3,dpx,dpy,ddpx,ddpy,pxr0,
+     $     dtheta(6),danp(6),dbeam(21),dpxi(6),dpyi(6),
+     $     c1,dpx,dpy,ddpx,ddpy,pxr0,ct,pz00,das,
      $     pr,px,py,pz,pz0,ppx,ppy,ppz,ppa,theta,
      $     p,h1,al1,anp,uc,dg,g,pr1,pxi,pyi,
-     $     p2,h2,de,cp,sp,b,pxm,pym,gi
+     $     p2,h2,de,cp,sp,b,pxm,pym,gi,a,dh1r,
+     $     pxh,pyh,pzh,ppzb,btx,bty,btz,dct,
+     $     dpxh(6),dpyh(6),dpzh(6),bp,dbp(6),dpxr0(6),dpz0(6),
+     $     dppx(6),dppy(6),dppzb(6),dblx(6),dbly(6),dblz(6),
+     $     dbtx(6),dbty(6),dbtz(6),dgx(6),dgy(6),dgz(6),dpz00(6)
       real*8, parameter:: gmin=-0.9999d0,
-     $     cave=8.d0/15.d0/sqrt(3.d0),cuu=11.d0/27.d0
+     $     cave=8.d0/15.d0/sqrt(3.d0),cuu=11.d0/27.d0,
+     $     cl=1.d0+gspin
+      integer*4 i
       gi=codr0(6)
       pr=1.d0+gi
       cp=cos(phir0)
       sp=sin(phir0)
       pxi=codr0(2)+bzhr0*codr0(3)
       pyi=codr0(4)-bzhr0*codr0(1)
-      pz0=pr*(1.d0+pxy2dpz(pxi/pr,pyi/pr))
-      pxr0= cp*pxi+sp*pz0
-      pz0 =-sp*pxi+cp*pz0
+      pz00=pr*(1.d0+pxy2dpz(pxi/pr,pyi/pr))
+      pxr0= cp*pxi+sp*pz00
+      pz0 =-sp*pxi+cp*pz00
       px=cod(2)+bzh*cod(3)
       py=cod(4)-bzh*cod(1)
       pz=pr*(1.d0+pxy2dpz(px/pr,py/pr))
       dpx=px-pxr0
       dpy=py-pyi
-      ppx=py*pz0 -pz*pyi
-      ppy=pz*pxr0-px*pz0
-      ppz=px*pyi-py*pxr0
+      ppx=(py*pz0 -pz*pyi)
+      ppy=(pz*pxr0-px*pz0)
+      ppz=(px*pyi-py*pxr0)
       ppa=abs(dcmplx(ppx,abs(dcmplx(ppy,ppz))))
-      if(ppa .eq. 0.d0)then
-        go to 1000
-      endif
-      theta=asin(min(1.d0,max(-1.d0,ppa)))
+      theta=asin(min(1.d0,ppa/pr**2))
       p=p0*pr
       h1=p2h(p)
       al1=al-cod(5)+codr0(5)
-      anp=anrad*p0*theta
-      uc=cuc*(1.d0+p**2)*theta/al1
+      anp=anrad*h1*theta
+      uc=cuc*h1**3/p0*theta/al1
       dg=-cave*anp*uc
       u0=u0-dg
       g=max(gmin,gi+dg)
@@ -312,77 +317,157 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
         h2=p2h(p2)
         cod(5)=cod(5)*p2/h2*h1/p
         call tesetdv(g)
+      else
+        p2=p
+        h2=h1
       endif
       if(irad .gt. 6)then
         call tinv6(transr,transi)
         call tmultr(transi,trans(:,1:6),6)
-        ddpz=(transi(6,1:6)*pr-transi(2,1:6)*px-transi(4,1:6)*py)/pz
-        dppasq=ppx*(transi(4,1:6)*pz0-ddpz*pyi)
-     $       +ppy*(ddpz*pxr0-transi(2,1:6)*pz0)
-     $       +ppz*(transi(2,1:6)*pyi-transi(4,1:6)*pxr0)
-        c3=(ppx*py-ppy*px)/pz0
-        dppasq(2)=dppasq(2)-c3*pxr0+ppy*pz-ppz*py
-        dppasq(4)=dppasq(4)-c3*pyi+ppz*px-ppx*pz
-        dppasq(6)=dppasq(6)+c3*pr
-        dal=-transi(5,1:6)
-        dal(5)=dal(5)+1.d0
-        dtheta=.5d0*dppasq/ppa/sqrt(1.d0-ppa**2)
-        danp=anrad*p0*dtheta
-        duc=cuc*((1.d0+p**2)*(dtheta-theta/al1*dal)/al1)
-        duc(6)=duc(6)+2.d0*cuc*p*p0*theta/al1
-        ddg=-cave*(danp*uc+anp*duc)
-        dddpx=-.5d0*(transi(2,1:6)*dg+ddpx*ddg)
-        dddpx(2)=dddpx(2)+.5d0*dg
-        dddpy=-.5d0*(transi(4,1:6)*dg+ddpy*ddg)
-        dddpy(4)=dddpy(4)+.5d0*dg
-        tr1(1,1:6)=dddpx*c1
-        tr1(1,6)=tr1(1,6)-ddpx*c1/pr
-        tr1(3,1:6)=dddpy*c1
-        tr1(3,6)=tr1(3,6)-ddpy*c1/pr
-        tr1(2,1:6)=transi(2,1:6)*dg/pr+px*ddg/pr+dddpx
-        tr1(2,6)=tr1(2,6)-px*dg/pr**2
-        tr1(4,1:6)=transi(4,1:6)*dg/pr+py*ddg/pr+dddpy
-        tr1(4,6)=tr1(4,6)-py*dg/pr**2
-c     derivative of dz has been ignored.
-        tr1(5,1:6)=0.d0
-        tr1(6,1:6)=ddg
-        if(bzhr0 .ne. 0.d0)then
-          tr1(:,3)=tr1(:,3)+bzhr0*tr1(:,2)
-          tr1(:,1)=tr1(:,1)-bzhr0*tr1(:,4)
-        endif
+        tr2=transi
         if(bzh .ne. 0.d0)then
-          tr1(2,:)=tr1(2,:)-bzh  *tr1(3,:)
-          tr1(4,:)=tr1(4,:)+bzh  *tr1(1,:)
+          tr2(2,:)=tr2(2,:)+bzh*tr2(3,:)
+          tr2(4,:)=tr2(4,:)-bzh*tr2(1,:)
         endif
-        call tmuld6(trans,tr1)
-        tr1(1,1)=tr1(1,1)+1.d0
-        tr1(2,2)=tr1(2,2)+1.d0
-        tr1(3,3)=tr1(3,3)+1.d0
-        tr1(4,4)=tr1(4,4)+1.d0
-        tr1(5,5)=tr1(5,5)+1.d0
-        tr1(6,6)=tr1(6,6)+1.d0
-        call tmulbs(beam,tr1,.false.,calint)
-        de=anp*uc**2*cuu
-        pxm=pxi+px
-        pym=pyi+py
-        b=bzh*.5d0
-        dbeam=0.d0
-        dbeam(3)=(beam(3)+b*(2.d0*beam(5)+b*beam(6))
-     $       +(pxm**2+pxi**2+px**2)/6.d0)*de
-        dbeam(8) =(beam(8)-b*(beam(2)-beam(10)+b*beam(4))
-     $       +(pxm*pym+pxi*pyi+px*py)/6.d0)*de
-        dbeam(10)=(beam(10)+b*(-2.d0*beam(7)+b*beam(1))
-     $       +(pym**2+pyi**2+py**2)/6.d0)*de
-        dbeam(17)=.5d0*pxm*de
-        dbeam(19)=.5d0*pym*de
-        dbeam(21)=de
-        beam(1:21)=beam(1:21)+dbeam
-        if(calint)then
-          beam(22:42)=beam(22:42)+dbeam
+        ddpz=(tr2(6,:)*pr-tr2(2,:)*px-tr2(4,:)*py)/pz
+        ppzb=ppz+(bsi+bzh*2.d0*al)/pr
+        dpxi=(/0.d0,1.d0,bzhr0,0.d0,0.d0,0.d0/)
+        dpyi=(/-bzhr0,0.d0,0.d0,1.d0,0.d0,0.d0/)
+        dpz00=(-pxi*dpxi-pyi*dpyi)/pz00
+        dpz00(6)=dpz00(6)+pr/pz00
+        dpxr0=cp*dpxi+sp*dpz00
+        dpz0=(-pxr0*dpxr0-pyi*dpyi)/pz0
+        dpz0(6)=dpz0(6)+pr/pz0
+        dppx=tr2(4,:)*pz0+py*dpz0-ddpz*pyi-pz*dpyi
+        dppy=ddpz*pxr0+pz*dpxr0-tr2(2,:)*pz0-px*dpz0
+        dppzb=tr2(2,:)*pyi+px*dpyi-tr2(4,:)*pxr0-py*dpxr0
+        dh1r=p*p0/h1**2
+        if(ppa .ne. 0.d0)then
+          dppa=(ppx*dppx+ppy*dppy+ppz*dppzb)/ppa
+          dal=-tr2(5,:)
+          dal(5)=dal(5)+1.d0
+          das=1.d0/sqrt(1.d0-ppa**2)
+          dtheta=dppa*das
+          dtheta(6)=dtheta(6)-2.d0*ppa/pr**3*das
+          danp=anrad*h1*dtheta
+          danp(6)=danp(6)+anp*dh1r
+          duc=uc*(dtheta/theta-dal/al1)
+          duc(6)=duc(6)+3.d0*uc*dh1r
+          ddg=-cave*(danp*uc+anp*duc)
+          dddpx=-.5d0*((tr2(2,:)-dpxr0)*dg+ddpx*ddg)
+          dddpy=-.5d0*((tr2(4,:)-dpyi )*dg+ddpy*ddg)
+          tr1(1,:)=c1*dddpx
+          tr1(1,6)=tr1(1,6)-ddpx/pr
+          tr1(3,:)=c1*dddpy
+          tr1(3,6)=tr1(3,6)-ddpy/pr
+          tr1(2,:)=(tr2(2,:)*dg+px*ddg)/pr+dddpx
+          tr1(2,6)=tr1(2,6)-px*dg/pr
+          tr1(4,:)=(tr2(4,:)*dg+py*ddg)/pr+dddpy
+          tr1(4,6)=tr1(4,6)-py*dg/pr
+c     derivative of dz has been ignored.
+          tr1(5,:)=0.d0
+          tr1(6,:)=ddg
+c          write(*,'(a,1p8g15.7)')'tradke  ',tr2(2,:)
+c          write(*,'(a,1p8g15.7)')' ddg    ',ddg,dg
+c          write(*,'(a,1p8g15.7)')' danp   ',danp,anp
+c          write(*,'(a,1p8g15.7)')' duc    ',duc,uc
+c          write(*,'(a,1p8g15.7)')' dtheta ',dtheta,theta
+c          write(*,'(a,1p8g15.7)')' dppy   ',dppy,ppy
+c          write(*,'(a,1p8g15.7)')' dpxr0  ',dpxr0,pxr0
+c          do i=1,6
+c            write(*,'(1p6g15.7)')tr1(i,:)
+c          enddo
+          if(bzh .ne. 0.d0)then
+            tr1(2,:)=tr1(2,:)-bzh  *tr1(3,:)
+            tr1(4,:)=tr1(4,:)+bzh  *tr1(1,:)
+          endif
+          call tmuld6(trans,tr1)
+          tr1(1,1)=tr1(1,1)+1.d0
+          tr1(2,2)=tr1(2,2)+1.d0
+          tr1(3,3)=tr1(3,3)+1.d0
+          tr1(4,4)=tr1(4,4)+1.d0
+          tr1(5,5)=tr1(5,5)+1.d0
+          tr1(6,6)=tr1(6,6)+1.d0
+          call tmulbs(beam,tr1,.false.,calint)
+          de=anp*uc**2*cuu
+          pxm=pxi+px
+          pym=pyi+py
+          pxh=pxm*.5d0
+          pyh=pym*.5d0
+          b=bzh*.5d0
+          dbeam=0.d0
+          dbeam(3)=(beam(3)+b*(2.d0*beam(5)+b*beam(6))
+     $         +(pxm**2+pxi**2+px**2)/6.d0)*de
+          dbeam(8) =(beam(8)-b*(beam(2)-beam(10)+b*beam(4))
+     $         +(pxm*pym+pxi*pyi+px*py)/6.d0)*de
+          dbeam(10)=(beam(10)+b*(-2.d0*beam(7)+b*beam(1))
+     $         +(pym**2+pyi**2+py**2)/6.d0)*de
+          dbeam(17)=pxh*de
+          dbeam(19)=pyh*de
+          dbeam(21)=de
+          beam(1:21)=beam(1:21)+dbeam
+          if(calint)then
+            beam(22:42)=beam(22:42)+dbeam
+          endif
+        endif
+        if(calpol)then
+          pxh=(pxr0+px)/pr*.5d0
+          pyh=(pyi+py)/pr*.5d0
+          dpxh=(tr2(2,:)+dpxr0)/pr*.5d0
+          dpxh(6)=dpxh(6)-pxh/pr
+          dpyh=(tr2(4,:)+dpyi)/pr*.5d0
+          dpyh(6)=dpyh(6)-pyh/pr
+          pzh=1.d0+pxy2dpz(pxh,pyh)
+          dpzh=-(pxh*dpxh+pyh*dpyh)/pzh
+          bp=(ppx*pxh+ppy*pyh+ppzb*pzh)/pr
+          dbp=(dppx*pxh+ppx*dpxh+dppy*pyh
+     $         +ppy*dpyh+dppzb*pzh+ppzb*dpzh)/pr
+          dbp(6)=dbp(6)-bp/pr
+          btx=ppx/pr-bp*pxh
+          bty=ppy/pr-bp*pyh
+          btz=ppzb/pr-bp*pzh
+          dblx=dbp*pxh+bp*dpxh
+          dbly=dbp*pyh+bp*dpyh
+          dblz=dbp*pzh+bp*dpzh
+          dbtx=dppx/pr-dblx
+          dbtx(6)=dbtx(6)-ppx/pr**2
+          dbty=dppy/pr-dbly
+          dbty(6)=dbty(6)-ppy/pr**2
+          dbtz=dppzb/pr-dblz
+          dbtz(6)=dbtz(6)-ppzb/pr**2
+          ct=h1*gspin
+          dct=ct*dh1r
+          ct=ct+1.d0
+          dgx=ct*dbtx+cl*dblx
+          dgx(6)=dgx(6)+dct*btx
+          dgy=ct*dbty+cl*dbly
+          dgy(6)=dgy(6)+dct*bty
+          dgz=ct*dbtz+cl*dblz
+          dgz(6)=dgz(6)+dct*btz
+          srot(1,4:9)=srot(1,4:9)
+     $         +dgx(1)*transr(1,:)+dgx(2)*transr(2,:)
+     $         +dgx(3)*transr(3,:)+dgx(4)*transr(4,:)
+     $         +dgx(5)*transr(5,:)+dgx(6)*transr(6,:)
+          srot(2,4:9)=srot(2,4:9)
+     $         +dgy(1)*transr(1,:)+dgy(2)*transr(2,:)
+     $         +dgy(3)*transr(3,:)+dgy(4)*transr(4,:)
+     $         +dgy(5)*transr(5,:)+dgy(6)*transr(6,:)
+          srot(3,4:9)=srot(3,4:9)
+     $         +dgz(1)*transr(1,:)+dgz(2)*transr(2,:)
+     $         +dgz(3)*transr(3,:)+dgz(4)*transr(4,:)
+     $         +dgz(5)*transr(5,:)+dgz(6)*transr(6,:)
+          if(ppa .eq. 0.d0)then
+            a=1.d0
+          else
+            a=theta/ppa
+          endif
+          call sprotm(9,srot,
+     $         pxh/pr1,pyh/pr1,ppx,ppy,ppz,bsi,a,p2,h2,cp,sp)
         endif
       endif
- 1000 codr0(1:6)=cod(1:6)
+      codr0(1:6)=cod(1:6)
       transr=trans(:,1:6)
       bzhr0=bzh
+      bsi=0.d0
       return
       end

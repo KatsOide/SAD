@@ -12,7 +12,8 @@ SetAttributes[{OneTurnInformation,Orbit,Matrix,ExpandElementValues,
   OneTurnDampingMatrix,ExtendedTwissParameters,
   OneTurnExcitation,EquilibriumBeamMatrix,ClosedOrbit,
   NominalSpinTune,NominalPolarizationTime,
-  TransferMatrices,IntrabeamExcitation,SaveEMIT,AzimuthalModes},
+  TransferMatrices,IntrabeamExcitation,SaveEMIT,AzimuthalModes,
+  SpinTune,Polarization,PolarizationVector},
   Constant];
 
 BeginPackage[emit$`,tws$`,`];
@@ -48,7 +49,9 @@ With[{default={OneTurnInformation->False,
           {DampingRate->e[[2,{ipdampx,ipdampy,ipdampz}]],Emittances->e[[2,{ipemx,ipemy,ipemz}]],
             MomentumSpread->e[[2,ipsige]],BunchLength->e[[2,ipsigz]],
             TuneShiftByRadiation->e[[2,{ipdnux,ipdnuy,ipdnuz}]]/Pi/2,
-            NominalSpinTune->e[[2,ipnup]],NominalPolarizationTime->e[[2,iptaup]]}]];
+            NominalSpinTune->e[[2,ipnnup]],NominalPolarizationTime->e[[2,iptaup]],
+            SpinTune->e[[2,ipnup]],Polarization->e[[2,ipequpol]],
+            PolarizationVector->e[[2,{ippolx,ippoly,ippolz}]]}]];
       If[mode>0,
         r=Join[r,{
           OrbitAtEntrance->e[[3,1]],OneTurnTransferMatrix->e[[3,2]],

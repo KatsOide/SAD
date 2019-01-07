@@ -10,11 +10,11 @@
       type (sad_descriptor) kx,kx1,kx2,ks,kp
       type (sad_dlist), pointer :: klx,kl
       integer, parameter :: nkptbl = 6
-      integer*4, parameter :: npparamin=9,npnlatmin=30000
+      integer*4, parameter :: npparamin=9,npnlatmin=3000
       integer*8 kz,kzp,kzf,kaxl,ktfmalocp,ktfresetparticles,kdv,
      $     kpsx,kpsy,kpsz
       integer*4 isp1,irtc,narg,itfloc,outfl0,ld,ls,mc,npz,npa,np00,
-     $     ipr(100),npr,np1,fork_worker,iprid, ne,nend,
+     $     ipr(100),npr,np1,fork_worker,iprid, ne,nend,npara,
      $     npp,ipn,m,itfmessage,nt,mt,kseed,j,mcf
       integer*8 ikptblw,ikptblm
       real*8 trf00,p00,vcalpha0
@@ -111,6 +111,7 @@
       kwakep=0
       kwakeelm=0
       nwakep=0
+      npara=max(nparallel,1)
       if(wake)then
         call tffssetupwake(icslfno(),irtc)
         if(irtc .ne. 0)then
@@ -119,7 +120,7 @@
         if(nwakep .eq. 0)then
           wake=.false.
         else
-          nparallel=1
+          npara=1
         endif
       endif
       ipn=0
@@ -137,20 +138,20 @@
         trpt=.true.
         call tlinit(npz,h0,rlist(ifgeo+12*(ls-1)))
       endif
-      if(nparallel .gt. 1)then
+      if(npara .gt. 1)then
         kseed=0
+c        write(*,*)'tftrack ',nparallel,npz,npparamin,
+c     $       ne,npnlatmin
         ne=ld-ls
         if(ne .le. 0)then
           ne=ne+nlat
         endif
-c        write(*,*)'tftrack ',nparallel,npz,npparamin,
-c     $       ne,npnlatmin
-        if(npz .gt. nparallel*npparamin
-     $       .and. npz .gt. npnlatmin/ne)then
+        npara=min(npara,npz/npparamin+1,ne*npz/npnlatmin+1)
+        if(npara .gt. 1)then
           irtc=1
           ikptblm=ktfallocshared(npz*((nkptbl+1)/2))
-          npr=nparallel-1
-          np1=npz/nparallel+1
+          npr=npara-1
+          np1=npz/npara+1
           ipn=0
           npr=0
           do while(ipn+np1 .lt. npz)
@@ -235,6 +236,7 @@ c      call tclrparaall
           nt=nt+1
           mt=mt-1
         enddo
+c        write(*,*)'tftrack-1 ',mt,ls,ld
         if(ld .le. ls)then
           normal=.false.
         elseif(mt .ge. 1 .and. npa .gt. 0)then

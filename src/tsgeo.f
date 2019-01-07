@@ -243,7 +243,7 @@ c        snchi3=sin(chi3)
      $     zf,gf,dvf,bzs,ak1,ftable(4),dir,bzs0,tfbzs,db,gi,
      $     chi2i,cchi2i,schi2i,chi1i,cchi1i,schi1i,g1,yf,pzf,
      $     sxf,syf,szf,bsi,
-     $     trans(6,12),cod(6),beam(42),geo1(3,3)
+     $     trans(6,12),cod(6),beam(42),geo1(3,3),srot(3,3)
       logical*4 seg,dirf
       i0=i+(1-idir)/2
       i1=2*i+1-i0
@@ -355,7 +355,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         if(seg)then
 c     call tmulteseg(trans,cod,beam,i,cmp,bzs*dir,lal,1.d0,i)
         else
-          call tmulte1(trans,cod,beam,i,cmp,bzs*dir,1.d0,i)
+          call tmulte1(trans,cod,beam,srot,i,cmp,bzs*dir,1.d0,i)
         endif
         call setdirelc(i,direlc(i)*dir)
         xf=cod(1)

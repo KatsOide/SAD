@@ -221,17 +221,13 @@ c            dp=g(i)*(2.d0+g(i))
         call tbendicorr(akn*.5d0,aln*.5d0,phin*.5d0)
         call tbendibody(aln)
         if(krad)then
-          px0(i)=px0(i)+phin
           bsi(i)=bsi(i)+akn/aln*xi*yi
-          sx0=sx(i)
-          sx(i)= sx0*cphin+sz(i)*sphin
-          sz(i)=-sx0*sphin+sz(i)*cphin
           if(rfluct)then
             call tradkf1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
-     $           px0(i),py0(i),zr0(i),bsi(i),aln)
+     $           px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln)
           else
             call tradk1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
-     $           px0(i),py0(i),zr0(i),bsi(i),aln)
+     $           px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln)
           endif
           px0(i)=pxi
           py0(i)=pyi
@@ -242,16 +238,12 @@ c            dp=g(i)*(2.d0+g(i))
           call tbendicorr(akn,aln,phin)
           call tbendibody(aln)
           if(krad .and. n .ne. ndiv)then
-            px0(i)=px0(i)+phin
-            sx0=sx(i)
-            sx(i)= sx0*cphin+sz(i)*sphin
-            sz(i)=-sx0*sphin+sz(i)*cphin
             if(rfluct)then
               call tradkf1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
-     $             px0(i),py0(i),zr0(i),bsi(i),aln)
+     $             px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln)
             else
               call tradk1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
-     $             px0(i),py0(i),zr0(i),bsi(i),aln)
+     $             px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln)
             endif
             px0(i)=pxi
             py0(i)=pyi
@@ -291,14 +283,8 @@ c     $       f1r,f2r,al,al,-1.d0)
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
       endif
       if(krad)then
-        do i=1,np
-          px0(i)=px0(i)+phin
-          bsi(i)=bsi(i)-akn/aln*x(i)*y(i)
-          sx0=sx(i)
-          sx(i)= sx0*cphin+sz(i)*sphin
-          sz(i)=-sx0*sphin+sz(i)*cphin
-        enddo
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,aln)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       px0,py0,zr0,cphin,sphin,bsi,aln)
       endif
 c      if(dphiy .ne. 0.d0)then
 c        do i=1,np

@@ -64,7 +64,7 @@
      $     amus,damp,dj,dpndim,emix0,emiy0,
      $     fz,phi0s,res,sige,sigea,vx,vy,w,
      $     emixp,emiyp,cod0(6)
-      real*8 beam(42),trans(6,12),cod(6),
+      real*8 beam(42),trans(6,12),cod(6),srot(3,3),
      $     beams(10,-ndims:ndims),
      $     trads(5,5,-ndims:ndims),
      $     tws(ntwissfun,-ndims:ndims),
@@ -147,7 +147,7 @@ c     $     dhc(4,mphi2,ndp),dhs(4,mphi2,ndp),
         call tinitr(trans)
         trans(:,7:12)=0.d0
         beam(1:21)=0.d0
-        call tturne(trans,cod,beam,int8(0),int8(0),int8(0),
+        call tturne(trans,cod,beam,srot,int8(0),int8(0),int8(0),
      $       .false.,.false.,.false.)
         if(fndcod)then
           cod(1:4)=cod(1:4)-codin(1:4)

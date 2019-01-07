@@ -1,10 +1,10 @@
-      subroutine tmulte(trans,cod,beam,l,al,ak,bz0,
+      subroutine tmulte(trans,cod,beam,srot,l,al,ak,bz0,
      $     phia,psi1,psi2,apsi1,apsi2,
      1     dx,dy,dz,chi1,chi2,theta,dtheta,
      $     eps0,enarad,fringe,
      $     f1in,f2in,f1out,f2out,mfring,
      $     fb1,fb2,bfrm,vc,harm,phi,freq,wakew1,
-     $     rtaper,autophi,ld)
+     $     rtaper,autophi)
       use tfstk
       use ffs_flag
       use ffs_pointer , only:gammab
@@ -27,7 +27,7 @@
      $     av,dpxa,dpya,dpx,dpy,dav,davdz,davdp,ddhdx,ddhdy,ddhdp,
      $     ddhdz,wi,dv,s0,fb1,fb2,rtaper,cod60,cod10,cod30,
      $     trans10(6,6)
-      real*8 trans(6,12),trans1(6,6),cod(6),beam(42)
+      real*8 trans(6,12),trans1(6,6),cod(6),beam(42),srot(3,3)
       complex*16 cx,cx0,cx2,cr,cr1
       real*8 fact(0:nmult),an(0:nmult)
       complex*16 ak(0:nmult),akn(0:nmult),ak0n
@@ -60,10 +60,10 @@
      $0.05d0,
      $0.047619047619047619048d0/
       if(phia .ne. 0.d0)then
-        call tmultae(trans,cod,beam,al,ak,
+        call tmultae(trans,cod,beam,srot,al,ak,
      $       phia,psi1,psi2,apsi1,apsi2,bz0,
      1       dx,dy,theta,dtheta,
-     $       eps0,enarad,fringe,fb1,fb2,mfring,l,ld)
+     $       eps0,enarad,fringe,fb1,fb2,mfring,l)
         return
       endif
       if(imag(ak(1)) .eq. 0.d0)then
@@ -72,10 +72,10 @@
         theta1=atan2(imag(ak(1)),dble(ak(1)))*.5d0
       endif
       call tsolrot(trans,cod,beam,al,bz0,dx,dy,dz,
-     $     chi1,chi2,theta+dtheta+theta1,bxs,bys,bzs,.true.,ld)
+     $     chi1,chi2,theta+dtheta+theta1,bxs,bys,bzs,.true.)
       krad=enarad .and. al .ne. 0.d0
       if(krad)then
-        call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0)
+        call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
       endif
       cr1=dcmplx(cos(theta1),-sin(theta1))
       akn(0)=(ak(0)*cr1+dcmplx(bys,bxs)*al)*rtaper
@@ -89,8 +89,9 @@
       if(vc .ne. 0.d0 .or. gammab(l+1) .ne. gammab(l))then
         nmmax=0
       else
-        call tdrife(trans,cod,beam,al,bzs,dble(akn(0)),imag(akn(0)),
-     $       .true.,krad,calpol,irad,ld)
+        call tdrife(trans,cod,beam,srot,
+     $       al,bzs,dble(akn(0)),imag(akn(0)),al,
+     $       .true.,krad,irad)
         dhg=0.d0
         go to 1000
       endif
@@ -197,13 +198,13 @@
         endif
         if(bfrm .and. ak0n .ne. (0.d0,0.d0))then
           if(mfring .eq. 1 .or. mfring .eq. 3)then
-            call tbfrme(trans,cod,beam,ak0n/al1,fb1,.true.,ld)
+            call tbfrme(trans,cod,beam,ak0n/al1,fb1,.true.)
           elseif(mfring .ne. 2)then
-            call tbfrme(trans,cod,beam,ak0n/al1,0.d0,.true.,ld)
+            call tbfrme(trans,cod,beam,ak0n/al1,0.d0,.true.)
           endif
         endif
         if(mfring .eq. 1 .or. mfring .eq. 3)then
-          call tqlfre(trans,cod,beam,al1,ak1,f1in,f2in,bzs,ld)
+          call tqlfre(trans,cod,beam,al1,ak1,f1in,f2in,bzs)
         endif
         nmmin=2
       else
@@ -218,18 +219,11 @@
           cod30=cod(3)
           cod60=cod(6)
           trans10=trans(:,1:6)
-          call tsolque(trans,cod,beam,al1,ak1,
+          call tsolque(trans,cod,beam,srot,al1,ak1,
      $         bzs,dble(ak0n),imag(ak0n),
-     $         eps0,krad,radcod,calpol,irad,ld)
+     $         eps0,krad,radcod,calpol,irad)
           call tgetdvh(dgb,dv)
           cod(5)=cod(5)+dv*al1
-c          if(abs(trans(2,3)).gt. 2.d0 .or.
-c     $         abs(trans(1,3)) .gt. 2.d0)then
-c            write(*,'(a,i5,1p8g14.6)')'tmulte-02 ',m,
-c     $           cod(1),cod(3),cod(6),dy,ak1,ak(2)
-c            write(*,'(1p6g14.6)')trans(:,1:6)
-c            write(*,'(1p6g14.6)')trans10
-c          endif
         endif
         ak1=dble(akn(1))
         al1=aln
@@ -255,6 +249,14 @@ c          endif
         trans1(4,3)= dble(cx2)+w1n
         cod(2)=cod(2)-dble(cx)+w1n*cod(1)
         cod(4)=cod(4)+imag(cx)+w1n*cod(3)
+        if(m .eq. 1)then
+          bsi=bsi+imag(cx)/al1
+        else
+          bsi=0.d0
+        endif
+        if(m .eq. ndiv)then
+          bsi=bsi-imag(cx)/al1
+        endif
         if(acc)then
           p1=p0*(1.d0+cod(6))
           h1=p2h(p1)
@@ -367,21 +369,21 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
         endif
       enddo
       if(nmmin .eq. 2)then
-        call tsolque(trans,cod,beam,al1*.5d0,ak1*.5d0,
+        call tsolque(trans,cod,beam,srot,al1*.5d0,ak1*.5d0,
      $       bzs,dble(ak0n)*.5d0,imag(ak0n)*.5d0,
-     $       eps0,.false.,radcod,calpol,irad,ld)
+     $       eps0,.false.,radcod,calpol,irad)
         call tgetdvh(dgb,dv)
         cod(5)=cod(5)+dv*al1*.5d0
       endif
       if(al .ne. 0.d0)then
         if(mfring .eq. 2 .or. mfring .eq. 3)then
-          call tqlfre(trans,cod,beam,al1,ak1,-f1out,f2out,bzs,ld)
+          call tqlfre(trans,cod,beam,al1,ak1,-f1out,f2out,bzs)
         endif
         if(bfrm .and. ak0n .ne. (0.d0,0.d0))then
           if(mfring .eq. 2 .or. mfring .eq. 3)then
-            call tbfrme(trans,cod,beam,-ak0n/al1,fb2,.false.,ld)
+            call tbfrme(trans,cod,beam,-ak0n/al1,fb2,.false.)
           elseif(mfring .ne. 1)then
-            call tbfrme(trans,cod,beam,-ak0n/al1,0.d0,.false.,ld)
+            call tbfrme(trans,cod,beam,-ak0n/al1,0.d0,.false.)
           endif
         endif
         if(fringe .and. mfring .ne. 1)then
@@ -395,11 +397,11 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
         endif
       endif
       if(krad)then
-        call tradke(trans,cod,beam,al1*.5d0,0.d0,bzs*.5d0)
+        call tradke(trans,cod,beam,srot,al1*.5d0,0.d0,bzs*.5d0)
       endif
  1000 continue
       call tsolrot(trans,cod,beam,al,bz,dx,dy,dz,
-     $     chi1,chi2,theta+dtheta+theta1,bxs,bys,bzs,.false.,ld)
+     $     chi1,chi2,theta+dtheta+theta1,bxs,bys,bzs,.false.)
       if(dhg .ne. 0.d0)then
         rg2=p0/gammab(l+1)
 c        rg=sqrt(rg2)

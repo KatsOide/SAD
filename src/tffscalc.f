@@ -663,9 +663,14 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
       use tfstk
       use ffs_pointer
       use mackw
+      use tmacro, only:nlat
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 lp,k
+      if(lp .ge. nlat)then
+        tffsmarkoffset=0.d0
+        return
+      endif
       call compelc(lp,cmp)
       k=kytbl(kwOFFSET,idtype(cmp%id))
       if(k .gt. 0)then

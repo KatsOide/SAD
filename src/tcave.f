@@ -1,6 +1,6 @@
-      subroutine tcave(trans,cod,beam,l,
+      subroutine tcave(trans,cod,beam,srot,l,
      $     al,vc,harm,phi,freq,dx,dy,theta,v10,v20,v11,v02,
-     $     fringe,mfring,autophi,ld)
+     $     fringe,mfring,autophi)
       use tfstk
       use ffs_flag
       use tmacro
@@ -10,7 +10,7 @@
       parameter (eps=1.d-2)
       parameter (oneev=1.d0+3.83d-12)
       integer*4 l,ld,ndiv,n,mfring
-      real*8 trans(6,12),cod(6),beam(42)
+      real*8 trans(6,12),cod(6),beam(42),srot(3,3)
       real*8 trans1(6,6)
       real*8 al,vc,harm,phi,freq,w,v,vn,vcn,p1,h1,
      $     aln,phis,phic,dhg,v1,t,phii,dh,a,
@@ -20,7 +20,8 @@
      $     wi,offset1,va,sp,cp,av,dpxa,dpya,dav,davdz,davdp,
      $     dpx,dpy,dv,s0
       logical*4 fringe,autophi
-      call tchge(trans,cod,beam,-dx,-dy,theta,0.d0,0.d0,.true.,ld)
+      call tchge(trans,cod,beam,srot,
+     $     -dx,-dy,theta,0.d0,0.d0,.true.)
       if(harm .eq. 0.d0)then
         w=pi2*freq/c
       else
@@ -77,11 +78,11 @@ c      write(*,'(a,1p5g15.7)')'tcave ',phi,phis,phic,trf0
         do n=1,ndiv
          if(al .ne. 0.d0)then
             if(n .eq. 1)then
-              call tdrife(trans,cod,beam,aln*.5d0,
-     $             0.d0,0.d0,0.d0,.true.,.false.,calpol,irad,ld)
+              call tdrife(trans,cod,beam,srot,aln*.5d0,
+     $             0.d0,0.d0,0.d0,0.d0,.true.,.false.,irad)
             else
-              call tdrife(trans,cod,beam,aln,
-     $             0.d0,0.d0,0.d0,.true.,.false.,calpol,irad,ld)
+              call tdrife(trans,cod,beam,srot,aln,
+     $             0.d0,0.d0,0.d0,0.d0,.true.,.false.,irad)
               call tgetdvh(dgb,dv)
               cod(5)=cod(5)+dv*aln
             endif
@@ -160,8 +161,8 @@ c          trans1(6,6)=(p1-a*t/p1/h1)/h1/v2
           dgb=dgb+dhg
         enddo
         if(al .ne. 0.d0)then
-          call tdrife(trans,cod,beam,aln*.5d0,
-     $         0.d0,0.d0,0.d0,.true.,.false.,calpol,irad,ld)
+          call tdrife(trans,cod,beam,srot,aln*.5d0,
+     $         0.d0,0.d0,0.d0,0.d0,.true.,.false.,irad)
           call tgetdvh(dgb,dv)
           cod(5)=cod(5)+dv*aln*.5d0
           if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
@@ -177,8 +178,8 @@ c          trans1(6,6)=(p1-a*t/p1/h1)/h1/v2
         ddvcacc=ddvcacc+vc*sp*w**2
         vcacc=vcacc-vc*sp
         if(al .ne. 0.d0)then
-          call tdrife(trans,cod,beam,al,
-     $         0.d0,0.d0,0.d0,.true.,.false.,calpol,irad,ld)
+          call tdrife(trans,cod,beam,srot,al,
+     $         0.d0,0.d0,0.d0,0.d0,.true.,.false.,irad)
         endif
       endif
       if(dhg .ne. 0.d0)then
@@ -201,7 +202,8 @@ c        rg=sqrt(rg2)
         call tphyzp
         call tesetdv(cod(6))
       endif
-      call tchge(trans,cod,beam,dx,dy,-theta,0.d0,0.d0,.false.,ld)
+      call tchge(trans,cod,beam,srot,
+     $     dx,dy,-theta,0.d0,0.d0,.false.)
 c      write(*,'(a,i5,1p6g15.7)')'tcave ',l+1,dhg,rg2,
 c     $     trans(5,5),trans(5,6),trans(6,5),trans(6,6)
       return

@@ -83,7 +83,8 @@ c          p=(1.d0+g(i))**2
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
       endif
       if(enarad)then
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,alr)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       px0,py0,zr0,1.d0,0.d0,bsi,alr)
       endif
       include 'inc/TEXIT.inc'
       return
@@ -337,7 +338,8 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
         call ttfrin(np,x,px,y,py,z,g,nord,-ak,al,0.d0)
       endif
       if(enarad)then
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,al)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       px0,py0,zr0,1.d0,0.d0,bsi,al)
       endif
       include 'inc/TEXIT.inc'
       return

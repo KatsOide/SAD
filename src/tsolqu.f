@@ -307,7 +307,7 @@ c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
           alr=aln
           if(n .ne. ndiv)then
             call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,
-     $           px0,py0,zr0,bsi,alr)
+     $           px0,py0,zr0,1.d0,0.d0,bsi,alr)
             px0=px
             py0=py
             zr0=z
@@ -395,7 +395,7 @@ c            dpz=-ap/(1.d0+sqrt(1.d0-ap))
           alr=aln
           if(n .ne. ndiv)then
             call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,
-     $           px0,py0,zr0,bsi,alr)
+     $           px0,py0,zr0,1.d0,0.d0,bsi,alr)
             px0=px
             py0=py
             zr0=z

@@ -269,14 +269,14 @@
       
       end module
 
-      recursive subroutine tsolque(trans,cod,beam,al,ak,
-     $     bz0,ak0x,ak0y,eps0,enarad,radcod,calpol,irad,ld)
+      recursive subroutine tsolque(trans,cod,beam,srot,al,ak,
+     $     bz0,ak0x,ak0y,eps0,enarad,radcod,calpol,irad)
       use tsolz
       use tmacro, only:bradprev
       implicit none
       type(tzparam) tz
-      integer*4 n,ndiv,ld,irad
-      real*8 trans(6,12),cod(6),beam(42),trans1(6,6)
+      integer*4 n,ndiv,irad
+      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,3)
       real*8 al,ak,eps0,bz,a,b,c,d,akk,eps,bzh,
      $     bw,dw,ak0x,ak0y,dx0,dy0,
      $     xi0,yi0,dy,dpy,
@@ -289,7 +289,7 @@
      $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
      $     u1p,u1wp,u2p,u2wp,v1p,v1wp,v2p,v2wp,
      $     dv,dvdp,xi,yi,pxi,pyi,xf,yf,pxf,pyf,
-     $     tbrhoz,bx,by,bxy,b1,br,bz0,cw,phieps,
+     $     tbrhoz,b1,br,bz0,cw,phieps,
      $     awu,dwu,awup,dwup,dz1,dz2,dz1p,dz2p
       logical*4 enarad,calpol,radcod
       external tbrhoz
@@ -317,14 +317,14 @@
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
 
       if(ak .eq. 0.d0)then
-        call tdrife(trans,cod,beam,al,
-     $       bz0,ak0x,ak0y,.true.,enarad,.false.,irad,ld)
+        call tdrife(trans,cod,beam,srot,al,
+     $       bz0,ak0x,ak0y,al,.true.,enarad,irad)
         return
       endif
       if(al*ak .lt. 0.d0)then
         call texchg(trans,cod,beam,1.d0)
-        call tsolque(trans,cod,beam,al,-ak,
-     $       bz0,ak0y,-ak0x,eps0,enarad,radcod,calpol,irad,ld)
+        call tsolque(trans,cod,beam,srot,al,-ak,
+     $       bz0,ak0y,-ak0x,eps0,enarad,radcod,calpol,irad)
         call texchg(trans,cod,beam,-1.d0)
 c        write(*,'(a,1p8g13.5)')'tsolque-out ',ak,bz,cod
         return
@@ -352,9 +352,9 @@ c     end   initialize for preventing compiler warning
       call tzsetparamp(tz)
       do n=1,ndiv
         if(n .eq. 1)then
-          call tqente(trans,cod,beam,aln*.5d0,bz,calpol,irad,ld)
+          call tqente(trans,cod,beam,aln*.5d0,bz,calpol,irad)
         else
-          call tqente(trans,cod,beam,aln,bz,calpol,irad,ld)
+          call tqente(trans,cod,beam,aln,bz,calpol,irad)
         endif
         xi0=cod(1)
         yi0=cod(3)
@@ -542,7 +542,7 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
           call tmulbs(beam ,trans1,.false.,.true.)
         endif
       enddo
-      call tqente(trans,cod,beam,aln*.5d0,bz,calpol,irad,ld)
+      call tqente(trans,cod,beam,aln*.5d0,bz,calpol,irad)
       if(enarad)then
 c        bx= b1*cod(3)
 c        by= b1*cod(1)
@@ -550,7 +550,7 @@ c        bxy= b1
 c        call trade(trans,beam,cod,bx,by,bz*br,bz,
 c     $       0.d0,bxy,0.d0,0.d0,
 c     $       .5d0*aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
-        call tradke(trans,cod,beam,al,0.d0,bzh)
+        call tradke(trans,cod,beam,srot,al,0.d0,bzh)
       endif
       bradprev=0.d0
       return

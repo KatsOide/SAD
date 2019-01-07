@@ -1,22 +1,22 @@
-      subroutine ttcave(trans,cod,beam,al,ak,harm,phi,freq,
-     $     dx,dy,theta,ld)
+      subroutine ttcave(trans,cod,beam,srot,al,ak,harm,phi,freq,
+     $     dx,dy,theta)
       use ffs_flag
       use tmacro
       implicit none
-      integer*4 ld
-      real*8 trans(6,12),cod(6),beam(42),trans1(6,13),
+      real*8 trans(6,12),cod(6),beam(42),trans1(6,13),srot(3,3),
      $     al,ak,harm,phi,freq,dx,dy,theta,w,v,p1,h1,dh1,phic,v1,t,
      $     phii,cosp,sinp,dh,dh2,h2,p2,pf,v2,a
       if(.not. rfsw)then
-        call tdrife(trans,cod,beam,al,0.d0,0.d0,0.d0,
-     $       .true.,.false.,calpol,irad,ld)
+        call tdrife(trans,cod,beam,srot,al,0.d0,0.d0,0.d0,0.d0,
+     $       .true.,.false.,irad)
         return
       endif
       if(al .ne. 0.d0)then
-        call tdrife(trans,cod,beam,al*.5d0,0.d0,0.d0,0.d0,
-     $       .true.,.false.,calpol,irad,ld)
+        call tdrife(trans,cod,beam,srot,al*.5d0,0.d0,0.d0,0.d0,0.d0,
+     $       .true.,.false.,irad)
       endif
-      call tchge(trans,cod,beam,-dx,-dy,theta,0.d0,0.d0,.true.,ld)
+      call tchge(trans,cod,beam,srot,
+     $     -dx,-dy,theta,0.d0,0.d0,.true.)
       if(harm .eq. 0.d0)then
         w=pi2*freq/c
       else
@@ -62,10 +62,11 @@ c      p2=sqrt((h2-1.d0)*(h2+1.d0))
       cod(5)=-t*v2
       cod(2)=cod(2)-ak*sinp
       call tesetdv(cod(6))
-      call tchge(trans,cod,beam, dx, dy,-theta,0.d0,0.d0,.false.,ld)
+      call tchge(trans,cod,beam,srot,
+     $     dx, dy,-theta,0.d0,0.d0,.false.)
       if(al .ne. 0.d0)then
-        call tdrife(trans,cod,beam,al*.5d0,0.d0,0.d0,0.d0,
-     $       .true.,.false.,calpol,irad,ld)
+        call tdrife(trans,cod,beam,srot,al*.5d0,0.d0,0.d0,0.d0,0.d0,
+     $       .true.,.false.,irad)
       endif
       return
       end

@@ -1,8 +1,7 @@
-      subroutine tinse(trans,cod,beam,trx,ld)
+      subroutine tinse(trans,cod,beam,trx)
       use ffs_flag
       use tmacro
       implicit none
-      integer*4 ld      
       real*8 trans(6,12),cod(6),beam(42),trx(6,7),trans1(6,13),
      $     x1,px1,y1,py1
       trans1(:,7:12)=0.d0

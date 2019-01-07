@@ -576,12 +576,6 @@ c     1       +dpx3a*t4)/ph2**2)))
      $       +t4*(sqwh+sinw*t2))
      1       +dpx3a*t4)/ph2**2)))
         phi0a=phi0+da
-        if(krad)then
-          px0(i)=px0(i)*cphi0+pzi*sphi0
-          sx0=sx(i)
-          sx(i)= sx0*cphi0+sz(i)*sphi0
-          sz(i)=-sx0*sphi0+sz(i)*cphi0
-        endif
         y3=y1+py2*rhoe*phi0a
         z3=z2-phi0*(dp*rhob+drhob)-da*rhoe-dv(i)*al
         pv2sqi=1.d0/max(smin,1.d0-px3**2)
@@ -607,7 +601,8 @@ c        dpz4=-s/(1.d0+sqrt(1.d0-s))
         bsi(i)=bsi(i)-bsi2*y(i)/rhob
 100   continue
       if(krad)then
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,al)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       px0,py0,zr0,cphi0,sphi0,bsi,al)
         px0=px
         py0=py
         zr0=z

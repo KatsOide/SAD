@@ -1,14 +1,14 @@
-      subroutine tquade(trans,cod,beam,al,ak,
+      subroutine tquade(trans,cod,beam,srot,al,ak,
      1     dx,dy,theta,enarad,
      $     fringe,f1in,f2in,f1out,f2out,mfring,eps0,
-     $     kin,achro,next,ld)
+     $     kin,achro,next)
       use tfstk
       use ffs_flag
       use tmacro
       use temw
       implicit none
       integer*4 ld,ndiv,i,mfring,n,itgetqraddiv
-      real*8 trans(6,12),cod(6),beam(21),trans1(6,6),
+      real*8 trans(6,12),cod(6),beam(21),trans1(6,6),srot(3,3),
      $     al,ak,dx,dy,theta,f1in,f2in,f1out,f2out,
      $     eps0,f1r,f2r,eps,b1,akn,
      $     aln,pr,akk,phi,scphi,shcphi,sinc2,sinhc2,akr,
@@ -19,28 +19,26 @@
       real*8 , parameter:: pramin=1.d-4
       integer*4 , parameter :: ndivmax=512
       if(al .eq. 0.d0)then
-        call tthine(trans,cod,beam,4,
-     $       al,ak,dx,dy,theta,.false.,ld)
+        call tthine(trans,cod,beam,srot,4,
+     $       al,ak,dx,dy,theta,.false.)
         return
       elseif(ak .eq. 0.d0)then
-        if(enarad)then
-          call tsetr0(trans(:,1:6),cod(1:6),0.d0)
-        endif
-        call tdrife(trans,cod,beam,al,
-     $       0.d0,0.d0,0.d0,.true.,enarad,calpol,irad,ld)
+        call tdrife(trans,cod,beam,srot,al,
+     $       0.d0,0.d0,0.d0,0.d0,.true.,.false.,irad)
         return
       endif
-      call tchge(trans,cod,beam,-dx,-dy,theta,0.d0,0.d0,.true.,ld)
+      call tchge(trans,cod,beam,srot,
+     $     -dx,-dy,theta,0.d0,0.d0,.true.)
       krad=enarad .and. al .ne. 0.d0
       if(krad)then
-        call tsetr0(trans(:,1:6),cod(1:6),0.d0)
+        call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
       endif
       if(fringe .and. mfring .ge. 0. and. mfring .ne. 2)then
         call tqfrie(trans,cod,beam,ak,al,ld,0.d0)
       endif
       prev=bradprev .ne. 0.d0
       if(mfring .eq. 1 .or. mfring .eq. 3)then
-        call tqlfre(trans,cod,beam,al,ak,f1in,f2in,0.d0,ld)
+        call tqlfre(trans,cod,beam,al,ak,f1in,f2in,0.d0)
         f1r=f1in
       else
         f1r=0.d0
@@ -117,10 +115,10 @@ c          als=als+aln
         if(kin)then
           if(n .eq. 1)then
             call tqente(trans,cod,beam,aln*.5d0,0.d0,
-     $           calpol,irad,ld)
+     $           calpol,irad)
           else
             call tqente(trans,cod,beam,aln     ,0.d0,
-     $           calpol,irad,ld)
+     $           calpol,irad)
           endif
         endif
         xi =cod(1)
@@ -204,7 +202,10 @@ c          als=als+aln
         cod(2)=pxf*pr
         cod(4)=pyf*pr
         if(krad .and. n .ne. ndiv)then
-          call tradke(trans,cod,beam,aln,0.d0,0.d0)
+          if(n .eq. 1)then
+            bsi=ak/aln*xi*yi
+          endif
+          call tradke(trans,cod,beam,srot,aln,0.d0,0.d0)
           if(radcod)then
             if(achro)then
               pr=1.d0
@@ -240,7 +241,7 @@ c          als=als+aln
 100   continue
       if(kin)then
         call tqente(trans,cod,beam,aln*.5d0,0.d0,
-     $       calpol,irad,ld)
+     $       calpol,irad)
       endif
 c      if(krad)then
 c        bx= b1*cod(3)
@@ -254,14 +255,16 @@ c      endif
         bradprev=0.d0
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
-        call tqlfre(trans,cod,beam,al,ak,-f1out,f2out,0.d0,ld)
+        call tqlfre(trans,cod,beam,al,ak,-f1out,f2out,0.d0)
       endif
       if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
         call tqfrie(trans,cod,beam,-ak,al,ld,0.d0)
       endif
       if(krad)then
-        call tradke(trans,cod,beam,aln,0.d0,0.d0)
+        bsi=-ak/aln*cod(1)*cod(3)
+        call tradke(trans,cod,beam,srot,aln,0.d0,0.d0)
       endif
-      call tchge(trans,cod,beam,dx,dy,-theta,0.d0,0.d0,.false.,ld)
+      call tchge(trans,cod,beam,srot,
+     $     dx,dy,-theta,0.d0,0.d0,.false.)
       return
       end
