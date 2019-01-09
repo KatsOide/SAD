@@ -403,6 +403,7 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
       endif
       call tchge(trans,cod,beam,srot,
      $     -dx,-dy,theta,dtheta,phi0,.true.)
+c      write(*,'(a,1p6g15.7)')'tbende-1 ',trans(1,6),trans(2,6)
       if(enarad)then
         call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
       endif
@@ -583,9 +584,10 @@ c      write(*,'(a,1p6g15.7)')'tbende-8 ',cod
       if(enarad)then
         call tradke(trans,cod,beam,srot,aln,phin,0.d0)
       endif
+c      write(*,'(a,1p6g15.7)')'tbende-8 ',trans(1,6),trans(2,6)
       call tchge(trans,cod,beam,srot,
      $     dx,dy,-theta,-dtheta,-phi0,.false.)
-c      write(*,'(a,1p6g15.7)')'tbende-9 ',cod
+c      write(*,'(a,1p6g15.7)')'tbende-9 ',trans(1,6),trans(2,6)
       return
       end
 
