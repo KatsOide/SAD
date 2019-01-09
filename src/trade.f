@@ -256,7 +256,6 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
       use temw
       use tfstk, only:pxy2dpz,p2h
       use ffs_flag,only:radcod,calpol
-      use tspin,only:sprotm
       implicit none
       real*8 , intent(inout)::trans(6,12),cod(6),beam(42),
      $     srot(3,9)
@@ -267,15 +266,16 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
      $     c1,dpx,dpy,ddpx,ddpy,pxr0,ct,pz00,das,
      $     pr,px,py,pz,pz0,ppx,ppy,ppz,ppa,theta,
      $     p,h1,al1,anp,uc,dg,g,pr1,pxi,pyi,
-     $     p2,h2,de,cp,sp,b,pxm,pym,gi,a,dh1r,
-     $     pxh,pyh,pzh,ppzb,btx,bty,btz,dct,
+     $     p2,h2,de,cp,sp,b,pxm,pym,gi,dh1r,
+     $     pxh,pyh,pzh,ppzb,btx,bty,btz,dct,sinu,cosu,dcosu,
+     $     gx,gy,gz,gnx,gny,gnz,blx,bly,blz,
+     $     sx(9),sy(9),sux(9),suy(9),suz(9),sw(9),
      $     dpxh(6),dpyh(6),dpzh(6),bp,dbp(6),dpxr0(6),dpz0(6),
      $     dppx(6),dppy(6),dppzb(6),dblx(6),dbly(6),dblz(6),
      $     dbtx(6),dbty(6),dbtz(6),dgx(6),dgy(6),dgz(6),dpz00(6)
       real*8, parameter:: gmin=-0.9999d0,
      $     cave=8.d0/15.d0/sqrt(3.d0),cuu=11.d0/27.d0,
      $     cl=1.d0+gspin
-      integer*4 i
       gi=codr0(6)
       pr=1.d0+gi
       cp=cos(phir0)
@@ -330,7 +330,7 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
           tr2(4,:)=tr2(4,:)-bzh*tr2(1,:)
         endif
         ddpz=(tr2(6,:)*pr-tr2(2,:)*px-tr2(4,:)*py)/pz
-        ppzb=ppz+(bsi+bzh*2.d0*al)/pr
+        ppzb=ppz+bsi+bzh*2.d0*al
         dpxi=(/0.d0,1.d0,bzhr0,0.d0,0.d0,0.d0/)
         dpyi=(/-bzhr0,0.d0,0.d0,1.d0,0.d0,0.d0/)
         dpz00=(-pxi*dpxi-pyi*dpyi)/pz00
@@ -392,8 +392,6 @@ c          enddo
           de=anp*uc**2*cuu
           pxm=pxi+px
           pym=pyi+py
-          pxh=pxm*.5d0
-          pyh=pym*.5d0
           b=bzh*.5d0
           dbeam=0.d0
           dbeam(3)=(beam(3)+b*(2.d0*beam(5)+b*beam(6))
@@ -402,8 +400,8 @@ c          enddo
      $         +(pxm*pym+pxi*pyi+px*py)/6.d0)*de
           dbeam(10)=(beam(10)+b*(-2.d0*beam(7)+b*beam(1))
      $         +(pym**2+pyi**2+py**2)/6.d0)*de
-          dbeam(17)=pxh*de
-          dbeam(19)=pyh*de
+          dbeam(17)=pxm*de*.5d0
+          dbeam(19)=pym*de*.5d0
           dbeam(21)=de
           beam(1:21)=beam(1:21)+dbeam
           if(calint)then
@@ -423,9 +421,12 @@ c          enddo
           dbp=(dppx*pxh+ppx*dpxh+dppy*pyh
      $         +ppy*dpyh+dppzb*pzh+ppzb*dpzh)/pr
           dbp(6)=dbp(6)-bp/pr
-          btx=ppx/pr-bp*pxh
-          bty=ppy/pr-bp*pyh
-          btz=ppzb/pr-bp*pzh
+          blx=bp*pxh
+          bly=bp*pyh
+          blz=bp*pzh
+          btx=ppx/pr-blx
+          bty=ppy/pr-bly
+          btz=ppzb/pr-blz
           dblx=dbp*pxh+bp*dpxh
           dbly=dbp*pyh+bp*dpyh
           dblz=dbp*pzh+bp*dpzh
@@ -438,6 +439,9 @@ c          enddo
           ct=h1*gspin
           dct=ct*dh1r
           ct=ct+1.d0
+          gx=ct*btx+cl*blx
+          gy=ct*bty+cl*bly
+          gz=ct*btz+cl*blz
           dgx=ct*dbtx+cl*dblx
           dgx(6)=dgx(6)+dct*btx
           dgy=ct*dbty+cl*dbly
@@ -456,13 +460,30 @@ c          enddo
      $         +dgz(1)*transr(1,:)+dgz(2)*transr(2,:)
      $         +dgz(3)*transr(3,:)+dgz(4)*transr(4,:)
      $         +dgz(5)*transr(5,:)+dgz(6)*transr(6,:)
-          if(ppa .eq. 0.d0)then
-            a=1.d0
+          g=abs(dcmplx(gx,abs(dcmplx(gy,gz))))
+          if(g .ne. 0.d0)then
+            gnx=gx/g
+            gny=gy/g
+            gnz=gz/g
+            sinu=sin(g)
+            cosu=cos(g)
+            dcosu=2.d0*sin(g*.5d0)**2
+            sx=srot(1,:)
+            sy=srot(2,:)
+            sw=(sx*gnx+sy*gny+srot(3,:)*gnz)*dcosu
+            sux=sy*gnz-srot(3,:)*gny
+            suy=srot(3,:)*gnx-sx*gnz
+            suz=sx*gny-sy*gnx
+            sx       =cosu*sx       +sinu*sux+sw*gnx
+            srot(2,:)=cosu*sy       +sinu*suy+sw*gny
+            srot(3,:)=cosu*srot(3,:)+sinu*suz+sw*gnz
+            srot(1,:)= cp*sx+sp*srot(3,:)
+            srot(3,:)=-sp*sx+cp*srot(3,:)
           else
-            a=theta/ppa
+            sx=srot(1,:)
+            srot(1,:)= cp*sx+sp*srot(3,:)
+            srot(3,:)=-sp*sx+cp*srot(3,:)
           endif
-          call sprotm(9,srot,
-     $         pxh/pr1,pyh/pr1,ppx,ppy,ppz,bsi,a,p2,h2,cp,sp)
         endif
       endif
       codr0(1:6)=cod(1:6)

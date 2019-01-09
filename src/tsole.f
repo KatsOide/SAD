@@ -117,11 +117,14 @@ c            endif
       endif
       bzs=tfbzs(l,kb)
       if(lt .eq. icDRFT)then
+        call tsetr0(trans,cod,bzs,0.d0)
         call tdrife(trans,cod,beam,srot,al,
      $       bzs,0.d0,0.d0,al,.true.,
+c     $       .false.,
      $       enarad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0,
      $       irad)
       elseif(lt .eq. icBEND)then
+        call tsetr0(trans,cod,bzs,0.d0)
         theta=cmp%value(ky_ROT_BEND)
      $       +cmp%value(ky_DROT_BEND)
         phi=cmp%value(ky_ANGL_BEND)+cmp%value(ky_K0_BEND)

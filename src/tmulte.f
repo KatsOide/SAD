@@ -221,7 +221,9 @@
           trans10=trans(:,1:6)
           call tsolque(trans,cod,beam,srot,al1,ak1,
      $         bzs,dble(ak0n),imag(ak0n),
-     $         eps0,krad,radcod,calpol,irad)
+     $         eps0,
+     $         krad,
+     $         radcod,calpol,irad)
           call tgetdvh(dgb,dv)
           cod(5)=cod(5)+dv*al1
         endif
@@ -397,7 +399,7 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
         endif
       endif
       if(krad)then
-        call tradke(trans,cod,beam,srot,al1*.5d0,0.d0,bzs*.5d0)
+c        call tradke(trans,cod,beam,srot,al1*.5d0,0.d0,bzs*.5d0)
       endif
  1000 continue
       call tsolrot(trans,cod,beam,al,bz,dx,dy,dz,

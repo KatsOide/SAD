@@ -767,68 +767,6 @@ c     $         btx,bty,btz,cphi0,sphi0
         return
         end subroutine
       
-        subroutine sprotm(m,sp,pxm,pym,bx0,by0,bz0,bsi,a,p,h,
-     $     cphi0,sphi0)
-        use tfstk,only:pxy2dpz,ktfenanq,sqrt1
-        use tmacro
-        implicit none
-        integer*4 , intent(in):: m
-        integer*4 i
-        real*8 , intent(inout) ::sp(3,9)
-        real*8 , intent(in)::pxm,pym,bsi,a,p,h,bx0,by0,bz0,
-     $       sphi0,cphi0
-        real*8 bx,by,bz,bp,blx,bly,blz,btx,bty,btz,ct,
-     $       gx,gy,gz,g,sx,sy,pzm,
-     $       gnx,gny,gnz,
-     $       sux,suy,suz,
-     $       sw,cosu,sinu,dcosu
-        real*8 , parameter :: cl=1.d0+gspin
-        pzm=1.d0+pxy2dpz(pxm,pym)
-        bx=bx0*a*p/p0
-        by=by0*a*p/p0
-        bz=bz0*a*p/p0+bsi
-        bp=bx*pxm+by*pym+bz*pzm
-        blx=bp*pxm
-        bly=bp*pym
-        blz=bp*pzm
-        btx=bx-blx
-        bty=by-bly
-        btz=bz-blz
-        ct=1.d0+h*gspin
-        gx=ct*btx+cl*blx
-        gy=ct*bty+cl*bly
-        gz=ct*btz+cl*blz
-        g=abs(dcmplx(gx,abs(dcmplx(gy,gz))))
-        if(g .ne. 0.d0)then
-          gnx=gx/g
-          gny=gy/g
-          gnz=gz/g
-          sinu=sin(g)
-          cosu=cos(g)
-          dcosu=2.d0*sin(g*.5d0)**2
-          do i=1,m
-            sx=sp(1,i)
-            sy=sp(2,i)
-            sw=(sx*gnx+sy*gny+sp(3,i)*gnz)*dcosu
-            sux=sy*gnz-sp(3,i)*gny
-            suy=sp(3,i)*gnx-sx*gnz
-            suz=sx*gny-sy*gnx
-            sx     =cosu*sx     +sinu*sux+sw*gnx
-            sp(2,i)=cosu*sy     +sinu*suy+sw*gny
-            sp(3,i)=cosu*sp(3,i)+sinu*suz+sw*gnz
-            sp(1,i)= cphi0*sx+sphi0*sp(3,i)
-            sp(3,i)=-sphi0*sx+cphi0*sp(3,i)
-          enddo
-        else
-          do i=1,m
-            sx=sp(1,i)
-            sp(1,i)= cphi0*sx+sphi0*sp(3,i)
-            sp(3,i)=-sphi0*sx+cphi0*sp(3,i)
-          enddo
-        endif
-        return
-        end subroutine
-      
         subroutine spnorm(srot,sps,smu)
         implicit none
         real*8 , intent(inout) :: srot(3,9)
@@ -1560,11 +1498,18 @@ ckiku ------------------>
      1        'x :',sps(1,1),'y :',sps(2,1),'z :',sps(3,1)
           if(emiout)then
             write(lfno,*)'\n'//'   Spin precession matrix:'
-            write(lfno,*)'                 x              y'//
-     $           '              z'
-            write(*,'(a,1p3g15.7)')'         x',srot1(1,:)
-            write(*,'(a,1p3g15.7)')'         y',srot1(2,:)
-            write(*,'(a,1p3g15.7)')'         z',srot1(3,:)
+            write(lfno,*)'                sx             sy'//
+     $           '             sz'
+            write(*,'(a,1p3g15.7)')'        sx',srot1(1,:)
+            write(*,'(a,1p3g15.7)')'        sy',srot1(2,:)
+            write(*,'(a,1p3g15.7)')'        sz',srot1(3,:)
+            write(lfno,*)'\n'//'   Spin depolarization matrix:'
+            write(lfno,*)'                x              px'//
+     $           '              y             py'//
+     $           '              z             pz'
+            write(*,'(a,1p6g15.7)')'        sx',srot(1,4:9)
+            write(*,'(a,1p6g15.7)')'        sy',srot(2,4:9)
+            write(*,'(a,1p6g15.7)')'        sz',srot(3,4:9)
           endif
           vout(1)=autofg(smu/m_2pi,'11.8')
           vout(2)=autofg(equpol*100.d0,'11.8')

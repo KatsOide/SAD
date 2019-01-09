@@ -276,7 +276,7 @@
       implicit none
       type(tzparam) tz
       integer*4 n,ndiv,irad
-      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,3)
+      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,9)
       real*8 al,ak,eps0,bz,a,b,c,d,akk,eps,bzh,
      $     bw,dw,ak0x,ak0y,dx0,dy0,
      $     xi0,yi0,dy,dpy,
@@ -289,7 +289,7 @@
      $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
      $     u1p,u1wp,u2p,u2wp,v1p,v1wp,v2p,v2wp,
      $     dv,dvdp,xi,yi,pxi,pyi,xf,yf,pxf,pyf,
-     $     tbrhoz,b1,br,bz0,cw,phieps,
+     $     tbrhoz,b1,br,bz0,cw,phieps,al1,
      $     awu,dwu,awup,dwup,dz1,dz2,dz1p,dz2p
       logical*4 enarad,calpol,radcod
       external tbrhoz
@@ -322,10 +322,10 @@
         return
       endif
       if(al*ak .lt. 0.d0)then
-        call texchg(trans,cod,beam,1.d0)
+        call texchg(trans,cod,beam,srot,1.d0,calpol)
         call tsolque(trans,cod,beam,srot,al,-ak,
      $       bz0,ak0y,-ak0x,eps0,enarad,radcod,calpol,irad)
-        call texchg(trans,cod,beam,-1.d0)
+        call texchg(trans,cod,beam,srot,-1.d0,calpol)
 c        write(*,'(a,1p8g13.5)')'tsolque-out ',ak,bz,cod
         return
       endif
@@ -350,12 +350,9 @@ c     end   initialize for preventing compiler warning
       call tzsetparam(tz,cod(6),akk,bz)
       call tgetdv(cod(6),dv,dvdp)
       call tzsetparamp(tz)
+      al1=aln*.5d0
       do n=1,ndiv
-        if(n .eq. 1)then
-          call tqente(trans,cod,beam,aln*.5d0,bz,calpol,irad)
-        else
-          call tqente(trans,cod,beam,aln,bz,calpol,irad)
-        endif
+        call tqente(trans,cod,beam,al1,bz,calpol,irad)
         xi0=cod(1)
         yi0=cod(3)
         xi=xi0+dx0
@@ -541,6 +538,10 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
         if(irad .gt. 6)then
           call tmulbs(beam ,trans1,.false.,.true.)
         endif
+        if(enarad .and. n .ne. ndiv)then
+          call tradke(trans,cod,beam,srot,al1,0.d0,bzh)
+        endif
+        al1=aln
       enddo
       call tqente(trans,cod,beam,aln*.5d0,bz,calpol,irad)
       if(enarad)then
@@ -550,7 +551,7 @@ c        bxy= b1
 c        call trade(trans,beam,cod,bx,by,bz*br,bz,
 c     $       0.d0,bxy,0.d0,0.d0,
 c     $       .5d0*aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
-        call tradke(trans,cod,beam,srot,al,0.d0,bzh)
+        call tradke(trans,cod,beam,srot,aln*.5d0,0.d0,bzh)
       endif
       bradprev=0.d0
       return
@@ -564,11 +565,12 @@ c     $       .5d0*aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
       return
       end
 
-      subroutine texchg(trans,cod,beam,s)
+      subroutine texchg(trans,cod,beam,srot,s,calpol)
       use temw, only:codr0,transr
       implicit none
-      real*8 trans(6,12),cod(6),beam(42),x0,px0,x,s,v(12),
-     $     u(6)
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 x0,px0,x,s,v(12),u(6),sx(9)
+      logical*4, intent(in)::calpol
       if(s .gt. 0.d0)then
         x0=cod(1)
         cod(1)=-cod(3)
@@ -620,7 +622,7 @@ c     $       .5d0*aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
         x=beam(17)
         beam(17)=-beam(19)
         beam(19)=x
-        
+
 
         x=beam(21+1)
         beam(21+1)=beam(21+6)
@@ -648,6 +650,11 @@ c     $       .5d0*aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
         x=beam(21+17)
         beam(21+17)=-beam(21+19)
         beam(21+19)=x
+        if(calpol)then
+          sx=srot(1,:)
+          srot(1,:)=-srot(2,:)
+          srot(2,:)=sx
+        endif
       else
         x0=cod(1)
         cod(1)=cod(3)
@@ -726,6 +733,11 @@ c     $       .5d0*aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
         x=beam(21+17)
         beam(21+17)=beam(21+19)
         beam(21+19)=-x
+        if(calpol)then
+          sx=srot(1,:)
+          srot(1,:)=srot(2,:)
+          srot(2,:)=-sx
+        endif
       endif
       return
       end

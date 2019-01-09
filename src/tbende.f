@@ -315,7 +315,7 @@ c     $     sxkxp,dcxkxp
       subroutine tbrote(trans1,cod,srot,phi0,dtheta)
       implicit none
       real*8 trans1(6,6),cod(6),phi0,dtheta,chi1,chi2,chi3,sphi0,
-     $     coschi2,sdt,cphi0,rr(3,3),srot(3,9),sx(9)
+     $     coschi2,sdt,cphi0,rr(3,3),srot(3,9)
       integer*4 i
       cphi0=cos(phi0*.5d0)
       sphi0=sin(phi0*.5d0)

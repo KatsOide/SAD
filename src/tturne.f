@@ -324,6 +324,7 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       use sad_main
       use tfcsi, only:icslfno
       use ffs_seg
+      use temw,only:tsetr0
       implicit none
       real*8 , parameter:: codmax=1.d4,demax=.5d0,dpmin=-0.9999d0,
      $     tapmax=0.3d0
@@ -354,7 +355,12 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       call tsetdvfs
       call tesetdv(cod(6))
       bradprev=0.d0
+      call tsetr0(trans,cod,0.d0,0.d0)
       do l=ibegin,iend
+c        if(irad .gt. 6 .and.
+c     $       l .gt. 7000 .and. l .lt. 8000 .and. mod(l,10) .eq. 0)then
+c          write(*,*)'tturne ',l,srot(:,6)
+c        endif
 c        if(l .gt. 6900 .and. l .lt. 6905)then
 c          write(*,*)'tturne ',l
 c          call tfmemcheckprint('tturne',l,.true.,irtc)
