@@ -1,4 +1,5 @@
-      subroutine tstrad(np,x,px,y,py,z,g,dv,pz,l,al,phib,dx,dy,
+      subroutine tstrad(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $     l,al,phib,dx,dy,
      1     theta,cost,sint,
      1     cosp1,sinp1,cosp2,sinp2,
      $     fb1,fb2,mfring,eps0)
@@ -15,14 +16,15 @@
       real*8, parameter :: a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
      1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
      1           a13=231.d0/13312.d0,a15=143.d0/10240.d0
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
+     $     sx(np),sy(np),sz(np)
       real*8 tran
       if(al .eq. 0.d0)then
-        call tthin(np,x,px,y,py,z,g,dv,pz,2,l,al,-phib,
+        call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,2,l,al,-phib,
      1             dx,dy,theta,cost,sint,1.d0,.false.)
         return
       elseif(phib .eq. 0.d0)then
-        call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
+        call tdrift_free(np,x,px,y,py,z,dv,al)
         return
       endif
       include 'inc/TENT.inc'

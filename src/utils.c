@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <regex.h>
+#include <fcntl.h>
 
 /* for regerror(3) buffer */
 #define REGEXP_ERRBUF_SIZE 80
@@ -150,7 +151,10 @@ integer4 tftmpnam_(character s, ftnlen slen) {
   /*  char buf[] = "/tmp/fileXXXXXX"; */
   size_t blen;
 
-  if(!mkstemp(s)) {
+  int fd = mkstemp(s);
+  fcntl(fd, F_SETFD, FD_CLOEXEC);
+
+  if(!fd) {
     return 0;
   }
 

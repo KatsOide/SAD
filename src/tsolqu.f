@@ -1,19 +1,18 @@
-      recursive subroutine tsolqu(np,x,px,y,py,z,gp,dv,pz,al,ak,bz0,
-     $     ak0x,ak0y,eps0)
+      recursive subroutine tsolqu(np,x,px,y,py,z,gp,dv,bsi,al,ak,bz0,
+     $     ak0x,ak0y,ibsi,eps0)
       use tsolz
       use tfstk
       implicit none
       type (tzparam) tz
-      integer*4 np,i,n,ndiv
-      real*8 smax
-      parameter (smax=0.99d0)
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),pz(np)
+      integer*4 np,i,n,ndiv,ibsi
+      real*8, parameter::smax=0.99d0,phieps=1.d-7
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),bsi(np),
+     $     sx(np),sy(np),sz(np)
       real*8 al,ak,eps0,bz,a,b,c,d,akk,eps,
      $     bw,dw,r,ap,dpz,ak0x,ak0y,bz0,
      $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,z00,
      $     dx0,dy0,xi,yi,a12,a14,a22,a24,ra,phi,pxi,pyi,
-     $     phieps,awu,dwu,dz1,dz2
-      parameter (phieps=1.d-7)
+     $     awu,dwu,dz1,dz2
         associate (
      $       w1=>tz%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
      $       phi1=>tz%phi1,phi2=>tz%phi2,
@@ -36,13 +35,14 @@
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
       if(ak*al .lt. 0.d0)then
-        call tsolqu(np,y,py,x,px,z,gp,dv,pz,al,-ak,
-     $       -bz0,-ak0y,-ak0x,eps0)
+        call tsolqu(np,y,py,x,px,z,gp,dv,bsi,al,-ak,
+     $       -bz0,-ak0y,-ak0x,ibsi,eps0)
         return
       endif
       bz=bz0
       if(ak .eq. 0.d0)then
-        call tdrift(np,x,px,y,py,z,gp,dv,pz,al,bz,ak0x,ak0y)
+        call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,bsi,
+     $       al,bz,ak0x,ak0y,.false.)
         return
       endif
       z00=z(1)
@@ -61,6 +61,11 @@
 c     pr=(1.d0+gp(i))**2
           call tzsetparam0(tz,gp(i),akk)
           ra=aln*0.5d0
+          if(ibsi .eq. 1)then
+            bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)
+          else
+            bsi(i)=0.d0
+          endif
           do n=1,ndiv
             ap=min(smax,px(i)**2+py(i)**2)
             dpz=sqrt1(-ap)
@@ -96,11 +101,18 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           x(i)=x(i)+px(i)*r
           y(i)=y(i)+py(i)*r
           z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
+          if(ibsi .eq. 2)then
+            bsi(i)=-akk*(x(i)+dx0)*(y(i)+dy0)
+          endif
         enddo
       else
         do i=1,np
-c     pr=(1.d0+gp(i))**2
           call tzsetparam(tz,gp(i),akk,bz)
+          if(ibsi .eq. 1)then
+            bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)+bzp*al
+          else
+            bsi(i)=bzp*al
+          endif
           px(i)=px(i)+bzp*y(i)*.5d0
           py(i)=py(i)-bzp*x(i)*.5d0
           ra=aln*0.5d0
@@ -179,26 +191,32 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
           px(i)=px(i)-bzp*y(i)*.5d0
           py(i)=py(i)+bzp*x(i)*.5d0
+          if(ibsi .eq. 2)then
+            bsi(i)=-akk*(x(i)+dx0)*(y(i)+dy0)+bzp*al
+          endif
         enddo
       endif
       return
       end associate
       end
 
-      recursive subroutine tsolqur(np,x,px,y,py,z,gp,dv,pz,al,ak,bz0,
-     $     ak0x,ak0y,eps0,px0,py0,alr)
+      recursive subroutine tsolqur(np,x,px,y,py,z,gp,dv,sx,sy,sz,
+     $     px0,py0,zr0,bsi,al,ak,
+     $     bz0,ak0x,ak0y,eps0,alr)
       use tsolz
       use tfstk
+      use tspin
       implicit none
       type (tzparam) tz
       integer*4 np,i,n,ndiv
       real*8 smax
       parameter (smax=0.99d0)
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),pz(np),
-     $     px0(np),py0(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),
+     $     px0(np),py0(np),zr0(np),bsi(np)
+      real*8 sx(np),sy(np),sz(np)
       real*8 al,ak,eps0,bz,a,b,c,d,akk,eps,alr,
      $     bw,dw,r,ap,dpz,ak0x,ak0y,bz0,
-     $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,z00,
+     $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
      $     dx0,dy0,xi,yi,a12,a14,a22,a24,phi,pxi,pyi,
      $     phieps,awu,dwu,dz1,dz2
       parameter (phieps=1.d-7)
@@ -224,17 +242,18 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
       if(ak*al .lt. 0.d0)then
-        call tsolqur(np,y,py,x,px,z,gp,dv,pz,al,-ak,
-     $       -bz0,-ak0y,-ak0x,eps0,py0,px0,alr)
+        call tsolqur(np,y,py,x,px,z,gp,dv,sy,sx,sz,
+     $       py0,px0,zr0,bsi,al,-ak,
+     $       -bz0,-ak0y,-ak0x,eps0,alr)
         return
       endif
       bz=bz0
       if(ak .eq. 0.d0)then
-        call tdrift(np,x,px,y,py,z,gp,dv,pz,al,bz,ak0x,ak0y)
+        call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,bsi,
+     $       al,bz,ak0x,ak0y,.false.)
         alr=al
         return
       endif
-      z00=z(1)
       if(eps0 .eq. 0.d0)then
         eps=0.2d0
       else
@@ -251,6 +270,11 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           do i=1,np
 c     pr=(1.d0+gp(i))**2
             call tzsetparam0(tz,gp(i),akk)
+            if(n .eq. 1)then
+              bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)
+            else
+              bsi(i)=0.d0
+            endif
             ap=min(smax,px(i)**2+py(i)**2)
             dpz=sqrt1(-ap)
 c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
@@ -276,13 +300,18 @@ c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
      $           +u1*(u2+b)+xi*b*dc1
      $           +v1*(v2+d)+yi*d*dch2)
      $           -dv(i)*aln
+            if(n .eq. ndiv)then
+              bsi(i)=-akk*(x(i)+dx0)*(y(i)+dy0)
+            endif
           enddo
+          alr=aln
           if(n .ne. ndiv)then
-            call tradk(np,x,px,y,py,px0,py0,gp,dv,alr)
+            call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,
+     $           px0,py0,zr0,1.d0,0.d0,bsi,alr)
             px0=px
             py0=py
+            zr0=z
           endif
-          alr=aln
         enddo
         do i=1,np
           ap=min(smax,px(i)**2+py(i)**2)
@@ -303,6 +332,11 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
         do n=1,ndiv
           do i=1,np
             call tzsetparam(tz,gp(i),akk,bz)
+            if(n .eq. 1)then
+              bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)+bzp*alr
+            else
+              bsi(i)=bzp*alr
+            endif
             ap=min(smax,px(i)**2+py(i)**2)
             dpz=sqrt1(-ap)
 c            dpz=-ap/(1.d0+sqrt(1.d0-ap))
@@ -354,13 +388,18 @@ c            dpz=-ap/(1.d0+sqrt(1.d0-ap))
      $           bzp*(-((awu*dwu*dxs**2)/akkp) +
      $           ca1*pxi*pyi*wss)
      $           +dz1+dz2-aln*dv(i)
+            if(n .eq. ndiv)then
+              bsi(i)=-akk*(x(i)+dx0)*(y(i)+dy0)+bzp*aln*.5d0
+            endif
           enddo
+          alr=aln
           if(n .ne. ndiv)then
-            call tradk(np,x,px,y,py,px0,py0,gp,dv,alr)
+            call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,
+     $           px0,py0,zr0,1.d0,0.d0,bsi,alr)
             px0=px
             py0=py
+            zr0=z
           endif
-          alr=aln
         enddo
         do i=1,np
           ap=min(smax,px(i)**2+py(i)**2)

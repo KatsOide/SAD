@@ -13,16 +13,7 @@ c    1         7, 8, 9,10,14,19,
 c    1        11,12,13,14,15,20,
 c    1        16,17,18,19,20,21/
       if(irad .lt. 12)then
-        if(calpol .and. poldiv)then
-          npelm=npelm+1
-        endif
         return
-      endif
-      if(calpol .and. poldiv)then
-        ipelm=ipelm+1
-        if(ipelm .le. npelm)then
-          call tmov(trans1,rlist(ipoltr+(ipelm-1)*36),36)
-        endif
       endif
 c      do j=1,6
         s(1,1:6)=trans1(1:6,1)*beam(1) +trans1(1:6,2)*beam(2)

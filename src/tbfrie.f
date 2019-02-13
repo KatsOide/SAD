@@ -1,9 +1,9 @@
-      subroutine tbfrie(trans,cod,beam,rhob,ak,ent,ld)
+      subroutine tbfrie(trans,cod,beam,rhob,ak,ent)
       use tfstk
       use ffs_flag
       use tmacro
       implicit none
-      integer*4 i,ld
+      integer*4 i
       real*8 trans(6,12),cod(6),beam(42),trans1(6,6),
      $     yi,pr,rho,ak,rhob,pxi
       logical*4 ent
@@ -59,9 +59,6 @@
         enddo
 c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-1 ',trans1
         call tmulbs(beam,trans1,.true.,.true.)
-        if(calpol)then
-          call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod)
-        endif
         cod(1)=cod(1)+.5d0*yi**2/rho
         cod(4)=min(pr,max(-pr,cod(4)+(ak-cod(2)/rho)*yi))
         cod(5)=cod(5)-.5d0*(yi/pr)**2*cod(2)/rhob
@@ -115,9 +112,6 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-1 ',trans1
         enddo
 c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
         call tmulbs(beam,trans1,.true.,.true.)
-        if(calpol)then
-          call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod)
-        endif
         cod(2)=pxi
         cod(1)=cod(1)+.5d0*yi**2/rho
         cod(4)=min(pr,max(-pr,cod(4)+(ak-pxi/rho)*yi))
@@ -126,12 +120,11 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       return
       end
 
-      subroutine tbedge(trans0,cod,beam,al,phib,psi,ent,ld)
+      subroutine tbedge(trans0,cod,beam,al,phib,psi,ent)
       use tfstk
       use ffs_flag
       use tmacro
       implicit none
-      integer*4 ld
       real*8 trans0(6,12),cod(6),beam(42),phib,psi,al,
      $     trans(6,6),trans1(6,6),rhob
       logical*4 ent
@@ -159,9 +152,6 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       endif
       call tmultr5(trans0,trans,irad)
       call tmulbs(beam,trans,.true.,.true.)
-      if(calpol)then
-        call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod)
-      endif
       return
       end
 
@@ -366,12 +356,11 @@ c      trans(3,6)=-pr*pyi*sxa*(f+pxi*sinp/pzi)
       return
       end
 
-      subroutine tbfrme(trans,cod,beam,ak,fb1,ent,ld)
+      subroutine tbfrme(trans,cod,beam,ak,fb1,ent)
       use tfstk
       use ffs_flag
       use tmacro
       implicit none
-      integer*4 ld
       real*8 trans(6,6),trans1(6,6),cod(6),beam(42),ak(2),pr,
      $     akx,aky,xi,pxi,yi,pyi,y1,px1,a,dx,dpx,dy,dpy,dz,fb1,
      $     dxfrx,dyfrx,dyfrax,
@@ -452,9 +441,6 @@ c      trans(3,6)=-pr*pyi*sxa*(f+pxi*sinp/pzi)
         call tbfrmle(trans,cod,beam,
      $       dxfrx,dyfrx,dyfrax,
      $       dxfry,dyfry,dxfray)
-      endif
-      if(calpol)then
-        call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod)
       endif
       return
       end

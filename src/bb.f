@@ -432,7 +432,7 @@ c     elmass:	Electron mass energy equivalent in eV
       parameter (am_e=elmass,re=elradi)
       integer*4 tbuf0,idummy,nslimax
       parameter (tbuf0=1100,nslimax=500)
-      real*8 p_in(70),blist(nblist)
+      real*8 p_in(70),blist(nblist),rfromk
       type (sad_descriptor) kv
       type (sad_symdef), pointer :: vsymd
       integer v_sub5,c_sub,eig5,v_bcen_fac
@@ -689,7 +689,7 @@ c          blist(1600)=iax
 c          ilist(1,iv-1)=ntflist
 c          ilist(2,iv-1)=itfcopy(ntflist,iax)
 c     In the case of only one real variable.
-          blist(nblist)=kv%k
+          blist(nblist)=rfromk(kv%k)
           vsymd%value=dfromr(0.d0)
        else
          kv%k=0

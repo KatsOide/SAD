@@ -1220,7 +1220,7 @@ c          ilist(2,iwakepold+6)=int(ifsize)
         endif
         call temits(mphi2,amus0,amus1,amusstep,
      $     emxe,emye,rese,rlist(iparams),
-     $     lfni,lfno,int8(0),irtc)
+     $     lfno,int8(0),irtc)
         call tfree(iparams)
         if(codplt)then
           updatesize=.true.

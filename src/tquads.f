@@ -1,20 +1,22 @@
-      subroutine tquads(np,x,px,y,py,z,g,dv,pz,l,al,ak,bz,
+      subroutine tquads(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,bz,
      1     dx,dy,theta,cost,sint,radlvl,
      1     fringe,f1in,f2in,f1out,f2out,
      $     mfring,eps0,ld,forward)
       use tfstk
       use ffs_flag
       use tmacro
+      use tspin
 c      use ffs_pointer, only:inext,iprev
       implicit none
       type (sad_rlist), pointer :: klr
       integer*4 np,ld,mfring,i,irtc,ld1,level,m,itfuplevel,
-     $     itfdownlevel,l
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
-     $     pxr0(np),pyr0(np),
+     $     itfdownlevel
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
+     $     pxr0(np),pyr0(np),zr0(np),bsi(np),
      $     al,bz,ak,dx,dy,theta,cost,sint,radlvl,alr,
      $     f1in,f2in,f1out,f2out,eps0,
      $     a,aki,akm,ali,alm,b,ea,fx,fy,p,pr,px0,pxf,pyf,rb,x0
+      real*8 sx(np),sy(np),sz(np)
       logical*4 enarad,fringe,forward
       character*13 vname
       character*2 ord
@@ -29,8 +31,9 @@ c        ilist(1,ifvh-2)=-1
         klist(ifv)=ktfsymbol+ktfcopy1(ifvh)
       endif
       if(al .eq. 0.d0)then
-        call tthin(np,x,px,y,py,z,g,dv,pz,4,ld,0.d0,ak,
-     $             dx,dy,theta,cost,sint, 1.d0,.false.)
+        call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       4,ld,0.d0,ak,
+     $       dx,dy,theta,cost,sint, 1.d0,.false.)
         return
       endif
       enarad=rad .and. radlvl .ne. 1.d0
@@ -57,6 +60,7 @@ c        pr=(1.d0+g(i))**2
       if(enarad)then
         pxr0=px
         pyr0=py
+        zr0=z
       endif
       if(fringe .and. mfring .ne. 2)then
         call ttfrin(np,x,px,y,py,z,g,4,ak,al,bz)
@@ -95,10 +99,12 @@ c$$$     1       b1,0.d0,0.d0,.5d0*al,f1r,f2r,0.d0,al,1.d0)
 c$$$      endif
       if(ifv .eq. 0)then
         if(enarad)then
-          call tsolqur(np,x,px,y,py,z,g,dv,pz,al,ak,bz,0.d0,0.d0,eps0,
-     $         pxr0,pyr0,alr)
+          call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         pxr0,pyr0,zr0,bsi,
+     $         al,ak,bz,0.d0,0.d0,eps0,
+     $         alr)
         else
-          call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,bz,0.d0,0.d0,eps0)
+          call tsolqu(np,x,px,y,py,z,g,dv,bsi,al,ak,bz,0.d0,0.d0,0,eps0)
         endif
       else
         level=itfuplevel()
@@ -136,11 +142,12 @@ c$$$      endif
               aki=akm
             endif
             if(enarad)then
-              call tsolqu(np,x,px,y,py,z,g,dv,pz,ali,aki,
-     $             bz*rb,0.d0,0.d0,eps0,pxr0,pyr0,alr)
+              call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $             pxr0,pyr0,zr0,bsi,ali,aki,
+     $             bz*rb,0.d0,0.d0,eps0,alr)
             else
-              call tsolqu(np,x,px,y,py,z,g,dv,pz,ali,aki,
-     $             bz*rb,0.d0,0.d0,eps0)
+              call tsolqu(np,x,px,y,py,z,g,dv,bsi,ali,aki,
+     $             bz*rb,0.d0,0.d0,0,eps0)
             endif
           enddo
           level=itfdownlevel()
@@ -151,11 +158,12 @@ c$$$      endif
           else
             level=itfdownlevel()
             if(enarad)then
-              call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,
-     $             bz,0.d0,0.d0,eps0,pxr0,pyr0,alr)
+              call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $             pxr0,pyr0,zr0,bsi,al,ak,
+     $             bz,0.d0,0.d0,eps0,alr)
             else
-              call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,
-     $             bz,0.d0,0.d0,eps0)
+              call tsolqu(np,x,px,y,py,z,g,dv,bsi,al,ak,
+     $             bz,0.d0,0.d0,0,eps0)
             endif
           endif
         endif
@@ -185,7 +193,8 @@ c          p=(1.d0+g(i))**2
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,bz)
       endif
       if(enarad)then
-        call tradk(np,x,px,y,py,pxr0,pyr0,g,dv,alr)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       pxr0,pyr0,zr0,1.d0,0.d0,bsi,alr)
       endif
       if(theta .ne. 0.d0)then
         do i=1,np

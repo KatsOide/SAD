@@ -5,16 +5,14 @@
       use tffitcode
       use iso_c_binding
       use tfcsi, only:icslfno
-      use temw, only:tfinitemip
+      use temw, only:tfinitemip,nparams
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: kl,klx
       type (sad_rlist), pointer :: kl1,kl2
       integer*8 iatr,iacod,iamat,kaparam,iabmi
-      integer*4 isp1,irtc,narg,mode,itgetfpe,nparam,
-     $     itfmessage,lno
-      parameter (nparam=59)
-      real*8 param(nparam),trans(6,12),cod(6),beam(42),btr(441),sx
+      integer*4 isp1,irtc,narg,mode,itgetfpe,itfmessage,lno
+      real*8 param(nparams),trans(6,12),cod(6),beam(42),btr(441),sx
       logical*4 stab
       call tfinitemip
       narg=isp-isp1
@@ -46,7 +44,7 @@
         irtc=itfmessage(9,'General::wrongnum','"-1, 0, 1, 2, or, 3"')
         return
       endif
-      lno=rtastk(isp1+2)
+      lno=int(rtastk(isp1+2))
       if(lno .eq. -1)then
         lno=icslfno()
       endif
@@ -76,13 +74,13 @@ c        ilist(2,iwakepold+6)=ifsize
       endif
       call temit(trans,cod,beam,btr,
      $     mode .ge. 0,iatr,iacod,iabmi,iamat,
-     $     .true.,param,stab,0,lno)
+     $     .true.,param,stab,lno)
       if(mode .eq. 3 .and. intra)then
         kx=kxadaloc(-1,6,klx)
       else
         kx=kxadaloc(-1,2+max(0,mode),klx)
       endif
-      kaparam=ktfaddr(kxm2l(param,0,nparam,1,.false.))
+      kaparam=ktfaddr(kxm2l(param,0,nparams,1,.false.))
       if(itgetfpe() .gt. 0)then
         stab=.false.
         call tclrfpe
@@ -92,7 +90,7 @@ c        ilist(2,iwakepold+6)=ifsize
       else
         sx=0.d0
       endif
-c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparam
+c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparams
       klx%rbody(1)=sx
       klx%dbody(2)%k=ktflist+ktfcopy1(kaparam)
       if(mode .ge. 1)then
@@ -118,7 +116,7 @@ c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparam
       implicit none
       type (sad_descriptor) kx
       integer*8 kparams
-      integer*4 isp1,irtc,mphi2,i,itfmessage,lfni
+      integer*4 isp1,irtc,mphi2,i,itfmessage
       real*8 arg(4),emxe,emye,rese
       call tfinitemip
       if(isp .ne. isp1+4)then
@@ -130,7 +128,7 @@ c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparam
         endif
         arg(i)=rtastk(isp1+i)
       enddo
-      mphi2=max(1.d0,min(32.d0,arg(4)))
+      mphi2=int(max(1.d0,min(32.d0,arg(4))))
       call tfgeo(.true.)
       kparams=ktaloc(nparams)
       codin=0.d0
@@ -143,7 +141,7 @@ c        ilist(2,iwakepold+6)=ifsize
      $     mphi2,
      $     arg(1)*pi2,arg(2)*pi2,arg(3)*pi2,
      $     emxe,emye,rese,rlist(kparams),
-     $     lfni,0,kx,irtc)
+     $     0,kx,irtc)
       call tfree(kparams)
       if(.not. codplt)then
         call tfgeo(.true.)

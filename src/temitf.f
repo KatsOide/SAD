@@ -52,7 +52,7 @@
       beamin=0.d0
       call temit(trans,cod,beam,ctrb,
      1     .true.,int8(0),int8(0),int8(0),int8(0),
-     1     plot,param(1,0),stab,lfni,lfno)
+     1     plot,param(1,0),stab,lfno)
       dps=rgetgl1('PSPAN')
       dpsa=dps*.5d0
       if(dps .gt. 0.d0)then
@@ -68,7 +68,7 @@
             call tsetdvfs
             call temit(trans,cod,beam,ctrb,
      1           .true.,int8(0),int8(0),int8(0),int8(0),
-     1           plot,param(1,i),stab,lfni,lfno)
+     1           plot,param(1,i),stab,lfno)
             if(.not. stab .and. lfnos .ne. 0)then
               write(lfnos,9101)'Unstable at "dp/p0" =',i*dps*.5d0
 9101          format(1x,a,f10.6)

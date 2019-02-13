@@ -313,6 +313,11 @@ c     Boltzman Constant:
 c     PDG2014:         1.380 6488(13) x 10^-23 J/K
       real*8, parameter :: kboltzman = 1.3806488e-23
 
+c     Spin precession coefficient (ge-2)/2
+c     NIST 2014 0.00115965218091
+c
+      real*8 , parameter :: gspin = 0.00115965218091
+
       end module
 
       module tfrbuf

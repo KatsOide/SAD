@@ -1,36 +1,37 @@
-      subroutine tsteer(np,x,px,y,py,z,g,dv,pz,l,al,phib,dx,dy,
+      subroutine tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,phib,dx,dy,
      1     theta,cost,sint,
      1     cosp1,sinp1,cosp2,sinp2,
      $     fb1,fb2,mfring,fringe,enarad,eps0)
       use ffs_flag
       use tmacro
-      use ffs_pointer, only:inext,iprev
+      use tspin
       implicit none
       real*8 a3,a5,a7,a9,a11,a13,a15
       parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
      1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
      1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
       integer*4 np,mfring,i,l
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
-     $     px0(np),py0(np),ds(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
+     $     px0(np),py0(np),zr0(np),bsi(np)
+      real*8 sx(np),sy(np),sz(np)
       real*8 al,phib,dx,dy,theta,cost,sint,eps0,rhob,
-     $     dxfr1,dyfr1,dyfra1,f1r,f2r,
+     $     dxfr1,dyfr1,dyfra1,dyi,
      $     dxfr2,dyfr2,dyfra2,
      $     dp,p,rhoe,pxi,s,dpv1,pv1,dpv2,pv2,fa,f,ff,
-     $     dpz1,pz1,dpz2,pz2,phsq,u,w,dl,brad,dpx,pyi,xi,pxf,d,
+     $     dpz1,pz1,dpz2,pz2,phsq,u,w,dl,dpx,pyi,xi,pxf,d,
      $     cosp1,sinp1,cosp2,sinp2,tanp1,tanp2,fb1,fb2
       logical*4 fringe,enarad,enrad
       enrad=enarad .and. rad
       if(al .eq. 0.d0)then
-        call tthin(np,x,px,y,py,z,g,dv,pz,2,l,al,-phib,
+        call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,2,l,al,-phib,
      1             dx,dy,theta,cost,sint,1.d0,.false.)
         return
       elseif(phib .eq. 0.d0)then
-        call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
+        call tdrift_free(np,x,px,y,py,z,dv,al)
         return
       endif
       if(enrad .and. trpt)then
-        call tstrad(np,x,px,y,py,z,g,dv,pz,l,al,phib,dx,dy,
+        call tstrad(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,phib,dx,dy,
      1       theta,cost,sint,
      1       cosp1,sinp1,cosp2,sinp2,
      $       fb1,fb2,mfring,eps0)
@@ -43,6 +44,7 @@
       if(enrad)then
         px0=px
         py0=py
+        zr0=z
 c        if(iprev(l) .eq. 0)then
 c          f1r=fb1
 c        else
@@ -136,10 +138,9 @@ c        dp=g(i)*(2.d0+g(i))
           endif
         endif
         x(i)=xi+al*(pxf+pxi)/(pz2+pz1)
-        if(enrad)then
-          ds(i)=al+dl
-        endif
-        y(i)=y(i)+pyi*(al+dl)
+        dyi=pyi*(al+dl)
+        bsi(i)=-dyi/rhob
+        y(i)=y(i)+dyi
         s=min(.9d0,pxf**2)
         dpv2=s*(-.5d0-s*(.125d0+s*.0625d0))
         dpv2=(dpv2**2-s)/(2.d0+2.d0*dpv2)
@@ -158,7 +159,8 @@ c        dp=g(i)*(2.d0+g(i))
      $       (.5d0*dyfr2-.25d0*dyfra2*y(i)**2)*y(i)**2/p)/p
 100   continue
       if(enrad)then
-        call tradki(np,x,px,y,py,px0,py0,g,dv,ds)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       px0,py0,zr0,1.d0,0.d0,bsi,al)
 c        call trad(np,x,px,y,py,g,dv,brad,0.d0,0.d0,
 c     1            0.d0,-tanp2*2.d0/al,.5d0*al,
 c     $       f1r,f2r,al,al,-1.d0)

@@ -16,7 +16,7 @@ c   Usage:       call teigen(a,w,eig,n,ndim)
 c
 c                where
 c
-c                a     is the input n*n matrixand the eigen vectors
+c                a     is the input n*n matrix, and the eigen vectors
 c                      are returned here.
 c                w     is a work area of n**2 words.
 c                eig   is a (2,n) real array where the eigen values

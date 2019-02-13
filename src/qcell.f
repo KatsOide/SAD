@@ -357,7 +357,7 @@ c                enddo
       type (ffs_bound) fbound
       type (ffs_stat) optstat
       integer*4 lfno,idp
-      real*8 trans(6,12),cod(6),beam(21),tw1(ntwissfun)
+      real*8 trans(6,12),cod(6),beam(21),srot(3,9),tw1(ntwissfun)
       complex*16 ceig(6)
       logical*4 codfnd,cell0,codplt0,ci0,rt
       cell0=cell
@@ -402,7 +402,7 @@ c        write(*,*)'qcell61 ',fbound%lb,tw1(mfitnx),tw1(mfitny)
       endif
       codplt=.true.
       call tinitr(trans)
-      call tturne0(trans,cod,beam,fbound,
+      call tturne0(trans,cod,beam,srot,fbound,
      $     int8(0),int8(0),int8(0),idp,.true.,rt,.true.)
 c      write(*,*)'qcell61-1 ',twiss(fbound%lb,idp,mfitnx),
 c     $     twiss(fbound%lb,idp,mfitny)

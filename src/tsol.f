@@ -1,4 +1,4 @@
-      subroutine tsol(np,x,px,y,py,z,g,dv,pz,
+      subroutine tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     latt,k,kstop,ke,sol,kptbl,la,n,
      $     nwak,nextwake,out)
       use kyparam
@@ -18,7 +18,8 @@
       integer*4 la1,la
       parameter (la1=15)
       integer*4 k,kbz,np
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
+      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
+     $     sx(np0),sy(np0),sz(np0),bsi(np)
       real*8 tfbzs,fw,bzs,rho,al,theta,phi,phix,phiy,rhoe,
      $     bz1,rho1,dx,dy,rot,rtaper
       integer*8 latt(nlat),l1,lp
@@ -52,7 +53,7 @@
         rho=1.d0/bzs
       endif
       if(.not. sol)then
-        call trots(np,x,px,y,py,z,g,dv,
+        call trots(np,x,px,y,py,z,dv,
      $       rlist(l1+ky_CHI1_SOL),
      $       rlist(l1+ky_CHI2_SOL),
      $       rlist(l1+ky_CHI3_SOL),
@@ -73,7 +74,8 @@
       iwpl=0
       do l=kb,min(ke,kstop)
         if(la .le. 0)then
-          call tapert(l,latt,x,px,y,py,z,g,dv,pz,kptbl,np,n,
+          call tapert(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         kptbl,np,n,
      $         0.d0,0.d0,0.d0,0.d0,
      $         -alost,-alost,alost,alost,0.d0,0.d0,0.d0,0.d0)
           if(np .le. 0)then
@@ -133,12 +135,12 @@
         case (icDRFT)
           al=cmp%value(ky_L_DRFT)
           if(spac)then
-            call spdrift_solenoid(np,x,px,y,py,z,g,dv,pz,al,bzs,
+            call spdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,al,bzs,
      $           cmp%value(ky_RADI_DRFT),n,l,latt,kptbl)
-          elseif(rad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0)then
-            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
           else
-            call tdrift_solenoid(np,x,px,y,py,z,g,dv,pz,al,bzs)
+            call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+     $           al,bzs,rad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0)
+c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
           endif
         case (icBEND)
           if(iand(cmp%update,1) .eq. 0)then
@@ -152,7 +154,8 @@
           phix= phi*sin(theta)
           enarad=rad .and. al .ne. 0.d0
      $         .and. cmp%value(ky_RAD_BEND) .eq. 0.d0
-          call tdrift(np,x,px,y,py,z,g,dv,pz,al,bzs,phiy,phix)
+          call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+     $         al,bzs,phiy,phix,enarad)
         case(icQUAD)
           if(iand(cmp%update,1) .eq. 0)then
             call tpara(cmp)
@@ -163,7 +166,7 @@
             rtaper=1.d0-dp0
      $           +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
           endif
-          call tquads(np,x,px,y,py,z,g,dv,pz,l,al,
+          call tquads(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,
      $         cmp%value(ky_K1_QUAD)*rtaper,bzs,
      $         cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1         cmp%value(p_THETA_QUAD),
@@ -182,10 +185,10 @@
      $           +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
           endif
           if(seg)then
-            call tmultiseg(np,x,px,y,py,z,g,dv,pz,
+            call tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           l,cmp,lsegp,bzs,rtaper,n,latt,kptbl)
           else
-            call tmulti1(np,x,px,y,py,z,g,dv,pz,
+            call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           l,cmp,bzs,rtaper,n,latt,kptbl)
           endif
         case (icSOL)
@@ -197,7 +200,7 @@
             if(rad .and. cmp%value(ky_RAD_SOL) .eq. 0.d0)then
               call tserad(np,x,px,y,py,g,dv,lp,rho)
             endif
-            call trots(np,x,px,y,py,z,g,dv,
+            call trots(np,x,px,y,py,z,dv,
      $           cmp%value(ky_CHI1_SOL),
      $           cmp%value(ky_CHI2_SOL),
      $           cmp%value(ky_CHI3_SOL),
@@ -230,7 +233,7 @@
         case(icMAP)
           call temap(np,np0,x,px,y,py,z,g,dv,l,n,kptbl)
         case(icAprt)
-          call tapert1(l,latt,x,px,y,py,z,g,dv,pz,
+          call tapert1(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
      1         kptbl,np,n)
           if(np .le. 0)then
             return
@@ -294,12 +297,12 @@ c      h1=p0*pr*sqrt(1.d0+1.d0/(p0*pr)**2)
       return
       end
 
-      subroutine trots(np,x,px,y,py,z,g,dv,
+      subroutine trots(np,x,px,y,py,z,dv,
      $     chi1,chi2,chi3,dx,dy,dz,ent)
       use tfstk
       implicit none
       integer*4 np,i
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),
      $     chi1,chi2,chi3,
      $     cchi1,schi1,cchi2,schi2,cchi3,schi3,
      $     r11,r12,r13,r21,r22,r23,r31,r32,r33,

@@ -1,4 +1,4 @@
-      subroutine tbrad(np,x,px,y,py,z,g,dv,pz,
+      subroutine tbrad(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     l,al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
@@ -13,7 +13,8 @@ c      parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
 c     1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
 c     1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
       integer*4 np,l,i,mfring,ndiv,nx,ngamma,n
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
+     $     sx(np),sy(np),sz(np),pz(np)
       real*8 al,phib,phi0,tanp1,tanp2,ak,dx,dy,theta,
      $     cost,sint,fs1,fs2,eps0,bxa,bya,alr,dpradx,dprady,
      $     alsum,brad0,brad1,brad2,rhob,rho0,af,aind,dxfr1,
@@ -31,7 +32,7 @@ c     begin initialize for preventing compiler warning
 c     end  initialize for preventing compiler warning
       include 'inc/TENT.inc'
       if(dtheta .ne. 0.d0)then
-        call tbrot(np,x,px,y,py,z,phi0,dtheta)
+        call tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
       endif
 c      if(dphiy .ne. 0.d0)then
 c        do 3510 i=1,np
@@ -335,7 +336,7 @@ c          py(i)=py(i)+dphiy/pr
 c3520    continue
 c      endif
       if(dtheta .ne. 0.d0)then
-        call tbrot(np,x,px,y,py,z,-phi0,-dtheta)
+        call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
       endif
       include 'inc/TEXIT.inc'
       return

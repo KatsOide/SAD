@@ -1,10 +1,9 @@
-      subroutine tqente(trans,cod,beam,al,bz,calpol,irad,ld)
+      subroutine tqente(trans,cod,beam,al,bz,irad)
       use tfstk, only: sqrtl
       implicit none
-      integer*4 irad,ld,i
+      integer*4 irad,i
       real*8 trans(6,12),cod(6),beam(42),trans1(6,6),trans2(6,6),
      $     al,bz,pr,a,pz,r,pxi,pyi,bzh,z0,f,g,fx,fy,dpz,rpz,ptmin
-      logical*4 calpol
       parameter (ptmin=0.9999d0)
       pr=1.d0+cod(6)
       if(bz .eq. 0.d0)then
@@ -138,7 +137,7 @@ c      write(*,'(a/,6(1p6g11.4/))')
 c     $     'tqente-2 ',((trans2(i,j),j=1,6),i=1,6)
         call tmultr5(trans,trans2,irad)
       endif
-      if(irad .gt. 6 .or. calpol)then
+      if(irad .gt. 6)then
         call tmulbs(beam,trans2,.true.,.true.)
       endif
       return

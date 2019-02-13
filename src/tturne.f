@@ -1,4 +1,4 @@
-      subroutine tturne(trans,cod,beam,
+      subroutine tturne(trans,cod,beam,srot,
      $     iatr,iacod,iabmi,plot,update,rt)
       use touschek_table
       use tfstk
@@ -15,7 +15,7 @@
       real*8 codmax,demax
       parameter (codmax=1.d4,demax=.5d0)
       integer*8 iatr,iacod,iabmi
-      real*8 trans(6,12),cod(6),beam(42)
+      real*8 trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 z0,pgev00,alambdarf,dzmax,phis,vcacc1
       logical*4 plot,update,rt
       pgev00=pgev
@@ -44,7 +44,7 @@
       ipelm=0
       normali=.true.
       call tffsbound(fbound)
-      call tturne0(trans,cod,beam,fbound,
+      call tturne0(trans,cod,beam,srot,fbound,
      $     iatr,iacod,iabmi,0,plot,rt,.false.)
       if(update)then
         if(vcacc .ne. 0.d0)then
@@ -119,7 +119,7 @@ c              trf0=-(cod(5)+z0)*0.5d0
       return
       end
 
-      subroutine tturne0(trans,cod,beam,fbound,
+      subroutine tturne0(trans,cod,beam,srot,fbound,
      $     iatr,iacod,iabmi,idp,plot,rt,optics)
       use touschek_table
       use tfstk
@@ -136,7 +136,7 @@ c              trf0=-(cod(5)+z0)*0.5d0
       type (sad_comp) , pointer :: cmp
       integer*8 iatr,iacod,iabmi
       integer*4 ls,l,nvar,lx,idp,le1,lv,itfdownlevel,irtc
-      real*8 trans(6,12),cod(6),beam(42)
+      real*8 trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 trans1(6,12),cod1(6),beam1(42)
       type (sad_descriptor) dsave(kwMAX)
       real*8 r,xp,xb,xe,fr,fra,frb,tffselmoffset
@@ -151,7 +151,7 @@ c              trf0=-(cod(5)+z0)*0.5d0
           call tffserrorhandle(l,irtc)
         else
 c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
-          call tturne1(trans,cod,beam,
+          call tturne1(trans,cod,beam,srot,
      $         iatr,iacod,iabmi,idp,plot,sol,rt,optics,
      $         fbound%lb,fbound%lb)
         endif
@@ -164,7 +164,7 @@ c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
       endif
       if(fbound%fe .eq. 0.d0)then
         le1=min(nlat-1,fbound%le)
-        call tturne1(trans,cod,beam,
+        call tturne1(trans,cod,beam,srot,
      $       iatr,iacod,iabmi,idp,plot,sol,rt,optics,
      $       ls,le1)
         if(plot)then
@@ -172,7 +172,7 @@ c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
      $         le1+1,iatr,iacod,.false.,idp)
         endif
       else
-        call tturne1(trans,cod,beam,
+        call tturne1(trans,cod,beam,srot,
      $       iatr,iacod,iabmi,idp,plot,sol,rt,optics,
      $       ls,fbound%le-1)
         call compelc(fbound%le,cmp)
@@ -181,7 +181,7 @@ c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
         if(irtc .ne. 0)then
           call tffserrorhandle(fbound%le,irtc)
         else
-          call tturne1(trans,cod,beam,
+          call tturne1(trans,cod,beam,srot,
      $         iatr,iacod,iabmi,idp,plot,sol,rt,optics,
      $         fbound%le,nlat-1)
         endif
@@ -283,7 +283,7 @@ c     below is incorrect for fra <> 0
                 codplt=.false.
                 int0=calint
                 calint=.false.
-                call tturne1(trans1,cod1,beam1,
+                call tturne1(trans1,cod1,beam1,srot,
      $               int8(0),int8(0),int8(0),idp,.false.,sol1,rt,
      $               optics,
      $               lx,lx)
@@ -311,7 +311,7 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       return
       end
 
-      subroutine tturne1(trans,cod,beam,
+      subroutine tturne1(trans,cod,beam,srot,
      $     iatr,iacod,iabmi,idp,plot,sol,rt,optics,
      $     ibegin,iend)
       use kyparam
@@ -324,6 +324,7 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       use sad_main
       use tfcsi, only:icslfno
       use ffs_seg
+      use temw,only:tsetr0
       implicit none
       real*8 , parameter:: codmax=1.d4,demax=.5d0,dpmin=-0.9999d0,
      $     tapmax=0.3d0
@@ -331,7 +332,7 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       type (sad_dlist), pointer :: lsegp
       integer*8 iatr,iacod,iabmi,kbmz,kbmzi,lp
       integer*4 idp,i,l1
-      real*8 trans(6,12),cod(6),beam(42),bmir(6,6),
+      real*8 trans(6,12),cod(6),beam(42),bmir(6,6),srot(3,9),
      $     bmi(21),bmh(21),trans1(6,6)
       real*8 psi1,psi2,apsi1,apsi2,alid,
      $     r,dir,al,alib,dtheta,theta0,ftable(4),
@@ -355,8 +356,14 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       call tesetdv(cod(6))
       bradprev=0.d0
       do l=ibegin,iend
-c        if(l .ge. 13136 .and. l .lt. 14000)then
-c          write(*,*)'tturne1 ',l
+        call tsetr0(trans,cod,0.d0,0.d0)
+c        if(irad .gt. 6 .and. calpol .and. 
+c     $       l .gt. 7100 .and. l .lt. 7200 .and. mod(l,1) .eq. 0)then
+c          write(*,*)'tturne ',l,srot(:,6)
+c        endif
+c        if(l .gt. 6900 .and. l .lt. 6905)then
+c          write(*,*)'tturne ',l
+c          call tfmemcheckprint('tturne',l,.true.,irtc)
 c        endif
         next=inext(l) .ne. 0
         if(ktfenanq(cod(1)) .or. ktfenanq(cod(3)))then
@@ -470,8 +477,8 @@ c        go to 5000
           if(calint)then
             if(al .ne. 0.d0)then
               al=al*.5d0
-              call tdrife(trans,cod,beam,al,0.d0,0.d0,0.d0,
-     $             .true.,.false.,calpol,irad,ld)
+              call tdrife(trans,cod,beam,srot,al,0.d0,0.d0,0.d0,0.d0,
+     $             .true.,.false.,irad)
               call tintrb(trans,cod,beam,bmi,al,al*.5d0,l)
               if(plotib)then
                 bmi=bmi*0.5d0
@@ -483,8 +490,8 @@ c        go to 5000
               endif
             endif
           endif
-          call tdrife(trans,cod,beam,al,0.d0,0.d0,0.d0,
-     $         .true.,.false.,calpol,irad,ld)
+          call tdrife(trans,cod,beam,srot,al,0.d0,0.d0,0.d0,0.d0,
+     $         .true.,.false.,irad)
 
         case (icBEND)
           if(dir .gt. 0.d0)then
@@ -525,7 +532,7 @@ c          endif
             ak0=ak0*rtaper
             ak1=ak1*rtaper
           endif
-          call tbende(trans,cod,beam,al,
+          call tbende(trans,cod,beam,srot,al,
      1         min(pi2,max(-pi2,ak0)),
      $         cmp%value(ky_ANGL_BEND),
      $         psi1,psi2,apsi1,apsi2,ak1,
@@ -536,7 +543,7 @@ c          endif
      $         cmp%value(ky_FRIN_BEND) .eq. 0.d0,
      $         cmp%value(ky_EPS_BEND),
      1         cmp%value(ky_RAD_BEND) .eq. 0.d0,.true.,
-     $         next,l,ld)
+     $         next,l)
 c          if(l .eq. 13136)then
 c            write(*,*)'tturne1-bend-1 ',l
 c          endif
@@ -559,14 +566,16 @@ c          endif
             ak1=ak1*min(1.d0+tapmax,max(1.d0-tapmax,rtaper))
           endif
           call tsetfringepe(cmp,icQUAD,dir,ftable)
-          call tquade(trans,cod,beam,al,ak1,
+          call tquade(trans,cod,beam,srot,al,ak1,
      $         cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1         cmp%value(ky_ROT_QUAD),
      $         cmp%value(ky_RAD_QUAD) .eq. 0.d0,
      1         cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $         ftable(1),ftable(2),ftable(3),ftable(4),
      $         mfr,cmp%value(ky_EPS_QUAD),
-     $         cmp%value(ky_KIN_QUAD) .eq. 0.d0,next,ld)
+     $         cmp%value(ky_KIN_QUAD) .eq. 0.d0,
+     $         cmp%value(ky_CHRO_QUAD) .ne. 0.d0,
+     $         next)
 
         case (icSEXT,icOCTU,icDECA,icDODECA)
           ak1=cmp%value(ky_K_THIN)
@@ -579,12 +588,12 @@ c          endif
             endif
             ak1=ak1*min(1.d0+tapmax,max(1.d0-tapmax,rtaper))
           endif
-          call tthine(trans,cod,beam,lele,al,ak1,
+          call tthine(trans,cod,beam,srot,lele,al,ak1,
      1         cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
-     $         cmp%value(ky_ROT_THIN),.false.,ld)
+     $         cmp%value(ky_ROT_THIN),.false.)
 
         case(icSOL)
-          call tsole(trans,cod,beam,l,ke,sol,
+          call tsole(trans,cod,beam,srot,l,ke,sol,
      1         iatr,iacod,iabmi,idp,plot,rt)
           alid=0.d0
 
@@ -606,11 +615,12 @@ c          endif
           if(seg)then
 c            call tfevals('Print["PROF-TTE-0: ",LINE["PROFILE","Q1"]]',
 c     $       kxx,irtc)
-            call tmulteseg(trans,cod,beam,l,cmp,0.d0,lsegp,rtaper,ld)
+            call tmulteseg(trans,cod,beam,srot,
+     $           l,cmp,0.d0,lsegp,rtaper)
 c            call tfevals('Print["PROF-TTE-1: ",LINE["PROFILE","Q1"]]',
 c     $       kxx,irtc)
           else
-            call tmulte1(trans,cod,beam,l,cmp,0.d0,rtaper,ld)
+            call tmulte1(trans,cod,beam,srot,l,cmp,0.d0,rtaper)
           endif
 
         case (icCAVI)
@@ -620,7 +630,7 @@ c     $       kxx,irtc)
             mfr=mfr*(11+mfr*(2*mfr-9))/2
           endif
 c     write(*,*)'tturne-tcave',cod
-          call tcave(trans,cod,beam,l,al,
+          call tcave(trans,cod,beam,srot,l,al,
      1         cmp%value(ky_VOLT_CAVI)+cmp%value(ky_DVOLT_CAVI),
      $         cmp%value(ky_HARM_CAVI),
      1         cmp%value(ky_PHI_CAVI),cmp%value(ky_FREQ_CAVI),
@@ -634,11 +644,11 @@ c     write(*,*)'tturne-tcave',cod
 c     write(*,*)'tturne-tcave-1',cod
 
         case (icTCAV)
-          call ttcave(trans,cod,beam,al,
+          call ttcave(trans,cod,beam,srot,al,
      1         cmp%value(ky_K0_TCAV),cmp%value(ky_HARM_TCAV),
      1         cmp%value(ky_PHI_TCAV),cmp%value(ky_FREQ_TCAV),
      1         cmp%value(ky_DX_TCAV),cmp%value(ky_DY_TCAV),
-     $         cmp%value(ky_ROT_TCAV),ld)
+     $         cmp%value(ky_ROT_TCAV))
 
         case (icMAP)
           if(optics)then
@@ -649,19 +659,20 @@ c     write(*,*)'tturne-tcave-1',cod
           endif
 
         case(icINS)
-          call tinse(trans,cod,beam,cmp%value(ky_DIR_INS+1),ld)
+          call tinse(trans,cod,beam,cmp%value(ky_DIR_INS+1))
 
         case (icCOORD)
           call tcoorde(trans,cod,beam,
      1         cmp%value(ky_DX_COORD),cmp%value(ky_DY_COORD),
      $         cmp%value(ky_DZ_COORD),cmp%value(ky_CHI1_COORD),
      $         cmp%value(ky_CHI2_COORD),cmp%value(ky_CHI3_COORD),
-     1         cmp%value(ky_DIR_COORD) .eq. 0.d0,ld)
+     1         cmp%value(ky_DIR_COORD) .eq. 0.d0)
 
         case default
         end select
  1010   continue
       enddo
+c      call tfmemcheckprint('tturne-end0',0,.true.,irtc)
       if(calint)then
         if(alid .ne. 0.d0)then
           call tintrb(trans,cod,beam,bmi,alid,alid,l)
@@ -678,6 +689,7 @@ c     write(*,*)'tturne-tcave-1',cod
      $         dtfcopy1(kxm2l(bmir,6,6,6,.false.))
         endif
       endif
+c      call tfmemcheckprint('tturne-end1',0,.true.,irtc)
       return
       end
 
@@ -893,7 +905,8 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
       return
       end
 
-      subroutine tmulteseg(trans,cod,beam,l,cmp,bzs,lsegp,rtaper,ld)
+      subroutine tmulteseg(trans,cod,beam,srot,
+     $     l,cmp,bzs,lsegp,rtaper)
       use kyparam
       use tfstk
       use ffs
@@ -906,8 +919,8 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
       type (sad_dlist), pointer :: lal,lk
       type (sad_rlist), pointer :: lak,lkv
       real*8 :: rsave(cmp%ncomp2)
-      real*8 trans(6,12),cod(6),beam(42),rtaper,bzs
-      integer*4 i,nseg,i1,i2,istep,k,l,ld,k1,k2,nk
+      real*8 trans(6,12),cod(6),beam(42),srot(3,9),rtaper,bzs
+      integer*4 i,nseg,i1,i2,istep,k,l,k1,k2,nk
       integer*8 kk
       integer*4 , parameter :: nc=ky_PROF_MULT-1
       rsave(1:nc)=cmp%value(1:nc)
@@ -943,13 +956,13 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
           endif
           cmp%value(k1)=cmp%value(k1)+rsave(k2)*lkv%rbody(i)
         enddo
-        call tmulte1(trans,cod,beam,l,cmp,bzs,rtaper,ld)
+        call tmulte1(trans,cod,beam,srot,l,cmp,bzs,rtaper)
       enddo
       cmp%value(1:nc)=rsave(1:nc)
       return
       end
 
-      subroutine tmulte1(trans,cod,beam,l,cmp,bzs,rtaper,ld)
+      subroutine tmulte1(trans,cod,beam,srot,l,cmp,bzs,rtaper)
       use kyparam
       use tfstk
       use tffitcode
@@ -961,7 +974,7 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
       implicit none
       type (sad_comp) :: cmp
       integer*4 l,mfr,ld
-      real*8 trans(6,12),cod(6),beam(42),phi,al,ftable(4),
+      real*8 trans(6,12),cod(6),beam(42),srot(3,9),phi,al,ftable(4),
      $     psi1,psi2,apsi1,apsi2,fb1,fb2,chi1,chi2,rtaper,
      $     bzs
       al=cmp%value(ky_L_MULT)
@@ -988,7 +1001,7 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
         chi2=-cmp%value(ky_CHI2_MULT)
       endif
       call tsetfringepe(cmp,icMULT,cmp%orient,ftable)
-      call tmulte(trans,cod,beam,l,al,
+      call tmulte(trans,cod,beam,srot,l,al,
      $     cmp%value(ky_K0_MULT),
      $     bzs,
      $     phi,psi1,psi2,apsi1,apsi2,

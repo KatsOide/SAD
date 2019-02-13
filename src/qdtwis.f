@@ -236,7 +236,6 @@ c      endif
       dtwiss(mfitax)=dax/(1.d0+utwiss(mfitax,idp,iutl)**2)
       dbx      =2.d0*(-(dx11*x12+x11*dx12)*ax0
      1               +dx11*x11*bx0+dx12*x12*gx0)
-c      write(*,*)'qdtwis ',dx11,dx12,x12,x11,ax0,bx0,gx0,dbx
       dtwiss(mfitbx)=dbx/utwiss(mfitbx,idp,iutl)
       dtwiss(mfitnx)=(dx12*(bx0*x11-ax0*x12)-x12*(bx0*dx11-ax0*dx12))
      1          /(x12**2+(bx0*x11-ax0*x12)**2)
@@ -313,7 +312,6 @@ c      write(*,*)'qdtwis ',dx11,dx12,x12,x11,ax0,bx0,gx0,dbx
      1       (-sinmy-utwiss(mfitay,idp,iutl)*cosmy)*dtwiss(mfitny)-
      1       sinmy*day)/byy
       endif
-c      write(*,*)'qdtwis ',k0,l,dtwiss(mfitey)
  9000 gammab(1)=g1
       call resetnan(dtwiss)
       return

@@ -14,7 +14,7 @@
      1     epsrr=1.d-4,rmax=1.d200,fmin=1.d-4,a=0.25d0, dpthre=3.e-4
       real*8 trans(6,12),cod(6),codi(6),codf(6),dcod(6),beam(42),
      1     r0,fact,trf00,dtrf0,r,dcod1(6),codw(6),conv,trs(6,6),
-     $     dcod0(6),s,trw,dz,alambdarf,trf0s,v0,red,ddp
+     $     dcod0(6),s,trw,dz,alambdarf,trf0s,v0,red,ddp,srot(3,9)
       integer*4 loop,i
       logical*4 rt,rtr
       real*8 , parameter :: codw0(6) =
@@ -72,11 +72,11 @@ c      write(*,*)'tcod-dp0 ',dp0
         endif
         return
       endif
-      call tinitr(trans)
+      call tinitr12(trans)
       codf=codi
       trf00=trf0
 c      write(*,*)'tcod-tturne-0'
-      call tturne(trans,codf,beam,
+      call tturne(trans,codf,beam,srot,
      $     int8(0),int8(0),int8(0),.false.,.true.,rt)
 c      write(*,*)'tcod-tturne-1'
       dz=(codi(5)+codf(5))*0.5d0

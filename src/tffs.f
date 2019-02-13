@@ -106,7 +106,7 @@ c$$$
      $       taurdx,taurdy,taurdz,fridiv,beamin(21),
      $       vcalpha,vceff,vcacc,dvcacc,ddvcacc,alphap,
      $       pspac_dx,pspac_dy,pspac_dz,dvfs,rcratio,rclassic,brhoz,
-     $       bradprev,amom0,circ,hvc0
+     $       bradprev,amom0,circ,hvc0,cuc
         integer*8 ilattp,lspect,ipoltr,ipolb,ipoll,ipolid,ipolo
         integer*4 nflag0,nlat,np0,nturn,isynch,nspect,
      $       lplot,nplot,nuse,nclas,irad,novfl,npelm,ipelm,
@@ -255,7 +255,7 @@ c$$$
      $       calpol,rfluct,k64,fourie,
      $       trsize,simulate,absweit,jitter,
      $       trgauss,lwake,twake,smearp,
-     $       bunchsta,convgo,cellstab,spac,
+     $       radpol,convgo,cellstab,spac,
      $       radlight,geocal,photons,wspac,
      $       selfcod,pspac,convcase,preservecase,
      $       lossmap,orbitcal,radtaper,sorg,
@@ -272,7 +272,7 @@ c$$$
      1     'POL     ','FLUC    ','K64     ','FOURIER ',
      1     'TRACKSIZ','SIMULATE','ABSW    ','JITTER  ',
      1     'TRGAUSS ','LWAKE   ','TWAKE   ','BARYCOD ',
-     1     'BUNCHSTA','CONV    ','STABLE  ','SPAC    ',
+     1     'RADPOL  ','CONV    ','STABLE  ','SPAC    ',
      $     'RADLIGHT','GEOCAL  ','PHOTONS ','WSPAC   ',
      $     'SELFCOD ','PSPAC   ','CONVCASE','PRSVCASE',
      $     'LOSSMAP ','ORBITCAL','RADTAPER','SORG    ',
@@ -285,7 +285,7 @@ c$$$
      1     '        ','DAMPONLY','LEGACY  ','        ',
      1     '        ','OPERATE ','RELW    ','QUIET   ',
      1     'TRUNI   ','        ','        ','        ',
-     1     'BATCHSTA','        ','UNSTABLE','        ',
+     1     '        ','        ','UNSTABLE','        ',
      $     '        ','GEOFIX  ','        ','        ',
      $     '        ','        ','        ','        ',
      $     '        ','        ','        ','        ',
@@ -518,7 +518,7 @@ c$$$
      $       calpol,rfluct,k64,fourie,
      $       trsize,simulate,absweit,jitter,
      $       trgauss,lwake,twake,smearp,
-     $       bunchsta,convgo,cellstab,spac,
+     $       radpol,convgo,cellstab,spac,
      $       radlight,geocal,photons,wspac,
      $       selfcod,pspac,convcase,preservecase,
      $       lossmap,orbitcal,radtaper,sorg,
@@ -555,7 +555,7 @@ c$$$
         lwake=>fff%lwake
         twake=>fff%twake
         smearp=>fff%smearp
-        bunchsta=>fff%bunchsta
+        radpol=>fff%radpol
         calc6d=>fff%calc6d
         cellstab=>fff%cellstab
         spac=>fff%spac

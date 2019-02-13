@@ -1,5 +1,6 @@
       subroutine tapert
-     1  (l,latt,x,px,y,py,z,g,dv,pz,kptbl,np,kturn,
+     1  (l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+     $     kptbl,np,kturn,
      $     ax,ay,dx,dy,
      $     xl,yl,xh,yh,pxj,pyj,dpj,theta)
       use kyparam
@@ -13,11 +14,12 @@
       parameter (plimit=0.99d0,zlimit=1.d10)
       integer*4 l
       integer*8 latt(nlat)
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
+      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
+      real*8 sx(np0),sy(np0),sz(np0)
       integer*4 kptbl(np0,nkptbl),np,kturn
       real*8 ax,ay,dx,dy,xl,yl,xh,yh,pxj,pyj,dpj,theta
       real*8 xh1,xl1,yh1,yl1,ax1,ay1,xa,ya,cost,sint,
-     $     x1,px1,y1,py1,z1,g1,dv1,pz1,phi(2)
+     $     x1,px1,y1,py1,z1,g1,dv1,phi(2),sx1,sy1,sz1
       integer*4 i,j,k,kptmp(nkptbl)
       logical eli, dodrop
 
@@ -174,7 +176,7 @@ c     Reporting drop particles
      $     .and. (.not. trpt .or. idtypec(l) .eq. icAprt)
      $     .and. (outfl .ne. 0))then
         call tapert_report_dropped(outfl,kturn,l,
-     $       latt,np,x,px,y,py,z,g,dv,pz,kptbl)
+     $       latt,np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl)
       endif
 
 c     Sweaping drop particles
@@ -206,7 +208,9 @@ c      - Swap particle coordinates
             z1  = z(i)
             g1  = g(i)
             dv1 = dv(i)
-            pz1 = pz(i)
+            sx1 = sx(i)
+            sy1 = sy(i)
+            sz1 = sz(i)
 
             x(i)  = x(np)
             px(i) = px(np)
@@ -215,7 +219,9 @@ c      - Swap particle coordinates
             z(i)  = z(np)
             g(i)  = g(np)
             dv(i) = dv(np)
-            pz(i) = pz(np)
+            sx(i) = sx(np)
+            sy(i) = sy(np)
+            sz(i) = sz(np)
 
             x(np)  = x1
             px(np) = px1
@@ -224,7 +230,13 @@ c      - Swap particle coordinates
             z(np)  = z1
             g(np)  = g1
             dv(np) = dv1
-            pz(np) = pz1
+            sx(np) = sx1
+            sy(np) = sy1
+            sz(np) = sz1
+c            if(ktfenanq(sy(np)))then
+c              write(*,'(a,2i5,1p8g12.4)')'tapert-i ',i,np,
+c     $           sx(i),sy(i),sz(i),sx1,sy1,sz1
+c            endif
           endif
           np=np-1
         endif
@@ -233,7 +245,7 @@ c      - Swap particle coordinates
       return
       end
 
-      subroutine tapert1(l,latt,x,px,y,py,z,g,dv,pz,
+      subroutine tapert1(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
      $     kptbl,np,kturn)
       use kyparam
       use tfstk
@@ -241,7 +253,8 @@ c      - Swap particle coordinates
       implicit none
       integer*4 l
       integer*8 latt(nlat)
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
+      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
+      real*8 sx(np0),sy(np0),sz(np0)
       integer*4 kptbl(np0,6),np,kturn
       integer*8 lp
       real*8 dpxj,dpyj,ddp,dx1,dy1,dx2,dy2
@@ -262,7 +275,7 @@ c     $     rlist(lp+ky_AX_Aprt),
 c     $     rlist(lp+ky_AY_Aprt),
 c     $     rlist(lp+ky_DX_Aprt),
 c     $     rlist(lp+ky_DY_Aprt)
-      call tapert(l,latt,x,px,y,py,z,g,dv,pz,
+      call tapert(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
      1     kptbl,np,kturn,
      $     rlist(lp+ky_AX_Aprt),
      $     rlist(lp+ky_AY_Aprt),
@@ -277,7 +290,7 @@ c     Helper functions for Aperture Handling in Tracking Modules
 
 c     Report new drop marked particles in alive area [1, np]
       subroutine tapert_report_dropped(outfd,kturn,lbegin,
-     $     latt,np,x,px,y,py,z,g,dv,pz,kptbl)
+     $     latt,np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl)
       use tfstk
       use tmacro
       use ffs_pointer, only:idvalc,idtypec,idelc
@@ -285,7 +298,8 @@ c     Report new drop marked particles in alive area [1, np]
       integer*4 outfd,kturn,lbegin
       integer*8 latt(nlat)
       integer*4 np
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
+      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
+      real*8 sx(np0),sy(np0),sz(np0)
       integer*4 kptbl(np0,6)
       integer*4 i,l,t
       character*2 ord
@@ -313,16 +327,17 @@ c     Report new drop marked particles in alive area [1, np]
 
 c     Sweep new drop marked particles from alive area [1, np]
 c     This subroutine need exclusive access to given arguments
-      subroutine tapert_sweep_dropped(np0,np,x,px,y,py,z,g,dv,pz,kptbl)
+      subroutine tapert_sweep_dropped(np0,np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $     kptbl)
       implicit none
       integer, parameter :: nkptbl = 6
       integer(4), intent(in)    :: np0
       integer(4), intent(inout) :: np
       real(8),    intent(inout) :: x(np0), px(np0), y(np0), py(np0),
-     $     z(np0), g(np0), dv(np0), pz(np0)
+     $     z(np0), g(np0), dv(np0), sx(np0),sy(np0),sz(np0)
       integer(4), intent(inout) :: kptbl(np0,nkptbl)
       integer(4) :: i, j, k, kptmp(nkptbl)
-      real(8) :: x1, px1, y1, py1, z1, g1, dv1, pz1
+      real(8) :: x1, px1, y1, py1, z1, g1, dv1, sx1, sy1, sz1
 
 c     Scan new drop marked particles from alive area [1, np]
       i = 1
@@ -353,7 +368,9 @@ c              Swap particle coordinates
                z1  = z (i)
                g1  = g (i)
                dv1 = dv(i)
-               pz1 = pz(i)
+               sx1 = sx(i)
+               sy1 = sy(i)
+               sz1 = sz(i)
 
                x (i) = x (np)
                px(i) = px(np)
@@ -362,7 +379,9 @@ c              Swap particle coordinates
                z (i) = z (np)
                g (i) = g (np)
                dv(i) = dv(np)
-               pz(i) = pz(np)
+               sx(i) = sx(np)
+               sy(i) = sy(np)
+               sz(i) = sz(np)
 
                x (np) = x1
                px(np) = px1
@@ -371,7 +390,9 @@ c              Swap particle coordinates
                z (np) = z1
                g (np) = g1
                dv(np) = dv1
-               pz(np) = pz1
+               sx(np) = sx1
+               sy(np) = sy1
+               sz(np) = sz1
             endif
             np = np - 1
          endif
@@ -382,16 +403,17 @@ c              Swap particle coordinates
 
 c     Sweep new inject marked particles from dead area (np, np0]
 c     This subroutine need exclusive access to given arguments
-      subroutine tapert_sweep_injected(np0,np,x,px,y,py,z,g,dv,pz,kptbl)
+      subroutine tapert_sweep_injected(np0,np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $     kptbl)
       implicit none
       integer, parameter :: nkptbl = 6
       integer(4), intent(in)    :: np0
       integer(4), intent(inout) :: np
       real(8),    intent(inout) :: x(np0), px(np0), y(np0), py(np0),
-     $     z(np0), g(np0), dv(np0), pz(np0)
+     $     z(np0), g(np0), dv(np0), sx(np0),sy(np0),sz(np0)
       integer(4), intent(inout) :: kptbl(np0,nkptbl)
       integer(4) :: i, j, k, m, kptmp(nkptbl)
-      real(8) :: x1, px1, y1, py1, z1, g1, dv1, pz1
+      real(8) :: x1, px1, y1, py1, z1, g1, dv1, sx1, sy1, sz1
 
 c     Scan dead particles from dead area (np, m = np0]
       i = np + 1
@@ -423,7 +445,9 @@ c              Swap particle coordinates
                z1  = z (i)
                g1  = g (i)
                dv1 = dv(i)
-               pz1 = pz(i)
+               sx1 = sx(i)
+               sy1 = sy(i)
+               sz1 = sz(i)
 
                x (i) = x (m)
                px(i) = px(m)
@@ -432,7 +456,9 @@ c              Swap particle coordinates
                z (i) = z (m)
                g (i) = g (m)
                dv(i) = dv(m)
-               pz(i) = pz(m)
+               sx(i) = sx(m)
+               sy(i) = sy(m)
+               sz(i) = sz(m)
 
                x (m) = x1
                px(m) = px1
@@ -441,7 +467,9 @@ c              Swap particle coordinates
                z (m) = z1
                g (m) = g1
                dv(m) = dv1
-               pz(m) = pz1
+               sx(m) = sx1
+               sy(m) = sy1
+               sz(m) = sz1
             endif
             m = m - 1
          endif

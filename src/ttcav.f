@@ -1,14 +1,14 @@
-      subroutine ttcav(np,x,px,y,py,z,g,dv,pz,
+      subroutine ttcav(np,x,px,y,py,z,g,dv,
      1                 al,ak,harm,phi,freq,dx,dy,theta)
       use tfstk
       use tmacro
       implicit none
       integer*4 np,i
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np)
       real*8 al,ak,harm,phi,freq,dx,dy,theta,cost,sint,w,phic,
      $     dp1r,p1r,p1,h1,t,ph,dh,h2,a,dpr,dp2r,p2r,xi,pxi,v
       if(al .ne. 0.d0)then
-        call tdrift_free(np,x,px,y,py,z,g,dv,pz,al*.5d0)
+        call tdrift_free(np,x,px,y,py,z,dv,al*.5d0)
       endif
       if(theta .ne. 0.d0)then
         cost=cos(theta)
@@ -58,7 +58,7 @@ c        g(i)=(gg**2+dp2r)/(2.d0+2.d0*gg)
 10    continue
       include 'inc/TEXIT.inc'
       if(al .ne. 0.d0)then
-        call tdrift_free(np,x,px,y,py,z,g,dv,pz,al*.5d0)
+        call tdrift_free(np,x,px,y,py,z,dv,al*.5d0)
       endif
       return
       end

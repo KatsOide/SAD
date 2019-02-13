@@ -45,7 +45,8 @@ c      endif
      $     ipr,j,n,jzout,np1,k,np,kp,kz,kx,irw,nsc,iw,
      $     jj,ip,isw,kseed,npmax,npara,nxm(n1p0)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
-     1     pz(np0),dampenough,aenox(np0),aenoy(np0),aenoz(np0)
+     1     pz(np0),dampenough,aenox(np0),aenoy(np0),aenoz(np0),
+     $     spx(np0),spy(np0),spz(np0)
       real*8 a2min,a2max,a3min,a3max,a1min,a1max,a2step,a3step,a1step,
      $     emx,emz,rgetgl1,cx,cy,cz,sx,sy,sz,
      $     dampx,dampy,dampz,t0
@@ -57,7 +58,7 @@ c      endif
       integer*4 ntloss(n1p0,n2p)
       integer*4 mturn(np0),kzx(2,np0),muls,irtc
       integer*4 i,fork_worker,wait,ichpid(maxpara)
-      logical*4 ini,remain,damp
+      logical*4 ini,remain,damp,pol0
       character label(3)
       data label /'X','Y','Z'/
       character rad62a
@@ -77,6 +78,8 @@ c     end   initialize for preventing compiler warning
 c      write(*,*)'trackd0 ',damp,dampx,t0,omega0,taurdx
       ncons=max(1,nint(rgetgl1('DAPWIDTH')))
       trpt=.false.
+      pol0=calpol
+      calpol=.false.
       call tsetdvfs
       trval=0.d0
       nscore=0
@@ -287,7 +290,6 @@ c     - Overwrite slot[np1] to slot[ip](Drop particle[k] information)
             z(ip)=z(np1)
             g(ip)=g(np1)
             dv(ip)=dv(np1)
-            pz(ip)=pz(np1)
             np1=np1-1
             if(np1 .le. 0)then
               go to 3000
@@ -299,7 +301,7 @@ c     - Overwrite slot[np1] to slot[ip](Drop particle[k] information)
  101  continue
 c      write(*,'(a,2i5,14(i5,1pg12.5))')
 c     $     'trackd-tturn-1 ',n,np,(kptbl(i,1),y(i),i=1,14)
-      call tturn(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n)
+      call tturn(np,latt,x,px,y,py,z,g,dv,spx,spy,spz,kptbl,n)
 c      write(*,'(a,2i5,14(i5,1pg12.5))')
 c     $     'trackd-tturn-2 ',n,np,(kptbl(i,1),y(i),i=1,14)
       if(damp .or. dampenough .ne. 0.d0)then
@@ -390,6 +392,7 @@ c        enddo
       write(lfno,'(a,i5)')'    Score: ',nscore
       trval=nscore
       call tltrm(kptbl)
+      calpol=pol0
       return
       end
 

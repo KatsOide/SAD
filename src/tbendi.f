@@ -4,7 +4,7 @@
       real*8 xi,pxi,yi,pyi,zi,p,dp,rhoe,rho0,rhob,drhob,drhop,
      $     rhosq,
      $     akk,akxsq,akysq,akx,aky,dcx,aksx,dcy,aksy,phix,phiy,
-     $     sx,sy,sxkx,syky,dcxkx,xsxkx
+     $     spx,spy,sxkx,syky,dcxkx,xsxkx
       real*8 a3,a5,a7,a9,a11,a13,a15,psqmax,epsbend
       parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
      1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
@@ -26,25 +26,25 @@
         akx=sqrt(akxsq)
         phix=akx*al
         dcx=2.d0*sinh(.5d0*phix)**2
-        sx=sinh(phix)
-        aksx=akx*sx
+        spx=sinh(phix)
+        aksx=akx*spx
         dcxkx=dcx/akxsq
-        sxkx=sx/akx
+        sxkx=spx/akx
         xsxkx=xsinh(phix)/akx/akxsq
       elseif(akxsq .lt. 0.d0)then
         akx=sqrt(-akxsq)
         phix=akx*al
         dcx=-2.d0*sin(.5d0*phix)**2
-        sx=sin(phix)
-        aksx=-akx*sx
+        spx=sin(phix)
+        aksx=-akx*spx
         dcxkx=dcx/akxsq
-        sxkx=sx/akx
+        sxkx=spx/akx
         xsxkx=-xsin(phix)/akx/akxsq
       else
         akx=0.d0
         phix=0.d0
         dcx=0.d0
-        sx=0.d0
+        spx=0.d0
         aksx=0.d0
         dcxkx=0.5d0*al**2
         sxkx=al
@@ -54,21 +54,21 @@
         aky=sqrt(akysq)
         phiy=aky*al
         dcy=2.d0*sinh(.5d0*phiy)**2
-        sy=sinh(phiy)
-        aksy=aky*sy
-        syky=sy/aky
+        spy=sinh(phiy)
+        aksy=aky*spy
+        syky=spy/aky
       elseif(akysq .lt. 0.d0)then
         aky=sqrt(-akysq)
         phiy=aky*al
         dcy=-2.d0*sin(.5d0*phiy)**2
-        sy=sin(phiy)
-        aksy=-aky*sy
-        syky=sy/aky
+        spy=sin(phiy)
+        aksy=-aky*spy
+        syky=spy/aky
       else
         aky=0.d0
         phiy=0.d0
         dcy=0.d0
-        sy=0.d0
+        spy=0.d0
         aksy=0.d0
         syky=al
       endif
@@ -119,7 +119,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
 
       end module
 
-      subroutine tbendi(np,x,px,y,py,z,g,dv,pz,l,al,phib,phi0,
+      subroutine tbendi(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb1,fb2,mfring,enarad,fringe,eps0)
@@ -129,33 +129,32 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       use ffs_flag
       use tmacro
       use ffs_pointer, only:inext,iprev
+      use tspin
       implicit none
       integer*4 np,mfring,i,ndiv,n,l
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
+     $     sx(np),sy(np),sz(np),px0(np),py0(np),zr0(np),bsi(np),
      $     al,phib,phi0,cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,cost,sint,fb1,fb2,eps0,
      $     tanp1,tanp2,aind,b,dxfr1,dyfr1,dyfra1,pr,eps,
      $     af,f,fpx,ff,akn,aln,phin,f1r,f2r,
-     $     dxfr2,dyfr2,dyfra2,dtheta
-      logical*4 enarad,fringe
+     $     dxfr2,dyfr2,dyfra2,dtheta,cphin,sphin
+      logical*4 enarad,fringe,krad
       include 'inc/TENT.inc'
       if(dtheta .ne. 0.d0)then
-        call tbrot(np,x,px,y,py,z,phi0,dtheta)
+        call tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
       endif
-c      if(dphiy .ne. 0.d0)then
-c        do i=1,np
-cc          pr=(1.d0+g(i))**2
-c          pr=1.d0+g(i)
-c          px(i)=px(i)+dphix/pr
-c          py(i)=py(i)+dphiy/pr
-c        enddo
-c      endif
       tanp1=sinp1/cosp1
       tanp2=sinp2/cosp2
       rhob=al/phib
       rho0=al/phi0
       aind=rho0/phi0*ak
-      if(rad .and. enarad)then
+      krad=rad .and. enarad .and. al .ne. 0.d0
+      if(krad)then
+        px0=px
+        py0=py
+        zr0=z
+        bsi=0.d0
         if(iprev(l) .eq. 0)then
           f1r=fb1
         else
@@ -167,9 +166,9 @@ c      endif
           f2r=0.d0
         endif
         b=brhoz/rhob
-        call trad(np,x,px,y,py,g,dv,b,0.d0,b*(aind/rho0),
-     1             1.d0/rho0,-tanp1*2.d0/al,.5d0*al,
-     $       f1r,f2r,0.d0,al,1.d0)
+c        call trad(np,x,px,y,py,g,dv,b,0.d0,b*(aind/rho0),
+c     1             1.d0/rho0,-tanp1*2.d0/al,.5d0*al,
+c     $       f1r,f2r,0.d0,al,1.d0)
       endif
       if(fringe .and. mfring .gt. -4 .and. mfring .ne. 2)then
         call ttfrin(np,x,px,y,py,z,g,4,ak,al,0.d0)
@@ -204,6 +203,8 @@ c            dp=g(i)*(2.d0+g(i))
       akn=ak/ndiv
       aln=al/ndiv
       phin=phi0/ndiv
+      cphin=cos(phin)
+      sphin=sin(phin)
       do i=1,np
         dp=g(i)
         p=1.d0+dp
@@ -219,9 +220,35 @@ c            dp=g(i)*(2.d0+g(i))
         call tbendiinit(akn,aln)
         call tbendicorr(akn*.5d0,aln*.5d0,phin*.5d0)
         call tbendibody(aln)
+        if(krad)then
+          bsi(i)=bsi(i)+akn/aln*xi*yi
+          if(rfluct)then
+            call tradkf1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
+     $           px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln)
+          else
+            call tradk1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
+     $           px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln)
+          endif
+          px0(i)=pxi
+          py0(i)=pyi
+          zr0(i)=zi
+          bsi(i)=0.d0
+        endif
         do n=2,ndiv
           call tbendicorr(akn,aln,phin)
           call tbendibody(aln)
+          if(krad .and. n .ne. ndiv)then
+            if(rfluct)then
+              call tradkf1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
+     $             px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln)
+            else
+              call tradk1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
+     $             px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln)
+            endif
+            px0(i)=pxi
+            py0(i)=pyi
+            zr0(i)=zi
+          endif
         enddo
         call tbendicorr(akn*.5d0,aln*.5d0,phin*.5d0)
         zi=zi-dv(i)*al
@@ -249,13 +276,15 @@ c            dp=g(i)*(2.d0+g(i))
           enddo
         endif
       endif
-      if(rad .and. enarad)then
-        call trad(np,x,px,y,py,g,dv,b,0.d0,b*(aind/rho0),
-     1             1.d0/rho0,-tanp2*2.d0/al,.5d0*al,
-     $       f1r,f2r,al,al,-1.d0)
-      endif
+c        call trad(np,x,px,y,py,g,dv,b,0.d0,b*(aind/rho0),
+c     1             1.d0/rho0,-tanp2*2.d0/al,.5d0*al,
+c     $       f1r,f2r,al,al,-1.d0)
       if(fringe .and. mfring .gt. -4 .and. mfring .ne. 1)then
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
+      endif
+      if(krad)then
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       px0,py0,zr0,cphin,sphin,bsi,aln)
       endif
 c      if(dphiy .ne. 0.d0)then
 c        do i=1,np
@@ -266,7 +295,7 @@ c          py(i)=py(i)+dphiy/pr
 c        enddo
 c      endif
       if(dtheta .ne. 0.d0)then
-        call tbrot(np,x,px,y,py,z,-phi0,-dtheta)
+        call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
       endif
       include 'inc/TEXIT.inc'
       return

@@ -56,7 +56,7 @@ c     end   initialize for preventing compiler warning
         call temits(ndim,ntwissfun,mphi2,
      $       amus0,amus1,amusstep,
      $       emxe,emye,rese,paramss,
-     $       15,0,0,irtc)
+     $       15,0,irtc)
         fey=max(1d0,emye/paramss(23))
         fex=emxe/paramss(22)
         if(fey.eq.1d0) fex=1d0

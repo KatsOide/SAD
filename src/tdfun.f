@@ -508,34 +508,34 @@ c     v1=pi2*(anint(v/pi2)+sign(.5d0*sin(.5d0*v)**2,sin(v)))
       subroutine tfpeak(idp,kf,ibegin,iend,ipeak,vpeak,npeak)
       use ffs_pointer
       implicit none
-      integer*4 ibegin,iend,kf,npeak,idp,ipeak(npeak)
-      real*8 vpeak(npeak)
+      integer*4 ,intent(in)::ibegin,iend,kf,npeak
+      integer*4 idp
+      integer*4 ,intent(out)::ipeak(npeak)
+      real*8 ,intent(out)::vpeak(npeak)
       integer*4 i,j,k
       real*8 va,va0,va1
-      do 10 i=1,npeak
-        vpeak(i)=0.d0
-        ipeak(i)=0
-10    continue
+      vpeak=0.d0
+      ipeak=0
       va0=0.d0
       va=abs(utwiss(kf,idp,itwissp(ibegin)))
-      do 110 i=ibegin,iend
+      do i=ibegin,iend
         va1=abs(utwiss(kf,idp,itwissp(min(i+1,iend))))
         if(va .gt. va0 .and. va .ge. va1)then
-          do 120 j=1,npeak
+          do j=1,npeak
             if(va .gt. abs(vpeak(j)))then
-              do 130 k=npeak,j+1,-1
+              do k=npeak,j+1,-1
                 vpeak(k)=vpeak(k-1)
                 ipeak(k)=ipeak(k-1)
- 130          continue
+              enddo
               vpeak(j)=utwiss(kf,idp,itwissp(i))
               ipeak(j)=i
 c              write(*,*)'tfpeak ',j,i,kf,idp,itwissp(i),vpeak(j)
-              go to 111
+              exit
             endif
- 120      continue
+          enddo
         endif
- 111    va0=va
+        va0=va
         va=va1
- 110  continue
+      enddo
       return
       end

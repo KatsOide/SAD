@@ -1,33 +1,37 @@
-      subroutine tthine(trans,cod,beam,nord,al,ak,
-     1                 dx,dy,theta,enarad,ld)
+      subroutine tthine(trans,cod,beam,srot,nord,al,ak,
+     1                 dx,dy,theta,enarad)
       use ffs_flag
       use tmacro
       use temw
       implicit none
-      integer*4 ld,kord,nord
-      real*8 al,ak,dx,dy,theta,b1,aki,ala,alb,bx,by,bxx,bxy,
-     $     ak0,ak1
-      real*8 trans(6,12),cod(6),beam(42)
+      integer*4 kord,nord
+      real*8 al,ak,dx,dy,theta,b1,aki,ala,alb
+      real*8 trans(6,12),cod(6),beam(42),srot(3,9)
       complex*16 cx,cx1
       real*8 fact(0:10)
-      logical*4 enarad
+      logical*4 enarad,krad
       data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
      1          720.d0,5040.d0,40320.d0,362880.d0,3628800.d0 /
       real*8 trans1(6,13)
       if(ak .eq. 0.d0)then
-        call tdrife(trans,cod,beam,al,
-     $       0.d0,0.d0,0.d0,.true.,enarad,calpol,irad,ld)
+        call tdrife(trans,cod,beam,srot,al,
+     $       0.d0,0.d0,0.d0,0.d0,.true.,.false.,irad)
         return
       endif
-      call tchge(trans,cod,beam,-dx,-dy,theta,0.d0,0.d0,.true.,ld)
+      call tchge(trans,cod,beam,srot,
+     $     -dx,-dy,theta,0.d0,0.d0,.true.)
+      krad=enarad .and. al .ne. 0.d0
+      if(krad)then
+        call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
+      endif
       kord=nord/2-1
       b1=0.d0
       aki=ak/fact(kord)
       if(al .ne. 0.d0)then
         ala=al/6.d0
         alb=al/1.5d0
-        call tdrife(trans,cod,beam,ala,
-     $       0.d0,0.d0,0.d0,.true.,enarad,calpol,irad,ld)
+        call tdrife(trans,cod,beam,srot,ala,
+     $       0.d0,0.d0,0.d0,0.d0,.true.,.false.,irad)
         b1=brhoz/al*aki
         aki=aki*.5d0
       endif
@@ -50,33 +54,21 @@
         call tmultr5(trans,trans1,irad)
       endif
       call tmulbs(beam ,trans1,.true.,.true.)
-      if(enarad .and. al .ne. 0.d0)then
-        bx=-b1*imag(cx)
-        by= b1*dble(cx)
-        bxx=-b1*imag(cx1)
-        bxy= b1*dble(cx1)
-        call trade(trans,beam,cod,bx,by,0.d0,0.d0,
-     $       bxx,bxy,0.d0,0.d0,0.d0,
-     $       al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
-      endif
-      if(calpol)then
-        if(nord .eq. 2)then
-          ak0=ak
-          ak1=0.d0
-        elseif(nord .lt. 8)then
-          ak0=0.d0
-          ak1=ak
-        else
-          ak0=0.d0
-          ak1=0.d0
-        endif
-        call polpar(nord*10,ld,0.d0,0.d0,ak0,ak1,0.d0,cod)
-      endif
+c      if(enarad .and. al .ne. 0.d0)then
+c        bx=-b1*imag(cx)
+c        by= b1*dble(cx)
+c        bxx=-b1*imag(cx1)
+c        bxy= b1*dble(cx1)
+c        call trade(trans,beam,cod,bx,by,0.d0,0.d0,
+c     $       bxx,bxy,0.d0,0.d0,0.d0,
+c     $       al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
+c      endif
       cod(2)=cod(2)-aki*dble(cx)
       cod(4)=cod(4)-aki*imag(cx)
       if(al .ne. 0.d0)then
-        call tdrife(trans,cod,beam,alb,
-     $       0.d0,0.d0,0.d0,.true.,enarad,calpol,irad,ld)
+        bsi=bsi-aki*imag(cx)/al
+        call tdrife(trans,cod,beam,srot,alb,
+     $       0.d0,0.d0,0.d0,al*.5d0,.true.,krad,irad)
         call tinitr(trans1)
         if(kord .eq. 0)then
           cx=(1.d0,0.d0)
@@ -96,34 +88,23 @@
           call tmultr5(trans,trans1,irad)
         endif
         call tmulbs(beam ,trans1,.true.,.true.)
-        if(enarad)then
-          bx=-b1*imag(cx)
-          by= b1*dble(cx)
-          bxx=-b1*imag(cx1)
-          bxy= b1*dble(cx1)
-          call trade(trans,beam,cod,bx,by,0.d0,0.d0,
-     $         bxx,bxy,0.d0,0.d0,0.d0,
-     $         al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
-        endif
-        if(calpol)then
-          if(nord .eq. 2)then
-            ak0=ak
-            ak1=0.d0
-          elseif(nord .lt. 8)then
-            ak0=0.d0
-            ak1=ak
-          else
-            ak0=0.d0
-            ak1=0.d0
-          endif
-          call polpar(nord*10,ld,0.d0,0.d0,ak0,ak1,0.d0,cod)
-        endif
+c        if(enarad)then
+c          bx=-b1*imag(cx)
+c          by= b1*dble(cx)
+c          bxx=-b1*imag(cx1)
+c          bxy= b1*dble(cx1)
+c          call trade(trans,beam,cod,bx,by,0.d0,0.d0,
+c     $         bxx,bxy,0.d0,0.d0,0.d0,
+c     $         al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
+c        endif
         cod(2)=cod(2)-aki*dble(cx)
         cod(4)=cod(4)-aki*imag(cx)
-        call tdrife(trans,cod,beam,ala,
-     $       0.d0,0.d0,0.d0,.true.,enarad,calpol,irad,ld)
+        bsi=bsi+aki*imag(cx)/al
+        call tdrife(trans,cod,beam,srot,ala,
+     $       0.d0,0.d0,0.d0,al*.5d0,.true.,krad,irad)
       endif
       bradprev=0.d0
-      call tchge(trans,cod,beam,dx,dy,-theta,0.d0,0.d0,.false.,ld)
+      call tchge(trans,cod,beam,srot,
+     $     dx,dy,-theta,0.d0,0.d0,.false.)
       return
       end
