@@ -6,7 +6,7 @@
       use tffitcode
       implicit none
       integer*4 k,mfring
-      real*8 trans(4,5),cod(6),srot(3,3),al,vc,harm,phi,
+      real*8 trans(4,5),cod(6),srot(3,9),al,vc,harm,phi,
      $     freq,dx,dy,theta,transe(6,12),beam(42),v10,v20,v11,v02
       logical*4 coup,fringe,autophi
       logical*4 rfsw0
@@ -28,7 +28,7 @@
       use tffitcode
       use ffs
       implicit none
-      real*8 trans(4,5),cod(6),srot(3,3),al,vc,harm,phi,
+      real*8 trans(4,5),cod(6),srot(3,9),al,vc,harm,phi,
      $     freq,dx,dy,transe(6,12),beam(42),theta
       logical*4 coup
       call tinitr(transe)

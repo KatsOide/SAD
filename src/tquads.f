@@ -1,4 +1,4 @@
-      subroutine tquads(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,ak,bz,
+      subroutine tquads(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,bz,
      1     dx,dy,theta,cost,sint,radlvl,
      1     fringe,f1in,f2in,f1out,f2out,
      $     mfring,eps0,ld,forward)
@@ -10,7 +10,7 @@ c      use ffs_pointer, only:inext,iprev
       implicit none
       type (sad_rlist), pointer :: klr
       integer*4 np,ld,mfring,i,irtc,ld1,level,m,itfuplevel,
-     $     itfdownlevel,l
+     $     itfdownlevel
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     pxr0(np),pyr0(np),zr0(np),bsi(np),
      $     al,bz,ak,dx,dy,theta,cost,sint,radlvl,alr,

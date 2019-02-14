@@ -138,7 +138,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      1     ak,dx,dy,theta,cost,sint,fb1,fb2,eps0,
      $     tanp1,tanp2,aind,b,dxfr1,dyfr1,dyfra1,pr,eps,
      $     af,f,fpx,ff,akn,aln,phin,f1r,f2r,
-     $     dxfr2,dyfr2,dyfra2,dtheta,cphin,sphin,sx0
+     $     dxfr2,dyfr2,dyfra2,dtheta,cphin,sphin
       logical*4 enarad,fringe,krad
       include 'inc/TENT.inc'
       if(dtheta .ne. 0.d0)then

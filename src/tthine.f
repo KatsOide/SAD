@@ -6,7 +6,7 @@
       implicit none
       integer*4 kord,nord
       real*8 al,ak,dx,dy,theta,b1,aki,ala,alb
-      real*8 trans(6,12),cod(6),beam(42),srot(3,3)
+      real*8 trans(6,12),cod(6),beam(42),srot(3,9)
       complex*16 cx,cx1
       real*8 fact(0:10)
       logical*4 enarad,krad

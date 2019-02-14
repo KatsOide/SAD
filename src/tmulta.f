@@ -412,6 +412,9 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
           else
             csxy=csxy+cxy
           endif
+          if(enarad)then
+            call tradke(trans,cod,beam,srot,aln,0.d0,0.d0)
+          endif
         enddo
 c        write(*,*)'tmultae ',dble(csr*cx1)/r,dble(csl),nmmin
         cod(2)=cod(2)-(dble(csr*cx1)/r+dble(csl))

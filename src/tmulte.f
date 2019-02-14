@@ -25,9 +25,8 @@
      $     dhg,rg2,dgb,wakew1,w1n,theta1,phia,psi1,psi2,
      $     apsi1,apsi2,bz0,v10a,v11a,v02a,v20a,offset1,va,sp,cp,
      $     av,dpxa,dpya,dpx,dpy,dav,davdz,davdp,ddhdx,ddhdy,ddhdp,
-     $     ddhdz,wi,dv,s0,fb1,fb2,rtaper,cod60,cod10,cod30,
-     $     trans10(6,6)
-      real*8 trans(6,12),trans1(6,6),cod(6),beam(42),srot(3,3)
+     $     ddhdz,wi,dv,s0,fb1,fb2,rtaper
+      real*8 trans(6,12),trans1(6,6),cod(6),beam(42),srot(3,9)
       complex*16 cx,cx0,cx2,cr,cr1
       real*8 fact(0:nmult),an(0:nmult)
       complex*16 ak(0:nmult),akn(0:nmult),ak0n
@@ -207,7 +206,15 @@
           call tqlfre(trans,cod,beam,al1,ak1,f1in,f2in,bzs)
         endif
         nmmin=2
+        if(krad)then
+          if(f1in .ne. 0.d0)then
+            call tradke(trans,cod,beam,srot,f1in,0.d0,bzs*.5d0)
+          else
+            call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
+          endif
+        endif
       else
+        call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
         nmmin=1
       endif
       call tinitr(trans1)
@@ -215,10 +222,6 @@
       dgb=0.d0
       do m=1,ndiv
         if(nmmin .eq. 2)then
-          cod10=cod(1)
-          cod30=cod(3)
-          cod60=cod(6)
-          trans10=trans(:,1:6)
           call tsolque(trans,cod,beam,srot,al1,ak1,
      $         bzs,dble(ak0n),imag(ak0n),
      $         eps0,
@@ -373,7 +376,7 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
       if(nmmin .eq. 2)then
         call tsolque(trans,cod,beam,srot,al1*.5d0,ak1*.5d0,
      $       bzs,dble(ak0n)*.5d0,imag(ak0n)*.5d0,
-     $       eps0,.false.,radcod,calpol,irad)
+     $       eps0,krad,radcod,calpol,irad)
         call tgetdvh(dgb,dv)
         cod(5)=cod(5)+dv*al1*.5d0
       endif
@@ -398,8 +401,8 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
           endif
         endif
       endif
-      if(krad)then
-c        call tradke(trans,cod,beam,srot,al1*.5d0,0.d0,bzs*.5d0)
+      if(krad .and. f1out .ne. 0.d0)then
+        call tradke(trans,cod,beam,srot,f1out,0.d0,bzs*.5d0)
       endif
  1000 continue
       call tsolrot(trans,cod,beam,al,bz,dx,dy,dz,

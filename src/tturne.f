@@ -355,10 +355,10 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       call tsetdvfs
       call tesetdv(cod(6))
       bradprev=0.d0
-      call tsetr0(trans,cod,0.d0,0.d0)
       do l=ibegin,iend
-c        if(irad .gt. 6 .and.
-c     $       l .gt. 7000 .and. l .lt. 8000 .and. mod(l,10) .eq. 0)then
+        call tsetr0(trans,cod,0.d0,0.d0)
+c        if(irad .gt. 6 .and. calpol .and. 
+c     $       l .gt. 7100 .and. l .lt. 7200 .and. mod(l,1) .eq. 0)then
 c          write(*,*)'tturne ',l,srot(:,6)
 c        endif
 c        if(l .gt. 6900 .and. l .lt. 6905)then
@@ -974,7 +974,7 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
       implicit none
       type (sad_comp) :: cmp
       integer*4 l,mfr,ld
-      real*8 trans(6,12),cod(6),beam(42),srot(3,3),phi,al,ftable(4),
+      real*8 trans(6,12),cod(6),beam(42),srot(3,9),phi,al,ftable(4),
      $     psi1,psi2,apsi1,apsi2,fb1,fb2,chi1,chi2,rtaper,
      $     bzs
       al=cmp%value(ky_L_MULT)

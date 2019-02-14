@@ -10,7 +10,7 @@
       type (sad_rlist), pointer :: klr
       integer*8 ifvh,kx
       integer*4 level,irtc
-      real*8 trans(6,12),cod(6),beam(21),srot(3,3),al,ak,bz,
+      real*8 trans(6,12),cod(6),beam(21),srot(3,9),al,ak,bz,
      $    dx,dy,theta,radlvl,f1in,f2in,f1out,f2out,eps0,
      $     aln,akn
       integer*4 mfring,l,ld
@@ -54,6 +54,11 @@ c        ilist(1,ifvh-2)=-1
       if(mfring .eq. 1 .or. mfring .eq. 3)then
         call tqlfre(trans,cod,beam,al,ak,f1in,f2in,bz)
       endif
+      if(krad .and. f1in .ne. 0.d0)then
+        call tradke(trans,cod,beam,srot,f1in,0.d0,bz*.5d0)
+      else
+        call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
+      endif
       if(ifv .eq. 0)then
         if(krad)then
           if(eps0 .eq. 0.d0)then
@@ -69,7 +74,7 @@ c        ilist(1,ifvh-2)=-1
         akn=ak/ndiv
         do i=1,ndiv
           call tsolque(trans,cod,beam,srot,aln,akn,
-     $         bz,0.d0,0.d0,eps0,krad .and. i .ne.ndiv,radcod,
+     $         bz,0.d0,0.d0,eps0,krad,radcod,
      $         calpol,irad)
         enddo
       else
@@ -109,7 +114,7 @@ c        ilist(1,ifvh-2)=-1
             endif
             call tsolque(trans,cod,beam,srot,ali,aki,
      $           bz*rb,0.d0,0.d0,
-     $           eps0,krad .and. i .ne. m,radcod,calpol,irad)
+     $           eps0,radcod,calpol,irad)
           enddo
           level=itfdownlevel()
         else
@@ -120,7 +125,7 @@ c        ilist(1,ifvh-2)=-1
             level=itfdownlevel()
             call tsolque(trans,cod,beam,srot,al,ak,
      $           bz,0.d0,0.d0,
-     $           eps0,.false.,radcod,calpol,irad)
+     $           eps0,krad,radcod,calpol,irad)
           endif
         endif
       endif
@@ -130,8 +135,8 @@ c        ilist(1,ifvh-2)=-1
       if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
         call tqfrie(trans,cod,beam,-ak,al,ld,bz)
       endif
-      if(krad)then
-        call tradke(trans,cod,beam,srot,al,0.d0,bzs*.5d0)
+      if(krad .and. f1out .ne. 0.d0)then
+        call tradke(trans,cod,beam,srot,f1out,0.d0,bzs*.5d0)
       endif
       call tsolrot(trans,cod,beam,al,0.d0,dx,dy,0.d0,
      $     0.d0,0.d0,theta,bxs,bys,bzs,.false.)

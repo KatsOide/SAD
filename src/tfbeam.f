@@ -90,7 +90,7 @@ c     $     beam(1)
       type (sad_comp), pointer ::cmp
       type (sad_descriptor) :: dsave(kwMAX)
       integer*4 k,nvar,le,itfdownlevel,irtc
-      real*8 f,beam(42),trans(6,12),cod(6),srot(3,3)
+      real*8 f,beam(42),trans(6,12),cod(6),srot(3,9)
       logical*4 chg,sol,cp0,int0
       if(.not. updatesize .or. sizedp .ne. dpmax)then
         call tfsize

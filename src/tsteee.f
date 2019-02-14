@@ -11,7 +11,7 @@
      1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
      1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
       integer*4 mfring,nrad,ndiv,n
-      real*8 trans(6,12),cod(6),beam(42),srot(3,3),
+      real*8 trans(6,12),cod(6),beam(42),srot(3,9),
      $     al,phib,dx,dy,theta,
      $     fb1,fb2,f2r,rhob,
      $     dxfr1,dyfr1,

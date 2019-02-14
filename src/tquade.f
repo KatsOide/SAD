@@ -8,12 +8,12 @@
       use temw
       implicit none
       integer*4 ld,ndiv,i,mfring,n,itgetqraddiv
-      real*8 trans(6,12),cod(6),beam(21),trans1(6,6),srot(3,3),
+      real*8 trans(6,12),cod(6),beam(21),trans1(6,6),srot(3,9),
      $     al,ak,dx,dy,theta,f1in,f2in,f1out,f2out,
      $     eps0,f1r,f2r,eps,b1,akn,
      $     aln,pr,akk,phi,scphi,shcphi,sinc2,sinhc2,akr,
      $     xsin2,xsinh2,a11,a12,a21,b11,b12,b21,als,
-     $     bx,by,bxy,xi,pxi,yi,pyi,xf,pxf,yf,pyf,
+     $     xi,pxi,yi,pyi,xf,pxf,yf,pyf,
      $     zx,zy,zxp,zyp,x,y,sinc,sinhc,xsin,xsinh
       logical*4 enarad,fringe,kin,next,prev,achro,krad
       real*8 , parameter:: pramin=1.d-4
@@ -42,6 +42,11 @@
         f1r=f1in
       else
         f1r=0.d0
+      endif
+      if(krad .and. f1in .ne. 0.d0)then
+        call tradke(trans,cod,beam,srot,f1in,0.d0,0.d0)
+      else
+        call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
         f2r=f1out
@@ -201,7 +206,7 @@ c          als=als+aln
      1      xi*xf*a21+yi*yf*b21)*.5d0
         cod(2)=pxf*pr
         cod(4)=pyf*pr
-        if(krad .and. n .ne. ndiv)then
+        if(krad)then
           if(n .eq. 1)then
             bsi=ak/aln*xi*yi
           endif
@@ -260,9 +265,9 @@ c      endif
       if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
         call tqfrie(trans,cod,beam,-ak,al,ld,0.d0)
       endif
-      if(krad)then
+      if(krad .and. f1out .ne. 0.d0)then
         bsi=-ak/aln*cod(1)*cod(3)
-        call tradke(trans,cod,beam,srot,aln,0.d0,0.d0)
+        call tradke(trans,cod,beam,srot,f1out,0.d0,0.d0)
       endif
       call tchge(trans,cod,beam,srot,
      $     dx,dy,-theta,0.d0,0.d0,.false.)

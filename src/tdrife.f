@@ -7,7 +7,7 @@
       implicit none
       integer*4 irad,i,itmax
       parameter (itmax=10)
-      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,3)
+      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,9)
       real*8 al,bz,ak0x,ak0y,pr,pxi,pyi,pzi,a,ale,alz,
      $     dv,dvdp,bzh,alr
       logical*4 dvon,enarad
@@ -49,12 +49,10 @@
           trans(5,i)=trans(5,i)+trans1(5,2)*trans(2,i)
      $         +trans1(5,4)*trans(4,i)+trans1(5,6)*trans(6,i)
         enddo
-        if(irad .gt. 6)then
-          call tmulbs(beam ,trans1,.true.,.true.)
-        endif
         cod(1)=cod(1)+pxi/pzi*al
         cod(3)=cod(3)+pyi/pzi*al
         cod(5)=cod(5)-(a/(pr+pzi)/pzi+dv)*al
+        bzh=0.d0
       else
 c        if(enarad)then
 c          br=tbrhoz()
@@ -68,9 +66,6 @@ c        else
 c          br=0.d0
 c        endif
         bzh=bz*.5d0
-        if(enarad)then
-          call tsetr0(trans(:,1:6),cod(1:6),bzh,0.d0)
-        endif
         cod(2)=cod(2)+bzh*cod(3)
         cod(4)=cod(4)-bzh*cod(1)
         call tsoldz(trans1,cod,al,ak0y/al,ak0x/al,bz,.true.)
@@ -81,12 +76,6 @@ c        endif
         trans1(2,1:6)=trans1(2,1:6)-bzh*trans1(3,1:6)
         trans1(4,1:6)=trans1(4,1:6)+bzh*trans1(1,1:6)
         call tmultr5(trans,trans1,irad)
-        if(irad .gt. 6)then
-          call tmulbs(beam ,trans1,.false.,.true.)
-        endif
-        if(enarad)then
-          call tradke(trans,cod,beam,srot,alr,0.d0,bzh)
-        endif
 c        if(enarad)then
 c          call trade(trans,beam,cod,bx,by,bz*br,bz,
 c     $         0.d0,0.d0,0.d0,0.d0,
@@ -95,6 +84,12 @@ c        endif
 c        if(irad .gt. 6)then
 c          call tmulbs(beam ,trans1,.true.,.true.)
 c        endif
+      endif
+      if(irad .gt. 6)then
+        call tmulbs(beam ,trans1,.false.,.true.)
+      endif
+      if(enarad)then
+        call tradke(trans,cod,beam,srot,alr,0.d0,bzh)
       endif
       bradprev=0.d0
       return

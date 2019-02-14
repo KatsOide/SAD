@@ -2,7 +2,7 @@
      1                 dx,dy,theta,coup)
       implicit none
       integer*4 nord
-      real*8 trans(4,5),cod(6),transe(6,12),beam(42),srot(3,3),
+      real*8 trans(4,5),cod(6),transe(6,12),beam(42),srot(3,9),
      $     dx,dy,theta,ak,al
       logical*4 coup
       call tinitr(transe)

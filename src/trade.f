@@ -260,18 +260,18 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
       real*8 , intent(inout)::trans(6,12),cod(6),beam(42),
      $     srot(3,9)
       real*8 , intent(in)::al,bzh,phir0
-      real*8 transi(6,6),tr1(6,6),dppa(6),tr2(6,6),
+      real*8 transi(6,6),tr1(6,6),dxpa(6),tr2(6,6),
      $     ddpz(6),dal(6),duc(6),dddpx(6),dddpy(6),ddg(6),
      $     dtheta(6),danp(6),dbeam(21),dpxi(6),dpyi(6),
      $     c1,dpx,dpy,ddpx,ddpy,pxr0,ct,pz00,das,
-     $     pr,px,py,pz,pz0,ppx,ppy,ppz,ppa,theta,
+     $     pr,px,py,pz,pz0,xpx,xpy,xpz,xpa,theta,
      $     p,h1,al1,anp,uc,dg,g,pr1,pxi,pyi,
      $     p2,h2,de,cp,sp,b,pxm,pym,gi,dh1r,
-     $     pxh,pyh,pzh,ppzb,btx,bty,btz,dct,sinu,cosu,dcosu,
+     $     pxh,pyh,pzh,xpzb,btx,bty,btz,dct,sinu,cosu,dcosu,
      $     gx,gy,gz,gnx,gny,gnz,blx,bly,blz,
      $     sx(9),sy(9),sux(9),suy(9),suz(9),sw(9),
      $     dpxh(6),dpyh(6),dpzh(6),bp,dbp(6),dpxr0(6),dpz0(6),
-     $     dppx(6),dppy(6),dppzb(6),dblx(6),dbly(6),dblz(6),
+     $     dxpx(6),dxpy(6),dxpz(6),dxpzb(6),dblx(6),dbly(6),dblz(6),
      $     dbtx(6),dbty(6),dbtz(6),dgx(6),dgy(6),dgz(6),dpz00(6)
       real*8, parameter:: gmin=-0.9999d0,
      $     cave=8.d0/15.d0/sqrt(3.d0),cuu=11.d0/27.d0,
@@ -290,11 +290,11 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
       pz=pr*(1.d0+pxy2dpz(px/pr,py/pr))
       dpx=px-pxr0
       dpy=py-pyi
-      ppx=(py*pz0 -pz*pyi)
-      ppy=(pz*pxr0-px*pz0)
-      ppz=(px*pyi-py*pxr0)
-      ppa=abs(dcmplx(ppx,abs(dcmplx(ppy,ppz))))
-      theta=asin(min(1.d0,ppa/pr**2))
+      xpx=(py*pz0 -pz*pyi)
+      xpy=(pz*pxr0-px*pz0)
+      xpz=(px*pyi-py*pxr0)
+      xpa=abs(dcmplx(xpx,abs(dcmplx(xpy,xpz))))/pr**2
+      theta=asin(min(1.d0,xpa))
       p=p0*pr
       h1=p2h(p)
       al1=al-cod(5)+codr0(5)
@@ -304,8 +304,8 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
       u0=u0-dg
       g=max(gmin,gi+dg)
       pr1=1.d0+g
-      ddpx=-.5d0*dpx*dg
-      ddpy=-.5d0*dpy*dg
+      ddpx=.5d0*dpx*dg
+      ddpy=.5d0*dpy*dg
       c1=al/pr/3.d0
       if(radcod)then
         cod(1)=cod(1)+ddpx*c1
@@ -330,7 +330,6 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
           tr2(4,:)=tr2(4,:)-bzh*tr2(1,:)
         endif
         ddpz=(tr2(6,:)*pr-tr2(2,:)*px-tr2(4,:)*py)/pz
-        ppzb=ppz+bsi+bzh*2.d0*al
         dpxi=(/0.d0,1.d0,bzhr0,0.d0,0.d0,0.d0/)
         dpyi=(/-bzhr0,0.d0,0.d0,1.d0,0.d0,0.d0/)
         dpz00=(-pxi*dpxi-pyi*dpyi)/pz00
@@ -338,24 +337,24 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
         dpxr0=cp*dpxi+sp*dpz00
         dpz0=(-pxr0*dpxr0-pyi*dpyi)/pz0
         dpz0(6)=dpz0(6)+pr/pz0
-        dppx=tr2(4,:)*pz0+py*dpz0-ddpz*pyi-pz*dpyi
-        dppy=ddpz*pxr0+pz*dpxr0-tr2(2,:)*pz0-px*dpz0
-        dppzb=tr2(2,:)*pyi+px*dpyi-tr2(4,:)*pxr0-py*dpxr0
+        dxpx=tr2(4,:)*pz0+py*dpz0-ddpz*pyi-pz*dpyi
+        dxpy=ddpz*pxr0+pz*dpxr0-tr2(2,:)*pz0-px*dpz0
+        dxpz=tr2(2,:)*pyi+px*dpyi-tr2(4,:)*pxr0-py*dpxr0
         dh1r=p*p0/h1**2
-        if(ppa .ne. 0.d0)then
-          dppa=(ppx*dppx+ppy*dppy+ppz*dppzb)/ppa
+        if(xpa .ne. 0.d0)then
+          dxpa=(xpx*dxpx+xpy*dxpy+xpz*dxpz)/xpa/pr**2
+          dxpa(6)=dxpa(6)-2.d0*xpa/pr
           dal=-tr2(5,:)
           dal(5)=dal(5)+1.d0
-          das=1.d0/sqrt(1.d0-ppa**2)
-          dtheta=dppa*das
-          dtheta(6)=dtheta(6)-2.d0*ppa/pr**3*das
+          das=1.d0/sqrt(1.d0-xpa**2)
+          dtheta=dxpa*das
           danp=anrad*h1*dtheta
           danp(6)=danp(6)+anp*dh1r
           duc=uc*(dtheta/theta-dal/al1)
           duc(6)=duc(6)+3.d0*uc*dh1r
           ddg=-cave*(danp*uc+anp*duc)
-          dddpx=-.5d0*((tr2(2,:)-dpxr0)*dg+ddpx*ddg)
-          dddpy=-.5d0*((tr2(4,:)-dpyi )*dg+ddpy*ddg)
+          dddpx=.5d0*((tr2(2,:)-dpxr0)*dg+ddpx*ddg)
+          dddpy=.5d0*((tr2(4,:)-dpyi )*dg+ddpy*ddg)
           tr1(1,:)=c1*dddpx
           tr1(1,6)=tr1(1,6)-ddpx/pr
           tr1(3,:)=c1*dddpy
@@ -372,7 +371,7 @@ c          write(*,'(a,1p8g15.7)')' ddg    ',ddg,dg
 c          write(*,'(a,1p8g15.7)')' danp   ',danp,anp
 c          write(*,'(a,1p8g15.7)')' duc    ',duc,uc
 c          write(*,'(a,1p8g15.7)')' dtheta ',dtheta,theta
-c          write(*,'(a,1p8g15.7)')' dppy   ',dppy,ppy
+c          write(*,'(a,1p8g15.7)')' dxpy   ',dxpy,xpy
 c          write(*,'(a,1p8g15.7)')' dpxr0  ',dpxr0,pxr0
 c          do i=1,6
 c            write(*,'(1p6g15.7)')tr1(i,:)
@@ -409,6 +408,9 @@ c          enddo
           endif
         endif
         if(calpol)then
+          xpzb=xpz+(bsi+bzh*2.d0*al)*pr**2
+          dxpzb=dxpz
+          dxpzb(6)=dxpzb(6)+2.d0*(bsi+bzh*2.d0*al)*pr
           pxh=(pxr0+px)/pr*.5d0
           pyh=(pyi+py)/pr*.5d0
           dpxh=(tr2(2,:)+dpxr0)/pr*.5d0
@@ -417,25 +419,25 @@ c          enddo
           dpyh(6)=dpyh(6)-pyh/pr
           pzh=1.d0+pxy2dpz(pxh,pyh)
           dpzh=-(pxh*dpxh+pyh*dpyh)/pzh
-          bp=(ppx*pxh+ppy*pyh+ppzb*pzh)/pr
-          dbp=(dppx*pxh+ppx*dpxh+dppy*pyh
-     $         +ppy*dpyh+dppzb*pzh+ppzb*dpzh)/pr
+          bp=(xpx*pxh+xpy*pyh+xpzb*pzh)/pr
+          dbp=(dxpx*pxh+xpx*dpxh+dxpy*pyh
+     $         +xpy*dpyh+dxpzb*pzh+xpzb*dpzh)/pr
           dbp(6)=dbp(6)-bp/pr
           blx=bp*pxh
           bly=bp*pyh
           blz=bp*pzh
-          btx=ppx/pr-blx
-          bty=ppy/pr-bly
-          btz=ppzb/pr-blz
+          btx=xpx/pr-blx
+          bty=xpy/pr-bly
+          btz=xpzb/pr-blz
           dblx=dbp*pxh+bp*dpxh
           dbly=dbp*pyh+bp*dpyh
           dblz=dbp*pzh+bp*dpzh
-          dbtx=dppx/pr-dblx
-          dbtx(6)=dbtx(6)-ppx/pr**2
-          dbty=dppy/pr-dbly
-          dbty(6)=dbty(6)-ppy/pr**2
-          dbtz=dppzb/pr-dblz
-          dbtz(6)=dbtz(6)-ppzb/pr**2
+          dbtx=dxpx/pr-dblx
+          dbtx(6)=dbtx(6)-xpx/pr**2
+          dbty=dxpy/pr-dbly
+          dbty(6)=dbty(6)-xpy/pr**2
+          dbtz=dxpzb/pr-dblz
+          dbtz(6)=dbtz(6)-xpzb/pr**2
           ct=h1*gspin
           dct=ct*dh1r
           ct=ct+1.d0

@@ -3,7 +3,7 @@
      $     kin,achro,coup)
       implicit none
       integer*4 mfring
-      real*8 trans(4,5),cod(6),transe(6,12),beam(42),srot(3,3),
+      real*8 trans(4,5),cod(6),transe(6,12),beam(42),srot(3,9),
      $     dx,dy,theta,ak,eps0,al,f1in,f2in,f1out,f2out
       logical*4 fringe,coup,kin,achro
       call tinitr(transe)

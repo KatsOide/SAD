@@ -95,12 +95,12 @@
         go to 9000
       endif
       if(calpol)then
-        if(.not. (mc .eq. 9 .or. mc .eq. 10))then
+        if(.not. (mc .ge. 9 .and. mc .le. 11))then
           go to 9000
         endif
         mcf=9
       else
-        if(.not. ((mc .eq. 7) .or. (mc .eq. 8)))then
+        if(.not. (mc .ge. 7 .and. mc .le. 9))then
           go to 9000
         endif
         mcf=7
@@ -341,12 +341,12 @@ c        endif
         go to 9000
       endif
       if(calpol)then
-        if(kll%nl .ne. 9 .and. kll%nl .ne. 10)then
+        if(kll%nl .ne. 9 .and. kll%nl .ne. 11)then
           go to 9000
         endif
         kcf=9
       else
-        if(kll%nl .ne. 7 .and. kll%nl .ne. 8)then
+        if(kll%nl .ne. 7 .and. kll%nl .ne. 9)then
           go to 9000
         endif
         kcf=7
@@ -412,16 +412,21 @@ c        endif
       use ffs_flag, only:calpol
       implicit none
       integer*8 ka,kaj(9)
-      integer*4 np,iptbl(np,6),i,j,k,nlati,tend,mc,mcf
+      integer*4 np,iptbl(np,6),i,j,k,nlati,tend,mc,mcf,nv
       real*8 zx(np,mc)
       if(calpol)then
         mcf=9
       else
         mcf=7
       endif
+      if(lossmap)then
+        nv=mcf+2
+      else
+        nv=mcf
+      endif
       call tconvm(np,zx(1,2),zx(1,4),zx(1,6),0.d0,1)
-      ka=ktadaloc(-1,mc)
-      do j=1,mc
+      ka=ktadaloc(-1,nv)
+      do j=1,nv
         kaj(j)=ktavaloc(0,np)
         klist(ka+j)=ktflist+kaj(j)
       enddo

@@ -357,7 +357,7 @@ c                enddo
       type (ffs_bound) fbound
       type (ffs_stat) optstat
       integer*4 lfno,idp
-      real*8 trans(6,12),cod(6),beam(21),srot(3,3),tw1(ntwissfun)
+      real*8 trans(6,12),cod(6),beam(21),srot(3,9),tw1(ntwissfun)
       complex*16 ceig(6)
       logical*4 codfnd,cell0,codplt0,ci0,rt
       cell0=cell
