@@ -94,7 +94,6 @@ c            endif
       use sad_main
       use ffs_seg
       use temw, only:tsetr0
-      use tspin, only:tsrot
       implicit none
       integer*4 l,ld,lt,mfr,kb,irtc
       integer*8 lp
@@ -176,7 +175,7 @@ c     $       .false.,
               call tmultr5(trans,trans1,irad)
               call tmulbs(beam,trans1,.false.,.true.)
               if(calpol)then
-                call tsrot(srot,rr)
+                srot=matmul(rr,srot)
               endif
               call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
               if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
@@ -197,7 +196,7 @@ c     $       .false.,
               call tmultr5(trans,trans1,irad)
               call tmulbs(beam,trans1,.false.,.true.)
               if(calpol)then
-                call tsrot(srot,rr)
+                srot=matmul(rr,srot)
               endif
             endif
           else
@@ -216,7 +215,7 @@ c     $       .false.,
             call tmultr5(trans,trans1,irad)
             call tmulbs(beam ,trans1,.true.,.true.)
             if(calpol)then
-              call tsrot(srot,rr)
+              srot=matmul(rr,srot)
             endif
           endif
         else
