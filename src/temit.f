@@ -706,12 +706,12 @@ c      end type
      $       ia11,ia12,ia13,ia14,ia15,
      $       ia20,ia21,ia22,ia40,ia41,ia42,ia43,ia44,
      $       ia60,ia61,ia62,ia63,ia64,ia65,ia66
-        complex*16 gx1,gy1,gz1,gx2,gy2,gz2,gyyzz,cg1,cg0
+        complex*16 gx1,gy1,gz1,gx2,gy2,gz2,gyyzz,cg1,cg0,ccg1
         complex*16 ,parameter :: cI=(0.d0,1.d0),c0=(0.d0,0.d0),
      $       c1=(1.d0,0.d0)
-        real*8 gxr,gxi,gyr,gyi,gzr,gzi,dx,amx,ams,e1,e2,a,
-     $       de12,se12,sesq,e1e2
+        real*8 , intent(in)::gxr,gxi,gyr,gyi,gzr,gzi,dx,amx,ams,e1,e2,a
         real*8 , intent(out) :: rmd(3,3)
+        real*8 de12,se12,sesq,e1e2
         do i=1,mlast
           call spinitrm(rm(i),iord(i),i)
         enddo
@@ -812,9 +812,10 @@ c      end type
         call spintrm(rm(mi2),dx,amx,ams)
 
         cg1=.25d0*(gx1**2+cI*gy2*gz1)
+        ccg1=conjg(cg1)
         cg0=.25d0*(2.d0*gx1*gx2+cI*gyyzz)
         call spmulrm(rm(m1),-cg1/6.d0,(/2,2,2,0/),rm(m3))
-        call spmulrm(rm(m1),-conjg(cg1)/6.d0,(/0,2,-2,0/),rm(m3))
+        call spmulrm(rm(m1),-ccg1/6.d0,(/0,2,-2,0/),rm(m3))
         call spmulrm(rm(m1),-cg0/6.d0,(/1,2,0,0/),rm(m3))
         call spcopyrm(rm(m3),rm(mi3))
         call spdotrm(rm(m1),rm(mi2),rm(mi3))
@@ -822,7 +823,7 @@ c      end type
         call spintrm(rm(mi3),dx,amx,ams)
 
         call spmulrm(rm(m2),-cg1/12.d0,(/2,2,2,0/),rm(m4))
-        call spmulrm(rm(m2),-conjg(cg1)/12.d0,(/0,2,-2,0/),rm(m4))
+        call spmulrm(rm(m2),-ccg1/12.d0,(/0,2,-2,0/),rm(m4))
         call spmulrm(rm(m2),-cg0/12.d0,(/1,2,0,0/),rm(m4))
         call spcopyrm(rm(m4),rm(mi4))
         call spdotrm(rm(m1),rm(mi3),rm(mi4))
@@ -831,7 +832,7 @@ c      end type
         call spintrm(rm(mi4),dx,amx,ams)
 
         call spmulrm(rm(m3),-cg1/20.d0,(/2,2,2,0/),rm(m5))
-        call spmulrm(rm(m3),-conjg(cg1)/20.d0,(/0,2,-2,0/),rm(m5))
+        call spmulrm(rm(m3),-ccg1/20.d0,(/0,2,-2,0/),rm(m5))
         call spmulrm(rm(m3),-cg0/20.d0,(/1,2,0,0/),rm(m5))
         call spcopyrm(rm(m5),rm(mi5))
         call spdotrm(rm(m1),rm(mi4),rm(mi5))
@@ -841,7 +842,7 @@ c      end type
         call spintrm(rm(mi5),dx,amx,ams)
 
         call spmulrm(rm(m4),-cg1/30.d0,(/2,2,2,0/),rm(m6))
-        call spmulrm(rm(m4),-conjg(cg1)/20.d0,(/0,2,-2,0/),rm(m6))
+        call spmulrm(rm(m4),-ccg1/20.d0,(/0,2,-2,0/),rm(m6))
         call spmulrm(rm(m4),-cg0/30.d0,(/1,2,0,0/),rm(m6))
         call spcopyrm(rm(m6),rm(mi6))
         call spdotrm(rm(m1),rm(mi5),rm(mi6))

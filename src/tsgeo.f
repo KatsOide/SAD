@@ -241,7 +241,7 @@ c        snchi3=sin(chi3)
       real*8 pxi,pyi,al,ds,pzi,phi,ak,sinphi,a14,a12,a22,
      $     a24,dx,pxf,dy,pyf,xi,yi,dl,theta,phix,phiy,f,xf,
      $     zf,gf,dvf,bzs,ak1,ftable(4),dir,bzs0,tfbzs,db,gi,
-     $     chi2i,cchi2i,schi2i,chi1i,cchi1i,schi1i,g1,yf,pzf,
+     $     chi2i,cchi2i,schi2i,chi1i,cchi1i,schi1i,g1,yf,
      $     sxf,syf,szf,bsi,
      $     trans(6,12),cod(6),beam(42),geo1(3,3),srot(3,9)
       logical*4 seg,dirf
@@ -327,7 +327,8 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         else
           ftable=0.d0
         endif
-        call tquads(1,xf,pxf,yf,pyf,zf,gf,dvf,pzf,i,
+        call tquads(1,xf,pxf,yf,pyf,zf,gf,dvf,
+     $       sxf,syf,szf,
      $       al,ak1,bzs*dir,
      $       cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),theta,
      1       cos(theta),sin(theta),

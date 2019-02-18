@@ -148,7 +148,7 @@ c     $       .false.,
         endif
         ak1=cmp%value(ky_K1_QUAD)
         call tsetfringepe(cmp,icQUAD,direlc(l),ftable)
-        call tquase(trans,cod,beam,
+        call tquase(trans,cod,beam,srot,
      $       al,ak1,bzs,
      $       cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      $       cmp%value(ky_ROT_QUAD),
