@@ -893,7 +893,7 @@ c      end type
      $      *dble(rm(mi6)%cmat(:,:,ia63))
 c     $       +(4.d0+1.d0/dx)*(e1+e2)**2*dble(rm(mi4)%cmat(:,:,ia42))
 c     $       +(24.d0+(8.d0+8.d0/dx)/dx)*dble(rm(mi6)%cmat(:,:,ia6))
-        
+
         do i=1,mlast
           deallocate(rm(i)%cmat)
           deallocate(rm(i)%iamat)
@@ -1118,7 +1118,7 @@ c     $         btx,bty,btz,cphi0,sphi0
         sz=-sx0*sphi0+sz*cphi0
         return
         end subroutine
-      
+
         subroutine spnorm(srot,sps,smu)
         implicit none
         real*8 , intent(inout) :: srot(3,9)
@@ -1188,7 +1188,7 @@ c     $         btx,bty,btz,cphi0,sphi0
         smu=atan(-sm,cm)
 c        write(*,'(a,1p8g15.7)')'spnorm ',sps(:,1),smu/2.d0/pi,dr
         return
-        end subroutine 
+        end subroutine
 
         subroutine sremit(srot,sps,params,emit,demit,rm1,equpol)
         use temw
@@ -2051,7 +2051,7 @@ c        call tmov(btr,r,78)
               klx1d%rbody(i)=(i+1)*2.d-3
               klx1l%rbody(i)=touckl(i)*tf
               do j=1,nlat
-c factor: tf for toucke(#dp/p0,#element) 
+c factor: tf for toucke(#dp/p0,#element)
                 toucke(i,j)=toucke(i,j)*tf
               enddo
             enddo
@@ -2198,12 +2198,12 @@ c            endif
         calint=.true.
 c     ccintr=(rclassic/h0**2)**2/8.d0/pi
 c     cintrb=ccintr*pbunch/emx/emy/emz
-c     
+c
 c     cintrb=rclassic**2/8.d0/pi
 c     1           *pbunch/(emx*h0)/(emy*h0)/(emz*h0)/h0
 c     Here was the factor 2 difference from B-M paper.
 c     Pointed out by K. Kubo on 6/18/2001.
-c     
+c
         cintrb=rclassic**2/4.d0/pi*pbunch
 c     write(*,*)cintrb,emx,emy,emz
 c        if(trpt)then
