@@ -273,6 +273,7 @@
      $     bz0,ak0x,ak0y,eps0,enarad,radcod,calpol,irad)
       use tsolz
       use tmacro, only:bradprev
+      use tspin, only:tradke
       implicit none
       type(tzparam) tz
       integer*4 n,ndiv,irad
@@ -754,7 +755,8 @@ c     $       .5d0*aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
       b=brhoz*(a*abs(bzh)+a/abs(al))
       nrad=int(abs(al*crad/epsrad*(h0*b)**2))
       itgetqraddiv=max(int(emidiv*emidiq*nrad),
-     1     int(abs(a)/epsrad/1.d3*emidiv*emidiq))
+     1       int(abs(h0*b*anrad)/epsrad/1.d5*emidiv*emidib))
+c     1     int(abs(a)/epsrad/1.d3*emidiv*emidiq))
       return
       end
 

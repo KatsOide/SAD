@@ -8,6 +8,7 @@
       use tmacro
       use multa
       use tbendcom, only:tbrot
+      use tspin, only:tradke      
       implicit none
       integer*4 ndivmax
       real*8 ampmax,eps00
@@ -262,6 +263,7 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
       use tfstk
       use tmacro
       use multa
+      use tspin, only:tradke      
       implicit none
       integer*4 ndivmax
       real*8 ampmax,eps00

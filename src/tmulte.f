@@ -11,6 +11,7 @@
       use tmacro
       use multa, only:nmult
       use temw
+      use tspin
       implicit none
       integer*4 ndivmax
       real*8 ampmax,oneev,pmax

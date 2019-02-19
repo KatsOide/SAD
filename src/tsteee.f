@@ -4,6 +4,7 @@
       use ffs_flag
       use tmacro
       use temw, only:tsetr0
+      use tspin, only:tradke      
       implicit none
       real*8 epslon,a3,a5,a7,a9,a11,a13,a15
       parameter (epslon=1.d-6)
@@ -63,7 +64,8 @@
         b=-brhoz/rhob
         nrad=int(abs(al/epsrad*crad*(h0*b)**2))
         ndiv=1+max(int(nrad*emidiv*emidib),
-     1       int(abs(phib)/epsrad/1.d3*emidiv*emidib))
+     1       int(abs(phib*h0*anrad)/epsrad/1.d5*emidiv*emidib))
+c     1       int(abs(phib)/epsrad/1.d3*emidiv*emidib))
       else
 c     begin initialize for preventing compiler warning
         tanp1=0.d0

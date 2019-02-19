@@ -94,6 +94,7 @@ c            endif
       use sad_main
       use ffs_seg
       use temw, only:tsetr0
+      use tspin
       implicit none
       integer*4 l,ld,lt,mfr,kb,irtc
       integer*8 lp

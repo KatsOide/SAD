@@ -6,11 +6,12 @@
       use ffs_flag
       use tmacro
       use temw, only:tsetr0
+      use tspin, only:tradke      
       implicit none
       type (sad_rlist), pointer :: klr
       integer*8 ifvh,kx
       integer*4 level,irtc
-      real*8 trans(6,12),cod(6),beam(21),srot(3,9),al,ak,bz,
+      real*8 trans(6,12),cod(6),beam(42),srot(3,9),al,ak,bz,
      $    dx,dy,theta,radlvl,f1in,f2in,f1out,f2out,eps0,
      $     aln,akn
       integer*4 mfring,l,ld
