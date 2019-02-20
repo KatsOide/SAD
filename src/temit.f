@@ -691,7 +691,7 @@ c      end type
         return
         end subroutine
 
-        subroutine spdepol(gxr,gxi,gyr,gyi,gzr,gzi,e1,e2,a,
+        subroutine spdepol(gxr,gxi,gyr,gyi,gzr,gzi,e1,e2,em,
      $     dx,amx,ams,rmd)
         implicit none
         integer*4 , parameter ::
@@ -705,35 +705,35 @@ c      end type
         type (scmat) rm(mlast)
         integer*4 i,ia1,ia2,ia3,ia4,ia5,ia6,ia7,ia8,ia9,ia10,
      $       ia11,ia12,ia13,ia14,ia15,
-     $       ia20,ia21,ia22,ia40,ia41,ia42,ia43,ia44,
-     $       ia60,ia61,ia62,ia63,ia64,ia65,ia66
-        complex*16 gx1,gy1,gz1,gx2,gy2,gz2,gyyzz,cg1,cg0,ccg1
+     $       ia20,ia21,ia40,ia41,ia42,
+     $       ia60,ia61,ia62,ia63
+        complex*16 gx,gy,gz,gxc,gyc,gzc,gyyzz,cg1,cg0,ccg1
         complex*16 ,parameter :: cI=(0.d0,1.d0),c0=(0.d0,0.d0),
      $       c1=(1.d0,0.d0)
-        real*8 , intent(in)::gxr,gxi,gyr,gyi,gzr,gzi,dx,amx,ams,e1,e2,a
+        real*8 , intent(in)::gxr,gxi,gyr,gyi,gzr,gzi,dx,amx,ams,e1,e2,em
         real*8 , intent(out) :: rmd(3,3)
         real*8 de12,se12,sesq,e1e2
         do i=1,mlast
           call spinitrm(rm(i),iord(i),i)
         enddo
-        gx1=dcmplx(gxr, gxi)
-        gx2=dcmplx(gxr,-gxi)
-        gy1=dcmplx( gyr+gzi, gzr-gyi)
-        gy2=dcmplx( gyi-gzr,-gyr-gzi)
-        gz1=dcmplx( gyr-gzi, gzr+gyi)
-        gz2=dcmplx(-gyi-gzr,-gyr+gzi)
+        gx=dcmplx(gxr,gxi)
+        gxc=conjg(gx)
+        gy=dcmplx(gyr+gzi,gzr-gyi)
+        gyc=conjg(gy)
+        gz=dcmplx(gyr-gzi,gzr+gyi)
+        gzc=conjg(gz)
         ia1=iaind(rm(m1),(/0,1,-1,-1/))
-        rm(m1)%cmat(:,:,ia1)=RESHAPE(0.25d0*gz2*(/
-     $        c0,c1,cI,
-     $       -c1,c0,c0,
-     $       -cI,c0,c0/),(/3,3/))
+        rm(m1)%cmat(:,:,ia1)=RESHAPE(0.25d0*gzc*(/
+     $        c0,-cI,c1,
+     $        cI,c0,c0,
+     $       -c1,c0,c0/),(/3,3/))
         ia2=iaind(rm(m1),(/0,1,-1,0/))
-        rm(m1)%cmat(:,:,ia2)=RESHAPE(0.5d0*gx2*(/
+        rm(m1)%cmat(:,:,ia2)=RESHAPE(0.5d0*gxc*(/
      $        c0,c0, c0,
      $        c0,c0,-c1,
      $        c0,c1, c0/),(/3,3/))
         ia3=iaind(rm(m1),(/0,1,-1,1/))
-        rm(m1)%cmat(:,:,ia3)=RESHAPE(0.25d0*gy1*(/
+        rm(m1)%cmat(:,:,ia3)=RESHAPE(0.25d0*gy*(/
      $        c0,cI,c1,
      $       -cI,c0,c0,
      $       -c1,c0,c0/),(/3,3/))
@@ -747,54 +747,48 @@ c      end type
         ia1=iaind(rm(m2),(/0,2,-2,-2/))
         rm(m2)%cmat(:,:,ia1)=RESHAPE((/
      $       c0, c0, c0,
-     $       c0,-c1,-cI,
-     $       c0,-cI, c1/)*gz2**2/32.d0,(/3,3/))
+     $       c0, c1, cI,
+     $       c0, cI,-c1/)*gzc**2/32.d0,(/3,3/))
         ia2=iaind(rm(m2),(/0,2,-2,-1/))
         rm(m2)%cmat(:,:,ia2)=RESHAPE((/
-     $        c0,cI,-c1,
-     $        cI,c0, c0,
-     $       -c1,c0, c0/)*gx2*gz2/16.d0,(/3,3/))
+     $        c0,c1,cI,
+     $        c1,c0,c0,
+     $        cI,c0,c0/)*gxc*gzc/16.d0,(/3,3/))
         ia3=iaind(rm(m2),(/0,2,-2,0/))
         rm(m2)%cmat(:,:,ia3)=RESHAPE((/
-     $       -2.d0*cI*gy1*gz2,c0,c0,
-     $       c0,-2.d0*gx2**2-cI*gy1*gz2,c0,
-     $       c0,c0,-2.d0*gx2**2-cI*gy1*gz2/)/16.d0,(/3,3/))
+     $       -2.d0*gy*gzc,c0,c0,
+     $       c0,-2.d0*gxc**2-gy*gzc,c0,
+     $       c0,c0,-2.d0*gxc**2-gy*gzc/)/16.d0,(/3,3/))
         ia4=iaind(rm(m2),(/0,2,-2,1/))
         rm(m2)%cmat(:,:,ia4)=RESHAPE((/
      $        c0,c1,-cI,
      $        c1,c0, c0,
-     $       -cI,c0, c0/)*gx2*gy1/16.d0,(/3,3/))
+     $       -cI,c0, c0/)*gxc*gy/16.d0,(/3,3/))
         ia5=iaind(rm(m2),(/0,2,-2,2/))
         rm(m2)%cmat(:,:,ia5)=RESHAPE((/
      $       c0, c0, c0,
      $       c0, c1,-cI,
-     $       c0,-cI,-c1/)*gy1**2/32.d0,(/3,3/))
+     $       c0,-cI,-c1/)*gy**2/32.d0,(/3,3/))
         ia6=iaind(rm(m2),(/1,2,0,-2/))
         rm(m2)%cmat(:,:,ia6)=RESHAPE((/
      $       c0, c0, c0,
-     $       c0,-c1,-cI,
-     $       c0,-cI, c1/)*gy2*gz2/16.d0,(/3,3/))
+     $       c0, c1, cI,
+     $       c0, cI,-c1/)*gyc*gzc/16.d0,(/3,3/))
         ia7=iaind(rm(m2),(/1,2,0,-1/))
         rm(m2)%cmat(:,:,ia7)=RESHAPE((/
-     $        c0,cI,-c1,
-     $        cI,c0, c0,
-     $       -c1,c0, c0/)*(gx2*gy2+gx1*gz2)/16.d0,(/3,3/))
-        gyyzz=gy1*gy2+gz1*gz2
+     $        c0,c1, cI,
+     $        c1,c0, c0,
+     $        cI,c0, c0/)*(gxc*gyc+gx*gzc)/16.d0,(/3,3/))
+        gyyzz=gy*gyc+gz*gzc
         ia8=iaind(rm(m2),(/1,2,0,0/))
         rm(m2)%cmat(:,:,ia8)=RESHAPE((/
-     $       -2.d0*cI*gyyzz,c0,c0,
-     $       c0,-4.d0*gx1*gx2-cI*gyyzz,c0,
-     $       c0,c0,-4.d0*gx1*gx2-cI*gyyzz/)/16.d0,(/3,3/))
+     $       -2.d0*gyyzz,c0,c0,
+     $       c0,-4.d0*gx*gxc-gyyzz,c0,
+     $       c0,c0,-4.d0*gx*gxc-gyyzz/)/16.d0,(/3,3/))
         ia9=iaind(rm(m2),(/1,2,0,1/))
-        rm(m2)%cmat(:,:,ia9)=RESHAPE((/
-     $        c0,c1,-cI,
-     $        c1,c0, c0,
-     $       -cI,c0, c0/)*(gx1*gy1+gx2*gz1)/16.d0,(/3,3/))
+        rm(m2)%cmat(:,:,ia9)=conjg(rm(m2)%cmat(:,:,ia7))
         ia10=iaind(rm(m2),(/1,2,0,2/))
-        rm(m2)%cmat(:,:,ia10)=RESHAPE((/
-     $       c0, c0, c0,
-     $       c0, c1,-cI,
-     $       c0,-cI,-c1/)*gy1*gz1/16.d0,(/3,3/))
+        rm(m2)%cmat(:,:,ia10)=conjg(rm(m2)%cmat(:,:,ia6))
         ia11=iaind(rm(m2),(/2,2,2,-2/))
         rm(m2)%cmat(:,:,ia11)=conjg(rm(m2)%cmat(:,:,ia5))
         ia12=iaind(rm(m2),(/2,2,2,-1/))
@@ -812,9 +806,9 @@ c      end type
         call spdotrm(rm(m1),rm(mi1),rm(mi2))
         call spintrm(rm(mi2),dx,amx,ams)
 
-        cg1=.25d0*(gx1**2+cI*gy2*gz1)
+        cg1=.25d0*(gx**2+gyc*gz)
         ccg1=conjg(cg1)
-        cg0=.25d0*(2.d0*gx1*gx2+cI*gyyzz)
+        cg0=.25d0*(2.d0*gx*gxc+gyyzz)
         call spmulrm(rm(m1),-cg1/6.d0,(/2,2,2,0/),rm(m3))
         call spmulrm(rm(m1),-ccg1/6.d0,(/0,2,-2,0/),rm(m3))
         call spmulrm(rm(m1),-cg0/6.d0,(/1,2,0,0/),rm(m3))
@@ -843,7 +837,7 @@ c      end type
         call spintrm(rm(mi5),dx,amx,ams)
 
         call spmulrm(rm(m4),-cg1/30.d0,(/2,2,2,0/),rm(m6))
-        call spmulrm(rm(m4),-ccg1/20.d0,(/0,2,-2,0/),rm(m6))
+        call spmulrm(rm(m4),-ccg1/30.d0,(/0,2,-2,0/),rm(m6))
         call spmulrm(rm(m4),-cg0/30.d0,(/1,2,0,0/),rm(m6))
         call spcopyrm(rm(m6),rm(mi6))
         call spdotrm(rm(m1),rm(mi5),rm(mi6))
@@ -855,44 +849,34 @@ c      end type
 
         ia20=iaind(rm(mi2),(/0,0,0,0/))
         ia21=iaind(rm(mi2),(/1,0,0,0/))
-        ia22=iaind(rm(mi2),(/2,0,0,0/))
         ia40=iaind(rm(mi4),(/0,0,0,0/))
         ia41=iaind(rm(mi4),(/1,0,0,0/))
         ia42=iaind(rm(mi4),(/2,0,0,0/))
-        ia43=iaind(rm(mi4),(/3,0,0,0/))
-        ia44=iaind(rm(mi4),(/4,0,0,0/))
         ia60=iaind(rm(mi6),(/0,0,0,0/))
         ia61=iaind(rm(mi6),(/1,0,0,0/))
         ia62=iaind(rm(mi6),(/2,0,0,0/))
         ia63=iaind(rm(mi6),(/3,0,0,0/))
-        ia64=iaind(rm(mi6),(/4,0,0,0/))
-        ia65=iaind(rm(mi6),(/5,0,0,0/))
-        ia66=iaind(rm(mi6),(/6,0,0,0/))
-        se12=e1+e2
-        de12=e1-e2
-        sesq=e1**2+e2**2
+        se12=(e1+e2)
+        de12=(e1-e2)
+        sesq=(e1**2+e2**2)
         e1e2=e1*e2
         rmd=se12*dble(rm(mi2)%cmat(:,:,ia21))
-     $     +de12*(dble(rm(mi2)%cmat(:,:,ia20))
-     $           +dble(rm(mi2)%cmat(:,:,ia22)))
-c$$$     $     +de12*(3.d0*de12*(dble(rm(mi4)%cmat(:,:,ia40))
-c$$$     $                      +dble(rm(mi4)%cmat(:,:,ia44)))
-c$$$     $           +(3.d0*se12+2.d0*a)
-c$$$     $              *(dble(rm(mi4)%cmat(:,:,ia41))
-c$$$     $               +dble(rm(mi4)%cmat(:,:,ia43))))
-c$$$     $     +(2.d0*(a*se12+e1e2)+3.d0*sesq)
-c$$$     $        *dble(rm(mi4)%cmat(:,:,ia42))
-c$$$     $     +de12*(3.d0*de12*(
-c$$$     $       5.d0*de12*(dble(rm(mi6)%cmat(:,:,ia60))
-c$$$     $                 +dble(rm(mi6)%cmat(:,:,ia66)))
-c$$$     $       +(2.d0*a+5.d0*se12)*(dble(rm(mi6)%cmat(:,:,ia61))
-c$$$     $                           +dble(rm(mi6)%cmat(:,:,ia65))))
-c$$$     $       +(2.d0*a*(4.d0*a+3.d0*se12)+15.d0*sesq+18.d0*e1e2)
-c$$$     $           *(dble(rm(mi6)%cmat(:,:,ia62))
-c$$$     $            +dble(rm(mi6)%cmat(:,:,ia64))))
-c$$$     $     +(a*(8.d0*a*se12+6.d0*sesq+4.d0*e1e2)
-c$$$     $       +3.d0*se12*(5.d0*sesq-2.d0*e1e2))
-c$$$     $      *dble(rm(mi6)%cmat(:,:,ia63))
+     $     +2.d0*de12*dble(rm(mi2)%cmat(:,:,ia20))
+     $       
+     $     +de12*(6.d0*de12*dble(rm(mi4)%cmat(:,:,ia40))
+     $           +(6.d0*se12+4.d0*em)
+     $              *dble(rm(mi4)%cmat(:,:,ia41)))
+     $     +(2.d0*(em*se12+e1e2)+3.d0*sesq)
+     $        *dble(rm(mi4)%cmat(:,:,ia42))
+     $       
+     $     +de12*(3.d0*de12*(
+     $       10.d0*de12*dble(rm(mi6)%cmat(:,:,ia60))
+     $       +(4.d0*em+10.d0*se12)*dble(rm(mi6)%cmat(:,:,ia61)))
+     $       +(em*(16.d0*em+12.d0*se12)+30.d0*sesq+36.d0*e1e2)
+     $           *dble(rm(mi6)%cmat(:,:,ia62)))
+     $     +(em*(8.d0*em*se12+6.d0*sesq+4.d0*e1e2)
+     $       +3.d0*se12*(5.d0*sesq-2.d0*e1e2))
+     $      *dble(rm(mi6)%cmat(:,:,ia63))
 c     $       +(4.d0+1.d0/dx)*(e1+e2)**2*dble(rm(mi4)%cmat(:,:,ia42))
 c     $       +(24.d0+(8.d0+8.d0/dx)/dx)*dble(rm(mi6)%cmat(:,:,ia6))
 
@@ -1368,6 +1352,16 @@ c     enddo
         return
         end subroutine
 
+        real*8 function outer(a,b)
+        implicit none
+        real*8 ,intent(in):: a(3),b(3)
+        dimension outer(3)
+        outer(1)=a(2)*b(3)-a(3)*b(2)
+        outer(2)=a(3)*b(1)-a(1)*b(3)
+        outer(3)=a(1)*b(2)-a(2)*b(1)
+        return
+        end function
+
         subroutine spnorm(srot,sps,smu,sdamp)
         use macmath, only:m_2pi
         use temw, only:gintd
@@ -1384,9 +1378,7 @@ c     enddo
         srot(:,1)=srot(:,1)-s*srot(:,2)
         s=abs(dcmplx(srot(1,1),abs(dcmplx(srot(2,1),srot(3,1)))))
         srot(:,1)=srot(:,1)/s
-        srot(1,3)=srot(2,1)*srot(3,2)-srot(2,2)*srot(3,1)
-        srot(2,3)=srot(3,1)*srot(1,2)-srot(3,2)*srot(1,1)
-        srot(3,3)=srot(1,1)*srot(2,2)-srot(1,2)*srot(2,1)
+        srot(:,3)=outer(srot(:,1),srot(:,2))
         sps(1,1)=srot(2,3)-srot(3,2)
         sps(2,1)=srot(3,1)-srot(1,3)
         sps(3,1)=srot(1,2)-srot(2,1)
@@ -1430,9 +1422,7 @@ c     enddo
         sps(:,2)=sps(:,2)-s*sps(:,1)
         s=abs(dcmplx(sps(1,2),abs(dcmplx(sps(2,2),sps(3,2)))))
         sps(:,2)=sps(:,2)/s
-        sps(1,3)=sps(2,1)*sps(3,2)-sps(3,1)*sps(2,2)
-        sps(2,3)=sps(3,1)*sps(1,2)-sps(1,1)*sps(3,2)
-        sps(3,3)=sps(1,1)*sps(2,2)-sps(2,1)*sps(1,2)
+        sps(:,3)=outer(sps(:,1),sps(:,2))
         spsa1=srot(:,1)*sps(1,2)+srot(:,2)*sps(2,2)+srot(:,3)*sps(3,2)
         cm=spsa1(1)*sps(1,2)+spsa1(2)*sps(2,2)+spsa1(3)*sps(3,2)
         sm=spsa1(1)*sps(1,3)+spsa1(2)*sps(2,3)+spsa1(3)*sps(3,3)
@@ -1442,90 +1432,95 @@ c        write(*,*)'spnorm ',sdamp,gintd
         return
         end subroutine
 
-        subroutine sremit(srot,sps,params,emit,demit,sdamp,
-     $     rm1,equpol)
+        subroutine sremit(srot,sps,params,demit,sdamp,rm1,equpol)
         use temw
         use macmath
         implicit none
-        real*8 , intent(in)::srot(3,9),emit(21),demit(21),sps(3,3),
+        real*8 , intent(in)::srot(3,9),demit(21),sps(3,3),
      $       params(nparams),sdamp
         real*8 , intent(out)::equpol,rm1(3,3)
         real*8 drot(3,6),
      $       d1,d2,d3,d4,d5,d6,e1,e2,e3,e4,e5,e6,
-     $       c1,c2,c3,c4,c5,c6,smu,c,s,tx,c60,c40,
+     $       c1,c2,c3,c4,c5,c6,smu,c,s,tx,c60,c40,c20,
      $       dex1,dex2,dey1,dey2,dez1,dez2,
-     $       c1a,c3a,c5a,d1a,d3a,d5a,e1a,e3a,e5a,
+     $       c1a,c3a,c5a,
      $       rm(3,3),rmx(3,3),rmy(3,3),rmz(3,3),epol(3),b(3)
         integer*4 k
 c        write(*,'(1p3g15.7)')(rm(k,:),k=1,3)
         smu=params(ipnup)*m_2pi
         drot=matmul(srot(:,4:9),r)
-        c1a=dot_product(drot(:,1),sps(:,1))
-        c2 =dot_product(drot(:,2),sps(:,1))
-        c3a=dot_product(drot(:,3),sps(:,1))
-        c4 =dot_product(drot(:,4),sps(:,1))
-        c5a=dot_product(drot(:,5),sps(:,1))
-        c6 =dot_product(drot(:,6),sps(:,1))
-        d1a=dot_product(drot(:,1),sps(:,2))
-        d2 =dot_product(drot(:,2),sps(:,2))
-        d3a=dot_product(drot(:,3),sps(:,2))
-        d4 =dot_product(drot(:,4),sps(:,2))
-        d5a=dot_product(drot(:,5),sps(:,2))
-        d6 =dot_product(drot(:,6),sps(:,2))
-        e1a=dot_product(drot(:,1),sps(:,3))
-        e2 =dot_product(drot(:,2),sps(:,3))
-        e3a=dot_product(drot(:,3),sps(:,3))
-        e4 =dot_product(drot(:,4),sps(:,3))
-        e5a=dot_product(drot(:,5),sps(:,3))
-        e6 =dot_product(drot(:,6),sps(:,3))
+        c1=dot_product(drot(:,1),sps(:,1))
+        c2=dot_product(drot(:,2),sps(:,1))
+        c3=dot_product(drot(:,3),sps(:,1))
+        c4=dot_product(drot(:,4),sps(:,1))
+        c5=dot_product(drot(:,5),sps(:,1))
+        c6=dot_product(drot(:,6),sps(:,1))
+        d1=dot_product(drot(:,1),sps(:,2))
+        d2=dot_product(drot(:,2),sps(:,2))
+        d3=dot_product(drot(:,3),sps(:,2))
+        d4=dot_product(drot(:,4),sps(:,2))
+        d5=dot_product(drot(:,5),sps(:,2))
+        d6=dot_product(drot(:,6),sps(:,2))
+        e1=dot_product(drot(:,1),sps(:,3))
+        e2=dot_product(drot(:,2),sps(:,3))
+        e3=dot_product(drot(:,3),sps(:,3))
+        e4=dot_product(drot(:,4),sps(:,3))
+        e5=dot_product(drot(:,5),sps(:,3))
+        e6=dot_product(drot(:,6),sps(:,3))
         tx=.5d0*atan(2.d0*demit(2),demit(1)-demit(3))
         c=cos(tx)
         s=sin(tx)
         dex1=c**2*demit(1)+s**2*demit(3)+2.d0*c*s*demit(2)
         dex2=c**2*demit(3)+s**2*demit(1)-2.d0*c*s*demit(2)
-        c1= c*c1a-s*c2
-        c2= s*c1a+c*c2
-        d1= c*d1a-s*d2
-        d2= s*d1a+c*d2
-        e1= c*e1a-s*e2
-        e2= s*e1a+c*e2
+        c1a=c1
+        c20=c2
+        c1=  c*c1-s*c2
+        c2= (s*c1+  c2)/c
+        d1=  c*d1-s*d2
+        d2= (s*d1+  d2)/c
+        e1=  c*e1-s*e2
+        e2= (s*e1+  e2)/c
+        write(*,'(a,1p10g12.4)')'sremit-x ',tx,
+     $       demit(1),demit(1),demit(3),dex1,dex2,c1,c2,c1a,c20
         tx=.5d0*atan(2.d0*demit(9),demit(6)-demit(10))
         c=cos(tx)
         s=sin(tx)
         dey1=c**2*demit(6) +s**2*demit(10)+2.d0*c*s*demit(9)
         dey2=c**2*demit(10)+s**2*demit(6) -2.d0*c*s*demit(9)
+        c3a=c3
         c40=c4
-        c3= c*c3a-s*c4
-        c4= s*c3a+c*c4
-        d3= c*d3a-s*d4
-        d4= s*d3a+c*d4
-        e3= c*e3a-s*e4
-        e4= s*e3a+c*e4
-        write(*,'(a,1p10g12.4)')'sremit ',tx,
+        c3=  c*c3-s*c4
+        c4= (s*c3+  c4)/c
+        d3=  c*d3-s*d4
+        d4= (s*d3+  d4)/c
+        e3=  c*e3-s*e4
+        e4= (s*e3+  e4)/c
+        write(*,'(a,1p10g12.4)')'sremit-y ',tx,
      $       demit(6),demit(9),demit(10),dey1,dey2,c3,c4,c3a,c40
         tx=.5d0*atan(2.d0*demit(20),demit(15)-demit(21))
         c=cos(tx)
         s=sin(tx)
         dez1=c**2*demit(15)+s**2*demit(21)+2.d0*c*s*demit(20)
         dez2=c**2*demit(21)+s**2*demit(15)-2.d0*c*s*demit(20)
+        c5a=c5
         c60=c6
-        c5= c*c5a-s*c6
-        c6= s*c5a+c*c6
-        d5= c*d5a-s*d6
-        d6= s*d5a+c*d6
-        e5= c*e5a-s*e6
-        e6= s*e5a+c*e6
-c        write(*,'(a,1p10g12.4)')'sremit ',tx,
-c     $       demit(15),demit(20),demit(21),dez1,dez2,c5,c6,c5a,c60
+        c5=  c*c5-s*c6
+        c6= (s*c5+  c6)/c
+        d5=  c*d5-s*d6
+        d6= (s*d5+  d6)/c
+        e5=  c*e5-s*e6
+        e6= (s*e5+  e6)/c
+        write(*,'(a,1p10g12.4)')'sremit-z ',tx,
+     $       demit(15),demit(20),demit(21),dez1,dez2,c5,c6,c5a,c60
         call spdepol(c1,c2,d1,d2,e1,e2,dex1,dex2,
-     $       .5d0*(emit(1)+emit(3)),
-     $       -params(ipdampx),params(ipnx)*m_2pi,smu,rmx)
+     $       params(ipemx),
+     $       abs(params(ipdampx)),params(ipnx)*m_2pi,smu,rmx)
         call spdepol(c3,c4,d3,d4,e3,e4,dey1,dey2,
-     $       .5d0*(emit(6)+emit(10)),
-     $       -params(ipdampy),params(ipny)*m_2pi,smu,rmy)
+     $       params(ipemy),
+     $       abs(params(ipdampy)),params(ipny)*m_2pi,smu,rmy)
         call spdepol(c5,c6,d5,d6,e5,e6,dez1,dez2,
-     $       .5d0*(emit(15)+emit(21)),
-     $       -params(ipdampz),params(ipnz)*m_2pi,smu,rmz)
+     $       params(ipemz),
+     $       abs(params(ipdampz)),params(ipnz)*m_2pi,smu,rmz)
         rm=rmx+rmy+rmz
         write(*,'(1p9g13.5)')(rmx(k,:),rmy(k,:),rmz(k,:),k=1,3)
         rm(1,1)=rm(1,1)-sdamp
@@ -2048,7 +2043,7 @@ c          enddo
         params(iptaup)=1.d0/sdamp/params(iprevf)
         srot1=srot(:,1:3)
         params(ipnup)=smu/m_2pi
-        call sremit(srot,sps,params,emit,beam2,sdamp,spm,equpol)
+        call sremit(srot,sps,params,beam2,sdamp,spm,equpol)
         params(ipequpol)=equpol
         params(ippolx:ippolz)=sps(:,1)
       endif
