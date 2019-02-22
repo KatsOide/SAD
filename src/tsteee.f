@@ -64,7 +64,7 @@
         b=-brhoz/rhob
         nrad=int(abs(al/epsrad*crad*(h0*b)**2))
         ndiv=1+max(int(nrad*emidiv*emidib),
-     1       int(abs(phib*h0*anrad)/epsrad/1.d5*emidiv*emidib))
+     1       int(abs(phib*h0*anrad)/epsrad/3.d6*emidiv*emidib))
 c     1       int(abs(phib)/epsrad/1.d3*emidiv*emidib))
       else
 c     begin initialize for preventing compiler warning

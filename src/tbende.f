@@ -446,7 +446,7 @@ c      write(*,'(a,1p6g15.7)')'tbende-1 ',trans(1,6),trans(2,6)
       if(enarad)then
         nrad=int(abs(al/epsrad*crad*(h0*b)**2))
         ndiv=max(ndiv,int(nrad*emidiv*emidib),
-     1       int(abs(phib*h0*anrad)/epsrad/1.d5*emidiv*emidib))
+     1       int(abs(phib*h0*anrad)/epsrad/3.d6*emidiv*emidib))
         if(ndiv .eq. 1)then
           bsi2=1.d0
         else
