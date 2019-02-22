@@ -755,7 +755,7 @@ c     $       .5d0*aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
       b=brhoz*(a*abs(bzh)+a/abs(al))
       nrad=int(abs(al*crad/epsrad*(h0*b)**2))
       itgetqraddiv=max(int(emidiv*emidiq*nrad),
-     1       int(abs(h0*b*anrad)/epsrad/3.d6*emidiv*emidib))
+     1       int(abs(h0*b*anrad)/epsrad/1.d6*emidiv*emidib))
 c     1     int(abs(a)/epsrad/1.d3*emidiv*emidiq))
       return
       end
