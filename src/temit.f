@@ -781,8 +781,8 @@ c      end type
         ia63=iaind(rmi(6),(/3,0,0,0/))
         se12=(e1+e2)*.5d0
         de12=(e1-e2)*.5d0
-        sesq=(e1**2+e2**2)*.5d0
-        e1e2=e1*e2*.5d0
+        sesq=(e1**2+e2**2)*.25d0
+        e1e2=e1*e2*.25d0
         rmd=se12*dble(rmi(2)%cmat(:,:,ia21))
      $     +2.d0*de12*dble(rmi(2)%cmat(:,:,ia20))
      $       
@@ -839,48 +839,47 @@ c     $       +(24.d0+(8.d0+8.d0/dx)/dx)*dble(rmi(6)%cmat(:,:,ia6))
         pr=1.d0+g
         p=p0*pr
         h1=p2h(p)
-        anp=anrad*p*theta
+        anp=anrad*h1*theta
+        al1=al-z+zr0
         call tdusrn(anp,dph,r1,r2,an)
         if(an .ne. 0.d0)then
-          al1=al-z+zr0
-c          al1=al*(1.d0+(dldx*pxm**2+pym**2)*.5d0)
           uc=cuc*h1**3/p0*theta/al1
           dg=-dph*uc
+          dg=dg/(1.d0-2.d0*dg)
           g=max(gmin,g+dg)
           ddpx=-r1*dpx*dg
           ddpy=-r1*dpy*dg
-          x=x+r2*ddpx*al
-          y=y+r2*ddpy*al
+          x=x+r2*ddpx*al1
+          y=y+r2*ddpy*al1
           px=px+ddpx
           py=py+ddpy
           pr=1.d0+g
           p2=p0*pr
           h2=p2h(p2)
           dv=-g*(1.d0+pr)/h2/(h2+p2)+dvfs
-          h1=p2h(p)
           z=z*p2/h2*h1/p
           if(calpol)then
             if(ppa .ne. 0.d0)then
-              a=theta/ppa
+              a=theta/ppa*pr
             else
               a=0.d0
             endif
             pxm=px0+dpx*.5d0
             pym=py0+dpy*.5d0
             call sprot(sx,sy,sz,pxm,pym,
-     $           ppx,ppy,ppz,bsi,a,
-     $           al1,p2,h2,an,cphi0,sphi0)
+     $           ppx,ppy,ppz,bsi,a,h1,
+     $           p2*h2/al1,an,cphi0,sphi0)
           endif
         elseif(calpol)then
           if(ppa .ne. 0.d0)then
-            a=theta/ppa
+            a=theta/ppa*pr
           else
             a=0.d0
           endif
           pxm=px0+dpx*.5d0
           pym=py0+dpy*.5d0
-          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,a,
-     $         al,p,h1,-1.d0,cphi0,sphi0)
+          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,a,h1,
+     $         p*h1/al1,-1.d0,cphi0,sphi0)
         endif
         return
         end subroutine
@@ -912,15 +911,16 @@ c          al1=al*(1.d0+(dldx*pxm**2+pym**2)*.5d0)
         p=p0*pr
         h1=p2h(p)
         al1=al-z+zr0
-c        al1=al*(1.d0+(dldx*pxm**2+pym**2)*.5d0)
-        anp=anrad*p*theta
+        anp=anrad*h1*theta
         uc=cuc*h1**3/p0*theta/al1
         dg=-cave*anp*uc
+        dg=dg/(1.d0-2.d0*dg)
+c        write(*,*)'tradk1 ',dg,anp,uc
         g=max(gmin,g+dg)
         ddpx=-.5d0*dpx*dg
         ddpy=-.5d0*dpy*dg
-        x=x+ddpx*al/3.d0
-        y=y+ddpy*al/3.d0
+        x=x+ddpx*al1/3.d0
+        y=y+ddpy*al1/3.d0
         px=px+ddpx
         py=py+ddpy
         pr=1.d0+g
@@ -930,37 +930,35 @@ c        al1=al*(1.d0+(dldx*pxm**2+pym**2)*.5d0)
         z=z*p2/h2*h1/p
         if(calpol)then
           if(ppa .ne. 0.d0)then
-            a=theta/ppa
+            a=theta/ppa*pr
           else
             a=0.d0
           endif
           pxm=px0+dpx*.5d0
           pym=py0+dpy*.5d0
-          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,a,
-     $         al1,p2,h2,anp,cphi0,sphi0)
+          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,a,h2,
+     $         p2*h2/al1,anp,cphi0,sphi0)
         endif
         return
         end subroutine
 
-        subroutine sprot(sx,sy,sz,pxm,pym,bx0,by0,bz0,bsi,a,
-     $     al,p,h,anph,cphi0,sphi0)
+        subroutine sprot(sx,sy,sz,pxm,pym,bx0,by0,bz0,bsi,a,h,
+     $     gbrhoi,anph,cphi0,sphi0)
         use tfstk,only:pxy2dpz,ktfenanq,sqrt1
         use tmacro
         use ffs_flag, only:radpol
         implicit none
-        real*8 pxm,pym,bsi,h,pzm,bx0,by0,bz0,sx,sy,sz,cphi0,sphi0,
-     $       bx,by,bz,bp,blx,bly,blz,btx,bty,btz,ct,
-     $       gx,gy,gz,g,a,p,al,dsx,dsy,dsz,
-     $       gnx,gny,gnz,
+        real*8 pxm,pym,bsi,pzm,bx0,by0,bz0,sx,sy,sz,cphi0,sphi0,
+     $       bx,by,bz,bp,blx,bly,blz,btx,bty,btz,ct,h,
+     $       gx,gy,gz,g,a,gbrhoi,dsx,dsy,dsz,
      $       sux,suy,suz,
-     $       tnx,tny,tnz,
-     $       bt,st,dst,dr,sl1,st1,
-     $       sw,anph,cosu,sinu,dcosu,sx0
+     $       bt,st,dst,dr,sl1,st1,tanuh,
+     $       sw,anph,cosu,sinu,dcosu
         real*8 , parameter :: cl=1.d0+gspin
         pzm=1.d0+pxy2dpz(pxm,pym)
-        bx=bx0*a*p/p0
-        by=by0*a*p/p0
-        bz=bz0*a*p/p0+bsi
+        bx=bx0*a
+        by=by0*a
+        bz=bz0*a+bsi
         bp=bx*pxm+by*pym+bz*pzm
         blx=bp*pxm
         bly=bp*pym
@@ -968,64 +966,51 @@ c        al1=al*(1.d0+(dldx*pxm**2+pym**2)*.5d0)
         btx=bx-blx
         bty=by-bly
         btz=bz-blz
-        dsx=0.d0
-        dsy=0.d0
-        dsz=0.d0
+        ct=1.d0+h*gspin
+        gx=ct*btx+cl*blx
+        gy=ct*bty+cl*bly
+        gz=ct*btz+cl*blz
         if(anph .gt. 0.d0 .and. radpol)then
           bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
           if(bt .ne. 0.d0)then
-            tnx=btx/bt
-            tny=bty/bt
-            tnz=btz/bt
-            st=sx*tnx+sy*tny+sz*tnz
-            dst=(st-pst)*sflc*anph*(bt*h*p/al)**2
+            st=(sx*btx+sy*bty+sz*btz)/bt
+            dst=(st-pst)*sflc*anph*(bt*gbrhoi)**2
             if(st .ne. 1.d0)then
-              dr=dst/(1.d0-st**2)
+              dr=dst/(1.d0-st**2)/bt
               dsx=dr*sx
               dsy=dr*sy
               dsz=dr*sz
+              gx=gx+dsy*btz-dsz*bty
+              gy=gy+dsz*btx-dsx*btz
+              gz=gz+dsx*bty-dsy*btx
             else
               st1=st-dst
               sl1=sqrt(1-st1**2)
-              sx=sl1*pxm+st1*tnx
-              sy=sl1*pym+st1*tny
-              sz=sl1*pzm+st1*tnz
+              sx=sl1*pxm+st1*btx/bt
+              sy=sl1*pym+st1*bty/bt
+              sz=sl1*pzm+st1*btz/bt
             endif
-          else
-            tnx=0.d0
-            tny=0.d0
-            tnz=0.d0
           endif
-        else
-          tnx=0.d0
-          tny=0.d0
-          tnz=0.d0
         endif
-        ct=1.d0+h*gspin
-        gx=ct*btx+cl*blx+dsy*tnz-dsz*tny
-        gy=ct*bty+cl*bly+dsz*tnx-dsx*tnz
-        gz=ct*btz+cl*blz+dsx*tny-dsy*tnx
         g=abs(dcmplx(gx,abs(dcmplx(gy,gz))))
         if(g .ne. 0.d0)then
 c          write(*,'(a,1p9g14.6)')'sprot ',g,ct,h,
 c     $         btx,bty,btz,cphi0,sphi0
-          gnx=gx/g
-          gny=gy/g
-          gnz=gz/g
-          sinu=sin(g)
-          dcosu=2.d0*sin(g*.5d0)**2
+          tanuh=tan(g*.5d0)
+          sinu=2.d0*tanuh/(1.d0+tanuh**2)
+          dcosu=tanuh*sinu
           cosu=1.d0-dcosu
-          sw=(sx*gnx+sy*gny+sz*gnz)*dcosu
-          sux=sy*gnz-sz*gny
-          suy=sz*gnx-sx*gnz
-          suz=sx*gny-sy*gnx
-          sx=cosu*sx+sinu*sux+sw*gnx
-          sy=cosu*sy+sinu*suy+sw*gny
-          sz=cosu*sz+sinu*suz+sw*gnz
+          sw=(sx*gx+sy*gy+sz*gz)*dcosu/g**2
+          sinu=sinu/g
+          sux=sy*gz-sz*gy
+          suy=sz*gx-sx*gz
+          suz=sx*gy-sy*gx
+          sx=cosu*sx+sinu*sux+sw*gx
+          sy=cosu*sy+sinu*suy+sw*gy
+          sz=cosu*sz+sinu*suz+sw*gz
         endif
-        sx0=sx
-        sx= sx0*cphi0+sz*sphi0
-        sz=-sx0*sphi0+sz*cphi0
+        sx= sx*cphi0+sz*sphi0
+        sz=(sz-sx*sphi0)/cphi0
         return
         end subroutine
 
@@ -1042,11 +1027,11 @@ c     $         btx,bty,btz,cphi0,sphi0
      $       ddpz(6),dal(6),duc(6),dddpx(6),dddpy(6),ddg(6),
      $       dtheta(6),danp(6),dbeam(21),dpxi(6),dpyi(6),
      $       c1,dpx,dpy,ddpx,ddpy,pxr0,ct,pz00,das,bt,
-     $       pr,px,py,pz,pz0,xpx,xpy,xpz,xpa,theta,
+     $       pr,px,py,pz,pz0,xpx,xpy,xpz,xpa,theta,th,
      $       p,h1,al1,anp,uc,dg,g,pr1,pxi,pyi,
      $       p2,h2,de,cp,sp,b,pxm,pym,gi,dh1r,
      $       pxh,pyh,pzh,xpzb,btx,bty,btz,dct,sinu,cosu,dcosu,
-     $       gx,gy,gz,gnx,gny,gnz,blx,bly,blz,
+     $       gx,gy,gz,blx,bly,blz,
      $       sx(9),sy(9),sz(9),sux(9),suy(9),suz(9),sw(9),
      $       dpxh(6),dpyh(6),dpzh(6),bp,dbp(6),dpxr0(6),dpz0(6),
      $       dxpx(6),dxpy(6),dxpz(6),dxpzb(6),dblx(6),dbly(6),dblz(6),
@@ -1056,8 +1041,11 @@ c     $         btx,bty,btz,cphi0,sphi0
      $       cl=1.d0+gspin
         gi=codr0(6)
         pr=1.d0+gi
-        cp=cos(phir0)
-        sp=sin(phir0)
+        th=tan(.5d0*phir0)
+        sp=2.d0*th/(1.d0+th**2)
+        cp=1.d0-th*sp
+c        cp=cos(phir0)
+c        sp=sin(phir0)
         pxi=codr0(2)+bzhr0*codr0(3)
         pyi=codr0(4)-bzhr0*codr0(1)
         pz00=pr*(1.d0+pxy2dpz(pxi/pr,pyi/pr))
@@ -1243,24 +1231,25 @@ c     enddo
             g=abs(dcmplx(gx,abs(dcmplx(gy,gz))))
             if(g .ne. 0.d0)then
               bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
-              gnx=gx/g
-              gny=gy/g
-              gnz=gz/g
-              sinu=sin(g)
-              dcosu=2.d0*sin(g*.5d0)**2
+              th=tan(.5d0*g)
+              sinu=2.d0*th/(1.d0+th**2)
+              dcosu=th*sinu
+c              sinu=sin(g)
+c              dcosu=2.d0*sin(g*.5d0)**2
               cosu=1.d0-dcosu
+              sinu=sinu/g
               sx=srot(1,:)
               sy=srot(2,:)
               sz=srot(3,:)
-              sw=sx*gnx+sy*gny+sz*gnz
+              sw=(sx*gx+sy*gy+sz*gz)/g
               gintd=gintd+sw(1:3)*sflc*anp*(bt*h1*p/al1)**2
-              sw=sw*dcosu
-              sux=sy*gnz-sz*gny
-              suy=sz*gnx-sx*gnz
-              suz=sx*gny-sy*gnx
-              sx       =cosu*sx+sinu*sux+sw*gnx
-              srot(2,:)=cosu*sy+sinu*suy+sw*gny
-              sz       =cosu*sz+sinu*suz+sw*gnz
+              sw=sw*dcosu/g
+              sux=sy*gz-sz*gy
+              suy=sz*gx-sx*gz
+              suz=sx*gy-sy*gx
+              sx       =cosu*sx+sinu*sux+sw*gx
+              srot(2,:)=cosu*sy+sinu*suy+sw*gy
+              sz       =cosu*sz+sinu*suz+sw*gz
               srot(1,:)= cp*sx+sp*sz
               srot(3,:)=-sp*sx+cp*sz
             else
@@ -1500,7 +1489,6 @@ c        write(*,'(1p3g15.7)')(rm(k,:),k=1,3)
       it=0
       trf0=0.d0
       vcalpha=1.d0
-      epsrad=1.d-6
       demin=1.d100
       calint=.false.
       intend=.false.

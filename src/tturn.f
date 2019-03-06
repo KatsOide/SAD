@@ -297,7 +297,7 @@ c     $              +l-1),
      $          cmp%value(ky_L_DRFT),
      $          cmp%value(ky_RADI_DRFT),n,l,latt,kptbl)
          else
-           if(cmp%value(kytbl(kwKIN,lele)) .eq. 0.d0)then
+           if(cmp%value(ky_KIN_DRFT) .eq. 0.d0)then
              do i=1,np
                dpz=pxy2dpz(px(i),py(i))
                al1=al/(1.d0+dpz)
@@ -350,7 +350,6 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      1        cmp%value(p_COSW_BEND),cmp%value(p_SINW_BEND),
      $        cmp%value(p_SQWH_BEND),cmp%value(p_SINWP1_BEND),
      1        cmp%value(ky_RAD_BEND) .eq. 0.d0,
-     $        0.d0,al,al,
      1        cmp%value(ky_EPS_BEND))
 
        case (icQUAD)
@@ -363,7 +362,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $          -dp0
          endif
          call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $        l,al,
+     $        al,
      1        cmp%value(ky_K1_QUAD)*rtaper,
      $        cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1        cmp%value(p_THETA_QUAD),
@@ -389,7 +388,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $          *.5d0-dp0)
          endif
          call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $        lele,l,al,ak1,
+     $        lele,al,ak1,
      1        cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
      1        cmp%value(p_THETA_THIN),
      $        cmp%value(p_COSTHETA_THIN),cmp%value(p_SINTHETA_THIN),

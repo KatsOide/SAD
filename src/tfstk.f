@@ -388,11 +388,15 @@ c     call tfsetlastp(ip+m-1)
 
         subroutine tfree(ka)
         use maccbk
+c        use ffs0, only:ifinext
         implicit none
         integer*8, intent(in):: ka
         integer*8 ix,ik,ik0,ip,ix1
         integer*4 m,mx
         m=ilist(1,ka-1)
+c        if(associated(ifinext) .and. ka .eq. ifinext)then
+c          write(*,*)'tfree ',ka,m
+c        endif
         if(m .lt. 4)then
           if(m .ne. 0)then
             write(*,*)'tfree-too small segment: ',ka,m

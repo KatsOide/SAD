@@ -15,9 +15,8 @@ c.....cmdidxbrings pointer to command name
       real*8 rval,yyval
       logical*4 skipch,ldummy,inlist
       integer*8 membas,iwork,ktcaloc,ktsalocb
-      integer*4 restme,memuse,idx,i,lidx
+      integer*4 restme,memuse,idx,i,lidx,offset
       integer*8 argdfp,argp
-      integer*4 offset
 c     
 c     for debug
 c     call ptrace('doAct '//pname(cmdidx)(2:)//'!',1)
@@ -60,7 +59,6 @@ c
       if((token(:slen) .eq. RCURL) .or.
      &     (token(:slen) .eq. SEMIC))    go to  3000
 c
-c      write(*,*)"doACT:", token(:slen),slen,ttype
       if (ttype .eq. ttypID) then
          call capita(token(:slen))
          idx=hsrch(token(:slen))
@@ -81,6 +79,7 @@ c..........read right value
                call errmsg(pname(cmdidx),'undefined parameter',0,0)
             else if( (.not. inlist) .and.
      &              skipch(LPAR,token,slen,ttype,rval,ival)) then
+
                inlist=.true.
 c               restme=mfalloc(-1)
 c               membas=mfalloc(restme)

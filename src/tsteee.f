@@ -65,7 +65,7 @@
         nrad=int(abs(al/epsrad*crad*(h0*b)**2))
         ndiv=1+max(int(nrad*emidiv*emidib),
      1       int(abs(phib*h0*anrad)/epsrad/1.d6*emidiv*emidib))
-c     1       int(abs(phib)/epsrad/1.d3*emidiv*emidib))
+c        write(*,*)'tsteee ',ndiv,nrad,phib,b,epsrad,crad
       else
 c     begin initialize for preventing compiler warning
         tanp1=0.d0
@@ -146,9 +146,6 @@ c        endif
         cod(3)=cod(3)+pyi*(aln+dl)
         cod(5)=cod(5)-(dl+dvemit*aln)
         if(n .ne. ndiv .and. krad)then
-c     call trade(trans,beam,cod,0.d0,b,0.d0,0.d0,
-c     $           0.d0,0.d0,0.d0,-tanp2,
-c     $           .5d0*aln,al,al,f1r,f2r,prev,next)
           call tradke(trans,cod,beam,srot,aln,0.d0,0.d0)
         endif
 100   continue

@@ -42,7 +42,8 @@ c     $     akx,aky,
      $     ts13,ts23,ts33,ts43,ts14,ts24,ts34,ts44,
      $     dts13,dts23,dts33,dts43,dts14,dts24,dts34,dts44,
      $     tds13,tds23,tds33,tds43,tds14,tds24,tds34,tds44,
-     $     ex,epx,ey,epy,pex,pepx,pey,pepy,dex,depx,dey,depy
+     $     ex,epx,ey,epy,pex,pepx,pey,pepy,dex,depx,dey,depy,
+     $     thx,thy,dcosx,dcosy
 c      logical*4 cell0,disp,nzcod,htrx,htry,normal
       logical*4 cell0,disp,nzcod,normal,xstab,ystab
 c-deb
@@ -56,12 +57,22 @@ c      htry=.false.
       if(cell)then
         dpsix = utwiss(mfitnx,idp,nut) - utwiss(mfitnx,idp,1)
         dpsiy = utwiss(mfitny,idp,nut) - utwiss(mfitny,idp,1)
-        cosmux = cos(dpsix)
-        sinmux = sin(dpsix)
-        cosmuy = cos(dpsiy)
-        sinmuy = sin(dpsiy)
-        detimx = 4.d0*sin(.5d0*dpsix)**2
-        detimy = 4.d0*sin(.5d0*dpsiy)**2
+        thx=tan(0.5d0*dpsix)
+        sinmux=2.d0*thx/(1.d0+thx**2)
+        dcosx=thx*sinmux
+        cosmux=1.d0-dcosx
+        detimx=2.d0*dcosx
+        thy=tan(0.5d0*dpsiy)
+        sinmuy=2.d0*thy/(1.d0+thy**2)
+        dcosy=thy*sinmuy
+        cosmuy=1.d0-dcosy
+        detimy=2.d0*dcosy
+c        cosmux = cos(dpsix)
+c        sinmux = sin(dpsix)
+c        cosmuy = cos(dpsiy)
+c        sinmuy = sin(dpsiy)
+c        detimx = 4.d0*sin(.5d0*dpsix)**2
+c        detimy = 4.d0*sin(.5d0*dpsiy)**2
         bxr=sqrt(utwiss(mfitbx,idp,nut)/utwiss(mfitbx,idp,1))
         trx=(bxr+1.d0/bxr)*cosmux
      1      +(bxr*utwiss(mfitax,idp,1)-utwiss(mfitax,idp,nut)/bxr)

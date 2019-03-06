@@ -102,14 +102,13 @@
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb10,fb20,mfring,fringe,
      $     cosw,sinw,sqwh,sinwp1,
-     1     enarad,alb,ale,ala,eps)
+     1     enarad,eps)
       use ffs_flag,only:rad
       use tspin
       implicit none
       integer*4 np,mfring,l
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,ak,dx,dy,theta,
      $     cost,sint,cosw,sinw,sqwh,sinwp1,eps,
-     $     alb,ale,ala,
      $     fb10,fb20,dtheta
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     px0(np),py0(np),zr0(np),bsi(np)
@@ -124,7 +123,7 @@
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb10,fb20,mfring,fringe,
      $     cosw,sinw,sqwh,sinwp1,
-     1     enarad,alb,ale,ala,eps,.true.)
+     1     enarad,eps,.true.)
       return
       end
 
@@ -135,7 +134,7 @@
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb10,fb20,mfring,fringe,
      $     cosw,sinw,sqwh,sinwp1,
-     1     enarad,alb,ale,ala,eps,ini)
+     1     enarad,eps,ini)
       use tfstk
       use ffs_flag
       use tmacro
@@ -148,8 +147,7 @@
       parameter (ndivmax=1024)
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,ak,dx,dy,theta,
      $     cost,sint,cosw,sinw,sqwh,sinwp1,eps,
-     $     xi,pxi,psi1,psi2,alb,ale,ala,
-     $     fb10,fb20,eps1,dtheta
+     $     xi,pxi,psi1,psi2,fb10,fb20,dtheta
       real*8 a3,a5,a7,a9,a11,a13,a15
       parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
      1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
@@ -163,12 +161,12 @@
       logical*4 enarad,fringe,ini
       if(phi0 .eq. 0.d0)then
         if(ak .eq. 0.d0)then
-          call tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,-phib,
+          call tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,al,-phib,
      1         dx,dy,theta+dtheta,cos(theta+dtheta),sin(theta+dtheta),
      1         cosp1,sinp1,cosp2,sinp2,
-     $         fb10,fb20,mfring,fringe,enarad,eps)
+     $         fb10,fb20,mfring,fringe,eps,enarad)
         elseif(phib .eq. phi0)then
-          call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,ak,
+          call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      1         dx,dy,theta+dtheta,
      $         cos(theta+dtheta),sin(theta+dtheta),0.d0,.true.,
      1         fringe,0.d0,0.d0,0,eps,.true.)
@@ -188,13 +186,13 @@
      $         int8(0),int8(0),int8(0),int8(0))
         endif
         return
-      elseif(rad .and. enarad .and. trpt)then
-        call tbrad(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,phib,phi0,
-     1       cosp1,sinp1,cosp2,sinp2,
-     1       ak,dx,dy,theta,dtheta,cost,sint,
-     1       fb10,fb20,mfring,
-     1       fringe,eps)
-        return
+c      elseif(rad .and. enarad .and. trpt)then
+c        call tbrad(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,phib,phi0,
+c     1       cosp1,sinp1,cosp2,sinp2,
+c     1       ak,dx,dy,theta,dtheta,cost,sint,
+c     1       fb10,fb20,mfring,
+c     1       fringe,eps)
+c        return
       elseif(ak .ne. 0.d0)then
         call tbendi(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,phib,phi0,
      1       cosp1,sinp1,cosp2,sinp2,
@@ -234,21 +232,16 @@
         else
           f2r=0.d0
         endif
-        eps1=eps
-        if(eps1 .eq. 0.d0)then
-          eps1=1.d0
-        endif
-        ndiv=min(ndivmax,int(1+(abs(phi0)*
-     $       max(h0/100.d0,1.d0/rphidiv)/eps1)))
+        ndiv=min(ndivmax,ndivrad(phib,0.d0,0.d0,eps))
       else
         ndiv=1
       endif
+c      write(*,*)'tbend0 ',ndiv
       if(ndiv .gt. 1)then
         call tbendr(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,
      $       al,phib,phi0,
      1       cosp1,sinp1,cosp2,sinp2,
-     1       mfring,fringe,
-     1       alb,ale,ala,ndiv)
+     1       mfring,fringe,ndiv)
       else
         call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       px0,py0,zr0,bsi,
@@ -256,7 +249,7 @@
      1       cosp1,sinp1,cosp2,sinp2,
      1       mfring,fringe,
      $       cosw,sinw,sqwh,sinwp1,
-     1       enarad,alb,ale,ala,1.d0,1.d0)
+     1       enarad,1.d0,1.d0)
       endif
  9000 if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
@@ -272,14 +265,18 @@
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),
      $     sx(np),sz(np),
-     $     al,phi0,cp,sp,rho0,dx,xi,pzi,pzf,dl,xsin,dcp,sxi
-      cp=cos(phi0)
-      sp=sin(phi0)
-      if(cp .ge. 0.d0)then
-        dcp=sp**2/(1.d0+cp)
-      else
-        dcp=1.d0-cp
-      endif
+     $     al,phi0,cp,sp,rho0,dx,xi,pzi,pzf,dl,xsin,dcp,th
+      th=tan(.5d0*phi0)
+      sp=2.d0*th/(1.d0+th**2)
+      dcp=th*sp
+      cp=1.d0-dcp
+c      cp=cos(phi0)
+c      sp=sin(phi0)
+c      if(cp .ge. 0.d0)then
+c        dcp=sp**2/(1.d0+cp)
+c      else
+c        dcp=1.d0-cp
+c      endif
       rho0=al/phi0
       call tdrift_free(np,x,px,y,py,z,dv,rho0*sp)
       dx=rho0*dcp
@@ -293,9 +290,8 @@
           y(i)=y(i)+xi*sp*py(i)/pzf
           z(i)=z(i)-xi*sp/pzf+(1.d0-dv(i))*dl
           px(i)=px(i)*cp+pzi*sp
-          sxi=sx(i)
-          sx(i)= cp*sxi+sp*sz(i)
-          sz(i)=-sp*sxi+cp*sz(i)
+          sx(i)= cp*sx(i)+sp*sz(i)
+          sz(i)=(sz(i)-sp*sx(i))/cp
         enddo
       else
         do i=1,np
@@ -338,20 +334,18 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
      $     px0,py0,zr0,bsi,
      $     al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
-     1     mfring,fringe,
-     1     alb,ale,ala,ndiv)
+     1     mfring,fringe,ndiv)
       use tfstk
       use ffs_flag
       use tmacro
       use tspin
       implicit none
-      integer*4 np,mfring,i,ndiv,mfr1,mfr2,ndivmax
-      parameter (ndivmax=1024)
+      integer*4 np,mfring,i,ndiv,mfr1,mfr2
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     px0(np),py0(np),zr0(np),bsi(np)
       real*8 sx(np),sy(np),sz(np)
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,
-     $     psi1,psi2,wn1,wn2,wnc,aln,phibn,phi0n,alb,ale,ala,als,
+     $     psi1,psi2,wn1,wn2,wnc,aln,phibn,phi0n,
      $     coswn1,sinwn1,sqwhn1,sinwp1n1,
      $     coswnc,sinwnc,sqwhnc,sinwp1nc,
      $     coswn2,sinwn2,sqwhn2,sinwp1n2
@@ -398,14 +392,13 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
       else
         mfr2=0
       endif
-      als=alb+aln
       call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     px0,py0,zr0,bsi,
      $     aln,phi0n,
      1     cosp1,sinp1,1.d0,0.d0,
      1     mfr1,fringe,
      $     coswn1,sinwn1,sqwhn1,sinwp1n1,
-     1     .true.,alb,als,ala,1.d0,0.d0)
+     1     .true.,1.d0,0.d0)
       do i=2,ndiv-1
         call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       px0,py0,zr0,bsi,
@@ -413,8 +406,7 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
      1       1.d0,0.d0,1.d0,0.d0,
      1       0,.false.,
      $       coswnc,sinwnc,sqwhnc,sinwp1nc,
-     1       .true.,als,als+aln,ala,0.d0,0.d0)
-        als=als+aln
+     1       .true.,0.d0,0.d0)
       enddo
       call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     px0,py0,zr0,bsi,
@@ -422,7 +414,7 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
      1     1.d0,0.d0,cosp2,sinp2,
      1     mfr2,fringe,
      $     coswn2,sinwn2,sqwhn2,sinwp1n2,
-     1     .true.,als,ale,ala,0.d0,1.d0)
+     1     .true.,0.d0,1.d0)
       return
       end
 
@@ -431,7 +423,7 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
      1     cosp1,sinp1,cosp2,sinp2,
      1     mfring,fringe,
      $     cosw,sinw,sqwh,sinwp1,
-     1     enarad,alb,ale,ala,bsi1,bsi2)
+     1     enarad,bsi1,bsi2)
       use tfstk
       use ffs_flag
       use tmacro
@@ -441,25 +433,19 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
       implicit none
       integer*4 np,mfring,i
       real*8 al,phi0,cosp1,sinp1,cosp2,sinp2,
-     $     cosw,sinw,sqwh,sinwp1,
-     $     drhob,dp,p,
+     $     cosw,sinw,sqwh,sinwp1,drhob,dp,p,
      $     pinv,rhoe,pxi,pyi,dpzi,pzi,sp1,x1,dz1,y1,z1,px1,
      $     py1,pv1sqi,f,ff,x2,py2,z2,dph2,ph2,dpx2,pz2,drho,
      $     t2,dpx3,px3,dpz3,pz3,t3,x3,da,y3,z3,pv2sqi,x4,py4,z4,dpz4,
      $     dz4,dxfr1,dyfr1,dzfr1,dxfr2,dyfr2,dzfr2,dpz32,
      $     dyfra1,dyfra2,fa,t4,dpx3a,t2t3,dcosp,px1px3,
-     $     phi0a,cphi0,sphi0,bsi1,bsi2,sx0,alb,ala,ale
-      real*8, parameter :: smax=0.99d0,smin=0.01d0,rphidiv=3e-3
+     $     phi0a,bsi1,bsi2
+      real*8, parameter :: smin=1.d-4
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     px0(np),py0(np),zr0(np),bsi(np)
       real*8 sx(np),sy(np),sz(np)
-      logical*4 enarad,fringe,krad
+      logical*4 enarad,fringe
 c      write(*,*)'tbendcore-1 ',z(1:3)
-      krad=rad .and. enarad
-      if(krad)then
-        cphi0=cos(phi0)
-        sphi0=sin(phi0)
-      endif
       if((mfring .gt. 0 .or. mfring .eq. -1) .and. fb1 .ne. 0.d0)then
         dxfr1=fb1**2/rhob/24.d0
         dyfr1=fb1/rhob**2/6.d0
@@ -504,8 +490,6 @@ c      write(*,*)'tbendcore-1 ',z(1:3)
         rhoe=rhob*p
         pxi=px(i)
         pyi=py(i)
-c        s=pxi**2+pyi**2
-c        dpzi=-s/(1.d0+sqrt(1.d0-s))
         dpzi=pxy2dpz(pxi,pyi)
         pzi=1.d0+dpzi
         sp1=sinp1/pzi
@@ -522,52 +506,33 @@ c        dpzi=-s/(1.d0+sqrt(1.d0-s))
         fa=y1/rhoe*sqrt(pv1sqi)
         f=(1.d0-(y1/rhob)**2/6.d0)*fa
         ff=.25d0*(f+fa)*y1*pv1sqi
-c        ff=(.5d0-(y1/rhob)**2/24.d0)*y1*fa*pv1sqi
         x2=x1+ff
         py2=py1-px1*f
         z2=z1-px1*ff
-c        s=py2**2
-c        dph2=-s/(1.d0+sqrt(1.d0-s))
         dph2=pxy2dpz(0.d0,py2)
         ph2=1.d0+dph2
         dpx2=pxi*cosp1+(dpzi-dph2)*sinp1
-c        s=px1**2+py2**2
-c        dpz2=-s/(1.d0+sqrt(1.d0-s))
         pz2=1.d0+pxy2dpz(px1,py2)
-c        pz2=sqrt(max(smin,1.d0-py2**2-px1**2))
         drho=drhob+rhoe*dph2+rhob*dp
         t2=(px1+ph2*sinp1)/(pz2+ph2*cosp1)
         dpx3a=(x2*sinw-drho*(sinp2+sinwp1))/rhoe
         dpx3=dpx3a-dpx2*(cosw-sinw*t2)
         px3=ph2*sinp2+dpx3
         px1px3=ph2*(sinp2+sinp1)+dpx3a+dpx2*(sqwh+sinw*t2)
-c        s=px3**2+py2**2
-c        dpz3=-s/(1.d0+sqrt(1.d0-s))
         dpz3=pxy2dpz(px3,py2)
         pz3=1.d0+dpz3
         dpz32=px1px3*(px1-px3)/(pz2+pz3)
         t3=(px3+ph2*sinp2)/(pz3+ph2*cosp2)
-c        t2t3=ph2*(sinp2/(pz3+ph2*cosp2)+sinp1/(pz2+ph2*cosp1))
-c     $       +((ph2*sinp2+dpx3a-dpx2*(cosw-sinw*t2))*(pz2+ph2*cosp1)
-c     $       +(dpx2+ph2*sinp1)*(pz3+ph2*cosp2))/
-c     $       (pz3+ph2*cosp2)/(pz2+ph2*cosp1)
         t2t3=(ph2*sinp2+px1px3)/(pz3+ph2*cosp2)
      $       +ph2*sinp1/(pz2+ph2*cosp1)
      $       +px1*(dpz32-ph2*dcosp)
      $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
 c        write(*,*)t2,t3,t2+t3,t2t3,px1+px3,px1px3
         t4=(cosp2+t3*sinp2)*(pz2*cosp1+px1*sinp1)
-c        x3=x2*cosw+
-c     1     (rho0*((cosw*t2+sinw)*dpx2-dpx3*t3)-
-c     1      drho*((px3-px1)*(px3+px1)/(pz3+pz2)-sqwh*pz2-sinw*px1))/ph2
         x3=x2*(cosw-rho0/rhoe*t3*sinw/ph2)
      1       +(rho0*(cosw*t2t3+sinw*(1.d0-t2*t3))*dpx2-
      1       drho*(-(sinp2+sinwp1)*rho0/rhoe*t3
      $       -dpz32-sqwh*pz2-sinw*px1))/ph2
-c        da=asin(min(1.d0,max(-1.d0,
-c     $       (dpx2*((cosp1+t2*sinp1)*(pz3*cosp2+px3*sinp2)
-c     $       -t4*(cosw-sinw*t2))
-c     1       +dpx3a*t4)/ph2**2)))
         da=asin(min(1.d0,max(-1.d0,
      $       (dpx2*(
      $       sinp1*(t2*(pz3*cosp2+px3*sinp2)-px1*cosp2)
@@ -582,15 +547,12 @@ c     1       +dpx3a*t4)/ph2**2)))
         fa=y3/rhoe*sqrt(pv2sqi)
         f=(1.d0-(y3/rhob)**2/6.d0)*fa
         ff=.25d0*(f+fa)*y3*pv2sqi
-c        ff=(.5d0-(y3/rhob)**2/24.d0)*y3*fa*pv2sqi
         py4=py2-px3*f
         z4=z3-px3*ff
         x4=x3-ff-dxfr2*dp*pinv
         py4=py4+(dyfr2-dyfra2*y3**2)*y3*pinv**2
         z4=z4+(dxfr2*px3+
      $       (.5d0*dyfr2-.25d0*dyfra2*y3**2)*y3**2*pinv)*pinv-dzfr2
-c        s=px3**2+py4**2
-c        dpz4=-s/(1.d0+sqrt(1.d0-s))
         dpz4=pxy2dpz(px3,py4)
         px(i)=-cosp2*dpx3+sinp2*(dpz4-dpz3-dpx3*t3)
         dz4=x4*sinp2/(cosp2*(1.d0+dpz4)+sinp2*px3)
@@ -600,22 +562,13 @@ c        dpz4=-s/(1.d0+sqrt(1.d0-s))
         z(i)=z4-dz4
         bsi(i)=bsi(i)-bsi2*y(i)/rhob
 100   continue
-      if(krad)then
+      if(rad .and. enarad)then
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       px0,py0,zr0,cphi0,sphi0,bsi,al)
+     $       px0,py0,zr0,cos(phi0),sin(phi0),bsi,al)
         px0=px
         py0=py
         zr0=z
         bsi=0.d0
-c        tanp2=sinp2/cosp2
-c        if(ale .eq. ala)then
-c          als=ale
-c        else
-c          als=ale-al*.25d0
-c        endif
-c        call trad(np,x,px,y,py,g,dv,b,0.d0,0.d0,
-c     1       1.d0/rho0,-tanp2*2.d0/al,.5d0*al,
-c     $       f1r,f2r,als,ala,-1.d0)
       endif
       return
       end

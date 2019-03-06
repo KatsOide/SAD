@@ -98,7 +98,7 @@ c      write(*,*)'tsgeo ',chi1
           geo1(i,3)= g1*cschi1+geo1(i,1)*snchi1
           geo1(i,1)=-g1*snchi1+geo1(i,1)*cschi1
 110     continue
-        call tgrot(cmp1%value(ky_CHI1_SOL),geo(1,1,k),geo1)
+        call tgrot(cmp1%value(ky_CHI1_SOL:ky_CHI3_SOL),geo(1,1,k),geo1)
         pos0=0
         pos(k+1)=pos(k)
       else
@@ -120,7 +120,7 @@ c      write(*,*)'tsgeo ',chi1
         geo(1,4,ke)= 0.d0
         geo(2,4,ke)= 0.d0
         geo(3,4,ke)= 0.d0
-        call tgrot(cmp2%value(ky_CHI1_SOL),geo1,geo(1,1,ke))
+        call tgrot(cmp2%value(ky_CHI1_SOL:ky_CHI3_SOL),geo1,geo(1,1,ke))
         pos0=pos(k)
         pos(k1)=0.d0
       endif
@@ -151,7 +151,8 @@ c      write(*,*)'tsgeo ',chi1
         cschi3= cos(chi3)
         snchi3= sin(chi3)
         call trotg(geo(1,1,ke1),geo(1,3,ke1),cschi3,snchi3)
-        call tgrot(cmp2%value(ky_CHI1_SOL),geo1,geo(1,1,ke1))
+        call tgrot(cmp2%value(ky_CHI1_SOL:ky_CHI3_SOL),
+     $       geo1,geo(1,1,ke1))
       else
         s1=geo(1,1,ke)*geo(1,1,k)+geo(2,1,ke)*geo(2,1,k)
      1       +geo(3,1,ke)*geo(3,1,k)
@@ -220,7 +221,7 @@ c        snchi3=sin(chi3)
      1              +geo(1,3,k)*geo1(j,3)
 240     continue
         geo(:,:,k)=geos
-        call tgrot(cmp1%value(ky_CHI1_SOL),geos,geo1)
+        call tgrot(cmp1%value(ky_CHI1_SOL:ky_CHI3_SOL),geos,geo1)
         geo(:,:,ke+1)=geo(:,:,ke)
       endif
       return

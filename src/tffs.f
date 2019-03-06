@@ -97,8 +97,8 @@ c$$$
         use mackw
         use macphys
         use macfile
-        real*8, parameter :: c=cveloc,hp=plankr,e=elemch
-        real*8 amass,charge,h0,p0,omega0,trf0,crad,erad,epsrad,
+        real*8, parameter :: c=cveloc,hp=plankr,e=elemch,epsrad=1.d-6
+        real*8 amass,charge,h0,p0,omega0,trf0,crad,erad,
      $       codin(6),dleng,anrad,urad,u0,vc0,wrfeff,dp0,brho,
      $       ccintr,cintrb,pbunch,coumin,re0,pgev,emidiv,
      $       emidib,emidiq,emidis,ctouck,dvemit,h1emit,
@@ -113,6 +113,7 @@ c$$$
      $       nparallel,pspac_nx,pspac_ny,pspac_nz,
      $       pspac_nturn,pspac_nturncalc
         logical*4 oldflagsdummy,calint,caltouck,tparaed
+
       end module
 
       module tffitcode
@@ -577,6 +578,26 @@ c$$$
         diffres=>fff%diffres
         return
         end subroutine
+
+        integer*4 function ndivrad(phi,ak,bz,eps)
+        use tmacro, only:h0
+        implicit none
+        real*8 , parameter :: arad=0.02d0
+        real*8 , intent(in)::ak,bz,phi,eps
+        real*8 aka,eps1
+        eps1=eps
+        if(eps1 .le. 0.d0)then
+          eps1=1.d0
+        endif
+        aka=(abs(phi)+abs(dcmplx(ak,bz))*arad)/eps1
+        if(trpt)then
+          ndivrad=int(1.d0+h0/100.d0*aka*10.d0)
+        else
+          ndivrad=int(1.d0+h0/100.d0*aka)
+        endif
+        return
+        end function 
+
       end module
 
       module ffs

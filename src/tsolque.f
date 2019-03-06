@@ -83,7 +83,7 @@
         subroutine tzsetparam(tz,dp,akk,bz)
         implicit none
         type (tzparam) tz
-        real*8 dp,bz,akk,xsin,xsinh,wa
+        real*8 dp,bz,akk,xsin,xsinh,wa,th
         external xsin,xsinh
         associate (
      $       w1=>tz%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
@@ -121,14 +121,18 @@
           w12=w1-w2
           wd=bzp/ws
           phi1=aln*w1
-          c1=cos(phi1)
-          s1=sin(phi1)
+          th=tan(.5d0*phi1)
+          s1=2.d0*th/(1.d0+th**2)
+          dc1=-th*s1
+          c1=1.d0+dc1
+c          c1=cos(phi1)
+c          s1=sin(phi1)
           xs1=xsin(phi1)
-          if(c1 .ge. 0.d0)then
-            dc1=-s1**2/(1.d0+c1)
-          else
-            dc1=c1-1.d0
-          endif
+c          if(c1 .ge. 0.d0)then
+c            dc1=-s1**2/(1.d0+c1)
+c          else
+c            dc1=c1-1.d0
+c          endif
           phi2=aln*w2
           ch2=cosh(phi2)
           sh2=sinh(phi2)
@@ -158,7 +162,7 @@
         subroutine tzsetparam0(tz,dp,akk)
         implicit none
         type (tzparam) tz
-        real*8 dp,akk,xsin,xsinh
+        real*8 dp,akk,xsin,xsinh,th
         external xsin,xsinh
         associate (
      $       w1=>tz%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
@@ -186,14 +190,18 @@
         akkp=akk/pr
         w1=sqrt(akkp)
         phi1=aln*w1
-        c1=cos(phi1)
-        s1=sin(phi1)
+        th=tan(0.5d0*phi1)
+        s1=2.d0*th/(1.d0+th**2)
+        dc1=-th*s1
+        c1=1.d0+dc1
+c        c1=cos(phi1)
+c        s1=sin(phi1)
         xs1=xsin(phi1)
-        if(c1 .ge. 0.d0)then
-          dc1=-s1**2/(1.d0+c1)
-        else
-          dc1=c1-1.d0
-        endif
+c        if(c1 .ge. 0.d0)then
+c          dc1=-s1**2/(1.d0+c1)
+c        else
+c          dc1=c1-1.d0
+c        endif
         ch2=cosh(phi1)
         sh2=sinh(phi1)
         xsh2=xsinh(phi1)
@@ -540,7 +548,7 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
           call tmulbs(beam ,trans1,.false.,.true.)
         endif
         if(enarad .and. n .ne. ndiv)then
-          call tradke(trans,cod,beam,srot,al1,0.d0,bzh)
+          call tradke(trans,cod,beam,srot,aln,0.d0,bzh)
         endif
         al1=aln
       enddo
@@ -552,7 +560,7 @@ c        bxy= b1
 c        call trade(trans,beam,cod,bx,by,bz*br,bz,
 c     $       0.d0,bxy,0.d0,0.d0,
 c     $       .5d0*aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
-        call tradke(trans,cod,beam,srot,aln*.5d0,0.d0,bzh)
+        call tradke(trans,cod,beam,srot,aln,0.d0,bzh)
       endif
       bradprev=0.d0
       return

@@ -223,18 +223,15 @@ c         eig(2)=.5d0*(x11+x22-sign(d,u))
       subroutine rot33(r,u,phi,ndim)
       implicit none
       integer*4 ndim
-      real*8 r(ndim,3),u(3),phi,w,u1,u2,u3,c,s,q
+      real*8 r(ndim,3),u(3),phi,w,u1,u2,u3,c,s,q,th
       w=sqrt(u(1)**2+u(2)**2+u(3)**2)
       u1=u(1)/w
       u2=u(2)/w
       u3=u(3)/w
-      c=cos(phi)
-      s=sin(phi)
-      if(c .ge. 0.d0)then
-        q=s**2/(1.d0+c)
-      else
-        q=1.d0-c
-      endif
+      th=tan(.5d0*phi)
+      s=2.d0*th/(1.d0+th**2)
+      q=th*s
+      c=1.d0-q
 c      q=2.d0*sin(.5d0*phi)**2
       r(1,1)=u1**2+(u2**2+u3**2)*c
       r(2,1)=u1*u2*q+u3*s

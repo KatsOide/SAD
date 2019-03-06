@@ -30,7 +30,7 @@
       character*2 ord
 c
       if(ifv .eq. 0)then
-        ifv=ktaaloc(0,2)
+        ifv=ktaaloc(0,1)
         ifvh=ktfsymbolz(vname,len(vname))
 c        ilist(1,ifvh-2)=-1
         klist(ifv)=ktfsymbol+ktfcopy1(ifvh)

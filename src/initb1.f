@@ -1770,6 +1770,7 @@ c
        call defflg('PHOTONS',FLAGOF)
        call defflg('EMIT',FLAGON)
        call defflg('POL'  ,FLAGOF)
+       call defflg('RADPOL',FLAGON)
        call defflg('DAPERT',FLAGOF)
        call defflg('FLUC',FLAGON)
        call defflg('K64' ,FLAGON)
