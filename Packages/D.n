@@ -290,3 +290,4 @@ Protect[ReduceExpression,D$,XSCheckDerivative,LegendreP,
   Integrate,Integrate$a,Spline,SplineData,SplineIntegrate,
   SplineIntegrate1,SplineIntegrate2,SplineIntegrateAll,NIntegrate
   ];
+
