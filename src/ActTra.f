@@ -25,7 +25,7 @@ c      integer*4 idxtws
       integer*4 sync,nxl(3),nxl0
       integer*8 nxp(3),nxp0
       integer*4 span$,cent$e
-      integer*4 itfdummyline,irtc
+      integer*4 itfdummyline
       real*8  p0,charge,mass,em(2),sigs,sige
       real*8  v0,dist,comp,df,de,ex,ey,r0,r
       real*8 RgetGL
@@ -89,7 +89,6 @@ c
       endif
       call RsetGL('$MASS$',mass,idummy)
  101  lptr=ilist(1,argp+2)
-c      write(*,*)'ActTra-2 ',argp,lptr,idtype(lptr),icLINE
       if (idtype(lptr) .ne. icLINE) then
 c
 c******* K. Oide 7/6/1997 *********
