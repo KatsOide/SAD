@@ -1844,10 +1844,11 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
         so=0.d0
         do i=1,6
           do j=1,6
-            s=0.d0
-            do k=1,6
-              s=s+ri(j,k)*r(k,i)
-            enddo
+c            s=0.d0
+c            do k=1,6
+c              s=s+ri(j,k)*r(k,i)
+c            enddo
+            s=dot_product(ri(j,1:6),r(1:6,i))
             trans(j,i)=s
             if(i .eq. j)then
               so=so+abs(s-1.d0)
@@ -1868,15 +1869,16 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
       if(.not. calem)then
         return
       endif
-      do i=1,6
-        do j=1,6
-          s=0.d0
-          do k=1,6
-            s=s+trans(j,k+6)*r(k,i)
-          enddo
-          trans(j,i)=s
-        enddo
-      enddo
+c$$$      do i=1,6
+c$$$        do j=1,6
+c$$$          s=0.d0
+c$$$          do k=1,6
+c$$$            s=s+trans(j,k+6)*r(k,i)
+c$$$          enddo
+c$$$          trans(j,i)=s
+c$$$        enddo
+c$$$      enddo
+      trans(1:6,1:6)=matmul(trans(1:6,7:12),r(1:6,1:6))
       call tmultr(trans,ri,6)
       do i=1,5,2
         cd(int(i/2)+1)=dcmplx((trans(i,i)+trans(i+1,i+1))*.5d0,

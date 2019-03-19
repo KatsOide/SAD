@@ -1091,15 +1091,16 @@ c
       subroutine tgrad(qu,qu0,df,grad,
      $wlimit,wexponent,nqcol,nvar)
       implicit none
-      integer*4 nqcol,nvar,i,j
+      integer*4 nqcol,nvar,i
       real*8 qu(nqcol,nvar),qu0(nqcol,nvar),df(nqcol),
      $     grad(nvar),wlimit(nvar),s,sg,r,wexponent,
      $     dfw(nqcol),dfwi
+c      qu=matmul(qu0,wlimit)
       do i=1,nvar
         qu(:,i)=qu0(:,i)*wlimit(i)
-c        do j=1,nqcol
-c          qu(j,i)=qu0(j,i)*wlimit(i)
-c        enddo
+cc        do j=1,nqcol
+cc          qu(j,i)=qu0(j,i)*wlimit(i)
+cc        enddo
       enddo
       r=0.d0
       do i=1,nqcol
@@ -1113,10 +1114,11 @@ c        enddo
       enddo
       sg=0.d0
       do i=1,nvar
-        s=0.d0
-        do j=1,nqcol
-          s=s+qu(j,i)*dfw(j)
-        enddo
+c        s=0.d0
+c        do j=1,nqcol
+c          s=s+qu(j,i)*dfw(j)
+c        enddo
+        s=dot_product(qu(:,i),dfw)
         grad(i)=s
         sg=sg+s**2
       enddo

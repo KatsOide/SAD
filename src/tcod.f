@@ -124,10 +124,11 @@ c      write(6,'(1p6g12.5)')codi,codf,dcod
       red=r/r0
       trf0s=trf0
       r0=r
-      s=0.d0
-      do i=1,6
-        s=s+dcod(i)*dcod0(i)/codw(i)**2
-      enddo
+c      s=0.d0
+c      do i=1,6
+c        s=s+dcod(i)*dcod0(i)/codw(i)**2
+c      enddo
+      s=sum(dcod*dcod0/codw**2)
       if(red .lt. 1.0d0)then
         fact=min(fact*(2.d0-max(red-0.7d0,0.d0)/0.3d0),1.d0)
       elseif(s .lt. 0.d0)then

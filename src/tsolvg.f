@@ -190,10 +190,13 @@ C     if(j .lt. ndim+2)then
               w=1.d0/sqrt(r)/ra
               b(i)=(b(i)-p*b(i+1))*w
               u=-p*w
-              do 4030 k=i+1,min(mn,ma-1)
-                v(k)=u*v(k)
-                x(k+1)=x(k+1)+b(i)*v(k)
- 4030         continue
+              v(i+1:min(mn,ma-1))=u*v(i+1:min(mn,ma-1))
+              x(i+2:min(mn+1,ma))=x(i+2:min(mn+1,ma))
+     $             +b(i)*v(i+1:min(mn,ma-1))
+c              do 4030 k=i+1,min(mn,ma-1)
+c                v(k)=u*v(k)
+c                x(k+1)=x(k+1)+b(i)*v(k)
+c 4030         continue
               v(i)=(v(i)-p*d)*w
               x(i+1)=x(i+1)+b(i)*v(i)
               d=x(i)*w
@@ -257,10 +260,12 @@ C     if(j .lt. ndim+2)then
             v(i1mn)=h1
             v(j +mn)=h2
             a(i,j)=q*a(i,i1)
-            do 5330 k=i1,mn
-              a(k,i1)=a(k,i1)-p*a(k,j )
-              a(k,j )=a(k,j )+q*a(k,i1)
- 5330       continue
+            a(i1:mn,i1)=a(i1:mn,i1)-p*a(i1:mn,j )
+            a(i1:mn,j )=a(i1:mn,j )+q*a(i1:mn,i1)
+c            do 5330 k=i1,mn
+c              a(k,i1)=a(k,i1)-p*a(k,j )
+c              a(k,j )=a(k,j )+q*a(k,i1)
+c 5330       continue
           else
             h1=v(j +mn)/s
             h2=v(i1mn)*s
@@ -474,17 +479,18 @@ c          do j=1,m
 c          enddo
         enddo
         do i=1,m
-          s=a(1,i)*b(1)
-          do j=2,mn
-            s=s+a(j,i)*b(j)
-          enddo
+          s=sum(a(1:mn,i)*b(1:mn))
+c          s=a(1,i)*b(1)
+c          do j=2,mn
+c            s=s+a(j,i)*b(j)
+c          enddo
           x(i)=s
         enddo
         b(1:mn)=v(1:mn)
         b(mn+1:m)=0.d0
-        do i=1,m
-          a(mn+1:n,i)=0.d0
-        enddo
+c        do i=1,m
+          a(mn+1:n,1:m)=0.d0
+c        enddo
       else
         do 3110 i=1,mn
           s=x(i)
@@ -496,11 +502,11 @@ c          enddo
           b(i)=b(i)*w
  3110   continue
         do 3030 i=1,m
-          s=a(1,i)*b(1)
-          do 3040 j=2,mn
-            s=s+a(j,i)*b(j)
- 3040     continue
-          x(i)=s
+c          s=a(1,i)*b(1)
+c          do 3040 j=2,mn
+c            s=s+a(j,i)*b(j)
+c 3040     continue
+          x(i)=sum(a(1:mn,i)*b(1:mn))
  3030   continue
       endif
       return

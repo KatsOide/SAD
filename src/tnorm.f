@@ -5,17 +5,21 @@
       complex*16 ceig(6),cc
       do 10 i=1,5,2
         if(imag(ceig(i)) .eq. 0.d0)then
-          sa=0.d0
-          sb=0.d0
-          do 40 j=1,6
-            sa=sa+r(j,i  )**2
-            sb=sb+r(j,i+1)**2
-40        continue
+          sa=sum(r(:,i)**2)
+          sb=sum(r(:,i+1)**2)
+c          sa=0.d0
+c          sb=0.d0
+c          do 40 j=1,6
+c            sa=sa+r(j,i  )**2
+c            sb=sb+r(j,i+1)**2
+c40        continue
           a=sqrt(sqrt(sa/sb))
-          do 50 j=1,6
-            r(j,i  )=r(j,i  )/a
-            r(j,i+1)=r(j,i+1)*a
-50        continue
+          r(:,i  )=r(:,i  )/a
+          r(:,i+1)=r(:,i+1)*a
+c          do 50 j=1,6
+c            r(j,i  )=r(j,i  )/a
+c            r(j,i+1)=r(j,i+1)*a
+c50        continue
         endif
         s=0.d0
         do 20 j=1,5,2
@@ -35,10 +39,12 @@
           ceig(i  )=conjg(ceig(i  ))
           ceig(i+1)=conjg(ceig(i+1))
         endif
-        do 30 j=1,6
-          r(j,i  )=r(j,i  )/sa
-          r(j,i+1)=r(j,i+1)/sb
-30      continue
+        r(:,i  )=r(:,i  )/sa
+        r(:,i+1)=r(:,i+1)/sb
+c        do 30 j=1,6
+c          r(j,i  )=r(j,i  )/sa
+c          r(j,i+1)=r(j,i+1)/sb
+c30      continue
 10    continue
       s1=(r(5,1)*r(6,2)-r(5,2)*r(6,1))**2
       s2=(r(5,3)*r(6,4)-r(5,4)*r(6,3))**2

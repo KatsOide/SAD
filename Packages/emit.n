@@ -12,14 +12,9 @@ SetAttributes[{OneTurnInformation,Orbit,Matrix,ExpandElementValues,
   OneTurnDampingMatrix,ExtendedTwissParameters,
   OneTurnExcitation,EquilibriumBeamMatrix,ClosedOrbit,
   NominalSpinTune,PolarizationTime,
-<<<<<<< HEAD
   TransferMatrices,IntrabeamExcitation,SaveEMIT,AzimuthalModes,SpinTune,
   Polarization,Polarizations,
   PolarizationVector},
-=======
-  TransferMatrices,IntrabeamExcitation,SaveEMIT,AzimuthalModes,
-  SpinTune,Polarization,PolarizationVector},
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
   Constant];
 
 BeginPackage[emit$`,tws$`,`];

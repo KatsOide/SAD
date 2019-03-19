@@ -1307,7 +1307,7 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
       integer*8 ia
       character*(*) keyword
       character*128 key
-      logical*4 saved,sum,ref
+      logical*4 saved,plus,ref
       real*8 s
       type (sad_comp), pointer :: cmp
 c     begin initialize for preventing compiler warning
@@ -1317,10 +1317,10 @@ c     begin initialize for preventing compiler warning
         kl=ilist(-i,ifklp)
       endif
       call compelc(kl,cmp)
-      sum=.false.
+      plus=.false.
       lk=lenw(keyword)
       if(lk .gt. 4 .and. keyword(lk-3:lk) .eq. '$SUM')then
-        sum=.true.
+        plus=.true.
         lk=lk-4
       endif
       key(1:lk)=keyword(1:lk)
@@ -1373,11 +1373,12 @@ c          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
           call tftouch(iele1(kl),l)
         endif
       endif
-      if(sum .and. tfreallistq(tfkeyv,klr))then
-        s=klr%rbody(1)
-        do i=2,klr%nl
-          s=s+klr%rbody(i)
-        enddo
+      if(plus .and. tfreallistq(tfkeyv,klr))then
+c        s=klr%rbody(1)
+c        do i=2,klr%nl
+c          s=s+klr%rbody(i)
+c        enddo
+        s=sum(klr%rbody(1:klr%nl))
         tfkeyv=dfromr(s)
       endif
       return
