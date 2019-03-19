@@ -560,16 +560,10 @@ c     Table of loss-rate
       real*8, parameter :: pst=8.d0*sqrt(3.d0)/15.d0,
      $     sflc=.75d0*(elradi/finest)**2
 
-<<<<<<< HEAD
       integer*4 ,parameter :: mord=6,lind=13
       integer*4 , parameter ::
      $     mlen(mord) =(/18,105, 392,1134, 2772, 6006/),
      $     mleni(mord)=(/24,234,1456,6825,26208,86632/)
-=======
-      integer*4 ,parameter :: mord=6,maxi=200,maxm=400,maxiv=10
-      integer*4 , parameter ::
-     $     mlen(mord)=(/8+2, 30+6, 80+10, 175+16, 336+25, 588+36/)
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
 
       type scmat
         complex*16 , pointer :: cmat(:,:,:)
@@ -587,17 +581,10 @@ c      end type
         subroutine spinitrm(rm,nord,id,l)
         implicit none
         type (scmat) , intent(inout):: rm
-<<<<<<< HEAD
         integer*4 , intent(in)::nord,id,l
         allocate(rm%cmat(3,3,l))
         allocate(rm%ind(lind,l))
         allocate(rm%ias(l))
-=======
-        integer*4 , intent(in)::nord,id
-        allocate(rm%cmat(3,3,mlen(nord)))
-        allocate(rm%iamat(0:nord,0:nord,-nord:nord,-nord:nord))
-        allocate(rm%ind(4,mlen(nord)))
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
         rm%nind=0
         rm%iord=nord
         rm%id=id
@@ -607,7 +594,6 @@ c      end type
 
         integer*4 function iaind(rm,ind) result(ia)
         type (scmat) , intent(inout):: rm
-<<<<<<< HEAD
         integer*4 , intent(in):: ind(lind)
         integer*4 i1,i2,im,k
         logical*4 found
@@ -631,15 +617,6 @@ c      end type
           enddo
           if(found)then
             return
-=======
-        integer*4 , intent(in):: ind(4)
-        ia=rm%iamat(ind(1),ind(2),ind(3),ind(4))
-        if(ia .eq. 0)then
-          rm%nind=rm%nind+1
-          if(rm%nind .gt. mlen(rm%iord))then
-            write(*,*)'Insufficient matrix table ',rm%id,rm%iord,ind
-            stop
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
           endif
         enddo
         ia=rm%nind+1
@@ -696,17 +673,9 @@ c      end type
         subroutine spsetrm(am,ind,rm)
         implicit none
         type (scmat) , intent(inout)::rm
-<<<<<<< HEAD
         integer*4 , intent(in) :: ind(lind)
         complex*16 , intent(in) ::am(3,3)
         rm%cmat(:,:,iaind(rm,ind))=am
-=======
-        integer*4 , intent(in) :: ind(4)
-        integer*4 ia
-        complex*16 , intent(in) ::am(3,3)
-        ia=iaind(rm,ind)
-        rm%cmat(:,:,ia)=am
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
         return
         end subroutine
 
@@ -714,11 +683,7 @@ c      end type
         implicit none
         type (scmat) , intent(in):: rma,rmb
         type (scmat) , intent(inout) :: rmc
-<<<<<<< HEAD
         integer*4 i,j,ia
-=======
-        integer*4 indc(4),i,j,ia
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
         do i=1,rma%nind
           do j=1,rmb%nind
             ia=iaind(rmc,rma%ind(:,i)+rmb%ind(:,j))
@@ -761,22 +726,14 @@ c      end type
         subroutine spintrm(rm,dx,dy,dz,amx,amy,amz,ams)
         implicit none
         type (scmat) , intent(inout) :: rm
-<<<<<<< HEAD
         real*8 , intent(in) :: dx,dy,dz,amx,amy,amz,ams
-=======
-        real*8 , intent(in) :: dx,amx,ams
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
         complex*16 cm(3,3)
         integer*4 i,ia,ind(lind)
         do i=1,rm%nind
           ind=rm%ind(:,i)
           cm=rm%cmat(:,:,i)/
-<<<<<<< HEAD
      $         (1.d0-exp(dcmplx(-ind(7)*dx-ind(8)*dy-ind(9)*dz,
      $         ind(10)*amx+ind(11)*amy+ind(12)*amz+ind(lind)*ams)))
-=======
-     $         (1.d0-exp(dcmplx(-ind(2)*dx,ind(3)*amx+ind(4)*ams)));
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
           rm%cmat(:,:,i)=-cm
           ind(7:lind)=0
           ia=iaind(rm,ind)
@@ -790,13 +747,8 @@ c      end type
         type (scmat) , intent(in) :: rm
         type (scmat) , intent(inout) :: rd
         complex*16 , intent(in):: cv
-<<<<<<< HEAD
         integer*4 , intent(in):: indv(lind)
         integer*4 i,ia
-=======
-        integer*4 , intent(in):: indv(4)
-        integer*4 i,ind(4),ia
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
         do i=1,rm%nind
           ia=iaind(rd,indv+rm%ind(:,i))
           rd%cmat(:,:,ia)=rd%cmat(:,:,ia)+cv*rm%cmat(:,:,i)
@@ -808,14 +760,7 @@ c      end type
         implicit none
         type (scmat) , intent(inout) :: rm
         real*8 , intent(in):: r
-<<<<<<< HEAD
         rm%cmat(:,:,1:rm%nind)=r*rm%cmat(:,:,1:rm%nind)
-=======
-        integer*4 i
-        do i=1,rm%nind
-          rm%cmat(:,:,i)=r*rm%cmat(:,:,i)
-        enddo
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
         return
         end subroutine
 
@@ -823,11 +768,7 @@ c      end type
         implicit none
         type (scmat), intent(inout):: rm(mord),rmi(mord)
         integer*4 , intent(in)::m
-<<<<<<< HEAD
         real*8 , intent(in)::dx(3),amx(3),ams
-=======
-        real*8 , intent(in)::dx,amx,ams
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
         integer*4 k
         call spdotrm(rm(1),rm(m-1),rm(m))
         call sprmulrm(rm(m),1.d0/dble(m))
@@ -835,18 +776,13 @@ c      end type
         do k=1,m-1
           call spdotrm(rm(k),rmi(m-k),rmi(m))
         enddo
-<<<<<<< HEAD
         call spintrm(rmi(m),dx(1),dx(2),dx(3),amx(1),amx(2),amx(3),ams)
-=======
-        call spintrm(rmi(m),dx,amx,ams)
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
         return
         end
 
         subroutine spdepol(gxr,gxi,gyr,gyi,gzr,gzi,e1,e2,em,
      $     dx,amx,ams,rmd)
         implicit none
-<<<<<<< HEAD
         type (scmat) rm(mord),rmi(mord)
         real*8 , intent(in)::gxr(3),gxi(3),gyr(3),gyi(3),gzr(3),gzi(3),
      $       dx(3),amx(3),ams,e1(3),e2(3),em(3)
@@ -992,95 +928,6 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
           deallocate(rmi(i)%ind)
           deallocate(rm(i)%ias)
           deallocate(rmi(i)%ias)
-=======
-        integer*4 , parameter :: mord=6
-        type (scmat) rm(mord),rmi(mord)
-        integer*4 i,ia1,ia2,ia3,ia4,ia5,ia6,
-     $       ia20,ia21,ia40,ia41,ia42,
-     $       ia60,ia61,ia62,ia63,k
-        complex*16 gx,gy,gz,gxc,gyc,gzc
-        complex*16 ,parameter :: cI=(0.d0,1.d0),c0=(0.d0,0.d0),
-     $       c1=(1.d0,0.d0)
-        real*8 , intent(in)::gxr,gxi,gyr,gyi,gzr,gzi,dx,amx,ams,e1,e2,em
-        real*8 , intent(out) :: rmd(3,3)
-        real*8 de12,se12,sesq,e1e2
-        do i=1,mord
-          call spinitrm(rm(i),i,i)
-          call spinitrm(rmi(i),i,i+mord)
-        enddo
-        gx=dcmplx(gxr,gxi)
-        gxc=conjg(gx)
-        gy=dcmplx(gyr+gzi,gzr-gyi)
-        gyc=conjg(gy)
-        gz=dcmplx(gyr-gzi,gzr+gyi)
-        gzc=conjg(gz)
-        ia1=iaind(rm(1),(/0,1,-1,-1/))
-        rm(1)%cmat(:,:,ia1)=RESHAPE(0.25d0*gzc*(/
-     $        c0,-cI,c1,
-     $        cI,c0,c0,
-     $       -c1,c0,c0/),(/3,3/))
-        ia2=iaind(rm(1),(/0,1,-1,0/))
-        rm(1)%cmat(:,:,ia2)=RESHAPE(0.5d0*gxc*(/
-     $        c0,c0, c0,
-     $        c0,c0,-c1,
-     $        c0,c1, c0/),(/3,3/))
-        ia3=iaind(rm(1),(/0,1,-1,1/))
-        rm(1)%cmat(:,:,ia3)=RESHAPE(0.25d0*gy*(/
-     $        c0,cI,c1,
-     $       -cI,c0,c0,
-     $       -c1,c0,c0/),(/3,3/))
-        ia4=iaind(rm(1),(/1,1,1,-1/))
-        rm(1)%cmat(:,:,ia4)=conjg(rm(1)%cmat(:,:,ia3))
-        ia5=iaind(rm(1),(/1,1,1,0/))
-        rm(1)%cmat(:,:,ia5)=conjg(rm(1)%cmat(:,:,ia2))
-        ia6=iaind(rm(1),(/1,1,1,1/))
-        rm(1)%cmat(:,:,ia6)=conjg(rm(1)%cmat(:,:,ia1))
-
-        call spcopyrm(rm(1),rmi(1))
-        call spintrm(rmi(1),dx,amx,ams)
-        do k=2,6
-          call spcalcres(rm,rmi,k,dx,amx,ams)
-        enddo
-
-        ia20=iaind(rmi(2),(/0,0,0,0/))
-        ia21=iaind(rmi(2),(/1,0,0,0/))
-        ia40=iaind(rmi(4),(/0,0,0,0/))
-        ia41=iaind(rmi(4),(/1,0,0,0/))
-        ia42=iaind(rmi(4),(/2,0,0,0/))
-        ia60=iaind(rmi(6),(/0,0,0,0/))
-        ia61=iaind(rmi(6),(/1,0,0,0/))
-        ia62=iaind(rmi(6),(/2,0,0,0/))
-        ia63=iaind(rmi(6),(/3,0,0,0/))
-        se12=(e1+e2)*.5d0
-        de12=(e1-e2)*.5d0
-        sesq=(e1**2+e2**2)*.25d0
-        e1e2=e1*e2*.25d0
-        rmd=se12*dble(rmi(2)%cmat(:,:,ia21))
-     $     +2.d0*de12*dble(rmi(2)%cmat(:,:,ia20))
-     $       
-     $     +de12*(6.d0*de12*dble(rmi(4)%cmat(:,:,ia40))
-     $           +(6.d0*se12+4.d0*em)
-     $              *dble(rmi(4)%cmat(:,:,ia41)))
-     $     +(2.d0*(em*se12+e1e2)+3.d0*sesq)
-     $        *dble(rmi(4)%cmat(:,:,ia42))
-     $       
-     $     +de12*(3.d0*de12*(
-     $       10.d0*de12*dble(rmi(6)%cmat(:,:,ia60))
-     $       +(4.d0*em+10.d0*se12)*dble(rmi(6)%cmat(:,:,ia61)))
-     $       +(em*(16.d0*em+12.d0*se12)+30.d0*sesq+36.d0*e1e2)
-     $           *dble(rmi(6)%cmat(:,:,ia62)))
-     $     +(em*(8.d0*em*se12+6.d0*sesq+4.d0*e1e2)
-     $       +3.d0*se12*(5.d0*sesq-2.d0*e1e2))
-     $      *dble(rmi(6)%cmat(:,:,ia63))
-c     $       +(4.d0+1.d0/dx)*(e1+e2)**2*dble(rmi(4)%cmat(:,:,ia42))
-c     $       +(24.d0+(8.d0+8.d0/dx)/dx)*dble(rmi(6)%cmat(:,:,ia6))
-
-        do i=1,mord
-          deallocate(rm(i)%cmat)
-          deallocate(rmi(i)%iamat)
-          deallocate(rm(i)%ind)
-          deallocate(rmi(i)%ind)
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
         enddo
         return
         end subroutine
@@ -1281,7 +1128,6 @@ c     $         btx,bty,btz,cphi0,sphi0
           sx=cosu*sx+sinu*sux+sw*gx
           sy=cosu*sy+sinu*suy+sw*gy
           sz=cosu*sz+sinu*suz+sw*gz
-<<<<<<< HEAD
         endif
         sx= sx*cphi0+sz*sphi0
         sz=(sz-sx*sphi0)/cphi0
@@ -1539,265 +1385,6 @@ c              dcosu=2.d0*sin(g*.5d0)**2
         return
         end subroutine
 
-=======
-        endif
-        sx= sx*cphi0+sz*sphi0
-        sz=(sz-sx*sphi0)/cphi0
-        return
-        end subroutine
-
-        subroutine tradke(trans,cod,beam,srot,al,phir0,bzh)
-        use tmacro
-        use temw
-        use tfstk, only:pxy2dpz,p2h
-        use ffs_flag,only:radcod,calpol
-        implicit none
-        real*8 , intent(inout)::trans(6,12),cod(6),beam(42),
-     $       srot(3,9)
-        real*8 , intent(in)::al,bzh,phir0
-        real*8 transi(6,6),tr1(6,6),dxpa(6),tr2(6,6),
-     $       ddpz(6),dal(6),duc(6),dddpx(6),dddpy(6),ddg(6),
-     $       dtheta(6),danp(6),dbeam(21),dpxi(6),dpyi(6),
-     $       c1,dpx,dpy,ddpx,ddpy,pxr0,ct,pz00,das,bt,
-     $       pr,px,py,pz,pz0,xpx,xpy,xpz,xpa,theta,th,
-     $       p,h1,al1,anp,uc,dg,g,pr1,pxi,pyi,
-     $       p2,h2,de,cp,sp,b,pxm,pym,gi,dh1r,
-     $       pxh,pyh,pzh,xpzb,btx,bty,btz,dct,sinu,cosu,dcosu,
-     $       gx,gy,gz,blx,bly,blz,
-     $       sx(9),sy(9),sz(9),sux(9),suy(9),suz(9),sw(9),
-     $       dpxh(6),dpyh(6),dpzh(6),bp,dbp(6),dpxr0(6),dpz0(6),
-     $       dxpx(6),dxpy(6),dxpz(6),dxpzb(6),dblx(6),dbly(6),dblz(6),
-     $       dbtx(6),dbty(6),dbtz(6),dgx(6),dgy(6),dgz(6),dpz00(6)
-        real*8, parameter:: gmin=-0.9999d0,
-     $       cave=8.d0/15.d0/sqrt(3.d0),cuu=11.d0/27.d0,
-     $       cl=1.d0+gspin
-        gi=codr0(6)
-        pr=1.d0+gi
-        th=tan(.5d0*phir0)
-        sp=2.d0*th/(1.d0+th**2)
-        cp=1.d0-th*sp
-c        cp=cos(phir0)
-c        sp=sin(phir0)
-        pxi=codr0(2)+bzhr0*codr0(3)
-        pyi=codr0(4)-bzhr0*codr0(1)
-        pz00=pr*(1.d0+pxy2dpz(pxi/pr,pyi/pr))
-        pxr0= cp*pxi+sp*pz00
-        pz0 =-sp*pxi+cp*pz00
-        px=cod(2)+bzh*cod(3)
-        py=cod(4)-bzh*cod(1)
-        pz=pr*(1.d0+pxy2dpz(px/pr,py/pr))
-        dpx=px-pxr0
-        dpy=py-pyi
-        xpx=(py*pz0 -pz*pyi)
-        xpy=(pz*pxr0-px*pz0)
-        xpz=(px*pyi-py*pxr0)
-        xpa=abs(dcmplx(xpx,abs(dcmplx(xpy,xpz))))/pr**2
-        theta=asin(min(1.d0,xpa))
-        p=p0*pr
-        h1=p2h(p)
-        al1=al-cod(5)+codr0(5)
-        anp=anrad*h1*theta
-        uc=cuc*h1**3/p0*theta/al1
-        dg=-cave*anp*uc
-        u0=u0-dg
-        g=max(gmin,gi+dg)
-        pr1=1.d0+g
-        ddpx=.5d0*dpx*dg
-        ddpy=.5d0*dpy*dg
-        c1=al1/pr/3.d0
-        if(radcod)then
-          cod(1)=cod(1)+ddpx*c1
-          cod(3)=cod(3)+ddpy*c1
-          cod(2)=px*pr1/pr+ddpx-bzh*cod(3)
-          cod(4)=py*pr1/pr+ddpy+bzh*cod(1)
-          cod(6)=g
-          p2=p0*pr1
-          h2=p2h(p2)
-          cod(5)=cod(5)*p2/h2*h1/p
-          call tesetdv(g)
-        else
-          p2=p
-          h2=h1
-        endif
-        if(irad .gt. 6)then
-          call tinv6(transr,transi)
-          call tmultr(transi,trans(:,1:6),6)
-          tr2=transi
-          if(bzh .ne. 0.d0)then
-            tr2(2,:)=tr2(2,:)+bzh*tr2(3,:)
-            tr2(4,:)=tr2(4,:)-bzh*tr2(1,:)
-          endif
-          ddpz=(tr2(6,:)*pr-tr2(2,:)*px-tr2(4,:)*py)/pz
-          dpxi=(/0.d0,1.d0,bzhr0,0.d0,0.d0,0.d0/)
-          dpyi=(/-bzhr0,0.d0,0.d0,1.d0,0.d0,0.d0/)
-          dpz00=(-pxi*dpxi-pyi*dpyi)/pz00
-          dpz00(6)=dpz00(6)+pr/pz00
-          dpxr0=cp*dpxi+sp*dpz00
-          dpz0=(-pxr0*dpxr0-pyi*dpyi)/pz0
-          dpz0(6)=dpz0(6)+pr/pz0
-          dxpx=tr2(4,:)*pz0+py*dpz0-ddpz*pyi-pz*dpyi
-          dxpy=ddpz*pxr0+pz*dpxr0-tr2(2,:)*pz0-px*dpz0
-          dxpz=tr2(2,:)*pyi+px*dpyi-tr2(4,:)*pxr0-py*dpxr0
-          dh1r=p*p0/h1**2
-          if(xpa .ne. 0.d0)then
-            dxpa=(xpx*dxpx+xpy*dxpy+xpz*dxpz)/xpa/pr**2
-            dxpa(6)=dxpa(6)-2.d0*xpa/pr
-            dal=-tr2(5,:)
-            dal(5)=dal(5)+1.d0
-            das=1.d0/sqrt(1.d0-xpa**2)
-            dtheta=dxpa*das
-            danp=anrad*h1*dtheta
-            danp(6)=danp(6)+anp*dh1r
-            duc=uc*(dtheta/theta-dal/al1)
-            duc(6)=duc(6)+3.d0*uc*dh1r
-            ddg=-cave*(danp*uc+anp*duc)
-            dddpx=.5d0*((tr2(2,:)-dpxr0)*dg+ddpx*ddg)
-            dddpy=.5d0*((tr2(4,:)-dpyi )*dg+ddpy*ddg)
-            tr1(1,:)=c1*dddpx
-            tr1(1,6)=tr1(1,6)-ddpx/pr
-            tr1(3,:)=c1*dddpy
-            tr1(3,6)=tr1(3,6)-ddpy/pr
-            tr1(2,:)=(tr2(2,:)*dg+px*ddg)/pr+dddpx
-            tr1(2,6)=tr1(2,6)-px*dg/pr
-            tr1(4,:)=(tr2(4,:)*dg+py*ddg)/pr+dddpy
-            tr1(4,6)=tr1(4,6)-py*dg/pr
-c     derivative of dz has been ignored.
-            tr1(5,:)=0.d0
-            tr1(6,:)=ddg
-c     write(*,'(a,1p8g15.7)')'tradke  ',tr2(2,:)
-c     write(*,'(a,1p8g15.7)')' ddg    ',ddg,dg
-c     write(*,'(a,1p8g15.7)')' danp   ',danp,anp
-c     write(*,'(a,1p8g15.7)')' duc    ',duc,uc
-c     write(*,'(a,1p8g15.7)')' dtheta ',dtheta,theta
-c     write(*,'(a,1p8g15.7)')' dxpy   ',dxpy,xpy
-c     write(*,'(a,1p8g15.7)')' dpxr0  ',dpxr0,pxr0
-c     do i=1,6
-c     write(*,'(1p6g15.7)')tr1(i,:)
-c     enddo
-            if(bzh .ne. 0.d0)then
-              tr1(2,:)=tr1(2,:)-bzh  *tr1(3,:)
-              tr1(4,:)=tr1(4,:)+bzh  *tr1(1,:)
-            endif
-            call tmuld6(trans,tr1)
-            tr1(1,1)=tr1(1,1)+1.d0
-            tr1(2,2)=tr1(2,2)+1.d0
-            tr1(3,3)=tr1(3,3)+1.d0
-            tr1(4,4)=tr1(4,4)+1.d0
-            tr1(5,5)=tr1(5,5)+1.d0
-            tr1(6,6)=tr1(6,6)+1.d0
-            call tmulbs(beam,tr1,.false.,calint)
-            de=anp*uc**2*cuu
-            pxm=pxi+px
-            pym=pyi+py
-            b=bzh*.5d0
-            dbeam=0.d0
-            dbeam(3)=(beam(3)+b*(2.d0*beam(5)+b*beam(6))
-     $           +(pxm**2+pxi**2+px**2)/6.d0)*de
-            dbeam(8) =(beam(8)-b*(beam(2)-beam(10)+b*beam(4))
-     $           +(pxm*pym+pxi*pyi+px*py)/6.d0)*de
-            dbeam(10)=(beam(10)+b*(-2.d0*beam(7)+b*beam(1))
-     $           +(pym**2+pyi**2+py**2)/6.d0)*de
-            dbeam(17)=pxm*de*.5d0
-            dbeam(19)=pym*de*.5d0
-            dbeam(21)=de
-            beam(1:21)=beam(1:21)+dbeam
-            if(calint)then
-              beam(22:42)=beam(22:42)+dbeam
-            endif
-          endif
-          if(calpol)then
-            xpzb=xpz+(bsi+bzh*2.d0*al)*pr**2
-            dxpzb=dxpz
-            dxpzb(6)=dxpzb(6)+2.d0*(bsi+bzh*2.d0*al)*pr
-            pxh=(pxr0+px)/pr*.5d0
-            pyh=(pyi+py)/pr*.5d0
-            dpxh=(tr2(2,:)+dpxr0)/pr*.5d0
-            dpxh(6)=dpxh(6)-pxh/pr
-            dpyh=(tr2(4,:)+dpyi)/pr*.5d0
-            dpyh(6)=dpyh(6)-pyh/pr
-            pzh=1.d0+pxy2dpz(pxh,pyh)
-            dpzh=-(pxh*dpxh+pyh*dpyh)/pzh
-            bp=(xpx*pxh+xpy*pyh+xpzb*pzh)/pr
-            dbp=(dxpx*pxh+xpx*dpxh+dxpy*pyh
-     $           +xpy*dpyh+dxpzb*pzh+xpzb*dpzh)/pr
-            dbp(6)=dbp(6)-bp/pr
-            blx=bp*pxh
-            bly=bp*pyh
-            blz=bp*pzh
-            btx=xpx/pr-blx
-            bty=xpy/pr-bly
-            btz=xpzb/pr-blz
-            dblx=dbp*pxh+bp*dpxh
-            dbly=dbp*pyh+bp*dpyh
-            dblz=dbp*pzh+bp*dpzh
-            dbtx=dxpx/pr-dblx
-            dbtx(6)=dbtx(6)-xpx/pr**2
-            dbty=dxpy/pr-dbly
-            dbty(6)=dbty(6)-xpy/pr**2
-            dbtz=dxpzb/pr-dblz
-            dbtz(6)=dbtz(6)-xpzb/pr**2
-            ct=h1*gspin
-            dct=ct*dh1r
-            ct=ct+1.d0
-            gx=ct*btx+cl*blx
-            gy=ct*bty+cl*bly
-            gz=ct*btz+cl*blz
-            dgx=ct*dbtx+cl*dblx
-            dgx(6)=dgx(6)+dct*btx
-            dgy=ct*dbty+cl*dbly
-            dgy(6)=dgy(6)+dct*bty
-            dgz=ct*dbtz+cl*dblz
-            dgz(6)=dgz(6)+dct*btz
-            srot(1,4:9)=srot(1,4:9)
-     $           +dgx(1)*transr(1,:)+dgx(2)*transr(2,:)
-     $           +dgx(3)*transr(3,:)+dgx(4)*transr(4,:)
-     $           +dgx(5)*transr(5,:)+dgx(6)*transr(6,:)
-            srot(2,4:9)=srot(2,4:9)
-     $           +dgy(1)*transr(1,:)+dgy(2)*transr(2,:)
-     $           +dgy(3)*transr(3,:)+dgy(4)*transr(4,:)
-     $           +dgy(5)*transr(5,:)+dgy(6)*transr(6,:)
-            srot(3,4:9)=srot(3,4:9)
-     $           +dgz(1)*transr(1,:)+dgz(2)*transr(2,:)
-     $           +dgz(3)*transr(3,:)+dgz(4)*transr(4,:)
-     $           +dgz(5)*transr(5,:)+dgz(6)*transr(6,:)
-            g=abs(dcmplx(gx,abs(dcmplx(gy,gz))))
-            if(g .ne. 0.d0)then
-              bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
-              th=tan(.5d0*g)
-              sinu=2.d0*th/(1.d0+th**2)
-              dcosu=th*sinu
-c              sinu=sin(g)
-c              dcosu=2.d0*sin(g*.5d0)**2
-              cosu=1.d0-dcosu
-              sinu=sinu/g
-              sx=srot(1,:)
-              sy=srot(2,:)
-              sz=srot(3,:)
-              sw=(sx*gx+sy*gy+sz*gz)/g
-              gintd=gintd+sw(1:3)*sflc*anp*(bt*h1*p/al1)**2
-              sw=sw*dcosu/g
-              sux=sy*gz-sz*gy
-              suy=sz*gx-sx*gz
-              suz=sx*gy-sy*gx
-              sx       =cosu*sx+sinu*sux+sw*gx
-              srot(2,:)=cosu*sy+sinu*suy+sw*gy
-              sz       =cosu*sz+sinu*suz+sw*gz
-              srot(1,:)= cp*sx+sp*sz
-              srot(3,:)=-sp*sx+cp*sz
-            else
-              srot(1,:)=  cp*srot(1,:)+sp*srot(3,:)
-              srot(3,:)=(-sp*srot(1,:)+srot(3,:))/cp
-            endif
-          endif
-        endif
-        codr0(1:6)=cod(1:6)
-        transr=trans(:,1:6)
-        bzhr0=bzh
-        bsi=0.d0
-        return
-        end subroutine
-
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
         real*8 function outer(a,b)
         implicit none
         real*8 ,intent(in):: a(3),b(3)
@@ -1884,23 +1471,14 @@ c        write(*,*)'spnorm ',sdamp,gintd
         implicit none
         real*8 , intent(in)::srot(3,9),demit(21),sps(3,3),
      $       params(nparams),sdamp
-<<<<<<< HEAD
         real*8 , intent(out)::equpol(3),rm1(3,3)
-=======
-        real*8 , intent(out)::equpol,rm1(3,3)
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
         real*8 drot(3,6),
      $       d1,d2,d3,d4,d5,d6,e1,e2,e3,e4,e5,e6,
      $       c1,c2,c3,c4,c5,c6,smu,c,s,tx,c60,c40,c20,
      $       dex1,dex2,dey1,dey2,dez1,dez2,
      $       c1a,c3a,c5a,
-<<<<<<< HEAD
      $       rm(3,3),epol(3,3),b(3),rmd(3,3,3)
         integer*4 i
-=======
-     $       rm(3,3),rmx(3,3),rmy(3,3),rmz(3,3),epol(3),b(3)
-        integer*4 k
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
 c        write(*,'(1p3g15.7)')(rm(k,:),k=1,3)
         smu=params(ipnup)*m_2pi
         drot=matmul(srot(:,4:9),r)
@@ -1967,7 +1545,6 @@ c        write(*,'(1p3g15.7)')(rm(k,:),k=1,3)
         e6= (s*e5+  e6)/c
         write(*,'(a,1p10g12.4)')'sremit-z ',tx,
      $       demit(15),demit(20),demit(21),dez1,dez2,c5,c6,c5a,c60
-<<<<<<< HEAD
         call spdepol(
      $       (/c1,c3,c5/),(/c2,c4,c6/),
      $       (/d1,d3,d5/),(/d2,d4,d6/),
@@ -1987,25 +1564,6 @@ c        write(*,'(1p3g15.7)')(rm(k,:),k=1,3)
         rm1(1,1)=rm1(1,1)-sdamp
         write(*,'(1p3g13.5)')epol
         equpol=epol(1,:)
-=======
-        call spdepol(c1,c2,d1,d2,e1,e2,dex1,dex2,
-     $       params(ipemx),
-     $       abs(params(ipdampx)),params(ipnx)*m_2pi,smu,rmx)
-        call spdepol(c3,c4,d3,d4,e3,e4,dey1,dey2,
-     $       params(ipemy),
-     $       abs(params(ipdampy)),params(ipny)*m_2pi,smu,rmy)
-        call spdepol(c5,c6,d5,d6,e5,e6,dez1,dez2,
-     $       params(ipemz),
-     $       abs(params(ipdampz)),params(ipnz)*m_2pi,smu,rmz)
-        rm=rmx+rmy+rmz
-        rm(1,1)=rm(1,1)-sdamp
-        rm1=rm
-        b=(/-sdamp*pst,0.d0,0.d0/)
-        call tsolvg(rm,b,epol,3,3,3)
-        equpol=epol(1)
-        write(*,'(1p9g13.5)')(rmx(k,:),rmy(k,:),rmz(k,:),k=1,3)
-        write(*,'(1p3g13.5)')epol
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
         return
         end subroutine
 
@@ -2027,11 +1585,7 @@ c        write(*,'(1p3g15.7)')(rm(k,:),k=1,3)
       integer*8 iatr,iacod,iamat,iabmi
       integer*4 lfno,ia,it,i,j,k,k1,k2,k3,m,n,iret,l
       real*8 trans(6,12),cod(6),beam(42),srot(3,9),srot1(3,3),
-<<<<<<< HEAD
      $     emx0,emy0,emz0,dl,equpol(3),sdamp,
-=======
-     $     emx0,emy0,emz0,dl,equpol,sdamp,
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
      $     heff,phirf,omegaz,bh,so,s,
      $     sr,sqr2,bb,bbv(21),sige,
      $     emxr,emyr,emzr,xxs,yys,btilt,
@@ -2523,12 +2077,8 @@ c          enddo
         srot1=srot(:,1:3)
         params(ipnup)=smu/m_2pi
         call sremit(srot,sps,params,beam2,sdamp,spm,equpol)
-<<<<<<< HEAD
         params(ipequpol)=equpol(3)
         params(ipequpol2:ipequpol6)=equpol
-=======
-        params(ipequpol)=equpol
->>>>>>> 901ee3111637e521b941e7d4d88ffbed62e7611a
         params(ippolx:ippolz)=sps(:,1)
       endif
       call rsetgl1('EMITX',emx)
