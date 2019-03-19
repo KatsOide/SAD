@@ -3,7 +3,8 @@
       use tfstk, only: sqrtl
       use element_drift_common
       use tmacro, only:bradprev
-      use temw, only:tsetr0,bsi
+      use temw, only:tsetr0
+      use tspin
       implicit none
       integer*4 irad,i,itmax
       parameter (itmax=10)

@@ -41,7 +41,6 @@ c      write(*,*)'tcod-dp0 ',dp0
       rt=.false.
  10   dcod=0.d0
       dcod0=0.d0
-      epsrad=epsr0
       r0=rmax
       fact=1.d0
       loop=lmax

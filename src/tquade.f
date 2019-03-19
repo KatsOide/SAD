@@ -6,9 +6,10 @@
       use ffs_flag
       use tmacro
       use temw
+      use tspin, only:tradke
       implicit none
       integer*4 ld,ndiv,i,mfring,n,itgetqraddiv
-      real*8 trans(6,12),cod(6),beam(21),trans1(6,6),srot(3,9),
+      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,9),
      $     al,ak,dx,dy,theta,f1in,f2in,f1out,f2out,
      $     eps0,f1r,f2r,eps,b1,akn,
      $     aln,pr,akk,phi,scphi,shcphi,sinc2,sinhc2,akr,

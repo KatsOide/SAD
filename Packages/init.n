@@ -1,3 +1,4 @@
+(* init.n 3/14/2019 *)
 SetAttributes[{Constant,HoldFirst,HoldAll,HoldRest,HoldNone},Constant];
 HoldPattern=Literal;
 SetAttributes[{Literal,HoldPattern},{HoldAll,Constant}];
@@ -202,6 +203,7 @@ $CommandLine=Module[{`s=$GetCommandLine[]},
     Rest[s],
     True,
     s]];
+
 NPARA=2;
 AutoLoad[`x__,`f_]:=(Scan[
   Function[`a,`a:=(Unprotect[x];Clear[x];Get[f];`a)],{x}];
@@ -215,6 +217,7 @@ AutoLoadSet[`x__,`f_]:=(Scan[
   {x}];
   Protect[x]);
 SetAttributes[{AutoLoad,AutoLoadSet},{HoldAll,Constant}];
+
 PackagesDirectory=GetEnv["SAD_PACKAGES"];
 If[PackagesDirectory=="",PackagesDirectory=GetEnv["SAD$PACKAGES"]];
 If[PackagesDirectory=="",PackagesDirectory=BuildInfo["Target:SAD_PKG_ROOT"]];
@@ -297,10 +300,15 @@ WithPriority[x_,`y_]:=With[x,
   Check[y,];
   $Priority=False];
 SetAttributes[{Priority,WithPriority},{HoldAll,Constant}];
+
 Close[x_]:=Close$[x];
 Close[x__]:=Scan[Close,{x}];
 Close[`l_List]:=Scan[Close,Flatten[l]];
-SetAttributes[Close,Constant];
+Put[x__,file_String]:=With[{f=OpenWrite[file]},
+  Scan[Write[f,#]&,{x}];
+  Close[f]];
+SetAttributes[Close,Put,Constant];
+
 Shared[`n_Real]:=ReadShared[`n];
 (Shared[n_]=`v_)^:=WriteShared[n,v];
 (Shared[n_]:=v_)^:=WriteShared[n,Unevaluated$[v]];
@@ -348,6 +356,7 @@ Parallelize[`f_,`n_,`lshare_,`npara_,`fcomp_:Identity]:=Module[{`shared,`sharedp
   Close[np];
   l];
 SetAttributes[{Parallelize,CloseShared},{HoldFirst,Constant}];
+
 $WildCardID=0;
 $WildCard:=Switch[$WildCardID,
   0,"SAD",
@@ -383,6 +392,7 @@ ReleaseVector[Vector[{`x___}]]^:={`x};
   Vectorize[`f,`a,Vector$[`x],`b,Vector$[`y],`c];
 `f_[`a___,Vector[`x_],`b___]^:=(Vectorize[`f,`a,Vector$[`x],`b]);
 Protect[Vector];
+
 $FORM=" ";
 $Input=$Output=-1;
 (Environment[x_]=s_)^:=SetEnv[x,s];

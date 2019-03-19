@@ -55,9 +55,6 @@ c        write(*,*)'track-0.4'
       else
         levele=1
       endif
-c      isp1=isp-1
-c      call tfmemcheck(isp1,kx,irtc)
-c      l=itfdownlevel()
       levele=levele+1
       novfl=0
       call cputime(dt0,irtc)

@@ -13,12 +13,11 @@
       use tspin
 c      use ffs_pointer, only:inext,iprev
       implicit none
-      integer*4 nmult,itmax,ndivmax
-      real*8 conv,ampmax,alstep,eps00,oneev,pmin
-      parameter (nmult=21,itmax=10,ndivmax=1000,conv=3.d-16,
-     $     ampmax=0.05d0,alstep=0.05d0,eps00=0.005d0,pmin=1.d-10)
+      integer*4 , parameter ::nmult=21,itmax=10,ndivmax=1000
+      real*8 ,parameter :: conv=3.d-16,oneev=1.d0+1.d-6,
+     $     ampmax=0.05d0,alstep=0.05d0,eps00=0.005d0,pmin=1.d-10,
+     $     arad=0.01d0
 c      parameter (oneev=1.d0+3.83d-12)
-      parameter (oneev=1.d0+1.d-6)
       integer*4 np
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
      $     pxr0(np),pyr0(np),zr0(np),bsi(np)
@@ -292,17 +291,18 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
         ndiv=max(ndiv,
      $int(sqrt(ampmax**(n-1)/6.d0/fact(n-1)/eps*abs(akr(n)*al)))+1)
       enddo
-      ndiv=min(ndivmax,ndiv)
       if(spac)then
         ndiv=max(ndiv,nint(abs(al)/(alstep*eps/eps00)),
      $       nint(eps00/eps*abs(bzs*al)/1.5d0))
       endif
-      acc=(trpt .or. rfsw) .and. vc .ne. 0.d0
       if(krad)then
         pxr0=px
         pyr0=py
         zr0=z
+        ndiv=max(ndiv,ndivrad(abs(akr(0)),akr1,bz,eps0))
       endif
+      ndiv=min(ndivmax,ndiv)
+      acc=(trpt .or. rfsw) .and. vc .ne. 0.d0
       if(acc)then
         if(w .eq. 0.d0)then
           wi=0.d0
@@ -453,6 +453,7 @@ c        vnominal=0.d0
             pxr0=px
             pyr0=py
             zr0=z
+            bsi=0.d0
           endif
           ibsi=0
         endif
@@ -695,12 +696,13 @@ c          h1=sqrt(1.d0+(p2*pr1)**2)
       subroutine tblfri(np,x,px,y,py,z,g,al,ck0,fb1)
       implicit none
       integer*4 np,i
+      complex*16 ck0
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),
      $     dxfrx,dyfrx,dyfrax,
      $     dxfry,dyfry,dxfray,
-     $     p,ck0(2),al,fb1,rhob
-      if(ck0(1) .ne. 0.d0)then
-        rhob=al/ck0(1)
+     $     p,al,fb1,rhob
+      if(dble(ck0) .ne. 0.d0)then
+        rhob=al/dble(ck0)
         dxfrx=fb1**2/rhob/24.d0
         dyfrx=fb1/rhob**2/6.d0
         dyfrax=4.d0*dyfrx/fb1**2
@@ -709,8 +711,8 @@ c          h1=sqrt(1.d0+(p2*pr1)**2)
         dyfrx=0.d0
         dyfrax=0.d0
       endif
-      if(ck0(2) .ne. 0.d0)then
-        rhob=al/ck0(2)
+      if(imag(ck0) .ne. 0.d0)then
+        rhob=al/imag(ck0)
         dyfry=fb1**2/rhob/24.d0
         dxfry=fb1/rhob**2/6.d0
         dxfray=4.d0*dxfry/fb1**2

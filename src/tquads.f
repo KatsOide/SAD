@@ -25,14 +25,13 @@ c      use ffs_pointer, only:inext,iprev
       data ifv/0/
       data vname/'SolenoidShape'/
       if(ifv .eq. 0)then
-        ifv=ktavaloc(0,2)
+        ifv=ktavaloc(0,1)
         ifvh=ktfsymbolz(vname,len(vname))
-c        ilist(1,ifvh-2)=-1
         klist(ifv)=ktfsymbol+ktfcopy1(ifvh)
       endif
       if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       4,ld,0.d0,ak,
+     $       4,0.d0,ak,
      $       dx,dy,theta,cost,sint, 1.d0,.false.)
         return
       endif
@@ -61,6 +60,7 @@ c        pr=(1.d0+g(i))**2
         pxr0=px
         pyr0=py
         zr0=z
+        bsi=0.d0
       endif
       if(fringe .and. mfring .ne. 2)then
         call ttfrin(np,x,px,y,py,z,g,4,ak,al,bz)
@@ -82,23 +82,16 @@ c          p=(1.d0+g(i))**2
           py(i)=pyf
 2110    continue
       endif
-c$$$      if(enarad)then
-c$$$        if(iprev(l) .eq. 0)then
-c$$$          f1r=f1in
-c$$$        else
-c$$$          f1r=0.d0
-c$$$        endif
-c$$$        if(inext(l) .eq. 0)then
-c$$$          f2r=f1out
-c$$$        else
-c$$$          f2r=0.d0
-c$$$        endif
-c$$$        b1=brhoz*ak/al
-c$$$        call trad(np,x,px,y,py,g,dv,0.d0,
-c$$$     1       b1,0.d0,0.d0,.5d0*al,f1r,f2r,0.d0,al,1.d0)
-c$$$      endif
       if(ifv .eq. 0)then
         if(enarad)then
+          if(f1in .ne. 0.d0)then
+            call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $           pxr0,pyr0,zr0,1.d0,0.d0,bsi,f1in)
+          endif
+          pxr0=px
+          pyr0=py
+          zr0=z
+          bsi=0.d0
           call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         pxr0,pyr0,zr0,bsi,
      $         al,ak,bz,0.d0,0.d0,eps0,
@@ -192,9 +185,9 @@ c          p=(1.d0+g(i))**2
       if(fringe .and. mfring .ne. 1)then
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,bz)
       endif
-      if(enarad)then
+      if(enarad .and. f1out .ne. 0.d0)then
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       pxr0,pyr0,zr0,1.d0,0.d0,bsi,alr)
+     $       pxr0,pyr0,zr0,1.d0,0.d0,bsi,f1out)
       endif
       if(theta .ne. 0.d0)then
         do i=1,np

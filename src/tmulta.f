@@ -4,10 +4,11 @@
      1     dx,dy,theta,dtheta,
      $     eps0,enarad,fb1,fb2,mfring,fringe)
       use tfstk
-      use ffs_flag, only:rad
+      use ffs_flag, only:rad,ndivrad
       use tmacro
       use multa
       use tbendcom, only:tbrot
+      use tspin, only:tradke      
       implicit none
       integer*4 ndivmax
       real*8 ampmax,eps00
@@ -92,12 +93,16 @@
           exit
         endif
       enddo
-      krad=rad .and. enarad
       ndiv=1
       do n=nmmin,nmmax
         ndiv=max(ndiv,
      $int(sqrt(ampmax**(n-1)/6.d0/fact(n-1)/eps*abs(ak(n)*al)))+1)
       enddo
+      phib=phi+ak0r
+      krad=rad .and. enarad
+      if(krad)then
+        ndiv=max(ndiv,ndivrad(phib,ak1r,0.d0,eps0))
+      endif
       ndiv=min(ndivmax,ndiv)
       aln=al/ndiv
       if(fb1 .ne. 0.d0)then
@@ -108,7 +113,6 @@
         aln=aln-(phi*fb2)**2/al/48.d0
      1       *sin(.5d0*(phi-psi1-psi2))/sin(.5d0*phi)/ndiv
       endif
-      phib=phi+ak0r
       rho0=al/phi
       rhob=al/phib
       phin=phi/ndiv
@@ -164,7 +168,7 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
      1         cosp1,sinp1,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $         fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
-     1         enarad,0.d0,als,al,eps0,.false.)
+     1         enarad,eps0,.false.)
           w=phin
           cosw=cos(w)
           sinw=sin(w)
@@ -181,7 +185,7 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
      1         1.d0,0.d0,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $         0.d0,0.d0,0,.false.,cosw,sinw,sqwh,sinwp1,
-     1         enarad,als,als+aln,al,eps0,.false.)
+     1         enarad,eps0,.false.)
           als=als+aln
         endif
         do i=1,np
@@ -247,7 +251,7 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
      1     1.d0,0.d0,cosp2,sinp2,
      1     ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $     fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
-     1     enarad,als,al,al,eps0,.false.)
+     1     enarad,eps0,.false.)
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi,-dtheta)
       endif
@@ -262,6 +266,7 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
       use tfstk
       use tmacro
       use multa
+      use tspin, only:tradke      
       implicit none
       integer*4 ndivmax
       real*8 ampmax,eps00

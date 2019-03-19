@@ -131,6 +131,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       use ffs_pointer, only:inext,iprev
       use tspin
       implicit none
+      integer*4 , parameter :: ndivmax=1000
       integer*4 np,mfring,i,ndiv,n,l
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     sx(np),sy(np),sz(np),px0(np),py0(np),zr0(np),bsi(np),
@@ -149,6 +150,12 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       rhob=al/phib
       rho0=al/phi0
       aind=rho0/phi0*ak
+      if(eps0 .le. 0.d0)then
+        eps=epsbend
+      else
+        eps=epsbend*eps0
+      endif
+      ndiv=1+int(abs(phi0/eps))
       krad=rad .and. enarad .and. al .ne. 0.d0
       if(krad)then
         px0=px
@@ -166,10 +173,9 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
           f2r=0.d0
         endif
         b=brhoz/rhob
-c        call trad(np,x,px,y,py,g,dv,b,0.d0,b*(aind/rho0),
-c     1             1.d0/rho0,-tanp1*2.d0/al,.5d0*al,
-c     $       f1r,f2r,0.d0,al,1.d0)
+        ndiv=max(ndiv,ndivrad(phib,ak,0.d0,eps0))
       endif
+      ndiv=min(ndivmax,ndiv)
       if(fringe .and. mfring .gt. -4 .and. mfring .ne. 2)then
         call ttfrin(np,x,px,y,py,z,g,4,ak,al,0.d0)
       endif
@@ -189,12 +195,7 @@ c            dp=g(i)*(2.d0+g(i))
           enddo
         endif
       endif
-      if(eps0 .le. 0.d0)then
-        eps=epsbend
-      else
-        eps=epsbend*eps0
-      endif
-      ndiv=1+int(abs(phi0/eps))
+
       if(fringe)then
         af=1.d0
       else
@@ -286,14 +287,6 @@ c     $       f1r,f2r,al,al,-1.d0)
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       px0,py0,zr0,cphin,sphin,bsi,aln)
       endif
-c      if(dphiy .ne. 0.d0)then
-c        do i=1,np
-c          pr=(1.d0+g(i))**2
-c          pr=1.d0+g(i)
-c          px(i)=px(i)+dphix/pr
-c          py(i)=py(i)+dphiy/pr
-c        enddo
-c      endif
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
       endif

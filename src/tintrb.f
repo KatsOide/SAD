@@ -235,10 +235,11 @@ c     endif
       return
       end
 
-      real*8 function fintrb(t)
+      real*8 pure function fintrb(t)
       use intrb
       implicit none
-      real*8 t,cost,sqsint
+      real*8 , intent(in)::t
+      real*8 cost,sqsint
       cost=cos(t)
       sqsint=(1.d0-cost)*(1.d0+cost)
       fintrb=sqsint*cost/
@@ -345,16 +346,17 @@ c      h1=sqrt(1.d0+p1**2)
       return
       end
 
-      subroutine twspac(np,x,px,y,py,z,g,dv,pz,al,
-     $     cod,beam)
+      subroutine twspac(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $     al,cod,beam)
       use tfstk
       use ffs_flag
       use tmacro
       implicit none
       integer*4 np,i
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+     $     sx(np),sy(np),sz(np),
      $     al,cod(6),beam(42),
-     $     xx1,yy1,xy1,a,c1,s1,sx,sy,p1,h1,f,dx,dy,
+     $     xx1,yy1,xy1,a,c1,s1,sigx,sigy,p1,h1,f,dx,dy,
      $     dx1,dy1,dpx,dpy,pr,u,v,theta,sigzsq,
      $     az,dg,dpr,pr1,fx,fy,fu,xc,yc,zc,fxx,fyy,fxy
       integer*4 ia(6,6)
@@ -374,9 +376,9 @@ c      h1=sqrt(1.d0+p1**2)
       theta=atan2(v,u)*.5d0
       c1=cos(theta)
       s1=sin(theta)
-      sx=(xx1+yy1)*.5d0
-      sy=sqrt(sx-a*.5d0)
-      sx=sqrt(sx+a*.5d0)
+      sigx=(xx1+yy1)*.5d0
+      sigy=sqrt(sigx-a*.5d0)
+      sigx=sqrt(sigx+a*.5d0)
       if(selfcod)then
         xc=0.d0
         yc=0.d0
@@ -404,14 +406,14 @@ c      h1=p1*sqrt(1.d0+1.d0/p1**2)
         dx1= dx*c1+dy*s1
         dy1=-dx*s1+dy*c1
         az=f*exp(-.5d0*(z(i)-zc)**2/sigzsq)
-        call twspfu(dx1,dy1,sx,sy,fx,fy,fu,fxx,fyy,fxy)
-c        bb=bbkick1(dx1,dy1,sx,sy)
-c        call bbkick(dcmplx(sx,sy),dcmplx(dx1,dy1),
+        call twspfu(dx1,dy1,sigx,sigy,fx,fy,fu,fxx,fyy,fxy)
+c        bb=bbkick1(dx1,dy1,sigx,sigy)
+c        call bbkick(dcmplx(sigx,sigy),dcmplx(dx1,dy1),
 c     $       bb,1,tr)
 c        fx=az*dble(bb)
 c        fy=az*dimag(bb)
 c        dg=-(z(i)-zc)/sigzsq*az*
-c     $       twspu(dx1,dy1,sx,sy,4.d-2,1.d-4)
+c     $       twspu(dx1,dy1,sigx,sigy,4.d-2,1.d-4)
         fx=-az*fx
         fy=-az*fy
         dg=-(z(i)-zc)/sigzsq*az*fu

@@ -2,6 +2,7 @@
       use tfstk
       use bendib
       use temw
+      use tspin
       implicit none
       logical*4 tbinit
       real*8 als,al,b1,b,aind,trans1(6,13),cx,cy,
@@ -445,7 +446,7 @@ c      write(*,'(a,1p6g15.7)')'tbende-1 ',trans(1,6),trans(2,6)
       if(enarad)then
         nrad=int(abs(al/epsrad*crad*(h0*b)**2))
         ndiv=max(ndiv,int(nrad*emidiv*emidib),
-     1       int(min(pi2,abs(phib))/epsrad/1.d3*emidiv*emidib))
+     1       int(abs(phib*h0*anrad)/epsrad/1.d6*emidiv*emidib))
         if(ndiv .eq. 1)then
           bsi2=1.d0
         else

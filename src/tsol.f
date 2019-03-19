@@ -166,7 +166,7 @@ c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
             rtaper=1.d0-dp0
      $           +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
           endif
-          call tquads(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,
+          call tquads(np,x,px,y,py,z,g,dv,sx,sy,sz,al,
      $         cmp%value(ky_K1_QUAD)*rtaper,bzs,
      $         cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1         cmp%value(p_THETA_QUAD),

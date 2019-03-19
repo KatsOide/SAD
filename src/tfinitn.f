@@ -13,8 +13,7 @@
       integer :: lpkg, lenv
       integer*8 ktfsymbolc,ktrvaloc,ktcontaloc,
      $     iaxsys,loc,ktcvaloc,kax,k1,k2,i
-      integer*4 lpw
-      integer*4 lenw,ifromstr
+      integer*4 lpw,lenw,ifromstr
       call tfinfinit
       call tfsinglechar
       levele=1

@@ -403,7 +403,7 @@ tmatch.o: tmatch.f tfstk.o
 tmov.o: tmov.f
 tmulbs.o: tmulbs.f tffs.o tfstk.o
 tmuld.o: tmuld.f
-tmulta.o: tmulta.f inc/TENT.inc inc/TEXIT.inc tbend.o tffs.o tfstk.o
+tmulta.o: tmulta.f inc/TENT.inc inc/TEXIT.inc tbend.o temit.o tffs.o tfstk.o
 tmulte.o: tmulte.f tbend.o temit.o tffs.o tfstk.o
 tmulti.o: tmulti.f temit.o tffs.o tfstk.o
 tmultr.o: tmultr.f
@@ -429,7 +429,7 @@ trackb.o: trackb.f tffs.o tffsa.o tfstk.o
 trackd.o: trackd.f tffs.o tfshared.o tfstk.o
 tracke.o: tracke.f tffs.o tffsa.o tfstk.o
 trad.o: trad.f temit.o tffs.o tfstk.o
-trade.o: trade.f temit.o tffs.o tfstk.o
+trade.o: trade.f tffs.o tfstk.o
 trcoda.o: trcoda.f tffs.o tfstk.o
 trotg.o: trotg.f
 tscale.o: tscale.f tffs.o
