@@ -29,7 +29,7 @@ c     end   initialize for preventing compiler warning
       end
 
       subroutine tsrote(trans,cod,rr,chi1,chi2,chi3)
-      use tfstk, only:sqrt1
+      use mathfun, only:sqrt1
       implicit none
       real*8 trans(6,6),cod(6),chi1,chi2,chi3,rr(3,3),
      $     pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf,

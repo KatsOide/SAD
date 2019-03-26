@@ -1226,7 +1226,7 @@ c        enddo
       subroutine tfsolv(qu,qu0,df,dval,wlimit,nqcol,nvar,
      $     iqcol,kfitp,mfitp,dg,wexponent,eps)
       implicit none
-      integer*4 nqcol,nvar,j
+      integer*4 nqcol,nvar
       real*8 qu(nqcol,nvar),qu0(nqcol,nvar)
       real*8 df(nqcol),dval(nvar)
       integer*4 iqcol(*),kfitp(*),mfitp(*)
@@ -1264,10 +1264,11 @@ c      call tfmemcheckprint('solv-3',.true.,irtc)
       again=.false.
       dg=0.d0
       do i=1,nqcol
-        s=0.d0
-        do j=1,nvar
-          s=s+qu(i,j)*wlimit(j)*dval(j)
-        enddo
+c        s=0.d0
+c        do j=1,nvar
+c          s=s+qu(i,j)*wlimit(j)*dval(j)
+c        enddo
+        s=sum(qu(i,:)*wlimit*dval)
         if(df(i) .ne. 0.d0)then
           if(wexponent .eq. 2.d0)then
             dg=dg-df(i)*s

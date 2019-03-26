@@ -10,6 +10,7 @@
       use tfstk
       use ffs_flag
       use tmacro
+      use mathfun
       implicit none
       real*8 fintrb
       external fintrb
@@ -268,6 +269,7 @@ c      parameter (eeuler=7.98221278918726d0,a=5.5077d0,b=1.1274d0)
       subroutine twspace(trans,cod,al,beam)
       use tfstk
       use tmacro
+      use mathfun
       implicit none
       real*8 trans(6,6),cod(6),al,beam(21),
      $     xx1,yy1,xy1,u,v,a,c2,s2,sx,sy,p1,h1,f,akx,aky,
@@ -351,6 +353,7 @@ c      h1=sqrt(1.d0+p1**2)
       use tfstk
       use ffs_flag
       use tmacro
+      use mathfun
       implicit none
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),

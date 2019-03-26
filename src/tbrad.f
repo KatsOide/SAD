@@ -3,11 +3,11 @@
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fs1,fs2,mfring,fringe,eps0)
-      use tfstk, only: sqrtl
       use ffs_flag
       use tmacro
       use bendeb, only:epsbend
       use tbendcom, only:tbrot
+      use mathfun
       implicit none
 c      parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
 c     1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
@@ -834,7 +834,7 @@ c     end   initialize for preventing compiler warning
 
       subroutine tphotonconv(al,phi,theta,geo1,xi,yi,dp,dpx,dpy,
      $     gx,gy,gz,dpgx,dpgy,dpgz,xi1,xi3)
-      use tfstk, only: sqrtl
+      use mathfun, only: sqrtl
       implicit none
       real*8 al,phi,theta,geo1(3,4),xi,yi,dp,dpx,dpy,gx,gy,gz,
      $     dpz,x1,x2,x3,y1,y2,y3,z1,z2,z3,rho0,sp0,cp0,r1,r2,

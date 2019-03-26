@@ -1,7 +1,7 @@
       recursive subroutine tsolqu(np,x,px,y,py,z,gp,dv,bsi,al,ak,bz0,
      $     ak0x,ak0y,ibsi,eps0)
       use tsolz
-      use tfstk
+      use mathfun
       implicit none
       type (tzparam) tz
       integer*4 np,i,n,ndiv,ibsi
@@ -212,9 +212,9 @@ c          endif
      $     px0,py0,zr0,bsi,al,ak,
      $     bz0,ak0x,ak0y,eps0,alr)
       use tsolz
-      use tfstk
       use tspin
       use ffs_flag, only:ndivrad
+      use mathfun
       implicit none
       type (tzparam) tz
       integer*4 np,i,n,ndiv

@@ -161,19 +161,20 @@ C
       real*8 function splint1(np,y,mode1,mode2,dy)
       implicit none
       integer*4 , intent(in)::np,mode1,mode2
-      integer*4 i
+c      integer*4 i
       real*8 ,intent(in)::y(np),dy(2)
-      real*8 s
+c      real*8 s
       real*8,allocatable:: work(:),ddy(:)
       allocate (work(np),ddy(np))
       ddy(1)=dy(1)
       ddy(np)=dy(2)
       call spline1(np,y,ddy,work,mode1,mode2)
-      s=(y(1)+y(np)-.5d0*(ddy(1)+ddy(np)))*.5d0
-      do i=2,np-1
-        s=s+y(i)-ddy(i)*.5d0
-      enddo
-      splint1=s
+      splint1=(y(1)+y(np)-.5d0*(ddy(1)+ddy(np)))*.5d0
+     $     +sum(y(2:np-1)-ddy(2:np-1)*.5d0)
+c      do i=2,np-1
+c        s=s+y(i)-ddy(i)*.5d0
+c      enddo
+c      splint1=s
       deallocate (work,ddy)
       return
       end

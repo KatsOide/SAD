@@ -847,8 +847,8 @@ c      write(*,*)'setetwiss ',twi(mfitddp),rgb
       end
 
       subroutine tesetdv(dp)
-      use tfstk
       use tmacro
+      use mathfun
       implicit none
       real*8 dp,p1
       p1=p0*(1.d0+dp)
@@ -874,8 +874,8 @@ c      h1emit=p1+1.d0/(sqrt(1.d0+p1**2)+p1)
       end
 
       subroutine tgetdv(dp,dv,dvdp)
-      use tfstk
       use tmacro
+      use mathfun
       implicit none
       real*8 dp,dv,dvdp,pr,p1,h1
       pr=1.d0+dp
@@ -889,8 +889,8 @@ c      h1=p1+1.d0/(sqrt(1.d0+p1**2)+p1)
       end
 
       subroutine tgetdvh(dh,dv)
-      use tfstk
       use tmacro
+      use mathfun
       implicit none
       real*8 dh,dv,h1,p1
       if(dh .ne. 0.d0)then

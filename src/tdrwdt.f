@@ -5,6 +5,7 @@
       use ffs
       use tffitcode
       use ffs_pointer, only:idvalc,idtypec,pnamec,lpnamec,gammab
+      use mathfun
       implicit real*8 (a-h,o-z)
       logical*4 sol,over,fin,monel,only,monly,tmatch
       character*(*) patt

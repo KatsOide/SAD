@@ -4,7 +4,8 @@
       use ffs_flag
       use tmacro
 c      use ffs_pointer, only:inext,iprev
-      use tfstk, only:pxy2dpz,sqrt1,ktfenanq
+      use tfstk, only:ktfenanq
+      use mathfun, only:pxy2dpz,sqrt1
       use tspin
       implicit none
       logical*4 enarad,chro,fringe,kin
@@ -96,10 +97,10 @@ c
       subroutine tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     nord,al,ak,
      1     dx,dy,theta,cost,sint,radlvl,fringe)
-      use tfstk
       use ffs_flag
       use tmacro
       use tspin
+      use mathfun
       implicit none
 c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
       integer*4 nmult
@@ -350,9 +351,9 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
 c
       subroutine tthinrad(np,x,px,y,py,z,g,dv,sx,sy,sz,nord,l,al,ak,
      1                 dx,dy,theta,cost,sint,fringe)
-      use tfstk
       use ffs_flag
       use tmacro
+      use mathfun
       implicit none
       integer*4 nmult,n,ndivmax
       parameter (nmult=21)

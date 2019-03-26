@@ -11,7 +11,7 @@ c     Maximum amplitude of (px/p0)^2 + (py/p0)^2
 c     drift in the free space
       subroutine tdrift_free(np,x,px,y,py,z,dv,al)
       use element_drift_common
-      use tfstk
+      use mathfun, only:pxy2dpz
       implicit none
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np)
@@ -29,10 +29,10 @@ c     drift in the free space
 c     drift in the parallel solenoid
       subroutine tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
      $     al,bz,enarad)
-      use tfstk, only: sqrtl
       use element_drift_common
       use ffs_flag, only:rfluct
       use tspin
+      use mathfun, only: sqrtl
       implicit none
       integer*4 np
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),bsi(np),
@@ -110,9 +110,9 @@ c
       subroutine tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
      $     al,bz,ak0x,ak0y,enarad)
       use element_drift_common
-      use tfstk, only:sqrtl
       use tspin
       use ffs_flag, only:rfluct
+      use mathfun
       implicit none
       integer*4 np,i,j,itmax,ndiag
       real*8 conv
@@ -123,7 +123,7 @@ c
      $     sinphi,ak0x,ak0y,b,phix,phiy,phiz,
      $     dphizsq,dpz0,pz0,plx,ply,plz,ptx,pty,ptz,
      $     pbx,pby,pbz,phi0,dphi,dcosphi,pl,dpl,alb,
-     $     xsinphi,xsin,r,bpr
+     $     xsinphi,r,bpr
       logical*4 enarad
       data ndiag/15/
       if(ak0x .eq. 0.d0 .and. ak0y .eq. 0.d0)then

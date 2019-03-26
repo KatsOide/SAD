@@ -26,6 +26,7 @@
         subroutine tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
         use tfstk
         use ffs_flag, only:calpol
+        use mathfun
         implicit none
         integer*4 np,i
         real*8 phi0,dtheta,
@@ -261,11 +262,12 @@ c      write(*,*)'tbend0 ',ndiv
       subroutine tbdrift(np,x,px,y,py,z,dv,sx,sz,al,phi0)
       use tfstk
       use ffs_flag, only:calpol
+      use mathfun
       implicit none
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),
      $     sx(np),sz(np),
-     $     al,phi0,cp,sp,rho0,dx,xi,pzi,pzf,dl,xsin,dcp,th
+     $     al,phi0,cp,sp,rho0,dx,xi,pzi,pzf,dl,dcp,th
       th=tan(.5d0*phi0)
       sp=2.d0*th/(1.d0+th**2)
       dcp=th*sp
@@ -430,6 +432,7 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
       use multa, only:nmult
       use tbendcom
       use tspin
+      use mathfun
       implicit none
       integer*4 np,mfring,i
       real*8 al,phi0,cosp1,sinp1,cosp2,sinp2,

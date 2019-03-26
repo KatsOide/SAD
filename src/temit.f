@@ -934,9 +934,9 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
 
         subroutine tradkf1(x,px,y,py,z,g,dv,sx,sy,sz,
      $     px00,py0,zr0,cphi0,sphi0,bsi,al)
-        use tfstk, only:pxy2dpz,p2h
         use ffs_flag
         use tmacro
+        use mathfun, only:pxy2dpz,p2h
         implicit none
         real*8, parameter:: gmin=-0.9999d0,
      $       cave=8.d0/15.d0/sqrt(3.d0)
@@ -1006,9 +1006,9 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
 
         subroutine tradk1(x,px,y,py,z,g,dv,sx,sy,sz,
      $     px00,py0,zr0,cphi0,sphi0,bsi,al)
-        use tfstk, only:pxy2dpz,p2h
         use ffs_flag
         use tmacro
+        use mathfun, only:pxy2dpz,p2h
         implicit none
         real*8 x,px,y,py,z,g,dv,px0,py0,zr0,bsi,al,a,
      $       dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
@@ -1064,9 +1064,10 @@ c        write(*,*)'tradk1 ',dg,anp,uc
 
         subroutine sprot(sx,sy,sz,pxm,pym,bx0,by0,bz0,bsi,a,h,
      $     gbrhoi,anph,cphi0,sphi0)
-        use tfstk,only:pxy2dpz,ktfenanq,sqrt1
+        use tfstk,only:ktfenanq
         use tmacro
         use ffs_flag, only:radpol
+        use mathfun,only:pxy2dpz,sqrt1
         implicit none
         real*8 pxm,pym,bsi,pzm,bx0,by0,bz0,sx,sy,sz,cphi0,sphi0,
      $       bx,by,bz,bp,blx,bly,blz,btx,bty,btz,ct,h,
@@ -1137,8 +1138,8 @@ c     $         btx,bty,btz,cphi0,sphi0
         subroutine tradke(trans,cod,beam,srot,al,phir0,bzh)
         use tmacro
         use temw
-        use tfstk, only:pxy2dpz,p2h
         use ffs_flag,only:radcod,calpol
+        use mathfun, only:pxy2dpz,p2h
         implicit none
         real*8 , intent(inout)::trans(6,12),cod(6),beam(42),
      $       srot(3,9)

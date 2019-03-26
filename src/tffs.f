@@ -1178,10 +1178,11 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
 
       contains
 
-      integer*4 function itftypekey(i,word1,lw1)
+      integer*4 function itftypekey(i,word1,lw1,kx)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,ks
+      type (sad_descriptor) , optional,intent(out)::kx
+      type (sad_descriptor) ks,ka
       integer*4 i,isp0,lw1,irtc
       character*(lw1) word1
       isp0=isp
@@ -1191,16 +1192,21 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
       ks=kxsalocb(-1,word1,lw1)
       dtastk(isp)=ks
       levele=levele+1
-      call tfefunref(isp0+1,kx,.false.,irtc)
-      call tfconnect(kx,irtc)
+      call tfefunref(isp0+1,ka,.false.,irtc)
+      call tfconnect(ka,irtc)
       isp=isp0
       if(irtc .ne. 0)then
         call tfreseterror
         itftypekey=0
-      elseif(.not. ktfrealq(kx))then
-        itftypekey=0
+      elseif(ktflistq(ka))then
+        itftypekey=-1
+        if(present(kx))then
+          kx=ka
+        endif
+      elseif(ktfrealq(ka))then
+        itftypekey=ifromd(ka)
       else
-        itftypekey=ifromd(kx)
+        itftypekey=0
       endif        
       return
       end function

@@ -810,8 +810,9 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       implicit none
       type (ffs_bound) fbound
       real*8 conv,cx,sx,ax,bx,cy,sy,ay,by,r0,dcod(6)
-      integer*4 , parameter :: itmax=15
-      real*8 , parameter :: conv0=1.d-19,conv1=1.d-10
+      integer*4 , parameter :: itmax=30
+      real*8 , parameter :: conv0=1.d-19,conv1=1.d-10,
+     $     factmin=1.d-3
       integer*4 idp,it
       real*8 r,fact
       real*8 trans(4,5),cod(6),cod0(6),trans1(4,5),transb(4,5),
@@ -870,6 +871,8 @@ c          enddo
         else
           trans=trans2
         endif
+        call resetnan(cod,1.d300)
+c        write(*,'(a,1p6g15.7)')'qcod ',cod
         if(.not. orbitcal)then
           codfnd=.true.
         endif
@@ -910,15 +913,23 @@ c          endif
         dcod=cod-cod0
         r=dcod(1)**2/bx+bx*(dcod(2)+ax/bx*dcod(1))**2
      $       +dcod(3)**2/by+by*(dcod(4)+ay/by*dcod(3))**2
+        if(ktfenanq(r))then
+          r=1.d300
+        endif
         if(r .le. conv)then
           codfnd=.true.
           return
         endif
-c        write(*,'(a,i5,1p6g14.6)')'qcod ',it,r,r0,cod0(1:4)
+c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
         it=it+1
         if(r .gt. r0)then
-          cod0=(1.d0-fact)*cod00+fact*cod0
-          fact=fact*.5d0
+          if(fact .lt. factmin)then
+            fact=fact*16.d0
+            cod0=(1.d0+fact)*cod00-fact*cod0
+          else
+            cod0=(1.d0-fact)*cod00+fact*cod0
+            fact=abs(fact)*.5d0
+          endif
         else
           fact=min(0.5d0,fact*2.d0)
           r0=r
@@ -939,6 +950,7 @@ c        write(*,'(a,i5,1p6g14.6)')'qcod ',it,r,r0,cod0(1:4)
           call tsolvg(trans1,cod,cod0,4,4,4)
         endif
       enddo
+      cod=cod0
       codfnd=.false.
       return
       end

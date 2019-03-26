@@ -20,7 +20,6 @@
      $     icBEND,icQUAD,icSEXT,icOCTU,icDECA,icDODECA,icMULT,icSOL,
      $     icCAVI,icTCAV,
      $     icMAP,icBEAM,icINS,icCOORD,icAPRT,icMONI,icMARK/
-      write(*,*)'tftype-0 '
       exist1=.false.
       lpw=min(131,itfgetrecl())
       name1=' '

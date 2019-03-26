@@ -233,7 +233,7 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       end
 
       subroutine tbedgemaxwell(trans,cod,rhob)
-      use tfstk, only: sqrtl
+      use mathfun, only: sqrtl
       implicit none
       real*8 trans(6,6),rhob,cod(6),pr,a,b,pxi,pyi,yi,pvi,
      $     c,af,bf,pvi2,yr

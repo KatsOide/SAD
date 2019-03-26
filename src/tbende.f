@@ -59,6 +59,7 @@
 
       subroutine tbendecorr(trans,cod,beam,ak1,al)
       use tmacro
+      use mathfun
       implicit none
       real*8 , intent(in) :: ak1,al
       real*8 trans(6,12),cod(6),beam(42)
@@ -235,6 +236,7 @@ c     $     sxkxp,dcxkxp
      $     bsi1,bsi2,enarad)
       use tmacro
       use temw
+      use mathfun
       implicit none
       real*8, intent(in):: phi0n,snphi0,sinsq0,csphi0,aln,bsi1,bsi2
       real*8 trans(6,12),cod(6),beam(42),srot(3,9)
@@ -592,12 +594,12 @@ c      write(*,'(a,1p6g15.7)')'tbende-9 ',trans(1,6),trans(2,6)
 
       subroutine tbdrifte(trans,cod,beam,srot,al,phi0,
      $     h0,h1emit,dvemit,irad)
-      use tfstk, only: sqrtl
+      use mathfun
       implicit none
       real*8 trans(6,12),cod(6),beam(42),srot(3,9),
      $     phi0,al,cp,sp,pr,pxi,pzf,
      $     trans1(6,6),xi,pyi,pzi,pxf,xf,dpzipxi,dpzipyi,dpzip,
-     $     dpzfpxi,dpzfpyi,dpzfp,rho0,h0,dl,xsin,dcp,
+     $     dpzfpxi,dpzfpyi,dpzfp,rho0,h0,dl,dcp,
      $     h1emit,dvemit,a,psqmax
       integer*4 irad
       parameter (psqmax=0.9999d0)

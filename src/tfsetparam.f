@@ -4,6 +4,7 @@
       use ffs
       use tffitcode
       use ffs_pointer, only:idelc,latt,idtypec,gammab
+      use mathfun
       implicit none
       integer*8 ix
       real*8 rgetgl1,df
@@ -70,6 +71,7 @@ c      iwakepold=ifwakep
       subroutine tphyzp
       use tfstk
       use tmacro
+      use mathfun
       implicit none
       brhoz =pgev/c
       brho  =brhoz/abs(charge)

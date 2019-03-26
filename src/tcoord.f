@@ -1,7 +1,7 @@
       subroutine tcoord(np,x,px,y,py,z,
      1                 dx,dy,dz,chi1,chi2,chi3,dir)
       use tmacro
-      use tfstk, only:sqrt1
+      use mathfun, only:sqrt1
       implicit none
       integer*4 np,i
       real*8 dx,dy,dz,chi1,chi2,chi3,cchi1,schi1,

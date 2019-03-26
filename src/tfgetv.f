@@ -8,6 +8,8 @@
       use ffs_seg
       implicit none
       type (sad_comp), pointer :: cmpd
+      type (sad_descriptor) kx
+      type (sad_rlist),pointer:: kl
       integer*8 kav
       integer*4 ii,i,id,iv,next,lfno,ivi,kv,next1,lw1
       real*8 v,getva,va,vx
@@ -58,6 +60,7 @@ c
           if(lw1 .gt. MAXPNAME)then
             go to 912
           endif
+          call capita1(word1(1:lw1))
           if(abbrev(word1,'R_ELATIVE','_'))then
             rel=.true.
           elseif(word1 .eq. 'MAX')then
@@ -80,9 +83,11 @@ c
               exit
             endif
           else
-            kv=itftypekey(id,word1,lw1)
+            kv=itftypekey(id,word1,lw1,kx)
             if(kv .eq. 0)then
               go to 912
+            elseif(tfreallistq(kx,kl))then
+              iv=-1
             else
               iv=kv
             endif
@@ -106,9 +111,11 @@ c
           endif
         endif
         if(idtypec(ii) .ne. id)then
-          kv=itftypekey(idtypec(ii),word1,lw1)
-          if(kv .ne. 0)then
+          kv=itftypekey(idtypec(ii),word1,lw1,kx)
+          if(kv .gt. 0)then
             ivi=kv
+          elseif(tfreallistq(kx,kl))then
+            ivi=-1
           else
             ivi=ival(i)
           endif
@@ -162,14 +169,25 @@ c          call tfsetcmp(vx*errk(1,ii),cmpd,ivi)
 c          rlist(latt(ii)+ivi)=vx*errk(1,ii)
         else
           vx=va
-c          call tfsetcmp(vx,cmpd,ivi)
-          cmpd%value(ivi)=vx
-c          rlist(latt(ii)+ivi)=vx
-          if(.not. vcomp)then
-            call tftouch(i,ivi)
-            isp=isp+1
-            itastk(1,isp)=i
-            itastk(2,isp)=iv
+          if(ivi .gt. 0)then
+            cmpd%value(ivi)=vx
+            if(.not. vcomp)then
+              call tftouch(i,ivi)
+              isp=isp+1
+              itastk(1,isp)=i
+              itastk(2,isp)=iv
+            endif
+          else
+            do i=1,kl%nl
+              ivi=int(kl%rbody(i))
+              cmpd%value(ivi)=vx
+              if(.not. vcomp)then
+                call tftouch(i,ivi)
+                isp=isp+1
+                itastk(1,isp)=i
+                itastk(2,isp)=iv
+              endif
+            enddo
           endif
         endif
         if(.not. vcomp)then

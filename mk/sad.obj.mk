@@ -86,7 +86,7 @@ OBJ4=defglb.o    ppair.o \
      mrmb.o      push.o      \
      mrqcof.o    wtune.o \
      expln.o     mrqcov.o    tphplt.o     \
-     fdate1.o    mrqmin.o    putsti.o    xsin.o      datetime.o \
+     fdate1.o    mrqmin.o    putsti.o    datetime.o \
      msolb.o     tdrife.o \
      filaux.o    pvert.o     tprmpt.o    tfgetm.o    tfojit.o    tedrawf.o
 

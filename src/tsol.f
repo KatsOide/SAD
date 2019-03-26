@@ -268,9 +268,9 @@ c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
       end
 c     
       subroutine trads(x,px,y,py,g,dv,brad,al)
-      use tfstk
       use ffs_flag
       use tmacro
+      use mathfun
       implicit none 
       real*8 x,px,y,py,g,dv,brad,al,
      $     alc,er,pr,p,hh,dp,de,h1,tran
@@ -299,7 +299,7 @@ c      h1=p0*pr*sqrt(1.d0+1.d0/(p0*pr)**2)
 
       subroutine trots(np,x,px,y,py,z,dv,
      $     chi1,chi2,chi3,dx,dy,dz,ent)
-      use tfstk
+      use mathfun
       implicit none
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),

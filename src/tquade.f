@@ -7,6 +7,7 @@
       use tmacro
       use temw
       use tspin, only:tradke
+      use mathfun
       implicit none
       integer*4 ld,ndiv,i,mfring,n,itgetqraddiv
       real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,9),
@@ -15,7 +16,7 @@
      $     aln,pr,akk,phi,scphi,shcphi,sinc2,sinhc2,akr,
      $     xsin2,xsinh2,a11,a12,a21,b11,b12,b21,als,
      $     xi,pxi,yi,pyi,xf,pxf,yf,pyf,
-     $     zx,zy,zxp,zyp,x,y,sinc,sinhc,xsin,xsinh
+     $     zx,zy,zxp,zyp,x,y
       logical*4 enarad,fringe,kin,next,prev,achro,krad
       real*8 , parameter:: pramin=1.d-4
       integer*4 , parameter :: ndivmax=512

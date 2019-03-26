@@ -4,6 +4,7 @@
       use ffs
       use ffs_pointer
       use tffitcode
+      use mathfun
       implicit none
       integer*4 kf,ne,k,ltyp,iv,nut,nfam,ip,j,j1,j2,
      $     k1
@@ -11,7 +12,7 @@
       real*8 dtrans(36),dcod(6),dcod0(6),
      $     trans1(4,5),s,couple1,qu,theta,al,drj1,drj2,c1,c2,
      $     cost,sint,yr1,yr2,yr3,xr,dz1,dz2,dx3,dy3,dx,dy,
-     $     dr1,dr2,dr3,v,sinc
+     $     dr1,dr2,dr3,v
       if(ne .eq. iorgr)then
         return
       endif
