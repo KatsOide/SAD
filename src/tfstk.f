@@ -121,7 +121,8 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
      $     iaxslotnull,iaxslotpart,iaxslotseqnull,
      $     kxvect,kxvect1,iavpw,
      $     kerror,ierrorf,ierrorgen,ierrorprint,ierrorth,
-     $     ierrorexp,ifunbase,initmessage,levelcompile
+     $     ierrorexp,ifunbase,initmessage,levelcompile,
+     $     kinfinity,kminfinity,knotanumber
       integer*4 
      $     levele,levelp,lgeneration,ltrace,
      $     modethrow,iordless
@@ -1507,8 +1508,10 @@ c     $           n,i,istat
         real*8 , intent(in)::x
         integer*8 kfromr,k
         k=kfromr(x)
-        ktfenanq=iand(k,ktfenan) .eq. ktfenan .and.
-     $       iand(k,ktfenanb) .ne. 0
+        ktfenanq=k .eq. knotanumber .or.
+     $       iand(k,ktfenan) .eq. ktfenan .and.
+     $       iand(k,ktfenanb) .ne. 0 .and. k .ne. kinfinity .and.
+     $       k .ne. kminfinity
         return
         end
 

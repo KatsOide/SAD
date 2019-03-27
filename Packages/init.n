@@ -673,7 +673,7 @@ AutoLoad[TransferMatrix,TransferMatrixPrimitive,
 AutoLoad[DynamicApertureSurvey,AccelerateParticles,
   PackagesDirectory//"dapert.n"];
 AutoLoad[Amoebar,Amoeba,DownhillSimplex,Simplex,CalculateMatching,
-  OptimizeOptics,PackagesDirectory//"optimize.n"];
+  OptimizeOptics,Find$COD,FindClosedOrbit,PackagesDirectory//"optimize.n"];
 AutoLoad[Monitor,Steer,
   ReadMonitorData,ReadSteerData,WriteMonitorData,WriteSteerData,
   PackagesDirectory//"correction.n"];

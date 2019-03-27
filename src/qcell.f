@@ -85,6 +85,16 @@
           write(lfno,*)'*****qcod---> Closed orbit not found'
           pri=.true.
         endif
+        if(.not. calopt)then
+          if(codfnd)then
+            optstat%stabx=.true.
+            optstat%staby=.true.
+          else
+            optstat%stabx=.false.
+            optstat%staby=.false.
+          endif
+          return
+        endif
         call qmdiag(
      $       tm11,tm12,tm13,tm14,
      1       tm21,tm22,tm23,tm24,

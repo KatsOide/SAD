@@ -133,6 +133,7 @@ c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       wspac=.false.
       selfcod=.false.
       orbitcal=.true.
+      calopt=.true.
       dp0   =0.d0
       call initialize_tampl()
       call tclrpara(elatt,nlat-1)

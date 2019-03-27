@@ -260,10 +260,10 @@ c$$$
      $       radlight,geocal,photons,wspac,
      $       selfcod,pspac,convcase,preservecase,
      $       lossmap,orbitcal,radtaper,sorg,
-     $       intres,halfres,sumres,diffres
+     $       intres,halfres,sumres,diffres,calopt
       end type
 
-      integer*4 ,parameter :: nflag=48
+      integer*4 ,parameter :: nflag=49
       type (flagset), target, save :: fff
       character*8, save :: fname(1:nflag)= (/
      $     'RAD     ','RFSW    ','RADCOD  ','COD     ',
@@ -277,7 +277,8 @@ c$$$
      $     'RADLIGHT','GEOCAL  ','PHOTONS ','WSPAC   ',
      $     'SELFCOD ','PSPAC   ','CONVCASE','PRSVCASE',
      $     'LOSSMAP ','ORBITCAL','RADTAPER','SORG    ',
-     $     'INTRES  ','HALFRES ','SUMRES  ','DIFFRES '/),
+     $     'INTRES  ','HALFRES ','SUMRES  ','DIFFRES ',
+     $     'CALOPT  '/),
      $     sino(1:nflag)= (/
      $     '        ','        ','        ','        ',
      1     '        ','RING    ','        ','UNIFORM ',
@@ -290,7 +291,8 @@ c$$$
      $     '        ','GEOFIX  ','        ','        ',
      $     '        ','        ','        ','        ',
      $     '        ','        ','        ','        ',
-     $     '        ','        ','        ','        '/)
+     $     '        ','        ','        ','        ',
+     $     'ORBONLY '/)
 
       integer*8, pointer :: ifvlim,ifibzl,ifmult,ifklp,ifival,iftwissp,
      $     iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifdcomp,ifele,ifcoup,
@@ -523,7 +525,8 @@ c$$$
      $       radlight,geocal,photons,wspac,
      $       selfcod,pspac,convcase,preservecase,
      $       lossmap,orbitcal,radtaper,sorg,
-     $       intres,halfres,sumres,diffres
+     $       intres,halfres,sumres,diffres,
+     $       calopt
         
         contains
         subroutine ffs_init_flag
@@ -576,6 +579,7 @@ c$$$
         halfres=>fff%halfres
         sumres=>fff%sumres
         diffres=>fff%diffres
+        calopt=>fff%calopt
         return
         end subroutine
 

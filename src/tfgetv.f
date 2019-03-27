@@ -11,15 +11,17 @@
       type (sad_descriptor) kx
       type (sad_rlist),pointer:: kl
       integer*8 kav
-      integer*4 ii,i,id,iv,next,lfno,ivi,kv,next1,lw1
+      integer*4 ii,i,id,iv,next,lfno,ivi,kv,next1,lw1,j,lv,
+     $     nl,irtc,lw,iii,lenw,isp0,itfuplevel,itfdownlevel,
+     $     ivj
       real*8 v,getva,va,vx
-      integer*4 nl,irtc,lw,iii,lenw,isp0
       character*(*) word
       character*128 word1
       logical*4 exist,get,rel,maxf,minf,
      $     abbrev,var,exist1,diff,vcomp, cont,vs,nvs
 
 c     Initialize to avoid compiler warning
+      lv=itfuplevel()
       if(iflinep .eq. 0)then
         call tfinitlinep(irtc)
       endif
@@ -111,7 +113,8 @@ c
           endif
         endif
         if(idtypec(ii) .ne. id)then
-          kv=itftypekey(idtypec(ii),word1,lw1,kx)
+          id=idtypec(ii)
+          kv=itftypekey(id,word1,lw1,kx)
           if(kv .gt. 0)then
             ivi=kv
           elseif(tfreallistq(kx,kl))then
@@ -170,22 +173,28 @@ c          rlist(latt(ii)+ivi)=vx*errk(1,ii)
         else
           vx=va
           if(ivi .gt. 0)then
+            if(ktfnonrealq(cmpd%dvalue(ivi)))then
+              call tfree(ktfaddr(cmpd%dvalue(ivi)))
+            endif
             cmpd%value(ivi)=vx
             if(.not. vcomp)then
               call tftouch(i,ivi)
               isp=isp+1
               itastk(1,isp)=i
-              itastk(2,isp)=iv
+              itastk(2,isp)=ivi
             endif
           else
-            do i=1,kl%nl
-              ivi=int(kl%rbody(i))
-              cmpd%value(ivi)=vx
+            do j=1,kl%nl
+              ivj=int(kl%rbody(j))
+              if(ktfnonrealq(cmpd%dvalue(ivj)))then
+                call tfree(ktfaddr(cmpd%dvalue(ivj)))
+              endif
+              cmpd%value(ivj)=vx
               if(.not. vcomp)then
-                call tftouch(i,ivi)
+c                call tftouch(i,ivi)
                 isp=isp+1
                 itastk(1,isp)=i
-                itastk(2,isp)=iv
+                itastk(2,isp)=ivj
               endif
             enddo
           endif
@@ -206,5 +215,6 @@ c          rlist(latt(ii)+ivi)=vx*errk(1,ii)
         call tffsadjust1(isp0,vs,nvs)
       endif
       isp=isp0
+      lv=itfdownlevel()
       return
       end
