@@ -934,9 +934,9 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
 
         subroutine tradkf1(x,px,y,py,z,g,dv,sx,sy,sz,
      $     px00,py0,zr0,cphi0,sphi0,bsi,al)
-        use tfstk, only:pxy2dpz,p2h
         use ffs_flag
         use tmacro
+        use mathfun, only:pxy2dpz,p2h
         implicit none
         real*8, parameter:: gmin=-0.9999d0,
      $       cave=8.d0/15.d0/sqrt(3.d0)
@@ -1006,9 +1006,9 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
 
         subroutine tradk1(x,px,y,py,z,g,dv,sx,sy,sz,
      $     px00,py0,zr0,cphi0,sphi0,bsi,al)
-        use tfstk, only:pxy2dpz,p2h
         use ffs_flag
         use tmacro
+        use mathfun, only:pxy2dpz,p2h
         implicit none
         real*8 x,px,y,py,z,g,dv,px0,py0,zr0,bsi,al,a,
      $       dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
@@ -1064,9 +1064,10 @@ c        write(*,*)'tradk1 ',dg,anp,uc
 
         subroutine sprot(sx,sy,sz,pxm,pym,bx0,by0,bz0,bsi,a,h,
      $     gbrhoi,anph,cphi0,sphi0)
-        use tfstk,only:pxy2dpz,ktfenanq,sqrt1
+        use tfstk,only:ktfenanq
         use tmacro
         use ffs_flag, only:radpol
+        use mathfun,only:pxy2dpz,sqrt1
         implicit none
         real*8 pxm,pym,bsi,pzm,bx0,by0,bz0,sx,sy,sz,cphi0,sphi0,
      $       bx,by,bz,bp,blx,bly,blz,btx,bty,btz,ct,h,
@@ -1137,8 +1138,8 @@ c     $         btx,bty,btz,cphi0,sphi0
         subroutine tradke(trans,cod,beam,srot,al,phir0,bzh)
         use tmacro
         use temw
-        use tfstk, only:pxy2dpz,p2h
         use ffs_flag,only:radcod,calpol
+        use mathfun, only:pxy2dpz,p2h
         implicit none
         real*8 , intent(inout)::trans(6,12),cod(6),beam(42),
      $       srot(3,9)
@@ -1844,10 +1845,11 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
         so=0.d0
         do i=1,6
           do j=1,6
-            s=0.d0
-            do k=1,6
-              s=s+ri(j,k)*r(k,i)
-            enddo
+c            s=0.d0
+c            do k=1,6
+c              s=s+ri(j,k)*r(k,i)
+c            enddo
+            s=dot_product(ri(j,1:6),r(1:6,i))
             trans(j,i)=s
             if(i .eq. j)then
               so=so+abs(s-1.d0)
@@ -1868,15 +1870,16 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
       if(.not. calem)then
         return
       endif
-      do i=1,6
-        do j=1,6
-          s=0.d0
-          do k=1,6
-            s=s+trans(j,k+6)*r(k,i)
-          enddo
-          trans(j,i)=s
-        enddo
-      enddo
+c$$$      do i=1,6
+c$$$        do j=1,6
+c$$$          s=0.d0
+c$$$          do k=1,6
+c$$$            s=s+trans(j,k+6)*r(k,i)
+c$$$          enddo
+c$$$          trans(j,i)=s
+c$$$        enddo
+c$$$      enddo
+      trans(1:6,1:6)=matmul(trans(1:6,7:12),r(1:6,1:6))
       call tmultr(trans,ri,6)
       do i=1,5,2
         cd(int(i/2)+1)=dcmplx((trans(i,i)+trans(i+1,i+1))*.5d0,

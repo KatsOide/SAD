@@ -1,1 +1,1 @@
-/Users/oide/SAD/oldsad/contrib/gdtoa/hd_init.c
+/home/oide/SAD/oldsad/contrib/gdtoa/hd_init.c
