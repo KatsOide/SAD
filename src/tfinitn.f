@@ -12,9 +12,12 @@
       character(len=64) :: env
       integer :: lpkg, lenv
       integer*8 ktfsymbolc,ktrvaloc,ktcontaloc,
-     $     iaxsys,loc,ktcvaloc,kax,k1,k2,i
+     $     iaxsys,loc,ktcvaloc,kax,k1,k2,i,kfromr
       integer*4 lpw,lenw,ifromstr
       call tfinfinit
+      kinfinity=kfromr(dinfinity)
+      kminfinity=kfromr(-dinfinity)
+      knotanumber=kfromr(dnotanumber)
       call tfsinglechar
       levele=1
       itflocal=ktaloc(maxlevele+1)

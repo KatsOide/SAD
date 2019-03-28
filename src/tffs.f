@@ -260,10 +260,10 @@ c$$$
      $       radlight,geocal,photons,wspac,
      $       selfcod,pspac,convcase,preservecase,
      $       lossmap,orbitcal,radtaper,sorg,
-     $       intres,halfres,sumres,diffres
+     $       intres,halfres,sumres,diffres,calopt
       end type
 
-      integer*4 ,parameter :: nflag=48
+      integer*4 ,parameter :: nflag=49
       type (flagset), target, save :: fff
       character*8, save :: fname(1:nflag)= (/
      $     'RAD     ','RFSW    ','RADCOD  ','COD     ',
@@ -277,7 +277,8 @@ c$$$
      $     'RADLIGHT','GEOCAL  ','PHOTONS ','WSPAC   ',
      $     'SELFCOD ','PSPAC   ','CONVCASE','PRSVCASE',
      $     'LOSSMAP ','ORBITCAL','RADTAPER','SORG    ',
-     $     'INTRES  ','HALFRES ','SUMRES  ','DIFFRES '/),
+     $     'INTRES  ','HALFRES ','SUMRES  ','DIFFRES ',
+     $     'CALOPT  '/),
      $     sino(1:nflag)= (/
      $     '        ','        ','        ','        ',
      1     '        ','RING    ','        ','UNIFORM ',
@@ -290,7 +291,8 @@ c$$$
      $     '        ','GEOFIX  ','        ','        ',
      $     '        ','        ','        ','        ',
      $     '        ','        ','        ','        ',
-     $     '        ','        ','        ','        '/)
+     $     '        ','        ','        ','        ',
+     $     'ORBONLY '/)
 
       integer*8, pointer :: ifvlim,ifibzl,ifmult,ifklp,ifival,iftwissp,
      $     iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifdcomp,ifele,ifcoup,
@@ -523,7 +525,8 @@ c$$$
      $       radlight,geocal,photons,wspac,
      $       selfcod,pspac,convcase,preservecase,
      $       lossmap,orbitcal,radtaper,sorg,
-     $       intres,halfres,sumres,diffres
+     $       intres,halfres,sumres,diffres,
+     $       calopt
         
         contains
         subroutine ffs_init_flag
@@ -576,6 +579,7 @@ c$$$
         halfres=>fff%halfres
         sumres=>fff%sumres
         diffres=>fff%diffres
+        calopt=>fff%calopt
         return
         end subroutine
 
@@ -1178,10 +1182,11 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
 
       contains
 
-      integer*4 function itftypekey(i,word1,lw1)
+      integer*4 function itftypekey(i,word1,lw1,kx)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,ks
+      type (sad_descriptor) , optional,intent(out)::kx
+      type (sad_descriptor) ks,ka
       integer*4 i,isp0,lw1,irtc
       character*(lw1) word1
       isp0=isp
@@ -1191,16 +1196,21 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
       ks=kxsalocb(-1,word1,lw1)
       dtastk(isp)=ks
       levele=levele+1
-      call tfefunref(isp0+1,kx,.false.,irtc)
-      call tfconnect(kx,irtc)
+      call tfefunref(isp0+1,ka,.false.,irtc)
+      call tfconnect(ka,irtc)
       isp=isp0
       if(irtc .ne. 0)then
         call tfreseterror
         itftypekey=0
-      elseif(.not. ktfrealq(kx))then
-        itftypekey=0
+      elseif(ktflistq(ka))then
+        itftypekey=-1
+        if(present(kx))then
+          kx=ka
+        endif
+      elseif(ktfrealq(ka))then
+        itftypekey=ifromd(ka)
       else
-        itftypekey=ifromd(kx)
+        itftypekey=0
       endif        
       return
       end function
@@ -1307,7 +1317,7 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
       integer*8 ia
       character*(*) keyword
       character*128 key
-      logical*4 saved,sum,ref
+      logical*4 saved,plus,ref
       real*8 s
       type (sad_comp), pointer :: cmp
 c     begin initialize for preventing compiler warning
@@ -1317,10 +1327,10 @@ c     begin initialize for preventing compiler warning
         kl=ilist(-i,ifklp)
       endif
       call compelc(kl,cmp)
-      sum=.false.
+      plus=.false.
       lk=lenw(keyword)
       if(lk .gt. 4 .and. keyword(lk-3:lk) .eq. '$SUM')then
-        sum=.true.
+        plus=.true.
         lk=lk-4
       endif
       key(1:lk)=keyword(1:lk)
@@ -1373,11 +1383,12 @@ c          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
           call tftouch(iele1(kl),l)
         endif
       endif
-      if(sum .and. tfreallistq(tfkeyv,klr))then
-        s=klr%rbody(1)
-        do i=2,klr%nl
-          s=s+klr%rbody(i)
-        enddo
+      if(plus .and. tfreallistq(tfkeyv,klr))then
+c        s=klr%rbody(1)
+c        do i=2,klr%nl
+c          s=s+klr%rbody(i)
+c        enddo
+        s=sum(klr%rbody(1:klr%nl))
         tfkeyv=dfromr(s)
       endif
       return

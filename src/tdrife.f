@@ -1,10 +1,10 @@
       subroutine tdrife(trans,cod,beam,srot,al,bz,ak0x,ak0y,alr,
      $     dvon,enarad,irad)
-      use tfstk, only: sqrtl
       use element_drift_common
       use tmacro, only:bradprev
       use temw, only:tsetr0
       use tspin
+      use mathfun, only: sqrtl
       implicit none
       integer*4 irad,i,itmax
       parameter (itmax=10)

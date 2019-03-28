@@ -50,6 +50,7 @@
       use tfmem
       use tfshare
       use tfcsi
+      use mathfun
       implicit none
       type (sad_descriptor) kx,k1,k,kh
       type (sad_dlist), pointer :: kl,kl1,klx,klh
@@ -92,22 +93,14 @@ c     for vendor extended math intrinsic function
       external   tctan
 
 c     DOUBLE COMPLEX specific math function implemented by SAD
-      complex*16 tcsinh,tccosh,tctanh,tcatan,tcatan2,tcasin,tcacos,
-     $     tcasinh,tcacosh,tcatanh,tcxsin
-      external   tcsinh,tccosh,tctanh,tcatan,tcatan2,tcasin,tcacos,
-     $     tcasinh,tcacosh,tcatanh,tcxsin
 
-      real*8 tfarg,tfcarg
-      external tfloor,tceiling,tfdummy,ccdabs,tfsign,tfcsign,
-     $     tround,tcfloor,tcceiling,tcround,tfarg,tfcarg,inverseerf
       real*8 aloggamma1,factorial,gammaq,gammap,inverseerf,
-     $     tfevenq,tfoddq,productlog,gamma0,xsin,erf,erfc
+     $     productlog,gamma0,erf,erfc
       complex*16 cloggamma1,cfactorial,cerfc,cerf,
-     $     tfcevenq,tfcoddq,cproductlog,tfdummy
+     $     cproductlog
       external aloggamma1,cloggamma1,factorial,cfactorial,gammaq,
      $     gammap,cerfc,cerf,gamma0,erf,erfc,
-     $     tfevenq,tfoddq,tfcevenq,tfcoddq,
-     $     cproductlog,productlog,xsin
+     $     cproductlog,productlog
 c      call tfreecheck1('tfefun-0',itastk(1,isp),
 c     $     itastk(2,isp),vstk(ivstkoffset+isp),irtc)
 c      if(irtc .ne. 0)then

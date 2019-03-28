@@ -121,7 +121,8 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
      $     iaxslotnull,iaxslotpart,iaxslotseqnull,
      $     kxvect,kxvect1,iavpw,
      $     kerror,ierrorf,ierrorgen,ierrorprint,ierrorth,
-     $     ierrorexp,ifunbase,initmessage,levelcompile
+     $     ierrorexp,ifunbase,initmessage,levelcompile,
+     $     kinfinity,kminfinity,knotanumber
       integer*4 
      $     levele,levelp,lgeneration,ltrace,
      $     modethrow,iordless
@@ -1507,8 +1508,10 @@ c     $           n,i,istat
         real*8 , intent(in)::x
         integer*8 kfromr,k
         k=kfromr(x)
-        ktfenanq=iand(k,ktfenan) .eq. ktfenan .and.
-     $       iand(k,ktfenanb) .ne. 0
+        ktfenanq=k .eq. knotanumber .or.
+     $       iand(k,ktfenan) .eq. ktfenan .and.
+     $       iand(k,ktfenanb) .ne. 0 .and. k .ne. kinfinity .and.
+     $       k .ne. kminfinity
         return
         end
 
@@ -2030,7 +2033,9 @@ c     $           n,i,istat
           case (ktfoper+mtflist)
             if(.not. ktfnonreallistqo(kl))return
             do i=1,kl%nl
-              if(.not. tfruleqk_dlist(kl%dbody(i)%k))return
+              if(.not. tfruleqk_dlist(kl%dbody(i)%k))then
+                return
+              endif
             enddo
           case (ktfoper+mtfrule,ktfoper+mtfruledelayed)
             if(kl%nl .ne. 2)return
@@ -4100,69 +4105,6 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         return
         end function
 
-        real*8 pure function p2h(p)
-        implicit none
-        real*8, intent(in) :: p
-        real*8 p2
-        real*8, parameter:: pth=1.d3;
-        if(p .gt. pth)then
-          p2=1.d0/p**2
-          p2h=p*(1.d0+p2*(0.5d0-p2*.125d0))
-        else
-          p2h=sqrt(1.d0+p**2)
-        endif
-        return
-        end function
-
-        real*8 pure function h2p(h)
-        implicit none
-        real*8, intent(in) :: h
-        real*8 h2
-        real*8, parameter:: hth=1.d3;
-        if(h .gt. hth)then
-          h2=-1.d0/h**2
-          h2p=h*(1.d0+h2*(0.5d0-h2*.125d0))
-        else
-          h2p=sqrt(h**2-1.d0)
-        endif
-        return
-        end function
-
-        real*8 pure function pxy2dpz(px,py)
-        implicit none
-        real*8, intent(in) :: px,py
-        real*8 x
-        real*8, parameter:: xth=1.d-6,xmin=1.d-100
-        x=px**2+py**2
-        if(x .lt. xth)then
-          pxy2dpz=-x*(0.5d0+x*(0.125d0+x*0.0625d0))
-        else
-          pxy2dpz=-x/(1.d0+sqrt(max(xmin,1.d0-x)))
-        endif
-        return
-        end function
-
-        real*8 pure function sqrt1(x)
-         implicit none
-        real*8, intent(in) :: x
-        real*8, parameter:: xth=1.d-6,xmin=1.d-100
-        if(abs(x) .lt. xth)then
-          sqrt1=x*(0.5d0-x*(0.125d0-x*0.0625d0))
-        else
-          sqrt1=x/(1.d0+sqrt(max(xmin,1.d0+x)))
-        endif
-        return
-        end function
-
-        real*8 function sqrt1n(x)
-        implicit none
-        real*8, intent(in) :: x
-        sqrt1n=x*(0.5d0-x*(0.125d0-x*0.0625d0))
-        sqrt1n=(sqrt1n**2+x)/(2.d0+2.d0*sqrt1n)
-        sqrt1n=(sqrt1n**2+x)/(2.d0+2.d0*sqrt1n)
-        return
-        end function
-
         subroutine resetnan(a,xl)
         implicit none
         real*8, intent(in), optional:: xl
@@ -4203,13 +4145,5 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         enddo
         return
         end subroutine
-
-        real*8 function sqrtl(x)
-        implicit none
-        real*8 x
-        real*8 ,parameter :: am=1.d-20
-        sqrtl=sqrt(max(x,am))
-        return
-        end function
 
       end module

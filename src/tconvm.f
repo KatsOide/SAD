@@ -1,6 +1,6 @@
       subroutine tconvm(np,px,py,g,dv,idir)
-      use tfstk
       use tmacro
+      use mathfun
       implicit none
       integer*4 np,idir,i
       real*8 px(np),py(np),dv(np),g(np),pr,h1,p1

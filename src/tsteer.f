@@ -2,10 +2,10 @@
      1     theta,cost,sint,
      1     cosp1,sinp1,cosp2,sinp2,
      $     fb1,fb2,mfring,fringe,eps,enarad)
-      use tfstk, only:pxy2dpz
       use ffs_flag
       use tmacro
       use tspin
+      use mathfun, only:pxy2dpz
       implicit none
       real*8 , parameter :: a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
      1     a9=35.d0/1152.d0,a11=63.d0/2816.d0,

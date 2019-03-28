@@ -11,6 +11,7 @@
       use ffs_flag
       use tmacro
       use tspin
+      use mathfun
 c      use ffs_pointer, only:inext,iprev
       implicit none
       integer*4 , parameter ::nmult=21,itmax=10,ndivmax=1000
@@ -38,7 +39,7 @@ c      parameter (oneev=1.d0+3.83d-12)
      $     phix,phiy,phiz,dphizsq,pr,ds1,ds2,pz1,
      $     dcchi1,cchi2,schi2,bzp,alb,s,dpz0,
      $     dpl,pl,plx,ply,plz,ptx,pty,ptz,pbx,pby,pbz,phi,
-     $     sinphi,dcosphi,xsinphi,xsin,dphi,phi0,pz2,a,
+     $     sinphi,dcosphi,xsinphi,dphi,phi0,pz2,a,
      $     fx,fy,cost,sint,x0,px0,bxs0,eps,w,wi,v,phis,r,wl,
      $     dcchi2,radlvl,r1,we,wsn,phic,dphis,offset,offset1,
      $     tlim,akr1,ak1,al1,p,ea,pxf,pyf,sv,wsm,asinh,ws1,wm,

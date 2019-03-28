@@ -3,9 +3,9 @@
      $     lwl,wakel,lwt,waket,
      $     dx,dy,theta,v1,v20,v11,v02,
      $     fringe,mfring,autophi)
-      use tfstk
       use ffs_flag
       use tmacro
+      use mathfun
       implicit none
       integer*4 ndivmax
       real*8 eps,oneev
@@ -213,7 +213,7 @@ c          h1=sqrt(1.d0+(pe*pr1)**2)
 
       subroutine tcavfrin(np,x,px,y,py,z,g,dv,al,v,w,p0,h0,
      $     dphis,dvfs,offset)
-      use tfstk
+      use mathfun
       implicit none
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np)

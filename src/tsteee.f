@@ -1,10 +1,10 @@
       subroutine tsteee(trans,cod,beam,srot,al,phib,dx,dy,theta,enarad,
      $     apsi1,apsi2,fb1,fb2,mfring,fringe,next)
-      use tfstk
       use ffs_flag
       use tmacro
       use temw, only:tsetr0
       use tspin, only:tradke      
+      use mathfun
       implicit none
       real*8 epslon,a3,a5,a7,a9,a11,a13,a15
       parameter (epslon=1.d-6)

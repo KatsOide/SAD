@@ -5,13 +5,13 @@
      $     f1in,f2in,f1out,f2out,mfring,
      $     fb1,fb2,bfrm,vc,harm,phi,freq,wakew1,
      $     rtaper,autophi)
-      use tfstk
       use ffs_flag
       use ffs_pointer , only:gammab
       use tmacro
       use multa, only:nmult
       use temw
       use tspin
+      use mathfun
       implicit none
       integer*4 ndivmax
       real*8 ampmax,oneev,pmax

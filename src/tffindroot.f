@@ -131,7 +131,7 @@ c      write(*,*)'findroot-D ',used
       integer*4 nvar,neq,maxi,irtc,i,j,iter
       real*8 v0(nvar),f(neq),f0(neq),eps,dv(nvar),
      $     v(nvar),fact,fact1,fact2,d0,d,d1,d2,
-     $     dg,am,sv,goal,s,tffsfmin,svi,vmin(nvar),vmax(nvar)
+     $     dg,am,sv,goal,tffsfmin,svi,vmin(nvar),vmax(nvar)
       real*8 , allocatable :: a(:,:),a0(:,:)
       logical*4 trace
       real*8 frac
@@ -200,11 +200,11 @@ c      write(*,*)'findroot-D ',used
       call tsolva(a,f,dv,neq,nvar,neq,1.d-8)
       dg=0.d0
       do i=1,neq
-        s=0.d0
-        do j=1,nvar
-          s=s+a0(i,j)*dv(j)
-        enddo
-        dg=dg+f0(i)*s
+c        s=0.d0
+c        do j=1,nvar
+c          s=s+a0(i,j)*dv(j)
+c        enddo
+        dg=dg+f0(i)*sum(a0(i,1:nvar)*dv(1:nvar))
       enddo
       dg=dg*2.d0
  2    v=min(vmax,max(vmin,v0+dv*fact))
@@ -592,7 +592,7 @@ c        call tfstk2l(lista,list)
       subroutine tfcovmat(c,ca,m,n,ndim)
       use tfstk, only:ktfenanq,ktfnan
       implicit none
-      integer*4 n,ndim,i,j,k,m
+      integer*4 n,ndim,i,j,m
       real*8 c(ndim,n),ca(n,n),s,rfromk
       real*8, save:: rnan=0.d0
 c      write(*,*)'covmat ',n,m,ndim
@@ -601,10 +601,11 @@ c      write(*,*)'covmat ',n,m,ndim
       endif
       do i=1,n
         do j=1,i
-          s=0.d0
-          do k=1,m
-            s=s+c(k,i)*c(k,j)
-          enddo
+c          s=0.d0
+c          do k=1,m
+c            s=s+c(k,i)*c(k,j)
+c          enddo
+          s=sum(c(1:m,i)*c(1:m,j))
           if(ktfenanq(s))then
             ca(i,j)=rnan
           else
@@ -629,7 +630,7 @@ c      write(*,*)'covmat ',n,m,ndim
       real*8 , allocatable :: a0(:,:),a(:,:),abest(:,:),
      $     df(:),df0(:),v00(:),w(:),cv(:,:),vbest(:),dv(:),df2(:)
       real*8 d00,d2,eps,svi,wi,db,dbest,
-     $     fact,d0,d1,fact1,v(nvar),dg,s,d,fact2,tffsfmin,
+     $     fact,d0,d1,fact1,v(nvar),dg,d,fact2,tffsfmin,
      $     good,gammaq,ajump,vmin(nvar),vmax(nvar),sigma
       real*8 frac,factmin,svmin,factmin1,svdeps,cut,tinvgr,chin,x
       parameter (frac=1.d-7,factmin=1.d-4,factmin1=1.d-4,
@@ -720,20 +721,20 @@ c            enddo
           call tsolva(a,df,dv,m,nvar,m,1.d-6)
         else
           do i=1,nvar
-            s=0.d0
-            do j=1,m
-              s=s+df0(j)*a0(j,i)
-            enddo
-            dv(i)=-s
+c            s=0.d0
+c            do j=1,m
+c              s=s+df0(j)*a0(j,i)
+c            enddo
+            dv(i)=-sum(df0(1:m)*a0(1:m,i))
           enddo
         endif
         dg=0.d0
         do i=1,m
-          s=0.d0
-          do j=1,nvar
-            s=s+a0(i,j)*dv(j)
-          enddo
-          dg=dg+df0(i)*s
+c          s=0.d0
+c          do j=1,nvar
+c            s=s+a0(i,j)*dv(j)
+c          enddo
+          dg=dg+df0(i)*dot_product(a0(i,1:nvar),dv(1:nvar))
         enddo
         dg=dg*2.d0
         if(abs(dg) .lt. d0*eps)then
@@ -823,17 +824,19 @@ c            enddo
       if(n .eq. 2)then
         sigma=sqrt(d0/max(1,m-nvar))
         do i=1,nvar
-          wi=w(i)*sigma
-          do j=1,nvar
-            a0(i,j)=a0(i,j)*wi
-          enddo
+c          wi=w(i)*sigma
+c          do j=1,nvar
+c            a0(i,j)=a0(i,j)*wi
+c          enddo
+          a0(i,:)=a0(i,:)*w(i)*sigma
         enddo
       else
         do i=1,nvar
-          wi=w(i)
-          do j=1,nvar
-            a0(i,j)=a0(i,j)*wi
-          enddo
+c          wi=w(i)
+c          do j=1,nvar
+c            a0(i,j)=a0(i,j)*wi
+c          enddo
+          a0(i,:)=a0(i,:)*w(i)
         enddo
       endif
       call tflocal1(kaxvec)
@@ -922,9 +925,10 @@ c            enddo
         if(deriv)then
           df=vx
         else
-          do i=1,m
-            df(i)=vx-a(2,i)
-          enddo
+          df=vx-a(2,:)
+c          do i=1,m
+c            df(i)=vx-a(2,i)
+c          enddo
         endif
         go to 1000
       endif
@@ -963,13 +967,15 @@ c            enddo
  1000 r=0.d0
       if(deriv)then
         if(n .eq. 3)then
-          do i=1,m
-            df(i)=df(i)/a(3,i)
-          enddo
+          df=df/a(3,:)
+c          do i=1,m
+c            df(i)=df(i)/a(3,i)
+c          enddo
         elseif(n .eq. 4)then
-          do i=1,m
-            df(i)=df(i)/a(4,i)
-          enddo
+          df=df/a(4,:)
+c          do i=1,m
+c            df(i)=df(i)/a(4,i)
+c          enddo
         endif
       else
         if(cutoff .ne. 0.d0)then
@@ -1109,4 +1115,3 @@ c        write(*,*)'tinvgr ',x0,dfdx,df
       call mrs(k1,k2)
       return
       end
-

@@ -433,8 +433,13 @@ InitLINE$P[]:=(
     (Element$Key[n,k]=(Position[Element$Key[n],k]/.{}->{{0}})[[1,1]]));
 
 Type$Key[n_]:=(Type$Key[n]=Type$Key$[n]);
-Type$Key[n_,k_String]:=
-    (Type$Key[n,k]=(Position[Type$Key[n],k|{___,k,___},1,1]/.{}->{{0}})[[1,1]]);
+Type$Key[n_,k_String]:=Module[{`p},
+  Type$Key[n,k]=(p=Position[Type$Key[n],
+    k|{___,k,___}|_?(StringMatchQ[#,k]&),1];
+    Switch[p,
+      {{_}},p[[1,1]],
+      {},0,
+      _,Flatten[p]])];
 
 Protect[InitLINE$P];
 FFS$TwissFuns={AX,BX,PSIX,AY,BY,PSIY,EX,EPX,EY,EPY,R1,R2,R3,R4,DETR,
@@ -668,7 +673,7 @@ AutoLoad[TransferMatrix,TransferMatrixPrimitive,
 AutoLoad[DynamicApertureSurvey,AccelerateParticles,
   PackagesDirectory//"dapert.n"];
 AutoLoad[Amoebar,Amoeba,DownhillSimplex,Simplex,CalculateMatching,
-  OptimizeOptics,PackagesDirectory//"optimize.n"];
+  OptimizeOptics,Find$COD,FindClosedOrbit,PackagesDirectory//"optimize.n"];
 AutoLoad[Monitor,Steer,
   ReadMonitorData,ReadSteerData,WriteMonitorData,WriteSteerData,
   PackagesDirectory//"correction.n"];

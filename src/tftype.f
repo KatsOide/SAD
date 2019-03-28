@@ -20,7 +20,6 @@
      $     icBEND,icQUAD,icSEXT,icOCTU,icDECA,icDODECA,icMULT,icSOL,
      $     icCAVI,icTCAV,
      $     icMAP,icBEAM,icINS,icCOORD,icAPRT,icMONI,icMARK/
-      write(*,*)'tftype-0 '
       exist1=.false.
       lpw=min(131,itfgetrecl())
       name1=' '
@@ -182,7 +181,8 @@ c      endif
      $         //autos(v)//unit(1:lene(unit))
           call trim(vout)
           if(v .ne. 0.d0 .or. ioff .eq. ival(kx))then
-            if(abs(v) .gt. 1.d10 .and. index(vout,'.') .le. 0)then
+            if(abs(v) .gt. 1.d10 .and. index(vout,'.') .le. 0
+     $           .and. v .ne. dinfinity)then
               lv=lene(vout)
               vout(lv+1:lv+1)='.'
             endif

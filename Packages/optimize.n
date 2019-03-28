@@ -74,7 +74,7 @@ Simplex=Class[{},{},{CurrentSimplex,Status="Stop",
       {VariableRange,MaxIteration,Output,
         Tolerance,Persistence,MinimumSize,ExpansionRatio,TryReflect,QuickShrink,
         ExtendLevel,ContractLevel,ReflectRange,WeightExponent}/.{opt}/.def;
-    Print[{limit,opt}];
+    Write[lo,"DownhillSimplex {limit, Option}: ",{limit,opt}];
     lrr=Length[Take[p,rr]];
     wexp=Exp[-(we/lrr)*Range[lrr]];
     wexp/=(Plus@@wexp);
@@ -94,6 +94,37 @@ Simplex=Class[{},{},{CurrentSimplex,Status="Stop",
 
   ];
 
+FindCOD=Class[{},{},{ax,bx,ay,by,p0,NDiv=300,MaxAmp=2e-2},
+
+  DiffCOD[z_]:=Module[{dz,r},
+    {DXI,DPXI,DYI,DPYI}=z;
+    FFS["CALC4D;CELL;CALC;"];
+    If[?STABLE,Throw[0]];
+    dz=Twiss[{"DX","DPX","DY","DPY"},"$$$"]-z;
+    r=dz[[1]]^2/bx+bx*(dz[[2]]+ax/bx*dz[[1]])^2
+    +dz[[3]]^2/by+by*(dz[[4]]+ay/by*dz[[3]])^2;
+    If[NaNQ[r],1e100,r]];
+  
+  Find[z0_List:{0,0,0,0},opt___]:=Module[{z1,dz,v,p0,p1,out},
+    out=Output/.{opt}/.Output->0;
+    FFS["RESET ALL;"];
+    {DXI,DPXI,DYI,DPYI}=z0;
+    FFS["CALC4D;INS;CAL;",6];
+    {ax,bx,ay,by}=Twiss[{"AX","BX","AY","BY"},1];
+    z1=Twiss[{"DX","DPX","DY","DPY"},"$$$"];
+    dz=Restrict[z1-z0,-MaxAmp,MaxAmp]/NDiv;
+    v=Prepend[Table[ReplacePart[z0,z0[[i]]+dz[[i]],i],{i,4}],z0];
+    Catch[
+      p0=Sort[Thread[{DiffCOD/@v,v}]];
+      p1=`DownhillSimplex[p0,DiffCOD,Output->out,opt]];
+    If[~?STABLE,
+      {DXI,DPXI,DYI,DPYI}=p1[[1,2]];
+      FFS["CELL;CAL;"]];
+    {?STABLE,Subtract@@[Twiss[{"DX","DPX","DY","DPY"},{"$$$","^^^"}],{1}]}
+    ];
+
+  ];
+
 End[];
 
 EndPackage[];
@@ -107,6 +138,11 @@ Amoebar=The$Simplex@Amoebar;
 Amoeba=The$Simplex@Amoeba;
 
 SetAtributes[{DownhillSimplex,Amoebar,Amoeba,Simplex},Constant];
+
+Clear[Find$COD,FindClosedOrbit];
+Find$COD=Optimize`FindCOD[];
+FindClosedOrbit=Find$COD@Find;
+SetAttributes[Find$COD,Dynamic];
 
 CalculateMatching[v_,vlist_]:=Module[{},
   Scan[(Element[#[[1,2]],#[[1,1]]]=#[[2]])&,Thread[{vlist,v}]];
@@ -149,6 +185,7 @@ OptimizeOptics[opt___]:=Module[
 ];
 
 OptimizeOptics::novariables="No matching variables";
+
 
 Protect[CalculateMatching,SetupOptimize,OptimizeOptics];
 

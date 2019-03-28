@@ -5,11 +5,12 @@
       use ffs_flag
       use tmacro
       use ffs_pointer, only: gammab
+      use mathfun
       implicit none
       real*8 eps,oneev
       parameter (eps=1.d-2)
       parameter (oneev=1.d0+3.83d-12)
-      integer*4 l,ld,ndiv,n,mfring
+      integer*4 l,ndiv,n,mfring
       real*8 trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 trans1(6,6)
       real*8 al,vc,harm,phi,freq,w,v,vn,vcn,p1,h1,
@@ -211,7 +212,7 @@ c     $     trans(5,5),trans(5,6),trans(6,5),trans(6,6)
 
       subroutine tcavfrie(trans,cod,beam,al,v,w,phic,dphis,s0,p0,
      $     irad,calb,autophi)
-      use tfstk, only:p2h
+      use mathfun, only:p2h
       implicit none
       real*8 trans(6,12),cod(6),trans1(6,6),beam(42),
      $     v,al,p0,vf,dp1r,p1r,p1,h1,v1,t,phic,

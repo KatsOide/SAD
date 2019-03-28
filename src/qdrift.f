@@ -1,5 +1,5 @@
       subroutine qdrift(trans,cod,al,coup)
-      use tfstk, only:sqrtl
+      use mathfun, only:sqrtl
       implicit none
       real*8 trans(4,5),cod(6),al,pxi,pyi,pxisq,pyisq,
      $     pzi,ale,alz

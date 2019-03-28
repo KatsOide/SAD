@@ -470,9 +470,9 @@ c        endif
 
       subroutine tfsetparticles(zx,dv,iptbl,np,npa,npc,mc,nlat,
      $     tbegin,mcf)
-      use tfstk, only: sqrt1
       use tspin
       use ffs_flag,only:calpol
+      use mathfun, only: sqrt1
       implicit none
       integer, parameter :: nkptbl = 6
       real(8),    intent(inout) :: zx(npc,mc), dv(np)

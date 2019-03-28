@@ -14,9 +14,9 @@
       contains
 
       subroutine tbendiinit(ak1,al)
+      use mathfun
       implicit none
       real*8, intent (in):: ak1,al
-      real*8 xsin,xsinh
       rhosq=rho0*rhoe
       drhop=(rhoe-rho0)/rhosq
       akk=ak1/al
@@ -76,6 +76,7 @@
       end subroutine
 
       subroutine tbendicorr(ak1,al,phi)
+      use mathfun
       implicit none
       real*8 , intent(in) :: ak1,al,phi
       real*8 pzi,dpzi,xr,s

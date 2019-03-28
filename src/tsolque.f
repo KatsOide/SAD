@@ -81,10 +81,10 @@
         end subroutine
 
         subroutine tzsetparam(tz,dp,akk,bz)
+        use mathfun
         implicit none
         type (tzparam) tz
-        real*8 dp,bz,akk,xsin,xsinh,wa,th
-        external xsin,xsinh
+        real*8 dp,bz,akk,wa,th
         associate (
      $       w1=>tz%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
      $       phi1=>tz%phi1,phi2=>tz%phi2,
@@ -160,10 +160,10 @@ c          endif
         end
 
         subroutine tzsetparam0(tz,dp,akk)
+        use mathfun
         implicit none
         type (tzparam) tz
-        real*8 dp,akk,xsin,xsinh,th
-        external xsin,xsinh
+        real*8 dp,akk,th
         associate (
      $       w1=>tz%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
      $       phi1=>tz%phi1,phi2=>tz%phi2,

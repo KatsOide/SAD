@@ -1,8 +1,8 @@
       subroutine trad(np,x,px,y,py,g,dv,by,bx,dbydx,dldx,dldxe,al,
      $     f1,f2,als,ala,dir)
-      use tfstk
       use ffs_flag
       use tmacro
+      use mathfun
       implicit none
       integer*4 np,i
       real*8 dbydx,dldx,dldxe,al,dir,brad,bx,by,tdusr,dg,

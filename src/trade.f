@@ -1,8 +1,8 @@
       subroutine trade(trans,beam,cod,bx,by,bz,br,
      $     bxx,bxy,byy,dldx,al,s,ala,f1,f2,prev,next)
-      use tfstk
       use ffs_flag
       use tmacro
+      use mathfun
       implicit none
       integer*4 i
       real*8 f1,al,dldx,bx,by,bz,

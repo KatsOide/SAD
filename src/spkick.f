@@ -77,9 +77,9 @@ c      call tfmemcheckprint('spkick0 ')
       subroutine spdeflect(np,x,px,y,py,z,g,dv,zz,
      $     ex,ey,ez,
      $     nx,nz,nz1,nz2,npz,itab,dx,dy,zc,al,alx,v0)
-      use tfstk
       use ffs
       use tffitcode
+      use mathfun
       implicit none
       real*8 eps,almin
       parameter (eps=1.d0,almin=0.01d0)
@@ -597,9 +597,9 @@ c     $     itab(np),itab((nza-1)*npz+1)
       end
 
       subroutine spzz(np,px,py,z,g,zz,v0,gamma0)
-      use tfstk
       use ffs
       use tffitcode
+      use mathfun
       implicit none
       integer*4 np,i
       real*8 px(np),py(np),z(np),g(np),zz(np),v0,sdp,gamma0,p,h

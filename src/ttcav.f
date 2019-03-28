@@ -1,7 +1,7 @@
       subroutine ttcav(np,x,px,y,py,z,g,dv,
      1                 al,ak,harm,phi,freq,dx,dy,theta)
-      use tfstk
       use tmacro
+      use mathfun
       implicit none
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np)

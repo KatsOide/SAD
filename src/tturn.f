@@ -151,6 +151,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       use tfcsi, only:icslfno
       use ffs_seg
       use tspin
+      use mathfun
       implicit none
       integer*4 la1
       parameter (la1=15)

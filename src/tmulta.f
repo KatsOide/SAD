@@ -3,12 +3,12 @@
      $     psi1,psi2,bz,
      1     dx,dy,theta,dtheta,
      $     eps0,enarad,fb1,fb2,mfring,fringe)
-      use tfstk
       use ffs_flag, only:rad,ndivrad
       use tmacro
       use multa
       use tbendcom, only:tbrot
       use tspin, only:tradke      
+      use mathfun
       implicit none
       integer*4 ndivmax
       real*8 ampmax,eps00

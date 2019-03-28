@@ -148,7 +148,7 @@ c        ilist(1,ifvh-2)=-1
 
       subroutine tsolrot(trans,cod,beam,al,bz,dx,dy,dz,
      $     chi1,chi2,theta,bxs,bys,bzs,ent)
-      use tfstk, only: sqrtl
+      use mathfun, only: sqrtl
       implicit none
       integer*4 i,itgetirad
       real*8 trans(6,12),cod(6),beam(21),trans1(6,6),
@@ -343,7 +343,7 @@ c     $     'tsolrot ',((trans1(i,j),j=1,6),i=1,6)
       end
 
       subroutine tsoldz(trans,cod,al,bxs0,bys0,bzs0,drift)
-      use tfstk, only: sqrtl
+      use mathfun
       implicit none
       integer*4 j,itmax,ndiag
       parameter (itmax=15)
@@ -354,7 +354,7 @@ c     $     'tsolrot ',((trans1(i,j),j=1,6),i=1,6)
      $     alb,pbx,pby,pbz,pl,dpl,dphizsq,a,
      $     dpldpx,dpldpy,dpldp,dplz,plx,ply,plz,ptx,pty,ptz,
      $     cosphi,sinphi,dcosphi,phi0,dphi,
-     $     xsin,xsinphi,ax,ay,az,cx,cy,conv,albabs,u,
+     $     xsinphi,ax,ay,az,cx,cy,conv,albabs,u,
      $     bxs0,bys0,bzs0,bzthre,ptmax
       parameter (conv=1.d-15,bzthre=1.d-20,ptmax=0.9999d0)
       logical*4 drift
