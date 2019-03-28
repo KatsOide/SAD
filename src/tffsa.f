@@ -75,7 +75,6 @@ c     end   initialize for preventing compiler warning
         trdtbl=0.d0
         itt1=0
         flv%itmax=40
-c        bzero=1.0d0
         id1=1
         id2=nlat
         iorgr=1
@@ -230,6 +229,7 @@ c      write(*,*)'tffsa-getwrd ',ios,linep,lrecl,' ',word(1:lenw(word))
       endif
       call cssets(0)
       call tfprint(word,lfno,.false.,itt,nextt,exist)
+c      write(*,*)'tffsa-tfprint-end ',word
       if(exist .or. ios .ne. 0)then
         go to 10
       endif
@@ -1220,7 +1220,7 @@ c          ilist(2,iwakepold+6)=int(ifsize)
         endif
         call temits(mphi2,amus0,amus1,amusstep,
      $     emxe,emye,rese,rlist(iparams),
-     $     lfni,lfno,int8(0),irtc)
+     $     lfno,int8(0),irtc)
         call tfree(iparams)
         if(codplt)then
           updatesize=.true.

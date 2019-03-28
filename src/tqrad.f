@@ -1,11 +1,12 @@
-      subroutine tqrad(np,x,px,y,py,z,g,dv,pz,l,al,ak,
+      subroutine tqrad(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,ak,
      1                 dx,dy,theta,cost,sint,radlvl,
      1                 f1in,f2in,f1out,f2out,mfring)
       use ffs_flag
       use tmacro
       implicit real*8(a-h,o-z)
       integer*4 np,l
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
+     $     sx(np),sy(np),sz(np)
       LOGICAL GAUSSR
       real*8 byx,bxa,bya,dprad,dpradx,dprady
       real*8 f1in,f2in,f1out,f2out

@@ -35,10 +35,11 @@
       endif
       if(ktfreallistq(kl1))then
         if(ktfreallistq(kl2))then
-          xr=kl1%rbody(1)*kl2%rbody(1)
-          do i=2,n
-            xr=xr+kl1%rbody(i)*kl2%rbody(i)
-          enddo
+          xr=dot_product(kl1%rbody(1:n),kl2%rbody(1:n))
+c          xr=kl1%rbody(1)*kl2%rbody(1)
+c          do i=2,n
+c            xr=xr+kl1%rbody(i)*kl2%rbody(i)
+c          enddo
           kx=sad_descr(xr)
           return
         else
@@ -544,24 +545,30 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       subroutine tfrdet(kl,kx,n)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
-      type (sad_dlist) kl
-      integer*4 n
-      real*8 a(n,n),tdet
+      type (sad_descriptor) , intent(out)::kx
+      type (sad_dlist) , intent(in):: kl
+      integer*4 ,intent(in)::n
+      real*8 tdet
+      real*8, allocatable :: a(:,:)
+      allocate (a(n,n))
       call tfl2m(kl,a,n,n,.false.)
       kx=dfromr(tdet(a,n,n))
+      deallocate (a)
       return
       end
 
       subroutine tfcdet(kl,kx,n,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
-      type (sad_dlist) kl
+      type (sad_descriptor) ,intent(out)::kx
+      type (sad_dlist) ,intent(in)::kl
       integer*4 n,irtc
-      complex*16 c(n,n),cx,tcdet
+      complex*16 , allocatable ::c(:,:)
+      complex*16 cx,tcdet
+      allocate (c(n,n))
       call tfl2cm(kl,c,n,n,.false.,irtc)
       if(irtc .ne. 0)then
+        deallocate(c)
         return
       endif
       cx=tcdet(c,n,n)
@@ -570,6 +577,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       else
         kx=kxcalocv(-1,dble(cx),imag(cx))
       endif
+      deallocate(c)
       return
       end
 
@@ -626,14 +634,19 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       subroutine tcsvdma(kl,kux,kvx,kwx,m,n,eps,inv,irtc)
       use tfstk
       implicit none
-      type (sad_dlist) kl
-      integer*8 kux,kvx,kwx,ktfcm2l
-      integer*4 n,m,mn,irtc
-      real*8 w(m),eps
-      complex*16 ca(n,m),cu(n,n)
-      logical*4 inv
+      type (sad_dlist) , intent(in)::kl
+      integer*8 , intent(out)::kux,kvx,kwx
+      integer*8 ktfcm2l
+      integer*4 ,intent(in)::n,m
+      integer*4 mn
+      integer*4 ,intent(out)::irtc
+      real*8 ,intent(in)::eps
+      complex*16, allocatable:: ca(:,:),cu(:,:),w(:)
+      logical*4 ,intent(in)::inv
+      allocate (ca(n,m),cu(n,n),w(m))
       call tfl2cm(kl,ca,n,m,.false.,irtc)
       if(irtc .ne. 0)then
+        deallocate(ca,cu,w)
         return
       endif
       call tcsvdm(ca,cu,w,n,m,n,n,eps,inv)
@@ -642,17 +655,21 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       kvx=ktfcm2l(ca,mn,m,n,.false.,.false.)
       kwx=ktavaloc(-1,mn)
       rlist(kwx+1:kwx+mn)=w(1:mn)
+      deallocate(ca,cu,w)
       return
       end
 
       subroutine tsvdma(kl,kux,kvx,kwx,m,n,eps,inv)
       use tfstk
       implicit none
-      type (sad_dlist) kl
-      integer*8 kux,kvx,kwx
-      integer*4 n,m,mn
-      real*8 a(n,m),w(m),eps,u(n,n)
-      logical*4 inv
+      type (sad_dlist) ,intent(in)::kl
+      integer*8,intent(out):: kux,kvx,kwx
+      integer*4 ,intent(in)::n,m
+      integer*4 mn
+      real*8 , allocatable:: a(:,:),u(:,:),w(:)
+      real*8 , intent(in)::eps
+      logical*4 ,intent(in)::inv
+      allocate (a(n,m),w(m),u(n,n))
       call tfl2m(kl,a,n,m,.false.)
       call tsvdm(a,u,w,n,m,n,n,eps,inv)
       mn=min(m,n)
@@ -660,15 +677,19 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       kvx=ktfaddr(kxm2l(a,mn,m,n,.false.))
       kwx=ktavaloc(-1,mn)
       rlist(kwx+1:kwx+mn)=w(1:mn)
+      deallocate(a,u,w)
       return
       end
 
       subroutine tflinearsolve(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k,kb
+      type (sad_descriptor) , intent(out) :: kx
+      type (sad_descriptor) k,kb
       type (sad_dlist), pointer :: kl,klb
-      integer*4 isp1,irtc,narg,nb,mb,n,m,itfmessage,mx
+      integer*4 , intent(in) :: isp1
+      integer*4 , intent(out) :: irtc
+      integer*4 narg,nb,mb,n,m,itfmessage,mx
       real*8 eps
       logical*4 cmplm,realm,vec
       narg=isp-isp1
@@ -721,10 +742,12 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       subroutine tflsolve(kl,klb,kx,n,m,mb,mx,eps)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
-      type (sad_dlist) kl,klb
-      integer*4 n,m,mb,mx
-      real*8 eps,a(n,m),b(n,mx),x(m,mx)
+      type (sad_descriptor) , intent(out)::kx
+      type (sad_dlist) , intent(in)::kl,klb
+      integer*4 , intent(in):: n,m,mb,mx
+      real*8 ,intent(in)::eps
+      real*8 , allocatable:: a(:,:),b(:,:),x(:,:)
+      allocate (a(n,m),b(n,mx),x(m,mx))
       call tfl2m(kl,a,n,m,.false.)
       if(mb .eq. 0)then
         b(:,1)=klb%rbody(1:n)
@@ -737,6 +760,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       else
         kx=kxm2l(x,m,mb,m,.true.)
       endif
+      deallocate (a,b,x)
       return
       end
 
@@ -829,10 +853,12 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       implicit none
       type (sad_dlist) kl
       integer*8 kvx,kex,ktfcm2l,ktfc2l
-      complex*16 c(m,m),cw(m,m),ce(m)
+      complex*16 , allocatable ::c(:,:),cw(:,:),ce(:)
       integer*4 irtc,m
+      allocate (c(m,m),cw(m,m),ce(m))
       call tfl2cm(kl,c,m,m,.false.,irtc)
       if(irtc .ne. 0)then
+        deallocate (c,cw,ce)
         return
       endif
       if(m .gt. 200)then
@@ -841,6 +867,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       call tceigen(c,cw,ce,m,m)
       kvx=ktfcm2l(c,m,m,m,.true.,.false.)
       kex=ktfc2l(ce,m)
+      deallocate (c,cw,ce)
       return
       end
 
@@ -851,9 +878,10 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       integer*8 kvx,kex,kvxkvr,kvxkvi,
      $     kzi1,kzi2,ktfc2l
       integer*4 m,i,j
-      real*8 a(m,m),w(m,m)
+      real*8 , allocatable :: a(:,:),w(:,:)
       complex*16 ce(m)
       logical*4 d,con
+      allocate (a(m,m),w(m,m))
       call tfl2m(kl,a,m,m,.false.)
       if(m .gt. 200)then
         call tftclupdate(3)
@@ -901,6 +929,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
           endif
         enddo
       endif
+      deallocate(a,w)
       return
       end
 

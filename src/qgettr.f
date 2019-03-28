@@ -29,7 +29,7 @@
       real*8 trans(4,5),trans1(4,5),amux,amuy
       logical*4 disp,fold,trpt1
       real*8 sqrtb1,sqrtb2,dpsi1,cospsi,sinpsi,gr,
-     $     detr,cc,r1,r2,r3,r4
+     $     detr,cc,r1,r2,r3,r4,th
 c      write(*,'(a,1p8g14.6)')'qgettru ',utwiss1(mfitr1:mfitr4),
 c     $     utwiss2(mfitr1:mfitr4)
       sqrtb1=sqrt(utwiss1(mfitbx))
@@ -41,8 +41,11 @@ c     if(k2 .lt. k1)then
      $     (k2 .lt. k1 .or. k2 .eq. k1 .and. fold))then
          dpsi1=amux+dpsi1
       endif
-      cospsi=cos(dpsi1)
-      sinpsi=sin(dpsi1)
+      th=tan(.5d0*dpsi1)
+      sinpsi=2.d0*th/(1.d0+th**2)
+      cospsi=1.d0-th*sinpsi
+c      sinpsi=sin(dpsi1)
+c      cospsi=cos(dpsi1)
       trans=0.d0
       trans(1,1)=sqrtb2/sqrtb1*(cospsi+utwiss1(mfitax)*sinpsi)
       trans(1,2)=sqrtb2*sqrtb1*sinpsi
@@ -69,8 +72,11 @@ c      if(k2 .lt. k1)then
      $     (k2 .lt. k1 .or. k2 .eq. k1 .and. fold))then
         dpsi1=amuy+dpsi1
       endif
-      cospsi=cos(dpsi1)
-      sinpsi=sin(dpsi1)
+      th=tan(.5d0*dpsi1)
+      sinpsi=2.d0*th/(1.d0+th**2)
+      cospsi=1.d0-th*sinpsi
+c      cospsi=cos(dpsi1)
+c      sinpsi=sin(dpsi1)
       trans(3,3)=sqrtb2/sqrtb1*(cospsi+utwiss1(mfitay)*sinpsi)
       trans(3,4)=sqrtb2*sqrtb1*sinpsi
       trans(4,3)=-((utwiss2(mfitay)-utwiss1(mfitay))*cospsi

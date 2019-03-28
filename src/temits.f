@@ -1,7 +1,7 @@
       subroutine temits(
      $     mphi2,amus0,amus1,amusstep,
      $     emix,emiy,res,params,
-     $     lfni,lfno,kx,irtc)
+     $     lfno,kx,irtc)
       use tfstk
       use ffs_pointer
       use ffs
@@ -10,7 +10,7 @@
       use temw, only:nparams
       implicit none
       integer*8 kx
-      integer*4 irtc,mphi2,lfni,lfno,mphiz,ndims,
+      integer*4 irtc,mphi2,lfno,mphiz,ndims,
      $     ndps,nzz
       real*8 amus0,amus1,amusstep,emix,emiy,res
       real*8 params(nparams)
@@ -34,7 +34,7 @@
      $     .false.,stab,ndps,nzz,mphiz,mphi2,ndims,
      $     amus0,amus1,amusstep,
      $     emix,emiy,res,params,
-     $     lfni,lfno,kx,irtc)
+     $     lfno,kx,irtc)
       radcod=radcod0
       radtaper=radtaper0
       rfsw=rfsw0
@@ -47,7 +47,7 @@
      $     plot,stab,ndp,nz,mphi,mphi2,ndims,
      $     amus0,amus1,amusstep,
      $     emix,emiy,res0,params,
-     $     lfni,lfno,kx,irtc)
+     $     lfno,kx,irtc)
       use tfstk
       use ffs
       use temw
@@ -58,13 +58,13 @@
       integer*4 , parameter:: itmax=20,ndiffh=16
       real*8 , parameter :: resconv=1.d-4,minconv=1.d-7
       integer*8 kx,kax,kai
-      integer*4 mphi,mphi2,ndims,i1,
-     $     lfni,lfno,irtc,ndp,i,k,kk,ns,it,j,nz
+      integer*4 mphi,mphi2,ndims,i1,nd1,
+     $     lfno,irtc,ndp,i,k,kk,ns,it,j,nz
       real*8 amus0,amus1,amusstep, emix,emiy,res0,
      $     amus,damp,dj,dpndim,emix0,emiy0,
      $     fz,phi0s,res,sige,sigea,vx,vy,w,
      $     emixp,emiyp,cod0(6)
-      real*8 beam(42),trans(6,12),cod(6),
+      real*8 beam(42),trans(6,12),cod(6),srot(3,9),
      $     beams(10,-ndims:ndims),
      $     trads(5,5,-ndims:ndims),
      $     tws(ntwissfun,-ndims:ndims),
@@ -84,16 +84,18 @@ c     $     dhc(4,mphi2,ndp),dhs(4,mphi2,ndp),
      $     rx(6,6),rxi(6,6),cmu(mphi2),smu(mphi2),disppi(6),
      $     beamr(42),fj(256),conv,tw0(ntwissfun),dispp(6)
       character*10 label1(6),label2(6)
-      logical*4 plot,stab,norm,fndcod
+      logical*4 plot,stab,fndcod,calpol0
       data label1/'        X ','       Px ','        Y ',
      1     '       Py ','        Z ','       Pz '/
       data label2/'        x ','    px/p0 ','        y ',
      1     '    py/p0 ','        z ','    dp/p0 '/
+      calpol0=calpol
+      calpol=.false.
       codin=0.d0
       beamin(1:21)=0.d0
       call temit(trans,cod,beamr,btr,
      $     .true.,int8(0),int8(0),int8(0),int8(0),
-     $     plot,params,stab,lfni,lfno)
+     $     plot,params,stab,lfno)
       dispp=r(:,6)
       call tinitr(rx)
       rxi=rx
@@ -147,7 +149,7 @@ c     $     dhc(4,mphi2,ndp),dhs(4,mphi2,ndp),
         call tinitr(trans)
         trans(:,7:12)=0.d0
         beam(1:21)=0.d0
-        call tturne(trans,cod,beam,int8(0),int8(0),int8(0),
+        call tturne(trans,cod,beam,srot,int8(0),int8(0),int8(0),
      $       .false.,.false.,.false.)
         if(fndcod)then
           cod(1:4)=cod(1:4)-codin(1:4)
@@ -171,9 +173,10 @@ c        write(*,'(a,2i5,1p7g12.4)')'temits1-cod ',i,i1,cod
         call tmov65(rm,trads(1,1,i))
         call tinv6(trans,rm)
         call tmultr(rm,ri,6)
-        call tfetwiss(rm,cod,tws(1,i),norm)
+        call tfetwiss(rm,cod,tws(1,i),.true.)
         call tmulbs(beam,rxi,.false.,.false.)
         beams(1:10,i)=beam(1:10)
+c        write(*,'(a,i5,1p10g12.4)')'te ',i,beams(1:10,i)
         if(i .le. 0)then
           i=-i+1
         else
@@ -211,12 +214,14 @@ c        write(*,'(a,2i5,1p7g12.4)')'temits1-cod ',i,i1,cod
      $       bd,hc,hs,
      $       ndp,mphi2,mphi,4,
      $       dj,damp,sige)
-        do k=1,ndiffh
+        nd1=max(1,min(int(abs(0.05d0/damp)),ndiffh))
+        do k=1,nd1
           call tevdif(hfb,hb,hc,hs,ha,amuj,cmu,smu,
      $         bd,hc,hs,
      $         ndp,mphi2,mphi,4,
      $         dj,damp,sige,' ')
         enddo
+c        write(*,'(a,i5,1p6g15.7)')'temits-4.1 ',kk,damp,sige,hc(1,1,1:4)
         call tesolvd(bff,bfb,bfx,
      $       bb,bc,bs,ba,amuj,cmu,smu,
      $       bd,hc,hs,
@@ -230,7 +235,6 @@ c        write(*,'(a,2i5,1p7g12.4)')'temits1-cod ',i,i1,cod
         vy=beamr(6)*beamr(10)-beamr(9)**2
         emix0=sign(sqrt(abs(vx)),vx)
         emiy0=sign(sqrt(abs(vy)),vy)
-c        write(*,*)'temits1a ',emix0,emiy0
         res0=1.d100
         res=1.d0
         it=0
@@ -255,7 +259,6 @@ c        write(*,*)'temits1a ',emix0,emiy0
           emix0=emix
           emiy0=emiy
           it=it+1
-c          write(*,'(a,i5,1p8g11.3)')'temits1 ',it,emix,emiy,res
           if(it .gt. itmax
      $         .or. it .gt. 1 .and.
      $         (res .gt. resconv .or. res .gt. res0))then
@@ -309,6 +312,7 @@ c            endif
         kx=ktflist+kax
       endif
 c      call tfdebugprint(kx,'temits1',1)
+      calpol=calpol0
       irtc=0
       return
       end
@@ -339,6 +343,7 @@ c      call tfdebugprint(kx,'temits1',1)
       d=2.d0*damp
       call tevdifj (bc,bs,ndp,mphi2,nd,dj,eps,damp)
       call tevdifj1(bc,bs,ndp,mphi2,nd,dj,eps,damp)
+c      write(*,'(a,1p7g15.7)')'tevdif-1 ',dj,eps,damp,bc(1,1,1:4)
       do j=1,ndp
         aj=(j-.5d0)*dj
         m=2
@@ -402,6 +407,7 @@ c            bs(i,m,j)=diff*bs(i,m,j)
 c          enddo
         enddo
       enddo
+c      write(*,*)'tevdif-2 ',bc(1,1,1:4)
       do j=1,ndp
         bfb=0.d0
 c        call tclr(bfb,2*nsb)
@@ -520,8 +526,10 @@ c            bs(i,m,j)=diff*bs(i,m,j)
 c          enddo
         enddo
       enddo
+c      write(*,*)'tevdif-3 ',bc(1,1,1:4)
       call tevdifj1(bc,bs,ndp,mphi2,nd,dj,eps,damp)
       call tevdifj (bc,bs,ndp,mphi2,nd,dj,eps,damp)
+c      write(*,*)'tevdif-9 ',bc(1,1,1:4)
       return
       end
 
@@ -537,27 +545,14 @@ c          enddo
           call tespl(bs,fbs,dfbs,ndp,mphi2,nd,dj,eps,damp,j,m)
           if(m .eq. 1)then
             bc(:,m,j)=bc(:,m,j)+2.d0*dfbc
-c            do i=1,nd
-c              bc(i,m,j)=bc(i,m,j)+2.d0*dfbc(i)
-c            enddo
           else
             bc(:,m,j)=bc(:,m,j)+dfbc
             bs(:,m,j)=bs(:,m,j)+dfbs
-c            do i=1,nd
-c              bc(i,m,j)=bc(i,m,j)+dfbc(i)
-c              bs(i,m,j)=bs(i,m,j)+dfbs(i)
-c            enddo
           endif
           m1=m+2
           if(m1 .le. mphi2)then
             bc(:,m1,j)=bc(:,m1,j)+dfbc-m*fbc
             bs(:,m1,j)=bs(:,m1,j)+dfbs-m*fbs
-c            do i=1,nd
-c              bc(i,m1,j)
-c     $             =bc(i,m1,j)+dfbc(i)-m*fbc(i)
-c              bs(i,m1,j)
-c     $             =bs(i,m1,j)+dfbs(i)-m*fbs(i)
-c            enddo
           endif
         enddo
       enddo
@@ -577,26 +572,12 @@ c            enddo
           m2=m-2
           if(m .eq. 3)then
             bc(:,m2,j)=bc(:,m2,j)+dfbc+2.d0*fbc
-c            do i=1,nd
-c              bc(i,m2,j)
-c     $             =bc(i,m2,j)+dfbc(i)+2.d0*fbc(i)
-c            enddo
           elseif(m .gt. 3)then
             bc(:,m2,j)=bc(:,m2,j)+dfbc+(m-2)*fbc
             bs(:,m2,j)=bs(:,m2,j)+dfbs+(m-2)*fbs
-c            do i=1,nd
-c              bc(i,m2,j)
-c     $             =bc(i,m2,j)+dfbc(i)+(m-2)*fbc(i)
-c              bs(i,m2,j)
-c     $             =bs(i,m2,j)+dfbs(i)+(m-2)*fbs(i)
-c            enddo
           endif
           bc(:,m,j)=bc(:,m,j)+dfbc
           bs(:,m,j)=bs(:,m,j)+dfbs
-c          do i=1,nd
-c            bc(i,m,j)=bc(i,m,j)+dfbc(i)
-c            bs(i,m,j)=bs(i,m,j)+dfbs(i)
-c          enddo
         enddo
       enddo
       return
@@ -692,10 +673,6 @@ c            call tclr(bfb,2*nsb)
                   bsi1=bs(ia,1,j)
                   bfb(mb+1:mb+nd)=bfb(mb+1:mb+nd)+ba(:,ia,m,j)*bci1
                   bfb(ms+1:ms+nd)=bfb(ms+1:ms+nd)+ba(:,ia,m,j)*bsi1
-c                  do i=1,nd
-c                    bfb(mb+i)=bfb(mb+i)+ba(i,ia,m,j)*bci1
-c                    bfb(ms+i)=bfb(ms+i)+ba(i,ia,m,j)*bsi1
-c                  enddo
                 elseif(m1 .gt. 0 .and. m1 .le. mphi2)then
                   k1=abs(m-m1)+1
                   k2=abs(m+m1-2)+1
@@ -705,12 +682,6 @@ c                  enddo
      $                 +(ba(:,ia,k1,j)+ba(:,ia,k2,j))*bci1
                   bfb(ms+1:ms+nd)=bfb(ms+1:ms+nd)
      $                 +(ba(:,ia,k1,j)-ba(:,ia,k2,j))*bsi1
-c                  do i=1,nd
-c                    bfb(mb+i)=bfb(mb+i)
-c     $                   +(ba(i,ia,k1,j)+ba(i,ia,k2,j))*bci1
-c                    bfb(ms+i)=bfb(ms+i)
-c     $                   +(ba(i,ia,k1,j)-ba(i,ia,k2,j))*bsi1
-c                  enddo
                 endif
               enddo
             enddo
@@ -725,19 +696,9 @@ c                  enddo
               bff(ms+1:ms+nd,maci)= smu(m)*dcb
               bff(mc+1:mc+nd,masi)=-smu(m)*dsb
               bff(ms+1:ms+nd,masi)=-cmu(m)*dsb
-c              do i=1,nd
-c                dc=bfb(mc+i)
-c                ds=bfb(ms+i)
-c                bff(mc+i,maci)=-cmu(m)*dc
-c                bff(ms+i,maci)= smu(m)*dc
-c                bff(mc+i,masi)=-smu(m)*ds
-c                bff(ms+i,masi)=-cmu(m)*ds
-c              enddo
             enddo
             bc(:,:,j)=0.d0
             bs(:,:,j)=0.d0
-c            call tclr(bc(1,1,j),nsb)
-c            call tclr(bs(1,1,j),nsb)
             bc(ia,ma,j)=1.d0
             bs(ia,ma,j)=1.d0
             if(ma .eq. 2)then
@@ -796,7 +757,6 @@ c            call tclr(bs(1,1,j),nsb)
           call tesetdm(j,bfb,bd,hc,hs,ndp,mphi,mphi2)
         else
           bfb=0.d0
-c          call tclr(bfb,2*nsb)
         endif
         call tadd(bb(1,1,j),bfb,bfb,nsb)
         do m=1,mphi2
@@ -806,15 +766,11 @@ c          call tclr(bfb,2*nsb)
           dsb=bfb(ms+1:ms+nd)
           bfb(mc+1:mc+nd)= cmu(m)*dcb+smu(m)*dsb
           bfb(ms+1:ms+nd)=-smu(m)*dcb+cmu(m)*dsb
-c          do i=1,nd
-c            dc=bfb(mc+i)
-c            ds=bfb(ms+i)
-c            bfb(mc+i)= cmu(m)*dc+smu(m)*ds
-c            bfb(ms+i)=-smu(m)*dc+cmu(m)*ds
-c          enddo
         enddo
-c        write(*,'(a,1p10g11.3)')'tesolvd-8 '
         call tsolva(bff,bfb,bfx,2*nsb,2*nsb,2*nsb,1.d-20)
+c        if(nd .eq. 4 .and. bfx(1) .gt. 1.d10)then
+c          write(*,'(a,1p10g11.3)')'tesolvd-8 ',j,nsb,bfx(1),bfb(1)
+c        endif
         call resetnan(bfx)
         call tmov(bfx,bc(1,1,j),nsb)
         call tmov(bfx(nsb+1),bs(1,1,j),nsb)
@@ -838,13 +794,7 @@ c      call tclr(bfb,2*nsb)
         ms=mb+nsb
         do i1=1,4
           hci1=hc(i1,1,j)
-c          hsi1=hs(i1,1,j)
           bfb(mb+1:mb+10)=bfb(mb+1:mb+10)+bd(:,i1,m,j)*hci1
-c          bfb(ms+1:ms+10)=bfb(ms+1:ms+10)+bd(:,i1,m,j)*hsi1
-c          do i=1,10
-c            bfb(mb+i)=bfb(mb+i)+(bd(i,i1,m,j))*hci1
-c            bfb(ms+i)=bfb(ms+i)+(bd(i,i1,m,j))*hsi1
-c          enddo
         enddo
         do m1=2,mphi2
           k1=abs(m-m1)+1
@@ -856,14 +806,6 @@ c          enddo
      $           +(bd(:,i1,k1,j)+bd(:,i1,k2,j))*hci1
             bfb(ms+1:ms+10)=bfb(ms+1:ms+10)
      $           +(bd(:,i1,k1,j)-bd(:,i1,k2,j))*hsi1
-c            do i=1,10
-c              bfb(mb+i)=bfb(mb+i)
-c     $             +(bd(i,i1,k1,j)+bd(i,i1,k2,j))
-c     $             *hci1
-c              bfb(ms+i)=bfb(ms+i)
-c     $             +(bd(i,i1,k1,j)-bd(i,i1,k2,j))
-c     $             *hsi1
-c            enddo
           enddo
         enddo
       enddo
@@ -924,7 +866,6 @@ c            call teintp(ip,f,tws,tr1,h1,1.d0,ndims)
 c            write(*,'(a,5(1p5g12.4/))')'setup11 ',(tr1(k,:),k=1,5)
             call teintm(ip,f,trads,trd,ndims,1.d0)
             tr1=tr1+trd
-c            call tadd(tr1,trd,tr1,25)
             call teintb(ip,f,beams,beama,ndims)
             do k=1,4
               do k1=1,k
@@ -1029,6 +970,9 @@ c              enddo
       bdx=f1*dy1
       bddx=f2*(-(e+ajj)*dy1
      $     +e*(ajj1*bx1-2.d0*ajj*bx(:,m,j0)+ajj2*bx2)/dj**2)
+      if(j0 .eq. ndp)then
+        bddx=max(0.d0,bddx)
+      endif
 c        do i=1,nd
 c          dy1=(bx(i,m,j0+1)-bx(i,m,j0-1))/dj*.5d0
 c          bdx(i)=f1*dy1
@@ -1109,9 +1053,6 @@ c      call tclr(beam,21)
       do j=1,ndp
         f=fj(j)*dj/e/w
         beam(1:10)=beam(1:10)+bc(:,1,j)*f
-c        do i=1,10
-c          beam(i)=beam(i)+bc(i,1,j)*f
-c        enddo
       enddo
       do j=1,ndp
         aj=(j-.5d0)*dj
@@ -1336,7 +1277,6 @@ c      a43=trans(4,3)+r3a*trans(1,3)+r4a*trans(2,3)
       tws(mfitbx,i)=bx
       tws(mfitnx,i)=amux
       cosamuy=(a33+a44)*.5d0
-      write(*,'(a,1p8g12.4)')'tediag ',cosamuy,a33,a44,a34
       if(abs(cosamuy) .gt. 1.d0)then
         stab=.false.
       endif

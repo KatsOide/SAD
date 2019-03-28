@@ -11,8 +11,9 @@
         type (sad_descriptor) kx
         type (sad_dlist), pointer ::klx
         type (sad_dlist), pointer ::kli
-        integer*4 nvar,i
-        type (symv) sav0(nvar)
+        integer*4 ,intent(in)::nvar
+        integer*4 i
+        type (symv),intent(in):: sav0(nvar)
         real*8 v0(nvar)
         kx=kxadaloc(-1,nvar,klx)
         do i=1,nvar
@@ -30,15 +31,17 @@
       use tfstk
       use findr
       implicit none
-      type (sad_descriptor) kx,ke
+      type (sad_descriptor) ,intent(out)::kx
+      type (sad_descriptor) ke
       real*8 , parameter :: eps0=1.d-20, frac0=1.d-7
       integer*4 , parameter :: nvmax=2048, maxi0=50
-      type (symv) sav(nvmax),sav0(nvmax)
+      type (symv) , allocatable::sav(:),sav0(:)
       type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: klo
       integer*8 kdl(nvmax)
       integer*4 isp1,irtc,neq,nvar,itfmessage,isp2,i,maxi,ispv
-      real*8 v0(nvmax),eps,vmin(nvmax),vmax(nvmax),d0,frac
+      real*8 eps,d0,frac
+      real*8 , allocatable :: v0(:),vmin(:),vmax(:)
       logical*4 trace,used
       integer*8 itfres
       data itfres /0/
@@ -79,9 +82,12 @@
       if(irtc .ne. 0)then
         return
       endif
+      allocate (sav(nvmax),sav0(nvmax),
+     $     v0(nvmax),vmin(nvmax),vmax(nvmax))
       call tfsetupvars(isp1+2,ispv,
      $     nvar,sav,sav0,v0,vmin,vmax,nvmax,irtc)
       if(irtc .ne. 0)then
+        deallocate (sav,sav0,v0,vmin,vmax)
         return
       endif
       ke=dtfcopy(ke)
@@ -109,6 +115,7 @@ c      write(*,*)'findroot-D ',used
         call tflocal(kdl(i))
         call tfdelete(sav(i)%p,.true.,.false.)
       enddo
+      deallocate (sav,sav0,v0,vmin,vmax)
       call tclrfpe
       return
       end
@@ -122,9 +129,10 @@ c      write(*,*)'findroot-D ',used
       type (symv) sav(nvar)
       integer*8 ke,kdl(nvar),kx
       integer*4 nvar,neq,maxi,irtc,i,j,iter
-      real*8 v0(nvar),a(neq,nvar),f(neq),f0(neq),eps,dv(nvar),
-     $     v(nvar),a0(neq,nvar),fact,fact1,fact2,d0,d,d1,d2,
-     $     dg,am,sv,goal,s,tffsfmin,svi,vmin(nvar),vmax(nvar)
+      real*8 v0(nvar),f(neq),f0(neq),eps,dv(nvar),
+     $     v(nvar),fact,fact1,fact2,d0,d,d1,d2,
+     $     dg,am,sv,goal,tffsfmin,svi,vmin(nvar),vmax(nvar)
+      real*8 , allocatable :: a(:,:),a0(:,:)
       logical*4 trace
       real*8 frac
       real*8 , parameter :: factmin=1.d-4,svmin=1.d-7
@@ -142,17 +150,21 @@ c      write(*,*)'findroot-D ',used
       if(irtc .ne. 0)then
         return
       endif
+      allocate (a(neq,nvar),a0(neq,nvar))
  1    if(d0 .lt. goal)then
+        deallocate (a0,a)
         return
       endif
       iter=iter+1
       if(iter .gt. maxi)then
+        deallocate (a0,a)
         return
       endif
       v(1:nvar)=v0(1:nvar)
       do i=1,nvar
         call tfeevalref(kdl(i),kx,irtc)
         if(irtc .ne. 0)then
+          deallocate (a0,a)
           return
         endif
         if(ktflistq(kx,klx))then
@@ -170,6 +182,7 @@ c      write(*,*)'findroot-D ',used
         v(i)=v0(i)+svi
         call tfevalresidual(sav,v,ke,f,am,d1,nvar,neq,.false.,irtc)
         if(irtc .ne. 0)then
+          deallocate (a0,a)
           return
         endif
         a(1:neq,i)=(f(1:neq)-f0(1:neq))/svi
@@ -187,11 +200,11 @@ c      write(*,*)'findroot-D ',used
       call tsolva(a,f,dv,neq,nvar,neq,1.d-8)
       dg=0.d0
       do i=1,neq
-        s=0.d0
-        do j=1,nvar
-          s=s+a0(i,j)*dv(j)
-        enddo
-        dg=dg+f0(i)*s
+c        s=0.d0
+c        do j=1,nvar
+c          s=s+a0(i,j)*dv(j)
+c        enddo
+        dg=dg+f0(i)*sum(a0(i,1:nvar)*dv(1:nvar))
       enddo
       dg=dg*2.d0
  2    v=min(vmax,max(vmin,v0+dv*fact))
@@ -201,6 +214,7 @@ c        v(i)=min(vmax(i),max(vmin(i),v0(i)+dv(i)*fact))
 c      enddo
       call tfevalresidual(sav,v,ke,f0,am,d,nvar,neq,trace,irtc)
       if(irtc .ne. 0)then
+        deallocate (a0,a)
         return
       endif
       if(d .lt. d0)then
@@ -213,6 +227,7 @@ c      enddo
       else
         iter=iter+1
         if(iter .gt. maxi)then
+          deallocate (a0,a)
           return
         endif
         d2=d1
@@ -221,6 +236,7 @@ c      enddo
         fact1=fact
         fact=tffsfmin(fact1,fact2,d1,d2,d0,dg)
         if(fact .lt. factmin)then
+          deallocate (a0,a)
           return
         endif
         go to 2
@@ -434,10 +450,10 @@ c        call tfstk2l(lista,list)
       real*8 eps0
       parameter (nvmax=1024,maxi0=40,eps0=1.d-9)
       integer*4 isp1,nvar,i,maxi,ispv,isp2,n,m,iu,ig,itfmessage
-      type (symv) sav(nvmax),sav0(nvmax)
+      type (symv) , allocatable::sav(:),sav0(:)
       integer*8 kdl(nvmax),kdp,kci,kcv,ktfmaloc
-      real*8 v0(nvmax),r,gammaq,rfromk,vx,
-     $     vmin(nvmax),vmax(nvmax),cut,cutoff,v0s(nvmax)
+      real*8 , allocatable::v0(:),vmin(:),vmax(:),v0s(:)
+      real*8 r,gammaq,rfromk,vx,cut,cutoff
       logical*4 used
       type (sad_descriptor), save ::
      $     itfchisq,itfsigma,itfgood,itfconf,itfcov
@@ -467,6 +483,8 @@ c        call tfstk2l(lista,list)
         call tfgetoption('MaxIterations',ktastk(i),kx,irtc)
         if(irtc .eq. -1)then
           ispv=i
+          allocate (sav(nvmax),sav0(nvmax),
+     $         v0(nvmax),vmin(nvmax),vmax(nvmax),v0s(nvmax))
           go to 1
         endif
         if(irtc .ne. 0)then
@@ -566,6 +584,7 @@ c        call tfstk2l(lista,list)
         call tfdelete(sav(i)%p,.true.,.false.)
       enddo
  9000 call tfdelete(symdv,.true.,.false.)
+      deallocate (sav,sav0,v0,vmin,vmax,v0s)
       call tclrfpe
       return
       end
@@ -573,7 +592,7 @@ c        call tfstk2l(lista,list)
       subroutine tfcovmat(c,ca,m,n,ndim)
       use tfstk, only:ktfenanq,ktfnan
       implicit none
-      integer*4 n,ndim,i,j,k,m
+      integer*4 n,ndim,i,j,m
       real*8 c(ndim,n),ca(n,n),s,rfromk
       real*8, save:: rnan=0.d0
 c      write(*,*)'covmat ',n,m,ndim
@@ -582,10 +601,11 @@ c      write(*,*)'covmat ',n,m,ndim
       endif
       do i=1,n
         do j=1,i
-          s=0.d0
-          do k=1,m
-            s=s+c(k,i)*c(k,j)
-          enddo
+c          s=0.d0
+c          do k=1,m
+c            s=s+c(k,i)*c(k,j)
+c          enddo
+          s=sum(c(1:m,i)*c(1:m,j))
           if(ktfenanq(s))then
             ca(i,j)=rnan
           else
@@ -606,16 +626,19 @@ c      write(*,*)'covmat ',n,m,ndim
       integer*4 n,m,nvar,irtc,maxi,iter,i,j
       type (symv) sav(nvar)
       integer*8 ke,kdl(nvar),kaxvec,kcv,kci,kfromr
-      real*8 data(n,m),v0(nvar),a0(m,nvar)
-      real*8 a(m,nvar),abest(m,nvar),df(m),
-     $     df0(m),d00,v00(nvar),w(nvar),cv(nvar,nvar),
-     $     vbest(nvar),dbest,dv(nvar),d2,eps,df2(m),svi,wi,db,
-     $     fact,d0,d1,fact1,v(nvar),dg,s,d,fact2,tffsfmin,
+      real*8 data(n,m),v0(nvar)
+      real*8 , allocatable :: a0(:,:),a(:,:),abest(:,:),
+     $     df(:),df0(:),v00(:),w(:),cv(:,:),vbest(:),dv(:),df2(:)
+      real*8 d00,d2,eps,svi,wi,db,dbest,
+     $     fact,d0,d1,fact1,v(nvar),dg,d,fact2,tffsfmin,
      $     good,gammaq,ajump,vmin(nvar),vmax(nvar),sigma
       real*8 frac,factmin,svmin,factmin1,svdeps,cut,tinvgr,chin,x
       parameter (frac=1.d-7,factmin=1.d-4,factmin1=1.d-4,
      $     svmin=1.d-7,svdeps=1.d-4)
       logical*4 newton,acalc
+      allocate (a0(m,nvar),a(m,nvar),abest(m,nvar),df(m),
+     $     df0(m),v00(nvar),w(nvar),cv(nvar,nvar),
+     $     vbest(nvar),dv(nvar),df2(m))
       kcv=0
       v00=v0
       iter=0
@@ -628,6 +651,7 @@ c      write(*,*)'covmat ',n,m,ndim
  21   call tfevalfit(df0,d0,data,n,m,ke,symdv,nvar,sav,v0,
      $     kaxvec,.false.,cut,irtc)
       if(irtc .ne. 0)then
+        deallocate(a0,a,abest,df,df0,v00,w,cv,vbest,dv,df2)
         call tflocal1(kaxvec)
         return
       endif
@@ -666,6 +690,7 @@ c            enddo
             call tfevalfit(df2,db,data,n,m,ke,symdv,nvar,sav,v,
      $           kaxvec,.false.,0.d0,irtc)
             if(irtc .ne. 0)then
+              deallocate(a0,a,abest,df,df0,v00,w,cv,vbest,dv,df2)
               call tflocal1(kaxvec)
               return
             endif
@@ -681,6 +706,7 @@ c            enddo
               v(i)=v0(i)
             endif
           else
+            deallocate(a0,a,abest,df,df0,v00,w,cv,vbest,dv,df2)
             call tflocal1(kaxvec)
             return
           endif
@@ -695,20 +721,20 @@ c            enddo
           call tsolva(a,df,dv,m,nvar,m,1.d-6)
         else
           do i=1,nvar
-            s=0.d0
-            do j=1,m
-              s=s+df0(j)*a0(j,i)
-            enddo
-            dv(i)=-s
+c            s=0.d0
+c            do j=1,m
+c              s=s+df0(j)*a0(j,i)
+c            enddo
+            dv(i)=-sum(df0(1:m)*a0(1:m,i))
           enddo
         endif
         dg=0.d0
         do i=1,m
-          s=0.d0
-          do j=1,nvar
-            s=s+a0(i,j)*dv(j)
-          enddo
-          dg=dg+df0(i)*s
+c          s=0.d0
+c          do j=1,nvar
+c            s=s+a0(i,j)*dv(j)
+c          enddo
+          dg=dg+df0(i)*dot_product(a0(i,1:nvar),dv(1:nvar))
         enddo
         dg=dg*2.d0
         if(abs(dg) .lt. d0*eps)then
@@ -732,6 +758,7 @@ c        enddo
         call tfevalfit(df0,d,data,n,m,ke,symdv,nvar,sav,v,
      $       kaxvec,.false.,cut,irtc)
         if(irtc .ne. 0)then
+          deallocate(a0,a,abest,df,df0,v00,w,cv,vbest,dv,df2)
           call tflocal1(kaxvec)
           return
         endif
@@ -797,17 +824,19 @@ c            enddo
       if(n .eq. 2)then
         sigma=sqrt(d0/max(1,m-nvar))
         do i=1,nvar
-          wi=w(i)*sigma
-          do j=1,nvar
-            a0(i,j)=a0(i,j)*wi
-          enddo
+c          wi=w(i)*sigma
+c          do j=1,nvar
+c            a0(i,j)=a0(i,j)*wi
+c          enddo
+          a0(i,:)=a0(i,:)*w(i)*sigma
         enddo
       else
         do i=1,nvar
-          wi=w(i)
-          do j=1,nvar
-            a0(i,j)=a0(i,j)*wi
-          enddo
+c          wi=w(i)
+c          do j=1,nvar
+c            a0(i,j)=a0(i,j)*wi
+c          enddo
+          a0(i,:)=a0(i,:)*w(i)
         enddo
       endif
       call tflocal1(kaxvec)
@@ -823,6 +852,7 @@ c            enddo
           klist(kci+i)=ktfnan
         endif
       enddo
+      deallocate(a0,a,abest,df,df0,v00,w,cv,vbest,dv,df2)
       return
       end
 
@@ -895,9 +925,10 @@ c            enddo
         if(deriv)then
           df=vx
         else
-          do i=1,m
-            df(i)=vx-a(2,i)
-          enddo
+          df=vx-a(2,:)
+c          do i=1,m
+c            df(i)=vx-a(2,i)
+c          enddo
         endif
         go to 1000
       endif
@@ -936,13 +967,15 @@ c            enddo
  1000 r=0.d0
       if(deriv)then
         if(n .eq. 3)then
-          do i=1,m
-            df(i)=df(i)/a(3,i)
-          enddo
+          df=df/a(3,:)
+c          do i=1,m
+c            df(i)=df(i)/a(3,i)
+c          enddo
         elseif(n .eq. 4)then
-          do i=1,m
-            df(i)=df(i)/a(4,i)
-          enddo
+          df=df/a(4,:)
+c          do i=1,m
+c            df(i)=df(i)/a(4,i)
+c          enddo
         endif
       else
         if(cutoff .ne. 0.d0)then
@@ -1054,7 +1087,8 @@ c        call tfdebugprint(kd,'==>',2)
 
       real*8 function tinvgr(an)
       implicit none
-      real*8 an,c0,x0,gn,erfc,gammaq,df,dfdx,anh
+      real*8 ,intent(in)::an
+      real*8 c0,x0,gn,erfc,gammaq,df,dfdx,anh
       if(an .eq. 1.d0)then
         tinvgr=1.d0
         return
@@ -1077,8 +1111,7 @@ c        write(*,*)'tinvgr ',x0,dfdx,df
       subroutine tfmakerulestk(k1,k2)
       use tfstk, only:mrs=>tfmakerulestk_dd,sad_descriptor
       implicit none
-      type (sad_descriptor) k1,k2
+      type (sad_descriptor) ,intent(in)::k1,k2
       call mrs(k1,k2)
       return
       end
-

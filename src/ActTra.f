@@ -89,7 +89,6 @@ c
       endif
       call RsetGL('$MASS$',mass,idummy)
  101  lptr=ilist(1,argp+2)
-c      write(*,*)'ActTra-2 ',argp,lptr,idtype(lptr),icLINE
       if (idtype(lptr) .ne. icLINE) then
 c
 c******* K. Oide 7/6/1997 *********

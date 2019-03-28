@@ -69,7 +69,7 @@ C CERRF *************************************************
 * Output:                                                              *
 *   WX, WY    (real)    Function result.                               *
 *----------------------------------------------------------------------*
-
+      use tfstk, only:ktfenanq
 *---- Single precision version.
       IMPLICIT DOUBLE PRECISION (A-H,O-Y), INTEGER (I-N)
 C     REAL RWX, RWY
@@ -88,6 +88,12 @@ C     REAL RWX, RWY
 c     XX=REAL(ZI)
 c     YY=AIMAG(ZI)
 
+      if(ktfenanq(XX) .or. ktfenanq(YY))then
+        WX=0.d0
+        WY=0.d0
+        return
+      endif
+
       X = ABS(XX)
       Y = ABS(YY)
 
@@ -99,6 +105,7 @@ c     YY=AIMAG(ZI)
          XH = Y + 0.5/H
          YH = X
          NU =  10+ INT(21.0*Q)
+c         write(*,'(a,i5,1p5g12.4)')'cerrf ',NU,Q,Y,YLIM,X,XLIM
          RX(NU+1) = 0.
          RY(NU+1) = 0.
 

@@ -4,6 +4,7 @@
       use ffs
       use tffitcode
       use ffs_pointer, only:idelc,latt,idtypec,gammab
+      use mathfun
       implicit none
       integer*8 ix
       real*8 rgetgl1,df
@@ -70,6 +71,7 @@ c      iwakepold=ifwakep
       subroutine tphyzp
       use tfstk
       use tmacro
+      use mathfun
       implicit none
       brhoz =pgev/c
       brho  =brhoz/abs(charge)
@@ -82,6 +84,7 @@ c      h0    =p0*sqrt(1.d0+1.d0/p0**2)
       urad  =sign(1.5d0*hp*c/p0/amass/e,charge)
       erad  =55.d0/24.d0/sqrt(3.d0)*urad
       rcratio=rclassic/(hp*c/amass/e)
+      cuc=1.5d0*rclassic/rcratio
       anrad =5.d0/2.d0/sqrt(3.d0)*rcratio
       ccintr=(rclassic/h0**2)**2/8.d0/pi
       if(rlist(klist(ilattp)+1) .ne. 0.d0)then

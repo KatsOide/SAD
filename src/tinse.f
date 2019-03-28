@@ -1,17 +1,13 @@
-      subroutine tinse(trans,cod,beam,trx,ld)
+      subroutine tinse(trans,cod,beam,trx)
       use ffs_flag
       use tmacro
       implicit none
-      integer*4 ld      
       real*8 trans(6,12),cod(6),beam(42),trx(6,7),trans1(6,13),
      $     x1,px1,y1,py1
       trans1(:,7:12)=0.d0
       trans1(:,1:6)=trx(:,1:6)
       call tmultr(trans,trans1,irad)
       call tmulbs(beam ,trans1,.true.,.true.)
-      if(calpol)then
-        call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod)
-      endif
        x1=trans1(1,1)*cod(1)+trans1(1,2)*cod(2)+
      $    trans1(1,3)*cod(3)+trans1(1,4)*cod(4)+trans1(1,6)*cod(6)+
      $    trans1(1,7)

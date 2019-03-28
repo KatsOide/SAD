@@ -97,8 +97,8 @@ c$$$
         use mackw
         use macphys
         use macfile
-        real*8, parameter :: c=cveloc,hp=plankr,e=elemch
-        real*8 amass,charge,h0,p0,omega0,trf0,crad,erad,epsrad,
+        real*8, parameter :: c=cveloc,hp=plankr,e=elemch,epsrad=1.d-6
+        real*8 amass,charge,h0,p0,omega0,trf0,crad,erad,
      $       codin(6),dleng,anrad,urad,u0,vc0,wrfeff,dp0,brho,
      $       ccintr,cintrb,pbunch,coumin,re0,pgev,emidiv,
      $       emidib,emidiq,emidis,ctouck,dvemit,h1emit,
@@ -106,13 +106,14 @@ c$$$
      $       taurdx,taurdy,taurdz,fridiv,beamin(21),
      $       vcalpha,vceff,vcacc,dvcacc,ddvcacc,alphap,
      $       pspac_dx,pspac_dy,pspac_dz,dvfs,rcratio,rclassic,brhoz,
-     $       bradprev,amom0,circ,hvc0
+     $       bradprev,amom0,circ,hvc0,cuc
         integer*8 ilattp,lspect,ipoltr,ipolb,ipoll,ipolid,ipolo
         integer*4 nflag0,nlat,np0,nturn,isynch,nspect,
      $       lplot,nplot,nuse,nclas,irad,novfl,npelm,ipelm,
      $       nparallel,pspac_nx,pspac_ny,pspac_nz,
      $       pspac_nturn,pspac_nturncalc
         logical*4 oldflagsdummy,calint,caltouck,tparaed
+
       end module
 
       module tffitcode
@@ -255,14 +256,14 @@ c$$$
      $       calpol,rfluct,k64,fourie,
      $       trsize,simulate,absweit,jitter,
      $       trgauss,lwake,twake,smearp,
-     $       bunchsta,convgo,cellstab,spac,
+     $       radpol,convgo,cellstab,spac,
      $       radlight,geocal,photons,wspac,
      $       selfcod,pspac,convcase,preservecase,
      $       lossmap,orbitcal,radtaper,sorg,
-     $       intres,halfres,sumres,diffres
+     $       intres,halfres,sumres,diffres,calopt
       end type
 
-      integer*4 ,parameter :: nflag=48
+      integer*4 ,parameter :: nflag=49
       type (flagset), target, save :: fff
       character*8, save :: fname(1:nflag)= (/
      $     'RAD     ','RFSW    ','RADCOD  ','COD     ',
@@ -272,11 +273,12 @@ c$$$
      1     'POL     ','FLUC    ','K64     ','FOURIER ',
      1     'TRACKSIZ','SIMULATE','ABSW    ','JITTER  ',
      1     'TRGAUSS ','LWAKE   ','TWAKE   ','BARYCOD ',
-     1     'BUNCHSTA','CONV    ','STABLE  ','SPAC    ',
+     1     'RADPOL  ','CONV    ','STABLE  ','SPAC    ',
      $     'RADLIGHT','GEOCAL  ','PHOTONS ','WSPAC   ',
      $     'SELFCOD ','PSPAC   ','CONVCASE','PRSVCASE',
      $     'LOSSMAP ','ORBITCAL','RADTAPER','SORG    ',
-     $     'INTRES  ','HALFRES ','SUMRES  ','DIFFRES '/),
+     $     'INTRES  ','HALFRES ','SUMRES  ','DIFFRES ',
+     $     'CALOPT  '/),
      $     sino(1:nflag)= (/
      $     '        ','        ','        ','        ',
      1     '        ','RING    ','        ','UNIFORM ',
@@ -285,11 +287,12 @@ c$$$
      1     '        ','DAMPONLY','LEGACY  ','        ',
      1     '        ','OPERATE ','RELW    ','QUIET   ',
      1     'TRUNI   ','        ','        ','        ',
-     1     'BATCHSTA','        ','UNSTABLE','        ',
+     1     '        ','        ','UNSTABLE','        ',
      $     '        ','GEOFIX  ','        ','        ',
      $     '        ','        ','        ','        ',
      $     '        ','        ','        ','        ',
-     $     '        ','        ','        ','        '/)
+     $     '        ','        ','        ','        ',
+     $     'ORBONLY '/)
 
       integer*8, pointer :: ifvlim,ifibzl,ifmult,ifklp,ifival,iftwissp,
      $     iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifdcomp,ifele,ifcoup,
@@ -518,11 +521,12 @@ c$$$
      $       calpol,rfluct,k64,fourie,
      $       trsize,simulate,absweit,jitter,
      $       trgauss,lwake,twake,smearp,
-     $       bunchsta,convgo,cellstab,spac,
+     $       radpol,convgo,cellstab,spac,
      $       radlight,geocal,photons,wspac,
      $       selfcod,pspac,convcase,preservecase,
      $       lossmap,orbitcal,radtaper,sorg,
-     $       intres,halfres,sumres,diffres
+     $       intres,halfres,sumres,diffres,
+     $       calopt
         
         contains
         subroutine ffs_init_flag
@@ -555,7 +559,7 @@ c$$$
         lwake=>fff%lwake
         twake=>fff%twake
         smearp=>fff%smearp
-        bunchsta=>fff%bunchsta
+        radpol=>fff%radpol
         calc6d=>fff%calc6d
         cellstab=>fff%cellstab
         spac=>fff%spac
@@ -575,8 +579,29 @@ c$$$
         halfres=>fff%halfres
         sumres=>fff%sumres
         diffres=>fff%diffres
+        calopt=>fff%calopt
         return
         end subroutine
+
+        integer*4 function ndivrad(phi,ak,bz,eps)
+        use tmacro, only:h0
+        implicit none
+        real*8 , parameter :: arad=0.02d0
+        real*8 , intent(in)::ak,bz,phi,eps
+        real*8 aka,eps1
+        eps1=eps
+        if(eps1 .le. 0.d0)then
+          eps1=1.d0
+        endif
+        aka=(abs(phi)+abs(dcmplx(ak,bz))*arad)/eps1
+        if(trpt)then
+          ndivrad=int(1.d0+h0/100.d0*aka*10.d0)
+        else
+          ndivrad=int(1.d0+h0/100.d0*aka)
+        endif
+        return
+        end function 
+
       end module
 
       module ffs
@@ -921,7 +946,7 @@ c$$$
           endif
           cmp%value(p_L_BEND)=al
           dtheta=cmp%value(ky_DROT_BEND)
-          theta=cmp%value(ky_ROT_BEND)+dtheta
+          theta=cmp%value(ky_ROT_BEND)
           cmp%value(p_COSPSI1_BEND)=cos(psi1)
           cmp%value(p_SINPSI1_BEND)=sin(psi1)
           cmp%value(p_COSPSI2_BEND)=cos(psi2)
@@ -937,8 +962,8 @@ c$$$
             cmp%value(p_SQWH_BEND)=1.d0-cmp%value(p_COSW_BEND)
           endif
           cmp%value(p_SINWP1_BEND)=sin(phi-psi2)
-          cmp%value(p_DPHIX_BEND)=phi*sin(.5d0*dtheta)**2
-          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
+c          cmp%value(p_DPHIX_BEND)=phi*sin(.5d0*dtheta)**2
+c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
           cmp%value(p_THETA_BEND)=theta
           cmp%value(p_FB1_BEND)=fb1
           cmp%value(p_FB2_BEND)=fb2
@@ -1157,10 +1182,11 @@ c$$$
 
       contains
 
-      integer*4 function itftypekey(i,word1,lw1)
+      integer*4 function itftypekey(i,word1,lw1,kx)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,ks
+      type (sad_descriptor) , optional,intent(out)::kx
+      type (sad_descriptor) ks,ka
       integer*4 i,isp0,lw1,irtc
       character*(lw1) word1
       isp0=isp
@@ -1170,16 +1196,21 @@ c$$$
       ks=kxsalocb(-1,word1,lw1)
       dtastk(isp)=ks
       levele=levele+1
-      call tfefunref(isp0+1,kx,.false.,irtc)
-      call tfconnect(kx,irtc)
+      call tfefunref(isp0+1,ka,.false.,irtc)
+      call tfconnect(ka,irtc)
       isp=isp0
       if(irtc .ne. 0)then
         call tfreseterror
         itftypekey=0
-      elseif(.not. ktfrealq(kx))then
-        itftypekey=0
+      elseif(ktflistq(ka))then
+        itftypekey=-1
+        if(present(kx))then
+          kx=ka
+        endif
+      elseif(ktfrealq(ka))then
+        itftypekey=ifromd(ka)
       else
-        itftypekey=ifromd(kx)
+        itftypekey=0
       endif        
       return
       end function
@@ -1286,7 +1317,7 @@ c$$$
       integer*8 ia
       character*(*) keyword
       character*128 key
-      logical*4 saved,sum,ref
+      logical*4 saved,plus,ref
       real*8 s
       type (sad_comp), pointer :: cmp
 c     begin initialize for preventing compiler warning
@@ -1296,10 +1327,10 @@ c     begin initialize for preventing compiler warning
         kl=ilist(-i,ifklp)
       endif
       call compelc(kl,cmp)
-      sum=.false.
+      plus=.false.
       lk=lenw(keyword)
       if(lk .gt. 4 .and. keyword(lk-3:lk) .eq. '$SUM')then
-        sum=.true.
+        plus=.true.
         lk=lk-4
       endif
       key(1:lk)=keyword(1:lk)
@@ -1352,11 +1383,12 @@ c          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
           call tftouch(iele1(kl),l)
         endif
       endif
-      if(sum .and. tfreallistq(tfkeyv,klr))then
-        s=klr%rbody(1)
-        do i=2,klr%nl
-          s=s+klr%rbody(i)
-        enddo
+      if(plus .and. tfreallistq(tfkeyv,klr))then
+c        s=klr%rbody(1)
+c        do i=2,klr%nl
+c          s=s+klr%rbody(i)
+c        enddo
+        s=sum(klr%rbody(1:klr%nl))
         tfkeyv=dfromr(s)
       endif
       return

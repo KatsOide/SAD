@@ -9,19 +9,15 @@ c     Maximum amplitude of (px/p0)^2 + (py/p0)^2
       end module element_drift_common
 
 c     drift in the free space
-      subroutine tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
+      subroutine tdrift_free(np,x,px,y,py,z,dv,al)
       use element_drift_common
-      use tfstk
+      use mathfun, only:pxy2dpz
       implicit none
       integer*4 np,i
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np)
       real*8 al,al1,dpz
       do i=1,np
-c        s=px(i)**2+py(i)**2
         dpz=pxy2dpz(px(i),py(i))
-c        dpz=s*(-.5d0-s*(.125d0+s*.0625d0))
-c        dpz=(dpz**2-s)/(2.d0+2.d0*dpz)
-c        dpz=(dpz**2-s)/(2.d0+2.d0*dpz)
         al1=al/(1.d0+dpz)
         x(i)=x(i)+px(i)*al1
         y(i)=y(i)+py(i)*al1
@@ -31,23 +27,32 @@ c        dpz=(dpz**2-s)/(2.d0+2.d0*dpz)
       end
 
 c     drift in the parallel solenoid
-      subroutine tdrift_solenoid(np,x,px,y,py,z,g,dv,pz,al,bz)
-      use tfstk, only: sqrtl
+      subroutine tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+     $     al,bz,enarad)
       use element_drift_common
+      use ffs_flag, only:rfluct
+      use tspin
+      use mathfun, only: sqrtl
       implicit none
       integer*4 np
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),bsi(np),
+     $     sx(np),sy(np),sz(np),zr0,px1,py1
       real*8 al,bz
       integer*4 i
       real*8 pr,bzp,pxi,pyi
       real*8 s,dpzi,pzi,al1
       real*8 phi,a22,a24,a12,a14
+      logical*4 enarad
+      if(enarad)then
+        bsi=0.d0
+      endif
       do i=1,np
 c         pr=(1.d0+g(i))**2
          pr=(1.d0+g(i))
          bzp=bz/pr
          pxi=px(i)+bzp*y(i)*.5d0
          pyi=py(i)-bzp*x(i)*.5d0
+         zr0=z(i)
 
          s=min(ampmax,pxi**2+pyi**2)
          dpzi=-s/(1.d0+sqrtl(1.d0-s))
@@ -79,41 +84,62 @@ c
          else
             a14=(1.d0-a22)/bzp
          endif
-
          x(i) =x(i)+a12*pxi+a14*pyi
          y(i) =y(i)-a14*pxi+a12*pyi
-         px(i)=     a22*pxi+a24*pyi-bzp*y(i)*.5d0
-         py(i)=    -a24*pxi+a22*pyi+bzp*x(i)*.5d0
          z(i) =z(i)+dpzi *al1-dv(i)*al
+         px1=     a22*pxi+a24*pyi
+         py1=    -a24*pxi+a22*pyi
+         bsi(i)=bz
+         if(enarad)then
+           if(rfluct)then
+             call tradkf1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
+     $            sx(i),sy(i),sz(i),
+     $            pxi,pyi,zr0,1.d0,0.d0,bsi(i),al)
+           else
+             call tradk1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
+     $            sx(i),sy(i),sz(i),
+     $            pxi,pyi,zr0,1.d0,0.d0,bsi(i),al)
+           endif
+         endif
+         px(i)=px1-bzp*y(i)*.5d0
+         py(i)=py1+bzp*x(i)*.5d0
       enddo
       return
       end
 
-      subroutine tdrift(np,x,px,y,py,z,g,dv,pz,
-     $     al,bz,ak0x,ak0y)
+      subroutine tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+     $     al,bz,ak0x,ak0y,enarad)
       use element_drift_common
-      use tfstk, only:sqrtl
+      use tspin
+      use ffs_flag, only:rfluct
+      use mathfun
       implicit none
       integer*4 np,i,j,itmax,ndiag
       real*8 conv
       parameter (itmax=15,conv=1.d-15)
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),pz(np),g(np)
-      real*8 al,bz,pr,bzp,s,phi,
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
+     $     sx(np),sy(np),sz(np),px0,py0,zr0,bsi(np)
+      real*8 al,bz,pr,bzp,s,phi,px1,py1,
      $     sinphi,ak0x,ak0y,b,phix,phiy,phiz,
      $     dphizsq,dpz0,pz0,plx,ply,plz,ptx,pty,ptz,
      $     pbx,pby,pbz,phi0,dphi,dcosphi,pl,dpl,alb,
-     $     xsinphi,xsin,r,bpr
+     $     xsinphi,r,bpr
+      logical*4 enarad
       data ndiag/15/
       if(ak0x .eq. 0.d0 .and. ak0y .eq. 0.d0)then
         if(bz .eq. 0.d0)then
-          call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
+          call tdrift_free(np,x,px,y,py,z,dv,al)
           return
         else
-          call tdrift_solenoid(np,x,px,y,py,z,g,dv,pz,al,bz)
+          call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+     $         al,bz,enarad)
           return
         endif
       else
 c        b=hypot(hypot(ak0x,ak0y),bz*al)
+        if(enarad)then
+          bsi=0.d0
+        endif
         b=abs(dcmplx(abs(dcmplx(ak0x,ak0y)),bz*al))
         phix=ak0y/b
         phiy=ak0x/b
@@ -121,11 +147,15 @@ c        b=hypot(hypot(ak0x,ak0y),bz*al)
         dphizsq=phix**2+phiy**2
         do i=1,np
 c          pr=(1.d0+g(i))**2
+          bsi(i)=bsi(i)+bz+ak0x*y(i)+ak0y*x(i)
           pr=(1.d0+g(i))
           alb=al*pr/b
           bzp=bz/pr
           px(i)=px(i)+bzp*y(i)*.5d0
           py(i)=py(i)-bzp*x(i)*.5d0
+          px0=px(i)
+          py0=py(i)
+          zr0=z(i)
           s=min(ampmax,px(i)**2+py(i)**2)
           dpz0=-s/(1.d0+sqrtl(1.d0-s))
           pz0=1.d0+dpz0
@@ -170,8 +200,22 @@ c          pr=(1.d0+g(i))**2
           y(i)=y(i)+(ply*phi+pty*sinphi+pby*dcosphi)*alb
           z(i)=z(i)+((dpl*phiz-dphizsq)*xsinphi
      $         +dpz0*sinphi+pbz*dcosphi)*alb-dv(i)*al
-          px(i)=px(i)-ptx*dcosphi+pbx*sinphi-bzp*y(i)*.5d0
-          py(i)=py(i)-pty*dcosphi+pby*sinphi+bzp*x(i)*.5d0
+          px1=px0-ptx*dcosphi+pbx*sinphi
+          py1=py0-pty*dcosphi+pby*sinphi
+          bsi(i)=bsi(i)-ak0x*y(i)-ak0y*x(i)
+          if(enarad)then
+            if(rfluct)then
+              call tradkf1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
+     $         sx(i),sy(i),sz(i),
+     $         px0,py0,zr0,1.d0,0.d0,bsi(i),al)
+            else
+              call tradk1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
+     $         sx(i),sy(i),sz(i),
+     $         px0,py0,zr0,1.d0,0.d0,bsi(i),al)
+            endif
+          endif
+          px(i)=px1-bzp*y(i)*.5d0
+          py(i)=py1+bzp*x(i)*.5d0
         enddo
       endif
       return

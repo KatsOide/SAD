@@ -176,6 +176,7 @@
       use tffitcode
       use sad_main
       use tfcsi, only:icslfno
+      use mathfun
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 istart,istop,ke,ke1,i,k,i1,istart0
@@ -458,6 +459,7 @@ c     $       1,4,i1),geo(1,3,i),geo(1,4,i)
       use ffs
       use ffs_pointer
       use tffitcode
+      use mathfun
       implicit none
       integer*4 i,id
       integer*8 ip

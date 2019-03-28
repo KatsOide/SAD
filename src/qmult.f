@@ -10,7 +10,7 @@
       implicit none
       integer*4 nmult,mfring,k
       parameter (nmult=21)
-      real*8 trans(4,5),cod(6),transe(6,12),beam(42),
+      real*8 trans(4,5),cod(6),transe(6,12),beam(42),srot(3,9),
      $     dx,dy,theta,f1in,f2in,f1out,f2out,
      $     al,bz,eps0,chi1,chi2,dz,
      $     vc,harm,phi,freq,wakew1,
@@ -22,7 +22,7 @@
       if(ini)then
         call tinitr(transe)
       endif
-      call tmulte(transe,cod,beam,k,al,ak,bz,
+      call tmulte(transe,cod,beam,srot,k,al,ak,bz,
      $     phi0,psi1,psi2,apsi1,apsi2,
      1     dx,dy,dz,chi1,chi2,theta,dtheta,
      $     eps0,.false.,fringe,

@@ -477,9 +477,10 @@
       use tfstk
       implicit none
       type (sad_descriptor) kh
-      type (sad_dlist) kl
+      type (sad_dlist), intent(in):: kl
       type (sad_dlist), pointer :: list,kli
       integer*4 level,irtc,i,m,i0,level0,itfmessage,mstk0
+c      write(*,*)'tfflattenstk ',sad_loc(kl%head)
       call dlist_dlist(kl,list)
       mstk0=mstk
       level=level0
@@ -499,14 +500,13 @@
           isp=isp+1
           dtastk(isp)=list%dbody(i)
           if(ktflistq(ktastk(isp),kli))then
-            if(.not. tfsameq(kli%head,kh))then
-              go to 10
+            if(tfsameq(kli%head,kh))then
+              if(level .ne. 0)then
+                go to 100
+              endif
+              cycle LOOP_I
             endif
-            if(level .ne. 0)then
-              go to 100
-            endif
-            cycle LOOP_I
- 10         if(kli%head%k .eq. ktfoper+mtfnull)then
+            if(kli%head%k .eq. ktfoper+mtfnull)then
               go to 100
             endif
           endif

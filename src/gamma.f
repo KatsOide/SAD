@@ -512,8 +512,8 @@ c     Including m_2_sqrtpi:	2 / Sqrt[Pi]
       end
 
       real*8 function productlog(x)
-      use tfstk
       use macmath
+      use mathfun
       implicit none
 c     Including m_e(Napier's constant: Exp[1])
       real*8 x,w,f1,d,eps,en

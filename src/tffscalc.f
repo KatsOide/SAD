@@ -12,6 +12,7 @@
       use tfshare
       use tfcsi,only:icslfno
       use macmath
+      use mathfun
       implicit none
 c      include 'DEBUG.inc'
       type (ffs_bound) fbound,ibound
@@ -23,9 +24,8 @@ c      include 'DEBUG.inc'
       real*8 df(maxcond),r,rp,wi,
      $     residual1(-ndimmax:ndimmax)
       logical*4 zcal,wcal,error,parallel
-      external tfloor
       real*8 anux0,anuy0,anux0h,anuy0h,anuxi,anuyi,anuxih,anuyih,
-     $     rw,drw,rstab,tfloor,
+     $     rw,drw,rstab,
      $     anusumi,anusum0,anudiffi,anudiff0
       logical*4 fam,beg,zerores
       integer*4 irw,isw,ipr,ifb,ife,idir,
@@ -663,9 +663,14 @@ c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
       use tfstk
       use ffs_pointer
       use mackw
+      use tmacro, only:nlat
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 lp,k
+      if(lp .ge. nlat)then
+        tffsmarkoffset=0.d0
+        return
+      endif
       call compelc(lp,cmp)
       k=kytbl(kwOFFSET,idtype(cmp%id))
       if(k .gt. 0)then

@@ -14,20 +14,20 @@ OBJMOD= tfstk.o	tfstrbuf.o	tfreadbuf.o	toplvl.o	tintrb.o \
 	tfetok.o	tfbeamline.o	temit.o	tbrad.o	tfloor.o
 
 OBJRC= 	tfefun1.o	tfsort.o	tfmodule.o	itfmaloc.o \
-	tfwrite.o	itfaloc.o	tfmemcheck.o	tfdot.o	tfematrix.o \
+	tfwrite.o	itfaloc.o	tfmemcheck.o	tfdot.o		tfematrix.o \
 	tfconvstr.o	tfpart.o	tfreplace.o	tftake.o	tfeval1.o \
 	tfearray.o	tfeexpr.o	tfsetlist.o	tfeeval.o	tfmap.o	tftable.o \
 	itfdepth.o	tfdset.o	tfsameq.o	itfpmat.o	tmatch.o \
-	gamma.o	tfbessel.o	 spkick.o	tsolqu.o	tsolque.o \
+	gamma.o		tfbessel.o	 spkick.o	tsolqu.o	tsolque.o \
 	tfshared.o	tfinitn.o	tffsa.o
 
 OBJ0= 	italoc.o qcav.o	JNLPRM.o	msolv1.o	prkick.o \
 	prkick1.o	twsdrw.o	tdrwdt.o	msortn.o   tdplt.o     bbstrhl.o bbtool.o \
-      ttdr.o     undulator.o phsrot.o    matrix.o \
-      autofg.o   tffswake.o  tfvectorize.o \
-      itfmessage.o           tffindroot.o spkick.o \
-      autos_.o      gdtoa/g_dfmt.o gdtoa/gdtoa.o gdtoa/g__fmt.o \
-      gdtoa/gmisc.o gdtoa/dmisc.o  gdtoa/misc.o
+	ttdr.o	 undulator.o phsrot.o    matrix.o \
+	autofg.o   tffswake.o  tfvectorize.o \
+	itfmessage.o           tffindroot.o spkick.o \
+	autos_.o      gdtoa/g_dfmt.o gdtoa/gdtoa.o gdtoa/g__fmt.o \
+	gdtoa/gmisc.o gdtoa/dmisc.o  gdtoa/misc.o
 
 OBJ1=ActGRA.o    filbuf.o    pwmatq.o    ActLie.o    \
      msort.o     pwrite.o    ActTra.o    flmgr.o \
@@ -62,8 +62,7 @@ OBJ3=sethtb.o    atof.o      bint.o      skipch.o    tspect.o    mbmp.o       pf
      phdrwa.o    sprlin.o    pinner.o     \
      tfzap.o     ttcav.o     pkill.o \
      ttcave.o    talign.o    tgfun.o      \
-     pmicad.o    tgrot.o     dAssgn.o    \
-     pmovi.o     defflg.o    polpar.o
+     pmicad.o    tgrot.o     dAssgn.o    pmovi.o     defflg.o
 
 OBJ4=defglb.o    ppair.o \
      tinitr.o    doelem.o    pqcell.o    doexpn.o \
@@ -87,7 +86,7 @@ OBJ4=defglb.o    ppair.o \
      mrmb.o      push.o      \
      mrqcof.o    wtune.o \
      expln.o     mrqcov.o    tphplt.o     \
-     fdate1.o    mrqmin.o    putsti.o    xsin.o      datetime.o \
+     fdate1.o    mrqmin.o    putsti.o    datetime.o \
      msolb.o     tdrife.o \
      filaux.o    pvert.o     tprmpt.o    tfgetm.o    tfojit.o    tedrawf.o
 

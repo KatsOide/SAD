@@ -12,10 +12,12 @@
       character(len=64) :: env
       integer :: lpkg, lenv
       integer*8 ktfsymbolc,ktrvaloc,ktcontaloc,
-     $     iaxsys,loc,ktcvaloc,kax,k1,k2,i
-      integer*4 lpw
-      integer*4 lenw,ifromstr
+     $     iaxsys,loc,ktcvaloc,kax,k1,k2,i,kfromr
+      integer*4 lpw,lenw,ifromstr
       call tfinfinit
+      kinfinity=kfromr(dinfinity)
+      kminfinity=kfromr(-dinfinity)
+      knotanumber=kfromr(dnotanumber)
       call tfsinglechar
       levele=1
       itflocal=ktaloc(maxlevele+1)
@@ -131,6 +133,7 @@ c     Physical constant
       kax=ktrvaloc('ProtonMass',prmass)
       kax=ktrvaloc('ProtonRadius',prradi)
       kax=ktrvaloc('BoltzmanConstant',kboltzman)
+      kax=ktrvaloc('ElectronGminus2over2',gspin)
 
       ierrorth=0
       ierrorexp=0

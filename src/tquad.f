@@ -1,36 +1,36 @@
-      subroutine tquad(np,x,px,y,py,z,g,dv,pz,l,al,ak,
+      subroutine tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      1                 dx,dy,theta,cost,sint,radlvl,chro,
      1                 fringe,f1in,f2in,f1out,f2out,mfring,eps0,kin)
       use ffs_flag
       use tmacro
 c      use ffs_pointer, only:inext,iprev
-      use tfstk, only:pxy2dpz,sqrt1
+      use tfstk, only:ktfenanq
+      use mathfun, only:pxy2dpz,sqrt1
+      use tspin
       implicit none
       logical*4 enarad,chro,fringe,kin
-      integer*4 np,l,i,mfring
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np),
-     $     px0(np),py0(np),
+      integer*4 np,i,mfring
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
+     $     px0(np),py0(np),zr0(np),bsi(np),
      $     al,ak,dx,dy,theta,cost,sint,radlvl,eps0,alr,
      $     f1in,f1out,f2in,f2out,p,a,ea,b,pxi,pxf,pyf,xi
+      real*8 sx(np),sy(np),sz(np)
       real*8, parameter :: ampmax=0.9999d0
       if(al .eq. 0.d0)then
-        call tthin(np,x,px,y,py,z,g,dv,pz,4,l,0.d0,ak,
+        call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,4,0.d0,ak,
      $             dx,dy,theta,cost,sint, 1.d0,.false.)
         return
       elseif(ak .eq. 0.d0)then
-        call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
-        return
-      endif
-      enarad=rad .and. radlvl .ne. 1.d0
-      if(trpt .and. enarad)then
-        call tqrad(np,x,px,y,py,z,g,dv,pz,l,al,ak,dx,dy,theta,
-     1             cost,sint,radlvl,f1in,f2in,f1out,f2out,mfring)
+        call tdrift_free(np,x,px,y,py,z,dv,al)
         return
       endif
       include 'inc/TENT.inc'
+      enarad=rad .and. radlvl .ne. 1.d0
       if(enarad)then
         px0=px
         py0=py
+        zr0=z
+        bsi=0.d0
       endif
       if(fringe .and. mfring .gt. -4 .and. mfring .ne. 2)then
         call ttfrin(np,x,px,y,py,z,g,4,ak,al,0.d0)
@@ -52,27 +52,19 @@ c          p=(1.d0+g(i))**2
           py(i)=pyf
 2110    continue
       endif
-c$$$      if(enarad)then
-c$$$        if(iprev(l) .eq. 0)then
-c$$$          f1r=sqrt(abs(24.d0*f1in/ak*al))
-c$$$        else
-c$$$          f1r=0.d0
-c$$$        endif
-c$$$        if(inext(l) .eq. 0)then
-c$$$          f2r=sqrt(abs(24.d0*f1out/ak*al))
-c$$$        else
-c$$$          f2r=0.d0
-c$$$        endif
-c$$$        b1=brho*ak/al
-c$$$        call trad(np,x,px,y,py,g,dv,0.d0,0.d0,
-c$$$     1       b1,0.d0,0.d0,.5d0*al,
-c$$$     $       f1r,f2r,0.d0,al,1.d0)
-c$$$      endif
       if(enarad)then
-        call tsolqur(np,x,px,y,py,z,g,dv,pz,al,ak,
-     $       0.d0,0.d0,0.d0,eps0,px0,py0,alr)
+        if(f1in .ne. 0.d0)then
+          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         px0,py0,zr0,1.d0,0.d0,bsi,f1in)
+        endif
+        px0=px
+        py0=py
+        zr0=z
+        call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       px0,py0,zr0,bsi,al,ak,
+     $       0.d0,0.d0,0.d0,eps0,alr)
       else
-        call tsolqu(np,x,px,y,py,z,g,dv,pz,al,ak,0.d0,0.d0,0.d0,eps0)
+        call tsolqu(np,x,px,y,py,z,g,dv,bsi,al,ak,0.d0,0.d0,0.d0,0,eps0)
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
         do 2120 i=1,np
@@ -94,18 +86,21 @@ c          p=(1.d0+g(i))**2
       if(fringe .and. mfring .gt. -4 .and. mfring .ne. 1)then
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
       endif
-      if(enarad)then
-        call tradk(np,x,px,y,py,px0,py0,g,dv,alr)
+      if(enarad .and. f1out .ne. 0.d0)then
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       px0,py0,zr0,1.d0,0.d0,bsi,f1out)
       endif
       include 'inc/TEXIT.inc'
       return
       end
 c
-      subroutine tthin(np,x,px,y,py,z,g,dv,pz,nord,l,al,ak,
-     1                 dx,dy,theta,cost,sint,radlvl,fringe)
-      use tfstk
+      subroutine tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $     nord,al,ak,
+     1     dx,dy,theta,cost,sint,radlvl,fringe)
       use ffs_flag
       use tmacro
+      use tspin
+      use mathfun
       implicit none
 c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
       integer*4 nmult
@@ -115,9 +110,10 @@ c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
      1           beta =2.23290993692602255d-2,
      1           gamma=9.43738783765593145d-4,
      1           alpha1=.5d0-alpha)
-      integer*4 l,nord,np,kord,i
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
-     $     px0(np),py0(np)
+      integer*4 nord,np,kord,i
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+     $     px0(np),py0(np),zr0(np),bsi(np)
+      real*8 sx(np),sy(np),sz(np)
       real*8 fact(0:nmult)
       real*8 theta,sint,cost,dx,dy,al,ak,
      $     ala,alb,aki,akf,dpz,al1,radlvl,
@@ -136,19 +132,21 @@ c     begin initialize for preventing compiler warning
       aki=0.d0
 c     end   initialize for preventing compiler warning
       if(ak .eq. 0.d0)then
-        call tdrift_free(np,x,px,y,py,z,g,dv,pz,al)
+        call tdrift_free(np,x,px,y,py,z,dv,al)
         return
       endif
       enarad=rad .and. radlvl .eq. 0.d0 .and. al .ne. 0.d0
-      if(enarad .and. trpt .and. rfluct)then
-        call tthinrad(np,x,px,y,py,z,g,dv,pz,nord,l,al,ak,
-     1                 dx,dy,theta,cost,sint,fringe)
-        return
-      endif
+c      if(enarad .and. trpt .and. rfluct)then
+c        call tthinrad(np,x,px,y,py,z,g,dv,sx,sy,sz,nord,l,al,ak,
+c     1                 dx,dy,theta,cost,sint,fringe)
+c        return
+c      endif
       include 'inc/TENT.inc'
       if(enarad)then
         px0=px
         py0=py
+        zr0=z
+        bsi=0.d0
       endif
       if(fringe)then
         call ttfrin(np,x,px,y,py,z,g,nord,ak,al,0.d0)
@@ -344,24 +342,26 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
         call ttfrin(np,x,px,y,py,z,g,nord,-ak,al,0.d0)
       endif
       if(enarad)then
-        call tradk(np,x,px,y,py,px0,py0,g,dv,al)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       px0,py0,zr0,1.d0,0.d0,bsi,al)
       endif
       include 'inc/TEXIT.inc'
       return
       end
 c
-      subroutine tthinrad(np,x,px,y,py,z,g,dv,pz,nord,l,al,ak,
+      subroutine tthinrad(np,x,px,y,py,z,g,dv,sx,sy,sz,nord,l,al,ak,
      1                 dx,dy,theta,cost,sint,fringe)
-      use tfstk
       use ffs_flag
       use tmacro
+      use mathfun
       implicit none
       integer*4 nmult,n,ndivmax
       parameter (nmult=21)
       real*8 ampmax,eps00
       parameter (ampmax=0.05d0,eps00=0.005d0,ndivmax=1000)
       integer*4 l,np,i,kord,ndiv,nord
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+     $     sx(np),sy(np),sz(np)
       real*8 fact(0:nmult)
       real*8 dx,dy,theta,cost,sint,an,sp,akfl,akf,alsum,aln,
      $     al0,pr,thr,alx,al1,aki,dpx,dpy,alr,prob,bxa,bya,
@@ -681,5 +681,17 @@ c        p=(1.d0+g(i))**2
         x(i)=xf
         y(i)=yf
       enddo
+      return
+      end
+
+      subroutine zcheck(x,tag)
+      implicit none
+      real*8 x
+      character*(*) tag
+      write(*,*)'zcheck-0 ',tag
+      if(x .ne. 0.d0)then
+        write(*,*)'zcheck-x ',x
+        stop
+      endif
       return
       end

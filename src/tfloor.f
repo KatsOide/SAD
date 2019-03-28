@@ -1,6 +1,15 @@
-      real*8 function tfloor(x)
+      module cfunc
       implicit none
-      real*8 x
+      integer*4 :: icrtc=0
+      end module
+
+      module mathfun
+      use cfunc
+
+      contains
+      real*8 pure function tfloor(x)
+      implicit none
+      real*8 ,intent(in)::x
       tfloor=aint(x+1.d-15)
       if(x .lt. 0.d0 .and. x .ne. tfloor)then
         tfloor=tfloor-1.d0
@@ -8,17 +17,16 @@
       return
       end
 
-      complex*16 function tcfloor(z)
+      complex*16 pure function tcfloor(z)
       implicit none
-      real*8 tfloor
-      complex*16 z
+      complex*16 ,intent(in)::z
       tcfloor=dcmplx(tfloor(dble(z)),tfloor(imag(z)))
       return
       end
 
-      real*8 function tceiling(x)
+      real*8 pure function tceiling(x)
       implicit none
-      real*8 x
+      real*8 ,intent(in)::x
       tceiling=-aint(-x+1.d-15)
       if(x .gt. 0.d0 .and. x .ne. tceiling)then
         tceiling=1.d0+tceiling
@@ -26,32 +34,30 @@
       return
       end
 
-      complex*16 function tcceiling(z)
+      complex*16 pure function tcceiling(z)
       implicit none
-      real*8 tceiling
-      complex*16 z
+      complex*16 ,intent(in)::z
       tcceiling=dcmplx(tceiling(dble(z)),tceiling(imag(z)))
       return
       end
 
-      real*8 function tround(x)
+      real*8 pure function tround(x)
       implicit none
-      real*8 x
+      real*8 ,intent(in)::x
       tround=sign(aint(abs(x)+0.5d0),x)
       return
       end
 
-      complex*16 function tcround(z)
+      complex*16 pure function tcround(z)
       implicit none
-      real*8 tround
-      complex*16 z
+      complex*16 ,intent(in)::z
       tcround=dcmplx(tround(dble(z)),tround(imag(z)))
       return
       end
 
-      real*8 function tfevenq(x)
+      real*8 pure function tfevenq(x)
       implicit none
-      real*8 x
+      real*8 ,intent(in)::x
       if(x*.5d0 .eq. aint(x*.5d0))then
         tfevenq=1.d0
       else
@@ -60,57 +66,57 @@
       return
       end
 
-      real*8 function tfoddq(x)
+      real*8 pure function tfoddq(x)
       implicit none
-      real*8 x,tfevenq
+      real*8 ,intent(in)::x
       tfoddq=tfevenq(x+1.d0)
       return
       end
 
-      complex*16 function tfcevenq(z)
+      complex*16 pure function tfcevenq(z)
       implicit none
-      complex*16 z
-      real*8 tfevenq
+      complex*16 ,intent(in)::z
       tfcevenq=dcmplx(tfevenq(dble(z)),tfevenq(imag(z)))
       return
       end
 
-      complex*16 function tfcoddq(z)
+      complex*16 pure function tfcoddq(z)
       implicit none
-      complex*16 z
-      real*8 tfoddq
+      complex*16 ,intent(in)::z
       tfcoddq=dcmplx(tfoddq(dble(z)),tfoddq(imag(z)))
       return
       end
 
-      complex*16 function tcsinh(z)
+      complex*16 pure function tcsinh(z)
       implicit none
-      complex*16 z,z1
+      complex*16 ,intent(in)::z
+      complex*16 z1
       z1=dcmplx(-imag(z),dble(z))
       tcsinh=sin(z1)
       tcsinh=dcmplx(imag(tcsinh),-dble(tcsinh))
       return
       end
 
-      complex*16 function tccosh(z)
+      complex*16 pure function tccosh(z)
       implicit none
-      complex*16 z
+      complex*16 ,intent(in)::z
       tccosh=cos(dcmplx(-imag(z),dble(z)))
       return
       end
 
-      complex*16 function tctanh(z)
+      complex*16 pure function tctanh(z)
       implicit none
-      complex*16 z,z1
+      complex*16 ,intent(in)::z
+      complex*16 z1
       z1=dcmplx(-imag(z),dble(z))
       tctanh=sin(z1)/cos(z1)
       tctanh=dcmplx(imag(tctanh),-dble(tctanh))
       return
       end
 
-      complex*16 function tcatan(z)
+      complex*16 pure function tcatan(z)
       implicit none
-      complex*16 z
+      complex*16 ,intent(in)::z
       if(dble(z) .eq. 0.d0)then
         tcatan=dcmplx(0.d0,atanh(dimag(z)))
       else
@@ -122,11 +128,11 @@
       return
       end
 
-      complex*16 function tcatan2(z1,z)
+      complex*16 pure function tcatan2(z1,z)
       implicit none
       real*8 pih
       parameter (pih=3.1415926535897932385d0*0.5d0)
-      complex*16 z,z1,tcatan
+      complex*16 ,intent(in)::z,z1
       if(z .eq. (0.d0,0.d0))then
         if(dble(z1) .eq. 0.d0)then
           if(imag(z1) .eq. 0.d0)then
@@ -143,53 +149,128 @@
       return
       end
 
-      complex*16 function tcasin(z)
+      complex*16 pure function tcasin(z)
       implicit none
-      complex*16 z,z1
+      complex*16 ,intent(in)::z
+      complex*16 z1
       z1=sqrt(1.d0-z**2)+(0.d0,1.d0)*z
       tcasin=dcmplx(atan2(imag(z1),dble(z1)),
      $     -.5d0*log(dble(z1)**2+imag(z1)**2))
       return
       end
 
-      complex*16 function tcacos(z)
+      complex*16 pure function tcacos(z)
       implicit none
-      complex*16 z,z1
+      complex*16 ,intent(in)::z
+      complex*16 z1
       z1=sqrt(1.d0-z**2)+(0.d0,1.d0)*z
       tcacos=dcmplx(atan2(dble(z1),imag(z1)),
      $     .5d0*log(dble(z1)**2+imag(z1)**2))
       return
       end
 
-      complex*16 function tcasinh(z)
+      complex*16 pure function tcasinh(z)
       implicit none
-      complex*16 z,z1,tcasin
+      complex*16 ,intent(in)::z
+      complex*16 z1
       z1=dcmplx(-imag(z),dble(z))
       z1=tcasin(z1)
       tcasinh=dcmplx(imag(z1),-dble(z1))
       return
       end
 
-      complex*16 function tcacosh(z)
+      complex*16 pure function tcacosh(z)
       implicit none
-      complex*16 z,z1,tcacos
+      complex*16 ,intent(in)::z
+      complex*16 z1
       z1=tcacos(z)
       tcacosh=dcmplx(imag(z1),-dble(z1))
       return
       end
 
-      complex*16 function tcatanh(z)
+      complex*16 pure function tcatanh(z)
       implicit none
-      complex*16 z,z1,tcatan
+      complex*16 ,intent(in)::z
+      complex*16 z1
       z1=dcmplx(-imag(z),dble(z))
       z1=tcatan(z1)
       tcatanh=dcmplx(imag(z1),-dble(z1))
       return
       end
 
-      complex*16 function tcxsin(x)
+      real*8 pure function xsin(x)
       implicit none
-      complex*16 x,x2
+      real*8 ,intent(in)::x
+      real*8 x2
+      if(abs(x) .gt. .1d0)then
+        xsin=x-sin(x)
+      else
+        x2=x**2
+        xsin=x*x2/6.d0*(1.d0-x2/20.d0*(1.d0-x2/42.d0*(
+     1       1.d0-x2/72.d0*(1.d0-x2/110.d0))))
+      endif
+      return
+      end
+
+      real*8 pure function xsinh(x)
+      implicit none
+      real*8 ,intent(in)::x
+      real*8 x2
+      if(abs(x) .gt. .1d0)then
+        xsinh=x-sinh(x)
+      else
+        x2=x**2
+        xsinh=-x*x2/6.d0*(1.d0+x2/20.d0*(1.d0+x2/42.d0*(
+     1       1.d0+x2/72.d0*(1.d0+x2/110.d0))))
+      endif
+      return
+      end
+
+      real*8 pure function xlog(x)
+      implicit none
+      real*8 ,intent(in)::x
+      if(abs(x) .gt. 1.d-2)then
+        xlog=log(1.d0+x)
+      else
+        xlog=x*(1.d0-x*(.5d0-x*(1.d0/3.d0
+     1      -x*(.25d0-x*(.2d0-x*(1.d0/6.d0
+     1      -x*(1.d0/7.d0-x*(.125d0-x/9.d0))))))))
+      endif
+      return
+      end
+
+      real*8 pure function sinc(x)
+      implicit none
+      real*8 ,intent(in)::x
+      real*8 x2
+      if(abs(x) .gt. .1d0)then
+        sinc=x*cos(x)-sin(x)
+      else
+        x2=x**2
+        sinc=-x*x2/6.d0*(2.d0-x2/20.d0*(4.d0-x2/42.d0*(
+     1       6.d0-x2/72.d0*(8.d0-x2/11.d0))))
+      endif
+      return
+      end
+
+      real*8 pure function sinhc(x)
+      implicit none
+      real*8 ,intent(in)::x
+      real*8 x2
+      if(abs(x) .gt. .1d0)then
+        sinhc=x*cosh(x)-sinh(x)
+      else
+        x2=x**2
+        sinhc=x*x2/6.d0*(2.d0+x2/20.d0*(4.d0+x2/42.d0*(
+     1       6.d0+x2/72.d0*(8.d0+x2/11.d0))))
+      endif
+      return
+      end
+
+      complex*16 pure function tcxsin(x)
+      implicit none
+      complex*16 ,intent(in)::x
+      complex*16 x2
       if(abs(x) .gt. .1d0)then
         tcxsin=x-sin(x)
       else
@@ -199,6 +280,138 @@
       endif
       return
       end
+
+      complex*16 pure function ccdabs(c)
+      implicit none
+      complex*16 ,intent(in)::c
+      ccdabs=dcmplx(abs(c),0.d0)
+      return
+      end
+
+      real*8 pure function tfsign(x)
+      implicit none
+      real*8 ,intent(in)::x
+      if(x .gt. 0.d0)then
+        tfsign=1.d0
+      elseif(x .eq. 0.d0)then
+        tfsign=0.d0
+      else
+        tfsign=-1.d0
+      endif
+      return
+      end
+
+      complex*16 pure function tfcsign(cx)
+      implicit none
+      complex*16 ,intent(in)::cx
+      if(cx .eq. (0.d0,0.d0))then
+        tfcsign=0.d0
+      else
+        tfcsign=cx/abs(cx)
+      endif
+      return
+      end
+
+      real*8 pure function tfarg(x)
+      implicit none
+      real*8 ,intent(in)::x
+      if(x .ge. 0.d0)then
+        tfarg=0.d0
+      else
+        tfarg=asin(1.d0)*2.d0
+      endif
+      return
+      end
+
+      complex*16 pure function tfcarg(z)
+      implicit none
+      complex*16 ,intent(in)::z
+      tfcarg=imag(log(z))
+      return
+      end
+
+      complex*16 function tfdummy(c)
+      use cfunc
+      implicit none
+      complex*16 ,intent(in)::c
+      icrtc=-1
+      tfdummy=(0.d0,0.d0)
+      return
+      end
+
+      real*8 function sqrtl(x)
+      implicit none
+      real*8 x
+      real*8 ,parameter :: am=1.d-20
+      sqrtl=sqrt(max(x,am))
+      return
+      end function
+
+
+      real*8 pure function p2h(p)
+      implicit none
+      real*8, intent(in) :: p
+      real*8 p2
+      real*8, parameter:: pth=1.d3;
+      if(p .gt. pth)then
+        p2=1.d0/p**2
+        p2h=p*(1.d0+p2*(0.5d0-p2*.125d0))
+      else
+        p2h=sqrt(1.d0+p**2)
+      endif
+      return
+      end function
+
+      real*8 pure function h2p(h)
+      implicit none
+      real*8, intent(in) :: h
+      real*8 h2
+      real*8, parameter:: hth=1.d3;
+      if(h .gt. hth)then
+        h2=-1.d0/h**2
+        h2p=h*(1.d0+h2*(0.5d0-h2*.125d0))
+      else
+        h2p=sqrt(h**2-1.d0)
+      endif
+      return
+      end function
+
+      real*8 pure elemental function pxy2dpz(px,py)
+      implicit none
+      real*8, intent(in) :: px,py
+      real*8 x
+      real*8, parameter:: xth=1.d-6,xmin=1.d-100
+      x=px**2+py**2
+      if(x .lt. xth)then
+        pxy2dpz=-x*(0.5d0+x*(0.125d0+x*0.0625d0))
+      else
+        pxy2dpz=-x/(1.d0+sqrt(max(xmin,1.d0-x)))
+      endif
+      return
+      end function
+
+      real*8 pure elemental function sqrt1(x)
+      implicit none
+      real*8, intent(in) :: x
+      real*8, parameter:: xth=1.d-6,xmin=1.d-100
+      if(abs(x) .lt. xth)then
+        sqrt1=x*(0.5d0-x*(0.125d0-x*0.0625d0))
+      else
+        sqrt1=x/(1.d0+sqrt(max(xmin,1.d0+x)))
+      endif
+      return
+      end function
+
+      real*8 pure elemental function sqrt1n(x)
+      implicit none
+      real*8, intent(in) :: x
+      sqrt1n=x*(0.5d0-x*(0.125d0-x*0.0625d0))
+      sqrt1n=(sqrt1n**2+x)/(2.d0+2.d0*sqrt1n)
+      sqrt1n=(sqrt1n**2+x)/(2.d0+2.d0*sqrt1n)
+      return
+      end function
+
+      end module
 
       subroutine tfmod(isp1,kx,mode,irtc)
       use tfstk
@@ -228,14 +441,15 @@
       recursive subroutine tfmodf(k1,k2,kx,mode,irtc)
       use iso_c_binding
       use tfstk
+      use mathfun
       implicit none
       type (sad_descriptor) k1,k2,kx
       type (sad_dlist), pointer :: klx,kl1,kl2
       type (sad_rlist), pointer :: klr
       integer*8 ka1,ka2
       integer*4 irtc,i,n1,n2,itfmessage,isp0,isp2,mode
-      real*8 v1,v2,vx,tfloor
-      complex*16 c1,c2,cx,tcfloor
+      real*8 v1,v2,vx
+      complex*16 c1,c2,cx
 c     begin initialize for preventing compiler warning
       cx=0.d0
       vx=0.d0
@@ -636,56 +850,7 @@ c     $       '"Real or List of Reals"')
       endif
       return
       end
-
-      complex*16 function ccdabs(c)
-      implicit none
-      complex*16 c
-      ccdabs=dcmplx(abs(c),0.d0)
-      return
-      end
-
-      real*8 function tfsign(x)
-      implicit none
-      real*8 x
-      if(x .gt. 0.d0)then
-        tfsign=1.d0
-      elseif(x .eq. 0.d0)then
-        tfsign=0.d0
-      else
-        tfsign=-1.d0
-      endif
-      return
-      end
-
-      complex*16 function tfcsign(cx)
-      implicit none
-      complex*16 cx
-      if(cx .eq. (0.d0,0.d0))then
-        tfcsign=0.d0
-      else
-        tfcsign=cx/abs(cx)
-      endif
-      return
-      end
-
-      real*8 function tfarg(x)
-      implicit none
-      real*8 x
-      if(x .ge. 0.d0)then
-        tfarg=0.d0
-      else
-        tfarg=asin(1.d0)*2.d0
-      endif
-      return
-      end
-
-      complex*16 function tfcarg(z)
-      implicit none
-      complex*16 z
-      tfcarg=imag(log(z))
-      return
-      end
-
+      
       integer*4 function itfsyserr(level)
       implicit none
       character*132 string
@@ -701,20 +866,6 @@ c     $       '"Real or List of Reals"')
       l=len_trim(string)
  10   itfsyserr=itfmessage(level,'System::error',
      $     '"'//string(1:l)//'"')
-      return
-      end
-
-      module cfunc
-      implicit none
-      integer*4 :: icrtc=0
-      end module
-
-      complex*16 function tfdummy(c)
-      use cfunc
-      implicit none
-      complex*16 c
-      icrtc=-1
-      tfdummy=(0.d0,0.d0)
       return
       end
 

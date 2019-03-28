@@ -3,6 +3,7 @@
             use tfstk
       use ffs
       use tffitcode
+      use mathfun
       implicit none
       integer*4 iv,i
       real*8 utwiss(ntwissfun),al,phib0,phi0,psi1,psi2,ak,
@@ -12,7 +13,7 @@
      $     xcs,drho,dx1,dpx1,xd,t11,t12,t21,t16,t33,t34,b11,b12,
      $     b21,b16,b26,a11,a12,a16,a21,a22,a26,a33,a34,a36,a43,
      $     a44,a46,chphix,chphiy,csphiy,ddrho,dk1,dk2,dphiy,
-     $     scphiy,u,shphix,shphiy,x,y,ycs,sinc,sinhc,snphiy
+     $     scphiy,u,shphix,shphiy,x,y,ycs,snphiy
       real*8  dtrans(4,5),dcod(6),cod(6)
       if(al .eq. 0.d0)then
 c        write(*,*)' QDBTHI Not installed yet.'

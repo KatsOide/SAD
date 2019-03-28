@@ -273,7 +273,7 @@ c          go to 1010
      $             +cmp%value(ky_FB2_BEND)
             endif
             dtheta=cmp%value(ky_DROT_BEND)
-            theta0=cmp%value(ky_ROT_BEND)+dtheta
+            theta0=cmp%value(ky_ROT_BEND)
             cod1=cod
             call qbend(trans,cod,al,
      $           cmp%value(ky_ANGL_BEND)+cmp%value(ky_K0_BEND),
@@ -302,7 +302,9 @@ c          go to 1010
      $           cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $           ftable(1),ftable(2),ftable(3),ftable(4),
      $           mfr,cmp%value(ky_EPS_QUAD),
-     $           cmp%value(ky_KIN_QUAD) .eq. 0.d0,coup)
+     $           cmp%value(ky_KIN_QUAD) .eq. 0.d0,
+     $           cmp%value(ky_CHRO_QUAD) .ne. 0.d0,
+     $           coup)
             go to 20
 
           case (icSEXT, icOCTU, icDECA, icDODECA)
@@ -808,8 +810,9 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       implicit none
       type (ffs_bound) fbound
       real*8 conv,cx,sx,ax,bx,cy,sy,ay,by,r0,dcod(6)
-      integer*4 , parameter :: itmax=15
-      real*8 , parameter :: conv0=1.d-19,conv1=1.d-10
+      integer*4 , parameter :: itmax=30
+      real*8 , parameter :: conv0=1.d-19,conv1=1.d-10,
+     $     factmin=1.d-3
       integer*4 idp,it
       real*8 r,fact
       real*8 trans(4,5),cod(6),cod0(6),trans1(4,5),transb(4,5),
@@ -868,6 +871,8 @@ c          enddo
         else
           trans=trans2
         endif
+        call resetnan(cod,1.d300)
+c        write(*,'(a,1p6g15.7)')'qcod ',cod
         if(.not. orbitcal)then
           codfnd=.true.
         endif
@@ -908,15 +913,23 @@ c          endif
         dcod=cod-cod0
         r=dcod(1)**2/bx+bx*(dcod(2)+ax/bx*dcod(1))**2
      $       +dcod(3)**2/by+by*(dcod(4)+ay/by*dcod(3))**2
+        if(ktfenanq(r))then
+          r=1.d300
+        endif
         if(r .le. conv)then
           codfnd=.true.
           return
         endif
-c        write(*,'(a,i5,1p6g14.6)')'qcod ',it,r,r0,cod0(1:4)
+c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
         it=it+1
         if(r .gt. r0)then
-          cod0=(1.d0-fact)*cod00+fact*cod0
-          fact=fact*.5d0
+          if(fact .lt. factmin)then
+            fact=fact*16.d0
+            cod0=(1.d0+fact)*cod00-fact*cod0
+          else
+            cod0=(1.d0-fact)*cod00+fact*cod0
+            fact=abs(fact)*.5d0
+          endif
         else
           fact=min(0.5d0,fact*2.d0)
           r0=r
@@ -937,6 +950,7 @@ c        write(*,'(a,i5,1p6g14.6)')'qcod ',it,r,r0,cod0(1:4)
           call tsolvg(trans1,cod,cod0,4,4,4)
         endif
       enddo
+      cod=cod0
       codfnd=.false.
       return
       end
@@ -952,7 +966,7 @@ c        write(*,'(a,i5,1p6g14.6)')'qcod ',it,r,r0,cod0(1:4)
       type (sad_comp) , pointer :: cmp
       integer*4 l,nvar,le,itfdownlevel,irtc
       real*8 fr,ftwiss(ntwissfun),trans(6,6),cod(6),gr,sgr,sgr2,gr1,
-     $     tw1(ntwissfun),ri(6,6),beam(21)
+     $     tw1(ntwissfun),ri(6,6),beam(21),srot(3,9)
       logical*4 over,sol,rt,chg,cp0,normal
       if(calc6d)then
         cp0=codplt
@@ -971,7 +985,7 @@ c        write(*,'(a,i5,1p6g14.6)')'qcod ',it,r,r0,cod0(1:4)
           cod=tw1(mfitdx:mfitddp)
           call etwiss2ri(tw1,ri,normal)
           call tinv6(ri,trans)
-          call tturne1(trans,cod,beam,
+          call tturne1(trans,cod,beam,srot,
      $         int8(0),int8(0),int8(0),0,
      $         .false.,sol,rt,.true.,l,l)
         endif

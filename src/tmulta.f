@@ -1,46 +1,30 @@
-      module multa
-        integer*4, parameter :: nmult=21
-        logical*4 :: gknini=.true.
-        real*8 :: gkn(0:nmult,0:nmult)=0.d0
-
-        contains
-        subroutine gkninit
-        implicit none
-        integer*4 n,k
-        do n=0,nmult
-          gkn(n,0)=1.d0
-          do k=1,nmult-n
-            gkn(n,k)=gkn(n,k-1)
-     $           *dble((2*k-3)*(2*k+1))/8.d0/dble(k*(k+n+1))
-          enddo
-        enddo
-        gknini=.false.
-        return
-        end subroutine
-      end module
-
       subroutine tmulta(
-     $     np,x,px,y,py,z,g,dv,pz,l,al,ak0,phi,
+     $     np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,ak0,phi,
      $     psi1,psi2,bz,
      1     dx,dy,theta,dtheta,
      $     eps0,enarad,fb1,fb2,mfring,fringe)
-      use tfstk
+      use ffs_flag, only:rad,ndivrad
       use tmacro
       use multa
+      use tbendcom, only:tbrot
+      use tspin, only:tradke      
+      use mathfun
       implicit none
       integer*4 ndivmax
       real*8 ampmax,eps00
       parameter (ampmax=0.05d0,eps00=0.005d0,ndivmax=2000)
       integer*4 np,mfring,i,n,mfr,ndiv,nmmax,m,m1,k,nmmin,l
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),pz(np),
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+     $     px0(np),py0(np),zr0(np),bsi(np),
      $     al,phi,psi1,psi2,bz,dx,dy,theta,eps0,fb1,fb2,
-     $     dphix,dphiy,dtheta,pr,cost,sint,rho0,rhob,
+     $     dtheta,pr,cost,sint,rho0,rhob,
      $     sinp1,sinp2,cosp1,cosp2,phin,aln,cosw,sinw,sqwh,sinwp1,
      $     eps,xi,pxi,w,r,rk(0:nmult),als,ak0r,ak1r,ak1n,
-     $     phib,phibn
+     $     phib,phibn,an(0:nmult+1)
+      real*8 sx(np),sy(np),sz(np)
       complex*16 ak0(0:nmult),ak(0:nmult),akn(0:nmult),
-     $     cx1,csl,csr,cl,cr,cg
-      logical*4 enarad,fringe
+     $     cx1,csl,csr,cl,cr,cg,cx
+      logical*4 enarad,fringe,krad
       real*8 fact(0:nmult+1)
       data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
      1     720.d0,     5040.d0,     40320.d0,362880.d0,3628800.d0,
@@ -49,6 +33,28 @@
      $     6402373705728000.d0,121645100408832000.d0,
      $     2432902008176640000.d0,51090942171709440000.d0,
      $     1124000727777607680000.d0/
+      data an/1.d0,1.d0,
+     $0.5d0,
+     $0.33333333333333333333d0,
+     $0.25d0,
+     $0.2d0,
+     $0.166666666666666666667d0,
+     $0.142857142857142857143d0,
+     $0.125d0,
+     $0.111111111111111111111d0,
+     $0.1d0,
+     $0.090909090909090909091d0,
+     $0.083333333333333333333d0,
+     $0.076923076923076923077d0,
+     $0.071428571428571428571d0,
+     $0.066666666666666666667d0,
+     $0.0625d0,
+     $0.058823529411764705882d0,
+     $0.055555555555555555556d0,
+     $0.052631578947368421053d0,
+     $0.05d0,
+     $0.047619047619047619048d0,
+     $0.045454545454545454545d0/
       if(bz .ne. 0.d0)then
         write(*,*)
      $       'MULT with nonzero ANGLE and BZ is not yet supported.'
@@ -57,20 +63,11 @@
       if(gknini)then
         call gkninit
       endif
-      cost=cos(theta+dtheta)
-      sint=sin(theta+dtheta)
+      cost=cos(theta)
+      sint=sin(theta)
       include 'inc/TENT.inc'
       if(dtheta .ne. 0.d0)then
-        dphix=phi*sin(.5d0*dtheta)**2
-        dphiy=.5d0*phi*sin(dtheta)
-        do i=1,np
-          pr=1.d0+g(i)
-          px(i)=px(i)+dphix/pr
-          py(i)=py(i)+dphiy/pr
-        enddo
-      else
-        dphix=0.d0
-        dphiy=0.d0
+        call tbrot(np,x,px,y,py,z,sx,sy,sz,phi,dtheta)
       endif
       if(eps0 .eq. 0.d0)then
         eps=eps00
@@ -101,6 +98,11 @@
         ndiv=max(ndiv,
      $int(sqrt(ampmax**(n-1)/6.d0/fact(n-1)/eps*abs(ak(n)*al)))+1)
       enddo
+      phib=phi+ak0r
+      krad=rad .and. enarad
+      if(krad)then
+        ndiv=max(ndiv,ndivrad(phib,ak1r,0.d0,eps0))
+      endif
       ndiv=min(ndivmax,ndiv)
       aln=al/ndiv
       if(fb1 .ne. 0.d0)then
@@ -111,7 +113,6 @@
         aln=aln-(phi*fb2)**2/al/48.d0
      1       *sin(.5d0*(phi-psi1-psi2))/sin(.5d0*phi)/ndiv
       endif
-      phib=phi+ak0r
       rho0=al/phi
       rhob=al/phib
       phin=phi/ndiv
@@ -125,6 +126,12 @@
         akn(m)=ak(m)/(fact(m+1)*ndiv)
       enddo
       als=0.d0
+      if(krad)then
+        px0=px
+        py0=py
+        zr0=z
+        bsi=0.d0
+      endif
       do n=1,ndiv
 c        write(*,*)'tmulta-1 ',n,x(1),px(1)
         if(n .eq. 1)then
@@ -143,13 +150,25 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
           elseif(mfring .ne. 0)then
             mfr=-1
           endif
+          if(krad)then
+            do i=1,np
+              cx1=dcmplx(x(i),y(i))
+              cx=0.d0
+              do k=nmmax,2,-1
+                cx=(cx+ak(k))*cx1*an(k+1)
+              enddo
+              cx=.5d0*cx*cx1**2
+              bsi(i)=imag(cx)/al
+            enddo
+          endif
           als=aln*.5d0
-          call tbend(np,x,px,y,py,z,g,dv,pz,l,aln*.5d0,
-     $         phibn*.5d0,phin*.5d0,
+          call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         px0,py0,zr0,bsi,
+     $         l,als,phibn*.5d0,phin*.5d0,
      1         cosp1,sinp1,1.d0,0.d0,
-     1         ak1n,0.d0,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
+     1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $         fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
-     1         enarad,0.d0,als,al,eps0)
+     1         enarad,eps0,.false.)
           w=phin
           cosw=cos(w)
           sinw=sin(w)
@@ -160,15 +179,15 @@ c        write(*,*)'tmulta-1 ',n,x(1),px(1)
           endif
           sinwp1=sinw
         else
-          call tbend(np,x,px,y,py,z,g,dv,pz,l,aln,
-     $         phibn,phin,
+          call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         px0,py0,zr0,bsi,
+     $         l,aln,phibn,phin,
      1         1.d0,0.d0,1.d0,0.d0,
-     1         ak1n,0.d0,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
+     1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $         0.d0,0.d0,0,.false.,cosw,sinw,sqwh,sinwp1,
-     1         enarad,als,als+aln,al,eps0)
+     1         enarad,eps0,.false.)
           als=als+aln
         endif
-c        write(*,*)'tmulta-2 ',n,x(1),px(1)
         do i=1,np
           pr=(1.d0+g(i))
           cx1=dcmplx(x(i),y(i))
@@ -194,6 +213,11 @@ c        write(*,*)'tmulta-2 ',n,x(1),px(1)
           px(i)=px(i)-(dble(csr*cx1)/r+dble(csl))/pr
           py(i)=py(i)+imag(csl)/pr
         enddo
+        if(krad)then
+          px0=px
+          py0=py
+          zr0=z
+        endif
       enddo
       w=phin*.5d0-psi2
       cosw=cos(w)
@@ -210,36 +234,45 @@ c        write(*,*)'tmulta-2 ',n,x(1),px(1)
       elseif(mfring .ne. 0)then
         mfr=-2
       endif
-      call tbend(np,x,px,y,py,z,g,dv,pz,l,aln*.5d0,
-     $     phibn*.5d0,phin*.5d0,
-     1     1.d0,0.d0,cosp2,sinp2,
-     1     ak1n,0.d0,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
-     $     fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
-     1     enarad,als,al,al,eps0)
-      if(dtheta .ne. 0.d0)then
+      if(krad)then
         do i=1,np
-          pr=(1.d0+g(i))
-          px(i)=px(i)+dphix/pr
-          py(i)=py(i)+dphiy/pr
+          cx1=dcmplx(x(i),y(i))
+          cx=0.d0
+          do k=nmmax,2,-1
+            cx=(cx+ak(k))*cx1*an(k+1)
+          enddo
+          cx=.5d0*cx*cx1**2
+          bsi(i)=-imag(cx)/al
         enddo
+      endif
+      call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $     px0,py0,zr0,bsi,
+     $     l,aln*.5d0,phibn*.5d0,phin*.5d0,
+     1     1.d0,0.d0,cosp2,sinp2,
+     1     ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
+     $     fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
+     1     enarad,eps0,.false.)
+      if(dtheta .ne. 0.d0)then
+        call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi,-dtheta)
       endif
       include 'inc/TEXIT.inc'
       return
       end
 
-      subroutine tmultae(trans,cod,beam,al,ak0,
+      subroutine tmultae(trans,cod,beam,srot,al,ak0,
      $     phi,psi1,psi2,apsi1,apsi2,bz,
      1     dx,dy,theta,dtheta,
-     $     eps0,enarad,fringe,fb1,fb2,mfring,l,ld)
+     $     eps0,enarad,fringe,fb1,fb2,mfring,l)
       use tfstk
       use tmacro
       use multa
+      use tspin, only:tradke      
       implicit none
       integer*4 ndivmax
       real*8 ampmax,eps00
       parameter (ampmax=0.05d0,eps00=0.005d0,ndivmax=2000)
-      integer*4 mfring,n,mfr,ndiv,nmmax,m,m1,k,nmmin,ld,l
-      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),
+      integer*4 mfring,n,mfr,ndiv,nmmax,m,m1,k,nmmin,l
+      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,9),
      $     al,phi,psi1,psi2,bz,dx,dy,theta,eps0,fb1,fb2,
      $     dphix,dphiy,dtheta,rho0,
      $     phin,aln,eps,r,rk(0:nmult),apsi1,apsi2,
@@ -264,7 +297,8 @@ c        write(*,*)'tmulta-2 ',n,x(1),px(1)
       if(gknini)then
         call gkninit
       endif
-      call tchge(trans,cod,beam,-dx,-dy,theta+dtheta,.true.,ld)
+      call tchge(trans,cod,beam,srot,
+     $     -dx,-dy,theta,dtheta,phi,.true.)
       if(dtheta .ne. 0.d0)then
         dphix=      phi*sin(.5d0*dtheta)**2
         dphiy= .5d0*phi*sin(dtheta)
@@ -334,15 +368,15 @@ c        write(*,*)'tmulta-2 ',n,x(1),px(1)
           elseif(mfring .ne. 0)then
             mfr=-1
           endif
-          call tbende(trans,cod,beam,aln*.5d0,phibn*.5d0,phin*.5d0,
+          call tbende(trans,cod,beam,srot,aln*.5d0,phibn*.5d0,phin*.5d0,
      $         psi1n,0.d0,apsi1,0.d0,ak1n*.5d0,
      $         0.d0,0.d0,0.d0,0.d0,
-     1         fb1,fb2,mfr,fringe,eps0,enarad,.false.,.false.,l,ld)
+     1         fb1,fb2,mfr,fringe,eps0,enarad,.false.,.false.,l)
         else
-          call tbende(trans,cod,beam,aln,phibn,phin,
+          call tbende(trans,cod,beam,srot,aln,phibn,phin,
      $         0.d0,0.d0,0.d0,0.d0,ak1n,
      $         0.d0,0.d0,0.d0,0.d0,
-     1         0.d0,0.d0,0,.false.,eps0,enarad,.false.,.false.,l,ld)
+     1         0.d0,0.d0,0,.false.,eps0,enarad,.false.,.false.,l)
         endif
         cx1=dcmplx(cod(1),cod(3))
         csl=(0.d0,0.d0)
@@ -383,6 +417,9 @@ c        write(*,*)'tmulta-2 ',n,x(1),px(1)
           else
             csxy=csxy+cxy
           endif
+          if(enarad)then
+            call tradke(trans,cod,beam,srot,aln,0.d0,0.d0)
+          endif
         enddo
 c        write(*,*)'tmultae ',dble(csr*cx1)/r,dble(csl),nmmin
         cod(2)=cod(2)-(dble(csr*cx1)/r+dble(csl))
@@ -400,14 +437,15 @@ c        write(*,*)'tmultae ',dble(csr*cx1)/r,dble(csl),nmmin
       elseif(mfring .ne. 0)then
         mfr=-2
       endif
-      call tbende(trans,cod,beam,aln*.5d0,phibn*.5d0,phin*.5d0,
+      call tbende(trans,cod,beam,srot,aln*.5d0,phibn*.5d0,phin*.5d0,
      $     0.d0,psi2n,0.d0,apsi2,ak1n*.5d0,
      $     0.d0,0.d0,0.d0,0.d0,
-     1     fb1,fb2,mfr,fringe,eps0,enarad,.false.,.false.,l,ld)
+     1     fb1,fb2,mfr,fringe,eps0,enarad,.false.,.false.,l)
       if(dtheta .ne. 0.d0)then
         cod(2)=cod(2)+dphix
         cod(4)=cod(4)+dphiy
       endif
-      call tchge(trans,cod,beam,dx,dy,-theta-dtheta,.false.,ld)
+      call tchge(trans,cod,beam,srot,
+     $     dx,dy,-theta,-dtheta,-phi,.false.)
       return
       end

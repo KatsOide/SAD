@@ -98,7 +98,7 @@ c      write(*,*)'tsgeo ',chi1
           geo1(i,3)= g1*cschi1+geo1(i,1)*snchi1
           geo1(i,1)=-g1*snchi1+geo1(i,1)*cschi1
 110     continue
-        call tgrot(cmp1%value(ky_CHI1_SOL),geo(1,1,k),geo1)
+        call tgrot(cmp1%value(ky_CHI1_SOL:ky_CHI3_SOL),geo(1,1,k),geo1)
         pos0=0
         pos(k+1)=pos(k)
       else
@@ -120,7 +120,7 @@ c      write(*,*)'tsgeo ',chi1
         geo(1,4,ke)= 0.d0
         geo(2,4,ke)= 0.d0
         geo(3,4,ke)= 0.d0
-        call tgrot(cmp2%value(ky_CHI1_SOL),geo1,geo(1,1,ke))
+        call tgrot(cmp2%value(ky_CHI1_SOL:ky_CHI3_SOL),geo1,geo(1,1,ke))
         pos0=pos(k)
         pos(k1)=0.d0
       endif
@@ -151,7 +151,8 @@ c      write(*,*)'tsgeo ',chi1
         cschi3= cos(chi3)
         snchi3= sin(chi3)
         call trotg(geo(1,1,ke1),geo(1,3,ke1),cschi3,snchi3)
-        call tgrot(cmp2%value(ky_CHI1_SOL),geo1,geo(1,1,ke1))
+        call tgrot(cmp2%value(ky_CHI1_SOL:ky_CHI3_SOL),
+     $       geo1,geo(1,1,ke1))
       else
         s1=geo(1,1,ke)*geo(1,1,k)+geo(2,1,ke)*geo(2,1,k)
      1       +geo(3,1,ke)*geo(3,1,k)
@@ -220,7 +221,7 @@ c        snchi3=sin(chi3)
      1              +geo(1,3,k)*geo1(j,3)
 240     continue
         geo(:,:,k)=geos
-        call tgrot(cmp1%value(ky_CHI1_SOL),geos,geo1)
+        call tgrot(cmp1%value(ky_CHI1_SOL:ky_CHI3_SOL),geos,geo1)
         geo(:,:,ke+1)=geo(:,:,ke)
       endif
       return
@@ -241,8 +242,9 @@ c        snchi3=sin(chi3)
       real*8 pxi,pyi,al,ds,pzi,phi,ak,sinphi,a14,a12,a22,
      $     a24,dx,pxf,dy,pyf,xi,yi,dl,theta,phix,phiy,f,xf,
      $     zf,gf,dvf,bzs,ak1,ftable(4),dir,bzs0,tfbzs,db,gi,
-     $     chi2i,cchi2i,schi2i,chi1i,cchi1i,schi1i,g1,yf,pzf,
-     $     trans(6,12),cod(6),beam(42),geo1(3,3)
+     $     chi2i,cchi2i,schi2i,chi1i,cchi1i,schi1i,g1,yf,
+     $     sxf,syf,szf,bsi,
+     $     trans(6,12),cod(6),beam(42),geo1(3,3),srot(3,9)
       logical*4 seg,dirf
       i0=i+(1-idir)/2
       i1=2*i+1-i0
@@ -293,8 +295,8 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         zf=0.d0
         gf=0.d0
         dvf=0.d0
-        call tdrift(1,xf,pxf,yf,pyf,zf,gf,dvf,pzf,al,bzs*dir,
-     $       phiy,phix)
+        call tdrift(1,xf,pxf,yf,pyf,zf,gf,dvf,sxf,syf,szf,bsi,
+     $       al,bzs*dir,phiy,phix,.false.)
         pxf=pxf*dir+f*yf
         pyf=pyf*dir-f*xf
         dl=-zf
@@ -326,7 +328,8 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         else
           ftable=0.d0
         endif
-        call tquads(1,xf,pxf,yf,pyf,zf,gf,dvf,pzf,i,
+        call tquads(1,xf,pxf,yf,pyf,zf,gf,dvf,
+     $       sxf,syf,szf,
      $       al,ak1,bzs*dir,
      $       cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),theta,
      1       cos(theta),sin(theta),
@@ -354,7 +357,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         if(seg)then
 c     call tmulteseg(trans,cod,beam,i,cmp,bzs*dir,lal,1.d0,i)
         else
-          call tmulte1(trans,cod,beam,i,cmp,bzs*dir,1.d0,i)
+          call tmulte1(trans,cod,beam,srot,i,cmp,bzs*dir,1.d0,i)
         endif
         call setdirelc(i,direlc(i)*dir)
         xf=cod(1)

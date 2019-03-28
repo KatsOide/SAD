@@ -1,19 +1,21 @@
-      subroutine tbrad(np,x,px,y,py,z,g,dv,pz,
+      subroutine tbrad(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     l,al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
-     1     ak,dx,dy,theta,dphix,dphiy,cost,sint,
+     1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fs1,fs2,mfring,fringe,eps0)
-      use tfstk, only: sqrtl
       use ffs_flag
       use tmacro
       use bendeb, only:epsbend
+      use tbendcom, only:tbrot
+      use mathfun
       implicit none
 c      parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
 c     1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
 c     1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
       integer*4 np,l,i,mfring,ndiv,nx,ngamma,n
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),pz(np)
-      real*8 al,phib,phi0,tanp1,tanp2,ak,dx,dy,theta,dphix,dphiy,
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
+     $     sx(np),sy(np),sz(np),pz(np)
+      real*8 al,phib,phi0,tanp1,tanp2,ak,dx,dy,theta,
      $     cost,sint,fs1,fs2,eps0,bxa,bya,alr,dpradx,dprady,
      $     alsum,brad0,brad1,brad2,rhob,rho0,af,aind,dxfr1,
      $     dyfr1,dyfra1,p,f,eps,fpx,ff,ur,an,phin,cs00,sn00,
@@ -21,7 +23,7 @@ c     1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
      $     brad,rho,alx,prob,pz1,dpx,pxf,dpz2,pz2,d,
      $     sinda,da,al0,cosp1,sinp1,cosp2,sinp2,akn,aln,
      $     bx00,by00,csphi0,dprad,drho,dxfr2,p1,phix,pr,
-     $     rhoe,sinsq0,snphi0,sq00,tran,dyfr2,dyfra2,h
+     $     rhoe,sinsq0,snphi0,sq00,tran,dyfr2,dyfra2,h,dtheta
       logical*4 fringe
 c     begin initialize for preventing compiler warning
       brad0=0.d0
@@ -29,14 +31,17 @@ c     begin initialize for preventing compiler warning
       brad2=0.d0
 c     end  initialize for preventing compiler warning
       include 'inc/TENT.inc'
-      if(dphiy .ne. 0.d0)then
-        do 3510 i=1,np
-c          pr=(1.d0+g(i))**2
-          pr=(1.d0+g(i))
-          px(i)=px(i)+dphix/pr
-          py(i)=py(i)+dphiy/pr
-3510    continue
+      if(dtheta .ne. 0.d0)then
+        call tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
       endif
+c      if(dphiy .ne. 0.d0)then
+c        do 3510 i=1,np
+cc          pr=(1.d0+g(i))**2
+c          pr=(1.d0+g(i))
+c          px(i)=px(i)+dphix/pr
+c          py(i)=py(i)+dphiy/pr
+c3510    continue
+c      endif
       tanp1=sinp1/cosp1
       tanp2=sinp2/cosp2
       rhob=al/phib
@@ -322,13 +327,16 @@ c        p=(1.d0+g(i))**2
           enddo
         endif
       endif
-      if(dphiy .ne. 0.d0)then
-        do 3520 i=1,np
-c          pr=(1.d0+g(i))**2
-          pr=(1.d0+g(i))
-          px(i)=px(i)+dphix/pr
-          py(i)=py(i)+dphiy/pr
-3520    continue
+c      if(dphiy .ne. 0.d0)then
+c        do 3520 i=1,np
+cc          pr=(1.d0+g(i))**2
+c          pr=(1.d0+g(i))
+c          px(i)=px(i)+dphix/pr
+c          py(i)=py(i)+dphiy/pr
+c3520    continue
+c      endif
+      if(dtheta .ne. 0.d0)then
+        call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
       endif
       include 'inc/TEXIT.inc'
       return
@@ -826,7 +834,7 @@ c     end   initialize for preventing compiler warning
 
       subroutine tphotonconv(al,phi,theta,geo1,xi,yi,dp,dpx,dpy,
      $     gx,gy,gz,dpgx,dpgy,dpgz,xi1,xi3)
-      use tfstk, only: sqrtl
+      use mathfun, only: sqrtl
       implicit none
       real*8 al,phi,theta,geo1(3,4),xi,yi,dp,dpx,dpy,gx,gy,gz,
      $     dpz,x1,x2,x3,y1,y2,y3,z1,z2,z3,rho0,sp0,cp0,r1,r2,

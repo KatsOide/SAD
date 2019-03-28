@@ -1,3 +1,5 @@
+!!! File Dialog 10/5/2018
+!!! File Dialog 4/5/2018
 !!! File Dialog 4/21/2008
 !!! File Dialog 3/15/2005
 
@@ -25,9 +27,10 @@ KBF$ListFiles[pwd_,currfilter0_,wl_,fork_:False] := Module[
     ];
   If[currfilter=="",currfilter = "*"];
   Check[
-    If[(f = OpenRead["!unset LANG LC_TIME;cd "//pwd//";ls -lnt"])<=>$Failed,
+    If[(f = OpenRead["!unset LANG LC_TIME;cd "//pwd//";ls -lnatL"])<=>$Failed,
       l=Table[
         c=Read[f,Word];
+!        Print["LF: ",c];
         If[c===EndOfFile,Break[]];
         lmode=StringLength[c];
         c=c[1];
@@ -66,7 +69,7 @@ KBF$ListFiles[pwd_,currfilter0_,wl_,fork_:False] := Module[
   If[fork && KBF$LFPid===0,
     If[KBF$LFShare<=>$Failed,
       Check[Shared[KBF$LFShare]=l, Shared[KBF$LFShare]={}]]; 
-        Print["Exit Fork"];Exit[],
+        (* Print["Exit Fork"] *);Exit[],
     Scan[(#[Cursor]="left_ptr")&, wl]; Return[l]];
   ];
 
@@ -277,8 +280,7 @@ KBF$$FileDialog=Class[{},{},
     If [w === Null, Return[Null]];
     frr = Frame[w, Side->"left", Fill->"both", PadX->10, PadY->5, Expand->1];
     fr1 = Frame[frr, PadX->7, PadY->2, Fill->"x"];
-    ldir = TextLabel[fr1, Width->12, TextAnchor->"w", Text->"Directory : ",
-      Side->"left"];
+    ldir = TextLabel[fr1, Width->12, TextAnchor->"w", Text->"Directory : ",Side->"left"];
     omt = OptionMenu[fr1, TextVariable:>omtv, Side->"left", Relief->"ridge"
       ,BG->"gray85"];
     omtm = Menu[omt];
@@ -336,7 +338,8 @@ KBF$$FileDialog=Class[{},{},
     mbrecent=MenuButton[frl,Picture->"kbfrec",Side->"top",BD->0,PadY->10];
     menurecent=Menu[mbrecent];
     addrecent[Directory[]//"/",""];
-    b = Button[frl, Width->8, Text->btext, Side->"bottom",
+    b = Button[frl, Width->8, Text->btext, Side->"bottom", BG->"light goldenrod yellow",
+      BorderWidth->3,BorderColor->"black",
       State->If[fn==0,"disabled","normal"],
       Command:>okordown[1]];
     c = Button[frl, Width->8, Text->"Cancel", Side->"bottom",
@@ -356,9 +359,9 @@ KBF$$FileDialog=Class[{},{},
     Bind[lb, "<Double-Button-1>", (dbflag=1; okordown[0])];
     dbflag = 0;
     Bind[lb, "<Key-Return>", okordown[0]];
+    Bind[lb, "<Key-Escape>", TkReturn[Null]];
     Bind[eflt, "<Key-Return>", changelist[]];
     Bind[eflt, "<Double-Button-1>", changelist[]];
-!  Bind[w, "<Key-Escape>", TkReturn[Null]];
     ];
 
   jumpto[dir_,file_:""]:=(

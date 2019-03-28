@@ -327,12 +327,14 @@ c1510  continue
                 endif
  1610         continue
               do 1710 i=iend,ibegin+1,-1
-                r=0.d0
-                s=0.d0
-                do 1720 j=1,m
-                  r=r+a(i,j)**2
-                  s=s+a(i,j)*a(i-1,j)
- 1720           continue
+                r=sum(a(i,1:m)**2)
+                s=dot_product(a(i,1:m),a(i-1,1:m))
+c                r=0.d0
+c                s=0.d0
+c                do 1720 j=1,m
+c                  r=r+a(i,j)**2
+c                  s=s+a(i,j)*a(i-1,j)
+c 1720           continue
                 if(r .ne. 0.d0)then
                   p=s/r
 c                  do 1730 j=1,m
@@ -470,11 +472,11 @@ c        enddo
 3110  continue
       do k=1,l
         do 3030 i=1,m
-          s=a(1,i)*b(1,k)
-          do 3040 j=2,mn
-            s=s+a(j,i)*b(j,k)
- 3040     continue
-          x(i,k)=s
+c          s=a(1,i)*b(1,k)
+c          do 3040 j=2,mn
+c            s=s+a(j,i)*b(j,k)
+c 3040     continue
+          x(i,k)=dot_product(a(1:mn,i),a(1:mn,k))
  3030   continue
       enddo
       return

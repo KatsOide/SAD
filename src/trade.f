@@ -1,8 +1,8 @@
       subroutine trade(trans,beam,cod,bx,by,bz,br,
      $     bxx,bxy,byy,dldx,al,s,ala,f1,f2,prev,next)
-      use tfstk
       use ffs_flag
       use tmacro
+      use mathfun
       implicit none
       integer*4 i
       real*8 f1,al,dldx,bx,by,bz,
@@ -227,6 +227,7 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
       real*8 trans(6,12),beam(42),cod(6),bxr,byr,bzs0,bzs1,
      $             bxx,f1,bzr,brhoz
       bzr=(bzs1-bzs0)*brhoz
+      return
       if(bzr .eq. 0.d0)then
         return
       endif

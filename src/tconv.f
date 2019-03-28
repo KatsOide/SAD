@@ -1,6 +1,6 @@
       subroutine tconv(x1,x2,idir)
-      use tfstk
       use tmacro
+      use mathfun
       implicit none
       integer*4 idir
       real*8 x1(8),x2(8),pr,h1,p1

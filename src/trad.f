@@ -1,13 +1,13 @@
       subroutine trad(np,x,px,y,py,g,dv,by,bx,dbydx,dldx,dldxe,al,
      $     f1,f2,als,ala,dir)
-      use tfstk
       use ffs_flag
       use tmacro
+      use mathfun
       implicit none
       integer*4 np,i
       real*8 dbydx,dldx,dldxe,al,dir,brad,bx,by,tdusr,dg,
      $     pr,p,hh,dp,h1,alc,ald,dldxx,dldpx,al1,alr1,
-     $     als,ala,alr2,alr3,f1,f2,cuc,uc,rhoinv0,anp
+     $     als,ala,alr2,alr3,f1,f2,uc,rhoinv0,anp,an,h
       real*8, parameter:: gmin=-0.9999d0
       real*8 x(np),px(np),y(np),py(np),dv(np),g(np)
       call tradel(al,f1,f2,als,ala,alr1,alr2,alr3)
@@ -17,7 +17,6 @@ c      write(*,'(a,1p7g14.6)')'trad ',al,f1,f2,als,ala,alr,alr1
 c      dldpx=dldx*ald
       dldpx=dldx*ald*.5d0
       if(rfluct .and. al .gt. 0.d0)then
-        cuc=1.5d0*rclassic/rcratio
 c        er=c/amass*erad*alr1/alr
 c        call tran_array(dv(1),np)
 c        do i=1,np
@@ -30,11 +29,12 @@ c        enddo
      $         (bx+dbydx*(y(i)+py(i)*ald/3.d0))*py(i))*(1.d0-px(i)**2)
           pr=1.d0+g(i)
           p=p0*pr
+          h=p2h(p)
           al1=(1.d0+x(i)*dldxx+px(i)*dldpx)*alr1
      1         *(1.d0+(px(i)**2+py(i)**2)*.5d0)
           rhoinv0=sqrt(brad)/brhoz
           anp=anrad*p0*rhoinv0*al1
-          uc=cuc*(1.d0+p**2)*rhoinv0
+          uc=cuc*h**3/p0*rhoinv0
 c          dp=-hh*brad*(1.d0+x(i)*dldxx+px(i)*dldpx)*alc
 c     1        *(1.d0+(px(i)**2+py(i)**2)*.5d0)
 c          de=er*sqrt(hh*brad)/p*dp*hh
@@ -43,7 +43,7 @@ c          if(i .eq. 1)then
 c            write(*,'(a,1p8g15.7)')'trad ',anp,uc,1.d0/rhoinv,
 c     $           al1*rhoinv,dg
 c          endif
-          dg=-uc*tdusr(anp)
+          dg=-uc*tdusr(anp,an)
           if(dg .ne. 0.d0)then
             g(i)=max(gmin,g(i)+dg)
             pr=1.d0+g(i)
@@ -70,70 +70,28 @@ c          endif
       return
       end
 
-      subroutine tradk(np,x,px,y,py,px0,py0,g,dv,al)
+      subroutine tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $     px0,py0,zr0,cphi0,sphi0,bsi,al)
       use tfstk
       use ffs_flag
       use tmacro
+      use tspin
       implicit none
       integer*4 np,i
-      real*8 al,tdusr,pr,p,al1,cuc,uc,anp,
-     $     dpx,dpy,pxm,pym,theta,dg,h1,ddpx,ddpy
-      real*8, parameter:: gmin=-0.9999d0,
-     $     cave=8.d0/15.d0/sqrt(3.d0)
-      real*8 x(np),px(np),y(np),py(np),dv(np),g(np),
-     $     px0(np),py0(np)
-      cuc=1.5d0*rclassic/rcratio
-      if(rfluct .and. al .gt. 0.d0)then
+      real*8 x(np),px(np),y(np),py(np),dv(np),z(np),g(np),
+     $     px0(np),py0(np),zr0(np),bsi(np),al
+      real*8 sx(np),sy(np),sz(np),cphi0,sphi0
+      if(rfluct .and. al .ne. 0.d0)then
         do i=1,np
-          dpx=px(i)-px0(i)
-          dpy=py(i)-py0(i)
-          theta=abs(dcmplx(dpx,dpy))
-          pr=1.d0+g(i)
-          p=p0*pr
-          anp=anrad*p*theta
-          dg=tdusr(anp)
-          if(dg .ne. 0.d0)then
-            pxm=px0(i)+dpx*.5d0
-            pym=py0(i)+dpy*.5d0
-            al1=al*(1.d0+(pxm**2+pym**2)*.5d0)
-            uc=cuc*(1.d0+p**2)*theta/al1*pr
-            dg=-dg*uc
-c            write(*,*)'tradk ',i,dg,rhoinv,anp,uc
-            g(i)=max(gmin,g(i)+dg)
-            ddpx=-.5d0*dpx*dg
-            ddpy=-.5d0*dpy*dg
-            x(i)=x(i)+.5d0*ddpx*al
-            y(i)=y(i)+.5d0*ddpy*al
-            px(i)=px(i)+ddpx
-            py(i)=py(i)+ddpy
-            pr=1.d0+g(i)
-            h1=p2h(p0*pr)
-            dv(i)=-g(i)*(1.d0+pr)/h1/(h1+pr*h0)+dvfs
-          endif
+          call tradkf1(x(i),px(i),y(i),py(i),z(i),g(i),dv(i),
+     $         sx(i),sy(i),sz(i),
+     $         px0(i),py0(i),zr0(i),cphi0,sphi0,bsi(i),al)
         enddo
       else
         do i=1,np
-          dpx=px(i)-px0(i)
-          dpy=py(i)-py0(i)
-          theta=abs(dcmplx(dpx,dpy))
-          pxm=px0(i)+dpx*.5d0
-          pym=py0(i)+dpy*.5d0
-          pr=1.d0+g(i)
-          p=p0*pr
-          al1=al*(1.d0+(pxm**2+pym**2)*.5d0)
-          anp=anrad*p*theta
-          uc=cuc*(1.d0+p**2)*theta/al1*pr
-          dg=-cave*anp*uc
-          g(i)=max(gmin,g(i)+dg)
-          ddpx=-.5d0*dpx*dg
-          ddpy=-.5d0*dpy*dg
-          x(i)=x(i)+.5d0*ddpx*al
-          y(i)=y(i)+.5d0*ddpy*al
-          px(i)=px(i)+ddpx
-          py(i)=py(i)+ddpy
-          pr=1.d0+g(i)
-          h1=p2h(p0*pr)
-          dv(i)=-g(i)*(1.d0+pr)/h1/(h1+pr*h0)+dvfs
+          call tradk1(x(i),px(i),y(i),py(i),z(i),g(i),dv(i),
+     $         sx(i),sy(i),sz(i),
+     $         px0(i),py0(i),zr0(i),cphi0,sphi0,bsi(i),al)
         enddo
       endif
       return

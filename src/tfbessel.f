@@ -156,12 +156,13 @@ c     Including euler(Euler-Mascheroni constant)/pi symbol
       recursive complex*16 function cbessely(cn,z)
      $     result(cb)
       use macmath
+      use mathfun
       implicit none
 c     Including m_pi_2 symbol
       integer*4 i,itmax,m
       parameter (itmax=26)
       complex*16 cn,z,cbesselj,cj,cg1,cg2,cgamm1,cgamm2,ca3,
-     $     cnf,cp,cq,cr,cs0,cs1,zp,cx,cxp,csigma,tccosh,tcsinh,
+     $     cnf,cp,cq,cr,cs0,cs1,zp,cx,cxp,csigma,
      $     ca1,ca2,cgamma,cf,cg,cf1,cf2,clogz,zhi,cnfpi,cs
       external cgamma
       real*8 az,xcn,an0,anf,acnf,ak

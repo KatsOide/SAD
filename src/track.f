@@ -55,9 +55,6 @@ c        write(*,*)'track-0.4'
       else
         levele=1
       endif
-c      isp1=isp-1
-c      call tfmemcheck(isp1,kx,irtc)
-c      l=itfdownlevel()
       levele=levele+1
       novfl=0
       call cputime(dt0,irtc)
@@ -97,6 +94,7 @@ c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       calcod=igetgl1('$COD$'   ) .ne. 0
       trpt  =igetgl1('$TRPT$'  ) .ne. 0
       radcod=igetgl1('$RADCOD$') .ne. 0
+      radpol=igetgl1('$RADPOL$') .ne. 0
       emiout=igetgl1('$EMIOUT$') .ne. 0
       dapert=igetgl1('$DAPERT$') .ne. 0
       rfluct=igetgl1('$FLUC$'  ) .ne. 0
@@ -131,11 +129,11 @@ c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       jitter=.true.
       trgauss=.true.
       gauss=.false.
-      bunchsta=.false.
       spac=.false.
       wspac=.false.
       selfcod=.false.
       orbitcal=.true.
+      calopt=.true.
       dp0   =0.d0
       call initialize_tampl()
       call tclrpara(elatt,nlat-1)
@@ -257,6 +255,7 @@ c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       call isetgl1('$RAD$',rad   )
       call isetgl1('$COD$',calcod)
       call isetgl1('$RADCOD$',radcod)
+      call isetgl1('$RADPOL$',radpol)
       call isetgl1('$EMIOUT$',emiout)
       call isetgl1('$DAPERT$',dapert)
       call isetgl1('$FLUC$',rfluct)

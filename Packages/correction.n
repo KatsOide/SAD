@@ -331,7 +331,7 @@ ResponseMatrixG[mon_,str_,opt_,periodic_,kind_,tune_:{0,0},options___]:=Module[
                 FLAG["CELL"],k[[i]][2,-1],tune],
   (*--Orbit---*)
       em=Optik[opt,1,mon,6+Position[{"X","PX","Y","PY"},k[[i]],1,1][[1,1]]];
-      If[Head[$CorAlpha]<=>Symbol && FLAG["CELL"],
+      If[Head[$CorAlpha]<=>Symbol && ?CELL,
         ee=Map[
           If[ LINE["angle",str[[1,#]]]==0,
             Optik[opt,1,str[[1,#]],9-2*str[[3,#]]] + LINE["L",str[[1,#]]]/2*Optik[opt,1,str[[1,#]],10-2*str[[3,#]]],
@@ -345,6 +345,7 @@ ResponseMatrixG[mon_,str_,opt_,periodic_,kind_,tune_:{0,0},options___]:=Module[
         aa=ResponseMatrix[mon,str[[1]],str[[2]],Optik[opt],FLAG["CELL"],k[[i]],tune]-
           Outer[Times,em,ee]/(LINE["s","$$$"]*$CorAlpha);
         aa=MapThread[(#1+#2*str[[3]])&,{aa,em/(2*Pi)}],
+        Print["RMG ",{i,k[[i]],tune}];
         aa=ResponseMatrix[mon,str[[1]],str[[2]],Optik[opt],FLAG["CELL"],k[[i]],tune]      ];
       If[MomentumCorrection/.op,MapThread[Append[#1,#2]&,{aa,em}],aa]
      ] ], {i,Length[k]}];

@@ -30,7 +30,7 @@
       integer*4 maxlevel,mode,m,n1,n2,irtc,i,isp1,
      $     idi,ispf,itfdepth,id,ind,ind1,
      $     itfpmatc,ihead,ispmax,ioff(0:7)
-      real*8 rind(ind)
+      real*8 ,intent(out)::rind(ind)
       logical*4 stack,map,stacktbl(0:7),indexf(0:7),indf,
      $     match(0:7)
       parameter (maxlevel=100000000)

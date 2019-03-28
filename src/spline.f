@@ -13,13 +13,16 @@ C     D=(B^3-B)(x(i+1)-x(i))^2
 C
       implicit none
       integer*4 np,i,mode
-      real*8 x(np),y(np),ddy(np),work(np),dy(2),dddy(np),
-     $     dy1a,ddy1
+      real*8 ,intent(in):: x(np),y(np),dy(2)
+      real*8 ,intent(out):: ddy(np),work(np)
+      real*8 dy1a,ddy1
+      real*8, allocatable :: dddy(:)
       real*8 f
       if(np .le. 2)then
         ddy=0.d0
         return
       endif
+      allocate (dddy(np))
       if(mode .eq. 0 .or. mode .eq. 2)then
         ddy(1)=0.d0
         ddy(2)=(y(3)-y(2))/(x(3)-x(2))-(y(2)-y(1))/(x(2)-x(1))
@@ -62,6 +65,7 @@ C
           ddy1=-(ddy(np)-ddy(1))/(dddy(np)-dddy(1))
           ddy=ddy+ddy1*dddy
         endif
+        deallocate (dddy)
         return
       endif
       do i=2,np-2
@@ -89,6 +93,7 @@ c        write(*,*)'spline ',i,work(i),ddy(i)
       if(mode .eq. 1 .or. mode .eq. 3)then
         ddy(1)=(ddy(1)/work(1)-ddy(2))*.5d0
       endif
+      deallocate (dddy)
       return
       end
 
@@ -107,8 +112,10 @@ C     C=(A^3-A)
 C     D=(B^3-B)
 C
       implicit none
-      integer*4 np,i,mode1,mode2
-      real*8 y(np),ddy(np),work(np)
+      integer*4 ,intent(in)::np,mode1,mode2
+      integer*4 i
+      real*8 ,intent(in)::y(np)
+      real*8 ,intent(out)::ddy(np),work(np)
       if(mode1 .eq. 0)then
         ddy(1)=0.d0
         if(np .le. 2)then
@@ -153,28 +160,37 @@ C
 
       real*8 function splint1(np,y,mode1,mode2,dy)
       implicit none
-      integer*4 np,i,mode1,mode2
-      real*8 y(np),work(np),ddy(np),s,dy(2)
+      integer*4 , intent(in)::np,mode1,mode2
+c      integer*4 i
+      real*8 ,intent(in)::y(np),dy(2)
+c      real*8 s
+      real*8,allocatable:: work(:),ddy(:)
+      allocate (work(np),ddy(np))
       ddy(1)=dy(1)
       ddy(np)=dy(2)
       call spline1(np,y,ddy,work,mode1,mode2)
-      s=(y(1)+y(np)-.5d0*(ddy(1)+ddy(np)))*.5d0
-      do i=2,np-1
-        s=s+y(i)-ddy(i)*.5d0
-      enddo
-      splint1=s
+      splint1=(y(1)+y(np)-.5d0*(ddy(1)+ddy(np)))*.5d0
+     $     +sum(y(2:np-1)-ddy(2:np-1)*.5d0)
+c      do i=2,np-1
+c        s=s+y(i)-ddy(i)*.5d0
+c      enddo
+c      splint1=s
+      deallocate (work,ddy)
       return
       end
 
       real*8 function splint(f,x0,x1,mode,dy,eps,epsabs,n0)
       implicit none
       integer*4 nmax,mode
-      parameter (nmax=2048)
-      integer*4 n,k,k1,i,i1,n0
-      real*8 f,x0,x1,eps,epsabs
-      real*8 x(nmax,2),y(nmax,2),ddy(nmax),work(nmax),dy(2),
-     $     xi,xstep,sddy,s,s0,dx,dx2,s20,s2,ddyi
+      parameter (nmax=8192)
+      integer*4 n,k,k1,i,i1
+      integer*4 , intent(in)::n0
+      real*8 , external:: f
+      real*8 , intent(in)::x0,x1,eps,epsabs,dy(2)
+      real*8 , allocatable::x(:,:),y(:,:),ddy(:),work(:)
+      real*8 xi,xstep,sddy,s,s0,dx,dx2,s20,s2,ddyi
       logical*4 first
+      allocate (x(nmax,2),y(nmax,2),ddy(nmax),work(nmax))
       first=.true.
       n=max(n0,4)
       k=1
@@ -216,6 +232,7 @@ C
 c      write(*,*)n,s2,s
       if(abs(s2-s20) .le. max(eps*s20,epsabs))then
         splint=s2
+        deallocate (x,y,ddy,work)
         return
       endif
       first=.false.
@@ -244,6 +261,7 @@ c      write(*,*)n,s2,s
       go to 1
  9000 write(*,*)'Splint convergence failed. ',s,s0
       splint=s2
+      deallocate (x,y,ddy,work)
       return
       end
 

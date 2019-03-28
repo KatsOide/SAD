@@ -117,7 +117,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       type (sad_dlist) kl
       type (sad_dlist), pointer :: kli
       integer*4 n,m,i
-      real*8 a(n,m)
+      real*8, intent(out):: a(n,m)
       logical*4 trans
       if(trans)then
         do i=1,m
@@ -136,12 +136,14 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       subroutine tfl2cm(kl,c,n,m,trans,irtc)
       use tfstk
       implicit none
-      type (sad_dlist) kl
+      type (sad_dlist) ,intent(in):: kl
       type (sad_dlist), pointer :: kli
       type (sad_complex), pointer :: cx
       integer*8 kij
-      integer*4 n,m,irtc,i,j
-      complex*16 c(n,m)
+      integer*4 ,intent(in)::n,m
+      integer*4 ,intent(out)::irtc
+      integer*4 i,j
+      complex*16, intent(out):: c(n,m)
       logical*4 trans
       if(trans)then
         do i=1,m
@@ -377,8 +379,8 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       use tfstk
       implicit none
       integer*8 ktfcm2l
-      integer*4 n
-      complex*16 cx(n)
+      integer*4 ,intent(in)::n
+      complex*16 ,intent(in):: cx(n)
       ktfc2l=ktfcm2l(cx,0,n,1,.false.,.false.)
       return
       end
@@ -387,7 +389,7 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       use tfstk, only:ktfenanq
       implicit none
       integer*4 n,m,ndim,i,j,k
-      real*8 a(ndim,m)
+      real*8, intent(in):: a(ndim,m)
       character*(*) tag
       do i=1,m
         do j=1,n
@@ -406,10 +408,12 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       type (sad_dlist), pointer :: klx,klxi
       type (sad_rlist), pointer :: klj,kl
       integer*8 kax,kaxi,ktcalocm,kai,kc,kaj
-      integer*4 n,m,nd,i,j
-      logical*4 trans,conj,c
+      integer*4,intent(in):: n,m,nd
+      integer*4 i,j
+      logical*4 ,intent(in)::trans,conj
+      logical*4 c
       real*8 imag_sign
-      complex*16 a(nd,m)
+      complex*16, intent(in):: a(nd,m)
       if(conj)then
         imag_sign=-1.d0
       else

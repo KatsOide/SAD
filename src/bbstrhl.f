@@ -50,7 +50,8 @@
 
       
 !     18/01/93 303061342  MEMBER NAME  BEAMBEAM *.FORT     M  E2FORT
-      subroutine beambeam(np,x,px,y,py,z,g,dv,work,p_in,blist,iturn)
+      subroutine beambeam(np,x,px,y,py,z,g,dv,spx,spy,spz,
+     $     p_in,blist,iturn)
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !                                                                 
 !  Beam-Beam tracking subroutine with a six dimension symplectic  
@@ -65,16 +66,19 @@
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !        emix  =p_in(22), emiy =(23),     dp=(24),  sigz=(27)
 !        nsli  =p_in(28), rne  =(29),
+!  Modified to accept spin variables spx, spy , spz by K. O., 11 Dec 2018.
+!  As for blist(nblist), modified to use kfromr/rfromk to store/recall integer data, K. O. 12 Dec 2018.
       use besseltab
       use wsbb
       use tfstk
       use tmacro
       implicit none
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),work(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+     $     spx(np),spy(np),spz(np)
       real*8 p_in(70),blist(nblist)
       real*8 sqrpi
       integer*4 np,iturn,idummy,bstrhl,nbsemit,ns1,ns2,nsli,nss
-      integer*4 n,i,is,j,jl,jm,ju,iseed
+      integer*4 n,i,is,j,jl,jm,ju,iseed,irtc
       LOGICAL*4 icross,tilt,deform,cod
       real*8 a2,a2x,a2y,acx,acy,asp,c1,cdu,d1x,d1y,dux,duy,delg,dLum
       real*8 fx0,fy0,fxy,gamp,gxy,h1,hi,pn,pxy2,pz
@@ -169,7 +173,8 @@
       sinx=colb%xangle(2)
       cosx=colb%xangle(3)
       tanx=colb%xangle(4)
-!      write(*,*) sinx,cosx,tanx
+c      write(*,*) 'xangle ',sinx,cosx,tanx
+c      call tfmemcheckprint('beambeam',1,.false.,irtc)
 
       if(icross) then
          do i=1,np
@@ -427,6 +432,7 @@
 !     
  20      enddo
  15   enddo
+c      call tfmemcheckprint('beambeam',5,.false.,irtc)
 
 ! t_angle rotation
 
@@ -481,6 +487,7 @@
 !   Return to SAD variables
 
 !   pn=|p|/p0=1+delta
+c      call tfmemcheckprint('beambeam',7,.false.,irtc)
       do  i=1,np
          pn=1.d0+g(i)
          px(i)=px(i)/pn
@@ -491,13 +498,17 @@
       enddo
 
 !      write(*,*) 'blist(nblist)',blist(nblist)
-      call descr_sad(dfromk(int8(blist(nblist)+0.1d0)),symd)
+c      call descr_sad(dfromk(int8(blist(nblist)+0.1d0)),symd)
+      call descr_sad(dfromr(blist(nblist)),symd)
       rlum_col=colb%Luminosity/colb%nslice/np
+c      call tfmemcheckprint('beambeam',8,.false.,irtc)
       symd%value=dfromr(rlum_col)
 !     call tfsetlist(ntfreal,0,rlum_col,iax,1)
 !!!!      iax=colb%iax
 !!!!      rlist(iax)=rlum_col
+c      call tfmemcheckprint('rlum_col',0,.false.,irtc)
       call LumRead(rlum_col)
+c      call tfmemcheckprint('rlum_col',1,.false.,irtc)
 !       write(*,*) rlum_col
 !
 
@@ -512,13 +523,13 @@
       use tfstk
       use tmacro
       implicit none
-      integer*4 idummy,nsli,i
+      integer*4 idummy,nsli,i,irtc
 !  parameter (nblist=1600,tbuf0=1100,nslimax=500)
       real*8 benv_inv(36),m_sub5(25),v_sub5(5),c_sub
       real*8 m_tmp(36),m_Crs(36),eig5(10)
       real*8 m_B(36),m_R(36),m_H(36),m_HRB(36),m_Emit(36)
       real*8 p_in(70),rne,blist(nblist)
-      real*8 rgetgl,gauinv
+      real*8 rgetgl,gauinv,rfromk
       type (sad_descriptor) kv
       type (sad_symdef), pointer :: vsymd
 !      integer*4 itlookup,itfsymbol
@@ -756,7 +767,7 @@ c that is this if block should be remove to beambeam.
          kv=kxsymbolz(vname,len(vname),vsymd)
          call tflocald(vsymd%value)
 c     In the case of only one real variable.
-         blist(nblist)=kv%k
+         blist(nblist)=rfromk(kv%k)
          vsymd%value=dfromr(0.d0)
        else
          kv%k=0
@@ -764,7 +775,9 @@ c     In the case of only one real variable.
 
 !      write(*,*) kv%k
 
+c       call tfmemcheckprint('storecolb',0,.true.,irtc)
        call storecolb(blist,colb)
+c       call tfmemcheckprint('storecolb',1,.true.,irtc)
 
        return
        end subroutine bbinit

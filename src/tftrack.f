@@ -10,11 +10,12 @@
       type (sad_descriptor) kx,kx1,kx2,ks,kp
       type (sad_dlist), pointer :: klx,kl
       integer, parameter :: nkptbl = 6
-      integer*4, parameter :: npparamin=9,npnlatmin=30000
-      integer*8 kz,kzp,kpz,kzf,kaxl,ktfmalocp,ktfresetparticles
+      integer*4, parameter :: npparamin=9,npnlatmin=3000
+      integer*8 kz,kzp,kzf,kaxl,ktfmalocp,ktfresetparticles,kdv,
+     $     kpsx,kpsy,kpsz
       integer*4 isp1,irtc,narg,itfloc,outfl0,ld,ls,mc,npz,npa,np00,
-     $     ipr(100),npr,np1,fork_worker,iprid, ne,nend,
-     $     npp,ipn,m,itfmessage,nt,mt,kseed,j
+     $     ipr(100),npr,np1,fork_worker,iprid, ne,nend,npara,
+     $     npp,ipn,m,itfmessage,nt,mt,kseed,j,mcf
       integer*8 ikptblw,ikptblm
       real*8 trf00,p00,vcalpha0
 
@@ -25,7 +26,7 @@
         return
       endif
       nt=1
-      nend=nt
+      nend=1
       mt=1
       if(narg .ge. 3)then
         if(ktastk(isp1+3) .eq. ktfoper+mtfnull)then
@@ -69,8 +70,15 @@
       if(irtc .ne. 0)then
         return
       endif
-      if(ls .eq. nlat)then
-        ls=1
+      if(ls .gt. 0)then
+        ls=mod(ls-1,nlat-1)+1
+      else
+        ls=nlat-mod(1-ls,nlat-1)
+      endif
+      if(ld .gt. 1)then
+        ld=mod(ld-2,nlat-1)+2
+      else
+        ld=nlat+1-mod(2-ld,nlat-1)
       endif
       if(ld .le. ls)then
         mt=mt+1
@@ -83,11 +91,19 @@
       if(irtc .ne. 0)then
         return
       endif
-      if(.not. ((mc .eq. 7) .or. (mc .eq. 8)))then
-        go to 9000
-      endif
       if(npz .lt. 0)then
         go to 9000
+      endif
+      if(calpol)then
+        if(.not. (mc .ge. 9 .and. mc .le. 11))then
+          go to 9000
+        endif
+        mcf=9
+      else
+        if(.not. (mc .ge. 7 .and. mc .le. 9))then
+          go to 9000
+        endif
+        mcf=7
       endif
       call tftclupdate(7)
       call tfsetparam
@@ -95,6 +111,7 @@
       kwakep=0
       kwakeelm=0
       nwakep=0
+      npara=max(nparallel,1)
       if(wake)then
         call tffssetupwake(icslfno(),irtc)
         if(irtc .ne. 0)then
@@ -103,7 +120,7 @@
         if(nwakep .eq. 0)then
           wake=.false.
         else
-          nparallel=1
+          npara=1
         endif
       endif
       ipn=0
@@ -121,21 +138,20 @@
         trpt=.true.
         call tlinit(npz,h0,rlist(ifgeo+12*(ls-1)))
       endif
-      if(nparallel .gt. 1)then
+      if(npara .gt. 1)then
         kseed=0
+c        write(*,*)'tftrack ',nparallel,npz,npparamin,
+c     $       ne,npnlatmin
         ne=ld-ls
         if(ne .le. 0)then
           ne=ne+nlat
         endif
-c        write(*,*)'tftrack ',nparallel,npz,npparamin,
-c     $       ne,npnlatmin
-        if(npz .gt. nparallel*npparamin
-     $       .and. npz .gt. npnlatmin/ne)then
+        npara=min(npara,npz/npparamin+1,ne*npz/npnlatmin+1)
+        if(npara .gt. 1)then
           irtc=1
           ikptblm=ktfallocshared(npz*((nkptbl+1)/2))
-          npr=nparallel-1
-c          write(*,*)'tftrack ',npr
-          np1=npz/nparallel+1
+          npr=npara-1
+          np1=npz/npara+1
           ipn=0
           npr=0
           do while(ipn+np1 .lt. npz)
@@ -163,18 +179,27 @@ c          write(*,*)'tftrack ',npr
         trf0=0.d0
         vcalpha=1.d0
       endif
-      kpz=ktaloc(npp)
+      kdv=ktaloc(npz)
       ikptblw=ktaloc(npp*((nkptbl+1)/2))
       kzp=kz+ipn
-      kzf=kzp+npz*6
+      kzf=kzp+npz*(mcf-1)
+      if(calpol)then
+        kpsx=kzp+npz*6
+        kpsy=kzp+npz*7
+        kpsz=kzp+npz*8
+      else
+        kpsx=ktaloc(npz)
+        kpsy=ktaloc(npz)
+        kpsz=ktaloc(npz)
+      endif
       p00=pgev
 c      pgev=rgetgl1('MOMENTUM')
       pgev=rlist(ifgamm+ls-1)*amass
 c      call tclrparaall
       call tphyzp
       call tsetdvfs
-      call tfsetparticles(rlist(kzp),rlist(kzf),rlist(kpz),
-     $     ilist(1,ikptblw),npp,npa,npz,mc,nlat,nt)
+      call tfsetparticles(rlist(kzp),rlist(kdv),
+     $     ilist(1,ikptblw),npp,npa,npz,mc,nlat,nt,mcf)
       if(npa .gt. 0)then
         outfl0=outfl
         outfl=0
@@ -186,7 +211,8 @@ c      call tclrparaall
           call tturn0(npa,latt,ls,nlat,
      $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
      $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
-     $         rlist(kzp+npz*6),rlist(kpz),ilist(1,ikptblw),nt,normal)
+     $         rlist(kdv),rlist(kpsx),rlist(kpsy),rlist(kpsz),
+     $         ilist(1,ikptblw),nt,normal)
           nt=nt+1
           mt=mt-1
           ls=1
@@ -205,25 +231,28 @@ c      call tclrparaall
           call tturn0(npa,latt,1,nlat,
      $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
      $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
-     $         rlist(kzp+npz*6),rlist(kpz),ilist(1,ikptblw),nt,normal)
+     $         rlist(kdv),rlist(kpsx),rlist(kpsy),rlist(kpsz),
+     $         ilist(1,ikptblw),nt,normal)
           nt=nt+1
           mt=mt-1
         enddo
+c        write(*,*)'tftrack-1 ',mt,ls,ld
         if(ld .le. ls)then
           normal=.false.
         elseif(mt .ge. 1 .and. npa .gt. 0)then
           call tturn0(npa,latt,ls,ld,
      $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
      $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
-     $         rlist(kzp+npz*6),rlist(kpz),ilist(1,ikptblw),nt,normal)
+     $         rlist(kdv),rlist(kpsx),rlist(kpsy),rlist(kpsz),
+     $         ilist(1,ikptblw),nt,normal)
         else
           normal=.true.
         endif
         np0=np00
         outfl=outfl0
         dapert=dapert0
-        rlist(kzf:kzf+npa-1)=1.d0
-        rlist(kzf+npa:kzf+npp-1)=0.d0
+c        rlist(kzf:kzf+npa-1)=1.d0
+c        rlist(kzf+npa:kzf+npp-1)=0.d0
       endif
       trf0=trf00
       vcalpha=vcalpha0
@@ -238,13 +267,15 @@ c       - Copy iptbl(*,3:nkptbl)
      $         ilist((j-1)*npp+1:    (j-1)*npp+npp,ikptblw)
         enddo
         call tffswait(iprid,npr+1,ipr,int8(0),'tftrack',irtc)
-        kaxl=ktfresetparticles(rlist(kz),ilist(1,ikptblm),npz,nlat,nend)
+        kaxl=ktfresetparticles(rlist(kz),
+     $       ilist(1,ikptblm),npz,nlat,nend,mc)
         call tfreeshared(ikptblm)
 c        if(mapfree(iptbl(ikptblm+1)) .ne. 0)then
 c          write(*,*)'???tftrack-munmap error.'
 c        endif
       else
-        kaxl=ktfresetparticles(rlist(kz),ilist(1,ikptblw),npz,nlat,nend)
+        kaxl=ktfresetparticles(rlist(kz),
+     $       ilist(1,ikptblw),npz,nlat,nend,mc)
       endif
       call tmunmapp(kz)
       if(photons)then
@@ -253,7 +284,12 @@ c        endif
       pgev=p00
       call tphyzp
       call tfree(ikptblw)
-      call tfree(kpz)
+      call tfree(kdv)
+      if(.not. calpol)then
+        call tfree(kpsx)
+        call tfree(kpsy)
+        call tfree(kpsz)
+      endif
       kx=kxadaloc(-1,2,klx)
       if(normal)then
         klx%rbody(1)=dble(ld)
@@ -275,24 +311,28 @@ c        endif
       return
  9000 irtc=itfmessage(9,'General::wrongtype',
      $     '"{loc,{{x1,..},{px1,..},{y1,..},{py1,..},'//
-     $     '{z1,..},{dp1,..},{flg1,..}[,{lost1,..}]}} for #2"')
+     $     '{z1,..},{dp1,..}[,{sz1...},{psis1...}]'//
+     $     ',{flg1,..}[,{lost1,..}]}} for #2"')
       return
  9100 irtc=itfmessage(9,'General::wrongval',
      $     '"[nbegin [, nend]] for #3 and #4"')
+      return
+ 9200 irtc=itfmessage(9,'FFS:nospin','""')
       return
       end
 
       subroutine tfsurvivedparticles(isp1,kx,irtc)
       use tfstk
+      use ffs_flag, only:calpol
       implicit none
       type llist
         type (sad_rlist), pointer :: kl
       end type
-      type (llist) klxi(7), kli(7)
+      type (llist) klxi(10), kli(10)
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: kll,klx
       type (sad_rlist), pointer :: klf
-      integer*4 isp1,irtc,npx,i,j,itfmessage,np,ii
+      integer*4 isp1,irtc,npx,i,j,k,itfmessage,np,ii,kcf
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -300,13 +340,21 @@ c        endif
       if(.not. tflistq(dtastk(isp),kll))then
         go to 9000
       endif
-      if(kll%nl .ne. 7)then
-        go to 9000
+      if(calpol)then
+        if(kll%nl .ne. 9 .and. kll%nl .ne. 11)then
+          go to 9000
+        endif
+        kcf=9
+      else
+        if(kll%nl .ne. 7 .and. kll%nl .ne. 9)then
+          go to 9000
+        endif
+        kcf=7
       endif
       if(ktfreallistq(kll))then
         go to 9000
       endif
-      if(.not. tfreallistq(kll%dbody(7),klf))then
+      if(.not. tfreallistq(kll%dbody(kcf),klf))then
         go to 9000
       endif
       np=klf%nl
@@ -321,14 +369,14 @@ c        endif
         kx=dtastk(isp)
         return
       endif
-      kx=kxadalocnull(-1,7,klx)
+      kx=kxadalocnull(-1,kll%nl,klx)
       if(npx .eq. 0)then
-        do i=1,7
+        do i=1,kll%nl
           klx%dbody(i)=dtfcopy1(dxnulll)
         enddo
         return
       endif
-      do i=1,7
+      do i=1,kll%nl
         if(.not. tfreallistq(kll%dbody(i),kli(i)%kl))then
           go to 8900
         endif
@@ -341,13 +389,10 @@ c        endif
       do i=1,np
         if(klf%rbody(i) .ne. 0.d0)then
           j=j+1
-          klxi(1)%kl%rbody(j)=kli(1)%kl%rbody(i)
-          klxi(2)%kl%rbody(j)=kli(2)%kl%rbody(i)
-          klxi(3)%kl%rbody(j)=kli(3)%kl%rbody(i)
-          klxi(4)%kl%rbody(j)=kli(4)%kl%rbody(i)
-          klxi(5)%kl%rbody(j)=kli(5)%kl%rbody(i)
-          klxi(6)%kl%rbody(j)=kli(6)%kl%rbody(i)
-          klxi(7)%kl%rbody(j)=1.d0
+          do k=1,kll%nl
+            klxi(k)%kl%rbody(j)=kli(k)%kl%rbody(i)
+          enddo
+          klxi(kcf)%kl%rbody(j)=1.d0
         endif
       enddo
       return
@@ -360,16 +405,24 @@ c        endif
       return
       end
       
-      integer*8 function ktfresetparticles(zx,iptbl,np,nlati,tend)
+      integer*8 function ktfresetparticles(zx,iptbl,np,nlati,tend,mc)
       use tfstk
       use ffs
+      use tspin
+      use ffs_flag, only:calpol
       implicit none
       integer*8 ka,kaj(9)
-      integer*4 np,iptbl(np,6),i,j,k,nlati,tend,nv
-      real*8 zx(np,7)
-      nv=7
+      integer*4 np,iptbl(np,6),i,j,k,nlati,tend,mc,mcf,nv
+      real*8 zx(np,mc)
+      if(calpol)then
+        mcf=9
+      else
+        mcf=7
+      endif
       if(lossmap)then
-        nv=9
+        nv=mcf+2
+      else
+        nv=mcf
       endif
       call tconvm(np,zx(1,2),zx(1,4),zx(1,6),0.d0,1)
       ka=ktadaloc(-1,nv)
@@ -386,24 +439,28 @@ c        endif
         rlist(kaj(4)+i)=zx(k,4)
         rlist(kaj(5)+i)=zx(k,5)
         rlist(kaj(6)+i)=zx(k,6)
+        if(calpol)then
+          rlist(kaj(8)+i)=zx(k,8)
+          rlist(kaj(7)+i)=atan(zx(k,9),zx(k,7))
+        endif
         if(iptbl(k,4) .eq. 0)then
-          rlist(kaj(7)+i)=1.d0
+          rlist(kaj(mcf)+i)=1.d0
         else
-          rlist(kaj(7)+i)=0.d0
+          rlist(kaj(mcf)+i)=0.d0
         endif
       enddo
       if(lossmap)then
         do i=1,np
           k=iptbl(iptbl(i,1),4)
           if((-nlati .le. k) .and. (k .le. nlati))then
-            rlist(kaj(8)+i)=dble(k)
+            rlist(kaj(mcf+1)+i)=dble(k)
           else
-            rlist(kaj(8)+i)=0.d0
+            rlist(kaj(mcf+1)+i)=0.d0
           endif
           if(k .ne. 0)then
-            rlist(kaj(9)+i)=dble(iptbl(iptbl(i,1),5))
+            rlist(kaj(mcf+2)+i)=dble(iptbl(iptbl(i,1),5))
           else
-            rlist(kaj(9)+i)=dble(tend+1)
+            rlist(kaj(mcf+2)+i)=dble(tend+1)
           endif
         enddo
       endif
@@ -411,23 +468,32 @@ c        endif
       return
       end
 
-      subroutine tfsetparticles(zx,dv,pz,iptbl,np,npa,npc,mc,nlat,
-     $     tbegin)
+      subroutine tfsetparticles(zx,dv,iptbl,np,npa,npc,mc,nlat,
+     $     tbegin,mcf)
+      use tspin
+      use ffs_flag,only:calpol
+      use mathfun, only: sqrt1
       implicit none
       integer, parameter :: nkptbl = 6
-      real(8),    intent(inout) :: zx(npc,mc), dv(np), pz(np)
+      real(8),    intent(inout) :: zx(npc,mc), dv(np)
       integer(4), intent(out)   :: iptbl(np,nkptbl)
       integer(4), intent(in)    :: np
       integer(4), intent(out)   :: npa
-      integer(4), intent(in)    :: npc, mc, nlat, tbegin
+      integer(4), intent(in)    :: npc, mc, nlat, tbegin, mcf
       integer(4) :: i, p, iptmp(nkptbl)
-      real(8) :: x1, px1, y1, py1, z1, g1
+      real(8) :: x1, px1, y1, py1, z1, g1, st, sv(2), phis
 c     zx(npc,mc): Initial particle distribution
 c            npc: Number of particles
 c             mc: Number of rows
+c             mcf: Row for flag
+c             if(nocalpol)
 c                 7: (x, x', y, y', z, delta, alive)
 c                 8: (x, x', y, y', z, delta, alive, lost-position)
 c                 9: (x, x', y, y', z, delta, alive, lost-position, lost-turns)
+c             ic(calpol)
+c                 9:  (x, x', y, y', z, delta, phis, sz, alive)
+c                 10: (x, x', y, y', z, delta, phis, sz, alive, lost-position)
+c                 11: (x, x', y, y', z, delta, phis, sz, alive, lost-position, lost-turns)
 
 c     Initialize iptbl
       iptbl(1:np,1:nkptbl)=0
@@ -436,7 +502,7 @@ c       Initialize map between particle ID and array index
         iptbl(i,1)=i
         iptbl(i,2)=i
 c       Initialize particle lost position[0:alive, -nlat-1:initial-dead]
-        if(zx(i,7) .eq. 0.d0)then
+        if(zx(i,mcf) .eq. 0.d0)then
           iptbl(i,4)=-nlat-1
           iptbl(i,5)=tbegin-1
         else
@@ -446,10 +512,10 @@ c       Initialize particle lost position[0:alive, -nlat-1:initial-dead]
       enddo
 
 c     Load particle lost position/turn from zx(#,8/9)
-      if(mc .ge. 8)then
+      if(mc .ge. mcf+1)then
         do i=1,np
           if(iptbl(i,4) .ne. 0)then
-            p=abs(nint(zx(i,8)))
+            p=abs(nint(zx(i,mcf+1)))
             if(p .gt. 0 .and. nlat .ge. p)then
               iptbl(i,4)=-p
             endif
@@ -458,10 +524,10 @@ c     Load particle lost position/turn from zx(#,8/9)
       endif
 
 c     Load particle lost turn from zx(#,9)
-      if(mc .ge. 9)then
+      if(mc .ge. mcf+2)then
         do i=1,np
           if(iptbl(i,4) .ne. 0)then
-            iptbl(i,5)=nint(zx(i,9))
+            iptbl(i,5)=nint(zx(i,mcf+2))
           endif
         enddo
       endif
@@ -508,6 +574,12 @@ c              - Swap particle coordinates
                zx(npa,4)=py1
                zx(npa,5)=z1
                zx(npa,6)=g1
+               
+               if(calpol)then
+                 sv=zx(i,7:8)
+                 zx(i,7:8)=zx(npa,7:8)
+                 zx(npa,7:8)=sv
+               endif
             endif
             npa=npa-1
          endif
@@ -515,6 +587,14 @@ c              - Swap particle coordinates
       enddo
       if(npa .gt. 0)then
         call tconvm(npa,zx(1,2),zx(1,4),zx(1,6),dv,-1)
+        if(calpol)then
+          do i=1,npa
+            st=1.d0+sqrt1(-zx(i,8)**2)
+            phis=zx(i,7)
+            zx(i,7)=st*cos(phis)
+            zx(i,9)=st*sin(phis)
+          enddo
+        endif
       endif
       return
       end
@@ -559,7 +639,6 @@ c              - Swap particle coordinates
         irtc=-1
         return
       endif
-c      call tfdebugprint(kx,'tfaddseed',1)
       kn=klx%dbody(2)
       if(ktfnonrealq(kn,vn))then
         irtc=-1

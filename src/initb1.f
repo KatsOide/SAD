@@ -71,9 +71,7 @@ c
      $     p_SINW_BEND=p_COSW_BEND+1,
      $     p_SQWH_BEND=p_SINW_BEND+1,
      $     p_SINWP1_BEND=p_SQWH_BEND+1,
-     $     p_DPHIX_BEND=p_SINWP1_BEND+1,
-     $     p_DPHIY_BEND=p_DPHIX_BEND+1,
-     $     p_THETA_BEND=p_DPHIY_BEND+1,
+     $     p_THETA_BEND=p_SINWP1_BEND+1,
      $     p_FB1_BEND=p_THETA_BEND+1,
      $     p_FB2_BEND=p_FB1_BEND+1,
      $     p_NPARAM_BEND=p_FB2_BEND-ky_MAX_BEND,
@@ -646,6 +644,7 @@ cc for spch
       use macfile
       use tfmem, only:ktaloc
       use tfmem, only:maxstack
+      use tfstk, only:dinfinity,dnotanumber
       implicit none
 c
       integer*4 idummy,idummy1,hsrch,i
@@ -1642,6 +1641,14 @@ c       call RsetGL('STACKSIZ',max(2d0**18,dble(iss)),idummy)
        call RsetGL('SEED',17.d0,idummy)
        call defglb('PI',icGLR,idummy)
        call RsetGL('PI',asin(1.d0)*2.d0,idummy)
+       call defglb('INF',icGLR,idummy)
+       call RsetGL('INF',dinfinity,idummy)
+       call defglb('INF.',icGLR,idummy)
+       call RsetGL('INF.',dinfinity,idummy)
+       call defglb('NaN',icGLR,idummy)
+       call RsetGL('NaN',dnotanumber,idummy)
+       call defglb('NAN',icGLR,idummy)
+       call RsetGL('NAN',dnotanumber,idummy)
        call defglb('MOMENTUM',icGLR,idummy)
        call RsetGL('MOMENTUM',30.d9,idummy)
        call defglb('PBUNCH',icGLR,idummy)
@@ -1772,6 +1779,7 @@ c
        call defflg('PHOTONS',FLAGOF)
        call defflg('EMIT',FLAGON)
        call defflg('POL'  ,FLAGOF)
+       call defflg('RADPOL',FLAGON)
        call defflg('DAPERT',FLAGOF)
        call defflg('FLUC',FLAGON)
        call defflg('K64' ,FLAGON)

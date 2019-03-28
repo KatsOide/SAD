@@ -1,12 +1,20 @@
-NormalCoordinates[i_]:=NormalCoordimatesPrimitive[Twiss['*',i]];
+?CALC6D;?GAUSS;EMITX;EMITY;NormalCoordinatesPrimitive;PeriodicR;
 
-NormalCoordinates[i_,param_]:=NormalCoordimatesPrimitive[param[i]];
+SetAttributes[{Fold,Symplectic},Constant];
 
-NormalCoordimatesPrimitive[param_]:=If[?Calc6D,
-  {NormalCoordinate6[param],Take[param,{16,21}]},
+BeginPackage[tws$`,`];
+
+Begin[tws$`];
+
+NormalCoordinates[i_]:=NormalCoordinatesPrimitive[Twiss['*',i]];
+
+NormalCoordinates[i_,param_]:=NormalCoordinatesPrimitive[param[i]];
+
+NormalCoordinatesPrimitive[param_]:=If[?CALC6D,
+  {NormalCoordinate6[param],Take[param,{mfdx,mfddp}]},
   Module[
-  {a1,f1,{r1,r2,r3,r4}=Take[param,{11,14}],detr,
-    xy=param[[15]],
+  {a1,f1,{r1,r2,r3,r4}=Take[param,{mfr1,mfr4}],detr,
+    xy=param[[mfdetr]],
     rmatrix,bmatrix,hmatrix},
   detr=r1*r4-r2*r3;
   a1=Sqrt[1-detr];
@@ -24,19 +32,19 @@ NormalCoordimatesPrimitive[param_]:=If[?Calc6D,
         {0,a1,r3,r4,0,0},
         {0,0,0,0,1,0},
         {0,0,0,0,0,1}}];
-  bmatrix={{1/Sqrt[param[[2]]],0,0,0,0,0},
-    {param[[1]]/Sqrt[param[[2]]],Sqrt[param[[2]]],0,0,0,0},
-    {0,0,1/Sqrt[param[[5]]],0,0,0},
-    {0,0,param[[4]]/Sqrt[param[[5]]],Sqrt[param[[5]]],0,0},
+  bmatrix={{1/Sqrt[param[[mfbx]]],0,0,0,0,0},
+    {param[[mfax]]/Sqrt[param[[mfbx]]],Sqrt[param[[mfbx]]],0,0,0,0},
+    {0,0,1/Sqrt[param[[mfby]]],0,0,0},
+    {0,0,param[[mfay]]/Sqrt[param[[mfby]]],Sqrt[param[[mfby]]],0,0},
     {0,0,0,0,1,0},
     {0,0,0,0,0,1}};
-  hmatrix={{1,0,0,0,0,-param[[7]]},
-    {0,1,0,0,0,-param[[8]]},
-    {0,0,1,0,0,-param[[9]]},
-    {0,0,0,1,0,-param[[10]]},
-    {param[[8]],-param[[7]],param[[10]],-param[[9]],1,0},
+  hmatrix={{1,0,0,0,0,-param[[mfex]]},
+    {0,1,0,0,0,-param[[mfepx]]},
+    {0,0,1,0,0,-param[[mfey]]},
+    {0,0,0,1,0,-param[[mfepy]]},
+    {param[[mfepx]],-param[[mfex]],param[[mfepy]],-param[[mfey]],1,0},
     {0,0,0,0,0,1}};
-  {bmatrix.hmatrix.rmatrix,Take[param,{16,21}]}]];
+  {bmatrix.hmatrix.rmatrix,Take[param,{mfdx,mfddp}]}]];
 
 BeamMatrix[i_]:=Module[
   {r=SymplecticInverse[NormalCoordinates[i][1]],
@@ -51,21 +59,15 @@ TransferMatrix[from_,to_,param1_List,opt___]:=
 TransferMatrix[from_,to_,opt___]:=
   TransferMatrixPrimitive[Twiss["*",{from,to}],LINE["GAMMABETA",{from,to}],opt];
 
-With[{ax=1,bx=2,nx=3,ay=4,by=5,ny=6,
-  ex=7,epx=8,ey=9,epy=10,
-  r1=11,r2=12,r3=13,r4=14,detr=15,
-  az=22,bz=23,nz=24,
-  zx=25,zpx=26,zy=27,zpy=28,
-  def={Fold->False,Symplectic->False}},
-
+With[{def={Fold->False,Symplectic->False}},
   TransferMatrixPrimitive[param_,g_List:LINE["GAMMABETA",{"^^^","$$$"}],opt___]:=Module[
     {dpsix,dpsiy,cospsix,cospsiy,sinpsix,sinpsiy,m4,rmatrix,det,a1,gr,
       {fold,symp}={Fold,Symplectic}/.opt/.def,dpsiz,cospisz,sinpsiz,m6,m},
     gr=If[symp,
       1,
       Sqrt[g[[1]]/g[[2]]]];
-    dpsix=param[[2,nx]]-param[[1,nx]];
-    dpsiy=param[[2,ny]]-param[[1,ny]];
+    dpsix=param[[2,mfnx]]-param[[1,mfnx]];
+    dpsiy=param[[2,mfny]]-param[[1,mfny]];
     If[fold,
       If[dpsix<=0,
         dpsix=dpsix+Twiss["NX","$$$"]];
@@ -76,7 +78,7 @@ With[{ax=1,bx=2,nx=3,ay=4,by=5,ny=6,
     cospsiy=Cos[dpsiy];
     sinpsiy=Sin[dpsiy];
     If[?CALC6D,
-      dpsiz=param[[2,nz]]-param[[1,nz]];
+      dpsiz=param[[2,mfnz]]-param[[1,mfnz]];
       cospsiz=Cos[dpsiz];
       sinpsiz=Sin[dpsiz];
       rmatrix=NormalCoordinate6/@param;
@@ -88,36 +90,36 @@ With[{ax=1,bx=2,nx=3,ay=4,by=5,ny=6,
           cospsiz*rmatrix[[1,5]]+sinpsiz*rmatrix[[1,6]],
           -sinpsiz*rmatrix[[1,5]]+cospsiz*rmatrix[[1,6]]};
       m=SymplecticInverse[rmatrix[[2]]].m6;
-      gr*If[(1-param[[1,detr]])*(1-param[[2,detr]])>0,
+      gr*If[(1-param[[1,mfdetr]])*(1-param[[2,mfdetr]])>0,
         m,
         {m[[3]],m[[4]],m[[1]],m[[2]],m[[5]],m[[6]]}],
       
-      m4={{Sqrt[param[[2,bx]]/param[[1,bx]]]*
-        (cospsix+param[[1,ax]] sinpsix),
-        Sqrt[param[[2,bx]] param[[1,bx]]] sinpsix,0,0},
-        {-((param[[2,ax]]-param[[1,ax]])*
-          cospsix+(1+param[[2,ax]] param[[1,ax]]) sinpsix)/
-            Sqrt[param[[2,bx]] param[[1,bx]]],
-          Sqrt[param[[1,bx]]/param[[2,bx]]]*(cospsix-param[[2,ax]] sinpsix),0,0},
-        {0,0,Sqrt[param[[2,by]]/param[[1,by]]]*
-          (cospsiy+param[[1,ay]] sinpsiy),
-          Sqrt[param[[2,by]] param[[1,by]]] sinpsiy},
-        {0,0,-((param[[2,ay]]-param[[1,ay]])*
-          cospsiy+(1+param[[2,ay]] param[[1,ay]]) sinpsiy)/
-            Sqrt[param[[2,by]] param[[1,by]]],
-          Sqrt[param[[1,by]]/param[[2,by]]]*(cospsiy-param[[2,ay]] sinpsiy)}};
+      m4={{Sqrt[param[[2,mfbx]]/param[[1,mfbx]]]*
+        (cospsix+param[[1,mfax]] sinpsix),
+        Sqrt[param[[2,mfbx]] param[[1,mfbx]]] sinpsix,0,0},
+        {-((param[[2,mfax]]-param[[1,mfax]])*
+          cospsix+(1+param[[2,mfax]] param[[1,mfax]]) sinpsix)/
+            Sqrt[param[[2,mfbx]] param[[1,mfbx]]],
+          Sqrt[param[[1,mfbx]]/param[[2,mfbx]]]*(cospsix-param[[2,mfax]] sinpsix),0,0},
+        {0,0,Sqrt[param[[2,mfby]]/param[[1,mfby]]]*
+          (cospsiy+param[[1,mfay]] sinpsiy),
+          Sqrt[param[[2,mfby]] param[[1,mfby]]] sinpsiy},
+        {0,0,-((param[[2,mfay]]-param[[1,mfay]])*
+          cospsiy+(1+param[[2,mfay]] param[[1,mfay]]) sinpsiy)/
+            Sqrt[param[[2,mfby]] param[[1,mfby]]],
+          Sqrt[param[[1,mfby]]/param[[2,mfby]]]*(cospsiy-param[[2,mfay]] sinpsiy)}};
       rmatrix=Map[
-        (det=#[[r1]]*#[[r4]]-#[[r2]]*#[[r3]];
+        (det=#[[mfr1]]*#[[mfr4]]-#[[mfr2]]*#[[mfr3]];
           a1=Sqrt[1-det];
-          If[#[[detr]]<1,
-            {{a1,0, -#[[r4]], #[[r2]]},
-              {0,a1, #[[r3]],-#[[r1]]},
-              {#[[r1]],#[[r2]],a1,0},
-              {#[[r3]],#[[r4]],0,a1}},
-            {{-#[[r4]], #[[r2]],a1,0},
-              {#[[r3]],-#[[r1]],0,a1},
-              {a1,0,#[[r1]],#[[r2]]},
-              {0,a1,#[[r3]],#[[r4]]}}])&,param];
+          If[#[[mfdetr]]<1,
+            {{a1,0, -#[[mfr4]], #[[mfr2]]},
+              {0,a1, #[[mfr3]],-#[[mfr1]]},
+              {#[[mfr1]],#[[mfr2]],a1,0},
+              {#[[mfr3]],#[[mfr4]],0,a1}},
+            {{-#[[mfr4]], #[[mfr2]],a1,0},
+              {#[[mfr3]],-#[[mfr1]],0,a1},
+              {a1,0,#[[mfr1]],#[[mfr2]]},
+              {0,a1,#[[mfr3]],#[[mfr4]]}}])&,param];
       gr*SymplecticInverse[rmatrix[[2]]].m4.rmatrix[[1]]]
     ]];
 
@@ -146,6 +148,10 @@ With[{z9=Table[0,{9}]},
     {ax,bx,mux,ay,by,muy,0,0,0,0,R[[1,1]],R[[1,2]],R[[2,1]],R[[2,2]],Det[R],
       Null@@LinearSolve[IdentityMatrix[4]-m,z],Null@@z9}]
   ];
+
+End[];
+
+EndPackage[];
 
 (*
 g0 = {{0, -1, 0}, {0, 0, -1}, {1, 0, 0}},

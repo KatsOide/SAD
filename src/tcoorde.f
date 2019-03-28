@@ -1,10 +1,10 @@
       subroutine tcoorde(trans,cod,beam,
-     1                 dx,dy,dz,chi1,chi2,chi3,dir,ld)
+     1                 dx,dy,dz,chi1,chi2,chi3,dir)
       use ffs_flag
       use tmacro
-      use tfstk, only: sqrtl
+      use mathfun, only: sqrtl
       implicit none
-      integer*4 ld,i
+      integer*4 i
       real*8 dx,dy,dz,chi1,chi2,chi3,cchi1,schi1,
      $     cchi2,schi2,cchi3,schi3,dx0,dy0,dz0,dx1,dy1,dz1,
      $     r11,r12,r13,r21,r22,r23,r31,r32,r33,
@@ -116,9 +116,6 @@
       call tmultr(trans1,trans2,6)
       call tmultr(trans,trans1,irad)
       call tmulbs(beam ,trans1,.true.,.true.)
-      if(calpol)then
-        call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod)
-      endif
       cod(1)=xf-pxf/pzf*zf+dx1
       cod(3)=yf-pyf/pzf*zf+dy1
       cod(5)=p/pzf*zf

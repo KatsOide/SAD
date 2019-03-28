@@ -114,11 +114,8 @@
         trans(1,i)=trans1(1,1)*trans(1,i)+trans1(1,3)*y
      $       +trans1(1,6)*trans(6,i)
       enddo
-      if(irad .gt. 6 .or. calpol)then
+      if(irad .gt. 6)then
         call tmulbs(beam,trans1,.true.,.true.)
-      endif
-      if(calpol)then
-        call polpar(0,ld,0.d0,0.d0,0.d0,0.d0,0.d0,cod)
       endif
       return
       end
