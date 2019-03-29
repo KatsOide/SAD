@@ -1,4 +1,4 @@
-Help$Update="$Date: 11/01/2018 23:00:00 $"[8,17];
+Help$Update="$Date: 4/2/2019 18:00:00 $"[8,17];
 !Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
 Help$Version=$Version;
 
@@ -1919,6 +1919,18 @@ UNIFORM is the antonym of GAUSS. It assumes the momentum distribution to be a un
       "CALC6D CAL GO",
       {}},
 
+      {"POL",
+       "\
+POL turns on spin tracking and the calculation of equilibrium polarization in EMIT/Emittance[].",
+       "RADPOL EMITTANCE(EMIT) Emittance TrackParticles",
+        {}},
+
+      {"RADPOL",
+       "\
+If POL is on, RADPOL turns on Sokolov-Ternov effect in tracking.",
+      "POL",
+      {}},
+
      {"CONVCASE",
       "\
 When CONVCASE is on, FFS command line parser converts the input characters to the upper case.(Default on) CONVCASE actions for the element names and patterns CAN be overridden by PRSVCASE flag.",
@@ -2289,7 +2301,7 @@ The probability of each polarization is given by each Stokes' parameter as (1+xi
    {"set-value-of-element",
     "\
 Usage: element-pattern [keyword] [{MIN | MAX | MINMAX | MAXMIN}] value\n\n\
-sets value to the specified keyword of the elements which match element-pattern. If keyword is omitted, the default-keyword is assumed.\n\
+sets value to the specified keyword of the elements which match element-pattern. If keyword is omitted, the default-keyword is assumed. keyword can be a wildcard to apply all matching keywords.\n\
    If MIN, MAX, MINMAX, MAXMIN are specified, it sets the limit of the default-keyword. Both MINMAX and MAXMIN means MIN=-Abs[value] and MAX=+Abs[value].\n\
    If the keyword is not the default-keyword, it affects both the current and the saved value.",
     "ATTRIBUTES(ATTR) SAVE elements default-keyword wildcards Element",
@@ -2780,6 +2792,7 @@ FineStructureConstant  alpha\n\
 ElectronCharge         e in Coulomb\n\
 ElectronMass           m_e in eV\n\
 ElectronRadius         classical radius of electron, in m\n\
+ElectronGminus2        electron g-2\n\
 ProtonMass             m_p in eV\n\
 ProtonRadius           classical radius of Proton, in m\n\
 SIMu0                  4 Pi 10^{-7}\n\
@@ -2844,7 +2857,7 @@ Tests:\n\
    Negative NonNegative NumberQ OddQ Order Positive RealQ StringQ* VectorQ\n\
    BoundQ* FBoundQ*\n\
 Input/Output:\n\
-   Close Flush* Get OpenRead OpenWrite OpenAppend Print Read ReadString SeekFile*\n\
+   Close Flush* Get OpenRead OpenWrite OpenAppend Print Put Read ReadString SeekFile*\n\
    Short* StringToStream Write WriteString\n\
 File System:\n\
    CopyDirectory CopyFile CreateDirectory DeleteDirectory DeleteFile\n\
@@ -4150,6 +4163,13 @@ DampingRate             {T0/taux, T0/tauy, T0/tauz}\n\
 Emittances              {emitx, emity, emitz}\n\
 MomentumSpread          sigma p/p0\n\
 BunchLength             sigma_z\n\ 
+Polarization            equilibrium polarization, if POL is on\n\
+Polarization2           equilibrium polarization by up to 2nd order calculaton\n\
+Polarization4           equilibrium polarization by up to 4th order calculaton\n\
+Polarization6           equilibrium polarization by up to 6th order calculaton\n\
+PolarizationVector      direction of polarization AppendTo the entrance of the beam line\n\
+SpinTune                spin tune on the closed orbit\n\
+NominalSpinTune         spin tune calculated by MOMENTUM and electron g-2\n\
 TuneShiftByRadiation    {dnux, dnuy, dnuz}\t\n\n\
 If OneTurnInformation->True, or Orbit->True, or Matrix->True, the followings are added.\t\n\n\
 OrbitAtEntrance         physical c.o.d. at the entrance of the ring.\n\
@@ -4168,7 +4188,7 @@ IntrabeamExcitation     List of the change of the 6 x 6 beam matrix due to the i
    Please do not forget to put semicolon at the end of Emittance[] function, otherwise the output will be huge especially when Orbit or Matrix is True.\n If ExpandElementValues->False, calculation is made using the present values of each component (i.e., including machine errors).\n\n\
 If SaveEMIT->True, the calculated values of emittances are stored in variables EMITX, EMITY, EMITZ, SIGE, SIGZ. The default is SaveEMIT->False.\n\n\
 InitialOrbit->{x0,px0,y0,py0,z0,dp0/p0} specifies the incoming orbit which is valid when NOCOD is set. The option Output->filenum enables the print out of EMITTANCE(EMIT) to filnum.",
-        "EMITTANCE(EMIT) SymplecticJ COD EMITX EMITY EMITZ SIGZ SIGE",
+        "EMITTANCE(EMIT) SymplecticJ COD EMITX EMITY EMITZ SIGZ SIGE POL",
         {}},
 
        {"TrackParticles",
@@ -4182,9 +4202,10 @@ The argument nend is the last turn number. The default is nbegin.\n\n\
 where location is the position-number of the starting point. If location is same as or in the downstream of destination, the tracking is done by folding across the beginning of the beam line. The coordinates are in a list of {7, np} form, where np is the number of particles. The first 6 elements of coordinates specifies\n\n\
    {x, px/p0, y, py/p0, z, dp/p0}\n\n\
 in this order. The {7, i} is the flag which is True(==1) when the particle is alive, and False(==0) when lost.\n\n\
+   If the flag POL is on, TrackParticles performes spin tracking. Then the coordinates has two more compornents sy and phis, which correspond to the y-component of the classical spin vector and the angle ArcTan[sx, sz], respectively. If POL is on, another flag RADPOL turns on the Sokolov-Ternov effect.\n\n\
    When a flag RADLIGHT is on, TrackParticles returns the trajectories of particles which are used to calculate the radiation fields. See RadiationField and RadiationSpectrum.\n\n\
 When PHOTONS is ON (default is OFF), TrackParticles generates a list of all photons radiated through the tracking. The list is assigned to a symbol PhotonList.",
-        "components LINE PHOTONS PhotonList RADLIGHT TouschekLifetime WakeFunction SurvivedParticles",
+        "components LINE PHOTONS PhotonList RADLIGHT TouschekLifetime WakeFunction SurvivedParticles POL RADPOL",
         {}},
 
        {"SurvivedParticles",
