@@ -64,7 +64,8 @@ c          p=(1.d0+g(i))**2
      $       px0,py0,zr0,bsi,al,ak,
      $       0.d0,0.d0,0.d0,eps0,alr)
       else
-        call tsolqu(np,x,px,y,py,z,g,dv,bsi,al,ak,0.d0,0.d0,0.d0,0,eps0)
+        call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       bsi,al,ak,0.d0,0.d0,0.d0,0,eps0)
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
         do 2120 i=1,np

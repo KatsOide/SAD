@@ -236,7 +236,7 @@ c      call tclrparaall
           nt=nt+1
           mt=mt-1
         enddo
-c        write(*,*)'tftrack-1 ',mt,ls,ld
+c       write(*,*)'tftrack-1 ',mt,ls,ld
         if(ld .le. ls)then
           normal=.false.
         elseif(mt .ge. 1 .and. npa .gt. 0)then
@@ -248,6 +248,7 @@ c        write(*,*)'tftrack-1 ',mt,ls,ld
         else
           normal=.true.
         endif
+c        write(*,*)'tftrack-2'
         np0=np00
         outfl=outfl0
         dapert=dapert0
