@@ -1,4 +1,5 @@
-      recursive subroutine tsolqu(np,x,px,y,py,z,gp,dv,bsi,al,ak,bz0,
+      recursive subroutine tsolqu(np,x,px,y,py,z,gp,dv,sx,sy,sz,
+     $     bsi,al,ak,bz0,
      $     ak0x,ak0y,ibsi,eps0)
       use tsolz
       use mathfun
@@ -34,8 +35,10 @@
      $     aw1=>tz%aw1,aw2=>tz%aw2,aw1p=>tz%aw1p,aw2p=>tz%aw2p,
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
+c      write(*,*)'tsolqu-0 ',al,ak,bz0
       if(ak*al .lt. 0.d0)then
-        call tsolqu(np,y,py,x,px,z,gp,dv,bsi,al,-ak,
+        call tsolqu(np,y,py,x,px,z,gp,dv,sx,sy,sz,
+     $       bsi,al,-ak,
      $       -bz0,-ak0y,-ak0x,ibsi,eps0)
         return
       endif

@@ -476,7 +476,7 @@ c          s=a(1,i)*b(1,k)
 c          do 3040 j=2,mn
 c            s=s+a(j,i)*b(j,k)
 c 3040     continue
-          x(i,k)=dot_product(a(1:mn,i),a(1:mn,k))
+          x(i,k)=dot_product(a(1:mn,i),b(1:mn,k))
  3030   continue
       enddo
       return

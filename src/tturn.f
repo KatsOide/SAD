@@ -205,6 +205,9 @@ c      isb=ilist(2,iwakepold+6)
       call tsetdvfs
 c      call tfmemcheckprint('tturn',0,.false.,irtc)
       do l=lbegin,lend
+c        if(mod(l,10) .eq. 0)then
+c          write(*,*)'tturn1 ',l
+c        endif
 c        call tfmemcheckprint('tturn',l,.false.,irtc)
         if(trpt .and. codplt)then
           call ttstat(np,x,px,y,py,z,g,dv,0.d0,

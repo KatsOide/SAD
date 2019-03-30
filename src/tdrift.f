@@ -190,7 +190,8 @@ c          pr=(1.d0+g(i))**2
           enddo
           if(ndiag .ge. 0)then
             ndiag=ndiag-1
-            write(*,*)'tdrift convergence error',phi,dphi
+            write(*,'(a,1p6g15.7)')'tdrift convergence error',
+     $           phi,dphi,bpr,b,bz,pr
             if(ndiag .eq. -1)then
               write(*,*)
      $             'Further tdrift messages will be suppressed.'

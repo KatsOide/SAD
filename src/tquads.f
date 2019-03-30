@@ -97,7 +97,8 @@ c          p=(1.d0+g(i))**2
      $         al,ak,bz,0.d0,0.d0,eps0,
      $         alr)
         else
-          call tsolqu(np,x,px,y,py,z,g,dv,bsi,al,ak,bz,0.d0,0.d0,0,eps0)
+          call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         bsi,al,ak,bz,0.d0,0.d0,0,eps0)
         endif
       else
         level=itfuplevel()
@@ -139,7 +140,8 @@ c          p=(1.d0+g(i))**2
      $             pxr0,pyr0,zr0,bsi,ali,aki,
      $             bz*rb,0.d0,0.d0,eps0,alr)
             else
-              call tsolqu(np,x,px,y,py,z,g,dv,bsi,ali,aki,
+              call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $             bsi,ali,aki,
      $             bz*rb,0.d0,0.d0,0,eps0)
             endif
           enddo
@@ -155,7 +157,8 @@ c          p=(1.d0+g(i))**2
      $             pxr0,pyr0,zr0,bsi,al,ak,
      $             bz,0.d0,0.d0,eps0,alr)
             else
-              call tsolqu(np,x,px,y,py,z,g,dv,bsi,al,ak,
+              call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $             bsi,al,ak,
      $             bz,0.d0,0.d0,0,eps0)
             endif
           endif
