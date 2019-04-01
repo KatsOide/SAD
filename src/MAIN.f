@@ -9,7 +9,7 @@ c                     /'1234567890123456789'/
       end module
 
       program MAIN
-      use version 
+      use version
       use maccbk
 c      use tfmem, only:talocinit
       use tfmem
