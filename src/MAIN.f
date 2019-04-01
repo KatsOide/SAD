@@ -1,15 +1,15 @@
       module version
         character*19, parameter ::
 c                     /'1234567890123456789'/
-     $     versionid  ='1.1.6.6.1k64       ',
-     $     versiondate='3/27/2018 22:00:00 '
+     $     versionid  ='1.1.6.6.4k64       ',
+     $     versiondate='4/1/2018 23:00:00  '
 
         character*25 builtdate
         character*30 startdat
       end module
 
       program MAIN
-      use version
+      use version 
       use maccbk
 c      use tfmem, only:talocinit
       use tfmem

@@ -303,6 +303,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
         ndiv=max(ndiv,ndivrad(abs(akr(0)),akr1,bz,eps0))
       endif
       ndiv=min(ndivmax,ndiv)
+c      write(*,*)'tmulit-4 ',krad,ndiv
       acc=(trpt .or. rfsw) .and. vc .ne. 0.d0
       if(acc)then
         if(w .eq. 0.d0)then
@@ -435,7 +436,8 @@ c        vnominal=0.d0
       ibsi=1
       do m=1,ndiv
         if(nmmin .eq. 2)then
-          call tsolqu(np,x,px,y,py,z,g,dv,bsi,al1,ak1,
+          call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         bsi,al1,ak1,
      $         bzs,dble(ak01),imag(ak01),ibsi,eps0)
           if(krad)then
             if(m .eq. 1)then
@@ -541,7 +543,8 @@ c            dpr=ah/(1.d0+sqrt(1.d0+ah))
         endif
       enddo
       if(nmmin .eq. 2)then
-        call tsolqu(np,x,px,y,py,z,g,dv,bsi,al1,
+        call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       bsi,al1,
      $       ak1,bzs,dble(ak01),imag(ak01),2,eps0)
 c        write(*,'(a,1p7g12.4)')'tmulti-2 ',bsi(1:7)
       endif
