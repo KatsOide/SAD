@@ -99,7 +99,7 @@ c     DOUBLE COMPLEX specific math function implemented by SAD
       complex*16 cloggamma1,cfactorial,cerfc,cerf,
      $     cproductlog
       external aloggamma1,cloggamma1,factorial,cfactorial,gammaq,
-     $     gammap,cerfc,cerf,gamma0,erf,erfc,
+     $     gammap,cerfc,cerf,gamma0,erf,erfc,inverseerf,
      $     cproductlog,productlog
 c      call tfreecheck1('tfefun-0',itastk(1,isp),
 c     $     itastk(2,isp),vstk(ivstkoffset+isp),irtc)
