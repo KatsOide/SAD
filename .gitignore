@@ -37,3 +37,6 @@ Documents.zip
 src/cod.sad
 src/errmsg,f
 src/tfsk.f
+*.mine
+*.r6473
+*.r6448
