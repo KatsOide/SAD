@@ -1,232 +1,305 @@
-# New MakeFile -- Driver Part
-#
+# Don't edit Makefile! Use conf-* for configuration.
+
 SHELL=/bin/sh
 
-include ./config.mk
+default: it
 
-CONF_FILE?=sad.conf
+auto-ccld.sh: \
+conf-cc conf-ld warn-auto.sh
+	( cat warn-auto.sh; \
+	echo CC=\'`head -1 conf-cc`\'; \
+	echo LD=\'`head -1 conf-ld`\' \
+	) > auto-ccld.sh
 
-BINDIR=$(SADDIR)/bin
-SRCDIR=$(SADDIR)/src
-PKGDIR=$(SADDIR)/Packages
-SADCONF=$(SADDIR)/config
-SADMK=$(SADDIR)/mk
-FILES=$(SADDIR)/files
-CONTRIB=$(SADDIR)/contrib
-OBJDIR=$(SADDIR)/obj/$(MACH_ARCH)
+hasclock_gettime.h: \
+tryclock_gettime.c compile load
+	( ( ./compile tryclock_gettime.c && ./load tryclock_gettime ) >/dev/null \
+	2>&1 \
+	&& echo \#define HASCLOCK_GETTIME 1 || exit 0 ) > hasclock_gettime.h
+	rm -f tryclock_gettime.o
 
-PRE_BUILD= setup-gdtoa
-PRE_DEPEND=setup-gdtoa
+caldate.0: \
+caldate.3
+	nroff -man caldate.3 > caldate.0
 
-all:
+caldate_fmjd.o: \
+compile caldate_fmjd.c caldate.h
+	./compile caldate_fmjd.c
 
--include $(SADDIR)/$(CONF_FILE)
+caldate_fmt.o: \
+compile caldate_fmt.c caldate.h
+	./compile caldate_fmt.c
 
-include $(SADMK)/sad.compiler.mk
-# -- Begin initialize options --
-SYS_OBJS=
-SYS_LIBS=
-# -- End   initialize options --
+caldate_mjd.0: \
+caldate_mjd.3
+	nroff -man caldate_mjd.3 > caldate_mjd.0
 
--include $(SADCONF)/$(OS_NAME).spec
--include $(SADDIR)/$(CONF_FILE)
+caldate_mjd.o: \
+compile caldate_mjd.c caldate.h
+	./compile caldate_mjd.c
 
-include $(SADMK)/sad.repository.mk
-include $(SADMK)/sad.port.mk
-include $(SADMK)/sad.doc.mk
-include $(SADMK)/sad.install.mk
-include $(SADMK)/sad.depend.mk
+caldate_norm.o: \
+compile caldate_norm.c caldate.h
+	./compile caldate_norm.c
 
-VPATH=$(SRCDIR)
+caldate_scan.o: \
+compile caldate_scan.c caldate.h
+	./compile caldate_scan.c
 
-## Message Output Rule
-_MSG_DEPRECATED=cat /dev/null
-ifdef CONFIG_DEPRECATED
-_MSG_EXPIRATION_DATE=
-ifneq ($(CONFIG_EXPIRATION_DATE),)
-_MSG_EXPIRATION_DATE=It it scheduled to be removed on or after $(CONFIG_EXPIRATION_DATE).
-endif
-_MSG_RECOMMEND=
-ifneq ($(CONFIG_RECOMMEND),)
-_MSG_RECOMMEND=Recommendation: $(CONFIG_RECOMMEND)
-endif
-_MSG_DEPRECATED=( \
-	echo ""; \
-	echo "Current configuration is deprecated"; \
-	echo "You may wish to reconsider installing it:"; \
-	echo "$(CONFIG_DEPRECATED)"; \
-	[ ! -z "$(_MSG_EXPIRATION_DATE)" ] && echo "$(_MSG_EXPIRATION_DATE)"; \
-	[ ! -z "$(_MSG_RECOMMEND)" ] && echo "$(_MSG_RECOMMEND)"; \
-	echo ""; \
-	sleep 5)
-endif
-ifdef DEPRECATED
-_MSG_EXPIRATION_DATE=
-ifneq ($(EXPIRATION_DATE),)
-_MSG_EXPIRATION_DATE=It it scheduled to be removed on or after $(EXPIRATION_DATE).
-endif
-_MSG_RECOMMEND=
-ifneq ($(RECOMMEND),)
-_MSG_RECOMMEND=Recommendation: $(RECOMMEND)
-endif
-_MSG_DEPRECATED=( \
-	echo ""; \
-	echo "This architecture[$(MACH_ARCH)] is deprecated!"; \
-	echo "You may wish to reconsider installing it:"; \
-	echo "$(DEPRECATED)"; \
-	[ ! -z "$(_MSG_EXPIRATION_DATE)" ] && echo "$(_MSG_EXPIRATION_DATE)"; \
-	[ ! -z "$(_MSG_RECOMMEND)" ] && echo "$(_MSG_RECOMMEND)"; \
-	echo ""; \
-	sleep 5)
-endif
+caldate_ster.o: \
+compile caldate_ster.c caldate.h
+	./compile caldate_ster.c
 
-_MSG_BROKEN=cat /dev/null
-ifdef CONFIG_UNSUPPORTED
-_MSG_RECOMMEND=
-ifneq ($(CONFIG_RECOMMEND),)
-_MSG_RECOMMEND=Recommendation: $(CONFIG_RECOMMEND)
-endif
-_MSG_BROKEN=( \
-	echo ""; \
-	echo "Current configuration is marked as UNSUPPORTED,"; \
-	echo "because $(CONFIG_UNSUPPORTED)."; \
-	[ ! -z "$(_MSG_RECOMMEND)" ] && echo "$(_MSG_RECOMMEND)"; \
-	echo ""; \
-	test 0 = 1)
-endif
-ifdef BROKEN
-_MSG_BROKEN=( \
-	echo ""; \
-	echo "This architecture[$(MACH_ARCH)] is marked as BROKEN,"; \
-	echo "because $(BROKEN)."; \
-	echo ""; \
-	test 0 = 1)
-endif
+caltime.0: \
+caltime.3
+	nroff -man caltime.3 > caltime.0
 
-check-port:
-	@$(_MSG_DEPRECATED)
-	@$(_MSG_BROKEN)
+caltime_fmt.o: \
+compile caltime_fmt.c caldate.h caltime.h
+	./compile caltime_fmt.c
 
-## Main Target Rule
-ifeq ($(USE_LIBTAI),YES)
-PRE_PATCH+= libtai-patch
-PRE_BUILD+= $(LIBTAI_INSTALL_TARGET)
-endif
+caltime_scan.o: \
+compile caltime_scan.c caltime.h caldate.h
+	./compile caltime_scan.c
 
-ifeq ($(USE_LIBFFI),YES)
-PRE_PATCH+= libffi-patch
-PRE_BUILD+= $(LIBFFI_INSTALL_TARGET)
-endif
+caltime_tai.0: \
+caltime_tai.3
+	nroff -man caltime_tai.3 > caltime_tai.0
 
-ifeq ($(USE_TCLTK),YES)
-PRE_PATCH+= tcltk-patch
-PRE_BUILD+= $(TCLTK_INSTALL_TARGET)
-endif
+caltime_tai.o: \
+compile caltime_tai.c tai.h uint64.h leapsecs.h caldate.h caltime.h
+	./compile caltime_tai.c
 
-all:	check-port $(PRE_BUILD) exe doc
+caltime_utc.o: \
+compile caltime_utc.c tai.h uint64.h leapsecs.h caldate.h caltime.h
+	./compile caltime_utc.c
 
-setup-gdtoa:	setup-gdtoa-src setup-gdtoa-gen
+check: \
+load check.o libtai.a
+	./load check libtai.a 
 
-setup-gdtoa-src:	$(CONTRIB)/gdtoa
-	[ -d $(SRCDIR)/gdtoa ] || mkdir -p $(SRCDIR)/gdtoa
-	(cd $(SRCDIR)/gdtoa; $(BINDIR)/lndir $(CONTRIB)/gdtoa)
+check.o: \
+compile check.c tai.h uint64.h leapsecs.h caltime.h caldate.h
+	./compile check.c
 
-setup-gdtoa-gen:	arith.h gd_qnan.h
+compile: \
+make-compile warn-auto.sh systype
+	( cat warn-auto.sh; ./make-compile "`cat systype`" ) > \
+	compile
+	chmod 755 compile
 
-clean-gdtoa:
-	@rm -f  gd_qnan.h arith.h
+easter: \
+load easter.o libtai.a
+	./load easter libtai.a 
 
-mostlyclean-gdtoa:
-	@rm -fr $(SRCDIR)/gdtoa
+easter.o: \
+compile easter.c caldate.h
+	./compile easter.c
 
-patch:	$(PRE_PATCH)
+find-systype: \
+find-systype.sh auto-ccld.sh
+	cat auto-ccld.sh find-systype.sh > find-systype
+	chmod 755 find-systype
 
-clean:	clean-gdtoa clean-std-modules
-	-cp $(PKGDIR)/init.local.n $(PKGDIR)/init.local.n.bak
-	@rm -f  buildinfo-db.c tfDefFuncs_.c
-	@rm -f  $(OBJ_LIBSAD)        $(OBJSIM)        $(OBJGLUE)        MAIN.o
-	@rm -f  $(OBJ_LIBSAD:.o=.il) $(OBJSIM:.o=.il) $(OBJGLUE:.o=.il) MAIN.il
-	@rm -f  *.mod
-	@rm -f  $(LIBSAD) $(SADEXE)
-#	@rm -f  $(BINDIR)/gs $(PKGDIR)/init.local.n
-	@rm -f  $(SADDIR)/script/design_example.sad.result
-	@rm -rf $(SADDIR)/Documents
+it: \
+man libtai.a leapsecs check easter yearcal nowutc
 
-distclean:	clean distclean-std-modules
-	@rm -rf $(OBJDIR)
+leapsecs: \
+load leapsecs.o libtai.a
+	./load leapsecs libtai.a 
 
-mostlyclean:	distclean mostlyclean-gdtoa mostlyclean-std-modules
-	@rm -fr $(MOSTLYCLEAN_DIRS)
+leapsecs.0: \
+leapsecs.3
+	nroff -man leapsecs.3 > leapsecs.0
 
-clean-std-modules:
-	@for mod in /dev/null $(STD_MODULES); do \
-	    if [ -x $(SADDIR)/extensions/Standard/$${mod} ]; then \
-		( cd $(SADDIR)/extensions/Standard/$${mod}; \
-		 unset OS_NAME MAKEFLAGS; \
-		 env SADSRCDIR=$(SADDIR) $(MAKE) clean); \
-	    fi; \
-	done
+leapsecs.o: \
+compile leapsecs.c tai.h uint64.h leapsecs.h caldate.h
+	./compile leapsecs.c
 
-distclean-std-modules:
-	@for mod in /dev/null $(STD_MODULES); do \
-	    if [ -x $(SADDIR)/extensions/Standard/$${mod} ]; then \
-		(cd $(SADDIR)/extensions/Standard/$${mod}; \
-		 unset OS_NAME MAKEFLAGS; \
-		 env SADSRCDIR=$(SADDIR) $(MAKE) distclean); \
-	    fi; \
-	done
+leapsecs_add.o: \
+compile leapsecs_add.c leapsecs.h tai.h uint64.h
+	./compile leapsecs_add.c
 
-mostlyclean-std-modules:
-	@for mod in /dev/null $(STD_MODULES); do \
-	    if [ -x $(SADDIR)/extensions/Standard/$${mod} ]; then \
-		(cd $(SADDIR)/extensions/Standard/$${mod}; \
-		 unset OS_NAME MAKEFLAGS; \
-		 env SADSRCDIR=$(SADDIR) $(MAKE) mostlyclean); \
-	    fi; \
-	done
+leapsecs_init.o: \
+compile leapsecs_init.c leapsecs.h
+	./compile leapsecs_init.c
 
-exe:	check-port $(SADEXE) std-modules $(PKGDIR)/init.local.n $(BINDIR)/gs
+leapsecs_read.o: \
+compile leapsecs_read.c tai.h uint64.h leapsecs.h
+	./compile leapsecs_read.c
 
-lib:	check-port $(LIBSAD)
+leapsecs_sub.o: \
+compile leapsecs_sub.c leapsecs.h tai.h uint64.h
+	./compile leapsecs_sub.c
 
-std-modules:
-	@for mod in /dev/null $(STD_MODULES); do \
-	    if [ -x $(SADDIR)/extensions/Standard/$${mod} ]; then \
-		(cd $(SADDIR)/extensions/Standard/$${mod}; \
-		 unset OS_NAME MAKEFLAGS; \
-		 env SADSRCDIR=$(SADDIR) $(MAKE) module); \
-	    fi; \
-	done
+libtai.a: \
+makelib tai_add.o tai_now.o tai_pack.o tai_sub.o tai_unpack.o \
+taia_add.o taia_approx.o taia_fmtfrac.o taia_frac.o taia_half.o \
+taia_less.o taia_now.o taia_pack.o taia_sub.o taia_tai.o \
+taia_unpack.o caldate_fmt.o caldate_scan.o caldate_fmjd.o \
+caldate_mjd.o caldate_norm.o caldate_ster.o leapsecs_read.o \
+leapsecs_init.o leapsecs_add.o leapsecs_sub.o caltime_fmt.o \
+caltime_scan.o caltime_tai.o caltime_utc.o
+	./makelib libtai.a tai_add.o tai_now.o tai_pack.o \
+	tai_sub.o tai_unpack.o taia_add.o taia_approx.o \
+	taia_fmtfrac.o taia_frac.o taia_half.o taia_less.o \
+	taia_now.o taia_pack.o taia_sub.o taia_tai.o taia_unpack.o \
+	caldate_fmt.o caldate_scan.o caldate_fmjd.o caldate_mjd.o \
+	caldate_norm.o caldate_ster.o leapsecs_read.o \
+	leapsecs_init.o leapsecs_add.o leapsecs_sub.o caltime_fmt.o \
+	caltime_scan.o caltime_tai.o caltime_utc.o
 
-$(LIBSAD):	$(OBJ_LIBSAD)
-	@rm -f $(LIBSAD)
-	@obj_libsad=`echo $(OBJ_LIBSAD) | tr ' ' '\n'| sort -u`; \
-	    $(AR) r $(LIBSAD) $${obj_libsad}
-	$(RANLIB) $(LIBSAD)
+load: \
+make-load warn-auto.sh systype
+	( cat warn-auto.sh; ./make-load "`cat systype`" ) > load
+	chmod 755 load
 
-_OBJ_LIBSAD=$(LIBSAD)
-__OBJ_LIBSAD=$(LIBSAD)
-ifdef USE_LTO
-_OBJ_LIBSAD=$(OBJ_LIBSAD)
-__OBJ_LIBSAD=$(shell lorder $(OBJ_LIBSAD) | tsort 2>/dev/null)
-endif
+make-compile: \
+make-compile.sh auto-ccld.sh
+	cat auto-ccld.sh make-compile.sh > make-compile
+	chmod 755 make-compile
 
-$(SADEXE):	$(PRE_BUILD) $(_OBJ_LIBSAD) $(OBJSIM) $(OBJGLUE) MAIN.o
-	$(FC) $(SYS_FC_ABIOPT) -o $@ $(FC_FLAGS) MAIN.o $(SYS_EXTSIM) $(OBJSIM) $(OBJGLUE) $(__OBJ_LIBSAD) $(LD_FLAGS)
+make-load: \
+make-load.sh auto-ccld.sh
+	cat auto-ccld.sh make-load.sh > make-load
+	chmod 755 make-load
 
-$(PKGDIR)/init.local.n:	$(SRCDIR)/init.local.n.in
-	-cp $@ $@.bak
-	sed -e "s,xSADROOT,$(SADDIR),g" \
-	    -e "s,xSAD_SHARE_ROOT,$(SADDIR),g" \
-	    -e "s,xScriptDirectory,script,g" \
-		$< >$@
+make-makelib: \
+make-makelib.sh auto-ccld.sh
+	cat auto-ccld.sh make-makelib.sh > make-makelib
+	chmod 755 make-makelib
 
-$(BINDIR)/gs:	$(SRCDIR)/gs.in
-	sed -e "s,xSADROOT,$(SADDIR),g" \
-	    -e "s,xSAD_SHARE_ROOT,$(SADDIR),g" \
-	    -e "s,xSAD_ARCH_ROOT,$(SAD_ARCH_ROOT),g" \
-	    -e "s,xSAD_EXE_ROOT,$(SADDIR)/obj,g" \
-	    -e "s,xSADEXE,$(SADEXE),g" \
-	    $< >$@ && chmod 755 $@
+makelib: \
+make-makelib warn-auto.sh systype
+	( cat warn-auto.sh; ./make-makelib "`cat systype`" ) > \
+	makelib
+	chmod 755 makelib
 
-# End of File
+man: \
+tai.0 tai_now.0 tai_pack.0 taia.0 taia_now.0 taia_pack.0 caldate.0 \
+caldate_mjd.0 caltime.0 caltime_tai.0 leapsecs.0
+
+nowutc: \
+load nowutc.o libtai.a
+	./load nowutc libtai.a 
+
+nowutc.o: \
+compile nowutc.c leapsecs.h tai.h uint64.h taia.h caltime.h caldate.h
+	./compile nowutc.c
+
+shar: \
+FILES BLURB README INSTALL TODO THANKS CHANGES FILES VERSION Makefile \
+leapsecs.txt leapsecs.dat leapsecs.c check.in check.out check.c \
+easter.c yearcal.c nowutc.c caldate.3 caldate_mjd.3 caldate.h \
+caldate_fmt.c caldate_scan.c caldate_mjd.c caldate_fmjd.c \
+caldate_norm.c caldate_ster.c tai.3 tai_now.3 tai_pack.3 tai.h \
+tai_add.c tai_now.c tai_pack.c tai_sub.c tai_unpack.c leapsecs.3 \
+leapsecs.h leapsecs_add.c leapsecs_sub.c leapsecs_init.c \
+leapsecs_read.c caltime.3 caltime_tai.3 caltime.h caltime_fmt.c \
+caltime_scan.c caltime_tai.c caltime_utc.c taia.3 taia_now.3 \
+taia_pack.3 taia.h taia_add.c taia_approx.c taia_fmtfrac.c \
+taia_frac.c taia_half.c taia_less.c taia_now.c taia_pack.c taia_sub.c \
+taia_tai.c taia_unpack.c uint64.h conf-cc conf-ld find-systype.sh \
+make-compile.sh make-load.sh make-makelib.sh trycpp.c warn-auto.sh
+	shar -m `cat FILES` > shar
+	chmod 400 shar
+
+systype: \
+find-systype trycpp.c
+	./find-systype > systype
+
+tai.0: \
+tai.3
+	nroff -man tai.3 > tai.0
+
+tai_add.o: \
+compile tai_add.c tai.h uint64.h
+	./compile tai_add.c
+
+tai_now.0: \
+tai_now.3
+	nroff -man tai_now.3 > tai_now.0
+
+tai_now.o: \
+compile tai_now.c tai.h uint64.h
+	./compile tai_now.c
+
+tai_pack.0: \
+tai_pack.3
+	nroff -man tai_pack.3 > tai_pack.0
+
+tai_pack.o: \
+compile tai_pack.c tai.h uint64.h
+	./compile tai_pack.c
+
+tai_sub.o: \
+compile tai_sub.c tai.h uint64.h
+	./compile tai_sub.c
+
+tai_unpack.o: \
+compile tai_unpack.c tai.h uint64.h
+	./compile tai_unpack.c
+
+taia.0: \
+taia.3
+	nroff -man taia.3 > taia.0
+
+taia_add.o: \
+compile taia_add.c taia.h tai.h uint64.h
+	./compile taia_add.c
+
+taia_approx.o: \
+compile taia_approx.c taia.h tai.h uint64.h
+	./compile taia_approx.c
+
+taia_fmtfrac.o: \
+compile taia_fmtfrac.c taia.h tai.h uint64.h
+	./compile taia_fmtfrac.c
+
+taia_frac.o: \
+compile taia_frac.c taia.h tai.h uint64.h
+	./compile taia_frac.c
+
+taia_half.o: \
+compile taia_half.c taia.h tai.h uint64.h
+	./compile taia_half.c
+
+taia_less.o: \
+compile taia_less.c taia.h tai.h uint64.h
+	./compile taia_less.c
+
+taia_now.0: \
+taia_now.3
+	nroff -man taia_now.3 > taia_now.0
+
+taia_now.o: \
+compile taia_now.c taia.h tai.h uint64.h hasclock_gettime.h
+	./compile taia_now.c
+
+taia_pack.0: \
+taia_pack.3
+	nroff -man taia_pack.3 > taia_pack.0
+
+taia_pack.o: \
+compile taia_pack.c taia.h tai.h uint64.h
+	./compile taia_pack.c
+
+taia_sub.o: \
+compile taia_sub.c taia.h tai.h uint64.h
+	./compile taia_sub.c
+
+taia_tai.o: \
+compile taia_tai.c taia.h tai.h uint64.h
+	./compile taia_tai.c
+
+taia_unpack.o: \
+compile taia_unpack.c taia.h tai.h uint64.h
+	./compile taia_unpack.c
+
+yearcal: \
+load yearcal.o libtai.a
+	./load yearcal libtai.a 
+
+yearcal.o: \
+compile yearcal.c caldate.h
+	./compile yearcal.c
