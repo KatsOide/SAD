@@ -40,3 +40,5 @@ src/tfsk.f
 *.mine
 *.r6473
 *.r6448
+*.bak
+bin/HostArch~
