@@ -13,7 +13,7 @@ SADCONF=$(SADDIR)/config
 SADMK=$(SADDIR)/mk
 FILES=$(SADDIR)/files
 CONTRIB=$(SADDIR)/contrib
-#OBJDIR=$(SADDIR)/obj/$(MACH_ARCH)
+OBJDIR=$(SADDIR)/obj/$(MACH_ARCH)
 
 PRE_BUILD= setup-gdtoa
 PRE_DEPEND=setup-gdtoa
@@ -21,8 +21,6 @@ PRE_DEPEND=setup-gdtoa
 all:
 
 -include $(SADDIR)/$(CONF_FILE)
-$(eval CCVERS=$(shell $(CC) --version|egrep -o '[0-9]+'|head -n 1|egrep -o '[0-9]+'))
-OBJDIR=$(TOPDIR)/obj/$(MACH_ARCH)_$(CCVERS)
 
 include $(SADMK)/sad.compiler.mk
 # -- Begin initialize options --
