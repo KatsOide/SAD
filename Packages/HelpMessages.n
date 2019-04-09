@@ -88,7 +88,7 @@ where l1, l2 are either an element or a line. n1, n2 are positive integers to re
      Sort[{
        {"orientation-of-an-element",
          "\
- An element with negative orientation means a reversal of the element along the z-axis. Thus all magnets except for a solenoid does not change the polaritty. A solenoid changes the polarity. An RF cavity should change, however, it does not in the current implementation. The edge angles and fringe parametes of the entrance and the exit swap.\n\
+ An element with negative orientation means a reversal of the element along the z-axis. Thus all magnets except for a solenoid does not change the polarity. A solenoid changes the polarity. An RF cavity should change, however, it does not in the current implementation. The edge angles and fringe parameters of the entrance and the exit swap.\n\
  AX, AY, AZ, EPX, EPY, ZPX, ZPY, R2, R3 of a MARK element are reversed.\n\
  The orientation is printed out by DISP. It can be accessed by LINE[\"DIR\"] . ",
          "beam-line LINE",
@@ -135,14 +135,14 @@ returns a BeamLine object which represents the expanded form of line which has b
        {"WriteBeamLine",
         "\
 Usage: WriteBeamLine[f, b1,.. ,option]\n\n\
-writes the BeamLine b1,.. to file f. If b1.. is omitteed the current beam line is assumed. If Format->\"MAIN\" is given, it writes in the MAIN-input format. If Name->{name1,..} is given, names of BeamLines are also written. The number of Name must be not smaller than number of BeamLines.",
+writes the BeamLine b1,.. to file f. If b1.. is omitted the current beam line is assumed. If Format->\"MAIN\" is given, it writes in the MAIN-input format. If Name->{name1,..} is given, names of BeamLines are also written. The number of Name must be not smaller than number of BeamLines.",
         "BeamLine ExtractBeamLine PrintBeamLine USE VISIT",
         {}},
 
        {"PrintBeamLine",
         "\
 Usage: PrintBeamLine[b1,.. ,option]\n\n\
-writes the BeamLine b1,.. to stdout. If b1.. is omitteed the current beam line is assumed. If Format->\"MAIN\" is given, it writes in the MAIN-input format. If Name->{name1,..} is given, names of BeamLines are also written. The number of Name must be not smaller than number of BeamLines.",
+writes the BeamLine b1,.. to stdout. If b1.. is omitted the current beam line is assumed. If Format->\"MAIN\" is given, it writes in the MAIN-input format. If Name->{name1,..} is given, names of BeamLines are also written. The number of Name must be not smaller than number of BeamLines.",
         "BeamLine ExtractBeamLine WriteBeamLine USE VISIT",
         {}}}]}
 
@@ -158,7 +158,7 @@ If an option EXPAND is given (default), it expands the beam line before the calc
    {dp, kind, reslist, function-values},\n\n\
 where\t\n\n\
 dp:        a list contains dp/p0 .\n\
-kind:      a list of kind of the orbit (ususally 0, but 1 to 6 for the finite amplitude matching, see MatchingAmplitude).\n\
+kind:      a list of kind of the orbit (usually 0, but 1 to 6 for the finite amplitude matching, see MatchingAmplitude).\n\
 reslist:   a list of {residual, xstab, ystab}, where\t\n\
        residual: matching residual,\n\
        xstab:    True when the matrix is stable in X,\n\
@@ -176,7 +176,7 @@ function-values: a list of length nc (== number of calculated items). Each eleme
 
    {"EXPAND",
      "\
- EXPAND distributes all variable keys to each correspoding components. Individual deviations (machine errors) are cleared.",
+ EXPAND distributes all variable keys to each corresponding components. Individual deviations (machine errors) are cleared.",
      "GO CAL EMIT",
      {}},
 
@@ -187,7 +187,7 @@ Usage: (1) CAL [[NO]EXPAND]]\n\
  \n\
 (1) With no argument or with an option [NO]EXPAND, calculates the optics and the matching-functions using the current values of the components. It prints out the values of the matching-functions specified either by the matching-function-commands or the second usage of CAL, as described below. If an option EXPAND is given(default), it expands the beam line before the calculation. If NOEXPAND is given, it calculates without any expansion."//
     FFSGO$Message//"\n\n\
-(2) With matching-fuction names, sets the matching-functions at the current fit point to be printed out after calculation. If the matching-function is followed by a minus sign, it suppresses the print-out.\n\\n\
+(2) With matching-function names, sets the matching-functions at the current fit point to be printed out after calculation. If the matching-function is followed by a minus sign, it suppresses the print-out.\n\\n\
 Example: CALC BX BY CAL",
    "GO DISPLAY(DISP) COUPLE(COUP) ATTRIBUTE(ATTR) SHOW FIT matching-function-commands EXPAND CONV CONVERGENCE MatchingResidual FFS",
     {}},
@@ -486,7 +486,7 @@ Usage: (1) EMIT\n\
    df_rf/f_rf/alpha_p = -|dp|, -|dp|/2, 0, |dp|/2, |dp|,\n\n\
 then prints out a table of the dependences of various quantities on the frequency shift.\n\n\
    The results of EMITTANCE(EMIT) are affected by flags COD, RADCOD, RFSW, INTRA, WSPAC, EMIOUT, CODPLOT and special-variables MOMENTUM, CHARGE, FSHIFT, MINCOUP, PBUNCH. The flag TRPT or RING affects only Emittance[], as EMITTANCE(EMIT) automatically set RING.\n\
-   EMITTANCE(EMIT) returns the equilibrium emittaces in variables EMITX, EMITY, EMITZ, and the equilibrium bunch length in SIGZ, the relative momentum spread in SIGE, and the longitudinal equilibrium position DTSYNCH. \n\n\
+   EMITTANCE(EMIT) returns the equilibrium emittances in variables EMITX, EMITY, EMITZ, and the equilibrium bunch length in SIGZ, the relative momentum spread in SIGE, and the longitudinal equilibrium position DTSYNCH. \n\n\
    The map used in EMIT is slightly different from that used in the tracking. For instance, the edge angle of a bend is approximated by a thin quad. If the edge angle is large and the curvature is small, EMIT may give a wrong answer. This will be corrected in near future.",
     "multi-turn-tracking extended-Twiss-parameters COD RADCOD RFSW INTRA EMIOUT WSPAC \n\
  CODPLOT TRPT MOMENTUM CHARGE FSHIFT MINCOUP PBUNCH EMITX EMITY EMITZ SIGE SIGZ DTSYNCH Emittance",
@@ -525,14 +525,14 @@ ADD(A)           Add the error to the keyword.\t",
 
    {"DUMP",
     "\
-Usage: DUMP component-pattern [compnent-pattern1..]\n\n\
+Usage: DUMP component-pattern [component-pattern1..]\n\n\
 prints out the current machine errors of components which match component-pattern.",
     "machine-error-commands components wildcards",
     {}},
 
    {"elements",
     "An element in FFS represents an object which has a unique name and several keywords with values. This simulates a power supply of a magnet. An element has one or more components, which correspond to individual magnets in a beam line. Each component may have different values from the values of the corresponding element. This simulates the machine error which varies magnet to magnet\n\
-   The value of an element can be saved to or recovered from the element-save-buffer by SAVE or RESET commnads. Different beam lines can share the same element, and their values can be different to each other, but they have the common element-save-buffer. Therefore the value of an element can be transferred between beam lines by SAVE and RESET command through the element-save-buffer.\n\
+   The value of an element can be saved to or recovered from the element-save-buffer by SAVE or RESET commands. Different beam lines can share the same element, and their values can be different to each other, but they have the common element-save-buffer. Therefore the value of an element can be transferred between beam lines by SAVE and RESET command through the element-save-buffer.\n\
    An element is created only in SAD MAIN level. In the definition, if a keyword is omitted, the previous definition is unchanged. All keywords have the default value zero. In FFS, it is only possible to change their values.",
     "TYPE(T) set-value-of-element Element",
     ElementsMessage=Sort[
@@ -1006,7 +1006,7 @@ An offset of the design ORBIT angle CHI2 relative to the solenoid axis at SOL wi
 
          {"F1",
            "\
-The length of fringe of the solenoide field. It affects only the EMITTANCE calculation. If F1 = 0 (default), no radiation arises at the fringe.",
+The length of fringe of the solenoid field. It affects only the EMITTANCE calculation. If F1 = 0 (default), no radiation arises at the fringe.",
            "",
            {}},
 
@@ -1133,7 +1133,7 @@ where ts is the equilibrium time determined by the valance between the accelerat
  Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. The acceleration is given as \n\n\
      dE = - e*(VOLT+DVOLT+V1 x+V20 x^2/2+V11 x y+V02 y^2/2)\n\
                 *Sin[2 Pi FREQ (t-ts) + PHI + DPHI],\n\n\
-where ts is the equilibrium time determined by the valance between the acceleration and the radiation loss around the ring. DPHI is not taken into account to determine the design mementum p0(s).",
+where ts is the equilibrium time determined by the valance between the acceleration and the radiation loss around the ring. DPHI is not taken into account to determine the design momentum p0(s).",
           "FREQ VOLT DVOLT V1 V20 V11",
           {}}
 
@@ -1252,7 +1252,7 @@ where ts is the equilibrium time determined by the valance between the accelerat
 Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. The acceleration is given as \n\n\
      dE = - e*(VOLT+DVOLT+V1 x+V20 x^2/2+V11 x y+V02 y^2/2)\n\
                 *Sin[2 Pi FREQ (t-ts) + PHI + DPHI],\n\n\
-where ts is the equilibrium time determined by the valance between the acceleration and the radiation loss around the ring. DPHI is not taken into account to determine the design mementum p0(s).",
+where ts is the equilibrium time determined by the valance between the acceleration and the radiation loss around the ring. DPHI is not taken into account to determine the design momentum p0(s).",
           "FREQ VOLT DVOLT V1 V20 V11",
           {}},
 
@@ -1422,7 +1422,7 @@ TDR does not work when SAD is running under EMACS without X-window.",
     "\
 Usage: IF expr1 body1 [ELSEIF expr2 body2 [ELSEIF ..]] [ELSE body3] ENDIF\n\n\
 This is a FORTRAN77 like IF-structure. If the expression expr1 is True(==1) or nonzero, executes commands in body1. If it is False(==0), skip commands until ELSE, ELSEIF or ENDIF appears at the same level of the IF-structure, and executes commands after ELSE or ENDIF, or executes the ELSEIF command. If expr1 is not a real number, an error message is printed and ignores the command line.",
-    "ELSE ELSEIF ENDIF expression command-systax If",
+    "ELSE ELSEIF ENDIF expression command-syntax If",
     {}},
 
    {"ELSE",
@@ -1457,7 +1457,7 @@ executes commands in body n times until expr1 gives nonzero. The number n can be
     "\
 Usage: MEA [end-component] [OUT file plot-spaces]\n\n\
 tracks particles from the entrance to end-component and prints out the statistics at the end. If end-component is omitted, the component end used in the last MEASURE(MEA) (default: end of the beam line) is assumed.\n\
-   If OUT file plot-spaces are attached, it plots phase space disribution on file. The phase-spaces are specified like as X-PX, \n\
+   If OUT file plot-spaces are attached, it plots phase space distribution on file. The phase-spaces are specified like as X-PX, \n\
 or X-Y, etc., (up to any numbers).\n\
    Parameters for the tracking are specified by special-variables and flags:\n\n\
 seed for the random-number generator:\n\
@@ -1700,7 +1700,7 @@ RFSW turns on the acceleration by CAVI and TCAVI element in the particle-trackin
 
      {"RADTAPER",
       " Scales all magnets except for solenoids according to the local momentum (DDP) of the closed orbit. It uses the average of DDPs at the entrance and the exit. For tracking, RADCOD and ( CAL/GO with CALC6D or EMIT(Emittance[]) ) is necessary. CAL/GO with CALC4D will clear the necessary information for tracking with RADTAPER.\n\
- RADTAPER sets the momentum diviation of the closed orbit to DP0, which is an arbitrary choice of an under-deterministic problem of tapering. Thus the difference in the path length around the ring is adjusted by automatically updatting FSHIFT.",
+ RADTAPER sets the momentum deviation of the closed orbit to DP0, which is an arbitrary choice of an under-deterministic problem of tapering. Thus the difference in the path length around the ring is adjusted by automatically updating FSHIFT.",
       "RADCOD CALC6D CALC4D EMIT CAL GO DP0 FSHIFT",
        {}},
 
@@ -1711,16 +1711,16 @@ RFSW turns on the acceleration by CAVI and TCAVI element in the particle-trackin
 
      {"INTRA",
       "INTRA turns on the calculation of intra-beam scattering in the emittance calculation. Accessible in MAIN level.",
-      "EMITTACE(EMIT)",
+      "EMITTANCE(EMIT)",
       {}},
 
      {"TRPT",
-      "TRPT or NORING decalres that the beam line is a transport line, not a part of a storage ring. The nominal momentum be changed in the bem line due to acceleration. The default momentum distribution becomes uniform distribution. The default is RING or NOTRPT. TRPT affects Emittance[] to ignore equilibrium calculation for a transport line.",
+      "TRPT or NORING declares that the beam line is a transport line, not a part of a storage ring. The nominal momentum be changed in the beam line due to acceleration. The default momentum distribution becomes uniform distribution. The default is RING or NOTRPT. TRPT affects Emittance[] to ignore equilibrium calculation for a transport line.",
       "DISPLAY(DISP) RING UNIFORM GAUSS",
       {}},
 
      {"EMIOUT",
-      "EMIOUT turns on the extented output of emittance calculation.\n\
+      "EMIOUT turns on the extended output of emittance calculation.\n\
 Accessible in the MAIN level.",
       "EMIT",
       {}},
@@ -1952,37 +1952,37 @@ There are several variables which have special rolls in FFS. Some of them are al
     Sort[
     {{"EMITX",
       "\
-EMITX is a real variable for the horizontal physical emittance. It is automatically set by the keyword EMITX of the MARK element at the beginning of the beam line. The EMITTANCE(EMIT) command returns its calculated value in EMITX. The value of EMITX affects the default weight of variables in the matching. Accessible in MAIN.",
+EMITX is a real variable for the horizontal emittance (not normalized by gamma beta). It is automatically set by the keyword EMITX of the MARK element at the beginning of the beam line. The EMITTANCE(EMIT) command returns its calculated value in EMITX. The value of EMITX affects the default weight of variables in the matching. Accessible in MAIN.",
       "EMITY EMITZ SIGZ SIGE DP elements MARK",
       {}},
 
      {"EMITY",
       "\
-EMITY is a real variable for the vertical physical emittance. It is automatically set by the keyword EMITY of the MARK element at the beginning of the beam line. The EMITTANCE(EMIT) command reôurns its calculated value in EMITY. The value of EMITY affects the default wei÷ht of variables in the matching. Accessible in MAIN.",
+EMITY is a real variable for the vertical emittance (not normalized by gamma beta). It is automatically set by the keyword EMITY of the MARK element at the beginning of the beam line. The EMITTANCE(EMIT) command returns its calculated value in EMITY. The value of EMITY affects the default wei÷ht of variables in the matching. Accessible in MAIN.",
       "EMITX EMITZ SIGZ SIGE DP elements MARK",
       {}},
 
      {"EMITZ",
       "\
-EMITZ is a real variable for the longitudinal physical emittance. It is automatically set by the keyword EMITZ of the MARK element at the beginning of the beam line. The EMITTANCE(EMIT) command reôurns its calculated value in EMITZ. Accessible in MAIN.",
+EMITZ is a real variable for the longitudinal emittance (not normalized by gamma beta). It is automatically set by the keyword EMITZ of the MARK element at the beginning of the beam line. The EMITTANCE(EMIT) command returns its calculated value in EMITZ. Accessible in MAIN.",
       "EMITX EMITY SIGZ SIGE DP elements MARK",
       {}},
 
       {"SIGZ",
         "\
- SIGZ is the equilibrium bunch length at the entrance of the beam line calulated by EMIT/Emittance[SaveEMIT->True].",
+ SIGZ is the equilibrium bunch length at the entrance of the beam line calculated by EMIT/Emittance[SaveEMIT->True].",
         "EMITX EMITY EMITZ SIGE EMIT Emittance",
         {}},
 
       {"SIGE",
         "\
- SIGE is the equilibrium momentum spread at the entrance of the beam line calulated by EMIT/Emittance[SaveEMIT->True].",
+ SIGE is the equilibrium momentum spread at the entrance of the beam line calculated by EMIT/Emittance[SaveEMIT->True].",
         "EMITX EMITY EMITZ SIGZ EMIT Emittance",
         {}},
 
       {"DTSYNCH",
         "\
- DTSYNCH is the equilibrium arrival time advance (= -c*delta t, in meter) where the synchrotron radiation loss balances with the RF, calulated by EMIT/Emittance[SaveEMIT->True]. This corresponds to the origin of the RF phase. The default is zero.",
+ DTSYNCH is the equilibrium arrival time advance (= -c*delta t, in meter) where the synchrotron radiation loss balances with the RF, calculated by EMIT/Emittance[SaveEMIT->True]. This corresponds to the origin of the RF phase. The default is zero.",
         "EMITX EMITY EMITZ SIGZ SIGE EMIT Emittance PHICAV",
         {}},
 
@@ -2027,7 +2027,7 @@ CONVERGENCE is the goal of the convergence(==MatchingResidual) in the matching. 
       "\
 MatchingResidual holds the convergence in the last GO or CALCULATE(CAL) commands. It is calculated by\n\n\
      sw*(Sum[(w_i*df_i)^ExponentOfResidual,{i}]/sw)^(2/ExponentOfResidual)\n\
-     +penalty\n where w_i is the weight of the i-th condition, df_i is the differeþce of the i-th function from the goal, penalty is an additional big number  (typically 10), when the optics is unstable or closed orbit is not found in the case of CELL. The parameter sw is defined as\n\n\
+     +penalty\n where w_i is the weight of the i-th condition, df_i is the difference of the i-th function from the goal, penalty is an additional big number  (typically 10), when the optics is unstable or closed orbit is not found in the case of CELL. The parameter sw is defined as\n\n\
      sw=Sum[(OffMomentumWeight/2/woff)^2,{i}]\n with\n\n\
      woff = 1                               for on-momentum optics\n\
           = Sqrt[number-of-momentum-points] for off-momentum optics.\n The weight of the function is lighter in the case of off-momentum-matching so that all off-momentum deviations functions weight equal to the on-momentum one. However, the relative weight for the off-momentum part can be changed by setting OffMomentumWeight. \n\
@@ -2064,7 +2064,7 @@ Number of unstable planes in the optics calculations. Equal to zero if all x and
       {}},
 
      {"FFS$NumericalDerivative",
-      "If False (default), the calculation of response matrix for each matching variables usus analytical expressions as much as possible. If True, performs numerical differentiation during the matching by GO. It is useful for some variables and matching functions in some cases. It is slow, so should be avoided for off-momentum-matching for a large beam line.",
+      "If False (default), the calculation of response matrix for each matching variables uses analytical expressions as much as possible. If True, performs numerical differentiation during the matching by GO. It is useful for some variables and matching functions in some cases. It is slow, so should be avoided for off-momentum-matching for a large beam line.",
       "GO off-momentum-matching",
       {}},
 
@@ -2096,7 +2096,7 @@ MASS is the rest mass of the particle in eV. The default is the electron mass.",
       {}},
 
      {"NPARA",
-      "NPARA specifies the maximum number of parallel processes for variaous calulations such as CALC, GO, TrackParticles, DynamicApertureSurve, etc.",
+      "NPARA specifies the maximum number of parallel processes for various calculations such as CALC, GO, TrackParticles, DynamicApertureSurve, etc.",
       "CAL GO TrackParticles DynamicApertureSurvey",
       {}},
 
@@ -2217,7 +2217,7 @@ specifies initial conditions of a number of orbits for the optics calculation by
 
      {"ElementValues",
       "\
-ElementValues is a symbol to assign rules to determine values of keywords of elements or components. This is used to give a dependence between keywords of different elements or components, or determine then by a parameteric expression.\n\n\
+ElementValues is a symbol to assign rules to determine values of keywords of elements or components. This is used to give a dependence between keywords of different elements or components, or determine then by a parametric expression.\n\n\
 Useage:  ElementValues = { key[elem] :> expr, ...}\n\n\
 where\t\n\n\
    key:      keyword to specify a value (string).\n\
@@ -2258,7 +2258,7 @@ OpticsProlog is a variable to assign a user-defined function which is to be exec
 
      {"OpticsEpilog",
       "\
-OpticsEpilog is a variable to assign a user-defined function which is to be executed everytime after an optics calculation is done in CALCULATE(CAL) or GO commands. In GO, OpticsEpilog is called at the end of each iteration. This function is useful, for instance, for setting parameters which depends on the result of optics calculation itself.",
+OpticsEpilog is a variable to assign a user-defined function which is to be executed every time after an optics calculation is done in CALCULATE(CAL) or GO commands. In GO, OpticsEpilog is called at the end of each iteration. This function is useful, for instance, for setting parameters which depends on the result of optics calculation itself.",
       "OpticsProlog",
       {}},
 
@@ -2627,10 +2627,10 @@ symb/:lhs = rhs sets rhs to lhs, associated with symbol symb. symb/:lhs := rhs s
    {"pattern",
      "\
  Pattern is a special expression for mathing arguments in function definitions and rules with several forms:\n\n\
-_           matchins any single argument.\n\
+_           matches any single argument.\n\
 __          matches a sequence of 1 or more arguments.\n\
 ___         matches a sequence of 0 or more arguments.\n\
-x_          matchins any single argument, which is names x.\n\
+x_          matches any single argument, which is names x.\n\
 x__         matches a sequence of 1 or more arguments, which is named x.\n\
 x___        matches a sequence of 0 or more arguments, which is named x.\n\
 x:pattern   a pattern which is named x.\n\
@@ -2655,9 +2655,9 @@ f[pat1 [,pat2...]] (:)= body;\n\
 f[pat1 [,pat2...]] ^(:)= body;\n\
 g//:f[pat1 [,pat2...]] (:)= body;\n\n\
 where pat1 [,pat2...] are patterns (including expressions).\n\
- If UpSet(^=) or UpSetDelayed (^:=) is used, the definitioin is associated with the symbol in the first level of l.h.s.\n\
+ If UpSet(^=) or UpSetDelayed (^:=) is used, the definition is associated with the symbol in the first level of l.h.s.\n\
  If TagSet(//:) is used, the definition is associated with the symbol on the left of //: .\n\n\
- The patters can be an expression including constants. The definition with constant arguments can be accessed faster than searching a list, in general, so they are suitable for a data base. Definitions with contant arguments have higher priorities than with patterns.",
+ The patters can be an expression including constants. The definition with constant arguments can be accessed faster than searching a list, in general, so they are suitable for a data base. Definitions with constant arguments have higher priorities than with patterns.",
     "UpSet UpSetDelayed TagSet pattern",
     {}},
 
@@ -2665,12 +2665,12 @@ where pat1 [,pat2...] are patterns (including expressions).\n\
      "\
  A character-string is expressed by enclosing in \"\". Special characters are expressed using \\:\n\n\
 \\n     new line\n\
-\\r     carriage returne\n\
+\\r     carriage return\n\
 \\t     tab\n\
 \\\"     double quote\n\
 \\      backslash\n\
 \\nnn   a character whose octal code is nnn.\n\n\
- If a character-string is wrtten over multiple lines, \\ must be placed at the end of each line.\n\
+ If a character-string is written over multiple lines, \\ must be placed at the end of each line.\n\
  The length of a character-string is limited to 2^31-1.",
      "",
      Sort[{
@@ -2744,9 +2744,9 @@ Example: StringPosition[\"abcbcbcbcb\",\"bcb\"] returns {{2,4},{4,6},{6,8},{8,10
 
        {"ToString",
          "\
- ToString[expr] evaluates an expresssion expr, then converts to a character-string.\n\
+ ToString[expr] evaluates an expression expr, then converts to a character-string.\n\
  ToString[expr, [FormatType ->] form [, form1...]] converts expr using one or more formats form [,form1...]. Available formats are:\t\n\n\
- InputForm special charachters are quoted with \\.\n\
+ InputForm special characters are quoted with \\.\n\
  HoldForm converts expr without evaluation.\n\
  StandardForm converts with the standard number format and PageWidth.\n\
  GenelicSymbolForm do not display the generation ($nnn) of local symbols for Module.\t",
@@ -2828,7 +2828,7 @@ Rational:\n\
    Numerator Denominator\n\
 Fourier-Transformation:\n\
    Fourier InverseFourier\n\
-Data-Manupilation:\n\
+Data-Manipulation:\n\
    FindRoot Fit* NIntegrate* PolynomialFit* Spline*\n\
 Calculus:\n\
    D NIntegrate\n\
@@ -2842,7 +2842,7 @@ List-manipulations:\n\
 Character-strings:\n\
    FromCharacterCode CharacterPosition Characters DigitQ LetterQ StringDrop\n\
    StringFill* StringInsert StringLength StringPosition StringTrim*\n\
-   Symbol SymbolName ToCharacteCode ToLowerCase ToUpperCase ToExpression\n\
+   Symbol SymbolName ToCharacterCode ToLowerCase ToUpperCase ToExpression\n\
 Functional-Operations:\n\
    Apply Cases Count DeleteCases Identity FixedPoint* FixedPointList*\n\
    Fold Function Level Map MapAll MapAt MapIndexed MapThread Nest Position\n\
@@ -2876,7 +2876,7 @@ Graphics:\n\
    BeamPlot* ColumnPlot* HistoPlot* ListContourPlot ListDensityPlot \n\
    ListPlot Plot Show FitPlot* GeometryPlot* OpticsPlot* TkPhotoPutBlock*\n\
 System Interface:\n\
-   Directory Evironment GetEnv* GetGID* GetPID* GetUID* ProcessStatus* \n\
+   Directory Environment GetEnv* GetGID* GetPID* GetUID* ProcessStatus* \n\
    SetDirectory SetEnv* System* TemporaryName* MkSecureTemp* RealPath*\n\
 Multiprocessing:\n\
    BiPipe* Fork* OpenShared* Shared* Wait*\n\ 
@@ -3061,7 +3061,7 @@ returns a list of indices of parts of l, which match a pattern pat. Optional lev
           "\
    Cases[l, pat [, level [,n]]]\n\n\
 returns a list of parts of l, which match a pattern pat. Optional level-spec l and the maximum number of results n can be specified.",
-          "level-spec pattern Position DelteCases",
+          "level-spec pattern Position Deletecases",
           {}},
 
         {"DeleteCases",
@@ -3176,7 +3176,7 @@ Word        a word, delimited by WordSeparators\n\
 Real        a real expression\n\
 Expression  an expression\n\
 Character   a single character\n\n\
- A format n*item is possible with a positive inteteger n.\n\
+ A format n*item is possible with a positive integer n.\n\
  A list {item1,.., itemn} is possible. The result is also a list.\n\n\
  opts are options given by a Rule:\n\
 Option         Value       Default        Effect\n\
@@ -3245,7 +3245,7 @@ PageWidth is the number of columns of the output. The default is set from GetEnv
          {"StandardForm",
            "\
 StandardForm[expr]\n\n\
-resets $FORM and PageWidth to their defaults, then evaulate expr, returns the result, and resets $FORM and PageWidth to those at the beginning of StandardForm.",
+resets $FORM and PageWidth to their defaults, then evaluate expr, returns the result, and resets $FORM and PageWidth to those at the beginning of StandardForm.",
            "$FORM PageWidth",
            {}}
 
@@ -3267,8 +3267,8 @@ resets $FORM and PageWidth to their defaults, then evaulate expr, returns the re
 MemoryCheck[n]\n\n\
 checks the consistency of the memory allocation by SAD. The range of the check and the output depend on n:\t\n\n\
 MemoryCheck[]  : checks the consistency of the free area and returns the allocation info,\n\
-MemoryCheck[1] : checks the consistensy of the free and used areas. Returns the allocaton info.\n\
-MemoryCheck[2] : checks the consistensy of the free and used areas. Returns the allocaton info. and a list of free segments.\t\n\n\
+MemoryCheck[1] : checks the consistensy of the free and used areas. Returns the allocation info.\n\
+MemoryCheck[2] : checks the consistensy of the free and used areas. Returns the allocation info. and a list of free segments.\t\n\n\
  The returned value is {used, allocated from system, # of free segments, missing size[, list of free segments]} in units of word (= 8 bytes).\n\
  If an inconsistency is found, messages are printed out.",
           "",
@@ -3277,7 +3277,7 @@ MemoryCheck[2] : checks the consistensy of the free and used areas. Returns the 
         {"TracePrint",
           "\
 TracePrint[fun]\n\n\
-prints out all funtion calls and each expression compound in \";\" in the evaluation of fun.",
+prints out all function calls and each expression compound in \";\" in the evaluation of fun.",
           "",
           {}},
 
@@ -3321,7 +3321,7 @@ where v1,..,vn are the values of the parameters which minimizes chi-square, chis
    Options are\n\n\
 MaxIterations        Maximum number of iterations.\n\
 D                    If True (default), tries to use analytical derivative.\n\
-Cutoff               If nonzero, set teh saturation point for each data as:\n\n\
+Cutoff               If nonzero, set the saturation point for each data as:\n\n\
 chi-suare = Sum_i ( Min[Cutoff, Max[-Cutoff, (d_i - f_ i) / sigma_i]]^2 ) ,\n\n\
                      which is a sort of robust M-Estimates. By Cutoff, the fit\n\
                      tends to ignore tail data which are beyond Cutoff.\n\
@@ -3373,7 +3373,7 @@ where list contains data in the form as {{x1,y1}, ..} or {{x1,{y11, y12, ..}}, .
     Derivative[1][sp][x]      value of y' at x.\n\
     Derivative[2][sp][x]      value of y'' at x.\n\
     Integrate[sp[x],{x, x0, x1}]   integral of sp[x] from x0 to x1.\n\n\
-Exapmple:\n\
+Example:\n\
    sp=Spline[{{1,2},{3,5},{4,2},{5,7}}];\n\
    Plot[{sp[x],Derivative[1][sp][x],Derivative[2][sp][x],Integrate[sp[y],{y,1,#}]&[x]}, {x,1,5}, FrameLabel->{\"x\"}, Thickness->2, Legend->{\"sp[x]\",\"sp'[x]\",\"sp''[x]\",\"Int sp[x]\"}];\n\
    Update[];\n\n\
@@ -3679,7 +3679,7 @@ ColumnOffset    0 < number < 1  0.15            Ratio of spacing of columns\n\
 Reference        number         0               Where column starts\n\
 Orientation     Vertical        Vertical        Orientation of columns\n\
                 Horizontal\n\
-ColumnLabel     List of Str.    Automatic       Lables for each column\n\
+ColumnLabel     List of Str.    Automatic       Labels for each column\n\
                 Function                        Scale for column number\n\
                 None                            No labels\n\
 FillColor       color                           Colors to fill columns\n\
@@ -3716,10 +3716,10 @@ FitParameters   args for FitPlot in a list",
        {"ListContourPlot",
         "\
 Usage:  ListContourPlot[list, options, ...]\n\n\
-plots a coutour plot by list which is a 2D List of Real data.\n\n\
+plots a contour plot by list which is a 2D List of Real data.\n\n\
 Option           Value            Default         Action\n\
 ---------------------------------------------------------------------------\n\
-Contours         Real             10              number of contoure\n\
+Contours         Real             10              number of contours\n\
 PlotRange        {min,max}, {prxy, prz}, or {prx, pry, prz}\n\
                                   Automatic       depth of contours (prz) and PlotRange for x-y (prxy)\n\
 AspectRatio      Real             1\n\
@@ -3883,7 +3883,7 @@ Example:\n\
 Usage: DownhillSimplex[initial, f, options]\n\n\
 minimizes a function f by the downhill simplex method, starting from an initial simplex initial.  Suppose f is a function of n variables.   Then  initial is a list of n+1 elements, each of which is a list of the form\n\n\
    {f[vi], vi} ,\n\n\
-where vi is a list of n values correspoinding to each variable. The initial must be sorted in ascending order of f, i.e.,\n\n\
+where vi is a list of n values corresponding to each variable. The initial must be sorted in ascending order of f, i.e.,\n\n\
    initial=Sort[Map[{f[#],#}&,vlist]]\n\n\
 generates initial from a list of variables vlist.\n\
    DownhillSimplex returns the final simplex in the same form as initial.\n\n\
@@ -3904,7 +3904,7 @@ Examples:\n\
   p=Sort[Map[{f[#],#}&,v]]\n\
   DownhillSimplex[p,f,MaxIteration->100,\n\
      Tolerance->1e-4,VariableRange->limit]",
-      "FFS-dediacted-functions:OptimizeOptics",
+      "FFS-dedicated-functions:OptimizeOptics",
       {}},
 
      {"FFS-dedicated-functions",
@@ -4111,7 +4111,7 @@ This restricts the range of the rotation angle of QF within +-100 mrad.\n\n\
          VariableRange[_,\"ROTATE\",v_]:= -0.1 < v < 0.1;\n\n\
 This specifies the same for all elements.\n\
    The expression can also return the range as a list {vmin, vmax}, which may give more chance of solution-finding for the matching routine.\n\
-   VarableRange only acts for variables used in the matching with the FREE command.",
+   VariableRange only acts for variables used in the matching with the FREE command.",
         "FREE set-value-of-element",
         {}},
 
@@ -4122,7 +4122,7 @@ where the default weight for matching with element:keyword is passed in v_, and 
 Example: VariableWeight[\"QF\",\"K1\",v_]:= 0.1*v;\n\n\
 reduces the weight of QF1:K1 to 1/10 of the default value.\n\n\
    The weight also affects the step size of the numerical derivative of the response. A smaller weight makes the step size larger.\n\n\
-   VarableWeight only acts for variables used in the matching with the FREE command.",
+   VariableWeight only acts for variables used in the matching with the FREE command.",
         "FREE set-value-of-element",
         {}},
 
@@ -4164,9 +4164,9 @@ Emittances              {emitx, emity, emitz}\n\
 MomentumSpread          sigma p/p0\n\
 BunchLength             sigma_z\n\ 
 Polarization            equilibrium polarization, if POL is on\n\
-Polarization2           equilibrium polarization by up to 2nd order calculaton\n\
-Polarization4           equilibrium polarization by up to 4th order calculaton\n\
-Polarization6           equilibrium polarization by up to 6th order calculaton\n\
+Polarization2           equilibrium polarization by up to 2nd order calculation\n\
+Polarization4           equilibrium polarization by up to 4th order calculation\n\
+Polarization6           equilibrium polarization by up to 6th order calculation\n\
 PolarizationVector      direction of polarization AppendTo the entrance of the beam line\n\
 SpinTune                spin tune on the closed orbit\n\
 NominalSpinTune         spin tune calculated by MOMENTUM and electron g-2\n\
@@ -4179,7 +4179,7 @@ NormalCoordinates       conversion matrix from physical to normal coords.\n\
 OneTurnExcitation       excitation matrix by radiation.\n\
 EquilibriumBeamMatrix   equilibrium beam matrix.\n\
 ExtendedTwissParameters list of rules giving the extended Twiss parameters at the entrance of the ring.\t\n\n\
-If Orbit->True or Matrix->True, the following is addded:\t\n\n\
+If Orbit->True or Matrix->True, the following is added:\t\n\n\
 ClosedOrbit             List of physical closed orbit at every element in the ring.\t\n\n\
 If Matrix->True, the followings are added:\t\n\n\
 TransferMatrices        List of physical transfer matrix from the beginning of the beam line to all elements.\n\
@@ -4202,15 +4202,15 @@ The argument nend is the last turn number. The default is nbegin.\n\n\
 where location is the position-number of the starting point. If location is same as or in the downstream of destination, the tracking is done by folding across the beginning of the beam line. The coordinates are in a list of {7, np} form, where np is the number of particles. The first 6 elements of coordinates specifies\n\n\
    {x, px/p0, y, py/p0, z, dp/p0}\n\n\
 in this order. The {7, i} is the flag which is True(==1) when the particle is alive, and False(==0) when lost.\n\n\
-   If the flag POL is on, TrackParticles performes spin tracking. Then the coordinates has two more compornents sy and phis, which correspond to the y-component of the classical spin vector and the angle ArcTan[sx, sz], respectively. If POL is on, another flag RADPOL turns on the Sokolov-Ternov effect.\n\n\
+   If the flag POL is on, TrackParticles performs spin tracking. Then the coordinates has two more components sy and phis, which correspond to the y-component of the classical spin vector and the angle ArcTan[sx, sz], respectively. If POL is on, another flag RADPOL turns on the Sokolov-Ternov effect.\n\n\
    When a flag RADLIGHT is on, TrackParticles returns the trajectories of particles which are used to calculate the radiation fields. See RadiationField and RadiationSpectrum.\n\n\
 When PHOTONS is ON (default is OFF), TrackParticles generates a list of all photons radiated through the tracking. The list is assigned to a symbol PhotonList.",
         "components LINE PHOTONS PhotonList RADLIGHT TouschekLifetime WakeFunction SurvivedParticles POL RADPOL",
         {}},
 
        {"SurvivedParticles",
-"SurvivedParticeles[x]\n\n\
-returns the list of 6 coordinates and the flag of the survivied particles in x. The form of x is {x, px/p0, y, py/p0, z, dp/p0, flag}, where each is a list of length of the number of particlse. If all particles are lost, it is a list of seven null lists.",
+"SurvivedParticles[x]\n\n\
+returns the list of 6 coordinates and the flag of the survived particles in x. The form of x is {x, px/p0, y, py/p0, z, dp/p0, flag}, where each is a list of length of the number of particles. If all particles are lost, it is a list of seven null lists.",
          "TrackParticles",
          {}},
 
@@ -4277,7 +4277,7 @@ To calculate the field of the synchrotron radiation from particles, first record
    {beam, trajectory} ,\n\n\
 where beam is a list as {location, coordinates}, and trajectory is a list\n\n\
    { {t1 .. tm}, {x1 ..xm}, {y1 .. ym}, {z1 .. zm} }, ..\n\n\
-where {t,x,y,z}_i is the coordinates of the particle at i-th point in the trajectory. The origin and the direction of the spatial coordinates are the same as GEO coordinat {GX, GY, GZ}. One can track many particles at the same time by TrackParticles, so the trajectory has the dimensions {np, m}, where np is the number of particles.\n\n\
+where {t,x,y,z}_i is the coordinates of the particle at i-th point in the trajectory. The origin and the direction of the spatial coordinates are the same as GEO coordinate {GX, GY, GZ}. One can track many particles at the same time by TrackParticles, so the trajectory has the dimensions {np, m}, where np is the number of particles.\n\n\
    After the trajectory is obtained, one can calculate the field in time domain\n\
 at any observation point. This is done by the function RadiationFiled as\n\n\
    field = RadiationField[ trajectory[[i]], obs];\n\n\
@@ -4298,7 +4298,7 @@ where filed[[k]] is one of the fields calculated by RadiationField. The range of
    { {k1 .. kk}, {c1 .. ck}, {s1 .. sk} } ,\n\n\
 where k1 .. kk is the wave number k = omega/c, c1 .. ck and s1 .. sk are the cosine and sine integrals of the field in tau1 .. taum , i.e.,\n\n\
    ck + I sk = Integrate[ field[tau] Exp[I c k tau] dtau] .\n\n\
-   An example is seen in /users/oide/WORK/oldsad/sad/examples.sad .";
+   An example is seen in $(SAD_ROOTPATH)/sad/examples.sad .";
 
        {"RadiationField",
         RADLIGHT$Message,
@@ -4314,8 +4314,8 @@ where k1 .. kk is the wave number k = omega/c, c1 .. ck and s1 .. sk are the cos
          "\
    WakeFunction[Longitudinal, comp]={{z1, wl1}, ..., {zn, wln}};\n\
    WakeFunction[Transverse,   comp]={{z1, wt1}, ..., {zn, wtn}};\n\n\
-specify logitudinal and transverse dipole wake functions at a component comp (string). Each functions is a list of {z, w} where z is the distance (z>=0) and w is the value of the wake, in the unit of either V/C or V/C/m.\n\
-   The wake functons are applied at the componet comp, giving kicks to each orbit whose initial conditions are given by InitialOrbits. The sufficient number of orbits depends on the situation.\n\
+specify longitudinal and transverse dipole wake functions at a component comp (string). Each functions is a list of {z, w} where z is the distance (z>=0) and w is the value of the wake, in the unit of either V/C or V/C/m.\n\
+   The wake functions are applied at the component comp, giving kicks to each orbit whose initial conditions are given by InitialOrbits. The sufficient number of orbits depends on the situation.\n\
    WakeFunction is valid only when TRPT and INS, and also either TWAKE or LWAKE is ON.\n\
    For tracking, it is only valid in TrackParticles.",
          "TrackParticles TRPT INS TWAKE LWAKE",
@@ -4354,7 +4354,7 @@ options: Output->lfn : output to the unit lfn (see OpenWrite).\n\
    {score,{{{xmin, xmax},{ymin, ymax},{z1, z2, .., zn}},\n\
            {{z1,score1,{turn1_1,..,turn1_50}},..,\n\
             {zn,scoren,{turnn_1,..,turnn_50}}}}} ,\n\n\
-where score = Sum[scorei,{i,n}], scorei is the \"score\" of i-th momentum, and turni_j is the lossed turn of the particle with i-th momentum and j-th intial amplitude.\n\
+where score = Sum[scorei,{i,n}], scorei is the \"score\" of i-th momentum, and turni_j is the lost turn of the particle with i-th momentum and j-th initial amplitude.\n\
    DynamicApertureSurvey tracks number of particles with different initial conditions in the range given by range. It outputs a z-x diagram of the dynamic aperture of the ring. Fifty one initial conditions are chosen in the range x-range for each point of z-range. The initial y-amplitude is linearly dependent on the x-amplitude. It tracks from xmax to downward for each z-amplitude zn, until the particles turns nturn with successive DAPWIDTH x-amplitudes. The default DAPWIDTH is 7.\n\
   DynamicApertureSurvey does parallel processing up to NPARA processes.",
         "NPARA DAPWIDTH",
