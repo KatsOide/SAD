@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -f
 
 config=false
 if [ x"$1" = x"-config" ]; then
@@ -83,7 +83,26 @@ FreeBSD|NetBSD|OpenBSD|DragonFly|Darwin)
     ;;
 Linux)
     os_type=Linux
-    cc_vers=_$(cc --version|egrep -o '[0-9]+\.'|head -n 1|egrep -o '[0-9]+')
+#    cc_vers=_$(cc --version|egrep -o '[0-9]+\.'|head -n 1|egrep -o '[0-9]+')
+#    if [ ${cc_vers} = "_4" ]; then
+#        echo $(eval echo ${HOSTNAME}|egrep -o '[^0-9]+'|head -n 1)
+#       case $(eval hostname|egrep -o '[^0-9]+'|head -n 1) in
+#           lxplus)
+#               cc_vers="_8"
+#               ;;
+#           hpc)
+#               cc_vers="_7"
+#               ;;
+#           slurmgate)
+#               cc_vers="_7"
+#               ;;
+#           hpc-be)
+#               cc_vers="_7"
+#               ;;
+#           *)
+#               ;;
+#       esac
+#    fi
     ;;
 SunOS)
     os_type=SunOS
