@@ -693,4 +693,5 @@ AutoLoad[NISTACK$OBJ,NISTACK$FIXSEED,PackagesDirectory//"NISTACK.n"];
 AutoLoad[LifeTrack,PackagesDirectory//"LifeTrack.n"];
 AutoLoad[CSR,CSRStability,PackagesDirectory//"CSR.n"];
 AutoLoad[WAKECOMMAND,PackagesDirectory//"WAKECOMMAND.n"];
+AutoLoad[LaTeX,PackagesDirectory//"latex.n"];
 ! End of File

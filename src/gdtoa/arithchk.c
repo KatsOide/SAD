@@ -1,1 +1,1 @@
-/Users/oide/SAD/oldsad/contrib/gdtoa/arithchk.c
+/home/oide/SAD/oldsad/contrib/gdtoa/arithchk.c
