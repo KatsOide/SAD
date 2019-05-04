@@ -1,6 +1,6 @@
 (* LDSolve 6/22/1999 *)
 
-BeginPackages[LDSolve`];
+BeginPackage[LDSolve`];
 
 Begin[LDSolve`];
 
