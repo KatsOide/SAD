@@ -99,7 +99,6 @@ c      write(*,*)'findroot-D ',used
           call tflocal1(ke%k)
           go to 9000
         endif
-c        call tfdebugprint(ke,'tffindroot-deriv',1)
       endif
       call tfnewton(ke%k,sav,v0,d0,kdl,
      $     vmin,vmax,neq,nvar,maxi,eps,trace,frac,irtc)
@@ -542,7 +541,6 @@ c        call tfstk2l(lista,list)
       kdl(1:nvar)=ktfoper+mtfnull
       if(used)then
         call tfderiv(ke,nvar,sav,kdl,irtc)
-c        call tfdebugprint(ke,'tffit-deriv',1)
       endif
       call tflocald(symdv%value)
       symdv%value%k=0
@@ -881,7 +879,6 @@ c          enddo
       do i=1,m
         rlist(kavvec+i)=a(1,i)
       enddo
-c     call tfdebugprint(ke,'ke',1)
       call tfeevalref(ke,kx,irtc)
       call tflocal1(kaxvec)
       symdv%value%k=0

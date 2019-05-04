@@ -1,6 +1,6 @@
 ! TkPhoto function family
 
-BeginPackages[TkPhoto`];
+BeginPackage[TkPhoto`];
 
 Begin[TkPhoto`];
 

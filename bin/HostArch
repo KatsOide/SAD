@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -f
 
 config=false
 if [ x"$1" = x"-config" ]; then
@@ -71,6 +71,7 @@ for symbol in processor architecture; do
     [ "x${cpu_arch}" != xunknown ] && break
 done
 
+cc_vers=""
 case ${os_name} in
 CYGWIN*)
     os_suffix=-
@@ -82,6 +83,26 @@ FreeBSD|NetBSD|OpenBSD|DragonFly|Darwin)
     ;;
 Linux)
     os_type=Linux
+#    cc_vers=_$(cc --version|egrep -o '[0-9]+\.'|head -n 1|egrep -o '[0-9]+')
+#    if [ ${cc_vers} = "_4" ]; then
+#        echo $(eval echo ${HOSTNAME}|egrep -o '[^0-9]+'|head -n 1)
+#       case $(eval hostname|egrep -o '[^0-9]+'|head -n 1) in
+#           lxplus)
+#               cc_vers="_8"
+#               ;;
+#           hpc)
+#               cc_vers="_7"
+#               ;;
+#           slurmgate)
+#               cc_vers="_7"
+#               ;;
+#           hpc-be)
+#               cc_vers="_7"
+#               ;;
+#           *)
+#               ;;
+#       esac
+#    fi
     ;;
 SunOS)
     os_type=SunOS
@@ -104,9 +125,9 @@ if [ x"${config}" = x"true" ]; then
     echo OS_MAJOR_VERSION=${os_major}
     echo OS_MINOR_VERSION=${os_minor}
     echo CPU_ARCH=${cpu_arch}
-    echo MACH_ARCH=${cpu_arch}-${os_name}${os_suffix}${os_major}
+    echo MACH_ARCH=${cpu_arch}-${os_name}${os_suffix}${os_major}${cc_vers}
 else
-    echo ${cpu_arch}-${os_name}${os_suffix}${os_major}
+    echo ${cpu_arch}-${os_name}${os_suffix}${os_major}${cc_vers}
 fi
 
 # End of File
