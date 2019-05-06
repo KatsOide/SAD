@@ -2,7 +2,7 @@ BeginPackage[LaTeX`];
 
 Begin[LaTeX`];
 
-LaTeX=Class[{},{},{style="align",pt=11,margins="'3 3 3 0'",eqn=0,dpi=150},
+LaTeX=Class[{},{eqn=0},{style="align",pt=11,margins="'3 3 3 0'",dpi=150},
 
   Constructor[]:={style,pt,margins,dpi,eqn};
 
@@ -21,6 +21,19 @@ LaTeX=Class[{},{},{style="align",pt=11,margins="'3 3 3 0'",eqn=0,dpi=150},
   Postamble["align"]="\
 \\end{split}\n\
 \\end{align}\n\
+\\end{document}\n";
+
+  Preamble["text"]:=StandardForm["\
+\\documentclass["//pt//"pt]{article}\n\
+\\usepackage{color} %used for font color\n\
+\\usepackage{amssymb} %maths\n\
+\\usepackage{amsmath,bm} %maths\n\
+\\usepackage[utf8]{inputenc} \n\
+\\definecolor{red}{rgb}{1,0,0}\n\
+\\thispagestyle{empty}\n\
+\\begin{document}\n"];
+
+  Postamble["text"]="\
 \\end{document}\n";
 
   TypesetPNG[text_,opt___]:=
