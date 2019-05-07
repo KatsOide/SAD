@@ -1,4 +1,4 @@
-Help$Update="$Date:  5/4/2019 18:00:00 $"[8,17];
+Help$Update="$Date:  5/7/2019 15:00:00 $"[8,17];
 !Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
 Help$Version=$Version;
 
@@ -701,8 +701,8 @@ Only the effects up to y^4 in Hamiltonian are taken into account. A more rigorou
 where integration is done over one fringe.\n\n"//
 (BF1$Message="\
    The transformation of the linear fringe of the entrance of a bend is\n\n"//EquAlign[
-"\\exp(:V:),\\qquad V=-\\frac{1}{p}\\left(\\frac{f^2}{24\\rho_b}p_x-\\frac{f}{12\\rho_b}y^2\
-+\\frac{1}{6f\\rho_b}y^4\\right)","\
+"\\exp(:V:),\\qquad V=-\\frac{1}{p}\\left(\\frac{{\\tt F1}^2}{24\\rho_b}p_x-\\frac{\\tt F1}{12\\rho_b}y^2\n\
++\\frac{y^4}{6{\\tt F1}\\ \\rho_b^2}\\right)","\
    exp(:V:),   V = -f^2/rhob px/p/24 - f/rhob^2 y^2/p/12 \n\
                    + 1/rhob^2/f y^4/p/6 ,"]//"\n\n\
 where f is the length of fringe given by F1, and rhob bending radius at the design momentum. At the exit, the sign of rhob is changed. This linear fringe also changes the path length in the body of the bend as\n\n"//EquAlign[
@@ -869,14 +869,20 @@ pieces (EPS = 1 is used when EPS = 0), and the bend-body transformation above is
          Kn$Message[1],
 
          {"F1",
-          F1F2$Message=
-          "\
+          F1F2$Message=EquAlign["Text[\
+{\\tt F1} and {\\tt F2} are parameters to characterize the slope of the field at the edges defined as:\n\
+\\begin{align}\n\
+{\\tt F1} =& {\\ rm sgn}(a)\\sqrt a,\\qquad a \\equiv 24\\left(\\frac{I_0^2}{2} - I_1\\right)\\ ,\\\\\n\
+{\\tt F2} =& I_2 - \\frac{I_0^3}{3}\\\\\n\
+{\\rm with\\ }I_n \\equiv& \\int_{-\\infty}^\\infty(s-s0)^n \\frac{K_1(s)}{K_{10}}ds\\ ,\n\
+\\end{align}\n\
+where $s_0$ is the location of the edge where the effective length is defined, and $K_{10}$ is the nominal value of $K_1(s)$, given by ${\\tt K1}/{\\tt L}$.;;;3]","\
 F1 and F2 are parameters to characterize the slope of the field at the edges defined as:\n\n\
      F1 = SIGN(Sqrt[a],a),    a = 24(I_0^2/2 - I_1),\n\
      F2 = I_2 - I_0^3/3\n\
 with\n\
      I_n = Integrate[(s-s0)^n K1[s]/K1_0,{s,-Infinity,Infinity}],\n\n\
-where s0 is the location of the edge where the effective length is defined, and K1_0 is the nominal value of K1, given by the keyword K1.\n\
+where s0 is the location of the edge where the effective length is defined, and K1_0 is the nominal value of K1, given by the keyword K1."]//"\n\
    The effects only in the first order of K1 is taken into account.",
           "F2 FRINGE",
           {}},
@@ -1298,8 +1304,7 @@ Additional accelerating peak voltage to be added to Volt, without affecting the 
          {"PHI",
           "\
 Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. \n\
-The acceleration is given as \n\n\
-     dE = - e * (VOLT+DVOLT) * Sin[2 Pi FREQ (t-ts) + PHI],\n\n\
+The acceleration is given as \n\n"//Acc$Message//"\n\n\
 where ts is the equilibrium time determined by the valance between the acceleration and the radiation loss around the ring.",
            "",
            {}},

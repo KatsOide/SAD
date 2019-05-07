@@ -13,7 +13,7 @@ eqs img{
 <BODY>
 <CENTER><H2>Welcome to SAD/FFS & SADScript
 </H2></CENTER>
-<CENTER> SAD/FFS SADScript Version: 1.1.6.6.4k64,      Updated:  5/4/2019 </CENTER>
+<CENTER> SAD/FFS SADScript Version: 1.1.6.6.4k64,      Updated:  5/7/2019 </CENTER>
 
 <PRE> Please use browser's search to find out an item.
 
@@ -1240,7 +1240,7 @@ to change their values.
 APERT</A></H3>
 <PRE>An aperture. Only valid in tracking. A particle with
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_1.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_1.svg" />
 
 can pass through the aperture, otherwise it is lost and a message is printed out. If AX or AY is
 zero (default), they are interpreted as infinity. If AX <=> 0 && AY <=> 0 and (DX1 == DX2 or DY1
@@ -1350,18 +1350,18 @@ F1</A></H3>
 
 Only the effects up to y^4 in Hamiltonian are taken into account. A more rigorous definition is
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_2.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_2.svg" />
 
 where integration is done over one fringe.
 
    The transformation of the linear fringe of the entrance of a bend is
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_3.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_3.svg" />
 
 where f is the length of fringe given by F1, and rhob bending radius at the design momentum. At the exit, the sign of rhob is chang
 ed. This linear fringe also changes the path length in the body of the bend as
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_4.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_4.svg" />
 
 to maintain the geometric position of the design orbit, i.e., you have to increase the bend field
 a little bit to keep the orbit unchanged. Unlike a quadrupole, the effect of linear fringe is always
@@ -1391,12 +1391,12 @@ FRINGE</A></H3>
 <PRE>When FRINGE is non-zero, the effect of the linear fringe F1 is taken into account both at the entrance and the exit.
    The transformation of the linear fringe of the entrance of a bend is
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_5.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_3.svg" />
 
 where f is the length of fringe given by F1, and rhob bending radius at the design momentum. At the exit, the sign of rhob is chang
 ed. This linear fringe also changes the path length in the body of the bend as
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_6.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_4.svg" />
 
 to maintain the geometric position of the design orbit, i.e., you have to increase the bend field
 a little bit to keep the orbit unchanged. Unlike a quadrupole, the effect of linear fringe is always
@@ -1411,7 +1411,7 @@ applied at both the entrance and the exit, otherwise you cannot obtain a circula
 K0</A></H3>
 <PRE>The normal 2-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_7.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_5.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -1422,7 +1422,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K1</A></H3>
 <PRE>The normal 4-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_8.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_6.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -1449,19 +1449,19 @@ transformation:BEND</A></H3>
 
     (transformation due to misalignments)
    (drift to the entrance face)
-<div><img  class="eqs" SRC="SADHelp_img/equ_9.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_7.svg" />
    (linear fringe at entrance face)
-<div><img  class="eqs" SRC="SADHelp_img/equ_10.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_8.svg" />
    (nonlinear fringe at entrance)
-<div><img  class="eqs" SRC="SADHelp_img/equ_11.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_9.svg" />
    (body of bend)
-<div><img  class="eqs" SRC="SADHelp_img/equ_12.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_10.svg" />
    (nonlinear fringe at exit)
-<div><img  class="eqs" SRC="SADHelp_img/equ_13.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_11.svg" />
    (linear fringe at exit face)
-<div><img  class="eqs" SRC="SADHelp_img/equ_14.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_12.svg" />
    (drift from the exit face)
-<div><img  class="eqs" SRC="SADHelp_img/equ_15.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_13.svg" />
    (transformation due to misalignments)
 
 If K1 is nonzero, the effects from E1 and E2 are approximated by thin
@@ -1501,7 +1501,7 @@ FRINGE=3    entr & exit            none
 DPHI</A></H3>
 <PRE> Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. The acceleration is given by 
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_16.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_14.svg" />
 
 where ts is the equilibrium time determined by the valance between the acceleration and the radiation
 loss around the ring. DPHI is not taken into account to determine the design momentum p0(s).
@@ -1533,7 +1533,7 @@ DY</A></H3>
 <H3><A NAME=L86>
 FREQ</A></H3>
 <PRE> Rf frequency. If this keyword is nonzero, the keyword HARM is ignored.
-<div><img  class="eqs" SRC="SADHelp_img/equ_17.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_14.svg" />
 </PRE>
 <PRE>See also:
  <A HREF=#L87>HARM</A></PRE>
@@ -1554,7 +1554,7 @@ L</A></H3>
 PHI</A></H3>
 <PRE> Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. The acceleration is given by 
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_18.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_14.svg" />
 
 where ts is the equilibrium time determined by the valance between the acceleration and the radiation
 loss around the ring.
@@ -1574,7 +1574,7 @@ around the local s-axis at the exit, then take out displacement.
 <H3><A NAME=L91>
 V02</A></H3>
 <PRE> The y^2-dependence of the acceleration. Tracking only.
-<div><img  class="eqs" SRC="SADHelp_img/equ_19.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_14.svg" />
 </PRE>
 <PRE>See also:
  <A HREF=#L94>VOLT</A> <A HREF=#L83>DVOLT</A> <A HREF=#L92>V1</A> V20 <A HREF=#L93>V11</A></PRE>
@@ -1582,7 +1582,7 @@ V02</A></H3>
 <H3><A NAME=L92>
 V1</A></H3>
 <PRE> The linear x-dependence of the acceleration. Tracking only.
-<div><img  class="eqs" SRC="SADHelp_img/equ_20.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_14.svg" />
 </PRE>
 <PRE>See also:
  <A HREF=#L94>VOLT</A> <A HREF=#L83>DVOLT</A> <A HREF=#L92>V1</A> <A HREF=#L93>V11</A> <A HREF=#L91>V02</A></PRE>
@@ -1590,7 +1590,7 @@ V1</A></H3>
 <H3><A NAME=L93>
 V11</A></H3>
 <PRE> The xy-dependence of the acceleration. Tracking only.
-<div><img  class="eqs" SRC="SADHelp_img/equ_21.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_14.svg" />
 </PRE>
 <PRE>See also:
  <A HREF=#L94>VOLT</A> <A HREF=#L83>DVOLT</A> <A HREF=#L92>V1</A> V20 <A HREF=#L91>V02</A></PRE>
@@ -1599,7 +1599,7 @@ V11</A></H3>
 VOLT</A></H3>
 <PRE>Accelerating peak voltage in Volt.
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_22.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_14.svg" />
 
 where ts is the equilibrium time determined by the valance between the acceleration and the radiation
 loss around the ring. (CAVI only) The non-relativistic corrections
@@ -1708,7 +1708,7 @@ DY</A></H3>
 K4</A></H3>
 <PRE>The normal 10-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_23.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_15.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -1790,7 +1790,7 @@ DY</A></H3>
 K5</A></H3>
 <PRE>The normal 12-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_24.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_16.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -1858,11 +1858,11 @@ RADIUS</A></H3>
 transformation:DRIFT</A></H3>
 <PRE>The transformation of a drift is
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_25.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_17.svg" />
 
 with
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_26.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_18.svg" />
 </PRE>
 <PRE>See also:
  coordinates</PRE>
@@ -2026,7 +2026,7 @@ DISRAD</A></H3>
 DPHI</A></H3>
 <PRE>Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. The acceleration is given as 
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_27.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_14.svg" />
 
 where ts is the equilibrium time determined by the valance between the acceleration and the radiation
 loss around the ring. DPHI is not taken into account to determine the design momentum p0(s).
@@ -2062,32 +2062,14 @@ rectangular magnet has E1 = 0.5 and E2 = 0.5.
 <LI>
 <H3><A NAME=L132>
 F1</A></H3>
-<PRE>F1 and F2 are parameters to characterize the slope of the field at the edges defined as:
-
-     F1 = SIGN(Sqrt[a],a),    a = 24(I_0^2/2 - I_1),
-     F2 = I_2 - I_0^3/3
-with
-     I_n = Integrate[(s-s0)^n K1[s]/K1_0,{s,-Infinity,Infinity}],
-
-where s0 is the location of the edge where the effective length is defined, and K1_0 is the nominal
-value of K1, given by the keyword K1.
-   The effects only in the first order of K1 is taken into account.
+<PRE><img  class="eqs" SRC="SADHelp_img/equ_19.svg" />
 </PRE>
 <PRE>See also:
  <A HREF=#L133>F2</A> <A HREF=#L74>FRINGE</A></PRE>
 <LI>
 <H3><A NAME=L133>
 F2</A></H3>
-<PRE>F1 and F2 are parameters to characterize the slope of the field at the edges defined as:
-
-     F1 = SIGN(Sqrt[a],a),    a = 24(I_0^2/2 - I_1),
-     F2 = I_2 - I_0^3/3
-with
-     I_n = Integrate[(s-s0)^n K1[s]/K1_0,{s,-Infinity,Infinity}],
-
-where s0 is the location of the edge where the effective length is defined, and K1_0 is the nominal
-value of K1, given by the keyword K1.
-   The effects only in the first order of K1 is taken into account.
+<PRE><img  class="eqs" SRC="SADHelp_img/equ_19.svg" />
 </PRE>
 <PRE>See also:
  <A HREF=#L71>F1</A> <A HREF=#L74>FRINGE</A></PRE>
@@ -2109,7 +2091,7 @@ FB2</A></H3>
 <H3><A NAME=L136>
 FREQ</A></H3>
 <PRE> Rf frequency. If this keyword is nonzero, the keyword HARM is ignored.
-<div><img  class="eqs" SRC="SADHelp_img/equ_28.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_14.svg" />
 </PRE>
 <PRE>See also:
  <A HREF=#L87>HARM</A></PRE>
@@ -2142,7 +2124,7 @@ HARM</A></H3>
 K0</A></H3>
 <PRE>The normal 2-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_29.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_5.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2153,7 +2135,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K1</A></H3>
 <PRE>The normal 4-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_30.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_6.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2164,7 +2146,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K10</A></H3>
 <PRE>The normal 22-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_31.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_22.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2175,7 +2157,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K11</A></H3>
 <PRE>The normal 24-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_32.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_23.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2186,7 +2168,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K12</A></H3>
 <PRE>The normal 26-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_33.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_24.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2197,7 +2179,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K13</A></H3>
 <PRE>The normal 28-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_34.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_25.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2208,7 +2190,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K14</A></H3>
 <PRE>The normal 30-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_35.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_26.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2219,7 +2201,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K15</A></H3>
 <PRE>The normal 32-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_36.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_27.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2230,7 +2212,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K16</A></H3>
 <PRE>The normal 34-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_37.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_28.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2241,7 +2223,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K17</A></H3>
 <PRE>The normal 36-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_38.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_29.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2252,7 +2234,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K18</A></H3>
 <PRE>The normal 38-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_39.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_30.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2263,7 +2245,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K19</A></H3>
 <PRE>The normal 40-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_40.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_31.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2274,7 +2256,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K2</A></H3>
 <PRE>The normal 6-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_41.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_32.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2285,7 +2267,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K20</A></H3>
 <PRE>The normal 42-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_42.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_33.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2296,7 +2278,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K21</A></H3>
 <PRE>The normal 44-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_43.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_34.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2307,7 +2289,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K3</A></H3>
 <PRE>The normal 8-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_44.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_35.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2318,7 +2300,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K4</A></H3>
 <PRE>The normal 10-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_45.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_15.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2329,7 +2311,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K5</A></H3>
 <PRE>The normal 12-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_46.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_16.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2340,7 +2322,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K6</A></H3>
 <PRE>The normal 14-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_47.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_36.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2351,7 +2333,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K7</A></H3>
 <PRE>The normal 16-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_48.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_37.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2362,7 +2344,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K8</A></H3>
 <PRE>The normal 18-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_49.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_38.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2373,7 +2355,7 @@ where L is the effective length of the component. Positive sign means horizontal
 K9</A></H3>
 <PRE>The normal 20-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_50.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_39.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2407,7 +2389,7 @@ the current values are used for DX, DY, and ROTATE.
 multipole_with_nonzero_ANGLE</A></H3>
 <PRE>The multipoles in MULT with nonzero ANGLE are defined by
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_51.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_40.svg" />
 Actually the summation is truncated at n + k <= 21 in the current version. While this definition
 converges to the regular one for multipoles when ANGLE -> 0, K0 and K1 of MUILT are different from
 those of BEND.
@@ -2420,7 +2402,7 @@ PHI</A></H3>
 <PRE>Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. 
 The acceleration is given as 
 
-     dE = - e * (VOLT+DVOLT) * Sin[2 Pi FREQ (t-ts) + PHI],
+<img  class="eqs" SRC="SADHelp_img/equ_14.svg" />
 
 where ts is the equilibrium time determined by the valance between the acceleration and the radiation
 loss around the ring.
@@ -2436,7 +2418,7 @@ RADIUS</A></H3>
 <H3><A NAME=L166>
 SK0</A></H3>
 <PRE>The skew 2-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_52.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_41.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2447,7 +2429,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L167>
 SK1</A></H3>
 <PRE>The skew 4-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_53.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_42.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2458,7 +2440,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L168>
 SK10</A></H3>
 <PRE>The skew 22-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_54.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_43.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2469,7 +2451,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L169>
 SK11</A></H3>
 <PRE>The skew 24-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_55.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_44.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2480,7 +2462,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L170>
 SK12</A></H3>
 <PRE>The skew 26-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_56.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_45.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2491,7 +2473,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L171>
 SK13</A></H3>
 <PRE>The skew 28-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_57.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_46.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2502,7 +2484,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L172>
 SK14</A></H3>
 <PRE>The skew 30-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_58.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_47.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2513,7 +2495,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L173>
 SK15</A></H3>
 <PRE>The skew 32-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_59.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_48.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2524,7 +2506,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L174>
 SK16</A></H3>
 <PRE>The skew 34-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_60.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_49.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2535,7 +2517,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L175>
 SK17</A></H3>
 <PRE>The skew 36-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_61.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_50.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2546,7 +2528,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L176>
 SK18</A></H3>
 <PRE>The skew 38-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_62.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_51.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2557,7 +2539,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L177>
 SK19</A></H3>
 <PRE>The skew 40-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_63.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_52.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2568,7 +2550,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L178>
 SK2</A></H3>
 <PRE>The skew 6-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_64.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_53.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2579,7 +2561,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L179>
 SK20</A></H3>
 <PRE>The skew 42-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_65.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_54.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2590,7 +2572,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L180>
 SK21</A></H3>
 <PRE>The skew 44-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_66.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_55.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2601,7 +2583,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L181>
 SK3</A></H3>
 <PRE>The skew 8-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_67.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_56.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2612,7 +2594,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L182>
 SK4</A></H3>
 <PRE>The skew 10-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_68.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_57.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2623,7 +2605,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L183>
 SK5</A></H3>
 <PRE>The skew 12-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_69.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_58.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2634,7 +2616,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L184>
 SK6</A></H3>
 <PRE>The skew 14-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_70.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_59.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2645,7 +2627,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L185>
 SK7</A></H3>
 <PRE>The skew 16-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_71.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_60.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2656,7 +2638,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L186>
 SK8</A></H3>
 <PRE>The skew 18-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_72.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_61.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2667,7 +2649,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L187>
 SK9</A></H3>
 <PRE>The skew 20-pole magnetic field component (times the length L).
-<div><img  class="eqs" SRC="SADHelp_img/equ_73.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_62.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2678,7 +2660,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L188>
 VOLT</A></H3>
 <PRE>Accelerating peak voltage in Volt.
-<div><img  class="eqs" SRC="SADHelp_img/equ_74.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_14.svg" />
 
 where ts is the equilibrium time determined by the valance between the acceleration and the radiation
 loss around the ring.
@@ -2723,7 +2705,7 @@ DY</A></H3>
 K3</A></H3>
 <PRE>The normal 8-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_75.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_35.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2815,32 +2797,14 @@ DY</A></H3>
 <LI>
 <H3><A NAME=L203>
 F1</A></H3>
-<PRE>F1 and F2 are parameters to characterize the slope of the field at the edges defined as:
-
-     F1 = SIGN(Sqrt[a],a),    a = 24(I_0^2/2 - I_1),
-     F2 = I_2 - I_0^3/3
-with
-     I_n = Integrate[(s-s0)^n K1[s]/K1_0,{s,-Infinity,Infinity}],
-
-where s0 is the location of the edge where the effective length is defined, and K1_0 is the nominal
-value of K1, given by the keyword K1.
-   The effects only in the first order of K1 is taken into account.
+<PRE><img  class="eqs" SRC="SADHelp_img/equ_19.svg" />
 </PRE>
 <PRE>See also:
  <A HREF=#L133>F2</A> <A HREF=#L74>FRINGE</A></PRE>
 <LI>
 <H3><A NAME=L204>
 F2</A></H3>
-<PRE>F1 and F2 are parameters to characterize the slope of the field at the edges defined as:
-
-     F1 = SIGN(Sqrt[a],a),    a = 24(I_0^2/2 - I_1),
-     F2 = I_2 - I_0^3/3
-with
-     I_n = Integrate[(s-s0)^n K1[s]/K1_0,{s,-Infinity,Infinity}],
-
-where s0 is the location of the edge where the effective length is defined, and K1_0 is the nominal
-value of K1, given by the keyword K1.
-   The effects only in the first order of K1 is taken into account.
+<PRE><img  class="eqs" SRC="SADHelp_img/equ_19.svg" />
 </PRE>
 <PRE>See also:
  <A HREF=#L71>F1</A> <A HREF=#L74>FRINGE</A></PRE>
@@ -2866,7 +2830,7 @@ FRINGE=3    entr & exit   entr & exit      none      entr & exit
 K1</A></H3>
 <PRE>The normal 4-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_76.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_6.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -2985,7 +2949,7 @@ DY</A></H3>
 K2</A></H3>
 <PRE>The normal 6-pole magnetic field component (times the length L).
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_77.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_32.svg" />
 
 where L is the effective length of the component. Positive sign means horizontal focusing.
 </PRE>
@@ -3547,7 +3511,7 @@ r to multi-turn tracking. See multi-turn-tracking.
 
 (2) EMIT dp, where dp is |df_rf/f_rf|/(alpha_p == momentum compaction), does EMIT for five rf frequencies:
 
-<div><img  class="eqs" SRC="SADHelp_img/equ_78.png" /></div>
+<img  class="eqs" SRC="SADHelp_img/equ_63.svg" />
 
 then prints out a table of the dependences of various quantities on the frequency shift.
 
@@ -7559,7 +7523,7 @@ components. The valid wildcards are:
  <A HREF=#L31>CALCULATE(CAL)</A> <A HREF=#L341>functions</A> <A HREF=#L370>Element</A> <A HREF=#L379>LINE</A> <A HREF=#L391>Twiss</A></PRE>
 <H3><A NAME=L542>
 x-y-coupling</A></H3>
-<PRE><div><img  class="eqs" SRC="SADHelp_img/equ_79.png" /></div>
+<PRE><img  class="eqs" SRC="SADHelp_img/equ_64.svg" />
 </PRE>
 <PRE>See also:
  <A HREF=#L42>DISPLAY(DISP)</A> <A HREF=#L460>optical-functions</A> <A HREF=#L455>matching-function-commands</A></PRE>

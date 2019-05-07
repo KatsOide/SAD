@@ -1,8 +1,11 @@
+`Format;
+
 BeginPackage[LaTeX`];
 
 Begin[LaTeX`];
 
-LaTeX=Class[{},{eqn=0},{style="align",pt=11,margins="'3 3 3 0'",dpi=150},
+LaTeX=Class[{},{eqn=0},{style="align",pt=11,margins="'3 3 3 0'",dpi=150,
+  tw="18 cm",pw="23 cm"},
 
   Constructor[]:={style,pt,margins,dpi,eqn};
 
@@ -14,6 +17,9 @@ LaTeX=Class[{},{eqn=0},{style="align",pt=11,margins="'3 3 3 0'",dpi=150},
 \\usepackage[utf8]{inputenc} \n\
 \\definecolor{red}{rgb}{1,0,0}\n\
 \\thispagestyle{empty}\n\
+\\setlength{\\paperwidth}{"//pw//"}\n\
+\\setlength{\\pdfpagewidth}{"//pw//"}\n\
+\\setlength{\\textwidth}{"//tw//"}\n\
 \\begin{document}\n\
 \\begin{align}\n\
 \\begin{split}\n"];
@@ -30,29 +36,41 @@ LaTeX=Class[{},{eqn=0},{style="align",pt=11,margins="'3 3 3 0'",dpi=150},
 \\usepackage{amsmath,bm} %maths\n\
 \\usepackage[utf8]{inputenc} \n\
 \\definecolor{red}{rgb}{1,0,0}\n\
+\\setlength{\\paperwidth}{"//pw//"}\n\
+\\setlength{\\pdfpagewidth}{"//pw//"}\n\
+\\setlength{\\textwidth}{"//tw//"}\n\
 \\thispagestyle{empty}\n\
 \\begin{document}\n"];
 
   Postamble["text"]="\
 \\end{document}\n";
 
-  TypesetPNG[text_,opt___]:=
-    Module[{f,fn=TemporaryName[],pdf,dir=Directory[],png},
-      SetDirectory["/tmp"];
-      pdf=fn//".pdf";
-      png=fn//".png";
-      f=OpenWrite[fn//".tex"];
-      Write[f,Preamble[style]];
-      Write[f,"\\setcounter{equation}{"//eqn++//"}\n"];
-      Write[f,text,"\n"];
-      Write[f,Postamble[style]];
-      Close[f];
-      If[System["pdflatex "//fn//" "//pdf//" > /dev/null"],
-        System["pdfcrop --margins "//margins//" "//pdf//" "//pdf//" > /dev/null"];
-        System["convert -density "//dpi//" "//pdf//" "//png//" > /dev/null"];
-        System["rm "//fn//" "//fn//".tex "//fn//".log "//fn//".aux "//pdf]];
-      SetDirectory[dir];
-      png];
+  With[{def={`Format->"png"}},
+    Typeset[text_,opt___]:=
+      Module[{f,fn=TemporaryName[],pdf,dir=Directory[],out,form},
+        form=`Format/.{opt}/.def;
+!        Print[{form,{opt},def}];
+        SetDirectory["/tmp"];
+        pdf=fn//".pdf";
+        out=fn//"."//form;
+        f=OpenWrite[fn//".tex"];
+        Write[f,Preamble[style]];
+        Write[f,"\\setcounter{equation}{"//eqn++//"}\n"];
+        Write[f,text,"\n"];
+        Write[f,Postamble[style]];
+        Close[f];
+        If[System["pdflatex "//fn//" "//pdf//" > /dev/null"],
+          System["pdfcrop --margins "//margins//" "//pdf//" "//pdf//" > /dev/null"];
+          Switch[form,
+            "svg",
+            System["pdf2svg "//pdf//" "//out//" > /dev/null"];
+            System["svgcleaner --quiet "//out//" "//out//" > /dev/null"],
+            _,
+            System["convert -density "//dpi//" "//pdf//" "//out//" > /dev/null"]];
+          System["rm "//fn//" "//fn//".tex "//fn//".log "//fn//".aux "//pdf]
+          ];
+        SetDirectory[dir];
+        out]];
 
   ];
 

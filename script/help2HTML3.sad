@@ -2,15 +2,17 @@ FFS;
 
  EquAlign[t_,_]:="::<"//t//">::";
 
- Help2HTML=Class[{},{},{help=Help$Messages,nlabel=0,Labels,col=96,lt,ltt},
+ Help2HTML=Class[{},{},{help=Help$Messages,nlabel=0,Labels,col=96,
+   lt,ltt,form="svg",svg,outf,pw="16 cm"},
 
    Constructor[]:=(
      SetDirectory[DocumentsDirectory];
      help[[1,2]]="";
      Labels[s_]:=s;
      Labels[""]="";
-     lt=LaTeX[style->"align",pt->10,margins->"'3 3 3 0'",dpi->120];
-     ltt=LaTeX[style->"text",pt->10,margins->"'3 3 3 0'",dpi->120]
+     outf[_]=Undefined;
+     lt=LaTeX[style->"align",pt->11,margins->"'3 3 3 0'",dpi->120];
+     ltt=LaTeX[style->"text",pt->11,margins->"'3 3 3 0'",dpi->120]
      );
 
      SelfIndent[in_]:=Module[{f=StringToStream[in],r,ind,tab,con,w,p,r1},
@@ -51,7 +53,7 @@ FFS;
 
      ReplaceLaTeX[""]="";
      ReplaceLaTeX[s_String]:=Module[{p=StringPosition[s,"::<",1],
-       p1,png,equ,pe,p2,p0,lx},
+       p1,out,equ,pe,p2,p0,lx},
        If[p=={},
          ReplaceDraw[s],
          p=p[[1,2]]+1;
@@ -66,23 +68,26 @@ FFS;
            p2=StringLength[s]+1;
            p0=0;
            If[(pe=StringPosition[s[p,-2],";;;"])<=>{},
-             {ToExpression[s[p+pe[[-1,2]],p1]],p1=p+pe[[-1,1]]-2}[[1]],
-             0],
+             {ToExpression[s[p+pe[[-1,2]],p1]]-1,p1=p+pe[[-1,1]]-2}[[1]],
+             -1],
            True,
            lx:=lt;
            p2=p1+4;
            p0=p-4;
            0];
-         equ="SADHelp_img/equ_"//++lt@eqn//".png";
-         If[Fork[],
-           lt@eqn+=neq,
-           --lt@eqn;
-           With[{lx},
-             png=lx@TypesetPNG[s[p,p1]];
-             System["mv -f "//png//" "//equ]];
-           Exit[]];
+         If[(equ=outf[s[p,p1]])===Undefined,
+           equ="SADHelp_img/equ_"//++lt@eqn//"."//form;
+           If[Fork[],
+             outf[s[p,p1]]=equ;
+             lt@eqn+=neq,
+             --lt@eqn;
+             With[{lx},
+               out=lx@Typeset[s[p,p1],Format->form];
+               System["mv -f "//out//" "//equ]];
+             Exit[]]
+           ];
          s[1,Max[p0,0]]//
-           "<div><img  class=\"eqs\" SRC=\""//equ//"\" /></div>"//
+           "<img  class=\"eqs\" SRC=\""//equ//"\" />"//
              ReplaceLaTeX[s[p2,-1]]
          ]];
 
