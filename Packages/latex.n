@@ -5,7 +5,7 @@ BeginPackage[LaTeX`];
 Begin[LaTeX`];
 
 LaTeX=Class[{},{eqn=0},{style="align",pt=11,margins="'3 3 3 0'",dpi=150,
-  tw="18 cm",pw="23 cm"},
+  tw="18 cm",pw="23 cm", th="40 cm", ph="45 cm"},
 
   Constructor[]:={style,pt,margins,dpi,eqn};
 
@@ -20,6 +20,9 @@ LaTeX=Class[{},{eqn=0},{style="align",pt=11,margins="'3 3 3 0'",dpi=150,
 \\setlength{\\paperwidth}{"//pw//"}\n\
 \\setlength{\\pdfpagewidth}{"//pw//"}\n\
 \\setlength{\\textwidth}{"//tw//"}\n\
+\\setlength{\\paperheight}{"//ph//"}\n\
+\\setlength{\\pdfpageheight}{"//ph//"}\n\
+\\setlength{\\textheight}{"//th//"}\n\
 \\begin{document}\n\
 \\begin{align}\n\
 \\begin{split}\n"];
@@ -39,6 +42,9 @@ LaTeX=Class[{},{eqn=0},{style="align",pt=11,margins="'3 3 3 0'",dpi=150,
 \\setlength{\\paperwidth}{"//pw//"}\n\
 \\setlength{\\pdfpagewidth}{"//pw//"}\n\
 \\setlength{\\textwidth}{"//tw//"}\n\
+\\setlength{\\paperheight}{"//ph//"}\n\
+\\setlength{\\pdfpageheight}{"//ph//"}\n\
+\\setlength{\\textheight}{"//th//"}\n\
 \\thispagestyle{empty}\n\
 \\begin{document}\n"];
 
@@ -46,7 +52,7 @@ LaTeX=Class[{},{eqn=0},{style="align",pt=11,margins="'3 3 3 0'",dpi=150,
 \\end{document}\n";
 
   With[{def={`Format->"png"}},
-    Typeset[text_,opt___]:=
+    Typeset[text_,opt___]:=StandardForm[
       Module[{f,fn=TemporaryName[],pdf,dir=Directory[],out,form},
         form=`Format/.{opt}/.def;
 !        Print[{form,{opt},def}];
@@ -70,7 +76,7 @@ LaTeX=Class[{},{eqn=0},{style="align",pt=11,margins="'3 3 3 0'",dpi=150,
           System["rm "//fn//" "//fn//".tex "//fn//".log "//fn//".aux "//pdf]
           ];
         SetDirectory[dir];
-        out]];
+        out]]];
 
   ];
 

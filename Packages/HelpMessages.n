@@ -4508,6 +4508,81 @@ Examples:\n\n\
         }]}
        }]},
 
+    {"dynamics",
+      "","",
+      {
+    {"independent-variable",
+      EquAlign["Text[\
+SAD uses $s$, the distance along a reference line as the independent variable. The reference line is either a straight line or an arc through an element. The arc is chosen for elements with nonzero {\\tt ANGLE} such as {\\tt BEND} and {\\tt MULT}, otherwise the reference line is a straight line. The reference line is an abstract object to describe the motion of particles, and not necessarily to be an orbit of a particle. Even the orbit is helical, for instance in a solenoid, the reference line is straight. An arc is always bent locally horizontally.\\\\\n\
+Such reference lines can be discontinuous at some locations such as an end of tilted {\\tt SOL} or {\\tt COORD}. SAD automatically calculates transformation of variables at such locations.;;;0]",""],
+      "Lagrangean Hamiltonian",
+      {}},
+
+    {"Lagrangean",
+     EquAlign["Text[\
+The primary position variables are $(x,y,s)$, where $x$ and $y$ are the displacements along the normal and binormal vectors, ${\\bm n}$ and ${\\bm b}$, respectively. Let ${\\bm t}$ denote the tangential vector along $s$, then ${\\bm n}$, ${\\bm b}$, ${\\bm t}$ consist a right-handed system.\\\\\n\
+The action in $t$ is expressed by\n\
+\\begin{align}\n\
+S=&\\int L_tcdt\\ ,\\\\\n\
+L_t=&-\\frac{mc}{p_0}\\sqrt{1-\\dot x^2+\\dot y^2+(1+x/\\rho)^2\\dot s^2}+a_x\\dot x+a_y\\dot y+(1+x/\\rho)a_s\\dot s\\ ,\n\
+\\end{align}\n\
+where $p_0$ and $(a_x,a_y,a_z)=e(A_x,A_y,A_z)/p_0$ are the design momentum and the normalized vector potentials, respectively, and $\\dot\\ $ denotes the derivative by $ct$. Currently SAD dose not handle the electrostatic potential.\\\\\n\
+As SAD uses $s$ for the independent variable instead of $t$, the Lagrangean $L$ for $s$ is written as\n\
+\\begin{align}\n\
+L=&L_t\\frac{dct}{ds}\\ ,\\\\\n\
+=&-\\frac{mc}{p_0}\\sqrt{c^2t'^2-x'^2+y'^2+(1+x/\\rho)^2}+a_xx'+a_yy'+(1+x/\\rho)a_s\\ ,\n\
+\\end{align}\n\
+where $'$ is the derivative by $s$.;;;4]",""],
+      "Hamiltonian independent-variable",
+      {}},
+
+        {"Hamiltonian",
+          EquAlign["Text[The Lagrangean $L$ defines the {\\it canonical} momenta as\n\
+\\begin{align}\n\
+p_x=&\\frac{\\partial L}{\\partial x}=\\frac{mcx'}{p_0\\sqrt{c^2t'^2-x'^2-y'^2-(1+x/\\rho)^2}}+a_x\\ ,\\\\\n\
+p_y=&\\frac{\\partial L}{\\partial y}=\\frac{mcy'}{p_0\\sqrt{c^2t'^2-x'^2-y'^2-(1+x/\\rho)^2}}+a_y\\ ,\\\\\n\
+p_t=&\\frac{\\partial L}{\\partial y}=-\\frac{mc^3t'}{p_0\\sqrt{c^2t'^2-x'^2-y'^2-(1+x/\\rho)^2}}\\ ,\n\
+\\end{align}\
+which derives the Hamiltonian as\n\
+\\begin{align}\n\
+H_t=&x'p_x+y'p_y+t'p_t-L\\\\\n\
+=&-\\left(\\sqrt{-c^2 m^2/p_0^2 + p_t^2/c^2 - (p_x-a_x)^2 + (p_y-a_y)^2}+a_s\\right)\\left(1+\\frac{x}{\\rho}\\right)\\ .\n\
+\\end{align}\n\
+Instead of the canonical variables $(t,p_t)$, SAD uses another set $(z,p)$, The variable $z$ means the logitudinal postion, and $p$ the total momentum, which is more convenient than $p_t$ especially in a low-energy case, ie., $\\gamma \\sim 1$. The canonical variables $(z,p)$ as well as the Hamiltonian $H$ are obtained using a mother function\n\
+\\begin{align}\n\
+G=&G(p_t,z)=\\frac{z}{c}\\sqrt{p_t^2-m^2c^4/p_0^2}-t_0(s)\\ ,\\\\\n\
+p=&\\frac{\\partial G}{\\partial z}=\\frac{\\sqrt{p_t^2p_0^2-m^2c^4}}{p_0}\\ ,\\\\\n\
+t=&\\frac{\\partial G}{\\partial p_t}=-z\\frac{\\sqrt{p^2p_0^2-m^2c^2}}{c p p_0}+t_0(s)\\ ,\\\\\n\
+H=&H_t-\\frac{\\partial G}{\\partial s}\\\\\n\
+=&-\\left(\\sqrt{p^2 - (p_x-a_x)^2 - (p_y-a_y)^2}+a_s\\right)\\left(1+\\frac{x}{\\rho}\\right)+\\frac{E}{p_0v_0}\\ ,\n\
+\\end{align}\n\
+where $t_0(s)$ is the {\\it design arrival time} at location $s$, \n\
+$E=\\sqrt{m^2c^4+p_0^2p^2}$ the energy of the particle, and $v_0=1/t_0'(s)$ the design velocity.\n\
+ The longitudinal position $z$ is written as\n\
+\\begin{align}\
+z=&-v\\left(t-t_0(s)\\right)\\ ,\
+\\end{align}\n\
+where $v$ is the total velocity of the particle. Note that $v>0$ for the head of a bunch.\
+;;;11]",""],
+      "Lagrangean independent-variable",
+      {}},
+
+      {"remarks-on-dynamics",
+        EquAlign["Text[There are several remarks on the dynamics in SAD:\n\
+\\begin{itemize}\n\
+\\item The Hamiltonian describes the motion of particles in the {\\it body} of an element. Some effects at the boundary of an element, such as {\\it fringe field}, are not expressed by that Hamiltonian. SAD treats them by canonical transformations approximating these effects. All transformations in SAD are symplectic up to the round-off errors, except radiations.\n\
+\\item In a case of a linac, where the design momentum $p_0$ changes along the beam line needs a special treatment.\n\
+\\item The Hamiltonian above analytical solutions in the case of constant field without acceleration, ie., in a solenoid + dipole field. SAD uses such analytic solutions.\n\
+\\item If the field is linear in $x$ and $y$ such as for {\\tt QUAD}, and there is no acceleration, the Hamiltonian truncated up to the second order of $(x,p_x,y,p_y)$ has an analytic solution. SAD uses that solution and adds the nonlinear corrections coming from the $\\sqrt{\\ }$ term by slicing an element. This method gives the exact linear transformation at least around the design orbit. \n\
+\\item Transformations shown in this manual are not necessarily coded as they are. Considerations for round-off errors as well as computing efficiency are taken into account in actual routines.\n\
+\\item Transformations shown here are basically for trackings. {\\tt EMITTANCE(EMIT)} and {\\tt CALC} may use slightly different ones depending on the element.\n\
+\\end{itemize};;;0]",""],
+        "Hamiltonian",
+        {}}
+
+        }
+      },
+
    {"example",
     Module[{f=OpenRead[ExamplesDirectory//"design_example.sad"],s="",l},
       If[f<=>$Failed,
@@ -4519,7 +4594,7 @@ Examples:\n\n\
     "",
     {}}
 
-   }]
+       }]
 }});
 
 Protect[Help$Messages]

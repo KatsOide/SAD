@@ -68,8 +68,8 @@ FFS;
            p2=StringLength[s]+1;
            p0=0;
            If[(pe=StringPosition[s[p,-2],";;;"])<=>{},
-             {ToExpression[s[p+pe[[-1,2]],p1]]-1,p1=p+pe[[-1,1]]-2}[[1]],
-             -1],
+             {Max[0,ToExpression[s[p+pe[[-1,2]],p1]]-1],p1=p+pe[[-1,1]]-2}[[1]],
+             0],
            True,
            lx:=lt;
            p2=p1+4;
