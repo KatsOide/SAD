@@ -22,7 +22,8 @@
       kf1=symfd%value%k
       kp1=sympd%value%k
       symfd%value=dtfcopy1(dxnulls)
-      sympd%value%k=nbmax-256
+      sympd%value=dfromr(dble(nbmax-256))
+c      call tfdebugprint(sympd%value,'standardform',1)
       call tfeeval(ktastk(isp),kx,.true.,irtc)
       call tflocald(symfd%value)
       symfd%value%k=kf1
