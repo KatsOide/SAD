@@ -1242,7 +1242,7 @@ H =& ... + A_s(x, y)\\ ,\\\\\n"//
                   {k, 0, Infinity}, {n, 0, nmax}]\n\n"//
 "with   g_kn = - (2k - 1)!! (2k - 3)!! (n + 1)! / (8^k (n + k + 1)! k!) ,\n\
 and    rho = L/ANGLE ."]//"\n\
-Actually the summation is truncated at n + k <= 21 in the current version. While this definition converges to the regular one for multipoles when ANGLE -> 0, K0 and K1 of MUILT are different from those of BEND.",
+Actually the summation is truncated at n + k <= 21 in the current version. While this definition converges to the regular one for multipoles when ANGLE -> 0, K0 and K1 of MULT are different from those of BEND.",
          "ANGLE",
          {}},
 
@@ -1634,98 +1634,6 @@ The geometrical coordinate {xi, eta, zeta} is set by the ORG command, and its de
    = rotate[s, chi3] rotate[x, chi2] rotate[y, -chi1]{x, y, s}_origin,\n\n\
 where rotate[a, b] reads \"rotate around the new-a vector by b right-handedly\".",
     "optical-functions matching-function-commands DISPLAY(DISP) GEOCAL GEOFIX",
-    {}},
-
-   {"extended-Twiss-parameters",
-    "\
-A symplectic matrix such as the normal mode matrix can be expressed in terms of the extended Twiss parameters. In 6 by 6 case, those are\n\n\
-   AX  BX          ZX  EX\n\
-     PSIX         ZPX EPX\n\
-   R1  R2  AY  BY  ZY  EY\n\
-   R3  R4    PSIY ZPY EPY\n\
-                   AZ  BZ\n\
-                     PSIZ .\n\n\
-A(X,Y,Z), B(X,Y,Z) are alphas and betas in the usual sense, after a diagonalization to 2 by 2 submatrices. PSI(X,Y,Z) are the rotation angle to set one the coordinate to parallel to the (X,Y,Z) axes. R(1,2,3,4) are the components of the x-y coupling matrix (see x-y-coupling). E(X,PX,Y,PY) are \"dispersions\" which decouples synchro-beta coupling terms together with Z(X,PX,Y,PY). Those parameters should agree with what FFS calculates in the case of no synchro-beta couplings.",
-    "x-y-coupling optical-functions",
-    {{"definitions",
-      "\
-Let V denote the matrix to define the normal mode, i.e.,\n\n\
-   U = V . u\n\n\
-where U = {X, PX, Y, PY, Z, PZ} and u = {x, px, y, py, z, delta} are normal physical coordinates, respectively. The matrix V can be expressed as\n\n\
-   V = P . B . R . H ,\n\n\
-where\n\n\
-   H = {{(1 - Det[Hx]/(1 + a))I,       Hx.J2.Transpose[Hy].J2/(1+a), -Hx},\n\
-        {Hy.J2.Transpose[Hx].J2/(1+a), (1 - Det[Hy]/(1 + a))I,       -Hy},\n\
-        {-J2.Transpose[Hx].J2,         -J2.Transpose[Hy].J2,         a I}} ,\n\
-   R = {{b I, J2.Transpose[r].J2, 0},\n\
-        {r,   b I,                0},\n\
-        {0,   0,                  I}} ,\n\
-   P . B = {{Px.Bx, 0,     0    },\n\
-            {0,     Py.By, 0    },\n\
-            {0,     0,     Pz.Bz}} ,\n\n\
-with\n\n\
-   a^2 + Det[Hx] + Det[Hy] = 1 ,\n\
-   b^2 + Det[R] = 1 .\n\n\
-Symbols I, J2, Hx,y, r, Bx,y,z, Px,y,z above are 2 by 2 matrices:\n\n\
-   I = {{1, 0},\n\
-        {0, 1}} ,\n\
-   J2 = {{0,  1},\n\
-         {-1, 0}} ,\n\
-   r = {{R1, R2},\n\
-        {R3, R4}} ,\n\
-   Bk = {{ 1/Sqrt[betak],      0          },\n\
-         { alphak/Sqrt[betak], Sqrt[betak]}} ,\n\
-   Pk = {{ Cos[psik], Sin[psik]},\n\
-         {-Sin[psik], Cos[psik]}} .\n\n\
-Matrices Hx,y defines dispersions as\n\n\
-   {{zetax,  etax},\n\
-    {zetapx, etapx},\n\
-    {zetay,  etay},\n\
-    {zetapy, etapy}} = R . Join[Hx, Hy] .",
-      "",
-      {}}}},
-
-   {"x-y-coupling",
-     EquAlign["Text[\
-The transformation matrix from the physical coordinate $(x,p_x,y,p_y)$ to the $x$-$y$ decoupled coordinate $(X,P_x,Y,P_y)$ is written as\n\
-\\begin{align}\n\
-{\\rm R}=\\left(\\begin{matrix}\\mu {\\rm I} & {\\rm J}{\\rm r}^T{\\rm J}\\\\\
-{\\rm r}&\\mu {\\rm I}\\end{matrix}\\right)\n\
-\\end{align} with a submatrix\n\
-\\begin{align}\n\
-{\\rm r}=\\left(\\begin{matrix}{\\tt R1}&{\\tt R2}\\\\\n\
-{\\tt R3} & {\\tt R4}\\end{matrix}\\right)\\ ,\n\
-\\end{align}\n\
-where \n\
-\\begin{align}\n\
-&\\mu^2 + \\det({\\rm r}) = 1,\\\\\n\
-&{\\rm I}\\equiv \\left(\\begin{matrix}1 & 0 \\\\ 0 & 1 \\end{matrix}\\right)\\ ,\\\\\n\
-&{\\rm J}\\equiv\\left(\\begin{matrix}0 & 1 \\\\ -1 & 0 \\end{matrix}\\right)\\ .\n\
-\\end{align}\n\
- The value of function {\\tt DETR} is equal to $\\det({\\rm r})$ in this case.\n\n\
-Let T stand for the physical transfer matrix from location 1 to location 2, then the transformation in the decoupled coordinate is diagonalized as\n\
-\\begin{align}\n\
-{\\rm R}_2{\\rm T}{\\rm R}_1^{-1} = \\left(\\begin{matrix}{\\rm T}_X & 0 \\\\ 0 & {\\rm T}_Y \\end{matrix}\\right)\\ .\
-\\end{align}\n\n\
-The Twiss parameters are defined for the 2 by 2 matrices ${\\rm T}_X$ and ${\\rm T}_Y$.\n\n\
-If $\\det({\\rm r})\\ge1$, the above condition for $\\mu$ is violated. In such a case, an alternative form of R is used:\n\
-\\begin{align}\n\
-{\\rm R}=\\left(\\begin{matrix}{\\rm J}{\\rm r}^T{\\rm J} & \\mu {\\rm I} \\\\\
-\\mu {\\rm I} &{\\rm r}\\end{matrix}\\right)\\ ,\n\
-\\end{align}\n\
-where $\\mu^2 + \\det({\\rm r}) = 1$. The function {\\tt DETR} shows a number $a-\\det({\\rm r})$, where $a = 1.375$. thus the alternative form is used when $\\det({\\rm r}) >= 0.625$.\
-;;;7]","\
-The transformation matrix from the physical coordinate {x,px,y,py} to the x-y decoupled coordinate {X,Px,Y,Py} is written as\n\n\
-      R = {{mu I, J . Transpose[r] . J}, {r, mu I}}, \n\n\
-with the submatrix r={{R1, R2},{R3, R4}}, where mu^2 + Det[r] = 1, I = {{1,0},{0,1}}, and J={{0, 1}, {-1, 0}}. The value of function DETR is equal to Det[r] in this case.\n\n\
-   Let T stand for the physical\n\
-transfer matrix from location 1 to location 2, then the transformation in the decoupled coordinate is diagonalized as\n\n\
-      R_2 . T . Inverse[R_1] = {{T_X ,0}, {0, T_Y}} .\n\n\
-The Twiss parameters are defined for the matrices T_X and T_Y.\n\
-   If Det[r] >= 1, the above condition for mu is violated. In such a case, an alternative form of m is used:\n\n\
-      R = {{J . Transpose[r] . J, mu I}, {mu I, r}}, \n\n\
-where mu^2 + Det[r] = 1. The function DETR shows a number a-Det[r], where a = 1.375. thus the alternative form is used when Det[r] >= 0.625."],
-    "DISPLAY(DISP) optical-functions matching-function-commands",
     {}},
 
    {"flags",
@@ -4578,7 +4486,145 @@ where $v$ is the total velocity of the particle. Note that $v>0$ for the head of
 \\item Transformations shown here are basically for trackings. {\\tt EMITTANCE(EMIT)} and {\\tt CALC} may use slightly different ones depending on the element.\n\
 \\end{itemize};;;0]",""],
         "Hamiltonian",
-        {}}
+        {}},
+
+   {"x-y-coupling",
+     EquAlign["Text[\
+The transformation matrix from the physical coordinate $(x,p_x,y,p_y)$ to the $x$-$y$ decoupled coordinate $(X,P_x,Y,P_y)$ is written as\n\
+\\begin{align}\n\
+{\\rm R}=\\left(\\begin{matrix}\\mu {\\rm I} & {\\rm J}{\\rm r}^T{\\rm J}\\\\\
+{\\rm r}&\\mu {\\rm I}\\end{matrix}\\right)\n\
+\\end{align} with a submatrix\n\
+\\begin{align}\n\
+{\\rm r}=\\left(\\begin{matrix}{\\tt R1}&{\\tt R2}\\\\\n\
+{\\tt R3} & {\\tt R4}\\end{matrix}\\right)\\ ,\n\
+\\end{align}\n\
+where \n\
+\\begin{align}\n\
+&\\mu^2 + \\det({\\rm r}) = 1,\\\\\n\
+&{\\rm I}\\equiv \\left(\\begin{matrix}1 & 0 \\\\ 0 & 1 \\end{matrix}\\right)\\ ,\\\\\n\
+&{\\rm J}\\equiv\\left(\\begin{matrix}0 & 1 \\\\ -1 & 0 \\end{matrix}\\right)\\ .\n\
+\\end{align}\n\
+ The value of function {\\tt DETR} is equal to $\\det({\\rm r})$ in this case.\n\n\
+Let T stand for the physical transfer matrix from location 1 to location 2, then the transformation in the decoupled coordinate is diagonalized as\n\
+\\begin{align}\n\
+{\\rm R}_2{\\rm T}{\\rm R}_1^{-1} = \\left(\\begin{matrix}{\\rm T}_X & 0 \\\\ 0 & {\\rm T}_Y \\end{matrix}\\right)\\ .\
+\\end{align}\n\n\
+The Twiss parameters are defined for the 2 by 2 matrices ${\\rm T}_X$ and ${\\rm T}_Y$.\n\n\
+If $\\det({\\rm r})\\ge1$, the above condition for $\\mu$ is violated. In such a case, an alternative form of R is used:\n\
+\\begin{align}\n\
+{\\rm R}=\\left(\\begin{matrix}{\\rm J}{\\rm r}^T{\\rm J} & \\mu {\\rm I} \\\\\
+\\mu {\\rm I} &{\\rm r}\\end{matrix}\\right)\\ ,\n\
+\\end{align}\n\
+where $\\mu^2 + \\det({\\rm r}) = 1$. The function {\\tt DETR} shows a number $a-\\det({\\rm r})$, where $a = 1.375$. thus the alternative form is used when $\\det({\\rm r}) >= 0.625$.\
+;;;7]","\
+The transformation matrix from the physical coordinate {x,px,y,py} to the x-y decoupled coordinate {X,Px,Y,Py} is written as\n\n\
+      R = {{mu I, J . Transpose[r] . J}, {r, mu I}}, \n\n\
+with the submatrix r={{R1, R2},{R3, R4}}, where mu^2 + Det[r] = 1, I = {{1,0},{0,1}}, and J={{0, 1}, {-1, 0}}. The value of function DETR is equal to Det[r] in this case.\n\n\
+   Let T stand for the physical\n\
+transfer matrix from location 1 to location 2, then the transformation in the decoupled coordinate is diagonalized as\n\n\
+      R_2 . T . Inverse[R_1] = {{T_X ,0}, {0, T_Y}} .\n\n\
+The Twiss parameters are defined for the matrices T_X and T_Y.\n\
+   If Det[r] >= 1, the above condition for mu is violated. In such a case, an alternative form of m is used:\n\n\
+      R = {{J . Transpose[r] . J, mu I}, {mu I, r}}, \n\n\
+where mu^2 + Det[r] = 1. The function DETR shows a number a-Det[r], where a = 1.375. thus the alternative form is used when Det[r] >= 0.625."],
+    "DISPLAY(DISP) optical-functions matching-function-commands",
+    {}},
+
+   {"extended-Twiss-parameters",
+    "\
+A symplectic matrix such as the normal mode matrix can be expressed in terms of the extended Twiss parameters. In 6 by 6 case, those are\n\n\
+   AX  BX          ZX  EX\n\
+     PSIX         ZPX EPX\n\
+   R1  R2  AY  BY  ZY  EY\n\
+   R3  R4    PSIY ZPY EPY\n\
+                   AZ  BZ\n\
+                     PSIZ .\n\n\
+A(X,Y,Z), B(X,Y,Z) are alphas and betas in the usual sense, after a diagonalization to 2 by 2 submatrices. PSI(X,Y,Z) are the rotation angle to set one the coordinate to parallel to the (X,Y,Z) axes. R(1,2,3,4) are the components of the x-y coupling matrix (see x-y-coupling). E(X,PX,Y,PY) are \"dispersions\" which decouples synchro-beta coupling terms together with Z(X,PX,Y,PY). Those parameters should agree with what FFS calculates in the case of no synchro-beta couplings.",
+    "x-y-coupling optical-functions",
+    {{"definitions",
+      EquAlign["Text[\
+Let V denote the matrix to define the normal mode, i.e.,\n\
+\\begin{align}\n\
+   {\\bm U} = {\\rm V}{\\bm u}\\ ,\n\
+\\end{align}\n\
+where ${\\bm U} = (X, P_x, Y, P_y, Z, P_z)$ and ${\\bm u} = (x, p_x, y, p_y, z, \\delta\\equiv p-1)$ are the normal and physical coordinates, respectively. The matrix V can be expressed as\n\
+\\begin{align}\n\
+   {\\rm V} = {\\rm PBR}_6{\\rm H}\\ ,\n\
+\\end{align}\n\
+where\n\
+{\\everymath{\\displaystyle}\n\
+\\begin{align}\n\
+{\\rm H} =&\\left(\\begin{matrix}\\left(1-\\frac{\\det{\\rm H}_x}{1+a}\\right){\\rm I}&\n\
+\\frac{{\\rm H}_x{\\rm J}_2{\\rm H}_y^T{\\rm J}_2}{1+a}&-{\\rm H}_x\\\\\n\
+\\frac{{\\rm H}_y{\\rm J}_2{\\rm H}_x^T{\\rm J}_2}{1+a}&\n\
+\\left(1-\\frac{\\det{\\rm H}_y}{1+a}\\right){\\rm I}&-{\\rm H}_y\\\\\n\
+-{\\rm J}_2{\\rm H}_x^T{\\rm J}_2 & -{\\rm J}_2{\\rm H}_y^T{\\rm J}_2 & a {\\rm I}\\end{matrix}\\right)\\ ,\\\\\n\
+{\\rm R}_6=&\\left(\\begin{matrix} {\\rm R} & \\begin{matrix}0 & 0\\end{matrix} \\\\\n\
+\\begin{matrix}0&0\\end{matrix} & {\\rm I}\\end{matrix}\\right)=\n\
+\\left(\\begin{matrix} b {\\rm I}& {\\rm J}_2{\\rm r}^T{\\rm J}_2 & 0\\\\\n\
+{\\rm r}&b{\\rm I} & 0\\\\ 0&0&{\\rm I}\\end{matrix}\\right)\\ ,\\\\\n\
+{\\rm PB}=&\\left(\\begin{matrix}{\\rm P}_x{\\rm B}_x & 0 & 0\\\\\n\
+0 & {\\rm P}_y{\\rm B}_y & 0\\\\ 0& 0& {\\rm P}_z{\\rm B}_z \\end{matrix}\\right)\\ ,\n\
+\\end{align}}\n\
+with\n\
+\\begin{align}\n\
+&a^2+\\det{\\rm H}_x +\\det{\\rm H}_y=1\\ ,\\\\\n\
+&b^2+\\det{\\rm R}=1\\ .\n\
+\\end{align}\n\
+Symbols I,J$_2$, H$_{x,y}$, r, B$_{x,y,z}$, P$_{x,y,z}$ above are 2 by 2 matrices:\n\
+{\\everymath{\\displaystyle}\n\
+\\begin{align}\n\
+{\\rm I}\\equiv&\\left(\\begin{matrix}1 & 0 \\\\ 0 & 1\\end{matrix}\\right)\\ ,\\\\\n\
+{\\rm J}_2\\equiv&\\left(\\begin{matrix}0 & 1 \\\\ -1 & 0\\end{matrix}\\right)\\ ,\\\\\n\
+{\\rm r}\\equiv&\\left(\\begin{matrix}{\\tt R1} & {\\tt R2} \\\\ {\\tt R3} & {\\tt R4}\\end{matrix}\\right)\\ ,\\\\\n\
+{\\rm B}_{x,y}\\equiv&\\left(\\begin{matrix}\\frac{1}{\\sqrt{\\beta_{x,y}}} & 0 \\\\\n\
+ \\frac{\\alpha_{x,y}}{\\sqrt{\\beta_{x,y}}} & \\sqrt{\\beta_{x,y}}\\end{matrix}\\right)\\ ,\\\\\n\
+{\\rm P}_{x,y,z}\\equiv&\\left(\\begin{matrix}\\cos\\psi_{x,y,z} & \\sin\\psi_{x,y,z} \\\\\n\
+-\\sin\\psi_{x,y,z} & \\cos\\psi_{x,y,z}\\end{matrix}\\right)\\ .\n\
+\\end{align}}\n\
+Matrixes H$_{x,y}$ define dispersions as\n\
+\\begin{align}\n\
+\\left(\\begin{matrix} {\\tt ZX} & {\\tt EX}\\\\{\\tt ZPX}& {\\tt EPX}\\\\\n\
+ {\\tt ZY} & {\\tt EY}\\\\{\\tt ZPY}& {\\tt EPY}\\end{matrix}\\right)\\equiv\n\
+{\\rm R} \\left(\\begin{matrix} {\\rm H}_x\\\\{\\rm H}_y\\end{matrix}\\right)\\ .\n\
+\\end{align}\n\
+;;;13]","\n\
+Let V denote the matrix to define the normal mode, i.e.,\n\n\
+   U = V . u\n\n\
+where U = {X, PX, Y, PY, Z, PZ} and u = {x, px, y, py, z, delta} are normal and physical coordinates, respectively. The matrix V can be expressed as\n\n\
+   V = P . B . R . H ,\n\n\
+where\n\n\
+   H = {{(1 - Det[Hx]/(1 + a))I,       Hx.J2.Transpose[Hy].J2/(1+a), -Hx},\n\
+        {Hy.J2.Transpose[Hx].J2/(1+a), (1 - Det[Hy]/(1 + a))I,       -Hy},\n\
+        {-J2.Transpose[Hx].J2,         -J2.Transpose[Hy].J2,         a I}} ,\n\
+   R = {{b I, J2.Transpose[r].J2, 0},\n\
+        {r,   b I,                0},\n\
+        {0,   0,                  I}} ,\n\
+   P . B = {{Px.Bx, 0,     0    },\n\
+            {0,     Py.By, 0    },\n\
+            {0,     0,     Pz.Bz}} ,\n\n\
+with\n\n\
+   a^2 + Det[Hx] + Det[Hy] = 1 ,\n\
+   b^2 + Det[R] = 1 .\n\n\
+Symbols I, J2, Hx,y, r, Bx,y,z, Px,y,z above are 2 by 2 matrices:\n\n\
+   I = {{1, 0},\n\
+        {0, 1}} ,\n\
+   J2 = {{0,  1},\n\
+         {-1, 0}} ,\n\
+   r = {{R1, R2},\n\
+        {R3, R4}} ,\n\
+   Bk = {{ 1/Sqrt[betak],      0          },\n\
+         { alphak/Sqrt[betak], Sqrt[betak]}} ,\n\
+   Pk = {{ Cos[psik], Sin[psik]},\n\
+         {-Sin[psik], Cos[psik]}} .\n\n\
+Matrices Hx,y define dispersions as\n\n\
+   {{zetax,  etax},\n\
+    {zetapx, etapx},\n\
+    {zetay,  etay},\n\
+    {zetapy, etapy}} = R . Join[Hx, Hy] ."],
+      "",
+      {}}}}
 
         }
       },

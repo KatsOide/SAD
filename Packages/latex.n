@@ -4,19 +4,20 @@ BeginPackage[LaTeX`];
 
 Begin[LaTeX`];
 
-LaTeX=Class[{},{eqn=0},{style="align",pt=11,margins="'3 3 3 0'",dpi=150,
-  tw="18 cm",pw="23 cm", th="40 cm", ph="45 cm"},
+LaTeX=Class[{},{eqn=0,pre0="\
+\\usepackage{color} %used for font color\n\
+\\usepackage{amssymb} %maths\n\
+\\usepackage{amsmath,bm,mathtools} %maths\n\
+\\usepackage[utf8]{inputenc} \n\
+\\definecolor{red}{rgb}{1,0,0}\n\
+\\thispagestyle{empty}\n"},
+  {style="align",pt=11,margins="'3 3 3 0'",dpi=150,
+    tw="18 cm",pw="23 cm", th="40 cm", ph="45 cm"},
 
   Constructor[]:={style,pt,margins,dpi,eqn};
 
   Preamble["align"]:=StandardForm["\
-\\documentclass["//pt//"pt]{article}\n\
-\\usepackage{color} %used for font color\n\
-\\usepackage{amssymb} %maths\n\
-\\usepackage{amsmath,bm} %maths\n\
-\\usepackage[utf8]{inputenc} \n\
-\\definecolor{red}{rgb}{1,0,0}\n\
-\\thispagestyle{empty}\n\
+\\documentclass["//pt//"pt]{article}\n"//pre0//"\
 \\setlength{\\paperwidth}{"//pw//"}\n\
 \\setlength{\\pdfpagewidth}{"//pw//"}\n\
 \\setlength{\\textwidth}{"//tw//"}\n\
@@ -33,19 +34,13 @@ LaTeX=Class[{},{eqn=0},{style="align",pt=11,margins="'3 3 3 0'",dpi=150,
 \\end{document}\n";
 
   Preamble["text"]:=StandardForm["\
-\\documentclass["//pt//"pt]{article}\n\
-\\usepackage{color} %used for font color\n\
-\\usepackage{amssymb} %maths\n\
-\\usepackage{amsmath,bm} %maths\n\
-\\usepackage[utf8]{inputenc} \n\
-\\definecolor{red}{rgb}{1,0,0}\n\
+\\documentclass["//pt//"pt]{article}\n"//pre0//"\
 \\setlength{\\paperwidth}{"//pw//"}\n\
 \\setlength{\\pdfpagewidth}{"//pw//"}\n\
 \\setlength{\\textwidth}{"//tw//"}\n\
 \\setlength{\\paperheight}{"//ph//"}\n\
 \\setlength{\\pdfpageheight}{"//ph//"}\n\
 \\setlength{\\textheight}{"//th//"}\n\
-\\thispagestyle{empty}\n\
 \\begin{document}\n"];
 
   Postamble["text"]="\

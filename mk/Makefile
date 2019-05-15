@@ -150,7 +150,7 @@ clean:	clean-gdtoa clean-std-modules
 	@rm -f  $(LIBSAD) $(SADEXE)
 #	@rm -f  $(BINDIR)/gs $(PKGDIR)/init.local.n
 	@rm -f  $(SADDIR)/script/design_example.sad.result
-	@rm -rf $(SADDIR)/Documents
+#	@rm -rf $(SADDIR)/Documents
 
 distclean:	clean distclean-std-modules
 	@rm -rf $(OBJDIR)
