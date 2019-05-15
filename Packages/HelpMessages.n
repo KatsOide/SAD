@@ -1,4 +1,4 @@
-Help$Update="$Date:  5/4/2019 18:00:00 $"[8,17];
+Help$Update="$Date:  5/7/2019 15:00:00 $"[8,17];
 !Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
 Help$Version=$Version;
 
@@ -564,7 +564,7 @@ APERT   DX1 DX2 DY1 DY2 DP AX AY DX DY",
         "A drift space.",
         "",
         {{"L",
-          "Length.",
+          "The length, can be negative.",
           "",
           {}},
 
@@ -604,7 +604,7 @@ can pass through the aperture, otherwise it is lost and a message is printed out
        "",
        Sort[
        {{"L",
-          "Length along the arc of the orbit.",
+          "The effective length along the arc of the orbit.",
           "",
           {}},
 
@@ -695,18 +695,18 @@ Length of the slope of the field at the edge as:\n\n\
                   |       |\n\
                   |<----->|\n\
                   |   F1  |\n\n\
-Only the effects up to y^4 in Hamiltonian are taken into account. More rigorous definition is\n\n"//EquAlign[
+Only the effects up to y^4 in Hamiltonian are taken into account. A more rigorous definition is\n\n"//EquAlign[
 "{\\tt F1}=6 \\int_{-\\infty}^\\infty{\\frac{B_y(s)}{B_0}-\\left(\\frac{B_y(s)}{B_0}\\right)^2}ds,","\
    F1 = 6 Integrate[By(s)/B0 - (By(s)/B0)^2, {s, -Inf, Inf}] ,"]//"\n\n\
 where integration is done over one fringe.\n\n"//
 (BF1$Message="\
    The transformation of the linear fringe of the entrance of a bend is\n\n"//EquAlign[
-"\\exp(:V:),\\qquad V=-\\frac{1}{p}\\left(\\frac{f^2}{24\\rho_b}p_x-\\frac{f}{12\\rho_b}y^2\
-+\\frac{1}{6f\\rho_b}y^4\\right)","\
+"\\exp(:V:),\\qquad V=-\\frac{1}{p}\\left(\\frac{{\\tt F1}^2}{24\\rho_b}p_x-\\frac{\\tt F1}{12\\rho_b}y^2\n\
++\\frac{y^4}{6{\\tt F1}\\ \\rho_b^2}\\right)","\
    exp(:V:),   V = -f^2/rhob px/p/24 - f/rhob^2 y^2/p/12 \n\
                    + 1/rhob^2/f y^4/p/6 ,"]//"\n\n\
 where f is the length of fringe given by F1, and rhob bending radius at the design momentum. At the exit, the sign of rhob is changed. This linear fringe also changes the path length in the body of the bend as\n\n"//EquAlign[
-"L'={\\tt L}-\\frac{(\\phi_0 f)^2}{24{\\tt L}}\\frac{\\sin((\\phi_0(1-{\\tt E1}-{\\tt E2})-{\\tt AE1}-{\\tt AE2})/2)}{\\sin(\\phi_0/2)}","\
+"L'={\\tt L}-\\frac{({\\tt ANGLE\\ F1})^2}{24{\\tt L}}\\frac{\\sin(({\\tt ANGLE}(1-{\\tt E1}-{\\tt E2})-{\\tt AE1}-{\\tt AE2})/2)}{\\sin({\\tt ANGLE}/2)}","\
    l'=l-(phi0 f)^2/l/24 Sin[(phi0(1-E1-E2)-AE1-AE2)/2]/Sin[phi0/2]"]//"\n\n\
 to maintain the geometric position of the design orbit, i.e., you have to increase the bend field a little bit to keep the orbit unchanged. Unlike a quadrupole, the effect of linear fringe is always applied at both the entrance and the exit, otherwise you cannot obtain a circular design orbit.\n\n\
    Use FB1 and FB2 to specify the values of entrance and exit separately."),
@@ -749,32 +749,28 @@ If nonzero, the synchrotron radiation in the particle-tracking is inhibited.",
          {"transformation:BEND",
           BEND$trans="\
 The transformation of a bend depends on the value of K1. If K1 is zero, it is a series of transformations:\n\n\
-   (kick due to rotation error)\n"//
-EquAlign["\
-p_{x2}&=p_{x1}+\\varDelta\\varphi_x\\\\\
-p_{y2}&=p_{y1}+\\varDelta\\varphi_y","\
-      px2 = px1 + dphix\n\
-      py2 = py1 + dphiy"]//"\n\
+    (transformation due to misalignments)\n\
    (drift to the entrance face)\n"//EquAlign["\
-x_2   &= \\frac{x_1}{\\cos\\psi_1 - p_{x1}/p_{z1}\\sin\\psi_1 }\\ ,\\\\\n\
+x_2   &= \\frac{x_1}{\\cos\\psi_1 - (p_{x1}/p_{z1})\\sin\\psi_1 }\\ ,\\\\\n\
 p_{x2}&= p_{x1} \\cos\\psi_1 + p_{z1} \\sin\\psi_1\\ ,\\\\\n\
 y_2   &= y_1 + \\frac{p_{y1}}{p_{z1}}x_2\\sin\\psi_1\\ ,\\\\\n\
 z_2   &= z_1 - \\frac{p_1}{p_{z1}} x_2 \\sin\\psi_1\\ ,\\\\\n\
-{\\rm where\\ } \\psi_1 &= {\\tt ANGLE} \\times {\\tt E1} + {\\tt AE1}","\
+{\\rm where\\ } \\psi_1 &\\equiv {\\tt ANGLE} \\times {\\tt E1} + {\\tt AE1}","\
       x2  = x1/(cos(psi1) - sin(psi1) (px1/pz1))\n\
       px2 = px1 cos(psi1) + pz1 sin(psi1)\n\
       y2  = y1 + (py1/pz1) x2 sin(psi1)\n\
       z2  = z1 - (p1 /pz1) x2 sin(psi1) ,\n\
       where psi1 = ANGLE * E1 + AE1"]//"\n\
    (linear fringe at entrance face)\n"//EquAlign["\
-x_2  &= x_1 + \\varDelta x_{fr} \\frac{p_1 - p_0}{p_1}\\ ,\\\\\n\
-p_{y2} &= p_{y1} + y_1\\frac{\\varDelta y_{fr} - \\varDelta y_{fra} y_1^2}{p_1^2}\\ ,\\\\\n\
-z_2  &= z_1 + \\frac{\\varDelta x_{fr} p_{x1} + (\\varDelta y_{fr} - \\varDelta y_{fra} y_1^2/2) y_1^2/(2 p_1)}{p_1}\\ ,\\\\\n\
-{\\rm where\\ }\\varDelta x_{fr} &= \\frac{{\\tt F1}^2}{24 \\rho_b}\\ ,\\\\\n\
-            \\varDelta y_{fr} &= \\frac{\\tt F1}{6 \\rho_b^2}\\ ,\\\\\n\
-            \\varDelta y_{fra}&= \\frac{2}{3} \\frac{1}{{\\tt F1} \\rho_b^2}\\\\\n\
-            \\rho_b &= \\frac{L'}{{\\tt ANGLE} + {\\tt K0}}\\ ,\\\\\n\
-L'&={\\tt L}-\\frac{(\\phi_0 f)^2}{24{\\tt L}}\\frac{\\sin((\\phi_0(1-{\\tt E1}-{\\tt E2})-{\\tt AE1}-{\\tt AE2})/2)}{\\sin(\\phi_0/2)}","\
+x_2  =& x_1 + \\varDelta x_{fr} \\frac{p_1 - p_0}{p_1}\\ ,\\\\\n\
+p_{y2} =& p_{y1} + y_1\\frac{\\varDelta y_{fr} - \\varDelta y_{fra} y_1^2}{p_1^2}\\ ,\\\\\n\
+z_2  =& z_1 + \\frac{\\varDelta x_{fr} p_{x1} + (\\varDelta y_{fr} - \\varDelta y_{fra} y_1^2/2) y_1^2/(2 p_1)}{p_1}\\ ,\\\\\n\
+{\\rm where\\ }\\varDelta x_{fr} \\equiv& \\frac{{\\tt F1}^2}{24 \\rho_b}\\ ,\\\\\n\
+            \\varDelta y_{fr} \\equiv& \\frac{\\tt F1}{6 \\rho_b^2}\\ ,\\\\\n\
+            \\varDelta y_{fra}\\equiv& \\frac{2}{3} \\frac{1}{{\\tt F1} \\rho_b^2}\\ ,\\\\\n\
+            \\rho_b \\equiv& \\frac{L'}{{\\tt ANGLE} + {\\tt K0}}\\ ,\\\\\n\
+L'\\equiv&{\\tt L}-\\frac{({\\tt ANGLE\\ F1})^2}{24{\\tt L}}\\\\\n\
+&\\times\\frac{\\sin(({\\tt ANGLE}(1-{\\tt E1}-{\\tt E2})-{\\tt AE1}-{\\tt AE2})/2)}{\\sin({\\tt ANGLE}/2)}\\ .","\
       x2  = x1 + dxfr (p1 - p0)/p1\n\
       py2 = py1 + (dyfr - dyfra y1^2) y1/p1^2\n\
       z2  = z1 + (dxfr px1 + (dyfr - dyfra y1^2/2) y1^2/(2 p1))/p1\n\
@@ -784,11 +780,26 @@ L'&={\\tt L}-\\frac{(\\phi_0 f)^2}{24{\\tt L}}\\frac{\\sin((\\phi_0(1-{\\tt E1}-
             rhob = L'/(ANGLE + K0) ,\n\
             L'   = L - (ANGLE F1)^2 /(24 L)\n\
                      * sin((ANGLE (1 - E1 - E2) - AE1 - AE2)/2)/sin(ANGLE/2)"]//"\n\
-   (nonlinear fringe at entrance)\n\
+   (nonlinear fringe at entrance)\n"//EquAlign["\
+x_2&=x_1 + y_1^2 (1-\\frac{y_1^2}{12\\rho_b^2}) \\frac{p_1^2}{2 \\rho_b (p_1^2 - p_{x1}^2)^{3/2}}\\ ,\\\\\n\
+p_{y2}&= p_{y1} - p_{x1} (1-\\frac{y_1^2}{6\\rho_b^2}) \\frac{y_1}{p_1 \\rho_b \\sqrt{p_1^2 - p_{x1}^2}}\\ ,\\\\\n\
+z_2&=z_1  - p_{x1} y_1^2 (1-\\frac{y_1^2}{12\\rho_b^2}) \\frac{p_1}{2 \\rho_b (p_1^2 - p_{x1}^2)^{3/2}}\\ .","\
       x2  = x1  + y1^2 (1-y1^2/rhob^2/12) p1^2/(2 rhob (p1^2 - px1^2)^(3/2))\n\
       py2 = py1 - px1 (1-y1^2/rhob^2/6) y1/(p1 rhob sqrt(p1^2 - px1^2))\n\
-      z2  = z1  - px1 y1^2 (1-y1^2/rhob^2/12) p1/(2 rhob (p1^2 - px1^2)^(3/2))\n\
-   (body of bend)\n\
+      z2  = z1  - px1 y1^2 (1-y1^2/rhob^2/12) p1/(2 rhob (p1^2 - px1^2)^(3/2))"]//"\n\
+   (body of bend)\n"//EquAlign["\
+p_{x2}=&-\\frac{\\rho_0}{\\rho_b} (\\sin\\psi_2 + \\sin(\\omega + \\psi_1))\\\\\n\
+            &+ p_{z1}\\sin\\omega  +  p_{x1}\\cos\\omega - \\frac{x_1}{\\rho_b \\sin\\omega}\\ ,\\\\\n\
+x_2 =& x_1 \\cos\\omega + \\rho_b (p_{z2} - p_{z1}\\cos\\omega + p_{x1}\\sin\\omega)\\\\\n\
+            &+\\rho_0 (\\cos(\\omega+\\psi_1) - \\cos\\psi_2)\\ ,\\\\\n\
+y_2  =& y_1 + s \\frac{p_{y1}}{\\sqrt{p_1^2 - p_{y1}^2}}\\ ,\\\\\n\
+z_2  =& z_1 - s \\frac{p_1}{\\sqrt{p_1^2 - p_{y1}^2}} + \\frac{v_1}{v_0} L'\\ ,\\\\\n\
+{\\rm where\\ } \\rho_0  \\equiv& \\frac{L'}{\\tt ANGLE}\\ ,\\\\\n\
+\\omega \\equiv& {\\tt ANGLE} - \\psi_1 - \\psi_2\\ ,\\\\\n\
+s \\equiv&{\\tt ANGLE}\\times\\rho_b\\\\\n\
+&\\times\\left(\\sin^{-1}\\frac{p_{x1}}{\\sqrt{p_1^2 - p_{y1}^2}}\n\
+                    - \\sin^{-1}\\frac{p_{x2}}{\\sqrt{p_2^2 - p_{y2}^2}} + \\omega\\right)\\ .",
+"\
       px2 = -rho0/rhob (sin(psi2) + sin(omega + psi1))\n\
             + sin(omega) pz1 + cos(omega) px1 - x1/rhob sin(omega)\n\
       x2  = x1 cos(omega) + rhob (pz2 - cos(omega) pz1 + sin(omega) px1)\n\
@@ -798,25 +809,38 @@ L'&={\\tt L}-\\frac{(\\phi_0 f)^2}{24{\\tt L}}\\frac{\\sin((\\phi_0(1-{\\tt E1}-
       where rho0  = L'/ANGLE\n\
             omega = ANGLE - psi1 - psi2\n\
             s     = rhob ANGLE (arcsin(px1/sqrt(p1^2 - py1^2))\n\
-                    - arcsin(px2/sqrt(p2^2 - py2^2)) + omega)\n\
-   (nonlinear fringe at exit)\n\
+                    - arcsin(px2/sqrt(p2^2 - py2^2)) + omega)"]//"\n\
+   (nonlinear fringe at exit)\n"//EquAlign["\
+x_2&=x_1 - y_1^2 (1-\\frac{y_1^2}{12\\rho_b^2}) \\frac{p_1^2}{2 \\rho_b (p_1^2 - p_{x1}^2)^{3/2}}\\ ,\\\\\n\
+p_{y2}&= p_{y1} + p_{x1} (1-\\frac{y_1^2}{6\\rho_b^2}) \\frac{y_1}{p_1 \\rho_b \\sqrt{p_1^2 - p_{x1}^2}}\\ ,\\\\\n\
+z_2&=z_1  + p_{x1} y_1^2 (1-\\frac{y_1^2}{12\\rho_b^2}) \\frac{p_1}{2 \\rho_b (p_1^2 - p_{x1}^2)^{3/2}}\\ .",
+"\
       x2  = x1  - y1^2 (1-y1^2/rhob^2/12) p1^2/(2 rhob (p1^2 - px1^2)^(3/2))\n\
       py2 = py1 + px1 y1 (1-y1^2/rhob^2/6)/(p1 rhob sqrt(p1^2 - px1^2))\n\
-      z2  = z1  + px1 y1^2 (1-y1^2/rhob^2/12) p1/(2 rhob (p1^2 - px1^2)^(3/2))\n\
-   (linear fringe at exit face)\n\
+      z2  = z1  + px1 y1^2 (1-y1^2/rhob^2/12) p1/(2 rhob (p1^2 - px1^2)^(3/2))"]//"\n\
+   (linear fringe at exit face)\n"//EquAlign["\
+x_2  &= x_1 - \\varDelta x_{fr} \\frac{p_1 - p_0}{p_1}\\ ,\\\\\n\
+p_{y2} &= p_{y1} + y_1\\frac{\\varDelta y_{fr} - \\varDelta y_{fra} y_1^2}{p_1^2}\\ ,\\\\\n\
+z_2  &= z_1 + \\frac{-\\varDelta x_{fr} p_{x1} + (\\varDelta y_{fr} - \\varDelta y_{fra} y_1^2/2) y_1^2/(2 p_1)}{p_1}-\\varDelta z_{fr}\\ ,\\\\\n\
+{\\rm where\\ } \\varDelta z_{fr}&\\equiv \\varDelta x_{fr} \\left(\\sin({\\tt ANGLE\\ E1} + {\\tt AE1}) + \\sin({\\tt ANGLE\\ E2} + {\\tt AE2}) \\right)\\ .",
+"\
       x2  = x1 - dxfr (p1 - p0)/p1\n\
       py2 = py1 + (dyfr - dyfra y1^2) y1/p1^2\n\
       z2  = z1 + (-dxfr px1 + (dyfr - dyfra y1^2/2) y1^2/(2 p1))/p1 - dzfr\n\
-      where dzfr = dxfr * ( sin(ANGLE E1 + AE1) + sin(ANGLE E2 + AE2) )\n\
-   (drift from the exit face)\n\
+      where dzfr = dxfr * ( sin(ANGLE E1 + AE1) + sin(ANGLE E2 + AE2) )"]//"\n\
+   (drift from the exit face)\n"//EquAlign["\
+p_{x2} =&  p_{x1}\\cos\\psi_2  + p_{z1}\\sin\\psi_2\\ ,\\\\\n\
+x_2  =& x_1 (\\cos\\psi_2 + \\frac{p_{x2}}{p_{z2}} \\sin\\psi_2)\\ ,\\\\\n\
+y_2  =& y_1 + \\frac{p_{y2}}{p_{z2}} x_1 \\sin\\psi_2\\ ,\\\\\n\
+z_2  =& z_1 - x_1 \\frac{p_2}{p_{z2}}\\sin\\psi_2\\ ,\\\\ \n\
+{\\rm where\\ } \\psi_2 \\equiv& {\\tt ANGLE} \\times {\\tt E2}\\ .",
+"\
       px2 =  cos(psi2) px1 + sin(psi2) pz1\n\
       x2  = x1 (cos(psi2) + px2/pz2 sin(psi2))\n\
       y2  = y1 + py2/pz2 x1 sin(psi2)\n\
       z2  = z1 - x1 sin(psi2) p2/pz2\n\
-      where psi2 = ANGLE * E2;\n\
-   (kick due to rotation error)\n\
-      px2 = px1 + dphix\n\
-      py2 = py1 + dphiy .\n\n\
+      where psi2 = ANGLE * E2."]//"\n\
+   (transformation due to misalignments)\n\n\
 If K1 is nonzero, the effects from E1 and E2 are approximated by thin\n\
 quadrupoles. Then the body is subdivided into\n\n\
    1 + floor(sqrt(abs(K1 L')/(12 10^-5 EPS)))\n\n\
@@ -832,7 +856,7 @@ pieces (EPS = 1 is used when EPS = 0), and the bend-body transformation above is
         Sort[
         {L$Message=
          {"L",
-          "Effective length.",
+          "The effective length.",
           "",
           {}},
 
@@ -845,14 +869,20 @@ pieces (EPS = 1 is used when EPS = 0), and the bend-body transformation above is
          Kn$Message[1],
 
          {"F1",
-          F1F2$Message=
-          "\
+          F1F2$Message=EquAlign["Text[\
+{\\tt F1} and {\\tt F2} are parameters to characterize the slope of the field at the edges defined as:\n\
+\\begin{align}\n\
+{\\tt F1} =& {\\ rm sgn}(a)\\sqrt a,\\qquad a \\equiv 24\\left(\\frac{I_0^2}{2} - I_1\\right)\\ ,\\\\\n\
+{\\tt F2} =& I_2 - \\frac{I_0^3}{3}\\\\\n\
+{\\rm with\\ }I_n \\equiv& \\int_{-\\infty}^\\infty(s-s0)^n \\frac{K_1(s)}{K_{10}}ds\\ ,\n\
+\\end{align}\n\
+where $s_0$ is the location of the edge where the effective length is defined, and $K_{10}$ is the nominal value of $K_1(s)$, given by ${\\tt K1}/{\\tt L}$.;;;3]","\
 F1 and F2 are parameters to characterize the slope of the field at the edges defined as:\n\n\
      F1 = SIGN(Sqrt[a],a),    a = 24(I_0^2/2 - I_1),\n\
      F2 = I_2 - I_0^3/3\n\
 with\n\
      I_n = Integrate[(s-s0)^n K1[s]/K1_0,{s,-Infinity,Infinity}],\n\n\
-where s0 is the location of the edge where the effective length is defined, and K1_0 is the nominal value of K1, given by the keyword K1.\n\
+where s0 is the location of the edge where the effective length is defined, and K1_0 is the nominal value of K1, given by the keyword K1."]//"\n\
    The effects only in the first order of K1 is taken into account.",
           "F2 FRINGE",
           {}},
@@ -1099,15 +1129,17 @@ FRINGE=3    entr & exit            none",
           {}},
 
          {"VOLT",
-          "Accelerating peak voltage in Volt.\n"//
-          (Acc$Message="The acceleration is given by \n\n\
-     dE = - e*(VOLT+DVOLT+V1 x+V20 x^2/2+V11 x y+V02 y^2/2)\n\
-                *Sin[2 Pi FREQ (t-ts) + PHI +DPHI],\n\n\
+          "Accelerating peak voltage in Volt.\n\n"//
+          (Acc$Message=EquAlign["\
+\\varDelta E =& - e*\\left({\\tt VOLT}+{\\tt DVOLT} +{\\tt V1}\\ x+\\frac{{\\tt V20}\\ x^2+{\\tt V02}\\ y^2}{2}+{\\tt V11}\\ x y\\right)\\\\\n\
+&\\times \\sin(2\\pi\\ {\\tt FREQ}(t-t_s) + {\\tt PHI} + {\\tt DPHI})\\ ,","\
+     dE = - e*(VOLT+DVOLT +V1 x+V20 x^2/2+V11 x y+V02 y^2/2)\n\
+                *Sin[2 Pi FREQ (t-ts) + PHI + DPHI],"])//"\n\n\
 where ts is the equilibrium time determined by the valance between the acceleration and the radiation loss around the ring. (CAVI only) The non-relativistic corrections\n\n\
      (VOLT+DVOLT)*(2 Pi FREQ/c)^2/(gamma beta)^2/4 are\n\n\
 automatically added to V20 and V02, respectively. The Lorentz factor is evaluated as inverse of average of 1/(beta gamma) at the entrance and the exit.\n\
    CAVI includes the edge effect at the lowest order, given by a Hamiltonian at the entrance edge at s0:\n\n\
-   Hf = - (e (VOLT+DVOLT)/L)(Sin(omega t - dphi) + Sin(dphi) - offset) (x^2+y^2)/4 delta(s-s0)\n where dphi and offset are determined by the cavity phase and the radiation loss, which is nonzero only in the case of NORAD. The sign flips at the exit. This Hamiltonian should be consistent with what Kiyoshi Kubo derived."),
+   Hf = - (e (VOLT+DVOLT)/L)(Sin(omega t - dphi) + Sin(dphi) - offset) (x^2+y^2)/4 delta(s-s0)\n where dphi and offset are determined by the cavity phase and the radiation loss, which is nonzero only in the case of NORAD. The sign flips at the exit. This Hamiltonian should be consistent with what Kiyoshi Kubo derived.",
           "DVOLT",
           {}},
 
@@ -1151,18 +1183,15 @@ Additional accelerating voltage to be added to VOLT without affecting the design
 
          {"PHI",
           "\
- Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. The acceleration is given as \n\n\
-     dE = - e*(VOLT+DVOLT +V1 x+V20 x^2/2+V11 x y+V02 y^2/2)\n\
-                *Sin[2 Pi FREQ (t-ts) + PHI + DPHI],\n\n\
+ Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. The acceleration is given by \n\n"//Acc$Message//"\n\n\
 where ts is the equilibrium time determined by the valance between the acceleration and the radiation loss around the ring.",
           "FREQ VOLT DVOLT V1 V20 V11",
           {}},
 
          {"DPHI",
           "\
- Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. The acceleration is given as \n\n\
-     dE = - e*(VOLT+DVOLT+V1 x+V20 x^2/2+V11 x y+V02 y^2/2)\n\
-                *Sin[2 Pi FREQ (t-ts) + PHI + DPHI],\n\n\
+ Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. The acceleration is given by \n\n"//
+Acc$Message//"\n\n\
 where ts is the equilibrium time determined by the valance between the acceleration and the radiation loss around the ring. DPHI is not taken into account to determine the design momentum p0(s).",
           "FREQ VOLT DVOLT V1 V20 V11",
           {}}
@@ -1200,16 +1229,20 @@ where c1 and s1 are Cos[CHI1] and Sin[CHI1], etc. The inverse is applied at the 
           "",
           {}},
 
-         {"multipole_with_nonzero_ANGLE",
-          StringJoin["\
-The multipoles in MULT with nonzero ANGLE are defined as\n\n\
-   H = ... + As(x, y) ,\n\n",
+         {"multipole_with_nonzero_ANGLE","\
+The multipoles in MULT with nonzero ANGLE are defined by\n\n"//EquAlign["\
+H =& ... + A_s(x, y)\\ ,\\\\\n"//
+"A_s(x, y) =& \\sum_{k,n=0}^\\infty g_{kn} \\frac{{\\tt K}n + i {\\tt SK}n}{(n + 1)!} (\\rho + x)^{1/2 - k}\
+\\times \\frac{(x + i y)^{n + k}}{\\sqrt\\rho}\\ ,\\\\\n"//
+"{\\rm with\\ }g_{kn}\\equiv& - \\frac{(2k - 1)!! (2k - 3)!! (n + 1)!}{8^k (n + k + 1)! k!}\\ ,\\\\\n\
+\\rho\\equiv&\\frac{\\tt L}{\\tt ANGLE}\\ .","\
+   H = ... + As(x, y) ,\n\n"//
 "   As(x, y) = Sum[ g_kn (Kn + I SKn)/(n + 1)! (rho + x)^(1/2 - k)\n\
                   * (x + I y)^(n + k) / rho^(1/2),\n\
-                  {k, 0, Infinity}, {n, 0, nmax}]\n\n\
-with\n\n",
-"   g_kn = - (2k - 1)!! (2k - 3)!! (n + 1)! / (8^k (n + k + 1)! k!) ,\n\n\
-where rho = L/ANGLE . Actually the summation is truncated at n + k <= 21 in the current version. While this definition converges to the regular one for multipoles when ANGLE -> 0, K0 and K1 of MUILT are different from those of BEND."],
+                  {k, 0, Infinity}, {n, 0, nmax}]\n\n"//
+"with   g_kn = - (2k - 1)!! (2k - 3)!! (n + 1)! / (8^k (n + k + 1)! k!) ,\n\
+and    rho = L/ANGLE ."]//"\n\
+Actually the summation is truncated at n + k <= 21 in the current version. While this definition converges to the regular one for multipoles when ANGLE -> 0, K0 and K1 of MULT are different from those of BEND.",
          "ANGLE",
          {}},
 
@@ -1218,8 +1251,9 @@ where rho = L/ANGLE . Actually the summation is truncated at n + k <= 21 in the 
          SKn$Message[n_]:=
          {"SK"//n,
           "\
-The skew "//2*(n+1)//"-pole magnetic field component (times the length L).\n\n\
-   SK"//n//" = B^("//n//")L/(Brho),\n\n\
+The skew "//2*(n+1)//"-pole magnetic field component (times the length L).\n"//EquAlign["\
+{\\tt SK"//n//"} = B^{("//n//")}{\\tt L}/(B\\rho)\\ ,","\
+   SK"//n//" = B^("//n//")L/(Brho),"]//"\n\n\
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .",
           "L",
           {}};
@@ -1252,9 +1286,8 @@ where L is the length of the component. Positive sign means a horizontally focus
 
          {"VOLT",
           "Accelerating peak voltage in Volt.\n"//
-          (Acc$Message="The acceleration is given by \n\n\
-     dE = - e * (VOLT+DVOLT) * Sin[2 Pi FREQ (t-ts) + PHI + DPHI],\n\n\
-where ts is the equilibrium time determined by the valance between the acceleration and the radiation loss around the ring."),
+          Acc$Message//"\n\n\
+where ts is the equilibrium time determined by the valance between the acceleration and the radiation loss around the ring.",
           "DVOLT",
           {}},
 
@@ -1271,17 +1304,14 @@ Additional accelerating peak voltage to be added to Volt, without affecting the 
          {"PHI",
           "\
 Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. \n\
-The acceleration is given as \n\n\
-     dE = - e * (VOLT+DVOLT) * Sin[2 Pi FREQ (t-ts) + PHI],\n\n\
+The acceleration is given as \n\n"//Acc$Message//"\n\n\
 where ts is the equilibrium time determined by the valance between the acceleration and the radiation loss around the ring.",
            "",
            {}},
            
          {"DPHI",
           "\
-Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. The acceleration is given as \n\n\
-     dE = - e*(VOLT+DVOLT+V1 x+V20 x^2/2+V11 x y+V02 y^2/2)\n\
-                *Sin[2 Pi FREQ (t-ts) + PHI + DPHI],\n\n\
+Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. The acceleration is given as \n\n"//Acc$Message//"\n\n\
 where ts is the equilibrium time determined by the valance between the acceleration and the radiation loss around the ring. DPHI is not taken into account to determine the design momentum p0(s).",
           "FREQ VOLT DVOLT V1 V20 V11",
           {}},
@@ -1604,70 +1634,6 @@ The geometrical coordinate {xi, eta, zeta} is set by the ORG command, and its de
    = rotate[s, chi3] rotate[x, chi2] rotate[y, -chi1]{x, y, s}_origin,\n\n\
 where rotate[a, b] reads \"rotate around the new-a vector by b right-handedly\".",
     "optical-functions matching-function-commands DISPLAY(DISP) GEOCAL GEOFIX",
-    {}},
-
-   {"extended-Twiss-parameters",
-    "\
-A symplectic matrix such as the normal mode matrix can be expressed in terms of the extended Twiss parameters. In 6 by 6 case, those are\n\n\
-   AX  BX          ZX  EX\n\
-     PSIX         ZPX EPX\n\
-   R1  R2  AY  BY  ZY  EY\n\
-   R3  R4    PSIY ZPY EPY\n\
-                   AZ  BZ\n\
-                     PSIZ .\n\n\
-A(X,Y,Z), B(X,Y,Z) are alphas and betas in the usual sense, after a diagonalization to 2 by 2 submatrices. PSI(X,Y,Z) are the rotation angle to set one the coordinate to parallel to the (X,Y,Z) axes. R(1,2,3,4) are the components of the x-y coupling matrix (see x-y-coupling). E(X,PX,Y,PY) are \"dispersions\" which decouples synchro-beta coupling terms together with Z(X,PX,Y,PY). Those parameters should agree with what FFS calculates in the case of no synchro-beta couplings.",
-    "x-y-coupling optical-functions",
-    {{"definitions",
-      "\
-Let V denote the matrix to define the normal mode, i.e.,\n\n\
-   U = V . u\n\n\
-where U = {X, PX, Y, PY, Z, PZ} and u = {x, px, y, py, z, delta} are normal physical coordinates, respectively. The matrix V can be expressed as\n\n\
-   V = P . B . R . H ,\n\n\
-where\n\n\
-   H = {{(1 - Det[Hx]/(1 + a))I,       Hx.J2.Transpose[Hy].J2/(1+a), -Hx},\n\
-        {Hy.J2.Transpose[Hx].J2/(1+a), (1 - Det[Hy]/(1 + a))I,       -Hy},\n\
-        {-J2.Transpose[Hx].J2,         -J2.Transpose[Hy].J2,         a I}} ,\n\
-   R = {{b I, J2.Transpose[r].J2, 0},\n\
-        {r,   b I,                0},\n\
-        {0,   0,                  I}} ,\n\
-   P . B = {{Px.Bx, 0,     0    },\n\
-            {0,     Py.By, 0    },\n\
-            {0,     0,     Pz.Bz}} ,\n\n\
-with\n\n\
-   a^2 + Det[Hx] + Det[Hy] = 1 ,\n\
-   b^2 + Det[R] = 1 .\n\n\
-Symbols I, J2, Hx,y, r, Bx,y,z, Px,y,z above are 2 by 2 matrices:\n\n\
-   I = {{1, 0},\n\
-        {0, 1}} ,\n\
-   J2 = {{0,  1},\n\
-         {-1, 0}} ,\n\
-   r = {{R1, R2},\n\
-        {R3, R4}} ,\n\
-   Bk = {{ 1/Sqrt[betak],      0          },\n\
-         { alphak/Sqrt[betak], Sqrt[betak]}} ,\n\
-   Pk = {{ Cos[psik], Sin[psik]},\n\
-         {-Sin[psik], Cos[psik]}} .\n\n\
-Matrices Hx,y defines dispersions as\n\n\
-   {{zetax,  etax},\n\
-    {zetapx, etapx},\n\
-    {zetay,  etay},\n\
-    {zetapy, etapy}} = R . Join[Hx, Hy] .",
-      "",
-      {}}}},
-
-   {"x-y-coupling",
-    "\
-The transformation matrix from the physical coordinate {x,px,y,py} to the x-y decoupled coordinate {X,Px,Y,Py} is written as\n\n\
-      R = {{mu I, J . Transpose[r] . J}, {r, mu I}}, \n\n\
-with the submatrix r={{R1, R2},{R3, R4}}, where mu^2 + Det[r] = 1, I = {{1,0},{0,1}}, and J={{0, 1}, {-1, 0}}. The value of function DETR is equal to Det[r] in this case.\n\n\
-   Let T stand for the physical\n\
-transfer matrix from location 1 to location 2, then the transformation in the decoupled coordinate is diagonalized as\n\n\
-      R_2 . T . Inverse[R_1] = {{T_X ,0}, {0, T_Y}} .\n\n\
-The Twiss parameters are defined for the matrices T_X and T_Y.\n\
-   If Det[r] >= 1, the above condition for mu is violated. In such a case, an alternative form of m is used:\n\n\
-      R = {{J . Transpose[r] . J, mu I}, {mu I, r}}, \n\n\
-where mu^2 + Det[r] = 1. The function DETR shows a number a-Det[r], where a = 1.375. thus the alternative form is used when Det[r] >= 0.625.",
-    "DISPLAY(DISP) optical-functions matching-function-commands",
     {}},
 
    {"flags",
@@ -3447,7 +3413,7 @@ TemporaryName[] returns a unique file name for a temporary use.",
          "\
 Forks the process into a parent and a child processes.\n\n\
    Fork[]\n\n\
-returns 0 and the pid of the child for the child and the parent, respectively.",
+returns 0 and the child's pid for the child and the parent, respectively.",
          "",
          {}},
 
@@ -4450,6 +4416,219 @@ Examples:\n\n\
         }]}
        }]},
 
+    {"dynamics",
+      "","",
+      {
+    {"independent-variable",
+      EquAlign["Text[\
+SAD uses $s$, the distance along a reference line as the independent variable. The reference line is either a straight line or an arc through an element. The arc is chosen for elements with nonzero {\\tt ANGLE} such as {\\tt BEND} and {\\tt MULT}, otherwise the reference line is a straight line. The reference line is an abstract object to describe the motion of particles, and not necessarily to be an orbit of a particle. Even the orbit is helical, for instance in a solenoid, the reference line is straight. An arc is always bent locally horizontally.\\\\\n\
+Such reference lines can be discontinuous at some locations such as an end of tilted {\\tt SOL} or {\\tt COORD}. SAD automatically calculates transformation of variables at such locations.;;;0]",""],
+      "Lagrangean Hamiltonian",
+      {}},
+
+    {"Lagrangean",
+     EquAlign["Text[\
+The primary position variables are $(x,y,s)$, where $x$ and $y$ are the displacements along the normal and binormal vectors, ${\\bm n}$ and ${\\bm b}$, respectively. Let ${\\bm t}$ denote the tangential vector along $s$, then ${\\bm n}$, ${\\bm b}$, ${\\bm t}$ consist a right-handed system.\\\\\n\
+The action in $t$ is expressed by\n\
+\\begin{align}\n\
+S=&\\int L_tcdt\\ ,\\\\\n\
+L_t=&-\\frac{mc}{p_0}\\sqrt{1-\\dot x^2+\\dot y^2+(1+x/\\rho)^2\\dot s^2}+a_x\\dot x+a_y\\dot y+(1+x/\\rho)a_s\\dot s\\ ,\n\
+\\end{align}\n\
+where $p_0$ and $(a_x,a_y,a_z)=e(A_x,A_y,A_z)/p_0$ are the design momentum and the normalized vector potentials, respectively, and $\\dot\\ $ denotes the derivative by $ct$. Currently SAD dose not handle the electrostatic potential.\\\\\n\
+As SAD uses $s$ for the independent variable instead of $t$, the Lagrangean $L$ for $s$ is written as\n\
+\\begin{align}\n\
+L=&L_t\\frac{dct}{ds}\\ ,\\\\\n\
+=&-\\frac{mc}{p_0}\\sqrt{c^2t'^2-x'^2+y'^2+(1+x/\\rho)^2}+a_xx'+a_yy'+(1+x/\\rho)a_s\\ ,\n\
+\\end{align}\n\
+where $'$ is the derivative by $s$.;;;4]",""],
+      "Hamiltonian independent-variable",
+      {}},
+
+        {"Hamiltonian",
+          EquAlign["Text[The Lagrangean $L$ defines the {\\it canonical} momenta as\n\
+\\begin{align}\n\
+p_x=&\\frac{\\partial L}{\\partial x}=\\frac{mcx'}{p_0\\sqrt{c^2t'^2-x'^2-y'^2-(1+x/\\rho)^2}}+a_x\\ ,\\\\\n\
+p_y=&\\frac{\\partial L}{\\partial y}=\\frac{mcy'}{p_0\\sqrt{c^2t'^2-x'^2-y'^2-(1+x/\\rho)^2}}+a_y\\ ,\\\\\n\
+p_t=&\\frac{\\partial L}{\\partial y}=-\\frac{mc^3t'}{p_0\\sqrt{c^2t'^2-x'^2-y'^2-(1+x/\\rho)^2}}\\ ,\n\
+\\end{align}\
+which derives the Hamiltonian as\n\
+\\begin{align}\n\
+H_t=&x'p_x+y'p_y+t'p_t-L\\\\\n\
+=&-\\left(\\sqrt{-c^2 m^2/p_0^2 + p_t^2/c^2 - (p_x-a_x)^2 + (p_y-a_y)^2}+a_s\\right)\\left(1+\\frac{x}{\\rho}\\right)\\ .\n\
+\\end{align}\n\
+Instead of the canonical variables $(t,p_t)$, SAD uses another set $(z,p)$, The variable $z$ means the logitudinal postion, and $p$ the total momentum, which is more convenient than $p_t$ especially in a low-energy case, ie., $\\gamma \\sim 1$. The canonical variables $(z,p)$ as well as the Hamiltonian $H$ are obtained using a mother function\n\
+\\begin{align}\n\
+G=&G(p_t,z)=\\frac{z}{c}\\sqrt{p_t^2-m^2c^4/p_0^2}-t_0(s)\\ ,\\\\\n\
+p=&\\frac{\\partial G}{\\partial z}=\\frac{\\sqrt{p_t^2p_0^2-m^2c^4}}{p_0}\\ ,\\\\\n\
+t=&\\frac{\\partial G}{\\partial p_t}=-z\\frac{\\sqrt{p^2p_0^2-m^2c^2}}{c p p_0}+t_0(s)\\ ,\\\\\n\
+H=&H_t-\\frac{\\partial G}{\\partial s}\\\\\n\
+=&-\\left(\\sqrt{p^2 - (p_x-a_x)^2 - (p_y-a_y)^2}+a_s\\right)\\left(1+\\frac{x}{\\rho}\\right)+\\frac{E}{p_0v_0}\\ ,\n\
+\\end{align}\n\
+where $t_0(s)$ is the {\\it design arrival time} at location $s$, \n\
+$E=\\sqrt{m^2c^4+p_0^2p^2}$ the energy of the particle, and $v_0=1/t_0'(s)$ the design velocity.\n\
+ The longitudinal position $z$ is written as\n\
+\\begin{align}\
+z=&-v\\left(t-t_0(s)\\right)\\ ,\
+\\end{align}\n\
+where $v$ is the total velocity of the particle. Note that $v>0$ for the head of a bunch.\
+;;;11]",""],
+      "Lagrangean independent-variable",
+      {}},
+
+      {"remarks-on-dynamics",
+        EquAlign["Text[There are several remarks on the dynamics in SAD:\n\
+\\begin{itemize}\n\
+\\item The Hamiltonian describes the motion of particles in the {\\it body} of an element. Some effects at the boundary of an element, such as {\\it fringe field}, are not expressed by that Hamiltonian. SAD treats them by canonical transformations approximating these effects. All transformations in SAD are symplectic up to the round-off errors, except radiations.\n\
+\\item In a case of a linac, where the design momentum $p_0$ changes along the beam line needs a special treatment.\n\
+\\item The Hamiltonian above analytical solutions in the case of constant field without acceleration, ie., in a solenoid + dipole field. SAD uses such analytic solutions.\n\
+\\item If the field is linear in $x$ and $y$ such as for {\\tt QUAD}, and there is no acceleration, the Hamiltonian truncated up to the second order of $(x,p_x,y,p_y)$ has an analytic solution. SAD uses that solution and adds the nonlinear corrections coming from the $\\sqrt{\\ }$ term by slicing an element. This method gives the exact linear transformation at least around the design orbit. \n\
+\\item Transformations shown in this manual are not necessarily coded as they are. Considerations for round-off errors as well as computing efficiency are taken into account in actual routines.\n\
+\\item Transformations shown here are basically for trackings. {\\tt EMITTANCE(EMIT)} and {\\tt CALC} may use slightly different ones depending on the element.\n\
+\\end{itemize};;;0]",""],
+        "Hamiltonian",
+        {}},
+
+   {"x-y-coupling",
+     EquAlign["Text[\
+The transformation matrix from the physical coordinate $(x,p_x,y,p_y)$ to the $x$-$y$ decoupled coordinate $(X,P_x,Y,P_y)$ is written as\n\
+\\begin{align}\n\
+{\\rm R}=\\left(\\begin{matrix}\\mu {\\rm I} & {\\rm J}{\\rm r}^T{\\rm J}\\\\\
+{\\rm r}&\\mu {\\rm I}\\end{matrix}\\right)\n\
+\\end{align} with a submatrix\n\
+\\begin{align}\n\
+{\\rm r}=\\left(\\begin{matrix}{\\tt R1}&{\\tt R2}\\\\\n\
+{\\tt R3} & {\\tt R4}\\end{matrix}\\right)\\ ,\n\
+\\end{align}\n\
+where \n\
+\\begin{align}\n\
+&\\mu^2 + \\det({\\rm r}) = 1,\\\\\n\
+&{\\rm I}\\equiv \\left(\\begin{matrix}1 & 0 \\\\ 0 & 1 \\end{matrix}\\right)\\ ,\\\\\n\
+&{\\rm J}\\equiv\\left(\\begin{matrix}0 & 1 \\\\ -1 & 0 \\end{matrix}\\right)\\ .\n\
+\\end{align}\n\
+ The value of function {\\tt DETR} is equal to $\\det({\\rm r})$ in this case.\n\n\
+Let T stand for the physical transfer matrix from location 1 to location 2, then the transformation in the decoupled coordinate is diagonalized as\n\
+\\begin{align}\n\
+{\\rm R}_2{\\rm T}{\\rm R}_1^{-1} = \\left(\\begin{matrix}{\\rm T}_X & 0 \\\\ 0 & {\\rm T}_Y \\end{matrix}\\right)\\ .\
+\\end{align}\n\n\
+The Twiss parameters are defined for the 2 by 2 matrices ${\\rm T}_X$ and ${\\rm T}_Y$.\n\n\
+If $\\det({\\rm r})\\ge1$, the above condition for $\\mu$ is violated. In such a case, an alternative form of R is used:\n\
+\\begin{align}\n\
+{\\rm R}=\\left(\\begin{matrix}{\\rm J}{\\rm r}^T{\\rm J} & \\mu {\\rm I} \\\\\
+\\mu {\\rm I} &{\\rm r}\\end{matrix}\\right)\\ ,\n\
+\\end{align}\n\
+where $\\mu^2 + \\det({\\rm r}) = 1$. The function {\\tt DETR} shows a number $a-\\det({\\rm r})$, where $a = 1.375$. thus the alternative form is used when $\\det({\\rm r}) >= 0.625$.\
+;;;7]","\
+The transformation matrix from the physical coordinate {x,px,y,py} to the x-y decoupled coordinate {X,Px,Y,Py} is written as\n\n\
+      R = {{mu I, J . Transpose[r] . J}, {r, mu I}}, \n\n\
+with the submatrix r={{R1, R2},{R3, R4}}, where mu^2 + Det[r] = 1, I = {{1,0},{0,1}}, and J={{0, 1}, {-1, 0}}. The value of function DETR is equal to Det[r] in this case.\n\n\
+   Let T stand for the physical\n\
+transfer matrix from location 1 to location 2, then the transformation in the decoupled coordinate is diagonalized as\n\n\
+      R_2 . T . Inverse[R_1] = {{T_X ,0}, {0, T_Y}} .\n\n\
+The Twiss parameters are defined for the matrices T_X and T_Y.\n\
+   If Det[r] >= 1, the above condition for mu is violated. In such a case, an alternative form of m is used:\n\n\
+      R = {{J . Transpose[r] . J, mu I}, {mu I, r}}, \n\n\
+where mu^2 + Det[r] = 1. The function DETR shows a number a-Det[r], where a = 1.375. thus the alternative form is used when Det[r] >= 0.625."],
+    "DISPLAY(DISP) optical-functions matching-function-commands",
+    {}},
+
+   {"extended-Twiss-parameters",
+    "\
+A symplectic matrix such as the normal mode matrix can be expressed in terms of the extended Twiss parameters. In 6 by 6 case, those are\n\n\
+   AX  BX          ZX  EX\n\
+     PSIX         ZPX EPX\n\
+   R1  R2  AY  BY  ZY  EY\n\
+   R3  R4    PSIY ZPY EPY\n\
+                   AZ  BZ\n\
+                     PSIZ .\n\n\
+A(X,Y,Z), B(X,Y,Z) are alphas and betas in the usual sense, after a diagonalization to 2 by 2 submatrices. PSI(X,Y,Z) are the rotation angle to set one the coordinate to parallel to the (X,Y,Z) axes. R(1,2,3,4) are the components of the x-y coupling matrix (see x-y-coupling). E(X,PX,Y,PY) are \"dispersions\" which decouples synchro-beta coupling terms together with Z(X,PX,Y,PY). Those parameters should agree with what FFS calculates in the case of no synchro-beta couplings.",
+    "x-y-coupling optical-functions",
+    {{"definitions",
+      EquAlign["Text[\
+Let V denote the matrix to define the normal mode, i.e.,\n\
+\\begin{align}\n\
+   {\\bm U} = {\\rm V}{\\bm u}\\ ,\n\
+\\end{align}\n\
+where ${\\bm U} = (X, P_x, Y, P_y, Z, P_z)$ and ${\\bm u} = (x, p_x, y, p_y, z, \\delta\\equiv p-1)$ are the normal and physical coordinates, respectively. The matrix V can be expressed as\n\
+\\begin{align}\n\
+   {\\rm V} = {\\rm PBR}_6{\\rm H}\\ ,\n\
+\\end{align}\n\
+where\n\
+{\\everymath{\\displaystyle}\n\
+\\begin{align}\n\
+{\\rm H} =&\\left(\\begin{matrix}\\left(1-\\frac{\\det{\\rm H}_x}{1+a}\\right){\\rm I}&\n\
+\\frac{{\\rm H}_x{\\rm J}_2{\\rm H}_y^T{\\rm J}_2}{1+a}&-{\\rm H}_x\\\\\n\
+\\frac{{\\rm H}_y{\\rm J}_2{\\rm H}_x^T{\\rm J}_2}{1+a}&\n\
+\\left(1-\\frac{\\det{\\rm H}_y}{1+a}\\right){\\rm I}&-{\\rm H}_y\\\\\n\
+-{\\rm J}_2{\\rm H}_x^T{\\rm J}_2 & -{\\rm J}_2{\\rm H}_y^T{\\rm J}_2 & a {\\rm I}\\end{matrix}\\right)\\ ,\\\\\n\
+{\\rm R}_6=&\\left(\\begin{matrix} {\\rm R} & \\begin{matrix}0 & 0\\end{matrix} \\\\\n\
+\\begin{matrix}0&0\\end{matrix} & {\\rm I}\\end{matrix}\\right)=\n\
+\\left(\\begin{matrix} b {\\rm I}& {\\rm J}_2{\\rm r}^T{\\rm J}_2 & 0\\\\\n\
+{\\rm r}&b{\\rm I} & 0\\\\ 0&0&{\\rm I}\\end{matrix}\\right)\\ ,\\\\\n\
+{\\rm PB}=&\\left(\\begin{matrix}{\\rm P}_x{\\rm B}_x & 0 & 0\\\\\n\
+0 & {\\rm P}_y{\\rm B}_y & 0\\\\ 0& 0& {\\rm P}_z{\\rm B}_z \\end{matrix}\\right)\\ ,\n\
+\\end{align}}\n\
+with\n\
+\\begin{align}\n\
+&a^2+\\det{\\rm H}_x +\\det{\\rm H}_y=1\\ ,\\\\\n\
+&b^2+\\det{\\rm R}=1\\ .\n\
+\\end{align}\n\
+Symbols I,J$_2$, H$_{x,y}$, r, B$_{x,y,z}$, P$_{x,y,z}$ above are 2 by 2 matrices:\n\
+{\\everymath{\\displaystyle}\n\
+\\begin{align}\n\
+{\\rm I}\\equiv&\\left(\\begin{matrix}1 & 0 \\\\ 0 & 1\\end{matrix}\\right)\\ ,\\\\\n\
+{\\rm J}_2\\equiv&\\left(\\begin{matrix}0 & 1 \\\\ -1 & 0\\end{matrix}\\right)\\ ,\\\\\n\
+{\\rm r}\\equiv&\\left(\\begin{matrix}{\\tt R1} & {\\tt R2} \\\\ {\\tt R3} & {\\tt R4}\\end{matrix}\\right)\\ ,\\\\\n\
+{\\rm B}_{x,y}\\equiv&\\left(\\begin{matrix}\\frac{1}{\\sqrt{\\beta_{x,y}}} & 0 \\\\\n\
+ \\frac{\\alpha_{x,y}}{\\sqrt{\\beta_{x,y}}} & \\sqrt{\\beta_{x,y}}\\end{matrix}\\right)\\ ,\\\\\n\
+{\\rm P}_{x,y,z}\\equiv&\\left(\\begin{matrix}\\cos\\psi_{x,y,z} & \\sin\\psi_{x,y,z} \\\\\n\
+-\\sin\\psi_{x,y,z} & \\cos\\psi_{x,y,z}\\end{matrix}\\right)\\ .\n\
+\\end{align}}\n\
+Matrixes H$_{x,y}$ define dispersions as\n\
+\\begin{align}\n\
+\\left(\\begin{matrix} {\\tt ZX} & {\\tt EX}\\\\{\\tt ZPX}& {\\tt EPX}\\\\\n\
+ {\\tt ZY} & {\\tt EY}\\\\{\\tt ZPY}& {\\tt EPY}\\end{matrix}\\right)\\equiv\n\
+{\\rm R} \\left(\\begin{matrix} {\\rm H}_x\\\\{\\rm H}_y\\end{matrix}\\right)\\ .\n\
+\\end{align}\n\
+;;;13]","\n\
+Let V denote the matrix to define the normal mode, i.e.,\n\n\
+   U = V . u\n\n\
+where U = {X, PX, Y, PY, Z, PZ} and u = {x, px, y, py, z, delta} are normal and physical coordinates, respectively. The matrix V can be expressed as\n\n\
+   V = P . B . R . H ,\n\n\
+where\n\n\
+   H = {{(1 - Det[Hx]/(1 + a))I,       Hx.J2.Transpose[Hy].J2/(1+a), -Hx},\n\
+        {Hy.J2.Transpose[Hx].J2/(1+a), (1 - Det[Hy]/(1 + a))I,       -Hy},\n\
+        {-J2.Transpose[Hx].J2,         -J2.Transpose[Hy].J2,         a I}} ,\n\
+   R = {{b I, J2.Transpose[r].J2, 0},\n\
+        {r,   b I,                0},\n\
+        {0,   0,                  I}} ,\n\
+   P . B = {{Px.Bx, 0,     0    },\n\
+            {0,     Py.By, 0    },\n\
+            {0,     0,     Pz.Bz}} ,\n\n\
+with\n\n\
+   a^2 + Det[Hx] + Det[Hy] = 1 ,\n\
+   b^2 + Det[R] = 1 .\n\n\
+Symbols I, J2, Hx,y, r, Bx,y,z, Px,y,z above are 2 by 2 matrices:\n\n\
+   I = {{1, 0},\n\
+        {0, 1}} ,\n\
+   J2 = {{0,  1},\n\
+         {-1, 0}} ,\n\
+   r = {{R1, R2},\n\
+        {R3, R4}} ,\n\
+   Bk = {{ 1/Sqrt[betak],      0          },\n\
+         { alphak/Sqrt[betak], Sqrt[betak]}} ,\n\
+   Pk = {{ Cos[psik], Sin[psik]},\n\
+         {-Sin[psik], Cos[psik]}} .\n\n\
+Matrices Hx,y define dispersions as\n\n\
+   {{zetax,  etax},\n\
+    {zetapx, etapx},\n\
+    {zetay,  etay},\n\
+    {zetapy, etapy}} = R . Join[Hx, Hy] ."],
+      "",
+      {}}}}
+
+        }
+      },
+
    {"example",
     Module[{f=OpenRead[ExamplesDirectory//"design_example.sad"],s="",l},
       If[f<=>$Failed,
@@ -4461,7 +4640,7 @@ Examples:\n\n\
     "",
     {}}
 
-   }]
+       }]
 }});
 
 Protect[Help$Messages]
