@@ -872,11 +872,11 @@ pieces (EPS = 1 is used when EPS = 0), and the bend-body transformation above is
           F1F2$Message=EquAlign["Text[\
 {\\tt F1} and {\\tt F2} are parameters to characterize the slope of the field at the edges defined as:\n\
 \\begin{align}\n\
-{\\tt F1} =& {\\ rm sgn}(a)\\sqrt a,\\qquad a \\equiv 24\\left(\\frac{I_0^2}{2} - I_1\\right)\\ ,\\\\\n\
+{\\tt F1} =& {\\rm sgn}(a)\\sqrt a,\\qquad a \\equiv 24\\left(\\frac{I_0^2}{2} - I_1\\right)\\ ,\\\\\n\
 {\\tt F2} =& I_2 - \\frac{I_0^3}{3}\\\\\n\
 {\\rm with\\ }I_n \\equiv& \\int_{-\\infty}^\\infty(s-s0)^n \\frac{K_1(s)}{K_{10}}ds\\ ,\n\
 \\end{align}\n\
-where $s_0$ is the location of the edge where the effective length is defined, and $K_{10}$ is the nominal value of $K_1(s)$, given by ${\\tt K1}/{\\tt L}$.;;;3]","\
+where $s_0$ is the location of the edge where the effective length is defined, and $K_{10}={\\tt K1}/{\\tt L}$.;;;3]","\
 F1 and F2 are parameters to characterize the slope of the field at the edges defined as:\n\n\
      F1 = SIGN(Sqrt[a],a),    a = 24(I_0^2/2 - I_1),\n\
      F2 = I_2 - I_0^3/3\n\
@@ -971,8 +971,26 @@ The transformation in a QUAD is a sequence of:\n\n\
          }]
         },
 
-          SEXT$trans[name_,pole_,n_]:="\
-The transformation in a "//name//" is given as\n\n\
+          SEXT$trans[name_,pole_,n_]:=EquAlign["Text[\
+The transformation of a {\\tt "//name//"} is given as\n\
+\\begin{align}\n\
+   &\\exp(:F_{\\rm in}:)\\exp(:a {\\tt L}:)\\exp(:H_"//n//"/2:)\\exp(:b {\\tt L}:)\\\\\n\
+   \\times&\\exp(:V_"//n//":)\\exp(:a {\\tt L}:)\\exp(:H_"//n//"/2:)\\exp(:b {\\tt L}:)\\exp(:F_{\\rm out}:)\\  ,\n\
+\\end{align}\n\
+where {\\tt L} and $H_"//n//"$ are the Hamiltonians of a drift of length {\\tt L} and a thin "//
+pole//"pole kick with integrated strength {\\tt K"//n//"}:\n\
+\\begin{align}\n\
+   H_"//n//" = \\frac{{\\tt K"//n//"}}{"//n+1//
+"\!} \\Re(x - i y)^{"//n+1//"}\\ ,\n\
+\\end{align}\n\
+respectively. The coeffients are $a\\equiv 1/2 - 1/\\sqrt{12}$ and $b = 1/2 - a$. Terms $\\exp(:F_{\\rm in}:)$ and $\\exp(:F_{\\rm out}:)$ are transformations for entrance and exit nonlinear fringes. The term $\\exp(:V_"//n//":)$ is a correction to adjust the third-order terms in {\\tt L}:\n\
+\\begin{align}\n\
+   V_"//n//" = \\sum_{j=(x,y),k=(x,y)} \n\
+              - \\frac{\\beta}{2}H_{"//n//",k}^2 \n\
+              + \\gamma H_{"//n//",j}H_{"//n//",k} H_{"//n//",j,k}\\ ,\n\
+\\end{align}\n\
+where $,i$ represents the derivative by $x$ or $y$. We have also introduced two coefficients $\\beta \\equiv 1/6 - 1/\\sqrt{48}$ and $\\gamma = 1/40 - 1/(24 \\sqrt3$)\\ .;;;3]","\
+The transformation of a "//name//" is given as\n\n\
    exp(:Fin:)exp(:a L:)exp(:H"//n//"/2:)exp(:b L:)\n\
          *exp(:V"//n//":)exp(:a L:)exp(:H"//n//"/2:)exp(:b L:)exp(:Fout:) ,\n\n\
 where L and H"//n//" are Hamiltonians of a drift of length L and a thin \n"//
@@ -983,7 +1001,7 @@ respectively. The coeffients are a = 1/2 - 1/sqrt(12) and b = 1/2 - a. Terms exp
    V"//n//" = (SUM over j=(x,y), k=(x,y)) [\n\
               - beta/2 (H"//n//",k)^2 \n\
               + gamma (H"//n//",j H"//n//",k H"//n//",j,k)] ,\n\n\
-where ,i represents the derivative by x or y. We have also introduced two coefficients beta = 1/6 - 1/sqrt(48) and gamma = 1/40 - 1/24/sqrt(3).";
+where ,i represents the derivative by x or y. We have also introduced two coefficients beta = 1/6 - 1/sqrt(48) and gamma = 1/40 - 1/24/sqrt(3)."];
        SEXT$Message[name_,pole_,n_]:=
        {name,
         "A "//pole//"pole magnet.",
@@ -1088,18 +1106,32 @@ respectively.",
 
        {"COORD",
         "\
-An element for an arbitrary coordinate transformation. This element can be used to express an off-axis element.\n Usage: COORD name=(DX=dx DY=dy CHI1=chi1 CHI2=chi2 CHI3=chi3 DIR=dir); .\n\n\
-If dir is zero (default), the transformation of the coordinate by COORD is\n\n\
-  {x1      {c3 -s3 0     {1  0  0      {c1 0  s1   {x-dx\n\
-   y1   =   s3  c3 0      0  c2 s2      0  1  0     y-dy\n\
-   z1}      0   0  1}.    0 -s2 c2}.   -s1 0  c1}.  z   } ,\n\ 
-and if dir is nonzero,\n\n\
-  {x1      { dx    {c3 -s3 0     {1  0   0      {c1 0  s1   {x\n\
-   y1   =   -dy  +  s3  c3 0      0  c2 -s2      0  1  0     y\n\
-   z1}       0 }    0   0  1}.    0  s2  c2}.   -s1 0  c1}.  z} ,\n\n\ 
-where {x1, y1, z1} is the new coordinate and\n\n\
-  c1=cos(chi1), s1=sin(chi1), etc.\n\n\
-Note that these are NOT the inverse to each other.\n\n\
+An element for an arbitrary coordinate transformation. This element can be used to express an off-axis element.\n\n\
+Usage: COORD name=(DX=dx DY=dy CHI1=chi1 CHI2=chi2 CHI3=chi3 DIR=dir); .\n\n\
+If dir is zero (default), the transformation of the coordinate by COORD is\n\n"//EquAlign["\
+\\left(\\begin{matrix} x \\\\y\\\\z\\end{matrix}\\right)_1=\n\
+\\left(\\begin{matrix} c_3 & -s_3 & 0\\\\s_3 & c_3 & 0 \\\\0&0&1\\end{matrix}\\right)\n\
+\\left(\\begin{matrix}1&0&0\\\\0&c_2&s_2 \\\\0&-s_2&c_2\\end{matrix}\\right)\n\
+\\left(\\begin{matrix}c_1&0&s_1\\\\0&1&0\\\\-s_1&0&c_1\\end{matrix}\\right)\n\
+\\left(\\begin{matrix} x-{\\tt DX} \\\\y-{\\tt DY}\\\\z\\end{matrix}\\right)_0\\ ,","\
+  {x      {c3 -s3 0     {1  0  0      {c1 0  s1   {x-dx\n\
+   y   =   s3  c3 0      0  c2 s2      0  1  0     y-dy\n\
+   z}_1      0   0  1}.    0 -s2 c2}.   -s1 0  c1}.  z   } ,"]//"\n\n\
+and if dir is nonzero,\n\n"//EquAlign["\
+\\left(\\begin{matrix} x \\\\y\\\\z\\end{matrix}\\right)_1=\n\
+\\left(\\begin{matrix} c_3 & -s_3 & 0\\\\s_3 & c_3 & 0 \\\\0&0&1\\end{matrix}\\right)\n\
+\\left(\\begin{matrix}1&0&0\\\\0&c_2&-s_2 \\\\0&s_2&c_2\\end{matrix}\\right)\n\
+\\left(\\begin{matrix}c_1&0&s_1\\\\0&1&0\\\\-s_1&0&c_1\\end{matrix}\\right)\n\
+\\left(\\begin{matrix} x \\\\y\\\\z\\end{matrix}\\right)_0+\n\
+\\left(\\begin{matrix} {\\tt DX} \\\\-{\\tt DY} \\\\0\\end{matrix}\\right)\\ ,","\
+  {x      { dx    {c3 -s3 0     {1  0   0      {c1 0  s1   {x\n\
+   y   =   -dy  +  s3  c3 0      0  c2 -s2      0  1  0     y\n\
+   z}_1     0 }    0   0  1}.    0  s2  c2}.   -s1 0  c1}.  z} ,"]//"\n\n\ 
+where {x, y, z}_1 are the new coordinates and\n\n"//EquAlign["\
+c_{1,2,3}=&\\cos({\\tt CHI1},{\\tt CHI2},{\\tt CHI3})\\ ,\\\\\n\
+s_{1,2,3}=&\\sin({\\tt CHI1},{\\tt CHI2},{\\tt CHI3})\\ .","\
+  c1=cos(chi1), s1=sin(chi1), etc."]//"\n\n\
+Note that these transformationis are NOT the inverse to each other.\n\n\
    To use this element, you have to calculate the values of those parameters carefully. DISP G may help you but there is no automatic way to get them. You may also have to be careful when you use a line with this element in the reverse direction.\n\n\
    A better way to do an equivalent thing in most cases is to use SOL. Unlike COORD, SOL automatically determines the parameters for the coordinate transformation.",
         "SOL DISPLAY(DISP)",
