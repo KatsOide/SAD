@@ -872,6 +872,7 @@ pieces (EPS = 1 is used when EPS = 0), and the bend-body transformation above is
           F1F2$Message=EquAlign["Text[\
 {\\tt F1} and {\\tt F2} are parameters to characterize the slope of the field at the edges defined as:\n\
 \\begin{align}\n\
+{\\tt F1} =& {\\rm sgn}(a)\\sqrt a,\\qquad a \\equiv 24\\left(\\frac{I_0^2}{2} - I_1\\right)\\ ,\\\\\n\
 {\\tt F2} =& I_2 - \\frac{I_0^3}{3}\\\\\n\
 {\\rm with\\ }I_n \\equiv& \\int_{-\\infty}^\\infty(s-s0)^n \\frac{K_1(s)}{K_{10}}ds\\ ,\n\
 \\end{align}\n\
