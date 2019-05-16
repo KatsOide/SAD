@@ -4447,9 +4447,9 @@ where $'$ is the derivative by $s$.;;;4]",""],
         {"Hamiltonian",
           EquAlign["Text[The Lagrangean $L$ defines the {\\it canonical} momenta as\n\
 \\begin{align}\n\
-p_x=&\\frac{\\partial L}{\\partial x}=\\frac{mcx'}{p_0\\sqrt{c^2t'^2-x'^2-y'^2-(1+x/\\rho)^2}}+a_x\\ ,\\\\\n\
-p_y=&\\frac{\\partial L}{\\partial y}=\\frac{mcy'}{p_0\\sqrt{c^2t'^2-x'^2-y'^2-(1+x/\\rho)^2}}+a_y\\ ,\\\\\n\
-p_t=&\\frac{\\partial L}{\\partial y}=-\\frac{mc^3t'}{p_0\\sqrt{c^2t'^2-x'^2-y'^2-(1+x/\\rho)^2}}\\ ,\n\
+p_x=&\\frac{\\partial L}{\\partial x'}=\\frac{mcx'}{p_0\\sqrt{c^2t'^2-x'^2-y'^2-(1+x/\\rho)^2}}+a_x\\ ,\\\\\n\
+p_y=&\\frac{\\partial L}{\\partial y'}=\\frac{mcy'}{p_0\\sqrt{c^2t'^2-x'^2-y'^2-(1+x/\\rho)^2}}+a_y\\ ,\\\\\n\
+p_t=&\\frac{\\partial L}{\\partial t'}=-\\frac{mc^3t'}{p_0\\sqrt{c^2t'^2-x'^2-y'^2-(1+x/\\rho)^2}}\\ ,\n\
 \\end{align}\
 which derives the Hamiltonian as\n\
 \\begin{align}\n\
@@ -4470,8 +4470,12 @@ $E=\\sqrt{m^2c^4+p_0^2p^2}$ the energy of the particle, and $v_0=1/t_0'(s)$ the 
 \\begin{align}\
 z=&-v\\left(t-t_0(s)\\right)\\ ,\
 \\end{align}\n\
-where $v$ is the total velocity of the particle. Note that $v>0$ for the head of a bunch.\
-;;;11]",""],
+where $v$ is the total velocity of the particle. Note that $v>0$ for the head of a bunch.\n\n\
+Thus the canonical variables in SAD are:\n\
+\\begin{align}\n\
+(x,p_x,y,p_y,z,\\delta\\equiv p-1)\\ .\n\
+\\end{align}\
+;;;12]",""],
       "Lagrangean independent-variable",
       {}},
 
@@ -4583,7 +4587,7 @@ Symbols I,J$_2$, H$_{x,y}$, r, B$_{x,y,z}$, P$_{x,y,z}$ above are 2 by 2 matrice
 {\\rm P}_{x,y,z}\\equiv&\\left(\\begin{matrix}\\cos\\psi_{x,y,z} & \\sin\\psi_{x,y,z} \\\\\n\
 -\\sin\\psi_{x,y,z} & \\cos\\psi_{x,y,z}\\end{matrix}\\right)\\ .\n\
 \\end{align}}\n\
-Matrixes H$_{x,y}$ define dispersions as\n\
+Matrices H$_{x,y}$ define dispersions as\n\
 \\begin{align}\n\
 \\left(\\begin{matrix} {\\tt ZX} & {\\tt EX}\\\\{\\tt ZPX}& {\\tt EPX}\\\\\n\
  {\\tt ZY} & {\\tt EY}\\\\{\\tt ZPY}& {\\tt EPY}\\end{matrix}\\right)\\equiv\n\
