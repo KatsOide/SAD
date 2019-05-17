@@ -2402,13 +2402,10 @@ L</A></H3>
 <LI>
 <H3><A NAME=L170>
 misalignments</A></H3>
-<PRE>Misalignments of a MULT element are expressed by the keywords DX, DY, DZ, CHI1, CHI2, and ROTATE(=CHI3).
-They specify all misalignments of a rigid body,  At the entrance of MULT, the coordinates of a particle
-are transformed as
+<PRE>Misalignments of a MULT element are expressed by the keywords DX, DY, DZ, CHI1, CHI2, and ROTATE(=CHI3). They specify all misa
+lignments of a rigid body,  At the entrance of MULT, the coordinates of a particle are transformed as
 
-   { x  }    {  c3 -s3  0  } {  1   0   0  } {  c1  0  -s1 } { x - DX }
-   { y  }  = {  s3  c3  0  } {  0   c2 -s2 } {  0   1   0  } { y - DY }
-   { ds }1   {  0   0   1  }.{  0   s2  c2 }.{  s1  0   c1 }.{   - DZ } ,
+<img  class="eqs" SRC="SADHelp_img/equ_87.svg" />
 
 where c1 and s1 are Cos[CHI1] and Sin[CHI1], etc. The inverse is applied at the exit.
    Those misalignments are also valid within a solenoid.
@@ -2422,7 +2419,7 @@ the current values are used for DX, DY, and ROTATE.
 multipole_with_nonzero_ANGLE</A></H3>
 <PRE>The multipoles in MULT with nonzero ANGLE are defined by
 
-<img  class="eqs" SRC="SADHelp_img/equ_87.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_88.svg" />
 Actually the summation is truncated at n + k <= 21 in the current version. While this definition
 converges to the regular one for multipoles when ANGLE -> 0, K0 and K1 of MULT are different from
 those of BEND.
@@ -2451,7 +2448,7 @@ RADIUS</A></H3>
 <H3><A NAME=L174>
 SK0</A></H3>
 <PRE>The skew 2-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_88.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_89.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2462,7 +2459,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L175>
 SK1</A></H3>
 <PRE>The skew 4-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_89.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_90.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2473,7 +2470,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L176>
 SK10</A></H3>
 <PRE>The skew 22-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_90.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_91.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2484,7 +2481,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L177>
 SK11</A></H3>
 <PRE>The skew 24-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_91.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_92.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2495,7 +2492,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L178>
 SK12</A></H3>
 <PRE>The skew 26-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_92.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_93.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2506,7 +2503,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L179>
 SK13</A></H3>
 <PRE>The skew 28-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_93.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_94.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2517,7 +2514,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L180>
 SK14</A></H3>
 <PRE>The skew 30-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_94.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_95.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2528,7 +2525,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L181>
 SK15</A></H3>
 <PRE>The skew 32-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_95.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_96.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2539,7 +2536,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L182>
 SK16</A></H3>
 <PRE>The skew 34-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_96.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_97.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2550,7 +2547,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L183>
 SK17</A></H3>
 <PRE>The skew 36-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_97.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_98.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2561,7 +2558,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L184>
 SK18</A></H3>
 <PRE>The skew 38-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_98.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_99.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2572,7 +2569,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L185>
 SK19</A></H3>
 <PRE>The skew 40-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_99.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_100.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2583,7 +2580,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L186>
 SK2</A></H3>
 <PRE>The skew 6-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_100.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_101.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2594,7 +2591,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L187>
 SK20</A></H3>
 <PRE>The skew 42-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_101.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_102.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2605,7 +2602,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L188>
 SK21</A></H3>
 <PRE>The skew 44-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_102.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_103.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2616,7 +2613,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L189>
 SK3</A></H3>
 <PRE>The skew 8-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_103.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_104.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2627,7 +2624,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L190>
 SK4</A></H3>
 <PRE>The skew 10-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_104.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_105.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2638,7 +2635,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L191>
 SK5</A></H3>
 <PRE>The skew 12-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_105.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_106.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2649,7 +2646,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L192>
 SK6</A></H3>
 <PRE>The skew 14-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_106.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_107.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2660,7 +2657,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L193>
 SK7</A></H3>
 <PRE>The skew 16-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_107.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_108.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2671,7 +2668,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L194>
 SK8</A></H3>
 <PRE>The skew 18-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_108.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_109.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2682,7 +2679,7 @@ around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
 <H3><A NAME=L195>
 SK9</A></H3>
 <PRE>The skew 20-pole magnetic field component (times the length L).
-<img  class="eqs" SRC="SADHelp_img/equ_109.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_110.svg" />
 
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated
 around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .
@@ -2761,7 +2758,7 @@ around the local s-axis at the exit, then take out displacement.
 <LI>
 <H3><A NAME=L205>
 transformation:THIN</A></H3>
-<PRE><img  class="eqs" SRC="SADHelp_img/equ_110.svg" />
+<PRE><img  class="eqs" SRC="SADHelp_img/equ_111.svg" />
 </PRE>
 </UL>
 <LI>
@@ -2986,7 +2983,7 @@ around the local s-axis at the exit, then take out displacement.
 <LI>
 <H3><A NAME=L226>
 transformation:THIN</A></H3>
-<PRE><img  class="eqs" SRC="SADHelp_img/equ_113.svg" />
+<PRE><img  class="eqs" SRC="SADHelp_img/equ_114.svg" />
 </PRE>
 </UL>
 <LI>
@@ -3435,7 +3432,7 @@ r to multi-turn tracking. See multi-turn-tracking.
 
 (2) EMIT dp, where dp is |df_rf/f_rf|/(alpha_p == momentum compaction), does EMIT for five rf frequencies:
 
-<img  class="eqs" SRC="SADHelp_img/equ_116.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_117.svg" />
 
 then prints out a table of the dependences of various quantities on the frequency shift.
 
