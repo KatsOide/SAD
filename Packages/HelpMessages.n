@@ -1,4 +1,4 @@
-Help$Update="$Date:  5/7/2019 15:00:00 $"[8,17];
+Help$Update="$Date:  6/2/2019 18:00:00 $"[8,17];
 !Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
 Help$Version=$Version;
 
@@ -1250,10 +1250,15 @@ A magnet with multipoles. Note that the reference plane is defined so that the s
 
          {"misalignments",
           "\
-Misalignments of a MULT element are expressed by the keywords DX, DY, DZ, CHI1, CHI2, and ROTATE(=CHI3). They specify all misalignments of a rigid body,  At the entrance of MULT, the coordinates of a particle are transformed as\n\n\
+Misalignments of a MULT element are expressed by the keywords DX, DY, DZ, CHI1, CHI2, and ROTATE(=CHI3). They specify all misalignments of a rigid body,  At the entrance of MULT, the coordinates of a particle are transformed as\n\n"//EquAlign["\
+\\left(\\begin{matrix}x\\\\y\\\\\\varDelta s\\end{matrix}\\right)_1=\n\
+\\left(\\begin{matrix} c_3 & -s_3 & 0\\\\s_3 & c_3 & 0 \\\\0&0&1\\end{matrix}\\right)\n\
+\\left(\\begin{matrix}1&0&0\\\\0&c_2&-s_2 \\\\0&s_2&c_2\\end{matrix}\\right)\n\
+\\left(\\begin{matrix}c_1&0&-s_1\\\\0&1&0\\\\s_1&0&c_1\\end{matrix}\\right)\n\
+\\left(\\begin{matrix} x-{\\tt DX} \\\\y-{\\tt DY}\\\\-{\\tt DZ}\\end{matrix}\\right)_0\\ ,","\
    { x  }    {  c3 -s3  0  } {  1   0   0  } {  c1  0  -s1 } { x - DX }\n\
    { y  }  = {  s3  c3  0  } {  0   c2 -s2 } {  0   1   0  } { y - DY }\n\
-   { ds }1   {  0   0   1  }.{  0   s2  c2 }.{  s1  0   c1 }.{   - DZ } ,\n\n\
+   { ds }1   {  0   0   1  }.{  0   s2  c2 }.{  s1  0   c1 }.{   - DZ } ,"]//"\n\n\
 where c1 and s1 are Cos[CHI1] and Sin[CHI1], etc. The inverse is applied at the exit.\n\
    Those misalignments are also valid within a solenoid.\n\
    Other straight elements such as QUAD or THIN do not and will not have these full misalignment specifications, because they can be substituted by MULT.\n\
@@ -1693,13 +1698,13 @@ LOG enables the echo of all inputs in the MAIN level. Also suppresses the prompt
 
       {"INTRES",
         "\
-In the case of CELL, if the total tune deviates across an integer resonance, it is counted as unstable. The default is INTRES.",
+In the case of CELL, if the total tune deviates across an integer resonance, or the trace is larger than 2, it is counted as unstable (~?STABLE). Otherwise the optics is recognized as STABLE. The default is INTRES.",
         "HALFRES SUMRES DIFFRES STABLE",
         {}},
 
       {"HALFRES",
         "\
-In the case of CELL, if the total tune deviates across a half-integer resonance, it is counted as unstable. The default is HALFRES.",
+In the case of CELL, if the total tune deviates across a half-integer resonance, or the traces is less than -2, it is counted as unstable (~?STABLE). Otherwise the optics is recognized as STABLE. The default is HALFRES.",
         "INTRES SUMRES DIFFRES STABLE",
         {}},
 
