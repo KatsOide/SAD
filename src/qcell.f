@@ -197,37 +197,55 @@ c     print *,tmd31,tmd32
 c     print *,tmd41,tmd42
         optstat%tracex=a11+a22
         optstat%tracey=b11+b22
-        optstat%stabx=optstat%tracex .ge. -2.d0
-     $       .and. optstat%tracex .le. 2.d0
-        optstat%staby=optstat%tracey .ge. -2.d0
-     $       .and. optstat%tracey .le. 2.d0
-        if(optstat%stabx)then
-          cosmux=.5d0*optstat%tracex
-          sinmux=sign(sqrt(abs(-a12*a21-.25d0*(a11-a22)**2)),a12)
-          twiss(fbound%lb,idp,mfitax)=.5d0*(a11-a22)/sinmux
-          twiss(fbound%lb,idp,mfitbx)=a12/sinmux
-        else
-          cosmux=2.d0/optstat%tracex
-          sinmux=sign(sqrt(1.d0-cosmux**2),a12)
-          if(chgini)then
-            twiss(fbound%lb,idp,mfitax)=(a11-cosmux)/sinmux
-            twiss(fbound%lb,idp,mfitbx)=a12/sinmux
+        optstat%stabx=.true.
+        optstat%staby=.true.
+        cosmux=.5d0*optstat%tracex
+        if(cosmux .gt. 1.d0)then
+          cosmux=1.d0/cosmux
+          if(intres)then
+            optstat%stabx=.false.
+          else
+            optstat%tracex=2.d0*cosmux
           endif
+        else
+        endif
+        if(cosmux .lt. -1.d0)then
+          cosmux=1.d0/cosmux
+          if(halfres)then
+            optstat%stabx=.false.
+          else
+            optstat%tracex=2.d0*cosmux
+          endif
+        endif
+        cosmuy=.5d0*optstat%tracey
+        if(cosmuy .gt. 1.d0)then
+          cosmuy=1.d0/cosmuy
+          if(intres)then
+            optstat%staby=.false.
+          else
+            optstat%tracey=2.d0*cosmuy
+          endif
+        else
+        endif
+        if(cosmuy .lt. -1.d0)then
+          cosmuy=1.d0/cosmuy
+          if(halfres)then
+            optstat%staby=.false.
+          else
+            optstat%tracey=2.d0*cosmuy
+          endif
+        endif
+        sinmux=sign(sqrt(1.d0-cosmux**2),a12)
+        if(chgini)then
+          twiss(fbound%lb,idp,mfitax)=(a11-cosmux)/sinmux
+          twiss(fbound%lb,idp,mfitbx)=a12/sinmux
         endif
         amux=atan2(sinmux,cosmux)
         dcosmux=2.d0*sin(.5d0*amux)**2
-        if(optstat%staby)then
-          cosmuy=.5d0*optstat%tracey
-          sinmuy=sign(sqrt(abs(-b12*b21-.25d0*(b11-b22)**2)),b12)
-          twiss(fbound%lb,idp,mfitay)=.5d0*(b11-b22)/sinmuy
+        sinmuy=sign(sqrt(1.d0-cosmuy**2),b12)
+        if(chgini)then
+          twiss(fbound%lb,idp,mfitay)=(b11-cosmuy)/sinmuy
           twiss(fbound%lb,idp,mfitby)=b12/sinmuy
-        else
-          cosmuy=2.d0/optstat%tracey
-          sinmuy=sign(sqrt(1.d0-cosmuy**2),b12)
-          if(chgini)then
-            twiss(fbound%lb,idp,mfitay)=(b11-cosmuy)/sinmuy
-            twiss(fbound%lb,idp,mfitby)=b12/sinmuy
-          endif
         endif
         amuy=atan2(sinmuy,cosmuy)
         dcosmuy=2.d0*sin(.5d0*amuy)**2
@@ -344,10 +362,34 @@ c                enddo
       optstat%tracex=x11+x22
       optstat%tracey=y11+y22
       if(cell)then
-        optstat%stabx=optstat%tracex .ge. -2.d0 .and.
-     $       optstat%tracex .le. 2.d0
-        optstat%staby=optstat%tracey .ge. -2.d0 .and.
-     $       optstat%tracey .le. 2.d0
+        if(optstat%tracex .gt. 2.d0)then
+          if(intres)then
+            optstat%stabx=.false.
+          else
+            optstat%tracex=4.d0/optstat%tracex
+          endif
+        endif
+        if(optstat%tracex .lt. -2.d0)then
+          if(halfres)then
+            optstat%stabx=.false.
+          else
+            optstat%tracex=4.d0/optstat%tracex
+          endif
+        endif
+        if(optstat%tracey .gt. 2.d0)then
+          if(intres)then
+            optstat%staby=.false.
+          else
+            optstat%tracey=4.d0/optstat%tracey
+          endif
+        endif
+        if(optstat%tracey .lt. -2.d0)then
+          if(halfres)then
+            optstat%staby=.false.
+          else
+            optstat%tracey=4.d0/optstat%tracey
+          endif
+        endif
         optstat%stabx=optstat%stabx .and. stab .and. (codfnd .or. fam)
         optstat%staby=optstat%staby .and. stab .and. (codfnd .or. fam)
       endif

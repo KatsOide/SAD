@@ -1,10 +1,12 @@
-autos_.o: autos_.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h sim/sad_f2c.h sim/TFCBK.h
-buildinfo_.o: buildinfo_.c buildinfo.h sim/sad_f2c.h
+CaSearch2.o: CaSearch2.c sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/sad_tcltk.h
+CaSearch_.o: CaSearch_.c sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+DbStatic.o: DbStatic.c sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+PyConfig.o: PyConfig.c
+PySad.o: PySad.c sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+autos_.o: autos_.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h sim/TFCBK.h sim/sad_f2c.h
 buildinfo.o: buildinfo.c buildinfo.h feature.h
+buildinfo_.o: buildinfo_.c buildinfo.h sim/sad_f2c.h
 calc.o: calc.c sim/sad_f2c.h
-CaSearch2.o: CaSearch2.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/sad_tcltk.h sim/TFCODE.h sim/TFSTK.h
-CaSearch_.o: CaSearch_.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCODE.h sim/TFSTK.h
-DbStatic.o: DbStatic.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCODE.h sim/TFSTK.h
 eval1_.o: eval1_.c sim/sad_f2c.h
 feature.o: feature.c feature.h
 ft.o: ft.c ft.h
@@ -13,88 +15,86 @@ itfgetbuf_.o: itfgetbuf_.c sim/sad_f2c.h
 netSemaphore.o: netSemaphore.c netSemaphore.h
 nfgetm.o: nfgetm.c sim/sad_f2c.h
 psn.o: psn.c ft.h psn.h
-PyConfig.o: PyConfig.c
-PySad.o: PySad.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h
 random_driver.o: random_driver.c feature.h random_driver.h
 random_plugin_sad.o: random_plugin_sad.c feature.h random_driver.h
 spch.o: spch.c
-tfBuildInfo_.o: tfBuildInfo_.c buildinfo.h feature.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h
-tfCrypt_.o: tfCrypt_.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h
-tfDateTAI_.o: tfDateTAI_.c feature.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h timezone_table.h
-tfDynamicLink_.o: tfDynamicLink_.c feature.h sim/dynl.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h
-tfFeatureQ_.o: tfFeatureQ_.c feature.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h
-tfFileIO_.o: tfFileIO_.c feature.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h
-tfNetSemaphore_.o: tfNetSemaphore_.c netSemaphore.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCODE.h sim/TFSTK.h
-tfNetworkIO_.o: tfNetworkIO_.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h
-tfProcess_.o: tfProcess_.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/sad_signal.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h
-tfPyInter_.o: tfPyInter_.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCODE.h sim/TFSTK.h
-tfRandom_.o: tfRandom_.c feature.h random_driver.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h
-tfRenumberElement_.o: tfRenumberElement_.c feature.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFSTK.h
-tfTkInter_.o: tfTkInter_.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/sad_tcltk.h sim/sad_xlib.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h
-tfXlib_.o: tfXlib_.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/sad_xlib.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h
-tgauss_.o: tgauss_.c random_driver.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFSTK.h
+tfBuildInfo_.o: tfBuildInfo_.c buildinfo.h feature.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+tfCrypt_.o: tfCrypt_.c sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+tfDateTAI_.o: tfDateTAI_.c feature.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h timezone_table.h
+tfDynamicLink_.o: tfDynamicLink_.c feature.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/dynl.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+tfFeatureQ_.o: tfFeatureQ_.c feature.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+tfFileIO_.o: tfFileIO_.c feature.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+tfNetSemaphore_.o: tfNetSemaphore_.c netSemaphore.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+tfNetworkIO_.o: tfNetworkIO_.c sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+tfProcess_.o: tfProcess_.c sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/sad_signal.h
+tfPyInter_.o: tfPyInter_.c sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+tfRandom_.o: tfRandom_.c feature.h random_driver.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+tfRenumberElement_.o: tfRenumberElement_.c feature.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+tfTkInter_.o: tfTkInter_.c sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/sad_tcltk.h sim/sad_xlib.h
+tfXlib_.o: tfXlib_.c sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/sad_xlib.h
+tgauss_.o: tgauss_.c random_driver.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
 tspch_.o: tspch_.c
-utils.o: utils.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCBK.h sim/TFSTK.h
-yylex_.o: yylex_.c calc.h sim/MACCBK.h sim/MACCODE.h sim/MACTTYP.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFSTK.h
-sim/dynl.o: sim/dynl.c sim/dynl.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h
+utils.o: utils.c sim/TFCBK.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+yylex_.o: yylex_.c calc.h sim/MACCBK.h sim/MACCODE.h sim/MACTTYP.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
 sim/dynl-dl.o: sim/dynl-dl.c sim/dynl-dlsym.c.in sim/dynl.h
 sim/dynl-dummy.o: sim/dynl-dummy.c sim/dynl.h
-sim/fortran_io_.o: sim/fortran_io_.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCODE.h sim/TFRBUF.h sim/TFSTK.h
+sim/dynl.o: sim/dynl.c sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/dynl.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+sim/fortran_io_.o: sim/fortran_io_.c sim/TFCODE.h sim/TFRBUF.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
 sim/fortran_math_acosh_.o: sim/fortran_math_acosh_.c sim/sad_f2c.h
 sim/fortran_math_asinh_.o: sim/fortran_math_asinh_.c sim/sad_f2c.h
 sim/fortran_math_atanh_.o: sim/fortran_math_atanh_.c sim/sad_f2c.h
 sim/fortran_math_hypot_.o: sim/fortran_math_hypot_.c sim/sad_f2c.h
 sim/fseek_Dummy_.o: sim/fseek_Dummy_.c sim/sad_f2c.h
 sim/fseek_subroutine_.o: sim/fseek_subroutine_.c sim/sad_f2c.h
-sim/sad_api.o: sim/sad_api.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h
-sim/sad_functbl.o: sim/sad_functbl.c sim/dynl.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFSTK.h
+sim/sad_api.o: sim/sad_api.c sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+sim/sad_functbl.o: sim/sad_functbl.c sim/TFSTK.h sim/dynl.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
 sim/sad_signal.o: sim/sad_signal.c sim/sad_f2c.h sim/sad_signal.h
-sim/sad_tcltk.o: sim/sad_tcltk.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/sad_tcltk.h sim/TFSTK.h
+sim/sad_tcltk.o: sim/sad_tcltk.c sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/sad_tcltk.h
 sim/sad_xlib.o: sim/sad_xlib.c sim/sad_f2c.h sim/sad_xlib.h
 sim/unix_fortran_.o: sim/unix_fortran_.c sim/sad_f2c.h
-sim/unix_memory8_.o: sim/unix_memory8_.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFSTK.h sim/unix_memory_.c
-sim/unix_memory_.o: sim/unix_memory_.c sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/TFSTK.h
+sim/unix_memory8_.o: sim/unix_memory8_.c sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/unix_memory_.c
+sim/unix_memory_.o: sim/unix_memory_.c sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
 sim/unix_pointer_.o: sim/unix_pointer_.c sim/sad_f2c.h
 gdtoa/arithchk.o: gdtoa/arithchk.c
 gdtoa/dmisc.o: gdtoa/dmisc.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/dtoa.o: gdtoa/dtoa.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
+gdtoa/g_Qfmt.o: gdtoa/g_Qfmt.c gdtoa/gdtoa.h gdtoa/gdtoa_fltrnds.h gdtoa/gdtoaimp.h
+gdtoa/g__fmt.o: gdtoa/g__fmt.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/g_ddfmt.o: gdtoa/g_ddfmt.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/g_dfmt.o: gdtoa/g_dfmt.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
+gdtoa/g_dfmt.o: gdtoa/g_dfmt.c gdtoa/gdtoa.h gdtoa/gdtoa_fltrnds.h gdtoa/gdtoaimp.h
+gdtoa/g_ffmt.o: gdtoa/g_ffmt.c gdtoa/gdtoa.h gdtoa/gdtoa_fltrnds.h gdtoa/gdtoaimp.h
+gdtoa/g_xLfmt.o: gdtoa/g_xLfmt.c gdtoa/gdtoa.h gdtoa/gdtoa_fltrnds.h gdtoa/gdtoaimp.h
+gdtoa/g_xfmt.o: gdtoa/g_xfmt.c gdtoa/gdtoa.h gdtoa/gdtoa_fltrnds.h gdtoa/gdtoaimp.h
 gdtoa/gdtoa.o: gdtoa/gdtoa.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/gethex.o: gdtoa/gethex.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/g_ffmt.o: gdtoa/g_ffmt.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/g__fmt.o: gdtoa/g__fmt.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/gmisc.o: gdtoa/gmisc.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/g_Qfmt.o: gdtoa/g_Qfmt.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/g_xfmt.o: gdtoa/g_xfmt.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/g_xLfmt.o: gdtoa/g_xLfmt.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/hd_init.o: gdtoa/hd_init.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/hexnan.o: gdtoa/hexnan.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/misc.o: gdtoa/misc.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/qnan.o: gdtoa/qnan.c
 gdtoa/smisc.o: gdtoa/smisc.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtod.o: gdtoa/strtod.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtodg.o: gdtoa/strtodg.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtodI.o: gdtoa/strtodI.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtodnrp.o: gdtoa/strtodnrp.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtof.o: gdtoa/strtof.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
+gdtoa/strtoIQ.o: gdtoa/strtoIQ.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtoId.o: gdtoa/strtoId.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtoIdd.o: gdtoa/strtoIdd.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtoIf.o: gdtoa/strtoIf.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtoIg.o: gdtoa/strtoIg.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtoIQ.o: gdtoa/strtoIQ.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtoIx.o: gdtoa/strtoIx.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtoIxL.o: gdtoa/strtoIxL.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtopd.o: gdtoa/strtopd.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtopdd.o: gdtoa/strtopdd.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtopf.o: gdtoa/strtopf.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtopQ.o: gdtoa/strtopQ.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtopx.o: gdtoa/strtopx.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtopxL.o: gdtoa/strtopxL.c gdtoa/gdtoa_fltrnds.h gdtoa/gdtoa.h gdtoa/gdtoaimp.h
+gdtoa/strtod.o: gdtoa/strtod.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
+gdtoa/strtodI.o: gdtoa/strtodI.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
+gdtoa/strtodg.o: gdtoa/strtodg.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
+gdtoa/strtodnrp.o: gdtoa/strtodnrp.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
+gdtoa/strtof.o: gdtoa/strtof.c gdtoa/gdtoa.h gdtoa/gdtoa_fltrnds.h gdtoa/gdtoaimp.h
+gdtoa/strtopQ.o: gdtoa/strtopQ.c gdtoa/gdtoa.h gdtoa/gdtoa_fltrnds.h gdtoa/gdtoaimp.h
+gdtoa/strtopd.o: gdtoa/strtopd.c gdtoa/gdtoa.h gdtoa/gdtoa_fltrnds.h gdtoa/gdtoaimp.h
+gdtoa/strtopdd.o: gdtoa/strtopdd.c gdtoa/gdtoa.h gdtoa/gdtoa_fltrnds.h gdtoa/gdtoaimp.h
+gdtoa/strtopf.o: gdtoa/strtopf.c gdtoa/gdtoa.h gdtoa/gdtoa_fltrnds.h gdtoa/gdtoaimp.h
+gdtoa/strtopx.o: gdtoa/strtopx.c gdtoa/gdtoa.h gdtoa/gdtoa_fltrnds.h gdtoa/gdtoaimp.h
+gdtoa/strtopxL.o: gdtoa/strtopxL.c gdtoa/gdtoa.h gdtoa/gdtoa_fltrnds.h gdtoa/gdtoaimp.h
+gdtoa/strtorQ.o: gdtoa/strtorQ.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtord.o: gdtoa/strtord.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtordd.o: gdtoa/strtordd.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtorf.o: gdtoa/strtorf.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
-gdtoa/strtorQ.o: gdtoa/strtorQ.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtorx.o: gdtoa/strtorx.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/strtorxL.o: gdtoa/strtorxL.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
 gdtoa/sum.o: gdtoa/sum.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h
