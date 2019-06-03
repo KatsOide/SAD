@@ -597,7 +597,7 @@ c      include 'DEBUG.inc'
             call termes(6,'Error in FitWeight '//
      $           nlist(k)//' at '//name,' ')
           elseif(ktfrealq(kx))then
-c            write(*,*)'twfit ',nlist(k),vx,wfit(i)
+c            write(*,*)'twfit ',nlist(k),rfromk(kx),wfit(i)
             wiq(iq)=rfromk(kx)
           endif
         else

@@ -66,8 +66,8 @@ c        write(*,*)'TDFUN ',j,ka,kf,mfitgx
             if((kfam(idp) .eq. 0 .and. idp .ge. -mp .and. idp .le. mp)
      $           .or. jfam(idp) .ge. -mp .and. jfam(idp) .le. mp)then
               if(kf .ge. mfitdx .and. kf .le. mfitdpy .and.
-     $             (idp .lt. -nfr .or. idp .gt. nfr .or.
-     $             inicond .and. idp .ne. 0))then
+     $             (idp .lt. -nfr .or. idp .gt. nfr ))then
+c     $             .or. inicond .and. idp .ne. 0))then
                 cycle
               elseif(idp .ne. 0 .and. kf .gt. mfittry)then
                 cycle

@@ -1,4 +1,4 @@
-Help$Update="$Date:  5/7/2019 15:00:00 $"[8,17];
+Help$Update="$Date:  6/2/2019 18:00:00 $"[8,17];
 !Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
 Help$Version=$Version;
 
@@ -1698,13 +1698,13 @@ LOG enables the echo of all inputs in the MAIN level. Also suppresses the prompt
 
       {"INTRES",
         "\
-In the case of CELL, if the total tune deviates across an integer resonance, it is counted as unstable. The default is INTRES.",
+In the case of CELL, if the total tune deviates across an integer resonance, or the trace is larger than 2, it is counted as unstable (~?STABLE). Otherwise the optics is recognized as STABLE. The default is INTRES.",
         "HALFRES SUMRES DIFFRES STABLE",
         {}},
 
       {"HALFRES",
         "\
-In the case of CELL, if the total tune deviates across a half-integer resonance, it is counted as unstable. The default is HALFRES.",
+In the case of CELL, if the total tune deviates across a half-integer resonance, or the traces is less than -2, it is counted as unstable (~?STABLE). Otherwise the optics is recognized as STABLE. The default is HALFRES.",
         "INTRES SUMRES DIFFRES STABLE",
         {}},
 

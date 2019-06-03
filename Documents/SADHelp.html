@@ -13,7 +13,7 @@ eqs img{
 <BODY>
 <CENTER><H2>Welcome to SAD/FFS & SADScript
 </H2></CENTER>
-<CENTER> SAD/FFS SADScript Version: 1.1.6.6.4k64,      Updated:  5/7/2019 </CENTER>
+<CENTER> SAD/FFS SADScript Version: 1.1.6.6.5k64,      Updated:  6/2/2019 </CENTER>
 
 <PRE> Please use browser's search to find out an item.
 
@@ -3665,9 +3665,9 @@ GEOFIX</A></H3>
 <LI>
 <H3><A NAME=L313>
 HALFRES</A></H3>
-<PRE>
-In the case of CELL, if the total tune deviates across a half-integer resonance, it is counted as
-unstable. The default is HALFRES.
+<PRE>In the case of CELL, if the total tune deviates across a half-integer resonance, or the traces is
+less than -2, it is counted as unstable (~?STABLE). Otherwise the optics is recognized as STABLE.
+The default is HALFRES.
 </PRE>
 <PRE>See also:
  <A HREF=#L317>INTRES</A> <A HREF=#L340>SUMRES</A> <A HREF=#L304>DIFFRES</A> <A HREF=#L339>STABLE</A></PRE>
@@ -3697,9 +3697,9 @@ in MAIN level.
 <LI>
 <H3><A NAME=L317>
 INTRES</A></H3>
-<PRE>
-In the case of CELL, if the total tune deviates across an integer resonance, it is counted as unstable.
-The default is INTRES.
+<PRE>In the case of CELL, if the total tune deviates across an integer resonance, or the trace is larger
+than 2, it is counted as unstable (~?STABLE). Otherwise the optics is recognized as STABLE. The default
+is INTRES.
 </PRE>
 <PRE>See also:
  <A HREF=#L313>HALFRES</A> <A HREF=#L340>SUMRES</A> <A HREF=#L304>DIFFRES</A> <A HREF=#L339>STABLE</A></PRE>
