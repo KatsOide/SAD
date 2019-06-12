@@ -208,6 +208,8 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                   endif
                   rp0=rp
                   r0=r
+                else
+                  aimprv=0.d0
                 endif
                 alate=fuzz(dble(iter),aitm1,aitm2)
                 smallf=1.d0-fuzz(log10(fact),flim1,flim2)
@@ -216,10 +218,10 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                 if(newton)then
                   chgmod=max(smallf,badcnv,min(alate,amedcv)) .gt. .5d0
                 else
-                  if(aimprv .gt. .5d0)then
-                    chgmod=.true.
-                  elseif(iter .gt. flv%itmax*10)then
+                  if(iter .gt. flv%itmax*10)then
                     fitflg=.false.
+                    chgmod=.true.
+                  elseif(aimprv .gt. .5d0)then
                     chgmod=.true.
                   elseif(max(smallf,badcnv,min(alate,amedcv))
      $                   .gt. .5d0)then
@@ -233,8 +235,8 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                   else
                     chgmod=.false.
                   endif
-c                  write(*,'(a,2l2,i5,1p5g15.7)')'tffsmatch ',
-c     $                 fitflg,chgmod,nretry,
+c                  write(*,'(a,2l2,2i5,1p5g15.7)')'tffsmatch ',
+c     $                 fitflg,chgmod,nretry,flv%itmax,
 c     $                 aimprv,smallf,badcnv,alate,amedcv
                 endif
                 if(chgmod)then
