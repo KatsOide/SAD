@@ -3492,6 +3492,21 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end function
 
+        type (sad_descriptor) function kxraaloc(mode,nd,kl)
+        implicit none
+        type (sad_rlist), pointer, optional, intent(out) :: kl
+        type (sad_rlist), pointer :: kl1
+        integer*4 , intent(in)::mode,nd
+        integer*8 ka
+        ka=ktavaloc(mode,nd,kl1)
+        kl1%rbody(1:nd)=0.d0
+        if(present(kl))then
+          kl=>kl1
+        endif
+        kxraaloc%k=ktflist+ka
+        return
+        end function
+
         integer*8 function ktaalocsp(nd,lp,la,kl1)
         implicit none
         type (sad_dlist), pointer, optional, intent(out) :: kl1
