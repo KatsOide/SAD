@@ -19,6 +19,14 @@ c       s.t.       x(beam)=x cos(t) - y sin(t)
       logical tmatch, over, exist, rght, other
       data keywrd /'RIGHT   ','LEFT    '/
       data window/2.,10.,1.,9./ parity /-1./
+      goto 9000
+ 9000 continue
+      call termes(lfno,
+     $     'A message from SAD/FFS: replace GEO command '//
+     $      'with GeometryPlot[].',
+     $  ' ')
+      return
+c$$$      
       alpha=getva(exist)
       if(.not.exist) then
         alpha=0.
