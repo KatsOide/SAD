@@ -611,10 +611,11 @@ AutoLoad[CaMonitor,PackagesDirectory//"CaSad2c.n"];
 AutoLoad[EPICSDB,PackagesDirectory//"CEPICSRecord.n"];
 
 $DisplayFunction=If[Environment["DISPLAY"]<=>"",CanvasDrawer,Identity,Identiy];
-Check[`f=OpenRead["!command -v tdr"];
-  Close[`f];
-  AutoLoad[TopDrawer,
-    PackagesDirectory//"TopDrawer.n"],];
+
+! Check[`f=OpenRead["!command -v tdr"];
+!   Close[`f];
+!   AutoLoad[TopDrawer,
+!     PackagesDirectory//"TopDrawer.n"],];
 
 AutoLoad[ListPlot,Plot,Show,Graphics,Rectangle,
   PackagesDirectory//"ListPlot.n"];
