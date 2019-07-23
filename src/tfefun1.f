@@ -45,13 +45,13 @@ c-------next 4 lines were modified by Kikuchi---------------
      $       5110,5120,5130,5140,5150,5160,5170,5180,5190,5200,
      $       5210,5220,5230,5240,5250,5260,5270,5280,5290,5300,
      $       5310,5320,5330,5340,5350,5360,5370,5380,5390,5400,
-     $       5410,5420,5430,5440,5450,5460
+     $       5410,5420,5430,5440,5450,5460,5470
      $     ),id
 c            ELEM TWIS LINE CalE TraP CalO DyAp RspM Mast FLAG
 c            Mcad exDA InDA MAP  FFS  RadF RadS Flag ExBL BLNm
 c            SetE TKey NCD6 Tcl  FFSH ExpB GetM ClTr LiTr RGBC
 c            CPro TcA1 CaSy TkOA CaSD TcSR LifT SyBE CSRI CSRM
-c            CSRC CSRT CSRH CSOS CSOM AliP
+c            CSRC CSRT CSRH CSOS CSOM AliP BBBR
       write(*,*)
      $'Wrong implementation of function (tfefun1).  ID = ',id0
       return
@@ -153,5 +153,7 @@ c-------Kikuchi addition end-----
  5450 call tfcsroymat(isp1,kx,irtc)
       return
  5460 call tfsurvivedparticles(isp1,kx,irtc)
+      return
+ 5470 call tbcube1(isp1,kx,irtc)
       return
       end

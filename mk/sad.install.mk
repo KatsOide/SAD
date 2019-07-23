@@ -104,6 +104,8 @@ $(SAD_ROOT)/bin/gs:	$(SRCDIR)/gs.in
 	    -e "s,xSAD_ARCH_ROOT,$(SAD_ARCH_ROOT),g" \
 	    -e "s,xSAD_EXE_ROOT,$(SAD_ARCH_ROOT),g" \
 	    -e "s,xSADEXE,bin/$(SADEXE),g" \
+	    -e "s,xSAD_ARCH_OR_OBJ,arch,g" \
+	    -e "s,xSAD_PACKAGES,share/Packages,g" \
 	    $< > $@ && chmod 755 $@
 
 $(SAD_ROOT)/bin/HostArch:	$(BINDIR)/HostArch

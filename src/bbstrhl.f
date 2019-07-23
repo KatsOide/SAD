@@ -78,7 +78,8 @@
       real*8 p_in(70),blist(nblist)
       real*8 sqrpi
       integer*4 np,iturn,idummy,bstrhl,nbsemit,ns1,ns2,nsli,nss
-      integer*4 n,i,is,j,jl,jm,ju,iseed,irtc
+c      integer*4 n,i,is,j,jl,jm,ju,iseed,irtc
+      integer*4 n,i,is,j,jl,jm,ju,irtc
       LOGICAL*4 icross,tilt,deform,cod
       real*8 a2,a2x,a2y,acx,acy,asp,c1,cdu,d1x,d1y,dux,duy,delg,dLum
       real*8 fx0,fy0,fxy,gamp,gxy,h1,hi,pn,pxy2,pz
@@ -373,7 +374,8 @@ c      call tfmemcheckprint('beambeam',1,.false.,irtc)
                endif
 !               g(i)=g(i)+dpzbs  !+tgauss(iseed)*dp2bs
 !  Poisson generator
-               xx=tran(iseed)
+c               xx=tran(iseed)
+               xx=tran()
 !           if(xx.gt.prb) then
 !  Binomial generator
                if(xx.lt.rnbs) then

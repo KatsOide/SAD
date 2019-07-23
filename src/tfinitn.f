@@ -1171,5 +1171,6 @@ c      i=itfunaloc('TclSetResult',1036,1,map,ieval,0)
       i=itfunaloc('CSRSetupOY',1044,1,map,ieval,0)
       i=itfunaloc('CSROYMatrix',1045,1,map,ieval,0)
       i=itfunaloc('SurvivedParticles',1046,1,map,ieval,0)
+      i=itfunaloc('BBBrem1',1047,2,map,ieval,0)
       return
       end
