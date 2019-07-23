@@ -20,15 +20,17 @@
       init=.false.
       clo=.false.
       if(abbrev(word,'SUSP_END','_') .or. word .eq. 'END')then
-        init=lfnp .gt. lfnb
-        lfni0=lfni
-        call tfclose(lfnb,int(lfnp),lfnstk,lfopen,lfret,lfrecl,
-     $       lflinep,maxlfn,lfni,lfnb)
-        lfnp=lfnb
-        lfno=6
-        outfl=lfno
-        if(lfnb .eq. 1)then
-          close(98)
+        if(suspend)then
+          init=lfnp .gt. lfnb
+          lfni0=lfni
+          call tfclose(lfnb,int(lfnp),lfnstk,lfopen,lfret,lfrecl,
+     $         lflinep,maxlfn,lfni,lfnb)
+          lfnp=lfnb
+          lfno=6
+          outfl=lfno
+          if(lfnb .eq. 1)then
+            close(98)
+          endif
         endif
         return
       elseif(abbrev(word,'TERM_INATE','_') .or.

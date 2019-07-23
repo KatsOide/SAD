@@ -113,6 +113,7 @@ c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       radlight=.false.
       ffsprmpt=.false.
       rfsw  =isynch .ne. 0
+      suspend=.true.
       call tsetgcut
       call tphyzp
       call tsetdvfs
