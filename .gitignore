@@ -43,6 +43,7 @@ src/tfsk.f
 *.bak
 bin/HostArch~
 contrib/BBBrem_dir
+contrib/BBBrem_dir/*
 Library/lib/*
 Library/lib/App/*
 Library/lib/App/LogBrowser/*
