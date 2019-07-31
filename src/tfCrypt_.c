@@ -86,7 +86,7 @@ static int GetUserPassword(integer4 *isp1,
   } else {
     *kx = ktfstring + ktsalocb(-1, "*");
   }
-    
+
   *irtc = 0;
   return 0;
 }

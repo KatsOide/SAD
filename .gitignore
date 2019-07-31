@@ -4,6 +4,7 @@ TclTk/*
 arch/*
 obj/*
 sad/*
+contrib/BBBrem_dir/*
 .DS_Store
 .svn/*
 /CVS
