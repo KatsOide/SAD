@@ -6,12 +6,14 @@ SAD_ROOTPATH="$(cd "$(dirname "$0")";cd ..; pwd)"
 export SAD_ROOTPATH
 cd $JOB_DIR
 
-SAD_PACKAGES="$SAD_ROOTPATH/Packages/"; export SAD_PACKAGES
+SAD_PACKAGES="$SAD_ROOTPATH/xSAD_PACKAGES"; export SAD_PACKAGES
 SAD_ARCH=`$SAD_ROOTPATH/bin/HostArch`
-SAD_EXE="$SAD_ROOTPATH/obj/${SAD_ARCH}/sad1.exe"; export SAD_EXE
+SAD_EXE="$SAD_ROOTPATH/xSAD_ARCH_OR_OBJ/${SAD_ARCH}/xSADEXE";export SAD_EXE
 
 # Set stack limit
-stacksize=8192		# Kbytes
+#stacksize=8192		# Kbytes
+#stacksize=32768		# Kbytes for 4.15e6 elements of array
+stacksize=65536		# Kbytes for 4.15e6 elements of array
 
 usage () {
     basename0="`basename $0`"

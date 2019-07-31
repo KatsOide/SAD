@@ -559,7 +559,7 @@ c     endif
      $     ktfenan  =int8(z'7ff0000000000000'),
      $     ktfenanb =int8(z'000fffffffffffff')
      $     )
-      integer*4 , parameter :: mbody = 2**12
+      integer*4 , parameter :: mbody = 2**24
 
       type sad_object
       sequence
@@ -762,7 +762,7 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
       interface ktfreallistq
         module procedure ktfreallistqo_rlist,
      $     ktfreallistqo_dlist,ktfreallistqk,ktfreallistqd,
-     $     ktfreallistqk_rlist
+     $     ktfreallistqk_rlist,ktfreallistqd_rlist
       end interface
 
       interface ktfnonreallistqo
@@ -2298,9 +2298,21 @@ c     $           n,i,istat
         logical*4 function ktfreallistqd(ka)
         implicit none
         type (sad_descriptor) , intent(in)::ka
-        ktfreallistqd=iand(ilist(2,ka%k-3),lnonreallist) .eq. 0
+        ktfreallistqd=iand(ilist(2,ktfaddrd(ka)-3),lnonreallist) .eq. 0
         return
         end function ktfreallistqd
+
+        logical*4 function ktfreallistqd_rlist(ka,kl)
+        implicit none
+        type (sad_rlist), pointer, intent(out) :: kl
+        type (sad_descriptor) , intent(in)::ka
+        ktfreallistqd_rlist=
+     $       iand(ilist(2,ktfaddrd(ka)-3),lnonreallist) .eq. 0
+        if(ktfreallistqd_rlist)then
+          call loc_sad(ktfaddrd(ka),kl)
+        endif
+        return
+        end function ktfreallistqd_rlist
 
         logical*4 function ktfnonreallistq(ka)
         implicit none
@@ -3489,6 +3501,21 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
           kl=>kl1
         endif
         ktraaloc=ka
+        return
+        end function
+
+        type (sad_descriptor) function kxraaloc(mode,nd,kl)
+        implicit none
+        type (sad_rlist), pointer, optional, intent(out) :: kl
+        type (sad_rlist), pointer :: kl1
+        integer*4 , intent(in)::mode,nd
+        integer*8 ka
+        ka=ktavaloc(mode,nd,kl1)
+        kl1%rbody(1:nd)=0.d0
+        if(present(kl))then
+          kl=>kl1
+        endif
+        kxraaloc%k=ktflist+ka
         return
         end function
 

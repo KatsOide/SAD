@@ -452,14 +452,16 @@ c        call tfstk2l(lista,list)
       parameter (nvmax=1024,maxi0=40,eps0=1.d-9)
       integer*4 isp1,nvar,i,maxi,ispv,isp2,n,m,iu,ig,itfmessage
       type (symv) , allocatable::sav(:),sav0(:)
-      integer*8 kdl(nvmax),kdp,kci,kcv,ktfmaloc
+      integer*8 kdl(nvmax),kdp,ktfmaloc
+      type (sad_descriptor) kdm,kcv,kci
       real*8 , allocatable::v0(:),vmin(:),vmax(:),v0s(:)
       real*8 r,gammaq,rfromk,vx,cut,cutoff
       logical*4 used
       type (sad_descriptor), save ::
-     $     itfchisq,itfsigma,itfgood,itfconf,itfcov
-      data itfchisq%k,itfsigma%k,itfgood%k,itfconf%k,itfcov%k
-     $     /0,0,0,0,0/
+     $     itfchisq,itfsigma,itfgood,itfconf,itfcov,itfdm
+      data itfchisq%k,itfsigma%k,itfgood%k,itfconf%k,itfcov%k,
+     $     itfdm%k
+     $     /0,0,0,0,0,0/
       if(isp1 .gt. isp-4)then
         irtc=itfmessage(9,'General::narg','"4 or more"')
         return
@@ -475,6 +477,7 @@ c        call tfstk2l(lista,list)
         itfgood=kxsymbolf('GoodnessOfFit',13,.true.)
         itfconf=kxsymbolf('ConfidenceInterval',18,.true.)
         itfcov=kxsymbolf('CovarianceMatrix',16,.true.)
+        itfdm=kxsymbolf('DesignMatrix',12,.true.)
       endif
       maxi=maxi0
       used=.true.
@@ -552,12 +555,12 @@ c        call tfdebugprint(ke,'tffit-deriv',1)
           if(cutoff .ne. 0.d0)then
             v0s(1:nvar)=v0(1:nvar)
             call tffit1(rlist(kdp),n,m,ke,symdv,nvar,sav,v0,
-     $           kdl,vmin,vmax,r,kcv,kci,eps0,maxi,0.d0,irtc)
+     $           kdl,vmin,vmax,r,kdm,kcv,kci,eps0,maxi,0.d0,irtc)
             cut=sqrt(r/max(1,m-nvar))*cutoff
           endif
         endif
         call tffit1(rlist(kdp),n,m,ke,symdv,nvar,sav,v0,
-     $       kdl,vmin,vmax,r,kcv,kci,eps0,maxi,cut,irtc)
+     $       kdl,vmin,vmax,r,kdm,kcv,kci,eps0,maxi,cut,irtc)
       endif
       do i=1,nvar
         call tflocal(kdl(i))
@@ -577,8 +580,9 @@ c        call tfdebugprint(ke,'tffit-deriv',1)
         call tfmakerulestk(itfgood,
      $       sad_descr(gammaq(dble(m-nvar)*.5d0,r*.5d0)))
       endif
-      call tfmakerulestk(itfconf,sad_descr(ktflist+kci))
-      call tfmakerulestk(itfcov,sad_descr(ktflist+kcv))
+      call tfmakerulestk(itfconf,kci)
+      call tfmakerulestk(itfcov,kcv)
+      call tfmakerulestk(itfdm,kdm)
       kx=kxmakelist(isp2)
       isp=isp2-1
  9200 call tfree(kdp)
@@ -620,14 +624,16 @@ c          enddo
       end
 
       subroutine tffit1(data,n,m,ke,symdv,nvar,sav,v0,
-     $     kdl,vmin,vmax,d0,kcv,kci,eps,maxi,cut,irtc)
+     $     kdl,vmin,vmax,d0,kdm,kcv,kci,eps,maxi,cut,irtc)
       use tfstk
       use findr
       implicit none
       type (sad_symdef) symdv
       integer*4 n,m,nvar,irtc,maxi,iter,i,j
       type (symv) sav(nvar)
-      integer*8 ke,kdl(nvar),kaxvec,kcv,kci,kfromr
+      type (sad_descriptor) kdm,kcv,kci
+      type (sad_rlist) , pointer :: klci
+      integer*8 ke,kdl(nvar),kaxvec,kfromr
       real*8 data(n,m),v0(nvar)
       real*8 , allocatable :: a0(:,:),a(:,:),abest(:,:),
      $     df(:),df0(:),v00(:),w(:),cv(:,:),vbest(:),dv(:),df2(:)
@@ -641,7 +647,8 @@ c          enddo
       allocate (a0(m,nvar),a(m,nvar),abest(m,nvar),df(m),
      $     df0(m),v00(nvar),w(nvar),cv(nvar,nvar),
      $     vbest(nvar),dv(nvar),df2(m))
-      kcv=0
+      kdm%k=0
+      kcv%k=0
       v00=v0
       iter=0
       ajump=1.d0
@@ -842,16 +849,17 @@ c          enddo
         enddo
       endif
       call tflocal1(kaxvec)
+      kdm=kxm2l(abest,m,nvar,m,.false.)
       call tfcovmat(a0,cv,m,nvar,m)
-      kcv=ktfaddr(kxm2l(cv,nvar,nvar,nvar,.false.))
-      kci=ktraaloc(-1,nvar)
+      kcv=kxm2l(cv,nvar,nvar,nvar,.false.)
+      kci=kxraaloc(-1,nvar,klci)
       chin=tinvgr(dble(nvar))
       do i=1,nvar
         x=sqrt(cv(i,i)*chin)
         if(ktfrealq(kfromr(x)))then
-          rlist(kci+i)=x
+          klci%rbody(i)=x
         else
-          klist(kci+i)=ktfnan
+          klci%body(i)=ktfnan
         endif
       enddo
       deallocate(a0,a,abest,df,df0,v00,w,cv,vbest,dv,df2)

@@ -5,8 +5,10 @@
 
 #include <sys/types.h>
 #include <unistd.h>
-#if __has_include("crypt.h")
-# include <crypt.h>
+#if defined __has_include
+#  if __has_include (<crypt.h>)
+#     include <crypt.h>
+#  endif
 #endif
 
 #include <pwd.h>

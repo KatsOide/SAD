@@ -171,9 +171,9 @@ c      endif
           unit=' DEG'
         else
           unit=' '
-          if(kw .eq. 'SIGMAZ')then
-            kw='SIGZ'
-          endif
+c          if(kw .eq. 'SIGMAZ')then
+c            kw='SIGZ'
+c          endif
         endif
         if(real)then
           v=v*coeff
