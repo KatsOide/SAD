@@ -166,7 +166,8 @@ c$$$      endif
       implicit none
       type (sad_descriptor) k1,k2,kx,kxi,k2i,k1i
       type (sad_dlist), pointer :: kl1,kl2,klx,kl10
-      type (sad_rlist), pointer :: klr
+      type (sad_rlist), pointer :: klr,klr1,klr2
+      integer*4 ,parameter::lseg=1000000
       integer*8 ir,ix1,ix2
       integer*4 irtc,m1,m2,i,iopc1,iopc2
       real*8 v1,v2i
@@ -179,45 +180,52 @@ c$$$      endif
             kx=dxnulll
             return
           endif
-          if(ktfreallistq(kl2))then
+c          write(*,*)'tfecmplx ',m2,v1
+          if(ktfreallistq(k2,klr2))then
             kx=kxavaloc(-1,m2,klr)
             klr%attr=ior(klr%attr,lconstlist)
             select case(iopc1)
             case (mtfplus)
-              klr%rbody(1:m2)=kl2%rbody(1:m2)+v1
+              klr%rbody(1:m2)=klr2%rbody(1:m2)+v1
             case (mtftimes)
-              klr%rbody(1:m2)=kl2%rbody(1:m2)*v1
+              klr%rbody(1:m2)=klr2%rbody(1:m2)*v1
+c              nseg=(m2-1)/lseg+1
+c              do i=0,nseg-1
+c                klr%rbody(i*lseg+1:min((i+1)*lseg,m2))=
+c     $               kl2%rbody(i*lseg+1:min((i+1)*lseg,m2))*v1
+c              enddo
+c              write(*,*)'tfecmplx-rl*2 '
             case (mtfrevpower)
               ir=int8(v1)
               if(dble(ir) .eq. v1)then
                 if(ir .eq. -1)then
-                  klr%rbody(1:m2)=1.d0/kl2%rbody(1:m2)
+                  klr%rbody(1:m2)=1.d0/klr2%rbody(1:m2)
                 else
-                  klr%rbody(1:m2)=kl2%rbody(1:m2)**ir
+                  klr%rbody(1:m2)=klr2%rbody(1:m2)**ir
                 endif
               else
-                klr%rbody(1:m2)=kl2%rbody(1:m2)**v1
+                klr%rbody(1:m2)=klr2%rbody(1:m2)**v1
               endif
             case (mtfpower)
               do i=1,m2
-                ir=int8(kl2%rbody(i))
-                if(dble(ir) .eq. kl2%rbody(i))then
+                ir=int8(klr2%rbody(i))
+                if(dble(ir) .eq. klr2%rbody(i))then
                   if(ir .eq. -1)then
                     klr%rbody(i)=1.d0/v1
                   else
                     klr%rbody(i)=v1**ir
                   endif
                 else
-                  klr%rbody(i)=v1**kl2%rbody(i)
+                  klr%rbody(i)=v1**klr2%rbody(i)
                 endif
               enddo
             case (mtfcomplex)
               d=.false.
               do i=1,m2
-                if(kl2%dbody(i)%k .eq. 0)then
+                if(klr2%dbody(i)%k .eq. 0)then
                   klr%dbody(i)=k1
                 else
-                  klr%dbody(i)=kxcalocv(0,v1,kl2%rbody(i))
+                  klr%dbody(i)=kxcalocv(0,v1,klr2%rbody(i))
                   d=.true.
                 endif
               enddo
@@ -457,9 +465,9 @@ c                  m    i    +    -    *    /    v    ^
           kx=kxadaloc(-1,m2,klx)
           c=.true.
           d=.false.
-          if(ktfreallistq(kl2))then
+          if(ktfreallistq(k2,klr2))then
             do i=1,m2
-              v2i=kl2%rbody(i)
+              v2i=klr2%rbody(i)
               cx=tfcmplxmathv(c1,dcmplx(v2i,0.d0),iopc1)
               if(imag(cx) .eq. 0.d0)then
                 klx%rbody(i)=dble(cx)
@@ -524,47 +532,47 @@ c                  m    i    +    -    *    /    v    ^
           call tfeexpr(k1,k2,kx,iopc1)
           return
         endif
-        if(ktfreallistq(kl1) .and. ktfreallistq(kl2))then
+        if(ktfreallistq(k1,klr1) .and. ktfreallistq(k2,klr2))then
           kx=kxavaloc(-1,m1,klr)
           klr%attr=lconstlist
           select case (iopc1)
           case (mtfplus)
-            klr%rbody(1:m1)=kl2%rbody(1:m1)+kl1%rbody(1:m1)
+            klr%rbody(1:m1)=klr2%rbody(1:m1)+klr1%rbody(1:m1)
           case (mtftimes)
-            klr%rbody(1:m1)=kl2%rbody(1:m1)*kl1%rbody(1:m1)
+            klr%rbody(1:m1)=klr2%rbody(1:m1)*klr1%rbody(1:m1)
           case (mtfrevpower)
             do i=1,m1
-              ir=int8(kl1%rbody(i))
-              if(ir .eq. kl1%rbody(i))then
+              ir=int8(klr1%rbody(i))
+              if(ir .eq. klr1%rbody(i))then
                 if(ir .eq. -1)then
-                  klr%rbody(i)=1.d0/kl2%rbody(i)
+                  klr%rbody(i)=1.d0/klr2%rbody(i)
                 else
-                  klr%rbody(i)=kl2%rbody(i)**ir
+                  klr%rbody(i)=klr2%rbody(i)**ir
                 endif
               else
-                klr%rbody(i)=kl2%rbody(i)**kl1%rbody(i)
+                klr%rbody(i)=klr2%rbody(i)**klr1%rbody(i)
               endif
             enddo
           case (mtfpower)
             do i=1,m1
-              ir=int8(kl2%rbody(i))
-              if(ir .eq. kl2%rbody(i))then
+              ir=int8(klr2%rbody(i))
+              if(ir .eq. klr2%rbody(i))then
                 if(ir .eq. -1)then
-                  klr%rbody(i)=1.d0/kl1%rbody(i)
+                  klr%rbody(i)=1.d0/klr1%rbody(i)
                 else
-                  klr%rbody(i)=kl1%rbody(i)**ir
+                  klr%rbody(i)=klr1%rbody(i)**ir
                 endif
               else
-                klr%rbody(i)=kl1%rbody(i)**kl2%rbody(i)
+                klr%rbody(i)=klr1%rbody(i)**klr2%rbody(i)
               endif
             enddo
           case (mtfcomplex)
             d=.false.
             do i=1,m1
-              if(kl2%rbody(i) .eq. 0.d0)then
-                klr%rbody(i)=kl1%rbody(i)
+              if(klr2%rbody(i) .eq. 0.d0)then
+                klr%rbody(i)=klr1%rbody(i)
               else
-                klr%dbody(i)=kxcalocv(0,kl1%rbody(i),kl2%rbody(i))
+                klr%dbody(i)=kxcalocv(0,klr1%rbody(i),klr2%rbody(i))
                 d=.true.
               endif
             enddo

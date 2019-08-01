@@ -694,4 +694,5 @@ AutoLoad[LifeTrack,PackagesDirectory//"LifeTrack.n"];
 AutoLoad[CSR,CSRStability,PackagesDirectory//"CSR.n"];
 AutoLoad[WAKECOMMAND,PackagesDirectory//"WAKECOMMAND.n"];
 AutoLoad[LaTeX,PackagesDirectory//"latex.n"];
+AutoLoad[BBBrem,PackagesDirectory//"bbbrem.n"];
 ! End of File
