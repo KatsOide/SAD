@@ -18,9 +18,8 @@ BBBrem=Class[{},{},{de=1e-6},
       With[{sinu=Abs3P[t]},
         If[sinu,
           Flatten[{
-            With[{g=ArcSin[sinu]},
-              With[{tg=t/g,dcosu=Tan[g/2]*sinu},
-                (1-dcosu) {p0s}+sinu OP[{p0s},tg]+dcosu ({p0s}.t) tg]],p0t}],
+            With[{tg=t/sinu,dcosu=Tan[ArcSin[sinu]/2]*sinu},
+              (1-dcosu) {p0s}+sinu OP[{p0s},tg]+dcosu ({p0s}.t) tg],p0t}],
           {p0s,p0t}]]];
 
   Brem[pa_,pb_,seed_]:=Module[{

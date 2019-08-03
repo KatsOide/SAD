@@ -154,6 +154,9 @@ c      temp2 = temp1*temp1-rme2-q0*q0
 * generate azimuthal angles
         phi = twopi*random(7.d0)
         phig = twopi*random(8.d0)
+c centralize phi : 3 Aug 2019 K. Oide
+c        phi=twopi*(random(7.d0)-0.5d0)
+c        phig=twopi*(random(8.d0)-0.5d0)
 
 * construct momentum transfer q(mu)
         ql = (2*eb*q0-t)*rin2pb

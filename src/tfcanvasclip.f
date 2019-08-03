@@ -1092,11 +1092,10 @@ c      parameter (a=sqrt(0.75d0))
       xmax=rlist(kad2+1)
       ymax=rlist(kad2+2)
       yoff=rlist(ktfaddr(ktastk(isp1+9)+2))
-      if(ktfnonrealq(ktastk(isp1+5)))then
+      if(ktfnonrealq(ktastk(isp1+5),s))then
         irtc=itfmessage(9,'General::wrongtype','"size for #5"')
         return
       endif
-      s=rtastk(isp1+5)
       if(ktfnonstringq(ktastk(isp1+6)))then
         irtc=itfmessage(9,'General::wrongtype','"fill color for #6"')
         return
