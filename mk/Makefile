@@ -227,6 +227,8 @@ $(BINDIR)/gs:	$(SRCDIR)/gs.in
 	    -e "s,xSAD_ARCH_ROOT,$(SAD_ARCH_ROOT),g" \
 	    -e "s,xSAD_EXE_ROOT,$(SADDIR)/obj,g" \
 	    -e "s,xSADEXE,$(SADEXE),g" \
+	    -e "s,xSAD_ARCH_OR_OBJ,obj,g" \
+	    -e "s,xSAD_PACKAGES,Packages,g" \
 	    $< >$@ && chmod 755 $@
 
 # End of File

@@ -1230,7 +1230,7 @@ c          endif
         endif
         kfile=mapallocfile(str%str,ifile,ksize,irtc)
         if(irtc .ne. 0)then
-          irtc=itfmessage(999,'General::fileopen',str%str(1:nc))
+          irtc=itfmessage(999,'General::fileopen',str%str(1:str%nch))
           kx=dxfailed
         else
           call tfreadbuf(irbopen,lfn,kfile/8,ksize+modemapped,ifile,' ')

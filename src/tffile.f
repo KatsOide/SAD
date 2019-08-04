@@ -8,9 +8,10 @@
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
       real*8 vx
-      integer*4 i,lfni0,lfni1,nc,next,itype,lfno1,j,maxlfn,lfnb
+      integer*4 i,lfni1,nc,next,itype,lfno1,j,maxlfn,lfnb
       integer*4 itfpeeko,lfnstk(maxlfn),lfret(maxlfn),lflinep(maxlfn),
      $     lfrecl(maxlfn)
+      integer*4 ,save:: lfni0=0
       logical*4 lfopen(maxlfn),init,exist,termin,rew,app,abbrev,
      $     clo,ret
       character*(*) word
@@ -18,7 +19,7 @@
       exist=.true.
       init=.false.
       clo=.false.
-      if(word .eq. 'END')then
+      if(abbrev(word,'SUSP_END','_') .or. word .eq. 'END')then
         init=lfnp .gt. lfnb
         lfni0=lfni
         call tfclose(lfnb,int(lfnp),lfnstk,lfopen,lfret,lfrecl,
@@ -29,6 +30,7 @@
         if(lfnb .eq. 1)then
           close(98)
         endif
+        return
       elseif(abbrev(word,'TERM_INATE','_') .or.
      $       abbrev(word,'CLO_SE','_'))then
         clo=abbrev(word,'CLO_SE','_')
@@ -55,6 +57,7 @@
           outfl=lfno
         endif
         init=termin
+        return
       elseif(abbrev(word,'IN_PUT','_')  .or. word .eq. 'GET'
      1       .or. word .eq. 'READ')then
         rew=word .eq. 'READ'
@@ -77,7 +80,10 @@
             lfni1=j
             go to 8021
  8020     continue
-          goto 8101
+ 8101     call termes(lfno,'?File open error ',word)
+          call cssets(9998)
+          init=.true.
+          return
  8021     if(word .eq. ' ')then
             call termes(lfno,'?Missing filename for IN_PUT',' ')
             init=.true.
@@ -97,21 +103,17 @@
           init=.true.
           return
         endif
-        lfnstk(lfnp)=lfni1
-        lfret(lfnp)=icsmrk()
-        lfrecl(lfnp)=icslrecl()
-        lflinep(lfnp)=icslinep()
-        call cssetp(lfrecl(lfnp))
-        call cssetlinep(lfrecl(lfnp))
-        lfni=lfni1
-        if(rew)then
-          rewind(lfni)
+      elseif(abbrev(word,'RES_UME','_'))then
+        lfni1=lfni0
+        if(lfni .eq. 0)then
+          return
         endif
-        init=.true.
-        return
- 8101   call termes(lfno,'?File open error ',word)
-        call cssets(9998)
-        init=.true.
+        lfni0=0
+        call cssetp(next)
+        write(word,'(''ftn'',i2.2)')lfni1
+        lfnp=lfnp+1
+        lfopen(lfnp)=.false.
+        rew=.false.
       elseif(abbrev(word,'EXE_CUTE','_'))then
         ret=.true.
         itype=itfpeeko(kx,next)
@@ -134,7 +136,7 @@
         lfrecl(lfnp)=icslrecl()
         lflinep(lfnp)=icslinep()
         call cssetp(lfrecl(lfnp))
-c        call cssetlinep(lfrecl(lfnp))
+c     call cssetlinep(lfrecl(lfnp))
         call setbuf(str%str,str%nch)
         init=.false.
         return
@@ -171,9 +173,22 @@ c        call cssetlinep(lfrecl(lfnp))
         call termes(lfno,'?File open error ',word)
         init=.true.
         call cssets(9998)
+        return
       else
         exist=.false.
+        return
       endif
+      lfnstk(lfnp)=lfni1
+      lfret(lfnp)=icsmrk()
+      lfrecl(lfnp)=icslrecl()
+      lflinep(lfnp)=icslinep()
+      call cssetp(lfrecl(lfnp))
+      call cssetlinep(lfrecl(lfnp))
+      lfni=lfni1
+      if(rew)then
+        rewind(lfni)
+      endif
+      init=.true.
       return
       end
 

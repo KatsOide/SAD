@@ -3,6 +3,7 @@
       use ffs_flag
       use tmacro
       use tparastat
+      use tfcsi, only:icslfno
       implicit none
       type (sad_descriptor) :: kmode,kc,kx
       type (sad_dlist), pointer :: klc
@@ -52,6 +53,9 @@
       n1=min(200,klc1%nl)
       if(ktfnonrealq(dtastk(isp1+2),lfno))then
         return
+      endif
+      if(lfno .eq. -1)then
+        lfno=icslfno()
       endif
       if(.not. tfreallistq(dtastk(isp1+4),klp))then
         irtc=itfmessage(9,'General::wrongtype',
