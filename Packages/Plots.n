@@ -78,7 +78,7 @@ With[{CP$def={Scale->{Linear,Linear},
         ft=False;
         cla=Flatten[cl];
         cla=Join[cla,Table["",{Max[n*nc-Length[cla],0]}]];
-        tx=WindowScaled[If[$DisplayFunction===TopDrawer,0.8,2.3]];
+	tx=WindowScaled[If[$DisplayFunction===CanvasDrawer,2.3,0.8]];
         tis=0;
         ts=Max[Min[2,6/Max[1,StringLength/@cla],12/n/nc],0.9]*txs,
         cl===Automatic,
@@ -162,14 +162,17 @@ With[{CP$def={Scale->{Linear,Linear},
     g
     ]];
 
-With[{def={PlotStyle->ColumnPlot,Orientation->Vertical,
-  Bins:>Max[5,Min[100,Sqrt[Max[Length/@l]]]],
-  Dashing->{{1},{0.75,0.25},{0.4, 0.15},{0.2,0.1},{0.1,0.08},
-  {0.8,0.08, 0.08, 0.08},{0.4,0.08,0.08,0.08}},
-  PlotColor:>If[$DisplayFunction===TopDrawer,
-    {"black","red","blue","green","gray","magenta","cyan","yellow"},
-    {"black","tomato","dark slate blue","forest green","gray",
-      "magenta","cyan","yellow"}]}},
+With[{def={
+	PlotStyle->ColumnPlot,Orientation->Vertical,
+  	Bins:>Max[5,Min[100,Sqrt[Max[Length/@l]]]],
+  	Dashing->{{1},{0.75,0.25},{0.4, 0.15},{0.2,0.1},{0.1,0.08},
+	         {0.8,0.08, 0.08, 0.08},{0.4,0.08,0.08,0.08}},
+  	PlotColor:>If[$DisplayFunction===CanvasDrawerr,
+		{"black","tomato","dark slate blue","forest green","gray",
+		          "magenta","cyan","yellow"},
+      		{"black","red","blue","green","gray","magenta","cyan","yellow"}
+       		]
+      }},
 
   HistoPlot[l_,opt___]:=HistoPlot[{l},opt];
   HistoPlot[l:{{_,_},___},opt___]:=HistoPlot[{l},opt];

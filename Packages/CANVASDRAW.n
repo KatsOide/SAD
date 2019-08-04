@@ -5,8 +5,7 @@ OpticsPlot;
 
 FFSCanvasDraw=Class[{},{},{},
 
-  Draw[]:=If[$DisplayFunction===TopDrawer,
-    1,
+  Draw[]:=If[$DisplayFunction===CanvasDrawer,
     Module[{w,r1,r2,list,w1,opt,w1u},
       w=Read[-1,Word,ReadNewRecord->False];
       If[ToUpperCase[w]==="DRAW",
@@ -53,7 +52,9 @@ FFSCanvasDraw=Class[{},{},{},
       OpticsPlot[list,Null@@opt,PlotLabel->TITLE];
       Update[];
 !      Print[{w,w1}];
-      If[w1==";","",w]]];      
+      If[w1==";","",w]]
+      , 1
+      ];      
 
   SeparateAmpsnd[w_]:=Module[{p=StringPosition[w,"&"]/.{}->{{Infinity,Infinity}},
     q=StringPosition[w,";"]/.{}->{{Infinity,Infinity}}},

@@ -170,9 +170,11 @@ OP$InfoLabel[canvas_Widget,frid_Real,bind_:True]:=Module[{
       ];
     KBF$MoveCBForInfoLabel[t]]];
 
-With[{tdr:=TopDrawer,cdr:=CanvasDrawer},
+
+!With[{tdr:=TopDrawer,cdr:=CanvasDrawer},
+With[{cdr:=CanvasDrawer},
   SetAttributes[PlotColorDefault,HoldAll];
-  PlotColorDefault[tdr]={"black"};
+  (* PlotColorDefault[tdr]={"black"}; *)
   PlotColorDefault[cdr]=
     {"dark slate blue","red3","forest green","goldenrod","purple"};
   SetAttributes[PlotColorDefault,HoldNone]];
@@ -572,46 +574,48 @@ Twiss$Unit[x_String?(#[1,3]==="SIG"&)]:=Module[
   Twiss$Unit[x]=u];
 Twiss$Unit[_]=1;
 
-If[$DisplayFunction===Unevaluated[TopDrawer],
-  Twiss$Unit$Label[Meter]={"M","L"};
-  Twiss$Unit$Label[Kilometer]={"KM","LL"};
-  Twiss$Unit$Label[Milimeter]={"MM","LL"};
-  Twiss$Unit$Label[Micron]={"MM","GL"};
-  Twiss$Unit$Label[Nanometer]={"NM","LL"};
-  Twiss$Unit$Label[Miliradian]={"MRAD","LLLL"};
-  Twiss$Unit$Label[Microradian]={"MRAD","GLLL"};
-  Twiss$Unit$Label[Radian]={"RAD","LLL"};
-  Twiss$Unit$Label[SqrtMeter]={"2M062O1","MLUUUDU"};
-  Twiss$Unit$Label[SquareMeter]={"M223","LX X"};
-  Twiss$Unit$Label[InvMeter]={"M2-13","LX  X"};
-  Twiss$Unit$Label[InvKilometer]={"KM2-13","LLX  X"};
-  Twiss$Unit$Label[Pi2]={"2P"," G"};
-  Twiss$Unit$Label[_]={"",""};
-  Twiss$Label["AX"]={"A0X1","GXLX"};
-  Twiss$Label["BX"]={"2B06O0X1","MGUUDXLX"};
-  Twiss$Label["NX"]={"M0X1","GXLX"};
-  Twiss$Label["EX"]={"H0X1","GXLX"};
-  Twiss$Label["EPX"]={"HA0X1","GPXLX"};
-  Twiss$Label["PEX"]={"H0XP1","GXL X"};
-  Twiss$Label["PEPX"]={"HA0XP1","GPXL X"};
-  Twiss$Label["DX"]={"DX","FL"};
-  Twiss$Label["DPX"]={"DXA","FLP"};
-  Twiss$Label["AY"]={"A0Y1","GXLX"};
-  Twiss$Label["BY"]={"2B06O0Y1","MGUUDXLX"};
-  Twiss$Label["NY"]={"M0Y1","GXLX"};
-  Twiss$Label["EY"]={"H0Y1","GXLX"};
-  Twiss$Label["EPY"]={"HA0Y1","GPXLX"};
-  Twiss$Label["PEY"]={"H0YP1","GXL X"};
-  Twiss$Label["PEPY"]={"HA0YP1","GPXL X"};
-  Twiss$Label["DY"]={"DY","FL"};
-  Twiss$Label["DPY"]={"DYA","FLP"};
-  Twiss$Label["DZ"]={"DZ","FL"};
-  Twiss$Label["R1"]={"R1","  "};
-  Twiss$Label["R2"]={"R2","  "};
-  Twiss$Label["R3"]={"R3","  "};
-  Twiss$Label["R4"]={"R4","  "};
-  Twiss$Label["DETR"]={"DETR"," LL "},
+! If[$DisplayFunction===Unevaluated[TopDrawer],
+!   Twiss$Unit$Label[Meter]={"M","L"};
+!   Twiss$Unit$Label[Kilometer]={"KM","LL"};
+!   Twiss$Unit$Label[Milimeter]={"MM","LL"};
+!   Twiss$Unit$Label[Micron]={"MM","GL"};
+!   Twiss$Unit$Label[Nanometer]={"NM","LL"};
+!   Twiss$Unit$Label[Miliradian]={"MRAD","LLLL"};
+!   Twiss$Unit$Label[Microradian]={"MRAD","GLLL"};
+!   Twiss$Unit$Label[Radian]={"RAD","LLL"};
+!   Twiss$Unit$Label[SqrtMeter]={"2M062O1","MLUUUDU"};
+!   Twiss$Unit$Label[SquareMeter]={"M223","LX X"};
+!   Twiss$Unit$Label[InvMeter]={"M2-13","LX  X"};
+!   Twiss$Unit$Label[InvKilometer]={"KM2-13","LLX  X"};
+!   Twiss$Unit$Label[Pi2]={"2P"," G"};
+!   Twiss$Unit$Label[_]={"",""};
+!   Twiss$Label["AX"]={"A0X1","GXLX"};
+!   Twiss$Label["BX"]={"2B06O0X1","MGUUDXLX"};
+!   Twiss$Label["NX"]={"M0X1","GXLX"};
+!   Twiss$Label["EX"]={"H0X1","GXLX"};
+!   Twiss$Label["EPX"]={"HA0X1","GPXLX"};
+!   Twiss$Label["PEX"]={"H0XP1","GXL X"};
+!   Twiss$Label["PEPX"]={"HA0XP1","GPXL X"};
+!   Twiss$Label["DX"]={"DX","FL"};
+!   Twiss$Label["DPX"]={"DXA","FLP"};
+!   Twiss$Label["AY"]={"A0Y1","GXLX"};
+!   Twiss$Label["BY"]={"2B06O0Y1","MGUUDXLX"};
+!   Twiss$Label["NY"]={"M0Y1","GXLX"};
+!   Twiss$Label["EY"]={"H0Y1","GXLX"};
+!   Twiss$Label["EPY"]={"HA0Y1","GPXLX"};
+!   Twiss$Label["PEY"]={"H0YP1","GXL X"};
+!   Twiss$Label["PEPY"]={"HA0YP1","GPXL X"};
+!   Twiss$Label["DY"]={"DY","FL"};
+!   Twiss$Label["DPY"]={"DYA","FLP"};
+!   Twiss$Label["DZ"]={"DZ","FL"};
+!   Twiss$Label["R1"]={"R1","  "};
+!   Twiss$Label["R2"]={"R2","  "};
+!   Twiss$Label["R3"]={"R3","  "};
+!   Twiss$Label["R4"]={"R4","  "};
+!   Twiss$Label["DETR"]={"DETR"," LL "},
+!   ];
 
+If[DisplayFunction===Unevaluated[CanvasDrawer],
   Twiss$Unit$Label[Meter]="m";
   Twiss$Unit$Label[Kilometer]="km";
   Twiss$Unit$Label[Milimeter]="mm";
@@ -701,8 +705,7 @@ If[$DisplayFunction===Unevaluated[TopDrawer],
     {{l,u}=MakeSize$Label$Unit[x[5,-1]]},
     Twiss$Unit[x]=u;
     Twiss$Label[x]="`fs`n`d"//l//"`n"];
-
-  ];
+];
 
 Twiss$Label[_]:="";
 

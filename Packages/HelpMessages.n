@@ -1501,13 +1501,13 @@ prints out the TopDrawer commands for the geometric plot of the beam line.",
     "DISPLAY(DISP)",
     {}},
 
-   {"TDR",
-    "Usage:   TDR {filename | file_number}\n\n\
-runs TopDrawer (tdr) using the file specified by filename or file_number as the input. It supports both Tek terminal and X-window.\n\n\
-Example:   OUT 'a' DRAW bx by & ex ey q* CLOSE OUT TDR 'a'\n\n\
-TDR does not work when SAD is running under EMACS without X-window.",
-    "DRAW GEO OUTPUT(OUT) CLOSE(CLO)",
-    {}},
+!    {"TDR",
+!     "Usage:   TDR {filename | file_number}\n\n\
+! runs TopDrawer (tdr) using the file specified by filename or file_number as the input. It supports both Tek terminal and X-window.\n\n\
+! Example:   OUT 'a' DRAW bx by & ex ey q* CLOSE OUT TDR 'a'\n\n\
+! TDR does not work when SAD is running under EMACS without X-window.",
+!     "DRAW GEO OUTPUT(OUT) CLOSE(CLO)",
+!     {}},
 
    {"PRINT(PRI)",
     "PRI expression evaluates expression and prints out the result.",
