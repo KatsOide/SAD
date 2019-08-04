@@ -3719,7 +3719,8 @@ FillColor       color                           Colors to fill columns\n\
                 list of colors\n\
 MeshStyle       bitmap                          Bitmap to fill columns\n\
                 list of bitmaps                 to distinguish stacking\n\
-TextSize        positive number 1               relative label size\n\n\
+TextSize        positive number 1               relative label size\n\
+PlotNull        True or False   False           plot a minimal rect for 0 occurrence\n\n\
 Example:\n\
   g=ColumnPlot[{{{1,1,2},{2,2,3}}, {{1,4,2},{2,2,3}}, {{1,3,2},{2,2,3}}}, Orientation->Horizontal];\n\
   Update[];\n\n\

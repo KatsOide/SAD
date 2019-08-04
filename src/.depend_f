@@ -245,8 +245,9 @@ sprexl.o: sprexl.f tfstk.o toplvl.o
 sprlin.o: sprlin.f tfstk.o toplvl.o
 synradcl.o: synradcl.f tffs.o
 talign.o: talign.f tffs.o tfstk.o
-tapert.o: tapert.f initb1.o tffs.o tfstk.o
+tapert.o: tapert.f initb1.o tffs.o tfstk.o tturn.o
 tbal.o: tbal.f
+tbbbrem.o: tbbbrem.f tfstk.o toplvl.o
 tbdecoup.o: tbdecoup.f
 tbend.o: tbend.f inc/TENT.inc inc/TEXIT.inc temit.o tffs.o tfloor.o tfstk.o
 tbend.f.o: tbend.f.f
@@ -301,7 +302,7 @@ tfchgv.o: tfchgv.f csinit.o tffs.o tfstk.o
 tfchro.o: tfchro.f initb1.o tffs.o tfstk.o
 tfconvstr.o: tfconvstr.f tfstk.o tfstrbuf.o
 tfcoup.o: tfcoup.f csinit.o tffs.o tfstk.o
-tfdapert.o: tfdapert.f tffs.o tfstk.o
+tfdapert.o: tfdapert.f csinit.o tffs.o tfstk.o
 tfdbun.o: tfdbun.f tffs.o
 tfdisp.o: tfdisp.f initb1.o tffs.o tfstk.o
 tfdot.o: tfdot.f tfstk.o toplvl.o
@@ -419,7 +420,7 @@ tqfrie.o: tqfrie.f tffs.o tfstk.o
 tqlfre.o: tqlfre.f tffs.o
 tqr.o: tqr.f tfstk.o
 tqrad.o: tqrad.f inc/TENT.inc inc/TEXIT.inc tffs.o
-tquad.o: tquad.f inc/TENT.inc inc/TEXIT.inc temit.o tffs.o tfloor.o tfstk.o toplvl.o
+tquad.o: tquad.f inc/TENT.inc inc/TEXIT.inc temit.o tffs.o tfloor.o tfstk.o toplvl.o tturn.o
 tquade.o: tquade.f temit.o tffs.o tfloor.o tfstk.o
 tquads.o: tquads.f temit.o tffs.o tfstk.o
 tquase.o: tquase.f temit.o tffs.o tfloor.o tfstk.o

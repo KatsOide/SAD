@@ -1,11 +1,13 @@
+      module tracklim
+      real*8, parameter ::plimit=0.9d0,zlimit=1.d10,vmax=.9d0,
+     $     ampmax=0.9999d0
+      end module
+
       subroutine tturn(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n)
       use tfstk
       use tmacro
       use tspin
       implicit none
-      real*8 plimit,zlimit,vmax
-      parameter (plimit=0.9d0,zlimit=1.d10)
-      parameter (vmax=.9d0)
       integer*4 np,n,kptbl(np0,6)
       integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
@@ -25,13 +27,11 @@
       use sad_main
       use ffs_pointer, only:compelc
       use tspin
+      use tracklim
       implicit none
       type (ffs_bound) fbound
       type (sad_comp), pointer ::cmp
       type (sad_descriptor) :: dsave(kwMAX)
-      real*8 plimit,zlimit,vmax
-      parameter (plimit=0.9d0,zlimit=1.d10)
-      parameter (vmax=.9d0)
       integer*4 np,n,la,ls,nvar,lb,le
 c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
       real*8 pgev00
@@ -152,12 +152,11 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       use ffs_seg
       use tspin
       use mathfun
+      use tracklim
       implicit none
       integer*4 la1
       parameter (la1=15)
-      real*8 xlimit,plimit,zlimit,vmax,ampmax
-      parameter (plimit=0.9d0,zlimit=1.d10,ampmax=0.9999d0)
-      parameter (vmax=.9d0)
+      real*8 xlimit
       type (sad_comp), pointer:: cmp
       type (sad_dlist) , pointer ::lsegp
       integer*4 np,n,la,lbegin,lend,kdx,kdy,krot
