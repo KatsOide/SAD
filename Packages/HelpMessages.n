@@ -1,4 +1,4 @@
-Help$Update="$Date:  6/2/2019 18:00:00 $"[8,17];
+Help$Update="$Date:  8/5/2019 18:00:00 $"[8,17];
 !Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
 Help$Version=$Version;
 
@@ -974,7 +974,7 @@ The transformation in a QUAD is a sequence of:\n\n\
           SEXT$trans[name_,pole_,n_]:=EquAlign["Text[\
 The transformation of a {\\tt "//name//"} is given as\n\
 \\begin{align}\n\
-   &\\exp(:F_{\\rm in}:)\\exp(:a {\\tt L}:)\\exp(:H_"//n//"/2:)\\exp(:b {\\tt L}:)\\\\\n\
+   &\\exp(:F_{\\rm in}:)\\exp(:a {\\tt L}:)\\exp(:H_"//n//"/2:)\\exp(:b {\\tt L}:)\\nonumber\\\\\n\
    \\times&\\exp(:V_"//n//":)\\exp(:a {\\tt L}:)\\exp(:H_"//n//"/2:)\\exp(:b {\\tt L}:)\\exp(:F_{\\rm out}:)\\  ,\n\
 \\end{align}\n\
 where {\\tt L} and $H_"//n//"$ are the Hamiltonians of a drift of length {\\tt L} and a thin "//

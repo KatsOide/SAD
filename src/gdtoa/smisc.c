@@ -1,1 +1,1 @@
-/Users/oide/SAD/oldsad/contrib/gdtoa/smisc.c
+/home/oide/SAD/oldsad/contrib/gdtoa/smisc.c
