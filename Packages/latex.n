@@ -60,7 +60,7 @@ LaTeX=Class[{},{eqn=0,pre0="\
         Write[f,text,"\n"];
         Write[f,Postamble[style]];
         Close[f];
-        If[System["pdflatex "//fn//" "//pdf//" > /dev/null"],
+        If[System["pdflatex "//fn//" "//pdf//" > /dev/null"] == 0,
           System["pdfcrop --margins "//margins//" "//pdf//" "//pdf//" > /dev/null"];
           Switch[form,
             "svg",
