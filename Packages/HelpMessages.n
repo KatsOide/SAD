@@ -1,4 +1,4 @@
-Help$Update="$Date:  6/2/2019 18:00:00 $"[8,17];
+Help$Update="$Date:  8/5/2019 18:00:00 $"[8,17];
 !Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
 Help$Version=$Version;
 
@@ -974,7 +974,7 @@ The transformation in a QUAD is a sequence of:\n\n\
           SEXT$trans[name_,pole_,n_]:=EquAlign["Text[\
 The transformation of a {\\tt "//name//"} is given as\n\
 \\begin{align}\n\
-   &\\exp(:F_{\\rm in}:)\\exp(:a {\\tt L}:)\\exp(:H_"//n//"/2:)\\exp(:b {\\tt L}:)\\\\\n\
+   &\\exp(:F_{\\rm in}:)\\exp(:a {\\tt L}:)\\exp(:H_"//n//"/2:)\\exp(:b {\\tt L}:)\\nonumber\\\\\n\
    \\times&\\exp(:V_"//n//":)\\exp(:a {\\tt L}:)\\exp(:H_"//n//"/2:)\\exp(:b {\\tt L}:)\\exp(:F_{\\rm out}:)\\  ,\n\
 \\end{align}\n\
 where {\\tt L} and $H_"//n//"$ are the Hamiltonians of a drift of length {\\tt L} and a thin "//
@@ -3719,7 +3719,8 @@ FillColor       color                           Colors to fill columns\n\
                 list of colors\n\
 MeshStyle       bitmap                          Bitmap to fill columns\n\
                 list of bitmaps                 to distinguish stacking\n\
-TextSize        positive number 1               relative label size\n\n\
+TextSize        positive number 1               relative label size\n\
+PlotNull        True or False   False           plot a minimal rect for 0 occurrence\n\n\
 Example:\n\
   g=ColumnPlot[{{{1,1,2},{2,2,3}}, {{1,4,2},{2,2,3}}, {{1,3,2},{2,2,3}}}, Orientation->Horizontal];\n\
   Update[];\n\n\

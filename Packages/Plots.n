@@ -10,7 +10,7 @@ SetAttributes[{Contours,MeshRange,ColorFunction,ColorFunctionScaling,
   MaxBend,PlotPoints,PlotDivision,FunctionLabel,ResultLabel,RaiseFit,
   Signal,GoodnessOfFit,ChiSquare,ConfidenceInterval,ColumnTags,MeshStyle,
   PlotStyle,Columns,ColumnOffset,Bins,BinRange,ColumnLabel,Mesh,MeshColor,
-  FitParameters},
+  FitParameters,PlotNull},
   Constant];
 
 BeginPackage[Plots`]
@@ -38,19 +38,20 @@ With[{CP$def={Scale->{Linear,Linear},
   FrameTicks->Automatic,Initialize->True,
   FrameLabel->{"","","",""},DisplayFunction:>$DisplayFunction,
   PlotLabel->"",Prolog->{},Epilog->{},
+  PlotNull->False,
   Background->"#ffffff"},
   r=(Rule|RuleDelayed)[Graphics$Options,_]},
 
   ColumnPlot[ll_,opt___]:=Module[
     {n=Length[ll],d=Dimensions[ll],nc,ns,
       coff,cm,cw,x,y,cx,g,ref,of,pc,ms,pcx,msx,pr,or,sc,gopt,ld,
-      cla,cl,ft,ts,tis,tx,t,tag,txs,
+      cla,cl,ft,ts,tis,tx,t,tag,txs,pn,
       op=Override[opt,CP$def]
       },
-    {coff,ref,of,pc,ms,or,cl,ft,tis,tag,txs}={ColumnOffset,Reference,
+    {coff,ref,of,pc,ms,or,cl,ft,tis,tag,txs,pn}={ColumnOffset,Reference,
       DisplayFunction,
       FillColor,MeshStyle,Orientation,ColumnLabel,FrameTicks,
-      TickSize,ColumnTags,TextSize}/.op;
+      TickSize,ColumnTags,TextSize,PlotNull}/.op;
     ld=Length[d];
     {nc,ns,ymin,ymax}=Switch[ld,
       1,
@@ -100,6 +101,7 @@ With[{CP$def={Scale->{Linear,Linear},
       Table[Null,{n*nc}],
       StandardForm[Table[tag//i,{i,n*nc}]]];
     cx=Thread[{Flatten[cx,1],Flatten[ll,1],pcx,msx,cla,t}];
+    If[~pn,cx=cx/.{_,0,__}:>Null[]];
     sc=Flatten[{Linear,Scale/.op}][[{-2,-1}]];
     gopt=Override[Scale->sc,DataRange->dr,
       PlotRange->pr,

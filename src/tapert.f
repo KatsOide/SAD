@@ -8,10 +8,9 @@
       use ffs_flag
       use tmacro
       use ffs_pointer, only:idelc,idtypec
+      use tracklim
       implicit none
       integer, parameter :: nkptbl = 6
-      real*8 plimit,zlimit
-      parameter (plimit=0.99d0,zlimit=1.d10)
       integer*4 l
       integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)

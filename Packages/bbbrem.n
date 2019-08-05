@@ -18,21 +18,31 @@ BBBrem=Class[{},{},{de=1e-6},
       With[{sinu=Abs3P[t]},
         If[sinu,
           Flatten[{
-            With[{g=ArcSin[sinu]},
-              With[{tg=t/g,dcosu=Tan[g/2]*sinu},
-                (1-dcosu) {p0s}+sinu OP[{p0s},tg]+dcosu ({p0s}.t) tg]],p0t}],
+            With[{tg=t/sinu,dcosu=Tan[ArcSin[sinu]/2]*sinu},
+              (1-dcosu) {p0s}+sinu OP[{p0s},tg]+dcosu ({p0s}.t) tg],p0t}],
           {p0s,p0t}]]];
 
-  Brem[pa_,pb_,seed_]:=Module[{
-    pcm=pa+pb,sqrts,pacm,pbr0,pbr,pbs,pbrr,sig,zero=Table[0,{Length[pa]}]},
-    sqrts=Sqrt[2 pcm[[,4]]^2-(#.#&)/@pcm];
-    pacm=MapThread[LBoost,{pa,pcm}];
-    SeedRandom[seed];
-    pbr0=BBBrem1[#,de]&/@sqrts;
-    pbr=pbr0[[,1]];
-    sig=(Plus@@(pbr0[[,2]]))/Length[pa];
-    pbs=Thread[{zero,zero,Sqrt[(sqrts/2)^2-MASS^2],sqrts/2}];
-    pbrr=MapThread[Rot3P,{pbs,pacm,pbr}];
-    {MapThread[LBoost,{pbrr,{-1,-1,-1,1}*#&/@pcm}]/MOMENTUM,sig}];
+  Brem[pa_,pb_,seed_]:=With[{np=Length[pa],npi=Ceiling[Length[pa]/NPARA]},
+    Module[{
+      pap=Table[Take[pa,{i,Min[i+npi-1,np]}],{i,1,npi*(NPARA-1)+1,npi}],
+      pbp=Table[Take[pb,{i,Min[i+npi-1,np]}],{i,1,npi*(NPARA-1)+1,npi}],
+      r},
+      r=Parallelize[(
+        SeedRandom[seed+(#-1)*2];
+        Module[{
+          pcm=pap[[#]]+pbp[[#]],n=Length[pap[[#]]],
+          sqrts,pacm,pbr0,pbr,pbs,pbrr,sig},
+          If[n,
+            sqrts=Sqrt[2 pcm[[,4]]^2-(#.#&)/@pcm];
+            pacm=MapThread[LBoost,{pap[[#]],pcm}];
+            pbr0=BBBrem1[#,de]&/@sqrts;
+            pbr=pbr0[[,1]];
+            sig=Plus@@(pbr0[[,2]]);
+            pbs=Thread[{0*sqrts,0*sqrts,Sqrt[(sqrts/2)^2-MASS^2],sqrts/2}];
+            pbrr=MapThread[Rot3P,{pbs,pacm,pbr}];
+            {MapThread[LBoost,{pbrr,{-1,-1,-1,1}*#&/@pcm}]/MOMENTUM,sig},
+          {{},{}}]])&,
+        NPARA,(npi*40+8+npi*16+8)*1.2,NPARA];
+      {Join@@r[[,1]],(Plus@@r[[,2]])/np}]];
 
   ];
