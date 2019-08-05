@@ -1541,9 +1541,12 @@ static int System(integer4 *isp1, integer8 *kx,
     return 1;
   }
 
-  *kx = kfromr(r_true);
-  *irtc = 0;
-  return 0;
+  {/* *kx = kfromr(r_true); */
+	  real8 vx=status;
+	  *kx=kfromr(vx);
+	  *irtc = 0;
+	  return 0;
+  }
 }
 
 /* Process Group ID family */
