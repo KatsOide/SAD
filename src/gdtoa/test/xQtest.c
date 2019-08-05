@@ -1,1 +1,1 @@
-/Users/oide/SAD/oldsad/contrib/gdtoa/test/xQtest.c
+/home/oide/SAD/oldsad/contrib/gdtoa/test/xQtest.c
