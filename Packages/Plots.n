@@ -1,4 +1,4 @@
-(* Plots 7/31/2017 *)
+(* Plots 8/6/2019 *)
 
 Show;
 
@@ -171,24 +171,24 @@ With[{def={PlotStyle->ColumnPlot,Orientation->Vertical,
   PlotColor:>If[$DisplayFunction===TopDrawer,
     {"black","red","blue","green","gray","magenta","cyan","yellow"},
     {"black","tomato","dark slate blue","forest green","gray",
-      "magenta","cyan","yellow"}]}},
+      "magenta","cyan","yellow"}]},fact=1.00001},
 
   HistoPlot[l_,opt___]:=HistoPlot[{l},opt];
   HistoPlot[l:{{_,_},___},opt___]:=HistoPlot[{l},opt];
   HistoPlot[l:{_List,___},opt___]:=Module[{min,max,
       {nc,ps}={Bins,PlotStyle}/.{opt}/.def,
       dc,col,hist,x,histall,ll=Length[l],da,pc,or},
+    nc=Round[nc];
     If[Head[l[[1,1]]]===List,
-      {min,max}=BinRange/.{opt}/.
-      BinRange->MinMax[l[[,,1]]]*{1,1.00001};
-      dc=(max-min)/nc;
+      {min,max}=BinRange/.{opt}/.BinRange->MinMax[l[[,,1]]];
+      dc=(max-min)/nc*fact;
       histall=(
         col=Select[Thread[{Floor[(#[[,1]]-min)/dc]+1,#[[,2]]}],(1<=First[#]<=nc)&];
         hist=Table[0,{nc}];
         Scan[(hist[[First[#]]]+=Second[#])&,col];
         hist)&/@l,
-      {min,max}=BinRange/.{opt}/.BinRange->MinMax[l]*{1,1.00001};
-      dc=(max-min)/nc;
+      {min,max}=BinRange/.{opt}/.BinRange->MinMax[l];
+      dc=(max-min)/nc*fact;
       histall=(
         col=Select[Floor[(#-min)/dc]+1,(1<=#<=nc)&];
         hist=Table[0,{nc}];
