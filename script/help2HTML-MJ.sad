@@ -11,9 +11,9 @@ Text2MJ[t_]:= Module[{
 ];
 
 Equ2MJ[t_]:=Module[{
-    pre = "<div class=\"EquAlign\">\\begin{align}\\begin{split}\n",
+    pre = "<div class=\"EquAlign\">\n\\begin{align}\\begin{split}\n",
     post= "\n\\end{split}\\end{align}\n</div>",
-    body=t
+    body=StringReplace[t,{"<" -> "< ",">"->" >"}]
   },
   pre//body//post
 ];
@@ -27,7 +27,7 @@ EquAlign[t_,_]:= Module[{
       "</pre>"//body//"<pre>\n"
 ];
 
-  MJPreamble = "\
+MJPreamble = "\
   <script type=\"text/x-mathjax-config\">\n\
     MathJax.Hub.Config({ \n\
       TeX: { \n\
@@ -40,7 +40,7 @@ EquAlign[t_,_]:= Module[{
       },\n\
      tex2jax: {\n\
 	inlineMath:[[\"$\",\"$\"], [\"\\\\(\",\"\\\\)\"]],\n\
-	displayMath: [ [\'\$\$\',\'\$\$\'], [\"\\\\[\",\"\\\\]\"] ],\n\
+	displayMath: [ [\"\$\$\",\'\$\$\'], [\"\\\\[\",\"\\\\]\"] ],\n\
 	processEscapes: true, \n\
 	processRefs: true, \n\
 	processEnvironments: true,\n\
@@ -129,7 +129,7 @@ Help2HTML=Class[{},{},{help=Help$Messages,nlabel=0,Labels,col=96,
        nlabel=nlabel+1;
        Write[f,"<H3><A NAME=L",nlabel,">\n",h[[1]],"</A></H3>"];
        Flush[f];
-       WriteString[f,ReplaceLaTeX[h[[2]]]];
+       WriteString[f, ReplaceLaTeX[h[[2]]]];
        r=GetLabel[h[[3]]];
        If[r<=>{},
          Write[f,"<PRE>See also:"];
@@ -165,9 +165,9 @@ Help2HTML=Class[{},{},{help=Help$Messages,nlabel=0,Labels,col=96,
          Labels[tag]=l];
 
      WriteHTMLIndex[f_,h_,tab_]:=Module[{tab1,lab,h1=h[[1]]},
-       If[h1=="example",Return[]];
+       If[h1=="example", Return[] ]; 
        nlabel=nlabel+1;
-       lab="<A HREF=#L"//nlabel//">"//h1//"</A>";
+       lab="<A HREF=#L"//nlabel//" class=\"w3-button menu.L"//Length[tab]//"\">"//h1//"</A>";
        Scan[SetLabel[#,lab]&,LabelTitle[h1]];
        Write[f,tab,lab];
        If[Length[h[[4]]]>0,
@@ -180,11 +180,11 @@ Help2HTML=Class[{},{},{help=Help$Messages,nlabel=0,Labels,col=96,
    ];
 
  HH=Help2HTML[];
-
+! CSS-sidebar referecne:https://www.w3schools.com/w3css/w3css_sidebar.asp
  f=OpenWrite["../script/SADHelp-MJ.html"];
  Write[f,"\
 <HEAD>\n<meta charset=\"UTF-8\">\n<TITLE>\n\
-SAD Help page with MathJax\n\
+SAD(k64) Help page with MathJax\n\
 </TITLE>\n\
 <STYLE>\n\
 eqs img{\n\
@@ -193,9 +193,15 @@ eqs img{\n\
   white-space:nowrap;\n\
   font-size:0;\n\
 }\n\
-</STYLE>\n"//MJPreamble//"\n</HEAD>\n\
-<BODY>\n\
-<CENTER><H2>Welcome to SAD/FFS & SADScript\n</H2></CENTER>\n\
+</STYLE>\n\
+<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> \n\
+<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\"> \n\
+"//MJPreamble//"\n</HEAD><BODY>\n"];
+ Write[f,"<div class=\"w3-sidebar w3-light-grey w3-bar-block\" style=\"width:25%\"><PRE>"];
+ HH@WriteHTMLIndex[f,HH@help[[1]],""];
+ Write[f,"</PRE><HR/></div><div style=\"margin-left:25%\" class=\"w3-container\">"];
+ Write[f,"\
+<CENTER><H2>Welcome to SAD/FFS & SADScript with MathJax\n</H2></CENTER>\n\
 <CENTER> SAD/FFS SADScript Version: ",
 Help$Version,
 ",      Updated: ",
@@ -210,42 +216,13 @@ Help$Update,
 Back to SAD Home Page</H4>\n\
 <A HREF=\"example/design_example.html\">\n<H4>\n\
 SAD/FFS Examples</H4></A>\n\
-<HR>\n"];
- Write[f,"<PRE>"];
- HH@WriteHTMLIndex[f,HH@help[[1]],""];
- Write[f,"</PRE><HR>"];
+<HR/>\n"];
  HH@nlabel=0;
  HH@WriteHTML[f,HH@help[[1]],1];
- Write[f,"<HR>\n</BODY></HTML>"];
+ Write[f,"<HR>\n</div></BODY></HTML>"];
  Close[f];
+ ;! convert EquAligh[Text[]] part into html using pandoc
+ System["python ../script/FixSADHelp.py"];
  ;
- !System["python ../script/FixSADHelp.py"];
- ;
-(*
-!
- f=OpenWrite["../script/design_example.html"];
- fr=OpenRead[ExamplesDirectory//"design_example.sad.result"];
- Write[f,"\
-<HEAD>\n<TITLE>\n\
-   SAD/FFS Examples\n\
-</TITLE>\n</HEAD>\n<BODY>\n\
-<CENTER><H2>SAD/FFS Examples\n</H2></CENTER>\n\
-<A HREF=\"http://acc-physics.kek.jp/SAD/\">\n<H4>\n\
-<img SRC=\"../sad.png\" ALIGN=\"middle\" ALT=\"SAD\" WIDTH=45></A>\n\
-Back to SAD Home Page</H4>\n\
-<A HREF=\"../SADHelp.html\">\n<H4>\n\
-Back to SAD/FFS Commands</H4></A>\n\
-<H3><A HREF=#result>Results</A></H3>\n<HR><PRE>",
-Cases[HH@help,{"example",__},Infinity][[1,2]],
-"\n</PRE><HR>\n<H3><A NAME=result>Results:</A></H3><PRE>"];
- While[l=ReadString[fr];l<=>EndOfFile,
-   Write[f,l];
-   If[StringPosition[l,"! draw"]<=>{},
-     Write[f,"</PRE><img SRC=\"",l[StringPosition[l," "][-1,1]+1,-1],
-             ".png\" WIDTH=500><PRE>"]];
-   ];
- Write[f,"</PRE><HR>\n</BODY>"];
- Close[f];
-*)
 end
 abort
