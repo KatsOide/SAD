@@ -52,12 +52,13 @@ MJPreamble = "\
   src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML-full'></script>\n\
   ";
 
-Help2HTML=Class[{},{},{help=Help$Messages,nlabel=0,Labels,col=96,
+Help2HTML=Class[{},{},{helpmsg=Help$Messages,nlabel=0,Labels,col=96,
    lt,ltt,form="svg",svg,outf,pw="16 cm"},
 
    Constructor[]:=(
      SetDirectory[DocumentsDirectory];
-     help[[1,2]]="";
+     helpmsg[[1,1]]="Help Menu";	
+     helpmsg[[1,2]]="";
      Labels[s_]:=s;
      Labels[""]="";
      outf[_]=Undefined;
@@ -171,7 +172,7 @@ Help2HTML=Class[{},{},{help=Help$Messages,nlabel=0,Labels,col=96,
        Scan[SetLabel[#,lab]&,LabelTitle[h1]];
        Write[f,tab,lab];
        If[Length[h[[4]]]>0,
-         tab1=tab//"   ";
+         tab1=tab//"  ";
 !     Write[f,"("];
          Scan[WriteHTMLIndex[f,#,tab1]&,h[[4]]]
 !     Write[f,")"]
@@ -198,7 +199,7 @@ eqs img{\n\
 <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\"> \n\
 "//MJPreamble//"\n</HEAD><BODY>\n"];
  Write[f,"<div class=\"w3-sidebar w3-light-grey w3-bar-block\" style=\"width:25%\"><PRE>"];
- HH@WriteHTMLIndex[f,HH@help[[1]],""];
+ HH@WriteHTMLIndex[f,HH@helpmsg[[1]],""];
  Write[f,"</PRE><HR/></div><div style=\"margin-left:25%\" class=\"w3-container\">"];
  Write[f,"\
 <CENTER><H2>Welcome to SAD/FFS & SADScript with MathJax\n</H2></CENTER>\n\
@@ -218,7 +219,7 @@ Back to SAD Home Page</H4>\n\
 SAD/FFS Examples</H4></A>\n\
 <HR/>\n"];
  HH@nlabel=0;
- HH@WriteHTML[f,HH@help[[1]],1];
+ HH@WriteHTML[f,HH@helpmsg[[1]],1];
  Write[f,"<HR>\n</div></BODY></HTML>"];
  Close[f];
  ;! convert EquAligh[Text[]] part into html using pandoc
