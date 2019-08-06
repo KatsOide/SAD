@@ -132,7 +132,7 @@ c     Physical constant
       kax=ktrvaloc('ElectronRadius',elradi)
       kax=ktrvaloc('ProtonMass',prmass)
       kax=ktrvaloc('ProtonRadius',prradi)
-      kax=ktrvaloc('BoltzmanConstant',kboltzman)
+      kax=ktrvaloc('BoltzmannConstant',kboltzman)
       kax=ktrvaloc('ElectronGminus2over2',gspin)
       kax=ktrvaloc('PlanckConstant',plank)
       kax=ktrvaloc('PlanckHbar',plankr)

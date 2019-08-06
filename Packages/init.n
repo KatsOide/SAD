@@ -15,7 +15,8 @@ SetAttributes[{Real,String,BuiltinFunction,
 SetAttributes[{True,False,I,NaN,INF,Infinity,Pi,E,EulerGamma,
   SpeedOfLight,SIMu0,MKSAMu0,SIEpsilon0,MKSAEpsilon0,
   ElectronCharge,FineStructureConstant,
-  ElectronMass,ElectronRadius,ProtonMass,ProtonRadius},
+  ElectronMass,ElectronRadius,ProtonMass,ProtonRadius,
+  PlanckConstant,PlanckHbar,BoltzmannConstant,ElectronGminus2over2},
   Constant];
 
 GoldenRatio=(1+Sqrt[5])/2;
