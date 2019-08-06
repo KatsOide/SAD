@@ -59,6 +59,7 @@ Help2HTML=Class[{},{},{helpmsg=Help$Messages,nlabel=0,Labels,col=96,
      SetDirectory[DocumentsDirectory];
      helpmsg[[1,1]]="Help Menu";	
      helpmsg[[1,2]]="";
+     helpmsg = helpmsg[[1,4]];
      Labels[s_]:=s;
      Labels[""]="";
      outf[_]=Undefined;
@@ -199,7 +200,7 @@ eqs img{\n\
 <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\"> \n\
 "//MJPreamble//"\n</HEAD><BODY>\n"];
  Write[f,"<div class=\"w3-sidebar w3-light-grey w3-bar-block\" style=\"width:25%\"><PRE>"];
- HH@WriteHTMLIndex[f,HH@helpmsg[[1]],""];
+ Scan[HH@WriteHTMLIndex[f,#,""]&,HH@helpmsg];
  Write[f,"</PRE><HR/></div><div style=\"margin-left:25%\" class=\"w3-container\">"];
  Write[f,"\
 <CENTER><H2>Welcome to SAD/FFS & SADScript with MathJax\n</H2></CENTER>\n\
@@ -219,7 +220,7 @@ Back to SAD Home Page</H4>\n\
 SAD/FFS Examples</H4></A>\n\
 <HR/>\n"];
  HH@nlabel=0;
- HH@WriteHTML[f,HH@helpmsg[[1]],1];
+ Scan[HH@WriteHTML[f,#,1]&,HH@helpmsg];
  Write[f,"<HR>\n</div></BODY></HTML>"];
  Close[f];
  ;! convert EquAligh[Text[]] part into html using pandoc
