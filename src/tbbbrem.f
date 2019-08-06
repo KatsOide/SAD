@@ -9,7 +9,7 @@ c
       use macmath
       use macphys
       type labmom
-      real*8 p2(4),q2(4),qk(4)
+      real*8 p2(4),q2(4),qk(4),weight
       end type
       real*8, parameter::alpha=finest,rme=elmass/1e9,
      $     tomb=(plankr*cveloc/elemch)**2/1.d18/1.d-31,
@@ -25,7 +25,7 @@ c     use SAD's tran()
       real*8
 c      double precision
 c     ,p1,p2,q1,q2,qk,alpha,rme,tomb,pi,twopi,rme2,d1,d2,t,weight
-     . p1(4),q1(4),d1,d2,t,weight,
+     . p1(4),q1(4),d1,d2,t,
      $     s,rme2s,rls,z0,a1,a2,ac,sigapp,eb,pb,rin2pb,
      . z,y,q0,temp1,tmin,tmax,sy,w2,rlamx,b,rlam,eps,rl,vgam,
      . cgam,sgam,phi,phig,ql,qt,q(4),r0,w,rin2w,rinr0w,eta,phat1,
@@ -118,7 +118,7 @@ c      temp2 = temp1*temp1-rme2-q0*q0
       if(temp2.lt.0d0) then
         write(*,904) temp2
   904   format(' y too large: delta_t^2 = ',d15.6)
-        weight = 0d0
+        mom%weight = 0d0
       else
         tmin = -2*(temp1+dsqrt(temp2))
         tmax = rme2*s*y*y/tmin
@@ -228,7 +228,7 @@ c        phig=twopi*(random(8.d0)-0.5d0)
 
 * impose cut on the photon energy: qk(4)>eb*rk0
         if(mom%qk(4).lt.eb*rk0) then
-          weight = 0d0
+          mom%weight = 0d0
         else
 
 * the event is now accepted: compute matrix element and weight
@@ -288,7 +288,7 @@ c* kleiss-burkhardt cross section multiplied by t**2
           rmap = 4*s*s*rind1*rind2*(-t)*c1*c2
 
 * the weight
-          weight = rmex/rmap*sigapp
+          mom%weight = rmex/rmap*sigapp
 CHBU      IF(T.GT.-3.56D-21) weight=0.D0  ! CHBU cutoff
 
 * the weight is now defined for both accepted and rejected events
@@ -404,7 +404,7 @@ c  interface to function BBBrem1
       call bcube1(ars/gev,drs,mom,sigapp)
       kx=kxaaloc(-1,2,kl)
       kl%dbody(1)=kxraaloc(0,4,klp)
-      klp%rbody(1:4)=mom%q2*gev
+      klp%rbody(1:4)=(/-1.d0,-1.d0,-1.d0,1.d0/)*mom%p2*gev
       kl%dbody(2)=dfromr(sigapp*mbarn)
       irtc=0
       return

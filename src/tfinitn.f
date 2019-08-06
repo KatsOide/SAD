@@ -134,6 +134,8 @@ c     Physical constant
       kax=ktrvaloc('ProtonRadius',prradi)
       kax=ktrvaloc('BoltzmanConstant',kboltzman)
       kax=ktrvaloc('ElectronGminus2over2',gspin)
+      kax=ktrvaloc('PlanckConstant',plank)
+      kax=ktrvaloc('PlanckHbar',plankr)
 
       ierrorth=0
       ierrorexp=0

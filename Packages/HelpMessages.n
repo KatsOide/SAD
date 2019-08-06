@@ -1991,7 +1991,7 @@ EMITX is a real variable for the horizontal emittance (not normalized by gamma b
 
      {"EMITY",
       "\
-EMITY is a real variable for the vertical emittance (not normalized by gamma beta). It is automatically set by the keyword EMITY of the MARK element at the beginning of the beam line. The EMITTANCE(EMIT) command returns its calculated value in EMITY. The value of EMITY affects the default wei�ht of variables in the matching. Accessible in MAIN.",
+EMITY is a real variable for the vertical emittance (not normalized by gamma beta). It is automatically set by the keyword EMITY of the MARK element at the beginning of the beam line. The EMITTANCE(EMIT) command returns its calculated value in EMITY. The value of EMITY affects the default wei÷ht of variables in the matching. Accessible in MAIN.",
       "EMITX EMITZ SIGZ SIGE DP elements MARK",
       {}},
 
@@ -2820,17 +2820,19 @@ EulerGamma     0.57721566490153286061",
    {"physical-constants",
      "\
 Physical constants available in FFS are:\n\n\
-SpeedOfLight           299792458\n\
+SpeedOfLight           299792458 m/s\n\
+PlanckConstant         6.626070d-34 Js\n\
+PlanckHbar             PlanckConstant/2/Pi\n\
+ElectronCharge         1.602176634d-19 C\n\
+BoltzmannConstant      1.380 649 × 10−23 J/K\n\
 FineStructureConstant  alpha\n\
-ElectronCharge         e in Coulomb\n\
 ElectronMass           m_e in eV\n\
 ElectronRadius         classical radius of electron, in m\n\
-ElectronGminus2        electron g-2\n\
 ProtonMass             m_p in eV\n\
 ProtonRadius           classical radius of Proton, in m\n\
 SIMu0                  4 Pi 10^{-7}\n\
 SIEpsilon0             1/SIMu0/SpeedOfLight^2\n\
-BoltzmannConstant      k_B in J/K",
+ElectronGminus2over2   (g-2)/2 of electrons",
      "constants expression special-variables",
      {}},
 

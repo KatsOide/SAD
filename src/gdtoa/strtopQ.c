@@ -1,1 +1,1 @@
-/home/oide/SAD/oldsad/contrib/gdtoa/strtopQ.c
+/Users/oide/SAD/oldsad/contrib/gdtoa/strtopQ.c
