@@ -13,7 +13,7 @@ eqs img{
 <BODY>
 <CENTER><H2>Welcome to SAD/FFS & SADScript
 </H2></CENTER>
-<CENTER> SAD/FFS SADScript Version: 1.1.6.7.3k64,      Updated:  8/5/2019 </CENTER>
+<CENTER> SAD/FFS SADScript Version: 1.1.6.7.4k64,      Updated:  8/5/2019 </CENTER>
 
 <PRE> Please use browser's search to find out an item.
 
@@ -6625,17 +6625,19 @@ MatchQ</A></H3>
 physical-constants</A></H3>
 <PRE>Physical constants available in FFS are:
 
-SpeedOfLight           299792458
+SpeedOfLight           299792458 m/s
+PlanckConstant         6.626070d-34 Js
+PlanckHbar             PlanckConstant/2/Pi
+ElectronCharge         1.602176634d-19 C
+BoltzmannConstant      1.380 649 × 10−23 J/K
 FineStructureConstant  alpha
-ElectronCharge         e in Coulomb
 ElectronMass           m_e in eV
 ElectronRadius         classical radius of electron, in m
-ElectronGminus2        electron g-2
 ProtonMass             m_p in eV
 ProtonRadius           classical radius of Proton, in m
 SIMu0                  4 Pi 10^{-7}
 SIEpsilon0             1/SIMu0/SpeedOfLight^2
-BoltzmannConstant      k_B in J/K
+ElectronGminus2over2   (g-2)/2 of electrons
 </PRE>
 <PRE>See also:
  <A HREF=#L30>constants</A> <A HREF=#L237>expression</A> <A HREF=#L484>special-variables</A></PRE>
@@ -6934,8 +6936,8 @@ It is useful to give emittance determined externally, such as for proton machine
 EMITY</A></H3>
 <PRE>EMITY is a real variable for the vertical emittance (not normalized by gamma beta). It is automatically
 set by the keyword EMITY of the MARK element at the beginning of the beam line. The EMITTANCE(EMIT)
-command returns its calculated value in EMITY. The value of EMITY affects the default wei�ht of variables
-in the matching. Accessible in MAIN.
+command returns its calculated value in EMITY. The value of EMITY affects the default wei÷ht of
+variables in the matching. Accessible in MAIN.
 </PRE>
 <PRE>See also:
  <A HREF=#L497>EMITX</A> <A HREF=#L501>EMITZ</A> <A HREF=#L528>SIGZ</A> <A HREF=#L527>SIGE</A> <A HREF=#L490>DP</A> <A HREF=#L66>elements</A> <A HREF=#L128>MARK</A></PRE>

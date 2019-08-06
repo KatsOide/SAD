@@ -256,19 +256,22 @@ c     Delivered from defintion
 c     Planck's constant:		h
 c     CODATA 2006:	6.626 068 96(33)   x 10^-34 Js
 c     PDG 2014::	6.626 069 57(29)  x 10^-34 Js
+c     CODATA 2018       6.626 070 15       x 10^-34 Js exact
       real*8, parameter :: plank  = 6.62606957d-34
 
 c     Dirac's constant:			hbar = h / (2 Pi)
 c     PDB 2003:		1.054 571 596(82)  x 10^-34 Js
 c     CODATA 2006:	1.054 571 628(53)  x 10^-34 Js
 c     PDG 2014: 	1.054 571 726(47)  x 10^-34 Js
-      real*8, parameter :: plankr = 1.054571726d-34
+c     CODATA 2018:      h (exact) / 2pi
+      real*8, parameter :: plankr = plank/m_2pi
 
 c     Elementary charge:		e
 c     PDB 2003:		1.602 176 462(63)  x 10^-19 C
 c     CODATA 2006:	1.602 176 487(40)  x 10^-19 C
 c     PDG 2014: 	1.602 176 565(35)  x 10^-19 C
-      real*8, parameter :: elemch = 1.602176565d-19
+c     CODATA 2018:      1.602 176 634      x 10^-19 C exact
+      real*8, parameter :: elemch = 1.602176634d-19
 
 c     Electron charge in elementary charge unit
       real*8, parameter :: echarg = 1.0d0
@@ -277,19 +280,22 @@ c     Fine-structure constant		\alpha = \mu_0 e^2 c / (2 h)
 c     PDB 2003:		1 / 137.035 999 76(50)
 c     CODATA 2006:	1 / 137.035 999 679(94)
 c     PDG 2014: 	1 / 137.035 999 074(44)
-      real*8, parameter :: finest = 1.d0 / 137.035999074d0
+c     CODATA 2018: 	1 / 137.035 999 084(21)
+      real*8, parameter :: finest = 1.d0 / 137.035999084d0
 
 c     Electron mass energy equivalent in eV:	m_e c^2 / e
 c     PDB 2003:		.510 998 902(21) MeV
 c     CODATA 2006:	.510 998 910(13) MeV
 c     PDG 2014: 	.510 998 928(11) MeV
-      real*8, parameter :: elmass =   0.510998928d6
+c     CODATA 2018: 	.510 998 950 00(15) MeV
+      real*8, parameter :: elmass =   0.51099895000d6
 
 c     Proton mass energy equivalent in eV:	m_p c^2 / e
 c     PDB 2003:		938. 271 998(38) MeV
 c     CODATA 2006:	938. 272 013(23) MeV
 c     PDG 2014: 	938. 272 046(21) MeV
-      real*8, parameter :: prmass = 938.272046d6
+c     CODATA 2018: 	938. 272 088 16(29) MeV
+      real*8, parameter :: prmass = 938.27208816d6
 
 c     Classical electron radius:	r_e = e^2 / (4Pi \epsilon_0 m_e c^2)
 c     					    = (\alpha hbar c) / (m_e c^2)
@@ -300,7 +306,7 @@ c     CODATA 2006:	2.817 940 2894(58) x 10^-15 m
 c     PDG 2014: 	2.817 940 3267(27) x 10^-15 m
 c      parameter (elradi = finest * plankr * cveloc / (elemch * elmass))
 c      parameter (elradi = elemch * cveloc**2 * 1.d-7 / elmass)
-      real*8, parameter :: elradi = 2.8179403267d-15
+      real*8, parameter :: elradi = elemch * cveloc**2 * 1.d-7 / elmass
 
 c     Classical proton radius:		r_p = e^2 / (4Pi \epsilon_0 m_p c^2)
 c     					    = (\alpha hbar c) / (m_p c^2)
@@ -310,13 +316,15 @@ c      parameter (prradi = finest * plankr * cveloc / (elemch * prmass))
       real*8, parameter :: prradi = elemch * cveloc**2 * 1.d-7 / prmass
 
 c     Boltzman Constant:
-c     PDG2014:         1.380 6488(13) x 10^-23 J/K
-      real*8, parameter :: kboltzman = 1.3806488e-23
+c     PDG2014:          1.380 6488(13) x 10^-23 J/K
+c     COD2018:		1.380 649 × 10−23 J/K exact
+      real*8, parameter :: kboltzman = 1.380649d-23
 
 c     Spin precession coefficient (ge-2)/2
 c     NIST 2014 0.00115965218091
+c     CODATA 2018: (2.002 319 304 362 56(35))/2-1 = 0.001159652181280002
 c
-      real*8 , parameter :: gspin = 0.00115965218091
+      real*8 , parameter :: gspin = 0.001159652181280002
 
       end module
 
