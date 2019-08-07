@@ -116,3 +116,31 @@ mostlyclean-modules:
 	done
 
 # End of File
+#
+
+dockerimage:Dockerfile
+	docker build -t oldsadk64:build .
+
+prune:
+	docker container prune -f 
+	docker image prune -f
+
+runimage:
+	xhost +
+	docker run -itd --rm --net host -e DISPLAY=:0 --name=oldsadk64 oldsadk64:build bash	
+	docker attach oldsadk64
+
+runimagewithXauthority:
+	docker run -it --net host --rm -e DISPLAY=:0 --name=oldsadk64 -v /run/user/1000/gdm/Xauthority:/root/.Xauthority -v /opt/SAD/examples:/opt/SAD/input oldsadk64:build 
+
+
+saveimage:
+	docker save oldsadk64:build -o oldsadk64-image.tar
+	gzip oldsadk64-image.tar
+
+loadimage:
+	ungzip oldsadk64-image.tar.gz
+	docker load -i oldsadk64-image.tar
+
+exportContainer:
+	docker export 
