@@ -245,19 +245,11 @@ c     Speed of light in vacuum:		c
 c     Definition:	299 792 458. m/sec
       real*8, parameter :: cveloc = 299792458d0
 
-c     Permeability of vacuum:		\mu_0
-c     Definition:	4 Pi x 10^-7 N A^-2
-      real*8, parameter :: mu0 = pi * 4.d-7
-
-c     Permittivity of vacuum:		\epsilon_0 = 1 / (\mu_0 c^2)
-c     Delivered from defintion
-      real*8, parameter :: ep0 = 1.d0 / (mu0 * cveloc**2)
-
 c     Planck's constant:		h
 c     CODATA 2006:	6.626 068 96(33)   x 10^-34 Js
 c     PDG 2014::	6.626 069 57(29)  x 10^-34 Js
 c     CODATA 2018       6.626 070 15       x 10^-34 Js exact
-      real*8, parameter :: plank  = 6.62606957d-34
+      real*8, parameter :: plank  = 6.62607015d-34
 
 c     Dirac's constant:			hbar = h / (2 Pi)
 c     PDB 2003:		1.054 571 596(82)  x 10^-34 Js
@@ -282,6 +274,17 @@ c     CODATA 2006:	1 / 137.035 999 679(94)
 c     PDG 2014: 	1 / 137.035 999 074(44)
 c     CODATA 2018: 	1 / 137.035 999 084(21)
       real*8, parameter :: finest = 1.d0 / 137.035999084d0
+
+c     Permeability of vacuum:		\mu_0
+c     Definition:	4 Pi x 10^-7 N A^-2
+c     CODATA 2018:      1.000 000 000 55 * above
+c     CODATA 2018:    4 pi alpha hbar/(e^2 c)
+c      real*8, parameter :: mu0 = 1.00000000055d0 * pi * 4.d-7
+      real*8, parameter :: mu0=m_4pi*finest*plankr/elemch**2/cveloc
+
+c     Permittivity of vacuum:		\epsilon_0 = 1 / (\mu_0 c^2)
+c     Delivered from defintion
+      real*8, parameter :: ep0 = 1.d0 / (mu0 * cveloc**2)
 
 c     Electron mass energy equivalent in eV:	m_e c^2 / e
 c     PDB 2003:		.510 998 902(21) MeV
@@ -315,7 +318,7 @@ c     					    = e c^2 * 10^-7 * (e / (m_p c^2))
 c      parameter (prradi = finest * plankr * cveloc / (elemch * prmass))
       real*8, parameter :: prradi = elemch * cveloc**2 * 1.d-7 / prmass
 
-c     Boltzman Constant:
+c     Boltzmann Constant:
 c     PDG2014:          1.380 6488(13) x 10^-23 J/K
 c     COD2018:		1.380 649 × 10−23 J/K exact
       real*8, parameter :: kboltzman = 1.380649d-23
