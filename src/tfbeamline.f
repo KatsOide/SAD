@@ -278,57 +278,55 @@
       type (sad_descriptor) k,ki,kk,kv
       integer*4 irtc,idx,i,idt,ioff,nc,itfmessage
       character*(MAXPNAME) tfgetstrs,key
-      if(tfruleq(k,kr))then
-        if(tflistq(k,kl))then
-          do i=1,kl%nl
-            ki=kl%dbody(i)
-            call tfsetelementkey(idx,ki,irtc)
-            if(irtc .ne. 0)then
-              return
-            endif
-          enddo
-        else
-          kk=kr%dbody(1)
-          key=tfgetstrs(kk%k,nc)
-          if(nc .le. 0)then
-            irtc=itfmessage(9,'General::wrongtype','"Character-string"')
+      if(tflistq(k,kl))then
+        do i=1,kl%nl
+          ki=kl%dbody(i)
+          call tfsetelementkey(idx,ki,irtc)
+          if(irtc .ne. 0)then
             return
           endif
-          idt=idtype(idx)
-          do ioff=1,kytbl(kwMAX,idt)-1
-            i=kyindex(ioff,idt)
-            if(i .ne. 0)then
-              if(pname(kytbl(i,0))(2:) .eq. key(1:nc))then
-                go to 10
-              endif
-              i=kyindex1(ioff,idt)
-              if(i .ne. 0 .and.
-     $             pname(kytbl(i,0))(2:) .eq. key(1:nc))then
-                go to 10
-              endif
-            endif
-          enddo
-          irtc=itfmessage(9,'FFS::undefkey',
-     $         '"'//key(1:nc)//'"')
+        enddo
+      elseif(tfruleq(k,kr))then
+        kk=kr%dbody(1)
+        key=tfgetstrs(kk%k,nc)
+        if(nc .le. 0)then
+          irtc=itfmessage(9,'General::wrongtype','"Character-string"')
           return
- 10       kv=kr%dbody(2)
-          if(kr%head%k .eq. ktfoper+mtfruledelayed)then
-            call tfeevalref(kv,kv,irtc)
-            if(irtc .ne. 0)then
-              return
+        endif
+        idt=idtype(idx)
+        do ioff=1,kytbl(kwMAX,idt)-1
+          i=kyindex(ioff,idt)
+          if(i .ne. 0)then
+            if(pname(kytbl(i,0))(2:) .eq. key(1:nc))then
+              go to 10
+            endif
+            i=kyindex1(ioff,idt)
+            if(i .ne. 0 .and.
+     $           pname(kytbl(i,0))(2:) .eq. key(1:nc))then
+              go to 10
             endif
           endif
-          if(ktfrealq(kv))then
-            call tflocald(dlist(idval(idx)+ioff))
-            dlist(idval(idx)+ioff)=kv
-          elseif(tfnonlistq(kv))then
-            irtc=itfmessage(9,'General::wrongtype',
-     $           '"Keyword -> value"')
+        enddo
+        irtc=itfmessage(9,'FFS::undefkey',
+     $       '"'//key(1:nc)//'"')
+        return
+ 10     kv=kr%dbody(2)
+        if(kr%head%k .eq. ktfoper+mtfruledelayed)then
+          call tfeevalref(kv,kv,irtc)
+          if(irtc .ne. 0)then
             return
-          else
-            call tflocald(dlist(idval(idx)+ioff))
-            dlist(idval(idx)+ioff)=dtfcopy(kv)
           endif
+        endif
+        if(ktfrealq(kv))then
+          call tflocald(dlist(idval(idx)+ioff))
+          dlist(idval(idx)+ioff)=kv
+        elseif(tfnonlistq(kv))then
+          irtc=itfmessage(9,'General::wrongtype',
+     $         '"Keyword -> value"')
+          return
+        else
+          call tflocald(dlist(idval(idx)+ioff))
+          dlist(idval(idx)+ioff)=dtfcopy(kv)
         endif
       else
         irtc=itfmessage(9,'General::wrongtype',
