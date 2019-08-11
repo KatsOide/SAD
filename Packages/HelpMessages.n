@@ -1,4 +1,4 @@
-Help$Update="$Date:  8/5/2019 18:00:00 $"[8,17];
+Help$Update="$Date:  8/11/2019 18:00:00 $"[8,18];
 !Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
 Help$Version=$Version;
 
@@ -148,6 +148,11 @@ writes the BeamLine b1,.. to stdout. If b1.. is omitted the current beam line is
 
        }]},
 
+   {"BEAMSIZE(BEAM)",
+   "Calculate the beam size with the current Twiss parameters. The calculation is in 5D and not correct if the synchrotron motion is significant. Use EMITTANCE(EMIT) with CODPLOT for a 6D calculation.",
+   "DISPLAY(DISP) EMITTANCE(EMIT) CODPLOT",
+   {}},
+
    {"GO",
    "\
 Usage: GO [[NO]EXPAND]\n\n\
@@ -249,6 +254,16 @@ DISP A displays the nominal energy, energy deviation(DDP), longitudinal position
       "extended-Twiss-parameters CALC6D CALC4D",
       {}},
 
+      {"REFERENCE(RE)",
+        "Specify the reference optics to be displayed.",
+        "reference-optics REFERENCE(REF) DISPLAY(DISP) DREFERENCE(DRE) Twiss OpticsPlot",
+        {}},
+
+      {"DREFERENCE(DRE)",
+        "Display the difference between the reference optics. (beta - betaR)/betaR are displayed for BX, BY, BZ.",
+        "reference-optics REFERENCE(REF) DISPLAY(DISP) REFERENCE(RE) Twiss OpticsPlot",
+        {}},
+
      {"region",
       "Region for DISPLAY(DISP) is specified as \n\n\
         DISP .... begin [end] \n\n\
@@ -286,6 +301,21 @@ ALL is a word to choose the entire beam line for the region to be displayed.",
    "STOP QUIT SAVE USE VISIT BYE",
    {}},
 
+   {"SUSPEND(SUSP)",
+   "Suspend reading from the current input stream, and wait for input from the console. Resumes by RESUME(RES)",
+   "RESUME(RES) END",
+     {}},
+
+   {"RENUMBER(RENUM)",
+   "RENUM comp renumbers the component number starting from a component comp.",
+   "components",
+     {}},
+
+   {"RESUME(RES)",
+   "Resumes reading from the previous input stream suspended by SUSPEND(SUSP) or END.",
+   "SUSPEND(SUSP) END",
+     {}},
+
   {"SAVE",
    "Usage: SAVE [element-pattern]\n\n\
 saves the values of the elements. What are saved are the value of the default keyword of all elements, the values of the non-default keywords which have been changed manually or by the matching. If ALL is given it resets all keywords. If element-pattern is given, it is only limited to the elements which match the pattern, otherwise all elements are saved.",
@@ -298,6 +328,14 @@ restores the value of the elements. What are restored are the value of the defau
    "SAVE USE VISIT wildcards RECOVER(REC)",
    {}},
 
+  {"REFERENCE(REF)",
+    "REFERENCE(REF) sets the current optics as the reference optics.",
+    "reference-optics",
+    {{"reference-optics",
+      "Optics stored as a reference. Can be refered by DISP REF (mode), DRAW, Twiss, OpticsPlot. Set automatically by the first CALC or GO after USE. Can be updated by REFERENCE(REF).",
+      "REFERENCE(REF) DISPLAY(DISP) DRAW Twiss OpticsPlot",
+      {}}}},
+
   {"wildcards",
    "\
    Many commands and functions accept the wildcards as a specification for the name of elements or components. The valid wildcards are:\n\n\
@@ -306,7 +344,7 @@ restores the value of the elements. What are restored are the value of the defau
        {..}      matches any character enclosed.\n\
        {^..}     matches any character not enclosed.\n\
        ..|..     alternative pattern.",
-   "elements components DISPLAY(DISP) TYPE(T) SAVE RESET FREE FIX machine-errors ATTRIBUTE(ATTR)\
+   "elements components DISPLAY(DISP) TYPE(T) SAVE RESET FREE FIX ATTRIBUTE(ATTR)\
  REJECT CALCULATE(CAL) functions Element LINE Twiss",
    {}},
 
@@ -1426,7 +1464,7 @@ These formula are not valid when there is x-y coupling or vertical dispersion.",
 
    {"SEED",
     "The SEED command is obsolete. Use SeedRandom[] function instead of SEED.",
-    "MEASURE(MEA) machine-errors FIXSEED MOVESEED SeedRandom",
+    "MEASURE(MEA) FIXSEED MOVESEED SeedRandom",
     {}},
 
    {"VARY",
@@ -1477,6 +1515,7 @@ entrance of the beam line.",
     "\
 Usage: DRAW [begin end] fun1 [fun2..] [& fun11 [fun12..]] [element-pattern]\n\n\
 draws a plot of optical functions in multi columns. It calls OpticsPlot internally. Available functions are all matching-functions (except LENG, TRX, TRY, GX, GY, GZ, CHI1, CHI2, CHI3) and additional functions. If functions are separated by ampersand (&), these are plotted in a separated window.\n\
+  Function name preceded by \"R\" and \"D\" refer the reference optics and the difference, respectively.\n\
   If begin- and end-components are specified, the plot region is limited between them. If the end-component comes earlier than the begin-components, it wraps the plot around the beam line.\n\
   If the optional element-pattern is given, it draws the beam-line lattice with the labels for elements which match element-pattern. If LAT is specified for element-pattern, the lattice is drawn without label.\n\
  A character string assigned to TITLE is shown as the FrameLabel on the top of the plot.\n\n\
@@ -1490,7 +1529,7 @@ draws a plot of optical functions in multi columns. It calls OpticsPlot internal
       {"Draw$Option",
         "\
  Draw$Option is a list of rules to specify Graphics options for the entire DRAW. If you need option for each column, use OpticsPlot",
-        "DRAW OpticsPlot Graphics",
+        "DRAW OpticsPlot Graphics REFERENCE(REF)",
         {}}
 
       }]},
@@ -1784,8 +1823,8 @@ Accessible in the MAIN level.",
       {}},
 
      {"IDEAL",
-      "IDEAL or NOREAL inhibits to use the component-specific deviations  (i.e., machine-errors) in the optics calculation.",
-      "REAL CALCULATE(CAL) GO machine-errors",
+      "IDEAL or NOREAL inhibits to use the component-specific deviations in the optics calculation.",
+      "REAL CALCULATE(CAL) GO",
       {}},
 
      {"CODPLOT",
@@ -1975,6 +2014,11 @@ When CONVCASE is on, FFS command line parser converts the input characters to th
 When PRSVCASE is on, FFS command line parser preserves the input characters for the element names and patterns.(Default off)",
       "CONVCASE",
       {}},
+
+      {"SUS",
+        "If OFF, SUSPEND(SUSP) and END commands have no action. The default is ON.",
+        "SUSPEND(SUSP) END",
+        {}},
 
       Null[]}]},
 
@@ -2245,7 +2289,7 @@ or     InitialOrbits = { {ax1, bx1, nx1, ay1, by1, ny1,\n\
 specifies initial conditions of a number of orbits for the optics calculation by CALCULATE(CAL) and GO. Those coordinates are offset from the central orbit. If six numbers are given, only the offsets of the orbits are affected. If 27 numbers are given, all Twiss parameters are set (values for non-orbit params are used directly. Orbits are giving offsets.)\n\
   If InitialOrbits are given, the off-momentum matching and finite-amplitude matching is disabled.\n\
   InitialOrbits is also necessary to calculate optics with wake field.",
-       "CALCULATE(CAL) GO off-momentum-matching finite-amplitude-matching",
+       "CALCULATE(CAL) GO off-momentum-matching MatchingAmplitude",
       {}},
 
      {"ElementValues",
@@ -2295,12 +2339,13 @@ OpticsEpilog is a variable to assign a user-defined function which is to be exec
       "OpticsProlog",
       {}},
 
+(*
      {"STACKSIZ",
       "\
 STACKSIZ has the size of the stack for SADScript interpreter. It can be set by user at the MAIN level, right before the first FFS session. The default value is 200000.",
       "",
       {}},
-
+*)
       {"$Line",
         "\
  %Line counts the number of the results in FFS Shown with Out[]:= . Out remembers all outputs up to Out[$Line]. $Line = 0 resets the counter and forgets the outputs.",
@@ -2337,7 +2382,7 @@ Usage: element-pattern [keyword] [{MIN | MAX | MINMAX | MAXMIN}] value\n\n\
 sets value to the specified keyword of the elements which match element-pattern. If keyword is omitted, the default-keyword is assumed. keyword can be a wildcard to apply all matching keywords.\n\
    If MIN, MAX, MINMAX, MAXMIN are specified, it sets the limit of the default-keyword. Both MINMAX and MAXMIN means MIN=-Abs[value] and MAX=+Abs[value].\n\
    If the keyword is not the default-keyword, it affects both the current and the saved value.",
-    "ATTRIBUTES(ATTR) SAVE elements default-keyword wildcards Element",
+    "ATTRIBUTE(ATTR) SAVE elements default-keyword wildcards Element",
     {KeywordsMessage,
 
      DefaultKeywordMessage}},
@@ -2359,9 +2404,9 @@ means the set-value-of-element command as unless the symbol QF has been defined 
     {"components",
      "\
 Components are the objects which consist the beam line. A component simulates an individual magnet, drift space, or rf-cavity. The parameters of a component is specified the values in the corresponding element with the same name as the component, which simulates a power supply. Many components can be attached to the same element. Parameters of each component may deviate from the corresponding element if machine errors are given.\n\
-   A component is specified with the form name[.order][{+-}offset], where name is the name of the component. The number order means the order-th component which belongs to name element, counted from the beginning of the line starting from 1. Offset is a positive or negative number to specify the downstream or upstream components from the given component. If order is omitted, the first element is assumed, and if offset is omitted, zero is assumed.\n\
+   A component is specified with the form name[.order][{+-}offset], where name is the name of the component. The number order means the order-th component which belongs to name element, counted from the beginning of the line starting from 1. Offset is a positive or negative number to specify the downstream or upstream components from the given component. If order is omitted, the first element is assumed, and if offset is omitted, zero is assumed. The order can be renumbererd by RENUMBER(RENUM).\n\
    The end of line is specified by $$$. The first component can be specified by ^^^.",
-     "elements",
+     "elements RENUMBER(RENUM)",
      {}},
 
     {"expression",
@@ -3849,7 +3894,7 @@ Usage: OpticsPlot[fun_list, options]\n\n\
 makes a plot of built-in optical functions, user-defined functions, or\n\
 list of data at components on the beam line.   The parameters are:\t\n\n\
 fun_list: a list of objects to be plotted in a window. The number of windows in a plot is the length of fun_list object plotted in a window MUST have same dimensions. An element of fun_list is one of fun_label, fun, list_data or a list as {object, options}, where\n\
-fun_label: one of \"AX\", \"BX\", \"NX\", \"EX\", \"EPX\", \"DX\", \"DPX\", \"AY\", \"BY\", \"NY\", \"EY\", \"EPY\", \"DY\", \"DPY\", \"R1\", \"R2\", \"R3\", \"R4\", \"DETR\", \"AZ\", \"BZ\", \"NZ\", \"ZX\", \"ZPX\", \"ZY\", \"ZPY\", \"DZ\",\"DDP\",\"PEX\", \"PEPX\", \"PEY\", \"PEPY\", \"GAMMA\", \"GAMMABETA\",\"SIGab\", where a and b in \"SIGab\" are one of X, PX, Y, PY, Z, DP.\n\
+fun_label: one of \"AX\", \"BX\", \"NX\", \"EX\", \"EPX\", \"DX\", \"DPX\", \"AY\", \"BY\", \"NY\", \"EY\", \"EPY\", \"DY\", \"DPY\", \"R1\", \"R2\", \"R3\", \"R4\", \"DETR\", \"AZ\", \"BZ\", \"NZ\", \"ZX\", \"ZPX\", \"ZY\", \"ZPY\", \"DZ\",\"DDP\",\"PEX\", \"PEPX\", \"PEY\", \"PEPY\", \"GAMMA\", \"GAMMABETA\",\"SIGab\", where a and b in \"SIGab\" are one of X, PX, Y, PY, Z, DP. \"R\"//fun_label refers the reference optics. \"D\"//fun_label refers the difference between the current and reference optics.\n\
             fun: Any function of the component number.   A fractional number may be used to obtain the intermediate value.\n\
             list_data: a list of {{pos1, val1}..{posn,valn}}.\t\n\n\
 options       defaults\n\
@@ -3881,7 +3926,7 @@ Example:\n\
    p2=OpticsPlot[{{\"BX\",\"BY\"}, {\"DX\",{{{10,0.001},{20,0.002}}, FrameLabel->\"DX meas.\", Unit->Meter, Thickness->2, Names->\"Q*\"}}}];\n\
    Update[];\n\n\
 <OpticsPlot.png",
-         "Graphics ListPlot",
+         "Graphics ListPlot Twiss reference-optics",
          {}},
 
         {"FitPlot",
@@ -4113,11 +4158,11 @@ keyword        The value of the keyword of the component (see below).\n\
  The second argument, component can be a name of component, a component number, or a list of them. If the number has a fraction, the intermediate value in the component is calculated.\n\
  Twiss[\"ALL\",component] or Twiss[\"*\",component] returns all 28 optical-functions at the entrance of component as a list:\n\n\
 {AX, BX, NX, AY, BY, NY, EX, EPX, EY, EPY, R1, R2, R3, R4, DETR, DX, DPX, DY, DPY, DZ, DDP, AZ, BZ, NZ, ZX, ZPX, ZY, ZPY},\n\n\
-which can be directly used in CalculateOptics. In the current version, however, parameters after AZ are uninteresting, because it always returns 1 for BZ and zeros for the others.\n\
+which can be directly used in CalculateOptics. In the current version, however, parameters after AZ are uninteresting, because it always returns 1 for BZ and zeros for the others. \"R\"//optical-function refers the reference optics. \"D\"//optical-function refers the difference between the current and the referece optics. \"RALL\" and \"DAL\" mean the all optical functions for the reference optics and the differences, respectively.\n\
    Keywords \"PEX\", \"PEPX\", \"PEY\", \"PEPY\", \"PZX\", \"PZPX\", \"PZY\", \"PZPY\" return dispersions in the physical coordinate.\n\
    Keywords \"LENGTH\", \"GAMMA\", \"GAMMABETA\", \"S\", \"SIGab\" return the same results as for the function LINE.\n\
    The units of NX, NY, NZ are in radian.",
-        "optical-functions extended-Twiss-parameters CalculateOptics LINE",
+        "DRAW optical-functions extended-Twiss-parameters CalculateOptics LINE reference-optics",
           {}},
 
        {"FitValue",

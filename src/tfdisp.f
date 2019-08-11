@@ -86,10 +86,10 @@ c      write(*,*)'tfdisp ',word,wordp
       elseif(abbrev(word,'E_XTREMUM','_'))then
         dpeak=.true.
         go to 270
-      elseif(abbrev(word,'REF_ERENCE','_'))then
+      elseif(abbrev(word,'RE_FERENCE','_'))then
         icolm=-1
         go to 270
-      elseif(abbrev(word,'DREF_ERENCE','_'))then
+      elseif(abbrev(word,'DRE_FERENCE','_'))then
         dref=.true.
         go to 270
       endif
