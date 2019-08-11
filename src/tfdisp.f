@@ -138,10 +138,15 @@ c      write(*,*)'tfdisp ',word,wordp
      1         ' Element    DX     DPX    DY     DPY   '//
      1         '   AY      BY      NY      EY      EPY    DetR     #'
         case (modeb)
+          if(dref .or. icolm .ne. 0)then
+            call termes(lfno,
+     $           'Info-REF and DREF not implemented for DISP B.',' ')
+            return
+          endif
           header=
-     1         '  AXp     BXp     EMITXp  EXp    EPXp   '//
-     1         ' Element   Sigx(mm)  Sigy(mm)  Rot(deg) '//
-     1         ' AYp     BYp     EMITYp  EYp    EPYp     sigp     #'
+     1         '   AXp     BXp    EMITXp   EXp     EPXp '//
+     1         ' Element   Sigx(mm)  Sigy(mm)  Rot(deg)'//
+     1         '   AYp     BYp    EMITYp   EYp     EPYp   sigp     #'
         case (modea)
           header=
      1         '   AX      BX      NX      EX      EPX  '//
@@ -160,6 +165,8 @@ c      write(*,*)'tfdisp ',word,wordp
       end select
       if(dref)then
         call tdrefheader(header,mdisp)
+      elseif(icolm .eq. -1)then
+        call trefheader(header,mdisp)
       endif
       do 200 l=idisp1,id3,idstep
         mat=temat(l,name,word1)
@@ -466,6 +473,9 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
       implicit none
       character*131 header
       integer*4 mode
+      if(mode .eq. modeb)then
+        return
+      endif
       header(3:3)='d'
       header(11:11)='d'
       header(14:16)='/BX'
@@ -491,6 +501,42 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
           header(73:73)='d'
         case (modea)
           header(121:122)=' d'
+        case default
+      end select
+      return
+      end
+
+      subroutine trefheader(header,mode)
+      use disp
+      implicit none
+      character*131 header
+      integer*4 mode
+      if(mode .eq. modeb)then
+        return
+      endif
+      header(6:6)='R'
+      header(14:14)='R'
+      header(22:22)='R'
+      header(30:30)='R'
+      header(39:39)='R'
+      header(85:85)='R'
+      header(93:93)='R'
+      header(101:101)='R'
+      header(106:106)='R'
+      header(118:118)='R'
+      header(126:126)='R'
+      select case (mode)
+        case (modez)
+          header(118:118)=' '
+        case (modeo,moder,modep)
+          header(55:55)='R'
+          header(63:63)='R'
+          header(69:69)='R'
+          header(77:77)='R'
+        case (modea)
+          header(125:126)='R '
+        case (modeb)
+
         case default
       end select
       return
