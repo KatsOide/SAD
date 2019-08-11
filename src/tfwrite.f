@@ -1331,7 +1331,7 @@ c      endif
       use tfrbuf
       implicit none
       type (sad_descriptor) kx
-      integer*8 kfromr
+      integer*8 kfromr,k
       integer*4 isp1,irtc,itfmessage,iu,nc
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
@@ -1346,6 +1346,7 @@ c      endif
       if(iu .le. 0)then
         irtc=itfmessage(9,'General::fileopen','"(String)"')
       else
+c        k=ktfcopy1(ktastk(isp))
         kx%k=kfromr(dble(iu))
         irtc=0
       endif

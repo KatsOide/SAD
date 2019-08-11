@@ -62,15 +62,6 @@
         return
         end subroutine
 
-c$$$        subroutine latt_el(latt,el)
-c$$$        use iso_c_binding
-c$$$        implicit none
-c$$$        integer*8 , target ::latt(1:)
-c$$$        type (sad_el), pointer, intent(out) ::el
-c$$$        call c_f_pointer(c_loc(latt(-1)),el)
-c$$$        return
-c$$$        end subroutine
-c$$$
         integer*4 function idcomp(el,i)
         implicit none
         type (sad_el) :: el
@@ -239,7 +230,7 @@ c$$$
      $       blname(lblname),pading,mcommon
         integer*4 ndim,ndima,nele,nfit,marki,iorgx,iorgy,iorgr,
      $       mfpnt,mfpnt1,id1,id2,nve
-        logical*4 updatesize
+        logical*4 updatesize,setref
       end type
 
       type (ffsv), target, save:: ffv
@@ -304,7 +295,7 @@ c$$$
       real*8, pointer, dimension(:,:) :: geo0
       integer*4, pointer :: ndim,ndima,nele,nfit,marki,iorgx,iorgy,
      $     iorgr,mfpnt,mfpnt1,id1,id2,nve,ntouch
-      logical*4 , pointer :: updatesize
+      logical*4 , pointer :: updatesize,setref
 
       type ffs_bound
       sequence
@@ -366,6 +357,7 @@ c$$$
         ielmhash=>ffv%ielmhash
         updatesize=>ffv%updatesize
         ntouch=>ffv%ntouch
+        setref=>ffv%setref
         flv=>ffv
         return
         end subroutine

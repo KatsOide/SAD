@@ -72,6 +72,7 @@ c     end   initialize for preventing compiler warning
         flv%iut=0
         flv%nvar=0
         flv%ntouch=0
+        flv%setref=.false.
         trdtbl=0.d0
         itt1=0
         flv%itmax=40
@@ -82,9 +83,7 @@ c     end   initialize for preventing compiler warning
         geo0(1,1)=1.d0
         geo0(2,2)=1.d0
         geo0(3,3)=1.d0
-        chi0(1)=0.d0
-        chi0(2)=0.d0
-        chi0(3)=0.d0
+        chi0(1:3)=0.d0
         if(geocal .or. chguse)then
           geocal0=geocal
           geocal=.true.
@@ -592,6 +591,8 @@ ckikuchi ... next 5 lines added     (8/17/'90)
       elseif(word .eq. 'RADINT')then
         call tfsetparam
         call intgrl( latt,twiss,0,1.d0,lfno)
+      elseif(abbrev(word,'REF_ERENCE','_'))then
+        call tfsetref
       elseif(word .eq. 'DIMAD')then
         call tfsetparam
         call tdimad(latt,mult,lfno)
@@ -1409,6 +1410,9 @@ c        dpm2=rlist(ktlookup('DPM'))
 c      call tfevalb('Setup$FF[];Print["setupff ",FF$Orig]',36,kx,irtc)
       call tfevalb('Setup$FF[]',10,kx,irtc)
       call tffsmatch(df,dp0,r,nparallel,lfno,irtc)
+      if(.not. setref)then
+        call tfsetref
+      endif
       updatesize=.false.
       call tclrfpe
       if(wake)then
@@ -1971,5 +1975,14 @@ c              klist(ifele2+nlat-1)=1
       ks=kxsymbolf(str,nch,.false.)
       call descr_symdef(ks,symd)
       call tfdelete(symd,del,.true.)
+      return
+      end
+
+      subroutine tfsetref
+      use ffs
+      use ffs_pointer
+      implicit none
+      twiss(:,-1,:)=twiss(:,0,:)
+      setref=.true.
       return
       end

@@ -33,7 +33,7 @@ ckikuchi ... 1 line added
       endif
       if(ret)then
         kx=kxadaloc(-1,3,klx)
-        klx%rbody(1)=dble(np)
+        klx%dbody(1)=dfromr(dble(np))
         klx%dbody(2)=kxavaloc(0,6,klx1)
         klx1%rbody(1:6)=result(:,7)
         klx%dbody(3)=kxadaloc(0,6,klx2)

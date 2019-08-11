@@ -14,13 +14,13 @@ SetAttributes[{Graphics,AspectRatio,PlotRange,
   RectScaled,AboveTags,BelowTags,Right,Left,Above,Below,
   TextCases,TextPosition,Prolog,Epilog,Vertical,Alignment,Legend,
   Scale,Weight,FrameClick,InfoBind,TickFont,RemoveOverlap,FrameColor,
-  FontScale,TickFontScale,FrameFontScale,LegendFontScale,
+  FontScale,TickFontScale,FrameFontScale,LegendFontScale,TitleFontScale,
   Major,Minor,Both,Ticks},Constant];
 
 Graphics$Options=AspectRatio|FrameLabel|PlotRange|GridLines|Alignment|DataRange|
   PlotRegion|PlotLabel|FrameTicks|TickSize|TickFont|Tags|Background|Frame|FrameClick|
     InfoBind|FrameUnitLabel|FontScale|TickFontScale|FrameFontScale|LegendFontScale|
-      FrameColor|TickColor;
+      TitleFontScale|FrameColor|TickColor;
 
 With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
   AspectRatio->Automatic,PlotJoined->False,StepRatio->1,
@@ -34,6 +34,7 @@ With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
   FrameLabel->{"","","",""},FrameUnitLabel->{},FrameColor->"black",
   TickColor->Null,
   FontScale->1,TickFontScale->1,FrameFontScale->1,LegendFontScale->1,
+  TitleFontScale->1,
   DisplayFunction:>$DisplayFunction,RemoveOverlap->"",
   PlotLabel->"",Prolog->{},Epilog->{},Legend->False,
   Background->"#ffffff"},
