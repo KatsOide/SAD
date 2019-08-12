@@ -1,4 +1,11 @@
+      module disp
+      integer*4 , parameter :: mode0=0,
+     $     modea=5,modeg=101,modeog=102,modeo=3,
+     $     moder=2,modeb=4,modep=6,moded=10,modez=11
+      end module
+
       subroutine tfdisp(word,idisp1,idisp2,dp00,lfno,exist)
+      use disp
       use tfstk
       use ffs
       use ffs_pointer
@@ -10,21 +17,23 @@
       type (sad_comp), pointer:: cmp
       integer*4 idisp1,idisp2,lfno,mdisp,icolm,ifany,id0,id3,idstep,
      $     lines,l,id,ielme,i
-      real*8 dp00,dgam,bx0,by0,bx1,by1,bx2,by2,r,sigpp,tfchi,detr,
+      real*8 dp00,dgam,bx0,by0,bx1,by1,bx2,by2,r,sigpp,tfchi,
      $     etaxp,etapxp,sigxxp,sigxpxp,sigpxpxp,emixp,
      $     etayp,etapyp,sigyyp,sigypyp,sigpypyp,emiyp
       integer*4 lname,lb,lb1
       integer*4, parameter:: blen=ntwissfun*12+15
-      real*8 pe(4)
+      real*8 pe(4),pe0(4)
       real*8 og(3,4)
       character*(*) word
       character*256 wordp,word1,name
       character*(blen) buff
       character*16 autofg,vout
+      character*8 tdispv
       character*256 bname
       character*1 dir,hc
+      character*131 header
       logical*4 tfinsol
-      logical exist,dpeak,seldis,abbrev,temat,mat
+      logical*4 exist,dpeak,seldis,abbrev,temat,mat,dref
 c     begin initialize for preventing compiler warning
       sigpp=0.d0
 c     end   initialize for preventing compiler warning
@@ -32,6 +41,7 @@ c     end   initialize for preventing compiler warning
       exist=.false.
       dpeak=.false.
       seldis=.false.
+      dref=.false.
       mdisp=0
       icolm=0
       buff=' '
@@ -47,34 +57,40 @@ c      write(*,*)'tfdisp ',word,wordp
         idisp2=nlat
         go to 270
       elseif(abbrev(word,'A_CCELERATION','_'))then
-        mdisp=5
+        mdisp=modea
         go to 270
       elseif(abbrev(word,'G_EOMETRY','_'))then
-        mdisp=101
+        mdisp=modeg
         go to 270
       elseif(abbrev(word,'OG_EOMETRY','_'))then
-        mdisp=102
+        mdisp=modeog
         go to 270
       elseif(abbrev(word,'O_RBIT','_'))then
-        mdisp=3
+        mdisp=modeo
         go to 270
       elseif(abbrev(word,'R_MATRIX','_'))then
-        mdisp=2
+        mdisp=moder
         go to 270
       elseif(abbrev(word,'B_EAM','_'))then
-        mdisp=4
+        mdisp=modeb
         go to 270
       elseif(abbrev(word,'P_HYSICAL','_'))then
-        mdisp=6
+        mdisp=modep
         go to 270
       elseif(abbrev(word,'D_UMPOPTICS','_'))then
-        mdisp=10
+        mdisp=moded
         go to 270
       elseif(word .eq. 'Z')then
-        mdisp=11
+        mdisp=modez
         go to 270
       elseif(abbrev(word,'E_XTREMUM','_'))then
         dpeak=.true.
+        go to 270
+      elseif(abbrev(word,'RE_FERENCE','_'))then
+        icolm=-1
+        go to 270
+      elseif(abbrev(word,'DRE_FERENCE','_'))then
+        dref=.true.
         go to 270
       endif
       id0=ielme(wordp,exist,lfno)
@@ -105,6 +121,53 @@ c      write(*,*)'tfdisp ',word,wordp
       bx1=twiss(idisp1,icolm,mfitbx)
       by1=twiss(idisp1,icolm,mfitby)
       lines=0
+      select case (mdisp)
+        case (moder)
+          header=
+     1         '   AX      BX      NX      EX      EPX  '//
+     1         ' Element    R1     R2     R3     R4    '//
+     1         '   AY      BY      NY      EY      EPY    DetR     #'
+        case (modep)
+          header=
+     1         '   AX      BX      NX      EX      EPX  '//
+     1         ' Element    PEX    PEPX   PEY    PEPY  '//
+     1         '   AY      BY      NY      EY      EPY    DetR     #'
+        case (modeo)
+          header=
+     1         '   AX      BX      NX      EX      EPX  '//
+     1         ' Element    DX     DPX    DY     DPY   '//
+     1         '   AY      BY      NY      EY      EPY    DetR     #'
+        case (modeb)
+          if(dref .or. icolm .ne. 0)then
+            call termes(lfno,
+     $           'Info-REF and DREF not implemented for DISP B.',' ')
+            return
+          endif
+          header=
+     1         '   AXp     BXp    EMITXp   EXp     EPXp '//
+     1         ' Element   Sigx(mm)  Sigy(mm)  Rot(deg)'//
+     1         '   AYp     BYp    EMITYp   EYp     EPYp   sigp     #'
+        case (modea)
+          header=
+     1         '   AX      BX      NX      EX      EPX  '//
+     1         ' Element    p(GeV)emitx(m)emity(m) DDP '//
+     1         '   AY      BY      NY      EY      EPY     DZ      #'
+        case (modez)
+          header=
+     1         '   AZ      BZ      NZ      DZ     DDP   '//
+     1         ' Element   Length   Value      s(m)    '//
+     1         '   ZX      ZPX     ZY      ZPY            DetR     #'
+        case default
+          header=
+     1         '   AX      BX      NX      EX      EPX  '//
+     1         ' Element   Length   Value      s(m)    '//
+     1         '   AY      BY      NY      EY      EPY    DetR     #'
+      end select
+      if(dref)then
+        call tdrefheader(header,mdisp)
+      elseif(icolm .eq. -1)then
+        call trefheader(header,mdisp)
+      endif
       do 200 l=idisp1,id3,idstep
         mat=temat(l,name,word1)
         lname=len_trim(name)
@@ -148,8 +211,8 @@ c      write(*,*)'tfdisp ',word,wordp
         else
           vout=' 0'
         endif
-        if(mdisp .eq. 101 .or. mdisp .eq. 102)then
-          if(mdisp .eq. 101)then
+        if(mdisp .eq. modeg .or. mdisp .eq. modeog)then
+          if(mdisp .eq. modeg)then
             hc=' '
           else
             hc='O'
@@ -177,7 +240,7 @@ c      write(*,*)'tfdisp ',word,wordp
           else
             buff(59:69)=' 0'
           endif
-          if(mdisp .eq. 101 .or. tfinsol(l))then
+          if(mdisp .eq. modeg .or. tfinsol(l))then
             do i=0,2
               buff(1+i*12:12+i*12)
      1           =autofg(geo(i+1,4,l)/scale(mfitgx+i),'12.6')
@@ -208,7 +271,7 @@ c      write(*,*)'tfdisp ',word,wordp
           write(lfno,9024)dir,name(1:max(18,lname)),buff(1:105),
      $         mod(l-1,10000)+1
 9024      format(a,a,a,1x,i5)
-        elseif(mdisp .eq. 10)then
+        elseif(mdisp .eq. moded)then
           if(l .eq. idisp1)then
             buff(1:15)=' '
             do i=1,ntwissfun
@@ -234,73 +297,16 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
           write(lfno,'(a)')buff(1:blen)
         else
           if(mod(lines,66) .eq. 0)then
-            if(mdisp .eq. 2)then
-              write(lfno,9021)
-9021          format(
-     1      '   AX      BX      NX      EX     EPX   ',
-     1      ' Element    R1     R2     R3     R4   ',' ',
-     1      '   AY      BY      NY      EY     EPY     DetR     #')
-            elseif(mdisp .eq. 6)then
-              write(lfno,9026)
- 9026         format(
-     1      '   AX      BX      NX      EX     EPX   ',
-     1      ' Element    PEX    PEPX   PEY    PEPY ',' ',
-     1      '   AY      BY      NY      EY     EPY     DetR     #')
-            elseif(mdisp .eq . 3)then
-              write(lfno,9041)
-9041          format(
-     1      '   AX      BX      NX      EX     EPX   ',
-     1      ' Element    DX     DPX    DY     DPY  ',' ',
-     1      '   AY      BY      NY      EY     EPY     DetR     #')
-            elseif(mdisp .eq. 4)then
-              write(lfno,9042)
-9042          format(
-     1      '  AXp     BXp     EMITXp  EXp    EPXp   ',
-     1      ' Element   Sigx(mm)  Sigy(mm)  Rot(deg)',' ',
-     1       ' AYp     BYp     EMITYp  EYp    EPYp     sigp     #')
-            elseif(mdisp .eq. 5)then
-              write(lfno,9043)
-9043          format(
-     1      '   AX      BX      NX      EX     EPX   ',
-     1      ' Element    p(GeV)emitx(m)emity(m) DDP',' ',
-     1      '   AY      BY      NY      EY     EPY      DZ      #')
-            elseif(mdisp .eq. 11)then
-              write(lfno,9032)
- 9032         format(
-     1      '   AZ      BZ      NZ      DZ    DDP    ',
-     1      ' Element   Length   Value      s(m)   ',' ',
-     1      '   ZX      ZPX     ZY      ZPY            DetR     #')
-            else
-              write(lfno,9031)
-9031          format(
-     1      '   AX      BX      NX      EX     EPX   ',
-     1      ' Element   Length   Value      s(m)   ',' ',
-     1      '   AY      BY      NY      EY     EPY     DetR     #')
-            endif
+            write(lfno,'(a)')header
           endif
-          if(mdisp .eq. 11)then
-            buff( 1: 8)=autofg(twiss(l,icolm,mfitaz)/
-     $           scale(mfitaz),'8.5')
-            buff( 9:16)=autofg(twiss(l,icolm,mfitbz)/
-     $           scale(mfitbz),'8.5')
-            buff(17:24)=autofg(twiss(l,icolm,mfitnz)/
-     $           scale(mfitnz),'8.5')
-            buff(25:32)=autofg(twiss(l,icolm,mfitdz)/
-     $           scale(mfitdz),'8.5')
-            buff(33:40)=autofg(twiss(l,icolm,mfitddp)/
-     $           scale(mfitddp),'8.5')
-          elseif(mdisp .ne. 4)then
-            buff( 1: 8)=autofg(twiss(l,icolm,mfitax)/
-     $           scale(mfitax),'8.5')
-            buff( 9:16)=autofg(twiss(l,icolm,mfitbx)/
-     $           scale(mfitbx),'8.5')
-            buff(17:24)=autofg(twiss(l,icolm,mfitnx)/
-     $           scale(mfitnx),'8.5')
-            buff(25:32)=autofg(twiss(l,icolm,mfitex)/
-     $           scale(mfitex),'8.5')
-            buff(33:40)=autofg(twiss(l,icolm,mfitepx)/
-     $           scale(mfitepx),'8.5')
-          else
+          select case (mdisp)
+          case (modez)
+            buff( 1: 8)=tdispv(mfitaz,l,icolm,dref,'8.5')
+            buff( 9:16)=tdispv(mfitbz,l,icolm,dref,'8.5')
+            buff(17:24)=tdispv(mfitnz,l,icolm,dref,'8.5')
+            buff(25:32)=tdispv(mfitdz,l,icolm,dref,'8.5')
+            buff(33:40)=tdispv(mfitddp,l,icolm,dref,'8.5')
+          case (modeb)
             call ffs_init_sizep
             if(.not. updatesize .or. sizedp .ne. dpmax)then
               call tfsize
@@ -317,7 +323,13 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             buff(17:24)=autofg(emixp,'8.5')
             buff(25:32)=autofg(etaxp/scale(mfitex),'8.5')
             buff(33:40)=autofg(etapxp/scale(mfitepx),'8.5')
-          endif
+          case default
+            buff( 1: 8)=tdispv(mfitax,l,icolm,dref,'8.5')
+            buff( 9:16)=tdispv(mfitbx,l,icolm,dref,'8.5')
+            buff(17:24)=tdispv(mfitnx,l,icolm,dref,'8.5')
+            buff(25:32)=tdispv(mfitex,l,icolm,dref,'8.5')
+            buff(33:40)=tdispv(mfitepx,l,icolm,dref,'8.5')
+          end select
           if(l .ne. nlat .and.
      $         direlc(l) .le. 0.d0)then
             bname(1:max(10,lname+2))=' -'//name(1:lname)
@@ -332,39 +344,48 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             endif
           endif
           buff(79:79)=' '
-          if(mdisp .eq. 2)then
+          select case (mdisp)
+          case (moder)
             do i=0,3
               buff(51+i*7:57+i*7)
-     $             =autofg(twiss(l,icolm,mfitr1+i)
-     $             /scale(mfitr1+i),'7.4')
+     $             =tdispv(mfitr1+i,l,icolm,dref,'7.4')
             enddo
-          elseif(mdisp .eq. 6)then
-            call tgetphysdisp(l,pe)
-            do i=0,3
-              buff(51+i*7:57+i*7)
-     $             =autofg(pe(i+1)
-     $             /scale(mfitpex+i),'7.4')
-            enddo
-          elseif(mdisp .eq. 3)then
+          case (modep)
+            if(dref)then
+              call tgetphysdispi(l,0,pe)
+              call tgetphysdispi(l,-1,pe0)
+              do i=0,3
+                buff(51+i*7:57+i*7)
+     $               =autofg((pe(i+1)-pe0(i+1))
+     $               /scale(mfitpex+i),'7.4')
+              enddo
+            else
+              call tgetphysdispi(l,icolm,pe)
+              do i=0,3
+                buff(51+i*7:57+i*7)
+     $               =autofg(pe(i+1)
+     $               /scale(mfitpex+i),'7.4')
+              enddo
+            endif
+          case (modeo)
             do 120 i=0,3
               buff(51+i*7:78+i*7)
-     $             =autofg(twiss(l,icolm,mfitdx+i)/
-     $             scale(mfitdx+i),'7.4')
+     $             =tdispv(mfitdx+i,l,icolm,dref,'7.4')
 120         continue
-          elseif(mdisp .eq. 4)then
+          case (modeb)
             buff(51:60)=autofg(sqrt(beamsize(1,l))*1.d3,'10.8')
             buff(61:70)=autofg(sqrt(beamsize(6,l))*1.d3,'10.8')
             buff(71:79)=autofg(
      1           atan2(-2.d0*beamsize(4,l),beamsize(1,l)-beamsize(6,l))
      $           *90.d0/pi,'9.4')
-          elseif(mdisp .eq. 5)then
+          case (modea)
             buff(51:58)=autofg((gammab(l)+dgam)*amass/1.d9,'8.6')
             r=(gammab(1)+dgam)/(gammab(l)+dgam)
             buff(59:65)=autofg(emx*r,'7.5')
             buff(66:72)=autofg(emy*r,'7.5')
             buff(73:79)=autofg(twiss(l,icolm,mfitddp)
      $           /scale(mfitddp),'7.4')
-          else
+          case default
             if(kytbl(kwL,id) .eq. 0)then
               buff(51:58)=autofg(0.d0,'8.5')
             else
@@ -376,37 +397,15 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
               buff(59:68)=' 0'
             endif
             buff(69:79)=autofg(pos(l)/scale(mfitleng),'11.6')
-          endif
-          if(mdisp .eq. 11)then
-            buff(80:87)=autofg(twiss(l,icolm,mfitzx)/
-     $           scale(mfitzx),'8.5')
-            buff(88:95)=autofg(twiss(l,icolm,mfitzpx)/
-     $           scale(mfitzpx),'8.5')
-            buff(96:103)=autofg(twiss(l,icolm,mfitzy)/
-     $           scale(mfitzy),'8.5')
-            buff(104:111)=autofg(twiss(l,icolm,mfitzpy)/
-     $           scale(mfitzpy),'8.5')
-            buff(120:126)=autofg(twiss(l,icolm,mfitdetr)/
-     $           scale(mfitdetr),'7.4')
-          elseif(mdisp .ne. 4)then
-            buff(80:87)=autofg(twiss(l,icolm,mfitay)/
-     $           scale(mfitay),'8.5')
-            buff(88:95)=autofg(twiss(l,icolm,mfitby)/
-     $           scale(mfitby),'8.5')
-            buff(96:103)=autofg(twiss(l,icolm,mfitny)/
-     $           scale(mfitny),'8.5')
-            buff(104:111)=autofg(twiss(l,icolm,mfitey)/
-     $           scale(mfitey),'8.5')
-            buff(112:119)=autofg(twiss(l,icolm,mfitepy)/
-     $           scale(mfitepy),'8.5')
-            if(mdisp .eq. 5)then
-              buff(120:126)=autofg(twiss(l,icolm,mfitdz)/
-     $             scale(mfitdz),'7.4')
-            else
-              detr=twiss(l,icolm,mfitdetr)
-              buff(120:126)=autofg(detr,'7.4')
-            endif
-          else
+          end select
+          select case (mdisp)
+          case (modez)
+            buff(80:87)=tdispv(mfitzx,l,icolm,dref,'8.5')
+            buff(88:95)=tdispv(mfitzpx,l,icolm,dref,'8.5')
+            buff(96:103)=tdispv(mfitzy,l,icolm,dref,'8.5')
+            buff(104:111)=tdispv(mfitzpy,l,icolm,dref,'8.5')
+            buff(120:126)=tdispv(mfitdetr,l,icolm,dref,'8.5')
+          case (modeb)
             etayp=beamsize(18,l)/sigpp
             etapyp=beamsize(19,l)/sigpp
             sigyyp=beamsize(6,l)-etayp**2*sigpp
@@ -419,7 +418,18 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             buff(104:111)=autofg(etayp/scale(mfitey),'8.5')
             buff(112:119)=autofg(etapyp/scale(mfitepy),'8.5')
             buff(120:126)=autofg(sqrt(sigpp),'7.4')
-          endif
+          case default
+            buff(80:87)=tdispv(mfitay,l,icolm,dref,'8.5')
+            buff(88:95)=tdispv(mfitby,l,icolm,dref,'8.5')
+            buff(96:103)=tdispv(mfitny,l,icolm,dref,'8.5')
+            buff(104:111)=tdispv(mfitey,l,icolm,dref,'8.5')
+            buff(112:119)=tdispv(mfitepy,l,icolm,dref,'8.5')
+            if(mdisp .eq. 5)then
+              buff(120:126)=tdispv(mfitdz,l,icolm,dref,'7.4')
+            else
+              buff(120:126)=tdispv(mfitdetr,l,icolm,dref,'7.4')
+            endif
+          end select
           write(buff(127:131),'(i5)')mod(l-1,100000)+1
           call tfsqueezespace(buff(51:131),lname-10,lb)
           call tfsqueezespace(buff(1:40),lb+lname-91,lb1)
@@ -455,5 +465,102 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
         str(i:i)=' '
       enddo
       ls=l-nsq
+      return
+      end
+      
+      subroutine tdrefheader(header,mode)
+      use disp
+      implicit none
+      character*131 header
+      integer*4 mode
+      if(mode .eq. modeb)then
+        return
+      endif
+      header(3:3)='d'
+      header(11:11)='d'
+      header(14:16)='/BX'
+      header(19:19)='d'
+      header(27:27)='d'
+      header(35:35)='d'
+      header(82:82)='d'
+      header(90:90)='d'
+      header(93:95)='/BY'
+      header(98:98)='d'
+      header(106:106)='d'
+      header(114:114)='d'
+      header(121:121)='d'
+      select case (mode)
+        case (modez)
+          header(14:16)='/BZ'
+          header(93:95)='X  '
+          header(114:114)=' '
+        case (modeo,moder,modep)
+          header(52:52)='d'
+          header(59:59)='d'
+          header(66:66)='d'
+          header(73:73)='d'
+        case (modea)
+          header(121:122)=' d'
+        case default
+      end select
+      return
+      end
+
+      subroutine trefheader(header,mode)
+      use disp
+      implicit none
+      character*131 header
+      integer*4 mode
+      if(mode .eq. modeb)then
+        return
+      endif
+      header(6:6)='R'
+      header(14:14)='R'
+      header(22:22)='R'
+      header(30:30)='R'
+      header(39:39)='R'
+      header(85:85)='R'
+      header(93:93)='R'
+      header(101:101)='R'
+      header(106:106)='R'
+      header(118:118)='R'
+      header(126:126)='R'
+      select case (mode)
+        case (modez)
+          header(118:118)=' '
+        case (modeo,moder,modep)
+          header(55:55)='R'
+          header(63:63)='R'
+          header(69:69)='R'
+          header(77:77)='R'
+        case (modea)
+          header(125:126)='R '
+        case (modeb)
+
+        case default
+      end select
+      return
+      end
+
+      character*(*) function tdispv(mf,l,icolm,dref,form)
+      use ffs_pointer
+      use ffs_fit
+      use tffitcode
+      implicit none
+      integer*4 l,icolm,mf
+      character*(*) form
+      character*16 autofg
+      logical*4 dref
+      if(dref)then
+        select case (mf)
+          case(mfitbx,mfitby,mfitbz)
+            tdispv=autofg((twiss(l,0,mf)-twiss(l,-1,mf))
+     $           /twiss(l,-1,mf),form)
+          case default
+            tdispv=autofg(twiss(l,0,mf)-twiss(l,-1,mf),form)
+        end select
+      else
+        tdispv=autofg(twiss(l,icolm,mf)/scale(mf),form)
+      endif
       return
       end
