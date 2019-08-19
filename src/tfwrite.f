@@ -88,9 +88,9 @@
  100  irtc=0
       if(itfgetlfn .eq. -1)then
         if(read)then
-          itfgetlfn=icslfni()
+          itfgetlfn=lfni
         else
-          itfgetlfn=icslfno()
+          itfgetlfn=lfno
         endif
       elseif(itfgetlfn .lt. 0)then
         irtc=itfmessage(9,'General::wrongnum','"positive, 0 or -1"')
@@ -152,7 +152,7 @@
       integer*4 isp1,irtc,isp0
       isp0=isp
       isp=isp+1
-      rtastk(isp)=icslfno()
+      rtastk(isp)=lfno
       ktastk(isp+1:isp+isp0-isp1)=ktastk(isp1+1:isp0)
       isp=isp+isp0-isp1
 c      do i=1,isp0-isp1
@@ -192,7 +192,7 @@ c      enddo
       integer*4 isp1,irtc,itfgetrecl,nret,itfmessage
       if(isp .eq. isp1+1)then
         call tfprint1(dtastk(isp),
-     $       icslfno(),-itfgetrecl(),1,.true.,.true.,irtc)
+     $       lfno,-itfgetrecl(),1,.true.,.true.,irtc)
       elseif(isp .eq. isp1+2)then
         if(ktfnonrealq(ktastk(isp)))then
           irtc=itfmessage(9,'General::wrongtype','"real number"')
@@ -200,7 +200,7 @@ c      enddo
         endif
         nret=int(rtastk(isp))
         call tfprint1(dtastk(isp1+1),
-     $       icslfno(),-itfgetrecl(),abs(nret),nret .ge. 0,
+     $       lfno,-itfgetrecl(),abs(nret),nret .ge. 0,
      $       .true.,irtc)
       else
         irtc=itfmessage(9,'General::narg','"1 or 2"')
@@ -374,8 +374,8 @@ c      enddo
       use tfcsi
       implicit none
       type (sad_descriptor) k,kx,kf,kfn
-      integer*4 irtc,itfgeto,lfni0,lfn10,ip0,lr0,
-     $     lfn,isp0,itf,nc,lp0
+      type (csiparam) sav
+      integer*4 irtc,itfgeto,lfn,isp0,itf,nc
       isp0=isp
       isp=isp+1
       dtastk(isp)=k
@@ -386,24 +386,14 @@ c      call tfdebugprint(k,'tfget',1)
         return
       endif
       lfn=int(rfromd(kfn))
-      lfni0=icslfni()
-      lfn10=icslfn1()
-      ip0=icsmrk()
-      lr0=icslrecl()
-      rec=csrec()
-      lp0=icslinep()
-c      if(index(delim(1:ldel),buffer(lr0:lr0)) .le. 0)then
-c        buffer(lr0:lr0)=char(10)
-c        lr0=lr0+1
-c      endif
-      call cssetrec(.false.)
-      call cssetlinep(lr0)
-      call cssetp(lr0)
-      call cssetlfni(lfn)
-      call cssetlfn1(0)
+      call cssave(sav)
+      rec=.false.
       levele=levele+1
       kx%k=ktfoper+mtfnull
       itf=0
+      lfni=lfn
+      lfn1=0
+      ipbase=sav%lrecl+1
       do while(itf .ge. 0)
         itf=itfgeto(kf)
         if(itf .ge. 0)then
@@ -413,20 +403,15 @@ c      endif
           itf=0
           call skipln
         endif
-        if(icsstat() .ne. 0)then
-          call cssets(0)
+        if(ios .ne. 0)then
+          ios=0
           itf=min(-1,itf)
         endif
       enddo
       call tfconnect(kx,0)
       close(lfn)
       call tfreadbuf(irbclose,lfn,int8(0),int8(0),nc,' ')
-      call cssetlfni(lfni0)
-      call cssetlfn1(lfn10)
-      call cssetl(lr0)
-      call cssetp(ip0)
-      call cssetlinep(lp0)
-      call cssetrec(rec)
+      call csrestore(sav)
       if(itf .eq. -3)then
         irtc=irtcabort
       else
@@ -441,31 +426,37 @@ c      endif
       use tfcsi
       implicit none
       type (sad_descriptor) kx,kf
-      integer*4 isp1,irtc,itfgeto,nc,
-     $     lfni0,lfn10,ip0,lr0,itf,
-     $     lfn,linep0,itfmessage
+      type (csiparam) sav
+      integer*4 isp1,irtc,itfgeto,nc,itf,lfni0,
+     $     lfn,itfmessage
+      integer*8 is
       logical*4 openf
       if(isp .gt. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
-      lfni0=icslfni()
+      lfni0=lfni
       openf=lfn .gt. 0 .and. lfn .ne. lfni0
       if(openf)then
-        lfn10=icslfn1()
-        ip0=icsmrk()
-        lr0=icslrecl()
-        linep0=icslinep()
-        call cssetlinep(lr0)
+        call cssave(sav)
         nc=0
-        call tfreadbuf(irbreadbuf,lfn,int8(0),int8(0),nc,buffer)
-        if(nc .gt. 0)then
-          call setbuf(buffer(1:nc),nc)
+        if(itbuf(lfn) .le. moderead)then
+          call tfreadbuf(irbreadbuf,lfn,int8(0),int8(0),nc,buffer)
+          if(nc .gt. 0)then
+            call setbuf(buffer(1:nc),nc)
+          else
+            ipoint=sav%lrecl
+          endif
         else
-          call cssetp(lr0)
+          call tfreadbuf(irbreadbuf,lfn,ibcloc,is,nc,' ')
+c          write(*,*)'tfread1 ',lfn,is,nc
+          if(nc .gt. 0)then
+            ipoint=int(is)
+            lrecl=int(is+nc)
+          endif
         endif
-        call cssetlfni(lfn)
-        call cssetlfn1(0)
+        lfni=lfn
+        lfn1=0
       endif
       levele=levele+1
  1    itf=itfgeto(kf)
@@ -478,31 +469,22 @@ c      endif
         call tprmpt(-1,-1,0)
         call getbuf
         call tprmpt(0,-1,0)
-        if(icsstat() .eq. 0)then
+        if(ios .eq. 0)then
           go to 1
         endif
       endif
-      if(icsstat() .ne. 0)then
-        call cssets(0)
+      if(ios .ne. 0)then
+        ios=0
         kx%k=kxeof
         if(openf)then
           call tfreadbuf(irbreset,lfn,int8(0),int8(0),nc,' ')
         endif
-      elseif(openf)then
-        call savebuf(buffer,nc)
-        if(nc .gt. 0)then
-          call tfreadbuf(irbsetbuf,lfn,int8(0),int8(0),nc,buffer)
-        else
-          call tfreadbuf(irbreset,lfn,int8(0),int8(0),nc,' ')
-        endif
+      elseif(openf .and. itbuf(lfn) .gt. modewrite)then
+        call tfreadbuf(irbsetpoint,lfn,int8(ipoint),int8(0),nc,' ')
       endif
       call tfconnect(kx,0)
       if(openf)then
-        call cssetlfni(lfni0)
-        call cssetl(lr0)
-        call cssetlinep(linep0)
-        call cssetp(ip0)
-        call cssetlfn1(lfn10)
+        call csrestore(sav)
       endif
       irtc=0
       return
@@ -811,7 +793,7 @@ c          enddo
       type(ropt) opts
       irtc=0
       isw=1
-      if(lfn .le. 0 .or. lfn .eq. icslfni())then
+      if(lfn .le. 0 .or. lfn .eq. lfni)then
         call tfreadstringfb(lfn,kx,char1,opts,irtc)
         return
       elseif(itbuf(lfn) .le. modestring)then
@@ -895,7 +877,7 @@ c          enddo
       isw=1
  20   call tfreadbuf(irbgetpoint,lfn,ib,is,nc,' ')
  10   if(nc .lt. 0)then
-        if(lfn .gt. 0 .and. lfn .ne. icslfni())then
+        if(lfn .gt. 0 .and. lfn .ne. lfni)then
           call tfreadbuf(irbreadrecordbuf,lfn,ib,is,nc,buff)
           if(nc .ge. 0)then
             go to 20
@@ -911,7 +893,7 @@ c          enddo
             if(opts%new)then
               call tprmpt(-1,-1,0)
               call getbuf
-              if(icsstat() .ne. 0)then
+              if(ios .ne. 0)then
                 go to 101
               endif
               call tprmpt(0,-1,0)
@@ -923,18 +905,18 @@ c          enddo
           endif
           if(char1)then
             nc=1
-            call cssetp(icsmrk()+1)
+            ipoint=ipoint+1
           elseif(opts%ndel .gt. 0)then
             call tfword(buff(1:nc),nc,opts%delim(1:opts%ndel),
      $           opts%ndel,isw,nc1,next,opts%null)
             if(next .gt. 0)then
-              call cssetp(icsmrk()+next-1)
+              ipoint=ipoint+next-1
             else
-              call cssetp(icsmrk()+nc)
+              ipoint=ipoint+nc
             endif
             nc=nc1
           else
-            call cssetp(icsmrk()+nc)
+            ipoint=ipoint+nc
           endif
         endif
         go to 1
@@ -1331,7 +1313,7 @@ c      endif
       use tfrbuf
       implicit none
       type (sad_descriptor) kx
-      integer*8 kfromr,k
+      integer*8 kfromr
       integer*4 isp1,irtc,itfmessage,iu,nc
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')

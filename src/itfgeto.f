@@ -1,6 +1,7 @@
       integer*4 function itfgeto(kx)
       use tfstk
       use tfcsi
+      use tfrbuf
       implicit none
       type (sad_descriptor) kx
       integer*4 irtc, m
@@ -11,9 +12,12 @@
       endif
       m=0
       call tfeval(buffer(1:lrecl),lrecl,ipoint,m,kx,.true.,irtc)
-c      call tfdebugprint(kx,'itfgeto',3)
-c      write(*,*)'with ',irtc,kerror
+c      if(lfni .gt. 100)then
+c        call tfdebugprint(kx,'itfgeto',3)
+c        write(*,*)'with ',irtc,ipoint,m,kerror
+c      endif
       ipoint=m
+      call tfreadbuf(irbsetpoint,lfni,int8(ipoint-1),int8(0),0,' ')
       if(irtc .eq. 0)then
         itfgeto=0
       elseif(irtc .gt. 0 .and. kerror .ne. 0)then

@@ -219,13 +219,13 @@ c
               go to 3
             endif
             if(re)then
-              if(string(istop-1:istop-1) .eq. char(10))then
+c              if(string(istop-1:istop-1) .eq. char(10))then
                 if(tfreadevalbuf(istart,istop,l,
      $               iop1))then
                   eol=.true.
                   go to 1
                 endif
-              endif
+c              endif
             elseif(iop1 .eq. mtfcomp)then
               go to 3
             endif
@@ -251,14 +251,14 @@ c
      $           .or. itastk2(1,i) .eq. mtfleftparen
      $           .or. itastk2(1,i) .eq. mtfpart)then
               if(re)then
-                if(string(istop-1:istop-1) .eq. char(10))then
+c                if(string(istop-1:istop-1) .eq. char(10))then
                   if(tfreadevalbuf(istart,istop,l,
      $                 int(itastk2(1,i))))then
                     itastk2(1,isp)=mtfnull
                     eol=.true.
                     go to 1
                   endif
-                endif
+c                endif
               endif
               go to 8700
             endif
@@ -283,7 +283,7 @@ c     because stack does not have mtfleft(brace|bra|paren)!!
         go to 7000
       case (-3)
         if(re)then
-          if(string(istop-1:istop-1) .eq. char(10))then
+c          if(string(istop-1:istop-1) .eq. char(10))then
  3001       if(tfreadevalbuf(istart,istop,l,
      $           mtfleftcomment))then
               ist2=index(string(istart:l),'*)')
@@ -294,7 +294,7 @@ c     because stack does not have mtfleft(brace|bra|paren)!!
               eol=.false.
               go to 1
             endif
-          endif
+c          endif
         endif
         irtc=itfmessage(9999,'General::comment',
      $       '"'//string(ist1:min(istop-1,l))//'"')
@@ -426,7 +426,7 @@ c        endif
         endif
       endif
  8910 istop=ifchar(string(1:l),char(10),ist1)+1
-      if(istop .eq. 1)then
+      if(istop .le. 1)then
         istop=l+1
       endif
  9000 if(levele .gt. 1)then

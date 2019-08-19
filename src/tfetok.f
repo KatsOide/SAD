@@ -1,11 +1,11 @@
       module tftok
       implicit none
-      character*28 oper
+      character*29 oper
       character*24 oper1
       character*15 oper2
       character*4 oper3
       character*11 opern
-      parameter (oper=' +-*/=(){}[],;@#:^&<>|~.?"''')
+      parameter (oper=' +-*/=(){}[],;@#:^&<>|~.?"'''//char(9))
       parameter (oper1='+-*/=(){}[],;@#:^&<>|~.?')
       parameter (oper2='=><&|/.+-:#@[*)')
       parameter (oper3='=>@.')
@@ -33,7 +33,7 @@
         do while(i .le. l)
           ch=string(i:i)
           i=i+1
-          if(ch .eq. '\' .and. i .le. l)then
+          if(ch .eq. '\\' .and. i .le. l)then
 c '
             ch=string(i:i)
             if('0' .le. ch .and. ch .le. '7')then
@@ -111,10 +111,13 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
             elseif(ch .eq. 'e')then
               ch=char(27)
               i=i+1
+            elseif(ch .eq. C_NEW_LINE)then
+              i=i+1
+              cycle
             else
               i=i+1
             endif
-          elseif(del .ne. ' ' .and. ch .eq. del)then
+          elseif(notabspace(del) .and. ch .eq. del)then
             exit
           endif
           call putstringbufb1(strb,ch)
@@ -123,6 +126,13 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
         kxmakestring=sad_descr(strb%string(1))
         return
         end function 
+
+        logical*4 function notabspace(ch)
+        implicit none
+        character ch
+        notabspace=ch .ne. ' ' .and. ch .ne. char(9)
+        return
+        end function
 
       end module
 
@@ -155,15 +165,12 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
         return
       endif
       istop=l+1
-c      if(istart .le. 0)then
-c        return
-c      endif
-      if(string(1:1) .ne. ' ')then
+      if(notabspace(string(1:1)))then
         is1=1
         go to 1
       endif
       do i=2,l
-        if(string(i:i) .ne. ' ')then
+        if(notabspace(string(i:i)))then
           is1=i
           go to 1
         endif
@@ -286,6 +293,8 @@ c      endif
           irt=0
           kx=dfromr(vx)
         endif
+        return
+      elseif(ch .eq. '!')then
         return
       else
         irt=0

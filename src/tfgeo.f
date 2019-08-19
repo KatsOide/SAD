@@ -440,6 +440,7 @@ c     $       1,4,i1),geo(1,3,i),geo(1,4,i)
       use tfstk
       use ffs_flag
       use tmacro
+      use tfcsi
       implicit none
       type (sad_descriptor) kx
       integer*4 irtc
@@ -447,7 +448,7 @@ c     $       1,4,i1),geo(1,3,i),geo(1,4,i)
       if(geocal .or. omega0 .eq. 0.d0)then
         geocal0=geocal
         geocal=.true.
-        call tffsa(0,kx,irtc)
+        call tffsa(0,lfni,kx,irtc)
         geocal=geocal0
       endif
       call tffssaveparams(0,-1,err)

@@ -2,7 +2,7 @@
         integer*8 itt1,itt2,itt3,itt4,itt5,itt6
       end module
 
-      subroutine tffsa(lfnb,kffs,irtcffs)
+      subroutine tffsa(lfnb,lfn,kffs,irtcffs)
       use tfstk
       use ffs
       use ffs_pointer
@@ -21,7 +21,7 @@
       integer*8 kffs,k,kx,itwisso,
      $     ifvalvar2,iparams,kax,iutwiss
       integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,
-     $     ii,irtc0,it,itemon,itmon,itestr,itstr,itt,
+     $     ii,irtc0,it,itemon,itmon,itestr,itstr,itt,lfn,
      $     iuse,l,itfuplevel,
      $     levelr,lfnl0,lpw,meas0,mfpnta,igetgl1,lenw,
      $     mphi2,newcor,next,nextt,nfp,nmon,
@@ -159,9 +159,9 @@ c
         endif
       else
         lfnp=lfnb
-        lfnstk(lfnp)=0
-        lfrecl(lfnp)=icslrecl()
-        lflinep(lfnp)=icslrecl()
+        lfnstk(lfnp)=lfn
+        lfrecl(lfnp)=lrecl
+        lflinep(lfnp)=lrecl
       endif
       iffserr=0
       if(chguse)then
@@ -175,6 +175,7 @@ c
       lfopen(lfnp)=.false.
       lfni=lfnstk(lfnp)
       lfno=outfl
+c      write(*,*)'tffsa ',lfnp,lfni,lfno
  2    if(lfnb .eq. 1)then
         if(lfni .ne. 5)then
           lfn1=lfno
@@ -217,7 +218,10 @@ c
         ios=0
       endif
       call getwrd(word)
-c      write(*,*)'tffsa-getwrd ',ios,linep,lrecl,' ',word(1:lenw(word))
+c      if(lfni .gt. 100)then
+c        write(*,*)'tffsa-getwrd ',lfni,ios,linep,lrecl,' ',
+c     $       word(1:lenw(word))
+c      endif
       if(ios .ne. 0)then
         go to 10
       endif
@@ -227,8 +231,9 @@ c      write(*,*)'tffsa-getwrd ',ios,linep,lrecl,' ',word(1:lenw(word))
         go to 2
       endif
       call cssets(0)
+c      write(*,*)'tffsa-tfprint ',word(1:lenw(word))
       call tfprint(word,lfno,.false.,itt,nextt,exist)
-c      write(*,*)'tffsa-tfprint-end ',word
+c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
       if(exist .or. ios .ne. 0)then
         go to 10
       endif
@@ -258,8 +263,8 @@ c      write(*,*)'tffsa-tfprint-end ',word
         endif
         ios=0
  4010   if(levelr .eq. 0)then
-c          call cssetlinep(icslrecl())
-          call cssetrec(.false.)
+          linep=lrecl
+          rec=.false.
         endif
         go to 10
       elseif(abbrev(word,'REP_EAT','_'))then

@@ -1047,20 +1047,20 @@ c      call tfdebugprint(kx,'==>',1)
       use tfcsi
       implicit none
       integer*4 ip1,istart,istop,l,ipr
-      ip1=icsmrk()
-      call cssetp(istop)
+      ip1=ipoint
+      ipoint=istop
       call tprmpt(ipr,-1,0)
       call getbuf
       call tprmpt(0,-1,0)
       if(csrec())then
-        call cssetp(ip1)
+        ipoint=ip1
       else
-        istop=icsmrk()
+        istop=ipoint
       endif
-      tfreadevalbuf=icsstat() .eq. 0
+      tfreadevalbuf=ios .eq. 0
       if(tfreadevalbuf)then
         istart=istop
-        l=icslrecl()
+        l=lrecl
       endif
       return
       end

@@ -26,7 +26,9 @@ c      write(*,*)'tfprint ',icsmrk()
       endif
       lpw=itfgetrecl()
  1    levele=levele+1
+c      write(*,*)'tfprint-0 ',word(1:lenw(word))
       itx=itfpeeko(kx,next)
+c      write(*,*)'tfprint-1 ',itx,next
       select case (itx)
       case (-1)
         call cssetp(next)
@@ -258,7 +260,7 @@ c      endif
         call capita(word2(1:l))
       endif
       ip1=ipoint-l
-      do i=ip1,1,-1
+      do i=ip1,ipbase,-1
         word1(1:l)=buffer(i:i+l-1)
         if(convcase)then
           call capita(word1(1:l))
@@ -267,12 +269,13 @@ c      endif
 c          write(*,*)'unreadbuf ',i,l,ip1,' ',buffer(i+l:i+l),
 c     $         ' ',word(1:l),
 c     $         index(delim(1:ldel),buffer(i+l:i+l))
-c          if(i .gt. 1)then
-c            write(*,*)'pre-delim: ',buffer(max(i-32,1):i-1),
+c          if(i .gt. ipbase)then
+c            write(*,*)'pre-delim: ',buffer(max(i-32,ipbase):i-1),
 c     $           index(delim(1:ldel),buffer(i-1:i-1))
 c          endif
-          if(index(delim(1:ldel),buffer(i+l:i+l)) .gt. 0 .and.
-     $         (i .eq. 1 .or.
+          if((i .eq. ip1 .or.
+     $         index(delim(1:ldel),buffer(i+l:i+l)) .gt. 0) .and.
+     $         (i .eq. ipbase .or.
      $         index(delim(1:ldel),buffer(i-1:i-1)) .gt. 0 .or.
      $         index('0123456789.',buffer(i-1:i-1)) .gt. 0 .or.
      $         word(1:1) .eq. '.'))then

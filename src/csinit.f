@@ -1,13 +1,37 @@
       module tfcsi
         use tfcbk, only:maxlbuf
-        integer*4, parameter :: nbmax=maxlbuf
-        integer*4 ipoint,iconv,ios,lfn1,lfni,lfno,lrecl,ldel,
-     $       lcmnt,linep,lastln,ibegt,lastt
-        logical*4 rec
+        integer*4, parameter :: nbmax=maxlbuf,nsav=6
+        type csiparam
+        sequence
+          integer*4 isav(1:0)
+          integer*4 lfni,lrecl,linep,ipoint,lfn1,ipbase,lfno
+          logical*4 rec
+        end type
+        type (csiparam) , target :: savep
         character*16 delim,cmnt
-        character*(nbmax) buffer
+        integer*8 ibcloc
+        integer*4, pointer:: lfni=>savep%lfni,
+     $       lrecl=>savep%lrecl,linep=>savep%linep,ipoint=>savep%ipoint,
+     $       lfn1=>savep%lfn1,ipbase=>savep%ipbase,lfno=>savep%lfno
+        logical*4 , pointer :: rec=>savep%rec
+        integer*4 iconv,ios,ldel,lcmnt,lastln,ibegt,lastt
+        character*(nbmax) , target :: buffer
 
         contains
+        subroutine cssave(sav)
+        implicit none
+        type (csiparam) , intent(out):: sav
+        sav=savep
+        return
+        end subroutine 
+
+        subroutine csrestore(sav)
+        implicit none
+        type (csiparam) , intent(in):: sav
+        savep=sav
+        return
+        end subroutine 
+
         subroutine cssetp(ip)
         implicit none
         integer*4 ip
@@ -117,17 +141,19 @@ c        write(*,*)'setlinep ',ip,linep,lrecl
 
       subroutine csinit(lfn0,iconv1,cmnt1,rec0)
       use tfcsi
+      use iso_c_binding
       implicit none
       integer*4 lfn0,iconv1
       character*(*) cmnt1
       logical*4 rec0
+      ibcloc=transfer(c_loc(buffer(1:1)),ibcloc)
       lfn1=lfn0
       lrecl=1
       buffer(1:1)=char(10)
       ipoint=1
       iconv=iconv1
       call tfsetconvcase(iconv1 .eq. 1)
-      delim=';'//char(10)//' ,'
+      delim=';'//char(10)//' ,'//char(9)
       ldel=len_trim(delim)
       cmnt=cmnt1
       lcmnt=len_trim(cmnt)
@@ -136,6 +162,7 @@ c        write(*,*)'setlinep ',ip,linep,lrecl
       lastln=0
       ibegt=0
       lastt=0
+      ipbase=1
       call csrst(lfn0)
       return
       end

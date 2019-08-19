@@ -666,7 +666,7 @@ If[$DisplayFunction===Unevaluated[TopDrawer],
   Twiss$Label["DAX"]="`fda`n`dx`n";
   Twiss$Label["BX"]="`f\326`ob`n`dx`O`n";
   Twiss$Label["RBX"]="`f\326`ob`n`dxR`O`n";
-  Twiss$Label["DBX"]="`fdb`n`dx`n/`fb`n`dxR`n";
+  Twiss$Label["DBX"]="`fdb`n`dx`n / `fb`n`dxR`n";
   Twiss$Label["NX"]="`fn`n`dx`n";
   Twiss$Label["RNX"]="`fn`n`dxR`n";
   Twiss$Label["DNX"]="`fdn`n`dx`n";
@@ -693,7 +693,7 @@ If[$DisplayFunction===Unevaluated[TopDrawer],
   Twiss$Label["DAY"]="`fda`n`dy`n";
   Twiss$Label["BY"]="`f\326`ob`n`dy`O`n";
   Twiss$Label["RBY"]="`f\326`ob`n`dyR`O`n";
-  Twiss$Label["DBY"]="`fdb`n`dy`n/`fb`n`dyR`n";
+  Twiss$Label["DBY"]="`fdb`n`dy`n / `fb`n`dyR`n";
   Twiss$Label["NY"]="`fn`n`dy`n";
   Twiss$Label["RNY"]="`fn`n`dyR`n";
   Twiss$Label["DNY"]="`fdn`n`dy`n";
@@ -718,9 +718,9 @@ If[$DisplayFunction===Unevaluated[TopDrawer],
   Twiss$Label["DZ"]="`fD`nz`n";
   Twiss$Label["RDZ"]="`fD`nzR`n";
   Twiss$Label["DDZ"]="`fdD`nz`n";
-  Twiss$Label["DDP"]="`fD`np/p`d0`n";
-  Twiss$Label["RDDP"]="`fD`np`dR`n/p`d0`n";
-  Twiss$Label["DDDP"]="`fdD`np/p`d0`n";
+  Twiss$Label["DDP"]="`fD`np / p`d0`n";
+  Twiss$Label["RDDP"]="`fD`np`dR`n / p`d0`n";
+  Twiss$Label["DDDP"]="`fdD`np / p`d0`n";
   Twiss$Label["R1"]="R`d1`n";
   Twiss$Label["RR1"]="R`d1R`n";
   Twiss$Label["DR1"]="`fd`nR`d1`n";
@@ -741,7 +741,7 @@ If[$DisplayFunction===Unevaluated[TopDrawer],
   Twiss$Label["DAZ"]="`fda`n`dz`n";
   Twiss$Label["BZ"]="`f\326`ob`n`dz`O`n";
   Twiss$Label["RBZ"]="`f\326`ob`n`dzR`O`n";
-  Twiss$Label["DBZ"]="`fdb`n`dz`n/`fb`n`dzR`n";
+  Twiss$Label["DBZ"]="`fdb`n`dz`n / `fb`n`dzR`n";
   Twiss$Label["NZ"]="`fn`n`dz`n";
   Twiss$Label["RNZ"]="`fn`n`dzR`n";
   Twiss$Label["DNZ"]="`fdn`n`dz`n";

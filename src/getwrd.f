@@ -13,8 +13,12 @@ c     Peek/Get word from input buffer with case preserving
       endif
       is=notany(buffer(1:lrecl),delim(3:ldel),ipoint)
       if(is .ge. ipoint)then
-        if(buffer(is:is) .eq. char(10) .or.
-     $       buffer(is:is) .eq. ';')then
+        if(is .eq. lrecl)then
+          next=lrecl+1
+          outstr=' '
+          return
+        elseif(buffer(is:is) .eq. char(10) .or.
+     $         buffer(is:is) .eq. ';')then
           next=is
           outstr=' '
           return
@@ -22,7 +26,7 @@ c     Peek/Get word from input buffer with case preserving
       endif
       next=ifany(buffer(1:lrecl),delim(1:ldel),is+1)
       if(next .le. 0)then
-        next=lrecl
+        next=lrecl+1
       endif
       outstr=buffer(is:next-1)
       peekwd0=next-is
@@ -86,7 +90,7 @@ c     Peek/Get word from input buffer with case normalization
       end
 
       subroutine getwrd(outstr)
-            use tfstk
+      use tfstk
       use ffs_flag
       use tmacro
       implicit none
@@ -258,9 +262,9 @@ c     Peek character from input buffer with case normalization
       use tfcsi
       implicit none
       integer*4 ifany,is
-      if(ipoint .gt. 0)then
+      if(ipoint .ge. ipbase)then
         is=ifany(buffer(1:lrecl),delim(1:2),ipoint)
-        if(is .gt. 1 .and. is .lt. lrecl)then
+        if(is .gt. ipbase .and. is .lt. lrecl)then
           ipoint=is+1
         else
           ipoint=lrecl+1
@@ -289,12 +293,14 @@ c     Peek character from input buffer with case normalization
       integer*4 ipoint1,ifchar
       if(ipoint .ge. lrecl)then
         ipoint=lrecl+1
-        buffer(lrecl:lrecl)=char(10)
+c        buffer(lrecl:lrecl)=char(10)
       else
         ipoint1=ifchar(buffer(1:lrecl),char(10),ipoint)+1
         if(ipoint1 .le. 1)then
-          write(*,*)'Buffer is damaged. point= ',ipoint,' total= ',lrecl
-          buffer(lrecl:lrecl)=char(10)
+c          write(*,*)'Buffer is damaged. point= ',ipoint,
+c     $         ' total= ',lrecl,' lfn= ',lfni,
+c     $         ' char= ''',buffer(lrecl:lrecl),''''
+c          buffer(lrecl:lrecl)=char(10)
           ipoint=lrecl+1
         else
           ipoint=ipoint1

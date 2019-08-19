@@ -336,7 +336,8 @@ c
      $     irbreadrecord=4,
      $     irbreadbuf=5,irbmovepoint=6,irbbor=7,irbgetpoint=8,
      $     irbreset=9,irbreadrecordbuf=10,irbeor2bor=11,
-     $     irbsetinp=12,irbcloseinp=13,irbsetbuf=14,irbibuf=15
+     $     irbsetinp=12,irbcloseinp=13,irbsetbuf=14,irbibuf=15,
+     $     irbsetpoint=16
       integer*8 , parameter ::
      $     modeclose=0,moderead=1,modewrite=2,modestring=3,
      $     modeshared=4,modemapped=5
@@ -384,6 +385,28 @@ c
       go to 1000
 c
       end function
+
+      integer*8 function ipoint2mbuf(lfn,ip) result(m)
+      use tfstk
+      use tfcsi
+      use iso_c_binding
+      implicit none
+      integer*4 lfn,ip
+      m=ip+ibcloc-transfer(c_loc(jlist(1,ibuf(lfn))),m)
+      return
+      end function
+
+      integer*4 function mbuf2ipoint(lfn,m) result(ip)
+      use tfstk
+      use tfcsi
+      use iso_c_binding
+      implicit none
+      integer*4 lfn
+      integer*8 m
+      ip=int(m-ibcloc+transfer(c_loc(jlist(1,ibuf(lfn))),m))
+      return
+      end function
+
       end module
 
       module trackbypass
