@@ -7,22 +7,27 @@ c     Peek/Get word from input buffer with case preserving
       integer*4 next,is,notany,ifany
       next=ipoint
       peekwd0=0
-      if(ipoint .gt. lrecl)then
+      if(ipoint .gt. lrecl .or. ipoint .lt. 1)then
         outstr=' '
         return
       endif
       is=notany(buffer(1:lrecl),delim(3:ldel),ipoint)
       if(is .ge. ipoint)then
-        if(is .eq. lrecl)then
-          next=lrecl+1
-          outstr=' '
-          return
-        elseif(buffer(is:is) .eq. char(10) .or.
-     $         buffer(is:is) .eq. ';')then
+        if(buffer(is:is) .eq. char(10) .or.
+     $       buffer(is:is) .eq. ';')then
           next=is
           outstr=' '
           return
+        elseif(is .eq. lrecl)then
+          next=lrecl+1
+          outstr=buffer(ipoint:is)
+          peekwd0=is-ipoint+1
+          return
         endif
+      else
+        next=lrecl+1
+        outstr=' '
+        return
       endif
       next=ifany(buffer(1:lrecl),delim(1:ldel),is+1)
       if(next .le. 0)then
@@ -39,6 +44,7 @@ c     Peek/Get word from input buffer with case preserving
       character*(*) outstr
       integer*4 next,peekwd0
       getwdl0=peekwd0(outstr,next)
+c      write(*,*)'getwdl0 ',next,ipoint,lrecl
       call cssetp(next)
       return
       end
@@ -150,7 +156,7 @@ c     Peek/Get word from input buffer with case normalization/preserved
 c     1st arg(outstr)	case normalized word
 c     2nd arg(outstrp)	case preserved word by preservecase flag
       subroutine peekwd2(outstr,outstrp,next)
-            use tfstk
+      use tfstk
       use ffs_flag
       use tmacro
       implicit none
@@ -262,9 +268,9 @@ c     Peek character from input buffer with case normalization
       use tfcsi
       implicit none
       integer*4 ifany,is
-      if(ipoint .ge. ipbase)then
+      if(ipoint .ge. ipbase .and. ipoint .le. lrecl)then
         is=ifany(buffer(1:lrecl),delim(1:2),ipoint)
-        if(is .gt. ipbase .and. is .lt. lrecl)then
+        if(is .ge. ipoint .and. is .lt. lrecl)then
           ipoint=is+1
         else
           ipoint=lrecl+1

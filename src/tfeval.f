@@ -7,10 +7,10 @@
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: kla,klx
       logical*4 re
-      character*1023 string
       integer*4 istart,istop,irtc,isp0,ist10,iop1,
      $     i,ist1,ishash,l,ifchar,mopc,itgetfpe,m1,
      $     itfmessage,level1,ist2,irt
+      character*(l) string
       logical*4 tfreadevalbuf,eol
 c     begin initialize for preventing compiler warning
       mopc=0
@@ -39,9 +39,9 @@ c     end   initialize for preventing compiler warning
  1    continue
 c      write(*,*)'tfeval ',istart,l,string(istart:l)
       call tfetok(string(istart:l),istop,kx,itfcontext,irt)
-      istop=istop+istart-1
+      istop=min(l+1,istop+istart-1)
 c        call tfreecheck1('tfeval-0',1,0,0.d0,irtc)
-c        write(*,*)'tfeval-0 ',irt,kx,istart,istop,
+c        write(*,*)'tfeval-0 ',irt,istart,istop,
 c     $       string(istart:istop)
 c        if(irtc .ne. 0)then
 c          rlist(7)=0.d0
@@ -162,6 +162,7 @@ c
           endif
           select case(mopc)
           case (mtfcomma)
+c            write(*,*)'tfeval-910 ',isp,isp0
             if(isp .eq. isp0)then
               go to 7000
             endif
@@ -220,8 +221,7 @@ c
             endif
             if(re)then
 c              if(string(istop-1:istop-1) .eq. char(10))then
-                if(tfreadevalbuf(istart,istop,l,
-     $               iop1))then
+                if(tfreadevalbuf(istart,istop,l,iop1))then
                   eol=.true.
                   go to 1
                 endif
@@ -238,13 +238,14 @@ c              endif
           if(.not. re)then
             itastk2(1,isp)=mtfrightparen
             call tfestk(isp0,iprior,lastfirst,irtc)
+c            write(*,*)'tfeval-3 ',isp,isp0,istop,irtc
             if(irtc .ne. 0)then
               go to 8900
             endif
             if(isp .le. isp0)then
               go to 7000
             endif
-          endif            
+          endif
           do i=isp0,isp
             if(itastk2(1,i) .eq. mtflist
      $           .or. itastk2(1,i) .eq. mtfleftbra
@@ -352,12 +353,13 @@ c
  7000 select case(ktftype(ktastk(isp)))
       case (ktflist,ktfpat,ktfsymbol)
         ist10=max(ist1,istop)
-        ist1=istop
+        ist2=istop
         call tclrfpe
 c     call tfdebugprint(ktastk(isp),'tfeval-8',3)
         call tfeevalref(ktastk(isp),kx%k,irtc)
-c      call tfdebugprint(kx,'tfeval-9',3)
-        istop=max(icsmrk(),ist1,ist10)
+c        call tfdebugprint(kx,'tfeval-9',3)
+        istop=max(ist2,ist10)
+c        write(*,*)': ',irtc,icsmrk(),ist2,ist10,lrecl
         if(irtc .eq. -1)then
           kx%k=ktfoper+mtfnull
           go to 9000
@@ -409,7 +411,7 @@ c        endif
         go to 8910
       endif
  8900 if(irtc .lt. -1 .and. irtc .gt. irtcabort)then
-        write(*,*)'tfeval ',irtc,modethrow
+c        write(*,*)'tfeval ',irtc,modethrow
         modethrow=-1
         if(irtc .le. irtcret)then
           call tfreseterror

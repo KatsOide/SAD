@@ -1708,7 +1708,6 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       implicit none
       type (sad_descriptor) kx
       integer*4 irtc
-      
       logical*4 err
       call tffsa(1,lfni,kx,irtc)
       if(irtc .ne. 0 .and. ierrorprint .ne. 0)then
@@ -1937,18 +1936,23 @@ c      call tfree(ifibzl)
         outfl=0
       endif
       levele=levele+1
+c      write(*,*)'tfffs-0 ',lfni,ipoint,lrecl
       call cssave(sav)
+c      call tfreadbuf(irbsetpoint,lfni,int8(ipoint),
+c     $     int8(0),0,' ')
       call tfreadbuf(irbopen,lfn,ktfaddr(ktastk(isp1+1)),
-     $     modestring,str%nch,' ')
-c      call tfreadbuf(irbbor,lfni,int8(0),int8(0),0,' ')
-      ipoint=mbuf2ipoint(lfn,int8(-1))
-      lrecl=ipoint+1
-      ipbase=ipoint+2
-c      write(*,*)'tfffs ',icslfni(),outfl,ipoint,lrecl
+     $     int8(modestring),str%nch,' ')
+      call tfreadbuf(irbassign,lfn,int8(0),int8(0),0,' ')
+      ipoint=1
+      lrecl=0
+      ipbase=1
+c      write(*,*)'tfffs ',lfn
       call tffsa(lfnp+1,lfn,kx,irtc)
       call tfreadbuf(irbclose,lfn,int8(0),int8(0),0,' ')
       call tclrfpe
       call csrestore(sav)
+      call tfreadbuf(irbassign,lfni,int8(0),int8(0),0,' ')
+c      write(*,*)'tfffs-1 ',lfni,ipoint,lrecl
       outfl=outfl1
       if(irtc .eq. 0 .and. iffserr .ne. 0)then
         irtc=itfmessage(9,'FFS::error',strfromis(iffserr))

@@ -331,33 +331,178 @@ c
 
       end module
 
+      module tfcsi
+        use tfcbk, only:maxlbuf
+        implicit none
+        integer*4, parameter :: nbmax=maxlbuf,nsav=6
+        type csiparam
+        sequence
+          integer*4 isav(1:0)
+          integer*4 lfni,lrecl,linep,ipoint,lfn1,ipbase,lfno
+          logical*4 rec
+        end type
+        type (csiparam) , target :: savep
+        character*16 delim,cmnt
+        integer*8 ibcloc
+        integer*4, pointer:: lfni=>savep%lfni,
+     $       lrecl=>savep%lrecl,linep=>savep%linep,ipoint=>savep%ipoint,
+     $       lfn1=>savep%lfn1,ipbase=>savep%ipbase,lfno=>savep%lfno
+        logical*4 , pointer :: rec=>savep%rec
+        integer*4 iconv,ios,ldel,lcmnt,lastln,ibegt,lastt
+        character*(nbmax) , target  :: buffer0
+        character*(nbmax) , pointer :: buffer
+
+        contains
+        subroutine cssave(sav)
+        implicit none
+        type (csiparam) , intent(out):: sav
+        sav=savep
+        return
+        end subroutine 
+
+        subroutine csrestore(sav)
+        implicit none
+        type (csiparam) , intent(in):: sav
+        savep=sav
+        return
+        end subroutine 
+
+        subroutine cssetp(ip)
+        implicit none
+        integer*4 ip
+        ipoint=ip
+        return
+        end subroutine
+
+        subroutine cssets(ip)
+        implicit none
+        integer*4 ip
+        ios=ip
+        return
+        end subroutine
+
+        subroutine cssetl(ip)
+        implicit none
+        integer*4 ip
+        lrecl=ip
+        return
+        end subroutine
+
+        subroutine cssetlfni(ip)
+        implicit none
+        integer*4 ip
+        lfni=ip
+        return
+        end subroutine
+
+        subroutine cssetlfno(ip)
+        implicit none
+        integer*4 ip
+        lfno=ip
+        return
+        end subroutine
+
+        subroutine cssetlfn1(ip)
+        implicit none
+        integer*4 ip
+        lfn1=ip
+        return
+        end subroutine
+
+        subroutine cssetrec(f)
+        implicit none
+        logical*4 f
+        rec=f
+        return
+        end subroutine
+
+        subroutine cssetlinep(ip)
+        implicit none
+        integer*4 ip
+c        write(*,*)'setlinep ',ip,linep,lrecl
+        linep=ip
+        return
+        end subroutine
+
+        integer*4 function icsmrk()
+        implicit none
+        icsmrk=ipoint
+        return
+        end function
+
+        integer*4 function icsstat()
+        implicit none
+        icsstat=ios
+        return
+        end function
+
+        integer*4 function icslrecl()
+        implicit none
+        icslrecl=lrecl
+        return
+        end function
+
+        integer*4 function icslfni()
+        implicit none
+        icslfni=lfni
+        return
+        end function
+
+        integer*4 function icslfno()
+        implicit none
+        icslfno=lfno
+        return
+        end function
+
+        integer*4 function icslfn1()
+        implicit none
+        icslfn1=lfn1
+        return
+        end function
+
+        integer*4 function icslinep()
+        implicit none
+        icslinep=linep
+        return
+        end function
+
+        logical*4 function csrec()
+        implicit none
+        csrec=rec
+        return
+        end function
+
+      end module
+
       module tfrbuf
+      implicit none
       integer*4, parameter :: irbinit=1,irbopen=2,irbclose=3,
      $     irbreadrecord=4,
      $     irbreadbuf=5,irbmovepoint=6,irbbor=7,irbgetpoint=8,
      $     irbreset=9,irbreadrecordbuf=10,irbeor2bor=11,
      $     irbsetinp=12,irbcloseinp=13,irbsetbuf=14,irbibuf=15,
-     $     irbsetpoint=16
-      integer*8 , parameter ::
+     $     irbsetpoint=16,irbassign=17
+      integer*4 , parameter ::
      $     modeclose=0,moderead=1,modewrite=2,modestring=3,
      $     modeshared=4,modemapped=5
       integer*4 nbuf
       parameter (nbuf=1024)
       integer*4 ncprolog
       character*128 prolog
-      integer*4 :: ifd(nbuf)=0
-      integer*8 :: lbuf(nbuf)=0,mbuf(nbuf)=0,itbuf(nbuf)=0,
-     $     ibuf(nbuf)=0,lenbuf(nbuf)=0
+      integer*4 :: ifd(0:nbuf)=0
+      integer*4 , target :: lbuf(0:nbuf)=0,mbuf(0:nbuf)=0,
+     $     itbuf(0:nbuf)=0,lenbuf(0:nbuf)=0
+      integer*8 :: ibuf(0:nbuf)=0
       type cbkshared
         integer*8, allocatable :: ca(:)
       end type
-      type (cbkshared) rbshared(nbuf)
+      type (cbkshared) rbshared(0:nbuf)
 
       contains
       integer*4 function nextfn(mode)
       use macfile, only:MAXLLEN
       implicit none
-      integer*8 mode
+      integer*4 mode
       integer*4 ios,f,is
       logical*4 od
       character*(MAXLLEN) msg
@@ -386,7 +531,7 @@ c
 c
       end function
 
-      integer*8 function ipoint2mbuf(lfn,ip) result(m)
+      integer*4 function ipoint2mbuf(lfn,ip) result(m)
       use tfstk
       use tfcsi
       use iso_c_binding
@@ -402,8 +547,8 @@ c
       use iso_c_binding
       implicit none
       integer*4 lfn
-      integer*8 m
-      ip=int(m-ibcloc+transfer(c_loc(jlist(1,ibuf(lfn))),m))
+      integer*4 m
+      ip=m-ibcloc+transfer(c_loc(jlist(1,ibuf(lfn))),m)
       return
       end function
 

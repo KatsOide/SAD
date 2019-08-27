@@ -7,6 +7,7 @@
       use sad_main
       use ffs_pointer, only:elatt
       use tparastat
+      use tfcsi, only:ipoint,lrecl,lfni
       implicit none
       type (sad_descriptor) kx
       integer*8 ikptbl,ig,ipz,ix,ixx,iy,iyy,iz,izz,ifz,imt,kzx,
@@ -32,8 +33,9 @@ c        write(*,*)'track-0.0 ',klist( 1621700052)
 c        write(*,*)'track-0.1 ',klist( 1621700052)
         call ffs_init_flag
 c        write(*,*)'track-0.2 ',klist( 1621700052)
-        call csinit(0,1,'!',.false.)
-c        write(*,*)'track-0.3 ',klist( 1621700052)
+c        call csinit(0,1,'!',.false.)
+        convcase=.true.
+c        write(*,*)'track-0.3 ',lfni,ipoint,lrecl
         call tfinitn
 c        write(*,*)'track-0.4'
         call tfinittws

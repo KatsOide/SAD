@@ -24,6 +24,7 @@ FFSCanvasDraw=Class[{},{},{},
         If[w1<=>"&",Break[]];
         Table[
           {w1,w}=SeparateAmpsnd[w];
+!      Print["CANVDR: ",{w1,w}];
           Switch[w1,
             "",
             If[w=="",w=ToUpperCase[Read[-1,Word,ReadNewRecord->False]];

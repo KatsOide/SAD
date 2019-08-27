@@ -1,169 +1,38 @@
-      module tfcsi
-        use tfcbk, only:maxlbuf
-        integer*4, parameter :: nbmax=maxlbuf,nsav=6
-        type csiparam
-        sequence
-          integer*4 isav(1:0)
-          integer*4 lfni,lrecl,linep,ipoint,lfn1,ipbase,lfno
-          logical*4 rec
-        end type
-        type (csiparam) , target :: savep
-        character*16 delim,cmnt
-        integer*8 ibcloc
-        integer*4, pointer:: lfni=>savep%lfni,
-     $       lrecl=>savep%lrecl,linep=>savep%linep,ipoint=>savep%ipoint,
-     $       lfn1=>savep%lfn1,ipbase=>savep%ipbase,lfno=>savep%lfno
-        logical*4 , pointer :: rec=>savep%rec
-        integer*4 iconv,ios,ldel,lcmnt,lastln,ibegt,lastt
-        character*(nbmax) , target :: buffer
-
-        contains
-        subroutine cssave(sav)
-        implicit none
-        type (csiparam) , intent(out):: sav
-        sav=savep
-        return
-        end subroutine 
-
-        subroutine csrestore(sav)
-        implicit none
-        type (csiparam) , intent(in):: sav
-        savep=sav
-        return
-        end subroutine 
-
-        subroutine cssetp(ip)
-        implicit none
-        integer*4 ip
-        ipoint=ip
-        return
-        end subroutine
-
-        subroutine cssets(ip)
-        implicit none
-        integer*4 ip
-        ios=ip
-        return
-        end subroutine
-
-        subroutine cssetl(ip)
-        implicit none
-        integer*4 ip
-        lrecl=ip
-        return
-        end subroutine
-
-        subroutine cssetlfni(ip)
-        implicit none
-        integer*4 ip
-        lfni=ip
-        return
-        end subroutine
-
-        subroutine cssetlfno(ip)
-        implicit none
-        integer*4 ip
-        lfno=ip
-        return
-        end subroutine
-
-        subroutine cssetlfn1(ip)
-        implicit none
-        integer*4 ip
-        lfn1=ip
-        return
-        end subroutine
-
-        subroutine cssetrec(f)
-        implicit none
-        logical*4 f
-        rec=f
-        return
-        end subroutine
-
-        subroutine cssetlinep(ip)
-        implicit none
-        integer*4 ip
-c        write(*,*)'setlinep ',ip,linep,lrecl
-        linep=ip
-        return
-        end subroutine
-
-        integer*4 function icsmrk()
-        implicit none
-        icsmrk=ipoint
-        return
-        end function
-
-        integer*4 function icsstat()
-        implicit none
-        icsstat=ios
-        return
-        end function
-
-        integer*4 function icslrecl()
-        implicit none
-        icslrecl=lrecl
-        return
-        end function
-
-        integer*4 function icslfni()
-        implicit none
-        icslfni=lfni
-        return
-        end function
-
-        integer*4 function icslfno()
-        implicit none
-        icslfno=lfno
-        return
-        end function
-
-        integer*4 function icslfn1()
-        implicit none
-        icslfn1=lfn1
-        return
-        end function
-
-        integer*4 function icslinep()
-        implicit none
-        icslinep=linep
-        return
-        end function
-
-        logical*4 function csrec()
-        implicit none
-        csrec=rec
-        return
-        end function
-
-      end module
-
       subroutine csinit(lfn0,iconv1,cmnt1,rec0)
+      use tfstk
+      use tfrbuf
       use tfcsi
       use iso_c_binding
       implicit none
       integer*4 lfn0,iconv1
       character*(*) cmnt1
       logical*4 rec0
-      ibcloc=transfer(c_loc(buffer(1:1)),ibcloc)
+c      allocate(buffer0)
+      buffer=>buffer0
+      ibcloc=transfer(c_loc(buffer0(1:1)),ibcloc)/8
+c      write(*,*)'csinit-0 ',ibcloc*8,
+c     $     transfer(c_loc(jlist(1,ibcloc)),ibcloc)
+      ibuf(lfni)=ibcloc
       lfn1=lfn0
-      lrecl=1
+      ipoint=>mbuf(lfni)
+      lrecl=>lbuf(lfni)
+      lrecl=0
       buffer(1:1)=char(10)
       ipoint=1
       iconv=iconv1
-      call tfsetconvcase(iconv1 .eq. 1)
+c      call tfsetconvcase(iconv1 .eq. 1)
       delim=';'//char(10)//' ,'//char(9)
       ldel=len_trim(delim)
       cmnt=cmnt1
       lcmnt=len_trim(cmnt)
       rec=rec0
-      linep=1
+      linep=0
       lastln=0
       ibegt=0
       lastt=0
       ipbase=1
       call csrst(lfn0)
+c      write(*,*)'csinit ',lfni,ipoint,lrecl,ibcloc,buffer(1:1)
       return
       end
 

@@ -1,5 +1,6 @@
       module maccode
 c Do not forget to update sim/MACCODE.h when you change this module!!!!
+      implicit none
       integer*4 , parameter ::
      $     icNULL   =   0, icDRFT   =   1,
      $     icBEND   =   2, icQUAD   =   4, icSEXT   =   6,
@@ -110,6 +111,7 @@ c$$$      integer*8 , pointer, dimension(:) :: pidval(:)
 
 c     Don't confuse, Emacs. This is -*- fortran -*- mode!
       module tfcbk
+      implicit none
       integer*4, parameter:: maxgeneration=2**30-1,maxlevele=2**14,
      $     nsymhash=2047,nslots=32,maxlbuf=2**22
       real*8 dinfinity,dnotanumber
@@ -132,7 +134,8 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
       implicit none
       integer*8, parameter :: mpsize=2**22,kcpklist0=0,maxstack=2**25,
      $     minstack=2**18
-      integer*4, parameter :: nindex=64,mhash=32767,
+      integer*8 , parameter :: mhash=32767
+      integer*4, parameter :: nindex=64,
      $     minseg0=9,minseg1=16,minseg2=16
       integer*4, parameter :: ncbk = 2**16
       integer*8, parameter :: kcpoffset = 0
@@ -464,6 +467,7 @@ c     endif
 
       module tfcode
       use tfmem, only:sad_descriptor
+      implicit none
       real*8, parameter :: xinfinity=1.7976931348623157D308
       integer*4, parameter :: ntfoper=0,ntfreal=1,ntflist=3,ntflistr=4,
      $     ntfstkseq=5,
@@ -538,7 +542,7 @@ c     endif
      $     irtcgoto=-6,irtcabort=-7
       integer*8 ktfoper,ktflist,ktfstring,ktfsymbol,ktfpat,ktfobj,
      $     ktfmask,ktamask,ktrmask,ktfnull,ktfnr,ktfref,ktfother,
-     $     ktomask,ktftrue,ktfnan,ktfenan
+     $     ktomask,ktftrue,ktfnan,ktfenan,ktfenanb
       parameter (
      $     ktfnull  =int8(z'fff0000000000000'),
      $     ktfother =int8(z'fff2000000000000'),
@@ -703,6 +707,7 @@ c size limitation due to gfortran 7 on macOS ???
       use tfcode
       use maccbk
       use tfmem, only:sad_loc,ksad_loc,ktaloc,tfree
+      implicit none
       public
       integer*8 ispbase
       integer*4 mstk,isp,ivstkoffset,ipurefp,napuref,isporg

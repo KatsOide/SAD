@@ -177,6 +177,9 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
       enddo
       return
  1    ch=string(is1:is1)
+c      if(is1 .eq. 1)then
+c        write(*,*)'tfetok-1 ',l,ch
+c      endif
       ich=ichar(ch)
       if(levelop(ich) .ne. 0)then
         if(ch .eq. C_NEW_LINE)then
@@ -288,6 +291,7 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
         istop=is1+1
       elseif(ch .ge. '0' .and. ch .le. '9')then
         vx=eval1(string,l,is1,m)
+c        write(*,*)'tfetok-r ',ch,m,vx
         if(m .gt. 0)then
           istop=is1+m
           irt=0

@@ -3,7 +3,7 @@
       use tfcsi
       use iso_c_binding
       implicit none
-      integer*4 lrecl0,lr
+      integer*4 lrecl0,lr,lrecl00
       integer*8 is
       logical*4 unmapped
       if(lfni .le. 0)then
@@ -11,18 +11,25 @@
         return
       endif
       unmapped=itbuf(lfni) .le. moderead
-c      if(.not. unmapped)then
-c        write(*,*)'getbuf-mapped ',lfni,ipoint,lrecl
+c      if(unmapped)then
+c        write(*,*)'getbuf-unmapped ',lfni,ipoint,lrecl
 c      endif
-2     if(ipoint .ge. lrecl)then
+2     if(ipoint .gt. lrecl)then
         call tprmpt(lfni,lfno,lfn1)
         if(unmapped)then
+c          write(*,*)'getbuf-unmapped ',lfni,ipoint,lrecl,linep,rec
           if(.not. rec)then
             lrecl0=linep+1
           else
             lrecl0=lrecl+1
           endif
           ipoint=lrecl0
+          lrecl0=max(lrecl0,1)
+c          if(lfni .lt. 10)then
+c           write(*,*)'getbuf-1 ',lfni,ipoint,lrecl,lrecl0
+c           write(*,*)': ','''',buffer(lrecl0:lrecl0),''''
+c          endif
+          lrecl00=lrecl0
         endif
  1      ios=-999
         if(unmapped)then
@@ -38,36 +45,36 @@ c      endif
             go to 10
           endif
           if(lr .le. 0)then
-            lrecl=lrecl0-1
+            lrecl=max(lrecl0-1,0)
           else
             lrecl=len_trim(buffer(1:lrecl0+lr-1))
           endif
-c     write(*,*)'getbuf ',lfni,lrecl0,lr,buffer(lrecl0:lrecl)
+          ipoint=1
+c          write(*,*)'getbuf ',lfni,ipoint,lrecl,lrecl0,lr
           if(lfn1 .gt. 0)then
             write(lfn1,'(1x,a)')buffer(lrecl0:lrecl)
           endif
+          ipoint=lrecl00
           ios=0
-c     if(lrecl .ge. lrecl0)then
-c          call removetab(buffer(lrecl0:lrecl))
-c          call removecomment(buffer(lrecl0:lrecl),cmnt(1:lcmnt),'''"')
-c        endif
           if(lrecl .lt. lrecl0 .or. buffer(lrecl0:lrecl) .eq. ' ')then
-            lrecl=lrecl0
+            lrecl=max(lrecl0-1,0)
           else
-            lrecl=len_trim(buffer(1:lrecl))
             if(buffer(lrecl:lrecl) .eq. '\\')then
               lrecl0=lrecl
               go to 1
             endif
             lrecl=lrecl+1
           endif
-          if(buffer(lrecl:lrecl) .ne. char(10))then
+          if(lrecl .gt. 0 .and. buffer(lrecl:lrecl) .ne. char(10))then
             buffer(lrecl:lrecl)=char(10)
           endif
         else
           ios=0
+c          call tfreadbuf(irbsetpoint,lfni,int8(ipoint),
+c     $         int8(0),0,' ')
+c          write(*,*)'getbuf-1 ',lfni,ipoint,lrecl
           call tfreadbuf(irbreadrecord,lfni,ibcloc,is,lr,' ')
-c          if(lr .le. 0)then
+c          if(lfni .lt. 100)then
 c            write(*,*)'getbuf ',lfni,ipoint,lr,lrecl,
 c     $           buffer(ipoint:ipoint+max(lr,1)-1)
 c          endif
@@ -80,15 +87,15 @@ c          endif
           lrecl=int(max(is+lr-1,is-1))
           if(lfn1 .gt. 0)then
             if(buffer(lrecl:lrecl) .eq. char(10))then
-              write(lfn1,'(a)')buffer(is:lrecl-1)
+              write(lfn1,'(1x,a)')buffer(is:lrecl-1)
             else
-              write(lfn1,'(a)')buffer(is:lrecl)
+              write(lfn1,'(1x,a)')buffer(is:lrecl)
             endif
           endif
         endif
       else
         call skipline
-        if(ipoint .ge. lrecl)then
+        if(ipoint .gt. lrecl)then
           go to 2
         endif
       endif
@@ -104,6 +111,7 @@ c          endif
  20   if(ios .le. 0)then
         ios=99999
       endif
+c      write(*,*)'getbuf-99999'
       if(lfni .eq. 5)then
         write(*,*)'???-getbuf-end of input stream'
         stop
@@ -171,7 +179,7 @@ c      write(*,*)'setbuf ',ipoint,lrecl,string
       if(nc .gt. 0)then
         do i=ipoint,ipoint+nc-1
           if(buffer(i:i) .eq. char(10))then
-            nc=i-ipoint+1
+            nc=i-ipoint
             exit
           endif
         enddo
