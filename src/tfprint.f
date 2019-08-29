@@ -124,11 +124,11 @@ c      endif
       call loc_symdef(iaxout,sdout)
       kad=sdout%downval
       if(kad .eq. 0)then
-        kad=ktdhtaloc(iaxout-5,int8(0),15)
+        kad=ktdhtaloc(iaxout-5,i00,15)
       endif
       ilist(2,kad-1)=ior(ilist(2,kad-1),1)
       kh=itfhasharg(ktflist+karg,ilist(2,kad+2))+kad+3
-      kan=ktdaloc(int8(0),kh,klist(kh),ktfref,karg,kx,karg,.false.)
+      kan=ktdaloc(i00,kh,klist(kh),ktfref,karg,kx,karg,.false.)
       rlist(kan+7)=1.d100
       if(lfno .gt. 0)then
         call tfprintout(amaxline,irtc)
@@ -272,10 +272,6 @@ c      write(*,*)'unreadbuf ',ipoint,lrecl,l,ip1,word(1:l)
 c          write(*,*)'unreadbuf ',i,l,ip1,' ',buffer(i+l:i+l),
 c     $         ' ',word(1:l),
 c     $         index(delim(1:ldel),buffer(i+l:i+l))
-c          if(i .gt. ipbase)then
-c            write(*,*)'pre-delim: ',buffer(max(i-32,ipbase):i-1),
-c     $           index(delim(1:ldel),buffer(i-1:i-1))
-c          endif
           if((i .eq. ip1 .or.
      $         index(delim(1:ldel),buffer(i+l:i+l)) .gt. 0) .and.
      $         (i .eq. ipbase .or.

@@ -14,7 +14,7 @@
       real*8 trans(6,12),cod(6),beam(42),srot(3,9),al,ak,bz,
      $    dx,dy,theta,radlvl,f1in,f2in,f1out,f2out,eps0,
      $     aln,akn
-      integer*4 mfring,l,ld
+      integer*4 mfring,l
       logical*4 fringe,forward
       real*8 bxs,bys,bzs,ali,alm,aki,akm,rb
       integer*4 itgetqraddiv
@@ -50,7 +50,7 @@ c        ilist(1,ifvh-2)=-1
         call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
       endif
       if(fringe .and. mfring .ge. 0 .and. mfring .ne. 2)then
-        call tqfrie(trans,cod,beam,ak,al,ld,bz)
+        call tqfrie(trans,cod,beam,ak,al,bz)
       endif
       if(mfring .eq. 1 .or. mfring .eq. 3)then
         call tqlfre(trans,cod,beam,al,ak,f1in,f2in,bz)
@@ -134,7 +134,7 @@ c        ilist(1,ifvh-2)=-1
         call tqlfre(trans,cod,beam,al,ak,-f1out,f2out,bz)
       endif
       if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
-        call tqfrie(trans,cod,beam,-ak,al,ld,bz)
+        call tqfrie(trans,cod,beam,-ak,al,bz)
       endif
       if(krad .and. f1out .ne. 0.d0)then
         call tradke(trans,cod,beam,srot,f1out,0.d0,bzs*.5d0)

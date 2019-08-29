@@ -124,7 +124,7 @@ c     $     beam(1)
           int0=intra
           calint=.false.
           call tturne1(trans,cod,beam,srot,
-     $         int8(0),int8(0),int8(0),0,.false.,sol,.false.,
+     $         i00,i00,i00,0,.false.,sol,.false.,
      $         .false.,k,k)
           codplt=cp0
           calint=int0

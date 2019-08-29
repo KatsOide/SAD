@@ -703,7 +703,7 @@ c     drift in the free space
       parameter (nzmax=1000,alstep=0.05d0)
       integer*8 latt(nlat)
       integer*4 np,kturn,l,kptbl(np0,6)
-      real*8 x(np0),px(np0),y(np),py(np0),z(np0),g(np0),dv(np0),zz(np0),
+      real*8 x(np0),px(np0),y(np),py(np0),z(np0),g(np0),dv(np0),
      $     sx(np0),sy(np0),sz(np0)
       real*8 al,radius
       integer*4 ndiv,i

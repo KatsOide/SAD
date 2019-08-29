@@ -32,7 +32,7 @@
           if(lfnb .eq. 1)then
             close(98)
           endif
-          call tfreadbuf(irbassign,lfni,int8(0),int8(0),0,' ')
+          call tfreadbuf(irbassign,lfni,i00,i00,0)
         endif
         return
       elseif(abbrev(word,'TERM_INATE','_') .or.
@@ -78,7 +78,7 @@ c            mbuf(lfni)=ipoint
 c            lbuf(lfni)=lrecl
 c          endif
           write(word,'(''ftn'',i2.2)')lfni1
-          call tfreadbuf(irbassign,lfni1,int8(0),int8(0),0,' ')
+          call tfreadbuf(irbassign,lfni1,i00,i00,0)
           lfnp=lfnp+1
           lfopen(lfnp)=.false.
         elseif(ktfstringq(kx))then
@@ -129,7 +129,7 @@ c         lbuf(lfni)=lrecl
 c       endif
         lfni0=0
         write(word,'(''ftn'',i2.2)')lfni1
-        call tfreadbuf(irbassign,lfni1,int8(0),int8(0),0,' ')
+        call tfreadbuf(irbassign,lfni1,i00,i00,0)
         lfnp=lfnp+1
         lfopen(lfnp)=.false.
         rew=.false.
@@ -245,7 +245,7 @@ c
       lfnp0=max(1,lfnb-1,lfnp1-1)
       lfni=lfnstk(lfnp0)
       if(lfni .ne. lfni0)then
-        call tfreadbuf(irbassign,lfni,int8(0),int8(0),0,' ')
+        call tfreadbuf(irbassign,lfni,i00,i00,0)
       endif
       if(lfret(lfnp1) .gt. 0)then
         call cssetp(lfret(lfnp1))

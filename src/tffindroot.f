@@ -637,7 +637,7 @@ c          enddo
       real*8 data(n,m),v0(nvar)
       real*8 , allocatable :: a0(:,:),a(:,:),abest(:,:),
      $     df(:),df0(:),v00(:),w(:),cv(:,:),vbest(:),dv(:),df2(:)
-      real*8 d00,d2,eps,svi,wi,db,dbest,
+      real*8 d00,d2,eps,svi,db,dbest,
      $     fact,d0,d1,fact1,v(nvar),dg,d,fact2,tffsfmin,
      $     good,gammaq,ajump,vmin(nvar),vmax(nvar),sigma
       real*8 frac,factmin,svmin,factmin1,svdeps,cut,tinvgr,chin,x

@@ -486,7 +486,7 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
         endif
         i=ka
       enddo
-      call tfreel(int8(0),lastfree)
+      call tfreel(i00,lastfree)
       klist(j)=j
       levele=max(0,levele-1)
       itfdownlevel=levele

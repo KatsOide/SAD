@@ -6,9 +6,8 @@
       implicit none
       character*80 pr
       character*10 n,autofg
-      integer*4 ipr,lfni,lfno,lfn1,l,nc
-      save ipr
-      data ipr /0/
+      integer*4 lfni,lfno,lfn1,l,nc
+      integer*4 , save:: ipr=0
       if(lfni .eq. 5 .and. lfno .eq. 6 .and. lfn1 .eq. 0)then
         if(ipr .eq. 0)then
           if(ffsprmpt)then
@@ -43,3 +42,13 @@
       endif
       return
       end
+
+      subroutine tprmptget(lfni,lfno,lfn1)
+      implicit none
+      integer*4 , intent(in)::lfni,lfno,lfn1
+      call tprmpt(lfni,lfno,lfn1)
+      call getbuf
+      call tprmpt(0,lfno,lfn1)
+      return
+      end
+

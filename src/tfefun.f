@@ -1191,7 +1191,7 @@ c            msgn TagS (*   *)   Hold z
  6560   if(narg .ne. 2)then
           go to 6812
         endif
-        call tfupset(dtastk(isp1+1),dtastk(isp),int8(0),kx,irtc)
+        call tfupset(dtastk(isp1+1),dtastk(isp),i00,kx,irtc)
         go to 6900
  6570   if(narg .ne. 2)then
           go to 6812

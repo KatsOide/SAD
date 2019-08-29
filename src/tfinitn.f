@@ -31,7 +31,7 @@
       modethrow=-1
       ncprolog=0
       initmessage=1
-      itfcontroot=ktcontaloc(int8(0))
+      itfcontroot=ktcontaloc(i00)
       call tfassigncont(itfcontroot,'`')
       call tfassigncont(itfcontroot,'Global`')
       iaxsys=ktfsymbolc('`System`',8,itfcontroot)

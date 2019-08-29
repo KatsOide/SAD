@@ -26,7 +26,7 @@ c
             kih=ktdhtaloc(kad1,kad,minhash)
             call loc_defhash(kih,dhash)
             kad1=sad_loc(dhash%dhash(ihash))
-            kap=ktdaloc(int8(0),kad1,int8(0),sad_descr(ktfref),
+            kap=ktdaloc(i00,kad1,i00,sad_descr(ktfref),
      $           karg,k,karg,.false.)
             dhash%attr=ior(dhash%attr,1)
             kx=k
@@ -48,7 +48,7 @@ c
                 if(k%k .eq. ktfref)then
                   go to 8000
                 else
-                  kan=ktdaloc(kad,int8(0),int8(0),
+                  kan=ktdaloc(kad,i00,i00,
      $                 sad_descr(ktfref),karg,k,karg,.false.)
                   kx=k
                   return
@@ -60,7 +60,7 @@ c
           enddo
           if(k%k .ne. ktfref)then
             kad=klist(kad1)
-            kan=ktdaloc(int8(0),
+            kan=ktdaloc(i00,
      $           kad1,kad,sad_descr(ktfref),karg,k,karg,.false.)
             kx=k
           else
@@ -100,7 +100,7 @@ c          call tfdebugprint(ktflist+kal  ,'=?=   ',1)
               iordless=iop0
               go to 8000
             else
-              kan=ktdaloc(kad,int8(0),int8(0),k,karg,kr,kargr,.true.)
+              kan=ktdaloc(kad,i00,i00,k,karg,kr,kargr,.true.)
             endif
             iordless=iop0
             mstk=mstk0
@@ -134,7 +134,7 @@ c          call tfdebugprint(ktflist+kal  ,'=?=   ',1)
         endif
 c        call tfdebugprint(ktflist+kargr,'tfdset-7',3)
 c        call tfdebugprint(kr,':= ',3)
-        kan=ktdaloc(int8(0),kad1,kad,k,karg,kr,kargr,.true.)
+        kan=ktdaloc(i00,kad1,kad,k,karg,kr,kargr,.true.)
         kx=k
       else
         kx%k=ktfoper+mtfnull

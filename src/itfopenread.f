@@ -24,7 +24,7 @@
         else
           open(in,file=fname(1:nc),status='OLD',err=9000)
         endif
-        call tfreadbuf(irbinit,in,modewrite,int8(0),nc,' ')
+        call tfreadbuf(irbinit,in,int8(modewrite),i00,nc)
         itfopenread=in
         irtc=0
         return

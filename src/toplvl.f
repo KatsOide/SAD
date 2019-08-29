@@ -334,19 +334,18 @@ c
       module tfcsi
         use tfcbk, only:maxlbuf
         implicit none
-        integer*4, parameter :: nbmax=maxlbuf,nsav=6
+        integer*4, parameter :: nbmax=maxlbuf,nsav=6,ipbase=1
         type csiparam
         sequence
           integer*4 isav(1:0)
-          integer*4 lfni,lrecl,linep,ipoint,lfn1,ipbase,lfno
+          integer*4 lfni,linep,lfn1,lfno
           logical*4 rec
         end type
         type (csiparam) , target :: savep
         character*16 delim,cmnt
         integer*8 ibcloc
-        integer*4, pointer:: lfni=>savep%lfni,
-     $       lrecl=>savep%lrecl,linep=>savep%linep,ipoint=>savep%ipoint,
-     $       lfn1=>savep%lfn1,ipbase=>savep%ipbase,lfno=>savep%lfno
+        integer*4, pointer:: ipoint,lrecl,lfni=>savep%lfni,
+     $       linep=>savep%linep,lfn1=>savep%lfn1,lfno=>savep%lfno
         logical*4 , pointer :: rec=>savep%rec
         integer*4 iconv,ios,ldel,lcmnt,lastln,ibegt,lastt
         character*(nbmax) , target  :: buffer0
@@ -475,6 +474,7 @@ c        write(*,*)'setlinep ',ip,linep,lrecl
       end module
 
       module tfrbuf
+      use maccbk, only:i00
       implicit none
       integer*4, parameter :: irbinit=1,irbopen=2,irbclose=3,
      $     irbreadrecord=4,
@@ -485,8 +485,7 @@ c        write(*,*)'setlinep ',ip,linep,lrecl
       integer*4 , parameter ::
      $     modeclose=0,moderead=1,modewrite=2,modestring=3,
      $     modeshared=4,modemapped=5
-      integer*4 nbuf
-      parameter (nbuf=1024)
+      integer*4 , parameter :: nbuf=1024
       integer*4 ncprolog
       character*128 prolog
       integer*4 :: ifd(0:nbuf)=0
@@ -529,27 +528,6 @@ c
       call perror(msg)
       go to 1000
 c
-      end function
-
-      integer*4 function ipoint2mbuf(lfn,ip) result(m)
-      use tfstk
-      use tfcsi
-      use iso_c_binding
-      implicit none
-      integer*4 lfn,ip
-      m=ip+ibcloc-transfer(c_loc(jlist(1,ibuf(lfn))),m)
-      return
-      end function
-
-      integer*4 function mbuf2ipoint(lfn,m) result(ip)
-      use tfstk
-      use tfcsi
-      use iso_c_binding
-      implicit none
-      integer*4 lfn
-      integer*4 m
-      ip=m-ibcloc+transfer(c_loc(jlist(1,ibuf(lfn))),m)
-      return
       end function
 
       end module

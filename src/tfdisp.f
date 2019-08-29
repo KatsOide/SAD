@@ -13,27 +13,27 @@
       use tffitcode
       use kyparam
       use ffs_seg
+      use tfcsi, only:lfni
       implicit none
       type (sad_comp), pointer:: cmp
       integer*4 idisp1,idisp2,lfno,mdisp,icolm,ifany,id0,id3,idstep,
-     $     lines,l,id,ielme,i
+     $     lines,l,id,ielmex,i
       real*8 dp00,dgam,bx0,by0,bx1,by1,bx2,by2,r,sigpp,tfchi,
      $     etaxp,etapxp,sigxxp,sigxpxp,sigpxpxp,emixp,
      $     etayp,etapyp,sigyyp,sigypyp,sigpypyp,emiyp
-      integer*4 lname,lb,lb1
-      integer*4, parameter:: blen=ntwissfun*12+15
+      integer*4 lname,lb,lb1,l1
+      integer*4, parameter:: blen=ntwissfun*12+15,nlc=66
       real*8 pe(4),pe0(4)
       real*8 og(3,4)
       character*(*) word
       character*256 wordp,word1,name
       character*(blen) buff
-      character*16 autofg,vout
+      character*16 autofg,vout,ans
       character*8 tdispv
       character*256 bname
       character*1 dir,hc
       character*131 header
-      logical*4 tfinsol
-      logical*4 exist,dpeak,seldis,abbrev,temat,mat,dref
+      logical*4 tfinsol,exist,dpeak,seldis,abbrev,temat,mat,dref,range
 c     begin initialize for preventing compiler warning
       sigpp=0.d0
 c     end   initialize for preventing compiler warning
@@ -42,6 +42,7 @@ c     end   initialize for preventing compiler warning
       dpeak=.false.
       seldis=.false.
       dref=.false.
+      range=.false.
       mdisp=0
       icolm=0
       buff=' '
@@ -55,6 +56,7 @@ c      write(*,*)'tfdisp ',word,wordp
       elseif(abbrev(word,'ALL','_'))then
         idisp1=1
         idisp2=nlat
+        range=.true.
         go to 270
       elseif(abbrev(word,'A_CCELERATION','_'))then
         mdisp=modea
@@ -93,7 +95,7 @@ c      write(*,*)'tfdisp ',word,wordp
         dref=.true.
         go to 270
       endif
-      id0=ielme(wordp,exist,lfno)
+      id0=ielmex(wordp,exist,lfno)
       if(exist)then
         idisp1=id0
       else
@@ -103,7 +105,7 @@ c      write(*,*)'tfdisp ',word,wordp
         go to 250
       endif
       call getwdl2(word,wordp)
-      id0=ielme(wordp,exist,lfno)
+      id0=ielmex(wordp,exist,lfno)
       if(exist)then
         idisp2=id0
       else
@@ -112,6 +114,9 @@ c      write(*,*)'tfdisp ',word,wordp
 250   if(idisp1 .eq. idisp2)then
         id3=nlat
         idstep=max(nlat-idisp2,1)
+      elseif(idisp2 .lt. idisp1)then
+        id3=idisp2+nlat
+        idstep=1
       else
         id3=idisp2
         idstep=1
@@ -168,7 +173,8 @@ c      write(*,*)'tfdisp ',word,wordp
       elseif(icolm .eq. -1)then
         call trefheader(header,mdisp)
       endif
-      do 200 l=idisp1,id3,idstep
+      do 200 l1=idisp1,id3,idstep
+        l=mod(l1-1,nlat)+1
         mat=temat(l,name,word1)
         lname=len_trim(name)
         if(seldis .and. .not. mat)then
@@ -211,13 +217,27 @@ c      write(*,*)'tfdisp ',word,wordp
         else
           vout=' 0'
         endif
+        if(mod(lines,nlc) .eq. 0 .and. lines .ne. 0
+     $       .and. lfni .eq. 5 .and. lfno .eq. 6 .and.
+     $       .not. range)then
+          write(lfno,'(a,$)')'(c_ontinue, q_uit, a_ll)? '
+          read(lfni,'(a)')ans
+          select case (ans(1:1))
+          case ('a')
+            range=.true.
+          case ('c')
+          case ('q')
+            exit
+          case default
+          end select
+        endif
         if(mdisp .eq. modeg .or. mdisp .eq. modeog)then
           if(mdisp .eq. modeg)then
             hc=' '
           else
             hc='O'
           endif
-          if(mod(lines,66) .eq. 0)then
+          if(mod(lines,nlc) .eq. 0)then
             write(lfno,9022)hc,hc,hc,hc,hc,hc
 9022        format(
      1           ' Element             ',a,
@@ -296,7 +316,7 @@ c$$$          enddo
 c$$$          buff((26-1)*12+16:26*12+15)=vout
           write(lfno,'(a)')buff(1:blen)
         else
-          if(mod(lines,66) .eq. 0)then
+          if(mod(lines,nlc) .eq. 0)then
             write(lfno,'(a)')header
           endif
           select case (mdisp)

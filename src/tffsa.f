@@ -150,10 +150,10 @@ c
           lfrecl(1)=1
           lflinep(1)=1
           itbuf(5)=moderead
-          call tfreadbuf(irbreset,5,int8(0),int8(0),0,' ')
+          call tfreadbuf(irbreset,5,i00,i00,0)
           if(infl .ne. 5)then
             lfnp=2
-            call tfreadbuf(irbbor,infl,int8(0),int8(0),0,' ')
+            call tfreadbuf(irbbor,infl,i00,i00,0)
             lfnstk(2)=infl
             lfret(2)=0
             lfrecl(2)=lbuf(infl)
@@ -179,7 +179,7 @@ c
       lfopen(lfnp)=.false.
       if(lfni .ne. lfnstk(lfnp))then
         lfni=lfnstk(lfnp)
-        call tfreadbuf(irbassign,lfni,int8(0),int8(0),0,' ')
+        call tfreadbuf(irbassign,lfni,i00,i00,0)
       endif
       lfno=outfl
 c      write(*,*)'tffsa ',lfnp,lfni,lfno
@@ -446,7 +446,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
         else
           byeall=.false.
         endif
-        call tffssaveparams(4,int8(0),err)
+        call tffssaveparams(4,i00,err)
         if(err)then
           if(byeall)then
             go to 10
@@ -458,7 +458,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
         call tclrpara(elatt,elatt%nlat1-2)
         call tffsfree
         if(byeall)then
-          call tffssaveparams(-2,int8(0),err)
+          call tffssaveparams(-2,i00,err)
         endif
         call tffssaveparams(1,ilattp,err)
         call loc_el(ilattp,elatt)
@@ -1205,7 +1205,7 @@ ckiku   call tfstr(word,latt,ist,nstr)
           call ffs_init_sizep
 c          ilist(2,iwakepold+6)=int(ifsize)
         endif
-        call temitf(codplt,lfni,lfno)
+        call temitf(codplt,lfno)
         trpt=trpt0
         if(codplt)then
           updatesize=.true.
@@ -1241,7 +1241,7 @@ c          ilist(2,iwakepold+6)=int(ifsize)
         endif
         call temits(mphi2,amus0,amus1,amusstep,
      $     emxe,emye,rese,rlist(iparams),
-     $     lfno,int8(0),irtc)
+     $     lfno,i00,irtc)
         call tfree(iparams)
         if(codplt)then
           updatesize=.true.

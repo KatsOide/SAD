@@ -1807,7 +1807,7 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       ifmast =ktaloc(nlat/2+1)
       ifival=ktaloc(nele/2+1)
       ifdcomp=ktaloc(nele)
-      klist(ifdcomp:ifdcomp+nele-1)=int8(0)
+      klist(ifdcomp:ifdcomp+nele-1)=i00
       ifele =ktaloc(nlat/2+1)
       ifele2=ktaloc(nlat)
       ifklp =ktaloc(nele/2+1)
@@ -1938,20 +1938,17 @@ c      call tfree(ifibzl)
       levele=levele+1
 c      write(*,*)'tfffs-0 ',lfni,ipoint,lrecl
       call cssave(sav)
-c      call tfreadbuf(irbsetpoint,lfni,int8(ipoint),
-c     $     int8(0),0,' ')
       call tfreadbuf(irbopen,lfn,ktfaddr(ktastk(isp1+1)),
-     $     int8(modestring),str%nch,' ')
-      call tfreadbuf(irbassign,lfn,int8(0),int8(0),0,' ')
+     $     int8(modestring),str%nch)
+      call tfreadbuf(irbassign,lfn,i00,i00,0)
       ipoint=1
       lrecl=0
-      ipbase=1
 c      write(*,*)'tfffs ',lfn
       call tffsa(lfnp+1,lfn,kx,irtc)
-      call tfreadbuf(irbclose,lfn,int8(0),int8(0),0,' ')
+      call tfreadbuf(irbclose,lfn,i00,i00,0)
       call tclrfpe
       call csrestore(sav)
-      call tfreadbuf(irbassign,lfni,int8(0),int8(0),0,' ')
+      call tfreadbuf(irbassign,lfni,i00,i00,0)
 c      write(*,*)'tfffs-1 ',lfni,ipoint,lrecl
       outfl=outfl1
       if(irtc .eq. 0 .and. iffserr .ne. 0)then

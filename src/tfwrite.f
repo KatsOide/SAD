@@ -390,9 +390,8 @@ c      call tfdebugprint(k,'tfget',1)
       rec=.false.
       levele=levele+1
       kx%k=ktfoper+mtfnull
-      call tfreadbuf(irbassign,lfn,int8(0),int8(0),0,' ')
+      call tfreadbuf(irbassign,lfn,i00,i00,0)
       lfn1=0
-      ipbase=1
       call skipln
 c      write(*,*)'tfget-0 ',lfn,ipoint,lrecl,buffer(1:1)
       itf=0
@@ -416,11 +415,11 @@ c          write(*,*)'tfget-skipln ',ios
       call tfconnect(kx,0)
       close(lfn)
 c      write(*,*)'tfget-6 ',lfni,buffer(ipoint:ipoint)
-      call tfreadbuf(irbclose,lfn,int8(0),int8(0),nc,' ')
+      call tfreadbuf(irbclose,lfn,i00,i00,nc)
 c      write(*,*)'tfget-6.5 ',lfni,ipoint
       call csrestore(sav)
 c      write(*,*)'tfget-7 ',lfni,ipoint
-      call tfreadbuf(irbassign,lfni,int8(0),int8(0),0,' ')
+      call tfreadbuf(irbassign,lfni,i00,i00,0)
 c      write(*,*)'tfget-8 ',lfni,ipoint
       if(itf .eq. -3)then
         irtc=irtcabort
@@ -449,22 +448,23 @@ c      write(*,*)'tfget-8 ',lfni,ipoint
       openf=lfn .gt. 0 .and. lfn .ne. lfni0
       if(openf)then
         call cssave(sav)
-        call tfreadbuf(irbassign,lfn,int8(0),int8(0),0,' ')
+        call tfreadbuf(irbassign,lfn,i00,i00,0)
         lfn1=0
         nc=0
         if(itbuf(lfn) .le. moderead)then
-          call tfreadbuf(irbreadbuf,lfn,int8(0),int8(0),nc,buffer)
+          call tfreadbuf(irbreadbuf,lfn,i00,is,nc)
           if(nc .gt. 0)then
-            call setbuf(buffer(1:nc),nc)
-          else
-            ipoint=sav%lrecl
+            ipoint=int(is)
           endif
+c          if(nc .gt. 0)then
+c            call setbuf(buffer(1:nc),nc)
+c          endif
         else
 c          write(*,*)'read1-a ',lfn,ipoint,lrecl
           if(ipoint .le. 0)then
             call skipln
           endif
-          call tfreadbuf(irbreadbuf,lfn,ibcloc,is,nc,' ')
+          call tfreadbuf(irbreadbuf,lfn,ibcloc,is,nc)
 c          write(*,*)'read1 ',lfn,is,nc,buffer(is:is+nc-1)
           if(nc .gt. 0)then
             ipoint=int(is)
@@ -482,9 +482,7 @@ c            lrecl=int(is+nc)
 c      call tfdebugprint(kx,'read1',1)
 c      WRITE(*,*)'with: ',lfni,ipoint,lrecl,itf
       if(itf .eq. -1)then
-        call tprmpt(-1,-1,0)
-        call getbuf
-        call tprmpt(0,-1,0)
+        call tprmptget(-1,-1,0)
         if(ios .eq. 0)then
           go to 1
         endif
@@ -494,15 +492,15 @@ c        write(*,*)'read1 ',ios
         ios=0
         kx%k=kxeof
         if(openf)then
-          call tfreadbuf(irbreset,lfn,int8(0),int8(0),nc,' ')
+          call tfreadbuf(irbreset,lfn,i00,i00,nc)
         endif
       elseif(openf .and. itbuf(lfn) .gt. modewrite)then
-c        call tfreadbuf(irbsetpoint,lfn,int8(ipoint),int8(0),nc,' ')
+c        call tfreadbuf(irbsetpoint,lfn,int8(ipoint),i00,nc)
       endif
       call tfconnect(kx,0)
       if(openf)then
         call csrestore(sav)
-        call tfreadbuf(irbassign,lfni,int8(0),int8(0),0,' ')
+        call tfreadbuf(irbassign,lfni,i00,i00,0)
       endif
       irtc=0
       return
@@ -674,10 +672,9 @@ c          enddo
       use tfstk
       use readopt
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) kx,kxi
       type (sad_dlist) list
       type (sad_dlist), pointer ::kl,klx
-      integer*8 kxi
       integer*4 lfn,irtc,isp0,isp2,kk,m
       logical*4 mult
       type(ropt) opts
@@ -696,11 +693,11 @@ c          enddo
           return
         endif
         isp=isp0
-        if(ktfsequenceq(kxi,kl))then
+        if(ktfsequenceq(kxi%k,kl))then
           call tfgetllstkall(kl)
         else
           isp=isp+1
-          ktastk(isp)=kxi
+          dtastk(isp)=kxi
         endif
       enddo
       kx=kxmakelist0(isp2,klx)
@@ -804,214 +801,100 @@ c          enddo
       use readopt
       implicit none
       type (sad_descriptor) kx
-      type (sad_string), pointer :: str
+c      type (sad_string), pointer :: str
       integer*8 ib,is,ie
-      integer*4 irtc,lfn,isw,next,nc1,nc,lfni0
-      logical*4 char1
+      integer*4 irtc,lfn,isw,next,nc1,nc,lfni0,isavebuf
+      logical*4 char1,fb
       type(ropt) opts
       irtc=0
       isw=1
       lfni0=lfni
       if(lfn .ne. lfni)then
-        call tfreadbuf(irbassign,lfn,int8(0),int8(0),0,' ')
+        call tfreadbuf(irbassign,lfn,i00,i00,0)
       endif
-      if(lfn .le. 0 .or. itbuf(lfn) .lt. modestring)then
-        call tfreadstringfb(lfn,kx,char1,opts,irtc)
-        go to 1000
-      endif
- 20   call tfreadbuf(irbgetpoint,lfn,ib,is,nc,' ')
-c      write(*,*)'tfreadstr ',lfn,ib,is,nc
+      fb=lfn .le. 0 .or. itbuf(lfn) .lt. modestring
+ 20   call tfreadbuf(irbgetpoint,lfn,ib,is,nc)
+c      write(*,*)'tfreadstring ',lfn,ib,is,nc,fb
  10   if(nc .lt. 0)then
-        call tfreadbuf(irbreadrecordbuf,lfn,ib,is,nc,' ')
-        if(nc .ge. 0)then
-          go to 20
-        else
-          go to 101
-        endif
-      else
-        if(nc .eq. 0)then
-          if(lfn .eq. 0)then
-            kx%k=kxeof
-            go to 1000
-          endif
-          if(opts%new)then
-            if((opts%ndel .gt. 0 .and. .not. opts%null) .or. char1)then
-              nc=-1
-              go to 10
-            endif
-            call tfreadbuf(irbeor2bor,lfn,int8(0),int8(0),nc,' ')
-          endif
-          kx=dxnulls
-          go to 1000
-        else
-          isw=1
-          if(char1)then
-            nc1=1
-            next=2
-          elseif(opts%ndel .gt. 0)then
-            call tfword(jlist(is,ib),nc,opts%delim(1:opts%ndel),
-     $           opts%ndel,isw,nc1,next,opts%null)
-            if(nc1 .le. 0 .and. .not. opts%null)then
-              if(opts%new)then
-                nc=-1
-                go to 10
-              else
-                nc1=0
-                next=nc+1
-              endif
-            endif
-c            write(*,*)'readstringf-word ',isw,nc1,next,'''',
-c     $           buffer(isw:isw+nc1-1),''''
-          else
-            nc1=nc
-            next=nc+1
-          endif
-          if(opts%new .and. next .gt. nc)then
-            call tfreadbuf(irbbor,lfn,int8(0),int8(0),nc,' ')
-          else
-            call tfreadbuf(irbmovepoint,lfn,int8(0),int8(0),next-1,' ')
-          endif
-          nc=nc1
-        endif
-        call loc_sad(ib-1,str)
-        ie=is+isw-2+nc
-        if(str%str(ie:ie) .eq. char(10))then
-          ie=ie-1
-          nc=nc-1
-        endif
-        kx=kxsalocb(-1,str%str(is+isw-1:ie),nc)
-        go to 1000
-      endif
-      go to 1000
- 101  kx%k=kxeof
- 1000 if(lfn .ne. lfni0)then
-        call tfreadbuf(irbassign,lfni0,int8(0),int8(0),0,' ')
-      endif
-      return
-      end
-
-      subroutine tfreadstringfb(lfn,kx,char1,opts,irtc)
-      use tfstk
-      use tfrbuf
-      use tfcsi
-      use readopt
-      implicit none
-      type (sad_descriptor) kx
-c      type (sad_string), pointer :: str
-      integer*8 ib,is
-      integer*4 irtc,lfn,isw,next,nc1,nc
-      character*(maxlbuf) buff
-      logical*4 char1
-      type(ropt) opts
-      irtc=0
-      isw=1
- 20   call tfreadbuf(irbgetpoint,lfn,ib,is,nc,' ')
-c      write(*,*)'readstrfb-getpoint ',lfn,ib,is,nc,buffer(is:is+nc-1)
- 10   if(nc .lt. 0)then
-        if(lfn .gt. 0 .and. lfn .ne. lfni)then
-          call tfreadbuf(irbreadrecordbuf,lfn,ib,is,nc,buff)
+        if(.not. fb .or. lfn .gt. 0 .and. lfn .ne. lfni)then
+          call tfreadbuf(irbreadrecordbuf,lfn,ib,is,nc)
           if(nc .ge. 0)then
             go to 20
           else
             go to 101
           endif
         else
-          call savebuf(buff,nc)
-c          write(*,*)'rdstrfb-savebuf ',ipoint,lrecl,nc,
-c     $         '''',buff(1:nc),''''
+          nc=isavebuf()
           if(nc .le. 0)then
             if(lfn .eq. 0)then
               go to 101
             endif
             if(opts%new)then
-              call tprmpt(-1,-1,0)
-c              write(*,*)'readstringfb ',lfni
-              call getbuf
+              call tprmptget(-1,-1,0)
               if(ios .ne. 0)then
                 go to 101
               endif
-              call tprmpt(0,-1,0)
-              call savebuf(buff,nc)
+              nc=isavebuf()
             else
               nc=0
               go to 1
             endif
           endif
-          if(char1)then
-            nc=1
-            ipoint=ipoint+1
-          elseif(opts%ndel .gt. 0)then
-            call tfword(buff(1:nc),nc,opts%delim(1:opts%ndel),
-     $           opts%ndel,isw,nc1,next,opts%null)
-            if(next .gt. 0)then
-              ipoint=ipoint+next
-            else
-              ipoint=ipoint+nc
-            endif
-            nc=nc1
-          else
-            ipoint=ipoint+nc
-          endif
         endif
- 1      kx=kxsalocb(-1,buff(isw:),nc)
-c     call tfdebugprint(kx,'rdstrfb-end',1)
-        return
- 101    kx%k=kxeof
-      else
-        if(nc .eq. 0)then
-          if(lfn .eq. 0)then
-            kx%k=kxeof
-            return
-          endif
+      endif
+      if(nc .eq. 0)then
+        if(lfn .eq. 0)then
+          kx%k=kxeof
+        else
           if(opts%new)then
             if((opts%ndel .gt. 0 .and. .not. opts%null) .or. char1)then
               nc=-1
               go to 10
             endif
-            call tfreadbuf(irbeor2bor,lfn,int8(0),int8(0),nc,' ')
+            call tfreadbuf(irbeor2bor,lfn,i00,i00,nc)
           endif
           kx=dxnulls
-          return
-        else
-          if(char1)then
-            nc1=1
-            next=2
-          elseif(opts%ndel .gt. 0)then
-c            write(*,*)'rdstrfb-word ',is,ib,nc,opts%ndel,
-c     $           isw,nc1,next
-            call tfword(buffer(is:is+nc-1),nc,opts%delim(1:opts%ndel),
-     $           opts%ndel,isw,nc1,next,opts%null)
-c            call tfword(jlist(is,ib),nc,opts%delim(1:opts%ndel),
-c     $           opts%ndel,isw,nc1,next,opts%null)
-c            write(*,*)'rdstrfb-word-end ',is,ib,nc,opts%ndel,
-c     $           isw,nc1,next
-            if(nc1 .le. 0 .and. .not. opts%null)then
-              if(opts%new)then
-                nc=-1
-                go to 10
-              else
-                nc1=0
-                next=nc+1
-              endif
-            endif
+        endif
+        go to 1000
+      endif
+      if(char1)then
+        nc1=1
+        next=2
+      elseif(opts%ndel .gt. 0)then
+        call tfword(buffer(is:is+nc-1),opts%delim(1:opts%ndel),
+     $       isw,nc1,next,opts%null)
+        if(nc1 .le. 0 .and. .not. opts%null)then
+          if(opts%new)then
+            nc=-1
+            go to 10
           else
-            nc1=nc
+            nc1=0
             next=nc+1
           endif
-c          write(*,*)'rdstrfb-8 ',lfn,opts%new,opts%ndel,
-c     $         next,nc,nc1,ipoint,lrecl
-          if(opts%new .and. next .gt. nc)then
-            call tfreadbuf(irbbor,lfn,int8(0),int8(0),nc,' ')
-          else
-            call tfreadbuf(irbmovepoint,lfn,int8(0),int8(0),next-1,' ')
-          endif
-          nc=nc1
         endif
-c        call loc_sad(ib-1,str)
-        kx=kxsalocb(-1,buffer(is+isw-1:is+isw-2+nc),nc)
-c        call tfdebugprint(kx,'rdstrfb-9',1)
-c        write(*,*)': ',is,isw,nc,buffer(is+isw-1:is+isw-2+nc)
-c        kx=kxsalocb(-1,jlist(is+isw-1,ib),nc)
+c            write(*,*)'readstringf-word ',is,isw,nc1,next,'''',
+c     $           buffer(is+isw-1:is+isw+nc1-2),''''
+      else
+        nc1=nc
+        next=nc+1
+      endif
+      if(opts%new .and. next .gt. nc)then
+        call tfreadbuf(irbbor,lfn,i00,i00,nc)
+      else
+        call tfreadbuf(irbmovepoint,lfn,i00,i00,next-1)
+      endif
+      nc=nc1
+      ie=is+isw-2+nc
+      if(buffer(ie:ie) .eq. char(10))then
+        nc=nc-1
+      endif
+c      write(*,*)'tfrstr-9 ',is,ie,nc,'''',
+c     $     buffer(is+isw-1:is+isw-1+nc-1),''''
+ 1    kx=kxsalocb(-1,buffer(is+isw-1:),nc)
+      go to 1000
+ 101  kx%k=kxeof
+ 1000 if(lfn .ne. lfni0)then
+        call tfreadbuf(irbassign,lfni0,i00,i00,0)
       endif
       return
       end
@@ -1119,22 +1002,22 @@ c        kx=kxsalocb(-1,jlist(is+isw-1,ib),nc)
       return
       end
 
-      subroutine tfword(str,nc,del,ndel,is,nw,next,null)
+      subroutine tfword(str,del,is,nw,next,null)
       implicit none
-      integer*4 nw,is,nc,i,next,ndel
-      character*(ndel) del
+      integer*4 nw,is,nc,i,next
+      character*(*) str,del
       logical*4 null
-      integer*1 str(nc)
+      nc=len(str)
       if(null)then
         is=1
-        if(index(del,char(str(1))) .gt. 0)then
+        if(index(del,str(1:1)) .gt. 0)then
           next=2
           nw=0
           return
         endif
       else
         do i=1,nc
-          if(index(del,char(str(i))) .le. 0)then
+          if(index(del,str(i:i)) .le. 0)then
             is=i
             go to 10
           endif
@@ -1145,16 +1028,14 @@ c        kx=kxsalocb(-1,jlist(is+isw-1,ib),nc)
         return
       endif
  10   do i=is+1,nc
-        if(index(del,char(str(i))) .gt. 0)then
+        if(index(del,str(i:i)) .gt. 0)then
           nw=i-is
           next=i+1
-c          write(*,*)'tfword-i ',nc,i,is,nw,next,str(1:nc)
           return
         endif
       enddo
       next=nc+1
       nw=next-is
-c      write(*,*)'tfword-9 ',nc,is,nw,next,str(1:nc)
       return
       end
 
@@ -1259,7 +1140,7 @@ c          endif
           irtc=itfmessage(999,'General::fileopen',str%str(1:str%nch))
           kx=dxfailed
         else
-          call tfreadbuf(irbopen,lfn,kfile/8,ksize+modemapped,ifile,' ')
+          call tfreadbuf(irbopen,lfn,kfile/8,ksize+modemapped,ifile)
           kx%k=kfromr(dble(lfn))
         endif
       endif
@@ -1367,7 +1248,7 @@ c      endif
         return
       endif
       call tfreadbuf(irbopen,iu,ktfaddr(ktastk(isp)),
-     $     modestring,nc,' ')
+     $     modestring,nc)
       if(iu .le. 0)then
         irtc=itfmessage(9,'General::fileopen','"(String)"')
       else
@@ -1388,7 +1269,7 @@ c      endif
         irtc=itfmessage(9,'General::wrongtype','"Real number"')
         return
       endif
-      call tfreadbuf(irbclose,iu,int8(0),int8(0),nc,' ')
+      call tfreadbuf(irbclose,iu,i00,i00,nc)
       irtc=0
       return
       end

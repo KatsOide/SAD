@@ -1,5 +1,5 @@
       subroutine JNLPRM(buf,LLEN,pbuf)
-      use tfrbuf, only:modemapped,irbassign
+      use tfrbuf, only:modemapped,irbassign,i00
       use tfcsi
       use macfile, only:MAXLLEN
 c
@@ -49,7 +49,7 @@ cccccccccccccK. Oide 9/1/2000
             kfile=mapallocfd(ifd,ksize,irtc)
             if(irtc .eq. 0)then
               call irbopen1(lfn77,kfile/8,ksize+modemapped,ifd)
-              call tfreadbuf(irbassign,lfn77,int8(0),int8(0),0,' ')
+              call tfreadbuf(irbassign,lfn77,i00,i00,0)
               ipoint=1
               lrecl=0
             else

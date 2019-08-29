@@ -30,7 +30,6 @@ c      call tfsetconvcase(iconv1 .eq. 1)
       lastln=0
       ibegt=0
       lastt=0
-      ipbase=1
       call csrst(lfn0)
 c      write(*,*)'csinit ',lfni,ipoint,lrecl,ibcloc,buffer(1:1)
       return

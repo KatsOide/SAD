@@ -18,7 +18,6 @@ c        call tfdebugprint(kx,'itfgeto',3)
 c        write(*,*)'with ',lfni,irtc,ipoint,lrecl,m
 c      endif
       ipoint=m
-c      call tfreadbuf(irbsetpoint,lfni,int8(ipoint-1),int8(0),0,' ')
       if(irtc .eq. 0)then
         itfgeto=0
       elseif(irtc .gt. 0 .and. kerror .ne. 0)then

@@ -1,9 +1,9 @@
-      subroutine tqfrie(trans,cod,beam,ak,al,ld,bz)
+      subroutine tqfrie(trans,cod,beam,ak,al,bz)
       use tfstk
       use ffs_flag
       use tmacro
       implicit none
-      integer*4 ld,i
+      integer*4 i
       real*8 trans(6,12),cod(6),beam(42),ak,al,bz,akk,pr
       real*8 trans1(6,6),xmax
       real*8 xi,yi,aki,a,b,d,ab,t,dx1,dy1,xx,yy,h,f,bzh,pxi,pyi,

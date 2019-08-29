@@ -31,7 +31,7 @@ c Do not forget to update sim/MACCODE.h when you change this module!!!!
       integer*4 HTMAX,MAXPNAME,LILISTDUMMY
       parameter(MAXPNAME=32,LILISTDUMMY=3)
       character*(MAXPNAME) NULSTR
-      parameter(HTMAX=2**16,NULSTR='        ')
+      parameter(HTMAX=2**18,NULSTR='        ')
 
       integer*4 pagesz,inipage
       parameter(pagesz=4096/8,inipage=4)
@@ -61,6 +61,7 @@ c$$$      integer*8 , pointer, dimension(:) :: pidval(:)
       real*8, pointer, dimension(:) :: rlist
       integer*4, pointer, dimension(:,:) :: ilist
       integer*1, pointer, dimension(:,:)  :: jlist
+      integer*8, parameter :: i00=int8(0)
 
       interface sethtb
         module procedure sethtb4,sethtb8
@@ -85,7 +86,7 @@ c$$$      integer*8 , pointer, dimension(:) :: pidval(:)
         else
           idtype(idx)=type
           if(type .eq. icRSVD) then
-            idval(idx)=transfer(c_loc(ival),int8(0))/8
+            idval(idx)=transfer(c_loc(ival),i00)/8
           else
             idval(idx)=ival
           endif
@@ -131,6 +132,7 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
       end module
 
       module tfmem
+      use maccbk, only:i00
       implicit none
       integer*8, parameter :: mpsize=2**22,kcpklist0=0,maxstack=2**25,
      $     minstack=2**18
@@ -165,7 +167,7 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
         use iso_c_binding
         implicit none
         type (sad_descriptor), target, intent(in) :: k
-        dsad_loc=(transfer(c_loc(k),int8(0))-kcpklist0)/8
+        dsad_loc=(transfer(c_loc(k),i00)-kcpklist0)/8
         return
         end function
 
@@ -173,7 +175,7 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
         use iso_c_binding
         implicit none
         integer*8, target, intent(in) :: k
-        ksad_loc=(transfer(c_loc(k),int8(0))-kcpklist0)/8
+        ksad_loc=(transfer(c_loc(k),i00)-kcpklist0)/8
         return
         end function
 
@@ -181,7 +183,7 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
         use iso_c_binding
         implicit none
         integer*4, target, intent(in):: i
-        isad_loc=(transfer(c_loc(i),int8(0))-kcpklist0)/8
+        isad_loc=(transfer(c_loc(i),i00)-kcpklist0)/8
         return
         end function
 
@@ -189,7 +191,7 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
         use iso_c_binding
         implicit none
         real*8, target, intent(in):: x
-        rsad_loc=(transfer(c_loc(x),int8(0))-kcpklist0)/8
+        rsad_loc=(transfer(c_loc(x),i00)-kcpklist0)/8
         return
         end function
 
@@ -200,9 +202,9 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
         type (c_ptr) cp
         integer*4, save::lps=0
         integer*4 getpagesize
-c        kcpklist0=transfer(c_loc(kdummy),int8(0))
+c        kcpklist0=transfer(c_loc(kdummy),i00)
 c        write(*,*)'tfcbkinit ',kcpklist0,2**31
-c        kcpklist0=transfer(c_loc(kdummy),int8(0))-kcpoffset-8
+c        kcpklist0=transfer(c_loc(kdummy),i00)-kcpoffset-8
         if(lps .eq. 0)then
           lps=getpagesize()
         endif
@@ -229,7 +231,7 @@ c$$$        pidval=>idval
         integer*8 ka,ic
         allocate(sadalloc(ncbk))
         allocate(sadalloc(1)%ca(nindex*2+mhash+16))
-        ka=transfer(c_loc(sadalloc(1)%ca(1)),int8(0))
+        ka=transfer(c_loc(sadalloc(1)%ca(1)),i00)
         kfirstalloc=ka
 c     kcpklist0=0
         call tfcbkinit
@@ -563,7 +565,8 @@ c     endif
      $     ktfenan  =int8(z'7ff0000000000000'),
      $     ktfenanb =int8(z'000fffffffffffff')
      $     )
-      integer*4 , parameter :: mbody = 2**24
+      integer*4 , parameter :: mbody = 2**8
+      integer*4 , parameter :: mbody1 = 2**8
 
       type sad_object
       sequence
@@ -571,7 +574,7 @@ c     endif
       type (sad_descriptor) alloc
       integer*4 ref,nl
       integer*8 body(1:0)
-      type (sad_descriptor) dbody(0:mbody)
+      type (sad_descriptor) dbody(0:mbody1)
       end type
 
       type sad_list
@@ -584,7 +587,7 @@ c     endif
       real*8 rbody(1:0)
       complex*16 cbody(1:0)
       type (sad_descriptor) dbody(1:0)
-      integer*8 body(1:mbody)
+      integer*8 body(1:mbody1)
       end type
 
       type sad_dlist
@@ -598,7 +601,7 @@ c     endif
       real*8 rbody(1:0)
       complex*16 cbody(1:0)
       integer*8 body(1:0)
-      type (sad_descriptor) dbody(1:mbody)
+      type (sad_descriptor) dbody(1:mbody1)
       end type
 
       type sad_rlist
@@ -612,7 +615,7 @@ c     endif
       complex*16 cbody(1:0)
       integer*8 body(1:0)
       type (sad_descriptor) dbody(1:0)
-      real*8 rbody(1:mbody)
+      real*8 rbody(1:mbody1)
       end type
 
       type sad_complex
@@ -671,7 +674,7 @@ c     endif
       integer*1 istr(1:0)
       integer*8 kstr(1:0)
 c size limitation due to gfortran 7 on macOS ???
-      character*(mbody) str
+      character*(mbody1) str
       end type
 
       type sad_namtbl
@@ -3635,7 +3638,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         integer*4 , intent(in)::l
         integer*8 ktfsymbolc
         character , intent(in)::name(l)
-        ktfsymbolz=ktfsymbolc(name,l,int8(0))
+        ktfsymbolz=ktfsymbolc(name,l,i00)
         if(present(symd))then
           call loc_symdef(ktfsymbolz,symd)
         endif

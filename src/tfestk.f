@@ -1052,10 +1052,8 @@ c      call tfdebugprint(kx,'==>',1)
       ip1=ipoint
       ipoint=istop
 c      write(*,*)'tfevalbuf'
-      call tprmpt(ipr,-1,0)
-      call getbuf
-      call tprmpt(0,-1,0)
-      if(csrec())then
+      call tprmptget(ipr,-1,0)
+      if(rec)then
         ipoint=ip1
       else
         istop=ipoint

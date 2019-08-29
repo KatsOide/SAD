@@ -11,13 +11,9 @@
         return
       endif
       unmapped=itbuf(lfni) .le. moderead
-c      if(unmapped)then
-c        write(*,*)'getbuf-unmapped ',lfni,ipoint,lrecl
-c      endif
 2     if(ipoint .gt. lrecl)then
         call tprmpt(lfni,lfno,lfn1)
         if(unmapped)then
-c          write(*,*)'getbuf-unmapped ',lfni,ipoint,lrecl,linep,rec
           if(.not. rec)then
             lrecl0=linep+1
           else
@@ -25,20 +21,13 @@ c          write(*,*)'getbuf-unmapped ',lfni,ipoint,lrecl,linep,rec
           endif
           ipoint=lrecl0
           lrecl0=max(lrecl0,1)
-c          if(lfni .lt. 10)then
-c           write(*,*)'getbuf-1 ',lfni,ipoint,lrecl,lrecl0
-c           write(*,*)': ','''',buffer(lrecl0:lrecl0),''''
-c          endif
           lrecl00=lrecl0
-        endif
- 1      ios=-999
-        if(unmapped)then
+ 1        ios=-999
           if(lrecl0 .gt. nbmax-256)then
             ios=999999
             go to 10
           endif
-          call tfreadbuf(irbreadrecord,lfni,int8(0),int8(0),
-     $         lr,buffer(lrecl0:))
+          call tfreadbuf(irbreadrecord,lfni,int8(lrecl0),i00,lr)
           if(lr .eq. -99)then
             go to 20
           elseif(lr .eq.  -999)then
@@ -50,7 +39,6 @@ c          endif
             lrecl=len_trim(buffer(1:lrecl0+lr-1))
           endif
           ipoint=1
-c          write(*,*)'getbuf ',lfni,ipoint,lrecl,lrecl0,lr
           if(lfn1 .gt. 0)then
             write(lfn1,'(1x,a)')buffer(lrecl0:lrecl)
           endif
@@ -70,10 +58,8 @@ c          write(*,*)'getbuf ',lfni,ipoint,lrecl,lrecl0,lr
           endif
         else
           ios=0
-c          call tfreadbuf(irbsetpoint,lfni,int8(ipoint),
-c     $         int8(0),0,' ')
 c          write(*,*)'getbuf-1 ',lfni,ipoint,lrecl
-          call tfreadbuf(irbreadrecord,lfni,ibcloc,is,lr,' ')
+          call tfreadbuf(irbreadrecord,lfni,ibcloc,is,lr)
 c          if(lfni .lt. 100)then
 c            write(*,*)'getbuf ',lfni,ipoint,lr,lrecl,
 c     $           buffer(ipoint:ipoint+max(lr,1)-1)
@@ -170,20 +156,18 @@ c      write(*,*)'setbuf ',ipoint,lrecl,string
       return
       end
 
-      subroutine savebuf(string,nc)
+      integer*4 function isavebuf() result(nc)
       use tfcsi
       implicit none
-      integer*4 nc,i
-      character*(*) string
-      nc=min(len(string),max(lrecl-ipoint,0))
+      integer*4 i
+      nc=max(lrecl-ipoint,0)
       if(nc .gt. 0)then
         do i=ipoint,ipoint+nc-1
           if(buffer(i:i) .eq. char(10))then
             nc=i-ipoint
-            exit
+            return
           endif
         enddo
-        string(:nc)=buffer(ipoint:lrecl-1)
       endif
       return
       end
