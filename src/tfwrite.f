@@ -477,6 +477,8 @@ c        write(*,*)'read1 ',ios
         if(openf)then
           call tfreadbuf(irbreset,lfn,i00,i00,nc)
         endif
+      elseif(openf .and. itbuf(lfn) .gt. modewrite)then
+c        call tfreadbuf(irbsetpoint,lfn,int8(ipoint),i00,nc)
       endif
       call tfconnect(kx,0)
       if(openf)then
@@ -639,7 +641,7 @@ c          enddo
           endif
         else
           go to 9000
-        endif            
+        endif
       endif
       return
  9000 irtc=itfmessage(9,'General::wrongval',
@@ -1130,7 +1132,7 @@ c          endif
 
       subroutine tfuncompress(cmd,nc,kx,irtc)
       use tfstk
-      implicit none 
+      implicit none
       type (sad_descriptor) kx
       integer*4 irtc,nc
       character*(*) cmd
@@ -1143,7 +1145,7 @@ c     $     nc+15,itx,iax,vx,irtc)
 
       subroutine tfungzip(cmd,nc,kx,irtc)
       use tfstk
-      implicit none 
+      implicit none
       type (sad_descriptor) kx
       integer*4 irtc,nc
       character*(*) cmd
@@ -1154,7 +1156,7 @@ c     $     nc+15,itx,iax,vx,irtc)
 
       subroutine tfunbzip2(cmd,nc,kx,irtc)
       use tfstk
-      implicit none 
+      implicit none
       type (sad_descriptor) kx
       integer*4 irtc,nc
       character*(*) cmd

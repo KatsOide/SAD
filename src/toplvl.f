@@ -231,7 +231,7 @@ c     Standard alias for SAD sources
       use macmath
 c DO not forget to update sim/MACPHYS.h!!!
 c
-c     Update History:	
+c     Update History:
 c     2016/01/12:	from PDG 2014 https://www.google.co.jp/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0ahUKEwjHw4unsKLKAhUEoJQKHaiPCLgQFggjMAE&url=http%3A%2F%2Fpdg.lbl.gov%2F2014%2Freviews%2Frpp2014-rev-phys-constants.pdf&usg=AFQjCNGXw6APvgkpoTdIRLeC-XV651ZbJg&sig2=-wjwSn5pfl6Juvok0hFqow
 c     2008/03/27:	from CODATA 2006
 c     			http://physics.nist.gov/cuu/Constants/Table/allascii.txt
@@ -357,14 +357,14 @@ c
         type (csiparam) , intent(out):: sav
         sav=savep
         return
-        end subroutine 
+        end subroutine
 
         subroutine csrestore(sav)
         implicit none
         type (csiparam) , intent(in):: sav
         savep=sav
         return
-        end subroutine 
+        end subroutine
 
         subroutine cssetp(ip)
         implicit none
@@ -554,14 +554,14 @@ c
       integer*4 index,IgetGL,idummy
       real*8  jrval,rval
       character*(MAXSTR) jtoken,token
-c     
+c
  1000 continue
       if (IgetGL('$CTIME$',idummy) .eq. FLAGON) call cputix
       call gettok(token,slen,ttype,rval,ival)
 c     for debug
 c       print *,'toplvl-0 ',token(:slen),slen,ttype
 c     end debug
-c     
+c
  1100 continue
       if (ttype .eq. ttypEF) go to 9000
       if(ttype .eq. ttypID) then
@@ -625,20 +625,20 @@ c     end debug
      &        ,0,0)
       endif
       go to 1000
-c     
+c
  9000 continue
       if(itbuf(infl) .ne. 0)then
         return
       endif
       print *," SAD1 reads EOF."
       call errmsg("main","Stop execution.(READ EOF)" ,0,0)
-c     
+c
       stop
 c.....Entry point for error handling.
       entry bigjmp(jtoken,jslen,jttype,jrval,jival)
 c........for debug
 c     print *,'Big Jump !!!'
-c     
+c
       token=jtoken
       slen=jslen
       ttype=jttype

@@ -46,7 +46,7 @@ bint.o: bint.f
 corfree.o: corfree.f inc/common.inc inc/coroper.inc tffs.o tfstk.o
 corinit.o: corinit.f inc/common.inc inc/coroper.inc tffs.o
 cputix.o: cputix.f toplvl.o
-csinit.o: csinit.f tfstk.o toplvl.o
+csinit.o: csinit.f toplvl.o
 csroy.o: csroy.f tfstk.o
 csrtest.o: csrtest.f tfstk.o
 csrtrack.o: csrtrack.f tfstk.o

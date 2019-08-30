@@ -233,6 +233,10 @@ c              endif
         else
           ib=0
         endif
+      case (irbsetpoint)
+        if(lfn .ge. 0)then
+          mbuf(lfn)=int(ib)
+        endif
       end select
       return
  9000 nc=-99
@@ -271,7 +275,7 @@ c        write(*,*)'irbopen1 ',j,ibuf(j)
       endif
       return
       end
- 
+
       subroutine readstr(in,str,irtc)
       use tfrbuf
       use tfcsi, only:buffer
