@@ -38,7 +38,7 @@ c     end   initialize for preventing compiler warning
       call tclr(codin,6)
       call tclr(beamin,21)
       call temit(rlist(itr),codin,rlist(ibeam),rlist(ictrb),
-     $     .true.,int8(0),int8(0),int8(0),int8(0),
+     $     .true.,i00,i00,i00,i00,
      $     .true.,params,stab,15,0)
       if(.not.stab) then
         call permes(' ','pmeas(temit) --> Unstable orbit.',' ',lfno)

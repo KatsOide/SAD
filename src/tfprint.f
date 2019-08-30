@@ -2,14 +2,14 @@
       use tfstk
       use tfcode
       use iso_c_binding
-      use tfcsi,only:cssetp,icsmrk
+      use tfcsi,only:cssetp,icsmrk,ipoint
       implicit none
       type (sad_dlist), pointer :: klx
       type (sad_symdef), pointer :: symd
       type (sad_namtbl),pointer :: loc
       type (sad_descriptor) kx
       integer*8 kax
-      integer*4 itx,nc,lfno,itfpeeko,next,lpw,next1
+      integer*4 itx,nc,lfno,itfpeeko,next,lpw,next1,ip0
       logical*4 exist,force,pri
       character*(*) word
       character peekch
@@ -17,7 +17,9 @@
       real*8 , parameter :: amaxline=8
       character*256 word0,word1
       itx=-1
-c      write(*,*)'tfprint ',icsmrk()
+      ip0=ipoint
+c      write(*,*)'tfprint-0 ',ipoint,lrecl,
+c     $     '''',word(1:lenw(word)),''''
       call unreadbuf(word,irtc)
       if(irtc .ne. 0)then
         call skipline
@@ -26,10 +28,12 @@ c      write(*,*)'tfprint ',icsmrk()
       endif
       lpw=itfgetrecl()
  1    levele=levele+1
+c      write(*,*)'tfprint-0 ',word(1:lenw(word))
       itx=itfpeeko(kx,next)
+c      write(*,*)'tfprint-1 ',lfni,itx,ipoint,next,lrecl
       select case (itx)
       case (-1)
-        call cssetp(next)
+        call cssetp(max(next,ip0+1))
         exist=.true.
         go to 9100
       case (-2)
@@ -45,7 +49,7 @@ c      write(*,*)'tfprint ',icsmrk()
         if(force)then
           exist=.true.
         else
-c          call tfdebugprint(kx,'tfprint',1)
+c          call tfdebugprint(kx,'tfprint-5',1)
           if(ktfoperq(kx,kax))then
             if(kx%k .eq. ktfoper+mtfnull)then
               go to 8000
@@ -120,11 +124,11 @@ c      endif
       call loc_symdef(iaxout,sdout)
       kad=sdout%downval
       if(kad .eq. 0)then
-        kad=ktdhtaloc(iaxout-5,int8(0),15)
+        kad=ktdhtaloc(iaxout-5,i00,15)
       endif
       ilist(2,kad-1)=ior(ilist(2,kad-1),1)
       kh=itfhasharg(ktflist+karg,ilist(2,kad+2))+kad+3
-      kan=ktdaloc(int8(0),kh,klist(kh),ktfref,karg,kx,karg,.false.)
+      kan=ktdaloc(i00,kh,klist(kh),ktfref,karg,kx,karg,.false.)
       rlist(kan+7)=1.d100
       if(lfno .gt. 0)then
         call tfprintout(amaxline,irtc)
@@ -257,8 +261,9 @@ c      endif
       if(convcase)then
         call capita(word2(1:l))
       endif
-      ip1=ipoint-l
-      do i=ip1,1,-1
+      ip1=min(ipoint,lrecl)-l+1
+c      write(*,*)'unreadbuf ',ipoint,lrecl,l,ip1,word(1:l)
+      do i=ip1,ipbase,-1
         word1(1:l)=buffer(i:i+l-1)
         if(convcase)then
           call capita(word1(1:l))
@@ -267,14 +272,12 @@ c      endif
 c          write(*,*)'unreadbuf ',i,l,ip1,' ',buffer(i+l:i+l),
 c     $         ' ',word(1:l),
 c     $         index(delim(1:ldel),buffer(i+l:i+l))
-c          if(i .gt. 1)then
-c            write(*,*)'pre-delim: ',buffer(max(i-32,1):i-1),
-c     $           index(delim(1:ldel),buffer(i-1:i-1))
-c          endif
-          if(index(delim(1:ldel),buffer(i+l:i+l)) .gt. 0 .and.
-     $         (i .eq. 1 .or.
+          if((i .eq. ip1 .or.
+     $         index(delim(1:ldel),buffer(i+l:i+l)) .gt. 0) .and.
+     $         (i .eq. ipbase .or.
      $         index(delim(1:ldel),buffer(i-1:i-1)) .gt. 0 .or.
      $         index('0123456789.',buffer(i-1:i-1)) .gt. 0 .or.
+     $         ichar(buffer(i-1:i-1)) .eq. 0 .or.
      $         word(1:1) .eq. '.'))then
             ipoint=i
             return
@@ -282,7 +285,8 @@ c          endif
         endif
       enddo
       write(*,*)'Buffer is damaged at unreadbuf. ',
-     $     ipoint,ip1,l,lrecl,' ',word(1:l)
+     $     ipoint,ip1,l,lrecl,'''',word(1:l),''', ''',
+     $     buffer(1:lrecl),''''
       irtc=-1
       return
       end

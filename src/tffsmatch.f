@@ -441,7 +441,7 @@ c                        enddo
                       enddo
                     endif
                   enddo
-                  call tffswait(ipr,npa,npr,int8(0),
+                  call tffswait(ipr,npa,npr,i00,
      $                 'tffsmatch-EVDeriv',irtc)
                 endif
               endif
@@ -1000,7 +1000,7 @@ c     $                       posk,pos(lp),rlist(kqu),ltyp,iv
             enddo
           endif
         enddo
-        call tffswait(ipr,npp,npr,int8(0),'tffsqu',irtc)
+        call tffswait(ipr,npp,npr,i00,'tffsqu',irtc)
         if(kcm .ne. 0)then
           call tfree(kcm)
         endif

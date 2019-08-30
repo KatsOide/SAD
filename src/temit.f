@@ -1675,7 +1675,7 @@ c        write(*,*)'temit-tcod ',trf0
           call tput(cod,label2,' Entrance ','9.6',1,lfno)
         endif
         call tinitr12(trans)
-        call tturne(trans,cod,beam,srot,int8(0),int8(0),int8(0),
+        call tturne(trans,cod,beam,srot,i00,i00,i00,
      $       .false.,.false.,rt)
       endif
       irad=12
@@ -1691,7 +1691,7 @@ c        write(*,*)'temit ',trf0,cod
         srot(3,3)=1.d0
         gintd=0.d0
         call tsetr0(trans,cod,0.d0,0.d0)
-        call tturne(trans,cod,beam,srot,int8(0),int8(0),int8(0),
+        call tturne(trans,cod,beam,srot,i00,i00,i00,
      1       .false.,.false.,rt)
       endif
 c     call tsymp(trans)

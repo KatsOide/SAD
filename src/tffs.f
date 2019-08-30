@@ -1704,12 +1704,12 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
 
       subroutine tffs
       use tfstk
+      use tfcsi
       implicit none
       type (sad_descriptor) kx
       integer*4 irtc
-      
       logical*4 err
-      call tffsa(1,kx,irtc)
+      call tffsa(1,lfni,kx,irtc)
       if(irtc .ne. 0 .and. ierrorprint .ne. 0)then
         call tfreseterror
       endif
@@ -1807,7 +1807,7 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       ifmast =ktaloc(nlat/2+1)
       ifival=ktaloc(nele/2+1)
       ifdcomp=ktaloc(nele)
-      klist(ifdcomp:ifdcomp+nele-1)=int8(0)
+      klist(ifdcomp:ifdcomp+nele-1)=i00
       ifele =ktaloc(nlat/2+1)
       ifele2=ktaloc(nlat)
       ifklp =ktaloc(nele/2+1)
@@ -1903,12 +1903,13 @@ c      call tfree(ifibzl)
       use ffs
       use tffitcode
       use tfcsi
+      use tfrbuf
+      use iso_c_binding
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
-      integer*4 outfl1,irtc,narg,llinep,
-     $     lfno1,lfni1,lfn11,lfret,lfrecl,
-     $     isp1,itfmessage
+      type (csiparam) sav
+      integer*4 outfl1,irtc,narg,lfn,isp1,itfmessage
       character*10 strfromis
       narg=isp-isp1
       if(narg .gt. 2)then
@@ -1935,23 +1936,20 @@ c      call tfree(ifibzl)
         outfl=0
       endif
       levele=levele+1
-      lfno1=icslfno()
-      lfni1=icslfni()
-      lfn11=icslfn1()
-      lfret=icsmrk()
-      lfrecl=icslrecl()
-      llinep=icslinep()
-      call setbuf(str%str(1:str%nch)//char(10),str%nch+1)
-      call cssetp(lfrecl)
-      call tffsa(lfnp+1,kx,irtc)
+c      write(*,*)'tfffs-0 ',lfni,ipoint,lrecl
+      call cssave(sav)
+      call tfreadbuf(irbopen,lfn,ktfaddr(ktastk(isp1+1)),
+     $     int8(modestring),str%nch)
+      call tfreadbuf(irbassign,lfn,i00,i00,0)
+      ipoint=1
+      lrecl=0
+c      write(*,*)'tfffs ',lfn
+      call tffsa(lfnp+1,lfn,kx,irtc)
+      call tfreadbuf(irbclose,lfn,i00,i00,0)
       call tclrfpe
-      call cssetp(lfret)
-      call cssetl(lfrecl)
-      call cssetlinep(llinep)
-      call cssetlfno(lfno1)
-      call cssetlfni(lfni1)
-      call cssetlfn1(lfn11)
-c      write(*,*)'FFS ',lfrecl,llinep
+      call csrestore(sav)
+      call tfreadbuf(irbassign,lfni,i00,i00,0)
+c      write(*,*)'tfffs-1 ',lfni,ipoint,lrecl
       outfl=outfl1
       if(irtc .eq. 0 .and. iffserr .ne. 0)then
         irtc=itfmessage(9,'FFS::error',strfromis(iffserr))

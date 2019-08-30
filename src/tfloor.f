@@ -1088,15 +1088,21 @@ c      lfn=itfopenread(ktastk(isp1+1),.false.,irtc)
       endif
       infl0=infl
       infl=lfn
+      if(infl .ne. infl0)then
+        call tfreadbuf(irbassign,infl,i00,i00,0)
+      endif
       ierrfl=errfl
       errfl=ierr
       bypasstrack=.true.
-c      write(*,*)'tfmain-1 '
+c      write(*,*)'tfmain-1 ', lfn
       call toplvl
 c      write(*,*)'tfmain-2 '
       bypasstrack=.false.
       errfl=ierrfl
-      call tfreadbuf(irbclose,lfn,int8(0),int8(0),nc,' ')
+      call tfreadbuf(irbclose,lfn,i00,i00,nc)
+      if(infl .ne. infl0)then
+        call tfreadbuf(irbassign,infl0,i00,i00,0)
+      endif
       infl=infl0
       kx%k=ktfoper+mtfnull
       return

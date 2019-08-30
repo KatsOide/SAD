@@ -279,7 +279,8 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       use tffitcode
       implicit none
       type (sad_descriptor) , intent(out):: kx
-      integer*4 i,icol,kt,itoff
+      integer*4 i,icol,kt
+      integer*8 itoff
       logical*4 ref,dref
       real*8 pe(4),pe0(4)
       select case (kt)

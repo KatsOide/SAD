@@ -2,7 +2,7 @@
         integer*8 itt1,itt2,itt3,itt4,itt5,itt6
       end module
 
-      subroutine tffsa(lfnb,kffs,irtcffs)
+      subroutine tffsa(lfnb,lfn,kffs,irtcffs)
       use tfstk
       use ffs
       use ffs_pointer
@@ -15,13 +15,14 @@
       use track_tt
       use tparastat
       use temw, only:nparams
+      use tfrbuf
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 maxrpt,maxlfn,hsrchz
       integer*8 kffs,k,kx,itwisso,
      $     ifvalvar2,iparams,kax,iutwiss
       integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,
-     $     ii,irtc0,it,itemon,itmon,itestr,itstr,itt,
+     $     ii,irtc0,it,itemon,itmon,itestr,itstr,itt,lfn,
      $     iuse,l,itfuplevel,
      $     levelr,lfnl0,lpw,meas0,mfpnta,igetgl1,lenw,
      $     mphi2,newcor,next,nextt,nfp,nmon,
@@ -148,20 +149,23 @@ c
           lfret(1)=0
           lfrecl(1)=1
           lflinep(1)=1
+          itbuf(5)=moderead
+          call tfreadbuf(irbreset,5,i00,i00,0)
           if(infl .ne. 5)then
             lfnp=2
+            call tfreadbuf(irbbor,infl,i00,i00,0)
             lfnstk(2)=infl
             lfret(2)=0
-            lfrecl(2)=1
-            lflinep(2)=1
+            lfrecl(2)=lbuf(infl)
+            lflinep(2)=lbuf(infl)
           endif
         else
         endif
       else
         lfnp=lfnb
-        lfnstk(lfnp)=0
-        lfrecl(lfnp)=icslrecl()
-        lflinep(lfnp)=icslrecl()
+        lfnstk(lfnp)=lfn
+        lfrecl(lfnp)=lbuf(lfnp)
+        lflinep(lfnp)=lbuf(lfnp)
       endif
       iffserr=0
       if(chguse)then
@@ -173,8 +177,12 @@ c
       iflevel=0
       lfret(lfnp)=0
       lfopen(lfnp)=.false.
-      lfni=lfnstk(lfnp)
+      if(lfni .ne. lfnstk(lfnp))then
+        lfni=lfnstk(lfnp)
+        call tfreadbuf(irbassign,lfni,i00,i00,0)
+      endif
       lfno=outfl
+c      write(*,*)'tffsa ',lfnp,lfni,lfno
  2    if(lfnb .eq. 1)then
         if(lfni .ne. 5)then
           lfn1=lfno
@@ -190,6 +198,9 @@ c
       endif
       call csrst(lfn1)
  10   continue
+c      if(lfni .gt. 100)then
+c        write(*,*)'tffsa-10 ',lfni,ipoint,lrecl,ios
+c      endif
       if(iffserr .ne. 0)then
         if(lfnb .gt. 1)then
           ios=1
@@ -216,8 +227,14 @@ c
       elseif(ios .lt. 0)then
         ios=0
       endif
+c      if(lfni .gt. 100)then
+c        write(*,*)'tffsa-getwrd-0 ',lfni,ipoint,lrecl
+c      endif
       call getwrd(word)
-c      write(*,*)'tffsa-getwrd ',ios,linep,lrecl,' ',word(1:lenw(word))
+c      if(lfni .gt. 100)then
+c        write(*,*)'tffsa-getwrd ',lfni,ios,ipoint,linep,lrecl,'''',
+c     $       word(1:lenw(word)),''''
+c      endif
       if(ios .ne. 0)then
         go to 10
       endif
@@ -227,8 +244,9 @@ c      write(*,*)'tffsa-getwrd ',ios,linep,lrecl,' ',word(1:lenw(word))
         go to 2
       endif
       call cssets(0)
+c      write(*,*)'tffsa-tfprint ',word(1:lenw(word))
       call tfprint(word,lfno,.false.,itt,nextt,exist)
-c      write(*,*)'tffsa-tfprint-end ',word
+c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
       if(exist .or. ios .ne. 0)then
         go to 10
       endif
@@ -258,8 +276,8 @@ c      write(*,*)'tffsa-tfprint-end ',word
         endif
         ios=0
  4010   if(levelr .eq. 0)then
-c          call cssetlinep(icslrecl())
-          call cssetrec(.false.)
+          linep=lrecl
+          rec=.false.
         endif
         go to 10
       elseif(abbrev(word,'REP_EAT','_'))then
@@ -428,7 +446,7 @@ c          call cssetlinep(icslrecl())
         else
           byeall=.false.
         endif
-        call tffssaveparams(4,int8(0),err)
+        call tffssaveparams(4,i00,err)
         if(err)then
           if(byeall)then
             go to 10
@@ -440,7 +458,7 @@ c          call cssetlinep(icslrecl())
         call tclrpara(elatt,elatt%nlat1-2)
         call tffsfree
         if(byeall)then
-          call tffssaveparams(-2,int8(0),err)
+          call tffssaveparams(-2,i00,err)
         endif
         call tffssaveparams(1,ilattp,err)
         call loc_el(ilattp,elatt)
@@ -869,15 +887,17 @@ c        flv%rsconv=rlist(ktlookup('CONVERGENCE'))
         r3i=-r3i
         go to 10
       elseif(word .eq. 'DRAW')then
+        call cssetp(nextt)
         call tfsetparam
         call tfevalb('CANVASDRAW[]',12,kx,irtc)
+c        call tfdebugprint(kx,'CANVASDRAW[]',1)
         if(irtc .ne. 0 .or. ktfnonstringq(kx))then
-          title=Tfgetstrv('TITLE')
-          case=Tfgetstrv('CASE')
-          call twsdrw(latt,pos,ilist(1,ifele),
-     $         word,wordp,lfno,
-     1         twiss,0,rlist(itmon),rlist(itemon),nmon,
-     1         title,case,exist)
+c          title=Tfgetstrv('TITLE')
+c          case=Tfgetstrv('CASE')
+c          call twsdrw(latt,pos,ilist(1,ifele),
+c     $         word,wordp,lfno,
+c     1         twiss,0,rlist(itmon),rlist(itemon),nmon,
+c     1         title,case,exist)
         else
           word=tfgetstr(kx,nc)
           exist=nc .eq. 0
@@ -1185,7 +1205,7 @@ ckiku   call tfstr(word,latt,ist,nstr)
           call ffs_init_sizep
 c          ilist(2,iwakepold+6)=int(ifsize)
         endif
-        call temitf(codplt,lfni,lfno)
+        call temitf(codplt,lfno)
         trpt=trpt0
         if(codplt)then
           updatesize=.true.
@@ -1221,7 +1241,7 @@ c          ilist(2,iwakepold+6)=int(ifsize)
         endif
         call temits(mphi2,amus0,amus1,amusstep,
      $     emxe,emye,rese,rlist(iparams),
-     $     lfno,int8(0),irtc)
+     $     lfno,i00,irtc)
         call tfree(iparams)
         if(codplt)then
           updatesize=.true.
@@ -1278,6 +1298,9 @@ c      write(*,*)'tffsa-getv ',exist,nextt,itt,word(1:lenw(word))
         go to 10
       endif
  1000 continue
+c      if(lfni .gt. 100)then
+c        write(*,*)'tffsa-1000 ',lfni,ipoint,lrecl,ios
+c      endif
       if(busy)then
         call termes(lfno,'?Recursive CAL or GO',' ')
         go to 2
@@ -1322,9 +1345,18 @@ c        go to 8900
           endif
         enddo
       endif
+c      if(lfni .gt. 100)then
+c        write(*,*)'tffsa-setupcoup-0 ',lfni,ipoint,lrecl,ios
+c      endif
       call tffssetupcouple(lfno)
+c      if(lfni .gt. 100)then
+c        write(*,*)'tffsa-setupcoup-1 ',lfni,ipoint,lrecl,ios
+c      endif
       if(expndc)then
         call tffsadjustvar
+c      if(lfni .gt. 100)then
+c        write(*,*)'tffsa-adjvar ',lfni,ipoint,lrecl,ios
+c      endif
       else
         if(.not. expndc)then
           call termes(lfno,
@@ -1334,6 +1366,9 @@ c        go to 8900
       if(fitflg)then
         call tmov(rlist(ifvalvar),rlist(ifvalvar+nve),flv%nvar)
       endif
+c      if(lfni .gt. 100)then
+c        write(*,*)'tffsa-inicond-0 ',lfni,ipoint,lrecl,ios
+c      endif
       if(tffsinitialcond(lfno,err))then
         inicond=.true.
         nfam=nfr
@@ -1408,8 +1443,17 @@ c        dpm2=rlist(ktlookup('DPM'))
         go to 8810
       endif
 c      call tfevalb('Setup$FF[];Print["setupff ",FF$Orig]',36,kx,irtc)
+c      if(lfni .gt. 100)then
+c        write(*,*)'tffsa-evalb ',lfni,ipoint,lrecl,ios
+c      endif
       call tfevalb('Setup$FF[]',10,kx,irtc)
+c      if(lfni .gt. 100)then
+c        write(*,*)'tffsa-match-0 ',lfni,ipoint,lrecl,ios
+c      endif
       call tffsmatch(df,dp0,r,nparallel,lfno,irtc)
+c      if(lfni .gt. 100)then
+c        write(*,*)'tffsa-match-1 ',lfni,ipoint,lrecl,ios
+c      endif
       if(.not. setref)then
         call tfsetref
       endif
@@ -1766,7 +1810,13 @@ c            call tclr(uini(1,0),28)
         itfcoupk=kxsymbolz('`CoupledKeys',12)
       endif
       levele=levele+1
+c      if(lfni .gt. 100)then
+c        write(*,*)'setupcoup-syeval-0 ',lfni,ipoint,lrecl,ios
+c      endif
       call tfsyeval(itfcoupk,kx,irtc)
+c      if(lfni .gt. 100)then
+c        write(*,*)'setupcoup-syeval ',lfni,ipoint,lrecl,ios
+c      endif
       call tfconnect(kx,irtc)
       if(irtc .ne. 0)then
         go to 9010

@@ -405,6 +405,7 @@ c                enddo
       use ffs_fit ,only:ffs_stat
       use ffs_pointer
       use temw
+      use maccbk, only:i00
       implicit none
       type (ffs_bound) fbound
       type (ffs_stat) optstat
@@ -455,7 +456,7 @@ c        write(*,*)'qcell61 ',fbound%lb,tw1(mfitnx),tw1(mfitny)
       codplt=.true.
       call tinitr(trans)
       call tturne0(trans,cod,beam,srot,fbound,
-     $     int8(0),int8(0),int8(0),idp,.true.,rt,.true.)
+     $     i00,i00,i00,idp,.true.,rt,.true.)
 c      write(*,*)'qcell61-1 ',twiss(fbound%lb,idp,mfitnx),
 c     $     twiss(fbound%lb,idp,mfitny)
       calint=ci0

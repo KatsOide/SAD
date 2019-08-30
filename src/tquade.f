@@ -9,7 +9,7 @@
       use tspin, only:tradke
       use mathfun
       implicit none
-      integer*4 ld,ndiv,i,mfring,n,itgetqraddiv
+      integer*4 ndiv,i,mfring,n,itgetqraddiv
       real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,9),
      $     al,ak,dx,dy,theta,f1in,f2in,f1out,f2out,
      $     eps0,f1r,f2r,eps,b1,akn,
@@ -36,7 +36,7 @@
         call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
       endif
       if(fringe .and. mfring .ge. 0. and. mfring .ne. 2)then
-        call tqfrie(trans,cod,beam,ak,al,ld,0.d0)
+        call tqfrie(trans,cod,beam,ak,al,0.d0)
       endif
       prev=bradprev .ne. 0.d0
       if(mfring .eq. 1 .or. mfring .eq. 3)then
@@ -265,7 +265,7 @@ c      endif
         call tqlfre(trans,cod,beam,al,ak,-f1out,f2out,0.d0)
       endif
       if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
-        call tqfrie(trans,cod,beam,-ak,al,ld,0.d0)
+        call tqfrie(trans,cod,beam,-ak,al,0.d0)
       endif
       if(krad .and. f1out .ne. 0.d0)then
         bsi=-ak/aln*cod(1)*cod(3)

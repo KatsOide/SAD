@@ -3,6 +3,7 @@
       use tfstk
       use ffs
       use tffitcode
+      use tfrbuf
       use tfcsi
       implicit none
       type (sad_descriptor) kx
@@ -31,6 +32,7 @@
           if(lfnb .eq. 1)then
             close(98)
           endif
+          call tfreadbuf(irbassign,lfni,i00,i00,0)
         endif
         return
       elseif(abbrev(word,'TERM_INATE','_') .or.
@@ -64,10 +66,19 @@
      1       .or. word .eq. 'READ')then
         rew=word .eq. 'READ'
         itype=itfpeeko(kx,next)
+c        call tfdebugprint(kx,'IN',1)
         if(ktfrealq(kx,vx))then
           lfni1=int(vx+.5d0)
+          if(lfni1 .le. 0)then
+            return
+          endif
           call cssetp(next)
+c          if(lfni .ne. 0)then
+c            mbuf(lfni)=ipoint
+c            lbuf(lfni)=lrecl
+c          endif
           write(word,'(''ftn'',i2.2)')lfni1
+          call tfreadbuf(irbassign,lfni1,i00,i00,0)
           lfnp=lfnp+1
           lfopen(lfnp)=.false.
         elseif(ktfstringq(kx))then
@@ -106,13 +117,19 @@
           return
         endif
       elseif(abbrev(word,'RES_UME','_'))then
+        call cssetp(next)
+c        write(*,*)'RES ',lfni0
         lfni1=lfni0
-        if(lfni .eq. 0)then
+        if(lfni1 .eq. 0)then
           return
         endif
+c       if(lfni .ne. 0)then
+c         mbuf(lfni)=ipoint
+c         lbuf(lfni)=lrecl
+c       endif
         lfni0=0
-        call cssetp(next)
         write(word,'(''ftn'',i2.2)')lfni1
+        call tfreadbuf(irbassign,lfni1,i00,i00,0)
         lfnp=lfnp+1
         lfopen(lfnp)=.false.
         rew=.false.
@@ -211,6 +228,7 @@ c
      $     lflinep,maxlfn,lfni,lfnb)
       use tfcsi, only:cssetl,cssetlfno,cssetlinep,cssetp,cssets,
      $     icslfni,icslfno,icsmrk,icsstat
+      use tfrbuf
       implicit none
       integer*4 lfnp1,lfnp,maxlfn,lfnstk(maxlfn),lfni0,
      $     lfni,i,lfret(maxlfn),lfrecl(maxlfn),lfnp0,lfnb,
@@ -226,6 +244,9 @@ c
 10    continue
       lfnp0=max(1,lfnb-1,lfnp1-1)
       lfni=lfnstk(lfnp0)
+      if(lfni .ne. lfni0)then
+        call tfreadbuf(irbassign,lfni,i00,i00,0)
+      endif
       if(lfret(lfnp1) .gt. 0)then
         call cssetp(lfret(lfnp1))
         call cssetl(lfrecl(lfnp1))

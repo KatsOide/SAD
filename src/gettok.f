@@ -27,7 +27,6 @@ c     for ungettok
       integer*4 bslen,btype,bival
       real*8 brval
       save inbuf,btoken,bslen,btype,bival,brval
-      
 
 c macro functions
       issign(chr)=(chr .eq. '+') .or. (chr .eq. '-')

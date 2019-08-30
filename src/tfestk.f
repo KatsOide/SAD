@@ -1002,11 +1002,13 @@ c          call tfdebugprint(kx,'==>',1)
       implicit none
       type (sad_descriptor) kx
       integer*4 irtc,istart,istop,nc
-      character string(nc)
+      character*(nc) string
       istart=1
       levele=levele+1
-c      write(*,*)'tfevalb ',string
+c      write(*,*)'tfevalb-0 ',nc,string
       call tfeval(string,nc,istart,istop,kx,.false.,irtc)
+c      call tfdebugprint(kx,'evalb',1)
+c      write(*,*)nc,istart,istop,irtc,string(1:istop)
       call tfconnect(kx,irtc)
       return
       end
@@ -1047,20 +1049,20 @@ c      call tfdebugprint(kx,'==>',1)
       use tfcsi
       implicit none
       integer*4 ip1,istart,istop,l,ipr
-      ip1=icsmrk()
-      call cssetp(istop)
-      call tprmpt(ipr,-1,0)
-      call getbuf
-      call tprmpt(0,-1,0)
-      if(csrec())then
-        call cssetp(ip1)
+      ip1=ipoint
+      ipoint=istop
+c      write(*,*)'tfevalbuf'
+      call tprmptget(ipr,-1,0)
+      if(rec)then
+        ipoint=ip1
       else
-        istop=icsmrk()
+        istop=ipoint
       endif
-      tfreadevalbuf=icsstat() .eq. 0
+      tfreadevalbuf=ios .eq. 0
+c        write(*,*)'tfevalbuf ',lfni,ipoint,lrecl,ios
       if(tfreadevalbuf)then
         istart=istop
-        l=icslrecl()
+        l=lrecl
       endif
       return
       end

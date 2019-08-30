@@ -1,6 +1,7 @@
       subroutine inifil
       use maccbk
       use macfile
+      use tfcsi
       implicit none
       integer*8 ktcaloc
 c
@@ -12,5 +13,7 @@ c
          inflpt=ktcaloc(5)
          klist(inflpt)=infl
          klist(inflpt+1)=0
+         lfni=infl
+         call csinit(0,1,'!',.false.)
       return
       end

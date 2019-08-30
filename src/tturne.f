@@ -284,7 +284,7 @@ c     below is incorrect for fra <> 0
                 int0=calint
                 calint=.false.
                 call tturne1(trans1,cod1,beam1,srot,
-     $               int8(0),int8(0),int8(0),idp,.false.,sol1,rt,
+     $               i00,i00,i00,idp,.false.,sol1,rt,
      $               optics,
      $               lx,lx)
                 codplt=cp0

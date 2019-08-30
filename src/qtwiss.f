@@ -986,7 +986,7 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
           call etwiss2ri(tw1,ri,normal)
           call tinv6(ri,trans)
           call tturne1(trans,cod,beam,srot,
-     $         int8(0),int8(0),int8(0),0,
+     $         i00,i00,i00,0,
      $         .false.,sol,rt,.true.,l,l)
         endif
         if(chg)then

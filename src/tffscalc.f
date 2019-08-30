@@ -10,14 +10,14 @@
       use ffs_wake
       use tffitcode
       use tfshare
-      use tfcsi,only:icslfno
+      use tfcsi,only:lfno
       use macmath
       use mathfun
       implicit none
 c      include 'DEBUG.inc'
       type (ffs_bound) fbound,ibound
       integer*8 kx
-      integer*4 ibegin,nqcola,lfno,irtc
+      integer*4 ibegin,nqcola,irtc
       integer*4 i1,i2,i3,i,ii,j,iter,kt,iq,l,maxf,
      $     nqcola1,ie,ie1,iv,nstab,lout
       integer*4 kdp(maxcond),iqcol(maxcond),lfp(2,maxcond)
@@ -44,7 +44,6 @@ c     begin initialize for preventing compiler warning
       anusum0=0.d0
       anudiff0=0.d0
       iutm=0
-      lfno=icslfno()
 c     end   initialize for preventing compiler warning
       if(iprolog .eq. 0)then
         iprolog=ktfsymbolz('OpticsProlog',12)

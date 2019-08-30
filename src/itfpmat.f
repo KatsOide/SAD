@@ -377,7 +377,7 @@ c        write(*,*)'patmat-result ',itfpatmat,pat%mat
         itfseqmatseq=0
       else
         itfseqmatseq=itfseqmatstk(isp1,isp2,kl%dbody(1),
-     $       kl%nl,mp1,ktfreallistq(kl),int8(0))
+     $       kl%nl,mp1,ktfreallistq(kl),i00)
       endif
       return
       end
@@ -395,7 +395,7 @@ c        write(*,*)'patmat-result ',itfpatmat,pat%mat
       elseif(mp .eq. 1 .and. mp1 .eq. 1)then
         itfseqmat=itfseqmatstk1(isp1,isp2,kp(1))
       else
-        itfseqmat=itfseqmatstk(isp1,isp2,kp,mp,mp1,.false.,int8(0))
+        itfseqmat=itfseqmatstk(isp1,isp2,kp,mp,mp1,.false.,i00)
       endif
       return
       end
@@ -488,7 +488,7 @@ c        write(*,*)'patmat-result ',itfpatmat,pat%mat
  1010       i=itfseqm(isp1a,isp2a,kp,ispf,isps,ispt)
             if(i .ge. 0)then
               ix=min(i,itfseqmatstk(isps,isp2a,
-     $             kp0,map,mp1+1,realp,int8(0)))
+     $             kp0,map,mp1+1,realp,i00))
               if(ix .ge. 0)then
                 return
               endif
@@ -582,7 +582,7 @@ c        write(*,*)'patmat-result ',itfpatmat,pat%mat
                 else
                   ix=min(i,
      $                 itfseqmatstk(isps,isp2a,kp0,map,mp1+1,
-     $                 realp,int8(0)))
+     $                 realp,i00))
                 endif
               endif
               if(ix .ge. 0)then

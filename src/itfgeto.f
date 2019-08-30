@@ -1,18 +1,22 @@
       integer*4 function itfgeto(kx)
       use tfstk
       use tfcsi
+      use tfrbuf
       implicit none
       type (sad_descriptor) kx
       integer*4 irtc, m
-      if(ipoint .ge. lrecl)then
+      if(ipoint .gt. lrecl .or. ipoint .le. 0)then
         itfgeto=-1
         kx%k=ktfoper+mtfnull
         return
       endif
       m=0
+c      write(*,*)'itfgeto-0 ',lfni,ipoint,lrecl,buffer(1:1)
       call tfeval(buffer(1:lrecl),lrecl,ipoint,m,kx,.true.,irtc)
-c      call tfdebugprint(kx,'itfgeto',3)
-c      write(*,*)'with ',irtc,kerror
+c      if(lfni .gt. 100)then
+c        call tfdebugprint(kx,'itfgeto',3)
+c        write(*,*)'with ',lfni,irtc,ipoint,lrecl,m
+c      endif
       ipoint=m
       if(irtc .eq. 0)then
         itfgeto=0
@@ -137,6 +141,7 @@ c      write(*,*)'with ',irtc,kerror
       integer*4 notspace,istop,nc,irt,i
       character*(*) word
  1    if(ipoint .ge. lrecl)then
+        write(*,*)'tfgettok'
         call getbuf
         if(ios .ne. 0)then
           word=' '

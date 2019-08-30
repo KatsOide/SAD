@@ -267,7 +267,7 @@ c       - Copy iptbl(*,3:nkptbl)
           ilist( ipn+(j-1)*npz+1:ipn+(j-1)*npz+npp,ikptblm)=
      $         ilist((j-1)*npp+1:    (j-1)*npp+npp,ikptblw)
         enddo
-        call tffswait(iprid,npr+1,ipr,int8(0),'tftrack',irtc)
+        call tffswait(iprid,npr+1,ipr,i00,'tftrack',irtc)
         kaxl=ktfresetparticles(rlist(kz),
      $       ilist(1,ikptblm),npz,nlat,nend,mc)
         call tfreeshared(ikptblm)

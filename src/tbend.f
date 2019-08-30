@@ -184,7 +184,7 @@
      $         mfring,fb10,fb20,
      $         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,
      $         .false.,.false.,
-     $         int8(0),int8(0),int8(0),int8(0))
+     $         i00,i00,i00,i00)
         endif
         return
 c      elseif(rad .and. enarad .and. trpt)then
