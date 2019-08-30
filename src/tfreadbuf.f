@@ -233,10 +233,6 @@ c              endif
         else
           ib=0
         endif
-      case (irbsetpoint)
-        if(lfn .ge. 0)then
-          mbuf(lfn)=int(ib)
-        endif
       end select
       return
  9000 nc=-99
