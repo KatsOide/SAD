@@ -12,6 +12,7 @@
      $     itfmessage,level1,ist2,irt
       character*(l) string
       logical*4 tfreadevalbuf,eol
+      type (csiparam) sav
 c     begin initialize for preventing compiler warning
       mopc=0
 c     end   initialize for preventing compiler warning
@@ -40,12 +41,8 @@ c     end   initialize for preventing compiler warning
 c      write(*,*)'tfeval ',istart,l,string(istart:l)
       call tfetok(string(istart:l),istop,kx,itfcontext,irt)
       istop=min(l+1,istop+istart-1)
-c        call tfreecheck1('tfeval-0',1,0,0.d0,irtc)
 c        write(*,*)'tfeval-0 ',irt,istart,istop,
 c     $       string(istart:istop)
-c        if(irtc .ne. 0)then
-c          rlist(7)=0.d0
-c        endif
       if(irt .ge. 0)then
         go to 2400
       endif
@@ -355,11 +352,13 @@ c
         ist10=max(ist1,istop)
         ist2=istop
         call tclrfpe
-c     call tfdebugprint(ktastk(isp),'tfeval-8',3)
-        call tfeevalref(ktastk(isp),kx%k,irtc)
-c        call tfdebugprint(kx,'tfeval-9',3)
         istop=max(ist2,ist10)
-c        write(*,*)': ',irtc,icsmrk(),ist2,ist10,lrecl
+c        sav=savep
+c        if(lfni .eq. 5)then
+c          ipoint=istop
+c        endif
+        call tfeevalref(ktastk(isp),kx%k,irtc)
+c        savep=sav
         if(irtc .eq. -1)then
           kx%k=ktfoper+mtfnull
           go to 9000

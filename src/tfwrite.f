@@ -828,9 +828,9 @@ c      write(*,*)'tfreadstring ',lfn,ib,is,nc,fb
           is=ipoint
         endif
       endif
-c      write(*,*)'tfreadstrf ',lfn,nc,ipoint,lrecl
-      if(nc .eq. 0)then
-        if(opts%new)then
+       if(nc .eq. 0)then
+c         write(*,*)'tfreadstrf ',lfn,nc,ipoint,lrecl,opts%new
+         if(opts%new)then
           if((opts%ndel .gt. 0 .and. .not. opts%null) .or. char1)then
             nc=-1
             go to 10

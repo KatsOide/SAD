@@ -212,7 +212,7 @@ Displays values of various optical-/geometric-functions at the components given 
       "DISP OG displays geometric information at the orbit.",
       "geometric-functions matching-function-commands",
       {}},
-      
+ 
      {"ORBIT(O)",
       "\
 DISP O displays the orbits DX, DPX, DY, DPY together with the other \n\
@@ -652,14 +652,14 @@ can pass through the aperture, otherwise it is lost and a message is printed out
 Rotation in x-y plane. After displacing the magnet by DX and DY, rotate the magnet around the local s-axis by -(amount given by ROTATE), then place the component. At the exit rotate back the magnet around the local s-axis at the exit, then take out displacement.",
           "DX DY DROTATE",
           {}},
-         
+    
          DROTATE$Message=
          {"DROTATE",
           "\
 Additional rotation in x-y plane to simulate a rotation error. DROTATE does not affect the geometry of the ring.",
           "DX DY ROTATE",
           {}},
-         
+    
          DX$Message=
          {"DX",
           "\
@@ -1164,7 +1164,7 @@ and if dir is nonzero,\n\n"//EquAlign["\
 \\left(\\begin{matrix} {\\tt DX} \\\\-{\\tt DY} \\\\0\\end{matrix}\\right)\\ ,","\
   {x      { dx    {c3 -s3 0     {1  0   0      {c1 0  s1   {x\n\
    y   =   -dy  +  s3  c3 0      0  c2 -s2      0  1  0     y\n\
-   z}_1     0 }    0   0  1}.    0  s2  c2}.   -s1 0  c1}.  z} ,"]//"\n\n\ 
+   z}_1     0 }    0   0  1}.    0  s2  c2}.   -s1 0  c1}.  z} ,"]//"\n\n\
 where {x, y, z}_1 are the new coordinates and\n\n"//EquAlign["\
 c_{1,2,3}=&\\cos({\\tt CHI1},{\\tt CHI2},{\\tt CHI3})\\ ,\\\\\n\
 s_{1,2,3}=&\\sin({\\tt CHI1},{\\tt CHI2},{\\tt CHI3})\\ .","\
@@ -1383,7 +1383,7 @@ The acceleration is given as \n\n"//Acc$Message//"\n\n\
 where ts is the equilibrium time determined by the valance between the acceleration and the radiation loss around the ring.",
            "",
            {}},
-           
+      
          {"DPHI",
           "\
 Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. The acceleration is given as \n\n"//Acc$Message//"\n\n\
@@ -1833,7 +1833,7 @@ Accessible in the MAIN level.",
       {}},
 
      {"WSPAC",
-      "When on, performs space-charge simulation in a \"strong-weak\" mode. The beam size through the beam line is to be calculated by EMIT with CODPLOT. The space-charge force is calculated assuming Gaussian distribution in all dimensions, and particles/bunch given by PBUNCH. WSPAC is effective in optics and emittance calculations and tracking.\n\ 
+      "When on, performs space-charge simulation in a \"strong-weak\" mode. The beam size through the beam line is to be calculated by EMIT with CODPLOT. The space-charge force is calculated assuming Gaussian distribution in all dimensions, and particles/bunch given by PBUNCH. WSPAC is effective in optics and emittance calculations and tracking.\n\
    Do not confuse WSPAC with SPAC.",
       "EMITTANCE(EMIT) PBUNCH CODPLOT MINCOUP SELFCOD SPAC",
        {}},
@@ -1844,7 +1844,7 @@ Accessible in the MAIN level.",
        {}},
 
      {"PSPAC",
-      "When on, performs space-charge simulation in a \"Particle-In-Cell\" method. PSPAC is effective in tracking only.\n\ 
+      "When on, performs space-charge simulation in a \"Particle-In-Cell\" method. PSPAC is effective in tracking only.\n\
    Do not confuse PSPAC with SPAC/WSPAC.",
       "PSPACNX PSPACNY PSPACNZ PSPACDX PSPACDY PSPACDZ",
        {}},
@@ -1884,7 +1884,7 @@ JITTER or NOQUIET allows jitter of the center-of-mass of the incoming beam in th
       "CONV is a flag set by the CALCULATE(CAL) or GO commands. It becomes True when MatchingResidual is less than CONVERGENCE.",
       "CALCULATE(CAL) GO MatchingResidual CONVERGENCE",
       {}},
-      
+ 
      {"STABLE",
       "STABLE is a flag set by the CALCULATE(CAL) or GO commands in the case of CELL. It becomes True when the closed orbit is found and the optics is stable in both x and y.",
       "CALCULATE(CAL) GO INTRES HALFRES SUMRES DIFFRES",
@@ -2160,13 +2160,13 @@ Number of unstable planes in the optics calculations. Equal to zero if all x and
 CHARGE contains the charge of the particle. The default is +1.",
       "",
       {}},
-      
+ 
      {"MASS",
       "\
 MASS is the rest mass of the particle in eV. The default is the electron mass.",
       "",
       {}},
-      
+ 
      {"MOMENTUM",
       "MOMENTUM is the nominal momentum of the beam line at the entrance in eV/c. Accessible in MAIN.",
       "",
@@ -2212,7 +2212,7 @@ ehere Vcacc is the total acceleration voltage at the equilibrium phase PHICAV. T
 The equilibrium RF phase (in radian, = 2 Pi EFFRFFREQ DTSYNCH/c) where the synchrotron radiation loss and acceleration balances. If there are phase, voltage, frequency variations in RF cavities, it is calculated based on \"effective voltage\". Effective with RING only.",
       "EFFVC EFFRFFREQ DTSYNCH CAVI MULT",
       {}},
-      
+ 
      {"SpeedOfLight",
       "SpeedOfLight is 299792458.",
       "",
@@ -2373,7 +2373,7 @@ The probability of each polarization is given by each Stokes' parameter as (1+xi
    Remember that the {GX, GY, GZ} = {0, 0, 0} and their directions are {z, -x, -y} at the entrance of the beam line by default. It is changeable by the GEO command anyway.",
        "PHOTONS TrackParticles",
        {}}
-       
+  
     }]},
 
    {"set-value-of-element",
@@ -2959,7 +2959,7 @@ System Interface:\n\
    Directory Environment GetEnv* GetGID* GetPID* GetUID* ProcessStatus* \n\
    SetDirectory SetEnv* System* TemporaryName* MkSecureTemp* RealPath*\n\
 Multiprocessing:\n\
-   BiPipe* Fork* OpenShared* Shared* Wait*\n\ 
+   BiPipe* Fork* OpenShared* Shared* Wait*\n\
 Utilities:\n\
    Date DateString* Definition* FromDate* ToDate ToDateString* Pause\n\
    MemoryCheck* Message Off On Sleep TimeUsed Timing TracePrint\n\n\
@@ -3207,7 +3207,7 @@ which is equivalent to MapThread without returning the results.",
  Thread is equivalent to Transpose if l is a matrix.",
           "MapThread Transpose",
           {}}
- 
+
         }]},
 
      {"Input/Output",
@@ -3297,7 +3297,7 @@ converts expr1... to _String then write them to $Output. A newline character is 
 $Output holds the file number for console output. The default is -1.",
            "$Input",
            {}},
-           
+   
          {"$Input",
            "\
 $Input holds the file number for console input stream. The default is -1.",
@@ -3315,7 +3315,7 @@ where w is the width of the output, and f is the length of the fractions. If S i
    The default is S17.15 .",
            "",
            {}},
-         
+
          {"PageWidth",
            "\
 PageWidth is the number of columns of the output. The default is set from GetEnv[\"WIDTH\"].",
@@ -4243,7 +4243,7 @@ If None of the options is given, the following keywords are added:\t\n\n\
 DampingRate             {T0/taux, T0/tauy, T0/tauz}\n\
 Emittances              {emitx, emity, emitz}\n\
 MomentumSpread          sigma p/p0\n\
-BunchLength             sigma_z\n\ 
+BunchLength             sigma_z\n\
 Polarization            equilibrium polarization, if POL is on\n\
 Polarization2           equilibrium polarization by up to 2nd order calculation\n\
 Polarization4           equilibrium polarization by up to 4th order calculation\n\
