@@ -24,6 +24,7 @@
         if(suspend)then
           init=lfnp .gt. lfnb
           lfni0=lfni
+          write(*,*)'SUSP ',lfni
           call tfclose(lfnb,int(lfnp),lfnstk,lfopen,lfret,lfrecl,
      $         lflinep,maxlfn,lfni,lfnb)
           lfnp=lfnb
@@ -118,7 +119,7 @@ c          endif
         endif
       elseif(abbrev(word,'RES_UME','_'))then
         call cssetp(next)
-c        write(*,*)'RES ',lfni0
+        write(*,*)'RES ',lfni0
         lfni1=lfni0
         if(lfni1 .eq. 0)then
           return

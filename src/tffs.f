@@ -1936,20 +1936,17 @@ c      call tfree(ifibzl)
         outfl=0
       endif
       levele=levele+1
-c      write(*,*)'tfffs-0 ',lfni,ipoint,lrecl
-      call cssave(sav)
+      sav=savep
       call tfreadbuf(irbopen,lfn,ktfaddr(ktastk(isp1+1)),
      $     int8(modestring),str%nch)
       call tfreadbuf(irbassign,lfn,i00,i00,0)
       ipoint=1
       lrecl=0
-c      write(*,*)'tfffs ',lfn
       call tffsa(lfnp+1,lfn,kx,irtc)
       call tfreadbuf(irbclose,lfn,i00,i00,0)
       call tclrfpe
-      call csrestore(sav)
+      savep=sav
       call tfreadbuf(irbassign,lfni,i00,i00,0)
-c      write(*,*)'tfffs-1 ',lfni,ipoint,lrecl
       outfl=outfl1
       if(irtc .eq. 0 .and. iffserr .ne. 0)then
         irtc=itfmessage(9,'FFS::error',strfromis(iffserr))

@@ -9,7 +9,7 @@
         return
       endif
       open(in,file='/dev/null',status='UNKNOWN')
-      call tfreadbuf(irbinit,in,modewrite,i00,nc)
+      call tfreadbuf(irbinit,in,int8(modewrite),i00,nc)
       itopenbuf=in
       irtc=0
       return

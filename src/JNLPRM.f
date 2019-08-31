@@ -1,5 +1,5 @@
       subroutine JNLPRM(buf,LLEN,pbuf)
-      use tfrbuf, only:modemapped,irbassign,i00
+      use tfrbuf, only:modemapped,irbassign,i00,tfreadbuf
       use tfcsi
       use macfile, only:MAXLLEN
 c

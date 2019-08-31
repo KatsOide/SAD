@@ -2,7 +2,7 @@
       use tfstk
       use tfcode
       use iso_c_binding
-      use tfcsi,only:cssetp,icsmrk,ipoint
+      use tfcsi,only:cssetp,icsmrk,ipoint,lrecl,lfni,ios
       implicit none
       type (sad_dlist), pointer :: klx
       type (sad_symdef), pointer :: symd
@@ -30,7 +30,7 @@ c     $     '''',word(1:lenw(word)),''''
  1    levele=levele+1
 c      write(*,*)'tfprint-0 ',word(1:lenw(word))
       itx=itfpeeko(kx,next)
-c      write(*,*)'tfprint-1 ',lfni,itx,ipoint,next,lrecl
+c      write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
       select case (itx)
       case (-1)
         call cssetp(max(next,ip0+1))
