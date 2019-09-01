@@ -13,7 +13,7 @@ eqs img{
 <BODY>
 <CENTER><H2>Welcome to SAD/FFS & SADScript
 </H2></CENTER>
-<CENTER> SAD/FFS SADScript Version: 1.1.6.8k64,      Updated:  8/11/2019 </CENTER>
+<CENTER> SAD/FFS SADScript Version: 1.1.6.9.1k64,      Updated: 09/01/2019</CENTER>
 
 <PRE> Please use browser's search to find an item.
 
@@ -1148,7 +1148,10 @@ keywords. As the default, it displays AX, BX, NX, EX, EPX, AY, BY, NY, EY, EPY, 
 and the value of the default-keyword of the component. Each line refers to the entrance of each component
 of the line. The end of the beam line has the name "$$$". The first component can be specified by
 "^^^".
-   DISP does not calculate the functions to be displayed, so CALCULATE(CALC) is necessary whenever
+   DISP suspends the output to the terminal at every 66 lines, asking (q_uit, c_ontinue, a_ll)?.
+The further output depends on the first character of the answer from the terminal input. This dialog
+is suppressed by specifying ALL.
+   DISP does not calculate the functions to be displayed, so CALCULATE(CALC) or GO is necessary whenever
 values of components are updated.
 </PRE>
 <PRE>See also:
@@ -1165,7 +1168,9 @@ for a transport line with accelerating cavities. The flag TRPT must be on.
 <LI>
 <H3><A NAME=L53>
 ALL</A></H3>
-<PRE>ALL is a word to choose the entire beam line for the region to be displayed.
+<PRE>ALL is a word to choose the entire beam line for the region to be displayed. If ALL is given, a dialog
+at every 66 lines to control the output to the terminal is suppressed. Thus "DISP ALL e1 e2" works
+to suppress the dialog for the output region e1 from e2.
 </PRE>
 <PRE>See also:
  <A HREF=#L62>region</A> <A HREF=#L60>pattern-string</A></PRE>
@@ -1244,15 +1249,21 @@ region</A></H3>
 
         DISP .... begin [end] 
 
-with begin and end having the form name[.order][{+-}offset] (see components).
+with begin and end having the form name[.order][{+-}offset], or the component number (see components).
 
-Example:   DISP ... QF.2-10 QD+5
+Example:
+  DISP ... QF.2-10 QD+5
+           DISP ... 100 200
 
 displays functions starting at 10 elements upstream from the entrance of the second QF through 5
 elements downstream from the entrance of the first QD. The region for DISP is kept after once set.
 It is shown in the second part of the prompt when FFSPRMPT is ON, and also seen by the STATUS(STAT)
 command.
- The components which match the pattern-string in DISP are only chosen in the current region.
+   If begin points to a component after end, DISP displays from begin to $$$, then from ^^^ to end.
+
+  ALL can be specified before the region. In such a case, the dialog for the output control is suppressed.
+
+  The components which match the pattern-string in DISP are only chosen in the current region.
 </PRE>
 <PRE>See also:
  <A HREF=#L53>ALL</A> <A HREF=#L60>pattern-string</A> <A HREF=#L30>components</A> <A HREF=#L544>STATUS(STAT)</A></PRE>
@@ -4707,66 +4718,52 @@ Example:
    ....
    FFS USE=A;
      ExternalMap["TRACK",LINE["POSITION","P1.2"],nt_,x_]:=
- (Print[x];x*2);
-   ....
-
-   TRACK USE=A ....;
-
-This example defines ExternalMap to print out the coordinates of all
-particles at the second P1 in the line A. It also makes all coordinates
-of all particles twice in every turn.
-
-2) Emittance
-In FFS, define the function ExternalMap as
-
-    ExternalMap["EMIT",n,cod_]:=body;
-
-The second argument n is the position of MAP counting from the beginning, which can be obtained using
-LINE["POSITION","name.m"]. The last argument cod_ is used to receive the orbit at the entrance of
-the element, as a list of 6 real numbers. ExternalMap must return a list, either {cod1, trans} or
- {cod1, trans, dtrans, dbeam}, where cod1 is the orbit at the exit, trans is the 6 by 6 transfer
-matrix of this element, dtrans is the radiation damping part of the transfer matrix (6 by 6), and
-dbeam is the radiation excitation of the beam matrix (6 by 6). Only j >= i parts of dbeam[[i, j]]
-are taken into account.
-
-Example:
-
-    ExternalMap["EMIT",LINE["POSITION","P1"],cod_]:=(
-      Print[cod];
-      {cod+{0,0.001,0,0,0,0},IdentityMatrix[6]});
-
-3) Optics
-In FFS, define the function ExternalMap as
-
-    ExternalMap["OPTICS",n,cod_]:=body;
-
-The second argument n is the position of MAP counting from the beginning, which can be obtained using
-LINE["POSITION","name.m"]. The last argument cod_ is used to receive the orbit at the entrance of
-the element, as a list of 6 real numbers. ExternalMap must return a list {cod1, trans}, where cod1
-is the orbit at the exit and trans is the 6 by 6 transfer matrix of this element. In the case of
-CACL4D (== ~CALC6D), only the 4 by 5 transfer matrix is effective.
-
-Example:
-
-    ExternalMap["OPTICS",LINE["POSITION","P1"],cod_]:=(
-      Print[cod];
-      {cod+{0,0.001,0,0,0,0},IdentityMatrix[6]});
-
-4) Geometry
-In FFS, define the function ExternalMap as
-
-    ExternalMap["GEO",n,geo_,pos_]:=body;
-
-The second argument n is the position of MAP counting from the beginning, which can be obtained using
-LINE["POSITION","name.m"]. The argument geo_ receives the geometry of the beam line at the MAP element,
-in the same format as LINE["GEO",n], i.e., {{GX,GY,GZ},{CHI1,CHI2,CHI3}}. The last argument pos_
-receives the orbit length S at the element. ExternalMap must return an updated list {geo1, pos1},
-as { {{GX,GY,GZ},{CHI1,CHI2,CHI3}}, S} as the values at the exit of the element.
-Example:
-
-    ExternalMap["GEO",LINE["POSITION","P1"],geo_,pos_]:=(
-      Print[cod];
-      { {geo[[1]]+{1,0,0}, geo[[2]]}, pos+0.1})
+(Print[x];x(Print[x];x*2);
+....       ....
+TRACK      USE=A ....;
+This       example defines ExternalMap to print out the coordinates of all
+particles  at the second P1 in the line A. It also makes all coordinates
+of         all particles twice in every turn.
+2)         Emittance
+In         FFS, define the function ExternalMap as
+ExternalMapExternalMap["EMIT",n,cod_]:=body;
+The        second argument n is the position of MAP counting from the beginning, which can be obtained
+           using LINE["POSITION","name.m"]. The last argument cod_ is used to receive the orbit at
+           the entrance of the element, as a list of 6 real numbers. ExternalMap must return a list,
+           either {cod1, trans} or  {cod1, trans, dtrans, dbeam}, where cod1 is the orbit at the
+           exit, trans is the 6 by 6 transfer matrix of this element, dtrans is the radiation damping
+           part of the transfer matrix (6 by 6), and dbeam is the radiation excitation of the beam
+           matrix (6 by 6). Only j >= i parts of dbeam[[i, j]] are taken into account.
+Example:   Example:
+ExternalMapExternalMap["EMIT",LINE["POSITION","P1"],cod_]:=(
+Print[cod];Print[cod];
+{cod+{0,0.0{cod+{0,0.001,0,0,0,0},IdentityMatrix[6]});
+3)         Optics
+In         FFS, define the function ExternalMap as
+ExternalMapExternalMap["OPTICS",n,cod_]:=body;
+The        second argument n is the position of MAP counting from the beginning, which can be obtained
+           using LINE["POSITION","name.m"]. The last argument cod_ is used to receive the orbit at
+           the entrance of the element, as a list of 6 real numbers. ExternalMap must return a list
+           {cod1, trans}, where cod1 is the orbit at the exit and trans is the 6 by 6 transfer matrix
+           of this element. In the case of CACL4D (== ~CALC6D), only the 4 by 5 transfer matrix is
+           effective.
+Example:   Example:
+ExternalMapExternalMap["OPTICS",LINE["POSITION","P1"],cod_]:=(
+Print[cod];Print[cod];
+{cod+{0,0.0{cod+{0,0.001,0,0,0,0},IdentityMatrix[6]});
+4)         Geometry
+In         FFS, define the function ExternalMap as
+ExternalMapExternalMap["GEO",n,geo_,pos_]:=body;
+The        second argument n is the position of MAP counting from the beginning, which can be obtained
+           using LINE["POSITION","name.m"]. The argument geo_ receives the geometry of the beam line
+           at the MAP element, in the same format as LINE["GEO",n], i.e., {{GX,GY,GZ},{CHI1,CHI2,CHI3}}.
+           The last argument pos_ receives the orbit length S at the element. ExternalMap must return
+           an updated list {geo1, pos1}, as { {{GX,GY,GZ},{CHI1,CHI2,CHI3}}, S} as the values at
+           the exit of the element.
+Example:   Example:
+ExternalMapExternalMap["GEO",LINE["POSITION","P1"],geo_,pos_]:=(
+Print[cod];Print[cod];
+{          {geo[[1]]+{1,0,0}, geo[[2]]}, pos+0.1})
 </PRE>
 <PRE>See also:
  MAP <A HREF=#L297>CALC4D</A></PRE>
@@ -5866,7 +5863,8 @@ converts expr1... to _String then write them to $Output. A newline character is 
 Read</A></H3>
 <PRE>Read[f, item [, item1...] [, opts..]]
 
-reads item from file number f. item can be one of or a list of:
+reads item from file number f. If f is $Input, it reads from the current input stream. item can be
+one of or a list of:
 Word        a word, delimited by WordSeparators
 Real        a real expression
 Expression  an expression
@@ -5876,11 +5874,12 @@ Character   a single character
  A list {item1,.., itemn} is possible. The result is also a list.
 
  opts are options given by a Rule:
-Option         Value       Default        Effect
-WordSeparator  _String     " ,\t"
-   the delimiters for Word
-ReadNewRecord  True/False  True           If true, read the next record of the file beyond the end
-of line
+Option         Value       Default    Effect
+WordSeparator  _String     " ,\t"     the delimiters for Word
+ReadNewRecord  True/False  True       If true, read the next record of the file beyond the end of
+line
+NullWords      True/False  False      If True, "" is returned when the input contains adjavent word
+separators
 </PRE>
 <PRE>See also:
  <A HREF=#L422>OpenRead</A> <A HREF=#L420>Close</A></PRE>

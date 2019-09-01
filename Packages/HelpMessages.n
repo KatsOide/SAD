@@ -1,5 +1,5 @@
-Help$Update="$Date:  8/11/2019 18:00:00 $"[8,18];
-!Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
+!Help$Update="$Date:  9/1/2019 18:00:00  $"[8,18];
+Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
 Help$Version=$Version;
 
 Help$Messages=(Print["SAD/FFS Help Update: ",Help$Update];{
@@ -200,7 +200,8 @@ Example: CALC BX BY CAL",
   {"DISPLAY(DISP)",
    "Usage: DISP_LAY [keywords] [pattern-string] [region]\n\n\
 Displays values of various optical-/geometric-functions at the components given by the pattern-string in the region (see region) in the current beam line. It has several display modes specified by the keywords. As the default, it displays AX, BX, NX, EX, EPX, AY, BY, NY, EY, EPY, LENG, the length and the value of the default-keyword of the component. Each line refers to the entrance of each component of the line. The end of the beam line has the name \"$$$\". The first component can be specified by \"^^^\".\n\
-   DISP does not calculate the functions to be displayed, so CALCULATE(CALC) is necessary whenever values of components are updated.",
+   DISP suspends the output to the terminal at every 66 lines, asking (q_uit, c_ontinue, a_ll)?. The further output depends on the first character of the answer from the terminal input. This dialog is suppressed by specifying ALL.\n\
+   DISP does not calculate the functions to be displayed, so CALCULATE(CALC) or GO is necessary whenever values of components are updated.",
    "TYPE(T) optical-functions geometric-functions",
     Sort[
     {{"GEOMETRY(G)",
@@ -267,16 +268,19 @@ DISP A displays the nominal energy, energy deviation(DDP), longitudinal position
      {"region",
       "Region for DISPLAY(DISP) is specified as \n\n\
         DISP .... begin [end] \n\n\
-with begin and end having the form name[.order][{+-}offset] (see components).\n\n\
-Example:   DISP ... QF.2-10 QD+5\n\n\
+with begin and end having the form name[.order][{+-}offset], or the component number (see components).\n\n\
+Example:   DISP ... QF.2-10 QD+5\n\
+           DISP ... 100 200\n\n\
 displays functions starting at 10 elements upstream from the entrance of the second QF through 5 elements downstream from the entrance of the first QD. The region for DISP is kept after once set. It is shown in the second part of the prompt when FFSPRMPT is ON, and also seen by the STATUS(STAT) command.\n\
- The components which match the pattern-string in DISP are only chosen in the current region.",
+   If begin points to a component after end, DISP displays from begin to $$$, then from ^^^ to end.\n\
+   ALL can be specified before the region. In such a case, the dialog for the output control is suppressed.\n\
+   The components which match the pattern-string in DISP are only chosen in the current region.",
       "ALL pattern-string components STATUS(STAT)",
       {}},
 
      {"ALL",
       "\
-ALL is a word to choose the entire beam line for the region to be displayed.",
+ALL is a word to choose the entire beam line for the region to be displayed. If ALL is given, a dialog at every 66 lines to control the output to the terminal is suppressed. Thus \"DISP ALL e1 e2\" works to suppress the dialog for the output region e1 from e2.",
       "region pattern-string",
       {}},
 
@@ -3251,7 +3255,7 @@ opens a character string for read and returns the file number (_Real)",
          {"Read",
            "\
 Read[f, item [, item1...] [, opts..]]\n\n\
-reads item from file number f. item can be one of or a list of:\n\
+reads item from file number f. If f is $Input, it reads from the current input stream. item can be one of or a list of:\n\
 Word        a word, delimited by WordSeparators\n\
 Real        a real expression\n\
 Expression  an expression\n\
@@ -3259,9 +3263,10 @@ Character   a single character\n\n\
  A format n*item is possible with a positive integer n.\n\
  A list {item1,.., itemn} is possible. The result is also a list.\n\n\
  opts are options given by a Rule:\n\
-Option         Value       Default        Effect\n\
-WordSeparator  _String     \" ,\\t\"\n\   the delimiters for Word\n\
-ReadNewRecord  True/False  True           If true, read the next record of the file beyond the end of line",
+Option         Value       Default    Effect\n\
+WordSeparator  _String     \" ,\\t\"     the delimiters for Word\n\
+ReadNewRecord  True/False  True       If true, read the next record of the file beyond the end of line\n\
+NullWords      True/False  False      If True, \"\" is returned when the input contains adjavent word separators",
            "OpenRead Close",
            {}},
 
