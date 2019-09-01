@@ -353,12 +353,14 @@ c
         ist2=istop
         call tclrfpe
         istop=max(ist2,ist10)
-c        sav=savep
-c        if(lfni .eq. 5)then
-c          ipoint=istop
-c        endif
+        if(re)then
+          sav=savep
+          ipoint=istop
+        endif
         call tfeevalref(ktastk(isp),kx%k,irtc)
-c        savep=sav
+        if(re)then
+          savep=sav
+        endif
         if(irtc .eq. -1)then
           kx%k=ktfoper+mtfnull
           go to 9000

@@ -24,7 +24,6 @@
         if(suspend)then
           init=lfnp .gt. lfnb
           lfni0=lfni
-          write(*,*)'SUSP ',lfni
           call tfclose(lfnb,int(lfnp),lfnstk,lfopen,lfret,lfrecl,
      $         lflinep,maxlfn,lfni,lfnb)
           lfnp=lfnb
@@ -74,10 +73,6 @@ c        call tfdebugprint(kx,'IN',1)
             return
           endif
           call cssetp(next)
-c          if(lfni .ne. 0)then
-c            mbuf(lfni)=ipoint
-c            lbuf(lfni)=lrecl
-c          endif
           write(word,'(''ftn'',i2.2)')lfni1
           call tfreadbuf(irbassign,lfni1,i00,i00,0)
           lfnp=lfnp+1
@@ -119,15 +114,10 @@ c          endif
         endif
       elseif(abbrev(word,'RES_UME','_'))then
         call cssetp(next)
-        write(*,*)'RES ',lfni0
         lfni1=lfni0
         if(lfni1 .eq. 0)then
           return
         endif
-c       if(lfni .ne. 0)then
-c         mbuf(lfni)=ipoint
-c         lbuf(lfni)=lrecl
-c       endif
         lfni0=0
         write(word,'(''ftn'',i2.2)')lfni1
         call tfreadbuf(irbassign,lfni1,i00,i00,0)
