@@ -247,6 +247,7 @@ synradcl.o: synradcl.f tffs.o
 talign.o: talign.f tffs.o tfstk.o
 tapert.o: tapert.f initb1.o tffs.o tfstk.o tturn.o
 tbal.o: tbal.f
+tbbbrem.o: tbbbrem.f tfstk.o toplvl.o
 tbdecoup.o: tbdecoup.f
 tbend.o: tbend.f inc/TENT.inc inc/TEXIT.inc temit.o tffs.o tfloor.o tfstk.o
 tbend.f.o: tbend.f.f
