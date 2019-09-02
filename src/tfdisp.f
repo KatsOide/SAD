@@ -21,7 +21,7 @@
       real*8 dp00,dgam,bx0,by0,bx1,by1,bx2,by2,r,sigpp,tfchi,
      $     etaxp,etapxp,sigxxp,sigxpxp,sigpxpxp,emixp,
      $     etayp,etapyp,sigyyp,sigypyp,sigpypyp,emiyp
-      integer*4 lname,lb,lb1,l1
+      integer*4 lname,lb,lb1,l1,irtc,nc,itfgetbuf
       integer*4, parameter:: blen=ntwissfun*12+15,nlc=66
       real*8 pe(4),pe0(4)
       real*8 og(3,4)
@@ -221,15 +221,19 @@ c      write(*,*)'tfdisp ',word,wordp
      $       .and. lfni .eq. 5 .and. lfno .eq. 6 .and.
      $       .not. range)then
           write(lfno,'(a,$)')'(c_ontinue, q_uit, a_ll)? '
-          read(lfni,'(a)')ans
-          select case (ans(1:1))
-          case ('a')
-            range=.true.
-          case ('c')
-          case ('q')
-            exit
-          case default
-          end select
+          nc=itfgetbuf(lfni,ans,len(ans),irtc)
+c          read(lfni,'(a)')ans
+          if(irtc .eq. 0 .and. nc .gt. 0)then
+            call small(ans(1:1))
+            select case (ans(1:1))
+            case ('a')
+              range=.true.
+            case ('c')
+            case ('q')
+              exit
+            case default
+            end select
+          endif
         endif
         if(mdisp .eq. modeg .or. mdisp .eq. modeog)then
           if(mdisp .eq. modeg)then

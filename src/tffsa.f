@@ -887,7 +887,6 @@ c        flv%rsconv=rlist(ktlookup('CONVERGENCE'))
         r3i=-r3i
         go to 10
       elseif(word .eq. 'DRAW')then
-        call cssetp(nextt)
         call tfsetparam
         call tfevalb('CANVASDRAW[]',12,kx,irtc)
 c        call tfdebugprint(kx,'CANVASDRAW[]',1)

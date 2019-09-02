@@ -46,7 +46,7 @@ bint.o: bint.f
 corfree.o: corfree.f inc/common.inc inc/coroper.inc tffs.o tfstk.o
 corinit.o: corinit.f inc/common.inc inc/coroper.inc tffs.o
 cputix.o: cputix.f toplvl.o
-csinit.o: csinit.f toplvl.o
+csinit.o: csinit.f tfstk.o toplvl.o
 csroy.o: csroy.f tfstk.o
 csrtest.o: csrtest.f tfstk.o
 csrtrack.o: csrtrack.f tfstk.o
@@ -98,7 +98,9 @@ italoc.o: italoc.f tfstk.o
 itfaloc.o: itfaloc.f tfstk.o toplvl.o
 itfcopy.o: itfcopy.f tfstk.o
 itfdepth.o: itfdepth.f tfstk.o
-itfgetbuf_.o: itfgetbuf_.c
+itfgetbuf.o: itfgetbuf.f
+itfgetbuf_PPC.o: itfgetbuf_PPC.f
+itfgetbuf_f90.o: itfgetbuf_f90.f
 itfgeto.o: itfgeto.f tfstk.o toplvl.o
 itfmaloc.o: itfmaloc.f tffs.o tfshared.o tfstk.o
 itfmessage.o: itfmessage.f tfstk.o toplvl.o
@@ -245,7 +247,6 @@ synradcl.o: synradcl.f tffs.o
 talign.o: talign.f tffs.o tfstk.o
 tapert.o: tapert.f initb1.o tffs.o tfstk.o tturn.o
 tbal.o: tbal.f
-tbbbrem.o: tbbbrem.f tfstk.o toplvl.o
 tbdecoup.o: tbdecoup.f
 tbend.o: tbend.f inc/TENT.inc inc/TEXIT.inc temit.o tffs.o tfloor.o tfstk.o
 tbend.f.o: tbend.f.f
@@ -282,7 +283,7 @@ teigen.o: teigen.f
 temap.o: temap.f tffs.o tfstk.o
 temat.o: temat.f tffs.o tfstk.o
 temit.o: temit.f tffs.o tfloor.o tfstk.o toplvl.o
-temitf.o: temitf.f tffs.o
+temitf.o: temitf.f tffs.o tfstk.o
 temits.o: temits.f temit.o tffs.o tfstk.o toplvl.o
 temp.o: temp.f toplvl.o
 termes.o: termes.f tffs.o tfstk.o
@@ -302,7 +303,7 @@ tfconvstr.o: tfconvstr.f tfstk.o tfstrbuf.o
 tfcoup.o: tfcoup.f tffs.o tfstk.o toplvl.o
 tfdapert.o: tfdapert.f tffs.o tfstk.o toplvl.o
 tfdbun.o: tfdbun.f tffs.o
-tfdisp.o: tfdisp.f initb1.o tffs.o tfstk.o
+tfdisp.o: tfdisp.f initb1.o tffs.o tfstk.o toplvl.o
 tfdot.o: tfdot.f tfstk.o toplvl.o
 tfdset.o: tfdset.f itfpmat.o tfstk.o
 tfearray.o: tfearray.f tfstk.o
@@ -407,7 +408,7 @@ tmulte.o: tmulte.f tbend.o temit.o tffs.o tfloor.o
 tmulti.o: tmulti.f temit.o tffs.o tfloor.o tfstk.o
 tmultr.o: tmultr.f
 tnorm.o: tnorm.f
-toplvl.o: toplvl.f tfstk.o
+toplvl.o: toplvl.f tfshared.o tfstk.o
 tpara.o: tpara.f
 tphplt.o: tphplt.f
 tprmpt.o: tprmpt.f tfestk.o tffs.o tfstk.o

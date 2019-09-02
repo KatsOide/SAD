@@ -47,6 +47,9 @@ DropWord[s_]:=Module[{l},
 
 Helpf[]:=Module[{f,w,w1,h,a,pri,ff,ws},
   w=GetArg;
+  If["HELP"===ToUpperCase[w[[-1]]],
+    w=Drop[w,-1];
+    w=GetArg];
   pri=True;
   While[w<=>{},
     If[pri,Print[""]];
@@ -79,9 +82,12 @@ Helpf[]:=Module[{f,w,w1,h,a,pri,ff,ws},
     If[Length[h]==1&&h[1,4]==={},
       w=Drop[w,-1];ws=TrimString[Apply[StringJoin,Map[(#//" ")&,w]]]];
     WriteString[6,ws//"Topic(? for list)? "];
-    a=TrimString[Read[-1,Word]/.EndOfFile->""];
+    a=TrimString[Read[-1,Word,NullWords->True]/.EndOfFile->""];
+!    Print["helpf-8: ",a];
     pri=True;
     If[a<>"?",
       If[a=="",pri=False;w=Drop[w,-1],w=Append[w,a]]];
   ];
 ];
+
+

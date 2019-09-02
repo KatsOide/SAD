@@ -15,13 +15,14 @@ FFS;
      ltt=LaTeX[style->"text",pt->11,margins->"'3 3 3 0'",dpi->120]
      );
 
-     SelfIndent[in_]:=Module[{f=StringToStream[in],r,ind,tab,con,w,p,r1},
+     SelfIndent[in_]:=Module[{f=StringToStream[in],r,ind,tab,con,w,p,ps,r1},
        r=Table[s=ReadString[f];
          If[s===EndOfFile,Close[f];Break[]];
          StringTrim[s],
          {Infinity}];
        r1=If[r[[1]]=="",r=Rest[r];"\n\n",""];
-       ind=Max[p=(StringPosition[#," ",1][[1,1]]&/@r)]+1;
+       ind=Max[p=(If[(ps=StringPosition[#," ",1])<=>{},ps[[1,1]],0]&/@r)]+1;
+!       Print["SI: ",{r,ind}];
        tab=FromCharacterCode[Table[32,{ind}]];
        con=MapThread[{#[1,#2-1],StringTrim[#[#2+1,-1]]}&,{r,p}];
        r1//(StringJoin@@((w=WrapLine[#2,col-ind];

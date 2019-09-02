@@ -231,7 +231,7 @@ c     Standard alias for SAD sources
       use macmath
 c DO not forget to update sim/MACPHYS.h!!!
 c
-c     Update History:	
+c     Update History:
 c     2016/01/12:	from PDG 2014 https://www.google.co.jp/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0ahUKEwjHw4unsKLKAhUEoJQKHaiPCLgQFggjMAE&url=http%3A%2F%2Fpdg.lbl.gov%2F2014%2Freviews%2Frpp2014-rev-phys-constants.pdf&usg=AFQjCNGXw6APvgkpoTdIRLeC-XV651ZbJg&sig2=-wjwSn5pfl6Juvok0hFqow
 c     2008/03/27:	from CODATA 2006
 c     			http://physics.nist.gov/cuu/Constants/Table/allascii.txt
@@ -336,36 +336,23 @@ c
         implicit none
         integer*4, parameter :: nbmax=maxlbuf,nsav=6,ipbase=1
         type csiparam
-        sequence
+          sequence
           integer*4 isav(1:0)
-          integer*4 lfni,linep,lfn1,lfno
+          integer*4 lfni,linep,lfn1,lfno,ios
           logical*4 rec
         end type
         type (csiparam) , target :: savep
         character*16 delim,cmnt
         integer*8 ibcloc
         integer*4, pointer:: ipoint,lrecl,lfni=>savep%lfni,
-     $       linep=>savep%linep,lfn1=>savep%lfn1,lfno=>savep%lfno
+     $       linep=>savep%linep,lfn1=>savep%lfn1,lfno=>savep%lfno,
+     $       ios=>savep%ios
         logical*4 , pointer :: rec=>savep%rec
-        integer*4 iconv,ios,ldel,lcmnt,lastln,ibegt,lastt
+        integer*4 iconv,ldel,lcmnt,lastln,ibegt,lastt
         character*(nbmax) , target  :: buffer0
         character*(nbmax) , pointer :: buffer
 
         contains
-        subroutine cssave(sav)
-        implicit none
-        type (csiparam) , intent(out):: sav
-        sav=savep
-        return
-        end subroutine 
-
-        subroutine csrestore(sav)
-        implicit none
-        type (csiparam) , intent(in):: sav
-        savep=sav
-        return
-        end subroutine 
-
         subroutine cssetp(ip)
         implicit none
         integer*4 ip
@@ -480,8 +467,7 @@ c        write(*,*)'setlinep ',ip,linep,lrecl
      $     irbreadrecord=4,
      $     irbreadbuf=5,irbmovepoint=6,irbbor=7,irbgetpoint=8,
      $     irbreset=9,irbreadrecordbuf=10,irbeor2bor=11,
-     $     irbsetinp=12,irbcloseinp=13,irbsetbuf=14,irbibuf=15,
-     $     irbsetpoint=16,irbassign=17
+     $     irbibuf=12,irbassign=13
       integer*4 , parameter ::
      $     modeclose=0,moderead=1,modewrite=2,modestring=3,
      $     modeshared=4,modemapped=5
@@ -530,6 +516,219 @@ c
 c
       end function
 
+      subroutine tfreadbuf(icmd,lfn,ib,is,nc)
+      use tfstk
+      use tfshare
+      use tfcsi
+      use iso_c_binding
+      implicit none
+      integer*8 ib,is,ia,ls1,mapresizefile,lenfile,ib1
+      integer*4 icmd,lfn,j,itfgetbuf,irtc,ls,ie,i
+      integer*4 , optional :: nc
+      if(lfn .le. 0)then
+        select case (icmd)
+        case (irbgetpoint,irbinit,irbreadbuf)
+          if(present(nc))then
+            nc=-1
+          endif
+          go to 9100
+        case (irbopen,irbibuf)
+          go to 1
+        case (irbreadrecordbuf,irbreadrecord)
+          go to 9000
+        end select
+        return
+      endif
+ 1    select case (icmd)
+      case (irbmovepoint)
+        mbuf(lfn)=min(lbuf(lfn)+1,max(1,mbuf(lfn)+nc))
+      case (irbbor)
+        mbuf(lfn)=lbuf(lfn)+1
+      case (irbeor2bor)
+        if(mbuf(lfn) .eq. lbuf(lfn))then
+          mbuf(lfn)=lbuf(lfn)+1
+        endif
+      case (irbgetpoint)
+        if(ibuf(lfn) .eq. 0)then
+          go to 9000
+        elseif(mbuf(lfn) .gt. lbuf(lfn)
+     $         .or. mbuf(lfn) .le. 0)then
+          nc=-1
+        else
+          nc=lbuf(lfn)-mbuf(lfn)+1
+          ib=ibuf(lfn)
+          is=int8(mbuf(lfn))
+        endif
+      case (irbinit)
+        itbuf(lfn)=int(ib)
+        if(ib .le. modewrite)then
+          if(ibuf(lfn) .eq. 0)then
+            ibuf(lfn)=ktaloc(maxlbuf/8)
+            lenbuf(lfn)=maxlbuf
+          endif
+          ilist(2,ibuf(lfn)-1)=0
+        endif
+        lbuf(lfn)=0
+        mbuf(lfn)=1
+      case (irbreset)
+        if(itbuf(lfn) .le. modewrite)then
+          lbuf(lfn)=0
+          mbuf(lfn)=1
+        else
+          mbuf(lfn)=lbuf(lfn)+1
+        endif
+      case (irbclose)
+        select case (itbuf(lfn))
+        case (modewrite)
+          close(lfn)
+          if(ibuf(lfn) .gt. 0)then
+            if(ilist(2,ibuf(lfn)-1) .ne. 0)then
+              call unixclose(ilist(2,ibuf(lfn)-1))
+              ilist(2,ibuf(lfn)-1)=0
+            endif
+            call tfree(ibuf(lfn))
+          endif
+        case(modeclose,moderead)
+          close(lfn)
+        case (modestring)
+          call tflocal1(ibuf(lfn)-1)
+          ibuf(lfn)=0
+        case (modeshared)
+          ia=ibuf(lfn)
+          call tfreeshared(ia)
+          ibuf(lfn)=0
+        case default
+          call unmapfile(klist(ibuf(lfn)),int8(lenbuf(lfn)))
+          call unixclose(ifd(lfn))
+        end select
+        lbuf(lfn)=0
+        mbuf(lfn)=1
+        itbuf(lfn)=modeclose
+      case (irbopen)
+        do j=nbuf,11,-1
+          if(itbuf(j) .eq. modeclose)then
+            lfn=j
+            call irbopen1(lfn,ib,is,nc)
+            return
+          endif
+        enddo
+        lfn=0
+        go to 9100
+      case (irbreadrecordbuf,irbreadrecord)
+        if(itbuf(lfn) .le. modewrite)then
+          if(icmd .eq. irbreadrecordbuf)then
+            nc=itfgetbuf(lfn,ilist(1,ibuf(lfn)),maxlbuf,irtc)
+            lenbuf(lfn)=nc
+            lbuf(lfn)=0
+            mbuf(lfn)=1
+          else
+            nc=itfgetbuf(lfn,jlist(ib,ibuf(lfn)),
+     $           maxlbuf-int(ib)-256,irtc)
+            lbuf(lfn)=int(ib)-1
+            lenbuf(lfn)=lbuf(lfn)+nc
+            mbuf(lfn)=int(ib)
+          endif
+          if(irtc .ne. 0)then
+            return
+          endif
+        else
+ 11       ls=lenbuf(lfn)
+          if(lbuf(lfn) .lt. ls .and.
+     $         jlist(lbuf(lfn)+1,ibuf(lfn)) .eq. 10)then
+            if(lfn1 .gt. 0)then
+              write(lfn1,*)
+            endif
+            lbuf(lfn)=lbuf(lfn)+1
+          endif
+c          if(ls .eq. 1)then
+c            write(*,*)'irbrr ',lbuf(lfn),mbuf(lfn)
+c          endif
+          if(lbuf(lfn) .lt. ls)then
+            ie=ls
+            do i=lbuf(lfn)+1,ls
+              if(jlist(i,ibuf(lfn)) .eq. 10)then
+                if(i .eq. 1 .or. jlist(i-1,ibuf(lfn)) .ne.
+     $               ichar('\\'))then
+                  ie=i
+                  exit
+                endif
+              endif
+            enddo
+            nc=int(ie-lbuf(lfn))
+            mbuf(lfn)=lbuf(lfn)+1
+            lbuf(lfn)=ie
+            if(icmd .eq. irbreadrecord)then
+c              if(ib .eq. 0)then
+c                nc=min(nc,len(buff))
+c                call tmovb(jlist(mbuf(lfn),ibuf(lfn)),buff,nc)
+c              else
+                is=int8(min(mbuf(lfn),ie))
+c              endif
+            endif
+          else
+            if(itbuf(lfn) .ge. modemapped)then
+              ls1=lenfile(ifd(lfn))
+              if(ls .lt. ls1)then
+                ib1=mapresizefile(klist(ibuf(lfn)),ifd(lfn),
+     $               ls,ls1)/8
+                if(ib1 .lt. 0)then
+                  go to 9000
+                endif
+                mbuf(lfn)=ls
+                ibuf(lfn)=ib1
+                lenbuf(lfn)=int(ls1)
+                go to 11
+              endif
+            elseif(mbuf(lfn) .lt. lbuf(lfn))then
+              nc=1
+              mbuf(lfn)=lbuf(lfn)
+              is=lbuf(lfn)
+              return
+            endif
+            mbuf(lfn)=ls+1
+            go to 9000
+          endif
+        endif
+      case (irbassign)
+        if(ibuf(lfn) .ne. 0)then
+          call c_f_pointer(c_loc(jlist(1,ibuf(lfn))),buffer)
+        else
+          buffer=>buffer0
+          ibuf(lfn)=transfer(c_loc(buffer0),ib)/8
+        endif
+        ipoint=>mbuf(lfn)
+        lrecl=>lbuf(lfn)
+        lfni=lfn
+      case (irbreadbuf)
+        if(ibuf(lfn) .eq. 0 .or. mbuf(lfn) .le. 0 .or.
+     $       mbuf(lfn) .gt. lbuf(lfn))then
+          nc=0
+        else
+          nc=lbuf(lfn)-mbuf(lfn)
+          if(jlist(lbuf(lfn),ibuf(lfn)) .ne. 10)then
+            nc=nc+1
+          endif
+          nc=max(nc,1)
+          ipoint=min(mbuf(lfn),lenbuf(lfn))
+        endif
+      case (irbibuf)
+        if(itbuf(lfn) .eq. is)then
+          ib=ibuf(lfn)
+        else
+          ib=0
+        endif
+      end select
+      return
+ 9000 if(present(nc))then
+        nc=-99
+      endif
+      return
+ 9100 if(present(nc))then
+        nc=-999
+      endif
+      return
+      end subroutine
+
       end module
 
       module trackbypass
@@ -554,14 +753,14 @@ c
       integer*4 index,IgetGL,idummy
       real*8  jrval,rval
       character*(MAXSTR) jtoken,token
-c     
+c
  1000 continue
       if (IgetGL('$CTIME$',idummy) .eq. FLAGON) call cputix
       call gettok(token,slen,ttype,rval,ival)
 c     for debug
 c       print *,'toplvl-0 ',token(:slen),slen,ttype
 c     end debug
-c     
+c
  1100 continue
       if (ttype .eq. ttypEF) go to 9000
       if(ttype .eq. ttypID) then
@@ -625,20 +824,20 @@ c     end debug
      &        ,0,0)
       endif
       go to 1000
-c     
+c
  9000 continue
       if(itbuf(infl) .ne. 0)then
         return
       endif
       print *," SAD1 reads EOF."
       call errmsg("main","Stop execution.(READ EOF)" ,0,0)
-c     
+c
       stop
 c.....Entry point for error handling.
       entry bigjmp(jtoken,jslen,jttype,jrval,jival)
 c........for debug
 c     print *,'Big Jump !!!'
-c     
+c
       token=jtoken
       slen=jslen
       ttype=jttype

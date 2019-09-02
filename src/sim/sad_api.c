@@ -94,15 +94,9 @@ integer8 ktsalocbcstrs_(integer4 *mode, const char **str, integer4 *index) {
 }
 
 /* Wrapper function for SAD internal API */
-void tfreadbuf(integer4 icmd, integer4 lfn, integer4 *ib, integer4 *is,
-	       const char *buff) {
-  integer4 nc = strlen(buff);
-  if(nc > 0) {
-    tfreadbuf_(&icmd, &lfn, ib, is, &nc, buff, nc);
-  } else {
-    tfreadbuf_(&icmd, &lfn, ib, is, &nc, " ", 1);
+void tfreadbuf(integer4 icmd, integer4 lfn, integer8 *ib, integer8 *is, integer4 *nc) {
+   __tfrbuf_MOD_tfreadbuf(&icmd, &lfn, ib, is, nc);
   }
-}
 
 integer8 kfromr_(real8 *x){
   return kfromr(*x);
