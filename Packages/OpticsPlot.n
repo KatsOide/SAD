@@ -401,7 +401,7 @@ With[{def={Names->"*",Tags->False,NameFilter->Identity,
     With[{s1,leng,ss}, Graphics[#,{DataRange->{{s1,s1+leng}*ss,{-1,1}},
       PlotRange:>With[{XRange=OP$XRange}, OP$XRange=.;
 	{If[Head[XRange]===List, XRange, ss*{s1-0.001, s1+leng+0.001}],{-1,1}}],
-      Frame->False,Background->Null,RemoveOverlap->ro}]&/@l]]];
+      Frame->False,Background->Null,RemoveOverlap->ro},opt]&/@l]]];
 
 LatticeNames[{pr1_,pr2_},n_,off_,w_,yoff_,tag_,nf_,ss_]:=Module[
   {s,s0=LINE["S",pr1]+off,e=""},
@@ -421,7 +421,7 @@ With[{yoff0=0.1},
   LatticePlot1$[{pr1_,pr2_},off_,tag_,wid_,eh_,ss_]:=Module[
     {type,h,si,si1,yoff,s1=LINE["S",pr1],ds,h1,v},
     ds=(LINE["S",pr2-1]-s1)/400/wid;
-    Literal[Print]["LatticePlot1$ ",{pr1,pr2,ss}];
+!    Literal[Print]["LatticePlot1$ ",{pr1,pr2,ss}];
     Table[
       type=LINE["TYPE",i];
       h=Switch[eh[i],
