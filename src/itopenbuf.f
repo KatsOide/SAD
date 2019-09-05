@@ -1,7 +1,7 @@
       integer*4 function itopenbuf(irtc)
       use tfrbuf
       implicit none
-      integer*4 irtc,in,itfmessage,nc
+      integer*4 irtc,in,itfmessage
       in=nextfn(modewrite)
       if(in .eq. 0)then
         itopenbuf=0
@@ -9,7 +9,7 @@
         return
       endif
       open(in,file='/dev/null',status='UNKNOWN')
-      call tfreadbuf(irbinit,in,int8(modewrite),i00,nc)
+      call trbinit(in,modewrite)
       itopenbuf=in
       irtc=0
       return

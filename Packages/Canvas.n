@@ -496,7 +496,7 @@ CanvasGraphics=Class[{},
         If[""<=>pl<=>nullsl2,
           If[Canvas$PlotLabel<=>0,
             CanvasWidget[Delete]=Canvas$PlotLabel];
-          MakeTitle[pl,Restrict[TitleFontScale*DefaultTitleSize*1.3*(wsx*wsy)^(.4),9,40],"TOP HIGH"];
+          MakeTitle[pl,Restrict[TitleFontScale*DefaultTitleSize*1.3*(wsx*wsy)^(.4),8,40],"TOP HIGH"];
           Canvas$PlotLabel=CanvasLastID
           ];
         If[wfr && StringQ[wc],
@@ -1722,7 +1722,7 @@ CanvasGraphics=Class[{},
 
   With[{def={Position->Default}},
     Primitive[Rectangle[min0_,max0_,g__,opt:((_Rule|_RuleDelayed)..)]]:=
-      (Show1$[False,RectPosition[min0,max0,Position/.{opt}/.def],g];
+      (Show1$[False,RectPosition[min0,max0,Position/.{opt}/.def],g,opt];
         {Canvas$Axes,Canvas$PlotRegion,Canvas$PlotRange,Canvas$Window}=#;
         SetCanvas$Scale[Automatic])&[
           {Canvas$Axes,Canvas$PlotRegion,Canvas$PlotRange,Canvas$Window}]];

@@ -32,7 +32,7 @@
           if(lfnb .eq. 1)then
             close(98)
           endif
-          call tfreadbuf(irbassign,lfni,i00,i00,0)
+          call trbassign(lfni)
         endif
         return
       elseif(abbrev(word,'TERM_INATE','_') .or.
@@ -74,7 +74,7 @@ c        call tfdebugprint(kx,'IN',1)
           endif
           call cssetp(next)
           write(word,'(''ftn'',i2.2)')lfni1
-          call tfreadbuf(irbassign,lfni1,i00,i00,0)
+          call trbassign(lfni1)
           lfnp=lfnp+1
           lfopen(lfnp)=.false.
         elseif(ktfstringq(kx))then
@@ -120,7 +120,7 @@ c        call tfdebugprint(kx,'IN',1)
         endif
         lfni0=0
         write(word,'(''ftn'',i2.2)')lfni1
-        call tfreadbuf(irbassign,lfni1,i00,i00,0)
+        call trbassign(lfni1)
         lfnp=lfnp+1
         lfopen(lfnp)=.false.
         rew=.false.
@@ -142,7 +142,7 @@ c        call tfdebugprint(kx,'IN',1)
         lfni=0
         lfopen(lfnp)=.false.
         lfnstk(lfnp)=0
-        lfret(lfnp)=icsmrk()
+        lfret(lfnp)=ipoint
         lfrecl(lfnp)=icslrecl()
         lflinep(lfnp)=icslinep()
         call cssetp(lfrecl(lfnp))
@@ -189,7 +189,7 @@ c     call cssetlinep(lfrecl(lfnp))
         return
       endif
       lfnstk(lfnp)=lfni1
-      lfret(lfnp)=icsmrk()
+      lfret(lfnp)=ipoint
       lfrecl(lfnp)=icslrecl()
       lflinep(lfnp)=icslinep()
       call cssetp(lfrecl(lfnp))
@@ -218,7 +218,7 @@ c
       subroutine tfclose(lfnp1,lfnp,lfnstk,lfopen,lfret,lfrecl,
      $     lflinep,maxlfn,lfni,lfnb)
       use tfcsi, only:cssetl,cssetlfno,cssetlinep,cssetp,cssets,
-     $     icslfni,icslfno,icsmrk,icsstat
+     $     icslfni,icslfno,icsstat
       use tfrbuf
       implicit none
       integer*4 lfnp1,lfnp,maxlfn,lfnstk(maxlfn),lfni0,
@@ -236,13 +236,12 @@ c
       lfnp0=max(1,lfnb-1,lfnp1-1)
       lfni=lfnstk(lfnp0)
       if(lfni .ne. lfni0)then
-        call tfreadbuf(irbassign,lfni,i00,i00,0)
+        call trbassign(lfni)
       endif
       if(lfret(lfnp1) .gt. 0)then
         call cssetp(lfret(lfnp1))
         call cssetl(lfrecl(lfnp1))
         call cssetlinep(lflinep(lfnp1))
-c        write(*,*)'tfclose ',lfnp1,lflinep(lfnp1)
       elseif(lfni0 .ne. lfni)then
         call skipline
       endif

@@ -1062,52 +1062,6 @@ c     $       '"Real or List of Reals"')
       return
       end
 
-      subroutine tfmain(isp1,kx,irtc)
-      use tfstk
-      use trackbypass, only: bypasstrack
-      use tfrbuf
-      use tmacro
-      implicit none
-      type (sad_descriptor) kx
-      integer*4 isp1,irtc,infl0,itfmessage,lfn,ierrfl,ierr,nc
-      ierr=0
-      if(isp .eq. isp1+2)then
-        ierr=int(rtastk(isp))
-      elseif(isp .ne. isp1+1)then
-        irtc=itfmessage(9,'General::narg','"1 or 2"')
-        return
-      endif
-c      lfn=itfopenread(ktastk(isp1+1),.false.,irtc)
-      call tfopenread(isp1,kx,irtc)
-      if(irtc .ne. 0)then
-        return
-      endif
-      if(.not. ktfrealq(kx,lfn))then
-        irtc=itfmessage(9,'General::wonrgtype','"Real"')
-        return
-      endif
-      infl0=infl
-      infl=lfn
-      if(infl .ne. infl0)then
-        call tfreadbuf(irbassign,infl,i00,i00,0)
-      endif
-      ierrfl=errfl
-      errfl=ierr
-      bypasstrack=.true.
-c      write(*,*)'tfmain-1 ', lfn
-      call toplvl
-c      write(*,*)'tfmain-2 '
-      bypasstrack=.false.
-      errfl=ierrfl
-      call tfreadbuf(irbclose,lfn,i00,i00,nc)
-      if(infl .ne. infl0)then
-        call tfreadbuf(irbassign,infl0,i00,i00,0)
-      endif
-      infl=infl0
-      kx%k=ktfoper+mtfnull
-      return
-      end
-
       recursive subroutine tfrgbcolor(isp1,kx,irtc)
       use tfstk
       implicit none

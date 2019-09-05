@@ -76,7 +76,9 @@
     FFS::dupkey="Duplicated Key for PROFILE `1`";
     FFS::wrongkeylist="Not {{key, master}, {value ...}} for `1`";
     FFS::wrongkeyval="Neither Real nor Real List for a key for `1`";
-    FFS::nospin="No spin coordinates are given";];
+    FFS::nospin="No spin coordinates are given";
+    FFS::lfn="File number full";
+    ];
 
   $WildCard::unknown="Unknown wild card scheme `1`";
 
@@ -97,7 +99,6 @@
   Tkinter::error="Error in Python";
   Tkinter::tclerror="Error in Tcl: `1`";
   Tkinter::wrongoption="Error in Tk Option:";
-
 
   _Symbol::`a_:=General::`a;
 

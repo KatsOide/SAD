@@ -690,10 +690,10 @@ c
        kytbl(kwL,0)   =sethtb('L       ',icKWRD,kwL   )
        kytbl(kwKIN,0) =sethtb('DISKIN  ',icKWRD,kwKIN )
        kytbl(kwANGL,0)=sethtb('ANGLE   ',icKWRD,kwANGL)
+       kytbl(kwROT ,0)=sethtb('ROT     ',icKWRD,kwROT)
+       kytbl(kwROT ,0)=sethtb('TILT    ',icKWRD,kwROT)
        kytbl(kwROT ,0)=sethtb('ROTATE  ',icKWRD,kwROT)
-             idummy   =sethtb('ROT     ',icKWRD,kwROT)
 c      kytbl(kwTILT,0)=sethtb('TILT    ',icKWRD,kwROT )
-             idummy   =sethtb('TILT    ',icKWRD,kwROT )
        kytbl(kwK0  ,0)=sethtb('K0      ',icKWRD,kwK0  )
        kytbl(kwK1  ,0)=sethtb('K1      ',icKWRD,kwK1  )
 c      kytbl(kwDK1 ,0)=sethtb('DK1     ',icKWRD,kwDK1 )
@@ -765,26 +765,26 @@ c
        kytbl(kwHARM,0)=sethtb('HARM    ',icKWRD,kwHARM)
        kytbl(kwLWAK,0)=sethtb('LWAKE   ',icKWRD,kwLWAK)
        kytbl(kwTWAK,0)=sethtb('TWAKE   ',icKWRD,kwTWAK)
+       kytbl(kwAX  ,0)=sethtb('ALPHAX  ',icKWRD,kwAX  )
        kytbl(kwAX  ,0)=sethtb('AX      ',icKWRD,kwAX  )
-                idummy=sethtb('ALPHAX  ',icKWRD,kwAX  )
+       kytbl(kwAY  ,0)=sethtb('ALPHAY  ',icKWRD,kwAY  )
        kytbl(kwAY  ,0)=sethtb('AY      ',icKWRD,kwAY  )
-                idummy=sethtb('ALPHAY  ',icKWRD,kwAY  )
+       kytbl(kwBX  ,0)=sethtb('BETAX   ',icKWRD,kwBX  )
        kytbl(kwBX  ,0)=sethtb('BX      ',icKWRD,kwBX  )
-                idummy=sethtb('BETAX   ',icKWRD,kwBX  )
+       kytbl(kwBY  ,0)=sethtb('BETAY   ',icKWRD,kwBY  )
        kytbl(kwBY  ,0)=sethtb('BY      ',icKWRD,kwBY  )
-                idummy=sethtb('BETAY   ',icKWRD,kwBY  )
+       kytbl(kwEMIX,0)=sethtb('EMIX    ',icKWRD,kwEMIX)
        kytbl(kwEMIX,0)=sethtb('EMITX   ',icKWRD,kwEMIX)
-                idummy=sethtb('EMIX    ',icKWRD,kwEMIX)
+       kytbl(kwEMIY,0)=sethtb('EMIY    ',icKWRD,kwEMIY)
        kytbl(kwEMIY,0)=sethtb('EMITY   ',icKWRD,kwEMIY)
-                idummy=sethtb('EMIY    ',icKWRD,kwEMIY)
+       kytbl(kwEMIZ,0)=sethtb('EMIZ    ',icKWRD,kwEMIZ)
        kytbl(kwEMIZ,0)=sethtb('EMITZ   ',icKWRD,kwEMIZ)
-                idummy=sethtb('EMIZ    ',icKWRD,kwEMIZ)
        kytbl(kwPX  ,0)=sethtb('PSIX    ',icKWRD,kwPX  )
        kytbl(kwPY  ,0)=sethtb('PSIY    ',icKWRD,kwPY  )
        kytbl(kwPZ  ,0)=sethtb('PSIZ    ',icKWRD,kwPZ  )
        kytbl(kwDP  ,0)=sethtb('DP      ',icKWRD,kwDP  )
+       kytbl(kwSIGZ,0)=sethtb('SIGZ    ',icKWRD,kwSIGZ)
        kytbl(kwSIGZ,0)=sethtb('SIGMAZ  ',icKWRD,kwSIGZ)
-                idummy=sethtb('SIGZ    ',icKWRD,kwSIGZ)
        kytbl(kwGEO ,0)=sethtb('GEO     ',icKWRD,kwGEO )
        kytbl(kwR1  ,0)=sethtb('R1      ',icKWRD,kwR1  )
        kytbl(kwR2  ,0)=sethtb('R2      ',icKWRD,kwR2  )
@@ -936,8 +936,8 @@ c
        kytbl(kwDY2  ,0)=sethtb('DY2     ',icKWRD,kwDY2  )
        kytbl(kwRADI ,0)=sethtb('RADIUS  ',icKWRD,kwRADI )
        kytbl(kwW1   ,0)=sethtb('W1      ',icKWRD,kwW1 )
+       kytbl(kwDROT ,0)=sethtb('DROT    ',icKWRD,kwDROT)
        kytbl(kwDROT ,0)=sethtb('DROTATE ',icKWRD,kwDROT)
-             idummy    =sethtb('DROT    ',icKWRD,kwDROT)
        kytbl(kwAE1 ,0) =sethtb('AE1     ',icKWRD,kwAE1)
        kytbl(kwAE2 ,0) =sethtb('AE2     ',icKWRD,kwAE2)
        kytbl(kwFB1 ,0) =sethtb('FB1     ',icKWRD,kwFB1)
@@ -965,7 +965,7 @@ cc for STeering
       idummy=sethtb('ST      ',icDEF,icBEND)
 c                         number of parameters
 c  for bend
-      idummy=sethtb('bend    ',icDEF,icBEND)
+      kytbl(0,icBEND)=sethtb('bend    ',icDEF,icBEND)
       kytbl(0,icBEND)=sethtb('BEND    ',icDEF,icBEND)
       kytbl(kwL,icBEND)=ky_L_BEND
       kytbl(kwANGL,icBEND)=ky_ANGL_BEND
@@ -999,7 +999,7 @@ c
       kytbl(kwMAX,icBEND)=ky_MAX_BEND
       kytbl(kwNPARAM,icBEND)=p_NPARAM_BEND
 c  for quad
-      idummy=sethtb('quad    ',icDEF,icQUAD)
+      kytbl(0,icQUAD)=sethtb('quad    ',icDEF,icQUAD)
       kytbl(0,icQUAD)=sethtb('QUAD    ',icDEF,icQUAD)
       kytbl(kwL,icQUAD)=ky_L_QUAD
       kytbl(kwK1,icQUAD)=ky_K1_QUAD
@@ -1030,13 +1030,13 @@ c
       kytbl(kwMAX,icQUAD)=ky_MAX_QUAD
       kytbl(kwNPARAM,icQUAD)=p_NPARAM_QUAD
 c  for THIN
-      idummy=sethtb('sext    ',icDEF,icsext)
+      kytbl(0,icSEXT)=sethtb('sext    ',icDEF,icsext)
       kytbl(0,icSEXT)=sethtb('SEXT    ',icDEF,icsext)
-      idummy=sethtb('oct    ',icDEF,icOCTU)
+      kytbl(0,icOCTU)=sethtb('oct    ',icDEF,icOCTU)
       kytbl(0,icOCTU)=sethtb('OCT    ',icDEF,icOCTU)
-      idummy=sethtb('deca    ',icDEF,icdeca)
+      kytbl(0,icDECA)=sethtb('deca    ',icDEF,icDECA)
       kytbl(0,icDECA)=sethtb('DECA    ',icDEF,icDECA)
-      idummy=sethtb('dodeca    ',icDEF,icdodeca)
+      kytbl(0,icDODECA)=sethtb('dodeca    ',icDEF,icdodeca)
       kytbl(0,icDODECA)=sethtb('DODECA    ',icDEF,icdodeca)
 
       do i=icSEXT,icDODECA,2
@@ -1064,7 +1064,7 @@ c
       kytbl(kwK5,icDODECA)=ky_K_THIN
 c  for octu
 c  for MULT
-      idummy=sethtb('mult    ',icDEF,icMULT)
+      kytbl(0,icMULT)=sethtb('mult    ',icDEF,icMULT)
       kytbl(0,icMULT)=sethtb('MULT    ',icDEF,icMULT)
       kytbl(kwL,icMULT)=ky_L_MULT
       kytbl(kwDX,icMULT)=ky_DX_MULT
@@ -1160,7 +1160,7 @@ c
       kytbl(kwNPARAM,icMULT)=p_NPARAM_MULT
 c
 c  for UNDULATOR
-      idummy=sethtb('und     ',icDEF,icUND)
+      kytbl(0,icUND)=sethtb('und    ',icDEF,icUND)
       kytbl(0,icUND)=sethtb('UND    ',icDEF,icUND)
       kytbl(kwL,icUND)=ky_L_UND
       kytbl(kwFBX,icUND)=ky_FBX_UND
@@ -1174,7 +1174,7 @@ c  for UNDULATOR
       kytbl(kwMAX,icUND)=ky_MAX_UND
       kytbl(kwNPARAM,icUND)=p_NPARAM_UND
 c  for WIG
-      idummy=sethtb('wig     ',icDEF,icWIG)
+      kytbl(0,icWIG)=sethtb('wig    ',icDEF,icWIG)
       kytbl(0,icWIG)=sethtb('WIG    ',icDEF,icWIG)
       kytbl(kwL,icWIG)=ky_L_WIG
       kytbl(kwBMAX,icWIG)=ky_BMAX_WIG
@@ -1193,7 +1193,7 @@ c  for WIG
       kytbl(kwCOUPLE,icWIG)=ky_COUPLE_WIG
       kytbl(kwMAX,icWIG)=ky_MAX_WIG
 c  for solenoid
-      idummy=sethtb('sol     ',icDEF,icSOL)
+      kytbl(0,icSOL)=sethtb('sol     ',icDEF,icSOL)
       kytbl(0,icSOL)=sethtb('SOL     ',icDEF,icSOL)
       kytbl(kwL,icSOL)=ky_L_SOL
       kytbl(kwBZ,icSOL)=ky_BZ_SOL
@@ -1221,7 +1221,7 @@ cc for TEST
       kytbl(kwANGL,icTEST)=ky_ANGL_TEST
       kytbl(kwMAX,icTEST)=ky_MAX_TEST
 cc for Cavity
-      idummy=sethtb('cavi    ',icDEF,icCavi)
+      kytbl(0,icCAVI)=sethtb('cavi    ',icDEF,icCavi)
       kytbl(0,icCAVI)=sethtb('CAVI    ',icDEF,icCavi)
       kytbl(kwL,icCAVI)=ky_L_CAVI
       kytbl(kwVOLT,icCAVI)=ky_VOLT_CAVI
@@ -1252,7 +1252,7 @@ c
       kytbl(kwMAX,icCAVI)=ky_MAX_CAVI
       kytbl(kwNPARAM,icCAVI)=p_NPARAM_CAVI
 cc for t-Cavity
-      idummy=sethtb('tcavi   ',icDEF,icTCAV)
+      kytbl(0,icTCAV)=sethtb('tcavi   ',icDEF,icTCAV)
       kytbl(0,icTCAV)=sethtb('TCAVI   ',icDEF,icTCAV)
       kytbl(kwL,icTCAV)=ky_L_TCAV
       kytbl(kwK0,icTCAV)=ky_K0_TCAV
@@ -1275,12 +1275,12 @@ c     kytbl(kwLRAD,icTCAV)=ky_LRAD_TCAV
 c
       kytbl(kwMAX,icTCAV)=ky_MAX_TCAV
 cc for MAP
-      idummy=sethtb('map    ',icDEF,icMAP)
+      kytbl(0,icMAP)=sethtb('map    ',icDEF,icMAP)
       kytbl(0,icMAP)=sethtb('MAP    ',icDEF,icMAP)
       kytbl(kwL,icMAP)=ky_L_MAP
       kytbl(kwMAX,icMAP)=ky_MAX_MAP
 cc for INS
-      idummy=sethtb('ins    ',icDEF,icINS)
+      kytbl(0,icINS)=sethtb('ins    ',icDEF,icINS)
       kytbl(0,icINS)=sethtb('INS    ',icDEF,icINS)
       kytbl(kwAX,icINS)=ky_AX_INS
       kytbl(kwBX,icINS)=ky_BX_INS
@@ -1315,7 +1315,7 @@ cc for Coordinate transformation
       kytbl(kwCOUPLE,icCOORD)=ky_COUPLE_COORD
       kytbl(kwMAX,icCOORD)=ky_MAX_COORD
 cc for BEAMBEAM
-      idummy=sethtb('beambeam',icDEF,icBEAM)
+      kytbl(0,icBEAM)=sethtb('beambeam',icDEF,icBEAM)
       kytbl(0,icBEAM)=sethtb('BEAMBEAM',icDEF,icBEAM)
       kytbl(kwAX,icBEAM)=ky_AX_BEAM
       kytbl(kwBX,icBEAM)=ky_BX_BEAM
@@ -1465,7 +1465,7 @@ cc for PHSROT
       kytbl(kwMAX,icProt)=ky_MAX_Prot
       kytbl(kwNPARAM,icProt)=p_NPARAM_Prot
 cc for MARK
-      idummy=sethtb('mark    ',icDEF,icMark)
+      kytbl(0,icMARK)=sethtb('mark    ',icDEF,icMark)
       kytbl(0,icMARK)=sethtb('MARK    ',icDEF,icMark)
       kytbl(kwAX,icMark)=ky_AX_Mark
       kytbl(kwBX,icMark)=ky_BX_Mark
@@ -1510,7 +1510,7 @@ cc for MARK
       kytbl(kwCOUPLE,icMark)=ky_COUPLE_Mark
       kytbl(kwMAX,icMark)=ky_MAX_Mark
 cc for apert
-      idummy=sethtb('apert   ',icDEF,icAprt)
+      kytbl(0,icAprt)=sethtb('apert   ',icDEF,icAprt)
       kytbl(0,icAprt)=sethtb('APERT   ',icDEF,icAprt)
       kytbl(kwDX1,icAprt)=ky_DX1_Aprt
       kytbl(kwDX2,icAprt)=ky_DX2_Aprt
@@ -1527,7 +1527,7 @@ cc for apert
       kytbl(kwDY,icAprt)=ky_DY_Aprt      
       kytbl(kwMAX,icAprt)=ky_MAX_Aprt
 cc for mon
-      idummy=sethtb('moni    ',icDEF,icMoni)
+      kytbl(0,icMONI)=sethtb('moni    ',icDEF,icMONI)
       kytbl(0,icMONI)=sethtb('MONI    ',icDEF,icMONI)
       kytbl(kwDX,icMONI)=ky_DX_MONI
       kytbl(kwDY,icMONI)=ky_DY_MONI

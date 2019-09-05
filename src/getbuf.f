@@ -3,8 +3,7 @@
       use tfcsi
       use iso_c_binding
       implicit none
-      integer*4 lrecl0,lr,lrecl00
-      integer*8 is
+      integer*4 lrecl0,lrecl00,nc
       logical*4 unmapped
       if(lfni .le. 0)then
         ios=99999
@@ -27,18 +26,16 @@
             ios=999999
             go to 10
           endif
-          call tfreadbuf(irbreadrecord,lfni,int8(lrecl0),i00,lr)
-          if(lr .eq. -99)then
+          call tfreadbuf(lfni,lrecl0,nc)
+          if(nc .eq. -99)then
             go to 20
-          elseif(lr .eq.  -999)then
+          elseif(nc .eq.  -999)then
             go to 10
-          endif
-          if(lr .le. 0)then
+          elseif(nc .le. 0)then
             lrecl=max(lrecl0-1,0)
           else
-            lrecl=len_trim(buffer(1:lrecl0+lr-1))
+            lrecl=len_trim(buffer(1:lrecl0+nc-1))
           endif
-          ipoint=1
           if(lfn1 .gt. 0)then
             write(lfn1,'(1x,a)')buffer(lrecl0:lrecl)
           endif
@@ -53,29 +50,27 @@
             endif
             lrecl=lrecl+1
           endif
-          if(lrecl .gt. 0 .and. buffer(lrecl:lrecl) .ne. char(10))then
+          if(lrecl .gt. 0)then
             buffer(lrecl:lrecl)=char(10)
           endif
         else
           ios=0
 c          write(*,*)'getbuf-1 ',lfni,ipoint,lrecl
-          call tfreadbuf(irbreadrecord,lfni,ibcloc,is,lr)
+          call tfreadbuf(lfni,0,nc)
 c          if(lfni .lt. 100)then
 c            write(*,*)'getbuf ',lfni,ipoint,lr,lrecl,
 c     $           buffer(ipoint:ipoint+max(lr,1)-1)
 c          endif
-          if(lr .eq. -99)then
+          if(nc .eq. -99)then
             go to 20
-          elseif(lr .eq.  -999)then
+          elseif(nc .eq.  -999)then
             go to 10
           endif
-          ipoint=int(is)
-          lrecl=int(max(is+lr-1,is-1))
           if(lfn1 .gt. 0)then
             if(buffer(lrecl:lrecl) .eq. char(10))then
-              write(lfn1,'(1x,a)')buffer(is:lrecl-1)
+              write(lfn1,'(1x,a)')buffer(ipoint:lrecl-1)
             else
-              write(lfn1,'(1x,a)')buffer(is:lrecl)
+              write(lfn1,'(1x,a)')buffer(ipoint:lrecl)
             endif
           endif
         endif
@@ -148,11 +143,6 @@ c      write(*,*)'getbuf-99999'
      $       transfer(c_loc(jlist(1,ibuf(lfni))),ib))+1
       endif
       lrecl=ipoint+nc
-c      buffer(ipoint:lrecl-1)=string
-c      call removetab(buffer(ipoint:lrecl))
-c      call removecomment(buffer(ipoint:lrecl),cmnt(1:lcmnt),'''"')
-c      buffer(lrecl:lrecl)=char(10)
-c      write(*,*)'setbuf ',ipoint,lrecl,string
       return
       end
 

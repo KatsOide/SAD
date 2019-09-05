@@ -83,7 +83,8 @@ extern integer4 hsrchz_(const_character, ftnlen);
 extern integer4 igetgl1_(const_character, ftnlen);
 extern real8    rgetgl1_(const_character, ftnlen);
 extern void capita_(character, ftnlen);
-extern void __tfrbuf_MOD_tfreadbuf(integer4*, integer4*, integer8*, integer8*, integer4*);
+extern void tfreadbuf_(integer4*, integer4*, integer4*);
+extern void __tfrbuf_MOD_trbinit(integer4*, integer4*);
 extern void gettok_(character, integer4*, integer4*, real8*, integer4*, ftnlen);
 extern void __tfmem_MOD_tfree(integer8*);
 extern integer4 itfdownlevel_(void);
@@ -128,7 +129,8 @@ extern integer4 itfgetoptionstk(integer4, const char**);
 extern int tfinitstk(tfstk_t*, integer4);
 
 /* Internal API Wrapper Prototypes */
-extern void tfreadbuf(integer4, integer4, integer8*, integer8*, integer4*);
+extern void tfreadbuf(integer4, integer4*, integer4*);
+extern void trbinit(integer4, integer4*);
 extern real8 rgetgl1(const char*);
 extern integer4 itfsyserr(integer4);
 extern integer8 ktfcopy(integer8);

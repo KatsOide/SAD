@@ -150,10 +150,10 @@ c
           lfrecl(1)=1
           lflinep(1)=1
           itbuf(5)=moderead
-          call tfreadbuf(irbreset,5,i00,i00,0)
+          call trbreset(5)
           if(infl .ne. 5)then
             lfnp=2
-            call tfreadbuf(irbbor,infl,i00,i00,0)
+            call trbnextl(infl)
             lfnstk(2)=infl
             lfret(2)=0
             lfrecl(2)=lbuf(infl)
@@ -179,7 +179,7 @@ c
       lfopen(lfnp)=.false.
       if(lfni .ne. lfnstk(lfnp))then
         lfni=lfnstk(lfnp)
-        call tfreadbuf(irbassign,lfni,i00,i00,0)
+        call trbassign(lfni)
       endif
       lfno=outfl
 c      write(*,*)'tffsa ',lfnp,lfni,lfno
@@ -287,7 +287,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
           nrpt1=65535
         endif
         nrpt(levelr)=max(1,nrpt1)
-        irptp(levelr)=icsmrk()
+        irptp(levelr)=ipoint
         call cssetrec(.true.)
         go to 10
       endif
@@ -901,7 +901,7 @@ c     1         title,case,exist)
           word=tfgetstr(kx,nc)
           exist=nc .eq. 0
 c          if(exist)then
-c            call cssetp(icsmrk()+1)
+c            call cssetp(ipoint+1)
 c          endif
 c          write(*,*)'DRAW ',exist,nc,ios,' ',word(1:nc)
         endif

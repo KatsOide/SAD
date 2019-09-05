@@ -75,13 +75,14 @@ c$$$      integer*8 , pointer, dimension(:) :: pidval(:)
         character*(*) , intent(in) :: token
         integer*8, target, intent(in):: ival
         integer*4 , intent(in) :: type
-        integer*4 idx,hsrch,lenw
+        integer*4 idx,hsrch
         sethtb8=0
      
-        idx= hsrch(token(:lenw(token)))
+        idx= hsrch(token(:len_trim(token)))
         if(idx .le. 0 .or. idx .gt. HTMAX) then
           call errmsg('sethtb8'
-     &         ,'illegal index value for sethashtble'
+     &         ,'illegal index value for sethashtble: '//
+     $         token(:len_trim(token))
      &         , 0,16)
         else
           idtype(idx)=type
