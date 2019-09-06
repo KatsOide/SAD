@@ -1937,19 +1937,24 @@ c      call tfree(ifibzl)
       endif
       levele=levele+1
       sav=savep
-      call tfreadbuf(irbopen,lfn,ktfaddr(ktastk(isp1+1)),
+      call trbopen(lfn,ktfaddr(ktastk(isp1+1)),
      $     int8(modestring),str%nch)
-      call tfreadbuf(irbassign,lfn,i00,i00,0)
-      ipoint=1
-      lrecl=0
-      call tffsa(lfnp+1,lfn,kx,irtc)
-      call tfreadbuf(irbclose,lfn,i00,i00,0)
-      call tclrfpe
-      savep=sav
-      call tfreadbuf(irbassign,lfni,i00,i00,0)
-      outfl=outfl1
-      if(irtc .eq. 0 .and. iffserr .ne. 0)then
-        irtc=itfmessage(9,'FFS::error',strfromis(iffserr))
+      if(lfn .le. 0)then
+        irtc=itfmessage(9,'FFS::lfn','"'//str%str(1:str%nch)//'"')
+        kx=dxnull
+      else
+        call trbassign(lfn)
+        ipoint=1
+        lrecl=0
+        call tffsa(lfnp+1,lfn,kx,irtc)
+        call trbclose(lfn)
+        call tclrfpe
+        savep=sav
+        call trbassign(lfni)
+        outfl=outfl1
+        if(irtc .eq. 0 .and. iffserr .ne. 0)then
+          irtc=itfmessage(9,'FFS::error',strfromis(iffserr))
+        endif
       endif
       call tfconnect(kx,irtc)
       return
@@ -1962,3 +1967,50 @@ c      call tfree(ifibzl)
       convcase=f
       return
       end
+
+      subroutine tfmain(isp1,kx,irtc)
+      use tfstk
+      use trackbypass, only: bypasstrack
+      use tfrbuf
+      use tmacro
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 isp1,irtc,infl0,itfmessage,lfn,ierrfl,ierr
+      ierr=0
+      if(isp .eq. isp1+2)then
+        ierr=int(rtastk(isp))
+      elseif(isp .ne. isp1+1)then
+        irtc=itfmessage(9,'General::narg','"1 or 2"')
+        return
+      endif
+c      lfn=itfopenread(ktastk(isp1+1),.false.,irtc)
+      call tfopenread(isp1,kx,irtc)
+      if(irtc .ne. 0)then
+        return
+      endif
+      if(.not. ktfrealq(kx,lfn))then
+        irtc=itfmessage(9,'General::wonrgtype','"Real"')
+        return
+      endif
+      infl0=infl
+      infl=lfn
+      if(infl .ne. infl0)then
+        call trbassign(infl)
+      endif
+      ierrfl=errfl
+      errfl=ierr
+      bypasstrack=.true.
+c      write(*,*)'tfmain-1 ', lfn
+      call toplvl
+c      write(*,*)'tfmain-2 '
+      bypasstrack=.false.
+      errfl=ierrfl
+      call trbclose(lfn)
+      if(infl .ne. infl0)then
+        call trbassign(infl0)
+      endif
+      infl=infl0
+      kx%k=ktfoper+mtfnull
+      return
+      end
+

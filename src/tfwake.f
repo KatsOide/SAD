@@ -56,7 +56,7 @@
                   nw=j-1
                   go to 31
                 elseif(word1 .eq. ' ')then
-                  call skipln
+                  call skiplnget
                   go to 32
                 endif
                 s=getva(exist)

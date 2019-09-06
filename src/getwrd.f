@@ -56,7 +56,7 @@ c      write(*,*)'getwdl0 ',next,ipoint,lrecl
       integer*4 getwdl0
  1    getwrd0=getwdl0(outstr)
       if(outstr(1:1) .eq. ' ')then
-        call skipln
+        call skiplnget
         if(icsstat() .ne. 0)then
           outstr=' '
           return
@@ -263,7 +263,7 @@ c     Peek character from input buffer with case normalization
       return
       end
 
-      subroutine skipln
+      subroutine skiplnget
       use ffs_flag
       use tfcsi
       implicit none
@@ -283,6 +283,23 @@ c     Peek character from input buffer with case normalization
       return
       end
 
+      subroutine skipline
+      use tfcsi
+      implicit none
+      integer*4 ipoint1,ifchar
+      if(ipoint .ge. lrecl)then
+        ipoint=lrecl+1
+      else
+        ipoint1=ifchar(buffer(1:lrecl),char(10),ipoint)+1
+        if(ipoint1 .le. 1)then
+          ipoint=lrecl+1
+        else
+          ipoint=ipoint1
+        endif
+      endif
+      return
+      end
+
       subroutine csrst(lfn0)
       use tfcsi
       implicit none
@@ -290,27 +307,5 @@ c     Peek character from input buffer with case normalization
       lfn1=lfn0
       call skipline
       call cssets(0)
-      return
-      end
-
-      subroutine skipline
-      use tfcsi
-      implicit none
-      integer*4 ipoint1,ifchar
-      if(ipoint .ge. lrecl)then
-        ipoint=lrecl+1
-c        buffer(lrecl:lrecl)=char(10)
-      else
-        ipoint1=ifchar(buffer(1:lrecl),char(10),ipoint)+1
-        if(ipoint1 .le. 1)then
-c          write(*,*)'Buffer is damaged. point= ',ipoint,
-c     $         ' total= ',lrecl,' lfn= ',lfni,
-c     $         ' char= ''',buffer(lrecl:lrecl),''''
-c          buffer(lrecl:lrecl)=char(10)
-          ipoint=lrecl+1
-        else
-          ipoint=ipoint1
-        endif
-      endif
       return
       end

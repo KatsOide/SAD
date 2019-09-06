@@ -83,7 +83,7 @@ gamma.o: gamma.f tfloor.o toplvl.o
 gaus3.o: gaus3.f
 gaussn.o: gaussn.f
 geodrw.o: geodrw.f tffs.o tfstk.o toplvl.o
-getbuf.o: getbuf.f tfstk.o toplvl.o
+getbuf.o: getbuf.f tfestk.o tffs.o tfstk.o toplvl.o
 gettok.o: gettok.f toplvl.o
 getvad.o: getvad.f tfstk.o toplvl.o
 getwrd.o: getwrd.f tffs.o tfstk.o toplvl.o
@@ -329,7 +329,6 @@ tffsa.o: tffsa.f temit.o tffs.o tfstk.o toplvl.o
 tffscalc.o: tffscalc.f tffs.o tfloor.o tfshared.o tfstk.o toplvl.o
 tffsfreefix.o: tffsfreefix.f tffs.o tfstk.o toplvl.o
 tffsmatch.o: tffsmatch.f initb1.o tffs.o tfshared.o tfstk.o toplvl.o
-tffsmatch_0.o: tffsmatch_0.f initb1.o tffs.o tfshared.o tfstk.o toplvl.o
 tffswake.o: tffswake.f tffs.o tfstk.o
 tfgeo.o: tfgeo.f initb1.o tffs.o tfloor.o tfstk.o toplvl.o
 tfgeti.o: tfgeti.f
@@ -343,7 +342,7 @@ tfkwrd.o: tfkwrd.f tfstk.o toplvl.o
 tflag.o: tflag.f tffs.o tfstk.o
 tflifetrack.o: tflifetrack.f tfstk.o
 tflogi.o: tflogi.f tffs.o
-tfloor.o: tfloor.f tffs.o tfstk.o toplvl.o
+tfloor.o: tfloor.f tffs.o tfstk.o
 tfltr1.o: tfltr1.f tffs.o
 tfltra.o: tfltra.f tffs.o tfstk.o
 tfmap.o: tfmap.f tfstk.o

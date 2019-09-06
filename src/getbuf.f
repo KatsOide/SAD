@@ -1,10 +1,13 @@
+      module prmpt
+        integer*4 , save:: ipr=0
+      end module
+
       subroutine getbuf
       use tfrbuf
       use tfcsi
       use iso_c_binding
       implicit none
-      integer*4 lrecl0,lr,lrecl00
-      integer*8 is
+      integer*4 lrecl0,lrecl00,nc
       logical*4 unmapped
       if(lfni .le. 0)then
         ios=99999
@@ -27,18 +30,16 @@
             ios=999999
             go to 10
           endif
-          call tfreadbuf(irbreadrecord,lfni,int8(lrecl0),i00,lr)
-          if(lr .eq. -99)then
+          call tfreadbuf(lfni,lrecl0,nc)
+          if(nc .eq. -99)then
             go to 20
-          elseif(lr .eq.  -999)then
+          elseif(nc .eq.  -999)then
             go to 10
-          endif
-          if(lr .le. 0)then
+          elseif(nc .le. 0)then
             lrecl=max(lrecl0-1,0)
           else
-            lrecl=len_trim(buffer(1:lrecl0+lr-1))
+            lrecl=len_trim(buffer(1:lrecl0+nc-1))
           endif
-          ipoint=1
           if(lfn1 .gt. 0)then
             write(lfn1,'(1x,a)')buffer(lrecl0:lrecl)
           endif
@@ -53,29 +54,22 @@
             endif
             lrecl=lrecl+1
           endif
-          if(lrecl .gt. 0 .and. buffer(lrecl:lrecl) .ne. char(10))then
+          if(lrecl .gt. 0)then
             buffer(lrecl:lrecl)=char(10)
           endif
         else
           ios=0
-c          write(*,*)'getbuf-1 ',lfni,ipoint,lrecl
-          call tfreadbuf(irbreadrecord,lfni,ibcloc,is,lr)
-c          if(lfni .lt. 100)then
-c            write(*,*)'getbuf ',lfni,ipoint,lr,lrecl,
-c     $           buffer(ipoint:ipoint+max(lr,1)-1)
-c          endif
-          if(lr .eq. -99)then
+          call tfreadbuf(lfni,0,nc)
+          if(nc .eq. -99)then
             go to 20
-          elseif(lr .eq.  -999)then
+          elseif(nc .eq.  -999)then
             go to 10
           endif
-          ipoint=int(is)
-          lrecl=int(max(is+lr-1,is-1))
           if(lfn1 .gt. 0)then
             if(buffer(lrecl:lrecl) .eq. char(10))then
-              write(lfn1,'(1x,a)')buffer(is:lrecl-1)
+              write(lfn1,'(1x,a)')buffer(ipoint:lrecl-1)
             else
-              write(lfn1,'(1x,a)')buffer(is:lrecl)
+              write(lfn1,'(1x,a)')buffer(ipoint:lrecl)
             endif
           endif
         endif
@@ -104,115 +98,58 @@ c      write(*,*)'getbuf-99999'
       endif
       return
       end
-      
-      subroutine capita1(string)
-      character*(*) string
-      character c,qc
-      logical quote
-      l=len(string)
-      ioff=ichar('A')-ichar('a')
-      quote=.false.
-      qc=' '
-      do 10 i=1,l
-        c=string(i:i)
-        if(quote)then
-          if(c .eq. qc)then
-            quote=.false.
-          endif
-        else        
-          if(c .eq. '''' .or. c .eq. '"')then
-            quote=.true.
-            qc=c
-          elseif(c .ge. 'a' .and. c .le. 'z')then
-            string(i:i)=char(ichar(c)+ioff)
-          endif
-        endif
- 10   continue
-      return
-      end
 
-      subroutine setbuf(string,nc)
+      subroutine tprmpt(lfni,lfno,lfn1)
       use tfstk
-      use tfcsi
-      use tfrbuf
-      use iso_c_binding
+      use ffs
+      use ophash, only: opcode
+      use tffitcode
+      use prmpt
       implicit none
-      integer*4 nc
-      integer*8 ib
-      character*(nc) , target :: string
-      if(itbuf(lfni) .le. modewrite)then
-        ipoint=int(transfer(c_loc(string),ib)-
-     $       transfer(c_loc(buffer),ib))+1
-      else
-        ipoint=int(transfer(c_loc(string),ib)-
-     $       transfer(c_loc(jlist(1,ibuf(lfni))),ib))+1
-      endif
-      lrecl=ipoint+nc
-c      buffer(ipoint:lrecl-1)=string
-c      call removetab(buffer(ipoint:lrecl))
-c      call removecomment(buffer(ipoint:lrecl),cmnt(1:lcmnt),'''"')
-c      buffer(lrecl:lrecl)=char(10)
-c      write(*,*)'setbuf ',ipoint,lrecl,string
-      return
-      end
-
-      integer*4 function isavebuf() result(nc)
-      use tfcsi
-      implicit none
-      integer*4 i
-      nc=max(lrecl-ipoint,0)
-      if(nc .gt. 0)then
-        do i=ipoint,ipoint+nc-1
-          if(buffer(i:i) .eq. char(10))then
-            nc=i-ipoint
-            return
+      character*80 pr
+      character*10 n,autofg
+      integer*4 lfni,lfno,lfn1,l,nc
+      if(lfni .eq. 5 .and. lfno .eq. 6 .and. lfn1 .eq. 0)then
+        if(ipr .eq. 0)then
+          if(ffsprmpt)then
+            call elname(mfpnt,pr)
+            l=len_trim(pr)
+            if(mfpnt .ne. mfpnt1)then
+              pr(l+1:l+1)=':'
+              call elname(mfpnt1,pr(l+2:80))
+              l=len_trim(pr)
+            endif
+            pr(l+1:l+1)='/'
+            call elname(id1,pr(l+2:80))
+            l=len_trim(pr)
+            if(id1 .ne. id2)then
+              pr(l+1:l+1)=':'
+              call elname(id2,pr(l+2:80))
+              l=len_trim(pr)
+            endif
+            pr(l+1:l+1)='>'
+            write(lfno,'(a,$)')pr(1:l+1)
+          else
+            n=autofg(rlist(iaxline)+1.d0,'S10.0')
+            write(lfno,'('' In['',a,'']:= '',$)')n(1:len_trim(n))
           endif
-        enddo
+        elseif(ipr .gt. 0)then
+          nc=len_trim(opcode(ipr))
+          pr(1:9)=' ...'//opcode(ipr)(1:nc)//'    '
+          write(lfno,'(a,$)')pr(1:9)
+        endif
+      elseif(lfno .eq. -1)then
+        ipr=lfni
       endif
       return
       end
 
-      subroutine removecomment(buf,comment,quote)
-      character*(*) buf,quote
-      character comment
-      integer*4 i1,iq,ic,iq1,ifany1
-      i1=1
-      ic=index(buf,comment)
-      do while(ic .gt. 0)
-        iq=ifany1(buf,len(buf),quote,i1)
-        if(iq .eq. 0 .or. iq .gt. ic)then
-          buf(ic:)=' '
-          return
-        endif
-        iq1=index(buf(iq+1:),buf(iq:iq))
-        if(iq1 .le. 0)then
-          return
-        else
-          i1=iq+iq1+1
-          ic=index(buf(i1:),comment)
-          if(ic .le. 0)then
-            return
-          endif
-          ic=i1+ic-1
-        endif
-      enddo
-      return
-      end
-
-      subroutine removetab(buf)
+      subroutine tprmptget(ipr1)
+      use prmpt
       implicit none
-      character*(*) buf
-      integer*4 i1,i
-      i1=index(buf,char(9))
-      do while(i1 .gt. 0)
-        write(*,*)'removetab ',i1,buf
-        buf(i1:i1)=' '
-        i=index(buf(i1+1:),char(9))
-        if(i .gt. 0)then
-          i1=i1+i
-        else
-          return
-        endif
-      enddo
+      integer*4 , intent(in)::ipr1
+      ipr=ipr1
+      call getbuf
+      ipr=0
       return
       end

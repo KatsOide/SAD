@@ -1,4 +1,3 @@
-
       module ophash
       use tfstk
       implicit none
@@ -1051,15 +1050,13 @@ c      call tfdebugprint(kx,'==>',1)
       integer*4 ip1,istart,istop,l,ipr
       ip1=ipoint
       ipoint=istop
-c      write(*,*)'tfevalbuf'
-      call tprmptget(ipr,-1,0)
+      call tprmptget(ipr)
       if(rec)then
         ipoint=ip1
       else
         istop=ipoint
       endif
       tfreadevalbuf=ios .eq. 0
-c        write(*,*)'tfevalbuf ',lfni,ipoint,lrecl,ios
       if(tfreadevalbuf)then
         istart=istop
         l=lrecl

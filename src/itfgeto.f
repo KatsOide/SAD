@@ -34,14 +34,14 @@ c      endif
 
       integer*4 function itfpeeko(kx,next)
       use tfstk
-      use tfcsi
+      use tfcsi, only:ipoint
       implicit none
       type (sad_descriptor) kx
       integer*4 next,ip0,itfgeto
-      ip0=icsmrk()
+      ip0=ipoint
       itfpeeko=itfgeto(kx)
-      next=icsmrk()
-      call cssetp(ip0)
+      next=ipoint
+      ipoint=ip0
       return
       end
 

@@ -1,3 +1,75 @@
+      subroutine tfreadbuf(lfn,ib,nc)
+      use tfstk
+      use tfshare
+      use tfcsi
+      use tfrbuf
+c      use iso_c_binding
+      implicit none
+      integer*8 ls1,mapresizefile,lenfile,ib1
+      integer*4 lfn,itfgetbuf,irtc,ls,ie,i,nc,ib
+      if(lfn .le. 0)then
+        go to 9000
+      endif
+      if(itbuf(lfn) .le. modewrite)then
+        nc=itfgetbuf(lfn,jlist(ib,ibuf(lfn)),
+     $       maxlbuf-ib-256,irtc)
+        if(irtc .ne. 0)then
+          return
+        endif
+        lbuf(lfn)=ib-1
+        lenbuf(lfn)=lbuf(lfn)+nc
+        mbuf(lfn)=ib
+      else
+ 11     ls=lenbuf(lfn)
+        if(lbuf(lfn) .lt. ls .and.
+     $       jlist(lbuf(lfn)+1,ibuf(lfn)) .eq. 10)then
+          if(lfn1 .gt. 0)then
+            write(lfn1,*)
+          endif
+          lbuf(lfn)=lbuf(lfn)+1
+        endif
+        if(lbuf(lfn) .lt. ls)then
+          ie=ls
+          do i=lbuf(lfn)+1,ls
+            if(jlist(i,ibuf(lfn)) .eq. 10)then
+              if(i .eq. 1 .or. jlist(i-1,ibuf(lfn)) .ne.
+     $             ichar('\\'))then
+                ie=i
+                exit
+              endif
+            endif
+          enddo
+          nc=int(ie-lbuf(lfn))
+          mbuf(lfn)=lbuf(lfn)+1
+          lbuf(lfn)=ie
+        else
+          if(itbuf(lfn) .ge. modemapped)then
+            ls1=lenfile(ifd(lfn))
+            if(ls .lt. ls1)then
+              ib1=mapresizefile(klist(ibuf(lfn)),ifd(lfn),
+     $             ls,ls1)/8
+              if(ib1 .lt. 0)then
+                go to 9000
+              endif
+              mbuf(lfn)=ls
+              ibuf(lfn)=ib1
+              lenbuf(lfn)=int(ls1)
+              go to 11
+            endif
+          elseif(mbuf(lfn) .lt. lbuf(lfn))then
+            nc=1
+            mbuf(lfn)=lbuf(lfn)
+            return
+          endif
+          mbuf(lfn)=ls+1
+          go to 9000
+        endif
+      endif
+      return
+ 9000 nc=-99
+      return
+      end subroutine
+
       subroutine irbopen1(j,ib,is,nc)
       use tfrbuf
       use tfstk
@@ -34,10 +106,9 @@ c        write(*,*)'irbopen1 ',j,ibuf(j)
       use tfcsi, only:buffer
       implicit none
       integer*4 in,irtc,nc
-      integer*8 is
       character*(*) str
 c      write(*,*)'reststr ',in
-      call tfreadbuf(irbreadrecord,in,int8(lbuf(in)+1),is,nc)
+      call tfreadbuf(in,int8(lbuf(in)+1),nc)
 c      write(*,*)': ',nc,'''',buffer(mbuf(in):mbuf(in)+nc-1),''''
       irtc=0
       if(nc .gt. 0)then
@@ -89,7 +160,7 @@ c      ia=mapallocfixed8(rlist(0), m+1, 8, irtc)
         irtc=0
         return
       endif
-      call tfreadbuf(irbopen,iu,ia,int8(modeshared),nc)
+      call trbopen(iu,ia,int8(modeshared),nc)
       if(iu .le. 0)then
         call tfreeshared(ia)
         irtc=itfmessage(9,'General::fileopen','"(Shared)"')
@@ -109,9 +180,8 @@ c      ia=mapallocfixed8(rlist(0), m+1, 8, irtc)
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
       integer*8 ia
-      integer*4 isp1,irtc,itfmessage,isp0,iu,nc,ist
+      integer*4 isp1,irtc,itfmessage,isp0,iu,ist
       logical*4 tfcheckelement
-c      call tfdebugprint(ktastk(isp),'readshard',3)
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -120,7 +190,7 @@ c      call tfdebugprint(ktastk(isp),'readshard',3)
         return
       endif
       irtc=0
-      call tfreadbuf(irbibuf,iu,ia,int8(4),nc)
+      ia=itrbibuf(iu,modeshared)
       if(ia .eq. 0)then
         kx%k=kxeof
         return
@@ -174,7 +244,7 @@ c          write(*,*)'readshared-other '
       use tfrbuf
       implicit none
       integer*8 kx,kas,ka,kt,kap,k
-      integer*4 isp1,irtc,itfmessage,itfmessageexp,isp0,n,i,iu,nc,ist
+      integer*4 isp1,irtc,itfmessage,itfmessageexp,isp0,n,i,iu,ist
       if(isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
@@ -183,7 +253,7 @@ c          write(*,*)'readshared-other '
         return
       endif
       iu=int(rtastk(isp1+1))
-      call tfreadbuf(irbibuf,iu,kas,int8(4),nc)
+      kas=itrbibuf(iu,modeshared)
       if(kas .eq. 0)then
         irtc=itfmessage(99,'Shared::notopen','""')
         return

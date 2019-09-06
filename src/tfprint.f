@@ -2,7 +2,7 @@
       use tfstk
       use tfcode
       use iso_c_binding
-      use tfcsi,only:cssetp,icsmrk,ipoint,lrecl,lfni,ios
+      use tfcsi,only:ipoint
       implicit none
       type (sad_dlist), pointer :: klx
       type (sad_symdef), pointer :: symd
@@ -18,22 +18,20 @@
       character*256 word0,word1
       itx=-1
       ip0=ipoint
-c      write(*,*)'tfprint-0 ',ipoint,lrecl,
-c     $     '''',word(1:lenw(word)),''''
       call unreadbuf(word,irtc)
       if(irtc .ne. 0)then
         call skipline
         exist=.true.
         return
       endif
-      lpw=itfgetrecl()
+c      lpw=itfgetrecl()
  1    levele=levele+1
 c      write(*,*)'tfprint-0 ',word(1:lenw(word))
       itx=itfpeeko(kx,next)
 c      write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
       select case (itx)
       case (-1)
-        call cssetp(max(next,ip0+1))
+        ipoint=max(next,ip0+1)
         exist=.true.
         go to 9100
       case (-2)
@@ -42,14 +40,13 @@ c      write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
         go to 9100
       case (-3)
         call getwrd(word)
-        word='END'
+        word='SUSP'
         exist=.false.
         go to 9100
       case default
         if(force)then
           exist=.true.
         else
-c          call tfdebugprint(kx,'tfprint-5',1)
           if(ktfoperq(kx,kax))then
             if(kx%k .eq. ktfoper+mtfnull)then
               go to 8000
@@ -66,7 +63,7 @@ c          call tfdebugprint(kx,'tfprint-5',1)
             call capita(word0(1:l))
             call capita(word1(1:nc))
             if(word0 .eq. word1)then
-              call cssetp(next1)
+              ipoint=next1
               exist=word0(1:1) .eq. ' '
               go to 9000
             elseif(l .gt. nc)then
@@ -75,7 +72,7 @@ c          call tfdebugprint(kx,'tfprint-5',1)
      $             word0(nc+1:nc+1) .eq. '(' .or.
      $             word0(nc+1:nc+1) .eq. '~' .or.
      $             word0(nc+1:nc+1) .eq. '.'))then
-                call cssetp(next1)
+                ipoint=next1
                 exist=.false.
                 go to 9000
               endif
@@ -91,16 +88,13 @@ c          call tfdebugprint(kx,'tfprint-5',1)
           endif
         endif
       end select
- 8000 call cssetp(next)
+ 8000 ipoint=next
       pri=(force .or. peekch(next) .ne. ';') .and.
      $     kx%k .ne. ktfoper+mtfnull
       if(pri)then
         call tfsetout(kx,lfno,amaxline)
       endif
       l=itfdownlevel()
-c      if(levele .le. 3)then
-c        call tfclearlocal
-c      endif
       go to 1
  9000 call tfsetout(kx,0,amaxline)
  9100 l=itfdownlevel()
@@ -285,7 +279,7 @@ c     $         index(delim(1:ldel),buffer(i+l:i+l))
         endif
       enddo
       write(*,*)'Buffer is damaged at unreadbuf. ',
-     $     ipoint,ip1,l,lrecl,'''',word(1:l),''', ''',
+     $     ipoint,ip1,l,lrecl,'''',word(1:l),''' ''',
      $     buffer(1:lrecl),''''
       irtc=-1
       return
