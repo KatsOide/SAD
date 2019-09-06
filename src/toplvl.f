@@ -471,7 +471,7 @@ c        write(*,*)'setlinep ',ip,linep,lrecl
           enddo
         endif
         return
-        end function 
+        end function
 
       end module
 
