@@ -235,7 +235,7 @@ c     write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
         endif
       enddo
       end
-          
+
       subroutine unreadbuf(word,irtc)
       use tfstk
       use ffs_flag

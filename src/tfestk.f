@@ -99,26 +99,26 @@ c          m    i    +    -    *    /    v    ^    ==   <>
 c          >    <    >=   <=   ===  <=>  ~    &&   ||   //
 c          [    ]    {    }    :=   =    C    (    )    ,
 c          ;    &    :    ->   :>   /.   //.  ^=   ^:=  =.
-c          ?    flg  #    ##   .    |    /@   //@  @@   .. 
+c          ?    flg  #    ##   .    |    /@   //@  @@   ..
 c          ...  ineq +=   -=   *=   /=   ++   --   [[   @
 c          msgn /:   (*   *)   Hold z
       logical*4, parameter :: T=.true.,F=.false.
       logical*4 :: nullfirst(0:mtfnopc) = (/
      $     T,
-     $     T,   T,   F,   F,   F,   F,   F,   F,   F,   F,   
-     $     F,   F,   F,   F,   F,   F,   T,   F,   F,   F,   
+     $     T,   T,   F,   F,   F,   F,   F,   F,   F,   F,
+     $     F,   F,   F,   F,   F,   F,   T,   F,   F,   F,
      $     T,   T,   T,   T,   F,   F,   F,   T,   T,   T,
-     $     T,   F,   F,   F,   F,   F,   F,   F,   F,   F,   
-     $     T,   T,   T,   T,   F,   F,   F,   F,   F,   F,   
+     $     T,   F,   F,   F,   F,   F,   F,   F,   F,   F,
+     $     T,   T,   T,   T,   F,   F,   F,   F,   F,   F,
      $     F,   F,   F,   F,   F,   F,   T,   T,   F,   F,
      $     F,   F,   F,   F,   F,   F/)
       logical*4 :: lastfirst(0:mtfnopc) = (/
      $     F,
-     $     F,   F,   F,   F,   F,   F,   F,   T,   F,   F,   
-     $     F,   F,   F,   F,   F,   F,   F,   F,   F,   F,   
+     $     F,   F,   F,   F,   F,   F,   F,   T,   F,   F,
+     $     F,   F,   F,   F,   F,   F,   F,   F,   F,   F,
      $     F,   F,   F,   F,   T,   T,   F,   F,   F,   F,
-     $     F,   F,   F,   T,   T,   F,   F,   F,   F,   F,   
-     $     F,   F,   F,   F,   F,   F,   T,   T,   T,   F,   
+     $     F,   F,   F,   T,   T,   F,   F,   F,   F,   F,
+     $     F,   F,   F,   F,   F,   F,   T,   T,   T,   F,
      $     F,   F,   F,   F,   F,   F,   F,   F,   F,   F,
      $     F,   F,   F,   F,   F,   F/)
 
@@ -1081,4 +1081,3 @@ c          call tfdebugprint(kx,'==>',1)
       endif
       return
       end
-
