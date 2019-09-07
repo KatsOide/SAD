@@ -88,7 +88,7 @@ OBJ4=defglb.o    ppair.o \
      expln.o     mrqcov.o    tphplt.o     \
      fdate1.o    mrqmin.o    putsti.o    datetime.o \
      msolb.o     tdrife.o \
-     filaux.o    pvert.o     tprmpt.o    tfgetm.o    tfojit.o    tedrawf.o
+     filaux.o    pvert.o     tfgetm.o    tfojit.o    tedrawf.o
 
 OBJ5=trcoda.o    nalign.o    ndelw.o    pwrtstr.o \
      palgn.o	pvbump.o    nfgetm.o    preadstr.o   msolvg.o    preadmon.o \

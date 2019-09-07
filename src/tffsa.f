@@ -687,20 +687,20 @@ C     23/06/92 212101550  MEMBER NAME  TRCOD    *.FORT     M  E2FORT
             go to 12
          endif
       else if(abbrev(word,'PUSHS_EED ','_'))then
-         call tfevalb('NISTACK$OBJ@Push[]',18,kx,irtc)
+         call tfevalb('NISTACK$OBJ@Push[]',kx,irtc)
          go to 10
       else if(abbrev(word,'POPS_EED ','_'))then
-         call tfevalb('NISTACK$OBJ@Pop[]',17,kx,irtc)
+         call tfevalb('NISTACK$OBJ@Pop[]',kx,irtc)
          go to 10
       else if(abbrev(word,'EXCGS_EED ','_'))then
-         call tfevalb('NISTACK$OBJ@Exchange[]',22,kx,irtc)
+         call tfevalb('NISTACK$OBJ@Exchange[]',kx,irtc)
          go to 10
       else if(abbrev(word,'PEEKS_EED ','_') .OR.
      &        abbrev(word,'PKS_EED','_')        )then
          call tfgeti(i,1.d0,word,lfno,exist)
          if( .not. exist) i=0
          write(word,'(A,I12,A)')'NISTACK$OBJ@Peek[',i,']'
-         call tfevalb(word,len_trim(word),kx,irtc)
+         call tfevalb(word,kx,irtc)
          go to 31
       else if(abbrev(word,'DELW_AVE ','_')) then
 c    syntax DELWave wave_length, amplitude, initial_phase,
@@ -888,7 +888,7 @@ c        flv%rsconv=rlist(ktlookup('CONVERGENCE'))
         go to 10
       elseif(word .eq. 'DRAW')then
         call tfsetparam
-        call tfevalb('CANVASDRAW[]',12,kx,irtc)
+        call tfevalb('CANVASDRAW[]',kx,irtc)
 c        call tfdebugprint(kx,'CANVASDRAW[]',1)
         if(irtc .ne. 0 .or. ktfnonstringq(kx))then
 c          title=Tfgetstrv('TITLE')
@@ -1179,7 +1179,7 @@ ckiku   call tfstr(word,latt,ist,nstr)
       if(word .eq. 'WAKE')then
         lfnl0=lfn1
         lfn1=lfno
-        call tfevalb('WAKECOMMAND[]',13,kx,irtc)
+        call tfevalb('WAKECOMMAND[]',kx,irtc)
         lfn1=lfnl0
         if(irtc .ne. 0 .or. kx .ne. ktftrue)then
           go to 2
@@ -1445,7 +1445,7 @@ c      call tfevalb('Setup$FF[];Print["setupff ",FF$Orig]',36,kx,irtc)
 c      if(lfni .gt. 100)then
 c        write(*,*)'tffsa-evalb ',lfni,ipoint,lrecl,ios
 c      endif
-      call tfevalb('Setup$FF[]',10,kx,irtc)
+      call tfevalb('Setup$FF[]',kx,irtc)
 c      if(lfni .gt. 100)then
 c        write(*,*)'tffsa-match-0 ',lfni,ipoint,lrecl,ios
 c      endif
@@ -1465,7 +1465,7 @@ c      endif
         call tmunmapp(flv%iut)
         go to 8810
       endif
-      call tfevalb('Reset$FF[]',10,kx,irtc)
+      call tfevalb('Reset$FF[]',kx,irtc)
       nqcol=nqcol-int(rfromk(kx))
       flv%nfc=nfc0
       call tfshow(cellstab,df,mfpnt,mfpnt1,

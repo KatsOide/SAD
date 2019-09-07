@@ -9,100 +9,93 @@
       type (sad_namtbl),pointer :: loc
       type (sad_descriptor) kx
       integer*8 kax
-      integer*4 itx,nc,lfno,itfpeeko,next,lpw,next1,ip0
-      logical*4 exist,force,pri
+      integer*4 itx,nc,lfno,itfpeeko,next,next1,ip0
+      logical*4 exist,force
       character*(*) word
       character peekch
-      integer*4 itfgetrecl,l,itfdownlevel,lenw,irtc
+      integer*4 l,itfdownlevel,lenw,irtc
       real*8 , parameter :: amaxline=8
       character*256 word0,word1
       itx=-1
       ip0=ipoint
-c      write(*,*)'tfprint-0 ',ipoint,lrecl,
-c     $     '''',word(1:lenw(word)),''''
       call unreadbuf(word,irtc)
       if(irtc .ne. 0)then
         call skipline
         exist=.true.
         return
       endif
-      lpw=itfgetrecl()
- 1    levele=levele+1
-c      write(*,*)'tfprint-0 ',word(1:lenw(word))
-      itx=itfpeeko(kx,next)
-c      write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
-      select case (itx)
-      case (-1)
-        ipoint=max(next,ip0+1)
-        exist=.true.
-        go to 9100
-      case (-2)
-        call getwrd(word)
-        exist=word(1:1) .eq. ' '
-        go to 9100
-      case (-3)
-        call getwrd(word)
-        word='END'
-        exist=.false.
-        go to 9100
-      case default
-        if(force)then
+      do while (.true.)
+        levele=levele+1
+c     write(*,*)'tfprint-0 ',word(1:lenw(word))
+        itx=itfpeeko(kx,next)
+c     write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
+        select case (itx)
+        case (-1)
+          ipoint=max(next,ip0+1)
           exist=.true.
-        else
-c          call tfdebugprint(kx,'tfprint-5',1)
-          if(ktfoperq(kx,kax))then
-            if(kx%k .eq. ktfoper+mtfnull)then
-              go to 8000
+          go to 9100
+        case (-2)
+          call getwrd(word)
+          exist=word(1:1) .eq. ' '
+          go to 9100
+        case (-3)
+          call getwrd(word)
+          word='SUSP'
+          exist=.false.
+          go to 9100
+        case default
+          if(force)then
+            exist=.true.
+          else
+            if(ktfoperq(kx,kax))then
+              if(kx%k .eq. ktfoper+mtfnull)then
+                go to 8000
+              endif
+              kx%k=ktfsymbol+klist(ifunbase+kax)
             endif
-            kx%k=ktfsymbol+klist(ifunbase+kax)
-          endif
-          if(ktfsymbolqdef(kx%k,symd))then
-            call peekwd(word,next1)
-            l=lenw(word)
-            word0=word(1:l)
-            call sym_namtbl(symd%sym,loc)
-            nc=loc%str%nch
-            word1=loc%str%str(1:nc)
-            call capita(word0(1:l))
-            call capita(word1(1:nc))
-            if(word0 .eq. word1)then
-              ipoint=next1
-              exist=word0(1:1) .eq. ' '
-              go to 9000
-            elseif(l .gt. nc)then
-              if(word0(1:nc) .eq. word1 .and.
-     $             (word0(nc+1:nc+1) .eq. '{' .or.
-     $             word0(nc+1:nc+1) .eq. '(' .or.
-     $             word0(nc+1:nc+1) .eq. '~' .or.
-     $             word0(nc+1:nc+1) .eq. '.'))then
+            if(ktfsymbolqdef(kx%k,symd))then
+              call peekwd(word,next1)
+              l=lenw(word)
+              word0=word(1:l)
+              call sym_namtbl(symd%sym,loc)
+              nc=loc%str%nch
+              word1=loc%str%str(1:nc)
+              call capita(word0(1:l))
+              call capita(word1(1:nc))
+              if(word0 .eq. word1)then
                 ipoint=next1
-                exist=.false.
-                go to 9000
+                exist=word0(1:1) .eq. ' '
+                exit
+              elseif(l .gt. nc)then
+                if(word0(1:nc) .eq. word1 .and.
+     $               (word0(nc+1:nc+1) .eq. '{' .or.
+     $               word0(nc+1:nc+1) .eq. '(' .or.
+     $               word0(nc+1:nc+1) .eq. '~' .or.
+     $               word0(nc+1:nc+1) .eq. '.'))then
+                  ipoint=next1
+                  exist=.false.
+                  exit
+                endif
+              endif
+            elseif(ktflistq(kx,klx))then
+              if(klx%head%k .ne. ktfoper+mtfcomplex .and.
+     $             klx%head%k .ne. ktfoper+mtflist .and.
+     $             ktfoperq(klx%head) .and. klx%ref .le. 0)then
+                call getwrd(word)
+                exist=word(1:1) .eq. ' '
+                exit
               endif
             endif
-          elseif(ktflistq(kx,klx))then
-            if(klx%head%k .ne. ktfoper+mtfcomplex .and.
-     $           klx%head%k .ne. ktfoper+mtflist .and.
-     $           ktfoperq(klx%head) .and. klx%ref .le. 0)then
-              call getwrd(word)
-              exist=word(1:1) .eq. ' '
-              go to 9000
-            endif
           endif
+        end select
+ 8000   ipoint=next
+        if((force .or. peekch(next) .ne. ';') .and.
+     $       kx%k .ne. ktfoper+mtfnull)then
+          call tfsetout(kx,lfno,amaxline)
         endif
-      end select
- 8000 ipoint=next
-      pri=(force .or. peekch(next) .ne. ';') .and.
-     $     kx%k .ne. ktfoper+mtfnull
-      if(pri)then
-        call tfsetout(kx,lfno,amaxline)
-      endif
-      l=itfdownlevel()
-c      if(levele .le. 3)then
-c        call tfclearlocal
-c      endif
-      go to 1
- 9000 call tfsetout(kx,0,amaxline)
+        l=itfdownlevel()
+      enddo
+      call tfsetout(kx,0,amaxline)
  9100 l=itfdownlevel()
       return
       end

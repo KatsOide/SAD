@@ -427,9 +427,10 @@ c      call tfdebugprint(k,'tfget',1)
       use tfrbuf
       use tfcsi
       implicit none
-      type (sad_descriptor) kx,kf
+      type (sad_descriptor) , intent(out)::kx
       type (csiparam) sav
-      integer*4 itfgeto,itf,lfn
+      integer*4 , intent(in)::lfn
+      integer*4 itfgeto,itf
       logical*4 openf
       if(lfn .le. 0)then
         kx%k=kxeof
@@ -442,17 +443,16 @@ c      call tfdebugprint(k,'tfget',1)
         lfn1=0
       endif
       levele=levele+1
- 1    itf=itfgeto(kf)
-      if(itf .ge. 0)then
-        kx=kf
-      else
-        kx%k=ktfoper+mtfnull
+      itf=-1
+      ios=0
+      do while (itf .eq. -1 .and. ios .eq. 0)
+        itf=itfgeto(kx)
         if(itf .eq. -1)then
-          call tprmptget(-1,-1,0)
-          if(ios .eq. 0)then
-            go to 1
-          endif
+          call tprmptget(-1,.true.)
         endif
+      enddo
+      if(itf .lt. 0)then
+        kx%k=ktfoper+mtfnull
       endif
       if(ios .ne. 0)then
         ios=0
@@ -767,7 +767,7 @@ c          enddo
       type (sad_descriptor) kx
       type (csiparam) sav
       integer*4 is,ie
-      integer*4 irtc,lfn,isw,next,nc1,nc,isavebuf
+      integer*4 irtc,lfn,isw,next,nc1,nc
       logical*4 char1,fb
       type (ropt) opts
       irtc=0
@@ -782,7 +782,7 @@ c          enddo
       endif
       fb=itbuf(lfn) .lt. modestring
  20   nc=itrbgetpoint(lfn,is)
-c      write(*,*)'tfreadstring ',lfn,ib,is,nc,fb
+c      write(*,*)'tfreadstring ',lfn,is,nc,fb
  10   if(nc .lt. 0)then
         if(.not. fb .or. lfn .ne. lfni)then
           call tfreadbuf(lfn,1,nc)
@@ -792,24 +792,24 @@ c      write(*,*)'tfreadstring ',lfn,ib,is,nc,fb
             go to 101
           endif
         else
-          nc=isavebuf()
-          if(nc .le. 0)then
-            if(opts%new)then
-              call tprmptget(-1,-1,0)
+          if(opts%new)then
+            do while (nc .lt. 0)
+              call tprmptget(-1,.false.)
               if(ios .ne. 0)then
                 go to 101
               endif
-              nc=isavebuf()
-            else
-              nc=0
-              go to 1
-            endif
+              nc=igetrecl()
+c             write(*,*)'tfreadstr ',nc
+            enddo
+          else
+            nc=0
+            go to 1
           endif
         endif
         is=ipoint
       endif
-       if(nc .eq. 0)then
-         if(opts%new)then
+      if(nc .eq. 0)then
+        if(opts%new)then
           if((opts%ndel .gt. 0 .and. .not. opts%null) .or. char1)then
             nc=-1
             go to 10
@@ -1021,7 +1021,7 @@ c      write(*,*)'tfreadstring ',lfn,ib,is,nc,fb
         kx%k=ktfoper+mtfnull
         return
       endif
-      call tfevalb(str%str(1:nc),nc,kx,irtc)
+      call tfevalb(str%str(1:nc),kx,irtc)
       return
       end
 

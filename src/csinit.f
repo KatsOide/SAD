@@ -261,3 +261,29 @@ c      parameter (ioff=ichar('A')-ichar('a'))
       endif
       return
       end
+
+      subroutine capita1(string)
+      character*(*) string
+      character c,qc
+      logical quote
+      l=len(string)
+      ioff=ichar('A')-ichar('a')
+      quote=.false.
+      qc=' '
+      do 10 i=1,l
+        c=string(i:i)
+        if(quote)then
+          if(c .eq. qc)then
+            quote=.false.
+          endif
+        else        
+          if(c .eq. '''' .or. c .eq. '"')then
+            quote=.true.
+            qc=c
+          elseif(c .ge. 'a' .and. c .le. 'z')then
+            string(i:i)=char(ichar(c)+ioff)
+          endif
+        endif
+ 10   continue
+      return
+      end

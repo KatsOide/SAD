@@ -115,9 +115,8 @@ extern integer4 itfunaloc_(const_character, integer4*, integer4*,
 extern integer8 ktfmakelist_(integer4*);
 extern void tfsetlist_(integer8*, integer8*, integer4*);
 extern void tfgetstr_(character, ftnlen, integer8*, integer4*);
-extern void tfevalb_(const_character, integer4*,
-		     integer8*, integer4*, ftnlen);
-extern void tfevalc_(const_character, integer4*, ftnlen);
+extern void tfevalb_(const_character, integer4*, integer8*, integer4*);
+extern void tfevalc_(const_character, integer4*);
 extern void tfdeval_(integer4*, integer8*, integer8*, 
 		     integer4*, logical4 *, integer4*, integer4*);
 extern void tflocal_(integer8*);

@@ -1,4 +1,3 @@
-
       module ophash
       use tfstk
       implicit none
@@ -997,32 +996,26 @@ c          call tfdebugprint(kx,'==>',1)
       return
       end
 
-      subroutine tfevalb(string,nc,kx,irtc)
+      subroutine tfevalb(string,kx,irtc)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*4 irtc,istart,istop,nc
-      character*(nc) string
-      istart=1
+      integer*4 irtc,istop
+      character*(*) string
       levele=levele+1
-c      write(*,*)'tfevalb-0 ',nc,string
-      call tfeval(string,nc,istart,istop,kx,.false.,irtc)
-c      call tfdebugprint(kx,'evalb',1)
-c      write(*,*)nc,istart,istop,irtc,string(1:istop)
+      call tfeval(string,1,istop,kx,.false.,irtc)
       call tfconnect(kx,irtc)
       return
       end
 
-      subroutine tfevalc(string,nc)
+      subroutine tfevalc(string)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*4 irtc,istart,istop,l,nc,itfdownlevel
-      character string(nc)
-      istart=1
+      integer*4 irtc,istart,istop,l,itfdownlevel
+      character*(*) string
       levele=levele+1
-c      write(*,*)'tfevalc ',string
-      call tfeval(string,nc,istart,istop,kx,.false.,irtc)
+      call tfeval(string,1,istop,kx,.false.,irtc)
       if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
         call tfreseterror
       endif
@@ -1036,11 +1029,8 @@ c      write(*,*)'tfevalc ',string
       type (sad_descriptor) kx
       integer*4 irtc,istart,istop
       character*(*) string
-      istart=1
       levele=levele+1
-      call tfeval(string,len_trim(string),
-     $     istart,istop,kx,.false.,irtc)
-c      call tfdebugprint(kx,'==>',1)
+      call tfeval(string,1,istop,kx,.false.,irtc)
       call tfconnect(kx,irtc)
       return
       end
@@ -1051,15 +1041,13 @@ c      call tfdebugprint(kx,'==>',1)
       integer*4 ip1,istart,istop,l,ipr
       ip1=ipoint
       ipoint=istop
-c      write(*,*)'tfevalbuf'
-      call tprmptget(ipr,-1,0)
+      call tprmptget(ipr,.true.)
       if(rec)then
         ipoint=ip1
       else
         istop=ipoint
       endif
       tfreadevalbuf=ios .eq. 0
-c        write(*,*)'tfevalbuf ',lfni,ipoint,lrecl,ios
       if(tfreadevalbuf)then
         istart=istop
         l=lrecl

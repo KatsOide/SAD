@@ -9,7 +9,8 @@
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
       real*8 vx
-      integer*4 i,lfni1,nc,next,itype,lfno1,j,maxlfn,lfnb
+      integer*4 i,lfni1,nc,next,itype,lfno1,j,maxlfn,lfnb,isp0,irtc,
+     $     itfdownlevel
       integer*4 itfpeeko,lfnstk(maxlfn),lfret(maxlfn),lflinep(maxlfn),
      $     lfrecl(maxlfn)
       integer*4 ,save:: lfni0=0
@@ -132,23 +133,16 @@ c        call tfdebugprint(kx,'IN',1)
           init=.true.
           return
         endif
-        call cssetp(next)
-        if(lfnp .ge. maxlfn)then
-          call termes(lfno,'?Number of input files exceeds limit',' ')
-          init=.true.
-          return
-        endif
-        lfnp=lfnp+1
-        lfni=0
-        lfopen(lfnp)=.false.
-        lfnstk(lfnp)=0
-        lfret(lfnp)=ipoint
-        lfrecl(lfnp)=icslrecl()
-        lflinep(lfnp)=icslinep()
-        call cssetp(lfrecl(lfnp))
-c     call cssetlinep(lfrecl(lfnp))
-        call setbuf(str%str,str%nch)
-        init=.false.
+        ipoint=next
+        isp0=isp
+        isp=isp+1
+        dtastk(isp)=kx
+        isp=isp+1
+        rtastk(isp)=dble(outfl)
+        levele=levele+1
+        call tfffs(isp0,kx,irtc)
+        i=itfdownlevel()
+        isp=isp0
         return
       elseif(abbrev(word,'OUT_PUT','_') .or. word .eq. 'PUT'
      1       .or. abbrev(word,'APP_END','_'))then

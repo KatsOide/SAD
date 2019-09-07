@@ -458,6 +458,21 @@ c        write(*,*)'setlinep ',ip,linep,lrecl
         return
         end function
 
+        integer*4 function igetrecl() result(nc)
+        implicit none
+        integer*4 i
+        nc=max(lrecl-ipoint,0)
+        if(nc .gt. 0)then
+          do i=ipoint,ipoint+nc-1
+            if(buffer(i:i) .eq. char(10))then
+              nc=i-ipoint
+              return
+            endif
+          enddo
+        endif
+        return
+        end function
+
       end module
 
       module tfrbuf
@@ -635,8 +650,7 @@ c
       integer*4 lfn,is
       if(lfn .le. 0 .or. ibuf(lfn) .eq. 0)then
         nc=-99
-      elseif(mbuf(lfn) .gt. lbuf(lfn)
-     $       .or. mbuf(lfn) .le. 0)then
+      elseif(mbuf(lfn) .gt. lbuf(lfn) .or. mbuf(lfn) .le. 0)then
         nc=-1
       else
         nc=lbuf(lfn)-mbuf(lfn)+1
