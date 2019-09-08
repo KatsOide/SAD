@@ -7,7 +7,7 @@ c      use iso_c_binding
       implicit none
       integer*8 ls1,mapresizefile,lenfile,ib1
       integer*4 lfn,itfgetbuf,irtc,ls,ie,i,nc,ib
-      if(lfn .le. 0)then
+      if(lfn .le. 0 .or. ibuf(lfn) .eq. 0)then
         go to 9000
       endif
       if(itbuf(lfn) .le. modewrite)then
@@ -37,7 +37,7 @@ c        endif
               endif
             endif
           enddo
-          nc=int(ie-lbuf(lfn))
+          nc=ie-lbuf(lfn)
           mbuf(lfn)=lbuf(lfn)+1
           lbuf(lfn)=ie
         else
@@ -64,7 +64,7 @@ c        endif
         endif
       endif
       return
- 9000 nc=-99
+ 9000 nc=irbeof
       return
       end subroutine
 

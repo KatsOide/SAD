@@ -58,6 +58,7 @@
 
       integer*4 function itfgetlfn(isp1,read,irtc) result(iv)
       use tfstk
+      use tfrbuf
       use tfcsi
       implicit none
       type (sad_descriptor) k
@@ -766,12 +767,12 @@ c          enddo
       implicit none
       type (sad_descriptor) kx
       type (csiparam) sav
-      integer*4 is,ie
+      integer*4 ie,is
       integer*4 irtc,lfn,isw,next,nc1,nc
       logical*4 char1,fb
       type (ropt) opts
       irtc=0
-      if(lfn .le. 0)then
+      if(lfn .le. 0 .or. ibuf(lfn) .eq. 0)then
         kx%k=kxeof
         return
       endif
@@ -781,63 +782,65 @@ c          enddo
         call trbassign(lfn)
       endif
       fb=itbuf(lfn) .lt. modestring
- 20   nc=itrbgetpoint(lfn,is)
-c      write(*,*)'tfreadstring ',lfn,is,nc,fb
- 10   if(nc .lt. 0)then
-        if(.not. fb .or. lfn .ne. lfni)then
-          call tfreadbuf(lfn,1,nc)
-          if(nc .ge. 0)then
-            go to 20
+      nc=sign(abs(lrecl-ipoint)+1,lrecl-ipoint)
+      is=ipoint
+c      write(*,*)'tfreadstr ',lfn,nc,ipoint
+      do while (.true.)
+        if(nc .lt. 0)then
+          if(.not. fb .or. lfn .ne. lfni)then
+            call tfreadbuf(lfn,1,nc)
+            if(nc .lt. 0)then
+              go to 101
+            endif
           else
-            go to 101
+            if(opts%new)then
+              do while (nc .lt. 0)
+                call tprmptget(-1,.false.)
+                if(ios .ne. 0)then
+                  go to 101
+                endif
+                nc=max(0,lrecl-ipoint)
+              enddo
+            else
+              nc=0
+              go to 1
+            endif
+          endif
+        endif
+        if(nc .eq. 0)then
+          if(opts%new)then
+            if((opts%ndel .gt. 0 .and. .not. opts%null) .or. char1)then
+              nc=-1
+              cycle
+            endif
+            call trbeor2bor(lfn)
+          endif
+          kx=dxnulls
+          go to 1000
+        endif
+        if(char1)then
+          nc1=1
+          next=2
+        elseif(opts%ndel .gt. 0)then
+          call tfword(buffer(ipoint:ipoint+nc-1),
+     $         opts%delim(1:opts%ndel),
+     $         isw,nc1,next,opts%null)
+          if(nc1 .le. 0 .and. .not. opts%null)then
+            if(opts%new)then
+              nc=-1
+              cycle
+            else
+              nc1=0
+              next=nc+1
+            endif
           endif
         else
-          if(opts%new)then
-            do while (nc .lt. 0)
-              call tprmptget(-1,.false.)
-              if(ios .ne. 0)then
-                go to 101
-              endif
-              nc=igetrecl()
-c             write(*,*)'tfreadstr ',nc
-            enddo
-          else
-            nc=0
-            go to 1
-          endif
+          nc1=nc
+          next=nc+1
         endif
-        is=ipoint
-      endif
-      if(nc .eq. 0)then
-        if(opts%new)then
-          if((opts%ndel .gt. 0 .and. .not. opts%null) .or. char1)then
-            nc=-1
-            go to 10
-          endif
-          call trbeor2bor(lfn)
-        endif
-        kx=dxnulls
-        go to 1000
-      endif
-      if(char1)then
-        nc1=1
-        next=2
-      elseif(opts%ndel .gt. 0)then
-        call tfword(buffer(is:is+nc-1),opts%delim(1:opts%ndel),
-     $       isw,nc1,next,opts%null)
-        if(nc1 .le. 0 .and. .not. opts%null)then
-          if(opts%new)then
-            nc=-1
-            go to 10
-          else
-            nc1=0
-            next=nc+1
-          endif
-        endif
-      else
-        nc1=nc
-        next=nc+1
-      endif
+        exit
+      enddo
+      is=ipoint
       if(opts%new .and. next .gt. nc)then
         call trbnextl(lfn)
       else
@@ -1146,14 +1149,12 @@ c     $     nc+15,itx,iax,vx,irtc)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_descriptor), save :: ntable(1000)
       integer*4 , parameter :: llbuf=1024
       integer*4 irtc,nc,system,itfsyserr,lw,ir,i,m
       integer*4 l
       character post
       character*(*) cmd
       character*(llbuf) buff,tfgetstr
-      data ntable(:)%k /1000*0/
       l=nextfn(moderead)
       if(ntable(l)%k .eq. 0)then
         call tftemporaryname(isp,kx,irtc)

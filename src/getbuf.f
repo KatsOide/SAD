@@ -77,7 +77,7 @@
 c     write(*,*)'getbuf ',ipoint,lrecl,trim
       else
         ios=0
-        call tfreadbuf(lfni,0,nc)
+        call tfreadbuf(lfni,1,nc)
         if(nc .eq. -99)then
           go to 20
         elseif(nc .eq.  -999)then
