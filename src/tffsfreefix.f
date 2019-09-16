@@ -5,7 +5,7 @@
       use ffs_fit
       use tffitcode
       use mackw
-      use tfcsi,only:cssetp
+      use tfcsi,only:ipoint
       use tflinepcom, only:tftouch
       implicit none
       integer*8 kal
@@ -29,7 +29,7 @@
           l=lenw(nlist(k))
           nlist1=nlist(k)(:l)//'I'
           if(word .eq. nlist1(:l+1))then
-            call cssetp(next)
+            ipoint=next
             found=.true.
             it=41
             word=pnamec(1)
@@ -58,7 +58,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
             ivck=0
           endif
           if(.not. found)then
-            call cssetp(next)
+            ipoint=next
             call peekwd(word1,next)
           endif
           itk=idtypec(k)
@@ -76,13 +76,13 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
                 go to 1020
               else
                 if(keyword .eq. word1)then
-                  call cssetp(next)
+                  ipoint=next
                   iv=ivk
                   go to 1020
                 endif
                 keyword=tfkwrd1(itk,ivk)
                 if(keyword .eq. word1)then
-                  call cssetp(next)
+                  ipoint=next
                   iv=ivk
                   go to 1020
                 endif
@@ -211,7 +211,7 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
           l=lenw(nlist(k))
           nlist1=nlist(k)(:l)//'I'
           if(word .eq. nlist1(:l+1))then
-            call cssetp(next)
+            ipoint=next
             found=.true.
             it=41
             word=pnamec(1)
@@ -232,7 +232,7 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
             cycle LOOP_I_3
           endif
           if(.not. found)then
-            call cssetp(next)
+            ipoint=next
             call peekwd(word1,next)
           endif
           found=.true.
@@ -251,13 +251,13 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
                 go to 1120
               else
                 if(keyword .eq. word1)then
-                  call cssetp(next)
+                  ipoint=next
                   iv=ivk
                   go to 1120
                 endif
                 keyword=tfkwrd1(itk,ivk)
                 if(keyword .eq. word1)then
-                  call cssetp(next)
+                  ipoint=next
                   iv=ivk
                   go to 1120
                 endif
@@ -290,7 +290,7 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
         if(.not. found .and. .not. wild)then
           do k=1,nele
             if(tmatch(pnamec(k),word))then
-              call cssetp(next)
+              ipoint=next
               found=.true.
               go to 1
             endif
@@ -298,7 +298,7 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
         endif
       endif
  3000 if(wild .and. .not. found)then
-        call cssetp(next)
+        ipoint=next
       endif
       if(found .or. wild)then
         go to 1

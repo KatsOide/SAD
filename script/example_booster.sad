@@ -6,10 +6,10 @@ ON ECHO;  !Turn on echo back of the input stream.
 ! In each line, after ! is ignored, except within "".
 !
 ! SAD starts in the "MAIN" mode which is used to define elements and beam lines.
-! However, they can be defined in the "FFS" mode later.
+! However, they can be (re)defined in the "FFS" mode later.
 !
 ! Define drift spaces
-!   Multiple drifts can be defined until ";".
+!   Multiple drifts can be defined by a single DRIFT until ";".
 !
 DRIFT LX03 = (L = 0.3) LSX = (L = 2.8 + 0.3*2) LSA = (L = 25) LSB = (L=25)   ! SAD uses the SI unit, radian, and eV. 
       LM = (L=30) LRF = (L=15) ! expressions with real variables and some basic math functions can be used.
@@ -22,11 +22,11 @@ DRIFT LX03 = (L = 0.3) LSX = (L = 2.8 + 0.3*2) LSA = (L = 25) LSB = (L=25)   ! S
 !
 BEND B1 = (L=25 ANGLE=0.002 E1 = 0.5 E2 = 0.5) ! L is the arc length.
 ;
-!   E1 and E2 are the edge angles at the entrance and exit, devided by ANGLE.
+!   E1 and E2 are the edge angles at the entrance and exit, divided by ANGLE.
 !   E1 = E2 = 0.5 means a rectangular dipole.
 !
 ! Define quads with initial strengths
-!   Strengths will be dermined by matching beam lines later.
+!   Strengths will be determined by matching beam lines later.
 !
 QUAD QF = (L=3 K1=0.05) QD = (L=3 K1 = -0.05)  !  K1 = B'L/(Brho) , hor. focusing is positive.
      QSA1 = (L=3 K1=-0.05)  ! quads for dispersion suppressors A
@@ -44,14 +44,14 @@ QUAD QF = (L=3 K1=0.05) QD = (L=3 K1 = -0.05)  !  K1 = B'L/(Brho) , hor. focusin
      QRF = (L=3 K1= 0.05)  ! quads for RF section
      QRD = (L=3 K1=-0.05)
 ;
-! Define sexts
-!  The strengths "K2" will be determined by chromaticity correction later.
+! Define sexts as MULT.
+!  The strengths "K2" = B''L/(Brho) will be determined by chromaticity correction later.
 !
-SEXT SF = (L=2.8) SD = (L=2.8)
+MULT SF = (L=2.8) SD = (L=2.8)
 ;
 ! Define RF cavity
 !  The voltage will be defined later to adjust the bunch length.
-!  "FREQ" is the rf frequency, but no need to be a harmonic of the circumference.
+!  "FREQ" is the rf frequency, but no need to be a harmonic of the revolution frequency.
 !  If an exact harmonic is necessary, use "HARM" instead.
 !
 CAVI CAV = (FREQ = 400 MHZ)
@@ -70,7 +70,7 @@ MARK
 LINE 
   SLF = (LX03 SF LX03)
   SLD = (LX03 SD LX03)
-! Arc "5*FODO" with noninterleaved sextupole pairs:
+! Arc "5*FODO" with non-interleaved sextupole pairs:
   FODOARC = (F1
       QF SLF B1 LX03 QD LSX B1 LX03 
       QF LSX B1 LX03 QD LSX B1 LX03 
@@ -125,7 +125,7 @@ loffset=LINE["S","$$$"]-Plus@@LINE["L","B1.*"];  ! length of components other th
 !  f[arg]:=body
 !  arg may contain patterns such as x_ , 
 !  
-FODOEmit[nfodo_]:=With[{ba=Pi/4/(nfodo*10+2)},   ! 10 dipoles per FODO, -2 for dipoles in the suppressor.
+FODOEmit[nfodo_]:=With[{ba=Pi/4/(nfodo*10+2)},   ! 10 dipoles per FODO, +2 for dipoles in the suppressor.
   Element["ANGLE","B1"]=ba;               ! setting the bending angle of B1
   Element["L","B1"]=(rhoarc*(ba*10)-loffset)/10; ! setting L of B1 according to rhoarc.
   FFS["fit; nx 1.25 ny 1.25;free Q*;GO;"];   ! 90 degree FODO * 5.
@@ -140,8 +140,19 @@ Update[];   ! The drawing on X is updated.
 CPU[];
 susp;
 
-!Thus we choose nfodo = 38 for emitx \approx 1.45 nm;
-nfodo = 38;
+! A more elegant way to choose nfodo:
+emr=Sort[Reverse /@ em];  ! /@ is an operator for MAP, as Mathematica.
+spnf=Spline[emr];     ! define a cubic spline function returns the nfodo as a function of emittance.
+nfodo=spnf[1.45]
+nfodo=Round[nfodo];
+Plot[spnf[x],{x,1.3,2.7},FrameLabel->{"`fe`n`dx`n (nm)","N`dFODO"}];
+Update[];
+
+CPU[];
+susp;
+
+!Thus we have chosen nfodo = 38 for emitx \approx 1.45 nm;
+
 FODOEmit[nfodo];
 save all;  ! save variables before moving to other beam lines.
 
@@ -161,7 +172,7 @@ ins;
 fit FM EX 0 EPX 0;       ! Suppress dispersion at the MARK FM.
 fit QMF QMF.2 ax 0 ay 0 bx 1 by 1 nx 0.25 ny 0.25;   !periodic condition for the FODO in the straight.
 !         between QMF and QMF.2 alphas and betas are equal, the phase advances are 90 degs.
-fit b1+1 b1.2 leng lir;  ! set the length betwee two dipoles at the suppresssors.
+fit b1+1 b1.2 leng lir;  ! set the length between two dipoles at the suppressors.
 fit ^^^ $$$ bxm 200 bym 200;  ! suppress the maximum betas below 200 meters.
 free LSA LLA LM QSA* QM*;     ! variables
 LLA min 7;     ! restrict LLA > 7 m.
@@ -231,17 +242,18 @@ susp;
 
 ! Chromaticity correction by 2 family sexts.
 rej total;
-FintFunction=.;           !  Clear FitFunction.
+FitFunction=.;            !  Clear FitFunction.
 DP=0.01;                  ! Width of off-momentum matching.
 fit ; nx nx0 4 ny ny0 4;  ! set the goals at -DP, -DP/2, +DP/2, DP.
-fix * free s*;            ! Variables are K2 of S* (in ths case SF and SD).
+vary k2 s*;               ! set K2 as the default variable of S*.
+fix * free s*;         ! Variables are K2 of S* (in this case SF and SD).
 S* minmax 10;             ! Set the range of K2, -10 <= K2 <= 10.
 go;
 save all;
 
 fitp 1;  ! set the fit point to 1 (ie., only on the center).
 !
-! Define a function to obtain tune as a unction of momentum offset.
+! Define a function to obtain tune as a function of momentum offset.
 offmtune[x_]:={
   DP0=x;        ! Set the momentum offset.
   FFS["CALC;"]; ! Calculate optics: FFS is a function to execute FFS commands in a script. 
@@ -266,13 +278,69 @@ type;  ! print out all elements.
 CPU[];
 susp;
 
+! Define a Class OrbitCorrection
+OrbitCorrection=Class[{},{},{seed=3,cor="S*",mon="Q*",al="Q*", ! Instance variables with some initial values
+  circ,pc,pm,pa,gcut=4,nx0,ny0,mx,my,tol=1e-2,em},     
+
+  Constructor[]:=(    ! Constructor to be called when an instance is defined
+    circ=LINE["S","$$$"]-LINE["S","^^^"];      ! ring circumference
+    {pc,pm,pa}=LINE["POSITION",{cor,mon,al}];  ! positions of correctors, bpms, and misaligned componentss.
+    LINE["DX",pa]*=0;     ! clear misalignments and correctors.
+    LINE["DX",pa]*=0;
+    LINE["K0",pc]*=0;
+    LINE["SK0",pc]*=0;
+    FFS["CALC4D;NORADCOD;CELL;CALC"];  ! calculate the design optics & emittance
+    em=Emittance[];
+    {nx0,ny0}=Twiss[{"NX","NY"},"$$$"];  ! design tune
+    With[{nx0,ny0,alpha=MomentumCompaction/.em},
+      mx=Outer[(Sqrt[Twiss["BX",#2]]*
+        Cos[Abs[Twiss["NX",#]-Twiss["NX",#2]]-nx0/2])&,pm,pc]*
+          Sqrt[Twiss["BX",pm]]/2/Sin[nx0/2]-   ! horizontal response matrix
+            Outer[Times,Twiss["EX",pm],Twiss["EX",pc]]/alpha/circ;  ! dispersion term
+      AppendTo[mx,Twiss["EX",pc]];   ! circumference correction
+      my=-Outer[(Sqrt[Twiss["BY",#2]]*   ! vertical response matrix
+        Cos[Abs[Twiss["NY",#]-Twiss["NY",#2]]-ny0/2])&,pm,pc]*
+          Sqrt[Twiss["BY",pm]]/2/Sin[ny0/2]]);
+
+  Misalign[{dx_,dy_}]:=(
+    SeedRandom[seed];
+    GCUT=gcut;
+    LINE["DX",pa]=dx*GaussRandom[Length[pa]];  ! set misalignments
+    LINE["DY",pa]=dy*GaussRandom[Length[pa]];
+    FFS["CALC NOEXP;REF;"]);   ! NOEXP is necessary for independent misalignments
+       ! optics is stored as the Referecnce optics
+
+  Correct[]:=Module[{{dx,dy}=Twiss[{"DX","DY"},pm],kx,ky},
+    kx00=kx=LinearSolve[mx,Append[dx,Twiss["DZ","$$$"]-Twiss["DZ","^^^"]],
+      Tolerance->tol];  ! horizontal correction with circumference adjustment
+    ky00=ky=LinearSolve[my,dy,Tolerance->tol]; !vertical correction
+    LINE["K0",pc]=kx;
+    LINE["SK0",pc]=ky;
+    FFS["CALC6D;CALC NOEXP;"];  ! optics after correction
+    ];
+
+  Plot[]:=(OpticsPlot[{{"RDX","DX"},{"RDY","DY"}},Lattice->False,Names->""];
+    Update[]);
+
+  ];
+
+oc=OrbitCorrection[];   ! Define an instance of OrbitCorrection
+oc@Misalign[{1e-5,1e-5}];  ! call an instance function oc@Misalign
+oc@Correct[];   ! call an instance function oc@Correct
+oc@Plot[];      ! call an instance function oc@Plot
+
+CPU[];
+susp;
+
+
+
 !
 !   Dynamic aperture
 !
 RAD;       ! Turn on radiation in all elements.
 NOFLUC;    ! Turn off quantum effects.
 RADCOD;    ! calculate orbit considering radiation loss
-RADTAPER;  ! automati tapering of all magnets according to local energy of the closed orbit.
+RADTAPER;  ! automatic tapering of all magnets according to local energy of the closed orbit.
 emit;
 nturn=180; ! Number of turns.
 DynamicApertureSurvey[             ! DA on Z-X plane.
@@ -289,5 +357,6 @@ DynamicApertureSurvey[  ! DA on X-Y plane.
 
 CPU[];
 susp;
+
 
 Exit[];  ! Terminates SAD.

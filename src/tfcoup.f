@@ -124,7 +124,7 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
       use ffs
       use ffs_pointer
       use tffitcode
-      use tfcsi,only:cssetp
+      use tfcsi,only:ipoint
       implicit none
       integer*4 lfno,next,i,j
       character*(MAXPNAME+16) ele,name
@@ -138,7 +138,7 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
         if(.not. mat)then
           if(.not. temat(i,name,ele))cycle
           mat=.true.
-          call cssetp(next)
+          ipoint=next
         endif
         j=iele(i)
         if(j .ne. klp(iele1(i)))then
@@ -163,7 +163,7 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
       use ffs
       use ffs_pointer
       use tffitcode
-      use tfcsi,only:cssetp
+      use tfcsi,only:ipoint
       implicit none
       integer*4 next,i
       character*(MAXPNAME+16) ele,name
@@ -177,7 +177,7 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
         if(temat(i,name,ele))then
           if(.not. mat)then
             mat=.true.
-            call cssetp(next)
+            ipoint=next
           endif
           iele(i)=i
         endif

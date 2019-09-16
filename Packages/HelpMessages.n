@@ -4560,7 +4560,7 @@ $E=\\sqrt{m^2c^4+p_0^2p^2}$ the energy of the particle, and $v_0=1/t_0'(s)$ the 
 \\begin{align}\
 z=&-v\\left(t-t_0(s)\\right)\\ ,\
 \\end{align}\n\
-where $v$ is the total velocity of the particle. Note that $v>0$ for the head of a bunch.\n\n\
+where $v$ is the total velocity of the particle. Note that $z>0$ for the head of a bunch.\n\n\
 Thus the canonical variables in SAD are:\n\
 \\begin{align}\n\
 (x,p_x,y,p_y,z,\\delta\\equiv p-1)\\ .\n\

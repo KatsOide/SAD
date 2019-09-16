@@ -42,10 +42,10 @@
         call peekwd(word,next)
         if(abbrev(word,'IN_PUT','_'))then
           termin=.true.
-          call cssetp(next)
+          ipoint=next
         elseif(abbrev(word,'OUT_PUT','_'))then
           termin=.false.
-          call cssetp(next)
+          ipoint=next
           if(clo)then
             close(lfno)
           else
@@ -73,13 +73,13 @@ c        call tfdebugprint(kx,'IN',1)
           if(lfni1 .le. 0)then
             return
           endif
-          call cssetp(next)
+          ipoint=next
           write(word,'(''ftn'',i2.2)')lfni1
           call trbassign(lfni1)
           lfnp=lfnp+1
           lfopen(lfnp)=.false.
         elseif(ktfstringq(kx))then
-          call cssetp(next)
+          ipoint=next
           word=tfconvstr(kx,nc,'*')
           do 8020 j=51,97
             do 8030 i=lfnb,int(lfnp)
@@ -91,7 +91,7 @@ c        call tfdebugprint(kx,'IN',1)
             go to 8021
  8020     continue
  8101     call termes(lfno,'?File open error ',word)
-          call cssets(9998)
+          ios=9998
           init=.true.
           return
  8021     if(word .eq. ' ')then
@@ -114,7 +114,7 @@ c        call tfdebugprint(kx,'IN',1)
           return
         endif
       elseif(abbrev(word,'RES_UME','_'))then
-        call cssetp(next)
+        ipoint=next
         lfni1=lfni0
         if(lfni1 .eq. 0)then
           return
@@ -150,11 +150,11 @@ c        call tfdebugprint(kx,'IN',1)
         itype=itfpeeko(kx,next)
         if(ktfrealq(kx,vx))then
           lfno1=int(vx+.5d0)
-          call cssetp(next)
+          ipoint=next
         elseif(ktfstringq(kx))then
           lfno1=98
           close(lfno1)
-          call cssetp(next)
+          ipoint=next
           word=tfconvstr(kx,nc,'*')
           call texpfn(word)
           if(app)then
@@ -176,7 +176,7 @@ c        call tfdebugprint(kx,'IN',1)
  6101   lfno=6
         call termes(lfno,'?File open error ',word)
         init=.true.
-        call cssets(9998)
+        ios=9998
         return
       else
         exist=.false.
@@ -186,7 +186,7 @@ c        call tfdebugprint(kx,'IN',1)
       lfret(lfnp)=ipoint
       lfrecl(lfnp)=icslrecl()
       lflinep(lfnp)=icslinep()
-      call cssetp(lfrecl(lfnp))
+      ipoint=lfrecl(lfnp)
       call cssetlinep(lfrecl(lfnp))
       lfni=lfni1
       if(rew)then
@@ -211,8 +211,8 @@ c
 
       subroutine tfclose(lfnp1,lfnp,lfnstk,lfopen,lfret,lfrecl,
      $     lflinep,maxlfn,lfni,lfnb)
-      use tfcsi, only:cssetl,cssetlfno,cssetlinep,cssetp,cssets,
-     $     icslfni,icslfno,icsstat
+      use tfcsi, only:cssetlinep,cssets,
+     $     icslfni,icslfno,icsstat,ipoint,lrecl
       use tfrbuf
       implicit none
       integer*4 lfnp1,lfnp,maxlfn,lfnstk(maxlfn),lfni0,
@@ -233,8 +233,8 @@ c
         call trbassign(lfni)
       endif
       if(lfret(lfnp1) .gt. 0)then
-        call cssetp(lfret(lfnp1))
-        call cssetl(lfrecl(lfnp1))
+        ipoint=lfret(lfnp1)
+        lrecl=lfrecl(lfnp1)
         call cssetlinep(lflinep(lfnp1))
       elseif(lfni0 .ne. lfni)then
         call skipline

@@ -45,7 +45,7 @@ c       s.t.       x(beam)=x cos(t) - y sin(t)
       call peekwd(word,next)
       do 10 i=1,2
         if(word.eq.keywrd(i)) then
-          call cssetp(next)
+          ipoint=next
           if(j.eq.1) then
             if(i.eq.2) then
               rght=.false.
@@ -265,7 +265,7 @@ c ... write element name
         n=idcomp(elatt,i)
         id=idtype(n)
         if( tmatch(pname(n),word) ) then
-          call cssetp(next)
+          ipoint=next
           if( pname(n).ne.pname(idcomp(elatt,i+1)) ) then
             cs(1)=x+dx/2.-spname*dy/dss*parity
             cs(2)=y+dy/2.+spname*dx/dss*parity

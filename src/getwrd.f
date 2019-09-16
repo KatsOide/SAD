@@ -306,6 +306,6 @@ c     Peek character from input buffer with case normalization
       integer*4 lfn0
       lfn1=lfn0
       call skipline
-      call cssets(0)
+      ios=0
       return
       end

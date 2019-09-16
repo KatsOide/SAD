@@ -36,15 +36,15 @@
         lrecl0=max(lrecl0,1)
         lrecl1=lrecl0
         do while (ios .eq. 0)
-          ios=-999
+          ios=irbnofile
           if(lrecl0 .gt. nbmax-256)then
             ios=999999
             go to 10
           endif
           call tfreadbuf(lfni,lrecl0,nc)
-          if(nc .eq. -99)then
+          if(nc .eq. irbeof)then
             go to 20
-          elseif(nc .eq.  -999)then
+          elseif(nc .eq.  irbnofile)then
             go to 10
           elseif(nc .le. 0)then
             lrecl=max(lrecl0-1,0)
@@ -74,13 +74,12 @@
         if(lrecl .gt. 0)then
           buffer(lrecl:lrecl)=char(10)
         endif
-c     write(*,*)'getbuf ',ipoint,lrecl,trim
       else
         ios=0
         call tfreadbuf(lfni,1,nc)
-        if(nc .eq. -99)then
+        if(nc .eq. irbeof)then
           go to 20
-        elseif(nc .eq.  -999)then
+        elseif(nc .eq.  irbnofile)then
           go to 10
         endif
         if(lfn1 .gt. 0)then

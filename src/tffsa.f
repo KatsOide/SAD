@@ -243,7 +243,7 @@ c      endif
       elseif(word(1:1) .eq. '!')then
         go to 2
       endif
-      call cssets(0)
+      ios=0
 c      write(*,*)'tffsa-tfprint ',word(1:lenw(word))
       call tfprint(word,lfno,.false.,itt,nextt,exist)
 c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
@@ -288,7 +288,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
         endif
         nrpt(levelr)=max(1,nrpt1)
         irptp(levelr)=ipoint
-        call cssetrec(.true.)
+        rec=.true.
         go to 10
       endif
       call tfif(word,iflevel,lfno,exist)
@@ -324,7 +324,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
         go to 9000
       endif
       if(init)then
-        call cssets(0)
+        ios=0
         go to 2
       endif
       if(exist)then
@@ -1357,10 +1357,8 @@ c      if(lfni .gt. 100)then
 c        write(*,*)'tffsa-adjvar ',lfni,ipoint,lrecl,ios
 c      endif
       else
-        if(.not. expndc)then
-          call termes(lfno,
+        call termes(lfno,
      $         'Info-Element values are not expanded.',' ')
-        endif
       endif
       if(fitflg)then
         call tmov(rlist(ifvalvar),rlist(ifvalvar+nve),flv%nvar)

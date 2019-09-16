@@ -3,7 +3,7 @@
       use ffs
       use ffs_pointer
       use tffitcode
-      use tfcsi,only:cssetp
+      use tfcsi,only:ipoint
       use ffs_seg
       implicit none
       type (sad_descriptor) kx
@@ -57,7 +57,7 @@
         endif
         if(tmatch(name,ele))then
           exist=.true.
-          call cssetp(next)
+          ipoint=next
           v1=autofg(valvar2(i,1),'15.12')
           v2=autofg(valvar2(i,2),'12.9')
           call loc_comp(idval(k),cmps)

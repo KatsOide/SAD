@@ -213,7 +213,7 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       use ffs
       use ffs_pointer
       use tffitcode
-      use tfcsi,only:cssetp
+      use tfcsi,only:ipoint
       implicit none
       integer*4 next,ielm,lfno,i0
       character*(MAXPNAME+16) name
@@ -221,7 +221,7 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       call peekwdp(name,next)
       i0=ielm(name,exist)
       if(exist)then
-        call cssetp(next)
+        ipoint=next
         call tfinimult(i0)
       else
         call termes(lfno,

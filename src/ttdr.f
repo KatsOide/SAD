@@ -1,5 +1,5 @@
       subroutine ttdr(lfno,err)
-      use tfcsi,only:cssetp
+      use tfcsi,only:ipoint
       implicit none
       logical*4 err,exist
       character*80 word,display
@@ -15,7 +15,7 @@
           call termes(lfno,'Missing file in TDR',' ')
           go to 9000
         endif
-        call cssetp(next)
+        ipoint=next
       endif
       call get_environment_variable('DISPLAY',display)
       if(display .ne. ' ')then
