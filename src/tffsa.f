@@ -1469,7 +1469,7 @@ c      endif
       call tfshow(cellstab,df,mfpnt,mfpnt1,
      $     kffs,irtcffs,lfnb .gt. 1,lfno)
       call tmunmapp(flv%iut)
-      call tffsclearcouple(iele2)
+      call tffsclearcouple(kele2)
       if(cell)then
         str=' '
         do i=nfam1,nfam
@@ -1552,13 +1552,13 @@ c      endif
       endif
       LOOP_I: do i=2,nlat-1
         do j=1,nvar
-          if(ivarele(j) .eq. iele1(iele(i)))then
+          if(ivarele(j) .eq. iele1(icomp(i)))then
             itwissp(i)=1
             itwissp(i+1)=1
             cycle LOOP_I
           endif
         enddo
-        if(iele2(i) .ne. 0)then
+        if(kele2(i) .ne. 0)then
           itwissp(i)=1
           itwissp(i+1)=1
         endif
@@ -1769,27 +1769,27 @@ c            call tclr(uini(1,0),28)
       return
       end
 
-      subroutine tffsclearcouple(iele2)
+      subroutine tffsclearcouple(kele2)
       use tfstk
       use ffs
       use tffitcode
       implicit none
-      integer*8 iele2(nlat)
+      integer*8 kele2(nlat)
       integer*4 i
       do i=1,nlat-1
-        if(iele2(i) .ne. 0)then
-          call tfree(iele2(i))
-          iele2(i)=0
+        if(kele2(i) .ne. 0)then
+          call tfree(kele2(i))
+          kele2(i)=0
         endif
       enddo
-      iele2(nlat)=0
+      kele2(nlat)=0
       return
       end
 
       subroutine tffssetupcouple(lfno)
       use tfstk
       use ffs
-      use ffs_pointer, only: iele2
+      use ffs_pointer, only: kele2
       use tffitcode
       implicit none
       type (sad_dlist), pointer :: klx,kli
@@ -1801,7 +1801,7 @@ c            call tclr(uini(1,0),28)
       type (sad_descriptor) kx,ki,kk,ke
       type (sad_descriptor) , save :: itfelv,itfcoupk
       data itfelv%k,itfcoupk%k /0,0/
-      iele2(1:nlat)=0
+      kele2(1:nlat)=0
       if(itfelv%k .eq. 0)then
         itfelv=kxsymbolz('`ElementValues',14)
         itfcoupk=kxsymbolz('`CoupledKeys',12)
@@ -1846,12 +1846,12 @@ c            write(*,*)'setupcouple ',j,ik,key(1:10)
             if(ik .lt. 0)then
               do k=1,nlat-1
                 if(ilist(k,ifele1) .eq. -ie)then
-                  iet=iele2(k)
+                  iet=kele2(k)
 c                  iet=klist(ifele2+k-1)
                   if(iet .eq. 0)then
                     iet=ktaloc(m+1)
                     ilist(1,iet)=0
-                    iele2(k)=iet
+                    kele2(k)=iet
 c                    klist(ifele2+k-1)=iet
                   endif
                   nk=ilist(1,iet)+1
@@ -1859,24 +1859,24 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
                   ilist(1,iet+nk)=i
                   ilist(2,iet+nk)=-ik
                   ilist(1,iet)=nk
-                  iele2(nlat)=1
+                  kele2(nlat)=1
 c                  klist(ifele2+nlat-1)=1
                 endif
               enddo
             elseif(ik .gt. 0)then
-              iet=iele2(ie)
+              iet=kele2(ie)
 c              iet=klist(ifele2+ie-1)
               if(iet .eq. 0)then
                 iet=ktaloc(m+1)
                 ilist(1,iet)=0
-                iele2(ie)=iet
+                kele2(ie)=iet
 c                klist(ifele2+ie-1)=iet
               endif
               nk=ilist(1,iet)+1
               ilist(1,iet+nk)=i
               ilist(2,iet+nk)=ik
               ilist(1,iet)=nk
-              iele2(nlat)=1
+              kele2(nlat)=1
 c              klist(ifele2+nlat-1)=1
             endif
           enddo

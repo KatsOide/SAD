@@ -205,10 +205,10 @@ c      write(*,*)'tfdisp ',word,wordp
           id=idtypec(l)
         endif
         call compelc(l,cmp)
-        if(iele1(iele((l))) .gt. 0 .and.
+        if(iele1(icomp((l))) .gt. 0 .and.
      $       id .ne. icMARK .and. id .ne. 34)then
-          if(ival(iele1(iele(l))) .gt. 0)then
-            vout=autofg(tfvcmp(cmp,ival(iele1(iele(l)))),'10.7')
+          if(ival(iele1(icomp(l))) .gt. 0)then
+            vout=autofg(tfvcmp(cmp,ival(iele1(icomp(l)))),'10.7')
           else
             vout=' 0'
           endif

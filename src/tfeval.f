@@ -44,8 +44,10 @@ c     end   initialize for preventing compiler warning
 c      write(*,*)'tfeval ',istart,l,string(istart:l)
       call tfetok(string(istart:l),istop,kx,itfcontext,irt)
       istop=min(l+1,istop+istart-1)
+c      if(string(istart:istop) .eq. '\\\n')then
 c        write(*,*)'tfeval-0 ',irt,istart,istop,
 c     $       string(istart:istop)
+c      endif
       if(irt .ge. 0)then
         go to 2400
       endif
@@ -312,6 +314,7 @@ c          endif
      $         .or. itastk2(1,i) .eq. mtfleftbra
      $         .or. itastk2(1,i) .eq. mtfleftparen
      $         .or. itastk2(1,i) .eq. mtfpart)then
+            write(*,*)'tfeval-7 ',eol
             if(eol)then
               irtc=itfmessage(9999,'General::missop',
      $             '"'//string(ist1:min(istop-1,l))//'"')

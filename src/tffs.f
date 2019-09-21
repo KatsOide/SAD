@@ -609,8 +609,8 @@
       type (sad_descriptor) , pointer :: dcomp(:)
       real*8 , pointer, contiguous :: errk(:,:),couple(:),
      $     valvar(:),valvar2(:,:)
-      integer*8, pointer, dimension(:) :: iele2 
-      integer*4, pointer, dimension(:) :: mult,iele,iele1,
+      integer*8, pointer, dimension(:) :: kele2 
+      integer*4, pointer, dimension(:) :: mult,icomp,iele1,
      $     ival,klp,master,itouchele,itouchv,ivarele,ivcomp,ivvar,
      $     iprev,inext
       integer*4, pointer, contiguous, dimension(:,:) :: ibzl
@@ -635,9 +635,9 @@
         call c_f_pointer(c_loc(ilist(1,ifmast)),master,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifival)),ival,[nele])
         call c_f_pointer(c_loc(dlist(ifdcomp)),dcomp,[nele])
-        call c_f_pointer(c_loc(ilist(1,ifele)),iele,[nlat])
+        call c_f_pointer(c_loc(ilist(1,ifele)),icomp,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifele1)),iele1,[nlat])
-        call c_f_pointer(c_loc(klist(ifele2)),iele2,[nlat])
+        call c_f_pointer(c_loc(klist(ifele2)),kele2,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         call c_f_pointer(c_loc(rlist(ifvalvar)),valvar,[nve*2])
         call c_f_pointer(c_loc(rlist(ifvalvar)),valvar2,[nve,2])

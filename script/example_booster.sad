@@ -227,9 +227,8 @@ susp;
 ! determine the RF voltage by adjusting the bunch length
 rfsw;      ! turn on RF
 u0=EnergyLossU0/.Emittance[];    ! Energy loss per 1/4 ring by SR
-nrf=Length[LINE["PISITION","CAV.*"]];    ! number of CAVs
+nrf=Length[LINE["POSITION","CAV.*"]];    ! number of CAVs
 LINE["VOLT","CAV"]=u0*1.1/nrf;    ! set the voltage 10% higher that u0
-
 rej total;    ! reject entire matching conditions.
 FitFunction:=(BunchLength/.Emittance[])/sigz0-1;   ! A function to match 0 in the matching.
 fix *; free cav;  ! VOLT of CAV is the only variable.
@@ -356,6 +355,7 @@ DynamicApertureSurvey[  ! DA on X-Y plane.
   Damping->False];
 
 CPU[];
+sus;
 susp;
 
 

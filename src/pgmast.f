@@ -19,13 +19,13 @@
       return
       end
 c     
-      subroutine pgmast1(rmaster,iele,pos)
+      subroutine pgmast1(rmaster,icomp,pos)
       use tfstk
       use ffs
       use tffitcode
       use ffs_pointer, only:idtypec
       implicit none
-      integer*4 iele(nlat)
+      integer*4 icomp(nlat)
       real*8 pos(nlat),rmaster(nlat)
       integer*4 i,ie,id,j
       do 10 i=1,nlat
@@ -68,7 +68,7 @@ c     1     .or. id .eq. 1)then
         endif
         ie=i
         do 1020 j=i+1,nlat-1
-          if(iele(j) .eq. iele(i))then
+          if(icomp(j) .eq. icomp(i))then
             ie=j
             rmaster(j)=-i
           elseif(pos(j) .eq. pos(j+1))then

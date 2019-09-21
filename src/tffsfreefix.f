@@ -161,10 +161,10 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
           ivcomp(i)=ivck
           if(ivi .eq. ival(kk))then
             if(comp)then
-              call elnameK(iele(k),name1)
-              if(iele(k) .eq. k)then
+              call elnameK(icomp(k),name1)
+              if(icomp(k) .eq. k)then
                 do jj=1,nlat-1
-                  if(jj .ne. k .and. iele(jj) .eq. k)then
+                  if(jj .ne. k .and. icomp(jj) .eq. k)then
                     call elnameK(jj,name)
                     call termes(lfno,'Info-Component '//
      $                   name(1:lenw(name))//' is coupled to ',
@@ -180,11 +180,11 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
             else
               do jj=1,nlat-1
                 if(klp(iele1(jj)) .eq. k
-     $               .and. iele(jj) .ne. k)then
+     $               .and. icomp(jj) .ne. k)then
 c     `jj' is same family but different master with `k',
 c     where klp(iele1(k)) == k
                   call elnameK(jj,name)
-                  call elnameK(iele(jj),name1)
+                  call elnameK(icomp(jj),name1)
                   call termes(lfno,'Info-Component '//
      $                 name(1:lenw(name))//' is coupled to ',
      $                 name1(1:lenw(name1)))

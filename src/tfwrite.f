@@ -269,8 +269,8 @@ c      enddo
       type (sad_symdef), pointer ::symd
       type (sad_dlist), pointer :: klh,kli,klx
       integer*8 ii,ka0,kadi,kad,ka
-      integer*4 isp1,irtc,i,isp00,isp0,kk,iop,ispv,icomp
-      icomp=0
+      integer*4 isp1,irtc,i,isp00,isp0,kk,iop,ispv,icmpl
+      icmpl=0
       call tfgetoption('Compiled',ktastk(isp),kx,irtc)
       if(irtc .eq. -1)then
         ispv=isp
@@ -278,7 +278,7 @@ c      enddo
         return
       elseif(ktfrealq(kx))then
         if(kx%k .ne. 0)then
-          icomp=1
+          icmpl=1
         endif
         ispv=isp-1
       else
@@ -325,8 +325,8 @@ c      enddo
                     isp=isp+1
                     dtastk(isp)=kxadaloc(-1,2,kli)
                     kli%head%k=ktfoper+iop
-                    kli%dbody(1)=dtfcopy1(dlist(kadi+3+icomp))
-                    kli%dbody(2)=dtfcopy(dlist(kadi+5+icomp))
+                    kli%dbody(1)=dtfcopy1(dlist(kadi+3+icmpl))
+                    kli%dbody(2)=dtfcopy(dlist(kadi+5+icmpl))
                     if(kli%dbody(2)%k .eq. ktfref)then
                       kli%dbody(2)=dtfcopy(dlist(kadi+6))
                     endif
@@ -337,8 +337,8 @@ c      enddo
                 isp=isp+1
                 dtastk(isp)=kxadaloc(-1,2,kli)
                 kli%head%k=ktfoper+iop
-                kli%dbody(1)=dtfcopy1(dlist(kad+3+icomp))
-                kli%dbody(2)=dtfcopy(dlist(kad+5+icomp))
+                kli%dbody(1)=dtfcopy1(dlist(kad+3+icmpl))
+                kli%dbody(2)=dtfcopy(dlist(kad+5+icmpl))
                 if(kli%dbody(2)%k .eq. ktfref)then
                   kli%dbody(2)=dtfcopy(dlist(kad+6))
                 endif

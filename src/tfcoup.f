@@ -43,7 +43,7 @@
      $       'Different keywords of element to COUP_LE.',' ')
         go to 9000
       endif
-      if(iele(kk2) .ne. kk2)then
+      if(icomp(kk2) .ne. kk2)then
         if(kk2 .eq. klp(k2))then
           call elnameK(kk2,name)
           call termes(lfno,'Info-COUPLEs of Components '//
@@ -51,14 +51,14 @@
      $         ' have been reset to ',name(1:lenw(name))//' .')
           do i=1,nlat-1
             if(iele1(i) .eq. k2)then
-              iele(i)=kk2
+              icomp(i)=kk2
               couple(i)=1.d0
             endif
           enddo
         else
           call termes(lfno,'Info-Component '//ele2(1:lenw(ele2))//
      $         ' has been made uncoupled.',' ')
-          iele(kk2)=kk2
+          icomp(kk2)=kk2
           couple(kk2)=1.d0
         endif
       endif
@@ -68,22 +68,22 @@ c      v=rlist(latt(kk2)+ival(k2))/errk(1,kk2)
         if(kk1 .eq. kk2 .and. klp(iele1(kk1)) .eq. kk1)then
           co=1.d0
           do i=1,nlat-1
-            if(iele(i) .eq. kk1 .and. i .ne. kk1)then
+            if(icomp(i) .eq. kk1 .and. i .ne. kk1)then
               call elname(i,name)
               call termes(lfno,'Info-Component '//name(1:lenw(name))//
      $             ' has been made uncoupled.',' ')
-              iele(i)=i
+              icomp(i)=i
               couple(i)=1.d0
             endif
           enddo
         else
           do i=1,nlat-1
-            if(iele(i) .eq. kk1 .and. i .ne. kk1)then
+            if(icomp(i) .eq. kk1 .and. i .ne. kk1)then
               call tfdecoupcomp(i,lfno)
             endif
           enddo
         endif
-        iele(kk1)=kk2
+        icomp(kk1)=kk2
         couple(kk1)=co
         call compelc(kk1,cmp)
 c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
@@ -92,11 +92,11 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
         if(k1 .ne. k2)then
           do i=1,nlat-1
             if(iele1(i) .ne. k1)then
-              if(iele1(iele(i)) .eq. k1)then
+              if(iele1(icomp(i)) .eq. k1)then
                 call tfdecoupcomp(i,lfno)
               endif
             else
-              iele(i)=kk2
+              icomp(i)=kk2
               couple(i)=co
               rlist(latt(i)+ival(k1))=v*errk(1,i)*co
             endif
@@ -104,7 +104,7 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
         else
           do i=1,nlat-1
             if(iele1(i) .eq. k1)then
-              iele(i)=kk2
+              icomp(i)=kk2
               couple(i)=co
               rlist(latt(i)+ival(k1))=v*errk(1,i)*co
             endif
@@ -140,10 +140,10 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
           mat=.true.
           ipoint=next
         endif
-        j=iele(i)
+        j=icomp(i)
         if(j .ne. klp(iele1(i)))then
           if(temat(i,name,ele))then
-            iele(i)=klp(iele1(i))
+            icomp(i)=klp(iele1(i))
             couple(i)=1.d0
           elseif(klp(iele1(j)) .ne. j)then
             if(temat(j,name,ele))then
@@ -179,7 +179,7 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
             mat=.true.
             ipoint=next
           endif
-          iele(i)=i
+          icomp(i)=i
         endif
       enddo
       if(mat)then
@@ -200,7 +200,7 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
       call elnameK(klp(iele1(i)),name1)
       call termes(lfno,'Info-COUPLE of component '//name(1:lenw(name))//
      $     ' has been reset to ',name1(1:lenw(name1))//' .')
-      iele(i)=klp(iele1(i))
+      icomp(i)=klp(iele1(i))
       couple(i)=1.d0
       return
       end

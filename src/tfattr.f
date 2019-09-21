@@ -37,11 +37,11 @@
           cycle LOOP_J
         endif
         exist1=.true.
-        i=iele1(iele(j))
-        if(iele(j) .eq. j .or. klp(iele1(j)) .eq. j .or.
-     $       iele(j) .ne. klp(iele1(j)) .and.
-     $       iele(j) .ne. iele(klp(iele1(j))))then
-          call elname(iele(j),namc)
+        i=iele1(icomp(j))
+        if(icomp(j) .eq. j .or. klp(iele1(j)) .eq. j .or.
+     $       icomp(j) .ne. klp(iele1(j)) .and.
+     $       icomp(j) .ne. icomp(klp(iele1(j))))then
+          call elname(icomp(j),namc)
           if(ival(i) .eq. 0)then
             v=0.d0
           else

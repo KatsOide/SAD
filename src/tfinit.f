@@ -73,7 +73,7 @@ c              errk(1,l)=rlist(latt(l)+ival(ikx))/v
         endif
 10    continue
       mult(nlat)=0
-      iele(nlat)=nlat
+      icomp(nlat)=nlat
       iele1(nlat)=0
       call tfinimult(1)
       ib=1
@@ -251,7 +251,7 @@ c        ilist(i-1,im)=0
         k=klp(iie)
         if(k .eq. 0)then
           klp(iie)=ii
-          iele(ii)=ii
+          icomp(ii)=ii
         else
           if(mult(k) .eq. 0)then
             mult(k)=1
@@ -270,7 +270,7 @@ c            ilist(iie-1,im)=mult(k)
           mult(ii)=im(iie)
 c          ilist(iie-1,im)=ilist(iie-1,im)+1
 c          mult(ii)=ilist(iie-1,im)          
-          iele(ii)=k
+          icomp(ii)=k
         endif
       enddo
       return

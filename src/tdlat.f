@@ -1,5 +1,5 @@
       subroutine tdlat(latt,ls,le,pos,posa,
-     1                                iele,patt,exist,lfnd)
+     1                                icomp,patt,exist,lfnd)
       use tfstk
       use ffs
       use tffitcode
@@ -8,7 +8,7 @@
       parameter (dh=.08,qh=.8,bh=.4,sh=.6,ch=.3,oh=.2,width=.2d0)
       real*4 xc,yc,dx,dy,xs
       integer*8 latt(nlat)
-      dimension pos(nlat),posa(nlat),iele(nlat)
+      dimension pos(nlat),posa(nlat),icomp(nlat)
       dimension height(7)
       logical tmatch,exist,fin
       character*8 name
@@ -61,7 +61,7 @@
         elseif(id .eq. icmult)then
           yc=sign(height(4)-oh,rlist(latt(i)+13))*.5d0
           dy=(height(4)+oh)*yscale
-        elseif(iele(i) .eq. 0 .or. id .eq. 1 .or.
+        elseif(icomp(i) .eq. 0 .or. id .eq. 1 .or.
      1          id .gt. icdodeca)then
           yc=0.d0
           dy=dh*2.d0*yscale

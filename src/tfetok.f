@@ -34,7 +34,6 @@
           ch=string(i:i)
           i=i+1
           if(ch .eq. '\\' .and. i .le. l)then
-c '
             ch=string(i:i)
             if('0' .le. ch .and. ch .le. '7')then
 c     Octal character literal:		\#[##]
@@ -150,13 +149,14 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
       type (sad_symdef), pointer :: symd
       type (sad_namtbl), pointer ::loc
       type (sad_strbuf), pointer :: strb
-      integer*4 istop,nc,is2,isp0,lm,ich,irt
+      integer*4 istop,nc,is2,isp0,lm,ich,irt,nnl,j
       integer*8 kax,ka,icont
       character*(*) string
       real*8 vx,eval1
       integer*4 m,l,i1,is1,notspace,ifromstr,
      $     i,jc,itfopcode,it1,it2,notany1
       character*1 ch
+      character*256 buf
       kx%k=ktfoper+mtfnull
       l=len(string)
       irt=-2
@@ -183,9 +183,14 @@ c      endif
       ich=ichar(ch)
       if(levelop(ich) .ne. 0)then
         if(ch .eq. C_NEW_LINE)then
-          irt=-2
-          istop=is1+1
-          return
+          if(is1 .eq. 1 .or. string(is1-1:is1-1) .ne. '\\')then
+c            write(*,*)'tfetok-2 ',is1,'''',string(is1-1:is1-1),''''
+            irt=-2
+            istop=is1+1
+            return
+          else
+c            write(*,*)'tfetok-3 '
+          endif
         elseif(ch .eq. '''' .or. ch .eq. '"')then
           isp0=isp
           kx=kxmakestring(string(is1+1:l),l-is1,ch,i1)
@@ -291,9 +296,15 @@ c      endif
         istop=is1+1
       elseif(ch .ge. '0' .and. ch .le. '9')then
         vx=eval1(string,l,is1,m)
-c        write(*,*)'tfetok-r ',ch,m,vx
         if(m .gt. 0)then
           istop=is1+m
+          if(string(istop:istop) .eq. '\\' .and.
+     $         string(istop+1:istop+1) .eq. '\n')then
+            call tedigicopy(string(is1:l),buf,j,nnl)
+            vx=eval1(buf,j,1,m)
+c            write(*,*)'tfetol-r1 ',l,is1,m1,j,nnl,vx,buf(1:j)
+            istop=is1+m+nnl
+          endif
           irt=0
           kx=dfromr(vx)
         endif
@@ -303,8 +314,15 @@ c        write(*,*)'tfetok-r ',ch,m,vx
       else
         irt=0
         nc=l-is1+1
+        nnl=0
         do i=is1+1,l
           if(levelop(ichar(string(i:i))) .ne. 0)then
+            if(string(i:i) .eq. '\n')then
+              if(i .gt. is1+1 .and. string(i-1:i-1) .eq. '\\')then
+                nnl=nnl+2
+                cycle
+              endif
+            endif
             nc=i-is1
             istop=i
             exit
@@ -313,9 +331,16 @@ c        write(*,*)'tfetok-r ',ch,m,vx
         if(icont .ge. 0)then
           it1=is1
           it2=it1+nc-1
+          if(nnl .gt. 0)then
+            call tremovecont(string(it1:it2),buf)
+          endif
           if(index(string(it1:it2),'_') .ne. 0)then
             irt=0
-            kx=kxpaloc(string(it1:it2))
+            if(nnl .eq. 0)then
+              kx=kxpaloc(string(it1:it2))
+            else
+              kx=kxpaloc(buf(1:nc-nnl))
+            endif
             return
           elseif(string(it1:it1) .eq. '%')then
             if(nc .eq. 1)then
@@ -330,11 +355,19 @@ c        write(*,*)'tfetok-r ',ch,m,vx
               kx=kxavaloc(-1,1,klr)
               call descr_sad(kx,klx)
               klx%head%k=ktfsymbol+ktfcopy1(iaxout)
-              klr%rbody(1)=ifromstr(string(it1+1:it2))
+              if(nnl .eq. 0)then
+                klr%rbody(1)=ifromstr(string(it1+1:it2))
+              else
+                klr%rbody(1)=ifromstr(buf(1:nc-nnl))
+              endif
               go to 9000
             endif
           endif
-          kx=kxsymbolz(string(it1:it2),nc,symd)
+          if(nnl .eq. 0)then
+            kx=kxsymbolz(string(it1:it2),nc,symd)
+          else
+            kx=kxsymbolz(buf,nc-nnl,symd)
+          endif
 c          write(*,*)'tfetok ',string(it1:it2),kax,klist(kax)
 c          call tfdebugprint(kx,'etok',1)
           if(rlist(iaximmediate) .ne. 0.d0)then
@@ -352,6 +385,63 @@ c          write(*,*)'kax ',kax
         endif
       endif
  9000 return
+      end
+
+      subroutine tedigicopy(string,buf,j,nnl)
+      implicit none
+      character*(*), intent(in)::string
+      character*(*), intent(out)::buf
+      integer*4 , intent(out)::j,nnl
+      integer*4 i
+      logical*4 cont
+      character ch
+      j=0
+      nnl=0
+      cont=.true.
+      do i=1,len(string)
+        ch=string(i:i)
+        if(ch .eq. '\\')then
+          if(i .lt. len(string) .and. string(i+1:i+1) .eq. '\n')then
+            nnl=nnl+2
+            cont=.false.
+            cycle
+          else
+            exit
+          endif
+        elseif(ch .ge. '0' .and. ch .le. '9'
+     $         .or. index('eEdDxX-+.',ch) .ne. 0)then
+          j=j+1
+          buf(j:j)=ch
+        elseif(cont)then
+          exit
+        endif
+        cont=.true.
+      enddo
+      return
+      end
+
+      subroutine tremovecont(string,buf)
+      implicit none
+      character*(*), intent(in)::string
+      character*(*), intent(out)::buf
+      integer*4 i,j
+      logical*4 cont
+      j=0
+      cont=.true.
+      do i=1,len(string)
+        if(cont)then
+          if(string(i:i) .eq. '\\' .and. i .lt. len(string)
+     $       .and. string(i+1:i+1) .eq. '\n')then
+            cont=.false.
+            cycle
+          else
+            j=j+1
+            buf(j:j)=string(i:i)
+          endif
+        endif
+        cont=.true.
+      enddo
+      return
       end
 
       integer function itfopcode(oper)

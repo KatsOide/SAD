@@ -68,7 +68,7 @@ c          x3=rlist(idval(k)+ivvar(i))
           if(ivvar(i) .eq. ival(iv))then
             vmin=vlim(iv,1)
             vmax=vlim(iv,2)
-            call elname1(iele(kk),ncoup,ivcomp(i) .ne. 0)
+            call elname1(icomp(kk),ncoup,ivcomp(i) .ne. 0)
             coup=couple(kk)
           else
             vmin=-1.d99
@@ -115,11 +115,11 @@ c          x3=rlist(idval(k)+ivvar(i))
           endif
 c     Note:
 c     * POSITION of `name'  element: ivcomp(i) == 0 ? kk : ivcomp(i)
-c     * POSITION of `ncoup' element: iele(kk) if ivvar(i) .eq. ival(iv)
-c     * iele(kk) != 0 for 1 =< kk =< nlat
+c     * POSITION of `ncoup' element: icomp(kk) if ivvar(i) .eq. ival(iv)
+c     * icomp(kk) != 0 for 1 =< kk =< nlat
           if(ivvar(i) .eq. ival(iv))then
-            if((ivcomp(i) .eq. 0 .and. iele(kk) .eq. kk)
-     $            .or. (iele(kk) .eq. ivcomp(i)))then
+            if((ivcomp(i) .eq. 0 .and. icomp(kk) .eq. kk)
+     $            .or. (icomp(kk) .eq. ivcomp(i)))then
               ncoup='<--'
             endif
           endif
