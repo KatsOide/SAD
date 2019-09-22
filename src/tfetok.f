@@ -149,14 +149,14 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
       type (sad_symdef), pointer :: symd
       type (sad_namtbl), pointer ::loc
       type (sad_strbuf), pointer :: strb
-      integer*4 istop,nc,is2,isp0,lm,ich,irt,nnl,j
+      integer*4 istop,nc,is2,isp0,lm,ich,irt,nnl
       integer*8 kax,ka,icont
       character*(*) string
-      real*8 vx,eval1
-      integer*4 m,l,i1,is1,notspace,ifromstr,
+      real*8 vx,eval2
+      integer*4 l,i1,is1,notspace,ifromstr,
      $     i,jc,itfopcode,it1,it2,notany1
       character*1 ch
-      character*256 buf
+      character*2048 buf
       kx%k=ktfoper+mtfnull
       l=len(string)
       irt=-2
@@ -231,13 +231,13 @@ c            write(*,*)'tfetok-3 '
             kax=jc
             istop=i+1
             if(jc .eq. mtfdot)then
-              vx=eval1(string,l,is1,m)
-              if(m .gt. 0)then
-                istop=is1+m
+              vx=eval2(string,i,istop,buf)
+              if(istop .gt. i)then
                 irt=0
                 kx=dfromr(vx)
                 return
               endif
+              istop=i+1
             elseif(jc .eq. mtfreplace .or. jc .eq. mtfunset
      $           .or. jc .eq. mtfreplacerepeated
      $           .or. jc .eq. mtfincrement
@@ -295,19 +295,9 @@ c            write(*,*)'tfetok-3 '
         enddo
         istop=is1+1
       elseif(ch .ge. '0' .and. ch .le. '9')then
-        vx=eval1(string,l,is1,m)
-        if(m .gt. 0)then
-          istop=is1+m
-          if(string(istop:istop) .eq. '\\' .and.
-     $         string(istop+1:istop+1) .eq. '\n')then
-            call tedigicopy(string(is1:l),buf,j,nnl)
-            vx=eval1(buf,j,1,m)
-c            write(*,*)'tfetol-r1 ',l,is1,m1,j,nnl,vx,buf(1:j)
-            istop=is1+m+nnl
-          endif
-          irt=0
-          kx=dfromr(vx)
-        endif
+        vx=eval2(string,is1,istop,buf)
+        kx=dfromr(vx)
+        irt=0
         return
       elseif(ch .eq. '!')then
         return
@@ -387,23 +377,42 @@ c          write(*,*)'kax ',kax
  9000 return
       end
 
+      real*8 function eval2(string,is1,istop,buf) result(vx)
+      implicit none
+      character*(*) string,buf
+      integer*4 l,is1,m,j,nnl,istop,is2
+      real*8 eval1
+      l=len(string)
+      vx=eval1(string,l,is1,m)
+      istop=is1+m
+      if(m .gt. 0 .or. string(is1:is1) .eq. '.')then
+        is2=is1+max(m,1)
+        if(is2 .lt. l .and. string(is2:is2+1) .eq. '\\\n')then
+          call tedigicopy(string(is1:l),buf,j,nnl)
+          vx=eval1(buf,j,1,m)
+          istop=is1+m+nnl
+        endif
+      endif
+      return
+      end
+
       subroutine tedigicopy(string,buf,j,nnl)
       implicit none
       character*(*), intent(in)::string
       character*(*), intent(out)::buf
       integer*4 , intent(out)::j,nnl
       integer*4 i
-      logical*4 cont
       character ch
       j=0
+      i=0
       nnl=0
-      cont=.true.
-      do i=1,len(string)
+      do while (i .lt. len(string))
+        i=i+1
         ch=string(i:i)
         if(ch .eq. '\\')then
           if(i .lt. len(string) .and. string(i+1:i+1) .eq. '\n')then
             nnl=nnl+2
-            cont=.false.
+            i=i+1
             cycle
           else
             exit
@@ -412,10 +421,9 @@ c          write(*,*)'kax ',kax
      $         .or. index('eEdDxX-+.',ch) .ne. 0)then
           j=j+1
           buf(j:j)=ch
-        elseif(cont)then
+        else
           exit
         endif
-        cont=.true.
       enddo
       return
       end
@@ -425,21 +433,18 @@ c          write(*,*)'kax ',kax
       character*(*), intent(in)::string
       character*(*), intent(out)::buf
       integer*4 i,j
-      logical*4 cont
+      i=0
       j=0
-      cont=.true.
-      do i=1,len(string)
-        if(cont)then
-          if(string(i:i) .eq. '\\' .and. i .lt. len(string)
+      do while(i .lt. len(string))
+        i=i+1
+        if(string(i:i) .eq. '\\' .and. i .lt. len(string)
      $       .and. string(i+1:i+1) .eq. '\n')then
-            cont=.false.
-            cycle
-          else
-            j=j+1
-            buf(j:j)=string(i:i)
-          endif
+          i=i+1
+          cycle
+        else
+          j=j+1
+          buf(j:j)=string(i:i)
         endif
-        cont=.true.
       enddo
       return
       end

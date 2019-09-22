@@ -314,7 +314,6 @@ c          endif
      $         .or. itastk2(1,i) .eq. mtfleftbra
      $         .or. itastk2(1,i) .eq. mtfleftparen
      $         .or. itastk2(1,i) .eq. mtfpart)then
-            write(*,*)'tfeval-7 ',eol
             if(eol)then
               irtc=itfmessage(9999,'General::missop',
      $             '"'//string(ist1:min(istop-1,l))//'"')
@@ -413,7 +412,6 @@ c
         go to 8910
       endif
  8900 if(irtc .lt. -1 .and. irtc .gt. irtcabort)then
-c        write(*,*)'tfeval ',irtc,modethrow
         modethrow=-1
         if(irtc .le. irtcret)then
           call tfreseterror
