@@ -437,8 +437,7 @@ c          write(*,*)'kax ',kax
       j=0
       do while(i .lt. len(string))
         i=i+1
-        if(string(i:i) .eq. '\\' .and. i .lt. len(string)
-     $       .and. string(i+1:i+1) .eq. '\n')then
+        if(i .lt. len(string) .and. string(i:i+1) .eq. '\\\n')then
           i=i+1
           cycle
         else
