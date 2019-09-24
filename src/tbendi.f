@@ -129,8 +129,9 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       use tfstk
       use ffs_flag
       use tmacro
-      use ffs_pointer, only:inext,iprev
+      use ffs_pointer, only:inext,iprev,geo
       use tspin
+      use photontable
       implicit none
       integer*4 , parameter :: ndivmax=1000
       integer*4 np,mfring,i,ndiv,n,l
@@ -208,6 +209,9 @@ c            dp=g(i)*(2.d0+g(i))
       cphin=cos(phin)
       sphin=sin(phin)
       do i=1,np
+        if(krad .and. photons)then
+          call tsetphotongeo(geo(:,:,l),aln,phin,theta,l)
+        endif
         dp=g(i)
         p=1.d0+dp
         rhoe=rhob*p
@@ -226,7 +230,7 @@ c            dp=g(i)*(2.d0+g(i))
           bsi(i)=bsi(i)+akn/aln*xi*yi
           if(rfluct)then
             call tradkf1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
-     $           px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln)
+     $           px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln,i)
           else
             call tradk1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
      $           px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln)
@@ -235,6 +239,9 @@ c            dp=g(i)*(2.d0+g(i))
           py0(i)=pyi
           zr0(i)=zi
           bsi(i)=0.d0
+          if(photons)then
+            call tsetphotongeo(pp%geo1,aln,phin,theta,l)
+          endif
         endif
         do n=2,ndiv
           call tbendicorr(akn,aln,phin)
@@ -242,7 +249,7 @@ c            dp=g(i)*(2.d0+g(i))
           if(krad .and. n .ne. ndiv)then
             if(rfluct)then
               call tradkf1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
-     $             px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln)
+     $             px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln,i)
             else
               call tradk1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
      $             px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln)
@@ -250,6 +257,9 @@ c            dp=g(i)*(2.d0+g(i))
             px0(i)=pxi
             py0(i)=pyi
             zr0(i)=zi
+            if(photons)then
+              call tsetphotongeo(pp%geo1,aln,phin,theta,l)
+            endif
           endif
         enddo
         call tbendicorr(akn*.5d0,aln*.5d0,phin*.5d0)
@@ -263,6 +273,9 @@ c            dp=g(i)*(2.d0+g(i))
         x(i)=xi-ff
         z(i)=zi+ff*fpx
       enddo
+      if(photons)then
+        call tsetphotongeo(pp%geo1,aln,phin,theta,l)
+      endif
       if(fb2 .ne. 0.d0)then
         if(mfring .gt. 0 .or. mfring .eq. -2)then
           dxfr2=fb2**2/rhob/24.d0

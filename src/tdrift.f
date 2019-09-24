@@ -28,13 +28,13 @@ c     drift in the free space
 
 c     drift in the parallel solenoid
       subroutine tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
-     $     al,bz,enarad)
+     $     al,bz,enarad,l)
       use element_drift_common
       use ffs_flag, only:rfluct
       use tspin
       use mathfun, only: sqrtl
       implicit none
-      integer*4 np
+      integer*4 np,l
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),bsi(np),
      $     sx(np),sy(np),sz(np),zr0,px1,py1
       real*8 al,bz
@@ -94,7 +94,7 @@ c
            if(rfluct)then
              call tradkf1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $            sx(i),sy(i),sz(i),
-     $            pxi,pyi,zr0,1.d0,0.d0,bsi(i),al)
+     $            pxi,pyi,zr0,1.d0,0.d0,bsi(i),al,l)
            else
              call tradk1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $            sx(i),sy(i),sz(i),
@@ -108,13 +108,15 @@ c
       end
 
       subroutine tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
-     $     al,bz,ak0x,ak0y,enarad)
+     $     al,bz,ak0x,ak0y,enarad,l)
       use element_drift_common
       use tspin
-      use ffs_flag, only:rfluct
+      use ffs_flag, only:rfluct,photons
+      use ffs_pointer,only:geo
+      use photontable
       use mathfun
       implicit none
-      integer*4 np,i,j,itmax,ndiag
+      integer*4 np,i,j,itmax,ndiag,l
       real*8 conv
       parameter (itmax=15,conv=1.d-15)
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
@@ -131,14 +133,20 @@ c
           call tdrift_free(np,x,px,y,py,z,dv,al)
           return
         else
+          if(enarad .and. photons)then
+            call tsetphotongeo(geo(:,:,l),0.d0,0.d0,0.d0,l)
+          endif
           call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
-     $         al,bz,enarad)
+     $         al,bz,enarad,l)
           return
         endif
       else
 c        b=hypot(hypot(ak0x,ak0y),bz*al)
         if(enarad)then
           bsi=0.d0
+          if(photons)then
+            call tsetphotongeo(geo(:,:,l),al,0.d0,0.d0,l)
+          endif
         endif
         b=abs(dcmplx(abs(dcmplx(ak0x,ak0y)),bz*al))
         phix=ak0y/b
@@ -208,7 +216,7 @@ c          pr=(1.d0+g(i))**2
             if(rfluct)then
               call tradkf1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $         sx(i),sy(i),sz(i),
-     $         px0,py0,zr0,1.d0,0.d0,bsi(i),al)
+     $         px0,py0,zr0,1.d0,0.d0,bsi(i),al,l)
             else
               call tradk1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $         sx(i),sy(i),sz(i),

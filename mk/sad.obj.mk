@@ -11,7 +11,7 @@ OBJ_LIBSAD=$(OBJMOD) $(OBJ0) $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ4) $(OBJ5) $(OBJ6) \
 
 OBJMOD= tfstk.o	tfstrbuf.o	tfreadbuf.o	toplvl.o	tintrb.o \
 	tftwiss.o	tftake.o	tfsolvemember.o \
-	tfetok.o	tfbeamline.o	temit.o	tbrad.o	tfloor.o
+	tfetok.o	tfbeamline.o	temit.o	tfloor.o
 
 OBJRC= 	tfefun1.o	tfsort.o	tfmodule.o	itfmaloc.o \
 	tfwrite.o	itfaloc.o	tfmemcheck.o	tfdot.o		tfematrix.o \
@@ -46,7 +46,7 @@ OBJ1=ActGRA.o    filbuf.o    pwmatq.o    ActLie.o    \
 OBJ2=packpi.o    tfdbun.o    tracke.o    NewGRF.o \
      trad.o      QUADRU.o    padd.o      R0CAL.o \
      R1INV.o     inifil.o	R2INV.o     initb1.o    SEXTU.o     initbl.o \
-     tfgeti.o    SYMPS.o     \
+     tfgeti.o    SYMPS.o     tbrad.o \
      qthin.o     tfgetr.o    trotg.o     SYMTR2.o    TCAL.o \
      TEDGE.o     TMATRS.o    rdexpr.o    tsdrad.o \
      TROT.o      rdkwdl.o    TWTRANS.o   lread.o \
@@ -122,7 +122,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      tlum.o      tmov.o       tmulbs.o   tmulte.o \
      tmulti.o    tmulta.o    tdrift.o     trackd.o \
      tmultr.o    tnorm.o     tqr.o \
-     tqrad.o     tquade.o    tquads.o     tquase.o   track.o \
+     tquade.o    tquads.o     tquase.o   track.o \
      tracka.o    trade.o     tsconv.o     tsgeo.o \
      tshow.o     tsol.o      tsole.o      tsolvg.o \
      tsolvm.o    tspac.o     tspini.o     tsteee.o   tsteer.o     tsvdm.o \

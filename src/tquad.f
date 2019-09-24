@@ -416,10 +416,10 @@ c        delp=g(i)*(2.d0+g(i))
           if((tran()-.5d0)*3.46410161513775461d0 .gt. .5d0-prob)then
             bya=-dpx*brhoz/al1
             bxa= dpy*brhoz/al1
-            call tsynchrad(pr,alr,bxa,bya,
-     $           dprad,dpradx,dprady,
-     $           i,l,alsum,-al0,0.d0,theta,
-     $           x(i),y(i),px(i),py(i))
+c            call tsynchrad(pr,alr,bxa,bya,
+c     $           dprad,dpradx,dprady,
+c     $           i,l,alsum,-al0,0.d0,theta,
+c     $           x(i),y(i),px(i),py(i))
             px(i)=px(i)-dpradx
             py(i)=py(i)-dprady
           else

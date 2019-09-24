@@ -933,17 +933,23 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         end subroutine
 
         subroutine tradkf1(x,px,y,py,z,g,dv,sx,sy,sz,
-     $     px00,py0,zr0,cphi0,sphi0,bsi,al)
+     $     px00,py0,zr0,cphi0,sphi0,bsi,al,k)
         use ffs_flag
         use tmacro
+        use photontable, only:tphotonconv
         use mathfun, only:pxy2dpz,p2h
         implicit none
+        integer*4 ,parameter :: npmax=10000
+        integer*4 , intent(in)::k
+        integer*4 i
         real*8, parameter:: gmin=-0.9999d0,
      $       cave=8.d0/15.d0/sqrt(3.d0)
         real*8 x,px,y,py,z,g,dv,px0,py0,zr0,bsi,al,
      $       dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
      $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,sx,sy,sz,
-     $       ppa,an,a,dph,r1,r2,px00,cphi0,sphi0
+     $       ppa,an,a,dph,r1,r2,px00,cphi0,sphi0,
+     $       xr,yr,pxr,pyr
+        real*8 dpr(npmax),rph(npmax)
         dpz0=pxy2dpz(px00,py0)
         px0= cphi0*px00+sphi0*(1.d0+dpz0)
         dpz0=cphi0*dpz0-sphi0*px00
@@ -961,9 +967,24 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         h1=p2h(p)
         anp=anrad*h1*theta
         al1=al-z+zr0
-        call tdusrn(anp,dph,r1,r2,an)
+        if(photons)then
+          call tdusrnpl(anp,dph,r1,r2,an,dpr,rph)
+        else
+          call tdusrn(anp,dph,r1,r2,an)
+        endif
         if(an .ne. 0.d0)then
           uc=cuc*h1**3/p0*theta/al1
+          if(photons)then
+            do i=1,int(an)
+              dg=dpr(i)*uc
+              pxr=px-dpx*rph(i)
+              pyr=py-dpy*rph(i)
+              xr=x-rph(i)*(px-.5d0*dpx*rph(i))*al
+              yr=y-rph(i)*(py-.5d0*dpy*rph(i))*al
+              call tphotonconv(xr,pxr,yr,pyr,dg,
+     $             dpr(i),p,h1,-rph(i)*al,k)
+            enddo
+          endif
           dg=-dph*uc
           dg=dg/(1.d0-2.d0*dg)
           g=max(gmin,g+dg)

@@ -5,6 +5,7 @@
       use tffitcode
       use tfshare
       use ffs_wake
+      use photontable,only:tphotoninit
       use tfcsi
       implicit none
       type (sad_descriptor) kx,kx1,kx2,ks,kp
