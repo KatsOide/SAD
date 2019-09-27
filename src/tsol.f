@@ -73,6 +73,7 @@
       iwpt=0
       iwpl=0
       do l=kb,min(ke,kstop)
+        l_track=l
         if(la .le. 0)then
           call tapert(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
      $         kptbl,np,n,

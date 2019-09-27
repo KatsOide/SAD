@@ -23,6 +23,24 @@
       return
       end
 
+      subroutine tggeol(l,geo1)
+      use ffs_pointer,only:geo,ibzl
+      implicit none
+      integer*4 , intent(in):: l
+      real*8 , intent(out)::geo1(3,4)
+      integer*4 ls
+      real*8 gs(3)
+      ls=ibzl(2,l)
+      if(ls .ne. 0)then
+        call tggeo1(ls,geo1)
+        gs=geo(:,4,ls)
+        geo1(:,4)=gs+dot_product(geo(:,4,l)-gs,geo1(:,3))*geo1(:,3)
+      else
+        geo1=geo(:,:,l)
+      endif
+      return
+      end
+
       subroutine tggeo1(k,geo1)
       use tfstk
       use ffs_pointer
@@ -30,7 +48,7 @@
       implicit none
       integer*4 k,i
       integer*8 lp
-      real*8 geo1(3,3),chi3,cschi3,snchi3,g1,
+      real*8 geo1(3,4),chi3,cschi3,snchi3,g1,
      $     chi1,chi2,cschi1,snchi1,cschi2,snchi2,
      $     tfchi
       lp=latt(k)
@@ -59,7 +77,7 @@
       use tffitcode
       implicit none
       integer*4 lxp,lxs,ibz
-      real*8 tfbzs,bzs,cod(6),f,xi,pxi,yi,pyi,ds,gi,geo2(3,3),
+      real*8 tfbzs,bzs,cod(6),f,xi,pxi,yi,pyi,ds,gi,geo2(3,4),
      $     pos0,gam0,gv(12),geo1(12)
       call tmov(geo(1,1,lxp+1),geo1,12)
       pos0=pos(lxp+1)

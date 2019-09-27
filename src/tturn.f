@@ -204,6 +204,7 @@ c      isb=ilist(2,iwakepold+6)
       call tsetdvfs
 c      call tfmemcheckprint('tturn',0,.false.,irtc)
       do l=lbegin,lend
+        l_track=l
 c        if(mod(l,10) .eq. 0)then
 c          write(*,*)'tturn1 ',l
 c        endif
@@ -338,7 +339,7 @@ c     $              +l-1),
          endif
          
          call tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $        l,cmp%value(p_L_BEND),ak0,
+     $        cmp%value(p_L_BEND),ak0,
      $        cmp%value(ky_ANGL_BEND),
      1        cmp%value(p_COSPSI1_BEND),cmp%value(p_SINPSI1_BEND),
      1        cmp%value(p_COSPSI2_BEND),cmp%value(p_SINPSI2_BEND),

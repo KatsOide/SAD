@@ -2,9 +2,11 @@
      1                 dx,dy,theta,cost,sint,radlvl,chro,
      1                 fringe,f1in,f2in,f1out,f2out,mfring,eps0,kin)
       use ffs_flag
+      use ffs_pointer,only:geo
       use tmacro
 c      use ffs_pointer, only:inext,iprev
       use tfstk, only:ktfenanq
+      use photontable,only:tsetphotongeo
       use mathfun, only:pxy2dpz,sqrt1
       use tspin
       implicit none
@@ -53,6 +55,9 @@ c          p=(1.d0+g(i))**2
 2110    continue
       endif
       if(enarad)then
+        if(photons)then
+          call tsetphotongeo(0.d0,0.d0,theta,.true.)
+        endif
         if(f1in .ne. 0.d0)then
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         px0,py0,zr0,1.d0,0.d0,bsi,f1in)
@@ -88,6 +93,9 @@ c          p=(1.d0+g(i))**2
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
       endif
       if(enarad .and. f1out .ne. 0.d0)then
+        if(photons)then
+          call tsetphotongeo(0.d0,0.d0,0.d0,.false.)
+        endif
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       px0,py0,zr0,1.d0,0.d0,bsi,f1out)
       endif

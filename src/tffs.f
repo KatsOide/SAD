@@ -102,7 +102,7 @@
         integer*4 nflag0,nlat,np0,nturn,isynch,nspect,
      $       lplot,nplot,nuse,nclas,irad,novfl,npelm,ipelm,
      $       nparallel,pspac_nx,pspac_ny,pspac_nz,
-     $       pspac_nturn,pspac_nturncalc
+     $       pspac_nturn,pspac_nturncalc,l_track
         logical*4 oldflagsdummy,calint,caltouck,tparaed
 
       end module

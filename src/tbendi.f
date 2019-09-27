@@ -120,7 +120,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
 
       end module
 
-      subroutine tbendi(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,phib,phi0,
+      subroutine tbendi(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb1,fb2,mfring,enarad,fringe,eps0)
@@ -134,7 +134,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       use photontable
       implicit none
       integer*4 , parameter :: ndivmax=1000
-      integer*4 np,mfring,i,ndiv,n,l
+      integer*4 np,mfring,i,ndiv,n
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     sx(np),sy(np),sz(np),px0(np),py0(np),zr0(np),bsi(np),
      $     al,phib,phi0,cosp1,sinp1,cosp2,sinp2,
@@ -164,12 +164,12 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
         py0=py
         zr0=z
         bsi=0.d0
-        if(iprev(l) .eq. 0)then
+        if(iprev(l_track) .eq. 0)then
           f1r=fb1
         else
           f1r=0.d0
         endif
-        if(inext(l) .eq. 0)then
+        if(inext(l_track) .eq. 0)then
           f2r=fb2
         else
           f2r=0.d0
@@ -210,7 +210,7 @@ c            dp=g(i)*(2.d0+g(i))
       sphin=sin(phin)
       do i=1,np
         if(krad .and. photons)then
-          call tsetphotongeo(geo(:,:,l),aln,phin,theta,l)
+          call tsetphotongeo(aln,phin,theta,.true.)
         endif
         dp=g(i)
         p=1.d0+dp
@@ -240,7 +240,7 @@ c            dp=g(i)*(2.d0+g(i))
           zr0(i)=zi
           bsi(i)=0.d0
           if(photons)then
-            call tsetphotongeo(pp%geo1,aln,phin,theta,l)
+            call tsetphotongeo(aln,phin,theta,.false.)
           endif
         endif
         do n=2,ndiv
@@ -258,7 +258,7 @@ c            dp=g(i)*(2.d0+g(i))
             py0(i)=pyi
             zr0(i)=zi
             if(photons)then
-              call tsetphotongeo(pp%geo1,aln,phin,theta,l)
+              call tsetphotongeo(aln,phin,theta,.false.)
             endif
           endif
         enddo
@@ -274,7 +274,7 @@ c            dp=g(i)*(2.d0+g(i))
         z(i)=zi+ff*fpx
       enddo
       if(photons)then
-        call tsetphotongeo(pp%geo1,aln,phin,theta,l)
+        call tsetphotongeo(aln,phin,theta,.false.)
       endif
       if(fb2 .ne. 0.d0)then
         if(mfring .gt. 0 .or. mfring .eq. -2)then

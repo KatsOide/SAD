@@ -102,10 +102,8 @@
       implicit none
       type photonp
         sequence
-        real*8 al,phi,theta,
-     $       x1,x2,x3,y1,y2,y3,z1,z2,z3,rho,sp0,cp0,
-     $       r1,r2,cost,sint,
-     $       gx0,gy0,gz0,chi,geo1(3,4)        
+        real*8 al,phi,theta,rho,sp0,cp0,
+     $       r1,r2,cost,sint,chi,geo1(3,4)        
         integer*4 l
       end type
       integer*4 ntable,ltable
@@ -127,37 +125,46 @@
       return
       end subroutine
 
-      subroutine tsetphotongeo(geo,al0,phi0,theta0,l0)
+      subroutine tsetphotongeo(al0,phi0,theta0,ini)
+      use tmacro, only:l_track
+      use ffs_pointer,only:ibzl,geo
       implicit none
-      integer*4 ,intent(in)::l0
-      real*8 geo(3,4),al0,phi0,theta0
+      real*8, intent(in):: al0,phi0,theta0
+      logical*4 , intent(in)::ini
+      integer*4 ls
+      real*8 gv(3,4)
       associate(l=>pp%l,al=>pp%al,phi=>pp%phi,theta=>pp%theta,
-     $     x1=>pp%x1,x2=>pp%x2,x3=>pp%x3,
-     $     y1=>pp%y1,y2=>pp%y2,y3=>pp%y3,
-     $     z1=>pp%z1,z2=>pp%z2,z3=>pp%z3,
+     $     x1=>pp%geo1(1,1),x2=>pp%geo1(2,1),x3=>pp%geo1(3,1),
+     $     y1=>pp%geo1(1,2),y2=>pp%geo1(2,2),y3=>pp%geo1(3,2),
+     $     z1=>pp%geo1(1,3),z2=>pp%geo1(2,3),z3=>pp%geo1(3,3),
+     $     gx0=>pp%geo1(1,4),gy0=>pp%geo1(2,4),gz0=>pp%geo1(3,4),
      $     rho=>pp%rho,sp0=>pp%sp0,cp0=>pp%cp0,
      $     r1=>pp%r1,r2=>pp%r2,cost=>pp%cost,sint=>pp%sint,
-     $     gx0=>pp%gx0,gy0=>pp%gy0,gz0=>pp%gz0,
      $     chi=>pp%chi,geo1=>pp%geo1)
-      l=l0
+      l=l_track
+      if(ini)then
+        call tggeol(l,gv)
+      else
+        gv=geo1
+      endif
       al=al0
       theta=theta0
       phi=phi0
       cost=cos(theta)
       sint=sin(theta)
-      x1= cost*geo(1,1)-sint*geo(1,2)
-      x2= cost*geo(2,1)-sint*geo(2,2)
-      x3= cost*geo(3,1)-sint*geo(3,2)
-      y1= sint*geo(1,1)+cost*geo(1,2)
-      y2= sint*geo(2,1)+cost*geo(2,2)
-      y3= sint*geo(3,1)+cost*geo(3,2)
-      z1=geo(1,3)
-      z2=geo(2,3)
-      z3=geo(3,3)
+      x1= cost*gv(1,1)-sint*gv(1,2)
+      x2= cost*gv(2,1)-sint*gv(2,2)
+      x3= cost*gv(3,1)-sint*gv(3,2)
+      y1= sint*gv(1,1)+cost*gv(1,2)
+      y2= sint*gv(2,1)+cost*gv(2,2)
+      y3= sint*gv(3,1)+cost*gv(3,2)
+      z1=gv(1,3)
+      z2=gv(2,3)
+      z3=gv(3,3)
       if(phi .eq. 0.d0)then
-        gx0=geo(1,4)+z1*al
-        gy0=geo(2,4)+z2*al
-        gz0=geo(3,4)+z3*al
+        gx0=gv(1,4)+z1*al
+        gy0=gv(2,4)+z2*al
+        gz0=gv(3,4)+z3*al
       else
         rho=al/phi
         sp0=sin(phi)
@@ -168,16 +175,16 @@
         else
           r2=rho*(1.d0-cp0)
         endif
-        gx0=geo(1,4)+(r1*z1-r2*x1)
-        gy0=geo(2,4)+(r1*z2-r2*x2)
-        gz0=geo(3,4)+(r1*z3-r2*x3)
-        z1=-sp0*x1+cp0*geo(1,3)
-        x1= cp0*x1+sp0*geo(1,3)
-        z2=-sp0*x2+cp0*geo(2,3)
-        x2= cp0*x2+sp0*geo(2,3)
-        z3=-sp0*x3+cp0*geo(3,3)
-        x3= cp0*x3+sp0*geo(3,3)
-        write(*,'(a,1p12g10.2)')'tsetphgeo ',gx0,gy0,gz0,
+        gx0=gv(1,4)+(r1*z1-r2*x1)
+        gy0=gv(2,4)+(r1*z2-r2*x2)
+        gz0=gv(3,4)+(r1*z3-r2*x3)
+        z1=-sp0*x1+cp0*gv(1,3)
+        x1= cp0*x1+sp0*gv(1,3)
+        z2=-sp0*x2+cp0*gv(2,3)
+        x2= cp0*x2+sp0*gv(2,3)
+        z3=-sp0*x3+cp0*gv(3,3)
+        x3= cp0*x3+sp0*gv(3,3)
+        write(*,'(a,1p12g10.2)')'tsetphgv ',gx0,gy0,gz0,
      $       x1,x2,x3,y1,y2,y3,z1,z2,z3
       endif
       if(x3 .eq. 0.d0)then
@@ -185,18 +192,6 @@
       else
         chi=2.d0*atan2(x3,-y3)
       endif
-      geo1(1,1)=x1
-      geo1(2,1)=x2
-      geo1(3,1)=x3
-      geo1(1,2)=y1
-      geo1(2,2)=y2
-      geo1(3,2)=y3
-      geo1(1,3)=z1
-      geo1(2,3)=z2
-      geo1(3,3)=z3
-      geo1(1,4)=gx0
-      geo1(2,4)=gy0
-      geo1(3,4)=gz0
       return
       end associate
       end subroutine
@@ -211,18 +206,18 @@
       real*8 xi,pxi,yi,pyi,dp,p1,h1,xi3a,gx,gy,gz,dpr,
      $     dpz,dpgx,dpgy,dpgz,ds,xir,pxir,zir,pzi,pyir,
      $     al1,phi1,cp,sp,thu,thv,xi30,xi1,xi2,xi3,pxia
-      associate( al=>pp%al,phi=>pp%phi,theta=>pp%theta,
-     $     x1=>pp%x1,x2=>pp%x2,x3=>pp%x3,
-     $     y1=>pp%y1,y2=>pp%y2,y3=>pp%y3,
-     $     z1=>pp%z1,z2=>pp%z2,z3=>pp%z3,
+      associate(l=>pp%l,al=>pp%al,phi=>pp%phi,theta=>pp%theta,
+     $     x1=>pp%geo1(1,1),x2=>pp%geo1(2,1),x3=>pp%geo1(3,1),
+     $     y1=>pp%geo1(1,2),y2=>pp%geo1(2,2),y3=>pp%geo1(3,2),
+     $     z1=>pp%geo1(1,3),z2=>pp%geo1(2,3),z3=>pp%geo1(3,3),
+     $     gx0=>pp%geo1(1,4),gy0=>pp%geo1(2,4),gz0=>pp%geo1(3,4),
      $     rho=>pp%rho,sp0=>pp%sp0,cp0=>pp%cp0,
      $     r1=>pp%r1,r2=>pp%r2,cost=>pp%cost,sint=>pp%sint,
-     $     gx0=>pp%gx0,gy0=>pp%gy0,gz0=>pp%gz0,
-     $     chi=>pp%chi,geo1=>pp%geo1,l=>pp%l)
+     $     chi=>pp%chi,geo1=>pp%geo1)
       call radangle(h1,rho*p1/p0,dpr,thu,thv,xi30,xi2)
-      pxia=pxir+thu
+      pxir=pxi+thu
       pyir=pyi+thv
-      pzi=1.d0+pxy2dpz(pxia,pyir)
+      pzi=1.d0+pxy2dpz(pxir,pyir)
       if(phi .ne. 0.d0)then
         phi1=ds/rho
         cp=cos(phi1)
@@ -231,6 +226,7 @@
         zir=rho*sp
         xi3=(cp-sp)*(cp+sp)*xi30
         xi1=-2.d0*cp*sp*xi30
+        pxia=pxir
         pxir=pxia*cp-pzi*sp
         pzi=pxia*sp+pzi*cp
       else
@@ -238,7 +234,6 @@
         zir=ds
         xi3=xi30
         xi1=0.d0
-        pxir=pxia
       endif
       gx=gx0+xir*x1+yi*y1+zir*z1
       gy=gy0+xir*x2+yi*y2+zir*z2
@@ -246,7 +241,8 @@
       dpgx=dp*(pzi*z1+pxir*x1+pyir*y1)
       dpgy=dp*(pzi*z2+pxir*x2+pyir*y2)
       dpgz=dp*(pzi*z3+pxir*x3+pyir*y3)
-c      write(*,'(a,2i5,1p5g12.4)')'phconv ',k,l,pyir,y1,y2,y3,dpgz
+c      write(*,'(a,2i5,1p5g12.4)')'phconv ',k,l,
+c     $     pxia,pxir*x2,pyir*y2,pzi*z2,dpgy/dp
       xi3a=cos(chi)*xi3+sin(chi)*xi1
       xi1=-sin(chi)*xi3+cos(chi)*xi1
       xi3=xi3a
@@ -272,6 +268,17 @@ c      write(*,'(a,2i5,1p5g12.4)')'phconv ',k,l,pyir,y1,y2,y3,dpgz
         ilp=0
       endif
       end associate
+      end subroutine
+
+      subroutine tgswap(l)
+      use ffs_pointer, only:geo
+      implicit none
+      integer*4 , intent(in)::l
+      real*8 v(3)
+      v=geo(:,1,l)
+      geo(:,1,l)=geo(:,2,l)
+      geo(:,2,l)=v
+      return
       end subroutine
 
       end module
@@ -339,7 +346,7 @@ c      write(*,'(a,2i5,1p5g12.4)')'phconv ',k,l,pyir,y1,y2,y3,dpgz
       end
 
       subroutine tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     l,al,phib,phi0,
+     $     al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb10,fb20,mfring,fringe,
@@ -360,23 +367,23 @@ c      write(*,'(a,2i5,1p5g12.4)')'phconv ',k,l,pyir,y1,y2,y3,dpgz
         bsi=0.d0
       endif
       call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,
-     $     l,al,phib,phi0,
+     $     al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb10,fb20,mfring,fringe,
      $     cosw,sinw,sqwh,sinwp1,
-     1     enarad,eps,.true.)
+     1     enarad,eps,.true.,0)
       return
       end
 
       subroutine tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     px0,py0,zr0,bsi,
-     $     l,al,phib,phi0,
+     $     al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb10,fb20,mfring,fringe,
      $     cosw,sinw,sqwh,sinwp1,
-     1     enarad,eps,ini)
+     1     enarad,eps,ini,iniph)
       use tfstk
       use ffs_flag
       use tmacro
@@ -386,7 +393,7 @@ c      write(*,'(a,2i5,1p5g12.4)')'phconv ',k,l,pyir,y1,y2,y3,dpgz
       use tspin
       use photontable
       implicit none
-      integer*4 np,mfring,i,l,ndiv,ndivmax
+      integer*4 np,mfring,i,ndiv,ndivmax,iniph
       parameter (ndivmax=1024)
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,ak,dx,dy,theta,
      $     cost,sint,cosw,sinw,sqwh,sinwp1,eps,
@@ -437,7 +444,7 @@ c     1       fb10,fb20,mfring,
 c     1       fringe,eps)
 c        return
       elseif(ak .ne. 0.d0)then
-        call tbendi(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,phib,phi0,
+        call tbendi(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phib,phi0,
      1       cosp1,sinp1,cosp2,sinp2,
      1       ak,dx,dy,theta,dtheta,cost,sint,
      1       fb10,fb20,mfring,enarad,fringe,eps)
@@ -465,19 +472,26 @@ c        return
           py0=py
           zr0=z
         endif
-        if(iprev(l) .eq. 0)then
+        if(iprev(l_track) .eq. 0)then
           f1r=fb1
         else
           f1r=0.d0
         endif
-        if(inext(l) .eq. 0)then
+        if(inext(l_track) .eq. 0)then
           f2r=fb2
         else
           f2r=0.d0
         endif
         ndiv=min(ndivmax,ndivrad(phib,0.d0,0.d0,eps))
         if(photons)then
-          call tsetphotongeo(geo(:,:,l),al/ndiv,phi0/ndiv,theta,l)
+          select case (iniph)
+            case (0)
+              call tsetphotongeo(al/ndiv,phi0/ndiv,theta,.true.)
+            case (1)
+              call tsetphotongeo(al/ndiv,phi0/ndiv,pp%theta,.true.)
+            case default
+              call tsetphotongeo(al/ndiv,phi0/ndiv,0.d0,.false.)
+          end select
         endif
       else
         ndiv=1
@@ -487,7 +501,7 @@ c      write(*,*)'tbend0 ',ndiv
         call tbendr(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,
      $       al,phib,phi0,
      1       cosp1,sinp1,cosp2,sinp2,
-     1       mfring,fringe,ndiv,l)
+     1       mfring,fringe,ndiv)
       else
         call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       px0,py0,zr0,bsi,
@@ -581,7 +595,7 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
      $     px0,py0,zr0,bsi,
      $     al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
-     1     mfring,fringe,ndiv,l)
+     1     mfring,fringe,ndiv)
       use tfstk
       use ffs_flag
       use tmacro
@@ -649,7 +663,7 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
      $     coswn1,sinwn1,sqwhn1,sinwp1n1,
      1     .true.,1.d0,0.d0)
       if(photons)then
-        call tsetphotongeo(pp%geo1,aln,phi0n,0.d0,l)
+        call tsetphotongeo(aln,phi0n,0.d0,.false.)
       endif
       do i=2,ndiv-1
         call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -660,7 +674,7 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
      $       coswnc,sinwnc,sqwhnc,sinwp1nc,
      1       .true.,0.d0,0.d0)
         if(photons)then
-          call tsetphotongeo(pp%geo1,aln,phi0n,0.d0,l)
+          call tsetphotongeo(aln,phi0n,0.d0,.false.)
         endif
       enddo
       call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -685,6 +699,7 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
       use multa, only:nmult
       use tbendcom
       use tspin
+      use photontable,only:pp
       use mathfun
       implicit none
       integer*4 np,mfring,i
@@ -819,6 +834,7 @@ c        write(*,*)t2,t3,t2+t3,t2t3,px1+px3,px1px3
         bsi(i)=bsi(i)-bsi2*y(i)/rhob
 100   continue
       if(rad .and. enarad)then
+        write(*,*)'tbendcore-tradk ',pp%l,pp%al,pp%phi
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       px0,py0,zr0,cos(phi0),sin(phi0),bsi,al)
         px0=px

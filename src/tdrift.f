@@ -28,13 +28,16 @@ c     drift in the free space
 
 c     drift in the parallel solenoid
       subroutine tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
-     $     al,bz,enarad,l)
+     $     al,bz,enarad)
       use element_drift_common
-      use ffs_flag, only:rfluct
+      use tmacro,only:l_track
+      use ffs_flag, only:rfluct,photons
+      use ffs_pointer,only:geo
+      use photontable
       use tspin
       use mathfun, only: sqrtl
       implicit none
-      integer*4 np,l
+      integer*4 np
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),bsi(np),
      $     sx(np),sy(np),sz(np),zr0,px1,py1
       real*8 al,bz
@@ -92,9 +95,13 @@ c
          bsi(i)=bz
          if(enarad)then
            if(rfluct)then
+             if(photons)then
+               call tsetphotongeo(al,0.d0,0.d0,.true.)
+c               write(*,'(a,1p12g10.2)')'drift_sol ',pp%geo1(:,:)
+             endif
              call tradkf1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $            sx(i),sy(i),sz(i),
-     $            pxi,pyi,zr0,1.d0,0.d0,bsi(i),al,l)
+     $            pxi,pyi,zr0,1.d0,0.d0,bsi(i),al,i)
            else
              call tradk1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $            sx(i),sy(i),sz(i),
@@ -108,15 +115,16 @@ c
       end
 
       subroutine tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
-     $     al,bz,ak0x,ak0y,enarad,l)
+     $     al,bz,ak0x,ak0y,enarad)
       use element_drift_common
+      use tmacro, only:l_track
       use tspin
       use ffs_flag, only:rfluct,photons
       use ffs_pointer,only:geo
       use photontable
       use mathfun
       implicit none
-      integer*4 np,i,j,itmax,ndiag,l
+      integer*4 np,i,j,itmax,ndiag
       real*8 conv
       parameter (itmax=15,conv=1.d-15)
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
@@ -133,20 +141,14 @@ c
           call tdrift_free(np,x,px,y,py,z,dv,al)
           return
         else
-          if(enarad .and. photons)then
-            call tsetphotongeo(geo(:,:,l),0.d0,0.d0,0.d0,l)
-          endif
           call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
-     $         al,bz,enarad,l)
+     $         al,bz,enarad)
           return
         endif
       else
 c        b=hypot(hypot(ak0x,ak0y),bz*al)
         if(enarad)then
           bsi=0.d0
-          if(photons)then
-            call tsetphotongeo(geo(:,:,l),al,0.d0,0.d0,l)
-          endif
         endif
         b=abs(dcmplx(abs(dcmplx(ak0x,ak0y)),bz*al))
         phix=ak0y/b
@@ -214,9 +216,12 @@ c          pr=(1.d0+g(i))**2
           bsi(i)=bsi(i)-ak0x*y(i)-ak0y*x(i)
           if(enarad)then
             if(rfluct)then
+              if(photons)then
+                call tsetphotongeo(al,0.d0,0.d0,.true.)
+              endif
               call tradkf1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $         sx(i),sy(i),sz(i),
-     $         px0,py0,zr0,1.d0,0.d0,bsi(i),al,l)
+     $         px0,py0,zr0,1.d0,0.d0,bsi(i),al,i)
             else
               call tradk1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $         sx(i),sy(i),sz(i),

@@ -977,11 +977,10 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
           if(photons)then
             do i=1,int(an)
               dg=dpr(i)*uc
-              pxr=px-dpx*rph(i)
-              pyr=py-dpy*rph(i)
               xr=x-rph(i)*(px-.5d0*dpx*rph(i))*al
               yr=y-rph(i)*(py-.5d0*dpy*rph(i))*al
-              call tphotonconv(xr,pxr,yr,pyr,dg,
+c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
+              call tphotonconv(xr,px,yr,py,dg,
      $             dpr(i),p,h1,-rph(i)*al,k)
             enddo
           endif
