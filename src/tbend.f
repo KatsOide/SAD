@@ -184,8 +184,8 @@
         x2= cp0*x2+sp0*gv(2,3)
         z3=-sp0*x3+cp0*gv(3,3)
         x3= cp0*x3+sp0*gv(3,3)
-        write(*,'(a,1p12g10.2)')'tsetphgv ',gx0,gy0,gz0,
-     $       x1,x2,x3,y1,y2,y3,z1,z2,z3
+c        write(*,'(a,1p12g10.2)')'tsetphgv ',gx0,gy0,gz0,
+c     $       x1,x2,x3,y1,y2,y3,z1,z2,z3
       endif
       if(x3 .eq. 0.d0)then
         chi=0.d0
@@ -834,7 +834,6 @@ c        write(*,*)t2,t3,t2+t3,t2t3,px1+px3,px1px3
         bsi(i)=bsi(i)-bsi2*y(i)/rhob
 100   continue
       if(rad .and. enarad)then
-        write(*,*)'tbendcore-tradk ',pp%l,pp%al,pp%phi
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       px0,py0,zr0,cos(phi0),sin(phi0),bsi,al)
         px0=px

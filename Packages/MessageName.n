@@ -52,7 +52,6 @@
   Shared::toolarge="Shared Memory Shortage by `1` bytes";
   Shared::notopen="Shared Memory not opend";
 
-
   Memory::alloc="Memory allocation error";
 
   DynamicLoader::nosymbol="Symbol \"`1`\" can not be resolved";
@@ -79,6 +78,8 @@
     FFS::nospin="No spin coordinates are given";
     FFS::lfn="File number full";
     ];
+
+  Track::photons="PHTONS requires RAD & FULC";
 
   $WildCard::unknown="Unknown wild card scheme `1`";
 

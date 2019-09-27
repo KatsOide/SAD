@@ -1896,8 +1896,8 @@ JITTER or NOQUIET allows jitter of the center-of-mass of the incoming beam in th
 
      {"PHOTONS",
        "\
-When PHOTONS is ON (default is OFF), TrackParticles generates a list of all photons radiated through the tracking. The list is assigned to a symbol PhotonList.",
-       "PhotonList TrackParticles",
+When PHOTONS is ON (default is OFF), with RAD and FLUC, TrackParticles generates a list of all photons radiated through the tracking. The list is assigned to a symbol PhotonList.",
+       "PhotonList TrackParticles RAD FLUC",
        {}},
 
      {"RADLIGHT",
@@ -2358,7 +2358,7 @@ STACKSIZ has the size of the stack for SADScript interpreter. It can be set by u
 
      {"PhotonList",
        "\
-When PHOTONS is ON (default is OFF), TrackParticles generates a list of all photons radiated through the tracking. The list is assigned to a symbol PhotonList. PhotonList is a list of\n\n\
+When PHOTONS is ON (default is OFF), with RAD and FLUC, TrackParticles generates a list of all photons radiated through the tracking. The list is assigned to a symbol PhotonList. PhotonList is a list of\n\n\
 {en, gx, gy, gz, nx, ny, nz, xi1, xi2, xi3, np, nele}\n\n\
 where\n\n\
 en:    photon energy [eV]\n\

@@ -132,7 +132,12 @@
         go to 8900
       endif
       if(photons)then
-        call tphotoninit()
+        if(rad .and. rfluct)then
+          call tphotoninit()
+        else
+          irtc=itfmessage(9,'Track::photons','""')
+          return
+        endif
       endif
       if(radlight)then
         rad=.true.
@@ -150,7 +155,7 @@ c     $       ne,npnlatmin
         npara=min(npara,npz/npparamin+1,ne*npz/npnlatmin+1)
         if(npara .gt. 1)then
           irtc=1
-          ikptblm=ktfallocshared(npz*((nkptbl+1)/2))
+          ikptblm=ktfallocshared(npz*int((nkptbl+1)/2))
           npr=npara-1
           np1=npz/npara+1
           ipn=0
@@ -181,7 +186,7 @@ c     $       ne,npnlatmin
         vcalpha=1.d0
       endif
       kdv=ktaloc(npz)
-      ikptblw=ktaloc(npp*((nkptbl+1)/2))
+      ikptblw=ktaloc(npp*int((nkptbl+1)/2))
       kzp=kz+ipn
       kzf=kzp+npz*(mcf-1)
       if(calpol)then
