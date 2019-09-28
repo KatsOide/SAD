@@ -2,7 +2,6 @@
      1                 dx,dy,theta,cost,sint,radlvl,chro,
      1                 fringe,f1in,f2in,f1out,f2out,mfring,eps0,kin)
       use ffs_flag
-      use ffs_pointer,only:geo
       use tmacro
 c      use ffs_pointer, only:inext,iprev
       use tfstk, only:ktfenanq
@@ -358,7 +357,7 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
       return
       end
 c
-      subroutine tthinrad(np,x,px,y,py,z,g,dv,sx,sy,sz,nord,l,al,ak,
+      subroutine tthinrad(np,x,px,y,py,z,g,dv,sx,sy,sz,nord,al,ak,
      1                 dx,dy,theta,cost,sint,fringe)
       use ffs_flag
       use tmacro
@@ -368,7 +367,7 @@ c
       parameter (nmult=21)
       real*8 ampmax,eps00
       parameter (ampmax=0.05d0,eps00=0.005d0,ndivmax=1000)
-      integer*4 l,np,i,kord,ndiv,nord
+      integer*4 np,i,kord,ndiv,nord
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
      $     sx(np),sy(np),sz(np)
       real*8 fact(0:nmult)

@@ -299,7 +299,7 @@ c     $              +l-1),
          if(spac)then
            call spdrift_free(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $          cmp%value(ky_L_DRFT),
-     $          cmp%value(ky_RADI_DRFT),n,l,latt,kptbl)
+     $          cmp%value(ky_RADI_DRFT),n,latt,kptbl)
          else
            if(cmp%value(ky_KIN_DRFT) .eq. 0.d0)then
              do i=1,np

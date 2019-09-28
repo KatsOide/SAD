@@ -693,16 +693,17 @@ c      h=sqrt(1.d0+p**2)
 
 c     drift in the free space
       subroutine spdrift_free(np,x,px,y,py,z,g,dv,sx,sy,sz,al,
-     $     radius,kturn,l,latt,kptbl)
+     $     radius,kturn,latt,kptbl)
       use tfstk
       use ffs
       use tffitcode
+      use tmacro,only:l_track
       implicit none
       integer*4 nzmax
       real*8 alstep
       parameter (nzmax=1000,alstep=0.05d0)
       integer*8 latt(nlat)
-      integer*4 np,kturn,l,kptbl(np0,6)
+      integer*4 np,kturn,kptbl(np0,6)
       real*8 x(np0),px(np0),y(np),py(np0),z(np0),g(np0),dv(np0),
      $     sx(np0),sy(np0),sz(np0)
       real*8 al,radius
@@ -714,17 +715,17 @@ c     drift in the free space
       call tdrift_free(np,x,px,y,py,z,dv,aln*.5d0)
 
       call spkick(np,x,px,y,py,z,g,dv,aln,
-     $     radius,alx,kturn,l,latt,kptbl)
+     $     radius,alx,kturn,l_track,latt,kptbl)
       do i=2,ndiv
         call tdrift_free(np,x,px,y,py,z,dv,aln)
         call spkick(np,x,px,y,py,z,g,dv,aln,
-     $       radius,alx,kturn,l,latt,kptbl)
+     $       radius,alx,kturn,l_track,latt,kptbl)
       enddo
 
       call tdrift_free(np,x,px,y,py,z,dv,aln*.5d0)
 c      call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
       if(radius .ne. 0.d0)then
-         call tapert(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+         call tapert(l_track,latt,x,px,y,py,z,g,dv,sx,sy,sz,
      $       kptbl,np,kturn,
      $        radius,radius,
      $        0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
@@ -734,16 +735,17 @@ c      call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
 
 c     drift in the parallel solenoid
       subroutine spdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     al,bz,radius,kturn,l,latt,kptbl)
+     $     al,bz,radius,kturn,latt,kptbl)
       use tfstk
       use ffs
       use tffitcode
+      use tmacro,only:l_track
       implicit none
       integer*4 nzmax
       real*8 alstep
       parameter (nzmax=1000,alstep=0.05d0)
       integer*8 latt(nlat)
-      integer*4 np,kturn,l,kptbl(np0,6)
+      integer*4 np,kturn,kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
      $     bsi(np0),sx(np0),sy(np0),sz(np0)
       real*8 al,bz,radius
@@ -756,19 +758,19 @@ c     drift in the parallel solenoid
      $     aln*.5d0,bz,.false.)
 
       call spkick(np,x,px,y,py,z,g,dv,aln,
-     $     radius,alx,kturn,l,latt,kptbl)
+     $     radius,alx,kturn,l_track,latt,kptbl)
       do i=2,ndiv
         call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
      $       aln,bz,.false.)
         call spkick(np,x,px,y,py,z,g,dv,aln,
-     $       radius,alx,kturn,l,latt,kptbl)
+     $       radius,alx,kturn,l_track,latt,kptbl)
       enddo
 
       call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
      $     aln*.5d0,bz,.false.)
 c      call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
       if(radius .ne. 0.d0)then
-         call tapert(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+         call tapert(l_track,latt,x,px,y,py,z,g,dv,sx,sy,sz,
      $       kptbl,np,kturn,
      $        radius,radius,
      $        0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)

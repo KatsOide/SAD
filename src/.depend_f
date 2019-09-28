@@ -277,13 +277,13 @@ tdjin.o: tdjin.f tfstk.o toplvl.o
 tdlat.o: tdlat.f tffs.o tfstk.o
 tdplt.o: tdplt.f
 tdrife.o: tdrife.f tdrift.o temit.o tffs.o tfloor.o
-tdrift.o: tdrift.f tbend.o temit.o tffs.o tfloor.o
+tdrift.o: tdrift.f temit.o tffs.o tfloor.o
 tdrwdt.o: tdrwdt.f inc/common.inc tffs.o tfloor.o tfstk.o
 tedrawf.o: tedrawf.f
 teigen.o: teigen.f
 temap.o: temap.f tffs.o tfstk.o
 temat.o: temat.f tffs.o tfstk.o
-temit.o: temit.f tbend.o tffs.o tfloor.o tfstk.o toplvl.o
+temit.o: temit.f tffs.o tfloor.o tfstk.o toplvl.o
 temitf.o: temitf.f tffs.o tfstk.o
 temits.o: temits.f temit.o tffs.o tfstk.o toplvl.o
 temp.o: temp.f toplvl.o
@@ -373,7 +373,7 @@ tfstrbuf.o: tfstrbuf.f tfestk.o tfstk.o
 tftable.o: tftable.f tfstk.o
 tftake.o: tftake.f tfstk.o
 tftmat.o: tftmat.f tffs.o tfstk.o
-tftrack.o: tftrack.f tbend.o temit.o tffs.o tfloor.o tfshared.o tfstk.o toplvl.o
+tftrack.o: tftrack.f temit.o tffs.o tfloor.o tfshared.o tfstk.o toplvl.o
 tftrad.o: tftrad.f tfstk.o
 tftrak.o: tftrak.f tffs.o
 tftrb.o: tftrb.f tffs.o
@@ -405,7 +405,7 @@ tmulbs.o: tmulbs.f tffs.o tfstk.o
 tmuld.o: tmuld.f
 tmulta.o: tmulta.f inc/TENT.inc inc/TEXIT.inc tbend.o temit.o tffs.o tfloor.o tfstk.o
 tmulte.o: tmulte.f tbend.o temit.o tffs.o tfloor.o
-tmulti.o: tmulti.f tbend.o temit.o tffs.o tfloor.o tfstk.o
+tmulti.o: tmulti.f temit.o tffs.o tfloor.o tfstk.o
 tmultr.o: tmultr.f
 tnorm.o: tnorm.f
 toplvl.o: toplvl.f tfshared.o tfstk.o
@@ -419,9 +419,9 @@ tqfrie.o: tqfrie.f tffs.o tfstk.o
 tqlfre.o: tqlfre.f tffs.o
 tqr.o: tqr.f tfstk.o
 tqrad.o: tqrad.f inc/TENT.inc inc/TEXIT.inc tffs.o
-tquad.o: tquad.f inc/TENT.inc inc/TEXIT.inc tbend.o temit.o tffs.o tfloor.o tfstk.o toplvl.o tturn.o
+tquad.o: tquad.f inc/TENT.inc inc/TEXIT.inc temit.o tffs.o tfloor.o tfstk.o toplvl.o tturn.o
 tquade.o: tquade.f temit.o tffs.o tfloor.o tfstk.o
-tquads.o: tquads.f tbend.o temit.o tffs.o tfstk.o
+tquads.o: tquads.f temit.o tffs.o tfstk.o
 tquase.o: tquase.f temit.o tffs.o tfloor.o tfstk.o
 track.o: track.f temit.o tffs.o tfstk.o toplvl.o
 tracka.o: tracka.f tffs.o tfstk.o
@@ -441,7 +441,7 @@ tshow.o: tshow.f tffs.o tfstk.o
 tsmear.o: tsmear.f tffs.o
 tsol.o: tsol.f initb1.o tffs.o tfloor.o tfstk.o
 tsole.o: tsole.f initb1.o temit.o tffs.o tfstk.o
-tsolqu.o: tsolqu.f tbend.o temit.o tffs.o tfloor.o tsolque.o
+tsolqu.o: tsolqu.f temit.o tffs.o tfloor.o tsolque.o
 tsolque.o: tsolque.f temit.o tffs.o tfloor.o tfstk.o
 tsolvg.o: tsolvg.f
 tsolvm.o: tsolvm.f
@@ -450,7 +450,7 @@ tspect.o: tspect.f tffs.o tfstk.o
 tspin.o: tspin.f
 tspini.o: tspini.f tffs.o tfstk.o
 tsteee.o: tsteee.f temit.o tffs.o tfloor.o
-tsteer.o: tsteer.f inc/TENT.inc inc/TEXIT.inc tbend.o temit.o tffs.o tfloor.o
+tsteer.o: tsteer.f inc/TENT.inc inc/TEXIT.inc temit.o tffs.o tfloor.o
 tstrad.o: tstrad.f inc/TENT.inc inc/TEXIT.inc tffs.o
 tsvdm.o: tsvdm.f tfstk.o
 ttcav.o: ttcav.f inc/TENT.inc inc/TEXIT.inc tffs.o tfloor.o

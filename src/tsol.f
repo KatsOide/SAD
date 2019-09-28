@@ -137,7 +137,7 @@
           al=cmp%value(ky_L_DRFT)
           if(spac)then
             call spdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,al,bzs,
-     $           cmp%value(ky_RADI_DRFT),n,l,latt,kptbl)
+     $           cmp%value(ky_RADI_DRFT),n,latt,kptbl)
           else
             call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
      $           al,bzs,rad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0)
