@@ -1,0 +1,17 @@
+(* Please localize this file as you like. *)
+
+With[{root=Environment["SAD_ROOTPATH"]},
+  Environment@@[{
+    {"UNIX95",""},
+    {"TCL_LIBRARY",""},
+    {"TK_LIBRARY",""},
+    {"KBFRAMEDIR",root//"/KBFrame"},
+    {"PYTHONPATH",root//"/Packages/"}
+    },{1}];
+
+  DocumentsDirectory=root//"/Documents/";
+  ExamplesDirectory=root//"/script/"
+
+    ];
+
+! End of File
