@@ -476,8 +476,11 @@ c        write(*,*)'setlinep ',ip,linep,lrecl
       end module
 
       module tfrbuf
+      use tfstk
       use maccbk, only:i00
       implicit none
+      ;integer*4 ,parameter :: irbnofile=-999,irbunread=-1,
+     $     irbeof=-99
       integer*4 , parameter ::
      $     modeclose=0,moderead=1,modewrite=2,modestring=3,
      $     modeshared=4,modemapped=5
@@ -488,10 +491,12 @@ c        write(*,*)'setlinep ',ip,linep,lrecl
       integer*4 , target :: lbuf(0:nbuf)=0,mbuf(0:nbuf)=0,
      $     itbuf(0:nbuf)=0,lenbuf(0:nbuf)=0
       integer*8 :: ibuf(0:nbuf)=0
+      type (sad_descriptor) :: ntable(nbuf)
       type cbkshared
         integer*8, allocatable :: ca(:)
       end type
       type (cbkshared) rbshared(0:nbuf)
+      data ntable(:)%k /nbuf*0/
 
       contains
       integer*4 function nextfn(mode)
@@ -644,21 +649,6 @@ c
       endif
       return
       end subroutine
-
-      integer*4 function itrbgetpoint(lfn,is) result(nc)
-      implicit none
-      integer*4 lfn,is
-      if(lfn .le. 0 .or. ibuf(lfn) .eq. 0)then
-        nc=-99
-      elseif(mbuf(lfn) .gt. lbuf(lfn)
-     $       .or. mbuf(lfn) .le. 0)then
-        nc=-1
-      else
-        nc=lbuf(lfn)-mbuf(lfn)+1
-        is=mbuf(lfn)
-      endif
-      return
-      end function
 
       subroutine trbinit(lfn,ib)
       use tfstk

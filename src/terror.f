@@ -209,7 +209,7 @@ c     temat(ilist(2,latt(1))... MUST need because of latt defined by (2,0:nlatt)
                 ldv=ld
               endif
               ie=j
-              k=iele1(iele(j))
+              k=iele1(icomp(j))
               if(ierr .eq. 5)then
                 kw=kytbl(kwL,id)
                 if(kw .ne. 0)then

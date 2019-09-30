@@ -7,7 +7,7 @@ c      use iso_c_binding
       implicit none
       integer*8 ls1,mapresizefile,lenfile,ib1
       integer*4 lfn,itfgetbuf,irtc,ls,ie,i,nc,ib
-      if(lfn .le. 0)then
+      if(lfn .le. 0 .or. ibuf(lfn) .eq. 0)then
         go to 9000
       endif
       if(itbuf(lfn) .le. modewrite)then
@@ -18,16 +18,14 @@ c      use iso_c_binding
         endif
         lbuf(lfn)=ib-1
         lenbuf(lfn)=lbuf(lfn)+nc
+c        write(*,*)'tfreadbuf ',lfn,nc,lbuf(lfn),mbuf(lfn),ib
         mbuf(lfn)=ib
       else
  11     ls=lenbuf(lfn)
-        if(lbuf(lfn) .lt. ls .and.
-     $       jlist(lbuf(lfn)+1,ibuf(lfn)) .eq. 10)then
-          if(lfn1 .gt. 0)then
-            write(lfn1,*)
-          endif
-          lbuf(lfn)=lbuf(lfn)+1
-        endif
+c        if(lbuf(lfn) .lt. ls .and.
+c     $       jlist(lbuf(lfn)+1,ibuf(lfn)) .eq. 10)then
+c          lbuf(lfn)=lbuf(lfn)+1
+c        endif
         if(lbuf(lfn) .lt. ls)then
           ie=ls
           do i=lbuf(lfn)+1,ls
@@ -39,7 +37,7 @@ c      use iso_c_binding
               endif
             endif
           enddo
-          nc=int(ie-lbuf(lfn))
+          nc=ie-lbuf(lfn)
           mbuf(lfn)=lbuf(lfn)+1
           lbuf(lfn)=ie
         else
@@ -66,7 +64,7 @@ c      use iso_c_binding
         endif
       endif
       return
- 9000 nc=-99
+ 9000 nc=irbeof
       return
       end subroutine
 
@@ -108,7 +106,7 @@ c        write(*,*)'irbopen1 ',j,ibuf(j)
       integer*4 in,irtc,nc
       character*(*) str
 c      write(*,*)'reststr ',in
-      call tfreadbuf(in,int8(lbuf(in)+1),nc)
+      call tfreadbuf(in,lbuf(in)+1,nc)
 c      write(*,*)': ',nc,'''',buffer(mbuf(in):mbuf(in)+nc-1),''''
       irtc=0
       if(nc .gt. 0)then
@@ -223,7 +221,6 @@ c          call tfdebugprint(kx,'readshared-string',1)
 c          write(*,*)'at ',ia
           kx=kxsalocb(-1,str%str(1:str%nch),str%nch)
         elseif(ktflistq(kx))then
-c          write(*,*)'readshared-list '
           isp0=isp
           call tfrecallshared(isp0,ktflist+ia+3,kx,irtc)
           isp=isp0

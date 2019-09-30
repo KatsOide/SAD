@@ -16,16 +16,20 @@ PolynomialFit[d_,nord_]:=Module[{{x,b}=Thread[d],
   s=Table[1,{Length[d]}],a,xa,sl,xl,cm,n,m,sx},
   xa=(Plus@@x)/Length[x];
   scale=1/Max[Abs[x-xa]];
+  If[Abs[xa]*scale<0.1,
+    xa=0;
+    scale=1/Max[Abs[x]]];
   x=(x-xa)*scale;
   a=Transpose[Table[First[{s,s*=x}],{nord+1}]];
   s=LinearSolve[a,b];
   sl=xl=1;
   sl=s*Table[First[{sl,sl*=scale}],{nord+1}];
-  xl=Table[First[{xl,xl*=-xa}],{nord+1}];
+  xl=If[xa,Table[First[{xl,xl*=-xa}],{nord+1}],
+      1];
   sx=sl*xl;
   cm=Table[
     Take[sx,{m+1,nord+1}].
-      Table[Factorial[n]/Factorial[n-m]/Factorial[m],{n,m,nord}],
+    Table[Factorial[n]/Factorial[n-m]/Factorial[m],{n,m,nord}],
     {m,0,nord}]/xl;
   {cm,{Residual->Sqrt[(Plus@@((a.s-b)^2))/Length[d]]}}];
 SetAttributes[{PolynomialFit,Residual},Constant];

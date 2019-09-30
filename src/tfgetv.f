@@ -3,7 +3,7 @@
       use ffs
       use ffs_pointer
       use tffitcode
-      use tfcsi,only:cssetp
+      use tfcsi,only:ipoint
       use tflinepcom
       use ffs_seg
       implicit none
@@ -75,7 +75,7 @@ c
             minf=.true.
           elseif(word1 .eq. ' ' .or. word1 .eq. '-')then
             next=next1
-            call cssetp(next)
+            ipoint=next
             exist=.true.
             if(cont)then
               go to 9000
@@ -95,7 +95,7 @@ c
             endif
           endif
           next=next1
-          call cssetp(next)
+          ipoint=next
           exist=.true.
  912      if(iv .eq. 0)then
             call termes(lfno,'?No default keyword for ',word)

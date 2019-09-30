@@ -13,7 +13,7 @@ eqs img{
 <BODY>
 <CENTER><H2>Welcome to SAD/FFS & SADScript
 </H2></CENTER>
-<CENTER> SAD/FFS SADScript Version: 1.1.6.9.1k64,      Updated: 09/01/2019</CENTER>
+<CENTER> SAD/FFS SADScript Version: 1.1.6.9.4k64,      Updated: 09/10/2019</CENTER>
 
 <PRE> Please use browser's search to find an item.
 
@@ -841,6 +841,7 @@ ToString</A></H3>
  ToString[expr, [FormatType ->] form [, form1...]] converts expr using one or more formats form [,form1...].
 Available formats are:
 
+                   
 InputForm          special characters are quoted with \.
 HoldForm           converts expr without evaluation.
 StandardForm       converts with the standard number format and PageWidth.
@@ -855,6 +856,7 @@ command-syntax</A></H3>
 
      expression1 [param1..] [;] expression2..
 
+     
 (1)  The input is first evaluated as an expression. If the expression returns a Symbol with the same
      name as the expression itself, it is interpreted as an FFS command, otherwise the returned value
      is printed out unless it is Null.
@@ -926,6 +928,7 @@ format is
 
 where
 
+          
 dp:       a list contains dp/p0 .
 kind:     a list of kind of the orbit (usually 0, but 1 to 6 for the finite amplitude matching, see
           MatchingAmplitude).
@@ -992,6 +995,8 @@ data-structure</A></H3>
    head[body1 [,body2...]]
 
 where head and body1... are atom or list-structure. Defined atoms are:
+
+
 Real     a real number
 Symbol   a symbol
 String   a character-string
@@ -1950,6 +1955,7 @@ with
 keywords</A></H3>
 <PRE>Available keywords are:
 
+        
 type    keywords
 DRIFT   L RADIUS
 BEND    L ROTATE DROTATE DX DY ANGLE K0 K1 E1 E2 AE1 AE2 F1 FB1 FB2 FRINGE DISFRIN DISRAD EPS RANKICK
@@ -1975,6 +1981,7 @@ APERT   DX1 DX2 DY1 DY2 DP AX AY DX DY
 MARK</A></H3>
 <PRE>MARK elements play special roles in FFS:
 
+     
 (1)  The first element of the beam line must be a MARK element to be used by FFS. In this case the
      MARK element contains the parameters of the incoming beam (see optical-functions, special-variables
      EMITX, EMITY, DP).
@@ -1991,6 +1998,7 @@ Example: MARK P1 = (EMITX = .. EMITY = .. DP = ..);
              ...           do matching of LINE B whose entrance is to be
                            matched P1.
 
+     
 (3)  If a MARK element has keyword GEO nonzero, this MARK element becomes the origin of the geometric
      rotation after the last SOL element.
 (4)  The values of optical-functions of the MARK element at the beginning of the beam line can be
@@ -4579,6 +4587,7 @@ are the default-keyword or keywords once used in matching.
 key-strings:Element</A></H3>
 <PRE>The key-string is not case-sensitive. Available key-strings are:
 
+            
 "LENGTH"    Number of elements in the beam line. No second argument.
 "POSITION"  Position of the element in the element-list.
 "NAME"      Name of the element.
@@ -4612,6 +4621,7 @@ ExpandElementValues(True), SaveEMIT(False), InitialOrbit(Null), InitialBeamMatri
 If
 Emittance->False is specified, the resulting keywords are:
 
+                     
 Stable               True if all modes are stable and the closed orbit is found.
 Tunes                {nux, nuy, nuz} .
 EnergyLossU0         One turn energy loss in eV.
@@ -4625,6 +4635,7 @@ OrbitAtExit          physical c.o.d. at the end of line.
 
 If None of the options is given, the following keywords are added:
 
+                      
 DampingRate           {T0/taux, T0/tauy, T0/tauz}
 Emittances            {emitx, emity, emitz}
 MomentumSpread        sigma p/p0
@@ -4640,6 +4651,7 @@ TuneShiftByRadiation  {dnux, dnuy, dnuz}
 
 If OneTurnInformation->True, or Orbit->True, or Matrix->True, the followings are added.
 
+                         
 OrbitAtEntrance          physical c.o.d. at the entrance of the ring.
 OneTurnTransferMatrix    symplectic part of the one-turn transfer matrix.
 OneTurnDampingMatrix     deviation of transfer matrix due to radiation.
@@ -4651,10 +4663,12 @@ ExtendedTwissParameters  list of rules giving the extended Twiss parameters at t
 
 If Orbit->True or Matrix->True, the following is added:
 
+             
 ClosedOrbit  List of physical closed orbit at every element in the ring.
 
 If Matrix->True, the followings are added:
 
+                     
 TransferMatrices     List of physical transfer matrix from the beginning of the beam line to all
                      elements.
 IntrabeamExcitation  List of the change of the 6 x 6 beam matrix due to the intrabeam scattering
@@ -4720,13 +4734,18 @@ Example:
      ExternalMap["TRACK",LINE["POSITION","P1.2"],nt_,x_]:=
 (Print[x];x(Print[x];x*2);
 ....       ....
+           
 TRACK      USE=A ....;
+           
 This       example defines ExternalMap to print out the coordinates of all
 particles  at the second P1 in the line A. It also makes all coordinates
 of         all particles twice in every turn.
+           
 2)         Emittance
 In         FFS, define the function ExternalMap as
+           
 ExternalMapExternalMap["EMIT",n,cod_]:=body;
+           
 The        second argument n is the position of MAP counting from the beginning, which can be obtained
            using LINE["POSITION","name.m"]. The last argument cod_ is used to receive the orbit at
            the entrance of the element, as a list of 6 real numbers. ExternalMap must return a list,
@@ -4734,26 +4753,36 @@ The        second argument n is the position of MAP counting from the beginning,
            exit, trans is the 6 by 6 transfer matrix of this element, dtrans is the radiation damping
            part of the transfer matrix (6 by 6), and dbeam is the radiation excitation of the beam
            matrix (6 by 6). Only j >= i parts of dbeam[[i, j]] are taken into account.
+           
 Example:   Example:
+           
 ExternalMapExternalMap["EMIT",LINE["POSITION","P1"],cod_]:=(
 Print[cod];Print[cod];
 {cod+{0,0.0{cod+{0,0.001,0,0,0,0},IdentityMatrix[6]});
+           
 3)         Optics
 In         FFS, define the function ExternalMap as
+           
 ExternalMapExternalMap["OPTICS",n,cod_]:=body;
+           
 The        second argument n is the position of MAP counting from the beginning, which can be obtained
            using LINE["POSITION","name.m"]. The last argument cod_ is used to receive the orbit at
            the entrance of the element, as a list of 6 real numbers. ExternalMap must return a list
            {cod1, trans}, where cod1 is the orbit at the exit and trans is the 6 by 6 transfer matrix
            of this element. In the case of CACL4D (== ~CALC6D), only the 4 by 5 transfer matrix is
            effective.
+           
 Example:   Example:
+           
 ExternalMapExternalMap["OPTICS",LINE["POSITION","P1"],cod_]:=(
 Print[cod];Print[cod];
 {cod+{0,0.0{cod+{0,0.001,0,0,0,0},IdentityMatrix[6]});
+           
 4)         Geometry
 In         FFS, define the function ExternalMap as
+           
 ExternalMapExternalMap["GEO",n,geo_,pos_]:=body;
+           
 The        second argument n is the position of MAP counting from the beginning, which can be obtained
            using LINE["POSITION","name.m"]. The argument geo_ receives the geometry of the beam line
            at the MAP element, in the same format as LINE["GEO",n], i.e., {{GX,GY,GZ},{CHI1,CHI2,CHI3}}.
@@ -4761,6 +4790,7 @@ The        second argument n is the position of MAP counting from the beginning,
            an updated list {geo1, pos1}, as { {{GX,GY,GZ},{CHI1,CHI2,CHI3}}, S} as the values at
            the exit of the element.
 Example:   Example:
+           
 ExternalMapExternalMap["GEO",LINE["POSITION","P1"],geo_,pos_]:=(
 Print[cod];Print[cod];
 {          {geo[[1]]+{1,0,0}, geo[[2]]}, pos+0.1})
@@ -4840,6 +4870,7 @@ Usage:   FitWeight[component, function, {id_,dp_}, default_] := weight;
 
 where
 
+           
 component  is the name of the location of the fit, like "QF.2", etc.
 function   is the name of the matching-function, like "BX", "LENG", etc.
 id_        is the id number of the orbit for MatchingAmplitude or InitialOrbits.
@@ -4889,6 +4920,7 @@ where both x and y can be also a list.
 key-strings:LINE</A></H3>
 <PRE>The key-string is not case-sensitive. Available key-strings are:
 
+             
 "LENGTH"     Number of components in the beam line. No second argument.
 "POSITION"   Position of the component in the beam line.
 "NAME"       Name of the component.
@@ -5692,6 +5724,7 @@ OpticsPlot</A></H3>
 makes a plot of built-in optical functions, user-defined functions, or
 list of data at components on the beam line.   The parameters are:
 
+            
 fun_list:   a list of objects to be plotted in a window. The number of windows in a plot is the length
             of fun_list object plotted in a window MUST have same dimensions. An element of fun_list
             is one of fun_label, fun, list_data or a list as {object, options}, where
@@ -6215,6 +6248,7 @@ MemoryCheck</A></H3>
 checks the consistency of the memory allocation by SAD. The range of the check and the output depend
 on n:
 
+                
 MemoryCheck[]   : checks the consistency of the free area and returns the allocation info,
 MemoryCheck[1]  : checks the consistensy of the free and used areas. Returns the allocation info.
 MemoryCheck[2]  : checks the consistensy of the free and used areas. Returns the allocation info.
@@ -6387,6 +6421,7 @@ format is
 
 where
 
+          
 dp:       a list contains dp/p0 .
 kind:     a list of kind of the orbit (usually 0, but 1 to 6 for the finite amplitude matching, see
           MatchingAmplitude).
@@ -6450,6 +6485,7 @@ DDK        K0 or DBZ            BEND SOL
 
    Options are
 
+                 
 RANDOM(R)        Set amount*GaussRandom[] to the keyword.
 UNIFORM(U)       Set the specified amount to the keyword without random number.
 INCOHERENT(INC)  GaussRandom[] is called for each component. Default.
@@ -6581,6 +6617,7 @@ is excluded.
 optical-functions</A></H3>
 <PRE>Available optical functions for matching are:
 
+      
 AX    alpha_X
 BX    beta_X
 NX    psi_X, the default scale is 1/(2Pi)
@@ -6800,6 +6837,7 @@ and MAXMIN means MIN=-Abs[value] and MAX=+Abs[value].
 keywords</A></H3>
 <PRE>Available keywords are:
 
+        
 type    keywords
 DRIFT   L RADIUS
 BEND    L ROTATE DROTATE DX DY ANGLE K0 K1 E1 E2 AE1 AE2 F1 FB1 FB2 FRINGE DISFRIN DISRAD EPS RANKICK
@@ -6963,6 +7001,7 @@ Useage:  ElementValues = { key[elem] :> expr, ...}
 
 where
 
+       
 key:   keyword to specify a value (string).
 elem:  String to specify the elements or components, wildcards are allowed.
 expr:  an expression which returs a real number to be set to the elements or components.
@@ -6973,6 +7012,8 @@ Example:  ElementValues =
               "ROTATE"["QF*"] :> f[x] }
 
 Remarks:
+
+
 1.  Iff elem contains ".", it is recognized as components, otherwise as elements.
 2.  In the r.h.s. of the rule, an expression like key[elem] is evaluated as either LINE[key, elem]
     or Element[key, elem], depending on elem has ".".

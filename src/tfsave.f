@@ -4,7 +4,7 @@
       use ffs
       use ffs_pointer
       use tffitcode
-      use tfcsi,only:cssetp
+      use tfcsi,only:ipoint
       use ffs_seg
       implicit none
       type (sad_comp), pointer ::cmp,cmpd
@@ -25,7 +25,7 @@
             return
           endif
         elseif(word .eq. 'ALL')then
-          call cssetp(next)
+          ipoint=next
           all=.true.
           go to 1
         endif
@@ -35,7 +35,7 @@
         l=klp(i)
         if(.not. cmd .or. tmatch(pnamec(l),word))then
           if(cmd .and. .not. exist1)then
-            call cssetp(next)
+            ipoint=next
             exist1=.true.
             exist=.true.
           endif
@@ -110,7 +110,7 @@ c            rlist(j+ival(i))=cmp%value(ival(i))/errk(1,l)
       use ffs
       use ffs_pointer
       use tffitcode
-      use tfcsi,only:cssetp
+      use tfcsi,only:ipoint
       use ffs_seg
       implicit none
       type (sad_comp), pointer :: cmp,cmps
@@ -130,11 +130,11 @@ c            rlist(j+ival(i))=cmp%value(ival(i))/errk(1,l)
             go to 9000
           endif
         elseif(word .eq. 'ALL')then
-          call cssetp(next)
+          ipoint=next
           all=.true.
           go to 1
         elseif(word .eq. 'TOTAL')then
-          call cssetp(next)
+          ipoint=next
           call tffsresetall
           go to 9000
         endif
@@ -144,7 +144,7 @@ c            rlist(j+ival(i))=cmp%value(ival(i))/errk(1,l)
         l=klp(i)
         if(.not. cmd .or. tmatch(pnamec(l),word))then
           if(cmd .and. .not. exist1)then
-            call cssetp(next)
+            ipoint=next
             exist1=.true.
             exist=.true.
           endif

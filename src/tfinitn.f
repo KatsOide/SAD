@@ -179,7 +179,7 @@ c     index(env,'/') MUST be `0' or grater than `1'
 
       write(*,*) '*** SADScript Initialization: '//
      $     pkg(1:lpkg)//'init.n ***'
-      call cssetlfno(0)
+      lfno=0
       call tfgetf(pkg(1:lpkg)//'init.n')
 c      write(*,*)'tfinitn 1 '
       klist(itfcontextpath)=itfcontroot

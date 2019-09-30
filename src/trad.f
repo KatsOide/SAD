@@ -85,7 +85,7 @@ c          endif
         do i=1,np
           call tradkf1(x(i),px(i),y(i),py(i),z(i),g(i),dv(i),
      $         sx(i),sy(i),sz(i),
-     $         px0(i),py0(i),zr0(i),cphi0,sphi0,bsi(i),al)
+     $         px0(i),py0(i),zr0(i),cphi0,sphi0,bsi(i),al,i)
         enddo
       else
         do i=1,np

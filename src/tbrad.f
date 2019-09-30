@@ -178,10 +178,10 @@ c              write(*,*)'tbrad ',n,i,prob,alx,byx,an
             if(tran() .gt. 1.d0-prob)then
               bxa=byx*(yi*(1.d0+akk0*alx**2/6.d0)+pyi*alx*.5d0)
               bya=by0+byx*(xi*(1.d0-akk0*alx**2/6.d0)+pxi*alx*.5d0)
-              call tsynchrad(p,alr,bxa,bya,
-     $             dprad,dpradx,dprady,
-     $             i,l,alsum,0.d0,phi0*alsum/al,theta,
-     $             xi,yi,pxi,pyi)
+c              call tsynchrad(p,alr,bxa,bya,
+c     $             dprad,dpradx,dprady,
+c     $             i,l,alsum,0.d0,phi0*alsum/al,theta,
+c     $             xi,yi,pxi,pyi)
               dp=max(-.999d0,dp-dprad)
               p=1.d0+dp
               sp=sp-dprad
@@ -252,10 +252,10 @@ c            sinsq0=2.d0*sin(phix*.5d0)**2
             if(tran() .gt. 1.d0-prob)then
               bxa=byx*(yi*(1.d0+akk0*alx**2/6.d0)+pyi*alx*.5d0)
               bya=by0+byx*(xi*(1.d0-akk0*alx**2/6.d0)+pxi*alx*.5d0)
-              call tsynchrad(p,alr,bxa,bya,
-     $             dprad,dpradx,dprady,
-     $             i,l,alsum,-alr,phi0*alsum/al,theta,
-     $             xi,yi,pxi,pyi)
+c              call tsynchrad(p,alr,bxa,bya,
+c     $             dprad,dpradx,dprady,
+c     $             i,l,alsum,-alr,phi0*alsum/al,theta,
+c     $             xi,yi,pxi,pyi)
               dp=max(-.999d0,dp-dprad)
               p=1.d0+dp
               sp=sp-dprad
@@ -755,234 +755,58 @@ c     end   initialize for preventing compiler warning
       return
       end
 
-      subroutine tsynchrad(p,alr,bxa,bya,
-     $     dprad,dpradx,dprady,
-     $     mp,l,al,s0,phi,theta,xi,yi,pxi,pyi)
-      use tfstk
-      use ffs
-      use ffs_pointer
-      use tffitcode
-      implicit none
-      integer*4 irtn,ng,l,mp
-      real*8 p,alr,bxa,bya,dprad,dpradx,dprady,tran,
-     $     b0,e0,eg,thx,thy,xi30,thu,thv,
-     $     c1,c2,s1,s2,xi3,xi2,xi1,s0,phi1,
-     $     thx1,thy1,ds,thu1,xi,yi,pxi,pyi,al,al1,
-     $     phi,theta,gx,gy,gz,dpgx,dpgy,dpgz
-      e0=amass*sqrt((p*p0)**2+1.d0)
-      b0=sqrt(bxa**2+bya**2)
-      call SYNRADCL(E0,B0,alr,2,NG,EG,thu,thv,XI30,XI2,IRTN)
-      if(irtn .gt. 100 .or. ng .eq. 0)then
-        dprad=0.d0
-        dpradx=0.d0
-        dprady=0.d0
-      else
-        dprad=eg/amass/p0
-        c1=bya/b0
-        s1=bxa/b0
-        thx=thu*c1+thv*s1
-        thy=-thu*s1+thv*c1
-        dpradx=thx*dprad
-        dprady=thy*dprad
-        if(photons)then
-          c2=(c1-s1)*(c1+s1)
-          s2=2.d0*c1*s1
-          xi3=c2*xi30
-          xi1=-s2*xi30
-          ds=tran()*alr
-          thu1=thu-(s0+ds)*b0/brho
-          thx1=thu1*c1+thv*s1
-          thy1=-thu1*s1+thv*c1
-          al1=al+ds+s0
-          if(al .eq. 0.d0)then
-            phi1=0.d0
-          else
-            phi1=phi*al1/al
-          endif
-          call tphotonconv(al1,phi1,theta,
-     $         geo(:,:,l),xi,yi,
-     $         dprad,pxi-thx1,pyi-thy1,
-     $         gx,gy,gz,dpgx,dpgy,dpgz,xi1,xi3)
-          call tphotonstore(mp,l,gx,gy,gz,
-     $         dpgx*p0,dpgy*p0,dpgz*p0,
-     $         xi1,xi2,xi3)
-        endif
-      endif
-      return
-      end
-
-      module photontable
-      implicit none
-      integer*4 ntable,ltable
-      parameter (ntable=256,ltable=100000)
-      integer*8 kphtable(ntable)
-      integer*4 nt,itp,ilp,lt
-      end module
-
-      subroutine tphotoninit()
-      use photontable
-      use tfstk
-      use tmacro
-      implicit none
-      nt=ntable
-      lt=ltable
-      itp=0
-      ilp=0
-      kphtable(1)=0
-      return
-      end
-
-      subroutine tphotonconv(al,phi,theta,geo1,xi,yi,dp,dpx,dpy,
-     $     gx,gy,gz,dpgx,dpgy,dpgz,xi1,xi3)
-      use mathfun, only: sqrtl
-      implicit none
-      real*8 al,phi,theta,geo1(3,4),xi,yi,dp,dpx,dpy,gx,gy,gz,
-     $     dpz,x1,x2,x3,y1,y2,y3,z1,z2,z3,rho0,sp0,cp0,r1,r2,
-     $     dpgx,dpgy,dpgz,cost,sint,xi1,xi3,chi,xi3a
-      cost=cos(theta)
-      sint=sin(theta)
-      x1= cost*geo1(1,1)-sint*geo1(1,2)
-      x2= cost*geo1(2,1)-sint*geo1(2,2)
-      x3= cost*geo1(3,1)-sint*geo1(3,2)
-      y1= sint*geo1(1,1)+cost*geo1(1,2)
-      y2= sint*geo1(2,1)+cost*geo1(2,2)
-      y3= sint*geo1(3,1)+cost*geo1(3,2)
-      if(phi .eq. 0.d0)then
-        gx=geo1(1,4)+geo1(1,3)*al
-        gy=geo1(2,4)+geo1(2,3)*al
-        gz=geo1(3,4)+geo1(3,3)*al
-        z1=geo1(1,3)
-        z2=geo1(2,3)
-        z3=geo1(3,3)
-      else
-        rho0=abs(al)/phi
-        sp0=sin(phi)
-        cp0=cos(phi)
-        r1=rho0*sp0
-        if(cp0 .ge. 0.d0)then
-          r2=rho0*sp0**2/(1.d0+cp0)
-        else
-          r2=rho0*(1.d0-cp0)
-        endif
-        gx=geo1(1,4)+(r1*geo1(1,3)-r2*x1)
-        gy=geo1(2,4)+(r1*geo1(2,3)-r2*x2)
-        gz=geo1(3,4)+(r1*geo1(3,3)-r2*x3)
-        z1=-sp0*x1+cp0*geo1(1,3)
-        x1= cp0*x1+sp0*geo1(1,3)
-        z2=-sp0*x2+cp0*geo1(2,3)
-        x2= cp0*x2+sp0*geo1(2,3)
-        z3=-sp0*x3+cp0*geo1(3,3)
-        x3= cp0*x3+sp0*geo1(3,3)
-      endif
-      gx=gx+xi*x1+yi*y1
-      gy=gy+xi*x2+yi*y2
-      gz=gz+xi*x3+yi*y3
-      dpz=dp*sqrtl(1.d0-dpx**2-dpy**2)
-      dpgx=dpz*z1+dp*(dpx*x1+dpy*y1)
-      dpgy=dpz*z2+dp*(dpx*x2+dpy*y2)
-      dpgz=dpz*z3+dp*(dpx*x3+dpy*y3)
-      if(x3 .eq. 0.d0)then
-        chi=0.d0
-      else
-        chi=2.d0*atan2(x3,-y3)
-      endif
-      xi3a=cos(chi)*xi3+sin(chi)*xi1
-      xi1=-sin(chi)*xi3+cos(chi)*xi1
-      xi3=xi3a
-      return
-      end
-
-      subroutine tphotonstore(mp,l,gx,gy,gz,dpgx,dpgy,dpgz,
-     $     xi1,xi2,xi3)
-      use photontable
-      use tfstk
-      use tmacro
-      implicit none
-      integer*8 kp
-      integer*4 mp,l
-      real*8 gx,gy,gz,dpgx,dpgy,dpgz,xi1,xi2,xi3
-      if(ilp .eq. 0)then
-        itp=itp+1
-        kphtable(itp)=ktaloc(10*lt)
-        ilp=1
-      endif
-      kp=kphtable(itp)+(ilp-1)*10
-      ilist(1,kp)=mp
-      ilist(2,kp)=l
-      rlist(kp+1)=gx
-      rlist(kp+2)=gy
-      rlist(kp+3)=gz
-      rlist(kp+4)=dpgx
-      rlist(kp+5)=dpgy
-      rlist(kp+6)=dpgz
-      rlist(kp+7)=xi1
-      rlist(kp+8)=xi2
-      rlist(kp+9)=xi3
-      ilp=ilp+1
-      if(ilp .gt. lt)then
-        ilp=0
-      endif
-      return
-      end
-
-      subroutine tphotonlist()
-      use photontable
-      use tfstk
-      use tmacro
-      implicit none
-      type (sad_dlist), pointer ::klx
-      type (sad_rlist), pointer ::klri
-      integer*4 nitem
-      parameter (nitem=12)
-      integer*8 kax, kp,kt
-      integer*4 nph,i
-      real*8 dp
-      integer*8 kphlist
-      data kphlist/0/
-      if(kphlist .eq. 0)then
-        kphlist=ktfsymbolz('`PhotonList',11)-4
-      endif
-      call tflocal(klist(kphlist))
-      if(itp .le. 0)then
-        kax=kxnulll
-      else
-        nph=(itp-1)*lt+max(ilp-1,0)
-        kax=ktadaloc(-1,nph,klx)
-        klx%attr=ior(klx%attr,lconstlist)
-        itp=1
-        ilp=0
-        kt=kphtable(1)
-        do i=1,nph
-          ilp=ilp+1
-          if(ilp .gt. lt)then
-            ilp=1
-            itp=itp+1
-            kt=kphtable(itp)
-          endif
-          kp=kt+(ilp-1)*10
-          klx%dbody(i)%k=ktflist+ktavaloc(0,nitem,klri)
-          klri%attr=lconstlist
-          dp=sqrt(rlist(kp+4)**2+rlist(kp+5)**2
-     $         +rlist(kp+6)**2)
-          klri%rbody(1)=dp*amass
-          klri%rbody(2)=rlist(kp+1)
-          klri%rbody(3)=rlist(kp+2)
-          klri%rbody(4)=rlist(kp+3)
-          klri%rbody(5)=rlist(kp+4)/dp
-          klri%rbody(6)=rlist(kp+5)/dp
-          klri%rbody(7)=rlist(kp+6)/dp
-          klri%rbody(8)=rlist(kp+7)
-          klri%rbody(9)=rlist(kp+8)
-          klri%rbody(10)=rlist(kp+9)
-          klri%rbody(11)=ilist(1,kp)
-          klri%rbody(12)=ilist(2,kp)
-        enddo
-        do i=1,itp
-          if(kphtable(i) .ne. 0)then
-            call tfree(kphtable(i))
-          endif
-        enddo
-      endif
-      klist(kphlist)=ktflist+ktfcopy1(kax)
-      return
-      end
+c$$$      subroutine tsynchrad(p,alr,bxa,bya,
+c$$$     $     dprad,dpradx,dprady,
+c$$$     $     mp,l,al,s0,phi,theta,xi,yi,pxi,pyi)
+c$$$      use tfstk
+c$$$      use ffs
+c$$$      use ffs_pointer
+c$$$      use tffitcode
+c$$$      implicit none
+c$$$      integer*4 irtn,ng,l,mp
+c$$$      real*8 p,alr,bxa,bya,dprad,dpradx,dprady,tran,
+c$$$     $     b0,e0,eg,thx,thy,xi30,thu,thv,
+c$$$     $     c1,c2,s1,s2,xi3,xi2,xi1,s0,phi1,
+c$$$     $     thx1,thy1,ds,thu1,xi,yi,pxi,pyi,al,al1,
+c$$$     $     phi,theta,gx,gy,gz,dpgx,dpgy,dpgz
+c$$$      e0=amass*sqrt((p*p0)**2+1.d0)
+c$$$      b0=sqrt(bxa**2+bya**2)
+c$$$      call SYNRADCL(E0,B0,alr,2,NG,EG,thu,thv,XI30,XI2,IRTN)
+c$$$      if(irtn .gt. 100 .or. ng .eq. 0)then
+c$$$        dprad=0.d0
+c$$$        dpradx=0.d0
+c$$$        dprady=0.d0
+c$$$      else
+c$$$        dprad=eg/amass/p0
+c$$$        c1=bya/b0
+c$$$        s1=bxa/b0
+c$$$        thx=thu*c1+thv*s1
+c$$$        thy=-thu*s1+thv*c1
+c$$$        dpradx=thx*dprad
+c$$$        dprady=thy*dprad
+c$$$        if(photons)then
+c$$$          c2=(c1-s1)*(c1+s1)
+c$$$          s2=2.d0*c1*s1
+c$$$          xi3=c2*xi30
+c$$$          xi1=-s2*xi30
+c$$$          ds=tran()*alr
+c$$$          thu1=thu-(s0+ds)*b0/brho
+c$$$          thx1=thu1*c1+thv*s1
+c$$$          thy1=-thu1*s1+thv*c1
+c$$$          al1=al+ds+s0
+c$$$          if(al .eq. 0.d0)then
+c$$$            phi1=0.d0
+c$$$          else
+c$$$            phi1=phi*al1/al
+c$$$          endif
+c$$$          call tphotonconv(al1,phi1,theta,
+c$$$     $         geo(:,:,l),xi,yi,
+c$$$     $         dprad,pxi-thx1,pyi-thy1,
+c$$$     $         gx,gy,gz,dpgx,dpgy,dpgz,xi1,xi3)
+c$$$          call tphotonstore(mp,l,gx,gy,gz,
+c$$$     $         dpgx*p0,dpgy*p0,dpgz*p0,
+c$$$     $         xi1,xi2,xi3)
+c$$$        endif
+c$$$      endif
+c$$$      return
+c$$$      end

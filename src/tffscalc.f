@@ -333,7 +333,7 @@ c      call tfevals('Print["PROF-3: ",LINE["PROFILE","Q1"]]',kxx,irtc)
           endif
           if(.not. cell .and. .not. geomet)then
             do i=ibegin,nlat-1
-              ii=iele(i)
+              ii=icomp(i)
               ie=iele1(ii)
               ie1=iele1(i)
               do j=1,nvar

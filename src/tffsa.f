@@ -243,7 +243,7 @@ c      endif
       elseif(word(1:1) .eq. '!')then
         go to 2
       endif
-      call cssets(0)
+      ios=0
 c      write(*,*)'tffsa-tfprint ',word(1:lenw(word))
       call tfprint(word,lfno,.false.,itt,nextt,exist)
 c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
@@ -288,7 +288,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
         endif
         nrpt(levelr)=max(1,nrpt1)
         irptp(levelr)=ipoint
-        call cssetrec(.true.)
+        rec=.true.
         go to 10
       endif
       call tfif(word,iflevel,lfno,exist)
@@ -324,7 +324,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
         go to 9000
       endif
       if(init)then
-        call cssets(0)
+        ios=0
         go to 2
       endif
       if(exist)then
@@ -687,20 +687,20 @@ C     23/06/92 212101550  MEMBER NAME  TRCOD    *.FORT     M  E2FORT
             go to 12
          endif
       else if(abbrev(word,'PUSHS_EED ','_'))then
-         call tfevalb('NISTACK$OBJ@Push[]',18,kx,irtc)
+         call tfevalb('NISTACK$OBJ@Push[]',kx,irtc)
          go to 10
       else if(abbrev(word,'POPS_EED ','_'))then
-         call tfevalb('NISTACK$OBJ@Pop[]',17,kx,irtc)
+         call tfevalb('NISTACK$OBJ@Pop[]',kx,irtc)
          go to 10
       else if(abbrev(word,'EXCGS_EED ','_'))then
-         call tfevalb('NISTACK$OBJ@Exchange[]',22,kx,irtc)
+         call tfevalb('NISTACK$OBJ@Exchange[]',kx,irtc)
          go to 10
       else if(abbrev(word,'PEEKS_EED ','_') .OR.
      &        abbrev(word,'PKS_EED','_')        )then
          call tfgeti(i,1.d0,word,lfno,exist)
          if( .not. exist) i=0
          write(word,'(A,I12,A)')'NISTACK$OBJ@Peek[',i,']'
-         call tfevalb(word,len_trim(word),kx,irtc)
+         call tfevalb(word,kx,irtc)
          go to 31
       else if(abbrev(word,'DELW_AVE ','_')) then
 c    syntax DELWave wave_length, amplitude, initial_phase,
@@ -888,7 +888,7 @@ c        flv%rsconv=rlist(ktlookup('CONVERGENCE'))
         go to 10
       elseif(word .eq. 'DRAW')then
         call tfsetparam
-        call tfevalb('CANVASDRAW[]',12,kx,irtc)
+        call tfevalb('CANVASDRAW[]',kx,irtc)
 c        call tfdebugprint(kx,'CANVASDRAW[]',1)
         if(irtc .ne. 0 .or. ktfnonstringq(kx))then
 c          title=Tfgetstrv('TITLE')
@@ -1179,7 +1179,7 @@ ckiku   call tfstr(word,latt,ist,nstr)
       if(word .eq. 'WAKE')then
         lfnl0=lfn1
         lfn1=lfno
-        call tfevalb('WAKECOMMAND[]',13,kx,irtc)
+        call tfevalb('WAKECOMMAND[]',kx,irtc)
         lfn1=lfnl0
         if(irtc .ne. 0 .or. kx .ne. ktftrue)then
           go to 2
@@ -1357,10 +1357,8 @@ c      if(lfni .gt. 100)then
 c        write(*,*)'tffsa-adjvar ',lfni,ipoint,lrecl,ios
 c      endif
       else
-        if(.not. expndc)then
-          call termes(lfno,
+        call termes(lfno,
      $         'Info-Element values are not expanded.',' ')
-        endif
       endif
       if(fitflg)then
         call tmov(rlist(ifvalvar),rlist(ifvalvar+nve),flv%nvar)
@@ -1445,7 +1443,7 @@ c      call tfevalb('Setup$FF[];Print["setupff ",FF$Orig]',36,kx,irtc)
 c      if(lfni .gt. 100)then
 c        write(*,*)'tffsa-evalb ',lfni,ipoint,lrecl,ios
 c      endif
-      call tfevalb('Setup$FF[]',10,kx,irtc)
+      call tfevalb('Setup$FF[]',kx,irtc)
 c      if(lfni .gt. 100)then
 c        write(*,*)'tffsa-match-0 ',lfni,ipoint,lrecl,ios
 c      endif
@@ -1465,13 +1463,13 @@ c      endif
         call tmunmapp(flv%iut)
         go to 8810
       endif
-      call tfevalb('Reset$FF[]',10,kx,irtc)
+      call tfevalb('Reset$FF[]',kx,irtc)
       nqcol=nqcol-int(rfromk(kx))
       flv%nfc=nfc0
       call tfshow(cellstab,df,mfpnt,mfpnt1,
      $     kffs,irtcffs,lfnb .gt. 1,lfno)
       call tmunmapp(flv%iut)
-      call tffsclearcouple(iele2)
+      call tffsclearcouple(kele2)
       if(cell)then
         str=' '
         do i=nfam1,nfam
@@ -1554,13 +1552,13 @@ c      endif
       endif
       LOOP_I: do i=2,nlat-1
         do j=1,nvar
-          if(ivarele(j) .eq. iele1(iele(i)))then
+          if(ivarele(j) .eq. iele1(icomp(i)))then
             itwissp(i)=1
             itwissp(i+1)=1
             cycle LOOP_I
           endif
         enddo
-        if(iele2(i) .ne. 0)then
+        if(kele2(i) .ne. 0)then
           itwissp(i)=1
           itwissp(i+1)=1
         endif
@@ -1771,27 +1769,27 @@ c            call tclr(uini(1,0),28)
       return
       end
 
-      subroutine tffsclearcouple(iele2)
+      subroutine tffsclearcouple(kele2)
       use tfstk
       use ffs
       use tffitcode
       implicit none
-      integer*8 iele2(nlat)
+      integer*8 kele2(nlat)
       integer*4 i
       do i=1,nlat-1
-        if(iele2(i) .ne. 0)then
-          call tfree(iele2(i))
-          iele2(i)=0
+        if(kele2(i) .ne. 0)then
+          call tfree(kele2(i))
+          kele2(i)=0
         endif
       enddo
-      iele2(nlat)=0
+      kele2(nlat)=0
       return
       end
 
       subroutine tffssetupcouple(lfno)
       use tfstk
       use ffs
-      use ffs_pointer, only: iele2
+      use ffs_pointer, only: kele2
       use tffitcode
       implicit none
       type (sad_dlist), pointer :: klx,kli
@@ -1803,7 +1801,7 @@ c            call tclr(uini(1,0),28)
       type (sad_descriptor) kx,ki,kk,ke
       type (sad_descriptor) , save :: itfelv,itfcoupk
       data itfelv%k,itfcoupk%k /0,0/
-      iele2(1:nlat)=0
+      kele2(1:nlat)=0
       if(itfelv%k .eq. 0)then
         itfelv=kxsymbolz('`ElementValues',14)
         itfcoupk=kxsymbolz('`CoupledKeys',12)
@@ -1848,12 +1846,12 @@ c            write(*,*)'setupcouple ',j,ik,key(1:10)
             if(ik .lt. 0)then
               do k=1,nlat-1
                 if(ilist(k,ifele1) .eq. -ie)then
-                  iet=iele2(k)
+                  iet=kele2(k)
 c                  iet=klist(ifele2+k-1)
                   if(iet .eq. 0)then
                     iet=ktaloc(m+1)
                     ilist(1,iet)=0
-                    iele2(k)=iet
+                    kele2(k)=iet
 c                    klist(ifele2+k-1)=iet
                   endif
                   nk=ilist(1,iet)+1
@@ -1861,24 +1859,24 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
                   ilist(1,iet+nk)=i
                   ilist(2,iet+nk)=-ik
                   ilist(1,iet)=nk
-                  iele2(nlat)=1
+                  kele2(nlat)=1
 c                  klist(ifele2+nlat-1)=1
                 endif
               enddo
             elseif(ik .gt. 0)then
-              iet=iele2(ie)
+              iet=kele2(ie)
 c              iet=klist(ifele2+ie-1)
               if(iet .eq. 0)then
                 iet=ktaloc(m+1)
                 ilist(1,iet)=0
-                iele2(ie)=iet
+                kele2(ie)=iet
 c                klist(ifele2+ie-1)=iet
               endif
               nk=ilist(1,iet)+1
               ilist(1,iet+nk)=i
               ilist(2,iet+nk)=ik
               ilist(1,iet)=nk
-              iele2(nlat)=1
+              kele2(nlat)=1
 c              klist(ifele2+nlat-1)=1
             endif
           enddo

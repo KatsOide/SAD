@@ -58,6 +58,7 @@
 
       integer*4 function itfgetlfn(isp1,read,irtc) result(iv)
       use tfstk
+      use tfrbuf
       use tfcsi
       implicit none
       type (sad_descriptor) k
@@ -268,8 +269,8 @@ c      enddo
       type (sad_symdef), pointer ::symd
       type (sad_dlist), pointer :: klh,kli,klx
       integer*8 ii,ka0,kadi,kad,ka
-      integer*4 isp1,irtc,i,isp00,isp0,kk,iop,ispv,icomp
-      icomp=0
+      integer*4 isp1,irtc,i,isp00,isp0,kk,iop,ispv,icmpl
+      icmpl=0
       call tfgetoption('Compiled',ktastk(isp),kx,irtc)
       if(irtc .eq. -1)then
         ispv=isp
@@ -277,7 +278,7 @@ c      enddo
         return
       elseif(ktfrealq(kx))then
         if(kx%k .ne. 0)then
-          icomp=1
+          icmpl=1
         endif
         ispv=isp-1
       else
@@ -324,8 +325,8 @@ c      enddo
                     isp=isp+1
                     dtastk(isp)=kxadaloc(-1,2,kli)
                     kli%head%k=ktfoper+iop
-                    kli%dbody(1)=dtfcopy1(dlist(kadi+3+icomp))
-                    kli%dbody(2)=dtfcopy(dlist(kadi+5+icomp))
+                    kli%dbody(1)=dtfcopy1(dlist(kadi+3+icmpl))
+                    kli%dbody(2)=dtfcopy(dlist(kadi+5+icmpl))
                     if(kli%dbody(2)%k .eq. ktfref)then
                       kli%dbody(2)=dtfcopy(dlist(kadi+6))
                     endif
@@ -336,8 +337,8 @@ c      enddo
                 isp=isp+1
                 dtastk(isp)=kxadaloc(-1,2,kli)
                 kli%head%k=ktfoper+iop
-                kli%dbody(1)=dtfcopy1(dlist(kad+3+icomp))
-                kli%dbody(2)=dtfcopy(dlist(kad+5+icomp))
+                kli%dbody(1)=dtfcopy1(dlist(kad+3+icmpl))
+                kli%dbody(2)=dtfcopy(dlist(kad+5+icmpl))
                 if(kli%dbody(2)%k .eq. ktfref)then
                   kli%dbody(2)=dtfcopy(dlist(kad+6))
                 endif
@@ -427,9 +428,10 @@ c      call tfdebugprint(k,'tfget',1)
       use tfrbuf
       use tfcsi
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) , intent(out)::kx
       type (csiparam) sav
-      integer*4 itfgeto,itf,lfn
+      integer*4 , intent(in)::lfn
+      integer*4 itfgeto,itf
       logical*4 openf
       if(lfn .le. 0)then
         kx%k=kxeof
@@ -442,15 +444,16 @@ c      call tfdebugprint(k,'tfget',1)
         lfn1=0
       endif
       levele=levele+1
- 1    itf=itfgeto(kx)
+      itf=-1
+      ios=0
+      do while (itf .eq. -1 .and. ios .eq. 0)
+        itf=itfgeto(kx)
+        if(itf .eq. -1)then
+          call tprmptget(-1,.true.)
+        endif
+      enddo
       if(itf .lt. 0)then
         kx%k=ktfoper+mtfnull
-        if(itf .eq. -1)then
-          call tprmptget(-1)
-          if(ios .eq. 0)then
-            go to 1
-          endif
-        endif
       endif
       if(ios .ne. 0)then
         ios=0
@@ -764,12 +767,12 @@ c          enddo
       implicit none
       type (sad_descriptor) kx
       type (csiparam) sav
-      integer*4 is,ie
+      integer*4 ie,is
       integer*4 irtc,lfn,isw,next,nc1,nc
       logical*4 char1,fb
       type (ropt) opts
       irtc=0
-      if(lfn .le. 0)then
+      if(lfn .le. 0 .or. ibuf(lfn) .eq. 0)then
         kx%k=kxeof
         return
       endif
@@ -779,62 +782,65 @@ c          enddo
         call trbassign(lfn)
       endif
       fb=itbuf(lfn) .lt. modestring
- 20   nc=itrbgetpoint(lfn,is)
-c      write(*,*)'tfreadstring ',lfn,ib,is,nc,fb
- 10   if(nc .lt. 0)then
-        if(.not. fb .or. lfn .ne. lfni)then
-          call tfreadbuf(lfn,1,nc)
-          if(nc .ge. 0)then
-            go to 20
+      nc=sign(abs(lrecl-ipoint)+1,lrecl-ipoint)
+      is=ipoint
+c      write(*,*)'tfreadstr ',lfn,nc,ipoint
+      do while (.true.)
+        if(nc .lt. 0)then
+          if(.not. fb .or. lfn .ne. lfni)then
+            call tfreadbuf(lfn,1,nc)
+            if(nc .lt. 0)then
+              go to 101
+            endif
           else
-            go to 101
-          endif
-        else
-          do while (nc .le. 0)
             if(opts%new)then
-              call tprmptget(-1)
-              if(ios .ne. 0)then
-                go to 101
-              endif
-              nc=igetrecl()
+              do while (nc .lt. 0)
+                call tprmptget(-1,.false.)
+                if(ios .ne. 0)then
+                  go to 101
+                endif
+                nc=max(0,lrecl-ipoint)
+              enddo
             else
               nc=0
               go to 1
             endif
-          enddo
-        endif
-        is=ipoint
-      endif
-      if(nc .eq. 0)then
-        if(opts%new)then
-          if((opts%ndel .gt. 0 .and. .not. opts%null) .or. char1)then
-            nc=-1
-            go to 10
           endif
-          call trbeor2bor(lfn)
         endif
-        kx=dxnulls
-        go to 1000
-      endif
-      if(char1)then
-        nc1=1
-        next=2
-      elseif(opts%ndel .gt. 0)then
-        call tfword(buffer(is:is+nc-1),opts%delim(1:opts%ndel),
-     $       isw,nc1,next,opts%null)
-        if(nc1 .le. 0 .and. .not. opts%null)then
+        if(nc .eq. 0)then
           if(opts%new)then
-            nc=-1
-            go to 10
-          else
-            nc1=0
-            next=nc+1
+            if((opts%ndel .gt. 0 .and. .not. opts%null) .or. char1)then
+              nc=-1
+              cycle
+            endif
+            call trbeor2bor(lfn)
           endif
+          kx=dxnulls
+          go to 1000
         endif
-      else
-        nc1=nc
-        next=nc+1
-      endif
+        if(char1)then
+          nc1=1
+          next=2
+        elseif(opts%ndel .gt. 0)then
+          call tfword(buffer(ipoint:ipoint+nc-1),
+     $         opts%delim(1:opts%ndel),
+     $         isw,nc1,next,opts%null)
+          if(nc1 .le. 0 .and. .not. opts%null)then
+            if(opts%new)then
+              nc=-1
+              cycle
+            else
+              nc1=0
+              next=nc+1
+            endif
+          endif
+        else
+          nc1=nc
+          next=nc+1
+        endif
+        exit
+      enddo
+      is=ipoint
       if(opts%new .and. next .gt. nc)then
         call trbnextl(lfn)
       else
@@ -1018,7 +1024,7 @@ c      write(*,*)'tfreadstring ',lfn,ib,is,nc,fb
         kx%k=ktfoper+mtfnull
         return
       endif
-      call tfevalb(str%str(1:nc),nc,kx,irtc)
+      call tfevalb(str%str(1:nc),kx,irtc)
       return
       end
 
@@ -1143,14 +1149,12 @@ c     $     nc+15,itx,iax,vx,irtc)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_descriptor), save :: ntable(1000)
       integer*4 , parameter :: llbuf=1024
       integer*4 irtc,nc,system,itfsyserr,lw,ir,i,m
       integer*4 l
       character post
       character*(*) cmd
       character*(llbuf) buff,tfgetstr
-      data ntable(:)%k /1000*0/
       l=nextfn(moderead)
       if(ntable(l)%k .eq. 0)then
         call tftemporaryname(isp,kx,irtc)

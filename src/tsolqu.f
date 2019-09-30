@@ -216,11 +216,12 @@ c          endif
      $     bz0,ak0x,ak0y,eps0,alr)
       use tsolz
       use tspin
-      use ffs_flag, only:ndivrad
+      use ffs_flag, only:ndivrad,photons
+      use photontable,only:tgswap,tsetphotongeo
       use mathfun
       implicit none
       type (tzparam) tz
-      integer*4 np,i,n,ndiv
+      integer*4 np,i,n,ndiv,l
       real*8 , parameter ::smax=0.99d0
       integer*4 , parameter :: ndivmax=1000
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),
@@ -254,9 +255,15 @@ c          endif
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
       if(ak*al .lt. 0.d0)then
+        if(photons)then
+          call tgswap(l)
+        endif
         call tsolqur(np,y,py,x,px,z,gp,dv,sy,sx,sz,
      $       py0,px0,zr0,bsi,al,-ak,
      $       -bz0,-ak0y,-ak0x,eps0,alr)
+        if(photons)then
+          call tgswap(l)
+        endif
         return
       endif
       bz=bz0
@@ -320,13 +327,14 @@ c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
             endif
           enddo
           alr=aln
-c          if(n .ne. ndiv)then
-            call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,
-     $           px0,py0,zr0,1.d0,0.d0,bsi,alr)
-            px0=px
-            py0=py
-            zr0=z
-c          endif
+          if(photons)then
+            call tsetphotongeo(alr,0.d0,0.d0,.false.)
+          endif
+          call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,
+     $         px0,py0,zr0,1.d0,0.d0,bsi,alr)
+          px0=px
+          py0=py
+          zr0=z
         enddo
         do i=1,np
           ap=min(smax,px(i)**2+py(i)**2)
@@ -412,13 +420,14 @@ c            endif
             endif
           enddo
           alr=aln
-c          if(n .ne. ndiv)then
-            call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,
-     $           px0,py0,zr0,1.d0,0.d0,bsi,alr)
-            px0=px
-            py0=py
-            zr0=z
-c          endif
+          if(photons)then
+            call tsetphotongeo(alr,0.d0,0.d0,.false.)
+          endif
+          call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,
+     $         px0,py0,zr0,1.d0,0.d0,bsi,alr)
+          px0=px
+          py0=py
+          zr0=z
         enddo
         do i=1,np
           ap=min(smax,px(i)**2+py(i)**2)

@@ -11,6 +11,7 @@
       use ffs_flag
       use tmacro
       use tspin
+      use photontable,only:tsetphotongeo
       use mathfun
 c      use ffs_pointer, only:inext,iprev
       implicit none
@@ -81,7 +82,7 @@ c      parameter (oneev=1.d0+3.83d-12)
       if(phia .ne. 0.d0)then
         call tmulta(
      $       np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       l,al,ak,phia,
+     $       al,ak,phia,
      $       psi1,psi2,bz,
      1       dx,dy,theta,dtheta,
      $       eps0,enarad,fb1,fb2,mfring,fringe)
@@ -265,12 +266,11 @@ c     $     x(np),px(np),y(np),py(np),z(np),g(np)
       enddo
       if(vc .ne. 0.d0 .or. spac)then
         nmmax=0
-        go to 1
       else
         call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
      $       al,bzs,dble(akr(0)),imag(akr(0)),krad)
+        go to 1000
       endif
-      go to 1000
  1    cr=cr1*rtaper
 c     Zero-clear akr(1) for case: nmmax .eq. 0
       akr(1)=0.d0
@@ -451,6 +451,13 @@ c        vnominal=0.d0
                 bsi(i)=bsi(i)+imag(cx)/al
               enddo
             endif
+            if(photons)then
+              if(m .eq. 1)then
+                call tsetphotongeo(al1,0.d0,theta,.true.)
+              else
+                call tsetphotongeo(al1,0.d0,0.d0,.false.)
+              endif
+            endif
             call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           pxr0,pyr0,zr0,1.d0,0.d0,bsi,al1)
             pxr0=px
@@ -599,6 +606,9 @@ c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
             cx=.5d0*cx*cx1**2
             bsi(i)=bsi(i)-imag(cx)/al
           enddo
+          if(photons)then
+            call tsetphotongeo(al1,0.d0,0.d0,.false.)
+          endif
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         pxr0,pyr0,zr0,1.d0,0.d0,bsi,al1)
         endif

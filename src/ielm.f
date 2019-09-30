@@ -25,7 +25,7 @@
       lw=len_trim(word)
       if(lw .gt. 0)then
         if(word(1:1) .ne. "^")then
-          call tfevalb(word,len_trim(word),kx,irtc)
+          call tfevalb(word,kx,irtc)
           ierrorprint=iep
           if(irtc .eq. 0 .and. ktfrealq(kx,v))then
             if(v .ge. 0.d0)then
@@ -67,7 +67,7 @@
       character*64 ordw
       character*(MAXPNAME) name
       real*8 frac
-      integer*4 ioff,m,ipm, irtc,idot,ielmh,ist1
+      integer*4 ioff,m,ipm, irtc,idot,ielmh
       logical*4 exist
       lw=len_trim(word)
       idot=index(word(1:lw),'.')
@@ -93,8 +93,7 @@
           else
             ordw=word(idot+1:lw)
           endif
-          ist1=1
-          call tfeval(ordw,lenw(ordw),ist1,m,kx,.false.,irtc)
+          call tfeval(ordw,1,m,kx,.false.,irtc)
           iord=int(rfromd(kx))
           if(irtc .ne. 0 .or. ktfnonrealq(kx))then
             if(irtc .gt. 0 .and. ierrorprint .ne. 0)then

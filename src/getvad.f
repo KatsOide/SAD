@@ -35,10 +35,10 @@
       integer*4 irtype,itfpeeko,next
       irtype=itfpeeko(kx,next)
       if(irtype .eq. 0 .and. ktfrealq(kx,getval))then
-        call cssetp(next)
+        ipoint=next
       else
         getval=0.d0
-        call cssets(-2)
+        ios=-2
       endif
       return
       end

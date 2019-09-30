@@ -11,7 +11,7 @@
         return
       endif
       m=0
-      call tfeval(buffer(1:lrecl),lrecl,ipoint,m,kx,.true.,irtc)
+      call tfeval(buffer(1:lrecl),ipoint,m,kx,.true.,irtc)
 c      if(lfni .lt. 100)then
 c        call tfdebugprint(kx,'itfgeto',3)
 c        write(*,*)'with ',lfni,irtc,ipoint,lrecl,m

@@ -7,7 +7,7 @@
       add=.false.
 1     call peekwd(word,next)
       if(abbrev(word,'R_ANDOM','_'))then
-        call cssetp(next)
+        ipoint=next
         r=getva(exist)
         if(.not. exist)then
           call termes(lfno,'?Missing value for DBUNCH R_ANDOM.',' ')
@@ -25,7 +25,7 @@
           enddo
         endif
       elseif(abbrev(word,'A_DD','_'))then
-        call cssetp(next)
+        ipoint=next
         add=.true.
         go to 1
       else

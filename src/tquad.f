@@ -5,6 +5,7 @@
       use tmacro
 c      use ffs_pointer, only:inext,iprev
       use tfstk, only:ktfenanq
+      use photontable,only:tsetphotongeo
       use mathfun, only:pxy2dpz,sqrt1
       use tspin
       implicit none
@@ -53,6 +54,9 @@ c          p=(1.d0+g(i))**2
 2110    continue
       endif
       if(enarad)then
+        if(photons)then
+          call tsetphotongeo(0.d0,0.d0,theta,.true.)
+        endif
         if(f1in .ne. 0.d0)then
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         px0,py0,zr0,1.d0,0.d0,bsi,f1in)
@@ -88,6 +92,9 @@ c          p=(1.d0+g(i))**2
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
       endif
       if(enarad .and. f1out .ne. 0.d0)then
+        if(photons)then
+          call tsetphotongeo(0.d0,0.d0,0.d0,.false.)
+        endif
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       px0,py0,zr0,1.d0,0.d0,bsi,f1out)
       endif
@@ -350,7 +357,7 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
       return
       end
 c
-      subroutine tthinrad(np,x,px,y,py,z,g,dv,sx,sy,sz,nord,l,al,ak,
+      subroutine tthinrad(np,x,px,y,py,z,g,dv,sx,sy,sz,nord,al,ak,
      1                 dx,dy,theta,cost,sint,fringe)
       use ffs_flag
       use tmacro
@@ -360,7 +367,7 @@ c
       parameter (nmult=21)
       real*8 ampmax,eps00
       parameter (ampmax=0.05d0,eps00=0.005d0,ndivmax=1000)
-      integer*4 l,np,i,kord,ndiv,nord
+      integer*4 np,i,kord,ndiv,nord
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
      $     sx(np),sy(np),sz(np)
       real*8 fact(0:nmult)
@@ -416,10 +423,10 @@ c        delp=g(i)*(2.d0+g(i))
           if((tran()-.5d0)*3.46410161513775461d0 .gt. .5d0-prob)then
             bya=-dpx*brhoz/al1
             bxa= dpy*brhoz/al1
-            call tsynchrad(pr,alr,bxa,bya,
-     $           dprad,dpradx,dprady,
-     $           i,l,alsum,-al0,0.d0,theta,
-     $           x(i),y(i),px(i),py(i))
+c            call tsynchrad(pr,alr,bxa,bya,
+c     $           dprad,dpradx,dprady,
+c     $           i,l,alsum,-al0,0.d0,theta,
+c     $           x(i),y(i),px(i),py(i))
             px(i)=px(i)-dpradx
             py(i)=py(i)-dprady
           else
