@@ -9,7 +9,7 @@ FFSCanvasDraw=Class[{},{},{},
     1,
     Module[{w,r1=1,r2=LINE["LENGTH"],list,w1,opt,w1u},
       w=Read[-1,Word,ReadNewRecord->False];
-!      Print["CD: ",w];
+!      System`Print["CD: ",w];
       If[ToUpperCase[w]==="DRAW",
         w=Read[-1,Word,ReadNewRecord->False]];
       If[w<=>"",
@@ -27,7 +27,7 @@ FFSCanvasDraw=Class[{},{},{},
         If[w1<=>"&",Break[]];
         Table[
           {w1,w}=SeparateAmpsnd[w];
-!      Print["CANVDR: ",{w1,w}];
+!      System`Print["CANVDR: ",{w1,w}];
           Switch[w1,
             "",
             If[w=="",w=ToUpperCase[Read[-1,Word,ReadNewRecord->False]];
