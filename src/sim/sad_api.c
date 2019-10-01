@@ -94,15 +94,13 @@ integer8 ktsalocbcstrs_(integer4 *mode, const char **str, integer4 *index) {
 }
 
 /* Wrapper function for SAD internal API */
-void tfreadbuf(integer4 icmd, integer4 lfn, integer4 *ib, integer4 *is,
-	       const char *buff) {
-  integer4 nc = strlen(buff);
-  if(nc > 0) {
-    tfreadbuf_(&icmd, &lfn, ib, is, &nc, buff, nc);
-  } else {
-    tfreadbuf_(&icmd, &lfn, ib, is, &nc, " ", 1);
+void tfreadbuf(integer4 lfn, integer4 *ib, integer4 *nc) {
+   tfreadbuf_(&lfn, ib, nc);
   }
-}
+
+void trbinit(integer4 lfn, integer4 *ib) {
+   __tfrbuf_MOD_trbinit(&lfn, ib);
+  }
 
 integer8 kfromr_(real8 *x){
   return kfromr(*x);
@@ -187,13 +185,13 @@ void tfevals(const char *buf,
 	     integer8 *kx, integer4 *irtc) {
   integer4 length = strlen(buf);
 
-  tfevalb_(buf, &length, kx, irtc, length);
+  tfevalb_(buf, &length, kx, irtc);
 }
 
 void tfevalc(const char *buf) {
   integer4 length = strlen(buf);
 
-  tfevalc_(buf, &length, length);
+  tfevalc_(buf, &length);
 }
 
 void tfdeval(integer4 isp1, integer8 iad,

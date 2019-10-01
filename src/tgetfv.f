@@ -6,7 +6,7 @@
       use ffs_pointer
       use ffs_fit
       use tffitcode
-      use tfcsi,only:cssetp
+      use tfcsi,only:ipoint
       implicit none
       integer*4 nfc,lfno,i,l,lenw,ix2,kp,j,next,ncalc
       real*8 sc,x1,x,getva
@@ -56,18 +56,18 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
  11       continue
           ch=peekch(next)
           if(peekch(next) .eq. ':')then
-            call cssetp(next)
+            ipoint=next
             sc=1.d0
             go to 11
           elseif(ch .eq. '*')then
-            call cssetp(next)
+            ipoint=next
             word='*'
             x1=1.d0
           elseif(ch .eq. '@')then
-            call cssetp(next)
+            ipoint=next
             ch=peekch(next)
             if(ch .eq. '-')then
-              call cssetp(next)
+              ipoint=next
               word='@-'
             else
               word='@'

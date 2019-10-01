@@ -1,11 +1,13 @@
+      module tracklim
+      real*8, parameter ::plimit=0.9d0,zlimit=1.d10,vmax=.9d0,
+     $     ampmax=0.9999d0
+      end module
+
       subroutine tturn(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n)
       use tfstk
       use tmacro
       use tspin
       implicit none
-      real*8 plimit,zlimit,vmax
-      parameter (plimit=0.9d0,zlimit=1.d10)
-      parameter (vmax=.9d0)
       integer*4 np,n,kptbl(np0,6)
       integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
@@ -25,13 +27,11 @@
       use sad_main
       use ffs_pointer, only:compelc
       use tspin
+      use tracklim
       implicit none
       type (ffs_bound) fbound
       type (sad_comp), pointer ::cmp
       type (sad_descriptor) :: dsave(kwMAX)
-      real*8 plimit,zlimit,vmax
-      parameter (plimit=0.9d0,zlimit=1.d10)
-      parameter (vmax=.9d0)
       integer*4 np,n,la,ls,nvar,lb,le
 c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
       real*8 pgev00
@@ -152,12 +152,11 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       use ffs_seg
       use tspin
       use mathfun
+      use tracklim
       implicit none
       integer*4 la1
       parameter (la1=15)
-      real*8 xlimit,plimit,zlimit,vmax,ampmax
-      parameter (plimit=0.9d0,zlimit=1.d10,ampmax=0.9999d0)
-      parameter (vmax=.9d0)
+      real*8 xlimit
       type (sad_comp), pointer:: cmp
       type (sad_dlist) , pointer ::lsegp
       integer*4 np,n,la,lbegin,lend,kdx,kdy,krot
@@ -205,6 +204,7 @@ c      isb=ilist(2,iwakepold+6)
       call tsetdvfs
 c      call tfmemcheckprint('tturn',0,.false.,irtc)
       do l=lbegin,lend
+        l_track=l
 c        if(mod(l,10) .eq. 0)then
 c          write(*,*)'tturn1 ',l
 c        endif
@@ -299,7 +299,7 @@ c     $              +l-1),
          if(spac)then
            call spdrift_free(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $          cmp%value(ky_L_DRFT),
-     $          cmp%value(ky_RADI_DRFT),n,l,latt,kptbl)
+     $          cmp%value(ky_RADI_DRFT),n,latt,kptbl)
          else
            if(cmp%value(ky_KIN_DRFT) .eq. 0.d0)then
              do i=1,np
@@ -339,7 +339,7 @@ c     $              +l-1),
          endif
          
          call tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $        l,cmp%value(p_L_BEND),ak0,
+     $        cmp%value(p_L_BEND),ak0,
      $        cmp%value(ky_ANGL_BEND),
      1        cmp%value(p_COSPSI1_BEND),cmp%value(p_SINPSI1_BEND),
      1        cmp%value(p_COSPSI2_BEND),cmp%value(p_SINPSI2_BEND),

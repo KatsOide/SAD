@@ -39,7 +39,7 @@ Widgets=Join[
   {Menu},						(* tkMenu.c *)
   {OptionMenu},						(* optMenu.tcl *)
   Null[]];
-Clear[X,Y,In,FG,BD];
+!Clear[X,Y,FG,BD];
 Focus$Set=Focus;
 SetAttributes[Focus$Set,Constant];
 

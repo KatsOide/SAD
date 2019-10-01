@@ -1,10 +1,10 @@
-(* init.n 3/14/2019 *)
+(* init.n 8/14/2019 *)
 SetAttributes[{Constant,HoldFirst,HoldAll,HoldRest,HoldNone},Constant];
 HoldPattern=Literal;
 SetAttributes[{Literal,HoldPattern},{HoldAll,Constant}];
 
 SetAttributes[{Real,String,BuiltinFunction,
-  Word,Expression,WordSeparator,ReadNewRecord,
+  Word,Expression,WordSeparators,ReadNewRecord,
   NullWords,EndOfFile,$Failed,FormatType,
   InputForm,HoldForm,GenericSymbolForm,
   Automatic,Default,
@@ -15,7 +15,8 @@ SetAttributes[{Real,String,BuiltinFunction,
 SetAttributes[{True,False,I,NaN,INF,Infinity,Pi,E,EulerGamma,
   SpeedOfLight,SIMu0,MKSAMu0,SIEpsilon0,MKSAEpsilon0,
   ElectronCharge,FineStructureConstant,
-  ElectronMass,ElectronRadius,ProtonMass,ProtonRadius},
+  ElectronMass,ElectronRadius,ProtonMass,ProtonRadius,
+  PlanckConstant,PlanckHbar,BoltzmannConstant,ElectronGminus2over2},
   Constant];
 
 GoldenRatio=(1+Sqrt[5])/2;
@@ -307,7 +308,7 @@ Close[`l_List]:=Scan[Close,Flatten[l]];
 Put[x__,file_String]:=With[{f=OpenWrite[file]},
   Scan[Write[f,#]&,{x}];
   Close[f]];
-SetAttributes[Close,Put,Constant];
+SetAttributes[{Close,Put},Constant];
 
 Shared[`n_Real]:=ReadShared[`n];
 (Shared[n_]=`v_)^:=WriteShared[n,v];
@@ -496,7 +497,8 @@ DateString$::use="Use DateString[] instead of DateString.";
 f_?(Switch[#,FFSFlag|Definition|Unprotect|Clear|SetDelayed,False,_,True]&)[a___,DateString,b___]^:=((* Message[DateString$::use];*)f[a,DateString$[],b]);
 DateString[x___]:=DateString$[x];
 SetAttributes[{DateString},Constant];
-TimeZoneOffset = +540;	(* SAD Default TimeZone: Asia/Tokyo[JST] *)
+
+TimeZoneOffset = +540; (* SAD Default TimeZone: Asia/Tokyo[JST] *)
 (TimeZoneOffset = tz_) ^:= SetTimeZone[tz];
 TimeZoneOffset = 
   Module[{f=OpenRead["!date +\\\"%z\\\""],s},
@@ -533,9 +535,10 @@ UnbufferedIOQ[] := Module[{`in, `out, l`out, `lin, `s},
   If[lout === lin && SelectUnit[in, 0] == 0 && Read[in, String] === EndOfFile,
     Close[in]; True, Close[in]; False]];
 Protect[BinaryIOQ,UnbufferedIOQ];
+
 (* BidirectionalPipe *)
 If[Not[FBoundQ$[BidirectionalPipe]],
-BDPipe[`argv___] = BidirectionalPipe[argv];	(* Alias *)
+BDPipe[`argv___] = BidirectionalPipe[argv]; (* Alias *)
 BidirectionalPipe[`cmd_String, `argv___String,
   `opt:((_Rule|_RuleDelayed)...)] := BidirectionalPipe[cmd, {argv}, opt];
 BidirectionalPipe[`cmd_String, {`argv___String},
@@ -569,6 +572,7 @@ BidirectionalPipe[`cmd_String, {`argv___String},
     {p2[[1]], p1[[2]]}];
 Protect[BidirectionalPipe, BDPipe];
 ]; (* Not[FBoundQ$[BidirectionalPipe]] *)
+
 SetAttributes[{BoundQ, FBoundQ}, HoldFirst];
 BoundQ[s_] :=  FBoundQ$[s] || Depth[?s] < 4 ||
   With[{def = List@@Hold/@First[Hold@@[?s, {1}]]},
@@ -695,4 +699,5 @@ AutoLoad[LifeTrack,PackagesDirectory//"LifeTrack.n"];
 AutoLoad[CSR,CSRStability,PackagesDirectory//"CSR.n"];
 AutoLoad[WAKECOMMAND,PackagesDirectory//"WAKECOMMAND.n"];
 AutoLoad[LaTeX,PackagesDirectory//"latex.n"];
+AutoLoad[BBBrem,PackagesDirectory//"bbbrem.n"];
 ! End of File

@@ -53,6 +53,18 @@ c     end   initialize for preventing compiler warning
         elseif(kf .eq. mfitpepy)then
           tphysdisp=cc*utwiss1(mfitepy)
      $         -r3*utwiss1(mfitex)-r4*utwiss1(mfitepx)
+        elseif(kf .eq. mfitpzx)then
+          tphysdisp=cc*utwiss1(mfitzx)
+     $         +r4*utwiss1(mfitzy)-r2*utwiss1(mfitzpy)
+        elseif(kf .eq. mfitpzpx)then
+          tphysdisp=cc*utwiss1(mfitzpx)
+     $         -r3*utwiss1(mfitzy)+r1*utwiss1(mfitzpy)
+        elseif(kf .eq. mfitpzy)then
+          tphysdisp=cc*utwiss1(mfitzy)
+     $         -r1*utwiss1(mfitzx)-r2*utwiss1(mfitzpx)
+        elseif(kf .eq. mfitpzpy)then
+          tphysdisp=cc*utwiss1(mfitzpy)
+     $         -r3*utwiss1(mfitzx)-r4*utwiss1(mfitzpx)
         endif
       else
         if(kf .eq. mfitpex)then
@@ -67,52 +79,17 @@ c     end   initialize for preventing compiler warning
         elseif(kf .eq. mfitpepy)then
           tphysdisp=cc*utwiss1(mfitepx)
      $         -r3*utwiss1(mfitey)+r1*utwiss1(mfitepy)
-        endif
-      endif
-      return
-      end
-
-      real*8 function tphysdispz(kf,utwiss1)
-      use ffs
-      use tffitcode
-      implicit none
-      integer*4 kf
-      real*8 utwiss1(ntwissfun),cc,r1,r2,r3,r4,detr
-c     begin initialize for preventing compiler warning
-      tphysdispz=0.d0
-c     end   initialize for preventing compiler warning
-      r1=utwiss1(mfitr1)
-      r2=utwiss1(mfitr2)
-      r3=utwiss1(mfitr3)
-      r4=utwiss1(mfitr4)
-      detr=r1*r4-r2*r3
-      cc=sqrt(1.d0-detr)
-      if(utwiss1(mfitdetr) .lt. 1.d0)then
-        if(kf .eq. mfitpzx)then
-          tphysdispz=cc*utwiss1(mfitzx)
-     $         +r4*utwiss1(mfitzy)-r2*utwiss1(mfitzpy)
-        elseif(kf .eq. mfitpzpx)then
-          tphysdispz=cc*utwiss1(mfitzpx)
-     $         -r3*utwiss1(mfitzy)+r1*utwiss1(mfitzpy)
-        elseif(kf .eq. mfitpzy)then
-          tphysdispz=cc*utwiss1(mfitzy)
-     $         -r1*utwiss1(mfitzx)-r2*utwiss1(mfitzpx)
-        elseif(kf .eq. mfitpzpy)then
-          tphysdispz=cc*utwiss1(mfitzpy)
-     $         -r3*utwiss1(mfitzx)-r4*utwiss1(mfitzpx)
-        endif
-      else
-        if(kf .eq. mfitpzx)then
-          tphysdispz=cc*utwiss1(mfitzy)
+        elseif(kf .eq. mfitpzx)then
+          tphysdisp=cc*utwiss1(mfitzy)
      $         -r1*utwiss1(mfitzx)-r2*utwiss1(mfitzpx)
         elseif(kf .eq. mfitpzpx)then
-          tphysdispz=cc*utwiss1(mfitzpy)
+          tphysdisp=cc*utwiss1(mfitzpy)
      $         -r3*utwiss1(mfitzx)-r4*utwiss1(mfitzpx)
         elseif(kf .eq. mfitpzy)then
-          tphysdispz=cc*utwiss1(mfitzx)
+          tphysdisp=cc*utwiss1(mfitzx)
      $         +r4*utwiss1(mfitzy)-r2*utwiss1(mfitzpy)
         elseif(kf .eq. mfitpzpy)then
-          tphysdispz=cc*utwiss1(mfitzpx)
+          tphysdisp=cc*utwiss1(mfitzpx)
      $         -r3*utwiss1(mfitzy)+r1*utwiss1(mfitzpy)
         endif
       endif
@@ -120,75 +97,91 @@ c     end   initialize for preventing compiler warning
       end
 
       subroutine tgetphysdisp(l,pe)
+      implicit none
+      integer*4 l
+      real*8 pe(4)
+      call tgetphysdispi(l,0,pe)
+      return
+      end
+
+      subroutine tgetphysdispi(l,icol,pe)
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 l
+      integer*4 l,icol
       real*8 pe(4)
       real*8 cc,r1,r2,r3,r4,detr
-      r1=twiss(l,0,mfitr1)
-      r2=twiss(l,0,mfitr2)
-      r3=twiss(l,0,mfitr3)
-      r4=twiss(l,0,mfitr4)
+      r1=twiss(l,icol,mfitr1)
+      r2=twiss(l,icol,mfitr2)
+      r3=twiss(l,icol,mfitr3)
+      r4=twiss(l,icol,mfitr4)
       detr=r1*r4-r2*r3
       cc=sqrt(1.d0-detr)
-      if(twiss(l,0,mfitdetr) .lt. 1.d0)then
-        pe(1)=cc*twiss(l,0,mfitex)
-     $       +r4*twiss(l,0,mfitey)-r2*twiss(l,0,mfitepy)
-        pe(2)=cc*twiss(l,0,mfitepx)
-     $       -r3*twiss(l,0,mfitey)+r1*twiss(l,0,mfitepy)
-        pe(3)=cc*twiss(l,0,mfitey)
-     $       -r1*twiss(l,0,mfitex)-r2*twiss(l,0,mfitepx)
-        pe(4)=cc*twiss(l,0,mfitepy)
-     $       -r3*twiss(l,0,mfitex)-r4*twiss(l,0,mfitepx)
+      if(twiss(l,icol,mfitdetr) .lt. 1.d0)then
+        pe(1)=cc*twiss(l,icol,mfitex)
+     $       +r4*twiss(l,icol,mfitey)-r2*twiss(l,icol,mfitepy)
+        pe(2)=cc*twiss(l,icol,mfitepx)
+     $       -r3*twiss(l,icol,mfitey)+r1*twiss(l,icol,mfitepy)
+        pe(3)=cc*twiss(l,icol,mfitey)
+     $       -r1*twiss(l,icol,mfitex)-r2*twiss(l,icol,mfitepx)
+        pe(4)=cc*twiss(l,icol,mfitepy)
+     $       -r3*twiss(l,icol,mfitex)-r4*twiss(l,icol,mfitepx)
       else
-        pe(1)=cc*twiss(l,0,mfitey)
-     $       -r1*twiss(l,0,mfitex)-r2*twiss(l,0,mfitepx)
-        pe(2)=cc*twiss(l,0,mfitepy)
-     $       -r3*twiss(l,0,mfitex)-r4*twiss(l,0,mfitepx)
-        pe(3)=cc*twiss(l,0,mfitex)
-     $       +r4*twiss(l,0,mfitey)-r2*twiss(l,0,mfitepy)
-        pe(4)=cc*twiss(l,0,mfitepx)
-     $       -r3*twiss(l,0,mfitey)+r1*twiss(l,0,mfitepy)
+        pe(1)=cc*twiss(l,icol,mfitey)
+     $       -r1*twiss(l,icol,mfitex)-r2*twiss(l,icol,mfitepx)
+        pe(2)=cc*twiss(l,icol,mfitepy)
+     $       -r3*twiss(l,icol,mfitex)-r4*twiss(l,icol,mfitepx)
+        pe(3)=cc*twiss(l,icol,mfitex)
+     $       +r4*twiss(l,icol,mfitey)-r2*twiss(l,icol,mfitepy)
+        pe(4)=cc*twiss(l,icol,mfitepx)
+     $       -r3*twiss(l,icol,mfitey)+r1*twiss(l,icol,mfitepy)
       endif
       return
       end
 
       subroutine tgetphysdispz(l,pe)
+      implicit none
+      integer*4 l
+      real*8 pe(4)
+      call tgetphysdispzi(l,0,pe)
+      return
+      end
+
+      subroutine tgetphysdispzi(l,icol,pe)
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 l
+      integer*4 l,icol
       real*8 pe(4)
       real*8 cc,r1,r2,r3,r4,detr
-      r1=twiss(l,0,mfitr1)
-      r2=twiss(l,0,mfitr2)
-      r3=twiss(l,0,mfitr3)
-      r4=twiss(l,0,mfitr4)
+      r1=twiss(l,icol,mfitr1)
+      r2=twiss(l,icol,mfitr2)
+      r3=twiss(l,icol,mfitr3)
+      r4=twiss(l,icol,mfitr4)
       detr=r1*r4-r2*r3
       cc=sqrt(1.d0-detr)
-      if(twiss(l,0,mfitdetr) .lt. 1.d0)then
-        pe(1)=cc*twiss(l,0,mfitzx)
-     $       +r4*twiss(l,0,mfitzy)-r2*twiss(l,0,mfitzpy)
-        pe(2)=cc*twiss(l,0,mfitzpx)
-     $       -r3*twiss(l,0,mfitzy)+r1*twiss(l,0,mfitzpy)
-        pe(3)=cc*twiss(l,0,mfitzy)
-     $       -r1*twiss(l,0,mfitzx)-r2*twiss(l,0,mfitzpx)
-        pe(4)=cc*twiss(l,0,mfitzpy)
-     $       -r3*twiss(l,0,mfitzx)-r4*twiss(l,0,mfitzpx)
+      if(twiss(l,icol,mfitdetr) .lt. 1.d0)then
+        pe(1)=cc*twiss(l,icol,mfitzx)
+     $       +r4*twiss(l,icol,mfitzy)-r2*twiss(l,icol,mfitzpy)
+        pe(2)=cc*twiss(l,icol,mfitzpx)
+     $       -r3*twiss(l,icol,mfitzy)+r1*twiss(l,icol,mfitzpy)
+        pe(3)=cc*twiss(l,icol,mfitzy)
+     $       -r1*twiss(l,icol,mfitzx)-r2*twiss(l,icol,mfitzpx)
+        pe(4)=cc*twiss(l,icol,mfitzpy)
+     $       -r3*twiss(l,icol,mfitzx)-r4*twiss(l,icol,mfitzpx)
       else
-        pe(1)=cc*twiss(l,0,mfitzy)
-     $       -r1*twiss(l,0,mfitzx)-r2*twiss(l,0,mfitzpx)
-        pe(2)=cc*twiss(l,0,mfitzpy)
-     $       -r3*twiss(l,0,mfitzx)-r4*twiss(l,0,mfitzpx)
-        pe(3)=cc*twiss(l,0,mfitzx)
-     $       +r4*twiss(l,0,mfitzy)-r2*twiss(l,0,mfitzpy)
-        pe(4)=cc*twiss(l,0,mfitzpx)
-     $       -r3*twiss(l,0,mfitzy)+r1*twiss(l,0,mfitzpy)
+        pe(1)=cc*twiss(l,icol,mfitzy)
+     $       -r1*twiss(l,icol,mfitzx)-r2*twiss(l,icol,mfitzpx)
+        pe(2)=cc*twiss(l,icol,mfitzpy)
+     $       -r3*twiss(l,icol,mfitzx)-r4*twiss(l,icol,mfitzpx)
+        pe(3)=cc*twiss(l,icol,mfitzx)
+     $       +r4*twiss(l,icol,mfitzy)-r2*twiss(l,icol,mfitzpy)
+        pe(4)=cc*twiss(l,icol,mfitzpx)
+     $       -r3*twiss(l,icol,mfitzy)+r1*twiss(l,0,mfitzpy)
       endif
       return
       end

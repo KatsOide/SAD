@@ -11,9 +11,10 @@
       integer*4 nkey
       parameter (nkey=mfitpzpy)
       integer*8 kax,kaxi,itoff
-      integer*4 isp1,irtc,narg,i,m,nc,isp0,nd,kt,itfmessage,lenw
-      real*8 ftwiss(28),pe(4),tfgettwiss,tphysdisp,tphysdispz
-      logical*4 over,ref
+      integer*4 isp1,irtc,narg,i,m,nc,isp0,nd,kt,itfmessage,lenw,
+     $     icol
+      real*8 ftwiss(28),tfgettwiss,tphysdisp
+      logical*4 over,ref,dref
       character*(MAXPNAME+16) keyword,tfgetstrs
       narg=isp-isp1
       keyword=tfgetstrs(ktastk(isp1+1),nc)
@@ -23,6 +24,8 @@
         return
       endif
       irtc=0
+      icol=0
+      dref=.false.
       kx%k=0
       call capita(keyword(1:nc))
       if(keyword .eq. 'LENGTH')then
@@ -31,18 +34,29 @@
           return
         endif
         kx=dfromr(dble(nlat))
-      elseif(keyword .eq. '*' .or. keyword .eq. 'ALL')then
+      elseif(keyword .eq. '*' .or. keyword .eq. 'ALL'
+     $       .or. keyword .eq. 'DALL' .or. keyword .eq. 'RALL')then
+        if(keyword .eq. 'RALL')then
+          icol=-1
+        elseif(keyword .eq. 'DALL')then
+          dref=.true.
+        endif
         if(narg .eq. 1)then
           kax=ktadaloc(-1,nlat,klx)
-          do i=1,nlat
-            kaxi=ktatwissaloc(0,ktl)
-            klx%dbody(i)%k=ktflist+kaxi
-            ktl%rbody(1:ntwissfun)=twiss(i,0,1:ntwissfun)
-c            do j=1,ntwissfun
-c              itoff=((2*ndim+1)*(j-1)+ndim)*nlat+iftwis+i-1
-c              rlist(kaxi+j)=rlist(itoff)
-c            enddo
-          enddo
+          if(dref)then
+            do i=1,nlat
+              kaxi=ktatwissaloc(0,ktl)
+              klx%dbody(i)%k=ktflist+kaxi
+              call tfgetdref(twiss(i,0,1:ntwissfun),
+     $             twiss(i,-1,1:ntwissfun),ktl%rbody(1:ntwissfun))
+            enddo
+          else
+            do i=1,nlat
+              kaxi=ktatwissaloc(0,ktl)
+              klx%dbody(i)%k=ktflist+kaxi
+              ktl%rbody(1:ntwissfun)=twiss(i,icol,1:ntwissfun)
+            enddo
+          endif
         elseif(narg .eq. 2)then
           call tflinestk(dtastk(isp),narg,isp0,irtc)
           if(irtc .ne. 0)then
@@ -51,12 +65,16 @@ c            enddo
           if(isp .eq. isp0+1)then
             kax=ktatwissaloc(-1,ktl)
             if(vstk2(isp) .eq. 0.d0)then
-              ktl%rbody(1:ntwissfun)=twiss(itastk(2,isp),0,1:ntwissfun)
-c              do j=1,ntwissfun
-c                itoff=((2*ndim+1)*(j-1)+ndim)*nlat+iftwis
-c     $               +itastk(2,isp)-1
-c                rlist(kax+j)=rlist(itoff)
-c              enddo
+              if(dref)then
+                call tfgetdref(twiss(itastk(2,isp),0,1:ntwissfun),
+     $               twiss(itastk(2,isp),-1,1:ntwissfun),
+     $               ktl%rbody(1:ntwissfun))
+              else
+                ktl%rbody(1:ntwissfun)
+     $               =twiss(itastk(2,isp),icol,1:ntwissfun)
+              endif
+            elseif(icol .ne. 0 .or. dref)then
+              go to 9000
             else
               call qtwissfrac(rlist(kax+1),itastk(2,isp),
      $             vstk2(isp),over)
@@ -68,13 +86,16 @@ c              enddo
               kaxi=ktatwissaloc(0,ktl)
               klx%dbody(i)%k=ktflist+kaxi
               if(vstk2(isp0+i) .eq. 0.d0)then
-                ktl%rbody(1:ntwissfun)=
-     $               twiss(itastk(2,isp0+i),0,1:ntwissfun)
-c                do j=1,ntwissfun
-c                  itoff=((2*ndim+1)*(j-1)+ndim)*nlat+iftwis
-c     $                 +itastk(2,isp0+i)-1
-c                  rlist(kaxi+j+1)=rlist(itoff)
-c                enddo
+                if(dref)then
+                  call tfgetdref(twiss(itastk(2,isp0+i),0,1:ntwissfun),
+     $                 twiss(itastk(2,isp0+i),-1,1:ntwissfun),
+     $                 ktl%rbody(1:ntwissfun))
+                else
+                  ktl%rbody(1:ntwissfun)=
+     $                 twiss(itastk(2,isp0+i),icol,1:ntwissfun)
+                endif
+              elseif(icol .ne. 0 .or. dref)then
+                go to 9000
               else
                 call qtwissfrac(rlist(kaxi+1),itastk(2,isp0+i),
      $               vstk2(isp0+i),over)
@@ -94,6 +115,21 @@ c                enddo
             go to 110
           endif
         enddo
+        if(keyword(1:1) .eq. 'D' .or. keyword (1:1) .eq. 'R')then
+          if(keyword(1:1) .eq. 'R')then
+            icol=-1
+          else
+            dref=.true.
+          endif
+          do i=1,nkey
+            if(keyword(2:) .eq. nlist(i))then
+              kt=i
+              go to 110
+            endif
+          enddo
+          icol=0
+          dref=.false.
+        endif
         if(keyword(1:3) .eq. 'SIG' .or. keyword(1:4) .eq. 'SIZE'
      $       .or. keyword .eq. 'GAMMA'
      $       .or. keyword .eq. 'GAMMABETA'
@@ -108,26 +144,28 @@ c                enddo
  110    if(narg .eq. 1)then
           kax=ktavaloc(-1,nlat,kll)
           if(kt .le. ntwissfun)then
-            if(ref)then
-              kll%rbody(1:nlat)=twiss(1:nlat,0,kt)
-c              rlist(kax+1:kax+nlat)=rlist(itoff:itoff+nlat-1)
+            if(dref)then
+              select case (kt)
+                case (mfitbx,mfitby,mfitbz)
+                  kll%rbody(1:nlat)=
+     $                 (twiss(1:nlat,0,kt)-twiss(1:nlat,-1,kt))
+     $                 /twiss(1:nlat,-1,kt)
+                case default
+                  kll%rbody(1:nlat)=
+     $                 twiss(1:nlat,0,kt)-twiss(1:nlat,-1,kt)
+              end select
+            elseif(ref)then
+              kll%rbody(1:nlat)=twiss(1:nlat,icol,kt)
             else
-              itoff=((2*ndim+1)*(kt-1)+ndim)*nlat+iftwis
+              itoff=((2*ndim+1)*(kt-1)+ndim*(icol+1))*nlat+iftwis
               do i=1,nlat
                 klist(kax+i)=ktfref+itoff+i-1
               enddo
             endif
-          elseif(kt .ge. mfitpex .and. kt .le. mfitpepy)then
+          elseif(kt .ge. mfitpex .and. kt .le. mfitpepy .or.
+     $           kt .ge. mfitpzx .and. kt .le. mfitpzpy)then
             do i=1,nlat
-              call tgetphysdisp(i,pe)
-              kll%rbody(i)=pe(kt-mfitpex+1)
-c              rlist(kax+i)=pe(kt-mfitpex+1)
-            enddo
-          elseif(kt .ge. mfitpzx .and. kt .le. mfitpzpy)then
-            do i=1,nlat
-              call tgetphysdispz(i,pe)
-              kll%rbody(i)=pe(kt-mfitpzx+1)
-c              rlist(kax+i)=pe(kt-mfitpzx+1)
+              call tfgettwiss1(i,icol,kt,kll%dbody(i),dref,ref)
             enddo
           endif
           kx%k=ktflist+kax
@@ -138,22 +176,9 @@ c              rlist(kax+i)=pe(kt-mfitpzx+1)
           endif
           if(isp .eq. isp0+1)then
             if(vstk2(isp) .eq. 0.d0)then
-              if(kt .le. ntwissfun)then
-                if(ref)then
-                  kx%x(1)=twiss(itastk(2,isp),0,kt)
-c                  kx%k=klist(itoff+itastk(2,isp)-1)
-                else
-                  itoff=((2*ndim+1)*(kt-1)+ndim)*nlat+iftwis
-                  kx%k=ktfref+itoff+itastk(2,isp)-1
-                endif
-              elseif(kt .ge. mfitpex .and. kt .le. mfitpepy)then
-                call tgetphysdisp(itastk(2,isp),pe)
-                kx=dfromr(pe(kt-mfitpex+1))
-              elseif(kt .ge. mfitpzx .and. kt .le. mfitpzpy)then
-                call tgetphysdispz(itastk(2,isp),pe)
-                kx=dfromr(pe(kt-mfitpzx+1))
-              endif
-c              call tfdebugprint(kx,'tftwiss',1)
+              call tfgettwiss1(itastk(2,isp),icol,kt,kx,dref,ref)
+            elseif(icol .ne. 0 .or. dref)then
+              go to 9000
             else
               call qtwissfrac(ftwiss,itastk(2,isp),
      $             vstk2(isp),over)
@@ -169,8 +194,11 @@ c     $             itastk(2,isp),vstk2(isp)
               if(ref)then
                 do i=1,m
                   if(vstk2(isp0+i) .eq. 0.d0)then
-                    kll%rbody(i)=twiss(itastk(2,isp0+i),0,kt)
-c                    rlist(kax+i)=rlist(itoff+itastk(2,isp0+i)-1)
+                    call tfgettwiss1(itastk(2,isp0+i),
+     $                   icol,kt,kll%dbody(i),dref,ref)
+c                    kll%rbody(i)=twiss(itastk(2,isp0+i),icol,kt)
+                  elseif(icol .ne. 0 .or. dref)then
+                    go to 9000
                   else
                     call qtwissfrac(ftwiss,itastk(2,isp0+i),
      $                   vstk2(isp0+i),over)
@@ -184,36 +212,22 @@ c                    rlist(kax+i)=ftwiss(kt)
                   if(vstk2(isp0+i) .eq. 0.d0)then
                     klist(kax+i)=ktfref+itoff+itastk(2,isp0+i)-1
                   else
-                    call qtwissfrac(ftwiss,itastk(2,isp0+i),
-     $                   vstk2(isp0+i),over)
-                    rlist(kax+i)=ftwiss(kt)
+                    go to 9000
                   endif
                 enddo
               endif
-            elseif(kt .ge. mfitpex .and. kt. le. mfitpepy)then
+            elseif(kt .ge. mfitpex .and. kt. le. mfitpepy
+     $             .or. kt .ge. mfitpzx .and. kt. le. mfitpzpy)then
               do i=1,m
                 if(vstk2(isp0+i) .eq. 0.d0)then
-                  call tgetphysdisp(itastk(2,isp0+i),pe)
-                  kll%rbody(i)=pe(kt-mfitpex+1)
-c                  rlist(kax+i)=pe(kt-mfitpex+1)
+                  call tfgettwiss1(itastk(2,isp0+i),
+     $                   icol,kt,kll%dbody(i),dref,ref)
+                elseif(icol .ne. 0 .or. dref)then
+                  go to 9000
                 else
                   call qtwissfrac(ftwiss,itastk(2,isp0+i),
      $                 vstk2(isp0+i),over)
                   kll%rbody(i)=tphysdisp(kt,ftwiss)
-c                  rlist(kax+i)=tphysdisp(kt,ftwiss)
-                endif
-              enddo
-            elseif(kt .ge. mfitpzx .and. kt. le. mfitpzpy)then
-              do i=1,m
-                if(vstk2(isp0+i) .eq. 0.d0)then
-                  call tgetphysdispz(itastk(2,isp0+i),pe)
-                  kll%rbody(i)=pe(kt-mfitpzx+1)
-c                  rlist(kax+i)=pe(kt-mfitpzx+1)
-                else
-                  call qtwissfrac(ftwiss,itastk(2,isp0+i),
-     $                 vstk2(isp0+i),over)
-                  kll%rbody(i)=tphysdispz(kt,ftwiss)
-c                  rlist(kax+i)=tphysdispz(kt,ftwiss)
                 endif
               enddo
             endif
@@ -232,7 +246,7 @@ c                  rlist(kax+i)=tphysdispz(kt,ftwiss)
               kx=dtastk(isp)
               if(ktflistq(kx,klx))then
                 nd=min(klx%nl,nlat)
-                twiss(1:nd,0,kt)=klx%rbody(1:nd)
+                twiss(1:nd,icol,kt)=klx%rbody(1:nd)
 c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
                 return
               endif
@@ -240,6 +254,73 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
           endif
         endif
       endif
+      return
+ 9000 irtc=itfmessage(9,'General::wrongval',
+     $     '"Fractional component # not supported"')
+      return
+      end
+
+      subroutine tfgetdref(ft,ft0,r)
+      use ffs
+      use tffitcode
+      implicit none
+      real*8 ft(ntwissfun),ft0(ntwissfun),r(ntwissfun)
+      r=ft-ft0
+      r(mfitbx)=r(mfitbx)/ft0(mfitbx)
+      r(mfitby)=r(mfitby)/ft0(mfitby)
+      r(mfitbz)=r(mfitbz)/ft0(mfitbz)
+      return
+      end
+
+      subroutine tfgettwiss1(i,icol,kt,kx,dref,ref)
+      use tfstk
+      use ffs
+      use ffs_pointer
+      use tffitcode
+      implicit none
+      type (sad_descriptor) , intent(out):: kx
+      integer*4 i,icol,kt
+      integer*8 itoff
+      logical*4 ref,dref
+      real*8 pe(4),pe0(4)
+      select case (kt)
+        case (mfitbx,mfitby,mfitbz)
+          if(dref)then
+            kx=dfromr((twiss(i,0,kt)-twiss(i,-1,kt))/twiss(i,-1,kt))
+          elseif(ref)then
+            kx=dfromr(twiss(i,icol,kt))
+          else
+            itoff=((2*ndim+1)*(kt-1)+ndim*(icol+1))*nlat+iftwis
+            kx%k=ktfref+itoff+i-1
+          endif
+        case (mfitpex,mfitpepx,mfitpey,mfitpepy)
+          if(dref)then
+            call tgetphysdispi(i,0,pe)
+            call tgetphysdispi(i,-1,pe0)
+            kx=dfromr(pe(kt-mfitpex+1)-pe0(kt-mfitpex+1))
+          else
+            call tgetphysdispi(i,icol,pe)
+            kx=dfromr(pe(kt-mfitpex+1))
+          endif
+        case (mfitpzx,mfitpzpx,mfitpzy,mfitpzpy)
+          if(dref)then
+            call tgetphysdispzi(i,0,pe)
+            call tgetphysdispzi(i,-1,pe0)
+            kx=dfromr(pe(kt-mfitpzx+1)-pe0(kt-mfitpzx+1))
+          else
+            call tgetphysdispzi(i,icol,pe)
+            kx=dfromr(pe(kt-mfitpzx+1))
+          endif
+        case default
+          if(dref)then
+            kx=dfromr(twiss(i,0,kt)-twiss(i,-1,kt))
+          elseif(ref)then
+            kx=dfromr(twiss(i,icol,kt))
+          else
+            itoff=((2*ndim+1)*(kt-1)+ndim*(icol+1))*nlat+iftwis
+            kx%k=ktfref+itoff+i-1
+          endif
+      end select
       return
       end
 
@@ -249,14 +330,13 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       implicit none
       integer*4 kt
       real*8 rfromk
-      real*8 ftwiss(ntwissfun),tphysdisp,tphysdispz
+      real*8 ftwiss(ntwissfun),tphysdisp
       tfgettwiss=0.d0
       if(kt .le. ntwissfun)then
         tfgettwiss=ftwiss(kt)
-      elseif(kt .ge. mfitpex .and. kt .le. mfitpepy)then
+      elseif(kt .ge. mfitpex .and. kt .le. mfitpepy .or.
+     $       kt .ge. mfitpzx .and. kt .le. mfitpzpy)then
         tfgettwiss=tphysdisp(kt,ftwiss)
-      elseif(kt .ge. mfitpzx .and. kt .le. mfitpzpy)then
-        tfgettwiss=tphysdispz(kt,ftwiss)
       endif
       if(ktfenanq(tfgettwiss))then
         tfgettwiss=rfromk(ktfnan)

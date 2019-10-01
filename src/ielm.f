@@ -8,6 +8,45 @@
       return
       end
 
+      integer*4 function ielmex(word,exist,lfn) result(iv)
+      use tfstk
+      use tmacro, only:nlat
+      implicit none
+      integer*4 ielme,lfn,irtc,lw
+      integer*8 iep
+      character*(*) word
+      real*8 v
+      logical*4 exist
+      type (sad_descriptor) kx
+      exist=.false.
+      iv=0
+      iep=ierrorprint
+      ierrorprint=0
+      irtc=0
+      lw=len_trim(word)
+      if(lw .gt. 0)then
+        if(word(1:1) .ne. "^")then
+          call tfevalb(word,kx,irtc)
+          ierrorprint=iep
+          if(irtc .eq. 0 .and. ktfrealq(kx,v))then
+            if(v .ge. 0.d0)then
+              iv=int(v+0.499)
+            else
+              iv=int(nlat+1+v+0.5d0)
+            endif
+            iv=max(1,min(nlat,iv))
+            exist=.true.
+            return
+          endif
+          if(irtc .ne. 0)then
+            call tfreseterror
+          endif
+        endif
+        iv=ielme(word,exist,lfn)
+      endif
+      return
+      end function
+
       integer*4 function ielme(word,exist,lfn)
       implicit none
       integer*4 ielmf,lfn
@@ -24,12 +63,12 @@
       use tffitcode
       implicit none
       type (sad_descriptor) kx
-      integer*4 lw,iord,ln,i,j,lenw,ip,im,lfn
+      integer*4 lw,iord,ln,i,j,ip,im,lfn
       character*(*) word
       character*64 ordw
       character*(MAXPNAME) name
       real*8 frac
-      integer*4 ioff,m,ipm, irtc,idot,ielmh,ist1
+      integer*4 ioff,m,ipm, irtc,idot,ielmh
       logical*4 exist
       lw=len_trim(word)
       idot=index(word(1:lw),'.')
@@ -55,8 +94,7 @@
           else
             ordw=word(idot+1:lw)
           endif
-          ist1=1
-          call tfeval(ordw,lenw(ordw),ist1,m,kx,.false.,irtc)
+          call tfeval(ordw,1,m,kx,.false.,irtc)
           iord=int(rfromd(kx))
           if(irtc .ne. 0 .or. ktfnonrealq(kx))then
             if(irtc .gt. 0 .and. ierrorprint .ne. 0)then

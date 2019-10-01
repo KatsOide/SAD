@@ -17,7 +17,7 @@
       real*8 ampmax,oneev,pmax
       parameter (ampmax=0.05d0,ndivmax=300,pmax=0.9999d0)
       parameter (oneev=1.d0+3.83d-12)
-      integer*4 mfring,ld,l,n,ndiv,m,kord,i,nmmax,nmmin,
+      integer*4 mfring,l,n,ndiv,m,kord,i,nmmax,nmmin,
      $     itgetqraddiv
       real*8 f1in,f2in,f1out,f2out,
      $     al,vc,harm,phi,freq,bz,dx,dy,dz,chi1,chi2,theta,
@@ -193,7 +193,7 @@
      $           irad,irad .gt. 6 .or. calpol,autophi)
           endif
           if(ak1 .ne. 0.d0)then
-            call tqfrie(trans,cod,beam,ak1,al1,ld,bzs)
+            call tqfrie(trans,cod,beam,ak1,al1,bzs)
           endif
         endif
         if(bfrm .and. ak0n .ne. (0.d0,0.d0))then
@@ -394,7 +394,7 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
         endif
         if(fringe .and. mfring .ne. 1)then
           if(ak1 .ne. 0.d0)then
-            call tqfrie(trans,cod,beam,-ak1,al1,ld,bzs)
+            call tqfrie(trans,cod,beam,-ak1,al1,bzs)
           endif
           if(acc)then
             call tcavfrie(trans,cod,beam,al,-v,w,phic,phis-phic,s0,p0,

@@ -27,7 +27,7 @@ c         Emulate disp='DELETE' in open statement
         else
           open(in,file=fname(1:nc),status='OLD',err=9000)
         endif
-        call tfreadbuf(irbinit,in,modewrite,int8(0),0,' ')
+        call trbinit(in,modewrite)
         itfopenread=in
         irtc=0
         return

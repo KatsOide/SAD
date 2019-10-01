@@ -98,7 +98,7 @@ FindCOD=Class[{},{},{ax,bx,ay,by,p0,NDiv=300,MaxAmp=2e-2},
 
   DiffCOD[z_]:=Module[{dz,r},
     {DXI,DPXI,DYI,DPYI}=z;
-    FFS["CALC4D;CELL;CALC;"];
+    FFS["CALC4D;CELL;CALC NOEXP;"];
     If[?STABLE,Throw[0]];
     dz=Twiss[{"DX","DPX","DY","DPY"},"$$$"]-z;
     r=dz[[1]]^2/bx+bx*(dz[[2]]+ax/bx*dz[[1]])^2
@@ -107,9 +107,9 @@ FindCOD=Class[{},{},{ax,bx,ay,by,p0,NDiv=300,MaxAmp=2e-2},
   
   Find[z0_List:{0,0,0,0},opt___]:=Module[{z1,dz,v,p0,p1,out},
     out=Output/.{opt}/.Output->0;
-    FFS["RESET ALL;"];
+!    FFS["RESET ALL;"];
     {DXI,DPXI,DYI,DPYI}=z0;
-    FFS["CALC4D;INS;CAL;",6];
+    FFS["CALC4D;INS;CAL NOEXP;"];
     {ax,bx,ay,by}=Twiss[{"AX","BX","AY","BY"},1];
     z1=Twiss[{"DX","DPX","DY","DPY"},"$$$"];
     dz=Restrict[z1-z0,-MaxAmp,MaxAmp]/NDiv;
@@ -119,7 +119,7 @@ FindCOD=Class[{},{},{ax,bx,ay,by,p0,NDiv=300,MaxAmp=2e-2},
       p1=`DownhillSimplex[p0,DiffCOD,Output->out,opt]];
     If[~?STABLE,
       {DXI,DPXI,DYI,DPYI}=p1[[1,2]];
-      FFS["CELL;CAL;"]];
+      FFS["CELL;CAL NOEXP;"]];
     {?STABLE,Subtract@@[Twiss[{"DX","DPX","DY","DPY"},{"$$$","^^^"}],{1}]}
     ];
 

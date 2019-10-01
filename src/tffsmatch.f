@@ -441,7 +441,7 @@ c                        enddo
                       enddo
                     endif
                   enddo
-                  call tffswait(ipr,npa,npr,int8(0),
+                  call tffswait(ipr,npa,npr,i00,
      $                 'tffsmatch-EVDeriv',irtc)
                 endif
               endif
@@ -819,7 +819,7 @@ c     call tfdebugprint(kx,'varfun',1)
       real*8 s,dtwiss(mfittry),coup,posk,wk,ctrans(27,-nfam:nfam)
       logical*4 col(2,nqcol),disp,nzcod
       integer*4 , parameter :: minnqu=512
-      call tffscoupmatrix(iele2,kcm,lfno)
+      call tffscoupmatrix(kele2,kcm,lfno)
       irtc=0
       nqu=max(minnqu,nqcol*nvar)
       do9000: do kkk=1,1
@@ -859,10 +859,10 @@ c     call tfdebugprint(kx,'varfun',1)
           istep=1
         endif  
         do k=1,nlat-1
-          kc=iele(k)
+          kc=icomp(k)
           kk=iele1(kc)
           kk1=iele1(k)
-          iec=iele2(k)
+          iec=kele2(k)
           if(iec .eq. 0)then
             nk=0
           else
@@ -1000,7 +1000,7 @@ c     $                       posk,pos(lp),rlist(kqu),ltyp,iv
             enddo
           endif
         enddo
-        call tffswait(ipr,npp,npr,int8(0),'tffsqu',irtc)
+        call tffswait(ipr,npp,npr,i00,'tffsqu',irtc)
         if(kcm .ne. 0)then
           call tfree(kcm)
         endif
@@ -1330,17 +1330,17 @@ c        endif
       return
       end
 
-      subroutine tffscoupmatrix(iele2,kcm,lfno)
+      subroutine tffscoupmatrix(kele2,kcm,lfno)
       use tfstk
       use ffs
       use tffitcode
       implicit none
-      integer*8 km,k1,kam,kcm,ktfmaloc,k2,iele2(nlat)
+      integer*8 km,k1,kam,kcm,ktfmaloc,k2,kele2(nlat)
       integer*4 lfno,irtc,n,m
       real*8 rfromk
       integer*8 itfcoupm
       data itfcoupm /0/
-      if(iele2(nlat) .eq. 0)then
+      if(kele2(nlat) .eq. 0)then
         kcm=0
         return
       endif

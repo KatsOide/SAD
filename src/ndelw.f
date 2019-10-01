@@ -1,7 +1,7 @@
 C created on HP by N. Yamamoto, Apr. 26,'93
 C   08/12/92 212101617  MEMBER NAME  NDELW    *.FORT     M  E2FORT
       subroutine ndelw(wl,wa,wp,wd,
-     &                 latt,iele,couple,geo,pos,master)
+     &                 latt,icomp,couple,geo,pos,master)
       use tfstk
       use ffs
       use tffitcode
@@ -10,7 +10,7 @@ C   08/12/92 212101617  MEMBER NAME  NDELW    *.FORT     M  E2FORT
       real*8 wl,wa,wp,wd
       dimension geo(3,4,nlat),pos(nlat)
       integer*8 latt(nlat),le,idv
-      dimension iele(nlat),couple(nlat),master(nlat)
+      dimension icomp(nlat),couple(nlat),master(nlat)
 c
       real*8 kx,ky
       real*8 delz

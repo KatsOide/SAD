@@ -5,6 +5,7 @@
       use tfstk
       use ffs_flag
       use tmacro
+      use photontable,only:tsetphotongeo
       use tspin
 c      use ffs_pointer, only:inext,iprev
       implicit none
@@ -84,6 +85,9 @@ c          p=(1.d0+g(i))**2
       endif
       if(ifv .eq. 0)then
         if(enarad)then
+          if(photons)then
+            call tsetphotongeo(0.d0,0.d0,theta,.true.)
+          endif
           if(f1in .ne. 0.d0)then
             call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           pxr0,pyr0,zr0,1.d0,0.d0,bsi,f1in)
@@ -122,6 +126,9 @@ c          p=(1.d0+g(i))**2
           endif
           alm=al/(m-1)
           akm=ak/(m-1)
+          if(enarad .and. photons)then
+            call tsetphotongeo(0.d0,0.d0,theta,.true.)
+          endif
           do i=1,m
             if(forward)then
               rb=klr%rbody(i)
@@ -189,6 +196,9 @@ c          p=(1.d0+g(i))**2
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,bz)
       endif
       if(enarad .and. f1out .ne. 0.d0)then
+        if(photons)then
+          call tsetphotongeo(0.d0,0.d0,0.d0,.false.)
+        endif
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       pxr0,pyr0,zr0,1.d0,0.d0,bsi,f1out)
       endif

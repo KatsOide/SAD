@@ -8,8 +8,7 @@
       integer elmidx
 c
       character*(MAXSTR) token
-      integer*4 slen,ival,ttype,hsrch
-     $     ,offset,idx
+      integer*4 slen,ival,ttype,hsrch,offset,idx
       real*8 rval,rdexpr
       logical skipch
 c
@@ -51,7 +50,7 @@ c         token(:8)=token(:slen)//NULSTR !deleted jul,16,'87 by N.Y
 c           print *,idtype(elmidx),kwMAX
             if (offset .eq. 0) then
               call errmsg('rdkwdl',
-     &             'invalid key word name'//
+     &             'invalid key word name: '//
      &              pname(kytbl(idval(idx),0)),0,16)
             else
 c for debug
@@ -61,8 +60,10 @@ c end debug
 c rdexpr  return next token in token(:slen)
             endif
           else
+            write(*,*)'rdkwl ',idx,idtype(idx)
             call errmsg('rdkwdl',
-     &           'syntax error:Undefined keyword',0,16)
+     &           'syntax error: Undefined keyword: '//token(:slen)
+     $           ,0,16)
           endif
         else if ((token(:slen) .eq. RCURL)
      &       .or.(token(:slen) .eq. SEMIC)

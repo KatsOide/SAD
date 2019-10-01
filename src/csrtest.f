@@ -380,6 +380,7 @@ c 32: Er -> Ey
       parameter (nphimax=16384)
       real*8 dx,dy,rho
       real*8 phix(nphimax),phiy(nphimax)
+      dx=0.d0
       if(isp .ne. isp1+1)then
         go to 9030
       endif

@@ -148,7 +148,7 @@ integer4 itopenbuf_(integer4 *irtc) {
   fprintf(stderr, "itopenbuf(unit=%d, fd=%d, temp=\"%s\")\n", in, getfd_(&in), template);
 #endif
 
-  tfreadbuf(irbinit, in, &argv[0], &argv[1], "");
+  trbinit(in, &argv[0]);
 
   *irtc = 0;
   return in;
@@ -190,7 +190,7 @@ integer4 itfopenread_(integer8 *k, logical4 *disp,
   if(*disp)
     unlink(expanded);
 
-  tfreadbuf(irbinit, in, &argv[0], &argv[1], "");
+  trbinit(in, &argv[0]);
 
   free(expanded);
   *irtc = 0;

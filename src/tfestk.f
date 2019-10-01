@@ -1,4 +1,3 @@
-
       module ophash
       use tfstk
       implicit none
@@ -100,26 +99,26 @@ c          m    i    +    -    *    /    v    ^    ==   <>
 c          >    <    >=   <=   ===  <=>  ~    &&   ||   //
 c          [    ]    {    }    :=   =    C    (    )    ,
 c          ;    &    :    ->   :>   /.   //.  ^=   ^:=  =.
-c          ?    flg  #    ##   .    |    /@   //@  @@   .. 
+c          ?    flg  #    ##   .    |    /@   //@  @@   ..
 c          ...  ineq +=   -=   *=   /=   ++   --   [[   @
 c          msgn /:   (*   *)   Hold z
       logical*4, parameter :: T=.true.,F=.false.
       logical*4 :: nullfirst(0:mtfnopc) = (/
      $     T,
-     $     T,   T,   F,   F,   F,   F,   F,   F,   F,   F,   
-     $     F,   F,   F,   F,   F,   F,   T,   F,   F,   F,   
+     $     T,   T,   F,   F,   F,   F,   F,   F,   F,   F,
+     $     F,   F,   F,   F,   F,   F,   T,   F,   F,   F,
      $     T,   T,   T,   T,   F,   F,   F,   T,   T,   T,
-     $     T,   F,   F,   F,   F,   F,   F,   F,   F,   F,   
-     $     T,   T,   T,   T,   F,   F,   F,   F,   F,   F,   
+     $     T,   F,   F,   F,   F,   F,   F,   F,   F,   F,
+     $     T,   T,   T,   T,   F,   F,   F,   F,   F,   F,
      $     F,   F,   F,   F,   F,   F,   T,   T,   F,   F,
      $     F,   F,   F,   F,   F,   F/)
       logical*4 :: lastfirst(0:mtfnopc) = (/
      $     F,
-     $     F,   F,   F,   F,   F,   F,   F,   T,   F,   F,   
-     $     F,   F,   F,   F,   F,   F,   F,   F,   F,   F,   
+     $     F,   F,   F,   F,   F,   F,   F,   T,   F,   F,
+     $     F,   F,   F,   F,   F,   F,   F,   F,   F,   F,
      $     F,   F,   F,   F,   T,   T,   F,   F,   F,   F,
-     $     F,   F,   F,   T,   T,   F,   F,   F,   F,   F,   
-     $     F,   F,   F,   F,   F,   F,   T,   T,   T,   F,   
+     $     F,   F,   F,   T,   T,   F,   F,   F,   F,   F,
+     $     F,   F,   F,   F,   F,   F,   T,   T,   T,   F,
      $     F,   F,   F,   F,   F,   F,   F,   F,   F,   F,
      $     F,   F,   F,   F,   F,   F/)
 
@@ -997,30 +996,26 @@ c          call tfdebugprint(kx,'==>',1)
       return
       end
 
-      subroutine tfevalb(string,nc,kx,irtc)
+      subroutine tfevalb(string,kx,irtc)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*4 irtc,istart,istop,nc
-      character string(nc)
-      istart=1
+      integer*4 irtc,istop
+      character*(*) string
       levele=levele+1
-c      write(*,*)'tfevalb ',string
-      call tfeval(string,nc,istart,istop,kx,.false.,irtc)
+      call tfeval(string,1,istop,kx,.false.,irtc)
       call tfconnect(kx,irtc)
       return
       end
 
-      subroutine tfevalc(string,nc)
+      subroutine tfevalc(string)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*4 irtc,istart,istop,l,nc,itfdownlevel
-      character string(nc)
-      istart=1
+      integer*4 irtc,istop,l,itfdownlevel
+      character*(*) string
       levele=levele+1
-c      write(*,*)'tfevalc ',string
-      call tfeval(string,nc,istart,istop,kx,.false.,irtc)
+      call tfeval(string,1,istop,kx,.false.,irtc)
       if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
         call tfreseterror
       endif
@@ -1032,13 +1027,10 @@ c      write(*,*)'tfevalc ',string
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*4 irtc,istart,istop
+      integer*4 irtc,istop
       character*(*) string
-      istart=1
       levele=levele+1
-      call tfeval(string,len_trim(string),
-     $     istart,istop,kx,.false.,irtc)
-c      call tfdebugprint(kx,'==>',1)
+      call tfeval(string,1,istop,kx,.false.,irtc)
       call tfconnect(kx,irtc)
       return
       end
@@ -1047,20 +1039,18 @@ c      call tfdebugprint(kx,'==>',1)
       use tfcsi
       implicit none
       integer*4 ip1,istart,istop,l,ipr
-      ip1=icsmrk()
-      call cssetp(istop)
-      call tprmpt(ipr,-1,0)
-      call getbuf
-      call tprmpt(0,-1,0)
-      if(csrec())then
-        call cssetp(ip1)
+      ip1=ipoint
+      ipoint=istop
+      call tprmptget(ipr,.true.)
+      if(rec)then
+        ipoint=ip1
       else
-        istop=icsmrk()
+        istop=ipoint
       endif
-      tfreadevalbuf=icsstat() .eq. 0
+      tfreadevalbuf=ios .eq. 0
       if(tfreadevalbuf)then
         istart=istop
-        l=icslrecl()
+        l=lrecl
       endif
       return
       end
@@ -1091,4 +1081,3 @@ c      call tfdebugprint(kx,'==>',1)
       endif
       return
       end
-

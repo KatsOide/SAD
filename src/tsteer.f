@@ -5,6 +5,7 @@
       use ffs_flag
       use tmacro
       use tspin
+      use photontable, only:tsetphotongeo
       use mathfun, only:pxy2dpz
       implicit none
       real*8 , parameter :: a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
@@ -149,6 +150,13 @@ c      write(*,*)'tsteer ',ndiv
      $         (.5d0*dyfr2-.25d0*dyfra2*y(i)**2)*y(i)**2/p)/p
  100    continue
         if(krad)then
+          if(photons)then
+            if(n .eq. 1)then
+              call tsetphotongeo(aln,0.d0,theta,.true.)
+            else
+              call tsetphotongeo(aln,0.d0,theta,.false.)
+            endif
+          endif
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         px0,py0,zr0,1.d0,0.d0,bsi,aln)
           px0=px

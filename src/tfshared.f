@@ -2,7 +2,6 @@
       integer*4, parameter:: nshmax=1024
       integer*8, save:: kashare(nshmax)=0,lshare(nshmax)=0
       integer*4, save :: ishared(nshmax)=0,kstshare(0:nshmax)=0
-
       
       contains
       integer*8 function ktfallocshared(n)

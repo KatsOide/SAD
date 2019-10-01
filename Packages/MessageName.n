@@ -52,7 +52,6 @@
   Shared::toolarge="Shared Memory Shortage by `1` bytes";
   Shared::notopen="Shared Memory not opend";
 
-
   Memory::alloc="Memory allocation error";
 
   DynamicLoader::nosymbol="Symbol \"`1`\" can not be resolved";
@@ -76,7 +75,11 @@
     FFS::dupkey="Duplicated Key for PROFILE `1`";
     FFS::wrongkeylist="Not {{key, master}, {value ...}} for `1`";
     FFS::wrongkeyval="Neither Real nor Real List for a key for `1`";
-    FFS::nospin="No spin coordinates are given";]
+    FFS::nospin="No spin coordinates are given";
+    FFS::lfn="File number full";
+    ];
+
+  Track::photons="PHTONS requires RAD & FULC";
 
   $WildCard::unknown="Unknown wild card scheme `1`";
 
@@ -97,7 +100,6 @@
   Tkinter::error="Error in Python";
   Tkinter::tclerror="Error in Tcl: `1`";
   Tkinter::wrongoption="Error in Tk Option:";
-
 
   _Symbol::`a_:=General::`a;
 

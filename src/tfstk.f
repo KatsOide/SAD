@@ -1,5 +1,6 @@
       module maccode
 c Do not forget to update sim/MACCODE.h when you change this module!!!!
+      implicit none
       integer*4 , parameter ::
      $     icNULL   =   0, icDRFT   =   1,
      $     icBEND   =   2, icQUAD   =   4, icSEXT   =   6,
@@ -30,7 +31,7 @@ c Do not forget to update sim/MACCODE.h when you change this module!!!!
       integer*4 HTMAX,MAXPNAME,LILISTDUMMY
       parameter(MAXPNAME=32,LILISTDUMMY=3)
       character*(MAXPNAME) NULSTR
-      parameter(HTMAX=2**16,NULSTR='        ')
+      parameter(HTMAX=2**18,NULSTR='        ')
 
       integer*4 pagesz,inipage
       parameter(pagesz=4096/8,inipage=4)
@@ -60,6 +61,7 @@ c$$$      integer*8 , pointer, dimension(:) :: pidval(:)
       real*8, pointer, dimension(:) :: rlist
       integer*4, pointer, dimension(:,:) :: ilist
       integer*1, pointer, dimension(:,:)  :: jlist
+      integer*8, parameter :: i00=int8(0)
 
       interface sethtb
         module procedure sethtb4,sethtb8
@@ -73,18 +75,19 @@ c$$$      integer*8 , pointer, dimension(:) :: pidval(:)
         character*(*) , intent(in) :: token
         integer*8, target, intent(in):: ival
         integer*4 , intent(in) :: type
-        integer*4 idx,hsrch,lenw
+        integer*4 idx,hsrch
         sethtb8=0
      
-        idx= hsrch(token(:lenw(token)))
+        idx= hsrch(token(:len_trim(token)))
         if(idx .le. 0 .or. idx .gt. HTMAX) then
           call errmsg('sethtb8'
-     &         ,'illegal index value for sethashtble'
+     &         ,'illegal index value for sethashtble: '//
+     $         token(:len_trim(token))
      &         , 0,16)
         else
           idtype(idx)=type
           if(type .eq. icRSVD) then
-            idval(idx)=transfer(c_loc(ival),int8(0))/8
+            idval(idx)=transfer(c_loc(ival),i00)/8
           else
             idval(idx)=ival
           endif
@@ -110,6 +113,7 @@ c$$$      integer*8 , pointer, dimension(:) :: pidval(:)
 
 c     Don't confuse, Emacs. This is -*- fortran -*- mode!
       module tfcbk
+      implicit none
       integer*4, parameter:: maxgeneration=2**30-1,maxlevele=2**14,
      $     nsymhash=2047,nslots=32,maxlbuf=2**22
       real*8 dinfinity,dnotanumber
@@ -129,10 +133,12 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
       end module
 
       module tfmem
+      use maccbk, only:i00
       implicit none
       integer*8, parameter :: mpsize=2**22,kcpklist0=0,maxstack=2**25,
      $     minstack=2**18
-      integer*4, parameter :: nindex=64,mhash=32767,
+      integer*8 , parameter :: mhash=32767
+      integer*4, parameter :: nindex=64,
      $     minseg0=9,minseg1=16,minseg2=16
       integer*4, parameter :: ncbk = 2**16
       integer*8, parameter :: kcpoffset = 0
@@ -162,7 +168,7 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
         use iso_c_binding
         implicit none
         type (sad_descriptor), target, intent(in) :: k
-        dsad_loc=(transfer(c_loc(k),int8(0))-kcpklist0)/8
+        dsad_loc=(transfer(c_loc(k),i00)-kcpklist0)/8
         return
         end function
 
@@ -170,7 +176,7 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
         use iso_c_binding
         implicit none
         integer*8, target, intent(in) :: k
-        ksad_loc=(transfer(c_loc(k),int8(0))-kcpklist0)/8
+        ksad_loc=(transfer(c_loc(k),i00)-kcpklist0)/8
         return
         end function
 
@@ -178,7 +184,7 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
         use iso_c_binding
         implicit none
         integer*4, target, intent(in):: i
-        isad_loc=(transfer(c_loc(i),int8(0))-kcpklist0)/8
+        isad_loc=(transfer(c_loc(i),i00)-kcpklist0)/8
         return
         end function
 
@@ -186,7 +192,7 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
         use iso_c_binding
         implicit none
         real*8, target, intent(in):: x
-        rsad_loc=(transfer(c_loc(x),int8(0))-kcpklist0)/8
+        rsad_loc=(transfer(c_loc(x),i00)-kcpklist0)/8
         return
         end function
 
@@ -197,9 +203,9 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
         type (c_ptr) cp
         integer*4, save::lps=0
         integer*4 getpagesize
-c        kcpklist0=transfer(c_loc(kdummy),int8(0))
+c        kcpklist0=transfer(c_loc(kdummy),i00)
 c        write(*,*)'tfcbkinit ',kcpklist0,2**31
-c        kcpklist0=transfer(c_loc(kdummy),int8(0))-kcpoffset-8
+c        kcpklist0=transfer(c_loc(kdummy),i00)-kcpoffset-8
         if(lps .eq. 0)then
           lps=getpagesize()
         endif
@@ -226,7 +232,7 @@ c$$$        pidval=>idval
         integer*8 ka,ic
         allocate(sadalloc(ncbk))
         allocate(sadalloc(1)%ca(nindex*2+mhash+16))
-        ka=transfer(c_loc(sadalloc(1)%ca(1)),int8(0))
+        ka=transfer(c_loc(sadalloc(1)%ca(1)),i00)
         kfirstalloc=ka
 c     kcpklist0=0
         call tfcbkinit
@@ -464,6 +470,7 @@ c     endif
 
       module tfcode
       use tfmem, only:sad_descriptor
+      implicit none
       real*8, parameter :: xinfinity=1.7976931348623157D308
       integer*4, parameter :: ntfoper=0,ntfreal=1,ntflist=3,ntflistr=4,
      $     ntfstkseq=5,
@@ -538,7 +545,7 @@ c     endif
      $     irtcgoto=-6,irtcabort=-7
       integer*8 ktfoper,ktflist,ktfstring,ktfsymbol,ktfpat,ktfobj,
      $     ktfmask,ktamask,ktrmask,ktfnull,ktfnr,ktfref,ktfother,
-     $     ktomask,ktftrue,ktfnan,ktfenan
+     $     ktomask,ktftrue,ktfnan,ktfenan,ktfenanb
       parameter (
      $     ktfnull  =int8(z'fff0000000000000'),
      $     ktfother =int8(z'fff2000000000000'),
@@ -559,7 +566,8 @@ c     endif
      $     ktfenan  =int8(z'7ff0000000000000'),
      $     ktfenanb =int8(z'000fffffffffffff')
      $     )
-      integer*4 , parameter :: mbody = 2**12
+      integer*4 , parameter :: mbody = 2**8
+      integer*4 , parameter :: mbody1 = 2**8
 
       type sad_object
       sequence
@@ -567,7 +575,7 @@ c     endif
       type (sad_descriptor) alloc
       integer*4 ref,nl
       integer*8 body(1:0)
-      type (sad_descriptor) dbody(0:mbody)
+      type (sad_descriptor) dbody(0:mbody1)
       end type
 
       type sad_list
@@ -580,7 +588,7 @@ c     endif
       real*8 rbody(1:0)
       complex*16 cbody(1:0)
       type (sad_descriptor) dbody(1:0)
-      integer*8 body(1:mbody)
+      integer*8 body(1:mbody1)
       end type
 
       type sad_dlist
@@ -594,7 +602,7 @@ c     endif
       real*8 rbody(1:0)
       complex*16 cbody(1:0)
       integer*8 body(1:0)
-      type (sad_descriptor) dbody(1:mbody)
+      type (sad_descriptor) dbody(1:mbody1)
       end type
 
       type sad_rlist
@@ -608,7 +616,7 @@ c     endif
       complex*16 cbody(1:0)
       integer*8 body(1:0)
       type (sad_descriptor) dbody(1:0)
-      real*8 rbody(1:mbody)
+      real*8 rbody(1:mbody1)
       end type
 
       type sad_complex
@@ -667,7 +675,7 @@ c     endif
       integer*1 istr(1:0)
       integer*8 kstr(1:0)
 c size limitation due to gfortran 7 on macOS ???
-      character*(mbody) str
+      character*(mbody1) str
       end type
 
       type sad_namtbl
@@ -703,6 +711,7 @@ c size limitation due to gfortran 7 on macOS ???
       use tfcode
       use maccbk
       use tfmem, only:sad_loc,ksad_loc,ktaloc,tfree
+      implicit none
       public
       integer*8 ispbase
       integer*4 mstk,isp,ivstkoffset,ipurefp,napuref,isporg
@@ -762,7 +771,7 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
       interface ktfreallistq
         module procedure ktfreallistqo_rlist,
      $     ktfreallistqo_dlist,ktfreallistqk,ktfreallistqd,
-     $     ktfreallistqk_rlist
+     $     ktfreallistqk_rlist,ktfreallistqd_rlist
       end interface
 
       interface ktfnonreallistqo
@@ -2298,9 +2307,21 @@ c     $           n,i,istat
         logical*4 function ktfreallistqd(ka)
         implicit none
         type (sad_descriptor) , intent(in)::ka
-        ktfreallistqd=iand(ilist(2,ka%k-3),lnonreallist) .eq. 0
+        ktfreallistqd=iand(ilist(2,ktfaddrd(ka)-3),lnonreallist) .eq. 0
         return
         end function ktfreallistqd
+
+        logical*4 function ktfreallistqd_rlist(ka,kl)
+        implicit none
+        type (sad_rlist), pointer, intent(out) :: kl
+        type (sad_descriptor) , intent(in)::ka
+        ktfreallistqd_rlist=
+     $       iand(ilist(2,ktfaddrd(ka)-3),lnonreallist) .eq. 0
+        if(ktfreallistqd_rlist)then
+          call loc_sad(ktfaddrd(ka),kl)
+        endif
+        return
+        end function ktfreallistqd_rlist
 
         logical*4 function ktfnonreallistq(ka)
         implicit none
@@ -3618,7 +3639,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         integer*4 , intent(in)::l
         integer*8 ktfsymbolc
         character , intent(in)::name(l)
-        ktfsymbolz=ktfsymbolc(name,l,int8(0))
+        ktfsymbolz=ktfsymbolc(name,l,i00)
         if(present(symd))then
           call loc_symdef(ktfsymbolz,symd)
         endif

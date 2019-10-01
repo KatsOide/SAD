@@ -120,7 +120,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
 
       end module
 
-      subroutine tbendi(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,phib,phi0,
+      subroutine tbendi(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb1,fb2,mfring,enarad,fringe,eps0)
@@ -131,9 +131,10 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       use tmacro
       use ffs_pointer, only:inext,iprev
       use tspin
+      use photontable
       implicit none
       integer*4 , parameter :: ndivmax=1000
-      integer*4 np,mfring,i,ndiv,n,l
+      integer*4 np,mfring,i,ndiv,n
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     sx(np),sy(np),sz(np),px0(np),py0(np),zr0(np),bsi(np),
      $     al,phib,phi0,cosp1,sinp1,cosp2,sinp2,
@@ -163,12 +164,12 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
         py0=py
         zr0=z
         bsi=0.d0
-        if(iprev(l) .eq. 0)then
+        if(iprev(l_track) .eq. 0)then
           f1r=fb1
         else
           f1r=0.d0
         endif
-        if(inext(l) .eq. 0)then
+        if(inext(l_track) .eq. 0)then
           f2r=fb2
         else
           f2r=0.d0
@@ -208,6 +209,9 @@ c            dp=g(i)*(2.d0+g(i))
       cphin=cos(phin)
       sphin=sin(phin)
       do i=1,np
+        if(krad .and. photons)then
+          call tsetphotongeo(aln,phin,theta,.true.)
+        endif
         dp=g(i)
         p=1.d0+dp
         rhoe=rhob*p
@@ -226,7 +230,7 @@ c            dp=g(i)*(2.d0+g(i))
           bsi(i)=bsi(i)+akn/aln*xi*yi
           if(rfluct)then
             call tradkf1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
-     $           px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln)
+     $           px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln,i)
           else
             call tradk1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
      $           px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln)
@@ -235,6 +239,9 @@ c            dp=g(i)*(2.d0+g(i))
           py0(i)=pyi
           zr0(i)=zi
           bsi(i)=0.d0
+          if(photons)then
+            call tsetphotongeo(aln,phin,theta,.false.)
+          endif
         endif
         do n=2,ndiv
           call tbendicorr(akn,aln,phin)
@@ -242,7 +249,7 @@ c            dp=g(i)*(2.d0+g(i))
           if(krad .and. n .ne. ndiv)then
             if(rfluct)then
               call tradkf1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
-     $             px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln)
+     $             px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln,i)
             else
               call tradk1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
      $             px0(i),py0(i),zr0(i),cphin,sphin,bsi(i),aln)
@@ -250,6 +257,9 @@ c            dp=g(i)*(2.d0+g(i))
             px0(i)=pxi
             py0(i)=pyi
             zr0(i)=zi
+            if(photons)then
+              call tsetphotongeo(aln,phin,theta,.false.)
+            endif
           endif
         enddo
         call tbendicorr(akn*.5d0,aln*.5d0,phin*.5d0)
@@ -263,6 +273,9 @@ c            dp=g(i)*(2.d0+g(i))
         x(i)=xi-ff
         z(i)=zi+ff*fpx
       enddo
+      if(photons)then
+        call tsetphotongeo(aln,phin,theta,.false.)
+      endif
       if(fb2 .ne. 0.d0)then
         if(mfring .gt. 0 .or. mfring .eq. -2)then
           dxfr2=fb2**2/rhob/24.d0

@@ -128,7 +128,7 @@ c      call tfdebugprint(sympd%value,'standardform',1)
         if(cr)then
           write(lfno,*,ERR=100)'...'
         else
-          write(lfno,'($,a)',ERR=100)'...'
+          write(lfno,'(a,$)',ERR=100)'...'
         endif
  100    strb%nch=0
         irtc=-1
@@ -152,8 +152,9 @@ c        irtc=itfmessage(9,'General::longstr',' ')
 
       subroutine tmovb(from,to,n)
       implicit none 
-      integer*4 n
-      character*(1073741823) from,to
+      integer*4, intent(in):: n
+      character*(*) , intent(in)::from
+      character*(*) , intent(out)::to
       to(1:n)=from(1:n)
       return
       end
@@ -167,7 +168,7 @@ c        irtc=itfmessage(9,'General::longstr',' ')
       if(l .gt. 0)then
 c
 c       I hope the below works for all compilers... but not for DEC
-c      write(lfno,'($,a)')string(1:l)
+c      write(lfno,'(a,$)')string(1:l)
 c
 c        write(form,*)l
 c        do i=12,1,-1

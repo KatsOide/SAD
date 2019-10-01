@@ -87,7 +87,7 @@
         isp=isp0
       elseif(ktfrealq(k1,x1))then
         if(ktfrealq(k2,x2))then
-          kx=dfromr(dble(cfun(dcmplx(x2,0.d0),
+          kx=dfromr(dble(cfun(dcmplx(x1,0.d0),
      $         dcmplx(x2,0.d0))))
         elseif(tfcomplexq(k2,c2))then
           cx=cfun(dcmplx(x1,0.d0),c2)

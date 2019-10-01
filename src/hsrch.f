@@ -2,14 +2,14 @@
       use maccbk
       implicit none
       character*(*) id,idw*(MAXPNAME+1)
-      integer*4 hsrchz,slen,lenw
+      integer*4 hsrchz,slen
 c for debug
 c      print *,'hsrch>',lenw(id),id(:lenw(id))
 c end debug
       if (id(1:1) .eq. '$') then
         hsrch=hsrchz(id)
       else
-        slen=min(lenw(id),MAXPNAME)
+        slen=min(len_trim(id),MAXPNAME)
         idw(1:1)='$'
         idw(2:)=id(:slen)
         hsrch=hsrchz(idw(:slen+1))
@@ -28,9 +28,8 @@ c end debug
       character wtoken*(MAXPNAME)
 c
       integer*4 loopc,slen,slenw,iw,isum,i
-      integer*4 lenw
 c
-      slen=lenw(token)
+      slen=len_trim(token)
       wtoken=token(:slen)
       if(slen .le. 0) then
          print *,'hsrchz warning: NULL token as input'
@@ -79,9 +78,8 @@ c
       character wtoken*(MAXPNAME)
 c     
       integer*4 loopc,slen,slenw,iw,isum,i
-      integer*4 lenw
 c     
-      slen=lenw(token)
+      slen=len_trim(token)
       wtoken=token(:slen)
       if(slen .le. 0) then
         print *,'hsrchz warning: NULL token as input'

@@ -110,7 +110,7 @@ c     tfstringliststk destroy `string' to decode backslash escape
 c     Search '"' from string(is:l) with backslash escape
         is1=is
         do while(is .le. l .and. string(is1:is1) .ne. '"')
-           if(string(is1:is1) .eq. '\') then
+           if(string(is1:is1) .eq. '\\') then
               string(is1:l-1)=string(is1+1:l)
               l=l-1
            endif
@@ -128,7 +128,7 @@ c     Search '"' from string(is:l) with backslash escape
 c     Search '"' from string(is+1:l) with backslash escape
         in=is
         do while(in .le. l .and. string(in:in) .ne. '"')
-           if(string(in:in) .eq. '\') then
+           if(string(in:in) .eq. '\\') then
               string(in:l-1)=string(in+1:l)
               l=l-1
            endif

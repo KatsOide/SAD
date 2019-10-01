@@ -1,11 +1,11 @@
       module tftok
       implicit none
-      character*28 oper
+      character*29 oper
       character*24 oper1
       character*15 oper2
       character*4 oper3
       character*11 opern
-      parameter (oper=' +-*/=(){}[],;@#:^&<>|~.?"''')
+      parameter (oper=' +-*/=(){}[],;@#:^&<>|~.?"'''//char(9))
       parameter (oper1='+-*/=(){}[],;@#:^&<>|~.?')
       parameter (oper2='=><&|/.+-:#@[*)')
       parameter (oper3='=>@.')
@@ -33,8 +33,7 @@
         do while(i .le. l)
           ch=string(i:i)
           i=i+1
-          if(ch .eq. '\' .and. i .le. l)then
-c '
+          if(ch .eq. '\\' .and. i .le. l)then
             ch=string(i:i)
             if('0' .le. ch .and. ch .le. '7')then
 c     Octal character literal:		\#[##]
@@ -111,10 +110,13 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
             elseif(ch .eq. 'e')then
               ch=char(27)
               i=i+1
+            elseif(ch .eq. C_NEW_LINE)then
+              i=i+1
+              cycle
             else
               i=i+1
             endif
-          elseif(del .ne. ' ' .and. ch .eq. del)then
+          elseif(notabspace(del) .and. ch .eq. del)then
             exit
           endif
           call putstringbufb1(strb,ch)
@@ -123,6 +125,13 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
         kxmakestring=sad_descr(strb%string(1))
         return
         end function 
+
+        logical*4 function notabspace(ch)
+        implicit none
+        character ch
+        notabspace=ch .ne. ' ' .and. ch .ne. char(9)
+        return
+        end function
 
       end module
 
@@ -140,13 +149,14 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
       type (sad_symdef), pointer :: symd
       type (sad_namtbl), pointer ::loc
       type (sad_strbuf), pointer :: strb
-      integer*4 istop,nc,is2,isp0,lm,ich,irt
+      integer*4 istop,nc,is2,isp0,lm,ich,irt,nnl
       integer*8 kax,ka,icont
       character*(*) string
-      real*8 vx,eval1
-      integer*4 m,l,i1,is1,notspace,ifromstr,
+      real*8 vx,eval2
+      integer*4 l,i1,is1,notspace,ifromstr,
      $     i,jc,itfopcode,it1,it2,notany1
       character*1 ch
+      character*2048 buf
       kx%k=ktfoper+mtfnull
       l=len(string)
       irt=-2
@@ -155,27 +165,32 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
         return
       endif
       istop=l+1
-c      if(istart .le. 0)then
-c        return
-c      endif
-      if(string(1:1) .ne. ' ')then
+      if(notabspace(string(1:1)))then
         is1=1
         go to 1
       endif
       do i=2,l
-        if(string(i:i) .ne. ' ')then
+        if(notabspace(string(i:i)))then
           is1=i
           go to 1
         endif
       enddo
       return
  1    ch=string(is1:is1)
+c      if(is1 .eq. 1)then
+c        write(*,*)'tfetok-1 ',l,ch
+c      endif
       ich=ichar(ch)
       if(levelop(ich) .ne. 0)then
         if(ch .eq. C_NEW_LINE)then
-          irt=-2
-          istop=is1+1
-          return
+          if(is1 .eq. 1 .or. string(is1-1:is1-1) .ne. '\\')then
+c            write(*,*)'tfetok-2 ',is1,'''',string(is1-1:is1-1),''''
+            irt=-2
+            istop=is1+1
+            return
+          else
+c            write(*,*)'tfetok-3 '
+          endif
         elseif(ch .eq. '''' .or. ch .eq. '"')then
           isp0=isp
           kx=kxmakestring(string(is1+1:l),l-is1,ch,i1)
@@ -216,13 +231,13 @@ c      endif
             kax=jc
             istop=i+1
             if(jc .eq. mtfdot)then
-              vx=eval1(string,l,is1,m)
-              if(m .gt. 0)then
-                istop=is1+m
+              vx=eval2(string,i,istop,buf)
+              if(istop .gt. i)then
                 irt=0
                 kx=dfromr(vx)
                 return
               endif
+              istop=i+1
             elseif(jc .eq. mtfreplace .or. jc .eq. mtfunset
      $           .or. jc .eq. mtfreplacerepeated
      $           .or. jc .eq. mtfincrement
@@ -280,18 +295,24 @@ c      endif
         enddo
         istop=is1+1
       elseif(ch .ge. '0' .and. ch .le. '9')then
-        vx=eval1(string,l,is1,m)
-        if(m .gt. 0)then
-          istop=is1+m
-          irt=0
-          kx=dfromr(vx)
-        endif
+        vx=eval2(string,is1,istop,buf)
+        kx=dfromr(vx)
+        irt=0
+        return
+      elseif(ch .eq. '!')then
         return
       else
         irt=0
         nc=l-is1+1
+        nnl=0
         do i=is1+1,l
           if(levelop(ichar(string(i:i))) .ne. 0)then
+            if(string(i:i) .eq. '\n')then
+              if(i .gt. is1+1 .and. string(i-1:i-1) .eq. '\\')then
+                nnl=nnl+2
+                cycle
+              endif
+            endif
             nc=i-is1
             istop=i
             exit
@@ -300,9 +321,16 @@ c      endif
         if(icont .ge. 0)then
           it1=is1
           it2=it1+nc-1
+          if(nnl .gt. 0)then
+            call tremovecont(string(it1:it2),buf)
+          endif
           if(index(string(it1:it2),'_') .ne. 0)then
             irt=0
-            kx=kxpaloc(string(it1:it2))
+            if(nnl .eq. 0)then
+              kx=kxpaloc(string(it1:it2))
+            else
+              kx=kxpaloc(buf(1:nc-nnl))
+            endif
             return
           elseif(string(it1:it1) .eq. '%')then
             if(nc .eq. 1)then
@@ -317,11 +345,19 @@ c      endif
               kx=kxavaloc(-1,1,klr)
               call descr_sad(kx,klx)
               klx%head%k=ktfsymbol+ktfcopy1(iaxout)
-              klr%rbody(1)=ifromstr(string(it1+1:it2))
+              if(nnl .eq. 0)then
+                klr%rbody(1)=ifromstr(string(it1+1:it2))
+              else
+                klr%rbody(1)=ifromstr(buf(1:nc-nnl))
+              endif
               go to 9000
             endif
           endif
-          kx=kxsymbolz(string(it1:it2),nc,symd)
+          if(nnl .eq. 0)then
+            kx=kxsymbolz(string(it1:it2),nc,symd)
+          else
+            kx=kxsymbolz(buf,nc-nnl,symd)
+          endif
 c          write(*,*)'tfetok ',string(it1:it2),kax,klist(kax)
 c          call tfdebugprint(kx,'etok',1)
           if(rlist(iaximmediate) .ne. 0.d0)then
@@ -339,6 +375,77 @@ c          write(*,*)'kax ',kax
         endif
       endif
  9000 return
+      end
+
+      real*8 function eval2(string,is1,istop,buf) result(vx)
+      implicit none
+      character*(*) string,buf
+      integer*4 l,is1,m,j,nnl,istop,is2
+      real*8 eval1
+      l=len(string)
+      vx=eval1(string,l,is1,m)
+      istop=is1+m
+      if(m .gt. 0 .or. string(is1:is1) .eq. '.')then
+        is2=is1+max(m,1)
+        if(is2 .lt. l .and. string(is2:is2+1) .eq. '\\\n')then
+          call tedigicopy(string(is1:l),buf,j,nnl)
+          vx=eval1(buf,j,1,m)
+          istop=is1+m+nnl
+        endif
+      endif
+      return
+      end
+
+      subroutine tedigicopy(string,buf,j,nnl)
+      implicit none
+      character*(*), intent(in)::string
+      character*(*), intent(out)::buf
+      integer*4 , intent(out)::j,nnl
+      integer*4 i
+      character ch
+      j=0
+      i=0
+      nnl=0
+      do while (i .lt. len(string))
+        i=i+1
+        ch=string(i:i)
+        if(ch .eq. '\\')then
+          if(i .lt. len(string) .and. string(i+1:i+1) .eq. '\n')then
+            nnl=nnl+2
+            i=i+1
+            cycle
+          else
+            exit
+          endif
+        elseif(ch .ge. '0' .and. ch .le. '9'
+     $         .or. index('eEdDxX-+.',ch) .ne. 0)then
+          j=j+1
+          buf(j:j)=ch
+        else
+          exit
+        endif
+      enddo
+      return
+      end
+
+      subroutine tremovecont(string,buf)
+      implicit none
+      character*(*), intent(in)::string
+      character*(*), intent(out)::buf
+      integer*4 i,j
+      i=0
+      j=0
+      do while(i .lt. len(string))
+        i=i+1
+        if(i .lt. len(string) .and. string(i:i+1) .eq. '\\\n')then
+          i=i+1
+          cycle
+        else
+          j=j+1
+          buf(j:j)=string(i:i)
+        endif
+      enddo
+      return
       end
 
       integer function itfopcode(oper)

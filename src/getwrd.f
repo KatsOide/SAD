@@ -7,7 +7,7 @@ c     Peek/Get word from input buffer with case preserving
       integer*4 next,is,notany,ifany
       next=ipoint
       peekwd0=0
-      if(ipoint .gt. lrecl)then
+      if(ipoint .gt. lrecl .or. ipoint .lt. 1)then
         outstr=' '
         return
       endif
@@ -18,11 +18,20 @@ c     Peek/Get word from input buffer with case preserving
           next=is
           outstr=' '
           return
+        elseif(is .eq. lrecl)then
+          next=lrecl+1
+          outstr=buffer(ipoint:is)
+          peekwd0=is-ipoint+1
+          return
         endif
+      else
+        next=lrecl+1
+        outstr=' '
+        return
       endif
       next=ifany(buffer(1:lrecl),delim(1:ldel),is+1)
       if(next .le. 0)then
-        next=lrecl
+        next=lrecl+1
       endif
       outstr=buffer(is:next-1)
       peekwd0=next-is
@@ -35,6 +44,7 @@ c     Peek/Get word from input buffer with case preserving
       character*(*) outstr
       integer*4 next,peekwd0
       getwdl0=peekwd0(outstr,next)
+c      write(*,*)'getwdl0 ',next,ipoint,lrecl
       call cssetp(next)
       return
       end
@@ -46,7 +56,7 @@ c     Peek/Get word from input buffer with case preserving
       integer*4 getwdl0
  1    getwrd0=getwdl0(outstr)
       if(outstr(1:1) .eq. ' ')then
-        call skipln
+        call skiplnget
         if(icsstat() .ne. 0)then
           outstr=' '
           return
@@ -86,7 +96,7 @@ c     Peek/Get word from input buffer with case normalization
       end
 
       subroutine getwrd(outstr)
-            use tfstk
+      use tfstk
       use ffs_flag
       use tmacro
       implicit none
@@ -146,7 +156,7 @@ c     Peek/Get word from input buffer with case normalization/preserved
 c     1st arg(outstr)	case normalized word
 c     2nd arg(outstrp)	case preserved word by preservecase flag
       subroutine peekwd2(outstr,outstrp,next)
-            use tfstk
+      use tfstk
       use ffs_flag
       use tmacro
       implicit none
@@ -253,14 +263,14 @@ c     Peek character from input buffer with case normalization
       return
       end
 
-      subroutine skipln
+      subroutine skiplnget
       use ffs_flag
       use tfcsi
       implicit none
       integer*4 ifany,is
-      if(ipoint .gt. 0)then
+      if(ipoint .ge. ipbase .and. ipoint .le. lrecl)then
         is=ifany(buffer(1:lrecl),delim(1:2),ipoint)
-        if(is .gt. 1 .and. is .lt. lrecl)then
+        if(is .ge. ipoint .and. is .lt. lrecl)then
           ipoint=is+1
         else
           ipoint=lrecl+1
@@ -273,32 +283,29 @@ c     Peek character from input buffer with case normalization
       return
       end
 
-      subroutine csrst(lfn0)
-      use tfcsi
-      implicit none
-      integer*4 lfn0
-      lfn1=lfn0
-      call skipline
-      call cssets(0)
-      return
-      end
-
       subroutine skipline
       use tfcsi
       implicit none
       integer*4 ipoint1,ifchar
       if(ipoint .ge. lrecl)then
         ipoint=lrecl+1
-        buffer(lrecl:lrecl)=char(10)
       else
         ipoint1=ifchar(buffer(1:lrecl),char(10),ipoint)+1
         if(ipoint1 .le. 1)then
-          write(*,*)'Buffer is damaged. point= ',ipoint,' total= ',lrecl
-          buffer(lrecl:lrecl)=char(10)
           ipoint=lrecl+1
         else
           ipoint=ipoint1
         endif
       endif
+      return
+      end
+
+      subroutine csrst(lfn0)
+      use tfcsi
+      implicit none
+      integer*4 lfn0
+      lfn1=lfn0
+      call skipline
+      ios=0
       return
       end

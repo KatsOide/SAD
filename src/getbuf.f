@@ -1,68 +1,93 @@
+      module prmpt
+        integer*4 , save:: ipr=0
+      end module
+
       subroutine getbuf
+      implicit none
+      call getbuf0(.true.)
+      return
+      end
+
+      subroutine getbuf0(trim)
       use tfrbuf
       use tfcsi
+      use iso_c_binding
       implicit none
-      integer*4 lrecl0,lr
+      integer*4 lrecl0,lrecl1,nc
+      logical*4 unmapped,trim
       if(lfni .le. 0)then
         ios=99999
         return
+      else
+        ios=0
       endif
-2     if(ipoint .ge. lrecl)then
-        call tprmpt(lfni,lfno,lfn1)
+      unmapped=itbuf(lfni) .le. moderead
+      do while (ipoint .le. lrecl)
+        call skipline
+      enddo
+      call tprmpt(lfni,lfno,lfn1)
+      if(unmapped)then
         if(.not. rec)then
           lrecl0=linep+1
         else
           lrecl0=lrecl+1
         endif
         ipoint=lrecl0
-        if(lrecl0 .gt. 1 .and.
-     $       index(delim(1:ldel),buffer(lrecl0-1:lrecl0-1)) .le. 0)then
-          write(*,*)'getbuf-unusual record ',rec,lrecl0,
-     $         buffer(max(1,lrecl0-32):lrecl0)
-          buffer(lrecl0:lrecl0)=char(10)
-          lrecl0=lrecl0+1
-        endif
- 1      ios=-999
-        if(lrecl0 .gt. nbmax-256)then
-          ios=999999
-          go to 10
-        endif
-        call tfreadbuf(irbreadrecord,lfni,int8(0),int8(0),
-     $       lr,buffer(lrecl0:))
-        if(lr .eq. -99)then
-          go to 20
-        elseif(lr .eq.  -999)then
-          go to 10
-        endif
-        if(lr .le. 0)then
-          lrecl=lrecl0-1
-        else
-          lrecl=len_trim(buffer(1:lrecl0+lr-1))
-        endif
-c        write(*,*)'getbuf ',lfni,lrecl0,lr,buffer(lrecl0:lrecl)
-        if(lfn1 .gt. 0)then
-          write(lfn1,'(1X,A)')buffer(lrecl0:lrecl)
-        endif
-        ios=0
-        if(lrecl .ge. lrecl0)then
-          call removetab(buffer(lrecl0:lrecl))
-          call removecomment(buffer(lrecl0:lrecl),cmnt(1:lcmnt),'''"')
-        endif
-        if(lrecl .lt. lrecl0 .or. buffer(lrecl0:lrecl) .eq. ' ')then
-          lrecl=lrecl0
-        else
-          lrecl=len_trim(buffer(1:lrecl))
-          if(buffer(lrecl:lrecl) .eq. '\')then !'
-            lrecl0=lrecl
-            go to 1
+        lrecl0=max(lrecl0,1)
+        lrecl1=lrecl0
+        do while (ios .eq. 0)
+          ios=irbnofile
+          if(lrecl0 .gt. nbmax-256)then
+            ios=999999
+            go to 10
           endif
-          lrecl=lrecl+1
+          call tfreadbuf(lfni,lrecl0,nc)
+          if(nc .eq. irbeof)then
+            go to 20
+          elseif(nc .eq.  irbnofile)then
+            go to 10
+          elseif(nc .le. 0)then
+            lrecl=max(lrecl0-1,0)
+          elseif(trim)then
+            lrecl=len_trim(buffer(1:lrecl0+nc-1))
+          else
+            lrecl=lrecl0+nc-1
+          endif
+          if(lfn1 .gt. 0)then
+            write(lfn1,'(1x,a)')buffer(lrecl0:lrecl)
+          endif
+          ipoint=lrecl1
+          ios=0
+          if(lrecl .lt. lrecl0 .or.
+     $         trim .and. (buffer(lrecl0:lrecl) .eq. ' '))then
+            lrecl=max(lrecl0-1,0)
+            exit
+          else
+            if(buffer(lrecl:lrecl) .eq. '\\')then
+              lrecl0=lrecl
+            else
+              lrecl=lrecl+1
+              exit
+            endif
+          endif
+        enddo
+        if(lrecl .gt. 0)then
+          buffer(lrecl:lrecl)=char(10)
         endif
-        buffer(lrecl:lrecl)=char(10)
       else
-        call skipline
-        if(ipoint .ge. lrecl)then
-          go to 2
+        ios=0
+        call tfreadbuf(lfni,1,nc)
+        if(nc .eq. irbeof)then
+          go to 20
+        elseif(nc .eq.  irbnofile)then
+          go to 10
+        endif
+        if(lfn1 .gt. 0)then
+          if(buffer(lrecl:lrecl) .eq. char(10))then
+            write(lfn1,'(1x,a)')buffer(ipoint:lrecl-1)
+          else
+            write(lfn1,'(1x,a)')buffer(ipoint:lrecl)
+          endif
         endif
       endif
       return
@@ -83,107 +108,60 @@ c        write(*,*)'getbuf ',lfni,lrecl0,lr,buffer(lrecl0:lrecl)
       endif
       return
       end
-      
-      subroutine capita1(string)
-      character*(*) string
-      character c,qc
-      logical quote
-      l=len(string)
-      ioff=ichar('A')-ichar('a')
-      quote=.false.
-      qc=' '
-      do 10 i=1,l
-        c=string(i:i)
-        if(quote)then
-          if(c .eq. qc)then
-            quote=.false.
+
+      subroutine tprmpt(lfni,lfno,lfn1)
+      use tfstk
+      use ffs
+      use ophash, only: opcode
+      use tffitcode
+      use prmpt
+      implicit none
+      character*80 pr
+      character*10 n,autofg
+      integer*4, intent(in):: lfni,lfno,lfn1
+      integer*4 l,nc
+      if(lfni .eq. 5 .and. lfno .eq. 6 .and. lfn1 .eq. 0)then
+        if(ipr .eq. 0)then
+          if(ffsprmpt)then
+            call elname(mfpnt,pr)
+            l=len_trim(pr)
+            if(mfpnt .ne. mfpnt1)then
+              pr(l+1:l+1)=':'
+              call elname(mfpnt1,pr(l+2:80))
+              l=len_trim(pr)
+            endif
+            pr(l+1:l+1)='/'
+            call elname(id1,pr(l+2:80))
+            l=len_trim(pr)
+            if(id1 .ne. id2)then
+              pr(l+1:l+1)=':'
+              call elname(id2,pr(l+2:80))
+              l=len_trim(pr)
+            endif
+            pr(l+1:l+1)='>'
+            write(lfno,'(a,$)')pr(1:l+1)
+          else
+            n=autofg(rlist(iaxline)+1.d0,'S10.0')
+            write(lfno,'('' In['',a,'']:= '',$)')n(1:len_trim(n))
           endif
-        else        
-          if(c .eq. '''' .or. c .eq. '"')then
-            quote=.true.
-            qc=c
-          elseif(c .ge. 'a' .and. c .le. 'z')then
-            string(i:i)=char(ichar(c)+ioff)
-          endif
+        elseif(ipr .gt. 0)then
+          nc=len_trim(opcode(ipr))
+          pr(1:9)=' ...'//opcode(ipr)(1:nc)//'    '
+          write(lfno,'(a,$)')pr(1:9)
         endif
- 10   continue
-      return
-      end
-
-      subroutine setbuf(string,nc)
-      use tfcsi
-      implicit none
-      integer*4 nc
-      character*(nc) string
-      ipoint=lrecl+1
-      linep=ipoint
-      lrecl=ipoint+nc
-      buffer(ipoint:lrecl-1)=string
-      call removetab(buffer(ipoint:lrecl))
-      call removecomment(buffer(ipoint:lrecl),cmnt(1:lcmnt),'''"')
-      buffer(lrecl:lrecl)=char(10)
-c      write(*,*)'setbuf ',ipoint,lrecl,string
-      return
-      end
-
-      subroutine savebuf(string,nc)
-      use tfcsi
-      implicit none
-      integer*4 nc,i
-      character*(*) string
-      nc=min(len(string),max(lrecl-ipoint,0))
-      if(nc .gt. 0)then
-        do i=ipoint,ipoint+nc-1
-          if(buffer(i:i) .eq. char(10))then
-            nc=i-ipoint+1
-            exit
-          endif
-        enddo
-        string(:nc)=buffer(ipoint:lrecl-1)
+      elseif(lfno .eq. -1)then
+        ipr=lfni
       endif
       return
       end
 
-      subroutine removecomment(buf,comment,quote)
-      character*(*) buf,quote
-      character comment
-      integer*4 i1,iq,ic,iq1,ifany1
-      i1=1
-      ic=index(buf,comment)
-      do while(ic .gt. 0)
-        iq=ifany1(buf,len(buf),quote,i1)
-        if(iq .eq. 0 .or. iq .gt. ic)then
-          buf(ic:)=' '
-          return
-        endif
-        iq1=index(buf(iq+1:),buf(iq:iq))
-        if(iq1 .le. 0)then
-          return
-        else
-          i1=iq+iq1+1
-          ic=index(buf(i1:),comment)
-          if(ic .le. 0)then
-            return
-          endif
-          ic=i1+ic-1
-        endif
-      enddo
-      return
-      end
-
-      subroutine removetab(buf)
+      subroutine tprmptget(ipr1,trim)
+      use prmpt
       implicit none
-      character*(*) buf
-      integer*4 i1,i
-      i1=index(buf,char(9))
-      do while(i1 .gt. 0)
-        buf(i1:i1)=' '
-        i=index(buf(i1+1:),char(9))
-        if(i .gt. 0)then
-          i1=i1+i
-        else
-          return
-        endif
-      enddo
+      integer*4 , intent(in)::ipr1
+      logical*4 , intent(in)::trim
+      ipr=ipr1
+      call getbuf0(trim)
+      ipr=0
       return
       end

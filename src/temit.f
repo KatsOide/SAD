@@ -554,6 +554,246 @@ c     Table of loss-rate
 
       end module touschek_table
 
+      module photontable
+      implicit none
+      type photonp
+        sequence
+        real*8 al,phi,theta,rho,cost,sint,chi,geo1(3,4)        
+        integer*4 l
+      end type
+      integer*4 ntable,ltable
+      parameter (ntable=256,ltable=100000)
+      integer*8 kphtable(ntable)
+      integer*4 nt,itp,ilp,lt
+      type (photonp) pp
+
+      contains
+      subroutine tphotoninit()
+      use tfstk
+      use tmacro
+      implicit none
+      nt=ntable
+      lt=ltable
+      itp=0
+      ilp=0
+      kphtable(1)=0
+      return
+      end subroutine
+
+      subroutine tsetphotongeo(al0,phi0,theta0,ini)
+      use tmacro, only:l_track
+      implicit none
+      real*8, intent(in):: al0,phi0,theta0
+      logical*4 , intent(in)::ini
+      real*8 gv(3,4),cp0,sp0,cost,sint,r1,r2
+      associate(l=>pp%l,al=>pp%al,phi=>pp%phi,theta=>pp%theta,
+     $     x1=>pp%geo1(1,1),x2=>pp%geo1(2,1),x3=>pp%geo1(3,1),
+     $     y1=>pp%geo1(1,2),y2=>pp%geo1(2,2),y3=>pp%geo1(3,2),
+     $     z1=>pp%geo1(1,3),z2=>pp%geo1(2,3),z3=>pp%geo1(3,3),
+     $     gx0=>pp%geo1(1,4),gy0=>pp%geo1(2,4),gz0=>pp%geo1(3,4),
+     $     rho=>pp%rho,chi=>pp%chi,geo1=>pp%geo1)
+      l=l_track
+      if(ini)then
+        call tggeol(l,gv)
+      else
+        gv=geo1
+      endif
+      al=al0
+      theta=theta0
+      phi=phi0
+      cost=cos(theta)
+      sint=sin(theta)
+      x1= cost*gv(1,1)-sint*gv(1,2)
+      x2= cost*gv(2,1)-sint*gv(2,2)
+      x3= cost*gv(3,1)-sint*gv(3,2)
+      y1= sint*gv(1,1)+cost*gv(1,2)
+      y2= sint*gv(2,1)+cost*gv(2,2)
+      y3= sint*gv(3,1)+cost*gv(3,2)
+      z1=gv(1,3)
+      z2=gv(2,3)
+      z3=gv(3,3)
+      if(phi .eq. 0.d0)then
+        rho=0.d0
+        gx0=gv(1,4)+z1*al
+        gy0=gv(2,4)+z2*al
+        gz0=gv(3,4)+z3*al
+      else
+        rho=al/phi
+        sp0=sin(phi)
+        cp0=cos(phi)
+        r1=rho*sp0
+        if(cp0 .ge. 0.d0)then
+          r2=rho*sp0**2/(1.d0+cp0)
+        else
+          r2=rho*(1.d0-cp0)
+        endif
+        gx0=gv(1,4)+(r1*z1-r2*x1)
+        gy0=gv(2,4)+(r1*z2-r2*x2)
+        gz0=gv(3,4)+(r1*z3-r2*x3)
+        z1=-sp0*x1+cp0*gv(1,3)
+        x1= cp0*x1+sp0*gv(1,3)
+        z2=-sp0*x2+cp0*gv(2,3)
+        x2= cp0*x2+sp0*gv(2,3)
+        z3=-sp0*x3+cp0*gv(3,3)
+        x3= cp0*x3+sp0*gv(3,3)
+c        write(*,'(a,1p12g10.2)')'tsetphgv ',gx0,gy0,gz0,
+c     $       x1,x2,x3,y1,y2,y3,z1,z2,z3
+      endif
+      if(x3 .eq. 0.d0)then
+        chi=0.d0
+      else
+        chi=2.d0*atan2(x3,-y3)
+      endif
+      return
+      end associate
+      end subroutine
+
+      subroutine tphotonconv(xi,pxi,yi,pyi,dp,dpr,p1,h1,ds,k)
+      use tfstk
+      use tmacro, only:p0
+      use mathfun, only:pxy2dpz
+      implicit none
+      integer*4 , intent(in)::k
+      integer*8 kp
+      real*8 xi,pxi,yi,pyi,dp,p1,h1,xi3a,gx,gy,gz,dpr,
+     $     dpgx,dpgy,dpgz,ds,xir,pxir,zir,pzi,pyir,
+     $     phi1,cp,sp,thu,thv,xi30,xi1,xi2,xi3,pxia
+      associate(l=>pp%l,al=>pp%al,phi=>pp%phi,theta=>pp%theta,
+     $     x1=>pp%geo1(1,1),x2=>pp%geo1(2,1),x3=>pp%geo1(3,1),
+     $     y1=>pp%geo1(1,2),y2=>pp%geo1(2,2),y3=>pp%geo1(3,2),
+     $     z1=>pp%geo1(1,3),z2=>pp%geo1(2,3),z3=>pp%geo1(3,3),
+     $     gx0=>pp%geo1(1,4),gy0=>pp%geo1(2,4),gz0=>pp%geo1(3,4),
+     $     rho=>pp%rho,chi=>pp%chi,geo1=>pp%geo1)
+      call radangle(h1,rho*p1/p0,dpr,thu,thv,xi30,xi2)
+      pxir=pxi+thu
+      pyir=pyi+thv
+      pzi=1.d0+pxy2dpz(pxir,pyir)
+      if(phi .ne. 0.d0)then
+        phi1=ds/rho
+        cp=cos(phi1)
+        sp=sin(phi1)
+        xir=xi*cp
+        zir=rho*sp
+        xi3=(cp-sp)*(cp+sp)*xi30
+        xi1=-2.d0*cp*sp*xi30
+        pxia=pxir
+        pxir=pxia*cp-pzi*sp
+        pzi=pxia*sp+pzi*cp
+      else
+        xir=xi
+        zir=ds
+        xi3=xi30
+        xi1=0.d0
+      endif
+      gx=gx0+xir*x1+yi*y1+zir*z1
+      gy=gy0+xir*x2+yi*y2+zir*z2
+      gz=gz0+xir*x3+yi*y3+zir*z3
+      dpgx=dp*(pzi*z1+pxir*x1+pyir*y1)
+      dpgy=dp*(pzi*z2+pxir*x2+pyir*y2)
+      dpgz=dp*(pzi*z3+pxir*x3+pyir*y3)
+c      write(*,'(a,2i5,1p5g12.4)')'phconv ',k,l,
+c     $     pxia,pxir*x2,pyir*y2,pzi*z2,dpgy/dp
+      xi3a=cos(chi)*xi3+sin(chi)*xi1
+      xi1=-sin(chi)*xi3+cos(chi)*xi1
+      xi3=xi3a
+      if(ilp .eq. 0)then
+        itp=itp+1
+        kphtable(itp)=ktaloc(10*lt)
+        ilp=1
+      endif
+      kp=kphtable(itp)+(ilp-1)*10
+      ilist(1,kp)=k
+      ilist(2,kp)=l
+      rlist(kp+1)=gx
+      rlist(kp+2)=gy
+      rlist(kp+3)=gz
+      rlist(kp+4)=dpgx
+      rlist(kp+5)=dpgy
+      rlist(kp+6)=dpgz
+      rlist(kp+7)=xi1
+      rlist(kp+8)=xi2
+      rlist(kp+9)=xi3
+      ilp=ilp+1
+      if(ilp .gt. lt)then
+        ilp=0
+      endif
+      end associate
+      end subroutine
+
+      subroutine tgswap(l)
+      use ffs_pointer, only:geo
+      implicit none
+      integer*4 , intent(in)::l
+      real*8 v(3)
+      v=geo(:,1,l)
+      geo(:,1,l)=geo(:,2,l)
+      geo(:,2,l)=v
+      return
+      end subroutine
+
+      subroutine tphotonlist()
+      use tfstk
+      use tmacro
+      implicit none
+      type (sad_dlist), pointer ::klx
+      type (sad_rlist), pointer ::klri
+      integer*4 nitem
+      parameter (nitem=12)
+      integer*8 kax, kp,kt
+      integer*4 nph,i
+      real*8 dp
+      integer*8 kphlist
+      data kphlist/0/
+      if(kphlist .eq. 0)then
+        kphlist=ktfsymbolz('`PhotonList',11)-4
+      endif
+      call tflocal(klist(kphlist))
+      if(itp .le. 0)then
+        kax=kxnulll
+      else
+        nph=(itp-1)*lt+max(ilp-1,0)
+        kax=ktadaloc(-1,nph,klx)
+        klx%attr=ior(klx%attr,lconstlist)
+        itp=1
+        ilp=0
+        kt=kphtable(1)
+        do i=1,nph
+          ilp=ilp+1
+          if(ilp .gt. lt)then
+            ilp=1
+            itp=itp+1
+            kt=kphtable(itp)
+          endif
+          kp=kt+(ilp-1)*10
+          klx%dbody(i)%k=ktflist+ktavaloc(0,nitem,klri)
+          klri%attr=lconstlist
+          dp=sqrt(rlist(kp+4)**2+rlist(kp+5)**2
+     $         +rlist(kp+6)**2)
+          klri%rbody(1)=dp*amass
+          klri%rbody(2)=rlist(kp+1)
+          klri%rbody(3)=rlist(kp+2)
+          klri%rbody(4)=rlist(kp+3)
+          klri%rbody(5)=rlist(kp+4)/dp
+          klri%rbody(6)=rlist(kp+5)/dp
+          klri%rbody(7)=rlist(kp+6)/dp
+          klri%rbody(8)=rlist(kp+7)
+          klri%rbody(9)=rlist(kp+8)
+          klri%rbody(10)=rlist(kp+9)
+          klri%rbody(11)=ilist(1,kp)
+          klri%rbody(12)=ilist(2,kp)
+        enddo
+        do i=1,itp
+          if(kphtable(i) .ne. 0)then
+            call tfree(kphtable(i))
+          endif
+        enddo
+      endif
+      klist(kphlist)=ktflist+ktfcopy1(kax)
+      return
+      end subroutine
+
+      end module
+
       module tspin
       use macphys
 
@@ -933,17 +1173,23 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         end subroutine
 
         subroutine tradkf1(x,px,y,py,z,g,dv,sx,sy,sz,
-     $     px00,py0,zr0,cphi0,sphi0,bsi,al)
+     $     px00,py0,zr0,cphi0,sphi0,bsi,al,k)
         use ffs_flag
         use tmacro
+        use photontable, only:tphotonconv
         use mathfun, only:pxy2dpz,p2h
         implicit none
+        integer*4 ,parameter :: npmax=10000
+        integer*4 , intent(in)::k
+        integer*4 i
         real*8, parameter:: gmin=-0.9999d0,
      $       cave=8.d0/15.d0/sqrt(3.d0)
         real*8 x,px,y,py,z,g,dv,px0,py0,zr0,bsi,al,
      $       dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
      $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,sx,sy,sz,
-     $       ppa,an,a,dph,r1,r2,px00,cphi0,sphi0
+     $       ppa,an,a,dph,r1,r2,px00,cphi0,sphi0,
+     $       xr,yr
+        real*8 dpr(npmax),rph(npmax)
         dpz0=pxy2dpz(px00,py0)
         px0= cphi0*px00+sphi0*(1.d0+dpz0)
         dpz0=cphi0*dpz0-sphi0*px00
@@ -961,9 +1207,23 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         h1=p2h(p)
         anp=anrad*h1*theta
         al1=al-z+zr0
-        call tdusrn(anp,dph,r1,r2,an)
+        if(photons)then
+          call tdusrnpl(anp,dph,r1,r2,an,dpr,rph)
+        else
+          call tdusrn(anp,dph,r1,r2,an)
+        endif
         if(an .ne. 0.d0)then
           uc=cuc*h1**3/p0*theta/al1
+          if(photons)then
+            do i=1,int(an)
+              dg=dpr(i)*uc
+              xr=x-rph(i)*(px-.5d0*dpx*rph(i))*al
+              yr=y-rph(i)*(py-.5d0*dpy*rph(i))*al
+c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
+              call tphotonconv(xr,px,yr,py,dg,
+     $             dpr(i),p,h1,-rph(i)*al,k)
+            enddo
+          endif
           dg=-dph*uc
           dg=dg/(1.d0-2.d0*dg)
           g=max(gmin,g+dg)
@@ -1675,7 +1935,7 @@ c        write(*,*)'temit-tcod ',trf0
           call tput(cod,label2,' Entrance ','9.6',1,lfno)
         endif
         call tinitr12(trans)
-        call tturne(trans,cod,beam,srot,int8(0),int8(0),int8(0),
+        call tturne(trans,cod,beam,srot,i00,i00,i00,
      $       .false.,.false.,rt)
       endif
       irad=12
@@ -1691,7 +1951,7 @@ c        write(*,*)'temit ',trf0,cod
         srot(3,3)=1.d0
         gintd=0.d0
         call tsetr0(trans,cod,0.d0,0.d0)
-        call tturne(trans,cod,beam,srot,int8(0),int8(0),int8(0),
+        call tturne(trans,cod,beam,srot,i00,i00,i00,
      1       .false.,.false.,rt)
       endif
 c     call tsymp(trans)

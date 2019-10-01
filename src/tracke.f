@@ -44,7 +44,7 @@ c     (Subroutine call flow at 2008/01/25)
 c     Under tffsa() subroutine, SADScript interpreter is already initialized.
 c
 c     Store current random seed into NISTACK$FIXSEED stack
-      call tfevalb('NISTACK$FIXSEED@Push[]',22,kx,irtc)
+      call tfevalb('NISTACK$FIXSEED@Push[]',kx,irtc)
       l2=l20
       if(l20 .lt. nlat)then
         if(idtype(ilist(2,latt(l20))) .eq. icMARK)then
@@ -169,9 +169,9 @@ c     end of lines added by N. Yamamoto
       endif
 c     Restore prior random seed from NISTACK$FIXSEED stack if needed
       if(fseed)then
-        call tfevalb('NISTACK$FIXSEED@Pop[]',21,kx,irtc)
+        call tfevalb('NISTACK$FIXSEED@Pop[]',kx,irtc)
       else
-        call tfevalb('NISTACK$FIXSEED@Discard[]',25,kx,irtc)
+        call tfevalb('NISTACK$FIXSEED@Discard[]',kx,irtc)
       endif
       call tclrfpe
       return

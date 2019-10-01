@@ -4,7 +4,7 @@
       type (sad_descriptor) k
       integer*4 nc
       character*(*) form
-      character*65535 buff
+      character*(len(tfconvstr)) buff
       call tfconvstrs(buff,k,nc,.false.,form)
       nc=min(nc,len(tfconvstr))
       tfconvstr=buff(1:nc)

@@ -3,7 +3,7 @@
       use ffs
       use ffs_pointer
       use tffitcode
-      use tfcsi,only:cssetp
+      use tfcsi,only:ipoint
       implicit none
       integer*4 lfno,i,k,j,next1
       character*(MAXPNAME) word
@@ -17,7 +17,7 @@
         k=idelc(klp(i))
         if(tmatch(pname(k),word))then
           if(.not. exist)then
-            call cssetp(next1)
+            ipoint=next1
             exist=.true.
           endif
           j=0
@@ -46,7 +46,7 @@
       if(.not. apply)then
         call termes(lfno,
      $       'No element for VAR_Y with keyword: ',key)
-        call cssetp(next1)
+        ipoint=next1
       endif
       return
       end

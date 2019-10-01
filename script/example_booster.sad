@@ -1,0 +1,362 @@
+ON ECHO;  !Turn on echo back of the input stream.
+!
+! This is a tutorial for SAD to construct an electron ring 
+! for the FCC-ee main booster with the 4 IP configuration.
+!
+! In each line, after ! is ignored, except within "".
+!
+! SAD starts in the "MAIN" mode which is used to define elements and beam lines.
+! However, they can be (re)defined in the "FFS" mode later.
+!
+! Define drift spaces
+!   Multiple drifts can be defined by a single DRIFT until ";".
+!
+DRIFT LX03 = (L = 0.3) LSX = (L = 2.8 + 0.3*2) LSA = (L = 25) LSB = (L=25)   ! SAD uses the SI unit, radian, and eV. 
+      LM = (L=30) LRF = (L=15) ! expressions with real variables and some basic math functions can be used.
+      LLA = (L=8)
+      LLB = (L=8)
+;
+!
+! Define dipoles with temporary values.
+!   Actual values will be determined later.
+!
+BEND B1 = (L=25 ANGLE=0.002 E1 = 0.5 E2 = 0.5) ! L is the arc length.
+;
+!   E1 and E2 are the edge angles at the entrance and exit, divided by ANGLE.
+!   E1 = E2 = 0.5 means a rectangular dipole.
+!
+! Define quads with initial strengths
+!   Strengths will be determined by matching beam lines later.
+!
+QUAD QF = (L=3 K1=0.05) QD = (L=3 K1 = -0.05)  !  K1 = B'L/(Brho) , hor. focusing is positive.
+     QSA1 = (L=3 K1=-0.05)  ! quads for dispersion suppressors A
+     QSA2 = (L=3 K1= 0.05)
+     QSA3 = (L=3 K1=-0.05) 
+     QSA4 = (L=3 K1= 0.05) 
+     QSA5 = (L=3 K1=-0.05) 
+     QSB1 = (L=3 K1=-0.05)  ! quads for dispersion suppressors B
+     QSB2 = (L=3 K1= 0.05)
+     QSB3 = (L=3 K1=-0.05) 
+     QSB4 = (L=3 K1= 0.05) 
+     QSB5 = (L=3 K1=-0.05) 
+     QMF = (L=3 K1= 0.05)  ! quads for IR straight sections
+     QMD = (L=3 K1=-0.05)
+     QRF = (L=3 K1= 0.05)  ! quads for RF section
+     QRD = (L=3 K1=-0.05)
+;
+! Define sexts as MULT.
+!  The strengths "K2" = B''L/(Brho) will be determined by chromaticity correction later.
+!
+MULT SF = (L=2.8) SD = (L=2.8)
+;
+! Define RF cavity
+!  The voltage will be defined later to adjust the bunch length.
+!  "FREQ" is the rf frequency, but no need to be a harmonic of the revolution frequency.
+!  If an exact harmonic is necessary, use "HARM" instead.
+!
+CAVI CAV = (FREQ = 400 MHZ)
+;
+! Define markers, which are necessary at the beginning of a beam line.
+!    Markers are also used to keep and transfer Twiss parameters to other beam lines in matching.
+!
+MARK 
+  F1 = (BX = 10 BY = 10)  ! betax = betay = 10 m as the initial values.
+  FR = (BX = 10 BY = 10)
+  FM = (BX = 10 BY = 10)
+;
+! Now define beam lines:
+!
+! short sections for sexts:
+LINE 
+  SLF = (LX03 SF LX03)
+  SLD = (LX03 SD LX03)
+! Arc "5*FODO" with non-interleaved sextupole pairs:
+  FODOARC = (F1
+      QF SLF B1 LX03 QD LSX B1 LX03 
+      QF LSX B1 LX03 QD LSX B1 LX03 
+      QF SLF B1 LX03 QD SLD B1 LX03 
+      QF LSX B1 LX03 QD LSX B1 LX03 
+      QF LSX B1 LX03 QD SLD B1 LX03)
+  SUPPA = (-F1   ! A negative sign means the reverse orientation; alpha, etap, zetap, R2, R3, dpx, dpy are reversed
+      LSA QSA1 LX03 B1 LX03 
+      QSA2 LLA QSA3 LLA QSA4 LLA QSA5 -FM) ! Suppressor from IR to arc
+  SUPPB = ( F1
+      QF LSB QSB1 LX03 B1 LX03 
+      QSB2 LLB QSB3 LLB QSB4 LLB QSB5 FR) ! Suppressor from arc to RF
+  FODOIR = (FM LM QMF LM QMD )
+  FODORF = (FR LRF CAV LRF QRF LRF CAV LRF QRD )
+  IRSTR  = (SUPPA 16*FODOIR LM QMF LM -SUPPA F1)  ! A negative sign means the reverse ordering
+!    -(A B C) = (-C -B -A)
+  RFSTR  = (SUPPB 16*FODORF LRF CAV LRF QRF LRF CAV LRF -SUPPB)
+;
+FFS;   ! Entering "FFS" mode for all calculations, scripting, etc.
+!
+! Define a function to output the CPU time.
+CPU[]:=Print["CPU time so far =",TimeUsed[]," sec"];
+CPU[];
+
+dr:=FFS["DRAW BX BY & EX EY {QS}*;"]; ! define a command to draw optics.
+MOMENTUM=182.5e9;  ! design momentum
+CONVERGENCE=1e-20; ! the goal convergence for matching
+rhoarc=13137;      ! average bending radius of the arc (given).
+lrf=1600;          ! length of full RF section (given).
+lir=1568;          ! length of full IR (given).
+sigz0=2.5e-3;      ! equilibrium bunch length
+MINCOUP=0.01;      ! minimum emittance ratio
+NPARA=8;           ! number of parallel processes
+
+USE FODOARC;      ! Choose the beam line
+cell;    ! impose periodic conditions for orbit and optics
+fit; nx 1.25 ny 1.25; ! fit tunes at the end of line
+free Q*;              ! See wildcards in manual
+GO;                   ! start matching
+
+dr;       ! draw optics on X.
+CPU[];
+susp; ! suspend reading the input stream and wait for interactive input from console. 
+!       Resumes by then RESUME(RES) command.
+!       susp is ignored if the flag SUS is unset (NOSUS).
+
+loffset=LINE["S","$$$"]-Plus@@LINE["L","B1.*"];  ! length of components other than B1 dipoles.
+!  "$$$" refers the end of beam line.
+
+! Define a function to calculate the FODO emittance as a function of number of cells in the arc.
+!  * definition of function is similar to Mathematica's.
+!  f[arg]:=body
+!  arg may contain patterns such as x_ , 
+!  
+FODOEmit[nfodo_]:=With[{ba=Pi/4/(nfodo*10+2)},   ! 10 dipoles per FODO, +2 for dipoles in the suppressor.
+  Element["ANGLE","B1"]=ba;               ! setting the bending angle of B1
+  Element["L","B1"]=(rhoarc*(ba*10)-loffset)/10; ! setting L of B1 according to rhoarc.
+  FFS["fit; nx 1.25 ny 1.25;free Q*;GO;"];   ! 90 degree FODO * 5.
+  Emittances[[1]]/.Emittance[]];        ! return horizontal emittance.
+
+em=Table[{nfodo,FODOEmit[nfodo]/1e-9},{nfodo,30,40}]; ! Table of {# of FODO, emitx}.
+ListPlot[em,
+  PlotJoined->True,
+  FrameLabel->{"N`dFODO","`fe`n`dx`n (nm)"}]; ! an old KaleidaGraph-like syntax for subscripts and Greek letters.
+Update[];   ! The drawing on X is updated.
+
+CPU[];
+susp;
+
+! A more elegant way to choose nfodo:
+emr=Sort[Reverse /@ em];  ! /@ is an operator for MAP, as Mathematica.
+spnf=Spline[emr];     ! define a cubic spline function returns the nfodo as a function of emittance.
+nfodo=spnf[1.45]
+nfodo=Round[nfodo];
+Plot[spnf[x],{x,1.3,2.7},FrameLabel->{"`fe`n`dx`n (nm)","N`dFODO"}];
+Update[];
+
+CPU[];
+susp;
+
+!Thus we have chosen nfodo = 38 for emitx \approx 1.45 nm;
+
+FODOEmit[nfodo];
+save all;  ! save variables before moving to other beam lines.
+
+ARC = BeamLine[nfodo * ExtractBeamLine[FODOARC]]; ! Construct the arc.
+
+use ARC;
+ins;     ! non-periodic condition for the orbit and optics.
+calc;    ! calculate the optics.
+dr;
+
+CPU[];
+susp;
+
+! Mathcing the straight section in the IR.
+use IRSTR;  
+ins;
+fit FM EX 0 EPX 0;       ! Suppress dispersion at the MARK FM.
+fit QMF QMF.2 ax 0 ay 0 bx 1 by 1 nx 0.25 ny 0.25;   !periodic condition for the FODO in the straight.
+!         between QMF and QMF.2 alphas and betas are equal, the phase advances are 90 degs.
+fit b1+1 b1.2 leng lir;  ! set the length between two dipoles at the suppressors.
+fit ^^^ $$$ bxm 200 bym 200;  ! suppress the maximum betas below 200 meters.
+free LSA LLA LM QSA* QM*;     ! variables
+LLA min 7;     ! restrict LLA > 7 m.
+go;
+save all;
+dr;
+
+(* This is another form of writing a comment in FFS *)
+(*
+MapThread[SetElement[#2,"QUAD",K1->Element["K1",#]]&,
+  {{"QSA1","QSA2","QSA3","QSA4","QSA5"},
+    {"QSB1","QSB2","QSB3","QSB4","QSB5"}}];
+*)
+
+CPU[];
+susp;
+
+! Mathcing the straight section for the RF. Similar to IRSTR.
+use RFSTR;
+ins;
+fit FR EX 0 EPX 0;
+fit QRF QRF.2 ax 0 ay 0 bx 1 by 1 nx 0.25 ny 0.25;
+fit b1+1 b1.2 leng lrf;
+fit ^^^ $$$ bxm 200 bym 200;
+free LSB LLB LRF QSB* QR*;
+LLB min 7;
+go;
+dr;
+save all;
+
+CPU[];
+susp;
+
+! Construct the quarter ring.
+QRING=BeamLine[ExtractBeamLine[IRSTR],
+  ARC,ExtractBeamLine[RFSTR],-ARC];
+
+use QRING;
+cell;
+cal;
+{nx0,ny0}=Round[Twiss[{"NX","NY"},"$$$"]/2/Pi]+{0.19,0.24}; ! Give the ring tune.
+fit FR; ax @ bx @ ay @ by @; ! set the alphas and betas at FR to the saved values.
+fit; nx nx0 ny ny0;      ! Set the ring tune.
+fit QMF QMF.2; ax 0 ay 0 bx 1 by 1;  ! keep the periodic condition of RF FODO.
+fix *; free qm* qsa{2345};  ! variables are quads in the dispersion free part in the IR.
+go;
+dr;
+
+CPU[];
+susp;
+
+! determine the RF voltage by adjusting the bunch length
+rfsw;      ! turn on RF
+u0=EnergyLossU0/.Emittance[];    ! Energy loss per 1/4 ring by SR
+nrf=Length[LINE["POSITION","CAV.*"]];    ! number of CAVs
+LINE["VOLT","CAV"]=u0*1.1/nrf;    ! set the voltage 10% higher that u0
+rej total;    ! reject entire matching conditions.
+FitFunction:=(BunchLength/.Emittance[])/sigz0-1;   ! A function to match 0 in the matching.
+fix *; free cav;  ! VOLT of CAV is the only variable.
+go;
+emit;  ! calculate the resulting emittance.
+
+CPU[];
+susp;
+
+
+! Chromaticity correction by 2 family sexts.
+rej total;
+FitFunction=.;            !  Clear FitFunction.
+DP=0.01;                  ! Width of off-momentum matching.
+fit ; nx nx0 4 ny ny0 4;  ! set the goals at -DP, -DP/2, +DP/2, DP.
+vary k2 s*;               ! set K2 as the default variable of S*.
+fix * free s*;         ! Variables are K2 of S* (in this case SF and SD).
+S* minmax 10;             ! Set the range of K2, -10 <= K2 <= 10.
+go;
+save all;
+
+fitp 1;  ! set the fit point to 1 (ie., only on the center).
+!
+! Define a function to obtain tune as a function of momentum offset.
+offmtune[x_]:={
+  DP0=x;        ! Set the momentum offset.
+  FFS["CALC;"]; ! Calculate optics: FFS is a function to execute FFS commands in a script. 
+  FractionalPart[Twiss["NX","$$$"]/2/Pi],    ! Twiss["NX",_] returns in radian.
+  FractionalPart[Twiss["NY","$$$"]/2/Pi]};
+!
+d=Table[Flatten[{x*100,offmtune[x]}],{x,-0.01,0.01,0.001}]; ! Table of {dp, nx(dp), ny (dp)}.
+DP0=0;
+
+Show[    ! Draw two plots in a same frame.
+  ListPlot[d[[,{1,3}]],
+    DisplayFunction->Identity, ! this is to avoid unnecessary intermediate output of a plot.
+    PointColor->"tomato",Legend->"`fn`n`dy"],     
+  ListPlot[d[[,{1,2}]],
+    DisplayFunction->Identity,
+    PointColor->"dark slate blue",Legend->"`fn`n`dx"],
+  FrameLabel->{"`fD`np/p`d0`n (%)","`fn`n`dx`n, `fn`n`dy`n"}];
+Update[];  !  The draw on X is only updated by Update[].
+
+type;  ! print out all elements.
+
+CPU[];
+susp;
+
+! Define a Class OrbitCorrection
+OrbitCorrection=Class[{},{},{seed=3,cor="S*",mon="Q*",al="Q*", ! Instance variables with some initial values
+  circ,pc,pm,pa,gcut=4,nx0,ny0,mx,my,tol=1e-2,em},     
+
+  Constructor[]:=(    ! Constructor to be called when an instance is defined
+    circ=LINE["S","$$$"]-LINE["S","^^^"];      ! ring circumference
+    {pc,pm,pa}=LINE["POSITION",{cor,mon,al}];  ! positions of correctors, bpms, and misaligned componentss.
+    LINE["DX",pa]*=0;     ! clear misalignments and correctors.
+    LINE["DX",pa]*=0;
+    LINE["K0",pc]*=0;
+    LINE["SK0",pc]*=0;
+    FFS["CALC4D;NORADCOD;CELL;CALC"];  ! calculate the design optics & emittance
+    em=Emittance[];
+    {nx0,ny0}=Twiss[{"NX","NY"},"$$$"];  ! design tune
+    With[{nx0,ny0,alpha=MomentumCompaction/.em},
+      mx=Outer[(Sqrt[Twiss["BX",#2]]*
+        Cos[Abs[Twiss["NX",#]-Twiss["NX",#2]]-nx0/2])&,pm,pc]*
+          Sqrt[Twiss["BX",pm]]/2/Sin[nx0/2]-   ! horizontal response matrix
+            Outer[Times,Twiss["EX",pm],Twiss["EX",pc]]/alpha/circ;  ! dispersion term
+      AppendTo[mx,Twiss["EX",pc]];   ! circumference correction
+      my=-Outer[(Sqrt[Twiss["BY",#2]]*   ! vertical response matrix
+        Cos[Abs[Twiss["NY",#]-Twiss["NY",#2]]-ny0/2])&,pm,pc]*
+          Sqrt[Twiss["BY",pm]]/2/Sin[ny0/2]]);
+
+  Misalign[{dx_,dy_}]:=(
+    SeedRandom[seed];
+    GCUT=gcut;
+    LINE["DX",pa]=dx*GaussRandom[Length[pa]];  ! set misalignments
+    LINE["DY",pa]=dy*GaussRandom[Length[pa]];
+    FFS["CALC NOEXP;REF;"]);   ! NOEXP is necessary for independent misalignments
+       ! optics is stored as the Referecnce optics
+
+  Correct[]:=Module[{{dx,dy}=Twiss[{"DX","DY"},pm],kx,ky},
+    kx00=kx=LinearSolve[mx,Append[dx,Twiss["DZ","$$$"]-Twiss["DZ","^^^"]],
+      Tolerance->tol];  ! horizontal correction with circumference adjustment
+    ky00=ky=LinearSolve[my,dy,Tolerance->tol]; !vertical correction
+    LINE["K0",pc]=kx;
+    LINE["SK0",pc]=ky;
+    FFS["CALC6D;CALC NOEXP;"];  ! optics after correction
+    ];
+
+  Plot[]:=(OpticsPlot[{{"RDX","DX"},{"RDY","DY"}},Lattice->False,Names->""];
+    Update[]);
+
+  ];
+
+oc=OrbitCorrection[];   ! Define an instance of OrbitCorrection
+oc@Misalign[{1e-5,1e-5}];  ! call an instance function oc@Misalign
+oc@Correct[];   ! call an instance function oc@Correct
+oc@Plot[];      ! call an instance function oc@Plot
+
+CPU[];
+susp;
+
+
+
+!
+!   Dynamic aperture
+!
+RAD;       ! Turn on radiation in all elements.
+NOFLUC;    ! Turn off quantum effects.
+RADCOD;    ! calculate orbit considering radiation loss
+RADTAPER;  ! automatic tapering of all magnets according to local energy of the closed orbit.
+emit;
+nturn=180; ! Number of turns.
+DynamicApertureSurvey[             ! DA on Z-X plane.
+  {{0,50},{0,50*Sqrt[MINCOUP]},    ! The horizontal and vertical ranges to survey.
+    Table[dp,{dp,-0.025/SIGE,0.025/SIGE,0.002/SIGE}]},  ! The initial momentum offsets.
+  nturn,Output->$Output,     ! outputs to the default output stream.
+  Damping->False];           ! No artificial damping.
+
+DynamicApertureSurvey[  ! DA on X-Y plane.
+  {Table[x,{x,-40,40,2}],{0,400*Sqrt[MINCOUP]},{0,0}},
+  nturn,Axes->"XY",
+  Output->$Output,
+  Damping->False];
+
+CPU[];
+sus;
+susp;
+
+
+Exit[];  ! Terminates SAD.

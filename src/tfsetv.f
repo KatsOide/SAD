@@ -11,7 +11,7 @@
       if(nvar .gt. 0)then
         do i=1,nlat-1
           call compelc(i,cmp)
-          ii=iele(i)
+          ii=icomp(i)
           ie=iele1(ii)
           ie1=iele1(i)
           do j=1,nvar
@@ -105,19 +105,19 @@ c              call tfsetcmp(valvar(j),cmp,iv)
       enddo
       if(ntv .eq. 0)then
         do i=1,nlat-1
-          ie=iele1(iele(i))
-          if(iele(i) .ne. i .and. ie .ne. 0 .and. ival(ie) .ne. 0)then
-            call tfvcopy(iele(i),i,ival(ie),
-     $           errk(1,i)*couple(i)/errk(1,iele(i)))
+          ie=iele1(icomp(i))
+          if(icomp(i) .ne. i .and. ie .ne. 0 .and. ival(ie) .ne. 0)then
+            call tfvcopy(icomp(i),i,ival(ie),
+     $           errk(1,i)*couple(i)/errk(1,icomp(i)))
           endif
         enddo
       else
         do i=1,nlat-1
-          ie=iele1(iele(i))
+          ie=iele1(icomp(i))
           ie1=iele1(i)
-          if(ie .ne. 0 .and. i .ne. iele(i) .and. ival(ie) .ne. 0)then
-            call tfvcopy(iele(i),i,ival(ie),
-     $           errk(1,i)*couple(i)/errk(1,iele(i)))
+          if(ie .ne. 0 .and. i .ne. icomp(i) .and. ival(ie) .ne. 0)then
+            call tfvcopy(icomp(i),i,ival(ie),
+     $           errk(1,i)*couple(i)/errk(1,icomp(i)))
           endif
           if(ite(ie1) .ne. 0)then
             do k=1,ntv
@@ -193,7 +193,7 @@ c              call tfsetcmp(valvar(j),cmp,iv)
               call elcompl(i,kl)
               do l=1,kl%nl
                 k=int(kl%rbody(l))
-                if(k .ne. k1 .and. iele(k) .eq. k1
+                if(k .ne. k1 .and. icomp(k) .eq. k1
      $               .and. itastk(2,j) .ne. ival(i))then
                   call tfvcopy(k1,k,itastk(2,j),1.d0)
                 endif
@@ -206,12 +206,13 @@ c              call tfsetcmp(valvar(j),cmp,iv)
         isp1=isp
         isp=isp+1
         do l=1,nlat-1
-          ie1=iele1(iele(l))
+          ie1=iele1(icomp(l))
           itastk(1,isp)=ie1
           itastk(2,isp)=ival(ie1)
           do j=isp0+1,isp1
             if(ktastk(j) .eq. ktastk(isp))then
-              call tfvcopy(klp(ie1),l,ival(ie1),couple(l))
+              call tfvcopy(icomp(l),l,ival(ie1),couple(l))
+c              call tfvcopy(klp(ie1),l,ival(ie1),couple(l))
             endif
           enddo
         enddo

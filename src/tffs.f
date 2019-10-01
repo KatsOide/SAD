@@ -62,15 +62,6 @@
         return
         end subroutine
 
-c$$$        subroutine latt_el(latt,el)
-c$$$        use iso_c_binding
-c$$$        implicit none
-c$$$        integer*8 , target ::latt(1:)
-c$$$        type (sad_el), pointer, intent(out) ::el
-c$$$        call c_f_pointer(c_loc(latt(-1)),el)
-c$$$        return
-c$$$        end subroutine
-c$$$
         integer*4 function idcomp(el,i)
         implicit none
         type (sad_el) :: el
@@ -111,7 +102,7 @@ c$$$
         integer*4 nflag0,nlat,np0,nturn,isynch,nspect,
      $       lplot,nplot,nuse,nclas,irad,novfl,npelm,ipelm,
      $       nparallel,pspac_nx,pspac_ny,pspac_nz,
-     $       pspac_nturn,pspac_nturncalc
+     $       pspac_nturn,pspac_nturncalc,l_track
         logical*4 oldflagsdummy,calint,caltouck,tparaed
 
       end module
@@ -239,7 +230,7 @@ c$$$
      $       blname(lblname),pading,mcommon
         integer*4 ndim,ndima,nele,nfit,marki,iorgx,iorgy,iorgr,
      $       mfpnt,mfpnt1,id1,id2,nve
-        logical*4 updatesize
+        logical*4 updatesize,setref
       end type
 
       type (ffsv), target, save:: ffv
@@ -260,10 +251,11 @@ c$$$
      $       radlight,geocal,photons,wspac,
      $       selfcod,pspac,convcase,preservecase,
      $       lossmap,orbitcal,radtaper,sorg,
-     $       intres,halfres,sumres,diffres,calopt
+     $       intres,halfres,sumres,diffres,
+     $       calopt,suspend
       end type
 
-      integer*4 ,parameter :: nflag=49
+      integer*4 ,parameter :: nflag=50
       type (flagset), target, save :: fff
       character*8, save :: fname(1:nflag)= (/
      $     'RAD     ','RFSW    ','RADCOD  ','COD     ',
@@ -278,7 +270,7 @@ c$$$
      $     'SELFCOD ','PSPAC   ','CONVCASE','PRSVCASE',
      $     'LOSSMAP ','ORBITCAL','RADTAPER','SORG    ',
      $     'INTRES  ','HALFRES ','SUMRES  ','DIFFRES ',
-     $     'CALOPT  '/),
+     $     'CALOPT  ','SUS     '/),
      $     sino(1:nflag)= (/
      $     '        ','        ','        ','        ',
      1     '        ','RING    ','        ','UNIFORM ',
@@ -292,7 +284,7 @@ c$$$
      $     '        ','        ','        ','        ',
      $     '        ','        ','        ','        ',
      $     '        ','        ','        ','        ',
-     $     'ORBONLY '/)
+     $     'ORBONLY ','        '/)
 
       integer*8, pointer :: ifvlim,ifibzl,ifmult,ifklp,ifival,iftwissp,
      $     iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifdcomp,ifele,ifcoup,
@@ -303,7 +295,7 @@ c$$$
       real*8, pointer, dimension(:,:) :: geo0
       integer*4, pointer :: ndim,ndima,nele,nfit,marki,iorgx,iorgy,
      $     iorgr,mfpnt,mfpnt1,id1,id2,nve,ntouch
-      logical*4 , pointer :: updatesize
+      logical*4 , pointer :: updatesize,setref
 
       type ffs_bound
       sequence
@@ -365,6 +357,7 @@ c$$$
         ielmhash=>ffv%ielmhash
         updatesize=>ffv%updatesize
         ntouch=>ffv%ntouch
+        setref=>ffv%setref
         flv=>ffv
         return
         end subroutine
@@ -526,7 +519,7 @@ c$$$
      $       selfcod,pspac,convcase,preservecase,
      $       lossmap,orbitcal,radtaper,sorg,
      $       intres,halfres,sumres,diffres,
-     $       calopt
+     $       calopt,suspend
         
         contains
         subroutine ffs_init_flag
@@ -580,6 +573,7 @@ c$$$
         sumres=>fff%sumres
         diffres=>fff%diffres
         calopt=>fff%calopt
+        suspend=>fff%suspend
         return
         end subroutine
 
@@ -615,8 +609,8 @@ c$$$
       type (sad_descriptor) , pointer :: dcomp(:)
       real*8 , pointer, contiguous :: errk(:,:),couple(:),
      $     valvar(:),valvar2(:,:)
-      integer*8, pointer, dimension(:) :: iele2 
-      integer*4, pointer, dimension(:) :: mult,iele,iele1,
+      integer*8, pointer, dimension(:) :: kele2 
+      integer*4, pointer, dimension(:) :: mult,icomp,iele1,
      $     ival,klp,master,itouchele,itouchv,ivarele,ivcomp,ivvar,
      $     iprev,inext
       integer*4, pointer, contiguous, dimension(:,:) :: ibzl
@@ -641,9 +635,9 @@ c$$$
         call c_f_pointer(c_loc(ilist(1,ifmast)),master,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifival)),ival,[nele])
         call c_f_pointer(c_loc(dlist(ifdcomp)),dcomp,[nele])
-        call c_f_pointer(c_loc(ilist(1,ifele)),iele,[nlat])
+        call c_f_pointer(c_loc(ilist(1,ifele)),icomp,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifele1)),iele1,[nlat])
-        call c_f_pointer(c_loc(klist(ifele2)),iele2,[nlat])
+        call c_f_pointer(c_loc(klist(ifele2)),kele2,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         call c_f_pointer(c_loc(rlist(ifvalvar)),valvar,[nve*2])
         call c_f_pointer(c_loc(rlist(ifvalvar)),valvar2,[nve,2])
@@ -1710,12 +1704,12 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
 
       subroutine tffs
       use tfstk
+      use tfcsi
       implicit none
       type (sad_descriptor) kx
       integer*4 irtc
-      
       logical*4 err
-      call tffsa(1,kx,irtc)
+      call tffsa(1,lfni,kx,irtc)
       if(irtc .ne. 0 .and. ierrorprint .ne. 0)then
         call tfreseterror
       endif
@@ -1813,7 +1807,7 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       ifmast =ktaloc(nlat/2+1)
       ifival=ktaloc(nele/2+1)
       ifdcomp=ktaloc(nele)
-      klist(ifdcomp:ifdcomp+nele-1)=int8(0)
+      klist(ifdcomp:ifdcomp+nele-1)=i00
       ifele =ktaloc(nlat/2+1)
       ifele2=ktaloc(nlat)
       ifklp =ktaloc(nele/2+1)
@@ -1909,12 +1903,13 @@ c      call tfree(ifibzl)
       use ffs
       use tffitcode
       use tfcsi
+      use tfrbuf
+      use iso_c_binding
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
-      integer*4 outfl1,irtc,narg,llinep,
-     $     lfno1,lfni1,lfn11,lfret,lfrecl,
-     $     isp1,itfmessage
+      type (csiparam) sav
+      integer*4 outfl1,irtc,narg,lfn,isp1,itfmessage
       character*10 strfromis
       narg=isp-isp1
       if(narg .gt. 2)then
@@ -1941,26 +1936,25 @@ c      call tfree(ifibzl)
         outfl=0
       endif
       levele=levele+1
-      lfno1=icslfno()
-      lfni1=icslfni()
-      lfn11=icslfn1()
-      lfret=icsmrk()
-      lfrecl=icslrecl()
-      llinep=icslinep()
-      call setbuf(str%str(1:str%nch)//char(10),str%nch+1)
-      call cssetp(lfrecl)
-      call tffsa(lfnp+1,kx,irtc)
-      call tclrfpe
-      call cssetp(lfret)
-      call cssetl(lfrecl)
-      call cssetlinep(llinep)
-      call cssetlfno(lfno1)
-      call cssetlfni(lfni1)
-      call cssetlfn1(lfn11)
-c      write(*,*)'FFS ',lfrecl,llinep
-      outfl=outfl1
-      if(irtc .eq. 0 .and. iffserr .ne. 0)then
-        irtc=itfmessage(9,'FFS::error',strfromis(iffserr))
+      sav=savep
+      call trbopen(lfn,ktfaddr(ktastk(isp1+1)),
+     $     int8(modestring),str%nch)
+      if(lfn .le. 0)then
+        irtc=itfmessage(9,'FFS::lfn','"'//str%str(1:str%nch)//'"')
+        kx=dxnull
+      else
+        call trbassign(lfn)
+        ipoint=1
+        lrecl=0
+        call tffsa(lfnp+1,lfn,kx,irtc)
+        call trbclose(lfn)
+        call tclrfpe
+        savep=sav
+        call trbassign(lfni)
+        outfl=outfl1
+        if(irtc .eq. 0 .and. iffserr .ne. 0)then
+          irtc=itfmessage(9,'FFS::error',strfromis(iffserr))
+        endif
       endif
       call tfconnect(kx,irtc)
       return
@@ -1973,3 +1967,50 @@ c      write(*,*)'FFS ',lfrecl,llinep
       convcase=f
       return
       end
+
+      subroutine tfmain(isp1,kx,irtc)
+      use tfstk
+      use trackbypass, only: bypasstrack
+      use tfrbuf
+      use tmacro
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 isp1,irtc,infl0,itfmessage,lfn,ierrfl,ierr
+      ierr=0
+      if(isp .eq. isp1+2)then
+        ierr=int(rtastk(isp))
+      elseif(isp .ne. isp1+1)then
+        irtc=itfmessage(9,'General::narg','"1 or 2"')
+        return
+      endif
+c      lfn=itfopenread(ktastk(isp1+1),.false.,irtc)
+      call tfopenread(isp1,kx,irtc)
+      if(irtc .ne. 0)then
+        return
+      endif
+      if(.not. ktfrealq(kx,lfn))then
+        irtc=itfmessage(9,'General::wonrgtype','"Real"')
+        return
+      endif
+      infl0=infl
+      infl=lfn
+      if(infl .ne. infl0)then
+        call trbassign(infl)
+      endif
+      ierrfl=errfl
+      errfl=ierr
+      bypasstrack=.true.
+c      write(*,*)'tfmain-1 ', lfn
+      call toplvl
+c      write(*,*)'tfmain-2 '
+      bypasstrack=.false.
+      errfl=ierrfl
+      call trbclose(lfn)
+      if(infl .ne. infl0)then
+        call trbassign(infl0)
+      endif
+      infl=infl0
+      kx%k=ktfoper+mtfnull
+      return
+      end
+

@@ -31,7 +31,7 @@
       modethrow=-1
       ncprolog=0
       initmessage=1
-      itfcontroot=ktcontaloc(int8(0))
+      itfcontroot=ktcontaloc(i00)
       call tfassigncont(itfcontroot,'`')
       call tfassigncont(itfcontroot,'Global`')
       iaxsys=ktfsymbolc('`System`',8,itfcontroot)
@@ -132,8 +132,10 @@ c     Physical constant
       kax=ktrvaloc('ElectronRadius',elradi)
       kax=ktrvaloc('ProtonMass',prmass)
       kax=ktrvaloc('ProtonRadius',prradi)
-      kax=ktrvaloc('BoltzmanConstant',kboltzman)
+      kax=ktrvaloc('BoltzmannConstant',kboltzman)
       kax=ktrvaloc('ElectronGminus2over2',gspin)
+      kax=ktrvaloc('PlanckConstant',plank)
+      kax=ktrvaloc('PlanckHbar',plankr)
 
       ierrorth=0
       ierrorexp=0
@@ -177,7 +179,7 @@ c     index(env,'/') MUST be `0' or grater than `1'
 
       write(*,*) '*** SADScript Initialization: '//
      $     pkg(1:lpkg)//'init.n ***'
-      call cssetlfno(0)
+      lfno=0
       call tfgetf(pkg(1:lpkg)//'init.n')
 c      write(*,*)'tfinitn 1 '
       klist(itfcontextpath)=itfcontroot
@@ -437,6 +439,7 @@ c      call tfdebugprint(kx,'setcontextpath',1)
           call exit(0)
         endif
       endif
+      kx=dxnull
       irtc=itfmessage(9,'General::wrongtype','"Null"')
       return
       end
@@ -478,8 +481,15 @@ c      call tfdebugprint(kx,'setcontextpath',1)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*4 isp1,irtc,narg,iargc,i,l,isp0
+      integer*4 isp1,irtc,narg,iargc,i,l,isp0,itfmessage
       character*256 arg
+      if(isp .gt. isp1+1)then
+        go to 9000
+      elseif(isp .eq. isp1+1)then
+        if(ktastk(isp) .ne. ktfoper+mtfnull)then
+          go to 9000
+        endif
+      endif
       narg=iargc()
       irtc=0
       if(narg .le. 0)then
@@ -495,6 +505,8 @@ c      call tfdebugprint(kx,'setcontextpath',1)
       enddo
       kx=kxmakelist(isp0)
       isp=isp0
+      return
+ 9000 irtc=itfmessage(9,'general::narg','"0"')
       return
       end
 

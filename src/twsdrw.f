@@ -1,4 +1,4 @@
-      subroutine twsdrw(latt,pos,iele,word,wordp,lfnd,
+      subroutine twsdrw(latt,pos,icomp,word,wordp,lfnd,
      1                 twiss,idp,imon,emon,nmon,
      1                 title,case,exist)
       use tfstk
@@ -10,7 +10,7 @@
       parameter (nkey=35,nstyle=8)
       integer*8 latt(nlat),it,it1,jp
       real*8 pos(nlat)
-      integer*4 iele(nlat),imon(*)
+      integer*4 icomp(nlat),imon(*)
       real*8 twiss(nlat,-ndim:ndim,ntwissfun),emon(*)
       real*8 ymax(nkey,2),ymin(nkey,2),gmin(2),gmax(2),fctr(2)
       integer*4 icat(nkey),ipw(2,nkey),kvar(nkey),
@@ -486,7 +486,7 @@ c         endif
       if(lat) then
         it=ktaloc(nlat)
         call tdlat(latt,ls,le,pos,rlist(it),
-     1             iele,' ',exist,lfnd)
+     1             icomp,' ',exist,lfnd)
         call tfree(int8(it))
       elseif(word.ne.' ') then
         istrt=ls
@@ -513,7 +513,7 @@ c         endif
 1100    continue
         it=ktaloc(nlat)
         call tdlat(latt,ls,le,pos,rlist(it),
-     1                            iele,wordp,exist,lfnd)
+     1                            icomp,wordp,exist,lfnd)
         call tfree(int8(it))
       endif
       return

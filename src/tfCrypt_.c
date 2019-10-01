@@ -5,10 +5,10 @@
 
 #include <sys/types.h>
 #include <unistd.h>
-#ifdef __has_inculde
-#  if __has_include("crypt.h")
+#if defined __has_include
+#  if __has_include (<crypt.h>)
 #     include <crypt.h>
-#   endif
+#  endif
 #endif
 
 #include <pwd.h>
@@ -86,7 +86,7 @@ static int GetUserPassword(integer4 *isp1,
   } else {
     *kx = ktfstring + ktsalocb(-1, "*");
   }
-    
+
   *irtc = 0;
   return 0;
 }

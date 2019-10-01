@@ -186,7 +186,7 @@ void caputcb(struct event_handler_args arg)
 	    ca_name(arg.chid), full_len - len);
     fflush(stderr);
   } else
-    tfevalb_(str, &len, &kx, &irtc, MAXCOMLEN);
+    tfevalb_(str, &len, &kx, &irtc);
 }
 
 integer ecaaddarrayevent_(real8 *chd,

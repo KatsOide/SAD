@@ -71,7 +71,7 @@ for symbol in processor architecture; do
     [ "x${cpu_arch}" != xunknown ] && break
 done
 
-cc_vers=""
+machine=""
 case ${os_name} in
 CYGWIN*)
     os_suffix=-
@@ -86,10 +86,10 @@ Linux)
 #    cc_vers=_$(cc --version|egrep -o '[0-9]+\.'|head -n 1|egrep -o '[0-9]+')
 #    if [ ${cc_vers} = "_4" ]; then
 #        echo $(eval echo ${HOSTNAME}|egrep -o '[^0-9]+'|head -n 1)
-#       case $(eval hostname|egrep -o '[^0-9]+'|head -n 1) in
-#           lxplus)
-#               cc_vers="_8"
-#               ;;
+    case $(eval hostname|egrep -o '[^0-9]+'|head -n 1) in
+        lxplus)
+            machine="_LXPLUS"
+            ;;
 #           hpc)
 #               cc_vers="_7"
 #               ;;
@@ -101,7 +101,7 @@ Linux)
 #               ;;
 #           *)
 #               ;;
-#       esac
+    esac
 #    fi
     ;;
 SunOS)
@@ -125,9 +125,9 @@ if [ x"${config}" = x"true" ]; then
     echo OS_MAJOR_VERSION=${os_major}
     echo OS_MINOR_VERSION=${os_minor}
     echo CPU_ARCH=${cpu_arch}
-    echo MACH_ARCH=${cpu_arch}-${os_name}${os_suffix}${os_major}${cc_vers}
+    echo MACH_ARCH=${cpu_arch}-${os_name}${os_suffix}${os_major}${machine}
 else
-    echo ${cpu_arch}-${os_name}${os_suffix}${os_major}${cc_vers}
+    echo ${cpu_arch}-${os_name}${os_suffix}${os_major}${machine}
 fi
 
 # End of File

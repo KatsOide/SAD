@@ -1,4 +1,4 @@
-      subroutine tfeval(string,l,ist1,istop,kx,re,irtc)
+      subroutine tfeval(string,ist1,istop,kx,re,irtc)
       use tfstk
       use ophash
       use opdata
@@ -6,15 +6,18 @@
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: kla,klx
-      logical*4 re
-      character*1023 string
+      logical*4 , intent(in) ::re
+      integer*4 , intent(in) :: ist1
       integer*4 istart,istop,irtc,isp0,ist10,iop1,
-     $     i,ist1,ishash,l,ifchar,mopc,itgetfpe,m1,
+     $     i,ishash,l,ifchar,mopc,itgetfpe,m1,iste,
      $     itfmessage,level1,ist2,irt
+      character*(*) string
       logical*4 tfreadevalbuf,eol
+      type (csiparam) sav
 c     begin initialize for preventing compiler warning
       mopc=0
 c     end   initialize for preventing compiler warning
+      l=len(string)
       isp0=isp+1
       isp=isp0
       ierrorf=0
@@ -23,6 +26,7 @@ c     end   initialize for preventing compiler warning
       ktastk(isp)=ktfoper
       istart=ist1
       istop=istart
+      iste=ist1
       ishash=-1
       if(.not. re)then
         itastk2(1,isp)=mtfleftparen
@@ -39,13 +43,11 @@ c     end   initialize for preventing compiler warning
  1    continue
 c      write(*,*)'tfeval ',istart,l,string(istart:l)
       call tfetok(string(istart:l),istop,kx,itfcontext,irt)
-      istop=istop+istart-1
-c        call tfreecheck1('tfeval-0',1,0,0.d0,irtc)
-c        write(*,*)'tfeval-0 ',irt,kx,istart,istop,
+      istop=min(l+1,istop+istart-1)
+c      if(string(istart:istop) .eq. '\\\n')then
+c        write(*,*)'tfeval-0 ',irt,istart,istop,
 c     $       string(istart:istop)
-c        if(irtc .ne. 0)then
-c          rlist(7)=0.d0
-c        endif
+c      endif
       if(irt .ge. 0)then
         go to 2400
       endif
@@ -219,14 +221,13 @@ c
               go to 3
             endif
             if(re)then
-              if(string(istop-1:istop-1) .eq. char(10))then
-                if(tfreadevalbuf(istart,istop,l,
-     $               iop1))then
+c              if(string(istop-1:istop-1) .eq. char(10))then
+                if(tfreadevalbuf(istart,istop,l,iop1))then
                   eol=.true.
                   go to 1
                 endif
-              endif
-            elseif(iop1 .eq. mtfcomp)then
+c              endif
+            elseif(iop1 .eq. mtfcomp .or. iop1 .eq. mtfleftparen)then
               go to 3
             endif
             go to 8700
@@ -244,21 +245,21 @@ c
             if(isp .le. isp0)then
               go to 7000
             endif
-          endif            
+          endif
           do i=isp0,isp
             if(itastk2(1,i) .eq. mtflist
      $           .or. itastk2(1,i) .eq. mtfleftbra
      $           .or. itastk2(1,i) .eq. mtfleftparen
      $           .or. itastk2(1,i) .eq. mtfpart)then
               if(re)then
-                if(string(istop-1:istop-1) .eq. char(10))then
+c                if(string(istop-1:istop-1) .eq. char(10))then
                   if(tfreadevalbuf(istart,istop,l,
      $                 int(itastk2(1,i))))then
                     itastk2(1,isp)=mtfnull
                     eol=.true.
                     go to 1
                   endif
-                endif
+c                endif
               endif
               go to 8700
             endif
@@ -283,7 +284,7 @@ c     because stack does not have mtfleft(brace|bra|paren)!!
         go to 7000
       case (-3)
         if(re)then
-          if(string(istop-1:istop-1) .eq. char(10))then
+c          if(string(istop-1:istop-1) .eq. char(10))then
  3001       if(tfreadevalbuf(istart,istop,l,
      $           mtfleftcomment))then
               ist2=index(string(istart:l),'*)')
@@ -294,7 +295,7 @@ c     because stack does not have mtfleft(brace|bra|paren)!!
               eol=.false.
               go to 1
             endif
-          endif
+c          endif
         endif
         irtc=itfmessage(9999,'General::comment',
      $       '"'//string(ist1:min(istop-1,l))//'"')
@@ -352,12 +353,17 @@ c
  7000 select case(ktftype(ktastk(isp)))
       case (ktflist,ktfpat,ktfsymbol)
         ist10=max(ist1,istop)
-        ist1=istop
+        ist2=istop
         call tclrfpe
-c     call tfdebugprint(ktastk(isp),'tfeval-8',3)
+        istop=max(ist2,ist10)
+        if(re)then
+          sav=savep
+          ipoint=istop
+        endif
         call tfeevalref(ktastk(isp),kx%k,irtc)
-c      call tfdebugprint(kx,'tfeval-9',3)
-        istop=max(icsmrk(),ist1,ist10)
+        if(re)then
+          savep=sav
+        endif
         if(irtc .eq. -1)then
           kx%k=ktfoper+mtfnull
           go to 9000
@@ -367,7 +373,7 @@ c      call tfdebugprint(kx,'tfeval-9',3)
      $         '"'//string(ist1:min(istop-1,l))//'"')
           go to 8900
         elseif(irtc .ne. 0)then
-          ist1=ist10
+          iste=ist10
           go to 8900
         endif
         if(itgetfpe() .ne. 0)then
@@ -403,20 +409,16 @@ c      call tfdebugprint(kx,'tfeval-9',3)
  8710 kx%k=ktfoper+mtfnull
       istop=ist1
  8800 if(re .and. icslfni() .eq. 5)then
-c        if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
-c          call tfreseterror
-c        endif
         go to 8910
       endif
  8900 if(irtc .lt. -1 .and. irtc .gt. irtcabort)then
-        write(*,*)'tfeval ',irtc,modethrow
         modethrow=-1
         if(irtc .le. irtcret)then
           call tfreseterror
         endif
         kx%k=ktfoper+mtfnull
         irtc=itfmessage(999,'General::unexpbreak',
-     $       '"'//string(ist1:min(l,ist1+20))//'"')
+     $       '"'//string(max(ist1,iste-16):min(l,iste+20))//'"')
       endif
       if(ierrorprint .ne. 0)then
         kx%k=ktfoper+mtfnull
@@ -425,8 +427,8 @@ c        endif
           call tfaddmessage(string(1:l),min(istop,l+1),icslfno())
         endif
       endif
- 8910 istop=ifchar(string(1:l),char(10),ist1)+1
-      if(istop .eq. 1)then
+ 8910 istop=ifchar(string(1:l),char(10),iste)+1
+      if(istop .le. 1)then
         istop=l+1
       endif
  9000 if(levele .gt. 1)then
