@@ -1,4 +1,4 @@
-(* OpticsPlot 2/6/2018 *)
+(* OpticsPlot 8/11/2019 *)
 
 PkgConfig$DefaultList["OpticsPlot"->{
   "PlotDivision"->80,
@@ -170,11 +170,9 @@ OP$InfoLabel[canvas_Widget,frid_Real,bind_:True]:=Module[{
       ];
     KBF$MoveCBForInfoLabel[t]]];
 
-
-!With[{tdr:=TopDrawer,cdr:=CanvasDrawer},
-With[{cdr:=CanvasDrawer},
+With[{tdr:=TopDrawer,cdr:=CanvasDrawer},
   SetAttributes[PlotColorDefault,HoldAll];
-  (* PlotColorDefault[tdr]={"black"}; *)
+  PlotColorDefault[tdr]={"black"};
   PlotColorDefault[cdr]=
     {"dark slate blue","red3","forest green","goldenrod","purple"};
   SetAttributes[PlotColorDefault,HoldNone]];
@@ -346,14 +344,18 @@ OpticsList[f_List,i1_,i2_,_,off_,"S",t_,pj_]:=
         {l,t}],
       {{},t}]];
 
-OpticsList[f_,i1_,i2_,dl_,off_,_,tags_,_]:=Module[{fun,ndiv},
+OpticsList[f_,i1_,i2_,dl_,off_,_,tags_,_]:=Module[{fun,ndiv,div=True},
   Which[
     f=="BX" || f=="BY" || f=="BZ",
     fun:=Sqrt[Twiss[f,#]]&,
     MemberQ[Twiss$Functions,f],
     fun:=Twiss[f,#]&,
-    f=="DETR",
-    fun:=(Twiss["R1",#]*Twiss["R4",#]-Twiss["R2",#]*Twiss["R3",#])&,
+    f=="RBX" || f=="RBY" || f=="RBZ",
+    div=False;
+    fun:=Sqrt[Twiss[f,#]]&,
+    MemberQ[XTwiss$Functions,f],
+    div=False;
+    fun:=Twiss[f,#]&,
     LINE$FunctionsQ[f],
     fun:=LINE[f,#]&,
     True,
@@ -362,8 +364,13 @@ OpticsList[f_,i1_,i2_,dl_,off_,_,tags_,_]:=Module[{fun,ndiv},
       fun:=f]
     ];
   {Table[
-    ndiv=If[LINE["TYPENAME",i]==="MARK", 0,
+    ndiv=Which[~div,
+      1,
+      LINE["TYPENAME",i]==="MARK",
+      0,
+      True,
       Floor[(LINE["L",i])/dl]+1];
+!    Print[{fun,ndiv}];
     Null@@Table[{LINE["S",i]+(LINE["L",i])*j/ndiv+off,fun[i+j/ndiv]},{j,0,ndiv-1}],
     {i,i1,i2}],tags}];
 
@@ -394,7 +401,7 @@ With[{def={Names->"*",Tags->False,NameFilter->Identity,
     With[{s1,leng,ss}, Graphics[#,{DataRange->{{s1,s1+leng}*ss,{-1,1}},
       PlotRange:>With[{XRange=OP$XRange}, OP$XRange=.;
 	{If[Head[XRange]===List, XRange, ss*{s1-0.001, s1+leng+0.001}],{-1,1}}],
-      Frame->False,Background->Null,RemoveOverlap->ro}]&/@l]]];
+      Frame->False,Background->Null,RemoveOverlap->ro},opt]&/@l]]];
 
 LatticeNames[{pr1_,pr2_},n_,off_,w_,yoff_,tag_,nf_,ss_]:=Module[
   {s,s0=LINE["S",pr1]+off,e=""},
@@ -414,7 +421,7 @@ With[{yoff0=0.1},
   LatticePlot1$[{pr1_,pr2_},off_,tag_,wid_,eh_,ss_]:=Module[
     {type,h,si,si1,yoff,s1=LINE["S",pr1],ds,h1,v},
     ds=(LINE["S",pr2-1]-s1)/400/wid;
-    Literal[Print]["LatticePlot1$ ",{pr1,pr2,ss}];
+!    Literal[Print]["LatticePlot1$ ",{pr1,pr2,ss}];
     Table[
       type=LINE["TYPE",i];
       h=Switch[eh[i],
@@ -555,15 +562,31 @@ Optics$Unit[unit_,am_]:=
       ];
 
 Twiss$Functions={"AX","BX","NX","AY","BY","NY","EX","EPX","EY","EPY",
-  "R1","R2","R3","R4","DX","DPX","DY","DPY","DZ","DDP",
+  "R1","R2","R3","R4","DETR","DX","DPX","DY","DPY","DZ","DDP",
   "AZ","BZ","NZ","ZX","ZPX","ZY","ZPY",
   "PEX","PEPX","PEY","PEPY","PZX","PZPX","PZY","PZPY"};
-Twiss$Unit["EX"|"EY"|"R2"|"DX"|"DY"|"S"|"PEX"|"PEY"|"DZ"]=Meter;
-Twiss$Unit["DPX"|"DPY"|"EPX"|"EPY"|"PEPX"|"PEPY"]=Radian;
-Twiss$Unit["R3"|"ZPX"|"ZPY"|"PZPX"|"PZPY"]=InvMeter;
-Twiss$Unit["BX"|"BY"|"BZ"]=SqrtMeter;
-Twiss$Unit["NX"|"NY"|"NZ"]=Pi2;
-Twiss$Unit["DDP"]=Ratio;
+RTwiss$Functions=("R"//#)&/@Twiss$Functions;
+DTwiss$Functions=("D"//#)&/@Twiss$Functions;
+XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions];
+
+Twiss$Unit[
+  "EX"|"EY"|"R2"|"DX"|"DY"|"S"|"PEX"|"PEY"|"DZ"|
+    "REX"|"REY"|"RR2"|"RDX"|"RDY"|"RPEX"|"RPEY"|"RDZ"|
+      "DEX"|"DEY"|"DR2"|"DDX"|"DDY"|"DPEX"|"DPEY"|"DDZ"]=Meter;
+Twiss$Unit[
+  "DPX"|"DPY"|"EPX"|"EPY"|"PEPX"|"PEPY"|
+    "RDPX"|"RDPY"|"REPX"|"REPY"|"RPEPX"|"RPEPY"|
+      "DDPX"|"DDPY"|"DEPX"|"DEPY"|"DPEPX"|"DPEPY"]=Radian;
+Twiss$Unit[
+  "R3"|"ZPX"|"ZPY"|"PZPX"|"PZPY"|
+    "RR3"|"RZPX"|"RZPY"|"RPZPX"|"RPZPY"|
+      "DR3"|"DZPX"|"DZPY"|"DPZPX"|"DPZPY"]=InvMeter;
+Twiss$Unit["BX"|"BY"|"BZ"|"RBX"|"RBY"|"RBZ"]=SqrtMeter;
+Twiss$Unit[
+  "NX"|"NY"|"NZ"|
+    "RNX"|"RNY"|"RNZ"|
+      "DNX"|"DNY"|"DNZ"]=Pi2;
+Twiss$Unit["DDP"|"DBX"|"DBY"|"DBZ"]=Ratio;
 Twiss$Unit[x_String?(#[1,4]==="SIZE"&)]:=Module[
   {{l,u}=MakeSize$Label$Unit[x[5,-1]]},
   Twiss$Label[x]="`fs`n`d"//l//"`n";
@@ -574,48 +597,48 @@ Twiss$Unit[x_String?(#[1,3]==="SIG"&)]:=Module[
   Twiss$Unit[x]=u];
 Twiss$Unit[_]=1;
 
-! If[$DisplayFunction===Unevaluated[TopDrawer],
-!   Twiss$Unit$Label[Meter]={"M","L"};
-!   Twiss$Unit$Label[Kilometer]={"KM","LL"};
-!   Twiss$Unit$Label[Milimeter]={"MM","LL"};
-!   Twiss$Unit$Label[Micron]={"MM","GL"};
-!   Twiss$Unit$Label[Nanometer]={"NM","LL"};
-!   Twiss$Unit$Label[Miliradian]={"MRAD","LLLL"};
-!   Twiss$Unit$Label[Microradian]={"MRAD","GLLL"};
-!   Twiss$Unit$Label[Radian]={"RAD","LLL"};
-!   Twiss$Unit$Label[SqrtMeter]={"2M062O1","MLUUUDU"};
-!   Twiss$Unit$Label[SquareMeter]={"M223","LX X"};
-!   Twiss$Unit$Label[InvMeter]={"M2-13","LX  X"};
-!   Twiss$Unit$Label[InvKilometer]={"KM2-13","LLX  X"};
-!   Twiss$Unit$Label[Pi2]={"2P"," G"};
-!   Twiss$Unit$Label[_]={"",""};
-!   Twiss$Label["AX"]={"A0X1","GXLX"};
-!   Twiss$Label["BX"]={"2B06O0X1","MGUUDXLX"};
-!   Twiss$Label["NX"]={"M0X1","GXLX"};
-!   Twiss$Label["EX"]={"H0X1","GXLX"};
-!   Twiss$Label["EPX"]={"HA0X1","GPXLX"};
-!   Twiss$Label["PEX"]={"H0XP1","GXL X"};
-!   Twiss$Label["PEPX"]={"HA0XP1","GPXL X"};
-!   Twiss$Label["DX"]={"DX","FL"};
-!   Twiss$Label["DPX"]={"DXA","FLP"};
-!   Twiss$Label["AY"]={"A0Y1","GXLX"};
-!   Twiss$Label["BY"]={"2B06O0Y1","MGUUDXLX"};
-!   Twiss$Label["NY"]={"M0Y1","GXLX"};
-!   Twiss$Label["EY"]={"H0Y1","GXLX"};
-!   Twiss$Label["EPY"]={"HA0Y1","GPXLX"};
-!   Twiss$Label["PEY"]={"H0YP1","GXL X"};
-!   Twiss$Label["PEPY"]={"HA0YP1","GPXL X"};
-!   Twiss$Label["DY"]={"DY","FL"};
-!   Twiss$Label["DPY"]={"DYA","FLP"};
-!   Twiss$Label["DZ"]={"DZ","FL"};
-!   Twiss$Label["R1"]={"R1","  "};
-!   Twiss$Label["R2"]={"R2","  "};
-!   Twiss$Label["R3"]={"R3","  "};
-!   Twiss$Label["R4"]={"R4","  "};
-!   Twiss$Label["DETR"]={"DETR"," LL "},
-!   ];
+(*
+If[$DisplayFunction===Unevaluated[TopDrawer],
+  Twiss$Unit$Label[Meter]={"M","L"};
+  Twiss$Unit$Label[Kilometer]={"KM","LL"};
+  Twiss$Unit$Label[Milimeter]={"MM","LL"};
+  Twiss$Unit$Label[Micron]={"MM","GL"};
+  Twiss$Unit$Label[Nanometer]={"NM","LL"};
+  Twiss$Unit$Label[Miliradian]={"MRAD","LLLL"};
+  Twiss$Unit$Label[Microradian]={"MRAD","GLLL"};
+  Twiss$Unit$Label[Radian]={"RAD","LLL"};
+  Twiss$Unit$Label[SqrtMeter]={"2M062O1","MLUUUDU"};
+  Twiss$Unit$Label[SquareMeter]={"M223","LX X"};
+  Twiss$Unit$Label[InvMeter]={"M2-13","LX  X"};
+  Twiss$Unit$Label[InvKilometer]={"KM2-13","LLX  X"};
+  Twiss$Unit$Label[Pi2]={"2P"," G"};
+  Twiss$Unit$Label[_]={"",""};
+  Twiss$Label["AX"]={"A0X1","GXLX"};
+  Twiss$Label["BX"]={"2B06O0X1","MGUUDXLX"};
+  Twiss$Label["NX"]={"M0X1","GXLX"};
+  Twiss$Label["EX"]={"H0X1","GXLX"};
+  Twiss$Label["EPX"]={"HA0X1","GPXLX"};
+  Twiss$Label["PEX"]={"H0XP1","GXL X"};
+  Twiss$Label["PEPX"]={"HA0XP1","GPXL X"};
+  Twiss$Label["DX"]={"DX","FL"};
+  Twiss$Label["DPX"]={"DXA","FLP"};
+  Twiss$Label["AY"]={"A0Y1","GXLX"};
+  Twiss$Label["BY"]={"2B06O0Y1","MGUUDXLX"};
+  Twiss$Label["NY"]={"M0Y1","GXLX"};
+  Twiss$Label["EY"]={"H0Y1","GXLX"};
+  Twiss$Label["EPY"]={"HA0Y1","GPXLX"};
+  Twiss$Label["PEY"]={"H0YP1","GXL X"};
+  Twiss$Label["PEPY"]={"HA0YP1","GPXL X"};
+  Twiss$Label["DY"]={"DY","FL"};
+  Twiss$Label["DPY"]={"DYA","FLP"};
+  Twiss$Label["DZ"]={"DZ","FL"};
+  Twiss$Label["R1"]={"R1","  "};
+  Twiss$Label["R2"]={"R2","  "};
+  Twiss$Label["R3"]={"R3","  "};
+  Twiss$Label["R4"]={"R4","  "};
+  Twiss$Label["DETR"]={"DETR"," LL "},
+*)
 
-If[DisplayFunction===Unevaluated[CanvasDrawer],
   Twiss$Unit$Label[Meter]="m";
   Twiss$Unit$Label[Kilometer]="km";
   Twiss$Unit$Label[Milimeter]="mm";
@@ -639,41 +662,113 @@ If[DisplayFunction===Unevaluated[CanvasDrawer],
   Twiss$Unit$Label[Pi2]="2`fp`n";
   Twiss$Unit$Label[_]="";
   Twiss$Label["AX"]="`fa`n`dx`n";
+  Twiss$Label["RAX"]="`fa`n`dxR`n";
+  Twiss$Label["DAX"]="`fda`n`dx`n";
   Twiss$Label["BX"]="`f\326`ob`n`dx`O`n";
+  Twiss$Label["RBX"]="`f\326`ob`n`dxR`O`n";
+  Twiss$Label["DBX"]="`fdb`n`dx`n / `fb`n`dxR`n";
   Twiss$Label["NX"]="`fn`n`dx`n";
+  Twiss$Label["RNX"]="`fn`n`dxR`n";
+  Twiss$Label["DNX"]="`fdn`n`dx`n";
   Twiss$Label["EX"]="`fh`n`dx`n";
+  Twiss$Label["REX"]="`fh`n`dxR`n";
+  Twiss$Label["DEX"]="`fdh`n`dx`n";
   Twiss$Label["EPX"]="`fh`n`dpx`n";
+  Twiss$Label["REPX"]="`fh`n`dpxR`n";
+  Twiss$Label["DEPX"]="`fdh`n`dpx`n";
   Twiss$Label["PEX"]="`fh`n`dxP`n";
+  Twiss$Label["RPEX"]="`fh`n`dxPR`n";
+  Twiss$Label["DPEX"]="`fdh`n`dxP`n";
   Twiss$Label["PEPX"]="`fh`n`dpxP`n";
+  Twiss$Label["RPEPX"]="`fh`n`dpxPR`n";
+  Twiss$Label["DPEPX"]="`fdh`n`dpxP`n";
   Twiss$Label["DX"]="`fD`nx`n";
+  Twiss$Label["RDX"]="`fD`nxR`n";
+  Twiss$Label["DDX"]="`fdD`nx`n";
   Twiss$Label["DPX"]="`fD`np`dx`n";
+  Twiss$Label["RDPX"]="`fD`np`dxR`n";
+  Twiss$Label["DDPX"]="`fdD`np`dx`n";
   Twiss$Label["AY"]="`fa`n`dy`n";
+  Twiss$Label["RAY"]="`fa`n`dyR`n";
+  Twiss$Label["DAY"]="`fda`n`dy`n";
   Twiss$Label["BY"]="`f\326`ob`n`dy`O`n";
+  Twiss$Label["RBY"]="`f\326`ob`n`dyR`O`n";
+  Twiss$Label["DBY"]="`fdb`n`dy`n / `fb`n`dyR`n";
   Twiss$Label["NY"]="`fn`n`dy`n";
+  Twiss$Label["RNY"]="`fn`n`dyR`n";
+  Twiss$Label["DNY"]="`fdn`n`dy`n";
   Twiss$Label["EY"]="`fh`n`dy`n";
+  Twiss$Label["REY"]="`fh`n`dyR`n";
+  Twiss$Label["DEY"]="`fdh`n`dy`n";
   Twiss$Label["EPY"]="`fh`n`dpy`n";
+  Twiss$Label["REPY"]="`fh`n`dpyR`n";
+  Twiss$Label["DEPY"]="`fdh`n`dpy`n";
   Twiss$Label["PEY"]="`fh`n`dyP`n";
+  Twiss$Label["RPEY"]="`fh`n`dyPR`n";
+  Twiss$Label["DPEY"]="`fdh`n`dyP`n";
   Twiss$Label["PEPY"]="`fh`n`dpyP`n";
+  Twiss$Label["RPEPY"]="`fh`n`dpyPR`n";
+  Twiss$Label["DPEPY"]="`fdh`n`dpyP`n";
   Twiss$Label["DY"]="`fD`ny`n";
+  Twiss$Label["RDY"]="`fD`nyR`n";
+  Twiss$Label["DDY"]="`fdD`ny`n";
   Twiss$Label["DPY"]="`fD`np`dy`n";
+  Twiss$Label["RDPY"]="`fD`np`dyR`n";
+  Twiss$Label["DDPY"]="`fdD`np`dy`n";
   Twiss$Label["DZ"]="`fD`nz`n";
-  Twiss$Label["DDP"]="`fD`np/p`d0`n";
+  Twiss$Label["RDZ"]="`fD`nzR`n";
+  Twiss$Label["DDZ"]="`fdD`nz`n";
+  Twiss$Label["DDP"]="`fD`np / p`d0`n";
+  Twiss$Label["RDDP"]="`fD`np`dR`n / p`d0`n";
+  Twiss$Label["DDDP"]="`fdD`np / p`d0`n";
   Twiss$Label["R1"]="R`d1`n";
+  Twiss$Label["RR1"]="R`d1R`n";
+  Twiss$Label["DR1"]="`fd`nR`d1`n";
   Twiss$Label["R2"]="R`d2`n";
+  Twiss$Label["RR2"]="R`d2R`n";
+  Twiss$Label["DR2"]="`fd`nR`d2`n";
   Twiss$Label["R3"]="R`d3`n";
+  Twiss$Label["RR3"]="R`d3R`n";
+  Twiss$Label["DR3"]="`fd`nR`d3`n";
   Twiss$Label["R4"]="R`d4`n";
+  Twiss$Label["RR4"]="R`d4R`n";
+  Twiss$Label["DR4"]="`fd`nR`d4`n";
   Twiss$Label["DETR"]="DetR";
+  Twiss$Label["RDETR"]="DetR`dR`n";
+  Twiss$Label["DDETR"]="`fd`nDetR";
   Twiss$Label["AZ"]="`fa`n`dz`n";
+  Twiss$Label["RAZ"]="`fa`n`dzR`n";
+  Twiss$Label["DAZ"]="`fda`n`dz`n";
   Twiss$Label["BZ"]="`f\326`ob`n`dz`O`n";
+  Twiss$Label["RBZ"]="`f\326`ob`n`dzR`O`n";
+  Twiss$Label["DBZ"]="`fdb`n`dz`n / `fb`n`dzR`n";
   Twiss$Label["NZ"]="`fn`n`dz`n";
-  Twiss$Label["ZX"]="`fz`n`dx`n";
+  Twiss$Label["RNZ"]="`fn`n`dzR`n";
+  Twiss$Label["DNZ"]="`fdn`n`dz`n";
+  Twiss$Label["ZX"]="`fh`n`dx`n";
+  Twiss$Label["RZX"]="`fh`n`dxR`n";
+  Twiss$Label["DZX"]="`fdh`n`dx`n";
   Twiss$Label["ZPX"]="`fz`n`dpx`n";
-  Twiss$Label["ZY"]="`fz`n`dy`n";
-  Twiss$Label["ZPY"]="`fz`n`dy`n";
+  Twiss$Label["RZPX"]="`fz`n`dpxR`n";
+  Twiss$Label["DZPX"]="`fdz`n`dpx`n";
   Twiss$Label["PZX"]="`fz`n`dxP`n";
+  Twiss$Label["RPZX"]="`fz`n`dxPR`n";
+  Twiss$Label["DPZX"]="`fdz`n`dxP`n";
   Twiss$Label["PZPX"]="`fz`n`dpxP`n";
+  Twiss$Label["RPZPX"]="`fz`n`dpxPR`n";
+  Twiss$Label["DPZPX"]="`fdz`n`dpxP`n";
+  Twiss$Label["ZY"]="`fz`n`dy`n";
+  Twiss$Label["RZY"]="`fz`n`dyR`n";
+  Twiss$Label["DZY"]="`fdz`n`dy`n";
+  Twiss$Label["ZPY"]="`fz`n`dpy`n";
+  Twiss$Label["RZPY"]="`fz`n`dpyR`n";
+  Twiss$Label["DZPY"]="`fdz`n`dpy`n";
   Twiss$Label["PZY"]="`fz`n`dyP`n";
+  Twiss$Label["RPZY"]="`fz`n`dyPR`n";
+  Twiss$Label["DPZY"]="`fdz`n`dyP`n";
   Twiss$Label["PZPY"]="`fz`n`dpyP`n";
+  Twiss$Label["RPZPY"]="`fz`n`dpyPR`n";
+  Twiss$Label["DPZPY"]="`fdz`n`dpyP`n";
   Twiss$Label[x_String?(#[1,4]==="SIZE"&)]:=Module[
     {{l,u}=MakeSize$Label$Unit[x[5,-1]]},
     Twiss$Unit[x]=u;
@@ -705,7 +800,10 @@ If[DisplayFunction===Unevaluated[CanvasDrawer],
     {{l,u}=MakeSize$Label$Unit[x[5,-1]]},
     Twiss$Unit[x]=u;
     Twiss$Label[x]="`fs`n`d"//l//"`n"];
-];
+
+(*
+  ];
+*)
 
 Twiss$Label[_]:="";
 
@@ -736,7 +834,11 @@ OpticsPlot::frameheight=
 OpticsPlot::wronglist=
   "List data must be {{x1, y1, (dy1)}, ..}";
 
-Protect[OpticsPlot,OpticsPlot1$,Twiss$Functions,
+Protect[OpticsPlot,OpticsPlot1$,
+  Twiss$Functions,
+  RTwiss$Functions,
+  DTwiss$Functions,
+  XTwiss$Functions,
   Twiss$Unit$Label,Unit$Factor,LINE$Funtions,
   Element$Height,LINE$FunctionsQ,
   BeamPlot,

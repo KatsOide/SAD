@@ -1,4 +1,4 @@
-(* Plots 7/31/2017 *)
+(* Plots 8/6/2019 *)
 
 Show;
 
@@ -10,7 +10,7 @@ SetAttributes[{Contours,MeshRange,ColorFunction,ColorFunctionScaling,
   MaxBend,PlotPoints,PlotDivision,FunctionLabel,ResultLabel,RaiseFit,
   Signal,GoodnessOfFit,ChiSquare,ConfidenceInterval,ColumnTags,MeshStyle,
   PlotStyle,Columns,ColumnOffset,Bins,BinRange,ColumnLabel,Mesh,MeshColor,
-  FitParameters},
+  FitParameters,PlotNull},
   Constant];
 
 BeginPackage[Plots`]
@@ -38,19 +38,20 @@ With[{CP$def={Scale->{Linear,Linear},
   FrameTicks->Automatic,Initialize->True,
   FrameLabel->{"","","",""},DisplayFunction:>$DisplayFunction,
   PlotLabel->"",Prolog->{},Epilog->{},
+  PlotNull->False,
   Background->"#ffffff"},
   r=(Rule|RuleDelayed)[Graphics$Options,_]},
 
   ColumnPlot[ll_,opt___]:=Module[
     {n=Length[ll],d=Dimensions[ll],nc,ns,
       coff,cm,cw,x,y,cx,g,ref,of,pc,ms,pcx,msx,pr,or,sc,gopt,ld,
-      cla,cl,ft,ts,tis,tx,t,tag,txs,
+      cla,cl,ft,ts,tis,tx,t,tag,txs,pn,
       op=Override[opt,CP$def]
       },
-    {coff,ref,of,pc,ms,or,cl,ft,tis,tag,txs}={ColumnOffset,Reference,
+    {coff,ref,of,pc,ms,or,cl,ft,tis,tag,txs,pn}={ColumnOffset,Reference,
       DisplayFunction,
       FillColor,MeshStyle,Orientation,ColumnLabel,FrameTicks,
-      TickSize,ColumnTags,TextSize}/.op;
+      TickSize,ColumnTags,TextSize,PlotNull}/.op;
     ld=Length[d];
     {nc,ns,ymin,ymax}=Switch[ld,
       1,
@@ -78,7 +79,7 @@ With[{CP$def={Scale->{Linear,Linear},
         ft=False;
         cla=Flatten[cl];
         cla=Join[cla,Table["",{Max[n*nc-Length[cla],0]}]];
-	tx=WindowScaled[If[$DisplayFunction===CanvasDrawer,2.3,0.8]];
+        tx=WindowScaled[If[$DisplayFunction===TopDrawer,0.8,2.3]];
         tis=0;
         ts=Max[Min[2,6/Max[1,StringLength/@cla],12/n/nc],0.9]*txs,
         cl===Automatic,
@@ -100,6 +101,7 @@ With[{CP$def={Scale->{Linear,Linear},
       Table[Null,{n*nc}],
       StandardForm[Table[tag//i,{i,n*nc}]]];
     cx=Thread[{Flatten[cx,1],Flatten[ll,1],pcx,msx,cla,t}];
+    If[~pn,cx=cx/.{_,0,__}:>Null[]];
     sc=Flatten[{Linear,Scale/.op}][[{-2,-1}]];
     gopt=Override[Scale->sc,DataRange->dr,
       PlotRange->pr,
@@ -162,34 +164,31 @@ With[{CP$def={Scale->{Linear,Linear},
     g
     ]];
 
-With[{def={
-	PlotStyle->ColumnPlot,Orientation->Vertical,
-  	Bins:>Max[5,Min[100,Sqrt[Max[Length/@l]]]],
-  	Dashing->{{1},{0.75,0.25},{0.4, 0.15},{0.2,0.1},{0.1,0.08},
-	         {0.8,0.08, 0.08, 0.08},{0.4,0.08,0.08,0.08}},
-  	PlotColor:>If[$DisplayFunction===CanvasDrawerr,
-		{"black","tomato","dark slate blue","forest green","gray",
-		          "magenta","cyan","yellow"},
-      		{"black","red","blue","green","gray","magenta","cyan","yellow"}
-       		]
-      }},
+With[{def={PlotStyle->ColumnPlot,Orientation->Vertical,
+  Bins:>Max[5,Min[100,Sqrt[Max[Length/@l]]]],
+  Dashing->{{1},{0.75,0.25},{0.4, 0.15},{0.2,0.1},{0.1,0.08},
+  {0.8,0.08, 0.08, 0.08},{0.4,0.08,0.08,0.08}},
+  PlotColor:>If[$DisplayFunction===TopDrawer,
+    {"black","red","blue","green","gray","magenta","cyan","yellow"},
+    {"black","tomato","dark slate blue","forest green","gray",
+      "magenta","cyan","yellow"}]},fact=1.00001},
 
   HistoPlot[l_,opt___]:=HistoPlot[{l},opt];
   HistoPlot[l:{{_,_},___},opt___]:=HistoPlot[{l},opt];
   HistoPlot[l:{_List,___},opt___]:=Module[{min,max,
       {nc,ps}={Bins,PlotStyle}/.{opt}/.def,
       dc,col,hist,x,histall,ll=Length[l],da,pc,or},
+    nc=Round[nc];
     If[Head[l[[1,1]]]===List,
-      {min,max}=BinRange/.{opt}/.
-      BinRange->MinMax[l[[,,1]]]*{1,1.00001};
-      dc=(max-min)/nc;
+      {min,max}=BinRange/.{opt}/.BinRange->MinMax[l[[,,1]]];
+      dc=(max-min)/nc*fact;
       histall=(
         col=Select[Thread[{Floor[(#[[,1]]-min)/dc]+1,#[[,2]]}],(1<=First[#]<=nc)&];
         hist=Table[0,{nc}];
         Scan[(hist[[First[#]]]+=Second[#])&,col];
         hist)&/@l,
-      {min,max}=BinRange/.{opt}/.BinRange->MinMax[l]*{1,1.00001};
-      dc=(max-min)/nc;
+      {min,max}=BinRange/.{opt}/.BinRange->MinMax[l];
+      dc=(max-min)/nc*fact;
       histall=(
         col=Select[Floor[(#-min)/dc]+1,(1<=#<=nc)&];
         hist=Table[0,{nc}];

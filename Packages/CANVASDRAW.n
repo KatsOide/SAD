@@ -1,28 +1,33 @@
-(* CANVASDRAW 10/21/2011 K. Oide *)
+(* CANVASDRAW 8/30/2019 K. Oide *)
 
 TkWait;
 OpticsPlot;
 
 FFSCanvasDraw=Class[{},{},{},
 
-  Draw[]:=If[$DisplayFunction===CanvasDrawer,
-    Module[{w,r1,r2,list,w1,opt,w1u},
+  Draw[]:=If[$DisplayFunction<=>CanvasDrawer,
+    1,
+    Module[{w,r1=1,r2=LINE["LENGTH"],list,w1,opt,w1u},
       w=Read[-1,Word,ReadNewRecord->False];
+!      System`Print["CD: ",w];
       If[ToUpperCase[w]==="DRAW",
         w=Read[-1,Word,ReadNewRecord->False]];
-      If[(r1=LINE["POSITION",ToUpperCase[w]])==={},
-        r1=1;
-        r2=LINE["LENGTH"],
-        w=Read[-1,Word,ReadNewRecord->False];
-        If[(r2=LINE["POSITION",ToUpperCase[w]])==={},
+      If[w<=>"",
+        If[(r1=LINE["POSITION",ToUpperCase[w]])==={},
+          r1=1;
           r2=LINE["LENGTH"],
-          w=Read[-1,Word,ReadNewRecord->False]]];
+          w=Read[-1,Word,ReadNewRecord->False];
+          If[w<=>"",
+            If[(r2=LINE["POSITION",ToUpperCase[w]])==={},
+              r2=LINE["LENGTH"],
+              w=Read[-1,Word,ReadNewRecord->False]]]]];
       w=ToUpperCase[w];
       w1="&";
       list=Table[
         If[w1<=>"&",Break[]];
         Table[
           {w1,w}=SeparateAmpsnd[w];
+!      System`Print["CANVDR: ",{w1,w}];
           Switch[w1,
             "",
             If[w=="",w=ToUpperCase[Read[-1,Word,ReadNewRecord->False]];
@@ -52,9 +57,7 @@ FFSCanvasDraw=Class[{},{},{},
       OpticsPlot[list,Null@@opt,PlotLabel->TITLE];
       Update[];
 !      Print[{w,w1}];
-      If[w1==";","",w]]
-      , 1
-      ];      
+      If[w1==";","",w]]];      
 
   SeparateAmpsnd[w_]:=Module[{p=StringPosition[w,"&"]/.{}->{{Infinity,Infinity}},
     q=StringPosition[w,";"]/.{}->{{Infinity,Infinity}}},
