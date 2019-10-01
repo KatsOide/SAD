@@ -129,7 +129,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       use tfstk
       use ffs_flag
       use tmacro
-      use ffs_pointer, only:inext,iprev,geo
+      use ffs_pointer, only:inext,iprev
       use tspin
       use photontable
       implicit none

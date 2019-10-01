@@ -21,6 +21,7 @@
      $     [1.d-6,1.d-5,1.d-6,1.d-5,1.d-5,1.d-6]
       vcalpha=1.d0
       trf0=0.d0
+c      write(*,*)'tcod-i ',rfsw
       if(rfsw)then
         rfsw=.false.
         call tcod(trans,cod,beam,fndcod)
@@ -29,7 +30,8 @@
           cod(5)=asin(min(1.d0,max(-1.d0,(u0*pgev-vcacc)/vceff)))
      $         /wrfeff-trf0
         endif
-c          write(*,*)'tcod ',trf0,vcacc,u0*pgev,cod(5)
+c        write(*,'(a,l2,1p5g15.7)')'tcod-0 ',
+c     $       fndcod,vceff,trf0,vcacc,u0*pgev,cod(5)
         im=6
       else
         im=5
@@ -74,10 +76,8 @@ c      write(*,*)'tcod-dp0 ',dp0
       call tinitr12(trans)
       codf=codi
       trf00=trf0
-c      write(*,*)'tcod-tturne-0'
       call tturne(trans,codf,beam,srot,
      $     i00,i00,i00,.false.,.true.,rt)
-c      write(*,*)'tcod-tturne-1'
       dz=(codi(5)+codf(5))*0.5d0
       rt=radtaper
       dcod1=codi-codf

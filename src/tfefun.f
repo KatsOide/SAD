@@ -101,12 +101,6 @@ c     DOUBLE COMPLEX specific math function implemented by SAD
       external aloggamma1,cloggamma1,factorial,cfactorial,gammaq,
      $     gammap,cerfc,cerf,gamma0,erf,erfc,inverseerf,
      $     cproductlog,productlog
-c      call tfreecheck1('tfefun-0',itastk(1,isp),
-c     $     itastk(2,isp),vstk(ivstkoffset+isp),irtc)
-c      if(irtc .ne. 0)then
-c        call tfdebugprint(itastk(1,isp1),itastk(2,isp1),
-c     $       vstk(ivstkoffset+isp1),'tfefun-0',1)
-c      endif
       if(upvalue)then
         LOOP_I: do i=isp1+1,isp
           k1=dtastk(i)

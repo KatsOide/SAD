@@ -439,6 +439,7 @@ c      call tfdebugprint(kx,'setcontextpath',1)
           call exit(0)
         endif
       endif
+      kx=dxnull
       irtc=itfmessage(9,'General::wrongtype','"Null"')
       return
       end
@@ -480,8 +481,15 @@ c      call tfdebugprint(kx,'setcontextpath',1)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*4 isp1,irtc,narg,iargc,i,l,isp0
+      integer*4 isp1,irtc,narg,iargc,i,l,isp0,itfmessage
       character*256 arg
+      if(isp .gt. isp1+1)then
+        go to 9000
+      elseif(isp .eq. isp1+1)then
+        if(ktastk(isp) .ne. ktfoper+mtfnull)then
+          go to 9000
+        endif
+      endif
       narg=iargc()
       irtc=0
       if(narg .le. 0)then
@@ -497,6 +505,8 @@ c      call tfdebugprint(kx,'setcontextpath',1)
       enddo
       kx=kxmakelist(isp0)
       isp=isp0
+      return
+ 9000 irtc=itfmessage(9,'general::narg','"0"')
       return
       end
 

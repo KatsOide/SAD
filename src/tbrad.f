@@ -1,5 +1,5 @@
       subroutine tbrad(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     l,al,phib,phi0,
+     $     al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fs1,fs2,mfring,fringe,eps0)

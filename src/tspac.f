@@ -205,6 +205,7 @@ C******************** CWERF ****************************************
       COMPLEX*16 Z
       LOGICAL B
       DATA CONST/1.12837 91670 9551D0/
+      H2=0.d0
       XX=dble(Z)
       YY=imag(Z)
       X=ABS(XX)
@@ -285,10 +286,11 @@ C
       EQUIVALENCE (DDF,FRI)
 C
       IF(K.EQ.2) THEN
-        DO 100 J=1,4
-          DO 100 I=1,4
- 100        T(I,J)=0D0
-          ENDIF
+        T=0.d0
+c        DO 100 J=1,4
+c          DO 100 I=1,4
+c 100        T(I,J)=0D0
+      ENDIF
       EX=0.5*((D(1)/S(1))**2+(D(2)/S(2))**2)
       IF(EX.LE.1D-12) GOTO 300
       G=0D0

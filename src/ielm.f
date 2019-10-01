@@ -15,10 +15,11 @@
       integer*4 ielme,lfn,irtc,lw
       integer*8 iep
       character*(*) word
-      real*8 v,getva
+      real*8 v
       logical*4 exist
       type (sad_descriptor) kx
       exist=.false.
+      iv=0
       iep=ierrorprint
       ierrorprint=0
       irtc=0
@@ -62,7 +63,7 @@
       use tffitcode
       implicit none
       type (sad_descriptor) kx
-      integer*4 lw,iord,ln,i,j,lenw,ip,im,lfn
+      integer*4 lw,iord,ln,i,j,ip,im,lfn
       character*(*) word
       character*64 ordw
       character*(MAXPNAME) name
