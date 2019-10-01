@@ -30,9 +30,7 @@ c     drift in the parallel solenoid
       subroutine tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
      $     al,bz,enarad)
       use element_drift_common
-      use tmacro,only:l_track
       use ffs_flag, only:rfluct,photons
-      use ffs_pointer,only:geo
       use photontable
       use tspin
       use mathfun, only: sqrtl
@@ -117,10 +115,8 @@ c               write(*,'(a,1p12g10.2)')'drift_sol ',pp%geo1(:,:)
       subroutine tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
      $     al,bz,ak0x,ak0y,enarad)
       use element_drift_common
-      use tmacro, only:l_track
       use tspin
       use ffs_flag, only:rfluct,photons
-      use ffs_pointer,only:geo
       use photontable
       use mathfun
       implicit none

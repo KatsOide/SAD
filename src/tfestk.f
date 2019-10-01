@@ -1012,7 +1012,7 @@ c          call tfdebugprint(kx,'==>',1)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*4 irtc,istart,istop,l,itfdownlevel
+      integer*4 irtc,istop,l,itfdownlevel
       character*(*) string
       levele=levele+1
       call tfeval(string,1,istop,kx,.false.,irtc)
@@ -1027,7 +1027,7 @@ c          call tfdebugprint(kx,'==>',1)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*4 irtc,istart,istop
+      integer*4 irtc,istop
       character*(*) string
       levele=levele+1
       call tfeval(string,1,istop,kx,.false.,irtc)
