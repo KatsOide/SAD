@@ -5,7 +5,7 @@ OpticsPlot;
 
 FFSCanvasDraw=Class[{},{},{},
 
-  Draw[]:=If[$DisplayFunction===TopDrawer,
+  Draw[]:=If[$DisplayFunction<=>CanvasDrawer,
     1,
     Module[{w,r1=1,r2=LINE["LENGTH"],list,w1,opt,w1u},
       w=Read[-1,Word,ReadNewRecord->False];
