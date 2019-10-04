@@ -36,7 +36,7 @@ c strat line definition
 c
  2000 if (skipch(COMMA,token,slen,ttype,rval,ival)) go to 2000
 c.......for debug
-c       print *,'read line defininition'
+c       print *,'read line defininition: ',slen,'"',token(:slen),'"'
 c.......end debug
 c
       if((token(:slen) .eq. RCURL) .or.
@@ -47,10 +47,11 @@ c
         idx=hsrchz(token(:slen))
         call gettok(token,slen,ttype,rval,ival)
         if ((idtype(idx) .eq. icNULL)
-     &      .or. (idtype(idx) .eq. icode)) then
-          if(idtype(idx) .eq. icode )
-     &         call errmsg('doline',pname(idx)(:lpname(idx))//
-     &         ' is redefined',0,-1)
+     &       .or. (idtype(idx) .eq. icode))then
+          if(idtype(idx) .eq. icode)then
+            call errmsg('doline',pname(idx)(:lpname(idx))//
+     &           ' is redefined',0,-1)
+          endif
           idtype(idx)=int(icode)
           idx1=idval(idx)
           if(idx1 .ne. 0) then
@@ -72,14 +73,13 @@ c                write(*,*)'doline ',idm,idtype(membas)
               endif
               ilist(2,idx1)=0
             endif
-c            write(*,*)'doline-delete ',
-c     $           idx1,ilist(1,idx1),ilist(1,idx1-1),pname(idx)
             call tfree(idx1)
-c            call tfreem(idx1,ilist(1,idx1)+1)
-c            call freeme(idx1,ilist(1,idx1)+1)
             idval(idx)=0
           endif
+c          print *,'doline-before-lread'
           call lread(idx,token,slen,ttype,rval,ival)
+c          print *,'doline-lread: ',slen,ttype,idx,idtype(idx),
+c     $         icode,'"',token(:slen),'"'
         else if (idtype(idx) .ge. icRSVD) then
           call errmsg('doline',
      &        'syntax error:you can not use reaserved words as a name'
