@@ -701,6 +701,7 @@ c     $     pxia,pxir*x2,pyir*y2,pzi*z2,dpgy/dp
         kphtable(itp)=ktaloc(10*lt)
         ilp=1
       endif
+c      write(*,*)'phconv ',itp,ilp
       kp=kphtable(itp)+(ilp-1)*10
       ilist(1,kp)=k
       ilist(2,kp)=l
@@ -742,16 +743,16 @@ c     $     pxia,pxir*x2,pyir*y2,pzi*z2,dpgy/dp
       integer*8 kax, kp,kt
       integer*4 nph,i
       real*8 dp
-      integer*8 kphlist
-      data kphlist/0/
+      integer*8 ,save ::kphlist=0
       if(kphlist .eq. 0)then
         kphlist=ktfsymbolz('`PhotonList',11)-4
       endif
       call tflocal(klist(kphlist))
       if(itp .le. 0)then
-        kax=kxnulll
+        dlist(kphlist)=dxnulll
       else
         nph=(itp-1)*lt+max(ilp-1,0)
+c        write(*,*)'phlist ',itp,nph
         kax=ktadaloc(-1,nph,klx)
         klx%attr=ior(klx%attr,lconstlist)
         itp=1
@@ -787,8 +788,10 @@ c     $     pxia,pxir*x2,pyir*y2,pzi*z2,dpgy/dp
             call tfree(kphtable(i))
           endif
         enddo
+        klist(kphlist)=ktflist+ktfcopy1(kax)
       endif
-      klist(kphlist)=ktflist+ktfcopy1(kax)
+c      call tfdebugprint(klist(kphlist),'phlist',1)
+c      write(*,*)'with ',itp,ilp
       return
       end subroutine
 
