@@ -1008,12 +1008,12 @@ c          call tfdebugprint(kx,'==>',1)
       return
       end
 
-      subroutine tfevalc(string,ls)
+      subroutine tfevalc(string)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*4 irtc,istop,l,itfdownlevel,ls
-      character*(ls) string
+      integer*4 irtc,istop,l,itfdownlevel
+      character*(*) string
       levele=levele+1
 c      write(*,*)'tfevalc ',len(string),ls,'''',string(1:5),''''
       call tfeval(string,1,istop,kx,.false.,irtc)
