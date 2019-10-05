@@ -6,7 +6,7 @@
      $     mfring,fb1,fb2,
      $     vc,w,phirf,dphirf,vnominal,
      $     radius,rtaper,autophi,
-     $     kturn,l,latt,kptbl)
+     $     kturn,latt,kptbl)
       use tfstk
       use ffs_flag
       use tmacro
@@ -31,7 +31,7 @@ c      parameter (oneev=1.d0+3.83d-12)
       integer*4 mfring
       real*8 fb1,fb2,vc,phirf,dphirf,radius
       integer*8 latt(nlat)
-      integer*4 kturn,l,kptbl(np0,6)
+      integer*4 kturn,kptbl(np0,6)
       logical*4 acc,spac1,dofr(0:nmult),krad
       integer*4 i,j,m,n,ndiv,nmmin,nmmax,ibsi
       real*8 pz0,s0,bxs,bys,bzs,
@@ -546,7 +546,7 @@ c            dpr=ah/(1.d0+sqrt(1.d0+ah))
         endif
         if(spac1)then
           call spkick(np,x,px,y,py,z,g,dv,sx,sy,sz,al*wsm,radius,alx,
-     $          kturn,l,latt,kptbl)
+     $          kturn,l_track,latt,kptbl)
         endif
       enddo
       if(nmmin .eq. 2)then
@@ -557,7 +557,7 @@ c        write(*,'(a,1p7g12.4)')'tmulti-2 ',bsi(1:7)
       endif
       if(spac1)then
 c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
-        call tapert(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+        call tapert(l_track,latt,x,px,y,py,z,g,dv,sx,sy,sz,
      $       kptbl,np,kturn,
      $       radius,radius,
      $       0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)

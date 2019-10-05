@@ -246,6 +246,7 @@ c        snchi3=sin(chi3)
      $     sxf,syf,szf,bsi,
      $     trans(6,12),cod(6),beam(42),geo1(3,3),srot(3,9)
       logical*4 seg,dirf
+      real*8 ,save::dummy(256)=0.d0
       i0=i+(1-idir)/2
       i1=2*i+1-i0
       lt=idtypec(i)
@@ -359,6 +360,44 @@ c     call tmulteseg(trans,cod,beam,i,cmp,bzs*dir,lal,1.d0,i)
         else
           call tmulte1(trans,cod,beam,srot,i,cmp,bzs*dir,1.d0,i)
         endif
+        call setdirelc(i,direlc(i)*dir)
+        xf=cod(1)
+        yf=cod(3)
+        pxf=cod(2)*dir+f*yf
+        pyf=cod(4)*dir-f*xf
+        dl=-cod(5)
+        dx=xf-xi
+        dy=yf-yi
+        xi=xf
+        yi=yf
+      elseif(lt .eq. icCAVI)then
+        f=bzs*.5d0
+        cod(1)=xi
+        cod(2)=(pxi-f*yi)*dir
+        cod(3)=yi
+        cod(4)=(pyi+f*xi)*dir
+        cod(5)=0.d0
+        cod(6)=0.d0
+        call setdirelc(i,direlc(i)*dir)
+        dirf=direlc(i) .gt. 0.d0
+        call tmulte(trans,cod,beam,srot,i,al,
+     $       dummy,
+     $       bzs*dir,
+     $       0.d0,0.d0,0.d0,0.d0,
+     1       cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
+     $       0.d0,0.d0,0.d0,
+     $       cmp%value(ky_ROT_CAVI),
+     $       0.d0,0.d0,.false.,
+     $       cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
+     $       0.d0,0.d0,0.d0,0.d0,
+     $       cmp%value(ky_FRMD_CAVI),0.d0,0.d0,
+     $       .true.,
+     $       (cmp%value(ky_VOLT_CAVI)+cmp%value(ky_DVOLT_CAVI))*dir,
+     $       cmp%value(ky_HARM_CAVI),
+     $       cmp%value(ky_PHI_CAVI),cmp%value(ky_FREQ_CAVI),
+     $       0.d0,1.d0,
+     $       cmp%value(ky_APHI_CAVI) .ne. 0.d0,
+     $       i)
         call setdirelc(i,direlc(i)*dir)
         xf=cod(1)
         yf=cod(3)

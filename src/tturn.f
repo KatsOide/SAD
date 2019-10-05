@@ -433,10 +433,10 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
          bz=0.d0
          if(seg)then
            call tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $          l,cmp,lsegp,bz,rtaper,n,latt,kptbl)
+     $          cmp,lsegp,bz,rtaper,n,latt,kptbl)
          else
            call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $          l,cmp,bz,rtaper,n,latt,kptbl)
+     $          cmp,bz,rtaper,n,latt,kptbl)
          endif
 
        case (icCAVI)
@@ -678,7 +678,7 @@ c     $             +lend-1),
       end
 
       subroutine tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     l,cmp,lsegp,bz,rtaper,n,latt,kptbl)
+     $     cmp,lsegp,bz,rtaper,n,latt,kptbl)
       use kyparam
       use tfstk
       use ffs
@@ -688,7 +688,7 @@ c     $             +lend-1),
       use tspin
       implicit none
       type (sad_comp) :: cmp
-      integer*4 np,n,l
+      integer*4 np,n
       integer*8 latt(nlat)
       integer*4 kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),
@@ -735,14 +735,14 @@ c     $             +lend-1),
         enddo
         cmp%update=iand(2,cmp%update)
         call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       l,cmp,bz,rtaper,n,latt,kptbl)
+     $       cmp,bz,rtaper,n,latt,kptbl)
       enddo
       cmp%value(1:nc)=rsave(1:nc)
       return
       end
 
       subroutine tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     l,cmp,bz,rtaper,n,latt,kptbl)
+     $     cmp,bz,rtaper,n,latt,kptbl)
       use kyparam
       use tfstk
       use ffs
@@ -752,7 +752,7 @@ c     $             +lend-1),
       use tspin
       implicit none
       type (sad_comp) :: cmp
-      integer*4 np,n,l
+      integer*4 np,n
       integer*8 latt(nlat)
       integer*4 kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
@@ -765,7 +765,7 @@ c     $             +lend-1),
       autophi=cmp%value(ky_APHI_MULT) .ne. 0.d0
       ph=cmp%value(ky_DPHI_MULT)
       if(autophi)then
-        ph=ph+gettwiss(mfitdz,l)*cmp%value(p_W_MULT)
+        ph=ph+gettwiss(mfitdz,l_track)*cmp%value(p_W_MULT)
       endif
       call tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     cmp%value(p_L_MULT),cmp%value(ky_K0_MULT),
@@ -789,6 +789,6 @@ c     $             +lend-1),
      $     cmp%value(p_W_MULT),
      $     cmp%value(ky_PHI_MULT),ph,cmp%value(p_VNOMINAL_MULT),
      $     cmp%value(ky_RADI_MULT),rtaper,autophi,
-     $     n,l,latt,kptbl)
+     $     n,latt,kptbl)
       return
       end
