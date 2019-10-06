@@ -43,8 +43,8 @@ c     now read elemnt list
      &           (idtype(idx) .ne. icLINE)      ) then
               wkstr(:slen)=token(:slen)
               call errmsg('lread',
-     &             'syntax error:'//wkstr(:slen)
-     &             //'is not line nor element.',0,16)
+     &             'syntax error: '//wkstr(:slen)
+     &             //' is not line nor element.',0,16)
             else
               isp=isp+1
               itastk(1,isp)=mult

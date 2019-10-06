@@ -21,13 +21,14 @@
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
      $     sx(np0),sy(np0),sz(np0),bsi(np)
       real*8 tfbzs,fw,bzs,rho,al,theta,phi,phix,phiy,rhoe,
-     $     bz1,rho1,dx,dy,rot,rtaper
+     $     bz1,rho1,dx,dy,rot,rtaper,ph
       integer*8 latt(nlat),l1,lp
       integer*4 kptbl(np0,6),nwak,nextwake,n,
      $     i,ke,l,lt,itab(np),izs(np),
      $     kdx,kdy,krot,kstop,kb,lwl,lwt,irtc
       integer*8 iwpl,iwpt
-      logical*4 sol,enarad,out,fringe,seg
+      logical*4 sol,enarad,out,fringe,seg,autophi
+      real*8 ,save::dummy(256)=0.d0
       l1=latt(k)
       if(sol)then
         kb=k
@@ -187,11 +188,33 @@ c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
           endif
           if(seg)then
             call tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           l,cmp,lsegp,bzs,rtaper,n,latt,kptbl)
+     $           cmp,lsegp,bzs,rtaper,n,latt,kptbl)
           else
             call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           l,cmp,bzs,rtaper,n,latt,kptbl)
+     $           cmp,bzs,rtaper,n,latt,kptbl)
           endif
+        case(icCAVI)
+          autophi=cmp%value(ky_APHI_CAVI) .ne. 0.d0
+          ph=cmp%value(ky_DPHI_CAVI)
+          if(autophi)then
+            ph=ph+gettwiss(mfitdz,l_track)*cmp%value(p_W_CAVI)
+          endif
+          call tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         cmp%value(ky_L_CAVI),dummy,
+     $         bzs,0.d0,0.d0,0.d0,
+     1         cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
+     $         0.d0,0.d0,0.d0,
+     $         cmp%value(ky_ROT_CAVI),
+     $         0.d0,0.d0,0.d0,
+     $         cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
+     $         0.d0,0.d0,0.d0,0.d0,
+     $         int(cmp%value(p_FRMD_CAVI)),
+     $         0.d0,0.d0,
+     $         cmp%value(ky_VOLT_CAVI)+cmp%value(ky_DVOLT_CAVI),
+     $         cmp%value(p_W_CAVI),
+     $         cmp%value(ky_PHI_CAVI),ph,cmp%value(p_VNOMINAL_CAVI),
+     $         0.d0,1.d0,autophi,
+     $         n,latt,kptbl)
         case (icSOL)
           if(l .eq. ke)then
             fringe=cmp%value(ky_FRIN_SOL) .eq. 0.d0      
@@ -245,7 +268,8 @@ c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
           if(out)then
             out=.false.
             write(*,*)
-     $'Only DRIFT, BEND, QUAD, SOL, MULT, MAP, APERT, MARK, MON '//
+     $'Only DRIFT, BEND, QUAD, SOL, MULT, '//
+     $'CAVI, MAP, APERT, MARK, MON '//
      $'are supported in SOL: ',
      $           lt
           endif

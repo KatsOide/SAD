@@ -72,6 +72,8 @@
       use wsbb
       use tfstk
       use tmacro
+      use photontable
+      use ffs_flag
       implicit none
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
      $     spx(np),spy(np),spz(np)
@@ -82,7 +84,7 @@ c      integer*4 n,i,is,j,jl,jm,ju,iseed,irtc
       integer*4 n,i,is,j,jl,jm,ju,irtc
       LOGICAL*4 icross,tilt,deform,cod
       real*8 a2,a2x,a2y,acx,acy,asp,c1,cdu,d1x,d1y,dux,duy,delg,dLum
-      real*8 fx0,fy0,fxy,gamp,gxy,h1,hi,pn,pxy2,pz
+      real*8 fx0,fy0,fxy,gamp,gxy,h1,p1,hi,pn,pxy2,pz,pxi,pyi
       real*8 sigz,xx,yy,w1x,w1y
       real*8 cosx,sinx,tanx,sig11x,sig11y,sig12x,sig12y,sqrsig11,sz
       real*8 sint,cost
@@ -251,7 +253,7 @@ c      call tfmemcheckprint('beambeam',1,.false.,irtc)
             x(i)=x(i)+px(i)*sz
             y(i)=y(i)+py(i)*sz
             g(i)=g(i)-pxy2*0.25d0
-
+            pn=1.+g(i)
 !     center of mass of each slice
 
 !       write(*,'(2D25.15)') x(1),px(1),y(1),py(1),z(1),g(1)
@@ -403,6 +405,16 @@ c               xx=tran(iseed)
                   xij=xi(j)+(xi(j+1)-xi(j))*(xx-SwI(j))/
      &                 (SwI(j+1)-SwI(j))
                   delg=cubs*rhoi*exp(xij)
+!    emitted photon info. is send to SAD.  2019/10/1
+                  if(photons) then
+                     pxi=px(i)/pn
+                     pyi=py(i)/pn
+                     p1=colb%gambet*pn
+                     h1=gamp*pn
+                     write(*,*) x(i),pxi,y(i),pyi,delg
+                     call tphotonconv(x(i),pxi,y(i),pyi,delg,0.d0,
+     &                    p1,h1,sz,i)
+                  endif
 !                  write(*,'(I4,1P,7E12.4)') 
 !     &                 j,xi(j),xi(j+1),xij,SwI(j),SwI(j+1),xx,delg
                   g(i)=g(i)-delg
@@ -524,6 +536,8 @@ c      call tfmemcheckprint('rlum_col',1,.false.,irtc)
       use wsbb
       use tfstk
       use tmacro
+      use photontable
+      use ffs_flag
       implicit none
       integer*4 idummy,nsli,i,irtc
 !  parameter (nblist=1600,tbuf0=1100,nslimax=500)
@@ -532,6 +546,7 @@ c      call tfmemcheckprint('rlum_col',1,.false.,irtc)
       real*8 m_B(36),m_R(36),m_H(36),m_HRB(36),m_Emit(36)
       real*8 p_in(70),rne,blist(nblist)
       real*8 rgetgl,gauinv,rfromk
+      real*8 cnbs,cpbs,cubs,gamp
       type (sad_descriptor) kv
       type (sad_symdef), pointer :: vsymd
 !      integer*4 itlookup,itfsymbol
@@ -651,7 +666,7 @@ c      call tfmemcheckprint('rlum_col',1,.false.,irtc)
 
       pwb0=rgetgl('MOMENTUM',idummy)
       colb%gambet=pwb0/am_e
-      colb%gamma=sqrt(colb%gambet**2+1)
+      colb%gamma=sqrt(colb%gambet**2+1.)
 !       write(*,*) ' Weak beam momentum '
 !       write(*,'(3F15.3/)') (blist(i_p0+i),i=0,2)
 
@@ -676,7 +691,16 @@ c      call tfmemcheckprint('rlum_col',1,.false.,irtc)
 !       write(*,'(A/,1P,(5D12.5)/)')
 !     &    '    dx          dpx         dy         dpy        dz',
 !     &            (blist(i_cod+i),i=0,4)
-
+      if(colb%bstrl.gt.0) then 
+         gamp=colb%gamma
+         cnbs=5.*sqrt(3.)*finest*gamp/6.
+         cpbs=2*re*gamp*gamp*gamp/3
+         cubs=1.5d0*hbar*cveloc*gamp*gamp/am_e
+         write(*,'(A,1P,4E12.4)') 'beamstrahlung ',gamp,cnbs,cpbs,cubs
+         if(photons) then
+            call tsetphotongeo(0.d0,0.d0,0.d0,.true.)
+         endif
+      endif
 
 !-------------------------------------------------------------------
 !         z slicing

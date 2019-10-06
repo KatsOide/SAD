@@ -185,13 +185,13 @@ void tfevals(const char *buf,
 	     integer8 *kx, integer4 *irtc) {
   integer4 length = strlen(buf);
 
-  tfevalb_(buf, &length, kx, irtc);
+  tfevalb_(buf, length, kx, irtc);
 }
 
 void tfevalc(const char *buf) {
   integer4 length = strlen(buf);
 
-  tfevalc_(buf, &length);
+  tfevalc_(buf, length);
 }
 
 void tfdeval(integer4 isp1, integer8 iad,

@@ -106,6 +106,7 @@ c            endif
      $     tfbzs,radlvl,bzs0,
      $     f1,rtaper,ftable(4),ak1
       logical*4 enarad,dir,ent,qsol,coup,err,krad,seg
+      real*8,save::dummy(256)=0.d0
       ld=idelc(l)
       lt=idtype(ld)
       lp=elatt%comp(l)
@@ -116,14 +117,15 @@ c            endif
         return
       endif
       bzs=tfbzs(l,kb)
-      if(lt .eq. icDRFT)then
+      select case(lt)
+      case (icDRFT)
         call tsetr0(trans,cod,bzs,0.d0)
         call tdrife(trans,cod,beam,srot,al,
      $       bzs,0.d0,0.d0,al,.true.,
 c     $       .false.,
      $       enarad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0,
      $       irad)
-      elseif(lt .eq. icBEND)then
+      case (icBEND)
         call tsetr0(trans,cod,bzs,0.d0)
         theta=cmp%value(ky_ROT_BEND)
      $       +cmp%value(ky_DROT_BEND)
@@ -134,7 +136,7 @@ c     $       .false.,
      $       bzs,phiy,phix,al,.true.,
      $       enarad .and. cmp%value(ky_RAD_BEND) .eq. 0.d0,
      $       irad)
-      elseif(lt .eq. icQUAD)then
+      case(icQUAD)
         dir=direlc(l) .gt. 0.d0
         if(dir)then
           mfr=nint(cmp%value(ky_FRMD_QUAD))
@@ -156,13 +158,32 @@ c     $       .false.,
      1       radlvl,cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $       ftable(1),ftable(2),ftable(3),ftable(4),
      $       mfr,cmp%value(ky_EPS_QUAD),l,dir)
-      elseif(lt .eq. icMULT)then
+      case(icMULT)
         if(seg)then
           call tmulteseg(trans,cod,beam,srot,l,cmp,bzs,lsegp,rtaper)
         else
           call tmulte1(trans,cod,beam,srot,l,cmp,bzs,rtaper)
         endif
-      elseif(lt .eq. icSOL)then
+      case(icCAVI)
+        call tmulte(trans,cod,beam,srot,l,al,
+     $       dummy,
+     $       bzs,
+     $       0.d0,0.d0,0.d0,0.d0,0.d0,
+     1       cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
+     $       0.d0,0.d0,0.d0,
+     $       cmp%value(ky_ROT_CAVI),
+     $       0.d0,0.d0,.false.,
+     $       cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
+     $       0.d0,0.d0,0.d0,0.d0,
+     $       cmp%value(ky_FRMD_CAVI),0.d0,0.d0,
+     $       .true.,
+     $       cmp%value(ky_VOLT_CAVI)+cmp%value(ky_DVOLT_CAVI),
+     $       cmp%value(ky_HARM_CAVI),
+     $       cmp%value(ky_PHI_CAVI),cmp%value(ky_FREQ_CAVI),
+     $       0.d0,1.d0,
+     $       cmp%value(ky_APHI_CAVI) .ne. 0.d0,
+     $       ld)
+      case(icSOL)
         f1=cmp%value(ky_F1_SOL)
         krad=enarad .and. cmp%value(ky_RAD_SOL) .eq. 0.d0
      $       .and. f1 .ne. 0.d0
@@ -234,14 +255,14 @@ c              call trades(trans,beam,cod,bzs0,bzs,f1,brhoz)
             call tradke(trans,cod,beam,srot,f1,0.d0,bzs*.5d0)
           endif
         endif
-      elseif(lt .eq. icMAP)then
+      case(icMAP)
         if(qsol)then
           call qemap(trans1,cod,l,coup,err)
           call tmultr(trans,trans1,6)
         else
           call temape(trans,cod,beam,l)
         endif
-      endif
+      end select
       return
       end
 

@@ -217,11 +217,12 @@ c          endif
       use tsolz
       use tspin
       use ffs_flag, only:ndivrad,photons
+      use tmacro, only:l_track
       use photontable,only:tgswap,tsetphotongeo
       use mathfun
       implicit none
       type (tzparam) tz
-      integer*4 np,i,n,ndiv,l
+      integer*4 np,i,n,ndiv
       real*8 , parameter ::smax=0.99d0
       integer*4 , parameter :: ndivmax=1000
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),
@@ -256,13 +257,13 @@ c          endif
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
       if(ak*al .lt. 0.d0)then
         if(photons)then
-          call tgswap(l)
+          call tgswap(l_track)
         endif
         call tsolqur(np,y,py,x,px,z,gp,dv,sy,sx,sz,
      $       py0,px0,zr0,bsi,al,-ak,
      $       -bz0,-ak0y,-ak0x,eps0,alr)
         if(photons)then
-          call tgswap(l)
+          call tgswap(l_track)
         endif
         return
       endif

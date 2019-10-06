@@ -9,13 +9,11 @@
       real*8 rval,atof
 c
       integer*4 iost,lens,ik,ipak
-      character*(*) SPACES,DELIMS,PERIOD,TAB,EOL
-c
-      parameter(TAB=C_HORIZONTAL_TAB,EOL=C_NEW_LINE)
-      parameter(SPACES=' '//TAB//EOL,PERIOD='.')
-      parameter(DELIMS=SPACES//'!"#%''()=!^-{`@ }!*+;:/?><,~')
-      integer LLEN
-      parameter(LLEN=MAXLLEN)
+      character*(*) , parameter ::TAB=C_HORIZONTAL_TAB,EOL=C_NEW_LINE,
+     $     CR=c_carriage_return,
+     $     SPACES=' '//TAB//EOL//CR,PERIOD='.',
+     $     DELIMS=SPACES//'!"#%''()=!^-{`@}!*+;:/?><,~'
+      integer*4, parameter::LLEN=MAXLLEN
 c
       logical issign,isdgt,isalph
       integer fltnum
@@ -35,6 +33,7 @@ c macro functions
      $      (LGE(chr,'a') .and. LLE(chr,'z')) )
 c     begin initialize for preventing compiler warning
       fltnum=0
+      quot=' '
 c     end   initialize for preventing compiler warning
       if (inbuf) then
         token=btoken

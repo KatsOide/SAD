@@ -1015,6 +1015,7 @@ c          call tfdebugprint(kx,'==>',1)
       integer*4 irtc,istop,l,itfdownlevel
       character*(*) string
       levele=levele+1
+c      write(*,*)'tfevalc ',len(string),ls,'''',string(1:5),''''
       call tfeval(string,1,istop,kx,.false.,irtc)
       if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
         call tfreseterror
