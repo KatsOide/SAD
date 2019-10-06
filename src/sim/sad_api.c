@@ -185,7 +185,7 @@ void tfevals(const char *buf,
 	     integer8 *kx, integer4 *irtc) {
   integer4 length = strlen(buf);
 
-  tfevalb_(buf, &length, kx, irtc);
+  tfevalb_(buf, length, kx, irtc);
 }
 
 void tfevalc(const char *buf) {
