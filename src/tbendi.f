@@ -124,7 +124,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb1,fb2,mfring,enarad,fringe,eps0)
-      use tbendcom, only:tbrot
+      use tbendcom, only:tbrot,tbshift
       use bendib
       use tfstk
       use ffs_flag
@@ -143,7 +143,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      $     af,f,fpx,ff,akn,aln,phin,f1r,f2r,
      $     dxfr2,dyfr2,dyfra2,dtheta,cphin,sphin
       logical*4 enarad,fringe,krad
-      include 'inc/TENT.inc'
+      call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint)
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
       endif
@@ -272,6 +272,7 @@ c            dp=g(i)*(2.d0+g(i))
         ff  =af*yi*f*.5d0
         x(i)=xi-ff
         z(i)=zi+ff*fpx
+        write(*,'(a,1p6g15.7)')'tbendi-2 ',zi,z(i),xi,x(i),ff,fpx
       enddo
       if(photons)then
         call tsetphotongeo(aln,phin,theta,.false.)
@@ -304,6 +305,6 @@ c     $       f1r,f2r,al,al,-1.d0)
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
       endif
-      include 'inc/TEXIT.inc'
+      call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint)
       return
       end

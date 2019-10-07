@@ -391,18 +391,18 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
         return
       elseif(phib .eq. 0.d0)then
         call tchge(trans,cod,beam,srot,
-     $       -dx,-dy,theta,dtheta,phi0,.true.)
+     $       dx,dy,theta,dtheta,phi0,.true.)
         call tbdrifte(trans,cod,beam,srot,al,phi0,h0,h1emit,dvemit,
      $       irad)
         call tchge(trans,cod,beam,srot,
-     $       dx,dy,-theta,-dtheta,-phi0,.false.)
+     $       -dx,-dy,-theta,-dtheta,-phi0,.false.)
         return
       elseif(al .eq. 0.d0)then
         call tbthie(trans,cod,beam,srot,phib,phi0,dx,dy,theta,dtheta)
         return
       endif
       call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,theta,dtheta,phi0,.true.)
+     $     dx,dy,theta,dtheta,phi0,.true.)
 c      write(*,'(a,1p6g15.7)')'tbende-1 ',trans(1,6),trans(2,6)
       if(enarad)then
         call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
@@ -587,7 +587,7 @@ c      write(*,'(a,1p6g15.7)')'tbende-8 ',cod
       endif
 c      write(*,'(a,1p6g15.7)')'tbende-8 ',trans(1,6),trans(2,6)
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,-theta,-dtheta,-phi0,.false.)
+     $     -dx,-dy,-theta,-dtheta,-phi0,.false.)
 c      write(*,'(a,1p6g15.7)')'tbende-9 ',trans(1,6),trans(2,6)
       return
       end
@@ -717,7 +717,7 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       real*8 trans(6,12),cod(6),beam(42),phib,phi0,dx,dy,theta,
      $     trans1(6,13),dtheta,srot(3,9)
       call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,theta,dtheta,phi0,.true.)
+     $     dx,dy,theta,dtheta,phi0,.true.)
       call tinitr(trans1)
       trans1(2,6)=phi0
       trans1(5,1)=-phi0
@@ -726,6 +726,6 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       cod(2)=cod(2)+(phi0-phib)+cod(6)*phi0
       cod(5)=cod(5)-phi0*cod(1)
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,-theta,-dtheta,-phi0,.false.)
+     $     -dx,-dy,-theta,-dtheta,-phi0,.false.)
       return
       end

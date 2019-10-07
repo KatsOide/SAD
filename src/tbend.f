@@ -95,6 +95,47 @@
         return
         end subroutine
 
+        subroutine tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint)
+        use tfstk
+        use mathfun
+        implicit none
+        integer*4 np,i
+        real*8 , intent(in)::dx,dy,phi0,cost,sint
+        real*8 , intent (inout)::x(np),px(np),y(np),py(np),z(np)
+        real*8 phih,c,s,ds,dx1,x1,px1,al,y1
+        if(dx .ne. 0.d0)then
+          phih=phi0*.5d0
+          s=sin(phih)
+          c=cos(phih)
+          ds=dx*s
+          dx1=dx*c
+          do i=1,np
+            al=ds/(1.d0+pxy2dpz(px(i),py(i)))
+            x1  =x(i)+px(i)*al-dx1
+            y(i)=y(i)+py(i)*al-dy
+            z(i)=z(i)-al
+c            write(*,'(a,1p6g15.7)')'tbshift ',z(i),al,dx,dy,phi0
+            x(i)=x1*cost-y(i)*sint
+            y(i)=x1*sint+y(i)*cost
+            px1=px(i)
+            px(i)=px1*cost-py(i)*sint
+            py(i)=px1*sint+py(i)*cost
+          enddo
+        elseif(sint .ne. 0.d0 .or. cost .ne. 1.d0)then
+          do i=1,np
+            y1=y(i)-dy
+            y(i)=x(i)*sint+y1*cost
+            x(i)=x(i)*cost-y1*sint
+            px1=px(i)
+            px(i)=px1*cost-py(i)*sint
+            py(i)=px1*sint+py(i)*cost
+          enddo
+        elseif(dy .ne. 0.d0)then
+          y=y-dy
+        endif
+        return
+        end subroutine 
+
       end module
 
       subroutine tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -145,11 +186,11 @@
       use tspin
       use photontable
       implicit none
-      integer*4 np,mfring,i,ndiv,ndivmax,iniph
+      integer*4 np,mfring,ndiv,ndivmax,iniph
       parameter (ndivmax=1024)
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,ak,dx,dy,theta,
      $     cost,sint,cosw,sinw,sqwh,sinwp1,eps,
-     $     xi,pxi,psi1,psi2,fb10,fb20,dtheta
+     $     psi1,psi2,fb10,fb20,dtheta
       real*8 a3,a5,a7,a9,a11,a13,a15
       parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
      1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
@@ -188,13 +229,6 @@
      $         i00,i00,i00,i00)
         endif
         return
-c      elseif(rad .and. enarad .and. trpt)then
-c        call tbrad(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,phib,phi0,
-c     1       cosp1,sinp1,cosp2,sinp2,
-c     1       ak,dx,dy,theta,dtheta,cost,sint,
-c     1       fb10,fb20,mfring,
-c     1       fringe,eps)
-c        return
       elseif(ak .ne. 0.d0)then
         call tbendi(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phib,phi0,
      1       cosp1,sinp1,cosp2,sinp2,
@@ -202,7 +236,7 @@ c        return
      1       fb10,fb20,mfring,enarad,fringe,eps)
         return
       endif
-      include 'inc/TENT.inc'
+      call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint)
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
       endif
@@ -211,7 +245,7 @@ c        return
         go to 9000
       elseif(al .eq. 0.d0)then
         call tbthin(np,x,px,y,py,z,g,sx,sy,sz,phib,phi0,dx,dy,
-     1              theta,dtheta,cost,sint)
+     1              dtheta,cost,sint)
         go to 9000
       endif
       rhob=al/phib
@@ -266,7 +300,7 @@ c      write(*,*)'tbend0 ',ndiv
  9000 if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
       endif
-      include 'inc/TEXIT.inc'
+      call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint)
       return
       end
 
@@ -321,13 +355,13 @@ c      endif
       end
 
       subroutine tbthin(np,x,px,y,py,z,g,sx,sy,sz,phib,phi0,dx,dy,
-     1                 theta,dtheta,cost,sint)
-      use tbendcom, only:tbrot
+     1                 dtheta,cost,sint)
+      use tbendcom, only:tbrot,tbshift
       implicit none
       integer*4 np,i
-      real*8 phib,phi0,dx,dy,theta,cost,sint,xi,pxi,dtheta
+      real*8 phib,phi0,dx,dy,cost,sint,dtheta
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),sx(np),sy(np),sz(np)
-      include 'inc/TENT.inc'
+      call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint)
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
       endif
@@ -339,7 +373,7 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
       endif
-      include 'inc/TEXIT.inc'
+      call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint)
       return
       end
 
