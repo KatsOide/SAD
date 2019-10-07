@@ -734,6 +734,7 @@ c      write(*,*)'phconv ',itp,ilp
 
       subroutine tphotonlist()
       use tfstk
+      use ffs_pointer,only:gammab
       use tmacro
       implicit none
       type (sad_dlist), pointer ::klx
@@ -770,7 +771,7 @@ c        write(*,*)'phlist ',itp,nph
           klri%attr=lconstlist
           dp=sqrt(rlist(kp+4)**2+rlist(kp+5)**2
      $         +rlist(kp+6)**2)
-          klri%rbody(1)=dp*amass
+          klri%rbody(1)=dp*amass*gammab(ilist(2,kp))
           klri%rbody(2)=rlist(kp+1)
           klri%rbody(3)=rlist(kp+2)
           klri%rbody(4)=rlist(kp+3)

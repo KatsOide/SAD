@@ -36,8 +36,8 @@ c      write(*,*)'tchge ',mat,ds,dx,dx1,dy
         cod(3)=cod(3)+cod(4)*al-dy
         cod(5)=cod(5)-al
         if(mat)then
-          call tinitr(trans2)
           if(ds .ne. 0.d0)then
+            call tinitr(trans2)
             trans2(1,2)=al
             trans2(1,6)=-al*cod(2)*pr/pz**2
             trans2(3,4)=al
@@ -69,11 +69,19 @@ c      write(*,*)'tchge ',mat,ds,dx,dx1,dy
               srot(1,:)= cost*sx-sint*srot(2,:)
               srot(2,:)= sint*sx+cost*srot(2,:)
             endif
-            call tmultr5(trans2,trans1,6)
+            if(ds .ne. 0.d0)then
+              call tmultr5(trans2,trans1,6)
+            else
+              trans2=trans1
+            endif
           endif
           if(dth .ne. 0.d0)then
             call tbrote(trans1,cod,srot,phi0,dth)
-            call tmultr5(trans2,trans1,6)
+            if(th .ne. 0.d0 .or. dth .ne. 0.d0)then
+              call tmultr5(trans2,trans1,6)
+            else
+              trans2=trans1
+            endif
           endif
           call tmultr(trans,trans2,irad)
           if(irad .gt. 6)then
@@ -82,35 +90,36 @@ c      write(*,*)'tchge ',mat,ds,dx,dx1,dy
         endif
       else
         if(mat)then
-          call tinitr(trans2)
-          if(th .ne. 0.d0 .or. dth .ne. 0.d0)then
-            if(dth .ne. 0.d0)then
-              call tbrote(trans2,cod,srot,phi0,dth)
-              call tmultr5(trans2,trans1,6)
+          if(dth .ne. 0.d0)then
+            call tbrote(trans2,cod,srot,phi0,dth)
+          endif
+          if(th .ne. 0.d0)then
+            call tinitr(trans1)
+            cost=cos(th)
+            sint=sin(th)
+            trans1(1,1)= cost
+            trans1(1,3)=-sint
+            trans1(3,1)= sint
+            trans1(3,3)= cost
+            trans1(2,2)= cost
+            trans1(2,4)=-sint
+            trans1(4,2)= sint
+            trans1(4,4)= cost
+            xi=cod(1)
+            cod(1)= cost*xi-sint*cod(3)
+            cod(3)= sint*xi+cost*cod(3)
+            pxi=cod(2)
+            cod(2)= cost*pxi-sint*cod(4)
+            cod(4)= sint*pxi+cost*cod(4)
+            if(irad .gt. 6)then
+              sx=srot(1,:)
+              srot(1,:)= cost*sx-sint*srot(2,:)
+              srot(2,:)= sint*sx+cost*srot(2,:)
             endif
-            if(th .ne. 0.d0)then
-              cost=cos(th)
-              sint=sin(th)
-              trans1(1,1)= cost
-              trans1(1,3)=-sint
-              trans1(3,1)= sint
-              trans1(3,3)= cost
-              trans1(2,2)= cost
-              trans1(2,4)=-sint
-              trans1(4,2)= sint
-              trans1(4,4)= cost
-              xi=cod(1)
-              cod(1)= cost*xi-sint*cod(3)
-              cod(3)= sint*xi+cost*cod(3)
-              pxi=cod(2)
-              cod(2)= cost*pxi-sint*cod(4)
-              cod(4)= sint*pxi+cost*cod(4)
-              if(irad .gt. 6)then
-                sx=srot(1,:)
-                srot(1,:)= cost*sx-sint*srot(2,:)
-                srot(2,:)= sint*sx+cost*srot(2,:)
-              endif
+            if(dth .ne. 0.d0)then
               call tmultr5(trans2,trans1,6)
+            else
+              trans2=trans1
             endif
           endif
           if(ds .ne. 0.d0)then
@@ -122,7 +131,11 @@ c      write(*,*)'tchge ',mat,ds,dx,dx1,dy
             trans1(5,2)=trans1(1,6)
             trans1(5,4)=trans1(3,6)
             trans1(5,6)=al*pr/pz**2
-            call tmultr5(trans2,trans1,6)
+            if(th .ne. 0.d0 .or. dth .ne. 0.d0)then
+              call tmultr5(trans2,trans1,6)
+            else
+              trans2=trans1
+            endif
           endif
           call tmultr(trans,trans2,irad)
           if(irad .gt. 6)then
