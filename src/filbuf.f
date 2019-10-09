@@ -4,6 +4,7 @@
       use macttyp
       use macfile
       use macmisc
+      use ffsfile
       implicit none
 c
 cccccc K. Oide 8/30/1999
@@ -56,24 +57,28 @@ c
  998  continue
       call errmsg('filbuf', ' file read error',0,0)
  999  continue
-cccccccccccc   K. Oide 11/22/1997
-cccccccccccc   K. Oide 8/30/1999
-c        if (infl .eq. STDIN)then
-c        write(*,*)'filbuf ',infl,itbuf(infl)
-        if (infl .eq. STDIN .or. itbuf(infl) .eq. 2
-     $       .or. itbuf(infl) .ge. 5)then
-cccccccccccc   K. Oide end
+      if (infl .eq. STDIN .or. itbuf(infl) .eq. modewrite)then
+        fst=ttypEF
+        pbuf=MAXLLEN
+        buf(pbuf)=' '
+      else
+        call trbclose(infl)
+        if(lfnp .gt. lfnbase)then
+c          write(*,*)'filbu-EOF ',infl,lfnp,lfnstk(lfnp)
+          infl=lfnstk(lfnp)
+          lfnp=lfnp-1
+          call trbassign(infl)
+        elseif(lfnbase .eq. 0)then
+c          write(*,*)'filbu-EOF1 ',infl
+          infl=STDIN
+c         call errmsg('filbuf',
+c     &         'input file is redirected to STDIN',0,0)
+          GO TO 10
+        else
           fst=ttypEF
           pbuf=MAXLLEN
           buf(pbuf)=' '
-        else
-          close(infl)
-          ii=infl-infl
-          infl=int(flmgr(ii))
-c        write(*,*)'@ii',ii,infl
-c         call errmsg('filbuf',
-c    &         'input file is redirected to STDIN',0,0)
-          GO TO 10
         endif
+      endif
       return
       end

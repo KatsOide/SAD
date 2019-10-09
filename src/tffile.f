@@ -1,21 +1,18 @@
-      subroutine tffile(word,lfnstk,lfopen,lfret,lfnb,lfrecl,
-     $     maxlfn,init,exist)
+      subroutine tffile(word,lfnb,init,exist)
       use tfstk
       use ffs
       use tffitcode
       use tfrbuf
       use tfcsi
+      use ffsfile
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
       real*8 vx
-      integer*4 i,lfni1,nc,next,itype,lfno1,j,maxlfn,lfnb,isp0,irtc,
-     $     itfdownlevel
-      integer*4 itfpeeko,lfnstk(maxlfn),lfret(maxlfn),lflinep(maxlfn),
-     $     lfrecl(maxlfn)
+      integer*4 i,lfni1,nc,next,itype,lfno1,j,lfnb,isp0,irtc,
+     $     itfdownlevel,itfpeeko
       integer*4 ,save:: lfni0=0
-      logical*4 lfopen(maxlfn),init,exist,termin,rew,app,abbrev,
-     $     clo,ret
+      logical*4 init,exist,termin,rew,app,abbrev,clo,ret
       character*(*) word
       character*256 tfconvstr
       exist=.true.
@@ -25,8 +22,7 @@
         if(suspend)then
           init=lfnp .gt. lfnb
           lfni0=lfni
-          call tfclose(lfnb,int(lfnp),lfnstk,lfopen,lfret,lfrecl,
-     $         lflinep,maxlfn,lfni,lfnb)
+          call tfclose(lfnb,lfni,lfnb)
           lfnp=lfnb
           lfno=6
           outfl=lfno
@@ -55,8 +51,7 @@
           termin=.true.
         endif
         if(termin)then
-          call tfclose(int(lfnp),int(lfnp),lfnstk,lfopen,lfret,lfrecl,
-     $         lflinep,maxlfn,lfni,lfnb)
+          call tfclose(int(lfnp),lfni,lfnb)
         else
           lfno=6
           outfl=lfno
@@ -209,16 +204,13 @@ c
       return
       end
 
-      subroutine tfclose(lfnp1,lfnp,lfnstk,lfopen,lfret,lfrecl,
-     $     lflinep,maxlfn,lfni,lfnb)
+      subroutine tfclose(lfnp1,lfni,lfnb)
       use tfcsi, only:cssetlinep,cssets,
      $     icslfni,icslfno,icsstat,ipoint,lrecl
       use tfrbuf
+      use ffsfile
       implicit none
-      integer*4 lfnp1,lfnp,maxlfn,lfnstk(maxlfn),lfni0,
-     $     lfni,i,lfret(maxlfn),lfrecl(maxlfn),lfnp0,lfnb,
-     $     lflinep(maxlfn)
-      logical*4 lfopen(maxlfn)
+      integer*4 lfnp1,lfni0,lfni,i,lfnp0,lfnb
       lfni0=lfni
       do 10 i=lfnp1,lfnp
         if(lfopen(i))then

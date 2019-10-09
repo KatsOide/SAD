@@ -669,6 +669,14 @@ c
 
       end module
 
+      module ffsfile
+        integer*4 , parameter :: maxlfn=128
+        integer*4 :: lfnp=0,lfnbase=0
+        integer*4 lfnstk(maxlfn),lfret(maxlfn),
+     $     lfrecl(maxlfn),lflinep(maxlfn)
+        logical*4 lfopen(maxlfn)
+      end module
+
       module trackbypass
         implicit none
         logical*4 :: bypasstrack=.false.
@@ -684,6 +692,7 @@ c
       use macfile
       use macmisc
       use tfstk, only:tfinitstk
+      use ffsfile, only:lfnbase
       implicit none
       integer*8 argp
       integer*4 jslen,jttype,jival
@@ -696,7 +705,7 @@ c
       if (IgetGL('$CTIME$',idummy) .eq. FLAGON) call cputix
       call gettok(token,slen,ttype,rval,ival)
 c     for debug
-c       print *,'toplvl-0 ',token(:slen),slen,ttype
+c       print *,'toplvl-0 ',token(:slen),slen,infl,ttype,ttypEF
 c     end debug
 c
  1100 continue
@@ -764,7 +773,7 @@ c     end debug
       go to 1000
 c
  9000 continue
-      if(itbuf(infl) .ne. 0)then
+      if(itbuf(infl) .ne. 0 .or. lfnbase .gt. 1)then
         return
       endif
       print *," SAD1 reads EOF."

@@ -16,9 +16,10 @@
       use tparastat
       use temw, only:nparams
       use tfrbuf
+      use ffsfile
       implicit none
       type (sad_comp), pointer :: cmp
-      integer*4 maxrpt,maxlfn,hsrchz
+      integer*4 maxrpt,hsrchz
       integer*8 kffs,k,kx,itwisso,
      $     ifvalvar2,iparams,kax,iutwiss
       integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,
@@ -32,24 +33,20 @@
      $     trval,rese,v,wa,wd,wl,xa,ya,xxa,xya,yya,getva,rgetgl1,
      $     wp,getvad,tgetgcut
       parameter (rmax=1.d35)
-      parameter (maxrpt=32,maxlfn=128)
+      parameter (maxrpt=32)
       character*256 word,wordp,title,case,tfgetstrv,tfgetstrs,tfgetstr
       character*(MAXPNAME) ename
       character*(MAXPNAME+8) name
       character*16 autofg
       character*20 str
-      integer*4 irtcffs,irtc,nc
-      integer*4 lfnstk(maxlfn),lfret(maxlfn),
-     $     lfrecl(maxlfn),lflinep(maxlfn),nrpt(maxrpt),
+      integer*4 irtcffs,irtc,nc,nrpt(maxrpt),
      $     irptp(maxrpt),df(maxcond)
       real*8 chi0(3),trdtbl(3,6),rfromk
       logical*4 err,new,cmd,open98,abbrev,ftest,
      $     frefix,exist,init,trpt0,expnd,chguse,visit,
      $     byeall,expndc,tfvcomp,tffsinitialcond,
      $     geocal0,busy
-      logical*4 lfopen(maxlfn)
-      save lfnstk,lfret,lfrecl,lfopen,open98,exist,init,
-     $     nmon,nster
+      save open98,exist,init,nmon,nster
       save busy
       data busy /.false./
       itwisso(kk,i,j)=iftwis+kk+nlat*(i+ndim+(j-1)*ndima)-1
@@ -210,8 +207,7 @@ c      endif
       endif
       if(ios .gt. 0)then
         ios=0
-        call tfclose(lfnp,lfnp,lfnstk,lfopen,lfret,lfrecl,
-     $       lflinep,maxlfn,lfni,lfnb)
+        call tfclose(lfnp,lfni,lfnb)
         if(lfnp .lt. lfnb)then
           go to 9000
         endif
@@ -318,8 +314,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
       elseif(new)then
         go to 12
       endif
-      call tffile(word,lfnstk,lfopen,lfret,lfnb,lfrecl,
-     $     maxlfn,init,exist)
+      call tffile(word,lfnb,init,exist)
       if(lfnp .lt. lfnb)then
         go to 9000
       endif

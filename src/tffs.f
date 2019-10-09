@@ -218,7 +218,7 @@
         integer*8 ifaux,ifibzl,ifmult,ifklp,ifival,iftwissp,
      $       iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifdcomp,ifele,ifcoup,
      $       iferrk,ifvarele,ifvvar,ifvalvar,ifele1,ifele2,
-     $       ifmast,iftouchele,iftouchv,lfnp,iffserr,
+     $       ifmast,iftouchele,iftouchv,iffserr,
      $       ifivcomp,ifvlim,iffssave,iut,ifiprev,ifinext,
      $       ielmhash
         real*8 emx,emy,dpmax,geo0(3,4),xixf,xiyf,sizedp,
@@ -289,7 +289,7 @@
       integer*8, pointer :: ifvlim,ifibzl,ifmult,ifklp,ifival,iftwissp,
      $     iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifdcomp,ifele,ifcoup,
      $     iferrk,ifvarele,ifvvar,ifvalvar,ifele1,ifele2,
-     $     ifmast,iftouchele,iftouchv,lfnp,iffserr,ifivcomp,iffssave,
+     $     ifmast,iftouchele,iftouchv,iffserr,ifivcomp,iffssave,
      $     ifiprev,ifinext,ielmhash
       real*8, pointer :: emx,emy,dpmax,xixf,xiyf,sizedp
       real*8, pointer, dimension(:,:) :: geo0
@@ -328,7 +328,6 @@
         ifmast=>ffv%ifmast
         iftouchele=>ffv%iftouchele
         iftouchv=>ffv%iftouchv
-        lfnp=>ffv%lfnp
         iffserr=>ffv%iffserr
         ifivcomp=>ffv%ifivcomp
         iffssave=>ffv%iffssave
@@ -1905,6 +1904,7 @@ c      call tfree(ifibzl)
       use tfcsi
       use tfrbuf
       use iso_c_binding
+      use ffsfile, only:lfnp
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
@@ -1973,9 +1973,10 @@ c      call tfree(ifibzl)
       use trackbypass, only: bypasstrack
       use tfrbuf
       use tmacro
+      use ffsfile
       implicit none
       type (sad_descriptor) kx
-      integer*4 isp1,irtc,infl0,itfmessage,lfn,ierrfl,ierr
+      integer*4 isp1,irtc,infl0,itfmessage,lfn,ierrfl,ierr,lfnb0
       ierr=0
       if(isp .eq. isp1+2)then
         ierr=int(rtastk(isp))
@@ -2000,9 +2001,13 @@ c      lfn=itfopenread(ktastk(isp1+1),.false.,irtc)
       ierrfl=errfl
       errfl=ierr
       bypasstrack=.true.
-c      write(*,*)'tfmain-1 ', lfn
+      lfnb0=lfnbase
+      lfnbase=lfnp
+c      write(*,*)'tfmain-1 ', lfn,infl0
       call toplvl
 c      write(*,*)'tfmain-2 '
+      lfnp=lfnbase
+      lfnbase=lfnb0
       bypasstrack=.false.
       errfl=ierrfl
       call trbclose(lfn)
