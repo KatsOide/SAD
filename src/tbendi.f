@@ -143,7 +143,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      $     af,f,fpx,ff,akn,aln,phin,f1r,f2r,
      $     dxfr2,dyfr2,dyfra2,dtheta,cphin,sphin
       logical*4 enarad,fringe,krad
-      call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint)
+      call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,.true.)
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
       endif
@@ -305,6 +305,6 @@ c     $       f1r,f2r,al,al,-1.d0)
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
       endif
-      call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint)
+      call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint,.false.)
       return
       end

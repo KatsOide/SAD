@@ -195,9 +195,9 @@ SYS_FOPT+= -falign-functions=8
 # Natural alignment of Pentium is 4bytes.
 # MacOS X for Intel requires 16bytes alignment.
 ifeq ($(CPU_ARCH),i386)
-SYS_FOPT+=   -mpreferred-stack-boundary=4
-SYS_COPT+=   -mpreferred-stack-boundary=4
-SYS_CXXOPT+= -mpreferred-stack-boundary=4
+#SYS_FOPT+=   -mpreferred-stack-boundary=4
+#SYS_COPT+=   -mpreferred-stack-boundary=4
+#SYS_CXXOPT+= -mpreferred-stack-boundary=4
 endif
 
 # Use GCC plugin

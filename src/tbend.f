@@ -95,43 +95,63 @@
         return
         end subroutine
 
-        subroutine tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint)
+        subroutine tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,ent)
         use tfstk
         use mathfun
         implicit none
         integer*4 np,i
         real*8 , intent(in)::dx,dy,phi0,cost,sint
         real*8 , intent (inout)::x(np),px(np),y(np),py(np),z(np)
-        real*8 phih,c,s,ds,dx1,x1,px1,al,y1
-        if(dx .ne. 0.d0)then
+        real*8 phih,dcph,sph,ds,dx1,dy1,dxa,st1,x1,px1,al,y1
+        logical*4 , intent(in)::ent
+        if(dx .ne. 0.d0 .or. dy .ne. 0.d0)then
           phih=phi0*.5d0
-          s=sin(phih)
-          c=cos(phih)
-          ds=dx*s
-          dx1=dx*c
-          do i=1,np
-            al=ds/(1.d0+pxy2dpz(px(i),py(i)))
-            x1  =x(i)+px(i)*al-dx1
-            y(i)=y(i)+py(i)*al-dy
-            z(i)=z(i)-al
-c            write(*,'(a,1p6g15.7)')'tbshift ',z(i),al,dx,dy,phi0
-            x(i)=x1*cost-y(i)*sint
-            y(i)=x1*sint+y(i)*cost
-            px1=px(i)
-            px(i)=px1*cost-py(i)*sint
-            py(i)=px1*sint+py(i)*cost
-          enddo
+          sph=sin(phih)
+          dcph=-2.d0*sin(phih*.5d0)**2
+          if(ent)then
+            st1=sint
+          else
+            st1=-sint
+          endif
+          dxa=dx*cost-dy*st1
+          dx1=dx+dcph*cost*dxa
+          dy1=dy-dcph*st1 *dxa
+          ds=dxa*sph
+          dxa=dxa*(1.d0+dcph)
+          if(ent)then
+            do i=1,np
+              al=ds/(1.d0+pxy2dpz(px(i),py(i)))
+              x1  =x(i)+px(i)*al-dx1
+              y(i)=y(i)+py(i)*al-dy1
+              z(i)=z(i)-al
+              x(i)=x1*cost-y(i)*sint
+              y(i)=x1*sint+y(i)*cost
+              px1=px(i)
+              px(i)=px1*cost-py(i)*sint
+              py(i)=px1*sint+py(i)*cost
+            enddo
+          else
+            do i=1,np
+              x1  =x(i)*cost-y(i)*sint
+              y(i)=x(i)*sint+y(i)*cost
+              px1=px(i)
+              px(i)=px1*cost-py(i)*sint
+              py(i)=px1*sint+py(i)*cost
+              al=ds/(1.d0+pxy2dpz(px(i),py(i)))
+              x(i)=x1  +px(i)*al-dx1
+              y(i)=y(i)+py(i)*al-dy1
+              z(i)=z(i)-al
+            enddo
+          endif
         elseif(sint .ne. 0.d0 .or. cost .ne. 1.d0)then
           do i=1,np
-            y1=y(i)-dy
+            y1=y(i)
             y(i)=x(i)*sint+y1*cost
             x(i)=x(i)*cost-y1*sint
             px1=px(i)
             px(i)=px1*cost-py(i)*sint
             py(i)=px1*sint+py(i)*cost
           enddo
-        elseif(dy .ne. 0.d0)then
-          y=y-dy
         endif
         return
         end subroutine 
@@ -236,7 +256,7 @@ c            write(*,'(a,1p6g15.7)')'tbshift ',z(i),al,dx,dy,phi0
      1       fb10,fb20,mfring,enarad,fringe,eps)
         return
       endif
-      call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint)
+      call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,.true.)
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
       endif
@@ -300,7 +320,7 @@ c      write(*,*)'tbend0 ',ndiv
  9000 if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
       endif
-      call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint)
+      call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint,.false.)
       return
       end
 
@@ -361,7 +381,7 @@ c      endif
       integer*4 np,i
       real*8 phib,phi0,dx,dy,cost,sint,dtheta
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),sx(np),sy(np),sz(np)
-      call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint)
+      call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,.true.)
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
       endif
@@ -373,7 +393,7 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
       endif
-      call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint)
+      call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint,.false.)
       return
       end
 

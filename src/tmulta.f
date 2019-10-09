@@ -66,7 +66,7 @@
       endif
       cost=cos(theta)
       sint=sin(theta)
-      call tbshift(np,x,px,y,py,z,dx,dy,phi,cost,sint)
+      call tbshift(np,x,px,y,py,z,dx,dy,phi,cost,sint,.true.)
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,phi,dtheta)
       endif
@@ -255,7 +255,7 @@
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi,-dtheta)
       endif
-      call tbshift(np,x,px,y,py,z,-dx,-dy,-phi,cost,-sint)
+      call tbshift(np,x,px,y,py,z,-dx,-dy,-phi,cost,-sint,.false.)
       return
       end
 
