@@ -272,7 +272,7 @@ c            dp=g(i)*(2.d0+g(i))
         ff  =af*yi*f*.5d0
         x(i)=xi-ff
         z(i)=zi+ff*fpx
-        write(*,'(a,1p6g15.7)')'tbendi-2 ',zi,z(i),xi,x(i),ff,fpx
+c        write(*,'(a,1p6g15.7)')'tbendi-2 ',zi,z(i),xi,x(i),ff,fpx
       enddo
       if(photons)then
         call tsetphotongeo(aln,phin,theta,.false.)

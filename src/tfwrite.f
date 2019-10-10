@@ -1097,14 +1097,7 @@ c          endif
              endif
           endif
         endif
-        kfile=mapallocfile(str%str,ifile,ksize,irtc)
-        if(irtc .ne. 0)then
-          irtc=itfmessage(999,'General::fileopen',str%str(1:str%nch))
-          kx=dxfailed
-        else
-          call trbopen(lfn,kfile/8,ksize+modemapped,ifile)
-          kx%k=kfromr(dble(lfn))
-        endif
+        call trbopenmap(str%str,kx,irtc)
       endif
       return
       end

@@ -1,7 +1,8 @@
       subroutine TROT (TM,VM,TETA,TO,VO)
-      IMPLICIT REAL*8 (A-H,O-Z)
-      DIMENSION TM(4,4),VM(4),TO(4,4),VO(4)
-      DIMENSION ROT(4,4),RINV(4,4),TS(4,4)
+      implicit none
+      real*8 TM(4,4),VM(4),TO(4,4),VO(4)
+      real*8 ROT(4,4),RINV(4,4),TS(4,4)
+      real*8 TETA,CTET,STET
       CTET=DCOS(TETA)
       STET=DSIN(TETA)
       CALL UNITM4(ROT,CTET)
@@ -14,8 +15,9 @@
       RINV(2,4)=STET
       RINV(3,1)=-STET
       RINV(4,2)=-STET
-      CALL MMUL4(TM,ROT,TS)
-      CALL MMUL4(RINV,TS,TO)
-      CALL VMUL4(RINV,VM,VO)
+      TS=matmul(TM,ROT)
+      TO=matmul(RINV,TS)
+      VO=matmul(RINV,VM)
+c      CALL VMUL4(RINV,VM,VO)
       RETURN
       END

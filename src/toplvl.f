@@ -667,6 +667,25 @@ c
       return
       end
 
+      subroutine trbopenmap(str,kx,irtc)
+      use tfstk
+      implicit none
+      character*(*) , intent(in)::str
+      integer*4 , intent(out)::irtc
+      type (sad_descriptor) , intent(out)::kx
+      integer*8 kfile,ksize,mapallocfile,kfromr
+      integer*4 itfmessage,lfn,nc
+      kfile=mapallocfile(str,nc,ksize,irtc)
+      if(irtc .ne. 0)then
+        irtc=itfmessage(999,'General::fileopen',str)
+        kx=dxfailed
+      else
+        call trbopen(lfn,kfile/8,ksize+modemapped,nc)
+        kx%k=kfromr(dble(lfn))
+      endif
+      return
+      end subroutine
+
       end module
 
       module ffsfile
@@ -776,7 +795,7 @@ c
       if(itbuf(infl) .ne. 0 .or. lfnbase .gt. 1)then
         return
       endif
-      print *," SAD1 reads EOF."
+c      print *," SAD1 reads EOF."
       call errmsg("main","Stop execution.(READ EOF)" ,0,0)
 c
       stop

@@ -31,8 +31,8 @@ OBJ0= 	italoc.o qcav.o	JNLPRM.o	msolv1.o	prkick.o \
 
 OBJ1=ActGRA.o    filbuf.o    pwmatq.o    ActLie.o    \
      msort.o     pwrite.o    ActTra.o    flmgr.o \
-     pwrlat.o    BEDGE.o     frand.o     mstack.o    tput.o \
-     BMAG.o      mstack1.o   tputbs.o    CM24.o      gaus3.o \
+     pwrlat.o         frand.o     mstack.o    tput.o \
+     mstack1.o   tputbs.o    CM24.o      gaus3.o \
      mstack2.o   DM42.o      gaussn.o    mstat.o \
      qchg.o      tqente.o    FMUL2.o     geodrw.o    mstat2.o \
      qcoord.o    termes.o    tqfrie.o    mstatp.o  \
@@ -41,18 +41,18 @@ OBJ1=ActGRA.o    filbuf.o    pwmatq.o    ActLie.o    \
      tfbeam.o    LgetGL.o    nlfit.o     qdrift.o    \
      Lrdnum.o    openP.o     hsrch.o     \
      MINV2.o     over.o      MMUL2.o     tfdset.o \
-     trackb.o    MMUL4.o     pack.o      qmdiag.o
+     trackb.o    pack.o      qmdiag.o
 
 OBJ2=packpi.o    tfdbun.o    tracke.o    NewGRF.o \
-     trad.o      QUADRU.o    padd.o      R0CAL.o \
-     R1INV.o     inifil.o	R2INV.o     initb1.o    SEXTU.o     initbl.o \
+     trad.o      padd.o       \
+     R1INV.o     inifil.o	R2INV.o     initb1.o        initbl.o \
      tfgeti.o    SYMPS.o     tbrad.o \
-     qthin.o     tfgetr.o    trotg.o     SYMTR2.o    TCAL.o \
-     TEDGE.o     TMATRS.o    rdexpr.o    tsdrad.o \
-     TROT.o      rdkwdl.o    TWTRANS.o   lread.o \
+     qthin.o     tfgetr.o    trotg.o     SYMTR2.o  \
+          rdexpr.o    tsdrad.o \
+     TROT.o      rdkwdl.o    lread.o \
      rdterm.o    UNITM2.o    lrflct.o    \
      tfltra.o    UNITM4.o    lstchk.o    rslvin.o \
-     tserad.o    VMUL4.o     rvrsln.o \
+     tserad.o       rvrsln.o \
      ZEROM2.o	ZEROM4.o	ZEROV4.o \
      tfrej.o     setdfl.o    tsmear.o    actPlt.o
 

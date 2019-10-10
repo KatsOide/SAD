@@ -1984,7 +1984,6 @@ c      call tfree(ifibzl)
         irtc=itfmessage(9,'General::narg','"1 or 2"')
         return
       endif
-c      lfn=itfopenread(ktastk(isp1+1),.false.,irtc)
       call tfopenread(isp1,kx,irtc)
       if(irtc .ne. 0)then
         return

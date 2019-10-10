@@ -1,4 +1,5 @@
       subroutine doread(dummy)
+      use tfstk
       use tfrbuf
       use maccbk
       use macttyp
@@ -7,21 +8,19 @@
       use tfcsi, only:ipoint,lrecl
       use ffsfile
       implicit none
+      type (sad_descriptor) kx
       character*(MAXSTR) token
 c      character*(22) cfmsg
       integer slen,ival,ttype
       real*8 rval
       logical*4 skipch,ok
-      integer*4 f,maxstk,ifd1
-      integer*8 flmgr,itemp,kfile,ksize,mapallocfd
-      parameter (maxstk=255)
-      integer*4 fstk(maxstk),stkpt,ipak,i,dummy,irtc
+      integer*4 f
+      integer*4 ipak,dummy,irtc
 c
 c      data cfmsg/'read data from file=**'/
 c     
       ok=.true.
       f=0
-      stkpt=0
 c
       call gettok(token,slen,ttype,rval,ival)
       if (.not. skipch(LCURL,token,slen,ttype,rval,ival) ) then
@@ -55,21 +54,15 @@ c     end debug
          endif
       else if(ttype .eq. ttypST) then
         if(ok) then
-          f=nextfn(moderead)
-          open(f,FILE=token(:slen),STATUS='OLD',err=9000)
-          ifd1=fnum(f)
-          kfile=mapallocfd(ifd1,ksize,irtc)
+          token(slen+1:slen+1)=char(0)
+          call trbopenmap(token(:slen+1),kx,irtc)
           if(irtc .eq. 0)then
-            call irbopen1(f,kfile/8,ksize+modemapped,ifd1)
-            call trbassign(f)
-            ipoint=1
-            lrecl=0
+            f=int(rfromd(kx))
           else
-            write(*,*)'???-input file open error: ',
+            write(*,*)'???-doread-input file open error: ',
      $           token(:slen)
+            call tfreseterror
           endif
-c     if( f .ne. 0)
-c     $           open(f,file=token(:slen),status='OLD',err=9000)
 c     for debug
           print *,'input file is redirected to #',f,token(:slen)
 c     end debug
@@ -96,6 +89,9 @@ c      write(*,*)'doread-return ',f,infl
         lfnstk(lfnp)=infl
         call myfflush
         infl=f 
+        call trbassign(f)
+        ipoint=1
+        lrecl=0
       endif
 c.....for debug
 c     call ptrace('doread',-1)
@@ -110,26 +106,3 @@ c
 c
       end
 c
-      subroutine redirectInput(fn,fd)
-      use tfrbuf, only:nextfn,moderead
-      use macfile
-      character*(MAXLLEN) fn
-      integer fd
-      integer*8 flmgr,f
-c
-      fd=nextfn(moderead)
-      if (fd .eq. 0) then
-         call errmsg('redirectInput','No more file descriptor',0,0)
-         return 
-      endif
-      open(fd,file=fn,status='OLD',err=9000)
-      f=flmgr(infl)
-      infl=fd
-      return
-c
- 9000 continue
-      call errmsg('redirect','Cannot open file '//fn,0,0)
-      return
-      end
-c     
- 
