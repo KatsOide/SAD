@@ -17,6 +17,7 @@
       use temw, only:nparams
       use tfrbuf
       use ffsfile
+      use radint
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 maxrpt,hsrchz
@@ -603,7 +604,7 @@ ckikuchi ... next 5 lines added     (8/17/'90)
      $       rlist(itwisso(1,i,6)),lfno)
       elseif(word .eq. 'RADINT')then
         call tfsetparam
-        call intgrl(0,1.d0,lfno)
+        call intgrl(lfno)
       elseif(abbrev(word,'REF_ERENCE','_'))then
         call tfsetref
       elseif(word .eq. 'DIMAD')then

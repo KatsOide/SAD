@@ -48,8 +48,8 @@ OBJ2=packpi.o    tfdbun.o    tracke.o    NewGRF.o \
      R1INV.o     inifil.o	R2INV.o     initb1.o        initbl.o \
      tfgeti.o    SYMPS.o     tbrad.o \
      qthin.o     tfgetr.o    trotg.o     SYMTR2.o  \
-          rdexpr.o    tsdrad.o \
-     TROT.o      rdkwdl.o    lread.o \
+     rdexpr.o    tsdrad.o \
+     rdkwdl.o    lread.o \
      rdterm.o    UNITM2.o    lrflct.o    \
      tfltra.o    UNITM4.o    lstchk.o    rslvin.o \
      tserad.o       rvrsln.o \

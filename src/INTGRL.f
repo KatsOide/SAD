@@ -6,19 +6,18 @@
       real*8  DL,DKL0,DKL1,DKL2,CKL0X,CKL0Y,CKL1X,CKL1Y
       real*8 FUNI(ML,NRI)
       real*8 TM(4,4),VM(4),TO(4,4),VO(4),TU(4,4),VU(4)
-      end module
 
-      subroutine INTGRL(IDP,DP,LFNO)
+      contains
+      subroutine INTGRL(LFNO)
       use tfstk
       use ffs
       use tffitcode
       use ffs_pointer
       use kyparam
       use macphys
-      use radint
-      implicit real*8 (a-h,o-z)
+      implicit none
+      integer*4 ,intent(in)::LFNO
       integer*4 IB,IQ
-*     IMPLICIT REAL*8 'inc/A-H,O-Z.inc'   *** includeD IN TFMACRO ***
 *    TWP(1)=AX    (2)=BX    (3)=PHX
 *    TWP(4)=AY    (5)=BY    (6)=PHY
 *    TWP(7)=EX    (8)=EPX   (9)=EY   (10)=EPY
@@ -26,6 +25,11 @@
 *    TWP(16)=DX   (17)=DXP  (18)=DY  (19)=DYP
       type (sad_comp) ,pointer ::cmp
       real*8  RI(NRI),DI(NRI),DIEG(NRI)
+      real*8 TOTANG,ENERGY,ALPHA,ALPHAX,ALPHAY,CHRX,CHRY,CO2,COPH,
+     $     DAMPU,DAMPV,ELOSS,EMITU,EMITV,EPMAX,FREQ,PHIS,QX,QY,QS,
+     $     RFV,RHARM,RKQ,RLT,SIG,SIGL,SIPH,TAUE,TAUQ,TAUU,TAUV,
+     $     XI,OVERV,SYMPS
+      integer*4 J,idc,ID,I,IR,IRP
       real*8 ,parameter ::
      $     COEFF=(elradi/(elmass**3)/3)*1e27,
      $     CO4=sqrt(55.d0/32.d0/sqrt(3.d0)*elradi/
@@ -34,14 +38,12 @@ c      DATA COEFF/7.0394513D-6/
 c      DATA CO4/1.2113938D-3/,CO5/1.4674773D-6/
 *   NRI  NUMBER OF RADIATION INTEGRALS  MUST < 15 (DIM OF FUNI,DI,RI)
 c
-      save
-c
       IB=0
       IQ=0
-      RI=0.
-      RFV=0.
-      RLT=0.
-      TOTANG=0.
+      RI=0.d0
+      RFV=0.d0
+      RLT=0.d0
+      TOTANG=0.d0
       ENERGY=amass/1e9*H0
       WRITE(LFNO,'(A/)')
      +'****************************************************************'
@@ -157,8 +159,8 @@ c            TETA=RLIST(LATT(2,J)+4)
                IF(IPOUT.EQ.1.AND.IQ.LE.10)
      +         WRITE(LFNO,'(A/ 10F8.3/ 1P,(10D8.1))') ' TWPMG ',TWPMG
          case (icSEXT)
-            RKL2=cmp%value(ky_K2_SEXT)
-            TETA=cmp%value(ky_ROT_SEXT)
+            RKL2=cmp%value(ky_K_THIN)
+            TETA=cmp%value(ky_ROT_THIN)
 c            RKL2=RLIST(LATT(2,J)+2)
 c            TETA=RLIST(LATT(2,J)+4)
 *           WRITE(LFNO,'(A,3F12.5)') ' S  ',RLE,RKL2,RLT
@@ -270,10 +272,9 @@ c     +           (DI(I),I=1,8)
       END IF
       WRITE(LFNO,'(/ A,F12.6)') ' LINEAR CHROMATICITY GX     = ',CHRX
       WRITE(LFNO,'(A,F12.6)')   ' LINEAR CHROMATICITY GY     = ',CHRY
-      END
+      END subroutine
 
       subroutine TCAL(I,IFLG)
-      use radint
       use tffitcode
       implicit none
       real*8, save:: R0(4,4),R0I(4,4)
@@ -339,12 +340,11 @@ c      write(*,'(a,1p6g15.7)')'chrom ',RK1,CURV2,BU,BV,DL
       FUNI(I,12)=CKL0Y
       IF(IFLG.EQ.1) RETURN
       CALL TMATRS(R0,R0I)
-      CALL TWTRANS(R0,R0I)
+      CALL TWTRANS()
       end associate
-      END
+      END subroutine
 
       subroutine BMAG(TETA1)
-      use radint
       implicit none
       real*8 TETA1,SI,CO,CURV
       CURV=DKL0/DL
@@ -369,10 +369,9 @@ c      write(*,'(a,1p6g15.7)')'chrom ',RK1,CURV2,BU,BV,DL
       CKL1Y=0.
       CALL TROT(TM,VM,TETA1,TO,VO)
       RETURN
-      END
+      END subroutine
 
       subroutine TMATRS(R0,R0I)
-      use radint
       use tffitcode
       implicit none
       real*8 A(2,2),B(2,2),C(2,2),D(2,2),AI(2,2),CAI(2,2),ACI(2,2)
@@ -425,14 +424,13 @@ c      WRITE(6,'(8F10.4)') TU
       VU=matmul(R0,VO)
 c      CALL VMUL4(R0,VO,VU)
       RETURN
-      END
+      END subroutine
 
-      subroutine TWTRANS(R0,R0I)
-      use radint
+      subroutine TWTRANS()
       use tffitcode
       use tmacro
       implicit none
-      real*8 TTX(3,3),TTY(3,3),R0(4,4),R0I(4,4),DX1(4)
+      real*8 TTX(3,3),TTY(3,3),DX1(4)
       real*8 GX,GY,BX1,AX1,BY1,AY1,EX1,EPX1,EY1,EPY1
       associate (
      $     AX=>TWPMG(mfitax),
@@ -502,14 +500,12 @@ c      CALL VMUL4(TO,DX,DX1)
       DX(4)=DX1(4)+VO(4)*DP0
 *    +      DP0*(R0I(4,1)*EX+R0I(4,2)*EPX+R0I(4,3)*EY+R0I(4,4)*EPY)
       end associate
-      END
+      END subroutine
 
       subroutine QUADRU(TETA1,DX,DY)
-      use radint
-      IMPLICIT REAL*8 (A-H,O-Z)
-c
-      save
-c
+      implicit none
+      real*8 ,intent(in)::TETA1,DX,DY
+      real*8 RK,P,S1,S2,S3,S4,TET2,DR,SQRK
       CALL ZEROV4(VM)
       CALL UNITM4(TM,1.d0)
       RK=DKL1/DL
@@ -556,18 +552,15 @@ c
       END IF
       CALL TROT(TM,VM,TETA1,TO,VO)
       RETURN
-      END
+      END subroutine
 
       subroutine R0CAL(R0,R0I)
-      use radint
       use tffitcode
       implicit none
       real*8 RA0(2,2),RB0(2,2),RC0(2,2),RD0(2,2)
       real*8 R0(4,4),R0I(4,4)
       real*8 DETR,RMU0
       integer*4 J,K
-c
-      save
 c
       DO J=1,2
         DO K=1,2
@@ -596,10 +589,9 @@ c
          CALL R2INV(R0,R0I)
       ENDIF
       RETURN
-      END
+      END subroutine
 
       subroutine TEDGE(DIEG)
-      use radint
       use tffitcode
       implicit none
       real*8 DIEG(*)
@@ -635,12 +627,11 @@ c
       DIEG(9)=DIEG(9)-TM(2,1)*BU
       DIEG(10)=DIEG(10)-TM(4,3)*BV
       CALL TMATRS(R0,R0I)
-      CALL TWTRANS(R0,R0I)
+      CALL TWTRANS()
       end associate
-      END
+      END subroutine
 
       subroutine BEDGE(EANG)
-      use radint
       implicit none
       real*8 EANG,CURV
       CURV=DKL0/DL
@@ -654,10 +645,9 @@ c
       CKL1X=0.
       CKL1Y=0.
       RETURN
-      END
+      END subroutine
 
       subroutine SEXTU(TETA1,DX,DY)
-      use radint
       implicit none
       real*8 TETA1,DX,DY,SINT,COST
       CALL UNITM4(TM,1.d0)
@@ -673,4 +663,30 @@ c
         CKL1X=DKL2*DX
         CKL1Y=-DKL2*DY
       RETURN
-      END
+      END subroutine
+
+      subroutine TROT (TM,VM,TETA,TO,VO)
+      implicit none
+      real*8 TM(4,4),VM(4),TO(4,4),VO(4)
+      real*8 ROT(4,4),RINV(4,4),TS(4,4)
+      real*8 TETA,CTET,STET
+      CTET=DCOS(TETA)
+      STET=DSIN(TETA)
+      CALL UNITM4(ROT,CTET)
+      CALL UNITM4(RINV,CTET)
+      ROT(1,3)=-STET
+      ROT(2,4)=-STET
+      ROT(3,1)=STET
+      ROT(4,2)=STET
+      RINV(1,3)=STET
+      RINV(2,4)=STET
+      RINV(3,1)=-STET
+      RINV(4,2)=-STET
+      TS=matmul(TM,ROT)
+      TO=matmul(RINV,TS)
+      VO=matmul(RINV,VM)
+c      CALL VMUL4(RINV,VM,VO)
+      RETURN
+      END subroutine
+
+      end module
