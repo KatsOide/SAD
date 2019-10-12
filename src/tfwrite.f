@@ -1042,9 +1042,7 @@ c      write(*,*)'tfreadstr ',lfn,nc,ipoint
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
-      if(ktfstringq(ktastk(isp)))then
-        ka=ktfaddr(ktastk(isp))
-        call loc_string(ka,str)
+      if(ktfstringq(ktastk(isp),str))then
         nc=str%nch
         if(nc .le. 0)then
           irtc=itfmessage(9,'General::wrongval',
@@ -1097,7 +1095,12 @@ c          endif
              endif
           endif
         endif
-        call trbopenmap(str%str,kx,irtc)
+        call trbopenmap(str%str(1:nc),kx,irtc)
+        if(Irtc .ne. 0)then
+          irtc=itfmessage(999,'General::fileopen',
+     $         '"'//str%str(1:nc)//'"')
+          kx=dxfailed
+        endif
       endif
       return
       end
