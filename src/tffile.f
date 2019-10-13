@@ -9,10 +9,12 @@
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
       real*8 vx
-      integer*4 i,lfni1,nc,next,itype,lfno1,j,lfnb,isp0,irtc,
+      integer*4 , intent(in)::lfnb
+      integer*4 i,lfni1,nc,next,itype,lfno1,isp0,irtc,
      $     itfdownlevel,itfpeeko
       integer*4 ,save:: lfni0=0
-      logical*4 init,exist,termin,rew,app,abbrev,clo,ret
+      logical*4 ,intent(out)::init,exist
+      logical*4 termin,rew,app,abbrev,clo,ret
       character*(*) word
       character*256 tfconvstr
       exist=.true.
@@ -58,68 +60,6 @@
         endif
         init=termin
         return
-      elseif(abbrev(word,'IN_PUT','_')  .or. word .eq. 'GET'
-     1       .or. word .eq. 'READ')then
-        rew=word .eq. 'READ'
-        itype=itfpeeko(kx,next)
-c        call tfdebugprint(kx,'IN',1)
-        if(ktfrealq(kx,vx))then
-          lfni1=int(vx+.5d0)
-          if(lfni1 .le. 0)then
-            return
-          endif
-          ipoint=next
-          write(word,'(''ftn'',i2.2)')lfni1
-          call trbassign(lfni1)
-          lfnp=lfnp+1
-          lfopen(lfnp)=.false.
-        elseif(ktfstringq(kx))then
-          ipoint=next
-          word=tfconvstr(kx,nc,'*')
-          do 8020 j=51,97
-            do 8030 i=lfnb,int(lfnp)
-              if(j .eq. lfnstk(i))then
-                go to 8020
-              endif
- 8030       continue
-            lfni1=j
-            go to 8021
- 8020     continue
- 8101     call termes(lfno,'?File open error ',word)
-          ios=9998
-          init=.true.
-          return
- 8021     if(word .eq. ' ')then
-            call termes(lfno,'?Missing filename for IN_PUT',' ')
-            init=.true.
-            return
-          endif
-          call texpfn(word)
-          open(lfni1,file=word,status='OLD',ERR=8101)
-          lfnp=lfnp+1
-          lfopen(lfnp)=.true.
-        else
-          call termes(lfno,'?Missing filename for IN_PUT',' ')
-          init=.true.
-          return
-        endif
-        if(lfnp .ge. maxlfn)then
-          call termes(lfno,'?Number of input files exceeds limit',' ')
-          init=.true.
-          return
-        endif
-      elseif(abbrev(word,'RES_UME','_'))then
-        ipoint=next
-        lfni1=lfni0
-        if(lfni1 .eq. 0)then
-          return
-        endif
-        lfni0=0
-        write(word,'(''ftn'',i2.2)')lfni1
-        call trbassign(lfni1)
-        lfnp=lfnp+1
-        lfopen(lfnp)=.false.
-        rew=.false.
       elseif(abbrev(word,'EXE_CUTE','_'))then
         ret=.true.
         itype=itfpeeko(kx,next)
@@ -173,16 +113,54 @@ c        call tfdebugprint(kx,'IN',1)
         init=.true.
         ios=9998
         return
+      elseif(abbrev(word,'RES_UME','_'))then
+        lfni1=lfni0
+        if(lfni1 .eq. 0)then
+          return
+        endif
+        lfni0=0
+        call trbassign(lfni1)
+        lfnp=lfnp+1
+        rew=.false.
+      elseif(abbrev(word,'IN_PUT','_')  .or. word .eq. 'GET'
+     1       .or. word .eq. 'READ')then
+        rew=word .eq. 'READ'
+        itype=itfpeeko(kx,next)
+c        call tfdebugprint(kx,'IN',1)
+        if(ktfrealq(kx,vx))then
+          lfni1=int(vx+.5d0)
+        elseif(ktfstringq(kx,str))then
+          call trbopenmap(str%str(1:str%nch),kx,irtc)
+          if(Irtc .ne. 0)then
+            call termes(lfno,'?File open error for IN_PUT',
+     $           str%str(1:str%nch))
+            return
+          endif
+          lfni1=int(rfromd(kx))
+        else
+          call termes(lfno,'?Missing filename for IN_PUT',' ')
+          init=.true.
+          return
+        endif
+        ipoint=next
+        if(lfnp .ge. maxlfn)then
+          call termes(lfno,'?Number of input files exceeds limit',' ')
+          init=.true.
+          return
+        endif
+        if(lfni1 .le. 0)then
+          return
+        endif
+c     write(word,'(''ftn'',i2.2)')lfni1
+        call trbassign(lfni1)
+        lfnp=lfnp+1
       else
         exist=.false.
         return
       endif
       lfnstk(lfnp)=lfni1
-      lfret(lfnp)=ipoint
-      lfrecl(lfnp)=icslrecl()
-      lflinep(lfnp)=icslinep()
-      ipoint=lfrecl(lfnp)
-      call cssetlinep(lfrecl(lfnp))
+      lflinep(lfnp)=linep
+      linep=lrecl
       lfni=lfni1
       if(rew)then
         rewind(lfni)
@@ -205,30 +183,20 @@ c
       end
 
       subroutine tfclose(lfnp1,lfni,lfnb)
-      use tfcsi, only:cssetlinep,cssets,
-     $     icslfni,icslfno,icsstat,ipoint,lrecl
+      use tfcsi, only:cssetlinep,cssets,linep,
+     $     icslfni,icslfno,icsstat
       use tfrbuf
       use ffsfile
       implicit none
       integer*4 lfnp1,lfni0,lfni,i,lfnp0,lfnb
       lfni0=lfni
-      do 10 i=lfnp1,lfnp
-        if(lfopen(i))then
-          if(lfnstk(i) .gt. 0)then
-            close(lfnstk(i))
-          endif
-        endif
-10    continue
       lfnp0=max(1,lfnb-1,lfnp1-1)
       lfni=lfnstk(lfnp0)
       if(lfni .ne. lfni0)then
         call trbassign(lfni)
       endif
-      if(lfret(lfnp1) .gt. 0)then
-        ipoint=lfret(lfnp1)
-        lrecl=lfrecl(lfnp1)
-        call cssetlinep(lflinep(lfnp1))
-      elseif(lfni0 .ne. lfni)then
+      linep=lflinep(lfnp1)
+      if(lfni0 .ne. lfni)then
         call skipline
       endif
       lfnp=lfnp0

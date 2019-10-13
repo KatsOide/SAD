@@ -65,8 +65,8 @@ c
         call trbclose(infl)
         if(lfnp .gt. lfnbase)then
 c          write(*,*)'filbu-EOF ',infl,lfnp,lfnstk(lfnp)
-          infl=lfnstk(lfnp)
           lfnp=lfnp-1
+          infl=lfnstk(lfnp)
           call trbassign(infl)
         elseif(lfnbase .eq. 0)then
 c          write(*,*)'filbu-EOF1 ',infl

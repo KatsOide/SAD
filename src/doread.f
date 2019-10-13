@@ -90,7 +90,7 @@ c     end debug
 c     
       if(f .ne. 0 .and. f .ne. infl)then
         lfnp=lfnp+1
-        lfnstk(lfnp)=infl
+        lfnstk(lfnp)=f
         call myfflush
         infl=f 
         call trbassign(f)

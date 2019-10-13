@@ -140,7 +140,6 @@ c      endif
       integer*4 notspace,istop,nc,irt,i
       character*(*) word
  1    if(ipoint .ge. lrecl)then
-        write(*,*)'tfgettok'
         call getbuf
         if(ios .ne. 0)then
           word=' '

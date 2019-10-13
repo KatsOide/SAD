@@ -143,9 +143,6 @@ c
           call tfsetsymbolr('ExponentOfResidual',18,2.d0)
           lfnp=1
           lfnstk(1)=5
-          lfopen(1)=.false.
-          lfret(1)=0
-          lfrecl(1)=1
           lflinep(1)=1
           itbuf(5)=moderead
           call trbreset(5)
@@ -153,8 +150,6 @@ c
             lfnp=2
             call trbnextl(infl)
             lfnstk(2)=infl
-            lfret(2)=0
-            lfrecl(2)=lbuf(infl)
             lflinep(2)=lbuf(infl)
           endif
         else
@@ -162,7 +157,6 @@ c
       else
         lfnp=lfnb
         lfnstk(lfnp)=lfn
-        lfrecl(lfnp)=lbuf(lfnp)
         lflinep(lfnp)=lbuf(lfnp)
       endif
       iffserr=0
@@ -173,14 +167,11 @@ c
       endif
       levelr=0
       iflevel=0
-      lfret(lfnp)=0
-      lfopen(lfnp)=.false.
       if(lfni .ne. lfnstk(lfnp))then
         lfni=lfnstk(lfnp)
         call trbassign(lfni)
       endif
       lfno=outfl
-c      write(*,*)'tffsa ',lfnp,lfni,lfno
  2    if(lfnb .eq. 1)then
         if(lfni .ne. 5)then
           lfn1=lfno
@@ -224,7 +215,7 @@ c      endif
       elseif(ios .lt. 0)then
         ios=0
       endif
-c      if(lfni .gt. 100)then
+c      if(lfni .eq. 5)then
 c        write(*,*)'tffsa-getwrd-0 ',lfni,ipoint,lrecl
 c      endif
       call getwrd(word)

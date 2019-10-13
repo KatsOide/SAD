@@ -691,9 +691,7 @@ c
       module ffsfile
         integer*4 , parameter :: maxlfn=128
         integer*4 :: lfnp=0,lfnbase=0
-        integer*4 lfnstk(maxlfn),lfret(maxlfn),
-     $     lfrecl(maxlfn),lflinep(maxlfn)
-        logical*4 lfopen(maxlfn)
+        integer*4 lfnstk(maxlfn),lflinep(maxlfn)
       end module
 
       module trackbypass

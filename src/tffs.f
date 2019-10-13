@@ -1974,9 +1974,10 @@ c      call tfree(ifibzl)
       use tfrbuf
       use tmacro
       use ffsfile
+      use tfcsi,only:lfni
       implicit none
       type (sad_descriptor) kx
-      integer*4 isp1,irtc,infl0,itfmessage,lfn,ierrfl,ierr,lfnb0
+      integer*4 isp1,irtc,infl0,itfmessage,lfn,ierrfl,ierr,lfnb0,lfni0
       ierr=0
       if(isp .eq. isp1+2)then
         ierr=int(rtastk(isp))
@@ -1992,9 +1993,10 @@ c      call tfree(ifibzl)
         irtc=itfmessage(9,'General::wonrgtype','"Real"')
         return
       endif
+      lfni0=lfni
       infl0=infl
       infl=lfn
-      if(infl .ne. infl0)then
+      if(infl .ne. lfni)then
         call trbassign(infl)
       endif
       ierrfl=errfl
@@ -2002,19 +2004,18 @@ c      call tfree(ifibzl)
       bypasstrack=.true.
       lfnb0=lfnbase
       lfnbase=lfnp
-c      write(*,*)'tfmain-1 ', lfn,infl0
+c      write(*,*)'tfmain-1 ', lfn,infl0,lfnb0,lfni0
       call toplvl
-c      write(*,*)'tfmain-2 '
       lfnp=lfnbase
       lfnbase=lfnb0
       bypasstrack=.false.
       errfl=ierrfl
       call trbclose(lfn)
-      if(infl .ne. infl0)then
-        call trbassign(infl0)
+      infl=lfni
+      if(lfni .ne. lfni0)then
+        lfni=lfni0
+        call trbassign(lfni)
       endif
-      infl=infl0
       kx%k=ktfoper+mtfnull
       return
       end
-
