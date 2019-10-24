@@ -334,20 +334,19 @@ c
       module tfcsi
         use tfcbk, only:maxlbuf
         implicit none
-        integer*4, parameter :: nbmax=maxlbuf,nsav=6,ipbase=1
+        integer*4, parameter :: nbmax=maxlbuf,nsav=5,ipbase=1
         type csiparam
           sequence
           integer*4 isav(1:0)
-          integer*4 lfni,linep,lfn1,lfno,ios
-          logical*4 rec
+          integer*4 lfni,lfn1,lfno,ios
+          logical*4 rep
         end type
         type (csiparam) , target :: savep
         character*16 delim,cmnt
         integer*8 ibcloc
         integer*4, pointer:: ipoint,lrecl,lfni=>savep%lfni,
-     $       linep=>savep%linep,lfn1=>savep%lfn1,lfno=>savep%lfno,
-     $       ios=>savep%ios
-        logical*4 , pointer :: rec=>savep%rec
+     $       lfn1=>savep%lfn1,lfno=>savep%lfno,ios=>savep%ios
+        logical*4 , pointer :: rep=>savep%rep
         integer*4 iconv,ldel,lcmnt,lastln,ibegt,lastt
         character*(nbmax) , target  :: buffer0
         character*(nbmax) , pointer :: buffer
@@ -395,21 +394,6 @@ c
         return
         end subroutine
 
-        subroutine cssetrec(f)
-        implicit none
-        logical*4 f
-        rec=f
-        return
-        end subroutine
-
-        subroutine cssetlinep(ip)
-        implicit none
-        integer*4 ip
-c        write(*,*)'setlinep ',ip,linep,lrecl
-        linep=ip
-        return
-        end subroutine
-
         integer*4 function icsmrk()
         implicit none
         icsmrk=ipoint
@@ -443,18 +427,6 @@ c        write(*,*)'setlinep ',ip,linep,lrecl
         integer*4 function icslfn1()
         implicit none
         icslfn1=lfn1
-        return
-        end function
-
-        integer*4 function icslinep()
-        implicit none
-        icslinep=linep
-        return
-        end function
-
-        logical*4 function csrec()
-        implicit none
-        csrec=rec
         return
         end function
 
@@ -691,7 +663,7 @@ c
       module ffsfile
         integer*4 , parameter :: maxlfn=128
         integer*4 :: lfnp=0,lfnbase=0
-        integer*4 lfnstk(maxlfn),lflinep(maxlfn)
+        integer*4 lfnstk(maxlfn)
       end module
 
       module trackbypass

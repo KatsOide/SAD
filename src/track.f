@@ -33,7 +33,6 @@ c        write(*,*)'track-0.0 ',klist( 1621700052)
 c        write(*,*)'track-0.1 ',klist( 1621700052)
         call ffs_init_flag
 c        write(*,*)'track-0.2 ',klist( 1621700052)
-c        call csinit(0,1,'!',.false.)
         convcase=.true.
 c        write(*,*)'track-0.3 ',lfni,ipoint,lrecl
         call tfinitn

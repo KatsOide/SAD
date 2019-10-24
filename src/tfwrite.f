@@ -391,7 +391,7 @@ c      call tfdebugprint(k,'tfget',1)
       endif
       lfn=int(rfromd(kfn))
       sav=savep
-      rec=.false.
+      rep=.false.
       levele=levele+1
       kx%k=ktfoper+mtfnull
       call trbassign(lfn)

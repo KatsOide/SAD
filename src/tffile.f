@@ -24,13 +24,10 @@
         if(suspend)then
           init=lfnp .gt. lfnb
           lfni0=lfni
-          call tfclose(lfnb,lfni,lfnb)
+          call tfclose(lfnb,lfnb)
           lfnp=lfnb
           lfno=6
           outfl=lfno
-          if(lfnb .eq. 1)then
-            close(98)
-          endif
           call trbassign(lfni)
         endif
         return
@@ -53,7 +50,7 @@
           termin=.true.
         endif
         if(termin)then
-          call tfclose(int(lfnp),lfni,lfnb)
+          call tfclose(int(lfnp),lfnb)
         else
           lfno=6
           outfl=lfno
@@ -159,8 +156,6 @@ c     write(word,'(''ftn'',i2.2)')lfni1
         return
       endif
       lfnstk(lfnp)=lfni1
-      lflinep(lfnp)=linep
-      linep=lrecl
       lfni=lfni1
       if(rew)then
         rewind(lfni)
@@ -182,20 +177,18 @@ c
       return
       end
 
-      subroutine tfclose(lfnp1,lfni,lfnb)
-      use tfcsi, only:cssetlinep,cssets,linep,
-     $     icslfni,icslfno,icsstat
+      subroutine tfclose(lfnp1,lfnb)
+      use tfcsi
       use tfrbuf
       use ffsfile
       implicit none
-      integer*4 lfnp1,lfni0,lfni,i,lfnp0,lfnb
+      integer*4 lfnp1,lfni0,lfnp0,lfnb
       lfni0=lfni
       lfnp0=max(1,lfnb-1,lfnp1-1)
       lfni=lfnstk(lfnp0)
       if(lfni .ne. lfni0)then
         call trbassign(lfni)
       endif
-      linep=lflinep(lfnp1)
       if(lfni0 .ne. lfni)then
         call skipline
       endif

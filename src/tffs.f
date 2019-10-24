@@ -2008,6 +2008,8 @@ c      write(*,*)'tfmain-1 ', lfn,infl0,lfnb0,lfni0
       call toplvl
       lfnp=lfnbase
       lfnbase=lfnb0
+      lfnp=lfnbase
+      lfnbase=lfnb0
       bypasstrack=.false.
       errfl=ierrfl
       call trbclose(lfn)

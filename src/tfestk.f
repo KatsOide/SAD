@@ -1043,7 +1043,7 @@ c      write(*,*)'tfevalc ',len(string),ls,'''',string(1:5),''''
       ip1=ipoint
       ipoint=istop
       call tprmptget(ipr,.true.)
-      if(rec)then
+      if(rep)then
         ipoint=ip1
       else
         istop=ipoint

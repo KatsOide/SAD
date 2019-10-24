@@ -14,6 +14,6 @@ c
          klist(inflpt)=infl
          klist(inflpt+1)=0
          lfni=infl
-         call csinit(0,1,'!',.false.)
+         call csinit(0,1,'!')
       return
       end

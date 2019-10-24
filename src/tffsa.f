@@ -143,21 +143,18 @@ c
           call tfsetsymbolr('ExponentOfResidual',18,2.d0)
           lfnp=1
           lfnstk(1)=5
-          lflinep(1)=1
           itbuf(5)=moderead
           call trbreset(5)
           if(infl .ne. 5)then
             lfnp=2
             call trbnextl(infl)
             lfnstk(2)=infl
-            lflinep(2)=lbuf(infl)
           endif
         else
         endif
       else
         lfnp=lfnb
         lfnstk(lfnp)=lfn
-        lflinep(lfnp)=lbuf(lfnp)
       endif
       iffserr=0
       if(chguse)then
@@ -199,7 +196,7 @@ c      endif
       endif
       if(ios .gt. 0)then
         ios=0
-        call tfclose(lfnp,lfni,lfnb)
+        call tfclose(lfnp,lfnb)
         if(lfnp .lt. lfnb)then
           go to 9000
         endif
@@ -264,8 +261,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
         endif
         ios=0
  4010   if(levelr .eq. 0)then
-          linep=lrecl
-          rec=.false.
+          rep=.false.
         endif
         go to 10
       elseif(abbrev(word,'REP_EAT','_'))then
@@ -276,7 +272,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
         endif
         nrpt(levelr)=max(1,nrpt1)
         irptp(levelr)=ipoint
-        rec=.true.
+        rep=.true.
         go to 10
       endif
       call tfif(word,iflevel,lfno,exist)

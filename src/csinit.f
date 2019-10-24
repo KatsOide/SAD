@@ -1,4 +1,4 @@
-      subroutine csinit(lfn0,iconv1,cmnt1,rec0)
+      subroutine csinit(lfn0,iconv1,cmnt1)
       use tfstk
       use tfrbuf
       use tfcsi
@@ -6,7 +6,6 @@
       implicit none
       integer*4 lfn0,iconv1
       character*(*) cmnt1
-      logical*4 rec0
 c      allocate(buffer0)
       buffer=>buffer0
       ibcloc=transfer(c_loc(buffer0(1:1)),ibcloc)/8
@@ -25,8 +24,7 @@ c      call tfsetconvcase(iconv1 .eq. 1)
       ldel=len_trim(delim)
       cmnt=cmnt1
       lcmnt=len_trim(cmnt)
-      rec=rec0
-      linep=0
+      rep=.false.
       lastln=0
       ibegt=0
       lastt=0
