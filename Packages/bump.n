@@ -22,7 +22,7 @@ If[ SetSteer/.op, AddSteerStrength[x,str[[,bumpR[[2]]]]] ];
 If[Calc/.op, 
   If[FLAG["SIMULATE"], 
     !CalculateOptics[1,LINE["length"],opt[[1,1]],FLAG["CELL"],2]
-     FFS["cal"]
+     FFS["CALC NOEXP;"]
     ]
   ];
 {x,bumpR[[2]]}
@@ -295,7 +295,7 @@ CorrectOrbitBump[orbitkind_,bumpset_,bpm_,str_,opt_,options___]:=
  !.. calc resultant orbit
   s1=LINE["k0",str[[1]]];
   If[ExpectedOrbit/.op,
-    FFS["cal"];
+    FFS["CALC NOEXP;"];
     MapThread[(Twiss["dx",#1]=Twiss["dx",#1]+#2)&,{bpm[[1]],co[[1]]}];
     MapThread[(Twiss["dy",#1]=Twiss["dy",#1]+#2)&,{bpm[[1]],co[[2]]}];
     MapThread[(Twiss["ex",#1]=Twiss["ex",#1]+#2)&,{bpm[[1]],co[[3]]}];
@@ -304,7 +304,7 @@ CorrectOrbitBump[orbitkind_,bumpset_,bpm_,str_,opt_,options___]:=
   RecoverSteers[s0];
   AddSteerStrength[s1,str];
   If[(Calc/.op)&&~(ExpectedOrbit/.op)&&FLAG["SIMULATE"], 
-    FFS["cal"];
+    FFS["CALC NOEXP;"];
     If[FLAG["CELL"],
       If[ ~Equal[Drop[ CalculateOptics[1,LINE["LENGTH"],Twiss["*",1],FLAG["CELL"],2][[2]], -1],{1,1}],
         Message[Corr::unstable] ]  ]
@@ -320,7 +320,7 @@ CorrectOrbitBump[orbitkind_,bumpset_,bpm_,str_,opt_,options___]:=
   na=Length[bpm[1]]*Max[1,Length[kind]];
   a=Table[{},{na}];
   s0=ResetSteers[];
-  FFS["cal"];
+  FFS["CALC NOEXP;"];
   x0=Twiss[{"dx","dy"}];
   Do[
     n=SlotNumberBump[bumps[[i]]];
@@ -328,7 +328,7 @@ CorrectOrbitBump[orbitkind_,bumpset_,bpm_,str_,opt_,options___]:=
     Do[
       b=Apply[bumps[[i]],dv[[j]]];
       xt=MakeBump[ b, str, opt, Calc->False ];
-      FFS["cal"];
+      FFS["CALC NOEXP;"];
       x1=Twiss[{"dx","dy"}]-x0;
       bh=Max[Max[x1[[1]]],-Min[x1[[1]]],Max[x1[[2]]],-Min[x1[[2]]]];
       AppendTo[r,maxheight/Abs[bh]];

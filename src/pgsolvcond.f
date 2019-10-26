@@ -53,6 +53,13 @@ c      write(*,*)'pgsolvcond-1 ',nx,normalize,cond,eps
           call tfree(kdp)
           return
         endif
+      else
+        nc=0
+        mc=0
+        nd=0
+        md=0
+        kcp=0
+        kdp=0
       endif
       kap=ktfmaloc(k,n,m,.false.,.false.,irtc)
       if(irtc .ne. 0) then
@@ -113,14 +120,14 @@ c
       use maccbk
       implicit none
       logical cond,micado,norm,svd
-      integer*4 nx,n,m,na,nc
+      integer*4,intent(in):: nx,n,m,na,nc
       real*8 a(na,m),b(n),x(m),c(nc,m),d(nc),eps
       real*8 aa(na,m),xx(m),bb(n),cc(nc,m), tt(nc),uu(nc)
       integer*4 mm(m)
       integer*4 i,j, m1
 
       micado=nx .ne. 0
-c      write(*,*)'pgsolvcond1 ',micado,cond
+c      write(*,*)'pgsolvcond1 ',micado,cond,nc,nx
       if(cond)then
         if(micado) then
           call tmov(a,aa,na*m)
