@@ -2004,20 +2004,18 @@ c      call tfree(ifibzl)
       bypasstrack=.true.
       lfnb0=lfnbase
       lfnbase=lfnp
-c      write(*,*)'tfmain-1 ', lfn,infl0,lfnb0,lfni0
       call toplvl
-      lfnp=lfnbase
-      lfnbase=lfnb0
       lfnp=lfnbase
       lfnbase=lfnb0
       bypasstrack=.false.
       errfl=ierrfl
       call trbclose(lfn)
-      infl=lfni
+      infl=lfni0
       if(lfni .ne. lfni0)then
         lfni=lfni0
         call trbassign(lfni)
       endif
+c      write(*,*)'tfmain-1 ', lfn,infl0,lfnb0,lfni0,lfni
       kx%k=ktfoper+mtfnull
       return
       end
