@@ -142,18 +142,6 @@
      $     dxf,dpxf,dyf,dpyf,hi,hip,pyf,yf,zf,
      $     xiksq
       logical*4 enarad
-c      if(enarad)then
-c        dpini=cod(6)
-c        xr=cod(1)/rho0
-c        xe=xi+xi*xr*(.5d0-xr*(2.d0-xr)/12.d0)
-c        dxe=1.d0+xr*(1.d0-xr*(.5d0-xr/3.d0))
-c        bx=b1*cod(3)
-c        by=b+b1*xe
-c        bxy=b1*dxe
-c        call trade(trans,beam,cod,bx,by,0.d0,0.d0,
-c     $       0.d0,bxy,0.d0,fal,alnr,als,ala,fb1,fb2,prev,next)
-c        tbinit=tbinit .or. cod(6) .ne. dpini
-c      endif
       dp=cod(6)
       p=1.d0+dp
       xi=cod(1)
@@ -164,10 +152,6 @@ c      endif
       if(tbinit)then
         call tbendeinit(ak1,al)
       endif
-c      dxf =(drhopak+xi)*dcx+aksx/akxsq*pxi
-c      dpxf= aksx*(drhopak+xi)+pxi*dcx
-c      dyf = dcy*yi+aksy/akysq*pyi
-c      dpyf=aksy*yi+dcy*pyi
       xiksq=drhop+akxsq*xi
       dxf = dcxkx*xiksq+sxkx*pxi
       dpxf= sxkx*xiksq +dcx*pxi
@@ -335,6 +319,45 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
       return
       end
 
+      subroutine tbendef1(trans,cod,beam,srot,al0,phi0,fb,rb0,enarad)
+      implicit none
+      real*8 , intent(inout)::trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 , intent(in)::al0,phi0,rb0,fb
+      logical*4 , intent(in)::enarad
+      real*8 phib1,csphib1,snphib1,sinsq1,bsi1,bsi2,rb,fl
+      integer*4 i
+      logical*4 en
+      rb=rb0
+      bsi2=0.d0
+      if(rb .lt. .5d0)then
+        bsi1=1.d0
+      else
+        bsi1=0.d0
+      endif
+      en=enarad
+      do i=1,2
+        fl=0.5d0*fb*rb
+        phib1=phi0*fl/al0
+        csphib1=cos(phib1)
+        snphib1=sin(phib1)
+        if(csphib1 .ge. 0.d0)then
+          sinsq1=snphib1**2/(1.d0+csphib1)
+        else
+          sinsq1=1.d0-csphib1
+        endif
+        call tbendebody0(trans,cod,beam,srot,fl,
+     $     phib1,snphib1,sinsq1,csphib1,.5d0*fb,bsi1,bsi2,
+     $     en)
+        rb=1.d0/6.d0/rb
+        bsi1=0.d0
+        if(rb .lt. .5d0)then
+          bsi2=1.d0
+          en=.false.
+        endif
+      enddo
+      return
+      end subroutine
+
       end module
 
       subroutine tbende(trans,cod,beam,srot,al0,phib,phi0,
@@ -348,15 +371,14 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
       use multa, only:nmult
       use temw
       implicit none
-      integer*4 mfring,ndiv,nrad,n,l,n1
+      integer*4 mfring,ndiv,nrad,n,l,n1,n2
       real*8 al0,phib,phi0,psi1,psi2,ak,dx,dy,theta,dtheta,
-     $     fb1,fb2,eps0,phibl,bsi2,phib1,phib2,phir2,alx,alr,
-     $     dxfr1,dyfr1,dxfr2,dyfr2,
+     $     fb1,fb2,eps0,phibl,bsi1,bsi2,alx,alr,
+     $     dxfr1,dyfr1,dxfr2,dyfr2,phi1,
      $     eps,akn,tanp1,tanp2,f,
      $     dyfra1,dyfra2,apsi1,apsi2,cod11,
-     $     csphin,snphin,sinsqn,phin,aln,alx1,akx1,
-     $     rbc,akc,alc,csphib1,csphib2,phic,rb1,rb2,
-     $     sinsq1,sinsq2,snphib1,snphib2,alr2
+     $     csphin,snphin,sinsqn,phin,aln,alx0,akx0,
+     $     rbc,akc,alc,phic,rb1,rb2
       real*8 trans(6,12),cod(6),beam(42),srot(3,9)
       complex*16 akm(0:nmult)
       logical*4 enarad,alcorr,fringe,next,prev
@@ -451,11 +473,6 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
         nrad=int(abs(al0*rbc/epsrad*crad*(h0*b)**2))
         ndiv=max(ndiv,int(nrad*emidiv*emidib),
      1       int(abs(phib*h0*anrad)/epsrad/1.d6*emidiv*emidib))
-        if(ndiv .eq. 1 .and. rb2 .eq. 0.d0)then
-          bsi2=1.d0
-        else
-          bsi2=0.d0
-        endif
       endif
       trans1(1,3)=0.d0
       trans1(1,4)=0.d0
@@ -491,7 +508,8 @@ c      endif
       akn=akc/ndiv
       aln=alc/ndiv
       phin=phic/ndiv
-c      write(*,'(a,i5,1p8g15.7)')'tbende ',ndiv,rb1,rb2,al0,alc,aln,phin
+c      write(*,'(a,i5,1p8g15.7)')'tbende ',ndiv,
+c     $     rb1,rb2,al0,alc,aln,phin,ak
       if(ak .eq. 0.d0)then
         trans1(3,3)=1.d0
         trans1(4,3)=0.d0
@@ -505,120 +523,101 @@ c      write(*,'(a,i5,1p8g15.7)')'tbende ',ndiv,rb1,rb2,al0,alc,aln,phin
         else
           sinsqn=1.d0-csphin
         endif
-        if(rb1 .eq. 0.d0)then
-          call tbendebody0(trans,cod,beam,srot,aln,
-     $         phin,snphin,sinsqn,csphin,aln,1.d0,bsi2,
-     $         enarad .and. ndiv .ne. 1)
-          n1=2
-        else
-          phib1=phi0*rb1
-          csphib1=cos(phib1)
-          snphib1=sin(phib1)
-          if(csphib1 .ge. 0.d0)then
-            sinsq1=snphib1**2/(1.d0+csphib1)
-          else
-            sinsq1=1.d0-csphib1
-          endif
-          call tbendebody0(trans,cod,beam,srot,al0*rb1,
-     $         phib1,snphib1,sinsq1,csphib1,al0*rb1*1.5d0,1.d0,bsi2,
-     $         enarad)
-          n1=1
-        endif
+        bsi1=1.d0
         bsi2=0.d0
-        do n=n1,ndiv
-          if(n .eq. ndiv .and. rb2 .ne. 0.d0)then
-            bsi2=1.d0
-          endif
-          call tbendebody0(trans,cod,beam,srot,aln,
-     $         phin,snphin,sinsqn,csphin,aln,0.d0,bsi2,
-     $         enarad .and. (n .ne. ndiv .or. rb2 .ne. 0.d0))
-        enddo
-        if(rb2 .ne. 0.d0)then
-          phib2=phi0*rb2
-          csphib2=cos(phib2)
-          snphib2=sin(phib2)
-          if(csphib2 .ge. 0.d0)then
-            sinsq2=snphib2**2/(1.d0+csphib2)
-          else
-            sinsq2=1.d0-csphib2
-          endif
-          alr2=al0*rb2*1.5d0
-          phir2=phib2
-          call tbendebody0(trans,cod,beam,srot,al0*rb2,
-     $         phib2,snphib2,sinsq1,csphib2,alr2,0.d0,1.d0,
-     $         .false.)
-        else
-          alr2=aln
-          phir2=phin
+        n1=1
+        n2=ndiv
+        if(rb1 .ne. 0.d0)then
+          n1=0
         endif
+        if(rb2 .ne. 0.d0)then
+          n2=ndiv+1
+        endif
+        do n=n1,n2
+          if(n .eq. 0)then
+            call tbendef1(trans,cod,beam,srot,al0,phi0,fb1,rbl,enarad)
+          elseif(n .eq. ndiv+1)then
+            call tbendef1(trans,cod,beam,srot,al0,phi0,fb2,rbh,enarad)
+            alr=.5d0*fb2
+            phi1=alr*rbl/al0*phi0
+          else
+            if(n .eq. n2)then
+              bsi2=1.d0
+            endif
+            call tbendebody0(trans,cod,beam,srot,aln,
+     $           phin,snphin,sinsqn,csphin,aln,bsi1,bsi2,
+     $           enarad .and. n .ne. n2)
+            alr=aln
+            phi1=phin
+          endif
+          bsi1=0.d0
+        enddo
       else
         tbinit=.true.
-        if(rb1 .eq. 0.d0)then
-          alx=aln
-          akx=akn
-          phix=phin
-          alr=aln
-          n1=2
-        else
-          alx=al0*rb1
-          akx=ak*rb1
-          phix=phi0*rb1
-          alr=alx*1.5d0
-          n1=1
+        n1=1
+        n2=ndiv
+        if(rb1 .ne. 0.d0)then
+          n1=-1
         endif
-        call tbendecorr(trans,cod,beam,akx*.5d0,alx*.5d0)
-        call tbendebody(trans,cod,beam,srot,alx,phix,
-     $       akx,alr,1.d0,bsi2,
-     $       enarad .and. (ndiv .ge. n1 .or. rb2 .ne. 0.d0))
+        if(rb2 .ne. 0.d0)then
+          n2=ndiv+2
+        endif
+        alx0=0.d0
+        akx0=0.d0
+        bsi1=1.d0
         bsi2=0.d0
-        do n=n1,ndiv
-          akx=(akn+akx)*.5d0
-          alx=(aln+alx)*.5d0
-          if(n .eq. ndiv .and. rb2 .eq. 0.d0)then
+        do n=n1,n2
+          alx=aln
+          alr=aln
+          if(n .eq. -1)then
+            alx=.5d0*rbl*fb1
+            alr=.5d0*fb1
+          elseif(n .eq. 0)then
+            alx=.5d0*rbh*fb1
+            alr=.5d0*fb1
+          elseif(n .eq. ndiv+1)then
+            alx=.5d0*rbh*fb2
+            alr=.5d0*fb2
+          elseif(n .eq. ndiv+2)then
+            alx=.5d0*rbl*fb2
+            alr=.5d0*fb2
+          endif
+          akx=ak*alx/al0
+          phi1=phi0*alx/al0
+          call tbendecorr(trans,cod,beam,
+     $         (akx+akx0)*.5d0,(alx+alx0)*.5d0)
+          akx0=akx
+          alx0=alx
+          if(n .eq. n2)then
             bsi2=1.d0
           endif
-          call tbendecorr(trans,cod,beam,akx,alx)
-          akx=akn
-          alx=aln
-          call tbendebody(trans,cod,beam,srot,aln,phin,
-     $         akn,aln,0.d0,bsi2,
-     $         enarad .and. (n .ne. ndiv .or. rb2 .ne. 0.d0))
+          call tbendebody(trans,cod,beam,srot,alx,phi1,
+     $         akx,alr,bsi1,bsi2,
+     $         enarad .and. n .ne. n2)
+          if(n .le. 0 .or. n .ge. ndiv)then
+            tbinit=.true.
+          endif
+          bsi1=0.d0
         enddo
-        if(rb2 .ne. 0.d0)then
-          alx1=al0*rb2
-          akx1=ak*rb2
-          phir2=phi0*rb2
-          alr2=alx1*1.5d0
-          call tbendecorr(trans,cod,beam,(akx+akx1)*.5d0,
-     $         (alx+alx1)*.5d0)
-          call tbendebody(trans,cod,beam,srot,alx1,phir2,
-     $         akx1,alr,0.d0,1.d0,.false.)
-          alx=alx1
-          akx=akx1
-        else
-          phir2=phin
-          alr2=aln
-        endif
-        call tbendecorr(trans,cod,beam,akx*5d0,alx*.5d0)
+        call tbendecorr(trans,cod,beam,akx0*.5d0,alx0*.5d0)
       endif
       if(.not. next)then
         bradprev=0.d0
       endif
       call tbedge(trans,cod,beam,al,phib,psi2*phi0+apsi2,.false.)
-      if(fb2 .ne. 0.d0)then
-        if(mfring .gt. 0 .or. mfring .eq. -2)then
-          dxfr2=-fb2**2/rhob/24.d0
-          dyfr2=fb2/rhob**2/6.d0
-          if(fringe)then
-            dyfra2=4.d0*dyfr2/fb2**2
-          else
-            dyfra2=0.d0
-          endif
-          call tblfre(trans,cod,beam,dxfr2,dyfr2,dyfra2)
+      if(rb2 .ne. 0.d0)then
+        dxfr2=-fb2**2/rhob/24.d0
+        dyfr2=fb2/rhob**2/6.d0
+        if(fringe)then
+          dyfra2=4.d0*dyfr2/fb2**2
+        else
+          dyfra2=0.d0
         endif
+        call tblfre(trans,cod,beam,dxfr2,dyfr2,dyfra2)
       endif
       if(enarad)then
-        call tradke(trans,cod,beam,srot,alr2,phir2,0.d0)
+c        write(*,*)'tbende-radke ',alr,phi1
+        call tradke(trans,cod,beam,srot,alr,phi1,0.d0)
       endif
       call tchge(trans,cod,beam,srot,
      $     -dx,-dy,-theta,-dtheta,-phi0,.false.)

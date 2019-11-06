@@ -2,6 +2,7 @@
      $     apsi1,apsi2,fb1,fb2,mfring,fringe,next)
       use ffs_flag
       use tmacro
+      use bendib, only:rbh,rbl
       use temw, only:tsetr0
       use tspin, only:tradke      
       use mathfun
@@ -39,8 +40,7 @@
       endif
       rhob=al/phib
       prev=bradprev .ne. 0.d0
-      rb1=0.d0
-      rb2=0.d0
+      rbc=1.d0
       if(fb1 .ne. 0.d0 .and. (mfring .gt. 0 .or. mfring .eq. -1))then
         dxfr1=-fb1**2/rhob/24.d0
         dyfr1=fb1/rhob**2/6.d0
@@ -50,19 +50,18 @@
           dyfra1=0.d0
         endif
         call tblfre(trans,cod,beam,dxfr1,dyfr1,dyfra1)
-        rb1=0.5d0*fb1/al
-        n1=0
+        rbc=rbc-0.5d0*fb1/al
+        n1=-1
       else
         n1=1
       endif
       if(fb2 .ne. 0.d0 .and.
      $       (mfring .gt. 0 .or. mfring .eq. -2))then
-        rb2=0.5d0*fb2/al
-        n2=1
+        rbc=rbc-0.5d0*fb2/al
+        n2=2
       else
         n2=0
       endif
-      rbc=1.d0-rb1-rb2
       alc=al*rbc
       phic=phib*rbc
       if(enarad)then
@@ -88,15 +87,20 @@ c        call tbfrie(trans,cod,beam,-rhob,0.d0,.true.)
       endif
       call tinitr(trans1)
       do 100 n=n1,ndiv+n2
-        if(n .eq. 0)then
-          alx=al*rb1
-          alr=alx*1.5d0
-        elseif(n .gt. ndiv)then
-          alx=al*rb2
-          alr=alx*1.5d0
-        else
-          alx=aln
-          alr=aln
+        alx=aln
+        alr=aln
+        if(n .eq. -1)then
+          alx=.5d0*rbl*fb1
+          alr=.5d0*fb1
+        elseif(n .eq. 0)then
+          alx=.5d0*rbh*fb1
+          alr=.5d0*fb1
+        elseif(n .eq. ndiv+1)then
+          alx=.5d0*rbh*fb2
+          alr=.5d0*fb2
+        elseif(n .eq. ndiv+2)then
+          alx=.5d0*rbl*fb2
+          alr=.5d0*fb2
         endif
         pr=1.d0+cod(6)
         pxi=cod(2)/pr

@@ -5,11 +5,11 @@
      $     rhosq,
      $     akk,akxsq,akysq,akx,aky,dcx,aksx,dcy,aksy,phix,phiy,
      $     spx,spy,sxkx,syky,dcxkx,xsxkx
-      real*8 a3,a5,a7,a9,a11,a13,a15,psqmax,epsbend
-      parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
-     1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
-     1           a13=231.d0/13312.d0,a15=143.d0/10240.d0,
-     $     psqmax=0.9999d0,epsbend=1.d-3)
+      real*8 ,parameter :: a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
+     1     a9=35.d0/1152.d0,a11=63.d0/2816.d0,
+     1     a13=231.d0/13312.d0,a15=143.d0/10240.d0,
+     $     psqmax=0.9999d0,epsbend=1.d-3,
+     $     rbh=.5d0+1.d0/sqrt(12.d0),rbl=1.d0/6.d0/rbh
 
       contains
 
