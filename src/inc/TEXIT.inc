@@ -8,11 +8,11 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
           else
             do i=1,np
               xi=x(i)
-              x(i)=xi*cost-y(i)*sint
-              y(i)=xi*sint+y(i)*cost
+              x(i)= xi*cost+y(i)*sint
+              y(i)=-xi*sint+y(i)*cost
               pxi=px(i)
-              px(i)=pxi*cost-py(i)*sint
-              py(i)=pxi*sint+py(i)*cost
+              px(i)= pxi*cost+py(i)*sint
+              py(i)=-pxi*sint+py(i)*cost
             enddo
           endif
         endif

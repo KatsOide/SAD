@@ -31,13 +31,6 @@
         call tdrift_free(np,x,px,y,py,z,dv,al)
         return
       endif
-c      if(krad .and. trpt)then
-c        call tstrad(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,phib,dx,dy,
-c     1       theta,cost,sint,
-c     1       cosp1,sinp1,cosp2,sinp2,
-c     $       fb1,fb2,mfring,eps0)
-c        return
-c      endif
       include 'inc/TENT.inc'
       tanp1=sinp1/cosp1
       tanp2=0.d0
