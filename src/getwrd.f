@@ -7,6 +7,7 @@ c     Peek/Get word from input buffer with case preserving
       integer*4 next,is,notany,ifany
       next=ipoint
       peekwd0=0
+c      write(*,*)'peekwd0 ',lfni,ipoint,lrecl,ios
       if(ipoint .gt. lrecl .or. ipoint .lt. 1)then
         outstr=' '
         return
@@ -106,6 +107,7 @@ c     Peek/Get word from input buffer with case normalization
       if(convcase .and. l .gt. 0)then
         call capita1(outstr(1:min(len(outstr),l)))
       endif
+c      write(*,*)'getwrd ',outstr(1:min(len(outstr),l))
       return
       end
 

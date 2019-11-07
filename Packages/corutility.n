@@ -194,7 +194,7 @@ RecoverSteers[{str_,istr_},Calc_:False]:=Module[{},
 Do[ LINE["K0",istr[i]]=str[i] , {i,Length[istr]} ];
 If[Calc,
   If[ ~Equal[Drop[CalculateOptics[1,LINE['LENGTH'],Twiss["*",1],FLAG['CELL'],2][2],-1],{1,1}]
-  , If[ ~Equal[Drop[CalculateOptics[1,LINE['LENGTH'],ReplacePart[Twiss["*",1],0,{{15},{16},{17},{18}}],FLAG['CELL'],2][2],-1],
+  , If[ ~Equal[Drop[CalculateOptics[1,LINE['LENGTH'],ReplacePart[Twiss["*",1],0,{{16},{17},{18},{19}}],FLAG['CELL'],2][2],-1],
            {1,1}],  Print["  !!! Unstable orbit"]
     ]
   ]

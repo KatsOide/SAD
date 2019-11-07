@@ -5,11 +5,11 @@
      $     rhosq,
      $     akk,akxsq,akysq,akx,aky,dcx,aksx,dcy,aksy,phix,phiy,
      $     spx,spy,sxkx,syky,dcxkx,xsxkx
-      real*8 a3,a5,a7,a9,a11,a13,a15,psqmax,epsbend
-      parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
-     1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
-     1           a13=231.d0/13312.d0,a15=143.d0/10240.d0,
-     $     psqmax=0.9999d0,epsbend=1.d-3)
+      real*8 ,parameter :: a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
+     1     a9=35.d0/1152.d0,a11=63.d0/2816.d0,
+     1     a13=231.d0/13312.d0,a15=143.d0/10240.d0,
+     $     psqmax=0.9999d0,epsbend=1.d-3,
+     $     rbh=.5d0+1.d0/sqrt(12.d0),rbl=1.d0/6.d0/rbh
 
       contains
 
@@ -124,7 +124,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb1,fb2,mfring,enarad,fringe,eps0)
-      use tbendcom, only:tbrot
+      use tbendcom, only:tbrot,tbshift
       use bendib
       use tfstk
       use ffs_flag
@@ -143,7 +143,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      $     af,f,fpx,ff,akn,aln,phin,f1r,f2r,
      $     dxfr2,dyfr2,dyfra2,dtheta,cphin,sphin
       logical*4 enarad,fringe,krad
-      include 'inc/TENT.inc'
+      call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,.true.)
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
       endif
@@ -272,6 +272,7 @@ c            dp=g(i)*(2.d0+g(i))
         ff  =af*yi*f*.5d0
         x(i)=xi-ff
         z(i)=zi+ff*fpx
+c        write(*,'(a,1p6g15.7)')'tbendi-2 ',zi,z(i),xi,x(i),ff,fpx
       enddo
       if(photons)then
         call tsetphotongeo(aln,phin,theta,.false.)
@@ -304,6 +305,6 @@ c     $       f1r,f2r,al,al,-1.d0)
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
       endif
-      include 'inc/TEXIT.inc'
+      call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint,.false.)
       return
       end

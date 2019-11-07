@@ -334,20 +334,19 @@ c
       module tfcsi
         use tfcbk, only:maxlbuf
         implicit none
-        integer*4, parameter :: nbmax=maxlbuf,nsav=6,ipbase=1
+        integer*4, parameter :: nbmax=maxlbuf,nsav=5,ipbase=1
         type csiparam
           sequence
           integer*4 isav(1:0)
-          integer*4 lfni,linep,lfn1,lfno,ios
-          logical*4 rec
+          integer*4 lfni,lfn1,lfno,ios
+          logical*4 rep
         end type
         type (csiparam) , target :: savep
         character*16 delim,cmnt
         integer*8 ibcloc
         integer*4, pointer:: ipoint,lrecl,lfni=>savep%lfni,
-     $       linep=>savep%linep,lfn1=>savep%lfn1,lfno=>savep%lfno,
-     $       ios=>savep%ios
-        logical*4 , pointer :: rec=>savep%rec
+     $       lfn1=>savep%lfn1,lfno=>savep%lfno,ios=>savep%ios
+        logical*4 , pointer :: rep=>savep%rep
         integer*4 iconv,ldel,lcmnt,lastln,ibegt,lastt
         character*(nbmax) , target  :: buffer0
         character*(nbmax) , pointer :: buffer
@@ -395,21 +394,6 @@ c
         return
         end subroutine
 
-        subroutine cssetrec(f)
-        implicit none
-        logical*4 f
-        rec=f
-        return
-        end subroutine
-
-        subroutine cssetlinep(ip)
-        implicit none
-        integer*4 ip
-c        write(*,*)'setlinep ',ip,linep,lrecl
-        linep=ip
-        return
-        end subroutine
-
         integer*4 function icsmrk()
         implicit none
         icsmrk=ipoint
@@ -443,18 +427,6 @@ c        write(*,*)'setlinep ',ip,linep,lrecl
         integer*4 function icslfn1()
         implicit none
         icslfn1=lfn1
-        return
-        end function
-
-        integer*4 function icslinep()
-        implicit none
-        icslinep=linep
-        return
-        end function
-
-        logical*4 function csrec()
-        implicit none
-        csrec=rec
         return
         end function
 
@@ -561,15 +533,16 @@ c
       return
       end subroutine
 
-      subroutine trbopen(lfn,ib,is,nc)
+      subroutine trbopen(lfn,ib,is,ifd)
       implicit none
       integer*8, intent(in) :: ib,is
-      integer*4, intent(out):: lfn,nc
+      integer*4, intent(in) :: ifd
+      integer*4, intent(out):: lfn
       integer*4 j
       do j=nbuf,11,-1
         if(itbuf(j) .eq. modeclose)then
           lfn=j
-          call irbopen1(lfn,ib,is,nc)
+          call irbopen1(lfn,ib,is,ifd)
           return
         endif
       enddo
@@ -667,6 +640,30 @@ c
       return
       end
 
+      subroutine trbopenmap(str,kx,irtc)
+      use tfstk
+      implicit none
+      character*(*) , intent(in)::str
+      integer*4 , intent(out)::irtc
+      type (sad_descriptor) , intent(out)::kx
+      integer*8 kfile,ksize,mapallocfile,kfromr
+      integer*4 lfn,ifd
+      kfile=mapallocfile(str,ifd,ksize,irtc)
+      if(irtc .eq. 0)then
+        call trbopen(lfn,kfile/8,ksize+modemapped,ifd)
+        kx%k=kfromr(dble(lfn))
+      else
+        kx%k=kfromr(-1.d0)
+      endif
+      return
+      end subroutine
+
+      end module
+
+      module ffsfile
+        integer*4 , parameter :: maxlfn=128
+        integer*4 :: lfnp=0,lfnbase=0
+        integer*4 lfnstk(maxlfn)
       end module
 
       module trackbypass
@@ -684,6 +681,7 @@ c
       use macfile
       use macmisc
       use tfstk, only:tfinitstk
+      use ffsfile, only:lfnbase
       implicit none
       integer*8 argp
       integer*4 jslen,jttype,jival
@@ -696,7 +694,7 @@ c
       if (IgetGL('$CTIME$',idummy) .eq. FLAGON) call cputix
       call gettok(token,slen,ttype,rval,ival)
 c     for debug
-c       print *,'toplvl-0 ',token(:slen),slen,ttype
+c       print *,'toplvl-0 ',token(:slen),slen,infl,ttype,ttypEF
 c     end debug
 c
  1100 continue
@@ -764,10 +762,10 @@ c     end debug
       go to 1000
 c
  9000 continue
-      if(itbuf(infl) .ne. 0)then
+      if(itbuf(infl) .ne. 0 .or. lfnbase .gt. 1)then
         return
       endif
-      print *," SAD1 reads EOF."
+c      print *," SAD1 reads EOF."
       call errmsg("main","Stop execution.(READ EOF)" ,0,0)
 c
       stop

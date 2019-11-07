@@ -16,9 +16,11 @@
       use tparastat
       use temw, only:nparams
       use tfrbuf
+      use ffsfile
+      use radint
       implicit none
       type (sad_comp), pointer :: cmp
-      integer*4 maxrpt,maxlfn,hsrchz
+      integer*4 maxrpt,hsrchz
       integer*8 kffs,k,kx,itwisso,
      $     ifvalvar2,iparams,kax,iutwiss
       integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,
@@ -32,24 +34,20 @@
      $     trval,rese,v,wa,wd,wl,xa,ya,xxa,xya,yya,getva,rgetgl1,
      $     wp,getvad,tgetgcut
       parameter (rmax=1.d35)
-      parameter (maxrpt=32,maxlfn=128)
+      parameter (maxrpt=32)
       character*256 word,wordp,title,case,tfgetstrv,tfgetstrs,tfgetstr
       character*(MAXPNAME) ename
       character*(MAXPNAME+8) name
       character*16 autofg
       character*20 str
-      integer*4 irtcffs,irtc,nc
-      integer*4 lfnstk(maxlfn),lfret(maxlfn),
-     $     lfrecl(maxlfn),lflinep(maxlfn),nrpt(maxrpt),
+      integer*4 irtcffs,irtc,nc,nrpt(maxrpt),
      $     irptp(maxrpt),df(maxcond)
       real*8 chi0(3),trdtbl(3,6),rfromk
       logical*4 err,new,cmd,open98,abbrev,ftest,
      $     frefix,exist,init,trpt0,expnd,chguse,visit,
      $     byeall,expndc,tfvcomp,tffsinitialcond,
      $     geocal0,busy
-      logical*4 lfopen(maxlfn)
-      save lfnstk,lfret,lfrecl,lfopen,open98,exist,init,
-     $     nmon,nster
+      save open98,exist,init,nmon,nster
       save busy
       data busy /.false./
       itwisso(kk,i,j)=iftwis+kk+nlat*(i+ndim+(j-1)*ndima)-1
@@ -145,27 +143,18 @@ c
           call tfsetsymbolr('ExponentOfResidual',18,2.d0)
           lfnp=1
           lfnstk(1)=5
-          lfopen(1)=.false.
-          lfret(1)=0
-          lfrecl(1)=1
-          lflinep(1)=1
           itbuf(5)=moderead
           call trbreset(5)
           if(infl .ne. 5)then
             lfnp=2
             call trbnextl(infl)
             lfnstk(2)=infl
-            lfret(2)=0
-            lfrecl(2)=lbuf(infl)
-            lflinep(2)=lbuf(infl)
           endif
         else
         endif
       else
         lfnp=lfnb
         lfnstk(lfnp)=lfn
-        lfrecl(lfnp)=lbuf(lfnp)
-        lflinep(lfnp)=lbuf(lfnp)
       endif
       iffserr=0
       if(chguse)then
@@ -175,14 +164,11 @@ c
       endif
       levelr=0
       iflevel=0
-      lfret(lfnp)=0
-      lfopen(lfnp)=.false.
       if(lfni .ne. lfnstk(lfnp))then
         lfni=lfnstk(lfnp)
         call trbassign(lfni)
       endif
       lfno=outfl
-c      write(*,*)'tffsa ',lfnp,lfni,lfno
  2    if(lfnb .eq. 1)then
         if(lfni .ne. 5)then
           lfn1=lfno
@@ -210,8 +196,7 @@ c      endif
       endif
       if(ios .gt. 0)then
         ios=0
-        call tfclose(lfnp,lfnp,lfnstk,lfopen,lfret,lfrecl,
-     $       lflinep,maxlfn,lfni,lfnb)
+        call tfclose(lfnp,lfnb)
         if(lfnp .lt. lfnb)then
           go to 9000
         endif
@@ -227,7 +212,7 @@ c      endif
       elseif(ios .lt. 0)then
         ios=0
       endif
-c      if(lfni .gt. 100)then
+c      if(lfni .eq. 5)then
 c        write(*,*)'tffsa-getwrd-0 ',lfni,ipoint,lrecl
 c      endif
       call getwrd(word)
@@ -276,8 +261,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
         endif
         ios=0
  4010   if(levelr .eq. 0)then
-          linep=lrecl
-          rec=.false.
+          rep=.false.
         endif
         go to 10
       elseif(abbrev(word,'REP_EAT','_'))then
@@ -288,7 +272,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
         endif
         nrpt(levelr)=max(1,nrpt1)
         irptp(levelr)=ipoint
-        rec=.true.
+        rep=.true.
         go to 10
       endif
       call tfif(word,iflevel,lfno,exist)
@@ -318,8 +302,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
       elseif(new)then
         go to 12
       endif
-      call tffile(word,lfnstk,lfopen,lfret,lfnb,lfrecl,
-     $     maxlfn,init,exist)
+      call tffile(word,lfnb,init,exist)
       if(lfnp .lt. lfnb)then
         go to 9000
       endif
@@ -608,7 +591,7 @@ ckikuchi ... next 5 lines added     (8/17/'90)
      $       rlist(itwisso(1,i,6)),lfno)
       elseif(word .eq. 'RADINT')then
         call tfsetparam
-        call intgrl( latt,twiss,0,1.d0,lfno)
+        call intgrl(lfno)
       elseif(abbrev(word,'REF_ERENCE','_'))then
         call tfsetref
       elseif(word .eq. 'DIMAD')then

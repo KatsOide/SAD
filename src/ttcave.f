@@ -16,7 +16,7 @@
      $       .true.,.false.,irad)
       endif
       call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,theta,0.d0,0.d0,.true.)
+     $     dx,dy,theta,0.d0,0.d0,.true.)
       if(harm .eq. 0.d0)then
         w=pi2*freq/c
       else
@@ -63,7 +63,7 @@ c      p2=sqrt((h2-1.d0)*(h2+1.d0))
       cod(2)=cod(2)-ak*sinp
       call tesetdv(cod(6))
       call tchge(trans,cod,beam,srot,
-     $     dx, dy,-theta,0.d0,0.d0,.false.)
+     $     -dx,-dy,-theta,0.d0,0.d0,.false.)
       if(al .ne. 0.d0)then
         call tdrife(trans,cod,beam,srot,al*.5d0,0.d0,0.d0,0.d0,0.d0,
      $       .true.,.false.,irad)

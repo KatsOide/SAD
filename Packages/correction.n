@@ -47,7 +47,7 @@ CorrectOrbit[orbitkind_,mon_,str_,opt_,options___]:=
       If[ etre ,
         $CorSV["use",kind,mid,sid]=$CorSV["use",kind,mid,sid]+10;
         x0=If[c=={},Table[0,{Length[a[[1]]]}],LinearSolve[ c[[1]],c[[2]] ]];
-       (*x=Dot[$CorSV[kind,mid,sid],b-a.x0]+x0*)
+        (*x=Dot[$CorSV[kind,mid,sid],b-a.x0]+x0*)
         {u,wi,v}=$CorSV[kind,mid,sid];
         wm=Max[wi]*Threshold;
         ncut=ThresholdExponent/.op;
@@ -85,14 +85,14 @@ CorrectOrbit[orbitkind_,mon_,str_,opt_,options___]:=
 !           ];
 !         yc=goldmin[Round[{1-#,#}.{1,Length[x]}&/@{.125,.25}],{1,Length[x]},Length[x],{Infinity,1}][[2]];
 !         ycut=xx[[yc]]/Max[Abs[x]] *)
-        ];
+            ];
         Print["ycut=",ycut];
         If[ycut<=>0,
           xm=Max[Abs[x]]*ycut;
           x=If[Abs[#]<xm,0,#]&/@x];
         x=wi*x;
         x=Transpose[v].x+x0
-      , (*Print["  -CorrectOrbit:new matrix: Explicit SVD"];*)
+        , (*Print["  -CorrectOrbit:new matrix: Explicit SVD"];*)
         $CorSV["use",kind,mid,sid]=100;
         $CorSV[kind,"Matrices"]=If[Head[$CorSV[kind,"Matrices"]]===$CorSV,1,$CorSV[kind,"Matrices"]+1];
         If[c=={},
@@ -104,7 +104,7 @@ CorrectOrbit[orbitkind_,mon_,str_,opt_,options___]:=
           WriteMatrixOnFile[ kind,midfile,sidfile,LINE["name",mon[[1]]],LINE["name",istr],$CorSV[kind,mid,sid]] ];
         If[$CorSV[kind,"Matrices"]>(MatricesOnMemory/.op),DeleteMatrix[kind,(MatricesOnMemory/.op)]];
         Return[CorrectOrbit[orbitkind,mon,str,opt,ResetMatrix->False,options]]
-      ];
+        ];
 
       Print["  -CorrectOrbit:Matrices on memory for "//kind//"=",$CorSV[kind,"Matrices"]];
       $CorSV["time"]=If[Head[$CorSV["time"]]===$CorSV,0,$CorSV["time"]+1];
@@ -120,7 +120,7 @@ CorrectOrbit[orbitkind_,mon_,str_,opt_,options___]:=
         Twiss[If[kind[[i]][1]=="E",kind[[i]],"D"//kind[[i]]],mon[[1,j]]]=b[[j+nx*(i-1)]]
         , {i,Length[kind]}, {j,nx} ] ];
     If[(Calc/.op)&&~(ExpectedOrbit/.op)&&FLAG["SIMULATE"], 
-      FFS["CALC"];
+      FFS["CALC NOEXP;"];
       If[FLAG["CELL"],
         If[ ~Equal[Drop[ CalculateOptics[1,LINE["LENGTH"],Twiss["*",1],FLAG["CELL"],2][[2]], -1],{1,1}],
           Message[Corr::unstable] ]  ]
@@ -322,7 +322,7 @@ ResponseMatrixG[mon_,str_,opt_,periodic_,kind_,tune_:{0,0},options___]:=Module[
       If[Depth[opt]<>5,
         Message[ResponseMatrixG::optdata];Break[]
       ];
-      el=Sort[Thread[{Part[opt,{1,2,3},1,1,20],{1,2,3}}]];
+      el=Sort[Thread[{Part[opt,{1,2,3},1,1,21],{1,2,3}}]];
       (ResponseMatrix[mon,str[[1]],str[[2]],opt[[ el[[3,2]] ]],
         FLAG["CELL"],k[[i]][2,-1],tune]-
           ResponseMatrix[mon,str[[1]],str[[2]],opt[[ el[[1,2]] ]],
@@ -345,7 +345,7 @@ ResponseMatrixG[mon_,str_,opt_,periodic_,kind_,tune_:{0,0},options___]:=Module[
         aa=ResponseMatrix[mon,str[[1]],str[[2]],Optik[opt],FLAG["CELL"],k[[i]],tune]-
           Outer[Times,em,ee]/(LINE["s","$$$"]*$CorAlpha);
         aa=MapThread[(#1+#2*str[[3]])&,{aa,em/(2*Pi)}],
-        Print["RMG ",{i,k[[i]],tune}];
+!        Print["RMG ",{i,k[[i]],tune}];
         aa=ResponseMatrix[mon,str[[1]],str[[2]],Optik[opt],FLAG["CELL"],k[[i]],tune]      ];
       If[MomentumCorrection/.op,MapThread[Append[#1,#2]&,{aa,em}],aa]
      ] ], {i,Length[k]}];
@@ -473,7 +473,7 @@ CanonicalPartner[x_]:=Switch[x[1],"P",x[2,-1],"E","E"//CanonicalPartner[x[2,-1]]
 
 Optik[opt_,a___]:=Module[{el},
   If[Depth[opt]==5,
-    el=Sort[Thread[{Part[opt,{1,2,3},1,1,20],{1,2,3}}]];
+    el=Sort[Thread[{Part[opt,{1,2,3},1,1,21],{1,2,3}}]];
     opt[[ el[[2,2]],a ]]
   , opt[[a]]
   ]

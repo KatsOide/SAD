@@ -168,14 +168,14 @@ c      write(*,*)'pgrmat-9.3 '
      $     tx,tpx,ty,tpy,axj,bxj,dphix,ayj,byj,dphiy,phx,phy,
      $     sx,cx,sy,cy,sg,v,x,px,y,py,detr,detri
 
-      axi=twsi(1)
-      bxi=twsi(2)
-      ayi=twsi(4)
-      byi=twsi(5)
-      ri11=twsi(11)
-      ri12=twsi(12)
-      ri21=twsi(13)
-      ri22=twsi(14)
+      axi=twsi(mfitax)
+      bxi=twsi(mfitbx)
+      ayi=twsi(mfitay)
+      byi=twsi(mfitby)
+      ri11=twsi(mfitr1)
+      ri12=twsi(mfitr2)
+      ri21=twsi(mfitr3)
+      ri22=twsi(mfitr4)
       detri=twsi(mfitdetr)
 
       if(.not.periodic) go to 199

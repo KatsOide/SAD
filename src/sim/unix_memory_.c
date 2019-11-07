@@ -476,7 +476,6 @@ integer8 mapallocfile_(char *fname, int *fd, integer8 *size, integer4 *irtc) {
   rpath = realpath(expt,NULL);
   free(expt);
 
-
   if((*fd = open(rpath, O_RDONLY)) < 0)
     {free(rpath);
      *irtc=1;

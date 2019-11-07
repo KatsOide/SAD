@@ -27,10 +27,10 @@
       enddo
       call tprmpt(lfni,lfno,lfn1)
       if(unmapped)then
-        if(.not. rec)then
-          lrecl0=linep+1
-        else
+        if(rep)then
           lrecl0=lrecl+1
+        else
+          lrecl0=1
         endif
         ipoint=lrecl0
         lrecl0=max(lrecl0,1)

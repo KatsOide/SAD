@@ -5,7 +5,7 @@
       use tspin
       implicit none
       logical*4 tbinit
-      real*8 als,al,b1,b,aind,trans1(6,13),cx,cy,
+      real*8 al,b1,b,aind,trans1(6,13),cx,cy,
      $     drhopp,akxsqp,dcxp,sxkxp,dcyp,sykyp,phixp,phiyp,
      $     akysqp,dcxkxp,aksxp,aksyp,xsxkxp
 
@@ -133,27 +133,15 @@
       end subroutine
 
       subroutine tbendebody(trans,cod,beam,srot,al,phin,
-     $     ak1,bsi1,bsi2,enarad)
+     $     ak1,alr,bsi1,bsi2,enarad)
       use tmacro
       implicit none
-      real*8, intent(in):: ak1,al,bsi1,bsi2
+      real*8, intent(in):: ak1,al,bsi1,bsi2,alr
       real*8 trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 pxf,xf,phin,dxpx,
      $     dxf,dpxf,dyf,dpyf,hi,hip,pyf,yf,zf,
      $     xiksq
       logical*4 enarad
-c      if(enarad)then
-c        dpini=cod(6)
-c        xr=cod(1)/rho0
-c        xe=xi+xi*xr*(.5d0-xr*(2.d0-xr)/12.d0)
-c        dxe=1.d0+xr*(1.d0-xr*(.5d0-xr/3.d0))
-c        bx=b1*cod(3)
-c        by=b+b1*xe
-c        bxy=b1*dxe
-c        call trade(trans,beam,cod,bx,by,0.d0,0.d0,
-c     $       0.d0,bxy,0.d0,fal,alnr,als,ala,fb1,fb2,prev,next)
-c        tbinit=tbinit .or. cod(6) .ne. dpini
-c      endif
       dp=cod(6)
       p=1.d0+dp
       xi=cod(1)
@@ -164,10 +152,6 @@ c      endif
       if(tbinit)then
         call tbendeinit(ak1,al)
       endif
-c      dxf =(drhopak+xi)*dcx+aksx/akxsq*pxi
-c      dpxf= aksx*(drhopak+xi)+pxi*dcx
-c      dyf = dcy*yi+aksy/akysq*pyi
-c      dpyf=aksy*yi+dcy*pyi
       xiksq=drhop+akxsq*xi
       dxf = dcxkx*xiksq+sxkx*pxi
       dpxf= sxkx*xiksq +dcx*pxi
@@ -225,20 +209,20 @@ c     $     sxkxp,dcxkxp
       if(enarad)then
         bsi=bsi+bsi1*(yi/rhob+ak1*xi*yi)
      $       -bsi2*(yf/rhob+ak1*xf*yf)
-        call tradke(trans,cod,beam,srot,al,phin,0.d0)
+        call tradke(trans,cod,beam,srot,alr,phin,0.d0)
         tbinit=.true.
       endif
       return
       end subroutine
 
       subroutine tbendebody0(trans,cod,beam,srot,aln,
-     $     phi0n,snphi0,sinsq0,csphi0,
+     $     phi0n,snphi0,sinsq0,csphi0,alr,
      $     bsi1,bsi2,enarad)
       use tmacro
       use temw
       use mathfun
       implicit none
-      real*8, intent(in):: phi0n,snphi0,sinsq0,csphi0,aln,bsi1,bsi2
+      real*8, intent(in):: phi0n,snphi0,sinsq0,csphi0,aln,bsi1,bsi2,alr
       real*8 trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 xi,pxi,yi,pyi,dp,pr,rhoe,
      $     dpzinv,phsq,dtn,s,dpz1,pz1,drho,dpx,pxf,
@@ -308,7 +292,7 @@ c     $     sxkxp,dcxkxp
       cod(5)=cod(5)-phi0n*(dp*rhob+drhob)+da*rhoe-dvemit*aln
       if(enarad)then
         bsi=bsi+bsi1*yi/rhob-bsi2*cod(3)/rhob
-        call tradke(trans,cod,beam,srot,aln,phi0n,0.d0)
+        call tradke(trans,cod,beam,srot,alr,phi0n,0.d0)
       endif
       return
       end subroutine
@@ -335,6 +319,45 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
       return
       end
 
+      subroutine tbendef1(trans,cod,beam,srot,al0,phi0,fb,rb0,enarad)
+      implicit none
+      real*8 , intent(inout)::trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 , intent(in)::al0,phi0,rb0,fb
+      logical*4 , intent(in)::enarad
+      real*8 phib1,csphib1,snphib1,sinsq1,bsi1,bsi2,rb,fl
+      integer*4 i
+      logical*4 en
+      rb=rb0
+      bsi2=0.d0
+      if(rb .lt. .5d0)then
+        bsi1=1.d0
+      else
+        bsi1=0.d0
+      endif
+      en=enarad
+      do i=1,2
+        fl=0.5d0*fb*rb
+        phib1=phi0*fl/al0
+        csphib1=cos(phib1)
+        snphib1=sin(phib1)
+        if(csphib1 .ge. 0.d0)then
+          sinsq1=snphib1**2/(1.d0+csphib1)
+        else
+          sinsq1=1.d0-csphib1
+        endif
+        call tbendebody0(trans,cod,beam,srot,fl,
+     $     phib1,snphib1,sinsq1,csphib1,.5d0*fb,bsi1,bsi2,
+     $     en)
+        rb=1.d0/6.d0/rb
+        bsi1=0.d0
+        if(rb .lt. .5d0)then
+          bsi2=1.d0
+          en=.false.
+        endif
+      enddo
+      return
+      end subroutine
+
       end module
 
       subroutine tbende(trans,cod,beam,srot,al0,phib,phi0,
@@ -348,13 +371,14 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
       use multa, only:nmult
       use temw
       implicit none
-      integer*4 mfring,ndiv,nrad,n,l
+      integer*4 mfring,ndiv,nrad,n,l,n1,n2
       real*8 al0,phib,phi0,psi1,psi2,ak,dx,dy,theta,dtheta,
-     $     fb1,fb2,eps0,phibl,bsi2,
-     $     dxfr1,dyfr1,dxfr2,dyfr2,
-     $     eps,f1r,f2r,akn,tanp1,tanp2,f,
+     $     fb1,fb2,eps0,phibl,bsi1,bsi2,alx,alr,
+     $     dxfr1,dyfr1,dxfr2,dyfr2,phi1,
+     $     eps,akn,tanp1,tanp2,f,
      $     dyfra1,dyfra2,apsi1,apsi2,cod11,
-     $     csphin,snphin,sinsqn,phin,aln
+     $     csphin,snphin,sinsqn,phin,aln,alx0,akx0,
+     $     rbc,akc,alc,phic,rb1,rb2
       real*8 trans(6,12),cod(6),beam(42),srot(3,9)
       complex*16 akm(0:nmult)
       logical*4 enarad,alcorr,fringe,next,prev
@@ -391,19 +415,18 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
         return
       elseif(phib .eq. 0.d0)then
         call tchge(trans,cod,beam,srot,
-     $       -dx,-dy,theta,dtheta,phi0,.true.)
+     $       dx,dy,theta,dtheta,phi0,.true.)
         call tbdrifte(trans,cod,beam,srot,al,phi0,h0,h1emit,dvemit,
      $       irad)
         call tchge(trans,cod,beam,srot,
-     $       dx,dy,-theta,-dtheta,-phi0,.false.)
+     $       -dx,-dy,-theta,-dtheta,-phi0,.false.)
         return
       elseif(al .eq. 0.d0)then
         call tbthie(trans,cod,beam,srot,phib,phi0,dx,dy,theta,dtheta)
         return
       endif
       call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,theta,dtheta,phi0,.true.)
-c      write(*,'(a,1p6g15.7)')'tbende-1 ',trans(1,6),trans(2,6)
+     $     dx,dy,theta,dtheta,phi0,.true.)
       if(enarad)then
         call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
       endif
@@ -411,7 +434,8 @@ c      write(*,'(a,1p6g15.7)')'tbende-1 ',trans(1,6),trans(2,6)
       rhob=1.d0/phibl
       rho0=al/phi0
       prev=bradprev .ne. 0.d0
-      f1r=0.d0
+      rb1=0.d0
+      rb2=0.d0
       if(fb1 .ne. 0.d0)then
         if(mfring .gt. 0 .or. mfring .eq. -1)then
           dxfr1=fb1**2*phibl/24.d0
@@ -422,15 +446,15 @@ c      write(*,'(a,1p6g15.7)')'tbende-1 ',trans(1,6),trans(2,6)
             dyfra1=0.d0
           endif
           call tblfre(trans,cod,beam,dxfr1,dyfr1,dyfra1)
-          f1r=fb1
+          rb1=0.5d0*fb1/al0
         endif
       endif
       if(fb2 .ne. 0.d0 .and.
      $       mfring .gt. 0 .or. mfring .eq. -2)then
-        f2r=fb2
-      else
-        f2r=0.d0
+        rb2=0.5d0*fb2/al0
       endif
+      rbc=1.d0-rb1-rb2
+      phic=phi0*rbc
       if(eps0 .eq. 0.d0)then
         eps=epsbend
       else
@@ -443,17 +467,12 @@ c      write(*,'(a,1p6g15.7)')'tbende-1 ',trans(1,6),trans(2,6)
       if(ak .eq. 0.d0)then
         ndiv=1
       else
-        ndiv=1+int(abs(phi0/eps))
+        ndiv=1+int(abs(phic/eps))
       endif
       if(enarad)then
-        nrad=int(abs(al/epsrad*crad*(h0*b)**2))
+        nrad=int(abs(al0*rbc/epsrad*crad*(h0*b)**2))
         ndiv=max(ndiv,int(nrad*emidiv*emidib),
      1       int(abs(phib*h0*anrad)/epsrad/1.d6*emidiv*emidib))
-        if(ndiv .eq. 1)then
-          bsi2=1.d0
-        else
-          bsi2=0.d0
-        endif
       endif
       trans1(1,3)=0.d0
       trans1(1,4)=0.d0
@@ -484,18 +503,19 @@ c      else
 c        call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
 c      endif
       cod11=cod(1)
-      akn=ak/ndiv
-      aln=al/ndiv
-      phin=phi0/ndiv
-      als=0.d0
-      csphin=cos(phin)
-      snphin=sin(phin)
+      akc=ak*rbc
+      alc=al*rbc
+      akn=akc/ndiv
+      aln=alc/ndiv
+      phin=phic/ndiv
+c      write(*,'(a,i5,1p8g15.7)')'tbende ',ndiv,
+c     $     rb1,rb2,al0,alc,aln,phin,ak
       if(ak .eq. 0.d0)then
         trans1(3,3)=1.d0
         trans1(4,3)=0.d0
         trans1(4,4)=1.d0
         trans1(4,6)=0.d0
-        trans1(5,3)=0.d0
+        trans1(5,3)=0.d0        
         csphin=cos(phin)
         snphin=sin(phin)
         if(csphin .ge. 0.d0)then
@@ -503,92 +523,104 @@ c      endif
         else
           sinsqn=1.d0-csphin
         endif
-        call tbendebody0(trans,cod,beam,srot,aln,
-     $       phin,snphin,sinsqn,csphin,1.d0,bsi2,
-     $       enarad .and. ndiv .ne. 1)
+        bsi1=1.d0
         bsi2=0.d0
-        als=als+aln
-        do n=2,ndiv
-          if(n .eq. ndiv)then
-            bsi2=1.d0
+        n1=1
+        n2=ndiv
+        if(rb1 .ne. 0.d0)then
+          n1=0
+        endif
+        if(rb2 .ne. 0.d0)then
+          n2=ndiv+1
+        endif
+        do n=n1,n2
+          if(n .eq. 0)then
+            call tbendef1(trans,cod,beam,srot,al0,phi0,fb1,rbl,enarad)
+          elseif(n .eq. ndiv+1)then
+            call tbendef1(trans,cod,beam,srot,al0,phi0,fb2,rbh,enarad)
+            alr=.5d0*fb2
+            phi1=alr*rbl/al0*phi0
+          else
+            if(n .eq. n2)then
+              bsi2=1.d0
+            endif
+            call tbendebody0(trans,cod,beam,srot,aln,
+     $           phin,snphin,sinsqn,csphin,aln,bsi1,bsi2,
+     $           enarad .and. n .ne. n2)
+            alr=aln
+            phi1=phin
           endif
-          call tbendebody0(trans,cod,beam,srot,aln,
-     $         phin,snphin,sinsqn,csphin,0.d0,bsi2,
-     $         enarad .and. n .ne. ndiv)
-          als=als+aln
+          bsi1=0.d0
         enddo
-c        if(enarad)then
-c          if(fb2 .ne. 0.d0 .and.
-c     $         mfring .gt. 0 .or. mfring .eq. -2)then
-c            f1r=fb2
-c          else
-c            f1r=0.d0
-c          endif
-c          call trade(trans,beam,cod,0.d0,b,0.d0,0.d0,
-c     $         0.d0,0.d0,0.d0,
-c     $         f*aln*.5d0-tanp2,aln*.5d0,al,al,f1r,f2r,prev,next)
-c          call tradke(trans,cod,beam,dlrad,0.d0)
-c        endif
       else
         tbinit=.true.
-        call tbendecorr(trans,cod,beam,akn*.5d0,aln*.5d0)
-        call tbendebody(trans,cod,beam,srot,aln,phin,
-     $       akn,1.d0,bsi2,
-     $       enarad .and. ndiv .ne. 1)
-        als=als+aln
+        n1=1
+        n2=ndiv
+        if(rb1 .ne. 0.d0)then
+          n1=-1
+        endif
+        if(rb2 .ne. 0.d0)then
+          n2=ndiv+2
+        endif
+        alx0=0.d0
+        akx0=0.d0
+        bsi1=1.d0
         bsi2=0.d0
-        do n=2,ndiv
-          if(n .eq. ndiv)then
+        do n=n1,n2
+          alx=aln
+          alr=aln
+          if(n .eq. -1)then
+            alx=.5d0*rbl*fb1
+            alr=.5d0*fb1
+          elseif(n .eq. 0)then
+            alx=.5d0*rbh*fb1
+            alr=.5d0*fb1
+          elseif(n .eq. ndiv+1)then
+            alx=.5d0*rbh*fb2
+            alr=.5d0*fb2
+          elseif(n .eq. ndiv+2)then
+            alx=.5d0*rbl*fb2
+            alr=.5d0*fb2
+          endif
+          akx=ak*alx/al0
+          phi1=phi0*alx/al0
+          call tbendecorr(trans,cod,beam,
+     $         (akx+akx0)*.5d0,(alx+alx0)*.5d0)
+          akx0=akx
+          alx0=alx
+          if(n .eq. n2)then
             bsi2=1.d0
           endif
-          call tbendecorr(trans,cod,beam,akn,aln)
-          call tbendebody(trans,cod,beam,srot,aln,phin,
-     $         akn,0.d0,bsi2,
-     $         enarad .and. n .ne. ndiv)
-          als=als+aln
+          call tbendebody(trans,cod,beam,srot,alx,phi1,
+     $         akx,alr,bsi1,bsi2,
+     $         enarad .and. n .ne. n2)
+          if(n .le. 0 .or. n .ge. ndiv)then
+            tbinit=.true.
+          endif
+          bsi1=0.d0
         enddo
-        call tbendecorr(trans,cod,beam,akn*.5d0,aln*.5d0)
-c        if(enarad)then
-c          xf=cod(1)
-c          xfr=xf/rho0
-c          dxe=1.d0+xfr*(1.d0-xfr*(.5d0-xfr/3.d0))
-c          xe=xf+xf*xfr*(.5d0-xfr*(2.d0-xfr)/12.d0)
-c          bx=b1*cod(3)
-c          by=b+b1*xe
-c          bxy=b1*dxe
-c          call trade(trans,beam,cod,bx,by,0.d0,0.d0,
-c     $         0.d0,bxy,0.d0,
-c     $         f*aln*.5d0-tanp2,aln*.5d0,al,al,f1r,f2r,prev,next)
-c        endif
+        call tbendecorr(trans,cod,beam,akx0*.5d0,alx0*.5d0)
       endif
       if(.not. next)then
         bradprev=0.d0
       endif
       call tbedge(trans,cod,beam,al,phib,psi2*phi0+apsi2,.false.)
-      if(fb2 .ne. 0.d0)then
-        if(mfring .gt. 0 .or. mfring .eq. -2)then
-          dxfr2=-fb2**2/rhob/24.d0
-          dyfr2=fb2/rhob**2/6.d0
-          if(fringe)then
-            dyfra2=4.d0*dyfr2/fb2**2
-          else
-            dyfra2=0.d0
-          endif
-          call tblfre(trans,cod,beam,dxfr2,dyfr2,dyfra2)
+      if(rb2 .ne. 0.d0)then
+        dxfr2=-fb2**2/rhob/24.d0
+        dyfr2=fb2/rhob**2/6.d0
+        if(fringe)then
+          dyfra2=4.d0*dyfr2/fb2**2
+        else
+          dyfra2=0.d0
         endif
+        call tblfre(trans,cod,beam,dxfr2,dyfr2,dyfra2)
       endif
-c      if(dtheta .ne. 0.d0)then
-c        cod(2)=cod(2)+dphix
-c        cod(4)=cod(4)+dphiy
-c      endif
-c      write(*,'(a,1p6g15.7)')'tbende-8 ',cod
       if(enarad)then
-        call tradke(trans,cod,beam,srot,aln,phin,0.d0)
+c        write(*,*)'tbende-radke ',alr,phi1
+        call tradke(trans,cod,beam,srot,alr,phi1,0.d0)
       endif
-c      write(*,'(a,1p6g15.7)')'tbende-8 ',trans(1,6),trans(2,6)
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,-theta,-dtheta,-phi0,.false.)
-c      write(*,'(a,1p6g15.7)')'tbende-9 ',trans(1,6),trans(2,6)
+     $     -dx,-dy,-theta,-dtheta,-phi0,.false.)
       return
       end
 
@@ -717,7 +749,7 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       real*8 trans(6,12),cod(6),beam(42),phib,phi0,dx,dy,theta,
      $     trans1(6,13),dtheta,srot(3,9)
       call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,theta,dtheta,phi0,.true.)
+     $     dx,dy,theta,dtheta,phi0,.true.)
       call tinitr(trans1)
       trans1(2,6)=phi0
       trans1(5,1)=-phi0
@@ -726,6 +758,6 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       cod(2)=cod(2)+(phi0-phib)+cod(6)*phi0
       cod(5)=cod(5)-phi0*cod(1)
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,-theta,-dtheta,-phi0,.false.)
+     $     -dx,-dy,-theta,-dtheta,-phi0,.false.)
       return
       end

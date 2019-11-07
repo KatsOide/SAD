@@ -312,6 +312,7 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       cod(2)=pxi*cosp+pzi*sinp
       cod(3)=cod(3)+pyi/pzi*sx
       cod(5)=cod(5)-pr/pzi*sx
+c      write(*,'(a,1p6g15.7)')'tbed ',psi,cod(5),-pr/pzi*sx
       phsq=pzi**2+pxi**2
       trans(1,1)=1.d0/f
       trans(1,2)=phsq*sxa

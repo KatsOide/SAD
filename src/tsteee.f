@@ -2,6 +2,7 @@
      $     apsi1,apsi2,fb1,fb2,mfring,fringe,next)
       use ffs_flag
       use tmacro
+      use bendib, only:rbh,rbl
       use temw, only:tsetr0
       use tspin, only:tradke      
       use mathfun
@@ -11,15 +12,15 @@
       parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
      1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
      1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
-      integer*4 mfring,nrad,ndiv,n
+      integer*4 mfring,nrad,ndiv,n,n1,n2
       real*8 trans(6,12),cod(6),beam(42),srot(3,9),
      $     al,phib,dx,dy,theta,
-     $     fb1,fb2,f2r,rhob,
+     $     fb1,fb2,rhob,rb1,rb2,rbc,alc,phic,alx,alr,
      $     dxfr1,dyfr1,
      $     dxfr2,dyfr2,
-     $     f1r,b,aln,phin,pr,pxi,pyi,rhoe,s,dpz1,
+     $     b,aln,phin,pr,pxi,pyi,rhoe,s,dpz1,
      $     pz1,dpx,pxf,d,w,u,spz,spx,phsq,dl,dpz2,pz2,
-     $     dyfra1,dyfra2,apsi1,apsi2,tanp1,tanp2,als
+     $     dyfra1,dyfra2,apsi1,apsi2,tanp1,tanp2
       real*8 trans1(6,6)
       logical*4 enarad,fringe,next,prev,krad
       if(al .eq. 0.d0)then
@@ -32,13 +33,14 @@
         return
       endif
       call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,theta,0.d0,0.d0,.true.)
+     $     dx,dy,theta,0.d0,0.d0,.true.)
       krad=enarad .and. al .ne. 0.d0
       if(krad)then
         call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
       endif
       rhob=al/phib
       prev=bradprev .ne. 0.d0
+      rbc=1.d0
       if(fb1 .ne. 0.d0 .and. (mfring .gt. 0 .or. mfring .eq. -1))then
         dxfr1=-fb1**2/rhob/24.d0
         dyfr1=fb1/rhob**2/6.d0
@@ -48,21 +50,25 @@
           dyfra1=0.d0
         endif
         call tblfre(trans,cod,beam,dxfr1,dyfr1,dyfra1)
-        f1r=fb1
+        rbc=rbc-0.5d0*fb1/al
+        n1=-1
       else
-        f1r=0.d0
+        n1=1
       endif
       if(fb2 .ne. 0.d0 .and.
      $       (mfring .gt. 0 .or. mfring .eq. -2))then
-        f2r=fb2
+        rbc=rbc-0.5d0*fb2/al
+        n2=2
       else
-        f2r=0.d0
+        n2=0
       endif
+      alc=al*rbc
+      phic=phib*rbc
       if(enarad)then
         tanp1=tan(apsi1)
         tanp2=tan(apsi2)
         b=-brhoz/rhob
-        nrad=int(abs(al/epsrad*crad*(h0*b)**2))
+        nrad=int(abs(alc/epsrad*crad*(h0*b)**2))
         ndiv=1+max(int(nrad*emidiv*emidib),
      1       int(abs(phib*h0*anrad)/epsrad/1.d6*emidiv*emidib))
 c        write(*,*)'tsteee ',ndiv,nrad,phib,b,epsrad,crad
@@ -73,27 +79,29 @@ c     begin initialize for preventing compiler warning
 c     end   initialize for preventing compiler warning
         ndiv=1
       endif
-      aln=al/ndiv
-      phin=phib/ndiv
+      aln=alc/ndiv
+      phin=phic/ndiv
       if(mfring .ne. -2)then
 c        call tbfrie(trans,cod,beam,-rhob,0.d0,.true.)
         call tbedge(trans,cod,beam,al,-phib,apsi1,.true.)
       endif
       call tinitr(trans1)
-      als=0.d0
-      do 100 n=1,ndiv
-c        if(enarad)then
-c          if(n .eq. 1)then
-c            call trade(trans,beam,cod,0.d0,b,0.d0,0.d0,
-c     $           0.d0,0.d0,0.d0,-tanp1,
-c     $           .5d0*aln,als,al,f1r,f2r,prev,next)
-c          else
-c            call trade(trans,beam,cod,0.d0,b,0.d0,0.d0,
-c     $           0.d0,0.d0,0.d0,0.d0,
-c     $           aln,als,al,f1r,f2r,prev,next)
-c          endif
-c          als=als+aln
-c        endif
+      do 100 n=n1,ndiv+n2
+        alx=aln
+        alr=aln
+        if(n .eq. -1)then
+          alx=.5d0*rbl*fb1
+          alr=.5d0*fb1
+        elseif(n .eq. 0)then
+          alx=.5d0*rbh*fb1
+          alr=.5d0*fb1
+        elseif(n .eq. ndiv+1)then
+          alx=.5d0*rbh*fb2
+          alr=.5d0*fb2
+        elseif(n .eq. ndiv+2)then
+          alx=.5d0*rbl*fb2
+          alr=.5d0*fb2
+        endif
         pr=1.d0+cod(6)
         pxi=cod(2)/pr
         pyi=cod(4)/pr
@@ -101,7 +109,7 @@ c        endif
         s=pxi**2+pyi**2
         dpz1=-s/(1.d0+sqrtl(1.d0-s))
         pz1=1.d0+dpz1
-        dpx=aln/rhoe
+        dpx=alx/rhoe
         pxf=pxi+dpx
         s=pxf**2+pyi**2
         dpz2=-s/(1.d0+sqrtl(1.d0-s))
@@ -129,24 +137,24 @@ c        endif
         spz=pz2+pz1
         spx=pxf+pxi
         phsq=(1.d0-pyi)*(1.d0+pyi)
-        trans1(1,2)=(2.d0*spz+spx*(pxf/pz2+pxi/pz1))/spz**2*aln/pr
-        trans1(1,6)=-spx/pz1/pz2/spz*aln/pr
+        trans1(1,2)=(2.d0*spz+spx*(pxf/pz2+pxi/pz1))/spz**2*alx/pr
+        trans1(1,6)=-spx/pz1/pz2/spz*alx/pr
         trans1(1,4)=-pyi*trans1(1,6)
         trans1(5,2)=trans1(1,6)
         trans1(5,6)= rhob*u/pz1/pz2
         trans1(5,4)=-pyi*trans1(5,6)
         trans1(3,2)=trans1(1,4)
-        trans1(3,4)=(aln+dl)/pr-pyi*trans1(5,4)
+        trans1(3,4)=(alx+dl)/pr-pyi*trans1(5,4)
         trans1(3,6)=trans1(5,4)
-        trans1(5,6)=trans1(5,6)-(aln+dl)/pr+h0/h1emit**3*aln
+        trans1(5,6)=trans1(5,6)-(alx+dl)/pr+h0/h1emit**3*alx
         call tmultr5(trans,trans1,irad)
         call tmulbs(beam ,trans1,.true.,.true.)
-        cod(1)=cod(1)+aln*spx/spz
+        cod(1)=cod(1)+alx*spx/spz
         cod(2)=pxf*pr
-        cod(3)=cod(3)+pyi*(aln+dl)
-        cod(5)=cod(5)-(dl+dvemit*aln)
-        if(n .ne. ndiv .and. krad)then
-          call tradke(trans,cod,beam,srot,aln,0.d0,0.d0)
+        cod(3)=cod(3)+pyi*(alx+dl)
+        cod(5)=cod(5)-(dl+dvemit*alx)
+        if(n .ne. ndiv+n2 .and. krad)then
+          call tradke(trans,cod,beam,srot,alr,0.d0,0.d0)
         endif
 100   continue
       if(.not. next)then
@@ -167,9 +175,9 @@ c        call tbfrie(trans,cod,beam, rhob,0.d0,.false.)
         call tblfre(trans,cod,beam,dxfr2,dyfr2,dyfra2)
       endif
       if(krad)then
-        call tradke(trans,cod,beam,srot,aln,0.d0,0.d0)
+        call tradke(trans,cod,beam,srot,alr,0.d0,0.d0)
       endif
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,-theta,0.d0,0.d0,.false.)
+     $     -dx,-dy,-theta,0.d0,0.d0,.false.)
       return
       end

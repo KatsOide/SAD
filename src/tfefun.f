@@ -49,7 +49,7 @@
       use tfstk
       use tfmem
       use tfshare
-      use tfcsi
+      use tfcsi,only:lfno
       use mathfun
       implicit none
       type (sad_descriptor) kx,k1,k,kh
@@ -596,7 +596,7 @@ c            write(*,*)'irtc: ',irtc
         endif
  829    if(irtc .ne. 0)then
           if(vx .eq. -2.d0)then
-            call tfaddmessage(' ',0,icslfno())
+            call tfaddmessage(' ',0,lfno)
             irtc=0
             kx%k=kxfailed
             return

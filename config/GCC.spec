@@ -171,7 +171,7 @@ SYS_CXXOPT_DYNL_PIC= -fPIC
 GCC_FOPT_GFORTRAN=	-Wall -std=gnu \
 			-Wno-unused-dummy-argument $(SYS_FOPT_GFORTRAN_CHECK)
 GCC_FOPT_G95=		-Wall -traditional
-GCC_COPT_GCC=		-Wall -std=c99     -pedantic-errors
+GCC_COPT_GCC=		-Wall -std=gnu11     -pedantic-errors
 GCC_CXXOPT_GCC=		-Wall -std=c++98   -pedantic-errors
 
 SYS_FOPT=$(GCC_FOPT_$(_USE_GNU_FORTRAN)) $(SYS_FOPT_DISABLE_BACKSLASH_ESCAPE)
@@ -195,9 +195,9 @@ SYS_FOPT+= -falign-functions=8
 # Natural alignment of Pentium is 4bytes.
 # MacOS X for Intel requires 16bytes alignment.
 ifeq ($(CPU_ARCH),i386)
-SYS_FOPT+=   -mpreferred-stack-boundary=4
-SYS_COPT+=   -mpreferred-stack-boundary=4
-SYS_CXXOPT+= -mpreferred-stack-boundary=4
+#SYS_FOPT+=   -mpreferred-stack-boundary=4
+#SYS_COPT+=   -mpreferred-stack-boundary=4
+#SYS_CXXOPT+= -mpreferred-stack-boundary=4
 endif
 
 # Use GCC plugin

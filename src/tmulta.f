@@ -6,7 +6,7 @@
       use ffs_flag, only:rad,ndivrad
       use tmacro
       use multa
-      use tbendcom, only:tbrot
+      use tbendcom, only:tbrot,tbshift
       use tspin, only:tradke
       use photontable,only:tsetphotongeo,pp
       use mathfun
@@ -20,7 +20,7 @@
      $     al,phi,psi1,psi2,bz,dx,dy,theta,eps0,fb1,fb2,
      $     dtheta,pr,cost,sint,rho0,rhob,
      $     sinp1,sinp2,cosp1,cosp2,phin,aln,cosw,sinw,sqwh,sinwp1,
-     $     eps,xi,pxi,w,r,rk(0:nmult),als,ak0r,ak1r,ak1n,
+     $     eps,w,r,rk(0:nmult),als,ak0r,ak1r,ak1n,
      $     phib,phibn,an(0:nmult+1)
       real*8 sx(np),sy(np),sz(np)
       complex*16 ak0(0:nmult),ak(0:nmult),akn(0:nmult),
@@ -66,7 +66,7 @@
       endif
       cost=cos(theta)
       sint=sin(theta)
-      include 'inc/TENT.inc'
+      call tbshift(np,x,px,y,py,z,dx,dy,phi,cost,sint,.true.)
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,phi,dtheta)
       endif
@@ -255,7 +255,7 @@
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi,-dtheta)
       endif
-      include 'inc/TEXIT.inc'
+      call tbshift(np,x,px,y,py,z,-dx,-dy,-phi,cost,-sint,.false.)
       return
       end
 
@@ -298,7 +298,7 @@
         call gkninit
       endif
       call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,theta,dtheta,phi,.true.)
+     $     dx,dy,theta,dtheta,phi,.true.)
       if(dtheta .ne. 0.d0)then
         dphix=      phi*sin(.5d0*dtheta)**2
         dphiy= .5d0*phi*sin(dtheta)
@@ -446,6 +446,6 @@ c        write(*,*)'tmultae ',dble(csr*cx1)/r,dble(csl),nmmin
         cod(4)=cod(4)+dphiy
       endif
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,-theta,-dtheta,-phi,.false.)
+     $     -dx,-dy,-theta,-dtheta,-phi,.false.)
       return
       end
