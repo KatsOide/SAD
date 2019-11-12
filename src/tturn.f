@@ -338,9 +338,12 @@ c     $              +l-1),
            ak1=ak1*rtaper
          endif
          
+c         write(*,*)'tturn-tbend ',l,
+c     $        cmp%value(p_FB1_BEND),cmp%value(p_FB2_BEND)
          call tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $        cmp%value(p_L_BEND),ak0,
      $        cmp%value(ky_ANGL_BEND),
+     $        cmp%value(p_PSI1_BEND),cmp%value(p_PSI2_BEND),
      1        cmp%value(p_COSPSI1_BEND),cmp%value(p_SINPSI1_BEND),
      1        cmp%value(p_COSPSI2_BEND),cmp%value(p_SINPSI2_BEND),
      1        ak1,

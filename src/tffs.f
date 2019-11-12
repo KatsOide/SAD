@@ -931,6 +931,7 @@
             fb1=0.d0
             fb2=0.d0
           endif
+c          write(*,*)'tpara-bend ',cmp%value(ky_FRMD_BEND),fb1,fb2
           w=phi-psi1-psi2
           if((fb1 .ne. 0.d0 .or. fb2 .ne. 0.d0) .and.
      1         al .ne. 0.d0 .and. phi .ne. 0.d0)then
@@ -940,6 +941,8 @@
           cmp%value(p_L_BEND)=al
           dtheta=cmp%value(ky_DROT_BEND)
           theta=cmp%value(ky_ROT_BEND)
+          cmp%value(p_PSI1_BEND)=psi1
+          cmp%value(p_PSI2_BEND)=psi2
           cmp%value(p_COSPSI1_BEND)=cos(psi1)
           cmp%value(p_SINPSI1_BEND)=sin(psi1)
           cmp%value(p_COSPSI2_BEND)=cos(psi2)

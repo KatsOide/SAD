@@ -159,7 +159,7 @@
       end module
 
       subroutine tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     al,phib,phi0,
+     $     al,phib,phi0,psi1,psi2,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb10,fb20,mfring,fringe,
@@ -169,7 +169,8 @@
       use tspin
       implicit none
       integer*4 np,mfring
-      real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,ak,dx,dy,theta,
+      real*8 al,phib,phi0,psi1,psi2,cosp1,sinp1,cosp2,sinp2,
+     $     ak,dx,dy,theta,
      $     cost,sint,cosw,sinw,sqwh,sinwp1,eps,
      $     fb10,fb20,dtheta
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
@@ -180,7 +181,7 @@
         bsi=0.d0
       endif
       call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,
-     $     al,phib,phi0,
+     $     al,phib,phi0,psi1,psi2,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb10,fb20,mfring,fringe,
@@ -191,7 +192,7 @@
 
       subroutine tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     px0,py0,zr0,bsi,
-     $     al,phib,phi0,
+     $     al,phib,phi0,psi1,psi2,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb10,fb20,mfring,fringe,
@@ -206,22 +207,21 @@
       use tspin
       use photontable
       implicit none
-      integer*4 np,mfring,ndiv,ndivmax,iniph
+      integer*4 np,mfring,ndiv,ndivmax,iniph,n1,n2
       parameter (ndivmax=1024)
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,ak,dx,dy,theta,
      $     cost,sint,cosw,sinw,sqwh,sinwp1,eps,
-     $     psi1,psi2,fb10,fb20,dtheta
+     $     psi1,psi2,fb10,fb20,dtheta,phir
       real*8 a3,a5,a7,a9,a11,a13,a15
       parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
      1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
      1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
-      real*8 smax,smin,rphidiv
-      parameter (smax=0.99d0,smin=0.01d0,rphidiv=3e-3)
+      real*8 ,parameter::smax=0.99d0,smin=0.01d0,rphidiv=3e-3
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     px0(np),py0(np),zr0(np),bsi(np)
       real*8 sx(np),sy(np),sz(np)
       complex*16 akm(0:nmult)
-      logical*4 enarad,fringe,ini
+      logical*4 enarad,fringe,ini,krad
       if(phi0 .eq. 0.d0)then
         if(ak .eq. 0.d0)then
           call tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,al,-phib,
@@ -272,23 +272,28 @@
       rho0=al/phi0
       fb1=fb10
       fb2=fb20
-      if(rad .and. enarad)then
+      krad=rad .and. enarad
+      n1=1
+      n2=1
+      ndiv=1
+      f1r=0.d0
+      f2r=0.d0
+      if(krad)then
         if(ini)then
           px0=px
           py0=py
           zr0=z
         endif
-        if(iprev(l_track) .eq. 0)then
-          f1r=fb1
-        else
-          f1r=0.d0
+        if(iprev(l_track) .eq. 0 .and. fb1 .ne. 0.d0)then
+          n1=-1
+          f1r=fb1*.5d0
         endif
-        if(inext(l_track) .eq. 0)then
-          f2r=fb2
-        else
-          f2r=0.d0
+        if(inext(l_track) .eq. 0 .and. fb2 .ne. 0.d0)then
+          n2=3
+          f2r=fb2*.5d0
         endif
-        ndiv=min(ndivmax,ndivrad(phib,0.d0,0.d0,eps))
+        phir=phib*(al-f1r-f2r)/al
+        ndiv=min(ndivmax,ndivrad(phir,0.d0,0.d0,eps))
         if(photons)then
           select case (iniph)
             case (0)
@@ -299,23 +304,23 @@
               call tsetphotongeo(al/ndiv,phi0/ndiv,0.d0,.false.)
           end select
         endif
-      else
-        ndiv=1
       endif
-c      write(*,*)'tbend0 ',ndiv
-      if(ndiv .gt. 1)then
-        call tbendr(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,
-     $       al,phib,phi0,
-     1       cosp1,sinp1,cosp2,sinp2,
-     1       mfring,fringe,ndiv)
-      else
+      n2=ndiv+n2-1
+c      write(*,'(a,4i5,1p6g15.7)')'tbend0 ',n1,n2,ndiv,iprev(l_track),
+c     $     fb1,fb2
+      if(n1 .eq. n2)then
         call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       px0,py0,zr0,bsi,
      $       al,phi0,
      1       cosp1,sinp1,cosp2,sinp2,
      1       mfring,fringe,
      $       cosw,sinw,sqwh,sinwp1,
-     1       enarad,1.d0,1.d0)
+     1       krad,al,1.d0,1.d0)
+      else
+        call tbendr(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,
+     $       al,phib,phi0,psi1,psi2,
+     1       cosp1,sinp1,cosp2,sinp2,f1r,f2r,
+     1       mfring,fringe,n1,n2,ndiv)
       endif
  9000 if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
@@ -399,106 +404,104 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
 
       subroutine tbendr(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     px0,py0,zr0,bsi,
-     $     al,phib,phi0,
-     1     cosp1,sinp1,cosp2,sinp2,
-     1     mfring,fringe,ndiv)
+     $     al,phib,phi0,psi1,psi2,
+     1     cosp1,sinp1,cosp2,sinp2,f1r,f2r,
+     1     mfring,fringe,n1,n2,ndiv)
       use tfstk
       use ffs_flag
       use tmacro
       use tspin
       use photontable
+      use bendib, only:rbh,rbl
       implicit none
-      integer*4 np,mfring,i,ndiv,mfr1,mfr2
+      integer*4 np,mfring,ndiv,mfr1,n1,n2,n
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     px0(np),py0(np),zr0(np),bsi(np)
       real*8 sx(np),sy(np),sz(np)
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,rho0,
-     $     psi1,psi2,wn1,wn2,wnc,aln,phibn,phi0n,
-     $     coswn1,sinwn1,sqwhn1,sinwp1n1,
-     $     coswnc,sinwnc,sqwhnc,sinwp1nc,
-     $     coswn2,sinwn2,sqwhn2,sinwp1n2
+     $     psi1,psi2,wn,aln,phibn,phi0n,alr,f1r,f2r,
+     $     coswn,sinwn,sqwhn,sinwpn,bsi1,bsi2,
+     $     cosp1n,sinp1n,cosp2n,sinp2n,psi1n,psi2n
       logical*4 fringe
-      rho0=al/phi0
-      aln=al/ndiv
-      phibn=phib/ndiv
-      phi0n=phi0/ndiv
-      psi1=atan2(sinp1,cosp1)
-      psi2=atan2(sinp2,cosp2)
-      wn1=phi0n-psi1
-      coswn1=cos(wn1)
-      sinwn1=sin(wn1)
-      if(coswn1 .gt. 0.d0)then
-        sqwhn1=sinwn1**2/(1.d0+coswn1)
-      else
-        sqwhn1=1.d0-coswn1
-      endif
-      sinwp1n1=sin(phi0n)
-      wn2=phi0n-psi2
-      coswn2=cos(wn2)
-      sinwn2=sin(wn2)
-      if(coswn2 .gt. 0.d0)then
-        sqwhn2=sinwn2**2/(1.d0+coswn2)
-      else
-        sqwhn2=1.d0-coswn2
-      endif
-      sinwp1n2=sinwn2
-      wnc=phi0n
-      coswnc=cos(wnc)
-      sinwnc=sin(wnc)
-      if(coswnc .gt. 0.d0)then
-        sqwhnc=sinwnc**2/(1.d0+coswnc)
-      else
-        sqwhnc=1.d0-coswnc
-      endif
-      sinwp1nc=sinwnc
-      if(mfring .gt. 0 .or. mfring .eq. -1)then
-        mfr1=-1
-      else
+      do n=n1,n2
         mfr1=0
-      endif
-      if(mfring .gt. 0 .or. mfring .eq. -2)then
-        mfr2=-2
-      else
-        mfr2=0
-      endif
-      call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     px0,py0,zr0,bsi,
-     $     aln,phi0n,
-     1     cosp1,sinp1,1.d0,0.d0,
-     1     mfr1,fringe,
-     $     coswn1,sinwn1,sqwhn1,sinwp1n1,
-     1     .true.,1.d0,0.d0)
-      if(photons)then
-        call tsetphotongeo(aln,phi0n,0.d0,.false.)
-      endif
-      do i=2,ndiv-1
+        psi1n=0.d0
+        psi2n=0.d0
+        cosp1n=1.d0
+        sinp1n=0.d0
+        cosp2n=1.d0
+        sinp2n=0.d0
+        bsi1=0.d0
+        bsi2=0.d0
+        if(n .eq. n1)then
+          if(mfring .gt. 0 .or. mfring .eq. -1)then
+            mfr1=-1
+          endif
+          psi1n=psi1
+          cosp1n=cosp1
+          sinp1n=sinp1
+          bsi1=1.d0
+        elseif(n .eq. n2)then
+          if(mfring .gt. 0 .or. mfring .eq. -2)then
+            mfr1=-2
+          endif
+          psi2n=psi2
+          cosp2n=cosp2
+          sinp2n=sinp2
+          bsi2=1.d0
+        endif
+        if(n .eq. -1)then
+          psi1n=psi1
+          aln=rbl*f1r
+          alr=f1r
+        elseif(n .eq. 0)then
+          aln=rbh*f1r
+          alr=f1r
+        elseif(n .eq. ndiv+1)then
+          aln=rbh*f2r
+          alr=f2r
+        elseif(n .eq. ndiv+2)then
+          aln=rbl*f2r
+          alr=f2r
+        else
+          aln=(al-f1r-f2r)/ndiv
+          alr=aln
+        endif
+        phi0n=aln/al*phi0
+        phibn=aln/al*phib
+        if(n .le. 2 .or. n .ge. ndiv)then
+          wn=phi0n-psi1n-psi2n
+          coswn=cos(wn)
+          sinwn=sin(wn)
+          if(coswn .gt. 0.d0)then
+            sqwhn=sinwn**2/(1.d0+coswn)
+          else
+            sqwhn=1.d0-coswn
+          endif
+          sinwpn=sin(phi0n-psi2n)
+        endif
+c        write(*,*)'tbendr ',n,ndiv,phi0n,aln,alr
         call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       px0,py0,zr0,bsi,
      $       aln,phi0n,
-     1       1.d0,0.d0,1.d0,0.d0,
-     1       0,.false.,
-     $       coswnc,sinwnc,sqwhnc,sinwp1nc,
-     1       .true.,0.d0,0.d0)
+     1       cosp1n,sinp1n,cosp2n,sinp2n,
+     1       mfr1,fringe,
+     $       coswn,sinwn,sqwhn,sinwpn,
+     1       .true.,alr,bsi1,bsi2)
         if(photons)then
           call tsetphotongeo(aln,phi0n,0.d0,.false.)
         endif
       enddo
-      call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     px0,py0,zr0,bsi,
-     $     aln,phi0n,
-     1     1.d0,0.d0,cosp2,sinp2,
-     1     mfr2,fringe,
-     $     coswn2,sinwn2,sqwhn2,sinwp1n2,
-     1     .true.,0.d0,1.d0)
       return
       end
 
-      subroutine tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,
+      subroutine tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $     px0,py0,zr0,bsi,
      $     al,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     mfring,fringe,
      $     cosw,sinw,sqwh,sinwp1,
-     1     enarad,bsi1,bsi2)
+     1     enarad,alr,bsi1,bsi2)
       use tfstk
       use ffs_flag
       use tmacro
@@ -515,7 +518,7 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
      $     t2,dpx3,px3,dpz3,pz3,t3,x3,da,y3,z3,pv2sqi,x4,py4,z4,dpz4,
      $     dz4,dxfr1,dyfr1,dzfr1,dxfr2,dyfr2,dzfr2,dpz32,
      $     dyfra1,dyfra2,fa,t4,dpx3a,t2t3,dcosp,px1px3,
-     $     phi0a,bsi1,bsi2
+     $     phi0a,bsi1,bsi2,alr
       real*8, parameter :: smin=1.d-4
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     px0(np),py0(np),zr0(np),bsi(np)
@@ -638,9 +641,9 @@ c        write(*,*)t2,t3,t2+t3,t2t3,px1+px3,px1px3
         z(i)=z4-dz4
         bsi(i)=bsi(i)-bsi2*y(i)/rhob
 100   continue
-      if(rad .and. enarad)then
+      if(enarad)then
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       px0,py0,zr0,cos(phi0),sin(phi0),bsi,al)
+     $       px0,py0,zr0,cos(phi0),sin(phi0),bsi,alr)
         px0=px
         py0=py
         zr0=z

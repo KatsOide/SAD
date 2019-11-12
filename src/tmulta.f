@@ -164,7 +164,7 @@
           endif
           call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         px0,py0,zr0,bsi,
-     $         als,phibn*.5d0,phin*.5d0,
+     $         als,phibn*.5d0,phin*.5d0,psi1,0.d0,
      1         cosp1,sinp1,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $         fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
@@ -181,7 +181,7 @@
         else
           call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         px0,py0,zr0,bsi,
-     $         aln,phibn,phin,
+     $         aln,phibn,phin,0.d0,0.d0,
      1         1.d0,0.d0,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $         0.d0,0.d0,0,.false.,cosw,sinw,sqwh,sinwp1,
@@ -247,7 +247,7 @@
       endif
       call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     px0,py0,zr0,bsi,
-     $     aln*.5d0,phibn*.5d0,phin*.5d0,
+     $     aln*.5d0,phibn*.5d0,phin*.5d0,0.d0,psi2,
      1     1.d0,0.d0,cosp2,sinp2,
      1     ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $     fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
