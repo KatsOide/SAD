@@ -158,6 +158,152 @@
 
       end module
 
+      module bendib
+      use tfstk
+      implicit none
+      real*8 xi,pxi,yi,pyi,zi,p,dp,rhoe,rho0,rhob,drhob,drhop,
+     $     rhosq,
+     $     akk,akxsq,akysq,akx,aky,dcx,aksx,dcy,aksy,phix,phiy,
+     $     spx,spy,sxkx,syky,dcxkx,xsxkx
+      real*8 ,parameter :: a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
+     1     a9=35.d0/1152.d0,a11=63.d0/2816.d0,
+     1     a13=231.d0/13312.d0,a15=143.d0/10240.d0,
+     $     psqmax=0.9999d0,epsbend=1.d-3,
+     $     rbh=.5d0+1.d0/sqrt(12.d0),rbl=1.d0/6.d0/rbh
+
+      contains
+
+      subroutine tbendal(n,ndiv,f1r,f2r,aln,alx,alr)
+      implicit none
+      integer*4 , intent(in)::n,ndiv
+      real*8 , intent(in) ::f1r,f2r,aln
+      real*8 , intent(out)::alx,alr
+      if(n .eq. -1)then
+        alx=rbl*f1r
+        alr=f1r
+      elseif(n .eq. 0)then
+        alx=rbh*f1r
+        alr=f1r
+      elseif(n .eq. ndiv+1)then
+        alx=rbh*f2r
+        alr=f2r
+      elseif(n .eq. ndiv+2)then
+        alx=rbl*f2r
+        alr=f2r
+      else
+        alx=aln
+        alr=aln
+      endif
+      return
+      end subroutine
+
+      subroutine tbendiinit(ak1,al)
+      use mathfun
+      implicit none
+      real*8, intent (in):: ak1,al
+      rhosq=rho0*rhoe
+      drhop=(rhoe-rho0)/rhosq
+      akk=ak1/al
+      akxsq=-1.d0/rhosq-akk/p
+      akysq=akk/p
+      if(akxsq .gt. 0.d0)then
+        akx=sqrt(akxsq)
+        phix=akx*al
+        dcx=2.d0*sinh(.5d0*phix)**2
+        spx=sinh(phix)
+        aksx=akx*spx
+        dcxkx=dcx/akxsq
+        sxkx=spx/akx
+        xsxkx=xsinh(phix)/akx/akxsq
+      elseif(akxsq .lt. 0.d0)then
+        akx=sqrt(-akxsq)
+        phix=akx*al
+        dcx=-2.d0*sin(.5d0*phix)**2
+        spx=sin(phix)
+        aksx=-akx*spx
+        dcxkx=dcx/akxsq
+        sxkx=spx/akx
+        xsxkx=-xsin(phix)/akx/akxsq
+      else
+        akx=0.d0
+        phix=0.d0
+        dcx=0.d0
+        spx=0.d0
+        aksx=0.d0
+        dcxkx=0.5d0*al**2
+        sxkx=al
+        xsxkx=-1.d0/6.d0*al**3
+      endif
+      if(akysq .gt. 0.d0)then
+        aky=sqrt(akysq)
+        phiy=aky*al
+        dcy=2.d0*sinh(.5d0*phiy)**2
+        spy=sinh(phiy)
+        aksy=aky*spy
+        syky=spy/aky
+      elseif(akysq .lt. 0.d0)then
+        aky=sqrt(-akysq)
+        phiy=aky*al
+        dcy=-2.d0*sin(.5d0*phiy)**2
+        spy=sin(phiy)
+        aksy=-aky*spy
+        syky=spy/aky
+      else
+        aky=0.d0
+        phiy=0.d0
+        dcy=0.d0
+        spy=0.d0
+        aksy=0.d0
+        syky=al
+      endif
+      return
+      end subroutine
+
+      subroutine tbendicorr(ak1,al,phi)
+      use mathfun
+      implicit none
+      real*8 , intent(in) :: ak1,al,phi
+      real*8 pzi,dpzi,xr,s
+      s=min(psqmax,pxi**2+pyi**2)
+      dpzi=sqrt1(-s)
+      pzi=1.d0+dpzi
+      xi =(-al*dpzi*pxi+pzi*xi)/(pzi-phi*pxi)
+      pxi=pxi+phi*dpzi
+      yi =yi+(-al*dpzi+xi*phi)*pyi/pzi
+      zi =zi-phi*dpzi*xi/pzi+al*dpzi*(.5d0*pzi+.5d0-1.d0/pzi)
+      xr=xi/rho0
+      pxi=pxi-ak1*xi*xr*(0.5d0-xr*(2.d0-xr)/12.d0)/p
+      return
+      end subroutine
+
+      subroutine tbendibody(al)
+      implicit none
+      real*8, intent(in):: al
+      real*8 dxf,dpxf,dyf,dpyf,hi,xiksq
+c      dxf =(drhopak+xi)*dcx+aksx/akxsq*pxi
+c      dpxf= aksx*(drhopak+xi)+pxi*dcx
+c      dyf = dcy*yi+aksy/akysq*pyi
+c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
+      xiksq = drhop    +akxsq*xi
+      dxf = dcxkx*xiksq+sxkx*pxi
+      dpxf= sxkx*xiksq +dcx*pxi
+      dyf = dcy*yi     +syky*pyi
+      dpyf= aksy*yi    +dcy*pyi
+      hi=.5d0*(pxi**2+pyi**2-akxsq*xi**2-akysq*yi**2)
+     $     -drhop*xi
+      zi =zi-.25d0*(dxf*pxi+xi*dpxf+dxf*dpxf
+     $     +dyf*pyi+yi*dpyf+dyf*dpyf
+     $     -(5.d0/rho0-1.d0/rhoe)*(drhop*xsxkx-sxkx*xi-dcxkx*pxi))
+     $     -hi*al*.5d0
+      xi =xi +dxf
+      pxi=pxi+dpxf
+      yi =yi +dyf
+      pyi=pyi+dpyf
+      return
+      end subroutine
+
+      end module
+
       subroutine tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     al,phib,phi0,psi1,psi2,
      1     cosp1,sinp1,cosp2,sinp2,
