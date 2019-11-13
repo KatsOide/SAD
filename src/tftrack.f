@@ -243,7 +243,6 @@ c      pgev=rgetgl1('MOMENTUM')
           nt=nt+1
           mt=mt-1
         enddo
-        write(*,*)'tftrack-1 ',mt,ls,ld
         if(ld .le. ls)then
           normal=.false.
         elseif(mt .ge. 1 .and. npa .gt. 0)then

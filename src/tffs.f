@@ -927,9 +927,13 @@
             fb2=cmp%value(ky_F1_BEND)+cmp%value(ky_FB1_BEND)
             fb1=cmp%value(ky_F1_BEND)+cmp%value(ky_FB2_BEND)
           endif
-          if(cmp%value(ky_FRMD_BEND) .eq. 0.d0)then
-            fb1=0.d0
-            fb2=0.d0
+          if(cmp%value(ky_FRMD_BEND) .le. 0.d0)then
+            if(cmp%value(ky_FRMD_BEND) .ne. -1.d0)then
+              fb1=0.d0
+            endif
+            if(cmp%value(ky_FRMD_BEND) .ne. -2.d0)then
+              fb2=0.d0
+            endif
           endif
 c          write(*,*)'tpara-bend ',cmp%value(ky_FRMD_BEND),fb1,fb2
           w=phi-psi1-psi2

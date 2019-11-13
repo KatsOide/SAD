@@ -2,7 +2,7 @@
      $     apsi1,apsi2,fb1,fb2,mfring,fringe,next)
       use ffs_flag
       use tmacro
-      use bendib, only:rbh,rbl
+      use bendib, only:rbh,rbl,tbendal
       use temw, only:tsetr0
       use tspin, only:tradke      
       use mathfun
@@ -14,8 +14,8 @@
      1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
       integer*4 mfring,nrad,ndiv,n,n1,n2
       real*8 trans(6,12),cod(6),beam(42),srot(3,9),
-     $     al,phib,dx,dy,theta,
-     $     fb1,fb2,rhob,rb1,rb2,rbc,alc,phic,alx,alr,
+     $     al,phib,dx,dy,theta,f1r,f2r,
+     $     fb1,fb2,rhob,rbc,alc,phic,alx,alr,
      $     dxfr1,dyfr1,
      $     dxfr2,dyfr2,
      $     b,aln,phin,pr,pxi,pyi,rhoe,s,dpz1,
@@ -41,6 +41,8 @@
       rhob=al/phib
       prev=bradprev .ne. 0.d0
       rbc=1.d0
+      f1r=0.d0
+      f2r=0.d0
       if(fb1 .ne. 0.d0 .and. (mfring .gt. 0 .or. mfring .eq. -1))then
         dxfr1=-fb1**2/rhob/24.d0
         dyfr1=fb1/rhob**2/6.d0
@@ -50,14 +52,16 @@
           dyfra1=0.d0
         endif
         call tblfre(trans,cod,beam,dxfr1,dyfr1,dyfra1)
-        rbc=rbc-0.5d0*fb1/al
+        f1r=.5d0*fb1
+        rbc=rbc-f1r/al
         n1=-1
       else
         n1=1
       endif
       if(fb2 .ne. 0.d0 .and.
      $       (mfring .gt. 0 .or. mfring .eq. -2))then
-        rbc=rbc-0.5d0*fb2/al
+        f2r=0.5d0*fb2
+        rbc=rbc-f2r/al
         n2=2
       else
         n2=0
@@ -87,21 +91,7 @@ c        call tbfrie(trans,cod,beam,-rhob,0.d0,.true.)
       endif
       call tinitr(trans1)
       do 100 n=n1,ndiv+n2
-        alx=aln
-        alr=aln
-        if(n .eq. -1)then
-          alx=.5d0*rbl*fb1
-          alr=.5d0*fb1
-        elseif(n .eq. 0)then
-          alx=.5d0*rbh*fb1
-          alr=.5d0*fb1
-        elseif(n .eq. ndiv+1)then
-          alx=.5d0*rbh*fb2
-          alr=.5d0*fb2
-        elseif(n .eq. ndiv+2)then
-          alx=.5d0*rbl*fb2
-          alr=.5d0*fb2
-        endif
+        call tbendal(n,ndiv,f1r,f2r,aln,alx,alr)
         pr=1.d0+cod(6)
         pxi=cod(2)/pr
         pyi=cod(4)/pr
@@ -164,7 +154,7 @@ c        call tbfrie(trans,cod,beam,-rhob,0.d0,.true.)
 c        call tbfrie(trans,cod,beam, rhob,0.d0,.false.)
         call tbedge(trans,cod,beam,al,-phib,apsi2,.false.)
       endif
-      if(fb2 .ne. 0.d0 .and. (mfring .gt. 0 .or. mfring .eq. -2))then
+      if(f2r .ne. 0.d0)then
         dxfr2=fb2**2/rhob/24.d0
         dyfr2=fb2/rhob**2/6.d0
         if(fringe)then

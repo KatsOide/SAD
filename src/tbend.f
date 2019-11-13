@@ -227,7 +227,7 @@
           call tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,al,-phib,
      1         dx,dy,theta+dtheta,cos(theta+dtheta),sin(theta+dtheta),
      1         cosp1,sinp1,cosp2,sinp2,
-     $         fb10,fb20,mfring,fringe,eps,enarad)
+     $         fb10,fb20,fringe,eps,enarad)
         elseif(phib .eq. phi0)then
           call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      1         dx,dy,theta+dtheta,
@@ -274,7 +274,7 @@
       fb2=fb20
       krad=rad .and. enarad
       n1=1
-      n2=1
+      n2=0
       ndiv=1
       f1r=0.d0
       f2r=0.d0
@@ -289,7 +289,7 @@
           f1r=fb1*.5d0
         endif
         if(inext(l_track) .eq. 0 .and. fb2 .ne. 0.d0)then
-          n2=3
+          n2=2
           f2r=fb2*.5d0
         endif
         phir=phib*(al-f1r-f2r)/al
@@ -305,7 +305,7 @@
           end select
         endif
       endif
-      n2=ndiv+n2-1
+      n2=ndiv+n2
 c      write(*,'(a,4i5,1p6g15.7)')'tbend0 ',n1,n2,ndiv,iprev(l_track),
 c     $     fb1,fb2
       if(n1 .eq. n2)then
@@ -412,17 +412,18 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
       use tmacro
       use tspin
       use photontable
-      use bendib, only:rbh,rbl
+      use bendib, only:rbh,rbl,tbendal
       implicit none
       integer*4 np,mfring,ndiv,mfr1,n1,n2,n
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     px0(np),py0(np),zr0(np),bsi(np)
       real*8 sx(np),sy(np),sz(np)
-      real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,rho0,
+      real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,
      $     psi1,psi2,wn,aln,phibn,phi0n,alr,f1r,f2r,
-     $     coswn,sinwn,sqwhn,sinwpn,bsi1,bsi2,
+     $     coswn,sinwn,sqwhn,sinwpn,bsi1,bsi2,alx,
      $     cosp1n,sinp1n,cosp2n,sinp2n,psi1n,psi2n
       logical*4 fringe
+      aln=(al-f1r-f2r)/ndiv
       do n=n1,n2
         mfr1=0
         psi1n=0.d0
@@ -450,25 +451,9 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
           sinp2n=sinp2
           bsi2=1.d0
         endif
-        if(n .eq. -1)then
-          psi1n=psi1
-          aln=rbl*f1r
-          alr=f1r
-        elseif(n .eq. 0)then
-          aln=rbh*f1r
-          alr=f1r
-        elseif(n .eq. ndiv+1)then
-          aln=rbh*f2r
-          alr=f2r
-        elseif(n .eq. ndiv+2)then
-          aln=rbl*f2r
-          alr=f2r
-        else
-          aln=(al-f1r-f2r)/ndiv
-          alr=aln
-        endif
-        phi0n=aln/al*phi0
-        phibn=aln/al*phib
+        call tbendal(n,ndiv,f1r,f2r,aln,alx,alr)
+        phi0n=alx/al*phi0
+        phibn=alx/al*phib
         if(n .le. 2 .or. n .ge. ndiv)then
           wn=phi0n-psi1n-psi2n
           coswn=cos(wn)
@@ -480,16 +465,16 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
           endif
           sinwpn=sin(phi0n-psi2n)
         endif
-c        write(*,*)'tbendr ',n,ndiv,phi0n,aln,alr
+c        write(*,*)'tbendr ',n,ndiv,phi0n,alx,alr
         call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       px0,py0,zr0,bsi,
-     $       aln,phi0n,
+     $       alx,phi0n,
      1       cosp1n,sinp1n,cosp2n,sinp2n,
      1       mfr1,fringe,
      $       coswn,sinwn,sqwhn,sinwpn,
      1       .true.,alr,bsi1,bsi2)
         if(photons)then
-          call tsetphotongeo(aln,phi0n,0.d0,.false.)
+          call tsetphotongeo(alx,phi0n,0.d0,.false.)
         endif
       enddo
       return

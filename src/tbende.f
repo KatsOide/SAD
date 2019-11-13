@@ -378,7 +378,7 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
      $     eps,akn,tanp1,tanp2,f,
      $     dyfra1,dyfra2,apsi1,apsi2,cod11,
      $     csphin,snphin,sinsqn,phin,aln,alx0,akx0,
-     $     rbc,akc,alc,phic,rb1,rb2
+     $     rbc,akc,alc,phic,f1r,f2r
       real*8 trans(6,12),cod(6),beam(42),srot(3,9)
       complex*16 akm(0:nmult)
       logical*4 enarad,alcorr,fringe,next,prev
@@ -434,8 +434,8 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
       rhob=1.d0/phibl
       rho0=al/phi0
       prev=bradprev .ne. 0.d0
-      rb1=0.d0
-      rb2=0.d0
+      f1r=0.d0
+      f2r=0.d0
       if(fb1 .ne. 0.d0)then
         if(mfring .gt. 0 .or. mfring .eq. -1)then
           dxfr1=fb1**2*phibl/24.d0
@@ -446,14 +446,14 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
             dyfra1=0.d0
           endif
           call tblfre(trans,cod,beam,dxfr1,dyfr1,dyfra1)
-          rb1=0.5d0*fb1/al0
+          f1r=0.5d0*fb1
         endif
       endif
       if(fb2 .ne. 0.d0 .and.
      $       mfring .gt. 0 .or. mfring .eq. -2)then
-        rb2=0.5d0*fb2/al0
+        f2r=0.5d0*fb2
       endif
-      rbc=1.d0-rb1-rb2
+      rbc=1.d0-(f1r+f2r)/al0
       phic=phi0*rbc
       if(eps0 .eq. 0.d0)then
         eps=epsbend
@@ -527,10 +527,10 @@ c     $     rb1,rb2,al0,alc,aln,phin,ak
         bsi2=0.d0
         n1=1
         n2=ndiv
-        if(rb1 .ne. 0.d0)then
+        if(f1r .ne. 0.d0)then
           n1=0
         endif
-        if(rb2 .ne. 0.d0)then
+        if(f2r .ne. 0.d0)then
           n2=ndiv+1
         endif
         do n=n1,n2
@@ -538,7 +538,7 @@ c     $     rb1,rb2,al0,alc,aln,phin,ak
             call tbendef1(trans,cod,beam,srot,al0,phi0,fb1,rbl,enarad)
           elseif(n .eq. ndiv+1)then
             call tbendef1(trans,cod,beam,srot,al0,phi0,fb2,rbh,enarad)
-            alr=.5d0*fb2
+            alr=f2r
             phi1=alr*rbl/al0*phi0
           else
             if(n .eq. n2)then
@@ -556,10 +556,10 @@ c     $     rb1,rb2,al0,alc,aln,phin,ak
         tbinit=.true.
         n1=1
         n2=ndiv
-        if(rb1 .ne. 0.d0)then
+        if(f1r .ne. 0.d0)then
           n1=-1
         endif
-        if(rb2 .ne. 0.d0)then
+        if(f2r .ne. 0.d0)then
           n2=ndiv+2
         endif
         alx0=0.d0
@@ -567,21 +567,7 @@ c     $     rb1,rb2,al0,alc,aln,phin,ak
         bsi1=1.d0
         bsi2=0.d0
         do n=n1,n2
-          alx=aln
-          alr=aln
-          if(n .eq. -1)then
-            alx=.5d0*rbl*fb1
-            alr=.5d0*fb1
-          elseif(n .eq. 0)then
-            alx=.5d0*rbh*fb1
-            alr=.5d0*fb1
-          elseif(n .eq. ndiv+1)then
-            alx=.5d0*rbh*fb2
-            alr=.5d0*fb2
-          elseif(n .eq. ndiv+2)then
-            alx=.5d0*rbl*fb2
-            alr=.5d0*fb2
-          endif
+          call tbendal(n,ndiv,f1r,f2r,aln,alx,alr)
           akx=ak*alx/al0
           phi1=phi0*alx/al0
           call tbendecorr(trans,cod,beam,
@@ -605,7 +591,7 @@ c     $     rb1,rb2,al0,alc,aln,phin,ak
         bradprev=0.d0
       endif
       call tbedge(trans,cod,beam,al,phib,psi2*phi0+apsi2,.false.)
-      if(rb2 .ne. 0.d0)then
+      if(f2r .ne. 0.d0)then
         dxfr2=-fb2**2/rhob/24.d0
         dyfr2=fb2/rhob**2/6.d0
         if(fringe)then
