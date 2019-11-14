@@ -1,0 +1,167 @@
+ChooseAxis=Class[{},{Mapped=False,CAWindow},
+  {x1,x2,y1,y2,ba,
+    bd,ef,lfb,sc,perm,vperm,xyr,gr,
+    w,gm,lax,lmin,lmax,lminauto,lmaxauto,lx,txmin,
+    cbxminauto,txmax,cbxmaxauto,
+    ly,tymin,cbyminauto,tymax,cbymaxauto,bsave,bcan,bok,
+    lscale,omxscale,omyscale,mxscale,myscale,
+    lgrid,omxgrid,omygrid,mxgrid,mygrid,
+    pfn,
+    fm,fu,fd,r,rr,rx,ry,vxy={{0,0},{0,0}}},
+
+  Constructor[]:=StandardForm[
+    Mapped=True;
+    gm = (GM->Grid);
+    bd = (BD->1);
+    pfn = (Font->TextFont[$DefaultSansSerifFont,8]);
+    ef = (Font->TextFont[$DefaultSansSerifFont,14]);
+    lfb = (Font->TextFont[$DefaultSansSerifFont,14,"bold"]);
+    w = Window[,Title->"Axis Options"];
+    fu = Frame[w,BD->2,Relief->"groove",IPadX->5,IPadY->5,PadX->5,PadY->5];
+!    fm = Frame[w];
+    fd = Frame[w,Fill->"x",Side->"bottom"];
+    lax = TextLabel[fu,Text->"axis",gm,Column->0,Row->0];
+    lmin = TextLabel[fu,Text->"min",lfb,gm,Column->1,Row->0];
+    lminauto = TextLabel[fu,Text->"auto",gm,Column->2,Row->0];
+    lmax = TextLabel[fu,Text->"max",lfb,gm,Column->3,Row->0];
+    lmaxauto = TextLabel[fu,Text->"auto",gm,Column->4,Row->0];
+    lscale = TextLabel[fu,Text->"scale",gm,Column->5,Row->0];
+    lgrid = TextLabel[fu,Text->"grid",gm,Column->6,Row->0];
+    
+    ly = TextLabel[fu,Text->"Y",Width->7,gm,Column->0,Row->1];
+    tymin = Entry[fu,TextVariable:>xyr[2,1],
+      ef,BG->"white",Justify->"right",bd,gm,Column->1,Row->1];
+    cbyminauto = CheckButton[fu,Text->"",
+      Variable:>ba[2,1],bd,gm,Column->2,Row->1];
+    tymax = Entry[fu,TextVariable:>xyr[2,2],
+      ef,BG->"white",Justify->"right",bd,gm,Column->3,Row->1];
+    cbymaxauto = CheckButton[fu,Text->"",
+      Variable:>ba[2,2],bd,gm,Column->4,Row->1];
+    omyscale = OptionMenu[fu,
+      Items->{"Linear","Log","Date"},Width->6,
+      TextVariable:>sc[2],gm,Column->5,Row->1,
+      ActiveBackground->KBF$ABG,ActiveForeground->"black"];
+    myscale = Menu[omyscale,Add->{
+      Button[Text->"Linear",Command:>(sc[2]="Linear")],
+      Button[Text->"Log",Command:>(sc[2]="Log")],
+      Button[Text->"Date",Command:>(sc[2]="Date")]}];
+    omygrid = OptionMenu[fu,
+      Items->{"None","Automatic"},Width->9,
+      TextVariable:>gr[2],gm,Column->6,Row->1,
+      ActiveBackground->KBF$ABG,ActiveForeground->"black"];
+    mygrid = Menu[omygrid,Add->{
+      Button[Text->"None",Command:>(gr[2]="None")],
+      Button[Text->"Axis",Command:>(gr[2]="Axis")],
+      Button[Text->"All",Command:>(gr[2]="All")],
+      Button[Text->"Automatic",Command:>(gr[2]="Automatic")],
+      Button[Text->"Both",Command:>(gr[2]="Both")],
+      Button[Text->"Major",Command:>(gr[2]="Major")],
+      Button[Text->"Minor",Command:>(gr[2]="Minor")]}];
+    
+    lx = TextLabel[fu,Text->"X",gm,Column->0,Row->3];
+    txmin = Entry[fu,TextVariable:>xyr[1,1],ef,bd,
+      BG->"white",Justify->"right",gm,Column->1,Row->3];
+    cbxminauto = CheckButton[fu,Text->"",
+      Variable:>ba[1,1],bd,gm,Column->2,Row->3];
+    txmax = Entry[fu,TextVariable:>xyr[1,2],
+      ef,BG->"white",Justify->"right",bd,gm,Column->3,Row->3];
+    cbxmaxauto = CheckButton[fu,Text->"",
+      Variable:>ba[1,2],bd,gm,Column->4,Row->3];
+    omxscale = OptionMenu[fu,
+      Items->{"Linear","Log","Date"},Width->6,
+      TextVariable:>sc[1],gm,Column->5,Row->3,
+      ActiveBackground->KBF$ABG,ActiveForeground->"black"];
+    mxscale = Menu[omxscale,
+      Add->{Button[Text->"Linear",Command:>(sc[1]="Linear")],
+        Button[Text->"Log",Command:>(sc[1]="Log")],
+        Button[Text->"Date",Command:>(sc[1]="Date")]}];
+    omxgrid = OptionMenu[fu,
+      Items->{"None","Automatic"},Width->9,
+      TextVariable:>gr[1],gm,Column->6,Row->3,
+      ActiveBackground->KBF$ABG,ActiveForeground->"black"];
+    mxgrid = Menu[omxgrid,Add->{
+      Button[Text->"None",Command:>(gr[1]="None")],
+      Button[Text->"Axis",Command:>(gr[1]="Axis")],
+      Button[Text->"All",Command:>(gr[1]="All")],
+      Button[Text->"Automatic",Command:>(gr[1]="Automatic")],
+      Button[Text->"Both",Command:>(gr[1]="Both")],
+      Button[Text->"Major",Command:>(gr[1]="Major")],
+      Button[Text->"Minor",Command:>(gr[1]="Minor")]}];
+    
+    Do[With[{i},
+      perm[i,1] = CheckButton[fu,Text->"permanent",Variable:>vperm[i,1],bd,gm,
+        pfn,ColumnSpan->2,Column->1,Row->6-i*2];
+      perm[i,2] = CheckButton[fu,Text->"permanent",Variable:>vperm[i,2],bd,gm,
+        pfn,ColumnSpan->2,Column->3,Row->6-i*2];
+      perm[i,3] = CheckButton[fu,Text->"permanent",Variable:>vperm[i,3],bd,gm,
+        pfn,Column->5,Row->6-i*2];
+      perm[i,4] = CheckButton[fu,Text->"permanent",Variable:>vperm[i,4],bd,gm,
+        pfn,Column->6,Row->6-i*2];
+      ],{i,2}];
+
+!    bsave = Button[fm, Text->"Save Graphics"];
+    bcan = Button[fd,Text->"Cancel",
+      Width->10,Side->"right",bd,PadX->5,PadY->3,Command:>TkReturn[0]];
+    bok = Button[fd,Text->"OK",
+      Width->10,Side->"right",bd,PadX->5,PadY->3,Command:>TkReturn[1]];
+    ];
+
+  Choose[gl_]:=
+    StandardForm[
+      w[State]="normal";
+      r = gl[[1]];!Print[r];
+        rr = gl[[4]];!Print[rr];
+	Do[
+	  If [Head[r[[i,j]]]===Permanent,
+		vperm[i,j] = True;
+		vxy[[i,j]] = r[[i,j,1]];
+	  ,!Else
+		vperm[i,j] = False;
+		vxy[[i,j]] = r[[i,j]];
+	  ];
+	  If [vxy[[i,j]]===Automatic, vxy[[i,j]]=rr[[i,j]];ba[i,j]=True,ba[i,j]=False];
+	,{i,2},{j,2}];
+      r = gl[[2]];!Print[r];
+	Do[
+	  If [Head[r[i]]===Permanent,
+		vperm[i,3]=True;
+		sc[i] = r[[i,1]];
+	  ,!Else
+		vperm[i,3]=False;
+		sc[i] = r[[i]];
+	  ];
+	  If [sc[i]==="Date",
+                vxy[[i]]=ToDate/@vxy[[i]]];
+	  If [sc[i]==="Log", 
+             Do[If[~vperm[i,j],vxy[[i,j]]=10^vxy[[i,j]]],{j,2}]];
+	,{i,2}];
+      r = gl[[3]];!Print[r];
+	Do[
+	  If [Head[r[i]]===Permanent,
+		vperm[i,4]=True;
+		gr[i] = r[[i,1]];
+	  ,!Else
+		vperm[i,4]=False;
+		gr[i] = r[[i]];
+	  ]
+	,{i,2}];
+
+      Do[xyr[i,j]=vxy[[i,j]],{i,2},{j,2}];
+
+      w[Raise];
+      w[Grab$Set];
+      r = TkWait[];
+      w[Grab$Release];
+      w[State]="withdrawn";
+      If [r>0,
+        If[ToExpression[xyr[1,1]//">"//xyr[1,2]], (xyr[1,1]=#2;xyr[1,2]=#)&[xyr[1,1],xyr[1,2]]];
+        If[ToExpression[xyr[2,1]//">"//xyr[2,2]], (xyr[2,1]=#2;xyr[2,2]=#)&[xyr[2,1],xyr[2,2]]];
+        If [ba[1,1], xyr[1,1] = Automatic]; If [ba[1,2], xyr[1,2] = Automatic];
+        If [ba[2,1], xyr[2,1] = Automatic]; If [ba[2,2], xyr[2,2] = Automatic];
+        {{sc[1],sc[2]},Table[vperm[i,j],{i,2},{j,4}],{gr[1],gr[2]},
+          Table[xyr[i,j],{i,2},{j,2}]}/.x_String:>ToExpression[x],
+        Null]];
+
+    ];
+
+Protect[ChooseAxis];

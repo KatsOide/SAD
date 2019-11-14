@@ -1,0 +1,37 @@
+Get["ChangeDotToUS.n"];
+OutPutPVName[fname_String,pvl_List]:=Module[{fd},
+ fd=OpenWrite[StringJoin[fname,".conf"]];
+ Write[fd, " file ",fname,".template\n{\n"];
+ Map[Write[fd,"\t{pvname= \"KEKB:LER:",#,"\"}\n"]&,pvl];
+ Write[fd, " }"];
+ Close[fd];
+];
+GenDBconf[]:=Module[{name={}},
+ name=LINE["NAME","Q*"];name=ChangeDotToUS[name];
+ OutPutPVName["quad",name];	
+ name=LINE["NAME","ZX*"];name=ChangeDotToUS[name];
+ OutPutPVName["steeringX",name];
+ name=LINE["NAME","ZY*"];name=ChangeDotToUS[name];
+ OutPutPVName["steeringY",name];
+ name=LINE["NAME","M*"];name=ChangeDotToUS[name];
+ OutPutPVName["monitor",name];
+];
+OpenPVchannel[pat_String]:=OpenPVchannel[LINE["NAME",pat]];
+
+OpenPVchannel[nameL_List]:=Module[{n={}},
+ n=ChangeDotToUS[nameL];
+ n=Map[StringJoin["KEKB:LER:",#]&,n];
+ {n,Map[CaOpen[#]&,n]}
+];
+
+GetOrbitData[chs_List]:=Module[{rdata={}},
+ rdata=CaRead[chs];
+ {Map[#[1]&,rdata],Map[#[2]&,rdata],Map[#[3]&,rdata]}
+];
+
+GetOrbitData[]:=Module[{chs={},rdata={}},
+ cha=CaOpen[mname];
+ GerOrgitData[chs]
+];
+
+PutORBData[ch_,orb_List]:=Module[{},CaWrite[ch, orb];];

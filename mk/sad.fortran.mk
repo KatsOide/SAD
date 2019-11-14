@@ -51,6 +51,7 @@ OBJ_F_WRITEB=
 # Note:	FGETC is required for binary Read[] in src/tfwrite.f
 #
 OBJ_F_ITGETBUF=itfgetbuf_.o
+
 ifeq ($(HAVE_F_FGETC),YES)
 OBJ_F_ITGETBUF=itfgetbuf_PPC.o
 ifeq ($(HAVE_F_FORMAT_Q_EDIT),YES)
