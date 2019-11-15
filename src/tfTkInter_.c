@@ -29,9 +29,10 @@
 #else
 #  undef  SAD_TK_EXTENSION
 #endif
+#  define SAD_TK_EXTENSION
 
 #ifdef SAD_TK_EXTENSION
-extern int bTkCanvTextDebug;
+extern int bTkCanvTextDebug; 
 extern int ctkCanvGetType(const char*);
 extern int ctkCanvGetTypes(void (*)(const char*));
 extern int ctkCanvCreateItem(Tk_Window, int,

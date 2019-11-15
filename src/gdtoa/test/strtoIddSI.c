@@ -1,1 +1,1 @@
-/Users/oide/SAD/oldsad/contrib/gdtoa/test/strtoIddSI.c
+/home/oide/SAD/oldsad/contrib/gdtoa/test/strtoIddSI.c

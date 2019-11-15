@@ -11,6 +11,7 @@ c      use iso_c_binding
         go to 9000
       endif
       if(itbuf(lfn) .le. modewrite)then
+c        write(*,*)'tfreadbuf ',lfn,itbuf(lfn),modewrite
         nc=itfgetbuf(lfn,jlist(ib,ibuf(lfn)),
      $       maxlbuf-ib-256,irtc)
         if(irtc .ne. 0)then

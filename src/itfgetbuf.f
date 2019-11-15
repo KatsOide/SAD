@@ -2,6 +2,7 @@
       implicit none
       integer*4 lfn,limit,i,fgetc,irtc,nc
       character*(*) buf
+c      write(*,*)'itfgetbuf ',lfn
       read(lfn,'(q,a)',end=9000,err=9100)nc,buf(:min(nc,limit))
       if(nc .lt. limit)then
         nc=nc+1
