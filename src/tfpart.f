@@ -680,16 +680,17 @@ c          call tfdebugprint(dtastk2(i),' -> ',1)
           if(ivi .gt. kli%nl)then
             if(ivi .eq. 1)then
               kli%nl=1
-              call tfreplist(kli,ivi,dtastk(isp0-1),seq1)
+              call tfreplist(kli,1,dtastk(isp0-1),seq1)
             else
               isp=isp3
               isp=isp+1
-              dtastk(isp)=kli%dbody(ivi-1)
+              dtastk(isp)=kli%dbody(kli%nl)
               isp=isp+1
               ktastk(isp)=ktastk(isp0-1)
               kxi=kxmakelist(isp3,klxi)
               klxi%head%k=ktfoper+mtfnull
-              call tfreplist(kli,ivi,kxi,seq1)
+              call tfreplist(kli,kli%nl,kxi,seq1)
+c              call tfdebugprint(kxi,'reppart1-kxi',1)
             endif
           else
             isp=isp3+1

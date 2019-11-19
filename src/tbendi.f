@@ -111,7 +111,7 @@ c     dp=g(i)*(2.d0+g(i))
           if(n .eq. n1 .and. krad .and. photons)then
             call tsetphotongeo(alx(n),phixn(n),theta,.true.)
           endif
-          call tbendiinit(akxn(n),alx(n))
+          call tbendiinit(akxn(n),alx(n),n .eq. n1)
           call tbendicorr((akxn(n)+akx0)*.5d0,(alx(n)+alx0)*.5d0,
      $         (phixn(n)+phix0)*.5d0)
           akx0=akxn(n)

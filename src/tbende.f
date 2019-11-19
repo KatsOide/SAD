@@ -10,11 +10,16 @@
      $     akysqp,dcxkxp,aksxp,aksyp,xsxkxp
 
       contains
-      subroutine tbendeinit(ak1,al)
+      subroutine tbendeinit(ak1,al,force)
       implicit none
       real*8 , intent(in) :: ak1,al
+      logical*4 , intent(in), optional::force      
       rhoe=rhob*p
-      call tbendiinit(ak1,al)
+      if(present(force))then
+        call tbendiinit(ak1,al,force)
+      else
+        call tbendiinit(ak1,al)
+      endif
       cx=1.d0+dcx
       cy=1.d0+dcy
       drhopp=1.d0/rhoe/p
