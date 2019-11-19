@@ -115,8 +115,8 @@ $(foreach _FUNC,$(SYS_SAVE_USES),$(eval override USE_$(_FUNC)=$(USER_USE_$(_FUNC
 
 include $(SADMK)/sad.compiler.mk
 # -- Begin initialize options --
-SYS_OBJS=
-SYS_LIBS=
+SYS_OBJS= 
+SYS_LIBS= 
 # -- End   initialize options --
 
 -include $(SADCONF)/$(OS_NAME).spec

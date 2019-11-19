@@ -94,13 +94,17 @@ case ${SAD_ARCH} in
 #    PATH=/Users/oide/SAD/oldsad/arch/${SAD_ARCH}/bin:${PATH}
     PATH=$SAD_ROOTPATH/obj/${SAD_ARCH}/bin:${PATH}
     ;;
-*-Darwin)
+*-Darwin*)
 #    DYLD_LIBRARY_PATH=/Users/oide/SAD/oldsad/arch/${SAD_ARCH}/lib ; export DYLD_LIBRARY_PATH
     DYLD_LIBRARY_PATH=$SAD_ROOTPATH/obj/${SAD_ARCH}/lib ; export DYLD_LIBRARY_PATH
+    ;;
+*-Linux*)
+    export LD_LIBRARY_PATH=$SAD_ROOTPATH/arch/${SAD_ARCH}/lib:${LD_LIBRARY_PATH}
     ;;
 *)
     ;;
 esac
+# printenv
 
 input_script=
 if [ $# -ge 1 ]; then

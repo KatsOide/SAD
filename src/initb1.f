@@ -61,7 +61,9 @@ c
 c
      $ky_MAX_BEND=28,
      $     p_L_BEND=ky_MAX_BEND+1,
-     $     p_COSPSI1_BEND=p_L_BEND+1,
+     $     p_PSI1_BEND=p_L_BEND+1,
+     $     p_PSI2_BEND=p_PSI1_BEND+1,
+     $     p_COSPSI1_BEND=p_PSI2_BEND+1,
      $     p_SINPSI1_BEND=p_COSPSI1_BEND+1,
      $     p_COSPSI2_BEND=p_SINPSI1_BEND+1,
      $     p_SINPSI2_BEND=p_COSPSI2_BEND+1,

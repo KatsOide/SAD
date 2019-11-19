@@ -5,6 +5,7 @@
       use tffitcode
       use tfshare
       use ffs_wake
+      use tparastat
       use photontable,only:tphotoninit,tphotonlist
       use tfcsi
       implicit none
@@ -201,7 +202,7 @@ c     $       ne,npnlatmin
       p00=pgev
 c      pgev=rgetgl1('MOMENTUM')
       pgev=rlist(ifgamm+ls-1)*amass
-c      call tclrparaall
+      call tclrparaall
       call tphyzp
       call tsetdvfs
       call tfsetparticles(rlist(kzp),rlist(kdv),
@@ -242,7 +243,6 @@ c      call tclrparaall
           nt=nt+1
           mt=mt-1
         enddo
-c       write(*,*)'tftrack-1 ',mt,ls,ld
         if(ld .le. ls)then
           normal=.false.
         elseif(mt .ge. 1 .and. npa .gt. 0)then
