@@ -1188,11 +1188,11 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         integer*4 i
         real*8, parameter:: gmin=-0.9999d0,
      $       cave=8.d0/15.d0/sqrt(3.d0)
-        real*8 x,px,y,py,z,g,dv,px0,py0,zr0,bsi,al,
-     $       dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
+        real*8 , intent(inout)::x,px,y,py,z,g,dv
+        real*8 , intent(in)::px00,py0,zr0,cphi0,sphi0,bsi,al
+        real*8 dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
      $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,sx,sy,sz,
-     $       ppa,an,a,dph,r1,r2,px00,cphi0,sphi0,
-     $       xr,yr
+     $       ppa,an,a,dph,r1,r2,px0,xr,yr
         real*8 dpr(npmax),rph(npmax)
         dpz0=pxy2dpz(px00,py0)
         px0= cphi0*px00+sphi0*(1.d0+dpz0)
@@ -1274,10 +1274,10 @@ c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
         use tmacro
         use mathfun, only:pxy2dpz,p2h
         implicit none
-        real*8 x,px,y,py,z,g,dv,px0,py0,zr0,bsi,al,a,
-     $       dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
-     $       pxm,pym,al1,uc,ddpx,ddpy,h2,h1,sx,sy,sz,ppa,p2,
-     $       cphi0,sphi0,px00
+        real*8 , intent(inout)::x,px,y,py,z,g,dv
+        real*8 , intent(in)::px00,py0,zr0,cphi0,sphi0,bsi,al
+        real*8 a,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
+     $       px0,pxm,pym,al1,uc,ddpx,ddpy,h2,h1,sx,sy,sz,ppa,p2
         real*8, parameter:: gmin=-0.9999d0,
      $       cave=8.d0/15.d0/sqrt(3.d0)
         dpz0=pxy2dpz(px00,py0)
