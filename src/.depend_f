@@ -10,7 +10,7 @@ IgetGL.o: IgetGL.f tfstk.o
 JNLPRM.o: JNLPRM.f toplvl.o
 LgetGL.o: LgetGL.f tfstk.o
 Lrdnum.o: Lrdnum.f tfstk.o toplvl.o
-MAIN.o: MAIN.f tfstk.o
+MAIN.o: MAIN.f tfetok.o tfstk.o
 MINV2.o: MINV2.f
 MMUL2.o: MMUL2.f
 NewGRF.o: NewGRF.f tfstk.o toplvl.o
@@ -239,8 +239,8 @@ tbbbrem.o: tbbbrem.f tfstk.o toplvl.o
 tbdecoup.o: tbdecoup.f
 tbend.o: tbend.f temit.o tffs.o tfloor.o tfstk.o
 tbend.f.o: tbend.f.f
-tbende.o: tbende.f tbend.o tbendi.o temit.o tffs.o tfloor.o tfstk.o
-tbendi.o: tbendi.f tbend.o temit.o tffs.o tfloor.o tfstk.o
+tbende.o: tbende.f tbend.o temit.o tffs.o tfloor.o tfstk.o
+tbendi.o: tbendi.f tbend.o temit.o tffs.o tfstk.o
 tbfrie.o: tbfrie.f tffs.o tfloor.o tfstk.o
 tbrad.o: tbrad.f inc/TENT.inc inc/TEXIT.inc tbend.o tbende.o tffs.o tfloor.o tfstk.o toplvl.o
 tcav.o: tcav.f inc/TENT.inc inc/TEXIT.inc tffs.o tfloor.o
@@ -437,8 +437,8 @@ tspac.o: tspac.f tffs.o tfstk.o toplvl.o
 tspect.o: tspect.f tffs.o tfstk.o
 tspin.o: tspin.f
 tspini.o: tspini.f tffs.o tfstk.o
-tsteee.o: tsteee.f temit.o tffs.o tfloor.o
-tsteer.o: tsteer.f inc/TENT.inc inc/TEXIT.inc temit.o tffs.o tfloor.o
+tsteee.o: tsteee.f tbend.o temit.o tffs.o tfloor.o
+tsteer.o: tsteer.f inc/TENT.inc inc/TEXIT.inc tbend.o temit.o tffs.o tfloor.o
 tstrad.o: tstrad.f inc/TENT.inc inc/TEXIT.inc tffs.o
 tsvdm.o: tsvdm.f tfstk.o
 ttcav.o: ttcav.f inc/TENT.inc inc/TEXIT.inc tffs.o tfloor.o

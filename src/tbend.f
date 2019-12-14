@@ -165,7 +165,7 @@
      $     rhosq,
      $     akk,akxsq,akysq,akx,aky,dcx,aksx,dcy,aksy,phix,phiy,
      $     spx,spy,sxkx,syky,dcxkx,xsxkx
-      real*8 , save :: akxi=0.d0,alxi=0.d0
+      real*8 , save :: akxi=0.d0,alxi=0.d0,dpxi=0.d0
       real*8 ,parameter :: a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
      1     a9=35.d0/1152.d0,a11=63.d0/2816.d0,
      1     a13=231.d0/13312.d0,a15=143.d0/10240.d0,
@@ -203,13 +203,20 @@
       implicit none
       real*8, intent (in):: ak1,al
       logical*4 , intent(in), optional::force
-      if(ak1 .eq. akxi .and. al .eq. alxi)then
+c      if(present(force))then
+c        write(*,*)'tbendiinit ',force,ak1,akxi,al,alxi,dpxi,dp
+c      else
+c        write(*,*)'tbendiinit-noforce ',ak1,akxi,al,alxi,dpxi,dp
+c      endif
+      if(ak1 .eq. akxi .and. al .eq. alxi .and. dpxi .eq. dp)then
         if(.not. present(force) .or. .not. force)then
           return
         endif
       endif
       akxi=ak1
       alxi=al
+      dpxi=dp
+      p=1.d0+dp
       rhosq=rho0*rhoe
       drhop=(rhoe-rho0)/rhosq
       akk=ak1/al
