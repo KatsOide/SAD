@@ -13,7 +13,8 @@
       subroutine tbendeinit(ak1,al,force)
       implicit none
       real*8 , intent(in) :: ak1,al
-      logical*4 , intent(in), optional::force      
+      logical*4 , intent(in), optional::force
+      p=1.d0+dp
       rhoe=rhob*p
       if(present(force))then
         call tbendiinit(ak1,al,force)
