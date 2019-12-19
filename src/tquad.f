@@ -59,7 +59,7 @@ c          p=(1.d0+g(i))**2
         endif
         if(f1in .ne. 0.d0)then
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         px0,py0,zr0,1.d0,0.d0,bsi,f1in)
+     $         px0,py0,zr0,bsi,f1in,0.d0)
         endif
         px0=px
         py0=py
@@ -96,7 +96,7 @@ c          p=(1.d0+g(i))**2
           call tsetphotongeo(0.d0,0.d0,0.d0,.false.)
         endif
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       px0,py0,zr0,1.d0,0.d0,bsi,f1out)
+     $       px0,py0,zr0,bsi,f1out,0.d0)
       endif
       include 'inc/TEXIT.inc'
       return
@@ -351,7 +351,7 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
       endif
       if(enarad)then
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       px0,py0,zr0,1.d0,0.d0,bsi,al)
+     $       px0,py0,zr0,bsi,al,0.d0)
       endif
       include 'inc/TEXIT.inc'
       return

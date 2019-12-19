@@ -90,12 +90,8 @@ c          p=(1.d0+g(i))**2
           endif
           if(f1in .ne. 0.d0)then
             call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           pxr0,pyr0,zr0,1.d0,0.d0,bsi,f1in)
+     $           pxr0,pyr0,zr0,bsi,f1in,0.d0)
           endif
-          pxr0=px
-          pyr0=py
-          zr0=z
-          bsi=0.d0
           call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         pxr0,pyr0,zr0,bsi,
      $         al,ak,bz,0.d0,0.d0,eps0,
@@ -200,7 +196,7 @@ c          p=(1.d0+g(i))**2
           call tsetphotongeo(0.d0,0.d0,0.d0,.false.)
         endif
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       pxr0,pyr0,zr0,1.d0,0.d0,bsi,f1out)
+     $       pxr0,pyr0,zr0,bsi,f1out,0.d0)
       endif
       if(theta .ne. 0.d0)then
         do i=1,np

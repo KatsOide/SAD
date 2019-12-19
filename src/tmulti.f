@@ -459,11 +459,7 @@ c        vnominal=0.d0
               endif
             endif
             call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           pxr0,pyr0,zr0,1.d0,0.d0,bsi,al1)
-            pxr0=px
-            pyr0=py
-            zr0=z
-            bsi=0.d0
+     $           pxr0,pyr0,zr0,bsi,al1,0.d0)
           endif
           ibsi=0
         endif
@@ -610,7 +606,7 @@ c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
             call tsetphotongeo(al1,0.d0,0.d0,.false.)
           endif
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         pxr0,pyr0,zr0,1.d0,0.d0,bsi,al1)
+     $         pxr0,pyr0,zr0,bsi,al1,0.d0)
         endif
       endif
  1000 if(theta2 .ne. 0.d0)then
