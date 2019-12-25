@@ -85,7 +85,7 @@
       sinhc2=sinhc(2.d0*phi)
       xsin2=xsin(2.d0*phi)
       xsinh2=xsinh(2.d0*phi)
-      if(akr .gt. 0.d0)then
+      if(ak .gt. 0.d0)then
         a11=cos(phi)
         a12=sin(phi)/akk
         a21=-a12*akk**2

@@ -11,12 +11,13 @@
       type (sad_rlist), pointer :: klr
       integer*8 ifvh,kx
       integer*4 level,irtc
-      real*8 trans(6,12),cod(6),beam(42),srot(3,9),al,ak,bz,
-     $    dx,dy,theta,radlvl,f1in,f2in,f1out,f2out,eps0,
-     $     aln,akn
+      real*8 , intent(in)::ak,al,bz,dx,dy,theta,
+     $     f1in,f2in,f1out,f2out,eps0
+      real*8 trans(6,12),cod(6),beam(42),srot(3,9),
+     $    radlvl,aln,akn
       integer*4 mfring,l
       logical*4 fringe,forward
-      real*8 bxs,bys,bzs,ali,alm,aki,akm,rb
+      real*8 bxs,bys,bzs,ali,alm,aki,akm,rb,theta1,ak1
       integer*4 itgetqraddiv
       integer*4 i,l1,m,ndiv
       integer*4 , parameter :: ndivmax=1000
@@ -44,16 +45,23 @@ c        ilist(1,ifvh-2)=-1
       krad=enarad .and. al .ne. 0.d0
       cod(2)=cod(2)+.5d0*bz*dy
       cod(4)=cod(4)-.5d0*bz*dx
+      if(ak .lt. 0.d0)then
+        theta1=theta-m_pi_2
+        ak1=-ak
+      else
+        theta1=theta
+        ak1=ak
+      endif
       call tsolrot(trans,cod,beam,al,0.d0,dx,dy,0.d0,
-     $     0.d0,0.d0,theta,bxs,bys,bzs,.true.)
+     $     0.d0,0.d0,theta1,bxs,bys,bzs,.true.)
       if(krad)then
         call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
       endif
       if(fringe .and. mfring .ge. 0 .and. mfring .ne. 2)then
-        call tqfrie(trans,cod,beam,ak,al,bz)
+        call tqfrie(trans,cod,beam,ak1,al,bz)
       endif
       if(mfring .eq. 1 .or. mfring .eq. 3)then
-        call tqlfre(trans,cod,beam,al,ak,f1in,f2in,bz)
+        call tqlfre(trans,cod,beam,al,ak1,f1in,f2in,bz)
       endif
       if(krad .and. f1in .ne. 0.d0)then
         call tradke(trans,cod,beam,srot,f1in,0.d0,bz*.5d0)
@@ -63,16 +71,17 @@ c        ilist(1,ifvh-2)=-1
       if(ifv .eq. 0)then
         if(krad)then
           if(eps0 .eq. 0.d0)then
-            ndiv=max(1,itgetqraddiv(cod,ak,al,bzs*.5d0))
+            ndiv=max(1,itgetqraddiv(cod,ak1,al,bzs*.5d0))
           else
-            ndiv=max(1,int(dble(itgetqraddiv(cod,ak,al,bzs*.5d0))/eps0))
+            ndiv=max(1,
+     $           int(dble(itgetqraddiv(cod,ak1,al,bzs*.5d0))/eps0))
           endif
           ndiv=min(ndivmax,ndiv)
         else
           ndiv=1
         endif
         aln=al/ndiv
-        akn=ak/ndiv
+        akn=ak1/ndiv
         do i=1,ndiv
           call tsolque(trans,cod,beam,srot,aln,akn,
      $         bz,0.d0,0.d0,eps0,krad,radcod,
@@ -99,7 +108,7 @@ c        ilist(1,ifvh-2)=-1
             return
           endif
           alm=al/(m-1)
-          akm=ak/(m-1)
+          akm=ak1/(m-1)
           do i=1,m
             if(forward)then
               rb=klr%rbody(i)
@@ -124,23 +133,23 @@ c        ilist(1,ifvh-2)=-1
             go to 1
           else
             level=itfdownlevel()
-            call tsolque(trans,cod,beam,srot,al,ak,
+            call tsolque(trans,cod,beam,srot,al,ak1,
      $           bz,0.d0,0.d0,
      $           eps0,krad,radcod,calpol,irad)
           endif
         endif
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
-        call tqlfre(trans,cod,beam,al,ak,-f1out,f2out,bz)
+        call tqlfre(trans,cod,beam,al,ak1,-f1out,f2out,bz)
       endif
       if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
-        call tqfrie(trans,cod,beam,-ak,al,bz)
+        call tqfrie(trans,cod,beam,-ak1,al,bz)
       endif
       if(krad .and. f1out .ne. 0.d0)then
         call tradke(trans,cod,beam,srot,f1out,0.d0,bzs*.5d0)
       endif
       call tsolrot(trans,cod,beam,al,0.d0,dx,dy,0.d0,
-     $     0.d0,0.d0,theta,bxs,bys,bzs,.false.)
+     $     0.d0,0.d0,theta1,bxs,bys,bzs,.false.)
       cod(2)=cod(2)-.5d0*bz*dy
       cod(4)=cod(4)+.5d0*bz*dx
       return

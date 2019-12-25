@@ -277,7 +277,7 @@ c        endif
       
       end module
 
-      recursive subroutine tsolque(trans,cod,beam,srot,al,ak,
+      subroutine tsolque(trans,cod,beam,srot,al,ak,
      $     bz0,ak0x,ak0y,eps0,enarad,radcod,calpol,irad)
       use tsolz
       use tmacro, only:bradprev
@@ -329,15 +329,18 @@ c        endif
         call tdrife(trans,cod,beam,srot,al,
      $       bz0,ak0x,ak0y,al,.true.,enarad,irad)
         return
+c      elseif(ak .lt. 0.d0)then
+c        write(*,*)'tsolque-implementation error ',ak
+c        stop
       endif
-      if(al*ak .lt. 0.d0)then
-        call texchg(trans,cod,beam,srot,1.d0,calpol)
-        call tsolque(trans,cod,beam,srot,al,-ak,
-     $       bz0,ak0y,-ak0x,eps0,enarad,radcod,calpol,irad)
-        call texchg(trans,cod,beam,srot,-1.d0,calpol)
+c      if(al*ak .lt. 0.d0)then
+c        call texchg(trans,cod,beam,srot,1.d0,calpol)
+c        call tsolque(trans,cod,beam,srot,al,-ak,
+c     $       bz0,ak0y,-ak0x,eps0,enarad,radcod,calpol,irad)
+c        call texchg(trans,cod,beam,srot,-1.d0,calpol)
 c        write(*,'(a,1p8g13.5)')'tsolque-out ',ak,bz,cod
-        return
-      endif
+c        return
+c      endif
       bz=bz0
       if(eps0 .eq. 0.d0)then
         eps=0.1d0
@@ -351,7 +354,7 @@ c      endif
       aln=al/ndiv
       dx0=ak0x/ak
       dy0=ak0y/ak
-      akk=ak/al
+      akk=ak/abs(al)
       br=tbrhoz()
       b1=br*akk
       call tinitr(trans1)
@@ -554,12 +557,6 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
       enddo
       call tqente(trans,cod,beam,aln*.5d0,bz,calpol,irad)
       if(enarad)then
-c        bx= b1*cod(3)
-c        by= b1*cod(1)
-c        bxy= b1
-c        call trade(trans,beam,cod,bx,by,bz*br,bz,
-c     $       0.d0,bxy,0.d0,0.d0,
-c     $       .5d0*aln,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
         call tradke(trans,cod,beam,srot,aln,0.d0,bzh)
       endif
       bradprev=0.d0

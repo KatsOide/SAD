@@ -228,11 +228,7 @@ c     end   initialize for preventing compiler warning
           py(i)=py(i)+fy/pr
         enddo
       endif
-      if(imag(ak(1)) .eq. 0.d0)then
-        theta1=0.d0
-      else
-        theta1=atan2(imag(ak(1)),dble(ak(1)))*.5d0
-      endif
+      call akang(ak(1),theta1,cr1)
       theta2=theta+dtheta+theta1
       if(theta2 .ne. 0.d0)then
         cost=cos(theta2)
@@ -256,7 +252,6 @@ c     end   initialize for preventing compiler warning
       endif
 c      write(*,'(2a,1p7g12.5)')'tmulti ',pname(latt(1,l))(1:8),rtaper,
 c     $     x(np),px(np),y(np),py(np),z(np),g(np)
-      cr1=dcmplx(cos(theta1),-sin(theta1))
       akr(0)=(ak(0)*cr1+dcmplx(bys*al,bxs*al))*rtaper
       do n=nmult,0,-1
         if(ak(n) .ne. (0.d0,0.d0))then
