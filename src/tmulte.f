@@ -179,7 +179,7 @@
       enddo
       akn(1)=dble(akn(1))
       ak1=dble(akn(1))*.5d0
-      write(*,*)'tmulte-ak1 ',akn(1),ak(1),cr1
+c      write(*,*)'tmulte-ak1 ',akn(1),ak(1),cr1
       al1=aln*.5d0
       ak0n=akn(0)*.5d0
       if(al .ne. 0.d0)then
