@@ -278,7 +278,7 @@ c        endif
       end module
 
       subroutine tsolque(trans,cod,beam,srot,al,ak,
-     $     bz0,ak0x,ak0y,eps0,enarad,radcod,calpol,irad)
+     $     bz0,ak0x,ak0y,eps0,enarad,irad)
       use tsolz
       use tmacro, only:bradprev
       use tspin, only:tradke
@@ -300,7 +300,7 @@ c        endif
      $     dv,dvdp,xi,yi,pxi,pyi,xf,yf,pxf,pyf,
      $     tbrhoz,b1,br,bz0,cw,phieps,al1,
      $     awu,dwu,awup,dwup,dz1,dz2,dz1p,dz2p
-      logical*4 enarad,calpol,radcod
+      logical*4 enarad
       external tbrhoz
       parameter (phieps=1.d-2)
         associate (
@@ -364,7 +364,10 @@ c     end   initialize for preventing compiler warning
       call tzsetparamp(tz)
       al1=aln*.5d0
       do n=1,ndiv
-        call tqente(trans,cod,beam,al1,bz,calpol,irad)
+        call tqente(trans,cod,beam,al1,bz,irad)
+c      write(*,'(a/,6(1p6g11.4/))')
+c     $     'tsolque-1 ',(trans(i,1:6),i=1,6)
+c      write(*,*)'with: ',al1,bz,irad
         xi0=cod(1)
         yi0=cod(3)
         xi=xi0+dx0
@@ -546,6 +549,8 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
      $       +trans1(4,1:4)*trans1(3,6)
         trans1(5,6)=trans1(5,6)
      $       -(pxi*trans1(5,2)+pyi*trans1(5,4))
+c        write(*,'(a,1p6g15.7)')'tsolque-trans  ',trans(1,1:6)
+c        write(*,'(a,1p6g15.7)')'tsolque-trans1 ',trans1(1,1:6)
         call tmultr5(trans,trans1,irad)
         if(irad .gt. 6)then
           call tmulbs(beam ,trans1,.false.,.true.)
@@ -555,7 +560,7 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
         endif
         al1=aln
       enddo
-      call tqente(trans,cod,beam,aln*.5d0,bz,calpol,irad)
+      call tqente(trans,cod,beam,aln*.5d0,bz,irad)
       if(enarad)then
         call tradke(trans,cod,beam,srot,aln,0.d0,bzh)
       endif

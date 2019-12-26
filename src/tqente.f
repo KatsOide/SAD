@@ -133,9 +133,10 @@
      $       +trans2(2,4)*trans2(1,6)
      $       -trans2(3,4)*trans2(4,6)
      $       +trans2(4,4)*trans2(3,6)
-c      write(*,'(a/,6(1p6g11.4/))')
-c     $     'tqente-2 ',((trans2(i,j),j=1,6),i=1,6)
         call tmultr5(trans,trans2,irad)
+c      write(*,'(a/,6(1p6g11.4/))')
+c     $     'tqente-2 ',((trans(i,j),j=1,6),i=1,6)
+c      write(*,*)'with irad: ',irad
       endif
       if(irad .gt. 6)then
         call tmulbs(beam,trans2,.true.,.true.)

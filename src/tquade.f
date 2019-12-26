@@ -121,11 +121,9 @@ c          endif
 c          als=als+aln
         if(kin)then
           if(n .eq. 1)then
-            call tqente(trans,cod,beam,aln*.5d0,0.d0,
-     $           calpol,irad)
+            call tqente(trans,cod,beam,aln*.5d0,0.d0,irad)
           else
-            call tqente(trans,cod,beam,aln     ,0.d0,
-     $           calpol,irad)
+            call tqente(trans,cod,beam,aln     ,0.d0,irad)
           endif
         endif
         xi =cod(1)
@@ -247,8 +245,7 @@ c          als=als+aln
         endif
 100   continue
       if(kin)then
-        call tqente(trans,cod,beam,aln*.5d0,0.d0,
-     $       calpol,irad)
+        call tqente(trans,cod,beam,aln*.5d0,0.d0,irad)
       endif
 c      if(krad)then
 c        bx= b1*cod(3)

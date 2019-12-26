@@ -157,7 +157,7 @@ c     $       .false.,
      $       cmp%value(ky_ROT_QUAD),
      1       radlvl,cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $       ftable(1),ftable(2),ftable(3),ftable(4),
-     $       mfr,cmp%value(ky_EPS_QUAD),l,dir)
+     $       mfr,cmp%value(ky_EPS_QUAD))
       case(icMULT)
         if(seg)then
           call tmulteseg(trans,cod,beam,srot,l,cmp,bzs,lsegp,rtaper)

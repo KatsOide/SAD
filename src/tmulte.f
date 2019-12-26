@@ -223,7 +223,7 @@
      $         bzs,dble(ak0n),imag(ak0n),
      $         eps0,
      $         krad,
-     $         radcod,calpol,irad)
+     $         irad)
           call tgetdvh(dgb,dv)
           cod(5)=cod(5)+dv*al1
         endif
@@ -373,7 +373,7 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
       if(nmmin .eq. 2)then
         call tsolque(trans,cod,beam,srot,al1*.5d0,ak1*.5d0,
      $       bzs,dble(ak0n)*.5d0,imag(ak0n)*.5d0,
-     $       eps0,krad,radcod,calpol,irad)
+     $       eps0,krad,irad)
         call tgetdvh(dgb,dv)
         cod(5)=cod(5)+dv*al1*.5d0
       endif
