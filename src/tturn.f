@@ -205,7 +205,7 @@ c      isb=ilist(2,iwakepold+6)
 c      call tfmemcheckprint('tturn',0,.false.,irtc)
       do l=lbegin,lend
         l_track=l
-c        if(mod(l,10) .eq. 0)then
+c        if(mod(l,1) .eq. 0)then
 c          write(*,*)'tturn1 ',l
 c        endif
 c        call tfmemcheckprint('tturn',l,.false.,irtc)

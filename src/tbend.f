@@ -790,11 +790,7 @@ c        write(*,*)t2,t3,t2+t3,t2t3,px1+px3,px1px3
 100   continue
       if(enarad)then
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       px0,py0,zr0,cos(phi0),sin(phi0),bsi,alr)
-        px0=px
-        py0=py
-        zr0=z
-        bsi=0.d0
+     $       px0,py0,zr0,bsi,alr,phi0)
       endif
       return
       end

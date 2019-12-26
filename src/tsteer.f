@@ -160,10 +160,7 @@
             endif
           endif
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         px0,py0,zr0,1.d0,0.d0,bsi,alr)
-          px0=px
-          py0=py
-          zr0=z
+     $         px0,py0,zr0,bsi,alr,0.d0)
         endif
       enddo
       include 'inc/TEXIT.inc'

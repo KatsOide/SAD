@@ -17,11 +17,12 @@
      $     sx(np),sy(np),sz(np),px0(np),py0(np),zr0(np),bsi(np),
      $     alx(-1:ndivmax+2),alr(-1:ndivmax+2),
      $     akxn(-1:ndivmax+2),phixn(-1:ndivmax+2),
+     $     cphixn(-1:ndivmax+2),sphixn(-1:ndivmax+2),
      $     al,phib,phi0,cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,cost,sint,fb1,fb2,eps0,
      $     tanp1,tanp2,aind,b,dxfr1,dyfr1,dyfra1,pr,eps,
      $     af,f,fpx,ff,aln,f1r,f2r,akx0,alx0,
-     $     phix0,cphix,sphix,alc,
+     $     phix0,alc,
      $     dxfr2,dyfr2,dyfra2,dtheta
       logical*4 enarad,fringe,krad
       call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,.true.)
@@ -91,6 +92,8 @@ c     dp=g(i)*(2.d0+g(i))
         call tbendal(n,ndiv,f1r,f2r,aln,alx(n),alr(n))
         akxn(n)=ak*alx(n)/al
         phixn(n)=phi0*alx(n)/al
+        cphixn(n)=cos(phixn(n))
+        sphixn(n)=sin(phixn(n))
       enddo
       do i=1,np
         dp=g(i)
@@ -120,17 +123,16 @@ c     dp=g(i)*(2.d0+g(i))
           call tbendibody(alx(n))
           if(krad)then
             bsi(i)=bsi(i)+akxn(n)/alx(n)*xi*yi
-            cphix=cos(phixn(n))
-            sphix=sin(phixn(n))
             if(n .ne. n2)then
               if(rfluct)then
                 call tradkf1(xi,pxi,yi,pyi,zi,dp,dv(i),
      $               sx(i),sy(i),sz(i),
      $               px0(i),py0(i),zr0(i),
-     $               cphix,sphix,bsi(i),alr(n),i)
+     $               cphixn(n),sphixn(n),bsi(i),alr(n),i)
               else
                 call tradk1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
-     $               px0(i),py0(i),zr0(i),cphix,sphix,bsi(i),alr(n))
+     $               px0(i),py0(i),zr0(i),cphixn(n),sphixn(n),
+     $               bsi(i),alr(n))
               endif
               px0(i)=pxi
               py0(i)=pyi
@@ -176,7 +178,7 @@ c        write(*,'(a,1p6g15.7)')'tbendi-2 ',zi,z(i),xi,x(i),ff,fpx
       endif
       if(krad)then
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       px0,py0,zr0,cphix,sphix,bsi,alr(n2))
+     $       px0,py0,zr0,bsi,alr(n2),phixn(n2))
       endif
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)

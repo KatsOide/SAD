@@ -66,18 +66,13 @@
      $       eps0,enarad,fringe,fb1,fb2,mfring,l)
         return
       endif
-      if(imag(ak(1)) .eq. 0.d0)then
-        theta1=0.d0
-      else
-        theta1=atan2(imag(ak(1)),dble(ak(1)))*.5d0
-      endif
+      call akang(ak(1),theta1,cr1)
       call tsolrot(trans,cod,beam,al,bz0,dx,dy,dz,
      $     chi1,chi2,theta+dtheta+theta1,bxs,bys,bzs,.true.)
       krad=enarad .and. al .ne. 0.d0
       if(krad)then
         call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
       endif
-      cr1=dcmplx(cos(theta1),-sin(theta1))
       akn(0)=(ak(0)*cr1+dcmplx(bys,bxs)*al)*rtaper
       bz=bz0
       do n=nmult,0,-1
@@ -184,6 +179,7 @@
       enddo
       akn(1)=dble(akn(1))
       ak1=dble(akn(1))*.5d0
+      write(*,*)'tmulte-ak1 ',akn(1),ak(1),cr1
       al1=aln*.5d0
       ak0n=akn(0)*.5d0
       if(al .ne. 0.d0)then
@@ -227,7 +223,7 @@
      $         bzs,dble(ak0n),imag(ak0n),
      $         eps0,
      $         krad,
-     $         radcod,calpol,irad)
+     $         irad)
           call tgetdvh(dgb,dv)
           cod(5)=cod(5)+dv*al1
         endif
@@ -377,7 +373,7 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
       if(nmmin .eq. 2)then
         call tsolque(trans,cod,beam,srot,al1*.5d0,ak1*.5d0,
      $       bzs,dble(ak0n)*.5d0,imag(ak0n)*.5d0,
-     $       eps0,krad,radcod,calpol,irad)
+     $       eps0,krad,irad)
         call tgetdvh(dgb,dv)
         cod(5)=cod(5)+dv*al1*.5d0
       endif
