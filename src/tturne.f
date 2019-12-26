@@ -616,11 +616,11 @@ c          endif
 c            call tfevals('Print["PROF-TTE-0: ",LINE["PROFILE","Q1"]]',
 c     $       kxx,irtc)
             call tmulteseg(trans,cod,beam,srot,
-     $           l,cmp,0.d0,lsegp,rtaper)
+     $           l,cmp,0.d0,lsegp,.true.,rtaper)
 c            call tfevals('Print["PROF-TTE-1: ",LINE["PROFILE","Q1"]]',
 c     $       kxx,irtc)
           else
-            call tmulte1(trans,cod,beam,srot,l,cmp,0.d0,rtaper)
+            call tmulte1(trans,cod,beam,srot,l,cmp,0.d0,.true.,rtaper)
           endif
 
         case (icCAVI)
@@ -906,7 +906,7 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
       end
 
       subroutine tmulteseg(trans,cod,beam,srot,
-     $     l,cmp,bzs,lsegp,rtaper)
+     $     l,cmp,bzs,lsegp,enarad,rtaper)
       use kyparam
       use tfstk
       use ffs
@@ -923,6 +923,7 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
       integer*4 i,nseg,i1,i2,istep,k,l,k1,k2,nk
       integer*8 kk
       integer*4 , parameter :: nc=ky_PROF_MULT-1
+      logical*4 , intent(in)::enarad
       rsave(1:nc)=cmp%value(1:nc)
       nk=lsegp%nl
       call descr_sad(lsegp%dbody(1),lal)
@@ -956,13 +957,13 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
           endif
           cmp%value(k1)=cmp%value(k1)+rsave(k2)*lkv%rbody(i)
         enddo
-        call tmulte1(trans,cod,beam,srot,l,cmp,bzs,rtaper)
+        call tmulte1(trans,cod,beam,srot,l,cmp,bzs,enarad,rtaper)
       enddo
       cmp%value(1:nc)=rsave(1:nc)
       return
       end
 
-      subroutine tmulte1(trans,cod,beam,srot,l,cmp,bzs,rtaper)
+      subroutine tmulte1(trans,cod,beam,srot,l,cmp,bzs,enarad,rtaper)
       use kyparam
       use tfstk
       use tffitcode
@@ -977,6 +978,7 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
       real*8 trans(6,12),cod(6),beam(42),srot(3,9),phi,al,ftable(4),
      $     psi1,psi2,apsi1,apsi2,fb1,fb2,chi1,chi2,rtaper,
      $     bzs
+      logical*4 , intent(in):: enarad
       al=cmp%value(ky_L_MULT)
       phi=cmp%value(ky_ANGL_MULT)
       mfr=nint(cmp%value(ky_FRMD_MULT))
@@ -1010,7 +1012,7 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
      $     chi1,chi2,cmp%value(ky_ROT_MULT),
      $     cmp%value(ky_DROT_MULT),
      $     cmp%value(ky_EPS_MULT),
-     $     cmp%value(ky_RAD_MULT) .eq. 0.d0,
+     $     enarad .and. cmp%value(ky_RAD_MULT) .eq. 0.d0,
      $     cmp%value(ky_FRIN_MULT) .eq. 0.d0,
      $     ftable(1),ftable(2),ftable(3),ftable(4),
      $     mfr,fb1,fb2,

@@ -51,25 +51,24 @@
       else
         call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
       endif
-c      if(ifv .eq. 0)then
-        if(krad)then
-          if(eps0 .eq. 0.d0)then
-            ndiv=max(1,itgetqraddiv(cod,ak1,al,bzs*.5d0))
-          else
-            ndiv=max(1,
-     $           int(dble(itgetqraddiv(cod,ak1,al,bzs*.5d0))/eps0))
-          endif
-          ndiv=min(ndivmax,ndiv)
+      if(krad)then
+        if(eps0 .eq. 0.d0)then
+          ndiv=max(1,itgetqraddiv(cod,ak1,al,bzs*.5d0))
         else
-          ndiv=1
+          ndiv=max(1,
+     $         int(dble(itgetqraddiv(cod,ak1,al,bzs*.5d0))/eps0))
         endif
+        ndiv=min(ndivmax,ndiv)
+      else
+        ndiv=1
+      endif
 c        write(*,*)'tquase ',ndiv,krad,irad,radlvl
-        aln=al/ndiv
-        akn=ak1/ndiv
-        do i=1,ndiv
-          call tsolque(trans,cod,beam,srot,aln,akn,
-     $         bz,0.d0,0.d0,eps0,krad,irad)
-        enddo
+      aln=al/ndiv
+      akn=ak1/ndiv
+      do i=1,ndiv
+        call tsolque(trans,cod,beam,srot,aln,akn,
+     $       bz,0.d0,0.d0,eps0,krad,irad)
+      enddo
       if(mfring .eq. 2 .or. mfring .eq. 3)then
         call tqlfre(trans,cod,beam,al,ak1,-f1out,f2out,bz)
       endif

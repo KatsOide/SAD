@@ -179,7 +179,6 @@
       enddo
       akn(1)=dble(akn(1))
       ak1=dble(akn(1))*.5d0
-c      write(*,*)'tmulte-ak1 ',akn(1),ak(1),cr1
       al1=aln*.5d0
       ak0n=akn(0)*.5d0
       if(al .ne. 0.d0)then
@@ -227,6 +226,8 @@ c      write(*,*)'tmulte-ak1 ',akn(1),ak(1),cr1
           call tgetdvh(dgb,dv)
           cod(5)=cod(5)+dv*al1
         endif
+c        write(*,'(a,i5,/,6(1p6g15.7/))')'tmulte-1 ',m,
+c     $       (trans(i,1:6),i=1,6)
         ak1=dble(akn(1))
         al1=aln
         ak0n=akn(0)

@@ -358,7 +358,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         if(seg)then
 c     call tmulteseg(trans,cod,beam,i,cmp,bzs*dir,lal,1.d0,i)
         else
-          call tmulte1(trans,cod,beam,srot,i,cmp,bzs*dir,1.d0,i)
+          call tmulte1(trans,cod,beam,srot,i,cmp,bzs*dir,.false.,1.d0)
         endif
         call setdirelc(i,direlc(i)*dir)
         xf=cod(1)
