@@ -392,8 +392,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      $         fb10,fb20,fringe,eps,enarad)
         elseif(phib .eq. phi0)then
           call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
-     1         dx,dy,theta+dtheta,
-     $         cos(theta+dtheta),sin(theta+dtheta),0.d0,.true.,
+     1         dx,dy,theta+dtheta,0.d0,.true.,
      1         fringe,0.d0,0.d0,0,eps,.true.)
         else
           akm=0.d0

@@ -333,10 +333,9 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
      $       sxf,syf,szf,
      $       al,ak1,bzs*dir,
      $       cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),theta,
-     1       cos(theta),sin(theta),
      1       1.d0,cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $       ftable(1),ftable(2),ftable(3),ftable(4),
-     $       mfr,cmp%value(ky_EPS_QUAD),i,dirf)
+     $       mfr,cmp%value(ky_EPS_QUAD))
         call setdirelc(i,direlc(i)*dir)
         pxf=pxf*dir+f*yf
         pyf=pyf*dir-f*xf

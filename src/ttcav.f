@@ -1,11 +1,13 @@
-      subroutine ttcav(np,x,px,y,py,z,g,dv,
+      subroutine ttcav(np,x,px,y,py,z,g,dv,sx,sy,sz,
      1                 al,ak,harm,phi,freq,dx,dy,theta)
       use tmacro
+      use ffs_flag, only:calpol
       use mathfun
       implicit none
       integer*4 np,i
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np)
-      real*8 al,ak,harm,phi,freq,dx,dy,theta,cost,sint,w,phic,
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+     $     sx(np),sy(np),sz(np)
+      real*8 al,ak,harm,phi,freq,dx,dy,theta,cost,sint,w,phic,x0,
      $     dp1r,p1r,p1,h1,t,ph,dh,h2,a,dpr,dp2r,p2r,xi,pxi,v
       if(al .ne. 0.d0)then
         call tdrift_free(np,x,px,y,py,z,dv,al*.5d0)

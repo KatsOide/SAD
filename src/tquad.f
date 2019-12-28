@@ -1,31 +1,44 @@
-      subroutine tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
-     1                 dx,dy,theta,cost,sint,radlvl,chro,
+      subroutine tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak0,
+     1                 dx,dy,theta,radlvl,chro,
      1                 fringe,f1in,f2in,f1out,f2out,mfring,eps0,kin)
       use ffs_flag
       use tmacro
 c      use ffs_pointer, only:inext,iprev
       use tfstk, only:ktfenanq
       use photontable,only:tsetphotongeo
-      use mathfun, only:pxy2dpz,sqrt1
+      use sol
+      use mathfun, only:pxy2dpz,sqrt1,akang
       use tspin
       implicit none
       logical*4 enarad,chro,fringe,kin
       integer*4 np,i,mfring
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     px0(np),py0(np),zr0(np),bsi(np),
-     $     al,ak,dx,dy,theta,cost,sint,radlvl,eps0,alr,
-     $     f1in,f1out,f2in,f2out,p,a,ea,b,pxi,pxf,pyf,xi
+     $     al,ak0,ak,dx,dy,theta,radlvl,eps0,alr,
+     $     f1in,f1out,f2in,f2out,p,a,ea,b,pxf,pyf,
+     $     theta2,theta1,bxs,bys,bzs
+      complex*16 cr1
       real*8 sx(np),sy(np),sz(np)
       real*8, parameter :: ampmax=0.9999d0
       if(al .eq. 0.d0)then
-        call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,4,0.d0,ak,
-     $             dx,dy,theta,cost,sint, 1.d0,.false.)
+        call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,4,0.d0,ak0,
+     $             dx,dy,theta,1.d0,.false.)
         return
-      elseif(ak .eq. 0.d0)then
+      elseif(ak0 .eq. 0.d0)then
         call tdrift_free(np,x,px,y,py,z,dv,al)
         return
       endif
-      include 'inc/TENT.inc'
+      call akang(dcmplx(ak0,0.d0),al,theta1,cr1)
+      if(theta1 .ne. 0.d0)then
+        ak=-ak0
+      else
+        ak=ak0
+      endif
+c      write(*,*)'tquad ',ak,ak0,al
+      theta2=theta+theta1
+      call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
+     $     al,0.d0,dx,dy,0.d0,
+     $     0.d0,0.d0,theta2,bxs,bys,bzs,.true.)
       enarad=rad .and. radlvl .ne. 1.d0
       if(enarad)then
         px0=px
@@ -55,7 +68,7 @@ c          p=(1.d0+g(i))**2
       endif
       if(enarad)then
         if(photons)then
-          call tsetphotongeo(0.d0,0.d0,theta,.true.)
+          call tsetphotongeo(0.d0,0.d0,theta2,.true.)
         endif
         if(f1in .ne. 0.d0)then
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -98,13 +111,15 @@ c          p=(1.d0+g(i))**2
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       px0,py0,zr0,bsi,f1out,0.d0)
       endif
-      include 'inc/TEXIT.inc'
+      call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
+     $     al,0.d0,dx,dy,0.d0,
+     $     0.d0,0.d0,theta2,bxs,bys,bzs,.false.)
       return
       end
 c
       subroutine tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     nord,al,ak,
-     1     dx,dy,theta,cost,sint,radlvl,fringe)
+     1     dx,dy,theta,radlvl,fringe)
       use ffs_flag
       use tmacro
       use tspin
@@ -144,11 +159,13 @@ c     end   initialize for preventing compiler warning
         return
       endif
       enarad=rad .and. radlvl .eq. 0.d0 .and. al .ne. 0.d0
-c      if(enarad .and. trpt .and. rfluct)then
-c        call tthinrad(np,x,px,y,py,z,g,dv,sx,sy,sz,nord,l,al,ak,
-c     1                 dx,dy,theta,cost,sint,fringe)
-c        return
-c      endif
+      if(theta .ne. 0.d0)then
+        cost=cos(theta)
+        sint=sin(theta)
+      else
+        cost=1.d0
+        sint=0.d0
+      endif
       include 'inc/TENT.inc'
       if(enarad)then
         px0=px

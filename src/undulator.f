@@ -11,6 +11,7 @@ c                                        Dec  1994                c
 c                                                                 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       use tmacro
+      use ffs_flag, only:calpol
       implicit real*8 (a-h,o-z)
 c      implicit none
       parameter (nsli=1,npole=2,len=3,i_F0=4,i_G0=5,i_dph=6,

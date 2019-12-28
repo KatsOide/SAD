@@ -22,4 +22,11 @@ C TENT
               py(i)=pxi*sint+py(i)*cost
             enddo
           endif
+          if(calpol)then
+            do i=1,np
+              xi=sx(i)
+              sx(i)=cost*xi-sint*sy(i)
+              sy(i)=sint*xi+cost*sy(i)
+            enddo
+          endif
         endif

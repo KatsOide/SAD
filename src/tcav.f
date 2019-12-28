@@ -1,4 +1,4 @@
-      subroutine tcav(np,x,px,y,py,z,g,dv,al,vc,
+      subroutine tcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,vc,
      $     w,phi,dphi,vnominal,
      $     lwl,wakel,lwt,waket,
      $     dx,dy,theta,v1,v20,v11,v02,
@@ -11,7 +11,8 @@
       real*8 eps,oneev
       parameter (eps=1.d-3,ndivmax=1000,oneev=1.d0+3.83d-12)
       integer*4 np,ndiv,i,n,mfring,itab(np),lwl,lwt,izs(np)
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+     $     sx(np),sy(np),sz(np)
       real*8 wakel(2,lwl),waket(2,lwt),ws(ndivmax)
       real*8 phi,dphi,vnominal,he,al,vc,
      1     dx,dy,theta,v1,v20,v11,v02,w,wi,cost,sint,v,v1a,
@@ -169,7 +170,7 @@ c          dpr=a/(1.d0+sqrt(1.d0+a))
 20      continue
         if(lwake .or. twake)then
           fw=fw0*wsn
-          call txwake(np,x,px,y,py,z,g,dv,
+          call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         0.d0,0.d0,0.d0,
      $         int(anbunch),
      $         fw,lwl,wakel,lwt,waket,p0,h0,itab,izs,n .eq. 1)

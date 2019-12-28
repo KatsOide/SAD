@@ -411,23 +411,41 @@
       return
       end function
 
-      subroutine akang(ak,theta1,cr1)
+      subroutine akang(ak,al,theta1,cr1)
       use macmath
       implicit none
       complex*16 , intent(in)::ak
       complex*16 , intent(out)::cr1
+      real*8 , intent(in)::al
       real*8 , intent(out)::theta1
-      if(imag(ak) .eq. 0.d0)then
-        if(dble(ak) .lt. 0.d0)then
-          theta1=m_pi_2
-          cr1=(0.d0,-1.d0)
+      complex*16 a
+      if(al .eq. 0.d0)then
+        if(imag(ak) .eq. 0.d0)then
+          if(dble(ak) .lt. 0.d0)then
+            theta1=m_pi_2
+            cr1=(0.d0,-1.d0)
+          else
+            theta1=0.d0
+            cr1=(1.d0,0.d0)
+          endif
         else
-          theta1=0.d0
-          cr1=(1.d0,0.d0)
+          theta1=atan2(imag(ak),dble(ak))*.5d0
+          cr1=dcmplx(cos(theta1),-sin(theta1))
         endif
       else
-        theta1=atan2(imag(ak),dble(ak))*.5d0
-        cr1=dcmplx(cos(theta1),-sin(theta1))
+        a=ak*al
+        if(imag(a) .eq. 0.d0)then
+          if(dble(a) .lt. 0.d0)then
+            theta1=m_pi_2
+            cr1=(0.d0,-1.d0)
+          else
+            theta1=0.d0
+            cr1=(1.d0,0.d0)
+          endif
+        else
+          theta1=atan2(imag(a),dble(a))*.5d0
+          cr1=dcmplx(cos(theta1),-sin(theta1))
+        endif
       endif
       return
       end subroutine

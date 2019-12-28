@@ -1,4 +1,4 @@
-      recursive subroutine tsolqu(np,x,px,y,py,z,gp,dv,sx,sy,sz,
+      subroutine tsolqu(np,x,px,y,py,z,gp,dv,sx,sy,sz,
      $     bsi,al,ak,bz0,
      $     ak0x,ak0y,ibsi,eps0)
       use tsolz
@@ -35,19 +35,15 @@
      $     aw1=>tz%aw1,aw2=>tz%aw2,aw1p=>tz%aw1p,aw2p=>tz%aw2p,
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
-c      write(*,*)'tsolqu-0 ',al,ak,bz0
       if(ak*al .lt. 0.d0)then
-        call tsolqu(np,y,py,x,px,z,gp,dv,sx,sy,sz,
-     $       bsi,al,-ak,
-     $       -bz0,-ak0y,-ak0x,ibsi,eps0)
+        write(*,*)'tsolqu-0-implementation error ',al,ak,bz0
+        stop
+      elseif(ak .eq. 0.d0)then
+        call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,bsi,
+     $       al,bz0,ak0x,ak0y,.false.)
         return
       endif
       bz=bz0
-      if(ak .eq. 0.d0)then
-        call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,bsi,
-     $       al,bz,ak0x,ak0y,.false.)
-        return
-      endif
       z00=z(1)
       if(eps0 .eq. 0.d0)then
         eps=0.2d0
@@ -211,7 +207,7 @@ c          endif
       end associate
       end
 
-      recursive subroutine tsolqur(np,x,px,y,py,z,gp,dv,sx,sy,sz,
+      subroutine tsolqur(np,x,px,y,py,z,gp,dv,sx,sy,sz,
      $     px0,py0,zr0,bsi,al,ak,
      $     bz0,ak0x,ak0y,eps0,alr)
       use tsolz
@@ -256,24 +252,15 @@ c          endif
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
       if(ak*al .lt. 0.d0)then
-        if(photons)then
-          call tgswap(l_track)
-        endif
-        call tsolqur(np,y,py,x,px,z,gp,dv,sy,sx,sz,
-     $       py0,px0,zr0,bsi,al,-ak,
-     $       -bz0,-ak0y,-ak0x,eps0,alr)
-        if(photons)then
-          call tgswap(l_track)
-        endif
-        return
-      endif
-      bz=bz0
-      if(ak .eq. 0.d0)then
+        write(*,*)'tsolqur-0-implementation error ',al,ak,bz0
+        stop
+      elseif(ak .eq. 0.d0)then
         call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,bsi,
-     $       al,bz,ak0x,ak0y,.false.)
+     $       al,bz0,ak0x,ak0y,.false.)
         alr=al
         return
       endif
+      bz=bz0
       if(eps0 .eq. 0.d0)then
         eps=0.2d0
       else

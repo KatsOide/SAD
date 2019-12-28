@@ -270,7 +270,7 @@ c        call tfmemcheckprint('tturn',l,.false.,irtc)
             else
               rot=0.d0
             endif
-            call txwake(np,x,px,y,py,z,g,dv,
+            call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           dx,dy,rot,int(anbunch),
      $           fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
      $           p0,h0,itab,izs,.true.)
@@ -373,7 +373,6 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      1        cmp%value(ky_K1_QUAD)*rtaper,
      $        cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1        cmp%value(p_THETA_QUAD),
-     $        cmp%value(p_COSTHETA_QUAD),cmp%value(p_SINTHETA_QUAD),
      1        cmp%value(ky_RAD_QUAD),
      $        cmp%value(ky_CHRO_QUAD) .eq. 0.d0,
      1        cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
@@ -398,7 +397,6 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $        lele,al,ak1,
      1        cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
      1        cmp%value(p_THETA_THIN),
-     $        cmp%value(p_COSTHETA_THIN),cmp%value(p_SINTHETA_THIN),
      $        cmp%value(ky_RAD_THIN),
      1        cmp%value(ky_FRIN_THIN) .eq. 0.d0)
 
@@ -480,7 +478,7 @@ c     else
 c     lwtc=(ilist(1,iwptc-1)-2)/2
 c     endif
            endif
-           call tcav(np,x,px,y,py,z,g,dv,al,ak,
+           call tcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      1          cmp%value(p_W_CAVI),cmp%value(ky_PHI_CAVI),ph,
      $          cmp%value(p_VNOMINAL_CAVI),
      $          lwlc,rlist(iwplc+1),lwtc,rlist(iwptc+1),
@@ -491,7 +489,7 @@ c     endif
      $          cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
      $          int(cmp%value(p_FRMD_CAVI)),autophi)
          else
-           call tcav(np,x,px,y,py,z,g,dv,al,ak,
+           call tcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      1          cmp%value(p_W_CAVI),cmp%value(ky_PHI_CAVI),ph,
      $          cmp%value(p_VNOMINAL_CAVI),
      $          0,0.d0,0,0.d0,
@@ -517,7 +515,7 @@ c     endif
            endif
            harmf=cmp%value(ky_HARM_TCAV)-int(cmp%value(ky_HARM_TCAV))
            ph=ph+harmf*(n-1)*pi2
-           call ttcav(np,x,px,y,py,z,g,dv,al,ak,
+           call ttcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      $          cmp%value(ky_HARM_TCAV),ph,cmp%value(ky_FREQ_TCAV),
      1          cmp%value(ky_DX_TCAV),cmp%value(ky_DY_TCAV),
      $          cmp%value(ky_ROT_TCAV))
@@ -605,7 +603,7 @@ c     print *,'tturn l sspac2',l,sspac2
  1010   continue
         if(l .eq. nextwake)then
           if(lele .ne. icCAVI)then
-            call txwake(np,x,px,y,py,z,g,dv,
+            call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           dx,dy,rot,int(anbunch),
      $           fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
      $           p0,h0,itab,izs,.false.)

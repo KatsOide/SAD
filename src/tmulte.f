@@ -10,6 +10,7 @@
       use tmacro
       use multa, only:nmult
       use temw
+      use sol
       use tspin
       use mathfun
       implicit none
@@ -66,8 +67,8 @@
      $       eps0,enarad,fringe,fb1,fb2,mfring,l)
         return
       endif
-      call akang(ak(1),theta1,cr1)
-      call tsolrot(trans,cod,beam,al,bz0,dx,dy,dz,
+      call akang(ak(1),al,theta1,cr1)
+      call tsolrote(trans,cod,beam,al,bz0,dx,dy,dz,
      $     chi1,chi2,theta+dtheta+theta1,bxs,bys,bzs,.true.)
       krad=enarad .and. al .ne. 0.d0
       if(krad)then
@@ -403,7 +404,7 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
         call tradke(trans,cod,beam,srot,f1out,0.d0,bzs*.5d0)
       endif
  1000 continue
-      call tsolrot(trans,cod,beam,al,bz,dx,dy,dz,
+      call tsolrote(trans,cod,beam,al,bz,dx,dy,dz,
      $     chi1,chi2,theta+dtheta+theta1,bxs,bys,bzs,.false.)
       if(dhg .ne. 0.d0)then
         rg2=p0/gammab(l+1)

@@ -46,7 +46,7 @@ OBJ1=ActGRA.o    filbuf.o    pwmatq.o    ActLie.o    \
 OBJ2=packpi.o    tfdbun.o    tracke.o    NewGRF.o \
      trad.o      padd.o       \
      R1INV.o     inifil.o	R2INV.o     initb1.o        initbl.o \
-     tfgeti.o    SYMPS.o     tbrad.o \
+     tfgeti.o    SYMPS.o      \
      qthin.o     tfgetr.o    trotg.o     SYMTR2.o  \
      rdexpr.o    tsdrad.o \
      rdkwdl.o    lread.o \
@@ -58,7 +58,7 @@ OBJ2=packpi.o    tfdbun.o    tracke.o    NewGRF.o \
 
 OBJ3=sethtb.o    atof.o      bint.o      skipch.o    tspect.o    mbmp.o       pfcoup.o \
      sols33.o    pgaussj.o   corfree.o   spline.o \
-     tstrad.o    corinit.o   phdrw.o     sprexl.o     \
+     corinit.o   phdrw.o     sprexl.o    tbrad.o \
      phdrwa.o    sprlin.o    pinner.o     \
      tfzap.o     ttcav.o     pkill.o \
      ttcave.o    talign.o    tgfun.o      \
