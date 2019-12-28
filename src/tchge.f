@@ -81,7 +81,7 @@ c      write(*,*)'tchge ',mat,ds,dx,dx1,dy
             pxi=cod(2)
             cod(2)= cost*pxi-sint*cod(4)
             cod(4)= sint*pxi+cost*cod(4)
-            if(irad .gt. 6)then
+            if(calpol .and. irad .gt. 6)then
               sx=srot(1,:)
               srot(1,:)= cost*sx-sint*srot(2,:)
               srot(2,:)= sint*sx+cost*srot(2,:)
@@ -127,7 +127,7 @@ c      write(*,*)'tchge ',mat,ds,dx,dx1,dy
             pxi=cod(2)
             cod(2)= cost*pxi-sint*cod(4)
             cod(4)= sint*pxi+cost*cod(4)
-            if(irad .gt. 6)then
+            if(calpol .and. irad .gt. 6)then
               sx=srot(1,:)
               srot(1,:)= cost*sx-sint*srot(2,:)
               srot(2,:)= sint*sx+cost*srot(2,:)

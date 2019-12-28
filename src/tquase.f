@@ -6,7 +6,7 @@
       use ffs_flag
       use tmacro
       use temw, only:tsetr0
-      use sol
+      use sol,only:tsolrote
       use tspin, only:tradke      
       implicit none
       real*8 , intent(in)::ak,al,bz,dx,dy,theta,
@@ -36,7 +36,7 @@
         theta1=theta
         ak1=ak
       endif
-      call tsolrote(trans,cod,beam,al,0.d0,dx,dy,0.d0,
+      call tsolrote(trans,cod,beam,srot,al,0.d0,dx,dy,0.d0,
      $     0.d0,0.d0,theta1,bxs,bys,bzs,.true.)
       if(krad)then
         call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
@@ -79,7 +79,7 @@ c        write(*,*)'tquase ',ndiv,krad,irad,radlvl
       if(krad .and. f1out .ne. 0.d0)then
         call tradke(trans,cod,beam,srot,f1out,0.d0,bzs*.5d0)
       endif
-      call tsolrote(trans,cod,beam,al,0.d0,dx,dy,0.d0,
+      call tsolrote(trans,cod,beam,srot,al,0.d0,dx,dy,0.d0,
      $     0.d0,0.d0,theta1,bxs,bys,bzs,.false.)
       cod(2)=cod(2)-.5d0*bz*dy
       cod(4)=cod(4)+.5d0*bz*dx

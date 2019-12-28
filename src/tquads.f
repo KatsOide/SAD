@@ -6,7 +6,7 @@
       use tmacro
       use photontable,only:tsetphotongeo
       use tspin
-      use sol
+      use sol,only:tsolrot
       use mathfun, only:akang
 c      use ffs_pointer, only:inext,iprev
       implicit none

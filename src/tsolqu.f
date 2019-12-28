@@ -36,7 +36,7 @@
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
       if(ak*al .lt. 0.d0)then
-        write(*,*)'tsolqu-0-implementation error ',al,ak,bz0
+        write(*,*)'tsolqu-implementation error ',al,ak,bz0
         stop
       elseif(ak .eq. 0.d0)then
         call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,bsi,
@@ -252,7 +252,7 @@ c          endif
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
       if(ak*al .lt. 0.d0)then
-        write(*,*)'tsolqur-0-implementation error ',al,ak,bz0
+        write(*,*)'tsolqur-implementation error ',al,ak,bz0
         stop
       elseif(ak .eq. 0.d0)then
         call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,bsi,

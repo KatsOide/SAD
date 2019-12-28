@@ -304,6 +304,8 @@ c     $     sxkxp,dcxkxp
       end subroutine
 
       subroutine tbrote(trans1,cod,srot,phi0,dtheta)
+      use tmacro, only:irad
+      use ffs_flag,only:calpol
       implicit none
       real*8 trans1(6,6),cod(6),phi0,dtheta,chi1,chi2,chi3,sphi0,
      $     coschi2,sdt,cphi0,rr(3,3),srot(3,9)
@@ -317,11 +319,13 @@ c     $     sxkxp,dcxkxp
       chi3=asin(sdt*cphi0/coschi2)
 c      write(*,*)'tbrote ',chi1,chi2,chi3
       call tsrote(trans1,cod,rr,chi1,chi2,chi3)
-      do i=1,9
-        srot(1,i)=dot_product(rr(1,:),srot(:,i))
-        srot(2,i)=dot_product(rr(2,:),srot(:,i))
-        srot(3,i)=dot_product(rr(3,:),srot(:,i))
-      enddo
+      if(calpol .and. irad .gt. 6)then
+        do i=1,9
+          srot(1,i)=dot_product(rr(1,:),srot(:,i))
+          srot(2,i)=dot_product(rr(2,:),srot(:,i))
+          srot(3,i)=dot_product(rr(3,:),srot(:,i))
+        enddo
+      endif
       return
       end
 

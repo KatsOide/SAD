@@ -259,15 +259,16 @@ c     pz0=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
       return
       end subroutine
 
-      subroutine tsolrote(trans,cod,beam,al,bz,dx,dy,dz,
+      subroutine tsolrote(trans,cod,beam,srot,al,bz,dx,dy,dz,
      $     chi1,chi2,theta,bxs,bys,bzs,ent)
       use tmacro, only:irad
+      use ffs_flag, only:calpol
       use mathfun, only: sqrtl
       implicit none
       real*8 trans(6,12),cod(6),beam(21),trans1(6,6),
-     $     trans2(6,6),tb(6)
+     $     trans2(6,6),tb(6),srot(3,9)
       real*8 bz,dx,dy,theta,cost,sint,x0,px0,bzh,dz,chi1,chi2,
-     $     al,s0,
+     $     al,s0,spx(9),
      $     ds1,pr,pz0,dpz0dpx,dpz0dpy,dpz0dp,
      $     pz1,ds2,bxs,bys,bzs,bxs0,bzh1,pzmin,a,ptmax
       logical*4 ent
@@ -368,6 +369,11 @@ c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
         bxs0=bxs
         bxs=cost*bxs0-sint*bys
         bys=sint*bxs0+cost*bys
+        if(calpol .and. irad .gt. 6)then
+          spx=srot(1,:)
+          srot(1,:)=cost*spx-sint*srot(2,:)
+          srot(2,:)=sint*spx+cost*srot(2,:)
+        endif
       endif
       if(.not. ent)then
         if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or.
@@ -950,36 +956,6 @@ c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
           endif
         endif
       enddo
-      return
-      end
-c     
-      subroutine trads(x,px,y,py,g,dv,brad,al)
-      use ffs_flag
-      use tmacro
-      use mathfun
-      implicit none 
-      real*8 x,px,y,py,g,dv,brad,al,
-     $     alc,er,pr,p,hh,dp,de,h1,tran
-      alc=al*crad
-      if(rfluct)then
-        er=c/amass*erad
-        dv=(tran()-.5d0)*3.46410161513775461d0
-        pr=1.d0+g
-        p=p0*pr
-        hh=1.d0+p**2
-        dp=-hh*brad*alc
-        de=er*sqrt(hh*brad)/p*dp*hh
-        g=g+dp+sqrt(abs(de))*dv
-      else
-        pr=1.d0+g
-        hh=1.d0+(p0*pr)**2
-        dp=-hh*brad*alc
-        g=g+dp
-      endif
-      pr=1.d0+g
-      h1=p2h(p0*pr)
-c      h1=p0*pr*sqrt(1.d0+1.d0/(p0*pr)**2)
-      dv=-g*(1.d0+pr)/h1/(h1+pr*h0)
       return
       end
 

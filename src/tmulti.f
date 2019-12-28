@@ -11,7 +11,7 @@
       use ffs_flag
       use tmacro
       use tspin
-      use sol
+      use sol,only:tsolrot
       use photontable,only:tsetphotongeo
       use mathfun
 c      use ffs_pointer, only:inext,iprev
