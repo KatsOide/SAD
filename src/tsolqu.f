@@ -213,7 +213,6 @@ c          endif
       use tsolz
       use tspin
       use ffs_flag, only:ndivrad,photons
-      use tmacro, only:l_track
       use photontable,only:tgswap,tsetphotongeo
       use mathfun
       implicit none

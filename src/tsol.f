@@ -1,27 +1,27 @@
       module sol
-      real*8 cchi1,cchi2,schi1,schi2,dcchi1,dcchi2,
-     $     s0s,fx,fy,cost,sint
+      real*8 cchi1,cchi2,cchi3,schi1,schi2,schi3,dcchi1,dcchi2,
+     $     s0s,fx,fy
 
       contains
       subroutine tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,bz,dx,dy,dz,
-     $     chi1,chi2,theta,bxs,bys,bzs,ent)
+     $     chi1,chi2,chi3,bxs,bys,bzs,ent)
       use mathfun, only:sqrt1,xsin
-      use ffs_flag, only:calpol
+      use ffs_flag, only:calpol,rad
       implicit none
       integer*4 ,intent(in):: np
       real*8 ,intent(inout)::
      $     x(np),px(np),y(np),py(np),z(np),g(np),
      $     sx(np),sy(np),sz(np),bxs,bys,bzs
       real*8 , intent(in)::al,bz,dx,dy,dz,
-     $     chi1,chi2,theta
+     $     chi1,chi2,chi3
       logical*4 ,intent(in)::ent
       integer*4 i,j
       real*8 b,phix,phiy,phiz,a,a12,a14,a22,a24,
      $     dphizsq,pr,ds1,ds2,pz0,pz1,bzp,alb,s,pl,
      $     dpz0,dpl,plx,ply,plz,ptx,pty,ptz,pbx,pby,pbz,
      $     phi,sinphi,dcosphi,xsinphi,dphi,phi0,bxs0,
-     $     px0,pxi,pyi,pz2,x0,x1,y1
+     $     px0,pxi,pyi,pz2,x0,x1,y1,sv(3),rr(3,3)
       integer*4 , parameter ::itmax=10
       real*8 ,parameter :: conv=3.d-16
       if(ent)then
@@ -154,45 +154,31 @@ c     pz2=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
             py(i)=py(i)+fy/pr
           enddo
         endif
-        if(theta .ne. 0.d0)then
-          cost=cos(theta)
-          sint=sin(theta)
+        if(chi3 .ne. 0.d0)then
+          cchi3=cos(chi3)
+          schi3=sin(chi3)
           do i=1,np
             x0=x(i)
-            x(i)=cost*x0-sint*y(i)
-            y(i)=sint*x0+cost*y(i)
+            x(i)=cchi3*x0-schi3*y(i)
+            y(i)=schi3*x0+cchi3*y(i)
             px0=px(i)
-            px(i)=cost*px0-sint*py(i)
-            py(i)=sint*px0+cost*py(i)
+            px(i)=cchi3*px0-schi3*py(i)
+            py(i)=schi3*px0+cchi3*py(i)
           enddo
           bxs0=bxs
-          bxs=cost*bxs0-sint*bys
-          bys=sint*bxs0+cost*bys
-          if(calpol)then
-            do i=1,np
-              x0=sx(i)
-              sx(i)=cost*x0-sint*sy(i)
-              sy(i)=sint*x0+cost*sy(i)
-            enddo
-          endif
+          bxs=cchi3*bxs0-schi3*bys
+          bys=schi3*bxs0+cchi3*bys
         endif
       else
-        if(theta .ne. 0.d0)then
+        if(chi3 .ne. 0.d0)then
           do i=1,np
             x0=x(i)
-            x(i)= cost*x0+sint*y(i)
-            y(i)=-sint*x0+cost*y(i)
+            x(i)= cchi3*x0+schi3*y(i)
+            y(i)=-schi3*x0+cchi3*y(i)
             px0=px(i)
-            px(i)= cost*px0+sint*py(i)
-            py(i)=-sint*px0+cost*py(i)
+            px(i)= cchi3*px0+schi3*py(i)
+            py(i)=-schi3*px0+cchi3*py(i)
           enddo
-          if(calpol)then
-            do i=1,np
-              x0=sx(i)
-              sx(i)= cost*x0+sint*sy(i)
-              sy(i)=-sint*x0+cost*sy(i)
-            enddo
-          endif
         endif
         if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or. chi2 .ne. 0.d0)then
           if(bz .ne. 0.d0)then
@@ -256,19 +242,28 @@ c     pz0=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
           enddo
         endif
       endif
+      if(rad .and. calpol)then
+        call trot33(rr,ent)
+        do i=1,np
+          sv=matmul(rr,(/sx(i),sy(i),sz(i)/))
+          sx(i)=sv(1)
+          sy(i)=sv(2)
+          sz(i)=sv(3)
+        enddo
+      endif
       return
       end subroutine
 
       subroutine tsolrote(trans,cod,beam,srot,al,bz,dx,dy,dz,
-     $     chi1,chi2,theta,bxs,bys,bzs,ent)
+     $     chi1,chi2,chi3,bxs,bys,bzs,ent)
       use tmacro, only:irad
       use ffs_flag, only:calpol
       use mathfun, only: sqrtl
       implicit none
       real*8 trans(6,12),cod(6),beam(21),trans1(6,6),
      $     trans2(6,6),tb(6),srot(3,9)
-      real*8 bz,dx,dy,theta,cost,sint,x0,px0,bzh,dz,chi1,chi2,
-     $     al,s0,spx(9),
+      real*8 bz,dx,dy,chi3,x0,px0,bzh,dz,chi1,chi2,
+     $     al,s0,rr(3,3),
      $     ds1,pr,pz0,dpz0dpx,dpz0dpy,dpz0dp,
      $     pz1,ds2,bxs,bys,bzs,bxs0,bzh1,pzmin,a,ptmax
       logical*4 ent
@@ -337,6 +332,12 @@ c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
           trans1(2,:)=trans1(2,:)-bzh*trans1(3,:)
           trans1(4,:)=trans1(4,:)+bzh*trans1(1,:)
         else
+          cchi1=1.d0
+          schi1=0.d0
+          cchi2=1.d0
+          schi2=0.d0
+          dcchi1=0.d0
+          dcchi2=0.d0
           bzh=bz*.5d0
           cod(1)=cod(1)-dx
           cod(3)=cod(3)-dy
@@ -347,52 +348,36 @@ c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
           bzs=bz
         endif
       endif
-      if(theta .ne. 0.d0)then
-        cost=cos(theta)
+      if(chi3 .ne. 0.d0)then
+        cchi3=cos(chi3)
         if(ent)then
-          sint=sin(theta)
+          schi3=sin(chi3)
         else
-          sint=-sin(theta)
+          schi3=-sin(chi3)
         endif
         x0=cod(1)
-        cod(1)=cost*x0-sint*cod(3)
-        cod(3)=sint*x0+cost*cod(3)
+        cod(1)=cchi3*x0-schi3*cod(3)
+        cod(3)=schi3*x0+cchi3*cod(3)
         px0=cod(2)
-        cod(2)=cost*px0-sint*cod(4)
-        cod(4)=sint*px0+cost*cod(4)
+        cod(2)=cchi3*px0-schi3*cod(4)
+        cod(4)=schi3*px0+cchi3*cod(4)
         tb=trans1(1,:)
-        trans1(1,:)=cost*tb-sint*trans1(3,:)
-        trans1(3,:)=sint*tb+cost*trans1(3,:)
+        trans1(1,:)=cchi3*tb-schi3*trans1(3,:)
+        trans1(3,:)=schi3*tb+cchi3*trans1(3,:)
         tb=trans1(2,:)
-        trans1(2,:)=cost*tb-sint*trans1(4,:)
-        trans1(4,:)=sint*tb+cost*trans1(4,:)
+        trans1(2,:)=cchi3*tb-schi3*trans1(4,:)
+        trans1(4,:)=schi3*tb+cchi3*trans1(4,:)
         bxs0=bxs
-        bxs=cost*bxs0-sint*bys
-        bys=sint*bxs0+cost*bys
-        if(calpol .and. irad .gt. 6)then
-          spx=srot(1,:)
-          srot(1,:)=cost*spx-sint*srot(2,:)
-          srot(2,:)=sint*spx+cost*srot(2,:)
-        endif
+        bxs=cchi3*bxs0-schi3*bys
+        bys=schi3*bxs0+cchi3*bys
+      else
+        cchi3=1.d0
+        schi3=0.d0
       endif
       if(.not. ent)then
         if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or.
      $       chi2 .ne. 0.d0)then
           s0=-.5d0*al
-          cchi1=cos(chi1)
-          schi1=sin(chi1)
-          if(cchi1 .ge. 0.d0)then
-            dcchi1=schi1**2/(1.d0+cchi1)
-          else
-            dcchi1=(1.d0-cchi1)
-          endif
-          cchi2=cos(chi2)
-          schi2=sin(chi2)
-          if(cchi2 .ge. 0.d0)then
-            dcchi2=schi2**2/(1.d0+cchi2)
-          else
-            dcchi2=(1.d0-cchi2)
-          endif
           call tinitr(trans2)
           pr=1.d0+cod(6)
           bzh=bzs*.5d0
@@ -451,6 +436,10 @@ c     $     'tsolrote ',((trans1(i,j),j=1,6),i=1,6)
       call tmultr5(trans,trans1,irad)
       if(irad .gt. 6)then
         call tmulbs(beam,trans1,.false.,.true.)
+        if(calpol)then
+          call trot33(rr,ent)
+          srot=matmul(rr,srot)
+        endif
       endif
       return
       end subroutine
@@ -661,6 +650,31 @@ c     $     'tsolrote ',((trans1(i,j),j=1,6),i=1,6)
           trans(5,6)= -alb*(phi+pr*dphidp)
           trans(5,5)= -pr*alb*dphidz
         endif
+      endif
+      return
+      end subroutine
+
+      subroutine trot33(rr,ent)
+      implicit none
+      real*8, intent(out)::rr(3,3)
+      logical*4 , intent(in)::ent
+      rr(1,1)= cchi1*cchi3+schi1*schi2*schi3
+      rr(2,2)= cchi2*cchi3
+      rr(3,3)= cchi1*cchi2
+      if(ent)then
+        rr(1,2)=-cchi2*schi3
+        rr(1,3)= schi1*cchi3-cchi1*schi2*schi3
+        rr(2,1)=-schi1*schi2*cchi3+cchi1*schi3
+        rr(2,3)= cchi1*schi2*cchi3+schi1*schi3
+        rr(3,1)=-schi1*cchi2
+        rr(3,2)=-schi2
+      else
+        rr(2,1)=-cchi2*schi3
+        rr(3,1)= schi1*cchi3-cchi1*schi2*schi3
+        rr(1,2)=-schi1*schi2*cchi3+cchi1*schi3
+        rr(3,2)= cchi1*schi2*cchi3+schi1*schi3
+        rr(1,3)=-schi1*cchi2
+        rr(2,3)=-schi2
       endif
       return
       end subroutine
