@@ -1,5 +1,5 @@
       module sol
-      real*8 cchi1,cchi2,cchi3,schi1,schi2,schi3,dcchi1,dcchi2,
+      real*8,private::cchi1,cchi2,cchi3,schi1,schi2,schi3,dcchi1,dcchi2,
      $     s0s,fx,fy
 
       contains
@@ -347,34 +347,46 @@ c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
           bys=0.d0
           bzs=bz
         endif
-      endif
-      if(chi3 .ne. 0.d0)then
-        cchi3=cos(chi3)
-        if(ent)then
+        if(chi3 .ne. 0.d0)then
+          cchi3=cos(chi3)
           schi3=sin(chi3)
+          x0=cod(1)
+          cod(1)=cchi3*x0-schi3*cod(3)
+          cod(3)=schi3*x0+cchi3*cod(3)
+          px0=cod(2)
+          cod(2)=cchi3*px0-schi3*cod(4)
+          cod(4)=schi3*px0+cchi3*cod(4)
+          tb=trans1(1,:)
+          trans1(1,:)=cchi3*tb-schi3*trans1(3,:)
+          trans1(3,:)=schi3*tb+cchi3*trans1(3,:)
+          tb=trans1(2,:)
+          trans1(2,:)=cchi3*tb-schi3*trans1(4,:)
+          trans1(4,:)=schi3*tb+cchi3*trans1(4,:)
+          bxs0=bxs
+          bxs=cchi3*bxs0-schi3*bys
+          bys=schi3*bxs0+cchi3*bys
         else
-          schi3=-sin(chi3)
+          cchi3=1.d0
+          schi3=0.d0
         endif
-        x0=cod(1)
-        cod(1)=cchi3*x0-schi3*cod(3)
-        cod(3)=schi3*x0+cchi3*cod(3)
-        px0=cod(2)
-        cod(2)=cchi3*px0-schi3*cod(4)
-        cod(4)=schi3*px0+cchi3*cod(4)
-        tb=trans1(1,:)
-        trans1(1,:)=cchi3*tb-schi3*trans1(3,:)
-        trans1(3,:)=schi3*tb+cchi3*trans1(3,:)
-        tb=trans1(2,:)
-        trans1(2,:)=cchi3*tb-schi3*trans1(4,:)
-        trans1(4,:)=schi3*tb+cchi3*trans1(4,:)
-        bxs0=bxs
-        bxs=cchi3*bxs0-schi3*bys
-        bys=schi3*bxs0+cchi3*bys
       else
-        cchi3=1.d0
-        schi3=0.d0
-      endif
-      if(.not. ent)then
+        if(chi3 .ne. 0.d0)then
+          x0=cod(1)
+          cod(1)= cchi3*x0+schi3*cod(3)
+          cod(3)=-schi3*x0+cchi3*cod(3)
+          px0=cod(2)
+          cod(2)= cchi3*px0+schi3*cod(4)
+          cod(4)=-schi3*px0+cchi3*cod(4)
+          tb=trans1(1,:)
+          trans1(1,:)= cchi3*tb+schi3*trans1(3,:)
+          trans1(3,:)=-schi3*tb+cchi3*trans1(3,:)
+          tb=trans1(2,:)
+          trans1(2,:)= cchi3*tb+schi3*trans1(4,:)
+          trans1(4,:)=-schi3*tb+cchi3*trans1(4,:)
+        else
+          cchi3=1.d0
+          schi3=0.d0
+        endif
         if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or.
      $       chi2 .ne. 0.d0)then
           s0=-.5d0*al

@@ -387,7 +387,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       if(phi0 .eq. 0.d0)then
         if(ak .eq. 0.d0)then
           call tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,al,-phib,
-     1         dx,dy,theta+dtheta,cos(theta+dtheta),sin(theta+dtheta),
+     1         dx,dy,theta+dtheta,
      1         cosp1,sinp1,cosp2,sinp2,
      $         fb10,fb20,fringe,eps,enarad)
         elseif(phib .eq. phi0)then

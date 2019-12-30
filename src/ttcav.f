@@ -7,17 +7,10 @@
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
      $     sx(np),sy(np),sz(np)
-      real*8 al,ak,harm,phi,freq,dx,dy,theta,cost,sint,w,phic,x0,
+      real*8 al,ak,harm,phi,freq,dx,dy,theta,cost,sint,w,phic,
      $     dp1r,p1r,p1,h1,t,ph,dh,h2,a,dpr,dp2r,p2r,xi,pxi,v
       if(al .ne. 0.d0)then
         call tdrift_free(np,x,px,y,py,z,dv,al*.5d0)
-      endif
-      if(theta .ne. 0.d0)then
-        cost=cos(theta)
-        sint=sin(theta)
-      else
-        cost=1.d0
-        sint=0.d0
       endif
       include 'inc/TENT.inc'
       if(harm .eq. 0.d0)then

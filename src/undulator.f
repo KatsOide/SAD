@@ -36,8 +36,6 @@ c     Initialize dx/dy/theta(cost/sint) for inc/T(ENT|EXIT).inc
       dx=0.d0
       dy=0.d0
       theta=0.d0
-      cost=1.d0
-      sint=0.d0
 c
       include 'inc/TENT.inc'
       do 10 i=1,np

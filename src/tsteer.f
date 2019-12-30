@@ -1,5 +1,5 @@
       subroutine tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phib,dx,dy,
-     1     theta,cost,sint,
+     1     theta,
      1     cosp1,sinp1,cosp2,sinp2,
      $     fb1,fb2,fringe,eps,enarad)
       use ffs_flag

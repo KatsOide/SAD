@@ -17,13 +17,6 @@
       if(lwl .eq. 0 .and. lwt .eq. 0)then
         return
       endif
-      if(theta .ne. 0.d0)then
-        cost=cos(theta)
-        sint=sin(theta)
-      else
-        cost=1.d0
-        sint=0.d0
-      endif
       include 'inc/TENT.inc'
       if(init)then
         do i=1,np

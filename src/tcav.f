@@ -27,13 +27,6 @@
       else
         wi=1.d0/w
       endif
-      if(theta .ne. 0.d0)then
-        cost=cos(theta)
-        sint=sin(theta)
-      else
-        cost=1.0d0
-        sint=0.0d0
-      endif
       include 'inc/TENT.inc'
       phic=(phi+dphi)*charge
       v=vc/amass*abs(charge)
