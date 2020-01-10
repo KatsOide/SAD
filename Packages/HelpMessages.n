@@ -1,4 +1,4 @@
-!Help$Update="$Date:  9/1/2019 18:00:00  $"[8,18];
+!Help$Update="$Date: 1/10/2019 18:00:00  $"[8,18];
 Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
 Help$Version=$Version;
 
@@ -2236,8 +2236,8 @@ NBUNCH is the number of bunches for the calculation of WakeFunction. Accessible 
 
      {"MINCOUP",
       "\
-MINCOUP is the minimum emittance ratio (EMITY/EMITX) to be assumed in the calculation of intrabeam effects in EMITTANCE(EMIT). Accessible in MAIN.",
-      "EMITTANCE(EMIT) INTRA",
+MINCOUP is the minimum emittance ratio to be assumed in the calculation of intrabeam effects in EMITTANCE(EMIT) and Emittance[]. Emittances Max[emit_k, MINCOUP*(emit_x+emit_y)] (k=x,y) are assumed in the intrabeam calculation. Accessible in MAIN.",
+      "EMITTANCE(EMIT) Emittance INTRA",
       {}},
 
      {"LOSSAMPL",
@@ -4246,7 +4246,7 @@ HarmonicNumber          The effective harmonic number\n\
 OrbitAtExit             physical c.o.d. at the end of line.\t\n\n\
 If None of the options is given, the following keywords are added:\t\n\n\
 DampingRate             {T0/taux, T0/tauy, T0/tauz}\n\
-Emittances              {emitx, emity, emitz}\n\
+Emittances              {emitx, emity, emitz} *1)\n\
 MomentumSpread          sigma p/p0\n\
 BunchLength             sigma_z\n\
 Polarization            equilibrium polarization, if POL is on\n\
@@ -4273,8 +4273,9 @@ IntrabeamExcitation     List of the change of the 6 x 6 beam matrix due to the i
    If the flag TRPT or NORING is set, the calculation assumes a transport line so that several quantities such as damping rate, eigen modes, equilibrium beam matrix, etc. are meaningless. Use RING or NOTRPT for such calculation. In the case of TRPT or NORING, the incoming beam envelope must be given by the option InitialBeamMatrix with a 6 x 6 symmetric matrix. TRPT is useful for calculation of space charge and intrabeam in a transport line.\n\
    Please do not forget to put semicolon at the end of Emittance[] function, otherwise the output will be huge especially when Orbit or Matrix is True.\n If ExpandElementValues->False, calculation is made using the present values of each component (i.e., including machine errors).\n\n\
 If SaveEMIT->True, the calculated values of emittances are stored in variables EMITX, EMITY, EMITZ, SIGE, SIGZ. The default is SaveEMIT->False.\n\n\
-InitialOrbit->{x0,px0,y0,py0,z0,dp0/p0} specifies the incoming orbit which is valid when NOCOD is set. The option Output->filenum enables the print out of EMITTANCE(EMIT) to filnum.",
-        "EMITTANCE(EMIT) SymplecticJ COD EMITX EMITY EMITZ SIGZ SIGE POL",
+InitialOrbit->{x0,px0,y0,py0,z0,dp0/p0} specifies the incoming orbit which is valid when NOCOD is set. The option Output->filenum enables the print out of EMITTANCE(EMIT) to filnum.\n\n\
+*1) The values of Emittances with INTRA and MINCOUP correspond to the equilibrium with intrabeam scattering weakened by MINCOUP.",
+        "EMITTANCE(EMIT) SymplecticJ COD EMITX EMITY EMITZ SIGZ SIGE POL MINCOUP",
         {}},
 
        {"TrackParticles",
