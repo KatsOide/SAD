@@ -336,10 +336,10 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
      $     bmi(21),bmh(21),trans1(6,6)
       real*8 psi1,psi2,apsi1,apsi2,alid,
      $     r,dir,al,alib,dtheta,theta0,ftable(4),
-     $     fb1,fb2,ak0,ak1,rtaper,als
+     $     fb1,fb2,ak0,ak1,rtaper,als,ptmax
       integer*4 l,ld,lele,mfr,ibegin,iend,ke,irtc
       logical*4 sol,plot,bmaccum,plotib,rt,next,seg,
-     $     optics,coup,err
+     $     optics,coup,err,inin
       save kbmz
       data kbmz /0/
       if(kbmz .eq. 0)then
@@ -357,28 +357,23 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       bradprev=0.d0
       do l=ibegin,iend
         call tsetr0(trans,cod,0.d0,0.d0)
-c        if(irad .gt. 6 .and. calpol .and. 
-c     $       l .gt. 7100 .and. l .lt. 7200 .and. mod(l,1) .eq. 0)then
-c          write(*,*)'tturne ',l,srot(:,6)
-c        endif
-c        if(l .gt. 6900 .and. l .lt. 6905)then
-c          write(*,*)'tturne ',l
-c          call tfmemcheckprint('tturne',l,.true.,irtc)
+c        if(l .gt. 4500 .and. l .lt. 4600)then
+c          write(*,'(a,i5,1p6g15.7)')'tturne ',l,cod
 c        endif
         next=inext(l) .ne. 0
-        if(ktfenanq(cod(1)) .or. ktfenanq(cod(3)))then
-          if(ktfenanq(cod(1)))then
-            cod(1)=0.d0
+        inin=.false.
+        do i=1,6
+          if(ktfenanq(cod(i)))then
+            inin=.true.
+            cod(i)=0.d0
           endif
-          if(ktfenanq(cod(3)))then
-            cod(3)=0.d0
-          endif
+        enddo
+        if(inin)then
           call tinitr(trans)
           if(.not. plot)then
             return
           endif
         endif
-        cod(6)=max(dpmin,cod(6))
         if(sol)then
           sol=l .lt. ke
           alid=0.d0
@@ -518,8 +513,9 @@ c        go to 5000
           ak0=cmp%value(ky_K0_BEND)
      $         +cmp%value(ky_ANGL_BEND)
           ak1=cmp%value(ky_K1_BEND)
-c          if(l .eq. 13136)then
-c            write(*,*)'ttrune-2 ',ak0,cod(6),gettwiss(mfitddp,nextl(l))
+c          if(l .eq. 4551)then
+c            write(*,*)'ttrune-icBend ',ak0,cod(6),
+c     $           gettwiss(mfitddp,nextl(l))
 c          endif
           if(radcod .and. radtaper)then
             if(rt)then
@@ -544,9 +540,6 @@ c          endif
      $         cmp%value(ky_EPS_BEND),
      1         cmp%value(ky_RAD_BEND) .eq. 0.d0,.true.,
      $         next,l)
-c          if(l .eq. 13136)then
-c            write(*,*)'tturne1-bend-1 ',l
-c          endif
 
         case (icQUAD)
           if(dir .gt. 0.d0)then
@@ -671,7 +664,12 @@ c     write(*,*)'tturne-tcave-1',cod
         case default
         end select
  1010   continue
+        cod(6)=max(dpmin,cod(6))
+        ptmax=1.d0+cod(6)
+        cod(2)=min(ptmax,max(-ptmax,cod(2)))
+        cod(4)=min(ptmax,max(-ptmax,cod(4)))
       enddo
+      call limitnan(cod,-1.d10,1.d10)
 c      call tfmemcheckprint('tturne-end0',0,.true.,irtc)
       if(calint)then
         if(alid .ne. 0.d0)then

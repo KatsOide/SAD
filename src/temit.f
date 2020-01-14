@@ -202,9 +202,10 @@ c     $     r(5,5)*r(6,6)-r(6,5)*r(5,6)
       hi(6,5)= 0.d0
       hi(5,5)= az
       call tmultr(hi,r,6)
+c      write(*,*)'tfetwiss-3'
       detm=(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2)
      $     +hi(3,3)*hi(4,4)-hi(4,3)*hi(3,4))*.5d0
-c      write(*,'(a,1p6g15.7)')'tfetwiss ',detm,ax,ay,az,f,xyth
+c      write(*,'(a,1p6g15.7)')'tfetwiss-4 ',detm,ax,ay,az,f,xyth
       normal=detm .gt. xyth
       if(.not. normal)then
         his=hi(1,1:4)
@@ -1958,6 +1959,7 @@ c        write(*,*)'temit ',trf0,cod
         call tturne(trans,cod,beam,srot,i00,i00,i00,
      1       .false.,.false.,rt)
       endif
+      call limitnan(cod,-1.d10,1.d10)
 c     call tsymp(trans)
       params(iprevf)=omega0/m_2pi
       params(ipdx:ipddp)=cod

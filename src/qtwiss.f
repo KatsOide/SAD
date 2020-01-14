@@ -35,7 +35,7 @@
      $     theta0,x,px,y,dpsix,dpsiy,bz,
      $     pr,a,dpz,trf00,dtheta,
      $     apsi1,apsi2,sspc0,sspc,vcalpha0,fb1,fb2,
-     $     ak1,ftable(4),dir
+     $     ak1,ftable(4),dir,ptmax
       logical*4 over,coup,normal,mat,calpol0,insmat,err,seg
       real*8 a11,a12,a13,a14,a21,a22,a23,a24,a31,a32,a33,
      $     a34,a41,a42,a43,a44,a15,a25,a35,a45
@@ -57,7 +57,8 @@
      1            (u43,rxy(4,3)),(u44,rxy(4,4)),
      1            (u15,rxy(1,5)),(u25,rxy(2,5)),(u35,rxy(3,5)),
      1            (u45,rxy(4,5))
-      real*8, parameter :: almostone=1.d0-1.d-16
+      real*8, parameter :: almostone=1.d0-1.d-16,omax=1.d3,zmax=1.e6,
+     $     dpmin=-1.d0+1.d-8
 c     begin initialize for preventing compiler warning
       normal=.true.
       sqrdet=0.d0
@@ -122,6 +123,10 @@ c     end   initialize for preventing compiler warning
           cod=twiss(ip1,mfitdx:mfitddp)
           call tesetdv(cod(6))
         endif
+c        if(l .gt. 20200 .and. l .lt. 20300)then
+c        if(l .gt. 20200 .and. mod(l,100) .eq. 0)then
+c          write(*,'(a,2i5,1p6g15.7)')'qtwiss1 ',l,ltyp,cod
+c        endif
         if(ltyp .gt. icMARK)then
           if(.not. mat)then
             twiss(ip,1:ntfun)=twiss(ip1,1:ntfun)
@@ -504,6 +509,13 @@ c        endif
           endif
         endif
  10     continue
+        cod(6)=min(zmax,max(dpmin,cod(6)))
+        ptmax=1.d0+cod(6)
+        cod(1)=min(omax,max(-omax,cod(1)))
+        cod(2)=min(ptmax,max(-ptmax,cod(2)))
+        cod(3)=min(omax,max(-omax,cod(3)))
+        cod(4)=min(ptmax,max(-ptmax,cod(4)))
+        cod(5)=min(zmax,max(-zmax,cod(5)))
       enddo
  9000 calpol=calpol0
       trf0=trf00
@@ -872,10 +884,10 @@ c          enddo
           trans=trans2
         endif
         call resetnan(cod,1.d300)
-c        write(*,'(a,1p6g15.7)')'qcod ',cod
         if(.not. orbitcal)then
           codfnd=.true.
         endif
+c        write(*,'(a,2l3,1p6g15.7)')'qcod ',codfnd,over,cod
         if(codfnd)then
           cod0=cod
           return

@@ -435,8 +435,14 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
         call tbthie(trans,cod,beam,srot,phib,phi0,dx,dy,theta,dtheta)
         return
       endif
+c      if(l .eq. 4551)then
+c        write(*,*)'tbende-0 ',dx,dy,dtheta
+c      endif
       call tchge(trans,cod,beam,srot,
      $     dx,dy,theta,dtheta,phi0,.true.)
+c      if(l .eq. 4551)then
+c        write(*,*)'tbende-0.5'
+c      endif
       if(enarad)then
         call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
       endif
@@ -507,11 +513,6 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
       tanp2=tan(psi2*phi0+apsi2)
       f=1.d0/rho0
       call tbedge(trans,cod,beam,al,phib,psi1*phi0+apsi1,.true.)
-c      if(enarad .and. fb1 .ne. 0.d0)then
-c        call tradke(trans,cod,beam,srot,fb1,0.d0,0.d0)
-c      else
-c        call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
-c      endif
       cod11=cod(1)
       akc=ak*rbc
       alc=al*rbc
@@ -612,7 +613,6 @@ c     $     rb1,rb2,al0,alc,aln,phin,ak
         call tblfre(trans,cod,beam,dxfr2,dyfr2,dyfra2)
       endif
       if(enarad)then
-c        write(*,*)'tbende-radke ',alr,phi1
         call tradke(trans,cod,beam,srot,alr,phi1,0.d0)
       endif
       call tchge(trans,cod,beam,srot,
