@@ -52,7 +52,15 @@
       endif
       lc=min(18,lc)
       lf=min(15,lf)
-      if(x .eq. 0.d0)then
+      if(ktfenanq(x))then
+        if(tzero)then
+          autofg='NaN'
+        else
+          autofg(:lc-3)=' '
+          autofg(lc-2:)='NaN'
+        endif
+        return
+      elseif(x .eq. 0.d0)then
         if(tzero)then
           autofg='0'
         elseif(lf .eq. 0)then
@@ -78,14 +86,6 @@
         else
           autofg(:lc-4)=' '
           autofg(lc-3:)='-INF'
-        endif
-        return
-      elseif(ktfenanq(x))then
-        if(tzero)then
-          autofg='NaN'
-        else
-          autofg(:lc-3)=' '
-          autofg(lc-2:)='NaN'
         endif
         return
       endif

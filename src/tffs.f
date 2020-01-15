@@ -600,6 +600,22 @@
       module ffs
         use ffs0
         use ffs_flag
+
+        contains
+        subroutine limitcod(cod)
+        real*8 , intent(inout)::cod(6)
+        real*8 , parameter :: omax=1.d5,dpmin=-1.d0+1.d-5,
+     $       pmax=1.d5,zmax=1.d100
+        real*8 ptmax
+        cod(6)=max(dpmin,min(pmax,cod(6)))
+        ptmax=1.d0+cod(6)
+        cod(1)=max(-omax,min(omax,cod(1)))
+        cod(3)=max(-omax,min(omax,cod(3)))
+        cod(2)=max(-ptmax,min(ptmax,cod(2)))
+        cod(4)=max(-ptmax,min(ptmax,cod(4)))
+        cod(5)=max(-zmax,min(zmax,cod(5)))
+        return
+        end subroutine
       end module
 
       module ffs_pointer

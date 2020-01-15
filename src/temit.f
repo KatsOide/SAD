@@ -1974,6 +1974,7 @@ c     call tsymp(trans)
         beams=beam(1:21)
       endif
  3101 r=trans(:,1:6)
+c      write(*,'(a/,6(1p6g15.7/))')'trans: ',(trans(i,1:6),i=1,6)
       if(pri .and. emiout)then
         write(lfno,*)'   Symplectic part of the transfer matrix:'
         call tput(trans,label2,label2,'9.6',6,lfno)
@@ -1990,6 +1991,7 @@ c     call tsymp(trans)
         r(6,6)=1.d0
       endif
       call teigen(r,ri,ceig,6,6)
+c      write(*,'(a,1p12g10.3)')'ceig: ',ceig
       call tnorm(r,ceig,lfno)
       call tsub(ceig,ceig0,dceig,12)
       ceig0=ceig

@@ -1,4 +1,5 @@
       subroutine tput(a,label,label1,form,lcol,lfno)
+      use tfstk, only:ktfenanq
       implicit none
       integer*4 lfno,i,j,lcol,ll,ll1
       real*8 a(lcol,6)
@@ -16,6 +17,7 @@
         buf(1:ll1)=label1(i)
         do 20 j=1,6
           buf(ll1+(j-1)*ll+2:ll1+j*ll+1)=' '//autofg(a(i,j),form)
+c          write(*,*)autofg(a(i,j),form),' ',a(i,j),ktfenanq(a(i,j))
 20      continue
         write(lfno,'(1X,A)')buf(1:ll1+ll*6+1)
 10    continue

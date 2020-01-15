@@ -30,7 +30,7 @@
      $     abs(ak0x) .eq. 0.d0 .and. abs(ak0y) .eq. 0.d0)then
         pxi=cod(2)
         pyi=cod(4)
-        a=min(ampmax,pxi**2+pyi**2)
+        a=pxi**2+pyi**2
         pzi=pr*sqrtl(1.d0-a/pr**2)
         ale=al/pzi
         alz=ale/pzi**2

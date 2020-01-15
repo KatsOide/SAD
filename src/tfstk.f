@@ -1522,7 +1522,14 @@ c     $           n,i,istat
      $       iand(k,ktfenanb) .ne. 0 .and. k .ne. kinfinity .and.
      $       k .ne. kminfinity
         return
-        end
+        end function 
+
+        logical*4 function ktfenanzeroq(x)
+        implicit none
+        real*8 , intent(in)::x
+        ktfenanzeroq=x .eq. 0.d0 .and. ktfenanq(x)
+        return
+        end function 
 
         logical*4 function ktfrealq_k(k,v)
         implicit none

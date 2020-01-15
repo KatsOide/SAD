@@ -28,7 +28,8 @@
      $     apsi1,apsi2,bz0,v10a,v11a,v02a,v20a,offset1,va,sp,cp,
      $     av,dpxa,dpya,dpx,dpy,dav,davdz,davdp,ddhdx,ddhdy,ddhdp,
      $     ddhdz,wi,dv,s0,fb1,fb2,rtaper
-      real*8 trans(6,12),trans1(6,6),cod(6),beam(42),srot(3,9)
+      real*8 trans(6,12),trans1(6,6),cod(6),beam(42),srot(3,9),
+     $     trans0(6,6)
       complex*16 cx,cx0,cx2,cr,cr1
       real*8 fact(0:nmult),an(0:nmult)
       complex*16 ak(0:nmult),akn(0:nmult),ak0n
@@ -227,8 +228,6 @@
           call tgetdvh(dgb,dv)
           cod(5)=cod(5)+dv*al1
         endif
-c        write(*,'(a,i5,/,6(1p6g15.7/))')'tmulte-1 ',m,
-c     $       (trans(i,1:6),i=1,6)
         ak1=dble(akn(1))
         al1=aln
         ak0n=akn(0)
@@ -336,6 +335,7 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
           call tmultr(trans,trans1,irad)
           dgb=dgb+dhg
         elseif(irad .eq. 6)then
+          trans0=trans(:,1:6)
             trans(2,1)=trans(2,1)+trans1(2,1)*trans(1,1)
      $           +trans1(2,3)*trans(3,1)
             trans(4,1)=trans(4,1)+trans1(4,1)*trans(1,1)

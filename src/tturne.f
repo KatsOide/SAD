@@ -317,7 +317,7 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       use kyparam
       use tfstk
       use tffitcode
-      use ffs, only: gettwiss
+      use ffs, only: gettwiss,limitcod
       use ffs_pointer
       use ffs_flag
       use tmacro
@@ -326,8 +326,7 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       use ffs_seg
       use temw,only:tsetr0
       implicit none
-      real*8 , parameter:: codmax=1.d4,demax=.5d0,dpmin=-0.9999d0,
-     $     tapmax=0.3d0
+      real*8 , parameter:: demax=.5d0,tapmax=0.3d0
       type (sad_comp), pointer :: cmp
       type (sad_dlist), pointer :: lsegp
       integer*8 iatr,iacod,iabmi,kbmz,kbmzi,lp
@@ -664,10 +663,7 @@ c     write(*,*)'tturne-tcave-1',cod
         case default
         end select
  1010   continue
-        cod(6)=max(dpmin,cod(6))
-        ptmax=1.d0+cod(6)
-        cod(2)=min(ptmax,max(-ptmax,cod(2)))
-        cod(4)=min(ptmax,max(-ptmax,cod(4)))
+        call limitcod(cod)
       enddo
       call limitnan(cod,-1.d10,1.d10)
 c      call tfmemcheckprint('tturne-end0',0,.true.,irtc)
@@ -1021,5 +1017,21 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
      $     cmp%value(ky_W1_MULT),rtaper,
      $     cmp%value(ky_APHI_MULT) .ne. 0.d0,
      $     ld)
+      return
+      end
+
+      logical*4 function nanm(a)
+      use tfstk, only:ktfenanzeroq
+      real*8 , intent(in):: a(6,6)
+      integer*4 i,j
+      do i=1,6
+        do j=1,6
+          if(ktfenanzeroq(a(i,j)))then
+            nanm=.true.
+            return
+          endif
+        enddo
+      enddo
+      nanm=.false.
       return
       end
