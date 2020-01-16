@@ -4232,9 +4232,10 @@ makes the weight of LENG at $$$ 10 times (100 times in MatchingResidual) bigger 
         "\
 Emittance[option] returns a set of rules as \n\n\
    {keyword1->value1, keyword2->value2, ..} .\n\n\
-Its options and default values are Matrix(False), Orbit(False), OneTurnInformation(False), Emittance(True), ExpandElementValues(True), SaveEMIT(False), InitialOrbit(Null), InitialBeamMatrix(Null), and Output(0).\n\n\
+Its options and default values are Matrix(False), Orbit(False), OneTurnInformation(False), Emittance(True), ExpandElementValues(True), SaveEMIT(False), InitialOrbit(Null), InitialBeamMatrix(Null), Region({1,-1}), and Output(0).\n\n\
 If Emittance->False is specified, the resulting keywords are:\t\n\n\
 Stable                  True if all modes are stable and the closed orbit is found.\n\
+Region                  The region {begin, end} to calculate.\n\
 Tunes                   {nux, nuy, nuz} .\n\
 EnergyLossU0            One turn energy loss in eV.\n\
 RfVoltageVc             The effective RF voltage (V).\n\
@@ -4274,6 +4275,7 @@ IntrabeamExcitation     List of the change of the 6 x 6 beam matrix due to the i
    Please do not forget to put semicolon at the end of Emittance[] function, otherwise the output will be huge especially when Orbit or Matrix is True.\n If ExpandElementValues->False, calculation is made using the present values of each component (i.e., including machine errors).\n\n\
 If SaveEMIT->True, the calculated values of emittances are stored in variables EMITX, EMITY, EMITZ, SIGE, SIGZ. The default is SaveEMIT->False.\n\n\
 InitialOrbit->{x0,px0,y0,py0,z0,dp0/p0} specifies the incoming orbit which is valid when NOCOD is set. The option Output->filenum enables the print out of EMITTANCE(EMIT) to filnum.\n\n\
+If Region is not the entire ring, parameters such as Emittances and Damping Rate, etc., are not calculated, and return NaNs.\n\n\
 *1) The values of Emittances with INTRA and MINCOUP correspond to the equilibrium with intrabeam scattering weakened by MINCOUP.",
         "EMITTANCE(EMIT) SymplecticJ COD EMITX EMITY EMITZ SIGZ SIGE POL MINCOUP",
         {}},

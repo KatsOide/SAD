@@ -19,12 +19,6 @@
       real*8 z0,pgev00,alambdarf,dzmax,phis,vcacc1
       logical*4 plot,update,rt
       pgev00=pgev
-      vc0=0.d0
-      u0=0.d0
-      hvc0=0.d0
-      vcacc=0.d0
-      dvcacc=0.d0
-      ddvcacc=0.d0
       z0=cod(5)
       if(calint)then
         touckl(:) = 0.d0
@@ -38,25 +32,11 @@
         endif
         toucke(:,:) = 0.d0
       endif
-      if(irad .eq. 6)then
-        npelm=0
-      endif
-      ipelm=0
       normali=.true.
       call tffsbound(fbound)
-      call tturne0(trans,cod,beam,srot,fbound,
-     $     iatr,iacod,iabmi,0,plot,rt,.false.)
+      call tturneg(trans,cod,beam,srot,fbound,
+     $     iatr,iacod,iabmi,plot,rt)
       if(update)then
-        if(vcacc .ne. 0.d0)then
-          wrfeff=sqrt(abs(ddvcacc/vcacc))
-        elseif(vc0 .ne. 0.d0)then
-          wrfeff=abs(dvcacc/vc0)
-        else
-          wrfeff=0.d0
-        endif
-        if(wrfeff .eq. 0.d0 .and. vc0 .ne. 0.d0)then
-          wrfeff=hvc0/vc0*omega0/c
-        endif
         if(wrfeff .ne. 0.d0)then
           alambdarf=pi2/wrfeff
           vceff=abs(dcmplx(vcacc,dvcacc/wrfeff))
@@ -64,45 +44,28 @@
           alambdarf=circ
           vceff=0.d0
         endif
-        if(vceff .eq. 0.d0)then
-          vceff=vc0
-        endif
-        vcacc1=vcacc
-        if(vcacc1 .eq. 0.d0)then
-          vcacc1=vceff*sin(trf0*wrfeff)
-        endif
-        if(trpt)then
-          trf0=0.d0
-          vcalpha=1.d0
-        else
-          if(vc0 .ne. 0.d0)then
-            vcalpha=vceff/vc0
+        if(vceff .ne. 0.d0)then
+          dzmax=alambdarf*.24d0
+          phis=asin(abs(vcacc1/vceff))
+c     write(*,*)'ttrune ',u0*pgev,vcacc,dvcacc,trf0
+          if(radcod)then
+c     trf0=-(cod(5)+z0)*0.5d0
           else
-            vcalpha=0.d0
-          endif
-          if(vceff .ne. 0.d0)then
-            dzmax=alambdarf*.24d0
-            phis=asin(abs(vcacc1/vceff))
-c            write(*,*)'ttrune ',u0*pgev,vcacc,dvcacc,trf0
-            if(radcod)then
-c              trf0=-(cod(5)+z0)*0.5d0
+            if(vceff .gt. u0*pgev)then
+              if(trans(5,6) .lt. 0.d0)then
+                trf0=(asin(u0*pgev/vceff))/wrfeff
+              else
+                trf0=(pi-asin(u0*pgev/vceff))/wrfeff
+              endif
             else
-              if(vceff .gt. u0*pgev)then
-                if(trans(5,6) .lt. 0.d0)then
-                  trf0=(asin(u0*pgev/vceff))/wrfeff
-                else
-                  trf0=(pi-asin(u0*pgev/vceff))/wrfeff
-                endif
-              else
-                trf0=(.5*pi)/wrfeff
-              endif
-              if(trf0 .lt. 0.d0)then
-                trf0=-mod(-trf0+0.5d0*alambdarf,alambdarf)
-     $               +alambdarf*0.5d0
-              else
-                trf0= mod(trf0-0.5d0*alambdarf,alambdarf)
-     $               +alambdarf*0.5d0
-              endif
+              trf0=(.5*pi)/wrfeff
+            endif
+            if(trf0 .lt. 0.d0)then
+              trf0=-mod(-trf0+0.5d0*alambdarf,alambdarf)
+     $             +alambdarf*0.5d0
+            else
+              trf0= mod(trf0-0.5d0*alambdarf,alambdarf)
+     $             +alambdarf*0.5d0
             endif
           endif
         endif
@@ -115,6 +78,71 @@ c              trf0=-(cod(5)+z0)*0.5d0
       if(pgev00 .ne. pgev)then
         pgev=pgev00
         call tphyzp
+      endif
+      return
+      end
+
+      subroutine tturneg(trans,cod,beam,srot,fbound,
+     $     iatr,iacod,iabmi,plot,rt)
+      use touschek_table
+      use tfstk
+      use tffitcode
+      use ffs, only: gettwiss,ffs_bound
+      use ffs_pointer
+      use ffs_flag
+      use tmacro
+      use sad_main
+      use temw, only:normali
+      use tfcsi, only:icslfno
+      implicit none
+      type (ffs_bound) fbound
+      real*8 codmax,demax
+      parameter (codmax=1.d4,demax=.5d0)
+      integer*8 iatr,iacod,iabmi
+      real*8 trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 z0,vcacc1
+      logical*4 plot,rt
+      vc0=0.d0
+      z0=cod(5)
+      u0=0.d0
+      hvc0=0.d0
+      vcacc=0.d0
+      dvcacc=0.d0
+      ddvcacc=0.d0
+      normali=.true.
+      call tturne0(trans,cod,beam,srot,fbound,
+     $     iatr,iacod,iabmi,0,plot,rt,.false.)
+      if(vcacc .ne. 0.d0)then
+        wrfeff=sqrt(abs(ddvcacc/vcacc))
+      elseif(vc0 .ne. 0.d0)then
+        wrfeff=abs(dvcacc/vc0)
+      else
+        wrfeff=0.d0
+      endif
+      if(wrfeff .eq. 0.d0 .and. vc0 .ne. 0.d0)then
+        wrfeff=hvc0/vc0*omega0/c
+      endif
+      if(wrfeff .ne. 0.d0)then
+        vceff=abs(dcmplx(vcacc,dvcacc/wrfeff))
+      else
+        vceff=0.d0
+      endif
+      if(vceff .eq. 0.d0)then
+        vceff=vc0
+      endif
+      vcacc1=vcacc
+      if(vcacc1 .eq. 0.d0)then
+        vcacc1=vceff*sin(trf0*wrfeff)
+      endif
+      if(trpt)then
+        trf0=0.d0
+        vcalpha=1.d0
+      else
+        if(vc0 .ne. 0.d0)then
+          vcalpha=vceff/vc0
+        else
+          vcalpha=0.d0
+        endif
       endif
       return
       end
@@ -335,7 +363,7 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
      $     bmi(21),bmh(21),trans1(6,6)
       real*8 psi1,psi2,apsi1,apsi2,alid,
      $     r,dir,al,alib,dtheta,theta0,ftable(4),
-     $     fb1,fb2,ak0,ak1,rtaper,als,ptmax
+     $     fb1,fb2,ak0,ak1,rtaper,als
       integer*4 l,ld,lele,mfr,ibegin,iend,ke,irtc
       logical*4 sol,plot,bmaccum,plotib,rt,next,seg,
      $     optics,coup,err,inin

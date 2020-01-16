@@ -1,7 +1,7 @@
       module version
         character*19, parameter ::
 c                     /'1234567890123456789'/
-     $     versionid  ='1.1.6.18.4k64      ',
+     $     versionid  ='1.1.7k64           ',
      $     versiondate='1/20/2019 12:00:00 '
 
         character*25 builtdate

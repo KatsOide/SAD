@@ -13,7 +13,7 @@ eqs img{
 <BODY>
 <CENTER><H2>Welcome to SAD/FFS & SADScript
 </H2></CENTER>
-<CENTER> SAD/FFS SADScript Version: 1.1.6.18.2k64,      Updated: 01/10/2020</CENTER>
+<CENTER> SAD/FFS SADScript Version: 1.1.7k64,      Updated: 01/16/2020</CENTER>
 
 <PRE> Please use browser's search to find an item.
 
@@ -4615,13 +4615,14 @@ Emittance</A></H3>
    {keyword1->value1, keyword2->value2, ..} .
 
 Its options and default values are Matrix(False), Orbit(False), OneTurnInformation(False), Emittance(True),
-ExpandElementValues(True), SaveEMIT(False), InitialOrbit(Null), InitialBeamMatrix(Null), and Output(0).
+ExpandElementValues(True), SaveEMIT(False), InitialOrbit(Null), InitialBeamMatrix(Null), Region({1,-1}),
+and Output(0).
 
-If
-Emittance->False is specified, the resulting keywords are:
+If Emittance->False is specified, the resulting keywords are:
 
                      
 Stable               True if all modes are stable and the closed orbit is found.
+Region               The region {begin, end} to calculate.
 Tunes                {nux, nuy, nuz} .
 EnergyLossU0         One turn energy loss in eV.
 RfVoltageVc          The effective RF voltage (V).
@@ -4688,6 +4689,9 @@ SIGE, SIGZ. The default is SaveEMIT->False.
 
 InitialOrbit->{x0,px0,y0,py0,z0,dp0/p0} specifies the incoming orbit which is valid when NOCOD is
 set. The option Output->filenum enables the print out of EMITTANCE(EMIT) to filnum.
+
+If Region is not the entire ring, parameters such as Emittances and Damping Rate, etc., are not calculated,
+and return NaNs.
 
 *1) The values of Emittances with INTRA and MINCOUP correspond to the equilibrium with intrabeam
 scattering weakened by MINCOUP.

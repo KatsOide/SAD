@@ -42,6 +42,7 @@ c     Inverse matrix of r
       real*8 , public :: transr(6,6),codr0(6),bzhr0,bsi
       real*8 , public :: gintd(3)
       real(8), public :: emx, emy, emz
+      real(8), public :: bh,heff
 
       logical*4, public :: normali, initemip=.true.
       logical*4 , public :: initr
@@ -1852,7 +1853,7 @@ c        write(*,'(1p3g15.7)')(rm(k,:),k=1,3)
       integer*4 lfno,ia,it,i,j,k,k1,k2,k3,m,n,iret,l
       real*8 trans(6,12),cod(6),beam(42),srot(3,9),srot1(3,3),
      $     emx0,emy0,emz0,dl,equpol(3),sdamp,
-     $     heff,phirf,omegaz,bh,so,s,
+     $     phirf,omegaz,so,s,
      $     sr,sqr2,bb,bbv(21),sige,
      $     emxr,emyr,emzr,xxs,yys,btilt,
      $     sig1,sig2,sigx,sigy,tune,sigz,
@@ -1961,8 +1962,6 @@ c        write(*,*)'temit ',trf0,cod
       endif
       call limitnan(cod,-1.d10,1.d10)
 c     call tsymp(trans)
-      params(iprevf)=omega0/m_2pi
-      params(ipdx:ipddp)=cod
       if(pri)then
         call tput(cod,label2,'     Exit ','9.6',1,lfno)
         write(lfno,*)
@@ -2003,12 +2002,6 @@ c      write(*,'(a,1p12g10.3)')'ceig: ',ceig
       if(pri .and. emiout)then
         call tput(btr,label1,label1,'9.6',6,lfno)
       endif
-      if(iamat .gt. 0)then
-        dlist(iamat+4)=
-     $       dtfcopy1(kxm2l(ri,6,6,6,.false.))
-        dlist(iamat+1)=
-     $       dtfcopy1(kxm2l(codin,0,6,1,.false.))
-      endif
       dl=btr(14,2)
       do i=1,3
         cc(i*2-1)=ceig(i*2-1)
@@ -2043,17 +2036,11 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
       else
         bh=0.d0
       endif
+      call setparams(params,cod)
       stab=(abs(dble(cd(4))) .lt. 1.d-6
      $     .and. abs(dble(cd(5))) .lt. 1.d-6
      1     .and. abs(dble(cd(6))) .lt. 1.d-6) .and. fndcod
       params(ipnx:ipnz)=imag(cd(4:6))/pi2
-      params(ipu0)=u0*pgev
-      params(ipvceff)=vceff
-      params(iptrf0)=trf0
-      params(ipalphap)=alphap
-      params(ipdleng)=dleng
-      params(ipbh)=bh
-      params(ipheff)=heff
       call tfetwiss(ri,cod,params(iptwiss),.true.)
       if(pri)then
         if(lfno .gt. 0)then
@@ -2472,12 +2459,6 @@ c        write(*,*)'temit-intraconv ',iret,beam(27)
         beam(22:42)=emit1(1:21)
       endif
 7010  if(plot .and. calem)then
-        if(iamat .gt. 0)then
-          dlist(iamat+5)=
-     $         dtfcopy1(kxm2l(beam1,0,21,1,.false.))
-          dlist(iamat+6)=
-     $         dtfcopy1(kxm2l(emit1,0,21,1,.false.))
-        endif
         call tinitr12(trans)
 c        call tclr(trans(1,7),36)
         cod=codin
@@ -2497,12 +2478,6 @@ c        call tfmemcheckprint('temit-3',0,.true.,iret)
         call tturne(trans,cod,emit1,srot,
      $       iatr,iacod,iabmi,.true.,.false.,rt)
 c        call tfmemcheckprint('temit-4',0,.true.,iret)
-        if(iamat .gt. 0)then
-          dlist(iamat+2)=
-     $         dtfcopy1(kxm2l(trans,6,6,6,.false.))
-          dlist(iamat+3)=
-     $         dtfcopy1(kxm2l(trans(1,7),6,6,6,.false.))
-        endif
         r=rsav
         ri=risav
 c        call tmov(btr,r,78)
@@ -2510,6 +2485,8 @@ c        call tmov(btr,r,78)
           if(charge .lt. 0.d0)then
             beamsize=-beamsize
           endif
+        else
+          call setiamat(iamat,ri,codin,beam1,emit1,trans)
         endif
       endif
       return
@@ -2926,5 +2903,46 @@ c20      continue
       ri(6,4)= r(3,5)
       ri(6,5)=-r(6,5)
       ri(6,6)= r(5,5)
+      return
+      end
+
+      subroutine setiamat(iamat,ri,codin,beam1,emit1,trans)
+      use tfstk
+      implicit none
+      integer*8 , intent(in)::iamat
+      real*8 , intent(in)::ri(6,6),codin(6),beam1(21),emit1(21),
+     $     trans(6,12)
+      if(iamat .gt. 0)then
+        dlist(iamat+4)=
+     $       dtfcopy1(kxm2l(ri,6,6,6,.false.))
+        dlist(iamat+1)=
+     $       dtfcopy1(kxm2l(codin,0,6,1,.false.))
+        dlist(iamat+5)=
+     $       dtfcopy1(kxm2l(beam1,0,21,1,.false.))
+        dlist(iamat+6)=
+     $       dtfcopy1(kxm2l(emit1,0,21,1,.false.))
+        dlist(iamat+2)=
+     $       dtfcopy1(kxm2l(trans,6,6,6,.false.))
+        dlist(iamat+3)=
+     $       dtfcopy1(kxm2l(trans(1,7),6,6,6,.false.))
+      endif
+      return
+      end
+
+      subroutine setparams(params,cod)
+      use temw
+      use tmacro
+      implicit none
+      real*8 , intent(out)::params(nparams)
+      real*8 , intent(in)::cod(6)
+      params(iprevf)=omega0/m_2pi
+      params(ipdx:ipddp)=cod
+      params(ipu0)=u0*pgev
+      params(ipvceff)=vceff
+      params(iptrf0)=trf0
+      params(ipalphap)=alphap
+      params(ipdleng)=dleng
+      params(ipbh)=bh
+      params(ipheff)=heff
       return
       end
