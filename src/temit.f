@@ -139,7 +139,9 @@ c      call tfdebugprint(kx,'initemip',1)
       subroutine tfetwiss(r,cod,twiss,normi)
       use ffs
       implicit none
-      real*8 r(6,6),twiss(ntwissfun),hi(6,6),cod(6)
+      real*8 , intent(in):: r(6,6),cod(6)
+      real*8 , intent(out):: twiss(ntwissfun)
+      real*8 hi(6,6)
       real*8 ax,ay,az,axy,f,detm,his(4),
      $     uz11,uz12,uz21,uz22,
      $     hx11,hx12,hx21,hx22,
@@ -147,7 +149,8 @@ c      call tfdebugprint(kx,'initemip',1)
      $     r11,r12,r21,r22,
      $     crx,cry,crz,cx,cy,cz,sx,sy,sz,
      $     bx21,bx22,by21,by22,bz21,bz22
-      logical*4 normal,normi
+      logical*4 normal
+      logical*4 , intent(in) :: normi
 c      write(*,'(a,1p5g15.7)')'tfetwiss ',r(5,5),r(5,6),r(6,5),r(6,6),
 c     $     r(5,5)*r(6,6)-r(6,5)*r(5,6)
       az=sqrt(r(5,5)*r(6,6)-r(6,5)*r(5,6))

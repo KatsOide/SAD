@@ -5,7 +5,7 @@
       use tffitcode
       use iso_c_binding
       use tfcsi, only:icslfno
-      use temw, only:tfinitemip,nparams
+      use temw, only:tfinitemip,nparams,tfetwiss,iptwiss
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: kl,klx
@@ -112,6 +112,8 @@ c        ilist(2,iwakepold+6)=ifsize
         call rotri(is,ris)
         dummy=dnotanumber
         call setiamat(iamat,ris,codin,beam,dummy,trans)
+        call tfetwiss(ris,codin,param(iptwiss),
+     $       twiss(is,0,mfitdetr) .lt. 1.d0)
       endif
       if(mode .eq. 3 .and. intra)then
         kx=kxadaloc(-1,6,klx)
@@ -197,9 +199,12 @@ c        ilist(2,iwakepold+6)=ifsize
       implicit none
       integer*4 ,intent(in)::is
       real*8 , intent(out)::ris(6,6)
-      real*8 mu(3),c(3),s(3),trans(6,6)
-      ris=ri
+      real*8 mu(3),c(3),s(3),trans(6,6),rs(6,6)
       if(is .ne. 1)then
+        rs=r
+        call tftmat6(trans,1,is)
+        call tmultr(rs,trans,6)
+        call tinv6(rs,ris)
         mu=twiss(is,0,(/mfitnx,mfitny,mfitnz/))
         c=cos(mu)
         s=sin(mu)
@@ -217,6 +222,8 @@ c        ilist(2,iwakepold+6)=ifsize
         trans(6,5)=-s(3)
         trans(6,6)=c(3)
         call tmultr(ris,trans,6)
+      else
+        ris=ri
       endif
       return
       end

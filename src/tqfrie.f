@@ -16,18 +16,11 @@
       if(irad .gt. 6)then
         trans1(1,2)=0.d0
         trans1(1,4)=0.d0
-        trans1(1,5)=0.d0
-        trans1(2,5)=0.d0
         trans1(3,2)=0.d0
         trans1(3,4)=0.d0
-        trans1(3,5)=0.d0
-        trans1(4,5)=0.d0
+        trans1(1:4,5)=0.d0
         trans1(5,5)=1.d0
-        trans1(6,1)=0.d0
-        trans1(6,2)=0.d0
-        trans1(6,3)=0.d0
-        trans1(6,4)=0.d0
-        trans1(6,5)=0.d0
+        trans1(6,1:5)=0.d0
         trans1(6,6)=1.d0
       endif
       xi=min(xmax,max(-xmax,cod(1)))
