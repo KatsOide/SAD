@@ -1780,8 +1780,8 @@ c        write(*,'(1p3g15.7)')(rm(k,:),k=1,3)
         d2= (s*d1+  d2)/c
         e1=  c*e1-s*e2
         e2= (s*e1+  e2)/c
-        write(*,'(a,1p10g12.4)')'sremit-x ',tx,
-     $       demit(1),demit(2),demit(3),dex1,dex2,c1,c2,c1a,c20
+c        write(*,'(a,1p10g12.4)')'sremit-x ',tx,
+c     $       demit(1),demit(2),demit(3),dex1,dex2,c1,c2,c1a,c20
         tx=.5d0*atan(2.d0*demit(9),demit(6)-demit(10))
         c=cos(tx)
         s=sin(tx)
@@ -1795,8 +1795,8 @@ c        write(*,'(1p3g15.7)')(rm(k,:),k=1,3)
         d4= (s*d3+  d4)/c
         e3=  c*e3-s*e4
         e4= (s*e3+  e4)/c
-        write(*,'(a,1p10g12.4)')'sremit-y ',tx,
-     $       demit(6),demit(9),demit(10),dey1,dey2,c3,c4,c3a,c40
+c        write(*,'(a,1p10g12.4)')'sremit-y ',tx,
+c     $       demit(6),demit(9),demit(10),dey1,dey2,c3,c4,c3a,c40
         tx=.5d0*atan(2.d0*demit(20),demit(15)-demit(21))
         c=cos(tx)
         s=sin(tx)
@@ -1810,8 +1810,8 @@ c        write(*,'(1p3g15.7)')(rm(k,:),k=1,3)
         d6= (s*d5+  d6)/c
         e5=  c*e5-s*e6
         e6= (s*e5+  e6)/c
-        write(*,'(a,1p10g12.4)')'sremit-z ',tx,
-     $       demit(15),demit(20),demit(21),dez1,dez2,c5,c6,c5a,c60
+c        write(*,'(a,1p10g12.4)')'sremit-z ',tx,
+c     $       demit(15),demit(20),demit(21),dez1,dez2,c5,c6,c5a,c60
         call spdepol(
      $       (/c1,c3,c5/),(/c2,c4,c6/),
      $       (/d1,d3,d5/),(/d2,d4,d6/),
@@ -1829,7 +1829,7 @@ c        write(*,'(1p3g15.7)')(rm(k,:),k=1,3)
           call tsolvg(rm,b,epol(:,i),3,3,3)
         enddo
         rm1(1,1)=rm1(1,1)-sdamp
-        write(*,'(1p3g13.5)')epol
+c        write(*,'(1p3g13.5)')epol
         equpol=epol(1,:)
         return
         end subroutine
@@ -1948,9 +1948,7 @@ c        write(*,*)'temit-tcod ',trf0
  4001 if(calem)then
         cod=codin
         beam(1:21)=beamin
-c        call tclr(beam,21)
         call tinitr12(trans)
-c        write(*,*)'temit ',trf0,cod
         srot=0.d0
         srot(1,1)=1.d0
         srot(2,2)=1.d0

@@ -16,7 +16,7 @@
      $     aln,pr,akk,phi,scphi,shcphi,sinc2,sinhc2,akr,
      $     xsin2,xsinh2,a11,a12,a21,b11,b12,b21,als,
      $     xi,pxi,yi,pyi,xf,pxf,yf,pyf,
-     $     zx,zy,zxp,zyp,x,y
+     $     zx,zy,zxp,zyp,x,y,bm21
       logical*4 enarad,fringe,kin,next,prev,achro,krad
       real*8 , parameter:: pramin=1.d-4
       integer*4 , parameter :: ndivmax=512
@@ -29,6 +29,7 @@
      $       0.d0,0.d0,0.d0,0.d0,.true.,.false.,irad)
         return
       endif
+      bm21=beam(21)
       call tchge(trans,cod,beam,srot,
      $     dx,dy,theta,0.d0,0.d0,.true.)
       krad=enarad .and. al .ne. 0.d0

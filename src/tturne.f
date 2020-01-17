@@ -171,6 +171,7 @@ c     trf0=-(cod(5)+z0)*0.5d0
       logical*4 sol,plot,chg,sol1,cp0,int0,rt,optics
       sol=.false.
       levele=levele+1
+c      write(*,*)'tturne1-1 ',fbound%lb,fbound%fb,fbound%le,fbound%fe
       if(fbound%fb .ne. 0.d0)then
         call compelc(fbound%lb,cmp)
         call qfracsave(fbound%lb,dsave,nvar,.true.)
@@ -384,9 +385,6 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       bradprev=0.d0
       do l=ibegin,iend
         call tsetr0(trans,cod,0.d0,0.d0)
-c        if(l .gt. 4500 .and. l .lt. 4600)then
-c          write(*,'(a,i5,1p6g15.7)')'tturne ',l,cod
-c        endif
         next=inext(l) .ne. 0
         inin=.false.
         do i=1,6
@@ -485,8 +483,8 @@ c            call checketwiss(trans,et)
           endif
         endif
 c        WRITE(*,*)lele,' ',PNAME(ILIST(2,LATT(L)))(1:16)
-c        if(l .lt. 5)then
-c          write(*,*)'tturne1-l ',l,beam(6)
+c        if(mod(l,100) .eq. 0)then
+c          write(*,*)'tturne1-l ',l,beam(21)
 c        endif
 c        go to (1100,1200,1010,1400,1010,1600,1010,1600,1010,1600,
 c     $       1010,1600,1010,1010,1010,1010,1010,1010,1010,3000,

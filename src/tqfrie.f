@@ -28,6 +28,7 @@
         trans1(6,3)=0.d0
         trans1(6,4)=0.d0
         trans1(6,5)=0.d0
+        trans1(6,6)=1.d0
       endif
       xi=min(xmax,max(-xmax,cod(1)))
       yi=min(xmax,max(-xmax,cod(3)))
