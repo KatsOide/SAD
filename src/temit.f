@@ -39,7 +39,7 @@ c     Inverse matrix of r
      $     0.d0, 0.d0, 0.d0, 0.d0, 0.d0, 1.d0/),
      $     (/6, 6/))
 
-      real*8 , public :: transr(6,6),codr0(6),bzhr0,bsi
+      real*8 , public :: transr(6,6),codr0(6),bzhr0,bsir0
       real*8 , public :: gintd(3)
       real(8), public :: emx, emy, emz
       real(8), public :: bh,heff
@@ -48,7 +48,6 @@ c     Inverse matrix of r
       logical*4 , public :: initr
 
       real*8 , parameter :: toln=0.1d0
-
 
       public :: tfetwiss,etwiss2ri,tfnormalcoord,toln,
      $     tfinitemip,tsetr0
@@ -60,7 +59,7 @@ c     Inverse matrix of r
       codr0=cod
       transr=trans
       bzhr0=bzh
-      bsi=bsi0
+      bsir0=bsi0
       return
       end subroutine
 
@@ -821,10 +820,8 @@ c      write(*,*)'with ',itp,ilp
         integer*4 nind,iord,id,maxi
       end type
 
-c      type spin
-c      sequence
-c      real*8 sx,sy,sz
-c      end type
+      real*8 cphi0,sphi0
+      real*8 , allocatable :: pxr0(:),pyr0(:),zr0(:),bsi(:)
 
       contains
         subroutine spinitrm(rm,nord,id,l)
@@ -1182,7 +1179,7 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         end subroutine
 
         subroutine tradkf1(x,px,y,py,z,g,dv,sx,sy,sz,
-     $     px00,py0,zr0,cphi0,sphi0,bsi,al,k)
+     $     px00,py0,zr00,bsi,al,k)
         use ffs_flag
         use tmacro
         use photontable, only:tphotonconv
@@ -1194,7 +1191,7 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         real*8, parameter:: gmin=-0.9999d0,
      $       cave=8.d0/15.d0/sqrt(3.d0)
         real*8 , intent(inout)::x,px,y,py,z,g,dv
-        real*8 , intent(in)::px00,py0,zr0,cphi0,sphi0,bsi,al
+        real*8 , intent(in)::px00,py0,zr00,bsi,al
         real*8 dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
      $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,sx,sy,sz,
      $       ppa,an,a,dph,r1,r2,px0,xr,yr
@@ -1209,13 +1206,13 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         ppx=py*dpz0-dpz*py0+dpy
         ppy=dpz*px0-px*dpz0-dpx
         ppz=px*py0-py*px0
-        ppa=abs(dcmplx(ppx,abs(dcmplx(ppy,ppz))))
+        ppa=hypot(ppx,hypot(ppy,ppz))
         theta=asin(min(1.d0,max(-1.d0,ppa)))
         pr=1.d0+g
         p=p0*pr
         h1=p2h(p)
         anp=anrad*h1*theta
-        al1=al-z+zr0
+        al1=al-z+zr00
         if(photons)then
           call tdusrnpl(anp,dph,r1,r2,an,dpr,rph)
         else
@@ -1257,7 +1254,7 @@ c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
             pym=py0+dpy*.5d0
             call sprot(sx,sy,sz,pxm,pym,
      $           ppx,ppy,ppz,bsi,a,h1,
-     $           p2*h2/al1,an,cphi0,sphi0)
+     $           p2*h2/al1,an)
           endif
         elseif(calpol)then
           if(ppa .ne. 0.d0)then
@@ -1268,19 +1265,19 @@ c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
           pxm=px0+dpx*.5d0
           pym=py0+dpy*.5d0
           call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,a,h1,
-     $         p*h1/al1,-1.d0,cphi0,sphi0)
+     $         p*h1/al1,-1.d0)
         endif
         return
         end subroutine
 
         subroutine tradk1(x,px,y,py,z,g,dv,sx,sy,sz,
-     $     px00,py0,zr0,cphi0,sphi0,bsi,al)
+     $     px00,py0,zr00,bsi0,al)
         use ffs_flag
         use tmacro
         use mathfun, only:pxy2dpz,p2h
         implicit none
         real*8 , intent(inout)::x,px,y,py,z,g,dv
-        real*8 , intent(in)::px00,py0,zr0,cphi0,sphi0,bsi,al
+        real*8 , intent(in)::px00,py0,zr00,bsi0,al
         real*8 a,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
      $       px0,pxm,pym,al1,uc,ddpx,ddpy,h2,h1,sx,sy,sz,ppa,p2
         real*8, parameter:: gmin=-0.9999d0,
@@ -1294,12 +1291,12 @@ c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
         ppx=py*dpz0-dpz*py0+dpy
         ppy=dpz*px0-px*dpz0-dpx
         ppz=px*py0-py*px0
-        ppa=abs(dcmplx(ppx,abs(dcmplx(ppy,ppz))))
+        ppa=hypot(ppx,hypot(ppy,ppz))
         theta=asin(min(1.d0,max(-1.d0,ppa)))
         pr=1.d0+g
         p=p0*pr
         h1=p2h(p)
-        al1=al-z+zr0
+        al1=al-z+zr00
         anp=anrad*h1*theta
         uc=cuc*h1**3/p0*theta/al1
         dg=-cave*anp*uc
@@ -1325,20 +1322,83 @@ c        write(*,*)'tradk1 ',dg,anp,uc
           endif
           pxm=px0+dpx*.5d0
           pym=py0+dpy*.5d0
-          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,a,h2,
-     $         p2*h2/al1,anp,cphi0,sphi0)
+          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi0,a,h2,
+     $         p2*h2/al1,anp)
         endif
         return
         end subroutine
 
+        subroutine tradk1n(np,xn,pxn,yn,pyn,zn,gn,dvn,sxn,syn,szn,al)
+        use ffs_flag
+        use tmacro
+        use mathfun, only:pxy2dpz,p2h
+        implicit none
+        integer*4 , intent(in)::np
+        real*8 , intent(inout)::
+     $       xn(np),pxn(np),yn(np),pyn(np),zn(np),gn(np),dvn(np),
+     $       sxn(np),syn(np),szn(np)
+        real*8 , intent(in)::al
+        real*8 a,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
+     $       px0,pxm,pym,al1,uc,ddpx,ddpy,h2,h1,ppa,p2
+        real*8, parameter:: gmin=-0.9999d0,
+     $       cave=8.d0/15.d0/sqrt(3.d0)
+        integer*4 i
+        do i=1,np
+          dpz0=pxy2dpz(pxr0(i),pyr0(i))
+          px0= cphi0*pxr0(i)+sphi0*(1.d0+dpz0)
+          dpz0=cphi0*dpz0-sphi0*pxr0(i)
+          dpx=pxn(i)-px0
+          dpy=pyn(i)-pyr0(i)
+          dpz=pxy2dpz(pxn(i),pyn(i))
+          ppx=pyn(i)*dpz0-dpz*pyr0(i)+dpy
+          ppy=dpz*px0-pxn(i)*dpz0-dpx
+          ppz=pxn(i)*pyr0(i)-pyn(i)*px0
+          ppa=hypot(ppx,hypot(ppy,ppz))
+          theta=asin(min(1.d0,max(-1.d0,ppa)))
+          pr=1.d0+gn(i)
+          p=p0*pr
+          h1=p2h(p)
+          al1=al-zn(i)+zr0(i)
+          anp=anrad*h1*theta
+          uc=cuc*h1**3/p0*theta/al1
+          dg=-cave*anp*uc
+          dg=dg/(1.d0-2.d0*dg)
+          gn(i)=max(gmin,gn(i)+dg)
+          ddpx=-.5d0*dpx*dg
+          ddpy=-.5d0*dpy*dg
+          xn(i)=xn(i)+ddpx*al1/3.d0
+          yn(i)=yn(i)+ddpy*al1/3.d0
+          pxn(i)=pxn(i)+ddpx
+          pyn(i)=pyn(i)+ddpy
+          pr=1.d0+gn(i)
+          p2=p0*pr
+          h2=p2h(p2)
+          dvn(i)=-gn(i)*(1.d0+pr)/h2/(h2+p2)+dvfs
+          zn(i)=zn(i)*p2/h2*h1/p
+          if(calpol)then
+            if(ppa .ne. 0.d0)then
+              a=theta/ppa*pr
+            else
+              a=0.d0
+            endif
+            pxm=px0    +dpx*.5d0
+            pym=pyr0(i)+dpy*.5d0
+            call sprot(sxn(i),syn(i),szn(i),pxm,pym,ppx,ppy,ppz,
+     $           bsi(i),a,h2,
+     $           p2*h2/al1,anp)
+          endif
+        enddo
+        return
+        end subroutine
+
         subroutine sprot(sx,sy,sz,pxm,pym,bx0,by0,bz0,bsi,a,h,
-     $     gbrhoi,anph,cphi0,sphi0)
+     $     gbrhoi,anph)
         use tfstk,only:ktfenanq
         use tmacro
         use ffs_flag, only:radpol
         use mathfun,only:pxy2dpz,sqrt1
         implicit none
-        real*8 pxm,pym,bsi,pzm,bx0,by0,bz0,sx,sy,sz,cphi0,sphi0,
+        real*8 pxm,pym,bsi,pzm,bx0,by0,bz0,sx,sy,sz,
      $       bx,by,bz,bp,blx,bly,blz,btx,bty,btz,ct,h,
      $       gx,gy,gz,g,a,gbrhoi,dsx,dsy,dsz,
      $       sux,suy,suz,
@@ -1564,9 +1624,9 @@ c     enddo
             endif
           endif
           if(calpol)then
-            xpzb=xpz+(bsi+bzh*2.d0*al)*pr**2
+            xpzb=xpz+(bsir0+bzh*2.d0*al)*pr**2
             dxpzb=dxpz
-            dxpzb(6)=dxpzb(6)+2.d0*(bsi+bzh*2.d0*al)*pr
+            dxpzb(6)=dxpzb(6)+2.d0*(bsir0+bzh*2.d0*al)*pr
             pxh=(pxr0+px)/pr*.5d0
             pyh=(pyi+py)/pr*.5d0
             dpxh=(tr2(2,:)+dpxr0)/pr*.5d0
@@ -1651,7 +1711,7 @@ c              dcosu=2.d0*sin(g*.5d0)**2
         codr0(1:6)=cod(1:6)
         transr=trans(:,1:6)
         bzhr0=bzh
-        bsi=0.d0
+        bsir0=0.d0
         return
         end subroutine
 

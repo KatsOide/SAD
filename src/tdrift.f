@@ -27,7 +27,7 @@ c     drift in the free space
       end
 
 c     drift in the parallel solenoid
-      subroutine tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+      subroutine tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     al,bz,enarad)
       use element_drift_common
       use ffs_flag, only:rfluct,photons
@@ -36,16 +36,18 @@ c     drift in the parallel solenoid
       use mathfun, only: sqrtl
       implicit none
       integer*4 np
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),bsi(np),
-     $     sx(np),sy(np),sz(np),zr0,px1,py1
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+     $     sx(np),sy(np),sz(np),px1,py1
       real*8 al,bz
       integer*4 i
       real*8 pr,bzp,pxi,pyi
-      real*8 s,dpzi,pzi,al1
+      real*8 s,dpzi,pzi,al1,zi
       real*8 phi,a22,a24,a12,a14
       logical*4 enarad
       if(enarad)then
         bsi=0.d0
+        cphi0=1.d0
+        sphi0=0.d0
       endif
       do i=1,np
 c         pr=(1.d0+g(i))**2
@@ -53,7 +55,7 @@ c         pr=(1.d0+g(i))**2
          bzp=bz/pr
          pxi=px(i)+bzp*y(i)*.5d0
          pyi=py(i)-bzp*x(i)*.5d0
-         zr0=z(i)
+         zi=z(i)
 
          s=min(ampmax,pxi**2+pyi**2)
          dpzi=-s/(1.d0+sqrtl(1.d0-s))
@@ -99,11 +101,11 @@ c               write(*,'(a,1p12g10.2)')'drift_sol ',pp%geo1(:,:)
              endif
              call tradkf1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $            sx(i),sy(i),sz(i),
-     $            pxi,pyi,zr0,1.d0,0.d0,bsi(i),al,i)
+     $            pxi,pyi,zi,bsi(i),al,i)
            else
              call tradk1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $            sx(i),sy(i),sz(i),
-     $            pxi,pyi,zr0,1.d0,0.d0,bsi(i),al)
+     $            pxi,pyi,zi,bsi(i),al)
            endif
          endif
          px(i)=px1-bzp*y(i)*.5d0
@@ -112,7 +114,7 @@ c               write(*,'(a,1p12g10.2)')'drift_sol ',pp%geo1(:,:)
       return
       end
 
-      subroutine tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+      subroutine tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     al,bz,ak0x,ak0y,enarad)
       use element_drift_common
       use tspin
@@ -124,8 +126,8 @@ c               write(*,'(a,1p12g10.2)')'drift_sol ',pp%geo1(:,:)
       real*8 conv
       parameter (itmax=15,conv=1.d-15)
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     sx(np),sy(np),sz(np),px0,py0,zr0,bsi(np)
-      real*8 al,bz,pr,bzp,s,phi,px1,py1,
+     $     sx(np),sy(np),sz(np)
+      real*8 al,bz,pr,bzp,s,phi,px1,py1,px0,py0,z0,
      $     sinphi,ak0x,ak0y,b,phix,phiy,phiz,
      $     dphizsq,dpz0,pz0,plx,ply,plz,ptx,pty,ptz,
      $     pbx,pby,pbz,phi0,dphi,dcosphi,pl,dpl,alb,
@@ -137,16 +139,17 @@ c               write(*,'(a,1p12g10.2)')'drift_sol ',pp%geo1(:,:)
           call tdrift_free(np,x,px,y,py,z,dv,al)
           return
         else
-          call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+          call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         al,bz,enarad)
           return
         endif
       else
-c        b=hypot(hypot(ak0x,ak0y),bz*al)
         if(enarad)then
+          cphi0=1.d0
+          sphi0=0.d0
           bsi=0.d0
         endif
-        b=abs(dcmplx(abs(dcmplx(ak0x,ak0y)),bz*al))
+        b=hypot(hypot(ak0x,ak0y),bz*al)
         phix=ak0y/b
         phiy=ak0x/b
         phiz=bz*al/b
@@ -161,7 +164,7 @@ c          pr=(1.d0+g(i))**2
           py(i)=py(i)-bzp*x(i)*.5d0
           px0=px(i)
           py0=py(i)
-          zr0=z(i)
+          z0=z(i)
           s=min(ampmax,px(i)**2+py(i)**2)
           dpz0=-s/(1.d0+sqrtl(1.d0-s))
           pz0=1.d0+dpz0
@@ -217,11 +220,11 @@ c          pr=(1.d0+g(i))**2
               endif
               call tradkf1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $         sx(i),sy(i),sz(i),
-     $         px0,py0,zr0,1.d0,0.d0,bsi(i),al,i)
+     $         px0,py0,z0,bsi(i),al,i)
             else
               call tradk1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $         sx(i),sy(i),sz(i),
-     $         px0,py0,zr0,1.d0,0.d0,bsi(i),al)
+     $         px0,py0,z0,bsi(i),al)
             endif
           endif
           px(i)=px1-bzp*y(i)*.5d0

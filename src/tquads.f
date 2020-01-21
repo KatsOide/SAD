@@ -12,7 +12,6 @@ c      use ffs_pointer, only:inext,iprev
       implicit none
       integer*4 np,mfring,i
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     pxr0(np),pyr0(np),zr0(np),bsi(np),
      $     al,bz,ak0,ak,dx,dy,theta,radlvl,alr,
      $     f1in,f2in,f1out,f2out,eps0,theta1,theta2,bxs,bys,bzs,
      $     a,b,ea,p,pxf,pyf
@@ -27,11 +26,7 @@ c      use ffs_pointer, only:inext,iprev
       endif
       enarad=rad .and. radlvl .ne. 1.d0
       call akang(dcmplx(ak0,0.d0),al,theta1,cr1)
-      if(theta1 .ne. 0.d0)then
-        ak=-ak0
-      else
-        ak=ak0
-      endif
+      ak=abs(ak0)
       theta2=theta+theta1
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,bz,dx,dy,0.d0,
@@ -67,16 +62,14 @@ c          p=(1.d0+g(i))**2
           call tsetphotongeo(0.d0,0.d0,theta2,.true.)
         endif
         if(f1in .ne. 0.d0)then
-          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         pxr0,pyr0,zr0,bsi,f1in,0.d0)
+          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,f1in,0.d0)
         endif
         call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       pxr0,pyr0,zr0,bsi,
      $       al,ak,bz,0.d0,0.d0,eps0,
      $       alr)
       else
         call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       bsi,al,ak,bz,0.d0,0.d0,0,eps0)
+     $       al,ak,bz,0.d0,0.d0,0,eps0)
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
         do 2120 i=1,np
@@ -102,8 +95,7 @@ c          p=(1.d0+g(i))**2
         if(photons)then
           call tsetphotongeo(0.d0,0.d0,0.d0,.false.)
         endif
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       pxr0,pyr0,zr0,bsi,f1out,0.d0)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,f1out,0.d0)
       endif
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,bz,dx,dy,0.d0,

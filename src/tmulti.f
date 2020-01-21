@@ -22,8 +22,7 @@ c      use ffs_pointer, only:inext,iprev
      $     arad=0.01d0
 c      parameter (oneev=1.d0+3.83d-12)
       integer*4 np
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
-     $     pxr0(np),pyr0(np),zr0(np),bsi(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np)
       real*8 sx(np),sy(np),sz(np)
       real*8 al,f1in,f2in,f1out,f2out
       complex*16 ak(0:nmult)
@@ -93,8 +92,6 @@ c      parameter (oneev=1.d0+3.83d-12)
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,bz,dx,dy,dz,
      $     chi1,chi2,theta2,bxs,bys,bzs,.true.)
-c      write(*,'(2a,1p7g12.5)')'tmulti ',pname(latt(1,l))(1:8),rtaper,
-c     $     x(np),px(np),y(np),py(np),z(np),g(np)
       akr(0)=(ak(0)*cr1+dcmplx(bys*al,bxs*al))*rtaper
       do n=nmult,0,-1
         if(ak(n) .ne. (0.d0,0.d0))then
@@ -105,7 +102,7 @@ c     $     x(np),px(np),y(np),py(np),z(np),g(np)
       if(vc .ne. 0.d0 .or. spac)then
         nmmax=0
       else
-        call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+        call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,bzs,dble(akr(0)),imag(akr(0)),krad)
         go to 1000
       endif
@@ -141,7 +138,6 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
         ndiv=max(ndiv,ndivrad(abs(akr(0)),akr1,bz,eps0))
       endif
       ndiv=min(ndivmax,ndiv)
-c      write(*,*)'tmulit-4 ',krad,ndiv
       acc=(trpt .or. rfsw) .and. vc .ne. 0.d0
       if(acc)then
         if(w .eq. 0.d0)then
@@ -272,11 +268,14 @@ c        vnominal=0.d0
       spac1 = spac .and. radius .ne. 0.d0
       sv=0.d0
       ibsi=1
+c      if(l_track .gt. 7300 .and. l_track .lt. 7310)then
+c        write(*,'(a,2i5,1p4g15.7)')'tmulti-2 ',
+c     $       l_track,ndiv,al1,ak1,x(1),px(1)
+c      endif
       do m=1,ndiv
         if(nmmin .eq. 2)then
-          call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         bsi,al1,ak1,
-     $         bzs,dble(ak01),imag(ak01),ibsi,eps0)
+         call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         al1,ak1,bzs,dble(ak01),imag(ak01),ibsi,eps0)
           if(krad)then
             if(m .eq. 1)then
               do i=1,np
@@ -296,8 +295,7 @@ c        vnominal=0.d0
                 call tsetphotongeo(al1,0.d0,0.d0,.false.)
               endif
             endif
-            call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           pxr0,pyr0,zr0,bsi,al1,0.d0)
+            call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al1,0.d0)
           endif
           ibsi=0
         endif
@@ -385,12 +383,13 @@ c            dpr=ah/(1.d0+sqrt(1.d0+ah))
       enddo
       if(nmmin .eq. 2)then
         call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       bsi,al1,
-     $       ak1,bzs,dble(ak01),imag(ak01),2,eps0)
-c        write(*,'(a,1p7g12.4)')'tmulti-2 ',bsi(1:7)
+     $       al1,ak1,bzs,dble(ak01),imag(ak01),2,eps0)
       endif
+c      if(l_track .gt. 7300 .and. l_track .lt. 7310)then
+c        write(*,'(a,2i5,1p4g15.7)')'tmulti-2 ',
+c     $       l_track,ndiv,al1,ak1,x(1),px(1)
+c      endif
       if(spac1)then
-c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
         call tapert(l_track,latt,x,px,y,py,z,g,dv,sx,sy,sz,
      $       kptbl,np,kturn,
      $       radius,radius,
@@ -443,11 +442,11 @@ c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
           if(photons)then
             call tsetphotongeo(al1,0.d0,0.d0,.false.)
           endif
-          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         pxr0,pyr0,zr0,bsi,al1,0.d0)
+          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al1,0.d0)
         endif
       endif
- 1000 call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
+ 1000 continue
+      call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,bz,dx,dy,dz,
      $     chi1,chi2,theta2,bxs,bys,bzs,.false.)
       if(vnominal .ne. 0.d0)then

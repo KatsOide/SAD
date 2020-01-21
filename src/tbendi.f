@@ -14,7 +14,7 @@
       integer*4 , parameter :: ndivmax=1000
       integer*4 np,mfring,i,ndiv,n,n1,n2
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     sx(np),sy(np),sz(np),px0(np),py0(np),zr0(np),bsi(np),
+     $     sx(np),sy(np),sz(np),
      $     alx(-1:ndivmax+2),alr(-1:ndivmax+2),
      $     akxn(-1:ndivmax+2),phixn(-1:ndivmax+2),
      $     cphixn(-1:ndivmax+2),sphixn(-1:ndivmax+2),
@@ -47,8 +47,8 @@
       n2=0
       alc=al
       if(krad)then
-        px0=px
-        py0=py
+        pxr0=px
+        pyr0=py
         zr0=z
         bsi=0.d0
         if(iprev(l_track) .eq. 0)then
@@ -124,18 +124,19 @@ c     dp=g(i)*(2.d0+g(i))
           if(krad)then
             bsi(i)=bsi(i)+akxn(n)/alx(n)*xi*yi
             if(n .ne. n2)then
+              cphi0=cphixn(n)
+              sphi0=sphixn(n)
               if(rfluct)then
                 call tradkf1(xi,pxi,yi,pyi,zi,dp,dv(i),
      $               sx(i),sy(i),sz(i),
-     $               px0(i),py0(i),zr0(i),
-     $               cphixn(n),sphixn(n),bsi(i),alr(n),i)
+     $               pxr0(i),pyr0(i),zr0(i),bsi(i),alr(n),i)
               else
-                call tradk1(xi,pxi,yi,pyi,zi,dp,dv(i),sx(i),sy(i),sz(i),
-     $               px0(i),py0(i),zr0(i),cphixn(n),sphixn(n),
-     $               bsi(i),alr(n))
+                call tradk1(xi,pxi,yi,pyi,zi,dp,dv(i),
+     $               sx(i),sy(i),sz(i),
+     $               pxr0(i),pyr0(i),zr0(i),bsi(i),alr(n))
               endif
-              px0(i)=pxi
-              py0(i)=pyi
+              pxr0(i)=pxi
+              pyr0(i)=pyi
               zr0(i)=zi
               bsi(i)=0.d0
               if(photons)then
@@ -177,8 +178,7 @@ c        write(*,'(a,1p6g15.7)')'tbendi-2 ',zi,z(i),xi,x(i),ff,fpx
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
       endif
       if(krad)then
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       px0,py0,zr0,bsi,alr(n2),phixn(n2))
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,alr(n2),phixn(n2))
       endif
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)

@@ -13,7 +13,6 @@ c      use ffs_pointer, only:inext,iprev
       logical*4 enarad,chro,fringe,kin
       integer*4 np,i,mfring
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     px0(np),py0(np),zr0(np),bsi(np),
      $     al,ak0,ak,dx,dy,theta,radlvl,eps0,alr,
      $     f1in,f1out,f2in,f2out,p,a,ea,b,pxf,pyf,
      $     theta2,theta1,bxs,bys,bzs
@@ -29,20 +28,15 @@ c      use ffs_pointer, only:inext,iprev
         return
       endif
       call akang(dcmplx(ak0,0.d0),al,theta1,cr1)
-      if(theta1 .ne. 0.d0)then
-        ak=-ak0
-      else
-        ak=ak0
-      endif
-c      write(*,*)'tquad ',ak,ak0,al
+      ak=abs(ak0)
       theta2=theta+theta1
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,0.d0,dx,dy,0.d0,
      $     0.d0,0.d0,theta2,bxs,bys,bzs,.true.)
       enarad=rad .and. radlvl .ne. 1.d0
       if(enarad)then
-        px0=px
-        py0=py
+        pxr0=px
+        pyr0=py
         zr0=z
         bsi=0.d0
       endif
@@ -71,18 +65,16 @@ c          p=(1.d0+g(i))**2
           call tsetphotongeo(0.d0,0.d0,theta2,.true.)
         endif
         if(f1in .ne. 0.d0)then
-          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         px0,py0,zr0,bsi,f1in,0.d0)
+          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,f1in,0.d0)
         endif
-        px0=px
-        py0=py
+        pxr0=px
+        pyr0=py
         zr0=z
-        call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       px0,py0,zr0,bsi,al,ak,
+        call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      $       0.d0,0.d0,0.d0,eps0,alr)
       else
         call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       bsi,al,ak,0.d0,0.d0,0.d0,0,eps0)
+     $       al,ak,0.d0,0.d0,0.d0,0,eps0)
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
         do 2120 i=1,np
@@ -108,8 +100,7 @@ c          p=(1.d0+g(i))**2
         if(photons)then
           call tsetphotongeo(0.d0,0.d0,0.d0,.false.)
         endif
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       px0,py0,zr0,bsi,f1out,0.d0)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,f1out,0.d0)
       endif
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,0.d0,dx,dy,0.d0,
@@ -134,8 +125,7 @@ c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
      1           gamma=9.43738783765593145d-4,
      1           alpha1=.5d0-alpha)
       integer*4 nord,np,kord,i
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
-     $     px0(np),py0(np),zr0(np),bsi(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np)
       real*8 sx(np),sy(np),sz(np)
       real*8 fact(0:nmult)
       real*8 theta,sint,cost,dx,dy,al,ak,
@@ -161,8 +151,8 @@ c     end   initialize for preventing compiler warning
       enarad=rad .and. radlvl .eq. 0.d0 .and. al .ne. 0.d0
       include 'inc/TENT.inc'
       if(enarad)then
-        px0=px
-        py0=py
+        pxr0=px
+        pyr0=py
         zr0=z
         bsi=0.d0
       endif
@@ -360,8 +350,7 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
         call ttfrin(np,x,px,y,py,z,g,nord,-ak,al,0.d0)
       endif
       if(enarad)then
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       px0,py0,zr0,bsi,al,0.d0)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al,0.d0)
       endif
       include 'inc/TEXIT.inc'
       return

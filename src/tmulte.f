@@ -253,12 +253,12 @@
         cod(2)=cod(2)-dble(cx)+w1n*cod(1)
         cod(4)=cod(4)+imag(cx)+w1n*cod(3)
         if(m .eq. 1)then
-          bsi=bsi+imag(cx)/al1
+          bsir0=bsir0+imag(cx)/al1
         else
-          bsi=0.d0
+          bsir0=0.d0
         endif
         if(m .eq. ndiv)then
-          bsi=bsi-imag(cx)/al1
+          bsir0=bsir0-imag(cx)/al1
         endif
         if(acc)then
           p1=p0*(1.d0+cod(6))
@@ -282,7 +282,6 @@ c          h1=sqrt(1.d0+p1**2)
           va=vn+(v10a+v20a*cod(1)+v11a*cod(3))*cod(1)
      $           +v02a*cod(3)**2
           dh=max(oneev-h1,-va*(sp+offset1))
-c          write(*,*)'tmulte-dh ',dh*amass,phii,phic,phis
           veff=vcn
           vc0=vc0+veff
           if(omega0 .ne. 0.d0)then

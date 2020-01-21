@@ -1,7 +1,11 @@
       module wsbb
+      use tfstk, only:sad_descriptor
       implicit none
       integer*4, parameter :: nslimax=500,nblist=1600
       real*8, parameter:: re=2.81794092d-15, am_e=510999.06
+
+      type (sad_descriptor) kvlum
+      data kvlum%k /0/
 
       type sbeam 
       real*8 Benv(36),Benv5(25),v_cen(5),cod(6)

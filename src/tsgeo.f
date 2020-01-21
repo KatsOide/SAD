@@ -243,7 +243,7 @@ c        snchi3=sin(chi3)
      $     a24,dx,pxf,dy,pyf,xi,yi,dl,theta,phix,phiy,f,xf,
      $     zf,gf,dvf,bzs,ak1,ftable(4),dir,bzs0,tfbzs,db,gi,
      $     chi2i,cchi2i,schi2i,chi1i,cchi1i,schi1i,g1,yf,
-     $     sxf,syf,szf,bsi,
+     $     sxf,syf,szf,
      $     trans(6,12),cod(6),beam(42),geo1(3,3),srot(3,9)
       logical*4 seg,dirf
       real*8 ,save::dummy(256)=0.d0
@@ -296,7 +296,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         zf=0.d0
         gf=0.d0
         dvf=0.d0
-        call tdrift(1,xf,pxf,yf,pyf,zf,gf,dvf,sxf,syf,szf,bsi,
+        call tdrift(1,xf,pxf,yf,pyf,zf,gf,dvf,sxf,syf,szf,
      $       al,bzs*dir,phiy,phix,.false.)
         pxf=pxf*dir+f*yf
         pyf=pyf*dir-f*xf
@@ -350,8 +350,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         cod(2)=(pxi-f*yi)*dir
         cod(3)=yi
         cod(4)=(pyi+f*xi)*dir
-        cod(5)=0.d0
-        cod(6)=0.d0
+        cod(5:6)=0.d0
         call setdirelc(i,direlc(i)*dir)
         dirf=direlc(i) .gt. 0.d0
         if(seg)then
@@ -375,8 +374,7 @@ c     call tmulteseg(trans,cod,beam,i,cmp,bzs*dir,lal,1.d0,i)
         cod(2)=(pxi-f*yi)*dir
         cod(3)=yi
         cod(4)=(pyi+f*xi)*dir
-        cod(5)=0.d0
-        cod(6)=0.d0
+        cod(5:6)=0.d0
         call setdirelc(i,direlc(i)*dir)
         dirf=direlc(i) .gt. 0.d0
         call tmulte(trans,cod,beam,srot,i,al,

@@ -213,7 +213,7 @@ c     $     sxkxp,dcxkxp
       cod(4)=min(p,max(-p,pyf*p))
       cod(5)=zf-dvemit*al
       if(enarad)then
-        bsi=bsi+bsi1*(yi/rhob+ak1*xi*yi)
+        bsir0=bsir0+bsi1*(yi/rhob+ak1*xi*yi)
      $       -bsi2*(yf/rhob+ak1*xf*yf)
         call tradke(trans,cod,beam,srot,alr,phin,0.d0)
         tbinit=.true.
@@ -297,7 +297,7 @@ c     $     sxkxp,dcxkxp
       cod(4)=min(pr,max(-pr,pyi*pr))
       cod(5)=cod(5)-phi0n*(dp*rhob+drhob)+da*rhoe-dvemit*aln
       if(enarad)then
-        bsi=bsi+bsi1*yi/rhob-bsi2*cod(3)/rhob
+        bsir0=bsir0+bsi1*yi/rhob-bsi2*cod(3)/rhob
         call tradke(trans,cod,beam,srot,alr,phi0n,0.d0)
       endif
       return

@@ -816,7 +816,7 @@
         implicit none
         type (sad_comp) cmp
         integer*4 ic
-        real*8 dir,akk,table(4),f1in,f1out,f2in,f2out
+        real*8 dir,akk,table(4),f1in,f1out,f2in,f2out,aakk
         f1in =cmp%value(kytbl(kwF1,ic))
      $       +cmp%value(kytbl(kwF1K1F,ic))
         f1out=cmp%value(kytbl(kwF1,ic))
@@ -826,15 +826,15 @@
         f2out=cmp%value(kytbl(kwF2,ic))
      $       +cmp%value(kytbl(kwF2K1B,ic))
         if(dir .ge. 0.d0)then
-          table(1)=-akk*f1in*abs(f1in)/24.d0
-          table(2)= akk*f2in
-          table(3)=-akk*f1out*abs(f1out)/24.d0
-          table(4)= akk*f2out
+          table(1)=-abs(akk*f1in*f1in)/24.d0
+          table(2)= abs(akk)*f2in
+          table(3)=-abs(akk*f1out*f1out)/24.d0
+          table(4)= abs(akk)*f2out
         else
-          table(3)=-akk*f1in*abs(f1in)/24.d0
-          table(4)= akk*f2in
-          table(1)=-akk*f1out*abs(f1out)/24.d0
-          table(2)= akk*f2out
+          table(3)=-abs(akk*f1in*f1in)/24.d0
+          table(4)= abs(akk)*f2in
+          table(1)=-abs(akk*f1out*f1out)/24.d0
+          table(2)= abs(akk)*f2out
         endif
         return
         end subroutine

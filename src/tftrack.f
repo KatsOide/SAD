@@ -254,7 +254,6 @@ c      pgev=rgetgl1('MOMENTUM')
         else
           normal=.true.
         endif
-c        write(*,*)'tftrack-2'
         np0=np00
         outfl=outfl0
         dapert=dapert0
@@ -419,7 +418,7 @@ c        endif
       use ffs_flag, only:calpol
       implicit none
       integer*8 ka,kaj(9)
-      integer*4 np,iptbl(np,6),i,j,k,nlati,tend,mc,mcf,nv
+      integer*4 np,iptbl(np,6),i,j,k,nlati,tend,mc,mcf,nv,irtc
       real*8 zx(np,mc)
       if(calpol)then
         mcf=9

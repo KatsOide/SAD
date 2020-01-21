@@ -209,7 +209,7 @@ c          als=als+aln
         cod(4)=pyf*pr
         if(krad)then
           if(n .eq. 1)then
-            bsi=ak/aln*xi*yi
+            bsir0=ak/aln*xi*yi
           endif
           call tradke(trans,cod,beam,srot,aln,0.d0,0.d0)
           if(radcod)then
@@ -266,7 +266,7 @@ c      endif
         call tqfrie(trans,cod,beam,-ak,al,0.d0)
       endif
       if(krad .and. f1out .ne. 0.d0)then
-        bsi=-ak/aln*cod(1)*cod(3)
+        bsir0=-ak/aln*cod(1)*cod(3)
         call tradke(trans,cod,beam,srot,f1out,0.d0,0.d0)
       endif
       call tchge(trans,cod,beam,srot,

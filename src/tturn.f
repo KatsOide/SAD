@@ -87,7 +87,6 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
         else
           ls=fbound%lb
         endif
-c      write(*,*)'tturn0 ',fbound%lb,fbound%fb,fbound%le,fbound%fe,ls
         if(fbound%le .gt. ls+1 .or.
      $       fbound%le .eq. ls+1 .and. fbound%fe .eq. 0.d0)then
           call tturn1(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
@@ -202,11 +201,17 @@ c      isb=ilist(2,iwakepold+6)
       xlimit=alost*3.d0
       sspac0=rlist(ifpos+lbegin-1)
       call tsetdvfs
+      if(rad)then
+        allocate(pxr0(np))
+        allocate(pyr0(np))
+        allocate(zr0(np))
+      endif
+      allocate(bsi(np))
 c      call tfmemcheckprint('tturn',0,.false.,irtc)
       do l=lbegin,lend
         l_track=l
-c        if(mod(l,1) .eq. 0)then
-c          write(*,*)'tturn1 ',l
+c        if(l .gt. 4000 .and. l .lt. 4100)then
+c          write(*,*)'tturn1-l ',l
 c        endif
 c        call tfmemcheckprint('tturn',l,.false.,irtc)
         if(trpt .and. codplt)then
@@ -220,7 +225,7 @@ c        call tfmemcheckprint('tturn',l,.false.,irtc)
      $         0.d0,0.d0,0.d0,0.d0,
      $         -alost,-alost,alost,alost,0.d0,0.d0,0.d0,0.d0)
           if(np .le. 0)then
-            return
+            go to 9000
           endif
           la=la1
         endif
@@ -358,7 +363,6 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $        cmp%value(p_SQWH_BEND),cmp%value(p_SINWP1_BEND),
      1        cmp%value(ky_RAD_BEND) .eq. 0.d0,
      1        cmp%value(ky_EPS_BEND))
-
        case (icQUAD)
          if(iand(1,cmp%update) .eq. 0)then
            call tpara(cmp)
@@ -418,7 +422,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $        latt,l,lend,
      $        ke,sol,kptbl,la,n,nwak,nextwake,out)
          if(np .le. 0)then
-           return
+           go to 9000
          endif
 
        case (icST)
@@ -543,10 +547,8 @@ c     endif
          if(iand(cmp%update,1) .eq. 0)then
            call tpara(cmp)
          endif
-c     call tfmemcheckprint('beambeam-0',l,.false.,irtc)
          call beambeam(np,x,px,y,py,z,g,dv,sx,sy,sz,cmp%value(1),
      $        cmp%value(p_PARAM_BEAM),n)
-c     call tfmemcheckprint('beambeam-1',l,.false.,irtc)
          go to 1020
 
        case (icProt)
@@ -577,7 +579,7 @@ c     print *,'tturn l sspac2',l,sspac2
          call tapert1(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
      1        kptbl,np,n)
          if(np .le. 0)then
-           return
+           go to 9000
          endif
          la=la1
          go to 1010
@@ -626,7 +628,7 @@ c     print *,'tturn l sspac2',l,sspac2
      $     0.d0,0.d0,0.d0,0.d0,
      $     -alost,-alost,alost,alost,0.d0,0.d0,0.d0,0.d0)
       if(np .le. 0)then
-        return
+        go to 9000
       endif
       la=la1
 c      call tfmemcheckprint('tturn',1,.false.,irtc)
@@ -648,6 +650,13 @@ c     $             +lend-1),
            endif
         endif
       endif
+ 9000 deallocate(bsi)
+      if(rad)then
+        deallocate(zr0)
+        deallocate(pyr0)
+        deallocate(pxr0)
+      endif
+
       return
       end
 

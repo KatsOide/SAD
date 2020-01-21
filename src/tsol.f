@@ -1,5 +1,6 @@
       module sol
-      real*8,private::cchi1,cchi2,cchi3,schi1,schi2,schi3,dcchi1,dcchi2,
+      real*8,save,private::cchi1,cchi2,cchi3,schi1,
+     $     schi2,schi3,dcchi1,dcchi2,
      $     s0s,fx,fy
 
       contains
@@ -96,7 +97,6 @@ c     dpz0=-s/(1.d0+sqrt(1.d0-s))
                     go to 100
                   endif
                 enddo
-c     write(*,*)'tmulti convergence error',phi,dphi
               else
                 phi=0.d0
                 sinphi=0.d0
@@ -443,8 +443,6 @@ c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
           cod(3)=cod(3)+dy
         endif
       endif
-c      write(*,'(a/,6(1p,6g11.4/))')
-c     $     'tsolrote ',((trans1(i,j),j=1,6),i=1,6)
       call tmultr5(trans,trans1,irad)
       if(irad .gt. 6)then
         call tmulbs(beam,trans1,.false.,.true.)
@@ -835,7 +833,7 @@ c     $     'tsolrote ',((trans1(i,j),j=1,6),i=1,6)
             call spdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,al,bzs,
      $           cmp%value(ky_RADI_DRFT),n,latt,kptbl)
           else
-            call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+            call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           al,bzs,rad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0)
 c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
           endif
@@ -851,7 +849,7 @@ c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
           phix= phi*sin(theta)
           enarad=rad .and. al .ne. 0.d0
      $         .and. cmp%value(ky_RAD_BEND) .eq. 0.d0
-          call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+          call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         al,bzs,phiy,phix,enarad)
         case(icQUAD)
           if(iand(cmp%update,1) .eq. 0)then

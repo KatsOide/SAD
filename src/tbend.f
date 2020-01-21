@@ -335,14 +335,13 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      $     ak,dx,dy,theta,
      $     cost,sint,cosw,sinw,sqwh,sinwp1,eps,
      $     fb10,fb20,dtheta
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     px0(np),py0(np),zr0(np),bsi(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
       real*8 sx(np),sy(np),sz(np)
       logical*4 enarad,fringe
       if(rad .and. enarad)then
         bsi=0.d0
       endif
-      call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,
+      call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     al,phib,phi0,psi1,psi2,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
@@ -353,7 +352,6 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       end
 
       subroutine tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     px0,py0,zr0,bsi,
      $     al,phib,phi0,psi1,psi2,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
@@ -379,8 +377,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
      1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
       real*8 ,parameter::smax=0.99d0,smin=0.01d0,rphidiv=3e-3
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     px0(np),py0(np),zr0(np),bsi(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
       real*8 sx(np),sy(np),sz(np)
       complex*16 akm(0:nmult)
       logical*4 enarad,fringe,ini,krad
@@ -441,8 +438,8 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       f2r=0.d0
       if(krad)then
         if(ini)then
-          px0=px
-          py0=py
+          pxr0=px
+          pyr0=py
           zr0=z
         endif
         if(iprev(l_track) .eq. 0 .and. fb1 .ne. 0.d0)then
@@ -467,18 +464,15 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
         endif
       endif
       n2=ndiv+n2
-c      write(*,'(a,4i5,1p6g15.7)')'tbend0 ',n1,n2,ndiv,iprev(l_track),
-c     $     fb1,fb2
       if(n1 .eq. n2)then
         call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       px0,py0,zr0,bsi,
      $       al,phi0,
      1       cosp1,sinp1,cosp2,sinp2,
      1       mfring,fringe,
      $       cosw,sinw,sqwh,sinwp1,
      1       krad,al,1.d0,1.d0)
       else
-        call tbendr(np,x,px,y,py,z,g,dv,sx,sy,sz,px0,py0,zr0,bsi,
+        call tbendr(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,phib,phi0,psi1,psi2,
      1       cosp1,sinp1,cosp2,sinp2,f1r,f2r,
      1       mfring,fringe,n1,n2,ndiv)
@@ -564,7 +558,6 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
       end
 
       subroutine tbendr(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     px0,py0,zr0,bsi,
      $     al,phib,phi0,psi1,psi2,
      1     cosp1,sinp1,cosp2,sinp2,f1r,f2r,
      1     mfring,fringe,n1,n2,ndiv)
@@ -576,8 +569,7 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
       use bendib, only:rbh,rbl,tbendal
       implicit none
       integer*4 np,mfring,ndiv,mfr1,n1,n2,n
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     px0(np),py0(np),zr0(np),bsi(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
       real*8 sx(np),sy(np),sz(np)
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,
      $     psi1,psi2,wn,aln,phibn,phi0n,alr,f1r,f2r,
@@ -628,7 +620,6 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
         endif
 c        write(*,*)'tbendr ',n,ndiv,phi0n,alx,alr
         call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       px0,py0,zr0,bsi,
      $       alx,phi0n,
      1       cosp1n,sinp1n,cosp2n,sinp2n,
      1       mfr1,fringe,
@@ -642,7 +633,6 @@ c        write(*,*)'tbendr ',n,ndiv,phi0n,alx,alr
       end
 
       subroutine tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     px0,py0,zr0,bsi,
      $     al,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
      1     mfring,fringe,
@@ -666,11 +656,9 @@ c        write(*,*)'tbendr ',n,ndiv,phi0n,alx,alr
      $     dyfra1,dyfra2,fa,t4,dpx3a,t2t3,dcosp,px1px3,
      $     phi0a,bsi1,bsi2,alr
       real*8, parameter :: smin=1.d-4
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     px0(np),py0(np),zr0(np),bsi(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
       real*8 sx(np),sy(np),sz(np)
       logical*4 enarad,fringe
-c      write(*,*)'tbendcore-1 ',z(1:3)
       if((mfring .gt. 0 .or. mfring .eq. -1) .and. fb1 .ne. 0.d0)then
         dxfr1=fb1**2/rhob/24.d0
         dyfr1=fb1/rhob**2/6.d0
@@ -788,8 +776,7 @@ c        write(*,*)t2,t3,t2+t3,t2t3,px1+px3,px1px3
         bsi(i)=bsi(i)-bsi2*y(i)/rhob
 100   continue
       if(enarad)then
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       px0,py0,zr0,bsi,alr,phi0)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,alr,phi0)
       endif
       return
       end
