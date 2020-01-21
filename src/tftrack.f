@@ -323,8 +323,8 @@ c        endif
  9100 irtc=itfmessage(9,'General::wrongval',
      $     '"[nbegin [, nend]] for #3 and #4"')
       return
- 9200 irtc=itfmessage(9,'FFS:nospin','""')
-      return
+c 9200 irtc=itfmessage(9,'FFS:nospin','""')
+c      return
       end
 
       subroutine tfsurvivedparticles(isp1,kx,irtc)
@@ -418,7 +418,7 @@ c        endif
       use ffs_flag, only:calpol
       implicit none
       integer*8 ka,kaj(9)
-      integer*4 np,iptbl(np,6),i,j,k,nlati,tend,mc,mcf,nv,irtc
+      integer*4 np,iptbl(np,6),i,j,k,nlati,tend,mc,mcf,nv
       real*8 zx(np,mc)
       if(calpol)then
         mcf=9

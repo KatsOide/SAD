@@ -712,7 +712,7 @@ c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
       parameter (la1=15)
       integer*4 k,kbz,np
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
-     $     sx(np0),sy(np0),sz(np0),bsi(np)
+     $     sx(np0),sy(np0),sz(np0)
       real*8 tfbzs,fw,bzs,rho,al,theta,phi,phix,phiy,rhoe,
      $     bz1,rho1,dx,dy,rot,rtaper,ph
       integer*8 latt(nlat),l1,lp

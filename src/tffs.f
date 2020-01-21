@@ -816,7 +816,7 @@
         implicit none
         type (sad_comp) cmp
         integer*4 ic
-        real*8 dir,akk,table(4),f1in,f1out,f2in,f2out,aakk
+        real*8 dir,akk,table(4),f1in,f1out,f2in,f2out
         f1in =cmp%value(kytbl(kwF1,ic))
      $       +cmp%value(kytbl(kwF1K1F,ic))
         f1out=cmp%value(kytbl(kwF1,ic))
