@@ -1,3 +1,5 @@
+c  Obsolete 22 Jan 2020
+c
       subroutine trad(np,x,px,y,py,g,dv,by,bx,dbydx,dldx,dldxe,al,
      $     f1,f2,als,ala,dir)
       use ffs_flag

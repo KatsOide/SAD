@@ -807,6 +807,9 @@ c      write(*,*)'with ',itp,ilp
 
       real*8, parameter :: pst=8.d0*sqrt(3.d0)/15.d0,
      $     sflc=.75d0*(elradi/finest)**2
+      real*8, parameter:: gmin=-0.9999d0,cave=1.d0/pst
+      real*8, parameter:: 
+     $     cuu=11.d0/27.d0,cl=1.d0+gspin
 
       integer*4 ,parameter :: mord=6,lind=13
       integer*4 , parameter ::
@@ -1188,8 +1191,6 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         integer*4 ,parameter :: npmax=10000
         integer*4 , intent(in)::k
         integer*4 i
-        real*8, parameter:: gmin=-0.9999d0,
-     $       cave=8.d0/15.d0/sqrt(3.d0)
         real*8 , intent(inout)::x,px,y,py,z,g,dv
         real*8 , intent(in)::px00,py0,zr00,bsi,al
         real*8 dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
@@ -1270,6 +1271,100 @@ c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
         return
         end subroutine
 
+        subroutine tradkf1n(np,xn,pxn,yn,pyn,zn,gn,dvn,sxn,syn,szn,al)
+        use ffs_flag
+        use tmacro
+        use photontable, only:tphotonconv
+        use mathfun, only:pxy2dpz,p2h
+        implicit none
+        integer*4 ,parameter :: npmax=10000
+        integer*4 , intent(in)::np
+        integer*4 i,k
+        real*8 , intent(inout)::
+     $       xn(np),pxn(np),yn(np),pyn(np),zn(np),gn(np),dvn(np),
+     $       sxn(np),syn(np),szn(np)
+        real*8 , intent(in)::al
+        real*8 dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
+     $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,
+     $       ppa,an,a,dph,r1,r2,px0,xr,yr
+        real*8 dpr(npmax),rph(npmax)
+        do k=1,np
+          dpz0=pxy2dpz(pxr0(k),pyr0(k))
+          px0= cphi0*pxr0(k)+sphi0*(1.d0+dpz0)
+          dpz0=cphi0*dpz0-sphi0*pxr0(k)
+          dpx=pxn(k)-px0
+          dpy=pyn(k)-pyr0(k)
+          dpz=pxy2dpz(pxn(k),pyn(k))
+          dpz0=pxy2dpz(px0,pyr0(k))
+          ppx=pyn(k)*dpz0-dpz*pyr0(k)+dpy
+          ppy=dpz*px0-pxn(k)*dpz0-dpx
+          ppz=pxn(k)*pyr0(k)-pyn(k)*px0
+          ppa=hypot(ppx,hypot(ppy,ppz))
+          theta=asin(min(1.d0,max(-1.d0,ppa)))
+          pr=1.d0+gn(k)
+          p=p0*pr
+          h1=p2h(p)
+          anp=anrad*h1*theta
+          al1=al-zn(k)+zr0(k)
+          if(photons)then
+            call tdusrnpl(anp,dph,r1,r2,an,dpr,rph)
+          else
+            call tdusrn(anp,dph,r1,r2,an)
+          endif
+          if(an .ne. 0.d0)then
+            uc=cuc*h1**3/p0*theta/al1
+            if(photons)then
+              do i=1,int(an)
+                dg=dpr(i)*uc
+                xr=xn(k)-rph(i)*(pxn(k)-.5d0*dpx*rph(i))*al
+                yr=yn(k)-rph(i)*(pyn(k)-.5d0*dpy*rph(i))*al
+c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
+                call tphotonconv(xr,pxn(k),yr,pyn(k),dg,
+     $               dpr(i),p,h1,-rph(i)*al,k)
+              enddo
+            endif
+            dg=-dph*uc
+            dg=dg/(1.d0-2.d0*dg)
+            gn(k)=max(gmin,gn(k)+dg)
+            ddpx=-r1*dpx*dg
+            ddpy=-r1*dpy*dg
+            xn(k)=xn(k)+r2*ddpx*al1
+            yn(k)=yn(k)+r2*ddpy*al1
+            pxn(k)=pxn(k)+ddpx
+            pyn(k)=pyn(k)+ddpy
+            pr=1.d0+gn(k)
+            p2=p0*pr
+            h2=p2h(p2)
+            dvn(k)=-gn(k)*(1.d0+pr)/h2/(h2+p2)+dvfs
+            zn(k)=zn(k)*p2/h2*h1/p
+            if(calpol)then
+              if(ppa .ne. 0.d0)then
+                a=theta/ppa*pr
+              else
+                a=0.d0
+              endif
+              pxm=px0    +dpx*.5d0
+              pym=pyr0(k)+dpy*.5d0
+              call sprot(sxn(k),syn(k),szn(k),pxm,pym,
+     $             ppx,ppy,ppz,bsi(k),a,h1,
+     $             p2*h2/al1,an)
+            endif
+          elseif(calpol)then
+            if(ppa .ne. 0.d0)then
+              a=theta/ppa*pr
+            else
+              a=0.d0
+            endif
+            pxm=px0    +dpx*.5d0
+            pym=pyr0(k)+dpy*.5d0
+            call sprot(sxn(k),syn(k),szn(k),pxm,pym,ppx,ppy,ppz,
+     $           bsi(k),a,h1,
+     $           p*h1/al1,-1.d0)
+          endif
+        enddo
+        return
+        end subroutine
+
         subroutine tradk1(x,px,y,py,z,g,dv,sx,sy,sz,
      $     px00,py0,zr00,bsi0,al)
         use ffs_flag
@@ -1280,8 +1375,6 @@ c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
         real*8 , intent(in)::px00,py0,zr00,bsi0,al
         real*8 a,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
      $       px0,pxm,pym,al1,uc,ddpx,ddpy,h2,h1,sx,sy,sz,ppa,p2
-        real*8, parameter:: gmin=-0.9999d0,
-     $       cave=8.d0/15.d0/sqrt(3.d0)
         dpz0=pxy2dpz(px00,py0)
         px0= cphi0*px00+sphi0*(1.d0+dpz0)
         dpz0=cphi0*dpz0-sphi0*px00
@@ -1340,8 +1433,6 @@ c        write(*,*)'tradk1 ',dg,anp,uc
         real*8 , intent(in)::al
         real*8 a,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
      $       px0,pxm,pym,al1,uc,ddpx,ddpy,h2,h1,ppa,p2
-        real*8, parameter:: gmin=-0.9999d0,
-     $       cave=8.d0/15.d0/sqrt(3.d0)
         integer*4 i
         do i=1,np
           dpz0=pxy2dpz(pxr0(i),pyr0(i))
@@ -1391,6 +1482,30 @@ c        write(*,*)'tradk1 ',dg,anp,uc
         return
         end subroutine
 
+        subroutine tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phi0)
+        use tfstk
+        use ffs_flag
+        use tmacro
+        implicit none
+        integer*4 np,i
+        real*8 ,intent(inout)::
+     $       x(np),px(np),y(np),py(np),dv(np),z(np),g(np),
+     $       sx(np),sy(np),sz(np)
+        real*8 , intent(in)::al,phi0
+        cphi0=cos(phi0)
+        sphi0=sin(phi0)
+        if(rfluct .and. al .ne. 0.d0)then
+          call tradkf1n(np,x,px,y,py,z,g,dv,sx,sy,sz,al)
+        else
+          call tradk1n(np,x,px,y,py,z,g,dv,sx,sy,sz,al)
+        endif
+        pxr0=px
+        pyr0=py
+        zr0=z
+        bsi=0.d0
+        return
+        end subroutine
+
         subroutine sprot(sx,sy,sz,pxm,pym,bx0,by0,bz0,bsi,a,h,
      $     gbrhoi,anph)
         use tfstk,only:ktfenanq
@@ -1404,7 +1519,6 @@ c        write(*,*)'tradk1 ',dg,anp,uc
      $       sux,suy,suz,
      $       bt,st,dst,dr,sl1,st1,tanuh,
      $       sw,anph,cosu,sinu,dcosu
-        real*8 , parameter :: cl=1.d0+gspin
         pzm=1.d0+pxy2dpz(pxm,pym)
         bx=bx0*a
         by=by0*a
@@ -1486,9 +1600,6 @@ c     $         btx,bty,btz,cphi0,sphi0
      $       dpxh(6),dpyh(6),dpzh(6),bp,dbp(6),dpxr0(6),dpz0(6),
      $       dxpx(6),dxpy(6),dxpz(6),dxpzb(6),dblx(6),dbly(6),dblz(6),
      $       dbtx(6),dbty(6),dbtz(6),dgx(6),dgy(6),dgz(6),dpz00(6)
-        real*8, parameter:: gmin=-0.9999d0,
-     $       cave=8.d0/15.d0/sqrt(3.d0),cuu=11.d0/27.d0,
-     $       cl=1.d0+gspin
         gi=codr0(6)
         pr=1.d0+gi
         th=tan(.5d0*phir0)

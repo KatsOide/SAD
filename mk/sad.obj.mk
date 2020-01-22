@@ -44,7 +44,7 @@ OBJ1=ActGRA.o    filbuf.o    pwmatq.o    ActLie.o    \
      trackb.o    pack.o      qmdiag.o
 
 OBJ2=packpi.o    tfdbun.o    tracke.o    NewGRF.o \
-     trad.o      padd.o       \
+     padd.o       \
      R1INV.o     inifil.o	R2INV.o     initb1.o        initbl.o \
      tfgeti.o    SYMPS.o      \
      qthin.o     tfgetr.o    trotg.o     SYMTR2.o  \
