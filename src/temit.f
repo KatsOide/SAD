@@ -807,9 +807,8 @@ c      write(*,*)'with ',itp,ilp
 
       real*8, parameter :: pst=8.d0*sqrt(3.d0)/15.d0,
      $     sflc=.75d0*(elradi/finest)**2
-      real*8, parameter:: gmin=-0.9999d0,cave=1.d0/pst
-      real*8, parameter:: 
-     $     cuu=11.d0/27.d0,cl=1.d0+gspin
+      real*8, parameter:: gmin=-0.9999d0,cave=8.d0/15.d0/sqrt(3.d0)
+      real*8, parameter:: cuu=11.d0/27.d0,cl=1.d0+gspin
 
       integer*4 ,parameter :: mord=6,lind=13
       integer*4 , parameter ::
