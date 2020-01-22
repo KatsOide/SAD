@@ -169,7 +169,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       integer*4 l,lele,i,ke,lwl,lwt,lwlc,lwtc,irtc,
      $     nextwake,nwak,itab(np),izs(np)
       integer*8 iwpl,iwpt,iwplc,iwptc
-      logical*4 sol,out,autophi,seg
+      logical*4 sol,out,autophi,seg,enarad
       if(np .le. 0)then
         return
       endif
@@ -207,6 +207,7 @@ c      isb=ilist(2,iwakepold+6)
         allocate(zr0(np))
       endif
       allocate(bsi(np))
+      bsi=0.d0
 c      call tfmemcheckprint('tturn',0,.false.,irtc)
       do l=lbegin,lend
         l_track=l
@@ -336,15 +337,19 @@ c     $              +l-1),
      $          +cmp%value(ky_K0_BEND)
          endif
          ak1=cmp%value(ky_K1_BEND)
-         if(rad .and. radcod .and. radtaper)then
-           rtaper=1.d0-dp0
-     $          +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
-           ak0=ak0*rtaper
-           ak1=ak1*rtaper
+         enarad=cmp%value(ky_RAD_BEND) .eq. 0.d0
+         if(rad)then
+           if(radcod .and. radtaper)then
+             rtaper=1.d0-dp0
+     $            +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+             ak0=ak0*rtaper
+             ak1=ak1*rtaper
+           endif
+           if(enarad .and. calpol)then
+             bsi=0.d0
+           endif
          endif
-         
-c         write(*,*)'tturn-tbend ',l,
-c     $        cmp%value(p_FB1_BEND),cmp%value(p_FB2_BEND)
+
          call tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $        cmp%value(p_L_BEND),ak0,
      $        cmp%value(ky_ANGL_BEND),
@@ -361,8 +366,8 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $        cmp%value(ky_FRIN_BEND) .eq. 0.d0,
      1        cmp%value(p_COSW_BEND),cmp%value(p_SINW_BEND),
      $        cmp%value(p_SQWH_BEND),cmp%value(p_SINWP1_BEND),
-     1        cmp%value(ky_RAD_BEND) .eq. 0.d0,
-     1        cmp%value(ky_EPS_BEND))
+     1        rad .and. enarad,
+     1        cmp%value(ky_EPS_BEND),.true.,0)
        case (icQUAD)
          if(iand(1,cmp%update) .eq. 0)then
            call tpara(cmp)

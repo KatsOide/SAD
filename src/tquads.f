@@ -35,7 +35,9 @@ c      use ffs_pointer, only:inext,iprev
         pxr0=px
         pyr0=py
         zr0=z
-        bsi=0.d0
+        if(calpol)then
+          bsi=0.d0
+        endif
       endif
       if(fringe .and. mfring .ne. 2)then
         call ttfrin(np,x,px,y,py,z,g,4,ak,al,bz)

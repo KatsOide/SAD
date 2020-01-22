@@ -1486,7 +1486,7 @@ c        write(*,*)'tradk1 ',dg,anp,uc
         use ffs_flag
         use tmacro
         implicit none
-        integer*4 np,i
+        integer*4 np
         real*8 ,intent(inout)::
      $       x(np),px(np),y(np),py(np),dv(np),z(np),g(np),
      $       sx(np),sy(np),sz(np)
@@ -1501,7 +1501,9 @@ c        write(*,*)'tradk1 ',dg,anp,uc
         pxr0=px
         pyr0=py
         zr0=z
-        bsi=0.d0
+        if(calpol)then
+          bsi=0.d0
+        endif
         return
         end subroutine
 

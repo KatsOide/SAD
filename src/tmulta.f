@@ -3,7 +3,7 @@
      $     psi1,psi2,bz,
      1     dx,dy,theta,dtheta,
      $     eps0,enarad,fb1,fb2,mfring,fringe)
-      use ffs_flag, only:rad,ndivrad
+      use ffs_flag, only:rad,ndivrad,calpol
       use tmacro
       use multa
       use tbendcom, only:tbrot,tbshift
@@ -130,7 +130,9 @@
         pxr0=px
         pyr0=py
         zr0=z
-        bsi=0.d0
+        if(calpol)then
+          bsi=0.d0
+        endif
         pp%theta=theta
       endif
       do n=1,ndiv
@@ -161,7 +163,7 @@
               bsi(i)=imag(cx)/al
             enddo
           endif
-          call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
+          call tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         als,phibn*.5d0,phin*.5d0,psi1,0.d0,
      1         cosp1,sinp1,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
@@ -177,7 +179,7 @@
           endif
           sinwp1=sinw
         else
-          call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
+          call tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         aln,phibn,phin,0.d0,0.d0,
      1         1.d0,0.d0,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
@@ -242,7 +244,7 @@
           bsi(i)=-imag(cx)/al
         enddo
       endif
-      call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
+      call tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     aln*.5d0,phibn*.5d0,phin*.5d0,0.d0,psi2,
      1     1.d0,0.d0,cosp2,sinp2,
      1     ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,

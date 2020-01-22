@@ -30,7 +30,7 @@ c     drift in the parallel solenoid
       subroutine tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     al,bz,enarad)
       use element_drift_common
-      use ffs_flag, only:rfluct,photons
+      use ffs_flag, only:rfluct,photons,calpol
       use photontable
       use tspin
       use mathfun, only: sqrtl
@@ -45,7 +45,9 @@ c     drift in the parallel solenoid
       real*8 phi,a22,a24,a12,a14
       logical*4 enarad
       if(enarad)then
-        bsi=0.d0
+        if(calpol)then
+          bsi=0.d0
+        endif
         cphi0=1.d0
         sphi0=0.d0
       endif
@@ -118,7 +120,7 @@ c               write(*,'(a,1p12g10.2)')'drift_sol ',pp%geo1(:,:)
      $     al,bz,ak0x,ak0y,enarad)
       use element_drift_common
       use tspin
-      use ffs_flag, only:rfluct,photons
+      use ffs_flag, only:rfluct,photons,calpol
       use photontable
       use mathfun
       implicit none
@@ -147,7 +149,9 @@ c               write(*,'(a,1p12g10.2)')'drift_sol ',pp%geo1(:,:)
         if(enarad)then
           cphi0=1.d0
           sphi0=0.d0
-          bsi=0.d0
+          if(calpol)then
+            bsi=0.d0
+          endif
         endif
         b=hypot(hypot(ak0x,ak0y),bz*al)
         phix=ak0y/b

@@ -179,7 +179,10 @@
       integer*4 , intent(in)::n,ndiv
       real*8 , intent(in) ::f1r,f2r,aln
       real*8 , intent(out)::alx,alr
-      if(n .eq. -1)then
+      if(n .gt. 0 .and. n .le. ndiv)then
+        alx=aln
+        alr=aln
+      elseif(n .eq. -1)then
         alx=rbl*f1r
         alr=f1r
       elseif(n .eq. 0)then
@@ -188,12 +191,9 @@
       elseif(n .eq. ndiv+1)then
         alx=rbh*f2r
         alr=f2r
-      elseif(n .eq. ndiv+2)then
+      else
         alx=rbl*f2r
         alr=f2r
-      else
-        alx=aln
-        alr=aln
       endif
       return
       end subroutine
@@ -326,38 +326,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb10,fb20,mfring,fringe,
      $     cosw,sinw,sqwh,sinwp1,
-     1     enarad,eps)
-      use ffs_flag,only:rad
-      use tspin
-      implicit none
-      integer*4 np,mfring
-      real*8 al,phib,phi0,psi1,psi2,cosp1,sinp1,cosp2,sinp2,
-     $     ak,dx,dy,theta,
-     $     cost,sint,cosw,sinw,sqwh,sinwp1,eps,
-     $     fb10,fb20,dtheta
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
-      real*8 sx(np),sy(np),sz(np)
-      logical*4 enarad,fringe
-      if(rad .and. enarad)then
-        bsi=0.d0
-      endif
-      call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     al,phib,phi0,psi1,psi2,
-     1     cosp1,sinp1,cosp2,sinp2,
-     1     ak,dx,dy,theta,dtheta,cost,sint,
-     1     fb10,fb20,mfring,fringe,
-     $     cosw,sinw,sqwh,sinwp1,
-     1     enarad,eps,.true.,0)
-      return
-      end
-
-      subroutine tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     al,phib,phi0,psi1,psi2,
-     1     cosp1,sinp1,cosp2,sinp2,
-     1     ak,dx,dy,theta,dtheta,cost,sint,
-     1     fb10,fb20,mfring,fringe,
-     $     cosw,sinw,sqwh,sinwp1,
-     1     enarad,eps,ini,iniph)
+     1     krad,eps,ini,iniph)
       use tfstk
       use ffs_flag
       use tmacro
@@ -380,13 +349,13 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
       real*8 sx(np),sy(np),sz(np)
       complex*16 akm(0:nmult)
-      logical*4 enarad,fringe,ini,krad
+      logical*4 fringe,ini,krad
       if(phi0 .eq. 0.d0)then
         if(ak .eq. 0.d0)then
           call tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,al,-phib,
      1         dx,dy,theta+dtheta,
      1         cosp1,sinp1,cosp2,sinp2,
-     $         fb10,fb20,fringe,eps,enarad)
+     $         fb10,fb20,fringe,eps,krad)
         elseif(phib .eq. phi0)then
           call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      1         dx,dy,theta+dtheta,0.d0,.true.,
@@ -399,7 +368,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      $         al,ak,0.d0,0.d0,
      $         psi1,psi2,
      $         dx,dy,0.d0,0.d0,0.d0,theta+dtheta,0.d0,
-     $         eps,enarad,fringe,
+     $         eps,krad,fringe,
      $         0.d0,0.d0,0.d0,0.d0,
      $         mfring,fb10,fb20,
      $         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,
@@ -411,7 +380,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
         call tbendi(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phib,phi0,
      1       cosp1,sinp1,cosp2,sinp2,
      1       ak,dx,dy,theta,dtheta,cost,sint,
-     1       fb10,fb20,mfring,enarad,fringe,eps)
+     1       fb10,fb20,mfring,krad,fringe,eps)
         return
       endif
       call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,.true.)
@@ -430,7 +399,6 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       rho0=al/phi0
       fb1=fb10
       fb2=fb20
-      krad=rad .and. enarad
       n1=1
       n2=0
       ndiv=1

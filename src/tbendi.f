@@ -50,7 +50,9 @@
         pxr0=px
         pyr0=py
         zr0=z
-        bsi=0.d0
+        if(calpol)then
+          bsi=0.d0
+        endif
         if(iprev(l_track) .eq. 0)then
           f1r=.5d0*fb1
           n1=-1

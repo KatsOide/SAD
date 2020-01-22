@@ -35,7 +35,7 @@
      $     theta0,x,px,y,dpsix,dpsiy,bz,
      $     pr,a,dpz,trf00,dtheta,
      $     apsi1,apsi2,sspc0,sspc,vcalpha0,fb1,fb2,
-     $     ak1,ftable(4),dir,ptmax
+     $     ak1,ftable(4),dir
       logical*4 over,coup,normal,mat,calpol0,insmat,err,seg
       real*8 a11,a12,a13,a14,a21,a22,a23,a24,a31,a32,a33,
      $     a34,a41,a42,a43,a44,a15,a25,a35,a45
