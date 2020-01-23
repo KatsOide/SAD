@@ -547,6 +547,7 @@ c      call tfmemcheckprint('rlum_col',1,.true.,irtc)
       use besseltab
       use wsbb
       use tfstk
+      use kyparam
       use tmacro
       use photontable
       use ffs_flag
@@ -576,13 +577,15 @@ c      type (sad_descriptor) kv
 !         write(*,*) 'colb is allocated'
 !      endif
       
-      rne=p_in(29)
-      nsli=int(p_in(28))
+      rne=p_in(ky_NP_BEAM)
+      nsli=int(p_in(ky_SLI_BEAM))
       colb%bstrl=p_in(53)
             
       colb%nslice=nsli
       if(nsli .le. 0) then
-         colb%nslice=1
+c 23 Jan 2020 by KO, modified to use non positive SLICE to disable BB.
+c         colb%nslice=1
+         colb%nslice=0
       endif
       if(nsli .gt. nslimax) then
          write(*,*)'*******************************'
