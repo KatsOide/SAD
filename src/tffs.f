@@ -600,6 +600,22 @@
       module ffs
         use ffs0
         use ffs_flag
+
+        contains
+        subroutine limitcod(cod)
+        real*8 , intent(inout)::cod(6)
+        real*8 , parameter :: omax=1.d5,dpmin=-1.d0+1.d-5,
+     $       pmax=1.d5,zmax=1.d100
+        real*8 ptmax
+        cod(6)=max(dpmin,min(pmax,cod(6)))
+        ptmax=1.d0+cod(6)
+        cod(1)=max(-omax,min(omax,cod(1)))
+        cod(3)=max(-omax,min(omax,cod(3)))
+        cod(2)=max(-ptmax,min(ptmax,cod(2)))
+        cod(4)=max(-ptmax,min(ptmax,cod(4)))
+        cod(5)=max(-zmax,min(zmax,cod(5)))
+        return
+        end subroutine
       end module
 
       module ffs_pointer
@@ -810,15 +826,15 @@
         f2out=cmp%value(kytbl(kwF2,ic))
      $       +cmp%value(kytbl(kwF2K1B,ic))
         if(dir .ge. 0.d0)then
-          table(1)=-akk*f1in*abs(f1in)/24.d0
-          table(2)= akk*f2in
-          table(3)=-akk*f1out*abs(f1out)/24.d0
-          table(4)= akk*f2out
+          table(1)=-abs(akk*f1in*f1in)/24.d0
+          table(2)= abs(akk)*f2in
+          table(3)=-abs(akk*f1out*f1out)/24.d0
+          table(4)= abs(akk)*f2out
         else
-          table(3)=-akk*f1in*abs(f1in)/24.d0
-          table(4)= akk*f2in
-          table(1)=-akk*f1out*abs(f1out)/24.d0
-          table(2)= akk*f2out
+          table(3)=-abs(akk*f1in*f1in)/24.d0
+          table(4)= abs(akk)*f2in
+          table(1)=-abs(akk*f1out*f1out)/24.d0
+          table(2)= abs(akk)*f2out
         endif
         return
         end subroutine

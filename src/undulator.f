@@ -11,6 +11,7 @@ c                                        Dec  1994                c
 c                                                                 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       use tmacro
+      use ffs_flag, only:calpol
       implicit real*8 (a-h,o-z)
 c      implicit none
       parameter (nsli=1,npole=2,len=3,i_F0=4,i_G0=5,i_dph=6,
@@ -35,8 +36,6 @@ c     Initialize dx/dy/theta(cost/sint) for inc/T(ENT|EXIT).inc
       dx=0.d0
       dy=0.d0
       theta=0.d0
-      cost=1.d0
-      sint=0.d0
 c
       include 'inc/TENT.inc'
       do 10 i=1,np

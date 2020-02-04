@@ -122,6 +122,10 @@ c     end   initialize for preventing compiler warning
           cod=twiss(ip1,mfitdx:mfitddp)
           call tesetdv(cod(6))
         endif
+c        if(l .gt. 20200 .and. l .lt. 20300)then
+c        if(l .gt. 20200 .and. mod(l,100) .eq. 0)then
+c          write(*,'(a,2i5,1p6g15.7)')'qtwiss1 ',l,ltyp,cod
+c        endif
         if(ltyp .gt. icMARK)then
           if(.not. mat)then
             twiss(ip,1:ntfun)=twiss(ip1,1:ntfun)
@@ -504,6 +508,7 @@ c        endif
           endif
         endif
  10     continue
+        call limitcod(cod)
       enddo
  9000 calpol=calpol0
       trf0=trf00
@@ -872,10 +877,10 @@ c          enddo
           trans=trans2
         endif
         call resetnan(cod,1.d300)
-c        write(*,'(a,1p6g15.7)')'qcod ',cod
         if(.not. orbitcal)then
           codfnd=.true.
         endif
+c        write(*,'(a,2l3,1p6g15.7)')'qcod ',codfnd,over,cod
         if(codfnd)then
           cod0=cod
           return

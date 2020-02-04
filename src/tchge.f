@@ -48,7 +48,7 @@ c        write(*,'(a,1p6g15.7)')'tchge ',dx,dy,dx1,dy1,ds
         al=ds/pz
       endif      
       mat=ds .ne. 0.d0 .or. th .ne. 0.d0 .or. dth .ne. 0.d0
-c      write(*,*)'tchge ',mat,ds,dx,dx1,dy
+      nullify(transa)
       if(ent)then
         cod(1)=cod(1)+cod(2)*al-dx1
         cod(3)=cod(3)+cod(4)*al-dy1
@@ -81,12 +81,12 @@ c      write(*,*)'tchge ',mat,ds,dx,dx1,dy
             pxi=cod(2)
             cod(2)= cost*pxi-sint*cod(4)
             cod(4)= sint*pxi+cost*cod(4)
-            if(irad .gt. 6)then
+            if(calpol .and. irad .gt. 6)then
               sx=srot(1,:)
               srot(1,:)= cost*sx-sint*srot(2,:)
               srot(2,:)= sint*sx+cost*srot(2,:)
             endif
-            if(al .ne. 0.d0)then
+            if(associated(transa))then
               call tmultr5(transa,trans1,6)
             else
               transa=>trans1
@@ -94,15 +94,21 @@ c      write(*,*)'tchge ',mat,ds,dx,dx1,dy
           endif
           if(dth .ne. 0.d0)then
             call tbrote(trans3,cod,srot,phi0,dth)
-            if(th .ne. 0.d0 .or. dth .ne. 0.d0)then
+            if(associated(transa))then
               call tmultr5(transa,trans3,6)
             else
               transa=>trans3
             endif
           endif
-          call tmultr(trans,transa,irad)
-          if(irad .gt. 6)then
-            call tmulbs(beam,transa,.true.,.true.)
+c          if(mat)then
+c            write(*,*)'tchge ',ent,associated(transa),
+c     $           calpol,irad,al,th,dth
+c          endif
+          if(associated(transa))then
+            call tmultr(trans,transa,irad)
+            if(irad .gt. 6)then
+              call tmulbs(beam,transa,.true.,.true.)
+            endif
           endif
         endif
       else
@@ -127,12 +133,12 @@ c      write(*,*)'tchge ',mat,ds,dx,dx1,dy
             pxi=cod(2)
             cod(2)= cost*pxi-sint*cod(4)
             cod(4)= sint*pxi+cost*cod(4)
-            if(irad .gt. 6)then
+            if(calpol .and. irad .gt. 6)then
               sx=srot(1,:)
               srot(1,:)= cost*sx-sint*srot(2,:)
               srot(2,:)= sint*sx+cost*srot(2,:)
             endif
-            if(dth .ne. 0.d0)then
+            if(associated(transa))then
               call tmultr5(transa,trans1,6)
             else
               transa=>trans1
@@ -147,15 +153,17 @@ c      write(*,*)'tchge ',mat,ds,dx,dx1,dy
             trans3(5,2)=trans3(1,6)
             trans3(5,4)=trans3(3,6)
             trans3(5,6)=al*pr/pz**2
-            if(th .ne. 0.d0 .or. dth .ne. 0.d0)then
+            if(associated(transa))then
               call tmultr5(transa,trans3,6)
             else
               transa=>trans3
             endif
           endif
-          call tmultr(trans,transa,irad)
-          if(irad .gt. 6)then
-            call tmulbs(beam,transa,.true.,.true.)
+          if(associated(transa))then
+            call tmultr(trans,transa,irad)
+            if(irad .gt. 6)then
+              call tmulbs(beam,transa,.true.,.true.)
+            endif
           endif
         endif
         cod(1)=cod(1)+cod(2)*al-dx1

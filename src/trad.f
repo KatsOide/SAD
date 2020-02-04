@@ -1,3 +1,5 @@
+c  Obsolete 22 Jan 2020
+c
       subroutine trad(np,x,px,y,py,g,dv,by,bx,dbydx,dldx,dldxe,al,
      $     f1,f2,als,ala,dir)
       use ffs_flag
@@ -70,8 +72,7 @@ c          endif
       return
       end
 
-      subroutine tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     px0,py0,zr0,bsi,al,phi0)
+      subroutine tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phi0)
       use tfstk
       use ffs_flag
       use tmacro
@@ -80,26 +81,27 @@ c          endif
       integer*4 np,i
       real*8 ,intent(inout)::
      $     x(np),px(np),y(np),py(np),dv(np),z(np),g(np),
-     $     px0(np),py0(np),zr0(np),bsi(np),sx(np),sy(np),sz(np)
+     $     sx(np),sy(np),sz(np)
       real*8 , intent(in)::al,phi0
-      real*8 cphi0,sphi0
       cphi0=cos(phi0)
       sphi0=sin(phi0)
       if(rfluct .and. al .ne. 0.d0)then
         do i=1,np
           call tradkf1(x(i),px(i),y(i),py(i),z(i),g(i),dv(i),
      $         sx(i),sy(i),sz(i),
-     $         px0(i),py0(i),zr0(i),cphi0,sphi0,bsi(i),al,i)
+     $         pxr0(i),pyr0(i),zr0(i),bsi(i),al,i)
         enddo
       else
-        do i=1,np
-          call tradk1(x(i),px(i),y(i),py(i),z(i),g(i),dv(i),
-     $         sx(i),sy(i),sz(i),
-     $         px0(i),py0(i),zr0(i),cphi0,sphi0,bsi(i),al)
-        enddo
+        call tradk1n(np,x,px,y,py,z,g,dv,
+     $       sx,sy,sz,al)
+c        do i=1,np
+c          call tradk1(x(i),px(i),y(i),py(i),z(i),g(i),dv(i),
+c     $         sx(i),sy(i),sz(i),
+c     $         px0(i),py0(i),zr0(i),bsi(i),al)
+c        enddo
       endif
-      px0=px
-      py0=py
+      pxr0=px
+      pyr0=py
       zr0=z
       bsi=0.d0
       return

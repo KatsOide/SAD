@@ -11,9 +11,8 @@ cccccc K. Oide 8/30/1999
 c
       integer fst
       character*(MAXLLEN) str
-      integer*4 LL1,idummy,ii
+      integer*4 LL1,idummy
       integer*4 lene,igetGL,irtc
-      integer*8 flmgr
       logical at1st
       save at1st
       data at1st/.true./

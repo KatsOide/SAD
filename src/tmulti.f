@@ -11,6 +11,7 @@
       use ffs_flag
       use tmacro
       use tspin
+      use sol,only:tsolrot
       use photontable,only:tsetphotongeo
       use mathfun
 c      use ffs_pointer, only:inext,iprev
@@ -21,8 +22,7 @@ c      use ffs_pointer, only:inext,iprev
      $     arad=0.01d0
 c      parameter (oneev=1.d0+3.83d-12)
       integer*4 np
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
-     $     pxr0(np),pyr0(np),zr0(np),bsi(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np)
       real*8 sx(np),sy(np),sz(np)
       real*8 al,f1in,f2in,f1out,f2out
       complex*16 ak(0:nmult)
@@ -33,19 +33,13 @@ c      parameter (oneev=1.d0+3.83d-12)
       integer*8 latt(nlat)
       integer*4 kturn,kptbl(np0,6)
       logical*4 acc,spac1,dofr(0:nmult),krad
-      integer*4 i,j,m,n,ndiv,nmmin,nmmax,ibsi
-      real*8 pz0,s0,bxs,bys,bzs,
-     $     vnominal,theta1,theta2,
-     $     cchi1,schi1,b,
-     $     phix,phiy,phiz,dphizsq,pr,ds1,ds2,pz1,
-     $     dcchi1,cchi2,schi2,bzp,alb,s,dpz0,
-     $     dpl,pl,plx,ply,plz,ptx,pty,ptz,pbx,pby,pbz,phi,
-     $     sinphi,dcosphi,xsinphi,dphi,phi0,pz2,a,
-     $     fx,fy,cost,sint,x0,px0,bxs0,eps,w,wi,v,phis,r,wl,
-     $     dcchi2,radlvl,r1,we,wsn,phic,dphis,offset,offset1,
+      integer*4 i,m,n,ndiv,nmmin,nmmax,ibsi
+      real*8 bxs,bys,bzs,vnominal,theta1,theta2,
+     $     b,a,eps,w,wi,v,phis,r,wl,
+     $     radlvl,r1,we,wsn,phic,dphis,offset,offset1,
      $     tlim,akr1,ak1,al1,p,ea,pxf,pyf,sv,wsm,asinh,ws1,wm,
      $     h2,p2,dp2,pr2,dvn,dzn,dp1r,p1r,p1,h1,t,ph,dh,dpr,dp2r,p2r,
-     $     alx,pyi,pxi,y1,x1,a24,a12,a22,a14,dp2p2,dp,dp1,pr1,
+     $     alx,dp2p2,dp,dp1,pr1,
      $     he,vcorr,v20a,v02a,v1a,v11a,av,dpx,dpy,pe,ah,z00,
      $     rtaper
       real*8 ws(ndivmax)
@@ -93,165 +87,11 @@ c      parameter (oneev=1.d0+3.83d-12)
       radlvl=1.d0
       b0=0.d0
       z00=z(1)
-      if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or. chi2 .ne. 0.d0)then
-c     begin initialize for preventing compiler warning
-        fx=0.d0
-        fy=0.d0
-c     end   initialize for preventing compiler warning
-        s0=-al*.5d0
-        cchi1=cos(chi1)
-        schi1=sin(chi1)
-        if(cchi1 .ge. 0.d0)then
-          dcchi1=schi1**2/(1.d0+cchi1)
-        else
-          dcchi1=(1.d0-cchi1)
-        endif
-        cchi2=cos(chi2)
-        schi2=sin(chi2)
-        if(cchi1 .ge. 0.d0)then
-          dcchi2=schi2**2/(1.d0+cchi2)
-        else
-          dcchi2=(1.d0-cchi2)
-        endif
-        if(bz .ne. 0.d0)then
-          b=abs(bz)
-          phix=(-schi1)         *sign(1.d0,bz)
-          phiy=( cchi1)*(-schi2)*sign(1.d0,bz)
-          phiz=( cchi1)*( cchi2)*sign(1.d0,bz)
-          dphizsq=phix**2+phiy**2
-          bxs=phix*b
-          bys=phiy*b
-          bzs=phiz*b
-          do i=1,np
-            pr=(1.d0+g(i))
-            px(i)=px(i)+bz*y(i)/pr*.5d0
-            py(i)=py(i)-bz*x(i)/pr*.5d0
-            x(i)=x(i)-dx
-            y(i)=y(i)-dy
-            ds1  = schi1*x(i)-dcchi1*s0-cchi1*dz
-            x(i) = cchi1*x(i)-schi1*(s0-dz)
-            ds2  =-(schi2*y(i)+cchi2*ds1-dcchi2*s0)
-            y(i) = cchi2*y(i)-schi2*(ds1+s0)
-            pz0=1.d0+sqrt1(-px(i)**2-py(i)**2)
-c            pz0=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
-            pz1  = schi1*px(i)+cchi1*pz0
-            px(i)= cchi1*px(i)-schi1*pz0
-            py(i)= cchi2*py(i)-schi2*pz1
-            bzp=bzs/pr
-            alb=pr/b
-            s=px(i)**2+py(i)**2
-            dpz0=sqrt1(-s)
-c            dpz0=-s/(1.d0+sqrt(1.d0-s))
-            pz0=1.d0+dpz0
-            dpl=px(i)*phix+py(i)*phiy+dpz0*phiz
-            pl=phiz+dpl
-            plx=pl*phix
-            ply=pl*phiy
-            plz=pl*phiz
-            ptx=px(i)-plx
-            pty=py(i)-ply
-            ptz=dpz0 -dpl*phiz+dphizsq
-            pbx=pty*phiz-ptz*phiy
-            pby=ptz*phix-ptx*phiz
-            pbz=ptx*phiy-pty*phix
-            if(ds2 .ne. 0.d0)then
-              phi=ds2/alb/pz0
-              do j=1,itmax
-                sinphi=sin(phi)
-                dcosphi=2.d0*sin(.5d0*phi)**2
-                xsinphi=xsin(phi)
-                s=(plz*xsinphi+pz0*sinphi+pbz*dcosphi)*alb
-                dphi=(ds2-s)/alb/(pz0-ptz*dcosphi+pbz*sinphi)
-                phi0=phi
-                phi=phi+dphi
-                if(phi0 .eq. phi .or. abs(dphi/phi) .lt. conv)then
-                  go to 100
-                endif
-              enddo
-c              write(*,*)'tmulti convergence error',phi,dphi
-            else
-              phi=0.d0
-              sinphi=0.d0
-              dcosphi=0.d0
-            endif
- 100        x(i)=x(i)+(plx*phi+ptx*sinphi+pbx*dcosphi)*alb
-            y(i)=y(i)+(ply*phi+pty*sinphi+pby*dcosphi)*alb
-            z(i)=z(i)-phi*alb
-            px(i)=px(i)-ptx*dcosphi+pbx*sinphi-bzp*y(i)*.5d0
-            py(i)=py(i)-pty*dcosphi+pby*sinphi+bzp*x(i)*.5d0
-          enddo        
-        else
-          bxs=0.d0
-          bys=0.d0
-          bzs=0.d0
-          do i=1,np
-            pr=(1.d0+g(i))
-            x(i)=x(i)-dx
-            y(i)=y(i)-dy
-            pz0=1.d0+sqrt1(-px(i)**2-py(i)**2)
-c            pz0=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
-            pz1  = schi1*px(i)+cchi1*pz0
-            px(i)= cchi1*px(i)-schi1*pz0
-            py(i)= cchi2*py(i)-schi2*pz1
-            ds1  = schi1*x(i)-dcchi1*s0-cchi1*dz
-            x(i) = cchi1*x(i)-schi1*(s0-dz)
-            ds2  = schi2*y(i)+cchi2*ds1-dcchi2*s0
-            y(i) = cchi2*y(i)-schi2*(ds1+s0)
-            pz2=1.d0+sqrt1(-px(i)**2-py(i)**2)
-c            pz2=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
-            a=ds2/pz2
-            x(i) =x(i)-a*px(i)
-            y(i) =y(i)-a*py(i)
-            z(i) =z(i)+a
-          enddo
-        endif
-      else
-c     begin initialize for preventing compiler warning: is it necessary?
-        cchi1=0.d0
-        cchi2=0.d0
-        schi1=0.d0
-        schi2=0.d0
-        dcchi1=0.d0
-        dcchi2=0.d0
-        s0=0.d0
-c     end   initialize for preventing compiler warning
-        bzs=bz
-        bxs=0.d0
-        bys=0.d0
-        fx= bzs*dy*.5d0
-        fy=-bzs*dx*.5d0
-        do i=1,np
-          pr=(1.d0+g(i))
-          x(i)=x(i)-dx
-          y(i)=y(i)-dy
-          px(i)=px(i)+fx/pr
-          py(i)=py(i)+fy/pr
-        enddo
-      endif
-      call akang(ak(1),theta1,cr1)
+      call akang(ak(1),al,theta1,cr1)
       theta2=theta+dtheta+theta1
-      if(theta2 .ne. 0.d0)then
-        cost=cos(theta2)
-        sint=sin(theta2)
-        do i=1,np
-          x0=x(i)
-          x(i)=cost*x0-sint*y(i)
-          y(i)=sint*x0+cost*y(i)
-          px0=px(i)
-          px(i)=cost*px0-sint*py(i)
-          py(i)=sint*px0+cost*py(i)
-        enddo
-        bxs0=bxs
-        bxs=cost*bxs0-sint*bys
-        bys=sint*bxs0+cost*bys
-      else
-c     begin initialize for preventing compiler warning
-        cost=1.d0
-        sint=0.d0
-c     end   initialize for preventing compiler warning
-      endif
-c      write(*,'(2a,1p7g12.5)')'tmulti ',pname(latt(1,l))(1:8),rtaper,
-c     $     x(np),px(np),y(np),py(np),z(np),g(np)
+      call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
+     $     al,bz,dx,dy,dz,
+     $     chi1,chi2,theta2,bxs,bys,bzs,.true.)
       akr(0)=(ak(0)*cr1+dcmplx(bys*al,bxs*al))*rtaper
       do n=nmult,0,-1
         if(ak(n) .ne. (0.d0,0.d0))then
@@ -262,7 +102,7 @@ c     $     x(np),px(np),y(np),py(np),z(np),g(np)
       if(vc .ne. 0.d0 .or. spac)then
         nmmax=0
       else
-        call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+        call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,bzs,dble(akr(0)),imag(akr(0)),krad)
         go to 1000
       endif
@@ -298,7 +138,6 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
         ndiv=max(ndiv,ndivrad(abs(akr(0)),akr1,bz,eps0))
       endif
       ndiv=min(ndivmax,ndiv)
-c      write(*,*)'tmulit-4 ',krad,ndiv
       acc=(trpt .or. rfsw) .and. vc .ne. 0.d0
       if(acc)then
         if(w .eq. 0.d0)then
@@ -429,11 +268,14 @@ c        vnominal=0.d0
       spac1 = spac .and. radius .ne. 0.d0
       sv=0.d0
       ibsi=1
+c      if(l_track .gt. 7300 .and. l_track .lt. 7310)then
+c        write(*,'(a,2i5,1p4g15.7)')'tmulti-2 ',
+c     $       l_track,ndiv,al1,ak1,x(1),px(1)
+c      endif
       do m=1,ndiv
         if(nmmin .eq. 2)then
-          call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         bsi,al1,ak1,
-     $         bzs,dble(ak01),imag(ak01),ibsi,eps0)
+         call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         al1,ak1,bzs,dble(ak01),imag(ak01),ibsi,eps0)
           if(krad)then
             if(m .eq. 1)then
               do i=1,np
@@ -448,13 +290,12 @@ c        vnominal=0.d0
             endif
             if(photons)then
               if(m .eq. 1)then
-                call tsetphotongeo(al1,0.d0,theta,.true.)
+                call tsetphotongeo(al1,0.d0,theta2,.true.)
               else
                 call tsetphotongeo(al1,0.d0,0.d0,.false.)
               endif
             endif
-            call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           pxr0,pyr0,zr0,bsi,al1,0.d0)
+            call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al1,0.d0)
           endif
           ibsi=0
         endif
@@ -542,12 +383,13 @@ c            dpr=ah/(1.d0+sqrt(1.d0+ah))
       enddo
       if(nmmin .eq. 2)then
         call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       bsi,al1,
-     $       ak1,bzs,dble(ak01),imag(ak01),2,eps0)
-c        write(*,'(a,1p7g12.4)')'tmulti-2 ',bsi(1:7)
+     $       al1,ak1,bzs,dble(ak01),imag(ak01),2,eps0)
       endif
+c      if(l_track .gt. 7300 .and. l_track .lt. 7310)then
+c        write(*,'(a,2i5,1p4g15.7)')'tmulti-2 ',
+c     $       l_track,ndiv,al1,ak1,x(1),px(1)
+c      endif
       if(spac1)then
-c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
         call tapert(l_track,latt,x,px,y,py,z,g,dv,sx,sy,sz,
      $       kptbl,np,kturn,
      $       radius,radius,
@@ -600,83 +442,13 @@ c        call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
           if(photons)then
             call tsetphotongeo(al1,0.d0,0.d0,.false.)
           endif
-          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         pxr0,pyr0,zr0,bsi,al1,0.d0)
+          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al1,0.d0)
         endif
       endif
- 1000 if(theta2 .ne. 0.d0)then
-        do i=1,np
-          x0=x(i)
-          x(i)= cost*x0+sint*y(i)
-          y(i)=-sint*x0+cost*y(i)
-          px0=px(i)
-          px(i)= cost*px0+sint*py(i)
-          py(i)=-sint*px0+cost*py(i)
-        enddo
-      endif
-      if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or. chi2 .ne. 0.d0)then
-        if(bz .ne. 0.d0)then
-          do i=1,np
-            pr=(1.d0+g(i))
-            px(i)=px(i)+bzs/pr*y(i)*.5d0
-            py(i)=py(i)-bzs/pr*x(i)*.5d0
-            pz0=1.d0+sqrt1(-px(i)**2-py(i)**2)
-c            pz0=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
-            pz1  =-schi2*py(i)+cchi2*pz0
-            pyi  = cchi2*py(i)+schi2*pz0
-            pz2  =-schi1*px(i)+cchi1*pz1
-            pxi  = cchi1*px(i)+schi1*pz1
-            y1   = cchi2*y(i)-schi2*s0
-            ds1  =-schi2*y(i)+dcchi2*s0
-            ds2  =-schi1*x(i)+cchi1*ds1+dcchi1*s0+dz
-            x1   = cchi1*x(i)+schi1*(ds1-s0)
-            bzp=bz/pr
-            phi=-bzp*ds2/pz2
-            a24=sin(phi)
-            a12=a24/bzp
-            a22=cos(phi)
-            if(a22 .ge. 0.d0)then
-              a14=a24**2/(1.d0+a22)/bzp
-            else
-              a14=(1.d0-a22)/bzp
-            endif
-            x(i) =x1 +a12*pxi+a14*pyi+dx
-            y(i) =y1 -a14*pxi+a12*pyi+dy
-            px(i)=    a22*pxi+a24*pyi-bzp*y(i)*.5d0
-            py(i)=   -a24*pxi+a22*pyi+bzp*x(i)*.5d0
-            z(i) =z(i)+ds2/pz2
-          enddo
-        else
-          do i=1,np
-c            pr=(1.d0+g(i))**2
-            pr=(1.d0+g(i))
-            pz0=1.d0+sqrt1(-px(i)**2-py(i)**2)
-c            pz0=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
-            pz1  =-schi2*py(i)+cchi2*pz0
-            pyi  = cchi2*py(i)+schi2*pz0
-            pz2  =-schi1*px(i)+cchi1*pz1
-            pxi  = cchi1*px(i)+schi1*pz1
-            y1   = cchi2*y(i)-schi2*s0
-            ds1  =-schi2*y(i)+dcchi2*s0
-            ds2  =-schi1*x(i)+cchi1*ds1+dcchi1*s0+dz
-            x1   = cchi1*x(i)+schi1*(ds1-s0)
-            a=ds2/pz2
-            px(i)=pxi
-            py(i)=pyi
-            x(i) =x1-a*pxi+dx
-            y(i) =y1-a*pyi+dy
-            z(i) =z(i)+a
-          enddo
-        endif
-      else
-        do i=1,np
-          pr=(1.d0+g(i))
-          px(i)=px(i)-fx/pr
-          py(i)=py(i)-fy/pr
-          x(i)=x(i)+dx
-          y(i)=y(i)+dy
-        enddo
-      endif
+ 1000 continue
+      call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
+     $     al,bz,dx,dy,dz,
+     $     chi1,chi2,theta2,bxs,bys,bzs,.false.)
       if(vnominal .ne. 0.d0)then
         h2=h0+vnominal
         p2=h2p(h2)

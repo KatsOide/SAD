@@ -859,6 +859,11 @@ c              call tfdebugprint(kxi,'reppart1-kxi',1)
         return
       endif
       no=itastk(2,isp1)
+      if(no .le. 0)then
+        irtc=itfmessage(9,'General::wrongval',
+     $       '"#3","positive number or list of them"')
+        return
+      endif
       mp=(ma-ne+no)/no
       isp0=isp
       isp=isp+1

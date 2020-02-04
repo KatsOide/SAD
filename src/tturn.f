@@ -87,7 +87,6 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
         else
           ls=fbound%lb
         endif
-c      write(*,*)'tturn0 ',fbound%lb,fbound%fb,fbound%le,fbound%fe,ls
         if(fbound%le .gt. ls+1 .or.
      $       fbound%le .eq. ls+1 .and. fbound%fe .eq. 0.d0)then
           call tturn1(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
@@ -170,7 +169,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       integer*4 l,lele,i,ke,lwl,lwt,lwlc,lwtc,irtc,
      $     nextwake,nwak,itab(np),izs(np)
       integer*8 iwpl,iwpt,iwplc,iwptc
-      logical*4 sol,out,autophi,seg
+      logical*4 sol,out,autophi,seg,enarad
       if(np .le. 0)then
         return
       endif
@@ -202,11 +201,18 @@ c      isb=ilist(2,iwakepold+6)
       xlimit=alost*3.d0
       sspac0=rlist(ifpos+lbegin-1)
       call tsetdvfs
+      if(rad)then
+        allocate(pxr0(np))
+        allocate(pyr0(np))
+        allocate(zr0(np))
+      endif
+      allocate(bsi(np))
+      bsi=0.d0
 c      call tfmemcheckprint('tturn',0,.false.,irtc)
       do l=lbegin,lend
         l_track=l
-c        if(mod(l,1) .eq. 0)then
-c          write(*,*)'tturn1 ',l
+c        if(l .gt. 4000 .and. l .lt. 4100)then
+c          write(*,*)'tturn1-l ',l
 c        endif
 c        call tfmemcheckprint('tturn',l,.false.,irtc)
         if(trpt .and. codplt)then
@@ -220,7 +226,7 @@ c        call tfmemcheckprint('tturn',l,.false.,irtc)
      $         0.d0,0.d0,0.d0,0.d0,
      $         -alost,-alost,alost,alost,0.d0,0.d0,0.d0,0.d0)
           if(np .le. 0)then
-            return
+            go to 9000
           endif
           la=la1
         endif
@@ -270,7 +276,7 @@ c        call tfmemcheckprint('tturn',l,.false.,irtc)
             else
               rot=0.d0
             endif
-            call txwake(np,x,px,y,py,z,g,dv,
+            call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           dx,dy,rot,int(anbunch),
      $           fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
      $           p0,h0,itab,izs,.true.)
@@ -331,15 +337,19 @@ c     $              +l-1),
      $          +cmp%value(ky_K0_BEND)
          endif
          ak1=cmp%value(ky_K1_BEND)
-         if(rad .and. radcod .and. radtaper)then
-           rtaper=1.d0-dp0
-     $          +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
-           ak0=ak0*rtaper
-           ak1=ak1*rtaper
+         enarad=cmp%value(ky_RAD_BEND) .eq. 0.d0
+         if(rad)then
+           if(radcod .and. radtaper)then
+             rtaper=1.d0-dp0
+     $            +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+             ak0=ak0*rtaper
+             ak1=ak1*rtaper
+           endif
+           if(enarad .and. calpol)then
+             bsi=0.d0
+           endif
          endif
-         
-c         write(*,*)'tturn-tbend ',l,
-c     $        cmp%value(p_FB1_BEND),cmp%value(p_FB2_BEND)
+
          call tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $        cmp%value(p_L_BEND),ak0,
      $        cmp%value(ky_ANGL_BEND),
@@ -356,9 +366,8 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $        cmp%value(ky_FRIN_BEND) .eq. 0.d0,
      1        cmp%value(p_COSW_BEND),cmp%value(p_SINW_BEND),
      $        cmp%value(p_SQWH_BEND),cmp%value(p_SINWP1_BEND),
-     1        cmp%value(ky_RAD_BEND) .eq. 0.d0,
-     1        cmp%value(ky_EPS_BEND))
-
+     1        rad .and. enarad,
+     1        cmp%value(ky_EPS_BEND),.true.,0)
        case (icQUAD)
          if(iand(1,cmp%update) .eq. 0)then
            call tpara(cmp)
@@ -373,7 +382,6 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      1        cmp%value(ky_K1_QUAD)*rtaper,
      $        cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1        cmp%value(p_THETA_QUAD),
-     $        cmp%value(p_COSTHETA_QUAD),cmp%value(p_SINTHETA_QUAD),
      1        cmp%value(ky_RAD_QUAD),
      $        cmp%value(ky_CHRO_QUAD) .eq. 0.d0,
      1        cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
@@ -398,7 +406,6 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $        lele,al,ak1,
      1        cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
      1        cmp%value(p_THETA_THIN),
-     $        cmp%value(p_COSTHETA_THIN),cmp%value(p_SINTHETA_THIN),
      $        cmp%value(ky_RAD_THIN),
      1        cmp%value(ky_FRIN_THIN) .eq. 0.d0)
 
@@ -420,7 +427,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $        latt,l,lend,
      $        ke,sol,kptbl,la,n,nwak,nextwake,out)
          if(np .le. 0)then
-           return
+           go to 9000
          endif
 
        case (icST)
@@ -480,7 +487,7 @@ c     else
 c     lwtc=(ilist(1,iwptc-1)-2)/2
 c     endif
            endif
-           call tcav(np,x,px,y,py,z,g,dv,al,ak,
+           call tcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      1          cmp%value(p_W_CAVI),cmp%value(ky_PHI_CAVI),ph,
      $          cmp%value(p_VNOMINAL_CAVI),
      $          lwlc,rlist(iwplc+1),lwtc,rlist(iwptc+1),
@@ -491,7 +498,7 @@ c     endif
      $          cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
      $          int(cmp%value(p_FRMD_CAVI)),autophi)
          else
-           call tcav(np,x,px,y,py,z,g,dv,al,ak,
+           call tcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      1          cmp%value(p_W_CAVI),cmp%value(ky_PHI_CAVI),ph,
      $          cmp%value(p_VNOMINAL_CAVI),
      $          0,0.d0,0,0.d0,
@@ -517,7 +524,7 @@ c     endif
            endif
            harmf=cmp%value(ky_HARM_TCAV)-int(cmp%value(ky_HARM_TCAV))
            ph=ph+harmf*(n-1)*pi2
-           call ttcav(np,x,px,y,py,z,g,dv,al,ak,
+           call ttcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      $          cmp%value(ky_HARM_TCAV),ph,cmp%value(ky_FREQ_TCAV),
      1          cmp%value(ky_DX_TCAV),cmp%value(ky_DY_TCAV),
      $          cmp%value(ky_ROT_TCAV))
@@ -545,10 +552,8 @@ c     endif
          if(iand(cmp%update,1) .eq. 0)then
            call tpara(cmp)
          endif
-c     call tfmemcheckprint('beambeam-0',l,.false.,irtc)
          call beambeam(np,x,px,y,py,z,g,dv,sx,sy,sz,cmp%value(1),
      $        cmp%value(p_PARAM_BEAM),n)
-c     call tfmemcheckprint('beambeam-1',l,.false.,irtc)
          go to 1020
 
        case (icProt)
@@ -579,7 +584,7 @@ c     print *,'tturn l sspac2',l,sspac2
          call tapert1(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
      1        kptbl,np,n)
          if(np .le. 0)then
-           return
+           go to 9000
          endif
          la=la1
          go to 1010
@@ -605,7 +610,7 @@ c     print *,'tturn l sspac2',l,sspac2
  1010   continue
         if(l .eq. nextwake)then
           if(lele .ne. icCAVI)then
-            call txwake(np,x,px,y,py,z,g,dv,
+            call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           dx,dy,rot,int(anbunch),
      $           fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
      $           p0,h0,itab,izs,.false.)
@@ -628,7 +633,7 @@ c     print *,'tturn l sspac2',l,sspac2
      $     0.d0,0.d0,0.d0,0.d0,
      $     -alost,-alost,alost,alost,0.d0,0.d0,0.d0,0.d0)
       if(np .le. 0)then
-        return
+        go to 9000
       endif
       la=la1
 c      call tfmemcheckprint('tturn',1,.false.,irtc)
@@ -650,6 +655,13 @@ c     $             +lend-1),
            endif
         endif
       endif
+ 9000 deallocate(bsi)
+      if(rad)then
+        deallocate(zr0)
+        deallocate(pyr0)
+        deallocate(pxr0)
+      endif
+
       return
       end
 

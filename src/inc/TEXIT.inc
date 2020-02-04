@@ -15,6 +15,13 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
               py(i)=-pxi*sint+py(i)*cost
             enddo
           endif
+          if(calpol)then
+            do i=1,np
+              xi=sx(i)
+              sx(i)= cost*xi+sint*sy(i)
+              sy(i)=-sint*xi+cost*sy(i)
+            enddo
+          endif
         endif
         if(dy .ne. 0.d0)then
           y(1:np)=y(1:np)+dy

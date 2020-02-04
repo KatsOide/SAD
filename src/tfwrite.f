@@ -265,7 +265,7 @@ c      enddo
       use tfstk
       implicit none
       type (sad_descriptor) kx,ki,k
-      type (sad_symbol), pointer ::sym
+      type (sad_symbol), pointer ::sym,sym1
       type (sad_symdef), pointer ::symd
       type (sad_dlist), pointer :: klh,kli,klx
       integer*8 ii,ka0,kadi,kad,ka
@@ -292,8 +292,8 @@ c      enddo
           ka=klist(ifunbase+ka)
           k%k=ktfsymbol+ka
         endif
-        if(ktfsymbolq(k,sym))then
-          call tfsydef(sym,sym)
+        if(ktfsymbolq(k,sym1))then
+          call tfsydef(sym1,sym)
           call sym_symdef(sym,symd)
           ka0=ksad_loc(symd%upval)
           if(ktfrefq(symd%value,ka))then
@@ -1035,8 +1035,7 @@ c      write(*,*)'tfreadstr ',lfn,nc,ipoint
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
-      integer*8 ka,kfromr,kfile,mapallocfile,ksize
-      integer*4 irtc,isp1,ifile,lfn,itfmessage,nc
+      integer*4 irtc,isp1,itfmessage,nc
       logical*4 disp
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')

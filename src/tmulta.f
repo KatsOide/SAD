@@ -3,11 +3,11 @@
      $     psi1,psi2,bz,
      1     dx,dy,theta,dtheta,
      $     eps0,enarad,fb1,fb2,mfring,fringe)
-      use ffs_flag, only:rad,ndivrad
+      use ffs_flag, only:rad,ndivrad,calpol
       use tmacro
       use multa
       use tbendcom, only:tbrot,tbshift
-      use tspin, only:tradke
+      use tspin, only:tradke,pxr0,pyr0,zr0,bsi
       use photontable,only:tsetphotongeo,pp
       use mathfun
       implicit none
@@ -16,7 +16,6 @@
       parameter (ampmax=0.05d0,eps00=0.005d0,ndivmax=2000)
       integer*4 np,mfring,i,n,mfr,ndiv,nmmax,m,m1,k,nmmin
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
-     $     px0(np),py0(np),zr0(np),bsi(np),
      $     al,phi,psi1,psi2,bz,dx,dy,theta,eps0,fb1,fb2,
      $     dtheta,pr,cost,sint,rho0,rhob,
      $     sinp1,sinp2,cosp1,cosp2,phin,aln,cosw,sinw,sqwh,sinwp1,
@@ -128,10 +127,12 @@
       enddo
       als=aln*.5d0
       if(krad)then
-        px0=px
-        py0=py
+        pxr0=px
+        pyr0=py
         zr0=z
-        bsi=0.d0
+        if(calpol)then
+          bsi=0.d0
+        endif
         pp%theta=theta
       endif
       do n=1,ndiv
@@ -162,8 +163,7 @@
               bsi(i)=imag(cx)/al
             enddo
           endif
-          call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         px0,py0,zr0,bsi,
+          call tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         als,phibn*.5d0,phin*.5d0,psi1,0.d0,
      1         cosp1,sinp1,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
@@ -179,8 +179,7 @@
           endif
           sinwp1=sinw
         else
-          call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         px0,py0,zr0,bsi,
+          call tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         aln,phibn,phin,0.d0,0.d0,
      1         1.d0,0.d0,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
@@ -214,8 +213,8 @@
           py(i)=py(i)+imag(csl)/pr
         enddo
         if(krad)then
-          px0=px
-          py0=py
+          pxr0=px
+          pyr0=py
           zr0=z
         endif
       enddo
@@ -245,8 +244,7 @@
           bsi(i)=-imag(cx)/al
         enddo
       endif
-      call tbend0(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     px0,py0,zr0,bsi,
+      call tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     aln*.5d0,phibn*.5d0,phin*.5d0,0.d0,psi2,
      1     1.d0,0.d0,cosp2,sinp2,
      1     ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,

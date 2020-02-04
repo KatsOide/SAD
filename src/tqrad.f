@@ -1,3 +1,5 @@
+c Obsolete
+c
       subroutine tqrad(np,x,px,y,py,z,g,dv,sx,sy,sz,l,al,ak,
      1                 dx,dy,theta,cost,sint,radlvl,
      1                 f1in,f2in,f1out,f2out,mfring)

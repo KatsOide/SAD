@@ -16,7 +16,7 @@
      $     aln,pr,akk,phi,scphi,shcphi,sinc2,sinhc2,akr,
      $     xsin2,xsinh2,a11,a12,a21,b11,b12,b21,als,
      $     xi,pxi,yi,pyi,xf,pxf,yf,pyf,
-     $     zx,zy,zxp,zyp,x,y
+     $     zx,zy,zxp,zyp,x,y,bm21
       logical*4 enarad,fringe,kin,next,prev,achro,krad
       real*8 , parameter:: pramin=1.d-4
       integer*4 , parameter :: ndivmax=512
@@ -29,6 +29,7 @@
      $       0.d0,0.d0,0.d0,0.d0,.true.,.false.,irad)
         return
       endif
+      bm21=beam(21)
       call tchge(trans,cod,beam,srot,
      $     dx,dy,theta,0.d0,0.d0,.true.)
       krad=enarad .and. al .ne. 0.d0
@@ -208,7 +209,7 @@ c          als=als+aln
         cod(4)=pyf*pr
         if(krad)then
           if(n .eq. 1)then
-            bsi=ak/aln*xi*yi
+            bsir0=ak/aln*xi*yi
           endif
           call tradke(trans,cod,beam,srot,aln,0.d0,0.d0)
           if(radcod)then
@@ -265,7 +266,7 @@ c      endif
         call tqfrie(trans,cod,beam,-ak,al,0.d0)
       endif
       if(krad .and. f1out .ne. 0.d0)then
-        bsi=-ak/aln*cod(1)*cod(3)
+        bsir0=-ak/aln*cod(1)*cod(3)
         call tradke(trans,cod,beam,srot,f1out,0.d0,0.d0)
       endif
       call tchge(trans,cod,beam,srot,

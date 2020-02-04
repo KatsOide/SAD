@@ -213,7 +213,7 @@ c     $     sxkxp,dcxkxp
       cod(4)=min(p,max(-p,pyf*p))
       cod(5)=zf-dvemit*al
       if(enarad)then
-        bsi=bsi+bsi1*(yi/rhob+ak1*xi*yi)
+        bsir0=bsir0+bsi1*(yi/rhob+ak1*xi*yi)
      $       -bsi2*(yf/rhob+ak1*xf*yf)
         call tradke(trans,cod,beam,srot,alr,phin,0.d0)
         tbinit=.true.
@@ -297,13 +297,15 @@ c     $     sxkxp,dcxkxp
       cod(4)=min(pr,max(-pr,pyi*pr))
       cod(5)=cod(5)-phi0n*(dp*rhob+drhob)+da*rhoe-dvemit*aln
       if(enarad)then
-        bsi=bsi+bsi1*yi/rhob-bsi2*cod(3)/rhob
+        bsir0=bsir0+bsi1*yi/rhob-bsi2*cod(3)/rhob
         call tradke(trans,cod,beam,srot,alr,phi0n,0.d0)
       endif
       return
       end subroutine
 
       subroutine tbrote(trans1,cod,srot,phi0,dtheta)
+      use tmacro, only:irad
+      use ffs_flag,only:calpol
       implicit none
       real*8 trans1(6,6),cod(6),phi0,dtheta,chi1,chi2,chi3,sphi0,
      $     coschi2,sdt,cphi0,rr(3,3),srot(3,9)
@@ -317,11 +319,13 @@ c     $     sxkxp,dcxkxp
       chi3=asin(sdt*cphi0/coschi2)
 c      write(*,*)'tbrote ',chi1,chi2,chi3
       call tsrote(trans1,cod,rr,chi1,chi2,chi3)
-      do i=1,9
-        srot(1,i)=dot_product(rr(1,:),srot(:,i))
-        srot(2,i)=dot_product(rr(2,:),srot(:,i))
-        srot(3,i)=dot_product(rr(3,:),srot(:,i))
-      enddo
+      if(calpol .and. irad .gt. 6)then
+        do i=1,9
+          srot(1,i)=dot_product(rr(1,:),srot(:,i))
+          srot(2,i)=dot_product(rr(2,:),srot(:,i))
+          srot(3,i)=dot_product(rr(3,:),srot(:,i))
+        enddo
+      endif
       return
       end
 
@@ -431,8 +435,14 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
         call tbthie(trans,cod,beam,srot,phib,phi0,dx,dy,theta,dtheta)
         return
       endif
+c      if(l .eq. 4551)then
+c        write(*,*)'tbende-0 ',dx,dy,dtheta
+c      endif
       call tchge(trans,cod,beam,srot,
      $     dx,dy,theta,dtheta,phi0,.true.)
+c      if(l .eq. 4551)then
+c        write(*,*)'tbende-0.5'
+c      endif
       if(enarad)then
         call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
       endif
@@ -503,11 +513,6 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
       tanp2=tan(psi2*phi0+apsi2)
       f=1.d0/rho0
       call tbedge(trans,cod,beam,al,phib,psi1*phi0+apsi1,.true.)
-c      if(enarad .and. fb1 .ne. 0.d0)then
-c        call tradke(trans,cod,beam,srot,fb1,0.d0,0.d0)
-c      else
-c        call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
-c      endif
       cod11=cod(1)
       akc=ak*rbc
       alc=al*rbc
@@ -608,7 +613,6 @@ c     $     rb1,rb2,al0,alc,aln,phin,ak
         call tblfre(trans,cod,beam,dxfr2,dyfr2,dyfra2)
       endif
       if(enarad)then
-c        write(*,*)'tbende-radke ',alr,phi1
         call tradke(trans,cod,beam,srot,alr,phi1,0.d0)
       endif
       call tchge(trans,cod,beam,srot,

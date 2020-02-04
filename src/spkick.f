@@ -747,26 +747,26 @@ c     drift in the parallel solenoid
       integer*8 latt(nlat)
       integer*4 np,kturn,kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
-     $     bsi(np0),sx(np0),sy(np0),sz(np0)
+     $     sx(np0),sy(np0),sz(np0)
       real*8 al,bz,radius
       integer*4 ndiv,i
       real*8 aln,alx
       ndiv=max(1,nint(abs(al)/alstep),nint(abs(bz*al)/1.5d0))
       aln=al/ndiv
 
-      call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+      call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     aln*.5d0,bz,.false.)
 
       call spkick(np,x,px,y,py,z,g,dv,aln,
      $     radius,alx,kturn,l_track,latt,kptbl)
       do i=2,ndiv
-        call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+        call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       aln,bz,.false.)
         call spkick(np,x,px,y,py,z,g,dv,aln,
      $       radius,alx,kturn,l_track,latt,kptbl)
       enddo
 
-      call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+      call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     aln*.5d0,bz,.false.)
 c      call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
       if(radius .ne. 0.d0)then
@@ -791,7 +791,7 @@ cProbably obsolete
       integer*8 latt(nlat)
       integer*4 np,kturn,l,kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
-     $     sx(np0),sy(np0),sz(np0),bsi(np0)
+     $     sx(np0),sy(np0),sz(np0)
       real*8 al,bz,ak0x,ak0y,radius
       integer*4 ndiv,i
       real*8 aln,akxn,akyn,alx
@@ -800,19 +800,19 @@ cProbably obsolete
       akxn=ak0x/ndiv
       akyn=ak0y/ndiv
 
-      call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+      call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     aln*.5d0,bz,akxn*.5d0,akyn*.5d0,.false.)
 
       call spkick(np,x,px,y,py,z,g,dv,aln,
      $     radius,alx,kturn,l,latt,kptbl)
       do i=2,ndiv
-        call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+        call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       aln,bz,akxn,akyn,.false.)
         call spkick(np,x,px,y,py,z,g,dv,aln,
      $       radius,alx,kturn,l,latt,kptbl)
       enddo
 
-      call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+      call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     aln*.5d0,bz,akxn*.5d0,akyn*.5d0,.false.)
 c      call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
       if(radius .ne. 0.d0)then

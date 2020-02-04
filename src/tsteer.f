@@ -1,5 +1,5 @@
-      subroutine tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phib,dx,dy,
-     1     theta,cost,sint,
+      subroutine tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phib,
+     $     dx,dy,theta,
      1     cosp1,sinp1,cosp2,sinp2,
      $     fb1,fb2,fringe,eps,enarad)
       use ffs_flag
@@ -14,8 +14,7 @@
      1     a13=231.d0/13312.d0,a15=143.d0/10240.d0
       integer*4 , parameter :: ndivmax=1000
       integer*4 np,i,ndiv,n,n1,n2
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     px0(np),py0(np),zr0(np),bsi(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
       real*8 sx(np),sy(np),sz(np)
       real*8 al,phib,dx,dy,theta,cost,sint,rhob,eps,aln,
      $     dxfr1,dyfr1,dyfra1,dyi,alc,alx,alr,
@@ -26,7 +25,7 @@
       logical*4 fringe,enarad,krad
       if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,2,al,-phib,
-     1             dx,dy,theta,cost,sint,1.d0,.false.)
+     1             dx,dy,theta,1.d0,.false.)
         return
       elseif(phib .eq. 0.d0)then
         call tdrift_free(np,x,px,y,py,z,dv,al)
@@ -64,8 +63,8 @@
       endif
       phic=phib*(1.d0-(f1r+f2r)/al)
       if(krad)then        
-        px0=px
-        py0=py
+        pxr0=px
+        pyr0=py
         zr0=z
         ndiv=min(ndivmax,max(1,ndivrad(phic,0.d0,0.d0,eps)))
       else
@@ -159,8 +158,7 @@
               call tsetphotongeo(alx,0.d0,theta,.false.)
             endif
           endif
-          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         px0,py0,zr0,bsi,alr,0.d0)
+          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,alr,0.d0)
         endif
       enddo
       include 'inc/TEXIT.inc'

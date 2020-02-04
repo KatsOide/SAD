@@ -10,6 +10,7 @@
       use tmacro
       use multa, only:nmult
       use temw
+      use sol, only:tsolrote
       use tspin
       use mathfun
       implicit none
@@ -27,7 +28,8 @@
      $     apsi1,apsi2,bz0,v10a,v11a,v02a,v20a,offset1,va,sp,cp,
      $     av,dpxa,dpya,dpx,dpy,dav,davdz,davdp,ddhdx,ddhdy,ddhdp,
      $     ddhdz,wi,dv,s0,fb1,fb2,rtaper
-      real*8 trans(6,12),trans1(6,6),cod(6),beam(42),srot(3,9)
+      real*8 trans(6,12),trans1(6,6),cod(6),beam(42),srot(3,9),
+     $     trans0(6,6)
       complex*16 cx,cx0,cx2,cr,cr1
       real*8 fact(0:nmult),an(0:nmult)
       complex*16 ak(0:nmult),akn(0:nmult),ak0n
@@ -66,8 +68,8 @@
      $       eps0,enarad,fringe,fb1,fb2,mfring,l)
         return
       endif
-      call akang(ak(1),theta1,cr1)
-      call tsolrot(trans,cod,beam,al,bz0,dx,dy,dz,
+      call akang(ak(1),al,theta1,cr1)
+      call tsolrote(trans,cod,beam,srot,al,bz0,dx,dy,dz,
      $     chi1,chi2,theta+dtheta+theta1,bxs,bys,bzs,.true.)
       krad=enarad .and. al .ne. 0.d0
       if(krad)then
@@ -179,7 +181,6 @@
       enddo
       akn(1)=dble(akn(1))
       ak1=dble(akn(1))*.5d0
-c      write(*,*)'tmulte-ak1 ',akn(1),ak(1),cr1
       al1=aln*.5d0
       ak0n=akn(0)*.5d0
       if(al .ne. 0.d0)then
@@ -252,12 +253,12 @@ c      write(*,*)'tmulte-ak1 ',akn(1),ak(1),cr1
         cod(2)=cod(2)-dble(cx)+w1n*cod(1)
         cod(4)=cod(4)+imag(cx)+w1n*cod(3)
         if(m .eq. 1)then
-          bsi=bsi+imag(cx)/al1
+          bsir0=bsir0+imag(cx)/al1
         else
-          bsi=0.d0
+          bsir0=0.d0
         endif
         if(m .eq. ndiv)then
-          bsi=bsi-imag(cx)/al1
+          bsir0=bsir0-imag(cx)/al1
         endif
         if(acc)then
           p1=p0*(1.d0+cod(6))
@@ -281,7 +282,6 @@ c          h1=sqrt(1.d0+p1**2)
           va=vn+(v10a+v20a*cod(1)+v11a*cod(3))*cod(1)
      $           +v02a*cod(3)**2
           dh=max(oneev-h1,-va*(sp+offset1))
-c          write(*,*)'tmulte-dh ',dh*amass,phii,phic,phis
           veff=vcn
           vc0=vc0+veff
           if(omega0 .ne. 0.d0)then
@@ -334,6 +334,7 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
           call tmultr(trans,trans1,irad)
           dgb=dgb+dhg
         elseif(irad .eq. 6)then
+          trans0=trans(:,1:6)
             trans(2,1)=trans(2,1)+trans1(2,1)*trans(1,1)
      $           +trans1(2,3)*trans(3,1)
             trans(4,1)=trans(4,1)+trans1(4,1)*trans(1,1)
@@ -402,7 +403,7 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
         call tradke(trans,cod,beam,srot,f1out,0.d0,bzs*.5d0)
       endif
  1000 continue
-      call tsolrot(trans,cod,beam,al,bz,dx,dy,dz,
+      call tsolrote(trans,cod,beam,srot,al,bz,dx,dy,dz,
      $     chi1,chi2,theta+dtheta+theta1,bxs,bys,bzs,.false.)
       if(dhg .ne. 0.d0)then
         rg2=p0/gammab(l+1)

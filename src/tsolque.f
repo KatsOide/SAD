@@ -354,7 +354,7 @@ c      endif
       aln=al/ndiv
       dx0=ak0x/ak
       dy0=ak0y/ak
-      akk=ak/abs(al)
+      akk=ak/al
       br=tbrhoz()
       b1=br*akk
       call tinitr(trans1)
@@ -758,10 +758,12 @@ c        write(*,'(a,1p6g15.7)')'tsolque-trans1 ',trans1(1,1:6)
       use tmacro
       implicit none
       integer*4 nrad
-      real*8 cod(6),ak,xd,xpd,a,b,al,bzh
-      xd=max(1.d-6,abs(cod(1))+abs(cod(3)))
-      xpd=max(1.d-6,abs(cod(2))+abs(cod(4)))
-      a=min(1.d-2,abs(ak)*xd+xpd)
+      real*8, intent(in):: cod(6),ak,al,bzh
+      real*8 xd,xpd,a,b
+      real*8 ,parameter :: xmin=1.d-6,pmin=1.d-6,amax=1.d-2
+      xd=max(xmin,abs(cod(1))+abs(cod(3)))
+      xpd=max(pmin,abs(cod(2))+abs(cod(4)))
+      a=min(amax,abs(ak)*xd+xpd)
       b=brhoz*(a*abs(bzh)+a/abs(al))
       nrad=int(abs(al*crad/epsrad*(h0*b)**2))
       itgetqraddiv=max(int(emidiv*emidiq*nrad),

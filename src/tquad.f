@@ -1,37 +1,46 @@
-      subroutine tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
-     1                 dx,dy,theta,cost,sint,radlvl,chro,
+      subroutine tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak0,
+     1                 dx,dy,theta,radlvl,chro,
      1                 fringe,f1in,f2in,f1out,f2out,mfring,eps0,kin)
       use ffs_flag
       use tmacro
 c      use ffs_pointer, only:inext,iprev
       use tfstk, only:ktfenanq
       use photontable,only:tsetphotongeo
-      use mathfun, only:pxy2dpz,sqrt1
+      use sol,only:tsolrot
+      use mathfun, only:pxy2dpz,sqrt1,akang
       use tspin
       implicit none
       logical*4 enarad,chro,fringe,kin
       integer*4 np,i,mfring
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     px0(np),py0(np),zr0(np),bsi(np),
-     $     al,ak,dx,dy,theta,cost,sint,radlvl,eps0,alr,
-     $     f1in,f1out,f2in,f2out,p,a,ea,b,pxi,pxf,pyf,xi
+     $     al,ak0,ak,dx,dy,theta,radlvl,eps0,alr,
+     $     f1in,f1out,f2in,f2out,p,a,ea,b,pxf,pyf,
+     $     theta2,theta1,bxs,bys,bzs
+      complex*16 cr1
       real*8 sx(np),sy(np),sz(np)
       real*8, parameter :: ampmax=0.9999d0
       if(al .eq. 0.d0)then
-        call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,4,0.d0,ak,
-     $             dx,dy,theta,cost,sint, 1.d0,.false.)
+        call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,4,0.d0,ak0,
+     $             dx,dy,theta,1.d0,.false.)
         return
-      elseif(ak .eq. 0.d0)then
+      elseif(ak0 .eq. 0.d0)then
         call tdrift_free(np,x,px,y,py,z,dv,al)
         return
       endif
-      include 'inc/TENT.inc'
+      call akang(dcmplx(ak0,0.d0),al,theta1,cr1)
+      ak=abs(ak0)
+      theta2=theta+theta1
+      call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
+     $     al,0.d0,dx,dy,0.d0,
+     $     0.d0,0.d0,theta2,bxs,bys,bzs,.true.)
       enarad=rad .and. radlvl .ne. 1.d0
       if(enarad)then
-        px0=px
-        py0=py
+        pxr0=px
+        pyr0=py
         zr0=z
-        bsi=0.d0
+        if(calpol)then
+          bsi=0.d0
+        endif
       endif
       if(fringe .and. mfring .gt. -4 .and. mfring .ne. 2)then
         call ttfrin(np,x,px,y,py,z,g,4,ak,al,0.d0)
@@ -55,21 +64,19 @@ c          p=(1.d0+g(i))**2
       endif
       if(enarad)then
         if(photons)then
-          call tsetphotongeo(0.d0,0.d0,theta,.true.)
+          call tsetphotongeo(0.d0,0.d0,theta2,.true.)
         endif
         if(f1in .ne. 0.d0)then
-          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         px0,py0,zr0,bsi,f1in,0.d0)
+          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,f1in,0.d0)
         endif
-        px0=px
-        py0=py
+        pxr0=px
+        pyr0=py
         zr0=z
-        call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       px0,py0,zr0,bsi,al,ak,
+        call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      $       0.d0,0.d0,0.d0,eps0,alr)
       else
         call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       bsi,al,ak,0.d0,0.d0,0.d0,0,eps0)
+     $       al,ak,0.d0,0.d0,0.d0,0,eps0)
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
         do 2120 i=1,np
@@ -95,16 +102,17 @@ c          p=(1.d0+g(i))**2
         if(photons)then
           call tsetphotongeo(0.d0,0.d0,0.d0,.false.)
         endif
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       px0,py0,zr0,bsi,f1out,0.d0)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,f1out,0.d0)
       endif
-      include 'inc/TEXIT.inc'
+      call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
+     $     al,0.d0,dx,dy,0.d0,
+     $     0.d0,0.d0,theta2,bxs,bys,bzs,.false.)
       return
       end
 c
       subroutine tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     nord,al,ak,
-     1     dx,dy,theta,cost,sint,radlvl,fringe)
+     1     dx,dy,theta,radlvl,fringe)
       use ffs_flag
       use tmacro
       use tspin
@@ -119,8 +127,7 @@ c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
      1           gamma=9.43738783765593145d-4,
      1           alpha1=.5d0-alpha)
       integer*4 nord,np,kord,i
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
-     $     px0(np),py0(np),zr0(np),bsi(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np)
       real*8 sx(np),sy(np),sz(np)
       real*8 fact(0:nmult)
       real*8 theta,sint,cost,dx,dy,al,ak,
@@ -144,17 +151,14 @@ c     end   initialize for preventing compiler warning
         return
       endif
       enarad=rad .and. radlvl .eq. 0.d0 .and. al .ne. 0.d0
-c      if(enarad .and. trpt .and. rfluct)then
-c        call tthinrad(np,x,px,y,py,z,g,dv,sx,sy,sz,nord,l,al,ak,
-c     1                 dx,dy,theta,cost,sint,fringe)
-c        return
-c      endif
       include 'inc/TENT.inc'
       if(enarad)then
-        px0=px
-        py0=py
+        pxr0=px
+        pyr0=py
         zr0=z
-        bsi=0.d0
+        if(calpol)then
+          bsi=0.d0
+        endif
       endif
       if(fringe)then
         call ttfrin(np,x,px,y,py,z,g,nord,ak,al,0.d0)
@@ -350,128 +354,7 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
         call ttfrin(np,x,px,y,py,z,g,nord,-ak,al,0.d0)
       endif
       if(enarad)then
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       px0,py0,zr0,bsi,al,0.d0)
-      endif
-      include 'inc/TEXIT.inc'
-      return
-      end
-c
-      subroutine tthinrad(np,x,px,y,py,z,g,dv,sx,sy,sz,nord,al,ak,
-     1                 dx,dy,theta,cost,sint,fringe)
-      use ffs_flag
-      use tmacro
-      use mathfun
-      implicit none
-      integer*4 nmult,n,ndivmax
-      parameter (nmult=21)
-      real*8 ampmax,eps00
-      parameter (ampmax=0.05d0,eps00=0.005d0,ndivmax=1000)
-      integer*4 np,i,kord,ndiv,nord
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
-     $     sx(np),sy(np),sz(np)
-      real*8 fact(0:nmult)
-      real*8 dx,dy,theta,cost,sint,an,sp,akfl,akf,alsum,aln,
-     $     al0,pr,thr,alx,al1,aki,dpx,dpy,alr,prob,bxa,bya,
-     $     delp,xi,pxi,ak,al,h1,dpz
-      real*8 dprad,dpradx,dprady
-      real*8 tran
-      complex*16 cx
-      logical fringe
-      data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
-     1     720.d0,     5040.d0,     40320.d0,362880.d0,3628800.d0,
-     $     39916800.d0,479001600.d0,6227020800.d0,87178291200.d0,
-     $     1307674368000.d0,20922789888000.d0,355687428096000.d0,
-     $     6402373705728000.d0,121645100408832000.d0,
-     $     2432902008176640000.d0,51090942171709440000.d0/
-      include 'inc/TENT.inc'
-      if(fringe)then
-        call ttfrin(np,x,px,y,py,z,g,nord,ak,al,0.d0)
-      endif
-      n=nord/2
-      kord=n-1
-      akf=ak/fact(kord)
-      ndiv=min(ndivmax,max(2,int(
-     $     sqrt(ampmax**(n-1)/6.d0/eps00*abs(akf)*al))+1))
-      an=anrad*p0
-      sp=0.d0
-      akfl=akf/al
-      do i=1,np
-        alsum=0.d0
-        aln=al/ndiv
-        al0=0.d0
-c        delp=g(i)*(2.d0+g(i))
-        delp=g(i)
-        pr=1.d0+delp
- 100    cx=dcmplx(x(i),-y(i))**kord
-        thr=abs(akfl)*abs(cx)
-        if(thr .eq. 0.d0)then
-          alx=aln
-        else
-          alx=min(aln,0.08d0/an/thr)
-        endif
-        al1=al0+alx*.5d0
-        aki=akfl*al1/pr
-        dpx=-aki*dble(cx)
-        dpy=-aki*imag(cx)
-        px(i)=px(i)+dpx
-        py(i)=py(i)+dpy
-        alr=al1*(1.d0+(px(i)**2+py(i)**2)*.5d0)
-        thr=thr*alr
-        if(thr .ne. 0.d0)then
-          prob=an*thr
-          if((tran()-.5d0)*3.46410161513775461d0 .gt. .5d0-prob)then
-            bya=-dpx*brhoz/al1
-            bxa= dpy*brhoz/al1
-c            call tsynchrad(pr,alr,bxa,bya,
-c     $           dprad,dpradx,dprady,
-c     $           i,l,alsum,-al0,0.d0,theta,
-c     $           x(i),y(i),px(i),py(i))
-            px(i)=px(i)-dpradx
-            py(i)=py(i)-dprady
-          else
-            dprad=0.d0
-          endif
-        else
-          dprad=0.d0
-        endif
-        delp=delp-dprad
-        pr=1.d0+delp
-        sp=sp-dprad
-        if(alx .ne. 0.d0)then
-c          a=px(i)**2+py(i)**2
-          dpz=pxy2dpz(px(i),py(i))
-c          dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-          al1=alx/(1.d0+dpz)
-          x(i)=x(i)+px(i)*al1
-          y(i)=y(i)+py(i)*al1
-          z(i)=z(i)+dpz  *al1-dv(i)*alx
-        endif
-        al0=alx*.5d0
-        alsum=alsum+alx
-        if(aln .gt. 0)then
-          aln=min(al/ndiv,max(al-alsum,0.d0))
-          go to 100
-        endif
-c        h1=sqrt(1.d0+(p0*pr)**2)
-        h1=p2h(p0*pr)
-c        g(i)=delp/(1.d0+sqrt(max(.01d0,pr)))
-        g(i)=delp
-        dv(i)=-delp*(1.d0+pr)/h1/(h1+pr*h0)+dvfs
-      enddo
-      if(.not. radcod  )then
-        sp=sp/np
-        do 1110 i=1,np
-c          dp=(2.d0+g(i))*g(i)-sp
-c          g(i)=dp/(1.d0+sqrt(1.d0+dp))
-          g(i)=g(i)-sp
-c     Change of dv(i) is ignored here.
- 1110   continue
-      endif
-      if(fringe)then
-        call ttfrin(np,x,px,y,py,z,g,nord,-ak,al,0.d0)
+        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al,0.d0)
       endif
       include 'inc/TEXIT.inc'
       return

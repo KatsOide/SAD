@@ -160,9 +160,10 @@ c     $       .false.,
      $       mfr,cmp%value(ky_EPS_QUAD))
       case(icMULT)
         if(seg)then
-          call tmulteseg(trans,cod,beam,srot,l,cmp,bzs,lsegp,rtaper)
+          call tmulteseg(trans,cod,beam,srot,l,cmp,bzs,lsegp,
+     $         enarad,rtaper)
         else
-          call tmulte1(trans,cod,beam,srot,l,cmp,bzs,rtaper)
+          call tmulte1(trans,cod,beam,srot,l,cmp,bzs,enarad,rtaper)
         endif
       case(icCAVI)
         call tmulte(trans,cod,beam,srot,l,al,
@@ -172,7 +173,7 @@ c     $       .false.,
      1       cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
      $       0.d0,0.d0,0.d0,
      $       cmp%value(ky_ROT_CAVI),
-     $       0.d0,0.d0,.false.,
+     $       0.d0,0.d0,enarad,
      $       cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
      $       0.d0,0.d0,0.d0,0.d0,
      $       cmp%value(ky_FRMD_CAVI),0.d0,0.d0,

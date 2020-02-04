@@ -1,10 +1,12 @@
-      subroutine txwake(np,x,px,y,py,z,g,dv,
+      subroutine txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     dx,dy,theta,nb,
      $     fw,lwl,wakel,lwt,waket,p0,h0,itab,izs,init)
       use tfstk, only: ktfenanq
+      use ffs_flag,only:calpol
       implicit none
       integer*4 np,ns,lwl,lwt,i,n,k,l,m,nb
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+     $     sx(np),sy(np),sz(np),
      $     wakel(2,lwl),waket(2,lwt),xs(np),ys(np),zs(np),
      $     dz,w,wx(np),wy(np),wz(np),ws(np),zk,dzk,
      $     pa,pb,h1,fw,dwx,dwy,dwz,p0,h0,fwp,dx,dy,theta,
@@ -14,10 +16,6 @@
       logical*4 init
       if(lwl .eq. 0 .and. lwt .eq. 0)then
         return
-      endif
-      if(theta .ne. 0.d0)then
-        cost=cos(theta)
-        sint=sin(theta)
       endif
       include 'inc/TENT.inc'
       if(init)then

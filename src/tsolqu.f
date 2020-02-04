@@ -1,6 +1,5 @@
-      recursive subroutine tsolqu(np,x,px,y,py,z,gp,dv,sx,sy,sz,
-     $     bsi,al,ak,bz0,
-     $     ak0x,ak0y,ibsi,eps0)
+      subroutine tsolqu(np,x,px,y,py,z,gp,dv,sx,sy,sz,
+     $     al,ak,bz0,ak0x,ak0y,ibsi,eps0)
       use tsolz
       use mathfun
       implicit none
@@ -35,26 +34,23 @@
      $     aw1=>tz%aw1,aw2=>tz%aw2,aw1p=>tz%aw1p,aw2p=>tz%aw2p,
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
-c      write(*,*)'tsolqu-0 ',al,ak,bz0
       if(ak*al .lt. 0.d0)then
-        call tsolqu(np,y,py,x,px,z,gp,dv,sx,sy,sz,
-     $       bsi,al,-ak,
-     $       -bz0,-ak0y,-ak0x,ibsi,eps0)
+        write(*,*)'tsolqu-implementation error ',al,ak,bz0
+        stop
+      elseif(ak .eq. 0.d0)then
+        call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,
+     $       al,bz0,ak0x,ak0y,.false.)
         return
       endif
       bz=bz0
-      if(ak .eq. 0.d0)then
-        call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,bsi,
-     $       al,bz,ak0x,ak0y,.false.)
-        return
-      endif
       z00=z(1)
       if(eps0 .eq. 0.d0)then
         eps=0.2d0
       else
         eps=0.2d0*eps0
       endif
-      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
+      ndiv=1+int(abs(al*hypot(ak,bz)/eps))
+c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
       aln=al/ndiv
       dx0=ak0x/ak
       dy0=ak0y/ak
@@ -126,18 +122,18 @@ c            dpz=-ap/(1.d0+sqrt(1.d0-ap))
             r=-dpz/(1.d0+dpz)*ra
             ra=aln
             phi=r*bzp
-            tph=tan(.5d0*phi)
-            a24=2.d0*tph/(1.d0+tph**2)
-c            a24=sin(phi)
+c            tph=tan(.5d0*phi)
+c            a24=2.d0*tph/(1.d0+tph**2)
+            a24=sin(phi)
             a12=a24/bzp
-            a22=1.d0-tph*a24
-c            a22=cos(phi)
-            a14=tph*a12
-c            if(a22 .ge. 0.d0)then
-c              a14=a12*a24/(1.d0+a22)
-c            else
-c              a14=(1.d0-a22)/bzp
-c            endif
+c            a22=1.d0-tph*a24
+            a22=cos(phi)
+c            a14=tph*a12
+            if(a22 .ge. 0.d0)then
+              a14=a12*a24/(1.d0+a22)
+            else
+              a14=(1.d0-a22)/bzp
+            endif
             pxi=px(i)
             x(i) =x(i)+a12*pxi+a14*py(i)
             y(i) =y(i)-a14*pxi+a12*py(i)
@@ -211,13 +207,11 @@ c          endif
       end associate
       end
 
-      recursive subroutine tsolqur(np,x,px,y,py,z,gp,dv,sx,sy,sz,
-     $     px0,py0,zr0,bsi,al,ak,
+      subroutine tsolqur(np,x,px,y,py,z,gp,dv,sx,sy,sz,al,ak,
      $     bz0,ak0x,ak0y,eps0,alr)
       use tsolz
       use tspin
       use ffs_flag, only:ndivrad,photons
-      use tmacro, only:l_track
       use photontable,only:tgswap,tsetphotongeo
       use mathfun
       implicit none
@@ -225,8 +219,7 @@ c          endif
       integer*4 np,i,n,ndiv
       real*8 , parameter ::smax=0.99d0
       integer*4 , parameter :: ndivmax=1000
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),
-     $     px0(np),py0(np),zr0(np),bsi(np)
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np)
       real*8 sx(np),sy(np),sz(np)
       real*8 al,ak,eps0,bz,a,b,c,d,akk,eps,alr,aka,
      $     bw,dw,r,ap,dpz,ak0x,ak0y,bz0,
@@ -256,33 +249,24 @@ c          endif
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
       if(ak*al .lt. 0.d0)then
-        if(photons)then
-          call tgswap(l_track)
-        endif
-        call tsolqur(np,y,py,x,px,z,gp,dv,sy,sx,sz,
-     $       py0,px0,zr0,bsi,al,-ak,
-     $       -bz0,-ak0y,-ak0x,eps0,alr)
-        if(photons)then
-          call tgswap(l_track)
-        endif
-        return
-      endif
-      bz=bz0
-      if(ak .eq. 0.d0)then
-        call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,bsi,
-     $       al,bz,ak0x,ak0y,.false.)
+        write(*,*)'tsolqur-implementation error ',al,ak,bz0
+        stop
+      elseif(ak .eq. 0.d0)then
+        call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,
+     $       al,bz0,ak0x,ak0y,.false.)
         alr=al
         return
       endif
+      bz=bz0
       if(eps0 .eq. 0.d0)then
         eps=0.2d0
       else
         eps=0.2d0*eps0
       endif
-      aka=abs(dcmplx(ak,bz))
+      aka=hypot(ak,bz)
       ndiv=1+int(abs(al)*aka/eps)
       ndiv=min(ndivmax,
-     $     max(ndiv,ndivrad(abs(dcmplx(ak0x,ak0y)),ak,bz,eps0)))
+     $     max(ndiv,ndivrad(hypot(ak0x,ak0y),ak,bz,eps0)))
       aln=al/ndiv
       dx0=ak0x/ak
       dy0=ak0y/ak
@@ -331,8 +315,7 @@ c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
           if(photons)then
             call tsetphotongeo(alr,0.d0,0.d0,.false.)
           endif
-          call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,
-     $         px0,py0,zr0,bsi,alr,0.d0)
+          call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,alr,0.d0)
         enddo
         do i=1,np
           ap=min(smax,px(i)**2+py(i)**2)
@@ -421,8 +404,7 @@ c            endif
           if(photons)then
             call tsetphotongeo(alr,0.d0,0.d0,.false.)
           endif
-          call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,
-     $         px0,py0,zr0,bsi,alr,0.d0)
+          call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,alr,0.d0)
         enddo
         do i=1,np
           ap=min(smax,px(i)**2+py(i)**2)

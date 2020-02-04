@@ -13,7 +13,7 @@ eqs img{
 <BODY>
 <CENTER><H2>Welcome to SAD/FFS & SADScript
 </H2></CENTER>
-<CENTER> SAD/FFS SADScript Version: 1.1.6.9.4k64,      Updated: 09/10/2019</CENTER>
+<CENTER> SAD/FFS SADScript Version: 1.1.7.1k64,      Updated: 02/04/2020</CENTER>
 
 <PRE> Please use browser's search to find an item.
 
@@ -576,15 +576,14 @@ SAD/FFS Examples</H4></A>
    <A HREF=#L544>STATUS(STAT)</A>
    <A HREF=#L545>STOP</A>
    <A HREF=#L546>SUSPEND(SUSP)</A>
-   <A HREF=#L547>TDR</A>
-   <A HREF=#L548>TERMINATE(TERM)</A>
-   <A HREF=#L549>TYPE(T)</A>
-   <A HREF=#L550>UNTIL</A>
-   <A HREF=#L551>USE</A>
-   <A HREF=#L552>VARIABLES(VAR)</A>
-   <A HREF=#L553>VARY</A>
-   <A HREF=#L554>VISIT</A>
-   <A HREF=#L555>wildcards</A>
+   <A HREF=#L547>TERMINATE(TERM)</A>
+   <A HREF=#L548>TYPE(T)</A>
+   <A HREF=#L549>UNTIL</A>
+   <A HREF=#L550>USE</A>
+   <A HREF=#L551>VARIABLES(VAR)</A>
+   <A HREF=#L552>VARY</A>
+   <A HREF=#L553>VISIT</A>
+   <A HREF=#L554>wildcards</A>
 </PRE><HR>
 <H3><A NAME=L1>
  </A></H3>
@@ -595,14 +594,14 @@ ABORT</A></H3>
 <PRE>Terminates SAD immediately.
 </PRE>
 <PRE>See also:
- <A HREF=#L545>STOP</A> <A HREF=#L477>QUIT</A> <A HREF=#L540>SAVE</A> <A HREF=#L551>USE</A> <A HREF=#L554>VISIT</A> <A HREF=#L14>BYE</A></PRE>
+ <A HREF=#L545>STOP</A> <A HREF=#L477>QUIT</A> <A HREF=#L540>SAVE</A> <A HREF=#L550>USE</A> <A HREF=#L553>VISIT</A> <A HREF=#L14>BYE</A></PRE>
 <H3><A NAME=L3>
 APPEND(APP)</A></H3>
 <PRE>APP {filename | file-number} switches the output stream to the specified file or the file number.
 The output is appended to the existing file.
 </PRE>
 <PRE>See also:
- <A HREF=#L548>TERMINATE(TERM)</A> <A HREF=#L34>CLOSE(CLO)</A> <A HREF=#L463>INPUT(IN)</A> <A HREF=#L479>READ</A> <A HREF=#L472>OUTPUT(OUT)</A> <A HREF=#L290>END</A></PRE>
+ <A HREF=#L547>TERMINATE(TERM)</A> <A HREF=#L34>CLOSE(CLO)</A> <A HREF=#L463>INPUT(IN)</A> <A HREF=#L479>READ</A> <A HREF=#L472>OUTPUT(OUT)</A> <A HREF=#L290>END</A></PRE>
 <H3><A NAME=L4>
 ATTRIBUTE(ATTR)</A></H3>
 <PRE>Usage: ATTR element-pattern
@@ -611,7 +610,7 @@ prints out the current value, minimum and maximum values, COUPLEd element and it
 elements which match the element-pattern.
 </PRE>
 <PRE>See also:
- <A HREF=#L35>COUPLE(COUP)</A> <A HREF=#L489>set-value-of-element</A> <A HREF=#L555>wildcards</A></PRE>
+ <A HREF=#L35>COUPLE(COUP)</A> <A HREF=#L489>set-value-of-element</A> <A HREF=#L554>wildcards</A></PRE>
 <H3><A NAME=L5>
 beam-line</A></H3>
 <PRE> A beam line is defined in the MAIN level by LINE command as:
@@ -626,7 +625,7 @@ line. A negative orientation of a line is inherited by its elements.
  A beam line can be accessed within FFS via beam-line-functions as shown below.
 </PRE>
 <PRE>See also:
- <A HREF=#L69>elements</A> <A HREF=#L12>orientation-of-an-element</A> <A HREF=#L551>USE</A> <A HREF=#L554>VISIT</A></PRE>
+ <A HREF=#L69>elements</A> <A HREF=#L12>orientation-of-an-element</A> <A HREF=#L550>USE</A> <A HREF=#L553>VISIT</A></PRE>
 <UL>
 <LI>
 <H3><A NAME=L6>
@@ -666,7 +665,7 @@ Examples:
 automatically.
 </PRE>
 <PRE>See also:
- <A HREF=#L9>ExtractBeamLine</A> <A HREF=#L10>PrintBeamLine</A> <A HREF=#L11>WriteBeamLine</A> <A HREF=#L551>USE</A> <A HREF=#L554>VISIT</A></PRE>
+ <A HREF=#L9>ExtractBeamLine</A> <A HREF=#L10>PrintBeamLine</A> <A HREF=#L11>WriteBeamLine</A> <A HREF=#L550>USE</A> <A HREF=#L553>VISIT</A></PRE>
 <LI>
 <H3><A NAME=L8>
 BeamLineName</A></H3>
@@ -682,7 +681,7 @@ returns a BeamLine object which represents the expanded form of line which has b
 If line is omitted, the current line is assumed.
 </PRE>
 <PRE>See also:
- <A HREF=#L7>BeamLine</A> <A HREF=#L10>PrintBeamLine</A> <A HREF=#L11>WriteBeamLine</A> <A HREF=#L551>USE</A> <A HREF=#L554>VISIT</A></PRE>
+ <A HREF=#L7>BeamLine</A> <A HREF=#L10>PrintBeamLine</A> <A HREF=#L11>WriteBeamLine</A> <A HREF=#L550>USE</A> <A HREF=#L553>VISIT</A></PRE>
 <LI>
 <H3><A NAME=L10>
 PrintBeamLine</A></H3>
@@ -693,7 +692,7 @@ is given, it writes in the MAIN-input format. If Name->{name1,..} is given, name
 also written. The number of Name must be not smaller than number of BeamLines.
 </PRE>
 <PRE>See also:
- <A HREF=#L7>BeamLine</A> <A HREF=#L9>ExtractBeamLine</A> <A HREF=#L11>WriteBeamLine</A> <A HREF=#L551>USE</A> <A HREF=#L554>VISIT</A></PRE>
+ <A HREF=#L7>BeamLine</A> <A HREF=#L9>ExtractBeamLine</A> <A HREF=#L11>WriteBeamLine</A> <A HREF=#L550>USE</A> <A HREF=#L553>VISIT</A></PRE>
 <LI>
 <H3><A NAME=L11>
 WriteBeamLine</A></H3>
@@ -704,7 +703,7 @@ is given, it writes in the MAIN-input format. If Name->{name1,..} is given, name
 also written. The number of Name must be not smaller than number of BeamLines.
 </PRE>
 <PRE>See also:
- <A HREF=#L7>BeamLine</A> <A HREF=#L9>ExtractBeamLine</A> <A HREF=#L10>PrintBeamLine</A> <A HREF=#L551>USE</A> <A HREF=#L554>VISIT</A></PRE>
+ <A HREF=#L7>BeamLine</A> <A HREF=#L9>ExtractBeamLine</A> <A HREF=#L10>PrintBeamLine</A> <A HREF=#L550>USE</A> <A HREF=#L553>VISIT</A></PRE>
 </UL>
 <LI>
 <H3><A NAME=L12>
@@ -734,7 +733,7 @@ All information specific to the beam line, such as matching conditions are resto
 values of elements of the returning beam line.
 </PRE>
 <PRE>See also:
- <A HREF=#L554>VISIT</A> <A HREF=#L551>USE</A> <A HREF=#L540>SAVE</A> <A HREF=#L486>RESET</A> <A HREF=#L545>STOP</A> <A HREF=#L477>QUIT</A> <A HREF=#L2>ABORT</A></PRE>
+ <A HREF=#L553>VISIT</A> <A HREF=#L550>USE</A> <A HREF=#L540>SAVE</A> <A HREF=#L486>RESET</A> <A HREF=#L545>STOP</A> <A HREF=#L477>QUIT</A> <A HREF=#L2>ABORT</A></PRE>
 <H3><A NAME=L15>
 character-string</A></H3>
 <PRE> A character-string is expressed by enclosing in "". Special characters are expressed using \:
@@ -784,7 +783,7 @@ StringMatchQ</A></H3>
 <PRE> StringMatchQ[s, spat] returns True/False whether string s matches string-patten spat.
 </PRE>
 <PRE>See also:
- <A HREF=#L555>wildcards</A></PRE>
+ <A HREF=#L554>wildcards</A></PRE>
 <LI>
 <H3><A NAME=L21>
 StringPart</A></H3>
@@ -976,7 +975,7 @@ CLOSE(CLO)</A></H3>
   CLOSE OUTPUT(OUT) suspends the current output and switches it to the previous output stream.
 </PRE>
 <PRE>See also:
- <A HREF=#L548>TERMINATE(TERM)</A> <A HREF=#L463>INPUT(IN)</A> <A HREF=#L479>READ</A> <A HREF=#L472>OUTPUT(OUT)</A> <A HREF=#L3>APPEND(APP)</A> <A HREF=#L290>END</A></PRE>
+ <A HREF=#L547>TERMINATE(TERM)</A> <A HREF=#L463>INPUT(IN)</A> <A HREF=#L479>READ</A> <A HREF=#L472>OUTPUT(OUT)</A> <A HREF=#L3>APPEND(APP)</A> <A HREF=#L290>END</A></PRE>
 <H3><A NAME=L35>
 COUPLE(COUP)</A></H3>
 <PRE>   Usage: COUP slave-element master-element coefficient
@@ -1160,7 +1159,7 @@ is suppressed by specifying ALL.
 values of components are updated.
 </PRE>
 <PRE>See also:
- <A HREF=#L549>TYPE(T)</A> <A HREF=#L470>optical-functions</A> <A HREF=#L459>geometric-functions</A></PRE>
+ <A HREF=#L548>TYPE(T)</A> <A HREF=#L470>optical-functions</A> <A HREF=#L459>geometric-functions</A></PRE>
 <UL>
 <LI>
 <H3><A NAME=L52>
@@ -1239,7 +1238,7 @@ Note that the components are chosen in the current region, and the keyword ALL i
 it to the entire beam line.
 </PRE>
 <PRE>See also:
- <A HREF=#L51>DISPLAY(DISP)</A> <A HREF=#L555>wildcards</A> <A HREF=#L30>components</A> <A HREF=#L62>region</A> <A HREF=#L53>ALL</A></PRE>
+ <A HREF=#L51>DISPLAY(DISP)</A> <A HREF=#L554>wildcards</A> <A HREF=#L30>components</A> <A HREF=#L62>region</A> <A HREF=#L53>ALL</A></PRE>
 <LI>
 <H3><A NAME=L61>
 PHYSICAL(P)</A></H3>
@@ -1321,8 +1320,8 @@ label.
 
 </PRE>
 <PRE>See also:
- <A HREF=#L414>OpticsPlot</A> <A HREF=#L492>special-variables</A> <A HREF=#L539>TITLE</A> <A HREF=#L465>matching-function-commands</A> <A HREF=#L472>OUTPUT(OUT)</A> <A HREF=#L548>TERMINATE(TERM)</A>
- <A HREF=#L239>GEO</A> <A HREF=#L51>DISPLAY(DISP)</A> <A HREF=#L555>wildcards</A></PRE>
+ <A HREF=#L414>OpticsPlot</A> <A HREF=#L492>special-variables</A> <A HREF=#L539>TITLE</A> <A HREF=#L465>matching-function-commands</A> <A HREF=#L472>OUTPUT(OUT)</A> <A HREF=#L547>TERMINATE(TERM)</A>
+ <A HREF=#L239>GEO</A> <A HREF=#L51>DISPLAY(DISP)</A> <A HREF=#L554>wildcards</A></PRE>
 <UL>
 <LI>
 <H3><A NAME=L67>
@@ -1341,7 +1340,7 @@ DUMP</A></H3>
 prints out the current machine errors of components which match component-pattern.
 </PRE>
 <PRE>See also:
- <A HREF=#L464>machine-error-commands</A> <A HREF=#L30>components</A> <A HREF=#L555>wildcards</A></PRE>
+ <A HREF=#L464>machine-error-commands</A> <A HREF=#L30>components</A> <A HREF=#L554>wildcards</A></PRE>
 <H3><A NAME=L69>
 elements</A></H3>
 <PRE>An element in FFS represents an object which has a unique name and several keywords with values.
@@ -1357,7 +1356,7 @@ previous definition is unchanged. All keywords have the default value zero. In F
 to change their values.
 </PRE>
 <PRE>See also:
- <A HREF=#L549>TYPE(T)</A> <A HREF=#L489>set-value-of-element</A> <A HREF=#L380>Element</A></PRE>
+ <A HREF=#L548>TYPE(T)</A> <A HREF=#L489>set-value-of-element</A> <A HREF=#L380>Element</A></PRE>
 <UL>
 <LI>
 <H3><A NAME=L70>
@@ -2008,7 +2007,7 @@ Example: MARK P1 = (EMITX = .. EMITY = .. DP = ..);
 it has keywords EMITX, EMITY, and DP which give the values of the corresponding special-variables.
 </PRE>
 <PRE>See also:
- <A HREF=#L540>SAVE</A> <A HREF=#L551>USE</A> <A HREF=#L470>optical-functions</A> <A HREF=#L230>SOL</A> <A HREF=#L492>special-variables</A> <A HREF=#L505>EMITX</A> <A HREF=#L507>EMITY</A> <A HREF=#L498>DP</A></PRE>
+ <A HREF=#L540>SAVE</A> <A HREF=#L550>USE</A> <A HREF=#L470>optical-functions</A> <A HREF=#L230>SOL</A> <A HREF=#L492>special-variables</A> <A HREF=#L505>EMITX</A> <A HREF=#L507>EMITY</A> <A HREF=#L498>DP</A></PRE>
 <UL>
 <LI>
 <H3><A NAME=L132>
@@ -3512,7 +3511,7 @@ and output streams, you may consider to use TERMINATE(TERM) or CLOSE(CLO) to sus
 selectively.
 </PRE>
 <PRE>See also:
- <A HREF=#L548>TERMINATE(TERM)</A> <A HREF=#L34>CLOSE(CLO)</A> <A HREF=#L463>INPUT(IN)</A> <A HREF=#L479>READ</A> <A HREF=#L472>OUTPUT(OUT)</A> <A HREF=#L3>APPEND(APP)</A></PRE>
+ <A HREF=#L547>TERMINATE(TERM)</A> <A HREF=#L34>CLOSE(CLO)</A> <A HREF=#L463>INPUT(IN)</A> <A HREF=#L479>READ</A> <A HREF=#L472>OUTPUT(OUT)</A> <A HREF=#L3>APPEND(APP)</A></PRE>
 <H3><A NAME=L291>
 ENDIF</A></H3>
 <PRE>Usage: IF expr1 body1 [ELSEIF expr2 body2 [ELSEIF ..]] [ELSE body3] ENDIF
@@ -3787,11 +3786,11 @@ MOVESEED</A></H3>
 <LI>
 <H3><A NAME=L325>
 PHOTONS</A></H3>
-<PRE>When PHOTONS is ON (default is OFF), TrackParticles generates a list of all photons radiated through
-the tracking. The list is assigned to a symbol PhotonList.
+<PRE>When PHOTONS is ON (default is OFF), with RAD and FLUC, TrackParticles generates a list of all photons
+radiated through the tracking. The list is assigned to a symbol PhotonList.
 </PRE>
 <PRE>See also:
- <A HREF=#L533>PhotonList</A> <A HREF=#L400>TrackParticles</A></PRE>
+ <A HREF=#L533>PhotonList</A> <A HREF=#L400>TrackParticles</A> <A HREF=#L330>RAD</A> <A HREF=#L312>FLUC</A></PRE>
 <LI>
 <H3><A NAME=L326>
 POL</A></H3>
@@ -4580,7 +4579,7 @@ other beam lines. Otherwise values set by Element are not saved when FFS is stop
 are the default-keyword or keywords once used in matching.
 </PRE>
 <PRE>See also:
- <A HREF=#L69>elements</A> <A HREF=#L555>wildcards</A> <A HREF=#L30>components</A> <A HREF=#L389>LINE</A> <A HREF=#L395>SetElement</A></PRE>
+ <A HREF=#L69>elements</A> <A HREF=#L554>wildcards</A> <A HREF=#L30>components</A> <A HREF=#L389>LINE</A> <A HREF=#L395>SetElement</A></PRE>
 <UL>
 <LI>
 <H3><A NAME=L381>
@@ -4616,13 +4615,14 @@ Emittance</A></H3>
    {keyword1->value1, keyword2->value2, ..} .
 
 Its options and default values are Matrix(False), Orbit(False), OneTurnInformation(False), Emittance(True),
-ExpandElementValues(True), SaveEMIT(False), InitialOrbit(Null), InitialBeamMatrix(Null), and Output(0).
+ExpandElementValues(True), SaveEMIT(False), InitialOrbit(Null), InitialBeamMatrix(Null), Region({1,-1}),
+and Output(0).
 
-If
-Emittance->False is specified, the resulting keywords are:
+If Emittance->False is specified, the resulting keywords are:
 
                      
 Stable               True if all modes are stable and the closed orbit is found.
+Region               The region {begin, end} to calculate.
 Tunes                {nux, nuy, nuz} .
 EnergyLossU0         One turn energy loss in eV.
 RfVoltageVc          The effective RF voltage (V).
@@ -4637,7 +4637,7 @@ If None of the options is given, the following keywords are added:
 
                       
 DampingRate           {T0/taux, T0/tauy, T0/tauz}
-Emittances            {emitx, emity, emitz}
+Emittances            {emitx, emity, emitz} *1)
 MomentumSpread        sigma p/p0
 BunchLength           sigma_z
 Polarization          equilibrium polarization, if POL is on
@@ -4689,9 +4689,15 @@ SIGE, SIGZ. The default is SaveEMIT->False.
 
 InitialOrbit->{x0,px0,y0,py0,z0,dp0/p0} specifies the incoming orbit which is valid when NOCOD is
 set. The option Output->filenum enables the print out of EMITTANCE(EMIT) to filnum.
+
+If Region is not the entire ring, parameters such as Emittances and DampingRate, etc., are not calculated,
+and return NaNs.
+
+*1) The values of Emittances with INTRA and MINCOUP correspond to the equilibrium with intrabeam
+scattering weakened by MINCOUP.
 </PRE>
 <PRE>See also:
- <A HREF=#L289>EMITTANCE(EMIT)</A> <A HREF=#L397>SymplecticJ</A> <A HREF=#L301>COD</A> <A HREF=#L505>EMITX</A> <A HREF=#L507>EMITY</A> <A HREF=#L509>EMITZ</A> <A HREF=#L536>SIGZ</A> <A HREF=#L535>SIGE</A> <A HREF=#L326>POL</A></PRE>
+ <A HREF=#L289>EMITTANCE(EMIT)</A> <A HREF=#L397>SymplecticJ</A> <A HREF=#L301>COD</A> <A HREF=#L505>EMITX</A> <A HREF=#L507>EMITY</A> <A HREF=#L509>EMITZ</A> <A HREF=#L536>SIGZ</A> <A HREF=#L535>SIGE</A> <A HREF=#L326>POL</A> <A HREF=#L522>MINCOUP</A></PRE>
 <LI>
 <H3><A NAME=L383>
 ExternalMap</A></H3>
@@ -4913,7 +4919,7 @@ LINE[a,b] = v) when component-pattern-string chooses only one component.
 where both x and y can be also a list.
 </PRE>
 <PRE>See also:
- <A HREF=#L30>components</A> <A HREF=#L555>wildcards</A> <A HREF=#L69>elements</A> <A HREF=#L380>Element</A></PRE>
+ <A HREF=#L30>components</A> <A HREF=#L554>wildcards</A> <A HREF=#L69>elements</A> <A HREF=#L380>Element</A></PRE>
 <UL>
 <LI>
 <H3><A NAME=L390>
@@ -6339,7 +6345,7 @@ Usage: (2) FIX
 sets the standard optics for the orbit correction commands.
 </PRE>
 <PRE>See also:
- <A HREF=#L457>FREE</A> <A HREF=#L454>FIT</A> <A HREF=#L542>SHOW</A> <A HREF=#L461>GO</A> <A HREF=#L32>CALCULATE(CAL)</A> <A HREF=#L555>wildcards</A> <A HREF=#L69>elements</A></PRE>
+ <A HREF=#L457>FREE</A> <A HREF=#L454>FIT</A> <A HREF=#L542>SHOW</A> <A HREF=#L461>GO</A> <A HREF=#L32>CALCULATE(CAL)</A> <A HREF=#L554>wildcards</A> <A HREF=#L69>elements</A></PRE>
 <H3><A NAME=L457>
 FREE</A></H3>
 <PRE>Usage: FREE element-pattern [keyword] [element-pattern1 [keyword1]..]
@@ -6355,7 +6361,7 @@ Example: FREE AXI BXI AYI BYI
 changes incoming AX, BX, AY, and BY to find the solution.
 </PRE>
 <PRE>See also:
- <A HREF=#L456>FIX</A> <A HREF=#L454>FIT</A> <A HREF=#L542>SHOW</A> <A HREF=#L461>GO</A> <A HREF=#L32>CALCULATE(CAL)</A> <A HREF=#L555>wildcards</A> <A HREF=#L69>elements</A></PRE>
+ <A HREF=#L456>FIX</A> <A HREF=#L454>FIT</A> <A HREF=#L542>SHOW</A> <A HREF=#L461>GO</A> <A HREF=#L32>CALCULATE(CAL)</A> <A HREF=#L554>wildcards</A> <A HREF=#L69>elements</A></PRE>
 <UL>
 <LI>
 <H3><A NAME=L458>
@@ -6444,8 +6450,8 @@ function-values: a list of length nc (== number of calculated items). Each eleme
        The central orbit comes at the Floor[(n+1)/2]-th element.
 </PRE>
 <PRE>See also:
- <A HREF=#L454>FIT</A> <A HREF=#L542>SHOW</A> <A HREF=#L465>matching-function-commands</A> <A HREF=#L469>off-momentum-matching</A> <A HREF=#L457>FREE</A> <A HREF=#L456>FIX</A> <A HREF=#L552>VARIABLES(VAR)</A> <A HREF=#L35>COUPLE(COUP)</A>
- <A HREF=#L4>ATTRIBUTE(ATTR)</A> <A HREF=#L32>CALCULATE(CAL)</A> <A HREF=#L553>VARY</A> <A HREF=#L542>SHOW</A> <A HREF=#L303>CONV</A> <A HREF=#L496>CONVERGENCE</A> <A HREF=#L520>MatchingResidual</A> <A HREF=#L519>MatchingAmplitude</A>
+ <A HREF=#L454>FIT</A> <A HREF=#L542>SHOW</A> <A HREF=#L465>matching-function-commands</A> <A HREF=#L469>off-momentum-matching</A> <A HREF=#L457>FREE</A> <A HREF=#L456>FIX</A> <A HREF=#L551>VARIABLES(VAR)</A> <A HREF=#L35>COUPLE(COUP)</A>
+ <A HREF=#L4>ATTRIBUTE(ATTR)</A> <A HREF=#L32>CALCULATE(CAL)</A> <A HREF=#L552>VARY</A> <A HREF=#L542>SHOW</A> <A HREF=#L303>CONV</A> <A HREF=#L496>CONVERGENCE</A> <A HREF=#L520>MatchingResidual</A> <A HREF=#L519>MatchingAmplitude</A>
  <A HREF=#L513>FitFunction</A> <A HREF=#L384>FFS</A> <A HREF=#L391>OptimizeOptics</A></PRE>
 <H3><A NAME=L462>
 IF</A></H3>
@@ -6464,7 +6470,7 @@ INPUT(IN)</A></H3>
 original stream is kept and to be returned by TERMINATE(TERM). The input file is not rewound.
 </PRE>
 <PRE>See also:
- <A HREF=#L548>TERMINATE(TERM)</A> <A HREF=#L34>CLOSE(CLO)</A> <A HREF=#L479>READ</A> <A HREF=#L472>OUTPUT(OUT)</A> <A HREF=#L3>APPEND(APP)</A> <A HREF=#L290>END</A></PRE>
+ <A HREF=#L547>TERMINATE(TERM)</A> <A HREF=#L34>CLOSE(CLO)</A> <A HREF=#L479>READ</A> <A HREF=#L472>OUTPUT(OUT)</A> <A HREF=#L3>APPEND(APP)</A> <A HREF=#L290>END</A></PRE>
 <H3><A NAME=L464>
 machine-error-commands</A></H3>
 <PRE>Usage: machine-error-command [options] amount component-pattern ..
@@ -6494,7 +6500,7 @@ PUT(P)           Set the error to the keyword. Default.
 ADD(A)           Add the error to the keyword.
 </PRE>
 <PRE>See also:
- <A HREF=#L30>components</A> <A HREF=#L555>wildcards</A> <A HREF=#L130>keywords</A> <A HREF=#L107>default-keyword</A> <A HREF=#L68>DUMP</A> <A HREF=#L541>SEED</A></PRE>
+ <A HREF=#L30>components</A> <A HREF=#L554>wildcards</A> <A HREF=#L130>keywords</A> <A HREF=#L107>default-keyword</A> <A HREF=#L68>DUMP</A> <A HREF=#L541>SEED</A></PRE>
 <H3><A NAME=L465>
 matching-function-commands</A></H3>
 <PRE>Usage: (1) matching-function  goal-value [off-momentum-points]
@@ -6674,7 +6680,7 @@ OUTPUT(OUT)</A></H3>
 The file is written from the beginning.
 </PRE>
 <PRE>See also:
- <A HREF=#L548>TERMINATE(TERM)</A> <A HREF=#L34>CLOSE(CLO)</A> <A HREF=#L463>INPUT(IN)</A> <A HREF=#L479>READ</A> <A HREF=#L3>APPEND(APP)</A> <A HREF=#L290>END</A></PRE>
+ <A HREF=#L547>TERMINATE(TERM)</A> <A HREF=#L34>CLOSE(CLO)</A> <A HREF=#L463>INPUT(IN)</A> <A HREF=#L479>READ</A> <A HREF=#L3>APPEND(APP)</A> <A HREF=#L290>END</A></PRE>
 <H3><A NAME=L473>
 pattern</A></H3>
 <PRE> Pattern is a special expression for mathing arguments in function definitions and rules with several
@@ -6732,7 +6738,7 @@ QUIT</A></H3>
 <PRE>Exits FFS and return to SAD/MAIN level, without saving the values of the elements.
 </PRE>
 <PRE>See also:
- <A HREF=#L545>STOP</A> <A HREF=#L540>SAVE</A> <A HREF=#L2>ABORT</A> <A HREF=#L551>USE</A> <A HREF=#L554>VISIT</A> <A HREF=#L14>BYE</A></PRE>
+ <A HREF=#L545>STOP</A> <A HREF=#L540>SAVE</A> <A HREF=#L2>ABORT</A> <A HREF=#L550>USE</A> <A HREF=#L553>VISIT</A> <A HREF=#L14>BYE</A></PRE>
 <H3><A NAME=L478>
 RADINT</A></H3>
 <PRE>RADINT prints out the radiation integrals involving the x-coupling for all components of the beam
@@ -6744,7 +6750,7 @@ READ</A></H3>
 The original stream is kept and to be returned by TERMINATE(TERM). The input file is rewound.
 </PRE>
 <PRE>See also:
- <A HREF=#L548>TERMINATE(TERM)</A> <A HREF=#L34>CLOSE(CLO)</A> <A HREF=#L463>INPUT(IN)</A> <A HREF=#L472>OUTPUT(OUT)</A> <A HREF=#L3>APPEND(APP)</A> <A HREF=#L290>END</A></PRE>
+ <A HREF=#L547>TERMINATE(TERM)</A> <A HREF=#L34>CLOSE(CLO)</A> <A HREF=#L463>INPUT(IN)</A> <A HREF=#L472>OUTPUT(OUT)</A> <A HREF=#L3>APPEND(APP)</A> <A HREF=#L290>END</A></PRE>
 <H3><A NAME=L480>
 RECOVER(REC)</A></H3>
 <PRE>REC exchanges the values of FREEd elements with those when the last GO command was issued. FIXed
@@ -6779,7 +6785,7 @@ If TOTAL or TOTALFIT is given, the entire matching conditions in all locations a
 output parameters by CALCULATE are reset when TOTAL is given.
 </PRE>
 <PRE>See also:
- <A HREF=#L465>matching-function-commands</A> <A HREF=#L454>FIT</A> <A HREF=#L555>wildcards</A></PRE>
+ <A HREF=#L465>matching-function-commands</A> <A HREF=#L454>FIT</A> <A HREF=#L554>wildcards</A></PRE>
 <H3><A NAME=L484>
 RENUMBER(RENUM)</A></H3>
 <PRE>RENUM comp renumbers the component number starting from a component comp.
@@ -6794,7 +6800,7 @@ executes commands in body n times until expr1 gives nonzero. The number n can be
 gives a number. If n is omitted, infinity is assumed. If expr1 is omitted, False(==0) is assumed.
 </PRE>
 <PRE>See also:
- <A HREF=#L550>UNTIL</A></PRE>
+ <A HREF=#L549>UNTIL</A></PRE>
 <H3><A NAME=L486>
 RESET</A></H3>
 <PRE>Usage: RESET [ALL] [element-pattern]
@@ -6805,7 +6811,7 @@ If ALL is given, it resets all keywords. If element-pattern is given, reset is l
 which match the pattern.
 </PRE>
 <PRE>See also:
- <A HREF=#L540>SAVE</A> <A HREF=#L551>USE</A> <A HREF=#L554>VISIT</A> <A HREF=#L555>wildcards</A> <A HREF=#L480>RECOVER(REC)</A></PRE>
+ <A HREF=#L540>SAVE</A> <A HREF=#L550>USE</A> <A HREF=#L553>VISIT</A> <A HREF=#L554>wildcards</A> <A HREF=#L480>RECOVER(REC)</A></PRE>
 <H3><A NAME=L487>
 RESUME(RES)</A></H3>
 <PRE>Resumes reading from the previous input stream suspended by SUSPEND(SUSP) or END.
@@ -6830,7 +6836,7 @@ and MAXMIN means MIN=-Abs[value] and MAX=+Abs[value].
    If the keyword is not the default-keyword, it affects both the current and the saved value.
 </PRE>
 <PRE>See also:
- <A HREF=#L4>ATTRIBUTE(ATTR)</A> <A HREF=#L540>SAVE</A> <A HREF=#L69>elements</A> <A HREF=#L107>default-keyword</A> <A HREF=#L555>wildcards</A> <A HREF=#L380>Element</A></PRE>
+ <A HREF=#L4>ATTRIBUTE(ATTR)</A> <A HREF=#L540>SAVE</A> <A HREF=#L69>elements</A> <A HREF=#L107>default-keyword</A> <A HREF=#L554>wildcards</A> <A HREF=#L380>Element</A></PRE>
 <UL>
 <LI>
 <H3><A NAME=L490>
@@ -7234,11 +7240,12 @@ MASS</A></H3>
 <LI>
 <H3><A NAME=L522>
 MINCOUP</A></H3>
-<PRE>MINCOUP is the minimum emittance ratio (EMITY/EMITX) to be assumed in the calculation of intrabeam
-effects in EMITTANCE(EMIT). Accessible in MAIN.
+<PRE>MINCOUP is the minimum emittance ratio to be assumed in the calculation of intrabeam effects in EMITTANCE(EMIT)
+and Emittance[]. Emittances Max[emit_k, MINCOUP*(emit_x+emit_y)] (k=x,y) are assumed in the intrabeam
+calculation. Accessible in MAIN.
 </PRE>
 <PRE>See also:
- <A HREF=#L289>EMITTANCE(EMIT)</A> <A HREF=#L319>INTRA</A></PRE>
+ <A HREF=#L289>EMITTANCE(EMIT)</A> <A HREF=#L382>Emittance</A> <A HREF=#L319>INTRA</A></PRE>
 <LI>
 <H3><A NAME=L523>
 MOMENTUM</A></H3>
@@ -7318,8 +7325,9 @@ in EMITTANCE(EMIT), and WakeFunction. Accessible in MAIN.
 <LI>
 <H3><A NAME=L533>
 PhotonList</A></H3>
-<PRE>When PHOTONS is ON (default is OFF), TrackParticles generates a list of all photons radiated through
-the tracking. The list is assigned to a symbol PhotonList. PhotonList is a list of
+<PRE>When PHOTONS is ON (default is OFF), with RAD and FLUC, TrackParticles generates a list of all photons
+radiated through the tracking. The list is assigned to a symbol PhotonList. PhotonList is a list
+of
 
 {en, gx, gy, gz, nx, ny, nz, xi1, xi2, xi3, np, nele}
 
@@ -7400,7 +7408,7 @@ is given it resets all keywords. If element-pattern is given, it is only limited
 which match the pattern, otherwise all elements are saved.
 </PRE>
 <PRE>See also:
- <A HREF=#L486>RESET</A> <A HREF=#L551>USE</A> <A HREF=#L554>VISIT</A> <A HREF=#L14>BYE</A> <A HREF=#L545>STOP</A> <A HREF=#L477>QUIT</A> <A HREF=#L555>wildcards</A></PRE>
+ <A HREF=#L486>RESET</A> <A HREF=#L550>USE</A> <A HREF=#L553>VISIT</A> <A HREF=#L14>BYE</A> <A HREF=#L545>STOP</A> <A HREF=#L477>QUIT</A> <A HREF=#L554>wildcards</A></PRE>
 <H3><A NAME=L541>
 SEED</A></H3>
 <PRE>The SEED command is obsolete. Use SeedRandom[] function instead of SEED.
@@ -7443,7 +7451,7 @@ STOP</A></H3>
 <PRE>Exits FFS and returns to SAD/MAIN level, with saving the values of the elements.
 </PRE>
 <PRE>See also:
- <A HREF=#L477>QUIT</A> <A HREF=#L540>SAVE</A> <A HREF=#L2>ABORT</A> <A HREF=#L551>USE</A> <A HREF=#L554>VISIT</A> <A HREF=#L14>BYE</A></PRE>
+ <A HREF=#L477>QUIT</A> <A HREF=#L540>SAVE</A> <A HREF=#L2>ABORT</A> <A HREF=#L550>USE</A> <A HREF=#L553>VISIT</A> <A HREF=#L14>BYE</A></PRE>
 <H3><A NAME=L546>
 SUSPEND(SUSP)</A></H3>
 <PRE>Suspend reading from the current input stream, and wait for input from the console. Resumes by RESUME(RES)
@@ -7451,19 +7459,6 @@ SUSPEND(SUSP)</A></H3>
 <PRE>See also:
  <A HREF=#L487>RESUME(RES)</A> <A HREF=#L290>END</A></PRE>
 <H3><A NAME=L547>
-TDR</A></H3>
-<PRE>Usage:   TDR {filename | file_number}
-
-runs TopDrawer (tdr) using the file specified by filename or file_number as the input. It supports
-both Tek terminal and X-window.
-
-Example:   OUT 'a' DRAW bx by & ex ey q* CLOSE OUT TDR 'a'
-
-TDR does not work when SAD is running under EMACS without X-window.
-</PRE>
-<PRE>See also:
- <A HREF=#L66>DRAW</A> <A HREF=#L239>GEO</A> <A HREF=#L472>OUTPUT(OUT)</A> <A HREF=#L34>CLOSE(CLO)</A></PRE>
-<H3><A NAME=L548>
 TERMINATE(TERM)</A></H3>
 <PRE>   TERM [INPUT(IN)] suspends the current input stream and switches it to the previous input stream.
 
@@ -7471,7 +7466,7 @@ TERMINATE(TERM)</A></H3>
 </PRE>
 <PRE>See also:
  <A HREF=#L34>CLOSE(CLO)</A> <A HREF=#L463>INPUT(IN)</A> <A HREF=#L479>READ</A> <A HREF=#L472>OUTPUT(OUT)</A> <A HREF=#L3>APPEND(APP)</A> <A HREF=#L290>END</A></PRE>
-<H3><A NAME=L549>
+<H3><A NAME=L548>
 TYPE(T)</A></H3>
 <PRE>Usage: TYPE [element-pattern [element-pattern1..]]
 
@@ -7480,8 +7475,8 @@ which have zero values are omitted unless it is the default variable. If non ele
 all elements are printed out.
 </PRE>
 <PRE>See also:
- <A HREF=#L51>DISPLAY(DISP)</A> <A HREF=#L552>VARIABLES(VAR)</A> <A HREF=#L69>elements</A></PRE>
-<H3><A NAME=L550>
+ <A HREF=#L51>DISPLAY(DISP)</A> <A HREF=#L551>VARIABLES(VAR)</A> <A HREF=#L69>elements</A></PRE>
+<H3><A NAME=L549>
 UNTIL</A></H3>
 <PRE>Usage: REP [n] body UNTIL [expr1]
 
@@ -7490,7 +7485,7 @@ gives a number. If n is omitted, infinity is assumed. If expr1 is omitted, False
 </PRE>
 <PRE>See also:
  <A HREF=#L485>REPEAT(REP)</A> <A HREF=#L240>expression</A> <A HREF=#L29>command-syntax</A> <A HREF=#L351>functions</A> Do</PRE>
-<H3><A NAME=L551>
+<H3><A NAME=L550>
 USE</A></H3>
 <PRE>Usage: USE [[NO]EXPAND] beam-line
 
@@ -7502,8 +7497,8 @@ is expanded, i.e., the values of components are refreshed to the saved values.
 new LINE in the MAIN level, with a name which is created automatically.
 </PRE>
 <PRE>See also:
- <A HREF=#L554>VISIT</A> <A HREF=#L14>BYE</A> <A HREF=#L293>EXPAND</A> <A HREF=#L7>BeamLine</A> <A HREF=#L8>BeamLineName</A></PRE>
-<H3><A NAME=L552>
+ <A HREF=#L553>VISIT</A> <A HREF=#L14>BYE</A> <A HREF=#L293>EXPAND</A> <A HREF=#L7>BeamLine</A> <A HREF=#L8>BeamLineName</A></PRE>
+<H3><A NAME=L551>
 VARIABLES(VAR)</A></H3>
 <PRE>VARIABLES displays a list of current matching-variables and their present, previous, saved, minimum,
 and maximum values together with the COUPLEd master elements and their coefficients.
@@ -7521,15 +7516,15 @@ which corresponds to the output of the VARIABLES(VAR) command.
 </PRE>
 <PRE>See also:
  <A HREF=#L457>FREE</A> <A HREF=#L35>COUPLE(COUP)</A> <A HREF=#L384>FFS</A></PRE>
-<H3><A NAME=L553>
+<H3><A NAME=L552>
 VARY</A></H3>
 <PRE>Usage: VARY keyword element-pattern
 
 changes the default-keyword of the elements which match element-pattern to keyword.
 </PRE>
 <PRE>See also:
- <A HREF=#L457>FREE</A> <A HREF=#L69>elements</A> <A HREF=#L555>wildcards</A></PRE>
-<H3><A NAME=L554>
+ <A HREF=#L457>FREE</A> <A HREF=#L69>elements</A> <A HREF=#L554>wildcards</A></PRE>
+<H3><A NAME=L553>
 VISIT</A></H3>
 <PRE>Usage: VISIT [[NO]EXPAND] beam-line
 
@@ -7542,8 +7537,8 @@ of components are refreshed to the saved values.
 level, with a name which is created automatically.
 </PRE>
 <PRE>See also:
- <A HREF=#L551>USE</A> <A HREF=#L14>BYE</A> <A HREF=#L293>EXPAND</A> <A HREF=#L7>BeamLine</A> <A HREF=#L8>BeamLineName</A></PRE>
-<H3><A NAME=L555>
+ <A HREF=#L550>USE</A> <A HREF=#L14>BYE</A> <A HREF=#L293>EXPAND</A> <A HREF=#L7>BeamLine</A> <A HREF=#L8>BeamLineName</A></PRE>
+<H3><A NAME=L554>
 wildcards</A></H3>
 <PRE>   Many commands and functions accept the wildcards as a specification for the name of elements or
 components. The valid wildcards are:
@@ -7555,7 +7550,7 @@ components. The valid wildcards are:
        ..|..     alternative pattern.
 </PRE>
 <PRE>See also:
- <A HREF=#L69>elements</A> <A HREF=#L30>components</A> <A HREF=#L51>DISPLAY(DISP)</A> <A HREF=#L549>TYPE(T)</A> <A HREF=#L540>SAVE</A> <A HREF=#L486>RESET</A> <A HREF=#L457>FREE</A> <A HREF=#L456>FIX</A> <A HREF=#L4>ATTRIBUTE(ATTR)</A> <A HREF=#L483>REJECT(REJ)</A>
+ <A HREF=#L69>elements</A> <A HREF=#L30>components</A> <A HREF=#L51>DISPLAY(DISP)</A> <A HREF=#L548>TYPE(T)</A> <A HREF=#L540>SAVE</A> <A HREF=#L486>RESET</A> <A HREF=#L457>FREE</A> <A HREF=#L456>FIX</A> <A HREF=#L4>ATTRIBUTE(ATTR)</A> <A HREF=#L483>REJECT(REJ)</A>
  <A HREF=#L32>CALCULATE(CAL)</A> <A HREF=#L351>functions</A> <A HREF=#L380>Element</A> <A HREF=#L389>LINE</A> <A HREF=#L401>Twiss</A></PRE>
 <HR>
 </BODY>

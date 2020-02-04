@@ -16,18 +16,11 @@
       if(irad .gt. 6)then
         trans1(1,2)=0.d0
         trans1(1,4)=0.d0
-        trans1(1,5)=0.d0
-        trans1(2,5)=0.d0
         trans1(3,2)=0.d0
         trans1(3,4)=0.d0
-        trans1(3,5)=0.d0
-        trans1(4,5)=0.d0
+        trans1(1:4,5)=0.d0
         trans1(5,5)=1.d0
-        trans1(6,1)=0.d0
-        trans1(6,2)=0.d0
-        trans1(6,3)=0.d0
-        trans1(6,4)=0.d0
-        trans1(6,5)=0.d0
+        trans1(6,1:5)=0.d0
         trans1(6,6)=1.d0
       endif
       xi=min(xmax,max(-xmax,cod(1)))
@@ -46,6 +39,9 @@
       yy=1.d0-d+ab*(a-5.d0*b)/6.d0
       h=2.d0*aki*xi*yi*(1.d0-ab/3.d0)
       f=xx*yy+h**2
+      if(f .eq. 0.d0)then
+        return
+      endif
       bzh=.5d0*bz
       pxi=cod(2)+bzh*cod(3)
       pyi=cod(4)-bzh*cod(1)
@@ -114,6 +110,11 @@
         trans(1,i)=trans1(1,1)*trans(1,i)+trans1(1,3)*y
      $       +trans1(1,6)*trans(6,i)
       enddo
+c        if(nanm(trans(:,1:6)))then
+c          write(*,'(a,1p2g15.7,7(1p6g15.7/))')'tqfrie-1 ',pr,f,
+c     $         cod(1:6),(trans1(i,1:6),i=1,6)
+c          stop
+c        endif
       if(irad .gt. 6)then
         call tmulbs(beam,trans1,.true.,.true.)
       endif

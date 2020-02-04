@@ -1,3 +1,696 @@
+      module sol
+      real*8,save,private::cchi1,cchi2,cchi3,schi1,
+     $     schi2,schi3,dcchi1,dcchi2,
+     $     s0s,fx,fy
+
+      contains
+      subroutine tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
+     $     al,bz,dx,dy,dz,
+     $     chi1,chi2,chi3,bxs,bys,bzs,ent)
+      use mathfun, only:sqrt1,xsin
+      use ffs_flag, only:calpol,rad
+      implicit none
+      integer*4 ,intent(in):: np
+      real*8 ,intent(inout)::
+     $     x(np),px(np),y(np),py(np),z(np),g(np),
+     $     sx(np),sy(np),sz(np),bxs,bys,bzs
+      real*8 , intent(in)::al,bz,dx,dy,dz,
+     $     chi1,chi2,chi3
+      logical*4 ,intent(in)::ent
+      integer*4 i,j
+      real*8 b,phix,phiy,phiz,a,a12,a14,a22,a24,
+     $     dphizsq,pr,ds1,ds2,pz0,pz1,bzp,alb,s,pl,
+     $     dpz0,dpl,plx,ply,plz,ptx,pty,ptz,pbx,pby,pbz,
+     $     phi,sinphi,dcosphi,xsinphi,dphi,phi0,bxs0,
+     $     px0,pxi,pyi,pz2,x0,x1,y1,sv(3),rr(3,3)
+      integer*4 , parameter ::itmax=10
+      real*8 ,parameter :: conv=3.d-16
+      if(ent)then
+        if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or. chi2 .ne. 0.d0)then
+          s0s=-al*.5d0
+          cchi1=cos(chi1)
+          schi1=sin(chi1)
+          if(cchi1 .ge. 0.d0)then
+            dcchi1=schi1**2/(1.d0+cchi1)
+          else
+            dcchi1=(1.d0-cchi1)
+          endif
+          cchi2=cos(chi2)
+          schi2=sin(chi2)
+          if(cchi1 .ge. 0.d0)then
+            dcchi2=schi2**2/(1.d0+cchi2)
+          else
+            dcchi2=(1.d0-cchi2)
+          endif
+          if(bz .ne. 0.d0)then
+            b=abs(bz)
+            phix=(-schi1)         *sign(1.d0,bz)
+            phiy=( cchi1)*(-schi2)*sign(1.d0,bz)
+            phiz=( cchi1)*( cchi2)*sign(1.d0,bz)
+            dphizsq=phix**2+phiy**2
+            bxs=phix*b
+            bys=phiy*b
+            bzs=phiz*b
+            do i=1,np
+              pr=(1.d0+g(i))
+              px(i)=px(i)+bz*y(i)/pr*.5d0
+              py(i)=py(i)-bz*x(i)/pr*.5d0
+              x(i)=x(i)-dx
+              y(i)=y(i)-dy
+              ds1  = schi1*x(i)-dcchi1*s0s-cchi1*dz
+              x(i) = cchi1*x(i)-schi1*(s0s-dz)
+              ds2  =-(schi2*y(i)+cchi2*ds1-dcchi2*s0s)
+              y(i) = cchi2*y(i)-schi2*(ds1+s0s)
+              pz0=1.d0+sqrt1(-px(i)**2-py(i)**2)
+c     pz0=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
+              pz1  = schi1*px(i)+cchi1*pz0
+              px(i)= cchi1*px(i)-schi1*pz0
+              py(i)= cchi2*py(i)-schi2*pz1
+              bzp=bzs/pr
+              alb=pr/b
+              s=px(i)**2+py(i)**2
+              dpz0=sqrt1(-s)
+c     dpz0=-s/(1.d0+sqrt(1.d0-s))
+              pz0=1.d0+dpz0
+              dpl=px(i)*phix+py(i)*phiy+dpz0*phiz
+              pl=phiz+dpl
+              plx=pl*phix
+              ply=pl*phiy
+              plz=pl*phiz
+              ptx=px(i)-plx
+              pty=py(i)-ply
+              ptz=dpz0 -dpl*phiz+dphizsq
+              pbx=pty*phiz-ptz*phiy
+              pby=ptz*phix-ptx*phiz
+              pbz=ptx*phiy-pty*phix
+              if(ds2 .ne. 0.d0)then
+                phi=ds2/alb/pz0
+                do j=1,itmax
+                  sinphi=sin(phi)
+                  dcosphi=2.d0*sin(.5d0*phi)**2
+                  xsinphi=xsin(phi)
+                  s=(plz*xsinphi+pz0*sinphi+pbz*dcosphi)*alb
+                  dphi=(ds2-s)/alb/(pz0-ptz*dcosphi+pbz*sinphi)
+                  phi0=phi
+                  phi=phi+dphi
+                  if(phi0 .eq. phi .or. abs(dphi/phi) .lt. conv)then
+                    go to 100
+                  endif
+                enddo
+              else
+                phi=0.d0
+                sinphi=0.d0
+                dcosphi=0.d0
+              endif
+ 100          x(i)=x(i)+(plx*phi+ptx*sinphi+pbx*dcosphi)*alb
+              y(i)=y(i)+(ply*phi+pty*sinphi+pby*dcosphi)*alb
+              z(i)=z(i)-phi*alb
+              px(i)=px(i)-ptx*dcosphi+pbx*sinphi-bzp*y(i)*.5d0
+              py(i)=py(i)-pty*dcosphi+pby*sinphi+bzp*x(i)*.5d0
+            enddo        
+          else
+            bxs=0.d0
+            bys=0.d0
+            bzs=0.d0
+            do i=1,np
+              pr=(1.d0+g(i))
+              x(i)=x(i)-dx
+              y(i)=y(i)-dy
+              pz0=1.d0+sqrt1(-px(i)**2-py(i)**2)
+c     pz0=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
+              pz1  = schi1*px(i)+cchi1*pz0
+              px(i)= cchi1*px(i)-schi1*pz0
+              py(i)= cchi2*py(i)-schi2*pz1
+              ds1  = schi1*x(i)-dcchi1*s0s-cchi1*dz
+              x(i) = cchi1*x(i)-schi1*(s0s-dz)
+              ds2  = schi2*y(i)+cchi2*ds1-dcchi2*s0s
+              y(i) = cchi2*y(i)-schi2*(ds1+s0s)
+              pz2=1.d0+sqrt1(-px(i)**2-py(i)**2)
+c     pz2=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
+              a=ds2/pz2
+              x(i) =x(i)-a*px(i)
+              y(i) =y(i)-a*py(i)
+              z(i) =z(i)+a
+            enddo
+          endif
+        else
+          cchi1=0.d0
+          cchi2=0.d0
+          schi1=0.d0
+          schi2=0.d0
+          dcchi1=0.d0
+          dcchi2=0.d0
+          s0s=0.d0
+          bzs=bz
+          bxs=0.d0
+          bys=0.d0
+          fx= bzs*dy*.5d0
+          fy=-bzs*dx*.5d0
+          do i=1,np
+            pr=(1.d0+g(i))
+            x(i)=x(i)-dx
+            y(i)=y(i)-dy
+            px(i)=px(i)+fx/pr
+            py(i)=py(i)+fy/pr
+          enddo
+        endif
+        if(chi3 .ne. 0.d0)then
+          cchi3=cos(chi3)
+          schi3=sin(chi3)
+          do i=1,np
+            x0=x(i)
+            x(i)=cchi3*x0-schi3*y(i)
+            y(i)=schi3*x0+cchi3*y(i)
+            px0=px(i)
+            px(i)=cchi3*px0-schi3*py(i)
+            py(i)=schi3*px0+cchi3*py(i)
+          enddo
+          bxs0=bxs
+          bxs=cchi3*bxs0-schi3*bys
+          bys=schi3*bxs0+cchi3*bys
+        endif
+      else
+        if(chi3 .ne. 0.d0)then
+          do i=1,np
+            x0=x(i)
+            x(i)= cchi3*x0+schi3*y(i)
+            y(i)=-schi3*x0+cchi3*y(i)
+            px0=px(i)
+            px(i)= cchi3*px0+schi3*py(i)
+            py(i)=-schi3*px0+cchi3*py(i)
+          enddo
+        endif
+        if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or. chi2 .ne. 0.d0)then
+          if(bz .ne. 0.d0)then
+            do i=1,np
+              pr=(1.d0+g(i))
+              px(i)=px(i)+bzs/pr*y(i)*.5d0
+              py(i)=py(i)-bzs/pr*x(i)*.5d0
+              pz0=1.d0+sqrt1(-px(i)**2-py(i)**2)
+c     pz0=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
+              pz1  =-schi2*py(i)+cchi2*pz0
+              pyi  = cchi2*py(i)+schi2*pz0
+              pz2  =-schi1*px(i)+cchi1*pz1
+              pxi  = cchi1*px(i)+schi1*pz1
+              y1   = cchi2*y(i)-schi2*s0s
+              ds1  =-schi2*y(i)+dcchi2*s0s
+              ds2  =-schi1*x(i)+cchi1*ds1+dcchi1*s0s+dz
+              x1   = cchi1*x(i)+schi1*(ds1-s0s)
+              bzp=bz/pr
+              phi=-bzp*ds2/pz2
+              a24=sin(phi)
+              a12=a24/bzp
+              a22=cos(phi)
+              if(a22 .ge. 0.d0)then
+                a14=a24**2/(1.d0+a22)/bzp
+              else
+                a14=(1.d0-a22)/bzp
+              endif
+              x(i) =x1 +a12*pxi+a14*pyi+dx
+              y(i) =y1 -a14*pxi+a12*pyi+dy
+              px(i)=    a22*pxi+a24*pyi-bzp*y(i)*.5d0
+              py(i)=   -a24*pxi+a22*pyi+bzp*x(i)*.5d0
+              z(i) =z(i)+ds2/pz2
+            enddo
+          else
+            do i=1,np
+              pr=(1.d0+g(i))
+              pz0=1.d0+sqrt1(-px(i)**2-py(i)**2)
+              pz1  =-schi2*py(i)+cchi2*pz0
+              pyi  = cchi2*py(i)+schi2*pz0
+              pz2  =-schi1*px(i)+cchi1*pz1
+              pxi  = cchi1*px(i)+schi1*pz1
+              y1   = cchi2*y(i)-schi2*s0s
+              ds1  =-schi2*y(i)+dcchi2*s0s
+              ds2  =-schi1*x(i)+cchi1*ds1+dcchi1*s0s+dz
+              x1   = cchi1*x(i)+schi1*(ds1-s0s)
+              a=ds2/pz2
+              px(i)=pxi
+              py(i)=pyi
+              x(i) =x1-a*pxi+dx
+              y(i) =y1-a*pyi+dy
+              z(i) =z(i)+a
+            enddo
+          endif
+        else
+          do i=1,np
+            pr=(1.d0+g(i))
+            px(i)=px(i)-fx/pr
+            py(i)=py(i)-fy/pr
+            x(i)=x(i)+dx
+            y(i)=y(i)+dy
+          enddo
+        endif
+      endif
+      if(rad .and. calpol)then
+        call trot33(rr,ent)
+        do i=1,np
+          sv=matmul(rr,(/sx(i),sy(i),sz(i)/))
+          sx(i)=sv(1)
+          sy(i)=sv(2)
+          sz(i)=sv(3)
+        enddo
+      endif
+      return
+      end subroutine
+
+      subroutine tsolrote(trans,cod,beam,srot,al,bz,dx,dy,dz,
+     $     chi1,chi2,chi3,bxs,bys,bzs,ent)
+      use tmacro, only:irad
+      use ffs_flag, only:calpol
+      use mathfun, only: sqrtl
+      implicit none
+      real*8 trans(6,12),cod(6),beam(21),trans1(6,6),
+     $     trans2(6,6),tb(6),srot(3,9)
+      real*8 bz,dx,dy,chi3,x0,px0,bzh,dz,chi1,chi2,
+     $     al,s0,rr(3,3),
+     $     ds1,pr,pz0,dpz0dpx,dpz0dpy,dpz0dp,
+     $     pz1,ds2,bxs,bys,bzs,bxs0,bzh1,pzmin,a,ptmax
+      logical*4 ent
+      parameter (pzmin=1.d-10,ptmax=0.9999d0)
+      call tinitr(trans1)
+      if(ent)then
+        if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or.
+     $       chi2 .ne. 0.d0)then
+          bzh1=bz*.5d0
+          cod(2)=cod(2)+bzh1*cod(3)
+          cod(4)=cod(4)-bzh1*cod(1)
+          s0=-.5d0*al
+          cchi1=cos(chi1)
+          schi1=sin(chi1)
+          if(cchi1 .ge. 0.d0)then
+            dcchi1=schi1**2/(1.d0+cchi1)
+          else
+            dcchi1=(1.d0-cchi1)
+          endif
+          cchi2=cos(chi2)
+          schi2=sin(chi2)
+          if(cchi2 .ge. 0.d0)then
+            dcchi2=schi2**2/(1.d0+cchi2)
+          else
+            dcchi2=(1.d0-cchi2)
+          endif
+          bzs=cchi2*cchi1*bz
+          bxs=-schi1*bz
+          bys=-schi2*cchi1*bz
+          cod(1)=cod(1)-dx
+          cod(3)=cod(3)-dy
+          pr=1.d0+cod(6)
+          a=cod(2)**2+cod(4)**2
+          pz0=pr*sqrtl(1.d0-a/pr**2)
+c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
+          dpz0dpx=-cod(2)/pz0
+          dpz0dpy=-cod(4)/pz0
+          dpz0dp = pr/pz0
+          pz1   = schi1*cod(2)+cchi1*pz0
+          cod(2)= cchi1*cod(2)-schi1*pz0
+          cod(4)= cchi2*cod(4)-schi2*pz1
+          trans1(2,2)= cchi1      -schi1*dpz0dpx
+          trans1(2,4)=            -schi1*dpz0dpy
+          trans1(2,6)=            -schi1*dpz0dp
+          trans1(4,2)=-schi2*schi1-schi2*cchi1*dpz0dpx
+          trans1(4,4)= cchi2      -schi2*cchi1*dpz0dpy
+          trans1(4,6)=            -schi2*cchi1*dpz0dp
+          ds1   = schi1*cod(1)-dcchi1*s0-cchi1*dz
+          cod(1)= cchi1*cod(1)-schi1*(s0-dz)
+          ds2   = schi2*cod(3)+cchi2*ds1-dcchi2*s0
+          cod(3)= cchi2*cod(3)-schi2*(ds1+s0)
+          trans1(1,1)= cchi1
+          trans1(3,1)=-schi2*schi1
+          trans1(3,3)= cchi2
+          trans1(5,1)=-cchi2*schi1
+          trans1(5,3)=-schi2
+          trans1(5,5)=0.d0
+          call tsoldz(trans2,cod,-ds2,bxs,bys,bzs,.false.)
+          call tmultr(trans1,trans2,6)
+          trans1(5,5)=1.d0
+          bzh=bzs*.5d0
+          cod(2)=cod(2)-bzh*cod(3)
+          cod(4)=cod(4)+bzh*cod(1)
+          trans1(:,1)=trans1(:,1)-bzh1*trans1(:,4)
+          trans1(:,3)=trans1(:,3)+bzh1*trans1(:,2)
+          trans1(2,:)=trans1(2,:)-bzh*trans1(3,:)
+          trans1(4,:)=trans1(4,:)+bzh*trans1(1,:)
+        else
+          cchi1=1.d0
+          schi1=0.d0
+          cchi2=1.d0
+          schi2=0.d0
+          dcchi1=0.d0
+          dcchi2=0.d0
+          bzh=bz*.5d0
+          cod(1)=cod(1)-dx
+          cod(3)=cod(3)-dy
+          cod(2)=cod(2)+bzh*dy
+          cod(4)=cod(4)-bzh*dx
+          bxs=0.d0
+          bys=0.d0
+          bzs=bz
+        endif
+        if(chi3 .ne. 0.d0)then
+          cchi3=cos(chi3)
+          schi3=sin(chi3)
+          x0=cod(1)
+          cod(1)=cchi3*x0-schi3*cod(3)
+          cod(3)=schi3*x0+cchi3*cod(3)
+          px0=cod(2)
+          cod(2)=cchi3*px0-schi3*cod(4)
+          cod(4)=schi3*px0+cchi3*cod(4)
+          tb=trans1(1,:)
+          trans1(1,:)=cchi3*tb-schi3*trans1(3,:)
+          trans1(3,:)=schi3*tb+cchi3*trans1(3,:)
+          tb=trans1(2,:)
+          trans1(2,:)=cchi3*tb-schi3*trans1(4,:)
+          trans1(4,:)=schi3*tb+cchi3*trans1(4,:)
+          bxs0=bxs
+          bxs=cchi3*bxs0-schi3*bys
+          bys=schi3*bxs0+cchi3*bys
+        else
+          cchi3=1.d0
+          schi3=0.d0
+        endif
+      else
+        if(chi3 .ne. 0.d0)then
+          x0=cod(1)
+          cod(1)= cchi3*x0+schi3*cod(3)
+          cod(3)=-schi3*x0+cchi3*cod(3)
+          px0=cod(2)
+          cod(2)= cchi3*px0+schi3*cod(4)
+          cod(4)=-schi3*px0+cchi3*cod(4)
+          tb=trans1(1,:)
+          trans1(1,:)= cchi3*tb+schi3*trans1(3,:)
+          trans1(3,:)=-schi3*tb+cchi3*trans1(3,:)
+          tb=trans1(2,:)
+          trans1(2,:)= cchi3*tb+schi3*trans1(4,:)
+          trans1(4,:)=-schi3*tb+cchi3*trans1(4,:)
+        else
+          cchi3=1.d0
+          schi3=0.d0
+        endif
+        if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or.
+     $       chi2 .ne. 0.d0)then
+          s0=-.5d0*al
+          call tinitr(trans2)
+          pr=1.d0+cod(6)
+          bzh=bzs*.5d0
+          cod(2)=cod(2)+bzh*cod(3)
+          cod(4)=cod(4)-bzh*cod(1)
+          a=cod(2)**2+cod(4)**2
+          pz0=pr*sqrtl(1.d0-a/pr**2)
+c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
+          dpz0dpx=-cod(2)/pz0
+          dpz0dpy=-cod(4)/pz0
+          dpz0dp = pr/pz0
+          ds1   =-schi2*cod(3)+dcchi2*s0
+          cod(3)= cchi2*cod(3)-schi2*s0
+          ds2   =-schi1*cod(1)+cchi1*ds1+dcchi1*s0+dz
+          cod(1)= cchi1*cod(1)+schi1*(ds1-s0)
+          pz1   =-schi2*cod(4)+cchi2*pz0
+          cod(2)= cchi1*cod(2)+schi1*pz1
+          cod(4)= cchi2*cod(4)+schi2*pz0
+          trans2(1,1)= cchi1
+          trans2(1,3)=-schi1*schi2
+          trans2(3,3)= cchi2
+          trans2(5,1)= schi1
+          trans2(5,3)= cchi1*schi2
+          trans2(2,2)= cchi1         +schi1*cchi2*dpz0dpx
+          trans2(2,4)=-schi1*schi2   +schi1*cchi2*dpz0dpy
+          trans2(2,3)= trans2(2,2)*bzh
+          trans2(2,1)=-trans2(2,4)*bzh
+          trans2(2,6)=                schi1*cchi2*dpz0dp
+          trans2(4,2)=                schi2*dpz0dpx
+          trans2(4,4)= cchi2         +schi2*dpz0dpy
+          trans2(4,6)=                schi2*dpz0dp
+          trans2(4,3)= trans2(4,2)*bzh
+          trans2(4,1)=-trans2(4,4)*bzh
+          trans1(5,5)=0.d0
+          call tmultr5(trans1,trans2,6)
+          call tsoldz(trans2,cod,-ds2,0.d0,0.d0,bz,.false.)
+          call tmultr(trans1,trans2,6)
+          trans1(5,5)=1.d0
+          cod(1)=cod(1)+dx
+          cod(3)=cod(3)+dy
+          bzh1=bz*.5d0
+          cod(2)=cod(2)-bzh1*cod(3)
+          cod(4)=cod(4)+bzh1*cod(1)
+          trans1(2,:)=trans1(2,:)-bzh1*trans1(3,:)
+          trans1(4,:)=trans1(4,:)+bzh1*trans1(1,:)
+        else
+          bzh=bz*.5d0
+          cod(2)=cod(2)-bzh*dy
+          cod(4)=cod(4)+bzh*dx
+          cod(1)=cod(1)+dx
+          cod(3)=cod(3)+dy
+        endif
+      endif
+      call tmultr5(trans,trans1,irad)
+      if(irad .gt. 6)then
+        call tmulbs(beam,trans1,.false.,.true.)
+        if(calpol)then
+          call trot33(rr,ent)
+          srot=matmul(rr,srot)
+        endif
+      endif
+      return
+      end subroutine
+
+      subroutine tsoldz(trans,cod,al,bxs0,bys0,bzs0,drift)
+      use mathfun
+      implicit none
+      integer*4 j,itmax,ndiag
+      parameter (itmax=15)
+      real*8 trans(6,6),cod(6),al,bxs,bys,bzs,pxi,pyi,pz0,
+     $     dpz0dpx,dpz0dpy,dpz0dp,phi,
+     $     dphidz,dphidpx,dphidpy,dphidp,a24,a12,a22,a14,
+     $     da12,da14,pr,dpz0,dv,dvdp,s,r,phix,phiy,phiz,babs,
+     $     alb,pbx,pby,pbz,pl,dpl,dphizsq,a,
+     $     dpldpx,dpldpy,dpldp,dplz,plx,ply,plz,ptx,pty,ptz,
+     $     cosphi,sinphi,dcosphi,phi0,dphi,
+     $     xsinphi,ax,ay,az,cx,cy,conv,albabs,u,
+     $     bxs0,bys0,bzs0,bzthre,ptmax
+      parameter (conv=1.d-15,bzthre=1.d-20,ptmax=0.9999d0)
+      logical*4 drift
+      data ndiag/15/
+      bxs=bxs0
+      bys=bys0
+      bzs=bzs0
+      babs=sqrt(bzs**2+bxs**2+bys**2)
+      if(abs(babs) .lt. bzthre)then
+        bxs=0.d0
+        bys=0.d0
+        bzs=0.d0
+        babs=0.d0
+      endif
+      call tinitr(trans)
+      pr=1.d0+cod(6)
+      pxi=cod(2)
+      pyi=cod(4)
+      a=pxi**2+pyi**2
+      dpz0=-a/pr/(1.d0+sqrtl(1.d0-a/pr**2))
+      pz0=pr+dpz0
+      r=al/pz0
+      dpz0dpx= -pxi/pz0
+      dpz0dpy= -pyi/pz0
+      dpz0dp =   pr/pz0
+      if(bxs .eq. 0.d0 .and. bys .eq. 0.d0)then
+        phi=bzs*r
+        dphidz  = 1.d0/pz0
+        dphidpx = -r/pz0*dpz0dpx
+        dphidpy = -r/pz0*dpz0dpy
+        dphidp  = -r/pz0*dpz0dp
+        if(bzs .eq. 0.d0)then
+          a24=0.d0
+          a12=r
+          a22=1.d0
+          a14=0.d0
+          da12=1.d0
+          da14=0.d0
+        else
+          a24=sin(phi)
+          a12=a24/bzs
+          a22=cos(phi)
+          if(a22 .ge. 0.d0)then
+            a14=a24**2/(1.d0+a22)/bzs
+          else
+            a14=(1.d0-a22)/bzs
+          endif
+          da12=a22
+          da14=a24
+        endif
+        cod(1)=cod(1)+a12*pxi+a14*pyi
+        cod(3)=cod(3)-a14*pxi+a12*pyi
+        cod(2)=       a22*pxi+a24*pyi
+        cod(4)=      -a24*pxi+a22*pyi
+        trans(1,2)=( da12*pxi+da14*pyi)*dphidpx+a12
+        trans(1,4)=( da12*pxi+da14*pyi)*dphidpy+a14
+        trans(1,6)=( da12*pxi+da14*pyi)*dphidp
+        trans(3,2)=(-da14*pxi+da12*pyi)*dphidpx-a14
+        trans(3,4)=(-da14*pxi+da12*pyi)*dphidpy+a12
+        trans(3,6)=(-da14*pxi+da12*pyi)*dphidp
+        trans(2,2)=( -a24*pxi+ a22*pyi)*bzs*dphidpx+a22
+        trans(2,4)=( -a24*pxi+ a22*pyi)*bzs*dphidpy+a24
+        trans(2,6)=( -a24*pxi+ a22*pyi)*bzs*dphidp
+        trans(4,2)=( -a22*pxi- a24*pyi)*bzs*dphidpx-a24
+        trans(4,4)=( -a22*pxi- a24*pyi)*bzs*dphidpy+a22
+        trans(4,6)=( -a22*pxi- a24*pyi)*bzs*dphidp
+        trans(5,2)=r*pr/pz0*dpz0dpx
+        trans(5,4)=r*pr/pz0*dpz0dpy
+        if(drift)then
+          call tgetdv(cod(6),dv,dvdp)
+          cod(5)=cod(5)+al*(dpz0/pz0-dv)
+          trans(5,6)=al*(a/pz0**3+dvdp)
+        else
+          trans(1,5)=( da12*pxi+da14*pyi)*dphidz
+          trans(3,5)=(-da14*pxi+da12*pyi)*dphidz
+          trans(2,5)=( -a24*pxi+ a22*pyi)*bzs*dphidz
+          trans(4,5)=( -a22*pxi- a24*pyi)*bzs*dphidz
+          cod(5)=cod(5)-r*pr
+          trans(5,5)=-pr/pz0
+          trans(5,6)= r*a/pz0**2
+        endif
+      else
+        phix=bxs/babs
+        phiy=bys/babs
+        phiz=bzs/babs
+        alb=1.d0/babs
+        albabs=al*babs
+        dphizsq=phix**2+phiy**2
+        dpl=pxi*phix+pyi*phiy+dpz0*phiz
+        pl=pr*phiz+dpl
+        dpldpx=phix+phiz*dpz0dpx
+        dpldpy=phiy+phiz*dpz0dpy
+        dpldp =     phiz*dpz0dp
+        plx=pl*phix
+        ply=pl*phiy
+        plz=pl*phiz
+        ptx=pxi-plx
+        pty=pyi-ply
+        ptz=dpz0 -dpl*phiz+pr*dphizsq
+        pbx=pty*phiz-ptz*phiy
+        pby=ptz*phix-ptx*phiz
+        pbz=ptx*phiy-pty*phix
+        if(al .ne. 0.d0)then
+          phi=asin(min(1.d0,max(-1.d0,albabs/pz0)))
+          dphi=0.d0
+          do j=1,itmax
+            sinphi=sin(phi)
+            dcosphi=2.d0*sin(.5d0*phi)**2
+            xsinphi=xsin(phi)
+            s=plz*xsinphi+pz0*sinphi+pbz*dcosphi
+            u=pz0-ptz*dcosphi+pbz*sinphi
+            if(u .ne. 0.d0)then
+              dphi=(albabs-s)/u
+            else
+              dphi=0.d0
+            endif
+            phi0=phi
+            phi=phi+dphi
+            if(phi0 .eq. phi .or. abs(dphi) .le. conv*abs(phi))then
+              go to 100
+            endif
+          enddo
+          if(ndiag .ge. 0)then
+            ndiag=ndiag-1
+            write(*,*)'tsoldz convergence error',phi,dphi,u,babs
+            if(ndiag .eq. -1)then
+              write(*,*)
+     $             'Further tsoldz message will be suppressed.'
+            endif
+          endif
+        else
+          phi=0.d0
+          xsinphi=0.d0
+          sinphi=0.d0
+          dcosphi=0.d0
+        endif
+ 100    dplz=-pr*dphizsq+dpl*phiz
+        cosphi=cos(phi)
+        ax=pxi-ptx*dcosphi+pbx*sinphi
+        ay=pyi-pty*dcosphi+pby*sinphi
+        az=pz0-ptz*dcosphi+pbz*sinphi
+        dphidpx=-(dpldpx*phiz*xsinphi+dpz0dpx*sinphi
+     $       +phiy*dcosphi)/az
+        dphidpy=-(dpldpy*phiz*xsinphi+dpz0dpy*sinphi
+     $       -phix*dcosphi)/az
+        dphidp =-(dpldp *phiz*xsinphi+dpz0dp*sinphi)/az
+        dphidz =babs/az
+        cod(1)=cod(1)+(plx*phi+ptx*sinphi+pbx*dcosphi)*alb
+        cod(3)=cod(3)+(ply*phi+pty*sinphi+pby*dcosphi)*alb
+        cod(2)=pxi-ptx*dcosphi+pbx*sinphi
+        cod(4)=pyi-pty*dcosphi+pby*sinphi
+        trans(1,2)=alb*(dpldpx*phix*xsinphi+sinphi
+     $       -dpz0dpx*phiy       *dcosphi+ax*dphidpx)
+        trans(1,4)=alb*(dpldpy*phix*xsinphi
+     $       +(phiz-dpz0dpy*phiy)*dcosphi+ax*dphidpy)
+        trans(1,6)=alb*(dpldp *phix*xsinphi
+     $       -dpz0dp *phiy       *dcosphi+ax*dphidp )
+        trans(3,2)=alb*(dpldpx*phiy*xsinphi
+     $       +(dpz0dpx*phix-phiz)*dcosphi+ay*dphidpx)
+        trans(3,4)=alb*(dpldpy*phiy*xsinphi+sinphi
+     $       +dpz0dpy*phix       *dcosphi+ay*dphidpy)
+        trans(3,6)=alb*(dpldp *phiy*xsinphi
+     $       +dpz0dp *phix       *dcosphi+ay*dphidp )
+        cx=-ptx*sinphi+pbx*cosphi
+        cy=-pty*sinphi+pby*cosphi
+        trans(2,2)=cosphi+dpldpx*phix*dcosphi
+     $       -dpz0dpx*phiy*sinphi+cx*dphidpx
+        trans(2,4)=       dpldpy*phix*dcosphi
+     $       +(phiz-dpz0dpy*phiy)*sinphi+cx*dphidpy
+        trans(2,6)=       dpldp *phix*dcosphi
+     $       -dpz0dp *phiy*sinphi+cx*dphidp
+        trans(4,2)=       dpldpx*phiy*dcosphi
+     $       +(dpz0dpx*phix-phiz)*sinphi+cy*dphidpx
+        trans(4,4)=cosphi+dpldpy*phiy*dcosphi
+     $       +dpz0dpy*phix*sinphi+cy*dphidpy
+        trans(4,6)=       dpldp *phiy*dcosphi
+     $       +dpz0dp *phix*sinphi+cy*dphidp
+        trans(5,2)= -pr*alb*dphidpx
+        trans(5,4)= -pr*alb*dphidpy
+        if(drift)then
+          call tgetdv(cod(6),dv,dvdp)
+          cod(5)=cod(5)+((dpl*phiz-dphizsq*pr)*xsinphi
+     $         +dpz0*sinphi+pbz*dcosphi)*alb-dv*al
+          trans(5,6)= -alb*(phi+pr*dphidp)+al*dvdp
+        else
+          trans(1,5)= alb*ax*dphidz
+          trans(3,5)= alb*ay*dphidz
+          trans(2,5)= cx*dphidz
+          trans(4,5)= cy*dphidz
+          cod(5)=cod(5)-pr*phi*alb
+          trans(5,6)= -alb*(phi+pr*dphidp)
+          trans(5,5)= -pr*alb*dphidz
+        endif
+      endif
+      return
+      end subroutine
+
+      subroutine trot33(rr,ent)
+      implicit none
+      real*8, intent(out)::rr(3,3)
+      logical*4 , intent(in)::ent
+      rr(1,1)= cchi1*cchi3+schi1*schi2*schi3
+      rr(2,2)= cchi2*cchi3
+      rr(3,3)= cchi1*cchi2
+      if(ent)then
+        rr(1,2)=-cchi2*schi3
+        rr(1,3)= schi1*cchi3-cchi1*schi2*schi3
+        rr(2,1)=-schi1*schi2*cchi3+cchi1*schi3
+        rr(2,3)= cchi1*schi2*cchi3+schi1*schi3
+        rr(3,1)=-schi1*cchi2
+        rr(3,2)=-schi2
+      else
+        rr(2,1)=-cchi2*schi3
+        rr(3,1)= schi1*cchi3-cchi1*schi2*schi3
+        rr(1,2)=-schi1*schi2*cchi3+cchi1*schi3
+        rr(3,2)= cchi1*schi2*cchi3+schi1*schi3
+        rr(1,3)=-schi1*cchi2
+        rr(2,3)=-schi2
+      endif
+      return
+      end subroutine
+
+      end module
+
       subroutine tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     latt,k,kstop,ke,sol,kptbl,la,n,
      $     nwak,nextwake,out)
@@ -19,7 +712,7 @@
       parameter (la1=15)
       integer*4 k,kbz,np
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
-     $     sx(np0),sy(np0),sz(np0),bsi(np)
+     $     sx(np0),sy(np0),sz(np0)
       real*8 tfbzs,fw,bzs,rho,al,theta,phi,phix,phiy,rhoe,
      $     bz1,rho1,dx,dy,rot,rtaper,ph
       integer*8 latt(nlat),l1,lp
@@ -127,7 +820,7 @@
           else
             rot=0.d0
           endif
-          call txwake(np,x,px,y,py,z,g,dv,
+          call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         dx,dy,rot,
      $         int(anbunch),
      $         fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
@@ -140,7 +833,7 @@
             call spdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,al,bzs,
      $           cmp%value(ky_RADI_DRFT),n,latt,kptbl)
           else
-            call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+            call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           al,bzs,rad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0)
 c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
           endif
@@ -156,7 +849,7 @@ c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
           phix= phi*sin(theta)
           enarad=rad .and. al .ne. 0.d0
      $         .and. cmp%value(ky_RAD_BEND) .eq. 0.d0
-          call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,bsi,
+          call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         al,bzs,phiy,phix,enarad)
         case(icQUAD)
           if(iand(cmp%update,1) .eq. 0)then
@@ -172,14 +865,12 @@ c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
      $         cmp%value(ky_K1_QUAD)*rtaper,bzs,
      $         cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1         cmp%value(p_THETA_QUAD),
-     $         cmp%value(p_COSTHETA_QUAD),cmp%value(p_SINTHETA_QUAD),
      1         cmp%value(ky_RAD_QUAD),cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $         cmp%value(p_AKF1F_QUAD)*rtaper,
      $         cmp%value(p_AKF2F_QUAD)*rtaper,
      $         cmp%value(p_AKF1B_QUAD)*rtaper,
      $         cmp%value(p_AKF2B_QUAD)*rtaper,
-     $         int(cmp%value(p_FRMD_QUAD)),cmp%value(ky_EPS_QUAD),l,
-     $         direlc(i) .gt. 0)
+     $         int(cmp%value(p_FRMD_QUAD)),cmp%value(ky_EPS_QUAD))
         case (icMULT)
           rtaper=1.d0
           if(rad .and. radcod .and. radtaper)then
@@ -276,7 +967,7 @@ c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
         end select
 
         if(l .eq. nextwake .and. l .ne. ke)then
-          call txwake(np,x,px,y,py,z,g,dv,
+          call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         dx,dy,rot,
      $         int(anbunch),
      $         fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
@@ -289,36 +980,6 @@ c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
           endif
         endif
       enddo
-      return
-      end
-c     
-      subroutine trads(x,px,y,py,g,dv,brad,al)
-      use ffs_flag
-      use tmacro
-      use mathfun
-      implicit none 
-      real*8 x,px,y,py,g,dv,brad,al,
-     $     alc,er,pr,p,hh,dp,de,h1,tran
-      alc=al*crad
-      if(rfluct)then
-        er=c/amass*erad
-        dv=(tran()-.5d0)*3.46410161513775461d0
-        pr=1.d0+g
-        p=p0*pr
-        hh=1.d0+p**2
-        dp=-hh*brad*alc
-        de=er*sqrt(hh*brad)/p*dp*hh
-        g=g+dp+sqrt(abs(de))*dv
-      else
-        pr=1.d0+g
-        hh=1.d0+(p0*pr)**2
-        dp=-hh*brad*alc
-        g=g+dp
-      endif
-      pr=1.d0+g
-      h1=p2h(p0*pr)
-c      h1=p0*pr*sqrt(1.d0+1.d0/(p0*pr)**2)
-      dv=-g*(1.d0+pr)/h1/(h1+pr*h0)
       return
       end
 

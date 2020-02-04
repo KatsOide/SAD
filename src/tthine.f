@@ -66,7 +66,7 @@ c      endif
       cod(2)=cod(2)-aki*dble(cx)
       cod(4)=cod(4)-aki*imag(cx)
       if(al .ne. 0.d0)then
-        bsi=bsi-aki*imag(cx)/al
+        bsir0=bsir0-aki*imag(cx)/al
         call tdrife(trans,cod,beam,srot,alb,
      $       0.d0,0.d0,0.d0,al*.5d0,.true.,krad,irad)
         call tinitr(trans1)
@@ -99,7 +99,7 @@ c     $         al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
 c        endif
         cod(2)=cod(2)-aki*dble(cx)
         cod(4)=cod(4)-aki*imag(cx)
-        bsi=bsi+aki*imag(cx)/al
+        bsir0=bsir0+aki*imag(cx)/al
         call tdrife(trans,cod,beam,srot,ala,
      $       0.d0,0.d0,0.d0,al*.5d0,.true.,krad,irad)
       endif
