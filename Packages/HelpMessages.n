@@ -1131,7 +1131,20 @@ The length of fringe of the solenoid field. It affects only the EMITTANCE calcul
            {}},
 
          {"DISFRIN",
-          "\
+     EquAlign["Text[\
+Disables the nonlinear fringe of solenoid if nonzero. The default is 0. The transformation for the nonlinear fringe is expressed by\n\
+\\begin{align}\n\
+\\exp(:H:)\ ,\\qquad H = -B_z/(8p^2B\\rho) p_\\phi p_r,\
+\\end{align} where\
+\\begin{align}\n\
+   p_\\phi &= xp_y - yp_x\\ ,\\\\\n\
+   p_r   &= xp_x + yp_y\\ ,\n\
+\\end{align} whose canonical partners are\n\
+\\begin{align}\n\
+   \\phi &= {\\tt ArcTan}[y/x]\\ ,\\\\\n\
+   r   &= {\\tt Log}[x^2 + y^2]/2\\ ,\n\
+\\end{align} respectively.\
+;;;5]","\
 Disables the nonlinear fringe of solenoid if nonzero. The default is 0. The transformation for the nonlinear fringe is expressed by\n\n\
    exp(:H:) ,\n\
    H = -Bz/(8 Brho p^2) p_phi p_r, \n\n\
@@ -1141,7 +1154,7 @@ where\n\n\
 whose canonical partners are\n\n\
    phi = ArcTan[y/x] ,\n\
    r   = Log[x^2 + y^2]/2 ,\n\n\
-respectively.",
+respectively."],
           "",
           {}}}]
        },
@@ -2689,7 +2702,7 @@ a-- decrements a by 1, returning the old value of a. --a decrements a by 1, retu
 
       {"Part([[]])",
        "\
-a[[b,..]] is a subexpression of an expression a.\n If an index is omitted or Null as a[[,b]], Part returns a list of elements whose corresponding index takes the entire range. For instance,\n {{1, 2}, {3, 4}, {5, 6}}[[,2]] gives {2, 4, 6}.",
+a[[b,..]] is a subexpression of an expression a.\n If an index is omitted or Null like as a[[,b]], Part returns a list of elements whose corresponding index takes the entire range. For instance,\n {{1, 2}, {3, 4}, {5, 6}}[[,2]] gives {2, 4, 6}.",
        "Part",
        {}},
 
@@ -4587,10 +4600,14 @@ Thus the canonical variables in SAD are:\n\
 
    {"x-y-coupling",
      EquAlign["Text[\
-The transformation matrix from the physical coordinate $(x,p_x,y,p_y)$ to the $x$-$y$ decoupled coordinate $(X,P_x,Y,P_y)$ is written as\n\
+The transformation matrix from the physical coordinate $(x,p_x,y,p_y)$ to the $x$-$y$ decoupled coordinate $(X,P_X,Y,P_Y)$ is written as\n\
 \\begin{align}\n\
 {\\rm R}=\\left(\\begin{matrix}\\mu {\\rm I} & {\\rm J}{\\rm r}^T{\\rm J}\\\\\
-{\\rm r}&\\mu {\\rm I}\\end{matrix}\\right)\n\
+{\\rm r}&\\mu {\\rm I}\\end{matrix}\\right)=\
+\\left(\\begin{matrix}\\mu&.&-{\\tt R4}&{\\tt R2}\\\\\
+.&\\mu&{\\tt R3}&-{\\tt R1}\\\\\
+{\\tt R1}&{\\tt R2}&\\mu&.\\\\\
+{\\tt R3}&{\\tt R4}&.&\\mu\\end{matrix}\\right)\n\
 \\end{align} with a submatrix\n\
 \\begin{align}\n\
 {\\rm r}=\\left(\\begin{matrix}{\\tt R1}&{\\tt R2}\\\\\n\
@@ -4602,7 +4619,16 @@ where \n\
 &{\\rm I}\\equiv \\left(\\begin{matrix}1 & 0 \\\\ 0 & 1 \\end{matrix}\\right)\\ ,\\\\\n\
 &{\\rm J}\\equiv\\left(\\begin{matrix}0 & 1 \\\\ -1 & 0 \\end{matrix}\\right)\\ .\n\
 \\end{align}\n\
- The value of function {\\tt DETR} is equal to $\\det({\\rm r})$ in this case.\n\n\
+ The inverse of R is obtained by reversing the sign of r:\n\
+\\begin{align}\n\
+{\\rm R}^{-1}=\\left(\\begin{matrix}\\mu {\\rm I} & -{\\rm J}{\\rm r}^T{\\rm J}\\\\\
+-{\\rm r}&\\mu {\\rm I}\\end{matrix}\\right)=\
+\\left(\\begin{matrix}\\mu&.&{\\tt R4}&-{\\tt R2}\\\\\
+.&\\mu&-{\\tt R3}&{\\tt R1}\\\\\
+-{\\tt R1}&-{\\tt R2}&\\mu&.\\\\\
+-{\\tt R3}&-{\\tt R4}&.&\\mu\\end{matrix}\\right)\n\
+\\end{align}\\ .\n\n\
+ The value of the function {\\tt DETR} is equal to $\\det({\\rm r})$ in this case.\n\n\
 Let T stand for the physical transfer matrix from location 1 to location 2, then the transformation in the decoupled coordinate is diagonalized as\n\
 \\begin{align}\n\
 {\\rm R}_2{\\rm T}{\\rm R}_1^{-1} = \\left(\\begin{matrix}{\\rm T}_X & 0 \\\\ 0 & {\\rm T}_Y \\end{matrix}\\right)\\ .\
@@ -4614,7 +4640,7 @@ If $\\det({\\rm r})\\ge1$, the above condition for $\\mu$ is violated. In such a
 \\mu {\\rm I} &{\\rm r}\\end{matrix}\\right)\\ ,\n\
 \\end{align}\n\
 where $\\mu^2 + \\det({\\rm r}) = 1$. The function {\\tt DETR} shows a number $a-\\det({\\rm r})$, where $a = 1.375$. thus the alternative form is used when $\\det({\\rm r}) >= 0.625$.\
-;;;7]","\
+;;;8]","\
 The transformation matrix from the physical coordinate {x,px,y,py} to the x-y decoupled coordinate {X,Px,Y,Py} is written as\n\n\
       R = {{mu I, J . Transpose[r] . J}, {r, mu I}}, \n\n\
 with the submatrix r={{R1, R2},{R3, R4}}, where mu^2 + Det[r] = 1, I = {{1,0},{0,1}}, and J={{0, 1}, {-1, 0}}. The value of function DETR is equal to Det[r] in this case.\n\n\
