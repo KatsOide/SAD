@@ -32,16 +32,14 @@
       mt=1
       if(narg .ge. 3)then
         if(ktastk(isp1+3) .eq. ktfoper+mtfnull)then
-        elseif(ktfrealq(ktastk(isp1+3)))then
-          nt=int(rtastk(isp1+3))
+        elseif(ktfrealq(ktastk(isp1+3),nt))then
           nend=nt
         else
           go to 9100
         endif
         if(narg .eq. 4)then
           if(ktastk(isp) .eq. ktfoper+mtfnull)then
-          elseif(ktfrealq(ktastk(isp)))then
-            nend=int(rtastk(isp))
+          elseif(ktfrealq(ktastk(isp),nend))then
             if(nend .lt. nt)then
               irtc=itfmessage(9,'General::wrongval',
      $             '"#4 >= #3"')
@@ -53,6 +51,7 @@
           endif
         endif
       endif
+c      write(*,*)'tftrack ',nt,nend,mt
 
       ld=nlat
       if(narg .ge. 2)then
