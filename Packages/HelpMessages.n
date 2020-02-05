@@ -2880,21 +2880,38 @@ EulerGamma     0.57721566490153286061",
     {}},
 
    {"physical-constants",
-     "\
+     EquAlign["Text[\
+Physical constants available in FFS are:\n\
+\\begin{align*}\n\
+{\\tt SpeedOfLight} &\\qquad c\\equiv 299792458 {\\rm\\ m/s}\\\\\n\
+{\\tt PlanckConstant} &\\qquad h \\equiv 6.62607015\\times 10^{-34} {\\rm\\ Js}\\\\\n\
+{\\tt PlanckHbar} &\\qquad \\hbar\\equiv h/(2\\pi)\\\\\n\
+{\\tt ElectronCharge} &\\qquad  e_e \\equiv 1.602176634\\times 10^{-19} {\\rm\\ C}\\\\\n\
+{\\tt FineStructureConstant}&\\qquad  \\alpha = 1/137.035999084 \\\\\n\
+{\\tt ElectronMass}&\\qquad  m_e = 0.51099895000\\times 10^6 {\\rm\\ eV}\\\\\n\
+{\\tt ElectronRadius}&\\qquad  {\\rm classical\\ radius\\ of\\ electron\\ in\\ m,} r_e \\equiv \\alpha \\hbar c / (e_e m_e)\\\\\n\
+{\\tt ProtonMass}&\\qquad  m_p  = 938.27208816\\times 10^6 {\\rm\\ eV}\\\\\n\
+{\\tt ProtonRadius}&\\qquad  {\\rm classical\\ radius\\ of\\ proton\\ in\\ m}\\\\\n\
+{\\tt SIMu0}&\\qquad \\mu_0\\equiv 2\\alpha h/(c e_e^2)\\\\\n\
+{\\tt SIEpsilon0}&\\qquad    \\varepsilon_0\\equiv 1/(\\mu_0 c^2)\\\\\n\
+{\\tt ElectronGminus2over2}&\\qquad   (g-2)/2 {\\rm\\ of\\ electron} = 0.001159652181280002\\\\\n\
+{\\tt BoltzmannConstant}&\\qquad   1.380649\\times 10^{-23} {\\rm\\ J/K .}\n\
+\\end{align*}\
+;;;0]","\
 Physical constants available in FFS are:\n\n\
-SpeedOfLight           299792458 m/s\n\
-PlanckConstant         6.626070d-34 Js\n\
-PlanckHbar             PlanckConstant/2/Pi\n\
-ElectronCharge         1.602176634d-19 C\n\
-BoltzmannConstant      1.380 649 × 10−23 J/K\n\
-FineStructureConstant  alpha\n\
-ElectronMass           m_e in eV\n\
-ElectronRadius         classical radius of electron, in m\n\
-ProtonMass             m_p in eV\n\
+SpeedOfLight           c = 299792458 m/s\n\
+PlanckConstant         h = 6.62607015d-34 Js\n\
+PlanckHbar             hbar = h/2/Pi\n\
+ElectronCharge         e_e = 1.602176634d-19 C\n\
+FineStructureConstant  alpha = 1.d0 / 137.035999084d0\n\
+ElectronMass           m_e in eV = 0.51099895000d6\n\
+ElectronRadius         classical radius of electron = alpha hbar c / (e_e m_e), in m\n\
+ProtonMass             m_p in eV = 938.27208816d6\n\
 ProtonRadius           classical radius of Proton, in m\n\
-SIMu0                  4 Pi 10^{-7}\n\
-SIEpsilon0             1/SIMu0/SpeedOfLight^2\n\
-ElectronGminus2over2   (g-2)/2 of electrons",
+SIMu0                  2 alpha h / e_e^2 / c\n\
+SIEpsilon0             1/SIMu0/c^2\n\
+ElectronGminus2over2   (g-2)/2 of electrons = 0.001159652181280002\n\
+BoltzmannConstant      1.380649d-23 J/K"],
      "constants expression special-variables",
      {}},
 

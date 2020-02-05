@@ -308,15 +308,16 @@ c     PDB 2003:		2.817 940 285(??)  x 10^-15 m
 c     CODATA 2006:	2.817 940 2894(58) x 10^-15 m
 c     PDG 2014: 	2.817 940 3267(27) x 10^-15 m
 c      parameter (elradi = finest * plankr * cveloc / (elemch * elmass))
-c      parameter (elradi = elemch * cveloc**2 * 1.d-7 / elmass)
-      real*8, parameter :: elradi = elemch * cveloc**2 * 1.d-7 / elmass
+      real*8, parameter :: elradi =
+     $     finest * plankr * cveloc / (elemch * elmass)
 
 c     Classical proton radius:		r_p = e^2 / (4Pi \epsilon_0 m_p c^2)
 c     					    = (\alpha hbar c) / (m_p c^2)
 c     					    = (e^2 c^2 \mu_0 / 4Pi) / (m_p c^2)
 c     					    = e c^2 * 10^-7 * (e / (m_p c^2))
 c      parameter (prradi = finest * plankr * cveloc / (elemch * prmass))
-      real*8, parameter :: prradi = elemch * cveloc**2 * 1.d-7 / prmass
+      real*8, parameter :: prradi =
+     $     finest * plankr * cveloc / (elemch * prmass)
 
 c     Boltzmann Constant:
 c     PDG2014:          1.380 6488(13) x 10^-23 J/K
