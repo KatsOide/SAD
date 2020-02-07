@@ -11,16 +11,18 @@
         return
       endif
       m=0
+c      write(*,*)'itfgeto ',lrecl,ipoint,buffer(max(ipoint-16,1):ipoint)
       call tfeval(buffer(1:lrecl),ipoint,m,kx,.true.,irtc)
 c      if(lfni .lt. 100)then
 c        call tfdebugprint(kx,'itfgeto',3)
-c        write(*,*)'with ',lfni,irtc,ipoint,lrecl,m
+c        write(*,'(a,10i12)')'with ',lfni,irtc,ipoint,lrecl,m,
+c     $       kerror,ktfaddr(kerror)
 c      endif
       ipoint=m
       if(irtc .eq. 0)then
         itfgeto=0
       elseif(irtc .gt. 0 .and. kerror .ne. 0)then
-        if(rlist(ktfaddr(kerror)+1) .ge. 1000.d0)then
+       if(rlist(ktfaddr(kerror)+1) .ge. 1000.d0)then
           itfgeto=-3
         else
           itfgeto=-2

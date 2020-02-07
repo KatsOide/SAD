@@ -1039,7 +1039,10 @@ c      write(*,*)'tfevalc ',len(string),ls,'''',string(1:5),''''
       logical*4 function tfreadevalbuf(istart,istop,l,ipr)
       use tfcsi
       implicit none
-      integer*4 ip1,istart,istop,l,ipr
+      integer*4 , intent (in) :: ipr
+      integer*4 , intent(out) :: l,istart
+      integer*4 , intent(inout) :: istop
+      integer*4 ip1
       ip1=ipoint
       ipoint=istop
       call tprmptget(ipr,.true.)

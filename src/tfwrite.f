@@ -411,6 +411,7 @@ c      call tfdebugprint(k,'tfget',1)
           itf=min(-1,itf)
         endif
       enddo
+      call tfdebugprint(kx,'tfget',1)
       call tfconnect(kx,0)
       call trbclose(lfn)
       savep=sav
@@ -784,7 +785,6 @@ c          enddo
       fb=itbuf(lfn) .lt. modestring
       nc=sign(abs(lrecl-ipoint)+1,lrecl-ipoint)
       is=ipoint
-c      write(*,*)'tfreadstr ',lfn,nc,ipoint
       do while (.true.)
         if(nc .lt. 0)then
           if(.not. fb .or. lfn .ne. lfni)then
@@ -1172,7 +1172,6 @@ c     $     nc+15,itx,iax,vx,irtc)
         endif
       enddo
       ir=system(cmd(2:m)//' > '//buff(:lw)//' '//post)
-c      write(*,*)'tfsyscmd ',ir,' ',cmd(2:m),' ',buff(:lw)
       if(ir .lt. 0)then
         irtc=itfsyserr(999)
         return

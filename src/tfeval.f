@@ -10,14 +10,15 @@
       integer*4 , intent(in) :: ist1
       integer*4 istart,istop,irtc,isp0,ist10,iop1,
      $     i,ishash,l,ifchar,mopc,itgetfpe,m1,iste,
-     $     itfmessage,level1,ist2,irt
-      character*(*) string
+     $     itfmessage,itfmessagestr,level1,ist2,irt,l0
+      character*(*) , intent(in) :: string
       logical*4 tfreadevalbuf,eol
       type (csiparam) sav
 c     begin initialize for preventing compiler warning
       mopc=0
 c     end   initialize for preventing compiler warning
       l=len(string)
+      l0=l
       isp0=isp+1
       isp=isp0
       ierrorf=0
@@ -41,12 +42,10 @@ c     end   initialize for preventing compiler warning
       irtc=0
       eol=.false.
  1    continue
-c      write(*,*)'tfeval ',istart,l,string(istart:l)
       call tfetok(string(istart:l),istop,kx,itfcontext,irt)
       istop=min(l+1,istop+istart-1)
-c      if(string(istart:istop) .eq. '\\\n')then
-c        write(*,*)'tfeval-0 ',irt,istart,istop,
-c     $       string(istart:istop)
+c      if(l .gt. l0)then
+c        write(*,*)'tfeval ',irt,istop,l,buffer(max(l-16,1):l)
 c      endif
       if(irt .ge. 0)then
         go to 2400
@@ -297,8 +296,8 @@ c          if(string(istop-1:istop-1) .eq. char(10))then
             endif
 c          endif
         endif
-        irtc=itfmessage(9999,'General::comment',
-     $       '"'//string(ist1:min(istop-1,l))//'"')
+        irtc=itfmessagestr(9999,'General::comment',
+     $       string(ist1:min(istop-1,l)))
         istop=ist1
         go to 8800
       case (-4)
@@ -315,8 +314,8 @@ c          endif
      $         .or. itastk2(1,i) .eq. mtfleftparen
      $         .or. itastk2(1,i) .eq. mtfpart)then
             if(eol)then
-              irtc=itfmessage(9999,'General::missop',
-     $             '"'//string(ist1:min(istop-1,l))//'"')
+              irtc=itfmessagestr(9999,'General::missop',
+     $             string(ist1:min(ist1+80,istop-1,l)))
               go to 8800
             endif
             itastk2(1,isp)=mtftimes
@@ -369,16 +368,16 @@ c
           go to 9000
         elseif(irtc .eq. irtcabort)then
           kx%k=ktfoper+mtfnull
-          irtc=itfmessage(999,'General::abort',
-     $         '"'//string(ist1:min(istop-1,l))//'"')
+          irtc=itfmessagestr(999,'General::abort',
+     $         string(ist1:min(istop-1,l)))
           go to 8900
         elseif(irtc .ne. 0)then
           iste=ist10
           go to 8900
         endif
         if(itgetfpe() .ne. 0)then
-          irtc=itfmessage(9,'General::fpe',
-     $         '"'//string(ist1:min(istop-1,l))//'"')
+          irtc=itfmessagestr(9,'General::fpe',
+     $         string(ist1:min(istop-1,l)))
           go to 8900
         endif
         go to 9000
@@ -386,8 +385,8 @@ c
         kx=dtastk(isp)
       end select
       go to 9000
- 8010 irtc=itfmessage(9999,'General::invop',
-     $     '"'//string(ist1:min(istop-1,l))//'"')
+ 8010 irtc=itfmessagestr(9999,'General::invop',
+     $     string(ist1:min(istop-1,l)))
       go to 8900
  8040 irtc=itfmessage(9999,'General::clquote','""')
       go to 8900
@@ -401,11 +400,11 @@ c
       irtc=itfmessage(9999,'General::deep','""')
       levele=level1
       go to 8900
- 8600 irtc=itfmessage(999,'General::incomplete',
-     $     '"'//string(ist1:min(istop-1,l))//'"')
+ 8600 irtc=itfmessagestr(999,'General::incomplete',
+     $     string(ist1:min(istop-1,l)))
       go to 8710
- 8700 irtc=itfmessage(9999,'General::incomplete',
-     $     '"'//string(ist1:min(istop-1,l))//'"')
+ 8700 irtc=itfmessagestr(9999,'General::incomplete',
+     $     string(ist1:min(istop-1,l)))
  8710 kx%k=ktfoper+mtfnull
       istop=ist1
  8800 if(re .and. icslfni() .eq. 5)then
@@ -417,8 +416,8 @@ c
           call tfreseterror
         endif
         kx%k=ktfoper+mtfnull
-        irtc=itfmessage(999,'General::unexpbreak',
-     $       '"'//string(max(ist1,iste-16):min(l,iste+20))//'"')
+        irtc=itfmessagestr(999,'General::unexpbreak',
+     $       string(max(ist1,iste-16):min(l,iste+20)))
       endif
       if(ierrorprint .ne. 0)then
         kx%k=ktfoper+mtfnull
