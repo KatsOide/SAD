@@ -1205,7 +1205,7 @@ c            write(*,*)'linestk ',name(1:nc),r
       use tffitcode
       implicit none
       type (sad_descriptor) k
-      integer*4 irtc,nc,ielm,itfmessage
+      integer*4 irtc,nc,ielm,itfmessage,itfmessagestr
       character*(MAXPNAME+16) tfgetstrs,name
       logical*4 exist
       irtc=0
@@ -1226,8 +1226,7 @@ c            write(*,*)'linestk ',name(1:nc),r
         endif
         itfloc=ielm(name(1:nc),exist)
         if(.not. exist)then
-          irtc=itfmessage(9,'FFS::undefcomp',
-     $         '"'//name(1:nc)//'"')
+          irtc=itfmessagestr(9,'FFS::undefcomp',name(1:nc))
         endif
       endif
       return

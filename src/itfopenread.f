@@ -2,7 +2,7 @@
       use tfrbuf
       implicit none 
       type (sad_descriptor) k
-      integer*4 irtc,nc,itfmessage,nextfn,in,ifd
+      integer*4 irtc,nc,itfmessage,itfmessagestr,nextfn,in,ifd
       integer*8 ka
       character*256 fname,tfgetstr
       logical*4 disp
@@ -29,7 +29,7 @@
         irtc=0
         return
       endif
- 9000 irtc=itfmessage(999,'General::fileopen','"'//fname(1:nc)//'"')
+ 9000 irtc=itfmessagestr(999,'General::fileopen',fname(1:nc))
       itfopenread=-2
       return
       end
@@ -38,7 +38,7 @@
       use tfrbuf
       implicit none 
       type (sad_descriptor) k
-      integer*4 irtc,nc,i,itfmessage,nextfn
+      integer*4 irtc,nc,i,itfmessage,itfmessagestr,nextfn
       character*256 fname,tfgetstr
       itfopenwrite=-1
       if(.not. ktfstringq(k))then
@@ -59,7 +59,7 @@ c     $       buffercount=16,
         irtc=0
         return
       endif
- 9000 irtc=itfmessage(999,'General::fileopen','"'//fname(1:nc)//'"')
+ 9000 irtc=itfmessagestr(999,'General::fileopen',fname(1:nc))
       itfopenwrite=-2
       return
       end
@@ -68,7 +68,7 @@ c     $       buffercount=16,
       use tfrbuf
       implicit none 
       type (sad_descriptor) k
-      integer*4 irtc,nc,i,itfmessage,nextfn
+      integer*4 irtc,nc,i,itfmessage,itfmessagestr,nextfn
       character*256 fname,tfgetstr
       itfopenappend=-1
       if(.not. ktfstringq(k))then
@@ -89,7 +89,7 @@ c     $       buffercount=16,
         irtc=0
         return
       endif
- 9000 irtc=itfmessage(999,'General::fileopen','"'//fname(1:nc)//'"')
+ 9000 irtc=itfmessage(999,'General::fileopen',fname(1:nc))
       itfopenappend=-2
       return
       end

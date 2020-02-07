@@ -893,7 +893,7 @@ c     $       '"Real or List of Reals"')
       integer*4 function itfsyserr(level)
       implicit none
       character*132 string
-      integer*4 level,itfmessage,i,l
+      integer*4 level,itfmessagestr,i,l
       call gerror(string)
       do i=1,132
         if(string(i:i) .eq. char(0))then
@@ -903,8 +903,7 @@ c     $       '"Real or List of Reals"')
         endif
       enddo
       l=len_trim(string)
- 10   itfsyserr=itfmessage(level,'System::error',
-     $     '"'//string(1:l)//'"')
+ 10   itfsyserr=itfmessagestr(level,'System::error',string(1:l))
       return
       end
 

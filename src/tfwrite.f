@@ -411,7 +411,6 @@ c      call tfdebugprint(k,'tfget',1)
           itf=min(-1,itf)
         endif
       enddo
-      call tfdebugprint(kx,'tfget',1)
       call tfconnect(kx,0)
       call trbclose(lfn)
       savep=sav
@@ -1035,7 +1034,7 @@ c          enddo
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
-      integer*4 irtc,isp1,itfmessage,nc
+      integer*4 irtc,isp1,itfmessage,nc,itfmessagestr
       logical*4 disp
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
@@ -1096,8 +1095,7 @@ c          endif
         endif
         call trbopenmap(str%str(1:nc),kx,irtc)
         if(Irtc .ne. 0)then
-          irtc=itfmessage(999,'General::fileopen',
-     $         '"'//str%str(1:nc)//'"')
+          irtc=itfmessagestr(999,'General::fileopen',str%str(1:nc))
           kx=dxfailed
         endif
       endif

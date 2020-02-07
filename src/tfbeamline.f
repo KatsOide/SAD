@@ -13,7 +13,7 @@
       type (sad_dlist), pointer :: kl,kli
       integer*8 kfromr,kdx1
       integer*4 irtc,hsrchz,lid,idx,n,lenw,idxi,
-     $     i,idir,idti,nc,itfmessage
+     $     i,idir,idti,nc,itfmessage,itfmessagestr
       character*(MAXPNAME) tfgetstrs,ename
       type (sad_descriptor) kxbl
       save kxbl
@@ -65,8 +65,7 @@
             idxi=hsrchz(ename)
             idti=idtype(idxi)
             if(idti .eq. icNULL .or. idti .gt. icMXEL)then
-              irtc=itfmessage(9,'MAIN::wrongtype',
-     $             '"'//ename(1:nc)//'"')
+              irtc=itfmessagestr(9,'MAIN::wrongtype',ename(1:nc))
               go to 9000
             elseif(i .eq. 1 .and. idti .ne. icMARK)then
               irtc=itfmessage(9,'FFS::firstmark',' ')
@@ -86,8 +85,7 @@
       idx=hsrchz(ename)
       if(idtype(idx) .ne. icNULL)then
         lid=lid-1
-        irtc=itfmessage(9,'MAIN::exist',
-     $       '"'//ename(1:lenw(ename))//'"')
+        irtc=itfmessagestr(9,'MAIN::exist',ename(1:lenw(ename)))
         go to 9000
       endif
       idtype(idx)=icLINE
@@ -156,7 +154,7 @@
       integer*8 ka1,kas,kdx1,ktcaloc
       integer*4 isp1,irtc,nc,lenw,narg,idx,itype,
      $     idt,n,i,nce,m,hsrchz,isp0, itfmessage,
-     $     itfdownlevel,l
+     $     itfdownlevel,l,itfmessagestr
       character*(MAXPNAME) ename,type,tfgetstrs,key,tfkwrd
       ename=tfgetstrs(ktastk(isp1+1),nce)
       if(nce .lt. 0)then
@@ -193,8 +191,7 @@
         else
           idt=hsrchz('$'//type)
           if(idtype(idt) .ne. icDEF)then
-            irtc=itfmessage(9,'MAIN::wrongtype',
-     $           '"'//type(1:lenw(type))//'"')
+            irtc=itfmessagestr(9,'MAIN::wrongtype',type(1:lenw(type)))
             return
           endif
           if(idval(idt) .eq. icNULL)then
@@ -210,8 +207,7 @@
               ilist(2,kdx1)=0
             endif
           elseif(idval(idt) .ne. itype)then
-            irtc=itfmessage(9,'FFS::equaltype',
-     $           '"'//type(1:lenw(type))//'"')
+            irtc=itfmessagestr(9,'FFS::equaltype',type(1:lenw(type)))
             return
           endif
         endif
@@ -276,7 +272,7 @@
       type (sad_dlist), pointer :: kr
       type (sad_dlist), pointer :: kl
       type (sad_descriptor) k,ki,kk,kv
-      integer*4 irtc,idx,i,idt,ioff,nc,itfmessage
+      integer*4 irtc,idx,i,idt,ioff,nc,itfmessage,itfmessagestr
       character*(MAXPNAME) tfgetstrs,key
       if(tflistq(k,kl))then
         do i=1,kl%nl
@@ -307,8 +303,7 @@
             endif
           endif
         enddo
-        irtc=itfmessage(9,'FFS::undefkey',
-     $       '"'//key(1:nc)//'"')
+        irtc=itfmessagestr(9,'FFS::undefkey',key(1:nc))
         return
  10     kv=kr%dbody(2)
         if(kr%head%k .eq. ktfoper+mtfruledelayed)then
@@ -378,7 +373,7 @@
       type (sad_el), pointer ::el
       integer*8 itfilattp,idx
       integer*4 isp1,irtc,
-     $     lenw,i,n,hsrchz,idl,nc,itfmessage
+     $     lenw,i,n,hsrchz,idl,nc,itfmessage,itfmessagestr
       character*(MAXPNAME) ename,tfgetstrs
       logical*4 eval
       data eval /.true./
@@ -405,8 +400,7 @@
         else
           idl=hsrchz(ename)
           if(idtype(idl) .ne. icLINE)then
-            irtc=itfmessage(9,'MAIN::wrongtype',
-     $           '"'//ename(1:lenw(ename))//'"')
+            irtc=itfmessagestr(9,'MAIN::wrongtype',ename(1:lenw(ename)))
             return
           endif
           call expln(idl)

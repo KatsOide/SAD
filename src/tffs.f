@@ -1932,7 +1932,7 @@ c      call tfree(ifibzl)
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
       type (csiparam) sav
-      integer*4 outfl1,irtc,narg,lfn,isp1,itfmessage
+      integer*4 outfl1,irtc,narg,lfn,isp1,itfmessage,itfmessagestr
       character*10 strfromis
       narg=isp-isp1
       if(narg .gt. 2)then
@@ -1963,7 +1963,7 @@ c      call tfree(ifibzl)
       call trbopen(lfn,ktfaddr(ktastk(isp1+1)),
      $     int8(modestring),str%nch)
       if(lfn .le. 0)then
-        irtc=itfmessage(9,'FFS::lfn','"'//str%str(1:str%nch)//'"')
+        irtc=itfmessagestr(9,'FFS::lfn',str%str(1:str%nch))
         kx=dxnull
       else
         call trbassign(lfn)
@@ -1976,7 +1976,7 @@ c      call tfree(ifibzl)
         call trbassign(lfni)
         outfl=outfl1
         if(irtc .eq. 0 .and. iffserr .ne. 0)then
-          irtc=itfmessage(9,'FFS::error',strfromis(iffserr))
+          irtc=itfmessagestr(9,'FFS::error',strfromis(iffserr))
         endif
       endif
       call tfconnect(kx,irtc)

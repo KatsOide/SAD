@@ -1018,7 +1018,7 @@ c                endif
       type (sad_namtbl), pointer :: nam
       integer*8 kaa,kopc
       integer*4 ind,irtc,nc,isp1,isps,
-     $     itfmessage,ns,ipf0,naf0,ls,isp2
+     $     itfmessage,ns,ipf0,naf0,ls,isp2,itfmessagestr
       real*8 ffval,vx
       character*256 name
       character*12 inds
@@ -1066,16 +1066,16 @@ c                endif
       if(kopc .eq. mtfslot)then
         if(ipurefp .eq. 0 .or. ind .le. 0 .or. ind .gt. napuref)then
           call strfromil(ind,inds,ls)
-          irtc=itfmessage(999,'General::slot',
-     $         '"#'//inds(:ls)//'"')
+          irtc=itfmessagestr(999,'General::slot',
+     $         '#'//inds(:ls))
           return
         endif
         kx=dtastk(isps)
       else
         if(ipurefp .eq. 0 .or. ind .le. 0)then
           call strfromil(ind,inds,ls)
-          irtc=itfmessage(999,'General::slot',
-     $         '"##'//inds(:ls)//'"')
+          irtc=itfmessagestr(999,'General::slot',
+     $         '##'//inds(:ls))
           return
         endif
         isp1=isp
