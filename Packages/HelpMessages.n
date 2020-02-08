@@ -4557,7 +4557,8 @@ The action in $t$ is expressed by\n\
 S=&\\int L_tcdt\\ ,\\\\\n\
 L_t=&-\\frac{mc}{p_0}\\sqrt{1-\\dot x^2+\\dot y^2+(1+x/\\rho)^2\\dot s^2}+a_x\\dot x+a_y\\dot y+(1+x/\\rho)a_s\\dot s\\ ,\n\
 \\end{align}\n\
-where $p_0$ and $(a_x,a_y,a_z)=e(A_x,A_y,A_z)/p_0$ are the design momentum and the normalized vector potentials, respectively, and $\\dot\\ $ denotes the derivative by $ct$. Currently SAD dose not handle the electrostatic potential.\\\\\n\
+where $p_0$ and $(a_x,a_y,a_z)=e(A_x,A_y,A_z)/p_0$ are the design momentum and the normalized vector potentials, respectively, and $\\dot\\ $ denotes the derivative by $ct$. SAD's coordinate only has the radius of curvature $\\rho$ in the local $x$-$s$ plane. Note that $\\rho$ is the curvature of the coordinate system, not that of the orbit. The transverse vector potentials $(a_x,a_y)$ are non-zero only in the solenoid region, where $1/\\rho$ is zero.\\\\\n\
+Currently SAD does not handle the electrostatic potential.\\\\\n\
 As SAD uses $s$ for the independent variable instead of $t$, the Lagrangean $L$ for $s$ is written as\n\
 \\begin{align}\n\
 L=&L_t\\frac{dct}{ds}\\ ,\\\\\n\
@@ -4600,19 +4601,30 @@ Thus the canonical variables in SAD are:\n\
 \\end{align}\
 ;;;12]",""],
       "Lagrangean independent-variable",
-      {}},
+      {{"2nd-order-Hamiltonian",
+EquAlign["Text[\
+The Hamiltonian $H$ can be expanded up to the second order of the transverse coordinates as:\n\
+\\begin{align}\n\
+H&=H_2+\\varDelta H\\ ,\\\\\n\
+H_2&=-\\left(p-\\frac{(p_x-a_{x1})^2}{2p}-\\frac{(p_y-a_{y1})^2}{2p}+a_{s2}\\right)\\left(1+\\frac{x}{\\rho}\\right)+\\frac{E}{p_0v_0}\\ ,\n\
+\\end{align}\n\
+where $a_{x1}$ and $a_{y1}$ are the transverse vector potentials up to the first order, and $a_{s2}$ longitudinal one up to the second order of $x$ and $y$, respectively. Note that $a_{x,y}=0$ where $1/\\rho\\ne0$. Thus $H_2$ represents up to quadrupole fields overlapped with a uniform solenoid. It is known that $H_2$ has an {\\it analytic solution}, if $a_{s2}$ is time-independent. Unless $H$ itself is solvable, SAD uses such an analytic solution of $H_2$, then apply the residual $\\varDelta H$ by slicing.;;;1]",""],
+      "Hamiltonian remarks-on-dynamics",
+        {}}
+        }},
 
       {"remarks-on-dynamics",
         EquAlign["Text[There are several remarks on the dynamics in SAD:\n\
 \\begin{itemize}\n\
-\\item The Hamiltonian describes the motion of particles in the {\\it body} of an element. Some effects at the boundary of an element, such as {\\it fringe field}, are not expressed by that Hamiltonian. SAD treats them by canonical transformations approximating these effects. All transformations in SAD are symplectic up to the round-off errors, except radiations.\n\
+\\item All transformations in SAD are symplectic up to the round-off errors, except radiations.\n\
+\\item The Hamiltonian describes the motion of particles in the {\\it body} of an element. Some effects at the boundary of an element, such as {\\it fringe field}, are not expressed by the Hamiltonian. SAD treats them by canonical transformations approximating these effects.\n\
 \\item In a case of a linac, where the design momentum $p_0$ changes along the beam line needs a special treatment.\n\
 \\item The Hamiltonian above analytical solutions in the case of constant field without acceleration, ie., in a solenoid + dipole field. SAD uses such analytic solutions.\n\
 \\item If the field is linear in $x$ and $y$ such as for {\\tt QUAD}, and there is no acceleration, the Hamiltonian truncated up to the second order of $(x,p_x,y,p_y)$ has an analytic solution. SAD uses that solution and adds the nonlinear corrections coming from the $\\sqrt{\\ }$ term by slicing an element. This method gives the exact linear transformation at least around the design orbit. \n\
 \\item Transformations shown in this manual are not necessarily coded as they are. Considerations for round-off errors as well as computing efficiency are taken into account in actual routines.\n\
-\\item Transformations shown here are basically for trackings. {\\tt EMITTANCE(EMIT)} and {\\tt CALC} may use slightly different ones depending on the element.\n\
+\\item Transformations shown here are basically for trackings. {\\tt EMITTANCE(EMIT)} and {\\tt CALC} may use slightly different but still symplectic ones depending on the element.\n\
 \\end{itemize};;;0]",""],
-        "Hamiltonian",
+        "Hamiltonian 2nd-order-Hamiltonian",
         {}},
 
    {"x-y-coupling",
