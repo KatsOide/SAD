@@ -4776,7 +4776,38 @@ Matrices Hx,y define dispersions as\n\n\
     {zetay,  etay},\n\
     {zetapy, etapy}} = R . Join[Hx, Hy] ."],
       "",
-      {}}}}
+      {}}}},
+
+    {"synchrotron-radiation",
+EquAlign["Text[The evaluation of synchrotron radiation in SAD is done usingbased on ``kinematical method\":\\\\\n\
+\\\\\n\
+Let ${\\bm q}$ denote the orientation vector of the momentum of a particle:\n\
+\\begin{align}\n\
+{\\bm q}&=\\left(\\frac{p_x}{p}, \\frac{p_y}{p}, \\frac{p_z}{p}\\right)\\ ,\\\\\n\
+p_z&=\\sqrt{p^2-p_x^2-p_y^2}\\ .\n\
+\\end{align}\n\
+Suppose a particles traverses a section (1, 2) of an accelerator component, then the orientation changes from ${\\bm q}_1$ to ${\\bm q}_2$. The bending angle $\\phi$ and the radius of curvature $\\rho_{\\rm r}$ are approximated, assuming a uniform bending, by:\n\
+\\begin{align}\n\
+\\sin|\\phi|=|{\\bm q}_2\\times{\\bm q}_1|\\ ,\\\\\n\
+\\rho_{\\rm r}=\\frac{{\\tt L}_{12}-z_2+z_1}{|\\phi|},\n\
+\\end{align}\n\
+where ${\\tt L}_{12}$ is the nominal length of the component between 1 and 2, and $z_{1,2}$ are the values of longitudinal coordinate $z\\equiv-v(t-t_0)$ at the locations 1 and 2.\\\\\n\
+\\begin{figure*}[h!]\n\
+\\begin{center}\n\
+\\includegraphics[width=6cm]{"//Directory[]//"/SADHelp_img/SR.png}\n\
+\\caption{The kinematical method for synchrotron radiation.}\n\
+\\end{center}\n\
+\\end{figure*}\\\\\n\
+By knowing $\\phi$ and $\\rho_{\\rm r}$ as well as the momentum of the particle, we can derive all information about the emission of synchrotron radiation (if we can use a classical formula with uniform bending). \n\
+\\begin{itemize}\n\
+\\item Thus the synchrotron radiation can be handled {\\it by a single routine for any type of component}, such as  multipoles, solenoid, fringe field, even including electric field, without knowing the details of the field.\n\
+\\item A component is sliced so that $N_\\gamma\\lesssim1$.\n\
+\\item Not only the radiation itself, its derivatives by phase space coordinated can be obtained kinematically using the transfer matrix. These derivatives are used to evaluate the damping and excitation matrices.\n\
+\\item In the region where the field is not uniform, such as the {\\tt F1} region of a {\\tt BEND}, a special treatment for $\\rho_{\\rm r}$ is applied.\n\
+\\item This method may be applied for a {\\it spin motion} if the longitudinal filed is taken care properly.\n\
+\\end{itemize};;;4]",""],
+      "RAD RADCOD Hamiltonian BEND F1",
+      {}}
 
         }
       },

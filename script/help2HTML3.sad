@@ -2,11 +2,12 @@ FFS;
 
  EquAlign[t_,_]:="::<"//t//">::";
 
- Help2HTML=Class[{},{},{help=Help$Messages,nlabel=0,Labels,col=96,
+ Help2HTML=Class[{},{},{help,nlabel=0,Labels,col=96,
    lt,ltt,form="svg",svg,outf,pw="16 cm"},
 
    Constructor[]:=(
      SetDirectory[DocumentsDirectory];
+     help=Help$Messages;
      help[[1,2]]="";
      Labels[s_]:=s;
      Labels[""]="";
