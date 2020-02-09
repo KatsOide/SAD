@@ -532,14 +532,14 @@ then prints out a table of the dependences of various quantities on the frequenc
    EMITTANCE(EMIT) returns the equilibrium emittances in variables EMITX, EMITY, EMITZ, and the equilibrium bunch length in SIGZ, the relative momentum spread in SIGE, and the longitudinal equilibrium position DTSYNCH. \n\n\
    The map used in EMIT is slightly different from that used in the tracking. For instance, the edge angle of a bend is approximated by a thin quad. If the edge angle is large and the curvature is small, EMIT may give a wrong answer. This will be corrected in near future.",
     "multi-turn-tracking extended-Twiss-parameters COD RADCOD RFSW INTRA EMIOUT WSPAC \n\
- CODPLOT TRPT MOMENTUM CHARGE FSHIFT MINCOUP PBUNCH EMITX EMITY EMITZ SIGE SIGZ DTSYNCH Emittance",
+ CODPLOT TRPT MOMENTUM CHARGE FSHIFT MINCOUP PBUNCH EMITX EMITY EMITZ SIGE SIGZ DTSYNCH Emittance equilibrium-beam-envelope",
     {}},
 
    {"multi-turn-tracking",
     "\
 The multi-turn tracking can be done by the TRACK command of the MAIN level, the TRACK command in FFS, or the DynamicApertureSurvey[] function in FFS. The latter only perform the DAPERT mode.\n\n\
    The multi-turn tracking uses the closed orbit, normal coordinate, and the equilibrium emittances. Therefore One of EMITTANCE(EMIT), the Emittance[] function, or the EMIT command in the MAIN level are necessary to be done once in prior to the multi-turn-tracking. The values of EMITX, EMITY, EMITZ, SIGE can be changed between EMITs and the multi-turn-tracking.",
-    "EMITTANCE(EMIT) RFSW RAD FLUC RADCOD SPAC WSPAC special-variables",
+    "EMITTANCE(EMIT) RFSW RAD FLUC RADCOD SPAC WSPAC special-variables equilibrium-beam-envelope",
     {}},
 
    {"machine-error-commands",
@@ -887,7 +887,7 @@ If K1 is nonzero, the effects from E1 and E2 are approximated by thin\n\
 quadrupoles. Then the body is subdivided into\n\n\
    1 + floor(sqrt(abs(K1 L')/(12 10^-5 EPS)))\n\n\
 pieces (EPS = 1 is used when EPS = 0), and the bend-body transformation above is done for each piece and the kick from K1 is applied alternatively. In FFS optics and Emittance calculations, or when the synchrotron radiation is turned on, the same algorithm as K1 <> 0 is applied.",
-          "coordinates",
+          "coordinates equilibrium-beam-envelope",
           {}}
           }]
          },
@@ -1800,7 +1800,7 @@ RFSW turns on the acceleration by CAVI and TCAVI element in the particle-trackin
 
      {"INTRA",
       "INTRA turns on the calculation of intra-beam scattering in the emittance calculation. Accessible in MAIN level.",
-      "EMITTANCE(EMIT)",
+      "EMITTANCE(EMIT) Emittance equilibrium-beam-envelope",
       {}},
 
      {"TRPT",
@@ -1852,7 +1852,7 @@ Accessible in the MAIN level.",
      {"WSPAC",
       "When on, performs space-charge simulation in a \"strong-weak\" mode. The beam size through the beam line is to be calculated by EMIT with CODPLOT. The space-charge force is calculated assuming Gaussian distribution in all dimensions, and particles/bunch given by PBUNCH. WSPAC is effective in optics and emittance calculations and tracking.\n\
    Do not confuse WSPAC with SPAC.",
-      "EMITTANCE(EMIT) PBUNCH CODPLOT MINCOUP SELFCOD SPAC",
+      "EMITTANCE(EMIT) PBUNCH CODPLOT MINCOUP SELFCOD SPAC equilibrium-beam-envelope",
        {}},
 
      {"SELFCOD",
@@ -2238,7 +2238,7 @@ The equilibrium RF phase (in radian, = 2 Pi EFFRFFREQ DTSYNCH/c) where the synch
      {"PBUNCH",
       "\
 PBUNCH is the number of particles/bunch for the calculation of the intra-beam and space charge effects in EMITTANCE(EMIT), and WakeFunction. Accessible in MAIN.",
-      "EMITTANCE(EMIT) INTRA WSPAC WakeFunction",
+      "EMITTANCE(EMIT) INTRA WSPAC WakeFunction equilibrium-beam-envelope",
       {}},
 
      {"NBUNCH",
@@ -2250,7 +2250,7 @@ NBUNCH is the number of bunches for the calculation of WakeFunction. Accessible 
      {"MINCOUP",
       "\
 MINCOUP is the minimum emittance ratio to be assumed in the calculation of intrabeam effects in EMITTANCE(EMIT) and Emittance[]. Emittances Max[emit_k, MINCOUP*(emit_x+emit_y)] (k=x,y) are assumed in the intrabeam calculation. Accessible in MAIN.",
-      "EMITTANCE(EMIT) Emittance INTRA",
+      "EMITTANCE(EMIT) Emittance INTRA equilibrium-beam-envelope",
       {}},
 
      {"LOSSAMPL",
@@ -4307,7 +4307,7 @@ If SaveEMIT->True, the calculated values of emittances are stored in variables E
 InitialOrbit->{x0,px0,y0,py0,z0,dp0/p0} specifies the incoming orbit which is valid when NOCOD is set. The option Output->filenum enables the print out of EMITTANCE(EMIT) to filnum.\n\n\
 If Region is not the entire ring, parameters such as Emittances and DampingRate, etc., are not calculated, and return NaNs.\n\n\
 *1) The values of Emittances with INTRA and MINCOUP correspond to the equilibrium with intrabeam scattering weakened by MINCOUP.",
-        "EMITTANCE(EMIT) SymplecticJ COD EMITX EMITY EMITZ SIGZ SIGE POL MINCOUP",
+        "EMITTANCE(EMIT) SymplecticJ COD EMITX EMITY EMITZ SIGZ SIGE POL MINCOUP equilibrium-beam-envelope",
         {}},
 
        {"TrackParticles",
@@ -4342,7 +4342,7 @@ returns the list of 6 coordinates and the flag of the survived particles in x. T
    TouschekLifetime[Infinity, ny, nz]: Touschek lifetime in seconds\n\
      with acceptance 2Jy/(ny * (EMITX+EMITY)) + 2Jz/(nz * EMITZ) < 1.\n\n\
 EMIT or Emittance[] with INTRA must precede TouschekLifetime.",
-         "EMITTANCE(EMIT) Emittance INTRA",
+         "EMITTANCE(EMIT) Emittance INTRA MINCOUP equilibrium-beam-envelope",
          {}},
 
        {"SynchroBetaEmittance",
@@ -4358,7 +4358,7 @@ where nus, emitx, emity, emitxp, emityp, conv are the synchrotron tune, equilibr
 Options               Type        Default     Meaning\n\
 -----------------------------------------------------------\n\
 AzimuthalModes        Real        9           Number of azimuthal modes",
-         "SYNCHTOBETA(SYNCHROB)",
+         "SYNCHTOBETA(SYNCHROB) equilibrium-beam-envelope",
          {}},
 
        {"AccelerateParticles",
@@ -4476,7 +4476,7 @@ options: Output->lfn : output to the unit lfn (see OpenWrite).\n\
 where score = Sum[scorei,{i,n}], scorei is the \"score\" of i-th momentum, and turni_j is the lost turn of the particle with i-th momentum and j-th initial amplitude.\n\
    DynamicApertureSurvey tracks number of particles with different initial conditions in the range given by range. It outputs a z-x diagram of the dynamic aperture of the ring. Fifty one initial conditions are chosen in the range x-range for each point of z-range. The initial y-amplitude is linearly dependent on the x-amplitude. It tracks from xmax to downward for each z-amplitude zn, until the particles turns nturn with successive DAPWIDTH x-amplitudes. The default DAPWIDTH is 7.\n\
   DynamicApertureSurvey does parallel processing up to NPARA processes.",
-        "NPARA DAPWIDTH",
+        "NPARA DAPWIDTH EMITTANCE(EMIT) Emittance",
         {}},
 
        {"BeamMatrix",
@@ -4807,7 +4807,22 @@ By knowing $\\phi$ and $\\rho_{\\rm r}$ as well as the momentum of the particle,
 \\item This method may be applied for a {\\it spin motion} if the longitudinal filed is taken care properly.\n\
 \\end{itemize};;;4]",""],
       "RAD RADCOD Hamiltonian BEND F1",
-      {}}
+      {}},
+
+     {"equilibrium-beam-envelope",
+      EquAlign["Text[\
+The equilibrium beam envelope (second order moment) $\\left\\langle X_iX_j\\right\\rangle$ is calculated by the {\\tt EMITTANCE(EMIT)} command and {\\tt Emittance[]} function by solving:\
+\\begin{align}\
+\\left\\langle X_iX_j\\right\\rangle={\\rm M}\\left\\langle X_iX_j\\right\\rangle{\\rm M}^T+\\Delta_{ij}\\ ,\
+\\end{align}\
+where $X_i=(x,p_x,y,p_y,z,\\delta)$ is the deviation from the closed orbit at the entrance of the beam line, M the one-turn transfer matrix including the damping, and $\\Delta_{ij}$ the one-turn excitation due to synchrotron radiation and intrabeam scattering. The excitation $\\Delta_{ij}$ is affected by the envelope in the case of intrabeam ({\\tt INTRA}). The transfer matrix M can be affected by the envelope due to space-charge in the case of {\\tt WSPAC}. Thus iterations are done for such cases.\\\\\\\\\
+In the case of an ideal ring, as the intrinsic vertical emittance might be too small, the intrabema or space charge effects can be unrealistically large. For such cases, a global variable {\\tt MINCOUP} is useful to specify their {\\it minimum} values as:\
+\\begin{align}\
+\\varepsilon_{x,y}={\\tt Max}\\left[\\varepsilon^0_{x,y},{\\tt MINCOUP}\\times(\\varepsilon^0_x+\\varepsilon^0_y)\\right]\\ ,\
+\\end{align}\
+where $\\varepsilon^0_{x,y}$ are the emittances given by the lattice.;;;2]",""],
+     "EMITTANCE(EMIT) Emittance INTRA WSPAC MINCOUP",
+    {}}
 
         }
       },
