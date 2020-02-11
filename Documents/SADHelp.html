@@ -13,7 +13,7 @@ eqs img{
 <BODY>
 <CENTER><H2>Welcome to SAD/FFS & SADScript
 </H2></CENTER>
-<CENTER> SAD/FFS SADScript Version: 1.1.7.2k64,      Updated: 02/09/2020</CENTER>
+<CENTER> SAD/FFS SADScript Version: 1.1.7.2k64,      Updated: 02/11/2020</CENTER>
 
 <PRE> Please use browser's search to find an item.
 
@@ -2174,6 +2174,7 @@ rectangular magnet has E1 = 0.5 and E2 = 0.5.
 <H3><A NAME=L146>
 F1</A></H3>
 <PRE><img  class="eqs" SRC="SADHelp_img/equ_74.svg" />
+   The effects only in the first order of K1 is taken into account.
 </PRE>
 <PRE>See also:
  <A HREF=#L147>F2</A> <A HREF=#L88>FRINGE</A></PRE>
@@ -2181,6 +2182,7 @@ F1</A></H3>
 <H3><A NAME=L147>
 F2</A></H3>
 <PRE><img  class="eqs" SRC="SADHelp_img/equ_74.svg" />
+   The effects only in the first order of K1 is taken into account.
 </PRE>
 <PRE>See also:
  <A HREF=#L85>F1</A> <A HREF=#L88>FRINGE</A></PRE>
@@ -2887,6 +2889,7 @@ DY</A></H3>
 <H3><A NAME=L217>
 F1</A></H3>
 <PRE><img  class="eqs" SRC="SADHelp_img/equ_74.svg" />
+   The effects only in the first order of K1 is taken into account.
 </PRE>
 <PRE>See also:
  <A HREF=#L147>F2</A> <A HREF=#L88>FRINGE</A></PRE>
@@ -2894,6 +2897,7 @@ F1</A></H3>
 <H3><A NAME=L218>
 F2</A></H3>
 <PRE><img  class="eqs" SRC="SADHelp_img/equ_74.svg" />
+   The effects only in the first order of K1 is taken into account.
 </PRE>
 <PRE>See also:
  <A HREF=#L85>F1</A> <A HREF=#L88>FRINGE</A></PRE>
@@ -2945,61 +2949,19 @@ transformation:QUAD</A></H3>
 <PRE>The transformation in a QUAD is a sequence of:
 
    (nonlinear fringe at entrance)
-      canonical transformation by a generating function
-
-      G(x1, px2, y1, py2, p1) = H0(x1, px2, y1, py2, p1)
-                + (D[H0, x1] D[H0, px2] + D[H0, y1] D[H0, py2])/2
-
-      where H0  =  px2 dx1 + py2 dy1
-            dx1 =  x1 (a/3 + b)
-            dy1 = -y1 (a + b/3)
-            a   =  K1 x1^2/p1/4
-            b   =  K1 y1^2/p1/4 .
+<img  class="eqs" SRC="SADHelp_img/equ_122.svg" />
    (linear fringe at entrance)
-      px2 = exp(-a) px1
-      py2 = exp(a)  py1
-      x2  = exp(a)  x1 + b px1
-      y2  = exp(-a) y1 - b py1
-      z2  = z1 - (a x1 + b (1 + a/2) px2) px1
-               + (a y1 + b (1 - a/2) py2) py1
-      where a = -K1 F1 abs(F1)/(24 p1 L)
-            b =  K1 F2/L .
+<img  class="eqs" SRC="SADHelp_img/equ_128.svg" />
    (body of quad)
-      The body is subdivided in n = 1 + floor(10 abs(K1 L)/EPS) (EPS = 1
-      is used when EPS = 0), then a transversely linear transformation
-      exp(:H:) is done in each slice with
-
-         H = ((-p + (px^2 + py^2)/(2 p) + E/v0) L + K1 (x^2 - y^2)/2)/n .
-
-      Between slices applied is the correction exp(:dH:) for the kinematical
-      term with
-
-         dH = (-sqrt(p^2 - px^2 -py^2) + p - (px^2 + py^2)/(2 p)) L/n .
-
-      In a solenoid, the forms of H and dH are modified.
+<img  class="eqs" SRC="SADHelp_img/equ_135.svg" />
    (linear fringe at exit)
-      px2 = exp( a)  px1
-      py2 = exp(-a) py1
-      x2  = exp(-a) x1 + b px1
-      y2  = exp( a) y1 - b py1
-      z2  = z1 + (a x1 - b (1 - a/2) px2) px1
-               - (a y1 - b (1 + a/2) py2) py1
-      where a = -K1 F1 abs(F1)/(24 p1 L)
-            b =  K1 F2/L .
+
+<img  class="eqs" SRC="SADHelp_img/equ_138.svg" />
    (nonlinear fringe at exit)
-      canonical transformation by a generating function
-
-      G(x1, px2, y1, py2, p1) = H0(x1, px2, y1, py2, p1)
-                + (D[H0, x1] D[H0, px2] + D[H0, y1] D[H0, py2])/2
-
-      where H0  =  px2 dx1 + py2 dy1
-            dx1 =  x1 (a/3 + b)
-            dy1 = -y1 (a + b/3)
-            a   = -K1 x1^2/p1/4
-            b   = -K1 y1^2/p1/4 .
+<img  class="eqs" SRC="SADHelp_img/equ_145.svg" />
 </PRE>
 <PRE>See also:
- coordinates</PRE>
+ <A HREF=#L46>Hamiltonian</A> <A HREF=#L47>2nd-order-Hamiltonian</A></PRE>
 </UL>
 <LI>
 <H3><A NAME=L224>
@@ -3061,7 +3023,7 @@ around the local s-axis at the exit, then take out displacement.
 <LI>
 <H3><A NAME=L232>
 transformation:THIN</A></H3>
-<PRE><img  class="eqs" SRC="SADHelp_img/equ_122.svg" />
+<PRE><img  class="eqs" SRC="SADHelp_img/equ_151.svg" />
 </PRE>
 </UL>
 <LI>
@@ -3096,7 +3058,7 @@ to change the field, and no coordinate transformation is applied.
 <LI>
 <H3><A NAME=L236>
 DISFRIN</A></H3>
-<PRE><img  class="eqs" SRC="SADHelp_img/equ_125.svg" />
+<PRE><img  class="eqs" SRC="SADHelp_img/equ_154.svg" />
 </PRE>
 <LI>
 <H3><A NAME=L237>
@@ -3494,7 +3456,7 @@ r to multi-turn tracking. See multi-turn-tracking.
 
 (2) EMIT dp, where dp is |df_rf/f_rf|/(alpha_p == momentum compaction), does EMIT for five rf frequencies:
 
-<img  class="eqs" SRC="SADHelp_img/equ_130.svg" />
+<img  class="eqs" SRC="SADHelp_img/equ_159.svg" />
 
 then prints out a table of the dependences of various quantities on the frequency shift.
 
@@ -6721,7 +6683,7 @@ MatchQ</A></H3>
 </UL>
 <H3><A NAME=L478>
 physical-constants</A></H3>
-<PRE><img  class="eqs" SRC="SADHelp_img/equ_131.svg" />
+<PRE><img  class="eqs" SRC="SADHelp_img/equ_160.svg" />
 </PRE>
 <PRE>See also:
  <A HREF=#L31>constants</A> <A HREF=#L243>expression</A> <A HREF=#L495>special-variables</A></PRE>

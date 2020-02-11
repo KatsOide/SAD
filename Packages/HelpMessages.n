@@ -963,7 +963,20 @@ FRINGE=3    entr & exit   entr & exit      none      entr & exit\n\n",
          {"transformation:QUAD",
           QUAD$trans="\
 The transformation in a QUAD is a sequence of:\n\n\
-   (nonlinear fringe at entrance)\n\
+   (nonlinear fringe at entrance)\n"//
+EquAlign["Text[\
+\\begin{align}\
+ G(x_1, p_{x2}, y_1, p_{y2}, p_1) =& H_0(x_1, p_{x2}, y_1, p_{y2}, p_1)\
++\\frac{1}{2}\\left(\\frac{\\partial H_0}{\\partial x_1} \\frac{\\partial H_0}{\\partial p_{x2}} + \\frac{\\partial H_0}{\\partial y_1} \\frac{\\partial H_0}{\\partial p_{y2}}\\right)\\ ,\
+\\end{align}\
+where \n\
+\\begin{align}\
+H_0  &=  p_{x2} \\varDelta x_1 + p_{y2} \\varDelta y_1\\ ,\\\\\
+\\varDelta x_1 &=  x_1 (a/3 + b)\\\\\
+\\varDelta y_1 &= -y_1 (a + b/3)\\\\\
+a&=  {\\tt K1} \\frac{x_1^2}{4p_1}\\\\\
+b&=  {\\tt K1} \\frac{y_1^2}{4 p1}\\ .\
+\\end{align}\\\\;;;6]","\
       canonical transformation by a generating function\n\n\
       G(x1, px2, y1, py2, p1) = H0(x1, px2, y1, py2, p1)\n\
                 + (D[H0, x1] D[H0, px2] + D[H0, y1] D[H0, py2])/2\n\n\
@@ -971,8 +984,22 @@ The transformation in a QUAD is a sequence of:\n\n\
             dx1 =  x1 (a/3 + b)\n\
             dy1 = -y1 (a + b/3)\n\
             a   =  K1 x1^2/p1/4\n\
-            b   =  K1 y1^2/p1/4 .\n\
-   (linear fringe at entrance)\n\
+            b   =  K1 y1^2/p1/4 ."]//"\n\
+   (linear fringe at entrance)\n"//
+EquAlign["Text[\
+\\begin{align}\
+      p_{x2} &= \\exp(-a) p_{x1}\\ ,\\\\\
+      p_{y2} &= \\exp(\ a)  p_{y1}\\ ,\\\\\
+      x_2  &= \\exp(\ a)x_1 + b p_{x1}\\ ,\\\\\
+      y_2  &= \\exp(-a)y_1 - b p_{y1}\\ ,\\\\\
+      z_2  &= z_1 - (a x_1 + b (1 + a/2) p_{x2}) p_{x1}\
+               + (a y_1 + b (1 - a/2) p_{y2}) p_{y1}\\ ,\
+\\end{align}\
+      where\
+\\begin{align}\
+ a &= -{\\tt K1 F1} \\frac{|{\\tt F1}|}{24 p_1 {\\tt L}}\\ ,\\\\\
+            b &=\\frac{\\tt K1 F2}{\\tt L}\\ .\
+\\end{align};;;7]","\
       px2 = exp(-a) px1\n\
       py2 = exp(a)  py1\n\
       x2  = exp(a)  x1 + b px1\n\
@@ -980,8 +1007,22 @@ The transformation in a QUAD is a sequence of:\n\n\
       z2  = z1 - (a x1 + b (1 + a/2) px2) px1\n\
                + (a y1 + b (1 - a/2) py2) py1\n\
       where a = -K1 F1 abs(F1)/(24 p1 L)\n\
-            b =  K1 F2/L .\n\
-   (body of quad)\n\
+            b =  K1 F2/L ."]//"\n\
+   (body of quad)\n"//
+EquAlign["Text[\
+The body is subdivided into\
+\\begin{align}\
+ n = 1 + {\\tt Floor}\\left[\\frac{10 |{\\tt K1 L}|}{\\tt EPS}\\right]\
+\\end{align}\
+slices. {\\tt EPS} = 1 is used when {\\tt EPS} = 0. Then a transversely linear transformation $\\exp(:H_{2n}:)$ is applied in each slice with\
+\\begin{align}\
+H_{2n} = \\frac{1}{n}\\left\\lbrace\\left(-p + \\frac{p_x^2 + p_y^2}{2 p} + \\frac{E}{v_0}\\right)L + \\frac{\\tt K1}{2} (x^2 - y^2)\\right\\rbrace\\ .\
+\\end{align}\\\\\
+Between slices the correction $\\exp(:\\varDelta H:)$ for the kinematical term\
+\\begin{align}\
+\\varDelta H = \\frac{1}{n}\\left(p-\\sqrt{p^2 - p_x^2 -p_y^2} - \\frac{p_x^2 + p_y^2}{2 p}\\right) L\
+\\end{align}\
+is applied. In a solenoid, the forms of $H_{2n}$ and $\\varDelta H$ are modified.\\;;;3]","\
       The body is subdivided in n = 1 + floor(10 abs(K1 L)/EPS) (EPS = 1\n\
       is used when EPS = 0), then a transversely linear transformation\n\
       exp(:H:) is done in each slice with\n\n\
@@ -989,8 +1030,22 @@ The transformation in a QUAD is a sequence of:\n\n\
       Between slices applied is the correction exp(:dH:) for the kinematical\n\
       term with\n\n\
          dH = (-sqrt(p^2 - px^2 -py^2) + p - (px^2 + py^2)/(2 p)) L/n .\n\n\
-      In a solenoid, the forms of H and dH are modified.\n\
-   (linear fringe at exit)\n\
+      In a solenoid, the forms of H and dH are modified."]//"\n\
+   (linear fringe at exit)\n"//
+EquAlign["Text[\
+\\begin{align}\
+      p_{x2} &= \\exp(\ a) p_{x1}\\ ,\\\\\
+      p_{y2} &= \\exp(-a)  p_{y1}\\ ,\\\\\
+      x_2  &= \\exp(-a)x_1 + b p_{x1}\\ ,\\\\\
+      y_2  &= \\exp(\ a)y_1 - b p_{y1}\\ ,\\\\\
+      z_2  &= z_1 + (a x_1 - b (1 - a/2) p_{x2}) p_{x1}\
+               - (a y_1 - b (1 + a/2) p_{y2}) p_{y1}\\ ,\
+\\end{align}\
+      where\
+\\begin{align}\
+ a &= -{\\tt K1 F1} \\frac{|{\\tt F1}|}{24 p_1 {\\tt L}}\\ ,\\\\\
+            b &=\\frac{\\tt K1 F2}{\\tt L}\\ .\
+\\end{align}\\;;;7]","\
       px2 = exp( a)  px1\n\
       py2 = exp(-a) py1\n\
       x2  = exp(-a) x1 + b px1\n\
@@ -998,8 +1053,21 @@ The transformation in a QUAD is a sequence of:\n\n\
       z2  = z1 + (a x1 - b (1 - a/2) px2) px1\n\
                - (a y1 - b (1 + a/2) py2) py1\n\
       where a = -K1 F1 abs(F1)/(24 p1 L)\n\
-            b =  K1 F2/L .\n\
-   (nonlinear fringe at exit)\n\
+            b =  K1 F2/L ."]//"\n\
+   (nonlinear fringe at exit)\n"//
+EquAlign["Text[\
+a canonical transformation by a generating function:\n\
+\\begin{align}\n\
+G(x_1, p_{x2}, y_1, p_{y2}, p_1) = H_0(x_1, p_{x2}, y_1, p_{y2}, p_1) + \\frac{1}{2}\\left(\\frac{\\partial H_0}{\\partial x_1} \\frac{\\partial H_0}{\\partial p_{x2}} + \\frac{\\partial H_0}{\\partial y_1} \\frac{\\partial H_0}{\\partial p_{y2}}\\right)\\ ,\n\
+\\end{align}\n\
+where\n\
+\\begin{align}\n\
+ H_0&= p_{x2} \\varDelta x_1 + p_{y2} \\varDelta y_1\\ ,\\\\\n\
+ \\varDelta x_1 &=  x_1 (a/3 + b)\\ ,\\\\\n\
+ \\varDelta y_1 &= -y_1 (a + b/3)\\ ,\\\\\n\
+ a &= -{\\tt K1} \\frac{x_1^2}{4p_1}\\ ,\\\\\n\
+ b &= -{\\tt K1} \\frac{y_1^2}{4p_1}\\ .\n\
+\\end{align};;;6]","\
       canonical transformation by a generating function\n\n\
       G(x1, px2, y1, py2, p1) = H0(x1, px2, y1, py2, p1)\n\
                 + (D[H0, x1] D[H0, px2] + D[H0, y1] D[H0, py2])/2\n\n\
@@ -1007,8 +1075,8 @@ The transformation in a QUAD is a sequence of:\n\n\
             dx1 =  x1 (a/3 + b)\n\
             dy1 = -y1 (a + b/3)\n\
             a   = -K1 x1^2/p1/4\n\
-            b   = -K1 y1^2/p1/4 .",
-        "coordinates",
+            b   = -K1 y1^2/p1/4 ."],
+        "Hamiltonian 2nd-order-Hamiltonian",
         {}}
          }]
         },
@@ -4820,7 +4888,7 @@ In the case of an ideal ring, as the intrinsic vertical emittance might be too s
 \\begin{align}\
 \\varepsilon_{x,y}={\\tt Max}\\left[\\varepsilon^0_{x,y},{\\tt MINCOUP}\\times(\\varepsilon^0_x+\\varepsilon^0_y)\\right]\\ ,\
 \\end{align}\
-where $\\varepsilon^0_{x,y}$ are the emittances given by the lattice.;;;2]",""],
+where $\\varepsilon^0_{x,y}$ are the emittances given only by the lattice.;;;2]",""],
      "EMITTANCE(EMIT) Emittance INTRA WSPAC MINCOUP",
     {}}
 
