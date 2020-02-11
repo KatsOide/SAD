@@ -2,6 +2,19 @@
 Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
 Help$Version=$Version;
 
+N$pole[2]="dipole";
+N$pole[4]="quadrupole";
+N$pole[6]="sextupole";
+N$pole[8]="octupole";
+N$pole[10]="decapole";
+N$pole[12]="dodecapole";
+N$pole[n_]:=StandardForm[n//"-pole"];
+N$deriv[0]="";
+N$deriv[1]="'";
+N$deriv[2]="''";
+N$deriv[3]="'''";
+N$deriv[n_]:=StandardForm["^{("//n//")}"];
+
 Help$Messages=(Print["SAD/FFS Help Update: ",Help$Update];{
 {" ",
  "\
@@ -712,8 +725,8 @@ The absolute face-angle at the exit to the bending angle. The effective face ang
          Kn$Message[n_]:=
          {"K"//n,
           "\
-The normal "//2*(n+1)//"-pole magnetic field component (times the length L).\n\n"//
-EquAlign["{\\tt K"//n//"}=\\frac{B^{("//n//")}{\\tt L}}{B\\rho},",
+The normal "//N$pole[2(n+1)]//" magnetic field component (times the length L).\n\n"//
+EquAlign["{\\tt K"//n//"}=\\frac{B"//N$deriv[n]//"{\\tt L}}{B\\rho},",
 "\
    K"//n//" = B^("//n//")L/(Brho),"]//"\n\n\
 where L is the effective length of the component. Positive sign means horizontal focusing.",
@@ -1016,11 +1029,11 @@ The body is subdivided into\
 \\end{align}\
 slices. {\\tt EPS} = 1 is used when {\\tt EPS} = 0. Then a transversely linear transformation $\\exp(:H_{2n}:)$ is applied in each slice with\
 \\begin{align}\
-H_{2n} = \\frac{1}{n}\\left\\lbrace\\left(-p + \\frac{p_x^2 + p_y^2}{2 p} + \\frac{E}{v_0}\\right)L + \\frac{\\tt K1}{2} (x^2 - y^2)\\right\\rbrace\\ .\
+H_{2n} = \\frac{1}{n}\\left\\lbrace\\left(-p + \\frac{p_x^2 + p_y^2}{2 p} + \\frac{E}{v_0}\\right){\\tt L} + \\frac{\\tt K1}{2} (x^2 - y^2)\\right\\rbrace\\ .\
 \\end{align}\\\\\
 Between slices the correction $\\exp(:\\varDelta H:)$ for the kinematical term\
 \\begin{align}\
-\\varDelta H = \\frac{1}{n}\\left(p-\\sqrt{p^2 - p_x^2 -p_y^2} - \\frac{p_x^2 + p_y^2}{2 p}\\right) L\
+\\varDelta H = \\frac{1}{n}\\left(p-\\sqrt{p^2 - p_x^2 -p_y^2} - \\frac{p_x^2 + p_y^2}{2 p}\\right) {\\tt L}\
 \\end{align}\
 is applied. In a solenoid, the forms of $H_{2n}$ and $\\varDelta H$ are modified.\\;;;3]","\
       The body is subdivided in n = 1 + floor(10 abs(K1 L)/EPS) (EPS = 1\n\
@@ -1081,14 +1094,14 @@ where\n\
          }]
         },
 
-          SEXT$trans[name_,pole_,n_]:=EquAlign["Text[\
+          SEXT$trans[name_,n_]:=EquAlign["Text[\
 The transformation of a {\\tt "//name//"} is given as\n\
 \\begin{align}\n\
    &\\exp(:F_{\\rm in}:)\\exp(:a {\\tt L}:)\\exp(:H_"//n//"/2:)\\exp(:b {\\tt L}:)\\nonumber\\\\\n\
    \\times&\\exp(:V_"//n//":)\\exp(:a {\\tt L}:)\\exp(:H_"//n//"/2:)\\exp(:b {\\tt L}:)\\exp(:F_{\\rm out}:)\\  ,\n\
 \\end{align}\n\
 where {\\tt L} and $H_"//n//"$ are the Hamiltonians of a drift of length {\\tt L} and a thin "//
-pole//"pole kick with integrated strength {\\tt K"//n//"}:\n\
+N$pole[2(n+1)]//" kick with integrated strength {\\tt K"//n//"}:\n\
 \\begin{align}\n\
    H_"//n//" = \\frac{{\\tt K"//n//"}}{"//n+1//
 "\!} \\Re(x - i y)^{"//n+1//"}\\ ,\n\
@@ -1103,8 +1116,8 @@ where $,i$ represents the derivative by $x$ or $y$. We have also introduced two 
 The transformation of a "//name//" is given as\n\n\
    exp(:Fin:)exp(:a L:)exp(:H"//n//"/2:)exp(:b L:)\n\
          *exp(:V"//n//":)exp(:a L:)exp(:H"//n//"/2:)exp(:b L:)exp(:Fout:) ,\n\n\
-where L and H"//n//" are Hamiltonians of a drift of length L and a thin \n"//
-pole//"pole kick of integrated strength K"//n//":\n\n\
+where L and H"//n//" are Hamiltonians of a drift of length L and a thin "//N$pole[n]
+//" kick of integrated strength K"//n//":\n\n\
    H"//n//
 " = K"//n//"/"//n+1//"! Re((x - I y)^"//n+1//") ,\n\n\
 respectively. The coeffients are a = 1/2 - 1/sqrt(12) and b = 1/2 - a. Terms exp(:Fin:) and exp(:Fout:) are transformations for entrance and exit nonlinear fringes. The term exp(:V"//n//":) is a correction to adjust the third-order terms in L:\n\n\
@@ -1112,9 +1125,9 @@ respectively. The coeffients are a = 1/2 - 1/sqrt(12) and b = 1/2 - a. Terms exp
               - beta/2 (H"//n//",k)^2 \n\
               + gamma (H"//n//",j H"//n//",k H"//n//",j,k)] ,\n\n\
 where ,i represents the derivative by x or y. We have also introduced two coefficients beta = 1/6 - 1/sqrt(48) and gamma = 1/40 - 1/24/sqrt(3)."];
-       SEXT$Message[name_,pole_,n_]:=
+       SEXT$Message[name_,n_]:=
        {name,
-        "A "//pole//"pole magnet.",
+        "A "//N$pole[2(n+1)]//" magnet.",
         "",
         Sort[
         {L$Message,
@@ -1132,17 +1145,17 @@ where ,i represents the derivative by x or y. We have also introduced two coeffi
          DISRAD$Message,
 
          {"transformation:THIN",
-        SEXT$trans[name,pole,n],
+        SEXT$trans[name,n],
         "",
         {}}
          }]
-        };SEXT$Message["SEXT","sextu",2],
+        };SEXT$Message["SEXT",2],
 
-       SEXT$Message["OCT","octa",3],
+       SEXT$Message["OCT",3],
 
-       SEXT$Message["DECA","deca",4],
+       SEXT$Message["DECA",4],
 
-       SEXT$Message["DODECA","dodeca",5],
+       SEXT$Message["DODECA",5],
 
        {"SOL",
         "\
@@ -1358,7 +1371,7 @@ where ts is the equilibrium time determined by the valance between the accelerat
 A magnet with multipoles. Note that the reference plane is defined so that the skew quadrupole component becomes zero.\n\
    It can have a nonzero ANGLE to express a combined function bending magnet with multipoles. Note that the definition of the multipoles with nonzero ANGLE is very special The current version does not allow nonzero ANGLE inside a solenoid or with acceleration. Also the fringe field and emittance calculation are not installed properly for nonzero ANGLE.",
         "multipole_with_nonzero_ANGLE",
-        Sort[
+        ReleaseHold[Sort[
         {L$Message,
 
           ANGLE$Message,
@@ -1406,18 +1419,17 @@ Actually the summation is truncated at n + k <= 21 in the current version. While
          "ANGLE",
          {}},
 
-         Apply[Sequence,Table[Kn$Message[i],{i,0,21}]],
-
          SKn$Message[n_]:=
          {"SK"//n,
           "\
-The skew "//2*(n+1)//"-pole magnetic field component (times the length L).\n"//EquAlign["\
-{\\tt SK"//n//"} = B^{("//n//")}{\\tt L}/(B\\rho)\\ ,","\
+The skew "//N$pole[2(n+1)]//" magnetic field component (times the length L).\n"//EquAlign["\
+{\\tt SK"//n//"} = \\frac{B"//N$deriv[n]//"{\\tt L}}{B\\rho}\\ ,","\
    SK"//n//" = B^("//n//")L/(Brho),"]//"\n\n\
 where L is the length of the component. Positive sign means a horizontally focusing magnet rotated around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .",
           "L",
           {}};
-         Apply[Sequence,Table[SKn$Message[i],{i,0,21}]],
+         Hold[Apply[Sequence,
+           Flatten[Table[{Kn$Message[i],SKn$Message[i]},{i,0,21}],1]]],
 
          {"RADIUS",
           "Radius of the vacuum chamber. Effective when SPAC is ON.",
@@ -1480,7 +1492,7 @@ where ts is the equilibrium time determined by the valance between the accelerat
 
          DISFRINQ$Message,
 
-         DISRAD$Message}]
+         DISRAD$Message}]]
          },
 
        {"MARK",
@@ -2816,10 +2828,10 @@ expression  matches expression.",
  A function is defined by one of the following forms:\n\n\
 f[pat1 [,pat2...]] (:)= body;\n\
 f[pat1 [,pat2...]] ^(:)= body;\n\
-g//:f[pat1 [,pat2...]] (:)= body;\n\n\
+g/:f[pat1 [,pat2...]] (:)= body;\n\n\
 where pat1 [,pat2...] are patterns (including expressions).\n\
  If UpSet(^=) or UpSetDelayed (^:=) is used, the definition is associated with the symbol in the first level of l.h.s.\n\
- If TagSet(//:) is used, the definition is associated with the symbol on the left of //: .\n\n\
+ If TagSet(/:) is used, the definition is associated with the symbol on the left of /: .\n\n\
  The patters can be an expression including constants. The definition with constant arguments can be accessed faster than searching a list, in general, so they are suitable for a data base. Definitions with constant arguments have higher priorities than with patterns.",
     "UpSet UpSetDelayed TagSet pattern",
     {}},
@@ -4555,8 +4567,13 @@ BeamMatrix[i] returns a 6 by 6 beam-matrix (i.e., <x_k x_l>) at location i. The 
 
        {"SymplecticJ",
         "\
-SymplecticJ[n] returns a n by n symplectic matrix like\n\n\
-   {{0, 1, ...}, {-1, 0, ...}, {0, 0, 0, 1, ...}, {0, 0, -1, 0, ...}, ...} .",
+SymplecticJ[n] returns an n by n symplectic matrix:\n\n"//
+EquAlign["\
+\\left(\\begin{matrix}\
+\\begin{matrix}.&1&.&.\\\\-1&.&.&.\\\\.&.&.&1\\\\.&.&-1&.\\end{matrix}& ...\\\\\
+...&...\\end{matrix}\
+\\right)\ .","\
+   {{0, 1, ...}, {-1, 0, ...}, {0, 0, 0, 1, ...}, {0, 0, -1, 0, ...}, ...} ."],
         "",
         {}},
 
