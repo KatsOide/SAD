@@ -746,7 +746,7 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
         fr=xp-lxp
         j=ifgeo+(lxp-1)*12
         if(fr .eq. 0.d0)then
-          kax=ktfgeol(rlist(j))
+          kx%k=ktflist+ktfgeol(rlist(j))
         else
           lt=idtypec(lxp)
           call compelc(lxp,cmp)
