@@ -1089,7 +1089,7 @@ where\n\
             dy1 = -y1 (a + b/3)\n\
             a   = -K1 x1^2/p1/4\n\
             b   = -K1 y1^2/p1/4 ."],
-        "Hamiltonian 2nd-order-Hamiltonian",
+        "Hamiltonian 2nd-order-Hamiltonian solution-H2",
         {}}
          }]
         },
@@ -4693,10 +4693,49 @@ The Hamiltonian $H$ can be expanded up to the second order of the transverse coo
 H&=H_2+\\varDelta H\\ ,\\\\\n\
 H_2&=-\\left(p-\\frac{(p_x-a_{x1})^2}{2p}-\\frac{(p_y-a_{y1})^2}{2p}+a_{s2}\\right)\\left(1+\\frac{x}{\\rho}\\right)+\\frac{E}{p_0v_0}\\ ,\n\
 \\end{align}\n\
-where $a_{x1}$ and $a_{y1}$ are the transverse vector potentials up to the first order, and $a_{s2}$ longitudinal one up to the second order of $x$ and $y$, respectively. Note that $a_{x,y}=0$ where $1/\\rho\\ne0$. Thus $H_2$ represents up to quadrupole fields overlapped with a uniform solenoid. It is known that $H_2$ has an {\\it analytic solution}, if $a_{s2}$ is time-independent. Unless $H$ itself is solvable, SAD uses such an analytic solution of $H_2$, then apply the residual $\\varDelta H$ by slicing.;;;1]",""],
+where $a_{x1}$ and $a_{y1}$ are the transverse vector potentials up to the first order, and $a_{s2}$ longitudinal one up to the second order of $x$ and $y$, respectively. Note that $a_{x,y}=0$ where $1/\\rho\\ne0$. Thus $H_2$ represents up to quadrupole fields overlapped with a uniform solenoid. It is known that $H_2$ has an {\\it analytic solution}, if $a_{s2}$ is time-independent. Unless $H$ itself is solvable, SAD uses such an analytic solution of $H_2$, then apply the residual $\\varDelta H$ by slicing.;;;2]",""],
       "Hamiltonian remarks-on-dynamics",
-        {}}
-        }},
+        {{"solution-H2",
+EquAlign["Text[\
+We assume the focusing is uniform and $K=B'/(B\\rho)>0$, which can be always obtained by an appropriate rotation in the $x$-$y$ plane. For a uniform longitudinal field $B_z=B/(B\\rho)$ with the length of the section $\\ell$, the solution of $H_2$ is written as:\
+\\begin{align}\
+            x &= x_0 + \\varDelta x\\ ,\\\\\
+p_x &= p_{x0} + p u_2 + B_z\\left(v_2  - \\frac{\\varDelta y}{2}\\right)\\ ,\\\\\
+y &= y_0 + \\varDelta y\\ ,\\\\\
+p_y &= p_{y0} + p w_+ v_1 + B_z \\left(-\\frac{u_1}{w_+}+\\frac{\\varDelta x}{2}\\right)\\ ,\
+\\end{align}\
+where\
+\\begin{align}\
+\\varDelta x &= \\frac{u_1}{w_1} + \\frac{v_1 Bz}{pw_2}\\ ,\\\\\
+\\varDelta y &= \\frac{u_2B_z}{pw_1w_+}+\\frac{w_+v_2}{w_2}\\ ,\\\\\
+           u_1&= a w_1(\\cos\\phi_1-1)+b\\sin\\phi_1\\ ,\\\\\
+           u_2&=-aw_1\\sin\\phi_1 +b(\\cos\\phi_1-1)\\ ,\\\\\
+            v_1&= cw_2(\\cosh\\phi_2-1)+d\\sinh\\phi_2\\ ,\\\\\
+            v_2&= cw_2 \\sinh\\phi_2 +d(\\cosh\\phi_2-1)\\ ,\
+\\end{align}\
+with\
+\\begin{align}\
+            a&=  U\\times\\left(w_2 w_+x_0-\\frac{B_z}{p^2}p_{ym}\\right)\\ ,\\\\\
+            b&= \\frac{w_1U}{p}\\times (w_+p_{xm}-B_z w_2 y_0)\\ ,\\\\\
+            c&=  \\frac{U}{p}\\times\\left(\\frac{w_1 B_z}{w_+}x_0 +p_{ym}\\right)\\ ,\\\\\
+            d&= U\\times w_2\\left(-\\frac{B_z}{p^2w_+} p_{xm}+w_1y_0\\right)\\ ,\\\\\
+            p_{xm}&=p_{x0}+\\frac{B_z}{2}y_0\\ ,\\\\\
+            p_{ym}&=p_{y0}-\\frac{B_z}{2}x_0\\ .\
+\\end{align}\
+The parameters are:\
+\\begin{align}\
+          \\phi_1&=w_1\\ell\\ ,\\\\\
+          \\phi_2&=w_2\\ell\\ ,\\\\\
+          w_1&=\\sqrt{\\frac{(B_z/p)^2+V}{2}}\\ ,\\\\\
+          w_2&=\\frac{K}{pw_1}\\ ,\\\\\
+          w_+&=w_1+w_2\\ ,\\\\\
+           U&=\\frac{1}{V}\\ ,\\\\\
+          V&=\\sqrt{(B_z/p)^4+4(K/p)^2}=w_1^2+w_2^2\\ .\
+\\end{align}\
+The subscript 0 above means the initial value.\\\\\
+The transformation for $z$ is to be written.;;;23]",""],
+          "",{}}}
+        }}},
 
       {"remarks-on-dynamics",
         EquAlign["Text[There are several remarks on the dynamics in SAD:\n\
@@ -4708,7 +4747,7 @@ where $a_{x1}$ and $a_{y1}$ are the transverse vector potentials up to the first
 \\item If the field is linear in $x$ and $y$ such as for {\\tt QUAD}, and there is no acceleration, the Hamiltonian truncated up to the second order of $(x,p_x,y,p_y)$ has an analytic solution. SAD uses that solution and adds the nonlinear corrections coming from the $\\sqrt{\\ }$ term by slicing an element. This method gives the exact linear transformation at least around the design orbit. \n\
 \\item Transformations shown in this manual are not necessarily coded as they are. Considerations for round-off errors as well as computing efficiency are taken into account in actual routines.\n\
 \\item Transformations shown here are basically for trackings. {\\tt EMITTANCE(EMIT)} and {\\tt CALC} may use slightly different but still symplectic ones depending on the element.\n\
-\\end{itemize};;;0]",""],
+\\end{itemize}]",""],
         "Hamiltonian 2nd-order-Hamiltonian",
         {}},
 
