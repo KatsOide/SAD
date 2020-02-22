@@ -2,11 +2,12 @@ FFS;
 
  EquAlign[t_,_]:="::<"//t//">::";
 
- Help2HTML=Class[{},{},{help=Help$Messages,nlabel=0,Labels,col=96,
+ Help2HTML=Class[{},{},{help,nlabel=0,Labels,col=96,
    lt,ltt,form="svg",svg,outf,pw="16 cm"},
 
    Constructor[]:=(
      SetDirectory[DocumentsDirectory];
+     help=Help$Messages;
      help[[1,2]]="";
      Labels[s_]:=s;
      Labels[""]="";
@@ -62,20 +63,23 @@ FFS;
          p1=If[p1==={},
            StringLength[s],
            p+p1[[1,1]]-2];
+!         Print["RL-1 ",{p,p1,s[p,p+4]}];
          neq=Which[s[p,p+4]==="Text[",
            lx:=ltt;
            p=p+5;
            p1-=1;
-           p2=StringLength[s]+1;
-           p0=0;
+           p2=p1+5;
+           p0=p-9;
            If[(pe=StringPosition[s[p,-2],";;;"])<=>{},
-             {Max[0,ToExpression[s[p+pe[[-1,2]],p1]]-1],p1=p+pe[[-1,1]]-2}[[1]],
+!             Print["RepLateX ",{p,p+pe[[1,2]],p1,Max[0,ToExpression[s[p+pe[[1,2]],p1]]-1],s[p+pe[[1,2]],p1],s[1,16]}];
+             {Max[0,ToExpression[s[p+pe[[1,2]],p1]]-1],p1=p+pe[[1,1]]-2}[[1]],
              0],
            True,
            lx:=lt;
            p2=p1+4;
            p0=p-4;
            0];
+!         Print["RL-5",{p,p1,neq,s[p,p1]}];
          If[(equ=outf[s[p,p1]])===Undefined,
            equ="SADHelp_img/equ_"//++lt@eqn//"."//form;
            If[Fork[],

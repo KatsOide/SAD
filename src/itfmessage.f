@@ -165,6 +165,24 @@ c     Search '"' from string(is+1:l) with backslash escape
       return
       end
 
+      integer*4 function itfmessagestr(level,mess,str)
+      use tfstk
+      use strbuf
+      implicit none
+      integer*4 ,parameter :: lbuf=128
+      type (sad_strbuf) , pointer :: strb
+      character*(*) str
+      integer*4 level,itfmessage
+      character*(*) mess
+      integer*4 irtc,isp0
+      isp0=isp
+      call getstringbuf(strb,lbuf*2,.true.)
+      call tfquotestring(strb,str,min(lbuf-1,len(str)),0,irtc)
+      itfmessagestr=itfmessage(level,mess,strb%str(1:strb%nch))
+      isp=isp0
+      return
+      end
+
       subroutine tferrorhandle(kx,irtc)
       use tfstk
       use tfcsi

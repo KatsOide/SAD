@@ -746,7 +746,7 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
         fr=xp-lxp
         j=ifgeo+(lxp-1)*12
         if(fr .eq. 0.d0)then
-          kax=ktfgeol(rlist(j))
+          kx%k=ktflist+ktfgeol(rlist(j))
         else
           lt=idtypec(lxp)
           call compelc(lxp,cmp)
@@ -1205,7 +1205,7 @@ c            write(*,*)'linestk ',name(1:nc),r
       use tffitcode
       implicit none
       type (sad_descriptor) k
-      integer*4 irtc,nc,ielm,itfmessage
+      integer*4 irtc,nc,ielm,itfmessage,itfmessagestr
       character*(MAXPNAME+16) tfgetstrs,name
       logical*4 exist
       irtc=0
@@ -1226,8 +1226,7 @@ c            write(*,*)'linestk ',name(1:nc),r
         endif
         itfloc=ielm(name(1:nc),exist)
         if(.not. exist)then
-          irtc=itfmessage(9,'FFS::undefcomp',
-     $         '"'//name(1:nc)//'"')
+          irtc=itfmessagestr(9,'FFS::undefcomp',name(1:nc))
         endif
       endif
       return

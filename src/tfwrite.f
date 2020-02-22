@@ -784,7 +784,6 @@ c          enddo
       fb=itbuf(lfn) .lt. modestring
       nc=sign(abs(lrecl-ipoint)+1,lrecl-ipoint)
       is=ipoint
-c      write(*,*)'tfreadstr ',lfn,nc,ipoint
       do while (.true.)
         if(nc .lt. 0)then
           if(.not. fb .or. lfn .ne. lfni)then
@@ -1035,7 +1034,7 @@ c      write(*,*)'tfreadstr ',lfn,nc,ipoint
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
-      integer*4 irtc,isp1,itfmessage,nc
+      integer*4 irtc,isp1,itfmessage,nc,itfmessagestr
       logical*4 disp
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
@@ -1096,8 +1095,7 @@ c          endif
         endif
         call trbopenmap(str%str(1:nc),kx,irtc)
         if(Irtc .ne. 0)then
-          irtc=itfmessage(999,'General::fileopen',
-     $         '"'//str%str(1:nc)//'"')
+          irtc=itfmessagestr(999,'General::fileopen',str%str(1:nc))
           kx=dxfailed
         endif
       endif
@@ -1172,7 +1170,6 @@ c     $     nc+15,itx,iax,vx,irtc)
         endif
       enddo
       ir=system(cmd(2:m)//' > '//buff(:lw)//' '//post)
-c      write(*,*)'tfsyscmd ',ir,' ',cmd(2:m),' ',buff(:lw)
       if(ir .lt. 0)then
         irtc=itfsyserr(999)
         return
