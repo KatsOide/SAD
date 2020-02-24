@@ -1,4 +1,4 @@
-!Help$Update="$Date: 1/10/2019 18:00:00  $"[8,18];
+!Help$Update="$Date: 2/25/2019 18:00:00  $"[8,18];
 Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
 Help$Version=$Version;
 
@@ -4697,7 +4697,7 @@ where $a_{x1}$ and $a_{y1}$ are the transverse vector potentials up to the first
       "Hamiltonian remarks-on-dynamics",
         {{"solution-H2",
 EquAlign["Text[\
-We assume the focusing is uniform and $K=B'/(B\\rho)>0$, which can be always obtained by an appropriate rotation in the $x$-$y$ plane. For a uniform longitudinal field $B_z=B/(B\\rho)$ with the length of the section $\\ell$, the solution of $H_2$ is written as:\
+We assume the focusing is uniform and $K=B'/(B\\rho)>0$, which can be always obtained by an appropriate rotation in the $x$-$y$ plane. For a uniform longitudinal field $B_z=B/(B\\rho)$ with the length of the section $\\ell$, the solution of $H_2$ for $1/\\rho =0$ is written as:\
 \\begin{align}\
             x &= x_0 + \\varDelta x\\ ,\\\\\
 p_x &= p_{x0} + p u_2 + B_z\\left(v_2  - \\frac{\\varDelta y}{2}\\right)\\ ,\\\\\
@@ -4732,8 +4732,25 @@ The parameters are:\
            U&=\\frac{1}{V}\\ ,\\\\\
           V&=\\sqrt{(B_z/p)^4+4(K/p)^2}=w_1^2+w_2^2\\ .\
 \\end{align}\
-The subscript 0 above means the initial value.\\\\\
-The transformation for $z$ is to be written.;;;23]",""],
+The subscript 0 above denotes the initial value.\\\\\
+The second order Hamiltonian $H_2$ can be rewritten to\
+\\begin{align}\
+H_{2u}=-p-iw_1up_u-w_2vp_v\
+\\end{align} \
+in terms of a {\\it complex} normal coordinate:\
+\\begin{align}\
+\\left(\\begin{matrix}u\\\\p_u\\\\v\\\\p_v\\end{matrix}\\right)&=\\sqrt U\\left(\\begin{matrix}\\frac{w_1+w_2}{2}&-\\frac{i}{p}&-\\frac{\\sqrt{w_1^2-w_2^2}}{2}&\\frac{1}{p}\\sqrt{\\frac{w_1-w_2}{w_1+w_2}}\\\\\
+-\\frac{ip}{4}(w_1+w_2)^2&\\frac{w_1+w_2}{2}&-\\frac{p(w_1-w_2)}{4}\\sqrt{w_1^2-w_2^2} & -\\frac{w_1-w_2}{2}\\sqrt\\frac{w_1-w_2}{w_1+w_2}\\\\\
+-\\frac{\\sqrt{w_1^2-w_2^2}}{2}&\\frac{1}{p}\\sqrt{\\frac{w_1-w_2}{w1+w2}}&\\frac{w_1+w_2}{2}&\\frac{1}{p}\\\\\
+-\\frac{p(w_1-w_2)}{4}\\sqrt{w_1^2-w_2^2}&-i\\frac{w_1-w_2}{2}\\sqrt\\frac{w_1-w_2}{w_1+w_2}&-\\frac{ip}{4}(w_1+w_2)^2&\\frac{w_1+w_2}{2}\
+\\end{matrix}\\right)\\left(\\begin{matrix}x\\\\p_x\\\\y\\\\p_y\\end{matrix}\\right)\\ .\
+\\end{align}\
+Note that $H_{2u}$ is real. Thus the transformation of the longitudinal coordinate is obtained as\
+\\begin{align}\
+z&=z_0+\\left(-iup_u\\frac{\\partial w_1}{\\partial p}-vp_v\\frac{\\partial w_2}{\\partial p}+\\varDelta v\\right)\\ell\\\\\
+&=z_0+\\frac{U}{p}\\left(iw_1^3u_0p_{u0}+w_2^3v_0p_{v0}+\\varDelta v\\right)\\ell\\ ,\
+\\end{align}\
+using $up_u=u_0p_{u0}$ and $vp_v=v_0p_{v0}$.;;;27]",""],
           "",{}}}
         }}},
 
