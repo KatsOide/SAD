@@ -1,5 +1,5 @@
       subroutine tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak0,
-     1                 dx,dy,theta,radlvl,chro,
+     1                 dx,dy,theta,theta2,radlvl,chro,
      1                 fringe,f1in,f2in,f1out,f2out,mfring,eps0,kin)
       use ffs_flag
       use tmacro
@@ -12,11 +12,10 @@ c      use ffs_pointer, only:inext,iprev
       implicit none
       logical*4 enarad,chro,fringe,kin
       integer*4 np,i,mfring
+      real*8 , intent(in) ::theta2
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     al,ak0,ak,dx,dy,theta,radlvl,eps0,alr,
-     $     f1in,f1out,f2in,f2out,p,a,ea,b,pxf,pyf,
-     $     theta2,theta1,bxs,bys,bzs
-      complex*16 cr1
+     $     f1in,f1out,f2in,f2out,p,a,ea,b,pxf,pyf,bxs,bys,bzs
       real*8 sx(np),sy(np),sz(np)
       real*8, parameter :: ampmax=0.9999d0
       if(al .eq. 0.d0)then
@@ -27,9 +26,8 @@ c      use ffs_pointer, only:inext,iprev
         call tdrift_free(np,x,px,y,py,z,dv,al)
         return
       endif
-      call akang(dcmplx(ak0,0.d0),al,theta1,cr1)
-      ak=abs(ak0)
-      theta2=theta+theta1
+c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
+      ak=sign(ak0,al)
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,0.d0,dx,dy,0.d0,
      $     0.d0,0.d0,theta2,bxs,bys,bzs,.true.)

@@ -1,7 +1,6 @@
       subroutine tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     al,ak,bz,phia,
-     $     psi1,psi2,
-     $     dx,dy,dz,chi1,chi2,theta,dtheta,
+     $     al,ak,bz,phia,psi1,psi2,
+     $     dx,dy,dz,chi1,chi2,theta,dtheta,theta2,cr1,
      $     eps0,enarad,fringe,f1in,f2in,f1out,f2out,
      $     mfring,fb1,fb2,
      $     vc,w,phirf,dphirf,vnominal,
@@ -34,7 +33,8 @@ c      parameter (oneev=1.d0+3.83d-12)
       integer*4 kturn,kptbl(np0,6)
       logical*4 acc,spac1,dofr(0:nmult),krad
       integer*4 i,m,n,ndiv,nmmin,nmmax,ibsi
-      real*8 bxs,bys,bzs,vnominal,theta1,theta2,
+      real*8 , intent(in)::theta2
+      real*8 bxs,bys,bzs,vnominal,theta1,
      $     b,a,eps,w,wi,v,phis,r,wl,
      $     radlvl,r1,we,wsn,phic,dphis,offset,offset1,
      $     tlim,akr1,ak1,al1,p,ea,pxf,pyf,sv,wsm,asinh,ws1,wm,
@@ -43,7 +43,8 @@ c      parameter (oneev=1.d0+3.83d-12)
      $     he,vcorr,v20a,v02a,v1a,v11a,av,dpx,dpy,pe,ah,z00,
      $     rtaper
       real*8 ws(ndivmax)
-      complex*16 akr(0:nmult),cr,cr1,cx,cx1,ak01,b0
+      complex*16 , intent(in)::cr1
+      complex*16 akr(0:nmult),cr,cx,cx1,ak01,b0
       real*8 fact(0:nmult),an(0:nmult+1)
       data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
      1     720.d0,     5040.d0,     40320.d0,362880.d0,3628800.d0,
@@ -87,8 +88,7 @@ c      parameter (oneev=1.d0+3.83d-12)
       radlvl=1.d0
       b0=0.d0
       z00=z(1)
-      call akang(ak(1),al,theta1,cr1)
-      theta2=theta+dtheta+theta1
+c      theta2=theta+dtheta+akang(ak(1),al,cr1)
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,bz,dx,dy,dz,
      $     chi1,chi2,theta2,bxs,bys,bzs,.true.)

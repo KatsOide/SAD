@@ -411,13 +411,12 @@
       return
       end function
 
-      subroutine akang(ak,al,theta1,cr1)
+      real*8 function akang(ak,al,cr1) result(theta1)
       use macmath
       implicit none
       complex*16 , intent(in)::ak
       complex*16 , intent(out)::cr1
       real*8 , intent(in)::al
-      real*8 , intent(out)::theta1
       complex*16 a
       if(al .eq. 0.d0)then
         if(imag(ak) .eq. 0.d0)then
@@ -448,7 +447,7 @@
         endif
       endif
       return
-      end subroutine
+      end function
 
       end module
 

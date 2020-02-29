@@ -288,6 +288,12 @@ c      endif
       dtwiss(mfitdy)=dcod1(3)
       dtwiss(mfitdpy)=dcod1(4)
       dtwiss(mfitdz)=dcod1(5)
+      dtwiss(mfitgmx)=2.d0*dtwiss(mfitax)*ax0/(1.d0+ax0**2)-
+     $     dtwiss(mfitbx)
+      dtwiss(mfitgmy)=2.d0*dtwiss(mfitay)*ay0/(1.d0+ay0**2)-
+     $     dtwiss(mfitby)
+c      dtwiss(mfitgmz)=2.d0*dtwiss(mfitaz)*az0/(1.d0+az0**2)-
+c     $     dtwiss(mfitbz)
       if(l .eq. nlat)then
         bxx=sqrt(utwiss(mfitbx,idp,iutl)/utwiss(mfitbx,idp,1))
         cosmx=cos(utwiss(mfitnx,idp,iutl))

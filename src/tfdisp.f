@@ -1,7 +1,62 @@
       module disp
       integer*4 , parameter :: mode0=0,
      $     modea=5,modeg=101,modeog=102,modeo=3,
-     $     moder=2,modeb=4,modep=6,moded=10,modez=11
+     $     moder=2,modeb=4,modep=6,moded=10,modez=11,
+     $     modega=12,
+     $     ldisp=8
+
+      contains
+      character*(ldisp) function tdispv(mf,l,icolm,dref,form,a)
+      use ffs_pointer
+      use ffs_fit
+      use tffitcode
+      implicit none
+      integer*4 , intent(in)::l,icolm,mf
+      character*(*) , intent(in)::form
+      real*8 , intent(in), optional::a
+      real*8 v,tgetgm
+      character*(ldisp) autofg
+      logical*4 dref
+      v=0.d0
+      if(dref)then
+        select case (mf)
+        case(mfitbx,mfitby,mfitbz)
+          v=(twiss(l,0,mf)-twiss(l,-1,mf))/twiss(l,-1,mf)
+        case(mfitgmx,mfitgmy,mfitgmz)
+          v=(tgetgm(mf,l,0)-tgetgm(mf,l,-1))/tgetgm(mf,l,-1)
+        case default
+          v=twiss(l,0,mf)-twiss(l,-1,mf)
+        end select
+      else
+        select case (mf)
+        case (mfitgmx,mfitgmy,mfitgmz)
+          v=tgetgm(mf,l,icolm)/scale(mf)
+        case default
+          v=twiss(l,icolm,mf)/scale(mf)
+        end select
+        if(present(a))then
+          v=v*a
+        endif
+      endif
+      tdispv=autofg(v,form)
+      return
+      end function
+
+      real*8 function tfvl(cmp,id)
+      use ffs
+      use ffs_pointer
+      use ffs_seg, only:tfvcmp
+      implicit none
+      type (sad_comp) ,intent(in):: cmp
+      integer*4 , intent(in)::id
+      if(kytbl(kwL,id) .eq. 0)then
+        tfvl=0.d0
+      else
+        tfvl=tfvcmp(cmp,kytbl(kwL,id))
+      endif
+      return
+      end function
+
       end module
 
       subroutine tfdisp(word,idisp1,idisp2,dp00,lfno,exist)
@@ -29,7 +84,6 @@
       character*256 wordp,word1,name
       character*(blen) buff
       character*16 autofg,vout,ans
-      character*8 tdispv
       character*256 bname
       character*1 dir,hc
       character*131 header
@@ -63,6 +117,9 @@ c      write(*,*)'tfdisp ',word,wordp
         go to 270
       elseif(abbrev(word,'G_EOMETRY','_'))then
         mdisp=modeg
+        go to 270
+      elseif(abbrev(word,'GA_MMA','_'))then
+        mdisp=modega
         go to 270
       elseif(abbrev(word,'OG_EOMETRY','_'))then
         mdisp=modeog
@@ -137,6 +194,11 @@ c      write(*,*)'tfdisp ',word,wordp
      1         '   AX      BX      NX      EX      EPX  '//
      1         ' Element    PEX    PEPX   PEY    PEPY  '//
      1         '   AY      BY      NY      EY      EPY    DetR     #'
+        case (modega)
+          header=
+     1         '   AX      BX      NX      GMX     GMX*L'//
+     1         ' Element   Length   Value      s(m)    '//
+     1         '   AY      BY      NY      GMY     GMY*L  DetR     #'
         case (modeo)
           header=
      1         '   AX      BX      NX      EX      EPX  '//
@@ -161,7 +223,7 @@ c      write(*,*)'tfdisp ',word,wordp
           header=
      1         '   AZ      BZ      NZ      DZ     DDP   '//
      1         ' Element   Length   Value      s(m)    '//
-     1         '   ZX      ZPX     ZY      ZPY            DetR     #'
+     1         '   ZX      ZPX     ZY      ZPY     GMZ    DetR     #'
         case default
           header=
      1         '   AX      BX      NX      EX      EPX  '//
@@ -254,11 +316,7 @@ c          read(lfni,'(a)')ans
      $           )
           endif
           buff(37:48)=autofg(pos(l)/scale(mfitleng),'12.6')
-          if(kytbl(kwL,id) .eq. 0)then
-            buff(49:58)=autofg(0.d0,'10.6')
-          else
-            buff(49:58)=autofg(tfvcmp(cmp,kytbl(kwL,id)),'10.6')
-          endif
+          buff(49:58)=autofg(tfvl(cmp,id),'10.6')
           if(id .ne. 41 .and. id .ne. 42 .and. id .ne. 34)then
             buff(59:69)=' '//vout(1:10)
           else
@@ -330,6 +388,13 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             buff(17:24)=tdispv(mfitnz,l,icolm,dref,'8.5')
             buff(25:32)=tdispv(mfitdz,l,icolm,dref,'8.5')
             buff(33:40)=tdispv(mfitddp,l,icolm,dref,'8.5')
+          case (modega)
+            buff( 1: 8)=tdispv(mfitax,l,icolm,dref,'8.5')
+            buff( 9:16)=tdispv(mfitbx,l,icolm,dref,'8.5')
+            buff(17:24)=tdispv(mfitnx,l,icolm,dref,'8.5')
+            buff(25:32)=tdispv(mfitgmx,l,icolm,dref,'8.5')
+            buff(33:40)=tdispv(mfitgmx,l,icolm,dref,'8.5',
+     $           tfvl(cmp,id))
           case (modeb)
             call ffs_init_sizep
             if(.not. updatesize .or. sizedp .ne. dpmax)then
@@ -410,11 +475,7 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             buff(73:79)=autofg(twiss(l,icolm,mfitddp)
      $           /scale(mfitddp),'7.4')
           case default
-            if(kytbl(kwL,id) .eq. 0)then
-              buff(51:58)=autofg(0.d0,'8.5')
-            else
-              buff(51:68)=autofg(tfvcmp(cmp,kytbl(kwL,id)),'8.5')
-            endif
+            buff(51:68)=autofg(tfvl(cmp,id),'8.5')
             if(id .ne. 41 .and. id .ne. 42 .and. id .ne. 34)then
               buff(59:68)=vout(1:10)
             else
@@ -428,7 +489,16 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             buff(88:95)=tdispv(mfitzpx,l,icolm,dref,'8.5')
             buff(96:103)=tdispv(mfitzy,l,icolm,dref,'8.5')
             buff(104:111)=tdispv(mfitzpy,l,icolm,dref,'8.5')
+            buff(112:119)=tdispv(mfitgmz,l,icolm,dref,'8.5')
             buff(120:126)=tdispv(mfitdetr,l,icolm,dref,'8.5')
+          case (modega)
+            buff(80:87)=tdispv(mfitay,l,icolm,dref,'8.5')
+            buff(88:95)=tdispv(mfitby,l,icolm,dref,'8.5')
+            buff(96:103)=tdispv(mfitny,l,icolm,dref,'8.5')
+            buff(104:111)=tdispv(mfitgmy,l,icolm,dref,'8.5')
+            buff(112:119)=tdispv(mfitgmy,l,icolm,dref,'8.5',
+     $           tfvl(cmp,id))
+            buff(120:126)=tdispv(mfitdetr,l,icolm,dref,'7.4')
           case (modeb)
             etayp=beamsize(18,l)/sigpp
             etapyp=beamsize(19,l)/sigpp
@@ -448,7 +518,7 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             buff(96:103)=tdispv(mfitny,l,icolm,dref,'8.5')
             buff(104:111)=tdispv(mfitey,l,icolm,dref,'8.5')
             buff(112:119)=tdispv(mfitepy,l,icolm,dref,'8.5')
-            if(mdisp .eq. 5)then
+            if(mdisp .eq. modea)then
               buff(120:126)=tdispv(mfitdz,l,icolm,dref,'7.4')
             else
               buff(120:126)=tdispv(mfitdetr,l,icolm,dref,'7.4')
@@ -563,28 +633,5 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
 
         case default
       end select
-      return
-      end
-
-      character*(*) function tdispv(mf,l,icolm,dref,form)
-      use ffs_pointer
-      use ffs_fit
-      use tffitcode
-      implicit none
-      integer*4 l,icolm,mf
-      character*(*) form
-      character*16 autofg
-      logical*4 dref
-      if(dref)then
-        select case (mf)
-          case(mfitbx,mfitby,mfitbz)
-            tdispv=autofg((twiss(l,0,mf)-twiss(l,-1,mf))
-     $           /twiss(l,-1,mf),form)
-          case default
-            tdispv=autofg(twiss(l,0,mf)-twiss(l,-1,mf),form)
-        end select
-      else
-        tdispv=autofg(twiss(l,icolm,mf)/scale(mf),form)
-      endif
       return
       end

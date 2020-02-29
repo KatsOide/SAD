@@ -222,6 +222,11 @@ Displays values of various optical-/geometric-functions at the components given 
       "geometric-functions matching-function-commands",
       {}},
 
+      {"GAMMA(GA)",
+       "DISP GA displays gamma functions for x and y, instead of dispersions, as well as gamma*L, which is nealry equal to the natural chromaticity.",
+       "",
+       {}},
+
       {"OGEOMETRY(OG)",
       "DISP OG displays geometric information at the orbit.",
       "geometric-functions matching-function-commands",
@@ -419,7 +424,7 @@ executes the character-string-expression as FFS commands.",
 Usage: (1) FIT [component]\n\
        (2) FIT component1 component2\n\n\
 sets the current location where the matching condition is applied. The component is given with the form name[.order][{+-}offset] (see components). If component is omitted, the end of the beam line is chosen.\n\
-   If two components are given, it means a relative-fitting or zone-fitting. If the fitting condition is not maximum-fitting, the condition means to make values at two components equal (for AX, BX, AY, BY, EX, EPX, EY, EPY, R1, R2, R3, R4, DX, DPX, DY, DPY, PEX, PEPX, PEY, PEPY, CHI1, CHI2, CHI3),  or have the specified difference (for NX, NY, LENG, GX, GY, GZ). If the fitting condition is maximum-fitting, the condition means a zone-fitting (for AX, BX, AY, BY, EX, EPX, EY, EPY, R1, R2, R3, R4, DX, DPX, DY, DPY, PEX, PEPX, PEY, PEPY, CHI1, CHI2, CHI3), which suppress the maximum of the function in the region between component1 and component2, or maximum-fitting for the difference of the function (for NX,  NY, LENG, GX, GY, GZ). The fit region is shown in the first part of the prompt when FFSPRMPT is ON.\n\n\
+   If two components are given, it means a relative-fitting or zone-fitting. If the fitting condition is not maximum-fitting, the condition means to make values at two components equal (for AX, BX, GMX, AY, BY, GMY, EX, EPX, EY, EPY, R1, R2, R3, R4, DX, DPX, DY, DPY, PEX, PEPX, PEY, PEPY, CHI1, CHI2, CHI3),  or have the specified difference (for NX, NY, LENG, GX, GY, GZ). If the fitting condition is maximum-fitting, the condition means a zone-fitting (for AX, BX, GMX, AY, BY, GMY, EX, EPX, EY, EPY, R1, R2, R3, R4, DX, DPX, DY, DPY, PEX, PEPX, PEY, PEPY, CHI1, CHI2, CHI3), which suppress the maximum of the function in the region between component1 and component2, or maximum-fitting for the difference of the function (for NX,  NY, LENG, GX, GY, GZ). The fit region is shown in the first part of the prompt when FFSPRMPT is ON.\n\n\
 Examples: (1) FIT QF.2-10\n\n\
 sets the current fit point at  10 components upstream from the entrance of the second QF.\n\n\
           (2) FIT QF QD NX 0.5 BXM 10\n\n\
@@ -1731,7 +1736,7 @@ Example:   BX 10 3    (beta_x to be 10 at 3 momenta) \n\
 (5) If the current fit location is at a MARK, @ for the goal value refers the save value at the MARK. @- refers -(save value). These are useful to match between two beam lines.\n\n\
    Available matching-functions are:\n\
 optical-functions (see optical-functions):\n\
-AX BX NX AY BY NY EX EPX EY EPY R1 R2 R3 R4 DETR DX DPX DY DPY DZ DDP PEX PEPX PEY PEPY TRX TRY LENG\n\
+AX BX GMX NX AY BY GMY NY EX EPX EY EPY R1 R2 R3 R4 DETR DX DPX DY DPY DZ DDP PEX PEPX PEY PEPY TRX TRY LENG\n\
 geometric-functions (see geometric-functions):\n\
 GX GY GZ CHI1 CHI2 CHI3",
     "FIT GO SHOW MARK optical-functions geometric-functions off-momentum-matching x-y-coupling REJ special-variables DP functions FitValue MatchingAmplitude",
@@ -1755,9 +1760,11 @@ As this example, the off-momentum points are chosen with equal separation. If th
      "Available optical functions for matching are:\t\n\n\
 AX      alpha_X\n\
 BX      beta_X\n\
+GMX     gamma_X\n\
 NX      psi_X, the default scale is 1/(2Pi)\n\
 AY      alpha_Y\n\
 BY      beta_Y\n\
+GMY     gamma_Y\n\
 NY      psi_Y, the default scale is 1/(2Pi)\n\
 EX      eta_X   (dispersion_X)\n\
 EPX     eta_Px  (dispersion_PX) \n\
@@ -1776,6 +1783,7 @@ DZ      dz\n\
 DDP     delta=dp/p0\n\
 AZ      alpha_Z\n\
 BZ      beta_Z\n\
+GMZ     gamma_Z\n\
 NZ      psi_Z, the default scale is 1/(2Pi)\n\
 ZX      zeta_X  (z-dispersion_X)\n\
 ZPX     zeta_Px (z-dispersion_PX) \n\
@@ -4009,7 +4017,7 @@ Usage: OpticsPlot[fun_list, options]\n\n\
 makes a plot of built-in optical functions, user-defined functions, or\n\
 list of data at components on the beam line.   The parameters are:\t\n\n\
 fun_list: a list of objects to be plotted in a window. The number of windows in a plot is the length of fun_list object plotted in a window MUST have same dimensions. An element of fun_list is one of fun_label, fun, list_data or a list as {object, options}, where\n\
-fun_label: one of \"AX\", \"BX\", \"NX\", \"EX\", \"EPX\", \"DX\", \"DPX\", \"AY\", \"BY\", \"NY\", \"EY\", \"EPY\", \"DY\", \"DPY\", \"R1\", \"R2\", \"R3\", \"R4\", \"DETR\", \"AZ\", \"BZ\", \"NZ\", \"ZX\", \"ZPX\", \"ZY\", \"ZPY\", \"DZ\",\"DDP\",\"PEX\", \"PEPX\", \"PEY\", \"PEPY\", \"GAMMA\", \"GAMMABETA\",\"SIGab\", where a and b in \"SIGab\" are one of X, PX, Y, PY, Z, DP. \"R\"//fun_label refers the reference optics. \"D\"//fun_label refers the difference between the current and reference optics.\n\
+fun_label: one of \"AX\", \"BX\", \"GMX\", \"NX\", \"EX\", \"EPX\", \"DX\", \"DPX\", \"AY\", \"BY\", \"GMY\", \"NY\", \"EY\", \"EPY\", \"DY\", \"DPY\", \"R1\", \"R2\", \"R3\", \"R4\", \"DETR\", \"AZ\", \"BZ\", \"GMZ\", \"NZ\", \"ZX\", \"ZPX\", \"ZY\", \"ZPY\", \"DZ\",\"DDP\",\"PEX\", \"PEPX\", \"PEY\", \"PEPY\", \"GAMMA\", \"GAMMABETA\",\"SIGab\", where a and b in \"SIGab\" are one of X, PX, Y, PY, Z, DP. \"R\"//fun_label refers the reference optics. \"D\"//fun_label refers the difference between the current and reference optics.\n\
             fun: Any function of the component number.   A fractional number may be used to obtain the intermediate value.\n\
             list_data: a list of {{pos1, val1}..{posn,valn}}.\t\n\n\
 options       defaults\n\
@@ -4272,7 +4280,7 @@ keyword        The value of the keyword of the component (see below).\n\
  Twiss[optical-function, component] returns the value of the optical-function at the entrance of component. The values are those calculated by the last CALCULATE(CALC) or GO commands, or CalculateOptics function.\n\
  The second argument, component can be a name of component, a component number, or a list of them. If the number has a fraction, the intermediate value in the component is calculated.\n\
  Twiss[\"ALL\",component] or Twiss[\"*\",component] returns all 28 optical-functions at the entrance of component as a list:\n\n\
-{AX, BX, NX, AY, BY, NY, EX, EPX, EY, EPY, R1, R2, R3, R4, DETR, DX, DPX, DY, DPY, DZ, DDP, AZ, BZ, NZ, ZX, ZPX, ZY, ZPY},\n\n\
+{AX, BX, GMX, NX, AY, BY, GMY, NY, EX, EPX, EY, EPY, R1, R2, R3, R4, DETR, DX, DPX, DY, DPY, DZ, DDP, AZ, BZ, GMZ, NZ, ZX, ZPX, ZY, ZPY},\n\n\
 which can be directly used in CalculateOptics. In the current version, however, parameters after AZ are uninteresting, because it always returns 1 for BZ and zeros for the others. \"R\"//optical-function refers the reference optics. \"D\"//optical-function refers the difference between the current and the referece optics. \"RALL\" and \"DAL\" mean the all optical functions for the reference optics and the differences, respectively.\n\
    Keywords \"PEX\", \"PEPX\", \"PEY\", \"PEPY\", \"PZX\", \"PZPX\", \"PZY\", \"PZPY\" return dispersions in the physical coordinate.\n\
    Keywords \"LENGTH\", \"GAMMA\", \"GAMMABETA\", \"S\", \"SIGab\" return the same results as for the function LINE.\n\

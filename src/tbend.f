@@ -335,6 +335,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       use tbendcom
       use tspin
       use photontable
+      use mathfun, only:akang
       implicit none
       integer*4 np,mfring,ndiv,ndivmax,iniph,n1,n2
       parameter (ndivmax=1024)
@@ -348,7 +349,8 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       real*8 ,parameter::smax=0.99d0,smin=0.01d0,rphidiv=3e-3
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
       real*8 sx(np),sy(np),sz(np)
-      complex*16 akm(0:nmult)
+      real*8 theta2
+      complex*16 akm(0:nmult),cr1
       logical*4 fringe,ini,krad
       if(phi0 .eq. 0.d0)then
         if(ak .eq. 0.d0)then
@@ -358,22 +360,23 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      $         fb10,fb20,fringe,eps,krad)
         elseif(phib .eq. phi0)then
           call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
-     1         dx,dy,theta+dtheta,0.d0,.true.,
+     1         dx,dy,theta+dtheta,theta+dtheta,0.d0,.true.,
      1         fringe,0.d0,0.d0,0,eps,.true.)
         else
           akm=0.d0
           akm(0)=phib-phi0
           akm(1)=ak
+          theta2=theta+dtheta+akang(dcmplx(ak,0.d0),al,cr1)
           call tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         al,ak,0.d0,0.d0,
-     $         psi1,psi2,
+     $         al,akm,0.d0,0.d0,0.d0,0.d0,
      $         dx,dy,0.d0,0.d0,0.d0,theta+dtheta,0.d0,
+     $         theta2,cr1,
      $         eps,krad,fringe,
      $         0.d0,0.d0,0.d0,0.d0,
      $         mfring,fb10,fb20,
      $         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,
      $         .false.,.false.,
-     $         i00,i00,i00,i00)
+     $         0,i00,i00)
         endif
         return
       elseif(ak .ne. 0.d0)then
