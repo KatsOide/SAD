@@ -269,7 +269,7 @@ DISP A displays the nominal energy, energy deviation(DDP), longitudinal position
       {}},
 
       {"Z",
-       "DISP Z displays muatching functions related to the Z plane: AZ BZ NZ DZ DDP ZX ZPX ZY ZPY , which are obtained by CAL/GO with CALC6D.",
+       "DISP Z displays muatching functions related to the Z plane: AZ BZ NZ DZ DDP ZX ZPX ZY ZPY GMZ , which are obtained by CAL/GO with CALC6D.",
       "extended-Twiss-parameters CALC6D CALC4D",
       {}},
 
