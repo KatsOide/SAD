@@ -34,7 +34,7 @@ c      parameter (oneev=1.d0+3.83d-12)
       logical*4 acc,spac1,dofr(0:nmult),krad
       integer*4 i,m,n,ndiv,nmmin,nmmax,ibsi
       real*8 , intent(in)::theta2
-      real*8 bxs,bys,bzs,vnominal,theta1,
+      real*8 bxs,bys,bzs,vnominal,
      $     b,a,eps,w,wi,v,phis,r,wl,
      $     radlvl,r1,we,wsn,phic,dphis,offset,offset1,
      $     tlim,akr1,ak1,al1,p,ea,pxf,pyf,sv,wsm,asinh,ws1,wm,

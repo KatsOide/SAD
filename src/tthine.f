@@ -53,7 +53,7 @@
         trans1(4,3)= aki*dble(cx1)
         call tmultr5(trans,trans1,irad)
       endif
-      call tmulbs(beam ,trans1,.true.,.true.)
+      call tmulbs(beam ,trans1,.true.)
 c      if(enarad .and. al .ne. 0.d0)then
 c        bx=-b1*imag(cx)
 c        by= b1*dble(cx)
@@ -87,7 +87,7 @@ c      endif
           trans1(4,3)= aki*dble(cx1)
           call tmultr5(trans,trans1,irad)
         endif
-        call tmulbs(beam ,trans1,.true.,.true.)
+        call tmulbs(beam ,trans1,.true.)
 c        if(enarad)then
 c          bx=-b1*imag(cx)
 c          by= b1*dble(cx)

@@ -427,7 +427,7 @@ c        write(*,*)'tmultae ',dble(csr*cx1)/r,dble(csl),nmmin
         trans1(4,1)=trans1(2,3)
         trans1(4,3)=dble(csyy)
         call tmultr5(trans,trans1,irad)
-        call tmulbs(beam,trans1,.true.,.true.)
+        call tmulbs(beam,trans1,.true.)
       enddo
       mfr=0
       if(mfring .eq. 1)then

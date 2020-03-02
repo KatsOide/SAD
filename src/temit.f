@@ -1715,7 +1715,7 @@ c     enddo
             tr1(4,4)=tr1(4,4)+1.d0
             tr1(5,5)=tr1(5,5)+1.d0
             tr1(6,6)=tr1(6,6)+1.d0
-            call tmulbs(beam,tr1,.false.,calint)
+            call tmulbs(beam,tr1,calint)
             de=anp*uc**2*cuu
             pxm=pxi+px
             pym=pyi+py
@@ -2370,7 +2370,7 @@ c$$$      enddo
         write(lfno,*)
       endif
       beam1(1:21)=beam(1:21)
-      call tmulbs(beam,ri,.false.,.false.)
+      call tmulbs(beam,ri,.false.)
       beam2(1:21)=beam(1:21)
       if(.not. synchm)then
         do i=1,6
@@ -2486,7 +2486,7 @@ c          enddo
      $       -emit(ia(5,6))**2)),emit(ia(6,6))*charge)
       endif
       emit1(1:21)=emit
-      call tmulbs(emit1,r,.false.,.false.)
+      call tmulbs(emit1,r,.false.)
       sige=sqrt(abs(emit1(21)))
       if(synchm)then
         sigz=sqrt(abs(emit1(15)))
@@ -2945,7 +2945,7 @@ c        endif
           trans1(6,6)=rz
 c     write(*,*)'temit ',rx,ry,rx
 c     write(*,*)'temit ',emy,emy1
-          call tmulbs(emit,trans1,.false.,.false.)
+          call tmulbs(emit,trans1,.false.)
           if(.not. synchm)then
             emit(ia(5,1))=0.d0
             emit(ia(5,2))=0.d0
@@ -2963,7 +2963,7 @@ c     write(*,*)'temit ',emy,emy1
             r(5,5)=1.d0
             r(5,6)=0.d0
           endif
-          call tmulbs(emit,r,.false.,.false.)
+          call tmulbs(emit,r,.false.)
           beam(22:42)=emit
           it=it+1
         else

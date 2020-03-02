@@ -445,7 +445,7 @@ c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
       endif
       call tmultr5(trans,trans1,irad)
       if(irad .gt. 6)then
-        call tmulbs(beam,trans1,.false.,.true.)
+        call tmulbs(beam,trans1,.true.)
         if(calpol)then
           call trot33(rr,ent)
           srot=matmul(rr,srot)

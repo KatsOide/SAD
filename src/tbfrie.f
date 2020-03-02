@@ -58,7 +58,7 @@
      $         +trans1(1,6)*trans(6,i)
         enddo
 c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-1 ',trans1
-        call tmulbs(beam,trans1,.true.,.true.)
+        call tmulbs(beam,trans1,.true.)
         cod(1)=cod(1)+.5d0*yi**2/rho
         cod(4)=min(pr,max(-pr,cod(4)+(ak-cod(2)/rho)*yi))
         cod(5)=cod(5)-.5d0*(yi/pr)**2*cod(2)/rhob
@@ -111,7 +111,7 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-1 ',trans1
      $         +trans1(1,6)*trans(6,i)
         enddo
 c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
-        call tmulbs(beam,trans1,.true.,.true.)
+        call tmulbs(beam,trans1,.true.)
         cod(2)=pxi
         cod(1)=cod(1)+.5d0*yi**2/rho
         cod(4)=min(pr,max(-pr,cod(4)+(ak-pxi/rho)*yi))
@@ -151,7 +151,7 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
         endif
       endif
       call tmultr5(trans0,trans,irad)
-      call tmulbs(beam,trans,.true.,.true.)
+      call tmulbs(beam,trans,.true.)
       return
       end
 
@@ -437,7 +437,7 @@ c      trans(3,6)=-pr*pyi*sxa*(f+pxi*sinp/pzi)
       cod(4)=pyi   +dpy
       cod(5)=cod(5)+dz
       call tmultr5(trans,trans1,irad)
-      call tmulbs(beam,trans1,.true.,.true.)
+      call tmulbs(beam,trans1,.true.)
       if((dxfrx .ne. 0.d0 .or. dyfry .ne. 0.d0) .and. .not. ent)then
         call tbfrmle(trans,cod,beam,
      $       dxfrx,dyfrx,dyfrax,
@@ -489,6 +489,6 @@ c      trans(3,6)=-pr*pyi*sxa*(f+pxi*sinp/pzi)
      $     -2.d0*dz/pr
       trans1(6,6)=1.d0
       call tmultr5(trans,trans1,irad)
-      call tmulbs(beam,trans1,.true.,.true.)
+      call tmulbs(beam,trans1,.true.)
       return
       end

@@ -186,6 +186,9 @@
      $     ';mfpzpx='//strfromis(mfitpzpx)//
      $     ';mfpzy='//strfromis(mfitpzy)//
      $     ';mfpzpy='//strfromis(mfitpzpy)//
+     $     ';mfgmx='//strfromis(mfitgmx)//
+     $     ';mfgmy='//strfromis(mfitgmy)//
+     $     ';mfgmz='//strfromis(mfitgmz)//
      $     ';mftrx='//strfromis(mfittrx)//
      $     ';mftry='//strfromis(mfittry)//
      $     ';mfleng='//strfromis(mfitleng)//

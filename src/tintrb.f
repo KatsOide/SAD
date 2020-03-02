@@ -62,14 +62,14 @@ c      hi=sqrt(1.d0+(pr*p0)**2)
       if(wspac)then
         call tmov(beam(22),bmi,21)
         call tadd(bmi,beam,bmi,21)
-        call tmulbs(bmi,trans1,.false.,.false.)
+        call tmulbs(bmi,trans1,.false.)
         call twspace(transsp,cod,al,bmi)
         call tmov(trans1,trans2,36)
         call tmultr(trans2,transsp,6)
         call tinv6(trans1,transa)
         call tmultr(trans2,transa,6)
         call tmultr(trans,trans2,irad)
-        call tmulbs(beam,trans2,.false.,.false.)
+        call tmulbs(beam,trans2,.false.)
       endif
       if(intra)then
         call tmov(beam(22),bmi,21)
@@ -111,7 +111,7 @@ c        call tmulbs(bmi,transa,.false.)
           trans2(i,6)=pr/pzi*trans2(i,6)
  3010   continue
         call tmultr(trans1,trans2,6)
-        call tmulbs(bmi,trans1,.false.,.false.)
+        call tmulbs(bmi,trans1,.false.)
         xx(1,1)=bmi(ia(1,1))
         xx(2,1)=bmi(ia(3,1))
         xx(3,1)=bmi(ia(5,1))
@@ -228,10 +228,10 @@ c     endif
         bmi(ia(6,4))=ci*pl(3,2)
         bmi(ia(6,6))=ci*pl(3,3)
         call tinv6(trans1,trans2)
-        call tmulbs(bmi,trans2,.false.,.false.)
+        call tmulbs(bmi,trans2,.false.)
         call tadd(beam,bmi,beam,21)
         call tinv6(trans,transa)
-        call tmulbs(bmi,transa,.false.,.false.)
+        call tmulbs(bmi,transa,.false.)
       endif
       return
       end

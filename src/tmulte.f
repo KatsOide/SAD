@@ -368,7 +368,7 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
           enddo
         endif
         if(irad .gt. 6)then
-          call tmulbs(beam ,trans1,.true.,.true.)
+          call tmulbs(beam ,trans1,.true.)
         endif
       enddo
       if(nmmin .eq. 2)then
@@ -414,7 +414,7 @@ c        rg=sqrt(rg2)
         trans1(6,6)=rg2
         call tmultr(trans,trans1,irad)
         if(irad .gt. 6)then
-          call tmulbs(beam,trans1,.true.,.true.)
+          call tmulbs(beam,trans1,.true.)
         endif
         cod(2)=cod(2)*rg2
         cod(4)=cod(4)*rg2

@@ -174,7 +174,7 @@ c        write(*,'(a,2i5,1p7g12.4)')'temits1-cod ',i,i1,cod
         call tinv6(trans,rm)
         call tmultr(rm,ri,6)
         call tfetwiss(rm,cod,tws(1,i),.true.)
-        call tmulbs(beam,rxi,.false.,.false.)
+        call tmulbs(beam,rxi,.false.)
         beams(1:10,i)=beam(1:10)
 c        write(*,'(a,i5,1p10g12.4)')'te ',i,beams(1:10,i)
         if(i .le. 0)then
@@ -230,7 +230,7 @@ c        write(*,'(a,i5,1p6g15.7)')'temits-4.1 ',kk,damp,sige,hc(1,1,1:4)
         call tesumb(bc,hc,mphi2,ndp,
      $       w,dj,sige,tws,ndims,beam,fj)
         beamr(1:21)=beam(1:21)
-        call tmulbs(beamr,ri,.false.,.false.)
+        call tmulbs(beamr,ri,.false.)
         vx=beamr(1)*beamr(3)-beamr(2)**2
         vy=beamr(6)*beamr(10)-beamr(9)**2
         emix0=sign(sqrt(abs(vx)),vx)
@@ -250,7 +250,7 @@ c        write(*,'(a,i5,1p6g15.7)')'temits-4.1 ',kk,damp,sige,hc(1,1,1:4)
           call tesumb(bc,hc,mphi2,ndp,
      $         w,dj,sige,tws,ndims,beam,fj)
           beamr(1:21)=beam(1:21)
-          call tmulbs(beamr,ri,.false.,.false.)
+          call tmulbs(beamr,ri,.false.)
           vx=beamr(1)*beamr(3)-beamr(2)**2
           vy=beamr(6)*beamr(10)-beamr(9)**2
           emix=sign(sqrt(abs(vx)),vx)

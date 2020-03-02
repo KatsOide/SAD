@@ -130,7 +130,7 @@
       trans2(6,5)=0.d0
       trans2(6,6)=1.d0
       call tmultr5(trans,trans2,irad)
-      call tmulbs(beam ,trans2,.true.,.true.)
+      call tmulbs(beam ,trans2,.true.)
       cod(1)=xf
       cod(2)=min(p,max(-p,pxf*p))
       cod(3)=yf
@@ -206,7 +206,7 @@ c     $     +aksx*(drhopakp*p+drhopak+xi)+pxi*dcxp
 c      write(*,'(a,1p8g15.7)')'tmulte ',drhopp,drhop,xsxkx,xsxkxp,
 c     $     sxkxp,dcxkxp
       call tmultr5(trans,trans1,irad)
-      call tmulbs(beam ,trans1,.true.,.true.)
+      call tmulbs(beam ,trans1,.true.)
       cod(1)=xf
       cod(2)=min(p,max(-p,pxf*p))
       cod(3)=yf
@@ -290,7 +290,7 @@ c     $     sxkxp,dcxkxp
       xf=xi*csphi0+rhoe*(snphi0*pxi-dpx*(pxi+pxf)/(pz1+pz2))
      1     +drho*sinsq0
       call tmultr5(trans,trans1,irad)
-      call tmulbs(beam ,trans1,.true.,.true.)
+      call tmulbs(beam ,trans1,.true.)
       cod(1)=xf
       cod(3)=yi+pyi*rhoe*(phi0n-da)
       cod(2)=min(pr,max(-pr,pxf*pr))
@@ -680,7 +680,7 @@ c      pzi=sqrt(max(1.d-4,(pr-pxi)*(pr+pxi)-pyi**2))
       trans1(5,6)=-xi*sp*(1.d0-pr*dpzfp  /pzf)/pzf
      $     +h0/h1emit**3*dl
       call tmultr5(trans,trans1,irad)
-      call tmulbs(beam ,trans1,.true.,.true.)
+      call tmulbs(beam ,trans1,.true.)
       cod(1)=xf
       cod(2)=pxf
       cod(3)=cod(3)+xi*sp*pyi/pzf
@@ -728,7 +728,7 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       trans1(5,6)=-(2.d0*dxfr*cod(2)+
      $     (dyfr-.5d0*dyfraysq)*ysq)/pr**3
       call tmultr5(trans,trans1,irad)
-      call tmulbs(beam,trans1,.true.,.true.)
+      call tmulbs(beam,trans1,.true.)
       cod(1)=cod(1)+dxfr*cod(6)/pr
       cod(4)=cod(4)+(dyfr-dyfraysq)*cod(3)/pr
       cod(5)=cod(5)+(dxfr*cod(2)+
@@ -750,7 +750,7 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       trans1(2,6)=phi0
       trans1(5,1)=-phi0
       call tmultr(trans,trans1,irad)
-      call tmulbs(beam ,trans1,.true.,.true.)
+      call tmulbs(beam ,trans1,.true.)
       cod(2)=cod(2)+(phi0-phib)+cod(6)*phi0
       cod(5)=cod(5)-phi0*cod(1)
       call tchge(trans,cod,beam,srot,

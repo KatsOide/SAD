@@ -140,7 +140,7 @@ c     $     'tqente-2 ',((trans(i,j),j=1,6),i=1,6)
 c      write(*,*)'with irad: ',irad
       endif
       if(irad .gt. 6)then
-        call tmulbs(beam,trans2,.true.,.true.)
+        call tmulbs(beam,trans2,.true.)
       endif
       return
       end

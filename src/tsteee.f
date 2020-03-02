@@ -138,7 +138,7 @@ c        call tbfrie(trans,cod,beam,-rhob,0.d0,.true.)
         trans1(3,6)=trans1(5,4)
         trans1(5,6)=trans1(5,6)-(alx+dl)/pr+h0/h1emit**3*alx
         call tmultr5(trans,trans1,irad)
-        call tmulbs(beam ,trans1,.true.,.true.)
+        call tmulbs(beam ,trans1,.true.)
         cod(1)=cod(1)+alx*spx/spz
         cod(2)=pxf*pr
         cod(3)=cod(3)+pyi*(alx+dl)

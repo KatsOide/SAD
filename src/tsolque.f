@@ -553,7 +553,7 @@ c        write(*,'(a,1p6g15.7)')'tsolque-trans  ',trans(1,1:6)
 c        write(*,'(a,1p6g15.7)')'tsolque-trans1 ',trans1(1,1:6)
         call tmultr5(trans,trans1,irad)
         if(irad .gt. 6)then
-          call tmulbs(beam ,trans1,.false.,.true.)
+          call tmulbs(beam ,trans1,.true.)
         endif
         if(enarad .and. n .ne. ndiv)then
           call tradke(trans,cod,beam,srot,aln,0.d0,bzh)

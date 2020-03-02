@@ -46,7 +46,7 @@ c     $     beam(1)
       trans1(5,5)=1.d0
       trans1(6,6)=1.d0
       irad=12
-      call tmulbs(beam,trans1,.false.,.false.)
+      call tmulbs(beam,trans1,.false.)
       return
       end
 
