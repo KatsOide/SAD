@@ -1430,7 +1430,7 @@ Actually the summation is truncated at n + k <= 21 in the current version. While
 The skew "//N$pole[2(n+1)]//" magnetic field component (times the length L).\n"//EquAlign["\
 {\\tt SK"//n//"} = \\frac{B"//N$deriv[n]//"{\\tt L}}{B\\rho}\\ ,","\
    SK"//n//" = B^("//n//")L/(Brho),"]//"\n\n\
-where L is the length of the component. Positive sign means a horizontally focusing magnet rotated around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .",
+where L is the length of the component. Positive sign means a horizontally focusing magnet rotated around z-axis by -90/"//n+1//" degree, i.e., ROTATE = "//90/(n+1)//" DEG .",
           "L",
           {}};
          Hold[Apply[Sequence,
