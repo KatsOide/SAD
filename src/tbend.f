@@ -463,18 +463,18 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),
      $     sx(np),sz(np),
-     $     al,phi0,cp,sp,rho0,dx,xi,pzi,pzf,dl,dcp,th
-      th=tan(.5d0*phi0)
-      sp=2.d0*th/(1.d0+th**2)
-      dcp=th*sp
-      cp=1.d0-dcp
-c      cp=cos(phi0)
-c      sp=sin(phi0)
-c      if(cp .ge. 0.d0)then
-c        dcp=sp**2/(1.d0+cp)
-c      else
-c        dcp=1.d0-cp
-c      endif
+     $     al,phi0,cp,sp,rho0,dx,xi,pzi,pzf,dl,dcp
+c      th=tan(.5d0*phi0)
+c      sp=2.d0*th/(1.d0+th**2)
+c      dcp=th*sp
+c      cp=1.d0-dcp
+      cp=cos(phi0)
+      sp=sin(phi0)
+      if(cp .ge. 0.d0)then
+        dcp=sp**2/(1.d0+cp)
+      else
+        dcp=1.d0-cp
+      endif
       rho0=al/phi0
       call tdrift_free(np,x,px,y,py,z,dv,rho0*sp)
       dx=rho0*dcp

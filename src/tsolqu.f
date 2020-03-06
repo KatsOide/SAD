@@ -1,18 +1,19 @@
       subroutine tsolqu(np,x,px,y,py,z,gp,dv,sx,sy,sz,
      $     al,ak,bz0,ak0x,ak0y,ibsi,eps0)
       use tsolz
+      use tspin, only:bsi
       use mathfun
       implicit none
       type (tzparam) tz
       integer*4 np,i,n,ndiv,ibsi
       real*8, parameter::smax=0.99d0,phieps=1.d-7
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),bsi(np),
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),
      $     sx(np),sy(np),sz(np)
       real*8 al,ak,eps0,bz,a,b,c,d,akk,eps,
      $     bw,dw,r,ap,dpz,ak0x,ak0y,bz0,
-     $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,z00,
+     $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
      $     dx0,dy0,xi,yi,a12,a14,a22,a24,ra,phi,pxi,pyi,
-     $     awu,dwu,dz1,dz2,tph
+     $     awu,dwu,dz1,dz2
         associate (
      $       w1=>tz%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
      $       phi1=>tz%phi1,phi2=>tz%phi2,
@@ -43,7 +44,6 @@
         return
       endif
       bz=bz0
-      z00=z(1)
       if(eps0 .eq. 0.d0)then
         eps=0.2d0
       else
@@ -126,8 +126,8 @@ c            tph=tan(.5d0*phi)
 c            a24=2.d0*tph/(1.d0+tph**2)
             a24=sin(phi)
             a12=a24/bzp
-c            a22=1.d0-tph*a24
             a22=cos(phi)
+c            a22=1.d0-tph*a24
 c            a14=tph*a12
             if(a22 .ge. 0.d0)then
               a14=a12*a24/(1.d0+a22)
@@ -164,10 +164,10 @@ c            a14=tph*a12
             py(i)=pyi-wd*u1 +ws*v1
             awu=a/ws*w1
             dwu=d
-            call tztaf(0,tz,awu,pxi,pyi,aw1,ws,w12,wss,g1,
-     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz1,0.d0)
-            call tztaf(0,tz,-dwu,-pyi,pxi,aw2,-w12,ws,-wss,g2,
-     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz2,0.d0)
+            call tztaf(tz,awu,pxi,pyi,aw1,ws,w12,wss,g1,
+     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz1)
+            call tztaf(tz,-dwu,-pyi,pxi,aw2,-w12,ws,-wss,g2,
+     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz2)
             z(i)=z(i)+
      $           bzp*(-((awu*dwu*dxs**2)/akkp) +
      $           ca1*pxi*pyi*wss)
@@ -178,18 +178,18 @@ c            a14=tph*a12
 c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           r=-dpz/(1.d0+dpz)*aln*.5d0
           phi=r*bzp
-          tph=tan(.5d0*phi)
-          a24=2.d0*tph/(1.d0+tph**2)
-c          a24=sin(phi)
+c          tph=tan(.5d0*phi)
+c          a24=2.d0*tph/(1.d0+tph**2)
+          a24=sin(phi)
+          a22=cos(phi)
           a12=a24/bzp
-          a22=1.d0-tph*a24
-c          a22=cos(phi)
-          a14=tph*a12
-c          if(a22 .ge. 0.d0)then
-c            a14=a12*a24/(1.d0+a22)
-c          else
-c            a14=(1.d0-a22)/bzp
-c          endif
+c          a22=1.d0-tph*a24
+c          a14=tph*a12
+          if(a22 .ge. 0.d0)then
+            a14=a12*a24/(1.d0+a22)
+          else
+            a14=(1.d0-a22)/bzp
+          endif
           pxi=px(i)
           x(i) =x(i)+a12*pxi+a14*py(i)
           y(i) =y(i)-a14*pxi+a12*py(i)
@@ -225,7 +225,7 @@ c          endif
      $     bw,dw,r,ap,dpz,ak0x,ak0y,bz0,
      $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
      $     dx0,dy0,xi,yi,a12,a14,a22,a24,phi,pxi,pyi,
-     $     awu,dwu,dz1,dz2,tph
+     $     awu,dwu,dz1,dz2
       real*8 , parameter ::phieps=1.d-7,arad=0.01d0
         associate (
      $       w1=>tz%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
@@ -346,18 +346,18 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
 c            dpz=-ap/(1.d0+sqrt(1.d0-ap))
             r=-dpz/(1.d0+dpz)*alr
             phi=r*bzp
-            tph=tan(.5d0*phi)
-            a24=2.d0*tph/(1.d0+tph**2)
-c            a24=sin(phi)
+c            tph=tan(.5d0*phi)
+c            a24=2.d0*tph/(1.d0+tph**2)
+            a24=sin(phi)
+            a22=cos(phi)
             a12=a24/bzp
-            a22=1.d0-tph*a24
-c            a22=cos(phi)
-            a14=tph*a12
-c            if(a22 .ge. 0.d0)then
-c              a14=a12*a24/(1.d0+a22)
-c            else
-c              a14=(1.d0-a22)/bzp
-c            endif
+c            a22=1.d0-tph*a24
+c            a14=tph*a12
+            if(a22 .ge. 0.d0)then
+              a14=a12*a24/(1.d0+a22)
+            else
+              a14=(1.d0-a22)/bzp
+            endif
             pxi=px(i)
             x(i) =x(i)+a12*pxi+a14*py(i)
             y(i) =y(i)-a14*pxi+a12*py(i)
@@ -388,10 +388,10 @@ c            endif
             py(i)=pyi-wd*u1 +ws*v1
             awu=a/ws*w1
             dwu=d
-            call tztaf(0,tz,awu,pxi,pyi,aw1,ws,w12,wss,g1,
-     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz1,0.d0)
-            call tztaf(0,tz,-dwu,-pyi,pxi,aw2,-w12,ws,-wss,g2,
-     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz2,0.d0)
+            call tztaf(tz,awu,pxi,pyi,aw1,ws,w12,wss,g1,
+     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz1)
+            call tztaf(tz,-dwu,-pyi,pxi,aw2,-w12,ws,-wss,g2,
+     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz2)
             z(i)=z(i)+
      $           bzp*(-((awu*dwu*dxs**2)/akkp) +
      $           ca1*pxi*pyi*wss)
@@ -412,18 +412,18 @@ c            endif
 c     dpz=-ap/(1.d0+sqrt(1.d0-ap))
           r=-dpz/(1.d0+dpz)*aln*.5d0
           phi=r*bzp
-          tph=tan(.5d0*phi)
-          a24=2.d0*tph/(1.d0+tph**2)
-c         a24=sin(phi)
-          a22=1.d0-tph*a24
+c          tph=tan(.5d0*phi)
+c          a24=2.d0*tph/(1.d0+tph**2)
+          a24=sin(phi)
+          a22=cos(phi)
+c          a22=1.d0-tph*a24
           a12=a24/bzp
-          a14=tph*a12
-c         a22=cos(phi)
-c          if(a22 .ge. 0.d0)then
-c            a14=a12*a24/(1.d0+a22)
-c          else
-c            a14=(1.d0-a22)/bzp
-c          endif
+c          a14=tph*a12
+          if(a22 .ge. 0.d0)then
+            a14=a12*a24/(1.d0+a22)
+          else
+            a14=(1.d0-a22)/bzp
+          endif
           pxi=px(i)
           x(i) =x(i)+a12*pxi+a14*py(i)
           y(i) =y(i)-a14*pxi+a12*py(i)
