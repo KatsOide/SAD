@@ -173,6 +173,7 @@ c          dch2=sh2**2/(1.d0+ch2)
      $       bzp=>tz%bzp,akkp=>tz%akkp,pr=>tz%pr,
      $       c1=>tz%c1,s1=>tz%s1,dc1=>tz%dc1,xs1=>tz%xs1,
      $       sh2=>tz%sh2,dch2=>tz%dch2,xsh2=>tz%xsh2,ch2=>tz%ch2)
+        bzp=0.d0
         pr=1.d0+dp
         akkp=akk/pr
         w1=sqrt(akkp)

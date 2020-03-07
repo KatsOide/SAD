@@ -627,21 +627,22 @@ c     $     rb1,rb2,al0,alc,aln,phin,ak
       real*8 trans(6,12),cod(6),beam(42),srot(3,9),
      $     phi0,al,cp,sp,pr,pxi,pzf,
      $     trans1(6,6),xi,pyi,pzi,pxf,xf,dpzipxi,dpzipyi,dpzip,
-     $     dpzfpxi,dpzfpyi,dpzfp,rho0,h0,dl,dcp,
+     $     dpzfpxi,dpzfpyi,dpzfp,rho0,h0,dl,dcp,xs,
      $     h1emit,dvemit,a,psqmax
       integer*4 irad
       parameter (psqmax=0.9999d0)
-      cp=cos(phi0)
-      sp=sin(phi0)
-      if(cp .ge. 0.d0)then
-        dcp=sp**2/(1.d0+cp)
-      else
-        dcp=1.d0-cp
-      endif
+      call xsincos(phi0,sp,xs,cp,dcp)
+c      cp=cos(phi0)
+c      sp=sin(phi0)
+c      if(cp .ge. 0.d0)then
+c        dcp=sp**2/(1.d0+cp)
+c      else
+c        dcp=1.d0-cp
+c      endif
       rho0=al/phi0
       call tdrife(trans,cod,beam,srot,rho0*sp,0.d0,0.d0,0.d0,0.d0,
      $     .true.,.false.,irad)
-      xi=cod(1)+rho0*dcp
+      xi=cod(1)-rho0*dcp
       pr=1.d0+cod(6)
       pxi=cod(2)
       pyi=cod(4)

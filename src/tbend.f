@@ -471,7 +471,7 @@ c      th=tan(.5d0*phi0)
 c      sp=2.d0*th/(1.d0+th**2)
 c      dcp=th*sp
 c      cp=1.d0-dcp
-      cp=cos(phi0)
+c      cp=cos(phi0)
       call xsincos(phi0,sp,xsp,cp,dcp)
 c      sp=sin(phi0)
 c      if(cp .ge. 0.d0)then
