@@ -109,11 +109,11 @@
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
 
-        bzp=bz/pr
-        if(bzp .eq. 0.d0)then
+        if(bz .eq. 0.d0)then
           call tzsetparam0(tz,dp,akk)
         else
           pr=1.d0+dp
+          bzp=bz/pr
           akkp=akk/pr
           wa=hypot(bzp**2,2.d0*akkp)
           w1=sqrt((bzp**2+wa)*.5d0)
@@ -167,13 +167,13 @@ c          dch2=sh2**2/(1.d0+ch2)
         use mathfun, only:xsincos,xsincosh
         implicit none
         type (tzparam) tz
-        real*8 dp,akk
+        real*8 , intent(in):: dp,akk
         associate (
      $       w1=>tz%w1,phi1=>tz%phi1,aln=>tz%aln,
      $       bzp=>tz%bzp,akkp=>tz%akkp,pr=>tz%pr,
      $       c1=>tz%c1,s1=>tz%s1,dc1=>tz%dc1,xs1=>tz%xs1,
      $       sh2=>tz%sh2,dch2=>tz%dch2,xsh2=>tz%xsh2,ch2=>tz%ch2)
-        pr=(1.d0+dp)
+        pr=1.d0+dp
         akkp=akk/pr
         w1=sqrt(akkp)
         phi1=aln*w1
