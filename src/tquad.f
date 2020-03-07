@@ -517,7 +517,8 @@ c        theta=pi/nord
           aka=ak(1)
         else
           theta=atan2(ak(2),ak(1))*2.d0/nord
-          aka=sqrt(ak(1)**2+ak(2)**2)
+          aka=hypot(ak(1),ak(2))
+c          aka=sqrt(ak(1)**2+ak(2)**2)
         endif
         if(theta .ne. 0.d0)then
           cost=cos(theta)

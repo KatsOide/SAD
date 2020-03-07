@@ -115,7 +115,7 @@
         if(bzp .eq. 0.d0)then
           call tzsetparam0(tz,dp,akk)
         else
-          wa=sqrt(bzp**4+4.d0*akkp**2)
+          wa=hypot(bzp**2,2.d0*akkp)
           w1=sqrt((bzp**2+wa)*.5d0)
           w2=akkp/w1
           wss=1.d0/(w1**2+w2**2)
@@ -127,19 +127,21 @@ c          th=tan(.5d0*phi1)
 c          s1=2.d0*th/(1.d0+th**2)
 c          dc1=-th*s1
 c          c1=1.d0+dc1
-          c1=cos(phi1)
-          s1=sin(phi1)
-          xs1=xsin(phi1)
+c           c1=cos(phi1)
+          call xsincos(phi1,s1,xs1,c1,dc1)
+c          s1=sin(phi1)
+c          xs1=xsin(phi1)
           if(c1 .ge. 0.d0)then
             dc1=-s1**2/(1.d0+c1)
           else
             dc1=c1-1.d0
           endif
           phi2=aln*w2
-          ch2=cosh(phi2)
-          sh2=sinh(phi2)
-          xsh2=xsinh(phi2)
-          dch2=sh2**2/(1.d0+ch2)
+c          ch2=cosh(phi2)
+          call xsincosh(phi2,sh2,xsh2,ch2,dch2)
+c          sh2=sinh(phi2)
+c          xsh2=xsinh(phi2)
+c          dch2=sh2**2/(1.d0+ch2)
           g1 = (s1**2*w2**2)/akkp
           g2 = -((sh2**2*w1**2)/akkp)
           wr1 = w1/w2
@@ -196,18 +198,20 @@ c        th=tan(0.5d0*phi1)
 c        s1=2.d0*th/(1.d0+th**2)
 c        dc1=-th*s1
 c        c1=1.d0+dc1
-        c1=cos(phi1)
-        s1=sin(phi1)
-        xs1=xsin(phi1)
-        if(c1 .ge. 0.d0)then
-          dc1=-s1**2/(1.d0+c1)
-        else
-          dc1=c1-1.d0
-        endif
-        ch2=cosh(phi1)
-        sh2=sinh(phi1)
-        xsh2=xsinh(phi1)
-        dch2=sh2**2/(1.d0+ch2)
+c        c1=cos(phi1)
+c        s1=sin(phi1)
+c        xs1=xsin(phi1)
+        call xsincos(phi1,s1,xs1,c1,dc1)
+c        if(c1 .ge. 0.d0)then
+c          dc1=-s1**2/(1.d0+c1)
+c        else
+c          dc1=c1-1.d0
+c        endif
+c        ch2=cosh(phi1)
+        call xsincosh(phi1,sh2,xsh2,ch2,dch2)
+c        sh2=sinh(phi1)
+c        xsh2=xsinh(phi1)
+c        dch2=sh2**2/(1.d0+ch2)
         return
         end associate
         end
@@ -349,7 +353,7 @@ c      endif
       else
         eps=0.1d0*eps0
       endif
-      ndiv=1+int(sqrt((ak*al)**2+(bz*al)**2)/eps)
+      ndiv=1+int(hypot(ak*al,bz*al)/eps)
 c      if(enarad)then
 c        ndiv=max(ndiv,itgetqraddiv(cod,ak,al))
 c      endif

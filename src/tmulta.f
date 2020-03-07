@@ -2,7 +2,7 @@
      $     np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak0,phi,
      $     psi1,psi2,bz,
      1     dx,dy,theta,dtheta,
-     $     eps0,enarad,fb1,fb2,mfring,fringe)
+     $     eps0,krad,fb1,fb2,mfring,fringe)
       use ffs_flag, only:rad,ndivrad,calpol
       use tmacro
       use multa
@@ -24,7 +24,7 @@
       real*8 sx(np),sy(np),sz(np)
       complex*16 ak0(0:nmult),ak(0:nmult),akn(0:nmult),
      $     cx1,csl,csr,cl,cr,cg,cx
-      logical*4 enarad,fringe,krad
+      logical*4 fringe,krad
       real*8 fact(0:nmult+1)
       data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
      1     720.d0,     5040.d0,     40320.d0,362880.d0,3628800.d0,
@@ -99,7 +99,6 @@
      $int(sqrt(ampmax**(n-1)/6.d0/fact(n-1)/eps*abs(ak(n)*al)))+1)
       enddo
       phib=phi+ak0r
-      krad=rad .and. enarad
       if(krad)then
         ndiv=max(ndiv,ndivrad(phib,ak1r,0.d0,eps0))
       endif
@@ -168,7 +167,7 @@
      1         cosp1,sinp1,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $         fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
-     1         enarad,eps0,.false.,1)
+     1         krad,eps0,.false.,1)
           w=phin
           cosw=cos(w)
           sinw=sin(w)
@@ -184,7 +183,7 @@
      1         1.d0,0.d0,1.d0,0.d0,
      1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $         0.d0,0.d0,0,.false.,cosw,sinw,sqwh,sinwp1,
-     1         enarad,eps0,.false.,2)
+     1         krad,eps0,.false.,2)
           als=als+aln
         endif
         do i=1,np
@@ -249,7 +248,7 @@
      1     1.d0,0.d0,cosp2,sinp2,
      1     ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,
      $     fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
-     1     enarad,eps0,.false.,2)
+     1     krad,eps0,.false.,2)
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi,-dtheta)
       endif

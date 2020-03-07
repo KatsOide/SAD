@@ -225,17 +225,20 @@ c      write(*,'(a,1p6g15.7)')'tfetwiss-4 ',detm,ax,ay,az,f,xyth
       r12=( hi(4,4)*hi(3,2)-hi(3,4)*hi(4,2))/axy
       r21=(-hi(4,3)*hi(3,1)+hi(3,3)*hi(4,1))/axy
       r22=(-hi(4,3)*hi(3,2)+hi(3,3)*hi(4,2))/axy
-      crx=sqrt(hi(1,2)**2+hi(2,2)**2)
+      crx=hypot(hi(1,2),hi(2,2))
+c      crx=sqrt(hi(1,2)**2+hi(2,2)**2)
       cx= hi(2,2)/crx
       sx=-hi(1,2)/crx
       bx21=(-sx*hi(1,1)+cx*hi(2,1))/axy
       bx22=crx/axy
-      cry=sqrt(hi(3,4)**2+hi(4,4)**2)
+      cry=hypot(hi(3,4),hi(4,4))
+c      cry=sqrt(hi(3,4)**2+hi(4,4)**2)
       cy= hi(4,4)/cry
       sy=-hi(3,4)/cry
       by21=(-sy*hi(3,3)+cy*hi(4,3))/axy
       by22=cry/axy
-      crz=sqrt(uz12**2+uz22**2)
+      crz=hypot(uz12,uz22)
+c      crz=sqrt(uz12**2+uz22**2)
       cz= uz22/crz
       sz=-uz12/crz
       bz21=-sz*uz11+cz*uz21
@@ -773,8 +776,9 @@ c        write(*,*)'phlist ',itp,nph
           kp=kt+(ilp-1)*10
           klx%dbody(i)%k=ktflist+ktavaloc(0,nitem,klri)
           klri%attr=lconstlist
-          dp=sqrt(rlist(kp+4)**2+rlist(kp+5)**2
-     $         +rlist(kp+6)**2)
+          dp=hypot(rlist(kp+4),hypot(rlist(kp+5),rlist(kp+6)))
+c          dp=sqrt(rlist(kp+4)**2+rlist(kp+5)**2
+c     $         +rlist(kp+6)**2)
           klri%rbody(1)=dp*amass*gammab(ilist(2,kp))
           klri%rbody(2)=rlist(kp+1)
           klri%rbody(3)=rlist(kp+2)

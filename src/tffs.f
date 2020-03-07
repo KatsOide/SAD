@@ -46,7 +46,7 @@
         use tfstk, only:klist
         use iso_c_binding
         implicit none
-        integer*8 k
+        integer*8 ,intent(in)::k
         type (sad_el), pointer, intent(out) ::el
         call c_f_pointer(c_loc(klist(k-1)),el)
         return
@@ -56,7 +56,7 @@
         use tfstk, only:klist
         use iso_c_binding
         implicit none
-        integer*8 k
+        integer*8 , intent(in)::k
         type (sad_comp), pointer, intent(out) ::cmp
         call c_f_pointer(c_loc(klist(k-2)),cmp)
         return
@@ -64,9 +64,9 @@
 
         integer*4 function idcomp(el,i)
         implicit none
-        type (sad_el) :: el
+        type (sad_el),intent(in) :: el
         type (sad_comp), pointer :: cmp
-        integer*4 i
+        integer*4 ,intent(in)::i
         call loc_comp(el%comp(i),cmp)
         idcomp=cmp%id
         return
@@ -74,8 +74,8 @@
 
         real*8 function dircomp(el,i)
         implicit none
-        integer*4 i
-        type (sad_el) :: el
+        integer*4 ,intent(in)::i
+        type (sad_el),intent(in) :: el
         type (sad_comp), pointer :: cmp
         call loc_comp(el%comp(i),cmp)
         dircomp=cmp%orient
@@ -1062,7 +1062,8 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
             if(sk1 .eq. 0.d0)then
               akk=cmp%value(ky_K1_MULT)/al
             else
-              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
+              akk=hypot(cmp%value(ky_K1_MULT),sk1)/al
+c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
             endif
             call tsetfringep(cmp,icMULT,cmp%orient,akk,
      $           cmp%value(p_AKF1F_MULT:p_AKF2B_MULT))

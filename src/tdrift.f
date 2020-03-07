@@ -187,9 +187,10 @@ c          pr=(1.d0+g(i))**2
           phi=asin(min(1.d0,max(-1.d0,bpr/pz0)))
           dphi=0.d0
           do j=1,itmax
-            sinphi=sin(phi)
+c            sinphi=sin(phi)
             dcosphi=2.d0*sin(.5d0*phi)**2
-            xsinphi=xsin(phi)
+c            xsinphi=xsin(phi)
+            call sxsin(phi,sinphi,xsinphi)
             s=plz*xsinphi+pz0*sinphi+pbz*dcosphi
             r=pz0-ptz*dcosphi+pbz*sinphi
             if(r .ne. 0.d0)then

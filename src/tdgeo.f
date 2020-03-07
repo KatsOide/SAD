@@ -72,7 +72,8 @@
             select case (kf)
             case (mfitchi2)
               qu=qu+s*(yr1*geo(2,3,ne)-yr2*geo(1,3,ne))
-     $             /sqrt(geo(1,3,ne)**2+geo(2,3,ne)**2)
+     $             /hypot(geo(1,3,ne),geo(2,3,ne))
+c     $             /sqrt(geo(1,3,ne)**2+geo(2,3,ne)**2)
             case (mfitchi1)
               dz1=-geo(2,3,ne)*yr3+geo(3,3,ne)*yr2
               dz2=-geo(3,3,ne)*yr1+geo(1,3,ne)*yr3
@@ -127,7 +128,8 @@ c     $         utwiss(mfitr1:mfitr4,0,itwissp(kbe))
      $           +dcod(1)*geo(3,1,kbe)+dcod(3)*geo(3,2,kbe))
           case (mfitchi2)
             qu=qu+s*(yr1*geo(2,3,ne)-yr2*geo(1,3,ne))
-     $           /sqrt(geo(1,3,ne)**2+geo(2,3,ne)**2)
+     $           /hypot(geo(1,3,ne),geo(2,3,ne))
+c     $           /sqrt(geo(1,3,ne)**2+geo(2,3,ne)**2)
           case (mfitchi1)
             dz1=-geo(2,3,ne)*yr3+geo(3,3,ne)*yr2
             dz2=-geo(3,3,ne)*yr1+geo(1,3,ne)*yr3

@@ -368,6 +368,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $        cmp%value(p_SQWH_BEND),cmp%value(p_SINWP1_BEND),
      1        rad .and. enarad,
      1        cmp%value(ky_EPS_BEND),.true.,0)
+
        case (icQUAD)
          if(iand(1,cmp%update) .eq. 0)then
            call tpara(cmp)
@@ -795,7 +796,8 @@ c     $             +lend-1),
      $     cmp%value(p_THETA2_MULT),
      $     cmp%value(p_CR1_MULT),
      $     cmp%value(ky_EPS_MULT),
-     $     cmp%value(ky_RAD_MULT) .eq. 0.d0,
+     $     rad .and. cmp%value(ky_RAD_MULT) .eq. 0.d0 .and.
+     $     cmp%value(p_L_MULT) .ne. 0.d0,
      $     cmp%value(ky_FRIN_MULT) .eq. 0.d0,
      $     cmp%value(p_AKF1F_MULT)*rtaper,
      $     cmp%value(p_AKF2F_MULT)*rtaper,

@@ -190,7 +190,7 @@ c         eig(2)=.5d0*(x11+x22-sign(d,u))
         else
           u1=r(1,2)
           u2=1.d0-r(1,1)
-          w=sqrt(u1**2+u2**2)
+          w=hypot(u1,u2)
           u(1)=u1/w
           u(2)=u2/w
           u(3)=0.d0
@@ -203,7 +203,7 @@ c         eig(2)=.5d0*(x11+x22-sign(d,u))
         u1=b*r(1,3)+a*r(2,3)
         u2=b*r(2,3)-a*r(1,3)
         u3=b*(1.d0+r(3,3))
-        w=sign(sqrt(u1**2+u2**2+u3**2),u3*r(3,3))
+        w=sign(hypot(u1,hypot(u2,u3)),u3*r(3,3))
         u1=u1/w
         u2=u2/w
         u3=u3/w
@@ -224,7 +224,7 @@ c         eig(2)=.5d0*(x11+x22-sign(d,u))
       implicit none
       integer*4 ndim
       real*8 r(ndim,3),u(3),phi,w,u1,u2,u3,c,s,q,th
-      w=sqrt(u(1)**2+u(2)**2+u(3)**2)
+      w=hypot(u(1),hypot(u(2),u(3)))
       u1=u(1)/w
       u2=u(2)/w
       u3=u(3)/w

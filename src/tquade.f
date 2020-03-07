@@ -82,10 +82,12 @@
       phi=aln*akk
       scphi=sinc(phi)
       shcphi=sinhc(phi)
-      sinc2=sinc(2.d0*phi)
-      sinhc2=sinhc(2.d0*phi)
-      xsin2=xsin(2.d0*phi)
-      xsinh2=xsinh(2.d0*phi)
+      call sxsin(2.d0*phi,sinc2,xsin2)
+      call sxsinh(2.d0*phi,sinhc2,xsinh2)
+c      sinc2=sinc(2.d0*phi)
+c      sinhc2=sinhc(2.d0*phi)
+c      xsin2=xsin(2.d0*phi)
+c      xsinh2=xsinh(2.d0*phi)
       if(ak .gt. 0.d0)then
         a11=cos(phi)
         a12=sin(phi)/akk

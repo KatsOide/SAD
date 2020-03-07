@@ -7,7 +7,7 @@
       subroutine tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,bz,dx,dy,dz,
      $     chi1,chi2,chi3,bxs,bys,bzs,ent)
-      use mathfun, only:sqrt1,xsin
+      use mathfun, only:sqrt1,sxsin
       use ffs_flag, only:calpol,rad
       implicit none
       integer*4 ,intent(in):: np
@@ -86,9 +86,10 @@ c     dpz0=-s/(1.d0+sqrt(1.d0-s))
               if(ds2 .ne. 0.d0)then
                 phi=ds2/alb/pz0
                 do j=1,itmax
-                  sinphi=sin(phi)
+                  call sxsin(phi,sinphi,xsinphi)
+c                  sinphi=sin(phi)
                   dcosphi=2.d0*sin(.5d0*phi)**2
-                  xsinphi=xsin(phi)
+c                  xsinphi=xsin(phi)
                   s=(plz*xsinphi+pz0*sinphi+pbz*dcosphi)*alb
                   dphi=(ds2-s)/alb/(pz0-ptz*dcosphi+pbz*sinphi)
                   phi0=phi
@@ -474,7 +475,8 @@ c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
       bxs=bxs0
       bys=bys0
       bzs=bzs0
-      babs=sqrt(bzs**2+bxs**2+bys**2)
+      babs=hypot(bzs,hypot(bxs,bys))
+c      babs=sqrt(bzs**2+bxs**2+bys**2)
       if(abs(babs) .lt. bzthre)then
         bxs=0.d0
         bys=0.d0
@@ -573,9 +575,10 @@ c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
           phi=asin(min(1.d0,max(-1.d0,albabs/pz0)))
           dphi=0.d0
           do j=1,itmax
-            sinphi=sin(phi)
+            call sxsin(phi,sinphi,xsinphi)
+c            sinphi=sin(phi)
             dcosphi=2.d0*sin(.5d0*phi)**2
-            xsinphi=xsin(phi)
+c            xsinphi=xsin(phi)
             s=plz*xsinphi+pz0*sinphi+pbz*dcosphi
             u=pz0-ptz*dcosphi+pbz*sinphi
             if(u .ne. 0.d0)then

@@ -290,7 +290,8 @@ c        write(*,*)na,isp-isp0
             y1=rtastk(i+1)
  11         dx=x1-x0
             dy=y1-y0
-            s=sqrt(dx**2+dy**2)
+            s=hypot(dx,dy)
+c            s=sqrt(dx**2+dy**2)
             if(s .gt. 0.d0)then
               s1=s+dash
               if(dash .ge. 0.d0)then

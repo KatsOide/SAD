@@ -112,7 +112,8 @@ c
             r2=x(j )*a(i,j )
             r1a=abs(r1)
             r2a=abs(r2)
-            r=sqrt(r1a**2+r2a**2)
+            r=hypot(r1a,r2a)
+c            r=sqrt(r1a**2+r2a**2)
             if(r .ne. 0.d0)then
               if(r1a .gt. r2a)then
                 c=r1a/r
@@ -271,7 +272,8 @@ c9710 format(1x,:1p11g11.3)
         v(iend)=0.d0
         do 1110 i=iend,ibegin,-1
           if(abs(f)+abs(x(i)) .ne. abs(x(i)))then
-            ap=sqrt(abs(f)**2+x(i)**2)
+            ap=hypot(abs(f),x(i))
+c            ap=sqrt(abs(f)**2+x(i)**2)
             vv=v(i-1)/ap
             v(i-1)=vv*x(i)
             x(i  )=ap

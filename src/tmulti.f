@@ -1,7 +1,7 @@
       subroutine tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     al,ak,bz,phia,psi1,psi2,
      $     dx,dy,dz,chi1,chi2,theta,dtheta,theta2,cr1,
-     $     eps0,enarad,fringe,f1in,f2in,f1out,f2out,
+     $     eps0,krad,fringe,f1in,f2in,f1out,f2out,
      $     mfring,fb1,fb2,
      $     vc,w,phirf,dphirf,vnominal,
      $     radius,rtaper,autophi,
@@ -26,7 +26,7 @@ c      parameter (oneev=1.d0+3.83d-12)
       real*8 al,f1in,f2in,f1out,f2out
       complex*16 ak(0:nmult)
       real*8 bz,phia,psi1,psi2,dx,dy,dz,chi1,chi2,theta,dtheta,eps0
-      logical*4 enarad,fringe,autophi
+      logical*4 fringe,autophi
       integer*4 mfring
       real*8 fb1,fb2,vc,phirf,dphirf,radius
       integer*8 latt(nlat)
@@ -80,10 +80,9 @@ c      parameter (oneev=1.d0+3.83d-12)
      $       al,ak,phia,
      $       psi1,psi2,bz,
      1       dx,dy,theta,dtheta,
-     $       eps0,enarad,fb1,fb2,mfring,fringe)
+     $       eps0,krad,fb1,fb2,mfring,fringe)
         return
       endif
-      krad=rad .and. enarad .and. al .ne. 0.d0
       dphis=0.d0
       radlvl=1.d0
       b0=0.d0

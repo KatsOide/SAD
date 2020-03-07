@@ -203,6 +203,7 @@
       implicit none
       real*8, intent (in):: ak1,al
       logical*4 , intent(in), optional::force
+      real*8 xspx
 c      if(present(force))then
 c        write(*,*)'tbendiinit ',force,ak1,akxi,al,alxi,dpxi,dp
 c      else
@@ -226,20 +227,22 @@ c      endif
         akx=sqrt(akxsq)
         phix=akx*al
         dcx=2.d0*sinh(.5d0*phix)**2
-        spx=sinh(phix)
+        call sxsinh(phix,spx,xspx)
+c        spx=sinh(phix)
         aksx=akx*spx
         dcxkx=dcx/akxsq
         sxkx=spx/akx
-        xsxkx=xsinh(phix)/akx/akxsq
+        xsxkx=xspx/akx/akxsq
       elseif(akxsq .lt. 0.d0)then
         akx=sqrt(-akxsq)
         phix=akx*al
         dcx=-2.d0*sin(.5d0*phix)**2
-        spx=sin(phix)
+        call sxsin(phix,spx,xspx)
+c        spx=sin(phix)
         aksx=-akx*spx
         dcxkx=dcx/akxsq
         sxkx=spx/akx
-        xsxkx=-xsin(phix)/akx/akxsq
+        xsxkx=-xspx/akx/akxsq
       else
         akx=0.d0
         phix=0.d0
@@ -463,13 +466,14 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),
      $     sx(np),sz(np),
-     $     al,phi0,cp,sp,rho0,dx,xi,pzi,pzf,dl,dcp
+     $     al,phi0,cp,sp,rho0,dx,xi,pzi,pzf,dl,dcp,xsp
 c      th=tan(.5d0*phi0)
 c      sp=2.d0*th/(1.d0+th**2)
 c      dcp=th*sp
 c      cp=1.d0-dcp
       cp=cos(phi0)
-      sp=sin(phi0)
+      call sxsin(phi0,sp,xsp)
+c      sp=sin(phi0)
       if(cp .ge. 0.d0)then
         dcp=sp**2/(1.d0+cp)
       else
@@ -478,7 +482,7 @@ c      cp=1.d0-dcp
       rho0=al/phi0
       call tdrift_free(np,x,px,y,py,z,dv,rho0*sp)
       dx=rho0*dcp
-      dl=rho0*xsin(phi0)
+      dl=rho0*xsp
       if(calpol)then
         do i=1,np
           xi=x(i)+dx
