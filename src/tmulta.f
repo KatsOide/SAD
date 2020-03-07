@@ -3,7 +3,7 @@
      $     psi1,psi2,bz,
      1     dx,dy,theta,dtheta,
      $     eps0,krad,fb1,fb2,mfring,fringe)
-      use ffs_flag, only:rad,ndivrad,calpol
+      use ffs_flag, only:ndivrad,calpol
       use tmacro
       use multa
       use tbendcom, only:tbrot,tbshift

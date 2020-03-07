@@ -109,12 +109,12 @@
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
 
-        pr=1.d0+dp
-        akkp=akk/pr
         bzp=bz/pr
         if(bzp .eq. 0.d0)then
           call tzsetparam0(tz,dp,akk)
         else
+          pr=1.d0+dp
+          akkp=akk/pr
           wa=hypot(bzp**2,2.d0*akkp)
           w1=sqrt((bzp**2+wa)*.5d0)
           w2=akkp/w1
@@ -131,11 +131,11 @@ c           c1=cos(phi1)
           call xsincos(phi1,s1,xs1,c1,dc1)
 c          s1=sin(phi1)
 c          xs1=xsin(phi1)
-          if(c1 .ge. 0.d0)then
-            dc1=-s1**2/(1.d0+c1)
-          else
-            dc1=c1-1.d0
-          endif
+c          if(c1 .ge. 0.d0)then
+c            dc1=-s1**2/(1.d0+c1)
+c          else
+c            dc1=c1-1.d0
+c          endif
           phi2=aln*w2
 c          ch2=cosh(phi2)
           call xsincosh(phi2,sh2,xsh2,ch2,dch2)
@@ -164,54 +164,21 @@ c          dch2=sh2**2/(1.d0+ch2)
         end
 
         subroutine tzsetparam0(tz,dp,akk)
-        use mathfun
+        use mathfun, only:xsincos,xsincosh
         implicit none
         type (tzparam) tz
         real*8 dp,akk
         associate (
-     $       w1=>tz%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
-     $       phi1=>tz%phi1,phi2=>tz%phi2,
-     $     wss=>tz%wss,bzp=>tz%bzp,akkp=>tz%akkp,aln=>tz%aln,
-     $       csw1=>tz%csw1,csws=>tz%csws,ca1=>tz%ca1,dcw1=>tz%dcw1,
-     $       dcw2=>tz%dcw2,cr2=>tz%cr2,cr3=>tz%cr3,
-     $     c1=>tz%c1,s1=>tz%s1,dc1=>tz%dc1,xs1=>tz%xs1,ch2=>tz%ch2,
-     $       sh2=>tz%sh2,dch2=>tz%dch2,xsh2=>tz%xsh2,pr=>tz%pr,
-     $     c1p=>tz%c1p,s1p=>tz%s1p,xs1p=>tz%xs1p,ch2p=>tz%ch2p,
-     $       sh2p=>tz%sh2p,xsh2p=>tz%xsh2p,
-     $     w1p=>tz%w1p,w2p=>tz%w2p,wsp=>tz%wsp,w12p=>tz%w12p,
-     $       wdp=>tz%wdp,phi1p=>tz%phi1p,phi2p=>tz%phi2p,
-     $       g1=>tz%g1,g2=>tz%g2,g1p=>tz%g1p,g2p=>tz%g2p,
-     $       wr1=>tz%wr1,wr2=>tz%wr2,wr1p=>tz%wr1p,wr2p=>tz%wr2p,
-     $     wssip=>tz%wssip, ca1p=>tz%ca1p,
-     $       dcw1p=>tz%dcw1p, dcw2p=>tz%dcw2p, 
-     $       csw1p=>tz%csw1p,cswsp=>tz%cswsp,
-     $     cr2p=>tz%cr2p, cr3p=>tz%cr3p,dxs=>tz%dxs,dxsp=>tz%dxsp,
-     $     aw1=>tz%aw1,aw2=>tz%aw2,aw1p=>tz%aw1p,aw2p=>tz%aw2p,
-     $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
-     $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
-
+     $       w1=>tz%w1,phi1=>tz%phi1,aln=>tz%aln,
+     $       bzp=>tz%bzp,akkp=>tz%akkp,pr=>tz%pr,
+     $       c1=>tz%c1,s1=>tz%s1,dc1=>tz%dc1,xs1=>tz%xs1,
+     $       sh2=>tz%sh2,dch2=>tz%dch2,xsh2=>tz%xsh2,ch2=>tz%ch2)
         pr=(1.d0+dp)
         akkp=akk/pr
         w1=sqrt(akkp)
         phi1=aln*w1
-c        th=tan(0.5d0*phi1)
-c        s1=2.d0*th/(1.d0+th**2)
-c        dc1=-th*s1
-c        c1=1.d0+dc1
-c        c1=cos(phi1)
-c        s1=sin(phi1)
-c        xs1=xsin(phi1)
         call xsincos(phi1,s1,xs1,c1,dc1)
-c        if(c1 .ge. 0.d0)then
-c          dc1=-s1**2/(1.d0+c1)
-c        else
-c          dc1=c1-1.d0
-c        endif
-c        ch2=cosh(phi1)
         call xsincosh(phi1,sh2,xsh2,ch2,dch2)
-c        sh2=sinh(phi1)
-c        xsh2=xsinh(phi1)
-c        dch2=sh2**2/(1.d0+ch2)
         return
         end associate
         end
@@ -222,22 +189,22 @@ c        dch2=sh2**2/(1.d0+ch2)
         associate (
      $       w1=>tz%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
      $       phi1=>tz%phi1,phi2=>tz%phi2,
-     $     wss=>tz%wss,bzp=>tz%bzp,akkp=>tz%akkp,aln=>tz%aln,
+     $       wss=>tz%wss,bzp=>tz%bzp,akkp=>tz%akkp,aln=>tz%aln,
      $       csw1=>tz%csw1,csws=>tz%csws,ca1=>tz%ca1,dcw1=>tz%dcw1,
      $       dcw2=>tz%dcw2,cr2=>tz%cr2,cr3=>tz%cr3,
-     $     c1=>tz%c1,s1=>tz%s1,dc1=>tz%dc1,xs1=>tz%xs1,ch2=>tz%ch2,
+     $       c1=>tz%c1,s1=>tz%s1,dc1=>tz%dc1,xs1=>tz%xs1,ch2=>tz%ch2,
      $       sh2=>tz%sh2,dch2=>tz%dch2,xsh2=>tz%xsh2,pr=>tz%pr,
-     $     c1p=>tz%c1p,s1p=>tz%s1p,xs1p=>tz%xs1p,ch2p=>tz%ch2p,
+     $       c1p=>tz%c1p,s1p=>tz%s1p,xs1p=>tz%xs1p,ch2p=>tz%ch2p,
      $       sh2p=>tz%sh2p,xsh2p=>tz%xsh2p,
-     $     w1p=>tz%w1p,w2p=>tz%w2p,wsp=>tz%wsp,w12p=>tz%w12p,
+     $       w1p=>tz%w1p,w2p=>tz%w2p,wsp=>tz%wsp,w12p=>tz%w12p,
      $       wdp=>tz%wdp,phi1p=>tz%phi1p,phi2p=>tz%phi2p,
      $       g1=>tz%g1,g2=>tz%g2,g1p=>tz%g1p,g2p=>tz%g2p,
      $       wr1=>tz%wr1,wr2=>tz%wr2,wr1p=>tz%wr1p,wr2p=>tz%wr2p,
-     $     wssip=>tz%wssip, ca1p=>tz%ca1p,
+     $       wssip=>tz%wssip, ca1p=>tz%ca1p,
      $       dcw1p=>tz%dcw1p, dcw2p=>tz%dcw2p, 
      $       csw1p=>tz%csw1p,cswsp=>tz%cswsp,
-     $     cr2p=>tz%cr2p, cr3p=>tz%cr3p,dxs=>tz%dxs,dxsp=>tz%dxsp,
-     $     aw1=>tz%aw1,aw2=>tz%aw2,aw1p=>tz%aw1p,aw2p=>tz%aw2p,
+     $       cr2p=>tz%cr2p, cr3p=>tz%cr3p,dxs=>tz%dxs,dxsp=>tz%dxsp,
+     $       aw1=>tz%aw1,aw2=>tz%aw2,aw1p=>tz%aw1p,aw2p=>tz%aw2p,
      $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
      $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
 
@@ -339,14 +306,6 @@ c      elseif(ak .lt. 0.d0)then
 c        write(*,*)'tsolque-implementation error ',ak
 c        stop
       endif
-c      if(al*ak .lt. 0.d0)then
-c        call texchg(trans,cod,beam,srot,1.d0,calpol)
-c        call tsolque(trans,cod,beam,srot,al,-ak,
-c     $       bz0,ak0y,-ak0x,eps0,enarad,radcod,calpol,irad)
-c        call texchg(trans,cod,beam,srot,-1.d0,calpol)
-c        write(*,'(a,1p8g13.5)')'tsolque-out ',ak,bz,cod
-c        return
-c      endif
       bz=bz0
       if(eps0 .eq. 0.d0)then
         eps=0.1d0
@@ -354,9 +313,6 @@ c      endif
         eps=0.1d0*eps0
       endif
       ndiv=1+int(hypot(ak*al,bz*al)/eps)
-c      if(enarad)then
-c        ndiv=max(ndiv,itgetqraddiv(cod,ak,al))
-c      endif
       aln=al/ndiv
       dx0=ak0x/ak
       dy0=ak0y/ak

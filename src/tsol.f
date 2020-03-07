@@ -7,7 +7,7 @@
       subroutine tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,bz,dx,dy,dz,
      $     chi1,chi2,chi3,bxs,bys,bzs,ent)
-      use mathfun, only:sqrt1,sxsin
+      use mathfun, only:sqrt1,sxsin,xsincos
       use ffs_flag, only:calpol,rad
       implicit none
       integer*4 ,intent(in):: np
@@ -199,16 +199,17 @@ c     pz0=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
               x1   = cchi1*x(i)+schi1*(ds1-s0s)
               bzp=bz/pr
               phi=-bzp*ds2/pz2
-              a24=sin(phi)
-              a12=a24/bzp
-              a22=cos(phi)
-              if(a22 .ge. 0.d0)then
-                a14=a24**2/(1.d0+a22)/bzp
-              else
-                a14=(1.d0-a22)/bzp
-              endif
-              x(i) =x1 +a12*pxi+a14*pyi+dx
-              y(i) =y1 -a14*pxi+a12*pyi+dy
+              call xsincos(phi,a24,a12,a22,a14)
+c              a24=sin(phi)
+c              a12=a24/bzp
+c              a22=cos(phi)
+c              if(a22 .ge. 0.d0)then
+c                a14=a24**2/(1.d0+a22)/bzp
+c              else
+c                a14=(1.d0-a22)/bzp
+c              endif
+              x(i) =x1 +(a24*pxi-a14*pyi)/bzp+dx
+              y(i) =y1 +(a14*pxi+a24*pyi)/bzp+dy
               px(i)=    a22*pxi+a24*pyi-bzp*y(i)*.5d0
               py(i)=   -a24*pxi+a22*pyi+bzp*x(i)*.5d0
               z(i) =z(i)+ds2/pz2

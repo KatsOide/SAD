@@ -472,16 +472,16 @@ c      sp=2.d0*th/(1.d0+th**2)
 c      dcp=th*sp
 c      cp=1.d0-dcp
       cp=cos(phi0)
-      call sxsin(phi0,sp,xsp)
+      call xsincos(phi0,sp,xsp,cp,dcp)
 c      sp=sin(phi0)
-      if(cp .ge. 0.d0)then
-        dcp=sp**2/(1.d0+cp)
-      else
-        dcp=1.d0-cp
-      endif
+c      if(cp .ge. 0.d0)then
+c        dcp=sp**2/(1.d0+cp)
+c      else
+c        dcp=1.d0-cp
+c      endif
       rho0=al/phi0
       call tdrift_free(np,x,px,y,py,z,dv,rho0*sp)
-      dx=rho0*dcp
+      dx=-rho0*dcp
       dl=rho0*xsp
       if(calpol)then
         do i=1,np
@@ -542,13 +542,14 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
       use tspin
       use photontable
       use bendib, only:rbh,rbl,tbendal
+      use mathfun, only:xsincos
       implicit none
       integer*4 np,mfring,ndiv,mfr1,n1,n2,n
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
       real*8 sx(np),sy(np),sz(np)
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,
      $     psi1,psi2,wn,aln,phibn,phi0n,alr,f1r,f2r,
-     $     coswn,sinwn,sqwhn,sinwpn,bsi1,bsi2,alx,
+     $     coswn,sinwn,sqwhn,sinwpn,bsi1,bsi2,alx,xsinwn,
      $     cosp1n,sinp1n,cosp2n,sinp2n,psi1n,psi2n
       logical*4 fringe
       aln=(al-f1r-f2r)/ndiv
@@ -584,13 +585,14 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
         phibn=alx/al*phib
         if(n .le. 2 .or. n .ge. ndiv)then
           wn=phi0n-psi1n-psi2n
-          coswn=cos(wn)
-          sinwn=sin(wn)
-          if(coswn .gt. 0.d0)then
-            sqwhn=sinwn**2/(1.d0+coswn)
-          else
-            sqwhn=1.d0-coswn
-          endif
+          call xsincos(wn,sinwn,xsinwn,coswn,sqwhn)
+c          coswn=cos(wn)
+c          sinwn=sin(wn)
+c          if(coswn .gt. 0.d0)then
+c            sqwhn=sinwn**2/(1.d0+coswn)
+c          else
+c            sqwhn=1.d0-coswn
+c          endif
           sinwpn=sin(phi0n-psi2n)
         endif
 c        write(*,*)'tbendr ',n,ndiv,phi0n,alx,alr
@@ -598,7 +600,7 @@ c        write(*,*)'tbendr ',n,ndiv,phi0n,alx,alr
      $       alx,phi0n,
      1       cosp1n,sinp1n,cosp2n,sinp2n,
      1       mfr1,fringe,
-     $       coswn,sinwn,sqwhn,sinwpn,
+     $       coswn,sinwn,-sqwhn,sinwpn,
      1       .true.,alr,bsi1,bsi2)
         if(photons)then
           call tsetphotongeo(alx,phi0n,0.d0,.false.)

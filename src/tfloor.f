@@ -520,7 +520,7 @@
       end function
 
       real*8 function akang(ak,al,cr1) result(theta1)
-      use macmath
+      use macmath, only:m_pi_2
       implicit none
       complex*16 , intent(in)::ak
       complex*16 , intent(out)::cr1
@@ -1017,7 +1017,7 @@ c     $       '"Real or List of Reals"')
       recursive subroutine tfeintf(fun,cfun,k,kx,cmpl,rmin,rmax,ir)
       use tfstk
       use cfunc
-      use tmacro
+c      use tmacro
       implicit none
       type (sad_descriptor) k,kx
       type (sad_dlist), pointer ::klx,kl
@@ -1137,7 +1137,7 @@ c     $       '"Real or List of Reals"')
       recursive subroutine tfeintf2(fun,cfun,k,k1,cmpl,kx,ir)
       use tfstk
       use cfunc
-      use tmacro
+c      use tmacro
       implicit none
       type (sad_descriptor) kx,k,k1,ki,k1i
       type (sad_dlist), pointer ::klx,kl,kl1
