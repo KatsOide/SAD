@@ -450,7 +450,7 @@
       real*8 function sqrtl(x)
       implicit none
       real*8 x
-      real*8 ,parameter :: am=1.d-20
+      real*8 ,parameter :: am=1.d-100
       sqrtl=sqrt(max(x,am))
       return
       end function
@@ -465,7 +465,7 @@
         p2=1.d0/p**2
         p2h=p*(1.d0+p2*(0.5d0-p2*.125d0))
       else
-        p2h=sqrt(1.d0+p**2)
+        p2h=hypot(1.d0,p)
       endif
       return
       end function

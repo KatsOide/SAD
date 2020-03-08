@@ -297,7 +297,7 @@ c        stop
       else
         eps=0.1d0*eps0
       endif
-      ndiv=1+int(hypot(ak*al,bz*al)/eps)
+      ndiv=1+int(abs(al*hypot(ak,bz))/eps)
       aln=al/ndiv
       dx0=ak0x/ak
       dy0=ak0y/ak

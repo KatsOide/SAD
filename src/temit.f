@@ -2557,7 +2557,8 @@ ckiku <------------------
           btilt=0.d0
         endif
         sig1 = abs(emit1(1)+emit1(6))/2d0
-        sig2 = 0.5d0* sqrt(abs((emit1(1)-emit1(6))**2+4d0*emit1(4)**2))
+c        sig2 = 0.5d0* sqrt(abs((emit1(1)-emit1(6))**2+4d0*emit1(4)**2))
+        sig2=0.5d0*hypot(emit1(1)-emit1(6),2.d0*emit1(4))
         sigx = max(sqrt(sig1+sig2),sqrt(abs(sig1-sig2)))
         sigy = min(sqrt(sig1+sig2),sqrt(abs(sig1-sig2)))
         vout(6)=autofg(btilt,'11.8')

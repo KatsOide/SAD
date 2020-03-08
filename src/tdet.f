@@ -1,4 +1,5 @@
       real*8 function tdet(a,n,ndim)
+      use mathfun, only:p2h
       implicit none
       integer*4 ,intent(in)::n,ndim
       integer*4 i,j,k
@@ -18,7 +19,8 @@
               di=a(j,i)
             else
               p=a(j,i)/di
-              u=1.d0/sqrt(1.d0+p**2)
+c              u=1.d0/sqrt(1.d0+p**2)
+              u=1.d0/p2h(p)
               do k=i+1,n
                 x=a(j,k)
                 a(j,k)=(x-p*a(i,k))*u
