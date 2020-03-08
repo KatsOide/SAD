@@ -1,6 +1,7 @@
       module tracklim
-      real*8, parameter ::plimit=0.9d0,zlimit=1.d10,vmax=.9d0,
+      real*8, parameter ::plimit=0.9999d0,zlimit=1.d10,vmax=.9d0,
      $     ampmax=0.9999d0
+      real*8 xlimit
       end module
 
       subroutine tturn(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n)
@@ -153,9 +154,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       use mathfun
       use tracklim
       implicit none
-      integer*4 la1
-      parameter (la1=15)
-      real*8 xlimit
+      integer*4,parameter :: la1=15
       type (sad_comp), pointer:: cmp
       type (sad_dlist) , pointer ::lsegp
       integer*4 np,n,la,lbegin,lend,kdx,kdy,krot
@@ -221,6 +220,11 @@ c        call tfmemcheckprint('tturn',l,.false.,irtc)
      1         .false.,.false.,0)
         endif
         if(la .le. 0)then
+          call limitnan(x(1:np),-xlimit,xlimit,xlimit)
+          call limitnan(px(1:np),-plimit,plimit,plimit)
+          call limitnan(y(1:np),-xlimit,xlimit,xlimit)
+          call limitnan(py(1:np),-plimit,plimit,plimit)
+          call limitnan(z(1:np),-zlimit,zlimit,zlimit)
           call tapert(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
      1         kptbl,np,n,
      $         0.d0,0.d0,0.d0,0.d0,
@@ -595,11 +599,6 @@ c     print *,'tturn l sspac2',l,sspac2
          go to 1010
        end select
  1020   la=la-1
-        call limitnan(x(1:np),-xlimit,xlimit,xlimit)
-        call limitnan(px(1:np),-plimit,plimit,plimit)
-        call limitnan(y(1:np),-xlimit,xlimit,xlimit)
-        call limitnan(py(1:np),-plimit,plimit,plimit)
-        call limitnan(z(1:np),-zlimit,zlimit,zlimit)
  1011   if(radlight)then
           if(lele .eq. icBEND)then
           elseif(lele .eq. icMULT .and.

@@ -359,10 +359,7 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
       end
 c
       subroutine ttfrin(np,x,px,y,py,z,g,nord,ak,al,bz)
-      use tracklim
       implicit none
-      real*8 xlimit
-      parameter (xlimit=10.d0)
       integer*4 np,nord,i,kord
       real*8 x(np),px(np),y(np),py(np),z(np),g(np)
       real*8 ak,al,akk,aki,a,b,ab,t,dx1,dy1,d,xx,yy,

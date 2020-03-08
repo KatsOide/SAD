@@ -1469,19 +1469,21 @@ c        write(*,*)'tftouch ',flv%ntouch,i,iv
         logical*4 function tcheckseg(cmp,ltyp,al,lsegp,irtc) result(seg)
         use tfstk
         use mackw
-        use tparastat, only:tpara
         use sad_main
         use kyparam
         implicit none
-        type (sad_comp) ::cmp
+        type (sad_comp) ,intent(in)::cmp
         type (sad_dlist) , pointer :: lprof,lsegp
-        real*8 al
-        integer*4 irtc,ltyp,kl,kprof
+        real*8 , intent(out)::al
+        integer*4 ,intent(out)::irtc
+        integer*4 ,intent(in)::ltyp
+        integer*4 kl,kprof
         irtc=0
         seg=.false.
         kl=kytbl(kwL,ltyp)
         if(kl .eq. 0)then
           al=0.d0
+          return
         else
           al=cmp%value(kl)
         endif

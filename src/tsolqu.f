@@ -57,7 +57,6 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
       akk=ak/al
       if(bz .eq. 0.d0)then
         do i=1,np
-c     pr=(1.d0+gp(i))**2
           call tzsetparam0(tz,gp(i),akk)
           ra=aln*0.5d0
           if(ibsi .eq. 1)then
@@ -279,7 +278,6 @@ c          endif
         alr=aln*0.5d0
         do n=1,ndiv
           do i=1,np
-c     pr=(1.d0+gp(i))**2
             call tzsetparam0(tz,gp(i),akk)
             if(n .eq. 1)then
               bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)

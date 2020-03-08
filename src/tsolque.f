@@ -123,25 +123,9 @@
           w12=w1-w2
           wd=bzp/ws
           phi1=aln*w1
-c          th=tan(.5d0*phi1)
-c          s1=2.d0*th/(1.d0+th**2)
-c          dc1=-th*s1
-c          c1=1.d0+dc1
-c           c1=cos(phi1)
-          call xsincos(phi1,s1,xs1,c1,dc1)
-c          s1=sin(phi1)
-c          xs1=xsin(phi1)
-c          if(c1 .ge. 0.d0)then
-c            dc1=-s1**2/(1.d0+c1)
-c          else
-c            dc1=c1-1.d0
-c          endif
           phi2=aln*w2
-c          ch2=cosh(phi2)
+          call xsincos(phi1,s1,xs1,c1,dc1)
           call xsincosh(phi2,sh2,xsh2,ch2,dch2)
-c          sh2=sinh(phi2)
-c          xsh2=xsinh(phi2)
-c          dch2=sh2**2/(1.d0+ch2)
           g1 = (s1**2*w2**2)/akkp
           g2 = -((sh2**2*w1**2)/akkp)
           wr1 = w1/w2
