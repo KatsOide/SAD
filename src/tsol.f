@@ -21,27 +21,29 @@
       real*8 b,phix,phiy,phiz,a,a12,a14,a22,a24,
      $     dphizsq,pr,ds1,ds2,pz0,pz1,bzp,alb,s,pl,
      $     dpz0,dpl,plx,ply,plz,ptx,pty,ptz,pbx,pby,pbz,
-     $     phi,sinphi,dcosphi,xsinphi,dphi,phi0,bxs0,
+     $     phi,sinphi,dcosphi,xsinphi,dphi,phi0,bxs0,xs,
      $     px0,pxi,pyi,pz2,x0,x1,y1,sv(3),rr(3,3)
       integer*4 , parameter ::itmax=10
       real*8 ,parameter :: conv=3.d-16
       if(ent)then
         if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or. chi2 .ne. 0.d0)then
           s0s=-al*.5d0
-          cchi1=cos(chi1)
-          schi1=sin(chi1)
-          if(cchi1 .ge. 0.d0)then
-            dcchi1=schi1**2/(1.d0+cchi1)
-          else
-            dcchi1=(1.d0-cchi1)
-          endif
-          cchi2=cos(chi2)
-          schi2=sin(chi2)
-          if(cchi1 .ge. 0.d0)then
-            dcchi2=schi2**2/(1.d0+cchi2)
-          else
-            dcchi2=(1.d0-cchi2)
-          endif
+          call xsincos(chi1,schi1,xs,cchi1,dcchi1)
+c          cchi1=cos(chi1)
+c          schi1=sin(chi1)
+c          if(cchi1 .ge. 0.d0)then
+c            dcchi1=schi1**2/(1.d0+cchi1)
+c          else
+c            dcchi1=(1.d0-cchi1)
+c          endif
+          call xsincos(chi2,schi2,xs,cchi2,dcchi2)
+c          cchi2=cos(chi2)
+c          schi2=sin(chi2)
+c          if(cchi1 .ge. 0.d0)then
+c            dcchi2=schi2**2/(1.d0+cchi2)
+c          else
+c            dcchi2=(1.d0-cchi2)
+c          endif
           if(bz .ne. 0.d0)then
             b=abs(bz)
             phix=(-schi1)         *sign(1.d0,bz)
@@ -57,9 +59,9 @@
               py(i)=py(i)-bz*x(i)/pr*.5d0
               x(i)=x(i)-dx
               y(i)=y(i)-dy
-              ds1  = schi1*x(i)-dcchi1*s0s-cchi1*dz
+              ds1  = schi1*x(i)+dcchi1*s0s-cchi1*dz
               x(i) = cchi1*x(i)-schi1*(s0s-dz)
-              ds2  =-(schi2*y(i)+cchi2*ds1-dcchi2*s0s)
+              ds2  =-(schi2*y(i)+cchi2*ds1+dcchi2*s0s)
               y(i) = cchi2*y(i)-schi2*(ds1+s0s)
               pz0=1.d0+sqrt1(-px(i)**2-py(i)**2)
 c     pz0=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
@@ -122,9 +124,9 @@ c     pz0=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
               pz1  = schi1*px(i)+cchi1*pz0
               px(i)= cchi1*px(i)-schi1*pz0
               py(i)= cchi2*py(i)-schi2*pz1
-              ds1  = schi1*x(i)-dcchi1*s0s-cchi1*dz
+              ds1  = schi1*x(i)+dcchi1*s0s-cchi1*dz
               x(i) = cchi1*x(i)-schi1*(s0s-dz)
-              ds2  = schi2*y(i)+cchi2*ds1-dcchi2*s0s
+              ds2  = schi2*y(i)+cchi2*ds1+dcchi2*s0s
               y(i) = cchi2*y(i)-schi2*(ds1+s0s)
               pz2=1.d0+sqrt1(-px(i)**2-py(i)**2)
 c     pz2=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
@@ -194,8 +196,8 @@ c     pz0=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
               pz2  =-schi1*px(i)+cchi1*pz1
               pxi  = cchi1*px(i)+schi1*pz1
               y1   = cchi2*y(i)-schi2*s0s
-              ds1  =-schi2*y(i)+dcchi2*s0s
-              ds2  =-schi1*x(i)+cchi1*ds1+dcchi1*s0s+dz
+              ds1  =-schi2*y(i)-dcchi2*s0s
+              ds2  =-schi1*x(i)+cchi1*ds1-dcchi1*s0s+dz
               x1   = cchi1*x(i)+schi1*(ds1-s0s)
               bzp=bz/pr
               phi=-bzp*ds2/pz2
@@ -223,8 +225,8 @@ c              endif
               pz2  =-schi1*px(i)+cchi1*pz1
               pxi  = cchi1*px(i)+schi1*pz1
               y1   = cchi2*y(i)-schi2*s0s
-              ds1  =-schi2*y(i)+dcchi2*s0s
-              ds2  =-schi1*x(i)+cchi1*ds1+dcchi1*s0s+dz
+              ds1  =-schi2*y(i)-dcchi2*s0s
+              ds2  =-schi1*x(i)+cchi1*ds1-dcchi1*s0s+dz
               x1   = cchi1*x(i)+schi1*(ds1-s0s)
               a=ds2/pz2
               px(i)=pxi
@@ -260,12 +262,12 @@ c              endif
      $     chi1,chi2,chi3,bxs,bys,bzs,ent)
       use tmacro, only:irad
       use ffs_flag, only:calpol
-      use mathfun, only: sqrtl
+      use mathfun, only: sqrtl,xsincos
       implicit none
       real*8 trans(6,12),cod(6),beam(21),trans1(6,6),
      $     trans2(6,6),tb(6),srot(3,9)
       real*8 bz,dx,dy,chi3,x0,px0,bzh,dz,chi1,chi2,
-     $     al,s0,rr(3,3),
+     $     al,s0,rr(3,3),xs,
      $     ds1,pr,pz0,dpz0dpx,dpz0dpy,dpz0dp,
      $     pz1,ds2,bxs,bys,bzs,bxs0,bzh1,pzmin,a,ptmax
       logical*4 ent
@@ -278,20 +280,22 @@ c              endif
           cod(2)=cod(2)+bzh1*cod(3)
           cod(4)=cod(4)-bzh1*cod(1)
           s0=-.5d0*al
-          cchi1=cos(chi1)
-          schi1=sin(chi1)
-          if(cchi1 .ge. 0.d0)then
-            dcchi1=schi1**2/(1.d0+cchi1)
-          else
-            dcchi1=(1.d0-cchi1)
-          endif
-          cchi2=cos(chi2)
-          schi2=sin(chi2)
-          if(cchi2 .ge. 0.d0)then
-            dcchi2=schi2**2/(1.d0+cchi2)
-          else
-            dcchi2=(1.d0-cchi2)
-          endif
+          call xsincos(chi1,schi1,xs,cchi1,dcchi1)
+          call xsincos(chi2,schi2,xs,cchi2,dcchi2)
+c$$$          cchi1=cos(chi1)
+c$$$          schi1=sin(chi1)
+c$$$          if(cchi1 .ge. 0.d0)then
+c$$$            dcchi1=schi1**2/(1.d0+cchi1)
+c$$$          else
+c$$$            dcchi1=(1.d0-cchi1)
+c$$$          endif
+c$$$          cchi2=cos(chi2)
+c$$$          schi2=sin(chi2)
+c$$$          if(cchi2 .ge. 0.d0)then
+c$$$            dcchi2=schi2**2/(1.d0+cchi2)
+c$$$          else
+c$$$            dcchi2=(1.d0-cchi2)
+c$$$          endif
           bzs=cchi2*cchi1*bz
           bxs=-schi1*bz
           bys=-schi2*cchi1*bz
@@ -313,9 +317,9 @@ c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
           trans1(4,2)=-schi2*schi1-schi2*cchi1*dpz0dpx
           trans1(4,4)= cchi2      -schi2*cchi1*dpz0dpy
           trans1(4,6)=            -schi2*cchi1*dpz0dp
-          ds1   = schi1*cod(1)-dcchi1*s0-cchi1*dz
+          ds1   = schi1*cod(1)+dcchi1*s0-cchi1*dz
           cod(1)= cchi1*cod(1)-schi1*(s0-dz)
-          ds2   = schi2*cod(3)+cchi2*ds1-dcchi2*s0
+          ds2   = schi2*cod(3)+cchi2*ds1+dcchi2*s0
           cod(3)= cchi2*cod(3)-schi2*(ds1+s0)
           trans1(1,1)= cchi1
           trans1(3,1)=-schi2*schi1
@@ -403,9 +407,9 @@ c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
           dpz0dpx=-cod(2)/pz0
           dpz0dpy=-cod(4)/pz0
           dpz0dp = pr/pz0
-          ds1   =-schi2*cod(3)+dcchi2*s0
+          ds1   =-schi2*cod(3)-dcchi2*s0
           cod(3)= cchi2*cod(3)-schi2*s0
-          ds2   =-schi1*cod(1)+cchi1*ds1+dcchi1*s0+dz
+          ds2   =-schi1*cod(1)+cchi1*ds1-dcchi1*s0+dz
           cod(1)= cchi1*cod(1)+schi1*(ds1-s0)
           pz1   =-schi2*cod(4)+cchi2*pz0
           cod(2)= cchi1*cod(2)+schi1*pz1

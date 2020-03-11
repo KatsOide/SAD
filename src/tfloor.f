@@ -245,16 +245,16 @@
         x2=x**2
         xs=x*x2/6.d0*(1.d0-x2/20.d0*(1.d0-x2/42.d0))
         s=x-xs
-        c=1.d0-x2/2.d0*(1.d0-x2/12.d0)
-        dc=-s**2/(1.d0+c)
+        dc=-x2/2.d0*(1.d0-x2/12.d0*(1.d0-x2/30.d0))
+        c=1.d0+dc
       elseif(abs(x) .lt. .1d0)then
         x2=x**2
         xs=x*x2/6.d0*(1.d0-x2/20.d0*(1.d0-x2/42.d0*(
      1       1.d0-x2/72.d0*(1.d0-x2/110.d0))))
         s=x-xs
-        c=1.d0-x2/2.d0*(1.d0-x2/12.d0*(1.d0-x2/30.d0*
+        dc=-x2/2.d0*(1.d0-x2/12.d0*(1.d0-x2/30.d0*
      $       (1.d0-x2/56.d0*(1.d0-x2/90.d0))))
-        dc=-s**2/(1.d0+c)
+        c=1.d0+dc
       else
         s=sin(x)
         xs=x-s
@@ -315,16 +315,16 @@
         x2=x**2
         xsh=-x*x2/6.d0*(1.d0+x2/20.d0*(1.d0+x2/42.d0))
         sh=x-xsh
-        ch=1.d0+x2/2.d0*(1.d0+x2/12.d0)
-        dch=sh**2/(1.d0+ch)
+        dch=x2/2.d0*(1.d0+x2/12.d0*(1.d0+x2/30.d0))
+        ch=1.d0+dch
       elseif(abs(x) .lt. 0.1d0)then
         x2=x**2
         xsh=-x*x2/6.d0*(1.d0+x2/20.d0*(1.d0+x2/42.d0*(
      1       1.d0+x2/72.d0*(1.d0+x2/110.d0))))
         sh=x-xsh
-        ch=1.d0+x2/2.d0*(1.d0+x2/12.d0*(1.d0+x2/30.d0*
+        dch=x2/2.d0*(1.d0+x2/12.d0*(1.d0+x2/30.d0*
      $       (1.d0+x2/56.d0*(1.d0+x2/90.d0))))
-        dch=sh**2/(1.d0+ch)
+        ch=1.d0+dch
       else
         sh=sinh(x)
         xsh=x-sh

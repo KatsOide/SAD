@@ -257,7 +257,7 @@ tcorr.o: tcorr.f tffs.o tfstk.o toplvl.o
 tcsvdm.o: tcsvdm.f tfstk.o
 tday.o: tday.f
 tdcmd.o: tdcmd.f tfstk.o toplvl.o
-tdet.o: tdet.f
+tdet.o: tdet.f tfloor.o
 tdfun.o: tdfun.f tffs.o tfstk.o toplvl.o
 tdgeo.o: tdgeo.f initb1.o tffs.o tfloor.o tfstk.o
 tdinit.o: tdinit.f
@@ -407,7 +407,7 @@ tqfrie.o: tqfrie.f tffs.o tfstk.o
 tqlfre.o: tqlfre.f tffs.o
 tqr.o: tqr.f tfstk.o
 tqrad.o: tqrad.f inc/TENT.inc inc/TEXIT.inc tffs.o
-tquad.o: tquad.f inc/TENT.inc inc/TEXIT.inc temit.o tffs.o tfloor.o tfstk.o toplvl.o tsol.o tturn.o
+tquad.o: tquad.f inc/TENT.inc inc/TEXIT.inc temit.o tffs.o tfloor.o tfstk.o toplvl.o tsol.o
 tquade.o: tquade.f temit.o tffs.o tfloor.o tfstk.o
 tquads.o: tquads.f temit.o tffs.o tfloor.o tfstk.o tsol.o
 tquase.o: tquase.f temit.o tffs.o tfstk.o tsol.o
