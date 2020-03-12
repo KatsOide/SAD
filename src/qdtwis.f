@@ -30,103 +30,99 @@
       iutk=itwissp(k)
       iutl=itwissp(l)
       dcod(5)=0.d0
-      go to (1110,1120,1900,1140,1900,1160,1900,1160,1900,1160,
-     $       1900,1160,1900,1900,1900,1900,1900,1900,1900,1320,
-     $       1900,1320,1900,1900,1900,1900,1900,1900,1900,1900,
-     $       1900,1900,1900,1900,1900,1900,1900,1900,1900,1900,
-     $       4100),ke
- 1900 dtwiss=0.d0
-      go to 9000
- 1110 call qddrif(dtrans,dcod,utwiss(1,idp,iutk))
-      go to 2001
- 1120 continue
-      if(iv .eq. ky_ANGL_BEND .or.
-     $     iv .eq. ky_K1_BEND)then
-        if(dir .gt. 0.d0)then
-          psi1=cmp%value(ky_E1_BEND)
-          psi2=cmp%value(ky_E2_BEND)
+c      go to (1110,1120,1900,1140,1900,1160,1900,1160,1900,1160,
+c     $       1900,1160,1900,1900,1900,1900,1900,1900,1900,1320,
+c     $       1900,1320,1900,1900,1900,1900,1900,1900,1900,1900,
+c     $       1900,1900,1900,1900,1900,1900,1900,1900,1900,1900,
+c     $       4100),ke
+      select case (ke)
+      case (icDRFT)
+        call qddrif(dtrans,dcod,utwiss(1,idp,iutk))
+      case (icBEND)
+        if(iv .eq. ky_ANGL_BEND .or.
+     $       iv .eq. ky_K1_BEND)then
+          if(dir .gt. 0.d0)then
+            psi1=cmp%value(ky_E1_BEND)
+            psi2=cmp%value(ky_E2_BEND)
+          else
+            psi2=cmp%value(ky_E1_BEND)
+            psi1=cmp%value(ky_E2_BEND)
+          endif
+          call qdbend(dtrans,dcod,cmp%value(ky_L_BEND),
+     1         cmp%value(ky_ANGL_BEND)+cmp%value(ky_K0_BEND),
+     $         cmp%value(ky_ANGL_BEND),
+     1         psi1,psi2,cmp%value(ky_K1_BEND),
+     1         utwiss(1,idp,iutk),
+     1         cmp%value(ky_DX_BEND),cmp%value(ky_DY_BEND),
+     1         cmp%value(ky_ROT_BEND),iv)
+          dt1=dtrans(1,5)
+          dt2=dtrans(2,5)
         else
-          psi2=cmp%value(ky_E1_BEND)
-          psi1=cmp%value(ky_E2_BEND)
+          call qdtrans(ke,iutk,k,k+1,
+     $         iv,dtrans,dcod,idp)
         endif
-        call qdbend(dtrans,dcod,cmp%value(ky_L_BEND),
-     1       cmp%value(ky_ANGL_BEND)+cmp%value(ky_K0_BEND),
-     $       cmp%value(ky_ANGL_BEND),
-     1       psi1,psi2,cmp%value(ky_K1_BEND),
-     1       utwiss(1,idp,iutk),
-     1       cmp%value(ky_DX_BEND),cmp%value(ky_DY_BEND),
-     1       cmp%value(ky_ROT_BEND),iv)
-        dt1=dtrans(1,5)
-        dt2=dtrans(2,5)
-      else
-        call qdtrans(ke,iutk,k,k+1,
-     $       iv,dtrans,dcod,idp)
-      endif
-      go to 2001
- 1140 if(iv .eq. ky_K1_QUAD .or.
-     $     iv .eq. ky_ROT_QUAD)then
-        call qdquad(dtrans,dcod,
-     $       cmp%value(ky_L_QUAD),cmp%value(ky_K1_QUAD),
-     $       k,idp,cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
-     $       cmp%value(ky_ROT_QUAD),iv,nfam,nut)
-        if(geocal .and. cmp%value(ky_DX_QUAD) .ne. 0.d0
-     $       .or. cmp%value(ky_DY_QUAD) .ne. 0.d0)then
-          call qdquad(dtrans1,dcod1,
+      case (icQUAD)
+        if(iv .eq. ky_K1_QUAD .or.
+     $       iv .eq. ky_ROT_QUAD)then
+          call qdquad(dtrans,dcod,
      $         cmp%value(ky_L_QUAD),cmp%value(ky_K1_QUAD),
-     $         k,0,cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
+     $         k,idp,cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      $         cmp%value(ky_ROT_QUAD),iv,nfam,nut)
-          dcod(1:4)=dcod(1:4)-dcod1(1:4)
-        endif
-      else
-        call qdtrans(ke,iutk,k,k+1,
-     $       iv,dtrans,dcod,idp)
-      endif
-      go to 2001
- 1160 if(iv .eq. 2 .or. iv .eq. 4)then
-        call qdthin(dtrans,dcod,ke,
-     $       cmp%value(ky_L_THIN),cmp%value(ky_K_THIN),
-     1       k,idp,cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
-     $       cmp%value(ky_ROT_THIN),iv,nfam,nut)
-      else
-        call qdtrans(ke,iutk,k,k+1,iv,dtrans,dcod,idp)
-      endif
-      go to 2001
- 1320 call qdtrans(ke,iutk,k,k+1,iv,dtrans,dcod,idp)
-c      if(cmp%value(3) .ne. 0.d0 .or. cmp%value(4) .ne. 0.d0)then
-c        call qdtrans(nlat,ke,iutk,k,k+1,
-c     $       iv,dtrans1,dcod1,0,
-c     $       utwiss,gammab,nfam,nut)
-c        dcod(1)=dcod(1)-dcod1(1)
-c        dcod(2)=dcod(2)-dcod1(2)
-c        dcod(3)=dcod(3)-dcod1(3)
-c        dcod(4)=dcod(4)-dcod1(4)
-c      endif
-      go to 2001
- 4100 if(k .eq. 1)then
-        if(iv .eq. mfitddp)then
-          call tftmatu(utwiss(1,idp,1),utwiss(1,idp,iutl),
-     $         0.d0,0.d0,dtrans,1,l,.false.,trpt)
-          r=sqrt(gammab(k)/gammab(l))
-          do i=mfitdx,mfitdpy
-            dtwiss(i)=dtrans(i-mfitdx+1,5)*r
-          enddo
-          go to 9000
-        elseif(.not. cell)then
-          k=min(nlat-1,max(2,1+int(
-     $         rlist(latt(1)+ky_OFFSET_MARK))))
-          gammab(1)=gammab(k)
-          iutk=itwissp(k)
-          call qdini(utwiss(1:ntwissfun,idp,1),
-     $         utwiss(1:ntwissfun,idp,iutk),k,dtrans,dcod,iv)
-          k1=k
-          go to 2002
+          if(geocal .and. cmp%value(ky_DX_QUAD) .ne. 0.d0
+     $         .or. cmp%value(ky_DY_QUAD) .ne. 0.d0)then
+            call qdquad(dtrans1,dcod1,
+     $           cmp%value(ky_L_QUAD),cmp%value(ky_K1_QUAD),
+     $           k,0,cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
+     $           cmp%value(ky_ROT_QUAD),iv,nfam,nut)
+            dcod(1:4)=dcod(1:4)-dcod1(1:4)
+          endif
         else
-          go to 1900
+          call qdtrans(ke,iutk,k,k+1,
+     $         iv,dtrans,dcod,idp)
         endif
-      else
-        go to 1900
-      endif
- 2001 k1=k+1
+      case (icSEXT,icOCTU,icDECA,icDODECA)
+        if(iv .eq. 2 .or. iv .eq. 4)then
+          call qdthin(dtrans,dcod,ke,
+     $         cmp%value(ky_L_THIN),cmp%value(ky_K_THIN),
+     1         k,idp,cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
+     $         cmp%value(ky_ROT_THIN),iv,nfam,nut)
+        else
+          call qdtrans(ke,iutk,k,k+1,iv,dtrans,dcod,idp)
+        endif
+      case (icMULT,icSOL)
+        call qdtrans(ke,iutk,k,k+1,iv,dtrans,dcod,idp)
+      case (icMARK)
+        if(k .eq. 1)then
+          if(iv .eq. mfitddp)then
+            call tftmatu(utwiss(1,idp,1),utwiss(1,idp,iutl),
+     $           0.d0,0.d0,dtrans,1,l,.false.,trpt)
+            r=sqrt(gammab(k)/gammab(l))
+            do i=mfitdx,mfitdpy
+              dtwiss(i)=dtrans(i-mfitdx+1,5)*r
+            enddo
+            go to 9000
+          elseif(.not. cell)then
+            k=min(nlat-1,max(2,1+int(
+     $           rlist(latt(1)+ky_OFFSET_MARK))))
+            gammab(1)=gammab(k)
+            iutk=itwissp(k)
+            call qdini(utwiss(1:ntwissfun,idp,1),
+     $           utwiss(1:ntwissfun,idp,iutk),k,dtrans,dcod,iv)
+            k1=k
+            go to 2002
+          else
+            dtwiss=0.d0
+            go to 9000
+          endif
+        else
+          dtwiss=0.d0
+          go to 9000
+        endif
+      case default
+        dtwiss=0.d0
+        go to 9000
+      end select
+      k1=k+1
  2002 gr=sqrt(gammab(k1)/gammab(l))
       dcod2(1:4)=dcod(1:4)*gr
       dcod2(5)=dcod(5)
@@ -137,21 +133,9 @@ c      endif
      $     utwiss(mfitnx,idp,nut),utwiss(mfitny,idp,nut),
      $     trans,k1,l,.false.,trpt)
       nzcod=.false.
-      do 10 i=1,4
-        trans1(i,1)= trans(i,1)*dtrans(1,1)+trans(i,2)*dtrans(2,1)
-     1              +trans(i,3)*dtrans(3,1)+trans(i,4)*dtrans(4,1)
-        trans1(i,2)= trans(i,1)*dtrans(1,2)+trans(i,2)*dtrans(2,2)
-     1              +trans(i,3)*dtrans(3,2)+trans(i,4)*dtrans(4,2)
-        trans1(i,3)= trans(i,1)*dtrans(1,3)+trans(i,2)*dtrans(2,3)
-     1              +trans(i,3)*dtrans(3,3)+trans(i,4)*dtrans(4,3)
-        trans1(i,4)= trans(i,1)*dtrans(1,4)+trans(i,2)*dtrans(2,4)
-     1              +trans(i,3)*dtrans(3,4)+trans(i,4)*dtrans(4,4)
-        trans1(i,5)= trans(i,1)*dtrans(1,5)+trans(i,2)*dtrans(2,5)
-     1              +trans(i,3)*dtrans(3,5)+trans(i,4)*dtrans(4,5)
-        dcod1(i)= trans(i,1)*dcod2(1)+trans(i,2)*dcod2(2)
-     1           +trans(i,3)*dcod2(3)+trans(i,4)*dcod2(4)
-        nzcod=nzcod .or. dcod1(i) .ne. 0.d0
-10    continue
+      trans1=matmul(trans(:,1:4),dtrans)
+      dcod1(1:4)=matmul(trans(:,1:4),dcod2(1:4))
+      nzcod=nzcod .or. maxval(abs(dcod1(1:4))) .ne. 0.d0
       dcod1(5)=dcod2(5)
       if(dzfit .or. (nzcod .and. disp .and. .not. cell))then
         call qddtwiss(k,k1,l,
@@ -345,117 +329,91 @@ c     end   initialize for preventing compiler warning
         call qgettru(utwiss1,utwiss2,0.d0,0.d0,
      $       trans,1,k2,.true.,.false.,.true.)
       endif
-      go to (100,200,300,400,500,600,700,800,900,1000,
-     $     1100,1200,1300,1400,1500,1600,1700,1800,1900),iv
-      return
- 100  b=-dir/utwiss1(mfitbx)
-      dtrans(1,1)= trans(1,2)*b
-      dtrans(2,1)= trans(2,2)*b
-      dtrans(3,1)= trans(3,2)*b
-      dtrans(4,1)= trans(4,2)*b
-      go to 5000
- 200  b=.5d0/utwiss1(mfitbx)
-      dtrans(1,1)= trans(1,1)*b
-      dtrans(2,1)= trans(2,1)*b
-      dtrans(3,1)= trans(3,1)*b
-      dtrans(4,1)= trans(4,1)*b
-      dtrans(1,2)=-trans(1,2)*b
-      dtrans(2,2)=-trans(2,2)*b
-      dtrans(3,2)=-trans(3,2)*b
-      dtrans(4,2)=-trans(4,2)*b
-      go to 5000
- 300  go to 5000
- 400  b=-dir/utwiss1(mfitby)
-      dtrans(1,3)= trans(1,4)*b
-      dtrans(2,3)= trans(2,4)*b
-      dtrans(3,3)= trans(3,4)*b
-      dtrans(4,3)= trans(4,4)*b
-      go to 5000
- 500  b=.5d0/utwiss1(mfitby)
-      dtrans(1,3)= trans(1,3)*b
-      dtrans(2,3)= trans(2,3)*b
-      dtrans(3,3)= trans(3,3)*b
-      dtrans(4,3)= trans(4,3)*b
-      dtrans(1,4)=-trans(1,4)*b
-      dtrans(2,4)=-trans(2,4)*b
-      dtrans(3,4)=-trans(3,4)*b
-      dtrans(4,4)=-trans(4,4)*b
-      go to 5000
- 600  go to 5000
- 700  dtrans(1,5)=trans(1,1)
-      dtrans(2,5)=trans(2,1)
-      dtrans(3,5)=trans(3,1)
-      dtrans(4,5)=trans(4,1)
-      go to 5000
- 800  dtrans(1,5)=dir*trans(1,2)
-      dtrans(2,5)=dir*trans(2,2)
-      dtrans(3,5)=dir*trans(3,2)
-      dtrans(4,5)=dir*trans(4,2)
-      go to 5000
- 900  dtrans(1,5)=trans(1,3)
-      dtrans(2,5)=trans(2,3)
-      dtrans(3,5)=trans(3,3)
-      dtrans(4,5)=trans(4,3)
-      go to 5000
- 1000 dtrans(1,5)=dir*trans(1,4)
-      dtrans(2,5)=dir*trans(2,4)
-      dtrans(3,5)=dir*trans(3,4)
-      dtrans(4,5)=dir*trans(4,4)
-      go to 5000
- 1100 if(detr .lt. 1.d0)then
-        damu=-.5d0*utwiss1(mfitr4)/sqrt(1.d0-detr)
-        dtrans(1,1)=damu
-        dtrans(3,1)=-1.d0
-        dtrans(2,2)=damu
-        dtrans(3,3)=damu
-        dtrans(2,4)=1.d0
-        dtrans(4,4)=damu
-      else
-      endif
-      go to 5000
- 1200 if(detr .lt. 1.d0)then
-        damu= .5d0*dir*utwiss1(mfitr3)/sqrt(1.d0-detr)
-        dtrans(1,1)=damu
-        dtrans(3,2)=-dir
-        dtrans(2,2)=damu
-        dtrans(3,3)=damu
-        dtrans(1,4)=-dir
-        dtrans(4,4)=damu
-      else
-      endif
-      go to 5000
- 1300 if(detr .lt. 1.d0)then
-        damu= .5d0*dir*utwiss1(mfitr2)/sqrt(1.d0-detr)
-        dtrans(1,1)=damu
-        dtrans(4,1)=-dir
-        dtrans(2,2)=damu
-        dtrans(3,3)=damu
-        dtrans(2,3)=-dir
-        dtrans(4,4)=damu
-      else
-      endif
-      go to 5000
- 1400 if(detr .lt. 1.d0)then
-        damu=-.5d0*utwiss1(mfitr1)/sqrt(1.d0-detr)
-        dtrans(1,1)=damu
-        dtrans(4,2)=-1.d0
-        dtrans(2,2)=damu
-        dtrans(3,3)=damu
-        dtrans(1,3)=1.d0
-        dtrans(4,4)=damu
-      else
-      endif
-      go to 5000
- 1500 dcod(1)=1.d0
-      go to 5000
- 1600 dcod(2)=dir
-      go to 5000
- 1700 dcod(3)=1.d0
-      go to 5000
- 1800 dcod(4)=dir
-      go to 5000
- 1900 dcod(5)=1.d0
- 5000 dcod(6)=0.d0
+c      go to (100,200,300,400,500,600,700,800,900,1000,
+c     $     1100,1200,1300,1400,1500,1600,1700,1800,1900),iv
+c      return
+      select case (iv)
+      case (mfitax)
+        b=-dir/utwiss1(mfitbx)
+        dtrans(1:4,1)= trans(1:4,2)*b
+      case (mfitbx)
+        b=.5d0/utwiss1(mfitbx)
+        dtrans(1:4,1)= trans(1:4,1)*b
+        dtrans(1:4,2)=-trans(1:4,2)*b
+      case (mfitay)
+        b=-dir/utwiss1(mfitby)
+        dtrans(1:4,3)= trans(1:4,4)*b
+      case (mfitby)
+        b=.5d0/utwiss1(mfitby)
+        dtrans(1:4,3)= trans(1:4,3)*b
+        dtrans(1:4,4)=-trans(1:4,4)*b
+      case (mfitex)
+        dtrans(1:4,5)=trans(1:4,1)
+      case (mfitepx)
+        dtrans(1:4,5)=dir*trans(1:4,2)
+      case (mfitey)
+        dtrans(1:4,5)=trans(1:4,3)
+      case (mfitepy)
+        dtrans(1:4,5)=dir*trans(1:4,4)
+      case (mfitr1)
+        if(detr .lt. 1.d0)then
+          damu=-.5d0*utwiss1(mfitr4)/sqrt(1.d0-detr)
+          dtrans(1,1)=damu
+          dtrans(3,1)=-1.d0
+          dtrans(2,2)=damu
+          dtrans(3,3)=damu
+          dtrans(2,4)=1.d0
+          dtrans(4,4)=damu
+        else
+        endif
+      case (mfitr2)
+        if(detr .lt. 1.d0)then
+          damu= .5d0*dir*utwiss1(mfitr3)/sqrt(1.d0-detr)
+          dtrans(1,1)=damu
+          dtrans(3,2)=-dir
+          dtrans(2,2)=damu
+          dtrans(3,3)=damu
+          dtrans(1,4)=-dir
+          dtrans(4,4)=damu
+        else
+        endif
+      case (mfitr3)
+        if(detr .lt. 1.d0)then
+          damu= .5d0*dir*utwiss1(mfitr2)/sqrt(1.d0-detr)
+          dtrans(1,1)=damu
+          dtrans(4,1)=-dir
+          dtrans(2,2)=damu
+          dtrans(3,3)=damu
+          dtrans(2,3)=-dir
+          dtrans(4,4)=damu
+        else
+        endif
+      case (mfitr4)
+        if(detr .lt. 1.d0)then
+          damu=-.5d0*utwiss1(mfitr1)/sqrt(1.d0-detr)
+          dtrans(1,1)=damu
+          dtrans(4,2)=-1.d0
+          dtrans(2,2)=damu
+          dtrans(3,3)=damu
+          dtrans(1,3)=1.d0
+          dtrans(4,4)=damu
+        else
+        endif
+      case (mfitdx)
+        dcod(1)=1.d0
+      case (mfitdpx)
+        dcod(2)=dir
+      case (mfitdy)
+        dcod(3)=1.d0
+      case (mfitdpy)
+        dcod(4)=dir
+      case (mfitdz)
+        dcod(5)=1.d0
+      case (mfitnx,mfitny,mfitddp)
+      case default
+        return
+      end select
+      dcod(6)=0.d0
       return
       end
 
@@ -618,28 +576,31 @@ c      enddo
       call compelc(j,cmp)
       v0=tfvalvar(j,iv)
       wv=1.d0
-      go to (
-     $     4900, 200,4900, 400,4900, 600,4900, 600,4900, 600,
-     $      600,4900,4900,4900,4900,4900,4900,4900,4900,6000,
-     $     4900,2200,4900,4900,4900,4900,4900,4900,4900,4900,
-     $     4900,4900,4900,4900,4900,4900,4900,4900,4900,4900,
-     $     4900),ke
- 4900 dtrans=0.d0
-      dcod=0.d0
-      return
- 200  wv=1.d0
-      go to 6000
- 400  wv=1.d0
-      go to 6000
- 600  wv=1.d0
-      go to 6000
- 2200 if(iv .ge. ky_K1_MULT)then
-        wv=10.d0**((iv-ky_K1_MULT)/2)
-      else
+c      go to (
+c     $     4900, 200,4900, 400,4900, 600,4900, 600,4900, 600,
+c     $      600,4900,4900,4900,4900,4900,4900,4900,4900,6000,
+c     $     4900,2200,4900,4900,4900,4900,4900,4900,4900,4900,
+c     $     4900,4900,4900,4900,4900,4900,4900,4900,4900,4900,
+c     $     4900),ke
+      select case (ke)
+      case (icBEND)
         wv=1.d0
-      endif
-      go to 6000
- 6000 dv=max(abs(eps*v0),abs(vmin*wv))
+      case (icQUAD)
+        wv=1.d0
+      case (icSEXT,icOCTU,icDECA,icDODECA)
+        wv=1.d0
+      case (icMULT)
+        if(iv .ge. ky_K1_MULT)then
+          wv=10.d0**((iv-ky_K1_MULT)/2)
+        else
+          wv=1.d0
+        endif
+      case default
+        dtrans=0.d0
+        dcod=0.d0
+        return  
+      end select        
+      dv=max(abs(eps*v0),abs(vmin*wv))
 c      call tfsetcmp(v0+dv,cmp,iv)
       cmp%value(iv)=v0+dv
       cod2(1:6)=utwiss(mfitdx:mfitddp,idp,kk1)
