@@ -1,4 +1,4 @@
-!Help$Update="$Date: 1/10/2019 18:00:00  $"[8,18];
+!Help$Update="$Date: 2/25/2019 18:00:00  $"[8,18];
 Help$Update=("$Date: "//DateString[][1,10]//" $")[8,17];
 Help$Version=$Version;
 
@@ -222,6 +222,11 @@ Displays values of various optical-/geometric-functions at the components given 
       "geometric-functions matching-function-commands",
       {}},
 
+      {"GAMMA(GA)",
+       "DISP GA displays gamma functions for x and y, instead of dispersions, as well as gamma*L, which is nealry equal to the natural chromaticity.",
+       "",
+       {}},
+
       {"OGEOMETRY(OG)",
       "DISP OG displays geometric information at the orbit.",
       "geometric-functions matching-function-commands",
@@ -264,7 +269,7 @@ DISP A displays the nominal energy, energy deviation(DDP), longitudinal position
       {}},
 
       {"Z",
-       "DISP Z displays muatching functions related to the Z plane: AZ BZ NZ DZ DDP ZX ZPX ZY ZPY , which are obtained by CAL/GO with CALC6D.",
+       "DISP Z displays muatching functions related to the Z plane: AZ BZ NZ DZ DDP ZX ZPX ZY ZPY GMZ , which are obtained by CAL/GO with CALC6D.",
       "extended-Twiss-parameters CALC6D CALC4D",
       {}},
 
@@ -419,7 +424,7 @@ executes the character-string-expression as FFS commands.",
 Usage: (1) FIT [component]\n\
        (2) FIT component1 component2\n\n\
 sets the current location where the matching condition is applied. The component is given with the form name[.order][{+-}offset] (see components). If component is omitted, the end of the beam line is chosen.\n\
-   If two components are given, it means a relative-fitting or zone-fitting. If the fitting condition is not maximum-fitting, the condition means to make values at two components equal (for AX, BX, AY, BY, EX, EPX, EY, EPY, R1, R2, R3, R4, DX, DPX, DY, DPY, PEX, PEPX, PEY, PEPY, CHI1, CHI2, CHI3),  or have the specified difference (for NX, NY, LENG, GX, GY, GZ). If the fitting condition is maximum-fitting, the condition means a zone-fitting (for AX, BX, AY, BY, EX, EPX, EY, EPY, R1, R2, R3, R4, DX, DPX, DY, DPY, PEX, PEPX, PEY, PEPY, CHI1, CHI2, CHI3), which suppress the maximum of the function in the region between component1 and component2, or maximum-fitting for the difference of the function (for NX,  NY, LENG, GX, GY, GZ). The fit region is shown in the first part of the prompt when FFSPRMPT is ON.\n\n\
+   If two components are given, it means a relative-fitting or zone-fitting. If the fitting condition is not maximum-fitting, the condition means to make values at two components equal (for AX, BX, GMX, AY, BY, GMY, EX, EPX, EY, EPY, R1, R2, R3, R4, DX, DPX, DY, DPY, PEX, PEPX, PEY, PEPY, CHI1, CHI2, CHI3),  or have the specified difference (for NX, NY, LENG, GX, GY, GZ). If the fitting condition is maximum-fitting, the condition means a zone-fitting (for AX, BX, GMX, AY, BY, GMY, EX, EPX, EY, EPY, R1, R2, R3, R4, DX, DPX, DY, DPY, PEX, PEPX, PEY, PEPY, CHI1, CHI2, CHI3), which suppress the maximum of the function in the region between component1 and component2, or maximum-fitting for the difference of the function (for NX,  NY, LENG, GX, GY, GZ). The fit region is shown in the first part of the prompt when FFSPRMPT is ON.\n\n\
 Examples: (1) FIT QF.2-10\n\n\
 sets the current fit point at  10 components upstream from the entrance of the second QF.\n\n\
           (2) FIT QF QD NX 0.5 BXM 10\n\n\
@@ -630,7 +635,7 @@ APERT   DX1 DX2 DY1 DY2 DP AX AY DX DY",
 
          {"transformation:DRIFT",
           DRIFT$trans="\
-The transformation of a drift is\n\n"//
+The transformation of a drift is written as\n\n"//
 EquAlign["\\exp(:H:)\\ .",
 "\
    exp(:H:),"]//"\n\n\
@@ -1089,7 +1094,7 @@ where\n\
             dy1 = -y1 (a + b/3)\n\
             a   = -K1 x1^2/p1/4\n\
             b   = -K1 y1^2/p1/4 ."],
-        "Hamiltonian 2nd-order-Hamiltonian solution-H2",
+        "Hamiltonian 2nd-order-Hamiltonian solution-H2 solution-dH",
         {}}
          }]
         },
@@ -1425,7 +1430,7 @@ Actually the summation is truncated at n + k <= 21 in the current version. While
 The skew "//N$pole[2(n+1)]//" magnetic field component (times the length L).\n"//EquAlign["\
 {\\tt SK"//n//"} = \\frac{B"//N$deriv[n]//"{\\tt L}}{B\\rho}\\ ,","\
    SK"//n//" = B^("//n//")L/(Brho),"]//"\n\n\
-where L is the length of the component. Positive sign means a horizontally focusing magnet rotated around z-axis by -90/(n+1) degree, i.e., ROTATE = (90/(n+1)) DEG .",
+where L is the length of the component. Positive sign means a horizontally focusing magnet rotated around z-axis by -90/"//n+1//" degree, i.e., ROTATE = "//90/(n+1)//" DEG .",
           "L",
           {}};
          Hold[Apply[Sequence,
@@ -1731,7 +1736,7 @@ Example:   BX 10 3    (beta_x to be 10 at 3 momenta) \n\
 (5) If the current fit location is at a MARK, @ for the goal value refers the save value at the MARK. @- refers -(save value). These are useful to match between two beam lines.\n\n\
    Available matching-functions are:\n\
 optical-functions (see optical-functions):\n\
-AX BX NX AY BY NY EX EPX EY EPY R1 R2 R3 R4 DETR DX DPX DY DPY DZ DDP PEX PEPX PEY PEPY TRX TRY LENG\n\
+AX BX GMX NX AY BY GMY NY EX EPX EY EPY R1 R2 R3 R4 DETR DX DPX DY DPY DZ DDP PEX PEPX PEY PEPY TRX TRY LENG\n\
 geometric-functions (see geometric-functions):\n\
 GX GY GZ CHI1 CHI2 CHI3",
     "FIT GO SHOW MARK optical-functions geometric-functions off-momentum-matching x-y-coupling REJ special-variables DP functions FitValue MatchingAmplitude",
@@ -1755,9 +1760,11 @@ As this example, the off-momentum points are chosen with equal separation. If th
      "Available optical functions for matching are:\t\n\n\
 AX      alpha_X\n\
 BX      beta_X\n\
+GMX     gamma_X\n\
 NX      psi_X, the default scale is 1/(2Pi)\n\
 AY      alpha_Y\n\
 BY      beta_Y\n\
+GMY     gamma_Y\n\
 NY      psi_Y, the default scale is 1/(2Pi)\n\
 EX      eta_X   (dispersion_X)\n\
 EPX     eta_Px  (dispersion_PX) \n\
@@ -1776,6 +1783,7 @@ DZ      dz\n\
 DDP     delta=dp/p0\n\
 AZ      alpha_Z\n\
 BZ      beta_Z\n\
+GMZ     gamma_Z\n\
 NZ      psi_Z, the default scale is 1/(2Pi)\n\
 ZX      zeta_X  (z-dispersion_X)\n\
 ZPX     zeta_Px (z-dispersion_PX) \n\
@@ -4009,7 +4017,7 @@ Usage: OpticsPlot[fun_list, options]\n\n\
 makes a plot of built-in optical functions, user-defined functions, or\n\
 list of data at components on the beam line.   The parameters are:\t\n\n\
 fun_list: a list of objects to be plotted in a window. The number of windows in a plot is the length of fun_list object plotted in a window MUST have same dimensions. An element of fun_list is one of fun_label, fun, list_data or a list as {object, options}, where\n\
-fun_label: one of \"AX\", \"BX\", \"NX\", \"EX\", \"EPX\", \"DX\", \"DPX\", \"AY\", \"BY\", \"NY\", \"EY\", \"EPY\", \"DY\", \"DPY\", \"R1\", \"R2\", \"R3\", \"R4\", \"DETR\", \"AZ\", \"BZ\", \"NZ\", \"ZX\", \"ZPX\", \"ZY\", \"ZPY\", \"DZ\",\"DDP\",\"PEX\", \"PEPX\", \"PEY\", \"PEPY\", \"GAMMA\", \"GAMMABETA\",\"SIGab\", where a and b in \"SIGab\" are one of X, PX, Y, PY, Z, DP. \"R\"//fun_label refers the reference optics. \"D\"//fun_label refers the difference between the current and reference optics.\n\
+fun_label: one of \"AX\", \"BX\", \"GMX\", \"NX\", \"EX\", \"EPX\", \"DX\", \"DPX\", \"AY\", \"BY\", \"GMY\", \"NY\", \"EY\", \"EPY\", \"DY\", \"DPY\", \"R1\", \"R2\", \"R3\", \"R4\", \"DETR\", \"AZ\", \"BZ\", \"GMZ\", \"NZ\", \"ZX\", \"ZPX\", \"ZY\", \"ZPY\", \"DZ\",\"DDP\",\"PEX\", \"PEPX\", \"PEY\", \"PEPY\", \"GAMMA\", \"GAMMABETA\",\"SIGab\", where a and b in \"SIGab\" are one of X, PX, Y, PY, Z, DP. \"R\"//fun_label refers the reference optics. \"D\"//fun_label refers the difference between the current and reference optics.\n\
             fun: Any function of the component number.   A fractional number may be used to obtain the intermediate value.\n\
             list_data: a list of {{pos1, val1}..{posn,valn}}.\t\n\n\
 options       defaults\n\
@@ -4272,7 +4280,7 @@ keyword        The value of the keyword of the component (see below).\n\
  Twiss[optical-function, component] returns the value of the optical-function at the entrance of component. The values are those calculated by the last CALCULATE(CALC) or GO commands, or CalculateOptics function.\n\
  The second argument, component can be a name of component, a component number, or a list of them. If the number has a fraction, the intermediate value in the component is calculated.\n\
  Twiss[\"ALL\",component] or Twiss[\"*\",component] returns all 28 optical-functions at the entrance of component as a list:\n\n\
-{AX, BX, NX, AY, BY, NY, EX, EPX, EY, EPY, R1, R2, R3, R4, DETR, DX, DPX, DY, DPY, DZ, DDP, AZ, BZ, NZ, ZX, ZPX, ZY, ZPY},\n\n\
+{AX, BX, GMX, NX, AY, BY, GMY, NY, EX, EPX, EY, EPY, R1, R2, R3, R4, DETR, DX, DPX, DY, DPY, DZ, DDP, AZ, BZ, GMZ, NZ, ZX, ZPX, ZY, ZPY},\n\n\
 which can be directly used in CalculateOptics. In the current version, however, parameters after AZ are uninteresting, because it always returns 1 for BZ and zeros for the others. \"R\"//optical-function refers the reference optics. \"D\"//optical-function refers the difference between the current and the referece optics. \"RALL\" and \"DAL\" mean the all optical functions for the reference optics and the differences, respectively.\n\
    Keywords \"PEX\", \"PEPX\", \"PEY\", \"PEPY\", \"PZX\", \"PZPX\", \"PZY\", \"PZPY\" return dispersions in the physical coordinate.\n\
    Keywords \"LENGTH\", \"GAMMA\", \"GAMMABETA\", \"S\", \"SIGab\" return the same results as for the function LINE.\n\
@@ -4697,7 +4705,7 @@ where $a_{x1}$ and $a_{y1}$ are the transverse vector potentials up to the first
       "Hamiltonian remarks-on-dynamics",
         {{"solution-H2",
 EquAlign["Text[\
-We assume the focusing is uniform and $K=B'/(B\\rho)>0$, which can be always obtained by an appropriate rotation in the $x$-$y$ plane. For a uniform longitudinal field $B_z=B/(B\\rho)$ with the length of the section $\\ell$, the solution of $H_2$ is written as:\
+We assume the focusing is uniform and $K=B'/(B\\rho)>0$, which can be always obtained by an appropriate rotation in the $x$-$y$ plane. For a uniform longitudinal field $B_z=B/(B\\rho)$ with the length of the section $\\ell$, the solution of $H_2$ for $1/\\rho =0$ is written as:\
 \\begin{align}\
             x &= x_0 + \\varDelta x\\ ,\\\\\
 p_x &= p_{x0} + p u_2 + B_z\\left(v_2  - \\frac{\\varDelta y}{2}\\right)\\ ,\\\\\
@@ -4732,9 +4740,56 @@ The parameters are:\
            U&=\\frac{1}{V}\\ ,\\\\\
           V&=\\sqrt{(B_z/p)^4+4(K/p)^2}=w_1^2+w_2^2\\ .\
 \\end{align}\
-The subscript 0 above means the initial value.\\\\\
-The transformation for $z$ is to be written.;;;23]",""],
-          "",{}}}
+The subscript 0 above denotes the initial value.\\\\\
+The second order Hamiltonian $H_2$ can be rewritten to\
+\\begin{align}\
+H_{2u}=-p-iw_1up_u-w_2vp_v\
+\\end{align} \
+in terms of a {\\it complex} normal coordinate:\
+\\begin{align}\
+\\left(\\begin{matrix}u\\\\p_u\\\\v\\\\p_v\\end{matrix}\\right)&=\\sqrt U\\left(\\begin{matrix}\\frac{w_1+w_2}{2}&-\\frac{i}{p}&-\\frac{\\sqrt{w_1^2-w_2^2}}{2}&\\frac{1}{p}\\sqrt{\\frac{w_1-w_2}{w_1+w_2}}\\\\\
+-\\frac{ip}{4}(w_1+w_2)^2&\\frac{w_1+w_2}{2}&-\\frac{p(w_1-w_2)}{4}\\sqrt{w_1^2-w_2^2} & -\\frac{w_1-w_2}{2}\\sqrt\\frac{w_1-w_2}{w_1+w_2}\\\\\
+-\\frac{\\sqrt{w_1^2-w_2^2}}{2}&\\frac{1}{p}\\sqrt{\\frac{w_1-w_2}{w1+w2}}&\\frac{w_1+w_2}{2}&\\frac{1}{p}\\\\\
+-\\frac{p(w_1-w_2)}{4}\\sqrt{w_1^2-w_2^2}&-i\\frac{w_1-w_2}{2}\\sqrt\\frac{w_1-w_2}{w_1+w_2}&-\\frac{ip}{4}(w_1+w_2)^2&\\frac{w_1+w_2}{2}\
+\\end{matrix}\\right)\\left(\\begin{matrix}x\\\\p_x\\\\y\\\\p_y\\end{matrix}\\right)\\ .\
+\\end{align}\
+Note that $H_{2u}$ is real. Thus the transformation of the longitudinal coordinate is obtained as\
+\\begin{align}\
+z&=z_0+\\left(-iup_u\\frac{\\partial w_1}{\\partial p}-vp_v\\frac{\\partial w_2}{\\partial p}+\\varDelta v\\right)\\ell\\\\\
+&=z_0+\\frac{U}{p}\\left(iw_1^3u_0p_{u0}+w_2^3v_0p_{v0}+\\varDelta v\\right)\\ell\\ ,\
+\\end{align}\
+using $up_u=u_0p_{u0}$ and $vp_v=v_0p_{v0}$.;;;27]",""],
+          "solution-dH",{}},
+
+        {"solution-dH",
+          EquAlign["Text[\
+The transformation for the correction term $\\varDelta H=H-H_2$ for $1/\\rho=0$:\
+\\begin{align}\
+\\varDelta H&=-\\sqrt{p^2-(p_x-a_c)^2-(p_y-a_y)^2}+p-\\frac{(p_x-a_x)^2}{2p}-\\frac{(p_y-a_y)^2}{2p}\\\\\
+&=p-p_z-\\frac{(p_x-a_x)^2}{2p}-\\frac{(p_y-a_y)^2}{2p}\\ ,\\\\\
+a_x&=-\\frac{B_z}{2}y\\ ,\\\\\
+a_y&=\\frac{B_z}{2}x\\ ,\
+\\end{align}\
+is written as\
+\\begin{align}\
+x&=x_0+\\varDelta x\\ ,\\\\\
+y&=y_0+\\varDelta y\\ ,\\\\\
+p_x&=p_{x0}+\\frac{B_z}{2}\\varDelta y\\ ,\\\\\
+p_y&=p_{y0}-\\frac{B_z}{2}\\varDelta x\\ ,\
+\\end{align}\
+where\
+\\begin{align}\
+\\varDelta x&=\\left(p_{x0}+\\frac{B_z}{2}y_0\\right)\\sin w\\ell-\\left(p_{y0}-\\frac{B_z}{2}x_0\\right)(\\cos w\\ell-1) ,\\\\\
+\\varDelta y&=\\left(p_{x0}+\\frac{B_z}{2}y_0\\right)(\\cos w\\ell-1)+\\left(p_{y0}-\\frac{B_z}{2}x_0\\right)\\sin w\\ell\\ ,\\\\\
+w&=\\frac{B_z(p-p_z)}{pp_z}\\ .\
+\\end{align}\
+The longitudinal coordinate is transformed as:\
+\\begin{align}\
+z=z_0+\\left(\\frac{3}{2}-\\frac{p}{p_z}-\\frac{p_z^2}{2p^2}+\\varDelta v\\right)\\ell\\ .\
+\\end{align};;;12]",""],
+          "solution-H2",
+          {}}}
+
         }}},
 
       {"remarks-on-dynamics",

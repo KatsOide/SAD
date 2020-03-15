@@ -225,17 +225,20 @@ c      write(*,'(a,1p6g15.7)')'tfetwiss-4 ',detm,ax,ay,az,f,xyth
       r12=( hi(4,4)*hi(3,2)-hi(3,4)*hi(4,2))/axy
       r21=(-hi(4,3)*hi(3,1)+hi(3,3)*hi(4,1))/axy
       r22=(-hi(4,3)*hi(3,2)+hi(3,3)*hi(4,2))/axy
-      crx=sqrt(hi(1,2)**2+hi(2,2)**2)
+      crx=hypot(hi(1,2),hi(2,2))
+c      crx=sqrt(hi(1,2)**2+hi(2,2)**2)
       cx= hi(2,2)/crx
       sx=-hi(1,2)/crx
       bx21=(-sx*hi(1,1)+cx*hi(2,1))/axy
       bx22=crx/axy
-      cry=sqrt(hi(3,4)**2+hi(4,4)**2)
+      cry=hypot(hi(3,4),hi(4,4))
+c      cry=sqrt(hi(3,4)**2+hi(4,4)**2)
       cy= hi(4,4)/cry
       sy=-hi(3,4)/cry
       by21=(-sy*hi(3,3)+cy*hi(4,3))/axy
       by22=cry/axy
-      crz=sqrt(uz12**2+uz22**2)
+      crz=hypot(uz12,uz22)
+c      crz=sqrt(uz12**2+uz22**2)
       cz= uz22/crz
       sz=-uz12/crz
       bz21=-sz*uz11+cz*uz21
@@ -773,8 +776,9 @@ c        write(*,*)'phlist ',itp,nph
           kp=kt+(ilp-1)*10
           klx%dbody(i)%k=ktflist+ktavaloc(0,nitem,klri)
           klri%attr=lconstlist
-          dp=sqrt(rlist(kp+4)**2+rlist(kp+5)**2
-     $         +rlist(kp+6)**2)
+          dp=hypot(rlist(kp+4),hypot(rlist(kp+5),rlist(kp+6)))
+c          dp=sqrt(rlist(kp+4)**2+rlist(kp+5)**2
+c     $         +rlist(kp+6)**2)
           klri%rbody(1)=dp*amass*gammab(ilist(2,kp))
           klri%rbody(2)=rlist(kp+1)
           klri%rbody(3)=rlist(kp+2)
@@ -1715,7 +1719,7 @@ c     enddo
             tr1(4,4)=tr1(4,4)+1.d0
             tr1(5,5)=tr1(5,5)+1.d0
             tr1(6,6)=tr1(6,6)+1.d0
-            call tmulbs(beam,tr1,.false.,calint)
+            call tmulbs(beam,tr1,calint)
             de=anp*uc**2*cuu
             pxm=pxi+px
             pym=pyi+py
@@ -2370,7 +2374,7 @@ c$$$      enddo
         write(lfno,*)
       endif
       beam1(1:21)=beam(1:21)
-      call tmulbs(beam,ri,.false.,.false.)
+      call tmulbs(beam,ri,.false.)
       beam2(1:21)=beam(1:21)
       if(.not. synchm)then
         do i=1,6
@@ -2486,7 +2490,7 @@ c          enddo
      $       -emit(ia(5,6))**2)),emit(ia(6,6))*charge)
       endif
       emit1(1:21)=emit
-      call tmulbs(emit1,r,.false.,.false.)
+      call tmulbs(emit1,r,.false.)
       sige=sqrt(abs(emit1(21)))
       if(synchm)then
         sigz=sqrt(abs(emit1(15)))
@@ -2553,7 +2557,8 @@ ckiku <------------------
           btilt=0.d0
         endif
         sig1 = abs(emit1(1)+emit1(6))/2d0
-        sig2 = 0.5d0* sqrt(abs((emit1(1)-emit1(6))**2+4d0*emit1(4)**2))
+c        sig2 = 0.5d0* sqrt(abs((emit1(1)-emit1(6))**2+4d0*emit1(4)**2))
+        sig2=0.5d0*hypot(emit1(1)-emit1(6),2.d0*emit1(4))
         sigx = max(sqrt(sig1+sig2),sqrt(abs(sig1-sig2)))
         sigy = min(sqrt(sig1+sig2),sqrt(abs(sig1-sig2)))
         vout(6)=autofg(btilt,'11.8')
@@ -2945,7 +2950,7 @@ c        endif
           trans1(6,6)=rz
 c     write(*,*)'temit ',rx,ry,rx
 c     write(*,*)'temit ',emy,emy1
-          call tmulbs(emit,trans1,.false.,.false.)
+          call tmulbs(emit,trans1,.false.)
           if(.not. synchm)then
             emit(ia(5,1))=0.d0
             emit(ia(5,2))=0.d0
@@ -2963,7 +2968,7 @@ c     write(*,*)'temit ',emy,emy1
             r(5,5)=1.d0
             r(5,6)=0.d0
           endif
-          call tmulbs(emit,r,.false.,.false.)
+          call tmulbs(emit,r,.false.)
           beam(22:42)=emit
           it=it+1
         else

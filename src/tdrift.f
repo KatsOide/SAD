@@ -33,7 +33,7 @@ c     drift in the parallel solenoid
       use ffs_flag, only:rfluct,photons,calpol
       use photontable
       use tspin
-      use mathfun, only: sqrtl
+      use mathfun, only: sqrtl,pxy2dpz,xsincos
       implicit none
       integer*4 np
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
@@ -41,7 +41,7 @@ c     drift in the parallel solenoid
       real*8 al,bz
       integer*4 i
       real*8 pr,bzp,pxi,pyi
-      real*8 s,dpzi,pzi,al1,zi
+      real*8 dpzi,pzi,al1,zi
       real*8 phi,a22,a24,a12,a14
       logical*4 enarad
       if(enarad)then
@@ -59,8 +59,9 @@ c         pr=(1.d0+g(i))**2
          pyi=py(i)-bzp*x(i)*.5d0
          zi=z(i)
 
-         s=min(ampmax,pxi**2+pyi**2)
-         dpzi=-s/(1.d0+sqrtl(1.d0-s))
+c         s=min(ampmax,pxi**2+pyi**2)
+c         dpzi=-s/(1.d0+sqrtl(1.d0-s))
+         dpzi=pxy2dpz(pxi,pyi)
          pzi=1.d0+dpzi
          al1=al/pzi
 
@@ -77,20 +78,21 @@ c                          + R_2N(x) / x
 c         |R_2N(x) / x| =< \frac{x^{2N}}{(2N)!}
 c
          phi=al1*bzp
-         a22=cos(phi)
-         a24=sin(phi)
-         if(abs(phi) .gt. 1.d-4)then
-            a12=a24/bzp
-         else
-            a12=(1.d0-(1.d0/6.d0)*phi*phi)*al1
-         endif
-         if(a22 .ge. 0.d0)then
-            a14=a12*a24/(1.d0+a22)
-         else
-            a14=(1.d0-a22)/bzp
-         endif
-         x(i) =x(i)+a12*pxi+a14*pyi
-         y(i) =y(i)-a14*pxi+a12*pyi
+         call xsincos(phi,a24,a12,a22,a14)
+c         a22=cos(phi)
+c         a24=sin(phi)
+c         if(abs(phi) .gt. 1.d-4)then
+c            a12=a24/bzp
+c         else
+c            a12=(1.d0-(1.d0/6.d0)*phi*phi)*al1
+c         endif
+c         if(a22 .ge. 0.d0)then
+c            a14=a12*a24/(1.d0+a22)
+c         else
+c            a14=(1.d0-a22)/bzp
+c         endif
+         x(i) =x(i)+(a24*pxi-a14*pyi)/bzp
+         y(i) =y(i)+(a14*pxi+a24*pyi)/bzp
          z(i) =z(i)+dpzi *al1-dv(i)*al
          px1=     a22*pxi+a24*pyi
          py1=    -a24*pxi+a22*pyi
@@ -169,8 +171,9 @@ c          pr=(1.d0+g(i))**2
           px0=px(i)
           py0=py(i)
           z0=z(i)
-          s=min(ampmax,px(i)**2+py(i)**2)
-          dpz0=-s/(1.d0+sqrtl(1.d0-s))
+c          s=min(ampmax,px(i)**2+py(i)**2)
+c          dpz0=-s/(1.d0+sqrtl(1.d0-s))
+          dpz0=pxy2dpz(px(i),py(i))
           pz0=1.d0+dpz0
           dpl=px(i)*phix+py(i)*phiy+dpz0*phiz
           pl=phiz+dpl
@@ -187,9 +190,10 @@ c          pr=(1.d0+g(i))**2
           phi=asin(min(1.d0,max(-1.d0,bpr/pz0)))
           dphi=0.d0
           do j=1,itmax
-            sinphi=sin(phi)
+c            sinphi=sin(phi)
             dcosphi=2.d0*sin(.5d0*phi)**2
-            xsinphi=xsin(phi)
+c            xsinphi=xsin(phi)
+            call sxsin(phi,sinphi,xsinphi)
             s=plz*xsinphi+pz0*sinphi+pbz*dcosphi
             r=pz0-ptz*dcosphi+pbz*sinphi
             if(r .ne. 0.d0)then

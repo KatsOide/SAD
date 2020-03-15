@@ -203,6 +203,7 @@
       implicit none
       real*8, intent (in):: ak1,al
       logical*4 , intent(in), optional::force
+      real*8 xspx
 c      if(present(force))then
 c        write(*,*)'tbendiinit ',force,ak1,akxi,al,alxi,dpxi,dp
 c      else
@@ -226,20 +227,22 @@ c      endif
         akx=sqrt(akxsq)
         phix=akx*al
         dcx=2.d0*sinh(.5d0*phix)**2
-        spx=sinh(phix)
+        call sxsinh(phix,spx,xspx)
+c        spx=sinh(phix)
         aksx=akx*spx
         dcxkx=dcx/akxsq
         sxkx=spx/akx
-        xsxkx=xsinh(phix)/akx/akxsq
+        xsxkx=xspx/akx/akxsq
       elseif(akxsq .lt. 0.d0)then
         akx=sqrt(-akxsq)
         phix=akx*al
         dcx=-2.d0*sin(.5d0*phix)**2
-        spx=sin(phix)
+        call sxsin(phix,spx,xspx)
+c        spx=sin(phix)
         aksx=-akx*spx
         dcxkx=dcx/akxsq
         sxkx=spx/akx
-        xsxkx=-xsin(phix)/akx/akxsq
+        xsxkx=-xspx/akx/akxsq
       else
         akx=0.d0
         phix=0.d0
@@ -335,6 +338,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       use tbendcom
       use tspin
       use photontable
+      use mathfun, only:akang
       implicit none
       integer*4 np,mfring,ndiv,ndivmax,iniph,n1,n2
       parameter (ndivmax=1024)
@@ -348,7 +352,8 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       real*8 ,parameter::smax=0.99d0,smin=0.01d0,rphidiv=3e-3
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
       real*8 sx(np),sy(np),sz(np)
-      complex*16 akm(0:nmult)
+      real*8 theta2
+      complex*16 akm(0:nmult),cr1
       logical*4 fringe,ini,krad
       if(phi0 .eq. 0.d0)then
         if(ak .eq. 0.d0)then
@@ -358,22 +363,23 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      $         fb10,fb20,fringe,eps,krad)
         elseif(phib .eq. phi0)then
           call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
-     1         dx,dy,theta+dtheta,0.d0,.true.,
+     1         dx,dy,theta+dtheta,theta+dtheta,0.d0,.true.,
      1         fringe,0.d0,0.d0,0,eps,.true.)
         else
           akm=0.d0
           akm(0)=phib-phi0
           akm(1)=ak
+          theta2=theta+dtheta+akang(dcmplx(ak,0.d0),al,cr1)
           call tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         al,ak,0.d0,0.d0,
-     $         psi1,psi2,
+     $         al,akm,0.d0,0.d0,0.d0,0.d0,
      $         dx,dy,0.d0,0.d0,0.d0,theta+dtheta,0.d0,
+     $         theta2,cr1,
      $         eps,krad,fringe,
      $         0.d0,0.d0,0.d0,0.d0,
      $         mfring,fb10,fb20,
      $         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,
      $         .false.,.false.,
-     $         i00,i00,i00,i00)
+     $         0,i00,i00)
         endif
         return
       elseif(ak .ne. 0.d0)then
@@ -460,12 +466,13 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),
      $     sx(np),sz(np),
-     $     al,phi0,cp,sp,rho0,dx,xi,pzi,pzf,dl,dcp,th
-      th=tan(.5d0*phi0)
-      sp=2.d0*th/(1.d0+th**2)
-      dcp=th*sp
-      cp=1.d0-dcp
+     $     al,phi0,cp,sp,rho0,dx,xi,pzi,pzf,dl,dcp,xsp
+c      th=tan(.5d0*phi0)
+c      sp=2.d0*th/(1.d0+th**2)
+c      dcp=th*sp
+c      cp=1.d0-dcp
 c      cp=cos(phi0)
+      call xsincos(phi0,sp,xsp,cp,dcp)
 c      sp=sin(phi0)
 c      if(cp .ge. 0.d0)then
 c        dcp=sp**2/(1.d0+cp)
@@ -474,8 +481,8 @@ c        dcp=1.d0-cp
 c      endif
       rho0=al/phi0
       call tdrift_free(np,x,px,y,py,z,dv,rho0*sp)
-      dx=rho0*dcp
-      dl=rho0*xsin(phi0)
+      dx=-rho0*dcp
+      dl=rho0*xsp
       if(calpol)then
         do i=1,np
           xi=x(i)+dx
@@ -535,13 +542,14 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
       use tspin
       use photontable
       use bendib, only:rbh,rbl,tbendal
+      use mathfun, only:xsincos
       implicit none
       integer*4 np,mfring,ndiv,mfr1,n1,n2,n
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
       real*8 sx(np),sy(np),sz(np)
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,
      $     psi1,psi2,wn,aln,phibn,phi0n,alr,f1r,f2r,
-     $     coswn,sinwn,sqwhn,sinwpn,bsi1,bsi2,alx,
+     $     coswn,sinwn,sqwhn,sinwpn,bsi1,bsi2,alx,xsinwn,
      $     cosp1n,sinp1n,cosp2n,sinp2n,psi1n,psi2n
       logical*4 fringe
       aln=(al-f1r-f2r)/ndiv
@@ -577,13 +585,14 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
         phibn=alx/al*phib
         if(n .le. 2 .or. n .ge. ndiv)then
           wn=phi0n-psi1n-psi2n
-          coswn=cos(wn)
-          sinwn=sin(wn)
-          if(coswn .gt. 0.d0)then
-            sqwhn=sinwn**2/(1.d0+coswn)
-          else
-            sqwhn=1.d0-coswn
-          endif
+          call xsincos(wn,sinwn,xsinwn,coswn,sqwhn)
+c          coswn=cos(wn)
+c          sinwn=sin(wn)
+c          if(coswn .gt. 0.d0)then
+c            sqwhn=sinwn**2/(1.d0+coswn)
+c          else
+c            sqwhn=1.d0-coswn
+c          endif
           sinwpn=sin(phi0n-psi2n)
         endif
 c        write(*,*)'tbendr ',n,ndiv,phi0n,alx,alr
@@ -591,7 +600,7 @@ c        write(*,*)'tbendr ',n,ndiv,phi0n,alx,alr
      $       alx,phi0n,
      1       cosp1n,sinp1n,cosp2n,sinp2n,
      1       mfr1,fringe,
-     $       coswn,sinwn,sqwhn,sinwpn,
+     $       coswn,sinwn,-sqwhn,sinwpn,
      1       .true.,alr,bsi1,bsi2)
         if(photons)then
           call tsetphotongeo(alx,phi0n,0.d0,.false.)

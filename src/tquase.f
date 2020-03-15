@@ -29,7 +29,7 @@
       krad=enarad .and. al .ne. 0.d0
       cod(2)=cod(2)+.5d0*bz*dy
       cod(4)=cod(4)-.5d0*bz*dx
-      if(ak .lt. 0.d0)then
+      if(ak*al .lt. 0.d0)then
         theta1=theta-m_pi_2
         ak1=-ak
       else
@@ -63,7 +63,6 @@
       else
         ndiv=1
       endif
-c        write(*,*)'tquase ',ndiv,krad,irad,radlvl
       aln=al/ndiv
       akn=ak1/ndiv
       do i=1,ndiv

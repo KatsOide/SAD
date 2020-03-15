@@ -91,7 +91,7 @@ itfgetbuf_PPC.o: itfgetbuf_PPC.f
 itfgetbuf_f90.o: itfgetbuf_f90.f
 itfgeto.o: itfgeto.f tfstk.o toplvl.o
 itfmaloc.o: itfmaloc.f tffs.o tfshared.o tfstk.o
-itfmessage.o: itfmessage.f tfstk.o toplvl.o
+itfmessage.o: itfmessage.f tfstk.o tfstrbuf.o toplvl.o
 itfopenread.o: itfopenread.f toplvl.o
 itfopenread_G77.o: itfopenread_G77.f tfstk.o toplvl.o
 itfpmat.o: itfpmat.f tfstk.o toplvl.o
@@ -242,7 +242,7 @@ tbend.f.o: tbend.f.f
 tbende.o: tbende.f tbend.o temit.o tffs.o tfloor.o tfstk.o
 tbendi.o: tbendi.f tbend.o temit.o tffs.o tfstk.o
 tbfrie.o: tbfrie.f tffs.o tfloor.o tfstk.o
-tbrad.o: tbrad.f inc/TENT.inc inc/TEXIT.inc tbend.o tbende.o tffs.o tfloor.o tfstk.o toplvl.o
+tbrad.o: tbrad.f tffs.o tfstk.o toplvl.o
 tcav.o: tcav.f inc/TENT.inc inc/TEXIT.inc tffs.o tfloor.o
 tcave.o: tcave.f tffs.o tfloor.o tfstk.o
 tceigen.o: tceigen.f
@@ -257,7 +257,7 @@ tcorr.o: tcorr.f tffs.o tfstk.o toplvl.o
 tcsvdm.o: tcsvdm.f tfstk.o
 tday.o: tday.f
 tdcmd.o: tdcmd.f tfstk.o toplvl.o
-tdet.o: tdet.f
+tdet.o: tdet.f tfloor.o
 tdfun.o: tdfun.f tffs.o tfstk.o toplvl.o
 tdgeo.o: tdgeo.f initb1.o tffs.o tfloor.o tfstk.o
 tdinit.o: tdinit.f
@@ -268,7 +268,7 @@ tdrife.o: tdrife.f tdrift.o temit.o tffs.o tfloor.o tsol.o
 tdrift.o: tdrift.f temit.o tffs.o tfloor.o
 tdrwdt.o: tdrwdt.f inc/common.inc tffs.o tfloor.o tfstk.o
 tedrawf.o: tedrawf.f
-teigen.o: teigen.f
+teigen.o: teigen.f tfstk.o
 temap.o: temap.f tffs.o tfstk.o
 temat.o: temat.f tffs.o tfstk.o
 temit.o: temit.f tffs.o tfloor.o tfstk.o toplvl.o
@@ -312,7 +312,7 @@ tfeval1.o: tfeval1.f tfstk.o toplvl.o
 tffamsetup.o: tffamsetup.f tffs.o tfstk.o
 tffile.o: tffile.f tffs.o tfstk.o toplvl.o
 tffindroot.o: tffindroot.f tfstk.o
-tffs.o: tffs.f initb1.o tfstk.o toplvl.o
+tffs.o: tffs.f initb1.o tfloor.o tfstk.o toplvl.o
 tffsa.o: tffsa.f INTGRL.o temit.o tffs.o tfstk.o toplvl.o
 tffscalc.o: tffscalc.f tffs.o tfloor.o tfshared.o tfstk.o toplvl.o
 tffsfreefix.o: tffsfreefix.f tffs.o tfstk.o toplvl.o
@@ -330,7 +330,7 @@ tfkwrd.o: tfkwrd.f tfstk.o toplvl.o
 tflag.o: tflag.f tffs.o tfstk.o
 tflifetrack.o: tflifetrack.f tfstk.o
 tflogi.o: tflogi.f tffs.o
-tfloor.o: tfloor.f tffs.o tfstk.o toplvl.o
+tfloor.o: tfloor.f tfstk.o toplvl.o
 tfltr1.o: tfltr1.f tffs.o
 tfltra.o: tfltra.f tffs.o tfstk.o
 tfmap.o: tfmap.f tfstk.o
@@ -400,14 +400,14 @@ toplvl.o: toplvl.f tfshared.o tfstk.o
 tpara.o: tpara.f
 tphplt.o: tphplt.f
 tprmpt.o: tprmpt.f tfestk.o tffs.o tfstk.o
-tput.o: tput.f
+tput.o: tput.f tfstk.o
 tputbs.o: tputbs.f
 tqente.o: tqente.f tfloor.o tsol.o
 tqfrie.o: tqfrie.f tffs.o tfstk.o
 tqlfre.o: tqlfre.f tffs.o
 tqr.o: tqr.f tfstk.o
 tqrad.o: tqrad.f inc/TENT.inc inc/TEXIT.inc tffs.o
-tquad.o: tquad.f inc/TENT.inc inc/TEXIT.inc temit.o tffs.o tfloor.o tfstk.o toplvl.o tsol.o tturn.o
+tquad.o: tquad.f inc/TENT.inc inc/TEXIT.inc temit.o tffs.o tfloor.o tfstk.o toplvl.o tsol.o
 tquade.o: tquade.f temit.o tffs.o tfloor.o tfstk.o
 tquads.o: tquads.f temit.o tffs.o tfloor.o tfstk.o tsol.o
 tquase.o: tquase.f temit.o tffs.o tfstk.o tsol.o
@@ -424,7 +424,7 @@ tscale.o: tscale.f tffs.o
 tsconv.o: tsconv.f initb1.o tffs.o tfloor.o tfstk.o
 tsdrad.o: tsdrad.f tffs.o
 tserad.o: tserad.f initb1.o tffs.o tfstk.o
-tsgeo.o: tsgeo.f initb1.o tffs.o tfstk.o
+tsgeo.o: tsgeo.f initb1.o tffs.o tfloor.o tfstk.o
 tshow.o: tshow.f tffs.o tfstk.o
 tsmear.o: tsmear.f tffs.o
 tsol.o: tsol.f initb1.o tffs.o tfloor.o tfstk.o

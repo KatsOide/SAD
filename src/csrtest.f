@@ -465,7 +465,7 @@ c 32: Er -> Ey
       do i=1,nphi
         sx=phix(i+1)-phix(i-1)
         sy=phiy(i+1)-phiy(i-1)
-        r=sqrt(sx**2+sy**2)
+        r=hypot(sx,sy)
         tx(i)=sx/r
         ty(i)=sy/r
       enddo

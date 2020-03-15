@@ -1,5 +1,5 @@
       subroutine tquads(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak0,bz,
-     1     dx,dy,theta,radlvl,fringe,f1in,f2in,f1out,f2out,
+     1     dx,dy,theta,theta2,radlvl,fringe,f1in,f2in,f1out,f2out,
      $     mfring,eps0)
       use tfstk
       use ffs_flag
@@ -11,12 +11,12 @@
 c      use ffs_pointer, only:inext,iprev
       implicit none
       integer*4 np,mfring,i
+      real*8 , intent(in)::theta2
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     al,bz,ak0,ak,dx,dy,theta,radlvl,alr,
-     $     f1in,f2in,f1out,f2out,eps0,theta1,theta2,bxs,bys,bzs,
+     $     f1in,f2in,f1out,f2out,eps0,bxs,bys,bzs,
      $     a,b,ea,p,pxf,pyf
       real*8 sx(np),sy(np),sz(np)
-      complex*16 cr1
       logical*4 enarad,fringe
       if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -25,9 +25,8 @@ c      use ffs_pointer, only:inext,iprev
         return
       endif
       enarad=rad .and. radlvl .ne. 1.d0
-      call akang(dcmplx(ak0,0.d0),al,theta1,cr1)
-      ak=abs(ak0)
-      theta2=theta+theta1
+c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
+      ak=sign(ak0,al)
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,bz,dx,dy,0.d0,
      $     0.d0,0.d0,theta2,bxs,bys,bzs,.true.)

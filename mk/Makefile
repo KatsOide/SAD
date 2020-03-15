@@ -202,6 +202,7 @@ $(LIBSAD):	$(OBJ_LIBSAD)
 	@rm -f $(LIBSAD)
 	@obj_libsad=`echo $(OBJ_LIBSAD) | tr ' ' '\n'| sort -u`; \
 	    $(AR) r $(LIBSAD) $${obj_libsad}
+	sleep 2
 	$(RANLIB) $(LIBSAD)
 
 _OBJ_LIBSAD=$(LIBSAD)
@@ -211,7 +212,7 @@ _OBJ_LIBSAD=$(OBJ_LIBSAD)
 __OBJ_LIBSAD=$(shell lorder $(OBJ_LIBSAD) | tsort 2>/dev/null)
 endif
 
-$(SADEXE):	$(PRE_BUILD) $(_OBJ_LIBSAD) $(OBJSIM) $(OBJGLUE) MAIN.o
+$(SADEXE): $(PRE_BUILD) $(_OBJ_LIBSAD) $(OBJSIM) $(OBJGLUE) MAIN.o
 	$(FC) $(SYS_FC_ABIOPT) -o $@ $(FC_FLAGS) MAIN.o $(SYS_EXTSIM) $(OBJSIM) $(OBJGLUE) $(__OBJ_LIBSAD) $(LD_FLAGS)
 
 $(PKGDIR)/init.local.n:	$(SRCDIR)/init.local.n.in

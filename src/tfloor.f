@@ -198,16 +198,72 @@
       return
       end
 
-      real*8 pure function xsin(x)
+      real*8 pure function xsin(x) result(xs)
       implicit none
       real*8 ,intent(in)::x
       real*8 x2
-      if(abs(x) .gt. .1d0)then
-        xsin=x-sin(x)
-      else
+      if(abs(x) .lt. 1.d-3)then
         x2=x**2
-        xsin=x*x2/6.d0*(1.d0-x2/20.d0*(1.d0-x2/42.d0*(
+        xs=x*x2/6.d0*(1.d0-x2/20.d0*(1.d0-x2/42.d0))
+      elseif(abs(x) .lt. 0.1d0)then
+        x2=x**2
+        xs=x*x2/6.d0*(1.d0-x2/20.d0*(1.d0-x2/42.d0*(
      1       1.d0-x2/72.d0*(1.d0-x2/110.d0))))
+      else
+        xs=x-sin(x)
+      endif
+      return
+      end
+
+      subroutine sxsin(x,s,xs)
+      implicit none
+      real*8 ,intent(in)::x
+      real*8 ,intent(out)::s,xs
+      real*8 x2
+      if(abs(x) .lt. 1.d-3)then
+        x2=x**2
+        xs=x*x2/6.d0*(1.d0-x2/20.d0*(1.d0-x2/42.d0))
+        s=x-xs
+      elseif(abs(x) .lt. .1d0)then
+        x2=x**2
+        xs=x*x2/6.d0*(1.d0-x2/20.d0*(1.d0-x2/42.d0*(
+     1       1.d0-x2/72.d0*(1.d0-x2/110.d0))))
+        s=x-xs
+      else
+        s=sin(x)
+        xs=x-s
+      endif
+      return
+      end
+
+      subroutine xsincos(x,s,xs,c,dc)
+      implicit none
+      real*8 ,intent(in)::x
+      real*8 ,intent(out)::s,xs,c,dc
+      real*8 x2
+      if(abs(x) .lt. 1.d-3)then
+        x2=x**2
+        xs=x*x2/6.d0*(1.d0-x2/20.d0*(1.d0-x2/42.d0))
+        s=x-xs
+        dc=-x2/2.d0*(1.d0-x2/12.d0*(1.d0-x2/30.d0))
+        c=1.d0+dc
+      elseif(abs(x) .lt. .1d0)then
+        x2=x**2
+        xs=x*x2/6.d0*(1.d0-x2/20.d0*(1.d0-x2/42.d0*(
+     1       1.d0-x2/72.d0*(1.d0-x2/110.d0))))
+        s=x-xs
+        dc=-x2/2.d0*(1.d0-x2/12.d0*(1.d0-x2/30.d0*
+     $       (1.d0-x2/56.d0*(1.d0-x2/90.d0))))
+        c=1.d0+dc
+      else
+        s=sin(x)
+        xs=x-s
+        c=cos(x)
+        if(c .gt. 0.d0)then
+          dc=-s**2/(1.d0+c)
+        else
+          dc=c-1.d0
+        endif
       endif
       return
       end
@@ -216,12 +272,64 @@
       implicit none
       real*8 ,intent(in)::x
       real*8 x2
-      if(abs(x) .gt. .1d0)then
-        xsinh=x-sinh(x)
-      else
+      if(abs(x) .lt. 1.d-3)then
+        x2=x**2
+        xsinh=-x*x2/6.d0*(1.d0+x2/20.d0*(1.d0+x2/42.d0))
+      elseif(abs(x) .lt. 0.1d0)then
         x2=x**2
         xsinh=-x*x2/6.d0*(1.d0+x2/20.d0*(1.d0+x2/42.d0*(
      1       1.d0+x2/72.d0*(1.d0+x2/110.d0))))
+      else
+        xsinh=x-sinh(x)
+      endif
+      return
+      end
+
+      subroutine sxsinh(x,sh,xsh)
+      implicit none
+      real*8 ,intent(in)::x
+      real*8 ,intent(out)::sh,xsh
+      real*8 x2
+      if(abs(x) .lt. 1.d-3)then
+        x2=x**2
+        xsh=-x*x2/6.d0*(1.d0+x2/20.d0*(1.d0+x2/42.d0))
+        sh=x-xsh
+      elseif(abs(x) .lt. 0.1d0)then
+        x2=x**2
+        xsh=-x*x2/6.d0*(1.d0+x2/20.d0*(1.d0+x2/42.d0*(
+     1       1.d0+x2/72.d0*(1.d0+x2/110.d0))))
+        sh=x-xsh
+      else
+        sh=sinh(x)
+        xsh=x-sh
+      endif
+      return
+      end
+
+      subroutine xsincosh(x,sh,xsh,ch,dch)
+      implicit none
+      real*8 ,intent(in)::x
+      real*8 ,intent(out)::sh,xsh,ch,dch
+      real*8 x2
+      if(abs(x) .lt. 1.d-3)then
+        x2=x**2
+        xsh=-x*x2/6.d0*(1.d0+x2/20.d0*(1.d0+x2/42.d0))
+        sh=x-xsh
+        dch=x2/2.d0*(1.d0+x2/12.d0*(1.d0+x2/30.d0))
+        ch=1.d0+dch
+      elseif(abs(x) .lt. 0.1d0)then
+        x2=x**2
+        xsh=-x*x2/6.d0*(1.d0+x2/20.d0*(1.d0+x2/42.d0*(
+     1       1.d0+x2/72.d0*(1.d0+x2/110.d0))))
+        sh=x-xsh
+        dch=x2/2.d0*(1.d0+x2/12.d0*(1.d0+x2/30.d0*
+     $       (1.d0+x2/56.d0*(1.d0+x2/90.d0))))
+        ch=1.d0+dch
+      else
+        sh=sinh(x)
+        xsh=x-sh
+        ch=cosh(x)
+        dch=sh**2/(1.d0+ch)
       endif
       return
       end
@@ -342,7 +450,7 @@
       real*8 function sqrtl(x)
       implicit none
       real*8 x
-      real*8 ,parameter :: am=1.d-20
+      real*8 ,parameter :: am=1.d-100
       sqrtl=sqrt(max(x,am))
       return
       end function
@@ -357,7 +465,7 @@
         p2=1.d0/p**2
         p2h=p*(1.d0+p2*(0.5d0-p2*.125d0))
       else
-        p2h=sqrt(1.d0+p**2)
+        p2h=hypot(1.d0,p)
       endif
       return
       end function
@@ -411,13 +519,12 @@
       return
       end function
 
-      subroutine akang(ak,al,theta1,cr1)
-      use macmath
+      real*8 function akang(ak,al,cr1) result(theta1)
+      use macmath, only:m_pi_2
       implicit none
       complex*16 , intent(in)::ak
       complex*16 , intent(out)::cr1
       real*8 , intent(in)::al
-      real*8 , intent(out)::theta1
       complex*16 a
       if(al .eq. 0.d0)then
         if(imag(ak) .eq. 0.d0)then
@@ -448,7 +555,7 @@
         endif
       endif
       return
-      end subroutine
+      end function
 
       end module
 
@@ -910,7 +1017,7 @@ c     $       '"Real or List of Reals"')
       recursive subroutine tfeintf(fun,cfun,k,kx,cmpl,rmin,rmax,ir)
       use tfstk
       use cfunc
-      use tmacro
+c      use tmacro
       implicit none
       type (sad_descriptor) k,kx
       type (sad_dlist), pointer ::klx,kl
@@ -1030,7 +1137,7 @@ c     $       '"Real or List of Reals"')
       recursive subroutine tfeintf2(fun,cfun,k,k1,cmpl,kx,ir)
       use tfstk
       use cfunc
-      use tmacro
+c      use tmacro
       implicit none
       type (sad_descriptor) kx,k,k1,ki,k1i
       type (sad_dlist), pointer ::klx,kl,kl1

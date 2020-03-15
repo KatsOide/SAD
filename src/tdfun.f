@@ -94,7 +94,7 @@ c           write(*,*)'TDFUN ',j,i,idp,kf,kp,kp1,maxcond,flv%mfitp(ka)
                       goto 3010
                     elseif(kf .le. mfitdpy
      $                     .or. kf .ge. mfitpex .and.
-     $                     kf .le. mfitpepx)then
+     $                     kf .le. mfitgmz)then
                       call tfpeak(idp,kf,kpb,kpe,ipeak,vpeak,npeak)
                       do 110 k=1,npeak
                         ip=ipeak(k)
@@ -118,7 +118,7 @@ c                        write(*,*)'tdfun ',k,ip,kf,maxfit,vpeak(k),df(i)
  110                  continue
                     endif
                   else
-                    if(kf .le. mfitpzpy .or.
+                    if(kf .le. mfitgmz .or.
      $                   (kf .ge. mfitleng .and. kf .le. mfitchi3))then
                       maxfit=flv%mfitp(ka) .lt. 0
                       vb=tgfun(kf,kpb,idp)
@@ -397,7 +397,7 @@ c      call tfmemcheckprint('FitFunction-end',.true.,irtc)
       real*8 vf,v,vfa
       logical*4 maxfit,ttrans
       select case (kf)
-      case (mfitbx,mfitby,mfitbz)
+      case (mfitbx,mfitby,mfitbz,mfitgmx,mfitgmy,mfitgmz)
         if(maxfit)then
           if(v .gt. vf)then
             tdfun1=log(vf*factor/v)

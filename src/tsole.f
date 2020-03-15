@@ -196,7 +196,7 @@ c     $       .false.,
             if(ent)then
               call tsconv(trans1,cod,rr,lp,.true.)
               call tmultr5(trans,trans1,irad)
-              call tmulbs(beam,trans1,.false.,.true.)
+              call tmulbs(beam,trans1,.true.)
               if(calpol)then
                 srot=matmul(rr,srot)
               endif
@@ -204,7 +204,7 @@ c     $       .false.,
               if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
                 call tsfrie(trans1,cod,bzs)
                 call tmultr5(trans,trans1,irad)
-                call tmulbs(beam,trans1,.false.,.true.)
+                call tmulbs(beam,trans1,.true.)
               endif
               call tradke(trans,cod,beam,srot,f1,0.d0,bzs*.5d0)
             else
@@ -212,12 +212,12 @@ c     $       .false.,
               if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
                 call tsfrie(trans1,cod,-bzs0)
                 call tmultr5(trans,trans1,irad)
-                call tmulbs(beam,trans1,.false.,.true.)
+                call tmulbs(beam,trans1,.true.)
               endif
               call tradke(trans,cod,beam,srot,f1,0.d0,0.d0)
               call tsconv(trans1,cod,rr,lp,.false.)
               call tmultr5(trans,trans1,irad)
-              call tmulbs(beam,trans1,.false.,.true.)
+              call tmulbs(beam,trans1,.true.)
               if(calpol)then
                 srot=matmul(rr,srot)
               endif
@@ -236,7 +236,7 @@ c     $       .false.,
               call tsconv(trans1,cod,rr,lp,ent)
             endif
             call tmultr5(trans,trans1,irad)
-            call tmulbs(beam ,trans1,.true.,.true.)
+            call tmulbs(beam ,trans1,.true.)
             if(calpol)then
               srot=matmul(rr,srot)
             endif
@@ -250,7 +250,7 @@ c              call trades(trans,beam,cod,bzs0,bzs,f1,brhoz)
           if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
             call tsfrie(trans1,cod,bzs-bzs0)
             call tmultr5(trans,trans1,irad)
-            call tmulbs(beam ,trans1,.true.,.true.)
+            call tmulbs(beam ,trans1,.true.)
           endif
           if(krad)then
             call tradke(trans,cod,beam,srot,f1,0.d0,bzs*.5d0)

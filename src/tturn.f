@@ -1,6 +1,7 @@
       module tracklim
-      real*8, parameter ::plimit=0.9d0,zlimit=1.d10,vmax=.9d0,
+      real*8, parameter ::plimit=0.9999d0,zlimit=1.d10,vmax=.9d0,
      $     ampmax=0.9999d0
+      real*8 xlimit
       end module
 
       subroutine tturn(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n)
@@ -153,9 +154,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       use mathfun
       use tracklim
       implicit none
-      integer*4 la1
-      parameter (la1=15)
-      real*8 xlimit
+      integer*4,parameter :: la1=15
       type (sad_comp), pointer:: cmp
       type (sad_dlist) , pointer ::lsegp
       integer*4 np,n,la,lbegin,lend,kdx,kdy,krot
@@ -221,6 +220,11 @@ c        call tfmemcheckprint('tturn',l,.false.,irtc)
      1         .false.,.false.,0)
         endif
         if(la .le. 0)then
+          call limitnan(x(1:np),-xlimit,xlimit,xlimit)
+          call limitnan(px(1:np),-plimit,plimit,plimit)
+          call limitnan(y(1:np),-xlimit,xlimit,xlimit)
+          call limitnan(py(1:np),-plimit,plimit,plimit)
+          call limitnan(z(1:np),-zlimit,zlimit,zlimit)
           call tapert(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
      1         kptbl,np,n,
      $         0.d0,0.d0,0.d0,0.d0,
@@ -368,6 +372,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $        cmp%value(p_SQWH_BEND),cmp%value(p_SINWP1_BEND),
      1        rad .and. enarad,
      1        cmp%value(ky_EPS_BEND),.true.,0)
+
        case (icQUAD)
          if(iand(1,cmp%update) .eq. 0)then
            call tpara(cmp)
@@ -381,7 +386,8 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $        al,
      1        cmp%value(ky_K1_QUAD)*rtaper,
      $        cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
-     1        cmp%value(p_THETA_QUAD),
+     1        cmp%value(ky_ROT_QUAD),
+     1        cmp%value(p_THETA2_QUAD),
      1        cmp%value(ky_RAD_QUAD),
      $        cmp%value(ky_CHRO_QUAD) .eq. 0.d0,
      1        cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
@@ -593,11 +599,6 @@ c     print *,'tturn l sspac2',l,sspac2
          go to 1010
        end select
  1020   la=la-1
-        call limitnan(x(1:np),-xlimit,xlimit,xlimit)
-        call limitnan(px(1:np),-plimit,plimit,plimit)
-        call limitnan(y(1:np),-xlimit,xlimit,xlimit)
-        call limitnan(py(1:np),-plimit,plimit,plimit)
-        call limitnan(z(1:np),-zlimit,zlimit,zlimit)
  1011   if(radlight)then
           if(lele .eq. icBEND)then
           elseif(lele .eq. icMULT .and.
@@ -791,8 +792,11 @@ c     $             +lend-1),
      $     cmp%value(p_CHI1_MULT),cmp%value(p_CHI2_MULT),
      $     cmp%value(ky_ROT_MULT),
      $     cmp%value(ky_DROT_MULT),
+     $     cmp%value(p_THETA2_MULT),
+     $     cmp%value(p_CR1_MULT),
      $     cmp%value(ky_EPS_MULT),
-     $     cmp%value(ky_RAD_MULT) .eq. 0.d0,
+     $     rad .and. cmp%value(ky_RAD_MULT) .eq. 0.d0 .and.
+     $     cmp%value(p_L_MULT) .ne. 0.d0,
      $     cmp%value(ky_FRIN_MULT) .eq. 0.d0,
      $     cmp%value(p_AKF1F_MULT)*rtaper,
      $     cmp%value(p_AKF2F_MULT)*rtaper,

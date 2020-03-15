@@ -1,10 +1,10 @@
-      subroutine tmulbs(beam,trans1,poldiv,beamr)
+      subroutine tmulbs(beam,trans1,beamr)
       use tfstk
       use ffs_flag
       use tmacro
       implicit none
        real*8 beam(42),trans1(6,12),s(6,6)
-      logical*4 poldiv,beamr
+      logical*4 beamr
 c     ia(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
 c     data ia/ 1, 2, 4, 7,11,16,
 c    1         2, 3, 5, 8,12,17,

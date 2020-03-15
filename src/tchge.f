@@ -107,7 +107,7 @@ c          endif
           if(associated(transa))then
             call tmultr(trans,transa,irad)
             if(irad .gt. 6)then
-              call tmulbs(beam,transa,.true.,.true.)
+              call tmulbs(beam,transa,.true.)
             endif
           endif
         endif
@@ -162,7 +162,7 @@ c          endif
           if(associated(transa))then
             call tmultr(trans,transa,irad)
             if(irad .gt. 6)then
-              call tmulbs(beam,transa,.true.,.true.)
+              call tmulbs(beam,transa,.true.)
             endif
           endif
         endif

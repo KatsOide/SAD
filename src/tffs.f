@@ -46,7 +46,7 @@
         use tfstk, only:klist
         use iso_c_binding
         implicit none
-        integer*8 k
+        integer*8 ,intent(in)::k
         type (sad_el), pointer, intent(out) ::el
         call c_f_pointer(c_loc(klist(k-1)),el)
         return
@@ -56,7 +56,7 @@
         use tfstk, only:klist
         use iso_c_binding
         implicit none
-        integer*8 k
+        integer*8 , intent(in)::k
         type (sad_comp), pointer, intent(out) ::cmp
         call c_f_pointer(c_loc(klist(k-2)),cmp)
         return
@@ -64,9 +64,9 @@
 
         integer*4 function idcomp(el,i)
         implicit none
-        type (sad_el) :: el
+        type (sad_el),intent(in) :: el
         type (sad_comp), pointer :: cmp
-        integer*4 i
+        integer*4 ,intent(in)::i
         call loc_comp(el%comp(i),cmp)
         idcomp=cmp%id
         return
@@ -74,8 +74,8 @@
 
         real*8 function dircomp(el,i)
         implicit none
-        integer*4 i
-        type (sad_el) :: el
+        integer*4 ,intent(in)::i
+        type (sad_el),intent(in) :: el
         type (sad_comp), pointer :: cmp
         call loc_comp(el%comp(i),cmp)
         dircomp=cmp%orient
@@ -129,7 +129,8 @@
      $     mfitpzx=mfitpepy+1,
      $     mfitpzpx=mfitpzx+1,
      $     mfitpzy=mfitpzpx+1,mfitpzpy=mfitpzy+1,
-     $     mfittrx=mfitpzpy+1,
+     $     mfitgmx=mfitpzpy+1,mfitgmy=mfitgmx+1,
+     $     mfitgmz=mfitgmy+1,mfittrx=mfitgmz+1,
      $     mfittry=mfittrx+1,mfitleng=mfittry+1,
      $     mfitgx=mfitleng+1,mfitgy=mfitgx+1,mfitgz=mfitgy+1,
      $     mfitchi1=mfitgz+1,mfitchi2=mfitchi1+1,mfitchi3=mfitchi2+1,
@@ -185,6 +186,9 @@
      $     ';mfpzpx='//strfromis(mfitpzpx)//
      $     ';mfpzy='//strfromis(mfitpzy)//
      $     ';mfpzpy='//strfromis(mfitpzpy)//
+     $     ';mfgmx='//strfromis(mfitgmx)//
+     $     ';mfgmy='//strfromis(mfitgmy)//
+     $     ';mfgmz='//strfromis(mfitgmz)//
      $     ';mftrx='//strfromis(mfittrx)//
      $     ';mftry='//strfromis(mfittry)//
      $     ';mfleng='//strfromis(mfitleng)//
@@ -918,11 +922,13 @@
         use tfstk
         use ffs_pointer, only:idelc,idvalc,compelc,tsetfringep
         use ffs_flag, only:trpt
+        use mathfun, only:akang
         implicit none
         type (sad_comp) :: cmp
         integer*4 ltyp
         real*8 phi,al,psi1,psi2,theta,dtheta,w,akk,sk1,
      $       fb1,fb2,harm,vnominal,frmd
+        complex*16 cr1
         cmp%update=ior(cmp%update,1)
         ltyp=idtype(cmp%id)
         if(kytbl(kwNPARAM,ltyp) .eq. 0)then
@@ -986,19 +992,16 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
 
         case (icQUAD)
           al=cmp%value(ky_L_QUAD)
+          theta=cmp%value(ky_ROT_QUAD)
+          cmp%value(p_THETA2_QUAD)=theta
+     $         +akang(dcmplx(cmp%value(ky_K1_QUAD),0.d0),al,cr1)
           if(al .ne. 0.d0)then
             akk=cmp%value(ky_K1_QUAD)/al
-            cmp%value(p_SQRTK_QUAD)  =sqrt(abs(akk))
             call tsetfringep(cmp,icQUAD,cmp%orient,akk,
      $           cmp%value(p_AKF1F_QUAD:p_AKF2B_QUAD))
           else
-            cmp%value(p_SQRTK_QUAD)=1.d100
             cmp%value(p_AKF1F_QUAD:p_AKF2B_QUAD)=0.d0
           endif
-          theta=cmp%value(ky_ROT_QUAD)
-          cmp%value(p_COSTHETA_QUAD)=cos(theta)
-          cmp%value(p_SINTHETA_QUAD)=sin(theta)
-          cmp%value(p_THETA_QUAD)=theta
           frmd=cmp%value(ky_FRMD_QUAD)
           if(cmp%orient .lt. 0.d0)then
             frmd=frmd*(11.d0+frmd*(2.d0*frmd-9.d0))/2.d0
@@ -1059,7 +1062,8 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
             if(sk1 .eq. 0.d0)then
               akk=cmp%value(ky_K1_MULT)/al
             else
-              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
+              akk=hypot(cmp%value(ky_K1_MULT),sk1)/al
+c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
             endif
             call tsetfringep(cmp,icMULT,cmp%orient,akk,
      $           cmp%value(p_AKF1F_MULT:p_AKF2B_MULT))
@@ -1080,6 +1084,12 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
           endif
           cmp%value(p_W_MULT)=w
           cmp%value(p_VNOMINAL_MULT)=vnominal
+          cmp%value(p_THETA2_MULT)=cmp%value(ky_ROT_MULt)+
+     $         cmp%value(ky_DROT_MULT)+
+     $         akang(dcmplx(cmp%value(ky_K1_MULT),
+     $         cmp%value(ky_SK1_MULT)),al,cr1)
+          cmp%value(p_CR1_MULT)=dble(cr1)
+          cmp%value(p_CR1I_MULT)=imag(cr1)
 
         case (icCAVI)
           frmd=cmp%value(ky_FRMD_CAVI)
@@ -1171,14 +1181,14 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
      $     'ZX      ','ZPX     ','ZY      ','ZPY     ',
      1     'PEX     ','PEPX    ','PEY     ','PEPY    ',
      1     'PZX     ','PZPX    ','PZY     ','PZPY    ',
+     $     'GMX     ','GMY     ','GMZ     ',
      $     'TRX     ','TRY     ',
      $     'LENG    ',
      $     'GX      ','GY      ','GZ      ',
      $     'CHI1    ','CHI2    ','CHI3    ',
-     $     'DEX     ','DEPX    ','DEY     ',
-     $     'DEPY    ','DDX     ','DDPX    ','DDY     ',
-     $     'DDPY    ','PDEX    ','PDEPX   ','PDEY    ',
-     $     'PDEPY   '/)
+     $     'DEX     ','DEPX    ','DEY     ','DEPY    ',
+     $     'DDX     ','DDPX    ','DDY     ','DDPY    ',
+     $     'PDEX    ','PDEPX   ','PDEY    ','PDEPY   '/)
       end module
 
       module ffs_wake
@@ -1459,19 +1469,21 @@ c        write(*,*)'tftouch ',flv%ntouch,i,iv
         logical*4 function tcheckseg(cmp,ltyp,al,lsegp,irtc) result(seg)
         use tfstk
         use mackw
-        use tparastat, only:tpara
         use sad_main
         use kyparam
         implicit none
-        type (sad_comp) ::cmp
+        type (sad_comp) ,intent(in)::cmp
         type (sad_dlist) , pointer :: lprof,lsegp
-        real*8 al
-        integer*4 irtc,ltyp,kl,kprof
+        real*8 , intent(out)::al
+        integer*4 ,intent(out)::irtc
+        integer*4 ,intent(in)::ltyp
+        integer*4 kl,kprof
         irtc=0
         seg=.false.
         kl=kytbl(kwL,ltyp)
         if(kl .eq. 0)then
           al=0.d0
+          return
         else
           al=cmp%value(kl)
         endif

@@ -278,7 +278,7 @@ c        call tfdebugprint(kx,'temap',1)
         do i=0,35
           rlist(kat1+i)=rlist(kat1+i)+rlist(krt+i)
         enddo
-        call tmulbs(beam,rlist(kat1),.false.,.true.)
+        call tmulbs(beam,rlist(kat1),.true.)
         do i=1,6
           do j=i,6
             beam(ia(i,j))=beam(ia(i,j))+rlist(kbm+(j-1)*6+i-1)
@@ -288,7 +288,7 @@ c        call tfdebugprint(kx,'temap',1)
         call tfree(kbm)
         call tfree(krt)
       else
-        call tmulbs(beam,rlist(kat1),.false.,.true.)
+        call tmulbs(beam,rlist(kat1),.true.)
       endif
       call tfree(kat1)
  9000 levele=itfdownlevel()

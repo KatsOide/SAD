@@ -52,10 +52,10 @@ uses a leap-second table read from disk.
 
 .B leapsecs_read
 reads the leap-second table from
-.BR %%LEAPSECONDS_PREFIX%%/leapsecs.dat .
+.BR /leapsecs.dat .
 It returns 0 on success, -1 on error.
 If
-.B %%LEAPSECONDS_PREFIX%%/leapsecs.dat
+.B /leapsecs.dat
 does not exist,
 .B leapsecs_read
 treats it as an empty file.

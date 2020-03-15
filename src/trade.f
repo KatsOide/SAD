@@ -99,7 +99,7 @@ c        write(*,'(1p6g15.7)')(radi(6,i),i=1,6)
      $       +(ar*(-2.d0*beam(7)+ar*beam(1))+pyi**2)*de
         beam(17)=beam(17)*fact1+(-ar*beam(18)/pr**2+pxi)*de
         beam(19)=beam(19)*fact1+( ar*beam(16)/pr**2+pyi)*de
-        call tmulbs(beam,radi,.false.,.true.)
+        call tmulbs(beam,radi,.true.)
         beam(21)=beam(21)+de
         beam(3)=beam(3)*fact
      $       +(ar*(2.d0*beam(5)+ar*beam(6))+pxi**2)*de

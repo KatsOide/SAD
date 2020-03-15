@@ -646,6 +646,10 @@ c..........going back to 4*4 world
         dtwiss(mfitpex) =sr31*dea +sr32*depa+sr33*deb
         dtwiss(mfitpepx)=sr41*dea +sr42*depa+sr44*depb
       endif
+      dtwiss(mfitgmx)=2.d0*dtwiss(mfitax)*utwiss(mfitax,idp,l)
+     $     -dtwiss(mfitbx)
+      dtwiss(mfitgmy)=2.d0*dtwiss(mfitay)*utwiss(mfitay,idp,l)
+     $     -dtwiss(mfitby)
 c      write(*,'(a,2(1p8g15.7/))')'qdcell-e ',
 c     $     dtwiss(mfitex),dtwiss(mfitepx),
 c     $     dtwiss(mfitey),dtwiss(mfitepy),

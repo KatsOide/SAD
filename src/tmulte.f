@@ -24,7 +24,7 @@
      $     al,vc,harm,phi,freq,bz,dx,dy,dz,chi1,chi2,theta,
      $     eps0,bxs,bys,bzs,al1,p1,h1,v1,t,phii,a,dh,dtheta,
      $     h2,p2,pf,v2,eps,v,w,aln,vn,phis,phic,ak1,vcn,veff,
-     $     dhg,rg2,dgb,wakew1,w1n,theta1,phia,psi1,psi2,
+     $     dhg,rg2,dgb,wakew1,w1n,theta2,phia,psi1,psi2,
      $     apsi1,apsi2,bz0,v10a,v11a,v02a,v20a,offset1,va,sp,cp,
      $     av,dpxa,dpya,dpx,dpy,dav,davdz,davdp,ddhdx,ddhdy,ddhdp,
      $     ddhdz,wi,dv,s0,fb1,fb2,rtaper
@@ -68,9 +68,9 @@
      $       eps0,enarad,fringe,fb1,fb2,mfring,l)
         return
       endif
-      call akang(ak(1),al,theta1,cr1)
+      theta2=theta+dtheta+akang(ak(1),al,cr1)
       call tsolrote(trans,cod,beam,srot,al,bz0,dx,dy,dz,
-     $     chi1,chi2,theta+dtheta+theta1,bxs,bys,bzs,.true.)
+     $     chi1,chi2,theta2,bxs,bys,bzs,.true.)
       krad=enarad .and. al .ne. 0.d0
       if(krad)then
         call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
@@ -368,7 +368,7 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
           enddo
         endif
         if(irad .gt. 6)then
-          call tmulbs(beam ,trans1,.true.,.true.)
+          call tmulbs(beam ,trans1,.true.)
         endif
       enddo
       if(nmmin .eq. 2)then
@@ -404,7 +404,7 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
       endif
  1000 continue
       call tsolrote(trans,cod,beam,srot,al,bz,dx,dy,dz,
-     $     chi1,chi2,theta+dtheta+theta1,bxs,bys,bzs,.false.)
+     $     chi1,chi2,theta2,bxs,bys,bzs,.false.)
       if(dhg .ne. 0.d0)then
         rg2=p0/gammab(l+1)
 c        rg=sqrt(rg2)
@@ -414,7 +414,7 @@ c        rg=sqrt(rg2)
         trans1(6,6)=rg2
         call tmultr(trans,trans1,irad)
         if(irad .gt. 6)then
-          call tmulbs(beam,trans1,.true.,.true.)
+          call tmulbs(beam,trans1,.true.)
         endif
         cod(2)=cod(2)*rg2
         cod(4)=cod(4)*rg2

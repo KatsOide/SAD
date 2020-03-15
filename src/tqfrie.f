@@ -116,7 +116,7 @@ c     $         cod(1:6),(trans1(i,1:6),i=1,6)
 c          stop
 c        endif
       if(irad .gt. 6)then
-        call tmulbs(beam,trans1,.true.,.true.)
+        call tmulbs(beam,trans1,.true.)
       endif
       return
       end

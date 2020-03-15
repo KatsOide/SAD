@@ -2,7 +2,7 @@
       use tfstk
       use tfcode
       use iso_c_binding
-      use tfcsi,only:ipoint,ios,lfni,lrecl
+      use tfcsi,only:ipoint
       implicit none
       type (sad_dlist), pointer :: klx
       type (sad_symdef), pointer :: symd

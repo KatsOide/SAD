@@ -564,7 +564,8 @@ Optics$Unit[unit_,am_]:=
 Twiss$Functions={"AX","BX","NX","AY","BY","NY","EX","EPX","EY","EPY",
   "R1","R2","R3","R4","DETR","DX","DPX","DY","DPY","DZ","DDP",
   "AZ","BZ","NZ","ZX","ZPX","ZY","ZPY",
-  "PEX","PEPX","PEY","PEPY","PZX","PZPX","PZY","PZPY"};
+  "PEX","PEPX","PEY","PEPY","PZX","PZPX","PZY","PZPY",
+  "GMX","GMY","GMZ"};
 RTwiss$Functions=("R"//#)&/@Twiss$Functions;
 DTwiss$Functions=("D"//#)&/@Twiss$Functions;
 XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions];
@@ -580,7 +581,8 @@ Twiss$Unit[
 Twiss$Unit[
   "R3"|"ZPX"|"ZPY"|"PZPX"|"PZPY"|
     "RR3"|"RZPX"|"RZPY"|"RPZPX"|"RPZPY"|
-      "DR3"|"DZPX"|"DZPY"|"DPZPX"|"DPZPY"]=InvMeter;
+      "DR3"|"DZPX"|"DZPY"|"DPZPX"|"DPZPY"|
+        "GMX"|"GMY"|"GMZ"]=InvMeter;
 Twiss$Unit["BX"|"BY"|"BZ"|"RBX"|"RBY"|"RBZ"]=SqrtMeter;
 Twiss$Unit[
   "NX"|"NY"|"NZ"|
@@ -664,6 +666,9 @@ If[$DisplayFunction===Unevaluated[TopDrawer],
   Twiss$Label["AX"]="`fa`n`dx`n";
   Twiss$Label["RAX"]="`fa`n`dxR`n";
   Twiss$Label["DAX"]="`fda`n`dx`n";
+  Twiss$Label["GMX"]="`fg`n`dx`n";
+  Twiss$Label["RGMX"]="`fg`n`dxR`n";
+  Twiss$Label["DGMX"]="`fdg`n`dx`n";
   Twiss$Label["BX"]="`f\326`ob`n`dx`O`n";
   Twiss$Label["RBX"]="`f\326`ob`n`dxR`O`n";
   Twiss$Label["DBX"]="`fdb`n`dx`n / `fb`n`dxR`n";
@@ -691,6 +696,9 @@ If[$DisplayFunction===Unevaluated[TopDrawer],
   Twiss$Label["AY"]="`fa`n`dy`n";
   Twiss$Label["RAY"]="`fa`n`dyR`n";
   Twiss$Label["DAY"]="`fda`n`dy`n";
+  Twiss$Label["GMY"]="`fg`n`dy`n";
+  Twiss$Label["RGMY"]="`fg`n`dyR`n";
+  Twiss$Label["DGMY"]="`fdg`n`dy`n";
   Twiss$Label["BY"]="`f\326`ob`n`dy`O`n";
   Twiss$Label["RBY"]="`f\326`ob`n`dyR`O`n";
   Twiss$Label["DBY"]="`fdb`n`dy`n / `fb`n`dyR`n";
@@ -739,6 +747,9 @@ If[$DisplayFunction===Unevaluated[TopDrawer],
   Twiss$Label["AZ"]="`fa`n`dz`n";
   Twiss$Label["RAZ"]="`fa`n`dzR`n";
   Twiss$Label["DAZ"]="`fda`n`dz`n";
+  Twiss$Label["GMZ"]="`fg`n`dz`n";
+  Twiss$Label["RGMZ"]="`fg`n`dzR`n";
+  Twiss$Label["DGMZ"]="`fdg`n`dz`n";
   Twiss$Label["BZ"]="`f\326`ob`n`dz`O`n";
   Twiss$Label["RBZ"]="`f\326`ob`n`dzR`O`n";
   Twiss$Label["DBZ"]="`fdb`n`dz`n / `fb`n`dzR`n";

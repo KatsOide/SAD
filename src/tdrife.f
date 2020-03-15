@@ -84,11 +84,11 @@ c     $         0.d0,0.d0,0.d0,0.d0,
 c     $         al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
 c        endif
 c        if(irad .gt. 6)then
-c          call tmulbs(beam ,trans1,.true.,.true.)
+c          call tmulbs(beam ,trans1,.true.)
 c        endif
       endif
       if(irad .gt. 6)then
-        call tmulbs(beam ,trans1,.false.,.true.)
+        call tmulbs(beam ,trans1,.true.)
       endif
       if(enarad)then
         call tradke(trans,cod,beam,srot,alr,0.d0,bzh)

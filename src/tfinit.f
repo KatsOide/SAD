@@ -13,7 +13,7 @@ c      do i=1,nele
         klp(1:nele)=mult(1:nele)
         ival(1:nele)=0
 c      enddo
-      do 10 l=1,nlat-1
+      do l=1,nlat-1
         ikx=iele1(l)
         couple(l)=1.d0
         errk(1,l)=1.d0
@@ -22,46 +22,27 @@ c      enddo
           lele=idtypec(klp(ikx))
           vlim(ikx,1)=-1.d10
           vlim(ikx,2)=1.d10
-          go to (110,120,10,140,10,160,10,160,10,160,10,160),lele
-          go to 210
-110       ival(ikx)=1
-          vlim(ikx,1)=.1d0
-          go to 200
-120       ival(ikx)=2
-          go to 200
-140       ival(ikx)=2
-          go to 200
-160       ival(ikx)=2
-          go to 200
-210       if(lele .eq. icSOL)then
+c          go to (110,120,10,140,10,160,10,160,10,160,10,160),lele
+c          go to 210
+          select case (lele)
+          case (icDRFT)
+            ival(ikx)=1
+            vlim(ikx,1)=.1d0
+          case (icBEND,icQUAD,icSEXT,icOCTU,icDECA,icDODECA,
+     $           icSOL,icCAVI,icTCAV)
             ival(ikx)=2
-          elseif(lele .eq. icMULT)then
+          case (icMULT)
             ival(ikx)=ky_K1_MULT
-          elseif(lele .eq. icCAVI)then
-            ival(ikx)=2
-          elseif(lele .eq. 32)then
-            ival(ikx)=2
-          elseif(lele .eq. icMARK)then
+          case (icMARK)
             ival(ikx)=0
             idv=idvalc(l)
             twiss(l,0,1:ntwissfun)=rlist(idv+1:idv+ntwissfun)
-          elseif(lele .eq. icMONI)then
+            cycle
+          case default
             ival(ikx)=0
-          elseif(lele .eq. 43)then
-            ival(ikx)=0
-          elseif(lele .eq. 35)then
-            ival(ikx)=0
-          elseif(lele .eq. 34)then
-            ival(ikx)=0
-          elseif(lele .eq. 36)then
-            ival(ikx)=0
-          elseif(lele .eq. 37)then
-            ival(ikx)=0
-          else
-            ival(ikx)=0
-            go to 10
-          endif
- 200      if(ival(ikx) .gt. 0)then
+            cycle
+          end select
+          if(ival(ikx) .gt. 0)then
             call loc_comp(idvalc(klp(ikx)),cmps)
             v=cmps%value(ival(ikx))
 c            v=rlist(idvalc(klp(ikx))+ival(ikx))
@@ -71,7 +52,7 @@ c              errk(1,l)=rlist(latt(l)+ival(ikx))/v
             endif
           endif
         endif
-10    continue
+      enddo
       mult(nlat)=0
       icomp(nlat)=nlat
       iele1(nlat)=0

@@ -235,6 +235,7 @@ c        snchi3=sin(chi3)
       use ffs_pointer
       use tffitcode
       use ffs_seg
+      use mathfun, only:akang
       implicit none
       type (sad_comp), pointer :: cmp
       type (sad_dlist), pointer :: lsegp
@@ -243,9 +244,10 @@ c        snchi3=sin(chi3)
      $     a24,dx,pxf,dy,pyf,xi,yi,dl,theta,phix,phiy,f,xf,
      $     zf,gf,dvf,bzs,ak1,ftable(4),dir,bzs0,tfbzs,db,gi,
      $     chi2i,cchi2i,schi2i,chi1i,cchi1i,schi1i,g1,yf,
-     $     sxf,syf,szf,
+     $     sxf,syf,szf,theta2,
      $     trans(6,12),cod(6),beam(42),geo1(3,3),srot(3,9)
       logical*4 seg,dirf
+      complex*16 cr1
       real*8 ,save::dummy(256)=0.d0
       i0=i+(1-idir)/2
       i1=2*i+1-i0
@@ -314,6 +316,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         zf=0.d0
         theta=cmp%value(ky_ROT_QUAD)
         ak1=cmp%value(ky_K1_QUAD)
+        theta2=theta+akang(dcmplx(ak1,0.d0),al,cr1)
         call setdirelc(i,direlc(i)*dir)
         dirf=direlc(i) .gt. 0.d0
         if(dirf)then
@@ -333,6 +336,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
      $       sxf,syf,szf,
      $       al,ak1,bzs*dir,
      $       cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),theta,
+     $       theta2,
      1       1.d0,cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $       ftable(1),ftable(2),ftable(3),ftable(4),
      $       mfr,cmp%value(ky_EPS_QUAD))

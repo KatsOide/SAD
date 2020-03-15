@@ -1,18 +1,19 @@
       subroutine tsolqu(np,x,px,y,py,z,gp,dv,sx,sy,sz,
      $     al,ak,bz0,ak0x,ak0y,ibsi,eps0)
       use tsolz
+      use tspin, only:bsi
       use mathfun
       implicit none
       type (tzparam) tz
       integer*4 np,i,n,ndiv,ibsi
-      real*8, parameter::smax=0.99d0,phieps=1.d-7
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),bsi(np),
+      real*8, parameter::phieps=1.d-7
+      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),
      $     sx(np),sy(np),sz(np)
       real*8 al,ak,eps0,bz,a,b,c,d,akk,eps,
      $     bw,dw,r,ap,dpz,ak0x,ak0y,bz0,
-     $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,z00,
+     $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
      $     dx0,dy0,xi,yi,a12,a14,a22,a24,ra,phi,pxi,pyi,
-     $     awu,dwu,dz1,dz2,tph
+     $     awu,dwu,dz1,dz2
         associate (
      $       w1=>tz%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
      $       phi1=>tz%phi1,phi2=>tz%phi2,
@@ -43,7 +44,6 @@
         return
       endif
       bz=bz0
-      z00=z(1)
       if(eps0 .eq. 0.d0)then
         eps=0.2d0
       else
@@ -57,7 +57,6 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
       akk=ak/al
       if(bz .eq. 0.d0)then
         do i=1,np
-c     pr=(1.d0+gp(i))**2
           call tzsetparam0(tz,gp(i),akk)
           ra=aln*0.5d0
           if(ibsi .eq. 1)then
@@ -66,7 +65,7 @@ c     pr=(1.d0+gp(i))**2
             bsi(i)=0.d0
           endif
           do n=1,ndiv
-            ap=min(smax,px(i)**2+py(i)**2)
+            ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
 c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
             r=-dpz/(1.d0+dpz)*ra
@@ -93,7 +92,7 @@ c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
      $           +v1*(v2+d)+yi*d*dch2)
      $           -dv(i)*aln
           enddo
-          ap=min(smax,px(i)**2+py(i)**2)
+          ap=px(i)**2+py(i)**2
           dpz=sqrt1(-ap)
 c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           r=-dpz/(1.d0+dpz)*aln*.5d0
@@ -116,7 +115,7 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           py(i)=py(i)-bzp*x(i)*.5d0
           ra=aln*0.5d0
           do n=1,ndiv
-            ap=min(smax,px(i)**2+py(i)**2)
+            ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
 c            dpz=-ap/(1.d0+sqrt(1.d0-ap))
             r=-dpz/(1.d0+dpz)*ra
@@ -124,19 +123,21 @@ c            dpz=-ap/(1.d0+sqrt(1.d0-ap))
             phi=r*bzp
 c            tph=tan(.5d0*phi)
 c            a24=2.d0*tph/(1.d0+tph**2)
-            a24=sin(phi)
-            a12=a24/bzp
+            call xsincos(phi,a24,a12,a22,a14)
+c            a14=-a14/bzp
+c            a24=sin(phi)
+c            a12=a24/bzp
+c            a22=cos(phi)
 c            a22=1.d0-tph*a24
-            a22=cos(phi)
 c            a14=tph*a12
-            if(a22 .ge. 0.d0)then
-              a14=a12*a24/(1.d0+a22)
-            else
-              a14=(1.d0-a22)/bzp
-            endif
+c            if(a22 .ge. 0.d0)then
+c              a14=a12*a24/(1.d0+a22)
+c            else
+c              a14=(1.d0-a22)/bzp
+c            endif
             pxi=px(i)
-            x(i) =x(i)+a12*pxi+a14*py(i)
-            y(i) =y(i)-a14*pxi+a12*py(i)
+            x(i) =x(i)+(a24*pxi-a14*py(i))/bzp
+            y(i) =y(i)+(a14*pxi+a24*py(i))/bzp
             px(i)=     a22*pxi+a24*py(i)
             py(i)=    -a24*pxi+a22*py(i)
             z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
@@ -164,35 +165,38 @@ c            a14=tph*a12
             py(i)=pyi-wd*u1 +ws*v1
             awu=a/ws*w1
             dwu=d
-            call tztaf(0,tz,awu,pxi,pyi,aw1,ws,w12,wss,g1,
-     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz1,0.d0)
-            call tztaf(0,tz,-dwu,-pyi,pxi,aw2,-w12,ws,-wss,g2,
-     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz2,0.d0)
+            call tztaf(tz,awu,pxi,pyi,aw1,ws,w12,wss,g1,
+     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz1)
+            call tztaf(tz,-dwu,-pyi,pxi,aw2,-w12,ws,-wss,g2,
+     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz2)
             z(i)=z(i)+
      $           bzp*(-((awu*dwu*dxs**2)/akkp) +
      $           ca1*pxi*pyi*wss)
      $           +dz1+dz2-aln*dv(i)
           enddo
-          ap=min(smax,px(i)**2+py(i)**2)
+          ap=px(i)**2+py(i)**2
           dpz=sqrt1(-ap)
 c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           r=-dpz/(1.d0+dpz)*aln*.5d0
           phi=r*bzp
-          tph=tan(.5d0*phi)
-          a24=2.d0*tph/(1.d0+tph**2)
+c          tph=tan(.5d0*phi)
+c          a24=2.d0*tph/(1.d0+tph**2)
+          call xsincos(phi,a24,a12,a22,a14)
+c          a14=-a14/bzp
+c          a12=a24/bzp
 c          a24=sin(phi)
-          a12=a24/bzp
-          a22=1.d0-tph*a24
 c          a22=cos(phi)
-          a14=tph*a12
+c          a12=a24/bzp
+c          a22=1.d0-tph*a24
+c          a14=tph*a12
 c          if(a22 .ge. 0.d0)then
 c            a14=a12*a24/(1.d0+a22)
 c          else
 c            a14=(1.d0-a22)/bzp
 c          endif
           pxi=px(i)
-          x(i) =x(i)+a12*pxi+a14*py(i)
-          y(i) =y(i)-a14*pxi+a12*py(i)
+          x(i) =x(i)+(a24*pxi-a14*py(i))/bzp
+          y(i) =y(i)+(a14*pxi+a24*py(i))/bzp
           px(i)=     a22*pxi+a24*py(i)
           py(i)=    -a24*pxi+a22*py(i)
           z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
@@ -217,7 +221,6 @@ c          endif
       implicit none
       type (tzparam) tz
       integer*4 np,i,n,ndiv
-      real*8 , parameter ::smax=0.99d0
       integer*4 , parameter :: ndivmax=1000
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np)
       real*8 sx(np),sy(np),sz(np)
@@ -225,7 +228,7 @@ c          endif
      $     bw,dw,r,ap,dpz,ak0x,ak0y,bz0,
      $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
      $     dx0,dy0,xi,yi,a12,a14,a22,a24,phi,pxi,pyi,
-     $     awu,dwu,dz1,dz2,tph
+     $     awu,dwu,dz1,dz2
       real*8 , parameter ::phieps=1.d-7,arad=0.01d0
         associate (
      $       w1=>tz%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
@@ -275,14 +278,13 @@ c          endif
         alr=aln*0.5d0
         do n=1,ndiv
           do i=1,np
-c     pr=(1.d0+gp(i))**2
             call tzsetparam0(tz,gp(i),akk)
             if(n .eq. 1)then
               bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)
             else
               bsi(i)=0.d0
             endif
-            ap=min(smax,px(i)**2+py(i)**2)
+            ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
 c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
             r=-dpz/(1.d0+dpz)*alr
@@ -318,7 +320,7 @@ c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
           call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,alr,0.d0)
         enddo
         do i=1,np
-          ap=min(smax,px(i)**2+py(i)**2)
+          ap=px(i)**2+py(i)**2
           dpz=sqrt1(-ap)
 c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           r=-dpz/(1.d0+dpz)*aln*0.5d0
@@ -341,26 +343,29 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
             else
               bsi(i)=bzp*alr
             endif
-            ap=min(smax,px(i)**2+py(i)**2)
+            ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
 c            dpz=-ap/(1.d0+sqrt(1.d0-ap))
             r=-dpz/(1.d0+dpz)*alr
             phi=r*bzp
-            tph=tan(.5d0*phi)
-            a24=2.d0*tph/(1.d0+tph**2)
+c            tph=tan(.5d0*phi)
+c            a24=2.d0*tph/(1.d0+tph**2)
+            call xsincos(phi,a24,a12,a22,a14)
+c            a14=-a14/bzp
+c            a12=a24/bzp
 c            a24=sin(phi)
-            a12=a24/bzp
-            a22=1.d0-tph*a24
 c            a22=cos(phi)
-            a14=tph*a12
+c            a12=a24/bzp
+c            a22=1.d0-tph*a24
+c            a14=tph*a12
 c            if(a22 .ge. 0.d0)then
 c              a14=a12*a24/(1.d0+a22)
 c            else
 c              a14=(1.d0-a22)/bzp
 c            endif
             pxi=px(i)
-            x(i) =x(i)+a12*pxi+a14*py(i)
-            y(i) =y(i)-a14*pxi+a12*py(i)
+            x(i) =x(i)+(a24*pxi-a14*py(i))/bzp
+            y(i) =y(i)+(a14*pxi+a24*py(i))/bzp
             px(i)=     a22*pxi+a24*py(i)
             py(i)=    -a24*pxi+a22*py(i)
             z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
@@ -388,10 +393,10 @@ c            endif
             py(i)=pyi-wd*u1 +ws*v1
             awu=a/ws*w1
             dwu=d
-            call tztaf(0,tz,awu,pxi,pyi,aw1,ws,w12,wss,g1,
-     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz1,0.d0)
-            call tztaf(0,tz,-dwu,-pyi,pxi,aw2,-w12,ws,-wss,g2,
-     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz2,0.d0)
+            call tztaf(tz,awu,pxi,pyi,aw1,ws,w12,wss,g1,
+     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz1)
+            call tztaf(tz,-dwu,-pyi,pxi,aw2,-w12,ws,-wss,g2,
+     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz2)
             z(i)=z(i)+
      $           bzp*(-((awu*dwu*dxs**2)/akkp) +
      $           ca1*pxi*pyi*wss)
@@ -407,26 +412,39 @@ c            endif
           call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,alr,0.d0)
         enddo
         do i=1,np
-          ap=min(smax,px(i)**2+py(i)**2)
+          ap=px(i)**2+py(i)**2
           dpz=sqrt1(-ap)
 c     dpz=-ap/(1.d0+sqrt(1.d0-ap))
           r=-dpz/(1.d0+dpz)*aln*.5d0
           phi=r*bzp
-          tph=tan(.5d0*phi)
-          a24=2.d0*tph/(1.d0+tph**2)
-c         a24=sin(phi)
-          a22=1.d0-tph*a24
-          a12=a24/bzp
-          a14=tph*a12
-c         a22=cos(phi)
+c          tph=tan(.5d0*phi)
+c          a24=2.d0*tph/(1.d0+tph**2)
+c          a24=sin(phi)
+c          a22=cos(phi)
+c          a22=1.d0-tph*a24
+c          a12=a24/bzp
+c          a14=tph*a12
 c          if(a22 .ge. 0.d0)then
 c            a14=a12*a24/(1.d0+a22)
 c          else
 c            a14=(1.d0-a22)/bzp
 c          endif
+          call xsincos(phi,a24,a12,a22,a14)
+c     a14=-a14/bzp
+c     a12=a24/bzp
+c     a24=sin(phi)
+c     a22=cos(phi)
+c     a12=a24/bzp
+c     a22=1.d0-tph*a24
+c     a14=tph*a12
+c     if(a22 .ge. 0.d0)then
+c     a14=a12*a24/(1.d0+a22)
+c     else
+c     a14=(1.d0-a22)/bzp
+c     endif
           pxi=px(i)
-          x(i) =x(i)+a12*pxi+a14*py(i)
-          y(i) =y(i)-a14*pxi+a12*py(i)
+          x(i) =x(i)+(a24*pxi-a14*py(i))/bzp
+          y(i) =y(i)+(a14*pxi+a24*py(i))/bzp
           px(i)=     a22*pxi+a24*py(i)
           py(i)=    -a24*pxi+a22*py(i)
           z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r

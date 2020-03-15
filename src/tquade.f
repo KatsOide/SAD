@@ -198,7 +198,7 @@ c          als=als+aln
           trans(4,i)=trans1(4,3)*y+trans1(4,4)*trans(4,i)
      $         +trans1(4,6)*trans(6,i)
         enddo
-        call tmulbs(beam ,trans1,.true.,.true.)
+        call tmulbs(beam ,trans1,.true.)
         cod(1)= xf
         cod(3)= yf
         cod(5)=cod(5)-dvemit*aln-

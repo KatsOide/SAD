@@ -1,7 +1,78 @@
       module disp
       integer*4 , parameter :: mode0=0,
      $     modea=5,modeg=101,modeog=102,modeo=3,
-     $     moder=2,modeb=4,modep=6,moded=10,modez=11
+     $     moder=2,modeb=4,modep=6,moded=10,modez=11,
+     $     modega=12,
+     $     ldisp=8
+
+      contains
+      character*(ldisp) function tdispv(mf,l,icolm,dref,form,a)
+      use ffs_pointer
+      use ffs_fit
+      use tffitcode
+      implicit none
+      integer*4 , intent(in)::l,icolm,mf
+      character*(*) , intent(in)::form
+      real*8 , intent(in), optional::a
+      real*8 v,tgetgm
+      logical*4 dref
+      v=0.d0
+      if(dref)then
+        select case (mf)
+        case(mfitbx,mfitby,mfitbz)
+          v=(twiss(l,0,mf)-twiss(l,-1,mf))/twiss(l,-1,mf)
+        case(mfitgmx,mfitgmy,mfitgmz)
+          v=(tgetgm(mf,l,0)-tgetgm(mf,l,-1))/tgetgm(mf,l,-1)
+        case default
+          v=twiss(l,0,mf)-twiss(l,-1,mf)
+        end select
+      else
+        select case (mf)
+        case (mfitgmx,mfitgmy,mfitgmz)
+          v=tgetgm(mf,l,icolm)/scale(mf)
+        case default
+          v=twiss(l,icolm,mf)/scale(mf)
+        end select
+        if(present(a))then
+          v=v*a
+        endif
+      endif
+      call tdtrimz(tdispv,v,form)
+      return
+      end function
+
+      subroutine tdtrimz(s,v,form)
+      implicit none
+      character*(*) , intent(out)::s
+      character*(*) , intent(in)::form
+      real*8 , intent(in)::v
+      integer*4 i
+      character*(len(s)) autofg
+      s=autofg(v,form)
+      if(v .eq. 0.d0)then
+        i=index(s,'.')
+        if(i .ne. 0 .and. i .lt. len(s)-1)then
+          s(i+2:)=' '
+        endif
+      endif
+      return
+      end subroutine
+
+      real*8 function tfvl(cmp,id)
+      use ffs
+      use ffs_pointer
+      use ffs_seg, only:tfvcmp
+      implicit none
+      type (sad_comp) ,intent(in):: cmp
+      integer*4 , intent(in)::id
+      if(kytbl(kwL,id) .eq. 0)then
+        tfvl=0.d0
+      else
+        tfvl=tfvcmp(cmp,kytbl(kwL,id))
+      endif
+      return
+      end function
+
       end module
 
       subroutine tfdisp(word,idisp1,idisp2,dp00,lfno,exist)
@@ -29,7 +100,6 @@
       character*256 wordp,word1,name
       character*(blen) buff
       character*16 autofg,vout,ans
-      character*8 tdispv
       character*256 bname
       character*1 dir,hc
       character*131 header
@@ -63,6 +133,9 @@ c      write(*,*)'tfdisp ',word,wordp
         go to 270
       elseif(abbrev(word,'G_EOMETRY','_'))then
         mdisp=modeg
+        go to 270
+      elseif(abbrev(word,'GA_MMA','_'))then
+        mdisp=modega
         go to 270
       elseif(abbrev(word,'OG_EOMETRY','_'))then
         mdisp=modeog
@@ -137,6 +210,11 @@ c      write(*,*)'tfdisp ',word,wordp
      1         '   AX      BX      NX      EX      EPX  '//
      1         ' Element    PEX    PEPX   PEY    PEPY  '//
      1         '   AY      BY      NY      EY      EPY    DetR     #'
+        case (modega)
+          header=
+     1         '   AX      BX      NX      GMX     GMX*L'//
+     1         ' Element   Length   Value      s(m)    '//
+     1         '   AY      BY      NY      GMY     GMY*L  DetR     #'
         case (modeo)
           header=
      1         '   AX      BX      NX      EX      EPX  '//
@@ -161,7 +239,7 @@ c      write(*,*)'tfdisp ',word,wordp
           header=
      1         '   AZ      BZ      NZ      DZ     DDP   '//
      1         ' Element   Length   Value      s(m)    '//
-     1         '   ZX      ZPX     ZY      ZPY            DetR     #'
+     1         '   ZX      ZPX     ZY      ZPY     GMZ    DetR     #'
         case default
           header=
      1         '   AX      BX      NX      EX      EPX  '//
@@ -208,12 +286,12 @@ c      write(*,*)'tfdisp ',word,wordp
         if(iele1(icomp((l))) .gt. 0 .and.
      $       id .ne. icMARK .and. id .ne. 34)then
           if(ival(iele1(icomp(l))) .gt. 0)then
-            vout=autofg(tfvcmp(cmp,ival(iele1(icomp(l)))),'10.7')
+            call tdtrimz(vout,tfvcmp(cmp,ival(iele1(icomp(l)))),'10.7')
           else
             vout=' 0'
           endif
         elseif(id .eq. icSOL)then
-          vout=autofg(cmp%value(ky_BZ_SOL),'10.7')
+          call tdtrimz(vout,cmp%value(ky_BZ_SOL),'10.7')
         else
           vout=' 0'
         endif
@@ -253,12 +331,8 @@ c          read(lfni,'(a)')ans
      $           'Chi3      #'
      $           )
           endif
-          buff(37:48)=autofg(pos(l)/scale(mfitleng),'12.6')
-          if(kytbl(kwL,id) .eq. 0)then
-            buff(49:58)=autofg(0.d0,'10.6')
-          else
-            buff(49:58)=autofg(tfvcmp(cmp,kytbl(kwL,id)),'10.6')
-          endif
+          call tdtrimz(buff(37:48),pos(l)/scale(mfitleng),'12.6')
+          call tdtrimz(buff(49:58),tfvl(cmp,id),'10.6')
           if(id .ne. 41 .and. id .ne. 42 .and. id .ne. 34)then
             buff(59:69)=' '//vout(1:10)
           else
@@ -266,11 +340,10 @@ c          read(lfni,'(a)')ans
           endif
           if(mdisp .eq. modeg .or. tfinsol(l))then
             do i=0,2
-              buff(1+i*12:12+i*12)
-     1           =autofg(geo(i+1,4,l)/scale(mfitgx+i),'12.6')
-              buff(70+i*12:81+i*12)
-     1             =autofg(tfchi(geo(1,1,l),i+1)/scale(i+mfitchi1),
-     $             '12.6')
+              call tdtrimz(buff(1+i*12:12+i*12),
+     1             geo(i+1,4,l)/scale(mfitgx+i),'12.6')
+              call tdtrimz(buff(70+i*12:81+i*12),
+     1             tfchi(geo(1,1,l),i+1)/scale(i+mfitchi1),'12.6')
             enddo
           else
             call tforbitgeo(og,geo(1,1,l),
@@ -279,11 +352,10 @@ c          read(lfni,'(a)')ans
      $           twiss(l,icolm,mfitdy),
      $           twiss(l,icolm,mfitdpy))
             do i=0,2
-              buff(1+i*12:12+i*12)
-     1           =autofg(og(i+1,4)/scale(mfitgx+i),'12.6')
-              buff(70+i*12:81+i*12)
-     1             =autofg(tfchi(og(1,1),i+1)/scale(i+mfitchi1),
-     $             '12.6')
+              call tdtrimz(buff(1+i*12:12+i*12),
+     1             og(i+1,4)/scale(mfitgx+i),'12.6')
+              call tdtrimz(buff(70+i*12:81+i*12),
+     1             tfchi(og(1,1),i+1)/scale(i+mfitchi1),'12.6')
             enddo
           endif
           dir=' '
@@ -299,15 +371,15 @@ c          read(lfni,'(a)')ans
           if(l .eq. idisp1)then
             buff(1:15)=' '
             do i=1,ntwissfun
-              buff((i-1)*12+16:i*12+15)=autofg(scale(i),'12.8')
+              call tdtrimz(buff((i-1)*12+16:i*12+15),scale(i),'12.8')
             enddo
             write(lfno,'(a)')buff(1:ntwissfun*12+15)
           endif
           buff(1:12)=name
           write(buff(13:15),'(I3)')id
           do i=1,ntwissfun
-            buff((i-1)*12+16:i*12+15)
-     $           =autofg(twiss(l,icolm,i)/scale(i),'12.8')
+            call tdtrimz(buff((i-1)*12+16:i*12+15),
+     $           twiss(l,icolm,i)/scale(i),'12.8')
           enddo
 c$$$          buff((19-1)*12+16:19*12+15)=autofg(pos(l)/
 c$$$     $         scale(mfitleng),'12.8')
@@ -330,6 +402,13 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             buff(17:24)=tdispv(mfitnz,l,icolm,dref,'8.5')
             buff(25:32)=tdispv(mfitdz,l,icolm,dref,'8.5')
             buff(33:40)=tdispv(mfitddp,l,icolm,dref,'8.5')
+          case (modega)
+            buff( 1: 8)=tdispv(mfitax,l,icolm,dref,'8.5')
+            buff( 9:16)=tdispv(mfitbx,l,icolm,dref,'8.5')
+            buff(17:24)=tdispv(mfitnx,l,icolm,dref,'8.5')
+            buff(25:32)=tdispv(mfitgmx,l,icolm,dref,'8.5')
+            buff(33:40)=tdispv(mfitgmx,l,icolm,dref,'8.5',
+     $           tfvl(cmp,id))
           case (modeb)
             call ffs_init_sizep
             if(.not. updatesize .or. sizedp .ne. dpmax)then
@@ -342,11 +421,11 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             sigxpxp=beamsize(2,l)-etaxp*etapxp*sigpp
             sigpxpxp=beamsize(3,l)-etapxp**2*sigpp
             emixp=sqrt(sigxxp*sigpxpxp-sigxpxp**2)
-            buff( 1: 8)=autofg(-sigxpxp/emixp/scale(mfitax),'8.5')
-            buff( 9:16)=autofg(sigxxp/emixp/scale(mfitbx),'8.5')
-            buff(17:24)=autofg(emixp,'8.5')
-            buff(25:32)=autofg(etaxp/scale(mfitex),'8.5')
-            buff(33:40)=autofg(etapxp/scale(mfitepx),'8.5')
+            call tdtrimz(buff( 1: 8),-sigxpxp/emixp/scale(mfitax),'8.5')
+            call tdtrimz(buff( 9:16),sigxxp/emixp/scale(mfitbx),'8.5')
+            call tdtrimz(buff(17:24),emixp,'8.5')
+            call tdtrimz(buff(25:32),etaxp/scale(mfitex),'8.5')
+            call tdtrimz(buff(33:40),etapxp/scale(mfitepx),'8.5')
           case default
             buff( 1: 8)=tdispv(mfitax,l,icolm,dref,'8.5')
             buff( 9:16)=tdispv(mfitbx,l,icolm,dref,'8.5')
@@ -397,30 +476,26 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
      $             =tdispv(mfitdx+i,l,icolm,dref,'7.4')
 120         continue
           case (modeb)
-            buff(51:60)=autofg(sqrt(beamsize(1,l))*1.d3,'10.8')
-            buff(61:70)=autofg(sqrt(beamsize(6,l))*1.d3,'10.8')
-            buff(71:79)=autofg(
+            call tdtrimz(buff(51:60),sqrt(beamsize(1,l))*1.d3,'10.8')
+            call tdtrimz(buff(61:70),sqrt(beamsize(6,l))*1.d3,'10.8')
+            call tdtrimz(buff(71:79),
      1           atan2(-2.d0*beamsize(4,l),beamsize(1,l)-beamsize(6,l))
      $           *90.d0/pi,'9.4')
           case (modea)
-            buff(51:58)=autofg((gammab(l)+dgam)*amass/1.d9,'8.6')
+            call tdtrimz(buff(51:58),(gammab(l)+dgam)*amass/1.d9,'8.6')
             r=(gammab(1)+dgam)/(gammab(l)+dgam)
-            buff(59:65)=autofg(emx*r,'7.5')
-            buff(66:72)=autofg(emy*r,'7.5')
-            buff(73:79)=autofg(twiss(l,icolm,mfitddp)
+            call tdtrimz(buff(59:65),emx*r,'7.5')
+            call tdtrimz(buff(66:72),emy*r,'7.5')
+            call tdtrimz(buff(73:79),twiss(l,icolm,mfitddp)
      $           /scale(mfitddp),'7.4')
           case default
-            if(kytbl(kwL,id) .eq. 0)then
-              buff(51:58)=autofg(0.d0,'8.5')
-            else
-              buff(51:68)=autofg(tfvcmp(cmp,kytbl(kwL,id)),'8.5')
-            endif
+            call tdtrimz(buff(51:68),tfvl(cmp,id),'8.5')
             if(id .ne. 41 .and. id .ne. 42 .and. id .ne. 34)then
               buff(59:68)=vout(1:10)
             else
               buff(59:68)=' 0'
             endif
-            buff(69:79)=autofg(pos(l)/scale(mfitleng),'11.6')
+            call tdtrimz(buff(69:79),pos(l)/scale(mfitleng),'11.6')
           end select
           select case (mdisp)
           case (modez)
@@ -428,7 +503,16 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             buff(88:95)=tdispv(mfitzpx,l,icolm,dref,'8.5')
             buff(96:103)=tdispv(mfitzy,l,icolm,dref,'8.5')
             buff(104:111)=tdispv(mfitzpy,l,icolm,dref,'8.5')
+            buff(112:119)=tdispv(mfitgmz,l,icolm,dref,'8.5')
             buff(120:126)=tdispv(mfitdetr,l,icolm,dref,'8.5')
+          case (modega)
+            buff(80:87)=tdispv(mfitay,l,icolm,dref,'8.5')
+            buff(88:95)=tdispv(mfitby,l,icolm,dref,'8.5')
+            buff(96:103)=tdispv(mfitny,l,icolm,dref,'8.5')
+            buff(104:111)=tdispv(mfitgmy,l,icolm,dref,'8.5')
+            buff(112:119)=tdispv(mfitgmy,l,icolm,dref,'8.5',
+     $           tfvl(cmp,id))
+            buff(120:126)=tdispv(mfitdetr,l,icolm,dref,'7.4')
           case (modeb)
             etayp=beamsize(18,l)/sigpp
             etapyp=beamsize(19,l)/sigpp
@@ -436,19 +520,19 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             sigypyp=beamsize(9,l)-etayp*etapyp*sigpp
             sigpypyp=beamsize(10,l)-etapyp**2*sigpp
             emiyp=sqrt(sigyyp*sigpypyp-sigypyp**2)
-            buff(80:87)=autofg(-sigypyp/emiyp/scale(mfitay),'8.5')
-            buff(88:95)=autofg(sigyyp/emiyp/scale(mfitby),'8.5')
-            buff(96:103)=autofg(emiyp,'8.5')
-            buff(104:111)=autofg(etayp/scale(mfitey),'8.5')
-            buff(112:119)=autofg(etapyp/scale(mfitepy),'8.5')
-            buff(120:126)=autofg(sqrt(sigpp),'7.4')
+            call tdtrimz(buff(80:87),-sigypyp/emiyp/scale(mfitay),'8.5')
+            call tdtrimz(buff(88:95),sigyyp/emiyp/scale(mfitby),'8.5')
+            call tdtrimz(buff(96:103),emiyp,'8.5')
+            call tdtrimz(buff(104:111),etayp/scale(mfitey),'8.5')
+            call tdtrimz(buff(112:119),etapyp/scale(mfitepy),'8.5')
+            call tdtrimz(buff(120:126),sqrt(sigpp),'7.4')
           case default
             buff(80:87)=tdispv(mfitay,l,icolm,dref,'8.5')
             buff(88:95)=tdispv(mfitby,l,icolm,dref,'8.5')
             buff(96:103)=tdispv(mfitny,l,icolm,dref,'8.5')
             buff(104:111)=tdispv(mfitey,l,icolm,dref,'8.5')
             buff(112:119)=tdispv(mfitepy,l,icolm,dref,'8.5')
-            if(mdisp .eq. 5)then
+            if(mdisp .eq. modea)then
               buff(120:126)=tdispv(mfitdz,l,icolm,dref,'7.4')
             else
               buff(120:126)=tdispv(mfitdetr,l,icolm,dref,'7.4')
@@ -563,28 +647,5 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
 
         case default
       end select
-      return
-      end
-
-      character*(*) function tdispv(mf,l,icolm,dref,form)
-      use ffs_pointer
-      use ffs_fit
-      use tffitcode
-      implicit none
-      integer*4 l,icolm,mf
-      character*(*) form
-      character*16 autofg
-      logical*4 dref
-      if(dref)then
-        select case (mf)
-          case(mfitbx,mfitby,mfitbz)
-            tdispv=autofg((twiss(l,0,mf)-twiss(l,-1,mf))
-     $           /twiss(l,-1,mf),form)
-          case default
-            tdispv=autofg(twiss(l,0,mf)-twiss(l,-1,mf),form)
-        end select
-      else
-        tdispv=autofg(twiss(l,icolm,mf)/scale(mf),form)
-      endif
       return
       end
