@@ -87,8 +87,11 @@ Linux)
 #    if [ ${cc_vers} = "_4" ]; then
 #        echo $(eval echo ${HOSTNAME}|egrep -o '[^0-9]+'|head -n 1)
     case $(eval hostname|egrep -o '[^0-9]+'|head -n 1) in
-        lxplus)
-            machine="_LXPLUS"
+        hpc)
+            machine="_HPC"
+            ;;
+        slurmgate)
+            machine="_HPC"
             ;;
 #           hpc)
 #               cc_vers="_7"

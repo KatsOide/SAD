@@ -171,7 +171,7 @@ $(LIBTAI_SRCDIR)/.post_patch_done: $(LIBTAI_SRCDIR)/.patch_done
 	    echo "$$f" >>leapsecs.txt; \
 	done; \
 	for f in *.h; do \
-	    mv -f $$f $$f.bak; \
+	    cp -f $$f $$f.bak; \
 	    sed -e 's|\(#include[ 	]*\)"\([^"][^"]*\)"|\1<libtai/\2>|' $$f.bak >$$f; \
 	done; \
 	touch $@)
@@ -201,7 +201,7 @@ $(LIBTAI_OBJDIR)/.configure_done: $(LIBTAI_OBJDIR)/.lndir_done
 	echo "$(CC) $(SYS_CC_ABIOPT) -I. $(LIB_COPT)" >conf-cc; \
 	echo "$(CC) $(SYS_CC_ABIOPT)" >conf-ld; \
 	for f in leapsecs_read.c leapsecs.3; do \
-	    mv -f $$f $$f.bak; \
+	    cp -f $$f $$f.bak; \
 	    sed -e 's|%%LEAPSECONDS_PREFIX%%|$(_LIBTAI_LEAPSECONDS_PREFIX)|' $$f.bak >$$f; \
 	done; \
 	touch $@)
