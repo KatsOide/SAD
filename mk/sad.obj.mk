@@ -105,7 +105,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      qddrif.o    qdmdia.o    qdquad.o     qdthin.o   qdtwis.o \
      qgettr.o    qins.o      qmult.o      qquad.o \
      qtent.o     qtwiss.o     tapert.o \
-     tbal.o      tbdecoup.o  tbende.o     tbendi.o   tbfrie.o \
+     tbdecoup.o  tbende.o     tbendi.o   tbfrie.o \
      tceigen.o    tcftr.o    tcod.o \
      tcorr.o     tdet.o      tdfun.o      tdgeo.o    tdlat.o \
      teigen.o    temap.o     temat.o      temitf.o \
@@ -118,10 +118,10 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      tfsave.o    tfsetparam.o             tfsetv.o   tfshow.o    tftmat.o \
      tftrack.o   tftrak.o    tftrb.o \
      tftype.o    tfvars.o     tgauss_.o \
-     tgetfv.o    thess.o     tins.o     tinse.o \
+     tgetfv.o    tins.o     tinse.o \
      tlum.o      tmov.o       tmulbs.o   tmulte.o \
      tmulti.o    tmulta.o    tdrift.o     trackd.o \
-     tmultr.o    tnorm.o     tqr.o \
+     tmultr.o    tnorm.o     \
      tquade.o    tquads.o     tquase.o   track.o \
      tracka.o    trade.o     tsconv.o     tsgeo.o \
      tshow.o     tsol.o      tsole.o      tsolvg.o \
