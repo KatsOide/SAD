@@ -1,3 +1,5 @@
+c  The varibles px, py in this level are canonical momenta divided by p.
+c 
       module sol
       real*8,save,private::cchi1,cchi2,cchi3,schi1,
      $     schi2,schi3,dcchi1,dcchi2,
@@ -711,6 +713,7 @@ c            xsinphi=xsin(phi)
       use sad_main
       use tparastat
       use ffs_seg
+      use tspin
       implicit none
       real*8 conv
       parameter (conv=3.d-16)
@@ -721,14 +724,14 @@ c            xsinphi=xsin(phi)
       integer*4 k,kbz,np
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
      $     sx(np0),sy(np0),sz(np0)
-      real*8 tfbzs,fw,bzs,rho,al,theta,phi,phix,phiy,rhoe,
-     $     bz1,rho1,dx,dy,rot,rtaper,ph
+      real*8 tfbzs,fw,bzs,al,theta,phi,phix,phiy,
+     $     bz1,dx,dy,rot,rtaper,ph,bzph
       integer*8 latt(nlat),l1,lp
       integer*4 kptbl(np0,6),nwak,nextwake,n,
      $     i,ke,l,lt,itab(np),izs(np),
      $     kdx,kdy,krot,kstop,kb,lwl,lwt,irtc
       integer*8 iwpl,iwpt
-      logical*4 sol,enarad,out,fringe,seg,autophi
+      logical*4 sol,out,seg,autophi,krad
       real*8 ,save::dummy(256)=0.d0
       l1=latt(k)
       if(sol)then
@@ -749,26 +752,31 @@ c            xsinphi=xsin(phi)
      $     pname(idelc(k))(1:lpnamec(k))
       ke=nlat
  20   bzs=tfbzs(k,kbz)
-      if(bzs .eq. 0.d0)then
-        rho=1.d50
-      else
-        rho=1.d0/bzs
-      endif
       if(.not. sol)then
+        call loc_comp(l1,cmp)
         call trots(np,x,px,y,py,z,dv,
-     $       rlist(l1+ky_CHI1_SOL),
-     $       rlist(l1+ky_CHI2_SOL),
-     $       rlist(l1+ky_CHI3_SOL),
-     $       rlist(l1+ky_DX_SOL),
-     $       rlist(l1+ky_DY_SOL),
-     $       rlist(l1+ky_DZ_SOL),
+     $       cmp%value(ky_CHI1_SOL),
+     $       cmp%value(ky_CHI2_SOL),
+     $       cmp%value(ky_CHI3_SOL),
+     $       cmp%value(ky_DX_SOL),
+     $       cmp%value(ky_DY_SOL),
+     $       cmp%value(ky_DZ_SOL),
      $       .true.)
-        fringe=rlist(l1+ky_FRIN_SOL) .eq. 0.d0      
-        if(fringe)then
+        krad=rad .and. cmp%value(ky_RAD_SOL) .eq. 0.d0
+     $       .and. cmp%value(ky_F1_SOL) .ne. 0.d0 .and. bzs .ne. 0.d0
+        if(krad)then
+          pxr0=px
+          pyr0=py
+          zr0=z
+          bsi=0.d0
+        endif
+        if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
           call tsfrin(np,x,px,y,py,z,g,bzs)
         endif
-        if(rad .and. rlist(l1+ky_RAD_SOL) .eq. 0.d0)then
-          call tserad(np,x,px,y,py,g,dv,l1,rho)
+        if(krad)then
+          call tradks(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         bzs,cmp%value(ky_F1_SOL))
+c          call tserad(np,x,px,y,py,g,dv,l1,rho)
         endif
         sol=.true.
       endif
@@ -843,22 +851,19 @@ c            xsinphi=xsin(phi)
           else
             call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           al,bzs,rad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0)
-c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
           endif
         case (icBEND)
           if(iand(cmp%update,1) .eq. 0)then
             call tpara(cmp)
           endif
           al=cmp%value(ky_L_BEND)
-          theta=cmp%value(ky_ROT_BEND)
-     $         +cmp%value(ky_DROT_BEND)
+          theta=cmp%value(ky_ROT_BEND)+cmp%value(ky_DROT_BEND)
           phi=cmp%value(ky_ANGL_BEND)+cmp%value(ky_K0_BEND)
           phiy= phi*cos(theta)
           phix= phi*sin(theta)
-          enarad=rad .and. al .ne. 0.d0
-     $         .and. cmp%value(ky_RAD_BEND) .eq. 0.d0
           call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         al,bzs,phiy,phix,enarad)
+     $         al,bzs,phiy,phix,rad .and. al .ne. 0.d0
+     $         .and. cmp%value(ky_RAD_BEND) .eq. 0.d0)
         case(icQUAD)
           if(iand(cmp%update,1) .eq. 0)then
             call tpara(cmp)
@@ -918,12 +923,28 @@ c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
      $         n,latt,kptbl)
         case (icSOL)
           if(l .eq. ke)then
-            fringe=cmp%value(ky_FRIN_SOL) .eq. 0.d0      
-            if(fringe)then
-              call tsfrin(np,x,px,y,py,z,g,-bzs)
-            endif
-            if(rad .and. cmp%value(ky_RAD_SOL) .eq. 0.d0)then
-              call tserad(np,x,px,y,py,g,dv,lp,rho)
+            bz1=0.d0
+          else
+            bz1=tfbzs(l,kbz)
+          endif
+          krad=rad .and. cmp%value(ky_RAD_SOL) .eq. 0.d0
+     $         .and. cmp%value(ky_F1_SOL) .ne. 0.d0 .and. bzs .ne. bz1          
+          if(krad)then
+            do i=1,np
+              bzph=.5d0*bzs/(1.d0+g(i))
+              pxr0(i)=px(i)+bzph*y(i)
+              pyr0(i)=py(i)-bzph*x(i)
+              zr0(i)=z(i)
+            enddo
+          endif
+          if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
+            call tsfrin(np,x,px,y,py,z,g,bz1-bzs)
+          endif
+          if(l .eq. ke)then
+            if(krad)then
+              call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $             cmp%value(ky_F1_SOL),0.d0)
+c              call tserad(np,x,px,y,py,g,dv,lp,rho)
             endif
             call trots(np,x,px,y,py,z,dv,
      $           cmp%value(ky_CHI1_SOL),
@@ -933,28 +954,12 @@ c            call tsdrad(np,x,px,y,py,z,g,dv,al,rho)
      $           cmp%value(ky_DY_SOL),
      $           cmp%value(ky_DZ_SOL),
      $           .false.)
-          else
-            bz1=tfbzs(l,kbz)
-            fringe=cmp%value(ky_FRIN_SOL) .eq. 0.d0      
-            if(fringe)then
-              call tsfrin(np,x,px,y,py,z,g,bz1-bzs)
-            endif
-            if(bz1 .eq. bzs)then
-              rhoe=1.d50
-            else
-              rhoe=1/(bz1-bzs)
-            endif
-            if(bz1 .eq. 0.d0)then
-              rho1=1.d50
-            else
-              rho1=1.d0/bz1
-            endif
-            rho=rho1
-            bzs=bz1
-            if(rad .and. cmp%value(ky_RAD_SOL) .eq. 0.d0)then
-              call tserad(np,x,px,y,py,g,dv,lp,rhoe)
-            endif
+          elseif(krad)then
+            call tradks(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $           bz1,cmp%value(ky_F1_SOL))
+c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
           endif
+          bzs=bz1
         case(icMAP)
           call temap(np,np0,x,px,y,py,z,g,dv,l,n,kptbl)
         case(icAprt)
@@ -1361,5 +1366,30 @@ c     Transfer Matrix: trans(i,j) := dcod(i)@exit / dcod(j)@enter
       trans(6,5) =  0.d0
       trans(6,6) =  1.d0
 
+      return
+      end
+
+      subroutine tradks(np,x,px,y,py,z,g,dv,sx,sy,sz,bzs,al)
+      use tspin, only:tradk
+      implicit none
+      integer*4 , intent(in)::np
+      real*8 , intent(in)::bzs,al
+      real*8 ,intent(inout)::
+     $     x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+     $     sx(np),sy(np),sz(np)
+      integer*4 i
+      real*8 bzph
+      do i=1,np
+        bzph=.5d0*bzs/(1.d0+g(i))
+        px(i)=px(i)+bzph*y(i)
+        py(i)=py(i)-bzph*x(i)
+      enddo
+      call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $     al,0.d0)
+      do i=1,np
+        bzph=.5d0*bzs/(1.d0+g(i))
+        px(i)=px(i)-bzph*y(i)
+        py(i)=py(i)+bzph*x(i)
+      enddo
       return
       end
