@@ -92,7 +92,7 @@ c          endif
      $         pxr0(i),pyr0(i),zr0(i),bsi(i),al,i)
         enddo
       else
-        call tradk1n(np,x,px,y,py,z,g,dv,
+        call tradkn(np,x,px,y,py,z,g,dv,
      $       sx,sy,sz,al)
 c        do i=1,np
 c          call tradk1(x(i),px(i),y(i),py(i),z(i),g(i),dv(i),

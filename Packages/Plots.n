@@ -638,6 +638,7 @@ CP$JoinLine[{l:{x_,m___,y_},c_},k_]:=Module[{lx=contb[k][x],ly=contb[k][y],a},
 CP$GetLine[l1_,n_,cf_]:=Module[
   {l=Extract[Delete[?contl,{{1,1},{1,-1}}],{{1,,2},{1,,1,0,1}}],
     ls,lc,ls1,k,t=Table[{k,_},{k,n}]},
+  If[l==={},Return[{}]];
   l=Thread[Partition[l,Length[l]/2]];
   l=If[contl[#2][#[[1,1]]]<=>{{}},
     If[#[[1,1]]<=>#[[1,-1]],contl[#2][#[[1,-1]]]=.];

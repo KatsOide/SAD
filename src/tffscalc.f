@@ -474,13 +474,12 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       subroutine twfit(kfit,
      1     ifitp,kfitp,kdp,nqcola,iqcol,maxf,wcal)
       use tfstk
-      use ffs, only:emx,emy,dpmax,coumin
+      use ffs, only:emx,emy,dpmax,coumin,emminv
       use ffs_pointer
       use ffs_fit
       use ffs_flag, only:cell
       use tffitcode
       implicit none
-c      include 'DEBUG.inc'
       integer*8 kx
       integer*4 maxf,i,j,k,nqcola,iq
       integer*4 kfit(*),ifitp(*),kfitp(*),kdp(*),idp,iqcol(nqcola)
@@ -503,9 +502,10 @@ c      include 'DEBUG.inc'
         klist(ifv+3)=ktflist+ifid
         klist(ifv+4)=0
       endif
-      em=abs(emx)+abs(emy)
+      em=max(emminv,abs(emx)+abs(emy))
       coum=min(1.d0,
-     $     max(coumin,0.01d0,1.d0/(abs(emx/emy)+abs(emy/emx))))
+     $     max(coumin,0.01d0,
+     $     1.d0/(abs(emx/max(emminv,emy))+abs(emy/max(emminv,emx)))))
       coum=coum/(1.d0+coum)
       emxx=max(emx,coum*em)
       emyy=max(emy,coum*em)

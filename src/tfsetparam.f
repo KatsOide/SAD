@@ -11,19 +11,18 @@
       logical*4 calgeo
       emx   =rgetgl1('EMITX')
       emy   =rgetgl1('EMITY')
-      if(emx .le. 1.d-30)then
-        emx=1.d-12
-      endif
-      if(emy .le. 1.d-30)then
-        emy=1.d-12
-      endif
+      emz   =rgetgl1('EMITZ')
+      sigzs =rgetgl1('SIGZ')
+      sizedp=rgetgl1('SIGE')
       dpmax =rfromd(kxsymbolv('DP',2))
       if(idtypec(1) .eq. icMARK)then
         ix=latt(1)
         rlist(ix+ky_EMIX_MARK)=emx
         rlist(ix+ky_EMIY_MARK)=emy
+        rlist(ix+ky_EMIZ_MARK)=emz
+        rlist(ix+ky_SIGZ_MARK)=sigzs
+        rlist(ix+ky_SIGE_MARK)=sizedp
         rlist(ix+ky_DP_MARK)=dpmax
-        rlist(ix+ky_SIGZ_MARK)=rgetgl1('SIGZ')
         dp0=rlist(ix+ky_DDP_MARK)
       else
         dp0=0.d0
@@ -93,5 +92,18 @@ c      h0    =p0*sqrt(1.d0+1.d0/p0**2)
         omega0=0.d0
       endif
       call rsetgl1('OMEGA0',omega0)
+      return
+      end
+
+      subroutine tfresetparam
+      use ffs
+      implicit none
+      real*8 rgetgl1,df
+      logical*4 calgeo
+      call rsetgl1('EMITX',emx)
+      call rsetgl1('EMITY',emy)
+      call rsetgl1('EMITZ',emz)
+      call rsetgl1('SIGZ',sigzs)
+      call rsetgl1('SIGE',sizedp)
       return
       end

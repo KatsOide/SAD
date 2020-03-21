@@ -699,10 +699,30 @@ c            xsinphi=xsin(phi)
       return
       end subroutine
 
+      subroutine tradks(np,x,px,y,py,z,g,dv,sx,sy,sz,bzs,al,bzph)
+      use tspin, only:tradk
+      implicit none
+      integer*4 , intent(in)::np
+      real*8 , intent(in)::bzs,al
+      real*8 ,intent(inout)::
+     $     x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+     $     sx(np),sy(np),sz(np)
+      real*8 , intent(out)::bzph(np)
+      bzph=.5d0*bzs/(1.d0+g)
+      px=px+bzph*y
+      py=py-bzph*x
+      call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $     al,0.d0)
+      bzph=.5d0*bzs/(1.d0+g)
+      px=px-bzph*y
+      py=py+bzph*x
+      return
+      end
+
       end module
 
       subroutine tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     latt,k,kstop,ke,sol,kptbl,la,n,
+     $     latt,k,kstop,ke,insol,kptbl,la,n,
      $     nwak,nextwake,out)
       use kyparam
       use tfstk
@@ -714,6 +734,7 @@ c            xsinphi=xsin(phi)
       use tparastat
       use ffs_seg
       use tspin
+      use sol
       implicit none
       real*8 conv
       parameter (conv=3.d-16)
@@ -721,25 +742,28 @@ c            xsinphi=xsin(phi)
       type (sad_dlist), pointer :: lsegp
       integer*4 la1,la
       parameter (la1=15)
-      integer*4 k,kbz,np
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
-     $     sx(np0),sy(np0),sz(np0)
+      integer*4 k,kbz
+      integer*4 , intent(inout)::np
+      real*8 ,intent(inout)::
+     $     x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+     $     sx(np),sy(np),sz(np)
       real*8 tfbzs,fw,bzs,al,theta,phi,phix,phiy,
-     $     bz1,dx,dy,rot,rtaper,ph,bzph
+     $     bz1,dx,dy,rot,rtaper,ph,bzph(np)
       integer*8 latt(nlat),l1,lp
       integer*4 kptbl(np0,6),nwak,nextwake,n,
      $     i,ke,l,lt,itab(np),izs(np),
      $     kdx,kdy,krot,kstop,kb,lwl,lwt,irtc
       integer*8 iwpl,iwpt
-      logical*4 sol,out,seg,autophi,krad
+      logical*4 , intent(inout) :: insol
+      logical*4 out,seg,autophi,krad
       real*8 ,save::dummy(256)=0.d0
       l1=latt(k)
-      if(sol)then
+      if(insol)then
         kb=k
       else
         kb=k+1
       endif
-      do 10 i=kb,nlat
+      do i=kb,nlat
         if(idtypec(i) .eq. icSOL)then
           if(rlist(idvalc(i)+ky_BND_SOL)
      $         .ne. 0.d0)then
@@ -747,12 +771,12 @@ c            xsinphi=xsin(phi)
             go to 20
           endif
         endif
- 10   continue
+      enddo
       write(*,*)' ???-TRACK-?Missing end of solenoid ',
      $     pname(idelc(k))(1:lpnamec(k))
       ke=nlat
  20   bzs=tfbzs(k,kbz)
-      if(.not. sol)then
+      if(.not. insol)then
         call loc_comp(l1,cmp)
         call trots(np,x,px,y,py,z,dv,
      $       cmp%value(ky_CHI1_SOL),
@@ -775,10 +799,10 @@ c            xsinphi=xsin(phi)
         endif
         if(krad)then
           call tradks(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         bzs,cmp%value(ky_F1_SOL))
+     $         bzs,cmp%value(ky_F1_SOL),bzph)
 c          call tserad(np,x,px,y,py,g,dv,l1,rho)
         endif
-        sol=.true.
+        insol=.true.
       endif
       iwpt=0
       iwpl=0
@@ -930,12 +954,10 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           krad=rad .and. cmp%value(ky_RAD_SOL) .eq. 0.d0
      $         .and. cmp%value(ky_F1_SOL) .ne. 0.d0 .and. bzs .ne. bz1          
           if(krad)then
-            do i=1,np
-              bzph=.5d0*bzs/(1.d0+g(i))
-              pxr0(i)=px(i)+bzph*y(i)
-              pyr0(i)=py(i)-bzph*x(i)
-              zr0(i)=z(i)
-            enddo
+            bzph=.5d0*bzs/(1.d0+g)
+            pxr0=px+bzph*y
+            pyr0=py-bzph*x
+            zr0=z
           endif
           if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
             call tsfrin(np,x,px,y,py,z,g,bz1-bzs)
@@ -956,7 +978,7 @@ c              call tserad(np,x,px,y,py,g,dv,lp,rho)
      $           .false.)
           elseif(krad)then
             call tradks(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           bz1,cmp%value(ky_F1_SOL))
+     $           bz1,cmp%value(ky_F1_SOL),bzph)
 c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
           endif
           bzs=bz1
@@ -1003,13 +1025,12 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
       use mathfun
       implicit none
       integer*4 np,i
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),
-     $     chi1,chi2,chi3,
-     $     cchi1,schi1,cchi2,schi2,cchi3,schi3,
+      real*8,intent(inout):: x(np),px(np),y(np),py(np),z(np),dv(np)
+      real*8 ,intent(in)::chi1,chi2,chi3,dx,dy,dz
+      real*8 cchi1,schi1,cchi2,schi2,cchi3,schi3,
      $     r11,r12,r13,r21,r22,r23,r31,r32,r33,
-     $     pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf,
-     $     dx,dy,dz
-      logical*4 ent
+     $     pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf
+      logical*4,intent(in):: ent
       cchi1=cos(chi1)
       schi1=sin(chi1)
       cchi2=cos(chi2)
@@ -1366,30 +1387,5 @@ c     Transfer Matrix: trans(i,j) := dcod(i)@exit / dcod(j)@enter
       trans(6,5) =  0.d0
       trans(6,6) =  1.d0
 
-      return
-      end
-
-      subroutine tradks(np,x,px,y,py,z,g,dv,sx,sy,sz,bzs,al)
-      use tspin, only:tradk
-      implicit none
-      integer*4 , intent(in)::np
-      real*8 , intent(in)::bzs,al
-      real*8 ,intent(inout)::
-     $     x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
-     $     sx(np),sy(np),sz(np)
-      integer*4 i
-      real*8 bzph
-      do i=1,np
-        bzph=.5d0*bzs/(1.d0+g(i))
-        px(i)=px(i)+bzph*y(i)
-        py(i)=py(i)-bzph*x(i)
-      enddo
-      call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     al,0.d0)
-      do i=1,np
-        bzph=.5d0*bzs/(1.d0+g(i))
-        px(i)=px(i)-bzph*y(i)
-        py(i)=py(i)+bzph*x(i)
-      enddo
       return
       end

@@ -573,17 +573,19 @@ cc for MARK
      $ky_DP_Mark=29,
      $ky_OFFSET_Mark=30,
      $ky_SIGZ_Mark=31,
-     $ky_GEO_Mark=32,
-     $ky_JDX_Mark=33,
-     $ky_JDPX_Mark=34,
-     $ky_JDY_Mark=35,
-     $ky_JDPY_Mark=36,
-     $ky_JDZ_Mark=37,
-     $ky_JDPZ_Mark=38,
-     $ky_EMIX_Mark=39,
-     $ky_EMIY_Mark=40,
-     $ky_COUPLE_Mark=41,
-     $ky_MAX_Mark=42,
+     $ky_SIGE_Mark=32,
+     $ky_GEO_Mark=33,
+     $ky_JDX_Mark=34,
+     $ky_JDPX_Mark=35,
+     $ky_JDY_Mark=36,
+     $ky_JDPY_Mark=37,
+     $ky_JDZ_Mark=38,
+     $ky_JDPZ_Mark=39,
+     $ky_EMIX_Mark=40,
+     $ky_EMIY_Mark=41,
+     $ky_EMIZ_Mark=42,
+     $ky_COUPLE_Mark=43,
+     $ky_MAX_Mark=44,
 cc for apert
      $ky_DX1_Aprt=1,
      $ky_DX2_Aprt=2,
@@ -794,6 +796,7 @@ c
        kytbl(kwDP  ,0)=sethtb('DP      ',icKWRD,kwDP  )
        kytbl(kwSIGZ,0)=sethtb('SIGZ    ',icKWRD,kwSIGZ)
        kytbl(kwSIGZ,0)=sethtb('SIGMAZ  ',icKWRD,kwSIGZ)
+       kytbl(kwSIGE,0)=sethtb('SIGE    ',icKWRD,kwSIGZ)
        kytbl(kwGEO ,0)=sethtb('GEO     ',icKWRD,kwGEO )
        kytbl(kwR1  ,0)=sethtb('R1      ',icKWRD,kwR1  )
        kytbl(kwR2  ,0)=sethtb('R2      ',icKWRD,kwR2  )
@@ -1507,6 +1510,7 @@ cc for MARK
       kytbl(kwDP,icMark)=ky_DP_Mark
       kytbl(kwOFFSET,icMark)=ky_OFFSET_Mark
       kytbl(kwSIGZ,icMark)=ky_SIGZ_Mark
+      kytbl(kwSIGE,icMark)=ky_SIGE_Mark
       kytbl(kwGEO,icMark)=ky_GEO_Mark
       kytbl(kwJDX,icMark)=ky_JDX_Mark
       kytbl(kwJDPX,icMark)=ky_JDPX_Mark
@@ -1516,6 +1520,7 @@ cc for MARK
       kytbl(kwJDPZ,icMark)=ky_JDPZ_Mark
       kytbl(kwEMIX,icMark)=ky_EMIX_Mark
       kytbl(kwEMIY,icMark)=ky_EMIY_Mark
+      kytbl(kwEMIZ,icMark)=ky_EMIZ_Mark
       kytbl(kwCOUPLE,icMark)=ky_COUPLE_Mark
       kytbl(kwMAX,icMark)=ky_MAX_Mark
 cc for apert

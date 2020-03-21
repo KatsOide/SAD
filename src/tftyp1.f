@@ -56,6 +56,12 @@
             v=emx
           elseif(ioff .eq. ky_EMIY_MARK)then
             v=emy
+          elseif(ioff .eq. ky_EMIZ_MARK)then
+            v=emz
+          elseif(ioff .eq. ky_SIGZ_MARK)then
+            v=sigzs
+          elseif(ioff .eq. ky_SIGE_MARK)then
+            v=sizedp
           elseif(ioff .eq. ky_DP_MARK)then
             v=dpmax
           else

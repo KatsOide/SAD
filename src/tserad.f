@@ -1,3 +1,5 @@
+c obsolete 3/18/2020 V1.1.8.1k64
+c
       subroutine tserad(np,x,px,y,py,g,dv,l1,rho)
       use kyparam
       use tfstk

@@ -448,6 +448,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
         call loc_el(ilattp,elatt)
         lattuse=ilattp
         nlat=elatt%nlat1-1
+        call tfresetparam
         dleng =rlist(elatt%aux+1)*rgetgl1('FSHIFT')
         call ffs_init_pointer
         call ffs_twiss_pointer
@@ -823,35 +824,37 @@ c        go to 31
         enddo
         call twbuf(word,lfno,1,0,0,-1)
         call twbuf('CHARGE='//autofg(charge,'S7.4'),lfno,1,lpw,8,1)
-        flv%rsconv=rfromd(kxsymbolv('CONVERGENCE',10))
-c        flv%rsconv=rlist(ktlookup('CONVERGENCE'))
-        call twbuf('CONVERGENCE='//autofg(flv%rsconv,'S8.5'),
-     $       lfno,1,lpw,8,1)
+        call twbuf('MASS='//autofg(amass,'S9.2'),lfno,1,lpw,8,1)
+        call twbuf('MOMENTUM='//autofg(pgev,'S9.6'),lfno,1,lpw,8,1)
+        call twbuf('PBUNCH='//autofg(pbunch,'S9.6'),lfno,1,lpw,8,1)
+        call twbuf('NBUNCH='//autofg(anbunch,'S9.6'),lfno,1,lpw,8,1)
+        flv%rsconv=rfromd(kxsymbolv('CONVERGENCE',11))
         call twbuf('DP='//autofg(dpmax,'S8.5'),lfno,1,lpw,8,1)
         call twbuf('DP0='//autofg(dp0,'S8.5'),lfno,1,lpw,8,1)
+        call twbuf('FSHIFT='//autofg(rgetgl1('FSHIFT'),'S9.6'),
+     $       lfno,1,lpw,8,1)
+        call twbuf('MINCOUP='//autofg(coumin,'S9.6'),lfno,1,lpw,8,1)
+        call twbuf('EMITX='//autofg(emx,'S9.6'),lfno,1,lpw,8,1)
+        call twbuf('EMITY='//autofg(emy,'S9.6'),lfno,1,lpw,8,1)
+        call twbuf('EMITZ='//autofg(emz,'S9.6'),lfno,1,lpw,8,1)
+        call twbuf('SIGZ='//autofg(sigzs,'S9.6'),lfno,1,lpw,8,1)
+        call twbuf('SIGE='//autofg(sizedp,'S9.6'),lfno,1,lpw,8,1)
+        call twbuf('XIX='//autofg(xixf/pi2,'S7.4'),lfno,1,lpw,8,1)
+        call twbuf('XIY='//autofg(xiyf/pi2,'S7.4'),lfno,1,lpw,8,1)
         call twbuf('EMITDIV='//autofg(emidiv,'S7.4'),lfno,1,lpw,8,1)
         call twbuf('EMITDIVB='//autofg(emidib,'S7.4'),lfno,1,lpw,8,1)
         call twbuf('EMITDIVQ='//autofg(emidiq,'S7.4'),lfno,1,lpw,8,1)
         call twbuf('EMITDIVS='//autofg(emidis,'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('EMITX='//autofg(emx,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('EMITY='//autofg(emy,'S9.6'),lfno,1,lpw,8,1)
         call twbuf('GCUT='//autofg(tgetgcut(),'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('MINCOUP='//autofg(coumin,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('MOMENTUM='//autofg(pgev,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('PBUNCH='//autofg(pbunch,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('NBUNCH='//autofg(anbunch,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('XIX='//autofg(xixf/pi2,'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('XIY='//autofg(xiyf/pi2,'S7.4'),lfno,1,lpw,8,1)
-        write(word,'(A,I6)')'NP=',np0
-        call twbuf(word,lfno,1,lpw,8,1)
-        write(word,'(A,I4)')'MAXITERATION=',flv%itmax
-        call twbuf(word,lfno,1,lpw,8,1)
-        call twbuf(word,lfno,1,lpw,8,-1)
+        call twbuf('NP='//autofg(dble(np0),'S8.1'),lfno,1,lpw,8,1)
+        call twbuf('CONVERGENCE='//autofg(flv%rsconv,'S8.5'),
+     $       lfno,1,lpw,8,1)
+        call twbuf('MAXITERATION='//autofg(dble(flv%itmax),'S8.1'),
+     $       lfno,1,lpw,8,1)
         call twelm(lfno,mfpnt,mfpnt1,'FIT',lpw,8)
         call twelm(lfno,flv%measp,0,'MEA_SURE',lpw,8)
         call twelm(lfno,iorgr,0,'ORG',lpw,8)
         call twelm(lfno,id1,id2,'DISP_LAY',lpw,8)
-        call twbuf(word,lfno,1,lpw,8,-1)
         go to 10
       elseif(abbrev(word,'VAR_IABLES','_') .or. word .eq. 'VARS')then
         call tfinitvar
@@ -1195,8 +1198,6 @@ c          ilist(2,iwakepold+6)=int(ifsize)
         else
           call tfgeo(.true.)
         endif
-        emx=max(4.d-13/p0,rgetgl1('EMITX'))
-        emy=max(4.d-13/p0,rgetgl1('EMITY'))
 c        dpmax=rgetgl1('SIGE')
 c        rlist(itlookup('DP',ivtype))=dpmax
         gauss=.true.
@@ -1231,8 +1232,6 @@ c          ilist(2,iwakepold+6)=int(ifsize)
         else
           call tfgeo(.true.)
         endif
-        emx=max(4.d-13/p0,rgetgl1('EMITX'))
-        emy=max(4.d-13/p0,rgetgl1('EMITY'))
 c        dpmax=rgetgl1('SIGE')
 c        rlist(itlookup('DP',ivtype))=dpmax
         gauss=.true.
@@ -1423,18 +1422,8 @@ c        dpm2=rlist(ktlookup('DPM'))
      $       '?Too many off-momentum or fit points.',' ')
         go to 8810
       endif
-c      call tfevalb('Setup$FF[];Print["setupff ",FF$Orig]',36,kx,irtc)
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-evalb ',lfni,ipoint,lrecl,ios
-c      endif
       call tfevalb('Setup$FF[]',kx,irtc)
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-match-0 ',lfni,ipoint,lrecl,ios
-c      endif
       call tffsmatch(df,dp0,r,nparallel,lfno,irtc)
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-match-1 ',lfni,ipoint,lrecl,ios
-c      endif
       if(.not. setref)then
         call tfsetref
       endif

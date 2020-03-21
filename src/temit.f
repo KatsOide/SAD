@@ -1274,7 +1274,7 @@ c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
         return
         end subroutine
 
-        subroutine tradkf1n(np,xn,pxn,yn,pyn,zn,gn,dvn,sxn,syn,szn,al)
+        subroutine tradkfn(np,xn,pxn,yn,pyn,zn,gn,dvn,sxn,syn,szn,al)
         use ffs_flag
         use tmacro
         use photontable, only:tphotonconv
@@ -1424,7 +1424,7 @@ c        write(*,*)'tradk1 ',dg,anp,uc
         return
         end subroutine
 
-        subroutine tradk1n(np,xn,pxn,yn,pyn,zn,gn,dvn,sxn,syn,szn,al)
+        subroutine tradkn(np,xn,pxn,yn,pyn,zn,gn,dvn,sxn,syn,szn,al)
         use ffs_flag
         use tmacro
         use mathfun, only:pxy2dpz,p2h
@@ -1487,20 +1487,21 @@ c        write(*,*)'tradk1 ',dg,anp,uc
 
         subroutine tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phi0)
         use tfstk
-        use ffs_flag
-        use tmacro
+        use ffs_flag, only:calpol,rfluct
         implicit none
-        integer*4 np
+        integer*4 , intent(in)::np
         real*8 ,intent(inout)::
      $       x(np),px(np),y(np),py(np),dv(np),z(np),g(np),
      $       sx(np),sy(np),sz(np)
         real*8 , intent(in)::al,phi0
-        cphi0=cos(phi0)
-        sphi0=sin(phi0)
-        if(rfluct .and. al .ne. 0.d0)then
-          call tradkf1n(np,x,px,y,py,z,g,dv,sx,sy,sz,al)
-        else
-          call tradk1n(np,x,px,y,py,z,g,dv,sx,sy,sz,al)
+        if(al .ne. 0.d0)then
+          cphi0=cos(phi0)
+          sphi0=sin(phi0)
+          if(rfluct)then
+            call tradkfn(np,x,px,y,py,z,g,dv,sx,sy,sz,al)
+          else
+            call tradkn(np,x,px,y,py,z,g,dv,sx,sy,sz,al)
+          endif
         endif
         pxr0=px
         pyr0=py

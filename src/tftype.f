@@ -92,7 +92,7 @@ c      endif
       subroutine tftyp1(kx,l,lp,kp,lt,lfno,lpw)
       use kyparam
       use tfstk
-      use ffs, only:emx,emy,dpmax
+      use ffs, only:emx,emy,emz,dpmax,sizedp,sigzs
       use ffs_pointer
       use tffitcode
       use ffs_flag
@@ -148,6 +148,12 @@ c      endif
             v=emx
           elseif(ioff .eq. ky_EMIY_MARK)then
             v=emy
+          elseif(ioff .eq. ky_EMIZ_MARK)then
+            v=emz
+          elseif(ioff .eq. ky_SIGZ_MARK)then
+            v=sigzs
+          elseif(ioff .eq. ky_SIGE_MARK)then
+            v=sizedp
           elseif(ioff .eq. ky_DP_MARK)then
             v=dpmax
           else
@@ -171,9 +177,6 @@ c      endif
           unit=' DEG'
         else
           unit=' '
-c          if(kw .eq. 'SIGMAZ')then
-c            kw='SIGZ'
-c          endif
         endif
         if(real)then
           v=v*coeff

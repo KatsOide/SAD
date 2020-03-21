@@ -27,7 +27,8 @@ With[{default={OneTurnInformation->False,
   InitialBeamMatrix->Null,Output->0}},
 
   Emittance[opt___]:=Module[{
-    e,r,op,mode,ex0=EMITX,ey0=EMITY,ez0=EMITZ,iniorbit,inibeam,out,reg},
+    e,r,op,mode,ex0=EMITX,ey0=EMITY,ez0=EMITZ,sz0=SIGZ,se0=SIGE,
+    iniorbit,inibeam,out,reg},
     Check[
       op=Override[opt,default];
       If[ExpandElementValues/.op,Element["EXPAND"]];
@@ -73,9 +74,9 @@ With[{default={OneTurnInformation->False,
             AppendTo[r,TransferMatrices->e[[5]]];
             If[?INTRA,
               AppendTo[r,IntrabeamExcitation->e[[6]]]]]]];
-      If[~(SaveEMIT/.op),EMITX=ex0;EMITY=ey0;EMITZ=ez0];
+      If[~(SaveEMIT/.op),EMITX=ex0;EMITY=ey0;EMITZ=ez0;SIGE=se0;SIGZ=sz0];
       r,
-      EMITX=ex0;EMITY=ey0;EMITZ=ez0;{}]]
+      EMITX=ex0;EMITY=ey0;EMITZ=ez0;SIGE=se0;SIGZ=sz0;{}]]
 
   ];
 

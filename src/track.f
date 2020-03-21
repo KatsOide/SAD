@@ -27,27 +27,23 @@ c      write(*,*)'track-0'
  10   call tsetupsig
       if(.not. trackinit)then
         trackinit=.true.
-c        write(*,*)'track-0.0 ',klist( 1621700052)
         call tffsvinit
         iffssave=0
-c        write(*,*)'track-0.1 ',klist( 1621700052)
         call ffs_init_flag
-c        write(*,*)'track-0.2 ',klist( 1621700052)
         convcase=.true.
-c        write(*,*)'track-0.3 ',lfni,ipoint,lrecl
         call tfinitn
-c        write(*,*)'track-0.4'
         call tfinittws
         call tfevals('CONVERGENCE=1E-9;ExponentOfResidual=2;'//
-     $       'OffMomentumWeight=1;MatchingResidual=0;'//
-     $       'NetResidual=0;StabilityLevel=0;'//
+     $       'OffMomentumWeight=1;MatchingResidual='//
+     $       'NetResidual=StabilityLevel=0;'//
      $       'FFS$NumericalDerivative=False;'//
-     $       'DP=0.01;DPM=0;XIX=0;XIY=0;TITLE="";CASE="";'//
-     $       'NFAMP=3;'//
-     $       'DP0:=LINE["DDP",1];(DP0=v_)^:=(LINE["DDP",1]=v);'//
-     $       'Protect[DP0];'//
+     $       'DP=0.01;DPM=XIX=XIY=0;TITLE=CASE="";NFAMP=4;'//
+     $       '(DP0=v_)^:=(LINE["DDP",1]=v);'//
      $       'System$Names=Select[Names["*"],'//
-     $       'ToUpperCase[#[1]]==#[1]&]',
+     $       'ToUpperCase[#[1]]==#[1]&];Protect[DP0];'//
+     $       '{EMITX,EMITY,EMITZ,SIGZ}='//
+     $       'LINE[{"EMITX","EMITY","EMITZ","SIGMAZ"},1];'//
+     $       'DP0=LINE["DDP",1];',
      $       kx,irtc)
         initmessage=0
         ifibzl=0

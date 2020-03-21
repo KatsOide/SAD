@@ -88,7 +88,8 @@
         use mackw
         use macphys
         use macfile
-        real*8, parameter :: c=cveloc,hp=plankr,e=elemch,epsrad=1.d-6
+        real*8, parameter :: c=cveloc,hp=plankr,e=elemch,epsrad=1.d-6,
+     $       emminv=1.d-15
         real*8 amass,charge,h0,p0,omega0,trf0,crad,erad,
      $       codin(6),dleng,anrad,urad,u0,vc0,wrfeff,dp0,brho,
      $       ccintr,cintrb,pbunch,coumin,re0,pgev,emidiv,
@@ -225,7 +226,8 @@
      $       ifmast,iftouchele,iftouchv,iffserr,
      $       ifivcomp,ifvlim,iffssave,iut,ifiprev,ifinext,
      $       ielmhash
-        real*8 emx,emy,dpmax,geo0(3,4),xixf,xiyf,sizedp,
+        real*8 emx,emy,emz,sigzs,fshifts,
+     $       dpmax,geo0(3,4),xixf,xiyf,sizedp,
      $       ctime0,ctime2,rsconv,fitval(maxcond)
         integer*4 mfitp(maxcond),ifitp(maxcond),ifitp1(maxcond),
      $       kdp(maxcond),kfitp(maxcond),kfit(maxcond),
@@ -240,62 +242,123 @@
       type (ffsv), target, save:: ffv
       type (ffsv), pointer :: flv
 
+c$$$ft={
+c$$${"TRPT    ","RING    ","trpt"},
+c$$${"CELL    ","INS     ","cell"},
+c$$${"RFSW    ","        ","rfsw"},
+c$$${"RAD     ","        ","rad"},
+c$$${"FLUC    ","DAMPONLY","rfluct"},
+c$$${"RADCOD  ","        ","radcod"},
+c$$${"RADTAPER","        ","radtaper"},
+c$$${"CALC6D  ","CALC4D  ","calc6d"},
+c$$${"EMIOUT  ","        ","emiout"},
+c$$${"CODPLOT ","        ","codplt"},
+c$$${"COD     ","        ","calcod"},
+c$$${"INTRA   ","        ","intra"},
+c$$${"POL     ","        ","calpol"},
+c$$${"RADPOL  ","        ","radpol"},
+c$$${"LWAKE   ","        ","lwake"},
+c$$${"TWAKE   ","        ","twake"},
+c$$${"WSPAC   ","        ","wspac"},
+c$$${"SPAC    ","        ","spac"},
+c$$${"SELFCOD ","        ","selfcod"},
+c$$${"CONV    ","        ","convgo"},
+c$$${"STABLE  ","UNSTABLE","cellstab"},
+c$$${"GEOCAL  ","GEOFIX  ","geocal"},
+c$$${"RADLIGHT","        ","radlight"},
+c$$${"PHOTONS ","        ","photons"},
+c$$${"LOSSMAP ","        ","lossmap"},
+c$$${"SORG    ","        ","sorg"},
+c$$${"INTRES  ","        ","intres"},
+c$$${"HALFRES ","        ","halfres"},
+c$$${"SUMRES  ","        ","sumres"},
+c$$${"DIFFRES ","        ","diffres"},
+c$$${"FFSPRMPT","        ","ffsprmpt"},
+c$$${"CONVCASE","        ","convcase"},
+c$$${"PRSVCASE","        ","preservecase"},
+c$$${"SUS     ","        ","suspend"},
+c$$${"K64     ","LEGACY  ","k64"},
+c$$${"GAUSS   ","UNIFORM ","gauss"},
+c$$${"FIXSEED ","MOVESEED","fseed"},
+c$$${"BIPOL   ","UNIPOL  ","bipol"},
+c$$${"PSPAC   ","        ","pspac"},
+c$$${"ORBITCAL","        ","orbitcal"},
+c$$${"CALOPT  ","ORBONLY ","calopt"},
+c$$${"DAPERT  ","        ","dapert"},
+c$$${"IDEAL   ","REAL    ","ideal"},
+c$$${"FOURIER ","        ","fourie"},
+c$$${"TRACKSIZ","        ","trsize"},
+c$$${"SIMULATE","OPERATE ","simulate"},
+c$$${"ABSW    ","RELW    ","absweit"},
+c$$${"JITTER  ","QUIET   ","jitter"},
+c$$${"TRGAUSS ","TRUNI   ","trgauss"},
+c$$${"BARYCOD ","        ","smearp"},
+c$$${"        ","        ","dummyf1"},
+c$$${"        ","        ","dummyf2"}
+c$$$};
+c$$$
+c$$$ftt=Thread[ft];
+c$$$(Print["     $  ",Null@@Table["'"//#[[k]]//"',",{k,4}]]&/@Partition[#,4])&/@ftt[[{1,2}]];
+c$$$Print["     $  ",Null@@Table[#[[k]]//",",{k,4}]]&/@Partition[ftt[[3]],4];
+c$$$susp;
+
       type flagset
         sequence
         logical*4 flags(1:0)
         logical*4
-     $       rad,rfsw,radcod,calcod,
-     $       intra,trpt,emiout,gauss,
-     $       bipol,cell,ffsprmpt,dapert,
-     $       fseed,ideal,codplt,calc6d,
-     $       calpol,rfluct,k64,fourie,
-     $       trsize,simulate,absweit,jitter,
-     $       trgauss,lwake,twake,smearp,
-     $       radpol,convgo,cellstab,spac,
-     $       radlight,geocal,photons,wspac,
-     $       selfcod,pspac,convcase,preservecase,
-     $       lossmap,orbitcal,radtaper,sorg,
-     $       intres,halfres,sumres,diffres,
-     $       calopt,suspend
+     $  trpt,cell,rfsw,rad,
+     $  rfluct,radcod,radtaper,calc6d,
+     $  emiout,codplt,calcod,intra,
+     $  calpol,radpol,lwake,twake,
+     $  wspac,spac,selfcod,convgo,
+     $  cellstab,geocal,radlight,photons,
+     $  lossmap,sorg,intres,halfres,
+     $  sumres,diffres,ffsprmpt,convcase,
+     $  preservecase,suspend,k64,gauss,
+     $  fseed,bipol,pspac,orbitcal,
+     $  calopt,dapert,ideal,fourie,
+     $  trsize,simulate,absweit,jitter,
+     $  trgauss,smearp
       end type
 
       integer*4 ,parameter :: nflag=50
       type (flagset), target, save :: fff
-      character*8, save :: fname(1:nflag)= (/
-     $     'RAD     ','RFSW    ','RADCOD  ','COD     ',
-     1     'INTRA   ','TRPT    ','EMIOUT  ','GAUSS   ',
-     1     'BIPOL   ','CELL    ','FFSPRMPT','DAPERT  ',
-     1     'FIXSEED ','IDEAL   ','CODPLOT ','CALC6D  ',
-     1     'POL     ','FLUC    ','K64     ','FOURIER ',
-     1     'TRACKSIZ','SIMULATE','ABSW    ','JITTER  ',
-     1     'TRGAUSS ','LWAKE   ','TWAKE   ','BARYCOD ',
-     1     'RADPOL  ','CONV    ','STABLE  ','SPAC    ',
-     $     'RADLIGHT','GEOCAL  ','PHOTONS ','WSPAC   ',
-     $     'SELFCOD ','PSPAC   ','CONVCASE','PRSVCASE',
-     $     'LOSSMAP ','ORBITCAL','RADTAPER','SORG    ',
-     $     'INTRES  ','HALFRES ','SUMRES  ','DIFFRES ',
-     $     'CALOPT  ','SUS     '/),
-     $     sino(1:nflag)= (/
-     $     '        ','        ','        ','        ',
-     1     '        ','RING    ','        ','UNIFORM ',
-     1     'UNIPOL  ','INS     ','        ','        ',
-     1     'MOVESEED','REAL    ','        ','CALC4D  ',
-     1     '        ','DAMPONLY','LEGACY  ','        ',
-     1     '        ','OPERATE ','RELW    ','QUIET   ',
-     1     'TRUNI   ','        ','        ','        ',
-     1     '        ','        ','UNSTABLE','        ',
-     $     '        ','GEOFIX  ','        ','        ',
-     $     '        ','        ','        ','        ',
-     $     '        ','        ','        ','        ',
-     $     '        ','        ','        ','        ',
-     $     'ORBONLY ','        '/)
+      character*8, save :: fname(1:nflag)=(/
+     $  'TRPT    ','CELL    ','RFSW    ','RAD     ',
+     $  'FLUC    ','RADCOD  ','RADTAPER','CALC6D  ',
+     $  'EMIOUT  ','CODPLOT ','COD     ','INTRA   ',
+     $  'POL     ','RADPOL  ','LWAKE   ','TWAKE   ',
+     $  'WSPAC   ','SPAC    ','SELFCOD ','CONV    ',
+     $  'STABLE  ','GEOCAL  ','RADLIGHT','PHOTONS ',
+     $  'LOSSMAP ','SORG    ','INTRES  ','HALFRES ',
+     $  'SUMRES  ','DIFFRES ','FFSPRMPT','CONVCASE',
+     $  'PRSVCASE','SUS     ','K64     ','GAUSS   ',
+     $  'FIXSEED ','BIPOL   ','PSPAC   ','ORBITCAL',
+     $  'CALOPT  ','DAPERT  ','IDEAL   ','FOURIER ',
+     $  'TRACKSIZ','SIMULATE','ABSW    ','JITTER  ',
+     $  'TRGAUSS ','BARYCOD '/),
+     $     sino(1:nflag)=(/
+     $  'RING    ','INS     ','        ','        ',
+     $  'DAMPONLY','        ','        ','CALC4D  ',
+     $  '        ','        ','        ','        ',
+     $  '        ','        ','        ','        ',
+     $  '        ','        ','        ','        ',
+     $  'UNSTABLE','GEOFIX  ','        ','        ',
+     $  '        ','        ','        ','        ',
+     $  '        ','        ','        ','        ',
+     $  '        ','        ','LEGACY  ','UNIFORM ',
+     $  'MOVESEED','UNIPOL  ','        ','        ',
+     $  'ORBONLY ','        ','REAL    ','        ',
+     $  '        ','OPERATE ','RELW    ','QUIET   ',
+     $  'TRUNI   ','        '/)
 
       integer*8, pointer :: ifvlim,ifibzl,ifmult,ifklp,ifival,iftwissp,
      $     iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifdcomp,ifele,ifcoup,
      $     iferrk,ifvarele,ifvvar,ifvalvar,ifele1,ifele2,
      $     ifmast,iftouchele,iftouchv,iffserr,ifivcomp,iffssave,
      $     ifiprev,ifinext,ielmhash
-      real*8, pointer :: emx,emy,dpmax,xixf,xiyf,sizedp
+      real*8, pointer :: emx,emy,emz,dpmax,xixf,xiyf,
+     $     sizedp,sigzs,fshifts
       real*8, pointer, dimension(:,:) :: geo0
       integer*4, pointer :: ndim,ndima,nele,nfit,marki,iorgx,iorgy,
      $     iorgr,mfpnt,mfpnt1,id1,id2,nve,ntouch
@@ -339,8 +402,11 @@
         ifinext=>ffv%ifinext
         emx=>ffv%emx
         emy=>ffv%emy
+        emz=>ffv%emz
         dpmax=>ffv%dpmax
         sizedp=>ffv%sizedp
+        sigzs=>ffv%sigzs
+        fshifts=>ffv%fshifts
         xixf=>ffv%xixf
         xiyf=>ffv%xiyf
         geo0=>ffv%geo0(1:3,1:4)
@@ -1761,7 +1827,7 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       type (sad_descriptor) kdp
       type (sad_symdef), pointer :: symddp
       integer*8 j
-      real*8 rgetgl1,sigz0
+      real*8 rgetgl1
       j=idvalc(1)
       emx=rlist(j+ky_EMIX_MARK)
       if(emx .le. 0.d0)then
@@ -1774,6 +1840,24 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
         emy=rgetgl1('EMITY')
       else
         call rsetgl1('EMITY',emy)
+      endif
+      emz=rlist(j+ky_EMIY_MARK)
+      if(emz .le. 0.d0)then
+        emz=rgetgl1('EMITZ')
+      else
+        call rsetgl1('EMITZ',emz)
+      endif
+      sizedp=rlist(j+ky_SIGE_MARK)
+      if(sizedp .le. 0.d0)then
+        sizedp=rgetgl1('SIGE')
+      else
+        call rsetgl1('SIGE',sizedp)
+      endif
+      sigzs=max(0.d0,rlist(j+ky_SIGZ_MARk))
+      if(sigzs .le. 0.d0)then
+        sigzs=rgetgl1('SIGZ')
+      else
+        call rsetgl1('SIGZ',sigzs)
       endif
       dpmax=max(0.d0,rlist(j+ky_DP_MARk))
       kdp=kxsymbolz('DP',2,symddp)
@@ -1793,8 +1877,6 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       if(rlist(latt(1)+ky_BZ_MARK) .le. 0.d0)then
         rlist(latt(1)+ky_BZ_MARK)=1.d0
       endif
-      sigz0=max(0.d0,rlist(j+ky_SIGZ_MARk))
-      call rsetgl1('SIGZ',sigz0)
       return
       end
 

@@ -78,6 +78,9 @@ c     $             rlist(j+1),rlist(j+4)
             endif
             rlist(j+ky_EMIX_MARK)=emx
             rlist(j+ky_EMIY_MARK)=emy
+            rlist(j+ky_EMIZ_MARK)=emz
+            rlist(j+ky_SIGZ_MARK)=sigzs
+            rlist(j+ky_SIGE_MARK)=sizedp
             rlist(j+ky_DP_MARK)=dpmax
           elseif(ival(i) .gt. 0)then
             call tfvcopycmp(cmp,cmpd,ival(i),1.d0/errk(1,l))
