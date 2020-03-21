@@ -487,9 +487,8 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       integer*4 itfuplevel, level,irtc
       character*16 name
       logical*4 wcal
-      integer*8 ifv,ifvh,ifvloc,ifvfun,ifid
-      save ifv,ifvh,ifvloc,ifvfun,ifid
-      data ifv /0/
+      integer*8 , save:: ifv=0,ifvh,ifvloc,ifvfun,ifid
+      real*8 , parameter :: almin=1.d0
       if(ifv .eq. 0)then
         ifv=ktadaloc(0,4)
         ifvh=ktfsymbolz('FitWeight',9)
@@ -550,11 +549,11 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
           case (mfitdz)
             wfit(i)=0.01d0*sqrt(
      $           max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
-     $           /em/(pos(maxf)-pos(1)))
+     $           /em/max(almin,pos(maxf)-pos(1)))
           case (mfitgx,mfitgy,mfitgz)
             wfit(i)=0.01d0*sqrt(
      $           max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
-     $           /em/(pos(maxf)-pos(1)))
+     $           /em/max(almin,pos(maxf)-pos(1)))
           case (mfitchi1,mfitchi2,mfitchi3)
             wfit(i)=1.d3
           case default

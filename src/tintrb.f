@@ -170,10 +170,10 @@ c        call tmulbs(bmi,transa,.false.)
                 toucke(i,ll)=toucke(i,ll)+touckf(aez/eztrans)*tf
  4010         continue
               do 4020 i=1,ntouckx
-                aex0=(tampl(i,1)**2)*(abs(emx)+abs(emy))
-                aey0=(tampl(i,2)**2)*(abs(emx)+abs(emy))
+                aex0=(tampl(i,1)**2)*(abs(eemx)+abs(eemy))
+                aey0=(tampl(i,2)**2)*(abs(eemx)+abs(eemy))
                 do 4030 j=1,ntouckz
-                  aez0=(tampl(j,3)**2)*abs(emz)
+                  aez0=(tampl(j,3)**2)*abs(eemz)
                   aexz=1.d0/(extrans/aex0+eztrans/aez0)
                   touckm(j,i,1)=touckm(j,i,1)+touckf(aexz)*tf
                   aeyz=1.d0/(eytrans/aey0+eztrans/aez0)

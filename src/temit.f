@@ -41,7 +41,7 @@ c     Inverse matrix of r
 
       real*8 , public :: transr(6,6),codr0(6),bzhr0,bsir0
       real*8 , public :: gintd(3)
-      real(8), public :: emx, emy, emz
+      real(8), public :: eemx,eemy,eemz
       real(8), public :: bh,heff
 
       logical*4, public :: normali, initemip=.true.
@@ -2483,11 +2483,11 @@ c          enddo
       emit(ia(6,6))=sign(max(abs(emit(ia(6,6))),emze),
      $     emit(ia(6,6)))
       if(.not. epi)then
-        emx= sign(sqrt(abs(emit(ia(1,1))*emit(ia(2,2))
+        eemx= sign(sqrt(abs(emit(ia(1,1))*emit(ia(2,2))
      $       -emit(ia(1,2))**2)),emit(ia(2,2))*charge)
-        emy= sign(sqrt(abs(emit(ia(3,3))*emit(ia(4,4))
+        eemy= sign(sqrt(abs(emit(ia(3,3))*emit(ia(4,4))
      $       -emit(ia(3,4))**2)),emit(ia(4,4))*charge)
-        emz= sign(sqrt(abs(emit(ia(5,5))*emit(ia(6,6))
+        eemz= sign(sqrt(abs(emit(ia(5,5))*emit(ia(6,6))
      $       -emit(ia(5,6))**2)),emit(ia(6,6))*charge)
       endif
       emit1(1:21)=emit
@@ -2501,9 +2501,9 @@ c          enddo
         else
           sigz=0.d0
         endif
-        emz=sigz*sige
+        eemz=sigz*sige
       endif
-      params(ipemx:ipemz)=(/emx,emy,emz/)
+      params(ipemx:ipemz)=(/eemx,eemy,eemz/)
       params(ipsige)=sige
       params(ipsigz)=sigz
       params(ipnnup)=h0*gspin
@@ -2517,9 +2517,9 @@ c          enddo
         params(ipequpol2:ipequpol6)=equpol
         params(ippolx:ippolz)=sps(:,1)
       endif
-      call rsetgl1('EMITX',emx)
-      call rsetgl1('EMITY',emy)
-      call rsetgl1('EMITZ',emz)
+      call rsetgl1('EMITX',eemx)
+      call rsetgl1('EMITY',eemy)
+      call rsetgl1('EMITZ',eemz)
       call rsetgl1('SIGE',sige)
       call rsetgl1('SIGZ',sigz)
  3001 if(pri)then
@@ -2542,9 +2542,9 @@ c          enddo
           call tputbs(emit,label1,lfno)
           call tputbs(emit1,label2,lfno)
         endif
-        vout(1)=autofg(emx             ,'11.8')
-        vout(2)=autofg(emy             ,'11.8')
-        vout(3)=autofg(emz             ,'11.8')
+        vout(1)=autofg(eemx             ,'11.8')
+        vout(2)=autofg(eemy             ,'11.8')
+        vout(3)=autofg(eemz             ,'11.8')
         vout(4)=autofg(sige            ,'11.8')
         vout(5)=autofg(sigz*1.d3       ,'11.8')
         vout(9)=autofg(params(ipnnup)   ,'11.7')
@@ -2577,7 +2577,7 @@ c        sig2 = 0.5d0* sqrt(abs((emit1(1)-emit1(6))**2+4d0*emit1(4)**2))
      $           ,'Nominal spin tune      =',a,'    ',
      $         1x,'Polarization time      =',a,' min'/)
 c9103   format(3X,'Beam dimension along principal axis:'/
-        call putsti(emx,emy,emz,sige,sigz,btilt,sigx,sigy,
+        call putsti(eemx,eemy,eemz,sige,sigz,btilt,sigx,sigy,
      1              calint,fndcod)
 ckiku ------------------>
         if(calpol)then
@@ -2627,7 +2627,7 @@ ckiku ------------------>
         call tintraconv(lfno,it,emit,transs,trans,r,
      $     beams,beam,
      $     emxr,emyr,emzr,
-     $     emx,emy,emz,
+     $     eemx,eemy,eemz,
      $     emxmax,emymax,emzmax,
      $     emxmin,emymin,emzmin,
      $     emx0,emy0,emz0,demin,sigz,sige,dc,
@@ -2674,7 +2674,7 @@ c        call tmov(btr,r,78)
       subroutine tintraconv(lfno,it,emit,transs,trans,r,
      $     beams,beam,
      $     emxr,emyr,emzr,
-     $     emx,emy,emz,
+     $     eemx,eemy,eemz,
      $     emxmax,emymax,emzmax,
      $     emxmin,emymin,emzmin,
      $     emx0,emy0,emz0,demin,sigz,sige,dc,
@@ -2695,7 +2695,7 @@ c        call tmov(btr,r,78)
       real*8 emit(21),beams(21),beam(42),transs(6,12),
      $     trans(6,12),trans1(6,6),r(6,6),
      $     rx,ry,rz,emxr,emyr,emzr,
-     $     emx,emy,emz,emx1,emy1,emz1,emmin,
+     $     eemx,eemy,eemz,emx1,emy1,emz1,emmin,
      $     emxmax,emymax,emzmax,
      $     emxmin,emymin,emzmin,
      $     de,emx0,emy0,emz0,demin,tf,tt,eintrb,
@@ -2703,28 +2703,28 @@ c        call tmov(btr,r,78)
       logical*4 pri,intend,epi,synchm
       character*11 autofg,vout(*)
       ia(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
-      emx1=emx
-      emy1=emy
-      emz1=emz
+      emx1=eemx
+      emy1=eemy
+      emz1=eemz
       if(.not. trpt)then
-        emmin=(emx+emy)*coumin
-        emx=max(emmin,emx)
-        emy=max(emmin,emy)
-        emz=max(emz0*0.1d0,emz)
-        if(emx .le. 0.d0 .or. emy .le. 0.d0 .or. emz .le. 0.d0)then
+        emmin=(eemx+eemy)*coumin
+        eemx=max(emmin,eemx)
+        eemy=max(emmin,eemy)
+        eemz=max(emz0*0.1d0,eemz)
+        if(eemx .le. 0.d0 .or. eemy .le. 0.d0 .or. eemz .le. 0.d0)then
           write(lfno,*)
      $         ' Negative emittance, ',
-     $         'No intrabeam/space charge calculation. emx,y,z =',
-     $         emx,emy,emz
+     $         'No intrabeam/space charge calculation. eemx,y,z =',
+     $         eemx,eemy,eemz
           it=itmax+1
         endif
         if(it .ge. 20)then
-          emx=min(emxmax,max(emxmin,emx))
-          emy=min(emymax,max(emymin,emy))
-          emz=min(emzmax,max(emzmin,emz))
+          eemx=min(emxmax,max(emxmin,eemx))
+          eemy=min(emymax,max(emymin,eemy))
+          eemz=min(emzmax,max(emzmin,eemz))
         endif
-        de=(1.d0-emx0/emx)**2+
-     1       (1.d0-emy0/emy)**2+(1.d0-emz0/emz)**2
+        de=(1.d0-emx0/eemx)**2+
+     1       (1.d0-emy0/eemy)**2+(1.d0-emz0/eemz)**2
         demin=min(de,demin)
         if(it .ge. 20)then
           if(it .eq. 20)then
@@ -2732,7 +2732,7 @@ c        call tmov(btr,r,78)
             write(*,*)
      $'     EMITX          EMITY          EMITZ           conv'
           endif
-          write(*,'(1P,4G15.7)')emx,emy,emz,de
+          write(*,'(1P,4G15.7)')eemx,eemy,eemz,de
         endif
       endif
  7301 if(it .gt. 1 .and. dc .lt. dcmin
@@ -2869,51 +2869,51 @@ c            endif
         pri=.false.
         if(calint)then
           if(intra)then
-            rx=eintrb(emx0,emx,emxr)/emx
-            ry=eintrb(emy0,emy,emyr)/emy
-            rz=eintrb(emz0,emz,emzr)/emz
+            rx=eintrb(emx0,eemx,emxr)/eemx
+            ry=eintrb(emy0,eemy,emyr)/eemy
+            rz=eintrb(emz0,eemz,emzr)/eemz
             rr=min(100.d0,max(0.01d0,(rx*ry*rz)**(1.d0/3.d0)))
-            emx=emx*rr
-            emy=emy*rr
-            emz=emz*rr
+            eemx=eemx*rr
+            eemy=eemy*rr
+            eemz=eemz*rr
           elseif(emx0 .ne. 0.d0)then
             if(it .ge. 20)then
-              emxmax=min(max(emx,emx0),emxmax)
-              emxmin=max(min(emx,emx0),emxmin)
-              emx=sqrt(emxmax*emxmin)
+              emxmax=min(max(eemx,emx0),emxmax)
+              emxmin=max(min(eemx,emx0),emxmin)
+              eemx=sqrt(emxmax*emxmin)
             else
-              emx=sqrt(emx*emx0)
+              eemx=sqrt(eemx*emx0)
             endif
             if(it .gt. 30)then
-              emymax=min(max(emy,emy0),emymax)
-              emymin=max(min(emy,emy0),emymin)
-              emy=sqrt(emymax*emymin)
+              emymax=min(max(eemy,emy0),emymax)
+              emymin=max(min(eemy,emy0),emymin)
+              eemy=sqrt(emymax*emymin)
             else
-              emy=sqrt(emy*emy0)
+              eemy=sqrt(eemy*emy0)
             endif
-            emzmax=min(max(emz,emz0),emzmax)
-            emzmin=max(min(emz,emz0),emzmin)
-            emz=sqrt(emzmax*emzmin)
+            emzmax=min(max(eemz,emz0),emzmax)
+            emzmin=max(min(eemz,emz0),emzmin)
+            eemz=sqrt(emzmax*emzmin)
           endif
         else
-          emxr=emx
-          emyr=emy
-          emzr=emz
+          emxr=eemx
+          emyr=eemy
+          emzr=eemz
         endif
-        emx0=emx
-        emy0=emy
-        emz0=emz
+        emx0=eemx
+        emy0=eemy
+        emz0=eemz
         calint=.true.
 c     ccintr=(rclassic/h0**2)**2/8.d0/pi
-c     cintrb=ccintr*pbunch/emx/emy/emz
+c     cintrb=ccintr*pbunch/eemx/eemy/eemz
 c
 c     cintrb=rclassic**2/8.d0/pi
-c     1           *pbunch/(emx*h0)/(emy*h0)/(emz*h0)/h0
+c     1           *pbunch/(eemx*h0)/(eemy*h0)/(eemz*h0)/h0
 c     Here was the factor 2 difference from B-M paper.
 c     Pointed out by K. Kubo on 6/18/2001.
 c
         cintrb=rclassic**2/4.d0/pi*pbunch
-c     write(*,*)cintrb,emx,emy,emz
+c     write(*,*)cintrb,eemx,eemy,eemz
 c        if(trpt)then
 c          write(*,*)'tintraconv @ src/temit.f: ',
 c     $          'Reference uninitialized emx1/emy1/emz1',
@@ -2921,25 +2921,25 @@ c     $          '(FIXME)'
 c          stop
 c        endif
         if(.not. trpt)then
-          if(emx1 .gt. 0.01d0*emx)then
-            rx=sqrt(emx/emx1)
+          if(emx1 .gt. 0.01d0*eemx)then
+            rx=sqrt(eemx/emx1)
           else
-            emit(ia(1,1))=emx
-            emit(ia(2,2))=emx
+            emit(ia(1,1))=eemx
+            emit(ia(2,2))=eemx
             rx=1.d0
           endif
-          if(emy1 .gt. 0.01d0*emy)then
-            ry=sqrt(emy/emy1)
+          if(emy1 .gt. 0.01d0*eemy)then
+            ry=sqrt(eemy/emy1)
           else
-            emit(ia(3,3))=emy
-            emit(ia(4,4))=emy
+            emit(ia(3,3))=eemy
+            emit(ia(4,4))=eemy
             ry=1.d0
           endif
-          if(emz1 .gt. 0.01d0*emz)then
-            rz=sqrt(emz/emz1)
+          if(emz1 .gt. 0.01d0*eemz)then
+            rz=sqrt(eemz/emz1)
           else
-            emit(ia(5,5))=emz
-            emit(ia(6,6))=emz
+            emit(ia(5,5))=eemz
+            emit(ia(6,6))=eemz
             rz=1.d0
           endif
           call tinitr(trans1)
@@ -2950,7 +2950,7 @@ c        endif
           trans1(5,5)=rz
           trans1(6,6)=rz
 c     write(*,*)'temit ',rx,ry,rx
-c     write(*,*)'temit ',emy,emy1
+c     write(*,*)'temit ',eemy,emy1
           call tmulbs(emit,trans1,.false.)
           if(.not. synchm)then
             emit(ia(5,1))=0.d0

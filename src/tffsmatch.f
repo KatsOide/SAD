@@ -1135,7 +1135,7 @@ c        enddo
       real*8 function tweigh(i,ltyp,iv,val0,vk,absweit)
       use kyparam
       use tfstk
-      use ffs, only:dpmax,emx,emy,brho
+      use ffs, only:dpmax,emx,emy,brho,emminv
       use ffs_fit
       use cbkmac
       implicit none
@@ -1186,11 +1186,13 @@ c        enddo
           gw=1.d0/avebeta**2
         elseif(iv .eq. ky_EX_MARK .or.
      $         iv .eq. ky_EPX_MARK)then
-          gw=max(1.d-3,dpmax)*sqrt(avebeta/(abs(emx)+abs(emy)))
+          gw=max(1.d-3,dpmax)*sqrt(avebeta/
+     $         max(emminv,abs(emx)+abs(emy)))
      $         /avebeta**2
         elseif(iv .eq. ky_EPX_MARK .or.
      $         iv .eq. ky_EPX_MARK)then
-          gw=max(1.d-3,dpmax)*sqrt(avebeta/(abs(emx)+abs(emy)))
+          gw=max(1.d-3,dpmax)*sqrt(avebeta/
+     $         max(emminv,abs(emx)+abs(emy)))
      $         /avebeta
         elseif(iv .eq. ky_R2_MARK)then
           gw=1.d0/avebeta**2

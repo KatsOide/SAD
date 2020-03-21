@@ -569,7 +569,7 @@ ckikuchi ... next 5 lines added     (8/17/'90)
         go to 12
       elseif(abbrev(word,'DISP_LAY','_'))then
         call tfsetparam
-        call tfdisp(word,id1,id2,dp0,lfno,exist)
+        call tfdisp(word,id1,id2,dp0*gammab(1),lfno,exist)
         go to 30
       elseif(word .eq. 'SCALE')then
         call tscale(nlist,scale,lfno)
