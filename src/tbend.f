@@ -361,9 +361,9 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      1         dx,dy,theta+dtheta,
      1         cosp1,sinp1,cosp2,sinp2,
      $         fb10,fb20,fringe,eps,krad)
-        elseif(phib .eq. phi0)then
+        elseif(phib .eq. 0.d0)then
           call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
-     1         dx,dy,theta+dtheta,theta+dtheta,0.d0,.true.,
+     1         dx,dy,theta+dtheta,theta+dtheta,krad,.true.,
      1         fringe,0.d0,0.d0,0,eps,.true.)
         else
           akm=0.d0
@@ -614,7 +614,7 @@ c        write(*,*)'tbendr ',n,ndiv,phi0n,alx,alr
      1     cosp1,sinp1,cosp2,sinp2,
      1     mfring,fringe,
      $     cosw,sinw,sqwh,sinwp1,
-     1     enarad,alr,bsi1,bsi2)
+     1     krad,alr,bsi1,bsi2)
       use tfstk
       use ffs_flag
       use tmacro
@@ -635,7 +635,7 @@ c        write(*,*)'tbendr ',n,ndiv,phi0n,alx,alr
       real*8, parameter :: smin=1.d-4
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
       real*8 sx(np),sy(np),sz(np)
-      logical*4 enarad,fringe
+      logical*4 krad,fringe
       if((mfring .gt. 0 .or. mfring .eq. -1) .and. fb1 .ne. 0.d0)then
         dxfr1=fb1**2/rhob/24.d0
         dyfr1=fb1/rhob**2/6.d0
@@ -752,7 +752,7 @@ c        write(*,*)t2,t3,t2+t3,t2t3,px1+px3,px1px3
         z(i)=z4-dz4
         bsi(i)=bsi(i)-bsi2*y(i)/rhob
 100   continue
-      if(enarad)then
+      if(krad)then
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,alr,phi0)
       endif
       return

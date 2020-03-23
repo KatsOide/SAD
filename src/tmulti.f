@@ -34,14 +34,12 @@ c      parameter (oneev=1.d0+3.83d-12)
       logical*4 acc,spac1,dofr(0:nmult),krad
       integer*4 i,m,n,ndiv,nmmin,nmmax,ibsi
       real*8 , intent(in)::theta2
-      real*8 bxs,bys,bzs,vnominal,
-     $     b,a,eps,w,wi,v,phis,r,wl,
-     $     radlvl,r1,we,wsn,phic,dphis,offset,offset1,
+      real*8 bxs,bys,bzs,vnominal,b,a,eps,w,wi,v,phis,r,wl,
+     $     r1,we,wsn,phic,dphis,offset,offset1,
      $     tlim,akr1,ak1,al1,p,ea,pxf,pyf,sv,wsm,asinh,ws1,wm,
      $     h2,p2,dp2,pr2,dvn,dzn,dp1r,p1r,p1,h1,t,ph,dh,dpr,dp2r,p2r,
-     $     alx,dp2p2,dp,dp1,pr1,
-     $     he,vcorr,v20a,v02a,v1a,v11a,av,dpx,dpy,pe,ah,z00,
-     $     rtaper
+     $     alx,dp2p2,dp,dp1,pr1,rtaper,
+     $     he,vcorr,v20a,v02a,v1a,v11a,av,dpx,dpy,pe,ah
       real*8 ws(ndivmax)
       complex*16 , intent(in)::cr1
       complex*16 akr(0:nmult),cr,cx,cx1,ak01,b0
@@ -84,9 +82,7 @@ c      parameter (oneev=1.d0+3.83d-12)
         return
       endif
       dphis=0.d0
-      radlvl=1.d0
       b0=0.d0
-      z00=z(1)
 c      theta2=theta+dtheta+akang(ak(1),al,cr1)
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,bz,dx,dy,dz,

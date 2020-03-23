@@ -743,6 +743,7 @@ c      write(*,*)'phconv ',itp,ilp
       use tfstk
       use ffs_pointer,only:gammab
       use tmacro
+      use mathfun, only:hypot3
       implicit none
       type (sad_dlist), pointer ::klx
       type (sad_rlist), pointer ::klri
@@ -776,7 +777,8 @@ c        write(*,*)'phlist ',itp,nph
           kp=kt+(ilp-1)*10
           klx%dbody(i)%k=ktflist+ktavaloc(0,nitem,klri)
           klri%attr=lconstlist
-          dp=hypot(rlist(kp+4),hypot(rlist(kp+5),rlist(kp+6)))
+          dp=hypot3(rlist(kp+4),rlist(kp+5),rlist(kp+6))
+c          dp=hypot(rlist(kp+4),hypot(rlist(kp+5),rlist(kp+6)))
 c          dp=sqrt(rlist(kp+4)**2+rlist(kp+5)**2
 c     $         +rlist(kp+6)**2)
           klri%rbody(1)=dp*amass*gammab(ilist(2,kp))
@@ -1189,7 +1191,7 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         use ffs_flag
         use tmacro
         use photontable, only:tphotonconv
-        use mathfun, only:pxy2dpz,p2h
+        use mathfun, only:pxy2dpz,p2h,hypot3
         implicit none
         integer*4 ,parameter :: npmax=10000
         integer*4 , intent(in)::k
@@ -1210,7 +1212,8 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         ppx=py*dpz0-dpz*py0+dpy
         ppy=dpz*px0-px*dpz0-dpx
         ppz=px*py0-py*px0
-        ppa=hypot(ppx,hypot(ppy,ppz))
+c        ppa=hypot(ppx,hypot(ppy,ppz))
+        ppa=hypot3(ppx,ppy,ppz)
         theta=asin(min(1.d0,max(-1.d0,ppa)))
         pr=1.d0+g
         p=p0*pr
@@ -1229,7 +1232,6 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
               dg=dpr(i)*uc
               xr=x-rph(i)*(px-.5d0*dpx*rph(i))*al
               yr=y-rph(i)*(py-.5d0*dpy*rph(i))*al
-c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
               call tphotonconv(xr,px,yr,py,dg,
      $             dpr(i),p,h1,-rph(i)*al,k)
             enddo
@@ -1278,7 +1280,7 @@ c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
         use ffs_flag
         use tmacro
         use photontable, only:tphotonconv
-        use mathfun, only:pxy2dpz,p2h
+        use mathfun, only:pxy2dpz,p2h,hypot3
         implicit none
         integer*4 ,parameter :: npmax=10000
         integer*4 , intent(in)::np
@@ -1302,7 +1304,8 @@ c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
           ppx=pyn(k)*dpz0-dpz*pyr0(k)+dpy
           ppy=dpz*px0-pxn(k)*dpz0-dpx
           ppz=pxn(k)*pyr0(k)-pyn(k)*px0
-          ppa=hypot(ppx,hypot(ppy,ppz))
+          ppa=hypot3(ppx,ppy,ppz)
+c          ppa=hypot(ppx,hypot(ppy,ppz))
           theta=asin(min(1.d0,max(-1.d0,ppa)))
           pr=1.d0+gn(k)
           p=p0*pr
@@ -1372,7 +1375,7 @@ c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
      $     px00,py0,zr00,bsi0,al)
         use ffs_flag
         use tmacro
-        use mathfun, only:pxy2dpz,p2h
+        use mathfun, only:pxy2dpz,p2h,hypot3
         implicit none
         real*8 , intent(inout)::x,px,y,py,z,g,dv
         real*8 , intent(in)::px00,py0,zr00,bsi0,al
@@ -1387,7 +1390,8 @@ c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
         ppx=py*dpz0-dpz*py0+dpy
         ppy=dpz*px0-px*dpz0-dpx
         ppz=px*py0-py*px0
-        ppa=hypot(ppx,hypot(ppy,ppz))
+        ppa=hypot3(ppx,ppy,ppz)
+c        ppa=hypot(ppx,hypot(ppy,ppz))
         theta=asin(min(1.d0,max(-1.d0,ppa)))
         pr=1.d0+g
         p=p0*pr
@@ -1427,7 +1431,7 @@ c        write(*,*)'tradk1 ',dg,anp,uc
         subroutine tradkn(np,xn,pxn,yn,pyn,zn,gn,dvn,sxn,syn,szn,al)
         use ffs_flag
         use tmacro
-        use mathfun, only:pxy2dpz,p2h
+        use mathfun, only:pxy2dpz,p2h,hypot3
         implicit none
         integer*4 , intent(in)::np
         real*8 , intent(inout)::
@@ -1447,7 +1451,8 @@ c        write(*,*)'tradk1 ',dg,anp,uc
           ppx=pyn(i)*dpz0-dpz*pyr0(i)+dpy
           ppy=dpz*px0-pxn(i)*dpz0-dpx
           ppz=pxn(i)*pyr0(i)-pyn(i)*px0
-          ppa=hypot(ppx,hypot(ppy,ppz))
+          ppa=hypot3(ppx,ppy,ppz)
+c          ppa=hypot(ppx,hypot(ppy,ppz))
           theta=asin(min(1.d0,max(-1.d0,ppa)))
           pr=1.d0+gn(i)
           p=p0*pr

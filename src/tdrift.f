@@ -152,7 +152,8 @@ c               write(*,'(a,1p12g10.2)')'drift_sol ',pp%geo1(:,:)
             bsi=0.d0
           endif
         endif
-        b=hypot(hypot(ak0x,ak0y),bz*al)
+c        b=hypot(hypot(ak0x,ak0y),bz*al)
+        b=hypot3(ak0x,ak0y,bz*al)
         phix=ak0y/b
         phiy=ak0x/b
         phiz=bz*al/b

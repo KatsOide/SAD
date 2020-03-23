@@ -21,7 +21,7 @@ c      use ffs_pointer, only:inext,iprev
       if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       4,0.d0,ak0,
-     $       dx,dy,theta, 1.d0,.false.)
+     $       dx,dy,theta,.false.,.false.)
         return
       endif
       enarad=rad .and. radlvl .ne. 1.d0

@@ -482,7 +482,8 @@ c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
       bxs=bxs0
       bys=bys0
       bzs=bzs0
-      babs=hypot(bzs,hypot(bxs,bys))
+      babs=hypot3(bzs,bxs,bys)
+c      babs=hypot(bzs,hypot(bxs,bys))
 c      babs=sqrt(bzs**2+bxs**2+bys**2)
       if(abs(babs) .lt. bzthre)then
         bxs=0.d0

@@ -1,7 +1,7 @@
       subroutine tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phib,
      $     dx,dy,theta,
      1     cosp1,sinp1,cosp2,sinp2,
-     $     fb1,fb2,fringe,eps,enarad)
+     $     fb1,fb2,fringe,eps,krad)
       use ffs_flag
       use tmacro
       use tspin
@@ -22,10 +22,10 @@
      $     dp,p,rhoe,pxi,s,dpv1,pv1,dpv2,pv2,fa,f,ff,
      $     dpz1,pz1,dpz2,pz2,phsq,u,w,dl,dpx,pyi,xi,pxf,d,
      $     cosp1,sinp1,cosp2,sinp2,tanp1,tanp2,fb1,fb2
-      logical*4 fringe,enarad,krad
+      logical*4 fringe,krad
       if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,2,al,-phib,
-     1             dx,dy,theta,1.d0,.false.)
+     1             dx,dy,theta,.false.,.false.)
         return
       elseif(phib .eq. 0.d0)then
         call tdrift_free(np,x,px,y,py,z,dv,al)
@@ -35,7 +35,6 @@
       tanp1=sinp1/cosp1
       tanp2=0.d0
       rhob=al/phib
-      krad=enarad .and. rad
       f1r=0.d0
       f2r=0.d0
       dxfr1=0.d0
