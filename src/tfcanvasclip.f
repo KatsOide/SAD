@@ -892,8 +892,9 @@ c            s=sqrt(dx**2+dy**2)
       type (sad_strbuf), pointer :: strb
       type (sad_string), pointer :: str
       integer*8 ka,kad,kad1,kad2,ks
-      integer*4 isp1,irtc,itfmessage
-      real*8 x,y,s,a,xmin,ymin,xmax,ymax,yoff
+      integer*4 isp1,irtc,itfmessage,i
+      real*8 x,y,s,a,xmin,ymin,xmax,ymax,yoff,sa,
+     $     ar(32)
 c      parameter (a=sqrt(0.75d0))
       parameter (a=.866025403784439d0)
       character*2 sym
@@ -964,6 +965,7 @@ c      parameter (a=sqrt(0.75d0))
       endif
       call loc_string(ktfaddr(ktastk(isp1+1)),str)
       call putstringbufb(strb,str%str,str%nch,full)
+      sa=s*a
       if(sym .eq. "1O")then
         call putstringbufb(strb,' create oval ',13,full)
         call tfconvround(strb,x-s)
@@ -974,22 +976,75 @@ c      parameter (a=sqrt(0.75d0))
         call loc_string(ktfaddr(ktastk(isp1+7)),str)
         call putstringbufb(strb,str%str,str%nch,full)
         call putstringbufb1(strb,'}')
+      elseif(sym .eq. "6O")then
+        call putstringbufb(strb,' create polygon ',16,full)
+        call tfconvround(strb,x-s)
+        call tfconvround(strb,y)
+        call tfconvround(strb,x+s*.5d0)
+        call tfconvround(strb,y-sa)
+        call tfconvround(strb,x+s*.5d0)
+        call tfconvround(strb,y+sa)
+      elseif(sym .eq. "7O")then
+        call putstringbufb(strb,' create polygon ',16,full)
+        call tfconvround(strb,x+s)
+        call tfconvround(strb,y)
+        call tfconvround(strb,x-s*.5d0)
+        call tfconvround(strb,y-sa)
+        call tfconvround(strb,x-s*.5d0)
+        call tfconvround(strb,y+sa)
       elseif(sym .eq. "8O")then
         call putstringbufb(strb,' create polygon ',16,full)
         call tfconvround(strb,x)
         call tfconvround(strb,y+s)
-        call tfconvround(strb,x-s*a)
+        call tfconvround(strb,x-sa)
         call tfconvround(strb,y-s*.5d0)
-        call tfconvround(strb,x+s*a)
+        call tfconvround(strb,x+sa)
         call tfconvround(strb,y-s*.5d0)
       elseif(sym .eq. "9O")then
         call putstringbufb(strb,' create polygon ',16,full)
         call tfconvround(strb,x)
         call tfconvround(strb,y-s)
-        call tfconvround(strb,x-s*a)
+        call tfconvround(strb,x-sa)
         call tfconvround(strb,y+s*.5d0)
-        call tfconvround(strb,x+s*a)
+        call tfconvround(strb,x+sa)
         call tfconvround(strb,y+s*.5d0)
+      elseif(sym .eq. "BX")then
+        call putstringbufb(strb,' create polygon ',16,full)
+        call tfconvround(strb,x+sa)
+        call tfconvround(strb,y-sa)
+        call tfconvround(strb,x+sa)
+        call tfconvround(strb,y+sa)
+        call tfconvround(strb,x-sa)
+        call tfconvround(strb,y+sa)
+        call tfconvround(strb,x-sa)
+        call tfconvround(strb,y-sa)
+      elseif(sym .eq. "RH")then
+        call putstringbufb(strb,' create polygon ',16,full)
+        call tfconvround(strb,x+s)
+        call tfconvround(strb,y)
+        call tfconvround(strb,x)
+        call tfconvround(strb,y+s)
+        call tfconvround(strb,x-s)
+        call tfconvround(strb,y)
+        call tfconvround(strb,x)
+        call tfconvround(strb,y-s)
+      elseif(sym .eq. "PL")then
+        call putstringbufb(strb,' create polygon ',16,full)
+        ar(1:24)=(/x+s,y-1,x+s,y+1,x+1,y+1,x+1,y+s,
+     $         x-1,y+s,x-1,y+1,x-s,y+1,x-s,y-1,x-1,y-1,
+     $         x-1,y-s,x+1,y-s,x+1,y-1/)
+        do i=1,24
+          call tfconvround(strb,ar(i))
+        enddo
+      elseif(sym .eq. "TI")then
+        call putstringbufb(strb,' create polygon ',16,full)
+        ar(1:24)=(/x+s+1,y+s-1,x+s-1,y+s+1,
+     $         x,y+1,x-s+1,y+s+1,x-s-1,y+s-1,x-1,y,
+     $         x-s-1,y-s+1,x-s+1,y-s-1,x,y-1,x+s-1,y-s-1,
+     $         x+s+1,y-s+1,x+1,y/)
+        do i=1,24
+          call tfconvround(strb,ar(i))
+        enddo
       endif
       call putstringbufb(strb,' -fill {',8,full)
       call loc_string(ktfaddr(ktastk(isp1+6)),str)
@@ -1015,7 +1070,7 @@ c      parameter (a=sqrt(0.75d0))
       integer*8 ks,ka,kad,kad1,kad2,kat,
      $     kavx,kavy,ktrsaloc,ka2
       integer*4 isp1,irtc,itfmessage,isp0,m,i
-      real*8 x,y,s,a,xmin,xmax,ymin,ymax,yoff,wmin
+      real*8 x,y,s,a,xmin,xmax,ymin,ymax,yoff,wmin,sa
       logical*4 ol
       type (sad_descriptor), save ::
      $     ioutline,ifill,itag,iwidth,ibar
@@ -1151,6 +1206,7 @@ c      endif
         rtastk(isp)=rtastk(isp1+1)
         rtastk(isp)=rtastk(isp1+1)
         isp=isp+1
+        sa=s*a
         if(sym .eq. "1O")then
           rtastk(isp)=rtastk(isp1+10)
           rtastk(isp+1)=x-s
@@ -1163,37 +1219,72 @@ c      endif
           rtastk(isp+1)=x-s
           rtastk(isp+2)=y
           rtastk(isp+3)=x+s*.5d0
-          rtastk(isp+4)=y-s*a
+          rtastk(isp+4)=y-sa
           rtastk(isp+5)=x+s*.5d0
-          rtastk(isp+6)=y+s*a
+          rtastk(isp+6)=y+sa
           isp=isp+7
         elseif(sym .eq. "7O")then
           rtastk(isp)=rtastk(isp1+11)
           rtastk(isp+1)=x+s
           rtastk(isp+2)=y
           rtastk(isp+3)=x-s*.5d0
-          rtastk(isp+4)=y-s*a
+          rtastk(isp+4)=y-sa
           rtastk(isp+5)=x-s*.5d0
-          rtastk(isp+6)=y+s*a
+          rtastk(isp+6)=y+sa
           isp=isp+7
         elseif(sym .eq. "8O")then
           rtastk(isp)=rtastk(isp1+11)
           rtastk(isp+1)=x
           rtastk(isp+2)=y+s
-          rtastk(isp+3)=x-s*a
+          rtastk(isp+3)=x-sa
           rtastk(isp+4)=y-s*.5d0
-          rtastk(isp+5)=x+s*a
+          rtastk(isp+5)=x+sa
           rtastk(isp+6)=y-s*.5d0
           isp=isp+7
         elseif(sym .eq. "9O")then
           rtastk(isp)=rtastk(isp1+11)
           rtastk(isp+1)=x
           rtastk(isp+2)=y-s
-          rtastk(isp+3)=x-s*a
+          rtastk(isp+3)=x-sa
           rtastk(isp+4)=y+s*.5d0
-          rtastk(isp+5)=x+s*a
+          rtastk(isp+5)=x+sa
           rtastk(isp+6)=y+s*.5d0
           isp=isp+7
+        elseif(sym .eq. "BX")then
+          rtastk(isp)=rtastk(isp1+11)
+          rtastk(isp+1)=x+sa
+          rtastk(isp+2)=y-sa
+          rtastk(isp+3)=x+sa
+          rtastk(isp+4)=y+sa
+          rtastk(isp+5)=x-sa
+          rtastk(isp+6)=y+sa
+          rtastk(isp+7)=x-sa
+          rtastk(isp+8)=y-sa
+          isp=isp+9
+        elseif(sym .eq. "RH")then
+          rtastk(isp)=rtastk(isp1+11)
+          rtastk(isp+1)=x+s
+          rtastk(isp+2)=y
+          rtastk(isp+3)=x
+          rtastk(isp+4)=y+s
+          rtastk(isp+5)=x-s
+          rtastk(isp+6)=y
+          rtastk(isp+7)=x
+          rtastk(isp+8)=y-s
+          isp=isp+9
+        elseif(sym .eq. "PL")then
+          rtastk(isp)=rtastk(isp1+11)
+          rtastk(isp+1:isp+24)=(/x+s,y-1,x+s,y+1,x+1,y+1,x+1,y+s,
+     $         x-1,y+s,x-1,y+1,x-s,y+1,x-s,y-1,x-1,y-1,
+     $         x-1,y-s,x+1,y-s,x+1,y-1/)
+          isp=isp+25
+        elseif(sym .eq. "TI")then
+          rtastk(isp)=rtastk(isp1+11)
+          rtastk(isp+1:isp+24)=(/x+s+1,y+s-1,x+s-1,y+s+1,
+     $         x,y+1,x-s+1,y+s+1,x-s-1,y+s-1,x-1,y,
+     $         x-s-1,y-s+1,x-s+1,y-s-1,x,y-1,x+s-1,y-s-1,
+     $         x+s+1,y-s+1,x+1,y/)
+          isp=isp+25
         elseif(sym .eq. "BA")then
           if(ol)then
             rtastk(isp)=rtastk(isp1+12)

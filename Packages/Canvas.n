@@ -1893,6 +1893,7 @@ CanvasGraphics=Class[{},
           {PlotColor,Plot,PointSize,PointSymbol,
             PointColor,Dashing,Thickness,PlotJoined,
             PointBorderColor,Legend}/.First[#];
+        sym=sym/.{Bar->"BX","BA"->"BX"};
         dash=DashCanonical[Switch[dash,
           1,{1},
           _Real,{dash,dash/3},
