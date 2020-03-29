@@ -1547,7 +1547,7 @@ c        dpm2=rlist(ktlookup('DPM'))
           itwissp(flv%ifitp(j))=1
           if(flv%ifitp1(j) .ne. flv%ifitp(j))then
             itwissp(flv%ifitp1(j))=1
-            if(flv%mfitp(j) .lt. 0 .and. flv%kfit(j) .le. mfitdz
+            if(flv%mfitp(j) .lt. 0 .and. flv%kfit(j) .le. mfit
      $           .and. flv%kfit(j) .ne. mfitnx
      $           .and. flv%kfit(j) .ne. mfitny)then
               do i=min(flv%ifitp(j),flv%ifitp1(j)),

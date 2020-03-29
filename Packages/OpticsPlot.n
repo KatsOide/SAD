@@ -25,7 +25,7 @@ With[{def={
   RemoveOverlap->"L$NAME"}},
 
   OpticsPlot[f_List,opt___]:=Module[
-    {nf=Length[f],g,pr,rg,dx,init,fh,yh,yh1,i1,lr,plb,op=Override[opt,def],opd,lpr,ss,slabel},
+    {nf=Length[f],g,pr,rg,dx,init,fh,yh,yh1,i1,lr,plb,op=Override[opt,def],opd,lpr,ss,slabel,gr},
     op = op/.{
 !      Rule[sRegion->{s1_Real, s2_Real}, Region->OP$S2Position[s1,s2]],
       Rule[Region->{S[s1_Real], s2:(_Real|_String)}, Region->{Floor[OP$S2Position[s1]], s2}],

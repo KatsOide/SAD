@@ -894,7 +894,7 @@ c            s=sqrt(dx**2+dy**2)
       type (sad_string), pointer :: str
       integer*8 ka,kad,kad1,kad2,ks
       integer*4 isp1,irtc,itfmessage,i,np
-      real*8 x,y,s,a,xmin,ymin,xmax,ymax,yoff,sa,sh,ar(32)
+      real*8 x,y,s,a,xmin,ymin,xmax,ymax,yoff,sa,sh,ar(32),s1
 c      parameter (a=sqrt(0.75d0))
       parameter (a=.866025403784439d0)
       character*2 sym
@@ -979,26 +979,26 @@ c      parameter (a=sqrt(0.75d0))
       else
         if(sym(2:2) .eq. "O")then
           call putstringbufb(strb,' create polygon ',16,full)
-          s=s*sqrt(m_pi/a/1.5d0)
-          sa=s*a
-          sh=s*.5d0
+          s1=s*sqrt(m_pi/a/1.5d0)
+          sa=s1*a
+          sh=s1*.5d0
           if(sym(1:1) .eq. "6")then
-            ar(1:6)=(/x-s,y,x+sh,y-sa,x+sh,y+sa/)
+            ar(1:6)=(/x-s1,y,x+sh,y-sa,x+sh,y+sa/)
           elseif(sym(1:1) .eq. "7")then
-            ar(1:6)=(/x+s,y,x-sh,y-sa,x-sh,y+sa/)
+            ar(1:6)=(/x+s1,y,x-sh,y-sa,x-sh,y+sa/)
           elseif(sym(1:1) .eq. "8")then
-            ar(1:6)=(/x,y+s,x-sa,y-sh,x+sa,y-sh/)
+            ar(1:6)=(/x,y+s1,x-sa,y-sh,x+sa,y-sh/)
           elseif(sym(1:1) .eq. "9")then
-            ar(1:6)=(/x,y-s,x-sa,y+sh,x+sa,y+sh/)
+            ar(1:6)=(/x,y-s1,x-sa,y+sh,x+sa,y+sh/)
           endif
           np=6
         elseif(sym .eq. "BX")then
-          s=s*sqrt(m_pi_4)
-          ar(1:8)=(/x+s,y-s,x+s,y+s,x-s,y+s,x-s,y-s/)
+          s1=s*sqrt(m_pi_4)
+          ar(1:8)=(/x+s1,y-s1,x+s1,y+s1,x-s1,y+s1,x-s1,y-s1/)
           np=8
         elseif(sym .eq. "RH")then
-          s=s*sqrt(m_pi_2)
-          ar(1:8)=(/x+s,y,x,y+s,x-s,y,x,y-s/)
+          s1=s*sqrt(m_pi_2)
+          ar(1:8)=(/x+s1,y,x,y+s1,x-s1,y,x,y-s1/)
           np=8
         elseif(sym .eq. "PL")then
           ar(1:24)=(/x+s,y-1,x+s,y+1,x+1,y+1,x+1,y+s,
@@ -1041,7 +1041,7 @@ c      parameter (a=sqrt(0.75d0))
       integer*8 ks,ka,kad,kad1,kad2,kat,
      $     kavx,kavy,ktrsaloc,ka2
       integer*4 isp1,irtc,itfmessage,isp0,m,i
-      real*8 x,y,s,a,xmin,xmax,ymin,ymax,yoff,wmin,sa,sh
+      real*8 x,y,s,a,xmin,xmax,ymin,ymax,yoff,wmin,sa,sh,s1
       logical*4 ol
       type (sad_descriptor), save ::
      $     ioutline,ifill,itag,iwidth,ibar
@@ -1182,38 +1182,38 @@ c      endif
           rtastk(isp+1:isp+4)=(/x-s,y-s,x+s,y+s/)
           isp=isp+5
         elseif(sym(2:2) .eq. "O")then
-          s=s*sqrt(m_pi/a/1.5d0)
-          sa=s*a
-          sh=s*.5d0
+          s1=s*sqrt(m_pi/a/1.5d0)
+          sa=s1*a
+          sh=s1*.5d0
           rtastk(isp)=rtastk(isp1+11)
           if(sym(1:1) .eq. "6")then
-            rtastk(isp+1:isp+6)=(/x-s,y,x+sh,y-sa,x+sh,y+sa/)
+            rtastk(isp+1:isp+6)=(/x-s1,y,x+sh,y-sa,x+sh,y+sa/)
           elseif(sym(1:1) .eq. "7")then
-            rtastk(isp+1:isp+6)=(/x+s,y,x-sh,y-sa,x-sh,y+sa/)
+            rtastk(isp+1:isp+6)=(/x+s1,y,x-sh,y-sa,x-sh,y+sa/)
           elseif(sym(1:1) .eq. "8")then
-            rtastk(isp+1:isp+6)=(/x,y+s,x-sa,y-sh,x+sa,y-sh/)
+            rtastk(isp+1:isp+6)=(/x,y+s1,x-sa,y-sh,x+sa,y-sh/)
           elseif(sym(1:1) .eq. "9")then
-            rtastk(isp+1:isp+6)=(/x,y-s,x-sa,y+sh,x+sa,y+sh/)
+            rtastk(isp+1:isp+6)=(/x,y-s1,x-sa,y+sh,x+sa,y+sh/)
           endif
           isp=isp+7
         elseif(sym .eq. "BX")then
-          s=s*sqrt(m_pi_4)
+          s1=s*sqrt(m_pi_4)
           rtastk(isp)=rtastk(isp1+11)
           rtastk(isp+1:isp+8)=
-     $         (/x+s,y-s,x+s,y+s,x-s,y+s,x-s,y-s/)
+     $         (/x+s1,y-s1,x+s1,y+s1,x-s1,y+s1,x-s1,y-s1/)
           isp=isp+9
         elseif(sym .eq. "RH")then
-          s=s*sqrt(m_pi_2)
+          s1=s*sqrt(m_pi_2)
           rtastk(isp)=rtastk(isp1+11)
           rtastk(isp+1:isp+8)=
-     $         (/x+s,y,x,y+s,x-s,y,x,y-s/)
+     $         (/x+s1,y,x,y+s1,x-s1,y,x,y-s1/)
           isp=isp+9
         elseif(sym .eq. "PL")then
-          s=s*1.2d0
+          s1=s*1.2d0
           rtastk(isp)=rtastk(isp1+11)
-          rtastk(isp+1:isp+24)=(/x+s,y-1,x+s,y+1,x+1,y+1,x+1,y+s,
-     $         x-1,y+s,x-1,y+1,x-s,y+1,x-s,y-1,x-1,y-1,
-     $         x-1,y-s,x+1,y-s,x+1,y-1/)
+          rtastk(isp+1:isp+24)=(/x+s1,y-1,x+s1,y+1,x+1,y+1,x+1,y+s1,
+     $         x-1,y+s1,x-1,y+1,x-s1,y+1,x-s1,y-1,x-1,y-1,
+     $         x-1,y-s1,x+1,y-s1,x+1,y-1/)
           isp=isp+25
         elseif(sym .eq. "TI")then
           rtastk(isp)=rtastk(isp1+11)

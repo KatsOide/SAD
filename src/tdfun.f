@@ -507,19 +507,22 @@ c     v1=pi2*(anint(v/pi2)+sign(.5d0*sin(.5d0*v)**2,sin(v)))
 
       subroutine tfpeak(idp,kf,ibegin,iend,ipeak,vpeak,npeak)
       use ffs_pointer
+      use tffitcode
       implicit none
-      integer*4 ,intent(in)::ibegin,iend,kf,npeak
-      integer*4 idp
+      integer*4 ,intent(in)::ibegin,iend,kf,npeak,idp
       integer*4 ,intent(out)::ipeak(npeak)
       real*8 ,intent(out)::vpeak(npeak)
       integer*4 i,j,k
-      real*8 va,va0,va1
+      real*8 va,va0,va1,tgfun
       vpeak=0.d0
       ipeak=0
       va0=0.d0
-      va=abs(utwiss(kf,idp,itwissp(ibegin)))
+      va=abs(tgfun(kf,ibegin,idp))
       do i=ibegin,iend
-        va1=abs(utwiss(kf,idp,itwissp(min(i+1,iend))))
+        va1=abs(tgfun(kf,min(i+1,iend),idp))
+c        if(kf .eq. mfitgmy)then
+c          write(*,*)'tfpeak ',i,va,va0,va1
+c        endif
         if(va .gt. va0 .and. va .ge. va1)then
           do j=1,npeak
             if(va .gt. abs(vpeak(j)))then
@@ -527,9 +530,8 @@ c     v1=pi2*(anint(v/pi2)+sign(.5d0*sin(.5d0*v)**2,sin(v)))
                 vpeak(k)=vpeak(k-1)
                 ipeak(k)=ipeak(k-1)
               enddo
-              vpeak(j)=utwiss(kf,idp,itwissp(i))
+              vpeak(j)=abs(tgfun(kf,i,idp))
               ipeak(j)=i
-c              write(*,*)'tfpeak ',j,i,kf,idp,itwissp(i),vpeak(j)
               exit
             endif
           enddo
