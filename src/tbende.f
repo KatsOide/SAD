@@ -744,13 +744,14 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       use tmacro
       implicit none
       real*8 trans(6,12),cod(6),beam(42),phib,phi0,dx,dy,theta,
-     $     trans1(6,13),dtheta,srot(3,9)
+     $     trans1(6,6),dtheta,srot(3,9)
       call tchge(trans,cod,beam,srot,
      $     dx,dy,theta,dtheta,phi0,.true.)
       call tinitr(trans1)
       trans1(2,6)=phi0
       trans1(5,1)=-phi0
-      call tmultr(trans,trans1,irad)
+      trans(:,1:irad)=matmul(trans1,trans(:,1:irad))
+c      call tmultr(trans,trans1,irad)
       call tmulbs(beam ,trans1,.true.)
       cod(2)=cod(2)+(phi0-phib)+cod(6)*phi0
       cod(5)=cod(5)-phi0*cod(1)

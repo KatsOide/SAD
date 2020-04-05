@@ -98,7 +98,8 @@
         cod(4)=pyi
         z0=cod(5)
         call tsoldz(trans1,cod,r,0.d0,0.d0,bz,.false.)
-        call tmultr(trans2,trans1,6)
+        trans2=matmul(trans1,trans2)
+c        call tmultr(trans2,trans1,6)
         cod(5)=z0-(a/pr/(pr+pz))**2*(2.d0*pr+pz)/pz/2.d0*al
         trans2(5,5)=1.d0
         trans2(5,6)=a**2*(pr**2+pr*pz+pz**2)/(pr*pz)**3/(pr+pz)*al

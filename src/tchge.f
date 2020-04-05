@@ -105,7 +105,8 @@ c            write(*,*)'tchge ',ent,associated(transa),
 c     $           calpol,irad,al,th,dth
 c          endif
           if(associated(transa))then
-            call tmultr(trans,transa,irad)
+            trans(:,1:irad)=matmul(transa,trans(:,1:irad))
+c            call tmultr(trans,transa,irad)
             if(irad .gt. 6)then
               call tmulbs(beam,transa,.true.)
             endif
@@ -160,7 +161,8 @@ c          endif
             endif
           endif
           if(associated(transa))then
-            call tmultr(trans,transa,irad)
+            trans(:,1:irad)=matmul(transa,trans(:,1:irad))
+c            call tmultr(trans,transa,irad)
             if(irad .gt. 6)then
               call tmulbs(beam,transa,.true.)
             endif

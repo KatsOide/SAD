@@ -95,7 +95,8 @@
       trans(6,:)=-sz*ri1(5,:)+cz*ri1(6,:)
       call etwiss2ri(tw2,ri2,normal2)
       call tinv6(ri2,ri2i)
-      call tmultr(trans,ri2i,6)
+      trans=matmul(ri2i,trans)
+c      call tmultr(trans,ri2i,6)
       if(.not. normal2)then
         normal1=.not. normal1
       endif

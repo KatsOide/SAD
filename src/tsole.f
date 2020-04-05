@@ -22,7 +22,7 @@
       sol=.true.
       do i=k+1,nlat-1
         if(idtypec(i) .eq. icSOL)then
-          if(rlist(idvalc(i)+8) .ne. 0.d0)then
+          if(rlist(idvalc(i)+ky_BND_SOL) .ne. 0.d0)then
             ke=i
             go to 20
           endif
@@ -122,7 +122,6 @@ c            endif
         call tsetr0(trans,cod,bzs,0.d0)
         call tdrife(trans,cod,beam,srot,al,
      $       bzs,0.d0,0.d0,al,.true.,
-c     $       .false.,
      $       enarad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0,
      $       irad)
       case (icBEND)
@@ -259,7 +258,8 @@ c              call trades(trans,beam,cod,bzs0,bzs,f1,brhoz)
       case(icMAP)
         if(qsol)then
           call qemap(trans1,cod,l,coup,err)
-          call tmultr(trans,trans1,6)
+          trans(:,1:6)=matmul(trans1,trans(:,1:6))
+c          call tmultr(trans,trans1,6)
         else
           call temape(trans,cod,beam,l)
         endif

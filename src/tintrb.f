@@ -64,11 +64,13 @@ c      hi=sqrt(1.d0+(pr*p0)**2)
         call tadd(bmi,beam,bmi,21)
         call tmulbs(bmi,trans1,.false.)
         call twspace(transsp,cod,al,bmi)
-        call tmov(trans1,trans2,36)
-        call tmultr(trans2,transsp,6)
+c        call tmov(trans1,trans2,36)
+c        call tmultr(trans2,transsp,6)
         call tinv6(trans1,transa)
-        call tmultr(trans2,transa,6)
-        call tmultr(trans,trans2,irad)
+        trans(:,1:irad)=matmul(
+     $       matmul(transa,matmul(transsp,trans1)),trans(:,1:irad))
+c        call tmultr(trans2,transa,6)
+c        call tmultr(trans,trans2,irad)
         call tmulbs(beam,trans2,.false.)
       endif
       if(intra)then
@@ -78,8 +80,9 @@ c      call tadd(transa,trans(1,7),transa,36)
 c        call tmulbs(bmi,transa,.false.)
         call tadd(bmi,beam,bmi,21)
         if(caltouck)then
-          call tmov(diagr,transw,36)
-          call tmultr(transw,trans,6)
+          transw=matmul(trans(:,1:6),diagr)
+c          call tmov(diagr,transw,36)
+c          call tmultr(transw,trans,6)
         endif
         a=p0**2/(hi+1.d0)
         b=a/hi
@@ -110,7 +113,8 @@ c        call tmulbs(bmi,transa,.false.)
      $         +pzi*trans2(i,5))/pr
           trans2(i,6)=pr/pzi*trans2(i,6)
  3010   continue
-        call tmultr(trans1,trans2,6)
+        trans1=matmul(trans2,trans1)
+c        call tmultr(trans1,trans2,6)
         call tmulbs(bmi,trans1,.false.)
         xx(1,1)=bmi(ia(1,1))
         xx(2,1)=bmi(ia(3,1))
@@ -122,7 +126,8 @@ c        call tmulbs(bmi,transa,.false.)
         vol1=sqrt(max(1.d-80,eig(1)*eig(2)*eig(3)))
         vol=sqrt((4.d0*pi)**3)*vol1
         bm=sqrt(min(abs(eig(1)),abs(eig(2)),abs(eig(3))))
-        call tmov(xx,xxs,9)
+        xxs=xx
+c        call tmov(xx,xxs,9)
         xp(1,1)=bmi(ia(1,2))
         xp(1,2)=bmi(ia(1,4))
         xp(1,3)=bmi(ia(1,6))
@@ -156,8 +161,9 @@ c        call tmulbs(bmi,transa,.false.)
         pvol=sqrt(max(1.d-80,eig(1)*eig(2)*eig(3)))
         if(vol .ne. 0.d0 .and. caltouck)then
           if(ptrans .ne. 0.d0)then
-            call tmultr(transw,trans1,6)
-            call tinv6(transw,trans2)
+            call tinv6(matmul(trans1,transw),trans2)
+c            call tmultr(transw,trans1,6)
+c            call tinv6(transw,trans2)
             extrans=(trans2(1,6)**2+trans2(2,6)**2)*ptrans**2
             eytrans=(trans2(3,6)**2+trans2(4,6)**2)*ptrans**2
             eztrans=(trans2(5,6)**2+trans2(6,6)**2)*ptrans**2

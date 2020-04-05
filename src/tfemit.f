@@ -201,9 +201,9 @@ c        ilist(2,iwakepold+6)=ifsize
       real*8 , intent(out)::ris(6,6)
       real*8 mu(3),c(3),s(3),trans(6,6),rs(6,6)
       if(is .ne. 1)then
-        rs=r
         call tftmat6(trans,1,is)
-        call tmultr(rs,trans,6)
+        rs=matmul(trans,r)
+c        call tmultr(rs,trans,6)
         call tinv6(rs,ris)
         mu=twiss(is,0,(/mfitnx,mfitny,mfitnz/))
         c=cos(mu)
@@ -221,7 +221,8 @@ c        ilist(2,iwakepold+6)=ifsize
         trans(5,6)=s(3)
         trans(6,5)=-s(3)
         trans(6,6)=c(3)
-        call tmultr(ris,trans,6)
+        ris=matmul(trans,ris)
+c        call tmultr(ris,trans,6)
       else
         ris=ri
       endif

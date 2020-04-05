@@ -204,7 +204,8 @@ c     $     r(5,5)*r(6,6)-r(6,5)*r(5,6)
       hi(3,5)= hy11
       hi(6,5)= 0.d0
       hi(5,5)= az
-      call tmultr(hi,r,6)
+      hi=matmul(r,hi)
+c      call tmultr(hi,r,6)
 c      write(*,*)'tfetwiss-3'
       detm=(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2)
      $     +hi(3,3)*hi(4,4)-hi(4,3)*hi(3,4))*.5d0
@@ -1661,7 +1662,8 @@ c        sp=sin(phir0)
         endif
         if(irad .gt. 6)then
           call tinv6(transr,transi)
-          call tmultr(transi,trans(:,1:6),6)
+          transi=matmul(trans(:,1:6),transi)
+c          call tmultr(transi,trans(:,1:6),6)
           tr2=transi
           if(bzh .ne. 0.d0)then
             tr2(2,:)=tr2(2,:)+bzh*tr2(3,:)
@@ -2161,7 +2163,8 @@ c      write(*,'(a/,6(1p6g15.7/))')'trans: ',(trans(i,1:6),i=1,6)
         write(lfno,*)'   Symplectic part of the transfer matrix:'
         call tput(trans,label2,label2,'9.6',6,lfno)
         call tinv6(r,ri)
-        call tmultr(ri,trans,6)
+        ri=matmul(trans(:,1:6),ri)
+c        call tmultr(ri,trans,6)
         call tput(ri,label2,label2,'9.6',6,lfno)
       endif
       if(.not. rfsw)then
@@ -2179,7 +2182,8 @@ c      write(*,'(a,1p12g10.3)')'ceig: ',ceig
       ceig0=ceig
       call tsymp(r)
       call tinv6(r,ri)
-      call tmultr(trans,ri,6)
+      trans(:,1:6)=matmul(ri,trans(:,1:6))
+c      call tmultr(trans,ri,6)
       call tmov(r,btr,36)
       call tmultr(btr,trans,6)
       if(pri .and. emiout)then
@@ -2317,8 +2321,9 @@ c$$$          enddo
 c$$$          trans(j,i)=s
 c$$$        enddo
 c$$$      enddo
-      trans(1:6,1:6)=matmul(trans(1:6,7:12),r(1:6,1:6))
-      call tmultr(trans,ri,6)
+c      trans(:,1:6)=matmul(trans(:,7:12),r)
+      trans(:,1:6)=matmul(ri,matmul(trans(:,7:12),r))
+c      call tmultr(trans,ri,6)
       do i=1,5,2
         cd(int(i/2)+1)=dcmplx((trans(i,i)+trans(i+1,i+1))*.5d0,
      1                   (trans(i,i+1)-trans(i+1,i))*.5d0)/cc(i)
@@ -2992,16 +2997,16 @@ c     write(*,*)'temit ',eemy,emy1
       subroutine tsymp(trans)
       implicit none
       integer*4 i
-      real*8 trans(6,6),ri(6,7)
+      real*8 trans(6,6),ri(6,6)
       call tinv6(trans,ri)
-      call tmultr(ri,trans,6)
-      do 10 i=1,6
-c        do 20 j=1,6
-          ri(1:6,i)=-ri(1:6,i)*.5d0
-c20      continue
+      ri=matmul(trans,ri)
+c      call tmultr(ri,trans,6)
+      do i=1,6
+        ri(:,i)=-ri(:,i)*.5d0
         ri(i,i)=ri(i,i)+1.5d0
-10    continue
-      call tmultr(trans,ri,6)
+      enddo
+      trans=matmul(ri,trans)
+c      call tmultr(trans,ri,6)
       return
       end
 

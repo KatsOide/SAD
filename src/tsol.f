@@ -330,7 +330,8 @@ c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
           trans1(5,3)=-schi2
           trans1(5,5)=0.d0
           call tsoldz(trans2,cod,-ds2,bxs,bys,bzs,.false.)
-          call tmultr(trans1,trans2,6)
+          trans1=matmul(trans2,trans1)
+c          call tmultr(trans1,trans2,6)
           trans1(5,5)=1.d0
           bzh=bzs*.5d0
           cod(2)=cod(2)-bzh*cod(3)
@@ -434,7 +435,8 @@ c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
           trans1(5,5)=0.d0
           call tmultr5(trans1,trans2,6)
           call tsoldz(trans2,cod,-ds2,0.d0,0.d0,bz,.false.)
-          call tmultr(trans1,trans2,6)
+          trans1=matmul(trans2,trans1)
+c          call tmultr(trans1,trans2,6)
           trans1(5,5)=1.d0
           cod(1)=cod(1)+dx
           cod(3)=cod(3)+dy

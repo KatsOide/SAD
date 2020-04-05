@@ -671,7 +671,8 @@ c     write(*,*)'tturne-tcave-1',cod
         case (icMAP)
           if(optics)then
             call qemap(trans1,cod,l,coup,err)
-            call tmultr(trans,trans1,6)
+            trans(:,1:6)=matmul(trans1,trans(:,1:6))
+c            call tmultr(trans,trans1,6)
           else
             call temape(trans,cod,beam,l)
           endif
@@ -804,14 +805,16 @@ c     $       twiss(l,idp,mfitzx:mfitzpy)
         call tinv6(trans,ti)
       endif
       if(lorg .le. 1)then
-        call tmultr(ti,ri,6)
+        ti=matmul(ri,ti)
+c        call tmultr(ti,ri,6)
         norm=normali
         l0=1
       else
         l0=lorg
         twi=twiss(lorg,idp,1:ntwissfun)
         call etwiss2ri(twi,ril,norm)
-        call tmultr(ti,ril,6)
+        ti=matmul(ril,ti)
+c        call tmultr(ti,ril,6)
       endif
       call tfetwiss(ti,cod,twi,norm)
       if(l .eq. 1)then
@@ -856,9 +859,10 @@ c      write(*,*)'setetwiss ',twi(mfitddp),rgb
       real*8 tw1(ntwissfun),ra(6,6),trans(6,6),ti(6,6)
       logical*4 normal
       call etwiss2ri(tw1,ra,normal)
-      ti=r
-      call tmultr(ti,trans,6)
-      call tmultr(ti,ra,6)
+      ti=matmul(ra,matmul(trans,r))
+c      ti=r
+c      call tmultr(ti,trans,6)
+c      call tmultr(ti,ra,6)
       write(*,*)'checketwiss ',tw1(mfitdetr)
       do i=1,6
         write(*,'(1p6g15.7)')ti(i,:)
