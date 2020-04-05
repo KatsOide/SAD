@@ -795,14 +795,16 @@ c     $       twiss(l,idp,mfitzx:mfitzpy)
       implicit none
       integer*4 l,idp,lorg,l0
       real*8 trans(6,6),ti(6,6),twi(ntwissfun),cod(6),
-     $     beam(21),ril(6,6),gr,tr0(6,6)
+     $     beam(21),ril(6,6),gr
       logical*4 norm
       if(trpt)then
         gr=gammab(l)/gammab(max(1,lorg-1))
-        tr0=trans*sqrt(gr)
-        call tinv6(tr0,ti)
+        ti=tinv6(trans*sqrt(gr))
+c        tr0=trans*sqrt(gr)
+c        call tinv6(tr0,ti)
       else
-        call tinv6(trans,ti)
+        ti=tinv6(trans)
+c        call tinv6(trans,ti)
       endif
       if(lorg .le. 1)then
         ti=matmul(ri,ti)

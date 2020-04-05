@@ -22,7 +22,7 @@
      $     al,al1,pxi,pyi,s,pr,pzi,alx,ale,alz,hi,a,b,d,vol,
      $     bm,ptrans,extrans,eytrans,eztrans,tf,aez,aex0,aey0,
      $     aez0,aexz,aeyz,f1,f2,f3,bn,bmax,bmin,ci,pvol,vol1,
-     $     transa(6,6),transsp(6,6)
+     $     transsp(6,6)
       integer*4 ia(6,6)
       real*8 trans1(6,6),trans2(6,6)
 c     real*8  vmin/0.d0/
@@ -66,9 +66,10 @@ c      hi=sqrt(1.d0+(pr*p0)**2)
         call twspace(transsp,cod,al,bmi)
 c        call tmov(trans1,trans2,36)
 c        call tmultr(trans2,transsp,6)
-        call tinv6(trans1,transa)
         trans(:,1:irad)=matmul(
-     $       matmul(transa,matmul(transsp,trans1)),trans(:,1:irad))
+     $       matmul(tinv6(trans1),matmul(transsp,trans1)),
+     $       trans(:,1:irad))
+c        call tinv6(trans1,transa)
 c        call tmultr(trans2,transa,6)
 c        call tmultr(trans,trans2,irad)
         call tmulbs(beam,trans2,.false.)
@@ -161,7 +162,7 @@ c        call tmov(xx,xxs,9)
         pvol=sqrt(max(1.d-80,eig(1)*eig(2)*eig(3)))
         if(vol .ne. 0.d0 .and. caltouck)then
           if(ptrans .ne. 0.d0)then
-            call tinv6(matmul(trans1,transw),trans2)
+            trans2=tinv6(matmul(trans1,transw))
 c            call tmultr(transw,trans1,6)
 c            call tinv6(transw,trans2)
             extrans=(trans2(1,6)**2+trans2(2,6)**2)*ptrans**2
@@ -233,11 +234,11 @@ c     endif
         bmi(ia(4,4))=ci*pl(2,2)
         bmi(ia(6,4))=ci*pl(3,2)
         bmi(ia(6,6))=ci*pl(3,3)
-        call tinv6(trans1,trans2)
-        call tmulbs(bmi,trans2,.false.)
+c        call tinv6(trans1,trans2)
+        call tmulbs(bmi,tinv6(trans1),.false.)
         call tadd(beam,bmi,beam,21)
-        call tinv6(trans,transa)
-        call tmulbs(bmi,transa,.false.)
+c        call tinv6(trans,transa)
+        call tmulbs(bmi,tinv6(trans(:,1:6)),.false.)
       endif
       return
       end

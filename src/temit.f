@@ -50,9 +50,69 @@ c     Inverse matrix of r
       real*8 , parameter :: toln=0.1d0
 
       public :: tfetwiss,etwiss2ri,tfnormalcoord,toln,
-     $     tfinitemip,tsetr0
+     $     tfinitemip,tsetr0,tinv6,tsymp
 
       contains
+      real*8 function tinv6(ra) result(rinv)
+      implicit none
+      real*8, intent(in):: ra(6,6)
+      dimension rinv(6,6)
+      rinv(1,1)= ra(2,2)
+      rinv(1,2)=-ra(1,2)
+      rinv(1,3)= ra(4,2)
+      rinv(1,4)=-ra(3,2)
+      rinv(1,5)= ra(6,2)
+      rinv(1,6)=-ra(5,2)
+      rinv(2,1)=-ra(2,1)
+      rinv(2,2)= ra(1,1)
+      rinv(2,3)=-ra(4,1)
+      rinv(2,4)= ra(3,1)
+      rinv(2,5)=-ra(6,1)
+      rinv(2,6)= ra(5,1)
+      rinv(3,1)= ra(2,4)
+      rinv(3,2)=-ra(1,4)
+      rinv(3,3)= ra(4,4)
+      rinv(3,4)=-ra(3,4)
+      rinv(3,5)= ra(6,4)
+      rinv(3,6)=-ra(5,4)
+      rinv(4,1)=-ra(2,3)
+      rinv(4,2)= ra(1,3)
+      rinv(4,3)=-ra(4,3)
+      rinv(4,4)= ra(3,3)
+      rinv(4,5)=-ra(6,3)
+      rinv(4,6)= ra(5,3)
+      rinv(5,1)= ra(2,6)
+      rinv(5,2)=-ra(1,6)
+      rinv(5,3)= ra(4,6)
+      rinv(5,4)=-ra(3,6)
+      rinv(5,5)= ra(6,6)
+      rinv(5,6)=-ra(5,6)
+      rinv(6,1)=-ra(2,5)
+      rinv(6,2)= ra(1,5)
+      rinv(6,3)=-ra(4,5)
+      rinv(6,4)= ra(3,5)
+      rinv(6,5)=-ra(6,5)
+      rinv(6,6)= ra(5,5)
+      return
+      end function
+
+      real*8 function tsymp(trans) result(ri)
+      implicit none
+      integer*4 i
+      real*8 , intent(in)::trans(6,6)
+      dimension ri(6,6)
+      ri=matmul(trans,tinv6(trans))
+c      call tinv6(trans,ri)
+c      call tmultr(ri,trans,6)
+      do i=1,6
+        ri(:,i)=-ri(:,i)*.5d0
+        ri(i,i)=ri(i,i)+1.5d0
+      enddo
+      ri=matmul(ri,trans)
+c      call tmultr(trans,ri,6)
+      return
+      end function
+
       subroutine tsetr0(trans,cod,bzh,bsi0)
       implicit none
       real*8 ,intent(in)::trans(6,6),cod(6),bzh,bsi0
@@ -1661,7 +1721,8 @@ c        sp=sin(phir0)
           h2=h1
         endif
         if(irad .gt. 6)then
-          call tinv6(transr,transi)
+          transi=tinv6(transr)
+c          call tinv6(transr,transi)
           transi=matmul(trans(:,1:6),transi)
 c          call tmultr(transi,trans(:,1:6),6)
           tr2=transi
@@ -2162,8 +2223,8 @@ c      write(*,'(a/,6(1p6g15.7/))')'trans: ',(trans(i,1:6),i=1,6)
       if(pri .and. emiout)then
         write(lfno,*)'   Symplectic part of the transfer matrix:'
         call tput(trans,label2,label2,'9.6',6,lfno)
-        call tinv6(r,ri)
-        ri=matmul(trans(:,1:6),ri)
+        ri=matmul(trans(:,1:6),tinv6(r))
+c        call tinv6(r,ri)
 c        call tmultr(ri,trans,6)
         call tput(ri,label2,label2,'9.6',6,lfno)
       endif
@@ -2180,8 +2241,9 @@ c      write(*,'(a,1p12g10.3)')'ceig: ',ceig
       call tnorm(r,ceig,lfno)
       call tsub(ceig,ceig0,dceig,12)
       ceig0=ceig
-      call tsymp(r)
-      call tinv6(r,ri)
+      r=tsymp(r)
+      ri=tinv6(r)
+c      call tinv6(r,ri)
       trans(:,1:6)=matmul(ri,trans(:,1:6))
 c      call tmultr(trans,ri,6)
       call tmov(r,btr,36)
@@ -2994,22 +3056,6 @@ c     write(*,*)'temit ',eemy,emy1
       return
       end
 
-      subroutine tsymp(trans)
-      implicit none
-      integer*4 i
-      real*8 trans(6,6),ri(6,6)
-      call tinv6(trans,ri)
-      ri=matmul(trans,ri)
-c      call tmultr(ri,trans,6)
-      do i=1,6
-        ri(:,i)=-ri(:,i)*.5d0
-        ri(i,i)=ri(i,i)+1.5d0
-      enddo
-      trans=matmul(ri,trans)
-c      call tmultr(trans,ri,6)
-      return
-      end
-
       real*8 function eintrb(em0,y,emr)
       implicit none
       real*8 em0,y,emr,eps
@@ -3051,50 +3097,6 @@ c      call tmultr(trans,ri,6)
 10    continue
       return
       end
-
-      subroutine tinv6(r,ri)
-      implicit none
-      real*8, intent(in):: r(6,6)
-      real*8 ,intent(out)::ri(6,6)
-      ri(1,1)= r(2,2)
-      ri(1,2)=-r(1,2)
-      ri(1,3)= r(4,2)
-      ri(1,4)=-r(3,2)
-      ri(1,5)= r(6,2)
-      ri(1,6)=-r(5,2)
-      ri(2,1)=-r(2,1)
-      ri(2,2)= r(1,1)
-      ri(2,3)=-r(4,1)
-      ri(2,4)= r(3,1)
-      ri(2,5)=-r(6,1)
-      ri(2,6)= r(5,1)
-      ri(3,1)= r(2,4)
-      ri(3,2)=-r(1,4)
-      ri(3,3)= r(4,4)
-      ri(3,4)=-r(3,4)
-      ri(3,5)= r(6,4)
-      ri(3,6)=-r(5,4)
-      ri(4,1)=-r(2,3)
-      ri(4,2)= r(1,3)
-      ri(4,3)=-r(4,3)
-      ri(4,4)= r(3,3)
-      ri(4,5)=-r(6,3)
-      ri(4,6)= r(5,3)
-      ri(5,1)= r(2,6)
-      ri(5,2)=-r(1,6)
-      ri(5,3)= r(4,6)
-      ri(5,4)=-r(3,6)
-      ri(5,5)= r(6,6)
-      ri(5,6)=-r(5,6)
-      ri(6,1)=-r(2,5)
-      ri(6,2)= r(1,5)
-      ri(6,3)=-r(4,5)
-      ri(6,4)= r(3,5)
-      ri(6,5)=-r(6,5)
-      ri(6,6)= r(5,5)
-      return
-      end
-
       subroutine setiamat(iamat,ri,codin,beam1,emit1,trans)
       use tfstk
       implicit none

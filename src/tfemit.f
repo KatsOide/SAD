@@ -199,12 +199,12 @@ c        ilist(2,iwakepold+6)=ifsize
       implicit none
       integer*4 ,intent(in)::is
       real*8 , intent(out)::ris(6,6)
-      real*8 mu(3),c(3),s(3),trans(6,6),rs(6,6)
+      real*8 mu(3),c(3),s(3),trans(6,6)
       if(is .ne. 1)then
         call tftmat6(trans,1,is)
-        rs=matmul(trans,r)
+        ris=tinv6(matmul(trans,r))
 c        call tmultr(rs,trans,6)
-        call tinv6(rs,ris)
+c        call tinv6(rs,ris)
         mu=twiss(is,0,(/mfitnx,mfitny,mfitnz/))
         c=cos(mu)
         s=sin(mu)
