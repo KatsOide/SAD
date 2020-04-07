@@ -171,8 +171,8 @@ c        write(*,'(a,2i5,1p7g12.4)')'temits1-cod ',i,i1,cod
         call tmultr(rm,trans(:,7:12),6)
         call tmultr(rm,rxi,6)
         call tmov65(rm,trads(1,1,i))
-        call tfetwiss(matmul(ri,tinv6(trans(:,1:6))),
-     $       cod,tws(1,i),.true.)
+        tws(1:ntwissfun,i)=tfetwiss(matmul(ri,tinv6(trans(:,1:6))),
+     $       cod,.true.)
 c        call tinv6(trans,rm)
 c        call tmultr(rm,ri,6)
 c        call tfetwiss(rm,cod,tws(1,i),.true.)
@@ -1207,7 +1207,7 @@ c      enddo
       ip1=ip+1
       twf=f*tws(:,ip1)+(1.d0-f)*tws(:,ip)
       twf(mfitdetr)=twf(mfitr1)*twf(mfitr4)-twf(mfitr2)*twf(mfitr3)
-      call etwiss2ri(twf,rxi,normal)
+      rxi=etwiss2ri(twf,normal)
 c      call etwiss2ri(tw0,ri,normal)
       dnx=twf(mfitnx)-tw0(mfitnx)
       dny=twf(mfitny)-tw0(mfitny)

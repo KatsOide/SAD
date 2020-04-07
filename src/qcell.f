@@ -443,15 +443,14 @@ c                enddo
 c        write(*,'(1p6g15.7)')(r(i,1:6),i=1,6)
         call teigen(r,ri,ceig,6,6)
         call tnorm(r,ceig,0)
-        ri=tinv6(tsymp(r))
+        r=tsymp(r)
+        ri=tinv6(r)
 c        call tsymp(r)
 c        call tinv6(r,ri)
 c       write(*,'(1p6g15.7)')(ri(i,1:6),i=1,6)
        normali=.true.
       else
-        tw1=twiss(fbound%lb,idp,1:ntwissfun)
-c        write(*,*)'qcell61 ',fbound%lb,tw1(mfitnx),tw1(mfitny)
-        call etwiss2ri(tw1,ri,normali)
+        ri=etwiss2ri(twiss(fbound%lb,idp,1:ntwissfun),normali)
         r=tinv6(ri)
 c        call tinv6(ri,r)
       endif

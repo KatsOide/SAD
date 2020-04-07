@@ -988,8 +988,7 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
         else
           tw1=twiss(l,0,1:ntwissfun)
           cod=tw1(mfitdx:mfitddp)
-          call etwiss2ri(tw1,ri,normal)
-          trans=tinv6(ri)
+          trans=tinv6(etwiss2ri(tw1,normal))
 c          call tinv6(ri,trans)
           call tturne1(trans,cod,beam,srot,
      $         i00,i00,i00,0,
@@ -1017,7 +1016,7 @@ c          write(*,'(a,1p8g15.7)')'qtwissfrac ',fr,sgr2,cod
         endif
 c        write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6)
 c        call tinv6(trans,ri)
-        call tfetwiss(tinv6(trans),cod,ftwiss,normal)
+        ftwiss=tfetwiss(tinv6(trans),cod,normal)
         ftwiss(mfitnx)=ftwiss(mfitnx)+twiss(l,0,mfitnx)
         ftwiss(mfitny)=ftwiss(mfitny)+twiss(l,0,mfitny)
         ftwiss(mfitnz)=ftwiss(mfitnz)+twiss(l,0,mfitnz)

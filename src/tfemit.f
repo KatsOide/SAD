@@ -112,7 +112,7 @@ c        ilist(2,iwakepold+6)=ifsize
         call rotri(is,ris)
         dummy=dnotanumber
         call setiamat(iamat,ris,codin,beam,dummy,trans)
-        call tfetwiss(ris,codin,param(iptwiss),
+        param(iptwiss:iptwiss+ntwissfun-1)=tfetwiss(ris,codin,
      $       twiss(is,0,mfitdetr) .lt. 1.d0)
       endif
       if(mode .eq. 3 .and. intra)then

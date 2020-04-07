@@ -794,8 +794,7 @@ c     $       twiss(l,idp,mfitzx:mfitzpy)
       use temw
       implicit none
       integer*4 l,idp,lorg,l0
-      real*8 trans(6,6),ti(6,6),twi(ntwissfun),cod(6),
-     $     beam(21),ril(6,6),gr
+      real*8 trans(6,6),ti(6,6),twi(ntwissfun),cod(6),beam(21),gr
       logical*4 norm
       if(trpt)then
         gr=gammab(l)/gammab(max(1,lorg-1))
@@ -814,11 +813,10 @@ c        call tmultr(ti,ri,6)
       else
         l0=lorg
         twi=twiss(lorg,idp,1:ntwissfun)
-        call etwiss2ri(twi,ril,norm)
-        ti=matmul(ril,ti)
+        ti=matmul(etwiss2ri(twi,norm),ti)
 c        call tmultr(ti,ril,6)
       endif
-      call tfetwiss(ti,cod,twi,norm)
+      twi=tfetwiss(ti,cod,norm)
       if(l .eq. 1)then
         twi(mfitnx)=0.d0
         twi(mfitny)=0.d0
@@ -858,10 +856,9 @@ c      write(*,*)'setetwiss ',twi(mfitddp),rgb
       use temw
       implicit none
       integer*4 i
-      real*8 tw1(ntwissfun),ra(6,6),trans(6,6),ti(6,6)
+      real*8 tw1(ntwissfun),trans(6,6),ti(6,6)
       logical*4 normal
-      call etwiss2ri(tw1,ra,normal)
-      ti=matmul(ra,matmul(trans,r))
+      ti=matmul(etwiss2ri(tw1,normal),matmul(trans,r))
 c      ti=r
 c      call tmultr(ti,trans,6)
 c      call tmultr(ti,ra,6)

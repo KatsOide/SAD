@@ -72,12 +72,12 @@
       implicit none
       integer*4 l1,l2
       real*8 trans(6,6),tw1(ntwissfun),tw2(ntwissfun),
-     $     ri1(6,6),ri2(6,6),v(6),
+     $     ri1(6,6),v(6),
      $     dnx,dny,dnz,cx,sx,cy,sy,cz,sz
       logical*4 normal1,normal2
       tw1=twiss(l1,0,1:ntwissfun)
       tw2=twiss(l2,0,1:ntwissfun)
-      call etwiss2ri(tw1,ri1,normal1)
+      ri1=etwiss2ri(tw1,normal1)
       dnx=tw2(mfitnx)-tw1(mfitnx)
       dny=tw2(mfitny)-tw1(mfitny)
       dnz=tw2(mfitnz)-tw1(mfitnz)
@@ -93,8 +93,7 @@
       trans(4,:)=-sy*ri1(3,:)+cy*ri1(4,:)
       trans(5,:)= cz*ri1(5,:)+sz*ri1(6,:)
       trans(6,:)=-sz*ri1(5,:)+cz*ri1(6,:)
-      call etwiss2ri(tw2,ri2,normal2)
-      trans=matmul(tinv6(ri2),trans)
+      trans=matmul(tinv6(etwiss2ri(tw2,normal2)),trans)
 c      call tinv6(ri2,ri2i)
 c      call tmultr(trans,ri2i,6)
       if(.not. normal2)then

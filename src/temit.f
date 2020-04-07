@@ -53,6 +53,7 @@ c     Inverse matrix of r
      $     tfinitemip,tsetr0,tinv6,tsymp
 
       contains
+
       real*8 function tinv6(ra) result(rinv)
       implicit none
       real*8, intent(in):: ra(6,6)
@@ -195,11 +196,11 @@ c      call tfdebugprint(kx,'initemip',1)
       return
       end subroutine
 
-      subroutine tfetwiss(r,cod,twiss,normi)
+      real*8 function tfetwiss(r,cod,normi) result(twiss)
       use ffs
       implicit none
       real*8 , intent(in):: r(6,6),cod(6)
-      real*8 , intent(out):: twiss(ntwissfun)
+      dimension twiss(ntwissfun)
       real*8 hi(6,6)
       real*8 ax,ay,az,axy,f,detm,his(4),
      $     uz11,uz12,uz21,uz22,
@@ -349,12 +350,14 @@ c      crz=sqrt(uz12**2+uz22**2)
       twiss(mfitbz)=bz22**2
       twiss(mfitnz)=atan2(sz,cz)
       return
-      end subroutine
+      end function
 
-      subroutine etwiss2ri(twiss1,ria,normal)
+      real*8 function etwiss2ri(twiss1,normal) result(ria)
       use ffs
       implicit none
-      real*8 twiss1(ntwissfun),ria(6,6),h(4,6),br(4,4),
+      real*8 , intent(in)::twiss1(ntwissfun)
+      dimension ria(6,6)
+      real*8 h(4,6),br(4,4),
      $     hx11,hx12,hx21,hx22,
      $     hy11,hy12,hy21,hy22,
      $     ex,epx,ey,epy,zx,zpx,zy,zpy,
@@ -515,7 +518,7 @@ c      crz=sqrt(uz12**2+uz22**2)
       ria(5,1:6)=ria(5,1:6)/sqrbz
       ria(6,1:6)=ria(6,1:6)*sqrbz+ria(5,1:6)*az
       return
-      end subroutine
+      end function
 
       subroutine tfnormalcoord(isp1,kx,irtc)
       use tfstk
@@ -523,7 +526,6 @@ c      crz=sqrt(uz12**2+uz22**2)
       implicit none
       type (sad_descriptor) kx
       integer*4 isp1,irtc,itfmessage
-      real*8 rn(6,6)
       logical*4 normal
       type (sad_rlist), pointer :: kl
       if(isp .ne. isp1+1)then
@@ -535,8 +537,7 @@ c      crz=sqrt(uz12**2+uz22**2)
      $       '"Real List of Length 28"')
         return
       endif
-      call etwiss2ri(kl%rbody(1:ntwissfun),rn,normal)
-      kx=kxm2l(rn,6,6,6,.false.)
+      kx=kxm2l(etwiss2ri(kl%rbody(1:ntwissfun),normal),6,6,6,.false.)
       irtc=0
       return
       end subroutine
@@ -2290,7 +2291,7 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
      $     .and. abs(dble(cd(5))) .lt. 1.d-6
      1     .and. abs(dble(cd(6))) .lt. 1.d-6) .and. fndcod
       params(ipnx:ipnz)=imag(cd(4:6))/pi2
-      call tfetwiss(ri,cod,params(iptwiss),.true.)
+      params(iptwiss:iptwiss+ntwissfun-1)=tfetwiss(ri,cod,.true.)
       if(pri)then
         if(lfno .gt. 0)then
           do i=1,ntwissfun
@@ -2374,18 +2375,7 @@ c            enddo
       if(.not. calem)then
         return
       endif
-c$$$      do i=1,6
-c$$$        do j=1,6
-c$$$          s=0.d0
-c$$$          do k=1,6
-c$$$            s=s+trans(j,k+6)*r(k,i)
-c$$$          enddo
-c$$$          trans(j,i)=s
-c$$$        enddo
-c$$$      enddo
-c      trans(:,1:6)=matmul(trans(:,7:12),r)
       trans(:,1:6)=matmul(ri,matmul(trans(:,7:12),r))
-c      call tmultr(trans,ri,6)
       do i=1,5,2
         cd(int(i/2)+1)=dcmplx((trans(i,i)+trans(i+1,i+1))*.5d0,
      1                   (trans(i,i+1)-trans(i+1,i))*.5d0)/cc(i)
@@ -2458,8 +2448,6 @@ c      call tmultr(trans,ri,6)
       endif
       btr=0.d0
       trans(:,7:12)=0.d0
-c      call tclr(btr,441)
-c      call tclr(trans(1,7),36)
       do i=1,5,2
         tune=imag(cd(int(i/2)+4))
         trans(i  ,i+6)= cos(tune)
@@ -3097,6 +3085,7 @@ c     write(*,*)'temit ',eemy,emy1
 10    continue
       return
       end
+
       subroutine setiamat(iamat,ri,codin,beam1,emit1,trans)
       use tfstk
       implicit none
