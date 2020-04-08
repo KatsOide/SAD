@@ -50,7 +50,7 @@ c     Inverse matrix of r
       real*8 , parameter :: toln=0.1d0
 
       public :: tfetwiss,etwiss2ri,tfnormalcoord,toln,
-     $     tfinitemip,tsetr0,tinv6,tsymp
+     $     tfinitemip,tsetr0,tinv6,tsymp,tmultr45
 
       contains
 
@@ -102,6 +102,7 @@ c     Inverse matrix of r
       integer*4 i
       real*8 , intent(in)::trans(6,6)
       dimension ri(6,6)
+c  gfortran up to 9 generates a warning on uninitialized..., which is said to be a bug in gcc...
       ri=matmul(trans,tinv6(trans))
 c      call tinv6(trans,ri)
 c      call tmultr(ri,trans,6)
@@ -111,6 +112,56 @@ c      call tmultr(ri,trans,6)
       enddo
       ri=matmul(ri,trans)
 c      call tmultr(trans,ri,6)
+      return
+      end function
+
+      real*8 function tmultr45(a,b) result(c)
+      implicit none
+      real*8 ,intent(in)::a(4,5),b(4,5)
+      dimension c(4,5)
+c      real*8 v1,v2,v3,v4
+      c=matmul(b(:,1:4),a)
+      c(:,5)=c(:,5)+b(:,5)
+c$$$      v1=a(1,1)
+c$$$      v2=a(2,1)
+c$$$      v3=a(3,1)
+c$$$      v4=a(4,1)
+c$$$      c(1,1)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
+c$$$      c(2,1)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
+c$$$      c(3,1)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
+c$$$      c(4,1)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
+c$$$      v1=a(1,2)
+c$$$      v2=a(2,2)
+c$$$      v3=a(3,2)
+c$$$      v4=a(4,2)
+c$$$      c(1,2)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
+c$$$      c(2,2)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
+c$$$      c(3,2)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
+c$$$      c(4,2)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
+c$$$      v1=a(1,3)
+c$$$      v2=a(2,3)
+c$$$      v3=a(3,3)
+c$$$      v4=a(4,3)
+c$$$      c(1,3)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
+c$$$      c(2,3)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
+c$$$      c(3,3)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
+c$$$      c(4,3)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
+c$$$      v1=a(1,4)
+c$$$      v2=a(2,4)
+c$$$      v3=a(3,4)
+c$$$      v4=a(4,4)
+c$$$      c(1,4)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
+c$$$      c(2,4)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
+c$$$      c(3,4)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
+c$$$      c(4,4)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
+c$$$      v1=a(1,5)
+c$$$      v2=a(2,5)
+c$$$      v3=a(3,5)
+c$$$      v4=a(4,5)
+c$$$      c(1,5)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4+b(1,5)
+c$$$      c(2,5)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4+b(2,5)
+c$$$      c(3,5)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4+b(3,5)
+c$$$      c(4,5)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4+b(4,5)
       return
       end function
 

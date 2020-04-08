@@ -6,6 +6,7 @@
       use ffs_pointer
       use sad_main
       use tffitcode
+      use temw, only:tmultr45
       implicit none
       type (sad_comp), pointer::cmp
       integer*4 nfam,nut,
@@ -13,7 +14,7 @@
      $     iutk,iutl,i,k1
       real*8 dtwiss(mfittry),dcod(6),dcod2(6),dtrans(4,5),
      $     trans(4,5),trans1(4,5),dcod1(6),dtrans1(4,5),
-     $     ctrans(27,-nfam:nfam),g1,dir,psi1,psi2,dt1,dt2,
+     $     ctrans(4,7,-nfam:nfam),g1,dir,psi1,psi2,dt1,dt2,
      $     r,gr,detp,sqrdet,ddetp,dsqr,
      $     x11,x12,x21,x22,dx11,dx12,dx21,dx22,
      $     ax0,bx0,gx0,dax,dbx,
@@ -140,7 +141,7 @@ c     $       4100),ke
       if(dzfit .or. (nzcod .and. disp .and. .not. cell))then
         call qddtwiss(k,k1,l,
      $       trans,trans1,dcod,idp,
-     $       ctrans(1,idp),iclast(idp),trpt)
+     $       ctrans(1,1,idp),iclast(idp),trpt)
         dcod1(5)=dcod(5)
       endif
       call qgettru(utwiss(1,idp,iutk),utwiss(1,idp,iutl),
@@ -442,18 +443,19 @@ c      return
       use ffs_fit, only:nut
       use tffitcode
       use ffs, only:ffs_bound
+      use temw, only:tmultr45
       implicit none
       type (ffs_bound) fbound,fbound1
       real*8 eps
       parameter (eps=1.d-4)
       integer*4 k,l,idp,itwk,itwl,
      $     iclast,k1,itwk1,ibg,ibe,itwe,ibe1,itwbe
-      real*8 dtrans(4,5),dcod(6),trans(20),trans2s(20),
+      real*8 dtrans(4,5),dcod(6),trans(4,5),
      $     trans2(4,5),trans3(4,5),trans1(4,5),transe(4,5),
      $     transe2(4,5),cod2(6),code(6),dcode(6),
-     $     w,ctrans(27)
+     $     w,ctrans(4,7)
       logical*4 over,trpt
-      equivalence (trans2,trans2s)
+c      equivalence (trans2,trans2s)
       itwk=itwissp(k)
       itwk1=itwissp(k1)
       itwl=itwissp(l)
@@ -463,13 +465,14 @@ c      return
       call tfbndsol(k,ibg,ibe)
       call tffsbound1(k1,l,fbound)
       if(iclast .gt. 0 .and. iclast .le. fbound%le .and.
-     $     (iclast .ne. fbound%le .or. ctrans(27) .le. fbound%fe))then
-        cod2(1:5)=ctrans(21:25)
+     $     (iclast .ne. fbound%le .or. ctrans(4,7) .le. fbound%fe))then
+        cod2(1:4)=ctrans(:,6)
+        cod2(5)=ctrans(1,7)
         fbound1=fbound
         fbound1%lb=iclast
-        fbound1%fb=ctrans(27)
+        fbound1%fb=ctrans(4,7)
         call qcod(1,fbound1,trans3,cod2,.true.,over)
-        call tmultr45(ctrans,trans3,trans2)
+        trans2=tmultr45(ctrans(:,1:5),trans3)
       else
         cod2(1:5)=utwiss(mfitdx:mfitdz, idp,itwk1)+w*dcod(1:5)
         if(ibg .eq. 0 .or. l .le. max(ibg,ibe))then
@@ -494,7 +497,7 @@ c      return
             call qcod(1,fbound1,trans3,cod2,.true.,over)
             trans3(2,5)=trans3(2,5)-cod2(2)+code(2)
             trans3(4,5)=trans3(4,5)-cod2(4)+code(4)
-            call tmultr45(trans3,transe2,trans)
+            trans=tmultr45(trans3,transe2)
           else
             itwbe=itwissp(ibe)
             call tftmatu(utwiss(1,idp,itwk1),
@@ -523,14 +526,14 @@ c      return
             call qcod(1,fbound1,trans2,cod2,.true.,over)
             transe(2,5)=transe(2,5)-w*dcode(2)
             transe(4,5)=transe(4,5)-w*dcode(4)
-            call tmultr45(transe,trans2,transe)
+            transe=tmultr45(transe,trans2)
             call tftmatu(utwiss(1,idp,itwk1),
      $           utwiss(1,idp,itwl),
      $           0.d0,0.d0,
      $           transe2,k1,l,.false.,trpt)
           endif
           cod2(1:5)=utwiss(mfitdx:mfitdz, idp,itwl)
-          call tmultr45(transe,transe2,trans2)
+          trans2=tmultr45(transe,transe2)
         endif
       endif
 c      call tmov(trans,transe2,20)
@@ -538,19 +541,17 @@ c      write(*,*)'qddtws-2 '
 c      write(*,'(1p5g13.5)')((transe2(i,j),j=1,5),i=1,4)
 c      write(*,'(1p5g13.5)')((trans2(i,j),j=1,5),i=1,4)
       iclast=fbound%le
-      ctrans(27)=fbound%fe
-      ctrans(1:20)=trans2s(1:20)
-      trans2s(1:20)=(trans2s(1:20)-trans(1:20))/w
-c      do i=1,20
-c        ctrans(i)=trans2s(i)
-c        trans2s(i)=(trans2s(i)-trans(i))/w
-c      enddo
+      ctrans(4,7)=fbound%fe
+      ctrans(:,1:5)=trans2
+      trans2=(trans2-trans)/w
+c      trans2s(1:20)=(trans2s(1:20)-trans(1:20))/w
       dcod(5)=(cod2(5)-utwiss(mfitdz,idp,itwl))/w
-      ctrans(21:26)=cod2(1:6)
+      ctrans(:,6)=cod2(1:4)
+      ctrans(1:2,7)=cod2(5:6)
       call qgettru(utwiss(1,idp,itwk),utwiss(1,idp,itwk1),
      $     utwiss(3,idp,nut),utwiss(6,idp,nut),
      $     trans1,k,k1,.true.,.true.,trpt)
-      call tmultr45(trans1,trans2,transe)
+      transe=tmultr45(trans1,trans2)
       call tadd(transe,dtrans,dtrans,20)
       return
       end
@@ -564,14 +565,14 @@ c      enddo
       use tffitcode
       use mackw
       use ffs_seg
+      use temw, only:tmultr45
       implicit none
       type (sad_comp), pointer :: cmp
       real*8 eps,vmin
       parameter (eps=1.d-6,vmin=1.d-6)
       integer*4 ke,iv,idp,j,kk1,je
-      real*8 dtrans(4,5),dcod(6),v0,wv,dv,trans2(20),
-     $     cod2(20),trans1(20),cod1(20),trans(4,5),trans3(4,5)
-      equivalence (trans2,trans3)
+      real*8 dtrans(4,5),dcod(6),v0,wv,dv,trans2(4,5),
+     $     cod2(20),trans1(4,5),cod1(20),trans(4,5)
       logical*4 over
       call compelc(j,cmp)
       v0=tfvalvar(j,iv)
@@ -610,58 +611,11 @@ c      write(*,'(a,i5,1p12g13.5)')'qdtrans ',iv,v0+dv,trans2(1:4)
       cod1(1:6)=utwiss(mfitdx:mfitddp,idp,kk1)
       call qtwiss1(0.d0,idp,j,je,trans1,cod1,.true.,over)
 c      write(*,'(a,i5,1p12g13.5)')'qdtrans ',iv,trans1(1:4)
-      trans2(1:20)=(trans2(1:20)-trans1(1:20))/(2.d0*dv)
+      trans2=(trans2-trans1)/(2.d0*dv)
       dcod(1:5)=(cod2(1:5)-cod1(1:5))/(2.d0*dv)
       cmp%value(iv)=v0
 c      write(*,'(a,i5,1p8g15.7)')'qdtrans ',iv,dv,trans2(1:4)
       call qtentu(trans,cod1,utwiss(1,idp,kk1),.true.)
-      call tmultr45(trans,trans3,dtrans)
-      return
-      end
-
-      subroutine tmultr45(a,b,c)
-      implicit none
-      real*8 a(4,5),b(4,5),c(4,5)
-      real*8 v1,v2,v3,v4
-      v1=a(1,1)
-      v2=a(2,1)
-      v3=a(3,1)
-      v4=a(4,1)
-      c(1,1)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
-      c(2,1)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
-      c(3,1)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
-      c(4,1)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
-      v1=a(1,2)
-      v2=a(2,2)
-      v3=a(3,2)
-      v4=a(4,2)
-      c(1,2)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
-      c(2,2)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
-      c(3,2)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
-      c(4,2)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
-      v1=a(1,3)
-      v2=a(2,3)
-      v3=a(3,3)
-      v4=a(4,3)
-      c(1,3)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
-      c(2,3)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
-      c(3,3)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
-      c(4,3)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
-      v1=a(1,4)
-      v2=a(2,4)
-      v3=a(3,4)
-      v4=a(4,4)
-      c(1,4)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
-      c(2,4)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
-      c(3,4)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
-      c(4,4)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
-      v1=a(1,5)
-      v2=a(2,5)
-      v3=a(3,5)
-      v4=a(4,5)
-      c(1,5)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4+b(1,5)
-      c(2,5)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4+b(2,5)
-      c(3,5)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4+b(3,5)
-      c(4,5)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4+b(4,5)
+      dtrans=tmultr45(trans,trans2)
       return
       end

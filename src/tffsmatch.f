@@ -816,7 +816,7 @@ c     call tfdebugprint(kx,'varfun',1)
      $     ii,ltyp,jj,kc,ik1,nparallel,
      $     iclast(-nfam:nfam),ik,nk,kk1,
      $     ip,ipr,istep,npr(nparallel),fork_worker
-      real*8 s,dtwiss(mfittry),coup,posk,wk,ctrans(27,-nfam:nfam)
+      real*8 s,dtwiss(mfittry),coup,posk,wk,ctrans(4,7,-nfam:nfam)
       logical*4 col(2,nqcol),disp,nzcod
       integer*4 , parameter :: minnqu=512
       call tffscoupmatrix(kele2,kcm,lfno)
