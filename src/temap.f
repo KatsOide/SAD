@@ -468,7 +468,8 @@ c      ktastk(isp)=ktflist+ktfgeol(geo(1,1,l))
       levele=itfdownlevel()
       isp=isp0
       return
- 9000 call tmov(geo(1,1,l),geo(1,1,l+1),12)
+ 9000 geo(:,:,l+1)=geo(:,:,l)
+c     call tmov(geo(1,1,l),geo(1,1,l+1),12)
       pos(l+1)=pos(l)
       levele=itfdownlevel()
       isp=isp0

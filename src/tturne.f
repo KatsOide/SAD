@@ -703,7 +703,8 @@ c      call tfmemcheckprint('tturne-end0',0,.true.,irtc)
         endif
         if(plotib)then
           if(bmaccum)then
-            call tadd(bmh,bmi,bmi,21)
+            bmi=bmi+bmh
+c            call tadd(bmh,bmi,bmi,21)
           endif
           call tconvbm(bmi,bmir)
           dlist(iabmi+iend+1)=

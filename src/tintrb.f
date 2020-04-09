@@ -60,8 +60,9 @@ c      hi=p0*pr*sqrt(1.d0+1.d0/(p0*pr)**2)
 c      hi=sqrt(1.d0+(pr*p0)**2)
       trans1(5,6)=h0/hi**3*alx+s*alz
       if(wspac)then
-        call tmov(beam(22),bmi,21)
-        call tadd(bmi,beam,bmi,21)
+        bmi=beam(22:42)+beam(1:21)
+c        call tmov(beam(22),bmi,21)
+c        call tadd(bmi,beam,bmi,21)
         call tmulbs(bmi,trans1,.false.)
         call twspace(transsp,cod,al,bmi)
 c        call tmov(trans1,trans2,36)
@@ -75,11 +76,12 @@ c        call tmultr(trans,trans2,irad)
         call tmulbs(beam,trans2,.false.)
       endif
       if(intra)then
-        call tmov(beam(22),bmi,21)
+        bmi=beam(22:42)+beam(1:21)
+c        call tmov(beam(22),bmi,21)
 c        call tmov(trans,transa,36)
 c      call tadd(transa,trans(1,7),transa,36)
 c        call tmulbs(bmi,transa,.false.)
-        call tadd(bmi,beam,bmi,21)
+c        call tadd(bmi,beam,bmi,21)
         if(caltouck)then
           transw=matmul(trans(:,1:6),diagr)
 c          call tmov(diagr,transw,36)
@@ -236,7 +238,8 @@ c     endif
         bmi(ia(6,6))=ci*pl(3,3)
 c        call tinv6(trans1,trans2)
         call tmulbs(bmi,tinv6(trans1),.false.)
-        call tadd(beam,bmi,beam,21)
+        beam(1:21)=bmi+beam(1:21)
+c        call tadd(beam,bmi,beam,21)
 c        call tinv6(trans,transa)
         call tmulbs(bmi,tinv6(trans(:,1:6)),.false.)
       endif

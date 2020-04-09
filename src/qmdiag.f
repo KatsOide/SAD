@@ -2,7 +2,7 @@
      1     tm21,tm22,tm23,tm24,
      1     tm31,tm32,tm33,tm34,
      1     tm41,tm42,tm43,tm44,
-     1     r1,r2,r3,r4,c,stab,lfno)
+     1     r1,r2,r3,r4,c,stab,nanq,lfno)
 c     
 c---- This subroutine find a transformation matrix---
 c     which diagonalizes 4*4 transfer matrix.
@@ -18,16 +18,18 @@ c     (r,    c    )
 c---------------------------------------------------
       use tfstk, only: ktfenanq
       implicit none
-      real*8 tm11,tm12,tm13,tm14,
+      real*8 , intent(in)::tm11,tm12,tm13,tm14,
      1     tm21,tm22,tm23,tm24,
      1     tm31,tm32,tm33,tm34,
-     1     tm41,tm42,tm43,tm44,
-     1     r1,r2,r3,r4,c,trpq,trab2,c2,aa,
+     1     tm41,tm42,tm43,tm44
+      real*8 , intent(out)::r1,r2,r3,r4,c
+      real*8 trpq,trab2,c2,aa,
      $     detn,trqk,trqj,aaa,bbb,ccc,p1,p2,p3,p4,trp,trqkj2,
      $     trql,xx11,xx12,xx21,xx22,yy11,yy12,yy21,yy22
-      integer*4 lfno
-      logical*4 stab
+      integer*4 , intent(inout)::lfno
+      logical*4, intent(out):: stab,nanq
       stab=.true.
+      nanq=.false.
 c     
       trpq = tm11 + tm22 - tm33 - tm44
 c.....trpq =(TrP-TrQ)
@@ -48,6 +50,7 @@ c      print *,'===qmdiag=== trab2 =',trab2
      $       tm11,tm22,tm33,tm44
         lfno=0
         stab=.false.
+        nanq=.true.
         return
       endif
       if( trab2.ge.1.d-14 ) then

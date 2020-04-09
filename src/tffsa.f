@@ -1344,7 +1344,9 @@ c      endif
      $         'Info-Element values are not expanded.',' ')
       endif
       if(fitflg)then
-        call tmov(rlist(ifvalvar),rlist(ifvalvar+nve),flv%nvar)
+        rlist(ifvalvar+nve:ifvalvar+nve+flv%nvar-1)=
+     $       rlist(ifvalvar:ifvalvar+flv%nvar-1)
+c        call tmov(rlist(ifvalvar),rlist(ifvalvar+nve),flv%nvar)
       endif
 c      if(lfni .gt. 100)then
 c        write(*,*)'tffsa-inicond-0 ',lfni,ipoint,lrecl,ios

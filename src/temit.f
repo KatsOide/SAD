@@ -2540,7 +2540,7 @@ c        do j=1,21
           btr(1:21,k3)=btr(1:21,k3)*sqr2
 c        enddo
       enddo
-      do  i=1,21
+      do i=1,21
         btr(i,i)=btr(i,i)+1.d0
         emit(i)=0.d0
       enddo

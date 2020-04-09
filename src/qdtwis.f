@@ -551,8 +551,9 @@ c      trans2s(1:20)=(trans2s(1:20)-trans(1:20))/w
       call qgettru(utwiss(1,idp,itwk),utwiss(1,idp,itwk1),
      $     utwiss(3,idp,nut),utwiss(6,idp,nut),
      $     trans1,k,k1,.true.,.true.,trpt)
-      transe=tmultr45(trans1,trans2)
-      call tadd(transe,dtrans,dtrans,20)
+      dtrans=tmultr45(trans1,trans2)+dtrans
+c      transe=tmultr45(trans1,trans2)
+c      call tadd(transe,dtrans,dtrans,20)
       return
       end
 

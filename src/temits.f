@@ -1242,13 +1242,13 @@ c      call tmov65(rt,tr1)
      $     a11,a12,a22,a33,a34,a44,
      $     cosamux,sinamux,cosamuy,sinamuy,
      $     ax,bx,ay,by,amux,amuy
-      logical*4 stab
+      logical*4 stab,nanq
       call qmdiag(
      $     trans(1,1),trans(1,2),trans(1,3),trans(1,4),
      $     trans(2,1),trans(2,2),trans(2,3),trans(2,4),
      $     trans(3,1),trans(3,2),trans(3,3),trans(3,4),
      $     trans(4,1),trans(4,2),trans(4,3),trans(4,4),
-     $     r1,r2,r3,r4,amu,stab,lfno)
+     $     r1,r2,r3,r4,amu,stab,nanq,lfno)
 c     amu=sqrt(1.d0-r1*r4+r2*r3)
       r1a=r1/amu
       r2a=r2/amu
