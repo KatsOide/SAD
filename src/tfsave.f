@@ -49,19 +49,9 @@
           call tfsavevar(i,ntou)
           if(lt .eq. icMARK)then
             if(l .eq. 1)then
-c              do 30 k=1,ntwissfun
               rlist(j+1:j+ntwissfun)=cmp%value(1:ntwissfun)
-c     $             rlist(latt(1)+1:latt(1)+ntwissfun)
-c                rlist(j+k)=rlist(latt(1)+k)
-c 30           continue
             else
-c              do 31 k=1,ntwissfun
               rlist(j+1:j+ntwissfun)=twiss(l,0,1:ntwissfun)
-c                rlist(j+k)=twiss(l,0,k)
-c 31           continue
-c              write(*,*)'tfsave ',l,
-c     $             ilist(1,latt(l)+ilist(1,latt(l))),
-c     $             rlist(j+1),rlist(j+4)
               if(direlc(l) .lt. 0.d0)then
                 rlist(j+mfitax)=-rlist(j+mfitax)
                 rlist(j+mfitay)=-rlist(j+mfitay)
@@ -84,7 +74,6 @@ c     $             rlist(j+1),rlist(j+4)
             rlist(j+ky_DP_MARK)=dpmax
           elseif(ival(i) .gt. 0)then
             call tfvcopycmp(cmp,cmpd,ival(i),1.d0/errk(1,l))
-c            rlist(j+ival(i))=cmp%value(ival(i))/errk(1,l)
           endif
         endif
       enddo
@@ -226,8 +215,6 @@ c              cmp%value(ival(i))=rlist(j+ival(i))*errk(1,l)
         if(ival(l) .gt. 0)then
           cmp%value(ival(l))=cmp%value(ival(l))*errk(1,l)
         endif
-c        cmp%value(1:kytbl(kwMAX,lt)-1)=
-c     $       rlist(j+1:j+kytbl(kwMAX,lt)-1)
       enddo
       return
       end

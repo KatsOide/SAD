@@ -46,7 +46,7 @@
       real*8 chi0(3),trdtbl(3,6),rfromk
       logical*4 err,new,cmd,open98,abbrev,ftest,
      $     frefix,exist,init,trpt0,expnd,chguse,visit,
-     $     byeall,expndc,tfvcomp,tffsinitialcond,
+     $     byeall,tfvcomp,tffsinitialcond,
      $     geocal0,busy
       save open98,exist,init,nmon,nster
       save busy
@@ -386,6 +386,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
           call tfclearlinep()
           call cssetp(next)
           call tffssaveparams(2,ilattp,err)
+          calexp=expnd
           expnd=expnd .and. .not. err
           call tclrpara(elatt,nlat-1)
           if(visit)then
@@ -528,13 +529,14 @@ ckikuchi ... next 5 lines added     (8/17/'90)
       elseif(abbrev(word,'CAL_CULATE','_'))then
         call tfcalc(word,nlist,flv%icalc,flv%ncalc,mfpnt,mfpnt1,exist)
         if(exist)then
-          expndc=.not. tfvcomp()
           if(abbrev(word,'NOEXP_AND','_'))then
             word=' '
-            expndc=.false.
+            calexp=.false.
           elseif(abbrev(word,'EXP_AND','_'))then
             word=' '
-            expndc=.true.
+            calexp=.true.
+          elseif(.not. keepexp)then
+            calexp=.not. tfvcomp()
           endif
           fitflg=.false.
           go to 1000
@@ -542,14 +544,15 @@ ckikuchi ... next 5 lines added     (8/17/'90)
           go to 12
         endif
       elseif(word .eq. 'GO')then
-        expndc=.not. tfvcomp()
         call peekwd(word,next)
         if(abbrev(word,'NOEXP_AND','_'))then
           call cssetp(next)
-          expndc=.false.
+          calexp=.false.
         elseif(abbrev(word,'EXP_AND','_'))then
           call cssetp(next)
-          expndc=.true.
+          calexp=.true.
+        elseif(.not. keepexp)then
+          calexp=.not. tfvcomp()
         endif
         word=' '
         fitflg=.true.
@@ -1334,7 +1337,7 @@ c      endif
 c      if(lfni .gt. 100)then
 c        write(*,*)'tffsa-setupcoup-1 ',lfni,ipoint,lrecl,ios
 c      endif
-      if(expndc)then
+      if(calexp)then
         call tffsadjustvar
 c      if(lfni .gt. 100)then
 c        write(*,*)'tffsa-adjvar ',lfni,ipoint,lrecl,ios
@@ -1666,16 +1669,6 @@ c          write(*,*)'tffssave -2: ',isave,ilattp
       return
       end
 
-      subroutine tffsadjustvar
-      use tfstk
-      use ffs
-      use tffitcode
-      implicit none
-      call tffsadjust
-      call tfinitvar
-      return
-      end
-
       logical*4 function tffsinitialcond(lfno,err)
       use tfstk
       use ffs_fit
@@ -1822,12 +1815,10 @@ c            write(*,*)'setupcouple ',j,ik,key(1:10)
               do k=1,nlat-1
                 if(ilist(k,ifele1) .eq. -ie)then
                   iet=kele2(k)
-c                  iet=klist(ifele2+k-1)
                   if(iet .eq. 0)then
                     iet=ktaloc(m+1)
                     ilist(1,iet)=0
                     kele2(k)=iet
-c                    klist(ifele2+k-1)=iet
                   endif
                   nk=ilist(1,iet)+1
 c                  write(*,*)'setupcouple ',k,iet,ik,nk
@@ -1835,24 +1826,20 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
                   ilist(2,iet+nk)=-ik
                   ilist(1,iet)=nk
                   kele2(nlat)=1
-c                  klist(ifele2+nlat-1)=1
                 endif
               enddo
             elseif(ik .gt. 0)then
               iet=kele2(ie)
-c              iet=klist(ifele2+ie-1)
               if(iet .eq. 0)then
                 iet=ktaloc(m+1)
                 ilist(1,iet)=0
                 kele2(ie)=iet
-c                klist(ifele2+ie-1)=iet
               endif
               nk=ilist(1,iet)+1
               ilist(1,iet+nk)=i
               ilist(2,iet+nk)=ik
               ilist(1,iet)=nk
               kele2(nlat)=1
-c              klist(ifele2+nlat-1)=1
             endif
           enddo
         endif

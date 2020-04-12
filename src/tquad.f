@@ -4,7 +4,6 @@
       use ffs_flag
       use tmacro
 c      use ffs_pointer, only:inext,iprev
-      use tfstk, only:ktfenanq
       use photontable,only:tsetphotongeo
       use sol,only:tsolrot
       use mathfun, only:pxy2dpz,sqrt1,akang

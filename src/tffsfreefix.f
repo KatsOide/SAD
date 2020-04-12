@@ -132,10 +132,9 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
               endif
             endif
           enddo LOOP_I_1
-          if(nvar .ge. nve)then
-            call termes(lfno,'Too many variables',' ')
-            return
-          endif
+          do while(nvar .ge. nve)
+            call tffsnvealloc
+          enddo
           LOOP_I_2: do i=1,nvar
             if(ivarele(i) .ge. kk)then
               do j=nvar,i,-1

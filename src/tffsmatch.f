@@ -45,6 +45,7 @@ c      include 'DEBUG.inc'
       integer*8 , external :: itmmapp
       real*8 , external :: tffsfmin, tweigh
       character ch
+      character*10 sexp
       integer*8 intffs,inumderiv,iexponent,inumw,iconvergence
       data intffs,inumderiv,iexponent,inumw,iconvergence /0,0,0,0,0/
 c
@@ -137,13 +138,18 @@ c          write(*,*)'tffsmatch ',chgini,nstab,nderiv
           endif
           convgo=r .le. rl
           fitflg=fitflg .and. nqcol .gt. 0
+          if(calexp)then
+            sexp='  CALEXP'
+          else
+            sexp='  NOCALEXP'
+          endif
           if(convgo)then
             write(lfno,9501)' Matched. (',r,')',
-     $           dpmax,dp0,wexponent,ch,offmw
+     $           dpmax,dp0,wexponent,ch,offmw,sexp
  9501       format(a,1pG11.4,a,
      $           ' DP =',0pf8.5,'  DP0 =',f8.5,
      $           '  ExponentOfResidual =',f4.1,a,
-     $           ' OffMomentumWeight =',f8.3)
+     $           ' OffMomentumWeight =',f8.3,a)
             fitflg=.false.
             if(.not. geomet)then
               call tfgeo(latt,.true.)
@@ -151,7 +157,7 @@ c          write(*,*)'tffsmatch ',chgini,nstab,nderiv
             exit do9000
           elseif(.not. fitflg)then
             write(lfno,9501)' Residual =',r,' ',
-     $           dpmax,dp0,wexponent,ch,offmw
+     $           dpmax,dp0,wexponent,ch,offmw,sexp
             exit do9000
           else
             if(chgini .and. cell)then

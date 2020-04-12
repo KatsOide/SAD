@@ -250,6 +250,8 @@ c$$${"RAD     ","        ","rad"},
 c$$${"FLUC    ","DAMPONLY","rfluct"},
 c$$${"RADCOD  ","        ","radcod"},
 c$$${"RADTAPER","        ","radtaper"},
+c$$${"KEEPEXP ","        ","keepexp"},
+c$$${"CALEXP  ","        ","calexp"},
 c$$${"CALC6D  ","CALC4D  ","calc6d"},
 c$$${"EMIOUT  ","        ","emiout"},
 c$$${"CODPLOT ","        ","codplt"},
@@ -306,51 +308,51 @@ c$$$susp;
         sequence
         logical*4 flags(1:0)
         logical*4
-     $  trpt,cell,rfsw,rad,
-     $  rfluct,radcod,radtaper,calc6d,
-     $  emiout,codplt,calcod,intra,
-     $  calpol,radpol,lwake,twake,
-     $  wspac,spac,selfcod,convgo,
-     $  cellstab,geocal,radlight,photons,
-     $  lossmap,sorg,intres,halfres,
-     $  sumres,diffres,ffsprmpt,convcase,
-     $  preservecase,suspend,k64,gauss,
-     $  fseed,bipol,pspac,orbitcal,
-     $  calopt,dapert,ideal,fourie,
-     $  trsize,simulate,absweit,jitter,
-     $  trgauss,smearp
+     $       trpt,cell,rfsw,rad,
+     $       rfluct,radcod,radtaper,calc6d,
+     $       keepexp,calexp,emiout,codplt,
+     $       calcod,intra,calpol,radpol,
+     $       lwake,twake,wspac,spac,
+     $       selfcod,convgo,cellstab,geocal,
+     $       radlight,photons,lossmap,sorg,
+     $       intres,halfres,sumres,diffres,
+     $       ffsprmpt,convcase,preservecase,suspend,
+     $       k64,gauss,fseed,bipol,
+     $       pspac,orbitcal,calopt,dapert,
+     $       ideal,fourie,trsize,simulate,
+     $       absweit,jitter,trgauss,smearp
       end type
 
-      integer*4 ,parameter :: nflag=50
+      integer*4 ,parameter :: nflag=52
       type (flagset), target, save :: fff
       character*8, save :: fname(1:nflag)=(/
      $  'TRPT    ','CELL    ','RFSW    ','RAD     ',
      $  'FLUC    ','RADCOD  ','RADTAPER','CALC6D  ',
-     $  'EMIOUT  ','CODPLOT ','COD     ','INTRA   ',
-     $  'POL     ','RADPOL  ','LWAKE   ','TWAKE   ',
-     $  'WSPAC   ','SPAC    ','SELFCOD ','CONV    ',
-     $  'STABLE  ','GEOCAL  ','RADLIGHT','PHOTONS ',
-     $  'LOSSMAP ','SORG    ','INTRES  ','HALFRES ',
-     $  'SUMRES  ','DIFFRES ','FFSPRMPT','CONVCASE',
-     $  'PRSVCASE','SUS     ','K64     ','GAUSS   ',
-     $  'FIXSEED ','BIPOL   ','PSPAC   ','ORBITCAL',
-     $  'CALOPT  ','DAPERT  ','IDEAL   ','FOURIER ',
-     $  'TRACKSIZ','SIMULATE','ABSW    ','JITTER  ',
-     $  'TRGAUSS ','BARYCOD '/),
+     $  'KEEPEXP ','CALEXP  ','EMIOUT  ','CODPLOT ',
+     $  'COD     ','INTRA   ','POL     ','RADPOL  ',
+     $  'LWAKE   ','TWAKE   ','WSPAC   ','SPAC    ',
+     $  'SELFCOD ','CONV    ','STABLE  ','GEOCAL  ',
+     $  'RADLIGHT','PHOTONS ','LOSSMAP ','SORG    ',
+     $  'INTRES  ','HALFRES ','SUMRES  ','DIFFRES ',
+     $  'FFSPRMPT','CONVCASE','PRSVCASE','SUS     ',
+     $  'K64     ','GAUSS   ','FIXSEED ','BIPOL   ',
+     $  'PSPAC   ','ORBITCAL','CALOPT  ','DAPERT  ',
+     $  'IDEAL   ','FOURIER ','TRACKSIZ','SIMULATE',
+     $  'ABSW    ','JITTER  ','TRGAUSS ','BARYCOD '/),
      $     sino(1:nflag)=(/
      $  'RING    ','INS     ','        ','        ',
      $  'DAMPONLY','        ','        ','CALC4D  ',
      $  '        ','        ','        ','        ',
      $  '        ','        ','        ','        ',
      $  '        ','        ','        ','        ',
-     $  'UNSTABLE','GEOFIX  ','        ','        ',
+     $  '        ','        ','UNSTABLE','GEOFIX  ',
      $  '        ','        ','        ','        ',
      $  '        ','        ','        ','        ',
-     $  '        ','        ','LEGACY  ','UNIFORM ',
-     $  'MOVESEED','UNIPOL  ','        ','        ',
-     $  'ORBONLY ','        ','REAL    ','        ',
-     $  '        ','OPERATE ','RELW    ','QUIET   ',
-     $  'TRUNI   ','        '/)
+     $  '        ','        ','        ','        ',
+     $  'LEGACY  ','UNIFORM ','MOVESEED','UNIPOL  ',
+     $  '        ','        ','ORBONLY ','        ',
+     $  'REAL    ','        ','        ','OPERATE ',
+     $  'RELW    ','QUIET   ','TRUNI   ','        '/)
 
       integer*8, pointer :: ifvlim,ifibzl,ifmult,ifklp,ifival,iftwissp,
      $     iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifdcomp,ifele,ifcoup,
@@ -576,19 +578,19 @@ c$$$susp;
       module ffs_flag
         use ffs0, only:fff
         logical*4, pointer ::flags(:),
-     $       rad,rfsw,radcod,calcod,
-     $       intra,trpt,emiout,gauss,
-     $       bipol,cell,ffsprmpt,dapert,
-     $       fseed,ideal,codplt,calc6d,
-     $       calpol,rfluct,k64,fourie,
-     $       trsize,simulate,absweit,jitter,
-     $       trgauss,lwake,twake,smearp,
-     $       radpol,convgo,cellstab,spac,
-     $       radlight,geocal,photons,wspac,
-     $       selfcod,pspac,convcase,preservecase,
-     $       lossmap,orbitcal,radtaper,sorg,
+     $       trpt,cell,rfsw,rad,
+     $       rfluct,radcod,radtaper,calc6d,
+     $       keepexp,calexp,emiout,codplt,
+     $       calcod,intra,calpol,radpol,
+     $       lwake,twake,wspac,spac,
+     $       selfcod,convgo,cellstab,geocal,
+     $       radlight,photons,lossmap,sorg,
      $       intres,halfres,sumres,diffres,
-     $       calopt,suspend
+     $       ffsprmpt,convcase,preservecase,suspend,
+     $       k64,gauss,fseed,bipol,
+     $       pspac,orbitcal,calopt,dapert,
+     $       ideal,fourie,trsize,simulate,
+     $       absweit,jitter,trgauss,smearp
         
         contains
         subroutine ffs_init_flag
@@ -623,6 +625,8 @@ c$$$susp;
         smearp=>fff%smearp
         radpol=>fff%radpol
         calc6d=>fff%calc6d
+        keepexp=>fff%keepexp
+        calexp=>fff%calexp
         cellstab=>fff%cellstab
         spac=>fff%spac
         radlight=>fff%radlight
@@ -1496,12 +1500,12 @@ c        enddo
           return
         endif
       enddo
-      if(flv%ntouch .lt. flv%nve*2)then
-        flv%ntouch=flv%ntouch+1
-c        write(*,*)'tftouch ',flv%ntouch,i,iv
-        itouchele(flv%ntouch)=i
-        itouchv(flv%ntouch)=iv
-      endif
+      do while(flv%ntouch .ge. flv%nve*2)
+        call tffsnvealloc
+      enddo
+      flv%ntouch=flv%ntouch+1
+      itouchele(flv%ntouch)=i
+      itouchv(flv%ntouch)=iv
       return
       end subroutine
 
@@ -1916,7 +1920,6 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
         ilist(nele,ifmult)=l
         ilist(l,ifele1)=nele
       enddo LOOP_L
-      nve=(nele+nlat)/2+10
       ifibzl =ktaloc(nlat*3/2+2)
       ifcoup=ktaloc(nlat)
       iferrk=ktaloc(nlat*2)
@@ -1929,12 +1932,8 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       ifklp =ktaloc(nele/2+1)
       ifiprev =ktaloc(nlat/2+1)
       ifinext =ktaloc(nlat/2+1)
-      ifvalvar=ktaloc(nve*2)
-      iftouchele=ktaloc(nve)
-      iftouchv=ktaloc(nve)
-      ifvvar=ktaloc(nve)
-      ifvarele=ktaloc(nve)
-      ifivcomp=ktaloc(nve)
+      nve=0
+      call tffsnvealloc
       ndim=1
       ndima=ndim*2+1
       ntwis =nlat*ndima
@@ -1963,6 +1962,51 @@ c      ilist(1,iwakepold+6)=int(iftwis)
 c      ilist(2,iwakepold+6)=int(ifsize)
       return
       end
+
+      subroutine tffsnvealloc
+      use tfstk
+      use ffs
+      use ffs_pointer
+      implicit none
+      integer*4 nve0
+      integer*8 ifvalvar1,iftouchele1,iftouchv1,
+     $     ifvvar1,ifvarele1,ifivcomp1
+      nve0=nve
+      nve=nve0+max(nele,128)
+      ifvalvar1=ktaloc(nve*2)
+      iftouchele1=ktaloc(nve)
+      iftouchv1=ktaloc(nve)
+      ifvvar1=ktaloc(nve)
+      ifvarele1=ktaloc(nve)
+      ifivcomp1=ktaloc(nve)
+      if(nve0 .ne. 0)then
+        klist(ifvalvar1:ifvalvar1+nve0*2-1)=
+     $       klist(ifvalvar:ifvalvar+nve*2-1)
+        klist(iftouchele1:iftouchele1+nve0-1)=
+     $       klist(iftouchele1:iftouchele+nve0-1)
+        klist(iftouchv1:iftouchv1+nve0-1)=
+     $       klist(iftouchv1:iftouchv+nve0-1)
+        klist(ifvvar1:ifvvar1+nve0-1)=
+     $       klist(ifvvar1:ifvvar+nve0-1)
+        klist(ifvarele1:ifvarele1+nve0-1)=
+     $       klist(ifvarele1:ifvarele+nve0-1)
+        klist(ifivcomp1:ifivcomp1+nve0-1)=
+     $       klist(ifivcomp1:ifivcomp+nve0-1)
+        call tfree(ifvalvar)
+        call tfree(iftouchele)
+        call tfree(iftouchv)
+        call tfree(ifvvar)
+        call tfree(ifvarele)
+        call tfree(ifivcomp)
+      endif
+      ifvalvar=ifvalvar1
+      iftouchele=iftouchele1
+      iftouchv=iftouchv1
+      ifvvar=ifvvar1
+      ifvarele=ifvarele1
+      ifivcomp=ifivcomp1
+      return
+      end subroutine
 
       subroutine tffsfree
       use tfstk
