@@ -154,15 +154,15 @@
               call tfvcopycmpall(cmps,cmp,kytbl(kwMAX,lt)-1)
             endif
             do k=1,flv%nvar
-              if(ivarele(k) .eq. i)then
-                valvar(k)=tfvalvar(l,ivvar(k))
+              if(nvevx(k)%ivarele .eq. i)then
+                nvevx(k)%valvar=tfvalvar(l,nvevx(k)%ivvar)
 c                valvar(k)=rlist(j+ivvar(k))
               endif
             enddo
             do k=1,flv%ntouch
-              if(itouchele(k) .eq. i)then
+              if(nvevx(k)%itouchele .eq. i)then
 c                write(*,*)'tfrst-itouch ',k,i,itouchv(k)
-                call tfvcopycmp(cmps,cmp,itouchv(k),1.d0)
+                call tfvcopycmp(cmps,cmp,nvevx(k)%itouchv,1.d0)
 c                cmp%value(itouchv(k))=rlist(j+itouchv(k))
               endif
             enddo

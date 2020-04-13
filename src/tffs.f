@@ -218,14 +218,20 @@
       real*8 , parameter :: xyth=0.375d0
       integer*4 , parameter :: maxcond=4001,lblname=maxcond/4
 
+      integer*4 , parameter :: lnvev=5
+      type nvev
+        sequence
+        real*8 valvar,valvar2
+        integer*4 itouchele,itouchv,ivvar,ivarele,ivcomp,idummy
+      end type
+
       type ffsv
         sequence
         integer*8 ifaux,ifibzl,ifmult,ifklp,ifival,iftwissp,
      $       iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifdcomp,ifele,ifcoup,
-     $       iferrk,ifvarele,ifvvar,ifvalvar,ifele1,ifele2,
-     $       ifmast,iftouchele,iftouchv,iffserr,
-     $       ifivcomp,ifvlim,iffssave,iut,ifiprev,ifinext,
-     $       ielmhash
+     $       iferrk,ifele1,ifele2,ifmast,iffserr,
+     $       ifvlim,iffssave,iut,ifiprev,ifinext,
+     $       ielmhash,ifnvev
         real*8 emx,emy,emz,sigzs,fshifts,
      $       dpmax,geo0(3,4),xixf,xiyf,sizedp,
      $       ctime0,ctime2,rsconv,fitval(maxcond)
@@ -356,15 +362,15 @@ c$$$susp;
 
       integer*8, pointer :: ifvlim,ifibzl,ifmult,ifklp,ifival,iftwissp,
      $     iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifdcomp,ifele,ifcoup,
-     $     iferrk,ifvarele,ifvvar,ifvalvar,ifele1,ifele2,
-     $     ifmast,iftouchele,iftouchv,iffserr,ifivcomp,iffssave,
-     $     ifiprev,ifinext,ielmhash
+     $     iferrk,ifele1,ifele2,ifmast,iffserr,iffssave,
+     $     ifiprev,ifinext,ielmhash,ifnvev
       real*8, pointer :: emx,emy,emz,dpmax,xixf,xiyf,
      $     sizedp,sigzs,fshifts
       real*8, pointer, dimension(:,:) :: geo0
       integer*4, pointer :: ndim,ndima,nele,nfit,marki,iorgx,iorgy,
      $     iorgr,mfpnt,mfpnt1,id1,id2,nve,ntouch
       logical*4 , pointer :: updatesize,setref
+      type (nvev), pointer,dimension(:)::nvevx
 
       type ffs_bound
       sequence
@@ -389,16 +395,10 @@ c$$$susp;
         ifele=>ffv%ifele
         ifcoup=>ffv%ifcoup
         iferrk=>ffv%iferrk
-        ifvarele=>ffv%ifvarele
-        ifvvar=>ffv%ifvvar
-        ifvalvar=>ffv%ifvalvar
         ifele1=>ffv%ifele1
         ifele2=>ffv%ifele2
         ifmast=>ffv%ifmast
-        iftouchele=>ffv%iftouchele
-        iftouchv=>ffv%iftouchv
         iffserr=>ffv%iffserr
-        ifivcomp=>ffv%ifivcomp
         iffssave=>ffv%iffssave
         ifiprev=>ffv%ifiprev
         ifinext=>ffv%ifinext
@@ -425,6 +425,7 @@ c$$$susp;
         id1=>ffv%id1
         id2=>ffv%id2
         nve=>ffv%nve
+        ifnvev=>ffv%ifnvev
         ielmhash=>ffv%ielmhash
         updatesize=>ffv%updatesize
         ntouch=>ffv%ntouch
@@ -696,12 +697,10 @@ c$$$susp;
       use sad_main
       implicit none
       type (sad_descriptor) , pointer :: dcomp(:)
-      real*8 , pointer, contiguous :: errk(:,:),couple(:),
-     $     valvar(:),valvar2(:,:)
+      real*8 , pointer, contiguous :: errk(:,:),couple(:)
       integer*8, pointer, dimension(:) :: kele2 
       integer*4, pointer, dimension(:) :: mult,icomp,iele1,
-     $     ival,klp,master,itouchele,itouchv,ivarele,ivcomp,ivvar,
-     $     iprev,inext
+     $     ival,klp,master,iprev,inext
       integer*4, pointer, contiguous, dimension(:,:) :: ibzl
       real*8 , pointer :: pos(:), gammab(:)
       real*8 , pointer , contiguous :: twiss(:,:,:),twiss2(:,:),
@@ -728,15 +727,9 @@ c$$$susp;
         call c_f_pointer(c_loc(ilist(1,ifele1)),iele1,[nlat])
         call c_f_pointer(c_loc(klist(ifele2)),kele2,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
-        call c_f_pointer(c_loc(rlist(ifvalvar)),valvar,[nve*2])
-        call c_f_pointer(c_loc(rlist(ifvalvar)),valvar2,[nve,2])
-        call c_f_pointer(c_loc(ilist(1,iftouchele)),itouchele,[nve*2])
-        call c_f_pointer(c_loc(ilist(1,iftouchv)),itouchv,[nve*2])
-        call c_f_pointer(c_loc(ilist(1,ifvvar)),ivvar,[nve*2])
         call c_f_pointer(c_loc(ilist(1,ifiprev)),iprev,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifinext)),inext,[nlat])
-        call c_f_pointer(c_loc(ilist(1,ifvarele)),ivarele,[nve*2])
-        call c_f_pointer(c_loc(ilist(1,ifivcomp)),ivcomp,[nve*2])
+        call c_f_pointer(c_loc(klist(ifnvev)),nvevx,[nve])
         call c_f_pointer(c_loc(rlist(ifvlim)),vlim,[nele,2])
         return
         end subroutine
@@ -1496,16 +1489,14 @@ c        enddo
       implicit none
       integer*4 iv,j,i
       do j=1,flv%ntouch
-        if(itouchele(j) .eq. i .and. itouchv(j) .eq. iv)then
+        if(nvevx(j)%itouchele .eq. i .and. nvevx(j)%itouchv .eq. iv)then
           return
         endif
       enddo
-      do while(flv%ntouch .ge. flv%nve*2)
-        call tffsnvealloc
-      enddo
+      call tffsnvealloc(flv%ntouch+1)
       flv%ntouch=flv%ntouch+1
-      itouchele(flv%ntouch)=i
-      itouchv(flv%ntouch)=iv
+      nvevx(flv%ntouch)%itouchele=i
+      nvevx(flv%ntouch)%itouchv=iv
       return
       end subroutine
 
@@ -1933,7 +1924,7 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       ifiprev =ktaloc(nlat/2+1)
       ifinext =ktaloc(nlat/2+1)
       nve=0
-      call tffsnvealloc
+      call tffsnvealloc(nele)
       ndim=1
       ndima=ndim*2+1
       ntwis =nlat*ndima
@@ -1963,48 +1954,27 @@ c      ilist(2,iwakepold+6)=int(ifsize)
       return
       end
 
-      subroutine tffsnvealloc
+      subroutine tffsnvealloc(nv)
       use tfstk
       use ffs
       use ffs_pointer
+      use iso_c_binding
       implicit none
+      integer*4 , intent(in)::nv
       integer*4 nve0
-      integer*8 ifvalvar1,iftouchele1,iftouchv1,
-     $     ifvvar1,ifvarele1,ifivcomp1
-      nve0=nve
-      nve=nve0+max(nele,128)
-      ifvalvar1=ktaloc(nve*2)
-      iftouchele1=ktaloc(nve)
-      iftouchv1=ktaloc(nve)
-      ifvvar1=ktaloc(nve)
-      ifvarele1=ktaloc(nve)
-      ifivcomp1=ktaloc(nve)
-      if(nve0 .ne. 0)then
-        klist(ifvalvar1:ifvalvar1+nve0*2-1)=
-     $       klist(ifvalvar:ifvalvar+nve*2-1)
-        klist(iftouchele1:iftouchele1+nve0-1)=
-     $       klist(iftouchele1:iftouchele+nve0-1)
-        klist(iftouchv1:iftouchv1+nve0-1)=
-     $       klist(iftouchv1:iftouchv+nve0-1)
-        klist(ifvvar1:ifvvar1+nve0-1)=
-     $       klist(ifvvar1:ifvvar+nve0-1)
-        klist(ifvarele1:ifvarele1+nve0-1)=
-     $       klist(ifvarele1:ifvarele+nve0-1)
-        klist(ifivcomp1:ifivcomp1+nve0-1)=
-     $       klist(ifivcomp1:ifivcomp+nve0-1)
-        call tfree(ifvalvar)
-        call tfree(iftouchele)
-        call tfree(iftouchv)
-        call tfree(ifvvar)
-        call tfree(ifvarele)
-        call tfree(ifivcomp)
+      integer*8 ifnvev1
+      if(nv .lt. nve)then
+        return
       endif
-      ifvalvar=ifvalvar1
-      iftouchele=iftouchele1
-      iftouchv=iftouchv1
-      ifvvar=ifvvar1
-      ifvarele=ifvarele1
-      ifivcomp=ifivcomp1
+      nve0=nve
+      nve=max(nv,nve0+128)
+      ifnvev1=ktaloc(nve*lnvev)
+      if(nve0 .ne. 0)then
+        klist(ifnvev1:ifnvev1+nve-1)=klist(ifnvev:ifnvev+nve-1)
+        call tfree(ifnvev)
+      endif
+      ifnvev=ifnvev1
+      call c_f_pointer(c_loc(klist(ifnvev)),nvevx,[nve])
       return
       end subroutine
 
@@ -2020,12 +1990,7 @@ c      ilist(2,iwakepold+6)=int(ifsize)
 c      call tfree(ilist(2,ifwakep))
 c      call tfree(ilist(2,ifwakep+2))
 c      call tfree(ifwakep)
-      call tfree(iftouchv)
-      call tfree(iftouchele)
-      call tfree(ifivcomp)
-      call tfree(ifvalvar)
-      call tfree(ifvvar)
-      call tfree(ifvarele)
+      call tfree(ifnvev)
       call tfree(iftwissp)
       if(ifsize .gt. 0)then
         call tfree(ifsize)

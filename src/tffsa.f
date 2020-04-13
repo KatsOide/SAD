@@ -22,8 +22,7 @@
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 maxrpt,hsrchz
-      integer*8 kffs,k,kx,itwisso,
-     $     ifvalvar2,iparams,kax,iutwiss
+      integer*8 kffs,k,kx,itwisso,iparams,kax,iutwiss
       integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,
      $     ii,irtc0,it,itemon,itmon,itestr,itstr,itt,lfn,
      $     iuse,l,itfuplevel,
@@ -559,12 +558,17 @@ ckikuchi ... next 5 lines added     (8/17/'90)
         convgo=.false.
         go to 1000
       elseif(abbrev(word,'REC_OVER','_'))then
-        ifvalvar2=ifvalvar+nve
         do i=1,flv%nvar
-          v=rlist(ifvalvar+i-1)
-          rlist(ifvalvar+i-1)=rlist(ifvalvar2+i-1)
-          rlist(ifvalvar2+i-1)=v
+          v=nvevx(i)%valvar
+          nvevx(i)%valvar=nvevx(i)%valvar2
+          nvevx(i)%valvar2=v
         enddo
+c        ifvalvar2=ifvalvar+nve
+c        do i=1,flv%nvar
+c          v=rlist(ifvalvar+i-1)
+c          rlist(ifvalvar+i-1)=rlist(ifvalvar2+i-1)
+c          rlist(ifvalvar2+i-1)=v
+c        enddo
         call tfsetv(flv%nvar)
       elseif(abbrev(word,'T_YPE','_'))then
         call tfsetparam
@@ -1330,9 +1334,7 @@ c        go to 8900
           endif
         enddo
       endif
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-setupcoup-0 ',lfni,ipoint,lrecl,ios
-c      endif
+c      write(*,*)'tffsa-setupcoup-0 ',flv%nvar
       call tffssetupcouple(lfno)
 c      if(lfni .gt. 100)then
 c        write(*,*)'tffsa-setupcoup-1 ',lfni,ipoint,lrecl,ios
@@ -1347,8 +1349,9 @@ c      endif
      $         'Info-Element values are not expanded.',' ')
       endif
       if(fitflg)then
-        rlist(ifvalvar+nve:ifvalvar+nve+flv%nvar-1)=
-     $       rlist(ifvalvar:ifvalvar+flv%nvar-1)
+        nvevx(1:flv%nvar)%valvar2=nvevx(1:flv%nvar)%valvar
+c        rlist(ifvalvar+nve:ifvalvar+nve+flv%nvar-1)=
+c     $       rlist(ifvalvar:ifvalvar+flv%nvar-1)
 c        call tmov(rlist(ifvalvar),rlist(ifvalvar+nve),flv%nvar)
       endif
 c      if(lfni .gt. 100)then
@@ -1493,7 +1496,7 @@ c        dpm2=rlist(ktlookup('DPM'))
 
       integer*8 function iutwiss(nlat,nvar,nfcol,nfam,nut,nonl)
       use tfstk
-      use ffs, only:flv
+      use ffs, only:flv,nvevx
       use ffs_pointer
       use tffitcode
       use ffs_wake
@@ -1530,7 +1533,7 @@ c        dpm2=rlist(ktlookup('DPM'))
       endif
       LOOP_I: do i=2,nlat-1
         do j=1,nvar
-          if(ivarele(j) .eq. iele1(icomp(i)))then
+          if(nvevx(j)%ivarele .eq. iele1(icomp(i)))then
             itwissp(i)=1
             itwissp(i+1)=1
             cycle LOOP_I
@@ -1655,13 +1658,13 @@ c          write(*,*)'tffssave -2: ',isave,ilattp
 
       logical*4 function tfvcomp()
       use ffs_pointer
-      use ffs, only:flv
+      use ffs, only:flv,nvevx
       implicit none
       integer*4 i
       tfvcomp=.false.
       do i=1,flv%nvar
-        if(ivcomp(i) .ne. 0 .and.
-     $       ivvar(i) .ne. ival(ivarele(i)))then
+        if(nvevx(i)%ivcomp .ne. 0 .and.
+     $       nvevx(i)%ivvar .ne. ival(nvevx(i)%ivarele))then
           tfvcomp=.true.
           return
         endif

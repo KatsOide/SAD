@@ -3,7 +3,7 @@
      $     r,rp,rstab,nstab,residual1,
      $     zcal,wcal,parallel,lout,error)
       use tfstk
-      use ffs, only:ndim,nlat,flv,maxcond,ffs_bound
+      use ffs, only:ndim,nlat,flv,maxcond,ffs_bound,nvevx
       use ffs_flag
       use ffs_pointer
       use ffs_fit
@@ -319,7 +319,7 @@ c      call tfevals('Print["PROF-3: ",LINE["PROFILE","Q1"]]',kxx,irtc)
         iter=1
         zcal=.false.
         do i=1,nvar
-          kt=idtypec(klp(ivarele(i)))
+          kt=idtypec(klp(nvevx(i)%ivarele))
           if(kt .ne. 6 .and. kt .ne. 8 .and. kt .ne. 10
      $         .and. kt .ne. 12)then
             zcal=.true.
@@ -328,6 +328,7 @@ c      call tfevals('Print["PROF-3: ",LINE["PROFILE","Q1"]]',kxx,irtc)
         enddo
         if(fitflg)then
           if(nvar .le. 0)then
+            write(*,*)'tffscalc ',nvar
             call termes(lfno,'?No variable.',' ')
             error=.true.
           endif
@@ -337,19 +338,19 @@ c      call tfevals('Print["PROF-3: ",LINE["PROFILE","Q1"]]',kxx,irtc)
               ie=iele1(ii)
               ie1=iele1(i)
               do j=1,nvar
-                iv=ivvar(j)
-                if(iv .eq. ival(ie) .and. ivarele(j) .eq. ie
-     $               .and. (ivcomp(j) .eq. 0 .or.
-     $               ivcomp(j) .eq. ii))then
+                iv=nvevx(j)%ivvar
+                if(iv .eq. ival(ie) .and. nvevx(j)%ivarele .eq. ie
+     $               .and. (nvevx(j)%ivcomp .eq. 0 .or.
+     $               nvevx(j)%ivcomp .eq. ii))then
                   ibegin=i
                   go to 1023
-                elseif(iv .ne. ival(ie) .and. ivarele(j) .eq. ie1
-     $                 .and. (ivcomp(j) .eq. 0 .or.
-     $                 ivcomp(j) .eq. i))then
+                elseif(iv .ne. ival(ie) .and. nvevx(j)%ivarele .eq. ie1
+     $                 .and. (nvevx(j)%ivcomp .eq. 0 .or.
+     $                 nvevx(j)%ivcomp .eq. i))then
                   ibegin=i
                   go to 1023
                 endif
-                if(ivarele(j) .gt. ie)then
+                if(nvevx(j)%ivarele .gt. ie)then
                   exit
                 endif
               enddo
