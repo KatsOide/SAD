@@ -1,7 +1,7 @@
       subroutine tffsmatch(df,dp0,r,nparallel,lfno,irtc)
       use kyparam
       use tfstk
-      use ffs, only: flv,dpmax,nele,ndim,nlat,maxcond,nvevx
+      use ffs, only: flv,dpmax,nele,ndim,nlat,maxcond,nvevx,nelvx
       use ffs_pointer
       use ffs_flag
       use ffs_fit
@@ -291,16 +291,16 @@ c                    enddo
               nderiv=nderiv0
               do kc=1,nvar
                 i=nvevx(kc)%ivarele
-                if(ival(i) .gt. 0)then
-                  v00=rlist(latt(klp(i))+ival(i))
+                if(nelvx(i)%ival .gt. 0)then
+                  v00=rlist(latt(nelvx(i)%klp)+nelvx(i)%ival)
                 else
                   v00=0.d0
                 endif
-                wvar(kc)=tweigh(idelc(klp(i)),
-     $               idtypec(klp(i)),
+                wvar(kc)=tweigh(idelc(nelvx(i)%klp),
+     $               idtypec(nelvx(i)%klp),
      $               nvevx(kc)%ivvar,bestval(kc),v00,absweit)
                 if(.not. nderiv)then
-                  nderiv=idtypec(klp(i)) .eq. icSOL
+                  nderiv=idtypec(nelvx(i)%klp) .eq. icSOL
                 endif
               enddo
               nderiv=nderiv .or.
@@ -485,9 +485,9 @@ c            call tfmemcheckprint('ffsmatch',.true.,irtc)
               i=nvevx(ii)%ivarele
               dv=dval(ii)*fact/wvar(ii)*wlimit(ii)
               nvevx(ii)%valvar=bestval(ii)+dv
-              call tffsvlimit(i,idelc(klp(i)),nvevx(ii)%valvar,
-     $             bestval(ii),vl,vlim,vl1,vl2,nvevx(ii)%ivvar,
-     $             ival,limited1,dlim)
+              call tffsvlimit(i,idelc(nelvx(i)%klp),nvevx(ii)%valvar,
+     $             bestval(ii),vl,vl1,vl2,nvevx(ii)%ivvar,
+     $             limited1,dlim)
               if(limited1)then
                 nvevx(ii)%valvar=min(vl2,max(vl1,bestval(ii)))
                 if(dv .ne. 0.d0)then
@@ -642,9 +642,9 @@ c        write(*,*)'setupqu ',nqu,nqcol,nvar,nqumax,ifqu0
       limited=.false.
       do ii=1,nvar
         i=nvevx(ii)%ivarele
-        call tffsvlimit(i,idelc(klp(i)),
+        call tffsvlimit(i,idelc(nelvx(i)%klp),
      $       nvevx(ii)%valvar,nvevx(ii)%valvar,
-     $       vl,vlim,vl1,vl2,nvevx(ii)%ivvar,ival,limited1,dlim)
+     $       vl,vl1,vl2,nvevx(ii)%ivvar,limited1,dlim)
         if(limited1)then
           limited=.true.
           nvevx(ii)%valvar=vl
@@ -656,25 +656,25 @@ c        write(*,*)'setupqu ',nqu,nqcol,nvar,nqumax,ifqu0
       return
       end
 
-      subroutine tffsvlimit(i,ld,val,val0,vl,vlim,
-     $     vl1,vl2,ivv,ival,limited,dlim)
+      subroutine tffsvlimit(i,ld,val,val0,vl,
+     $     vl1,vl2,ivv,limited,dlim)
       use tfstk
       use ffs
       use tffitcode
       implicit none
       type (sad_rlist), pointer :: klr
       integer*8 kx
-      integer*4 i,ld,ivv,ival(nele),ltyp,irtc
-      real*8 val,val0,vlim(nele,2),vl,vl1,vl0,vl2
+      integer*4 i,ld,ivv,ltyp,irtc
+      real*8 val,val0,vl,vl1,vl0,vl2
       logical*4 limited,dlim
 c      call tfmemcheckprint('vlimit-0',.true.,irtc)
       limited=.false.
       ltyp=idtype(ld)
       vl=val
       vl0=val0
-      if(ivv .eq. ival(i))then
-        vl1=vlim(i,1)
-        vl2=vlim(i,2)
+      if(ivv .eq. nelvx(i)%ival)then
+        vl1=nelvx(i)%vlim(1)
+        vl2=nelvx(i)%vlim(2)
         if(vl .lt. vl1)then
           vl=vl1
           limited=.true.
@@ -805,7 +805,7 @@ c     call tfdebugprint(kx,'varfun',1)
      $     free,nlat,nele,nfam,nfam1,nut,
      $     nparallel,cell,lfno,irtc)
       use tfstk
-      use ffs, only:flv,ffs_bound,nvevx
+      use ffs, only:flv,ffs_bound,nvevx,nelvx
       use ffs_pointer
       use tffitcode
       use tfshare
@@ -913,12 +913,12 @@ c     call tfdebugprint(kx,'varfun',1)
                   iv=nvevx(ii)%ivvar
 c     write(*,*)'tffssqu ',iv,ival(kk),kk,kk1,
 c     $               ivarele(ii),k,ivcomp(ii),ii
-                  if(iv .eq. ival(kk) .and.
+                  if(iv .eq. nelvx(kk)%ival .and.
      $                 nvevx(ii)%ivarele .eq. kk .and.
      $                 (nvevx(ii)%ivcomp .eq. 0 .or.
      $                 nvevx(ii)%ivcomp .eq. kc))then
                     coup=couple(k)*wk
-                  elseif(iv .ne. ival(kk) .and.
+                  elseif(iv .ne. nelvx(kk)%ival .and.
      $                   nvevx(ii)%ivarele .eq. kk1 .and.
      $                   (nvevx(ii)%ivcomp .eq. 0 .or.
      $                   nvevx(ii)%ivcomp .eq. k))then

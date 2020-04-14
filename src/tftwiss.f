@@ -450,7 +450,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
         id=idelc(ia)
         kx=kxsalocb(-1,pname(id),lpname(id))
       elseif(keyword .eq. 'VALUE')then
-        iv=ilist(it,ifival)
+        iv=nelvx(it)%ival
         if(iv .gt. 0)then
           if(saved)then
             iax=idvalc(ia)+iv
@@ -473,7 +473,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
           kx%k=0
         endif
       elseif(keyword .eq. 'DEFAULT')then
-        iv=ilist(it,ifival)
+        iv=nelvx(it)%ival
         if(iv .eq. 0)then
           key=' '
         else
@@ -481,7 +481,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
         endif
         Kx=kxsalocb(-1,key,lenw(key))
       elseif(keyword .eq. 'DEFAULT$SUM')then
-        iv=ilist(it,ifival)
+        iv=nelvx(it)%ival
         if(iv .eq. 0)then
           key=' '
         else
@@ -541,7 +541,8 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
         endif
         isp=isp+1
         itastk(1,isp)=iv
-        itastk(2,isp)=ilist(iv,ifklp)
+        itastk(2,isp)=nelvx(iv)%klp
+c        itastk(2,isp)=ilist(iv,ifklp)
         irtc=0
       else
         if(narg .eq. 1)then
@@ -563,11 +564,11 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
      $       ifany1(name(1:nc),nc,'*%{<|',1) .gt. 0)then
           do i=1,nele
 c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
-            if(tmatch(pnamec(ilist(i,ifklp)),
+            if(tmatch(pnamec(nelvx(i)%klp),
      $           name(1:nc)))then
               isp=isp+1
               itastk(1,isp)=i
-              itastk(2,isp)=ilist(i,ifklp)
+              itastk(2,isp)=nelvx(i)%klp
             endif
           enddo
         else
@@ -576,7 +577,7 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
             i=ilist(j,ifele1)
             isp=isp+1
             itastk(1,isp)=i
-            itastk(2,isp)=ilist(i,ifklp)
+            itastk(2,isp)=nelvx(i)%klp
             return
           endif
         endif
@@ -616,9 +617,11 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
         do i=1,nlat-1
           ie=ilist(ilist(i,ifele),ifele1)
           if(ie .gt. 0)then
-            iv=ilist(ie,ifival)
+            iv=nelvx(ie)%ival
+c            iv=ilist(ie,ifival)
             if(iv .gt. 0)then
-              k=ilist(ie,ifklp)
+              k=nelvx(ie)%klp
+c              k=ilist(ie,ifklp)
               rlist(latt(i)+iv)=
      $             rlist(ifcoup+i-1)*
      $             rlist(iferrk+i*2-2)/rlist(iferrk+k*2-2)*

@@ -216,14 +216,14 @@ c     temat(ilist(2,latt(1))... MUST need because of latt defined by (2,0:nlatt)
                   rlist(le+1)=max(0.d0,rlist(ldv+kw)+errg)
                 endif
               elseif(ierr .eq. 3)then
-                if(ival(k) .gt. 0 .and. id .ne. icSOL
+                if(nelvx(k)%ival .gt. 0 .and. id .ne. icSOL
      $               .and. id .ne. icMARK)then
-                  if(j .eq. klp(k))then
-                    rlist(latt(j)+ival(k))
-     $                   =rlist(latt(j)+ival(k))/errk(1,j)
+                  if(j .eq. nelvx(k)%klp)then
+                    rlist(latt(j)+nelvx(k)%ival)
+     $                   =rlist(latt(j)+nelvx(k)%ival)/errk(1,j)
                     er=1.d0
                   else
-                    er=errk(1,klp(k))
+                    er=errk(1,nelvx(k)%klp)
                   endif
                   if(add)then
                     v=errk(1,j)
@@ -232,8 +232,8 @@ c     temat(ilist(2,latt(1))... MUST need because of latt defined by (2,0:nlatt)
                   endif
                   errk(1,j)=v+errg
                   if(id .ne. 20)then
-                    rlist(le+ival(k))
-     1                   =rlist(latt(klp(k))+ival(k))
+                    rlist(le+nelvx(k)%ival)
+     1                   =rlist(latt(nelvx(k)%klp)+nelvx(k)%ival)
      $                   /er*errk(1,j)*couple(j)
                   endif
                 endif

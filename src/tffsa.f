@@ -20,11 +20,10 @@
       use ffsfile
       use radint
       implicit none
-      type (sad_comp), pointer :: cmp
       integer*4 maxrpt,hsrchz
       integer*8 kffs,k,kx,itwisso,iparams,kax,iutwiss
       integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,
-     $     ii,irtc0,it,itemon,itmon,itestr,itstr,itt,lfn,
+     $     irtc0,it,itemon,itmon,itestr,itstr,itt,lfn,
      $     iuse,l,itfuplevel,
      $     levelr,lfnl0,lpw,meas0,mfpnta,igetgl1,lenw,
      $     mphi2,newcor,next,nextt,nfp,nmon,
@@ -581,8 +580,8 @@ c        enddo
       elseif(word .eq. 'SCALE')then
         call tscale(nlist,scale,lfno)
       elseif(word.eq.'MAPANA') then
-        call gosadpls(latt,ilist(1,ifklp),
-     $       ilist(1,ifele),lfno)
+c        call gosadpls(latt,ilist(1,ifklp),
+c     $       ilist(1,ifele),lfno)
       elseif(abbrev(word,'AP_ERTURE','_'))then
         call tfsetparam
         call tfaprt(lfno,word)
@@ -1326,9 +1325,7 @@ c        go to 8900
       enddo
       if(.not. geomet)then
         do i=1,nele
-          ii=(i-1)/2
-          call compelc(ilist(i-ii*2,ifklp+ii),cmp)
-          if(idtype(cmp%id) .eq. 20)then
+          if(idtypec(nelvx(i)%klp) .eq. icSOL)then
             geomet=.true.
             exit
           endif
@@ -1658,13 +1655,13 @@ c          write(*,*)'tffssave -2: ',isave,ilattp
 
       logical*4 function tfvcomp()
       use ffs_pointer
-      use ffs, only:flv,nvevx
+      use ffs, only:flv,nvevx,nelvx
       implicit none
       integer*4 i
       tfvcomp=.false.
       do i=1,flv%nvar
         if(nvevx(i)%ivcomp .ne. 0 .and.
-     $       nvevx(i)%ivvar .ne. ival(nvevx(i)%ivarele))then
+     $       nvevx(i)%ivvar .ne. nelvx(nvevx(i)%ivarele)%ival)then
           tfvcomp=.true.
           return
         endif
@@ -1870,7 +1867,7 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
       if(i .gt. 0)then
         it=idtypec(i)
       else
-        kl=ilist(-i,ifklp)
+        kl=nelvx(-i)%klp
         it=idtypec(kl)
       endif
       kw='-'

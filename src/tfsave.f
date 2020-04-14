@@ -32,7 +32,7 @@
       endif
       levele=levele+1
       do i=1,nele
-        l=klp(i)
+        l=nelvx(i)%klp
         if(.not. cmd .or. tmatch(pnamec(l),word))then
           if(cmd .and. .not. exist1)then
             ipoint=next
@@ -72,8 +72,8 @@
             rlist(j+ky_SIGZ_MARK)=sigzs
             rlist(j+ky_SIGE_MARK)=sizedp
             rlist(j+ky_DP_MARK)=dpmax
-          elseif(ival(i) .gt. 0)then
-            call tfvcopycmp(cmp,cmpd,ival(i),1.d0/errk(1,l))
+          elseif(nelvx(i)%ival .gt. 0)then
+            call tfvcopycmp(cmp,cmpd,nelvx(i)%ival,1.d0/errk(1,l))
           endif
         endif
       enddo
@@ -133,7 +133,7 @@
       endif
       levele=levele+1
       do i=1,nele
-        l=klp(i)
+        l=nelvx(i)%klp
         if(.not. cmd .or. tmatch(pnamec(l),word))then
           if(cmd .and. .not. exist1)then
             ipoint=next
@@ -166,8 +166,8 @@ c                write(*,*)'tfrst-itouch ',k,i,itouchv(k)
 c                cmp%value(itouchv(k))=rlist(j+itouchv(k))
               endif
             enddo
-            if(ival(i) .gt. 0)then
-              call tfvcopycmp(cmps,cmp,ival(i),errk(1,l))
+            if(nelvx(i)%ival .gt. 0)then
+              call tfvcopycmp(cmps,cmp,nelvx(i)%ival,errk(1,l))
 c              cmp%value(ival(i))=rlist(j+ival(i))*errk(1,l)
             endif
           endif
@@ -212,8 +212,8 @@ c              cmp%value(ival(i))=rlist(j+ival(i))*errk(1,l)
         call loc_comp(j,cmps)
         call tfvcopycmpall(cmps,cmp,kytbl(kwMAX,lt)-1)
         cmp%update=0
-        if(ival(l) .gt. 0)then
-          cmp%value(ival(l))=cmp%value(ival(l))*errk(1,l)
+        if(nelvx(l)%ival .gt. 0)then
+          cmp%value(nelvx(l)%ival)=cmp%value(nelvx(l)%ival)*errk(1,l)
         endif
       enddo
       return

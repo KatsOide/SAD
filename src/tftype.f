@@ -1,6 +1,7 @@
       subroutine tftype(lfno,word)
       use kyparam
       use tfstk
+      use ffs, only:nelvx
       use ffs_pointer
       use ffs_flag
       use tffitcode
@@ -50,7 +51,7 @@
         start=.true.
         do kkk=1,nl
           k1=int(rlist(kavl+kkk))
-          kx=klp(k1)
+          kx=nelvx(k1)%klp
 c     Note: Skip no-head multiple elements
 c     *     klp(iele1(kx)) == kx if singlet or head of multipole elements
 c          if(klp(iele1(kx)) .ne. kx)cycle
@@ -92,7 +93,7 @@ c      endif
       subroutine tftyp1(kx,l,lp,kp,lt,lfno,lpw)
       use kyparam
       use tfstk
-      use ffs, only:emx,emy,emz,dpmax,sizedp,sigzs
+      use ffs, only:emx,emy,emz,dpmax,sizedp,sigzs,nelvx
       use ffs_pointer
       use tffitcode
       use ffs_flag
@@ -168,7 +169,7 @@ c      endif
           endif
         else
           real=ktfrealq(cmp%dvalue(ioff),v)
-          if(ioff .eq. ival(kx))then
+          if(ioff .eq. nelvx(kx)%ival)then
             coeff=1.d0/errk(1,l)
           endif
         endif
@@ -183,7 +184,7 @@ c      endif
           vout=kw(1:lenw(kw))//' ='
      $         //autos(v)//unit(1:lene(unit))
           call trim(vout)
-          if(v .ne. 0.d0 .or. ioff .eq. ival(kx))then
+          if(v .ne. 0.d0 .or. ioff .eq. nelvx(kx)%ival)then
             if(abs(v) .gt. 1.d10 .and. index(vout,'.') .le. 0
      $           .and. v .ne. dinfinity)then
               lv=lene(vout)

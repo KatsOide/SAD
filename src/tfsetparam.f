@@ -98,8 +98,6 @@ c      h0    =p0*sqrt(1.d0+1.d0/p0**2)
       subroutine tfresetparam
       use ffs
       implicit none
-      real*8 rgetgl1,df
-      logical*4 calgeo
       call rsetgl1('EMITX',emx)
       call rsetgl1('EMITY',emy)
       call rsetgl1('EMITZ',emz)

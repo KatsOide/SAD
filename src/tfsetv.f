@@ -1,6 +1,6 @@
       subroutine tfsetv(nvar)
       use tfstk
-      use ffs, only:nlat,nvevx
+      use ffs, only:nlat,nvevx,nelvx
       use ffs_pointer
       use mackw
       use ffs_seg
@@ -16,12 +16,12 @@
           ie1=iele1(i)
           do j=1,nvar
             iv=nvevx(j)%ivvar
-            if(iv .eq. ival(ie) .and. nvevx(j)%ivarele .eq. ie
+            if(iv .eq. nelvx(ie)%ival .and. nvevx(j)%ivarele .eq. ie
      $           .and. (nvevx(j)%ivcomp .eq. 0 .or.
      $           nvevx(j)%ivcomp .eq. ii))then
               cmp%value(iv)=nvevx(j)%valvar*errk(1,i)*couple(i)
               cmp%update=iand(cmp%update,2)
-            elseif(iv .ne. 0 .and. iv .ne. ival(ie) .and.
+            elseif(iv .ne. 0 .and. iv .ne. nelvx(ie)%ival .and.
      $             nvevx(j)%ivarele .eq. ie1
      $             .and. (nvevx(j)%ivcomp .eq. 0 .or.
      $             nvevx(j)%ivcomp .eq. i))then
@@ -50,7 +50,7 @@
 
       subroutine tfinitvar
       use tfstk
-      use ffs, only: flv,nvevx
+      use ffs, only: flv,nvevx,nelvx
       use ffs_pointer
       use tfcsi, only:icslfno
       implicit none
@@ -65,9 +65,9 @@
         iv=nvevx(i)%ivvar
         k=nvevx(i)%ivcomp
         if(k .eq. 0)then
-          k=klp(ie)
+          k=nelvx(ie)%klp
         endif
-        if(iv .eq. ival(ie))then
+        if(iv .eq. nelvx(ie)%ival)then
           nvevx(i)%valvar=tfvalvar(k,iv)/errk(1,k)
         else
           nvevx(i)%valvar=tfvalvar(k,iv)
@@ -89,7 +89,7 @@
       ite=0
       ntv=0
       do j=1,flv%ntouch
-        if(ival(nvevx(j)%itouchele) .ne. nvevx(j)%itouchv)then
+        if(nelvx(nvevx(j)%itouchele)%ival .ne. nvevx(j)%itouchv)then
           ntv=ntv+1
           itv(ntv)=j
           ite(nvevx(j)%itouchele)=1
@@ -98,8 +98,9 @@
       if(ntv .eq. 0)then
         do i=1,nlat-1
           ie=iele1(icomp(i))
-          if(icomp(i) .ne. i .and. ie .ne. 0 .and. ival(ie) .ne. 0)then
-            call tfvcopy(icomp(i),i,ival(ie),
+          if(icomp(i) .ne. i .and. ie .ne. 0 .and.
+     $         nelvx(ie)%ival .ne. 0)then
+            call tfvcopy(icomp(i),i,nelvx(ie)%ival,
      $           errk(1,i)*couple(i)/errk(1,icomp(i)))
           endif
         enddo
@@ -107,15 +108,17 @@
         do i=1,nlat-1
           ie=iele1(icomp(i))
           ie1=iele1(i)
-          if(ie .ne. 0 .and. i .ne. icomp(i) .and. ival(ie) .ne. 0)then
-            call tfvcopy(icomp(i),i,ival(ie),
+          if(ie .ne. 0 .and. i .ne. icomp(i) .and.
+     $         nelvx(ie)%ival .ne. 0)then
+            call tfvcopy(icomp(i),i,nelvx(ie)%ival,
      $           errk(1,i)*couple(i)/errk(1,icomp(i)))
           endif
           if(ite(ie1) .ne. 0)then
             do k=1,ntv
               j=itv(k)
-              if(nvevx(j)%itouchele .eq. ie1 .and. klp(ie1) .ne. i)then
-                call tfvcopy(klp(ie1),i,nvevx(j)%itouchv,1.d0)
+              if(nvevx(j)%itouchele .eq. ie1 .and.
+     $             nelvx(ie1)%klp .ne. i)then
+                call tfvcopy(nelvx(ie1)%klp,i,nvevx(j)%itouchv,1.d0)
               endif
             enddo
           endif
@@ -137,18 +140,19 @@
       use ffs_seg
       implicit none
       type (sad_rlist), pointer ::kl
-      integer*4 i,j,isp0,isp1,l,irtc,k,k1,ie1
-      logical*4 var,nv
+      integer*4 ,intent(in)::isp0
+      integer*4 i,j,isp1,l,irtc,k,k1,ie1
+      logical*4 ,intent(in)::var,nv
       if(nv)then
         do i=1,nele
-          k1=klp(i)
+          k1=nelvx(i)%klp
           do j=isp0+1,isp
             if(itastk(1,j) .eq. i)then
               call elcompl(i,kl)
               do l=1,kl%nl
                 k=int(kl%rbody(l))
                 if(k .ne. k1 .and. icomp(k) .eq. k1
-     $               .and. itastk(2,j) .ne. ival(i))then
+     $               .and. itastk(2,j) .ne. nelvx(i)%ival)then
                   call tfvcopy(k1,k,itastk(2,j),1.d0)
                 endif
               enddo
@@ -162,10 +166,10 @@
         do l=1,nlat-1
           ie1=iele1(icomp(l))
           itastk(1,isp)=ie1
-          itastk(2,isp)=ival(ie1)
+          itastk(2,isp)=nelvx(ie1)%ival
           do j=isp0+1,isp1
             if(ktastk(j) .eq. ktastk(isp))then
-              call tfvcopy(icomp(l),l,ival(ie1),couple(l))
+              call tfvcopy(icomp(l),l,nelvx(ie1)%ival,couple(l))
             endif
           enddo
         enddo
@@ -218,7 +222,7 @@
 
       subroutine tfsavevar(ie,ntou)
       use tfstk
-      use ffs, only:nvevx
+      use ffs, only:nvevx,nelvx
       use ffs_pointer
       use sad_main
       use ffs_seg
@@ -227,8 +231,8 @@
       integer*4 ntou,i,ie
       do i=1,ntou
         if(nvevx(i)%itouchele .eq. ie)then
-          call loc_comp(latt(klp(ie)),cmps)
-          call loc_comp(idvalc(klp(ie)),cmpd)
+          call loc_comp(latt(nelvx(ie)%klp),cmps)
+          call loc_comp(idvalc(nelvx(ie)%klp),cmpd)
           call tfvcopycmp(cmps,cmpd,nvevx(i)%itouchv,1.d0)
         endif
       enddo

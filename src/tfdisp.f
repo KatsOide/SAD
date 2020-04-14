@@ -288,8 +288,9 @@ c      write(*,*)'tfdisp ',word,wordp
         call compelc(l,cmp)
         if(iele1(icomp((l))) .gt. 0 .and.
      $       id .ne. icMARK .and. id .ne. 34)then
-          if(ival(iele1(icomp(l))) .gt. 0)then
-            call tdtrimz(vout,tfvcmp(cmp,ival(iele1(icomp(l)))),'10.7')
+          if(nelvx(iele1(icomp(l)))%ival .gt. 0)then
+            call tdtrimz(vout,
+     $           tfvcmp(cmp,nelvx(iele1(icomp(l)))%ival),'10.7')
           else
             vout=' 0'
           endif

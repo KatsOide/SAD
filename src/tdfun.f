@@ -296,7 +296,7 @@ c     Generate singlet element name with suffix number(.###)
           call elnameK(kp,name)
           ln=lenw(name)
           go to 100
-        elseif(ilist(ilist(kp,ifele1),ifklp) .eq. kp)then
+        elseif(nelvx(ilist(kp,ifele1))%klp .eq. kp)then
 c     Remove suffix number(.###) if head of multiple elements
 c     Note: index(name,'.') > 0 if mult(kp) != 0
           ln=index(name,'.')-1
@@ -321,7 +321,7 @@ c     Generate singlet element name with suffix number(.###)
           call elnameK(kp1,name1)
           ln1=lenw(name1)
           go to 100
-        elseif(ilist(ilist(kp1,ifele1),ifklp) .eq. kp1)then
+        elseif(nelvx(ilist(kp1,ifele1))%klp .eq. kp1)then
 c     Remove suffix number(.###) if singlet or head of multiple elements
 c     Note: index(name1,'.') > 0 if kp1 != 0
           ln1=index(name1,'.')-1

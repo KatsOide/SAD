@@ -3,7 +3,7 @@
      $     r,rp,rstab,nstab,residual1,
      $     zcal,wcal,parallel,lout,error)
       use tfstk
-      use ffs, only:ndim,nlat,flv,maxcond,ffs_bound,nvevx
+      use ffs, only:ndim,nlat,flv,maxcond,ffs_bound,nvevx,nelvx
       use ffs_flag
       use ffs_pointer
       use ffs_fit
@@ -319,7 +319,7 @@ c      call tfevals('Print["PROF-3: ",LINE["PROFILE","Q1"]]',kxx,irtc)
         iter=1
         zcal=.false.
         do i=1,nvar
-          kt=idtypec(klp(nvevx(i)%ivarele))
+          kt=idtypec(nelvx(nvevx(i)%ivarele)%klp)
           if(kt .ne. 6 .and. kt .ne. 8 .and. kt .ne. 10
      $         .and. kt .ne. 12)then
             zcal=.true.
@@ -339,12 +339,13 @@ c      call tfevals('Print["PROF-3: ",LINE["PROFILE","Q1"]]',kxx,irtc)
               ie1=iele1(i)
               do j=1,nvar
                 iv=nvevx(j)%ivvar
-                if(iv .eq. ival(ie) .and. nvevx(j)%ivarele .eq. ie
+                if(iv .eq. nelvx(ie)%ival .and. nvevx(j)%ivarele .eq. ie
      $               .and. (nvevx(j)%ivcomp .eq. 0 .or.
      $               nvevx(j)%ivcomp .eq. ii))then
                   ibegin=i
                   go to 1023
-                elseif(iv .ne. ival(ie) .and. nvevx(j)%ivarele .eq. ie1
+                elseif(iv .ne. nelvx(ie)%ival .and.
+     $                 nvevx(j)%ivarele .eq. ie1
      $                 .and. (nvevx(j)%ivcomp .eq. 0 .or.
      $                 nvevx(j)%ivcomp .eq. i))then
                   ibegin=i

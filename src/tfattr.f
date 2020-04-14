@@ -38,33 +38,34 @@
         endif
         exist1=.true.
         i=iele1(icomp(j))
-        if(icomp(j) .eq. j .or. klp(iele1(j)) .eq. j .or.
-     $       icomp(j) .ne. klp(iele1(j)) .and.
-     $       icomp(j) .ne. icomp(klp(iele1(j))))then
+        if(icomp(j) .eq. j .or. nelvx(iele1(j))%klp .eq. j .or.
+     $       icomp(j) .ne. nelvx(iele1(j))%klp .and.
+     $       icomp(j) .ne. icomp(nelvx(iele1(j))%klp))then
           call elname(icomp(j),namc)
-          if(ival(i) .eq. 0)then
+          if(nelvx(i)%ival .eq. 0)then
             v=0.d0
           else
-            v=rlist(latt(j)+ival(i))/errk(1,j)
+            v=rlist(latt(j)+nelvx(i)%ival)/errk(1,j)
           endif
-          key=tfkwrd(idtypec(j),ival(i))
+          key=tfkwrd(idtypec(j),nelvx(i)%ival)
           if(ret)then
             dtastk(isp)=kxadaloc(-1,7,klxi)
             klxi%dbody(1)=kxsalocb(0,name,lenw(name))
             klxi%dbody(2)=kxsalocb(0,key,lenw(key))
             klxi%rbody(3)=v
-            klxi%rbody(4)=vlim(1,1)
-            klxi%rbody(5)=vlim(1,2)
+            klxi%rbody(4)=nelvx(i)%vlim(1)
+            klxi%rbody(5)=nelvx(i)%vlim(2)
             klxi%dbody(6)=kxsalocb(0,namc,lenw(namc))
             klxi%rbody(7)=couple(j)
             isp=isp+1
           endif
-          if(klp(i) .eq. j)then
+          if(nelvx(i)%klp .eq. j)then
             namc='<--'
           endif
           write(lfno,'(5a,1x,2a)')name(1:12),
      $         key,autofg(v,'10.6'),
-     $         autofg(vlim(i,1),'10.6'),autofg(vlim(i,2),'10.6'),
+     $         autofg(nelvx(i)%vlim(1),'10.6'),
+     $         autofg(nelvx(i)%vlim(2),'10.6'),
      1         namc(1:12),autofg(couple(j),'10.6')
         endif
       enddo LOOP_J

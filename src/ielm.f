@@ -228,7 +228,7 @@ c     *        >0: found
           if(name1 .eq. pnamec(ielmh))then
             if(ilist(ielmh,ifmult) .eq. iord)return
             if(iord .ne. 0)cycle
-            if(ilist(ilist(ielmh,ifele1),ifklp) .eq. ielmh)return
+            if(nelvx(ilist(ielmh,ifele1))%klp .eq. ielmh)return
 c     Note: ilist(i, ifmult) == 0 if ilist(ilist(i, ifele1), ifklp) == i
 c     *     by tfinit(), tfinimult() initialization
           endif

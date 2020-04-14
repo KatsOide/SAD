@@ -1,6 +1,6 @@
       subroutine tffsfreefix(frefix,nvar,lfno)
       use tfstk
-      use ffs, only:nve,nele,nlat,nvevx
+      use ffs, only:nele,nlat,nvevx,nelvx
       use ffs_pointer
       use ffs_fit
       use tffitcode
@@ -51,7 +51,7 @@
           else
 c     Note: Skip no-head multiple elements
 c     *     klp(iele1(k)) == k if singlet or head of multipole elements
-            if(klp(iele1(k)) .ne. k .or.
+            if(nelvx(iele1(k))%klp .ne. k .or.
      $           .not. tmatch(pnamec(k),word))then
               cycle LOOP_K_2
             endif
@@ -96,7 +96,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
           found=.true.
           kk=iele1(k)
           if(iv .eq. 0)then
-            if(ival(kk) .eq. 0)then
+            if(nelvx(kk)%ival .eq. 0)then
               call termes(lfno,'Can''t use as variable ',
      $             pnamec(k))
               return
@@ -105,7 +105,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
           LOOP_I_1: do i=1,nvar
             if(nvevx(i)%ivarele .eq. kk)then
               if(iv .eq. 0)then
-                ivi=ival(kk)
+                ivi=nelvx(kk)%ival
               else
                 ivi=iv
               endif
@@ -132,7 +132,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
               endif
             endif
           enddo LOOP_I_1
-          call tffsnvealloc(nvar)
+          call tffsnvealloc(nvar+1)
           LOOP_I_2: do i=1,nvar
             if(nvevx(i)%ivarele .ge. kk)then
               do j=nvar,i,-1
@@ -149,14 +149,14 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
  11       nvar=nvar+1
           nvevx(i)%ivarele=kk
           if(iv .eq. 0)then
-            ivi=ival(kk)
+            ivi=nelvx(kk)%ival
           else
             ivi=iv
           endif
           nvevx(i)%ivvar=ivi
           nvevx(i)%valvar=tfvalvar(k,ivi)
           nvevx(i)%ivcomp=ivck
-          if(ivi .eq. ival(kk))then
+          if(ivi .eq. nelvx(kk)%ival)then
             if(comp)then
               call elnameK(icomp(k),name1)
               if(icomp(k) .eq. k)then
@@ -176,7 +176,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
               endif
             else
               do jj=1,nlat-1
-                if(klp(iele1(jj)) .eq. k
+                if(nelvx(iele1(jj))%klp .eq. k
      $               .and. icomp(jj) .ne. k)then
 c     `jj' is same family but different master with `k',
 c     where klp(iele1(k)) == k
@@ -196,7 +196,6 @@ c     where klp(iele1(k)) == k
               call tftouch(kk,ivi)
             endif
           endif
-c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
  10       if(.not. wild)then
             go to 1
           endif
@@ -225,7 +224,7 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
             endif
           elseif(comp)then
             cycle LOOP_I_3
-          elseif(.not. tmatch(pnamec(klp(kk)),word))then
+          elseif(.not. tmatch(pnamec(nelvx(kk)%klp),word))then
             cycle LOOP_I_3
           endif
           if(.not. found)then
@@ -233,7 +232,7 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
             call peekwd(word1,next)
           endif
           found=.true.
-          itk=idtypec(klp(kk))
+          itk=idtypec(nelvx(kk)%klp)
           if(itk .ne. it)then
             if(word1 .ne. ' ')then
               ivk=1

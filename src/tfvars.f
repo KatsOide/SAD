@@ -45,7 +45,7 @@
       do i=1,nvar
         iv=nvevx(i)%ivarele
         if(nvevx(i)%ivcomp .eq. 0)then
-          kk=klp(iv)
+          kk=nelvx(iv)%klp
         else
           kk=nvevx(i)%ivcomp
         endif
@@ -65,9 +65,9 @@
 c          x3=rlist(idval(k)+ivvar(i))
           v3=autofg(x3,'12.9')
           key=tfkwrd(idtype(k),nvevx(i)%ivvar)
-          if(nvevx(i)%ivvar .eq. ival(iv))then
-            vmin=vlim(iv,1)
-            vmax=vlim(iv,2)
+          if(nvevx(i)%ivvar .eq. nelvx(iv)%ival)then
+            vmin=nelvx(iv)%vlim(1)
+            vmax=nelvx(iv)%vlim(2)
             call elname1(icomp(kk),ncoup,nvevx(i)%ivcomp .ne. 0)
             coup=couple(kk)
           else
@@ -117,7 +117,7 @@ c     Note:
 c     * POSITION of `name'  element: ivcomp(i) == 0 ? kk : ivcomp(i)
 c     * POSITION of `ncoup' element: icomp(kk) if ivvar(i) .eq. ival(iv)
 c     * icomp(kk) != 0 for 1 =< kk =< nlat
-          if(nvevx(i)%ivvar .eq. ival(iv))then
+          if(nvevx(i)%ivvar .eq. nelvx(iv)%ival)then
             if((nvevx(i)%ivcomp .eq. 0 .and. icomp(kk) .eq. kk)
      $            .or. (icomp(kk) .eq. nvevx(i)%ivcomp))then
               ncoup='<--'

@@ -609,7 +609,7 @@ c          write(*,*)'kax ',kax
       use tfstk
       use sad_main
       use ffs
-      use ffs_pointer, only:klp,errk,tfvalvar,ival,pnamec
+      use ffs_pointer, only:errk,tfvalvar,pnamec
       implicit none
       logical*4 exist
       integer*4 i,lenw
@@ -622,9 +622,10 @@ c          write(*,*)'kax ',kax
       endif
       name1=name(2:lenw(name))
       do i=1,nele
-        if(pnamec(klp(i)) .eq. name1)then
+        if(pnamec(nelvx(i)%klp) .eq. name1)then
           exist=.true.
-          ffval=tfvalvar(klp(i),ival(i))/errk(1,klp(i))
+          ffval=tfvalvar(nelvx(i)%klp,
+     $         nelvx(i)%ival)/errk(1,nelvx(i)%klp)
           return
         endif
       enddo

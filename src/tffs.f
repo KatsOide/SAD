@@ -34,7 +34,7 @@
         use tfstk, only:klist
         use iso_c_binding
         implicit none
-        integer*4 n
+        integer*4 ,intent(in)::n
         integer*8 ktcaloc
         type (sad_comp), pointer, intent(out) :: cmp
         kmcompaloc=ktcaloc(n+expnsize+2)+1
@@ -208,6 +208,7 @@
       end module
 
       module ffs0
+      use tfstk,only:sad_descriptor
       use tffitcode
       use tmacro
       implicit none
@@ -218,20 +219,27 @@
       real*8 , parameter :: xyth=0.375d0
       integer*4 , parameter :: maxcond=4001,lblname=maxcond/4
 
-      integer*4 , parameter :: lnvev=5
+      integer*4 , parameter :: lnvev=5,lnelv=4
       type nvev
         sequence
         real*8 valvar,valvar2
         integer*4 itouchele,itouchv,ivvar,ivarele,ivcomp,idummy
       end type
 
+      type nelv
+        sequence
+        type (sad_descriptor) dcomp
+        real*8 vlim(2)
+        integer*4 ival,klp
+      end type
+
       type ffsv
         sequence
-        integer*8 ifaux,ifibzl,ifmult,ifklp,ifival,iftwissp,
-     $       iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifdcomp,ifele,ifcoup,
+        integer*8 ifaux,ifibzl,ifmult,iftwissp,
+     $       iftwis,ifpos,ifgeo,ifsize,ifgamm,ifele,ifcoup,
      $       iferrk,ifele1,ifele2,ifmast,iffserr,
-     $       ifvlim,iffssave,iut,ifiprev,ifinext,
-     $       ielmhash,ifnvev
+     $       iffssave,iut,ifiprev,ifinext,
+     $       ielmhash,ifnvev,ifnelv
         real*8 emx,emy,emz,sigzs,fshifts,
      $       dpmax,geo0(3,4),xixf,xiyf,sizedp,
      $       ctime0,ctime2,rsconv,fitval(maxcond)
@@ -360,10 +368,10 @@ c$$$susp;
      $  'REAL    ','        ','        ','OPERATE ',
      $  'RELW    ','QUIET   ','TRUNI   ','        '/)
 
-      integer*8, pointer :: ifvlim,ifibzl,ifmult,ifklp,ifival,iftwissp,
-     $     iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifdcomp,ifele,ifcoup,
+      integer*8, pointer :: ifibzl,ifmult,iftwissp,
+     $     iftwis,ifpos,ifgeo,ifsize,ifgamm,ifele,ifcoup,
      $     iferrk,ifele1,ifele2,ifmast,iffserr,iffssave,
-     $     ifiprev,ifinext,ielmhash,ifnvev
+     $     ifiprev,ifinext,ielmhash,ifnvev,ifnelv
       real*8, pointer :: emx,emy,emz,dpmax,xixf,xiyf,
      $     sizedp,sigzs,fshifts
       real*8, pointer, dimension(:,:) :: geo0
@@ -371,6 +379,7 @@ c$$$susp;
      $     iorgr,mfpnt,mfpnt1,id1,id2,nve,ntouch
       logical*4 , pointer :: updatesize,setref
       type (nvev), pointer,dimension(:)::nvevx
+      type (nelv), pointer,dimension(:)::nelvx
 
       type ffs_bound
       sequence
@@ -380,18 +389,14 @@ c$$$susp;
 
       contains
         subroutine tffsvinit
-        ifvlim=>ffv%ifvlim
         ifibzl=>ffv%ifibzl
         ifmult=>ffv%ifmult
-        ifklp=>ffv%ifklp
-        ifival=>ffv%ifival
         iftwissp=>ffv%iftwissp
         iftwis=>ffv%iftwis
         ifpos=>ffv%ifpos
         ifgeo=>ffv%ifgeo
         ifsize=>ffv%ifsize
         ifgamm=>ffv%ifgamm
-        ifdcomp=>ffv%ifdcomp
         ifele=>ffv%ifele
         ifcoup=>ffv%ifcoup
         iferrk=>ffv%iferrk
@@ -426,6 +431,7 @@ c$$$susp;
         id2=>ffv%id2
         nve=>ffv%nve
         ifnvev=>ffv%ifnvev
+        ifnelv=>ffv%ifnelv
         ielmhash=>ffv%ielmhash
         updatesize=>ffv%updatesize
         ntouch=>ffv%ntouch
@@ -565,14 +571,14 @@ c$$$susp;
         use tfstk
         use tffitcode
         implicit none
-        type (sad_rlist), pointer::kl
+        type (sad_rlist), pointer,intent(out)::kl
+        integer*4 ,intent(in):: mode
         integer*8 kax
-        integer*4 mode
         kax=ktraaloc(mode,28,kl)
         kl%rbody(mfitbz)=1.d0
         ktatwissaloc=kax
         return
-        end
+        end function
 
       end module
 
@@ -696,15 +702,14 @@ c$$$susp;
       module ffs_pointer
       use sad_main
       implicit none
-      type (sad_descriptor) , pointer :: dcomp(:)
       real*8 , pointer, contiguous :: errk(:,:),couple(:)
       integer*8, pointer, dimension(:) :: kele2 
       integer*4, pointer, dimension(:) :: mult,icomp,iele1,
-     $     ival,klp,master,iprev,inext
+     $     master,iprev,inext
       integer*4, pointer, contiguous, dimension(:,:) :: ibzl
       real*8 , pointer :: pos(:), gammab(:)
       real*8 , pointer , contiguous :: twiss(:,:,:),twiss2(:,:),
-     $     geo(:,:,:),vlim(:,:),beamsize(:,:)
+     $     geo(:,:,:),beamsize(:,:)
       integer*4 , pointer, contiguous :: itwissp(:)
       integer*8 , pointer :: latt(:)
       real*8 , pointer , contiguous :: utwiss(:,:,:)
@@ -721,16 +726,16 @@ c$$$susp;
         call c_f_pointer(c_loc(rlist(iferrk)),errk,[2,nlat])
         call c_f_pointer(c_loc(ilist(1,ifmult)),mult,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifmast)),master,[nlat])
-        call c_f_pointer(c_loc(ilist(1,ifival)),ival,[nele])
-        call c_f_pointer(c_loc(dlist(ifdcomp)),dcomp,[nele])
+c        call c_f_pointer(c_loc(ilist(1,ifival)),ival,[nele])
+c        call c_f_pointer(c_loc(dlist(ifdcomp)),dcomp,[nele])
         call c_f_pointer(c_loc(ilist(1,ifele)),icomp,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifele1)),iele1,[nlat])
         call c_f_pointer(c_loc(klist(ifele2)),kele2,[nlat])
-        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
+c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         call c_f_pointer(c_loc(ilist(1,ifiprev)),iprev,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifinext)),inext,[nlat])
         call c_f_pointer(c_loc(klist(ifnvev)),nvevx,[nve])
-        call c_f_pointer(c_loc(rlist(ifvlim)),vlim,[nele,2])
+        call c_f_pointer(c_loc(klist(ifnelv)),nelvx,[nele])
         return
         end subroutine
 
@@ -813,7 +818,7 @@ c$$$susp;
         use sad_main
         implicit none
         type (sad_comp),pointer, intent(out) :: cmp
-        integer*4 i
+        integer*4,intent(in)::i
         call loc_comp(elatt%comp(i),cmp)
         return
         end subroutine
@@ -821,14 +826,14 @@ c$$$susp;
         character*(MAXPNAME) function pnamec(i)
         use maccbk, only:pname,MAXPNAME
         implicit none
-        integer*4 i
+        integer*4,intent(in)::i
         pnamec=pname(idcomp(elatt,i))
         return
         end function
 
         real*8 function direlc(i)
         implicit none
-        integer*4 i
+        integer*4,intent(in)::i
         type (sad_comp), pointer :: cmp
         call loc_comp(elatt%comp(i),cmp)
         direlc=cmp%orient
@@ -837,8 +842,8 @@ c$$$susp;
 
         subroutine setdirelc(i,v)
         implicit none
-        integer*4 i
-        real*8 v
+        integer*4 ,intent(in)::i
+        real*8 ,intent(in)::v
         type (sad_comp), pointer :: cmp
         call loc_comp(elatt%comp(i),cmp)
         cmp%orient=v
@@ -1413,7 +1418,7 @@ c     begin initialize for preventing compiler warning
       if(i .gt. 0)then
         kl=i
       else
-        kl=ilist(-i,ifklp)
+        kl=nelvx(-i)%klp
       endif
       call compelc(kl,cmp)
       plus=.false.
@@ -1452,7 +1457,7 @@ c     begin initialize for preventing compiler warning
         tfkeyv=dlist(ia)
       else
         ia=elatt%comp(kl)+l
-        if(l .eq. ilist(-i,ifival))then
+        if(l .eq. nelvx(-i)%ival)then
           if(tfreallistq(dlist(ia),klr))then
             tfkeyv=kxavaloc(-1,klr%nl,kld)
             kld%rbody(1:klr%nl)=klr%rbody(1:klr%nl)
@@ -1505,9 +1510,10 @@ c        enddo
       use ffs
       use ffs_pointer
       implicit none
-      type (sad_rlist), pointer :: kl
-      integer*4 i,l,isp1
-      if(dcomp(i)%k .eq. 0)then
+      type (sad_rlist), pointer,intent(out) :: kl
+      integer*4 ,intent(in)::i
+      integer*4 l,isp1
+      if(nelvx(i)%dcomp%k .eq. 0)then
         isp1=isp
         do l=1,nlat-1
           if(iele1(l) .eq. i)then
@@ -1515,10 +1521,10 @@ c        enddo
             rtastk(isp)=dble(l)
           endif
         enddo
-        dcomp(i)=dtfcopy(kxmakelist(isp1,kl))
+        nelvx(i)%dcomp=dtfcopy(kxmakelist(isp1,kl))
         isp=isp1
       else
-        call descr_sad(dcomp(i),kl)
+        call descr_sad(nelvx(i)%dcomp,kl)
       endif
       return
       end subroutine
@@ -1915,12 +1921,8 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       ifcoup=ktaloc(nlat)
       iferrk=ktaloc(nlat*2)
       ifmast =ktaloc(nlat/2+1)
-      ifival=ktaloc(nele/2+1)
-      ifdcomp=ktaloc(nele)
-      klist(ifdcomp:ifdcomp+nele-1)=i00
       ifele =ktaloc(nlat/2+1)
       ifele2=ktaloc(nlat)
-      ifklp =ktaloc(nele/2+1)
       ifiprev =ktaloc(nlat/2+1)
       ifinext =ktaloc(nlat/2+1)
       nve=0
@@ -1933,8 +1935,9 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       ifgeo =ktaloc(nlat*12)
       ifgamm=ktaloc(nlat)
       iftwissp=ktaloc(nlat/2+1)
-      ifvlim =ktaloc(nele*2)
+      ifnelv=ktaloc(nele*lnelv)
       call ffs_init_pointer
+      nelvx(1:nele)%dcomp%k=i00
       call ffs_twiss_pointer
       call tfinit
       ifsize=0
@@ -1982,7 +1985,6 @@ c      ilist(2,iwakepold+6)=int(ifsize)
       use tfstk
       use ffs
       use tffitcode
-      use ffs_pointer, only:dcomp
       implicit none
       integer*4 l,itfdownlevel,i
       levele=levele+1
@@ -2004,18 +2006,15 @@ c      call tfree(ifibzl)
       call tfree(ifmast)
       call tfree(ifmult)
       call tfree(ifcoup)
-      call tfree(ifvlim)
-      call tfree(ifival)
       call tfree(ifinext)
       call tfree(ifiprev)
-      call tfree(ifklp)
       call tfree(ifele2)
       call tfree(ifele1)
       call tfree(ifele)
       do i=1,nele
-        call tflocald(dcomp(i))
+        call tflocald(nelvx(i)%dcomp)
       enddo
-      call tfree(ifdcomp)
+      call tfree(ifnelv)
       call tfree(iferrk)
       call tfree(ifibzl)
       call tfree(ifgamm)

@@ -971,7 +971,7 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
       type (sad_comp) , pointer :: cmp
       integer*4 l,nvar,le,itfdownlevel,irtc
       real*8 fr,ftwiss(ntwissfun),trans(6,6),cod(6),gr,sgr,sgr2,gr1,
-     $     tw1(ntwissfun),ri(6,6),beam(21),srot(3,9)
+     $     tw1(ntwissfun),beam(21),srot(3,9)
       logical*4 over,sol,rt,chg,cp0,normal
       if(calc6d)then
         cp0=codplt
