@@ -9,7 +9,7 @@
       real*8, parameter::phieps=1.d-7
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),
      $     sx(np),sy(np),sz(np)
-      real*8 al,ak,eps0,bz,a,b,c,d,akk,eps,
+      real*8 al,ak,eps0,bz,a,c,akk,eps,
      $     bw,dw,r,ap,dpz,ak0x,ak0y,bz0,
      $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
      $     dx0,dy0,xi,yi,a12,a14,a22,a24,ra,phi,pxi,pyi,
@@ -65,32 +65,32 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
             bsi(i)=0.d0
           endif
           do n=1,ndiv
-            ap=px(i)**2+py(i)**2
+            pxi=px(i)
+            pyi=py(i)
+            ap=pxi**2+pyi**2
             dpz=sqrt1(-ap)
 c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
             r=-dpz/(1.d0+dpz)*ra
             ra=aln
-            x(i)=x(i)+px(i)*r
-            y(i)=y(i)+py(i)*r
-            z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
+            x(i)=x(i)+pxi*r
+            y(i)=y(i)+pyi*r
+c            z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
             xi=x(i)+dx0
             yi=y(i)+dy0
-            b=px(i)
-            d=py(i)
-            u1 =   xi*dc1 +b*s1/w1
-            u2 =-xi*w1*s1 +b*dc1
-            v1 =   yi*dch2+d*sh2/w1
-            v2 = yi*w1*sh2+d*dch2
-            x(i) =x(i) +u1
-            px(i)=px(i)+u2 
-            y(i) =y(i) +v1
-            py(i)=py(i)+v2 
-            z(i) =z(i)-0.25d0*(
+            u1 =   xi*dc1 +pxi*s1/w1
+            u2 =-xi*w1*s1 +pxi*dc1
+            v1 =   yi*dch2+pyi*sh2/w1
+            v2 = yi*w1*sh2+pyi*dch2
+            x(i) =x(i)+u1
+            px(i)=pxi +u2 
+            y(i) =y(i)+v1
+            py(i)=pyi +v2 
+            z(i) =z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
+     $           -0.25d0*(
      $           w1*(xi**2*xs1-yi**2*xsh2)
-     $           +(b**2+d**2)*aln
-     $           +u1*(u2+b)+xi*b*dc1
-     $           +v1*(v2+d)+yi*d*dch2)
-     $           -dv(i)*aln
+     $           +(ap-dv(i))*aln
+     $           +u1*px(i)+xi*pxi*dc1
+     $           +v1*py(i)+yi*pyi*dch2)
           enddo
           ap=px(i)**2+py(i)**2
           dpz=sqrt1(-ap)
@@ -138,37 +138,33 @@ c            endif
             pxi=px(i)
             x(i) =x(i)+(a24*pxi-a14*py(i))/bzp
             y(i) =y(i)+(a14*pxi+a24*py(i))/bzp
-            px(i)=     a22*pxi+a24*py(i)
-            py(i)=    -a24*pxi+a22*py(i)
+            px(i)=      a22*pxi+a24*py(i)
+            py(i)=     -a24*pxi+a22*py(i)
             z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
             pxi=px(i)
             pyi=py(i)
             xi=x(i)+dx0
             yi=y(i)+dy0
-            a=  (w2*ws*xi-bzp*pyi)*wss
-            bw= (ws*pxi-bzp*w2*yi)*wss
-            b=bw*w1
-            c=  (w1*wd*xi +pyi)*wss
-            dw= (-wd*pxi+w1*yi)*wss
-            d=dw*w2
-            u1w= a*dc1+bw*s1
-            u1=u1w*w1
-            u2w=-a*s1 +bw*dc1
-            u2=u2w*w1
+            a=  (w2*ws*xi-bzp*pyi  )*wss
+            bw= (  ws*pxi-bzp*w2*yi)*wss
+            c=  (w1*wd*xi+pyi  )*wss
+            dw= ( -wd*pxi+w1*yi)*wss
+            u1w= a*dc1 +bw*s1
+            u1 =u1w*w1
+            u2w=-a*s1  +bw*dc1
+            u2 =u2w*w1
             v1w= c*dch2+dw*sh2
-            v1=v1w*w2
+            v1 =v1w*w2
             v2w= c*sh2 +dw*dch2
             v2=v2w*w2
-            x(i) =x(i) +u1w+v1w*bzp
-            px(i)=pxi+u2 + v2*bzp
-            y(i) =y(i) +wd*u2w+ws*v2w
-            py(i)=pyi-wd*u1 +ws*v1
+            x(i) =x(i)+u1w   +v1w*bzp
+            px(i)=pxi +u2    + v2*bzp
+            y(i) =y(i)+wd*u2w+ws*v2w
+            py(i)=pyi -wd*u1 +ws*v1
             awu=a/ws*w1
-            dwu=d
-            call tztaf(tz,awu,pxi,pyi,aw1,ws,w12,wss,g1,
-     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz1)
-            call tztaf(tz,-dwu,-pyi,pxi,aw2,-w12,ws,-wss,g2,
-     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz2)
+            dwu=dw*w2
+            call tztaf(tz, awu, pxi,pyi,aw1, ws, w12,wss, g1, dz1)
+            call tztaf(tz,-dwu,-pyi,pxi,aw2,-w12,ws, -wss,g2, dz2)
             z(i)=z(i)+
      $           bzp*(-((awu*dwu*dxs**2)/akkp) +
      $           ca1*pxi*pyi*wss)
@@ -393,10 +389,8 @@ c            endif
             py(i)=pyi-wd*u1 +ws*v1
             awu=a/ws*w1
             dwu=d
-            call tztaf(tz,awu,pxi,pyi,aw1,ws,w12,wss,g1,
-     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz1)
-            call tztaf(tz,-dwu,-pyi,pxi,aw2,-w12,ws,-wss,g2,
-     $           0.d0,0.d0,0.d0,0.d0,0.d0,dz2)
+            call tztaf(tz,awu,  pxi,pyi,aw1,  ws,w12, wss,g1,dz1)
+            call tztaf(tz,-dwu,-pyi,pxi,aw2,-w12,ws, -wss,g2,dz2)
             z(i)=z(i)+
      $           bzp*(-((awu*dwu*dxs**2)/akkp) +
      $           ca1*pxi*pyi*wss)

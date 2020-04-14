@@ -13,18 +13,18 @@
 
       contains
         subroutine tztaf(tz,
-     $       zwu, pxt, pyt, zw1, wst, w12t, swss, g1t,
-     $       zwup, zw1p, wstp, w12tp, g1tp, dz, dzp)
+     $     zwu, pxt, pyt, zw1, wst, w12t, swss, g1t, dz,
+     $     zwup, zw1p, wstp, w12tp, g1tp, dzp)
         implicit none
         type (tzparam) , intent(in)::tz
-        real*8 , intent(in)::zwu, pxt, pyt, zw1, wst, w12t, swss, g1t,
-     $       zwup, zw1p, g1tp
+        real*8 , intent(in)::zwu, pxt, pyt, zw1, wst, w12t, swss, g1t
         real*8 , intent(out)::dz
+        real*8 , intent(in) , optional::zwup, zw1p, wstp, w12tp, g1tp
         real*8 , intent(out), optional::dzp
         real*8 f1,f2,f3,f1p,f2p,f3p,
      $       w12xsh,wsxs,wsm,ws1,ws2,cr1,cwsd,
      $       w12xshp,wsxsp,wsmp,ws1p,ws2p,cr1p,cwsdp,
-     $       wstp,w12tp,cswa,cswap
+     $       cswa,cswap
         associate (
      $       w1=>tz%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
      $       phi1=>tz%phi1,phi2=>tz%phi2,
@@ -458,12 +458,10 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
           dwu=d
           awup=adp/ws*w1-a/ws*(w2p-wsp/ws*w2)
           dwup=ddp
-          call tztaf(tz,awu,pxi,pyi,aw1,ws,w12,wss,
-     $         g1,awup,aw1p,wsp,w12p,g1p,
-     $         dz1,dz1p)
-          call tztaf(tz,-dwu,-pyi,pxi,aw2,-w12,ws,-wss,g2,
-     $         -dwup,aw2p,-w12p,wsp,g2p,
-     $         dz2,dz2p)
+          call tztaf(tz,awu,pxi,pyi,aw1,ws,w12,wss,g1,dz1,
+     $         awup,aw1p,wsp,w12p,g1p,dz1p)
+          call tztaf(tz,-dwu,-pyi,pxi,aw2,-w12,ws,-wss,g2,dz2,
+     $         -dwup,aw2p,-w12p,wsp,g2p,dz2p)
           cod(5)=cod(5)+
      $         bzp*(-((awu*dwu*dxs**2)/akkp) +
      $         ca1*pxi*pyi*wss)

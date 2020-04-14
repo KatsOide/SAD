@@ -71,23 +71,23 @@ c      iwakepold=ifwakep
       use tfstk
       use tmacro
       use mathfun
+      use macphys
       implicit none
-      brhoz =pgev/c
+      brhoz =pgev/cveloc
       brho  =brhoz/abs(charge)
       p0    =pgev/amass
       h0    =p2h(p0)
-c      h0    =p0*sqrt(1.d0+1.d0/p0**2)
-      re0   =e/amass/4/pi/ep0
+      re0   =elradi
       rclassic=charge**2*re0
-      crad  =sign(rclassic*(c/amass)**2/p0/1.5d0,charge)
-      urad  =sign(1.5d0*hp*c/p0/amass/e,charge)
+      crad  =sign(rclassic*(cveloc/amass)**2/p0/1.5d0,charge)
+      urad  =sign(1.5d0*hp*cveloc/p0/amass/e,charge)
       erad  =55.d0/24.d0/sqrt(3.d0)*urad
-      rcratio=rclassic/(hp*c/amass/e)
+      rcratio=rclassic/(hp*cveloc/amass/e)
       cuc=1.5d0*rclassic/rcratio
       anrad =5.d0/2.d0/sqrt(3.d0)*rcratio
       ccintr=(rclassic/h0**2)**2/8.d0/pi
       if(rlist(klist(ilattp)+1) .ne. 0.d0)then
-        omega0=pi2*c*p0/h0/rlist(klist(ilattp)+1)
+        omega0=pi2*cveloc*p0/h0/rlist(klist(ilattp)+1)
       else
         omega0=0.d0
       endif
