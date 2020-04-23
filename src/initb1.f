@@ -301,6 +301,16 @@ c  for solenoid
      $ky_RAD_SOL=20,
      $ky_FL_SOL=21,
      $ky_MAX_SOL=22,
+     $     p_R11_SOL=ky_MAX_SOL+1,
+     $     p_R12_SOL=p_R11_SOL+1,
+     $     p_R13_SOL=p_R12_SOL+1,
+     $     p_R21_SOL=p_R13_SOL+1,
+     $     p_R22_SOL=p_R21_SOL+1,
+     $     p_R23_SOL=p_R22_SOL+1,
+     $     p_R31_SOL=p_R23_SOL+1,
+     $     p_R32_SOL=p_R31_SOL+1,
+     $     p_R33_SOL=p_R32_SOL+1,
+     $     p_NPARAM_SOL=p_R33_SOL-ky_MAX_SOL,
 cc for TEST
      $ky_L_TEST=1,
      $ky_ANGL_TEST=2,
@@ -1226,6 +1236,7 @@ c  for solenoid
       kytbl(kwRAD,icSOL)=ky_RAD_SOL
       kytbl(kwFL,icSOL)=ky_FL_SOL
       kytbl(kwMAX,icSOL)=ky_MAX_SOL
+      kytbl(kwNPARAM,icSOL)=p_NPARAM_SOL
 cc for TEST
       idummy=sethtb('test    ',icDEF,icTEST)
       kytbl(0,icTEST)=sethtb('TEST    ',icDEF,icTEST)

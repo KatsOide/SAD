@@ -61,7 +61,7 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
           ra=aln*0.5d0
           if(ibsi .eq. 1)then
             bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)
-          else
+          elseif(ibsi .ge. 0)then
             bsi(i)=0.d0
           endif
           do n=1,ndiv
@@ -108,7 +108,7 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           call tzsetparam(tz,gp(i),akk,bz)
           if(ibsi .eq. 1)then
             bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)+bzp*al
-          else
+          elseif(ibsi .ge. 0)then
             bsi(i)=bzp*al
           endif
           px(i)=px(i)+bzp*y(i)*.5d0
@@ -138,11 +138,9 @@ c            endif
             pxi=px(i)
             x(i) =x(i)+(a24*pxi-a14*py(i))/bzp
             y(i) =y(i)+(a14*pxi+a24*py(i))/bzp
-            px(i)=      a22*pxi+a24*py(i)
-            py(i)=     -a24*pxi+a22*py(i)
+            pxi  =      a22*pxi+a24*py(i)
+            pyi  =     -a24*pxi+a22*py(i)
             z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
-            pxi=px(i)
-            pyi=py(i)
             xi=x(i)+dx0
             yi=y(i)+dy0
             a=  (w2*ws*xi-bzp*pyi  )*wss
@@ -362,11 +360,9 @@ c            endif
             pxi=px(i)
             x(i) =x(i)+(a24*pxi-a14*py(i))/bzp
             y(i) =y(i)+(a14*pxi+a24*py(i))/bzp
-            px(i)=     a22*pxi+a24*py(i)
-            py(i)=    -a24*pxi+a22*py(i)
+            pxi  =     a22*pxi+a24*py(i)
+            pyi  =    -a24*pxi+a22*py(i)
             z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
-            pxi=px(i)
-            pyi=py(i)
             xi=x(i)+dx0
             yi=y(i)+dy0
             a=  (w2*ws*xi-bzp*pyi)*wss

@@ -995,7 +995,8 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         type (sad_comp) :: cmp
         integer*4 ltyp
         real*8 phi,al,psi1,psi2,theta,dtheta,w,akk,sk1,
-     $       fb1,fb2,harm,vnominal,frmd
+     $       fb1,fb2,harm,vnominal,frmd,
+     $       cchi1,cchi2,cchi3,schi1,schi2,schi3
         complex*16 cr1
         cmp%update=ior(cmp%update,1)
         ltyp=idtype(cmp%id)
@@ -1185,6 +1186,23 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
 
         case (icPROT)
           call phsinit(cmp%value(1),cmp%value(p_PARAM_Prot))
+
+        case (icSOL)
+          cchi1=cos(cmp%value(ky_CHI1_SOL))
+          cchi2=cos(cmp%value(ky_CHI2_SOL))
+          cchi3=cos(cmp%value(ky_CHI3_SOL))
+          schi1=sin(cmp%value(ky_CHI1_SOL))
+          schi2=sin(cmp%value(ky_CHI2_SOL))
+          schi3=sin(cmp%value(ky_CHI3_SOL))
+          cmp%value(p_R11_SOL)= cchi1*cchi3+schi1*schi2*schi3
+          cmp%value(p_R12_SOL)=-cchi2*schi3
+          cmp%value(p_R13_SOL)= schi1*cchi3-cchi1*schi2*schi3
+          cmp%value(p_R21_SOL)=-schi1*schi2*cchi3+cchi1*schi3
+          cmp%value(p_R22_SOL)= cchi2*cchi3
+          cmp%value(p_R23_SOL)= cchi1*schi2*cchi3+schi1*schi3
+          cmp%value(p_R31_SOL)=-schi1*cchi2
+          cmp%value(p_R32_SOL)=-schi2
+          cmp%value(p_R33_SOL)= cchi1*cchi2
 
         case default
         end select

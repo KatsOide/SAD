@@ -781,10 +781,19 @@ c            xsinphi=xsin(phi)
  20   bzs=tfbzs(k,kbz)
       if(.not. insol)then
         call loc_comp(l1,cmp)
+        if(iand(cmp%update,1) .eq. 0)then
+          call tpara(cmp)
+        endif
         call trots(np,x,px,y,py,z,dv,
-     $       cmp%value(ky_CHI1_SOL),
-     $       cmp%value(ky_CHI2_SOL),
-     $       cmp%value(ky_CHI3_SOL),
+     $       cmp%value(p_R11_SOL),
+     $       cmp%value(p_R12_SOL),
+     $       cmp%value(p_R13_SOL),
+     $       cmp%value(p_R21_SOL),
+     $       cmp%value(p_R22_SOL),
+     $       cmp%value(p_R23_SOL),
+     $       cmp%value(p_R31_SOL),
+     $       cmp%value(p_R32_SOL),
+     $       cmp%value(p_R33_SOL),
      $       cmp%value(ky_DX_SOL),
      $       cmp%value(ky_DY_SOL),
      $       cmp%value(ky_DZ_SOL),
@@ -911,7 +920,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
      $         cmp%value(p_AKF2F_QUAD)*rtaper,
      $         cmp%value(p_AKF1B_QUAD)*rtaper,
      $         cmp%value(p_AKF2B_QUAD)*rtaper,
-     $         int(cmp%value(p_FRMD_QUAD)),cmp%value(ky_EPS_QUAD))
+     $         int(cmp%value(p_FRMD_QUAD)),0,cmp%value(ky_EPS_QUAD))
         case (icMULT)
           rtaper=1.d0
           if(rad .and. radcod .and. radtaper)then
@@ -926,6 +935,9 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
      $           cmp,bzs,rtaper,n,latt,kptbl)
           endif
         case(icCAVI)
+          if(iand(cmp%update,1) .eq. 0)then
+            call tpara(cmp)
+          endif
           autophi=cmp%value(ky_APHI_CAVI) .ne. 0.d0
           ph=cmp%value(ky_DPHI_CAVI)
           if(autophi)then
@@ -966,15 +978,24 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
             call tsfrin(np,x,px,y,py,z,g,bz1-bzs)
           endif
           if(l .eq. ke)then
+            if(iand(cmp%update,1) .eq. 0)then
+              call tpara(cmp)
+            endif
             if(krad)then
               call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $             cmp%value(ky_F1_SOL),0.d0)
 c              call tserad(np,x,px,y,py,g,dv,lp,rho)
             endif
             call trots(np,x,px,y,py,z,dv,
-     $           cmp%value(ky_CHI1_SOL),
-     $           cmp%value(ky_CHI2_SOL),
-     $           cmp%value(ky_CHI3_SOL),
+     $           cmp%value(p_R11_SOL),
+     $           cmp%value(p_R12_SOL),
+     $           cmp%value(p_R13_SOL),
+     $           cmp%value(p_R21_SOL),
+     $           cmp%value(p_R22_SOL),
+     $           cmp%value(p_R23_SOL),
+     $           cmp%value(p_R31_SOL),
+     $           cmp%value(p_R32_SOL),
+     $           cmp%value(p_R33_SOL),
      $           cmp%value(ky_DX_SOL),
      $           cmp%value(ky_DY_SOL),
      $           cmp%value(ky_DZ_SOL),
@@ -1024,31 +1045,15 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
       end
 
       subroutine trots(np,x,px,y,py,z,dv,
-     $     chi1,chi2,chi3,dx,dy,dz,ent)
+     $     r11,r12,r13,r21,r22,r23,r31,r32,r33,
+     $     dx,dy,dz,ent)
       use mathfun
       implicit none
       integer*4 np,i
       real*8,intent(inout):: x(np),px(np),y(np),py(np),z(np),dv(np)
-      real*8 ,intent(in)::chi1,chi2,chi3,dx,dy,dz
-      real*8 cchi1,schi1,cchi2,schi2,cchi3,schi3,
-     $     r11,r12,r13,r21,r22,r23,r31,r32,r33,
-     $     pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf
+      real*8 ,intent(in)::dx,dy,dz,r11,r12,r13,r21,r22,r23,r31,r32,r33
+      real*8 pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf
       logical*4,intent(in):: ent
-      cchi1=cos(chi1)
-      schi1=sin(chi1)
-      cchi2=cos(chi2)
-      schi2=sin(chi2)
-      cchi3=cos(chi3)
-      schi3=sin(chi3)
-      r11= cchi1*cchi3+schi1*schi2*schi3
-      r12=-cchi2*schi3
-      r13= schi1*cchi3-cchi1*schi2*schi3
-      r21=-schi1*schi2*cchi3+cchi1*schi3
-      r22= cchi2*cchi3
-      r23= cchi1*schi2*cchi3+schi1*schi3
-      r31=-schi1*cchi2
-      r32=-schi2
-      r33= cchi1*cchi2
       if(ent)then
         do i=1,np
           pxi=px(i)
