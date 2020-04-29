@@ -610,7 +610,7 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
           irtc=itfmessage(9,'General::narg','"1"')
         endif
         kx=dfromr(dble(nlat))
-      elseif(keyword .eq. 'EXPAND')then
+      elseif(keyword(1:nc) .eq. 'EXPAND')then
         if(narg .ne. 1)then
           irtc=itfmessage(9,'General::narg','"1"')
         endif
@@ -638,12 +638,12 @@ c              k=ilist(ie,ifklp)
         endif
         m=isp-isp0
         if(m .eq. 1)then
-          call tfline1(isp,kx,keyword,ref,irtc)
+          call tfline1(isp,kx,keyword(1:nc),ref,irtc)
         else
           ispa=isp
           do j=1,m
             isp=isp+1
-            call tfline1(isp0+j,dtastk(isp),keyword,ref,irtc)
+            call tfline1(isp0+j,dtastk(isp),keyword(1:nc),ref,irtc)
             if(irtc .ne. 0)then
               return
             endif
@@ -919,6 +919,19 @@ c          enddo
         else
           kx%k=ktftrue
         endif
+      elseif(keyword .eq. 'BZS')then
+        if(ref)then
+          kx=dfromr(tfbzs(ia,ibz))
+        else
+          kx%k=0
+        endif
+      elseif(keyword .eq. 'UPDATE')then
+        if(ia .lt. nlat)then
+          call compelc(ia,cmp)
+          kx=dfromr(dble(cmp%update))
+        else
+          kx=dfromr(1.d0)
+        endif
       elseif(keyword .eq. 'DK')then
         kax=iferrk-2+ia*2
         if(ref)then
@@ -927,12 +940,6 @@ c          enddo
           kx%k=ktfref+kax
           call compelc(ia,cmp)
           cmp%update=0
-        endif
-      elseif(keyword .eq. 'BZS')then
-        if(ref)then
-          kx=dfromr(tfbzs(ia,ibz))
-        else
-          kx%k=0
         endif
       else
         if(ia .lt. nlat)then
