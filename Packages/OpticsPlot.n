@@ -228,7 +228,7 @@ With[{def={PlotRange->Automatic,
       v=v/ru;
       v=MapAt[#*ru&,v,{,,1}];
       If[pra<=>Automatic,pra=If[RealQ[#],#/ru,#]&/@pra]];
-    If[pra===Automatic && unit===SqrtMeter,pra={0,am*1.1}];
+    If[pra===Automatic && And@@(Twiss$Positive/@f1),pra={0,am*1.1}];
     If[Depth[pra]<=2,pra={l[[1,1,5]]*ss,pra}];
     {del,del1}={"",""};
     If[leg===Automatic,
@@ -572,6 +572,11 @@ Twiss$Functions={"AX","BX","NX","AY","BY","NY","EX","EPX","EY","EPY",
 RTwiss$Functions=("R"//#)&/@Twiss$Functions;
 DTwiss$Functions=("D"//#)&/@Twiss$Functions;
 XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions];
+
+Twiss$Positive["BX"|"BY"|"BZ"|"GMX"|"GMY"|"GMZ"|
+  "SIGX"|"SIGY"|"SIGZ"|"SIGXX"|"SIGYY"|"SIGZZ"|
+    "SIZEX"|"SIZEY"|"SIZEZ"|"SIZEXX"|"SIZEYY"|"SIZEZZ"]=True;
+Twiss$Positive[_]=False;
 
 Twiss$Unit[
   "EX"|"EY"|"R2"|"DX"|"DY"|"S"|"PEX"|"PEY"|"DZ"|

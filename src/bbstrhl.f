@@ -101,8 +101,8 @@ c      integer*4 n,i,is,j,jl,jm,ju,iseed,irtc
 
       bstrhl=colb%bstrl
 
-!      write(*,'(A,I6,1P,3E12.3)') 'Welcome to beambeam',
-!     &     iturn,colb%ce,colb%gamma
+c      write(*,'(A,2I6,1P,3E12.3)') 'Welcome to beambeam',
+c     &     iturn,colb%nslice,colb%ce,colb%gamma
 !      write(*,'(4F10.5,I5)') colb%xangle(1),colb%xangle(2),
 !     &     colb%xangle(3),colb%xangle(4),colb%nslice
 !      write(*,'(5E12.4)') (p_in(i),i=1,30)
@@ -244,7 +244,7 @@ c      call tfmemcheckprint('beambeam',1,.false.,irtc)
             if(is.eq.colb%nslice) dsz=(colb%zslice(nslimax+is-1)+5.)*
      &           sigz*0.5
             
-!       write(*,*) ' In loop ',is
+c       write(*,*) ' In loop ',is
             pxy2=px(i)**2+py(i)**2
             sz=(z(i)-colb%zslice(is)*sigz)/2.d0
 !

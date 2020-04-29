@@ -169,7 +169,7 @@ c          dpr=a/(1.d0+sqrt(1.d0+a))
      $         fw,lwl,wakel,lwt,waket,p0,h0,itab,izs,n .eq. 1)
         endif
 110   continue
-c      write(*,*)'tcav-2 ',z(1),g(1),dv(1)
+c      write(*,'(a,1p5g15.7)')'tcav-2 ',y(1),py(1),z(1),g(1),dv(1)
       if(al .ne. 0.d0)then
         alx=al*ws(ndiv)*.5d0
         do 30 i=1,np

@@ -992,7 +992,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         use ffs_flag, only:trpt
         use mathfun, only:akang
         implicit none
-        type (sad_comp) :: cmp
+        type (sad_comp) , intent(inout):: cmp
         integer*4 ltyp
         real*8 phi,al,psi1,psi2,theta,dtheta,w,akk,sk1,
      $       fb1,fb2,harm,vnominal,frmd,

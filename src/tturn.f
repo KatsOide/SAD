@@ -209,7 +209,7 @@ c      isb=ilist(2,iwakepold+6)
       bsi=0.d0
       do l=lbegin,lend
         l_track=l
-c        if(l .gt. 4000 .and. l .lt. 4100)then
+c        if(l .gt. 3300)then
 c          write(*,*)'tturn1-l ',l
 c        endif
 c        call tfmemcheckprint('tturn',l,.false.,irtc)
@@ -504,6 +504,8 @@ c     endif
      $          cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
      $          int(cmp%value(p_FRMD_CAVI)),autophi)
          else
+c           write(*,*)'tturn-tcav-0 ',cmp%value(p_W_CAVI),
+c     $          cmp%value(p_VNOMINAL_CAVI)
            call tcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      1          cmp%value(p_W_CAVI),cmp%value(ky_PHI_CAVI),ph,
      $          cmp%value(p_VNOMINAL_CAVI),

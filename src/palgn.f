@@ -3140,9 +3140,9 @@ c7/16   iy=0
 c7/16   iiv=0
 c.......output history......
         if(history) then
-          call pmbdrw(rlist(ipemibuf),rlist(iob),ilist(1,iob),nemitd,
-     $         title,case,lio)
-          if(lio.ne.lfno .and. lio.ne. stndout) close(lio)
+c          call pmbdrw(rlist(ipemibuf),rlist(iob),ilist(1,iob),nemitd,
+c     $         title,case,lio)
+c          if(lio.ne.lfno .and. lio.ne. stndout) close(lio)
         endif
 c7/13   if(ipemibuf.ne.0) then
 c7/13     call tfree(int8(ipemibuf))
