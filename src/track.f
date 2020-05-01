@@ -136,7 +136,7 @@ c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       calopt=.true.
       dp0   =0.d0
       call initialize_tampl()
-      call tclrpara(elatt,nlat-1)
+      call tclrpara
       call tclrfpe
       write(*,'(a)')
      1' RFSW RADCOD RAD  FLUC  INTRA'//
@@ -269,7 +269,7 @@ c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       call isetgl1('$DIFFRES$',diffres)
       call isetgl1('$PHOTONS$',photons)
       nlat  =elatt%nlat1-1
-      call tclrpara(elatt,nlat-1)
+      call tclrpara
       call cputime(dt1,irtc)
       write(*,'(1X,2A,F10.3,A)')
      1     title,' end:  CPU time =',(dt1-dt0)*1.d-6,' sec'

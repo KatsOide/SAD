@@ -11,7 +11,8 @@
         type sad_comp
         sequence
         integer*4 ncomp2,id
-        integer*4 nparam,update
+        integer*4 nparam
+        logical*1 update,updateseg,ldummy(2)
         real*8 orient
         type (sad_descriptor) dvalue(1:0)
         integer*8 kvalue(1:0)
@@ -975,11 +976,11 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
             rstat(2,l)=charge
             lstat(1,l)=trpt
           else
-            tparacheck=iand(cmp%update,1) .eq. 0
+            tparacheck=.not. cmp%update
           endif
 
         case default
-          tparacheck=iand(cmp%update,1) .eq. 0 
+          tparacheck=.not. cmp%update
 
         end select
         return
@@ -998,7 +999,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
      $       fb1,fb2,harm,vnominal,frmd,
      $       cchi1,cchi2,cchi3,schi1,schi2,schi3
         complex*16 cr1
-        cmp%update=ior(cmp%update,1)
+        cmp%update=.true.
         ltyp=idtype(cmp%id)
         if(kytbl(kwNPARAM,ltyp) .eq. 0)then
           return
@@ -1209,30 +1210,18 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
         return
         end subroutine
 
-        subroutine tclrpara(el,nl)
+        subroutine tclrpara
+        use mackw
         use tmacro
-        use tfstk, only:itfcbk
-        use tfmem, only:tfree
+        use ffs_pointer, only:compelc
         implicit none
-        type (sad_el), pointer :: el
         type (sad_comp), pointer :: cmp
-        integer*4 nl,i
-        integer*8 lp
-        do i=1,nl
-          lp=el%comp(i)
-          if(lp .gt. 0)then
-            call loc_comp(lp,cmp)
-            cmp%update=0
-          endif
+        integer*4 i
+        do i=1,nlat-1
+          call compelc(i,cmp)
+          cmp%update=cmp%nparam .le. 0
         enddo
         tparaed=.false.
-        return
-        end subroutine
-
-        subroutine tclrparaall()
-        use ffs_pointer
-        implicit none
-        call tclrpara(elatt,elatt%nlat1-2)
         return
         end subroutine
 
@@ -1576,7 +1565,7 @@ c        enddo
         if(kprof .eq. 0 .or. tfnonlistq(cmp%dvalue(kprof),lprof))then
           return
         endif
-        if(iand(cmp%update,2) .eq. 0)then
+        if(.not. cmp%updateseg)then
           call tsetupseg(cmp,lprof,lsegp,irtc)
           if(irtc .ne. 0)then
             return
@@ -1696,7 +1685,7 @@ c        enddo
               lk1%dbody(2)=dtfcopy(dtastk2(i))
             endif
           enddo
-          cmp%update=ior(cmp%update,2)
+          cmp%updateseg=.true.
  9000     l=itfdownlevel()
           isp=isp0
           return
@@ -1704,7 +1693,7 @@ c        enddo
           isp=isp0
           irtc=itfmessage(99,"FFS::wrongkeylist",'""')
         case default
-          cmp%update=ior(cmp%update,2)
+          cmp%updateseg=.true.
         end select
         return
         end
@@ -1730,9 +1719,10 @@ c        enddo
           cmpd%dvalue(k)=dtfcopy1(cmps%dvalue(k))
           if(idtype(cmpd%id) .eq. icMULT .and.
      $         k .eq. ky_PROF_MULT)then
-            cmpd%update=0
+            cmpd%updateseg=.false.
           endif
         endif
+        cmpd%update=.false.
         return
         end subroutine
 
@@ -1751,10 +1741,9 @@ c        enddo
         call tfvcopycmp(cmps,cmpd,k,coeff)
         if(idtype(cmpd%id) .eq. icMULT .and.
      $       k .eq. ky_PROF_MULT)then
-          cmpd%update=0
-        else
-          cmpd%update=iand(2,cmpd%update)
+          cmpd%updateseg=.false.
         endif
+        cmpd%update=.false.
         return
         end subroutine
 

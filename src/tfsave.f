@@ -142,7 +142,7 @@
           endif
           lt=idtypec(l)
           call compelc(l,cmp)
-          cmp%update=0
+          cmp%update=.false.
           j=idvalc(l)
           call loc_comp(j,cmps)
           if(lt .eq. icMARK)then
@@ -211,7 +211,7 @@ c              cmp%value(ival(i))=rlist(j+ival(i))*errk(1,l)
         call compelc(l,cmp)
         call loc_comp(j,cmps)
         call tfvcopycmpall(cmps,cmp,kytbl(kwMAX,lt)-1)
-        cmp%update=0
+        cmp%update=.false.
         if(nelvx(l)%ival .gt. 0)then
           cmp%value(nelvx(l)%ival)=cmp%value(nelvx(l)%ival)*errk(1,l)
         endif

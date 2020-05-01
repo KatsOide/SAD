@@ -53,7 +53,8 @@ c
         call loc_comp(idi,cmps)
 c     set Nominal values
         call tfvcopycmpall(cmps,cmp,plen)
-        cmp%update=0
+        cmp%update=cmp%nparam .le. 0
+        cmp%updateseg=.false.
 c     and then add statistical error
         idxerr=ilist(2,idi)
         do while(idxerr .ne. 0)

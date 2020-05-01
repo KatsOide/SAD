@@ -1280,7 +1280,7 @@ c     $     cmp%value(ky_K0_BEND)
       endif
       chg=.true.
       if(.not. ideal)then
-        cmp%update=iand(cmp%update,2)
+        cmp%update=cmp%nparam .le. 0
       endif
       return
       end
@@ -1450,7 +1450,8 @@ c fringes are not taken into account yet...
       enddo
       chg=.true.
       if(.not. ideal)then
-        cmp%update=2
+        cmp%update=.false.
+        cmp%updateseg=.true.
       endif
       return
       end

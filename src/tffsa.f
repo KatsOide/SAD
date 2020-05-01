@@ -386,7 +386,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
           call tffssaveparams(2,ilattp,err)
           calexp=expnd
           expnd=expnd .and. .not. err
-          call tclrpara(elatt,nlat-1)
+          call tclrpara
           if(visit)then
             call tffssaveparams(0,ilattp,err)
             call tfblocksym('`FitFunction',12)
@@ -413,7 +413,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
           ilattp=idval(ilist(2,idval(iuse)))
           call loc_el(ilattp,elatt)
           lattuse=ilattp
-          call tclrpara(elatt,elatt%nlat1-2)
+          call tclrpara
           dleng =rlist(elatt%aux+1)*rgetgl1('FSHIFT')
           ename=pname(iuse)
           call tmovb(ename,flv%blname,MAXPNAME)
@@ -438,7 +438,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
             go to 2
           endif
         endif
-        call tclrpara(elatt,elatt%nlat1-2)
+        call tclrpara
         call tffsfree
         if(byeall)then
           call tffssaveparams(-2,i00,err)

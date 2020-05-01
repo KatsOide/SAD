@@ -328,7 +328,7 @@ c     $              +l-1),
          endif
 
        case (icBEND)
-         if(iand(cmp%update,1) .eq. 0)then
+         if(.not. cmp%update)then
            call tpara(cmp)
          endif
          if(cmp%value(ky_RANK_BEND) .ne. 0.d0)then
@@ -373,7 +373,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      1        krad,cmp%value(ky_EPS_BEND),.true.,0)
 
        case (icQUAD)
-         if(iand(1,cmp%update) .eq. 0)then
+         if(.not. cmp%update)then
            call tpara(cmp)
          endif
          rtaper=1.d0
@@ -398,7 +398,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $        cmp%value(ky_KIN_QUAD) .eq. 0.d0)
 
        case (icSEXT,icOCTU,icDECA,icDODECA)
-         if(iand(cmp%update,1) .eq. 0)then
+         if(.not. cmp%update)then
            call tpara(cmp)
          endif
          ak1=cmp%value(ky_K_THIN)
@@ -416,7 +416,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      1        cmp%value(ky_FRIN_THIN) .eq. 0.d0)
 
        case (icUND)
-         if(iand(cmp%update,1) .eq. 0)then
+         if(.not. cmp%update)then
            call tpara(cmp)
          endif
          call undulator(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -557,7 +557,7 @@ c     $          cmp%value(p_VNOMINAL_CAVI)
          go to 1010
 
        case (icBEAM)
-         if(iand(cmp%update,1) .eq. 0)then
+         if(.not. cmp%update)then
            call tpara(cmp)
          endif
          call beambeam(np,x,px,y,py,z,g,dv,sx,sy,sz,cmp%value(1),
@@ -565,7 +565,7 @@ c     $          cmp%value(p_VNOMINAL_CAVI)
          go to 1020
 
        case (icProt)
-         if(iand(cmp%update,1) .eq. 0)then
+         if(.not. cmp%update)then
            call tpara(cmp)
          endif
          call phsrot(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -751,7 +751,7 @@ c     $             +lend-1),
           endif
           cmp%value(k1)=cmp%value(k1)+rsave(k2)*lkv%rbody(i)
         enddo
-        cmp%update=iand(2,cmp%update)
+        cmp%update=.false.
         call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       cmp,bz,rtaper,n,latt,kptbl)
       enddo

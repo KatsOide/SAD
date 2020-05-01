@@ -65,10 +65,10 @@ With[{setop=Set|AddTo|TimesBy|SubtractFrom|DivideBy},
         If[k==d || k=="VALUE",
           f[Element$[d,elp,op],z*LINE["DK",el]];
           If[Length[ll]>1,
-            f[LINE[d,#],z*LINE["DK",#]]&/@Rest[ll],
+            f[LINE[d,#],z*LINE["DK",#]]&/@Rest[ll]],
           If[k<>"GEO" && Length[ll]>1,
 	    f[LINE[k,#],z]&/@ll,
-            f[Element$[k,elp,op],z]]]];
+            f[Element$[k,elp,op],z]]];
         Element$[k,elp]]]];
   (f:setop)[Element[x_,y_List,op___],z_List]^:=
     MapThread[Function[{a,b},f[Element[x,a,op],b]],{y,z}];

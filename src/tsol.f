@@ -781,7 +781,7 @@ c            xsinphi=xsin(phi)
  20   bzs=tfbzs(k,kbz)
       if(.not. insol)then
         call loc_comp(l1,cmp)
-        if(iand(cmp%update,1) .eq. 0)then
+        if(.not. cmp%update)then
           call tpara(cmp)
         endif
         call trots(np,x,px,y,py,z,dv,
@@ -889,7 +889,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
      $           al,bzs,rad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0)
           endif
         case (icBEND)
-          if(iand(cmp%update,1) .eq. 0)then
+          if(.not. cmp%update)then
             call tpara(cmp)
           endif
           al=cmp%value(ky_L_BEND)
@@ -901,7 +901,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
      $         al,bzs,phiy,phix,rad .and. al .ne. 0.d0
      $         .and. cmp%value(ky_RAD_BEND) .eq. 0.d0)
         case(icQUAD)
-          if(iand(cmp%update,1) .eq. 0)then
+          if(.not. cmp%update)then
             call tpara(cmp)
           endif
           al=cmp%value(ky_L_QUAD)
@@ -935,7 +935,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
      $           cmp,bzs,rtaper,n,latt,kptbl)
           endif
         case(icCAVI)
-          if(iand(cmp%update,1) .eq. 0)then
+          if(.not. cmp%update)then
             call tpara(cmp)
           endif
           autophi=cmp%value(ky_APHI_CAVI) .ne. 0.d0
@@ -978,7 +978,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
             call tsfrin(np,x,px,y,py,z,g,bz1-bzs)
           endif
           if(l .eq. ke)then
-            if(iand(cmp%update,1) .eq. 0)then
+            if(.not. cmp%update)then
               call tpara(cmp)
             endif
             if(krad)then
