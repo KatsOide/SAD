@@ -466,7 +466,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
             else
               kx%k=ktfref+iax
               call compelc(ia,cmp)
-              cmp%update=.false.
+              cmp%update=cmp%nparam .le. 0
             endif
           endif
         else
@@ -512,7 +512,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
         if(.not. ref)then
           kx%k=ktfref+iax
           if(.not. saved)then
-            cmp%update=.false.
+            cmp%update=cmp%nparam .le. 0
           endif
         endif
       endif
@@ -914,7 +914,7 @@ c          enddo
           else
             kx%k=ktfref+latt(ia)+1
             call compelc(ia,cmp)
-            cmp%update=.false.
+            cmp%update=cmp%nparam .le. 0
           endif
         else
           kx%k=ktftrue
@@ -943,13 +943,13 @@ c          enddo
         else
           kx%k=ktfref+kax
           call compelc(ia,cmp)
-          cmp%update=.false.
+          cmp%update=cmp%nparam .le. 0
         endif
       else
         if(ia .lt. nlat)then
           kx=tfkeyv(int(ia),keyword,ip,cmp,ref,.false.)
           if(.not. ref)then
-            cmp%update=.false.
+            cmp%update=cmp%nparam .le. 0
             kx%k=ktfref+ip
           endif
           tparaed=.false.

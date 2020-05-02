@@ -150,7 +150,7 @@ c
           va=v
         endif
         call compelc(ii,cmpd)
-        cmpd%update=.false.
+        cmpd%update=cmpd%nparam .le. 0
         if(var)then
           vx=cmpd%value(ivi)/errk(1,ii)
           if(minf)then

@@ -20,13 +20,13 @@
      $           .and. (nvevx(j)%ivcomp .eq. 0 .or.
      $           nvevx(j)%ivcomp .eq. ii))then
               cmp%value(iv)=nvevx(j)%valvar*errk(1,i)*couple(i)
-              cmp%update=.false.
+              cmp%update=cmp%nparam .le. 0
             elseif(iv .ne. 0 .and. iv .ne. nelvx(ie)%ival .and.
      $             nvevx(j)%ivarele .eq. ie1
      $             .and. (nvevx(j)%ivcomp .eq. 0 .or.
      $             nvevx(j)%ivcomp .eq. i))then
               cmp%value(iv)=nvevx(j)%valvar
-              cmp%update=.false.
+              cmp%update=cmp%nparam .le. 0
             endif
             if(nvevx(j)%ivarele .gt. ie)then
               exit

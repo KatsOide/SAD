@@ -1722,7 +1722,7 @@ c        enddo
             cmpd%updateseg=.false.
           endif
         endif
-        cmpd%update=.false.
+        cmpd%update=cmpd%nparam .le. 0
         return
         end subroutine
 
@@ -1743,7 +1743,7 @@ c        enddo
      $       k .eq. ky_PROF_MULT)then
           cmpd%updateseg=.false.
         endif
-        cmpd%update=.false.
+        cmpd%update=cmpd%nparam .le. 0
         return
         end subroutine
 

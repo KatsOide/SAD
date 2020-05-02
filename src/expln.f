@@ -55,6 +55,7 @@ c     set Nominal values
         call tfvcopycmpall(cmps,cmp,plen)
         cmp%update=cmp%nparam .le. 0
         cmp%updateseg=.false.
+c        write(*,*)'expnln ',j,iti,cmp%update
 c     and then add statistical error
         idxerr=ilist(2,idi)
         do while(idxerr .ne. 0)
