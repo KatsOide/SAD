@@ -51,12 +51,9 @@
       data busy /.false./
       itwisso(kk,i,j)=iftwis+kk+nlat*(i+ndim+(j-1)*ndima)-1
       flv%mcommon=int((sizeof(flv)+7)/8)
-c      write(*,*)'tffsa ',flv%mcommon
       kffs=ktfoper+mtfnull
       irtcffs=0
-c      write(*,*)'tffsa-0 ',lfnb,ilattp,mstk
       l=itfuplevel()
-c      write(*,*)'tffsa-1 ',l
       chguse=.false.
 c     begin initialize for preventing compiler warning
       levelr=0
@@ -409,9 +406,10 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
           if(ilist(2,idval(iuse)) .le. 0 .or. expnd)then
             call expnln(iuse)
           endif
-          call filaux(iuse)
           ilattp=idval(ilist(2,idval(iuse)))
           call loc_el(ilattp,elatt)
+          nlat=elatt%nlat0+1
+          call filaux(iuse)
           lattuse=ilattp
           call tclrpara
           dleng =rlist(elatt%aux+1)*rgetgl1('FSHIFT')
@@ -446,7 +444,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
         call tffssaveparams(1,ilattp,err)
         call loc_el(ilattp,elatt)
         lattuse=ilattp
-        nlat=elatt%nlat1-1
+        nlat=elatt%nlat0+1
         call tfresetparam
         dleng =rlist(elatt%aux+1)*rgetgl1('FSHIFT')
         call ffs_init_pointer

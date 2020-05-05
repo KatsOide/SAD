@@ -199,7 +199,6 @@ c     end   initialize for preventing compiler warning
       istart=istart0
  1    ke=0
       ke1=0
-c      write(*,*)'tfgeo',istart
       p1=gammab(istart)
       h1=p2h(p1)
 c      h1=p1*sqrt(1.d0+1.d0/p1**2)

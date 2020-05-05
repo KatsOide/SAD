@@ -17,8 +17,8 @@
       implicit none
       type (sad_el), pointer :: el
       type (sad_comp), pointer :: cmp,cmps
-      integer*4 idxl,isp0,i,iti,plen,orientation,
-     $     idxerr,n,j,hsrchz,idxe
+      integer*4, intent(in):: idxl
+      integer*4 isp0,i,iti,plen,orientation,idxerr,n,j,hsrchz,idxe,id
       integer*8 kp,idxpar,ia,idx0,idi
       real*8 frand
       idx0=idval(idxl)
@@ -37,17 +37,17 @@ c
       idxe=hsrchz(pname(idxl)(:lpname(idxl))//"$EXPND")
       ia=kmelaloc(n,el)
       idval(idxe)=ia
-      el%aux=0
       ilist(2,idx0)=idxe
       do j=1,n
         i=isp0+j
-        idi=idval(itastk(1,i))
-        iti=idtype(itastk(1,i))
+        id=itastk(1,i)
+        idi=idval(id)
+        iti=idtype(id)
         plen=ilist(1,idi)
         orientation=sign(1,itastk(2,i))
         kp=kmcompaloc(plen+kytbl(kwNPARAM,iti)+1,cmp)
         el%comp(j)=kp
-        cmp%id=itastk(1,i)
+        cmp%id=id
         cmp%nparam=kytbl(kwNPARAM,iti)
         cmp%orient=dble(orientation)
         call loc_comp(idi,cmps)
@@ -55,7 +55,6 @@ c     set Nominal values
         call tfvcopycmpall(cmps,cmp,plen)
         cmp%update=cmp%nparam .le. 0
         cmp%updateseg=.false.
-c        write(*,*)'expnln ',j,iti,cmp%update
 c     and then add statistical error
         idxerr=ilist(2,idi)
         do while(idxerr .ne. 0)
@@ -141,7 +140,7 @@ c     and then add statistical error
       ip=idval(idxe)
       call loc_el(ip,el)
       idval(idxe)=0
-      do i=1,el%nlat1-2
+      do i=1,el%nlat0
         k=el%comp(i)
         call loc_comp(k,cmp)
         lt=idtype(cmp%id)

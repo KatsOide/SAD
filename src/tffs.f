@@ -4,7 +4,8 @@
 
         type sad_el
         sequence
-        integer*4 nlat1,dum1
+        integer*4 nl,nlat0
+c        type (sad_descriptor) elmv
         integer*8 aux,comp(1:mbody)
         end type
 
@@ -12,10 +13,11 @@
         sequence
         integer*4 ncomp2,id
         integer*4 nparam
-        logical*1 update,updateseg,ldummy(2)
+        logical*1 ldummy1,update,updateseg,ldummy2
         real*8 orient
         type (sad_descriptor) dvalue(1:0)
         integer*8 kvalue(1:0)
+        integer*4 ivalue(2,1:0)
         real*8 value(1:mbody)
         end type
 
@@ -28,18 +30,21 @@
         type (sad_el), pointer, intent(out) :: el
         kmelaloc=ktaloc(n+1)
         call c_f_pointer(c_loc(klist(kmelaloc-1)),el)
+        el%nlat0=n
+c        el%elmv%k=0
+        el%aux=0
         return
         end function
 
         integer*8 function kmcompaloc(n,cmp)
-        use tfstk, only:klist
+        use tfstk, only:klist,ktraaloc
         use iso_c_binding
         implicit none
         integer*4 ,intent(in)::n
-        integer*8 ktcaloc
         type (sad_comp), pointer, intent(out) :: cmp
-        kmcompaloc=ktcaloc(n+expnsize+2)+1
+        kmcompaloc=ktraaloc(0,n+expnsize+2)+2
         call c_f_pointer(c_loc(klist(kmcompaloc-2)),cmp)
+        cmp%ncomp2=n+expnsize+3
         return
         end function
 
@@ -780,7 +785,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         integer*4 function idtypec(i)
         use maccbk, only:idtype
         implicit none
-        integer*4 i
+        integer*4 ,intent(in)::i
         idtypec=idtype(idcomp(elatt,i))
         return
         end function
@@ -1027,7 +1032,6 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
               fb2=0.d0
             endif
           endif
-c          write(*,*)'tpara-bend ',cmp%value(ky_FRMD_BEND),fb1,fb2
           w=phi-psi1-psi2
           if((fb1 .ne. 0.d0 .or. fb2 .ne. 0.d0) .and.
      1         al .ne. 0.d0 .and. phi .ne. 0.d0)then
@@ -1789,14 +1793,12 @@ c        enddo
         integer*4 i,k
         real*8 r0,v
         if(ktfrealq(cmpd%dvalue(i)))then
-c     write(*,*)'tfsetcmp-0 ',i,v
           cmpd%value(i)=v
         elseif(tfreallistq(cmpd%dvalue(i),lad))then
           r0=lad%rbody(1)
           do k=2,lad%nl
             r0=r0+lad%rbody(k)
           enddo
-c     write(*,*)'tfsetcmp-1 ',i,r0,v
           if(r0 .ne. 0.d0)then
             lad%rbody(1:lad%nl)=v/r0*lad%rbody(1:lad%nl)
           else
@@ -1888,6 +1890,21 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       return
       end
 
+      subroutine tffs_init_elmv
+      use tfstk
+      use ffs
+      use ffs_pointer
+      implicit none
+c      type (sad_dlist) , pointer ::kl
+c      elatt%elmv%k=ktadalocnull(0,nele,kl)
+c      do i=1,nele
+c        l=ilist(i,ifmult)
+c        id=ilist(1,l)
+cc
+c
+      return
+      end
+
       subroutine tffsalloc()
       use tfstk
       use ffs
@@ -1895,35 +1912,16 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       use tffitcode
       use sad_main
       implicit none
-      integer*8 j
-      integer*4 l,ntwis,k,i,itehash
+      integer*4 ntwis
       marki=1
-      nlat=elatt%nlat1-1
+      nlat=elatt%nlat0+1
       latt(1:nlat)=>elatt%comp(1:nlat)
       if(idtypec(1) .ne. icMARK)then
         write(*,*)'The first element must be a MARK element.'
         call abort
       endif
       call tfhashelement
-      ifele1=ktaloc(nlat/2+1)
-      ifmult =ktaloc(nlat/2+1)
-      nele=0
-      LOOP_L: do l=1,nlat-1
-        j=ielmhash+itehash(pnamec(l),MAXPNAME)*2
-        LOOP_K: do k=1,ilist(1,j+1)
-          i=ilist(1,k+klist(j+2)-1)
-          if(i .ge. l)then
-            exit LOOP_K
-          endif
-          if(idelc(i) .eq. idelc(l))then
-            ilist(l,ifele1)=ilist(i,ifele1)
-            cycle LOOP_L
-          endif
-        enddo LOOP_K
-        nele=nele+1
-        ilist(nele,ifmult)=l
-        ilist(l,ifele1)=nele
-      enddo LOOP_L
+      call tffs_init_nele
       ifibzl =ktaloc(nlat*3/2+2)
       ifcoup=ktaloc(nlat)
       iferrk=ktaloc(nlat*2)
@@ -1963,6 +1961,38 @@ c      ilist(1,iwakepold+6)=int(iftwis)
 c      ilist(2,iwakepold+6)=int(ifsize)
       return
       end
+
+      subroutine tffs_init_nele
+      use tfstk
+      use ffs
+      use ffs_pointer
+      implicit none
+      integer*8 j
+      integer*4 i,l,k,itehash
+      ifele1=ktaloc(nlat/2+1)
+      ifmult =ktaloc(nlat/2+1)
+      nele=0
+      LOOP_L: do l=1,nlat-1
+        j=ielmhash+itehash(pnamec(l),MAXPNAME)*2
+        LOOP_K: do k=1,ilist(1,j+1)
+          i=ilist(1,k+klist(j+2)-1)
+          if(i .ge. l)then
+            exit LOOP_K
+          endif
+          if(idelc(i) .eq. idelc(l))then
+            ilist(l,ifele1)=ilist(i,ifele1)
+            cycle LOOP_L
+          endif
+        enddo LOOP_K
+        nele=nele+1
+        ilist(nele,ifmult)=l
+        ilist(l,ifele1)=nele
+      enddo LOOP_L
+c      if(elatt%elmv%k .eq. 0)then
+c        call tffs_init_elmv
+c      endif
+      return
+      end subroutine
 
       subroutine tffsnvealloc(nv)
       use tfstk
@@ -2147,7 +2177,6 @@ c      call tfree(ifibzl)
         lfni=lfni0
         call trbassign(lfni)
       endif
-c      write(*,*)'tfmain-1 ', lfn,infl0,lfnb0,lfni0,lfni
       kx%k=ktfoper+mtfnull
       return
       end

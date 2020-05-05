@@ -17,7 +17,6 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       character*20 title
       logical*4, save :: trackinit=.false.
       real*8 ol,trval,dt1,df,rgetgl1,dt0,phi(3)
-c      write(*,*)'track-0'
       if(bypasstrack)then
         write(*,*)
      $       '??? FFS, EMIT, TRACK in GetMAIN are bypassed. ???'
@@ -58,6 +57,7 @@ c      write(*,*)'track-0'
       pltfl=8
       ilattp=latt
       call loc_el(ilattp,elatt)
+      write(*,*)'track-3 ',ilattp,elatt%nlat0
       lattuse=latt
       lscal =klist(iparam+1)
       np0   =ilist(1,lscal+1)
@@ -81,7 +81,7 @@ c      write(*,*)'track-0'
       zlost =rgetgl1('LOSSDZ')
       trf0  =rgetgl1('DTSYNCH')
       vcalpha=rgetgl1('EFFVCRATIO')
-      nlat  =elatt%nlat1-1
+      nlat  =elatt%nlat0+1
 c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       df    =rgetgl1('FSHIFT')
       isynch=igetgl1('$RFSW$'  )
@@ -268,7 +268,7 @@ c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       call isetgl1('$SUMRES$',sumres)
       call isetgl1('$DIFFRES$',diffres)
       call isetgl1('$PHOTONS$',photons)
-      nlat  =elatt%nlat1-1
+      nlat  =elatt%nlat0+1
       call tclrpara
       call cputime(dt1,irtc)
       write(*,'(1X,2A,F10.3,A)')
