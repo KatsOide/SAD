@@ -2,6 +2,7 @@
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer
       implicit none
       integer*8 kx,kax
       integer*4 isp1,irtc,itfmessage
@@ -11,7 +12,7 @@
       if(narg .gt. 1) go to 9010
       irtc=0
       kax=ktavaloc(-1,nlat)
-      call pgmast1(rlist(kax+1:kax+nlat),ilist(1:nlat,ifele),
+      call pgmast1(rlist(kax+1:kax+nlat),icomp(1:nlat),
      $     rlist(ifpos:ifpos+nlat-1))
       kx=ktflist+kax
       return

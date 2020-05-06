@@ -824,7 +824,7 @@ c     call tfdebugprint(kx,'varfun',1)
       real*8 s,dtwiss(mfittry),coup,posk,wk,ctrans(4,7,-nfam:nfam)
       logical*4 col(2,nqcol),disp,nzcod
       integer*4 , parameter :: minnqu=512
-      call tffscoupmatrix(kele2,kcm,lfno)
+      call tffscoupmatrix(kcm,lfno)
       irtc=0
       nqu=max(minnqu,nqcol*nvar)
       do9000: do kkk=1,1
@@ -1338,12 +1338,13 @@ c        endif
       return
       end
 
-      subroutine tffscoupmatrix(kele2,kcm,lfno)
+      subroutine tffscoupmatrix(kcm,lfno)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer,only:kele2
       implicit none
-      integer*8 km,k1,kam,kcm,ktfmaloc,k2,kele2(nlat)
+      integer*8 km,k1,kam,kcm,ktfmaloc,k2
       integer*4 lfno,irtc,n,m
       real*8 rfromk
       integer*8 itfcoupm

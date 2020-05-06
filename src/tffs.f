@@ -242,7 +242,7 @@ c        el%elmv%k=0
       type ffsv
         sequence
         integer*8 ifaux,ifibzl,ifmult,iftwissp,
-     $       iftwis,ifpos,ifgeo,ifsize,ifgamm,ifele,ifcoup,
+     $       iftwis,ifpos,ifgeo,ifsize,ifgamm,ifcomp,ifcoup,
      $       iferrk,ifele1,ifele2,ifmast,iffserr,
      $       iffssave,iut,ifiprev,ifinext,
      $       ielmhash,ifnvev,ifnelv
@@ -375,7 +375,7 @@ c$$$susp;
      $  'RELW    ','QUIET   ','TRUNI   ','        '/)
 
       integer*8, pointer :: ifibzl,ifmult,iftwissp,
-     $     iftwis,ifpos,ifgeo,ifsize,ifgamm,ifele,ifcoup,
+     $     iftwis,ifpos,ifgeo,ifsize,ifgamm,ifcomp,ifcoup,
      $     iferrk,ifele1,ifele2,ifmast,iffserr,iffssave,
      $     ifiprev,ifinext,ielmhash,ifnvev,ifnelv
       real*8, pointer :: emx,emy,emz,dpmax,xixf,xiyf,
@@ -403,7 +403,7 @@ c$$$susp;
         ifgeo=>ffv%ifgeo
         ifsize=>ffv%ifsize
         ifgamm=>ffv%ifgamm
-        ifele=>ffv%ifele
+        ifcomp=>ffv%ifcomp
         ifcoup=>ffv%ifcoup
         iferrk=>ffv%iferrk
         ifele1=>ffv%ifele1
@@ -734,7 +734,7 @@ c$$$susp;
         call c_f_pointer(c_loc(ilist(1,ifmast)),master,[nlat])
 c        call c_f_pointer(c_loc(ilist(1,ifival)),ival,[nele])
 c        call c_f_pointer(c_loc(dlist(ifdcomp)),dcomp,[nele])
-        call c_f_pointer(c_loc(ilist(1,ifele)),icomp,[nlat])
+        call c_f_pointer(c_loc(ilist(1,ifcomp)),icomp,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifele1)),iele1,[nlat])
         call c_f_pointer(c_loc(klist(ifele2)),kele2,[nlat])
 c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
@@ -1926,7 +1926,7 @@ c
       ifcoup=ktaloc(nlat)
       iferrk=ktaloc(nlat*2)
       ifmast =ktaloc(nlat/2+1)
-      ifele =ktaloc(nlat/2+1)
+      ifcomp =ktaloc(nlat/2+1)
       ifele2=ktaloc(nlat)
       ifiprev =ktaloc(nlat/2+1)
       ifinext =ktaloc(nlat/2+1)
@@ -1970,7 +1970,7 @@ c      ilist(2,iwakepold+6)=int(ifsize)
       integer*8 j
       integer*4 i,l,k,itehash
       ifele1=ktaloc(nlat/2+1)
-      ifmult =ktaloc(nlat/2+1)
+      ifmult=ktaloc(nlat/2+1)
       nele=0
       LOOP_L: do l=1,nlat-1
         j=ielmhash+itehash(pnamec(l),MAXPNAME)*2
@@ -2047,7 +2047,7 @@ c      call tfree(ifibzl)
       call tfree(ifiprev)
       call tfree(ifele2)
       call tfree(ifele1)
-      call tfree(ifele)
+      call tfree(ifcomp)
       do i=1,nele
         call tflocald(nelvx(i)%dcomp)
       enddo

@@ -589,7 +589,7 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
       use tfstk
       use ffs
       use tffitcode
-      use ffs_pointer, only:latt
+      use ffs_pointer, only:latt,icomp
       implicit none
       type (sad_descriptor) kx
       integer*4 isp1,irtc,ie,iv,k,j,m,ispa
@@ -615,7 +615,7 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
           irtc=itfmessage(9,'General::narg','"1"')
         endif
         do i=1,nlat-1
-          ie=ilist(ilist(i,ifele),ifele1)
+          ie=ilist(icomp(i),ifele1)
           if(ie .gt. 0)then
             iv=nelvx(ie)%ival
 c            iv=ilist(ie,ifival)

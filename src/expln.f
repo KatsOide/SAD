@@ -18,8 +18,8 @@
       type (sad_el), pointer :: el
       type (sad_comp), pointer :: cmp,cmps
       integer*4, intent(in):: idxl
-      integer*4 isp0,i,iti,plen,orientation,idxerr,n,j,hsrchz,idxe,id
-      integer*8 kp,idxpar,ia,idx0,idi
+      integer*4 isp0,i,iti,plen,idxerr,n,j,hsrchz,idxe,id
+      integer*8 kp,idxpar,idx0,kdi
       real*8 frand
       idx0=idval(idxl)
       if(ilist(2,idx0) .gt. 0)then
@@ -35,28 +35,26 @@ c     Second stage : expand parameter list of each element
 c
       n=isp-isp0
       idxe=hsrchz(pname(idxl)(:lpname(idxl))//"$EXPND")
-      ia=kmelaloc(n,el)
-      idval(idxe)=ia
+      idval(idxe)=kmelaloc(n,el)
       ilist(2,idx0)=idxe
       do j=1,n
         i=isp0+j
         id=itastk(1,i)
-        idi=idval(id)
+        kdi=idval(id)
         iti=idtype(id)
-        plen=ilist(1,idi)
-        orientation=sign(1,itastk(2,i))
+        plen=ilist(1,kdi)
         kp=kmcompaloc(plen+kytbl(kwNPARAM,iti)+1,cmp)
         el%comp(j)=kp
         cmp%id=id
         cmp%nparam=kytbl(kwNPARAM,iti)
-        cmp%orient=dble(orientation)
-        call loc_comp(idi,cmps)
+        cmp%orient=dble(sign(1,itastk(2,i)))
+        call loc_comp(kdi,cmps)
 c     set Nominal values
         call tfvcopycmpall(cmps,cmp,plen)
         cmp%update=cmp%nparam .le. 0
         cmp%updateseg=.false.
 c     and then add statistical error
-        idxerr=ilist(2,idi)
+        idxerr=ilist(2,kdi)
         do while(idxerr .ne. 0)
           iti=idtype(itastk(1,i))
           if (kytbl(ilist(1,idxerr),iti) .ne. 0) then

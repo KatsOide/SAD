@@ -715,7 +715,7 @@ c                   directio_vector(angle)
           wd=0.d0
         end if
         call ndelw(wl,wa,wp,wd,
-     &             latt,ilist(1,ifele),rlist(ifcoup),
+     &             latt,icomp,rlist(ifcoup),
      $       rlist(ifgeo),pos,ilist(1,ifmast))
         go to 10
 c End of the lines added by N. Yamamoto Apr. 25, '93
@@ -1445,7 +1445,7 @@ c        dpm2=rlist(ktlookup('DPM'))
       call tfshow(cellstab,df,mfpnt,mfpnt1,
      $     kffs,irtcffs,lfnb .gt. 1,lfno)
       call tmunmapp(flv%iut)
-      call tffsclearcouple(kele2)
+      call tffsclearcouple
       if(cell)then
         str=' '
         do i=nfam1,nfam
@@ -1735,12 +1735,12 @@ c            call tclr(uini(1,0),28)
       return
       end
 
-      subroutine tffsclearcouple(kele2)
+      subroutine tffsclearcouple
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer,only:kele2
       implicit none
-      integer*8 kele2(nlat)
       integer*4 i
       do i=1,nlat-1
         if(kele2(i) .ne. 0)then

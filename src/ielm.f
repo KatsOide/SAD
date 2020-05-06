@@ -246,9 +246,7 @@ c     *     by tfinit(), tfinimult() initialization
       implicit none
       integer*8 k
       integer*4 itehash,nelm(0:nelmhash),j,n,i
-      do j=0,nelmhash
-        nelm(j)=0
-      enddo
+      nelm=0
       do i=1,nlat-1
         j=itehash(pnamec(i),MAXPNAME)
         nelm(j)=nelm(j)+1
@@ -284,8 +282,7 @@ c     *     by tfinit(), tfinimult() initialization
       ih=0
       do i=1,nc
         if(name(i) .eq. ichar(' '))then
-          itehash=iand(ih,nh)
-          return
+          exit
         endif          
         ih=ih+name(i)
       enddo
