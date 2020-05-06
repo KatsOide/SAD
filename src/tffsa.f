@@ -805,60 +805,65 @@ c        go to 31
         call cputime(ctime1,irtc0)
         call tfsetparam
         lpw=min(itfgetrecl()-1,255)
-        call twbuf(word,lfno,1,0,0,0)
-        call twbuf('CTIME='//autofg((ctime1-flv%ctime0)*1.d-6,'8.3'),
-     1          lfno,1,lpw,8,1)
-        call twbuf('sec  DT='//autofg((ctime1-flv%ctime2)*1.d-6,'8.3'),
-     1          lfno,1,lpw,8,1)
-        call twbuf('sec',lfno,1,lpw,8,1)
+        call twbuf(word,'',lfno,1,0,0,0)
+        call twbuf('CTIME='//autofg((ctime1-flv%ctime0)*1.d-6,'S8.3'),
+     $       ' sec',lfno,1,lpw,8,1)
+        call twbuf('DT='//autofg((ctime1-flv%ctime2)*1.d-6,'S8.3'),
+     $       ' sec',lfno,1,lpw,8,1)
         flv%ctime2=ctime1
-        call twbuf(word,lfno,1,0,0,-1)
+        call twbuf(word,'',lfno,1,0,0,-1)
         do i=1,nflag
           if(fname(i) .ne. ' ')then
             if(flags(i))then
-              call twbuf(fname(i),lfno,1,lpw,8,1)
+              call twbuf(fname(i),'',lfno,1,lpw,8,1)
             else
               if(sino(i) .ne. ' ')then
-                call twbuf(sino(i),lfno,1,lpw,8,1)
+                call twbuf(sino(i),'',lfno,1,lpw,8,1)
               else
-                call twbuf('NO'//fname(i),lfno,1,lpw,8,1)
+                call twbuf('NO'//fname(i),'',lfno,1,lpw,8,1)
               endif
             endif
           endif
         enddo
-        call twbuf(word,lfno,1,0,0,-1)
-        call twbuf('CHARGE='//autofg(charge,'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('MASS='//autofg(amass,'S9.2'),lfno,1,lpw,8,1)
-        call twbuf('MOMENTUM='//autofg(pgev,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('PBUNCH='//autofg(pbunch,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('NBUNCH='//autofg(anbunch,'S9.6'),lfno,1,lpw,8,1)
+        call twbuf(word,'',lfno,1,0,0,-1)
+        call twbuf('CHARGE='//autofg(charge,'S7.4'),'',lfno,1,lpw,8,1)
+        call twbuf('MASS='//autofg(amass/1e6,'S10.7'),' MeV',
+     $       lfno,1,lpw,8,1)
+        call twbuf('MOMENTUM='//autofg(pgev/1e9,'S10.6'),' GeV',
+     $       lfno,1,lpw,8,1)
+        call twbuf('PBUNCH='//autofg(pbunch,'S9.6'),'',lfno,1,lpw,8,1)
         flv%rsconv=rfromd(kxsymbolv('CONVERGENCE',11))
-        call twbuf('DP='//autofg(dpmax,'S8.5'),lfno,1,lpw,8,1)
-        call twbuf('DP0='//autofg(dp0,'S8.5'),lfno,1,lpw,8,1)
-        call twbuf('FSHIFT='//autofg(rgetgl1('FSHIFT'),'S9.6'),
+        call twbuf('DP='//autofg(dpmax,'S8.5'),'',lfno,1,lpw,8,1)
+        call twbuf('DP0='//autofg(dp0,'S8.5'),'',lfno,1,lpw,8,1)
+        call twbuf('FSHIFT='//autofg(rgetgl1('FSHIFT'),'S9.6'),'',
      $       lfno,1,lpw,8,1)
-        call twbuf('MINCOUP='//autofg(coumin,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('EMITX='//autofg(emx,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('EMITY='//autofg(emy,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('EMITZ='//autofg(emz,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('SIGZ='//autofg(sigzs,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('SIGE='//autofg(sizedp,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('XIX='//autofg(xixf/pi2,'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('XIY='//autofg(xiyf/pi2,'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('EMITDIV='//autofg(emidiv,'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('EMITDIVB='//autofg(emidib,'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('EMITDIVQ='//autofg(emidiq,'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('EMITDIVS='//autofg(emidis,'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('GCUT='//autofg(tgetgcut(),'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('NP='//autofg(dble(np0),'S8.1'),lfno,1,lpw,8,1)
-        call twbuf('CONVERGENCE='//autofg(flv%rsconv,'S8.5'),
+        call twbuf('MINCOUP='//autofg(coumin,'S9.6'),'',lfno,1,lpw,8,1)
+        call twbuf('EMITX='//autofg(emx,'S9.6'),' m',lfno,1,lpw,8,1)
+        call twbuf('EMITY='//autofg(emy,'S9.6'),' m',lfno,1,lpw,8,1)
+        call twbuf('EMITZ='//autofg(emz,'S9.6'),' m',lfno,1,lpw,8,1)
+        call twbuf('SIGZ='//autofg(sigzs,'S9.6'),' m',lfno,1,lpw,8,1)
+        call twbuf('SIGE='//autofg(sizedp,'S9.6'),'',lfno,1,lpw,8,1)
+        call twbuf('XIX='//autofg(xixf/pi2,'S7.4'),'',lfno,1,lpw,8,1)
+        call twbuf('XIY='//autofg(xiyf/pi2,'S7.4'),'',lfno,1,lpw,8,1)
+        call twbuf('NBUNCH='//autofg(anbunch,''),'',lfno,1,lpw,8,1)
+        call twbuf('NP='//autofg(dble(np0),'S8.1'),'',lfno,1,lpw,8,1)
+        call twbuf('GCUT='//autofg(tgetgcut(),''),'',lfno,1,lpw,8,1)
+        call twbuf('EMITDIV='//autofg(emidiv,''),'',lfno,1,lpw,8,1)
+        call twbuf('EMITDIVB='//autofg(emidib,''),'',lfno,1,lpw,8,1)
+        call twbuf('EMITDIVQ='//autofg(emidiq,''),'',lfno,1,lpw,8,1)
+        call twbuf('EMITDIVS='//autofg(emidis,''),'',lfno,1,lpw,8,1)
+        call twbuf('CONVERGENCE='//autofg(flv%rsconv,''),'',
      $       lfno,1,lpw,8,1)
-        call twbuf('MAXITERATION='//autofg(dble(flv%itmax),'S8.1'),
+        call twbuf('MAXITERATION='//autofg(dble(flv%itmax),''),'',
      $       lfno,1,lpw,8,1)
+        call twbuf('NPARA='//autofg(dble(nparallel),''),'',
+     $       lfno,1,lpw,8,1)
+        call twbuf(' ','',lfno,1,lpw,8,-1)
         call twelm(lfno,mfpnt,mfpnt1,'FIT',lpw,8)
-        call twelm(lfno,flv%measp,0,'MEA_SURE',lpw,8)
-        call twelm(lfno,iorgr,0,'ORG',lpw,8)
         call twelm(lfno,id1,id2,'DISP_LAY',lpw,8)
+        call twelm(lfno,iorgr,0,'ORG',lpw,8)
+        call twelm(lfno,flv%measp,0,'MEA_SURE',lpw,8)
+        call twbuf(' ','',lfno,1,lpw,8,-1)
         go to 10
       elseif(abbrev(word,'VAR_IABLES','_') .or. word .eq. 'VARS')then
         call tfinitvar

@@ -1,3 +1,4 @@
+! Obsolete
       subroutine twelm(lfno,idisp1,idisp2,title,irmgn,itab)
       use ffs
       use tffitcode
@@ -12,7 +13,7 @@
       endif
       title1=title
       call twbuf(
-     1    title1(1:lene(title1))//' '//name(1:lene(name))//' '//name1,
+     1    title1(1:lene(title1))//' '//name(1:lene(name))//' '//name1,'',
      1    lfno,1,irmgn,itab,1)
       return
       end

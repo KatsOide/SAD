@@ -57,7 +57,6 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       pltfl=8
       ilattp=latt
       call loc_el(ilattp,elatt)
-      write(*,*)'track-3 ',ilattp,elatt%nlat0
       lattuse=latt
       lscal =klist(iparam+1)
       np0   =ilist(1,lscal+1)
@@ -82,7 +81,6 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       trf0  =rgetgl1('DTSYNCH')
       vcalpha=rgetgl1('EFFVCRATIO')
       nlat  =elatt%nlat0+1
-c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       df    =rgetgl1('FSHIFT')
       isynch=igetgl1('$RFSW$'  )
       intra =igetgl1('$INTRA$' ) .ne. 0

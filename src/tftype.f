@@ -61,19 +61,19 @@ c          if(klp(iele1(kx)) .ne. kx)cycle
             if(idtype(kp) .eq. lt)then
               if(start)then
                 write(lfno,*)';'
-                call twbuf(' ',lfno,1,lpw,0,0)
-                call twbuf(tfkwrd(lt,0),lfno,1,lpw,7,1)
+                call twbuf(' ','',lfno,1,lpw,0,0)
+                call twbuf(tfkwrd(lt,0),'',lfno,1,lpw,7,1)
                 start=.false.
               endif
               call tftyp1(iele1(kx),kx,latt(kx),kp,lt,lfno,lpw)
               if(mulc)then
-                call twbuf(' ',lfno,10,lpw,0,-1)
+                call twbuf(' ','',lfno,10,lpw,0,-1)
               endif
             endif
           endif
         enddo
         if(.not. start .and. .not. mulc)then
-          call twbuf(' ',lfno,10,lpw,0,-1)
+          call twbuf(' ','',lfno,10,lpw,0,-1)
         endif
       enddo
 21    exist1=exist1 .or. exist
@@ -105,7 +105,7 @@ c      endif
       type (sad_dlist), pointer :: klv
       type (sad_strbuf), pointer :: strb
       integer*8 lp
-      integer*4 ioff,kx,l,kp,lt,lfno,lv,lene,lenw,lpw,irtc,nc,j,j1
+      integer*4 ioff,kx,l,kp,lt,lfno,lv,lenw,lpw,irtc,nc,j,j1
       real*8 v,coeff
       character*32 autos
       character*132 vout
@@ -119,10 +119,10 @@ c      endif
         kw=tfkwrd(lt,ioff)
         if(kw .eq. ' ')then
           if(start)then
-            call twbuf(pname(kp)(1:max(8,lpname(kp)))//'=()',
+            call twbuf(pname(kp)(1:max(8,lpname(kp))),'=()',
      $           lfno,7,lpw,7,1)
           else
-            call twbuf(')',lfno,10,lpw,1,1)
+            call twbuf(')','',lfno,10,lpw,1,1)
           endif
           return
         elseif(kw .eq. '-')then
@@ -181,21 +181,20 @@ c      endif
         endif
         if(real)then
           v=v*coeff
-          vout=kw(1:lenw(kw))//' ='
-     $         //autos(v)//unit(1:lene(unit))
+          vout=kw(1:lenw(kw))//' ='//autos(v)
           call trim(vout)
           if(v .ne. 0.d0 .or. ioff .eq. nelvx(kx)%ival)then
             if(abs(v) .gt. 1.d10 .and. index(vout,'.') .le. 0
      $           .and. v .ne. dinfinity)then
-              lv=lene(vout)
+              lv=len_trim(vout)
               vout(lv+1:lv+1)='.'
             endif
             if(start)then
               call twbuf(pname(kp)(1:max(8,lpname(kp)))//
-     $             '=('//vout,lfno,7,lpw-2,7,1)
+     $             '=('//vout,unit(:len_trim(unit)),lfno,7,lpw-2,7,1)
               start=.false.
             else
-              call twbuf(vout,lfno,10,lpw-2,5,1)
+              call twbuf(vout,unit(:len_trim(unit)),lfno,10,lpw-2,5,1)
             endif
           endif
         elseif(ioff .eq. kytbl(kwPROF,lt) .and. k64)then
@@ -207,10 +206,10 @@ c      endif
               vout='  '//kw(1:lenw(kw))//' ='
             endif
             if(start)then
-              call twbuf(vout,lfno,7,lpw-2,7,1)
+              call twbuf(vout,'',lfno,7,lpw-2,7,1)
               start=.false.
             else
-              call twbuf(vout,lfno,10,lpw-2,1,1)
+              call twbuf(vout,'',lfno,10,lpw-2,1,1)
             endif
             call getstringbuf(strb,0,.true.)
             call tfconvstrb(strb,cmp%dvalue(ioff),nc,
@@ -219,10 +218,10 @@ c      endif
             do while(j .le. nc)
               j1=index(strb%str(j:nc),',')
               if(j1 .eq. 0)then
-                call twbuf(strb%str(j:nc),lfno,10,lpw-2,1,1)
+                call twbuf(strb%str(j:nc),'',lfno,10,lpw-2,1,1)
                 j=nc+1
               else
-                call twbuf(strb%str(j:j+j1-1),lfno,10,lpw-2,1,1)
+                call twbuf(strb%str(j:j+j1-1),'',lfno,10,lpw-2,1,1)
                 j=j+j1
               endif
             enddo                

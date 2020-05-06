@@ -26,10 +26,10 @@
         kw=tfkwrd(lt,ioff)
         if(kw .eq. ' ')then
           if(start)then
-            call twbuf(pname(kp)(1:max(8,lpname(kp)))//'=()',
+            call twbuf(pname(kp)(1:max(8,lpname(kp))),'=()',
      $           lfno,7,lpw,7,1)
           else
-            call twbuf(')',lfno,10,lpw,1,1)
+            call twbuf(')','',lfno,10,lpw,1,1)
           endif
           return
         elseif(kw .eq. '-')then
@@ -95,11 +95,11 @@
               vout(lv+1:lv+1)='.'
             endif
             if(start)then
-              call twbuf(pname(kp)(1:max(8,lpname(kp)))//
+              call twbuf(pname(kp)(1:max(8,lpname(kp))),
      $             '=('//vout,lfno,7,lpw-2,7,1)
               start=.false.
             else
-              call twbuf(vout,lfno,10,lpw-2,5,1)
+              call twbuf(vout,'',lfno,10,lpw-2,5,1)
             endif
           endif
         elseif(ioff .eq. kytbl(kwPROF,lt))then
@@ -111,10 +111,10 @@
               vout='  '//kw(1:lenw(kw))//' ='
             endif
             if(start)then
-              call twbuf(vout,lfno,7,lpw-2,7,1)
+              call twbuf(vout,'',lfno,7,lpw-2,7,1)
               start=.false.
             else
-              call twbuf(vout,lfno,10,lpw-2,1,1)
+              call twbuf(vout,'',lfno,10,lpw-2,1,1)
             endif
             call getstringbuf(strb,0,.true.)
             call tfconvstrb(strb,cmp%dvalue(ioff),nc,
@@ -123,10 +123,10 @@
             do while(j .le. nc)
               j1=index(strb%str(j:nc),',')
               if(j1 .eq. 0)then
-                call twbuf(strb%str(j:nc),lfno,10,lpw-2,1,1)
+                call twbuf(strb%str(j:nc),'',lfno,10,lpw-2,1,1)
                 j=nc+1
               else
-                call twbuf(strb%str(j:j+j1-1),lfno,10,lpw-2,1,1)
+                call twbuf(strb%str(j:j+j1-1),'',lfno,10,lpw-2,1,1)
                 j=j+j1
               endif
             enddo                

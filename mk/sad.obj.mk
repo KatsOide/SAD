@@ -69,7 +69,7 @@ OBJ4=defglb.o    ppair.o \
      prelem.o    title.o     doline.o    prelm0.o \
      tcav.o      dolist.o    prexln.o \
      tcave.o     tltrm.o     twbuf.o     mdpmax.o    prkwdv.o \
-     metaer.o    prline.o    tchge.o     tluma.o     twelm.o     doprin.o \
+     metaer.o    prline.o    tchge.o     tluma.o     doprin.o \
      tmap.o      doread.o    mfdel.o     prnGlb.o  \
      tmast.o     dorvrs.o    mfdel1.o    prnflg.o   \
      twinil.o    dostop.o    mfdir.o     tconv.o     synradcl.o \
