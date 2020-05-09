@@ -1,7 +1,7 @@
       subroutine tffsmatch(df,dp0,r,nparallel,lfno,irtc)
       use kyparam
       use tfstk
-      use ffs, only: flv,dpmax,nele,ndim,nlat,maxcond
+      use ffs, only: flv,dpmax,nele,ndim,nlat,maxcond,nvevx,nelvx
       use ffs_pointer
       use ffs_flag
       use ffs_fit
@@ -45,6 +45,7 @@ c      include 'DEBUG.inc'
       integer*8 , external :: itmmapp
       real*8 , external :: tffsfmin, tweigh
       character ch
+      character*10 sexp
       integer*8 intffs,inumderiv,iexponent,inumw,iconvergence
       data intffs,inumderiv,iexponent,inumw,iconvergence /0,0,0,0,0/
 c
@@ -97,10 +98,10 @@ c     end   initialize for preventing compiler warning
         iter=0
         newton=.true.
         chgmod=.true.
-        bestval(1:nvar)=valvar(1:nvar)
+        bestval(1:nvar)=nvevx(1:nvar)%valvar
         free=.false.
         do i=1,nvar
-          free(ivarele(i))=.true.
+          free(nvevx(i)%ivarele)=.true.
         enddo
         aitm1=flv%itmax*alit
         aitm2=flv%itmax
@@ -117,7 +118,6 @@ c     end   initialize for preventing compiler warning
         do 200: do kkk=1,1
           call tftclupdate(int(rlist(intffs)))
           dp0=rlist(latt(1)+mfitddp)
-c          write(*,*)'tffsmatch ',chgini,nstab,nderiv
           call tffscalc(flv%kdp,df,flv%iqcol,flv%lfp,
      $         nqcol,nqcol1,ibegin,
      $         r,rp,rstab,nstab,residual,
@@ -128,7 +128,7 @@ c          write(*,*)'tffsmatch ',chgini,nstab,nderiv
             else
               fitflg=.false.
               irtc=20001
-              bestval(1:nvar)=valvar(1:nvar)
+              bestval(1:nvar)=nvevx(1:nvar)%valvar
               if(cell)then
                 call twmov(1,twisss,1,0,.false.)
               endif
@@ -137,13 +137,18 @@ c          write(*,*)'tffsmatch ',chgini,nstab,nderiv
           endif
           convgo=r .le. rl
           fitflg=fitflg .and. nqcol .gt. 0
+          if(calexp)then
+            sexp='  CALEXP'
+          else
+            sexp='  NOCALEXP'
+          endif
           if(convgo)then
             write(lfno,9501)' Matched. (',r,')',
-     $           dpmax,dp0,wexponent,ch,offmw
+     $           dpmax,dp0,wexponent,ch,offmw,sexp
  9501       format(a,1pG11.4,a,
      $           ' DP =',0pf8.5,'  DP0 =',f8.5,
      $           '  ExponentOfResidual =',f4.1,a,
-     $           ' OffMomentumWeight =',f8.3)
+     $           ' OffMomentumWeight =',f8.3,a)
             fitflg=.false.
             if(.not. geomet)then
               call tfgeo(latt,.true.)
@@ -151,7 +156,7 @@ c          write(*,*)'tffsmatch ',chgini,nstab,nderiv
             exit do9000
           elseif(.not. fitflg)then
             write(lfno,9501)' Residual =',r,' ',
-     $           dpmax,dp0,wexponent,ch,offmw
+     $           dpmax,dp0,wexponent,ch,offmw,sexp
             exit do9000
           else
             if(chgini .and. cell)then
@@ -202,7 +207,7 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                   endif
                   f1=0.d0
                   g1=rp
-                  bestval(1:nvar)=valvar(1:nvar)
+                  bestval(1:nvar)=nvevx(1:nvar)%valvar
                   if(cell)then
                     call twmov(1,twisss,1,0,.true.)
                   endif
@@ -235,15 +240,12 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                   else
                     chgmod=.false.
                   endif
-c                  write(*,'(a,2l2,2i5,1p5g15.7)')'tffsmatch ',
-c     $                 fitflg,chgmod,nretry,flv%itmax,
-c     $                 aimprv,smallf,badcnv,alate,amedcv
                 endif
                 if(chgmod)then
                   r=r0
                   newton=.not. newton
                   fact=1.d0
-                  valvar(1:nvar)=bestval(1:nvar)
+                  nvevx(1:nvar)%valvar=bestval(1:nvar)
                   if(cell)then
                     call twmov(1,twisss,1,0,.false.)
                   endif
@@ -264,7 +266,7 @@ c     $                 aimprv,smallf,badcnv,alate,amedcv
                   endif
                   if(nvara .eq. nvar)then
                     a=fact/f1
-                    valvar(1:nvar)=valvar(1:nvar)*a
+                    nvevx(1:nvar)%valvar=nvevx(1:nvar)%valvar*a
      $                   +bestval(1:nvar)*(1.d0-a)
 c                    do i=1,nvar
 c                      valvar(i)=valvar(i)*a+bestval(i)*(1.d0-a)
@@ -285,17 +287,17 @@ c                    enddo
               endif
               nderiv=nderiv0
               do kc=1,nvar
-                i=ivarele(kc)
-                if(ival(i) .gt. 0)then
-                  v00=rlist(latt(klp(i))+ival(i))
+                i=nvevx(kc)%ivarele
+                if(nelvx(i)%ival .gt. 0)then
+                  v00=rlist(latt(nelvx(i)%klp)+nelvx(i)%ival)
                 else
                   v00=0.d0
                 endif
-                wvar(kc)=tweigh(idelc(klp(i)),
-     $               idtypec(klp(i)),
-     $               ivvar(kc),bestval(kc),v00,absweit)
+                wvar(kc)=tweigh(idelc(nelvx(i)%klp),
+     $               idtypec(nelvx(i)%klp),
+     $               nvevx(kc)%ivvar,bestval(kc),v00,absweit)
                 if(.not. nderiv)then
-                  nderiv=idtypec(klp(i)) .eq. icSOL
+                  nderiv=idtypec(nelvx(i)%klp) .eq. icSOL
                 endif
               enddo
               nderiv=nderiv .or.
@@ -303,9 +305,7 @@ c                    enddo
      $             .and. dble(nvar*nfam*nlat) .lt. aloadmax
               npa=min(nvar,nparallel)
               chgini=(nstab .eq. 0) .or. nderiv
-c              chgini=.true.
               if(nderiv)then
-c                write(*,*)'tffsmatch-setupqu ',nqcol,nvar
                 call tffssetupqu(ifqu,ifqu0,nqumax,nqcol,nvar,lfno)
                 ipr=-1
                 if(npa .gt. 1)then
@@ -332,24 +332,21 @@ c                write(*,*)'tffsmatch-setupqu ',nqcol,nvar
                 wcal1=wcal
                 zcal1=zcal
                 do kc=ip,nvar,istep
-                  dvkc=max(abs(valvar(kc))*eps,abs(eps1/wvar(kc)))
-                  valvar0=valvar(kc)
-                  valvar(kc)=valvar0+dvkc
+                  dvkc=max(abs(nvevx(kc)%valvar)*eps,abs(eps1/wvar(kc)))
+                  valvar0=nvevx(kc)%valvar
+                  nvevx(kc)%valvar=valvar0+dvkc
                   call tfsetv(nvar)
                   call tffscalc(kdpa1,df1,iqcola1,lfpa1,
      $                 nqcola1,nqcol1a1,ibegin,
      $                 ra1,rpa1,rstaba1,nstaba1,residuala1,
      $                 zcal1,wcal1,.false.,lfno,error)
-                  valvar(kc)=valvar0-dvkc
-c                  write(*,*)'tffsmatch-calc ',nqcol,nvar
+                  nvevx(kc)%valvar=valvar0-dvkc
                   call tfsetv(nvar)
                   call tffscalc(kdpa2,df2,iqcola2,lfpa2,
      $                 nqcola2,nqcol1a2,ibegin,
      $                 ra1,rpa1,rstaba1,nstaba1,residuala1,
      $                 zcal1,wcal1,.false.,lfno,error2)
-                  valvar(kc)=valvar0
-c                  write(*,*)'tffsmatch-calc1 ',nqcol,nvar
-c                  call tfmemcheckprint('ffsmatch-nderiv-2',.true.,irtc)
+                  nvevx(kc)%valvar=valvar0
                   if(error .or. error2)then
                     ddf1(1:nqcol)=0.d0
                     ddf2(1:nqcol)=0.d0
@@ -361,16 +358,9 @@ c                  call tfmemcheckprint('ffsmatch-nderiv-2',.true.,irtc)
                   endif
                   rlist((kc-1)*nqcol+ifqu:kc*nqcol+ifqu-1)=
      $                 (ddf1(1:nqcol)-ddf2(1:nqcol))/2.d0/dvkc/wvar(kc)
-c                  call tfmemcheckprint('ffsmatch-nderiv-3',.true.,irtc)
-c                  do j=1,nqcol
-c                    rlist((kc-1)*nqcol+j+ifqu-1)=
-c     $                   (ddf1(j)-ddf2(j))/2.d0/dvkc/wvar(kc)
-c                  enddo
                 enddo
-c                write(*,*)'tffsmatch-nderiv-wait ',nqcol
                 call tffswait(ipr,npa,npr,iuta1,
      $               'tffsmatch-NumDerv',irtc)
-c                call tfmemcheckprint('ffsmatch-nderiv-4',.true.,irtc)
               else
                 call tffsqu(nqcol,nqcol1,nvar,nqumax,ifqu0,ifqu,
      $               free,nlat,nele,nfam,nfam1,nut,
@@ -384,7 +374,6 @@ c                call tfmemcheckprint('ffsmatch-nderiv-4',.true.,irtc)
                     kqu=(kc-1)*nqcol+j+ifqu-1
                     rlist(kqu)=rlist(kqu)*wiq(j)/wvar(kc)
                   enddo
-c                  write(*,'(a,1p10g12.4)')'tffsqu ',rlist(kqu:kqu+9)
                 enddo
                 if(nqcol .gt. nqcol1)then
                   ipr=-1
@@ -404,9 +393,9 @@ c                  write(*,'(a,1p10g12.4)')'tffsqu ',rlist(kqu:kqu+9)
                     istep=1
                   endif
                   do kc=ip,nvar,istep
-                    i=ivarele(kc)
+                    i=nvevx(kc)%ivarele
                     if(nqcol .gt. nqcol1)then
-                      valvar(kc)=valvar(kc)+eps1/wvar(kc)
+                      nvevx(kc)%valvar=nvevx(kc)%valvar+eps1/wvar(kc)
                       if(cell)then
                         call twmov(1,twisss,1,0,.false.)
                       endif
@@ -433,7 +422,7 @@ c                        enddo
                       if(error .or. nqcol .ne. nqcol00)then
                         irtc=20003
                       endif
-                      valvar(kc)=valvar(kc)-eps1/wvar(kc)
+                      nvevx(kc)%valvar=nvevx(kc)%valvar-eps1/wvar(kc)
                       call tfsetv(nvar)
                       do j=nqcol1+1,nqcol
                         kqu=(kc-1)*nqcol+j+ifqu-1
@@ -477,17 +466,17 @@ c              call tfmemcheckprint('ffsmatch-solv-1',.true.,irtc)
             limited=.false.
 c            call tfmemcheckprint('ffsmatch',.true.,irtc)
             do ii=1,nvar
-              i=ivarele(ii)
+              i=nvevx(ii)%ivarele
               dv=dval(ii)*fact/wvar(ii)*wlimit(ii)
-              valvar(ii)=bestval(ii)+dv
-              call tffsvlimit(ii,i,idelc(klp(i)),valvar(ii),
-     $             bestval(ii),
-     $             vl,vlim,vl1,vl2,ivvar,ival,nvar,limited1,dlim)
+              nvevx(ii)%valvar=bestval(ii)+dv
+              call tffsvlimit(i,idelc(nelvx(i)%klp),nvevx(ii)%valvar,
+     $             bestval(ii),vl,vl1,vl2,nvevx(ii)%ivvar,
+     $             limited1,dlim)
               if(limited1)then
-                valvar(ii)=min(vl2,max(vl1,bestval(ii)))
+                nvevx(ii)%valvar=min(vl2,max(vl1,bestval(ii)))
                 if(dv .ne. 0.d0)then
                   wlimit(ii)=wlimit(ii)*
-     $                 min(abs((vl-valvar(ii))/dv),.3d0)
+     $                 min(abs((vl-nvevx(ii)%valvar)/dv),.3d0)
                   limited=.true.
                   if(wlimit(ii) .lt. wlmin)then
                     wlimit(ii)=0.d0
@@ -614,7 +603,6 @@ c            call tfmemcheckprint('ffsmatch',.true.,irtc)
           go to 9000
         endif
         nqumax=nqu
-c        write(*,*)'setupqu ',nqu,nqcol,nvar,nqumax,ifqu0
       endif
       return
  9000 call termes(lfno,'?Too many conditions*variables.',' ')
@@ -636,13 +624,13 @@ c        write(*,*)'setupqu ',nqu,nqcol,nvar,nqumax,ifqu0
       logical*4 dlim,limited,limited1
       limited=.false.
       do ii=1,nvar
-        i=ivarele(ii)
-        call tffsvlimit(ii,i,idelc(klp(i)),
-     $       valvar(ii),valvar(ii),
-     $       vl,vlim,vl1,vl2,ivvar,ival,nvar,limited1,dlim)
+        i=nvevx(ii)%ivarele
+        call tffsvlimit(i,idelc(nelvx(i)%klp),
+     $       nvevx(ii)%valvar,nvevx(ii)%valvar,
+     $       vl,vl1,vl2,nvevx(ii)%ivvar,limited1,dlim)
         if(limited1)then
           limited=.true.
-          valvar(ii)=vl
+          nvevx(ii)%valvar=vl
         endif
       enddo
       if(limited)then
@@ -651,25 +639,25 @@ c        write(*,*)'setupqu ',nqu,nqcol,nvar,nqumax,ifqu0
       return
       end
 
-      subroutine tffsvlimit(ii,i,ld,val,val0,vl,vlim,
-     $     vl1,vl2,ivvar,ival,nvar,limited,dlim)
+      subroutine tffsvlimit(i,ld,val,val0,vl,
+     $     vl1,vl2,ivv,limited,dlim)
       use tfstk
       use ffs
       use tffitcode
       implicit none
       type (sad_rlist), pointer :: klr
       integer*8 kx
-      integer*4 ii,i,ld,nvar,ivvar(nvar),ival(nele),ltyp,irtc
-      real*8 val,val0,vlim(nele,2),vl,vl1,vl0,vl2
+      integer*4 i,ld,ivv,ltyp,irtc
+      real*8 val,val0,vl,vl1,vl0,vl2
       logical*4 limited,dlim
 c      call tfmemcheckprint('vlimit-0',.true.,irtc)
       limited=.false.
       ltyp=idtype(ld)
       vl=val
       vl0=val0
-      if(ivvar(ii) .eq. ival(i))then
-        vl1=vlim(i,1)
-        vl2=vlim(i,2)
+      if(ivv .eq. nelvx(i)%ival)then
+        vl1=nelvx(i)%vlim(1)
+        vl2=nelvx(i)%vlim(2)
         if(vl .lt. vl1)then
           vl=vl1
           limited=.true.
@@ -689,14 +677,14 @@ c      call tfmemcheckprint('vlimit-0',.true.,irtc)
         vl2=1.d100
       endif
       if(ltyp .eq. icMARK)then
-        if(ivvar(ii) .eq. mfitbx .or.ivvar(ii) .eq. mfitby)then
+        if(ivv .eq. mfitbx .or.ivv .eq. mfitby)then
           if(vl .le. 1.d-9)then
             vl=0.d0
             limited=.true.
           endif
         endif
       endif
-      call tffsvarfun(1,ld,ivvar(ii),val,kx,irtc)
+      call tffsvarfun(1,ld,ivv,val,kx,irtc)
       if(irtc .ne. 0)then
         return
       endif
@@ -749,8 +737,6 @@ c      call tfmemcheckprint('vlimit-0',.true.,irtc)
         call loc_string(ifvvarn,svarn)
         call loc_string(ifvkey,skey)
       endif
-c      write(*,*)'vf-0 ',id,ld,k,x
-c      call tfmemcheckprint('varfun-0',.true.,irtc)
       isp=isp+1
       isp1=isp
       if(id .eq. 1)then
@@ -800,7 +786,7 @@ c     call tfdebugprint(kx,'varfun',1)
      $     free,nlat,nele,nfam,nfam1,nut,
      $     nparallel,cell,lfno,irtc)
       use tfstk
-      use ffs, only:flv,ffs_bound
+      use ffs, only:flv,ffs_bound,nvevx,nelvx
       use ffs_pointer
       use tffitcode
       use tfshare
@@ -816,10 +802,10 @@ c     call tfdebugprint(kx,'varfun',1)
      $     ii,ltyp,jj,kc,ik1,nparallel,
      $     iclast(-nfam:nfam),ik,nk,kk1,
      $     ip,ipr,istep,npr(nparallel),fork_worker
-      real*8 s,dtwiss(mfittry),coup,posk,wk,ctrans(27,-nfam:nfam)
+      real*8 s,dtwiss(mfittry),coup,posk,wk,ctrans(4,7,-nfam:nfam)
       logical*4 col(2,nqcol),disp,nzcod
       integer*4 , parameter :: minnqu=512
-      call tffscoupmatrix(kele2,kcm,lfno)
+      call tffscoupmatrix(kcm,lfno)
       irtc=0
       nqu=max(minnqu,nqcol*nvar)
       do9000: do kkk=1,1
@@ -885,7 +871,7 @@ c     call tfdebugprint(kx,'varfun',1)
               else
                 ik1=0
                 do ik=1,nk
-                  if(ivvar(ii) .eq. ilist(2,iec+ik))then
+                  if(nvevx(ii)%ivvar .eq. ilist(2,iec+ik))then
                     ik1=1
                     exit
                   endif
@@ -905,17 +891,16 @@ c     call tfdebugprint(kx,'varfun',1)
                     endif
                   endif
                 else
-                  iv=ivvar(ii)
-c     write(*,*)'tffssqu ',iv,ival(kk),kk,kk1,
-c     $               ivarele(ii),k,ivcomp(ii),ii
-                  if(iv .eq. ival(kk) .and. ivarele(ii) .eq. kk .and.
-     $                 (ivcomp(ii) .eq. 0 .or.
-     $                 ivcomp(ii) .eq. kc))then
+                  iv=nvevx(ii)%ivvar
+                  if(iv .eq. nelvx(kk)%ival .and.
+     $                 nvevx(ii)%ivarele .eq. kk .and.
+     $                 (nvevx(ii)%ivcomp .eq. 0 .or.
+     $                 nvevx(ii)%ivcomp .eq. kc))then
                     coup=couple(k)*wk
-                  elseif(iv .ne. ival(kk) .and.
-     $                   ivarele(ii) .eq. kk1 .and.
-     $                   (ivcomp(ii) .eq. 0 .or.
-     $                   ivcomp(ii) .eq. k))then
+                  elseif(iv .ne. nelvx(kk)%ival .and.
+     $                   nvevx(ii)%ivarele .eq. kk1 .and.
+     $                   (nvevx(ii)%ivcomp .eq. 0 .or.
+     $                   nvevx(ii)%ivcomp .eq. k))then
                     coup=wk
                   else
                     cycle
@@ -986,8 +971,6 @@ c     $               ivarele(ii),k,ivcomp(ii),ii
                             rlist(kqu)=rlist(kqu)-s
                           endif
                         endif
-c                        write(*,'(a,1p3g15.7,3i5)')'tffsqu ',
-c     $                       posk,pos(lp),rlist(kqu),ltyp,iv
                       else
                         call tdgeo(s,rlist(kqu),
      $                       kf,lp,k,ltyp,iv,nut,nfam)
@@ -1135,7 +1118,7 @@ c        enddo
       real*8 function tweigh(i,ltyp,iv,val0,vk,absweit)
       use kyparam
       use tfstk
-      use ffs, only:dpmax,emx,emy,brho
+      use ffs, only:dpmax,emx,emy,brho,emminv
       use ffs_fit
       use cbkmac
       implicit none
@@ -1186,11 +1169,13 @@ c        enddo
           gw=1.d0/avebeta**2
         elseif(iv .eq. ky_EX_MARK .or.
      $         iv .eq. ky_EPX_MARK)then
-          gw=max(1.d-3,dpmax)*sqrt(avebeta/(abs(emx)+abs(emy)))
+          gw=max(1.d-3,dpmax)*sqrt(avebeta/
+     $         max(emminv,abs(emx)+abs(emy)))
      $         /avebeta**2
         elseif(iv .eq. ky_EPX_MARK .or.
      $         iv .eq. ky_EPX_MARK)then
-          gw=max(1.d-3,dpmax)*sqrt(avebeta/(abs(emx)+abs(emy)))
+          gw=max(1.d-3,dpmax)*sqrt(avebeta/
+     $         max(emminv,abs(emx)+abs(emy)))
      $         /avebeta
         elseif(iv .eq. ky_R2_MARK)then
           gw=1.d0/avebeta**2
@@ -1246,8 +1231,6 @@ c        enddo
       nagain=0
 1     nj=0
       do i=1,nqcol
-c        write(*,*)'tfsolv ',i,nj,nvar,nqcol,fit(i)
-c        call tfmemcheckprint('solv-i',.true.,irtc)
         if(fit(i))then
           nj=nj+1
 c          do j=1,nvar
@@ -1260,7 +1243,6 @@ c            call tfmemcheckprint('solv-i-2',.true.,irtc)
         endif
       enddo
 c      call tfmemcheckprint('solv-2',.true.,irtc)
-c      write(*,'(1p4g15.7)')((qu0(i,j),j=1,nvar),i=1,nj)
       call tsolva(qu0,b,dval,nj,nvar,nqcol,eps)
 c      call tfmemcheckprint('solv-3',.true.,irtc)
       again=.false.
@@ -1306,7 +1288,6 @@ c      call tfmemcheckprint('solv-4',.true.,irtc)
       if(nparallel .gt. 1)then
         irtc=1
         itmmapp=ktfallocshared(n)
-c        write(*,*)'mmapp ',itmmapp,n
       else
         itmmapp=ktaloc(n)
       endif
@@ -1321,21 +1302,19 @@ c        write(*,*)'mmapp ',itmmapp,n
       integer*8 i
       if(nparallel .gt. 1)then
         call tfreeshared(i)
-c        if(mapfree(rlist(i)) .ne. 0)then
-c          write(*,*)'???tmunmapp-error in unmap.'
-c        endif
       else
         call tfree(i)
       endif
       return
       end
 
-      subroutine tffscoupmatrix(kele2,kcm,lfno)
+      subroutine tffscoupmatrix(kcm,lfno)
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer,only:kele2
       implicit none
-      integer*8 km,k1,kam,kcm,ktfmaloc,k2,kele2(nlat)
+      integer*8 km,k1,kam,kcm,ktfmaloc,k2
       integer*4 lfno,irtc,n,m
       real*8 rfromk
       integer*8 itfcoupm

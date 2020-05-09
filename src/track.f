@@ -17,7 +17,6 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       character*20 title
       logical*4, save :: trackinit=.false.
       real*8 ol,trval,dt1,df,rgetgl1,dt0,phi(3)
-c      write(*,*)'track-0'
       if(bypasstrack)then
         write(*,*)
      $       '??? FFS, EMIT, TRACK in GetMAIN are bypassed. ???'
@@ -27,27 +26,23 @@ c      write(*,*)'track-0'
  10   call tsetupsig
       if(.not. trackinit)then
         trackinit=.true.
-c        write(*,*)'track-0.0 ',klist( 1621700052)
         call tffsvinit
         iffssave=0
-c        write(*,*)'track-0.1 ',klist( 1621700052)
         call ffs_init_flag
-c        write(*,*)'track-0.2 ',klist( 1621700052)
         convcase=.true.
-c        write(*,*)'track-0.3 ',lfni,ipoint,lrecl
         call tfinitn
-c        write(*,*)'track-0.4'
         call tfinittws
         call tfevals('CONVERGENCE=1E-9;ExponentOfResidual=2;'//
-     $       'OffMomentumWeight=1;MatchingResidual=0;'//
-     $       'NetResidual=0;StabilityLevel=0;'//
+     $       'OffMomentumWeight=1;MatchingResidual='//
+     $       'NetResidual=StabilityLevel=0;'//
      $       'FFS$NumericalDerivative=False;'//
-     $       'DP=0.01;DPM=0;XIX=0;XIY=0;TITLE="";CASE="";'//
-     $       'NFAMP=3;'//
-     $       'DP0:=LINE["DDP",1];(DP0=v_)^:=(LINE["DDP",1]=v);'//
-     $       'Protect[DP0];'//
+     $       'DP=0.01;DPM=XIX=XIY=0;TITLE=CASE="";NFAMP=4;'//
+     $       '(DP0=v_)^:=(LINE["DDP",1]=v);'//
      $       'System$Names=Select[Names["*"],'//
-     $       'ToUpperCase[#[1]]==#[1]&]',
+     $       'ToUpperCase[#[1]]==#[1]&];Protect[DP0];'//
+     $       '{EMITX,EMITY,EMITZ,SIGZ}='//
+     $       'LINE[{"EMITX","EMITY","EMITZ","SIGMAZ"},1];'//
+     $       'DP0=LINE["DDP",1];',
      $       kx,irtc)
         initmessage=0
         ifibzl=0
@@ -85,8 +80,7 @@ c        write(*,*)'track-0.4'
       zlost =rgetgl1('LOSSDZ')
       trf0  =rgetgl1('DTSYNCH')
       vcalpha=rgetgl1('EFFVCRATIO')
-      nlat  =elatt%nlat1-1
-c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
+      nlat  =elatt%nlat0+1
       df    =rgetgl1('FSHIFT')
       isynch=igetgl1('$RFSW$'  )
       intra =igetgl1('$INTRA$' ) .ne. 0
@@ -110,6 +104,8 @@ c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       diffres=igetgl1('$DIFFRES$') .ne. 0
       photons=igetgl1('$PHOTONS$' ) .ne. 0
       nparallel=max(1,int(rgetgl1('NPARA')))
+      keepexp=.true.
+      calexp=.true.
       calc6d=.false.
       radlight=.false.
       ffsprmpt=.false.
@@ -138,7 +134,7 @@ c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       calopt=.true.
       dp0   =0.d0
       call initialize_tampl()
-      call tclrpara(elatt,nlat-1)
+      call tclrpara
       call tclrfpe
       write(*,'(a)')
      1' RFSW RADCOD RAD  FLUC  INTRA'//
@@ -270,8 +266,8 @@ c      write(*,*)'track (np0,nturn,nlat) =',np0,nturn,nlat
       call isetgl1('$SUMRES$',sumres)
       call isetgl1('$DIFFRES$',diffres)
       call isetgl1('$PHOTONS$',photons)
-      nlat  =elatt%nlat1-1
-      call tclrpara(elatt,nlat-1)
+      nlat  =elatt%nlat0+1
+      call tclrpara
       call cputime(dt1,irtc)
       write(*,'(1X,2A,F10.3,A)')
      1     title,' end:  CPU time =',(dt1-dt0)*1.d-6,' sec'

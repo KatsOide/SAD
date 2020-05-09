@@ -11,19 +11,18 @@
       logical*4 calgeo
       emx   =rgetgl1('EMITX')
       emy   =rgetgl1('EMITY')
-      if(emx .le. 1.d-30)then
-        emx=1.d-12
-      endif
-      if(emy .le. 1.d-30)then
-        emy=1.d-12
-      endif
+      emz   =rgetgl1('EMITZ')
+      sigzs =rgetgl1('SIGZ')
+      sizedp=rgetgl1('SIGE')
       dpmax =rfromd(kxsymbolv('DP',2))
       if(idtypec(1) .eq. icMARK)then
         ix=latt(1)
         rlist(ix+ky_EMIX_MARK)=emx
         rlist(ix+ky_EMIY_MARK)=emy
+        rlist(ix+ky_EMIZ_MARK)=emz
+        rlist(ix+ky_SIGZ_MARK)=sigzs
+        rlist(ix+ky_SIGE_MARK)=sizedp
         rlist(ix+ky_DP_MARK)=dpmax
-        rlist(ix+ky_SIGZ_MARK)=rgetgl1('SIGZ')
         dp0=rlist(ix+ky_DDP_MARK)
       else
         dp0=0.d0
@@ -72,26 +71,37 @@ c      iwakepold=ifwakep
       use tfstk
       use tmacro
       use mathfun
+      use macphys
       implicit none
-      brhoz =pgev/c
+      brhoz =pgev/cveloc
       brho  =brhoz/abs(charge)
       p0    =pgev/amass
       h0    =p2h(p0)
-c      h0    =p0*sqrt(1.d0+1.d0/p0**2)
-      re0   =e/amass/4/pi/ep0
+      re0   =elradi
       rclassic=charge**2*re0
-      crad  =sign(rclassic*(c/amass)**2/p0/1.5d0,charge)
-      urad  =sign(1.5d0*hp*c/p0/amass/e,charge)
+      crad  =sign(rclassic*(cveloc/amass)**2/p0/1.5d0,charge)
+      urad  =sign(1.5d0*hp*cveloc/p0/amass/e,charge)
       erad  =55.d0/24.d0/sqrt(3.d0)*urad
-      rcratio=rclassic/(hp*c/amass/e)
+      rcratio=rclassic/(hp*cveloc/amass/e)
       cuc=1.5d0*rclassic/rcratio
       anrad =5.d0/2.d0/sqrt(3.d0)*rcratio
       ccintr=(rclassic/h0**2)**2/8.d0/pi
       if(rlist(klist(ilattp)+1) .ne. 0.d0)then
-        omega0=pi2*c*p0/h0/rlist(klist(ilattp)+1)
+        omega0=pi2*cveloc*p0/h0/rlist(klist(ilattp)+1)
       else
         omega0=0.d0
       endif
       call rsetgl1('OMEGA0',omega0)
+      return
+      end
+
+      subroutine tfresetparam
+      use ffs
+      implicit none
+      call rsetgl1('EMITX',emx)
+      call rsetgl1('EMITY',emy)
+      call rsetgl1('EMITZ',emz)
+      call rsetgl1('SIGZ',sigzs)
+      call rsetgl1('SIGE',sizedp)
       return
       end

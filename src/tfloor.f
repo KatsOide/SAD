@@ -557,6 +557,21 @@
       return
       end function
 
+      real*8 pure elemental function hypot3(x,y,z) result(v)
+      implicit none
+      real*8 ,intent(in)::x,y,z
+      real*8 a(3),am
+      a=abs((/x,y,z/))
+      am=maxval(a)
+      if(am .eq. 0.d0)then
+        v=0.d0
+      else
+        a(maxloc(a))=0.d0
+        v=am+am*sqrt1(sum((a/am)**2))
+      endif
+      return
+      end function
+
       end module
 
       subroutine tfmod(isp1,kx,mode,irtc)

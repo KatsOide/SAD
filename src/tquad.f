@@ -1,26 +1,25 @@
       subroutine tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak0,
-     1                 dx,dy,theta,theta2,radlvl,chro,
+     1                 dx,dy,theta,theta2,krad,chro,
      1                 fringe,f1in,f2in,f1out,f2out,mfring,eps0,kin)
       use ffs_flag
       use tmacro
 c      use ffs_pointer, only:inext,iprev
-      use tfstk, only:ktfenanq
       use photontable,only:tsetphotongeo
       use sol,only:tsolrot
       use mathfun, only:pxy2dpz,sqrt1,akang
       use tspin
       implicit none
-      logical*4 enarad,chro,fringe,kin
+      logical*4 , intent(in)::krad,chro,fringe,kin
       integer*4 np,i,mfring
       real*8 , intent(in) ::theta2
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     al,ak0,ak,dx,dy,theta,radlvl,eps0,alr,
+     $     al,ak0,ak,dx,dy,theta,eps0,alr,
      $     f1in,f1out,f2in,f2out,p,a,ea,b,pxf,pyf,bxs,bys,bzs
       real*8 sx(np),sy(np),sz(np)
       real*8, parameter :: ampmax=0.9999d0
       if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,4,0.d0,ak0,
-     $             dx,dy,theta,1.d0,.false.)
+     $             dx,dy,theta,.false.,.false.)
         return
       elseif(ak0 .eq. 0.d0)then
         call tdrift_free(np,x,px,y,py,z,dv,al)
@@ -31,8 +30,7 @@ c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,0.d0,dx,dy,0.d0,
      $     0.d0,0.d0,theta2,bxs,bys,bzs,.true.)
-      enarad=rad .and. radlvl .ne. 1.d0
-      if(enarad)then
+      if(krad)then
         pxr0=px
         pyr0=py
         zr0=z
@@ -60,7 +58,7 @@ c          p=(1.d0+g(i))**2
           py(i)=pyf
 2110    continue
       endif
-      if(enarad)then
+      if(krad)then
         if(photons)then
           call tsetphotongeo(0.d0,0.d0,theta2,.true.)
         endif
@@ -96,7 +94,7 @@ c          p=(1.d0+g(i))**2
       if(fringe .and. mfring .gt. -4 .and. mfring .ne. 1)then
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
       endif
-      if(enarad .and. f1out .ne. 0.d0)then
+      if(krad .and. f1out .ne. 0.d0)then
         if(photons)then
           call tsetphotongeo(0.d0,0.d0,0.d0,.false.)
         endif
@@ -110,29 +108,26 @@ c          p=(1.d0+g(i))**2
 c
       subroutine tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     nord,al,ak,
-     1     dx,dy,theta,radlvl,fringe)
+     1     dx,dy,theta,krad,fringe)
       use ffs_flag
       use tmacro
       use tspin
       use mathfun
       implicit none
 c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
-      integer*4 nmult
-      parameter (nmult=21)
-      real*8 alpha,beta,gamma,alpha1
-      parameter (alpha=2.88675134594812882d-1,
+      integer*4 , parameter::nmult=21
+      real*8,parameter::alpha=2.88675134594812882d-1,
      1           beta =2.23290993692602255d-2,
      1           gamma=9.43738783765593145d-4,
-     1           alpha1=.5d0-alpha)
+     1           alpha1=.5d0-alpha
       integer*4 nord,np,kord,i
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np)
       real*8 sx(np),sy(np),sz(np)
       real*8 fact(0:nmult)
-      real*8 theta,sint,cost,dx,dy,al,ak,
-     $     ala,alb,aki,akf,dpz,al1,radlvl,
+      real*8 theta,sint,cost,dx,dy,al,ak,ala,alb,aki,akf,dpz,al1,
      $     f1,f2,f3,f4,f5,xi,yi,zi,pr,r,rcx1,pxi,rk1,rk
       complex*16 cx
-      logical enarad,fringe
+      logical*4, intent(in)::krad,fringe
       data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
      1     720.d0,     5040.d0,     40320.d0,362880.d0,3628800.d0,
      $     39916800.d0,479001600.d0,6227020800.d0,87178291200.d0,
@@ -148,9 +143,8 @@ c     end   initialize for preventing compiler warning
         call tdrift_free(np,x,px,y,py,z,dv,al)
         return
       endif
-      enarad=rad .and. radlvl .eq. 0.d0 .and. al .ne. 0.d0
       include 'inc/TENT.inc'
-      if(enarad)then
+      if(krad)then
         pxr0=px
         pyr0=py
         zr0=z
@@ -351,7 +345,7 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
       if(fringe)then
         call ttfrin(np,x,px,y,py,z,g,nord,-ak,al,0.d0)
       endif
-      if(enarad)then
+      if(krad)then
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al,0.d0)
       endif
       include 'inc/TEXIT.inc'
@@ -385,7 +379,6 @@ c
         akk=ak/al/4.d0
         if(bz .eq. 0.d0)then
           do i=1,np
-c            aki=akk/(1.d0+g(i))**2
             aki=akk/(1.d0+g(i))
             xi=x(i)
             yi=y(i)
@@ -448,7 +441,6 @@ c            pr=(1.d0+g(i))**2
 c        akk=ak/al/12.d0
         akk=ak/al/24.d0
         do i=1,np
-c          aki=akk/(1.d0+g(i))**2
           aki=akk/(1.d0+g(i))
           cx=dcmplx(x(i),y(i))
           cp=dcmplx(px(i),-py(i))

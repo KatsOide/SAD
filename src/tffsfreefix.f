@@ -1,6 +1,6 @@
       subroutine tffsfreefix(frefix,nvar,lfno)
       use tfstk
-      use ffs, only:nve,nele,nlat
+      use ffs, only:nele,nlat,nvevx,nelvx
       use ffs_pointer
       use ffs_fit
       use tffitcode
@@ -51,7 +51,7 @@
           else
 c     Note: Skip no-head multiple elements
 c     *     klp(iele1(k)) == k if singlet or head of multipole elements
-            if(klp(iele1(k)) .ne. k .or.
+            if(nelvx(iele1(k))%klp .ne. k .or.
      $           .not. tmatch(pnamec(k),word))then
               cycle LOOP_K_2
             endif
@@ -96,32 +96,32 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
           found=.true.
           kk=iele1(k)
           if(iv .eq. 0)then
-            if(ival(kk) .eq. 0)then
+            if(nelvx(kk)%ival .eq. 0)then
               call termes(lfno,'Can''t use as variable ',
      $             pnamec(k))
               return
             endif
           endif
           LOOP_I_1: do i=1,nvar
-            if(ivarele(i) .eq. kk)then
+            if(nvevx(i)%ivarele .eq. kk)then
               if(iv .eq. 0)then
-                ivi=ival(kk)
+                ivi=nelvx(kk)%ival
               else
                 ivi=iv
               endif
-              if(ivvar(i) .eq. ivi)then
+              if(nvevx(i)%ivvar .eq. ivi)then
                 if(comp)then
-                  if(ivcomp(i) .eq. 0)then
+                  if(nvevx(i)%ivcomp .eq. 0)then
                     call termes(lfno,
      $                   'Element already used as variable: ',
      $                   pnamec(k))
                     return
-                  elseif(ivcomp(i) .ne. k)then
+                  elseif(nvevx(i)%ivcomp .ne. k)then
                     cycle LOOP_I_1
                   endif
                 else
-                  if(ivcomp(i) .ne. 0)then
-                    call elname(ivcomp(i),name)
+                  if(nvevx(i)%ivcomp .ne. 0)then
+                    call elname(nvevx(i)%ivcomp,name)
                     call termes(lfno,
      $        'A component has been already used as variable: ',
      $                   name)
@@ -132,34 +132,31 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
               endif
             endif
           enddo LOOP_I_1
-          if(nvar .ge. nve)then
-            call termes(lfno,'Too many variables',' ')
-            return
-          endif
+          call tffsnvealloc(nvar+1)
           LOOP_I_2: do i=1,nvar
-            if(ivarele(i) .ge. kk)then
+            if(nvevx(i)%ivarele .ge. kk)then
               do j=nvar,i,-1
-                ivarele(j+1)=ivarele(j)
-                ivvar(j+1)=ivvar(j)
-                ivcomp(j+1)=ivcomp(j)
-                valvar2(j+1,1)=valvar2(j,1)
-                valvar2(j+1,2)=valvar2(j,2)
+                nvevx(j+1)%ivarele=nvevx(j)%ivarele
+                nvevx(j+1)%ivvar=nvevx(j)%ivvar
+                nvevx(j+1)%ivcomp=nvevx(j)%ivcomp
+                nvevx(j+1)%valvar=nvevx(j)%valvar
+                nvevx(j+1)%valvar2=nvevx(j)%valvar2
               enddo
               go to 11
             endif
           enddo LOOP_I_2
           i=nvar+1
  11       nvar=nvar+1
-          ivarele(i)=kk
+          nvevx(i)%ivarele=kk
           if(iv .eq. 0)then
-            ivi=ival(kk)
+            ivi=nelvx(kk)%ival
           else
             ivi=iv
           endif
-          ivvar(i)=ivi
-          valvar2(i,1)=tfvalvar(k,ivi)
-          ivcomp(i)=ivck
-          if(ivi .eq. ival(kk))then
+          nvevx(i)%ivvar=ivi
+          nvevx(i)%valvar=tfvalvar(k,ivi)
+          nvevx(i)%ivcomp=ivck
+          if(ivi .eq. nelvx(kk)%ival)then
             if(comp)then
               call elnameK(icomp(k),name1)
               if(icomp(k) .eq. k)then
@@ -179,7 +176,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
               endif
             else
               do jj=1,nlat-1
-                if(klp(iele1(jj)) .eq. k
+                if(nelvx(iele1(jj))%klp .eq. k
      $               .and. icomp(jj) .ne. k)then
 c     `jj' is same family but different master with `k',
 c     where klp(iele1(k)) == k
@@ -191,15 +188,14 @@ c     where klp(iele1(k)) == k
                 endif
               enddo
             endif
-            valvar2(i,1)=valvar2(i,1)/errk(1,k)
-            valvar2(i,2)=valvar2(i,1)
+            nvevx(i)%valvar=nvevx(i)%valvar/errk(1,k)
+            nvevx(i)%valvar2=nvevx(i)%valvar
           else
-            valvar2(i,2)=valvar2(i,1)
+            nvevx(i)%valvar2=nvevx(i)%valvar
             if(.not. comp)then
               call tftouch(kk,ivi)
             endif
           endif
-c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
  10       if(.not. wild)then
             go to 1
           endif
@@ -221,14 +217,14 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
         enddo LOOP_K_3
         LOOP_I_3: do i=1,nvar
  1210     continue
-          kk=ivarele(i)
-          if(ivcomp(i) .ne. 0)then
-            if(.not. temat(ivcomp(i),name,word))then
+          kk=nvevx(i)%ivarele
+          if(nvevx(i)%ivcomp .ne. 0)then
+            if(.not. temat(nvevx(i)%ivcomp,name,word))then
               cycle LOOP_I_3
             endif
           elseif(comp)then
             cycle LOOP_I_3
-          elseif(.not. tmatch(pnamec(klp(kk)),word))then
+          elseif(.not. tmatch(pnamec(nelvx(kk)%klp),word))then
             cycle LOOP_I_3
           endif
           if(.not. found)then
@@ -236,7 +232,7 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
             call peekwd(word1,next)
           endif
           found=.true.
-          itk=idtypec(klp(kk))
+          itk=idtypec(nelvx(kk)%klp)
           if(itk .ne. it)then
             if(word1 .ne. ' ')then
               ivk=1
@@ -268,13 +264,13 @@ c          write(*,*)'tffsfreefix ',i,k,ivi,valvar2(i,1),valvar2(i,2)
             endif
             it=itk
           endif
-          if(iv .eq. 0 .or. iv .eq. ivvar(i))then
+          if(iv .eq. 0 .or. iv .eq. nvevx(i)%ivvar)then
             do j=i,nvar-1
-              ivarele(j)=ivarele(j+1)
-              ivvar(j)=ivvar(j+1)
-              ivcomp(j)=ivcomp(j+1)
-              valvar2(j,1)=valvar2(j+1,1)
-              valvar2(j,2)=valvar2(j+1,2)
+              nvevx(j)%ivarele=nvevx(j+1)%ivarele
+              nvevx(j)%ivvar=nvevx(j+1)%ivvar
+              nvevx(j)%ivcomp=nvevx(j+1)%ivcomp
+              nvevx(j)%valvar=nvevx(j+1)%valvar
+              nvevx(j)%valvar2=nvevx(j+1)%valvar2
             enddo
             nvar=nvar-1
             if(i .gt. nvar .or.

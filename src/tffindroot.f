@@ -607,10 +607,6 @@ c      write(*,*)'covmat ',n,m,ndim
       endif
       do i=1,n
         do j=1,i
-c          s=0.d0
-c          do k=1,m
-c            s=s+c(k,i)*c(k,j)
-c          enddo
           s=sum(c(1:m,i)*c(1:m,j))
           if(ktfenanq(s))then
             ca(i,j)=rnan

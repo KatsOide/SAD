@@ -76,7 +76,6 @@
       cmpp%value(ky_DZ_SOL)=0.d0
       chi1=cmpp%value(ky_DPX_SOL)
       chi2=cmpp%value(ky_DPY_SOL)
-c      write(*,*)'tsgeo ',chi1
       cschi1=cos(chi1)
       snchi1=sin(chi1)
       cschi2=cos(chi2)
@@ -339,7 +338,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
      $       theta2,
      1       1.d0,cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $       ftable(1),ftable(2),ftable(3),ftable(4),
-     $       mfr,cmp%value(ky_EPS_QUAD))
+     $       mfr,-1,cmp%value(ky_EPS_QUAD))
         call setdirelc(i,direlc(i)*dir)
         pxf=pxf*dir+f*yf
         pyf=pyf*dir-f*xf

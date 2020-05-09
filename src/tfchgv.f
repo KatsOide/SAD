@@ -14,7 +14,7 @@
  1    call peekwd(word,next1)
       exist=.false.
       LOOP_I: do i=1,nele
-        k=idelc(klp(i))
+        k=idelc(nelvx(i)%klp)
         if(tmatch(pname(k),word))then
           if(.not. exist)then
             ipoint=next1
@@ -27,13 +27,13 @@
             ki=tfkwrd(idtype(k),j)
             if(ki .eq. key)then
               apply=.true.
-              ival(i)=j
+              nelvx(i)%ival=j
               cycle LOOP_I
             endif
             ki=tfkwrd1(idtype(k),j)
             if(ki .eq. key)then
               apply=.true.
-              ival(i)=j
+              nelvx(i)%ival=j
               cycle LOOP_I
             endif
           enddo

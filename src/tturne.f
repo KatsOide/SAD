@@ -671,7 +671,8 @@ c     write(*,*)'tturne-tcave-1',cod
         case (icMAP)
           if(optics)then
             call qemap(trans1,cod,l,coup,err)
-            call tmultr(trans,trans1,6)
+            trans(:,1:6)=matmul(trans1,trans(:,1:6))
+c            call tmultr(trans,trans1,6)
           else
             call temape(trans,cod,beam,l)
           endif
@@ -702,7 +703,8 @@ c      call tfmemcheckprint('tturne-end0',0,.true.,irtc)
         endif
         if(plotib)then
           if(bmaccum)then
-            call tadd(bmh,bmi,bmi,21)
+            bmi=bmi+bmh
+c            call tadd(bmh,bmi,bmi,21)
           endif
           call tconvbm(bmi,bmir)
           dlist(iabmi+iend+1)=
@@ -793,27 +795,29 @@ c     $       twiss(l,idp,mfitzx:mfitzpy)
       use temw
       implicit none
       integer*4 l,idp,lorg,l0
-      real*8 trans(6,6),ti(6,6),twi(ntwissfun),cod(6),
-     $     beam(21),ril(6,6),gr,tr0(6,6)
+      real*8 trans(6,6),ti(6,6),twi(ntwissfun),cod(6),beam(21),gr
       logical*4 norm
       if(trpt)then
         gr=gammab(l)/gammab(max(1,lorg-1))
-        tr0=trans*sqrt(gr)
-        call tinv6(tr0,ti)
+        ti=tinv6(trans*sqrt(gr))
+c        tr0=trans*sqrt(gr)
+c        call tinv6(tr0,ti)
       else
-        call tinv6(trans,ti)
+        ti=tinv6(trans)
+c        call tinv6(trans,ti)
       endif
       if(lorg .le. 1)then
-        call tmultr(ti,ri,6)
+        ti=matmul(ri,ti)
+c        call tmultr(ti,ri,6)
         norm=normali
         l0=1
       else
         l0=lorg
         twi=twiss(lorg,idp,1:ntwissfun)
-        call etwiss2ri(twi,ril,norm)
-        call tmultr(ti,ril,6)
+        ti=matmul(etwiss2ri(twi,norm),ti)
+c        call tmultr(ti,ril,6)
       endif
-      call tfetwiss(ti,cod,twi,norm)
+      twi=tfetwiss(ti,cod,norm)
       if(l .eq. 1)then
         twi(mfitnx)=0.d0
         twi(mfitny)=0.d0
@@ -853,12 +857,12 @@ c      write(*,*)'setetwiss ',twi(mfitddp),rgb
       use temw
       implicit none
       integer*4 i
-      real*8 tw1(ntwissfun),ra(6,6),trans(6,6),ti(6,6)
+      real*8 tw1(ntwissfun),trans(6,6),ti(6,6)
       logical*4 normal
-      call etwiss2ri(tw1,ra,normal)
-      ti=r
-      call tmultr(ti,trans,6)
-      call tmultr(ti,ra,6)
+      ti=matmul(etwiss2ri(tw1,normal),matmul(trans,r))
+c      ti=r
+c      call tmultr(ti,trans,6)
+c      call tmultr(ti,ra,6)
       write(*,*)'checketwiss ',tw1(mfitdetr)
       do i=1,6
         write(*,'(1p6g15.7)')ti(i,:)

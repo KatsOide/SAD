@@ -10,11 +10,11 @@
       type sbeam 
       real*8 Benv(36),Benv5(25),v_cen(5),cod(6)
       real*8 xangle(8)  !(8)
-      integer*4 nslice,bstrl
       integer*8 iax
       real*8 zslice(nslimax*2)   !(nslimax*2+2)
 !      real*8, pointer :: zslice(:)   !(nslimax*2+2)
       real*8 gamma,gambet,ce,Luminosity
+      integer*4 nslice,bstrl
       end type sbeam
       end module wsbb
 
@@ -301,6 +301,16 @@ c  for solenoid
      $ky_RAD_SOL=20,
      $ky_FL_SOL=21,
      $ky_MAX_SOL=22,
+     $     p_R11_SOL=ky_MAX_SOL+1,
+     $     p_R12_SOL=p_R11_SOL+1,
+     $     p_R13_SOL=p_R12_SOL+1,
+     $     p_R21_SOL=p_R13_SOL+1,
+     $     p_R22_SOL=p_R21_SOL+1,
+     $     p_R23_SOL=p_R22_SOL+1,
+     $     p_R31_SOL=p_R23_SOL+1,
+     $     p_R32_SOL=p_R31_SOL+1,
+     $     p_R33_SOL=p_R32_SOL+1,
+     $     p_NPARAM_SOL=p_R33_SOL-ky_MAX_SOL,
 cc for TEST
      $ky_L_TEST=1,
      $ky_ANGL_TEST=2,
@@ -573,17 +583,19 @@ cc for MARK
      $ky_DP_Mark=29,
      $ky_OFFSET_Mark=30,
      $ky_SIGZ_Mark=31,
-     $ky_GEO_Mark=32,
-     $ky_JDX_Mark=33,
-     $ky_JDPX_Mark=34,
-     $ky_JDY_Mark=35,
-     $ky_JDPY_Mark=36,
-     $ky_JDZ_Mark=37,
-     $ky_JDPZ_Mark=38,
-     $ky_EMIX_Mark=39,
-     $ky_EMIY_Mark=40,
-     $ky_COUPLE_Mark=41,
-     $ky_MAX_Mark=42,
+     $ky_SIGE_Mark=32,
+     $ky_GEO_Mark=33,
+     $ky_JDX_Mark=34,
+     $ky_JDPX_Mark=35,
+     $ky_JDY_Mark=36,
+     $ky_JDPY_Mark=37,
+     $ky_JDZ_Mark=38,
+     $ky_JDPZ_Mark=39,
+     $ky_EMIX_Mark=40,
+     $ky_EMIY_Mark=41,
+     $ky_EMIZ_Mark=42,
+     $ky_COUPLE_Mark=43,
+     $ky_MAX_Mark=44,
 cc for apert
      $ky_DX1_Aprt=1,
      $ky_DX2_Aprt=2,
@@ -794,6 +806,7 @@ c
        kytbl(kwDP  ,0)=sethtb('DP      ',icKWRD,kwDP  )
        kytbl(kwSIGZ,0)=sethtb('SIGZ    ',icKWRD,kwSIGZ)
        kytbl(kwSIGZ,0)=sethtb('SIGMAZ  ',icKWRD,kwSIGZ)
+       kytbl(kwSIGE,0)=sethtb('SIGE    ',icKWRD,kwSIGZ)
        kytbl(kwGEO ,0)=sethtb('GEO     ',icKWRD,kwGEO )
        kytbl(kwR1  ,0)=sethtb('R1      ',icKWRD,kwR1  )
        kytbl(kwR2  ,0)=sethtb('R2      ',icKWRD,kwR2  )
@@ -1223,6 +1236,7 @@ c  for solenoid
       kytbl(kwRAD,icSOL)=ky_RAD_SOL
       kytbl(kwFL,icSOL)=ky_FL_SOL
       kytbl(kwMAX,icSOL)=ky_MAX_SOL
+      kytbl(kwNPARAM,icSOL)=p_NPARAM_SOL
 cc for TEST
       idummy=sethtb('test    ',icDEF,icTEST)
       kytbl(0,icTEST)=sethtb('TEST    ',icDEF,icTEST)
@@ -1507,6 +1521,7 @@ cc for MARK
       kytbl(kwDP,icMark)=ky_DP_Mark
       kytbl(kwOFFSET,icMark)=ky_OFFSET_Mark
       kytbl(kwSIGZ,icMark)=ky_SIGZ_Mark
+      kytbl(kwSIGE,icMark)=ky_SIGE_Mark
       kytbl(kwGEO,icMark)=ky_GEO_Mark
       kytbl(kwJDX,icMark)=ky_JDX_Mark
       kytbl(kwJDPX,icMark)=ky_JDPX_Mark
@@ -1516,6 +1531,7 @@ cc for MARK
       kytbl(kwJDPZ,icMark)=ky_JDPZ_Mark
       kytbl(kwEMIX,icMark)=ky_EMIX_Mark
       kytbl(kwEMIY,icMark)=ky_EMIY_Mark
+      kytbl(kwEMIZ,icMark)=ky_EMIZ_Mark
       kytbl(kwCOUPLE,icMark)=ky_COUPLE_Mark
       kytbl(kwMAX,icMark)=ky_MAX_Mark
 cc for apert
@@ -1699,7 +1715,7 @@ c       call RsetGL('STACKSIZ',max(2d0**18,dble(iss)),idummy)
        call defglb('SIGZ',icGLR,idummy)
        call RsetGL('SIGZ',0.0d0,idummy)
        call defglb('GCUT',icGLR,idummy)
-       call RsetGL('GCUT',1.d35,idummy)
+       call RsetGL('GCUT',1.d300,idummy)
        call defglb('TDXI',icGLR,idummy)
        call RsetGL('TDXI',0.0d0,idummy)
        call defglb('TDYI',icGLR,idummy)

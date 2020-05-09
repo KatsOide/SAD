@@ -31,17 +31,15 @@ c      parameter (oneev=1.d0+3.83d-12)
       real*8 fb1,fb2,vc,phirf,dphirf,radius
       integer*8 latt(nlat)
       integer*4 kturn,kptbl(np0,6)
-      logical*4 acc,spac1,dofr(0:nmult),krad
-      integer*4 i,m,n,ndiv,nmmin,nmmax,ibsi
+      logical*4 acc,spac1,dofr(0:nmult),krad,nzleng
+      integer*4 i,m,n,ndiv,nmmax,ibsi
       real*8 , intent(in)::theta2
-      real*8 bxs,bys,bzs,vnominal,
-     $     b,a,eps,w,wi,v,phis,r,wl,
-     $     radlvl,r1,we,wsn,phic,dphis,offset,offset1,
+      real*8 bxs,bys,bzs,vnominal,b,a,eps,w,wi,v,phis,r,wl,
+     $     r1,we,wsn,phic,dphis,offset,offset1,
      $     tlim,akr1,ak1,al1,p,ea,pxf,pyf,sv,wsm,asinh,ws1,wm,
      $     h2,p2,dp2,pr2,dvn,dzn,dp1r,p1r,p1,h1,t,ph,dh,dpr,dp2r,p2r,
-     $     alx,dp2p2,dp,dp1,pr1,
-     $     he,vcorr,v20a,v02a,v1a,v11a,av,dpx,dpy,pe,ah,z00,
-     $     rtaper
+     $     alx,dp2p2,dp,dp1,pr1,rtaper,
+     $     he,vcorr,v20a,v02a,v1a,v11a,av,dpx,dpy,pe,ah
       real*8 ws(ndivmax)
       complex*16 , intent(in)::cr1
       complex*16 akr(0:nmult),cr,cx,cx1,ak01,b0
@@ -84,9 +82,9 @@ c      parameter (oneev=1.d0+3.83d-12)
         return
       endif
       dphis=0.d0
-      radlvl=1.d0
       b0=0.d0
-      z00=z(1)
+      nzleng=al .ne. 0.d0
+      spac1=.false.
 c      theta2=theta+dtheta+akang(ak(1),al,cr1)
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,bz,dx,dy,dz,
@@ -122,21 +120,24 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
         eps=eps00*eps0
       endif
       ndiv=1
-      do n=2,nmmax
-        ndiv=max(ndiv,
-     $int(sqrt(ampmax**(n-1)/6.d0/fact(n-1)/eps*abs(akr(n)*al)))+1)
-      enddo
-      if(spac)then
-        ndiv=max(ndiv,nint(abs(al)/(alstep*eps/eps00)),
-     $       nint(eps00/eps*abs(bzs*al)/1.5d0))
+      if(nzleng)then
+        do n=2,nmmax
+          ndiv=max(ndiv,int(
+     $         sqrt(ampmax**(n-1)/6.d0/fact(n-1)/eps*abs(akr(n)*al)))+1)
+        enddo
+        if(spac)then
+          spac1 = radius .ne. 0.d0
+          ndiv=max(ndiv,nint(abs(al)/(alstep*eps/eps00)),
+     $         nint(eps00/eps*abs(bzs*al)/1.5d0))
+        endif
+        if(krad)then
+          pxr0=px
+          pyr0=py
+          zr0=z
+          ndiv=max(ndiv,ndivrad(abs(akr(0)),akr1,bz,eps0))
+        endif
+        ndiv=min(ndivmax,ndiv)
       endif
-      if(krad)then
-        pxr0=px
-        pyr0=py
-        zr0=z
-        ndiv=max(ndiv,ndivrad(abs(akr(0)),akr1,bz,eps0))
-      endif
-      ndiv=min(ndivmax,ndiv)
       acc=(trpt .or. rfsw) .and. vc .ne. 0.d0
       if(acc)then
         if(w .eq. 0.d0)then
@@ -215,12 +216,7 @@ c        vnominal=0.d0
       ak1=akr1*ws(1)*.5d0
       al1=al*ws(1)*.5d0
       ak01=akr(0)*ws(1)*.5d0
-      if(al .ne. 0.d0)then
-        nmmin=2
-      else
-        nmmin=1
-      endif
-      if(al .ne. 0.d0)then
+      if(nzleng)then
         if(fringe)then
           if(mfring .ne. 2 .and. acc)then
             call tcavfrin(np,x,px,y,py,z,g,dv,al,v,w,p0,h0,
@@ -264,7 +260,6 @@ c        vnominal=0.d0
           endif
         endif
       endif
-      spac1 = spac .and. radius .ne. 0.d0
       sv=0.d0
       ibsi=1
 c      if(l_track .gt. 7300 .and. l_track .lt. 7310)then
@@ -272,8 +267,8 @@ c        write(*,'(a,2i5,1p4g15.7)')'tmulti-2 ',
 c     $       l_track,ndiv,al1,ak1,x(1),px(1)
 c      endif
       do m=1,ndiv
-        if(nmmin .eq. 2)then
-         call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
+        if(nzleng)then
+          call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         al1,ak1,bzs,dble(ak01),imag(ak01),ibsi,eps0)
           if(krad)then
             if(m .eq. 1)then
@@ -307,7 +302,7 @@ c      endif
         al1=al*wm
         ak1=akr1*wm
         ak01=akr(0)*wm
-        if(nmmin .eq. 2)then
+        if(nzleng)then
           do i=1,np
             cx1=dcmplx(x(i),y(i))
             cx=(0.d0,0.d0)
@@ -380,7 +375,7 @@ c            dpr=ah/(1.d0+sqrt(1.d0+ah))
      $          kturn,l_track,latt,kptbl)
         endif
       enddo
-      if(nmmin .eq. 2)then
+      if(nzleng)then
         call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al1,ak1,bzs,dble(ak01),imag(ak01),2,eps0)
       endif
@@ -394,7 +389,7 @@ c      endif
      $       radius,radius,
      $       0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
       endif
-      if(al .ne. 0.d0)then
+      if(nzleng)then
         if(mfring .eq. 2 .or. mfring .eq. 3)then
           if(f1out .ne. 0.d0 .or. f2out .ne. 0.d0)then
             do i=1,np

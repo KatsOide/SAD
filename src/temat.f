@@ -26,7 +26,7 @@ c     No more test for nlat($$$)
 c     Test implicit match with singlet element
           call elnameK(i,name1)
           temat=name1(1:lenw(name1)) .eq. word(1:lw)
-        elseif(ilist(ilist(i,ifele1),ifklp) .eq. i)then
+        elseif(nelvx(ilist(i,ifele1))%klp .eq. i)then
 c     Test implicit match with head of multiple elements
           temat=pname(idelc(i))(1:lpnamec(i)) .eq. word(1:lw)
         else
@@ -43,7 +43,7 @@ c     No more test for nlat($$$)
 c     Test implicit pattern match with singlet element
           call elnameK(i,name1)
           temat=tmatchl(name1,lenw(name1),word,lw)
-        elseif(ilist(ilist(i,ifele1),ifklp) .eq. i)then
+        elseif(nelvx(ilist(i,ifele1))%klp .eq. i)then
 c     Test implicit pattern match with head of multiple elements
           temat=tmatchl(pnamec(i),lpnamec(i),word,lw)
         else

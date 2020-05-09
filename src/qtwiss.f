@@ -965,13 +965,13 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
       use ffs
       use ffs_pointer
       use tffitcode
-      use temw, only:etwiss2ri,tfetwiss
+      use temw, only:etwiss2ri,tfetwiss,tinv6
       implicit none
       type (sad_descriptor) dsave(kwMAX)
       type (sad_comp) , pointer :: cmp
       integer*4 l,nvar,le,itfdownlevel,irtc
       real*8 fr,ftwiss(ntwissfun),trans(6,6),cod(6),gr,sgr,sgr2,gr1,
-     $     tw1(ntwissfun),ri(6,6),beam(21),srot(3,9)
+     $     tw1(ntwissfun),beam(21),srot(3,9)
       logical*4 over,sol,rt,chg,cp0,normal
       if(calc6d)then
         cp0=codplt
@@ -988,8 +988,8 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
         else
           tw1=twiss(l,0,1:ntwissfun)
           cod=tw1(mfitdx:mfitddp)
-          call etwiss2ri(tw1,ri,normal)
-          call tinv6(ri,trans)
+          trans=tinv6(etwiss2ri(tw1,normal))
+c          call tinv6(ri,trans)
           call tturne1(trans,cod,beam,srot,
      $         i00,i00,i00,0,
      $         .false.,sol,rt,.true.,l,l)
@@ -1015,8 +1015,8 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
 c          write(*,'(a,1p8g15.7)')'qtwissfrac ',fr,sgr2,cod
         endif
 c        write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6)
-        call tinv6(trans,ri)
-        call tfetwiss(ri,cod,ftwiss,normal)
+c        call tinv6(trans,ri)
+        ftwiss=tfetwiss(tinv6(trans),cod,normal)
         ftwiss(mfitnx)=ftwiss(mfitnx)+twiss(l,0,mfitnx)
         ftwiss(mfitny)=ftwiss(mfitny)+twiss(l,0,mfitny)
         ftwiss(mfitnz)=ftwiss(mfitnz)+twiss(l,0,mfitnz)
@@ -1280,7 +1280,7 @@ c     $     cmp%value(ky_K0_BEND)
       endif
       chg=.true.
       if(.not. ideal)then
-        cmp%update=iand(cmp%update,2)
+        cmp%update=cmp%nparam .le. 0
       endif
       return
       end
@@ -1450,7 +1450,8 @@ c fringes are not taken into account yet...
       enddo
       chg=.true.
       if(.not. ideal)then
-        cmp%update=2
+        cmp%update=.false.
+        cmp%updateseg=.true.
       endif
       return
       end

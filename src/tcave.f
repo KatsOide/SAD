@@ -155,7 +155,8 @@ c          trans1(6,6)=(p1-a*t/p1/h1)/h1/v2
           cod(4)=cod(4)+dpy
           cod(6)=cod(6)+pf/p0
           cod(5)=-t*v2
-          call tmultr(trans,trans1,irad)
+          trans(:,1:irad)=matmul(trans1,trans(:,1:irad))
+c          call tmultr(trans,trans1,irad)
           if(irad .gt. 6)then
             call tmulbs(beam,trans1,.true.)
           endif
@@ -268,7 +269,8 @@ c      write(*,*)'tcavfrie ',dpt
       trans1(5,5)=v2/v1+az*trans1(6,5)
       trans1(5,6)=az*trans1(6,6)-at*v2/v1
       cod(5)=cod(5)*v2/v1
-      call tmultr(trans,trans1,irad)
+      trans(:,1:irad)=matmul(trans1,trans(:,1:irad))
+c      call tmultr(trans,trans1,irad)
       if(calb)then
         call tmulbs(beam,trans1,.true.)
       endif

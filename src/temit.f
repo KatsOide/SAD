@@ -41,7 +41,7 @@ c     Inverse matrix of r
 
       real*8 , public :: transr(6,6),codr0(6),bzhr0,bsir0
       real*8 , public :: gintd(3)
-      real(8), public :: emx, emy, emz
+      real(8), public :: eemx,eemy,eemz
       real(8), public :: bh,heff
 
       logical*4, public :: normali, initemip=.true.
@@ -50,9 +50,121 @@ c     Inverse matrix of r
       real*8 , parameter :: toln=0.1d0
 
       public :: tfetwiss,etwiss2ri,tfnormalcoord,toln,
-     $     tfinitemip,tsetr0
+     $     tfinitemip,tsetr0,tinv6,tsymp,tmultr45
 
       contains
+
+      real*8 function tinv6(ra) result(rinv)
+      implicit none
+      real*8, intent(in):: ra(6,6)
+      dimension rinv(6,6)
+      rinv(1,1)= ra(2,2)
+      rinv(1,2)=-ra(1,2)
+      rinv(1,3)= ra(4,2)
+      rinv(1,4)=-ra(3,2)
+      rinv(1,5)= ra(6,2)
+      rinv(1,6)=-ra(5,2)
+      rinv(2,1)=-ra(2,1)
+      rinv(2,2)= ra(1,1)
+      rinv(2,3)=-ra(4,1)
+      rinv(2,4)= ra(3,1)
+      rinv(2,5)=-ra(6,1)
+      rinv(2,6)= ra(5,1)
+      rinv(3,1)= ra(2,4)
+      rinv(3,2)=-ra(1,4)
+      rinv(3,3)= ra(4,4)
+      rinv(3,4)=-ra(3,4)
+      rinv(3,5)= ra(6,4)
+      rinv(3,6)=-ra(5,4)
+      rinv(4,1)=-ra(2,3)
+      rinv(4,2)= ra(1,3)
+      rinv(4,3)=-ra(4,3)
+      rinv(4,4)= ra(3,3)
+      rinv(4,5)=-ra(6,3)
+      rinv(4,6)= ra(5,3)
+      rinv(5,1)= ra(2,6)
+      rinv(5,2)=-ra(1,6)
+      rinv(5,3)= ra(4,6)
+      rinv(5,4)=-ra(3,6)
+      rinv(5,5)= ra(6,6)
+      rinv(5,6)=-ra(5,6)
+      rinv(6,1)=-ra(2,5)
+      rinv(6,2)= ra(1,5)
+      rinv(6,3)=-ra(4,5)
+      rinv(6,4)= ra(3,5)
+      rinv(6,5)=-ra(6,5)
+      rinv(6,6)= ra(5,5)
+      return
+      end function
+
+      real*8 function tsymp(trans) result(ri)
+      implicit none
+      integer*4 i
+      real*8 , intent(in)::trans(6,6)
+      dimension ri(6,6)
+c  gfortran up to 9 generates a warning on uninitialized..., which is said to be a bug in gcc...
+      ri=matmul(trans,tinv6(trans))
+c      call tinv6(trans,ri)
+c      call tmultr(ri,trans,6)
+      do i=1,6
+        ri(:,i)=-ri(:,i)*.5d0
+        ri(i,i)=ri(i,i)+1.5d0
+      enddo
+      ri=matmul(ri,trans)
+c      call tmultr(trans,ri,6)
+      return
+      end function
+
+      real*8 function tmultr45(a,b) result(c)
+      implicit none
+      real*8 ,intent(in)::a(4,5),b(4,5)
+      dimension c(4,5)
+c      real*8 v1,v2,v3,v4
+      c=matmul(b(:,1:4),a)
+      c(:,5)=c(:,5)+b(:,5)
+c$$$      v1=a(1,1)
+c$$$      v2=a(2,1)
+c$$$      v3=a(3,1)
+c$$$      v4=a(4,1)
+c$$$      c(1,1)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
+c$$$      c(2,1)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
+c$$$      c(3,1)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
+c$$$      c(4,1)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
+c$$$      v1=a(1,2)
+c$$$      v2=a(2,2)
+c$$$      v3=a(3,2)
+c$$$      v4=a(4,2)
+c$$$      c(1,2)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
+c$$$      c(2,2)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
+c$$$      c(3,2)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
+c$$$      c(4,2)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
+c$$$      v1=a(1,3)
+c$$$      v2=a(2,3)
+c$$$      v3=a(3,3)
+c$$$      v4=a(4,3)
+c$$$      c(1,3)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
+c$$$      c(2,3)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
+c$$$      c(3,3)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
+c$$$      c(4,3)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
+c$$$      v1=a(1,4)
+c$$$      v2=a(2,4)
+c$$$      v3=a(3,4)
+c$$$      v4=a(4,4)
+c$$$      c(1,4)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
+c$$$      c(2,4)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
+c$$$      c(3,4)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
+c$$$      c(4,4)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
+c$$$      v1=a(1,5)
+c$$$      v2=a(2,5)
+c$$$      v3=a(3,5)
+c$$$      v4=a(4,5)
+c$$$      c(1,5)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4+b(1,5)
+c$$$      c(2,5)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4+b(2,5)
+c$$$      c(3,5)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4+b(3,5)
+c$$$      c(4,5)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4+b(4,5)
+      return
+      end function
+
       subroutine tsetr0(trans,cod,bzh,bsi0)
       implicit none
       real*8 ,intent(in)::trans(6,6),cod(6),bzh,bsi0
@@ -135,11 +247,11 @@ c      call tfdebugprint(kx,'initemip',1)
       return
       end subroutine
 
-      subroutine tfetwiss(r,cod,twiss,normi)
+      real*8 function tfetwiss(r,cod,normi) result(twiss)
       use ffs
       implicit none
       real*8 , intent(in):: r(6,6),cod(6)
-      real*8 , intent(out):: twiss(ntwissfun)
+      dimension twiss(ntwissfun)
       real*8 hi(6,6)
       real*8 ax,ay,az,axy,f,detm,his(4),
      $     uz11,uz12,uz21,uz22,
@@ -204,7 +316,8 @@ c     $     r(5,5)*r(6,6)-r(6,5)*r(5,6)
       hi(3,5)= hy11
       hi(6,5)= 0.d0
       hi(5,5)= az
-      call tmultr(hi,r,6)
+      hi=matmul(r,hi)
+c      call tmultr(hi,r,6)
 c      write(*,*)'tfetwiss-3'
       detm=(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2)
      $     +hi(3,3)*hi(4,4)-hi(4,3)*hi(3,4))*.5d0
@@ -288,12 +401,14 @@ c      crz=sqrt(uz12**2+uz22**2)
       twiss(mfitbz)=bz22**2
       twiss(mfitnz)=atan2(sz,cz)
       return
-      end subroutine
+      end function
 
-      subroutine etwiss2ri(twiss1,ria,normal)
+      real*8 function etwiss2ri(twiss1,normal) result(ria)
       use ffs
       implicit none
-      real*8 twiss1(ntwissfun),ria(6,6),h(4,6),br(4,4),
+      real*8 , intent(in)::twiss1(ntwissfun)
+      dimension ria(6,6)
+      real*8 h(4,6),br(4,4),
      $     hx11,hx12,hx21,hx22,
      $     hy11,hy12,hy21,hy22,
      $     ex,epx,ey,epy,zx,zpx,zy,zpy,
@@ -454,7 +569,7 @@ c      crz=sqrt(uz12**2+uz22**2)
       ria(5,1:6)=ria(5,1:6)/sqrbz
       ria(6,1:6)=ria(6,1:6)*sqrbz+ria(5,1:6)*az
       return
-      end subroutine
+      end function
 
       subroutine tfnormalcoord(isp1,kx,irtc)
       use tfstk
@@ -462,7 +577,6 @@ c      crz=sqrt(uz12**2+uz22**2)
       implicit none
       type (sad_descriptor) kx
       integer*4 isp1,irtc,itfmessage
-      real*8 rn(6,6)
       logical*4 normal
       type (sad_rlist), pointer :: kl
       if(isp .ne. isp1+1)then
@@ -474,8 +588,7 @@ c      crz=sqrt(uz12**2+uz22**2)
      $       '"Real List of Length 28"')
         return
       endif
-      call etwiss2ri(kl%rbody(1:ntwissfun),rn,normal)
-      kx=kxm2l(rn,6,6,6,.false.)
+      kx=kxm2l(etwiss2ri(kl%rbody(1:ntwissfun),normal),6,6,6,.false.)
       irtc=0
       return
       end subroutine
@@ -743,6 +856,7 @@ c      write(*,*)'phconv ',itp,ilp
       use tfstk
       use ffs_pointer,only:gammab
       use tmacro
+      use mathfun, only:hypot3
       implicit none
       type (sad_dlist), pointer ::klx
       type (sad_rlist), pointer ::klri
@@ -776,7 +890,8 @@ c        write(*,*)'phlist ',itp,nph
           kp=kt+(ilp-1)*10
           klx%dbody(i)%k=ktflist+ktavaloc(0,nitem,klri)
           klri%attr=lconstlist
-          dp=hypot(rlist(kp+4),hypot(rlist(kp+5),rlist(kp+6)))
+          dp=hypot3(rlist(kp+4),rlist(kp+5),rlist(kp+6))
+c          dp=hypot(rlist(kp+4),hypot(rlist(kp+5),rlist(kp+6)))
 c          dp=sqrt(rlist(kp+4)**2+rlist(kp+5)**2
 c     $         +rlist(kp+6)**2)
           klri%rbody(1)=dp*amass*gammab(ilist(2,kp))
@@ -1189,7 +1304,7 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         use ffs_flag
         use tmacro
         use photontable, only:tphotonconv
-        use mathfun, only:pxy2dpz,p2h
+        use mathfun, only:pxy2dpz,p2h,hypot3
         implicit none
         integer*4 ,parameter :: npmax=10000
         integer*4 , intent(in)::k
@@ -1210,7 +1325,8 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         ppx=py*dpz0-dpz*py0+dpy
         ppy=dpz*px0-px*dpz0-dpx
         ppz=px*py0-py*px0
-        ppa=hypot(ppx,hypot(ppy,ppz))
+c        ppa=hypot(ppx,hypot(ppy,ppz))
+        ppa=hypot3(ppx,ppy,ppz)
         theta=asin(min(1.d0,max(-1.d0,ppa)))
         pr=1.d0+g
         p=p0*pr
@@ -1229,7 +1345,6 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
               dg=dpr(i)*uc
               xr=x-rph(i)*(px-.5d0*dpx*rph(i))*al
               yr=y-rph(i)*(py-.5d0*dpy*rph(i))*al
-c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
               call tphotonconv(xr,px,yr,py,dg,
      $             dpr(i),p,h1,-rph(i)*al,k)
             enddo
@@ -1274,11 +1389,11 @@ c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
         return
         end subroutine
 
-        subroutine tradkf1n(np,xn,pxn,yn,pyn,zn,gn,dvn,sxn,syn,szn,al)
+        subroutine tradkfn(np,xn,pxn,yn,pyn,zn,gn,dvn,sxn,syn,szn,al)
         use ffs_flag
         use tmacro
         use photontable, only:tphotonconv
-        use mathfun, only:pxy2dpz,p2h
+        use mathfun, only:pxy2dpz,p2h,hypot3
         implicit none
         integer*4 ,parameter :: npmax=10000
         integer*4 , intent(in)::np
@@ -1302,7 +1417,8 @@ c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
           ppx=pyn(k)*dpz0-dpz*pyr0(k)+dpy
           ppy=dpz*px0-pxn(k)*dpz0-dpx
           ppz=pxn(k)*pyr0(k)-pyn(k)*px0
-          ppa=hypot(ppx,hypot(ppy,ppz))
+          ppa=hypot3(ppx,ppy,ppz)
+c          ppa=hypot(ppx,hypot(ppy,ppz))
           theta=asin(min(1.d0,max(-1.d0,ppa)))
           pr=1.d0+gn(k)
           p=p0*pr
@@ -1372,7 +1488,7 @@ c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
      $     px00,py0,zr00,bsi0,al)
         use ffs_flag
         use tmacro
-        use mathfun, only:pxy2dpz,p2h
+        use mathfun, only:pxy2dpz,p2h,hypot3
         implicit none
         real*8 , intent(inout)::x,px,y,py,z,g,dv
         real*8 , intent(in)::px00,py0,zr00,bsi0,al
@@ -1387,7 +1503,8 @@ c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
         ppx=py*dpz0-dpz*py0+dpy
         ppy=dpz*px0-px*dpz0-dpx
         ppz=px*py0-py*px0
-        ppa=hypot(ppx,hypot(ppy,ppz))
+        ppa=hypot3(ppx,ppy,ppz)
+c        ppa=hypot(ppx,hypot(ppy,ppz))
         theta=asin(min(1.d0,max(-1.d0,ppa)))
         pr=1.d0+g
         p=p0*pr
@@ -1424,10 +1541,10 @@ c        write(*,*)'tradk1 ',dg,anp,uc
         return
         end subroutine
 
-        subroutine tradk1n(np,xn,pxn,yn,pyn,zn,gn,dvn,sxn,syn,szn,al)
+        subroutine tradkn(np,xn,pxn,yn,pyn,zn,gn,dvn,sxn,syn,szn,al)
         use ffs_flag
         use tmacro
-        use mathfun, only:pxy2dpz,p2h
+        use mathfun, only:pxy2dpz,p2h,hypot3
         implicit none
         integer*4 , intent(in)::np
         real*8 , intent(inout)::
@@ -1447,7 +1564,8 @@ c        write(*,*)'tradk1 ',dg,anp,uc
           ppx=pyn(i)*dpz0-dpz*pyr0(i)+dpy
           ppy=dpz*px0-pxn(i)*dpz0-dpx
           ppz=pxn(i)*pyr0(i)-pyn(i)*px0
-          ppa=hypot(ppx,hypot(ppy,ppz))
+          ppa=hypot3(ppx,ppy,ppz)
+c          ppa=hypot(ppx,hypot(ppy,ppz))
           theta=asin(min(1.d0,max(-1.d0,ppa)))
           pr=1.d0+gn(i)
           p=p0*pr
@@ -1487,20 +1605,21 @@ c        write(*,*)'tradk1 ',dg,anp,uc
 
         subroutine tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phi0)
         use tfstk
-        use ffs_flag
-        use tmacro
+        use ffs_flag, only:calpol,rfluct
         implicit none
-        integer*4 np
+        integer*4 , intent(in)::np
         real*8 ,intent(inout)::
      $       x(np),px(np),y(np),py(np),dv(np),z(np),g(np),
      $       sx(np),sy(np),sz(np)
         real*8 , intent(in)::al,phi0
-        cphi0=cos(phi0)
-        sphi0=sin(phi0)
-        if(rfluct .and. al .ne. 0.d0)then
-          call tradkf1n(np,x,px,y,py,z,g,dv,sx,sy,sz,al)
-        else
-          call tradk1n(np,x,px,y,py,z,g,dv,sx,sy,sz,al)
+        if(al .ne. 0.d0)then
+          cphi0=cos(phi0)
+          sphi0=sin(phi0)
+          if(rfluct)then
+            call tradkfn(np,x,px,y,py,z,g,dv,sx,sy,sz,al)
+          else
+            call tradkn(np,x,px,y,py,z,g,dv,sx,sy,sz,al)
+          endif
         endif
         pxr0=px
         pyr0=py
@@ -1654,8 +1773,10 @@ c        sp=sin(phir0)
           h2=h1
         endif
         if(irad .gt. 6)then
-          call tinv6(transr,transi)
-          call tmultr(transi,trans(:,1:6),6)
+          transi=tinv6(transr)
+c          call tinv6(transr,transi)
+          transi=matmul(trans(:,1:6),transi)
+c          call tmultr(transi,trans(:,1:6),6)
           tr2=transi
           if(bzh .ne. 0.d0)then
             tr2(2,:)=tr2(2,:)+bzh*tr2(3,:)
@@ -2154,8 +2275,9 @@ c      write(*,'(a/,6(1p6g15.7/))')'trans: ',(trans(i,1:6),i=1,6)
       if(pri .and. emiout)then
         write(lfno,*)'   Symplectic part of the transfer matrix:'
         call tput(trans,label2,label2,'9.6',6,lfno)
-        call tinv6(r,ri)
-        call tmultr(ri,trans,6)
+        ri=matmul(trans(:,1:6),tinv6(r))
+c        call tinv6(r,ri)
+c        call tmultr(ri,trans,6)
         call tput(ri,label2,label2,'9.6',6,lfno)
       endif
       if(.not. rfsw)then
@@ -2171,9 +2293,11 @@ c      write(*,'(a,1p12g10.3)')'ceig: ',ceig
       call tnorm(r,ceig,lfno)
       call tsub(ceig,ceig0,dceig,12)
       ceig0=ceig
-      call tsymp(r)
-      call tinv6(r,ri)
-      call tmultr(trans,ri,6)
+      r=tsymp(r)
+      ri=tinv6(r)
+c      call tinv6(r,ri)
+      trans(:,1:6)=matmul(ri,trans(:,1:6))
+c      call tmultr(trans,ri,6)
       call tmov(r,btr,36)
       call tmultr(btr,trans,6)
       if(pri .and. emiout)then
@@ -2218,7 +2342,7 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
      $     .and. abs(dble(cd(5))) .lt. 1.d-6
      1     .and. abs(dble(cd(6))) .lt. 1.d-6) .and. fndcod
       params(ipnx:ipnz)=imag(cd(4:6))/pi2
-      call tfetwiss(ri,cod,params(iptwiss),.true.)
+      params(iptwiss:iptwiss+ntwissfun-1)=tfetwiss(ri,cod,.true.)
       if(pri)then
         if(lfno .gt. 0)then
           do i=1,ntwissfun
@@ -2302,17 +2426,7 @@ c            enddo
       if(.not. calem)then
         return
       endif
-c$$$      do i=1,6
-c$$$        do j=1,6
-c$$$          s=0.d0
-c$$$          do k=1,6
-c$$$            s=s+trans(j,k+6)*r(k,i)
-c$$$          enddo
-c$$$          trans(j,i)=s
-c$$$        enddo
-c$$$      enddo
-      trans(1:6,1:6)=matmul(trans(1:6,7:12),r(1:6,1:6))
-      call tmultr(trans,ri,6)
+      trans(:,1:6)=matmul(ri,matmul(trans(:,7:12),r))
       do i=1,5,2
         cd(int(i/2)+1)=dcmplx((trans(i,i)+trans(i+1,i+1))*.5d0,
      1                   (trans(i,i+1)-trans(i+1,i))*.5d0)/cc(i)
@@ -2385,8 +2499,6 @@ c$$$      enddo
       endif
       btr=0.d0
       trans(:,7:12)=0.d0
-c      call tclr(btr,441)
-c      call tclr(trans(1,7),36)
       do i=1,5,2
         tune=imag(cd(int(i/2)+4))
         trans(i  ,i+6)= cos(tune)
@@ -2428,7 +2540,7 @@ c        do j=1,21
           btr(1:21,k3)=btr(1:21,k3)*sqr2
 c        enddo
       enddo
-      do  i=1,21
+      do i=1,21
         btr(i,i)=btr(i,i)+1.d0
         emit(i)=0.d0
       enddo
@@ -2482,11 +2594,11 @@ c          enddo
       emit(ia(6,6))=sign(max(abs(emit(ia(6,6))),emze),
      $     emit(ia(6,6)))
       if(.not. epi)then
-        emx= sign(sqrt(abs(emit(ia(1,1))*emit(ia(2,2))
+        eemx= sign(sqrt(abs(emit(ia(1,1))*emit(ia(2,2))
      $       -emit(ia(1,2))**2)),emit(ia(2,2))*charge)
-        emy= sign(sqrt(abs(emit(ia(3,3))*emit(ia(4,4))
+        eemy= sign(sqrt(abs(emit(ia(3,3))*emit(ia(4,4))
      $       -emit(ia(3,4))**2)),emit(ia(4,4))*charge)
-        emz= sign(sqrt(abs(emit(ia(5,5))*emit(ia(6,6))
+        eemz= sign(sqrt(abs(emit(ia(5,5))*emit(ia(6,6))
      $       -emit(ia(5,6))**2)),emit(ia(6,6))*charge)
       endif
       emit1(1:21)=emit
@@ -2500,9 +2612,9 @@ c          enddo
         else
           sigz=0.d0
         endif
-        emz=sigz*sige
+        eemz=sigz*sige
       endif
-      params(ipemx:ipemz)=(/emx,emy,emz/)
+      params(ipemx:ipemz)=(/eemx,eemy,eemz/)
       params(ipsige)=sige
       params(ipsigz)=sigz
       params(ipnnup)=h0*gspin
@@ -2516,9 +2628,9 @@ c          enddo
         params(ipequpol2:ipequpol6)=equpol
         params(ippolx:ippolz)=sps(:,1)
       endif
-      call rsetgl1('EMITX',emx)
-      call rsetgl1('EMITY',emy)
-      call rsetgl1('EMITZ',emz)
+      call rsetgl1('EMITX',eemx)
+      call rsetgl1('EMITY',eemy)
+      call rsetgl1('EMITZ',eemz)
       call rsetgl1('SIGE',sige)
       call rsetgl1('SIGZ',sigz)
  3001 if(pri)then
@@ -2541,9 +2653,9 @@ c          enddo
           call tputbs(emit,label1,lfno)
           call tputbs(emit1,label2,lfno)
         endif
-        vout(1)=autofg(emx             ,'11.8')
-        vout(2)=autofg(emy             ,'11.8')
-        vout(3)=autofg(emz             ,'11.8')
+        vout(1)=autofg(eemx             ,'11.8')
+        vout(2)=autofg(eemy             ,'11.8')
+        vout(3)=autofg(eemz             ,'11.8')
         vout(4)=autofg(sige            ,'11.8')
         vout(5)=autofg(sigz*1.d3       ,'11.8')
         vout(9)=autofg(params(ipnnup)   ,'11.7')
@@ -2576,7 +2688,7 @@ c        sig2 = 0.5d0* sqrt(abs((emit1(1)-emit1(6))**2+4d0*emit1(4)**2))
      $           ,'Nominal spin tune      =',a,'    ',
      $         1x,'Polarization time      =',a,' min'/)
 c9103   format(3X,'Beam dimension along principal axis:'/
-        call putsti(emx,emy,emz,sige,sigz,btilt,sigx,sigy,
+        call putsti(eemx,eemy,eemz,sige,sigz,btilt,sigx,sigy,
      1              calint,fndcod)
 ckiku ------------------>
         if(calpol)then
@@ -2626,7 +2738,7 @@ ckiku ------------------>
         call tintraconv(lfno,it,emit,transs,trans,r,
      $     beams,beam,
      $     emxr,emyr,emzr,
-     $     emx,emy,emz,
+     $     eemx,eemy,eemz,
      $     emxmax,emymax,emzmax,
      $     emxmin,emymin,emzmin,
      $     emx0,emy0,emz0,demin,sigz,sige,dc,
@@ -2673,7 +2785,7 @@ c        call tmov(btr,r,78)
       subroutine tintraconv(lfno,it,emit,transs,trans,r,
      $     beams,beam,
      $     emxr,emyr,emzr,
-     $     emx,emy,emz,
+     $     eemx,eemy,eemz,
      $     emxmax,emymax,emzmax,
      $     emxmin,emymin,emzmin,
      $     emx0,emy0,emz0,demin,sigz,sige,dc,
@@ -2694,7 +2806,7 @@ c        call tmov(btr,r,78)
       real*8 emit(21),beams(21),beam(42),transs(6,12),
      $     trans(6,12),trans1(6,6),r(6,6),
      $     rx,ry,rz,emxr,emyr,emzr,
-     $     emx,emy,emz,emx1,emy1,emz1,emmin,
+     $     eemx,eemy,eemz,emx1,emy1,emz1,emmin,
      $     emxmax,emymax,emzmax,
      $     emxmin,emymin,emzmin,
      $     de,emx0,emy0,emz0,demin,tf,tt,eintrb,
@@ -2702,28 +2814,28 @@ c        call tmov(btr,r,78)
       logical*4 pri,intend,epi,synchm
       character*11 autofg,vout(*)
       ia(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
-      emx1=emx
-      emy1=emy
-      emz1=emz
+      emx1=eemx
+      emy1=eemy
+      emz1=eemz
       if(.not. trpt)then
-        emmin=(emx+emy)*coumin
-        emx=max(emmin,emx)
-        emy=max(emmin,emy)
-        emz=max(emz0*0.1d0,emz)
-        if(emx .le. 0.d0 .or. emy .le. 0.d0 .or. emz .le. 0.d0)then
+        emmin=(eemx+eemy)*coumin
+        eemx=max(emmin,eemx)
+        eemy=max(emmin,eemy)
+        eemz=max(emz0*0.1d0,eemz)
+        if(eemx .le. 0.d0 .or. eemy .le. 0.d0 .or. eemz .le. 0.d0)then
           write(lfno,*)
      $         ' Negative emittance, ',
-     $         'No intrabeam/space charge calculation. emx,y,z =',
-     $         emx,emy,emz
+     $         'No intrabeam/space charge calculation. eemx,y,z =',
+     $         eemx,eemy,eemz
           it=itmax+1
         endif
         if(it .ge. 20)then
-          emx=min(emxmax,max(emxmin,emx))
-          emy=min(emymax,max(emymin,emy))
-          emz=min(emzmax,max(emzmin,emz))
+          eemx=min(emxmax,max(emxmin,eemx))
+          eemy=min(emymax,max(emymin,eemy))
+          eemz=min(emzmax,max(emzmin,eemz))
         endif
-        de=(1.d0-emx0/emx)**2+
-     1       (1.d0-emy0/emy)**2+(1.d0-emz0/emz)**2
+        de=(1.d0-emx0/eemx)**2+
+     1       (1.d0-emy0/eemy)**2+(1.d0-emz0/eemz)**2
         demin=min(de,demin)
         if(it .ge. 20)then
           if(it .eq. 20)then
@@ -2731,7 +2843,7 @@ c        call tmov(btr,r,78)
             write(*,*)
      $'     EMITX          EMITY          EMITZ           conv'
           endif
-          write(*,'(1P,4G15.7)')emx,emy,emz,de
+          write(*,'(1P,4G15.7)')eemx,eemy,eemz,de
         endif
       endif
  7301 if(it .gt. 1 .and. dc .lt. dcmin
@@ -2868,51 +2980,51 @@ c            endif
         pri=.false.
         if(calint)then
           if(intra)then
-            rx=eintrb(emx0,emx,emxr)/emx
-            ry=eintrb(emy0,emy,emyr)/emy
-            rz=eintrb(emz0,emz,emzr)/emz
+            rx=eintrb(emx0,eemx,emxr)/eemx
+            ry=eintrb(emy0,eemy,emyr)/eemy
+            rz=eintrb(emz0,eemz,emzr)/eemz
             rr=min(100.d0,max(0.01d0,(rx*ry*rz)**(1.d0/3.d0)))
-            emx=emx*rr
-            emy=emy*rr
-            emz=emz*rr
+            eemx=eemx*rr
+            eemy=eemy*rr
+            eemz=eemz*rr
           elseif(emx0 .ne. 0.d0)then
             if(it .ge. 20)then
-              emxmax=min(max(emx,emx0),emxmax)
-              emxmin=max(min(emx,emx0),emxmin)
-              emx=sqrt(emxmax*emxmin)
+              emxmax=min(max(eemx,emx0),emxmax)
+              emxmin=max(min(eemx,emx0),emxmin)
+              eemx=sqrt(emxmax*emxmin)
             else
-              emx=sqrt(emx*emx0)
+              eemx=sqrt(eemx*emx0)
             endif
             if(it .gt. 30)then
-              emymax=min(max(emy,emy0),emymax)
-              emymin=max(min(emy,emy0),emymin)
-              emy=sqrt(emymax*emymin)
+              emymax=min(max(eemy,emy0),emymax)
+              emymin=max(min(eemy,emy0),emymin)
+              eemy=sqrt(emymax*emymin)
             else
-              emy=sqrt(emy*emy0)
+              eemy=sqrt(eemy*emy0)
             endif
-            emzmax=min(max(emz,emz0),emzmax)
-            emzmin=max(min(emz,emz0),emzmin)
-            emz=sqrt(emzmax*emzmin)
+            emzmax=min(max(eemz,emz0),emzmax)
+            emzmin=max(min(eemz,emz0),emzmin)
+            eemz=sqrt(emzmax*emzmin)
           endif
         else
-          emxr=emx
-          emyr=emy
-          emzr=emz
+          emxr=eemx
+          emyr=eemy
+          emzr=eemz
         endif
-        emx0=emx
-        emy0=emy
-        emz0=emz
+        emx0=eemx
+        emy0=eemy
+        emz0=eemz
         calint=.true.
 c     ccintr=(rclassic/h0**2)**2/8.d0/pi
-c     cintrb=ccintr*pbunch/emx/emy/emz
+c     cintrb=ccintr*pbunch/eemx/eemy/eemz
 c
 c     cintrb=rclassic**2/8.d0/pi
-c     1           *pbunch/(emx*h0)/(emy*h0)/(emz*h0)/h0
+c     1           *pbunch/(eemx*h0)/(eemy*h0)/(eemz*h0)/h0
 c     Here was the factor 2 difference from B-M paper.
 c     Pointed out by K. Kubo on 6/18/2001.
 c
         cintrb=rclassic**2/4.d0/pi*pbunch
-c     write(*,*)cintrb,emx,emy,emz
+c     write(*,*)cintrb,eemx,eemy,eemz
 c        if(trpt)then
 c          write(*,*)'tintraconv @ src/temit.f: ',
 c     $          'Reference uninitialized emx1/emy1/emz1',
@@ -2920,25 +3032,25 @@ c     $          '(FIXME)'
 c          stop
 c        endif
         if(.not. trpt)then
-          if(emx1 .gt. 0.01d0*emx)then
-            rx=sqrt(emx/emx1)
+          if(emx1 .gt. 0.01d0*eemx)then
+            rx=sqrt(eemx/emx1)
           else
-            emit(ia(1,1))=emx
-            emit(ia(2,2))=emx
+            emit(ia(1,1))=eemx
+            emit(ia(2,2))=eemx
             rx=1.d0
           endif
-          if(emy1 .gt. 0.01d0*emy)then
-            ry=sqrt(emy/emy1)
+          if(emy1 .gt. 0.01d0*eemy)then
+            ry=sqrt(eemy/emy1)
           else
-            emit(ia(3,3))=emy
-            emit(ia(4,4))=emy
+            emit(ia(3,3))=eemy
+            emit(ia(4,4))=eemy
             ry=1.d0
           endif
-          if(emz1 .gt. 0.01d0*emz)then
-            rz=sqrt(emz/emz1)
+          if(emz1 .gt. 0.01d0*eemz)then
+            rz=sqrt(eemz/emz1)
           else
-            emit(ia(5,5))=emz
-            emit(ia(6,6))=emz
+            emit(ia(5,5))=eemz
+            emit(ia(6,6))=eemz
             rz=1.d0
           endif
           call tinitr(trans1)
@@ -2949,7 +3061,7 @@ c        endif
           trans1(5,5)=rz
           trans1(6,6)=rz
 c     write(*,*)'temit ',rx,ry,rx
-c     write(*,*)'temit ',emy,emy1
+c     write(*,*)'temit ',eemy,emy1
           call tmulbs(emit,trans1,.false.)
           if(.not. synchm)then
             emit(ia(5,1))=0.d0
@@ -2980,22 +3092,6 @@ c     write(*,*)'temit ',emy,emy1
         return
       endif
       iret=1
-      return
-      end
-
-      subroutine tsymp(trans)
-      implicit none
-      integer*4 i
-      real*8 trans(6,6),ri(6,7)
-      call tinv6(trans,ri)
-      call tmultr(ri,trans,6)
-      do 10 i=1,6
-c        do 20 j=1,6
-          ri(1:6,i)=-ri(1:6,i)*.5d0
-c20      continue
-        ri(i,i)=ri(i,i)+1.5d0
-10    continue
-      call tmultr(trans,ri,6)
       return
       end
 
@@ -3038,49 +3134,6 @@ c20      continue
           ri(i+1,j+1)= r(j  ,i  )
 20      continue
 10    continue
-      return
-      end
-
-      subroutine tinv6(r,ri)
-      implicit none
-      real*8, intent(in):: r(6,6)
-      real*8 ,intent(out)::ri(6,6)
-      ri(1,1)= r(2,2)
-      ri(1,2)=-r(1,2)
-      ri(1,3)= r(4,2)
-      ri(1,4)=-r(3,2)
-      ri(1,5)= r(6,2)
-      ri(1,6)=-r(5,2)
-      ri(2,1)=-r(2,1)
-      ri(2,2)= r(1,1)
-      ri(2,3)=-r(4,1)
-      ri(2,4)= r(3,1)
-      ri(2,5)=-r(6,1)
-      ri(2,6)= r(5,1)
-      ri(3,1)= r(2,4)
-      ri(3,2)=-r(1,4)
-      ri(3,3)= r(4,4)
-      ri(3,4)=-r(3,4)
-      ri(3,5)= r(6,4)
-      ri(3,6)=-r(5,4)
-      ri(4,1)=-r(2,3)
-      ri(4,2)= r(1,3)
-      ri(4,3)=-r(4,3)
-      ri(4,4)= r(3,3)
-      ri(4,5)=-r(6,3)
-      ri(4,6)= r(5,3)
-      ri(5,1)= r(2,6)
-      ri(5,2)=-r(1,6)
-      ri(5,3)= r(4,6)
-      ri(5,4)=-r(3,6)
-      ri(5,5)= r(6,6)
-      ri(5,6)=-r(5,6)
-      ri(6,1)=-r(2,5)
-      ri(6,2)= r(1,5)
-      ri(6,3)=-r(4,5)
-      ri(6,4)= r(3,5)
-      ri(6,5)=-r(6,5)
-      ri(6,6)= r(5,5)
       return
       end
 

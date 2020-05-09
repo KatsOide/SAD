@@ -1,92 +1,93 @@
-(Element["PROFILE"[`key_String|{`key_String}|{`key_String,`key_String}],y_,`op___]=`z:{__Real})^:=
-  With[{`e=Element$["POSITION",y,op]},
-(*    Print["Element-PROF-Set ",{Hold[key],y,z}]; *)
+With[{setop=Set|AddTo|TimesBy|SubtractFrom|DivideBy},
+
+  (Element["PROFILE"[`key_String|{`key_String}|{`key_String,`key_String}],y_,`op___]=`z:{__Real})^:=
+    With[{`e=Element$["POSITION",y,op]},
+      (*    Print["Element-PROF-Set ",{Hold[key],y,z}]; *)
+      If[ListQ[e],
+        With[{`p=Element$["PROFILE",#,op]},
+          If[RealQ[p],Element$["PROFILE",#]={{key,z}},
+            Element["PROFILE",#]=Prepend[DeleteCases[p,{key,__}|{{key,key},__}|{{key},__},1],{key,z}]]]&/@e,
+        With[{p=Element$["PROFILE",e,op]},
+          If[RealQ[p],Element$["PROFILE",e]={{key,z}},
+            Element["PROFILE",e]=Prepend[DeleteCases[p,{key,__}|{{key,key},__}|{{key},__},1],{key,z}]]]]];
+  (Element["PROFILE"[`key:{_String,_String}],y_,`op___]=`z:{__Real})^:=With[{`e=Element$["POSITION",y,op]},
     If[ListQ[e],
       With[{`p=Element$["PROFILE",#,op]},
         If[RealQ[p],Element$["PROFILE",#]={{key,z}},
-          Element["PROFILE",#]=Prepend[DeleteCases[p,{key,__}|{{key,key},__}|{{key},__},1],{key,z}]]]&/@e,
+          Element["PROFILE",#]=Prepend[DeleteCases[p,{key,__},1],{key,z}]]]&/@e,
       With[{p=Element$["PROFILE",e,op]},
         If[RealQ[p],Element$["PROFILE",e]={{key,z}},
-          Element["PROFILE",e]=Prepend[DeleteCases[p,{key,__}|{{key,key},__}|{{key},__},1],{key,z}]]]]];
-(Element["PROFILE"[`key:{_String,_String}],y_,`op___]=`z:{__Real})^:=With[{`e=Element$["POSITION",y,op]},
-  If[ListQ[e],
-    With[{`p=Element$["PROFILE",#,op]},
-      If[RealQ[p],Element$["PROFILE",#]={{key,z}},
-        Element["PROFILE",#]=Prepend[DeleteCases[p,{key,__},1],{key,z}]]]&/@e,
-    With[{p=Element$["PROFILE",e,op]},
-      If[RealQ[p],Element$["PROFILE",e]={{key,z}},
-        Element["PROFILE",e]=Prepend[DeleteCases[p,{key,__},1],{key,z}]]]]];
+          Element["PROFILE",e]=Prepend[DeleteCases[p,{key,__},1],{key,z}]]]]];
 
-(Element["PROFILE"[`key_String|{`key_String}|{`key_String,`key_String}],y_,`op___]=.)^:=With[{`e=Element$["POSITION",y,op]},
-  If[ListQ[e],
-    With[{`p=Element$["PROFILE",#,op]},
-      If[~RealQ[p],
-        Element["PROFILE",#]=DeleteCases[p,{key,__}|{{key,key},__}|{{key},__},1]]]&/@e,
-    With[{p=Element$["PROFILE",e,op]},
-      If[~RealQ[p],
-        Element["PROFILE",e]=DeleteCases[p,{key,__}|{{key,key},__}|{{key},__},1]]]]];
-(Element["PROFILE"[`key:{_String,_String}],y_,`op___]=.)^:=With[{`e=Element$["POSITION",y,op]},
-  If[ListQ[e],
-    With[{`p=Element$["PROFILE",#,op]},
-      If[~RealQ[p],
-        Element["PROFILE",#]=DeleteCases[p,{key,__},1]]]&/@e,
-    With[{p=Element$["PROFILE",e,op]},
-      If[~RealQ[p],
-        Element["PROFILE",e]=DeleteCases[p,{key,__},1]]]]];
-
-(Element["PROFILE",y_,op___]=z:{key_String|{key_String}|{key_String,key_String},{__Real},___})^:=
-  With[{e=Element$["POSITION",y,op]},
+  (Element["PROFILE"[`key_String|{`key_String}|{`key_String,`key_String}],y_,`op___]=.)^:=With[{`e=Element$["POSITION",y,op]},
     If[ListQ[e],
-      With[{p=Element$["PROFILE",#,op]},
-        If[RealQ[p],Element$["PROFILE",#]={z},
-          Element["PROFILE",#]=Prepend[DeleteCases[p,{key|{key}|{key,key},__},1],z]]]&/@e,
+      With[{`p=Element$["PROFILE",#,op]},
+        If[~RealQ[p],
+          Element["PROFILE",#]=DeleteCases[p,{key,__}|{{key,key},__}|{{key},__},1]]]&/@e,
       With[{p=Element$["PROFILE",e,op]},
-        If[RealQ[p],Element$["PROFILE",e]={z},
-          Element["PROFILE",e]=Prepend[DeleteCases[p,{key|{key}|{key,key},__},1],z]]]]];
-(Element["PROFILE",y_,op___]=z:{key:{_String,_String},{__Real},___})^:=
-  With[{e=Element$["POSITION",y,op]},
+        If[~RealQ[p],
+          Element["PROFILE",e]=DeleteCases[p,{key,__}|{{key,key},__}|{{key},__},1]]]]];
+  (Element["PROFILE"[`key:{_String,_String}],y_,`op___]=.)^:=With[{`e=Element$["POSITION",y,op]},
     If[ListQ[e],
-      With[{p=Element$["PROFILE",#,op]},
-        If[RealQ[p],Element$["PROFILE",#]={z},
-          Element["PROFILE",#]=Prepend[DeleteCases[p,{key,__},1],z]]]&/@e,
+      With[{`p=Element$["PROFILE",#,op]},
+        If[~RealQ[p],
+          Element["PROFILE",#]=DeleteCases[p,{key,__},1]]]&/@e,
       With[{p=Element$["PROFILE",e,op]},
-        If[RealQ[p],Element$["PROFILE",e]={z},
-          Element["PROFILE",e]=Prepend[DeleteCases[p,{key,__},1],z]]]]];
+        If[~RealQ[p],
+          Element["PROFILE",e]=DeleteCases[p,{key,__},1]]]]];
 
-(Element[x_List,y_,`op___]=`z_List)^:=
-  (ScanThread[Function[{a,b},Element[a,y,op]=b],{x,z}];
-    z);
-(Element[x_,y_,`op___]=`z_)^:=With[{`el=Element$["NAME",y]},
-  If[ListQ[`el],
-    ScanThread[(Element[x,#,op]=#2)&,{`el,z}];
-    z,
-    With[{`k=ToUpperCase[x],`d=Element$["DEFAULT",el,op],`elp=Element$["POSITION",y],
-      `ll=Flatten[Element$["COMPONENT",el]]},
-      If[k==d || k=="VALUE",
-        Element$[d,elp,op]=z*LINE["DK",el];
-        If[Length[ll]>1,
-          Scan[(LINE[d,#]=z*LINE["DK",#])&,ll]],
-        Element$[k,elp,op]=z;
-        If[k<>"GEO" && Length[ll]>1,
-	  Scan[(LINE[k,#]=z)&,ll]]];
-      z]]];
-(Element[x_,y_List,op___]=z_List)^:=(
-  ScanThread[Function[{a,b},Element[x,a,op]=b],{y,z}];z);
-(Element[x_,y_List,op___]=z_)^:=(Scan[Function[{a},Element[x,a,op]=z],y];z);
-Element["PROFILE"[`key_String|{`key_String}|{`key_String,`key_String}],y_,op___]:=With[{e=Element$["POSITION",y,op]},
-  If[ListQ[e],
-    Level[Cases[Element$["PROFILE",#,op],{`key|{`key}|{`key,`key},__},1,1],{2}]&/@e,
-    Level[Cases[Element$["PROFILE",e,op],{`key|{`key}|{`key,`key},__},1,1],{2}]]];
-Element["PROFILE"[`key:{_String,_String}],y_,op___]:=With[{e=Element$["POSITION",y,op]},
-  If[ListQ[e],
-    Level[Cases[Element$["PROFILE",#,op],{`key,__},1,1],{2}]&/@e,
-    Level[Cases[Element$["PROFILE",e,op],{`key,__},1,1],{2}]]];
-Element[x___]:=Element$[x];
+  (Element["PROFILE",y_,op___]=z:{key_String|{key_String}|{key_String,key_String},{__Real},___})^:=
+    With[{e=Element$["POSITION",y,op]},
+      If[ListQ[e],
+        With[{p=Element$["PROFILE",#,op]},
+          If[RealQ[p],Element$["PROFILE",#]={z},
+            Element["PROFILE",#]=Prepend[DeleteCases[p,{key|{key}|{key,key},__},1],z]]]&/@e,
+        With[{p=Element$["PROFILE",e,op]},
+          If[RealQ[p],Element$["PROFILE",e]={z},
+            Element["PROFILE",e]=Prepend[DeleteCases[p,{key|{key}|{key,key},__},1],z]]]]];
+  (Element["PROFILE",y_,op___]=z:{key:{_String,_String},{__Real},___})^:=
+    With[{e=Element$["POSITION",y,op]},
+      If[ListQ[e],
+        With[{p=Element$["PROFILE",#,op]},
+          If[RealQ[p],Element$["PROFILE",#]={z},
+            Element["PROFILE",#]=Prepend[DeleteCases[p,{key,__},1],z]]]&/@e,
+        With[{p=Element$["PROFILE",e,op]},
+          If[RealQ[p],Element$["PROFILE",e]={z},
+            Element["PROFILE",e]=Prepend[DeleteCases[p,{key,__},1],z]]]]];
 
-SetElement[x_?(Element$["POSITION",#]<=>{}&),t:(_String|),k__]:=
-  With[{v=SetElement$[x,t,k]},
-    Scan[(Element[#[[1]],x]=#[[2]])&,Flatten[{k}]];
-    v];
-SetElement[x__]:=SetElement$[x];
+  (f:setop)[Element[x_List,y_,`op___],`z_List]^:=
+    MapThread[Function[{a,b},f[Element[a,y,op],b]],{x,z}];
+  (f:setop)[Element[x_,y_,`op___],`z_]^:=With[{`el=Element$["NAME",y]},
+    If[ListQ[`el],
+      MapThread[f[Element[x,#,op],#2]&,{`el,z}],
+      With[{`k=ToUpperCase[x],`d=Element$["DEFAULT",el,op],`elp=Element$["POSITION",y],
+        `ll=Flatten[Element$["COMPONENT",el]]},
+        If[k==d || k=="VALUE",
+          f[Element$[d,elp,op],z*LINE["DK",el]];
+          If[Length[ll]>1,
+            f[LINE[d,#],z*LINE["DK",#]]&/@Rest[ll]],
+          If[k<>"GEO" && Length[ll]>1,
+	    f[LINE[k,#],z]&/@ll,
+            f[Element$[k,elp,op],z]]];
+        Element$[k,elp]]]];
+  (f:setop)[Element[x_,y_List,op___],z_List]^:=
+    MapThread[Function[{a,b},f[Element[x,a,op],b]],{y,z}];
+  (f:setop)[Element[x_,y_List,op___],z_]^:=Function[{a},f[Element[x,a,op],z],y]/@z;
+  Element["PROFILE"[`key_String|{`key_String}|{`key_String,`key_String}],y_,op___]:=With[{e=Element$["POSITION",y,op]},
+    If[ListQ[e],
+      Level[Cases[Element$["PROFILE",#,op],{`key|{`key}|{`key,`key},__},1,1],{2}]&/@e,
+      Level[Cases[Element$["PROFILE",e,op],{`key|{`key}|{`key,`key},__},1,1],{2}]]];
+  Element["PROFILE"[`key:{_String,_String}],y_,op___]:=With[{e=Element$["POSITION",y,op]},
+    If[ListQ[e],
+      Level[Cases[Element$["PROFILE",#,op],{`key,__},1,1],{2}]&/@e,
+      Level[Cases[Element$["PROFILE",e,op],{`key,__},1,1],{2}]]];
+  Element[x___]:=Element$[x];
+
+  SetElement[x_?(Element$["POSITION",#]<=>{}&),t:(_String|),k__]:=
+    With[{v=SetElement$[x,t,k]},
+      Scan[(Element[#[[1]],x]=#[[2]])&,Flatten[{k}]];
+      v];
+  SetElement[x__]:=SetElement$[x]
+  ];
 
 Protect[Element,SetElement];

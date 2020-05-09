@@ -112,7 +112,7 @@ c        ilist(2,iwakepold+6)=ifsize
         call rotri(is,ris)
         dummy=dnotanumber
         call setiamat(iamat,ris,codin,beam,dummy,trans)
-        call tfetwiss(ris,codin,param(iptwiss),
+        param(iptwiss:iptwiss+ntwissfun-1)=tfetwiss(ris,codin,
      $       twiss(is,0,mfitdetr) .lt. 1.d0)
       endif
       if(mode .eq. 3 .and. intra)then
@@ -199,12 +199,12 @@ c        ilist(2,iwakepold+6)=ifsize
       implicit none
       integer*4 ,intent(in)::is
       real*8 , intent(out)::ris(6,6)
-      real*8 mu(3),c(3),s(3),trans(6,6),rs(6,6)
+      real*8 mu(3),c(3),s(3),trans(6,6)
       if(is .ne. 1)then
-        rs=r
         call tftmat6(trans,1,is)
-        call tmultr(rs,trans,6)
-        call tinv6(rs,ris)
+        ris=tinv6(matmul(trans,r))
+c        call tmultr(rs,trans,6)
+c        call tinv6(rs,ris)
         mu=twiss(is,0,(/mfitnx,mfitny,mfitnz/))
         c=cos(mu)
         s=sin(mu)
@@ -221,7 +221,8 @@ c        ilist(2,iwakepold+6)=ifsize
         trans(5,6)=s(3)
         trans(6,5)=-s(3)
         trans(6,6)=c(3)
-        call tmultr(ris,trans,6)
+        ris=matmul(trans,ris)
+c        call tmultr(ris,trans,6)
       else
         ris=ri
       endif

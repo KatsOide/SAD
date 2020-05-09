@@ -3,7 +3,7 @@
      $     r,rp,rstab,nstab,residual1,
      $     zcal,wcal,parallel,lout,error)
       use tfstk
-      use ffs, only:ndim,nlat,flv,maxcond,ffs_bound
+      use ffs, only:ndim,nlat,flv,maxcond,ffs_bound,nvevx,nelvx
       use ffs_flag
       use ffs_pointer
       use ffs_fit
@@ -319,7 +319,7 @@ c      call tfevals('Print["PROF-3: ",LINE["PROFILE","Q1"]]',kxx,irtc)
         iter=1
         zcal=.false.
         do i=1,nvar
-          kt=idtypec(klp(ivarele(i)))
+          kt=idtypec(nelvx(nvevx(i)%ivarele)%klp)
           if(kt .ne. 6 .and. kt .ne. 8 .and. kt .ne. 10
      $         .and. kt .ne. 12)then
             zcal=.true.
@@ -328,6 +328,7 @@ c      call tfevals('Print["PROF-3: ",LINE["PROFILE","Q1"]]',kxx,irtc)
         enddo
         if(fitflg)then
           if(nvar .le. 0)then
+            write(*,*)'tffscalc ',nvar
             call termes(lfno,'?No variable.',' ')
             error=.true.
           endif
@@ -337,19 +338,20 @@ c      call tfevals('Print["PROF-3: ",LINE["PROFILE","Q1"]]',kxx,irtc)
               ie=iele1(ii)
               ie1=iele1(i)
               do j=1,nvar
-                iv=ivvar(j)
-                if(iv .eq. ival(ie) .and. ivarele(j) .eq. ie
-     $               .and. (ivcomp(j) .eq. 0 .or.
-     $               ivcomp(j) .eq. ii))then
+                iv=nvevx(j)%ivvar
+                if(iv .eq. nelvx(ie)%ival .and. nvevx(j)%ivarele .eq. ie
+     $               .and. (nvevx(j)%ivcomp .eq. 0 .or.
+     $               nvevx(j)%ivcomp .eq. ii))then
                   ibegin=i
                   go to 1023
-                elseif(iv .ne. ival(ie) .and. ivarele(j) .eq. ie1
-     $                 .and. (ivcomp(j) .eq. 0 .or.
-     $                 ivcomp(j) .eq. i))then
+                elseif(iv .ne. nelvx(ie)%ival .and.
+     $                 nvevx(j)%ivarele .eq. ie1
+     $                 .and. (nvevx(j)%ivcomp .eq. 0 .or.
+     $                 nvevx(j)%ivcomp .eq. i))then
                   ibegin=i
                   go to 1023
                 endif
-                if(ivarele(j) .gt. ie)then
+                if(nvevx(j)%ivarele .gt. ie)then
                   exit
                 endif
               enddo
@@ -474,13 +476,12 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       subroutine twfit(kfit,
      1     ifitp,kfitp,kdp,nqcola,iqcol,maxf,wcal)
       use tfstk
-      use ffs, only:emx,emy,dpmax,coumin
+      use ffs, only:emx,emy,dpmax,coumin,emminv
       use ffs_pointer
       use ffs_fit
       use ffs_flag, only:cell
       use tffitcode
       implicit none
-c      include 'DEBUG.inc'
       integer*8 kx
       integer*4 maxf,i,j,k,nqcola,iq
       integer*4 kfit(*),ifitp(*),kfitp(*),kdp(*),idp,iqcol(nqcola)
@@ -488,9 +489,8 @@ c      include 'DEBUG.inc'
       integer*4 itfuplevel, level,irtc
       character*16 name
       logical*4 wcal
-      integer*8 ifv,ifvh,ifvloc,ifvfun,ifid
-      save ifv,ifvh,ifvloc,ifvfun,ifid
-      data ifv /0/
+      integer*8 , save:: ifv=0,ifvh,ifvloc,ifvfun,ifid
+      real*8 , parameter :: almin=1.d0
       if(ifv .eq. 0)then
         ifv=ktadaloc(0,4)
         ifvh=ktfsymbolz('FitWeight',9)
@@ -503,9 +503,10 @@ c      include 'DEBUG.inc'
         klist(ifv+3)=ktflist+ifid
         klist(ifv+4)=0
       endif
-      em=abs(emx)+abs(emy)
+      em=max(emminv,abs(emx)+abs(emy))
       coum=min(1.d0,
-     $     max(coumin,0.01d0,1.d0/(abs(emx/emy)+abs(emy/emx))))
+     $     max(coumin,0.01d0,
+     $     1.d0/(abs(emx/max(emminv,emy))+abs(emy/max(emminv,emx)))))
       coum=coum/(1.d0+coum)
       emxx=max(emx,coum*em)
       emyy=max(emy,coum*em)
@@ -550,11 +551,11 @@ c      include 'DEBUG.inc'
           case (mfitdz)
             wfit(i)=0.01d0*sqrt(
      $           max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
-     $           /em/(pos(maxf)-pos(1)))
+     $           /em/max(almin,pos(maxf)-pos(1)))
           case (mfitgx,mfitgy,mfitgz)
             wfit(i)=0.01d0*sqrt(
      $           max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
-     $           /em/(pos(maxf)-pos(1)))
+     $           /em/max(almin,pos(maxf)-pos(1)))
           case (mfitchi1,mfitchi2,mfitchi3)
             wfit(i)=1.d3
           case default

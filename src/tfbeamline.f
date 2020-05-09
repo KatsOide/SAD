@@ -410,7 +410,7 @@
       endif
       call loc_el(idx,el)
 c      write(*,*)'extractbeamline-0 ',idx,idl,el%comp(1),el%comp(2),ename
-      n=el%nlat1-2
+      n=el%nlat0
       kx=kxadaloc(-1,n,klx)
       klx%head=dtfcopy1(kxsymbolz('BeamLine',8))
       do i=1,n

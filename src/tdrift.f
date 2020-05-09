@@ -52,15 +52,12 @@ c     drift in the parallel solenoid
         sphi0=0.d0
       endif
       do i=1,np
-c         pr=(1.d0+g(i))**2
          pr=(1.d0+g(i))
          bzp=bz/pr
          pxi=px(i)+bzp*y(i)*.5d0
          pyi=py(i)-bzp*x(i)*.5d0
          zi=z(i)
 
-c         s=min(ampmax,pxi**2+pyi**2)
-c         dpzi=-s/(1.d0+sqrtl(1.d0-s))
          dpzi=pxy2dpz(pxi,pyi)
          pzi=1.d0+dpzi
          al1=al/pzi
@@ -155,7 +152,8 @@ c               write(*,'(a,1p12g10.2)')'drift_sol ',pp%geo1(:,:)
             bsi=0.d0
           endif
         endif
-        b=hypot(hypot(ak0x,ak0y),bz*al)
+c        b=hypot(hypot(ak0x,ak0y),bz*al)
+        b=hypot3(ak0x,ak0y,bz*al)
         phix=ak0y/b
         phiy=ak0x/b
         phiz=bz*al/b

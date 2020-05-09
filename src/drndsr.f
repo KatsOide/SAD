@@ -52,7 +52,6 @@ c npmax: the maximum number of photons to try
       x=1.d0
       do np=1,npmax
         if(p .le. pn)then
-c          write(*,*)'tdusr ',np,p,pn,tdusr
           return
         endif
         tdusr=tdusr+drndsr()
@@ -60,7 +59,7 @@ c          write(*,*)'tdusr ',np,p,pn,tdusr
         x=x*anp/an
         pn=pn+x*p0
         if(pn .gt. cutoff)then
-          return
+          exit
         endif
       enddo
       return

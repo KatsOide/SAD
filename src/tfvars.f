@@ -43,32 +43,32 @@
       endif
  1    exist=nvar .le. 0
       do i=1,nvar
-        iv=ivarele(i)
-        if(ivcomp(i) .eq. 0)then
-          kk=klp(iv)
+        iv=nvevx(i)%ivarele
+        if(nvevx(i)%ivcomp .eq. 0)then
+          kk=nelvx(iv)%klp
         else
-          kk=ivcomp(i)
+          kk=nvevx(i)%ivcomp
         endif
         k=idelc(kk)
-        if(ivcomp(i) .eq. 0)then
+        if(nvevx(i)%ivcomp .eq. 0)then
           name=pname(k)
         else
-          call elnameK(ivcomp(i),name)
+          call elnameK(nvevx(i)%ivcomp,name)
         endif
         if(tmatch(name,ele))then
           exist=.true.
           ipoint=next
-          v1=autofg(valvar2(i,1),'15.12')
-          v2=autofg(valvar2(i,2),'12.9')
+          v1=autofg(nvevx(i)%valvar,'15.12')
+          v2=autofg(nvevx(i)%valvar2,'12.9')
           call loc_comp(idval(k),cmps)
-          x3=tfvcmp(cmps,ivvar(i))
+          x3=tfvcmp(cmps,nvevx(i)%ivvar)
 c          x3=rlist(idval(k)+ivvar(i))
           v3=autofg(x3,'12.9')
-          key=tfkwrd(idtype(k),ivvar(i))
-          if(ivvar(i) .eq. ival(iv))then
-            vmin=vlim(iv,1)
-            vmax=vlim(iv,2)
-            call elname1(icomp(kk),ncoup,ivcomp(i) .ne. 0)
+          key=tfkwrd(idtype(k),nvevx(i)%ivvar)
+          if(nvevx(i)%ivvar .eq. nelvx(iv)%ival)then
+            vmin=nelvx(iv)%vlim(1)
+            vmax=nelvx(iv)%vlim(2)
+            call elname1(icomp(kk),ncoup,nvevx(i)%ivcomp .ne. 0)
             coup=couple(kk)
           else
             vmin=-1.d99
@@ -80,7 +80,7 @@ c          x3=rlist(idval(k)+ivvar(i))
           call tfpadstr(name,ifnvar+1,ilist(1,ifnvar))
           ilist(1,ifvkey)=lenw(key)
           call tfpadstr(key,ifvkey+1,ilist(1,ifvkey))
-          rlist(ifv+3)=valvar2(i,1)
+          rlist(ifv+3)=nvevx(i)%valvar
           call tclrfpe
           level=itfuplevel()
           call tfleval(klist(ifv-3),kxr,.true.,irtc)
@@ -105,8 +105,8 @@ c          x3=rlist(idval(k)+ivvar(i))
             dtastk(isp)=kxadaloc(-1,9,kli)
             kli%dbody(1)=kxsalocb(0,name,lenw(name))
             kli%dbody(2)=kxsalocb(0,key,lenw(key))
-            kli%rbody(3)=valvar2(i,1)
-            kli%rbody(4)=valvar2(i,2)
+            kli%rbody(3)=nvevx(i)%valvar
+            kli%rbody(4)=nvevx(i)%valvar2
             kli%rbody(5)=x3
             kli%rbody(6)=vmin
             kli%rbody(7)=vmax
@@ -117,9 +117,9 @@ c     Note:
 c     * POSITION of `name'  element: ivcomp(i) == 0 ? kk : ivcomp(i)
 c     * POSITION of `ncoup' element: icomp(kk) if ivvar(i) .eq. ival(iv)
 c     * icomp(kk) != 0 for 1 =< kk =< nlat
-          if(ivvar(i) .eq. ival(iv))then
-            if((ivcomp(i) .eq. 0 .and. icomp(kk) .eq. kk)
-     $            .or. (icomp(kk) .eq. ivcomp(i)))then
+          if(nvevx(i)%ivvar .eq. nelvx(iv)%ival)then
+            if((nvevx(i)%ivcomp .eq. 0 .and. icomp(kk) .eq. kk)
+     $            .or. (icomp(kk) .eq. nvevx(i)%ivcomp))then
               ncoup='<--'
             endif
           endif

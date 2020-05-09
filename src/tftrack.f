@@ -201,7 +201,7 @@ c     $       ne,npnlatmin
       p00=pgev
 c      pgev=rgetgl1('MOMENTUM')
       pgev=rlist(ifgamm+ls-1)*amass
-      call tclrparaall
+c      call tclrparaall
       call tphyzp
       call tsetdvfs
       call tfsetparticles(rlist(kzp),rlist(kdv),

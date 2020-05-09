@@ -9,7 +9,7 @@ ListPlot;
 SetAttributes[{Region,FrameHeight,Graph,Lattice,ListCoordinate,Unit,
   InfoLabel,NameFilter,LatticeRegion,Kilometer,Milimeter,Micron,
   Nanometer,Picometer,Femtometer,Attometer,InvKilometer,SquareMilimeter,
-  SquareMicrometer,Pi2,Miliradian,Microradian,PPM,Percent},  Constant];
+  SquareMicrometer,Pi2,Miliradian,Microradian,PPB,PPM,Percent},  Constant];
 
 With[{def={
   Region:>{1,LINE["LENGTH"]},
@@ -25,15 +25,16 @@ With[{def={
   RemoveOverlap->"L$NAME"}},
 
   OpticsPlot[f_List,opt___]:=Module[
-    {nf=Length[f],g,pr,rg,dx,init,fh,yh,yh1,i1,lr,plb,op=Override[opt,def],opd,lpr,ss,slabel},
+    {nf=Length[f],g,pr,rg,dx,init,fl,fh,yh,yh1,i1,lr,plb,
+      op=Override[opt,def],lpr,ss,slabel,gr,lat},
     op = op/.{
 !      Rule[sRegion->{s1_Real, s2_Real}, Region->OP$S2Position[s1,s2]],
       Rule[Region->{S[s1_Real], s2:(_Real|_String)}, Region->{Floor[OP$S2Position[s1]], s2}],
       Rule[Region->{s1:(_Real|_String), S[s2_Real]}, Region->{s1, Ceiling[OP$S2Position[s2]]}],
       Rule[Region->{S[s1_Real], S[s2_Real]}, Region->OP$S2Position[s1, s2]],
       Null[]};
-    {pr,rg,init,fh,il,lr,plb,gr}={Region,PlotRegion,Initialize,FrameHeight,
-      InfoLabel,LatticeRegion,PlotLabel,GridLines}/.op;
+    {pr,rg,init,fh,il,lr,plb,gr,lat}={Region,PlotRegion,Initialize,FrameHeight,
+      InfoLabel,LatticeRegion,PlotLabel,GridLines,Lattice}/.op;
     If[Head[pr]<=>List,pr={1,pr}];
     pr=LINE["POSITION",pr]/.{0->1,{}->LINE["LENGTH"]};
     lpr=-Subtract@@MinMax[LINE["S",pr]];
@@ -67,7 +68,7 @@ With[{def={
             GridLines->gr,
             Frame->True,opt]]],
       {i,nf}];
-    If[Lattice/.op,
+    If[lat,
       If[il, g=MapAt[With[{slot=#}, Append[slot, Graphics[Hook[
 	Command:>((OP$XRange=If[#===CanvasDrawer && RealQ[Canvas$Frame],
         The$CanvasObject@GraphicsList[[Canvas$Frame,1,2,4,1]],
@@ -78,7 +79,7 @@ With[{def={
           LatticePlot[pr,ss,PlotRegion->rg,opt],
 	  If[il, Graphics[Hook[Command:>(If[#===CanvasDrawer &&
 	    RealQ[Canvas$Frame], OPBind[Canvas$Frame]]&)]], Null[]]]]];
-    g=Graphics[g,Override[Background->None,Initialize->init,opt]];
+    g=Graphics[g,Override[Background->None,Initialize->init,FrameLabel->fl,opt]];
     If[(DisplayFunction/.op)===Default,
       Show[g,Override[Initialize->init,opt]]];
     g
@@ -227,7 +228,7 @@ With[{def={PlotRange->Automatic,
       v=v/ru;
       v=MapAt[#*ru&,v,{,,1}];
       If[pra<=>Automatic,pra=If[RealQ[#],#/ru,#]&/@pra]];
-    If[pra===Automatic && unit===SqrtMeter,pra={0,am*1.1}];
+    If[pra===Automatic && And@@(Twiss$Positive/@f1),pra={0,am*1.1}];
     If[Depth[pra]<=2,pra={l[[1,1,5]]*ss,pra}];
     {del,del1}={"",""};
     If[leg===Automatic,
@@ -506,7 +507,7 @@ Element$Color[__]="skyblue";
 SetAttributes[{Meter,InvMeter,SqrtMeter,SquareMeter,Kilometer,
   Milimeter,Micron,Nanometer,Pi2,SquareMilimeter,SquareMicrometer,
   InvKilometer,Radian,Miliradian,Microradian,
-  Ratio,Percent,PPM},Constant];
+  Ratio,Percent,PPM,PPB},Constant];
 
 Optics$Unit[unit_,am_]:=
     Switch[unit,
@@ -551,6 +552,8 @@ Optics$Unit[unit_,am_]:=
         Radian],
       Ratio,
       Which[
+        am<1e-7,
+        PPB,
         am<1e-4,
         PPM,
         am<1,
@@ -570,6 +573,11 @@ RTwiss$Functions=("R"//#)&/@Twiss$Functions;
 DTwiss$Functions=("D"//#)&/@Twiss$Functions;
 XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions];
 
+Twiss$Positive["BX"|"BY"|"BZ"|"GMX"|"GMY"|"GMZ"|
+  "SIGX"|"SIGY"|"SIGZ"|"SIGXX"|"SIGYY"|"SIGZZ"|
+    "SIZEX"|"SIZEY"|"SIZEZ"|"SIZEXX"|"SIZEYY"|"SIZEZZ"]=True;
+Twiss$Positive[_]=False;
+
 Twiss$Unit[
   "EX"|"EY"|"R2"|"DX"|"DY"|"S"|"PEX"|"PEY"|"DZ"|
     "REX"|"REY"|"RR2"|"RDX"|"RDY"|"RPEX"|"RPEY"|"RDZ"|
@@ -577,18 +585,18 @@ Twiss$Unit[
 Twiss$Unit[
   "DPX"|"DPY"|"EPX"|"EPY"|"PEPX"|"PEPY"|
     "RDPX"|"RDPY"|"REPX"|"REPY"|"RPEPX"|"RPEPY"|
-      "DDPX"|"DDPY"|"DEPX"|"DEPY"|"DPEPX"|"DPEPY"]=Radian;
+      "DDPX"|"DDPY"|"DEPX"|"DEPY"|"DPEPX"|"DPEPY"|
+        "DDP"|"DBX"|"DBY"|"DBZ"|"DGMX"|"DGMY"|"DGMZ"]=Ratio;
 Twiss$Unit[
   "R3"|"ZPX"|"ZPY"|"PZPX"|"PZPY"|
     "RR3"|"RZPX"|"RZPY"|"RPZPX"|"RPZPY"|
       "DR3"|"DZPX"|"DZPY"|"DPZPX"|"DPZPY"|
-        "GMX"|"GMY"|"GMZ"]=InvMeter;
+        "GMX"|"GMY"|"GMZ"|"RGMX"|"RGMY"|"RGMZ"]=InvMeter;
 Twiss$Unit["BX"|"BY"|"BZ"|"RBX"|"RBY"|"RBZ"]=SqrtMeter;
 Twiss$Unit[
   "NX"|"NY"|"NZ"|
     "RNX"|"RNY"|"RNZ"|
       "DNX"|"DNY"|"DNZ"]=Pi2;
-Twiss$Unit["DDP"|"DBX"|"DBY"|"DBZ"]=Ratio;
 Twiss$Unit[x_String?(#[1,4]==="SIZE"&)]:=Module[
   {{l,u}=MakeSize$Label$Unit[x[5,-1]]},
   Twiss$Label[x]="`fs`n`d"//l//"`n";
@@ -652,6 +660,7 @@ If[$DisplayFunction===Unevaluated[TopDrawer],
   Twiss$Unit$Label[Attometer]="am";
   Twiss$Unit$Label[Ratio]="";
   Twiss$Unit$Label[PPM]="ppm";
+  Twiss$Unit$Label[PPB]="ppb";
   Twiss$Unit$Label[Percent]="%";
   Twiss$Unit$Label[Micron]="`fm`nm";
   Twiss$Unit$Label[Microradian]="`fm`nrad";
@@ -831,6 +840,7 @@ Unit$Factor[SquareMicrometer]=1e-12;
 Unit$Factor[Pi2]=2*Pi;
 Unit$Factor[Miliradian]=1E-3;
 Unit$Factor[Microradian]=1E-6;
+Unit$Factor[PPB]=1E-9;
 Unit$Factor[PPM]=1E-6;
 Unit$Factor[Percent]=1E-2;
 Unit$Factor[_]=1;

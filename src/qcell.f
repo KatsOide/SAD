@@ -7,13 +7,14 @@
       implicit none
       type (ffs_bound) fb
       type (ffs_stat) optstat
-      integer*4 idp
+      integer*4 idp,lfno
       logical*4 fam
       fb%lb=1
       fb%le=nlat
       fb%fb=0.d0
       fb%fe=0.d0
-      call qcell1(fb,idp,optstat,fam,.true.,0)
+      lfno=0
+      call qcell1(fb,idp,optstat,fam,.true.,lfno)
       return
       end
 
@@ -24,8 +25,8 @@
       use ffs_fit , only:ffs_stat
       use tffitcode
       implicit none
-      type (ffs_bound) fbound
-      type (ffs_stat) optstat
+      type (ffs_bound) , intent(in)::fbound
+      type (ffs_stat) , intent(out)::optstat
       real*8 bmin,bmax,amax
       integer*4 itmax
       parameter (bmin=1.d-16,bmax=1.d16,amax=1.d16)
@@ -41,8 +42,11 @@
      $     xb,xe,xp,fr,fra,frb,tr,
      $     dpsix,dpsiy,cosx,sinx,cosy,siny,
      $     x11,x22,y11,y22
-      integer*4 idp,ie1,l,nm,lx,lfno
-      logical*4 stab,codfnd,fam,chgini,pri
+      integer*4 , intent(in) :: idp
+      integer*4 , intent(inout) :: lfno
+      integer*4 ie1,l,nm,lx
+      logical*4 , intent(in)::fam,chgini
+      logical*4 stab,codfnd,pri,nanq
       real*8 trans(4,5),cod(6),
      $     tm11,tm12,tm13,tm14,tm15,
      $     tm21,tm22,tm23,tm24,tm25,
@@ -100,9 +104,14 @@
      1       tm21,tm22,tm23,tm24,
      1       tm31,tm32,tm33,tm34,
      1       tm41,tm42,tm43,tm44,
-     1       r1,r2,r3,r4,c1,stab,lfno)
+     1       r1,r2,r3,r4,c1,stab,nanq,lfno)
 C     ----------------------------
         if(.not. stab)then
+          optstat%stabx=.false.
+          optstat%staby=.false.
+          if(nanq)then
+            return
+          endif
           go to 1
         endif
         twiss(fbound%lb,idp,mfitr1) = r1
@@ -410,7 +419,7 @@ c                enddo
       type (ffs_bound) fbound
       type (ffs_stat) optstat
       integer*4 lfno,idp
-      real*8 trans(6,12),cod(6),beam(21),srot(3,9),tw1(ntwissfun)
+      real*8 trans(6,12),cod(6),beam(21),srot(3,9)
       complex*16 ceig(6)
       logical*4 codfnd,cell0,codplt0,ci0,rt
       cell0=cell
@@ -443,15 +452,16 @@ c                enddo
 c        write(*,'(1p6g15.7)')(r(i,1:6),i=1,6)
         call teigen(r,ri,ceig,6,6)
         call tnorm(r,ceig,0)
-        call tsymp(r)
-        call tinv6(r,ri)
+        r=tsymp(r)
+        ri=tinv6(r)
+c        call tsymp(r)
+c        call tinv6(r,ri)
 c       write(*,'(1p6g15.7)')(ri(i,1:6),i=1,6)
        normali=.true.
       else
-        tw1=twiss(fbound%lb,idp,1:ntwissfun)
-c        write(*,*)'qcell61 ',fbound%lb,tw1(mfitnx),tw1(mfitny)
-        call etwiss2ri(tw1,ri,normali)
-        call tinv6(ri,r)
+        ri=etwiss2ri(twiss(fbound%lb,idp,1:ntwissfun),normali)
+        r=tinv6(ri)
+c        call tinv6(ri,r)
       endif
       codplt=.true.
       call tinitr(trans)

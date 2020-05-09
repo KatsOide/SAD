@@ -9,45 +9,42 @@
       integer*4 i,l,j,ikx,lele,ib,ibz,ibznext,ibzb,k,ibg,ibb
       integer*8 idv
       real*8 v
-c      do i=1,nele
-        klp(1:nele)=mult(1:nele)
-        ival(1:nele)=0
-c      enddo
+      nelvx(1:nele)%klp=mult(1:nele)
+      nelvx(1:nele)%ival=0
       do l=1,nlat-1
         ikx=iele1(l)
         couple(l)=1.d0
         errk(1,l)=1.d0
         errk(2,l)=0.d0
         if(ikx .gt. 0)then
-          lele=idtypec(klp(ikx))
-          vlim(ikx,1)=-1.d10
-          vlim(ikx,2)=1.d10
+          lele=idtypec(nelvx(ikx)%klp)
+          nelvx(ikx)%vlim=(/-1.d10,1.d10/)
 c          go to (110,120,10,140,10,160,10,160,10,160,10,160),lele
 c          go to 210
           select case (lele)
           case (icDRFT)
-            ival(ikx)=1
-            vlim(ikx,1)=.1d0
+            nelvx(ikx)%ival=1
+            nelvx(ikx)%vlim(1)=.1d0
           case (icBEND,icQUAD,icSEXT,icOCTU,icDECA,icDODECA,
      $           icSOL,icCAVI,icTCAV)
-            ival(ikx)=2
+            nelvx(ikx)%ival=2
           case (icMULT)
-            ival(ikx)=ky_K1_MULT
+            nelvx(ikx)%ival=ky_K1_MULT
           case (icMARK)
-            ival(ikx)=0
+            nelvx(ikx)%ival=0
             idv=idvalc(l)
             twiss(l,0,1:ntwissfun)=rlist(idv+1:idv+ntwissfun)
             cycle
           case default
-            ival(ikx)=0
+            nelvx(ikx)%ival=0
             cycle
           end select
-          if(ival(ikx) .gt. 0)then
-            call loc_comp(idvalc(klp(ikx)),cmps)
-            v=cmps%value(ival(ikx))
+          if(nelvx(ikx)%ival .gt. 0)then
+            call loc_comp(idvalc(nelvx(ikx)%klp),cmps)
+            v=cmps%value(nelvx(ikx)%ival)
 c            v=rlist(idvalc(klp(ikx))+ival(ikx))
             if(v .ne. 0.d0)then
-              errk(1,l)=tfvalvar(l,ival(ikx))/v
+              errk(1,l)=tfvalvar(l,nelvx(ikx)%ival)/v
 c              errk(1,l)=rlist(latt(l)+ival(ikx))/v
             endif
           endif
@@ -222,16 +219,16 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
         mult(i)=0
       enddo
       do i=1,nele
-        klp(i)=0
+        nelvx(i)%klp=0
         im(i)=0
 c        ilist(i-1,im)=0
       enddo
       do i=1,nlat-1
         ii=mod(i+nlat+i0-3,nlat-1)+1
         iie=iele1(ii)
-        k=klp(iie)
+        k=nelvx(iie)%klp
         if(k .eq. 0)then
-          klp(iie)=ii
+          nelvx(iie)%klp=ii
           icomp(ii)=ii
         else
           if(mult(k) .eq. 0)then

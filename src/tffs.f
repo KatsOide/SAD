@@ -4,17 +4,20 @@
 
         type sad_el
         sequence
-        integer*4 nlat1,dum1
+        integer*4 nl,nlat0
+c        type (sad_descriptor) elmv
         integer*8 aux,comp(1:mbody)
         end type
 
         type sad_comp
         sequence
         integer*4 ncomp2,id
-        integer*4 nparam,update
+        integer*4 nparam
+        logical*1 ldummy1,update,updateseg,ldummy2
         real*8 orient
         type (sad_descriptor) dvalue(1:0)
         integer*8 kvalue(1:0)
+        integer*4 ivalue(2,1:0)
         real*8 value(1:mbody)
         end type
 
@@ -27,18 +30,21 @@
         type (sad_el), pointer, intent(out) :: el
         kmelaloc=ktaloc(n+1)
         call c_f_pointer(c_loc(klist(kmelaloc-1)),el)
+        el%nlat0=n
+c        el%elmv%k=0
+        el%aux=0
         return
         end function
 
         integer*8 function kmcompaloc(n,cmp)
-        use tfstk, only:klist
+        use tfstk, only:klist,ktraaloc
         use iso_c_binding
         implicit none
-        integer*4 n
-        integer*8 ktcaloc
+        integer*4 ,intent(in)::n
         type (sad_comp), pointer, intent(out) :: cmp
-        kmcompaloc=ktcaloc(n+expnsize+2)+1
+        kmcompaloc=ktraaloc(0,n+expnsize+2)+2
         call c_f_pointer(c_loc(klist(kmcompaloc-2)),cmp)
+        cmp%ncomp2=n+expnsize+3
         return
         end function
 
@@ -88,7 +94,8 @@
         use mackw
         use macphys
         use macfile
-        real*8, parameter :: c=cveloc,hp=plankr,e=elemch,epsrad=1.d-6
+        real*8, parameter :: c=cveloc,hp=plankr,e=elemch,epsrad=1.d-6,
+     $       emminv=1.d-15
         real*8 amass,charge,h0,p0,omega0,trf0,crad,erad,
      $       codin(6),dleng,anrad,urad,u0,vc0,wrfeff,dp0,brho,
      $       ccintr,cintrb,pbunch,coumin,re0,pgev,emidiv,
@@ -207,6 +214,7 @@
       end module
 
       module ffs0
+      use tfstk,only:sad_descriptor
       use tffitcode
       use tmacro
       implicit none
@@ -217,15 +225,29 @@
       real*8 , parameter :: xyth=0.375d0
       integer*4 , parameter :: maxcond=4001,lblname=maxcond/4
 
+      integer*4 , parameter :: lnvev=5,lnelv=4
+      type nvev
+        sequence
+        real*8 valvar,valvar2
+        integer*4 itouchele,itouchv,ivvar,ivarele,ivcomp,idummy
+      end type
+
+      type nelv
+        sequence
+        type (sad_descriptor) dcomp
+        real*8 vlim(2)
+        integer*4 ival,klp
+      end type
+
       type ffsv
         sequence
-        integer*8 ifaux,ifibzl,ifmult,ifklp,ifival,iftwissp,
-     $       iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifdcomp,ifele,ifcoup,
-     $       iferrk,ifvarele,ifvvar,ifvalvar,ifele1,ifele2,
-     $       ifmast,iftouchele,iftouchv,iffserr,
-     $       ifivcomp,ifvlim,iffssave,iut,ifiprev,ifinext,
-     $       ielmhash
-        real*8 emx,emy,dpmax,geo0(3,4),xixf,xiyf,sizedp,
+        integer*8 ifaux,ifibzl,ifmult,iftwissp,
+     $       iftwis,ifpos,ifgeo,ifsize,ifgamm,ifcomp,ifcoup,
+     $       iferrk,ifele1,ifele2,ifmast,iffserr,
+     $       iffssave,iut,ifiprev,ifinext,
+     $       ielmhash,ifnvev,ifnelv
+        real*8 emx,emy,emz,sigzs,fshifts,
+     $       dpmax,geo0(3,4),xixf,xiyf,sizedp,
      $       ctime0,ctime2,rsconv,fitval(maxcond)
         integer*4 mfitp(maxcond),ifitp(maxcond),ifitp1(maxcond),
      $       kdp(maxcond),kfitp(maxcond),kfit(maxcond),
@@ -240,66 +262,130 @@
       type (ffsv), target, save:: ffv
       type (ffsv), pointer :: flv
 
+c$$$ft={
+c$$${"TRPT    ","RING    ","trpt"},
+c$$${"CELL    ","INS     ","cell"},
+c$$${"RFSW    ","        ","rfsw"},
+c$$${"RAD     ","        ","rad"},
+c$$${"FLUC    ","DAMPONLY","rfluct"},
+c$$${"RADCOD  ","        ","radcod"},
+c$$${"RADTAPER","        ","radtaper"},
+c$$${"KEEPEXP ","        ","keepexp"},
+c$$${"CALEXP  ","        ","calexp"},
+c$$${"CALC6D  ","CALC4D  ","calc6d"},
+c$$${"EMIOUT  ","        ","emiout"},
+c$$${"CODPLOT ","        ","codplt"},
+c$$${"COD     ","        ","calcod"},
+c$$${"INTRA   ","        ","intra"},
+c$$${"POL     ","        ","calpol"},
+c$$${"RADPOL  ","        ","radpol"},
+c$$${"LWAKE   ","        ","lwake"},
+c$$${"TWAKE   ","        ","twake"},
+c$$${"WSPAC   ","        ","wspac"},
+c$$${"SPAC    ","        ","spac"},
+c$$${"SELFCOD ","        ","selfcod"},
+c$$${"CONV    ","        ","convgo"},
+c$$${"STABLE  ","UNSTABLE","cellstab"},
+c$$${"GEOCAL  ","GEOFIX  ","geocal"},
+c$$${"RADLIGHT","        ","radlight"},
+c$$${"PHOTONS ","        ","photons"},
+c$$${"LOSSMAP ","        ","lossmap"},
+c$$${"SORG    ","        ","sorg"},
+c$$${"INTRES  ","        ","intres"},
+c$$${"HALFRES ","        ","halfres"},
+c$$${"SUMRES  ","        ","sumres"},
+c$$${"DIFFRES ","        ","diffres"},
+c$$${"FFSPRMPT","        ","ffsprmpt"},
+c$$${"CONVCASE","        ","convcase"},
+c$$${"PRSVCASE","        ","preservecase"},
+c$$${"SUS     ","        ","suspend"},
+c$$${"K64     ","LEGACY  ","k64"},
+c$$${"GAUSS   ","UNIFORM ","gauss"},
+c$$${"FIXSEED ","MOVESEED","fseed"},
+c$$${"BIPOL   ","UNIPOL  ","bipol"},
+c$$${"PSPAC   ","        ","pspac"},
+c$$${"ORBITCAL","        ","orbitcal"},
+c$$${"CALOPT  ","ORBONLY ","calopt"},
+c$$${"DAPERT  ","        ","dapert"},
+c$$${"IDEAL   ","REAL    ","ideal"},
+c$$${"FOURIER ","        ","fourie"},
+c$$${"TRACKSIZ","        ","trsize"},
+c$$${"SIMULATE","OPERATE ","simulate"},
+c$$${"ABSW    ","RELW    ","absweit"},
+c$$${"JITTER  ","QUIET   ","jitter"},
+c$$${"TRGAUSS ","TRUNI   ","trgauss"},
+c$$${"BARYCOD ","        ","smearp"},
+c$$${"        ","        ","dummyf1"},
+c$$${"        ","        ","dummyf2"}
+c$$$};
+c$$$
+c$$$ftt=Thread[ft];
+c$$$(Print["     $  ",Null@@Table["'"//#[[k]]//"',",{k,4}]]&/@Partition[#,4])&/@ftt[[{1,2}]];
+c$$$Print["     $  ",Null@@Table[#[[k]]//",",{k,4}]]&/@Partition[ftt[[3]],4];
+c$$$susp;
+
       type flagset
         sequence
         logical*4 flags(1:0)
         logical*4
-     $       rad,rfsw,radcod,calcod,
-     $       intra,trpt,emiout,gauss,
-     $       bipol,cell,ffsprmpt,dapert,
-     $       fseed,ideal,codplt,calc6d,
-     $       calpol,rfluct,k64,fourie,
-     $       trsize,simulate,absweit,jitter,
-     $       trgauss,lwake,twake,smearp,
-     $       radpol,convgo,cellstab,spac,
-     $       radlight,geocal,photons,wspac,
-     $       selfcod,pspac,convcase,preservecase,
-     $       lossmap,orbitcal,radtaper,sorg,
+     $       trpt,cell,rfsw,rad,
+     $       rfluct,radcod,radtaper,calc6d,
+     $       keepexp,calexp,emiout,codplt,
+     $       calcod,intra,calpol,radpol,
+     $       lwake,twake,wspac,spac,
+     $       selfcod,convgo,cellstab,geocal,
+     $       radlight,photons,lossmap,sorg,
      $       intres,halfres,sumres,diffres,
-     $       calopt,suspend
+     $       ffsprmpt,convcase,preservecase,suspend,
+     $       k64,gauss,fseed,bipol,
+     $       pspac,orbitcal,calopt,dapert,
+     $       ideal,fourie,trsize,simulate,
+     $       absweit,jitter,trgauss,smearp
       end type
 
-      integer*4 ,parameter :: nflag=50
+      integer*4 ,parameter :: nflag=52
       type (flagset), target, save :: fff
-      character*8, save :: fname(1:nflag)= (/
-     $     'RAD     ','RFSW    ','RADCOD  ','COD     ',
-     1     'INTRA   ','TRPT    ','EMIOUT  ','GAUSS   ',
-     1     'BIPOL   ','CELL    ','FFSPRMPT','DAPERT  ',
-     1     'FIXSEED ','IDEAL   ','CODPLOT ','CALC6D  ',
-     1     'POL     ','FLUC    ','K64     ','FOURIER ',
-     1     'TRACKSIZ','SIMULATE','ABSW    ','JITTER  ',
-     1     'TRGAUSS ','LWAKE   ','TWAKE   ','BARYCOD ',
-     1     'RADPOL  ','CONV    ','STABLE  ','SPAC    ',
-     $     'RADLIGHT','GEOCAL  ','PHOTONS ','WSPAC   ',
-     $     'SELFCOD ','PSPAC   ','CONVCASE','PRSVCASE',
-     $     'LOSSMAP ','ORBITCAL','RADTAPER','SORG    ',
-     $     'INTRES  ','HALFRES ','SUMRES  ','DIFFRES ',
-     $     'CALOPT  ','SUS     '/),
-     $     sino(1:nflag)= (/
-     $     '        ','        ','        ','        ',
-     1     '        ','RING    ','        ','UNIFORM ',
-     1     'UNIPOL  ','INS     ','        ','        ',
-     1     'MOVESEED','REAL    ','        ','CALC4D  ',
-     1     '        ','DAMPONLY','LEGACY  ','        ',
-     1     '        ','OPERATE ','RELW    ','QUIET   ',
-     1     'TRUNI   ','        ','        ','        ',
-     1     '        ','        ','UNSTABLE','        ',
-     $     '        ','GEOFIX  ','        ','        ',
-     $     '        ','        ','        ','        ',
-     $     '        ','        ','        ','        ',
-     $     '        ','        ','        ','        ',
-     $     'ORBONLY ','        '/)
+      character*8, save :: fname(1:nflag)=(/
+     $  'TRPT    ','CELL    ','RFSW    ','RAD     ',
+     $  'FLUC    ','RADCOD  ','RADTAPER','CALC6D  ',
+     $  'KEEPEXP ','CALEXP  ','EMIOUT  ','CODPLOT ',
+     $  'COD     ','INTRA   ','POL     ','RADPOL  ',
+     $  'LWAKE   ','TWAKE   ','WSPAC   ','SPAC    ',
+     $  'SELFCOD ','CONV    ','STABLE  ','GEOCAL  ',
+     $  'RADLIGHT','PHOTONS ','LOSSMAP ','SORG    ',
+     $  'INTRES  ','HALFRES ','SUMRES  ','DIFFRES ',
+     $  'FFSPRMPT','CONVCASE','PRSVCASE','SUS     ',
+     $  'K64     ','GAUSS   ','FIXSEED ','BIPOL   ',
+     $  'PSPAC   ','ORBITCAL','CALOPT  ','DAPERT  ',
+     $  'IDEAL   ','FOURIER ','TRACKSIZ','SIMULATE',
+     $  'ABSW    ','JITTER  ','TRGAUSS ','BARYCOD '/),
+     $     sino(1:nflag)=(/
+     $  'RING    ','INS     ','        ','        ',
+     $  'DAMPONLY','        ','        ','CALC4D  ',
+     $  '        ','        ','        ','        ',
+     $  '        ','        ','        ','        ',
+     $  '        ','        ','        ','        ',
+     $  '        ','        ','UNSTABLE','GEOFIX  ',
+     $  '        ','        ','        ','        ',
+     $  '        ','        ','        ','        ',
+     $  '        ','        ','        ','        ',
+     $  'LEGACY  ','UNIFORM ','MOVESEED','UNIPOL  ',
+     $  '        ','        ','ORBONLY ','        ',
+     $  'REAL    ','        ','        ','OPERATE ',
+     $  'RELW    ','QUIET   ','TRUNI   ','        '/)
 
-      integer*8, pointer :: ifvlim,ifibzl,ifmult,ifklp,ifival,iftwissp,
-     $     iftwis,ifpos,ifgeo,ifsize,ifgamm ,ifdcomp,ifele,ifcoup,
-     $     iferrk,ifvarele,ifvvar,ifvalvar,ifele1,ifele2,
-     $     ifmast,iftouchele,iftouchv,iffserr,ifivcomp,iffssave,
-     $     ifiprev,ifinext,ielmhash
-      real*8, pointer :: emx,emy,dpmax,xixf,xiyf,sizedp
+      integer*8, pointer :: ifibzl,ifmult,iftwissp,
+     $     iftwis,ifpos,ifgeo,ifsize,ifgamm,ifcomp,ifcoup,
+     $     iferrk,ifele1,ifele2,ifmast,iffserr,iffssave,
+     $     ifiprev,ifinext,ielmhash,ifnvev,ifnelv
+      real*8, pointer :: emx,emy,emz,dpmax,xixf,xiyf,
+     $     sizedp,sigzs,fshifts
       real*8, pointer, dimension(:,:) :: geo0
       integer*4, pointer :: ndim,ndima,nele,nfit,marki,iorgx,iorgy,
      $     iorgr,mfpnt,mfpnt1,id1,id2,nve,ntouch
       logical*4 , pointer :: updatesize,setref
+      type (nvev), pointer,dimension(:)::nvevx
+      type (nelv), pointer,dimension(:)::nelvx
 
       type ffs_bound
       sequence
@@ -309,38 +395,31 @@
 
       contains
         subroutine tffsvinit
-        ifvlim=>ffv%ifvlim
         ifibzl=>ffv%ifibzl
         ifmult=>ffv%ifmult
-        ifklp=>ffv%ifklp
-        ifival=>ffv%ifival
         iftwissp=>ffv%iftwissp
         iftwis=>ffv%iftwis
         ifpos=>ffv%ifpos
         ifgeo=>ffv%ifgeo
         ifsize=>ffv%ifsize
         ifgamm=>ffv%ifgamm
-        ifdcomp=>ffv%ifdcomp
-        ifele=>ffv%ifele
+        ifcomp=>ffv%ifcomp
         ifcoup=>ffv%ifcoup
         iferrk=>ffv%iferrk
-        ifvarele=>ffv%ifvarele
-        ifvvar=>ffv%ifvvar
-        ifvalvar=>ffv%ifvalvar
         ifele1=>ffv%ifele1
         ifele2=>ffv%ifele2
         ifmast=>ffv%ifmast
-        iftouchele=>ffv%iftouchele
-        iftouchv=>ffv%iftouchv
         iffserr=>ffv%iffserr
-        ifivcomp=>ffv%ifivcomp
         iffssave=>ffv%iffssave
         ifiprev=>ffv%ifiprev
         ifinext=>ffv%ifinext
         emx=>ffv%emx
         emy=>ffv%emy
+        emz=>ffv%emz
         dpmax=>ffv%dpmax
         sizedp=>ffv%sizedp
+        sigzs=>ffv%sigzs
+        fshifts=>ffv%fshifts
         xixf=>ffv%xixf
         xiyf=>ffv%xiyf
         geo0=>ffv%geo0(1:3,1:4)
@@ -357,6 +436,8 @@
         id1=>ffv%id1
         id2=>ffv%id2
         nve=>ffv%nve
+        ifnvev=>ffv%ifnvev
+        ifnelv=>ffv%ifnelv
         ielmhash=>ffv%ielmhash
         updatesize=>ffv%updatesize
         ntouch=>ffv%ntouch
@@ -496,33 +577,33 @@
         use tfstk
         use tffitcode
         implicit none
-        type (sad_rlist), pointer::kl
+        type (sad_rlist), pointer,intent(out)::kl
+        integer*4 ,intent(in):: mode
         integer*8 kax
-        integer*4 mode
         kax=ktraaloc(mode,28,kl)
         kl%rbody(mfitbz)=1.d0
         ktatwissaloc=kax
         return
-        end
+        end function
 
       end module
 
       module ffs_flag
         use ffs0, only:fff
         logical*4, pointer ::flags(:),
-     $       rad,rfsw,radcod,calcod,
-     $       intra,trpt,emiout,gauss,
-     $       bipol,cell,ffsprmpt,dapert,
-     $       fseed,ideal,codplt,calc6d,
-     $       calpol,rfluct,k64,fourie,
-     $       trsize,simulate,absweit,jitter,
-     $       trgauss,lwake,twake,smearp,
-     $       radpol,convgo,cellstab,spac,
-     $       radlight,geocal,photons,wspac,
-     $       selfcod,pspac,convcase,preservecase,
-     $       lossmap,orbitcal,radtaper,sorg,
+     $       trpt,cell,rfsw,rad,
+     $       rfluct,radcod,radtaper,calc6d,
+     $       keepexp,calexp,emiout,codplt,
+     $       calcod,intra,calpol,radpol,
+     $       lwake,twake,wspac,spac,
+     $       selfcod,convgo,cellstab,geocal,
+     $       radlight,photons,lossmap,sorg,
      $       intres,halfres,sumres,diffres,
-     $       calopt,suspend
+     $       ffsprmpt,convcase,preservecase,suspend,
+     $       k64,gauss,fseed,bipol,
+     $       pspac,orbitcal,calopt,dapert,
+     $       ideal,fourie,trsize,simulate,
+     $       absweit,jitter,trgauss,smearp
         
         contains
         subroutine ffs_init_flag
@@ -557,6 +638,8 @@
         smearp=>fff%smearp
         radpol=>fff%radpol
         calc6d=>fff%calc6d
+        keepexp=>fff%keepexp
+        calexp=>fff%calexp
         cellstab=>fff%cellstab
         spac=>fff%spac
         radlight=>fff%radlight
@@ -625,17 +708,14 @@
       module ffs_pointer
       use sad_main
       implicit none
-      type (sad_descriptor) , pointer :: dcomp(:)
-      real*8 , pointer, contiguous :: errk(:,:),couple(:),
-     $     valvar(:),valvar2(:,:)
+      real*8 , pointer, contiguous :: errk(:,:),couple(:)
       integer*8, pointer, dimension(:) :: kele2 
       integer*4, pointer, dimension(:) :: mult,icomp,iele1,
-     $     ival,klp,master,itouchele,itouchv,ivarele,ivcomp,ivvar,
-     $     iprev,inext
+     $     master,iprev,inext
       integer*4, pointer, contiguous, dimension(:,:) :: ibzl
       real*8 , pointer :: pos(:), gammab(:)
       real*8 , pointer , contiguous :: twiss(:,:,:),twiss2(:,:),
-     $     geo(:,:,:),vlim(:,:),beamsize(:,:)
+     $     geo(:,:,:),beamsize(:,:)
       integer*4 , pointer, contiguous :: itwissp(:)
       integer*8 , pointer :: latt(:)
       real*8 , pointer , contiguous :: utwiss(:,:,:)
@@ -652,22 +732,16 @@
         call c_f_pointer(c_loc(rlist(iferrk)),errk,[2,nlat])
         call c_f_pointer(c_loc(ilist(1,ifmult)),mult,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifmast)),master,[nlat])
-        call c_f_pointer(c_loc(ilist(1,ifival)),ival,[nele])
-        call c_f_pointer(c_loc(dlist(ifdcomp)),dcomp,[nele])
-        call c_f_pointer(c_loc(ilist(1,ifele)),icomp,[nlat])
+c        call c_f_pointer(c_loc(ilist(1,ifival)),ival,[nele])
+c        call c_f_pointer(c_loc(dlist(ifdcomp)),dcomp,[nele])
+        call c_f_pointer(c_loc(ilist(1,ifcomp)),icomp,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifele1)),iele1,[nlat])
         call c_f_pointer(c_loc(klist(ifele2)),kele2,[nlat])
-        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
-        call c_f_pointer(c_loc(rlist(ifvalvar)),valvar,[nve*2])
-        call c_f_pointer(c_loc(rlist(ifvalvar)),valvar2,[nve,2])
-        call c_f_pointer(c_loc(ilist(1,iftouchele)),itouchele,[nve*2])
-        call c_f_pointer(c_loc(ilist(1,iftouchv)),itouchv,[nve*2])
-        call c_f_pointer(c_loc(ilist(1,ifvvar)),ivvar,[nve*2])
+c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         call c_f_pointer(c_loc(ilist(1,ifiprev)),iprev,[nlat])
         call c_f_pointer(c_loc(ilist(1,ifinext)),inext,[nlat])
-        call c_f_pointer(c_loc(ilist(1,ifvarele)),ivarele,[nve*2])
-        call c_f_pointer(c_loc(ilist(1,ifivcomp)),ivcomp,[nve*2])
-        call c_f_pointer(c_loc(rlist(ifvlim)),vlim,[nele,2])
+        call c_f_pointer(c_loc(klist(ifnvev)),nvevx,[nve])
+        call c_f_pointer(c_loc(klist(ifnelv)),nelvx,[nele])
         return
         end subroutine
 
@@ -711,7 +785,7 @@
         integer*4 function idtypec(i)
         use maccbk, only:idtype
         implicit none
-        integer*4 i
+        integer*4 ,intent(in)::i
         idtypec=idtype(idcomp(elatt,i))
         return
         end function
@@ -750,7 +824,7 @@
         use sad_main
         implicit none
         type (sad_comp),pointer, intent(out) :: cmp
-        integer*4 i
+        integer*4,intent(in)::i
         call loc_comp(elatt%comp(i),cmp)
         return
         end subroutine
@@ -758,14 +832,14 @@
         character*(MAXPNAME) function pnamec(i)
         use maccbk, only:pname,MAXPNAME
         implicit none
-        integer*4 i
+        integer*4,intent(in)::i
         pnamec=pname(idcomp(elatt,i))
         return
         end function
 
         real*8 function direlc(i)
         implicit none
-        integer*4 i
+        integer*4,intent(in)::i
         type (sad_comp), pointer :: cmp
         call loc_comp(elatt%comp(i),cmp)
         direlc=cmp%orient
@@ -774,8 +848,8 @@
 
         subroutine setdirelc(i,v)
         implicit none
-        integer*4 i
-        real*8 v
+        integer*4 ,intent(in)::i
+        real*8 ,intent(in)::v
         type (sad_comp), pointer :: cmp
         call loc_comp(elatt%comp(i),cmp)
         cmp%orient=v
@@ -907,11 +981,11 @@
             rstat(2,l)=charge
             lstat(1,l)=trpt
           else
-            tparacheck=iand(cmp%update,1) .eq. 0
+            tparacheck=.not. cmp%update
           endif
 
         case default
-          tparacheck=iand(cmp%update,1) .eq. 0 
+          tparacheck=.not. cmp%update
 
         end select
         return
@@ -924,12 +998,13 @@
         use ffs_flag, only:trpt
         use mathfun, only:akang
         implicit none
-        type (sad_comp) :: cmp
+        type (sad_comp) , intent(inout):: cmp
         integer*4 ltyp
         real*8 phi,al,psi1,psi2,theta,dtheta,w,akk,sk1,
-     $       fb1,fb2,harm,vnominal,frmd
+     $       fb1,fb2,harm,vnominal,frmd,
+     $       cchi1,cchi2,cchi3,schi1,schi2,schi3
         complex*16 cr1
-        cmp%update=ior(cmp%update,1)
+        cmp%update=.true.
         ltyp=idtype(cmp%id)
         if(kytbl(kwNPARAM,ltyp) .eq. 0)then
           return
@@ -957,7 +1032,6 @@
               fb2=0.d0
             endif
           endif
-c          write(*,*)'tpara-bend ',cmp%value(ky_FRMD_BEND),fb1,fb2
           w=phi-psi1-psi2
           if((fb1 .ne. 0.d0 .or. fb2 .ne. 0.d0) .and.
      1         al .ne. 0.d0 .and. phi .ne. 0.d0)then
@@ -1118,35 +1192,40 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
         case (icPROT)
           call phsinit(cmp%value(1),cmp%value(p_PARAM_Prot))
 
+        case (icSOL)
+          cchi1=cos(cmp%value(ky_CHI1_SOL))
+          cchi2=cos(cmp%value(ky_CHI2_SOL))
+          cchi3=cos(cmp%value(ky_CHI3_SOL))
+          schi1=sin(cmp%value(ky_CHI1_SOL))
+          schi2=sin(cmp%value(ky_CHI2_SOL))
+          schi3=sin(cmp%value(ky_CHI3_SOL))
+          cmp%value(p_R11_SOL)= cchi1*cchi3+schi1*schi2*schi3
+          cmp%value(p_R12_SOL)=-cchi2*schi3
+          cmp%value(p_R13_SOL)= schi1*cchi3-cchi1*schi2*schi3
+          cmp%value(p_R21_SOL)=-schi1*schi2*cchi3+cchi1*schi3
+          cmp%value(p_R22_SOL)= cchi2*cchi3
+          cmp%value(p_R23_SOL)= cchi1*schi2*cchi3+schi1*schi3
+          cmp%value(p_R31_SOL)=-schi1*cchi2
+          cmp%value(p_R32_SOL)=-schi2
+          cmp%value(p_R33_SOL)= cchi1*cchi2
+
         case default
         end select
         return
         end subroutine
 
-        subroutine tclrpara(el,nl)
+        subroutine tclrpara
+        use mackw
         use tmacro
-        use tfstk, only:itfcbk
-        use tfmem, only:tfree
+        use ffs_pointer, only:compelc
         implicit none
-        type (sad_el), pointer :: el
         type (sad_comp), pointer :: cmp
-        integer*4 nl,i
-        integer*8 lp
-        do i=1,nl
-          lp=el%comp(i)
-          if(lp .gt. 0)then
-            call loc_comp(lp,cmp)
-            cmp%update=0
-          endif
+        integer*4 i
+        do i=1,nlat-1
+          call compelc(i,cmp)
+          cmp%update=cmp%nparam .le. 0
         enddo
         tparaed=.false.
-        return
-        end subroutine
-
-        subroutine tclrparaall()
-        use ffs_pointer
-        implicit none
-        call tclrpara(elatt,elatt%nlat1-2)
         return
         end subroutine
 
@@ -1350,7 +1429,7 @@ c     begin initialize for preventing compiler warning
       if(i .gt. 0)then
         kl=i
       else
-        kl=ilist(-i,ifklp)
+        kl=nelvx(-i)%klp
       endif
       call compelc(kl,cmp)
       plus=.false.
@@ -1389,16 +1468,11 @@ c     begin initialize for preventing compiler warning
         tfkeyv=dlist(ia)
       else
         ia=elatt%comp(kl)+l
-        if(l .eq. ilist(-i,ifival))then
+        if(l .eq. nelvx(-i)%ival)then
           if(tfreallistq(dlist(ia),klr))then
             tfkeyv=kxavaloc(-1,klr%nl,kld)
             kld%rbody(1:klr%nl)=klr%rbody(1:klr%nl)
      $           /rlist(iferrk+(kl-1)*2)
-c            write(*,*)'tfkeyv ',i,l,ia,l,kl,ilist(-i,ifival),
-c     $           klr%nl,rlist(iferrk+(kl-1)*2)
-c            call tfdebugprint(dlist(ia),'tfkeyv-s',1)
-c            call tfdebugprint(tfkeyv,'tfkeyv-d',2)
-c          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
           else
             tfkeyv=dlist(ia)
           endif
@@ -1426,16 +1500,14 @@ c        enddo
       implicit none
       integer*4 iv,j,i
       do j=1,flv%ntouch
-        if(itouchele(j) .eq. i .and. itouchv(j) .eq. iv)then
+        if(nvevx(j)%itouchele .eq. i .and. nvevx(j)%itouchv .eq. iv)then
           return
         endif
       enddo
-      if(flv%ntouch .lt. flv%nve*2)then
-        flv%ntouch=flv%ntouch+1
-c        write(*,*)'tftouch ',flv%ntouch,i,iv
-        itouchele(flv%ntouch)=i
-        itouchv(flv%ntouch)=iv
-      endif
+      call tffsnvealloc(flv%ntouch+1)
+      flv%ntouch=flv%ntouch+1
+      nvevx(flv%ntouch)%itouchele=i
+      nvevx(flv%ntouch)%itouchv=iv
       return
       end subroutine
 
@@ -1444,9 +1516,10 @@ c        write(*,*)'tftouch ',flv%ntouch,i,iv
       use ffs
       use ffs_pointer
       implicit none
-      type (sad_rlist), pointer :: kl
-      integer*4 i,l,isp1
-      if(dcomp(i)%k .eq. 0)then
+      type (sad_rlist), pointer,intent(out) :: kl
+      integer*4 ,intent(in)::i
+      integer*4 l,isp1
+      if(nelvx(i)%dcomp%k .eq. 0)then
         isp1=isp
         do l=1,nlat-1
           if(iele1(l) .eq. i)then
@@ -1454,10 +1527,10 @@ c        write(*,*)'tftouch ',flv%ntouch,i,iv
             rtastk(isp)=dble(l)
           endif
         enddo
-        dcomp(i)=dtfcopy(kxmakelist(isp1,kl))
+        nelvx(i)%dcomp=dtfcopy(kxmakelist(isp1,kl))
         isp=isp1
       else
-        call descr_sad(dcomp(i),kl)
+        call descr_sad(nelvx(i)%dcomp,kl)
       endif
       return
       end subroutine
@@ -1491,7 +1564,7 @@ c        write(*,*)'tftouch ',flv%ntouch,i,iv
         if(kprof .eq. 0 .or. tfnonlistq(cmp%dvalue(kprof),lprof))then
           return
         endif
-        if(iand(cmp%update,2) .eq. 0)then
+        if(.not. cmp%updateseg)then
           call tsetupseg(cmp,lprof,lsegp,irtc)
           if(irtc .ne. 0)then
             return
@@ -1611,7 +1684,7 @@ c        write(*,*)'tftouch ',flv%ntouch,i,iv
               lk1%dbody(2)=dtfcopy(dtastk2(i))
             endif
           enddo
-          cmp%update=ior(cmp%update,2)
+          cmp%updateseg=.true.
  9000     l=itfdownlevel()
           isp=isp0
           return
@@ -1619,7 +1692,7 @@ c        write(*,*)'tftouch ',flv%ntouch,i,iv
           isp=isp0
           irtc=itfmessage(99,"FFS::wrongkeylist",'""')
         case default
-          cmp%update=ior(cmp%update,2)
+          cmp%updateseg=.true.
         end select
         return
         end
@@ -1645,9 +1718,10 @@ c        write(*,*)'tftouch ',flv%ntouch,i,iv
           cmpd%dvalue(k)=dtfcopy1(cmps%dvalue(k))
           if(idtype(cmpd%id) .eq. icMULT .and.
      $         k .eq. ky_PROF_MULT)then
-            cmpd%update=0
+            cmpd%updateseg=.false.
           endif
         endif
+        cmpd%update=cmpd%nparam .le. 0
         return
         end subroutine
 
@@ -1666,10 +1740,9 @@ c        write(*,*)'tftouch ',flv%ntouch,i,iv
         call tfvcopycmp(cmps,cmpd,k,coeff)
         if(idtype(cmpd%id) .eq. icMULT .and.
      $       k .eq. ky_PROF_MULT)then
-          cmpd%update=0
-        else
-          cmpd%update=iand(2,cmpd%update)
+          cmpd%updateseg=.false.
         endif
+        cmpd%update=cmpd%nparam .le. 0
         return
         end subroutine
 
@@ -1715,14 +1788,12 @@ c        write(*,*)'tftouch ',flv%ntouch,i,iv
         integer*4 i,k
         real*8 r0,v
         if(ktfrealq(cmpd%dvalue(i)))then
-c     write(*,*)'tfsetcmp-0 ',i,v
           cmpd%value(i)=v
         elseif(tfreallistq(cmpd%dvalue(i),lad))then
           r0=lad%rbody(1)
           do k=2,lad%nl
             r0=r0+lad%rbody(k)
           enddo
-c     write(*,*)'tfsetcmp-1 ',i,r0,v
           if(r0 .ne. 0.d0)then
             lad%rbody(1:lad%nl)=v/r0*lad%rbody(1:lad%nl)
           else
@@ -1761,7 +1832,7 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       type (sad_descriptor) kdp
       type (sad_symdef), pointer :: symddp
       integer*8 j
-      real*8 rgetgl1,sigz0
+      real*8 rgetgl1
       j=idvalc(1)
       emx=rlist(j+ky_EMIX_MARK)
       if(emx .le. 0.d0)then
@@ -1774,6 +1845,24 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
         emy=rgetgl1('EMITY')
       else
         call rsetgl1('EMITY',emy)
+      endif
+      emz=rlist(j+ky_EMIY_MARK)
+      if(emz .le. 0.d0)then
+        emz=rgetgl1('EMITZ')
+      else
+        call rsetgl1('EMITZ',emz)
+      endif
+      sizedp=rlist(j+ky_SIGE_MARK)
+      if(sizedp .le. 0.d0)then
+        sizedp=rgetgl1('SIGE')
+      else
+        call rsetgl1('SIGE',sizedp)
+      endif
+      sigzs=max(0.d0,rlist(j+ky_SIGZ_MARk))
+      if(sigzs .le. 0.d0)then
+        sigzs=rgetgl1('SIGZ')
+      else
+        call rsetgl1('SIGZ',sigzs)
       endif
       dpmax=max(0.d0,rlist(j+ky_DP_MARk))
       kdp=kxsymbolz('DP',2,symddp)
@@ -1793,8 +1882,21 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       if(rlist(latt(1)+ky_BZ_MARK) .le. 0.d0)then
         rlist(latt(1)+ky_BZ_MARK)=1.d0
       endif
-      sigz0=max(0.d0,rlist(j+ky_SIGZ_MARk))
-      call rsetgl1('SIGZ',sigz0)
+      return
+      end
+
+      subroutine tffs_init_elmv
+      use tfstk
+      use ffs
+      use ffs_pointer
+      implicit none
+c      type (sad_dlist) , pointer ::kl
+c      elatt%elmv%k=ktadalocnull(0,nele,kl)
+c      do i=1,nele
+c        l=ilist(i,ifmult)
+c        id=ilist(1,l)
+cc
+c
       return
       end
 
@@ -1805,54 +1907,26 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       use tffitcode
       use sad_main
       implicit none
-      integer*8 j
-      integer*4 l,ntwis,k,i,itehash
+      integer*4 ntwis
       marki=1
-      nlat=elatt%nlat1-1
+      nlat=elatt%nlat0+1
       latt(1:nlat)=>elatt%comp(1:nlat)
       if(idtypec(1) .ne. icMARK)then
         write(*,*)'The first element must be a MARK element.'
         call abort
       endif
       call tfhashelement
-      ifele1=ktaloc(nlat/2+1)
-      ifmult =ktaloc(nlat/2+1)
-      nele=0
-      LOOP_L: do l=1,nlat-1
-        j=ielmhash+itehash(pnamec(l),MAXPNAME)*2
-        LOOP_K: do k=1,ilist(1,j+1)
-          i=ilist(1,k+klist(j+2)-1)
-          if(i .ge. l)then
-            exit LOOP_K
-          endif
-          if(idelc(i) .eq. idelc(l))then
-            ilist(l,ifele1)=ilist(i,ifele1)
-            cycle LOOP_L
-          endif
-        enddo LOOP_K
-        nele=nele+1
-        ilist(nele,ifmult)=l
-        ilist(l,ifele1)=nele
-      enddo LOOP_L
-      nve=(nele+nlat)/2+10
+      call tffs_init_nele
       ifibzl =ktaloc(nlat*3/2+2)
       ifcoup=ktaloc(nlat)
       iferrk=ktaloc(nlat*2)
       ifmast =ktaloc(nlat/2+1)
-      ifival=ktaloc(nele/2+1)
-      ifdcomp=ktaloc(nele)
-      klist(ifdcomp:ifdcomp+nele-1)=i00
-      ifele =ktaloc(nlat/2+1)
+      ifcomp =ktaloc(nlat/2+1)
       ifele2=ktaloc(nlat)
-      ifklp =ktaloc(nele/2+1)
       ifiprev =ktaloc(nlat/2+1)
       ifinext =ktaloc(nlat/2+1)
-      ifvalvar=ktaloc(nve*2)
-      iftouchele=ktaloc(nve)
-      iftouchv=ktaloc(nve)
-      ifvvar=ktaloc(nve)
-      ifvarele=ktaloc(nve)
-      ifivcomp=ktaloc(nve)
+      nve=0
+      call tffsnvealloc(nele)
       ndim=1
       ndima=ndim*2+1
       ntwis =nlat*ndima
@@ -1861,8 +1935,9 @@ c     write(*,*)'tfsetcmp-1 ',i,r0,v
       ifgeo =ktaloc(nlat*12)
       ifgamm=ktaloc(nlat)
       iftwissp=ktaloc(nlat/2+1)
-      ifvlim =ktaloc(nele*2)
+      ifnelv=ktaloc(nele*lnelv)
       call ffs_init_pointer
+      nelvx(1:nele)%dcomp%k=i00
       call ffs_twiss_pointer
       call tfinit
       ifsize=0
@@ -1882,11 +1957,66 @@ c      ilist(2,iwakepold+6)=int(ifsize)
       return
       end
 
+      subroutine tffs_init_nele
+      use tfstk
+      use ffs
+      use ffs_pointer
+      implicit none
+      integer*8 j
+      integer*4 i,l,k,itehash
+      ifele1=ktaloc(nlat/2+1)
+      ifmult=ktaloc(nlat/2+1)
+      nele=0
+      LOOP_L: do l=1,nlat-1
+        j=ielmhash+itehash(pnamec(l),MAXPNAME)*2
+        LOOP_K: do k=1,ilist(1,j+1)
+          i=ilist(1,k+klist(j+2)-1)
+          if(i .ge. l)then
+            exit LOOP_K
+          endif
+          if(idelc(i) .eq. idelc(l))then
+            ilist(l,ifele1)=ilist(i,ifele1)
+            cycle LOOP_L
+          endif
+        enddo LOOP_K
+        nele=nele+1
+        ilist(nele,ifmult)=l
+        ilist(l,ifele1)=nele
+      enddo LOOP_L
+c      if(elatt%elmv%k .eq. 0)then
+c        call tffs_init_elmv
+c      endif
+      return
+      end subroutine
+
+      subroutine tffsnvealloc(nv)
+      use tfstk
+      use ffs
+      use ffs_pointer
+      use iso_c_binding
+      implicit none
+      integer*4 , intent(in)::nv
+      integer*4 nve0
+      integer*8 ifnvev1
+      if(nv .lt. nve)then
+        return
+      endif
+      nve0=nve
+      nve=max(nv,nve0+128)
+      ifnvev1=ktaloc(nve*lnvev)
+      if(nve0 .ne. 0)then
+        klist(ifnvev1:ifnvev1+nve-1)=klist(ifnvev:ifnvev+nve-1)
+        call tfree(ifnvev)
+      endif
+      ifnvev=ifnvev1
+      call c_f_pointer(c_loc(klist(ifnvev)),nvevx,[nve])
+      return
+      end subroutine
+
       subroutine tffsfree
       use tfstk
       use ffs
       use tffitcode
-      use ffs_pointer, only:dcomp
       implicit none
       integer*4 l,itfdownlevel,i
       levele=levele+1
@@ -1894,12 +2024,7 @@ c      ilist(2,iwakepold+6)=int(ifsize)
 c      call tfree(ilist(2,ifwakep))
 c      call tfree(ilist(2,ifwakep+2))
 c      call tfree(ifwakep)
-      call tfree(iftouchv)
-      call tfree(iftouchele)
-      call tfree(ifivcomp)
-      call tfree(ifvalvar)
-      call tfree(ifvvar)
-      call tfree(ifvarele)
+      call tfree(ifnvev)
       call tfree(iftwissp)
       if(ifsize .gt. 0)then
         call tfree(ifsize)
@@ -1913,18 +2038,15 @@ c      call tfree(ifibzl)
       call tfree(ifmast)
       call tfree(ifmult)
       call tfree(ifcoup)
-      call tfree(ifvlim)
-      call tfree(ifival)
       call tfree(ifinext)
       call tfree(ifiprev)
-      call tfree(ifklp)
       call tfree(ifele2)
       call tfree(ifele1)
-      call tfree(ifele)
+      call tfree(ifcomp)
       do i=1,nele
-        call tflocald(dcomp(i))
+        call tflocald(nelvx(i)%dcomp)
       enddo
-      call tfree(ifdcomp)
+      call tfree(ifnelv)
       call tfree(iferrk)
       call tfree(ifibzl)
       call tfree(ifgamm)
@@ -2050,7 +2172,6 @@ c      call tfree(ifibzl)
         lfni=lfni0
         call trbassign(lfni)
       endif
-c      write(*,*)'tfmain-1 ', lfn,infl0,lfnb0,lfni0,lfni
       kx%k=ktfoper+mtfnull
       return
       end

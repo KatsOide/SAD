@@ -75,7 +75,7 @@
 
       end module
 
-      subroutine tfdisp(word,idisp1,idisp2,dp00,lfno,exist)
+      subroutine tfdisp(word,idisp1,idisp2,dgam,lfno,exist)
       use disp
       use tfstk
       use ffs
@@ -87,27 +87,30 @@
       use tfcsi, only:lfni
       implicit none
       type (sad_comp), pointer:: cmp
-      integer*4 idisp1,idisp2,lfno,mdisp,icolm,ifany,id0,id3,idstep,
+      integer*4 , intent(inout):: idisp1,idisp2
+      integer*4 ,intent(in)::lfno
+      integer*4 mdisp,icolm,ifany,id0,id3,idstep,
      $     lines,l,id,ielmex,i
-      real*8 dp00,dgam,bx0,by0,bx1,by1,bx2,by2,r,sigpp,tfchi,
+      real*8 , intent(in)::dgam
+      real*8 bx0,by0,bx1,by1,bx2,by2,r,sigpp,tfchi,
      $     etaxp,etapxp,sigxxp,sigxpxp,sigpxpxp,emixp,
      $     etayp,etapyp,sigyyp,sigypyp,sigpypyp,emiyp
       integer*4 lname,lb,lb1,l1,irtc,nc,itfgetbuf
       integer*4, parameter:: blen=ntwissfun*12+15,nlc=66
       real*8 pe(4),pe0(4)
       real*8 og(3,4)
-      character*(*) word
+      character*(*) , intent(inout)::word
       character*256 wordp,word1,name
       character*(blen) buff
       character*16 autofg,vout,ans
       character*256 bname
       character*1 dir,hc
       character*131 header
-      logical*4 tfinsol,exist,dpeak,seldis,abbrev,temat,mat,dref,range
+      logical*4 , intent(out)::exist
+      logical*4 tfinsol,dpeak,seldis,abbrev,temat,mat,dref,range
 c     begin initialize for preventing compiler warning
       sigpp=0.d0
 c     end   initialize for preventing compiler warning
-      dgam=gammab(1)*dp00
       exist=.false.
       dpeak=.false.
       seldis=.false.
@@ -285,8 +288,9 @@ c      write(*,*)'tfdisp ',word,wordp
         call compelc(l,cmp)
         if(iele1(icomp((l))) .gt. 0 .and.
      $       id .ne. icMARK .and. id .ne. 34)then
-          if(ival(iele1(icomp(l))) .gt. 0)then
-            call tdtrimz(vout,tfvcmp(cmp,ival(iele1(icomp(l)))),'10.7')
+          if(nelvx(iele1(icomp(l)))%ival .gt. 0)then
+            call tdtrimz(vout,
+     $           tfvcmp(cmp,nelvx(iele1(icomp(l)))%ival),'10.7')
           else
             vout=' 0'
           endif

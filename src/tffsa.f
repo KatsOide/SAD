@@ -20,12 +20,10 @@
       use ffsfile
       use radint
       implicit none
-      type (sad_comp), pointer :: cmp
       integer*4 maxrpt,hsrchz
-      integer*8 kffs,k,kx,itwisso,
-     $     ifvalvar2,iparams,kax,iutwiss
+      integer*8 kffs,k,kx,itwisso,iparams,kax,iutwiss
       integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,
-     $     ii,irtc0,it,itemon,itmon,itestr,itstr,itt,lfn,
+     $     irtc0,it,itemon,itmon,itestr,itstr,itt,lfn,
      $     iuse,l,itfuplevel,
      $     levelr,lfnl0,lpw,meas0,mfpnta,igetgl1,lenw,
      $     mphi2,newcor,next,nextt,nfp,nmon,
@@ -46,19 +44,16 @@
       real*8 chi0(3),trdtbl(3,6),rfromk
       logical*4 err,new,cmd,open98,abbrev,ftest,
      $     frefix,exist,init,trpt0,expnd,chguse,visit,
-     $     byeall,expndc,tfvcomp,tffsinitialcond,
+     $     byeall,tfvcomp,tffsinitialcond,
      $     geocal0,busy
       save open98,exist,init,nmon,nster
       save busy
       data busy /.false./
       itwisso(kk,i,j)=iftwis+kk+nlat*(i+ndim+(j-1)*ndima)-1
       flv%mcommon=int((sizeof(flv)+7)/8)
-c      write(*,*)'tffsa ',flv%mcommon
       kffs=ktfoper+mtfnull
       irtcffs=0
-c      write(*,*)'tffsa-0 ',lfnb,ilattp,mstk
       l=itfuplevel()
-c      write(*,*)'tffsa-1 ',l
       chguse=.false.
 c     begin initialize for preventing compiler warning
       levelr=0
@@ -185,9 +180,6 @@ c
       endif
       call csrst(lfn1)
  10   continue
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-10 ',lfni,ipoint,lrecl,ios
-c      endif
       if(iffserr .ne. 0)then
         if(lfnb .gt. 1)then
           ios=1
@@ -213,14 +205,7 @@ c      endif
       elseif(ios .lt. 0)then
         ios=0
       endif
-c      if(lfni .eq. 5)then
-c        write(*,*)'tffsa-getwrd-0 ',lfni,ipoint,lrecl
-c      endif
       call getwrd(word)
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-getwrd ',lfni,ios,ipoint,linep,lrecl,'''',
-c     $       word(1:lenw(word)),''''
-c      endif
       if(ios .ne. 0)then
         go to 10
       endif
@@ -230,9 +215,7 @@ c      endif
         go to 2
       endif
       ios=0
-c      write(*,*)'tffsa-tfprint ',word(1:lenw(word))
       call tfprint(word,lfno,.false.,itt,nextt,exist)
-c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
       if(exist .or. ios .ne. 0)then
         go to 10
       endif
@@ -386,8 +369,9 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
           call tfclearlinep()
           call cssetp(next)
           call tffssaveparams(2,ilattp,err)
+          calexp=expnd
           expnd=expnd .and. .not. err
-          call tclrpara(elatt,nlat-1)
+          call tclrpara
           if(visit)then
             call tffssaveparams(0,ilattp,err)
             call tfblocksym('`FitFunction',12)
@@ -410,11 +394,12 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
           if(ilist(2,idval(iuse)) .le. 0 .or. expnd)then
             call expnln(iuse)
           endif
-          call filaux(iuse)
           ilattp=idval(ilist(2,idval(iuse)))
           call loc_el(ilattp,elatt)
+          nlat=elatt%nlat0+1
+          call filaux(iuse)
           lattuse=ilattp
-          call tclrpara(elatt,elatt%nlat1-2)
+          call tclrpara
           dleng =rlist(elatt%aux+1)*rgetgl1('FSHIFT')
           ename=pname(iuse)
           call tmovb(ename,flv%blname,MAXPNAME)
@@ -439,7 +424,7 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
             go to 2
           endif
         endif
-        call tclrpara(elatt,elatt%nlat1-2)
+        call tclrpara
         call tffsfree
         if(byeall)then
           call tffssaveparams(-2,i00,err)
@@ -447,7 +432,8 @@ c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
         call tffssaveparams(1,ilattp,err)
         call loc_el(ilattp,elatt)
         lattuse=ilattp
-        nlat=elatt%nlat1-1
+        nlat=elatt%nlat0+1
+        call tfresetparam
         dleng =rlist(elatt%aux+1)*rgetgl1('FSHIFT')
         call ffs_init_pointer
         call ffs_twiss_pointer
@@ -527,13 +513,14 @@ ckikuchi ... next 5 lines added     (8/17/'90)
       elseif(abbrev(word,'CAL_CULATE','_'))then
         call tfcalc(word,nlist,flv%icalc,flv%ncalc,mfpnt,mfpnt1,exist)
         if(exist)then
-          expndc=.not. tfvcomp()
           if(abbrev(word,'NOEXP_AND','_'))then
             word=' '
-            expndc=.false.
+            calexp=.false.
           elseif(abbrev(word,'EXP_AND','_'))then
             word=' '
-            expndc=.true.
+            calexp=.true.
+          elseif(.not. keepexp)then
+            calexp=.not. tfvcomp()
           endif
           fitflg=.false.
           go to 1000
@@ -541,26 +528,32 @@ ckikuchi ... next 5 lines added     (8/17/'90)
           go to 12
         endif
       elseif(word .eq. 'GO')then
-        expndc=.not. tfvcomp()
         call peekwd(word,next)
         if(abbrev(word,'NOEXP_AND','_'))then
           call cssetp(next)
-          expndc=.false.
+          calexp=.false.
         elseif(abbrev(word,'EXP_AND','_'))then
           call cssetp(next)
-          expndc=.true.
+          calexp=.true.
+        elseif(.not. keepexp)then
+          calexp=.not. tfvcomp()
         endif
         word=' '
         fitflg=.true.
         convgo=.false.
         go to 1000
       elseif(abbrev(word,'REC_OVER','_'))then
-        ifvalvar2=ifvalvar+nve
         do i=1,flv%nvar
-          v=rlist(ifvalvar+i-1)
-          rlist(ifvalvar+i-1)=rlist(ifvalvar2+i-1)
-          rlist(ifvalvar2+i-1)=v
+          v=nvevx(i)%valvar
+          nvevx(i)%valvar=nvevx(i)%valvar2
+          nvevx(i)%valvar2=v
         enddo
+c        ifvalvar2=ifvalvar+nve
+c        do i=1,flv%nvar
+c          v=rlist(ifvalvar+i-1)
+c          rlist(ifvalvar+i-1)=rlist(ifvalvar2+i-1)
+c          rlist(ifvalvar2+i-1)=v
+c        enddo
         call tfsetv(flv%nvar)
       elseif(abbrev(word,'T_YPE','_'))then
         call tfsetparam
@@ -568,13 +561,13 @@ ckikuchi ... next 5 lines added     (8/17/'90)
         go to 12
       elseif(abbrev(word,'DISP_LAY','_'))then
         call tfsetparam
-        call tfdisp(word,id1,id2,dp0,lfno,exist)
+        call tfdisp(word,id1,id2,dp0*gammab(1),lfno,exist)
         go to 30
       elseif(word .eq. 'SCALE')then
         call tscale(nlist,scale,lfno)
       elseif(word.eq.'MAPANA') then
-        call gosadpls(latt,ilist(1,ifklp),
-     $       ilist(1,ifele),lfno)
+c        call gosadpls(latt,ilist(1,ifklp),
+c     $       ilist(1,ifele),lfno)
       elseif(abbrev(word,'AP_ERTURE','_'))then
         call tfsetparam
         call tfaprt(lfno,word)
@@ -710,7 +703,7 @@ c                   directio_vector(angle)
           wd=0.d0
         end if
         call ndelw(wl,wa,wp,wd,
-     &             latt,ilist(1,ifele),rlist(ifcoup),
+     &             latt,icomp,rlist(ifcoup),
      $       rlist(ifgeo),pos,ilist(1,ifmast))
         go to 10
 c End of the lines added by N. Yamamoto Apr. 25, '93
@@ -800,58 +793,65 @@ c        go to 31
         call cputime(ctime1,irtc0)
         call tfsetparam
         lpw=min(itfgetrecl()-1,255)
-        call twbuf(word,lfno,1,0,0,0)
-        call twbuf('CTIME='//autofg((ctime1-flv%ctime0)*1.d-6,'8.3'),
-     1          lfno,1,lpw,8,1)
-        call twbuf('sec  DT='//autofg((ctime1-flv%ctime2)*1.d-6,'8.3'),
-     1          lfno,1,lpw,8,1)
-        call twbuf('sec',lfno,1,lpw,8,1)
+        call twbuf(word,'',lfno,1,0,0,0)
+        call twbuf('CTIME='//autofg((ctime1-flv%ctime0)*1.d-6,'S8.3'),
+     $       ' sec',lfno,1,lpw,8,1)
+        call twbuf('DT='//autofg((ctime1-flv%ctime2)*1.d-6,'S8.3'),
+     $       ' sec',lfno,1,lpw,8,1)
         flv%ctime2=ctime1
-        call twbuf(word,lfno,1,0,0,-1)
+        call twbuf(word,'',lfno,1,0,0,-1)
         do i=1,nflag
           if(fname(i) .ne. ' ')then
             if(flags(i))then
-              call twbuf(fname(i),lfno,1,lpw,8,1)
+              call twbuf(fname(i),'',lfno,1,lpw,8,1)
             else
               if(sino(i) .ne. ' ')then
-                call twbuf(sino(i),lfno,1,lpw,8,1)
+                call twbuf(sino(i),'',lfno,1,lpw,8,1)
               else
-                call twbuf('NO'//fname(i),lfno,1,lpw,8,1)
+                call twbuf('NO'//fname(i),'',lfno,1,lpw,8,1)
               endif
             endif
           endif
         enddo
-        call twbuf(word,lfno,1,0,0,-1)
-        call twbuf('CHARGE='//autofg(charge,'S7.4'),lfno,1,lpw,8,1)
-        flv%rsconv=rfromd(kxsymbolv('CONVERGENCE',10))
-c        flv%rsconv=rlist(ktlookup('CONVERGENCE'))
-        call twbuf('CONVERGENCE='//autofg(flv%rsconv,'S8.5'),
+        call twbuf(word,'',lfno,1,0,0,-1)
+        call twbuf('CHARGE='//autofg(charge,'S7.4'),'',lfno,1,lpw,8,1)
+        call twbuf('MASS='//autofg(amass/1e6,'S10.7'),' MeV',
      $       lfno,1,lpw,8,1)
-        call twbuf('DP='//autofg(dpmax,'S8.5'),lfno,1,lpw,8,1)
-        call twbuf('DP0='//autofg(dp0,'S8.5'),lfno,1,lpw,8,1)
-        call twbuf('EMITDIV='//autofg(emidiv,'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('EMITDIVB='//autofg(emidib,'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('EMITDIVQ='//autofg(emidiq,'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('EMITDIVS='//autofg(emidis,'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('EMITX='//autofg(emx,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('EMITY='//autofg(emy,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('GCUT='//autofg(tgetgcut(),'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('MINCOUP='//autofg(coumin,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('MOMENTUM='//autofg(pgev,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('PBUNCH='//autofg(pbunch,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('NBUNCH='//autofg(anbunch,'S9.6'),lfno,1,lpw,8,1)
-        call twbuf('XIX='//autofg(xixf/pi2,'S7.4'),lfno,1,lpw,8,1)
-        call twbuf('XIY='//autofg(xiyf/pi2,'S7.4'),lfno,1,lpw,8,1)
-        write(word,'(A,I6)')'NP=',np0
-        call twbuf(word,lfno,1,lpw,8,1)
-        write(word,'(A,I4)')'MAXITERATION=',flv%itmax
-        call twbuf(word,lfno,1,lpw,8,1)
-        call twbuf(word,lfno,1,lpw,8,-1)
+        call twbuf('MOMENTUM='//autofg(pgev/1e9,'S10.6'),' GeV',
+     $       lfno,1,lpw,8,1)
+        call twbuf('PBUNCH='//autofg(pbunch,'S9.6'),'',lfno,1,lpw,8,1)
+        flv%rsconv=rfromd(kxsymbolv('CONVERGENCE',11))
+        call twbuf('DP='//autofg(dpmax,'S8.5'),'',lfno,1,lpw,8,1)
+        call twbuf('DP0='//autofg(dp0,'S8.5'),'',lfno,1,lpw,8,1)
+        call twbuf('FSHIFT='//autofg(rgetgl1('FSHIFT'),'S9.6'),'',
+     $       lfno,1,lpw,8,1)
+        call twbuf('MINCOUP='//autofg(coumin,'S9.6'),'',lfno,1,lpw,8,1)
+        call twbuf('EMITX='//autofg(emx,'S9.6'),' m',lfno,1,lpw,8,1)
+        call twbuf('EMITY='//autofg(emy,'S9.6'),' m',lfno,1,lpw,8,1)
+        call twbuf('EMITZ='//autofg(emz,'S9.6'),' m',lfno,1,lpw,8,1)
+        call twbuf('SIGZ='//autofg(sigzs,'S9.6'),' m',lfno,1,lpw,8,1)
+        call twbuf('SIGE='//autofg(sizedp,'S9.6'),'',lfno,1,lpw,8,1)
+        call twbuf('XIX='//autofg(xixf/pi2,'S7.4'),'',lfno,1,lpw,8,1)
+        call twbuf('XIY='//autofg(xiyf/pi2,'S7.4'),'',lfno,1,lpw,8,1)
+        call twbuf('NBUNCH='//autofg(anbunch,''),'',lfno,1,lpw,8,1)
+        call twbuf('NP='//autofg(dble(np0),'S8.1'),'',lfno,1,lpw,8,1)
+        call twbuf('GCUT='//autofg(tgetgcut(),''),'',lfno,1,lpw,8,1)
+        call twbuf('EMITDIV='//autofg(emidiv,''),'',lfno,1,lpw,8,1)
+        call twbuf('EMITDIVB='//autofg(emidib,''),'',lfno,1,lpw,8,1)
+        call twbuf('EMITDIVQ='//autofg(emidiq,''),'',lfno,1,lpw,8,1)
+        call twbuf('EMITDIVS='//autofg(emidis,''),'',lfno,1,lpw,8,1)
+        call twbuf('CONVERGENCE='//autofg(flv%rsconv,''),'',
+     $       lfno,1,lpw,8,1)
+        call twbuf('MAXITERATION='//autofg(dble(flv%itmax),''),'',
+     $       lfno,1,lpw,8,1)
+        call twbuf('NPARA='//autofg(dble(nparallel),''),'',
+     $       lfno,1,lpw,8,1)
+        call twbuf(' ','',lfno,1,lpw,8,-1)
         call twelm(lfno,mfpnt,mfpnt1,'FIT',lpw,8)
-        call twelm(lfno,flv%measp,0,'MEA_SURE',lpw,8)
-        call twelm(lfno,iorgr,0,'ORG',lpw,8)
         call twelm(lfno,id1,id2,'DISP_LAY',lpw,8)
-        call twbuf(word,lfno,1,lpw,8,-1)
+        call twelm(lfno,iorgr,0,'ORG',lpw,8)
+        call twelm(lfno,flv%measp,0,'MEA_SURE',lpw,8)
+        call twbuf(' ','',lfno,1,lpw,8,-1)
         go to 10
       elseif(abbrev(word,'VAR_IABLES','_') .or. word .eq. 'VARS')then
         call tfinitvar
@@ -884,10 +884,6 @@ c     1         title,case,exist)
         else
           word=tfgetstr(kx,nc)
           exist=nc .eq. 0
-c          if(exist)then
-c            call cssetp(ipoint+1)
-c          endif
-c          write(*,*)'DRAW ',exist,nc,ios,' ',word(1:nc)
         endif
         go to 30
       elseif(word .eq. 'GEO')then
@@ -954,7 +950,6 @@ c     $         ilist(1,iwakepold)*8
          go to 10
 C   19/12/90 302031849  MEMBER NAME  CORRECT  *.FORT     M  E2FORT
       elseif(abbrev(word,'STE_ERING','_'))then
-ckiku   call tfstr(word,latt,ist,nstr)
         call mcmess(lfno)
         call mcstr(word,latt,
      $       mult,ilist(1,ifmast),itstr,itestr,nster,
@@ -1195,8 +1190,6 @@ c          ilist(2,iwakepold+6)=int(ifsize)
         else
           call tfgeo(.true.)
         endif
-        emx=max(4.d-13/p0,rgetgl1('EMITX'))
-        emy=max(4.d-13/p0,rgetgl1('EMITY'))
 c        dpmax=rgetgl1('SIGE')
 c        rlist(itlookup('DP',ivtype))=dpmax
         gauss=.true.
@@ -1231,8 +1224,6 @@ c          ilist(2,iwakepold+6)=int(ifsize)
         else
           call tfgeo(.true.)
         endif
-        emx=max(4.d-13/p0,rgetgl1('EMITX'))
-        emy=max(4.d-13/p0,rgetgl1('EMITY'))
 c        dpmax=rgetgl1('SIGE')
 c        rlist(itlookup('DP',ivtype))=dpmax
         gauss=.true.
@@ -1249,7 +1240,6 @@ c        rlist(itlookup('DP',ivtype))=dpmax
         go to 30
       endif
  7000 call tfgetv(word,lfno,nextt,exist)
-c      write(*,*)'tffsa-getv ',exist,nextt,itt,word(1:lenw(word))
       if(.not. exist)then
         if(itt .ge. 0)then
           call cssetp(nextt)
@@ -1281,14 +1271,9 @@ c      write(*,*)'tffsa-getv ',exist,nextt,itt,word(1:lenw(word))
         go to 10
       endif
  1000 continue
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-1000 ',lfni,ipoint,lrecl,ios
-c      endif
       if(busy)then
         call termes(lfno,'?Recursive CAL or GO',' ')
         go to 2
-c        irtcffs=itfmessage(9,'FFS::busy','""')
-c        go to 8900
       endif
       busy=.true.
       call tfsetparam
@@ -1320,36 +1305,22 @@ c        go to 8900
       enddo
       if(.not. geomet)then
         do i=1,nele
-          ii=(i-1)/2
-          call compelc(ilist(i-ii*2,ifklp+ii),cmp)
-          if(idtype(cmp%id) .eq. 20)then
+          if(idtypec(nelvx(i)%klp) .eq. icSOL)then
             geomet=.true.
             exit
           endif
         enddo
       endif
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-setupcoup-0 ',lfni,ipoint,lrecl,ios
-c      endif
       call tffssetupcouple(lfno)
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-setupcoup-1 ',lfni,ipoint,lrecl,ios
-c      endif
-      if(expndc)then
+      if(calexp)then
         call tffsadjustvar
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-adjvar ',lfni,ipoint,lrecl,ios
-c      endif
       else
         call termes(lfno,
      $         'Info-Element values are not expanded.',' ')
       endif
       if(fitflg)then
-        call tmov(rlist(ifvalvar),rlist(ifvalvar+nve),flv%nvar)
+        nvevx(1:flv%nvar)%valvar2=nvevx(1:flv%nvar)%valvar
       endif
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-inicond-0 ',lfni,ipoint,lrecl,ios
-c      endif
       if(tffsinitialcond(lfno,err))then
         inicond=.true.
         nfam=nfr
@@ -1423,18 +1394,8 @@ c        dpm2=rlist(ktlookup('DPM'))
      $       '?Too many off-momentum or fit points.',' ')
         go to 8810
       endif
-c      call tfevalb('Setup$FF[];Print["setupff ",FF$Orig]',36,kx,irtc)
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-evalb ',lfni,ipoint,lrecl,ios
-c      endif
       call tfevalb('Setup$FF[]',kx,irtc)
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-match-0 ',lfni,ipoint,lrecl,ios
-c      endif
       call tffsmatch(df,dp0,r,nparallel,lfno,irtc)
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-match-1 ',lfni,ipoint,lrecl,ios
-c      endif
       if(.not. setref)then
         call tfsetref
       endif
@@ -1453,7 +1414,7 @@ c      endif
       call tfshow(cellstab,df,mfpnt,mfpnt1,
      $     kffs,irtcffs,lfnb .gt. 1,lfno)
       call tmunmapp(flv%iut)
-      call tffsclearcouple(kele2)
+      call tffsclearcouple
       if(cell)then
         str=' '
         do i=nfam1,nfam
@@ -1499,7 +1460,7 @@ c      endif
 
       integer*8 function iutwiss(nlat,nvar,nfcol,nfam,nut,nonl)
       use tfstk
-      use ffs, only:flv
+      use ffs, only:flv,nvevx
       use ffs_pointer
       use tffitcode
       use ffs_wake
@@ -1536,7 +1497,7 @@ c      endif
       endif
       LOOP_I: do i=2,nlat-1
         do j=1,nvar
-          if(ivarele(j) .eq. iele1(icomp(i)))then
+          if(nvevx(j)%ivarele .eq. iele1(icomp(i)))then
             itwissp(i)=1
             itwissp(i+1)=1
             cycle LOOP_I
@@ -1558,7 +1519,7 @@ c      endif
           itwissp(flv%ifitp(j))=1
           if(flv%ifitp1(j) .ne. flv%ifitp(j))then
             itwissp(flv%ifitp1(j))=1
-            if(flv%mfitp(j) .lt. 0 .and. flv%kfit(j) .le. mfitdz
+            if(flv%mfitp(j) .lt. 0 .and. flv%kfit(j) .le. mfit
      $           .and. flv%kfit(j) .ne. mfitnx
      $           .and. flv%kfit(j) .ne. mfitny)then
               do i=min(flv%ifitp(j),flv%ifitp1(j)),
@@ -1649,7 +1610,6 @@ c nlocal = mcommon in TFFSLOCAL.inc
         isave=klist(iffssave+1)
         do while(isave .gt. 0)
           ilattp=klist(iffssave)
-c          write(*,*)'tffssave -2: ',isave,ilattp
           call tmov(rlist(iffssave+2),ffv,nxh)
           call tfree(iffssave)
           iffssave=isave
@@ -1661,27 +1621,17 @@ c          write(*,*)'tffssave -2: ',isave,ilattp
 
       logical*4 function tfvcomp()
       use ffs_pointer
-      use ffs, only:flv
+      use ffs, only:flv,nvevx,nelvx
       implicit none
       integer*4 i
       tfvcomp=.false.
       do i=1,flv%nvar
-        if(ivcomp(i) .ne. 0 .and.
-     $       ivvar(i) .ne. ival(ivarele(i)))then
+        if(nvevx(i)%ivcomp .ne. 0 .and.
+     $       nvevx(i)%ivvar .ne. nelvx(nvevx(i)%ivarele)%ival)then
           tfvcomp=.true.
           return
         endif
       enddo
-      return
-      end
-
-      subroutine tffsadjustvar
-      use tfstk
-      use ffs
-      use tffitcode
-      implicit none
-      call tffsadjust
-      call tfinitvar
       return
       end
 
@@ -1753,12 +1703,12 @@ c            call tclr(uini(1,0),28)
       return
       end
 
-      subroutine tffsclearcouple(kele2)
+      subroutine tffsclearcouple
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer,only:kele2
       implicit none
-      integer*8 kele2(nlat)
       integer*4 i
       do i=1,nlat-1
         if(kele2(i) .ne. 0)then
@@ -1831,12 +1781,10 @@ c            write(*,*)'setupcouple ',j,ik,key(1:10)
               do k=1,nlat-1
                 if(ilist(k,ifele1) .eq. -ie)then
                   iet=kele2(k)
-c                  iet=klist(ifele2+k-1)
                   if(iet .eq. 0)then
                     iet=ktaloc(m+1)
                     ilist(1,iet)=0
                     kele2(k)=iet
-c                    klist(ifele2+k-1)=iet
                   endif
                   nk=ilist(1,iet)+1
 c                  write(*,*)'setupcouple ',k,iet,ik,nk
@@ -1844,24 +1792,20 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
                   ilist(2,iet+nk)=-ik
                   ilist(1,iet)=nk
                   kele2(nlat)=1
-c                  klist(ifele2+nlat-1)=1
                 endif
               enddo
             elseif(ik .gt. 0)then
               iet=kele2(ie)
-c              iet=klist(ifele2+ie-1)
               if(iet .eq. 0)then
                 iet=ktaloc(m+1)
                 ilist(1,iet)=0
                 kele2(ie)=iet
-c                klist(ifele2+ie-1)=iet
               endif
               nk=ilist(1,iet)+1
               ilist(1,iet+nk)=i
               ilist(2,iet+nk)=ik
               ilist(1,iet)=nk
               kele2(nlat)=1
-c              klist(ifele2+nlat-1)=1
             endif
           enddo
         endif
@@ -1889,7 +1833,7 @@ c              klist(ifele2+nlat-1)=1
       if(i .gt. 0)then
         it=idtypec(i)
       else
-        kl=ilist(-i,ifklp)
+        kl=nelvx(-i)%klp
         it=idtypec(kl)
       endif
       kw='-'

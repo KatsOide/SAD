@@ -331,7 +331,8 @@ c          p2=h2*sqrt(1.d0-1.d0/h2**2)
           cod(4)=cod(4)+dpy
           cod(6)=cod(6)+pf/p0
           cod(5)=-t*v2
-          call tmultr(trans,trans1,irad)
+          trans(:,1:irad)=matmul(trans1,trans(:,1:irad))
+c          call tmultr(trans,trans1,irad)
           dgb=dgb+dhg
         elseif(irad .eq. 6)then
           trans0=trans(:,1:6)
@@ -412,7 +413,8 @@ c        rg=sqrt(rg2)
         trans1(2,2)=rg2
         trans1(4,4)=rg2
         trans1(6,6)=rg2
-        call tmultr(trans,trans1,irad)
+        trans(:,1:6)=matmul(trans1,trans(:,1:irad))
+c        call tmultr(trans,trans1,irad)
         if(irad .gt. 6)then
           call tmulbs(beam,trans1,.true.)
         endif

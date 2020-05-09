@@ -427,7 +427,7 @@ tserad.o: tserad.f initb1.o tffs.o tfstk.o
 tsgeo.o: tsgeo.f initb1.o tffs.o tfloor.o tfstk.o
 tshow.o: tshow.f tffs.o tfstk.o
 tsmear.o: tsmear.f tffs.o
-tsol.o: tsol.f initb1.o tffs.o tfloor.o tfstk.o
+tsol.o: tsol.f initb1.o temit.o tffs.o tfloor.o tfstk.o
 tsole.o: tsole.f initb1.o temit.o tffs.o tfstk.o
 tsolqu.o: tsolqu.f temit.o tffs.o tfloor.o tsolque.o
 tsolque.o: tsolque.f temit.o tffs.o tfloor.o tfstk.o
@@ -435,7 +435,6 @@ tsolvg.o: tsolvg.f
 tsolvm.o: tsolvm.f
 tspac.o: tspac.f tffs.o tfstk.o toplvl.o
 tspect.o: tspect.f tffs.o tfstk.o
-tspin.o: tspin.f
 tspini.o: tspini.f tffs.o tfstk.o
 tsteee.o: tsteee.f tbend.o temit.o tffs.o tfloor.o
 tsteer.o: tsteer.f inc/TENT.inc inc/TEXIT.inc tbend.o temit.o tffs.o tfloor.o

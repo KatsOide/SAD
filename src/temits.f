@@ -171,9 +171,11 @@ c        write(*,'(a,2i5,1p7g12.4)')'temits1-cod ',i,i1,cod
         call tmultr(rm,trans(:,7:12),6)
         call tmultr(rm,rxi,6)
         call tmov65(rm,trads(1,1,i))
-        call tinv6(trans,rm)
-        call tmultr(rm,ri,6)
-        call tfetwiss(rm,cod,tws(1,i),.true.)
+        tws(1:ntwissfun,i)=tfetwiss(matmul(ri,tinv6(trans(:,1:6))),
+     $       cod,.true.)
+c        call tinv6(trans,rm)
+c        call tmultr(rm,ri,6)
+c        call tfetwiss(rm,cod,tws(1,i),.true.)
         call tmulbs(beam,rxi,.false.)
         beams(1:10,i)=beam(1:10)
 c        write(*,'(a,i5,1p10g12.4)')'te ',i,beams(1:10,i)
@@ -1192,20 +1194,20 @@ c      enddo
       
       subroutine teintp1(ip,f,tws,tr1,h1,tw0,ndims)
       use tfstk, only:ktfenanq
-      use temw, only:etwiss2ri,ri
+      use temw, only:etwiss2ri,ri,tinv6
       use ffs, only:xyth
       use tffitcode
       implicit none
       integer*4 ip,ip1,ndims
       real*8 tws(ntwissfun,-ndims:ndims),tr1(5,5),h1(4),
-     $     rxi(6,6),rx(6,6),rt(6,6)
+     $     rxi(6,6),rt(6,6)
       real*8 f,twf(ntwissfun),tw0(ntwissfun),
      $     dnx,dny,dnz,cx,cy,cz,sx,sy,sz
       logical*4 normal
       ip1=ip+1
       twf=f*tws(:,ip1)+(1.d0-f)*tws(:,ip)
       twf(mfitdetr)=twf(mfitr1)*twf(mfitr4)-twf(mfitr2)*twf(mfitr3)
-      call etwiss2ri(twf,rxi,normal)
+      rxi=etwiss2ri(twf,normal)
 c      call etwiss2ri(tw0,ri,normal)
       dnx=twf(mfitnx)-tw0(mfitnx)
       dny=twf(mfitny)-tw0(mfitny)
@@ -1222,9 +1224,10 @@ c      call etwiss2ri(tw0,ri,normal)
       rt(4,:)=-sy*ri(3,:)+cy*ri(4,:)
       rt(5,:)= cz*ri(5,:)+sz*ri(6,:)
       rt(6,:)=-sz*ri(5,:)+cz*ri(6,:)
-      call tinv6(rxi,rx)
-      call tmultr(rt,rx,6)
-      call tmov65(rt,tr1)
+      call tmov65(matmul(tinv6(rxi),rt),tr1)
+c      call tinv6(rxi,rx)
+c      call tmultr(rt,tinv6(rxi),6)
+c      call tmov65(rt,tr1)
       h1=twf(mfitdx:mfitdpy)
       return
       end
@@ -1239,13 +1242,13 @@ c      call etwiss2ri(tw0,ri,normal)
      $     a11,a12,a22,a33,a34,a44,
      $     cosamux,sinamux,cosamuy,sinamuy,
      $     ax,bx,ay,by,amux,amuy
-      logical*4 stab
+      logical*4 stab,nanq
       call qmdiag(
      $     trans(1,1),trans(1,2),trans(1,3),trans(1,4),
      $     trans(2,1),trans(2,2),trans(2,3),trans(2,4),
      $     trans(3,1),trans(3,2),trans(3,3),trans(3,4),
      $     trans(4,1),trans(4,2),trans(4,3),trans(4,4),
-     $     r1,r2,r3,r4,amu,stab,lfno)
+     $     r1,r2,r3,r4,amu,stab,nanq,lfno)
 c     amu=sqrt(1.d0-r1*r4+r2*r3)
       r1a=r1/amu
       r2a=r2/amu

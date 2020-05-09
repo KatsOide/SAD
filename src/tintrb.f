@@ -22,7 +22,7 @@
      $     al,al1,pxi,pyi,s,pr,pzi,alx,ale,alz,hi,a,b,d,vol,
      $     bm,ptrans,extrans,eytrans,eztrans,tf,aez,aex0,aey0,
      $     aez0,aexz,aeyz,f1,f2,f3,bn,bmax,bmin,ci,pvol,vol1,
-     $     transa(6,6),transsp(6,6)
+     $     transsp(6,6)
       integer*4 ia(6,6)
       real*8 trans1(6,6),trans2(6,6)
 c     real*8  vmin/0.d0/
@@ -60,26 +60,32 @@ c      hi=p0*pr*sqrt(1.d0+1.d0/(p0*pr)**2)
 c      hi=sqrt(1.d0+(pr*p0)**2)
       trans1(5,6)=h0/hi**3*alx+s*alz
       if(wspac)then
-        call tmov(beam(22),bmi,21)
-        call tadd(bmi,beam,bmi,21)
+        bmi=beam(22:42)+beam(1:21)
+c        call tmov(beam(22),bmi,21)
+c        call tadd(bmi,beam,bmi,21)
         call tmulbs(bmi,trans1,.false.)
         call twspace(transsp,cod,al,bmi)
-        call tmov(trans1,trans2,36)
-        call tmultr(trans2,transsp,6)
-        call tinv6(trans1,transa)
-        call tmultr(trans2,transa,6)
-        call tmultr(trans,trans2,irad)
+c        call tmov(trans1,trans2,36)
+c        call tmultr(trans2,transsp,6)
+        trans(:,1:irad)=matmul(
+     $       matmul(tinv6(trans1),matmul(transsp,trans1)),
+     $       trans(:,1:irad))
+c        call tinv6(trans1,transa)
+c        call tmultr(trans2,transa,6)
+c        call tmultr(trans,trans2,irad)
         call tmulbs(beam,trans2,.false.)
       endif
       if(intra)then
-        call tmov(beam(22),bmi,21)
+        bmi=beam(22:42)+beam(1:21)
+c        call tmov(beam(22),bmi,21)
 c        call tmov(trans,transa,36)
 c      call tadd(transa,trans(1,7),transa,36)
 c        call tmulbs(bmi,transa,.false.)
-        call tadd(bmi,beam,bmi,21)
+c        call tadd(bmi,beam,bmi,21)
         if(caltouck)then
-          call tmov(diagr,transw,36)
-          call tmultr(transw,trans,6)
+          transw=matmul(trans(:,1:6),diagr)
+c          call tmov(diagr,transw,36)
+c          call tmultr(transw,trans,6)
         endif
         a=p0**2/(hi+1.d0)
         b=a/hi
@@ -110,7 +116,8 @@ c        call tmulbs(bmi,transa,.false.)
      $         +pzi*trans2(i,5))/pr
           trans2(i,6)=pr/pzi*trans2(i,6)
  3010   continue
-        call tmultr(trans1,trans2,6)
+        trans1=matmul(trans2,trans1)
+c        call tmultr(trans1,trans2,6)
         call tmulbs(bmi,trans1,.false.)
         xx(1,1)=bmi(ia(1,1))
         xx(2,1)=bmi(ia(3,1))
@@ -122,7 +129,8 @@ c        call tmulbs(bmi,transa,.false.)
         vol1=sqrt(max(1.d-80,eig(1)*eig(2)*eig(3)))
         vol=sqrt((4.d0*pi)**3)*vol1
         bm=sqrt(min(abs(eig(1)),abs(eig(2)),abs(eig(3))))
-        call tmov(xx,xxs,9)
+        xxs=xx
+c        call tmov(xx,xxs,9)
         xp(1,1)=bmi(ia(1,2))
         xp(1,2)=bmi(ia(1,4))
         xp(1,3)=bmi(ia(1,6))
@@ -156,8 +164,9 @@ c        call tmulbs(bmi,transa,.false.)
         pvol=sqrt(max(1.d-80,eig(1)*eig(2)*eig(3)))
         if(vol .ne. 0.d0 .and. caltouck)then
           if(ptrans .ne. 0.d0)then
-            call tmultr(transw,trans1,6)
-            call tinv6(transw,trans2)
+            trans2=tinv6(matmul(trans1,transw))
+c            call tmultr(transw,trans1,6)
+c            call tinv6(transw,trans2)
             extrans=(trans2(1,6)**2+trans2(2,6)**2)*ptrans**2
             eytrans=(trans2(3,6)**2+trans2(4,6)**2)*ptrans**2
             eztrans=(trans2(5,6)**2+trans2(6,6)**2)*ptrans**2
@@ -170,10 +179,10 @@ c        call tmulbs(bmi,transa,.false.)
                 toucke(i,ll)=toucke(i,ll)+touckf(aez/eztrans)*tf
  4010         continue
               do 4020 i=1,ntouckx
-                aex0=(tampl(i,1)**2)*(abs(emx)+abs(emy))
-                aey0=(tampl(i,2)**2)*(abs(emx)+abs(emy))
+                aex0=(tampl(i,1)**2)*(abs(eemx)+abs(eemy))
+                aey0=(tampl(i,2)**2)*(abs(eemx)+abs(eemy))
                 do 4030 j=1,ntouckz
-                  aez0=(tampl(j,3)**2)*abs(emz)
+                  aez0=(tampl(j,3)**2)*abs(eemz)
                   aexz=1.d0/(extrans/aex0+eztrans/aez0)
                   touckm(j,i,1)=touckm(j,i,1)+touckf(aexz)*tf
                   aeyz=1.d0/(eytrans/aey0+eztrans/aez0)
@@ -227,11 +236,12 @@ c     endif
         bmi(ia(4,4))=ci*pl(2,2)
         bmi(ia(6,4))=ci*pl(3,2)
         bmi(ia(6,6))=ci*pl(3,3)
-        call tinv6(trans1,trans2)
-        call tmulbs(bmi,trans2,.false.)
-        call tadd(beam,bmi,beam,21)
-        call tinv6(trans,transa)
-        call tmulbs(bmi,transa,.false.)
+c        call tinv6(trans1,trans2)
+        call tmulbs(bmi,tinv6(trans1),.false.)
+        beam(1:21)=bmi+beam(1:21)
+c        call tadd(beam,bmi,beam,21)
+c        call tinv6(trans,transa)
+        call tmulbs(bmi,tinv6(trans(:,1:6)),.false.)
       endif
       return
       end

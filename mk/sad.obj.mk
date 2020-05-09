@@ -9,9 +9,9 @@ OBJ_LIBSAD=$(OBJMOD) $(OBJ0) $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ4) $(OBJ5) $(OBJ6) \
 	$(OBJFUNC) \
 	$(OBJUTIL) $(OBJOSDEP)
 
-OBJMOD= tfstk.o	tfstrbuf.o	tfreadbuf.o	toplvl.o	tintrb.o \
-	tftwiss.o	tftake.o	tfsolvemember.o \
-	tfetok.o	tfbeamline.o	temit.o	tfloor.o
+OBJMOD= tfstk.o		tfstrbuf.o	tfreadbuf.o	toplvl.o	tintrb.o \
+	tftwiss.o	tftake.o	tfsolvemember.o	tfetok.o	tfbeamline.o\
+	temit.o		tfloor.o	 tffs.o
 
 OBJRC= 	tfefun1.o	tfsort.o	tfmodule.o	itfmaloc.o \
 	tfwrite.o	itfaloc.o	tfmemcheck.o	tfdot.o		tfematrix.o \
@@ -51,8 +51,7 @@ OBJ2=packpi.o    tfdbun.o    tracke.o    NewGRF.o \
      rdexpr.o    tsdrad.o \
      rdkwdl.o    lread.o \
      rdterm.o    UNITM2.o    lrflct.o    \
-     tfltra.o    UNITM4.o    lstchk.o    rslvin.o \
-     tserad.o       rvrsln.o \
+     tfltra.o    UNITM4.o    lstchk.o    rslvin.o rvrsln.o \
      ZEROM2.o	ZEROM4.o	ZEROV4.o \
      tfrej.o     setdfl.o    tsmear.o    actPlt.o
 
@@ -70,7 +69,7 @@ OBJ4=defglb.o    ppair.o \
      prelem.o    title.o     doline.o    prelm0.o \
      tcav.o      dolist.o    prexln.o \
      tcave.o     tltrm.o     twbuf.o     mdpmax.o    prkwdv.o \
-     metaer.o    prline.o    tchge.o     tluma.o     twelm.o     doprin.o \
+     metaer.o    prline.o    tchge.o     tluma.o     doprin.o \
      tmap.o      doread.o    mfdel.o     prnGlb.o  \
      tmast.o     dorvrs.o    mfdel1.o    prnflg.o   \
      twinil.o    dostop.o    mfdir.o     tconv.o     synradcl.o \
@@ -111,7 +110,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      teigen.o    temap.o     temat.o      temitf.o \
      temits.o    terror.o    tfaprt.o     tfattr.o   tfcalc.o     tfchgv.o \
      tfchro.o    tfcoup.o    tfdapert.o   tfdisp.o   tfemit.o \
-     tffamsetup.o tffile.o	tffs.o      tffscalc.o tffsfreefix.o \
+     tffamsetup.o tffile.o      tffscalc.o tffsfreefix.o \
      tffsmatch.o tfgeo.o     tfgetv.o     tfif.o     tfinit.o     \
      tfkwrd.o    tflag.o     tflogi.o     tfltr1.o   \
      tfmat.o     tfoptics.o  tfprint.o   \
