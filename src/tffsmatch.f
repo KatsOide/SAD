@@ -240,9 +240,6 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                   else
                     chgmod=.false.
                   endif
-c                  write(*,'(a,2l2,2i5,1p5g15.7)')'tffsmatch ',
-c     $                 fitflg,chgmod,nretry,flv%itmax,
-c     $                 aimprv,smallf,badcnv,alate,amedcv
                 endif
                 if(chgmod)then
                   r=r0
@@ -308,9 +305,7 @@ c                    enddo
      $             .and. dble(nvar*nfam*nlat) .lt. aloadmax
               npa=min(nvar,nparallel)
               chgini=(nstab .eq. 0) .or. nderiv
-c              chgini=.true.
               if(nderiv)then
-c                write(*,*)'tffsmatch-setupqu ',nqcol,nvar
                 call tffssetupqu(ifqu,ifqu0,nqumax,nqcol,nvar,lfno)
                 ipr=-1
                 if(npa .gt. 1)then
@@ -346,15 +341,12 @@ c                write(*,*)'tffsmatch-setupqu ',nqcol,nvar
      $                 ra1,rpa1,rstaba1,nstaba1,residuala1,
      $                 zcal1,wcal1,.false.,lfno,error)
                   nvevx(kc)%valvar=valvar0-dvkc
-c                  write(*,*)'tffsmatch-calc ',nqcol,nvar
                   call tfsetv(nvar)
                   call tffscalc(kdpa2,df2,iqcola2,lfpa2,
      $                 nqcola2,nqcol1a2,ibegin,
      $                 ra1,rpa1,rstaba1,nstaba1,residuala1,
      $                 zcal1,wcal1,.false.,lfno,error2)
                   nvevx(kc)%valvar=valvar0
-c                  write(*,*)'tffsmatch-calc1 ',nqcol,nvar
-c                  call tfmemcheckprint('ffsmatch-nderiv-2',.true.,irtc)
                   if(error .or. error2)then
                     ddf1(1:nqcol)=0.d0
                     ddf2(1:nqcol)=0.d0
@@ -366,16 +358,9 @@ c                  call tfmemcheckprint('ffsmatch-nderiv-2',.true.,irtc)
                   endif
                   rlist((kc-1)*nqcol+ifqu:kc*nqcol+ifqu-1)=
      $                 (ddf1(1:nqcol)-ddf2(1:nqcol))/2.d0/dvkc/wvar(kc)
-c                  call tfmemcheckprint('ffsmatch-nderiv-3',.true.,irtc)
-c                  do j=1,nqcol
-c                    rlist((kc-1)*nqcol+j+ifqu-1)=
-c     $                   (ddf1(j)-ddf2(j))/2.d0/dvkc/wvar(kc)
-c                  enddo
                 enddo
-c                write(*,*)'tffsmatch-nderiv-wait ',nqcol
                 call tffswait(ipr,npa,npr,iuta1,
      $               'tffsmatch-NumDerv',irtc)
-c                call tfmemcheckprint('ffsmatch-nderiv-4',.true.,irtc)
               else
                 call tffsqu(nqcol,nqcol1,nvar,nqumax,ifqu0,ifqu,
      $               free,nlat,nele,nfam,nfam1,nut,
@@ -389,7 +374,6 @@ c                call tfmemcheckprint('ffsmatch-nderiv-4',.true.,irtc)
                     kqu=(kc-1)*nqcol+j+ifqu-1
                     rlist(kqu)=rlist(kqu)*wiq(j)/wvar(kc)
                   enddo
-c                  write(*,'(a,1p10g12.4)')'tffsqu ',rlist(kqu:kqu+9)
                 enddo
                 if(nqcol .gt. nqcol1)then
                   ipr=-1
@@ -619,7 +603,6 @@ c            call tfmemcheckprint('ffsmatch',.true.,irtc)
           go to 9000
         endif
         nqumax=nqu
-c        write(*,*)'setupqu ',nqu,nqcol,nvar,nqumax,ifqu0
       endif
       return
  9000 call termes(lfno,'?Too many conditions*variables.',' ')
@@ -754,8 +737,6 @@ c      call tfmemcheckprint('vlimit-0',.true.,irtc)
         call loc_string(ifvvarn,svarn)
         call loc_string(ifvkey,skey)
       endif
-c      write(*,*)'vf-0 ',id,ld,k,x
-c      call tfmemcheckprint('varfun-0',.true.,irtc)
       isp=isp+1
       isp1=isp
       if(id .eq. 1)then
@@ -911,8 +892,6 @@ c     call tfdebugprint(kx,'varfun',1)
                   endif
                 else
                   iv=nvevx(ii)%ivvar
-c     write(*,*)'tffssqu ',iv,ival(kk),kk,kk1,
-c     $               ivarele(ii),k,ivcomp(ii),ii
                   if(iv .eq. nelvx(kk)%ival .and.
      $                 nvevx(ii)%ivarele .eq. kk .and.
      $                 (nvevx(ii)%ivcomp .eq. 0 .or.
@@ -992,8 +971,6 @@ c     $               ivarele(ii),k,ivcomp(ii),ii
                             rlist(kqu)=rlist(kqu)-s
                           endif
                         endif
-c                        write(*,'(a,1p3g15.7,3i5)')'tffsqu ',
-c     $                       posk,pos(lp),rlist(kqu),ltyp,iv
                       else
                         call tdgeo(s,rlist(kqu),
      $                       kf,lp,k,ltyp,iv,nut,nfam)
@@ -1254,8 +1231,6 @@ c        enddo
       nagain=0
 1     nj=0
       do i=1,nqcol
-c        write(*,*)'tfsolv ',i,nj,nvar,nqcol,fit(i)
-c        call tfmemcheckprint('solv-i',.true.,irtc)
         if(fit(i))then
           nj=nj+1
 c          do j=1,nvar
@@ -1268,7 +1243,6 @@ c            call tfmemcheckprint('solv-i-2',.true.,irtc)
         endif
       enddo
 c      call tfmemcheckprint('solv-2',.true.,irtc)
-c      write(*,'(1p4g15.7)')((qu0(i,j),j=1,nvar),i=1,nj)
       call tsolva(qu0,b,dval,nj,nvar,nqcol,eps)
 c      call tfmemcheckprint('solv-3',.true.,irtc)
       again=.false.
@@ -1314,7 +1288,6 @@ c      call tfmemcheckprint('solv-4',.true.,irtc)
       if(nparallel .gt. 1)then
         irtc=1
         itmmapp=ktfallocshared(n)
-c        write(*,*)'mmapp ',itmmapp,n
       else
         itmmapp=ktaloc(n)
       endif
@@ -1329,9 +1302,6 @@ c        write(*,*)'mmapp ',itmmapp,n
       integer*8 i
       if(nparallel .gt. 1)then
         call tfreeshared(i)
-c        if(mapfree(rlist(i)) .ne. 0)then
-c          write(*,*)'???tmunmapp-error in unmap.'
-c        endif
       else
         call tfree(i)
       endif

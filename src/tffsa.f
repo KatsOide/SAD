@@ -180,9 +180,6 @@ c
       endif
       call csrst(lfn1)
  10   continue
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-10 ',lfni,ipoint,lrecl,ios
-c      endif
       if(iffserr .ne. 0)then
         if(lfnb .gt. 1)then
           ios=1
@@ -208,14 +205,7 @@ c      endif
       elseif(ios .lt. 0)then
         ios=0
       endif
-c      if(lfni .eq. 5)then
-c        write(*,*)'tffsa-getwrd-0 ',lfni,ipoint,lrecl
-c      endif
       call getwrd(word)
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-getwrd ',lfni,ios,ipoint,linep,lrecl,'''',
-c     $       word(1:lenw(word)),''''
-c      endif
       if(ios .ne. 0)then
         go to 10
       endif
@@ -225,9 +215,7 @@ c      endif
         go to 2
       endif
       ios=0
-c      write(*,*)'tffsa-tfprint ',word(1:lenw(word))
       call tfprint(word,lfno,.false.,itt,nextt,exist)
-c      write(*,*)'tffsa-tfprint-end ',exist,ios,word(1:lenw(word))
       if(exist .or. ios .ne. 0)then
         go to 10
       endif
@@ -896,10 +884,6 @@ c     1         title,case,exist)
         else
           word=tfgetstr(kx,nc)
           exist=nc .eq. 0
-c          if(exist)then
-c            call cssetp(ipoint+1)
-c          endif
-c          write(*,*)'DRAW ',exist,nc,ios,' ',word(1:nc)
         endif
         go to 30
       elseif(word .eq. 'GEO')then
@@ -966,7 +950,6 @@ c     $         ilist(1,iwakepold)*8
          go to 10
 C   19/12/90 302031849  MEMBER NAME  CORRECT  *.FORT     M  E2FORT
       elseif(abbrev(word,'STE_ERING','_'))then
-ckiku   call tfstr(word,latt,ist,nstr)
         call mcmess(lfno)
         call mcstr(word,latt,
      $       mult,ilist(1,ifmast),itstr,itestr,nster,
@@ -1257,7 +1240,6 @@ c        rlist(itlookup('DP',ivtype))=dpmax
         go to 30
       endif
  7000 call tfgetv(word,lfno,nextt,exist)
-c      write(*,*)'tffsa-getv ',exist,nextt,itt,word(1:lenw(word))
       if(.not. exist)then
         if(itt .ge. 0)then
           call cssetp(nextt)
@@ -1289,14 +1271,9 @@ c      write(*,*)'tffsa-getv ',exist,nextt,itt,word(1:lenw(word))
         go to 10
       endif
  1000 continue
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-1000 ',lfni,ipoint,lrecl,ios
-c      endif
       if(busy)then
         call termes(lfno,'?Recursive CAL or GO',' ')
         go to 2
-c        irtcffs=itfmessage(9,'FFS::busy','""')
-c        go to 8900
       endif
       busy=.true.
       call tfsetparam
@@ -1334,29 +1311,16 @@ c        go to 8900
           endif
         enddo
       endif
-c      write(*,*)'tffsa-setupcoup-0 ',flv%nvar
       call tffssetupcouple(lfno)
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-setupcoup-1 ',lfni,ipoint,lrecl,ios
-c      endif
       if(calexp)then
         call tffsadjustvar
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-adjvar ',lfni,ipoint,lrecl,ios
-c      endif
       else
         call termes(lfno,
      $         'Info-Element values are not expanded.',' ')
       endif
       if(fitflg)then
         nvevx(1:flv%nvar)%valvar2=nvevx(1:flv%nvar)%valvar
-c        rlist(ifvalvar+nve:ifvalvar+nve+flv%nvar-1)=
-c     $       rlist(ifvalvar:ifvalvar+flv%nvar-1)
-c        call tmov(rlist(ifvalvar),rlist(ifvalvar+nve),flv%nvar)
       endif
-c      if(lfni .gt. 100)then
-c        write(*,*)'tffsa-inicond-0 ',lfni,ipoint,lrecl,ios
-c      endif
       if(tffsinitialcond(lfno,err))then
         inicond=.true.
         nfam=nfr
@@ -1646,7 +1610,6 @@ c nlocal = mcommon in TFFSLOCAL.inc
         isave=klist(iffssave+1)
         do while(isave .gt. 0)
           ilattp=klist(iffssave)
-c          write(*,*)'tffssave -2: ',isave,ilattp
           call tmov(rlist(iffssave+2),ffv,nxh)
           call tfree(iffssave)
           iffssave=isave

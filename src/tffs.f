@@ -1473,11 +1473,6 @@ c     begin initialize for preventing compiler warning
             tfkeyv=kxavaloc(-1,klr%nl,kld)
             kld%rbody(1:klr%nl)=klr%rbody(1:klr%nl)
      $           /rlist(iferrk+(kl-1)*2)
-c            write(*,*)'tfkeyv ',i,l,ia,l,kl,ilist(-i,ifival),
-c     $           klr%nl,rlist(iferrk+(kl-1)*2)
-c            call tfdebugprint(dlist(ia),'tfkeyv-s',1)
-c            call tfdebugprint(tfkeyv,'tfkeyv-d',2)
-c          tfkeyv=rlist(ia)/rlist(iferrk+(kl-1)*2)
           else
             tfkeyv=dlist(ia)
           endif
