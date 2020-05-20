@@ -15,7 +15,7 @@ SetAttributes[{Graphics,AspectRatio,PlotRange,
   TextCases,TextPosition,Prolog,Epilog,Vertical,Alignment,Legend,
   Scale,Weight,FrameClick,InfoBind,TickFont,RemoveOverlap,FrameColor,
   FontScale,TickFontScale,FrameFontScale,LegendFontScale,TitleFontScale,
-  Major,Minor,Both,Ticks},Constant];
+  Major,Minor,Both,Ticks,BelowFrame},Constant];
 
 Graphics$Options=AspectRatio|FrameLabel|PlotRange|GridLines|Alignment|DataRange|
   PlotRegion|PlotLabel|FrameTicks|TickSize|TickFont|Tags|Background|Frame|FrameClick|

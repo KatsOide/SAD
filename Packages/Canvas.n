@@ -1710,7 +1710,8 @@ CanvasGraphics=Class[{},
       ];
     Primitive[Point[{},___]]:=Null];
 
-  With[{def={PlotColor->Null,FillColor->Null,MeshStyle->Null,Tags->False}},
+  With[{def={PlotColor->Null,FillColor->Null,MeshStyle->Null,Tags->False,
+    BelowFrame->False}},
     Primitive[Rectangle[min_,max_,
       opt:((_Rule|_RuleDelayed)...)]]:=(
         CanvasWidget[Create$Rectangle]={
@@ -1718,7 +1719,10 @@ CanvasGraphics=Class[{},
           CoordLimited[max],
           MapThread[If[StringQ[#],#2->#,Null[]]&,
             {{FillColor,MeshStyle,PlotColor,Tags}/.Override[opt,def],
-              {Fill,Stipple,OutLine,Tag}}]})];
+              {Fill,Stipple,OutLine,Tag}}]};
+        If[BelowFrame/.{opt}/.def,
+          The$Canvas[Lower]={CanvasLastID,StartID}]
+        )];
 
   With[{def={Position->Default}},
     Primitive[Rectangle[min0_,max0_,g__,opt:((_Rule|_RuleDelayed)..)]]:=
@@ -1761,17 +1765,17 @@ CanvasGraphics=Class[{},
   With[{def={Plot->False, PointSize->1, PointSymbol->"1O",
     PointColor->"forest green", PointBorderColor->Automatic, PointTags->Null,
     PlotJoined->True, Thickness->1, Dashing->{1},
-    PlotColor->"black", LineTags->Null,
+    PlotColor->"black", LineTags->Null,BelowFrame->False,
     FillColor->Null, Tags->False}},
 
     Primitive[Polygon[body_, opt:((_Rule|_RuleDelayed)...)]]:=Module[
       {pl, size, sym, ptc, pbc, ptag,
-	pj, thick, dash, pc, ltag, fc, tag, cmd},
+	pj, thick, dash, pc, ltag, fc, tag, cmd, bf},
 
-      {pl, size, sym, ptc, pbc, ptag, pj, thick, dash, pc, ltag, fc, tag}=
+      {pl, size, sym, ptc, pbc, ptag, pj, thick, dash, pc, ltag, fc, tag, bf}=
 	{Plot, PointSize, PointSymbol, PointColor, PointBorderColor, PointTags,
 	  PlotJoined, Thickness, Dashing, PlotColor, LineTags,
-	  FillColor, Tags}/.Override[{opt}/.{
+	  FillColor, Tags, BelowFrame}/.Override[{opt}/.{
 	    Literal[The$Canvas]->The$Canvas,
 	    Literal[Canvas$Frame]->Canvas$Frame}, def];
 
@@ -1789,7 +1793,10 @@ CanvasGraphics=Class[{},
 	CanvasWidget[Create$Polygon]={
 	  Flatten[Map[CoordLimited[#]&, body]], Fill->fc,
 	  If[StringQ[tag],
-	    TagFrame[tag]=Canvas$Frame;Tags->tag, Null[]]}];
+	    TagFrame[tag]=Canvas$Frame;Tags->tag, Null[]]};
+        If[bf,
+          The$Canvas[Lower]={CanvasLastID,StartID}]
+        ];
 
       (* BorderLine *)
       If[pj===True,
