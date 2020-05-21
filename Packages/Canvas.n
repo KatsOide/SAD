@@ -68,6 +68,8 @@ CanvasGraphics=Class[{},
     Canvas$Origin=CanvasGraphics@$DefaultWindowOrigin,
     LegendList,
     LegendPos,
+    LegendBG=Null,
+    LegendRaise=False,
     WindowList,
     TickListY={},
     Canvas$PlotLabel,
@@ -358,6 +360,8 @@ CanvasGraphics=Class[{},
     Alignment->Automatic,
     TickSize->Automatic,
     TickFont->Default,
+    Literal[LegendBG]->Null,
+    Literal[LegendRaise]->False,
     Literal[FontScale]->1,
     Literal[TickFontScale]->1,
     Literal[FrameFontScale]->1,
@@ -375,11 +379,13 @@ CanvasGraphics=Class[{},
         pr,id,l1,align,up,ts,frid,fclk,dr,plr,sca,gr,ib,tkf,frt,frt1,rmo,
         op=Override[opt,def],wfr,ftc,tkc},
       {tag,fl,pl,fr,wc,align,pr,fclk,dr,ft,frt,ftc,tkc,ts,ib,tkf,ful,rmo,
+        LegendBG,LegendRaise,
         FontScale,TickFontScale,FrameFontScale,LegendFontScale,TitleFontScale}=
         {Tags,FrameLabel,PlotLabel,Frame,Background,Alignment,
           PlotRegion,FrameClick,DataRange,FrameTicks,FrameThickness,
           FrameColor,TickColor,TickSize,
           InfoBind,TickFont,FrameUnitLabel,RemoveOverlap,
+          Literal[LegendBG],Literal[LegendRaise],
           Literal[FontScale],Literal[TickFontScale],
           Literal[FrameFontScale],Literal[LegendFontScale],
           Literal[TitleFontScale]}/.op;
@@ -1883,7 +1889,8 @@ CanvasGraphics=Class[{},
 
   With[{txdef={PlotColor->"black",TextFont->"",TextSize->1}},
     Canvas$Legend[n_, r_] := Module[
-      {pc,pl,size,sym,ptc,dash,thick,pj,pbc,pbc1,leg,cmd,x0,dx,dy,y,d1=5,d2=-1,d3=1,legtag,legtagfr,bdf,
+      {pc,pl,size,sym,ptc,dash,thick,pj,pbc,pbc1,leg,cmd,x0,dx,dy,y,
+        d1=5,d2=-1,d3=1,legtag,legtagfr,bdf,begin=CanvasLastID,
         x1,x2,y1,y2,ls="legend"//n,lsfr,w,h,rb,tx,txfont,txsize,txcol,zr,legr,p,
         l=LegendList[[n]],wy=(-Subtract@@WindowList[[n,2]])*DPI},
       lsfr=ls//"fr";
@@ -1939,12 +1946,14 @@ CanvasGraphics=Class[{},
         CanvasWidget[Move] = {ls, {dx,dy}};
         zr+={dx,dy,dx,dy}];
       {x1,y1,x2,y2}=zr;
-      CanvasWidget[Create$Rectangle]={x1-d1,y1-d3,x2+d1,y2+d2,legtagfr,Outline->"gray40"};
+      CanvasWidget[Create$Rectangle]={x1-d1,y1-d3,x2+d1,y2+d2,legtagfr,
+        Outline->"gray40",If[LegendBG<=>Null,Fill->LegendBG,Null[],Null[]]};
       CanvasWidget[Create$Line]={x1-d1+1,y2+d2+1,x2+d1+1,y2+d2+1,x2+d1+1,y1-d3+1,
         Fill->"gray60",legtagfr};
-      If[FirstBG<=>"",
-        With[{lsfr,FirstBG},
-          After[0,CanvasWidget[Raise]={lsfr,FirstBG}]]];
+      If[FirstBG<=>"",begin=FirstBG];
+!      With[{lsfr,begin},
+!        After[0,CanvasWidget[Raise]={lsfr,begin}]];
+      CanvasWidget[Raise]={lsfr,begin};
       If[(p=Position[Legends,legr,1,1])<=>{},
         Legends[[p[[1,1]]]]=legr,
         AppendTo[Legends,legr]];
