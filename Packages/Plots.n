@@ -468,7 +468,8 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
             PlotColor->cf[l1[[i,j]]],BelowFrame->bf],
           {i,nx},{j,ny}]];
       gs=CP$ColorScale[cs,cf,cfs,pr,ar,ncs,opt];
-      op=Override[AspectRatio->ar,PlotRange->prg,DataRange->Thread[{mesh[{1,1}],mesh[{nx,ny}+1]}],opt,def]
+      op=Override[AspectRatio->ar,PlotRange->prg,
+        DataRange->Thread[{mesh[{1,1}],mesh[{nx,ny}+1]}],opt,def]
       ];
     g=Graphics[Flatten[{Prolog/.op,g,gs,Epilog/.op}],op];
     If[df===Default,Show[g,op]];
