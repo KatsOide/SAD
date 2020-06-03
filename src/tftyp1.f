@@ -89,11 +89,11 @@
      $         //autos(v)//unit(1:lene(unit))
           call trim(vout)
           if(v .ne. 0.d0 .or. ioff .eq. ival(kx))then
-            if(abs(v) .gt. 1.d10 .and. index(vout,'.') .le. 0
-     $           .and. v .ne. dinfinity)then
-              lv=lene(vout)
-              vout(lv+1:lv+1)='.'
-            endif
+c            if(abs(v) .gt. 1.d10 .and. index(vout,'.') .le. 0
+c     $           .and. v .ne. dinfinity)then
+c              lv=lene(vout)
+c              vout(lv+1:lv+1)='.'
+c            endif
             if(start)then
               call twbuf(pname(kp)(1:max(8,lpname(kp))),
      $             '=('//vout,lfno,7,lpw-2,7,1)

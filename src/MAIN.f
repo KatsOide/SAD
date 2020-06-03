@@ -2,7 +2,7 @@
         character*19, parameter ::
 c                     /'1234567890123456789'/
      $     versionid  ='1.1.8.2k6          ',
-     $     versiondate='5/31/2019 18:00:00 '
+     $     versiondate='6/20/2019 18:00:00 '
 
         character*25 builtdate
         character*30 startdat
