@@ -4381,7 +4381,7 @@ OrbitAtEntrance         physical c.o.d. at the entrance of the ring.\n\
 OneTurnTransferMatrix   symplectic part of the one-turn transfer matrix.\n\
 OneTurnDampingMatrix    deviation of transfer matrix due to radiation.\n\
 NormalCoordinates       conversion matrix from physical to normal coords.\n\
-OneTurnExcitation       excitation matrix by radiation.\n\
+OneTurnExcitation       excitation matrix by radiation and intrabeam scattering (with INTRA).\n\
 EquilibriumBeamMatrix   equilibrium beam matrix.\n\
 ExtendedTwissParameters list of rules giving the extended Twiss parameters at the entrance of the ring.\t\n\n\
 If Orbit->True or Matrix->True, the following is added:\t\n\n\

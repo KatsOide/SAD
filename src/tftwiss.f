@@ -108,6 +108,7 @@
           return
         endif
         kx%k=ktflist+kax
+      elseif(keyword .eq. 'FUNCTIONS')then
       else
         do i=1,nkey
           if(keyword .eq. nlist(i))then

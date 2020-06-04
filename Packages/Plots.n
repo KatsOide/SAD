@@ -10,7 +10,7 @@ SetAttributes[{Contours,MeshRange,ColorFunction,ColorFunctionScaling,
   MaxBend,PlotPoints,PlotDivision,FunctionLabel,ResultLabel,RaiseFit,
   Signal,GoodnessOfFit,ChiSquare,ConfidenceInterval,ColumnTags,MeshStyle,
   PlotStyle,Columns,ColumnOffset,Bins,BinRange,ColumnLabel,Mesh,MeshColor,
-  FitParameters,PlotNull},
+  FitParameters,PlotNull,BelowFrame},
   Constant];
 
 BeginPackage[Plots`]
@@ -343,6 +343,7 @@ CP$ColorScale[cs_,cf_,cfs_,pr_,ar_,ncs_,opt___]:=
         FrameTicks->{None,None,None,True},
         FrameLabel->{"",""},
         FrameColor->"white",
+        BelowFrame->False,
         TickSize->-0.1,
         MeshRange->{Default,pr},opt],Position->Right[]]];
 
@@ -374,14 +375,14 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
   Smoothing->0,
   DisplayFunction->Default,
   AspectRatio->1,ContourColorFunction->Automatic,
-  Contours->10,Prolog->{},Epilog->{}},
+  Contours->10,Prolog->{},Epilog->{},BelowFrame->True},
   ncs=16},
 
   ListContourPlot[l0_,opt___]:=Module[{
     gr,op,gs,prg,l=l0,
-    {pr,mr,lc,cf,cfs,cs,df,nc,ar,sm}={PlotRange,MeshRange,ContourColorFunction,
+    {pr,mr,lc,cf,cfs,cs,df,nc,ar,sm,bf}={PlotRange,MeshRange,ContourColorFunction,
       ColorFunction,ColorFunctionScaling,ColorScale,
-      DisplayFunction,Contours,AspectRatio,Smoothing}/.{opt}/.def},
+      DisplayFunction,Contours,AspectRatio,Smoothing,BelowFrame}/.{opt}/.def},
     Do[l=LDP$Smooth[l],{sm}];
     Block[{nx,ny,mesh},
       {nx,ny}=Dimensions[l];
@@ -409,7 +410,7 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
       gs=CP$ColorScale[cs,cf,cfs,pr,ar,ncs,opt];
       op=Override[AspectRatio->ar,PlotRange->prg,
         DataRange->Thread[{mesh[{1,1}],mesh[{nx,ny}]}],opt,def];
-      gr=Graphics[Flatten[{Prolog/.op,CP$FindContour[l,pr,nc,cf,cfs,lc],gs,Epilog/.op}],op];
+      gr=Graphics[Flatten[{Prolog/.op,CP$FindContour[l,pr,nc,cf,cfs,lc,bf],gs,Epilog/.op}],op];
       ];
     If[df===Default,Show[gr,op]];
     gr]];
@@ -418,17 +419,17 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
 With[{def={PlotRange->Automatic,MeshRange->Default,
   ColorFunction->Automatic,DisplayFunction->Default,
   ColorFunctionScaling->True,
-  Smoothing->1,
+  Smoothing->1,BelowFrame->True,
   ColorScale->True,
   AspectRatio->1,Mesh->False,MeshColor->Automatic,Prolog->{},Epilog->{}},
   ncs=16},
 
   ListDensityPlot[l0_,opt___]:=Module[{l=l0,
     gr,op,l1,g,gs,prg,
-    {pr,mr,cf,cfs,df,ar,ms,mc,cs,sm}={PlotRange,MeshRange,
+    {pr,mr,cf,cfs,df,ar,ms,mc,cs,sm,bf}={PlotRange,MeshRange,
       ColorFunction,ColorFunctionScaling,
       DisplayFunction,AspectRatio,Mesh,MeshColor,
-      ColorScale,Smoothing}/.opt/.def},
+      ColorScale,Smoothing,BelowFrame}/.opt/.def},
     Do[l=LDP$Smooth[l],{sm}];
     Block[{nx,ny,mesh},
       {nx,ny}=Dimensions[l];
@@ -460,20 +461,21 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
       g=If[ms===True,
         Table[
           Rectangle[mesh[{i,j}],mesh[{i+1,j+1}],FillColor->cf[l1[[i,j]]],
-            PlotColor->mc[l1[[i,j]]]],
+            PlotColor->mc[l1[[i,j]]],BelowFrame->bf],
           {i,nx},{j,ny}],
         Table[
           Rectangle[mesh[{i,j}],mesh[{i+1,j+1}],FillColor->cf[l1[[i,j]]],
-            PlotColor->cf[l1[[i,j]]]],
+            PlotColor->cf[l1[[i,j]]],BelowFrame->bf],
           {i,nx},{j,ny}]];
       gs=CP$ColorScale[cs,cf,cfs,pr,ar,ncs,opt];
-      op=Override[AspectRatio->ar,PlotRange->prg,DataRange->Thread[{mesh[{1,1}],mesh[{nx,ny}+1]}],opt,def]
+      op=Override[AspectRatio->ar,PlotRange->prg,
+        DataRange->Thread[{mesh[{1,1}],mesh[{nx,ny}+1]}],opt,def]
       ];
     g=Graphics[Flatten[{Prolog/.op,g,gs,Epilog/.op}],op];
     If[df===Default,Show[g,op]];
     g]];
 
-CP$FindContour[l_,pr_,n_,cf_,cfs_,lc_]:=Module[
+CP$FindContour[l_,pr_,n_,cf_,cfs_,lc_,bf_]:=Module[
   {l1f,i,j,k,dl,min,max,g,ml,gp,gl,b,
     i1,j1,f0,f1,f2,f3,
     l1=Restrict[(l-pr[[1]])/(pr[[2]]-pr[[1]])*n+0.5,0.5,n+0.5]},
@@ -520,9 +522,12 @@ CP$FindContour[l_,pr_,n_,cf_,cfs_,lc_]:=Module[
     {gp,gl}=CP$GetLine[l1,n,cf];
     g=Flatten[{
       If[cf<=>Null,
-        {Rectangle[mesh[{1,1}],mesh[{nx,ny}],PlotColor->"",FillColor->cf[0]],
+        {Rectangle[mesh[{1,1}],mesh[{nx,ny}],PlotColor->"",FillColor->cf[0],
+          BelowFrame->bf],
           Polygon[Thread[mesh[Thread[#2]]],
-            PlotColor->"",FillColor->If[cfs,cf[#/n],cf[#/n*(pr[[2]]-pr[[1]])+pr[[1]]]]]&@@[gp,{1}]},
+            BelowFrame->bf,
+            PlotColor->"",
+            FillColor->If[cfs,cf[#/n],cf[#/n*(pr[[2]]-pr[[1]])+pr[[1]]]]]&@@[gp,{1}]},
         Null[]],
       If[lc<=>Null,
         With[{c=lc[#2/n]},

@@ -105,7 +105,7 @@ c      endif
       type (sad_dlist), pointer :: klv
       type (sad_strbuf), pointer :: strb
       integer*8 lp
-      integer*4 ioff,kx,l,kp,lt,lfno,lv,lenw,lpw,irtc,nc,j,j1
+      integer*4 ioff,kx,l,kp,lt,lfno,lenw,lpw,irtc,nc,j,j1
       real*8 v,coeff
       character*32 autos
       character*132 vout
@@ -184,11 +184,11 @@ c      endif
           vout=kw(1:lenw(kw))//' ='//autos(v)
           call trim(vout)
           if(v .ne. 0.d0 .or. ioff .eq. nelvx(kx)%ival)then
-            if(abs(v) .gt. 1.d10 .and. index(vout,'.') .le. 0
-     $           .and. v .ne. dinfinity)then
-              lv=len_trim(vout)
-              vout(lv+1:lv+1)='.'
-            endif
+c            if(abs(v) .gt. 1.d10 .and. index(vout,'.') .le. 0
+c     $           .and. v .ne. dinfinity)then
+c              lv=len_trim(vout)
+c              vout(lv+1:lv+1)='.'
+c            endif
             if(start)then
               call twbuf(pname(kp)(1:max(8,lpname(kp)))//
      $             '=('//vout,unit(:len_trim(unit)),lfno,7,lpw-2,7,1)

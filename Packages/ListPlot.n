@@ -13,14 +13,15 @@ SetAttributes[{Graphics,AspectRatio,PlotRange,
   TextSize,TextRotate,TextAlign,Scaled,GridLines,WindowScaled,CanvasScaled,
   RectScaled,AboveTags,BelowTags,Right,Left,Above,Below,
   TextCases,TextPosition,Prolog,Epilog,Vertical,Alignment,Legend,
+  LegendRaise,LegendBG,
   Scale,Weight,FrameClick,InfoBind,TickFont,RemoveOverlap,FrameColor,
   FontScale,TickFontScale,FrameFontScale,LegendFontScale,TitleFontScale,
-  Major,Minor,Both,Ticks},Constant];
+  Major,Minor,Both,Ticks,BelowFrame},Constant];
 
 Graphics$Options=AspectRatio|FrameLabel|PlotRange|GridLines|Alignment|DataRange|
   PlotRegion|PlotLabel|FrameTicks|TickSize|TickFont|Tags|Background|Frame|FrameClick|
     InfoBind|FrameUnitLabel|FontScale|TickFontScale|FrameFontScale|LegendFontScale|
-      TitleFontScale|FrameColor|TickColor;
+      TitleFontScale|FrameColor|TickColor|LegendBG|LegendRaise|BelowFrame;
 
 With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
   AspectRatio->Automatic,PlotJoined->False,StepRatio->1,
@@ -33,6 +34,7 @@ With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
   FrameTicks->{True,True,Ticks,Ticks},Initialize->True,
   FrameLabel->{"","","",""},FrameUnitLabel->{},FrameColor->"black",
   TickColor->Null,
+  LegendRaise->False,LegendBG->Null,BelowFrame->False,
   FontScale->1,TickFontScale->1,FrameFontScale->1,LegendFontScale->1,
   TitleFontScale->1,
   DisplayFunction:>$DisplayFunction,RemoveOverlap->"",
