@@ -93,8 +93,8 @@ c         endif
          z(i) =z(i)+dpzi *al1-dv(i)*al
          px1=     a22*pxi+a24*pyi
          py1=    -a24*pxi+a22*pyi
-         bsi(i)=bz
          if(enarad)then
+           bsi(i)=bz
            if(rfluct)then
              if(photons)then
                call tsetphotongeo(al,0.d0,0.d0,.true.)
@@ -132,7 +132,7 @@ c               write(*,'(a,1p12g10.2)')'drift_sol ',pp%geo1(:,:)
      $     sinphi,ak0x,ak0y,b,phix,phiy,phiz,
      $     dphizsq,dpz0,pz0,plx,ply,plz,ptx,pty,ptz,
      $     pbx,pby,pbz,phi0,dphi,dcosphi,pl,dpl,alb,
-     $     xsinphi,r,bpr
+     $     xsinphi,r,bpr,bsi0
       logical*4 enarad
       data ndiag/15/
       if(ak0x .eq. 0.d0 .and. ak0y .eq. 0.d0)then
@@ -159,8 +159,7 @@ c        b=hypot(hypot(ak0x,ak0y),bz*al)
         phiz=bz*al/b
         dphizsq=phix**2+phiy**2
         do i=1,np
-c          pr=(1.d0+g(i))**2
-          bsi(i)=bsi(i)+bz+ak0x*y(i)+ak0y*x(i)
+          bsi0=bz+ak0x*y(i)+ak0y*x(i)
           pr=(1.d0+g(i))
           alb=al*pr/b
           bzp=bz/pr
@@ -218,8 +217,8 @@ c            xsinphi=xsin(phi)
      $         +dpz0*sinphi+pbz*dcosphi)*alb-dv(i)*al
           px1=px0-ptx*dcosphi+pbx*sinphi
           py1=py0-pty*dcosphi+pby*sinphi
-          bsi(i)=bsi(i)-ak0x*y(i)-ak0y*x(i)
           if(enarad)then
+            bsi(i)=bsi(i)+bsi0-ak0x*y(i)-ak0y*x(i)
             if(rfluct)then
               if(photons)then
                 call tsetphotongeo(al,0.d0,0.d0,.true.)
