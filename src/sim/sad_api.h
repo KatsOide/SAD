@@ -91,7 +91,7 @@ extern integer4 itfdownlevel_(void);
 extern logical8 tfruleqk_(integer8*);
 extern logical4 tfsamesymbolq_(integer4*, integer4*);
 extern logical4 tfsamesymbolqk_(integer8*, integer8*);
-extern integer4 itopenbuf_(integer4*);
+extern integer4 itopenbuf_(integer4*, integer4*);
 extern integer4 itfsyserr_(integer4*);
 extern integer8 ktfcopy_(integer8*);
 extern integer8 kfromr_(real8*);

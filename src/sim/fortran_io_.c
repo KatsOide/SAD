@@ -25,7 +25,7 @@ extern integer4 open_write_(const_character, integer4*, ftnlen);
 extern integer4 open_append_(const_character, integer4*, ftnlen);
 
 /* SAD open buffer API */
-integer4 itopenbuf_(integer4 *irtc) {
+integer4 itopenbuf_(integer4 *mode, integer4 *irtc) {
   integer4 nc, in;
   integer4 argv[2] = {2, 0};
   char *template, template_buffer[32];
@@ -44,8 +44,10 @@ integer4 itopenbuf_(integer4 *irtc) {
   type = TEMP_TYPE_TTY;
 #endif
 
+  fprintf(stderr,"itopenbuf %d",type);
   switch(type) {
   case TEMP_TYPE_REGULAR:
+    fprintf(stderr,"REGULAR");
     fd = mkstemp(template);
     if(fd < 0) {
       *irtc = itfmessage(999, "System::error",
@@ -56,6 +58,7 @@ integer4 itopenbuf_(integer4 *irtc) {
     break;
 
   case TEMP_TYPE_SPECIAL:
+    fprintf(stderr,"SPECIAL");
     template[nc - 5] = '\0';
     strcat(template, "/fifo");
     template[nc - 5] = '\0';
@@ -78,6 +81,7 @@ integer4 itopenbuf_(integer4 *irtc) {
     break;
 
   case TEMP_TYPE_TTY:
+    fprintf(stderr,"TTY");
     dev_null = open("/dev/null", O_RDWR);
     if(dev_null == -1) {
       *irtc = itfmessage(999, "System::error",
@@ -148,6 +152,7 @@ integer4 itopenbuf_(integer4 *irtc) {
   fprintf(stderr, "itopenbuf(unit=%d, fd=%d, temp=\"%s\")\n", in, getfd_(&in), template);
 #endif
 
+  argv[0]=*mode;
   trbinit(in, &argv[0]);
 
   *irtc = 0;
@@ -157,7 +162,7 @@ integer4 itopenbuf_(integer4 *irtc) {
 /* SAD itfopen* API family */
 integer4 itfopenread_(integer8 *k, logical4 *disp,
 		      integer4 *irtc) {
-  integer8 ka
+  integer8 ka;
   integer4 nc, in;
   integer4 argv[2] = {2, 0};
   char *expanded, *quote = NULL;

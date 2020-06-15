@@ -1362,7 +1362,8 @@ static int Execve(integer4 *isp1, integer8 *kx,
   close_std = False;
   isp0 = isp;
   ispopt = itfgetoptionstk(*isp1, options);
-  if(ispopt > 0) {
+  /*  fprintf(stderr,"Execve %d %d %g\n",ispopt,isp0,rtastk(isp0 + 1));*/
+  if(ispopt <= isp0) {
     if(ktfrealq(ktastk(isp0 + 1))){
       force_close_on_exec = (rtastk(isp0 + 1) != 0.0);
     }
@@ -1371,19 +1372,19 @@ static int Execve(integer4 *isp1, integer8 *kx,
     else {
       isp = isp0;
       *irtc = itfmessage(9, "General::wrongtype",
-			 "\"ForceCloseOnExec -> True of False\"");
+			 "\"ForceCloseOnExec -> True or False\"");
       return -1;
     };
 
     if(ktfrealq(ktastk(isp0 + 2))){
       close_std = (rtastk(isp0 + 2) != 0.0);
     }
-    else if(ktastk(isp0 + 1) == ktfref){
+    else if(ktastk(isp0 + 2) == ktfref){
     }
     else {
       isp = isp0;
       *irtc = itfmessage(9, "General::wrongtype",
-			 "\"ForceCloseOnExec -> True of False\"");
+			 "\"CloseStd -> True of False\"");
       return -1;
     }
 
@@ -1414,20 +1415,20 @@ static int Execve(integer4 *isp1, integer8 *kx,
     return -1;
   }
 
-  ia1 = ktfaddr(ktastk(*isp1 + 1));
+  ia1 = (ktamask & ktastk(*isp1 + 1));
 #if SAD_REQUIRE_STRING_TERMINATION
   jlist(ilist(1, ia1) + 1, ia1 + 1) = '\0';
 #endif
 
-  ia2 = ktfaddr(ktastk(*isp1 + 2));
-  if(itastk(2, ia2 - 1) < 1) {
+  ia2 = (ktamask & ktastk(*isp1 + 2));
+  if(ilist(2, ia2 - 1) < 1) {
     *irtc = itfmessage(9, "General::wrongtype",
 		       "\"List of Character-strings for #2\"");
     return -1;
   }
-  for(i = 0, j = 1; i < itastk(2, ia2 - 1); i++, j++)
+  for(i = 0, j = 1; i < ilist(2, ia2 - 1); i++, j++)
     if(ktfstringq(klist(ia2 + j))) {
-      ia = ilist(2, ia2 + j);
+      ia = (ktamask & klist(ia2 + j));
 #if SAD_REQUIRE_STRING_TERMINATION
       jlist(ilist(1, ia) + 1, ia + 1) = '\0';
 #endif
@@ -1437,10 +1438,10 @@ static int Execve(integer4 *isp1, integer8 *kx,
       return -1;
     }
 
-  ia3 = ktfaddr(ktastk(*isp1 + 3));
-  for(i = 0, j = 1; i < itastk(2, ia3 - 1); i++, j++)
+  ia3 = (ktamask & ktastk(*isp1 + 3));
+  for(i = 0, j = 1; i < ilist(2, ia3 - 1); i++, j++)
     if(ktfstringq(klist(ia3 + j))) {
-      ia = ilist(2, ia3 + j);
+      ia = (ktamask & klist(ia3 + j));
 #if SAD_REQUIRE_STRING_TERMINATION
       jlist(ilist(1, ia) + 1, ia + 1) = '\0';
 #endif
@@ -1475,15 +1476,15 @@ static int Execve(integer4 *isp1, integer8 *kx,
 
     for(i = 0, j = 1; j <= ilist(2, ia3 - 1); i++, j++)
       if(ktfstringq(klist(ia3 + j))) {
-	ia = ilist(2, ia3 + j);
+	ia = (ktamask & klist(ia3 + j));
 	envp[i] = &jlist(1, ia + 1);
       }
     envp[i] = NULL;
 
     argv[0] = "sh";
-    for(i = 1, j = 1; j <= itastk(2, ia2 - 1); i++, j++)
+    for(i = 1, j = 1; j <= ilist(2, ia2 - 1); i++, j++)
       if(ktfstringq(klist(ia2 + j))) {
-	ia = ilist(2, ia2 + j);
+	ia = (ktamask & klist(ia2 + j));
 	argv[i] = &jlist(1, ia + 1);
       }
     argv[i] = NULL;
@@ -1518,7 +1519,6 @@ static int System(integer4 *isp1, integer8 *kx,
 		  integer4 *irtc) {
   integer8 ka;
   int status;
-
   if(isp != *isp1 + 1) {
     *irtc = itfmessage(9, "General::narg", "\"1\"");
     return -1;
@@ -1562,7 +1562,7 @@ static int GetPGID(integer4 *isp1, integer8 *kx,
     pid = rtastk( *isp1 + 1);
   }
   else if((ktfmask & ktastk(*isp1 + 1)) == ktfoper){
-    if(!(ktamask & ktastk(*isp1 + 1)) == mtfnull && *isp1 + 1 == isp) {
+    if(!((ktamask & ktastk(*isp1 + 1)) == mtfnull) && *isp1 + 1 == isp) {
       *irtc = itfmessage(9, "General::wrongtype",
 			 "\"Null or PID for #1\"");
       return -1;
@@ -1672,7 +1672,7 @@ int sadDefFunc_Process(void) {
   REG8("SetDirectory",	SetDirectory,	1, NULL, NULL, 0);
 
   /* Exec family */
-  REG8("Execve",		Execve,		3, NULL, NULL, 0);
+  REG8("Execve",       	Execve,		3, NULL, NULL, 0);
   REG8("System",	System,		1, NULL, NULL, 0);
 
   /* Process ID family */

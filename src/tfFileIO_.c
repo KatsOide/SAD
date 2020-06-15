@@ -313,7 +313,7 @@ static int MkSecureTemp(integer4 *isp1,
 static int Pipe(integer4 *isp1, integer8 *kx,
 		integer4 *irtc) {
   integer4 isp0, luns[2];
-  int fildes[2];
+  int fildes[2],moder=1,modew=2;
 
   if(isp != *isp1 + 1
      || ktastk(isp) != ktfoper + mtfnull) {
@@ -326,8 +326,8 @@ static int Pipe(integer4 *isp1, integer8 *kx,
     return 1;
   }
 
-  luns[0] = itopenbuf_(irtc); if(*irtc != 0) return 1;
-  luns[1] = itopenbuf_(irtc); if(*irtc != 0) return 1;
+  luns[0] = itopenbuf_(&moder,irtc); if(*irtc != 0) return 1;
+  luns[1] = itopenbuf_(&modew,irtc); if(*irtc != 0) return 1;
 
   if(dup2(fildes[0], getfd_(&luns[0])) == -1 ||
      dup2(fildes[1], getfd_(&luns[1])) == -1) {
@@ -344,7 +344,7 @@ static int Pipe(integer4 *isp1, integer8 *kx,
   isp += 1;
   rtastk(isp) = luns[1];
 
-  *kx = ktfmakelist(isp0); 
+  *kx = ktflist + ktfmakelist(isp0); 
   isp = isp0;
   *irtc = 0;
   return 0;
@@ -375,7 +375,9 @@ static int SetLUN2FD(integer4 *isp1, integer8 *kx,
   lun = rtastk(*isp1 + 1);
   fd  = rtastk(*isp1 + 2);
 
-  if(dup2(getfd_(&lun), fd) == -1) {
+  /* fprintf(stderr,"SetLUN %d %d %d\n",lun,fd,getfd_(&lun)); */
+
+  if(dup2(getfd_(&lun),fd) == -1) {
     *irtc = itfsyserr(9);
     return 1;
   }
