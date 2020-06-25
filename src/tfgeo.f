@@ -219,7 +219,7 @@ c      h1=sqrt(1.d0+p1**2)
         i1=i+1
         if(sol)then
           sol=i .lt. ke
-          go to 10
+          cycle
         endif
         k=idtypec(i)
         if(ideal)then
@@ -229,7 +229,7 @@ c      h1=sqrt(1.d0+p1**2)
         endif
         if(k .eq. icSOL)then
           call tsgeo(i,ke,ke1,sol)
-          go to 10
+          cycle
         endif
         call compelc(i,cmp)
         if(kytbl(kwL,k) .gt. 0)then
@@ -288,15 +288,13 @@ c                a=sqrt((1.d0-b)*(1.d0+b))
             endif
           endif
           if(k .ge. 36)then
-            call tmov(geo(1,1,i),geo(1,1,i1),12)
+            geo(:,:,i1)=geo(:,:,i)
           endif
           if(kytbl(kwANGL,k) .ne. 0)then
             v=cmp%value(kytbl(kwANGL,k))
             ald=ali
             if(v .eq. 0.d0)then
-              geo(1,4,i1)=geo(1,3,i)*ald+geo(1,4,i)
-              geo(2,4,i1)=geo(2,3,i)*ald+geo(2,4,i)
-              geo(3,4,i1)=geo(3,3,i)*ald+geo(3,4,i)
+              geo(:,4,i1)=geo(:,3,i)*ald+geo(:,4,i)
               call tmov(geo(1,1,i),geo(1,1,i1),9)
             else
               if(kytbl(kwROT,k) .ne. 0)then
@@ -345,9 +343,7 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
                 geo(3,2,i1)=-sint*geo(3,1,i1)+cost*y3
                 geo(3,1,i1)= cost*geo(3,1,i1)+sint*y3
               else
-                geo(1,2,i1)=geo(1,2,i)
-                geo(2,2,i1)=geo(2,2,i)
-                geo(3,2,i1)=geo(3,2,i)
+                geo(:,2,i1)=geo(:,2,i)
               endif
             endif
           elseif(k .eq. icMAP)then
@@ -394,41 +390,18 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
               r23=-schi2
               r33= cchi1*cchi2
             endif
-            geo(1,1,i1)=r11*geo(1,1,i)+r12*geo(1,2,i)+r13*geo(1,3,i)
-            geo(2,1,i1)=r11*geo(2,1,i)+r12*geo(2,2,i)+r13*geo(2,3,i)
-            geo(3,1,i1)=r11*geo(3,1,i)+r12*geo(3,2,i)+r13*geo(3,3,i)
-            geo(1,2,i1)=r21*geo(1,1,i)+r22*geo(1,2,i)+r23*geo(1,3,i)
-            geo(2,2,i1)=r21*geo(2,1,i)+r22*geo(2,2,i)+r23*geo(2,3,i)
-            geo(3,2,i1)=r21*geo(3,1,i)+r22*geo(3,2,i)+r23*geo(3,3,i)
-            geo(1,3,i1)=r31*geo(1,1,i)+r32*geo(1,2,i)+r33*geo(1,3,i)
-            geo(2,3,i1)=r31*geo(2,1,i)+r32*geo(2,2,i)+r33*geo(2,3,i)
-            geo(3,3,i1)=r31*geo(3,1,i)+r32*geo(3,2,i)+r33*geo(3,3,i)
+            geo(:,1,i1)=r11*geo(:,1,i)+r12*geo(:,2,i)+r13*geo(:,3,i)
+            geo(:,2,i1)=r21*geo(:,1,i)+r22*geo(:,2,i)+r23*geo(:,3,i)
+            geo(:,3,i1)=r31*geo(:,1,i)+r32*geo(:,2,i)+r33*geo(:,3,i)
             if(.not. dir)then
-              geo(1,4,i1)=geo(1,4,i)
-     1                  +dx*geo(1,1,i1)+dy*geo(1,2,i1)+dz*geo(1,3,i1)
-              geo(2,4,i1)=geo(2,4,i)
-     1                  +dx*geo(2,1,i1)+dy*geo(2,2,i1)+dz*geo(2,3,i1)
-              geo(3,4,i1)=geo(3,4,i)
-     1                  +dx*geo(3,1,i1)+dy*geo(3,2,i1)+dz*geo(3,3,i1)
+              geo(:,4,i1)=geo(:,4,i)
+     1                  +dx*geo(:,1,i1)+dy*geo(:,2,i1)+dz*geo(:,3,i1)
             endif
           else
-            geo(1,4,i1)=geo(1,3,i)*ali+geo(1,4,i)
-            geo(2,4,i1)=geo(2,3,i)*ali+geo(2,4,i)
-            geo(3,4,i1)=geo(3,3,i)*ali+geo(3,4,i)
-            geo(1,1,i1)=geo(1,1,i)
-            geo(2,1,i1)=geo(2,1,i)
-            geo(3,1,i1)=geo(3,1,i)
-            geo(1,2,i1)=geo(1,2,i)
-            geo(2,2,i1)=geo(2,2,i)
-            geo(3,2,i1)=geo(3,2,i)
-            geo(1,3,i1)=geo(1,3,i)
-            geo(2,3,i1)=geo(2,3,i)
-            geo(3,3,i1)=geo(3,3,i)
+            geo(:,4,i1)=geo(:,3,i)*ali+geo(:,4,i)
+            geo(:,1:3,i1)=geo(:,1:3,i)
           endif
         endif
-c        write(*,*)'tfgeo1 ',i1,i1,k,ali,geo(
-c     $       1,4,i1),geo(1,3,i),geo(1,4,i)
- 10     continue
       enddo
       call tsetdvfs
       call tesetdv(0.d0)

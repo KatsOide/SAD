@@ -342,7 +342,9 @@ c          read(lfni,'(a)')ans
           else
             buff(59:69)=' 0'
           endif
-          if(mdisp .eq. modeg .or. tfinsol(l))then
+c          write(*,*)'tfdisp ',mdisp,modeg,l,tfinsol(l)
+c          if(mdisp .eq. modeg .or. tfinsol(l))then
+          if(mdisp .eq. modeg)then
             do i=0,2
               call tdtrimz(buff(1+i*12:12+i*12),
      1             geo(i+1,4,l)/scale(mfitgx+i),'12.6')
