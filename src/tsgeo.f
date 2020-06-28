@@ -6,50 +6,52 @@
       use ffs_pointer
       use tffitcode
       use ffs_seg
+      use geolib
       implicit none
       real*8, parameter:: conv=3.d-16
-      integer*4 i,kg,k1,k2,idir,j,kbz
-      real*8 geo1(3,3),geos(3,4),bzs,
-     $     chi1,chi2,cschi1,snchi1,cschi2,snchi2,chi3,
-     $     cschi3,snchi3,xi,yi,pxi,pyi,
-     $     dir,tfbzs,pos0,ds,
-     $     s1,s2,s3,u,v,w,g1,g2,tfchi,gi
-      integer*4 k,ke,ke1
+      integer*4 ,intent(in)::k
+      integer*4 ,intent(inout)::ke,ke1
+      integer*4 i,kg,k1,k2,idir,kbz
+      real*8 geos(3,4),bzs,
+     $     chi1,chi2,chi3,
+     $     xi,yi,pxi,pyi,
+     $     dir,tfbzs,pos0,ds,a(3),dg4(3),
+     $     gi,geot(3,3)
       integer*8 led
-      logical*4 sol
+      logical*4 ,intent(inout):: sol
       type (sad_comp),pointer :: cmp,cmp1,cmp2,cmpp,cmpe
-      sol=.true.
+      sol=.false.
       call compelc(k,cmp1)
       kg=0
-      if(cmp1%value(ky_BND_SOL) .eq. 0.d0)then
-        go to 12
-      endif
-      if(cmp1%value(ky_GEO_SOL) .ne. 0.d0)then
-        kg=k
-      endif
-      do i=k+1,nlat-1
-        if(idtypec(i) .eq. icSOL)then
-          call compelc(i,cmp)
-          if(cmp%value(ky_BND_SOL) .ne. 0.d0)then
-            if(cmp%value(ky_GEO_SOL) .ne. 0.d0)then
-              if(kg .ne. 0)then
-                write(*,*)' Duplicated GEO of Solenoid ',
-     $               pname(idelc(k))(1:lpnamec(k))
-                sol=.false.
-                return
-              endif
-              kg=i
-            endif
-            ke=i
-            go to 20
-          endif
+      if(cmp1%value(ky_BND_SOL) .ne. 0.d0)then
+        if(cmp1%value(ky_GEO_SOL) .ne. 0.d0)then
+          kg=k
         endif
-      enddo
-12    write(*,*)' Missing BOUND of Solenoid ',
-     $     pname(idelc(k))(1:lpnamec(k))
-      sol=.false.
-      return
-20    if(kg .eq. 0)then
+        do i=k+1,nlat-1
+          if(idtypec(i) .eq. icSOL)then
+            call compelc(i,cmp)
+            if(cmp%value(ky_BND_SOL) .ne. 0.d0)then
+              if(cmp%value(ky_GEO_SOL) .ne. 0.d0)then
+                if(kg .ne. 0)then
+                  write(*,*)' Duplicated GEO of Solenoid ',
+     $                 pname(idelc(k))(1:lpnamec(k))
+                  return
+                endif
+                kg=i
+              endif
+              ke=i
+              sol=.true.
+              exit
+            endif
+          endif
+        enddo
+      endif
+      if(.not. sol)then
+        write(*,*)' Missing BOUND of Solenoid ',
+     $       pname(idelc(k))(1:lpnamec(k))
+        return
+      endif
+      if(kg .eq. 0)then
         write(*,*)' Missing GEO of Solenoid ',
      $     pname(idelc(k))(1:lpnamec(k))
         sol=.false.
@@ -75,57 +77,30 @@
       cmpp%value(ky_DZ_SOL)=0.d0
       chi1=cmpp%value(ky_DPX_SOL)
       chi2=cmpp%value(ky_DPY_SOL)
-      cschi1=cos(chi1)
-      snchi1=sin(chi1)
-      cschi2=cos(chi2)
-      snchi2=sin(chi2)
       if(idir .gt. 0)then
-        bzs=tfbzs(k1,kbz)
-        chi3=tfchi(geo(1,1,k),3)
-        cschi3=cos(chi3)
-        snchi3=sin(chi3)
-        do i=1,3
-          geo1(i,1)= geo(i,1,k)*cschi3+geo(i,2,k)*snchi3
-          geo1(i,2)=-geo(i,1,k)*snchi3+geo(i,2,k)*cschi3
-          g1       = geo1(i,2)*snchi2+geo(i,3,k)*cschi2
-          geo1(i,2)= geo1(i,2)*cschi2-geo(i,3,k)*snchi2
-          geo1(i,3)= g1*cschi1+geo1(i,1)*snchi1
-          geo1(i,1)=-g1*snchi1+geo1(i,1)*cschi1
-        enddo
-        geo(:,1:3,k+1)=geo1
-        geo(:,4,k+1)=geo(:,4,k)
-        call tgrot(cmp1%value(ky_CHI1_SOL:ky_CHI3_SOL),geo(1,1,k),geo1)
         pos0=0
+        bzs=tfbzs(k1,kbz)
+        chi3=tfchi(geo(:,:,k),3)
+        geo(:,1:3,k+1)=tfrotgeo(geo(:,:,k),(/chi1,chi2,-chi3/))
+        geo(:,4,k+1)=geo(:,4,k)
+        cmp1%value(ky_CHI1_SOL:ky_CHI3_SOL)=
+     $       tgrot(geo(:,:,k),geo(:,:,k+1))
         pos(k+1)=pos(k)
       else
         geos=geo(:,:,k)
-        bzs=tfbzs(k1-1,kbz)
-        geo1(:,:)=0.d0
-        geo1(2,1)=-1.d0
-        geo1(3,2)=-1.d0
-        geo1(1,3)=1.d0
-        geo(:,1:3,ke)=geo1
-        geo(1,1,ke1)= snchi1
-        geo(2,1,ke1)=-cschi1
-        geo(3,1,ke1)=0.d0
-        geo(1,2,ke1)= snchi2*cschi1
-        geo(2,2,ke1)= snchi2*snchi1
-        geo(3,2,ke1)=-cschi2
-        geo(1,3,ke1)= cschi2*cschi1
-        geo(2,3,ke1)= cschi2*snchi1
-        geo(3,3,ke1)= snchi2
-        geo(:,4,ke1)= 0.d0
-        call tgrot(cmp2%value(ky_CHI1_SOL:ky_CHI3_SOL),
-     $       geo1,geo(:,1:3,ke1))
         pos0=pos(k)
-        pos(ke)=0.d0
-        pos(ke1)=0.d0
-        geo(:,4,ke)=0.d0
+        bzs=tfbzs(k1-1,kbz)
+        geo(:,:,ke)=geoini
+        geo(:,:,ke1)=tfchitogeo((/chi1,chi2,0.d0/))
+        cmp2%value(ky_CHI1_SOL:ky_CHI3_SOL)=
+     $       tgrot(geo(:,1:3,ke),geo(:,:,ke1))
+        pos(ke:ke1)=0.d0
+        geo(:,4,ke:ke1)=0.d0
       endif
       xi=cmpp%value(ky_DX_SOL)
       yi=cmpp%value(ky_DY_SOL)
-      pxi=-snchi1*cschi2
-      pyi=-snchi2
+      pxi=-sin(chi1)*cos(chi2)
+      pyi=-sin(chi2)
       led=idvalc(k2)
       ds=0.d0
       gi=0.d0
@@ -136,82 +111,34 @@
       pxi=pxi+yi*bzs*.5d0
       pyi=pyi-xi*bzs*.5d0
       do i=k1+idir,k2,idir
-        call tsgeo1(i,xi,pxi,yi,pyi,ds,gi,bzs,geo1,idir,dir)
+        call tsgeo1(i,xi,pxi,yi,pyi,ds,gi,bzs,idir,dir)
       enddo
-      rlist(led+3)=xi
-      rlist(led+4)=yi
-      rlist(led+5)=ds
-      cmpe%value(ky_DX_SOL)=xi
-      cmpe%value(ky_DY_SOL)=yi
-      cmpe%value(ky_DZ_SOL)=ds
+      rlist(led+3:led+5)=(/xi,yi,ds/)
+      cmpe%value(ky_DX_SOL:ky_DZ_SOL)=(/xi,yi,ds/)
       if(idir .gt. 0)then
-        chi3=tfchi(geo(1,1,ke1),3)
-        cschi3= cos(chi3)
-        snchi3= sin(chi3)
-        call trotg(geo(1,1,ke1),geo(1,3,ke1),cschi3,snchi3)
-        call tgrot(cmp2%value(ky_CHI1_SOL:ky_CHI3_SOL),
-     $       geo1,geo(1,1,ke1))
+        chi3=tfchi(geo(:,1:3,ke1),3)
+        geo(:,1:3,ke1)=tfrotgeo(geo(:,1:3,ke1),(/0.d0,0.d0,-chi3/))
+        cmp2%value(ky_CHI1_SOL:ky_CHI3_SOL)=
+     $       tgrot(geo(:,1:3,ke),geo(:,:,ke1))
       else
-        s1=geo(1,1,ke1)*geo(1,1,k)+geo(2,1,ke1)*geo(2,1,k)
-     1       +geo(3,1,ke1)*geo(3,1,k)
-        s2=geo(1,1,ke1)*geo(1,2,k)+geo(2,1,ke1)*geo(2,2,k)
-     1       +geo(3,1,ke1)*geo(3,2,k)
-        s3=geo(1,1,ke1)*geo(1,3,k)+geo(2,1,ke1)*geo(2,3,k)
-     1       +geo(3,1,ke1)*geo(3,3,k)
-        u=s1*geos(3,1)+s2*geos(3,2)
-        v=s1*geos(3,2)-s2*geos(3,1)
-        w=s3*geos(3,3)
-        if(u .eq. 0.d0)then
-          if(v .eq. 0.d0)then
-            snchi3=0.d0
-          else
-            snchi3=-w/v
-          endif
-          cschi3=sqrt(1.d0-snchi3**2)
-        else
-          if(v .ge. 0.d0)then
-            snchi3=(-v*w-u*sqrt(u**2+(v-w)*(v+w)))/(u**2+v**2)
-            cschi3=(-u*w+v*sqrt(u**2+(v-w)*(v+w)))/(u**2+v**2)
-          else
-            snchi3=(-v*w+u*sqrt(u**2+(v-w)*(v+w)))/(u**2+v**2)
-            cschi3=(-u*w-v*sqrt(u**2+(v-w)*(v+w)))/(u**2+v**2)
-          endif
-        endif
-        geo1(:,1)= cschi3*geos(:,1)+snchi3*geos(:,2)
-        geo1(:,2)=-snchi3*geos(:,1)+cschi3*geos(:,2)
-        geo1(:,3)=geos(:,3)
+        a=tgrot(geo(:,:,k),geo(:,:,ke1))
+        geot=matmul(tfrotgeo(geos,(/0.d0,0.d0,-a(3)/)),
+     $       transpose(geo(:,1:3,k)))
+        pos(k:ke1)=pos0+pos(k:ke1)-pos(k)
+        dg4=geos(:,4)-matmul(geot,geo(:,4,k))
         do i=k+1,ke1
-          pos(i)=pos0+(pos(i)-pos(k))
-          geo(:,4,i)=geo(:,4,i)-geo(:,4,k)
-          do j=1,4
-            s1=geo(1,j,i)*geo(1,1,k)+geo(2,j,i)*geo(2,1,k)
-     1        +geo(3,j,i)*geo(3,1,k)
-            s2=geo(1,j,i)*geo(1,2,k)+geo(2,j,i)*geo(2,2,k)
-     1        +geo(3,j,i)*geo(3,2,k)
-            s3=geo(1,j,i)*geo(1,3,k)+geo(2,j,i)*geo(2,3,k)
-     1        +geo(3,j,i)*geo(3,3,k)
-            geo(:,j,i)=s1*geo1(:,1)+s2*geo1(:,2)+s3*geo1(:,3)
-          enddo
-          geo(:,4,i)=geo(:,4,i)+geos(:,4)
-        enddo
-        pos(k)=pos0
-        do j=1,3
-          g1=geo1(j,1)
-          g2=geo1(j,2)
-          geo1(j,1)=-geo(2,1,k)*g1-geo(2,2,k)*g2
-     1              -geo(2,3,k)*geo1(j,3)
-          geo1(j,2)=-geo(3,1,k)*g1-geo(3,2,k)*g2
-     1              -geo(3,3,k)*geo1(j,3)
-          geo1(j,3)= geo(1,1,k)*g1+geo(1,2,k)*g2
-     1              +geo(1,3,k)*geo1(j,3)
+          geo(:,:,i)=matmul(geot,geo(:,:,i))
+          geo(:,4,i)=geo(:,4,i)+dg4
+c          write(*,'(a,i5,1p3g15.7)')'tsgeo ',i,geo(:,4,i)
         enddo
         geo(:,:,k)=geos
-        call tgrot(cmp1%value(ky_CHI1_SOL:ky_CHI3_SOL),geos,geo1)
+        cmp1%value(ky_CHI1_SOL:ky_CHI3_SOL)=
+     $       tgrot(geos,geo(:,:,k+1))
       endif
       return
       end
 
-      subroutine tsgeo1(i,xi,pxi,yi,pyi,ds,gi,bzs,geo1,idir,dir)
+      subroutine tsgeo1(i,xi,pxi,yi,pyi,ds,gi,bzs,idir,dir)
       use kyparam
       use tfstk
       use ffs
@@ -220,16 +147,19 @@
       use tffitcode
       use ffs_seg
       use mathfun, only:akang
+      use geolib
       implicit none
       type (sad_comp), pointer :: cmp
       type (sad_dlist), pointer :: lsegp
-      integer*4 i,idir,i0,i1,lt,irtc,mfr,kbz
-      real*8 pxi,pyi,al,ds,pzi,phi,ak,sinphi,a14,a12,a22,
-     $     a24,dx,pxf,dy,pyf,xi,yi,dl,theta,phix,phiy,f,xf,
-     $     zf,gf,dvf,bzs,ak1,ftable(4),dir,bzs0,tfbzs,db,gi,
-     $     chi2i,cchi2i,schi2i,chi1i,cchi1i,schi1i,yf,
-     $     sxf,syf,szf,theta2,gs(3),
-     $     trans(6,12),cod(6),beam(42),geo1(3,3),srot(3,9)
+      integer*4 , intent(in):: i,idir
+      integer*4 i0,i1,lt,irtc,mfr,kbz
+      real*8 , intent(in)::dir
+      real*8 , intent(inout):: xi,yi,pxi,pyi,ds,gi
+      real*8 phi,ak,sinphi,a14,a12,a22,al,pzi,
+     $     a24,dx,pxf,dy,pyf,dl,theta,phix,phiy,f,xf,
+     $     zf,gf,dvf,bzs,ak1,ftable(4),bzs0,tfbzs,db,yf,
+     $     sxf,syf,szf,theta2,
+     $     trans(6,12),cod(6),beam(42),srot(3,9)
       logical*4 seg,dirf
       complex*16 cr1
       real*8 ,save::dummy(256)=0.d0
@@ -440,17 +370,7 @@ c     call tmulteseg(trans,cod,beam,i,cmp,bzs*dir,lal,1.d0,i)
             yi=yf
             dl=-dl
           endif
-          chi2i =-asin(min(1.d0,max(-1.d0,pyf)))
-          cchi2i=cos(chi2i)
-          schi2i=sin(chi2i)
-          chi1i =-asin(min(1.d0,max(-1.d0,pxf/cchi2i)))
-          cchi1i=cos(chi1i)
-          schi1i=sin(chi1i)
-          geo(:,4,i1)= geo(:,4,i0)+geo1(:,1)*xi+geo1(:,2)*yi
-          geo(:,1,i1)= cchi1i*geo1(:,1)+schi1i*geo1(:,3)
-          gs         =-schi1i*geo1(:,1)+cchi1i*geo1(:,3)
-          geo(:,3,i1)= cchi2i*gs-schi2i*geo1(:,2)
-          geo(:,2,i1)= schi2i*gs+cchi2i*geo1(:,2)
+          geo(:,:,i1)=tforbitgeo(geo(:,:,i0),(/xi,pxf,yi,pyf/))
           pxi=pxf
           pyi=pyf
           pos(i1)=pos(i0)+dl*dir
@@ -465,7 +385,7 @@ c     call tmulteseg(trans,cod,beam,i,cmp,bzs*dir,lal,1.d0,i)
         pyf=pyi
         dl=0.d0
       end select
-      geo(:,4,i1)=geo(:,4,i0)+geo1(:,3)*al*dir
+      geo(:,4,i1)=geo(:,4,i0)+geo(:,3,i0)*al*dir
       geo(:,1:3,i1)=geo(:,1:3,i0)
       pxi=pxf
       pyi=pyf

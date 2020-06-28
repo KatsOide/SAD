@@ -19,6 +19,7 @@
       use tfrbuf
       use ffsfile
       use radint
+      use geolib
       implicit none
       integer*4 maxrpt,hsrchz
       integer*8 kffs,k,kx,itwisso,iparams,kax,iutwiss
@@ -781,7 +782,7 @@ c        go to 31
             exit
           endif
         enddo
-        call tsetg(geo0,chi0)
+        geo0(:,1:3)=tsetg(chi0*m_pi/180.d0)
         if(.not. exist)then
           go to 12
         endif

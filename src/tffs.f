@@ -1,6 +1,13 @@
       module sad_main
         use tfstk, only:sad_descriptor,mbody
         integer*4, parameter ::expnsize=7
+        integer*4 ,parameter :: iaidx(6,6)=reshape(
+     $       (/ 1, 2, 4, 7,11,16,
+     $          2, 3, 5, 8,12,17,
+     $          4, 5, 6, 9,13,18,
+     $          7, 8, 9,10,14,19,
+     $         11,12,13,14,15,21,
+     $         16,17,18,19,20,21/), (/6,6/))
 
         type sad_el
         sequence

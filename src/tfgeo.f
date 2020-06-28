@@ -5,11 +5,12 @@
       use ffs_flag
       use ffs_pointer
       use tffitcode
+      use geolib
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 i,lxp,lt,nv,j,it
-      real*8 geo1(3,4),vsave(256),dpos,offset,xp,fr,pos0,
-     $     dox,doy,doz,g1,tffsmarkoffset,g2,rgetgl1,poso,posi
+      real*8 geo1(3,4),geo2(3,3),vsave(256),dpos,offset,xp,fr,pos0,
+     $     dgo(3),tffsmarkoffset,rgetgl1,poso,posi
       logical*4 calgeo,calgeo0,calpol0,chg
       call tfsetparam
       if(.not. geocal)then
@@ -25,18 +26,15 @@
       calpol=.false.
       calgeo=calgeo0
       if(.not. calgeo)then
-        do 1030 i=1,nlat-1
+        do i=1,nlat-1
           if(idtypec(i) .eq. 20)then
             calgeo=.true.
-            goto 1040
+            exit
           endif
-1030    continue
+        enddo
       endif
-1040  if(calgeo)then
-        geo(:,:,1)=0.d0
-        geo(2,1,1)=-1.d0
-        geo(3,2,1)=-1.d0
-        geo(1,3,1)= 1.d0
+      if(calgeo)then
+        geo(:,:,1)=geoini
       endif
       pos(1)=0.d0
       gammab(1)=p0
@@ -116,37 +114,23 @@
         pos=pos-poso
       endif
       if(calgeo)then
-        dox=geo(1,4,iorgr)+ffv%geo0(1,4)*geo(1,3,iorgr)
-     $       -ffv%geo0(2,4)*geo(1,1,iorgr)-ffv%geo0(3,4)*geo(1,2,iorgr)
-        doy=geo(2,4,iorgr)+ffv%geo0(1,4)*geo(2,3,iorgr)
-     $       -ffv%geo0(2,4)*geo(2,1,iorgr)-ffv%geo0(3,4)*geo(2,2,iorgr)
-        doz=geo(3,4,iorgr)+ffv%geo0(1,4)*geo(3,3,iorgr)
-     $       -ffv%geo0(2,4)*geo(3,1,iorgr)-ffv%geo0(3,4)*geo(3,2,iorgr)
-        do 110 i=1,nlat
-          geo(1,4,i)=geo(1,4,i)-dox
-          geo(2,4,i)=geo(2,4,i)-doy
-          geo(3,4,i)=geo(3,4,i)-doz
-110     continue
-        do 100 i=1,3
-          geo1(1,i)=ffv%geo0(1,i)*geo(1,3,iorgr)
-     $         -ffv%geo0(2,i)*geo(1,1,iorgr)
-     1             -ffv%geo0(3,i)*geo(1,2,iorgr)
-          geo1(2,i)=ffv%geo0(1,i)*geo(2,3,iorgr)
-     $         -ffv%geo0(2,i)*geo(2,1,iorgr)
-     1             -ffv%geo0(3,i)*geo(2,2,iorgr)
-          geo1(3,i)=ffv%geo0(1,i)*geo(3,3,iorgr)
-     $         -ffv%geo0(2,i)*geo(3,1,iorgr)
-     1             -ffv%geo0(3,i)*geo(3,2,iorgr)
-100     continue
-        do 120 j=1,4
-          do 130 i=1,nlat
-            g1=geo(1,j,i)
-            g2=geo(2,j,i)
-            geo(1,j,i)=geo1(1,1)*g1+geo1(2,1)*g2+geo1(3,1)*geo(3,j,i)
-            geo(2,j,i)=geo1(1,2)*g1+geo1(2,2)*g2+geo1(3,2)*geo(3,j,i)
-            geo(3,j,i)=geo1(1,3)*g1+geo1(2,3)*g2+geo1(3,3)*geo(3,j,i)
-130       continue
-120     continue
+        dgo=geo(:,4,iorgr)+ffv%geo0(1,4)*geo(:,3,iorgr)
+     $       -ffv%geo0(2,4)*geo(:,1,iorgr)-ffv%geo0(3,4)*geo(:,2,iorgr)
+        do i=1,nlat
+          geo(:,4,i)=geo(:,4,i)-dgo
+        enddo
+        geo2(1:3,1)=ffv%geo0(1,1:3)*geo(1,3,iorgr)
+     $       -ffv%geo0(2,1:3)*geo(1,1,iorgr)
+     1       -ffv%geo0(3,1:3)*geo(1,2,iorgr)
+        geo2(1:3,2)=ffv%geo0(1,1:3)*geo(2,3,iorgr)
+     $       -ffv%geo0(2,1:3)*geo(2,1,iorgr)
+     1       -ffv%geo0(3,1:3)*geo(2,2,iorgr)
+        geo2(1:3,3)=ffv%geo0(1,1:3)*geo(3,3,iorgr)
+     $       -ffv%geo0(2,1:3)*geo(3,1,iorgr)
+     1       -ffv%geo0(3,1:3)*geo(3,2,iorgr)
+        do i=1,nlat
+          geo(:,1:4,i)=matmul(geo2,geo(:,1:4,i))
+        enddo
         if(sorg)then
           poso=pos(iorgr)
           pos=pos-poso
@@ -270,7 +254,6 @@ c      h1=sqrt(1.d0+p1**2)
      1               +geo(3,3,ke1)*geo(3,1,i)
                 b=min(1.d0,max(-1.d0,-zetau/geo(3,2,i)))
                 a=1.d0+sqrt1(-b**2)
-c                a=sqrt((1.d0-b)*(1.d0+b))
                  etau=geo(1,2,ke1)*geo(1,1,i)+geo(2,2,ke1)*geo(2,1,i)
      1               +geo(3,2,ke1)*geo(3,1,i)
                   xiu=geo(1,1,ke1)*geo(1,1,i)+geo(2,1,ke1)*geo(2,1,i)
@@ -346,60 +329,63 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
                 geo(:,2,i1)=geo(:,2,i)
               endif
             endif
-          elseif(k .eq. icMAP)then
-            call tgmap(i)
-          elseif(k .eq. icCOORD)then
-            id=idvalc(i)
-            cchi1=cos(cmp%value(ky_CHI1_COORD))
-            schi1=sin(cmp%value(ky_CHI1_COORD))
-            cchi2=cos(cmp%value(ky_CHI2_COORD))
-            schi2=sin(cmp%value(ky_CHI2_COORD))
-            cchi3=cos(cmp%value(ky_CHI3_COORD))
-            schi3=sin(cmp%value(ky_CHI3_COORD))
-            dir=cmp%value(ky_DIR_COORD) .eq. 0.d0
-            if(dir)then
-              dx=cmp%value(ky_DX_COORD)
-              dy=cmp%value(ky_DY_COORD)
-              dz=cmp%value(ky_DZ_COORD)
-              r11= cchi1*cchi3+schi1*schi2*schi3
-              r12=-cchi2*schi3
-              r13= schi1*cchi3-cchi1*schi2*schi3
-              r21=-schi1*schi2*cchi3+cchi1*schi3
-              r22= cchi2*cchi3
-              r23= cchi1*schi2*cchi3+schi1*schi3
-              r31=-schi1*cchi2
-              r32=-schi2
-              r33= cchi1*cchi2
-              geo(1,4,i1)=geo(1,4,i)
-     1                  +dx*geo(1,1,i)+dy*geo(1,2,i)+dz*geo(1,3,i)
-              geo(2,4,i1)=geo(2,4,i)
-     1                  +dx*geo(2,1,i)+dy*geo(2,2,i)+dz*geo(2,3,i)
-              geo(3,4,i1)=geo(3,4,i)
-     1                  +dx*geo(3,1,i)+dy*geo(3,2,i)+dz*geo(3,3,i)
-            else
-              dx=-cmp%value(ky_DX_COORD)
-              dy= cmp%value(ky_DY_COORD)
-              dz= cmp%value(ky_DZ_COORD)
-              r11= cchi1*cchi3+schi1*schi2*schi3
-              r21= cchi2*schi3
-              r31=-schi1*cchi3+cchi1*schi2*schi3
-              r12= schi1*schi2*cchi3-cchi1*schi3
-              r22= cchi2*cchi3
-              r32= cchi1*schi2*cchi3+schi1*schi3
-              r13= schi1*cchi2
-              r23=-schi2
-              r33= cchi1*cchi2
-            endif
-            geo(:,1,i1)=r11*geo(:,1,i)+r12*geo(:,2,i)+r13*geo(:,3,i)
-            geo(:,2,i1)=r21*geo(:,1,i)+r22*geo(:,2,i)+r23*geo(:,3,i)
-            geo(:,3,i1)=r31*geo(:,1,i)+r32*geo(:,2,i)+r33*geo(:,3,i)
-            if(.not. dir)then
-              geo(:,4,i1)=geo(:,4,i)
-     1                  +dx*geo(:,1,i1)+dy*geo(:,2,i1)+dz*geo(:,3,i1)
-            endif
           else
-            geo(:,4,i1)=geo(:,3,i)*ali+geo(:,4,i)
-            geo(:,1:3,i1)=geo(:,1:3,i)
+            select case (k)
+            case (icMAP)
+              call tgmap(i)
+            case (icCOORD)
+              id=idvalc(i)
+              cchi1=cos(cmp%value(ky_CHI1_COORD))
+              schi1=sin(cmp%value(ky_CHI1_COORD))
+              cchi2=cos(cmp%value(ky_CHI2_COORD))
+              schi2=sin(cmp%value(ky_CHI2_COORD))
+              cchi3=cos(cmp%value(ky_CHI3_COORD))
+              schi3=sin(cmp%value(ky_CHI3_COORD))
+              dir=cmp%value(ky_DIR_COORD) .eq. 0.d0
+              if(dir)then
+                dx=cmp%value(ky_DX_COORD)
+                dy=cmp%value(ky_DY_COORD)
+                dz=cmp%value(ky_DZ_COORD)
+                r11= cchi1*cchi3+schi1*schi2*schi3
+                r12=-cchi2*schi3
+                r13= schi1*cchi3-cchi1*schi2*schi3
+                r21=-schi1*schi2*cchi3+cchi1*schi3
+                r22= cchi2*cchi3
+                r23= cchi1*schi2*cchi3+schi1*schi3
+                r31=-schi1*cchi2
+                r32=-schi2
+                r33= cchi1*cchi2
+                geo(1,4,i1)=geo(1,4,i)
+     1               +dx*geo(1,1,i)+dy*geo(1,2,i)+dz*geo(1,3,i)
+                geo(2,4,i1)=geo(2,4,i)
+     1               +dx*geo(2,1,i)+dy*geo(2,2,i)+dz*geo(2,3,i)
+                geo(3,4,i1)=geo(3,4,i)
+     1               +dx*geo(3,1,i)+dy*geo(3,2,i)+dz*geo(3,3,i)
+              else
+                dx=-cmp%value(ky_DX_COORD)
+                dy= cmp%value(ky_DY_COORD)
+                dz= cmp%value(ky_DZ_COORD)
+                r11= cchi1*cchi3+schi1*schi2*schi3
+                r21= cchi2*schi3
+                r31=-schi1*cchi3+cchi1*schi2*schi3
+                r12= schi1*schi2*cchi3-cchi1*schi3
+                r22= cchi2*cchi3
+                r32= cchi1*schi2*cchi3+schi1*schi3
+                r13= schi1*cchi2
+                r23=-schi2
+                r33= cchi1*cchi2
+              endif
+              geo(:,1,i1)=r11*geo(:,1,i)+r12*geo(:,2,i)+r13*geo(:,3,i)
+              geo(:,2,i1)=r21*geo(:,1,i)+r22*geo(:,2,i)+r23*geo(:,3,i)
+              geo(:,3,i1)=r31*geo(:,1,i)+r32*geo(:,2,i)+r33*geo(:,3,i)
+              if(.not. dir)then
+                geo(:,4,i1)=geo(:,4,i)
+     1               +dx*geo(:,1,i1)+dy*geo(:,2,i1)+dz*geo(:,3,i1)
+              endif
+            case default
+              geo(:,4,i1)=geo(:,3,i)*ali+geo(:,4,i)
+              geo(:,1:3,i1)=geo(:,1:3,i)
+            end select
           endif
         endif
       enddo
@@ -477,49 +463,5 @@ c        p2=sqrt((h2-1.d0)*(h2+1.d0))
       implicit none
       integer*4 k
       tfpos=rlist(ifpos+k-1)
-      return
-      end
-
-      subroutine tforbitgeo(og,geo,dx,dpx,dy,dpy)
-      implicit none
-      real*8 og(3,4),geo(3,4),g1,dx,dpx,dy,dpy
-      real*8 chi2i,cchi2i,schi2i,chi1i,cchi1i,schi1i
-      integer*4 j
-      chi2i =-asin(min(1.d0,max(-1.d0,dpy)))
-      cchi2i=cos(chi2i)
-      schi2i=sin(chi2i)
-      chi1i =-asin(min(1.d0,max(-1.d0,dpx/cchi2i)))
-      cchi1i=cos(chi1i)
-      schi1i=sin(chi1i)
-      do j=1,3
-        og(j,4)=geo(j,4)+geo(j,1)*dx+geo(j,2)*dy
-        og(j,1)= cchi1i*geo(j,1)+schi1i*geo(j,3)
-        g1     =-schi1i*geo(j,1)+cchi1i*geo(j,3)
-        og(j,3)= cchi2i*g1-schi2i*geo(j,2)
-        og(j,2)= schi2i*g1+cchi2i*geo(j,2)
-      enddo
-      return
-      end
-
-      subroutine tsetg(geo,chi)
-      use ffs
-      use tffitcode
-      implicit none
-      real*8 geo(3,3),chi(3),c1,c2,c3,s1,s2,s3
-      c1=cos(pi/180.d0*chi(1))
-      s1=sin(pi/180.d0*chi(1))
-      c2=cos(pi/180.d0*chi(2))
-      s2=sin(pi/180.d0*chi(2))
-      c3=cos(pi/180.d0*chi(3))
-      s3=sin(pi/180.d0*chi(3))
-      geo(1,1)=c1*c2
-      geo(2,1)=s1*c2
-      geo(3,1)=s2
-      geo(1,2)=-c3*s1+c1*s2*s3
-      geo(2,2)=c1*c3+s1*s2*s3
-      geo(3,2)=-c2*s3
-      geo(1,3)=-c1*s2*c3-s1*s3
-      geo(2,3)=-s1*s2*c3-c1*s3
-      geo(3,3)= c2*c3
       return
       end

@@ -961,18 +961,36 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
       end
 
       subroutine qtwissfrac(ftwiss,l,fr,over)
+      use ffs
+      implicit none
+      integer*4 , intent(in)::l
+      real*8 , intent(out)::ftwiss(ntwissfun)
+      real*8 , intent(in)::fr
+      real*8 gv(3,4)
+      logical*4 , intent(out)::over
+      call qtwissfracgeo(ftwiss,gv,l,fr,.false.,over)
+      return
+      end
+
+      subroutine qtwissfracgeo(ftwiss,gv,l,fr,cgeo,over)
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
       use temw, only:etwiss2ri,tfetwiss,tinv6
+      use geolib
       implicit none
       type (sad_descriptor) dsave(kwMAX)
       type (sad_comp) , pointer :: cmp
-      integer*4 l,nvar,le,itfdownlevel,irtc
-      real*8 fr,ftwiss(ntwissfun),trans(6,6),cod(6),gr,sgr,sgr2,gr1,
+      integer*4 , intent(in)::l
+      integer*4 nvar,le,itfdownlevel,irtc
+      real*8 , intent(in)::fr
+      real*8 , intent(out)::ftwiss(ntwissfun),gv(3,4)
+      real*8 trans(6,6),cod(6),gr,sgr,sgr2,gr1,
      $     tw1(ntwissfun),beam(21),srot(3,9)
-      logical*4 over,sol,rt,chg,cp0,normal
+      logical*4 , intent(in)::cgeo
+      logical*4 , intent(out)::over
+      logical*4 sol,rt,chg,cp0,normal
       if(calc6d)then
         cp0=codplt
         codplt=.false.
@@ -993,6 +1011,9 @@ c          call tinv6(ri,trans)
           call tturne1(trans,cod,beam,srot,
      $         i00,i00,i00,0,
      $         .false.,sol,rt,.true.,l,l)
+        endif
+        if(cgeo)then
+          gv=tfgeofrac(l)
         endif
         if(chg)then
           call qfracsave(l,dsave,nvar,.false.)
@@ -1024,25 +1045,44 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
         over=.false.
         codplt=cp0
       else
-        call qtwissfrac1(ftwiss,trans,cod,
-     $       0,l,0.d0,fr,.false.,.false.,over)
+        call qtwissfrac1geo(ftwiss,gv,trans,cod,
+     $       0,l,0.d0,fr,.false.,.true.,.false.,over)
       endif
       return
       end
 
       subroutine qtwissfrac1(ftwiss,
      $     trans,cod,idp,l,fr1,fr2,mat,force,over)
+      use ffs
+      implicit none
+      integer*4 idp,l
+      real*8 , intent(out)::ftwiss(ntwissfun)
+      real*8 gv(3,4),trans(4,5),cod(6),fr1,fr2
+      logical*4 over,mat,force
+      call qtwissfrac1geo(ftwiss,gv,
+     $     trans,cod,idp,l,fr1,fr2,mat,.false.,force,over)
+      return
+      end
+
+      subroutine qtwissfrac1geo(ftwiss,gv,
+     $     trans,cod,idp,l,fr1,fr2,mat,cgeo,force,over)
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
+      use geolib, only:tfgeofrac
       implicit none
       type (sad_descriptor) dsave(kwMAX)
       type (sad_comp) ,pointer :: cmp,cmp0
-      integer*4 idp,l,nvar,le,itfdownlevel,irtc
-      real*8 twisss(ntwissfun),ftwiss(ntwissfun),
-     $     trans(4,5),cod(6),fr1,fr2,gb0,gb1,dgb
-      logical*4 over,chg,mat,force
+      integer*4 ,intent(in):: idp,l
+      integer*4 nvar,le,itfdownlevel,irtc
+      real*8 , intent(out)::ftwiss(ntwissfun),gv(3,4),
+     $     trans(4,5),cod(6)
+      real*8 ,intent(in):: fr1,fr2
+      real*8 twisss(ntwissfun),gb0,gb1,dgb
+      logical*4 , intent(in):: mat,force,cgeo
+      logical*4 , intent(out):: over
+      logical*4 chg
       levele=levele+1
       call qfracsave(l,dsave,nvar,.true.)
       call compelc(l,cmp)
@@ -1072,6 +1112,9 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
         endif
         gammab(l)=gb0
         gammab(l+1)=gb1
+        if(cgeo)then
+          gv=tfgeofrac(l)
+        endif
         if(chg)then
           call qfracsave(l,dsave,nvar,.false.)
         endif

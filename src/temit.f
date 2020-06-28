@@ -702,6 +702,7 @@ c     Table of loss-rate
 
       subroutine tsetphotongeo(al0,phi0,theta0,ini)
       use tmacro, only:l_track
+      use ffs_pointer, only:geo
       implicit none
       real*8, intent(in):: al0,phi0,theta0
       logical*4 , intent(in)::ini
@@ -714,7 +715,8 @@ c     Table of loss-rate
      $     rho=>pp%rho,chi=>pp%chi,geo1=>pp%geo1)
       l=l_track
       if(ini)then
-        call tggeol(l,gv)
+        gv=geo(:,:,l)
+c        call tggeol(l,gv)
       else
         gv=geo1
       endif
@@ -2150,7 +2152,7 @@ c        write(*,'(1p3g13.5)')epol
       real*8 conv
       parameter (conv=1.d-12)
       integer*8 iatr,iacod,iamat,iabmi
-      integer*4 lfno,ia,it,i,j,k,k1,k2,k3,m,n,iret,l
+      integer*4 lfno,it,i,j,k,k1,k2,k3,m,n,iret,l
       real*8 trans(6,12),cod(6),beam(42),srot(3,9),srot1(3,3),
      $     emx0,emy0,emz0,dl,equpol(3),sdamp,
      $     phirf,omegaz,so,s,
@@ -2174,7 +2176,7 @@ c        write(*,'(1p3g13.5)')epol
      1            '       Py ','        Z ','       Pz '/
       data label2/'        x ','    px/p0 ','        y ',
      1            '    py/p0 ','        z ','    dp/p0 '/
-      ia(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
+c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       it=0
       trf0=0.d0
       vcalpha=1.d0
@@ -2492,7 +2494,7 @@ c            enddo
       beam2(1:21)=beam(1:21)
       if(.not. synchm)then
         do i=1,6
-          beam(ia(5,i))=0.d0
+          beam(iaidx(5,i))=0.d0
           trans(i,5)=0.d0
           trans(5,i)=0.d0
         enddo
@@ -2508,10 +2510,10 @@ c            enddo
       enddo
       do i=1,6
         do j=1,i
-          k=ia(i  ,j  )
+          k=iaidx(i  ,j  )
           do m=1,6
             do n=1,6
-              l=ia(m,n)
+              l=iaidx(m,n)
               btr(k,l)=btr(k,l)-(trans(i,m)+trans(i,m+6))*
      1                          (trans(j,n)+trans(j,n+6))
             enddo
@@ -2520,9 +2522,9 @@ c            enddo
       enddo
       sqr2=sqrt(.5d0)
       do i=1,5,2
-        k1=ia(i  ,i  )
-        k2=ia(i+1,i+1)
-        k3=ia(i  ,i+1)
+        k1=iaidx(i  ,i  )
+        k2=iaidx(i+1,i+1)
+        k3=iaidx(i  ,i+1)
 c        do j=1,21
           bbv=btr(k1,1:21)
           btr(k1,1:21)=( bbv+btr(k2,1:21))*sqr2
@@ -2545,7 +2547,7 @@ c        enddo
         emit(i)=0.d0
       enddo
       do i=1,5,2
-        k=ia(i,i)
+        k=iaidx(i,i)
         btr(k,k)=-(trans(i  ,i)**2+trans(i  ,i+1)**2+
      1             trans(i+1,i)**2+trans(i+1,i+1)**2)*.5d0-
      1            trans(i,i+6)*(trans(i,i)+trans(i+1,i+1))-
@@ -2558,8 +2560,8 @@ c        enddo
         beam(21)=0.d0
       endif
       do i=1,5,2
-        k1=ia(i,i)
-        k2=ia(i+1,i+1)
+        k1=iaidx(i,i)
+        k2=iaidx(i+1,i+1)
         if(btr(k2,k2) .ne. 0.d0 .and. btr(k1,k1) .ne. 0.d0)then
           ab(i)=sqrt(abs(btr(k1,k1)/btr(k2,k2)))
 c          do j=1,21
@@ -2574,32 +2576,32 @@ c          enddo
       enddo
       call tsolva(btr,beam,emit,21,21,21,1d-8)
       do i=1,5,2
-        k1=ia(i,i)
-        k2=ia(i+1,i+1)
+        k1=iaidx(i,i)
+        k2=iaidx(i+1,i+1)
         bb=emit(k1)
         emit(k1          )=(bb-emit(k2))*sqr2
         emit(k2          )=(bb+emit(k2))*sqr2
-        emit(ia(i  ,i+1))=emit(ia(i  ,i+1))*sqr2
+        emit(iaidx(i  ,i+1))=emit(iaidx(i  ,i+1))*sqr2
       enddo
-      emit(ia(1,1))=sign(max(abs(emit(ia(1,1))),emxe),
-     $     emit(ia(1,1)))
-      emit(ia(2,2))=sign(max(abs(emit(ia(2,2))),emxe),
-     $     emit(ia(2,2)))
-      emit(ia(3,3))=sign(max(abs(emit(ia(3,3))),emye),
-     $     emit(ia(3,3)))
-      emit(ia(4,4))=sign(max(abs(emit(ia(4,4))),emye),
-     $     emit(ia(4,4)))
-      emit(ia(5,5))=sign(max(abs(emit(ia(5,5))),emze),
-     $     emit(ia(5,5)))
-      emit(ia(6,6))=sign(max(abs(emit(ia(6,6))),emze),
-     $     emit(ia(6,6)))
+      emit(iaidx(1,1))=sign(max(abs(emit(iaidx(1,1))),emxe),
+     $     emit(iaidx(1,1)))
+      emit(iaidx(2,2))=sign(max(abs(emit(iaidx(2,2))),emxe),
+     $     emit(iaidx(2,2)))
+      emit(iaidx(3,3))=sign(max(abs(emit(iaidx(3,3))),emye),
+     $     emit(iaidx(3,3)))
+      emit(iaidx(4,4))=sign(max(abs(emit(iaidx(4,4))),emye),
+     $     emit(iaidx(4,4)))
+      emit(iaidx(5,5))=sign(max(abs(emit(iaidx(5,5))),emze),
+     $     emit(iaidx(5,5)))
+      emit(iaidx(6,6))=sign(max(abs(emit(iaidx(6,6))),emze),
+     $     emit(iaidx(6,6)))
       if(.not. epi)then
-        eemx= sign(sqrt(abs(emit(ia(1,1))*emit(ia(2,2))
-     $       -emit(ia(1,2))**2)),emit(ia(2,2))*charge)
-        eemy= sign(sqrt(abs(emit(ia(3,3))*emit(ia(4,4))
-     $       -emit(ia(3,4))**2)),emit(ia(4,4))*charge)
-        eemz= sign(sqrt(abs(emit(ia(5,5))*emit(ia(6,6))
-     $       -emit(ia(5,6))**2)),emit(ia(6,6))*charge)
+        eemx= sign(sqrt(abs(emit(iaidx(1,1))*emit(iaidx(2,2))
+     $       -emit(iaidx(1,2))**2)),emit(iaidx(2,2))*charge)
+        eemy= sign(sqrt(abs(emit(iaidx(3,3))*emit(iaidx(4,4))
+     $       -emit(iaidx(3,4))**2)),emit(iaidx(4,4))*charge)
+        eemz= sign(sqrt(abs(emit(iaidx(5,5))*emit(iaidx(6,6))
+     $       -emit(iaidx(5,6))**2)),emit(iaidx(6,6))*charge)
       endif
       emit1(1:21)=emit
       call tmulbs(emit1,r,.false.)
@@ -2794,15 +2796,15 @@ c        call tmov(btr,r,78)
       use ffs_flag
       use touschek_table
       use tmacro
+      use sad_main , only:iaidx
       implicit none
       type (sad_dlist), pointer :: klx1
       type (sad_dlist), pointer :: klx2,klx
       type (sad_rlist), pointer :: klx1d,klx1l
-      integer*4 itmax,ia,m,n
-      real*8 resib,dcmin
-      parameter (itmax=100,resib=3.d-6,dcmin=0.06d0)
+      integer*4 ,parameter ::itmax=100
+      real*8 ,parameter ::resib=3.d-6,dcmin=0.06d0
       integer*8 kax,kax1,kax1d,kax1l,kax2
-      integer*4 lfno,it,i,iii,k,iret,j
+      integer*4 lfno,it,i,iii,k,iret,j,m
       real*8 emit(21),beams(21),beam(42),transs(6,12),
      $     trans(6,12),trans1(6,6),r(6,6),
      $     rx,ry,rz,emxr,emyr,emzr,
@@ -2813,7 +2815,7 @@ c        call tmov(btr,r,78)
      $     rr,sigz,sige,dc
       logical*4 pri,intend,epi,synchm
       character*11 autofg,vout(*)
-      ia(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
+c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       emx1=eemx
       emy1=eemy
       emz1=eemz
@@ -3035,22 +3037,22 @@ c        endif
           if(emx1 .gt. 0.01d0*eemx)then
             rx=sqrt(eemx/emx1)
           else
-            emit(ia(1,1))=eemx
-            emit(ia(2,2))=eemx
+            emit(iaidx(1,1))=eemx
+            emit(iaidx(2,2))=eemx
             rx=1.d0
           endif
           if(emy1 .gt. 0.01d0*eemy)then
             ry=sqrt(eemy/emy1)
           else
-            emit(ia(3,3))=eemy
-            emit(ia(4,4))=eemy
+            emit(iaidx(3,3))=eemy
+            emit(iaidx(4,4))=eemy
             ry=1.d0
           endif
           if(emz1 .gt. 0.01d0*eemz)then
             rz=sqrt(eemz/emz1)
           else
-            emit(ia(5,5))=eemz
-            emit(ia(6,6))=eemz
+            emit(iaidx(5,5))=eemz
+            emit(iaidx(6,6))=eemz
             rz=1.d0
           endif
           call tinitr(trans1)
@@ -3064,13 +3066,13 @@ c     write(*,*)'temit ',rx,ry,rx
 c     write(*,*)'temit ',eemy,emy1
           call tmulbs(emit,trans1,.false.)
           if(.not. synchm)then
-            emit(ia(5,1))=0.d0
-            emit(ia(5,2))=0.d0
-            emit(ia(5,3))=0.d0
-            emit(ia(5,4))=0.d0
-            emit(ia(5,5))=sigz**2
-            emit(ia(5,6))=0.d0
-            emit(ia(6,6))=sige**2
+            emit(iaidx(5,1))=0.d0
+            emit(iaidx(5,2))=0.d0
+            emit(iaidx(5,3))=0.d0
+            emit(iaidx(5,4))=0.d0
+            emit(iaidx(5,5))=sigz**2
+            emit(iaidx(5,6))=0.d0
+            emit(iaidx(6,6))=sige**2
             r(1:4,5)=0.d0
             r(5,5)=1.d0
             r(6,5)=0.d0

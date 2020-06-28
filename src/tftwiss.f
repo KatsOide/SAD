@@ -664,20 +664,20 @@ c              k=ilist(ie,ifklp)
      $     direlc,twiss
       use sad_main
       use tflinepcom
+      use geolib
       implicit none
       type (sad_descriptor) kx
       type (sad_comp), pointer ::cmp
       integer*8 kax,ktfgeol,kai,i,ip,j
-      integer*4 irtc,lenw,lxp,nv,lt,kk,ia,isp1,ibz
+      integer*4 irtc,lenw,lxp,nv,lt,isp1,ibz,ia
       real*8 v,beam(42),xp,fr,
-     $     gv(3,4),ogv(3,4),cod(6),vtwiss(27),tfchi,tfbzs
+     $     gv(3,4),ogv(3,4),cod(6),vtwiss(ntwissfun),tfbzs
       type (sad_descriptor) dsave(kwMAX)
       character*(*) keyword
       character*64 name
-      integer*4 iaa,lv,itfdownlevel
-      integer*8 n,m
+      integer*4 lv,itfdownlevel
       logical*4 chg,over,ref
-      iaa(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
+c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
       irtc=0
       ip=itastk(1,isp1)
       ia=itastk(2,isp1)
@@ -710,18 +710,18 @@ c              k=ilist(ie,ifklp)
               kai=ktavaloc(0,6)
               klist(kax+i)=ktflist+kai
               do j=1,6
-                rlist(kai+j)=beam(iaa(i,j))
+                rlist(kai+j)=beam(iaidx(i,j))
               enddo
             enddo
             kx%k=ktflist+kax
           else
-            kx=dfromr(sqrt(beam(iaa(j,j))))
+            kx=dfromr(sqrt(beam(iaidx(j,j))))
           endif
         else
           if(j .eq. 0)then
-            kx=dfromr(sqrt(beam(iaa(i,i))))
+            kx=dfromr(sqrt(beam(iaidx(i,i))))
           else
-            kx=dfromr(beam(iaa(i,j)))
+            kx=dfromr(beam(iaidx(i,j)))
           endif
         endif
       elseif(keyword .eq. 'MULT')then
@@ -769,8 +769,7 @@ c              k=ilist(ie,ifklp)
             kx%k=ktflist+ktfgeol(rlist(j))
           else
             if(chg)then
-              call tfgeofrac(lxp,gv)
-              kax=ktfgeol(gv)
+              kax=ktfgeol(tfgeofrac(lxp))
             else
               kax=ktfgeol(rlist(j+12))
             endif
@@ -798,7 +797,7 @@ c              k=ilist(ie,ifklp)
             call tffserrorhandle(lxp,irtc)
           else
             if(chg)then
-              call tfgeofrac(lxp,gv)
+              gv=tfgeofrac(lxp)
             else
               call tmov(rlist(j+12),gv,12)
             endif
@@ -826,36 +825,15 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
         fr=xp-lxp
         j=ifgeo+(lxp-1)*12
         if(fr .eq. 0.d0)then
-          do kk=mfitdx,mfitddp
-            cod(kk-mfitdx+1)=twiss(lxp,0,kk)
-          enddo
-c          do kk=mfitdx,mfitdpy
-c            itoff=((2*ndim+1)*(kk-1)+ndim)*nlat+iftwis+lxp-1
-c            cod(kk-mfitdx+1)=rlist(itoff)
-c          enddo
+          cod(mfitdx:mfitddp)=twiss(lxp,0,mfitdx:mfitddp)
           call tmov(rlist(j),gv,12)
         else
-          lt=idtypec(lxp)
-          call compelc(lxp,cmp)
           levele=levele+1
-          call qfracsave(lxp,dsave,nv,.true.)
-          call qfracseg(cmp,cmp,0.d0,fr,chg,irtc)
-          if(irtc .ne. 0)then
-            call tffserrorhandle(lxp,irtc)
-          else
-            if(chg)then
-              call tfgeofrac(lxp,gv)
-            else
-              call tmov(rlist(j+12),gv,12)
-            endif
-            call qtwissfrac(vtwiss,lxp,fr,over)
-            cod(1:4)=vtwiss(mfitdx:mfitdpy)
-          endif
-          call qfracsave(lxp,dsave,nv,.false.)
+          call qtwissfracgeo(vtwiss,gv,lxp,fr,.true.,over)
+          cod(1:4)=vtwiss(mfitdx:mfitdpy)
           lv=itfdownlevel()
         endif
-        call tforbitgeo(ogv,gv,cod(1),cod(2),cod(3),cod(4))
-        kx%k=ktflist+ktfgeol(ogv)
+        kx%k=ktflist+ktfgeol(tforbitgeo(gv,cod))
       elseif(keyword .eq. 'OGX' .or. keyword .eq. 'OGY' .or.
      $       keyword .eq. 'OGZ' .or. keyword .eq. 'OCHI1' .or.
      $       keyword .eq. 'OCHI2' .or. keyword .eq. 'OCHI3')then
@@ -865,36 +843,14 @@ c          enddo
         j=ifgeo+(lxp-1)*12
         if(fr .eq. 0.d0)then
           call tmov(rlist(j),gv,12)
-          do kk=mfitdx,mfitddp
-            cod(kk-mfitdx+1)=twiss(lxp,0,kk)
-          enddo
-c          do kk=mfitdx,mfitdpy
-c            itoff=((2*ndim+1)*(kk-1)+ndim)*nlat+iftwis+lxp-1
-c            cod(kk-mfitdx+1)=rlist(itoff)
-c          enddo
+          cod(mfitdx:mfitddp)=twiss(lxp,0,mfitdx:mfitddp)
         else
-          lt=idtypec(lxp)
-          call compelc(lxp,cmp)
-          nv=kytbl(kwmax,lt)-1
           levele=levele+1
-          call qfracsave(lxp,dsave,nv,.true.)
-          call qfracseg(cmp,cmp,0.d0,fr,chg,irtc)
-          if(irtc .ne. 0)then
-            call tffserrorhandle(lxp,irtc)
-          else
-            if(chg)then
-              call tfgeofrac(lxp,gv)
-            else
-              call tmov(rlist(j+12),gv,12)
-            endif
-            call qtwissfrac(vtwiss,lxp,fr,over)
-            cod(1:4)=vtwiss(mfitdx:mfitdpy)
-          endif
-          call qfracsave(lxp,dsave,nv,.false.)
-          lv=itfdownlevel()
+          call qtwissfracgeo(vtwiss,gv,lxp,fr,.true.,over)
+          cod(1:4)=vtwiss(mfitdx:mfitdpy)
           lv=itfdownlevel()
         endif
-        call tforbitgeo(ogv,gv,cod(1),cod(2),cod(3),cod(4))
+        ogv=tforbitgeo(gv,cod)
         if(keyword .eq. 'OGX')then
           kx=dfromr(ogv(1,4))
         elseif(keyword .eq. 'OGY')then
@@ -1263,11 +1219,12 @@ c            write(*,*)'linestk ',name(1:nc),r
 
       integer*8 function ktfgeol(geo)
       use tfstk
+      use geolib
       implicit none
       type (sad_dlist), pointer :: kl
       type (sad_rlist), pointer :: klv,klv2
       integer*8 kax,kax1,kax2
-      real*8 geo(3,4),tfchi
+      real*8 geo(3,4)
       kax=ktadaloc(-1,2,kl)
       kax1=ktavaloc(0,3,klv)
       klv%rbody(1:3)=geo(1:3,4)
