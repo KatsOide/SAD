@@ -51,29 +51,6 @@
       return
       end function
 
-      real*8 function tsetg(chi) result(geo)
-      implicit none
-      dimension geo(3,3)
-      real*8 ,intent(in):: chi(3)
-      real*8 c1,c2,c3,s1,s2,s3
-      c1=cos(chi(1))
-      s1=sin(chi(1))
-      c2=cos(chi(2))
-      s2=sin(chi(2))
-      c3=cos(chi(3))
-      s3=sin(chi(3))
-      geo(1,1)=c1*c2
-      geo(2,1)=s1*c2
-      geo(3,1)=s2
-      geo(1,2)=-c3*s1+c1*s2*s3
-      geo(2,2)=c1*c3+s1*s2*s3
-      geo(3,2)=-c2*s3
-      geo(1,3)=-c1*s2*c3-s1*s3
-      geo(2,3)=-s1*s2*c3-c1*s3
-      geo(3,3)= c2*c3
-      return
-      end function
-
       real*8 function tfrotgeo(geo,chi) result(geo1)
       implicit none
       real*8, intent(in)::geo(3,3),chi(3)

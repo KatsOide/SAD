@@ -825,12 +825,12 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
         fr=xp-lxp
         j=ifgeo+(lxp-1)*12
         if(fr .eq. 0.d0)then
-          cod(mfitdx:mfitddp)=twiss(lxp,0,mfitdx:mfitddp)
+          cod=twiss(lxp,0,mfitdx:mfitddp)
           call tmov(rlist(j),gv,12)
         else
           levele=levele+1
           call qtwissfracgeo(vtwiss,gv,lxp,fr,.true.,over)
-          cod(1:4)=vtwiss(mfitdx:mfitdpy)
+          cod=vtwiss(mfitdx:mfitddp)
           lv=itfdownlevel()
         endif
         kx%k=ktflist+ktfgeol(tforbitgeo(gv,cod))
@@ -843,11 +843,11 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
         j=ifgeo+(lxp-1)*12
         if(fr .eq. 0.d0)then
           call tmov(rlist(j),gv,12)
-          cod(mfitdx:mfitddp)=twiss(lxp,0,mfitdx:mfitddp)
+          cod=twiss(lxp,0,mfitdx:mfitddp)
         else
           levele=levele+1
           call qtwissfracgeo(vtwiss,gv,lxp,fr,.true.,over)
-          cod(1:4)=vtwiss(mfitdx:mfitdpy)
+          cod=vtwiss(mfitdx:mfitddp)
           lv=itfdownlevel()
         endif
         ogv=tforbitgeo(gv,cod)

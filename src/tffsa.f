@@ -75,10 +75,8 @@ c     end   initialize for preventing compiler warning
         id1=1
         id2=nlat
         iorgr=1
-        geo0=0.d0
-        geo0(1,1)=1.d0
-        geo0(2,2)=1.d0
-        geo0(3,3)=1.d0
+        geo0(:,1:3)=geoini
+        geo0(:,4)=0.d0
         chi0(1:3)=0.d0
         if(geocal .or. chguse)then
           geocal0=geocal
@@ -782,7 +780,8 @@ c        go to 31
             exit
           endif
         enddo
-        geo0(:,1:3)=tsetg(chi0*m_pi/180.d0)
+        geo0(:,1:3)=tfchitogeo(chi0*scale(mfitchi1:mfitchi3))
+c        write(*,'(1p4g15.7)')(geo0(i,:),i=1,3)
         if(.not. exist)then
           go to 12
         endif

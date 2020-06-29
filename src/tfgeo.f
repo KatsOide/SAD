@@ -63,17 +63,17 @@
               call compelc(lxp,cmp)
               call qfraccomp(cmp,0.d0,fr,ideal,chg)
               if(chg)then
-                call tmov(geo(1,1,lxp+1),geo1,12)
+                geo1=geo(:,:,lxp+1)
                 pos0=pos(lxp+1)
                 call tfgeo1(lxp,lxp+1,calgeo,.false.)
                 if(i .ne. lxp+1)then
-                  call tmov(geo(1,1,lxp+1),geo(1,1,i),12)
+                  geo(:,:,i)=geo(:,:,lxp+1)
                   pos(i)=pos(lxp+1)
-                  call tmov(geo1,geo(1,1,lxp+1),12)
+                  geo(:,:,lxp+1)=geo1
                   pos(lxp+1)=pos0
                 endif
               else
-                call tmov(geo(1,1,lxp+1),geo(1,1,i),12)
+                geo(:,:,i)=geo(:,:,lxp+1)
                 pos(i)=pos(lxp+1)
               endif
               if(ideal)then
@@ -86,7 +86,7 @@
                 pos=pos-dpos
               endif
               if(i .eq. nlat-1)then
-                call tmov(geo(1,1,i),geo(1,1,nlat),12)
+                geo(:,:,nlat)=geo(:,:,i)
                 pos(nlat)=pos(i)
               endif
             endif
@@ -119,15 +119,7 @@
         do i=1,nlat
           geo(:,4,i)=geo(:,4,i)-dgo
         enddo
-        geo2(1:3,1)=ffv%geo0(1,1:3)*geo(1,3,iorgr)
-     $       -ffv%geo0(2,1:3)*geo(1,1,iorgr)
-     1       -ffv%geo0(3,1:3)*geo(1,2,iorgr)
-        geo2(1:3,2)=ffv%geo0(1,1:3)*geo(2,3,iorgr)
-     $       -ffv%geo0(2,1:3)*geo(2,1,iorgr)
-     1       -ffv%geo0(3,1:3)*geo(2,2,iorgr)
-        geo2(1:3,3)=ffv%geo0(1,1:3)*geo(3,3,iorgr)
-     $       -ffv%geo0(2,1:3)*geo(3,1,iorgr)
-     1       -ffv%geo0(3,1:3)*geo(3,2,iorgr)
+        geo2=matmul(ffv%geo0(:,1:3),transpose(geo(:,1:3,iorgr)))
         do i=1,nlat
           geo(:,1:4,i)=matmul(geo2,geo(:,1:4,i))
         enddo
@@ -166,16 +158,13 @@
       integer*4 istart,istop,ke,ke1,i,k,i1,istart0
       integer*8 id
       real*8 p1,h1,ali,v,zetau,b,a,xiu,dchi3,coschi,sinchi,
-     $     x1,x2,x3,y1,y2,y3,rho0,sp0,cp0,r1,r2,cchi1,schi1,
+     $     rho0,sp0,cp0,r1,r2,cchi1,schi1,
      $     cchi2,schi2,cchi3,schi3,dx,dy,dz,r11,r12,r13,
-     $     r31,r32,r33,oneev,etau,phi,fb1,fb2,
+     $     r31,r32,r33,oneev,etau,phi,fb1,fb2,x(3),y(3),
      $     theta,cost,sint,r21,r22,r23,ald,tfacc
       parameter (oneev=1.d0+3.83d-12)
       logical*4 sol,calgeo,dir,acconly
 c     begin initialize for preventing compiler warning
-      y1=0.d0
-      y2=0.d0
-      y3=0.d0
       cost=1.d0
       sint=0.d0
 c     end   initialize for preventing compiler warning
@@ -278,7 +267,7 @@ c      h1=sqrt(1.d0+p1**2)
             ald=ali
             if(v .eq. 0.d0)then
               geo(:,4,i1)=geo(:,3,i)*ald+geo(:,4,i)
-              call tmov(geo(1,1,i),geo(1,1,i1),9)
+              geo(1,1:3,i1)=geo(1,1:3,i)
             else
               if(kytbl(kwROT,k) .ne. 0)then
                 theta=cmp%value(kytbl(kwROT,k))
@@ -288,16 +277,11 @@ c      h1=sqrt(1.d0+p1**2)
               if(theta .ne. 0.d0)then
                 cost=cos(theta)
                 sint=sin(theta)
-                x1= cost*geo(1,1,i)-sint*geo(1,2,i)
-                x2= cost*geo(2,1,i)-sint*geo(2,2,i)
-                x3= cost*geo(3,1,i)-sint*geo(3,2,i)
-                y1= sint*geo(1,1,i)+cost*geo(1,2,i)
-                y2= sint*geo(2,1,i)+cost*geo(2,2,i)
-                y3= sint*geo(3,1,i)+cost*geo(3,2,i)
+                x= cost*geo(:,1,i)-sint*geo(:,2,i)
+                y= sint*geo(:,1,i)+cost*geo(:,2,i)
               else
-                x1= geo(1,1,i)
-                x2= geo(2,1,i)
-                x3= geo(3,1,i)
+                x= geo(:,1,i)
+                y=0.d0
               endif
               rho0=ald/v
               sp0=sin(v)
@@ -309,22 +293,12 @@ c      h1=sqrt(1.d0+p1**2)
                 r2=rho0*(1.d0-cp0)
               endif
 c              r2=2.d0*rho0*sin(v*.5d0)**2
-              geo(1,4,i1)=geo(1,4,i)+(r1*geo(1,3,i)-r2*x1)
-              geo(2,4,i1)=geo(2,4,i)+(r1*geo(2,3,i)-r2*x2)
-              geo(3,4,i1)=geo(3,4,i)+(r1*geo(3,3,i)-r2*x3)
-              geo(1,1,i1)= cp0*x1+sp0*geo(1,3,i)
-              geo(1,3,i1)=-sp0*x1+cp0*geo(1,3,i)
-              geo(2,1,i1)= cp0*x2+sp0*geo(2,3,i)
-              geo(2,3,i1)=-sp0*x2+cp0*geo(2,3,i)
-              geo(3,1,i1)= cp0*x3+sp0*geo(3,3,i)
-              geo(3,3,i1)=-sp0*x3+cp0*geo(3,3,i)
+              geo(:,4,i1)=geo(:,4,i)+(r1*geo(:,3,i)-r2*x)
+              geo(:,1,i1)= cp0*x+sp0*geo(:,3,i)
+              geo(:,3,i1)=-sp0*x+cp0*geo(:,3,i)
               if(theta .ne. 0.d0)then
-                geo(1,2,i1)=-sint*geo(1,1,i1)+cost*y1
-                geo(1,1,i1)= cost*geo(1,1,i1)+sint*y1
-                geo(2,2,i1)=-sint*geo(2,1,i1)+cost*y2
-                geo(2,1,i1)= cost*geo(2,1,i1)+sint*y2
-                geo(3,2,i1)=-sint*geo(3,1,i1)+cost*y3
-                geo(3,1,i1)= cost*geo(3,1,i1)+sint*y3
+                geo(:,2,i1)=-sint*geo(:,1,i1)+cost*y
+                geo(:,1,i1)= cost*geo(:,1,i1)+sint*y
               else
                 geo(:,2,i1)=geo(:,2,i)
               endif
@@ -355,12 +329,8 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
                 r31=-schi1*cchi2
                 r32=-schi2
                 r33= cchi1*cchi2
-                geo(1,4,i1)=geo(1,4,i)
-     1               +dx*geo(1,1,i)+dy*geo(1,2,i)+dz*geo(1,3,i)
-                geo(2,4,i1)=geo(2,4,i)
-     1               +dx*geo(2,1,i)+dy*geo(2,2,i)+dz*geo(2,3,i)
-                geo(3,4,i1)=geo(3,4,i)
-     1               +dx*geo(3,1,i)+dy*geo(3,2,i)+dz*geo(3,3,i)
+                geo(:,4,i1)=geo(:,4,i)
+     1               +dx*geo(:,1,i)+dy*geo(:,2,i)+dz*geo(:,3,i)
               else
                 dx=-cmp%value(ky_DX_COORD)
                 dy= cmp%value(ky_DY_COORD)
@@ -447,21 +417,9 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
         dh=max(oneev-h1,-v*sin(phic))
         h2=h1+dh
         p2=h2p(h2)
-c        p2=h2*sqrt(1.d0-1.d0/h2**2)
-c        p2=sqrt((h2-1.d0)*(h2+1.d0))
         p1=p1+dh*(h2+h1)/(p2+p1)
         h1=h2
       endif
       tfacc=p1
-      return
-      end
-
-      real*8 function tfpos(k)
-      use tfstk
-      use ffs
-      use tffitcode
-      implicit none
-      integer*4 k
-      tfpos=rlist(ifpos+k-1)
       return
       end
