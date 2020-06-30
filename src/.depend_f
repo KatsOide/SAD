@@ -312,7 +312,7 @@ tffamsetup.o: tffamsetup.f tffs.o tfstk.o
 tffile.o: tffile.f tffs.o tfstk.o toplvl.o
 tffindroot.o: tffindroot.f tfstk.o
 tffs.o: tffs.f initb1.o tfloor.o tfstk.o toplvl.o
-tffsa.o: tffsa.f INTGRL.o temit.o tffs.o tfstk.o toplvl.o
+tffsa.o: tffsa.f INTGRL.o temit.o tffs.o tfstk.o tgrot.o toplvl.o
 tffscalc.o: tffscalc.f tffs.o tfloor.o tfshared.o tfstk.o toplvl.o
 tffsfreefix.o: tffsfreefix.f tffs.o tfstk.o toplvl.o
 tffsmatch.o: tffsmatch.f initb1.o tffs.o tfshared.o tfstk.o toplvl.o

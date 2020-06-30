@@ -1013,7 +1013,7 @@ c          call tinv6(ri,trans)
      $         .false.,sol,rt,.true.,l,l)
         endif
         if(cgeo)then
-          gv=tfgeofrac(l)
+          gv=tfgeo1s(l)
         endif
         if(chg)then
           call qfracsave(l,dsave,nvar,.false.)
@@ -1070,7 +1070,7 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
       use ffs
       use ffs_pointer
       use tffitcode
-      use geolib, only:tfgeofrac
+      use geolib, only:tfgeo1s
       implicit none
       type (sad_descriptor) dsave(kwMAX)
       type (sad_comp) ,pointer :: cmp,cmp0
@@ -1113,7 +1113,7 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
         gammab(l)=gb0
         gammab(l+1)=gb1
         if(cgeo)then
-          gv=tfgeofrac(l)
+          gv=tfgeo1s(l)
         endif
         if(chg)then
           call qfracsave(l,dsave,nvar,.false.)
@@ -1184,10 +1184,6 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
         f2=0.d0
       endif
       lt=idtype(cmp%id)
-c      go to (1100,1200,1010,1400,1010,1600,1010,1600,1010,1600,
-c     1       1010,1600,1010,1010,1010,1010,1010,1010,1010,1010,
-c     1       1600,2200,1010,1010,1010,1010,1010,1010,1010,1010,
-c     1       3100,3200),lt
       select case (lt)
 
       case (icDRFT)

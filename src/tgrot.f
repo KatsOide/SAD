@@ -98,7 +98,7 @@
       return
       end function
 
-      real*8 function tfgeofrac(lxp) result(gv)
+      real*8 function tfgeo1s(lxp) result(gv)
       use ffs_pointer
       implicit none
       integer*4 , intent(in)::lxp
@@ -131,6 +131,37 @@
       g1     =-schi1i*geo(:,1)+cchi1i*geo(:,3)
       og(:,3)= cchi2i*g1-schi2i*geo(:,2)
       og(:,2)= schi2i*g1+cchi2i*geo(:,2)
+      return
+      end function
+
+      real*8 function tfgeofrac(l,fr,irtc) result(gv)
+      use ffs
+      use ffs_pointer
+      implicit none
+      dimension gv(3,4)
+      type (sad_descriptor) dsave(kwMAX)
+      type (sad_comp) , pointer :: cmp
+      integer*4 , intent(in)::l
+      integer*4 nvar
+      integer*4 ,intent(out):: irtc
+      real*8 , intent(in)::fr
+      logical*4 chg
+      if(fr .eq. 0.d0)then
+        gv=geo(:,:,l)
+      else
+        call qfracsave(l,dsave,nvar,.true.)
+        call compelc(l,cmp)
+        call qfracseg(cmp,cmp,0.d0,fr,chg,irtc)
+        if(irtc .ne. 0)then
+          call tffserrorhandle(l,irtc)
+          gv=geo(:,:,l)
+        elseif(chg)then
+          gv=tfgeo1s(l)
+          call qfracsave(l,dsave,nvar,.false.)
+        else
+          gv=geo(:,:,l)
+        endif
+      endif
       return
       end function
 

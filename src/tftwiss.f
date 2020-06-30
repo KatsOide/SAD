@@ -110,58 +110,59 @@
         kx%k=ktflist+kax
       elseif(keyword .eq. 'FUNCTIONS')then
       else
-        do i=1,nkey
-          if(keyword .eq. nlist(i))then
-            kt=i
-            go to 110
-          endif
-        enddo
-        if(keyword(1:1) .eq. 'D' .or. keyword (1:1) .eq. 'R')then
-          if(keyword(1:1) .eq. 'R')then
-            icol=-1
-          else
-            dref=.true.
-          endif
+        findkey: do while(.true.)
           do i=1,nkey
-            if(keyword(2:) .eq. nlist(i))then
+            if(keyword .eq. nlist(i))then
               kt=i
-              go to 110
+              exit findkey
             endif
           enddo
-          icol=0
-          dref=.false.
-        endif
-        if(keyword(1:3) .eq. 'SIG' .or. keyword(1:4) .eq. 'SIZE'
-     $       .or. keyword .eq. 'GAMMA'
-     $       .or. keyword .eq. 'GAMMABETA'
-     $       .or. keyword .eq. 'S')then
-          call tfline(isp1,kx,ref,irtc)
-        else
-          irtc=itfmessage(9,'General::wrongval',
-     $         '"#1 ('//keyword(1:lenw(keyword))//
-     $         ') is","to be name of optical function"')
-        endif
-        return
- 110    if(narg .eq. 1)then
+          if(keyword(1:1) .eq. 'D' .or. keyword (1:1) .eq. 'R')then
+            if(keyword(1:1) .eq. 'R')then
+              icol=-1
+            else
+              dref=.true.
+            endif
+            do i=1,nkey
+              if(keyword(2:) .eq. nlist(i))then
+                kt=i
+                exit findkey
+              endif
+            enddo
+            icol=0
+            dref=.false.
+          endif
+          if(keyword(1:3) .eq. 'SIG' .or. keyword(1:4) .eq. 'SIZE'
+     $         .or. keyword .eq. 'GAMMA'
+     $         .or. keyword .eq. 'GAMMABETA'
+     $         .or. keyword .eq. 'S')then
+            call tfline(isp1,kx,ref,irtc)
+          else
+            irtc=itfmessage(9,'General::wrongval',
+     $           '"#1 ('//keyword(1:lenw(keyword))//
+     $           ') is","to be name of optical function"')
+          endif
+          return
+        enddo findkey
+        if(narg .eq. 1)then
           kax=ktavaloc(-1,nlat,kll)
           if(kt .le. ntwissfun)then
             if(dref)then
               select case (kt)
-                case (mfitbx,mfitby,mfitbz)
-                  kll%rbody(1:nlat)=
-     $                 (twiss(1:nlat,0,kt)-twiss(1:nlat,-1,kt))
-     $                 /twiss(1:nlat,-1,kt)
-                case default
-                  kll%rbody(1:nlat)=
-     $                 twiss(1:nlat,0,kt)-twiss(1:nlat,-1,kt)
+              case (mfitbx,mfitby,mfitbz)
+                kll%rbody(1:nlat)=
+     $               (twiss(1:nlat,0,kt)-twiss(1:nlat,-1,kt))
+     $               /twiss(1:nlat,-1,kt)
+              case default
+                kll%rbody(1:nlat)=
+     $               twiss(1:nlat,0,kt)-twiss(1:nlat,-1,kt)
               end select
             elseif(ref)then
               kll%rbody(1:nlat)=twiss(1:nlat,icol,kt)
             else
               itoff=((2*ndim+1)*(kt-1)+ndim*(icol+1))*nlat+iftwis
-              do i=1,nlat
-                klist(kax+i)=ktfref+itoff+i-1
-              enddo
+                klist(kax+1:kax+nlat)=
+     $             (/(ktfref+itoff+i-1,i=1,nlat)/)
             endif
           elseif(kt .ge. mfitpex .and. kt .le. mfitpepy .or.
      $           kt .ge. mfitpzx .and. kt .le. mfitgmz)then
@@ -204,7 +205,6 @@ c                    kll%rbody(i)=twiss(itastk(2,isp0+i),icol,kt)
                     call qtwissfrac(ftwiss,itastk(2,isp0+i),
      $                   vstk2(isp0+i),over)
                     kll%rbody(i)=ftwiss(kt)
-c                    rlist(kax+i)=ftwiss(kt)
                   endif
                 enddo
               else
@@ -285,49 +285,49 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       logical*4 ref,dref
       real*8 pe(4),pe0(4),tgetgm
       select case (kt)
-        case (mfitbx,mfitby,mfitbz)
-          if(dref)then
-            kx=dfromr((twiss(i,0,kt)-twiss(i,-1,kt))/twiss(i,-1,kt))
-          elseif(ref)then
-            kx=dfromr(twiss(i,icol,kt))
-          else
-            itoff=((2*ndim+1)*(kt-1)+ndim*(icol+1))*nlat+iftwis
-            kx%k=ktfref+itoff+i-1
-          endif
-        case (mfitpex,mfitpepx,mfitpey,mfitpepy)
-          if(dref)then
-            call tgetphysdispi(i,0,pe)
-            call tgetphysdispi(i,-1,pe0)
-            kx=dfromr(pe(kt-mfitpex+1)-pe0(kt-mfitpex+1))
-          else
-            call tgetphysdispi(i,icol,pe)
-            kx=dfromr(pe(kt-mfitpex+1))
-          endif
-        case (mfitpzx,mfitpzpx,mfitpzy,mfitpzpy)
-          if(dref)then
-            call tgetphysdispzi(i,0,pe)
-            call tgetphysdispzi(i,-1,pe0)
-            kx=dfromr(pe(kt-mfitpzx+1)-pe0(kt-mfitpzx+1))
-          else
-            call tgetphysdispzi(i,icol,pe)
-            kx=dfromr(pe(kt-mfitpzx+1))
-          endif
-        case (mfitgmx,mfitgmy,mfitgmz)
-          if(dref)then
-            kx=dfromr((tgetgm(kt,i,0)-tgetgm(kt,i,-1))/
-     $           tgetgm(kt,i,-1))
-          else
-            kx=dfromr(tgetgm(kt,i,icol))
-          endif
-        case default
-          if(dref)then
-            kx=dfromr(twiss(i,0,kt)-twiss(i,-1,kt))
-          elseif(ref)then
-            kx=dfromr(twiss(i,icol,kt))
-          else
-            itoff=((2*ndim+1)*(kt-1)+ndim*(icol+1))*nlat+iftwis
-            kx%k=ktfref+itoff+i-1
-          endif
+      case (mfitbx,mfitby,mfitbz)
+        if(dref)then
+          kx=dfromr((twiss(i,0,kt)-twiss(i,-1,kt))/twiss(i,-1,kt))
+        elseif(ref)then
+          kx=dfromr(twiss(i,icol,kt))
+        else
+          itoff=((2*ndim+1)*(kt-1)+ndim*(icol+1))*nlat+iftwis
+          kx%k=ktfref+itoff+i-1
+        endif
+      case (mfitpex,mfitpepx,mfitpey,mfitpepy)
+        if(dref)then
+          call tgetphysdispi(i,0,pe)
+          call tgetphysdispi(i,-1,pe0)
+          kx=dfromr(pe(kt-mfitpex+1)-pe0(kt-mfitpex+1))
+        else
+          call tgetphysdispi(i,icol,pe)
+          kx=dfromr(pe(kt-mfitpex+1))
+        endif
+      case (mfitpzx,mfitpzpx,mfitpzy,mfitpzpy)
+        if(dref)then
+          call tgetphysdispzi(i,0,pe)
+          call tgetphysdispzi(i,-1,pe0)
+          kx=dfromr(pe(kt-mfitpzx+1)-pe0(kt-mfitpzx+1))
+        else
+          call tgetphysdispzi(i,icol,pe)
+          kx=dfromr(pe(kt-mfitpzx+1))
+        endif
+      case (mfitgmx,mfitgmy,mfitgmz)
+        if(dref)then
+          kx=dfromr((tgetgm(kt,i,0)-tgetgm(kt,i,-1))/
+     $         tgetgm(kt,i,-1))
+        else
+          kx=dfromr(tgetgm(kt,i,icol))
+        endif
+      case default
+        if(dref)then
+          kx=dfromr(twiss(i,0,kt)-twiss(i,-1,kt))
+        elseif(ref)then
+          kx=dfromr(twiss(i,icol,kt))
+        else
+          itoff=((2*ndim+1)*(kt-1)+ndim*(icol+1))*nlat+iftwis
+          kx%k=ktfref+itoff+i-1
+        endif
       end select
       return
       end
@@ -669,14 +669,13 @@ c              k=ilist(ie,ifklp)
       type (sad_descriptor) kx
       type (sad_comp), pointer ::cmp
       integer*8 kax,ktfgeol,kai,i,ip,j
-      integer*4 irtc,lenw,lxp,nv,lt,isp1,ibz,ia
+      integer*4 irtc,lenw,lxp,isp1,ibz,ia
       real*8 v,beam(42),xp,fr,
      $     gv(3,4),ogv(3,4),cod(6),vtwiss(ntwissfun),tfbzs
-      type (sad_descriptor) dsave(kwMAX)
       character*(*) keyword
       character*64 name
       integer*4 lv,itfdownlevel
-      logical*4 chg,over,ref
+      logical*4 over,ref
 c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
       irtc=0
       ip=itastk(1,isp1)
@@ -755,57 +754,14 @@ c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
         xp=v+ia
         lxp=int(xp)
         fr=xp-lxp
-        j=ifgeo+(lxp-1)*12
-        if(fr .eq. 0.d0)then
-          kx%k=ktflist+ktfgeol(rlist(j))
-        else
-          lt=idtypec(lxp)
-          call compelc(lxp,cmp)
-          call qfracsave(lxp,dsave,nv,.true.)
-          levele=levele+1
-          call qfracseg(cmp,cmp,0.d0,fr,chg,irtc)
-          if(irtc .ne. 0)then
-            call tffserrorhandle(lxp,irtc)
-            kx%k=ktflist+ktfgeol(rlist(j))
-          else
-            if(chg)then
-              kax=ktfgeol(tfgeofrac(lxp))
-            else
-              kax=ktfgeol(rlist(j+12))
-            endif
-            kx%k=ktflist+kax
-          endif
-          call qfracsave(lxp,dsave,nv,.false.)
-          call tfconnect(kx,irtc)
-        endif
+        kx%k=ktflist+ktfgeol(tfgeofrac(lxp,fr,irtc))
       elseif(keyword .eq. 'GX' .or. keyword .eq. 'GY' .or.
      $       keyword .eq. 'GZ' .or. keyword .eq. 'GCHI1' .or.
      $       keyword .eq. 'GCHI2' .or. keyword .eq. 'GCHI3')then
         xp=v+ia
         lxp=int(xp)
         fr=xp-lxp
-        j=ifgeo+(lxp-1)*12
-        if(fr .eq. 0.d0)then
-          call tmov(rlist(j),gv,12)
-        else
-          lt=idtypec(lxp)
-          call compelc(lxp,cmp)
-          levele=levele+1
-          call qfracsave(lxp,dsave,nv,.true.)
-          call qfracseg(cmp,cmp,0.d0,fr,chg,irtc)
-          if(irtc .ne. 0)then
-            call tffserrorhandle(lxp,irtc)
-          else
-            if(chg)then
-              gv=tfgeofrac(lxp)
-            else
-              call tmov(rlist(j+12),gv,12)
-            endif
-          endif
-          call qfracsave(lxp,dsave,nv,.false.)
-          lv=itfdownlevel()
-c          call tmov(vsave,rlist(latt(lxp)+1),nv)
-        endif
+        gv=tfgeofrac(lxp,fr,irtc)
         if(keyword .eq. 'GX')then
           kx=dfromr(gv(1,4))
         elseif(keyword .eq. 'GY')then
@@ -976,7 +932,7 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
       use tfstk
       use ffs
       use tffitcode
-      use ffs_pointer, only:idelc,pnamec
+      use ffs_pointer, only:idelc,pnamec,iele1
       implicit none
       type (sad_descriptor) k
       integer*8 kav,ka,j,jj
@@ -1036,13 +992,10 @@ c          call tmov(vsave,rlist(latt(lxp)+1),nv)
             return
           endif
           if(nl .gt. 0)then
-            do i=1,nl
-              l=int(rlist(kav+i))
-              isp=isp+1
-              itastk(1,isp)=ilist(l,ifele1)
-              itastk(2,isp)=l
-              vstk2(isp)=0.d0
-            enddo
+            itastk(2,isp+1:isp+nl)=int(rlist(kav+1:kav+nl))
+            itastk(1,isp+1:isp+nl)=iele1(itastk(2,isp+1:isp+nl))
+            vstk2(isp+1:isp+nl)=0.d0
+            isp=isp+nl
             return
           endif
         endif
