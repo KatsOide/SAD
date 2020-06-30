@@ -13,7 +13,7 @@ eqs img{
 <BODY>
 <CENTER><H2>Welcome to SAD/FFS & SADScript
 </H2></CENTER>
-<CENTER> SAD/FFS SADScript Version: 1.1.8.1k6,      Updated: 05/26/2020</CENTER>
+<CENTER> SAD/FFS SADScript Version: 1.1.8.4k64,      Updated: 07/01/2020</CENTER>
 
 <PRE> Please use browser's search to find an item.
 
@@ -1260,18 +1260,17 @@ nealry equal to the natural chromaticity.
 <LI>
 <H3><A NAME=L63>
 GEOMETRY(G)</A></H3>
-<PRE>DISP G displays geometric information of the beam line. It shows the geometry at the coordinate,
-except for a SOL region, where the geometry at the orbit is shown.
+<PRE>DISP G displays geometric information of the beam line. It shows the geometry of the coordinate.
 </PRE>
 <PRE>See also:
- <A HREF=#L465>geometric-functions</A> <A HREF=#L471>matching-function-commands</A></PRE>
+ <A HREF=#L465>geometric-functions</A> <A HREF=#L471>matching-function-commands</A> <A HREF=#L64>OGEOMETRY(OG)</A></PRE>
 <LI>
 <H3><A NAME=L64>
 OGEOMETRY(OG)</A></H3>
 <PRE>DISP OG displays geometric information at the orbit.
 </PRE>
 <PRE>See also:
- <A HREF=#L465>geometric-functions</A> <A HREF=#L471>matching-function-commands</A></PRE>
+ <A HREF=#L465>geometric-functions</A> <A HREF=#L471>matching-function-commands</A> <A HREF=#L63>GEOMETRY(G)</A></PRE>
 <LI>
 <H3><A NAME=L65>
 ORBIT(O)</A></H3>
@@ -3088,14 +3087,14 @@ DISFRIN</A></H3>
 <LI>
 <H3><A NAME=L240>
 DPX</A></H3>
-<PRE>An offset of the design ORBIT angle CHI1 relative to the solenoid axis at SOL with GEO = 1.
+<PRE>An offset of the design ORBIT angle -CHI1 relative to the solenoid axis at SOL with GEO = 1.
 </PRE>
 <PRE>See also:
  <A HREF=#L245>GEO</A> <A HREF=#L84>DX</A> <A HREF=#L85>DY</A> <A HREF=#L241>DPY</A> CHI1</PRE>
 <LI>
 <H3><A NAME=L241>
 DPY</A></H3>
-<PRE>An offset of the design ORBIT angle CHI2 relative to the solenoid axis at SOL with GEO = 1.
+<PRE>An offset of the design ORBIT angle -CHI2 relative to the solenoid axis at SOL with GEO = 1.
 </PRE>
 <PRE>See also:
  <A HREF=#L245>GEO</A> <A HREF=#L84>DX</A> <A HREF=#L85>DY</A> <A HREF=#L240>DPX</A> CHI2</PRE>
@@ -3126,7 +3125,7 @@ GEO</A></H3>
 design orbit. At a SOL element with GEO = 1, the design orbit is determined by DX, DY, DPX, DPY parameters
 </PRE>
 <PRE>See also:
- <A HREF=#L84>DX</A> <A HREF=#L85>DY</A> <A HREF=#L240>DPX</A> <A HREF=#L241>DPY</A></PRE>
+ <A HREF=#L84>DX</A> <A HREF=#L85>DY</A> <A HREF=#L240>DPX</A> <A HREF=#L241>DPY</A> <A HREF=#L465>geometric-functions</A> <A HREF=#L56>DISPLAY(DISP)</A> GEOMRTRY(G) <A HREF=#L64>OGEOMETRY(OG)</A></PRE>
 </UL>
 </UL>
 <H3><A NAME=L246>
@@ -4949,9 +4948,9 @@ key-strings:LINE</A></H3>
 keyword      The value of the keyword of the component (see below).
 "EXPAND"     Distribute the value of the default-keywords and the keywords used in the matching to
              all components in the beam line. No second argument.
-"GX", "GY", "GZ"  Geometric functions GX, GY, GZ.
-"GCHI1", "GCHI2", "GCHI3"  Geometric functions CHI1, CHI2, CHI3
-"OGX", "OGY", "OGZ", "OCHI1", "OCHI2", "OCHI3"  Geometrical functions at the orbit.
+"GX", "GY", "GZ"  Geometric functions for the coordinate GX, GY, GZ.
+"GCHI1", "GCHI2", "GCHI3"  Geometric functions for the coordinate CHI1, CHI2, CHI3
+"OGX", "OGY", "OGZ", "OCHI1", "OCHI2", "OCHI3"  Geometrical functions for the orbit.
  Setting by LINE[keyword,..] to the DEFAULT keyword for the FIRST component changes the current value
 of the corresponding element, because the value of an element is stored in the first component.
 </PRE>
@@ -6400,10 +6399,13 @@ and zeta in -(y-direction) at the entrance. The set {xi, eta, zeta} forms a righ
     {x, y, s}_local
    = rotate[s, chi3] rotate[x, chi2] rotate[y, -chi1]{x, y, s}_origin,
 
-where rotate[a, b] reads "rotate around the new-a vector by b right-handedly".
+where rotate[a, b] reads "rotate around the new-a vector by b right-handedly.
+
+geometric functions disignate the geometry of the coordinate. If the geometry of orbit is needed,
+use LINE["OGEO"], etc., or DISP OG.
 </PRE>
 <PRE>See also:
- <A HREF=#L476>optical-functions</A> <A HREF=#L471>matching-function-commands</A> <A HREF=#L56>DISPLAY(DISP)</A> <A HREF=#L320>GEOCAL</A> <A HREF=#L321>GEOFIX</A></PRE>
+ <A HREF=#L476>optical-functions</A> <A HREF=#L471>matching-function-commands</A> <A HREF=#L56>DISPLAY(DISP)</A> <A HREF=#L320>GEOCAL</A> <A HREF=#L321>GEOFIX</A> <A HREF=#L477>ORG</A> <A HREF=#L395>LINE</A></PRE>
 <H3><A NAME=L466>
 GEO</A></H3>
 <PRE>prints out the TopDrawer commands for the geometric plot of the beam line.
