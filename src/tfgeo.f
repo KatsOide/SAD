@@ -153,14 +153,15 @@
       use sad_main
       use tfcsi, only:icslfno
       use mathfun
+      use geolib
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 istart,istop,ke,ke1,i,k,i1,istart0
       integer*8 id
-      real*8 p1,h1,ali,v,zetau,b,a,xiu,dchi3,coschi,sinchi,
+      real*8 p1,h1,ali,v,dchi3,
      $     rho0,sp0,cp0,r1,r2,cchi1,schi1,
      $     cchi2,schi2,cchi3,schi3,dx,dy,dz,r11,r12,r13,
-     $     r31,r32,r33,oneev,etau,phi,fb1,fb2,x(3),y(3),
+     $     r31,r32,r33,oneev,phi,fb1,fb2,x(3),y(3),
      $     theta,cost,sint,r21,r22,r23,ald,tfacc
       parameter (oneev=1.d0+3.83d-12)
       logical*4 sol,calgeo,dir,acconly
@@ -239,21 +240,13 @@ c      h1=sqrt(1.d0+p1**2)
           if(k .eq. icMARK)then
             if(ke .ne. 0 .and. ke1 .ne. 0)then
               if(rlist(idvalc(i)+ky_GEO_MARK) .ne. 0)then
-                zetau=geo(1,3,ke1)*geo(1,1,i)+geo(2,3,ke1)*geo(2,1,i)
-     1               +geo(3,3,ke1)*geo(3,1,i)
-                b=min(1.d0,max(-1.d0,-zetau/geo(3,2,i)))
-                a=1.d0+sqrt1(-b**2)
-                 etau=geo(1,2,ke1)*geo(1,1,i)+geo(2,2,ke1)*geo(2,1,i)
-     1               +geo(3,2,ke1)*geo(3,1,i)
-                  xiu=geo(1,1,ke1)*geo(1,1,i)+geo(2,1,ke1)*geo(2,1,i)
-     1               +geo(3,1,ke1)*geo(3,1,i)
-                dchi3=atan2(a*etau-b*geo(3,3,ke1)*xiu,
-     1                      a*xiu+b*geo(3,3,ke1)*etau)
-                rlist(latt(ke)+ky_CHI3_SOL)=
-     $               rlist(latt(ke)+ky_CHI3_SOL)+dchi3
-                coschi= cos(dchi3)
-                sinchi=-sin(dchi3)
-                call trotg(geo(1,1,ke1),geo(1,3,ke1),coschi,sinchi)
+                dchi3=tfchi(geo(:,:,i),3)
+                geo(:,1:3,ke1)=matmul(matmul(
+     $               tfrotgeo(geo(:,1:3,i),(/0.d0,0.d0,-dchi3/)),
+     $               transpose(geo(:,1:3,i))),geo(:,1:3,ke1))
+                call compelc(ke,cmp)
+                cmp%value(ky_CHI1_SOL:ky_CHI3_SOL)=
+     $               tgrot(geo(:,1:3,ke),geo(:,1:3,ke1))
                 istart=ke1
                 go to 1
               endif
@@ -267,7 +260,7 @@ c      h1=sqrt(1.d0+p1**2)
             ald=ali
             if(v .eq. 0.d0)then
               geo(:,4,i1)=geo(:,3,i)*ald+geo(:,4,i)
-              geo(1,1:3,i1)=geo(1,1:3,i)
+              geo(:,1:3,i1)=geo(:,1:3,i)
             else
               if(kytbl(kwROT,k) .ne. 0)then
                 theta=cmp%value(kytbl(kwROT,k))

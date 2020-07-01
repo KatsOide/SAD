@@ -75,8 +75,7 @@ c     end   initialize for preventing compiler warning
         id1=1
         id2=nlat
         iorgr=1
-        geo0(:,1:3)=geoini
-        geo0(:,4)=0.d0
+        geo0(:,:)=geoini
         chi0(1:3)=0.d0
         if(geocal .or. chguse)then
           geocal0=geocal

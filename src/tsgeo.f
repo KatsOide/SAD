@@ -81,7 +81,7 @@
         pos0=0
         bzs=tfbzs(k1,kbz)
         chi3=tfchi(geo(:,:,k),3)
-        geo(:,1:3,k+1)=tfrotgeo(geo(:,:,k),(/chi1,chi2,-chi3/))
+        geo(:,1:3,k+1)=tfrotgeo(geo(:,:,k),-(/chi1,chi2,chi3/))
         geo(:,4,k+1)=geo(:,4,k)
         cmp1%value(ky_CHI1_SOL:ky_CHI3_SOL)=
      $       tgrot(geo(:,:,k),geo(:,:,k+1))
@@ -129,7 +129,6 @@
         do i=k+1,ke1
           geo(:,:,i)=matmul(geot,geo(:,:,i))
           geo(:,4,i)=geo(:,4,i)+dg4
-c          write(*,'(a,i5,1p3g15.7)')'tsgeo ',i,geo(:,4,i)
         enddo
         geo(:,:,k)=geos
         cmp1%value(ky_CHI1_SOL:ky_CHI3_SOL)=

@@ -1027,6 +1027,9 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
         chi2=-cmp%value(ky_CHI2_MULT)
       endif
       call tsetfringepe(cmp,icMULT,cmp%orient,ftable)
+      if(l .eq. 941)then
+        write(*,'(a,1p6g15.7)')'tmulte1 ',cod
+      endif
       call tmulte(trans,cod,beam,srot,l,al,
      $     cmp%value(ky_K0_MULT),
      $     bzs,
@@ -1047,6 +1050,9 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
      $     cmp%value(ky_W1_MULT),rtaper,
      $     cmp%value(ky_APHI_MULT) .ne. 0.d0,
      $     ld)
+      if(l .eq. 941)then
+        write(*,'(a,1p6g15.7)')'tmulte1-9 ',cod
+      endif
       return
       end
 

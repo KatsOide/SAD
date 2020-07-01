@@ -1,9 +1,10 @@
       module geolib
-      real*8 ,parameter :: geoini(3,3)=
+      real*8 ,parameter :: geoini(3,4)=
      $     reshape(
      $     (/0.d0,-1.d0, 0.d0,
      $       0.d0, 0.d0,-1.d0,
-     $       1.d0, 0.d0, 0.d0/) , (/3,3/))
+     $       1.d0, 0.d0, 0.d0,
+     $       0.d0, 0.d0, 0.d0/) , (/3,4/))
 
       contains
       real*8 function tfchi(geo,i)
@@ -55,7 +56,7 @@
       implicit none
       real*8, intent(in)::geo(3,3),chi(3)
       real*8 cschi1,snchi1,cschi2,snchi2,cschi3,snchi3,
-     $     g1(3),g2(3)
+     $     g1(3),g3(3)
       dimension geo1(3,3)
       cschi1=cos(chi(1))
       snchi1=sin(chi(1))
@@ -63,12 +64,12 @@
       snchi2=sin(chi(2))
       cschi3=cos(chi(3))
       snchi3=sin(chi(3))
-      g1       = geo(:,1) *cschi3+geo(:,2)*snchi3
-      geo1(:,2)=-geo(:,1) *snchi3+geo(:,2)*cschi3
-      g2       = geo1(:,2)*snchi2+geo(:,3)*cschi2
-      geo1(:,2)= geo1(:,2)*cschi2-geo(:,3)*snchi2
-      geo1(:,3)=        g2*cschi1+      g1*snchi1
-      geo1(:,1)=       -g2*snchi1+      g1*cschi1
+      g1       = geo(:,1) *cschi3-geo(:,2)*snchi3
+      geo1(:,2)= geo(:,1) *snchi3+geo(:,2)*cschi3
+      g3       =-geo1(:,2)*snchi2+geo(:,3)*cschi2
+      geo1(:,2)= geo1(:,2)*cschi2+geo(:,3)*snchi2
+      geo1(:,3)=        g3*cschi1-      g1*snchi1
+      geo1(:,1)=        g3*snchi1+      g1*cschi1
       return
       end function
 

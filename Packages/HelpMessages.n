@@ -1200,13 +1200,13 @@ A y-offset of the design ORBIT relative to the solenoid center at SOL with GEO =
 
          {"DPX",
           "\
-An offset of the design ORBIT angle -CHI1 relative to the solenoid axis at SOL with GEO = 1.",
+An offset of the design ORBIT angle CHI1 relative to the solenoid axis at SOL with GEO = 1.",
           "GEO DX DY DPY CHI1",
           {}},
 
          {"DPY",
           "\
-An offset of the design ORBIT angle -CHI2 relative to the solenoid axis at SOL with GEO = 1.",
+An offset of the design ORBIT angle CHI2 relative to the solenoid axis at SOL with GEO = 1.",
           "GEO DX DY DPX CHI2",
           {}},
 
@@ -1635,20 +1635,6 @@ draws a plot of optical functions in multi columns. It calls OpticsPlot internal
         {}}
 
       }]},
-
-   {"GEO",
-    "\
-prints out the TopDrawer commands for the geometric plot of the beam line.",
-    "DISPLAY(DISP)",
-    {}},
-
-!    {"TDR",
-!     "Usage:   TDR {filename | file_number}\n\n\
-! runs TopDrawer (tdr) using the file specified by filename or file_number as the input. It supports both Tek terminal and X-window.\n\n\
-! Example:   OUT 'a' DRAW bx by & ex ey q* CLOSE OUT TDR 'a'\n\n\
-! TDR does not work when SAD is running under EMACS without X-window.",
-!     "DRAW GEO OUTPUT(OUT) CLOSE(CLO)",
-!     {}},
 
    {"PRINT(PRI)",
     "PRI expression evaluates expression and prints out the result.",
