@@ -81,7 +81,7 @@
         pos0=0
         bzs=tfbzs(k1,kbz)
         chi3=tfchi(geo(:,:,k),3)
-        geo(:,1:3,k+1)=tfrotgeo(geo(:,:,k),-(/chi1,chi2,chi3/))
+        geo(:,1:3,k+1)=tfderotgeo(geo(:,:,k),(/chi1,chi2,chi3/))
         geo(:,4,k+1)=geo(:,4,k)
         cmp1%value(ky_CHI1_SOL:ky_CHI3_SOL)=
      $       tgrot(geo(:,:,k),geo(:,:,k+1))
@@ -113,16 +113,16 @@
       do i=k1+idir,k2,idir
         call tsgeo1(i,xi,pxi,yi,pyi,ds,gi,bzs,idir,dir)
       enddo
-      rlist(led+3:led+5)=(/xi,yi,ds/)
+      rlist(led+ky_DX_SOL:led+ky_DZ_SOL)=(/xi,yi,ds/)
       cmpe%value(ky_DX_SOL:ky_DZ_SOL)=(/xi,yi,ds/)
       if(idir .gt. 0)then
         chi3=tfchi(geo(:,1:3,ke1),3)
-        geo(:,1:3,ke1)=tfrotgeo(geo(:,1:3,ke1),(/0.d0,0.d0,-chi3/))
+        geo(:,1:3,ke1)=tfderotgeo(geo(:,1:3,ke1),(/0.d0,0.d0,chi3/))
         cmp2%value(ky_CHI1_SOL:ky_CHI3_SOL)=
      $       tgrot(geo(:,1:3,ke),geo(:,:,ke1))
       else
         a=tgrot(geo(:,:,k),geo(:,:,ke1))
-        geot=matmul(tfrotgeo(geos,(/0.d0,0.d0,-a(3)/)),
+        geot=matmul(tfderotgeo(geos,(/0.d0,0.d0,a(3)/)),
      $       transpose(geo(:,1:3,k)))
         pos(k:ke1)=pos0+pos(k:ke1)-pos(k)
         dg4=geos(:,4)-matmul(geot,geo(:,4,k))

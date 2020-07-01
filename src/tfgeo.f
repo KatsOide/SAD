@@ -242,7 +242,7 @@ c      h1=sqrt(1.d0+p1**2)
               if(rlist(idvalc(i)+ky_GEO_MARK) .ne. 0)then
                 dchi3=tfchi(geo(:,:,i),3)
                 geo(:,1:3,ke1)=matmul(matmul(
-     $               tfrotgeo(geo(:,1:3,i),(/0.d0,0.d0,-dchi3/)),
+     $               tfderotgeo(geo(:,1:3,i),(/0.d0,0.d0,dchi3/)),
      $               transpose(geo(:,1:3,i))),geo(:,1:3,ke1))
                 call compelc(ke,cmp)
                 cmp%value(ky_CHI1_SOL:ky_CHI3_SOL)=

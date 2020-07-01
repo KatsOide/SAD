@@ -52,7 +52,50 @@
       return
       end function
 
+      real*8 function tfchitorot(chi) result(rot)
+      implicit none
+      real*8 , intent(in)::chi(3)
+      dimension rot(3,3)
+      real*8 schi1,cchi1,schi2,cchi2,schi3,cchi3
+      cchi1=cos(chi(1))
+      cchi2=cos(chi(2))
+      cchi3=cos(chi(3))
+      schi1=sin(chi(1))
+      schi2=sin(chi(2))
+      schi3=sin(chi(3))
+      rot(1,1)= cchi1*cchi2
+      rot(2,1)= cchi2*schi1
+      rot(3,1)= schi2
+      rot(1,2)=-cchi3*schi1+cchi1*schi2*schi3
+      rot(2,2)= cchi1*cchi3+schi1*schi2*schi3
+      rot(3,2)=-cchi2*schi3
+      rot(1,3)=-cchi1*cchi3*schi2-schi1*schi3
+      rot(2,3)=-cchi3*schi1*schi2
+      rot(3,3)= cchi2*cchi3
+      return
+      end function
+
       real*8 function tfrotgeo(geo,chi) result(geo1)
+      implicit none
+      dimension geo1(3,3)
+      real*8, intent(in)::geo(3,3),chi(3)
+      real*8 cschi1,snchi1,cschi2,snchi2,cschi3,snchi3,g1(3)
+      cschi1=cos(chi(1))
+      snchi1=sin(chi(1))
+      cschi2=cos(chi(2))
+      snchi2=sin(chi(2))
+      cschi3=cos(chi(3))
+      snchi3=sin(chi(3))
+      g1       = geo(:,1)*cschi1+ geo(:,3)*snchi1
+      geo1(:,3)=-geo(:,1)*snchi1+ geo(:,3)*cschi1
+      geo1(:,2)= geo(:,2)*cschi2+geo1(:,3)*snchi2
+      geo1(:,3)=-geo(:,2)*snchi2+geo1(:,3)*cschi2
+      geo1(:,1)= g1      *cschi3-geo1(:,2)*snchi3
+      geo1(:,2)= g1      *snchi3+geo1(:,2)*cschi3
+      return
+      end function
+
+      real*8 function tfderotgeo(geo,chi) result(geo1)
       implicit none
       real*8, intent(in)::geo(3,3),chi(3)
       real*8 cschi1,snchi1,cschi2,snchi2,cschi3,snchi3,
@@ -64,12 +107,12 @@
       snchi2=sin(chi(2))
       cschi3=cos(chi(3))
       snchi3=sin(chi(3))
-      g1       = geo(:,1) *cschi3-geo(:,2)*snchi3
-      geo1(:,2)= geo(:,1) *snchi3+geo(:,2)*cschi3
-      g3       =-geo1(:,2)*snchi2+geo(:,3)*cschi2
-      geo1(:,2)= geo1(:,2)*cschi2+geo(:,3)*snchi2
-      geo1(:,3)=        g3*cschi1-      g1*snchi1
-      geo1(:,1)=        g3*snchi1+      g1*cschi1
+      g1       = geo(:,1) *cschi3+geo(:,2)*snchi3
+      geo1(:,2)=-geo(:,1) *snchi3+geo(:,2)*cschi3
+      g3       = geo1(:,2)*snchi2+geo(:,3)*cschi2
+      geo1(:,2)= geo1(:,2)*cschi2-geo(:,3)*snchi2
+      geo1(:,3)=        g3*cschi1+      g1*snchi1
+      geo1(:,1)=       -g3*snchi1+      g1*cschi1
       return
       end function
 
