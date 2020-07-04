@@ -385,7 +385,7 @@ c            s=sqrt(dx**2+dy**2)
       type (sad_dlist), pointer :: klx,klxi
       type (sad_rlist), pointer :: klxj
       integer*8 ka,kas,kac,kai,kavc,kavs
-      integer*4 isp1,irtc,iav(3),nt,m,itfmessage,isp0,j,i,ii
+      integer*4 isp1,irtc,iav(3),nt,m,itfmessage,isp0,j,i,ii,m3
       real*8 xs,ys,zs,xc,yc,zc
       if(isp .ne. isp1+3)then
         irtc=itfmessage(9,'General::narg','"3"')
@@ -425,8 +425,11 @@ c            s=sqrt(dx**2+dy**2)
         iav(i)=ilist(2,kai+1)
       enddo
       isp0=isp
-      call tfcliptriangle1(m/3,
-     $     rlist(iav(1)+1),rlist(iav(2)+1),rlist(iav(3)+1))
+      m3=m/3
+      call tfcliptriangle1(m3,
+     $     rlist(iav(1)+1:iav(1)+m3),
+     $     rlist(iav(2)+1:iav(2)+m3),
+     $     rlist(iav(3)+1:iav(3)+m3))
       nt=(isp-isp0)/9
       if(nt .le. 0)then
         kx=dxnulll
@@ -672,7 +675,8 @@ c            s=sqrt(dx**2+dy**2)
         rtastk(isp+6)=rlist(kaci2+3)
         isp=isp+6
       enddo
-      call tfcanvas3dlighttriangle1(nt,kat,nc,rtastk(isp0+1),kx,irtc)
+      call tfcanvas3dlighttriangle1(nt,kat,nc,
+     $     rtastk(isp0+1:isp),kx,irtc)
       isp=isp0
       if(irtc .ne. 0)then
         return
@@ -806,7 +810,8 @@ c            s=sqrt(dx**2+dy**2)
       e(2)=rlist(kave+2)/d
       e(3)=rlist(kave+3)/d
       call tfcanvas3dprojection1(ktastk(isp1+1),e,
-     $     rlist(kavx+1),rlist(kavy+1),d,rlist(kavoff+1),kx,irtc)
+     $     rlist(kavx+1:kavx+3),rlist(kavy+1:kavy+3),
+     $     d,rlist(kavoff+1:kavoff+2),kx,irtc)
       return
  9000 irtc=itfmessage(9,'General::wrongtype',
      $     '"[data, Eye, Xproj, Yproj, Offset]"')

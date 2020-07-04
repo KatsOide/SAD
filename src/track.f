@@ -39,10 +39,7 @@ c      use tfcsi, only:ipoint,lrecl,lfni
      $       'DP=0.01;DPM=XIX=XIY=0;TITLE=CASE="";NFAMP=4;'//
      $       '(DP0=v_)^:=(LINE["DDP",1]=v);'//
      $       'System$Names=Select[Names["*"],'//
-     $       'ToUpperCase[#[1]]==#[1]&];Protect[DP0];'//
-     $       '{EMITX,EMITY,EMITZ,SIGZ}='//
-     $       'LINE[{"EMITX","EMITY","EMITZ","SIGMAZ"},1];'//
-     $       'DP0=LINE["DDP",1];',
+     $       'ToUpperCase[#[1]]==#[1]&];Protect[DP0];',
      $       kx,irtc)
         initmessage=0
         ifibzl=0
@@ -81,6 +78,7 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       trf0  =rgetgl1('DTSYNCH')
       vcalpha=rgetgl1('EFFVCRATIO')
       nlat  =elatt%nlat0+1
+      write(*,*)'track-nlat ',nlat
       df    =rgetgl1('FSHIFT')
       isynch=igetgl1('$RFSW$'  )
       intra =igetgl1('$INTRA$' ) .ne. 0
@@ -136,6 +134,8 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       call initialize_tampl()
       call tclrpara
       call tclrfpe
+      write(*,*)'track-clrpara ',ifele1
+        write(*,*)'track-evals'
       write(*,'(a)')
      1' RFSW RADCOD RAD  FLUC  INTRA'//
      1' POL   COD  DAPER EMIOU K64   FOURI SMEAR'

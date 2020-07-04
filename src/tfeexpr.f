@@ -472,18 +472,18 @@ c      enddo
           endif
           return
          elseif(tfcomplexq(k2,cx2))then
-          call tfcmplxmath(dcmplx(v1,0.d0),cx2%cx,kx,iopc,irtc)
+          call tfcmplxmath(dcmplx(v1,0.d0),cx2%cx(1),kx,iopc,irtc)
           return
         else
           go to 8000
         endif
       elseif(tfcomplexq(k1,cx1))then
         if(ktfrealq(k2,v2))then
-          call tfcmplxmath(cx1%cx,dcmplx(v2,0.d0),
+          call tfcmplxmath(cx1%cx(1),dcmplx(v2,0.d0),
      $         kx,iopc,irtc)
           return
         elseif(tfcomplexq(k2,cx2))then
-          call tfcmplxmath(cx1%cx,cx2%cx,kx,iopc,irtc)
+          call tfcmplxmath(cx1%cx(1),cx2%cx(1),kx,iopc,irtc)
           return
         endif
       endif

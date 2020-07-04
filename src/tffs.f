@@ -962,6 +962,21 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         return
         end subroutine
 
+        integer*4 pure function ielma(i)
+        use ffs_flag,only:trpt
+        use tmacro, only:nlat
+        implicit none
+        integer*4 ,intent(in):: i
+        if(trpt)then
+          ielma=min(max(i,1),nlat)
+        elseif(i .gt. 0)then
+          ielma=mod(i-1,nlat)+1
+        else
+          ielma=nlat-mod(-i,nlat)
+        endif
+        return
+        end function
+
       end module
 
       module tparastat
@@ -2117,7 +2132,7 @@ c      call tfree(ifibzl)
         call trbassign(lfni)
         outfl=outfl1
         if(irtc .eq. 0 .and. iffserr .ne. 0)then
-          irtc=itfmessagestr(9,'FFS::error',strfromis(iffserr))
+          irtc=itfmessagestr(9,'FFS::error',strfromis(int(iffserr)))
         endif
       endif
       call tfconnect(kx,irtc)

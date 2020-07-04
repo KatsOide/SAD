@@ -2148,6 +2148,7 @@ c        write(*,'(1p3g13.5)')epol
       use tmacro
       use tffitcode
       use tspin, only:spnorm,sremit
+      use eigen
       implicit none
       real*8 conv
       parameter (conv=1.d-12)
@@ -2290,7 +2291,7 @@ c        call tmultr(ri,trans,6)
         r(6,5)=0.d0
         r(6,6)=1.d0
       endif
-      call teigen(r,ri,ceig,6,6)
+      call teigenc(r,ri,ceig,6,6)
 c      write(*,'(a,1p12g10.3)')'ceig: ',ceig
       call tnorm(r,ceig,lfno)
       call tsub(ceig,ceig0,dceig,12)
@@ -2348,7 +2349,7 @@ c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
       if(pri)then
         if(lfno .gt. 0)then
           do i=1,ntwissfun
-            vout9(i)=autofg(params(iptws0+i),'9.6')(1:9)
+            vout9(i)=autofg(params(iptws0+i),'9.6')
           enddo
           write(lfno,9001)
      $         vout9(mfitax),vout9(mfitbx),vout9(mfitzx),vout9(mfitex),

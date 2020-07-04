@@ -685,10 +685,10 @@ c          endif
       subroutine tfreplacewithstk(list,ispr,nrule,kx,rep,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k1,k2,ki
+      type (sad_descriptor) kx,k1,k2,ki,ki2
       type (sad_dlist) list
       type (sad_dlist), pointer :: kl1,kli,klx,klx1
-      integer*8 kai,ki1,ka1,kai1,ki2,ksave
+      integer*8 kai,ki1,ka1,kai1,ksave
       integer*4 ispr,nrule,irtc,i, ispj,ispa,ispb
       logical*4 rep,rep1,tfmatchsymstk
       irtc=0
@@ -728,7 +728,7 @@ c        enddo
                     dtastk(isp)=kxadaloc(-1,2,klx1)
                     klx1%head=dlist(kai)
                     klx1%dbody(1)%k=ktfcopy1(ki1)
-                    klx1%dbody(2)%k=ktfcopy(ki2)
+                    klx1%dbody(2)=dtfcopy(ki2)
                     rep=.true.
                   else
                     ktastk(isp)=ki1
@@ -739,7 +739,7 @@ c        enddo
             endif
           endif
           isp=isp+1
-          call tfreplacesymbolstk1(ki,ispr,nrule,ktastk(isp),
+          call tfreplacesymbolstk1(ki,ispr,nrule,dtastk(isp),
      $         .true.,rep1,irtc)
           if(irtc .ne. 0)then
             isp=ispa

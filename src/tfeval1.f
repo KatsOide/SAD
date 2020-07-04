@@ -161,7 +161,7 @@
               return
             endif
             call loc_sad(ktfaddrd(kx),kl)
-            call tfsetpart(kl,ktastk(isp),kx,mode,irtc)
+            call tfsetpart(kl,dtastk(isp),kx,mode,irtc)
             return
           endif
         endif

@@ -98,6 +98,10 @@ c
         call tmast
         call twmov(1,twiss,nlat,ndim,.true.)
         if(.not. chguse)then
+          call tfevals(
+     $         '{EMITX,EMITY,EMITZ,SIGZ,SIGE}='//
+     $         'LINE[{"EMITX","EMITY","EMITZ","SIGMAZ,."SIGE"},1];'//
+     $         'DP0=LINE["DDP",1];',kx,irtc)
           scale=1.d0
           scale(mfitnx)=pi2
           scale(mfitny)=pi2

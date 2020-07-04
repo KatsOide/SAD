@@ -133,7 +133,7 @@
       endif
       return
  9030 if(err)then
-        irtc=itfmessageexp(9,'General::index',dble(ivi))
+        irtc=itfmessageexp(9,'General::index',sad_descr(dble(ivi)))
       else
         irtc=-1
       endif
@@ -324,7 +324,7 @@
       endif
       return
  9030 if(err)then
-        irtc=itfmessageexp(9,'General::index',dble(ivi))
+        irtc=itfmessageexp(9,'General::index',sad_descr(dble(ivi)))
       else
         irtc=-1
       endif
@@ -465,7 +465,7 @@
       isp3=isp1+isp-isp2
       if(kh%k .eq. ktfref)then
         do i=1,isp-isp2
-          call tfeevalref(ktastk(isp2+i),ktastk(isp1+i),irtc)
+          call tfeevalref(dtastk(isp2+i),dtastk(isp1+i),irtc)
           if(irtc .ne. 0)then
             isp=isp1
             return
@@ -483,7 +483,7 @@ c        enddo
           isp=isp0+2
           dtastk(isp-1)=kh
           dtastk(isp)=dtastk(isp2+i)
-          call tfefunref(isp-1,ktastk(isp1+i),.true.,irtc)
+          call tfefunref(isp-1,dtastk(isp1+i),.true.,irtc)
           if(irtc .ne. 0)then
             isp=isp1
             return
@@ -1193,7 +1193,7 @@ c              call tfdebugprint(kxi,'reppart1-kxi',1)
       else
         kx=sad_descr(listl)
       endif
-      call tflocal(klist(kap))
+      call tflocal(dlist(kap))
       dlist(kap)=dtfcopy(kx)
  1000 isp=isp1
       kx=k2

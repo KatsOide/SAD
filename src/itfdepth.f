@@ -243,13 +243,13 @@ c      write(*,*)mode,n1,n2,ihead,indf
             endif
           elseif(mode .eq. 3)then
             dtastk(ispf)=kf
-            call tfefunrefc(ispf,kx%k,irtc)
+            call tfefunrefc(ispf,kx,irtc)
           elseif(mode .eq. 2)then
             if(ktflistq(kx,klx))then
               isp=ispf
               call tfgetllstkall(klx)
               dtastk(ispf)=kf
-              call tfefunrefc(ispf,kx%k,irtc)
+              call tfefunrefc(ispf,kx,irtc)
             endif
           elseif(mode .eq. 4)then
             dtastk(ispf)=kf
@@ -259,10 +259,10 @@ c      write(*,*)mode,n1,n2,ihead,indf
             else
               dtastk(isp)=kxm2l(rind,0,ind,1,.false.)
             endif
-            call tfefunrefc(ispf,kx%k,irtc)
+            call tfefunrefc(ispf,kx,irtc)
           elseif(mode .eq. 1)then
             dtastk(ispf)=kf
-            call tfefunrefc(ispf,kx,.true.,irtc)
+            call tfefunrefc(ispf,kx,irtc)
             isp=ispf-1
             if(irtc .eq. -2)then
               irtc=0

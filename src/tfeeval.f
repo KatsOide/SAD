@@ -229,7 +229,7 @@ c          call tfstk2l(lista,lista)
       case(mtfset)
         rep=tfgetseqstk(ks,ns)
         if(isp .gt. isp1)then
-          call tfeevalref(ktastk(isp),ktastk(isp),irtc)
+          call tfeevalref(dtastk(isp),dtastk(isp),irtc)
           if(irtc .ne. 0)then
             go to 8000
           endif
@@ -604,7 +604,7 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
           dtastk(isp)=sad_descr(list)
           irtc=0
         else
-          call tfleval(list,ktastk(isp),ref,irtc)     
+          call tfleval(list,dtastk(isp),ref,irtc)     
           if(irtc .ne. 0)then
             return
           endif
@@ -679,7 +679,7 @@ c                endif
               endif
             elseif(isp .gt. isp0)then
               isp=isp+1
-              call tfeevalref(ki,ktastk(isp),irtc)
+              call tfeevalref(ki,dtastk(isp),irtc)
               if(irtc .ne. 0)then
                 return
               endif
@@ -698,7 +698,7 @@ c                endif
               endif
             elseif(isp .eq. isp0)then
               isp=isp+1
-              call tfeevalref(ki,ktastk(isp),irtc)
+              call tfeevalref(ki,dtastk(isp),irtc)
               if(irtc .ne. 0)then
                 return
               endif

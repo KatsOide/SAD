@@ -399,7 +399,7 @@ c        write(*,*)'tftocontext ',str%str(1:nc)
       isp0=isp
       do i=1,m
         ki=kl%dbody(i)
-        if(.not. tfcontextqk(ki))then
+        if(.not. tfcontextqk(ki%k))then
           isp=isp0
           go to 9000
         endif

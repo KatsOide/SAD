@@ -76,7 +76,7 @@
             elseif(icol .ne. 0 .or. dref)then
               go to 9000
             else
-              call qtwissfrac(rlist(kax+1),itastk(2,isp),
+              call qtwissfrac(rlist(kax+1:kax+ntwissfun),itastk(2,isp),
      $             vstk2(isp),over)
             endif
           else
@@ -97,8 +97,8 @@
               elseif(icol .ne. 0 .or. dref)then
                 go to 9000
               else
-                call qtwissfrac(rlist(kaxi+1),itastk(2,isp0+i),
-     $               vstk2(isp0+i),over)
+                call qtwissfrac(rlist(kaxi+1:kax+ntwissfun),
+     $               itastk(2,isp0+i),vstk2(isp0+i),over)
               endif
             enddo
           endif
@@ -932,42 +932,22 @@ c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
       use tfstk
       use ffs
       use tffitcode
-      use ffs_pointer, only:idelc,pnamec,iele1
+      use ffs_pointer, only:idelc,pnamec,ielma
       implicit none
       type (sad_descriptor) k
-      integer*8 kav,ka,j,jj
-      integer*4 narg,isp0,irtc,nc,ifany1,ielmf,itfmessage,
-     $     itehash,l,i
-      real*8 r
-      character*1024 name,name2
-      character*(MAXPNAME+16) name1
-      logical*4 exist,temat
-      integer*4 nl
+      integer*4 narg,isp0,irtc,nc,itfmessage,i
+      real*8 r,v
+      character*(MAXPNAME+16) name
       isp0=isp
-      if(ktfrealq(k) .and. narg .eq. 2)then
-        i=int(rtastk(isp))
-        if(i .lt. 0)then
-          r=1.d0+rtastk(isp)-i
-          if(r .ne. 1.d0)then
-            i=i-1
-          endif
-          i=nlat+i+1
-        else
-          r=rtastk(isp)-i
-        endif
-        if(i .le. 0 .or. i .gt. nlat)then
-          irtc=itfmessage(9,'General::wrongnum',
-     $         '"positive and less than length of beam line"')
-        else
-          if(i .eq. nlat)then
-            r=0.d0
-          endif
-          isp=isp+1
-          itastk(1,isp)=ilist(i,ifele1)
-          itastk(2,isp)=i
-          vstk2(isp)=r
-          irtc=0
-        endif
+      if(ktfrealq(k,v) .and. narg .eq. 2)then
+        i=floor(v)
+        r=v-i
+        i=ielma(i)
+        isp=isp+1
+        itastk(1,isp)=ilist(i,ifele1)
+        itastk(2,isp)=i
+        vstk2(isp)=r
+        irtc=0
       else
         if(narg .eq. 1)then
           name(1:1)='*'
@@ -983,21 +963,63 @@ c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
             call capita1(name(1:nc))
           endif
         endif
-        if(name(1:1) .eq. '@')then
-          name(1:nc-1)=name(2:nc)
-          nc=nc-1
-        elseif(ifany1(name(1:nc),nc,'+-',1) .eq. 0)then
+        call tflinenamestk(name(1:nc),narg,0,0.d0,isp0,irtc)
+        do i=isp0+1,isp
+          itastk(2,i)=ielma(itastk(2,i))
+        enddo
+      endif
+      return
+      end
+
+      recursive subroutine tflinenamestk(name0,narg,ioff,fr,isp0,irtc)
+      use tfstk
+      use ffs
+      use tffitcode
+      use ffs_pointer, only:idelc,pnamec,iele1
+      implicit none
+      type (sad_descriptor) kx
+      integer*8 kav,ka,j,jj
+      integer*4 ,intent(in):: narg,ioff
+      integer*4 ,intent(out):: irtc
+      integer*4 isp0,nc,ifany1,ielmf,itehash,l,i,ipoff,io
+      real*8 ,intent(in):: fr
+      real*8 r
+      character*(*) ,intent(in):: name0
+      character*1024 name,name2
+      character*(MAXPNAME+16) name1
+      logical*4 exist,temat
+      integer*4 nl
+      nc=len(name0)
+      name(1:nc)=name0
+      if(name(1:1) .eq. '@')then
+        name(1:nc-1)=name(2:nc)
+        nc=nc-1
+      else
+        ipoff=ifany1(name(1:nc),nc,'+-',1)
+        if(ipoff .eq. 0)then
           call tfgetlineps(name,nc,nl,kav,0,irtc)
           if(irtc .ne. 0)then
             return
           endif
           if(nl .gt. 0)then
-            itastk(2,isp+1:isp+nl)=int(rlist(kav+1:kav+nl))
+            itastk(2,isp+1:isp+nl)=int(rlist(kav+1:kav+nl))+ioff
             itastk(1,isp+1:isp+nl)=iele1(itastk(2,isp+1:isp+nl))
-            vstk2(isp+1:isp+nl)=0.d0
+            vstk2(isp+1:isp+nl)=fr
             isp=isp+nl
             return
           endif
+        else
+          call tfevals(name(ipoff:nc),kx%k,irtc)
+          if(irtc .ne. 0 .or. ktfnonrealq(kx,r))then
+            if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+              call tfreseterror
+            endif
+            return
+          endif
+          io=floor(r)
+          call tflinenamestk(name(1:ipoff-1),narg,
+     $         io,r-dble(io),isp0,irtc)          
+          return
         endif
         if(nc .gt. 2 .and. name(nc-1:nc) .eq. '.*' .and.
      $       ifany1(name(1:nc),nc-2,'*%{|',1) .eq. 0)then
@@ -1009,9 +1031,9 @@ c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
               l=ilist(1,jj)
               if(name2(1:nc-2) .eq. pnamec(l))then
                 isp=isp+1
-                itastk(1,isp)=ilist(l,ifele1)
-                itastk(2,isp)=l
-                vstk2(isp)=0.d0
+                itastk(1,isp)=ilist(l+ioff,ifele1)
+                itastk(2,isp)=l+ioff
+                vstk2(isp)=fr
               endif
             enddo
           endif
@@ -1021,9 +1043,9 @@ c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
           do i=1,nlat
             if(temat(i,name1,name(1:nc)))then
               isp=isp+1
-              itastk(1,isp)=ilist(i,ifele1)
-              itastk(2,isp)=i
-              vstk2(isp)=0.d0
+              itastk(1,isp)=ilist(i+ioff,ifele1)
+              itastk(2,isp)=i+ioff
+              vstk2(isp)=fr
             endif
           enddo
           irtc=0
@@ -1031,9 +1053,9 @@ c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
           i=ielmf(name(1:nc),r,exist,0)
           if(exist)then
             isp=isp+1
-            itastk(1,isp)=ilist(i,ifele1)
-            itastk(2,isp)=i
-            vstk2(isp)=r
+            itastk(1,isp)=ilist(i+ioff,ifele1)
+            itastk(2,isp)=i+ioff
+            vstk2(isp)=fr
 c            write(*,*)'linestk ',name(1:nc),r
             irtc=0
           else
@@ -1148,7 +1170,7 @@ c            write(*,*)'linestk ',name(1:nc),r
           return
         endif
       else
-        name=tfgetstrs(k,nc)
+        name=tfgetstrs(k%k,nc)
         if(nc .le. 0)then
           irtc=itfmessage(9,'General::wrongtype',
      $         '"name of component"')

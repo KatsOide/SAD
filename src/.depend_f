@@ -270,7 +270,7 @@ tedrawf.o: tedrawf.f
 teigen.o: teigen.f tfstk.o
 temap.o: temap.f tffs.o tfstk.o tgrot.o
 temat.o: temat.f tffs.o tfstk.o
-temit.o: temit.f tffs.o tfloor.o tfstk.o toplvl.o
+temit.o: temit.f teigen.o tffs.o tfloor.o tfstk.o toplvl.o
 temitf.o: temitf.f tffs.o tfstk.o
 temits.o: temits.f temit.o tffs.o tfstk.o toplvl.o
 temp.o: temp.f toplvl.o
