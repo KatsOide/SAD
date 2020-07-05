@@ -2,7 +2,6 @@
       use tfstk
       use tmacro
       use sad_main
-      use ffs_pointer, only:elatt
       use tparastat
       implicit none
       integer*4 i

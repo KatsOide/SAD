@@ -2607,10 +2607,10 @@ c     $           n,i,istat
                 kaai=ktfaddr(kai%k)
                 kapi=ktfaddr(kpi%k)
                 if(ilist(1,kapi-1) .ge. ilist(1,kaai-1))then
-                  call tflocal1(kai)
+                  call tflocal1(kai%k)
                   lista%dbody(i)=dtfcopy1(kpi)
                 else
-                  call tflocal1(kpi)
+                  call tflocal1(kpi%k)
                   listp%dbody(i)=dtfcopy1(kai)
                 endif
                 cycle

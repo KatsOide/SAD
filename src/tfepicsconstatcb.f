@@ -59,11 +59,12 @@
       use tfstk
       use casym
       implicit none
+      type (sad_descriptor) stat,kn,krnn
       real*8 chid
       integer*8 kx, iastart,icarlch,kaa,
-     $     ka,kn,iacscomm,iarn, ki,krnn
+     $     ka,iacscomm,iarn, ki
       integer*4 isp0,irtc,n,l,itfdownlevel,istat
-      real*8 stat,vn,rfromk
+      real*8 vn
       logical*4 ev
       levele=levele+1
       isp0=isp
@@ -87,24 +88,23 @@
         go to 9000
       endif
       ka=klist(icarlch+1)
-      kn=klist(icarlch+2)
-      if(ktfnonlistq(ka) .or. ktfnonrealq(kn))then
+      kn=dlist(icarlch+2)
+      if(ktfnonlistq(ka) .or. ktfnonrealq(kn,vn))then
         go to 9000
       endif
-      vn=rfromk(kn)
       kaa=ktfaddr(ka)
-      stat=istat
+      stat%x(1)=istat
       if(vn .lt. 1.d0)then
         call tfcbsetsymbol(kaa,ics,stat,irtc)
         if(irtc .ne. 0)then
           go to 9000
         endif
       else
-        call tfcbsetsymbol(kaa,ipos,vn,irtc)
+        call tfcbsetsymbol(kaa,ipos,kn,irtc)
         if(irtc .ne. 0)then
           go to 9000
         endif
-        n=vn
+        n=int(vn)
         call tfcbsetlist(kaa,ics,n,stat,irtc)
         if(irtc .ne. 0)then
           go to 9000
@@ -117,7 +117,7 @@
         if(ktfnonlistq(kx) .or. ilist(2,iarn-1) .lt. n)then
           go to 9000
         endif
-        krnn=klist(iarn+n)
+        krnn=dlist(iarn+n)
         call tfcbsetsymbol(kaa,irnl,krnn,irtc)
         if(irtc .ne. 0)then
           go to 9000
@@ -145,7 +145,7 @@
         go to 9000
       endif
       if(ktfrealq(kx) .and. kx .ne. 0)then
-        if(rlist(icacsconn-4) .eq. stat)then
+        if(rlist(icacsconn-4) .eq. stat%x(1))then
           call tfclassmember(ktflist+kaa,ktfsymbol+istart,
      $         kx,.true.,irtc)
           if(irtc .ne. 0 .or. ktfnonsymbolq(kx))then
@@ -172,10 +172,10 @@
       use tfstk
       use casym
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) k,krnn
       real*8 chid
       integer*8 karray(nc),kx, ka,kn,iarn,
-     $     krnn,iavalcomm,kaa,ki, icarlch
+     $     iavalcomm,kaa,ki, icarlch
       integer*4 istat,jsev,itype,nc
       real*8 t,rfromk,vn,stat
       integer*4 isp0,isp2,irtc,n,l,i,itfdownlevel
@@ -205,7 +205,7 @@
       if(ktfnonlistq(ka) .or. ktfnonrealq(kn))then
         go to 9000
       endif
-      n=rfromk(kn)
+      n=int(rfromk(kn))
       stat=istat
       if(itype .eq. 0)then
         if(nc .eq. 1)then
@@ -232,16 +232,16 @@
         if(irtc .ne. 0)then
           go to 9000
         endif
-        call tfcbsetsymbol(kaa,isev,dble(jsev),irtc)
+        call tfcbsetsymbol(kaa,isev,dfromr(dble(jsev)),irtc)
         if(irtc .ne. 0)then
           go to 9000
         endif
-        call tfcbsetsymbol(kaa,its,t,irtc)
+        call tfcbsetsymbol(kaa,its,dfromr(t),irtc)
         if(irtc .ne. 0)then
           go to 9000
         endif
       else
-        call tfcbsetsymbol(kaa,ipos,vn,irtc)
+        call tfcbsetsymbol(kaa,ipos,dfromr(vn),irtc)
         if(irtc .ne. 0)then
           go to 9000
         endif
@@ -249,11 +249,11 @@
         if(irtc .ne. 0)then
           go to 9000
         endif
-        call tfcbsetlist(kaa,isev,n,dble(jsev),irtc)
+        call tfcbsetlist(kaa,isev,n,dfromr(dble(jsev)),irtc)
         if(irtc .ne. 0)then
           go to 9000
         endif
-        call tfcbsetlist(kaa,its,n,t,irtc)
+        call tfcbsetlist(kaa,its,n,dfromr(t),irtc)
         if(irtc .ne. 0)then
           go to 9000
         endif
@@ -265,7 +265,7 @@
         if(ktfnonlistq(kx) .or. ilist(2,iarn-1) .lt. n)then
           go to 9000
         endif
-        krnn=klist(iarn+n)
+        krnn=dlist(iarn+n)
         call tfcbsetsymbol(kaa,irnl,krnn,irtc)
         if(irtc .ne. 0)then
           go to 9000
@@ -274,11 +274,11 @@
         if(irtc .ne. 0)then
           go to 9000
         endif
-        call tfcbsetsymbol(kaa,isevl,dble(jsev),irtc)
+        call tfcbsetsymbol(kaa,isevl,dfromr(dble(jsev)),irtc)
         if(irtc .ne. 0)then
           go to 9000
         endif
-        call tfcbsetsymbol(kaa,itsl,t,irtc)
+        call tfcbsetsymbol(kaa,itsl,dfromr(t),irtc)
         if(irtc .ne. 0)then
           go to 9000
         endif
@@ -302,7 +302,8 @@
       subroutine tfcbsetsymbol(ka,kv,k1,irtc)
       use tfstk
       implicit none
-      integer*8 ka,kv,k1,kax,kx
+      type (sad_descriptor) k1
+      integer*8 ka,kv,kax,kx
       integer*4 irtc
       call tfclassmember(ktflist+ka,ktfsymbol+kv,kx,.false.,irtc)
       if(irtc .ne. 0)then
@@ -313,14 +314,15 @@
       endif
       kax=ktfaddr(kx)
       call tflocal(klist(kax-4))
-      klist(kax-4)=ktfcopy(k1)
+      dlist(kax-4)=dtfcopy(k1)
       return
       end
 
       subroutine tfcbsetlist(ka,kv,n,k1,irtc)
       use tfstk
       implicit none
-      integer*8 ka,kv,k1,kal,kax,kx
+      type (sad_descriptor) k1
+      integer*8 ka,kv,kal,kax,kx
       integer*4 n,irtc,i
       call tfclassmember(ktflist+ka,ktfsymbol+kv,kx,.false.,irtc)
       if(irtc .ne. 0)then
@@ -344,7 +346,7 @@
         call tflocal(klist(kal+n))
         if(ktfrealq(k1))then
           if(ktfnonrealq(klist(kal+n)))then
-            klist(kal+n)=k1
+            dlist(kal+n)=k1
             do i=1,ilist(2,kal-1)
               if(ktfnonrealq(klist(kal+i)))then
                 return
@@ -355,7 +357,7 @@
           endif
         endif
       endif        
-      klist(kal+n)=ktfcopy(k1)
+      dlist(kal+n)=dtfcopy(k1)
       return
  9000 irtc=-1
       return

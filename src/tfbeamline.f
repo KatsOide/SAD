@@ -32,7 +32,7 @@
         go to 9900
       endif
       n=kl%nl
-      if(n .lt. 3)then
+      if(n .lt. 1)then
         go to 9900
       endif
       kdx1=ktaloc(n+1)

@@ -1,0 +1,200 @@
+C   19/12/90 302031849  MEMBER NAME  CORRECT  *.FORT     M  E2FORT
+      elseif(abbrev(word,'STE_ERING','_'))then
+        call mcmess(lfno)
+        call mcstr(word,latt,
+     $       mult,ilist(1,ifmast),itstr,itestr,nster,
+     $       .false.,lfno)
+        go to 12
+      elseif(word.eq.'COUPLESTE') then
+        call mcoupste(word,latt,mult,
+     $       rlist(itstr),nster,lfno)
+        go to 12
+      elseif(word.eq.'READSTE')then
+        call mcstr(' ',latt,mult,
+     $       ilist(1,ifmast),itstr,itestr,nster,.true.,lfno)
+        call preadstr(word,latt,twiss,
+     $       mult,rlist(itstr),nster,lfno)
+        go to 12
+      elseif(word.eq.'WRITESTE')then
+        call pwrtstr(word,latt,twiss,
+     $       mult,rlist(itstr),nster,lfno)
+        go to 12
+      elseif(abbrev(word,'MON_ITOR','_'))then
+        call mcmess(lfno)
+        call mcmon(word,latt,mult,pos,
+     $       ilist(1,ifmast),itmon,itemon,nmon,.false.,
+     &             lfno)
+        go to 12
+      elseif(word.eq.'READMON')then
+        call mcmon(' ',latt,mult,pos,
+     $       ilist(1,ifmast),itmon,itemon,nmon,.true.,
+     &             lfno)
+        call preadmon(word,latt,twiss,
+     $       mult,rlist(itmon),nmon,lfno)
+        go to 12
+      elseif(word.eq.'WRITEMON')then
+        call pwrtmon(word,latt,twiss,
+     $       mult,rlist(itmon),nmon,lfno)
+        go to 12
+      elseif(word.eq.'KILL')then
+        call pkill(word,wordp,latt,mult,
+     $       rlist(itmon),nmon,rlist(itstr),
+     1       nster,lfno)
+        go to 12
+      elseif(abbrev(word,'COR_RECT','_')) then
+        call mcmess(lfno)
+        call mccor(word,wordp,
+     $       latt,pos,twiss,
+     $       gammab,mult,ilist(1,ifmast),flv%kfit,
+     $       flv%ifitp,
+     $       flv%mfitp,flv%fitval,flv%nfc,rlist(itstr),rlist(itestr),
+     $       nster,
+     $       rlist(itmon),rlist(itemon),nmon,newcor,lfno)
+        go to 12
+      elseif(abbrev(word,'KI_CK','_'))then
+        call mckick(word,wordp,latt,mult)
+        go to 12
+      elseif(abbrev(word,'CLE_AR','_')) then
+        call mclear(word,latt,rlist(itstr),nster)
+        goto 12
+      elseif(abbrev(word,'UNDO_CORRECT','_')) then
+        call pundo(latt,twiss,
+     $       gammab,0,1.d0+dp0)
+        go to 10
+      elseif(word.eq.'SUM+'.or.word.eq.'SUM-'.or.word.eq.'SUM'.or.
+     1       abbrev(word,'SUMC_LR','_')) then
+        title=Tfgetstrv('TITLE')
+        case=Tfgetstrv('CASE')
+        call pstati(word,latt,twiss,
+     $       rlist(itmon),rlist(itemon),nmon,
+     1       rlist(itstr),nster,title,case,lfno)
+        go to 12
+      elseif(abbrev(word,'STO_RE','_')) then
+        call mstore(word,latt,twiss,
+     $       rlist(itstr),nster,rlist(itmon),
+     1       rlist(itemon),nmon)
+        go to 12
+      elseif(abbrev(word,'RECA_LL','_')) then
+        call mrecal(word,latt,twiss,
+     $       rlist(itstr),nster,rlist(itmon),rlist(itemon),nmon,lfno)
+        go to 12
+      elseif(abbrev(word,'DIR_ECTORY','_'))then
+        call mfdir(word,lfno)
+        goto 12
+      elseif(abbrev(word,'DEL_ETE','_'))then
+        call mfdel(word)
+        goto 12
+      elseif(word.eq.'ADD'.or.word.eq.'SUB'.or.word.eq.'SWAP'
+     z       .or.abbrev(word,'FAC_TOR','_')
+     z       .or.abbrev(word,'DIV_IDE','_')
+     1       .or.word.eq.'PUSH'.or.word.eq.'DROP'            ) then
+        call mstack(word,latt,twiss,
+     $       rlist(itstr),nster,rlist(itmon),
+     1       rlist(itemon),nmon)
+        goto 12
+      elseif(word.eq.'TRIM') then
+        call ptrim(word,latt,twiss,rlist(itmon),
+     $       rlist(itemon),nmon,lfno)
+        goto 12
+      elseif(word.eq.'TCOD') then
+        call mcrcod(latt,twiss,mult,
+     $       rlist(itmon),rlist(itemon),nmon,
+     $       .false.,.false.,.true.,lfno)
+        go to 10
+      elseif(word.eq.'MCOD') then
+        call mcrcod(latt,twiss,mult,
+     $       rlist(itmon),rlist(itemon),
+     1       nmon,.true.,.false.,.true.,lfno)
+        go to 10
+      elseif(abbrev(word,'EPS_ILON','_')) then
+        call mcepst(word,lfno)
+        go to 12
+      elseif(abbrev(word,'DPS_HIFT','_')) then
+        call mdpmax(word,lfno)
+        go to 12
+      elseif(abbrev(word,'ECOR_R','_')) then
+        title=Tfgetstrv('TITLE')
+        case=Tfgetstrv('CASE')
+        call pecorr(word,latt,pos,
+     $       rlist(iferrk),title,case,lfno)
+        goto 12
+      elseif(word .eq. 'BUMP')then
+        call getwdl(word)
+        call pcbak(latt,twiss)
+        if(abbrev(word,'I_TERATION','_')) then
+          call getwdl(word)
+          call pbumps(rlist(itstr),nster,flv%kfit,flv%ifitp,flv%mfitp,
+     $         flv%nfc,.true.)
+          call pbump(latt,twiss,
+     $         gammab,0,mult,rlist(itstr),
+     1               rlist(itestr),nster,flv%kfit,flv%ifitp,flv%mfitp,
+     $         flv%fitval,flv%nfc,
+     1               .true.,.false.,.false.,lfno)
+          call pbumps(rlist(itstr),nster,flv%kfit,flv%ifitp,flv%mfitp,
+     $         flv%nfc,.false.)
+        else
+          call pbumps(rlist(itstr),nster,flv%kfit,flv%ifitp,flv%mfitp,
+     $         flv%nfc,.true.)
+          call pbump(latt,twiss,
+     $         gammab,0,mult,rlist(itstr),
+     1               rlist(itestr),nster,flv%kfit,flv%ifitp,flv%mfitp,
+     $         flv%fitval,flv%nfc,
+     1               .false.,.false.,.false.,lfno)
+          call pbumps(rlist(itstr),nster,flv%kfit,flv%ifitp,flv%mfitp,
+     $         flv%nfc,.false.)
+        endif
+        go to 12
+      elseif(word.eq.'LBUMP') then
+        call getwdl(word)
+        call pcbak(latt,twiss)
+        call pbumps(rlist(itstr),nster,flv%kfit,flv%ifitp,flv%mfitp,
+     $       flv%nfc,.true.)
+        call pbump(latt,twiss,gammab,
+     $       0,mult,rlist(itstr),rlist(itestr),
+     1             nster,flv%kfit,flv%ifitp,flv%mfitp,flv%fitval,
+     $       flv%nfc,.false.,.true.,
+     1             .false.,lfno)
+        call pbumps(rlist(itstr),nster,flv%kfit,flv%ifitp,flv%mfitp,
+     $       flv%nfc,.false.)
+        go to 12
+      elseif(abbrev(word,'TOR_','_')) then
+        call ptol(word,latt,mult,
+     $       ilist(1,ifmast),twiss,
+     $       gammab,0,1.d0+dp0,
+     1            rlist(itstr),nster,lfno)
+        goto 12
+      elseif(word.eq.'VBUMP') then
+        call pvbump(word,wordp,latt,twiss,
+     $       mult,ilist(1,ifmast),rlist(itstr),nster,
+     $       nlist,flv%kfit,flv%ifitp,flv%mfitp,flv%fitval,flv%nfc,lfno)
+        goto 12
+      elseif(word.eq.'BTUNE') then
+        call ffs_init_sizep
+        title=Tfgetstrv('TITLE')
+        case=Tfgetstrv('CASE')
+        call petune(word,latt,twiss,
+     $       mult,gammab,rlist(ifsize),nlist,
+     $       rlist(itstr),rlist(itestr),nster,title,case,lfno)
+        goto 12
+      elseif(word.eq.'BALS') then
+        title=Tfgetstrv('TITLE')
+        case=Tfgetstrv('CASE')
+        call pasex(word,wordp,
+     $       latt,pos,twiss,
+     $       mult,ilist(1,ifmast),gammab,title,case,
+     $       rlist(itstr),rlist(itestr),nster,rlist(itmon),
+     $       rlist(itemon),nmon,lfno)
+        go to 12
+      elseif(word.eq.'PETIN'.or.word.eq.'PETOUT') then
+        call petcod(word,twiss,rlist(itmon),nmon)
+        goto 12
+      elseif(abbrev(word,'WR_ITE','_')) then
+        call getwdl(word)
+        if(word.eq.'RMATQ'.or.word.eq.'RMAT') then
+          call pwrite(word,latt,twiss,
+     $         gammab,pos,rlist(itmon),nmon)
+        elseif(abbrev(word,'LAT_TICE','_').or.
+     1         abbrev(word,'PS_NAME','_')) then
+          call pwrlat(word,wordp,lfno)
+        endif
+        goto 12

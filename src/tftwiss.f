@@ -1021,46 +1021,46 @@ c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
      $         io,r-dble(io),isp0,irtc)          
           return
         endif
-        if(nc .gt. 2 .and. name(nc-1:nc) .eq. '.*' .and.
-     $       ifany1(name(1:nc),nc-2,'*%{|',1) .eq. 0)then
-          name2(1:nc-2)=name(1:nc-2)
-          ka=itehash(name2(1:nc-2),nc-2)*2
-          j=klist(ielmhash+ka+2)
-          if(j .ne. 0)then
-            do jj=j,j+ilist(1,ielmhash+ka+1)-1
-              l=ilist(1,jj)
-              if(name2(1:nc-2) .eq. pnamec(l))then
-                isp=isp+1
-                itastk(1,isp)=ilist(l+ioff,ifele1)
-                itastk(2,isp)=l+ioff
-                vstk2(isp)=fr
-              endif
-            enddo
-          endif
-          irtc=0
-        elseif(name(1:nc) .ne. '***' .and. name(1:nc) .ne. '^^^' .and.
-     $       ifany1(name(1:nc),nc,'*%{|',1) .gt. 0)then
-          do i=1,nlat
-            if(temat(i,name1,name(1:nc)))then
+      endif
+      if(nc .gt. 2 .and. name(nc-1:nc) .eq. '.*' .and.
+     $     ifany1(name(1:nc),nc-2,'*%{|',1) .eq. 0)then
+        name2(1:nc-2)=name(1:nc-2)
+        ka=itehash(name2(1:nc-2),nc-2)*2
+        j=klist(ielmhash+ka+2)
+        if(j .ne. 0)then
+          do jj=j,j+ilist(1,ielmhash+ka+1)-1
+            l=ilist(1,jj)
+            if(name2(1:nc-2) .eq. pnamec(l))then
               isp=isp+1
-              itastk(1,isp)=ilist(i+ioff,ifele1)
-              itastk(2,isp)=i+ioff
+              itastk(1,isp)=ilist(l+ioff,ifele1)
+              itastk(2,isp)=l+ioff
               vstk2(isp)=fr
             endif
           enddo
-          irtc=0
-        else
-          i=ielmf(name(1:nc),r,exist,0)
-          if(exist)then
+        endif
+        irtc=0
+      elseif(name(1:nc) .ne. '***' .and. name(1:nc) .ne. '^^^' .and.
+     $       ifany1(name(1:nc),nc,'*%{|',1) .gt. 0)then
+        do i=1,nlat
+          if(temat(i,name1,name(1:nc)))then
             isp=isp+1
             itastk(1,isp)=ilist(i+ioff,ifele1)
             itastk(2,isp)=i+ioff
             vstk2(isp)=fr
-c            write(*,*)'linestk ',name(1:nc),r
-            irtc=0
-          else
-            irtc=0
           endif
+        enddo
+        irtc=0
+      else
+        i=ielmf(name(1:nc),r,exist,0)
+        if(exist)then
+          isp=isp+1
+          itastk(1,isp)=ilist(i+ioff,ifele1)
+          itastk(2,isp)=i+ioff
+          vstk2(isp)=fr
+c     write(*,*)'linestk ',name(1:nc),r
+          irtc=0
+        else
+          irtc=0
         endif
       endif
       return

@@ -543,8 +543,7 @@ c 32: Er -> Ey
       end
 
       subroutine csr2dpoisson1(phix,phiy,psi,xc,yc,tx,ty,
-     $     xp1,xp2,yp1,
-     $     cs,nphi,nm)
+     $     xp1,xp2,yp1,cs,nphi,nm)
       implicit none
       integer*4 nphi,i,j,k,nv,nm
       real*8 phix(0:nphi),phiy(0:nphi),tx(nphi),ty(nphi),

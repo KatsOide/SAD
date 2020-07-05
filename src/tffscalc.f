@@ -278,8 +278,10 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
               if(i .gt. 0 .and. i .le. nfr .or.
      $             kfam(i) .ne. 0 .and. jfam(i) .ge. 0)then
                 jb=iutm+(i+nfam)*4
-                call tmovi(rlist(jb+1),optstat(i)%stabx,1)
-                call tmovi(rlist(jb+2),optstat(i)%staby,1)
+                optstat(i)%stabx=ilist(1,jb+1)
+                optstat(i)%staby=ilist(1,jb+2)
+c                call tmovi(rlist(jb+1),optstat(i)%stabx,1)
+c                call tmovi(rlist(jb+2),optstat(i)%staby,1)
                 optstat(i)%tracex=rlist(jb+3)
                 optstat(i)%tracey=rlist(jb+4)
 c                write(*,*)'tffscalc1 ',i,jb,tracex(i),rlist(jb+3)
@@ -290,8 +292,10 @@ c                write(*,*)'tffscalc1 ',i,jb,tracex(i),rlist(jb+3)
               if(i .gt. 0 .and. i .le. nfr .or.
      $             kfam(i) .ne. 0 .and. jfam(i) .ge. 0)then
                 jb=iutm+(i+nfam)*4
-                call tmovi(optstat(i)%stabx,rlist(jb+1),1)
-                call tmovi(optstat(i)%staby,rlist(jb+2),1)
+                ilist(1,jb+1)=optstat(i)%stabx
+                ilist(1,jb+2)=optstat(i)%staby
+c                call tmovi(optstat(i)%stabx,rlist(jb+1),1)
+c                call tmovi(optstat(i)%staby,rlist(jb+2),1)
                 rlist(jb+3)=optstat(i)%tracex
                 rlist(jb+4)=optstat(i)%tracey
 c                write(*,*)'tffscalc2 ',i,jb,tracex(i),rlist(jb+3)

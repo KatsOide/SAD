@@ -121,31 +121,35 @@ c
       use ffs
       use tffitcode
       logical save
-      dimension a(nd,m),b(na),d(nc),x(m)
-      integer*8 it,it1
-      save it,it1
+      real*8 a(nd,m),b(na),d(nc),x(m),resrms
+      real*8,allocatable::  a1(:,:),b1(:),d1(:)
       if(save) then
-        it=ktaloc(nd*m)
-        it1=ktaloc(na+nc)
-        call tmov(a,rlist(it),nd*m)
-        call tmov(b,rlist(it1),na)
-        call tmov(d,rlist(it1+na),nc)
+        allocate(a1(nd,m))
+        allocate(b1(na))
+        allocate(d1(nc))
+        a1=a
+        b1=b
+        d1=d
+c        it=ktaloc(nd*m)
+c        it1=ktaloc(na+nc)
+c        call tmov(a,rlist(it),nd*m)
+c        call tmov(b,rlist(it1),na)
+c        call tmov(d,rlist(it1+na),nc)
       else
         print *,'x:'
         write(*,'(1p,10g11.3)')(x(i),i=1,m)
         print *,'b-a.x:'
-        call mresdue(rlist(it),x,rlist(it1),resrms,nd,na+nc,m)
-        write(*,'(1p,10g11.3)') (rlist(it1+i),i=0,na+nc-1)
+        call mresdue(a1,x,b1,resrms,nd,na+nc,m)
+c        write(*,'(1p,10g11.3)') (rlist(it1+i),i=0,na+nc-1)
         print *,' |b-a*x|/sqrt(n) :',resrms
-        call tfree(it)
-        call tfree(it1)
+        deallocate(a1,b1,d1)
       endif
       return
       end
 c
       subroutine mresdue(a,x,b,resrms,nd,n,m)
       implicit real*8 (a-h,o-z)
-      dimension a(nd,m),b(n),x(m)
+      real*8 a(nd,m),b(n),x(m)
 c
       resrms=0d0
       do i=1,n

@@ -144,7 +144,8 @@ c     $       4100),ke
      $       ctrans(1,1,idp),iclast(idp),trpt)
         dcod1(5)=dcod(5)
       endif
-      call qgettru(utwiss(1,idp,iutk),utwiss(1,idp,iutl),
+      call qgettru(utwiss(1:ntwissfun,idp,iutk),
+     $     utwiss(1:ntwissfun,idp,iutl),
      $     utwiss(3,idp,nut),utwiss(6,idp,nut),
      $     trans,k,l,.true.,.true.,trpt)
       r1=utwiss(mfitr1,idp,iutl)
@@ -548,7 +549,8 @@ c      trans2s(1:20)=(trans2s(1:20)-trans(1:20))/w
       dcod(5)=(cod2(5)-utwiss(mfitdz,idp,itwl))/w
       ctrans(:,6)=cod2(1:4)
       ctrans(1:2,7)=cod2(5:6)
-      call qgettru(utwiss(1,idp,itwk),utwiss(1,idp,itwk1),
+      call qgettru(utwiss(1:ntwissfun,idp,itwk),
+     $     utwiss(1:ntwissfun,idp,itwk1),
      $     utwiss(3,idp,nut),utwiss(6,idp,nut),
      $     trans1,k,k1,.true.,.true.,trpt)
       dtrans=tmultr45(trans1,trans2)+dtrans

@@ -967,6 +967,7 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       subroutine tffft(kl,m,kx,inv,irtc)
       use tfstk
       use macmath
+      use iso_c_binding
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist) :: kl
@@ -974,7 +975,10 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       integer*8 ktfc2l
       integer*4 m,n,irtc,i
       complex*16 cx(m),cy(m)
-      real*8 c,s,f,w,a(m*2),ay(m*2)
+      complex*16 , pointer ::ca(:)
+      real*8 c,s,f,w
+      complex*16 ay(m)
+      real*8 , target::a(m*2)
       logical*4 inv,power2,even
       irtc=-1
       n=2
@@ -1006,7 +1010,9 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
         kx%k=ktflist+ktfc2l(cx,m)
         irtc=0
         return
-      elseif(even)then
+      endif
+      call c_f_pointer(c_loc(a),ca,[m/2])
+      if(even)then
         a(1:m)=kl%rbody(1:m)
 c        call tmov(kl%dbody(1),a,m)
         if(power2)then
@@ -1023,13 +1029,13 @@ c        call tmov(kl%dbody(1),a,m)
             a(2  )=0.d0
             go to 1000
           else
-            call tcftr(a,m/2,inv)
+            call tcftr(ca,m/2,inv)
           endif
         else
           if(inv)then
-            call zfftw(a,m/2,-1,ay)
+            call zfftw(ca,m/2,-1,ay)
           else
-            call zfftw(a,m/2, 1,ay)
+            call zfftw(ca,m/2, 1,ay)
           endif
         endif
         f=.5d0/sqrt(dble(m))
@@ -1063,12 +1069,12 @@ c        call tmov(kl%dbody(1),a,m)
           a(i*2  )=0.d0
         enddo
         if(inv)then
-          call zfftw(a,m,-1,ay)
+          call zfftw(ca,m,-1,ay)
         else
-          call zfftw(a,m, 1,ay)
+          call zfftw(ca,m, 1,ay)
         endif
       endif
- 1000 kx%k=ktflist+ktfc2l(a,m)
+ 1000 kx%k=ktflist+ktfc2l(ca,m)
       irtc=0
       return
       end

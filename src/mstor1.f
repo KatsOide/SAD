@@ -3,12 +3,14 @@
       use tfstk
       use ffs
       use tffitcode
+      use iso_c_binding
       parameter (kfiles=3)
       parameter (integr=4,lreal8=8,ichr=lreal8*10,namel=ichr/integr)
       logical extend
       character*(*) word
       character*30 dat
-      character fn(1)*(ichr),fnn(1)*(ichr)
+      character fn(1)*(ichr)
+      character,pointer :: fnn (:)
       integer*8 latt(nlat)
       dimension twiss(nlat,-ndim:ndim,ntwissfun)
       dimension id(*),ifname(*)
@@ -27,7 +29,8 @@ c
       icom=icomf
       nf=nof(icom)
       do 10 i=1,nf
-        call mcchar(rlist(ifname(i)),fnn,namel)
+        call c_f_pointer(c_loc(rlist(ifname(i))),fnn,[ichr])
+c        call mcchar(rlist(ifname(i)),fnn,namel)
         if(fn(1).eq.fnn(1)) then
           np=i
           call tfree(int8(id(np)))

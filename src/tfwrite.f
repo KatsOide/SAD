@@ -728,15 +728,15 @@ c          enddo
           return
         endif
         opts%opt=.false.
-        if(ktfstringq(ktastk(isp0+1)))then
-          opts%delim=tfgetstr(ktastk(isp0+1),opts%ndel)
+        if(ktfstringq(dtastk(isp0+1)))then
+          opts%delim=tfgetstr(dtastk(isp0+1),opts%ndel)
           opts%opt=.true.
         elseif(ktastk(isp0+1) .ne. ktfref)then
           irtc=itfmessage(9,'General::wrongval',
      $         '"Character-string is","for WordSeparators ->"')
           return
         endif
-        if(ktfrealq(ktastk(isp0+2)))then
+        if(ktfrealq(dtastk(isp0+2)))then
           opts%new=rtastk(isp0+2) .ne. 0.d0
           opts%opt=.true.
         elseif(ktastk(isp0+2) .ne. ktfref)then
@@ -744,7 +744,7 @@ c          enddo
      $         '"True or False is","for ReadNewRecord ->"')
           return
         endif
-        if(ktfrealq(ktastk(isp0+3)))then
+        if(ktfrealq(dtastk(isp0+3)))then
           opts%null=rtastk(isp0+3) .ne. 0.d0
           opts%opt=.true.
         elseif(ktastk(isp0+3) .ne. ktfref)then
@@ -1040,7 +1040,7 @@ c          enddo
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
-      if(ktfstringq(ktastk(isp),str))then
+      if(ktfstringq(dtastk(isp),str))then
         nc=str%nch
         if(nc .le. 0)then
           irtc=itfmessage(9,'General::wrongval',

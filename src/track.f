@@ -78,7 +78,6 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       trf0  =rgetgl1('DTSYNCH')
       vcalpha=rgetgl1('EFFVCRATIO')
       nlat  =elatt%nlat0+1
-      write(*,*)'track-nlat ',nlat
       df    =rgetgl1('FSHIFT')
       isynch=igetgl1('$RFSW$'  )
       intra =igetgl1('$INTRA$' ) .ne. 0
@@ -134,8 +133,6 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       call initialize_tampl()
       call tclrpara
       call tclrfpe
-      write(*,*)'track-clrpara ',ifele1
-        write(*,*)'track-evals'
       write(*,'(a)')
      1' RFSW RADCOD RAD  FLUC  INTRA'//
      1' POL   COD  DAPER EMIOU K64   FOURI SMEAR'
@@ -247,25 +244,25 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       title='Tracking'
  8001 call rsetgl1('LOSSAMPL',alost )
       call rsetgl1('LOSSDZ',zlost )
-      call isetgl1('$RFSW$',isynch)
-      call isetgl1('$INTRA$',intra )
-      call isetgl1('$POL$',calpol)
-      call isetgl1('$RAD$',rad   )
-      call isetgl1('$COD$',calcod)
-      call isetgl1('$RADCOD$',radcod)
-      call isetgl1('$RADPOL$',radpol)
-      call isetgl1('$EMIOUT$',emiout)
-      call isetgl1('$DAPERT$',dapert)
-      call isetgl1('$FLUC$',rfluct)
-      call isetgl1('$K64$',k64)
-      call isetgl1('$FOURIE$',fourie)
-      call isetgl1('$SMEAR$',smearp)
-      call isetgl1('$GEOCAL$',geocal)
-      call isetgl1('$INTRES$',intres)
-      call isetgl1('$HALFRES$',halfres)
-      call isetgl1('$SUMRES$',sumres)
-      call isetgl1('$DIFFRES$',diffres)
-      call isetgl1('$PHOTONS$',photons)
+      call isetgll('$RFSW$',rfsw)
+      call isetgll('$INTRA$',intra )
+      call isetgll('$POL$',calpol)
+      call isetgll('$RAD$',rad   )
+      call isetgll('$COD$',calcod)
+      call isetgll('$RADCOD$',radcod)
+      call isetgll('$RADPOL$',radpol)
+      call isetgll('$EMIOUT$',emiout)
+      call isetgll('$DAPERT$',dapert)
+      call isetgll('$FLUC$',rfluct)
+      call isetgll('$K64$',k64)
+      call isetgll('$FOURIE$',fourie)
+      call isetgll('$SMEAR$',smearp)
+      call isetgll('$GEOCAL$',geocal)
+      call isetgll('$INTRES$',intres)
+      call isetgll('$HALFRES$',halfres)
+      call isetgll('$SUMRES$',sumres)
+      call isetgll('$DIFFRES$',diffres)
+      call isetgll('$PHOTONS$',photons)
       nlat  =elatt%nlat0+1
       call tclrpara
       call cputime(dt1,irtc)
@@ -321,6 +318,17 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       integer*4 ia,ival
       character*(*) vname
       ia=0
+      call isetgl(vname,ival,ia)
+      return
+      end
+
+      subroutine isetgll(vname,lval)
+      implicit none
+      logical*4 , intent(in)::lval
+      integer*4 ia,ival
+      character*(*) vname
+      ia=0
+      ival=lval
       call isetgl(vname,ival,ia)
       return
       end

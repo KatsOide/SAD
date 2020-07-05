@@ -701,7 +701,7 @@ c
        idummy=sethtb('GRAPH   ',icACT,ktaloc(8))
        idummy1=sethtb('graph   ',icACT,idval(idummy))
        ilist(1,idval(idummy))=7
-       call setfnp(ilist(1,idval(idummy)+1),ActGra)
+       call setfnp(klist(idval(idummy)+1),ActGra)
        ilist(1,idval(idummy)+2)=hsrch('ID')
        ilist(1,idval(idummy)+3)=hsrch('GTYPE')
        ilist(1,idval(idummy)+4)=hsrch('TURNS')

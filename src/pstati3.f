@@ -80,7 +80,7 @@ c----- HistoPlot -------------
       if(ghisto .and. n.gt.1) then
         nbin=10*max(log10(dble(n)),1d0)
         ig=italoc(nbin)
-        call pstatihist(rlist(ig),xmin,xmax,nbin,title,case,name,namf,
+        call pstatihist(rlist(ig:ig+nbin-1),xmin,xmax,nbin,title,case,name,namf,
      $       0,0,1,lfnd)
         do i=1,ndi
           do j=1,nbin
@@ -184,7 +184,8 @@ c           namf='GXLX  '//prefixc//'L '
             name='S0Y1'//name(1:lene(name))//'M)'
             namf='GXLX'//namf(1:lene(namf))//'L'
           endif
-          call pstatihist(rlist(ig),xmin,xmax,nbin,title,case,name,namf,
+          call pstatihist(rlist(ig:ig+nbin-1),xmin,xmax,nbin,
+     $         title,case,name,namf,
      $         3,3,i,lfnd)
         enddo
         call tfree(int8(ig))

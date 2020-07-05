@@ -271,13 +271,13 @@ c     *     by tfinit(), tfinimult() initialization
       implicit none
       integer*4 nc,i,ih,nh
       parameter (nh=nelmhash)
-      integer*1 name(nc)
+      character name(nc)
       ih=0
       do i=1,nc
-        if(name(i) .eq. ichar(' '))then
+        if(name(i) .eq. ' ')then
           exit
         endif          
-        ih=ih+name(i)
+        ih=ih+ichar(name(i))
       enddo
       itehash=iand(ih,nh)
       return

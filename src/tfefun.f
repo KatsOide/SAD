@@ -94,13 +94,10 @@ c     for vendor extended math intrinsic function
 
 c     DOUBLE COMPLEX specific math function implemented by SAD
 
-      real*8 aloggamma1,factorial,gammaq,gammap,inverseerf,
-     $     productlog,gamma0,erf,erfc
-      complex*16 cloggamma1,cfactorial,cerfc,cerf,
+      real*8 , external:: aloggamma1,factorial,gammaq,gammap,inverseerf,
+     $     productlog,gamma0,ferf,ferfc
+      complex*16, external:: cloggamma1,cfactorial,cerfc,cerf,
      $     cproductlog
-      external aloggamma1,cloggamma1,factorial,cfactorial,gammaq,
-     $     gammap,cerfc,cerf,gamma0,erf,erfc,inverseerf,
-     $     cproductlog,productlog
       if(upvalue)then
         LOOP_I: do i=isp1+1,isp
           k1=dtastk(i)
@@ -299,7 +296,7 @@ c            write(*,*)'irtc: ',irtc
      $         .true.,-dinfinity,dinfinity,irtc)
         elseif(narg .eq. 2)then
           call tfeintf2(datan2,tcatan2,k,
-     $         ktastk(isp-1),.true.,kx,irtc)
+     $         dtastk(isp-1),.true.,kx,irtc)
         else
           go to 6812
         endif
@@ -854,26 +851,26 @@ c        go to 6900
  1560   call tffindroot(isp1,kx,irtc)
         go to 6900
  1570   if(narg .eq. 2)then
-          call tfeintf2(gammaq,0.d0,ktastk(isp-1),k,.false.,kx,irtc)
+          call tfeintf2(gammaq,tfdummy,dtastk(isp-1),k,.false.,kx,irtc)
         else
           go to 6812
         endif
         go to 6900
  1580   if(narg .eq. 2)then
-          call tfeintf2(gammap,0.d0,ktastk(isp-1),k,.false.,kx,irtc)
+          call tfeintf2(gammap,tfdummy,dtastk(isp-1),k,.false.,kx,irtc)
         else
           go to 6812
         endif
         go to 6900
  1590   if(narg .eq. 1)then
-          call tfeintf(erf,cerf,k,
+          call tfeintf(ferf,cerf,k,
      $         kx,.true.,-dinfinity,dinfinity,irtc)
         else
           go to 6810
         endif
         go to 6900
  1600   if(narg .eq. 1)then
-          call tfeintf(erfc,cerfc,k,
+          call tfeintf(ferfc,cerfc,k,
      $         kx,.true.,-dinfinity,dinfinity,irtc)
         else
           go to 6810
@@ -938,7 +935,7 @@ c        go to 6900
  1900   if(narg .ne. 2)then
           go to 6812
         endif
-        call tfreplace(ktastk(isp1+1),ktastk(isp),
+        call tfreplace(dtastk(isp1+1),dtastk(isp),
      $       kx,.false.,.true.,.false.,irtc)
         go to 6900
  1910   irtc=itfmessage(999,'General::unregister',' ')
@@ -1130,7 +1127,7 @@ c            msgn TagS (*   *)   Hold z
           go to 6900
         endif
  6100   if(narg .eq. 2)then
-          call tfeval1(ktastk(isp1+1),ktastk(isp),kx,iaf,irtc)
+          call tfeval1(dtastk(isp1+1),dtastk(isp),kx,iaf,irtc)
           go to 6900
         endif
         if(narg .eq. 0)then
@@ -1145,14 +1142,14 @@ c            msgn TagS (*   *)   Hold z
         endif
         do i=isp1+2,isp
           k1=kx
-          call tfeval1(k1,ktastk(i),kx,iaf,irtc)
+          call tfeval1(k1,dtastk(i),kx,iaf,irtc)
           if(irtc .ne. 0)then
             go to 6900
           endif
         enddo
         return
  6200   if(narg .eq. 2)then
-          call tfeval1(ktastk(isp1+1),ktastk(isp),kx,iaf,irtc)
+          call tfeval1(dtastk(isp1+1),dtastk(isp),kx,iaf,irtc)
           go to 6900
         endif
         if(narg .eq. 0)then
@@ -1166,7 +1163,7 @@ c            msgn TagS (*   *)   Hold z
         endif
         do i=isp-1,isp1+1,-1
           k1=kx
-          call tfeval1(ktastk(i),k1,kx,iaf,irtc)
+          call tfeval1(dtastk(i),k1,kx,iaf,irtc)
           if(irtc .ne. 0)then
             go to 6900
           endif
@@ -1190,7 +1187,7 @@ c            msgn TagS (*   *)   Hold z
  6570   if(narg .ne. 2)then
           go to 6812
         endif
-        call tfeval1to(ktastk(isp1+1),ktastk(isp),
+        call tfeval1to(dtastk(isp1+1),dtastk(isp),
      $       kx,iaf,.false.,irtc)
         go to 6900
  6580   if(iaf .eq. mtfincrement)then
@@ -1199,11 +1196,11 @@ c            msgn TagS (*   *)   Hold z
           v1=-1.d0
         endif
         if(narg .eq. 1)then
-          call tfeval1to(ktastk(isp1+1),dfromr(v1),
+          call tfeval1to(dtastk(isp1+1),dfromr(v1),
      $         kx,mtfaddto,.true.,irtc)
         elseif(narg .eq. 2 .and.
      $         ktastk(isp1+1) .eq. ktfoper+mtfnull)then
-          call tfeval1to(ktastk(isp),dfromr(v1),
+          call tfeval1to(dtastk(isp),dfromr(v1),
      $         kx,mtfaddto,.false.,irtc)
         else
           go to 6810
@@ -1263,7 +1260,7 @@ c            msgn TagS (*   *)   Hold z
  6750   if(narg .ne. 2)then
           go to 6812
         endif
-        call tfeval1(ktastk(isp1+1),ktastk(isp),kx,mtfcomplex,irtc)
+        call tfeval1(dtastk(isp1+1),dtastk(isp),kx,mtfcomplex,irtc)
         go to 6900
       elseif(ktfsymbolqdef(k1%k,symd))then
         if(symd%sym%override .ne. 0)then
@@ -1870,12 +1867,12 @@ c          write(*,*)irtc
       if(isp .eq. isp1+2)then
         if(tfnumberq(dtastk(isp1+1)) .and.
      $       tfnumberq(dtastk(isp)))then
-          call tfcmplx(ktastk(isp1+1),ktastk(isp),kx,iopc,irtc)
+          call tfcmplx(dtastk(isp1+1),dtastk(isp),kx,iopc,irtc)
         elseif(tflistq(dtastk(isp1+1))
      $         .or. tflistq(dtastk(isp)))then
-          call tfearray(ktastk(isp1+1),ktastk(isp),kx,iopc,irtc)
+          call tfearray(dtastk(isp1+1),dtastk(isp),kx,iopc,irtc)
         else
-          call tfeexpr(ktastk(isp1+1),ktastk(isp),kx,iopc)
+          call tfeexpr(dtastk(isp1+1),dtastk(isp),kx,iopc)
           irtc=0
         endif
       else
@@ -1936,8 +1933,8 @@ c          write(*,*)irtc
         return
       endif
       if(isp .eq. isp1+2 .and.
-     $     ktfstringq(ktastk(isp)) .and. ktfstringq(ktastk(isp1+1)))then
-        if(tfsamestringq(ktastk(isp),ktastk(isp1+1)))then
+     $     ktfstringq(dtastk(isp)) .and. ktfstringq(dtastk(isp1+1)))then
+        if(tfsamestringq(dtastk(isp),dtastk(isp1+1)))then
           kx%k=ktftrue
         else
           kx%k=0
@@ -1962,11 +1959,11 @@ c          write(*,*)irtc
         return
       endif
       if(tfnumberq(dtastk(isp)))then
-        call tfcmplx(0.d0,ktastk(isp),kx,iopc,irtc)
+        call tfcmplx(dfromr(0.d0),dtastk(isp),kx,iopc,irtc)
       elseif(tflistq(dtastk(isp)))then
-        call tfearray(0.d0,ktastk(isp),kx,iopc,irtc)
+        call tfearray(dfromr(0.d0),dtastk(isp),kx,iopc,irtc)
       else
-        call tfeexpr(0.d0,ktastk(isp),kx,iopc)
+        call tfeexpr(dfromr(0.d0),dtastk(isp),kx,iopc)
         irtc=0
       endif
       return

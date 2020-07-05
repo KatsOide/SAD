@@ -1,9 +1,11 @@
       subroutine pgsolvcond(isp1,kx,irtc)
       use tfstk
+      use iso_c_binding
       implicit none
       logical*4 normalize,cond
       type (sad_descriptor) kx
       type (sad_rlist) , pointer :: kl
+      real*8, pointer:: a(:,:),b(:),c(:,:),d(:)
       integer*8 ktfmaloc,k,kb,kap,kbp,kc,kcp,kd,kdp
       integer*4 isp1,irtc,narg,nb,mb,n,m,
      $     nc,mc,nd,md,nx,itfmessage
@@ -94,8 +96,12 @@ c      write(*,*)'pgsolvcond-1 ',nx,normalize,cond,eps
       endif
       kx=kxavaloc(-1,m,kl)
 c      write(*,*)'pgsolvcond-3 ',m
-      call pgsolvcond1(rlist(kap),rlist(kbp),kl%rbody(1:m),n,m,n,
-     $     rlist(kcp),rlist(kdp),nc,cond,nx,normalize,eps,
+      call c_f_pointer(c_loc(rlist(kap)),a,[n,m])
+      call c_f_pointer(c_loc(rlist(kbp)),b,[n])
+      call c_f_pointer(c_loc(rlist(kcp)),c,[nc,m])
+      call c_f_pointer(c_loc(rlist(kdp)),d,[nc])
+      call pgsolvcond1(a,b,kl%rbody(1:m),n,m,n,
+     $     c,d,nc,cond,nx,normalize,eps,
      $     .false.)
 c      write(*,*)'pgsolvcond-4 ',nc,nx
       call tfree(kap)

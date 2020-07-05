@@ -56,9 +56,9 @@
               lt=idtypec(lxp)
               nv=kytbl(kwmax,lt)-1
               if(ideal)then
-                call tmov(rlist(idvalc(lxp)+1),vsave,nv)
+                call tmov(rlist(idvalc(lxp)+1:idvalc(lxp)+nv),vsave,nv)
               else
-                call tmov(rlist(latt(lxp)+1),vsave,nv)
+                call tmov(rlist(latt(lxp)+1:latt(lxp)+nv),vsave,nv)
               endif
               call compelc(lxp,cmp)
               call qfraccomp(cmp,0.d0,fr,ideal,chg)
@@ -77,9 +77,9 @@
                 pos(i)=pos(lxp+1)
               endif
               if(ideal)then
-                call tmov(vsave,rlist(idvalc(lxp)+1),nv)
+                call tmov(vsave,rlist(idvalc(lxp)+1:idvalc(lxp)+nv),nv)
               else
-                call tmov(vsave,rlist(latt(lxp)+1),nv)
+                call tmov(vsave,rlist(latt(lxp)+1:latt(lxp)+nv),nv)
               endif
               if(i .eq. 1)then
                 dpos=pos(1)

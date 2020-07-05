@@ -11,7 +11,7 @@
       if(kf .le. mfitzpy)then
         tgfun=utwiss(kf,idp,itwissp(kp))
       elseif(kf .ge. mfitpex .and. kf .le. mfitgmz)then
-        tgfun=tphysdisp(kf,utwiss(1,idp,itwissp(kp)))
+        tgfun=tphysdisp(kf,utwiss(1:ntwissfun,idp,itwissp(kp)))
       else
         select case (kf)
         case (mfittrx)

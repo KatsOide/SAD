@@ -972,7 +972,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         elseif(i .gt. 0)then
           ielma=mod(i-1,nlat)+1
         else
-          ielma=nlat-mod(-i,nlat)
+          ielma=min(nlat-mod(-i,nlat)+1,nlat)
         endif
         return
         end function

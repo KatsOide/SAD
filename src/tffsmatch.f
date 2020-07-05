@@ -38,6 +38,7 @@ c      include 'DEBUG.inc'
      $     dg,f1,f2,g1,g2,ra1,rpa1,rstaba1,valvar0,
      $     rp,rp0,wlimit(flv%nvar),dv,vl,dvkc
       real*8 twisss(ntwissfun)
+      real*8 , pointer :: qu(:,:),qu0(:,:)
       logical*4 chgmod,newton,imprv,limited,over,wcal,
      $     parallel,nderiv,outt,nderiv0,dlim
       integer*4 kkk,kkkk,npa
@@ -445,7 +446,9 @@ c                        enddo
             enddo do1082
  1082       if(newton)then
 c              call tfmemcheckprint('ffsmatch-solv-0',.true.,irtc)
-              call tfsolv(rlist(ifqu),rlist(ifqu0),
+              call c_f_pointer(c_loc(rlist(ifqu)),qu,[nqcol,nvar])
+              call c_f_pointer(c_loc(rlist(ifqu0)),qu0,[nqcol,nvar])
+              call tfsolv(qu,qu0,
      $             df,dval,wlimit,nqcol,nvar,flv%iqcol,
      $             flv%kfitp,flv%mfitp,dg,wexponent,1.d-8/fact)
 c              call tfmemcheckprint('ffsmatch-solv-1',.true.,irtc)
@@ -460,8 +463,9 @@ c              call tfmemcheckprint('ffsmatch-solv-1',.true.,irtc)
                 go to 1082
               endif
             else
-              call tgrad(rlist(ifqu0),rlist(ifqu),
-     $             df,dval,wlimit,wexponent,nqcol,nvar)
+              call c_f_pointer(c_loc(rlist(ifqu)),qu,[nqcol,nvar])
+              call c_f_pointer(c_loc(rlist(ifqu0)),qu0,[nqcol,nvar])
+              call tgrad(qu,qu0,df,dval,wlimit,wexponent,nqcol,nvar)
             endif
             limited=.false.
 c            call tfmemcheckprint('ffsmatch',.true.,irtc)
@@ -1314,7 +1318,8 @@ c      call tfmemcheckprint('solv-4',.true.,irtc)
       use tffitcode
       use ffs_pointer,only:kele2
       implicit none
-      integer*8 km,k1,kam,kcm,ktfmaloc,k2
+      type (sad_descriptor) km
+      integer*8 k1,kam,kcm,ktfmaloc,k2
       integer*4 lfno,irtc,n,m
       real*8 rfromk
       integer*8 itfcoupm
@@ -1327,8 +1332,8 @@ c      call tfmemcheckprint('solv-4',.true.,irtc)
         itfcoupm=ktfsymbolz('CouplingMatrix',14)
       endif
       levele=levele+1
-      call tfsyeval(itfcoupm,km,irtc)
-      call tfconnectk(km,irtc)
+      call tfsyeval(dfromk(itfcoupm),km,irtc)
+      call tfconnect(km,irtc)
       if(irtc .ne. 0)then
         go to 9010
       endif

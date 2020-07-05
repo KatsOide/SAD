@@ -12,8 +12,8 @@
           xa=((x(j,i)-xm)/sigx+3.d0)*s
           ya=((y(j,i)-ym)/sigy+3.d0)*s
           if(xa .gt. 0.d0 .and. ya .gt. 0.d0)then
-            ix=xa
-            iy=ya
+            ix=int(xa)
+            iy=int(ya)
             if(ix .lt. nmesh .and. iy .lt. nmesh)then
               fx=xa-ix
               fy=ya-iy

@@ -258,7 +258,7 @@ c          msgn /:   (*   *)   Hold z
      $         tfconstq(ktastk(isp)) .and.
      $         .not. tfheldqd(dtastk(isp)) .and.
      $         ktfimmediateq(klist(ifunbase+iop1)))then
-            call tfeval1(ktastk(isp1),ktastk(isp),kx%k,iop1,irtc)
+            call tfeval1(dtastk(isp1),dtastk(isp),kx,iop1,irtc)
             if(irtc .ne. 0)then
               return
             endif

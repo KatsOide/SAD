@@ -145,7 +145,7 @@ c     $     beam(1)
       integer*4 i
       call ffs_init_sizep
       do i=1,nlat
-        call tfbeam(i,0.d0,beamsize(1,i))
+        call tfbeam(i,0.d0,beamsize(:,i))
       enddo
       updatesize=.true.
       return

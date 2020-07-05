@@ -543,29 +543,33 @@ c     $       epslon,epsabs,8)+rlog
 
       subroutine twspfu(x,y,sigx,sigy,fx,fy,fu,fxx,fyy,fxy)
       use tfstk
+      use iso_c_binding
       implicit none
       integer*8 iu
-      integer*4 nr,nx,ny,m
+      integer*4 ,parameter::nr=20,nx=60,ny=60,m=(nr+1)*(nx+1)*(ny+1)
       real*8 x,y,sigy,sigx,fx,fy,fu,fxx,fyy,fxy
-      parameter (nr=20,nx=60,ny=60,m=(nr+1)*(nx+1)*(ny+1))
+      real*8 ,pointer,save::u(:,:,:),uxx(:,:,:),uyy(:,:,:),uxxyy(:,:,:),
+     $     urr(:,:,:),uxxrr(:,:,:),uyyrr(:,:,:),uxxyyrr(:,:,:)     
       data iu /0/
       if(iu .eq. 0)then
         iu=ktaloc(8*m)
+        call c_f_pointer(c_loc(rlist(iu)),u,[nx+1,ny+1,nr+1])
+        call c_f_pointer(c_loc(rlist(iu+m)),uxx,[nx+1,ny+1,nr+1])
+        call c_f_pointer(c_loc(rlist(iu+2*m)),uyy,[nx+1,ny+1,nr+1])
+        call c_f_pointer(c_loc(rlist(iu+3*m)),uxxyy,[nx+1,ny+1,nr+1])
+        call c_f_pointer(c_loc(rlist(iu+4*m)),urr,[nx+1,ny+1,nr+1])
+        call c_f_pointer(c_loc(rlist(iu+5*m)),uxxrr,[nx+1,ny+1,nr+1])
+        call c_f_pointer(c_loc(rlist(iu+6*m)),uyyrr,[nx+1,ny+1,nr+1])
+        call c_f_pointer(c_loc(rlist(iu+7*m)),uxxyyrr,[nx+1,ny+1,nr+1])
         call twspfuinit(
-     $       rlist(iu),rlist(iu+m),rlist(iu+2*m),
-     $       rlist(iu+3*m),rlist(iu+4*m),rlist(iu+5*m),
-     $       rlist(iu+6*m),rlist(iu+7*m))
+     $     u,uxx,uyy,uxxyy,urr,uxxrr,uyyrr,uxxyyrr)
       endif
       if(sigx .lt. sigy)then
         call twspfu0(y,x,sigy,sigx,fy,fx,fu,fxx,fyy,fxy,
-     $       rlist(iu),rlist(iu+m),rlist(iu+2*m),
-     $       rlist(iu+3*m),rlist(iu+4*m),rlist(iu+5*m),
-     $       rlist(iu+6*m),rlist(iu+7*m))
+     $     u,uxx,uyy,uxxyy,urr,uxxrr,uyyrr,uxxyyrr)
       else
         call twspfu0(x,y,sigx,sigy,fx,fy,fu,fxx,fyy,fxy,
-     $       rlist(iu),rlist(iu+m),rlist(iu+2*m),
-     $       rlist(iu+3*m),rlist(iu+4*m),rlist(iu+5*m),
-     $       rlist(iu+6*m),rlist(iu+7*m))
+     $     u,uxx,uyy,uxxyy,urr,uxxrr,uyyrr,uxxyyrr)
       endif
       return
       end

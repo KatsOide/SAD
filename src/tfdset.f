@@ -404,7 +404,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
                   iord0=iordless
                   iordless=0
                   mstk0=mstk
-                  if(.not. itfseqmatstk(im,isp0,larg%dbody(1)%k,
+                  if(.not. itfseqmatstk(im,isp0,larg%dbody(1),
      $                 m,is,ktftype(larg%dbody(1)%k) .eq. ktfoper,
      $                 kap) .ge. 0)then
                     iordless=iord0
@@ -503,6 +503,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       real*8 x,ha
       parameter (ha=7.d0**5+1.d0/7.d0**5)
       equivalence (h,ih),(x,ix),(h1,ih1)
+      ih=0
       if(ktflistq(k,kl))then
         m=kl%nl
         if(m .eq. 0)then
@@ -688,7 +689,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
             call tfevalwitharg(dtbl,dtbl%bodyc,kx,irtc)
             call tflocal1d(kal)
           else
-            call tfeevalref(dtbl%bodyc%k,kx,irtc)
+            call tfeevalref(dtbl%bodyc,kx,irtc)
           endif
           if(irtc .ne. 0)then
             call tfcatchreturn(irtcret,kx,irtc)
@@ -1065,7 +1066,7 @@ c          write(*,*)isp-isp1-1
           return
         endif
         rep=rep .or. rep1
-        rep1=tfreplacearg(pat%head%k,kp(1),irtc)
+        rep1=tfreplacearg(pat%head,kp(1),irtc)
         if(irtc .ne. 0)then
           return
         endif

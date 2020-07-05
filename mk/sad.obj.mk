@@ -21,9 +21,9 @@ OBJRC= 	tfefun1.o	tfsort.o	tfmodule.o	itfmaloc.o \
 	gamma.o		tfbessel.o	 spkick.o	tsolqu.o	tsolque.o \
 	tfshared.o	tfinitn.o	tffsa.o
 
-OBJ0= 	italoc.o qcav.o	JNLPRM.o	msolv1.o	prkick.o \
-	prkick1.o	twsdrw.o	tdrwdt.o	msortn.o   tdplt.o     bbstrhl.o bbtool.o \
-	ttdr.o	 undulator.o phsrot.o    matrix.o \
+OBJ0= 	italoc.o qcav.o	JNLPRM.o	msolv1.o \
+	msortn.o   tdplt.o     bbstrhl.o bbtool.o \
+	 undulator.o phsrot.o    matrix.o \
 	autofg.o   tffswake.o  tfvectorize.o \
 	itfmessage.o           tffindroot.o spkick.o \
 	autos_.o      gdtoa/g_dfmt.o gdtoa/gdtoa.o gdtoa/g__fmt.o \
@@ -36,7 +36,7 @@ OBJ1=ActGRA.o    filbuf.o    pwmatq.o    ActLie.o    \
      mstack2.o   DM42.o      gaussn.o    mstat.o \
      qchg.o      tqente.o    FMUL2.o     geodrw.o    mstat2.o \
      qcoord.o    termes.o    tqfrie.o    mstatp.o  \
-     mstor1.o    tfadjst.o   tqlfre.o    INTGRL.o \
+       tfadjst.o   tqlfre.o    INTGRL.o \
      gettok.o    mstore.o    IPAK.o      mwght.o     IgetGL.o    getvad.o \
      tfbeam.o    LgetGL.o    nlfit.o     qdrift.o    \
      Lrdnum.o    openP.o     hsrch.o     \
@@ -55,7 +55,13 @@ OBJ2=packpi.o    tfdbun.o    tracke.o    NewGRF.o \
      ZEROM2.o	ZEROM4.o	ZEROV4.o \
      tfrej.o     setdfl.o    tsmear.o    actPlt.o
 
-OBJ3=sethtb.o    atof.o      bint.o      skipch.o    tspect.o    mbmp.o       pfcoup.o \
+OBJOBS = mbmp.o temp.o pstati3.o palgn.o pvbump.o pwrtmon.o pwrtstr.o \
+	mfdir.o mfdel.o mfdel1.o mrecal.o mstor1.o putsti.o ttdr.o \
+	prkick.o prkick1.o pstati.o pstai1.o \
+     pvbump2.o    pmeas.o    pmbdata.o   pvbump3.o \
+     pmbdrw.o    pmbump.o    pvbump1.o    preabuf.o  pmbdata1.o 
+
+OBJ3=sethtb.o    atof.o      bint.o      skipch.o    tspect.o    pfcoup.o \
      sols33.o    pgaussj.o   corfree.o   spline.o \
      corinit.o   phdrw.o     sprexl.o    tbrad.o \
      phdrwa.o    sprlin.o    pinner.o     \
@@ -70,30 +76,28 @@ OBJ4=defglb.o    ppair.o \
      tcav.o      dolist.o    prexln.o \
      tcave.o     tltrm.o     twbuf.o     mdpmax.o    prkwdv.o \
      metaer.o    prline.o    tchge.o     tluma.o     doprin.o \
-     tmap.o      doread.o    mfdel.o     prnGlb.o  \
-     tmast.o     dorvrs.o    mfdel1.o    prnflg.o   \
-     twinil.o    dostop.o    mfdir.o     tconv.o     synradcl.o \
-     twinit.o    dotemp.o    temp.o      mfnst.o     pstati.o    tconvm.o    drndsr.o \
-     mhogal.o    pstati1.o   tcoord.o    drwkwd.o    mhogan.o    pstati2.o \
-     tcoorde.o   pstati3.o \
+     tmap.o      doread.o         prnGlb.o  \
+     tmast.o     dorvrs.o        prnflg.o   \
+     twinil.o    dostop.o        tconv.o     synradcl.o \
+     twinit.o    dotemp.o	mfnst.o      tconvm.o    drndsr.o \
+     mhogal.o    tcoord.o    drwkwd.o    mhogan.o    pstati2.o \
+     tcoorde.o    \
      mkplst.o    psub.o      tday.o      tmuld.o \
      wfbin.o     tdcmd.o     wfres.o \
      eigs33.o    monel.o     wiord.o     monqu.o \
      ptimes.o    wjdraw.o    elname.o    ptol.o   \
-     errmsg.o    mrecal.o    ptrace.o    tdinit.o    mrecal1.o \
+     errmsg.o        ptrace.o    tdinit.o    mrecal1.o \
      ptrim.o     pundo.o     tdjin.o  \
      mrmb.o      push.o      \
      mrqcof.o    wtune.o \
      expln.o     mrqcov.o    tphplt.o     \
-     fdate1.o    mrqmin.o    putsti.o    datetime.o \
+     fdate1.o    mrqmin.o        datetime.o \
      msolb.o     tdrife.o \
      filaux.o    pvert.o     tfgetm.o    tfojit.o    tedrawf.o
 
-OBJ5=trcoda.o    nalign.o    ndelw.o    pwrtstr.o \
-     palgn.o	pvbump.o    nfgetm.o    preadstr.o   msolvg.o    preadmon.o \
-     pwrtmon.o   yylex_.o    calc.o \
-     pvbump2.o    pmeas.o    pmbdata.o   pvbump3.o \
-     pmbdrw.o    pmbump.o    pvbump1.o    preabuf.o  pmbdata1.o  \
+OBJ5=trcoda.o    nalign.o    ndelw.o     \
+     nfgetm.o    preadstr.o   msolvg.o    preadmon.o \
+        yylex_.o    calc.o \
      initdainterface.o       initda.o     tfepicsconstatcb.o
 
 OBJAUTO=         abbrev.o    cputix.o     csinit.o     \

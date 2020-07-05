@@ -2691,8 +2691,8 @@ c        sig2 = 0.5d0* sqrt(abs((emit1(1)-emit1(6))**2+4d0*emit1(4)**2))
      $           ,'Nominal spin tune      =',a,'    ',
      $         1x,'Polarization time      =',a,' min'/)
 c9103   format(3X,'Beam dimension along principal axis:'/
-        call putsti(eemx,eemy,eemz,sige,sigz,btilt,sigx,sigy,
-     1              calint,fndcod)
+ccc        call putsti(eemx,eemy,eemz,sige,sigz,btilt,sigx,sigy,
+ccc     1              calint,fndcod)
 ckiku ------------------>
         if(calpol)then
           write(lfno,*)'  Polarization vector at entrance:'

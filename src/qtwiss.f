@@ -804,6 +804,7 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       use ffs
       use ffs_pointer
       use tffitcode
+      use iso_c_binding
       implicit none
       type (ffs_bound) fbound
       real*8 conv,cx,sx,ax,bx,cy,sy,ay,by,r0,dcod(6)
@@ -812,6 +813,7 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
      $     factmin=1.d-3
       integer*4 idp,it
       real*8 r,fact
+      real*8 , pointer :: ptwiss(:,:)
       real*8 trans(4,5),cod(6),cod0(6),trans1(4,5),transb(4,5),
      $     transe(4,5),ftwiss(ntwissfun),trans2(4,5),cod00(6)
       logical*4 over,codfnd,stab
@@ -821,12 +823,14 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       fact=.5d0
       conv=min(conv1,conv0*(1.d0+(cod0(6)/0.001d0)**2))
       stab=.false.
+      call c_f_pointer(c_loc(rlist(iftwis)),
+     $     ptwiss,[nlat*(2*ndim+1),ntwissfun])
       do while(it .le. itmax)
         cod=cod0
         if(fbound%fb .gt. 0.d0)then
           call qtwissfrac1(ftwiss,transb,cod,idp,
      $         fbound%lb,fbound%fb,1.d0,.true.,.true.,over)
-          call qtwiss1(rlist(iftwis),idp,fbound%lb+1,fbound%le,
+          call qtwiss1(ptwiss,idp,fbound%lb+1,fbound%le,
      $         trans1,cod,.true.,over)
 c          do i=1,5
             trans2(1,1:5)=
@@ -844,7 +848,7 @@ c          do i=1,5
 c          enddo
           trans2(:,5)=trans2(:,5)+trans1(:,5)
         else
-          call qtwiss1(rlist(iftwis),idp,fbound%lb,fbound%le,
+          call qtwiss1(ptwiss,idp,fbound%lb,fbound%le,
      $         trans2,cod,.true.,over)
         endif
         if(fbound%fe .gt. 0.d0)then

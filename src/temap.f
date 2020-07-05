@@ -190,7 +190,8 @@ c        call tfdebugprint(kx,'temap',1)
       use tmacro
       use sad_main, only:iaidx
       implicit none
-      integer*8 kx,k1,k2,k3,k4,kax,
+      type (sad_descriptor) kx
+      integer*8 k1,k2,k3,k4,kax,
      $     ktfmalocp,ka1,kat1,kbm,krt
       integer*4 l,isp0,itfdownlevel,n,m,irtc,i,j
       real*8 trans(6,12),cod(6),beam(42)
@@ -386,7 +387,8 @@ c      itastk(2,isp)=iat
       use tmacro
       use geolib
       implicit none
-      integer*8 ktfgeol,kx,kax,k1,k2,k11,k12,ka1,ka11,ka12,kdb
+      type (sad_descriptor) kx
+      integer*8 ktfgeol,kax,k1,k2,k11,k12,ka1,ka11,ka12,kdb
       integer*4 l,isp0,irtc,itfdownlevel
       real*8 rfromk
       character*2 ord

@@ -106,7 +106,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
           endif
         enddo
         isp=isp2+idsp
-        call tfefunref(isp0,ktastk(isp2+j),.true.,irtc)
+        call tfefunref(isp0,dtastk(isp2+j),.true.,irtc)
         if(irtc .ne. 0)then
           return
         endif

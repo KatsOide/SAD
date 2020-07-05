@@ -37,17 +37,17 @@
       endif
       do i=2,3
         if(.not. tfreallistq(klc%dbody(iv(i)),klcx))then
-          irtc=itfmessage(9,'General::wrongtype','Real List'," ")
+          irtc=itfmessage(9,'General::wrongtype','"Real List"')
           return
         endif
         if(klcx%nl .ne. 2)then
-          irtc=itfmessage(9,'General::wrongtype','"{min, max}"," "')
+          irtc=itfmessage(9,'General::wrongtype','"{min, max}"')
           return
         endif
         range(1:2,i-1)=klcx%rbody(1:2)
       enddo
       if(.not. tfreallistq(klc%dbody(iv(1)),klc1))then
-        irtc=itfmessage(9,'General::wrongtype','Real List'," ")
+        irtc=itfmessage(9,'General::wrongtype','"Real List"')
         return
       endif
       n1=min(200,klc1%nl)
