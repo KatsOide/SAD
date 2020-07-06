@@ -26,11 +26,11 @@
       type (sad_descriptor) kx
       integer*8 kffs,itwisso,iparams,kax,iutwiss
       integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,k,
-     $     irtc0,it,itemon,itmon,itestr,itstr,itt,lfn,
+     $     irtc0,it,itt,lfn,
      $     iuse,l,itfuplevel,
      $     levelr,lfnl0,lpw,meas0,mfpnta,igetgl1,lenw,
-     $     mphi2,newcor,next,nextt,nfp,nmon,
-     $     nster,nrpt1,itfpeeko,itfgetrecl,nl
+     $     mphi2,next,nextt,nfp,
+     $     nrpt1,itfpeeko,itfgetrecl,nl
       real*8 rmax,amus0,amus1,amusstep,apert,axi,ayi,ctime1,
      $     dpm2,dpxi,dpyi,em,emxe,emye,epxi,epyi,pspan,r,r2i,r3i,
      $     trval,rese,v,wa,wd,wl,xa,ya,xxa,xya,yya,getva,rgetgl1,
@@ -50,7 +50,7 @@
      $     frefix,exist,init,trpt0,expnd,chguse,visit,
      $     byeall,tfvcomp,tffsinitialcond,
      $     geocal0,busy
-      save open98,exist,init,nmon,nster
+      save open98,exist,init
       save busy
       data busy /.false./
       itwisso(kk,i,j)=iftwis+kk+nlat*(i+ndim+(j-1)*ndima)-1
@@ -91,7 +91,7 @@ c     end   initialize for preventing compiler warning
         endif
         call tffsinitparam
 c     kikuchi ... next 1 line added     (11/13/'91)
-        call corinit(newcor,nster,nmon,itstr,itestr,itmon,itemon)
+c        call corinit(newcor,nster,nmon,itstr,itestr,itmon,itemon)
 c     
         flv%measp=nlat
         mfpnt=nlat
