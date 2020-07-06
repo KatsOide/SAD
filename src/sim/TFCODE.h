@@ -52,14 +52,14 @@ typedef enum {
   mtfnopc = 66 /* Last SAD_OPERATOR_TYPES */
 } SAD_OPERATOR_TYPES;
 
-enum {
+typedef enum {
   lsimplepat   =  1, lsimplepatlist =   2, larglist       =   4,
   lconstlist   =  8, lnoconstlist   =  16, lnopatarg      =  32,
   lmemberlist  = 64, lnodefsymbol   = 128, lnoseqlist     = 256,
   lnonreallist = 512
 } SAD_LIST_FLAGS;
 
-enum {
+typedef enum {
   knopatarg      =   lnonreallist*2,
   kpatarg   =    lnonreallist*4, kconstlist  =    lnonreallist*8,
   knoconstlist   =   lnonreallist*16, kfixedarg =   lnonreallist*32, 
@@ -69,7 +69,7 @@ enum {
   kseqarg        = lnonreallist*1024, knoseqarg = lnonreallist*2048
 } SAD_ARG_FLAGS;
 
-enum {
+typedef enum {
   iattrholdfirst =  1, iattrholdrest  =  2,
   iattrconstant  =  4, iattrimmediate =  8,
   iattrorderless = 16, iattrdynamic   = 32,
