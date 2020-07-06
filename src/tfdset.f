@@ -324,7 +324,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
         if(ks%override .eq. 0)then
           sym=.true.
           if(ks%gen .ne. maxgeneration)then
-            call tfsydef(ks,ks1)
+            ks1=>tfsydef(ks)
             kx=sad_descr(ks1)
             rep=.true.
           endif
@@ -368,7 +368,9 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
       integer*8 kad0,kad,kadv,kadv0,kap,ktfrehash,khash
       integer*4 isp1,iup,irtc,is,itfhasharg,
      $     m,mstk0,im,i,itfseqmatstk,isp0,ns,nh,iord0
-      logical*4 ev,ordless,def,tfmaxgenerationq,tfordlessq
+      logical*4 ,intent(in):: def
+      logical*4 ,intent(out):: ev
+      logical*4 ordless,tfmaxgenerationq,tfordlessq
       ev=.false.
       im=isp1+1
       ordless=iup .eq. 0 .and. tfordlessq(ktastk(isp1))

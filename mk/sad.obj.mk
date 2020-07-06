@@ -37,7 +37,7 @@ OBJ1=ActGRA.o    filbuf.o    pwmatq.o    ActLie.o    \
      qchg.o      tqente.o    FMUL2.o     geodrw.o    mstat2.o \
      qcoord.o    termes.o    tqfrie.o    mstatp.o  \
        tfadjst.o   tqlfre.o    INTGRL.o \
-     gettok.o    mstore.o    IPAK.o      mwght.o     IgetGL.o    getvad.o \
+     gettok.o    mstore.o    IPAK.o           IgetGL.o    getvad.o \
      tfbeam.o    LgetGL.o    nlfit.o     qdrift.o    \
      Lrdnum.o    openP.o     hsrch.o     \
      MINV2.o     over.o      MMUL2.o     tfdset.o \
@@ -57,24 +57,27 @@ OBJ2=packpi.o    tfdbun.o    tracke.o    NewGRF.o \
 
 OBJOBS = mbmp.o temp.o pstati3.o palgn.o pvbump.o pwrtmon.o pwrtstr.o \
 	mfdir.o mfdel.o mfdel1.o mrecal.o mstor1.o putsti.o ttdr.o \
-	prkick.o prkick1.o pstati.o pstai1.o \
+	prkick.o prkick1.o pstati.o pstai1.o mwght.o corfree.o \
+	phdrw.o phdrwa.o pkill.o ppair.o pqcell.o mdpmax.o monqu.o \
+	wjdraw.o ptol.o  msolb.o pvert.o preadstr.o preadmon.o \
+	tdlat.o \
      pvbump2.o    pmeas.o    pmbdata.o   pvbump3.o \
      pmbdrw.o    pmbump.o    pvbump1.o    preabuf.o  pmbdata1.o 
 
 OBJ3=sethtb.o    atof.o      bint.o      skipch.o    tspect.o    pfcoup.o \
-     sols33.o    pgaussj.o   corfree.o   spline.o \
-     corinit.o   phdrw.o     sprexl.o    tbrad.o \
-     phdrwa.o    sprlin.o    pinner.o     \
-     tfzap.o     ttcav.o     pkill.o \
+     sols33.o    pgaussj.o   spline.o \
+     corinit.o      sprexl.o    tbrad.o \
+         sprlin.o    pinner.o     \
+     tfzap.o     ttcav.o      \
      ttcave.o    talign.o    tgfun.o      \
      pmicad.o    tgrot.o     dAssgn.o    pmovi.o     defflg.o
 
-OBJ4=defglb.o    ppair.o \
-     tinitr.o    doelem.o    pqcell.o    doexpn.o \
+OBJ4=defglb.o     \
+     tinitr.o    doelem.o        doexpn.o \
      prSad.o     tvcorr.o    doflag.o     \
      prelem.o    title.o     doline.o    prelm0.o \
      tcav.o      dolist.o    prexln.o \
-     tcave.o     tltrm.o     twbuf.o     mdpmax.o    prkwdv.o \
+     tcave.o     tltrm.o     twbuf.o         prkwdv.o \
      metaer.o    prline.o    tchge.o     tluma.o     doprin.o \
      tmap.o      doread.o         prnGlb.o  \
      tmast.o     dorvrs.o        prnflg.o   \
@@ -84,19 +87,19 @@ OBJ4=defglb.o    ppair.o \
      tcoorde.o    \
      mkplst.o    psub.o      tday.o      tmuld.o \
      wfbin.o     tdcmd.o     wfres.o \
-     eigs33.o    monel.o     wiord.o     monqu.o \
-     ptimes.o    wjdraw.o    elname.o    ptol.o   \
+     eigs33.o    monel.o     wiord.o     \
+     ptimes.o    elname.o   \
      errmsg.o        ptrace.o    tdinit.o    mrecal1.o \
      ptrim.o     pundo.o     tdjin.o  \
      mrmb.o      push.o      \
      mrqcof.o    wtune.o \
      expln.o     mrqcov.o    tphplt.o     \
      fdate1.o    mrqmin.o        datetime.o \
-     msolb.o     tdrife.o \
-     filaux.o    pvert.o     tfgetm.o    tfojit.o    tedrawf.o
+          tdrife.o \
+     filaux.o     tfgetm.o    tfojit.o    tedrawf.o
 
 OBJ5=trcoda.o    nalign.o    ndelw.o     \
-     nfgetm.o    preadstr.o   msolvg.o    preadmon.o \
+     nfgetm.o       msolvg.o \
         yylex_.o    calc.o \
      initdainterface.o       initda.o     tfepicsconstatcb.o
 

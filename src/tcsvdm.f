@@ -175,7 +175,8 @@ c            r=sqrt(r1a**2+r2a**2)
           p=1.d0
         endif
         a(i,i)=a(i,i)*p
-        x(i)=aa1*ap*x(i)
+        x(i)=abs(a(i,i))*x(i)
+c        x(i)=aa1*ap*x(i)
         do k=1,n1
           b(i,k)=b(i,k)*p
         enddo

@@ -64,7 +64,7 @@
                     endif
                   endif
                 endif
-                call tfclonelist(listy,listy)
+                listy=>tfclonelist(listy)
                 call tfreplist(listy,1,ky1,eval)
                 ke=sad_descr(listy)
               else

@@ -58,7 +58,6 @@ c          enddo
                   isp=isp0
                   return
                 endif
-c                write(*,*)'tfdot ',i,kl1%rbody(i)
                 call tfaddrcstk(isp0,kl2i,kl1%rbody(i),irtc)
                 if(irtc .ne. 0)then
                   go to 3000
@@ -641,7 +640,8 @@ c                write(*,*)'tfdot ',i,kl1%rbody(i)
       integer*4 mn
       integer*4 ,intent(out)::irtc
       real*8 ,intent(in)::eps
-      complex*16, allocatable:: ca(:,:),cu(:,:),w(:)
+      complex*16, allocatable:: ca(:,:),cu(:,:)
+      real*8 , allocatable:: w(:)
       logical*4 ,intent(in)::inv
       allocate (ca(n,m),cu(n,n),w(m))
       call tfl2cm(kl,ca,n,m,.false.,irtc)
@@ -1081,6 +1081,7 @@ c        call tmov(kl%dbody(1),a,m)
 c
 c
 c  K. Yokoya's FFT routines.   Received 2/26/1998.
+c  Revised Jul 6, 2020 for FORTRAN 2018 compliance.
 c
 c
 C**************************ZFFTW **************************************
@@ -1230,12 +1231,13 @@ C     end   initialize for preventing compiler warning
       J=0
       K1=K-1
       NN=N/K*K1
-      DO 120 I=0,N-1
+      DO I=0,N-1
         IF(J.GT.I) THEN
-          DO 110 M1=1,M
-          T=A(M1,J)
-          A(M1,J)=A(M1,I)
- 110      A(M1,I)=T
+          DO  M1=1,M
+            T=A(M1,J)
+            A(M1,J)=A(M1,I)
+            A(M1,I)=T
+          ENDDO
         ENDIF
 C  Bit inversion in K-scale
         N1=NN
@@ -1244,7 +1246,7 @@ C  Bit inversion in K-scale
           N1=N1/K
         ENDDO
         J=J+N1/K1
- 120  CONTINUE
+ 120  ENDDO
 C  Following statements apply for any K>=2, but in
 C  order for the computing time, the cases K<=5 are
 C  written separately.
@@ -1261,90 +1263,97 @@ c        WP0=DCMPLX(-2D0*SIN(THETA/2D0)**2,SIN(THETA))
 c        WP=DCMPLX(-2D0*SIN(THETA/2D0)**2,SIN(THETA))
         WP=DCMPLX(COS(THETA),SIN(THETA))
         W=1
-        DO 300 N1=0,NN-1
-          DO 280 M1=1,M
-            DO 260 I=N1,N1+N-1,IS
-            IF(K.EQ.2) THEN
-              T=W*A(M1,I+NN)
-              A(M1,I+NN)=A(M1,I)-T
-              A(M1,I)=A(M1,I)+T
-            ELSEIF(K.EQ.3) THEN
-              X0=A(M1,I)
-              X1=W*A(M1,I+NN)
-              X2=W**2*A(M1,I+2*NN)
-              X3=X1+X2
-              X4=DCMPLX(0D0,SGN*C31)*(X1-X2)
-              X5=X0-0.5D0*X3
-              A(M1,I)=X0+X3
-              A(M1,I+NN)=X5+X4
-              A(M1,I+2*NN)=X5-X4
-            ELSEIF(K.EQ.4) THEN
-              W2=W**2
-              X1=W*A(M1,I+NN)
-              X2=W2*A(M1,I+2*NN)
-              X3=W2*W*A(M1,I+3*NN)
-              X4=A(M1,I)+X2
-              X5=A(M1,I)-X2
-              X6=X1+X3
-              X7=DCMPLX(0D0,SGN)*(X1-X3)
-              A(M1,I)=X4+X6
-              A(M1,I+NN)=X5+X7
-              A(M1,I+2*NN)=X4-X6
-              A(M1,I+3*NN)=X5-X7
-            ELSEIF(K.EQ.5) THEN
-              W2=W**2
-              X1=W*A(M1,I+NN)
-              X2=W2*A(M1,I+2*NN)
-              X3=W2*W*A(M1,I+3*NN)
-              X4=W2*W2*A(M1,I+4*NN)
-              X0=A(M1,I)
-              X5=X1+X4
-              X6=DCMPLX(0D0,SGN)*(X1-X4)
-              X7=X2+X3
-              X8=DCMPLX(0D0,SGN)*(X2-X3)
-              A(M1,I)=X0+X5+X7
-              X1=X0+C51*X5+C53*X7
-              X2=X0+C53*X5+C51*X7
-              X3=C52*X6+C54*X8
-              X4=C54*X6-C52*X8
-              A(M1,I+NN)=X1+X3
-              A(M1,I+2*NN)=X2+X4
-              A(M1,I+3*NN)=X2-X4
-              A(M1,I+4*NN)=X1-X3
-            ELSE
-              W0=W
-              DO 200 J=0,K1
- 200          WORK(J)=A(M1,I+J*NN)
-              DO 240 L=0,K1
-                T=WORK(K1)
-                DO 220 J=K1-1,0,-1
- 220              T=T*W0+WORK(J)
-                A(M1,I+L*NN)=T
-c                W0=W0*WP0+W0
-                W0=W0*WP0
- 240          CONTINUE
-            ENDIF
- 260        CONTINUE
- 280      CONTINUE
-c          W=W*WP+W
+        DO N1=0,NN-1
+          DO  M1=1,M
+            DO  I=N1,N1+N-1,IS
+              SELECT CASE (K)
+              CASE (2)
+                T=W*A(M1,I+NN)
+                A(M1,I+NN)=A(M1,I)-T
+                A(M1,I)=A(M1,I)+T
+              CASE (3)
+                X0=A(M1,I)
+                X1=W*A(M1,I+NN)
+                X2=W**2*A(M1,I+2*NN)
+                X3=X1+X2
+                X4=DCMPLX(0D0,SGN*C31)*(X1-X2)
+                X5=X0-0.5D0*X3
+                A(M1,I)=X0+X3
+                A(M1,I+NN)=X5+X4
+                A(M1,I+2*NN)=X5-X4
+              CASE (4)
+                W2=W**2
+                X1=W*A(M1,I+NN)
+                X2=W2*A(M1,I+2*NN)
+                X3=W2*W*A(M1,I+3*NN)
+                X4=A(M1,I)+X2
+                X5=A(M1,I)-X2
+                X6=X1+X3
+                X7=DCMPLX(0D0,SGN)*(X1-X3)
+                A(M1,I)=X4+X6
+                A(M1,I+NN)=X5+X7
+                A(M1,I+2*NN)=X4-X6
+                A(M1,I+3*NN)=X5-X7
+              CASE (5)
+                W2=W**2
+                X1=W*A(M1,I+NN)
+                X2=W2*A(M1,I+2*NN)
+                X3=W2*W*A(M1,I+3*NN)
+                X4=W2*W2*A(M1,I+4*NN)
+                X0=A(M1,I)
+                X5=X1+X4
+                X6=DCMPLX(0D0,SGN)*(X1-X4)
+                X7=X2+X3
+                X8=DCMPLX(0D0,SGN)*(X2-X3)
+                A(M1,I)=X0+X5+X7
+                X1=X0+C51*X5+C53*X7
+                X2=X0+C53*X5+C51*X7
+                X3=C52*X6+C54*X8
+                X4=C54*X6-C52*X8
+                A(M1,I+NN)=X1+X3
+                A(M1,I+2*NN)=X2+X4
+                A(M1,I+3*NN)=X2-X4
+                A(M1,I+4*NN)=X1-X3
+              CASE DEFAULT
+                W0=W
+                DO J=0,K1
+                  WORK(J)=A(M1,I+J*NN)
+                ENDDO
+                DO  L=0,K1
+                  T=WORK(K1)
+                  DO  J=K1-1,0,-1
+                    T=T*W0+WORK(J)
+                  ENDDO
+                  A(M1,I+L*NN)=T
+c     W0=W0*WP0+W0
+                  W0=W0*WP0
+                ENDDO
+              END SELECT
+            ENDDO
+          ENDDO
+c     W=W*WP+W
           W=W*WP
- 300    CONTINUE
+        ENDDO
         NN=IS
       ENDDO
       RETURN
       END
-C--------------- ZFTWTR -----------------
+C---------------ZFTWTR -----------------
       SUBROUTINE ZFTWTR(A,L,M,N,W)
       IMPLICIT NONE
       INTEGER L,M,N,I,J,K
       COMPLEX*16 A(L,0:M*N-1),W(0:M*N-1)
-      DO 300 I=1,L
-        DO 200 J=0,M-1
-        DO 200 K=0,N-1
- 200    W(J+M*K)=A(I,J+M*K)
-        DO 240 J=0,M-1
-        DO 240 K=0,N-1
- 240    A(I,K+N*J)=W(J+M*K)
- 300  CONTINUE
+      DO  I=1,L
+        DO  J=0,M-1
+          DO  K=0,N-1
+            W(J+M*K)=A(I,J+M*K)
+          ENDDO
+        ENDDO
+        DO  J=0,M-1
+          DO  K=0,N-1
+            A(I,K+N*J)=W(J+M*K)
+          ENDDO
+        ENDDO
+      ENDDO
       RETURN
       END

@@ -182,7 +182,7 @@
           k1=lar%dbody(iv)
           if(ktflistq(k1,lari))then
             if(write)then
-              call tfclonelist(lari,lari)
+              lari=>tfclonelist(lari)
               call tfreplist(lar,iv,sad_descr(lari),eval1)
               eval=eval .or. eval1
             endif
@@ -231,7 +231,7 @@
               ki=lar%dbody(ivi)
               if(ktflistq(ki,lari))then
                 if(write)then
-                  call tfclonelist(lari,lari)
+                  lari=>tfclonelist(lari)
                   call tfreplist(lar,ivi,sad_descr(lari),eval1)
                   eval=eval .or. eval1
                 endif
@@ -298,7 +298,7 @@
               ki=lar%dbody(i)
               if(ktflistq(ki,lari))then
                 if(write)then
-                  call tfclonelist(lari,lari)
+                  lari=>tfclonelist(lari)
                   call tfreplist(lar,i,sad_descr(lari),eval1)
                   eval=eval .or. eval1
                 endif
@@ -554,7 +554,7 @@ c        enddo
           return
         endif
       endif
-      call tfclonelist(list,list)
+      list=>tfclonelist(list)
       if(rule)then
         do i=isp0+1,isp
 c          call tfdebugprint(dtastk(i),'reppart',1)
@@ -1109,7 +1109,7 @@ c              call tfdebugprint(kxi,'reppart1-kxi',1)
       isp1=isp
       call tfgetllstk(kln,2,-1)
       isp2=isp
-      call tfclonelist(listl,listl)
+      listl=>tfclonelist(listl)
       call tfpartrstk(listl,isp1,isp2,list,
      $     .false.,.true.,eval,.true.,irtc)
       if(irtc .ne. 0)then

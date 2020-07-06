@@ -3653,15 +3653,16 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end function
 
-        subroutine tfsydef(sym,symx)
+        function tfsydef(sym)
         implicit none
+        type (sad_symbol), pointer :: tfsydef
         type (sad_descriptor) kx
         type (sad_symbol) , intent(in)::sym
-        type (sad_symbol), pointer, intent(out) :: symx
+c        type (sad_symbol), pointer, intent(out) :: symx
         call tfsydefg(sym%loc,kx,sym%gen)
-        call loc_sad(ktfaddrd(kx),symx)
+        call loc_sad(ktfaddrd(kx),tfsydef)
         return
-        end subroutine
+        end function
 
         type (sad_descriptor) function dxsycopy(sym)
         implicit none
@@ -3796,10 +3797,10 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end function
 
-        subroutine tfclonelist(list,listc)
+        function tfclonelist(list) result(listc)
         implicit none
+        type (sad_dlist), pointer:: listc
         type (sad_dlist), target, intent(in) :: list
-        type (sad_dlist), pointer, intent(out) :: listc
         integer*4 i
         if(ktfovrwrtq(list))then
           listc=>list
@@ -3817,12 +3818,12 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         endif
         listc%attr=ior(listc%attr,ktoberebuilt)
         return
-        end subroutine
+        end function
 
-        subroutine tfduplist(list,listc)
+        function tfduplist(list) result(listc)
         implicit none
+        type (sad_dlist), pointer :: listc
         type (sad_dlist), target, intent(in) :: list
-        type (sad_dlist), pointer, intent(out) :: listc
         integer*4 i
         call loc_dlist(ktaaloc(-1,list%nl),listc)
         listc%attr=list%attr
@@ -3835,7 +3836,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
           enddo
         endif
         return
-        end subroutine
+        end function
 
         recursive subroutine tfgetllstkall_dlist(list)
         implicit none
@@ -3923,7 +3924,7 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         integer*8 kp
         integer*4 isp0
         integer*4 , intent(out)::irtc
-        logical*4 , intent(in)::ev
+        logical*4 , intent(out)::ev
         isp=isp+1
         isp0=isp
         dtastk(isp)=kl%head

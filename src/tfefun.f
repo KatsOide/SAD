@@ -120,7 +120,7 @@ c     DOUBLE COMPLEX specific math function implemented by SAD
           endif
           if(ktfsymbolq(k1,sym1))then
             if(sym1%override .eq. 0)then
-              call tfsydef(sym1,sym1)
+              sym1=>tfsydef(sym1)
             endif
             call sym_symdef(sym1,symd)
             if(symd%upval .ne. 0)then
@@ -1467,7 +1467,7 @@ c            msgn TagS (*   *)   Hold z
               call tfleval(klx,kx,.false.,irtc)
             elseif(ktfsymbolq(kx,sym))then
               if(sym%override .eq. 0)then
-                call tfsydef(sym,sym)
+                sym=>tfsydef(sym)
                 kx=sad_descr(sym)
               endif
             endif
@@ -1753,7 +1753,7 @@ c          write(*,*)irtc
         k1=dtastk(isp1+1)
         if(ktfsymbolq(k1,sym))then
           if(sym%override .eq. 0)then
-            call tfsydef(sym,sym)
+            sym=>tfsydef(sym)
             k1=sad_descr(sym)
           endif
         elseif(ktflistq(k1))then
@@ -1776,7 +1776,7 @@ c          write(*,*)irtc
           endif
           if(ktfsymbolq(k11,sym))then
             if(sym%override .eq. 0)then
-              call tfsydef(sym,sym)
+              sym=>tfsydef(sym)
             endif
             call sym_symdef(sym,symd)
             if(symd%upval .ne. 0)then
@@ -2009,7 +2009,7 @@ c          write(*,*)irtc
               endif
             endif
           else
-            call tfsydef(symd%sym,symi)
+            symi=>tfsydef(symd%sym)
             if(symi%gen .lt. 0 .and. symi%gen .ne. -3)then
               cycle LOOP_I
             endif

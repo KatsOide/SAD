@@ -293,7 +293,7 @@ c      enddo
           k%k=ktfsymbol+ka
         endif
         if(ktfsymbolq(k,sym1))then
-          call tfsydef(sym1,sym)
+          sym=>tfsydef(sym1)
           call sym_symdef(sym,symd)
           ka0=ksad_loc(symd%upval)
           if(ktfrefq(symd%value,ka))then

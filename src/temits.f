@@ -292,7 +292,7 @@ c            endif
               call tputbs(beam,label2,lfno)
               call tputbs(beamr,label1,lfno)
               call tedrawf(8,bc,bs,hc,hs,
-     $             sige,amus/pi2,mphi,mphi2,ndp)
+     $             sige,amus/pi2,mphi2,ndp)
             endif
           endif
         else

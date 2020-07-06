@@ -5,7 +5,7 @@
       logical cond,micado,norm,svd
       real*8  a(nd,m), b(n), x(m)
       real*8 ,allocatable::  a1(:,:), b1(:), x1(:)
-      integer*8 ixc,it,iu,ic1,ia,ib,im
+      integer*8 ixc,it,iu,ic1,im
 c
       na=n-nc
       if(cond) then
@@ -19,7 +19,7 @@ c
           allocate(x1(m))
 c          ia=ktaloc(nd*m)
 c          ib=ktaloc(n)
-c          im=ktaloc(m)
+          im=ktaloc(m)
           a1=a
           b1=b
 c          call tmov(a,rlist(ia),nd*m)
@@ -48,7 +48,7 @@ c          call tmov(rlist(ib),b,n)
               x(i)=0d0
             endif
           enddo
-c          call tfree(im)
+          call tfree(im)
 c          call tfree(ib)
 c          call tfree(ia)
         else

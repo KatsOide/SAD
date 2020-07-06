@@ -4,12 +4,16 @@
 c
       save
 c
-      DO 10 I=1,2
-      DO 10 J=1,2
-      A(I,J)=R(I,J)
-      B(I,J)=R(I,J+2)
-      C(I,J)=R(I+2,J)
-      D(I,J)=R(I+2,J+2)
-10    CONTINUE
+      A=R(1:2,1:2)
+      B=R(1:2,3:4)
+      C=R(3:4,1:2)
+      D=R(3:4,3:4)
+c$$$      DO 10 I=1,2
+c$$$      DO 10 J=1,2
+c$$$      A(I,J)=R(I,J)
+c$$$      B(I,J)=R(I,J+2)
+c$$$      C(I,J)=R(I+2,J)
+c$$$      D(I,J)=R(I+2,J+2)
+c$$$10    CONTINUE
       RETURN
       END

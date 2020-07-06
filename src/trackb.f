@@ -28,9 +28,9 @@ ckikuchi ... 1 line added
       xxa=sv(3)
       xya=sv(5)
       yya=sv(4)
-      if(print)then
-        call phdrw(ix,np,word,title,case,exist,lfno)
-      endif
+c      if(print)then
+c        call phdrw(ix,np,word,title,case,exist,lfno)
+c      endif
       if(ret)then
         kx=kxadaloc(-1,3,klx)
         klx%dbody(1)=dfromr(dble(np))

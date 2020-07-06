@@ -406,7 +406,7 @@ c      endif
       endif
       if(list%head%k .eq. ktfoper+mtfequal)then
         neq=1
-        call tfduplist(list,list)
+        list=>tfduplist(list)
         call tfreplist(list%list(1),0,ktfoper+mtflist,eval)
 c        call tfloadlstk(list,lista)
 c        lista%head=ktfoper+mtflist

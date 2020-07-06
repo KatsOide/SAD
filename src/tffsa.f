@@ -323,11 +323,11 @@ c
         call tffsadjustvar
         call tfsave(word,.false.,flv%ntouch)
         call tfgeo(.false.)
-        call corfree(newcor,nster,nmon,itstr,itestr,itmon,itemon)
+c        call corfree(newcor,nster,nmon,itstr,itestr,itmon,itemon)
         go to 8900
       elseif(word .eq. 'QUIT')then
         call tfgeo(.false.)
-        call corfree(newcor,nster,nmon,itstr,itestr,itmon,itemon)
+c        call corfree(newcor,nster,nmon,itstr,itestr,itmon,itemon)
         go to 8900
       elseif(word .eq. 'ABORT')then
         call tfresetsharedmap()
@@ -655,8 +655,7 @@ C     23/06/92 212101550  MEMBER NAME  TRCOD    *.FORT     M  E2FORT
             go to 10
          else if(abbrev(word,'ALIGN','_')) then
             call getwdl(word)
-            call nalign(latt,mult,
-     $           ilist(1,ifmast),word,lfno,exist)
+            call nalign(latt,mult,ilist(1,ifmast),word,exist)
             go to 10
          else
             meas0=ielm(wordp,exist)

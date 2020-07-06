@@ -106,7 +106,7 @@
           endif
         else
           call loc_sym(kaf,sym)
-          call tfsydef(sym,sym)
+          sym=>tfsydef(sym)
           kf=sad_descr(sym)
         endif
       case (ktflist)
@@ -204,7 +204,7 @@ c          msgn TagS (*   *)   Hold z
         endif
         if(evalh .or. .not. ref)then
           if(tfonstackq(ks) .or. kls%ref .gt. 0)then
-            call tfduplist(kls,kls1)
+            kls1=>tfduplist(kls)
             kls=>kls1
           endif
           kls%head%k=ktfoper+kaf
@@ -999,7 +999,7 @@ c                endif
           return
         endif
       elseif(ktfsymbolq(k,sym) .and. sym%override .eq. 0)then
-        call tfsydef(sym,sym)
+        sym=>tfsydef(sym)
         kx=sad_descr(sym)
         irtc=0
         return

@@ -88,9 +88,9 @@ c
 c
       lfno=olfno
       call tracke(latt,nl,sv,np,'CONT',name,lfno)
-      if(print)then
-        call phdrw(ix,np,word,title,case,exist,lfno)
-      endif
+c      if(print)then
+c        call phdrw(ix,np,word,title,case,exist,lfno)
+c      endif
       call tracke(latt,nlat1,sv,np,'RESET',name,lfno)
       xa=sv(1)
       ya=sv(2)

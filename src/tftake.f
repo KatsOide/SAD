@@ -353,7 +353,7 @@
         ki=dtastk(i)
         if(ktfsymbolq(ki,sym))then
           if(sym%override .eq. 0)then
-            call tfsydef(sym,sym)
+            sym=>tfsydef(sym)
           endif
           if(ktfprotectedqo(sym))then
             irtc=itfmessage(999,'General::protect','""')
@@ -409,7 +409,7 @@ c      include 'DEBUG.inc'
       enddo
       if(ktfsymbolqdef(kh%k,def))then
         if(def%sym%override .eq. 0)then
-          call tfsydef(def%sym,symh)
+          symh=>tfsydef(def%sym)
           call sym_symdef(symh,def)
         endif
         kad=def%upval
@@ -522,7 +522,7 @@ c      include 'DEBUG.inc'
         endif
         if(ktfsymbolq(k,sym))then
           if(sym%override .eq. 0)then
-            call tfsydef(sym,sym)
+            sym=>tfsydef(sym)
           endif
           if(sym%gen .le. 0)then
             if(protect)then
@@ -663,7 +663,7 @@ c      include 'DEBUG.inc'
       endif
       if(ktfsymbolq(k,sym))then
         if(sym%override .eq. 0 .or. sym%override .eq. 1)then
-          call tfsydef(sym,sym)
+          sym=>tfsydef(sym)
           ka=ksad_loc(sym%loc)
         endif
         kv=dtastk(isp)

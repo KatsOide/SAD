@@ -4,9 +4,10 @@
 c
       save
 c
-      DO 10 I=1,2
-      DO 10 J=1,2
-      C(I,J)=A*B(I,J)
-10    CONTINUE
+      C=A*B
+c$$$      DO 10 I=1,2
+c$$$      DO 10 J=1,2
+c$$$      C(I,J)=A*B(I,J)
+c$$$10    CONTINUE
       RETURN
       END
