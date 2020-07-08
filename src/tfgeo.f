@@ -359,9 +359,9 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
 
       subroutine tfinitgeo
       use tfstk
-      use ffs_flag
-      use tmacro
-      use tfcsi
+      use ffs_flag, only:geocal
+      use tmacro , only:omega0
+      use tfcsi , only:lfni
       implicit none
       type (sad_descriptor) kx
       integer*4 irtc
@@ -381,13 +381,15 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
       use ffs
       use ffs_pointer
       use tffitcode
-      use mathfun
+      use mathfun ,only:h2p
       implicit none
-      integer*4 i,id
+      integer*4 ,intent(in):: i
+      integer*4 id
       integer*8 ip
-      real*8 harm,w,v,phic,dh,h2,p2,oneev,h1,p1
-      logical*4 dir
-      parameter (oneev=1.d0+3.83d-12)
+      real*8 ,intent(inout):: h1,p1
+      real*8 harm,w,v,phic,dh,h2,p2
+      logical*4 ,intent(in):: dir
+      real*8 , parameter :: oneev=1.d0+3.83d-12
       if(ideal)then
         ip=idvalc(i)
       else

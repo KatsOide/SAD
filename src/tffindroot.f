@@ -128,8 +128,10 @@ c        call tfdebugprint(ke,'tffindroot-deriv',1)
       type (sad_dlist), pointer :: klx
       type (symv) sav(nvar)
       type (sad_descriptor) kdl(nvar),kx
-      integer*8 ke
-      integer*4 nvar,neq,maxi,irtc,i,j,iter
+      integer*8 ,intent(in):: ke
+      integer*4 ,intent(in)::  nvar,neq,maxi
+      integer*4 ,intent(inout):: irtc
+      integer*4 i,j,iter
       real*8 v0(nvar),f(neq),f0(neq),eps,dv(nvar),
      $     v(nvar),fact,fact1,fact2,d0,d,d1,d2,
      $     dg,am,sv,goal,tffsfmin,svi,vmin(nvar),vmax(nvar)
@@ -140,10 +142,11 @@ c        call tfdebugprint(ke,'tffindroot-deriv',1)
       iter=0
       call tfevalresidual(sav,v0,ke,f0,am,d0,nvar,neq,trace,irtc)
       goal=am*eps
-      sv=0.d0
-      do i=1,nvar
-        sv=sv+abs(v0(i)*frac)+svmin
-      enddo
+      sv=svmin+sum(abs(v0))*frac
+c      sv=0.d0
+c      do i=1,nvar
+c        sv=sv+abs(v0(i)*frac)+svmin
+c      enddo
       sv=sv/nvar
       fact=1.d0
       d1=d0
@@ -161,7 +164,7 @@ c        call tfdebugprint(ke,'tffindroot-deriv',1)
         deallocate (a0,a)
         return
       endif
-      v(1:nvar)=v0(1:nvar)
+      v=v0
       do i=1,nvar
         call tfeevalref(kdl(i),kx,irtc)
         if(irtc .ne. 0)then
@@ -188,8 +191,8 @@ c        call tfdebugprint(ke,'tffindroot-deriv',1)
         endif
         a(1:neq,i)=(f(1:neq)-f0(1:neq))/svi
         if(d1 .lt. d0)then
-          v0(1:nvar)=v(1:nvar)
-          f0(1:nvar)=f(1:nvar)
+          v0=v
+          f0=f
           d0=d1
         else
           v(i)=v0(i)
@@ -197,7 +200,7 @@ c        call tfdebugprint(ke,'tffindroot-deriv',1)
         endif
       enddo
       a0=a
-      f(1:nvar)=-f0(1:nvar)
+      f=-f0
       call tsolva(a,f,dv,neq,nvar,neq,1.d-8)
       dg=0.d0
       do i=1,neq
@@ -219,7 +222,7 @@ c      enddo
         return
       endif
       if(d .lt. d0)then
-        v0(1:nvar)=v(1:nvar)
+        v0=v
         d0=d
         fact=min(1.d0,fact*4.d0)
         fact1=0.d0
@@ -408,9 +411,6 @@ c      endif
         neq=1
         list=>tfduplist(list)
         call tfreplist(list%list(1),0,ktfoper+mtflist,eval)
-c        call tfloadlstk(list,lista)
-c        lista%head=ktfoper+mtflist
-c        call tfstk2l(lista,list)
         kae=ksad_loc(list%head%k)
         irtc=0
       elseif(list%head%k .eq. ktfoper+mtflist)then
@@ -548,7 +548,6 @@ c        call tfstk2l(lista,list)
       kdl(1:nvar)%k=ktfoper+mtfnull
       if(used)then
         call tfderiv(ke,nvar,sav,kdl,irtc)
-c        call tfdebugprint(ke,'tffit-deriv',1)
       endif
       call tflocald(symdv%value)
       symdv%value%k=0

@@ -1,14 +1,36 @@
-(* Fit.n 8/29/2019 *)
+(* Fit.n 7/8/2020 *)
 {MaxIterations,AccuracyGoal,D};
 
-Fit[`data:{{{__},_,_},___},`fun_,{`v__},`para__]:=Module[
-  {{`x$,`y$,`z$}=Thread[data],`ff,`k,`l=Length[data]},
+Fit[`data:{{{__Real},_Real,_Real},___},`fun_,{`v__},`para__]:=Module[
+  {{`x$,`y$,`dy$}=Thread[data],`ff,`k,`l=Length[data]},
   ff[k_]:=Function[{v},fun]@@x$[[k]];
-  Fit$[Thread[{Range[l],y$,z$}],ff[k],k,para]];
-Fit[`data_,`fun_,{`v__},`para__]:=Module[
+  Fit$[Thread[{Range[l],y$,dy$}],ff[k],k,para]];
+
+Fit[`data:{{{__Real},_Real,_Real,_Real},___},`fun_,{`v__},`para__]:=Module[
+  {{`x$,`y$,`dx$,`dy$}=Thread[data],`ff,`k,`l=Length[data]},
+  ff[k_]:=Function[{v},fun]@@x$[[k]];
+  Fit[Thread[{Range[l],y$,dx$,dy$}],ff[k],k,para]];
+
+Fit[`data:{{{__Real},_Real},___},`fun_,{`v__},`para__]:=Module[
   {{`x$,`y$}=Thread[data],`ff,`k,`l=Length[data]},
   ff[k_]:=Function[{v},fun]@@x$[[k]];
   Fit$[Thread[{Range[l],y$}],ff[k],k,para]];
+
+With[{csl=0.001},
+  Fit[`data:{{_Real,_Real,_Real,_Real},___},`fun_,`v_,`para__]:=Module[
+    {{`x$,`y$,`dx$,`dy$}=Thread[data],`df,`cs0=1e-100,`d,`f1,`dy1,`cs},
+    df[v_]=D[fun,v];
+    d=dy$^2+(dx$*(df/@x$))^2;
+    dy1=dy$;
+    cs=1e100;
+    While[Abs[cs-cs0]/cs0>csl,
+      cs0=cs;
+      f1=Fit$[Thread[{x$,y$,dy1}],fun,v,para];
+      {cs,dy1}={ChiSquare,d}/.f1;
+!      Print["Fit with x-error, chi square: ",cs];
+      dy1=Sqrt[dy1]];
+    f1]];
+
 Fit[a__]:=Fit$[a];
 SetAttributes[Fit,{HoldRest,Constant}];
 

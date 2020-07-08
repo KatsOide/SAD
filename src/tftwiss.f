@@ -669,11 +669,11 @@ c              k=ilist(ie,ifklp)
       type (sad_descriptor) kx
       type (sad_comp), pointer ::cmp
       integer*8 kax,ktfgeol,kai,i,ip,j
-      integer*4 irtc,lenw,lxp,isp1,ibz,ia
+      integer*4 irtc,lenw,lxp,isp1,ibz,ia,nc
       real*8 v,beam(42),xp,fr,
      $     gv(3,4),ogv(3,4),cod(6),vtwiss(ntwissfun),tfbzs
       character*(*) keyword
-      character*64 name
+      character*64 name,key1
       integer*4 lv,itfdownlevel
       logical*4 over,ref
 c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
@@ -859,8 +859,15 @@ c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
           cmp%update=cmp%nparam .le. 0
         endif
       else
+        nc=len(keyword)
+        if(keyword .eq. '@GEO')then
+          key1(1:3)='GEO'
+          nc=3
+        else
+          key1(1:nc)=keyword(1:nc)
+        endif
         if(ia .lt. nlat)then
-          kx=tfkeyv(int(ia),keyword,ip,cmp,ref,.false.)
+          kx=tfkeyv(int(ia),key1(1:nc),ip,cmp,ref,.false.)
           if(.not. ref)then
             cmp%update=cmp%nparam .le. 0
             kx%k=ktfref+ip
