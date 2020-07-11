@@ -127,7 +127,7 @@ c.....for debug
 c     print *,'length of line',pname(lptr),'is',dist
 c.....end debug
 c.....parameters for ploting
-      plot$=IgetGL('$PLOT$',idummy)
+      plot$=IgetGL('$PLOT$')
       nps=0
       npw=0
       i=plot$

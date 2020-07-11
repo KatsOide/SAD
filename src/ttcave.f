@@ -1,22 +1,27 @@
       subroutine ttcave(trans,cod,beam,srot,al,ak,harm,phi,freq,
-     $     dx,dy,theta)
+     $     dx,dy,theta,krad)
       use ffs_flag
       use tmacro
+      use temw
       implicit none
       real*8 trans(6,12),cod(6),beam(42),trans1(6,13),srot(3,9),
      $     al,ak,harm,phi,freq,dx,dy,theta,w,v,p1,h1,dh1,phic,v1,t,
      $     phii,cosp,sinp,dh,dh2,h2,p2,pf,v2,a
+      logical*4 ,intent(in):: krad
       if(.not. rfsw)then
         call tdrife(trans,cod,beam,srot,al,0.d0,0.d0,0.d0,0.d0,
      $       .true.,.false.,irad)
         return
       endif
+      call tchge(trans,cod,beam,srot,
+     $     dx,dy,theta,0.d0,0.d0,.true.)
       if(al .ne. 0.d0)then
+        if(krad)then
+          call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
+        endif
         call tdrife(trans,cod,beam,srot,al*.5d0,0.d0,0.d0,0.d0,0.d0,
      $       .true.,.false.,irad)
       endif
-      call tchge(trans,cod,beam,srot,
-     $     dx,dy,theta,0.d0,0.d0,.true.)
       if(harm .eq. 0.d0)then
         w=pi2*freq/c
       else
@@ -62,11 +67,11 @@ c      p2=sqrt((h2-1.d0)*(h2+1.d0))
       cod(5)=-t*v2
       cod(2)=cod(2)-ak*sinp
       call tesetdv(cod(6))
-      call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,-theta,0.d0,0.d0,.false.)
       if(al .ne. 0.d0)then
         call tdrife(trans,cod,beam,srot,al*.5d0,0.d0,0.d0,0.d0,0.d0,
-     $       .true.,.false.,irad)
+     $       .true.,krad,irad)
       endif
+      call tchge(trans,cod,beam,srot,
+     $     -dx,-dy,-theta,0.d0,0.d0,.false.)
       return
       end

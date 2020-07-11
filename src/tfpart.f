@@ -155,6 +155,7 @@
       type (sad_descriptor) ki,kl,k1
       type (sad_dlist) lar
       type (sad_dlist),pointer :: lari,listl
+      integer*8 ka
       integer*4 isp1,irtc,narg,ivi,iv,ma,m,i,isp0,itfmessage,
      $     itfmessageexp,isp2
       logical*4 err,list,list1,last,write,eval,eval1
@@ -285,9 +286,10 @@
         elseif(kl%k .eq. ktfoper+mtfnull)then
           if(narg .eq. 1)then
             if(write)then
+              ka=sad_loc(lar%head)
               do i=1,ma
                 isp=isp+1
-                ktastk(isp)=sad_loc(lar%head)
+                ktastk(isp)=ka
                 itastk2(1,isp)=i
               enddo
             else
@@ -809,17 +811,23 @@ c              call tfdebugprint(kxi,'reppart1-kxi',1)
           m=klp%nl
           if(tflistq(ks,kls) .and. ktfreallistq(kls) .and.
      $         kls%nl .eq. m)then
-            do i=1,m
-              isp=isp+1
-              itastk(1,isp)=int(klp%rbody(i))
-              itastk(2,isp)=int(kls%rbody(i))
-            enddo
+            itastk(1,isp+1:isp+m)=int(klp%rbody(1:m))
+            itastk(2,isp+1:isp+m)=int(kls%rbody(1:m))
+            isp=isp+m
+c            do i=1,m
+c              isp=isp+1
+c              itastk(1,isp)=int(klp%rbody(i))
+c              itastk(2,isp)=int(kls%rbody(i))
+c            enddo
           elseif(ktfrealq(ks,id))then
-            do i=1,m
-              isp=isp+1
-              itastk(1,isp)=int(klp%rbody(i))
-              itastk(2,isp)=id
-            enddo
+            itastk(1,isp+1:isp+m)=int(klp%rbody(1:m))
+            itastk(2,isp+1:isp+m)=id
+            isp=isp+m
+c            do i=1,m
+c              isp=isp+1
+c              itastk(1,isp)=int(klp%rbody(i))
+c              itastk(2,isp)=id
+c            enddo
           else
             irtc=itfmessage(9,'General::wrongtype',
      $           '"Real or List of Reals for index"')

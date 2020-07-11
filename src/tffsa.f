@@ -28,7 +28,7 @@
       integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,k,
      $     irtc0,it,itt,lfn,
      $     iuse,l,itfuplevel,
-     $     levelr,lfnl0,lpw,meas0,mfpnta,igetgl1,lenw,
+     $     levelr,lfnl0,lpw,meas0,mfpnta,igetgl,lenw,
      $     mphi2,next,nextt,nfp,
      $     nrpt1,itfpeeko,itfgetrecl,nl
       real*8 rmax,amus0,amus1,amusstep,apert,axi,ayi,ctime1,
@@ -174,7 +174,7 @@ c
         if(lfni .ne. 5)then
           lfn1=lfno
         else
-          if(igetgl1('$LOG$') .eq. 0)then
+          if(igetgl('$LOG$') .eq. 0)then
             lfn1=0
           else
             lfn1=lfno
@@ -201,7 +201,7 @@ c
         if(lfni .ne. 5)then
           lfn1=lfno
         else
-          if(igetgl1('$LOG$') .eq. 0)then
+          if(igetgl('$LOG$') .eq. 0)then
             lfn1=0
           else
             lfn1=lfno

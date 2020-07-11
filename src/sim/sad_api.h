@@ -80,7 +80,7 @@ static real8 r_true = 1.0;
 extern real8    atof_(const_character, integer4*, ftnlen);
 extern integer4 hsrch_(const_character, ftnlen);
 extern integer4 hsrchz_(const_character, ftnlen);
-extern integer4 igetgl1_(const_character, ftnlen);
+extern integer4 igetgl_(const_character, ftnlen);
 extern real8    rgetgl1_(const_character, ftnlen);
 extern void capita_(character, ftnlen);
 extern void tfreadbuf_(integer4*, integer4*, integer4*);

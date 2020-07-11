@@ -1246,7 +1246,7 @@ C  Bit inversion in K-scale
           N1=N1/K
         ENDDO
         J=J+N1/K1
- 120  ENDDO
+      ENDDO
 C  Following statements apply for any K>=2, but in
 C  order for the computing time, the cases K<=5 are
 C  written separately.

@@ -95,7 +95,7 @@ int yylex(void) {
       return ID;
 
     case icGLI:
-      yylval = igetgl1_(token, len);
+      yylval = igetgl_(token, len);
       return ID;
 
     default:

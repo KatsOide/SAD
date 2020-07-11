@@ -535,7 +535,8 @@ c     $          cmp%value(p_VNOMINAL_CAVI)
            call ttcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      $          cmp%value(ky_HARM_TCAV),ph,cmp%value(ky_FREQ_TCAV),
      1          cmp%value(ky_DX_TCAV),cmp%value(ky_DY_TCAV),
-     $          cmp%value(ky_ROT_TCAV))
+     $          cmp%value(ky_ROT_TCAV),rad .and.
+     $          cmp%value(ky_RAD_TCAV) .eq. 0.d0)
          else
            call tdrift_free(np,x,px,y,py,z,dv,al)
          endif

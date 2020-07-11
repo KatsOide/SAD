@@ -13,7 +13,7 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       integer*8 ikptbl,ig,ipz,ix,ixx,iy,iyy,iz,izz,ifz,imt,kzx,
      $     latt,iparam,lscal
       integer*4 irtc,l,isp1,
-     $     nts,itfdownlevel,naz,ltpara,igetgl1
+     $     nts,itfdownlevel,naz,ltpara,IgetGL
       character*20 title
       logical*4, save :: trackinit=.false.
       real*8 ol,trval,dt1,df,rgetgl1,dt0,phi(3)
@@ -79,27 +79,27 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       vcalpha=rgetgl1('EFFVCRATIO')
       nlat  =elatt%nlat0+1
       df    =rgetgl1('FSHIFT')
-      isynch=igetgl1('$RFSW$'  )
-      intra =igetgl1('$INTRA$' ) .ne. 0
-      calpol=igetgl1('$POL$'   ) .ne. 0
-      rad   =igetgl1('$RAD$'   ) .ne. 0
-      calcod=igetgl1('$COD$'   ) .ne. 0
-      trpt  =igetgl1('$TRPT$'  ) .ne. 0
-      radcod=igetgl1('$RADCOD$') .ne. 0
-      radpol=igetgl1('$RADPOL$') .ne. 0
-      emiout=igetgl1('$EMIOUT$') .ne. 0
-      dapert=igetgl1('$DAPERT$') .ne. 0
-      rfluct=igetgl1('$FLUC$'  ) .ne. 0
-      k64   =igetgl1('$K64$'   ) .ne. 0
-      fourie=igetgl1('$FOURIE$') .ne. 0
-      smearp=igetgl1('$SMEAR$' ) .ne. 0
-      geocal=igetgl1('$GEOCAL$' ) .ne. 0
-      calc6d=igetgl1('$CALC6D$') .ne. 0
-      intres=igetgl1('$INTRES$') .ne. 0
-      halfres=igetgl1('$HALFRES$') .ne. 0
-      sumres=igetgl1('$SUMRES$') .ne. 0
-      diffres=igetgl1('$DIFFRES$') .ne. 0
-      photons=igetgl1('$PHOTONS$' ) .ne. 0
+      isynch=IgetGL('$RFSW$'  )
+      intra =IgetGL('$INTRA$' ) .ne. 0
+      calpol=IgetGL('$POL$'   ) .ne. 0
+      rad   =IgetGL('$RAD$'   ) .ne. 0
+      calcod=IgetGL('$COD$'   ) .ne. 0
+      trpt  =IgetGL('$TRPT$'  ) .ne. 0
+      radcod=IgetGL('$RADCOD$') .ne. 0
+      radpol=IgetGL('$RADPOL$') .ne. 0
+      emiout=IgetGL('$EMIOUT$') .ne. 0
+      dapert=IgetGL('$DAPERT$') .ne. 0
+      rfluct=IgetGL('$FLUC$'  ) .ne. 0
+      k64   =IgetGL('$K64$'   ) .ne. 0
+      fourie=IgetGL('$FOURIE$') .ne. 0
+      smearp=IgetGL('$SMEAR$' ) .ne. 0
+      geocal=IgetGL('$GEOCAL$' ) .ne. 0
+      calc6d=IgetGL('$CALC6D$') .ne. 0
+      intres=IgetGL('$INTRES$') .ne. 0
+      halfres=IgetGL('$HALFRES$') .ne. 0
+      sumres=IgetGL('$SUMRES$') .ne. 0
+      diffres=IgetGL('$DIFFRES$') .ne. 0
+      photons=IgetGL('$PHOTONS$' ) .ne. 0
       nparallel=max(1,int(rgetgl1('NPARA')))
       keepexp=.true.
       calexp=.true.
@@ -291,15 +291,6 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       real*8 rgetgl
       ia=0
       rgetgl1=rgetgl(vname,ia)
-      return
-      end
-
-      integer*4 function igetgl1(vname)
-      implicit none
-      integer*4 ia,igetgl
-      character*(*) vname
-      ia=0
-      igetgl1=igetgl(vname,ia)
       return
       end
 

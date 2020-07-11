@@ -477,7 +477,7 @@ c     endif
      $     ntfstk=6,ntfstring=101,ntfsymbol=201,ntfpat=203,ntfarg=205,
      $     ntffun=ntfoper,ntfdef=ntfsymbol
       integer*4, parameter :: nfunif=39,nfunlength=20,nfunreppart=22,
-     $     nfundo=29,
+     $     nfundo=29,nfunwhich=126,nfunswitch=91,
      $     nfunmodule=34,nfunblock=35,nfunswicases=37,
      $     nfunselect=41,nfunappend=44,
      $     nfunprepend=45,nfunposition=59,nfunthread=83,nfunscan=96,
@@ -3292,7 +3292,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end function
 
-        type (sad_descriptor) function dfromk(k)
+        type (sad_descriptor) pure function dfromk(k)
         implicit none
         integer*8 , intent(in)::k
         dfromk%k=k

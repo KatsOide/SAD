@@ -507,6 +507,9 @@ c      include 'DEBUG.inc'
         return
       elseif(isp1+2 .eq. isp)then
         select case (iah)
+          case (mtfset,mtfsetdelayed,mtfmap,mtfapply,
+     $         mtfmapall,mtfunset,mtfmessagename)
+          return
         case (mtfplus,mtftimes)
           if(tfconstq(ktastk(isp1+1)))then
             if(tfconstq(ktastk(isp)))then
@@ -572,7 +575,7 @@ c      include 'DEBUG.inc'
             return
           endif
         case (mtfunequal)
-           if(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr .and.
+          if(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr .and.
      $         iand(ktrmask,ktastk(isp)) .ne. ktfnr )then
             if(rtastk(isp1+1) .eq. rtastk(isp))then
               kx%k=0
@@ -612,7 +615,7 @@ c      include 'DEBUG.inc'
             return
           endif
         case (mtfgreater)
-           if(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr .and.
+          if(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr .and.
      $         iand(ktrmask,ktastk(isp)) .ne. ktfnr )then
             if(rtastk(isp1+1) .gt. rtastk(isp))then
               kx%k=ktftrue
@@ -623,7 +626,7 @@ c      include 'DEBUG.inc'
             return
           endif
         case (mtfgeq)
-           if(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr .and.
+          if(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr .and.
      $         iand(ktrmask,ktastk(isp)) .ne. ktfnr )then
             if(rtastk(isp1+1) .ge. rtastk(isp))then
               kx%k=ktftrue
@@ -634,7 +637,7 @@ c      include 'DEBUG.inc'
             return
           endif
         case(mtfless)
-           if(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr .and.
+          if(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr .and.
      $         iand(ktrmask,ktastk(isp)) .ne. ktfnr )then
             if(rtastk(isp1+1) .lt. rtastk(isp))then
               kx%k=ktftrue
@@ -645,7 +648,7 @@ c      include 'DEBUG.inc'
             return
           endif
         case (mtfleq)
-           if(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr .and.
+          if(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr .and.
      $         iand(ktrmask,ktastk(isp)) .ne. ktfnr )then
             if(rtastk(isp1+1) .le. rtastk(isp))then
               kx%k=ktftrue
@@ -669,19 +672,16 @@ c      include 'DEBUG.inc'
           endif
         case (mtfatt)
           call tfclassmember(dtastk(isp1+1),dtastk(isp),kx,.false.,irtc)
-c          call tfdebugprint(dtastk(isp1+1),'estk',1)
-c          call tfdebugprint(dtastk(isp),'@',1)
-c          call tfdebugprint(kx,'==>',1)
-c          write(*,*)'with ',irtc
+c     call tfdebugprint(dtastk(isp1+1),'estk',1)
+c     call tfdebugprint(dtastk(isp),'@',1)
+c     call tfdebugprint(kx,'==>',1)
+c     write(*,*)'with ',irtc
           return
         case (mtffun)
           if(ktastk(isp) .eq. ktfoper+mtfnull)then
             kx=kxpfaloc(dtastk(isp-1))
             irtc=0
           endif
-          return
-        case (mtfset,mtfsetdelayed,mtfmap,mtfapply,
-     $         mtfmapall,mtfunset,mtfmessagename)
           return
         end select
       endif
@@ -818,9 +818,6 @@ c          write(*,*)'with ',irtc
         enddo
         call tfstringjoin(isp1,kx,irtc)
         return
-      case (mtfset,mtfsetdelayed,mtfmap,mtfapply,
-     $       mtfmapall,mtfatt,mtfunset,mtffun,mtfmessagename)
-        return
       end select
  1    irtc=-1
       return
@@ -850,11 +847,15 @@ c          write(*,*)'with ',irtc
       recursive subroutine tfcomposefun(isp1,iah,kx,full,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,dh
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) dh
       integer*8 ka,kti,kai,i
-      integer*4 isp1,iah,irtc,narg,id
-      real*8 rimmediate0
-      logical*4 full,re
+      integer*4 ,intent(in):: isp1,iah
+      integer*4 ,intent(out):: irtc
+      integer*4 narg,id,isp2,j,itfpmatc
+      real*8 rimmediate0,v
+      logical*4 ,intent(in):: full
+      logical*4 re
       irtc=1
       id=iget_fun_id(int8(iah))
       select case (id)
@@ -876,6 +877,60 @@ c          write(*,*)'with ',irtc
           return
         endif
         return
+
+      case (nfunwhich)
+        if(mod(isp-isp1,2) .eq. 0)then
+          isp2=isp1+1
+          do j=isp1+1,isp-1,2
+            if(ktfrealq(ktastk(j),v))then
+              if(v .ne. 0.d0)then
+                kx=dtastk(j+1)
+                irtc=0
+                return
+              else
+                isp2=j+2
+              endif
+            else
+              isp2=j
+              exit
+            endif
+          enddo
+          if(isp2 .gt. isp1+1)then
+            dh%k=ktfoper+int8(iah)
+            kx=kxcrelistm(isp-isp2+1,ktastk(isp2:isp),dh)
+            irtc=0
+          endif
+        endif
+        return
+
+      case (nfunswitch)
+        if(mod(isp-isp1,2) .eq. 1)then
+          if(tfconstq(dtastk(isp1+1)))then
+            isp2=isp1+1
+            do j=isp1+2,isp-1,2
+              if(tfconstq(dtastk(j)))then
+                if(itfpmatc(dtastk(isp1+1),dtastk(j)) .ge. 0)then
+                  kx=dtastk(j+1)
+                  irtc=0
+                  return
+                else
+                  isp2=j+1
+                endif
+              else
+                isp2=j-1
+                exit
+              endif
+            enddo
+            if(isp2 .gt. isp1+1)then
+              dh%k=ktfoper+int8(iah)
+              dtastk(isp2)=dtastk(isp1+1)
+              kx=kxcrelistm(isp-isp2+1,ktastk(isp2:isp),dh)
+              irtc=0
+            endif
+          endif
+        endif
+        return
+
       case (nfunmodule)
         if(full)then
  11       if(isp .eq. isp1+2)then

@@ -43,9 +43,9 @@ c
 c      do i=1,MAXLLEN
 c         buf(i)=str(i:i)
 c      end do
-  11  if (IgetGL('$ECHO$',idummy) .eq. FLAGON
+  11  if (IgetGL('$ECHO$') .eq. FLAGON
      1     .and. (infl .ne. STDIN
-     1     .or. igetGL('$LOG$',idummy) .eq. FLAGON) )
+     1     .or. IgetGL('$LOG$') .eq. FLAGON) )
      & then
          write(errfl,'(a)')str(:lene(str))
       endif

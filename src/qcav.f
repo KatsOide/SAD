@@ -33,7 +33,7 @@
       logical*4 coup
       call tinitr(transe)
       call ttcave(transe,cod,beam,srot,al,vc,harm,phi,freq,
-     $     dx,dy,theta,1)
+     $     dx,dy,theta,1,.false.)
       call qcopymat(trans,transe,.false.)
       coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
      $     trans(2,3) .ne. 0.d0 .or. trans(2,4) .ne. 0.d0

@@ -1,9 +1,9 @@
-      integer*4 function IgetGL(id,idx1)
+      integer*4 function IgetGL(id)
       use maccbk
       use maccode
       implicit none
       character*(*) id
-      integer*4 idx1, idx
+      integer*4 idx
       character*(MAXPNAME) idw
       integer*4 hsrchz
       idx=hsrchz(id)
@@ -20,12 +20,12 @@
       return
       end
 c
-      integer*8 function IgetGL8(id,idx1)
+      integer*8 function IgetGL8(id)
       use maccbk
       use maccode
       implicit none
       character*(*) id
-      integer*4 idx1, idx
+      integer*4 idx
       character*(MAXPNAME) idw
       integer*4 hsrchz
       idx=hsrchz(id)

@@ -365,7 +365,7 @@ c
      $ky_AX_TCAV=14,
      $ky_AY_TCAV=15,
      $ky_LDEV_TCAV=16,
-c     ky_LRAD_TCAV=17,
+     $ky_RAD_TCAV=17,
 c
      $ky_MAX_TCAV=18,
 cc for MAP

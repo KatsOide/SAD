@@ -10,7 +10,7 @@ c      call ptrace('ActPlt',1)
 c......end debug
 c......fallocate memory for new ploting definition
        last$=0
-       newpl$=IgetGL8('$PLOT$',plot$)
+       newpl$=IgetGL8('$PLOT$')
 c......find last of list.
  1000 continue
         if (newpl$ .eq. 0) goto 1100

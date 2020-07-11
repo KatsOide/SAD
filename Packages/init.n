@@ -498,6 +498,10 @@ DateString$::use="Use DateString[] instead of DateString.";
 f_?(Switch[#,FFSFlag|Definition|Unprotect|Clear|SetDelayed,False,_,True]&)[a___,DateString,b___]^:=((* Message[DateString$::use];*)f[a,DateString$[],b]);
 DateString[x___]:=DateString$[x];
 SetAttributes[{DateString},Constant];
+Range[`n_Real]:=(Range[n]=Range[1,n,1]);
+Range[`n1_Real,`n2_Real]:=(Range[n1,n2]=Range[n1,n2,1]);
+Range[x__Real]:=(Range[x]=Range$[x]);
+
 
 TimeZoneOffset = +540; (* SAD Default TimeZone: Asia/Tokyo[JST] *)
 (TimeZoneOffset = tz_) ^:= SetTimeZone[tz];
