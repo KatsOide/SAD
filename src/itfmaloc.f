@@ -3,8 +3,8 @@
       implicit none
       type (sad_descriptor) k
       integer*8 ktfmalocp
-      integer*4 n,m,irtc
-      logical*4 vec,trans
+      integer*4 ,intent(inout):: n,m,irtc
+      logical*4 ,intent(in):: vec,trans
       ktfmaloc=ktfmalocp(k,n,m,vec,trans,.false.,.true.,irtc)
       return
       end
@@ -14,11 +14,12 @@
       use tfshare
       use tmacro
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer :: kl,kl1,kli
-      integer*8 kap,i0,ip,ip0
-      integer*4 n,m,irtc,i,j,itfmessage
-      logical*4 vec,trans,map,err
+      integer*8 kap,i0,ip0
+      integer*4 ,intent(out):: n,m,irtc
+      integer*4 i,itfmessage
+      logical*4 ,intent(in):: vec,trans,map,err
 c
       ktfmalocp=-9999
 c
@@ -87,10 +88,11 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       else
         do i=1,n
           i0=ktfaddr(kl%dbody(i)%k)
-          do j=1,m
-            ip=kap+(j-1)*n+i-1
-            rlist(ip)=rlist(i0+j)
-          enddo
+          rlist(kap+i-1:kap+(m-1)*n+i-1:n)=rlist(i0+1:i0+m)
+c          do j=1,m
+c            ip=kap+(j-1)*n+i-1
+c            rlist(ip)=rlist(i0+j)
+c          enddo
         enddo
       endif
       irtc=0
@@ -114,11 +116,12 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       subroutine tfl2m(kl,a,n,m,trans)
       use tfstk
       implicit none
-      type (sad_dlist) kl
+      type (sad_dlist) ,intent(in):: kl
       type (sad_dlist), pointer :: kli
-      integer*4 n,m,i
+      integer*4 ,intent(in):: n,m
+      integer*4 i
       real*8, intent(out):: a(n,m)
-      logical*4 trans
+      logical*4 ,intent(in):: trans
       if(trans)then
         do i=1,m
           call loc_sad(ktfaddr(kl%dbody(i)%k),kli)
@@ -183,9 +186,10 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       subroutine tfmsize(k,n,m,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer ::kl,kl1,kli
-      integer*4 n,m,irtc,i,itfmessage
+      integer*4 ,intent(inout):: n,m,irtc
+      integer*4 i,itfmessage
       if(.not. tflistq(k,kl))then
         irtc=itfmessage(9,'General::wrongtype','"List"')
         return
@@ -222,13 +226,14 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       integer*8 function ktfcmaloc(k,n,m,vec,trans,err,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_complex), pointer :: cxi
       type (sad_dlist), pointer :: kl,kl1,kli
       type (sad_rlist), pointer :: klj
       integer*8 kap,ki,ip0,kj,kaj
-      integer*4 n,m,irtc,i,j,itfmessage
-      logical*4 vec,trans,err
+      integer*4 ,intent(out):: n,m,irtc
+      integer*4 i,j,itfmessage
+      logical*4 ,intent(in):: vec,trans,err
       ktfcmaloc=0
       if(.not. tflistq(k,kl))then
         go to 9100
@@ -239,10 +244,12 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
         m=0
         if(ktfreallistq(kl))then
           kap=ktaloc(n*2)
-          do i=1,n
-            rlist(kap+i*2-2)=kl%rbody(i)
-            rlist(kap+i*2-1)=0.d0
-          enddo
+          rlist(kap:kap+2*n-2:2)=kl%rbody(1:n)
+          rlist(kap+1:kap+2*n-1:2)=0.d0
+c          do i=1,n
+c            rlist(kap+i*2-2)=kl%rbody(i)
+c            rlist(kap+i*2-1)=0.d0
+c          enddo
           ktfcmaloc=kap
           return
         elseif(tfnumberq(kl%dbody(1)))then
@@ -290,10 +297,12 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
           call loc_sad(ktfaddr(kl%dbody(i)%k),kli)
           ip0=kap+(i-1)*2*m-2
           if(ktfreallistq(kli))then
-            do j=1,m
-              rlist(ip0+j*2  )=kli%rbody(j)
-              rlist(ip0+j*2+1)=0.d0
-            enddo
+            rlist(ip0+2:ip0+2*m:2)=kli%rbody(1:m)
+            rlist(ip0+3:ip0+2*m+1:2)=0.d0
+c            do j=1,m
+c              rlist(ip0+j*2  )=kli%rbody(j)
+c              rlist(ip0+j*2+1)=0.d0
+c            enddo
           else
             do j=1,m
               kj=kli%dbody(j)%k
@@ -320,11 +329,12 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
         do i=1,n
           call loc_sad(ktfaddr(kl%dbody(i)%k),kli)
           if(ktfreallistq(kli))then
-            do j=1,m
-              ip0=kap+(j-1)*2*n+i*2-2
-              rlist(ip0  )=kli%rbody(j)
-              rlist(ip0+1)=0.d0
-            enddo
+            rlist(kap+i*2-2:kap+2*((m-1)*n+i-1))=kli%rbody(1:m)
+c            do j=1,m
+c              ip0=kap+(j-1)*2*n+i*2-2
+c              rlist(ip0  )=kli%rbody(j)
+c              rlist(ip0+1)=0.d0
+c            enddo
           else
             do j=1,m
               kj=kli%dbody(j)%k

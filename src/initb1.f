@@ -1,8 +1,10 @@
       module wsbb
       use tfstk, only:sad_descriptor
+      use macphys, only:elradi,elmass
       implicit none
       integer*4, parameter :: nslimax=500,nblist=1600
-      real*8, parameter:: re=2.81794092d-15, am_e=510999.06
+c      real*8, parameter:: re=2.81794092d-15, am_e=510999.06
+      real*8, parameter:: re=elradi, am_e=elmass
 
       type (sad_descriptor) kvlum
       data kvlum%k /0/

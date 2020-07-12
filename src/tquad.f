@@ -113,6 +113,7 @@ c
       use tmacro
       use tspin
       use mathfun
+      use multa,only:fact
       implicit none
 c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
       integer*4 , parameter::nmult=21
@@ -123,17 +124,10 @@ c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
       integer*4 nord,np,kord,i
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np)
       real*8 sx(np),sy(np),sz(np)
-      real*8 fact(0:nmult)
       real*8 theta,sint,cost,dx,dy,al,ak,ala,alb,aki,akf,dpz,al1,
      $     f1,f2,f3,f4,f5,xi,yi,zi,pr,r,rcx1,pxi,rk1,rk
       complex*16 cx
       logical*4, intent(in)::krad,fringe
-      data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
-     1     720.d0,     5040.d0,     40320.d0,362880.d0,3628800.d0,
-     $     39916800.d0,479001600.d0,6227020800.d0,87178291200.d0,
-     $     1307674368000.d0,20922789888000.d0,355687428096000.d0,
-     $     6402373705728000.d0,121645100408832000.d0,
-     $     2432902008176640000.d0,51090942171709440000.d0/
 c     begin initialize for preventing compiler warning
       ala=0.d0
       alb=0.d0
@@ -353,25 +347,18 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
       end
 c
       subroutine ttfrin(np,x,px,y,py,z,g,nord,ak,al,bz)
+      use multa,only:fact,nmult
       implicit none
       integer*4 np,nord,i,kord
       real*8 x(np),px(np),y(np),py(np),z(np),g(np)
       real*8 ak,al,akk,aki,a,b,ab,t,dx1,dy1,d,xx,yy,
      $     h,f,px1,py1,xi,yi,bz,bzph,pr,pxa,pya
       complex*16 cx,cp,cz,cz1,cx1,cp1,ca
-      integer*4 nmult
-      parameter (nmult=22)
-      real*8 fact(0:nmult),an(nmult+1)
-      data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
-     1     720.d0,     5040.d0,     40320.d0,362880.d0,3628800.d0,
-     $     39916800.d0,479001600.d0,6227020800.d0,87178291200.d0,
-     $     1307674368000.d0,20922789888000.d0,355687428096000.d0,
-     $     6402373705728000.d0,121645100408832000.d0,
-     $     2.432902008176640000d18,5.1090942171709440000d19,
-     $     1.124000727777607680000d21/
-      data an /1.d0,2.d0,3.d0,4.d0,5.d0,6.d0,7.d0,8.d0,9.d0,10.d0,
+      real*8 ,parameter ::
+     $     an(nmult+2)=[
+     $     1.d0,2.d0,3.d0,4.d0,5.d0,6.d0,7.d0,8.d0,9.d0,10.d0,
      $     11.d0,12.d0,13.d0,14.d0,15.d0,16.d0,17.d0,18.d0,19.d0,
-     $     20.d0,21.d0,22.d0,23.d0/
+     $     20.d0,21.d0,22.d0,23.d0]
       if(al .eq. 0.d0 .or. ak .eq. 0.d0)then
         return
       endif

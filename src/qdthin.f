@@ -3,16 +3,17 @@
       use ffs
       use ffs_pointer
       use tffitcode
+      use multa, only:fact
       implicit none
-      integer*4 nut,k1,idp,iv,nord,i,kord
-      real*8 trans1(4,5),dtrans(4,5),dcod(6),cod(6),al,ak,
-     $     dx,dy,theta,ala,alb,pr,aki,daki,
+      integer*4 ,intent(in):: nut,k1,idp,iv,nord
+      integer*4 kord
+      real*8 ,intent(inout):: dtrans(4,5),dcod(6)
+      real*8 ,intent(in):: al,ak,dx,dy
+      real*8 trans1(4,5),cod(6),
+     $     theta,ala,alb,pr,aki,daki,
      $     a21,a23,a41,a43,a26,a46,
      $     da21,da23,da41,da43,da26,da46
       complex*16 cx,cx1,cx0
-      real*8 fact(0:10)
-      data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
-     1          720.d0,5040.d0,40320.d0,362880.d0,3628800.d0 /
       if(iv .eq. 4)then
         call qdrotate(dtrans,dcod,k1,itwissp(k1),idp,dx,dy,nut)
       else
@@ -27,10 +28,10 @@ c     end   initialize for preventing compiler warning
           alb=al/1.5d0
           cod(1)=cod(1)+cod(2)*ala
           cod(3)=cod(3)+cod(4)*ala
-          do 1110 i=1,5
-            trans1(1,i)=trans1(1,i)+trans1(2,i)*ala
-            trans1(3,i)=trans1(3,i)+trans1(4,i)*ala
- 1110     continue
+c          do 1110 i=1,5
+            trans1(1,:)=trans1(1,:)+trans1(2,:)*ala
+            trans1(3,:)=trans1(3,:)+trans1(4,:)*ala
+c 1110     continue
         endif
         pr=1.d0+cod(6)
         kord=nord/2-1
@@ -70,14 +71,14 @@ c     end   initialize for preventing compiler warning
           da43= daki*dble(cx1)
           da26=daki/pr*dble(cx)
           da46=daki/pr*imag(cx)
-          do 10 i=1,5
-            dtrans(1,i)=0.d0
-            dtrans(2,i)=da21*trans1(1,i)+da23*trans1(3,i)
-            dtrans(3,i)=0.d0
-            dtrans(4,i)=da41*trans1(1,i)+da43*trans1(3,i)
-            trans1 (2,i)=trans1(2,i)+ a21*trans1(1,i)+ a23*trans1(3,i)
-            trans1 (4,i)=trans1(4,i)+ a41*trans1(1,i)+ a43*trans1(3,i)
- 10       continue
+c          do 10 i=1,5
+            dtrans(1,:)=0.d0
+            dtrans(2,:)=da21*trans1(1,:)+da23*trans1(3,:)
+            dtrans(3,:)=0.d0
+            dtrans(4,:)=da41*trans1(1,:)+da43*trans1(3,:)
+            trans1(2,:)=trans1(2,:)+ a21*trans1(1,:)+ a23*trans1(3,:)
+            trans1(4,:)=trans1(4,:)+ a41*trans1(1,:)+ a43*trans1(3,:)
+c 10       continue
           dtrans(2,5)=dtrans(2,5)+da26
           dtrans(4,5)=dtrans(4,5)+da46
           trans1(2,5)=trans1(2,5)+a26
@@ -90,12 +91,12 @@ c     end   initialize for preventing compiler warning
         cod(3)=cod(3)+cod(4)*alb
         dcod(1)=dcod(1)+dcod(2)*alb
         dcod(3)=dcod(3)+dcod(4)*alb
-        do 1120 i=1,5
-          trans1(1,i)=trans1(1,i)+trans1(2,i)*alb
-          trans1(3,i)=trans1(3,i)+trans1(4,i)*alb
-          dtrans(1,i)=dtrans(1,i)+dtrans(2,i)*alb
-          dtrans(3,i)=dtrans(3,i)+dtrans(4,i)*alb
- 1120   continue
+c        do 1120 i=1,5
+          trans1(1,:)=trans1(1,:)+trans1(2,:)*alb
+          trans1(3,:)=trans1(3,:)+trans1(4,:)*alb
+          dtrans(1,:)=dtrans(1,:)+dtrans(2,:)*alb
+          dtrans(3,:)=dtrans(3,:)+dtrans(4,:)*alb
+c 1120   continue
         cx0=dcmplx(cod(1),-cod(3))
         if(kord .le. 0)then
           cx=(1.d0,0.d0)
@@ -120,12 +121,12 @@ c     end   initialize for preventing compiler warning
           da43= daki*dble(cx1)
           da26=daki/pr*dble(cx)
           da46=daki/pr*imag(cx)
-          do 20 i=1,5
-            dtrans(2,i)=dtrans(2,i)+ a21*dtrans(1,i)+ a23*dtrans(3,i)
-     1           +da21*trans1(1,i)+da23*trans1(3,i)
-            dtrans(4,i)=dtrans(4,i)+ a41*dtrans(1,i)+ a43*dtrans(3,i)
-     1           +da41*trans1(1,i)+da43*trans1(3,i)
- 20       continue
+c          do 20 i=1,5
+            dtrans(2,:)=dtrans(2,:)+ a21*dtrans(1,:)+ a23*dtrans(3,:)
+     1           +da21*trans1(1,:)+da23*trans1(3,:)
+            dtrans(4,:)=dtrans(4,:)+ a41*dtrans(1,:)+ a43*dtrans(3,:)
+     1           +da41*trans1(1,:)+da43*trans1(3,:)
+c 20       continue
           dtrans(2,5)=dtrans(2,5)+da26
           dtrans(4,5)=dtrans(4,5)+da46
           dcod(2)=dcod(2)+a21*dcod(1)+a23*dcod(3)
@@ -133,10 +134,10 @@ c     end   initialize for preventing compiler warning
         endif
         dcod(1)=dcod(1)+dcod(2)*ala
         dcod(3)=dcod(3)+dcod(4)*ala
-        do 1130 i=1,5
-          dtrans(1,i)=dtrans(1,i)+dtrans(2,i)*ala
-          dtrans(3,i)=dtrans(3,i)+dtrans(4,i)*ala
- 1130   continue
+c        do 1130 i=1,5
+          dtrans(1,:)=dtrans(1,:)+dtrans(2,:)*ala
+          dtrans(3,:)=dtrans(3,:)+dtrans(4,:)*ala
+c 1130   continue
  3000   continue
         call qchg(dtrans,dcod,0.d0,0.d0,-theta,.false.)
       endif

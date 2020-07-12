@@ -5,12 +5,14 @@
       integer*4 np,idir,i
       real*8 px(np),py(np),dv(np),g(np),pr,h1,p1
       if(idir .ge. 0)then
-        do 10 i=1,np
-c          g(i)=g(i)*(2.d0+g(i))
-          pr=1.d0+g(i)
-          px(i)=px(i)*pr
-          py(i)=py(i)*pr
-10      continue
+        px=px+g*px
+        py=py+g*py
+c        do 10 i=1,np
+cc          g(i)=g(i)*(2.d0+g(i))
+c          pr=1.d0+g(i)
+c          px(i)=px(i)*pr
+c          py(i)=py(i)*pr
+c10      continue
       else
         do 20 i=1,np
           pr=1.d0+g(i)

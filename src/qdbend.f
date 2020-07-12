@@ -5,16 +5,18 @@
       use tffitcode
       use mathfun
       implicit none
-      integer*4 iv,i
-      real*8 utwiss(ntwissfun),al,phib0,phi0,psi1,psi2,ak,
-     1     dx,dy,theta,phi,phib,rhob,rho0,aind,ax,ay,pr,
+      integer*4 ,intent(in):: iv
+      real*8 ,intent(in):: utwiss(ntwissfun),
+     $     al,phib0,phi0,psi1,psi2,ak,dx,dy,theta
+      real*8 phi,phib,rhob,rho0,aind,ax,ay,pr,
      $     rho,tanp1,tanp2,ak1,ak2,xi,pxi,yi,pyi,rhos,rhox,phix,
      $     rhoa,rhoy,phiy,bpr,dphix,csphix,snphix,sinsq,scphix,
      $     xcs,drho,dx1,dpx1,xd,t11,t12,t21,t16,t33,t34,b11,b12,
      $     b21,b16,b26,a11,a12,a16,a21,a22,a26,a33,a34,a36,a43,
      $     a44,a46,chphix,chphiy,csphiy,ddrho,dk1,dk2,dphiy,
-     $     scphiy,u,shphix,shphiy,x,y,ycs,snphiy
-      real*8  dtrans(4,5),dcod(6),cod(6)
+     $     scphiy,u,shphix,shphiy,ycs,snphiy,x(5),y(5)
+      real*8 ,intent(out):: dtrans(4,5),dcod(6)
+      real*8 cod(6)
       if(al .eq. 0.d0)then
 c        write(*,*)' QDBTHI Not installed yet.'
         dtrans=0.d0
@@ -354,18 +356,18 @@ c     This block is never invoked by src/qdtwiss.f
      $        '(FIXME)' 
         call abort
       endif
-      do 4010 i=1,5
-        dtrans(2,i)=dtrans(2,i)-ak1*dtrans(1,i)
-        dtrans(4,i)=dtrans(4,i)+ak1*dtrans(3,i)
-4010  continue
-      do 10 i=1,5
-        x=dtrans(1,i)
-        dtrans(1,i)= a11*x+a12*dtrans(2,i)
-        dtrans(2,i)= a21*x+a22*dtrans(2,i)
-        y=dtrans(3,i)
-        dtrans(3,i)= a33*y+a34*dtrans(4,i)
-        dtrans(4,i)= a43*y+a44*dtrans(4,i)
-10    continue
+c      do 4010 i=1,5
+        dtrans(2,:)=dtrans(2,:)-ak1*dtrans(1,:)
+        dtrans(4,:)=dtrans(4,:)+ak1*dtrans(3,:)
+c4010  continue
+c      do 10 i=1,5
+        x=dtrans(1,:)
+        dtrans(1,:)= a11*x+a12*dtrans(2,:)
+        dtrans(2,:)= a21*x+a22*dtrans(2,:)
+        y=dtrans(3,:)
+        dtrans(3,:)= a33*y+a34*dtrans(4,:)
+        dtrans(4,:)= a43*y+a44*dtrans(4,:)
+c10    continue
       dtrans(1,5)=dtrans(1,5)+a16
       dtrans(2,5)=dtrans(2,5)+a26
       dtrans(3,5)=dtrans(3,5)+a36
@@ -376,10 +378,10 @@ c     write(*,*)a16,a26,dtrans(1,5),dtrans(2,5)
       dcod(3)= a33*yi+a34*pyi
       dcod(4)= a43*yi+a44*pyi
       dcod(6)=pr
-      do 4020 i=1,5
-        dtrans(2,i)=dtrans(2,i)-ak2*dtrans(1,i)
-        dtrans(4,i)=dtrans(4,i)+ak2*dtrans(3,i)
-4020  continue
+c      do 4020 i=1,5
+        dtrans(2,:)=dtrans(2,:)-ak2*dtrans(1,:)
+        dtrans(4,:)=dtrans(4,:)+ak2*dtrans(3,:)
+c4020  continue
       dcod(2)=dcod(2)-ak2*dcod(1)
       dcod(4)=dcod(4)+ak2*dcod(3)
       call qchg(dtrans,dcod,0.d0,0.d0,-theta,.false.)

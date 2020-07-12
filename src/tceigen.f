@@ -1,15 +1,15 @@
       subroutine tceigen(ca,cw,ceig,n,ndim)
       implicit none
-      integer*4 n,ndim,itmax
-      parameter (itmax=30)
+      integer*4 ,intent(in):: n,ndim
+      integer*4 ,parameter ::itmax=30
       integer*4 i,j,k,i1,i2,it
-      complex*16 ca(ndim,n),cw(n,n),ceig(n),cs,cc,ccs,ccc,
+      complex*16 ,intent(inout):: ca(ndim,n)
+      complex*16 ,intent(out):: cw(n,n),ceig(n)
+      complex*16 cs,cc,ccs,ccc,
      $     cpk,cr,cp,cu,cd,ctr,cdet,csqr,c1,c2
       real*8 a,w,xc,xs,xp
+      cw=(0.d0,0.d0)
       do i=1,n
-        do j=1,n
-          cw(j,i)=(0.d0,0.d0)
-        enddo
         cw(i,i)=(1.d0,0.d0)
       enddo
       do i=1,n-1
@@ -21,10 +21,8 @@
             ca(i+1,j)=ca(i+1,j)*cu
           enddo
           cu=conjg(cu)
-          do j=1,n
-            ca(j,i+1)=ca(j,i+1)*cu
-            cw(j,i+1)=cw(j,i+1)*cu
-          enddo
+          ca(1:n,i+1)=ca(1:n,i+1)*cu
+          cw(1:n,i+1)=cw(1:n,i+1)*cu
         else
           a=dble(cp)
         endif
@@ -144,16 +142,16 @@
         a=abs(ca(i2,i2-1))
         cu=conjg(ca(i2,i2-1))/a
         ca(i2,i2-1)=a
-        do i=i2+1,n
-          ca(i2,i)=ca(i2,i)*cu
-        enddo
+c        do i=i2+1,n
+        ca(i2,i2+1:n)=ca(i2,i2+1:n)*cu
+c        enddo
         cu=conjg(cu)
-        do i=1,i2-1
-          ca(i,i2)=ca(i,i2)*cu
-        enddo
-        do i=1,n
-          cw(i,i2)=cw(i,i2)*cu
-        enddo
+c        do i=1,i2-1
+        ca(1:i2-1,i2)=ca(1:i2-1,i2)*cu
+c        enddo
+c        do i=1,n
+        cw(:,i2)=cw(:,i2)*cu
+c        enddo
       endif
       it=it+1
       if(it .gt. itmax)then
@@ -166,24 +164,22 @@
           cd=ca(j,j)-ca(i,i)
           if(cd .ne. 0.d0)then
             cu=ca(j,i)/cd
-            do k=i,n
-              ca(j,k)=ca(j,k)+cu*ca(i,k)
-            enddo
-            do k=1,j-1
-              ca(k,i)=ca(k,i)-cu*ca(k,j)
-            enddo
+c            do k=i,n
+            ca(j,i:n)=ca(j,i:n)+cu*ca(i,i:n)
+c            enddo
+c            do k=1,j-1
+            ca(1:j-1,i)=ca(1:j-1,i)-cu*ca(1:j-1,j)
+c            enddo
             ca(j,i)=0.d0
-            do k=1,n
-              cw(k,i)=cw(k,i)-cu*cw(k,j)
-            enddo
+c            do k=1,n
+            cw(:,i)=cw(:,i)-cu*cw(:,j)
+c            enddo
           endif
         enddo
       enddo
       do i=1,n
         ceig(i)=ca(i,i)
-        do j=1,n
-          ca(j,i)=cw(j,i)
-        enddo
       enddo
+      ca(1:n,:)=cw
       return
       end

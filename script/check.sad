@@ -4,15 +4,15 @@ FFS;
  test2: 2d list operations
 *)
 
- CheckFunctions=Class[{},{},{a,ndim=30,b,thre1=1e-15,
+ CheckFunctions=Class[{},{},{a,ndim=40,b,thre1=1e-15,
 
    test1:={
-     {"Real Fourier",InverseFourier[Fourier[Re[#]]]-Re[#]&,0.5},
-     {"Complex Fourier",InverseFourier[Fourier[#]]-#&,0.6},
+     {"Real Fourier",InverseFourier[Fourier[Re[#]]]-Re[#]&,0.6},
+     {"Complex Fourier",InverseFourier[Fourier[#]]-#&,0.9},
      {"Real Trigonometrics",ArcSin[ArcCos[ArcTan[Tan[Cos[Sin[Re[#]]]]]]]-Re[#]&,6},
-     {"Complex Trigonometrics",ArcSin[ArcCos[ArcTan[Tan[Cos[Sin[#/10]]]]]]-#/10&,5},
-     {"Real Log",Log[Exp[Re[#]]]-Re[#]&,0.2},
-     {"Complex Log",Log[Exp[#]]-#&,0.3},
+     {"Complex Trigonometrics",ArcSin[ArcCos[ArcTan[Tan[Cos[Sin[#/10]]]]]]-#/10&,11},
+     {"Real Log",Log[Exp[Re[#]]]-Re[#]&,0.12},
+     {"Complex Log",Log[Exp[#]]-#&,0.26},
      {"Real Det",Det[DiagonalMatrix[Re[#]]]-Times@@Re[#]&,0},
      {"Complex Det",Det[DiagonalMatrix[#]]-Times@@#&,0},
      {"Sort",Sort[#]-Sort[Reverse[#]]&,0},
@@ -26,7 +26,7 @@ FFS;
      {"Take & Drop",Take[#,{3,-3}]-Drop[Drop[#,2],-2]&,0},
      {"Real Spline",Module[{x=Append[Prepend[Sort[Re[#]*2*Pi],0],0],sp},
        sp=Spline[Thread[{x,Sin[x]}],Derivative->Periodic];
-       Sin[x*0.99]-sp[x*0.99]]&,5e11},
+       Sin[x*0.99]-sp[x*0.99]]&,2.7e11},
      {"ToString & ToExpression",#-ToExpression[ToString[#]]&,0},
      {"Position",With[{x=#},x[[Position[x,#][[1,1]]]]&/@x-x]&,0},
      {"Partition",Flatten[Partition[#,4]]-Take[#,Floor[Length[#]/4]*4]&,0},
@@ -36,14 +36,14 @@ FFS;
      },
 
    test2:={
-     {"Real LinearSolve",Re[#].LinearSolve[Re[#],Re[#2]]-Re[#2]&,80},
+     {"Real LinearSolve",Re[#].LinearSolve[Re[#],Re[#2]]-Re[#2]&,8.1},
      {"Complex LinearSolve",#.LinearSolve[#,#2]-#2&,450},
      {"Real SingularValues",Module[{{u,w,v}=SingularValues[Re[#],Inverse->False]},
-       Transpose[u].DiagonalMatrix[w].v-Re[#]]&,3},
+       Transpose[u].DiagonalMatrix[w].v-Re[#]]&,2.6},
      {"Complex SingularValues",Module[{{u,w,v}=SingularValues[#,Inverse->False]},
-       Conjugate[Transpose[u]].DiagonalMatrix[w].v-#]&,5},
+       Conjugate[Transpose[u]].DiagonalMatrix[w].v-#]&,3.6},
      {"Real Eigensystem",Module[{{e,v}=Eigensystem[Re[#]]},
-       Re[#].Transpose[v]-Transpose[e*v]]&,40},
+       Re[#].Transpose[v]-Transpose[e*v]]&,33},
      {"Complex Eigensystem",Module[{{e,v}=Eigensystem[#]},
        #.Transpose[v]-Transpose[e*v]]&,15},
      {"SetPart",Module[{x=Table[0,{Length[#]}]},Do[x[[i]]=i,{i,Length[x]}];x-Range[Length[x]]]&,0},
@@ -76,7 +76,7 @@ FFS;
        d0[[1]]=d0[[1]]+d0[[2]]/(1+d0[[6]])*l;
        d0[[3]]=d0[[3]]+d0[[4]]/(1+d0[[6]])*l;
        d0[[5]]=d0[[5]]-((d0[[2]]/(1+d0[[6]]))^2+(d0[[4]]/(1+d0[[6]]))^2)*l/2;
-       d1-d0]&,1e6},
+       d1-d0]&,9e5},
      Null[]
      }
 
@@ -87,18 +87,19 @@ FFS;
      b=Random[ndim,ndim]+ I Random[ndim,ndim]
      );
 
-   Test[]:={Catch[
-     Module[{r},
-       Join[
-         With[{f=#[[2]],m=#[[1]],th=#[[3]]},
-           If[(r=Max[Abs[f[a]]]) <= thre1*th,r,
-             BreakTest[m,r],
-             BreakTest[m,r]]]&/@test1,
-         With[{f=#[[2]],m=#[[1]],th=#[[3]]},
-           If[(r=Max[Abs[f[b,a]]]) <= thre1*th,r,
-             BreakTest[m,r],
-             BreakTest[m,r]]]&/@test2
-         ]]],
+   Test[]:={Catch[MapAt[StandardForm[$FORM="S7.4";"CPU = "//#//" sec"]&,
+     Timing[
+       Module[{r},
+         Join[
+           With[{f=#[[2]],m=#[[1]],th=#[[3]]},
+             If[(r=Max[Abs[f[a]]]) <= thre1*th,r,
+               BreakTest[m,r],
+               BreakTest[m,r]]]&/@test1,
+           With[{f=#[[2]],m=#[[1]],th=#[[3]]},
+             If[(r=Max[Abs[f[b,a]]]) <= thre1*th,r,
+               BreakTest[m,r],
+               BreakTest[m,r]]]&/@test2
+           ]]],{1}]],
      MemoryCheck[2]};
 
    BreakTest[m_,r_]:=(

@@ -152,9 +152,10 @@ integer8 ktsalocbl(integer4 mode, const char *str, integer4 length) {
   return ktsalocb_(&mode, str, &length, length);
 }
 
+/*
 integer4 italoc(integer4 nd) {
   return italoc_(&nd);
-}
+  }*/
 
 integer8 ktavaloc(integer4 mode, integer4 nd) {
   return ktavaloc_(&mode, &nd);
@@ -209,6 +210,7 @@ void tflocal1(integer8 kx) {
   tflocal1_(&kx);
 }
 
+/*
 int tfinitstk(tfstk_t *stack, integer4 size) {
   integer4 stk_size, stk_offset;
 
@@ -225,7 +227,7 @@ int tfinitstk(tfstk_t *stack, integer4 size) {
   stack->__napuref     = 0;
 
   return 0;
-}
+  }*/
 
 static bool itfgetoption1(integer8 ia, integer8 kr,
 			  integer8 *kx) {

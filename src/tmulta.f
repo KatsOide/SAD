@@ -11,50 +11,19 @@
       use photontable,only:tsetphotongeo,pp
       use mathfun
       implicit none
-      integer*4 ndivmax
-      real*8 ampmax,eps00
-      parameter (ampmax=0.05d0,eps00=0.005d0,ndivmax=2000)
+      integer*4 ,parameter ::ndivmax=2000
+      real*8 ,parameter ::ampmax=0.05d0,eps00=0.005d0
       integer*4 np,mfring,i,n,mfr,ndiv,nmmax,m,m1,k,nmmin
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
      $     al,phi,psi1,psi2,bz,dx,dy,theta,eps0,fb1,fb2,
      $     dtheta,pr,cost,sint,rho0,rhob,
      $     sinp1,sinp2,cosp1,cosp2,phin,aln,cosw,sinw,sqwh,sinwp1,
      $     eps,w,r,rk(0:nmult),als,ak0r,ak1r,ak1n,
-     $     phib,phibn,an(0:nmult+1)
+     $     phib,phibn
       real*8 sx(np),sy(np),sz(np)
       complex*16 ak0(0:nmult),ak(0:nmult),akn(0:nmult),
      $     cx1,csl,csr,cl,cr,cg,cx
       logical*4 fringe,krad
-      real*8 fact(0:nmult+1)
-      data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
-     1     720.d0,     5040.d0,     40320.d0,362880.d0,3628800.d0,
-     $     39916800.d0,479001600.d0,6227020800.d0,87178291200.d0,
-     $     1307674368000.d0,20922789888000.d0,355687428096000.d0,
-     $     6402373705728000.d0,121645100408832000.d0,
-     $     2432902008176640000.d0,51090942171709440000.d0,
-     $     1124000727777607680000.d0/
-      data an/1.d0,1.d0,
-     $0.5d0,
-     $0.33333333333333333333d0,
-     $0.25d0,
-     $0.2d0,
-     $0.166666666666666666667d0,
-     $0.142857142857142857143d0,
-     $0.125d0,
-     $0.111111111111111111111d0,
-     $0.1d0,
-     $0.090909090909090909091d0,
-     $0.083333333333333333333d0,
-     $0.076923076923076923077d0,
-     $0.071428571428571428571d0,
-     $0.066666666666666666667d0,
-     $0.0625d0,
-     $0.058823529411764705882d0,
-     $0.055555555555555555556d0,
-     $0.052631578947368421053d0,
-     $0.05d0,
-     $0.047619047619047619048d0,
-     $0.045454545454545454545d0/
       if(bz .ne. 0.d0)then
         write(*,*)
      $       'MULT with nonzero ANGLE and BZ is not yet supported.'
@@ -278,14 +247,6 @@
      $     cx1,csl,csr,cl,cr,cg,
      $     csxx,csxy,csyy,cxx,cxy,cyy
       logical*4 enarad,fringe
-      real*8 fact(0:nmult+1)
-      data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
-     1     720.d0,     5040.d0,     40320.d0,362880.d0,3628800.d0,
-     $     39916800.d0,479001600.d0,6227020800.d0,87178291200.d0,
-     $     1307674368000.d0,20922789888000.d0,355687428096000.d0,
-     $     6402373705728000.d0,121645100408832000.d0,
-     $     2432902008176640000.d0,51090942171709440000.d0,
-     $     1124000727777607680000.d0/
       if(bz .ne. 0.d0)then
         write(*,*)
      $       'MULT with nonzero ANGLE and BZ is not yet supported.'

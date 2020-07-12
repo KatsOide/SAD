@@ -13,16 +13,18 @@
      1     a9=35.d0/1152.d0,a11=63.d0/2816.d0,
      1     a13=231.d0/13312.d0,a15=143.d0/10240.d0
       integer*4 , parameter :: ndivmax=1000
-      integer*4 np,i,ndiv,n,n1,n2
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
-      real*8 sx(np),sy(np),sz(np)
-      real*8 al,phib,dx,dy,theta,cost,sint,rhob,eps,aln,
-     $     dxfr1,dyfr1,dyfra1,dyi,alc,alx,alr,
+      integer*4 ,intent(in)::  np
+      integer*4 i,ndiv,n,n1,n2
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
+     $     dv(np),g(np),sx(np),sy(np),sz(np)
+      real*8 ,intent(in):: al,phib,dx,dy,theta,eps,
+     $     cosp1,sinp1,cosp2,sinp2,fb1,fb2
+      real*8 rhob,aln,dxfr1,dyfr1,dyfra1,dyi,alc,alx,alr,
      $     dxfr2,dyfr2,dyfra2,f1r,f2r,phic,
      $     dp,p,rhoe,pxi,s,dpv1,pv1,dpv2,pv2,fa,f,ff,
      $     dpz1,pz1,dpz2,pz2,phsq,u,w,dl,dpx,pyi,xi,pxf,d,
-     $     cosp1,sinp1,cosp2,sinp2,tanp1,tanp2,fb1,fb2
-      logical*4 fringe,krad
+     $     tanp1,tanp2,cost,sint
+      logical*4 ,intent(in):: fringe,krad
       if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,2,al,-phib,
      1             dx,dy,theta,.false.,.false.)

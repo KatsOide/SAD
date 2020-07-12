@@ -41,7 +41,7 @@ OBJ1=ActGRA.o    filbuf.o    pwmatq.o    ActLie.o    \
 
 OBJ2=packpi.o    tfdbun.o    tracke.o    NewGRF.o padd.o       \
      R1INV.o     inifil.o	R2INV.o     initb1.o        initbl.o \
-     tfgeti.o    SYMPS.o qthin.o tfgetr.o   SYMTR2.o  \
+     tfgeti.o    SYMPS.o  tfgetr.o   SYMTR2.o  \
      rdexpr.o    tsdrad.o rdkwdl.o    lread.o \
      rdterm.o    UNITM2.o lrflct.o    \
      tfltra.o    UNITM4.o lstchk.o    rslvin.o rvrsln.o \
@@ -49,7 +49,7 @@ OBJ2=packpi.o    tfdbun.o    tracke.o    NewGRF.o padd.o       \
      tfrej.o     setdfl.o    tsmear.o    actPlt.o
 
 OBJ3=sethtb.o    atof.o      bint.o      skipch.o    tspect.o    pfcoup.o \
-     sols33.o    pgaussj.o   spline.o     sprexl.o    tbrad.o \
+     sols33.o    pgaussj.o   spline.o     sprexl.o    tlinit.o \
      sprlin.o    pinner.o  tfzap.o     ttcav.o      \
      ttcave.o    talign.o    tgfun.o      \
      pmicad.o    tgrot.o     dAssgn.o     defflg.o
@@ -70,7 +70,7 @@ OBJ4=defglb.o     \
      ptimes.o    elname.o errmsg.o ptrace.o    tdinit.o    mrecal1.o \
      push.o      mrqcof.o    wtune.o \
      expln.o     mrqcov.o    tphplt.o     \
-     fdate1.o    mrqmin.o    datetime.o tdrife.o \
+     mrqmin.o    datetime.o tdrife.o \
      filaux.o     tfgetm.o    tfojit.o tedrawf.o
 
 OBJ5=trcoda.o nalign.o ndelw.o nfgetm.o msolvg.o yylex_.o calc.o \
@@ -82,7 +82,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      pgflag.o    pgmast.o     pgrmat.o \
      pgsolvcond.o qcell.o qdbend.o qdcell.o \
      qddrif.o    qdmdia.o    qdquad.o     qdthin.o   qdtwis.o \
-     qgettr.o    qins.o      qmult.o      qquad.o \
+     qgettr.o    qins.o      qmult.o       \
      qtent.o     qtwiss.o     tapert.o \
      tbdecoup.o  tbende.o     tbendi.o   tbfrie.o \
      tceigen.o    tcftr.o    tcod.o \

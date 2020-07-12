@@ -1,88 +1,88 @@
-      integer*4 function italoc(n)
-      use tfstk
-      use tfmem
-      implicit none
-      integer*4 n,n1,m,m1,na,l,l1
-      integer*8 i,ic,i1,j,ixl(16)
-      do l=1,16
-        ixl(l)=ktaloc(n)
-        if(ixl(l) .ge. 2**31-n .or. ixl(l) .le. 0)then
-          if(l .ne. 1)then
-            cycle
-          else
-            n1=max(n,3)
-            m=n1+1
-            do na=n1,nindex
-              ic=icp+na*2
-              i1=ic
-              i=klist(i1)
-              do while(i .ne. ic)
-                if(i .gt. 0 .and. i .lt. 2**31)then
-                  m1=ilist(1,i-1)
-                  if(m1 .eq. m)then
-                    klist(i1)=klist(i)
-                    klist(klist(i)+1)=i1
-                    j=ich+iand(i+m+2,mhash)
-                    do while(klist(j) .ne. i+2)
-                      j=klist(j)
-                    enddo
-                    klist(j)=klist(i+2)
-                    nnet=nnet+m
-                    italoc=int(i)
-                    if(ic .eq. maxic .and. klist(ic) .eq. ic)then
-                      maxic=maxic-2
-                    endif
-                    call tfree(ixl(1))
-                    return
-                  elseif(m1 .ge. m+minseg2)then
-                    klist(i1)=klist(i)
-                    klist(klist(i)+1)=i1
-                    j=ich+iand(i+m1+2,mhash)
-                    do while(klist(j) .ne. i+2)
-                      j=klist(j)
-                    enddo
-                    klist(j)=klist(i+2)
-                    call tsetindexhash(i+m,m1-m)
-                    ilist(1,i-1)=m
-                    nnet=nnet+m
-                    italoc=int(i)
-                    if(ic .eq. maxic .and. klist(ic) .eq. ic)then
-                      maxic=maxic-2
-                    endif
-                    call tfree(ixl(1))
-                    return
-                  endif
-                endif
-                i1=i
-                i=klist(i)
-              enddo
-            enddo
-          endif
-        else
-          do l1=l-1,1,-1
-            call tfree(ixl(l))
-          enddo
-          italoc=int(ixl(l))
-          return
-        endif
-      enddo
-      write(*,*)'italoc memory allocation error ',ixl(16),n
-      call meminfo()
-      call abort
-      italoc=-1
-      return
-      end
-
-      integer*4 function itcaloc(n)
-      use tfstk
-      implicit none
-      integer*4 n,italoc,i
-      i=italoc(n)
-      klist(i:i+n-1)=0
-      itcaloc=i
-      return
-      end
-
+c$$$      integer*4 function italoc(n)
+c$$$      use tfstk
+c$$$      use tfmem
+c$$$      implicit none
+c$$$      integer*4 n,n1,m,m1,na,l,l1
+c$$$      integer*8 i,ic,i1,j,ixl(16)
+c$$$      do l=1,16
+c$$$        ixl(l)=ktaloc(n)
+c$$$        if(ixl(l) .ge. 2**31-n .or. ixl(l) .le. 0)then
+c$$$          if(l .ne. 1)then
+c$$$            cycle
+c$$$          else
+c$$$            n1=max(n,3)
+c$$$            m=n1+1
+c$$$            do na=n1,nindex
+c$$$              ic=icp+na*2
+c$$$              i1=ic
+c$$$              i=klist(i1)
+c$$$              do while(i .ne. ic)
+c$$$                if(i .gt. 0 .and. i .lt. 2**31)then
+c$$$                  m1=ilist(1,i-1)
+c$$$                  if(m1 .eq. m)then
+c$$$                    klist(i1)=klist(i)
+c$$$                    klist(klist(i)+1)=i1
+c$$$                    j=ich+iand(i+m+2,mhash)
+c$$$                    do while(klist(j) .ne. i+2)
+c$$$                      j=klist(j)
+c$$$                    enddo
+c$$$                    klist(j)=klist(i+2)
+c$$$                    nnet=nnet+m
+c$$$                    italoc=int(i)
+c$$$                    if(ic .eq. maxic .and. klist(ic) .eq. ic)then
+c$$$                      maxic=maxic-2
+c$$$                    endif
+c$$$                    call tfree(ixl(1))
+c$$$                    return
+c$$$                  elseif(m1 .ge. m+minseg2)then
+c$$$                    klist(i1)=klist(i)
+c$$$                    klist(klist(i)+1)=i1
+c$$$                    j=ich+iand(i+m1+2,mhash)
+c$$$                    do while(klist(j) .ne. i+2)
+c$$$                      j=klist(j)
+c$$$                    enddo
+c$$$                    klist(j)=klist(i+2)
+c$$$                    call tsetindexhash(i+m,m1-m)
+c$$$                    ilist(1,i-1)=m
+c$$$                    nnet=nnet+m
+c$$$                    italoc=int(i)
+c$$$                    if(ic .eq. maxic .and. klist(ic) .eq. ic)then
+c$$$                      maxic=maxic-2
+c$$$                    endif
+c$$$                    call tfree(ixl(1))
+c$$$                    return
+c$$$                  endif
+c$$$                endif
+c$$$                i1=i
+c$$$                i=klist(i)
+c$$$              enddo
+c$$$            enddo
+c$$$          endif
+c$$$        else
+c$$$          do l1=l-1,1,-1
+c$$$            call tfree(ixl(l))
+c$$$          enddo
+c$$$          italoc=int(ixl(l))
+c$$$          return
+c$$$        endif
+c$$$      enddo
+c$$$      write(*,*)'italoc memory allocation error ',ixl(16),n
+c$$$      call meminfo()
+c$$$      call abort
+c$$$      italoc=-1
+c$$$      return
+c$$$      end
+c$$$
+c$$$      integer*4 function itcaloc(n)
+c$$$      use tfstk
+c$$$      implicit none
+c$$$      integer*4 n,italoc,i
+c$$$      i=italoc(n)
+c$$$      klist(i:i+n-1)=0
+c$$$      itcaloc=i
+c$$$      return
+c$$$      end
+c$$$
       integer*8 function ktcaloc(n)
       use tfstk
       implicit none
@@ -134,23 +134,23 @@ c      write(*,*)'talocp ',ip1,ip1+na
       return
       end
 
-      integer*4 function mtaloc(n)
-      use tfstk
-      implicit none
-      integer*4 n,italoc
-      mtaloc=italoc(max(3,n-1))-1
-      return
-      end
-
-      integer*4 function mctaloc(n)
-      use tfstk
-      implicit none
-      integer*4 n,i,italoc
-      i=italoc(max(3,n-1))-1
-      klist(i:i+n-1)=0
-      mctaloc=i
-      return
-      end
+c$$$      integer*4 function mtaloc(n)
+c$$$      use tfstk
+c$$$      implicit none
+c$$$      integer*4 n,italoc
+c$$$      mtaloc=italoc(max(3,n-1))-1
+c$$$      return
+c$$$      end
+c$$$
+c$$$      integer*4 function mctaloc(n)
+c$$$      use tfstk
+c$$$      implicit none
+c$$$      integer*4 n,i,italoc
+c$$$      i=italoc(max(3,n-1))-1
+c$$$      klist(i:i+n-1)=0
+c$$$      mctaloc=i
+c$$$      return
+c$$$      end
 
       logical*4 function tfaloc(n)
       use tfstk

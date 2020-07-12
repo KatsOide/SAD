@@ -8,15 +8,17 @@
       use ffs
       use tffitcode
       implicit none
-      integer*4 nmult,mfring,k
-      parameter (nmult=21)
-      real*8 trans(4,5),cod(6),transe(6,12),beam(42),srot(3,9),
-     $     dx,dy,theta,f1in,f2in,f1out,f2out,
-     $     al,bz,eps0,chi1,chi2,dz,
-     $     vc,harm,phi,freq,wakew1,
+      integer*4 ,intent(in):: mfring,k
+      integer*4 ,parameter :: nmult=21
+      real*8 ,intent(inout):: trans(4,5),cod(6)
+      real*8 ,intent(in)::dx,dy,theta,f1in,f2in,f1out,f2out,
+     $     al,bz,eps0,chi1,chi2,dz,vc,harm,phi,freq,wakew1,
      $     psi1,psi2,phi0,dtheta,apsi1,apsi2,fb1,fb2
-      complex*16 ak(0:nmult)
-      logical*4 fringe,coup,rfsw0,bfrm,autophi,ini
+      real*8 transe(6,12),beam(42),srot(3,9)
+      complex*16 ,intent(in):: ak(0:nmult)
+      logical*4 ,intent(out):: coup
+      logical*4 ,intent(in):: fringe,bfrm,autophi,ini
+      logical*4 rfsw0
       rfsw0=rfsw
       rfsw=rfsw .and. trpt
       if(ini)then
