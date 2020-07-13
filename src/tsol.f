@@ -882,11 +882,18 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
         case (icDRFT)
           al=cmp%value(ky_L_DRFT)
           if(spac)then
-            call spdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,al,bzs,
-     $           cmp%value(ky_RADI_DRFT),n,latt,kptbl)
-          else
+            if(bzs .ne. 0.d0)then
+              call spdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,al,bzs,
+     $             cmp%value(ky_RADI_DRFT),n,latt,kptbl)
+            else
+              call spdrift_free(np,x,px,y,py,z,g,dv,sx,sy,sz,al,
+     $             cmp%value(ky_RADI_DRFT),n,latt,kptbl)
+            endif
+          elseif(bzs .ne. 0.d0)then
             call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           al,bzs,rad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0)
+          else
+            call tdrift_free(np,x,px,y,py,z,dv,al)
           endif
         case (icBEND)
           if(.not. cmp%update)then

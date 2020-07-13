@@ -1,5 +1,6 @@
       subroutine tfcsroysetup(isp1,kx,irtc)
       use tfstk
+      use iso_c_binding
       implicit none
       type (sad_rlist), pointer :: lazl,lal
       type (sad_descriptor) kx
@@ -7,6 +8,7 @@
      $     kax
       integer*4 isp1,irtc,itfmessage,nr,nj,nphi,mphi
       real*8 dz,aw,r56,r65,zspan,dt
+      real*8 ,pointer ::zjn(:,:),dpjn(:,:)
       if(isp .ne. isp1+3)then
         go to 9000
       endif
@@ -39,15 +41,16 @@
       kadpjn=ktavaloc(0,nj*mphi)
       karhoj=ktavaloc(0,nj)
       dt=min(1.d0,0.01d0/sqrt(abs(r56*r65)))
+      call c_f_pointer(c_loc(rlist(kazjn)),zjn,[mphi,nj])
+      call c_f_pointer(c_loc(rlist(kazjn)),dpjn,[mphi,nj])
       call csroysetup(
-     $     rlist(karho+1),
-     $     lazl%rbody(1),
-     $     rlist(kawi+1),
-     $     rlist(kaaj+1),
-     $     rlist(kaomega+1),
-     $     rlist(kazjn+1),
-     $     rlist(kadpjn+1),
-     $     rlist(karhoj+1),
+     $     rlist(karho+1:karho+nr),
+     $     lazl%rbody(1:nr),
+     $     rlist(kawi+1:kawi+nr),
+     $     rlist(kaaj+1:kaaj+nj),
+     $     rlist(kaomega+1:kaomega+nj),
+     $     zjn,dpjn,
+     $     rlist(karhoj+1:karhoj+nj),
      $     aw,r56,r65,dz,nr,nj,mphi,zspan,dt,irtc)
       kax=ktadaloc(-1,6)
       klist(kax+1)=ktflist+kawi

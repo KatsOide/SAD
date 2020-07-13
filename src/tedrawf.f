@@ -1,7 +1,7 @@
       subroutine tedrawf(lfno,bc,bs,hc,hs,
-     $     sige,anuz,mphi,mphi2,ndp)
+     $     sige,anuz,mphi2,ndp)
       implicit none
-      integer*4 mphi,mphi2,ndp,lfno,i,lene
+      integer*4 mphi2,ndp,lfno,lene
       real*8 bc(10,mphi2,ndp),bs(10,mphi2,ndp),
      $     hc(4,mphi2,ndp),hs(4,mphi2,ndp),
      $     sige,anuz
@@ -33,7 +33,7 @@
       write(lfno,'(a)')s1(:l)//'{{'
       do j=1,ndp
         do m=1,mphi2
-          call mathinit(lfno,'{')
+          call mathinit('{')
           do i=1,n
             call mathput(lfno,bc(i,m,j))
           enddo
@@ -52,7 +52,7 @@
       return
       end
 
-      subroutine mathinit(lfno,s)
+      subroutine mathinit(s)
       implicit none
       integer*4 lfno,ip,lene
       character*80 mb

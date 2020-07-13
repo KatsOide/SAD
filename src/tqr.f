@@ -1,3 +1,5 @@
+! Obsolete
+!
       subroutine tqr(a,w,eig,vx,n,ndim)
       use tfstk, only: ktfenanq
       implicit none

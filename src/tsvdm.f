@@ -12,15 +12,14 @@ c
 c
       use tfstk, only:ktfenanq
       implicit none
-      integer*4 nmax,itmax
-      parameter (nmax=100000,itmax=256)
-      integer*4 n,m,ndim,ndimb
-      real*8 a(ndim,m),b(ndimb,n),x(m),epslon
-c      real*8 v(0:n+m+32),anorm,enorm
+      integer*4 ,parameter ::nmax=100000,itmax=256
+      integer*4 ,intent(in):: n,m,ndim,ndimb
+      real*8 ,intent(inout):: a(ndim,m),b(ndimb,n)
+      real*8 ,intent(out):: x(m)
+      real*8 ,intent(in):: epslon
       real*8 v(0:nmax),anorm
       real*8 aa(m),f,g,s,r,w,h,xmin,z,vv,c,p,bb(n),y,an
       real*8 q,h1,h2,t,r1,r2
-c      integer*4 lsep(0:n+m+32)
       integer*4 lsep(0:nmax)
       integer*4 i,j,mn,it,isep,ibegin,iend,i1,i1mn,n1,kkk
       logical*4 inv

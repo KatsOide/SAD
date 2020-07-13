@@ -3,8 +3,9 @@
       use ffs
       use ffs_pointer
       use tffitcode
+      use sad_main,only:iaidx
       implicit none
-      integer*4 m,n,lfno,i,i1,it,nl,ia,ifany,lene
+      integer*4 lfno,i,i1,it,nl,ifany,lene
       real*8 a,al,bpole,ak,bpole1,brho1,s,sigx,sigy,
      $     sigx0,sigx1,sigy0,sigy1,sigxp,sigyp,theta,v,
      $     getva,sigxy0,sigxy1
@@ -15,7 +16,7 @@
       character*73 buff
       logical*4 match,begin,temat,exist
       external trim
-      ia(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
+c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
 c     begin initialize for preventing compiler warning
       v=0.d0
       ak=0.d0
@@ -85,30 +86,30 @@ c     end   initialize for preventing compiler warning
           i1=i+1
           call tfbeam(i ,theta,beam1)
           call tfbeam(i1,theta,beam2)
-          sigx0=sqrt(beam1(ia(1,1)))
-          sigy0=sqrt(beam1(ia(3,3)))
-          sigxy0=beam1(ia(1,3))/sigx0/sigy0
-          sigx1=sqrt(beam2(ia(1,1)))
-          sigy1=sqrt(beam2(ia(3,3)))
-          sigxy1=beam2(ia(1,3))/sigx1/sigy1
+          sigx0=sqrt(beam1(iaidx(1,1)))
+          sigy0=sqrt(beam1(iaidx(3,3)))
+          sigxy0=beam1(iaidx(1,3))/sigx0/sigy0
+          sigx1=sqrt(beam2(iaidx(1,1)))
+          sigy1=sqrt(beam2(iaidx(3,3)))
+          sigxy1=beam2(iaidx(1,3))/sigx1/sigy1
           sigx=0.d0
           sigy=0.d0
           if(it .eq. 4 .or. it .eq. icmult)then
             if(v .gt. 0.d0)then
-              if(beam1(ia(1,2)) .gt. 0.d0
-     1           .and. beam2(ia(1,2)) .lt. 0.d0)then
-                s=ak*beam1(ia(1,1))+beam1(ia(2,2))
+              if(beam1(iaidx(1,2)) .gt. 0.d0
+     1           .and. beam2(iaidx(1,2)) .lt. 0.d0)then
+                s=ak*beam1(iaidx(1,1))+beam1(iaidx(2,2))
                 sigx=(s+sqrt(s**2
-     1                 -4.d0*ak*(beam1(ia(1,1))*beam1(ia(2,2))
-     1                          -beam1(ia(2,1))**2) ))/2.d0/ak
+     1                 -4.d0*ak*(beam1(iaidx(1,1))*beam1(iaidx(2,2))
+     1                          -beam1(iaidx(2,1))**2) ))/2.d0/ak
               endif
             elseif(v .lt. 0.d0)then
-              if(beam1(ia(3,4)) .gt. 0.d0
-     1           .and. beam2(ia(3,4)) .lt. 0.d0)then
-                s=ak*beam1(ia(3,3))+beam1(ia(4,4))
+              if(beam1(iaidx(3,4)) .gt. 0.d0
+     1           .and. beam2(iaidx(3,4)) .lt. 0.d0)then
+                s=ak*beam1(iaidx(3,3))+beam1(iaidx(4,4))
                 sigy=(s+sqrt(s**2
-     1                 -4.d0*ak*(beam1(ia(3,3))*beam1(ia(4,4))
-     1                          -beam1(ia(4,3))**2) ))/2.d0/ak
+     1                 -4.d0*ak*(beam1(iaidx(3,3))*beam1(iaidx(4,4))
+     1                          -beam1(iaidx(4,3))**2) ))/2.d0/ak
               endif
             endif
             sigx=sqrt(sigx)

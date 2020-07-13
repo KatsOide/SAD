@@ -535,7 +535,8 @@ c     $          cmp%value(p_VNOMINAL_CAVI)
            call ttcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      $          cmp%value(ky_HARM_TCAV),ph,cmp%value(ky_FREQ_TCAV),
      1          cmp%value(ky_DX_TCAV),cmp%value(ky_DY_TCAV),
-     $          cmp%value(ky_ROT_TCAV))
+     $          cmp%value(ky_ROT_TCAV),rad .and.
+     $          cmp%value(ky_RAD_TCAV) .eq. 0.d0)
          else
            call tdrift_free(np,x,px,y,py,z,dv,al)
          endif
@@ -579,8 +580,8 @@ c     print *,'tturn l sspac2',l,sspac2
            call tpspac(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $          pbunch, amass, p0, h0, sspac2-sspac1,
      $          pspac_nx,pspac_ny,pspac_nz,
-     $          pspac_dx,pspac_dy,pspac_dz,l,lend,
-     $          pspac_nturn,pspac_nturncalc)
+     $          pspac_dx,pspac_dy,pspac_dz,
+     $          l,lend,pspac_nturn,pspac_nturncalc)
            sspac1=sspac2
          endif
          go to 1020
@@ -654,7 +655,8 @@ c     $             +lend-1),
               call tpspac(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $             pbunch, amass, p0, h0, sspac-sspac0,
      $             pspac_nx,pspac_ny,pspac_nz,
-     $             pspac_dx,pspac_dy,pspac_dz)
+     $             pspac_dx,pspac_dy,pspac_dz,
+     $            lend,lend,pspac_nturn,pspac_nturncalc)
            endif
         endif
       endif

@@ -25,27 +25,29 @@
      $     n1,n2,mode,ind,rind,ihead,ispmax,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kx,kxi,ki,kf
+      type (sad_descriptor) ,intent(in):: k,kf
+      type (sad_descriptor) ,intent(inout):: kx
+      type (sad_descriptor) kxi,ki
       type (sad_dlist), pointer :: klx,kl
-      integer*4 maxlevel,mode,m,n1,n2,irtc,i,isp1,
-     $     idi,ispf,itfdepth,id,ind,ind1,
-     $     itfpmatc,ihead,ispmax,ioff(0:7)
+      integer*4 ,intent(in):: mode,n1,n2,ispmax,ihead
+      integer*4 ,intent(out):: irtc
+      integer*4 i,isp1,m,idi,ispf,itfdepth,id,ind,ind1,
+     $     itfpmatc
       real*8 ,intent(out)::rind(ind)
-      logical*4 stack,map,stacktbl(0:7),indexf(0:7),indf,
-     $     match(0:7)
-      parameter (maxlevel=100000000)
-      data stacktbl/
+      logical*4 stack,map,indf
+      integer*4 ,parameter::maxlevel=100000000
+      logical*4 ,parameter:: stacktbl(0:7)=[
      $     .false.,.false., .true., .true., .true.,
-     $     .false.,.false., .true./
-      data indexf/
+     $     .false.,.false., .true.],
+     $ indexf(0:7)=[
      $     .false.,.false.,.false.,.false., .true.,
-     $      .true.,.false.,.false./
-      data match/
+     $      .true.,.false.,.false.],
+     $ match(0:7)=[
      $     .false.,.false.,.false.,.false.,.false.,
-     $      .true.,.true., .true./
+     $      .true.,.true., .true.]
 c            Level    Scan   Apply     Map MapIndx
 c          Positio   Cases DeCases     
-      data ioff/0,1,1,1,1,0,0,0/
+      integer*4 ,parameter ::ioff(0:7)=[0,1,1,1,1,0,0,0]
       irtc=0
       if(isp .ge. ispmax)then
         return
@@ -192,7 +194,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
               go to 9000
             endif
             if(isp .ge. ispmax)then
-              go to 4000
+              exit
             endif
           enddo
         endif
@@ -223,33 +225,32 @@ c      write(*,*)mode,n1,n2,ihead,indf
           isp=isp+1
           dtastk(isp)=kx
           if(match(mode))then
-            if(itfpmatc(kx%k,kf) .lt. 0)then
-              go to 7010
-            endif
-            if(mode .eq. 5)then
-              if(ind .eq. 0)then
-                dtastk(isp)=dxnulll
-              else
-                dtastk(isp)=kxm2l(rind,0,ind,1,.false.)
+            if(itfpmatc(kx%k,kf) .ge. 0)then
+              if(mode .eq. 5)then
+                if(ind .eq. 0)then
+                  dtastk(isp)=dxnulll
+                else
+                  dtastk(isp)=kxm2l(rind,0,ind,1,.false.)
+                endif
+                return
+              elseif(mode .eq. 6)then
+                return
               endif
-              return
-            elseif(mode .eq. 6)then
-              return
+              kx=dxnull
             endif
-            kx=dxnull
- 7010       if(mode .ne. 7)then
+            if(mode .ne. 7)then
               isp=isp-1
               return
             endif
           elseif(mode .eq. 3)then
             dtastk(ispf)=kf
-            call tfefunrefc(ispf,kx%k,irtc)
+            call tfefunrefc(ispf,kx,irtc)
           elseif(mode .eq. 2)then
             if(ktflistq(kx,klx))then
               isp=ispf
               call tfgetllstkall(klx)
               dtastk(ispf)=kf
-              call tfefunrefc(ispf,kx%k,irtc)
+              call tfefunrefc(ispf,kx,irtc)
             endif
           elseif(mode .eq. 4)then
             dtastk(ispf)=kf
@@ -259,10 +260,10 @@ c      write(*,*)mode,n1,n2,ihead,indf
             else
               dtastk(isp)=kxm2l(rind,0,ind,1,.false.)
             endif
-            call tfefunrefc(ispf,kx%k,irtc)
+            call tfefunrefc(ispf,kx,irtc)
           elseif(mode .eq. 1)then
             dtastk(ispf)=kf
-            call tfefunrefc(ispf,kx,.true.,irtc)
+            call tfefunrefc(ispf,kx,irtc)
             isp=ispf-1
             if(irtc .eq. -2)then
               irtc=0
@@ -298,11 +299,8 @@ c      write(*,*)mode,n1,n2,ihead,indf
       if(irtc .ne. 0)then
         return
       endif
-      if(n2 .ge. 0 .and. n1 .gt. n2)then
-        kx=dxnulll
-        return
-      endif
-      if(n1 .lt. 0 .and. n1 .gt. n2)then
+      if(n2 .ge. 0 .and. n1 .gt. n2 .or.
+     $     n1 .lt. 0 .and. n1 .gt. n2)then
         kx=dxnulll
         return
       endif

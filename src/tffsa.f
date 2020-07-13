@@ -19,15 +19,18 @@
       use tfrbuf
       use ffsfile
       use radint
+      use geolib
+      use iso_c_binding
       implicit none
       integer*4 maxrpt,hsrchz
-      integer*8 kffs,k,kx,itwisso,iparams,kax,iutwiss
-      integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,
-     $     irtc0,it,itemon,itmon,itestr,itstr,itt,lfn,
+      type (sad_descriptor) kx
+      integer*8 kffs,itwisso,iparams,kax,iutwiss
+      integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,k,
+     $     irtc0,it,itt,lfn,
      $     iuse,l,itfuplevel,
-     $     levelr,lfnl0,lpw,meas0,mfpnta,igetgl1,lenw,
-     $     mphi2,newcor,next,nextt,nfp,nmon,
-     $     nster,nrpt1,itfpeeko,itfgetrecl,nl
+     $     levelr,lfnl0,lpw,meas0,mfpnta,igetgl,lenw,
+     $     mphi2,next,nextt,nfp,
+     $     nrpt1,itfpeeko,itfgetrecl,nl
       real*8 rmax,amus0,amus1,amusstep,apert,axi,ayi,ctime1,
      $     dpm2,dpxi,dpyi,em,emxe,emye,epxi,epyi,pspan,r,r2i,r3i,
      $     trval,rese,v,wa,wd,wl,xa,ya,xxa,xya,yya,getva,rgetgl1,
@@ -36,6 +39,7 @@
       parameter (maxrpt=32)
       character*256 word,wordp,title,case,tfgetstrv,tfgetstrs,tfgetstr
       character*(MAXPNAME) ename
+      character*(MAXPNAME) , pointer :: pename
       character*(MAXPNAME+8) name
       character*16 autofg
       character*20 str
@@ -46,7 +50,7 @@
      $     frefix,exist,init,trpt0,expnd,chguse,visit,
      $     byeall,tfvcomp,tffsinitialcond,
      $     geocal0,busy
-      save open98,exist,init,nmon,nster
+      save open98,exist,init
       save busy
       data busy /.false./
       itwisso(kk,i,j)=iftwis+kk+nlat*(i+ndim+(j-1)*ndima)-1
@@ -74,10 +78,7 @@ c     end   initialize for preventing compiler warning
         id1=1
         id2=nlat
         iorgr=1
-        geo0=0.d0
-        geo0(1,1)=1.d0
-        geo0(2,2)=1.d0
-        geo0(3,3)=1.d0
+        geo0(:,:)=geoini
         chi0(1:3)=0.d0
         if(geocal .or. chguse)then
           geocal0=geocal
@@ -90,7 +91,7 @@ c     end   initialize for preventing compiler warning
         endif
         call tffsinitparam
 c     kikuchi ... next 1 line added     (11/13/'91)
-        call corinit(newcor,nster,nmon,itstr,itestr,itmon,itemon)
+c        call corinit(newcor,nster,nmon,itstr,itestr,itmon,itemon)
 c     
         flv%measp=nlat
         mfpnt=nlat
@@ -100,6 +101,10 @@ c
         call tmast
         call twmov(1,twiss,nlat,ndim,.true.)
         if(.not. chguse)then
+          call tfevals(
+     $         '{EMITX,EMITY,EMITZ,SIGZ,SIGE}='//
+     $         'LINE[{"EMITX","EMITY","EMITZ","SIGMAZ","SIGE"},1];'//
+     $         'DP0=LINE["DDP",1];',kx,irtc)
           scale=1.d0
           scale(mfitnx)=pi2
           scale(mfitny)=pi2
@@ -169,7 +174,7 @@ c
         if(lfni .ne. 5)then
           lfn1=lfno
         else
-          if(igetgl1('$LOG$') .eq. 0)then
+          if(igetgl('$LOG$') .eq. 0)then
             lfn1=0
           else
             lfn1=lfno
@@ -196,7 +201,7 @@ c
         if(lfni .ne. 5)then
           lfn1=lfno
         else
-          if(igetgl1('$LOG$') .eq. 0)then
+          if(igetgl('$LOG$') .eq. 0)then
             lfn1=0
           else
             lfn1=lfno
@@ -318,11 +323,11 @@ c
         call tffsadjustvar
         call tfsave(word,.false.,flv%ntouch)
         call tfgeo(.false.)
-        call corfree(newcor,nster,nmon,itstr,itestr,itmon,itemon)
+c        call corfree(newcor,nster,nmon,itstr,itestr,itmon,itemon)
         go to 8900
       elseif(word .eq. 'QUIT')then
         call tfgeo(.false.)
-        call corfree(newcor,nster,nmon,itstr,itestr,itmon,itemon)
+c        call corfree(newcor,nster,nmon,itstr,itestr,itmon,itemon)
         go to 8900
       elseif(word .eq. 'ABORT')then
         call tfresetsharedmap()
@@ -339,11 +344,12 @@ c
         else
           expnd=.true.
         endif
-        it=itfpeeko(k,next)
-        call tfbeamline(k,iuse,ename,irtc)
+        it=itfpeeko(kx,next)
+c        call tfdebugprint(kx,'USE ',1)
+        call tfbeamline(kx,iuse,ename,irtc)
         if(iuse .eq. 0)then
-          if(ktfstringq(k) .or. ktfsymbolq(k))then
-            word=tfgetstrs(k,nc)
+          if(ktfstringq(kx) .or. ktfsymbolq(kx))then
+            word=tfgetstrs(kx,nc)
             iuse=hsrchz(word(1:nc))
           else
             call peekwd(word,next)
@@ -402,7 +408,9 @@ c
           call tclrpara
           dleng =rlist(elatt%aux+1)*rgetgl1('FSHIFT')
           ename=pname(iuse)
-          call tmovb(ename,flv%blname,MAXPNAME)
+          call c_f_pointer(c_loc(flv%blname),pename)
+          pename=ename
+c          call tmovb(ename,flv%blname,MAXPNAME)
           call tfsetbeamlinename(ename)
           chguse=.true.
           go to 101
@@ -437,7 +445,9 @@ c
         dleng =rlist(elatt%aux+1)*rgetgl1('FSHIFT')
         call ffs_init_pointer
         call ffs_twiss_pointer
-        call tmovb(flv%blname,ename,MAXPNAME)
+        call c_f_pointer(c_loc(flv%blname),pename)
+        ename=pename
+c        call tmovb(flv%blname,ename,MAXPNAME)
         call tfsetbeamlinename(ename)
         call tfclearlinep()
         call tfunblocksym('`FitFunction',12,.true.)
@@ -467,13 +477,13 @@ c
         call peekwd(word,next)
         if(word .eq. ' ')then
 ckikuchi ... next 5 lines added     (8/17/'90)
-          call mcmess(lfno)
-          if(frefix) then
-            call mcfre(newcor)
-          else
-            call mcfix(latt,twiss,
-     $           gammab,newcor)
-          endif
+c$$$          call mcmess(lfno)
+c$$$          if(frefix) then
+c$$$            call mcfre(newcor)
+c$$$          else
+c$$$            call mcfix(latt,twiss,
+c$$$     $           gammab,newcor)
+c$$$          endif
           go to 10
         endif
         call tffsfreefix(frefix,flv%nvar,lfno)
@@ -645,8 +655,7 @@ C     23/06/92 212101550  MEMBER NAME  TRCOD    *.FORT     M  E2FORT
             go to 10
          else if(abbrev(word,'ALIGN','_')) then
             call getwdl(word)
-            call nalign(latt,mult,
-     $           ilist(1,ifmast),word,lfno,exist)
+            call nalign(latt,mult,ilist(1,ifmast),word,exist)
             go to 10
          else
             meas0=ielm(wordp,exist)
@@ -781,7 +790,8 @@ c        go to 31
             exit
           endif
         enddo
-        call tsetg(geo0,chi0)
+        geo0(:,1:3)=tfchitogeo(chi0*scale(mfitchi1:mfitchi3))
+c        write(*,'(1p4g15.7)')(geo0(i,:),i=1,3)
         if(.not. exist)then
           go to 12
         endif
@@ -874,7 +884,7 @@ c        go to 31
         call tfsetparam
         call tfevalb('CANVASDRAW[]',kx,irtc)
 c        call tfdebugprint(kx,'CANVASDRAW[]',1)
-        if(irtc .ne. 0 .or. ktfnonstringq(kx))then
+        if(irtc .ne. 0 .or. ktfnonstringq(kx%k))then
 c          title=Tfgetstrv('TITLE')
 c          case=Tfgetstrv('CASE')
 c          call twsdrw(latt,pos,ilist(1,ifele),
@@ -891,9 +901,6 @@ c     1         title,case,exist)
         case=Tfgetstrv('CASE')
         call geodrw(rlist(ifgeo),word,lfno,title,case)
         go to 10
-      elseif(word .eq. 'TDR')then
-        call ttdr(lfno,err)
-        go to 32
       elseif(abbrev(word,'PRI_NT','_'))then
         word=' '
         call tfprint(word,lfno,.true.,itt,nextt,exist)
@@ -948,206 +955,6 @@ c     $         ilist(1,iwakepold)*8
          write(lfno,9771)xa,ya,xxa,xya,yya
  9771    format(1p,5g15.7)
          go to 10
-C   19/12/90 302031849  MEMBER NAME  CORRECT  *.FORT     M  E2FORT
-      elseif(abbrev(word,'STE_ERING','_'))then
-        call mcmess(lfno)
-        call mcstr(word,latt,
-     $       mult,ilist(1,ifmast),itstr,itestr,nster,
-     $       .false.,lfno)
-        go to 12
-      elseif(word.eq.'COUPLESTE') then
-        call mcoupste(word,latt,mult,
-     $       rlist(itstr),nster,lfno)
-        go to 12
-      elseif(word.eq.'READSTE')then
-        call mcstr(' ',latt,mult,
-     $       ilist(1,ifmast),itstr,itestr,nster,.true.,lfno)
-        call preadstr(word,latt,twiss,
-     $       mult,rlist(itstr),nster,lfno)
-        go to 12
-      elseif(word.eq.'WRITESTE')then
-        call pwrtstr(word,latt,twiss,
-     $       mult,rlist(itstr),nster,lfno)
-        go to 12
-      elseif(abbrev(word,'MON_ITOR','_'))then
-        call mcmess(lfno)
-        call mcmon(word,latt,mult,pos,
-     $       ilist(1,ifmast),itmon,itemon,nmon,.false.,
-     &             lfno)
-        go to 12
-      elseif(word.eq.'READMON')then
-        call mcmon(' ',latt,mult,pos,
-     $       ilist(1,ifmast),itmon,itemon,nmon,.true.,
-     &             lfno)
-        call preadmon(word,latt,twiss,
-     $       mult,rlist(itmon),nmon,lfno)
-        go to 12
-      elseif(word.eq.'WRITEMON')then
-        call pwrtmon(word,latt,twiss,
-     $       mult,rlist(itmon),nmon,lfno)
-        go to 12
-      elseif(word.eq.'KILL')then
-        call pkill(word,wordp,latt,mult,
-     $       rlist(itmon),nmon,rlist(itstr),
-     1       nster,lfno)
-        go to 12
-      elseif(abbrev(word,'COR_RECT','_')) then
-        call mcmess(lfno)
-        call mccor(word,wordp,
-     $       latt,pos,twiss,
-     $       gammab,mult,ilist(1,ifmast),flv%kfit,
-     $       flv%ifitp,
-     $       flv%mfitp,flv%fitval,flv%nfc,rlist(itstr),rlist(itestr),
-     $       nster,
-     $       rlist(itmon),rlist(itemon),nmon,newcor,lfno)
-        go to 12
-      elseif(abbrev(word,'KI_CK','_'))then
-        call mckick(word,wordp,latt,mult)
-        go to 12
-      elseif(abbrev(word,'CLE_AR','_')) then
-        call mclear(word,latt,rlist(itstr),nster)
-        goto 12
-      elseif(abbrev(word,'UNDO_CORRECT','_')) then
-        call pundo(latt,twiss,
-     $       gammab,0,1.d0+dp0)
-        go to 10
-      elseif(word.eq.'SUM+'.or.word.eq.'SUM-'.or.word.eq.'SUM'.or.
-     1       abbrev(word,'SUMC_LR','_')) then
-        title=Tfgetstrv('TITLE')
-        case=Tfgetstrv('CASE')
-        call pstati(word,latt,twiss,
-     $       rlist(itmon),rlist(itemon),nmon,
-     1       rlist(itstr),nster,title,case,lfno)
-        go to 12
-      elseif(abbrev(word,'STO_RE','_')) then
-        call mstore(word,latt,twiss,
-     $       rlist(itstr),nster,rlist(itmon),
-     1       rlist(itemon),nmon)
-        go to 12
-      elseif(abbrev(word,'RECA_LL','_')) then
-        call mrecal(word,latt,twiss,
-     $       rlist(itstr),nster,rlist(itmon),rlist(itemon),nmon,lfno)
-        go to 12
-      elseif(abbrev(word,'DIR_ECTORY','_'))then
-        call mfdir(word,lfno)
-        goto 12
-      elseif(abbrev(word,'DEL_ETE','_'))then
-        call mfdel(word)
-        goto 12
-      elseif(word.eq.'ADD'.or.word.eq.'SUB'.or.word.eq.'SWAP'
-     z       .or.abbrev(word,'FAC_TOR','_')
-     z       .or.abbrev(word,'DIV_IDE','_')
-     1       .or.word.eq.'PUSH'.or.word.eq.'DROP'            ) then
-        call mstack(word,latt,twiss,
-     $       rlist(itstr),nster,rlist(itmon),
-     1       rlist(itemon),nmon)
-        goto 12
-      elseif(word.eq.'TRIM') then
-        call ptrim(word,latt,twiss,rlist(itmon),
-     $       rlist(itemon),nmon,lfno)
-        goto 12
-      elseif(word.eq.'TCOD') then
-        call mcrcod(latt,twiss,mult,
-     $       rlist(itmon),rlist(itemon),nmon,
-     $       .false.,.false.,.true.,lfno)
-        go to 10
-      elseif(word.eq.'MCOD') then
-        call mcrcod(latt,twiss,mult,
-     $       rlist(itmon),rlist(itemon),
-     1       nmon,.true.,.false.,.true.,lfno)
-        go to 10
-      elseif(abbrev(word,'EPS_ILON','_')) then
-        call mcepst(word,lfno)
-        go to 12
-      elseif(abbrev(word,'DPS_HIFT','_')) then
-        call mdpmax(word,lfno)
-        go to 12
-      elseif(abbrev(word,'ECOR_R','_')) then
-        title=Tfgetstrv('TITLE')
-        case=Tfgetstrv('CASE')
-        call pecorr(word,latt,pos,
-     $       rlist(iferrk),title,case,lfno)
-        goto 12
-      elseif(word .eq. 'BUMP')then
-        call getwdl(word)
-        call pcbak(latt,twiss)
-        if(abbrev(word,'I_TERATION','_')) then
-          call getwdl(word)
-          call pbumps(rlist(itstr),nster,flv%kfit,flv%ifitp,flv%mfitp,
-     $         flv%nfc,.true.)
-          call pbump(latt,twiss,
-     $         gammab,0,mult,rlist(itstr),
-     1               rlist(itestr),nster,flv%kfit,flv%ifitp,flv%mfitp,
-     $         flv%fitval,flv%nfc,
-     1               .true.,.false.,.false.,lfno)
-          call pbumps(rlist(itstr),nster,flv%kfit,flv%ifitp,flv%mfitp,
-     $         flv%nfc,.false.)
-        else
-          call pbumps(rlist(itstr),nster,flv%kfit,flv%ifitp,flv%mfitp,
-     $         flv%nfc,.true.)
-          call pbump(latt,twiss,
-     $         gammab,0,mult,rlist(itstr),
-     1               rlist(itestr),nster,flv%kfit,flv%ifitp,flv%mfitp,
-     $         flv%fitval,flv%nfc,
-     1               .false.,.false.,.false.,lfno)
-          call pbumps(rlist(itstr),nster,flv%kfit,flv%ifitp,flv%mfitp,
-     $         flv%nfc,.false.)
-        endif
-        go to 12
-      elseif(word.eq.'LBUMP') then
-        call getwdl(word)
-        call pcbak(latt,twiss)
-        call pbumps(rlist(itstr),nster,flv%kfit,flv%ifitp,flv%mfitp,
-     $       flv%nfc,.true.)
-        call pbump(latt,twiss,gammab,
-     $       0,mult,rlist(itstr),rlist(itestr),
-     1             nster,flv%kfit,flv%ifitp,flv%mfitp,flv%fitval,
-     $       flv%nfc,.false.,.true.,
-     1             .false.,lfno)
-        call pbumps(rlist(itstr),nster,flv%kfit,flv%ifitp,flv%mfitp,
-     $       flv%nfc,.false.)
-        go to 12
-      elseif(abbrev(word,'TOR_','_')) then
-        call ptol(word,latt,mult,
-     $       ilist(1,ifmast),twiss,
-     $       gammab,0,1.d0+dp0,
-     1            rlist(itstr),nster,lfno)
-        goto 12
-      elseif(word.eq.'VBUMP') then
-        call pvbump(word,wordp,latt,twiss,
-     $       mult,ilist(1,ifmast),rlist(itstr),nster,
-     $       nlist,flv%kfit,flv%ifitp,flv%mfitp,flv%fitval,flv%nfc,lfno)
-        goto 12
-      elseif(word.eq.'BTUNE') then
-        call ffs_init_sizep
-        title=Tfgetstrv('TITLE')
-        case=Tfgetstrv('CASE')
-        call petune(word,latt,twiss,
-     $       mult,gammab,rlist(ifsize),nlist,
-     $       rlist(itstr),rlist(itestr),nster,title,case,lfno)
-        goto 12
-      elseif(word.eq.'BALS') then
-        title=Tfgetstrv('TITLE')
-        case=Tfgetstrv('CASE')
-        call pasex(word,wordp,
-     $       latt,pos,twiss,
-     $       mult,ilist(1,ifmast),gammab,title,case,
-     $       rlist(itstr),rlist(itestr),nster,rlist(itmon),
-     $       rlist(itemon),nmon,lfno)
-        go to 12
-      elseif(word.eq.'PETIN'.or.word.eq.'PETOUT') then
-        call petcod(word,twiss,rlist(itmon),nmon)
-        goto 12
-      elseif(abbrev(word,'WR_ITE','_')) then
-        call getwdl(word)
-        if(word.eq.'RMATQ'.or.word.eq.'RMAT') then
-          call pwrite(word,latt,twiss,
-     $         gammab,pos,rlist(itmon),nmon)
-        elseif(abbrev(word,'LAT_TICE','_').or.
-     1         abbrev(word,'PS_NAME','_')) then
-          call pwrlat(word,wordp,lfno)
-        endif
-        goto 12
       else
         cmd=.true.
       endif
@@ -1160,7 +967,7 @@ C   19/12/90 302031849  MEMBER NAME  CORRECT  *.FORT     M  E2FORT
         lfn1=lfno
         call tfevalb('WAKECOMMAND[]',kx,irtc)
         lfn1=lfnl0
-        if(irtc .ne. 0 .or. kx .ne. ktftrue)then
+        if(irtc .ne. 0 .or. kx%k .ne. ktftrue)then
           go to 2
         endif
         go to 10
@@ -1265,7 +1072,7 @@ c        rlist(itlookup('DP',ivtype))=dpmax
       else
         go to 10
       endif
- 32   if(err)then
+      if(err)then
         go to 2
       else
         go to 10
@@ -1560,24 +1367,29 @@ c        dpm2=rlist(ktlookup('DPM'))
       subroutine tffssaveparams(icmd,ilattp,err)
       use tfstk
       use ffs, local_ilattp=>ilattp
+      use iso_c_binding
       implicit none
 c nlocal = mcommon in TFFSLOCAL.inc
       integer*8 isave,ilattp
+      integer*8 , pointer ::kffv(:)
       integer*4 icmd,nxh
       logical*4 err
       nxh=int((sizeof(ffv)+7)/8)
+      call c_f_pointer(c_loc(ffv),kffv,[nxh])
       err=.false.
       if(icmd .eq. 0)then
         isave=ktaloc(nxh+2)
         klist(isave)=ilattp
         klist(isave+1)=iffssave
-        call tmov(ffv,rlist(isave+2),nxh)
+        klist(isave+2:isave+nxh+1)=kffv
+c        call tmov(ffv,rlist(isave+2),nxh)
         iffssave=isave
       elseif(icmd .eq. 1)then
         if(iffssave .gt. 0)then
           isave=iffssave
           ilattp=klist(isave)
-          call tmov(rlist(isave+2),ffv,nxh)
+          kffv=klist(isave+2:isave+nxh+1)
+c          call tmov(rlist(isave+2),ffv,nxh)
           iffssave=klist(isave+1)
           call tfree(isave)
         else
@@ -1601,7 +1413,8 @@ c nlocal = mcommon in TFFSLOCAL.inc
         do while(iffssave .gt. 0)
           isave=iffssave
           ilattp=klist(isave)
-          call tmov(rlist(isave+2),ffv,nxh)
+          kffv=klist(isave+2:isave+nxh+1)
+c          call tmov(rlist(isave+2),ffv,nxh)
           iffssave=klist(isave+1)
           call tfree(isave)
         enddo
@@ -1610,7 +1423,8 @@ c nlocal = mcommon in TFFSLOCAL.inc
         isave=klist(iffssave+1)
         do while(isave .gt. 0)
           ilattp=klist(iffssave)
-          call tmov(rlist(iffssave+2),ffv,nxh)
+          kffv=klist(iffssave+2:iffssave+nxh+1)
+c          call tmov(rlist(iffssave+2),ffv,nxh)
           call tfree(iffssave)
           iffssave=isave
           isave=klist(iffssave+1)
@@ -1642,15 +1456,14 @@ c nlocal = mcommon in TFFSLOCAL.inc
       implicit none
       type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: klj
-      integer*8 kx
+      type (sad_descriptor) kx,iaini
       integer*4 irtc,lfno,n,i,j,nfr1
       logical*4 err
-      integer*8 iaini
-      data iaini/0/
+      data iaini%k/0/
       tffsinitialcond=.false.
       err=.true.
-      if(iaini .eq. 0)then
-        iaini=ktfsymbolz('InitialOrbits',13)
+      if(iaini%k .eq. 0)then
+        iaini%k=ktfsymbolz('InitialOrbits',13)
       endif
       call tfsyeval(iaini,kx,irtc)
       if(irtc .ne. 0)then
@@ -1696,7 +1509,7 @@ c            call tclr(uini(1,0),28)
         enddo
         tffsinitialcond=.true.
         err=.false.
-      elseif(kx .eq. ktfoper+mtfnull .or. ktfsymbolq(kx))then
+      elseif(kx%k .eq. ktfoper+mtfnull .or. ktfsymbolq(kx))then
         err=.false.
         return
       endif
@@ -1730,7 +1543,8 @@ c            call tclr(uini(1,0),28)
       type (sad_rlist), pointer :: kle
       type (sad_symdef), pointer :: symd
       integer*8 iet
-      integer*4 lfno,i,j,k,nk,m,me,nc, ie,ik,irtc
+      integer*4 ,intent(in):: lfno
+      integer*4 i,j,k,nk,m,me,nc, ie,ik,irtc
       character*(MAXPNAME) key,tfgetstrs
       type (sad_descriptor) kx,ki,kk,ke
       type (sad_descriptor) , save :: itfelv,itfcoupk

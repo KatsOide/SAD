@@ -3,11 +3,12 @@
       use ffs
       use ffs_pointer
       use tffitcode
+      use sad_main,only:iaidx
       implicit none
-      integer*4 k,ip,m,n,ia
+      integer*4 k,ip
       real*8 trans(4,5),trans1(6,12),cod(6),beam(21)
       real*8 theta,r,pfi,emxi,emyi
-      ia(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
+c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       ip=nlat*ndim+k
       beam=0.d0
       r=gammab(1)/gammab(k)
@@ -18,25 +19,25 @@
       endif
       emxi=emx*r
       emyi=emy*r
-      beam(ia(1,1))= twiss2(ip,2)*emxi+twiss2(ip,7)**2*pfi
+      beam(iaidx(1,1))= twiss2(ip,2)*emxi+twiss2(ip,7)**2*pfi
 c      write(*,*)'tfbeam ',emxi,pfi,twiss2(ip,2),twiss2(ip,7),
 c     $     beam(1)
-      beam(ia(1,2))=-twiss2(ip,1)*emxi+twiss2(ip,7)*twiss2(ip,8)*pfi
-      beam(ia(1,3))= twiss2(ip,7)*twiss2(ip,9)*pfi
-      beam(ia(1,4))= twiss2(ip,7)*twiss2(ip,10)*pfi
-      beam(ia(2,2))=(1.d0+twiss2(ip,1)**2)/twiss2(ip,2)*emxi
+      beam(iaidx(1,2))=-twiss2(ip,1)*emxi+twiss2(ip,7)*twiss2(ip,8)*pfi
+      beam(iaidx(1,3))= twiss2(ip,7)*twiss2(ip,9)*pfi
+      beam(iaidx(1,4))= twiss2(ip,7)*twiss2(ip,10)*pfi
+      beam(iaidx(2,2))=(1.d0+twiss2(ip,1)**2)/twiss2(ip,2)*emxi
      1             +twiss2(ip,8)**2*pfi
-      beam(ia(2,3))= twiss2(ip,8)*twiss2(ip,9)*pfi
-      beam(ia(2,4))= twiss2(ip,8)*twiss2(ip,10)*pfi
-      beam(ia(3,3))= twiss2(ip,5)*emyi+twiss2(ip,9)**2*pfi
-      beam(ia(3,4))=-twiss2(ip,4)*emyi+twiss2(ip,9)*twiss2(ip,10)*pfi
-      beam(ia(4,4))=(1.d0+twiss2(ip,4)**2)/twiss2(ip,5)*emyi
+      beam(iaidx(2,3))= twiss2(ip,8)*twiss2(ip,9)*pfi
+      beam(iaidx(2,4))= twiss2(ip,8)*twiss2(ip,10)*pfi
+      beam(iaidx(3,3))= twiss2(ip,5)*emyi+twiss2(ip,9)**2*pfi
+      beam(iaidx(3,4))=-twiss2(ip,4)*emyi+twiss2(ip,9)*twiss2(ip,10)*pfi
+      beam(iaidx(4,4))=(1.d0+twiss2(ip,4)**2)/twiss2(ip,5)*emyi
      1             +twiss2(ip,10)**2*pfi
-      beam(ia(1,6))= twiss2(ip,7)*pfi
-      beam(ia(2,6))= twiss2(ip,8)*pfi
-      beam(ia(3,6))= twiss2(ip,9)*pfi
-      beam(ia(4,6))= twiss2(ip,10)*pfi
-      beam(ia(6,6))= pfi
+      beam(iaidx(1,6))= twiss2(ip,7)*pfi
+      beam(iaidx(2,6))= twiss2(ip,8)*pfi
+      beam(iaidx(3,6))= twiss2(ip,9)*pfi
+      beam(iaidx(4,6))= twiss2(ip,10)*pfi
+      beam(iaidx(6,6))= pfi
       cod(6)=0.d0
       call qtent(trans,cod,k,0,.false.)
       call qchg(trans,cod,0.d0,0.d0,theta,.true.)
@@ -144,7 +145,7 @@ c     $     beam(1)
       integer*4 i
       call ffs_init_sizep
       do i=1,nlat
-        call tfbeam(i,0.d0,beamsize(1,i))
+        call tfbeam(i,0.d0,beamsize(:,i))
       enddo
       updatesize=.true.
       return

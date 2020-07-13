@@ -174,6 +174,7 @@ Execvpe[`file_String, {`argv___String}, {`env___String},
 	If[path === "", {"/bin", "/usr/bin"},
 	  Map[path[#[[1]] + 1, #[[2]] - 1]&,
 	    Partition[Flatten[{0, StringPosition[path, ":"], 0}], 2]]]]],
+(*    Print["Execvpe ",{file, {argv}, {env}, opt}]; *)
     Execve[file, {argv}, {env}, opt]]; Null);
 Execvp[`file_String, {`argv___String},
   `opt:((_Rule|_RuleDelayed)...)] := Execvpe[file, {argv}, Environments[], opt];
@@ -497,6 +498,10 @@ DateString$::use="Use DateString[] instead of DateString.";
 f_?(Switch[#,FFSFlag|Definition|Unprotect|Clear|SetDelayed,False,_,True]&)[a___,DateString,b___]^:=((* Message[DateString$::use];*)f[a,DateString$[],b]);
 DateString[x___]:=DateString$[x];
 SetAttributes[{DateString},Constant];
+Range[`n_Real]:=(Range[n]=Range[1,n,1]);
+Range[`n1_Real,`n2_Real]:=(Range[n1,n2]=Range[n1,n2,1]);
+Range[x__Real]:=(Range[x]=Range$[x]);
+
 
 TimeZoneOffset = +540; (* SAD Default TimeZone: Asia/Tokyo[JST] *)
 (TimeZoneOffset = tz_) ^:= SetTimeZone[tz];
@@ -547,9 +552,9 @@ BidirectionalPipe[`cmd_String, {`argv___String},
       {Rule[Environment|Environments, {___String}], RuleDelayed[PID, _], _}];
     env = If[env <=> {}, env[[1,2]], Environments[]];
     Check[p1 = Pipe[],
-      Message[9, System::error, "Cannot create pipe"]; Return[$Failed]];
+      Message[9, System::error, "Cannot create pipe 1"]; Return[$Failed]];
     Check[p2 = Pipe[],
-      Message[9, System::error, "Cannot create pipe"]; Return[$Failed]];
+      Message[9, System::error, "Cannot create pipe 2"]; Return[$Failed]];
     Switch[$pid = Fork[],
       -1, ( (* Error *)
 	Message[9, System::error, "Cannot fork process"];
@@ -557,10 +562,11 @@ BidirectionalPipe[`cmd_String, {`argv___String},
       0,  ( (* Child *)
 	Check[SetLUN2FD[p1[[1]], 0], Exit[127]];
 	Check[SetLUN2FD[p2[[2]], 1], Exit[127]];
-	Close/@p1; Close/@p2;
+ 	Close/@p1; Close/@p2;
 	(* Force activate SIGPIPE *)
 	SigAction[SIGPIPE, Action->Default];
 	SigProcMask[UnBlock, SIGPIPE];
+        Print["BD-1 ",{p1,p2}];
 	If[{argv} === {},
 	  Execvpe[cmd, {cmd},  env, Null@@op],
 	  Execvpe[cmd, {argv}, env, Null@@op]];

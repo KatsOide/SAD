@@ -39,7 +39,7 @@
      $     a13,a23,b13,b23,
      $     cosmux,cosmuy,sinmux,sinmuy,
      $     amux,amuy,dcosmux,dcosmuy,
-     $     xb,xe,xp,fr,fra,frb,tr,
+     $     xb,xe,xp,fr,fra,frb,tr(4,5),
      $     dpsix,dpsiy,cosx,sinx,cosy,siny,
      $     x11,x22,y11,y22
       integer*4 , intent(in) :: idp

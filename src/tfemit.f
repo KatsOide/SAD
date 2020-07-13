@@ -34,9 +34,10 @@
           return
         endif
         is=int(klr%rbody(1))
-        ie=int(klr%rbody(2))
-        if(ie .lt. 0)then
-          ie=nlat+ie+1
+        if(klr%rbody(2) .lt. 0.d0)then
+          ie=nlat-int(abs(klr%rbody(2)))+1
+        else
+          ie=int(klr%rbody(2))
         endif
       endif
       nel=ie-is+1

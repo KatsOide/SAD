@@ -236,9 +236,9 @@ c          call tfdebugprint(kh,'storeshared-head',1)
           do j=isp0,isp
             if(ktastk(j) .eq. kh)then
               if(ktfstringq(kh))then
-                klist(kap+1)=ktfstring++ktastk2(j)
+                klist(kap+1)=ktfstring+ktastk2(j)
               else
-                klist(kap+1)=ktflist++ktastk2(j)+1
+                klist(kap+1)=ktflist+ktastk2(j)+1
               endif
 c              klist(kap+1)=iand(ktfmask,kh)+ktastk2(j)
               exit

@@ -67,7 +67,7 @@ c      endif
         endif
         isp0=isp
         kh=lista%head
-        itflistmat=itfpmat(kh,listp%head%k)
+        itflistmat=itfpmat(kh,listp%head)
         if(itflistmat .lt. 0)then
           return
         endif
@@ -458,10 +458,10 @@ c        write(*,*)'patmat-result ',itfpatmat,pat%mat
         kp=kp0(mp1)
       endif
       mstk0=mstk
+      ispf=isp20
       if(kpp .eq. 0)then
         isp1a=isp10
         isp2a=isp20
-        ispf=isp20
         if(map .eq. mp1+1)then
           do while(ispf .ge. isp1a-1)
             iop0=iordless
@@ -810,7 +810,7 @@ c          write(*,*)'==> ',ix
      $           iand(lsimplepat,listp%attr) .ne. 0)then
               ix=-1
             else
-              ix=itflistmat(ktastk(isp1),listp)
+              ix=itflistmat(dtastk(isp1),listp)
             endif
           endif
         elseif(listp%head%k .eq. ktfoper+mtfnull .and.

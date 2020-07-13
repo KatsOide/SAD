@@ -17,7 +17,7 @@
         n2=1
         ispf=isp-1
       elseif(narg .eq. 3)then
-        call tflevelspec(ktastk(isp),n1,n2,irtc)
+        call tflevelspec(dtastk(isp),n1,n2,irtc)
         if(irtc .ne. 0)then
           return
         endif
@@ -94,7 +94,7 @@
           endif
         enddo
  1000   call tflocald(kf)
-        call tflocal1(k)
+        call tflocal1(k%k)
         kx%k=ktfoper+mtfnull
         isp=isp2-1
         irtc=0
@@ -162,7 +162,7 @@
       kf=dtfcopy(dtastk(isp1+1))
       kl=dtfcopy(dtastk(isp1+2))
       call tflevelstk(kl,kf,kx,
-     $     0,maxgeneration,3,0,0.d0,ihead,mstk,irtc)
+     $     0,maxgeneration,3,0,(/0.d0/),ihead,mstk,irtc)
       call tflocald(kf)
       call tflocald(kl)
       return
@@ -204,9 +204,9 @@
       endif
       kf=dtfcopy(dtastk(ispf))
       kl=dtfcopy(dtastk(ispf+1))
-      call tflevelstk(kl,kf,kx,n1,n2,2,0,0.d0,1,mstk,irtc)
-      call tflocal(kf)
-      call tflocal(kl)
+      call tflevelstk(kl,kf,kx,n1,n2,2,0,[0.d0],1,mstk,irtc)
+      call tflocald(kf)
+      call tflocald(kl)
       return
       end
 
@@ -311,7 +311,7 @@
         endif
         if(narg .eq. 3 .or. narg .eq. 4)then
           ispf=ispa-narg+2
-          call tflevelspec(ktastk(ispf+1),n1,n2,irtc)
+          call tflevelspec(dtastk(ispf+1),n1,n2,irtc)
           if(irtc .ne. 0)then
             return
           endif
@@ -366,7 +366,7 @@
                     else
                       isp=isp0
                       do i=ihead,nl
-                        if(itfpmat(kll%dbody(i),kf%k) .ge. 0)then
+                        if(itfpmat(kll%dbody(i),kf) .ge. 0)then
                           ii=i
                           go to 220
                         endif
@@ -414,10 +414,10 @@
       kf=dtfcopy(dtastk(ispf))
       kl=dtfcopy(dtastk(ispf-1))
       ind=0
-      call tflevelstk(kl,kf%k,kx,
+      call tflevelstk(kl,kf,kx,
      $     n1,n2,5+icases,ind,rind,ihead,ispmax,irtc)
       call tflocald(kf)
-      call tflocal(kl)
+      call tflocald(kl)
       if(irtc .ne. 0)then
         return
       endif
@@ -540,7 +540,7 @@ c      write(*,*)'tfflattenstk ',sad_loc(kl%head)
         irtc=itfmessage(9,'General::narg','"2, 3, or 4"')
         return
       endif
-      if(ktfnonrealq(ktastk(isp1+1)))then
+      if(ktfnonrealq(dtastk(isp1+1)))then
         if(narg .ne. 4)then
           irtc=-1
           return
@@ -558,7 +558,7 @@ c      write(*,*)'tfflattenstk ',sad_loc(kl%head)
           j=isp1+3
         endif
       endif
-      call tfeevalref(ktastk(j),kx,irtc)
+      call tfeevalref(dtastk(j),kx,irtc)
       return
       end
 
@@ -572,7 +572,7 @@ c      write(*,*)'tfflattenstk ',sad_loc(kl%head)
         return
       endif
       do i=isp1+2,isp-1,2
-        call tfeevalref(ktastk(i),kxi,irtc)
+        call tfeevalref(dtastk(i),kxi,irtc)
         if(irtc .ne. 0)then
           return
         endif
@@ -595,12 +595,12 @@ c      write(*,*)'tfflattenstk ',sad_loc(kl%head)
         return
       endif
       do i=isp1+1,isp-1,2
-        call tfeevalref(ktastk(i),kxi,irtc)
+        call tfeevalref(dtastk(i),kxi,irtc)
         if(irtc .ne. 0)then
           return
         endif
         if(ktftrueq(kxi%k))then
-          call tfeevalref(ktastk(i+1),kx,irtc)
+          call tfeevalref(dtastk(i+1),kx,irtc)
           return
         endif
       enddo
@@ -702,7 +702,7 @@ c      write(*,*)'tfflattenstk ',sad_loc(kl%head)
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
-      call tfeevalref(ktastk(isp),kx,irtc)
+      call tfeevalref(dtastk(isp),kx,irtc)
       call tfcatchreturn(irtcthrow,kx,irtc)
       return
       end
@@ -845,7 +845,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
       if(mode .eq. 0)then
         do i=isp0+1,isp
           do j=1,kelm
-            if(itfpmatc(ktastk(i),ktastk(isp2+j)) .ge. 0)then
+            if(itfpmatc(dtastk(i),dtastk(isp2+j)) .ge. 0)then
               km=j
               go to 10
             endif

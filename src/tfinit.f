@@ -170,15 +170,17 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       if(ibz .ne. 0)then
         if(ibz .lt. i)then
           tfinsol=.true.
-        elseif(ibz .gt. i)then
+        else
           ld=idelc(i)
-          if(idtype(ld) .ne. icSOL)then
-            tfinsol=.true.
+          if(ibz .gt. i)then
+            if(idtype(ld) .ne. icSOL)then
+              tfinsol=.true.
+            elseif(rlist(idval(ld)+ky_BND_SOL) .eq. 0.d0)then
+              tfinsol=.true.
+            endif            
           elseif(rlist(idval(ld)+ky_BND_SOL) .eq. 0.d0)then
             tfinsol=.true.
-          endif            
-        else
-          if(direlc(i) .lt. 0.d0)then
+          elseif(direlc(i) .lt. 0.d0)then
             tfinsol=.true.
           endif
         endif

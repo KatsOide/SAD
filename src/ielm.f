@@ -61,9 +61,10 @@
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer,only:ielma
       implicit none
       type (sad_descriptor) kx
-      integer*4 lw,iord,ln,i,j,ip,im,lfn
+      integer*4 lw,iord,ln,i,ip,im,lfn
       character*(*) word
       character*64 ordw
       character*(MAXPNAME) name
@@ -158,15 +159,7 @@
           return
         endif
       endif
-      if(trpt)then
-        ielmf=min(max(i+ioff,1),nlat)
-      else
-        j=i+ioff
-        do while(j .le. 0)
-          j=j+nlat
-        enddo
-        ielmf=mod(j-1,nlat)+1
-      endif
+      ielmf=ielma(i+ioff)
       exist=.true.
       return
       end
@@ -278,13 +271,13 @@ c     *     by tfinit(), tfinimult() initialization
       implicit none
       integer*4 nc,i,ih,nh
       parameter (nh=nelmhash)
-      integer*1 name(nc)
+      character name(nc)
       ih=0
       do i=1,nc
-        if(name(i) .eq. ichar(' '))then
+        if(name(i) .eq. ' ')then
           exit
         endif          
-        ih=ih+name(i)
+        ih=ih+ichar(name(i))
       enddo
       itehash=iand(ih,nh)
       return

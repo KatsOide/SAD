@@ -136,21 +136,24 @@ c     Including pi = m_pi
       return
       end
 
-      real*8 function erf(x)
+      real*8 pure function ferf(x)
       implicit none
-      real*8 x,gammap
-      erf=sign(gammap(.5d0,x**2),x)
+      real*8 , intent(in)::x
+c      ferf=sign(gammap(.5d0,x**2),x)
+      ferf=erf(x)
       return
       end
 
-      real*8 function erfc(x)
+      real*8 pure function ferfc(x)
       implicit none
-      real*8 x,gammaq,gammap
-      if(x .lt. 0.d0)then
-        erfc=1.d0+gammap(.5d0,x**2)
-      else
-        erfc=gammaq(.5d0,x**2)
-      endif
+      real*8 ,intent(in):: x
+      ferfc=erfc(x)
+c      real*8 x,gammaq,gammap
+c      if(x .lt. 0.d0)then
+c        erfc=1.d0+gammap(.5d0,x**2)
+c      else
+c        erfc=gammaq(.5d0,x**2)
+c      endif
       return
       end
       

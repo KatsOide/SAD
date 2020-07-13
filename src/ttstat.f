@@ -123,7 +123,7 @@ c        s6=g(i)*(2.d0+g(i))
         call tmov(ss,ss1,36)
         call tbdecoup(ss1,param,param1,temix,temiy,temix1,temiy1,sigp)
 c Kikuchi added one line following. 9APR'93
-        call putsti(temix,temiy,0d0,0d0,0d0,0d0,0d0,0d0,.false.,.true.)
+ccc        call putsti(temix,temiy,0d0,0d0,0d0,0d0,0d0,0d0,.false.,.true.)
         write(lfno,9006)temix,param(2),param(1),param(7),param(8),
      1                  temiy,param(5),param(4),param(9),param(10),
      1                  temix1,param1(2),param1(1),param1(7),param1(8),

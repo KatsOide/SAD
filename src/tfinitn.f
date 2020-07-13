@@ -399,7 +399,7 @@ c        write(*,*)'tftocontext ',str%str(1:nc)
       isp0=isp
       do i=1,m
         ki=kl%dbody(i)
-        if(.not. tfcontextqk(ki))then
+        if(.not. tfcontextqk(ki%k))then
           isp=isp0
           go to 9000
         endif
@@ -830,7 +830,7 @@ c     Initialize map/ieval array
       ieval(2)=0
       ieval(3)=0
       ieval(4)=0
-      i=itfunaloc('Range',62,3,map,ieval,2)
+      i=itfunaloc('Range$',62,3,map,ieval,2)
       map(1)=1
       i=itfunaloc('Re',63,1,map,ieval,2)
       i=itfunaloc('Im',64,1,map,ieval,2)
@@ -879,7 +879,7 @@ c      i=itfunaloc('SeedRandom',89,1,map,ieval,0)
       i=itfunaloc('SaveSharedMap',90,0,map,ieval,0)
 c      i=itfunaloc('GaussRandom',90,1,map,ieval,0)
       ieval(2)=1
-      i=itfunaloc('Switch',91,1,map,ieval,1)
+      i=itfunaloc('Switch',nfunswitch,1,map,ieval,1)
       ieval(2)=0
       i=itfunaloc('Sort',92,2,map,ieval,1)
       i=itfunaloc('Union1',93,2,map,ieval,1)
@@ -935,7 +935,7 @@ c      i=itfunaloc('ToDate',112,1,map,ieval,1)
       ieval(2)=1
       ieval(3)=1
       i=itfunaloc('Check',125,2,map,ieval,0)
-      i=itfunaloc('Which',126,2,map,ieval,0)
+      i=itfunaloc('Which',nfunwhich,2,map,ieval,0)
       ieval(1)=0
       ieval(2)=0
 c      i=itfunaloc('System',127,1,map,ieval,0)

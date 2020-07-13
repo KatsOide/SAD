@@ -576,6 +576,18 @@ c     write(*,*)
       return
       end subroutine
 
+      subroutine teigenc(a,w,ceig,n,ndim)
+      use iso_c_binding
+      implicit none
+      integer*4 ,intent(in):: n,ndim
+      real*8 ,intent(inout):: a(ndim,n),w(n,n)
+      real*8 ,pointer :: eig(:,:)
+      complex*16 ,target ::ceig(n)
+      call c_f_pointer(c_loc(ceig),eig,[2,n])
+      call teigen(a,w,eig,n,ndim)
+      return
+      end subroutine
+
       end module
 
       subroutine teigen(a,w,eig,n,ndim)

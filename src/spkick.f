@@ -3,13 +3,16 @@
       use tfstk
       use ffs
       use tffitcode
+      use iso_c_binding
       implicit none
       integer*4 nzmax,ntheta
       parameter (nzmax=1000,ntheta=12)
-      integer*8 latt(nlat),itt,irho,iphi,iq,iphis,iex,iey,iez
+      integer*8 latt(nlat),itt,irho,iphi,iq,iphis,iey,iez
       integer*4 np,kturn,l,kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
      $     sx(np0),sy(np0),sz(np0),zz(np0)
+      real*8 ,pointer ::rho(:,:,:),phi(:,:,:),q(:,:),phis(:),
+     $     ex(:,:,:),ey(:,:,:),ez(:,:,:)
       real*8 al,radius,alx
       integer*4 i,npz,nx,nz,nz1,nz2,nza,nrho,nphi,nq
       real*8 v0,gamma0,dx,dy,zc(nzmax),zf(nzmax)
@@ -33,36 +36,39 @@ c      call spapert(np,x,px,y,py,z,g,dv,radius,kptbl)
       do i=1,np
         ilist(i,itt)=i
       enddo
-      call spsort(np,ilist(1,itt),zz)
+      call spsort(np,ilist(1:np,itt),zz)
       call spmesh(nx,nz,nz1,nz2,dx,dy,zc,zf,np,npz,x,y,zz,radius,
-     $     ilist(1,itt),nzmax)
+     $     ilist(1:np,itt),nzmax)
       nza=nz2-nz1+1
       nrho=(2*nx)**2*nza
       irho=ktaloc(nrho)
-      call tclr(rlist(irho),nrho)
-c      call tfmemcheckprint('spkick0 ')
-      call sprho(rlist(irho),nx,nz,nz1,nz2,dx,dy,zc,
-     $     np,npz,x,y,zz,ilist(1,itt))
+      call c_f_pointer(c_loc(rlist(irho)),rho,[2*nx,2*nx,nza])
+      rho=0.d0
+      call sprho(rho,nx,nz,nz1,nz2,dx,dy,zc,
+     $     np,npz,x,y,zz,ilist(1:np,itt))
       nphi=(2*nx+2)**2*(nza+2)
       iphi=ktaloc(nphi)
+      call c_f_pointer(c_loc(rlist(iphi)),phi,[2*nx+2,2*nx,nza+2])
+      phi=0.d0
       nq=ntheta*nz
       iq=ktaloc(nq)
+      call c_f_pointer(c_loc(rlist(iq)),q,[ntheta,nz])
+      q=0.d0
       iphis=ktaloc(nq)
-      call tclr(rlist(iphi),nphi)
-      call tclr(rlist(iphis),nq)
-      call tclr(rlist(iq),nq)
-      call spphi(rlist(irho),rlist(iphi),
-     $     rlist(iq),rlist(iphis),
+      call c_f_pointer(c_loc(rlist(iphis)),phis,[nq])
+      phis=0.d0
+      call spphi(rho,phi,q,phis,
      $     nx,nz,nz1,nz2,np,dx,dy,zc,zf,radius,ntheta)
-      iex=irho
+      call c_f_pointer(c_loc(rlist(irho)),ex,[2*nx,2*nx,nza])
       iey=ktaloc(nrho)
+      call c_f_pointer(c_loc(rlist(iey)),ey,[2*nx,2*nx,nza])
       iez=ktaloc(nrho)
-      call spfield(rlist(iphi),
-     $     rlist(iex),rlist(iey),rlist(iez),
+      call c_f_pointer(c_loc(rlist(iez)),ez,[2*nx,2*nx,nza])
+      call spfield(phi,ex,ey,ez,
      $     nx,nz,nz1,nz2,dx,dy,zc,gamma0)
       call spdeflect(np,x,px,y,py,z,g,dv,zz,
-     $     rlist(iex),rlist(iey),rlist(iez),
-     $     nx,nz,nz1,nz2,npz,ilist(1,itt),dx,dy,zc,
+     $     ex,ey,ez,
+     $     nx,nz,nz1,nz2,npz,ilist(1:np,itt),dx,dy,zc,
      $     al,alx,v0)
       call tfree(int8(iphis))
       call tfree(int8(iq))

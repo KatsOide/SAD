@@ -23,7 +23,7 @@ c      judge if two character strings overlap or not
         endif
       elseif(cs(4).eq.-1..and.cs(6).lt.0.
      &                   .or.cs(4).eq.1. .and.cs(6).ge.0.) then
-        ln=min(cs(5),csa(5))
+        ln=int(min(cs(5),csa(5)))
         x=cs(1)+cl *2.*ln*cos(cs(3))
         y=cs(2)+cl *2.*ln*sin(cs(3))
         xa=csa(1)+cla*2.*ln*cos(csa(3))

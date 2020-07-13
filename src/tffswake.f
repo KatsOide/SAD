@@ -5,12 +5,15 @@
       use ffs_fit
       use ffs_wake
       use tffitcode
+      use iso_c_binding
       implicit none
       type (ffs_bound) fbound,ibound,ibound1
       integer*8 iwbufxy,iwbufxyl,iwl,iwt,iwsl,iwst
-      integer*4 itp1,i,j,ii,iutp,iwp,iutp1,np,npf,idx,idy
+      integer*4 itp1,i,j,ii,iutp,iwp,iutp1,np,npf,idx,idy,
+     $     nlw,ntw
       real*8 rgetgl1,utwiss1(ntwissfun,-nfam:nfam),sigz,
      $     wbuf(nfam1:nfam),wzl(nfam1:nfam),wzt(nfam1:nfam),dx,dy
+      real*8 , pointer::wakel(:,:),waket(:,:),wbufxy(:,:),wbufxyl(:,:)
       logical*4 beg
       sigz=rgetgl1('SIGZ')
       ibound1%fb=0.d0
@@ -33,6 +36,8 @@
       np=nfam-nfam1+1
       iwbufxy=ktaloc(np**2)
       iwbufxyl=ktaloc(np**2)
+      call c_f_pointer(c_loc(rlist(iwbufxy)),wbufxy,[np,np])
+      call c_f_pointer(c_loc(rlist(iwbufxyl)),wbufxyl,[np,np])
       do iwp=1,nwakep+1
         if(iwp .eq. nwakep+1)then
           ibound%le=fbound%le
@@ -63,13 +68,15 @@
           npf=np*ntwissfun
           if(idtypec(nlat-1) .eq. icMARK)then
             iutp=itwissp(nlat-1)
-            call tmov(utwiss(1,nfam1,itp1),
-     $           utwiss(1,nfam1,iutp),npf)
+            utwiss(:,nfam1:nfam,iutp)=utwiss(:,nfam1:nfam,itp1)
+c            call tmov(utwiss(1,nfam1,itp1),
+c     $           utwiss(1,nfam1,iutp),npf)
           endif
           if(ibound%lb .lt. nlat)then
             iutp=itwissp(nlat)
-            call tmov(utwiss(1,nfam1,itp1),
-     $           utwiss(1,nfam1,iutp),npf)
+            utwiss(:,nfam1:nfam,iutp)=utwiss(:,nfam1:nfam,itp1)
+c            call tmov(utwiss(1,nfam1,itp1),
+c     $           utwiss(1,nfam1,iutp),npf)
           endif
           return
         endif
@@ -89,10 +96,14 @@
           endif
           iwl=abs(kwaketbl(1,iwp))
           iwt=abs(kwaketbl(2,iwp))
+          nlw=(ilist(1,iwl-1)-1)/2
+          ntw=(ilist(1,iwt-1)-1)/2
+          call c_f_pointer(c_loc(rlist(iwl)),wakel,[2,nlw])
+          call c_f_pointer(c_loc(rlist(iwt)),waket,[2,ntw])
           call tffswakekick(utwiss(1:ntwissfun,-nfam,iutp),utwiss1,
-     $         iwl,iwt,rlist(iwl),rlist(iwt),
+     $         iwl,iwt,wakel,waket,
      $         sigz,2.d0*gammab(ibound%le)*amass,nfam,nfam1,
-     $         dx,dy,wbuf,rlist(iwbufxy),rlist(iwbufxyl),
+     $         dx,dy,wbuf,wbufxy,wbufxyl,
      $         wzl,wzt,iwsl,iwst)
           ibound1%lb=ibound%le
           ibound1%le=ibound%le+1
@@ -105,9 +116,9 @@
           iutp1=itwissp(ibound1%le)
           call tffswakekick(utwiss1,
      $         utwiss(1:ntwissfun,-nfam,iutp1),
-     $         iwl,iwt,rlist(iwl),rlist(iwt),
+     $         iwl,iwt,wakel,waket,
      $         sigz,2.d0*gammab(ibound%le+1)*amass,nfam,nfam1,
-     $         dx,dy,wbuf,rlist(iwbufxy),rlist(iwbufxyl),
+     $         dx,dy,wbuf,wbufxy,wbufxyl,
      $         wzl,wzt,iwsl,iwst)
           ibound%lb=ibound%le+1
           ibound%fb=0.d0
@@ -143,7 +154,8 @@
       logical*4 re
       real*8 , parameter :: fact=.398942280401433d0
       np=nfam-nfam1+1
-      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
+      ut1(:,1:np)=ut0(:,1:np)
+c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
       cp0=abs(charge*e*pbunch/np/p)
       sigg=max(1.d-5,sigz/np/anbunch)
       dsig=.1d0*sigg
@@ -362,7 +374,7 @@
         isp=isp2
         if(irtc .ne. 0)then
           if(ierrorprint .ne. 0)then
-            call tfaddmessage(kerror,'WakeFunction Transverse',0,lfno)
+            call tfaddmessage('WakeFunction Transverse',0,lfno)
           endif
           go to 9000
         endif

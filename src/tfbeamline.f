@@ -32,7 +32,7 @@
         go to 9900
       endif
       n=kl%nl
-      if(n .lt. 3)then
+      if(n .lt. 1)then
         go to 9900
       endif
       kdx1=ktaloc(n+1)
@@ -457,19 +457,23 @@ c        write(*,*)'extractbeamline ',i,n,el%comp(i)
                     n=int(kl%rbody(j))
 c                    write(*,*)'expandbeamline ',j,kl%rbody(j),n
                     if(n .gt. 0)then
-                      do k=1,n
-                        isp=isp+1
-                        dtastk(isp)=kl%dbody(3-j)
-                      enddo
+                      dtastk(isp+1:isp+n)=kl%dbody(3-j)
+                      isp=isp+n
+c                      do k=1,n
+c                        isp=isp+1
+c                        dtastk(isp)=kl%dbody(3-j)
+c                      enddo
                     else
                       kal=ktadaloc(-1,2,kll)
                       kll%head%k=ktfoper+mtftimes
                       kll%rbody(1)=-1.d0
                       kll%dbody(2)=dtfcopy(kl%dbody(3-j))
-                      do k=1,-n
-                        isp=isp+1
-                        ktastk(isp)=ktflist+kal
-                      enddo
+                      ktastk(isp+1:isp-n)=ktflist+kal
+                      isp=isp-n
+c                      do k=1,-n
+c                        isp=isp+1
+c                        ktastk(isp)=ktflist+kal
+c                      enddo
                     endif
                     cycle LOOP_I
                   endif

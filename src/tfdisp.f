@@ -15,7 +15,7 @@
       character*(*) , intent(in)::form
       real*8 , intent(in), optional::a
       real*8 v,tgetgm
-      logical*4 dref
+      logical*4 ,intent(in):: dref
       v=0.d0
       if(dref)then
         select case (mf)
@@ -85,6 +85,7 @@
       use kyparam
       use ffs_seg
       use tfcsi, only:lfni
+      use geolib
       implicit none
       type (sad_comp), pointer:: cmp
       integer*4 , intent(inout):: idisp1,idisp2
@@ -92,7 +93,7 @@
       integer*4 mdisp,icolm,ifany,id0,id3,idstep,
      $     lines,l,id,ielmex,i
       real*8 , intent(in)::dgam
-      real*8 bx0,by0,bx1,by1,bx2,by2,r,sigpp,tfchi,
+      real*8 bx0,by0,bx1,by1,bx2,by2,r,sigpp,
      $     etaxp,etapxp,sigxxp,sigxpxp,sigpxpxp,emixp,
      $     etayp,etapyp,sigyyp,sigypyp,sigpypyp,emiyp
       integer*4 lname,lb,lb1,l1,irtc,nc,itfgetbuf
@@ -107,7 +108,7 @@
       character*1 dir,hc
       character*131 header
       logical*4 , intent(out)::exist
-      logical*4 tfinsol,dpeak,seldis,abbrev,temat,mat,dref,range
+      logical*4 dpeak,seldis,abbrev,temat,mat,dref,range
 c     begin initialize for preventing compiler warning
       sigpp=0.d0
 c     end   initialize for preventing compiler warning
@@ -342,19 +343,17 @@ c          read(lfni,'(a)')ans
           else
             buff(59:69)=' 0'
           endif
-          if(mdisp .eq. modeg .or. tfinsol(l))then
+c          write(*,*)'tfdisp ',mdisp,modeg,l,tfinsol(l)
+c          if(mdisp .eq. modeg .or. tfinsol(l))then
+          if(mdisp .eq. modeg)then
             do i=0,2
               call tdtrimz(buff(1+i*12:12+i*12),
      1             geo(i+1,4,l)/scale(mfitgx+i),'12.6')
               call tdtrimz(buff(70+i*12:81+i*12),
-     1             tfchi(geo(1,1,l),i+1)/scale(i+mfitchi1),'12.6')
+     1             tfchi(geo(:,:,l),i+1)/scale(i+mfitchi1),'12.6')
             enddo
           else
-            call tforbitgeo(og,geo(1,1,l),
-     $           twiss(l,icolm,mfitdx),
-     $           twiss(l,icolm,mfitdpx),
-     $           twiss(l,icolm,mfitdy),
-     $           twiss(l,icolm,mfitdpy))
+            og=tforbitgeo(geo(:,:,l),twiss(l,icolm,mfitdx:mfitdpy))
             do i=0,2
               call tdtrimz(buff(1+i*12:12+i*12),
      1             og(i+1,4)/scale(mfitgx+i),'12.6')
@@ -583,8 +582,8 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
       subroutine tdrefheader(header,mode)
       use disp
       implicit none
-      character*131 header
-      integer*4 mode
+      character*131 ,intent(out):: header
+      integer*4 ,intent(in):: mode
       if(mode .eq. modeb)then
         return
       endif
@@ -621,8 +620,8 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
       subroutine trefheader(header,mode)
       use disp
       implicit none
-      character*131 header
-      integer*4 mode
+      character*131 ,intent(out):: header
+      integer*4 ,intent(in):: mode
       if(mode .eq. modeb)then
         return
       endif

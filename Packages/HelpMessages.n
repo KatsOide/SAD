@@ -218,8 +218,8 @@ Displays values of various optical-/geometric-functions at the components given 
    "TYPE(T) optical-functions geometric-functions",
     Sort[
     {{"GEOMETRY(G)",
-      "DISP G displays geometric information of the beam line. It shows the geometry at the coordinate, except for a SOL region, where the geometry at the orbit is shown.",
-      "geometric-functions matching-function-commands",
+      "DISP G displays geometric information of the beam line. It shows the geometry of the coordinate.",
+      "geometric-functions matching-function-commands OGEOMETRY(OG)",
       {}},
 
       {"GAMMA(GA)",
@@ -229,7 +229,7 @@ Displays values of various optical-/geometric-functions at the components given 
 
       {"OGEOMETRY(OG)",
       "DISP OG displays geometric information at the orbit.",
-      "geometric-functions matching-function-commands",
+      "geometric-functions matching-function-commands GEOMETRY(G)",
       {}},
  
      {"ORBIT(O)",
@@ -1183,7 +1183,7 @@ The longitudinal field of a solenoid. If a SOL is used with BOUND = 0 (default),
          {"GEO",
           "\
 One of boundaries (with GEO = 1) of a solenoid must have GEO = 1 to specify the alignment of the design orbit. At a SOL element with GEO = 1, the design orbit is determined by DX, DY, DPX, DPY parameters",
-          "DX DY DPX DPY",
+          "DX DY DPX DPY geometric-functions DISPLAY(DISP) GEOMRTRY(G) OGEOMETRY(OG)",
           {}},
 
          {"DX",
@@ -1636,20 +1636,6 @@ draws a plot of optical functions in multi columns. It calls OpticsPlot internal
 
       }]},
 
-   {"GEO",
-    "\
-prints out the TopDrawer commands for the geometric plot of the beam line.",
-    "DISPLAY(DISP)",
-    {}},
-
-!    {"TDR",
-!     "Usage:   TDR {filename | file_number}\n\n\
-! runs TopDrawer (tdr) using the file specified by filename or file_number as the input. It supports both Tek terminal and X-window.\n\n\
-! Example:   OUT 'a' DRAW bx by & ex ey q* CLOSE OUT TDR 'a'\n\n\
-! TDR does not work when SAD is running under EMACS without X-window.",
-!     "DRAW GEO OUTPUT(OUT) CLOSE(CLO)",
-!     {}},
-
    {"PRINT(PRI)",
     "PRI expression evaluates expression and prints out the result.",
     "expression Print",
@@ -1813,8 +1799,9 @@ The geometrical coordinate {xi, eta, zeta} is set by the ORG command, and its de
    The rotation angles are defined so as to give the local {x,y,s} is written\n\n\
     {x, y, s}_local\n\
    = rotate[s, chi3] rotate[x, chi2] rotate[y, -chi1]{x, y, s}_origin,\n\n\
-where rotate[a, b] reads \"rotate around the new-a vector by b right-handedly\".",
-    "optical-functions matching-function-commands DISPLAY(DISP) GEOCAL GEOFIX",
+where rotate[a, b] reads \"rotate around the new-a vector by b right-handedly.\n\n\
+geometric functions disignate the geometry of the coordinate. If the geometry of orbit is needed, use LINE[\"OGEO\"], etc., or DISP OG.",
+    "optical-functions matching-function-commands DISPLAY(DISP) GEOCAL GEOFIX ORG LINE",
     {}},
 
    {"flags",
@@ -2100,6 +2087,12 @@ UNIFORM is the antonym of GAUSS. It assumes the momentum distribution to be a un
        "\
 POL turns on spin tracking and the calculation of equilibrium polarization in EMIT/Emittance[].",
        "RADPOL EMITTANCE(EMIT) Emittance TrackParticles",
+        {}},
+
+      {"LOSSMAP",
+        "\
+If LOSSMAP is on, TrackParticles returns the location and turn where the particle lost is detected, in the 7/9th and 8/10th element of the result, for  NOPOL/POL, respectively. The default is NOLOSSMAP",
+        "TrackParticles POL",
         {}},
 
       {"RADPOL",
@@ -4260,7 +4253,7 @@ The key-string is not case-sensitive. Available key-strings are:\t\n\n\
 \"S\"            The orbit length to the entrance from the beginning of the beam line.\n\
 \"LENG\"         Same as \"S\".\n\
 \"GEO\"          Geometric-functions at the entrance of the component, {{GX, GY, GZ}, {GCHI1, GCHI2, GCHI3}}.\n\
-\"OGEO\"          Geometric-functions of the orbit at the entrance of the component, {{OGX, OGY, OGZ}, {OCHI1, OCHI2, OCHI3}}.\n\
+\"OGEO\"         Geometric-functions of the orbit at the entrance of the component, {{OGX, OGY, OGZ}, {OCHI1, OCHI2, OCHI3}}.\n\
 \"GAMMA\"        Lorentz factor gamma.\n\
 \"GAMMABETA\"    Lorentz factor gamma*beta = Sqrt[gamma^2 - 1].\n\
 \"SIGab\"        Beam matrix component, where a and b are one of X, PX, Y, PY, Z, DP. If b is omitted it returns Sqrt[SIGaa] is returned. Just \"SIG\" returns the entire 6 by 6 beam matrix.\n\
@@ -4268,9 +4261,9 @@ The key-string is not case-sensitive. Available key-strings are:\t\n\n\
 \"MULT\"         The ordered number of each component belonging to the- same element, starting from 1.\n\
 keyword        The value of the keyword of the component (see below).\n\
 \"EXPAND\"       Distribute the value of the default-keywords and the keywords used in the matching to all components in the beam line. No second argument.\t\n\
-\"GX\", \"GY\", \"GZ\"  Geometric functions GX, GY, GZ.\n\
-\"GCHI1\", \"GCHI2\", \"GCHI3\"  Geometric functions CHI1, CHI2, CHI3\n\
-\"OGX\", \"OGY\", \"OGZ\", \"OCHI1\", \"OCHI2\", \"OCHI3\"  Geometrical functions at the orbit.\n\
+\"GX\", \"GY\", \"GZ\"  Geometric functions for the coordinate GX, GY, GZ.\n\
+\"GCHI1\", \"GCHI2\", \"GCHI3\"  Geometric functions for the coordinate CHI1, CHI2, CHI3\n\
+\"OGX\", \"OGY\", \"OGZ\", \"OCHI1\", \"OCHI2\", \"OCHI3\"  Geometrical functions for the orbit.\n\
  Setting by LINE[keyword,..] to the DEFAULT keyword for the FIRST component changes the current value of the corresponding element, because the value of an element is stored in the first component.",
           "components geometric-functions elements keywords default-keyword Element",
           {}}}},
@@ -4411,8 +4404,9 @@ where location is the position-number of the starting point. If location is same
 in this order. The {7, i} is the flag which is True(==1) when the particle is alive, and False(==0) when lost.\n\n\
    If the flag POL is on, TrackParticles performs spin tracking. Then the coordinates has two more components sy and phis, which correspond to the y-component of the classical spin vector and the angle ArcTan[sx, sz], respectively. If POL is on, another flag RADPOL turns on the Sokolov-Ternov effect.\n\n\
    When a flag RADLIGHT is on, TrackParticles returns the trajectories of particles which are used to calculate the radiation fields. See RadiationField and RadiationSpectrum.\n\n\
-When PHOTONS is ON (default is OFF), TrackParticles generates a list of all photons radiated through the tracking. The list is assigned to a symbol PhotonList.",
-        "components LINE PHOTONS PhotonList RADLIGHT TouschekLifetime WakeFunction SurvivedParticles POL RADPOL",
+When PHOTONS is ON (default is OFF), TrackParticles generates a list of all photons radiated through the tracking. The list is assigned to a symbol PhotonList.\n\n\
+When LOSSMAP is ON (default is OFF), TrackParticles returns the component and the turn where the loss of each particle is detected.",
+        "components LINE PHOTONS PhotonList RADLIGHT TouschekLifetime WakeFunction SurvivedParticles LOSSMAP POL RADPOL",
         {}},
 
        {"SurvivedParticles",

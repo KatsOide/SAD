@@ -1,4 +1,4 @@
-      subroutine nalign(latt,mult,master,word,lfno,exist)
+      subroutine nalign(latt,mult,master,word,exist)
       use tfstk
       use ffs
       use tffitcode

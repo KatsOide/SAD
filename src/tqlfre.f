@@ -2,10 +2,10 @@
       use ffs_flag
       use tmacro
       implicit none
-      integer*4 i
-      real*8 al,ak,f1,f2,bz,af1,af2,p,a,b,ea,bzph,bp,
-     $     xf,yf,pxf,pyf,f,fdp,bb
-      real*8 trans(6,12),cod(6),beam(21),trans1(6,13)
+      real*8 ,intent(in):: al,ak,f1,f2,bz
+      real*8 af1,af2,p,a,b,ea,bzph,bp,xf,yf,pxf,pyf,f,fdp,bb
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(21)
+      real*8 trans1(6,13)
 c      write(*,*)'tflfre ',f1,f2
       af1=-ak/al*f1*abs(f1)/24.d0
       af2=ak/al*f2
@@ -45,17 +45,22 @@ c      write(*,*)'tflfre ',f1,f2
      $       -((2.d0-a)*a/ea*cod(3)-bp/ea*(2.d0-.5d0*a)*pyf)/p*pyf
      $       -(a*ea*cod(1)+bp*ea*(2.d0+a)*pxf)*trans1(2,6)
      $       +(a/ea*cod(3)+bp/ea*(2.d0-a)*pyf)*trans1(4,6))/p
-        do i=1,irad
-          trans(5,i)=trans1(5,1)*trans(1,i)+trans1(5,2)*trans(2,i)
-     $         +trans1(5,3)*trans(3,i)+trans1(5,4)*trans(4,i)
-     $         +            trans(5,i)+trans1(5,6)*trans(6,i)
-          trans(1,i)=trans1(1,1)*trans(1,i)+trans1(1,2)*trans(2,i)
-     $         +trans1(1,6)*trans(6,i)
-          trans(2,i)=trans1(2,2)*trans(2,i)+trans1(2,6)*trans(6,i)
-          trans(3,i)=trans1(3,3)*trans(3,i)+trans1(3,4)*trans(4,i)
-     $         +trans1(3,6)*trans(6,i)
-          trans(4,i)=trans1(4,4)*trans(4,i)+trans1(4,6)*trans(6,i)
-        enddo
+c        do i=1,irad
+          trans(5,1:irad)=trans1(5,1)*trans(1,1:irad)
+     $       +trans1(5,2)*trans(2,1:irad)
+     $       +trans1(5,3)*trans(3,1:irad)+trans1(5,4)*trans(4,1:irad)
+     $       +            trans(5,1:irad)+trans1(5,6)*trans(6,1:irad)
+          trans(1,1:irad)=trans1(1,1)*trans(1,1:irad)
+     $         +trans1(1,2)*trans(2,1:irad)
+     $         +trans1(1,6)*trans(6,1:irad)
+          trans(2,1:irad)=trans1(2,2)*trans(2,1:irad)
+     $         +trans1(2,6)*trans(6,1:irad)
+          trans(3,1:irad)=trans1(3,3)*trans(3,1:irad)
+     $         +trans1(3,4)*trans(4,1:irad)
+     $         +trans1(3,6)*trans(6,1:irad)
+          trans(4,1:irad)=trans1(4,4)*trans(4,1:irad)
+     $         +trans1(4,6)*trans(6,1:irad)
+c        enddo
         if(irad .gt. 6)then
           trans1(1,3)= 0.d0
           trans1(1,4)= 0.d0

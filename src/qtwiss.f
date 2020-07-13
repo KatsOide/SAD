@@ -195,14 +195,6 @@ c          endif
             go to 1010
           endif
           dir=direlc(l1)
-c          go to (
-c     $         1100,1200,1010,1400,1010,1600,1010,1600,1010,1600,
-c     1         1010,1600,1010,1010,1010,1010,1010,1010,1010,2000,
-c     1         2100,2200,1010,1010,1010,1010,1010,1010,1010,3000,
-c     1         3100,3200,3300,3400,3500,1010,1010,1010,1010,1010,
-c     $         4100),
-c     1      ltyp
-c          go to 1010
           select case (ltyp)
 
           case (icDRFT)
@@ -812,6 +804,7 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       use ffs
       use ffs_pointer
       use tffitcode
+      use iso_c_binding
       implicit none
       type (ffs_bound) fbound
       real*8 conv,cx,sx,ax,bx,cy,sy,ay,by,r0,dcod(6)
@@ -820,6 +813,7 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
      $     factmin=1.d-3
       integer*4 idp,it
       real*8 r,fact
+      real*8 , pointer :: ptwiss(:,:)
       real*8 trans(4,5),cod(6),cod0(6),trans1(4,5),transb(4,5),
      $     transe(4,5),ftwiss(ntwissfun),trans2(4,5),cod00(6)
       logical*4 over,codfnd,stab
@@ -829,12 +823,14 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       fact=.5d0
       conv=min(conv1,conv0*(1.d0+(cod0(6)/0.001d0)**2))
       stab=.false.
+      call c_f_pointer(c_loc(rlist(iftwis)),
+     $     ptwiss,[nlat*(2*ndim+1),ntwissfun])
       do while(it .le. itmax)
         cod=cod0
         if(fbound%fb .gt. 0.d0)then
           call qtwissfrac1(ftwiss,transb,cod,idp,
      $         fbound%lb,fbound%fb,1.d0,.true.,.true.,over)
-          call qtwiss1(rlist(iftwis),idp,fbound%lb+1,fbound%le,
+          call qtwiss1(ptwiss,idp,fbound%lb+1,fbound%le,
      $         trans1,cod,.true.,over)
 c          do i=1,5
             trans2(1,1:5)=
@@ -852,7 +848,7 @@ c          do i=1,5
 c          enddo
           trans2(:,5)=trans2(:,5)+trans1(:,5)
         else
-          call qtwiss1(rlist(iftwis),idp,fbound%lb,fbound%le,
+          call qtwiss1(ptwiss,idp,fbound%lb,fbound%le,
      $         trans2,cod,.true.,over)
         endif
         if(fbound%fe .gt. 0.d0)then
@@ -961,18 +957,36 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
       end
 
       subroutine qtwissfrac(ftwiss,l,fr,over)
+      use ffs
+      implicit none
+      integer*4 , intent(in)::l
+      real*8 , intent(out)::ftwiss(ntwissfun)
+      real*8 , intent(in)::fr
+      real*8 gv(3,4)
+      logical*4 , intent(out)::over
+      call qtwissfracgeo(ftwiss,gv,l,fr,.false.,over)
+      return
+      end
+
+      subroutine qtwissfracgeo(ftwiss,gv,l,fr,cgeo,over)
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
       use temw, only:etwiss2ri,tfetwiss,tinv6
+      use geolib
       implicit none
       type (sad_descriptor) dsave(kwMAX)
       type (sad_comp) , pointer :: cmp
-      integer*4 l,nvar,le,itfdownlevel,irtc
-      real*8 fr,ftwiss(ntwissfun),trans(6,6),cod(6),gr,sgr,sgr2,gr1,
+      integer*4 , intent(in)::l
+      integer*4 nvar,le,itfdownlevel,irtc
+      real*8 , intent(in)::fr
+      real*8 , intent(out)::ftwiss(ntwissfun),gv(3,4)
+      real*8 trans(6,6),cod(6),gr,sgr,sgr2,gr1,
      $     tw1(ntwissfun),beam(21),srot(3,9)
-      logical*4 over,sol,rt,chg,cp0,normal
+      logical*4 , intent(in)::cgeo
+      logical*4 , intent(out)::over
+      logical*4 sol,rt,chg,cp0,normal
       if(calc6d)then
         cp0=codplt
         codplt=.false.
@@ -993,6 +1007,9 @@ c          call tinv6(ri,trans)
           call tturne1(trans,cod,beam,srot,
      $         i00,i00,i00,0,
      $         .false.,sol,rt,.true.,l,l)
+        endif
+        if(cgeo)then
+          gv=tfgeo1s(l)
         endif
         if(chg)then
           call qfracsave(l,dsave,nvar,.false.)
@@ -1024,25 +1041,44 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
         over=.false.
         codplt=cp0
       else
-        call qtwissfrac1(ftwiss,trans,cod,
-     $       0,l,0.d0,fr,.false.,.false.,over)
+        call qtwissfrac1geo(ftwiss,gv,trans,cod,
+     $       0,l,0.d0,fr,.false.,.true.,.false.,over)
       endif
       return
       end
 
       subroutine qtwissfrac1(ftwiss,
      $     trans,cod,idp,l,fr1,fr2,mat,force,over)
+      use ffs
+      implicit none
+      integer*4 idp,l
+      real*8 , intent(out)::ftwiss(ntwissfun)
+      real*8 gv(3,4),trans(4,5),cod(6),fr1,fr2
+      logical*4 over,mat,force
+      call qtwissfrac1geo(ftwiss,gv,
+     $     trans,cod,idp,l,fr1,fr2,mat,.false.,force,over)
+      return
+      end
+
+      subroutine qtwissfrac1geo(ftwiss,gv,
+     $     trans,cod,idp,l,fr1,fr2,mat,cgeo,force,over)
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
+      use geolib, only:tfgeo1s
       implicit none
       type (sad_descriptor) dsave(kwMAX)
       type (sad_comp) ,pointer :: cmp,cmp0
-      integer*4 idp,l,nvar,le,itfdownlevel,irtc
-      real*8 twisss(ntwissfun),ftwiss(ntwissfun),
-     $     trans(4,5),cod(6),fr1,fr2,gb0,gb1,dgb
-      logical*4 over,chg,mat,force
+      integer*4 ,intent(in):: idp,l
+      integer*4 nvar,le,itfdownlevel,irtc
+      real*8 , intent(out)::ftwiss(ntwissfun),gv(3,4),
+     $     trans(4,5),cod(6)
+      real*8 ,intent(in):: fr1,fr2
+      real*8 twisss(ntwissfun),gb0,gb1,dgb
+      logical*4 , intent(in):: mat,force,cgeo
+      logical*4 , intent(out):: over
+      logical*4 chg
       levele=levele+1
       call qfracsave(l,dsave,nvar,.true.)
       call compelc(l,cmp)
@@ -1072,6 +1108,9 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
         endif
         gammab(l)=gb0
         gammab(l+1)=gb1
+        if(cgeo)then
+          gv=tfgeo1s(l)
+        endif
         if(chg)then
           call qfracsave(l,dsave,nvar,.false.)
         endif
@@ -1141,10 +1180,6 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
         f2=0.d0
       endif
       lt=idtype(cmp%id)
-c      go to (1100,1200,1010,1400,1010,1600,1010,1600,1010,1600,
-c     1       1010,1600,1010,1010,1010,1010,1010,1010,1010,1010,
-c     1       1600,2200,1010,1010,1010,1010,1010,1010,1010,1010,
-c     1       3100,3200),lt
       select case (lt)
 
       case (icDRFT)
@@ -1591,5 +1626,39 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
      $     cmp%value(ky_W1_MULT),
      $     cmp%value(ky_APHI_MULT) .ne. 0.d0,ini,
      $     coup)
+      return
+      end
+
+      subroutine qthin(trans,cod,nord,al,ak,
+     1                 dx,dy,theta,coup)
+      implicit none
+      integer*4 nord
+      real*8 trans(4,5),cod(6),transe(6,12),beam(42),srot(3,9),
+     $     dx,dy,theta,ak,al
+      logical*4 coup
+      call tinitr(transe)
+      call tthine(transe,cod,beam,srot,nord,al,ak,
+     1     dx,dy,theta,.false.,1)
+      call qcopymat(trans,transe,.false.)
+      coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
+     $     trans(2,3) .ne. 0.d0 .or. trans(2,4) .ne. 0.d0
+      return
+      end
+
+      subroutine qquad(trans,cod,al,ak,
+     1dx,dy,theta,fringe,f1in,f2in,f1out,f2out,mfring,eps0,
+     $     kin,achro,coup)
+      implicit none
+      integer*4 mfring
+      real*8 trans(4,5),cod(6),transe(6,12),beam(42),srot(3,9),
+     $     dx,dy,theta,ak,eps0,al,f1in,f2in,f1out,f2out
+      logical*4 fringe,coup,kin,achro
+      call tinitr(transe)
+      call tquade(transe,cod,beam,srot,al,ak,
+     1     dx,dy,theta,.false.,fringe,f1in,f2in,f1out,f2out,mfring,eps0,
+     $     kin,achro,.false.,1)
+      call qcopymat(trans,transe,.false.)
+      coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
+     $     trans(2,3) .ne. 0.d0 .or. trans(2,4) .ne. 0.d0
       return
       end

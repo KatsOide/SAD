@@ -265,7 +265,7 @@
         write(lfno,9102)((iord(j,ibigb(k)),j=1,3),
      1                 b(2*ibigb(k)-ndim-1),b(2*ibigb(k)-ndim),k=1,nbig)
 9102    format(i4,2i4,1p,2g12.4,3i4,2g12.4)
-        call wjdraw(ajx,lsp,ndim,i,maxord)
+c        call wjdraw(ajx,lsp,ndim,i,maxord)
       enddo
       return
       end

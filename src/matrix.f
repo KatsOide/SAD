@@ -4,79 +4,89 @@ c
       subroutine v_clear(a,n)
       implicit real*8(a-h,o-z)
       real*8 a(n)
-      do 10 i=1,n
- 10      a(i)=0.d0
+      a=0.d0
+c      do 10 i=1,n
+c 10      a(i)=0.d0
       return
       end
 c ------------------------------------------------------------------
       subroutine m_clear(a,n)
       implicit real*8(a-h,o-z)
       real*8 a(*)
-      do 10 i=1,n*n
- 10      a(i)=0.d0
+      a(1:n*n)=0.d0
+c      do 10 i=1,n*n
+c 10      a(i)=0.d0
       return
       end
 c ------------------------------------------------------------------
       subroutine m_unit(a,n)
       implicit real*8(a-h,o-z)
       real*8 a(n,n)
-      do 20 i=1,n
-         do 20 j=1,n
-            a(j,i)=0.
- 20   continue
-      do 10 i=1,n
-         a(i,i)=1.d0
- 10   continue
+      a=0.d0
+c      do 20 i=1,n
+c         do 20 j=1,n
+c            a(j,i)=0.
+c 20   continue
+      do i=1,n
+        a(i,i)=1.d0
+      enddo
       return
       end
 c ------------------------------------------------------------------
       subroutine v_copy(a,b,n)
       implicit real*8(a-h,o-z)
       real*8 a(n),b(n)
-      do 10 i=1,n
- 10      b(i)=a(i)
+      b=a
+c      do 10 i=1,n
+c 10      b(i)=a(i)
       return
       end
 c ------------------------------------------------------------------
       subroutine m_copy_6d(a,b)
       real*8 a(36),b(36)
-      do 10 i=1,36
- 10      b(i)=a(i)
+      b=a
+c      do 10 i=1,36
+c 10      b(i)=a(i)
       return
       end
 c ------------------------------------------------------------------
       subroutine v_chg_sign(a,n)
       real*8 a(n)
-      do 10 i=1,n
- 10      a(i)=-a(i)
+      a=-a
+c      do 10 i=1,n
+c 10      a(i)=-a(i)
       return
       end
 c ------------------------------------------------------------------
       subroutine m_print(a,n)
-      real*8 a(n,n)
+      integer*4 ,intent(in):: n
+      real*8 ,intent(in):: a(n,n)
+      integer*4 i
 c      write(*,*) 'Matrix print out : Ndim=',n
-      do 10 i=1,n
-       write(*,'(1P,(6D12.5))') (a(i,j),j=1,n)
- 10    continue
+      do i=1,n
+        write(*,'(1P,(6D12.5))') (a(i,j),j=1,n)
+      enddo
       return
       end
 c ------------------------------------------------------------------
       subroutine m_add_6d(a,b,c)
       implicit real*8(a-h,o-z)
-      real*8 a(*),b(*),c(*)
-      do 10 i=1,36
-      c(i)=a(i)+b(i)
- 10   continue
+      real*8 a(36),b(36),c(36)
+      c=a+b
+c      do 10 i=1,36
+c      c(i)=a(i)+b(i)
+c 10   continue
       return
       end
 c
 c ------------------------------------------------------------------
       subroutine m_sub_6d(a,b,c)
       implicit real*8(a-h,o-z)
-      real*8 a(*),b(*),c(*)
-      do 10 i=1,36
-      c(i)=a(i)-b(i)
- 10   continue
+      real*8 a(36),b(36),c(36)
+      c=a-b
+c      do 10 i=1,36
+c      c(i)=a(i)-b(i)
+c 10   continue
       return
       end
 c
@@ -84,22 +94,23 @@ c ------------------------------------------------------------------
       subroutine m_mul_6d(a,b,c)
       implicit real*8(a-h,o-z)
       real*8 a(6,6),b(6,6),c(6,6)
-      real*8 t(6,6)
+c      real*8 t(6,6)
 c
-      call m_clear(t,6)
-      do 10 i=1,6
-      do 20 j=1,6
-      t(i,j)=0.d0
-      do 30 k=1,6
-         t(i,j)=t(i,j)+a(i,k)*b(k,j)
- 30   continue
- 20   continue
- 10   continue
+      c=matmul(a,b)
+c      call m_clear(t,6)
+c      do 10 i=1,6
+c      do 20 j=1,6
+c      t(i,j)=0.d0
+c      do 30 k=1,6
+c         t(i,j)=t(i,j)+a(i,k)*b(k,j)
+c 30   continue
+c 20   continue
+c 10   continue
 c
-      do 40 i=1,6
-      do 40 j=1,6
-      c(i,j)=t(i,j)
- 40   continue
+c     do 40 i=1,6
+c      do 40 j=1,6
+c      c(i,j)=t(i,j)
+c 40   continue
       return
       end
 c
@@ -118,15 +129,16 @@ c ------------------------------------------------------------------
       subroutine m_transpose_6d(a,b)
       implicit real*8(a-h,o-z)
       real*8 a(6,6),b(6,6)
-      real*8 t(6,6)
+c      real*8 t(6,6)
+      b=transpose(a)
 c
-      do 10 i=1,6
-      do 10 j=1,6
- 10      t(i,j)=a(j,i)
-      do 20 i=1,6
-      do 20 j=1,6
- 20      b(j,i)=t(j,i)
-      return
+c      do 10 i=1,6
+c      do 10 j=1,6
+c 10      t(i,j)=a(j,i)
+c      do 20 i=1,6
+c      do 20 j=1,6
+c 20      b(j,i)=t(j,i)
+c      return
       end
 c ------------------------------------------------------------------
       subroutine m_sim_tr_6d(a,b,c)
@@ -142,22 +154,23 @@ c ------------------------------------------------------------------
       subroutine m_mul_5d(a,b,c)
       implicit real*8(a-h,o-z)
       real*8 a(5,5),b(5,5),c(5,5)
-      real*8 t(5,5)
+c      real*8 t(5,5)
 c
-      call m_clear(t,5)
-      do 10 i=1,5
-      do 20 j=1,5
-      t(i,j)=0.d0
-      do 30 k=1,5
-         t(i,j)=t(i,j)+a(i,k)*b(k,j)
- 30   continue
- 20   continue
- 10   continue
-c
-      do 40 i=1,5
-      do 40 j=1,5
-      c(i,j)=t(i,j)
- 40   continue
+      c=matmul(a,b)
+c$$$      call m_clear(t,5)
+c$$$      do 10 i=1,5
+c$$$      do 20 j=1,5
+c$$$      t(i,j)=0.d0
+c$$$      do 30 k=1,5
+c$$$         t(i,j)=t(i,j)+a(i,k)*b(k,j)
+c$$$ 30   continue
+c$$$ 20   continue
+c$$$ 10   continue
+c$$$c
+c$$$      do 40 i=1,5
+c$$$      do 40 j=1,5
+c$$$      c(i,j)=t(i,j)
+c$$$ 40   continue
       return
       end
 c
@@ -176,14 +189,15 @@ c ------------------------------------------------------------------
       subroutine m_transpose_5d(a,b)
       implicit real*8(a-h,o-z)
       real*8 a(5,5),b(5,5)
-      real*8 t(5,5)
+c      real*8 t(5,5)
 c
-      do 10 i=1,5
-      do 10 j=1,5
- 10      t(i,j)=a(j,i)
-      do 20 i=1,5
-      do 20 j=1,5
- 20      b(j,i)=t(j,i)
+      b=transpose(a)
+c$$$      do 10 i=1,5
+c$$$      do 10 j=1,5
+c$$$ 10      t(i,j)=a(j,i)
+c$$$      do 20 i=1,5
+c$$$      do 20 j=1,5
+c$$$ 20      b(j,i)=t(j,i)
       return
       end
 c ------------------------------------------------------------------
@@ -200,7 +214,8 @@ c ------------------------------------------------------------------
       subroutine m_symp_set_6d(S)
       real*8 S(6,6)
 c
-      call m_clear(S,6)
+c      call m_clear(S,6)
+      s=0.d0
       S(1,2)=1.d0
       S(2,1)=-1.d0
       S(3,4)=1.d0
@@ -213,16 +228,16 @@ c-----------------------------------------------------------------
       subroutine m_symmet_set_6d(p_in,blist)
       real*8 p_in(*),blist(*)
       k=1
-      do 10 i=1,6
-       do 20 j=1,6
+      do i=1,6
+       do j=1,6
          if(i.le.j) then
             blist(i+(j-1)*6)=p_in(k)
             k=k+1
          else
             blist(i+(j-1)*6)=blist(j+(i-1)*6)
          endif
- 20      continue
- 10      continue
+       enddo
+      enddo
 
       return
       end
@@ -446,9 +461,10 @@ c ------------------------------------------------------------------
       real*8 a(6,6),b(6,6),t(6,6)
       integer indx(6)
 c
-      do 10 i=1,6
-      do 10 j=1,6
- 10     t(j,i)=a(j,i)
+      t=a
+c      do 10 i=1,6
+c      do 10 j=1,6
+c 10     t(j,i)=a(j,i)
       call m_inverse(t,6,6,indx,b)
       return
       end
@@ -456,14 +472,15 @@ c ------------------------------------------------------------------
       subroutine m_zslice_5d(x,a,b,c)
       real*8 x(6,6),a(5,5),b(5),c
 c
-      do 10 j=1,4
-      do 10 i=1,4
- 10      a(i,j)=x(i,j)
-      do 20 i=1,4
-         b(i)=x(5,i)
-         a(5,i)=x(6,i)
-         a(i,5)=x(i,6)
- 20   continue
+      a(1:4,1:4)=x(1:4,1:4)
+c      do 10 j=1,4
+c      do 10 i=1,4
+c 10      a(i,j)=x(i,j)
+      do i=1,4
+        b(i)=x(5,i)
+        a(5,i)=x(6,i)
+        a(i,5)=x(i,6)
+      enddo
       c=x(5,5)
       b(5)=x(5,6)
       a(5,5)=x(6,6)
@@ -474,44 +491,46 @@ c ------------------------------------------------------------------
       real*8 a(5,5),b(10)
       real*8 ta(5,5),tb(10),rnorm,remax,absa
       integer naxis(5),ikeep(5)
-      do 5 i=1,5
- 5       ikeep(i)=0
+      ikeep=0
+c      do 5 i=1,5
+c 5       ikeep(i)=0
 c
-      do 10 i=1,5
-       rnorm=0.d0
-       remax=0.
-       naxis(i)=0
-      do 20 j=1,5
-       rnorm=rnorm+a(j,i)**2
- 20    continue
-       rnorm=1.d0/sqrt(rnorm)
-      do 30 j=1,5
-       ta(j,i)=a(j,i)*rnorm
-       absa=abs(ta(j,i))
-       if(absa.gt.remax.and.ikeep(j).eq.0) then
-         remax=absa
-         naxis(i)=j
-       endif
- 30    continue
-       ikeep(naxis(i))=1
- 10   continue
-      do 35 i=1,5
+      do i=1,5
+        rnorm=0.d0
+        remax=0.
+        naxis(i)=0
+        do j=1,5
+          rnorm=rnorm+a(j,i)**2
+        enddo
+        rnorm=1.d0/sqrt(rnorm)
+        do j=1,5
+          ta(j,i)=a(j,i)*rnorm
+          absa=abs(ta(j,i))
+          if(absa.gt.remax.and.ikeep(j).eq.0) then
+            remax=absa
+            naxis(i)=j
+          endif
+        enddo
+        ikeep(naxis(i))=1
+      enddo
+      do i=1,5
         if(ikeep(i).eq.0) then
-           write(*,*) 'matrix.f : Normal axis is determined'
-           write(*,*) naxis
-           stop
+          write(*,*) 'matrix.f : Normal axis is determined'
+          write(*,*) naxis
+          stop
         endif
- 35     continue
-      do 40 i=1,5
+      enddo
+      do i=1,5
         k=naxis(i)
-        do 50 j=1,5
+        do j=1,5
           a(j,k)=ta(j,i)
- 50       continue
+        enddo
         tb(2*k-1)=b(2*i-1)
         tb(2*k)=b(2*i)
- 40     continue
-      do 60 i=1,10
- 60     b(i)=tb(i)
+      enddo
+      b=tb
+c      do 60 i=1,10
+c 60     b(i)=tb(i)
       return
       end
 c ------------------------------------------------------------------
@@ -519,46 +538,48 @@ c ------------------------------------------------------------------
       real*8 a(6,6),b(12)
       real*8 ta(6,6),tb(12),rnorm,remax,absa
       integer naxis(6),ikeep(6)
-      do 5 i=1,6
- 5       ikeep(i)=0
+      ikeep=0
+c      do 5 i=1,6
+c 5       ikeep(i)=0
 c
-      do 10 i=1,6
-       rnorm=0.d0
-       remax=0.
-       naxis(i)=0
-      do 20 j=1,6
-       rnorm=rnorm+a(j,i)**2
- 20    continue
-       rnorm=1.d0/sqrt(rnorm)
-      do 30 j=1,6
-       ta(j,i)=a(j,i)*rnorm
-       absa=abs(ta(j,i))
-       if(absa.gt.remax.and.ikeep(j).eq.0) then
-         remax=absa
-         naxis(i)=j
-       endif
- 30    continue
-       ikeep(naxis(i))=1
- 10   continue
-      do 35 i=1,6
+      do i=1,6
+        rnorm=0.d0
+        remax=0.
+        naxis(i)=0
+        do j=1,6
+          rnorm=rnorm+a(j,i)**2
+        enddo
+        rnorm=1.d0/sqrt(rnorm)
+        do j=1,6
+          ta(j,i)=a(j,i)*rnorm
+          absa=abs(ta(j,i))
+          if(absa.gt.remax.and.ikeep(j).eq.0) then
+            remax=absa
+            naxis(i)=j
+          endif
+        enddo
+        ikeep(naxis(i))=1
+      enddo
+      do i=1,6
         if(ikeep(i).eq.0) then
-           write(*,*) 'matrix.f : Normal axis is determined'
-           write(*,*) naxis
-           stop
+          write(*,*) 'matrix.f : Normal axis is determined'
+          write(*,*) naxis
+          stop
         endif
- 35     continue
-      do 40 i=1,6
+      enddo
+      do i=1,6
         k=naxis(i)
-        do 50 j=1,6
+        do j=1,6
           a(j,k)=ta(j,i)
- 50       continue
+        enddo
         tb(2*k-1)=b(2*i-1)
         tb(2*k)=b(2*i)
- 40     continue
-      do 60 i=1,12
- 60     b(i)=tb(i)
-      return
-      end
+      enddo
+      b=tb
+c      do 60 i=1,12
+c 60     b(i)=tb(i)
+        return
+        end
 c ------------------------------------------------------------------
       subroutine m_diag_5d(a1,a2,a3,a4,a5,b)
       real*8 a1,a2,a3,a4,a5,b(5,5)
@@ -572,24 +593,26 @@ c ------------------------------------------------------------------
       end
 c ------------------------------------------------------------------
       subroutine mv_mul_5d(a,b,c)
-      real*8 a(5,5),b(5),c(5),t(5)
-      do 10 i=1,5
-       t(i)=0.d0
-      do 10 j=1,5
- 10    t(i)=t(i)+a(i,j)*b(j)
-      do 20 i=1,5
- 20      c(i)=t(i)
+      real*8 a(5,5),b(5),c(5)
+      c=matmul(a,b)
+c      do 10 i=1,5
+c       t(i)=0.d0
+c      do 10 j=1,5
+c 10    t(i)=t(i)+a(i,j)*b(j)
+c      do 20 i=1,5
+c 20      c(i)=t(i)
       return
       end
 c ------------------------------------------------------------------
       subroutine mv_mul_6d(a,b,c)
-      real*8 a(6,6),b(6),c(6),t(6)
-      do 10 i=1,6
-       t(i)=0.d0
-      do 10 j=1,6
- 10    t(i)=t(i)+a(i,j)*b(j)
-      do 20 i=1,6
- 20      c(i)=t(i)
+      real*8 a(6,6),b(6),c(6)
+      c=matmul(a,b)
+c$$$      do 10 i=1,6
+c$$$       t(i)=0.d0
+c$$$      do 10 j=1,6
+c$$$ 10    t(i)=t(i)+a(i,j)*b(j)
+c$$$      do 20 i=1,6
+c$$$ 20      c(i)=t(i)
       return
       end
 c ------------------------------------------------------------------
@@ -612,21 +635,30 @@ c ------------------------------------------------------------------
       u(4,2)=-sint
 c
       call m_clear(tmp,5)
-      do 10 i=1,5
-      do 10 j=1,5
-      do 10 k=1,5
- 10      tmp(i,j)=tmp(i,j)+env(i,k)*u(j,k)
+      do i=1,5
+        do j=1,5
+          do k=1,5
+            tmp(i,j)=tmp(i,j)+env(i,k)*u(j,k)
+          enddo
+        enddo
+      enddo
       call m_clear(env,5)
-      do 20 i=1,5
-      do 20 j=1,5
-      do 20 k=1,5
- 20      env(i,j)=env(i,j)+u(i,k)*tmp(k,j)
-      do 30 i=1,5
-      xx(i)=0.
-      do 30 j=1,5
- 30      xx(i)=xx(i)+u(i,j)*vec(j)
-      do 40 i=1,5
- 40      vec(i)=xx(i)
+      do i=1,5
+        do j=1,5
+          do k=1,5
+            env(i,j)=env(i,j)+u(i,k)*tmp(k,j)
+          enddo
+        enddo
+      enddo
+      do i=1,5
+        xx(i)=0.
+        do j=1,5
+          xx(i)=xx(i)+u(i,j)*vec(j)
+        enddo
+      enddo
+      vec=xx
+c      do 40 i=1,5
+c 40      vec(i)=xx(i)
       return
       end
 c ------------------------------------------------------------------

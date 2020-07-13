@@ -8,8 +8,7 @@
 c
       integer*4 lene,lst,ln
       character*(MAXLLEN) cwork
-      character*(*) astr
-      parameter (astr=' *** ')
+      character*(5) ,parameter ::astr=' *** '
 c     
 c      print *,"errmsg",rtn(:8)
 c
@@ -18,7 +17,7 @@ c
          lst=lene(msg)
          lst=min(lst,80-2*len(astr)-ln)
          cwork=astr//rtn(:ln)//astr//msg(:lst)
-         write(errfl,*)cwork(:ln+lst+2*len(astr))
+         write(errfl,*)cwork(:ln+lst+2*len(astr)),' ercode = ',ercode
       endif
 c
       if (erlvl .lt. 16) then

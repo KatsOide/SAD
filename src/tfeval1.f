@@ -161,7 +161,7 @@
               return
             endif
             call loc_sad(ktfaddrd(kx),kl)
-            call tfsetpart(kl,ktastk(isp),kx,mode,irtc)
+            call tfsetpart(kl,dtastk(isp),kx,mode,irtc)
             return
           endif
         endif
@@ -382,7 +382,7 @@
         endif
       elseif(ktfsymbolq(k1,sym))then
         if(sym%override .eq. 0)then
-          call tfsydef(sym,sym)
+          sym=>tfsydef(sym)
         endif
         if(ktfprotectedqo(sym))then
           irtc=itfmessage(999,'General::protect','""')

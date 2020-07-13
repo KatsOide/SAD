@@ -13,7 +13,7 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       integer*8 ikptbl,ig,ipz,ix,ixx,iy,iyy,iz,izz,ifz,imt,kzx,
      $     latt,iparam,lscal
       integer*4 irtc,l,isp1,
-     $     nts,itfdownlevel,naz,ltpara,igetgl1
+     $     nts,itfdownlevel,naz,ltpara,IgetGL
       character*20 title
       logical*4, save :: trackinit=.false.
       real*8 ol,trval,dt1,df,rgetgl1,dt0,phi(3)
@@ -39,10 +39,7 @@ c      use tfcsi, only:ipoint,lrecl,lfni
      $       'DP=0.01;DPM=XIX=XIY=0;TITLE=CASE="";NFAMP=4;'//
      $       '(DP0=v_)^:=(LINE["DDP",1]=v);'//
      $       'System$Names=Select[Names["*"],'//
-     $       'ToUpperCase[#[1]]==#[1]&];Protect[DP0];'//
-     $       '{EMITX,EMITY,EMITZ,SIGZ}='//
-     $       'LINE[{"EMITX","EMITY","EMITZ","SIGMAZ"},1];'//
-     $       'DP0=LINE["DDP",1];',
+     $       'ToUpperCase[#[1]]==#[1]&];Protect[DP0];',
      $       kx,irtc)
         initmessage=0
         ifibzl=0
@@ -82,27 +79,27 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       vcalpha=rgetgl1('EFFVCRATIO')
       nlat  =elatt%nlat0+1
       df    =rgetgl1('FSHIFT')
-      isynch=igetgl1('$RFSW$'  )
-      intra =igetgl1('$INTRA$' ) .ne. 0
-      calpol=igetgl1('$POL$'   ) .ne. 0
-      rad   =igetgl1('$RAD$'   ) .ne. 0
-      calcod=igetgl1('$COD$'   ) .ne. 0
-      trpt  =igetgl1('$TRPT$'  ) .ne. 0
-      radcod=igetgl1('$RADCOD$') .ne. 0
-      radpol=igetgl1('$RADPOL$') .ne. 0
-      emiout=igetgl1('$EMIOUT$') .ne. 0
-      dapert=igetgl1('$DAPERT$') .ne. 0
-      rfluct=igetgl1('$FLUC$'  ) .ne. 0
-      k64   =igetgl1('$K64$'   ) .ne. 0
-      fourie=igetgl1('$FOURIE$') .ne. 0
-      smearp=igetgl1('$SMEAR$' ) .ne. 0
-      geocal=igetgl1('$GEOCAL$' ) .ne. 0
-      calc6d=igetgl1('$CALC6D$') .ne. 0
-      intres=igetgl1('$INTRES$') .ne. 0
-      halfres=igetgl1('$HALFRES$') .ne. 0
-      sumres=igetgl1('$SUMRES$') .ne. 0
-      diffres=igetgl1('$DIFFRES$') .ne. 0
-      photons=igetgl1('$PHOTONS$' ) .ne. 0
+      isynch=IgetGL('$RFSW$'  )
+      intra =IgetGL('$INTRA$' ) .ne. 0
+      calpol=IgetGL('$POL$'   ) .ne. 0
+      rad   =IgetGL('$RAD$'   ) .ne. 0
+      calcod=IgetGL('$COD$'   ) .ne. 0
+      trpt  =IgetGL('$TRPT$'  ) .ne. 0
+      radcod=IgetGL('$RADCOD$') .ne. 0
+      radpol=IgetGL('$RADPOL$') .ne. 0
+      emiout=IgetGL('$EMIOUT$') .ne. 0
+      dapert=IgetGL('$DAPERT$') .ne. 0
+      rfluct=IgetGL('$FLUC$'  ) .ne. 0
+      k64   =IgetGL('$K64$'   ) .ne. 0
+      fourie=IgetGL('$FOURIE$') .ne. 0
+      smearp=IgetGL('$SMEAR$' ) .ne. 0
+      geocal=IgetGL('$GEOCAL$' ) .ne. 0
+      calc6d=IgetGL('$CALC6D$') .ne. 0
+      intres=IgetGL('$INTRES$') .ne. 0
+      halfres=IgetGL('$HALFRES$') .ne. 0
+      sumres=IgetGL('$SUMRES$') .ne. 0
+      diffres=IgetGL('$DIFFRES$') .ne. 0
+      photons=IgetGL('$PHOTONS$' ) .ne. 0
       nparallel=max(1,int(rgetgl1('NPARA')))
       keepexp=.true.
       calexp=.true.
@@ -247,25 +244,25 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       title='Tracking'
  8001 call rsetgl1('LOSSAMPL',alost )
       call rsetgl1('LOSSDZ',zlost )
-      call isetgl1('$RFSW$',isynch)
-      call isetgl1('$INTRA$',intra )
-      call isetgl1('$POL$',calpol)
-      call isetgl1('$RAD$',rad   )
-      call isetgl1('$COD$',calcod)
-      call isetgl1('$RADCOD$',radcod)
-      call isetgl1('$RADPOL$',radpol)
-      call isetgl1('$EMIOUT$',emiout)
-      call isetgl1('$DAPERT$',dapert)
-      call isetgl1('$FLUC$',rfluct)
-      call isetgl1('$K64$',k64)
-      call isetgl1('$FOURIE$',fourie)
-      call isetgl1('$SMEAR$',smearp)
-      call isetgl1('$GEOCAL$',geocal)
-      call isetgl1('$INTRES$',intres)
-      call isetgl1('$HALFRES$',halfres)
-      call isetgl1('$SUMRES$',sumres)
-      call isetgl1('$DIFFRES$',diffres)
-      call isetgl1('$PHOTONS$',photons)
+      call isetgll('$RFSW$',rfsw)
+      call isetgll('$INTRA$',intra )
+      call isetgll('$POL$',calpol)
+      call isetgll('$RAD$',rad   )
+      call isetgll('$COD$',calcod)
+      call isetgll('$RADCOD$',radcod)
+      call isetgll('$RADPOL$',radpol)
+      call isetgll('$EMIOUT$',emiout)
+      call isetgll('$DAPERT$',dapert)
+      call isetgll('$FLUC$',rfluct)
+      call isetgll('$K64$',k64)
+      call isetgll('$FOURIE$',fourie)
+      call isetgll('$SMEAR$',smearp)
+      call isetgll('$GEOCAL$',geocal)
+      call isetgll('$INTRES$',intres)
+      call isetgll('$HALFRES$',halfres)
+      call isetgll('$SUMRES$',sumres)
+      call isetgll('$DIFFRES$',diffres)
+      call isetgll('$PHOTONS$',photons)
       nlat  =elatt%nlat0+1
       call tclrpara
       call cputime(dt1,irtc)
@@ -297,15 +294,6 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       return
       end
 
-      integer*4 function igetgl1(vname)
-      implicit none
-      integer*4 ia,igetgl
-      character*(*) vname
-      ia=0
-      igetgl1=igetgl(vname,ia)
-      return
-      end
-
       subroutine rsetgl1(vname,val)
       implicit none
       integer*4 ia
@@ -321,6 +309,17 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       integer*4 ia,ival
       character*(*) vname
       ia=0
+      call isetgl(vname,ival,ia)
+      return
+      end
+
+      subroutine isetgll(vname,lval)
+      implicit none
+      logical*4 , intent(in)::lval
+      integer*4 ia,ival
+      character*(*) vname
+      ia=0
+      ival=lval
       call isetgl(vname,ival,ia)
       return
       end

@@ -1,8 +1,8 @@
       module version
         character*19, parameter ::
 c                     /'1234567890123456789'/
-     $     versionid  ='1.1.8.2k6          ',
-     $     versiondate='6/20/2019 18:00:00 '
+     $     versionid  ='1.1.8.6k64         ',
+     $     versiondate='7/31/2019 18:00:00 '
 
         character*25 builtdate
         character*30 startdat
@@ -32,4 +32,24 @@ c
       call ktfinitshare
 c
       call toplvl
+      end
+
+      subroutine fdate1(dat)
+      implicit none
+      character*(*) ,intent(out):: dat
+      character*8 d
+      character*12 tim
+      character*9 day
+      integer lene
+
+      call datetime(d,tim)
+      if(d(7:7) .eq. ' ')then
+        d(7:7)='0'
+      endif
+
+      call tday(day)
+      dat=tim(1:2)//":"//tim(3:4)//":"//
+     $     tim(5:6)//' '//day(1:lene(day))//' '//
+     $     d(5:6)//"/"//d(7:8)//"/"//d(1:4)
+      return
       end

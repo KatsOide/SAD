@@ -55,9 +55,9 @@
           return
         endif
         if(reps)then
-          call tfduplist(list,listx)
+          listx=>tfduplist(list)
         else
-          call tfclonelist(list,listx)
+          listx=>tfclonelist(list)
         endif
         call tfreplist(listx,0,k1,eval)
 c        call tfloadlstk(list,listx)
@@ -702,7 +702,7 @@ c      call tfdebugprint(kx,'==>',3)
       endif
       irtc=0
       if(sym%override .eq. 0)then
-        call tfsydef(sym,sym)
+        sym=>tfsydef(sym)
       endif
       call sym_namtbl(sym,loc)
       call sym_symdef(sym,symd)

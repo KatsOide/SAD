@@ -7,12 +7,11 @@
       use tspin
       use mathfun, only: sqrtl
       implicit none
-      integer*4 irad,i,itmax
-      parameter (itmax=10)
-      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,9)
-      real*8 al,bz,ak0x,ak0y,pr,pxi,pyi,pzi,a,ale,alz,
-     $     dv,dvdp,bzh,alr
-      logical*4 dvon,enarad
+      integer*4 ,intent(in):: irad
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 ,intent(in)::  al,bz,ak0x,ak0y
+      real*8 trans1(6,6),pr,pxi,pyi,pzi,a,ale,alz,dv,dvdp,bzh,alr
+      logical*4 ,intent(in):: dvon,enarad
       if(al .eq. 0.d0)then
         cod(2)=cod(2)-ak0x
         cod(4)=cod(4)+ak0y
@@ -43,14 +42,14 @@
         trans1(5,2)=trans1(1,6)
         trans1(5,4)=trans1(3,6)
         trans1(5,6)=dvdp*al+a*alz
-        do i=1,irad
-          trans(1,i)=trans(1,i)+trans1(1,2)*trans(2,i)
-     $         +trans1(1,4)*trans(4,i)+trans1(1,6)*trans(6,i)
-          trans(3,i)=trans(3,i)+trans1(3,2)*trans(2,i)
-     $         +trans1(3,4)*trans(4,i)+trans1(3,6)*trans(6,i)
-          trans(5,i)=trans(5,i)+trans1(5,2)*trans(2,i)
-     $         +trans1(5,4)*trans(4,i)+trans1(5,6)*trans(6,i)
-        enddo
+        trans(1:5:2,1:irad)=trans(1:5:2,1:irad)
+     $       +matmul(trans1(1:5:2,2:6:2),trans(2:6:2,1:irad))
+c        trans(1,1:irad)=trans(1,1:irad)+trans1(1,2)*trans(2,1:irad)
+c     $       +trans1(1,4)*trans(4,1:irad)+trans1(1,6)*trans(6,1:irad)
+c        trans(3,1:irad)=trans(3,1:irad)+trans1(3,2)*trans(2,1:irad)
+c     $       +trans1(3,4)*trans(4,1:irad)+trans1(3,6)*trans(6,1:irad)
+c        trans(5,1:irad)=trans(5,1:irad)+trans1(5,2)*trans(2,1:irad)
+c     $       +trans1(5,4)*trans(4,1:irad)+trans1(5,6)*trans(6,1:irad)
         cod(1)=cod(1)+pxi/pzi*al
         cod(3)=cod(3)+pyi/pzi*al
         cod(5)=cod(5)-(a/(pr+pzi)/pzi+dv)*al

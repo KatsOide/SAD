@@ -2,13 +2,13 @@
       use tfstk
       use tfcode
       implicit none
-      type (sad_symdef) def
+      type (sad_symdef) ,intent(inout):: def
       type (sad_symdef), pointer :: def1
       type (sad_defhash), pointer :: dhash
       type (sad_descriptor) kx
       integer*8 ka1,ka10,kp1,kadi,kadi0,kp0
       integer*4 i,kk,irtc,isp0
-      logical*4 del,unset
+      logical*4 ,intent(in):: del,unset
       if(unset)then
         if(def%upval .ne. 0)then
           isp0=isp
@@ -75,7 +75,7 @@
       integer*8 function ktfcopy(k)
       use tfstk, ktfc=>ktfcopy
       implicit none
-      integer*8 k
+      integer*8 ,intent(in):: k
       ktfcopy=ktfc(k)
       return
       end

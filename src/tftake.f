@@ -268,15 +268,14 @@
       use tfstk
       use iso_c_binding
       implicit none
-      type (sad_descriptor) kx,k0,k1,ks
+      type (sad_descriptor) kx,k0,k1,ks,krv
       type (sad_dlist), pointer :: klx
       type (sad_dlist), pointer :: kl
       type (sad_rlist), pointer :: klr
       integer*4 isp1,irtc,i,m,itfmessage,isp0
-      real*8 cv
-      cv=-1.d0
+      krv%x(1)=-1.d0
       if(isp .eq. isp1+2)then
-        if(.not. ktfrealq(dtastk(isp),cv))then
+        if(.not. ktfrealq(dtastk(isp),krv%x(1)))then
           irtc=itfmessage(9,'General::wrongtype',
      $         '"Real for #2"')
           return
@@ -299,12 +298,12 @@
       if(ktfreallistq(kl))then
         kx=kxavaloc(-1,m-1,klr)
         call c_f_pointer(c_loc(klr),klx)
-        if(cv .eq. -1.d0)then
+        if(krv%x(1) .eq. -1.d0)then
           klr%rbody(1:m-1)=kl%rbody(2:m)-kl%rbody(1:m-1)
-        elseif(cv .eq. 1.d0)then
+        elseif(krv%x(1) .eq. 1.d0)then
           klr%rbody(1:m-1)=kl%rbody(2:m)+kl%rbody(1:m-1)
         else
-          klr%rbody(1:m-1)=kl%rbody(2:m)+cv*kl%rbody(1:m-1)
+          klr%rbody(1:m-1)=kl%rbody(2:m)+krv%x(1)*kl%rbody(1:m-1)
         endif
       else
         isp0=isp
@@ -312,7 +311,7 @@
         do i=2,m
           isp=isp+1
           k1=kl%dbody(i)
-          call tfecmplxl(cv,k0,ks,mtfmult)
+          call tfecmplxl(krv,k0,ks,mtfmult)
           call tfecmplxl(ks,k1,dtastk(isp),mtfplus)
           k0=k1
         enddo
@@ -354,7 +353,7 @@
         ki=dtastk(i)
         if(ktfsymbolq(ki,sym))then
           if(sym%override .eq. 0)then
-            call tfsydef(sym,sym)
+            sym=>tfsydef(sym)
           endif
           if(ktfprotectedqo(sym))then
             irtc=itfmessage(999,'General::protect','""')
@@ -410,7 +409,7 @@ c      include 'DEBUG.inc'
       enddo
       if(ktfsymbolqdef(kh%k,def))then
         if(def%sym%override .eq. 0)then
-          call tfsydef(def%sym,symh)
+          symh=>tfsydef(def%sym)
           call sym_symdef(symh,def)
         endif
         kad=def%upval
@@ -523,7 +522,7 @@ c      include 'DEBUG.inc'
         endif
         if(ktfsymbolq(k,sym))then
           if(sym%override .eq. 0)then
-            call tfsydef(sym,sym)
+            sym=>tfsydef(sym)
           endif
           if(sym%gen .le. 0)then
             if(protect)then
@@ -664,7 +663,7 @@ c      include 'DEBUG.inc'
       endif
       if(ktfsymbolq(k,sym))then
         if(sym%override .eq. 0 .or. sym%override .eq. 1)then
-          call tfsydef(sym,sym)
+          sym=>tfsydef(sym)
           ka=ksad_loc(sym%loc)
         endif
         kv=dtastk(isp)

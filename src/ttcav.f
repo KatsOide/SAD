@@ -1,18 +1,25 @@
       subroutine ttcav(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     1                 al,ak,harm,phi,freq,dx,dy,theta)
+     1                 al,ak,harm,phi,freq,dx,dy,theta,krad)
       use tmacro
       use ffs_flag, only:calpol
       use mathfun
+      use tspin
       implicit none
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
      $     sx(np),sy(np),sz(np)
       real*8 al,ak,harm,phi,freq,dx,dy,theta,cost,sint,w,phic,
      $     dp1r,p1r,p1,h1,t,ph,dh,h2,a,dpr,dp2r,p2r,xi,pxi,v
+      logical*4 krad
+      include 'inc/TENT.inc'
       if(al .ne. 0.d0)then
         call tdrift_free(np,x,px,y,py,z,dv,al*.5d0)
+        if(krad)then
+          pxr0=px
+          pyr0=py
+          zr0=z
+        endif
       endif
-      include 'inc/TENT.inc'
       if(harm .eq. 0.d0)then
         w=pi2*freq/c
       else
@@ -51,9 +58,12 @@ c        g(i)=(gg**2+dp2r)/(2.d0+2.d0*gg)
         py(i)=py(i)*p1r/p2r
         z(i)=-t*p2r*p0/h2
 10    continue
-      include 'inc/TEXIT.inc'
       if(al .ne. 0.d0)then
         call tdrift_free(np,x,px,y,py,z,dv,al*.5d0)
+        if(krad)then
+          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al,0.d0)
+        endif
       endif
+      include 'inc/TEXIT.inc'
       return
       end

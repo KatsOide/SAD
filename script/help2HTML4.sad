@@ -1,0 +1,238 @@
+FFS;
+
+ EquAlign[t_,_]:="::<"//t//">::";
+
+ Help2HTML=Class[{},{},{help,nlabel=0,Labels,col=96,
+   lt,ltt,form="svg",svg,outf,pw="16 cm"},
+
+   Constructor[]:=(
+     SetDirectory[DocumentsDirectory];
+     help=Help$Messages;
+     help[[1,2]]="";
+     Labels[s_]:=s;
+     Labels[""]="";
+     outf[_]=Undefined;
+     lt=LaTeX[style->"align",pt->11,margins->"'3 3 3 0'",dpi->120];
+     ltt=LaTeX[style->"text",pt->11,margins->"'3 3 3 0'",dpi->120]
+     );
+
+     SelfIndent[in_]:=Module[{f=StringToStream[in],r,ind,tab,con,w,p,ps,r1},
+       r=Table[s=ReadString[f];
+         If[s===EndOfFile,Close[f];Break[]];
+         StringTrim[s],
+         {Infinity}];
+       r1=If[r[[1]]=="",r=Rest[r];"\n\n",""];
+       ind=Max[p=(If[(ps=StringPosition[#," ",1])<=>{},ps[[1,1]],0]&/@r)]+1;
+!       Print["SI: ",{r,ind}];
+       tab=FromCharacterCode[Table[32,{ind}]];
+       con=MapThread[{#[1,#2-1],StringTrim[#[#2+1,-1]]}&,{r,p}];
+       r1//(StringJoin@@((w=WrapLine[#2,col-ind];
+         w=((#//tab)[1,ind])//w;
+         StringReplace[w,"\n"->("\n"//tab)]//"\n")&@@[con,{1}]))[1,-2]
+       ];
+
+     ReplaceIndent[s_]:=Module[{p=StringPosition[s,"\t",2],p1,s2,s3},
+       If[p==={},
+         WrapLine[s,col],
+         p1=p[[1,1]];
+         {s2,s3}=If[Length[p]==1,{s[p1+1,-1],""},{s[p1+1,p[[2,1]]-1],s[p[[2,1]]+1,-1]}];
+         WrapLine[s[1,p1-1],col]//SelfIndent[s2]//ReplaceIndent[s3]]];
+
+     ReplaceDraw[""]="";
+     ReplaceDraw[s_String]:=Module[{p=StringPosition[s,"\n<",1],p1},
+       If[p=={},
+         ReplaceIndent[s],
+         p=p[[1,1]]+2;
+         p1=StringPosition[s[p,-1],"\n",1];
+         p1=If[p1==={},
+           StringLength[s],
+           p+p1[[1,1]]-2];
+         If[s[p1-3,p1]<=>".png" && s[p1-3,p1]<=>".jpg",
+           ReplaceIndent[s[1,p1]]//"\n",
+           ReplaceIndent[s[1,Max[0,p-2]]]//
+             "<img SRC=\"SADHelp_img/"//s[p,p1]//"\" ALIGN=\"middle\" WIDTH=540>\n"]//
+               ReplaceDraw[s[p1+2,-1]]]];
+
+     ReplaceLaTeX[""]="";
+     ReplaceLaTeX[s_String]:=Module[{p=StringPosition[s,"::<",1],
+       p1,out,equ,pe,p2,p0,lx},
+       If[p=={},
+         ReplaceDraw[s],
+         p=p[[1,2]]+1;
+         p1=StringPosition[s[p,-1],">::",1];
+         p1=If[p1==={},
+           StringLength[s],
+           p+p1[[1,1]]-2];
+!         Print["RL-1 ",{p,p1,s[p,p+4]}];
+         neq=Which[s[p,p+4]==="Text[",
+           lx:=ltt;
+           p=p+5;
+           p1-=1;
+           p2=p1+5;
+           p0=p-9;
+           If[(pe=StringPosition[s[p,-2],";;;"])<=>{},
+!             Print["RepLateX ",{p,p+pe[[1,2]],p1,Max[0,ToExpression[s[p+pe[[1,2]],p1]]-1],s[p+pe[[1,2]],p1],s[1,16]}];
+             {Max[0,ToExpression[s[p+pe[[1,2]],p1]]-1],p1=p+pe[[1,1]]-2}[[1]],
+             0],
+           True,
+           lx:=lt;
+           p2=p1+4;
+           p0=p-4;
+           0];
+!         Print["RL-5",{p,p1,neq,s[p,p1]}];
+         If[(equ=outf[s[p,p1]])===Undefined,
+           equ="SADHelp_img/equ_"//++lt@eqn//"."//form;
+           If[Fork[],
+             outf[s[p,p1]]=equ;
+             lt@eqn+=neq,
+             --lt@eqn;
+             With[{lx},
+               out=lx@Typeset[s[p,p1],Format->form];
+               System["mv -f "//out//" "//equ]];
+             Exit[]]
+           ];
+         s[1,Max[p0,0]]//
+           "<img  class=\"eqs\" SRC=\""//equ//"\" />"//
+             ReplaceLaTeX[s[p2,-1]]
+         ]];
+
+     WrapLine[t_,n_]:=Module[{p=StringPosition[t,"\n",1],p1},
+       If[p==={},
+         If[StringLength[t]<=n,
+           t,
+           p1=StringPosition[t[n+1,-1]," ",1];
+           If[p1==={},
+             t,
+             t[1,n+p1[[1,1]]-1]//"\n"//WrapLine[t[n+p1[[1,1]]+1,-1],n]]],
+         If[p[[1,1]]<=n+1,
+           t[1,p[[1,1]]]//WrapLine[t[p[[1,1]]+1,-1],n],
+           p1=StringPosition[t[n+1,-1]," ",1];
+           If[p1==={},
+             t[1,p[[1,1]]]//WrapLine[t[p[[1,1]]+1,-1],n],
+             t[1,n+p1[[1,1]]-1]//"\n"//
+               WrapLine[t[n+p1[[1,1]]+1,-1],n]]
+           ]
+         ]
+       ];
+
+     WriteHTML[f_,h_,ul_]:=Module[{r,c=0},
+       If[h[[1]]=="example",Return[]];
+       If[ul<0,Write[f,"<LI>"]];
+       nlabel=nlabel+1;
+!       Write[f,"<H3><A NAME=L",nlabel,">\n",h[[1]],"</A></H3>"];
+       Write[f,"<H3><A NAME=L",h[[1]],">\n",h[[1]],"</A></H3>"];
+       Flush[f];
+       Write[f,"<PRE>",ReplaceLaTeX[h[[2]]],"\n</PRE>\n"];
+       r=GetLabel[h[[3]]];
+       If[r<=>{},
+         Write[f,"<PRE>See also:"];
+         (WriteString[f," ",Labels[#]];
+           If[(c+=StringLength[Labels[#]]-15)>col,
+             Write[f,""];
+             c=0])&/@r;
+         Write[f,"</PRE>"]
+         ];
+       If[Length[h[[4]]]>0,
+         If[ul<=0,Write[f,"<UL>"]];
+         Scan[WriteHTML[f,#,ul-1]&,h[[4]]];
+         If[ul<=0,Write[f,"</UL>"]]]];
+
+     GetLabel[""]={};
+     GetLabel[s_]:=Module[{f=StringToStream[s],w},
+       Table[
+         w=Read[f,Word];
+         If[w===EndOfFile,Close[f];Break[]];
+         w,
+         {Infinity}]];
+
+     LabelTitle[l_]:=Module[{p=StringPosition[l,"("]},
+       If[p==={},
+         {l},
+         p=p[[1,1]];
+         {l,l[1,p-1],l[p+1,-2]}]];
+
+     SetLabel[tag_,l_]:=
+       If[
+         Labels[tag]<=>tag,
+         Print["Duplicated Label: ",tag," ",Labels[tag]," <=> ",l],
+         Labels[tag]=l];
+
+     WriteHTMLIndex[f_,h_,tab_]:=Module[{tab1,lab,h1=h[[1]]},
+       If[h1=="example",Return[]];
+       nlabel++;
+!       lab="<A HREF=#L"//nlabel//">"//h1//"</A>";
+       lab="<A HREF=#L"//LabelTitle[h1][[1]]//">"//h1//"</A>";
+       Scan[SetLabel[#,lab]&,LabelTitle[h1]];
+       Write[f,tab,lab];
+       If[Length[h[[4]]]>0,
+         tab1=tab//"   ";
+!     Write[f,"("];
+         Scan[WriteHTMLIndex[f,#,tab1]&,h[[4]]]
+!     Write[f,")"]
+         ]];
+
+   ];
+
+ HH=Help2HTML[];
+
+ f=OpenWrite["SADHelp.html"];
+ Write[f,"\
+<HEAD>\n<TITLE>\n\
+</TITLE>\n\
+<STYLE>\n\
+eqs img{\n\
+  display: inline;\n\
+  vertical-align: center;\n\
+  white-space:nowrap;\n\
+  font-size:0;\n\
+}\n\
+</STYLE>\n\
+</HEAD>\n<BODY>\n\
+<CENTER><H2>Welcome to SAD/FFS & SADScript\n</H2></CENTER>\n\
+<CENTER> SAD/FFS SADScript Version: ",Help$Version,",      Updated: ",Help$Update,"</CENTER>\n\n",
+"<PRE>"//HH@WrapLine[" Please use browser's search to find an item.\n\n\
+ The FFS commands are shown in uppercases. The minimum abbreviated form of each command is enclosed in (). Each command can be shorten down to that. The optional arguments for the commands are usually shown in [].\n\
+ The notation ===> reads \"equivalent to\" below.",HH@col]//"\
+</PRE>\n\
+<A HREF=\"http://acc-physics.kek.jp/SAD/\">\n<H4>\n\
+<img SRC=\"SADHelp_img/SAD.jpg\" ALIGN=\"middle\" ALT=\"SAD\" WIDTH=90></A>\n\
+Back to SAD Home Page</H4>\n\
+<A HREF=\"example/design_example.html\">\n<H4>\n\
+SAD/FFS Examples</H4></A>\n\
+<HR>\n"];
+ Write[f,"<PRE>"];
+ HH@WriteHTMLIndex[f,HH@help[[1]],""];
+ Write[f,"</PRE><HR>"];
+ HH@nlabel=0;
+ HH@WriteHTML[f,HH@help[[1]],1];
+ Write[f,"<HR>\n</BODY>"];
+ Close[f]
+
+(*
+!
+ f=OpenWrite["../script/design_example.html"];
+ fr=OpenRead[ExamplesDirectory//"design_example.sad.result"];
+ Write[f,"\
+<HEAD>\n<TITLE>\n\
+   SAD/FFS Examples\n\
+</TITLE>\n</HEAD>\n<BODY>\n\
+<CENTER><H2>SAD/FFS Examples\n</H2></CENTER>\n\
+<A HREF=\"http://acc-physics.kek.jp/SAD/\">\n<H4>\n\
+<img SRC=\"../sad.png\" ALIGN=\"middle\" ALT=\"SAD\" WIDTH=45></A>\n\
+Back to SAD Home Page</H4>\n\
+<A HREF=\"../SADHelp.html\">\n<H4>\n\
+Back to SAD/FFS Commands</H4></A>\n\
+<H3><A HREF=#result>Results</A></H3>\n<HR><PRE>",
+Cases[HH@help,{"example",__},Infinity][[1,2]],
+"\n</PRE><HR>\n<H3><A NAME=result>Results:</A></H3><PRE>"];
+ While[l=ReadString[fr];l<=>EndOfFile,
+   Write[f,l];
+   If[StringPosition[l,"! draw"]<=>{},
+     Write[f,"</PRE><img SRC=\"",l[StringPosition[l," "][-1,1]+1,-1],
+             ".png\" WIDTH=500><PRE>"]];
+   ];
+ Write[f,"</PRE><HR>\n</BODY>"];
+ Close[f];
+*)
+end
+abort

@@ -1885,7 +1885,7 @@ CanvasGraphics=Class[{},
       d[[1]]=0.1];
     DashCanonical[dash]=d];
 
-  With[{txdef={PlotColor->"black",TextFont->"",TextSize->1}},
+  With[{txdef={PlotColor->"black",TextFont->DefaultFont,TextSize->1}},
     Canvas$Legend[n_, r_] := Module[
       {pc,pl,size,sym,ptc,dash,thick,pj,pbc,pbc1,leg,cmd,x0,dx,dy,y,
         d1=5,d2=-1,d3=1,legtag,legtagfr,bdf,begin=CanvasLastID,

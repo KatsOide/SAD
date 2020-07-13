@@ -3,15 +3,13 @@
       use ffs_flag
       use tmacro
       use temw
+      use multa, only:fact
       implicit none
       integer*4 kord,nord
       real*8 al,ak,dx,dy,theta,b1,aki,ala,alb
       real*8 trans(6,12),cod(6),beam(42),srot(3,9)
       complex*16 cx,cx1
-      real*8 fact(0:10)
       logical*4 enarad,krad
-      data fact / 1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
-     1          720.d0,5040.d0,40320.d0,362880.d0,3628800.d0 /
       real*8 trans1(6,13)
       if(ak .eq. 0.d0)then
         call tdrife(trans,cod,beam,srot,al,

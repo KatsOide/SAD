@@ -4,13 +4,14 @@
       use ffs_fit
       use ffs_pointer
       use tffitcode
+      use geolib
       implicit none
       integer*4 kf,kp,idp
-      real*8 tfchi,tphysdisp
+      real*8 tphysdisp
       if(kf .le. mfitzpy)then
         tgfun=utwiss(kf,idp,itwissp(kp))
       elseif(kf .ge. mfitpex .and. kf .le. mfitgmz)then
-        tgfun=tphysdisp(kf,utwiss(1,idp,itwissp(kp)))
+        tgfun=tphysdisp(kf,utwiss(1:ntwissfun,idp,itwissp(kp)))
       else
         select case (kf)
         case (mfittrx)
@@ -23,7 +24,7 @@
           if(kf .le. mfitgz)then
             tgfun=geo(kf-mfitgx+1,4,kp)
           else
-            tgfun=tfchi(geo(1,1,kp),kf-mfitchi1+1)
+            tgfun=tfchi(geo(:,:,kp),kf-mfitchi1+1)
           endif
         end select
       endif
@@ -262,51 +263,5 @@ c        write(*,*)'tphysdisp ',kf
         pe(4)=cc*utwiss1(mfitepx)
      $       -r3*utwiss1(mfitey)+r1*utwiss1(mfitepy)
       endif
-      return
-      end
-
-      real*8 function tfchi(geo,i)
-      implicit none
-      real*8 geo(3,4)
-      integer*4 i
-      if(i .eq. 2)then
-        tfchi=asin(geo(3,3))
-      elseif(i .eq. 1)then
-        if(geo(2,3) .eq. 0.d0)then
-          tfchi=0.d0
-        else
-          tfchi=atan2(geo(2,3),geo(1,3))
-        endif
-      else
-        if(geo(3,1) .eq. 0.d0)then
-          tfchi=0.d0
-        else
-          tfchi=atan2(geo(3,1),-geo(3,2))
-        endif
-      endif
-      return
-      end
-
-      subroutine tfchi2geo(chi1,chi2,chi3,geo)
-      implicit none
-      real*8 chi1,chi2,chi3,geo(3,3),
-     $     schi1,cchi1,
-     $     schi2,cchi2,
-     $     schi3,cchi3
-      cchi1=cos(chi1)
-      cchi2=cos(chi2)
-      cchi3=cos(chi3)
-      schi1=sin(chi1)
-      schi2=sin(chi2)
-      schi3=sin(chi3)
-      geo(1,1)= schi1*cchi3-cchi1*schi2*schi3
-      geo(2,1)=-cchi1*cchi3-schi1*schi2*schi3
-      geo(3,1)= cchi2*schi3
-      geo(1,2)= schi1*schi3+cchi1*schi2*cchi3
-      geo(2,2)=-cchi1*schi3+schi1*schi2*cchi3
-      geo(3,2)=-cchi2*cchi3
-      geo(1,3)= cchi1*cchi2
-      geo(2,3)= schi1*cchi2
-      geo(3,3)= schi2
       return
       end

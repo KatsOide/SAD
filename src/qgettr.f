@@ -4,14 +4,14 @@
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 k1,k2,idp,i
-      real*8 trans1(4,5)
-      logical*4 disp,fold
+      integer*4 ,intent(in):: k1,k2,idp
+      real*8 ,intent(inout):: trans1(4,5)
+      logical*4 ,intent(in):: disp,fold
       real*8 utwiss1(ntwissfun),utwiss2(ntwissfun)
-      do i=1,mfitdetr
-        utwiss1(i)=twiss(k1,idp,i)
-        utwiss2(i)=twiss(k2,idp,i)
-      enddo
+c      do i=1,mfitdetr
+        utwiss1(1:mfitdetr)=twiss(k1,idp,1:mfitdetr)
+        utwiss2(1:mfitdetr)=twiss(k2,idp,1:mfitdetr)
+c      enddo
       call qgettru(utwiss1,utwiss2,
      $     twiss(nlat,idp,mfitnx),twiss(nlat,idp,mfitny),
      $     trans1,k1,k2,disp,fold,trpt)
@@ -25,13 +25,12 @@
       use tffitcode
       implicit none
       integer*4 k1,k2
-      real*8 utwiss1(*),utwiss2(*)
-      real*8 trans(4,5),trans1(4,5),amux,amuy
-      logical*4 disp,fold,trpt1
+      real*8 ,intent(in):: utwiss1(*),utwiss2(*),amux,amuy
+      real*8 ,intent(inout):: trans1(4,5)
+      real*8 trans(4,5)
+      logical*4 ,intent(in):: disp,fold,trpt1
       real*8 sqrtb1,sqrtb2,dpsi1,cospsi,sinpsi,gr,
      $     detr,cc,r1,r2,r3,r4,th
-c      write(*,'(a,1p8g14.6)')'qgettru ',utwiss1(mfitr1:mfitr4),
-c     $     utwiss2(mfitr1:mfitr4)
       sqrtb1=sqrt(utwiss1(mfitbx))
       sqrtb2=sqrt(utwiss2(mfitbx))
       dpsi1=utwiss2(mfitnx)-utwiss1(mfitnx)

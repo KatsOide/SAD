@@ -1,9 +1,11 @@
       subroutine qdrift(trans,cod,al,coup)
       use mathfun, only:sqrtl
       implicit none
-      real*8 trans(4,5),cod(6),al,pxi,pyi,pxisq,pyisq,
-     $     pzi,ale,alz
-      logical coup
+      real*8 ,intent(out):: trans(4,5)
+      real*8 ,intent(inout):: cod(6)
+      real*8 ,intent(in):: al
+      real*8 pxi,pyi,pxisq,pyisq,pzi,ale,alz
+      logical*4 ,intent(out):: coup
       pxi=cod(2)
       pyi=cod(4)
       pxisq=pxi**2

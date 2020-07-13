@@ -2,10 +2,12 @@
       use tfstk
       use ffs
       use tffitcode
+      use ffs_pointer , only:gammab
       implicit none
+      type(sad_descriptor) kx
       type (sad_rlist) , pointer :: kl
       type (sad_dlist) , pointer :: klopt,klopt1,klst,klstt
-      integer*8 kx,kax,kax1,kaxfirst,kaxlast,kam,kaa1,kaa
+      integer*8 kax,kax1,kaxfirst,kaxlast,kam,kaa1,kaa
       logical*4 normalmode,xplane,angle,periodic
       integer*4 isp1,irtc
       integer*4 narg,nc,itfloc,itfmessage,im,m
@@ -119,9 +121,10 @@ c      write(*,*)'pgrmat-7 ',psix0,psiy0
         endif
 c      write(*,*)'pgrmat-8.1 '
         
-        call pgrmat1(rlist(ifgamm),im,
-     $       rtastk(isp1+2),rtastk(isp1+3),1,
-     $       rlist(kam+1),klopt1,kx,psix,psiy,psix0,psiy0,
+        call pgrmat1(gammab,im,
+     $       rtastk(isp1+2:isp1+2),rtastk(isp1+3:isp1+3),1,
+     $       rlist(kam+1:kam+ntwissfun),klopt1,kx%x(1:1),
+     $       psix,psiy,psix0,psiy0,
      $       periodic,normalmode,angle,xplane)
 c      write(*,*)'pgrmat-8.2 '
       elseif(tflistq(ktastk(isp1+2),klst))then
@@ -139,13 +142,14 @@ c       print *,'length=',m
         endif
         kax=ktavaloc(-1,m)
 c      write(*,*)'pgrmat-9.2 ',kaa,kaa1,m,kam
-        call pgrmat1(rlist(ifgamm),im,rlist(kaa+1),
-     $       rlist(kaa1+1),m,rlist(kam+1),klopt1,rlist(kax+1),psix,psiy,
+        call pgrmat1(gammab,im,rlist(kaa+1:kaa+m),
+     $       rlist(kaa1+1:kaa+m),m,rlist(kam+1:kam+ntwissfun),
+     $       klopt1,rlist(kax+1:kax+m),psix,psiy,
      $       psix0,psiy0,periodic,normalmode,angle,xplane)
-        kx=ktflist+kax
+        kx%k=ktflist+kax
 c      write(*,*)'pgrmat-9.3 '
       else
-        kx=ktfoper+mtfnull
+        kx%k=ktfoper+mtfnull
       endif
       return
       end

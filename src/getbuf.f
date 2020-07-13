@@ -14,7 +14,8 @@
       use iso_c_binding
       implicit none
       integer*4 lrecl0,lrecl1,nc
-      logical*4 unmapped,trim
+      logical*4 ,intent(in):: trim
+      logical*4 unmapped
       if(lfni .le. 0)then
         ios=99999
         return

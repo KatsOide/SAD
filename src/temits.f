@@ -83,12 +83,7 @@ c     $     dhc(4,mphi2,ndp),dhs(4,mphi2,ndp),
       real*8 params(nparams),btr(21,21),rm(6,6),
      $     rx(6,6),rxi(6,6),cmu(mphi2),smu(mphi2),disppi(6),
      $     beamr(42),fj(256),conv,tw0(ntwissfun),dispp(6)
-      character*10 label1(6),label2(6)
       logical*4 plot,stab,fndcod,calpol0
-      data label1/'        X ','       Px ','        Y ',
-     1     '       Py ','        Z ','       Pz '/
-      data label2/'        x ','    px/p0 ','        y ',
-     1     '    py/p0 ','        z ','    dp/p0 '/
       calpol0=calpol
       calpol=.false.
       codin=0.d0
@@ -292,7 +287,7 @@ c            endif
               call tputbs(beam,label2,lfno)
               call tputbs(beamr,label1,lfno)
               call tedrawf(8,bc,bs,hc,hs,
-     $             sige,amus/pi2,mphi,mphi2,ndp)
+     $             sige,amus/pi2,mphi2,ndp)
             endif
           endif
         else
@@ -832,6 +827,7 @@ c      call tclr(bfb,2*nsb)
       use macmath
       use tfstk,only:ktfenanq
       use tffitcode,only:ntwissfun
+      use sad_main, only:iaidx
       implicit none
       integer*4 mphi,mphi2,nz,ndp,i,j,k,l,m,ndims
       real*8 
@@ -844,9 +840,9 @@ c      call tclr(bfb,2*nsb)
       real*8 phi,cs,phim,csm,p,f,tr1(5,5),h1(4),
      $     beama(10),trd(5,5),dpndim,sigea,btr(10,10),
      $     aj,pj,dj
-      integer*4 ip,kk,k1,ll,l1,ia,n,nj,j1
+      integer*4 ip,kk,k1,ll,l1,nj,j1
       parameter (nj=2)
-      ia(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
+c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       bb=0.d0
       bd=0.d0
       ba=0.d0
@@ -871,10 +867,10 @@ c            write(*,'(a,5(1p5g12.4/))')'setup11 ',(tr1(k,:),k=1,5)
             call teintb(ip,f,beams,beama,ndims)
             do k=1,4
               do k1=1,k
-                kk=ia(k,k1)
+                kk=iaidx(k,k1)
                 do l=1,4
                   do l1=1,l
-                    ll=ia(l,l1)
+                    ll=iaidx(l,l1)
                     if(l .eq. l1)then
                       btr(kk,ll)=tr1(k,l)*tr1(k1,l)
 c     btrd(kk,ll)=tr1(k,l)*trd(k1,l)+
@@ -903,7 +899,7 @@ c     $                   trd(k,l1)*trd(k1,l)
                 ha(1:4,k,m,j)=ha(1:4,k,m,j)+tr1(1:4,k)*csm
                 hb(k,m,j)=hb(k,m,j)+h1(k)*csm
                 do l=1,k
-                  kk=ia(k,l)
+                  kk=iaidx(k,l)
                   bb(kk,m,j)=bb(kk,m,j)+h1(k)*h1(l)*csm
                   bd(kk,:,m,j)=bd(kk,:,m,j)+
      $                 (tr1(k,1:4)*h1(l)+tr1(l,1:4)*h1(k))*csm
@@ -928,7 +924,7 @@ c              enddo
               do k=1,4
                 ha(:,k,m,j)=ha(:,k,m,j)+tr1(1:4,k)*csm
                 do l=1,k
-                  kk=ia(k,l)
+                  kk=iaidx(k,l)
                   bd(kk,:,m,j)=bd(kk,:,m,j)+
      $                 (tr1(k,1:4)*h1(l)+tr1(l,1:4)*h1(k))*csm
                 enddo
@@ -1042,13 +1038,14 @@ c$$$     $     bdx(1,m,j0),nd)
       subroutine tesumb(bc,hc,mphi2,ndp,
      $     w,dj,sige,tws,ndims,beam,fj)
       use tffitcode
+      use sad_main, only:iaidx
       implicit none
       integer*4 mphi2,ndp,ndims
       real*8 beam(42),sige,f,dj,w,e,aj
       real*8 bc(10,mphi2,ndp),hc(4,mphi2,ndp),
      $     tws(ntwissfun,-ndims:ndims),fj(ndp),dispp(4)
-      integer*4 i,j,m,ia,i1,ii,n
-      ia(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
+      integer*4 i,j,i1,ii
+c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       e=sige**2
       beam(1:21)=0.d0
 c      call tclr(beam,21)
@@ -1067,7 +1064,7 @@ c        enddo
       call tgetphysdispu(tws(1,0),dispp)
       do i=1,4
         do i1=1,i
-          ii=ia(i,i1)
+          ii=iaidx(i,i1)
           beam(ii)=beam(ii)+dispp(i)*dispp(i1)*e
         enddo
       enddo

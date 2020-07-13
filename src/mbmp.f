@@ -191,7 +191,7 @@ c     print *,'nb=',nb
       end
 
       subroutine mbstr(latt,twiss,gammab,mult,isb,xs,nbp,ncb,istr,estr,
-     1                 wk,cor)
+     $     cor)
 c     ---- solve bump equation ---------
       use ffs
       use tffitcode
@@ -199,7 +199,8 @@ c     ---- solve bump equation ---------
       logical cor(*),xplane,yplane
       integer*8 latt(nlat)
       dimension twiss(*),gammab(nlat),mult(*)
-     z,         isb(ncb+4,*),xs(ncb+2,2,*),istr(*),estr(*),wk(ncb+2,2)
+     z,         isb(ncb+4,*),xs(ncb+2,2,*),istr(*),estr(*)
+      real*8 wk(ncb+2,2)
 c
       save
 c
@@ -355,13 +356,16 @@ c ----------------------------------------------------------------------
       use tffitcode
       use sad_main
       use ffs_pointer, only:elatt
+      use iso_c_binding
       implicit real*8 (a-h,o-z)
       parameter (nobj=8,nmeth=5,nsolvr=2,nbound=2,nother=nsolvr+nbound,
      1           nkey=nobj+nmeth+nother,ddp=1d-6, nbc0=4)
       parameter (mfitc1=32,mfitc2=28)
+      real*8 ,pointer :: amat(:,:)
       character*(*) word,wordp,keywrd(nkey)*8,xy*4,line*79
+      integer*4 ,pointer :: isbp(:,:)
       integer*4 coex(nmeth+nother,nmeth+nother)
-      integer*8 isex,istb,ixs,istb1,ia,ib,ix,iz,iwk,iqc,iqd,
+      integer*8 isex,istb,istb1,ia,ib,ix,iz,iqc,iqd,
      $     itemp,iu,iv,ixb,iaad,iadd,iac,ibc,iaa,iqq
       logical stab,cod,dsp,normal,xplane,yplane,both,bump,minusi,micado,
      1        cond,zsum,exist,exec,coup,operate
@@ -372,6 +376,7 @@ c ----------------------------------------------------------------------
       dimension dp1(-ndim:ndim)
       dimension istr(nstra,4),imon(nmona,4),emon(*),estr(*)
       dimension kfit(nfc),ifitp(nfc),mfitp(nfc),fitval(nfc)
+      real*8 , allocatable :: xs(:,:,:),wk(:,:)
       include 'inc/common.inc'
       data line/' '/
       data keywrd/'MX      ','MY      ','X       ','Y       ',
@@ -565,13 +570,15 @@ c 1001 continue
             nbump=nbp
           endif
           istb=ktaloc(((nbco+4)*nbump+1)/2)
-          ixs =ktaloc(2*(nbco+2)*nbump)
+c          ixs =ktaloc(2*(nbco+2)*nbump)
+          allocate(xs(nbco+2,2,nbump))
         elseif( corc(nobj+3) ) then
           nbco=4
           if(nbp.eq.0) exit
           istb=ktaloc(((nbco+4)*nbp+1)/2)
           istb1=ktaloc(((nbco+4)*nbp+1)/2)
-          ixs =ktaloc(4*nbco*nbp)
+c          ixs =ktaloc(4*nbco*nbp)
+          allocate(xs(nbco,4,nbp))
         endif
 c     7/30--------------->
         if(corc(12)) then
@@ -613,8 +620,9 @@ c     ---- SK ----
             if(cod) then
               psix=twiss(nlat,0,3)-twiss(1,0,3)
               psiy=twiss(nlat,0,6)-twiss(1,0,6)
-              call mcrmat(latt,twiss,gammab,ndim,psix,psiy,
-     $             rlist(ia+irow),
+              call c_f_pointer(c_loc(rlist(ia+irow)),amat,[mdim,nstr])
+              call mcrmat(latt,twiss,gammab,ndim,psix,psiy,amat,
+c     $             rlist(ia+irow),
      1             mdim,.false.,normal,istr,nstr,imon,nmon,xy)
             elseif(dsp) then
               psix=0d0
@@ -636,28 +644,33 @@ c     ---- BUMP ----
             if(cod) then
               psix=twiss(nlat,0,3)-twiss(1,0,3)
               psiy=twiss(nlat,0,6)-twiss(1,0,6)
-              call mcrmat(latt,twiss,gammab,ndim,psix,psiy,
-     $             rlist(ia+irow),
+              call c_f_pointer(c_loc(rlist(ia+irow)),amat,[mdim,nstr])
+              call mcrmat(latt,twiss,gammab,ndim,psix,psiy,amat,
+c     $             rlist(ia+irow),
      1             mdim,.false.,normal,istr,nstr,imon,nmon,xy)
 c     ---- Calc steerings of unit bumps.
               if(both) then
-                call mbmp(latt,twiss,mult,master,ilist(1,istb),nbp,istr,
+                call c_f_pointer(c_loc(ilist(1,istb)),isbp,[nbco+4,nbp])
+                call mbmp(latt,twiss,mult,master,isbp,nbp,istr,
      1               nstr,nbco,.false.,iret,lfno)
                 k=nbp*(nbco+4)
-                call mbmp(latt,twiss,mult,master,ilist(mod(k,2)+1,
-     $               istb+k/2),nbp,istr,nstr,nbco,.true.,iret,lfno)
+                call c_f_pointer(c_loc(ilist(mod(k,2)+1,
+     $               istb+k/2)),isbp,[nbco,nbp])
+                call mbmp(latt,twiss,mult,master,isbp,
+     $               nbp,istr,nstr,nbco,.true.,iret,lfno)
               else
-                call mbmp(latt,twiss,mult,master,ilist(1,istb),nbp,istr,
+                call c_f_pointer(c_loc(ilist(1,istb)),isbp,[nbco+4,nbp])
+                call mbmp(latt,twiss,mult,master,isbp,nbp,istr,
      1               nstr,nbco,corc(2).or.corc(4),iret,lfno)
               endif
-              iwk =ktaloc(2*(nbco+2))
+c              iwk =ktaloc(2*(nbco+2))
 c     print *,'free before mbstr=',mfalloc(-1)
-              call mbstr(latt,twiss,gammab,mult,ilist(1,istb),
-     $             rlist(ixs),nbp,nbco,istr,estr,rlist(iwk),corc)
-              call tfree(iwk)
+              call c_f_pointer(c_loc(ilist(1,istb)),isbp,[nbco+4,nbp])
+              call mbstr(latt,twiss,gammab,mult,isbp,
+     $             xs,nbp,nbco,istr,estr,corc)
 c     ---- calc bump response
               iqc =ktaloc(mdim*2*nbump)
-              call mrmb(ilist(1,istb),rlist(ixs),rlist(iqc),
+              call mrmb(ilist(1,istb),xs,rlist(iqc),
      z             nbco,nbump,rlist(ia+irow),mdim)
             elseif(dsp) then
               psix=0d0
@@ -674,37 +687,35 @@ c     ---- calc bump response
               istr(1,2)=k
 c     ---- calc steerings for unit bumps
               if(both) then
-                call mbmp(latt,twiss,mult,master,ilist(1,istb),nbp,istr,
+                call c_f_pointer(c_loc(ilist(1,istb)),isbp,[nbco+4,nbp])
+                call mbmp(latt,twiss,mult,master,isbp,nbp,istr,
      1               nstr,nbco,.false.,iret,lfno)
                 k=nbp*(nbco+4)
-                call mbmp(latt,twiss,mult,master,ilist(mod(k,2)+1,
-     $               istb+k/2),nbp,istr,nstr,nbco,.true.,iret,lfno)
+                call mbmp(latt,twiss,mult,master,isbp,nbp,istr,
+     $               nstr,nbco,.true.,iret,lfno)
               else
-                call mbmp(latt,twiss,mult,master,ilist(1,istb),nbp,istr,
+                call c_f_pointer(c_loc(ilist(1,istb)),isbp,[nbco+4,nbp])
+                call mbmp(latt,twiss,mult,master,isbp,nbp,istr,
      1               nstr,nbco,corc(6).or.corc(8),iret,lfno)
               endif
-              iwk =ktaloc(2*(nbco+2))
-              call mbstr(latt,twiss,gammab,mult,ilist(1,istb),
-     $             rlist(ixs),nbp,nbco,istr,estr,rlist(iwk),corc)
-              call tfree(iwk)
+              call mbstr(latt,twiss,gammab,mult,isbp,
+     $             xs,nbp,nbco,istr,estr,corc)
 c     ---- calc bump response
               iqd =ktaloc(mdim*2*nbump)
-              call mrmb(ilist(1,istb),rlist(ixs),rlist(iqd),nbco,nbump,
+              call mrmb(isbp,xs,rlist(iqd),nbco,nbump,
      z             rlist(ia+irow),mdim)
             endif
           elseif(method(ic,3)) then
 c     ---- SEX ----
             if(cod) then
               nbp1=nbp
-              call mbmp(latt,twiss,mult,master,ilist(1,istb),
-     $             nbp1,istr,nstr,
+              call c_f_pointer(c_loc(ilist(1,istb)),isbp,[nbco+4,nbp1])
+              call mbmp(latt,twiss,mult,master,isbp,nbp1,istr,nstr,
      z             nbco,.false.,iret,lfno)
               nbp1=nbp
               call mbmp(latt,twiss,mult,master,rlist(istb1),nbp1,istr,
      1             nstr,nbco,.true.,iret,lfno)
               nbp=nbp1
-              iwk =ktaloc(6*(nbco+2))
-              call tfree(iwk)
               call tfree(istb1)
 c     elseif(dsp) then
             endif
@@ -900,15 +911,14 @@ c     -----Check of Response Matrix------>
      $         .false.)
           write(*,'(1p,10d12.4)') (rlist(ixb-1+i),i=1,nvar)
           call tfree(iqq)
-          call pbset(latt,mult,rlist(ixb),ilist(1,istb),rlist(ixs),
+          call pbset(latt,mult,rlist(ixb),ilist(1,istb),xs,
      1         istr,estr,nstr,nbco,nbump,.true.,lfno)
           if(operate) then
             call mbexpect(twiss,imon,nmon,
-     $           ilist(1,istb),rlist(ixs),rlist(ixb),nbco,nbump,
+     $           ilist(1,istb),xs,rlist(ixb),nbco,nbump,
      $           rlist(ia),mdim,corc,nobj)
           endif
           call tfree(ixb)
-          call tfree(ixs)
           call tfree(istb)
         else
           call mwght(twiss,ndim,rlist(ia),rlist(ib),mdim1,nstr,mdim1,
@@ -3125,7 +3135,7 @@ c.............print out
       if(word(lene(word)-1:).eq.'.1')word=word(1:lene(word)-2)
       do i=1,nstr
         l=istr(istr(i,2),1)
-        call elname(latt,l,mult,en)
+        call elname(latt,int(l),mult,en)
         if(word.eq.en) then
           js=js+1
           ilist(mod(js-1,2)+1,itemp+(js-1)/2)=l
@@ -3201,7 +3211,8 @@ c
       include 'inc/common.inc'
       common /corcoup/ itcoupste
 c
-      call pclr(ar,(nstr+1)*nc)
+      ar=0.d0
+c      call pclr(ar,(nstr+1)*nc)
       icoup=0
       next=0
       last=itcoupste
@@ -3257,7 +3268,8 @@ c     enddo
         err=.false.
         errst=0d0
       endif
-      call pmovi(istr(1,3),istr(1,4),nstra)
+      istr(:,4)=istr(:,3)
+c      call pmovi(istr(1,3),istr(1,4),nstra)
       do 9 i=1,nstra
         istr(i,3)=1
     9 continue
@@ -3286,7 +3298,8 @@ c     enddo
  11     continue
       endif
       if(ns.eq.0) then
-        call pmovi(istr(1,4),istr(1,3),nstra)
+        istr(:,3)=istr(:,4)
+c        call pmovi(istr(1,4),istr(1,3),nstra)
         return
       endif
       call pack(istr(1,2),istr(1,3),nstr,nstra)

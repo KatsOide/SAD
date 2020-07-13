@@ -91,17 +91,17 @@
       comm=""
       call tmovb(rlist(ktfaddr(ktastk(isp1+12))+1),comm,
      $     min(ilist(1,ktfaddr(ktastk(isp1+12))),lstr))
-      call sad_lifetrack(
-     $     rlist(ktfaddr(ktastk(isp1+1))),
-     $     rlist(ktfaddr(ktastk(isp1+2))),
-     $     rlist(ktfaddr(ktastk(isp1+3))),
-     $     rlist(ktfaddr(ktastk(isp1+4))),
-     $     rlist(ktfaddr(ktastk(isp1+5))),
-     $     rlist(ktfaddr(ktastk(isp1+6))),
-     $     rlist(ktfaddr(ktastk(isp1+7))),
-     $     rlist(ktfaddr(ktastk(isp1+8))),
-     $     rlist(ktfaddr(ktastk(isp1+9))),
-     $     nip,gw,file,comm)
+      call sad_lifetrack()
+c$$$     $     rlist(ktfaddr(ktastk(isp1+1))),
+c$$$     $     rlist(ktfaddr(ktastk(isp1+2))),
+c$$$     $     rlist(ktfaddr(ktastk(isp1+3))),
+c$$$     $     rlist(ktfaddr(ktastk(isp1+4))),
+c$$$     $     rlist(ktfaddr(ktastk(isp1+5))),
+c$$$     $     rlist(ktfaddr(ktastk(isp1+6))),
+c$$$     $     rlist(ktfaddr(ktastk(isp1+7))),
+c$$$     $     rlist(ktfaddr(ktastk(isp1+8))),
+c$$$     $     rlist(ktfaddr(ktastk(isp1+9))),
+c$$$     $     nip,gw,file,comm)
       irtc=0
       kx=ktfoper+mtfnull
       return

@@ -8,6 +8,7 @@
       use tparastat
       use photontable,only:tphotoninit,tphotonlist
       use tfcsi
+      use iso_c_binding
       implicit none
       type (sad_descriptor) kx,kx1,kx2,ks,kp
       type (sad_dlist), pointer :: klx,kl
@@ -20,7 +21,8 @@
      $     npp,ipn,m,itfmessage,nt,mt,kseed,j,mcf
       integer*8 ikptblw,ikptblm
       real*8 trf00,p00,vcalpha0
-
+      real*8 , pointer::zx(:,:)
+      integer*4 , pointer::iptbl(:,:)
       logical*4 dapert0,normal
       narg=isp-isp1
       if(narg .gt. 4)then
@@ -204,8 +206,10 @@ c      pgev=rgetgl1('MOMENTUM')
 c      call tclrparaall
       call tphyzp
       call tsetdvfs
-      call tfsetparticles(rlist(kzp),rlist(kdv),
-     $     ilist(1,ikptblw),npp,npa,npz,mc,nlat,nt,mcf)
+      call c_f_pointer(c_loc(rlist(kzp)),zx,[npz,mc])
+      call c_f_pointer(c_loc(ilist(1,ikptblw)),iptbl,[npp,6])
+      call tfsetparticles(zx,rlist(kdv:kdv+npp-1),
+     $     iptbl,npp,npa,npz,mc,nlat,nt,mcf)
       if(npa .gt. 0)then
         outfl0=outfl
         outfl=0
@@ -272,15 +276,13 @@ c       - Copy iptbl(*,3:nkptbl)
      $         ilist((j-1)*npp+1:    (j-1)*npp+npp,ikptblw)
         enddo
         call tffswait(iprid,npr+1,ipr,i00,'tftrack',irtc)
-        kaxl=ktfresetparticles(rlist(kz),
-     $       ilist(1,ikptblm),npz,nlat,nend,mc)
+        kaxl=ktfresetparticles(zx,iptbl,npz,nlat,nend,mc)
         call tfreeshared(ikptblm)
 c        if(mapfree(iptbl(ikptblm+1)) .ne. 0)then
 c          write(*,*)'???tftrack-munmap error.'
 c        endif
       else
-        kaxl=ktfresetparticles(rlist(kz),
-     $       ilist(1,ikptblw),npz,nlat,nend,mc)
+        kaxl=ktfresetparticles(zx,iptbl,npz,nlat,nend,mc)
       endif
       call tmunmapp(kz)
       if(photons)then
@@ -429,7 +431,7 @@ c      return
       else
         nv=mcf
       endif
-      call tconvm(np,zx(1,2),zx(1,4),zx(1,6),0.d0,1)
+      call tconvm(np,zx(:,2),zx(:,4),zx(:,6),(/0.d0/),1)
       ka=ktadaloc(-1,nv)
       do j=1,nv
         kaj(j)=ktavaloc(0,np)
@@ -591,7 +593,7 @@ c              - Swap particle coordinates
          i=i+1
       enddo
       if(npa .gt. 0)then
-        call tconvm(npa,zx(1,2),zx(1,4),zx(1,6),dv,-1)
+        call tconvm(npa,zx(:,2),zx(:,4),zx(:,6),dv,-1)
         if(calpol)then
           do i=1,npa
             st=1.d0+sqrt1(-zx(i,8)**2)

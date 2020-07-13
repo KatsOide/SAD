@@ -15,8 +15,8 @@
       if(iaxform .eq. 0)then
         call tfforminit
       endif
-      call tfsydef(symform,symf)
-      call tfsydef(sympw,symp)
+      symf=>tfsydef(symform)
+      symp=>tfsydef(sympw)
       call sym_symdef(symf,symfd)
       call sym_symdef(symp,sympd)
       kf1=symfd%value%k

@@ -86,21 +86,24 @@ c      stop
 cc
 c ####### Tracking routine ##################################
 c   
-      subroutine phsrot(np,x,px,y,py,z,g,dv,work,blist)
+c  Modified args include spins without transformation, 12 Jul 2020. 
+      subroutine phsrot(np,x,px,y,py,z,g,dv,sx,sy,sz,blist)
       use ffs_flag
       use tmacro
       use wsbb, only:nblist
       implicit real*8(a-h,o-z)
+      integer*4 ,intent(in):: np
       integer v_eig,v_difu
       parameter(m_PtoN=1,m_prot=37,m_NtoP=73,
      &          m_damp=109,m_difu=145,m_prot_d=181,
      &          v_eig=217,v_difu=223)
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),work(np)
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),
+     $     dv(np), sx(np),sy(np),sz(np)
       real*8 blist(*)
       real*8 xdifu(6),xo(6)
 c
 cc
-      do 11 i=1,np
+      do i=1,np
 c
 c   Get Canonical variables
 c       g(i)=pn-1.d0   Not good for precision
@@ -109,18 +112,18 @@ c   pn=|p|/p0=1+delta
        pn=1.d0+g(i)
        px(i)=px(i)*pn
        py(i)=py(i)*pn
- 11    continue
+      enddo
 c
-      do 10 i=1,np
+      do i=1,np
 c
-       do 20 j=1,6
+       do j=1,6
          xo(j)=blist(j-1+m_prot_d)*x(i)
      &        +blist(j+5+m_prot_d)*px(i)
      &        +blist(j+11+m_prot_d)*y(i)
      &        +blist(j+17+m_prot_d)*py(i)
      &        +blist(j+23+m_prot_d)*z(i)
      &        +blist(j+29+m_prot_d)*g(i)
- 20      continue
+       enddo
 c
          x(i)=xo(1)
          px(i)=xo(2)
@@ -132,13 +135,15 @@ c
 c  quantum diffusion
        if(rfluct) then
        call tgauss_array(xo(1),6)
-       do 35 j=1,6
- 35      xo(j)=blist(v_difu+j-1)*xo(j)
-       do 36 j=1,6
-       xdifu(j)=0.
-       do 36 k=1,6
-         xdifu(j)=xdifu(j)+blist(j-1+6*(k-1)+m_NtoP)*xo(k)
- 36   continue
+       do j=1,6
+         xo(j)=blist(v_difu+j-1)*xo(j)
+       enddo
+       do j=1,6
+         xdifu(j)=0.
+         do k=1,6
+           xdifu(j)=xdifu(j)+blist(j-1+6*(k-1)+m_NtoP)*xo(k)
+         enddo
+       enddo
        x(i)=x(i)+xdifu(1)
        px(i)=px(i)+xdifu(2)
        y(i)=y(i)+xdifu(3)
@@ -147,12 +152,12 @@ c  quantum diffusion
        g(i)=g(i)+xdifu(6)
        endif
 c
- 10      continue
+      enddo
 c
 c   Return to SAD variables
 c
 c   pn=|p|/p0=1+delta
-      do 19 i=1,np
+      do i=1,np
       pn=1.d0+g(i)
       px(i)=px(i)/pn
       py(i)=py(i)/pn
@@ -161,10 +166,9 @@ c   When you change momentum, change dv(i) as
       dv(i)=-g(i)*(1.d0+pn)/h1/(h1+pn*blist(i_p0+2))+dvfs
 c   g(i)=sqrt(pn)-1.d0  Not good for precision
 c      g(i)=g(i)/(1.d0+sqrt(pn))
- 19   continue
+      enddo
 c
 c     number=number+1
 c     write(*,*)'number=',number
       return
       end
-

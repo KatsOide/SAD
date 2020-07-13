@@ -188,14 +188,16 @@ c        call tfdebugprint(kx,'temap',1)
       subroutine temape(trans,cod,beam,l)
       use tfstk
       use tmacro
+      use sad_main, only:iaidx
       implicit none
-      integer*8 kx,k1,k2,k3,k4,kax,
+      type (sad_descriptor) kx
+      integer*8 k1,k2,k3,k4,kax,
      $     ktfmalocp,ka1,kat1,kbm,krt
-      integer*4 l,isp0,itfdownlevel,n,m,irtc,i,j,ia
+      integer*4 l,isp0,itfdownlevel,n,m,irtc,i,j
       real*8 trans(6,12),cod(6),beam(42)
       character*2 ord
       integer*8 , save :: ifv=0,iem=0
-      ia(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
+c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       if(iem .eq. 0)then
         iem=ktfsymbolz('ExternalMap',11)
         ifv=ktsalocb(0,'EMIT',4)
@@ -281,7 +283,7 @@ c        call tfdebugprint(kx,'temap',1)
         call tmulbs(beam,rlist(kat1),.true.)
         do i=1,6
           do j=i,6
-            beam(ia(i,j))=beam(ia(i,j))+rlist(kbm+(j-1)*6+i-1)
+            beam(iaidx(i,j))=beam(iaidx(i,j))+rlist(kbm+(j-1)*6+i-1)
           enddo
         enddo
         call tmuld6(trans,rlist(krt))
@@ -383,8 +385,10 @@ c      itastk(2,isp)=iat
       use tfstk
       use ffs_pointer
       use tmacro
+      use geolib
       implicit none
-      integer*8 ktfgeol,kx,kax,k1,k2,k11,k12,ka1,ka11,ka12,kdb
+      type (sad_descriptor) kx
+      integer*8 ktfgeol,kax,k1,k2,k11,k12,ka1,ka11,ka12,kdb
       integer*4 l,isp0,irtc,itfdownlevel
       real*8 rfromk
       character*2 ord
@@ -462,8 +466,7 @@ c      ktastk(isp)=ktflist+ktfgeol(geo(1,1,l))
         go to 9100
       endif
       call tmov(rlist(ka11+1),geo(1,4,l+1),3)
-      call tfchi2geo(rlist(ka12+1),rlist(ka12+2),rlist(ka12+3),
-     $     geo(1,1,l+1))
+      geo(:,:,l+1)=tfchitogeo(rlist(ka12+1:ka12+3))
       pos(l+1)=rfromk(k2)
       levele=itfdownlevel()
       isp=isp0

@@ -1,5 +1,6 @@
       integer*4 function ipak(ia,ik)
       use macfile, only:MAXLLEN
+      implicit none
       character*(*) ia
       integer*4 ik
       real*8 v
@@ -8,9 +9,9 @@
       parameter(maxInteger=2147483647)
       integer*4 dummy
 
+      ipak=0
       if(ik .le. 0) then
          call errmsg('IPAK','Null string appears as argument.',0,0)
-         ipak=0
       else if(ik .lt. MAXLLEN) then
          write(fmt0,'( 2H(I ,I2.2, 3H.0)  )')ik
          read(ia(1:ik),fmt0,err=9000) ipak

@@ -688,12 +688,12 @@ c
       integer*8 argp
       integer*4 jslen,jttype,jival
       integer*4 slen,ttype,ival,hsrch,hsrchz,status
-      integer*4 index,IgetGL,idummy
+      integer*4 index,IgetGL
       real*8  jrval,rval
       character*(MAXSTR) jtoken,token
 c
  1000 continue
-      if (IgetGL('$CTIME$',idummy) .eq. FLAGON) call cputix
+      if (IgetGL('$CTIME$') .eq. FLAGON) call cputix
       call gettok(token,slen,ttype,rval,ival)
 c     for debug
 c       print *,'toplvl-0 ',token(:slen),slen,infl,ttype,ttypEF

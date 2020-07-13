@@ -5,11 +5,13 @@
       use ffs_fit
       use tffitcode
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: klx,klxi
-      integer*4 lfno,nc,i,j,kf,irtc
+      integer*4 ,intent(out):: irtc
+      integer*4 ,intent(in):: lfno
+      integer*4 nc,i,j,kf
       real*8 x
-      logical*4 ret
+      logical*4 ,intent(in):: ret
       character*8 fun
       character*12 name,name1
       character*32 namer,name1r

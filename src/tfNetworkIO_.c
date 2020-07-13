@@ -26,7 +26,7 @@
 #define NTOP_BUFFER_LEN		64
 
 /* SADScript function helper of Network stuff */
-extern integer4 itopenbuf_(integer4*);
+extern integer4 itopenbuf_(integer4*,integer4*);
 
 static int tfSocketOpen(integer4 *isp1,
 			integer8 *kx,
@@ -36,6 +36,7 @@ static int tfSocketOpen(integer4 *isp1,
   real8 vx, timeout;
   int fd1, fd2, fdn, err;
   int port0 = 0, port = 0;
+  int moder=1;
   char service[NI_MAXSERV], *src_addr, *src_addr0, *src_port;
   struct addrinfo hints, *res, *res0;
   struct sockaddr_storage addr;
@@ -46,9 +47,9 @@ static int tfSocketOpen(integer4 *isp1,
     return -1;
   }
 
+  ispi = *isp1;
   if(ktfrealq(ktastk(ispi + 1))){
     src_addr0 = NULL;
-    ispi = *isp1;
   }else if(ktfstringq(ktastk(ispi + 1))){
     ia1 = ktfaddr(ktastk(*isp1 + 1));
 #if SAD_REQUIRE_STRING_TERMINATION
@@ -112,10 +113,10 @@ static int tfSocketOpen(integer4 *isp1,
 	 || !strcmp(src_addr, "0.0.0.0")
 	 || !strcmp(src_addr, "::"))) src_addr = NULL;
 
-  in1 = itopenbuf_(irtc); if(*irtc != 0) return -1;
+  in1 = itopenbuf_(&moder,irtc); if(*irtc != 0) return -1;
   fd1 = getfd_(&in1);
   if(src_addr != NULL) {
-    in2 = itopenbuf_(irtc); if(*irtc != 0) return -1;
+    in2 = itopenbuf_(&moder,irtc); if(*irtc != 0) return -1;
     fd2 = getfd_(&in2);
   } else {
     fd2 = 0;
@@ -373,6 +374,7 @@ static int tfTCPAccept(integer4 *isp1,
   integer8 kax;
   integer4 ins, in1, in2;
   int fds, fd1, fd2, fdn;
+  int moder=1,modew=2;
   double timeout;
   struct sockaddr_in addr;
   socklen_t addr_len = sizeof(struct sockaddr_in);
@@ -406,9 +408,9 @@ static int tfTCPAccept(integer4 *isp1,
     return -1;
   }
 
-  in1 = itopenbuf_(irtc); if(*irtc != 0) return -1;
+  in1 = itopenbuf_(&moder,irtc); if(*irtc != 0) return -1;
   fd1 = getfd_(&in1);
-  in2 = itopenbuf_(irtc); if(*irtc != 0) return -1;
+  in2 = itopenbuf_(&modew,irtc); if(*irtc != 0) return -1;
   fd2 = getfd_(&in2);
 
   if((fdn = accept(fds, (struct sockaddr*)&addr, &addr_len)) != -1) {

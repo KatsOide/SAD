@@ -1,8 +1,10 @@
       module wsbb
       use tfstk, only:sad_descriptor
+      use macphys, only:elradi,elmass
       implicit none
       integer*4, parameter :: nslimax=500,nblist=1600
-      real*8, parameter:: re=2.81794092d-15, am_e=510999.06
+c      real*8, parameter:: re=2.81794092d-15, am_e=510999.06
+      real*8, parameter:: re=elradi, am_e=elmass
 
       type (sad_descriptor) kvlum
       data kvlum%k /0/
@@ -365,7 +367,7 @@ c
      $ky_AX_TCAV=14,
      $ky_AY_TCAV=15,
      $ky_LDEV_TCAV=16,
-c     ky_LRAD_TCAV=17,
+     $ky_RAD_TCAV=17,
 c
      $ky_MAX_TCAV=18,
 cc for MAP
@@ -701,7 +703,7 @@ c
        idummy=sethtb('GRAPH   ',icACT,ktaloc(8))
        idummy1=sethtb('graph   ',icACT,idval(idummy))
        ilist(1,idval(idummy))=7
-       call setfnp(ilist(1,idval(idummy)+1),ActGra)
+       call setfnp(klist(idval(idummy)+1),ActGra)
        ilist(1,idval(idummy)+2)=hsrch('ID')
        ilist(1,idval(idummy)+3)=hsrch('GTYPE')
        ilist(1,idval(idummy)+4)=hsrch('TURNS')

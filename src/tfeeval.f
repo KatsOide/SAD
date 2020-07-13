@@ -106,7 +106,7 @@
           endif
         else
           call loc_sym(kaf,sym)
-          call tfsydef(sym,sym)
+          sym=>tfsydef(sym)
           kf=sad_descr(sym)
         endif
       case (ktflist)
@@ -204,7 +204,7 @@ c          msgn TagS (*   *)   Hold z
         endif
         if(evalh .or. .not. ref)then
           if(tfonstackq(ks) .or. kls%ref .gt. 0)then
-            call tfduplist(kls,kls1)
+            kls1=>tfduplist(kls)
             kls=>kls1
           endif
           kls%head%k=ktfoper+kaf
@@ -229,7 +229,7 @@ c          call tfstk2l(lista,lista)
       case(mtfset)
         rep=tfgetseqstk(ks,ns)
         if(isp .gt. isp1)then
-          call tfeevalref(ktastk(isp),ktastk(isp),irtc)
+          call tfeevalref(dtastk(isp),dtastk(isp),irtc)
           if(irtc .ne. 0)then
             go to 8000
           endif
@@ -604,7 +604,7 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
           dtastk(isp)=sad_descr(list)
           irtc=0
         else
-          call tfleval(list,ktastk(isp),ref,irtc)     
+          call tfleval(list,dtastk(isp),ref,irtc)     
           if(irtc .ne. 0)then
             return
           endif
@@ -679,7 +679,7 @@ c                endif
               endif
             elseif(isp .gt. isp0)then
               isp=isp+1
-              call tfeevalref(ki,ktastk(isp),irtc)
+              call tfeevalref(ki,dtastk(isp),irtc)
               if(irtc .ne. 0)then
                 return
               endif
@@ -698,7 +698,7 @@ c                endif
               endif
             elseif(isp .eq. isp0)then
               isp=isp+1
-              call tfeevalref(ki,ktastk(isp),irtc)
+              call tfeevalref(ki,dtastk(isp),irtc)
               if(irtc .ne. 0)then
                 return
               endif
@@ -999,7 +999,7 @@ c                endif
           return
         endif
       elseif(ktfsymbolq(k,sym) .and. sym%override .eq. 0)then
-        call tfsydef(sym,sym)
+        sym=>tfsydef(sym)
         kx=sad_descr(sym)
         irtc=0
         return

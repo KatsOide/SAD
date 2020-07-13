@@ -3,7 +3,7 @@
       use tfcsi
       use tfrbuf
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       integer*4 irtc, m
       if(ipoint .gt. lrecl .or. ipoint .le. 0)then
         itfgeto=-1
@@ -38,8 +38,9 @@ c      endif
       use tfstk
       use tfcsi, only:ipoint
       implicit none
-      type (sad_descriptor) kx
-      integer*4 next,ip0,itfgeto
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(out):: next
+      integer*4 ip0,itfgeto
       ip0=ipoint
       itfpeeko=itfgeto(kx)
       next=ipoint
@@ -50,11 +51,11 @@ c      endif
       character*(*) function tfgetstrs(k,nc)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_symbol), pointer :: sym
       type (sad_namtbl), pointer :: nam
       type (sad_string), pointer :: str
-      integer*4 nc
+      integer*4 ,intent(inout):: nc
       if(ktfsymbolq(k,sym))then
         call sym_namtbl(sym,nam)
         str=>nam%str

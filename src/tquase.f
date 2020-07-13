@@ -10,14 +10,12 @@
       use tspin, only:tradke      
       implicit none
       real*8 , intent(in)::ak,al,bz,dx,dy,theta,
-     $     f1in,f2in,f1out,f2out,eps0
-      real*8 trans(6,12),cod(6),beam(42),srot(3,9),
-     $    radlvl,aln,akn
-      integer*4 mfring
-      logical*4 fringe
-      real*8 bxs,bys,bzs,theta1,ak1
-      integer*4 itgetqraddiv
-      integer*4 i,ndiv
+     $     f1in,f2in,f1out,f2out,eps0,radlvl
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
+      integer*4 ,intent(in):: mfring
+      logical*4 ,intent(in):: fringe
+      real*8 bxs,bys,bzs,theta1,ak1,aln,akn
+      integer*4 itgetqraddiv,i,ndiv
       integer*4 , parameter :: ndivmax=1000
       logical*4 enarad,krad
       if(al .eq. 0.d0)then

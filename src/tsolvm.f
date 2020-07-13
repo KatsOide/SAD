@@ -1,15 +1,18 @@
       subroutine tsolvm(a,b,x,n,m,l,ndim,ndimb,ndimx,
      $     epslon,svd)
       implicit none
-      integer*4 itmax,n,m,ndim,ndimb,ndimx,l,kkk
-      parameter (itmax=256)
-      real*8 a(ndim,m),b(ndimb,l),x(ndimx,l),epslon
+      integer*4 ,parameter ::itmax=256
+      integer*4 ,intent(in):: n,m,l,ndim,ndimb,ndimx
+      integer*4 kkk
+      real*8 ,intent(inout):: a(ndim,m),b(ndimb,l)
+      real*8 ,intent(out):: x(ndimx,l)
+      real*8 ,intent(in):: epslon
       real*8 v(0:m+n),anorm,enorm
       real*8 aa(m+l),f,g,s,r,w,u,h,xmin,z,vv,d,c,p,bb(n),y,an
       real*8 q,h1,h2,t,r1,r2,ra
       integer*4 lsep(m+n),i,j,k,mn,it,isep,ibegin,iend,ma,i1,i1mn,
      $     kk,nfail
-      logical*4 svd
+      logical*4 ,intent(in):: svd
       nfail=4
       mn=min(n,m)
 c      do 1 i=1,n
@@ -143,25 +146,25 @@ c          enddo
           w=1.d0/r
           d=x(mn,1)*w
           v(mn)=v(mn)*w
-          do k=1,l
-            b(mn,k)=b(mn,k)*w
+c          do k=1,l
+            b(mn,1:l)=b(mn,1:l)*w
             if(mn .lt. m)then
-              x(mn+1,k)=v(mn)*b(mn,k)
+              x(mn+1,1:l)=v(mn)*b(mn,1:l)
             endif
-            x(mn,k)=d*b(mn,k)
-          enddo
+            x(mn,1:l)=d*b(mn,1:l)
+c          enddo
           ma=m
         else
           ma=mn
           d=0.d0
           v(mn)=0.d0
-          do k=1,l
-            b(mn,k)=0.d0
-            x(mn,k)=0.d0
-            if(mn .lt. m)then
-              x(mn+1,k)=0.d0
-            endif
-          enddo
+c          do k=1,l
+          b(mn,1:l)=0.d0
+          x(mn,1:l)=0.d0
+          if(mn .lt. m)then
+            x(mn+1,1:l)=0.d0
+          endif
+c          enddo
         endif
         do 4020 i=mn-1,1,-1
           if(x(i,1) .ne. 0.d0)then

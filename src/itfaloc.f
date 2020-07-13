@@ -308,21 +308,23 @@ c            write(*,*)' : ',idx
       use tfstk
       implicit none
       integer*4 nc,i,ih
-      integer*1 name(nc)
-      ih=name(1)
+      character name(nc)
+      ih=ichar(name(1))
       if(nc .eq. 2)then
-        ih=ih+name(2)
+        ih=ih+ichar(name(2))
       elseif(nc .eq. 3)then
-        ih=ih+name(2)+name(3)
+        ih=ih+ichar(name(2))+ichar(name(3))
       elseif(nc .eq. 4)then
-        ih=ih+name(2)+name(3)+name(4)
+        ih=ih+ichar(name(2))+ichar(name(3))+ichar(name(4))
       elseif(nc .eq. 5)then
-        ih=ih+name(2)+name(3)+name(4)+name(5)
+        ih=ih+ichar(name(2))+ichar(name(3))+ichar(name(4))
+     $       +ichar(name(5))
       elseif(nc .eq. 6)then
-        ih=ih+name(2)+name(3)+name(4)+name(5)+name(6)
+        ih=ih+ichar(name(2))+ichar(name(3))+ichar(name(4))
+     $       +ichar(name(5))+ichar(name(6))
       else
         do i=2,nc
-          ih=ih+name(i)
+          ih=ih+ichar(name(i))
         enddo
       endif
       ithash=iand(ih,nsymhash)
