@@ -3,14 +3,14 @@
       use ffs_flag
       use tmacro
       implicit none
-      integer*4 i
-      real*8 trans(6,12),cod(6),beam(42),ak,al,bz,akk,pr
-      real*8 trans1(6,6),xmax
-      real*8 xi,yi,aki,a,b,d,ab,t,dx1,dy1,xx,yy,h,f,bzh,pxi,pyi,
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42)
+      real*8 ,intent(in):: ak,al,bz
+      real*8 akk,pr,trans1(6,6),
+     $     xi,yi,aki,a,b,d,ab,t,dx1,dy1,xx,yy,h,f,bzh,pxi,pyi,
      $     px1,py1,dz1,dddx,dddy,dddp,dxxdx,dxxdy,dxxdp,
      $     dyydx,dyydy,dyydp,dhdx,dhdy,dhdp,dfdx,dfdy,dfdp,
-     $     y,py
-      parameter (xmax=1.d10)
+     $     y(12),py(12)
+      real*8 ,parameter::xmax=1.d10
       akk=ak/al/4.d0
       pr=1.d0+cod(6)
       if(irad .gt. 6)then
@@ -95,21 +95,26 @@
      $     -trans1(3,3)*trans1(4,6)+trans1(4,3)*trans1(3,6)
       trans1(5,4)=trans1(2,4)*trans1(1,6)+trans1(4,4)*trans1(3,6)
       trans1(5,6)=-2.d0*(dz1-(cod(2)*xi+cod(4)*yi)*t/pr)/pr
-      do i=1,irad
-        y=trans(3,i)
-        py=trans(4,i)
-        trans(5,i)=trans(5,i)
-     $       +trans1(5,1)*trans(1,i)+trans1(5,2)*trans(2,i)
-     $       +trans1(5,3)*y+trans1(5,4)*py+trans1(5,6)*trans(6,i)
-        trans(4,i)=trans1(4,1)*trans(1,i)+trans1(4,2)*trans(2,i)
-     $       +trans1(4,3)*y+trans1(4,4)*py+trans1(4,6)*trans(6,i)
-        trans(2,i)=trans1(2,1)*trans(1,i)+trans1(2,2)*trans(2,i)
-     $       +trans1(2,3)*y+trans1(2,4)*py+trans1(2,6)*trans(6,i)
-        trans(3,i)=trans1(3,1)*trans(1,i)+trans1(3,3)*y
-     $       +trans1(3,6)*trans(6,i)
-        trans(1,i)=trans1(1,1)*trans(1,i)+trans1(1,3)*y
-     $       +trans1(1,6)*trans(6,i)
-      enddo
+c      do i=1,irad
+        y(1:irad)=trans(3,1:irad)
+        py(1:irad)=trans(4,1:irad)
+        trans(5,1:irad)=trans(5,1:irad)
+     $       +trans1(5,1)*trans(1,1:irad)+trans1(5,2)*trans(2,1:irad)
+     $       +trans1(5,3)*y(1:irad)+trans1(5,4)*py(1:irad)
+     $       +trans1(5,6)*trans(6,1:irad)
+        trans(4,1:irad)=trans1(4,1)*trans(1,1:irad)
+     $       +trans1(4,2)*trans(2,1:irad)
+     $       +trans1(4,3)*y(1:irad)+trans1(4,4)*py(1:irad)
+     $       +trans1(4,6)*trans(6,1:irad)
+        trans(2,1:irad)=trans1(2,1)*trans(1,1:irad)
+     $       +trans1(2,2)*trans(2,1:irad)
+     $       +trans1(2,3)*y(1:irad)+trans1(2,4)*py(1:irad)
+     $       +trans1(2,6)*trans(6,1:irad)
+        trans(3,1:irad)=trans1(3,1)*trans(1,1:irad)
+     $       +trans1(3,3)*y(1:irad)+trans1(3,6)*trans(6,1:irad)
+        trans(1,1:irad)=trans1(1,1)*trans(1,1:irad)
+     $       +trans1(1,3)*y(1:irad)+trans1(1,6)*trans(6,1:irad)
+c      enddo
 c        if(nanm(trans(:,1:6)))then
 c          write(*,'(a,1p2g15.7,7(1p6g15.7/))')'tqfrie-1 ',pr,f,
 c     $         cod(1:6),(trans1(i,1:6),i=1,6)

@@ -1543,7 +1543,8 @@ c            call tclr(uini(1,0),28)
       type (sad_rlist), pointer :: kle
       type (sad_symdef), pointer :: symd
       integer*8 iet
-      integer*4 lfno,i,j,k,nk,m,me,nc, ie,ik,irtc
+      integer*4 ,intent(in):: lfno
+      integer*4 i,j,k,nk,m,me,nc, ie,ik,irtc
       character*(MAXPNAME) key,tfgetstrs
       type (sad_descriptor) kx,ki,kk,ke
       type (sad_descriptor) , save :: itfelv,itfcoupk

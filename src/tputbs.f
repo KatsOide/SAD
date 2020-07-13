@@ -1,8 +1,9 @@
       subroutine tputbs(a,label,lfno)
       implicit none
-      real*8 a(21)
-      integer*4 i,j,lfno
-      character*(*) label(6)
+      real*8 ,intent(in):: a(21)
+      integer*4 ,intent(in):: lfno
+      integer*4 i,j
+      character*(*) ,intent(in):: label(6)
       character*60 vout
       character*10 autofg
       write(lfno,'(10X,6A)')label

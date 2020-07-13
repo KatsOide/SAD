@@ -49,8 +49,15 @@ c     Inverse matrix of r
 
       real*8 , parameter :: toln=0.1d0
 
+      character*10, parameter ::
+     $     label1(6)=['        X ','       Px ','        Y ',
+     1                '       Py ','        Z ','       Pz '],
+     $     label2(6)=['        x ','    px/p0 ','        y ',
+     1                '    py/p0 ','        z ','    dp/p0 ']
+
       public :: tfetwiss,etwiss2ri,tfnormalcoord,toln,
-     $     tfinitemip,tsetr0,tinv6,tsymp,tmultr45
+     $     tfinitemip,tsetr0,tinv6,tsymp,tmultr45,
+     $     label1,label2
 
       contains
 
@@ -958,11 +965,6 @@ c      write(*,*)'with ',itp,ilp
       character*9 vout9(nparams)
       logical*4 plot,pri,fndcod,synchm,intend,stab,calem,
      $     epi,calcodr,rt,radpol0
-      character*10, parameter ::
-     $     label1(6)=['        X ','       Px ','        Y ',
-     1                '       Py ','        Z ','       Pz '],
-     $     label2(6)=['        x ','    px/p0 ','        y ',
-     1                '    py/p0 ','        z ','    dp/p0 ']
 c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       it=0
       trf0=0.d0

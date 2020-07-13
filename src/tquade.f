@@ -9,15 +9,19 @@
       use tspin, only:tradke
       use mathfun
       implicit none
-      integer*4 ndiv,i,mfring,n,itgetqraddiv
-      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,9),
-     $     al,ak,dx,dy,theta,f1in,f2in,f1out,f2out,
-     $     eps0,f1r,f2r,eps,b1,akn,
+      integer*4 ,intent(in):: mfring
+      integer*4 ndiv,i,n,itgetqraddiv
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 ,intent(in):: al,ak,dx,dy,theta,f1in,f2in,f1out,f2out,
+     $     eps0
+      real*8 trans1(6,6),
+     $     f1r,f2r,eps,b1,akn,
      $     aln,pr,akk,phi,scphi,shcphi,sinc2,sinhc2,akr,
      $     xsin2,xsinh2,a11,a12,a21,b11,b12,b21,als,
      $     xi,pxi,yi,pyi,xf,pxf,yf,pyf,
      $     zx,zy,zxp,zyp,x,y,bm21
-      logical*4 enarad,fringe,kin,next,prev,achro,krad
+      logical*4 ,intent(in):: enarad,fringe,kin,next
+      logical*4 prev,achro,krad
       real*8 , parameter:: pramin=1.d-4
       integer*4 , parameter :: ndivmax=512
       if(al .eq. 0.d0)then

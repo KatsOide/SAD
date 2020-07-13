@@ -1,10 +1,14 @@
       subroutine tfreplace(k,kr,kx,all,eval,rule,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kr,kx,ki
+      type (sad_descriptor) ,intent(in):: k,kr
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) ki,tfreplacestk
       type (sad_dlist), pointer :: lri,lr,klr
-      integer*4 irtc,i,nrule,isp1,j,itfmessage
-      logical*4 all,eval,rep,rule,symbol
+      integer*4 ,intent(out):: irtc
+      integer*4 i,nrule,isp1,j,itfmessage
+      logical*4 ,intent(in):: all,eval,rule
+      logical*4 symbol,rep
       irtc=0
       isp1=isp
       symbol=.true.
@@ -60,7 +64,7 @@
           call tfreplacesymbolstk(k,isp1,nrule,kx,.false.,rep,irtc)
         else
           call tfinitrule(isp1,nrule)
-          call tfreplacestk(k,isp1,nrule,kx,all,rep,irtc)
+          kx=tfreplacestk(k,isp1,nrule,all,rep,irtc)
           call tfresetrule(isp1,nrule)
         endif
       endif
@@ -75,7 +79,8 @@
       use tfstk
       implicit none
       type (sad_descriptor) kp
-      integer*4 ispr,nrule,i,isp0
+      integer*4 ,intent(in):: ispr,nrule
+      integer*4 i,isp0
       do i=ispr+1,ispr+nrule*2,2
         kp=dtastk(i)
         if(ktfnonrealq(kp) .and. ivstk2(2,i) .eq. 1)then
@@ -100,19 +105,25 @@
       return
       end
 
-      recursive subroutine tfreplacestk(k,ispr,nrule,kx,all,rep,irtc)
+      recursive function tfreplacestk(k,ispr,nrule,all,rep,irtc)
+     $     result(kx)
       use tfstk
       use tfcode
       use iso_c_binding
       implicit none
-      type (sad_descriptor) kp,k,kx,ki,k1,kir,ks,kd
+      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) kp,ki,k1,kir,ks,kd
       type (sad_dlist), pointer :: klir,kl
       type (sad_rlist), pointer :: klr
       type (sad_pat), pointer :: pat
       integer*8 kair
-      integer*4 irtc,i,m,isp1,ispr,nrule,isp0,isp2,
+      integer*4 ,intent(out):: irtc
+      integer*4 i,m,isp1,ispr,nrule,isp0,isp2,
      $     itfmessageexp,mstk0,itfpmat,iop
-      logical*4 rep,all,noreal,rep1
+      logical*4 ,intent(out):: rep
+      logical*4 ,intent(in):: all
+      logical*4 noreal,rep1
       irtc=0
       noreal=.true.
       mstk0=mstk
@@ -158,11 +169,8 @@
       if(ktflistq(k,kl))then
         if(noreal .and. ktfreallistq(kl))then
           ki=kl%head
-          call tfreplacestk(ki,ispr,nrule,k1,.true.,rep,irtc)
-          if(irtc .ne. 0)then
-            return
-          endif
-          if(.not. rep)then
+          k1=tfreplacestk(ki,ispr,nrule,.true.,rep,irtc)
+          if(irtc .ne. 0 .or. .not. rep)then
             kx=k
             return
           endif
@@ -173,17 +181,17 @@
         else
           isp1=isp
           isp=isp+1
-          call tfreplacestk(kl%head,ispr,nrule,dtastk(isp),
-     $         .true.,rep,irtc)
+          dtastk(isp)=tfreplacestk(kl%head,ispr,nrule,.true.,rep,irtc)
           if(irtc .ne. 0)then
+            kx=k
             isp=isp1
             return
           endif
           do i=1,kl%nl
             isp=isp+1
-            call tfreplacestk(kl%dbody(i),ispr,nrule,kir,
-     $           .true.,rep1,irtc)
+            kir=tfreplacestk(kl%dbody(i),ispr,nrule,.true.,rep1,irtc)
             if(irtc .ne. 0)then
+              kx=k
               isp=isp1
               return
             endif
@@ -210,13 +218,14 @@
       elseif(ktfpatq(k,pat))then
         rep=.false.
         if(pat%sym%loc .ne. 0)then
-          call tfreplacestk(pat%sym%alloc,ispr,nrule,ks,
+          ks=tfreplacestk(pat%sym%alloc,ispr,nrule,
      $         .false.,rep,irtc)
           if(irtc .ne. 0)then
             return
           endif
           if(rep)then
             if(ktfnonsymbolq(ks))then
+              kx=k
               irtc=itfmessageexp(999,'General::reppat',k)
               return
             endif
@@ -225,8 +234,7 @@
           ks%k=0
         endif
         if(ktftype(pat%expr%k) .ne. ktfref)then
-          call tfreplacestk(pat%expr,ispr,nrule,k1,
-     $         .true.,rep1,irtc)
+          k1=tfreplacestk(pat%expr,ispr,nrule,.true.,rep1,irtc)
           if(irtc .ne. 0)then
             return
           endif
@@ -236,7 +244,7 @@
         endif
         kd=pat%default
         if(ktftype(kd%k) .ne. ktfref)then
-          call tfreplacestk(kd,ispr,nrule,kd,.true.,rep1,irtc)
+          kd=tfreplacestk(kd,ispr,nrule,.true.,rep1,irtc)
           if(irtc .ne. 0)then
             return
           endif

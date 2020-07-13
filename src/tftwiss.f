@@ -5,16 +5,17 @@
       use ffs_fit, only:nlist
       use ffs_pointer, only:twiss
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: ktl,kll
-      integer*4 nkey
-      parameter (nkey=mfitgmz)
+      integer*4 ,parameter ::nkey=mfitgmz
       integer*8 kax,kaxi,itoff
-      integer*4 isp1,irtc,narg,i,m,nc,isp0,nd,kt,itfmessage,lenw,
-     $     icol
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 narg,i,m,nc,isp0,nd,kt,itfmessage,lenw,icol
       real*8 ftwiss(ntwissfun),tfgettwiss,tphysdisp
-      logical*4 over,ref,dref
+      logical*4 ,intent(in):: ref
+      logical*4 over,dref
       character*(MAXPNAME+16) keyword,tfgetstrs
       narg=isp-isp1
       keyword=tfgetstrs(ktastk(isp1+1),nc)
@@ -265,7 +266,8 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       use ffs
       use tffitcode
       implicit none
-      real*8 ft(ntwissfun),ft0(ntwissfun),r(ntwissfun)
+      real*8 ,intent(in):: ft(ntwissfun),ft0(ntwissfun)
+      real*8 ,intent(out):: r(ntwissfun)
       r=ft-ft0
       r(mfitbx)=r(mfitbx)/ft0(mfitbx)
       r(mfitby)=r(mfitby)/ft0(mfitby)
@@ -280,9 +282,9 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       use tffitcode
       implicit none
       type (sad_descriptor) , intent(out):: kx
-      integer*4 i,icol,kt
+      integer*4 ,intent(in):: i,icol,kt
       integer*8 itoff
-      logical*4 ref,dref
+      logical*4 ,intent(in):: ref,dref
       real*8 pe(4),pe0(4),tgetgm
       select case (kt)
       case (mfitbx,mfitby,mfitbz)
@@ -336,9 +338,9 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       use tfstk
       use tffitcode
       implicit none
-      integer*4 kt
-      real*8 rfromk
-      real*8 ftwiss(ntwissfun),tphysdisp
+      integer*4 ,intent(in):: kt
+      real*8 ,intent(in):: ftwiss(ntwissfun)
+      real*8 rfromk,tphysdisp
       tfgettwiss=0.d0
       if(kt .le. ntwissfun)then
         tfgettwiss=ftwiss(kt)
@@ -357,10 +359,13 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       use ffs
       use tffitcode
       implicit none
-      type (sad_descriptor) kx
-      integer*4 isp1,irtc,i,narg,nc,isp0,m,itfmessage,ispa
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 i,narg,nc,isp0,m,itfmessage,ispa
       character*(MAXPNAME+16) keyword,tfgetstrs
-      logical*4 saved,ref
+      logical*4 ,intent(in):: ref
+      logical*4 saved
       narg=isp-isp1
       irtc=0
       if(narg .le. 0)then
@@ -441,11 +446,12 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       type (sad_comp), pointer :: cmp
       type (sad_rlist), pointer :: kl
       integer*8 iax
-      integer*4 irtc,id,lenw,it,ia,iv,isps,l
-
-      character*(*) keyword
+      integer*4 ,intent(out):: irtc
+      integer*4 ,intent(in):: it,ia
+      integer*4 id,lenw,iv,isps,l
+      character*(*) ,intent(in):: keyword
       character*(MAXPNAME) key,tfkwrd
-      logical*4 saved,ref
+      logical*4 ,intent(in):: saved,ref
       irtc=0
       if(keyword .eq. 'NAME')then
         id=idelc(ia)
@@ -526,8 +532,10 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       use tffitcode
       use ffs_pointer, only:idelc,pnamec
       implicit none
-      type (sad_descriptor) k
-      integer*4 isp0,narg,irtc,iv,nc,ifany1,i,itfmessage,j,ielmh
+      type (sad_descriptor) ,intent(in):: k
+      integer*4 ,intent(out):: isp0,irtc
+      integer*4 ,intent(in):: narg
+      integer*4 iv,nc,ifany1,i,itfmessage,j,ielmh
       character*1024 name
       logical*4 tmatch
       isp0=isp
@@ -592,11 +600,13 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
       use tffitcode
       use ffs_pointer, only:latt,icomp
       implicit none
-      type (sad_descriptor) kx
-      integer*4 isp1,irtc,ie,iv,k,j,m,ispa
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 ie,iv,k,j,m,ispa
       integer*4 i,narg,nc,isp0,itfmessage
       character*(MAXPNAME+16) keyword,tfgetstrs
-      logical*4 ref
+      logical*4 ,intent(in):: ref
       narg=isp-isp1
       keyword=tfgetstrs(ktastk(isp1+1),nc)
       if(nc .le. 0)then
@@ -666,16 +676,19 @@ c              k=ilist(ie,ifklp)
       use tflinepcom
       use geolib
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_comp), pointer ::cmp
       integer*8 kax,ktfgeol,kai,i,ip,j
-      integer*4 irtc,lenw,lxp,isp1,ibz,ia,nc
+      integer*4 ,intent(out):: irtc
+      integer*4 ,intent(in):: isp1
+      integer*4 lenw,lxp,ibz,ia,nc
       real*8 v,beam(42),xp,fr,
      $     gv(3,4),ogv(3,4),cod(6),vtwiss(ntwissfun),tfbzs
-      character*(*) keyword
+      character*(*) ,intent(in):: keyword
       character*64 name,key1
       integer*4 lv,itfdownlevel
-      logical*4 over,ref
+      logical*4 ,intent(in):: ref
+      logical*4 over
 c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
       irtc=0
       ip=itastk(1,isp1)
@@ -708,9 +721,9 @@ c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
             do i=1,6
               kai=ktavaloc(0,6)
               klist(kax+i)=ktflist+kai
-              do j=1,6
-                rlist(kai+j)=beam(iaidx(i,j))
-              enddo
+c              do j=1,6
+              rlist(kai+1:kai+6)=beam(iaidx(i,1:6))
+c              enddo
             enddo
             kx%k=ktflist+kax
           else
@@ -882,11 +895,13 @@ c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
 
       subroutine tfbeamkey(key,i,j,irtc)
       implicit none
-      integer*8 i,j
-      integer*4 irtc,lk,l1,k1,k,lenw,itfmessage
-      character*(*) key
-      character*2 key1,keyname(6)
-      data keyname /'X ','PX','Y ','PY','Z ','DP'/
+      integer*8 ,intent(out):: i,j
+      integer*4 ,intent(out):: irtc
+      integer*4 lk,l1,k1,k,lenw,itfmessage
+      character*(*) ,intent(in):: key
+      character*2 key1
+      character*2 ,parameter ::keyname(6)=[
+     $     'X ','PX','Y ','PY','Z ','DP']
       lk=lenw(key)
       if(lk .eq. 0)then
         i=0
@@ -941,8 +956,10 @@ c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
       use tffitcode
       use ffs_pointer, only:idelc,pnamec,ielma
       implicit none
-      type (sad_descriptor) k
-      integer*4 narg,isp0,irtc,nc,itfmessage,i
+      type (sad_descriptor) ,intent(in):: k
+      integer*4 ,intent(in):: narg
+      integer*4 ,intent(out):: irtc,isp0
+      integer*4 nc,itfmessage,i
       real*8 r,v
       character*(MAXPNAME+16) name
       isp0=isp
@@ -1086,7 +1103,8 @@ c     write(*,*)'linestk ',name(1:nc),r
       use maccbk
       implicit none
       type (sad_descriptor) kx
-      integer*4 irtc,isp0
+      integer*4 ,intent(out):: irtc
+      integer*4 isp0
       irtc=0
       if(ifinitlinep .eq. 0)then
         ifinitlinep=ktfsymbol+
@@ -1111,10 +1129,13 @@ c     write(*,*)'linestk ',name(1:nc),r
       use tflinepcom
       use tfstk
       implicit none
-      type (sad_descriptor) kx,ks
+      type (sad_descriptor) ,intent(in):: ks
+      type (sad_descriptor) kx
       type (sad_rlist), pointer :: klr
-      integer*8 kax
-      integer*4 irtc,isp0,nl,mode
+      integer*8 ,intent(out):: kax
+      integer*4 ,intent(out):: irtc
+      integer*4 ,intent(in):: mode
+      integer*4 isp0,nl
       call tfinitlinep(irtc)
       if(irtc .ne. 0)then
         nl=0
@@ -1146,9 +1167,11 @@ c     write(*,*)'linestk ',name(1:nc),r
       use tmacro
       implicit none
       type (sad_descriptor) ks
-      integer*8 kax
-      integer*4 irtc,lname,nl,mode
-      character*(*) name0
+      integer*8 ,intent(out):: kax
+      integer*4 ,intent(in):: lname,mode
+      integer*4 ,intent(out):: irtc
+      integer*4 nl
+      character*(*) ,intent(in):: name0
       character*(lname) name
       name=name0(1:lname)
       if(convcase)then
@@ -1164,8 +1187,9 @@ c     write(*,*)'linestk ',name(1:nc),r
       use ffs
       use tffitcode
       implicit none
-      type (sad_descriptor) k
-      integer*4 irtc,nc,ielm,itfmessage,itfmessagestr
+      type (sad_descriptor) ,intent(in):: k
+      integer*4 ,intent(out):: irtc
+      integer*4 nc,ielm,itfmessage,itfmessagestr
       character*(MAXPNAME+16) tfgetstrs,name
       logical*4 exist
       irtc=0
@@ -1206,10 +1230,10 @@ c     write(*,*)'linestk ',name(1:nc),r
       type (sad_dlist), pointer :: kl
       type (sad_rlist), pointer :: klv,klv2
       integer*8 kax,kax1,kax2
-      real*8 geo(3,4)
+      real*8 ,intent(in):: geo(3,4)
       kax=ktadaloc(-1,2,kl)
       kax1=ktavaloc(0,3,klv)
-      klv%rbody(1:3)=geo(1:3,4)
+      klv%rbody(1:3)=geo(:,4)
       kl%body(1)=ktflist+kax1
       kax2=ktavaloc(0,3,klv2)
       klv2%rbody(1)=tfchi(geo,1)

@@ -112,6 +112,7 @@ c               write(*,'(a,1p12g10.2)')'drift_sol ',pp%geo1(:,:)
          px(i)=px1-bzp*y(i)*.5d0
          py(i)=py1+bzp*x(i)*.5d0
       enddo
+      write(*,'(a,106g15.7)')'td_sol ',x(1),px(1),y(1),py(1),z(1),g(1)
       return
       end
 

@@ -309,6 +309,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       use tfstk
       implicit none
       type (sad_descriptor) kx,ki,k1,kxi
+      type (sad_descriptor) tfreplacestk
       type (sad_dlist), pointer :: list,listi,klx
       type (sad_symbol), pointer :: symi
       integer*4 isp1,irtc,isp2,i,itfmessage,lg0,n
@@ -391,8 +392,8 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
      $           .true.,rep,irtc)
           else
             call tfinitrule(isp2,list%nl)
-            call tfreplacestk(dtastk(isp2),
-     $           isp2,list%nl,kx,.true.,rep,irtc)
+            kx=tfreplacestk(dtastk(isp2),
+     $           isp2,list%nl,.true.,rep,irtc)
             call tfresetrule(isp2,list%nl)
           endif
           if(irtc .ne. 0)then

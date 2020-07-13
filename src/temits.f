@@ -83,12 +83,7 @@ c     $     dhc(4,mphi2,ndp),dhs(4,mphi2,ndp),
       real*8 params(nparams),btr(21,21),rm(6,6),
      $     rx(6,6),rxi(6,6),cmu(mphi2),smu(mphi2),disppi(6),
      $     beamr(42),fj(256),conv,tw0(ntwissfun),dispp(6)
-      character*10 label1(6),label2(6)
       logical*4 plot,stab,fndcod,calpol0
-      data label1/'        X ','       Px ','        Y ',
-     1     '       Py ','        Z ','       Pz '/
-      data label2/'        x ','    px/p0 ','        y ',
-     1     '    py/p0 ','        z ','    dp/p0 '/
       calpol0=calpol
       calpol=.false.
       codin=0.d0

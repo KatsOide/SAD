@@ -15,7 +15,7 @@
       character*(*) , intent(in)::form
       real*8 , intent(in), optional::a
       real*8 v,tgetgm
-      logical*4 dref
+      logical*4 ,intent(in):: dref
       v=0.d0
       if(dref)then
         select case (mf)
@@ -582,8 +582,8 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
       subroutine tdrefheader(header,mode)
       use disp
       implicit none
-      character*131 header
-      integer*4 mode
+      character*131 ,intent(out):: header
+      integer*4 ,intent(in):: mode
       if(mode .eq. modeb)then
         return
       endif
@@ -620,8 +620,8 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
       subroutine trefheader(header,mode)
       use disp
       implicit none
-      character*131 header
-      integer*4 mode
+      character*131 ,intent(out):: header
+      integer*4 ,intent(in):: mode
       if(mode .eq. modeb)then
         return
       endif
