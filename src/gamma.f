@@ -443,7 +443,6 @@ c     Including m_2_sqrtpi:	2 / Sqrt[Pi]
       use macmath
       implicit none
 c     Including m_2_sqrtpi:	2 / Pi
-      real*8 r,h,an,an1,an2,an0
       complex*16 ,intent(in):: z
       real*8 an1,an2,an0
       real*8 ,parameter ::r=m_2_pi
