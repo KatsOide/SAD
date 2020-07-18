@@ -168,6 +168,7 @@ c        call tfdebugprint(kr,':= ',3)
       use tfstk
       implicit none
       type (sad_descriptor) k,kr,kx1,karg,kargr
+      type (sad_descriptor) tfreplacesymbolstk1
       integer*4 irtc,isp0,ispr,i,ipsbase,nrule
       logical*4 rep,same
       isp0=isp
@@ -206,7 +207,7 @@ c        call tfdebugprint(kr,':= ',3)
         return
       endif
       kargr=kx1
-      call tfreplacesymbolstk1(k,ispr,nrule,kr,.false.,rep,irtc)
+      kr=tfreplacesymbolstk1(k,ispr,nrule,.false.,rep,irtc)
       isp=isp0
       return
       end
@@ -217,6 +218,7 @@ c        call tfdebugprint(kr,':= ',3)
       use tfcode
       implicit none
       type (sad_descriptor) kr,kx,karg,kargr,karg1,k
+      type (sad_descriptor) tfdefsymbol
       type (sad_dlist), pointer :: klx
       type (sad_deftbl), pointer :: dtbl
       integer*8 kb0,kn0,kan,kan0,ktalocr,kb,kn
@@ -224,7 +226,7 @@ c        call tfdebugprint(kr,':= ',3)
       logical*4 tbl,rep,sym
       isp0=isp
       if(tbl)then
-        call tfdefsymbol(kargr,kx,rep,sym)
+        kx=tfdefsymbol(kargr,rep,sym)
         karg1=kx
         call descr_sad(karg1,klx)
         call tfinitpatlist(isp0,klx)
@@ -268,19 +270,20 @@ c        call tfdebugprint(kr,':= ',3)
         endif
       endif
       dtbl%compile=0.d0   ! compile level
-      do i=1,npat
-        dtbl%pattbl(i)=dtastk(isp0+i*2-1)
+c      do i=1,npat
+        dtbl%pattbl(1:npat)=dtastk(isp0+1:isp0+npat*2-1:2)
 c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
-      enddo
+c      enddo
       isp=isp0
       ktdaloc=kan
       return
       end
       
-      recursive subroutine tfdefsymbol(k,kx,rep,sym)
+      recursive function tfdefsymbol(k,rep,sym) result(kx)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k
+      type (sad_descriptor) kx
+      type (sad_descriptor) k
       type (sad_dlist), pointer :: list
       type (sad_rlist), pointer :: klr
       type (sad_symbol), pointer :: ks,ks1
@@ -295,7 +298,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
         endif
         isp0=isp
         isp=isp+1
-        call tfdefsymbol(list%head,dtastk(isp),rep,sym)
+        dtastk(isp)=tfdefsymbol(list%head,rep,sym)
         m=list%nl
         if(ktfreallistq(list))then
           if(rep)then
@@ -310,7 +313,7 @@ c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
         endif
         do i=1,list%nl
           isp=isp+1
-          call tfdefsymbol(list%dbody(i),dtastk(isp),rep1,sym)
+          dtastk(isp)=tfdefsymbol(list%dbody(i),rep1,sym)
           rep=rep .or. rep1
         enddo
         if(rep)then
@@ -743,7 +746,7 @@ c      endif
       use tfcode
       use iso_c_binding
       implicit none
-      type (sad_descriptor) kx,k,kh,kp(0:2),ksy
+      type (sad_descriptor) kx,k,kh,kp(0:2),ksy,tfcomposefun
       type (sad_dlist), pointer :: list,klh
       type (sad_pat), pointer :: pat
       type (sad_symdef), pointer :: symdef
@@ -813,7 +816,7 @@ c            call tfdebugprint(list%body(i),'==> ',3)
             if(ktfoperq(kh))then
               if(kah .gt. mtfend)then
                 ks1=isp+ispbase
-                call tfcomposefun(isp1+1,kah,kx,.false.,irtc)
+                kx=tfcomposefun(isp1+1,kah,.false.,irtc)
               else
                 call tfcomposeoper(isp1+1,kah,kx,.false.,isp0,irtc)
                 ks1=isp0+ispbase
@@ -917,7 +920,7 @@ c      call tfdebugprint(kx,'tfreparg-out',1)
       use tfcode
       use iso_c_binding
       implicit none
-      type (sad_descriptor) k,ks,kx,kh,kp(0:2)
+      type (sad_descriptor) k,ks,kx,kh,kp(0:2),tfcomposefun
       type (sad_dlist), pointer :: list,klx,klh
       type (sad_rlist), pointer :: klr
       type (sad_pat), pointer :: pat
@@ -1008,7 +1011,7 @@ c              call tfdebugprint(list%dbody(i),'==>',3)
           if(rlist(iaximmediate) .ne. 0.d0)then
             if(ktfoperq(kh))then
               if(kah .gt. mtfend)then
-                call tfcomposefun(isp1+1,kah,kx,.false.,irtc)
+                kx=tfcomposefun(isp1+1,kah,.false.,irtc)
               else
                 call tfcomposeoper(isp1+1,kah,kx,.true.,isp0,irtc)
               endif
@@ -1304,7 +1307,6 @@ c          write(*,*)'with ',symd%sym%override
           call descr_sad(dtbl%pattbl(i),pat)
           pat%mat=0
           pat%value%k=ktfref
-c          call tfunsetpat(dtbl%pattbl(i))
         enddo
       endif
       return
@@ -1315,7 +1317,7 @@ c          call tfunsetpat(dtbl%pattbl(i))
       use tfcode
       use tfpmat
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) kx,tfsetuparg,tfrecompilearg
       type (sad_deftbl) dtbl
       type (sad_dlist), pointer :: klx
       type (sad_pat), pointer :: pat
@@ -1347,8 +1349,8 @@ c            call tflinkedpat(pat0,pat)
             dtastk(isp  )=sad_descr(pat%sym)
           enddo
           call tfsortsymbolstk(isp0,dtbl%npat,nrule1)
-          call tfsetuparg(dtbl%bodyc,isp0,nrule1*2,
-     $         kx,rep,member,irtc)
+          kx=tfsetuparg(dtbl%bodyc,isp0,nrule1*2,
+     $         rep,member,irtc)
           isp=isp0
           if(irtc .ne. 0)then
             return
@@ -1360,13 +1362,13 @@ c            call tflinkedpat(pat0,pat)
           dtbl%compile=rlist(levelcompile)
           if(ktflistq(kx,klx))then
             if(iand(lmemberlist,klx%attr) .ne. 0)then
-              call tfrecompilearg(kx,kx,rep,irtc)
+              kx=tfrecompilearg(kx,rep,irtc)
               if(irtc .ne. 0)then
                 return
               endif
             endif
           elseif(ktfpatq(kx))then
-            call tfrecompilearg(kx,kx,rep,irtc)
+            kx=tfrecompilearg(kx,rep,irtc)
             if(irtc .ne. 0)then
               return
             endif
@@ -1377,14 +1379,14 @@ c            call tflinkedpat(pat0,pat)
       else
         if(ktflistq(kx,klx))then
           if(iand(lmemberlist,klx%attr) .ne. 0)then
-            call tfrecompilearg(kx,kx,rep,irtc)
+            kx=tfrecompilearg(kx,rep,irtc)
             if(irtc .ne. 0)then
               return
             endif
             dtbl%compile=rlist(levelcompile)
           endif
         elseif(ktfpatq(kx))then
-          call tfrecompilearg(kx,kx,rep,irtc)
+          kx=tfrecompilearg(kx,rep,irtc)
           if(irtc .ne. 0)then
             return
           endif
@@ -1396,7 +1398,8 @@ c            call tflinkedpat(pat0,pat)
       return
       end
 
-      recursive subroutine tfsetuparg(k,ispr,nrule2,kx,rep,member,irtc)
+      recursive function tfsetuparg(k,ispr,nrule2,rep,member,irtc)
+     $     result(kx)
       use tfstk
       use tfcode
       implicit none
@@ -1418,7 +1421,7 @@ c            call tflinkedpat(pat0,pat)
         endif
         return
       elseif(ktflistq(k,list))then
-        call tfsetuparg(list%head,ispr,nrule2,k1,rep,member,irtc)
+        k1=tfsetuparg(list%head,ispr,nrule2,rep,member,irtc)
         if(irtc .ne. 0)then
           return
         endif
@@ -1440,8 +1443,8 @@ c            call tflinkedpat(pat0,pat)
         dtastk(isp)=k1
         rep2=.false.
         LOOP_I: do i=1,m
-          call tfsetuparg(list%dbody(i),
-     $       ispr,nrule2,ki,rep1,member1,irtc)
+          ki=tfsetuparg(list%dbody(i),
+     $       ispr,nrule2,rep1,member1,irtc)
           if(irtc .ne. 0)then
             isp=isp1
             return
@@ -1477,7 +1480,7 @@ c            call tflinkedpat(pat0,pat)
       elseif(ktfpatq(k,pat))then
         rep=.false.
         if(pat%sym%loc .ne. 0)then
-          call tfsetuparg(pat%sym%alloc,ispr,nrule2,ks,rep,member,irtc)
+          ks=tfsetuparg(pat%sym%alloc,ispr,nrule2,rep,member,irtc)
           if(irtc .ne. 0)then
             return
           endif
@@ -1492,7 +1495,7 @@ c            call tflinkedpat(pat0,pat)
         endif
         k1=pat%expr
         if(.not. ktfrefq(k1,ka1) .or. ka1 .gt. 3)then
-          call tfsetuparg(k1,ispr,nrule2,k1,rep1,member1,irtc)
+          k1=tfsetuparg(k1,ispr,nrule2,rep1,member1,irtc)
           member=member .or. member1
           if(irtc .ne. 0)then
             return
@@ -1501,7 +1504,7 @@ c            call tflinkedpat(pat0,pat)
         endif
         kd=pat%default
         if(ktftype(kd%k) .ne. ktfref)then
-          call tfsetuparg(kd,ispr,nrule2,kd,rep1,member1,irtc)
+          kd=tfsetuparg(kd,ispr,nrule2,rep1,member1,irtc)
           member=member .or. member1
           if(irtc .ne. 0)then
             return
@@ -1515,7 +1518,7 @@ c            call tflinkedpat(pat0,pat)
       return
       end
 
-      recursive subroutine tfrecompilearg(k,kx,rep,irtc)
+      recursive function tfrecompilearg(k,rep,irtc) result(kx)
       use tfstk
       use tfcode
       implicit none
@@ -1538,7 +1541,7 @@ c            call tflinkedpat(pat0,pat)
         if(k1%k .eq. ktfoper+mtfhold)then
           return
         endif
-        call tfrecompilearg(k1,k1,rep,irtc)
+        k1=tfrecompilearg(k1,rep,irtc)
         if(ktfreallistq(list))then
           if(rep)then
             m=list%nl
@@ -1556,7 +1559,7 @@ c            call tmov(rlist(ka+1),rlist(kax+1),m)
         rep2=.false.
         do i=1,list%nl
           isp=isp+1
-          call tfrecompilearg(list%dbody(i),dtastk(isp),rep1,irtc)
+          dtastk(isp)=tfrecompilearg(list%dbody(i),rep1,irtc)
           if(irtc .ne. 0)then
             isp=isp1
             return
@@ -1596,13 +1599,13 @@ c                call tfdebugprint(kx,'==>',3)
       elseif(ktfpatq(k,pat))then
         k1=pat%expr
         if(ktfrefq(k1,ka1) .and. ka1 .gt. 3)then
-          call tfrecompilearg(k1,k1,rep,irtc)
+          k1=tfrecompilearg(k1,rep,irtc)
           if(irtc .ne. 0)then
             return
           endif
         endif
         kd=pat%default
-        call tfrecompilearg(kd,kd,rep1,irtc)
+        kd=tfrecompilearg(kd,rep1,irtc)
         if(irtc .ne. 0)then
           return
         endif

@@ -642,10 +642,10 @@ cc for spch
      $ky_MAX_SPCH=19
 
       contains
-        logical*4 function integv(k,ic)
+        logical*4 pure elemental function integv(k,ic)
         use maccode
         implicit none
-        integer*4 k,ic
+        integer*4 ,intent(in):: k,ic
         select case (ic)
         case (icMULT)
           integv=k. eq. ky_L_MULT .or. k .eq. ky_ANGL_MULT .or.

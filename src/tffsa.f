@@ -1137,11 +1137,11 @@ c        rlist(itlookup('DP',ivtype))=dpmax
           nfam1=-nfam
         endif
         uini(mfitddp,0)=0.d0
-        do i=nfam1,nfr
-          kfam(i)=0
-          jfam(i)=9999
-          dp(i)=uini(mfitddp,i)
-        enddo
+c        do i=nfam1,nfr
+          kfam(nfam1:nfr)=0
+          jfam(nfam1:nfr)=9999
+          dp(nfam1:nfr)=uini(mfitddp,nfam1:nfr)
+c        enddo
         jfam(0)=0
       elseif(err)then
         call termes(lfno,'Error in InitialOrbits',' ')

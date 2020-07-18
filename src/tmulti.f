@@ -143,9 +143,9 @@ c        pe=sqrt((he-1.d0)*(he+1.d0))
           enddo
         else
           wsn=1.d0/ndiv
-          do i=1,ndiv
-            ws(i)=wsn
-          enddo
+c          do i=1,ndiv
+            ws(1:ndiv)=wsn
+c          enddo
         endif            
         phic=(phirf+dphirf)*charge
         if(trpt)then
@@ -181,9 +181,9 @@ c     begin initialize for preventing compiler warning
 c     end   initialize for preventing compiler warning
 c        vnominal=0.d0
         wsn=1.d0/ndiv
-        do i=1,ndiv
-          ws(i)=wsn
-        enddo
+c        do i=1,ndiv
+          ws(1:ndiv)=wsn
+c        enddo
       endif
       ak1=akr1*ws(1)*.5d0
       al1=al*ws(1)*.5d0
@@ -215,7 +215,7 @@ c        vnominal=0.d0
             call tblfri(np,x,px,y,py,z,g,al,akr(0),fb1)
           endif
           if(f1in .ne. 0.d0 .or. f2in .ne. 0.d0)then
-            do i=1,np
+            do concurrent (i=1:np)
               p=(1.d0+g(i))
               a=f1in/p
               ea=exp(a)
@@ -244,7 +244,7 @@ c      endif
      $         al1,ak1,bzs,dble(ak01),imag(ak01),ibsi,eps0)
           if(krad)then
             if(m .eq. 1)then
-              do i=1,np
+              do concurrent (i=1:np)
                 cx1=dcmplx(x(i),y(i))
                 cx=0.d0
                 do n=nmmax,2,-1
@@ -275,7 +275,7 @@ c      endif
         ak1=akr1*wm
         ak01=akr(0)*wm
         if(nzleng)then
-          do i=1,np
+          do concurrent (i=1:np)
             cx1=dcmplx(x(i),y(i))
             cx=(0.d0,0.d0)
             do n=nmmax,2,-1
@@ -286,7 +286,7 @@ c      endif
             py(i)=py(i)+imag(cx)
           enddo
         else
-          do i=1,np
+          do concurrent (i=1:np)
             cx1=dcmplx(x(i),y(i))
             cx=(0.d0,0.d0)
             do n=nmmax,1,-1
@@ -310,7 +310,7 @@ c            p2=sqrt((h2-1.d0)*(h2+1.d0))
           else
             dzn=0.d0
           endif
-          do i=1,np
+          do concurrent (i=1:np)
             dp1r=g(i)
             p1r=1.d0+dp1r
             p1=p0*p1r
@@ -364,7 +364,7 @@ c      endif
       if(nzleng)then
         if(mfring .eq. 2 .or. mfring .eq. 3)then
           if(f1out .ne. 0.d0 .or. f2out .ne. 0.d0)then
-            do i=1,np
+            do concurrent (i=1:np)
               p=(1.d0+g(i))
               a=-f1out/p
               ea=exp(a)
@@ -396,7 +396,7 @@ c      endif
           endif
         endif
         if(krad)then
-          do i=1,np
+          do concurrent (i=1:np)
             cx1=dcmplx(x(i),y(i))
             cx=0.d0
             do n=nmmax,2,-1
@@ -420,7 +420,7 @@ c      endif
         p2=h2p(h2)
 c        p2=sqrt((h2-1.d0)*(h2+1.d0))
         dp2p2=vnominal*(h2+h0)/(p2+p0)/p2
-        do i=1,np
+        do concurrent (i=1:np)
           dp=max(g(i),pmin-1.d0)
           dp1=dp*p0/p2-dp2p2
           pr1=1.d0+dp1
@@ -464,7 +464,7 @@ c          h1=sqrt(1.d0+(p2*pr1)**2)
         dxfry=0.d0
         dxfray=0.d0
       endif
-      do i=1,np
+      do concurrent (i=1:np)
         p=1.d0+g(i)
         x(i)=x(i)+dxfrx*g(i)/p
         y(i)=y(i)-dyfry*g(i)/p

@@ -101,9 +101,9 @@ c     end   initialize for preventing compiler warning
         chgmod=.true.
         bestval(1:nvar)=nvevx(1:nvar)%valvar
         free=.false.
-        do i=1,nvar
-          free(nvevx(i)%ivarele)=.true.
-        enddo
+c        do i=1,nvar
+        free(nvevx(1:nvar)%ivarele)=.true.
+c        enddo
         aitm1=flv%itmax*alit
         aitm2=flv%itmax
         nvara=nvar
@@ -370,11 +370,12 @@ c                    enddo
                   irtc=20003
                   exit do9000
                 endif
-                do kc=1,nvar
-                  do j=1,nqcol1
-                    kqu=(kc-1)*nqcol+j+ifqu-1
-                    rlist(kqu)=rlist(kqu)*wiq(j)/wvar(kc)
-                  enddo
+                do concurrent (kc=1:nvar)
+c                  do concurrent (j=1:nqcol1)
+                  kqu=(kc-1)*nqcol+ifqu
+                  rlist(kqu:kqu+nqcol1-1)=rlist(kqu:kqu+nqcol1-1)
+     $                 *wiq(1:nqcol1)/wvar(kc)
+c     enddo
                 enddo
                 if(nqcol .gt. nqcol1)then
                   ipr=-1
@@ -425,7 +426,7 @@ c                        enddo
                       endif
                       nvevx(kc)%valvar=nvevx(kc)%valvar-eps1/wvar(kc)
                       call tfsetv(nvar)
-                      do j=nqcol1+1,nqcol
+                      do concurrent (j=nqcol1+1:nqcol)
                         kqu=(kc-1)*nqcol+j+ifqu-1
                         rlist(kqu)=(df(j)-df1(j))/eps1
                       enddo
@@ -650,7 +651,7 @@ c            call tfmemcheckprint('ffsmatch',.true.,irtc)
       use tffitcode
       implicit none
       type (sad_rlist), pointer :: klr
-      integer*8 kx
+      type (sad_descriptor) kx
       integer*4 i,ld,ivv,ltyp,irtc
       real*8 val,val0,vl,vl1,vl0,vl2
       logical*4 limited,dlim
@@ -694,7 +695,7 @@ c      call tfmemcheckprint('vlimit-0',.true.,irtc)
       endif
       if(ktfrealq(kx))then
         dlim=.true.
-        if(kx .eq. 0)then
+        if(kx%k .eq. 0)then
           vl=vl0
           go to 2009
         endif
@@ -723,11 +724,12 @@ c      call tfmemcheckprint('vlimit-0',.true.,irtc)
       use ffs
       use tffitcode
       use iso_c_binding
+      use efun
       implicit none
       type (sad_string), pointer, save :: svarn, skey
       type (sad_descriptor) , save ::ifvr,ifvw
       data ifvr%k/0/
-      integer*8 kx
+      type (sad_descriptor) ,intent(out):: kx
       integer*4 id,ld,irtc,isp1,level,itfuplevel,ltyp,
      $     itfdownlevel,k
       real*8 x
@@ -764,7 +766,7 @@ c      call tfmemcheckprint('vlimit-0',.true.,irtc)
         call tclrfpe
         level=itfuplevel()
 c     call tfmemcheckprint('varfun',.true.,irtc)
-        call tfefunref(isp1,kx,.false.,irtc)
+        kx=tfefunref(isp1,.false.,irtc)
 c     call tfdebugprint(kx,'varfun',1)
         isp=isp1-1
       endif
@@ -781,7 +783,7 @@ c     call tfdebugprint(kx,'varfun',1)
      $         pname(ld)//' '//vn,' ')
         endif
       else
-        call tfconnectk(kx,irtc)
+        call tfconnect(kx,irtc)
       endif
       return
       end
@@ -911,7 +913,7 @@ c     call tfdebugprint(kx,'varfun',1)
                   endif
                 endif
                 iclast(nfam1:nfam)=0
-                do kq=1,nqcol1
+                do concurrent (kq=1:nqcol1)
                   col(1,kq)=.true.
                   col(2,kq)=flv%lfp(2,kq) .gt. 0
                 enddo
@@ -1085,14 +1087,14 @@ c
      $     grad(nvar),wlimit(nvar),s,sg,r,wexponent,
      $     dfw(nqcol),dfwi
 c      qu=matmul(qu0,wlimit)
-      do i=1,nvar
+      do concurrent (i=1:nvar)
         qu(:,i)=qu0(:,i)*wlimit(i)
 cc        do j=1,nqcol
 cc          qu(j,i)=qu0(j,i)*wlimit(i)
 cc        enddo
       enddo
       r=0.d0
-      do i=1,nqcol
+      do concurrent (i=1:nqcol)
         if(df(i) .ne. 0.d0)then
           dfwi=abs(df(i))**wexponent
           r=r+dfwi
@@ -1126,9 +1128,9 @@ c        enddo
       use ffs_fit
       use cbkmac
       implicit none
-      integer*8 kx
+      type (sad_descriptor) kx
       integer*4 i,ltyp,iv,irtc
-      real*8 val0,gw,vmin,rfromk,vk
+      real*8 val0,gw,vmin,vk
       logical*4 absweit
       gw=1.d0
       if(iv .eq. kytbl(kwK1,ltyp))then
@@ -1208,7 +1210,7 @@ c        enddo
       endif
       call tffsvarfun(2,i,iv,gw,kx,irtc)
       if(irtc .eq. 0 .and. ktfrealq(kx))then
-        gw=rfromk(kx)
+        gw=rfromd(kx)
       endif
       tweigh=gw
       return

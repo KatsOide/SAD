@@ -116,11 +116,11 @@
       if(calgeo)then
         dgo=geo(:,4,iorgr)+ffv%geo0(1,4)*geo(:,3,iorgr)
      $       -ffv%geo0(2,4)*geo(:,1,iorgr)-ffv%geo0(3,4)*geo(:,2,iorgr)
-        do i=1,nlat
+        do concurrent (i=1:nlat)
           geo(:,4,i)=geo(:,4,i)-dgo
         enddo
         geo2=matmul(ffv%geo0(:,1:3),transpose(geo(:,1:3,iorgr)))
-        do i=1,nlat
+        do concurrent (i=1:nlat)
           geo(:,1:4,i)=matmul(geo2,geo(:,1:4,i))
         enddo
         if(sorg)then

@@ -1,5 +1,6 @@
       subroutine temap(np,np0,x,px,y,py,z,g,dv,l,nt,kptbl)
       use tfstk
+      use efun
       implicit none
       type alist
         type (sad_rlist), pointer :: p
@@ -61,7 +62,7 @@
           kav(7)%p%rbody(i)=1.d0
         endif
       enddo
-      call tfefunref(isp0+1,kx,.false.,irtc)
+      kx=tfefunref(isp0+1,.false.,irtc)
       if(irtc .ne. 0)then
         levele=itfdownlevel()
         isp=isp0
@@ -189,6 +190,7 @@ c        call tfdebugprint(kx,'temap',1)
       use tfstk
       use tmacro
       use sad_main, only:iaidx
+      use efun
       implicit none
       type (sad_descriptor) kx
       integer*8 k1,k2,k3,k4,kax,
@@ -212,7 +214,7 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       rtastk(isp)=l
       isp=isp+1
       dtastk(isp)=kxm2l(cod,0,6,1,.false.)
-      call tfefunref(isp0+1,kx,.false.,irtc)
+      kx=tfefunref(isp0+1,.false.,irtc)
       if(irtc .ne. 0)then
         levele=itfdownlevel()
         if(ierrorprint .ne. 0)then
@@ -310,6 +312,7 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       subroutine qemap(trans,cod,l,coup,err)
       use tfstk
       use tmacro
+      use efun
       implicit none
       type (sad_descriptor) :: kx
       type (sad_dlist), pointer :: kxl, k2l
@@ -336,7 +339,7 @@ c      iat=itfm2l(cod,0,6,1,.false.)
       isp=isp+1
       dtastk(isp)=kxm2l(cod,0,6,1,.false.)
 c      itastk(2,isp)=iat
-      call tfefunref(isp0+1,kx,.false.,irtc)
+      kx=tfefunref(isp0+1,.false.,irtc)
       if(irtc .ne. 0)then
         levele=itfdownlevel()
         if(ierrorprint .ne. 0)then
@@ -386,6 +389,7 @@ c      itastk(2,isp)=iat
       use ffs_pointer
       use tmacro
       use geolib
+      use efun
       implicit none
       type (sad_descriptor) kx
       integer*8 ktfgeol,kax,k1,k2,k11,k12,ka1,ka11,ka12,kdb
@@ -415,7 +419,7 @@ c      iat=itfm2l(cod,0,6,1,.false.)
 c      ktastk(isp)=ktflist+ktfgeol(geo(1,1,l))
       isp=isp+1
       rtastk(isp)=pos(l)
-      call tfefunref(isp0+1,kx,.false.,irtc)
+      kx=tfefunref(isp0+1,.false.,irtc)
       if(irtc .ne. 0)then
         levele=itfdownlevel()
         if(ierrorprint .ne. 0)then

@@ -136,10 +136,12 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
       use tfstk
       use tfrbuf
       use ffs_flag
+      use efun
       implicit none
       type (sad_dlist), pointer :: kl
       type (sad_symbol), pointer :: sym
-      integer*8 kad,kah,ka,k,kt,kx,k1
+      type (sad_descriptor) kx
+      integer*8 kad,kah,ka,k,kt,k1
       integer*4 irtc,l,lenw,itfhasharg,isp0
       real*8 al,amaxline
       character*10 n,autofg
@@ -180,7 +182,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
               isp=isp+1
               isp0=isp
               ktastk(isp)=k1
-              call tfefunref(isp0,kx,.true.,irtc)
+              kx=tfefunref(isp0,.true.,irtc)
               isp=isp0-1
               ncprolog=0
               return
@@ -192,7 +194,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
             ktastk(isp)=k
             isp=isp+1
             rtastk(isp)=amaxline
-            call tfefunref(isp0,kx,.true.,irtc)
+            kx=tfefunref(isp0,.true.,irtc)
             isp=isp0-1
             ncprolog=0
             return

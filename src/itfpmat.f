@@ -50,6 +50,7 @@ c      endif
 
       integer*4 function itflistmat(k,listp)
       use tfstk
+      use efun
       implicit none
       type (sad_descriptor) kph,k,ki,kc,kh,kf,k1,kp1
       type (sad_dlist) listp
@@ -220,7 +221,7 @@ c      endif
                 dtastk(isp)=k
                 ierrorth0=ierrorth
                 ierrorth=10
-                call tfefunref(isp3+1,kf,.true.,irtc)
+                kf=tfefunref(isp3+1,.true.,irtc)
                 ierrorth=ierrorth0
                 isp=isp3
                 if(irtc .ne. 0)then
@@ -636,6 +637,7 @@ c     write(*,*)'at ',ispp,' with ',mop,np
       use tfstk
       use tfcode
       use tfpmat
+      use efun
       use iso_c_binding
       implicit none
       type (sad_descriptor) kp1,kp0,kp,kd,k2,kf
@@ -773,7 +775,7 @@ c          write(*,*)'==> ',ix
             isp=isp+isps-isp1
             ierrorth0=ierrorth
             ierrorth=10
-            call tfefunref(isp0+1,kf,.true.,irtc)
+            kf=tfefunref(isp0+1,.true.,irtc)
             ierrorth=ierrorth0
             isp=isp0
             if(irtc .ne. 0)then

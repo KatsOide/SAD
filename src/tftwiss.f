@@ -1101,6 +1101,7 @@ c     write(*,*)'linestk ',name(1:nc),r
       use tflinepcom
       use tfstk
       use maccbk
+      use efun
       implicit none
       type (sad_descriptor) kx
       integer*4 ,intent(out):: irtc
@@ -1119,7 +1120,7 @@ c     write(*,*)'linestk ',name(1:nc),r
         isp0=isp
         isp=isp+1
         ktastk(isp)=ifinitlinep
-        call tfefunref(isp0+1,kx,.false.,irtc)
+        kx=tfefunref(isp0+1,.false.,irtc)
         isp=isp0
       endif
       return
@@ -1128,6 +1129,7 @@ c     write(*,*)'linestk ',name(1:nc),r
       subroutine tfgetlinep(ks,nl,kax,mode,irtc)
       use tflinepcom
       use tfstk
+      use efun
       implicit none
       type (sad_descriptor) ,intent(in):: ks
       type (sad_descriptor) kx
@@ -1150,7 +1152,7 @@ c     write(*,*)'linestk ',name(1:nc),r
       endif
       isp=isp+1
       dtastk(isp)=ks
-      call tfefunref(isp0+1,kx,.false.,irtc)
+      kx=tfefunref(isp0+1,.false.,irtc)
       isp=isp0
       if(.not. tfreallistq(kx,klr))then
         nl=0

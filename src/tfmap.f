@@ -1,7 +1,8 @@
-      subroutine tfmap(isp1,kx,mode,ihead,irtc)
+      function tfmap(isp1,mode,ihead,irtc) result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) kx,kf,kl
+      type (sad_descriptor) tflevelstk,tfmap1
       integer*4 maxind
       parameter (maxind=4096)
       real*8 rind(maxind)
@@ -10,7 +11,7 @@
       narg=isp-isp1
       if(narg .eq. 2)then
         if(mode .eq. 1 .or. mode .eq. 3)then
-          call tfmap1(isp1,kx,mode,irtc)
+          kx=tfmap1(isp1,mode,irtc)
           return
         endif
         n1=1
@@ -41,7 +42,7 @@
       kl=dtfcopy(dtastk(ispf+1))
       ind=0
       isp0=isp
-      call tflevelstk(kl,kf,kx,
+      kx=tflevelstk(kl,kf,
      $     n1,n2,mode,ind,rind,ihead,mstk,irtc)
       isp=isp0
       call tflocald(kf)
@@ -55,8 +56,9 @@
       return
       end
 
-      subroutine tfmap1(isp1,kx,mode,irtc)
+      function tfmap1(isp1,mode,irtc) result(kx)
       use tfstk
+      use efun
       implicit none
       type (sad_descriptor) kx,k,ki,kf
       type (sad_dlist), pointer :: kl,kli
@@ -81,7 +83,7 @@
           isp=isp2+1
           dtastk(isp)=kl%dbody(i)
           levele=levele+1
-          call tfefunref(isp2,ki,.true.,irtc)
+          ki=tfefunref(isp2,.true.,irtc)
           l=itfdownlevel()
           if(irtc .ne. 0)then
             if(irtc .eq. -3)then
@@ -107,7 +109,7 @@
           isp=isp+1
           dtastk(isp)=kl%dbody(i)
           levele=levele+1
-          call tfefunref(isp2,ki,.true.,irtc)
+          ki=tfefunref(isp2,.true.,irtc)
           call tfconnect(ki,irtc)
           if(irtc .ne. 0)then
             go to 9000
@@ -132,7 +134,7 @@
             dtastk(isp)=ki
           endif
         enddo
-        call tfefunref(isp2,kx,.true.,irtc)
+        kx=tfefunref(isp2,.true.,irtc)
       endif
  9000 call tflocald(kf)
       call tflocal1(k%k)
@@ -144,6 +146,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx,kf,kl
+      type (sad_descriptor) tflevelstk
       integer*4 isp1,narg,irtc,ihead,itfmessage
       narg=isp-isp1
       ihead=1
@@ -161,7 +164,7 @@
       endif
       kf=dtfcopy(dtastk(isp1+1))
       kl=dtfcopy(dtastk(isp1+2))
-      call tflevelstk(kl,kf,kx,
+      kx=tflevelstk(kl,kf,
      $     0,maxgeneration,3,0,(/0.d0/),ihead,mstk,irtc)
       call tflocald(kf)
       call tflocald(kl)
@@ -170,8 +173,10 @@
 
       subroutine tfapply(isp1,kx,irtc)
       use tfstk
+      use efun
       implicit none
       type (sad_descriptor) kx,kf,kl
+      type (sad_descriptor) tflevelstk
       type (sad_dlist), pointer :: klx
       integer*4 isp1,narg,irtc,n1,n2,ispf,itfmessage
       narg=isp-isp1
@@ -182,7 +187,7 @@
           ispf=isp
           call tfgetllstkall(klx)
           levele=levele+1
-          call tfefunref(ispf,kx,.true.,irtc)
+          kx=tfefunref(ispf,.true.,irtc)
           call tfconnect(kx,irtc)
           isp=ispf
         else
@@ -204,7 +209,7 @@
       endif
       kf=dtfcopy(dtastk(ispf))
       kl=dtfcopy(dtastk(ispf+1))
-      call tflevelstk(kl,kf,kx,n1,n2,2,0,[0.d0],1,mstk,irtc)
+      kx=tflevelstk(kl,kf,n1,n2,2,0,[0.d0],1,mstk,irtc)
       call tflocald(kf)
       call tflocald(kl)
       return
@@ -256,6 +261,7 @@
       use tfstk
       implicit none
       type (sad_descriptor) kf,kx,ki,kl
+      type (sad_descriptor) tfgetoption1,tflevelstk
       type (sad_dlist), pointer :: kla,klx,kll
       type (sad_rlist), pointer :: klir
       integer*4 maxind
@@ -295,7 +301,7 @@
         ispf=ispa
       else
         if(tfruleq(dtastk(ispa),kla))then
-          call tfgetoption1(kxheads,kla,kx,rep)
+          kx=tfgetoption1(kxheads,kla,rep)
           if(rep .and. ktfrealq(kx))then
             ispa=ispa-1
             if(kx%k .eq. 0)then
@@ -414,7 +420,7 @@
       kf=dtfcopy(dtastk(ispf))
       kl=dtfcopy(dtastk(ispf-1))
       ind=0
-      call tflevelstk(kl,kf,kx,
+      kx=tflevelstk(kl,kf,
      $     n1,n2,5+icases,ind,rind,ihead,ispmax,irtc)
       call tflocald(kf)
       call tflocald(kl)
@@ -727,6 +733,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
 
       subroutine tfselect(isp1,kx,irtc)
       use tfstk
+      use efun
       implicit none
       type (sad_descriptor) kx,k,kf,ki,kxi
       type (sad_dlist), pointer ::kl
@@ -781,7 +788,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
         isp=isp+1
         dtastk(isp)=ki
         levele=levele+1
-        call tfefunref(isp2+1,kxi,.true.,irtc)
+        kxi=tfefunref(isp2+1,.true.,irtc)
         call tfconnect(kxi,irtc)
         if(irtc .ne. 0)then
           go to 9000
@@ -804,6 +811,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
 
       subroutine tfswitchcases(isp1,kx,mode,irtc)
       use tfstk
+      use efun
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: kl,kl2,klx
@@ -863,7 +871,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
             ktastk(isp)=ktastk(isp2+j)
             isp=isp+1
             ktastk(isp)=ktastk(i)
-            call tfefunref(isp4+1,kx,.true.,irtc)
+            kx=tfefunref(isp4+1,.true.,irtc)
             if(irtc .ne. 0)then
               isp=isp2+1
               return

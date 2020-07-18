@@ -825,6 +825,7 @@ c       call tfmemcheckprint('storecolb',1,.true.,irtc)
 
       subroutine LumRead(rlum_col)
       use tfstk
+      use efun
 c      use tfcbk
       implicit none
       type (sad_descriptor) kx,kem
@@ -855,7 +856,7 @@ c      isp=isp+1
 c      itastk(1,isp)=ntfreal
 c      vstk(ivstkoffset+isp)=sigz
 
-      call tfefunref(isp0+1,kx,.false.,irtc)
+      kx=tfefunref(isp0+1,.false.,irtc)
 c      call tfdebugprint(kx,'LumRead',1)
       isp=isp0
       level=itfdownlevel()

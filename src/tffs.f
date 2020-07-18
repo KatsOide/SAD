@@ -1292,6 +1292,255 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
      $     'PDEX    ','PDEPX   ','PDEY    ','PDEPY   '/)
       end module
 
+      module photontable
+      implicit none
+      type photonp
+        sequence
+        real*8 al,phi,theta,rho,cost,sint,chi,geo1(3,4)        
+        integer*4 l
+      end type
+      integer*4 ntable,ltable
+      parameter (ntable=256,ltable=100000)
+      integer*8 kphtable(ntable)
+      integer*4 nt,itp,ilp,lt
+      type (photonp) pp
+
+      contains
+      subroutine tphotoninit()
+      use tfstk
+      use tmacro
+      implicit none
+      nt=ntable
+      lt=ltable
+      itp=0
+      ilp=0
+      kphtable(1)=0
+      return
+      end subroutine
+
+      subroutine tsetphotongeo(al0,phi0,theta0,ini)
+      use tmacro, only:l_track
+      use ffs_pointer, only:geo
+      implicit none
+      real*8, intent(in):: al0,phi0,theta0
+      logical*4 , intent(in)::ini
+      real*8 gv(3,4),cp0,sp0,cost,sint,r1,r2
+      associate(l=>pp%l,al=>pp%al,phi=>pp%phi,theta=>pp%theta,
+     $     x1=>pp%geo1(1,1),x2=>pp%geo1(2,1),x3=>pp%geo1(3,1),
+     $     y1=>pp%geo1(1,2),y2=>pp%geo1(2,2),y3=>pp%geo1(3,2),
+     $     z1=>pp%geo1(1,3),z2=>pp%geo1(2,3),z3=>pp%geo1(3,3),
+     $     gx0=>pp%geo1(1,4),gy0=>pp%geo1(2,4),gz0=>pp%geo1(3,4),
+     $     rho=>pp%rho,chi=>pp%chi,geo1=>pp%geo1)
+      l=l_track
+      if(ini)then
+        gv=geo(:,:,l)
+c        call tggeol(l,gv)
+      else
+        gv=geo1
+      endif
+      al=al0
+      theta=theta0
+      phi=phi0
+      cost=cos(theta)
+      sint=sin(theta)
+      x1= cost*gv(1,1)-sint*gv(1,2)
+      x2= cost*gv(2,1)-sint*gv(2,2)
+      x3= cost*gv(3,1)-sint*gv(3,2)
+      y1= sint*gv(1,1)+cost*gv(1,2)
+      y2= sint*gv(2,1)+cost*gv(2,2)
+      y3= sint*gv(3,1)+cost*gv(3,2)
+      z1=gv(1,3)
+      z2=gv(2,3)
+      z3=gv(3,3)
+      if(phi .eq. 0.d0)then
+        rho=0.d0
+        gx0=gv(1,4)+z1*al
+        gy0=gv(2,4)+z2*al
+        gz0=gv(3,4)+z3*al
+      else
+        rho=al/phi
+        sp0=sin(phi)
+        cp0=cos(phi)
+        r1=rho*sp0
+        if(cp0 .ge. 0.d0)then
+          r2=rho*sp0**2/(1.d0+cp0)
+        else
+          r2=rho*(1.d0-cp0)
+        endif
+        gx0=gv(1,4)+(r1*z1-r2*x1)
+        gy0=gv(2,4)+(r1*z2-r2*x2)
+        gz0=gv(3,4)+(r1*z3-r2*x3)
+        z1=-sp0*x1+cp0*gv(1,3)
+        x1= cp0*x1+sp0*gv(1,3)
+        z2=-sp0*x2+cp0*gv(2,3)
+        x2= cp0*x2+sp0*gv(2,3)
+        z3=-sp0*x3+cp0*gv(3,3)
+        x3= cp0*x3+sp0*gv(3,3)
+c        write(*,'(a,1p12g10.2)')'tsetphgv ',gx0,gy0,gz0,
+c     $       x1,x2,x3,y1,y2,y3,z1,z2,z3
+      endif
+      if(x3 .eq. 0.d0)then
+        chi=0.d0
+      else
+        chi=2.d0*atan2(x3,-y3)
+      endif
+      return
+      end associate
+      end subroutine
+
+      subroutine tphotonconv(xi,pxi,yi,pyi,dp,dpr,p1,h1,ds,k)
+      use tfstk
+      use tmacro, only:p0
+      use mathfun, only:pxy2dpz
+      implicit none
+      integer*4 , intent(in)::k
+      integer*8 kp
+      real*8 xi,pxi,yi,pyi,dp,p1,h1,xi3a,gx,gy,gz,dpr,
+     $     dpgx,dpgy,dpgz,ds,xir,pxir,zir,pzi,pyir,
+     $     phi1,cp,sp,thu,thv,xi30,xi1,xi2,xi3,pxia
+      associate(l=>pp%l,al=>pp%al,phi=>pp%phi,theta=>pp%theta,
+     $     x1=>pp%geo1(1,1),x2=>pp%geo1(2,1),x3=>pp%geo1(3,1),
+     $     y1=>pp%geo1(1,2),y2=>pp%geo1(2,2),y3=>pp%geo1(3,2),
+     $     z1=>pp%geo1(1,3),z2=>pp%geo1(2,3),z3=>pp%geo1(3,3),
+     $     gx0=>pp%geo1(1,4),gy0=>pp%geo1(2,4),gz0=>pp%geo1(3,4),
+     $     rho=>pp%rho,chi=>pp%chi,geo1=>pp%geo1)
+      call radangle(h1,rho*p1/p0,dpr,thu,thv,xi30,xi2)
+      pxir=pxi+thu
+      pyir=pyi+thv
+      pzi=1.d0+pxy2dpz(pxir,pyir)
+      if(phi .ne. 0.d0)then
+        phi1=ds/rho
+        cp=cos(phi1)
+        sp=sin(phi1)
+        xir=xi*cp
+        zir=rho*sp
+        xi3=(cp-sp)*(cp+sp)*xi30
+        xi1=-2.d0*cp*sp*xi30
+        pxia=pxir
+        pxir=pxia*cp-pzi*sp
+        pzi=pxia*sp+pzi*cp
+      else
+        xir=xi
+        zir=ds
+        xi3=xi30
+        xi1=0.d0
+      endif
+      gx=gx0+xir*x1+yi*y1+zir*z1
+      gy=gy0+xir*x2+yi*y2+zir*z2
+      gz=gz0+xir*x3+yi*y3+zir*z3
+      dpgx=dp*(pzi*z1+pxir*x1+pyir*y1)
+      dpgy=dp*(pzi*z2+pxir*x2+pyir*y2)
+      dpgz=dp*(pzi*z3+pxir*x3+pyir*y3)
+c      write(*,'(a,2i5,1p5g12.4)')'phconv ',k,l,
+c     $     pxia,pxir*x2,pyir*y2,pzi*z2,dpgy/dp
+      xi3a=cos(chi)*xi3+sin(chi)*xi1
+      xi1=-sin(chi)*xi3+cos(chi)*xi1
+      xi3=xi3a
+      if(ilp .eq. 0)then
+        itp=itp+1
+        kphtable(itp)=ktaloc(10*lt)
+        ilp=1
+      endif
+c      write(*,*)'phconv ',itp,ilp
+      kp=kphtable(itp)+(ilp-1)*10
+      ilist(1,kp)=k
+      ilist(2,kp)=l
+      rlist(kp+1)=gx
+      rlist(kp+2)=gy
+      rlist(kp+3)=gz
+      rlist(kp+4)=dpgx
+      rlist(kp+5)=dpgy
+      rlist(kp+6)=dpgz
+      rlist(kp+7)=xi1
+      rlist(kp+8)=xi2
+      rlist(kp+9)=xi3
+      ilp=ilp+1
+      if(ilp .gt. lt)then
+        ilp=0
+      endif
+      end associate
+      end subroutine
+
+      subroutine tgswap(l)
+      use ffs_pointer, only:geo
+      implicit none
+      integer*4 , intent(in)::l
+      real*8 v(3)
+      v=geo(:,1,l)
+      geo(:,1,l)=geo(:,2,l)
+      geo(:,2,l)=v
+      return
+      end subroutine
+
+      subroutine tphotonlist()
+      use tfstk
+      use ffs_pointer,only:gammab
+      use tmacro
+      use mathfun, only:hypot3
+      implicit none
+      type (sad_dlist), pointer ::klx
+      type (sad_rlist), pointer ::klri
+      integer*4 nitem
+      parameter (nitem=12)
+      integer*8 kax, kp,kt
+      integer*4 nph,i
+      real*8 dp
+      integer*8 ,save ::kphlist=0
+      if(kphlist .eq. 0)then
+        kphlist=ktfsymbolz('`PhotonList',11)-4
+      endif
+      call tflocal(klist(kphlist))
+      if(itp .le. 0)then
+        dlist(kphlist)=dxnulll
+      else
+        nph=(itp-1)*lt+max(ilp-1,0)
+c        write(*,*)'phlist ',itp,nph
+        kax=ktadaloc(-1,nph,klx)
+        klx%attr=ior(klx%attr,lconstlist)
+        itp=1
+        ilp=0
+        kt=kphtable(1)
+        do i=1,nph
+          ilp=ilp+1
+          if(ilp .gt. lt)then
+            ilp=1
+            itp=itp+1
+            kt=kphtable(itp)
+          endif
+          kp=kt+(ilp-1)*10
+          klx%dbody(i)%k=ktflist+ktavaloc(0,nitem,klri)
+          klri%attr=lconstlist
+          dp=hypot3(rlist(kp+4),rlist(kp+5),rlist(kp+6))
+c          dp=hypot(rlist(kp+4),hypot(rlist(kp+5),rlist(kp+6)))
+c          dp=sqrt(rlist(kp+4)**2+rlist(kp+5)**2
+c     $         +rlist(kp+6)**2)
+          klri%rbody(1)=dp*amass*gammab(ilist(2,kp))
+          klri%rbody(2)=rlist(kp+1)
+          klri%rbody(3)=rlist(kp+2)
+          klri%rbody(4)=rlist(kp+3)
+          klri%rbody(5)=rlist(kp+4)/dp
+          klri%rbody(6)=rlist(kp+5)/dp
+          klri%rbody(7)=rlist(kp+6)/dp
+          klri%rbody(8)=rlist(kp+7)
+          klri%rbody(9)=rlist(kp+8)
+          klri%rbody(10)=rlist(kp+9)
+          klri%rbody(11)=ilist(1,kp)
+          klri%rbody(12)=ilist(2,kp)
+        enddo
+        do i=1,itp
+          if(kphtable(i) .ne. 0)then
+            call tfree(kphtable(i))
+          endif
+        enddo
+        klist(kphlist)=ktflist+ktfcopy1(kax)
+      endif
+c      call tfdebugprint(klist(kphlist),'phlist',1)
+c      write(*,*)'with ',itp,ilp
+      return
+      end subroutine
+
+      end module
+
       module ffs_wake
       integer*8 kwakep,kwakeelm
       integer*4 nwakep
@@ -1311,6 +1560,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
 
       integer*4 function itftypekey(i,word1,lw1,kx)
       use tfstk
+      use efun
       implicit none
       type (sad_descriptor) , optional,intent(out)::kx
       type (sad_descriptor) ks,ka
@@ -1323,7 +1573,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       ks=kxsalocb(-1,word1,lw1)
       dtastk(isp)=ks
       levele=levele+1
-      call tfefunref(isp0+1,ka,.false.,irtc)
+      ka=tfefunref(isp0+1,.false.,irtc)
       call tfconnect(ka,irtc)
       isp=isp0
       if(irtc .ne. 0)then
@@ -1344,6 +1594,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
 
       integer*4 function itfelementkey(i,word1,lw1)
       use tfstk
+      use efun
       implicit none
       type (sad_descriptor) kx,ks
       integer*4 i,isp0,lw1,irtc
@@ -1355,7 +1606,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       ks=kxsalocb(-1,word1,lw1)
       dtastk(isp)=ks
       levele=levele+1
-      call tfefunref(isp0+1,kx,.false.,irtc)
+      kx=tfefunref(isp0+1,.false.,irtc)
       call tfconnect(kx,irtc)
       isp=isp0
       if(irtc .ne. 0)then
@@ -1791,10 +2042,10 @@ c        enddo
         integer*4 j,k
         if(ktfnonrealq(cmps%dvalue(k),v))then
           if(tfreallistq(cmps%dvalue(k),las))then
-            v=las%rbody(1)
-            do j=2,las%nl
-              v=v+las%rbody(j)
-            enddo
+            v=sum(las%rbody(1:las%nl))
+c            do j=2,las%nl
+c              v=v+las%rbody(j)
+c            enddo
           endif
         endif
         return
@@ -1812,22 +2063,626 @@ c        enddo
         if(ktfrealq(cmpd%dvalue(i)))then
           cmpd%value(i)=v
         elseif(tfreallistq(cmpd%dvalue(i),lad))then
-          r0=lad%rbody(1)
-          do k=2,lad%nl
-            r0=r0+lad%rbody(k)
-          enddo
+          r0=sum(lad%rbody(1:lad%nl))
+c          do k=2,lad%nl
+c            r0=r0+lad%rbody(k)
+c          enddo
           if(r0 .ne. 0.d0)then
             lad%rbody(1:lad%nl)=v/r0*lad%rbody(1:lad%nl)
           else
-            do k=1,lad%nl
-              lad%rbody(k)=v/lad%nl
-            enddo
+c            do k=1,lad%nl
+              lad%rbody(1:lad%nl)=v/lad%nl
+c            enddo
           endif
         endif
         return
         end subroutine
 
       end module
+
+      module temw
+      use tffitcode
+      implicit none
+
+      private
+
+      integer*4 , public, parameter ::
+     $     ipdx=1,ipdpx=2,ipdy=3,ipdpy=4,ipdz=5,ipddp=6,
+     $     ipnx=7,ipny=8,ipnz=9,
+     $     ipu0=10,ipvceff=11,iptrf0=12,ipalphap=13,ipdleng=14,
+     $     ipbh=15,ipdampx=16,ipdampy=17,ipdampz=18,
+     $     ipjx=19,ipjy=20,ipjz=21,
+     $     ipemx=22,ipemy=23,ipemz=24,ipsige=25,ipsigz=26,
+     $     ipheff=27,ipdnux=28,ipdnuy=29,ipdnuz=30,
+     $     iptwiss=31,iptws0=iptwiss-1,
+     $     ipnnup=iptwiss+ntwissfun,iptaup=ipnnup+1,
+     $     ippolx=iptaup+1,ippoly=ippolx+1,ippolz=ippoly+1,
+     $     ipequpol=ippolz+1,ipequpol2=ipequpol+1,
+     $     ipequpol4=ipequpol2+1,ipequpol6=ipequpol4+1,
+     $     ipnup=ipequpol6+1,iprevf=ipnup+1,
+     $     nparams=iprevf
+
+      real(8), public :: r(6, 6) = RESHAPE((/
+     $     1.d0, 0.d0, 0.d0, 0.d0, 0.d0, 0.d0,
+     $     0.d0, 1.d0, 0.d0, 0.d0, 0.d0, 0.d0,
+     $     0.d0, 0.d0, 1.d0, 0.d0, 0.d0, 0.d0,
+     $     0.d0, 0.d0, 0.d0, 1.d0, 0.d0, 0.d0,
+     $     0.d0, 0.d0, 0.d0, 0.d0, 1.d0, 0.d0,
+     $     0.d0, 0.d0, 0.d0, 0.d0, 0.d0, 1.d0/),
+     $     (/6, 6/))
+
+c     Inverse matrix of r
+      real(8), public :: ri(6, 6) = RESHAPE((/
+     $     1.d0, 0.d0, 0.d0, 0.d0, 0.d0, 0.d0,
+     $     0.d0, 1.d0, 0.d0, 0.d0, 0.d0, 0.d0,
+     $     0.d0, 0.d0, 1.d0, 0.d0, 0.d0, 0.d0,
+     $     0.d0, 0.d0, 0.d0, 1.d0, 0.d0, 0.d0,
+     $     0.d0, 0.d0, 0.d0, 0.d0, 1.d0, 0.d0,
+     $     0.d0, 0.d0, 0.d0, 0.d0, 0.d0, 1.d0/),
+     $     (/6, 6/))
+
+      real*8 , public :: transr(6,6),codr0(6),bzhr0,bsir0
+      real*8 , public :: gintd(3)
+      real(8), public :: eemx,eemy,eemz
+      real(8), public :: bh,heff
+
+      logical*4, public :: normali, initemip=.true.
+      logical*4 , public :: initr
+
+      real*8 , parameter :: toln=0.1d0
+
+      character*10, parameter ::
+     $     label1(6)=['        X ','       Px ','        Y ',
+     1                '       Py ','        Z ','       Pz '],
+     $     label2(6)=['        x ','    px/p0 ','        y ',
+     1                '    py/p0 ','        z ','    dp/p0 ']
+
+      public :: tfetwiss,etwiss2ri,tfnormalcoord,toln,
+     $     tfinitemip,tsetr0,tinv6,tsymp,tmultr45,
+     $     label1,label2
+
+      contains
+
+      real*8 function tinv6(ra) result(rinv)
+      implicit none
+      real*8, intent(in):: ra(6,6)
+      dimension rinv(6,6)
+      rinv(1,1)= ra(2,2)
+      rinv(1,2)=-ra(1,2)
+      rinv(1,3)= ra(4,2)
+      rinv(1,4)=-ra(3,2)
+      rinv(1,5)= ra(6,2)
+      rinv(1,6)=-ra(5,2)
+      rinv(2,1)=-ra(2,1)
+      rinv(2,2)= ra(1,1)
+      rinv(2,3)=-ra(4,1)
+      rinv(2,4)= ra(3,1)
+      rinv(2,5)=-ra(6,1)
+      rinv(2,6)= ra(5,1)
+      rinv(3,1)= ra(2,4)
+      rinv(3,2)=-ra(1,4)
+      rinv(3,3)= ra(4,4)
+      rinv(3,4)=-ra(3,4)
+      rinv(3,5)= ra(6,4)
+      rinv(3,6)=-ra(5,4)
+      rinv(4,1)=-ra(2,3)
+      rinv(4,2)= ra(1,3)
+      rinv(4,3)=-ra(4,3)
+      rinv(4,4)= ra(3,3)
+      rinv(4,5)=-ra(6,3)
+      rinv(4,6)= ra(5,3)
+      rinv(5,1)= ra(2,6)
+      rinv(5,2)=-ra(1,6)
+      rinv(5,3)= ra(4,6)
+      rinv(5,4)=-ra(3,6)
+      rinv(5,5)= ra(6,6)
+      rinv(5,6)=-ra(5,6)
+      rinv(6,1)=-ra(2,5)
+      rinv(6,2)= ra(1,5)
+      rinv(6,3)=-ra(4,5)
+      rinv(6,4)= ra(3,5)
+      rinv(6,5)=-ra(6,5)
+      rinv(6,6)= ra(5,5)
+      return
+      end function
+
+      real*8 function tsymp(trans) result(ri)
+      implicit none
+      integer*4 i
+      real*8 , intent(in)::trans(6,6)
+      dimension ri(6,6)
+c  gfortran up to 9 generates a warning on uninitialized..., which is said to be a bug in gcc...
+      ri=matmul(trans,tinv6(trans))
+c      call tinv6(trans,ri)
+c      call tmultr(ri,trans,6)
+      do i=1,6
+        ri(:,i)=-ri(:,i)*.5d0
+        ri(i,i)=ri(i,i)+1.5d0
+      enddo
+      ri=matmul(ri,trans)
+c      call tmultr(trans,ri,6)
+      return
+      end function
+
+      real*8 function tmultr45(a,b) result(c)
+      implicit none
+      real*8 ,intent(in)::a(4,5),b(4,5)
+      dimension c(4,5)
+c      real*8 v1,v2,v3,v4
+      c=matmul(b(:,1:4),a)
+      c(:,5)=c(:,5)+b(:,5)
+c$$$      v1=a(1,1)
+c$$$      v2=a(2,1)
+c$$$      v3=a(3,1)
+c$$$      v4=a(4,1)
+c$$$      c(1,1)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
+c$$$      c(2,1)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
+c$$$      c(3,1)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
+c$$$      c(4,1)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
+c$$$      v1=a(1,2)
+c$$$      v2=a(2,2)
+c$$$      v3=a(3,2)
+c$$$      v4=a(4,2)
+c$$$      c(1,2)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
+c$$$      c(2,2)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
+c$$$      c(3,2)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
+c$$$      c(4,2)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
+c$$$      v1=a(1,3)
+c$$$      v2=a(2,3)
+c$$$      v3=a(3,3)
+c$$$      v4=a(4,3)
+c$$$      c(1,3)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
+c$$$      c(2,3)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
+c$$$      c(3,3)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
+c$$$      c(4,3)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
+c$$$      v1=a(1,4)
+c$$$      v2=a(2,4)
+c$$$      v3=a(3,4)
+c$$$      v4=a(4,4)
+c$$$      c(1,4)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
+c$$$      c(2,4)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
+c$$$      c(3,4)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
+c$$$      c(4,4)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
+c$$$      v1=a(1,5)
+c$$$      v2=a(2,5)
+c$$$      v3=a(3,5)
+c$$$      v4=a(4,5)
+c$$$      c(1,5)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4+b(1,5)
+c$$$      c(2,5)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4+b(2,5)
+c$$$      c(3,5)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4+b(3,5)
+c$$$      c(4,5)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4+b(4,5)
+      return
+      end function
+
+      subroutine tsetr0(trans,cod,bzh,bsi0)
+      implicit none
+      real*8 ,intent(in)::trans(6,6),cod(6),bzh,bsi0
+      codr0=cod
+      transr=trans
+      bzhr0=bzh
+      bsir0=bsi0
+      return
+      end subroutine
+
+      subroutine tfinitemip
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 irtc
+      character*2 strfromis
+      if( .not. initemip)then
+        return
+      endif
+      call tfevals('BeginPackage[emit$`];Begin[emit$`]',kx,irtc)
+      call tfevals(
+     $'nparams='//strfromis(nparams)//
+     $';ipdx='//strfromis(ipdx)//
+     $';ipdpx='//strfromis(ipdpx)//
+     $';ipdy='//strfromis(ipdy)//
+     $';ipdpy='//strfromis(ipdpy)//
+     $';ipdz='//strfromis(ipdz)//
+     $';ipddp='//strfromis(ipddp)//
+     $';ipnx='//strfromis(ipnx)//
+     $';ipny='//strfromis(ipny)//
+     $';ipnz='//strfromis(ipnz)//
+     $';ipu0='//strfromis(ipu0)//
+     $';ipvceff='//strfromis(ipvceff)//
+     $';iptrf0='//strfromis(iptrf0)//
+     $';ipalphap='//strfromis(ipalphap)//
+     $';ipdleng='//strfromis(ipdleng)//
+     $';ipbh='//strfromis(ipbh)//
+     $';ipheff='//strfromis(ipheff)//
+     $';iptwiss='//strfromis(iptwiss)//
+     $';iptws0='//strfromis(iptws0)//
+     $';ipdampx='//strfromis(ipdampx)//
+     $';ipdampy='//strfromis(ipdampy)//
+     $';ipdampz='//strfromis(ipdampz)//
+     $';ipdnux='//strfromis(ipdnux)//
+     $';ipdnuy='//strfromis(ipdnuy)//
+     $';ipdnuz='//strfromis(ipdnuz)//
+     $';ipjx='//strfromis(ipjx)//
+     $';ipjy='//strfromis(ipjy)//
+     $';ipjz='//strfromis(ipjz)//
+     $';ipemx='//strfromis(ipemx)//
+     $';ipemy='//strfromis(ipemy)//
+     $';ipemz='//strfromis(ipemz)//
+     $';ipsige='//strfromis(ipsige)//
+     $';ipsigz='//strfromis(ipsigz)//
+     $';ipnnup='//strfromis(ipnnup)//
+     $';iptaup='//strfromis(iptaup)//
+     $';ippolx='//strfromis(ippolx)//
+     $';ippoly='//strfromis(ippoly)//
+     $';ippolz='//strfromis(ippolz)//
+     $';ipequpol='//strfromis(ipequpol)//
+     $';ipequpol2='//strfromis(ipequpol2)//
+     $';ipequpol4='//strfromis(ipequpol4)//
+     $';ipequpol6='//strfromis(ipequpol6)//
+     $';ipnup='//strfromis(ipnup)//
+     $';iprevf='//strfromis(iprevf)//
+     $';SetAttributes[{'//
+     $ 'nparams,ipdx,ipdpx,ipdy,ipdpy,ipdz,ipddp,'//
+     $ 'ipnx,ipny,ipnz,'//
+     $ 'ipu0,ipvceff,iptrf0,ipalphap,ipdleng,'//
+     $ 'ipbh,ipheff,iptwiss,ipdampx,ipdampy,ipdampz,'//
+     $ 'ipdnux,ipdnuy,ipdnuz,ipjx,ipjy,ipjz,'//
+     $ 'ipemx,ipemy,ipemz,ipsige,ipsigz,iptaup,ipnup,'//
+     $ 'ippolx,ippoly,ippolz,'//
+     $ 'ipequpol,ipequpol2,ipequpol4,ipequpol6,'//
+     $ 'ipnup,iprevf'//
+     $ '},Constant];'//
+     $ 'End[];EndPackage[];',kx,irtc)
+c      call tfdebugprint(kx,'initemip',1)
+      initemip=.false.
+      return
+      end subroutine
+
+      real*8 function tfetwiss(r,cod,normi) result(twiss)
+      use ffs
+      implicit none
+      real*8 , intent(in):: r(6,6),cod(6)
+      dimension twiss(ntwissfun)
+      real*8 hi(6,6)
+      real*8 ax,ay,az,axy,f,detm,his(4),
+     $     uz11,uz12,uz21,uz22,
+     $     hx11,hx12,hx21,hx22,
+     $     hy11,hy12,hy21,hy22,
+     $     r11,r12,r21,r22,
+     $     crx,cry,crz,cx,cy,cz,sx,sy,sz,
+     $     bx21,bx22,by21,by22,bz21,bz22
+      logical*4 normal
+      logical*4 , intent(in) :: normi
+c      write(*,'(a,1p5g15.7)')'tfetwiss ',r(5,5),r(5,6),r(6,5),r(6,6),
+c     $     r(5,5)*r(6,6)-r(6,5)*r(5,6)
+      az=sqrt(r(5,5)*r(6,6)-r(6,5)*r(5,6))
+      uz11=r(5,5)/az
+      uz12=r(5,6)/az
+      uz21=r(6,5)/az
+      uz22=r(6,6)/az
+      hx11= r(6,2)*uz11-r(5,2)*uz21
+      hx12= r(6,2)*uz12-r(5,2)*uz22
+      hx21=-r(6,1)*uz11+r(5,1)*uz21
+      hx22=-r(6,1)*uz12+r(5,1)*uz22
+      hy11= r(6,4)*uz11-r(5,4)*uz21
+      hy12= r(6,4)*uz12-r(5,4)*uz22
+      hy21=-r(6,3)*uz11+r(5,3)*uz21
+      hy22=-r(6,3)*uz12+r(5,3)*uz22
+      f=1.d0/(1.d0+az)
+      ax=1.d0-(hx11*hx22-hx21*hx12)*f
+      ay=1.d0-(hy11*hy22-hy21*hy12)*f
+      hi(2,2)=ax
+      hi(1,2)=0.d0
+      hi(4,2)= (hx12*hy21-hx11*hy22)*f
+      hi(3,2)=-(-hx12*hy11+hx11*hy12)*f
+      hi(6,2)=-hx11
+      hi(5,2)= hx12
+      hi(2,1)= 0.d0
+      hi(1,1)= ax
+      hi(4,1)=-(hx22*hy21-hx21*hy22)*f
+      hi(3,1)=(-hx22*hy11+hx21*hy12)*f
+      hi(6,1)= hx21
+      hi(5,1)=-hx22
+      hi(2,4)= hi(3,1)
+      hi(1,4)=-hi(3,2)
+      hi(4,4)= ay
+      hi(3,4)= 0.d0
+      hi(6,4)=-hy11
+      hi(5,4)= hy12
+      hi(2,3)=-hi(4,1)
+      hi(1,3)= hi(4,2)
+      hi(4,3)= 0.d0
+      hi(3,3)= ay
+      hi(6,3)= hy21
+      hi(5,3)=-hy22
+      hi(2,6)= hx22
+      hi(1,6)= hx21
+      hi(4,6)= hy22
+      hi(3,6)= hy21
+      hi(6,6)= az
+      hi(5,6)= 0.d0
+      hi(2,5)= hx12
+      hi(1,5)= hx11
+      hi(4,5)= hy12
+      hi(3,5)= hy11
+      hi(6,5)= 0.d0
+      hi(5,5)= az
+      hi=matmul(r,hi)
+c      call tmultr(hi,r,6)
+c      write(*,*)'tfetwiss-3'
+      detm=(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2)
+     $     +hi(3,3)*hi(4,4)-hi(4,3)*hi(3,4))*.5d0
+c      write(*,'(a,1p6g15.7)')'tfetwiss-4 ',detm,ax,ay,az,f,xyth
+      normal=detm .gt. xyth
+      if(.not. normal)then
+        his=hi(1,1:4)
+        hi(1,1:4)=hi(3,1:4)
+        hi(3,1:4)=his
+        his=hi(2,1:4)
+        hi(2,1:4)=hi(4,1:4)
+        hi(4,1:4)=his
+        detm=(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2)
+     $       +hi(3,3)*hi(4,4)-hi(4,3)*hi(3,4))*.5d0
+      endif
+      axy=sqrt(detm)
+      r11=( hi(4,4)*hi(3,1)-hi(3,4)*hi(4,1))/axy
+      r12=( hi(4,4)*hi(3,2)-hi(3,4)*hi(4,2))/axy
+      r21=(-hi(4,3)*hi(3,1)+hi(3,3)*hi(4,1))/axy
+      r22=(-hi(4,3)*hi(3,2)+hi(3,3)*hi(4,2))/axy
+      crx=hypot(hi(1,2),hi(2,2))
+c      crx=sqrt(hi(1,2)**2+hi(2,2)**2)
+      cx= hi(2,2)/crx
+      sx=-hi(1,2)/crx
+      bx21=(-sx*hi(1,1)+cx*hi(2,1))/axy
+      bx22=crx/axy
+      cry=hypot(hi(3,4),hi(4,4))
+c      cry=sqrt(hi(3,4)**2+hi(4,4)**2)
+      cy= hi(4,4)/cry
+      sy=-hi(3,4)/cry
+      by21=(-sy*hi(3,3)+cy*hi(4,3))/axy
+      by22=cry/axy
+      crz=hypot(uz12,uz22)
+c      crz=sqrt(uz12**2+uz22**2)
+      cz= uz22/crz
+      sz=-uz12/crz
+      bz21=-sz*uz11+cz*uz21
+      bz22=crz
+      twiss(mfitr1)=r11
+      twiss(mfitr2)=r12
+      twiss(mfitr3)=r21
+      twiss(mfitr4)=r22
+      if(.not. normi)then
+        normal=.not. normal
+      endif
+      if(normal)then
+        twiss(mfitax)= bx21*bx22
+        twiss(mfitbx)= bx22**2
+        twiss(mfitnx)= atan2(sx,cx)
+        twiss(mfitay)= by21*by22
+        twiss(mfitby)= by22**2
+        twiss(mfitny)= atan2(sy,cy)
+        twiss(mfitex)= axy*hx12-r22*hy12+r12*hy22
+        twiss(mfitepx)= axy*hx22+r21*hy12-r11*hy22
+        twiss(mfitey) = axy*hy12+r11*hx12+r12*hx22
+        twiss(mfitepy)=axy*hy22+r21*hx12+r22*hx22
+        twiss(mfitdetr)=r11*r22-r12*r21
+        twiss(mfitzx) =axy*hx11-r22*hy11+r12*hy21
+        twiss(mfitzpx)=axy*hx21+r21*hy11-r11*hy21
+        twiss(mfitzy) =axy*hy11+r11*hx11+r12*hx21
+        twiss(mfitzpy)=axy*hy21+r21*hx11+r22*hx21
+      else
+        twiss(mfitay)= bx21*bx22
+        twiss(mfitby)= bx22**2
+        twiss(mfitny)= atan2(sx,cx)
+        twiss(mfitax)= by21*by22
+        twiss(mfitbx)= by22**2
+        twiss(mfitnx)= atan2(sy,cy)
+        twiss(mfitey)= axy*hx12-r22*hy12+r12*hy22
+        twiss(mfitepy)= axy*hx22+r21*hy12-r11*hy22
+        twiss(mfitex) = axy*hy12+r11*hx12+r12*hx22
+        twiss(mfitepx)=axy*hy22+r21*hx12+r22*hx22
+        twiss(mfitdetr)=1.d0+xyth-r11*r22+r12*r21
+        twiss(mfitzy) =axy*hx11-r22*hy11+r12*hy21
+        twiss(mfitzpy)=axy*hx21+r21*hy11-r11*hy21
+        twiss(mfitzx) =axy*hy11+r11*hx11+r12*hx21
+        twiss(mfitzpx)=axy*hy21+r21*hx11+r22*hx21
+      endif
+      twiss(mfitdx:mfitddp)=cod
+      twiss(mfitaz)=bz21*bz22
+      twiss(mfitbz)=bz22**2
+      twiss(mfitnz)=atan2(sz,cz)
+      return
+      end function
+
+      real*8 function etwiss2ri(twiss1,normal) result(ria)
+      use ffs
+      implicit none
+      real*8 , intent(in)::twiss1(ntwissfun)
+      dimension ria(6,6)
+      real*8 h(4,6),br(4,4),
+     $     hx11,hx12,hx21,hx22,
+     $     hy11,hy12,hy21,hy22,
+     $     ex,epx,ey,epy,zx,zpx,zy,zpy,
+     $     r1,r2,r3,r4,amu,detr,sqrbx,sqrby,sqrbz,aa,
+     $     ax,ay,az,dethx,dethy,amux,amuy,azz
+      logical*4 normal
+      r1=twiss1(mfitr1)
+      r2=twiss1(mfitr2)
+      r3=twiss1(mfitr3)
+      r4=twiss1(mfitr4)
+      detr=twiss1(mfitdetr)
+      normal=detr .lt. 1.d0
+      if(normal)then
+        amu=sqrt(1.d0-detr)
+        ex =twiss1(mfitex)
+        epx=twiss1(mfitepx)
+        ey =twiss1(mfitey)
+        epy=twiss1(mfitepy)
+        zx =twiss1(mfitzx)
+        zpx=twiss1(mfitzpx)
+        zy =twiss1(mfitzy)
+        zpy=twiss1(mfitzpy)
+        sqrbx=sqrt(twiss1(mfitbx))
+        ax=twiss1(mfitax)
+        sqrby=sqrt(twiss1(mfitby))
+        ay=twiss1(mfitay)
+      else
+        amu=sqrt(1.d0-r1*r4+r2*r3)
+        ey =twiss1(mfitex)
+        epy=twiss1(mfitepx)
+        ex =twiss1(mfitey)
+        epx=twiss1(mfitepy)
+        zy =twiss1(mfitzx)
+        zpy=twiss1(mfitzpx)
+        zx =twiss1(mfitzy)
+        zpx=twiss1(mfitzpy)
+        sqrby=sqrt(twiss1(mfitbx))
+        ay=twiss1(mfitax)
+        sqrbx=sqrt(twiss1(mfitby))
+        ax=twiss1(mfitay)
+      endif
+      sqrbz=sqrt(twiss1(mfitbz))
+      az=twiss1(mfitaz)
+      hx11=amu*zx -r2*zpy+r4*zy
+      hx12=amu*ex -r2*epy+r4*ey
+      hx21=amu*zpx+r1*zpy-r3*zy
+      hx22=amu*epx+r1*epy-r3*ey
+      hy11=amu*zy -r2*zpx-r1*zx
+      hy12=amu*ey -r2*epx-r1*ex
+      hy21=amu*zpy-r4*zpx-r3*zx
+      hy22=amu*epy-r4*epx-r3*ex
+      dethx=hx11*hx22-hx21*hx12
+      dethy=hy11*hy22-hy21*hy12
+      azz=sqrt(1.d0-dethx-dethy)
+      aa=1.d0/(1.d0+azz)
+      amux=1.d0-dethx*aa
+      amuy=1.d0-dethy*aa
+      h(1,1)=amux
+      h(1,2)=0.d0
+      h(1,3)=( hx12*hy21-hx11*hy22)*aa
+      h(1,4)=(-hx12*hy11+hx11*hy12)*aa
+      h(1,5)=-hx11
+      h(1,6)=-hx12
+      h(2,1)=0.d0
+      h(2,2)=amux
+      h(2,3)=( hx22*hy21-hx21*hy22)*aa
+      h(2,4)=(-hx22*hy11+hx21*hy12)*aa
+      h(2,5)=-hx21
+      h(2,6)=-hx22
+      h(3,1)= h(2,4)
+      h(3,2)=-h(1,4)
+      h(3,3)=amuy
+      h(3,4)=0.d0
+      h(3,5)=-hy11
+      h(3,6)=-hy12
+      h(4,1)=-h(2,3)
+      h(4,2)= h(1,3)
+      h(4,3)=0.d0
+      h(4,4)=amuy
+      h(4,5)=-hy21
+      h(4,6)=-hy22
+      ria(5,1)= hx22
+      ria(5,2)=-hx12
+      ria(5,3)= hy22
+      ria(5,4)=-hy12
+      ria(5,5)=azz
+      ria(5,6)=0.d0
+      ria(6,1)=-hx21
+      ria(6,2)= hx11
+      ria(6,3)=-hy21
+      ria(6,4)= hy11
+      ria(6,5)=0.d0
+      ria(6,6)=azz
+      br(1,1)= amu/sqrbx
+      br(1,2)=0.d0
+      br(1,3)=-r4/sqrbx
+      br(1,4)= r2/sqrbx
+      br(2,1)= amu*ax/sqrbx
+      br(2,2)= amu*sqrbx
+      br(2,3)= r3*sqrbx-r4*ax/sqrbx
+      br(2,4)= r2*ax/sqrbx-r1*sqrbx
+      br(3,1)= r1/sqrby
+      br(3,2)= r2/sqrby
+      br(3,3)= amu/sqrby
+      br(3,4)=0.d0
+      br(4,1)= r1*ay/sqrby+r3*sqrby
+      br(4,2)= r2*ay/sqrby+r4*sqrby
+      br(4,3)= amu*ay/sqrby
+      br(4,4)= amu*sqrby
+      ria(1,1)=br(1,1)*h(1,1)+br(1,2)*h(2,1)
+     $       +br(1,3)*h(3,1)+br(1,4)*h(4,1)
+      ria(1,2)=br(1,1)*h(1,2)+br(1,2)*h(2,2)
+     $       +br(1,3)*h(3,2)+br(1,4)*h(4,2)
+      ria(1,3)=br(1,1)*h(1,3)+br(1,2)*h(2,3)
+     $       +br(1,3)*h(3,3)+br(1,4)*h(4,3)
+      ria(1,4)=br(1,1)*h(1,4)+br(1,2)*h(2,4)
+     $       +br(1,3)*h(3,4)+br(1,4)*h(4,4)
+      ria(1,5)=br(1,1)*h(1,5)+br(1,2)*h(2,5)
+     $       +br(1,3)*h(3,5)+br(1,4)*h(4,5)
+      ria(1,6)=br(1,1)*h(1,6)+br(1,2)*h(2,6)
+     $       +br(1,3)*h(3,6)+br(1,4)*h(4,6)
+      ria(2,1)=br(2,1)*h(1,1)+br(2,2)*h(2,1)
+     $       +br(2,3)*h(3,1)+br(2,4)*h(4,1)
+      ria(2,2)=br(2,1)*h(1,2)+br(2,2)*h(2,2)
+     $       +br(2,3)*h(3,2)+br(2,4)*h(4,2)
+      ria(2,3)=br(2,1)*h(1,3)+br(2,2)*h(2,3)
+     $       +br(2,3)*h(3,3)+br(2,4)*h(4,3)
+      ria(2,4)=br(2,1)*h(1,4)+br(2,2)*h(2,4)
+     $       +br(2,3)*h(3,4)+br(2,4)*h(4,4)
+      ria(2,5)=br(2,1)*h(1,5)+br(2,2)*h(2,5)
+     $       +br(2,3)*h(3,5)+br(2,4)*h(4,5)
+      ria(2,6)=br(2,1)*h(1,6)+br(2,2)*h(2,6)
+     $       +br(2,3)*h(3,6)+br(2,4)*h(4,6)
+      ria(3,1)=br(3,1)*h(1,1)+br(3,2)*h(2,1)
+     $       +br(3,3)*h(3,1)+br(3,4)*h(4,1)
+      ria(3,2)=br(3,1)*h(1,2)+br(3,2)*h(2,2)
+     $       +br(3,3)*h(3,2)+br(3,4)*h(4,2)
+      ria(3,3)=br(3,1)*h(1,3)+br(3,2)*h(2,3)
+     $       +br(3,3)*h(3,3)+br(3,4)*h(4,3)
+      ria(3,4)=br(3,1)*h(1,4)+br(3,2)*h(2,4)
+     $       +br(3,3)*h(3,4)+br(3,4)*h(4,4)
+      ria(3,5)=br(3,1)*h(1,5)+br(3,2)*h(2,5)
+     $       +br(3,3)*h(3,5)+br(3,4)*h(4,5)
+      ria(3,6)=br(3,1)*h(1,6)+br(3,2)*h(2,6)
+     $       +br(3,3)*h(3,6)+br(3,4)*h(4,6)
+      ria(4,1)=br(4,1)*h(1,1)+br(4,2)*h(2,1)
+     $       +br(4,3)*h(3,1)+br(4,4)*h(4,1)
+      ria(4,2)=br(4,1)*h(1,2)+br(4,2)*h(2,2)
+     $       +br(4,3)*h(3,2)+br(4,4)*h(4,2)
+      ria(4,3)=br(4,1)*h(1,3)+br(4,2)*h(2,3)
+     $       +br(4,3)*h(3,3)+br(4,4)*h(4,3)
+      ria(4,4)=br(4,1)*h(1,4)+br(4,2)*h(2,4)
+     $       +br(4,3)*h(3,4)+br(4,4)*h(4,4)
+      ria(4,5)=br(4,1)*h(1,5)+br(4,2)*h(2,5)
+     $       +br(4,3)*h(3,5)+br(4,4)*h(4,5)
+      ria(4,6)=br(4,1)*h(1,6)+br(4,2)*h(2,6)
+     $       +br(4,3)*h(3,6)+br(4,4)*h(4,6)
+      ria(5,1:6)=ria(5,1:6)/sqrbz
+      ria(6,1:6)=ria(6,1:6)*sqrbz+ria(5,1:6)*az
+      return
+      end function
+
+      subroutine tfnormalcoord(isp1,kx,irtc)
+      use tfstk
+      use ffs
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 isp1,irtc,itfmessage
+      logical*4 normal
+      type (sad_rlist), pointer :: kl
+      if(isp .ne. isp1+1)then
+        irtc=itfmessage(9,'General::narg','"1"')
+        return
+      endif
+      if(.not. tfnumlistqn(dtastk(isp),ntwissfun,kl))then
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"Real List of Length 28"')
+        return
+      endif
+      kx=kxm2l(etwiss2ri(kl%rbody(1:ntwissfun),normal),6,6,6,.false.)
+      irtc=0
+      return
+      end subroutine
+
+      end module temw
 
       module tspin
       use macphys
@@ -3043,6 +3898,7 @@ c        write(*,'(1p3g13.5)')epol
         end subroutine
 
       end module
+
 
       subroutine tffs
       use tfstk

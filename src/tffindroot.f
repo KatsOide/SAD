@@ -443,6 +443,7 @@ c      endif
       use tfstk
       use findr
       use iso_c_binding
+      use gammaf
       implicit none
       type (sad_descriptor) kx,ke
       type (sad_symbol), pointer :: sym
@@ -456,7 +457,7 @@ c      endif
       integer*8 kdp,ktfmaloc
       type (sad_descriptor) kdl(nvmax),kdm,kcv,kci
       real*8 , allocatable::v0(:),vmin(:),vmax(:),v0s(:)
-      real*8 r,gammaq,rfromk,vx,cut,cutoff
+      real*8 r,rfromk,vx,cut,cutoff
       real*8 , pointer :: datap(:,:)
       logical*4 used
       type (sad_descriptor), save ::
@@ -625,6 +626,7 @@ c      write(*,*)'covmat ',n,m,ndim
      $     kdl,vmin,vmax,d0,kdm,kcv,kci,eps,maxi,cut,irtc)
       use tfstk
       use findr
+      use gammaf
       implicit none
       type (sad_symdef) symdv
       integer*4 n,m,nvar,irtc,maxi,iter,i,j
@@ -637,7 +639,7 @@ c      write(*,*)'covmat ',n,m,ndim
      $     df(:),df0(:),v00(:),w(:),cv(:,:),vbest(:),dv(:),df2(:)
       real*8 d00,d2,eps,svi,db,dbest,
      $     fact,d0,d1,fact1,v(nvar),dg,d,fact2,tffsfmin,
-     $     good,gammaq,ajump,vmin(nvar),vmax(nvar),sigma
+     $     good,ajump,vmin(nvar),vmax(nvar),sigma
       real*8 frac,factmin,svmin,factmin1,svdeps,cut,tinvgr,chin,x
       parameter (frac=1.d-7,factmin=1.d-4,factmin1=1.d-4,
      $     svmin=1.d-7,svdeps=1.d-4)
@@ -1095,9 +1097,10 @@ c        call tfdebugprint(kd,'==>',2)
       end
 
       real*8 function tinvgr(an)
+      use gammaf
       implicit none
       real*8 ,intent(in)::an
-      real*8 c0,x0,gn,erfc,gammaq,df,dfdx,anh
+      real*8 c0,x0,gn,erfc,df,dfdx,anh
       if(an .eq. 1.d0)then
         tinvgr=1.d0
         return

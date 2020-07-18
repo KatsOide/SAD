@@ -23,10 +23,12 @@
 
       end module
 
-      recursive subroutine tfsolvemember(list,kx,reps,irtc)
+      recursive function tfsolvemember(list,reps,irtc)
+     $     result(kx)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k1
+      type (sad_descriptor) kx
+      type (sad_descriptor) k1
       type (sad_dlist) list
       type (sad_dlist), pointer :: listx
       integer*4 irtc
@@ -50,7 +52,7 @@
         return
       endif
       if(ktflistq(list%head,listx))then
-        call tfsolvemember(listx,k1,reps,irtc)
+        k1=tfsolvemember(listx,reps,irtc)
         if(irtc .ne. 0)then
           return
         endif
@@ -240,11 +242,12 @@ c      write(*,*)'with: ',irtc,ev,eval
       if(irtc .ne. 0)then
         return
       endif
-c      call tfdebugprint(ka,'repmember',3)
-      do i=1,klm%nl
-        isp=isp+2
-        dtastk(isp-1)=klm%dbody(i)
-      enddo
+      dtastk(isp+1:isp+2*klm%nl-1:2)=klm%dbody(1:klm%nl)
+      isp=isp+2*klm%nl
+c      do i=1,klm%nl
+c        isp=isp+2
+c        dtastk(isp-1)=klm%dbody(i)
+c      enddo
       ispb=isp
       do i=ispa+1,ispb,2
         isp=isp+2
@@ -266,7 +269,7 @@ c      call tfdebugprint(kx,'==>',3)
       irtc=0
       isp=ispa
       return
- 9000 irtc=itfmessage(9,'General::wrongtype',
+ 9000 irtc=itfmessage(9,'General::rongtype',
      $     '"List of Symbols for #2"')
       isp=ispa
       return

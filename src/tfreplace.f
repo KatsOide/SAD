@@ -264,26 +264,33 @@
       subroutine tfreplacesymbolstk(k,ispr,nrule,kx,scope,rep,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kx
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) tfreplacesymbolstk1
       integer*4 ispr,nrule,irtc,nrule1
       logical*4 scope,rep
       call tfsortsymbolstk(ispr,nrule,nrule1)
-      call tfreplacesymbolstk1(k,ispr,nrule1,kx,scope,rep,irtc)
+      kx=tfreplacesymbolstk1(k,ispr,nrule1,scope,rep,irtc)
       return
       end
 
-      recursive subroutine tfreplacesymbolstk1(k,ispr,nrule,kx,
-     $     scope,rep,irtc)
+      recursive function tfreplacesymbolstk1(k,ispr,nrule,
+     $     scope,rep,irtc) result(kx)
       use tfstk
       use tfcode
       implicit none
-      type (sad_descriptor) k,kx,kd,k1,ki,ks
+      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) kd,k1,ki,ks
       type (sad_pat), pointer :: pat
       type (sad_dlist), pointer :: kl,kli
       type (sad_rlist), pointer :: klr
       integer*8 ka1,kas
-      integer*4 irtc,i,m,isp1,j, ispr,nrule,itfmessageexp, id
-      logical*4 rep,rep1,scope,tfmatchsymstk,tfsymbollistqo
+      integer*4 ,intent(out):: irtc
+      integer*4 i,m,isp1,j,itfmessageexp, id
+      integer*4 ,intent(in):: ispr,nrule
+      logical*4 ,intent(out):: rep
+      logical*4 rep1,scope,tfmatchsymstk,tfsymbollistqo
       irtc=0
       rep=.false.
       kx=k
@@ -293,8 +300,7 @@ c     call tfdebugprint(ktflist+ktfaddr(k),'repsymstk',3)
           return
         endif
         m=kl%nl
-        call tfreplacesymbolstk1(kl%head,ispr,nrule,k1,
-     $       scope,rep,irtc)
+        k1=tfreplacesymbolstk1(kl%head,ispr,nrule,scope,rep,irtc)
         if(irtc .ne. 0)then
           return
         endif
@@ -338,8 +344,8 @@ c     call tfdebugprint(ktflist+ktfaddr(k),'repsymstk',3)
           endif
           do i=1,m
 c            call tfdebugprint(kl%dbody(i),'repsymstk',1)
-            call tfreplacesymbolstk1(kl%dbody(i),ispr,nrule,ki,
-     $         scope,rep1,irtc)
+            ki=tfreplacesymbolstk1(kl%dbody(i),ispr,nrule,
+     $           scope,rep1,irtc)
             if(irtc .ne. 0)then
               return
             endif
@@ -372,7 +378,7 @@ c            call tfdebugprint(ki,'==> ',1)
           endif
         endif
         if(ktftype(pat%expr%k).ne. ktfref)then
-          call tfreplacesymbolstk1(pat%expr,ispr,nrule,k1,
+          k1=tfreplacesymbolstk1(pat%expr,ispr,nrule,
      $         scope,rep1,irtc)
           if(irtc .ne. 0)then
             return
@@ -383,7 +389,7 @@ c            call tfdebugprint(ki,'==> ',1)
         endif
         kd=pat%default
         if(ktftype(kd%k) .ne. ktfref)then
-          call tfreplacesymbolstk1(kd,ispr,nrule,kd,scope,rep1,irtc)
+          kd=tfreplacesymbolstk1(kd,ispr,nrule,scope,rep1,irtc)
           if(irtc .ne. 0)then
             return
           endif
@@ -599,6 +605,7 @@ c          endif
       use tfstk
       implicit none
       type (sad_descriptor) kx,ki,kr
+      type (sad_descriptor) tfreplacesymbolstk1
       type (sad_dlist) list
       type (sad_dlist), pointer :: klx
       integer*4 ispr,nrule,irtc,i,isp1,j
@@ -619,7 +626,7 @@ c          endif
         isp=isp+1
         dtastk(isp)=ki
       else
-        call tfreplacesymbolstk1(ki,ispr,nrule,kr,scope,rep1,irtc)
+        kr=tfreplacesymbolstk1(ki,ispr,nrule,scope,rep1,irtc)
         if(irtc .ne. 0)then
           isp=isp1
           return
@@ -649,7 +656,7 @@ c          endif
           if(ktfrealq(ki) .or. ktfstringq(ki) .or. ktfoperq(ki))then
             kx=ki
           else
-            call tfreplacesymbolstk1(ki,ispr,nrule,kr,scope,rep1,irtc)
+            kr=tfreplacesymbolstk1(ki,ispr,nrule,scope,rep1,irtc)
             if(irtc .ne. 0)then
               isp=isp1
               return
@@ -673,7 +680,7 @@ c          endif
           isp=isp+1
           dtastk(isp)=ki
         else
-          call tfreplacesymbolstk1(ki,ispr,nrule,kr,scope,rep1,irtc)
+          kr=tfreplacesymbolstk1(ki,ispr,nrule,scope,rep1,irtc)
           if(irtc .ne. 0)then
             isp=isp1
             return
@@ -694,6 +701,7 @@ c          endif
       use tfstk
       implicit none
       type (sad_descriptor) kx,k1,k2,ki,ki2
+      type (sad_descriptor) tfreplacesymbolstk1
       type (sad_dlist) list
       type (sad_dlist), pointer :: kl1,kli,klx,klx1
       integer*8 kai,ki1,ka1,kai1,ksave
@@ -725,7 +733,7 @@ c        enddo
                 kai1=ktfaddr(ki1)
                 if(tfmatchsymstk(kai1,ispa,nrule,ispj))then
                   ivstk2(2,ispj)=min(-ivstk2(2,ispj)-1,ivstk2(2,ispj))
-                  call tfreplacesymbolstk1(kli%dbody(2),ispr,nrule,ki2,
+                  ki2=tfreplacesymbolstk1(kli%dbody(2),ispr,nrule,
      $                 .true.,rep1,irtc)
                   if(irtc .ne. 0)then
                     isp=ispa
@@ -747,7 +755,7 @@ c        enddo
             endif
           endif
           isp=isp+1
-          call tfreplacesymbolstk1(ki,ispr,nrule,dtastk(isp),
+          dtastk(isp)=tfreplacesymbolstk1(ki,ispr,nrule,
      $         .true.,rep1,irtc)
           if(irtc .ne. 0)then
             isp=ispa
@@ -758,8 +766,8 @@ c        enddo
         if(rep)then
           k1=kxmakelist(ispb)
         endif
-        call tfreplacesymbolstk1(list%dbody(2),ispa,nrule,k2,
-     $     .true.,rep1,irtc)
+        k2=tfreplacesymbolstk1(list%dbody(2),ispa,nrule,
+     $       .true.,rep1,irtc)
         if(irtc .ne. 0)then
           isp=ispa
           return
@@ -777,8 +785,8 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       else
         ksave=list%head%k
         list%head%k=ktfoper+mtfhold
-        call tfreplacesymbolstk1(sad_descr(list),
-     $       ispa,nrule,kx,.true.,rep,irtc)
+        kx=tfreplacesymbolstk1(sad_descr(list),
+     $       ispa,nrule,.true.,rep,irtc)
         if(irtc .eq. 0 .and. ktflistq(kx,klx))then
           klx%head%k=ksave
         endif
@@ -792,6 +800,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       use tfstk
       implicit none
       type (sad_descriptor) kx,k1,ki
+      type (sad_descriptor) tfreplacesymbolstk1
       type (sad_dlist) list
       type (sad_dlist), pointer :: kl1,klx
       integer*8 kai,ka1,ksave
@@ -828,8 +837,8 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       endif
       ksave=list%head%k
       list%head%k=ktfoper+mtfhold
-      call tfreplacesymbolstk1(sad_descr(list),ispr,nrule,
-     $     kx,.true.,rep1,irtc)
+      kx=tfreplacesymbolstk1(sad_descr(list),ispr,nrule,
+     $     .true.,rep1,irtc)
       if(irtc .eq. 0 .and. ktflistq(kx,klx))then
         klx%head%k=ksave
       endif
@@ -869,13 +878,13 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       subroutine tfgetoption(symbol,kr,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kr,kx
+      type (sad_descriptor) kr,kx,tfgetoption1
       type (sad_dlist), pointer :: lr
       integer*4 irtc
       character*(*) symbol
       logical*4 rep
       if(tfruleq(kr%k,lr))then
-        call tfgetoption1(ktfsymbolz(symbol,len(symbol)),lr,kx,rep)
+        kx=tfgetoption1(ktfsymbolz(symbol,len(symbol)),lr,rep)
         irtc=0
         if(.not. rep)then
           kx%k=ktfref
@@ -886,7 +895,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       return
       end
 
-      recursive subroutine tfgetoption1(ka,list,kx,rep)
+      recursive function tfgetoption1(ka,list,rep) result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) kx
@@ -899,7 +908,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       if(list%head%k .eq. ktfoper+mtflist)then
         do i=1,list%nl
           call descr_sad(list%dbody(i),listi)
-          call tfgetoption1(ka,listi,kx,rep)
+          kx=tfgetoption1(ka,listi,rep)
           if(rep)then
             return
           endif
@@ -919,7 +928,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       use tfstk
       implicit none
       type (sad_dlist), pointer :: lri
-      type (sad_descriptor) kaopt(nopt)
+      type (sad_descriptor) kaopt(nopt),tfgetoption1
       integer*4 isp1,nopt,ispopt,i,j,isp0,irtc,lenw
       logical*4 rep
       character*(*) optname(nopt)
@@ -945,7 +954,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       LOOP_J: do j=1,nopt
         do i=ispopt,isp0
           call loc_sad(ktfaddr(ktastk(i)),lri)
-          call tfgetoption1(kaopt(j)%k,lri,dtastk(isp0+j),rep)
+          dtastk(isp0+j)=tfgetoption1(kaopt(j)%k,lri,rep)
           if(rep)then
             cycle LOOP_J
           endif

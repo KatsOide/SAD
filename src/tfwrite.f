@@ -365,14 +365,14 @@ c      enddo
       use tfcode
       implicit none
       character*(*) fname
-      type (sad_descriptor) kx,k
+      type (sad_descriptor) kx,k,tfget
       integer*4 irtc
       k=kxsalocb(-1,fname,len_trim(fname))
-      call tfget(k,kx,irtc)
+      kx=tfget(k,irtc)
       return
       end
 
-      recursive subroutine tfget(k,kx,irtc)
+      recursive function tfget(k,irtc) result(kx)
       use tfstk
       use tfrbuf
       use tfcsi
@@ -387,6 +387,7 @@ c      call tfdebugprint(k,'tfget',1)
       call tfopenread(isp0,kfn,irtc)
       isp=isp0
       if(irtc .ne. 0)then
+        kx=dxnull
         return
       endif
       lfn=int(rfromd(kfn))

@@ -1,4 +1,4 @@
-      recursive subroutine tfdot(k1,k2,kx,irtc)
+      recursive function tfdot(k1,k2,irtc) result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) k1,k2,kx
@@ -6,6 +6,7 @@
       integer*4 irtc,i,itfmessage,isp0,m,n
       real*8 xr,xi
       complex*16 cx,cx1,cx2
+      kx=dxnull
       if(.not. tflistq(k1,kl1) .or. .not. tflistq(k2,kl2))then
         irtc=itfmessage(9,'General::wrongtype','"List"')
         return
@@ -19,7 +20,7 @@
       if(tflistq(kl1%dbody(1)))then
         do i=1,n
           isp=isp+1
-          call tfdot(kl1%dbody(i),k2,dtastk(isp),irtc)
+          dtastk(isp)=tfdot(kl1%dbody(i),k2,irtc)
           if(irtc .ne. 0)then
             isp=isp0
             return
@@ -258,6 +259,7 @@ c          enddo
 
       recursive subroutine tfinner(k1,k2,kx,ks,kp,irtc)
       use tfstk
+      use efun
       implicit none
       type (sad_descriptor) k1,k2,kx,ki,ks,kp,k1i
       type (sad_dlist), pointer :: kl1,kl2,klx
@@ -300,7 +302,7 @@ c          enddo
         dtastk(isp-2)=kp
         dtastk(isp-1)=kl1%dbody(i)
         dtastk(isp  )=kl2%dbody(i)
-        call tfefunref(isp-2,ki,.true.,irtc)
+        ki=tfefunref(isp-2,.true.,irtc)
         isp=isp0
         if(irtc .ne. 0)then
           isp=isp-3
@@ -312,7 +314,7 @@ c          enddo
           dtastk(isp-2)=ks
           dtastk(isp-1)=kx
           dtastk(isp  )=ki
-          call tfefunref(isp-2,kx,.true.,irtc)
+          kx=tfefunref(isp-2,.true.,irtc)
           isp=isp0
           if(irtc .ne. 0)then
             isp=isp-3
@@ -441,6 +443,7 @@ c          enddo
 
       subroutine tftr(isp1,kx,irtc)
       use tfstk
+      use efun
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: kl,kli
@@ -483,7 +486,7 @@ c          enddo
               go to 9000
             endif
           enddo
-          call tfefunref(isp0+1,kx,.true.,irtc)
+          kx=tfefunref(isp0+1,.true.,irtc)
           isp=isp0
         endif
       else
@@ -499,7 +502,7 @@ c          enddo
             go to 9000
           endif
         enddo
-        call tfefunref(isp0+1,kx,.true.,irtc)
+        kx=tfefunref(isp0+1,.true.,irtc)
         isp=isp0
       endif
       return
@@ -1014,16 +1017,17 @@ c          enddo
       call c_f_pointer(c_loc(a),ca,[m/2])
       if(even)then
         a(1:m)=kl%rbody(1:m)
-c        call tmov(kl%dbody(1),a,m)
         if(power2)then
           if(m .ge. 4)then
             call trftr(a,m,inv)
             f=1.d0/sqrt(dble(m))
             a(1:m)=f*a(1:m)
-            do i=1,m/2-1
-              a((m-i)*2+1)= a(i*2+1)
-              a((m-i)*2+2)=-a(i*2+2)
-            enddo
+            a(m*2-1:m+3:-2)= a(3:m-1:2)
+            a(m*2:  m+4:-2)=-a(4:m:  2)
+c            do i=1,m/2-1
+c              a((m-i)*2+1)= a(i*2+1)
+c              a((m-i)*2+2)=-a(i*2+2)
+c            enddo
             a(m+1)=a(2)
             a(m+2)=0.d0
             a(2  )=0.d0
@@ -1044,7 +1048,7 @@ c        call tmov(kl%dbody(1),a,m)
         else
           w= 2.d0*pi/m
         endif
-        do i=1,m/2-1
+        do concurrent (i=1:m/2-1)
           c=cos(w*i)
           s=sin(w*i)
           a((m-i)*2+1)= f*(a(i*2+1)+a(m-i*2+1)
@@ -1058,16 +1062,20 @@ c        call tmov(kl%dbody(1),a,m)
         a(1  )=f*2.d0*(a(1)+a(2))
         a(m+2)=0.d0
         a(2  )=0.d0
-        do i=1,m/2-1
-          a(i*2+1)= a((m-i)*2+1)
-          a(i*2+2)=-a((m-i)*2+2)
-        enddo
+        a(3:m-1:2)= a(m*2-1:m+3:-2)
+        a(4:m:  2)=-a(m*2:m+4:-2)        
+c        do i=1,m/2-1
+c          a(i*2+1)= a((m-i)*2+1)
+c          a(i*2+2)=-a((m-i)*2+2)
+c        enddo
       else
         f=1.d0/sqrt(dble(m))
-        do i=1,m
-          a(i*2-1)=f*kl%rbody(i)
-          a(i*2  )=0.d0
-        enddo
+        a(1:2*m-1:2)=f*kl%rbody(1:m)
+        a(2:2*m  :2)=0.d0
+c        do i=1,m
+c          a(i*2-1)=f*kl%rbody(i)
+c          a(i*2  )=0.d0
+c        enddo
         if(inv)then
           call zfftw(ca,m,-1,ay)
         else

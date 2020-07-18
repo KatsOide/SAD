@@ -1,7 +1,7 @@
       subroutine tfmodule(isp1,kx,module,eval,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,ke,kxl1
+      type (sad_descriptor) kx,ke,kxl1,tfredefslist
       type (sad_dlist), pointer :: lvlist,kle
       type (sad_symdef), pointer :: symdi
       integer*4 irtc,i, isp0,isp1,isp2, itfmessage
@@ -55,7 +55,7 @@ c          call tfdebugprint(kx,'tfmodule-1',1)
       elseif(rep)then
         if(isp2 .gt. isp0)then
 c          call tfdebugprint(ktflist+ksad_loc(lvlist%head),'module-1',2)
-          call tfredefslist(isp0,isp2,lvlist,kxl1)
+          kxl1=tfredefslist(isp0,isp2,lvlist)
 c          call tfdebugprint(ktflist+kal1,'==>',2)
         else
           kxl1=sad_descr(lvlist)
@@ -252,7 +252,8 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       return
       end
 
-      recursive subroutine tfredefslist(isp1,isp2,lvlist,kx)
+      recursive function tfredefslist(isp1,isp2,lvlist)
+     $     result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) kx,k11,kj,k1
@@ -281,7 +282,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
           dtastk(isp)=klj%head
           k1=klj%dbody(1)
           if(ktflistq(k1,kl1))then
-            call tfredefslist(isp1,isp2,kl1,k11)
+            k11=tfredefslist(isp1,isp2,kl1)
             isp=isp+1
             dtastk(isp)=k11
           else
@@ -310,6 +311,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       implicit none
       type (sad_descriptor) kx,ki,k1,kxi
       type (sad_descriptor) tfreplacestk
+      type (sad_descriptor) tfreplacesymbolstk1
       type (sad_dlist), pointer :: list,listi,klx
       type (sad_symbol), pointer :: symi
       integer*4 isp1,irtc,isp2,i,itfmessage,lg0,n
@@ -407,7 +409,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
             call tfreplacesymbolstk(dtastk(isp1+1),isp2,n,dtastk(isp),
      $           .true.,rep,irtc)
             isp=isp+1
-            call tfreplacesymbolstk1(dtastk(isp1+2),isp2,n,dtastk(isp),
+            dtastk(isp)=tfreplacesymbolstk1(dtastk(isp1+2),isp2,n,
      $           .true.,rep,irtc)
             kx=kxmakelist(isp-2,klx);
             klx%head=dtastk(isp1)
@@ -433,7 +435,8 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       return
       end
 
-      recursive subroutine tfredefsymbol(isp1,isp2,k,kx,rep)
+      recursive function tfredefsymbol(isp1,isp2,k,rep)
+     $     result(kx)
       use tfstk
       use tfcode
       implicit none
@@ -449,11 +452,11 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       if(ktflistq(k,list))then
         isp=isp+1
         isp0=isp
-        call tfredefsymbol(isp1,isp2,list%head,dtastk(isp),rep)
+        dtastk(isp)=tfredefsymbol(isp1,isp2,list%head,rep)
         if(ktfnonreallistqo(list))then
           do i=1,list%nl
             isp=isp+1
-            call tfredefsymbol(isp1,isp2,list%dbody(i),dtastk(isp),rep1)
+            dtastk(isp)=tfredefsymbol(isp1,isp2,list%dbody(i),rep1)
             rep=rep .or. rep1
           enddo
           if(rep)then
@@ -466,10 +469,10 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
         endif
         isp=isp0-1
       elseif(ktfpatq(k,pat))then
-        call tfredefsymbol(isp1,isp2,pat%expr,k1,rep)
-        call tfredefsymbol(isp1,isp2,pat%head,k2,rep1)
+        k1=tfredefsymbol(isp1,isp2,pat%expr,rep)
+        k2=tfredefsymbol(isp1,isp2,pat%head,rep1)
         rep=rep .or. rep1
-        call tfredefsymbol(isp1,isp2,pat%default,kd,rep1)
+        kd=tfredefsymbol(isp1,isp2,pat%default,rep1)
         rep=rep .or. rep1
         if(pat%sym%loc .ne. 0)then
           ks=pat%sym%alloc

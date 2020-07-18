@@ -262,6 +262,7 @@ c      write(*,*)'tfinitn 1.1 ',itfcontroot
 
       subroutine tftocontext(isp1,kx,irtc)
       use tfstk
+      use efun
       implicit none
       type (sad_descriptor) kx,k,kc,ki
       type (sad_symbol), pointer :: sym
@@ -346,7 +347,7 @@ c        write(*,*)'tftocontext ',str%str(1:nc)
       else
         isp=isp+1
         ktastk(isp)=ktfsymbol+ks
-        call tfefunref(isp0+1,kx,.true.,irtc)
+        kx=tfefunref(isp0+1,.true.,irtc)
         isp=isp0
       endif
       return

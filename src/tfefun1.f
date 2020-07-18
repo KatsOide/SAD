@@ -1,4 +1,5 @@
-      recursive subroutine tfefun1(isp1,id0,kx,ref,irtc)
+      recursive function tfefun1(isp1,id0,ref,irtc)
+     $     result(kx)
       use tfstk
       use tflinepcom
       use temw, only:tfnormalcoord,tfinitemip
@@ -12,6 +13,7 @@
       real*8 rgetgl1
       logical*4 ref
       irtc=-1
+      kx=dxnull
       id=id0-1000
       narg=isp-isp1
       ka=klist(ifunbase+ktfaddr(ktastk(isp1)))+1
@@ -26,7 +28,7 @@
             irtc=0
             do j=1,m
               dtastk(ispi)=kli%dbody(j)
-              call tfefun1(isp1,id0,kxj,ref,irtc)
+              kxj=tfefun1(isp1,id0,ref,irtc)
               if(irtc .ne. 0)then
                 do l=j,m
                   klx%rbody(l)=0.d0

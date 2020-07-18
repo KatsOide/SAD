@@ -577,7 +577,7 @@
       subroutine tfmod(isp1,kx,mode,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) kx,tfmodf
       integer*4 isp1,irtc,itfmessage,mode,i
       if(isp .le. isp1+1)then
         irtc=itfmessage(9,'General::narg','"2"')
@@ -587,19 +587,20 @@
         else
           kx=dtastk(isp1+1)
           do i=isp1+2,isp
-            call tfmodf(kx,dtastk(i),kx,mode,irtc)
+            kx=tfmodf(kx,dtastk(i),mode,irtc)
             if(irtc .ne. 0)then
               return
             endif
           enddo
         endif
       else
-        call tfmodf(dtastk(isp1+1),dtastk(isp),kx,mode,irtc)
+        kx=tfmodf(dtastk(isp1+1),dtastk(isp),mode,irtc)
       endif
       return
       end
 
-      recursive subroutine tfmodf(k1,k2,kx,mode,irtc)
+      recursive function tfmodf(k1,k2,mode,irtc)
+     $     result(kx)
       use iso_c_binding
       use tfstk
       use mathfun
@@ -614,6 +615,7 @@
 c     begin initialize for preventing compiler warning
       cx=0.d0
       vx=0.d0
+      kx=dxnull
 c     end   initialize for preventing compiler warning
       ka1=ktfaddrd(k1)
       ka2=ktfaddrd(k2)
@@ -635,17 +637,20 @@ c     end   initialize for preventing compiler warning
      $               -tfloor(kl1%rbody(i)/kl2%rbody(i))*kl2%rbody(i)
               enddo
             elseif(mode .eq. 1)then
-              do i=1,n1
-                klr%rbody(i)=iand(int8(kl1%rbody(i)),int8(kl2%rbody(i)))
-              enddo
+c              do i=1,n1
+                klr%rbody(1:n1)=iand(int8(kl1%rbody(1:n1)),
+     $             int8(kl2%rbody(1:n1)))
+c              enddo
             elseif(mode .eq. 2)then
-              do i=1,n1
-                klr%rbody(i)=ior(int8(kl1%rbody(i)),int8(kl2%rbody(i)))
-              enddo
+c              do i=1,n1
+                klr%rbody(1:n1)=ior(int8(kl1%rbody(1:n1)),
+     $             int8(kl2%rbody(1:n1)))
+c              enddo
             elseif(mode .eq. 3)then
-              do i=1,n1
-                klr%rbody(i)=ieor(int8(kl1%rbody(i)),int8(kl2%rbody(i)))
-              enddo
+c              do i=1,n1
+                klr%rbody(1:n1)=ieor(int8(kl1%rbody(1:n1)),
+     $             int8(kl2%rbody(1:n1)))
+c              enddo
             endif
           else
             call tfgetllstkall(kl1)
@@ -653,8 +658,8 @@ c     end   initialize for preventing compiler warning
             isp2=isp
             do i=1,n1
               isp=isp+1
-              call tfmodf(dtastk(isp0+i),dtastk(isp0+n1+i),
-     $             dtastk(isp),mode,irtc)
+              dtastk(isp)=tfmodf(dtastk(isp0+i),dtastk(isp0+n1+i),
+     $             mode,irtc)
               if(irtc .ne. 0)then
                 isp=isp0
                 return
@@ -669,7 +674,7 @@ c     end   initialize for preventing compiler warning
           isp2=isp
           do i=1,n1
             isp=isp+1
-            call tfmodf(dtastk(isp0+i),k2,dtastk(isp),mode,irtc)
+            dtastk(isp)=tfmodf(dtastk(isp0+i),k2,mode,irtc)
             if(irtc .ne. 0)then
               isp=isp0
               return
@@ -689,7 +694,7 @@ c     end   initialize for preventing compiler warning
         isp2=isp
         do i=1,n2
           isp=isp+1
-          call tfmodf(k1,dtastk(isp0+i),dtastk(isp),mode,irtc)
+          dtastk(isp)=tfmodf(k1,dtastk(isp0+i),mode,irtc)
           if(irtc .ne. 0)then
             isp=isp0
             return
@@ -780,8 +785,8 @@ c     end   initialize for preventing compiler warning
           isp2=isp
           do i=1,n1
             isp=isp+1
-            call tfmodf(dtastk(isp0+i),dtastk(isp0+n1+i),
-     $           dtastk(isp),mode,irtc)
+            dtastk(isp)=tfmodf(dtastk(isp0+i),dtastk(isp0+n1+i),
+     $           mode,irtc)
             if(irtc .ne. 0)then
               isp=isp0
               return
@@ -795,7 +800,7 @@ c     end   initialize for preventing compiler warning
           isp2=isp
           do i=1,isp2-isp0
             isp=isp+1
-            call tfmodf(dtastk(isp0+i),k2,dtastk(isp),mode,irtc)
+            dtastk(isp)=tfmodf(dtastk(isp0+i),k2,mode,irtc)
             if(irtc .ne. 0)then
               isp=isp0
               return
@@ -952,7 +957,7 @@ c     end   initialize for preventing compiler warning
       subroutine tfrestrict(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) kx,tfrestrictl
       integer*4 isp1,irtc,itfmessage
       if(isp .ne. isp1+3)then
         irtc=itfmessage(9,'General::narg','"3"')
@@ -961,13 +966,14 @@ c     end   initialize for preventing compiler warning
         irtc=-1
 c        irtc=itfmessage(9,'General::wrongtype','"x, min, max"')
       else
-        call tfrestrictl(dtastk(isp1+1),kx,
+        kx=tfrestrictl(dtastk(isp1+1),
      $       rtastk(isp-1),rtastk(isp),irtc)
       endif
       return
       end
 
-      recursive subroutine tfrestrictl(k,kx,x1,x2,irtc)
+      recursive function tfrestrictl(k,x1,x2,irtc)
+     $     result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) k,kx
@@ -996,7 +1002,7 @@ c          enddo
           isp0=isp
           do i=1,n
             isp=isp+1
-            call tfrestrictl(kl%dbody(i),dtastk(isp),x1,x2,irtc)
+            dtastk(isp)=tfrestrictl(kl%dbody(i),x1,x2,irtc)
             if(irtc .ne. 0)then
               return
             endif
@@ -1005,6 +1011,7 @@ c          enddo
           isp=isp0
         endif
       else
+        kx=dxnull
         irtc=-1
 c        irtc=itfmessage(9,'General::wrongtype',
 c     $       '"Real or List of Reals"')
@@ -1029,7 +1036,8 @@ c     $       '"Real or List of Reals"')
       return
       end
 
-      recursive subroutine tfeintf(fun,cfun,k,kx,cmpl,rmin,rmax,ir)
+      recursive function tfeintf(fun,cfun,k,cmpl,rmin,rmax,ir)
+     $     result(kx)
       use tfstk
       use cfunc
 c      use tmacro
@@ -1044,6 +1052,7 @@ c      use tmacro
       logical*4 cmpl
       external fun,cfun
       ir=0
+      kx=dxnull
       if(ktfrealq(k,v))then
         if(v .lt. rmin .or. v .gt. rmax)then
           cv=cfun(dcmplx(v,0.d0))
@@ -1125,8 +1134,8 @@ c      use tmacro
                   rtastk(isp)=dble(cfun(cv))
                 endif
               elseif(tflistq(kl%dbody(i)))then
-                call tfeintf(fun,cfun,kl%dbody(i),
-     $               dtastk(isp),cmpl,rmin,rmax,ir)
+                dtastk(isp)=tfeintf(fun,cfun,kl%dbody(i),
+     $               cmpl,rmin,rmax,ir)
                 if(ir .ne. 0.d0)then
                   isp=isp0
                   return
@@ -1149,7 +1158,8 @@ c      use tmacro
       return
       end
 
-      recursive subroutine tfeintf2(fun,cfun,k,k1,cmpl,kx,ir)
+      recursive function tfeintf2(fun,cfun,k,k1,cmpl,ir)
+     $     result(kx)
       use tfstk
       use cfunc
 c      use tmacro
@@ -1162,7 +1172,7 @@ c      use tmacro
       external fun,cfun
       real*8 fun,v,v1
       complex*16 cv,cv1,cfun
-      
+      kx=dxnull
       ir=0
       if(ktfrealq(k,v) .and. ktfrealq(k1,v1))then
         kx=dfromr(fun(v,v1))
@@ -1204,7 +1214,7 @@ c      use tmacro
      $           ktfrealq(k1i))then
               rtastk(isp)=fun(kl%rbody(i),kl1%rbody(i))
             elseif(tflistq(ki) .and. tflistq(k1i))then
-              call tfeintf2(fun,cfun,ki,k1i,cmpl,dtastk(isp),ir)
+              dtastk(isp)=tfeintf2(fun,cfun,ki,k1i,cmpl,ir)
               if(ir .ne. 0.d0)then
                 return
               endif

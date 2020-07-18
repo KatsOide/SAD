@@ -334,12 +334,12 @@ c          call tmultr(trans,trans1,irad)
             trans(4,6)=trans(4,6)+trans1(4,1)*trans(1,6)
      $           +trans1(4,3)*trans(3,6)
         else
-          do i=1,irad
-            trans(2,i)=trans(2,i)+trans1(2,1)*trans(1,i)
-     $           +trans1(2,3)*trans(3,i)
-            trans(4,i)=trans(4,i)+trans1(4,1)*trans(1,i)
-     $           +trans1(4,3)*trans(3,i)
-          enddo
+c          do i=1,irad
+            trans(2,1:irad)=trans(2,1:irad)+trans1(2,1)*trans(1,1:irad)
+     $           +trans1(2,3)*trans(3,1:irad)
+            trans(4,1:irad)=trans(4,1:irad)+trans1(4,1)*trans(1,1:irad)
+     $           +trans1(4,3)*trans(3,1:irad)
+c          enddo
         endif
         if(irad .gt. 6)then
           call tmulbs(beam ,trans1,.true.)
@@ -386,7 +386,7 @@ c        rg=sqrt(rg2)
         trans1(2,2)=rg2
         trans1(4,4)=rg2
         trans1(6,6)=rg2
-        trans(:,1:6)=matmul(trans1,trans(:,1:irad))
+        trans(:,1:irad)=matmul(trans1,trans(:,1:irad))
 c        call tmultr(trans,trans1,irad)
         if(irad .gt. 6)then
           call tmulbs(beam,trans1,.true.)

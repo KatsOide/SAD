@@ -5,14 +5,35 @@ c$$$      gamma=factorial(x)/x
 c$$$      return
 c$$$      end
 
-      real*8 function factorial(x)
+      module gammaf
+      integer*4 ,parameter ::itmaxg=67
+      real*8 ,parameter ::hg=0.2d0
+      real*8 ag(itmaxg)
+
+      contains
+      subroutine aginit
+      implicit none
+      integer*4 i
+      real*8 an
+      if(ag(1) .eq. 0.d0)then
+        an=-1.d0
+        do i=1,itmaxg
+          an=an+2.d0
+          ag(i)=exp(-(an*hg)**2)
+        enddo
+      endif
+c      write(*,*)'agint ',itmaxg,ag(itmaxg)
+      return
+      end subroutine
+
+      real*8 pure function factorial(x)
       use macmath
       implicit none
 c     Including pi = m_pi
-      integer*4 ix,lt
-      parameter (lt=23)
-      real*8 x,aloggamma1,fac(0:lt)
-      data fac/
+      real*8 ,intent(in):: x
+      integer*4 ix
+      integer*4 ,parameter ::lt=23
+      real*8 ,parameter :: fac(0:lt)=[
      $1d0,
      $1d0,
      $2d0,
@@ -36,7 +57,7 @@ c     Including pi = m_pi
      $2432902008176640000d0,
      $51090942171709440000d0,
      $1124000727777607680000d0,
-     $25852016738884976640000d0/
+     $25852016738884976640000d0]
       if(x .lt. 0.d0)then
         factorial=exp(-aloggamma1(-x))*pi*x/sin(pi*x)
       else
@@ -50,16 +71,15 @@ c     Including pi = m_pi
       return
       end
 
-      real*8 function aloggamma1(x)
+      real*8 pure function aloggamma1(x)
       use macmath
       implicit none
 c     Including pi = m_pi
-      real*8 x,x1
-      real*8 c0,c1,c2,c3,c4,c5,c6,c7,c8
-      real*8 gamma,alogsqrt2pi,alogpi
-      parameter (gamma=5.d0,alogsqrt2pi=0.918938533204672742d0,
-     $     alogpi=1.144729885849400174d0)
-      parameter (c0=0.999999999999997524d0,
+      real*8 ,intent(in):: x
+      real*8 x1
+      real*8 ,parameter ::gamma=5.d0,alogsqrt2pi=0.918938533204672742d0,
+     $     alogpi=1.144729885849400174d0,
+     $     c0=0.999999999999997524d0,
      $      c1=76.1800917309326077d0,
      $      c2=-86.5053204008552d0,
      $      c3=24.01409906379226027d0,
@@ -67,7 +87,7 @@ c     Including pi = m_pi
      $      c5=0.001216872118636531519d0,
      $      c6=-0.00001408915744128554778d0,
      $      c7=4.00491935010387864d-6,
-     $      c8=-4.93961492826482964d-7)
+     $      c8=-4.93961492826482964d-7
       if(x .lt. 0.d0)then
         x1=-x
         aloggamma1=log(pi*x/sin(pi*x))-
@@ -86,30 +106,28 @@ c     Including pi = m_pi
       return
       end
 
-      complex*16 function cgamma(x)
+      complex*16 pure function cgamma(x)
       implicit none
-      complex*16 x,cloggamma1
+      complex*16 ,intent(in):: x
       cgamma=exp(cloggamma1(x))/x
       return
       end
 
-      complex*16 function cfactorial(x)
+      complex*16 pure function cfactorial(x)
       implicit none
-      complex*16 x,cloggamma1
+      complex*16 ,intent(in):: x
       cfactorial=exp(cloggamma1(x))
       return
       end
 
-      complex*16 function cloggamma1(z)
+      complex*16 pure function cloggamma1(z)
       use macmath
       implicit none
 c     Including pi = m_pi
-      complex*16 z,z1
-      real*8 c0,c1,c2,c3,c4,c5,c6,c7,c8
-      real*8 gamma,alogsqrt2pi,alogpi
-      parameter (gamma=5.d0,alogsqrt2pi=0.918938533204672742d0,
-     $     alogpi=1.144729885849400174d0)
-      parameter (c0=0.999999999999997524d0,
+      complex*16 ,intent(in):: z
+      complex*16 z1
+      real*8 ,parameter ::gamma=5.d0,alogsqrt2pi=0.918938533204672742d0,
+     $     alogpi=1.144729885849400174d0,c0=0.999999999999997524d0,
      $      c1=76.1800917309326077d0,
      $      c2=-86.5053204008552d0,
      $      c3=24.01409906379226027d0,
@@ -117,7 +135,7 @@ c     Including pi = m_pi
      $      c5=0.001216872118636531519d0,
      $      c6=-0.00001408915744128554778d0,
      $      c7=4.00491935010387864d-6,
-     $      c8=-4.93961492826482964d-7)
+     $      c8=-4.93961492826482964d-7
       if(dble(z) .lt. 0.d0)then
         z1=-z
         cloggamma1=log(pi*z/sin(pi*z))-
@@ -157,9 +175,9 @@ c      endif
       return
       end
       
-      real*8 function gammap(a,x)
+      real*8 pure function gammap(a,x)
       implicit none
-      real*8 a,x,gammaser,gammacf
+      real*8 ,intent(in):: a,x
       if(x .lt. 0.d0 .or. a .lt. 0.d0)then
         gammap=x/0.d0
         return
@@ -174,9 +192,9 @@ c      endif
       return
       end
 
-      real*8 function gammaq(a,x)
+      real*8 pure function gammaq(a,x)
       implicit none
-      real*8 a,x,gammaser,gammacf
+      real*8 ,intent(in):: a,x
       if(x .lt. 0.d0 .or. a .lt. 0.d0)then
         gammaq=x/0.d0
         return
@@ -191,11 +209,11 @@ c      endif
       return
       end
 
-      real*8 function gamma0(x)
+      real*8 pure function gamma0(x)
       use macmath
       implicit none
 c     Including Euler's gamma(euler)
-      real*8 x,gamma0ser,gamma0cf
+      real*8 ,intent(in):: x
       if(x .lt. 0.d0)then
         gamma0=x/0.d0
         return
@@ -208,11 +226,11 @@ c     Including Euler's gamma(euler)
       return
       end
 
-      real*8 function gamma0log(x)
+      real*8 pure function gamma0log(x)
       use macmath
       implicit none
 c     Including Euler's gamma(euler)
-      real*8 x,gamma0ser,gamma0cf
+      real*8 ,intent(in):: x
       if(x .lt. 0.d0)then
         gamma0log=x/0.d0
         return
@@ -225,11 +243,13 @@ c     Including Euler's gamma(euler)
       return
       end
 
-      real*8 function gammaser(a,x)
+      real*8 pure function gammaser(a,x)
       implicit none
-      integer*4 itmax,i
-      real*8 a,x,eps,gln,ap,sum,del,aloggamma1
-      parameter (itmax=300,eps=1.d-13)
+      integer*4 i
+      real*8 ,intent(in):: a,x
+      real*8 gln,ap,sum,del
+      integer*4 ,parameter::itmax=300
+      real*8 ,parameter ::eps=1.d-13
       if(x .lt. 0.d0)then
         gammaser=x/0.d0
         return
@@ -256,11 +276,13 @@ c     Including Euler's gamma(euler)
       return
       end
       
-      real*8 function gammacf(a,x)
+      real*8 pure function gammacf(a,x)
       implicit none
-      integer*4 itmax,i
-      real*8 a,x,eps,fpmin,a1,gln,b,c,d,h,an,del,aloggamma1
-      parameter (itmax=300,eps=1.d-13,fpmin=1.d-30)
+      real*8 ,intent(in):: a,x
+      integer*4 i
+      real*8 a1,gln,b,c,d,h,an,del
+      integer*4 ,parameter::itmax=300
+      real*8 ,parameter ::eps=1.d-13,fpmin=1.d-30
       if(a .eq. 0.d0)then
         gammacf=0.d0
         return
@@ -293,11 +315,13 @@ c     Including Euler's gamma(euler)
       return
       end
 
-      real*8 function gamma0ser(x)
+      real*8 pure function gamma0ser(x)
       implicit none
-      integer*4 itmax,i
-      real*8 x,eps,ap,sum,del
-      parameter (itmax=300,eps=1.d-13)
+      real*8 ,intent(in):: x
+      integer*4 i
+      real*8 ap,sum,del
+      integer*4 ,parameter ::itmax=300
+      real*8 ,parameter ::eps=1.d-13
       if(x .le. 0.d0)then
         gamma0ser=x/0.d0
         return
@@ -318,11 +342,13 @@ c     Including Euler's gamma(euler)
       return
       end
       
-      real*8 function gamma0cf(x)
+      real*8 pure function gamma0cf(x)
       implicit none
-      integer*4 itmax,i
-      real*8 x,eps,fpmin,a1,b,c,d,h,an,del
-      parameter (itmax=300,eps=1.d-13,fpmin=1.d-30)
+      integer*4 i
+      real*8 ,intent(in):: x
+      real*8 a1,b,c,d,h,an,del
+      integer*4 ,parameter ::itmax=300
+      real*8 ,parameter ::eps=1.d-13,fpmin=1.d-30
       a1=-1.d0
       b=x-a1
       c=1.d0/fpmin
@@ -350,10 +376,10 @@ c     Including Euler's gamma(euler)
       return
       end
 
-      complex*16 function cerf(z)
+      complex*16 pure function cerf(z)
       implicit none
       real*8 a
-      complex*16 z,cerfcf,cerfs,cerfcd
+      complex*16 ,intent(in):: z
       a=dble(z)**2+imag(z)**2
       if(dble(z) .lt. 0.d0)then
         if(dble(-z) .gt. 1.d0)then
@@ -375,13 +401,13 @@ c     Including Euler's gamma(euler)
       return
       end
 
-      complex*16 function cerfc(z)
+      complex*16 pure function cerfc(z)
       implicit none
+      complex*16 ,intent(in):: z
       real*8 a
-      complex*16 z,cerfcf,cerfs,cerfcd
       a=dble(z)**2+imag(z)**2
       if(dble(z) .lt. 0.d0)then
-        if(dble(z) .gt. 1.d0)then
+        if(dble(-z) .gt. 1.d0)then
           cerfc=2.d0-cerfcf(-z)
         elseif(a .gt. 0.01d0)then
           cerfc=2.d0-cerfcd(-z)
@@ -400,97 +426,88 @@ c     Including Euler's gamma(euler)
       return
       end
 
-      complex*16 function cerfs(z)
+      complex*16 pure function cerfs(z)
       use macmath
       implicit none
-      real*8 r
+      complex*16 ,intent(in):: z
 c     Including m_2_sqrtpi:	2 / Sqrt[Pi]
-      parameter (r=m_2_sqrtpi)
-      complex*16 z,z2
+      real*8 ,parameter ::r=m_2_sqrtpi
+      complex*16 z2
       z2=z**2
       cerfs=r*z*(1.d0-z2*(1.d0/3.d0-z2*(1.d0/10.d0-
      $     z2*(1.d0/42.d0-z2*(1.d0/216.d0-z2/1320.d0)))))
       return
       end
 
-      complex*16 function cerfcd(z)
+      complex*16 pure function cerfcd(z)
       use macmath
       implicit none
 c     Including m_2_sqrtpi:	2 / Pi
-      real*8 r,h,an,an1,an2,an0
-      parameter (r=m_2_pi,h=0.2d0)
-      complex*16 z,cs,cs1,ca,ca2,cd,z1,z2
-      integer*4 i,itmax
-      parameter (itmax=66)
-      real*8 a(itmax)
-      data a /itmax*0.d0/
-      if(a(1) .eq. 0.d0)then
-        an=-1.d0
-        do i=1,itmax
-          an=an+2.d0
-          a(i)=exp(-(an*h)**2)
-        enddo
-      endif
+      complex*16 ,intent(in):: z
+      real*8 an1,an2,an0
+      real*8 ,parameter ::r=m_2_pi
+      complex*16 cs,cs1,ca,ca2,cd,z1,z2
+      integer*4 i
       if(imag(z) .gt. 0.d0)then
         z1=dcmplx(imag(z),dble(z))
-        an0=anint(dble(z1)/2.d0/h)*2.d0
-        z2=z1-an0*h
+        an0=anint(dble(z1)/2.d0/hg)*2.d0
+        z2=z1-an0*hg
         an1=an0+1.d0
         an2=an0-1.d0
-        ca=exp(2.d0*h*z2)
+        ca=exp(2.d0*hg*z2)
         ca2=ca**2
-        cs=a(1)*(ca/an1+1.d0/an2/ca)
-        do i=2,itmax
+        cs=ag(1)*(ca/an1+1.d0/an2/ca)
+        do i=2,itmaxg
           an1=an1+2.d0
           an2=an2-2.d0
           ca=ca*ca2
-          cd=a(i)*(ca/an1+1.d0/an2/ca)
+          cd=ag(i)*(ca/an1+1.d0/an2/ca)
           cs1=cs+cd
           if(cs1 .eq. cs)then
             go to 11
           endif
           cs=cs1
         enddo
-        write(*,*)'cerfcd convergence error'
+c        write(*,*)'cerfcd convergence error'
  11     cs=exp(z1**2-z2**2)*cs
         cerfcd=dcmplx(1.d0-r*imag(cs),-r*dble(cs))
       else
         z1=dcmplx(-imag(z),dble(z))
-        an0=anint(dble(z1)/2.d0/h)*2.d0
-        z2=z1-an0*h
+        an0=anint(dble(z1)/2.d0/hg)*2.d0
+        z2=z1-an0*hg
         an1=an0+1.d0
         an2=an0-1.d0
-        ca=exp(2.d0*h*z2)
+        ca=exp(2.d0*hg*z2)
         ca2=ca**2
-        cs=a(1)*(ca/an1+1.d0/an2/ca)
-        do i=2,itmax
+        cs=ag(1)*(ca/an1+1.d0/an2/ca)
+        do i=2,itmaxg
           an1=an1+2.d0
           an2=an2-2.d0
           ca=ca*ca2
-          cd=a(i)*(ca/an1+1.d0/an2/ca)
+          cd=ag(i)*(ca/an1+1.d0/an2/ca)
           cs1=cs+cd
           if(cs1 .eq. cs)then
             go to 10
           endif
           cs=cs1
         enddo
-        write(*,*)'cerfcd convergence error'
+c        write(*,*)'cerfcd convergence error'
  10     cs=exp(z1**2-z2**2)*cs
         cerfcd=dcmplx(1.d0-r*imag(cs),r*dble(cs))
       endif
       return
       end
 
-      complex*16 function cerfcf(z)
+      complex*16 pure function cerfcf(z)
       use macmath
       implicit none
 c     Including m_2_sqrtpi:	2 / Sqrt[Pi]
-      real*8 fpmin,eps,r
-      parameter (fpmin=1.d-300,eps=1.d-15,r=m_2_sqrtpi)
-      integer*4 i,itmax
-      parameter (itmax=1000)
+      complex*16 ,intent(in):: z
+      real*8 ,parameter:: fpmin=1.d-300,eps=1.d-15,r=m_2_sqrtpi
+      integer*4 i
+      integer*4 ,parameter::itmax=1000
       real*8 an,a
-      complex*16 z,cb,cd,ch,cdel,cc,z2
+      complex*16 cb,cd,ch,cdel,cc,z2
       z2=z**2
       cb=2.d0*z2+1.d0
       cc=1.d0/fpmin
@@ -509,18 +526,19 @@ c     Including m_2_sqrtpi:	2 / Sqrt[Pi]
           go to 2
         endif
       enddo
-      write(*,*)'erfc convergence error'
+c      write(*,*)'erfc convergence error'
  2    cerfcf=ch*z*r*exp(-z2)
       return
       end
 
-      real*8 function productlog(x)
+      real*8 pure function productlog(x)
       use macmath
       use mathfun
       implicit none
 c     Including m_e(Napier's constant: Exp[1])
-      real*8 x,w,f1,d,eps,en
-      parameter (eps=3.d-16,en=m_e)
+      real*8 ,intent(in):: x
+      real*8 w,f1,d
+      real*8 ,parameter ::eps=3.d-16,en=m_e
       if(x .le. -1.d0/en)then
         productlog=-1.d0
         return
@@ -549,13 +567,13 @@ c        w=.5d0*(sqrt(4.d0*x+1.d0)-1.d0)
       return
       end
 
-      complex*16 function cproductlog(z)
+      complex*16 pure function cproductlog(z)
       use macmath
       implicit none
 c     Including m_e(Napier's constant: Exp[1])
-      complex*16 z,w,f1,d
-      real*8 productlog,eps,en
-      parameter (eps=3.d-16,en=m_e)
+      complex*16 ,intent(in):: z
+      complex*16 w,f1,d
+      real*8 ,parameter ::eps=3.d-16,en=m_e
       if(imag(z) .eq. 0.d0)then
         if(dble(z) .ge. -1.d0/en)then
           cproductlog=productlog(dble(z))
@@ -580,9 +598,10 @@ c     Including m_e(Napier's constant: Exp[1])
       return
       end
 
-      real*8 function inverseerf(x)
+      real*8 pure function inverseerf(x)
       implicit none
-      real*8 x,erf,y,dy,ady0,y1
+      real*8 ,intent(in):: x
+      real*8 y,dy,ady0,y1
       real*8, parameter:: c=1.12837916709551257d0, a=0.140012d0,
      $     pa=0.461814d0
 c      if(abs(x) .gt. 0.6d0)then
@@ -608,3 +627,6 @@ c      endif
       inverseerf=y
       return
       end
+
+      end module
+

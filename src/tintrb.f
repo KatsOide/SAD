@@ -458,10 +458,11 @@ c        h1=sqrt(1.d0+(p0*pr1)**2)
 
       real*8 function twspu(x,y,sigx,sigy,epslon,epsabs)
       use wspf
+      use gammaf, only:gamma0log
       implicit none
       real*8 x,y,sigx,sigy,u
       real*8 twspurec,epslon,epsabs,
-     $     gamma0log,c,d,f0,f1,f2,f3,d2,
+     $     c,d,f0,f1,f2,f3,d2,
      $     ax,ay,r1,sig2,twspf1,rombint
       external twspf1
       if(sigx .lt. sigy)then

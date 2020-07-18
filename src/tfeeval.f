@@ -66,6 +66,7 @@
       use tfstk
       use tfcode
       use iso_c_binding
+      use efun
       implicit none
       type (sad_descriptor) kx,kf,kh,kl
       type (sad_funtbl), pointer :: fun
@@ -401,7 +402,7 @@ c        call tfdebugprint(ktastk(isp1+1),' ',3)
 c        call tfdebugprint(ktastk(isp),' ',3)
 c      endif
       if(ref)then
-        call tfefunref(isp1,kx,.true.,irtc)
+        kx=tfefunref(isp1,.true.,irtc)
 c          call tfdebugprint(kf,'tfseval-efunref-out',3)
 c          call tfdebugprint(ktastk(isp1+1),' ',3)
 c          call tfdebugprint(ktastk(isp),' ',3)
