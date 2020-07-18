@@ -11,6 +11,7 @@
       use ffs_flag
       use tmacro
       use mathfun
+      use sad_main, ia=>iaidx
       implicit none
       real*8 fintrb
       external fintrb
@@ -23,15 +24,8 @@
      $     bm,ptrans,extrans,eytrans,eztrans,tf,aez,aex0,aey0,
      $     aez0,aexz,aeyz,f1,f2,f3,bn,bmax,bmin,ci,pvol,vol1,
      $     transsp(6,6)
-      integer*4 ia(6,6)
       real*8 trans1(6,6),trans2(6,6)
 c     real*8  vmin/0.d0/
-      data ia/ 1, 2, 4, 7,11,16,
-     1         2, 3, 5, 8,12,17,
-     1         4, 5, 6, 9,13,18,
-     1         7, 8, 9,10,14,19,
-     1        11,12,13,14,15,20,
-     1        16,17,18,19,20,21/
       if(al .eq. 0.d0)then
         bmi=0.d0
         return
@@ -280,17 +274,11 @@ c      parameter (eeuler=7.98221278918726d0,a=5.5077d0,b=1.1274d0)
       use tfstk
       use tmacro
       use mathfun
+      use sad_main, ia=>iaidx
       implicit none
       real*8 trans(6,6),cod(6),al,beam(21),
      $     xx1,yy1,xy1,u,v,a,c2,s2,sx,sy,p1,h1,f,akx,aky,
      $     aks,akd,sigzsq
-      integer*4 ia(6,6)
-      data ia/ 1, 2, 4, 7,11,16,
-     1         2, 3, 5, 8,12,17,
-     1         4, 5, 6, 9,13,18,
-     1         7, 8, 9,10,14,19,
-     1        11,12,13,14,15,20,
-     1        16,17,18,19,20,21/
       sigzsq=beam(ia(5,5))
       xx1=beam(ia(1,1))-beam(ia(5,1))**2/sigzsq
       yy1=beam(ia(3,3))-beam(ia(5,3))**2/sigzsq
@@ -365,6 +353,7 @@ c      h1=sqrt(1.d0+p1**2)
       use ffs_flag
       use tmacro
       use mathfun
+      use sad_main, ia=>iaidx
       implicit none
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
@@ -373,13 +362,6 @@ c      h1=sqrt(1.d0+p1**2)
      $     xx1,yy1,xy1,a,c1,s1,sigx,sigy,p1,h1,f,dx,dy,
      $     dx1,dy1,dpx,dpy,pr,u,v,theta,sigzsq,
      $     az,dg,dpr,pr1,fx,fy,fu,xc,yc,zc,fxx,fyy,fxy
-      integer*4 ia(6,6)
-      data ia/ 1, 2, 4, 7,11,16,
-     1         2, 3, 5, 8,12,17,
-     1         4, 5, 6, 9,13,18,
-     1         7, 8, 9,10,14,19,
-     1        11,12,13,14,15,20,
-     1        16,17,18,19,20,21/
       sigzsq=beam(ia(5,5))
       xx1=beam(ia(1,1))-beam(ia(5,1))**2/sigzsq
       yy1=beam(ia(3,3))-beam(ia(5,3))**2/sigzsq
@@ -795,4 +777,3 @@ c      write(*,*)'twspfu ',x,y,sigx,sigy
       endif
       return
       end
-

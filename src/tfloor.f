@@ -1239,8 +1239,7 @@ c      use tmacro
       type (sad_rlist), pointer ::kl
       integer*8 ka
       integer*4 isp1,irtc,ir,ig,ib,isp2,isp0,itfmessage,i,n
-      character*2 r256(0:255)
-      data r256/
+      character*2 ,parameter :: r256(0:255)=[
      $     '00','01','02','03','04','05','06','07',
      $     '08','09','0A','0B','0C','0D','0E','0F',
      $     '10','11','12','13','14','15','16','17',
@@ -1272,7 +1271,7 @@ c      use tmacro
      $     'E0','E1','E2','E3','E4','E5','E6','E7',
      $     'E8','E9','EA','EB','EC','ED','EE','EF',
      $     'F0','F1','F2','F3','F4','F5','F6','F7',
-     $     'F8','F9','FA','FB','FC','FD','FE','FF'/
+     $     'F8','F9','FA','FB','FC','FD','FE','FF']
       if(isp .eq. isp1+1)then
         if(.not. tflistq(ktastk(isp)))then
           go to 9000
