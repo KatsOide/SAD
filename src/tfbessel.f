@@ -157,14 +157,14 @@ c     Including euler(Euler-Mascheroni constant)/pi symbol
      $     result(cb)
       use macmath
       use mathfun
+      use gammaf,only:cgamma
       implicit none
 c     Including m_pi_2 symbol
       integer*4 i,itmax,m
       parameter (itmax=26)
       complex*16 cn,z,cbesselj,cj,cg1,cg2,cgamm1,cgamm2,ca3,
      $     cnf,cp,cq,cr,cs0,cs1,zp,cx,cxp,csigma,
-     $     ca1,ca2,cgamma,cf,cg,cf1,cf2,clogz,zhi,cnfpi,cs
-      external cgamma
+     $     ca1,ca2,cf,cg,cf1,cf2,clogz,zhi,cnfpi,cs
       real*8 az,xcn,an0,anf,acnf,ak
       az=abs(z)
       if(az .gt. 12.2d0)then
@@ -256,12 +256,12 @@ c     Including m_pi_2 symbol
 
       recursive complex*16 function cbesselj(cn,z)
      $     result(cb)
+      use gammaf
       implicit none
       integer*4 nmax,i
       complex*16 cn,z,cbessely,cj,cj1,cj2,cs,zi,
-     $     cnk,cn2k,cg,cgamma
-      real*8 az,acn,an,ak,xcn,factorial
-      external cgamma
+     $     cnk,cn2k,cg
+      real*8 az,acn,an,ak,xcn
 c     Initialization to avoid compiler warning
       nmax=0
 c

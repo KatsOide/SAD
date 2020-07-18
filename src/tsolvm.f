@@ -473,14 +473,14 @@ c        do k=1,l
           b(i,1:l)=b(i,1:l)*w
 c        enddo
 3110  continue
-      do k=1,l
-        do 3030 i=1,m
+      do concurrent (k=1:l)
+        do concurrent (i=1:m)
 c          s=a(1,i)*b(1,k)
 c          do 3040 j=2,mn
 c            s=s+a(j,i)*b(j,k)
 c 3040     continue
           x(i,k)=dot_product(a(1:mn,i),b(1:mn,k))
- 3030   continue
+        enddo
       enddo
       return
       end

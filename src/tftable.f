@@ -1,5 +1,7 @@
-      recursive subroutine tftable(isp1,isp2,ispa,kx,mode,irtc)
+      recursive function tftable(isp1,isp2,ispa,mode,irtc)
+     $     result(kx)
       use tfstk
+      use efun
       implicit none
       integer*4 maxint
       parameter (maxint=2**31-1)
@@ -13,6 +15,7 @@
      $     itfmessage,itfdownlevel,lv,m,j,isp0,ispb,i
       real*8 x0,x1,xstep,xns,xi,ve
       logical*4 var
+      kx=dxnull
       narg=ispa-isp1
       if(narg .lt. 2)then
         irtc=itfmessage(9,'General::narg','"2 or more"')
@@ -125,7 +128,7 @@
       endif
       if(isp2 .lt. ispa)then
         do j=1,ns
-          call tftable(isp1,isp2+1,ispa,kj,mode,irtc)
+          kj=tftable(isp1,isp2+1,ispa,mode,irtc)
           if(irtc .ne. 0)then
             go to 9000
           endif
@@ -210,9 +213,13 @@
                       isp0=isp
                       call tfgetllstkall(klj)
                       call tflocal1d(kj)
-                      do i=isp0+1,isp
-                        ktastk(i)=ktfcopy(ktastk(i))
-                      enddo
+c                      call incr1i(ilist(1,ktaobj(ktastk(isp0+1:isp))-1))
+                      call ktfcopym(ktastk(isp0+1:isp))
+c                      ilist(1,ktaobj(ktastk(isp0+1:isp))-1)=
+c     $                     ilist(1,ktaobj(ktastk(isp0+1:isp))-1)+1
+c                      do i=isp0+1,isp
+c                        ktastk(i)=ktfcopy(ktastk(i))
+c                      enddo
                     else
                       isp=isp+1
                       dtastk(isp)=kj
@@ -246,9 +253,10 @@
                       isp0=isp
                       call tfgetllstkall(klj)
                       call tflocal1d(kj)
-                      do i=isp0+1,isp
-                        ktastk(i)=ktfcopy(ktastk(i))
-                      enddo
+                      call ktfcopym(ktastk(isp0+1:isp))
+c                      do i=isp0+1,isp
+c                        ktastk(i)=ktfcopy(ktastk(i))
+c                      enddo
                     else
                       isp=isp+1
                       dtastk(isp)=kj
@@ -328,9 +336,10 @@
                       isp0=isp
                       call tfgetllstkall(klj)
                       call tflocal1d(kj)
-                      do i=isp0+1,isp
-                        ktastk(i)=ktfcopy(ktastk(i))
-                      enddo
+                      call ktfcopym(ktastk(isp0+1:isp))
+c                      do i=isp0+1,isp
+c                        ktastk(i)=ktfcopy(ktastk(i))
+c                      enddo
                     else
                       isp=isp+1
                       dtastk(isp)=kj
@@ -362,9 +371,10 @@
                       isp0=isp
                       call tfgetllstkall(klj)
                       call tflocal1d(kj)
-                      do i=isp0+1,isp
-                        ktastk(i)=ktfcopy(ktastk(i))
-                      enddo
+                      call ktfcopym(ktastk(isp0+1:isp))
+c                      do i=isp0+1,isp
+c                        ktastk(i)=ktfcopy(ktastk(i))
+c                      enddo
                     else
                       isp=isp+1
                       dtastk(isp)=kj
@@ -395,7 +405,7 @@
         else
           ktastk(ispb)=ktfoper+mtfmult
         endif
-        call tfefunref(ispb,kx,.true.,irtc)
+        kx=tfefunref(ispb,.true.,irtc)
       endif
  9000 isp=ispb-1
       if(var)then

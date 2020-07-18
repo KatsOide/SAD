@@ -202,8 +202,10 @@ ClassName[c_]:=c;
       classs=Flatten[classm[[,1]]];
       HeldMethods[c]=heldmethods;
       mets=Flatten[List@@(MethodSymbol[c,#]&/@heldmethods)];
+!      Print["Class-0.3 ",{Family[c],?MemberSymbol,List@@(MethodSymbol[c,#]&/@heldmethods),mets}];
       Scan[Function[{m},InstanceVar[m]=True],insts];
       MemberSymbol[c]=Override[VarSymbol[c]=Override[insts,classs],mets];
+!      Print["Class-0.5 ",{Family[c],?MemberSymbol,insts,classs,mets,heldmethods}];
       AssignVar@@[instm,{1}];
       AssignClassVar[c,##]&@@[classm,{1}];
       UpValueDefinition[c]=Flatten[UpValueDefinition/@

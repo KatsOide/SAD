@@ -1,11 +1,15 @@
-      subroutine tftake(k,kn,kx,take0,eval,irtc)
+      function tftake(k,kn,take0,eval,irtc) result(kx)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kn,kx
+      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(in):: k,kn
       type (sad_dlist), pointer :: kl,klx
       type (sad_rlist), pointer :: klr,kln
-      integer*4 irtc,m,iv,n1,n2,mn,mx,itfmessage,i
-      logical*4 take0,take,eval,list,d
+      integer*4 ,intent(out):: irtc
+      integer*4 m,iv,n1,n2,mn,mx,itfmessage,i
+      logical*4 ,intent(in):: take0,eval
+      logical*4 take,list,d
+      kx=dxnull
       if(ktfnonlistq(k,kl))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List or composition for #1"')
@@ -173,7 +177,7 @@
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: list,listx
-      integer*4 isp1,irtc,i,m,itfmessage
+      integer*4 isp1,irtc,m,itfmessage
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -189,14 +193,15 @@
       endif
       if(iand(list%attr,lnonreallist) .eq. 0)then
         call loc_sad(ktavaloc(-1,m),listx)
-        do i=1,m
-          listx%dbody(m-i+1)=list%dbody(i)
-        enddo
+c        do i=1,m
+        listx%dbody(m:1:-1)=list%dbody(1:m)
+c        enddo
       else
         call loc_sad(ktadaloc(-1,m),listx)
-        do i=1,m
-          listx%dbody(m-i+1)=dtfcopy(list%dbody(i))
-        enddo
+c        do i=1,m
+        call ktfcopym(list%body(1:m))
+        listx%dbody(m:1:-1)=list%dbody(1:m)
+c        enddo
       endif
       listx%head=dtfcopy(list%head)
       listx%attr=list%attr
@@ -266,6 +271,7 @@
 
       subroutine tfdifference(isp1,kx,irtc)
       use tfstk
+      use eexpr
       use iso_c_binding
       implicit none
       type (sad_descriptor) kx,k0,k1,ks,krv
@@ -311,8 +317,8 @@
         do i=2,m
           isp=isp+1
           k1=kl%dbody(i)
-          call tfecmplxl(krv,k0,ks,mtfmult)
-          call tfecmplxl(ks,k1,dtastk(isp),mtfplus)
+          ks=tfecmplxl(krv,k0,mtfmult)
+          dtastk(isp)=tfecmplxl(ks,k1,mtfplus)
           k0=k1
         enddo
         kx=kxmakelist(isp0,klx)
@@ -328,7 +334,8 @@
       subroutine tfrest(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) tftake
       integer*4 isp1,irtc,itfmessage
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
@@ -337,7 +344,7 @@
         irtc=itfmessage(9,'General::wrongtype','"List or composition"')
         return
       endif
-      call tftake(dtastk(isp),sad_descr(1.d0),kx,.false.,.true.,irtc)
+      kx=tftake(dtastk(isp),sad_descr(1.d0),.false.,.true.,irtc)
       return
       end
 
@@ -380,7 +387,7 @@
       use tfcode
       use iso_c_binding
       implicit none
-      type (sad_descriptor) kh,kx
+      type (sad_descriptor) kh,kx,tfset
       type (sad_dlist) kl
       type (sad_dlist), pointer :: klh
       type (sad_symbol), pointer :: symh
@@ -398,7 +405,7 @@ c      include 'DEBUG.inc'
       dtastk(isp)=sad_descr(kl)
       isp=isp+1
       ktastk(isp)=ktfref
-      call tfset(isp0+1,kx,.false.,irtc)
+      kx=tfset(isp0+1,.false.,irtc)
       isp=isp0
       if(irtc .ne. 0)then
         return

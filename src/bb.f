@@ -700,6 +700,7 @@ c
       subroutine LumRead(rlum_col)
       use tfstk
       use tfcbk
+      use efun
       implicit none
       type (sad_descriptor) kx,kem
       integer*4 irtc,level,itfdownlevel,isp0
@@ -729,7 +730,7 @@ c      isp=isp+1
 c      itastk(1,isp)=ntfreal
 c      vstk(ivstkoffset+isp)=sigz
 
-      call tfefunref(isp0+1,kx,.false.,irtc)
+      kx=tfefunref(isp0+1,.false.,irtc)
 c      call tfdebugprint(kx,'LumRead',1)
       isp=isp0
       level=itfdownlevel()

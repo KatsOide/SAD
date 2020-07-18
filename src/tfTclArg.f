@@ -68,7 +68,8 @@ c        write(*,*)'unicode ',buf(1:m)
       return
       end subroutine
 
-      recursive subroutine tftclarggen(isp1,kx,strb,single,irtc)
+      recursive function tftclarggen(isp1,strb,single,irtc)
+     $     result(kx)
       use tfstk
       use strbuf
       implicit none
@@ -134,7 +135,7 @@ c        write(*,*)'unicode ',buf(1:m)
             if(list)then
               call putstringbufb1(strb,'{')
             endif
-            call tftclarggen(isp0,kx,strb,single,irtc)
+            kx=tftclarggen(isp0,strb,single,irtc)
             if(irtc .gt. 0)then
               go to 9000
             endif
@@ -152,7 +153,7 @@ c        write(*,*)'unicode ',buf(1:m)
               call loc_dlist(kai,kl)
               call tfgetllstkall(kl)
 c              call tfgetllstkall(klist(kai-3))
-              call tftclarggen(isp0,kx,strb,single,irtc)
+              kx=tftclarggen(isp0,strb,single,irtc)
               if(irtc .gt. 0)then
                 go to 9000
               endif
@@ -171,7 +172,7 @@ c              call tfgetllstkall(klist(kai-3))
               endif
               isp=isp0+1
               dtastk(isp)=kx
-              call tftclarggen(isp0,kx,strb,single,irtc)
+              kx=tftclarggen(isp0,strb,single,irtc)
               if(irtc .ne. 0)then
                 go to 9000
               endif
@@ -247,7 +248,7 @@ c              call tfgetllstkall(klist(kai-3))
         isp=isp00
       endif
       return
-      end subroutine
+      end function
 
       end module
 
@@ -256,11 +257,11 @@ c              call tfgetllstkall(klist(kai-3))
       use strbuf
       use tclstrbuf
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_strbuf), pointer :: strb
       integer*4 isp1,irtc
       nullify(strb)
-      call tftclarggen(isp1,kx,strb,.false.,irtc)
+      kx=tftclarggen(isp1,strb,.false.,irtc)
       end
 
       subroutine tftclarg1(isp1,kx,irtc)
@@ -268,11 +269,11 @@ c              call tfgetllstkall(klist(kai-3))
       use strbuf
       use tclstrbuf
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_strbuf), pointer :: strb
       integer*4 isp1,irtc
       nullify(strb)
-      call tftclarggen(isp1,kx,strb,.true.,irtc)
+      kx=tftclarggen(isp1,strb,.true.,irtc)
       end
 
       recursive subroutine tfgetcanvasargstk(ka,irtc)

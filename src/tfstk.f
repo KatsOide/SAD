@@ -1,3 +1,181 @@
+      module macmath
+c     Math constants
+
+c     Napier's constant(Exp[1])
+c     \lim_{n\rightarrow\infty}(1 + \frac{1}{n})^n
+      real*8, parameter :: m_e        = 2.7182818284590452354d0
+
+c     Euler-Mascheroni constant(Euler's gamma)
+c     \lim_{n\rightarrow\infty}(\sum_{k=1}^{n}\frac{1}{k} - \ln{n})
+      real*8, parameter :: m_euler    = 0.57721566490153286061d0
+
+c     Log[2,  Exp[1]]
+      real*8, parameter :: m_log2e    = 1.4426950408889634074d0
+
+c     Log[10, Exp[1]]
+      real*8, parameter :: m_log10e   = 0.43429448190325182765d0
+
+c     Log[Exp[1],  2]
+      real*8, parameter :: m_ln2      = 0.69314718055994530942d0
+
+c     Log[Exp[1], 10]
+      real*8, parameter :: m_ln10     = 2.30258509299404568402d0
+
+c         Pi
+      real*8, parameter :: m_pi       = 3.14159265358979323846d0
+
+c     2 * Pi
+      real*8, parameter :: m_2pi      = 6.28318530717958647693d0
+
+c     4 * Pi
+      real*8, parameter :: m_4pi      = 12.5663706143591729539d0
+
+c         Pi / 2
+      real*8, parameter :: m_pi_2     = 1.57079632679489661923d0
+
+c         Pi / 4
+      real*8, parameter :: m_pi_4     = 0.78539816339744830962d0
+
+c     1 / Pi
+      real*8, parameter :: m_1_pi     = 0.31830988618379067154d0
+
+c     2 / Pi
+      real*8, parameter :: m_2_pi     = 0.63661977236758134308d0
+
+c     4 / Pi
+      real*8, parameter :: m_4_pi     = 1.27323954473516268615d0
+
+c         Sqrt[Pi]
+      real*8, parameter :: m_sqrtpi   = 1.77245385090551602730d0
+
+c     2 / Sqrt[Pi]
+      real*8, parameter :: m_2_sqrtpi = 1.12837916709551257390d0
+
+c     Sqrt[2]
+      real*8, parameter :: m_sqrt2    = 1.41421356237309504880d0
+
+c     Sqrt[1/2]
+      real*8, parameter :: m_1_sqrt2  = 0.70710678118654752440d0
+
+c     Sqrt[3]
+      real*8, parameter :: m_sqrt3    = 1.73205080756887729353d0
+
+c     Sqrt[1/3]
+      real*8, parameter :: m_1_sqrt3  = 0.57735026918962576451d0
+
+c     Standard alias for SAD sources
+      real*8, parameter :: napier = m_e, euler = m_euler
+      real*8, parameter :: pi  = m_pi
+      real*8, parameter :: pi2 = m_2pi,  pi4 = m_4pi
+      real*8, parameter :: hpi = m_pi_2, qpi = m_pi_4
+
+      end module
+
+      module macphys
+      use macmath
+c DO not forget to update sim/MACPHYS.h!!!
+c
+c     Update History:
+c     2016/01/12:	from PDG 2014 https://www.google.co.jp/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0ahUKEwjHw4unsKLKAhUEoJQKHaiPCLgQFggjMAE&url=http%3A%2F%2Fpdg.lbl.gov%2F2014%2Freviews%2Frpp2014-rev-phys-constants.pdf&usg=AFQjCNGXw6APvgkpoTdIRLeC-XV651ZbJg&sig2=-wjwSn5pfl6Juvok0hFqow
+c     2008/03/27:	from CODATA 2006
+c     			http://physics.nist.gov/cuu/Constants/Table/allascii.txt
+c
+c     2003/07/15:	from Particle Data Book
+c
+
+c     Including math constant for permeability of vacuum
+
+c     Speed of light in vacuum:		c
+c     Definition:	299 792 458. m/sec
+      real*8, parameter :: cveloc = 299792458d0
+
+c     Planck's constant:		h
+c     CODATA 2006:	6.626 068 96(33)   x 10^-34 Js
+c     PDG 2014::	6.626 069 57(29)  x 10^-34 Js
+c     CODATA 2018       6.626 070 15       x 10^-34 Js exact
+      real*8, parameter :: plank  = 6.62607015d-34
+
+c     Dirac's constant:			hbar = h / (2 Pi)
+c     PDB 2003:		1.054 571 596(82)  x 10^-34 Js
+c     CODATA 2006:	1.054 571 628(53)  x 10^-34 Js
+c     PDG 2014: 	1.054 571 726(47)  x 10^-34 Js
+c     CODATA 2018:      h (exact) / 2pi
+      real*8, parameter :: plankr = plank/m_2pi
+
+c     Elementary charge:		e
+c     PDB 2003:		1.602 176 462(63)  x 10^-19 C
+c     CODATA 2006:	1.602 176 487(40)  x 10^-19 C
+c     PDG 2014: 	1.602 176 565(35)  x 10^-19 C
+c     CODATA 2018:      1.602 176 634      x 10^-19 C exact
+      real*8, parameter :: elemch = 1.602176634d-19
+
+c     Electron charge in elementary charge unit
+      real*8, parameter :: echarg = 1.0d0
+
+c     Fine-structure constant		\alpha = \mu_0 e^2 c / (2 h)
+c     PDB 2003:		1 / 137.035 999 76(50)
+c     CODATA 2006:	1 / 137.035 999 679(94)
+c     PDG 2014: 	1 / 137.035 999 074(44)
+c     CODATA 2018: 	1 / 137.035 999 084(21)
+      real*8, parameter :: finest = 1.d0 / 137.035999084d0
+
+c     Permeability of vacuum:		\mu_0
+c     Definition:	4 Pi x 10^-7 N A^-2
+c     CODATA 2018:      1.000 000 000 55 * above
+c     CODATA 2018:    4 pi alpha hbar/(e^2 c)
+c      real*8, parameter :: mu0 = 1.00000000055d0 * pi * 4.d-7
+      real*8, parameter :: mu0=m_4pi*finest*plankr/elemch**2/cveloc
+
+c     Permittivity of vacuum:		\epsilon_0 = 1 / (\mu_0 c^2)
+c     Delivered from defintion
+      real*8, parameter :: ep0 = 1.d0 / (mu0 * cveloc**2)
+
+c     Electron mass energy equivalent in eV:	m_e c^2 / e
+c     PDB 2003:		.510 998 902(21) MeV
+c     CODATA 2006:	.510 998 910(13) MeV
+c     PDG 2014: 	.510 998 928(11) MeV
+c     CODATA 2018: 	.510 998 950 00(15) MeV
+      real*8, parameter :: elmass =   0.51099895000d6
+
+c     Proton mass energy equivalent in eV:	m_p c^2 / e
+c     PDB 2003:		938. 271 998(38) MeV
+c     CODATA 2006:	938. 272 013(23) MeV
+c     PDG 2014: 	938. 272 046(21) MeV
+c     CODATA 2018: 	938. 272 088 16(29) MeV
+      real*8, parameter :: prmass = 938.27208816d6
+
+c     Classical electron radius:	r_e = e^2 / (4Pi \epsilon_0 m_e c^2)
+c     					    = (\alpha hbar c) / (m_e c^2)
+c     					    = (e^2 c^2 \mu_0 / 4Pi) / (m_e c^2)
+c     					    = e c^2 * 10^-7 * (e / (m_e c^2))
+c     PDB 2003:		2.817 940 285(??)  x 10^-15 m
+c     CODATA 2006:	2.817 940 2894(58) x 10^-15 m
+c     PDG 2014: 	2.817 940 3267(27) x 10^-15 m
+c      parameter (elradi = finest * plankr * cveloc / (elemch * elmass))
+      real*8, parameter :: elradi =
+     $     finest * plankr * cveloc / (elemch * elmass)
+
+c     Classical proton radius:		r_p = e^2 / (4Pi \epsilon_0 m_p c^2)
+c     					    = (\alpha hbar c) / (m_p c^2)
+c     					    = (e^2 c^2 \mu_0 / 4Pi) / (m_p c^2)
+c     					    = e c^2 * 10^-7 * (e / (m_p c^2))
+c      parameter (prradi = finest * plankr * cveloc / (elemch * prmass))
+      real*8, parameter :: prradi =
+     $     finest * plankr * cveloc / (elemch * prmass)
+
+c     Boltzmann Constant:
+c     PDG2014:          1.380 6488(13) x 10^-23 J/K
+c     COD2018:		1.380 649 × 10−23 J/K exact
+      real*8, parameter :: kboltzman = 1.380649d-23
+
+c     Spin precession coefficient (ge-2)/2
+c     NIST 2014 0.00115965218091
+c     CODATA 2018: (2.002 319 304 362 56(35))/2-1 = 0.001159652181280002
+c
+      real*8 , parameter :: gspin = 0.001159652181280002
+
+      end module
+
       module maccode
 c Do not forget to update sim/MACCODE.h when you change this module!!!!
       implicit none
@@ -233,7 +411,6 @@ c$$$        pidval=>idval
         allocate(sadalloc(ncbk))
         allocate(sadalloc(1)%ca(nindex*2+mhash+16))
         ka=transfer(c_loc(sadalloc(1)%ca(1)),i00)
-        kfirstalloc=ka
 c     kcpklist0=0
         call tfcbkinit
         icp=ksad_loc(sadalloc(1)%ca(1))
@@ -253,6 +430,7 @@ c     kcpklist0=0
         klist(icsep)=icsep
         nmem=0
         nnet=0
+        kfirstalloc=ktaloc(3)
         return
         end subroutine
 
@@ -885,6 +1063,10 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         module procedure ktfobjqk,ktfobjqd
       end interface
 
+      interface ktaobj
+        module procedure ktaobjk,ktaobjd
+      end interface
+
       interface tfmakerulestk
         module procedure tfmakerulestk_dd,tfmakerulestk_dr
       end interface
@@ -1013,7 +1195,7 @@ c     $           n,i,istat
           else
             write(*,*)'Negative allocation - retry: ',i,ktfsadalloc
           endif
-        enddo          
+        enddo
         if(icbk .ge. ncbk)then
           write(*,*)'ktfsadalloc too many allocations: ',icbk
           call abort
@@ -1039,8 +1221,8 @@ c     $           n,i,istat
                     jcbk=jcbk-1
                   endif
                 else
-                  kcbk(2,j)=kcbk(2,k)
-                  kcbk(3,j)=kcbk(2,k)
+                  kcbk(2:3,j)=kcbk(2,k)
+c                  kcbk(3,j)=kcbk(2,k)
                   kcbk(:,k)=0
                 endif
                 return
@@ -1051,8 +1233,7 @@ c     $           n,i,istat
             do k=1,jcbk
               if(kcbk(2,k) .eq. kcbk(1,j)+1)then
                 if(k .lt. j)then
-                  kcbk(2,k)=kcbk(2,j)
-                  kcbk(3,k)=kcbk(3,j)
+                  kcbk(2:3,k)=kcbk(2:3,j)
                   kcbk(:,j)=0
                   if(j .eq. jcbk)then
                     jcbk=jcbk-1
@@ -1453,7 +1634,7 @@ c     $           n,i,istat
         return
         end function ktfaddrk
 
-        integer*8 function ktfaddrd(k)
+        integer*8 pure function ktfaddrd(k)
         implicit none
         type (sad_descriptor) , intent(in)::k
         ktfaddrd=iand(ktamask,k%k)
@@ -1496,6 +1677,30 @@ c     $           n,i,istat
         endif
         return
         end function ktfobjqd
+
+        integer*8 pure elemental function ktaobjk(k) result(ka)
+        use tfmem,only:kfirstalloc
+        implicit none
+        integer*8 , intent(in)::k
+        if(iand(ktomask,k) .eq. ktfobj)then
+          ka=iand(ktamask,k)
+        else
+          ka=kfirstalloc+1
+        endif
+        return
+        end function ktaobjk
+
+        integer*8 pure elemental function ktaobjd(k) result(ka)
+        use tfmem,only:kfirstalloc
+        implicit none
+        type (sad_descriptor) , intent(in)::k
+        if(iand(ktomask,k%k) .eq. ktfobj)then
+          ka=iand(ktamask,k%k)
+        else
+          ka=kfirstalloc+1
+        endif
+        return
+        end function ktaobjd
 
         logical*4 function ktfnonobjq(ka)
         implicit none
@@ -2840,6 +3045,13 @@ c     $           n,i,istat
         return
         end function cfromr
 
+        subroutine incr1i(ia)
+        implicit none
+        integer*4 ia(:)
+        ia=ia+1
+        return
+        end
+
         integer*8 function ktfcopy1(k)
         implicit none
         integer*8 , intent(in)::k
@@ -2851,16 +3063,17 @@ c     $           n,i,istat
         end function ktfcopy1
 
         integer*8 function ktfcopyd(k,d)
+        use tfmem,only:kfirstalloc
         implicit none
         integer*8 , intent(in)::k
         integer*8 ka
-        logical*4 , intent(out)::d
-        d=ktfobjq(k)
-        if(d)then
+        logical*4 , intent(inout)::d
+        if(iand(ktomask,k) .eq. ktfobj)then
+          d=.true.
           ka=iand(ktamask,k)
           ilist(1,ka-1)=ilist(1,ka-1)+1
         else
-          d=ktfnonrealq(k)
+          d=d .or. ktfnonrealq(k)
         endif
         ktfcopyd=k
         return
@@ -2870,18 +3083,37 @@ c     $           n,i,istat
         implicit none
         integer*8 , intent(in)::k
         integer*8 ka
-        if(ktfobjq(k))then
-          ka=ktfaddr(k)
+        if(iand(ktomask,k) .eq. ktfobj)then
+          ka=iand(ktamask,k)
           ilist(1,ka-1)=ilist(1,ka-1)+1
         endif
         ktfcopy=k
         return
         end function
 
+        subroutine ktfcopym(k)
+        implicit none
+        integer*8 ,intent(in):: k(:)
+        ilist(1,ktaobj(k)-1)=ilist(1,ktaobj(k)-1)+1
+        return
+        end
+
+        subroutine dtfcopym(d)
+        implicit none
+        type(sad_descriptor) ,intent(in):: d(:)
+        ilist(1,ktaobj(d)-1)=ilist(1,ktaobj(d)-1)+1
+        return
+        end
+
         type (sad_descriptor) function dtfcopy(d)
         implicit none
         type (sad_descriptor) , intent(in)::d
-        dtfcopy%k=ktfcopy(d%k)
+        integer*8 ka
+        if(iand(ktomask,d%k) .eq. ktfobj)then
+          ka=iand(ktamask,d%k)
+          ilist(1,ka-1)=ilist(1,ka-1)+1
+        endif
+        dtfcopy=d
         return
         end function
 
@@ -3066,9 +3298,8 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         type (sad_descriptor) function kxcomposer(isp1)
         implicit none
         integer*4 , intent(in)::isp1
-        integer*8 ktfcrelistr
         kxcomposer%k=ktflist+
-     $       ktfcrelistr(isp-isp1,ktastk(isp1+1),ktastk(isp1))
+     $       ktfcrelistr(ktastk(isp1+1:isp),dtastk(isp1))
         return
         end function
 
@@ -3330,9 +3561,37 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         integer*4 , intent(in)::m
         integer*8 , intent(in)::ks(m)
         kxcrelistm=kxaaloc(-1,m,kl)
-        call tfcrelista(m,ks,kh,kl)
+        call tfcrelista(ks,kh,kl)
         return
         end function
+
+        subroutine tfcrelista(ks,kh,list)
+        implicit none
+        type (sad_descriptor) ,intent(in):: kh
+        type (sad_dlist) ,intent(inout):: list
+        integer*4 i
+        integer*8 ,intent(in):: ks(:)
+        logical*4 d
+        list%head=dtfcopy(kh)
+        d=.false.
+        do i=1,size(ks)
+          list%dbody(i)%k=ktfcopyd(ks(i),d)
+        enddo
+        if(d)then
+          list%attr=ior(list%attr,lnonreallist)
+        endif
+        return
+        end subroutine
+      
+        integer*8 function ktfcrelistr(ks,kh)
+        implicit none
+        type (sad_descriptor) ,intent(in):: kh
+        type (sad_dlist), pointer ::kl
+        integer*8 ,intent(in):: ks(:)
+        ktfcrelistr=ktaalocr(-1,size(ks),kl)
+        call tfcrelista(ks,kh,kl)
+        return
+        end
 
         integer*8 function ktsalocb(mode,string,leng)
         integer*8 ktfaloc,l

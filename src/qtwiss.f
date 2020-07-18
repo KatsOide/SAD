@@ -165,7 +165,9 @@ c        endif
               enddo
               ip1=ip0+la
  12           continue
-              forall(k=1:ntfun)twiss(ip1+1:ip0+lb,k)=twiss(ip1,k)
+              do concurrent (k=1:ntfun)
+                twiss(ip1+1:ip0+lb,k)=twiss(ip1,k)
+              enddo
               over=.true.
               go to 9000
             endif
@@ -1366,10 +1368,10 @@ c     $     cmp%value(ky_K0_BEND)
         i2=1
         go to 100
       endif
-      al=kl%rbody(1)
-      do i=2,n
-        al=al+kl%rbody(i)
-      enddo
+      al=sum(kl%rbody(1:n))
+c      do i=2,n
+c        al=al+kl%rbody(i)
+c      enddo
       al=al*al0
       al1=al*fr1
       al2=al*fr2

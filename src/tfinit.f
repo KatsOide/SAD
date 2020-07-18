@@ -58,9 +58,9 @@ c              errk(1,l)=rlist(latt(l)+ival(ikx))/v
       ibz=0
       ibzb=0
       ibznext=0
-      do i=1,nlat
-        ibzl(3,i)=0
-      enddo
+c      do i=1,nlat
+        ibzl(3,1:nlat)=0
+c      enddo
       do i=1,nlat-1
         if(idtypec(i) .eq. icSOL)then
           if(ibz .ne. 0 .and.
@@ -217,14 +217,14 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       use tffitcode
       implicit none
       integer*4 i0,im(nele),i,ii,iie,k,ltyp,idx
-      do i=1,nlat
-        mult(i)=0
-      enddo
-      do i=1,nele
-        nelvx(i)%klp=0
-        im(i)=0
+c      do i=1,nlat
+        mult(1:nlat)=0
+c      enddo
+c      do i=1,nele
+        nelvx(1:nele)%klp=0
+        im=0
 c        ilist(i-1,im)=0
-      enddo
+c      enddo
       do i=1,nlat-1
         ii=mod(i+nlat+i0-3,nlat-1)+1
         iie=iele1(ii)

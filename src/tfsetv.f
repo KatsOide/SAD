@@ -88,7 +88,7 @@
       integer*4 i,ie,j,irtc,ie1,ntv,k
       ite=0
       ntv=0
-      do j=1,flv%ntouch
+      do concurrent (j=1:flv%ntouch)
         if(nelvx(nvevx(j)%itouchele)%ival .ne. nvevx(j)%itouchv)then
           ntv=ntv+1
           itv(ntv)=j

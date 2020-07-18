@@ -55,11 +55,7 @@ c Alternatives is temporarily set .false. due to possible reducution.
         subroutine tfopcodehash
         integer*4 i,j,k
         character*4 oper1
-        do i=0,63
-          do k=1,nhash
-            iophash(k,i)=-1
-          enddo
-        enddo
+        iophash=-1
         LOOP_I: do i=0,mtfnopc
           if(opcode(i) .ne. ' ')then
             oper1=opcode(i)
@@ -141,8 +137,9 @@ c          msgn /:   (*   *)   Hold z
       subroutine tfestk(isp0,iprior,lastfirst,irtc)
       use tfstk
       use ophash
+      use eexpr
       implicit none
-      type (sad_descriptor) kx,kh
+      type (sad_descriptor) kx,kh,tfeval1
       type (sad_dlist), pointer :: klx
       integer*4 isp0,iprior(0:mtfnopc),irtc
       integer*4 iop,iop1,isp1,i,itgetfpe,itfmessage
@@ -258,7 +255,7 @@ c          msgn /:   (*   *)   Hold z
      $         tfconstq(ktastk(isp)) .and.
      $         .not. tfheldqd(dtastk(isp)) .and.
      $         ktfimmediateq(klist(ifunbase+iop1)))then
-            call tfeval1(dtastk(isp1),dtastk(isp),kx,iop1,irtc)
+            kx=tfeval1(dtastk(isp1),dtastk(isp),iop1,irtc)
             if(irtc .ne. 0)then
               return
             endif
@@ -267,7 +264,7 @@ c          msgn /:   (*   *)   Hold z
               return
             endif
           else
-            call tfeexpr(dtastk(isp1),dtastk(isp),kx,iop1)
+            kx=tfeexpr(dtastk(isp1),dtastk(isp),iop1)
           endif
         endif
  1010   isp=isp1
@@ -353,7 +350,7 @@ c          msgn /:   (*   *)   Hold z
       subroutine tfinequality(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) kx,tfeval1
       integer*8 ka
       integer*4 isp1,irtc,i,narg,itfmessage
       narg=isp-isp1
@@ -373,7 +370,7 @@ c          msgn /:   (*   *)   Hold z
      $           '"==, <>, <, >, <=, >=, ===, <=>"')
             return
           endif
-          call tfeval1(dtastk(i-2),dtastk(i),kx,int(ka),irtc)
+          kx=tfeval1(dtastk(i-2),dtastk(i),int(ka),irtc)
           if(irtc .ne. 0)then
             return
           endif
@@ -392,14 +389,14 @@ c          msgn /:   (*   *)   Hold z
       use tfstk
       implicit none
 c      include 'DEBUG.inc'
-      type (sad_descriptor) kx,kh
+      type (sad_descriptor) kx,kh,tfcomposefun
       integer*8 kah
       integer*4 isp1,irtc,iah,isp0
       if(rlist(iaximmediate) .ne. 0.d0)then
         if(ktfoperq(kh,kah))then
           iah=int(kah)
           if(iah .gt. mtfend)then
-            call tfcomposefun(isp1,iah,kx,.false.,irtc)
+            kx=tfcomposefun(isp1,iah,.false.,irtc)
           else
             call tfcomposeoper(isp1,iah,kx,.true.,isp0,irtc)
           endif
@@ -424,15 +421,16 @@ c      include 'DEBUG.inc'
 
       subroutine tfcomposefull(isp1,kh,kx,irtc)
       use tfstk
+      use efun
       implicit none
-      type (sad_descriptor) kh,kx
+      type (sad_descriptor) kh,kx,tfcomposefun
       integer*8 kah
       integer*4 isp1,i,irtc,isp0,iah
       if(isp .ne. isp1 .and. rlist(iaximmediate) .ne. 0.d0)then
         if(ktfoperq(kh,kah))then
           iah=int(kah)
           if(iah .gt. mtfend)then
-            call tfcomposefun(isp1,iah,kx,.true.,irtc)
+            kx=tfcomposefun(isp1,iah,.true.,irtc)
             if(irtc .eq. 0)then
               return
             elseif(irtc .gt. 0)then
@@ -483,7 +481,7 @@ c      include 'DEBUG.inc'
             go to 10
           endif
         enddo
-        call tfefunref(isp0+1,kx,.true.,irtc)
+        kx=tfefunref(isp0+1,.true.,irtc)
         isp=isp0
         return
       endif
@@ -844,10 +842,12 @@ c     write(*,*)'with ',irtc
       return
       end
 
-      recursive subroutine tfcomposefun(isp1,iah,kx,full,irtc)
+      recursive function tfcomposefun(isp1,iah,full,irtc)
+     $     result(kx)
       use tfstk
+      use efun
       implicit none
-      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx
       type (sad_descriptor) dh
       integer*8 ka,kti,kai,i
       integer*4 ,intent(in):: isp1,iah
@@ -871,6 +871,7 @@ c     write(*,*)'with ',irtc
           elseif(ktfrealq(ktastk(isp1+1)))then
             kx=dtastk(isp1+2)
           else
+            kx=dxnull
             return
           endif
           irtc=0
@@ -945,7 +946,7 @@ c     write(*,*)'with ',irtc
           elseif(isp .gt. isp1+2)then
             dh=dtastk(isp1+1)
             dtastk(isp1+1)=dtastk(isp1)
-            call tfcomposefun(isp1+1,iah,kx,.true.,irtc)
+            kx=tfcomposefun(isp1+1,iah,.true.,irtc)
             dtastk(isp1+1)=dh
             if(irtc .ne. 0)then
               if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
@@ -969,7 +970,7 @@ c     write(*,*)'with ',irtc
           elseif(isp .gt. isp1+2)then
             dh=dtastk(isp1+1)
             dtastk(isp1+1)=dtastk(isp1)
-            call tfcomposefun(isp1+1,iah,kx,.true.,irtc)
+            kx=tfcomposefun(isp1+1,iah,.true.,irtc)
             dtastk(isp1+1)=dh
             if(irtc .ne. 0)then
               if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
@@ -1012,21 +1013,22 @@ c     write(*,*)'with ',irtc
         return
       end select
       irtc=-1
+      kx=dxnull
       if(ktfnumericq(klist(ifunbase+iah)))then
         rimmediate0=rlist(iaximmediate)
         rlist(iaximmediate)=-1.d0
         if(isp .eq. isp1+1)then
           if(ktfrealq(ktastk(isp)))then
-            call tfefunref(isp1,kx,.false.,irtc)
+            kx=tfefunref(isp1,.false.,irtc)
           elseif(tfconstq(ktastk(isp)))then
             if(ktflistq(ktastk(isp)))then
               if(ilist(2,ktfaddr(ktastk(isp))-1) .le. 15)then
 c                call tfdebugprint(ktastk(isp),'composefun-a',1)
-                call tfefunref(isp1,kx,.true.,irtc)
+                kx=tfefunref(isp1,.true.,irtc)
               endif
             else
 c              call tfdebugprint(ktastk(isp),'composefun-b',1)
-              call tfefunref(isp1,kx,.true.,irtc)
+              kx=tfefunref(isp1,.true.,irtc)
             endif
           endif
         else
@@ -1043,7 +1045,7 @@ c              call tfdebugprint(ktastk(i),'composefun-c-i',1)
               return
             endif
           enddo
-          call tfefunref(isp1,kx,re,irtc)
+          kx=tfefunref(isp1,re,irtc)
 c          call tfdebugprint(kx,'==>',1)
         endif
         rlist(iaximmediate)=rimmediate0

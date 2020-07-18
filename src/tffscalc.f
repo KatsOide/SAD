@@ -736,7 +736,7 @@ c            write(*,*)'twfit ',nlist(k),rfromk(kx),wfit(i)
       integer*4 nlat,idp,jdp,j,jp,le1
       logical*4 beg,begin,end
       jdp=min(1,abs(idp))
-      do j=fbound%lb,fbound%le
+      do concurrent (j=fbound%lb:fbound%le)
         jp=itwissp(j)
         if(jp .gt. 0)then
 c          do k=1,ntwissfun
@@ -767,13 +767,13 @@ c          enddo
           jp=itwissp(nlat-1)
           if(jp .gt. 0)then
 c            do k=1,ntwissfun
-              utwiss(:,idp,jp)=twiss(le1,jdp,:)
+            utwiss(:,idp,jp)=twiss(le1,jdp,:)
 c            enddo
           endif
           jp=itwissp(nlat)
           if(jp .gt. 0)then
 c            do k=1,ntwissfun
-              utwiss(:,idp,jp)=twiss(le1,jdp,:)
+            utwiss(:,idp,jp)=twiss(le1,jdp,:)
 c            enddo
           endif
         endif

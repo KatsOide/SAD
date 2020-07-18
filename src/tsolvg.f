@@ -465,7 +465,7 @@ c        anorm=max(anorm,abs(x(i)))
 c 3010 continue
       anorm=anorm*epslon
       if(svd)then
-        do i=1,mn
+        do concurrent (i=1:mn)
           s=x(i)
           if(abs(s) .gt. anorm)then
             w=v(i+mn)/s
@@ -478,7 +478,7 @@ c          do j=1,m
             a(i,1:m)=a(i,1:m)*w
 c          enddo
         enddo
-        do i=1,m
+        do concurrent (i=1:m)
           s=sum(a(1:mn,i)*b(1:mn))
 c          s=a(1,i)*b(1)
 c          do j=2,mn
@@ -489,10 +489,10 @@ c          enddo
         b(1:mn)=v(1:mn)
         b(mn+1:m)=0.d0
 c        do i=1,m
-          a(mn+1:n,1:m)=0.d0
+        a(mn+1:n,1:m)=0.d0
 c        enddo
       else
-        do 3110 i=1,mn
+        do concurrent (i=1:mn)
           s=x(i)
           if(abs(s) .gt. anorm)then
             w=(v(i+mn)/s)**2
@@ -500,14 +500,14 @@ c        enddo
             w=(s*v(i+mn)/anorm**2)**2
           endif
           b(i)=b(i)*w
- 3110   continue
-        do 3030 i=1,m
+        enddo
+        do concurrent (i=1:m)
 c          s=a(1,i)*b(1)
 c          do 3040 j=2,mn
 c            s=s+a(j,i)*b(j)
 c 3040     continue
           x(i)=sum(a(1:mn,i)*b(1:mn))
- 3030   continue
+        enddo
       endif
       return
       end

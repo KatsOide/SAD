@@ -311,7 +311,7 @@ c     $              +l-1),
      $          cmp%value(ky_RADI_DRFT),n,latt,kptbl)
          else
            if(cmp%value(ky_KIN_DRFT) .eq. 0.d0)then
-             do i=1,np
+             do concurrent (i=1:np)
                dpz=pxy2dpz(px(i),py(i))
                al1=al/(1.d0+dpz)
                x(i)=x(i)+px(i)*al1
@@ -737,7 +737,7 @@ c     $             +lend-1),
         istep=-1
       endif
       do i=i1,i2,istep
-        do k=1,nc
+        do concurrent (k=1:nc)
           if(integv(k,icMULT))then
             cmp%value(k)=rsave(k)*lak%rbody(i)
           endif

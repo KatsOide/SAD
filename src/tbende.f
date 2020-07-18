@@ -320,7 +320,7 @@ c     $     sxkxp,dcxkxp
 c      write(*,*)'tbrote ',chi1,chi2,chi3
       call tsrote(trans1,cod,rr,chi1,chi2,chi3)
       if(calpol .and. irad .gt. 6)then
-        do i=1,9
+        do concurrent (i=1:9)
           srot(1,i)=dot_product(rr(1,:),srot(:,i))
           srot(2,i)=dot_product(rr(2,:),srot(:,i))
           srot(3,i)=dot_product(rr(3,:),srot(:,i))

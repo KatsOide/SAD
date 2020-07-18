@@ -12,38 +12,6 @@
       return
       end
 
-      integer*8 function ktfcrelistr(m,ks,kh)
-      use tfstk
-      implicit none
-      type (sad_descriptor) kh
-      type (sad_dlist), pointer ::kl
-      integer*4 m
-      integer*8 ks(m)
-      ktfcrelistr=ktaalocr(-1,m,kl)
-      call tfcrelista(m,ks,kh,kl)
-      return
-      end
-
-      subroutine tfcrelista(m,ks,kh,list)
-      use tfstk
-      implicit none
-      type (sad_descriptor) kh
-      type (sad_dlist) list
-      integer*4 i,m
-      integer*8 ks(m)
-      logical*4 d,di
-      list%head=dtfcopy(kh)
-      d=.false.
-      do i=1,m
-        list%dbody(i)%k=ktfcopyd(ks(i),di)
-        d=d .or. di
-      enddo
-      if(d)then
-        list%attr=ior(list%attr,lnonreallist)
-      endif
-      return
-      end
-      
       subroutine tfdimensions(isp1,kx,irtc)
       use tfstk
       implicit none
@@ -62,9 +30,9 @@
         call tfdimensionsstk(dtastk(isp),dtastk(isp))
         m=isp-isp0
         kx=kxavaloc(-1,m,klr)
-        do i=1,m
-          klr%rbody(i)=dble(itastk(1,isp0+i))
-        enddo
+c        do i=1,m
+          klr%rbody(1:m)=dble(itastk(1,isp0+1:isp0+m))
+c        enddo
       endif
       return
       end

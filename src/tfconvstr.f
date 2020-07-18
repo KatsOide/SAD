@@ -532,7 +532,7 @@ c      include 'DEBUG.inc'
       m=str%nch
       kx=kxavaloc(-1,m,klr)
       if(m .gt. 0)then
-        do i=1,m
+        do concurrent (i=1:m)
           klr%rbody(i)=iachar(str%str(i:i))
         enddo
       endif

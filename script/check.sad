@@ -23,6 +23,7 @@ FFS;
      {"AppendTo",Module[{x={}},Do[AppendTo[x,#[[i]]],{i,Length[#]}];x-#]&,0},
      {"Difference",Difference[#]-Table[#[[i]]-#[[i-1]],{i,2,Length[#]}]&,0},
      {"Difference-1",Difference[#,-2]-Table[#[[i]]-2*#[[i-1]],{i,2,Length[#]}]&,0},
+     {"Reverse",#-Reverse[Reverse[#]]&,0},
      {"Take & Drop",Take[#,{3,-3}]-Drop[Drop[#,2],-2]&,0},
      {"Real Spline",Module[{x=Append[Prepend[Sort[Re[#]*2*Pi],0],0],sp},
        sp=Spline[Thread[{x,Sin[x]}],Derivative->Periodic];

@@ -290,6 +290,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
         
       subroutine tfvectorqf(isp1,kx,irtc)
       use tfstk
+      use efun
       implicit none
       type (sad_descriptor) kx,kxi
       type (sad_dlist), pointer ::kl
@@ -331,7 +332,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
                 kx%k=0
                 go to 100
               endif
-              call tfefunref(ispf,kxi,.true.,irtc)
+              kxi=tfefunref(ispf,.true.,irtc)
               isp=ispf-1
               if(irtc .ne. 0)then
                 go to 100

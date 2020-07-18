@@ -1,17 +1,19 @@
-      recursive subroutine tfeval1(k1,k2,kx,iopc1,irtc)
+      recursive function tfeval1(k1,k2,iopc1,irtc) result(kx)
       use tfstk
+      use eexpr
+      use efun
       implicit none
       type (sad_descriptor) k1,k2,kx
       integer*4 irtc,iopc1,isp1
       select case (iopc1)
       case (mtfrevpower)
-        call tfeval1(k2,k1,kx,mtfpower,irtc)
+        kx=tfeval1(k2,k1,mtfpower,irtc)
       case (mtfcomp)
         irtc=0
         kx=k2
       case (mtffun:mtfruledelayed,mtfpattest,mtfslot,mtfslotseq,
      $       mtfalt,mtfrepeated,mtfrepeatednull)
-        call tfeexpr(k1,k2,kx,iopc1)
+        kx=tfeexpr(k1,k2,iopc1)
         irtc=0
       case (mtfnull:mtfdiv,mtfpower,mtfgreater:mtfleq,mtfnot:mtfor,
      $       mtfleftbra:mtfrightbrace,mtfcomplex:mtfcomma,
@@ -24,7 +26,7 @@
         if(tflistq(k2) .or. tflistq(k1))then
           call tfearray(k1,k2,kx,iopc1,irtc)
         else
-          call tfeexpr(k1,k2,kx,iopc1)
+          kx=tfeexpr(k1,k2,iopc1)
           irtc=0
         endif
       case default
@@ -35,7 +37,7 @@
         dtastk(isp)=k1
         isp=isp+1
         dtastk(isp)=k2
-        call tfefunref(isp1,kx,.true.,irtc)
+        kx=tfefunref(isp1,.true.,irtc)
         isp=isp1-1
       end select
       return
@@ -72,13 +74,15 @@
       return
       end
 
-      subroutine tfeval1to(k1,k2,kx,iopc,old,irtc)
+      function tfeval1to(k1,k2,iopc,old,irtc) result(kx)
       use tfstk
       implicit none
-      type (sad_descriptor) k1,k2,kx,kv,kr,ku,ks
+      type (sad_descriptor) ,intent(in):: k1,k2
+      type (sad_descriptor) kx,kv,kr,ku,ks,tfeval1,tfset1
       type (sad_dlist), pointer :: kl1
-      integer*4 iopc,irtc
-      logical*4 old
+      integer*4 ,intent(in):: iopc
+      integer*4 ,intent(out):: irtc
+      logical*4 ,intent(in):: old
       if(ktflistq(k1,kl1))then
         call tfleval(kl1,kv,.true.,irtc)
         if(irtc .ne. 0)then
@@ -98,21 +102,21 @@
         kv=k1
       endif
       if(iopc .eq. mtfaddto)then
-        call tfeval1(kv,k2,kr,mtfplus,irtc)
+        kr=tfeval1(kv,k2,mtfplus,irtc)
       elseif(iopc .eq. mtftimesby)then
-        call tfeval1(kv,k2,kr,mtfmult,irtc)
+        kr=tfeval1(kv,k2,mtfmult,irtc)
       elseif(iopc .eq. mtfsubtractfrom)then
-        call tfeval1(sad_descr(-1.d0),k2,ku,mtfmult,irtc)
+        ku=tfeval1(sad_descr(-1.d0),k2,mtfmult,irtc)
         if(irtc .ne. 0)then
           return
         endif
-        call tfeval1(kv,ku,kr,mtfplus,irtc)
+        kr=tfeval1(kv,ku,mtfplus,irtc)
       else
-        call tfeval1(k2,sad_descr(-1.d0),ku,mtfpower,irtc)
+        ku=tfeval1(k2,sad_descr(-1.d0),mtfpower,irtc)
         if(irtc .ne. 0)then
           return
         endif
-        call tfeval1(kv,ku,kr,mtfmult,irtc)
+        kr=tfeval1(kv,ku,mtfmult,irtc)
       endif
       if(irtc .ne. 0)then
         return
@@ -121,7 +125,7 @@
       if(irtc .ne. 0)then
         return
       endif
-      call tfset1(ks,kr,kx,mtfset,irtc)
+      kx=tfset1(ks,kr,mtfset,irtc)
       if(old)then
         kx=kv
       endif
@@ -130,6 +134,8 @@
 
       subroutine tfappendto(isp1,kx,mode,irtc)
       use tfstk
+      use efun
+      use eexpr
       implicit none
       type (sad_descriptor) kx,k10,kr,k1
       type (sad_dlist), pointer :: kl
@@ -174,9 +180,9 @@
           return
         endif
         if(mode .eq. 1)then
-          call tfappend(k1,dtastk(isp),kr,.true.,0,irtc)
+          kr=tfappend(k1,dtastk(isp),.true.,0,irtc)
         else
-          call tfappend(k1,dtastk(isp),kr,.true.,1,irtc)
+          kr=tfappend(k1,dtastk(isp),.true.,1,irtc)
         endif
         if(irtc .ne. 0)then
           return
@@ -189,7 +195,7 @@
       ktastk(isp)=ktastk(isp1+1)
       isp=isp+1
       dtastk(isp)=kr
-      call tfefunref(isp0+1,kx,.true.,irtc)
+      kx=tfefunref(isp0+1,.true.,irtc)
       isp=isp0
       return
       end
@@ -312,11 +318,12 @@
       return
       end function 
 
-      subroutine tfset1(k10,k20,kx,mopc,irtc)
+      function  tfset1(k10,k20,mopc,irtc) result(kx)
       use tfstk
       use mackw
       implicit none
-      type (sad_descriptor) k1,k2,kx,k10,k20,ks,ka
+      type (sad_descriptor) k1,k2,kx,ks,ka
+      type (sad_descriptor) ,intent(in):: k10,k20
       type (sad_dlist),pointer :: list,kls1,kla,kls
       type (sad_symbol), pointer ::sym
       type (sad_symdef),pointer :: symd
@@ -427,7 +434,7 @@ c        if(ka1 .gt. 0 .and. ktfrealq(k2))then
       subroutine tftagset(list,k2,kx,mopc,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) ks,k2,kx,kl,kh
+      type (sad_descriptor) ks,k2,kx,kl,kh,tfset1
       type (sad_dlist) list
       type (sad_symbol), pointer :: syms
       type (sad_symdef),pointer :: symd
@@ -454,7 +461,7 @@ c        if(ka1 .gt. 0 .and. ktfrealq(k2))then
           return
         endif
         if(ks%k .eq. kl%k)then
-          call tfset1(ks,k2,kx,mopc,irtc)
+          kx=tfset1(ks,k2,mopc,irtc)
           return
         else
           irtc=itfmessage(9,'General::samesymbol',' ')

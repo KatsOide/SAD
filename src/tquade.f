@@ -10,7 +10,7 @@
       use mathfun
       implicit none
       integer*4 ,intent(in):: mfring
-      integer*4 ndiv,i,n,itgetqraddiv
+      integer*4 ndiv,n,itgetqraddiv
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 ,intent(in):: al,ak,dx,dy,theta,f1in,f2in,f1out,f2out,
      $     eps0
@@ -19,7 +19,7 @@
      $     aln,pr,akk,phi,scphi,shcphi,sinc2,sinhc2,akr,
      $     xsin2,xsinh2,a11,a12,a21,b11,b12,b21,als,
      $     xi,pxi,yi,pyi,xf,pxf,yf,pyf,
-     $     zx,zy,zxp,zyp,x,y,bm21
+     $     zx,zy,zxp,zyp,x(12),y(12),bm21
       logical*4 ,intent(in):: enarad,fringe,kin,next
       logical*4 prev,achro,krad
       real*8 , parameter:: pramin=1.d-4
@@ -186,22 +186,26 @@ c          als=als+aln
         trans1(3,4)=b12/pr
         trans1(4,4)=b11
         trans1(5,4)=-(aln*pyi+b12*pyf)*.5d0/pr
-        do i=1,irad
-          x=trans(1,i)
-          y=trans(3,i)
-          trans(5,i)=trans(5,i)
-     $         +trans1(5,1)*x+trans1(5,2)*trans(2,i)
-     $         +trans1(5,3)*y+trans1(5,4)*trans(4,i)
-     $         +trans1(5,6)*trans(6,i)
-          trans(1,i)=trans1(1,1)*x+trans1(1,2)*trans(2,i)
-     $         +trans1(1,6)*trans(6,i)
-          trans(2,i)=trans1(2,1)*x+trans1(2,2)*trans(2,i)
-     $         +trans1(2,6)*trans(6,i)
-          trans(3,i)=trans1(3,3)*y+trans1(3,4)*trans(4,i)
-     $         +trans1(3,6)*trans(6,i)
-          trans(4,i)=trans1(4,3)*y+trans1(4,4)*trans(4,i)
-     $         +trans1(4,6)*trans(6,i)
-        enddo
+c        do i=1,irad
+          x(1:irad)=trans(1,1:irad)
+          y(1:irad)=trans(3,1:irad)
+          trans(5,1:irad)=trans(5,1:irad)
+     $         +trans1(5,1)*x(1:irad)+trans1(5,2)*trans(2,1:irad)
+     $         +trans1(5,3)*y(1:irad)+trans1(5,4)*trans(4,1:irad)
+     $         +trans1(5,6)*trans(6,1:irad)
+          trans(1,1:irad)=trans1(1,1)*x(1:irad)
+     $         +trans1(1,2)*trans(2,1:irad)
+     $         +trans1(1,6)*trans(6,1:irad)
+          trans(2,1:irad)=trans1(2,1)*x(1:irad)
+     $         +trans1(2,2)*trans(2,1:irad)
+     $         +trans1(2,6)*trans(6,1:irad)
+          trans(3,1:irad)=trans1(3,3)*y(1:irad)
+     $         +trans1(3,4)*trans(4,1:irad)
+     $         +trans1(3,6)*trans(6,1:irad)
+          trans(4,1:irad)=trans1(4,3)*y(1:irad)
+     $         +trans1(4,4)*trans(4,1:irad)
+     $         +trans1(4,6)*trans(6,1:irad)
+c        enddo
         call tmulbs(beam ,trans1,.true.)
         cod(1)= xf
         cod(3)= yf

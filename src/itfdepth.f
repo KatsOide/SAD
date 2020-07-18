@@ -21,12 +21,14 @@
       return
       end
       
-      recursive subroutine tflevelstk(k,kf,kx,
+      recursive function tflevelstk(k,kf,
      $     n1,n2,mode,ind,rind,ihead,ispmax,irtc)
+     $     result(kx)
       use tfstk
+      use efun
       implicit none
+      type (sad_descriptor) kx
       type (sad_descriptor) ,intent(in):: k,kf
-      type (sad_descriptor) ,intent(inout):: kx
       type (sad_descriptor) kxi,ki
       type (sad_dlist), pointer :: klx,kl
       integer*4 ,intent(in):: mode,n1,n2,ispmax,ihead
@@ -74,11 +76,11 @@ c      write(*,*)mode,n1,n2,ihead,indf
             if(ihead .eq. 0)then
               if(indf)then
                 rind(ind+1)=0.d0
-                call tflevelstk(kl%head,kf,kxi,
+                kxi=tflevelstk(kl%head,kf,
      $               max(0,n1-1),n2-1,mode,ind+1,rind,
      $               0,ispmax,irtc)
               else
-                call tflevelstk(kl%head,kf,kxi,
+                kxi=tflevelstk(kl%head,kf,
      $               max(0,n1-1),n2-1,mode,0,rind,0,ispmax,irtc)
               endif
             endif
@@ -88,7 +90,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
             if(indf)then
               do i=1,m
                 rind(ind+1)=i
-                call tflevelstk(kl%dbody(i),kf,kxi,
+                kxi=tflevelstk(kl%dbody(i),kf,
      $                 max(0,n1-1),n2-1,mode,ind+1,rind,
      $                 ihead,ispmax,irtc)
                 if(irtc .ne. 0)then
@@ -100,7 +102,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
               enddo
             else
               do i=1,m
-                call tflevelstk(kl%dbody(i),kf,kxi,
+                kxi=tflevelstk(kl%dbody(i),kf,
      $                 max(0,n1-1),n2-1,mode,0,rind,
      $                 ihead,ispmax,irtc)
                 if(irtc .ne. 0)then
@@ -119,7 +121,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
                 if(indf)then
                   rind(ind1)=0.d0
                 endif
-                call tflevelstk(kl%head,kf,kxi,
+                kxi=tflevelstk(kl%head,kf,
      $             max(0,n1-1),n2,mode,ind1,rind,ihead,
      $               ispmax,irtc)
                 if(irtc .ne. 0)then
@@ -144,7 +146,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
                 if(indf)then
                   rind(ind1)=i
                 endif
-                call tflevelstk(ki,kf,kxi,
+                kxi=tflevelstk(ki,kf,
      $               max(0,n1-1),n2,mode,ind1,rind,
      $               ihead,ispmax,irtc)
                 if(irtc .ne. 0)then
@@ -167,7 +169,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
             if(indf)then
               rind(ind1)=0.d0
             endif
-            call tflevelstk(ki,kf,kxi,
+            kxi=tflevelstk(ki,kf,
      $           max(0,idi+n1),min(n2,abs(n2)-1),
      $           mode,ind1,rind,ihead,ispmax,irtc)
             if(irtc .ne. 0)then
@@ -187,7 +189,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
             if(indf)then
               rind(ind1)=i
             endif
-            call tflevelstk(ki,kf,kxi,
+            kxi=tflevelstk(ki,kf,
      $           max(0,idi+n1),min(n2,abs(n2)-1),
      $           mode,ind1,rind,ihead,ispmax,irtc)
             if(irtc .ne. 0)then
@@ -293,6 +295,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
       use tfstk
       implicit none
       type (sad_descriptor) k,kl,kx
+      type (sad_descriptor) tflevelstk
       integer*4 n1,n2,irtc,isp1
       real*8 rind(1)
       call tflevelspec(kl,n1,n2,irtc)
@@ -306,7 +309,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
       endif
 c      write(*,*)'tflevel ',n1,n2
       isp1=isp
-      call tflevelstk(k,sad_descr(ktfoper+mtfnull),kx,n1,n2,
+      kx=tflevelstk(k,sad_descr(ktfoper+mtfnull),n1,n2,
      $     0,0,rind,1,mstk,irtc)
       if(isp .le. isp1)then
         kx=dxnulll

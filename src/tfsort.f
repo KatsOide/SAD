@@ -1039,6 +1039,7 @@ c        enddo
 
       integer function itforderl(kl,av,i1,i2,kf,irtc)
       use tfstk
+      use efun
       implicit none
       type (sad_descriptor) k1,k2,kf,kx,kx1
       type (sad_dlist) kl
@@ -1074,7 +1075,7 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
         dtastk(isp)=k1
         isp=isp+1
         dtastk(isp)=k2
-        call tfefunref(isp1,kx,.true.,irtc)
+        kx=tfefunref(isp1,.true.,irtc)
         if(irtc .ne. 0)then
           itforderl=-1
           return
@@ -1091,7 +1092,7 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
         dtastk(isp)=k2
         isp=isp+1
         dtastk(isp)=k1
-        call tfefunref(isp1,kx1,.true.,irtc)
+        kx1=tfefunref(isp1,.true.,irtc)
         isp=isp1-1
         if(irtc .ne. 0)then
           itforderl=-1
