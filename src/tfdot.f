@@ -1107,29 +1107,14 @@ C  A     B is stored in the same area as A.
 C Work area
 C  W     Same size as A.
 C
+      use macmath ,MPRIME=>nsprime,PRIME=>smallprime,MPRIME0=>nsprime
       IMPLICIT NONE
-      INTEGER MPRIME0,MPRIME,MREST
-      PARAMETER (MPRIME0=172,MPRIME=500,MREST=MPRIME-MPRIME0)
-      INTEGER NN,ISGN
+      integer*4 ,PARAMETER ::MREST=0
+      INTEGER*4 NN,ISGN
       COMPLEX*16 A(0:NN-1),WORK(0:NN-1)
-      INTEGER I,J,KK,L,M,N,N1,K,KPRIME
-      INTEGER PRIME(MPRIME)
-      DATA PRIME/
-     % 2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,
-     % 89,97,101,103,107,109,113,127,131,137,139,149,151,157,163,167,
-     % 173,179,181,191,193,197,199,211,223,227,229,233,239,241,251,257,
-     % 263,269,271,277,281,283,293,307,311,313,317,331,337,347,349,353,
-     % 359,367,373,379,383,389,397,401,409,419,421,431,433,439,443,449,
-     % 457,461,463,467,479,487,491,499,503,509,521,523,541,547,557,563,
-     % 569,571,577,587,593,599,601,607,613,617,619,631,641,643,647,653,
-     % 659,661,673,677,683,691,701,709,719,727,733,739,743,751,757,761,
-     % 769,773,787,797,809,811,821,823,827,829,839,853,857,859,863,877,
-     % 881,883,887,907,911,919,929,937,941,947,953,967,971,977,983,991,
-     % 997,1009,1013,1019,1021,MREST*0/
+      INTEGER*4  I,J,KK,L,M,N,N1,K,KPRIME
       COMPLEX*16 W,W0,WP
       REAL*8 THETA
-      REAL*8 PI2
-      DATA PI2 /6.28318 53071 79586 477D0/
 C
       IF(NN.LE.1) GOTO 900
       IF(ABS(ISGN).NE.1) GOTO 920
@@ -1151,23 +1136,24 @@ C
             THETA=PI2/(ISGN*M*N)
             WP=DCMPLX(COS(THETA),SIN(THETA))
 c            WP=DCMPLX(-2D0*SIN(THETA/2D0)**2,SIN(THETA))
-            DO 260 J=0,M-1
+            DO J=0,M-1
               W=1
-              DO 240 K=0,N-1
-                DO 230 I=0,L-1
- 230            A(I+L*(J+M*K))=W*A(I+L*(J+M*K))
+              DO K=0,N-1
+                DO  I=0,L-1
+                  A(I+L*(J+M*K))=W*A(I+L*(J+M*K))
+                enddo
                 W=W0*W
- 240          CONTINUE
+              enddo
 c              W0=W0*WP+W0
               W0=W0*WP
- 260        CONTINUE
+            enddo
             CALL ZFTWTR(A,L,M,N,WORK)
           ENDIF
         ENDIF
         IF(M.NE.1) THEN
           KPRIME=KPRIME+1
           IF(KPRIME.LE.MPRIME) THEN
-            IF(KPRIME.GT.MPRIME0) CALL NEXTPRIM(PRIME,KPRIME)
+c            IF(KPRIME.GT.MPRIME0) CALL NEXTPRIM(PRIME,KPRIME)
             KK=PRIME(KPRIME)
           ELSE
             KK=KK+2
@@ -1218,20 +1204,19 @@ C   WORK Complex*16 array of length K.
 C Output:
 C   A    B(l,k) is stored in the same place as A.
 C   
+      use macmath
       IMPLICIT NONE
       INTEGER M,N,K,ISGN
       COMPLEX*16 A(M,0:N-1)
       INTEGER M1,N1,I,J,NN,IS,K1,L
-      COMPLEX*16 T,W,WP,W0,WP0,W2,WORK(0:K-1)
+      COMPLEX*16 T(1:N),TM(1:M),W,WP,W0,WP0,W2,WORK(0:K-1),U
       REAL*8 THETA,SGN
-      REAL*8 PI2
-      DATA PI2 /6.28318 53071 79586 477D0/
-      REAL*8 C31,C51,C52,C53,C54
-      DATA C31/0.86602 54037 84438 64676D0/,
-     %     C51/0.30901 69943 74947 42410D0/,
-     %     C52/0.95105 65162 95153 57212D0/,
-     %     C53/-.80901 69943 74947 42410D0/,
-     %     C54/0.58778 52522 92473 12917D0/
+      REAL*8 , parameter ::
+     $     C31=0.86602 54037 84438 64676D0,
+     %     C51=0.30901 69943 74947 42410D0,
+     %     C52=0.95105 65162 95153 57212D0,
+     %     C53=-.80901 69943 74947 42410D0,
+     %     C54=0.58778 52522 92473 12917D0
       COMPLEX*16 X0,X1,X2,X3,X4,X5,X6,X7,X8
 C     begin initialize for preventing compiler warning
       WP0=(0.D0,0.D0)
@@ -1241,11 +1226,9 @@ C     end   initialize for preventing compiler warning
       NN=N/K*K1
       DO I=0,N-1
         IF(J.GT.I) THEN
-          DO  M1=1,M
-            T=A(M1,J)
-            A(M1,J)=A(M1,I)
-            A(M1,I)=T
-          ENDDO
+          TM=A(:,J)
+          A(:,J)=A(:,I)
+          A(:,I)=TM
         ENDIF
 C  Bit inversion in K-scale
         N1=NN
@@ -1273,13 +1256,13 @@ c        WP=DCMPLX(-2D0*SIN(THETA/2D0)**2,SIN(THETA))
         W=1
         DO N1=0,NN-1
           DO  M1=1,M
-            DO  I=N1,N1+N-1,IS
-              SELECT CASE (K)
-              CASE (2)
-                T=W*A(M1,I+NN)
-                A(M1,I+NN)=A(M1,I)-T
-                A(M1,I)=A(M1,I)+T
-              CASE (3)
+            SELECT CASE (K)
+            CASE (2)
+              T(1:N:IS)=W*A(M1,N1+NN:N1+N-1+NN:IS)
+              A(M1,N1+NN:N1+N-1+NN:IS)=A(M1,N1:N1+N-1:IS)-T(1:N:IS)
+              A(M1,N1:N1+N-1:IS)=A(M1,N1:N1+N-1:IS)+T(1:N:IS)
+            CASE (3)
+              DO concurrent (I=N1:N1+N-1:IS)
                 X0=A(M1,I)
                 X1=W*A(M1,I+NN)
                 X2=W**2*A(M1,I+2*NN)
@@ -1289,7 +1272,9 @@ c        WP=DCMPLX(-2D0*SIN(THETA/2D0)**2,SIN(THETA))
                 A(M1,I)=X0+X3
                 A(M1,I+NN)=X5+X4
                 A(M1,I+2*NN)=X5-X4
-              CASE (4)
+              enddo
+            CASE (4)
+              DO concurrent (I=N1:N1+N-1:IS)
                 W2=W**2
                 X1=W*A(M1,I+NN)
                 X2=W2*A(M1,I+2*NN)
@@ -1302,7 +1287,9 @@ c        WP=DCMPLX(-2D0*SIN(THETA/2D0)**2,SIN(THETA))
                 A(M1,I+NN)=X5+X7
                 A(M1,I+2*NN)=X4-X6
                 A(M1,I+3*NN)=X5-X7
-              CASE (5)
+              enddo
+            CASE (5)
+              DO concurrent (I=N1:N1+N-1:IS)
                 W2=W**2
                 X1=W*A(M1,I+NN)
                 X2=W2*A(M1,I+2*NN)
@@ -1322,22 +1309,21 @@ c        WP=DCMPLX(-2D0*SIN(THETA/2D0)**2,SIN(THETA))
                 A(M1,I+2*NN)=X2+X4
                 A(M1,I+3*NN)=X2-X4
                 A(M1,I+4*NN)=X1-X3
-              CASE DEFAULT
+              enddo
+            CASE DEFAULT
+              DO concurrent (I=N1:N1+N-1:IS)
                 W0=W
-                DO J=0,K1
-                  WORK(J)=A(M1,I+J*NN)
-                ENDDO
-                DO  L=0,K1
-                  T=WORK(K1)
-                  DO  J=K1-1,0,-1
-                    T=T*W0+WORK(J)
+                WORK(0:K1)=A(M1,I:I+K1*NN:NN)
+                DO L=0,K1
+                  U=WORK(K1)
+                  DO J=K1-1,0,-1
+                    U=U*W0+WORK(J)
                   ENDDO
-                  A(M1,I+L*NN)=T
-c     W0=W0*WP0+W0
+                  A(M1,I+L*NN)=U
                   W0=W0*WP0
                 ENDDO
-              END SELECT
-            ENDDO
+              ENDDO
+            END SELECT
           ENDDO
 c     W=W*WP+W
           W=W*WP
@@ -1349,18 +1335,14 @@ c     W=W*WP+W
 C---------------ZFTWTR -----------------
       SUBROUTINE ZFTWTR(A,L,M,N,W)
       IMPLICIT NONE
-      INTEGER L,M,N,I,J,K
+      INTEGER L,M,N,I,J
       COMPLEX*16 A(L,0:M*N-1),W(0:M*N-1)
-      DO  I=1,L
-        DO  J=0,M-1
-          DO  K=0,N-1
-            W(J+M*K)=A(I,J+M*K)
-          ENDDO
+      DO concurrent (I=1:L)
+        DO J=0,M-1
+          W(J:J+M*(N-1):M)=A(I,J:J+M*(N-1):M)
         ENDDO
-        DO  J=0,M-1
-          DO  K=0,N-1
-            A(I,K+N*J)=W(J+M*K)
-          ENDDO
+        DO J=0,M-1
+          A(I,N*J:N-1+N*J)=W(J:J+M*(N-1):M)
         ENDDO
       ENDDO
       RETURN

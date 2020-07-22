@@ -983,15 +983,12 @@ c     $         ilist(1,iwakepold)*8
           ia=0
           call rsetgl('PSPAN',pspan,ia)
         endif
-        trpt0=trpt
-        trpt=.false.
         call tfgeo(.true.)
         if(codplt)then
           call ffs_init_sizep
 c          ilist(2,iwakepold+6)=int(ifsize)
         endif
         call temitf(codplt,lfno)
-        trpt=trpt0
         if(codplt)then
           updatesize=.true.
         else
@@ -1206,7 +1203,7 @@ c        dpm2=rlist(ktlookup('DPM'))
       if(.not. setref)then
         call tfsetref
       endif
-      updatesize=.false.
+c      updatesize=.false.
       call tclrfpe
       if(wake)then
         call tffsclearwake

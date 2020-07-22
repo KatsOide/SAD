@@ -2,6 +2,8 @@
       use ffs_pointer
       use tmacro
       use tffitcode
+      use ffs_flag, only:trpt
+      use temw, only:tfinibeam
       use maccbk, only:i00
       implicit none
       integer*4 nparam,ntitle
@@ -51,8 +53,11 @@
 10    continue
       codin=twiss(1,0,mfitdx:mfitddp)
       beamin=0.d0
+      if(trpt)then
+        beamin=tfinibeam(1)
+      endif
       call temit(trans,cod,beam,ctrb,
-     1     .true.,i00,i00,i00,i00,
+     1     .not. trpt,i00,i00,i00,i00,
      1     plot,param(1,0),stab,lfno)
       dps=rgetgl1('PSPAN')
       dpsa=dps*.5d0

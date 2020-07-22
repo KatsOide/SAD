@@ -4,13 +4,13 @@ FFS;
  test2: 2d list operations
 *)
 
- CheckFunctions=Class[{},{},{a,ndim=40,b,thre1=1e-15,
+ CheckFunctions=Class[{},{},{a,ndim=66,b,thre1=1e-15,
 
    test1:={
-     {"Real Fourier",InverseFourier[Fourier[Re[#]]]-Re[#]&,0.6},
-     {"Complex Fourier",InverseFourier[Fourier[#]]-#&,0.9},
-     {"Real Trigonometrics",ArcSin[ArcCos[ArcTan[Tan[Cos[Sin[Re[#]]]]]]]-Re[#]&,6},
-     {"Complex Trigonometrics",ArcSin[ArcCos[ArcTan[Tan[Cos[Sin[#/10]]]]]]-#/10&,11},
+     {"Real Fourier",InverseFourier[Fourier[Re[#]]]-Re[#]&,2.2},
+     {"Complex Fourier",InverseFourier[Fourier[#]]-#&,2.5},
+     {"Real Trigonometrics",ArcSin[ArcCos[ArcTan[Tan[Cos[Sin[Re[#]]]]]]]-Re[#]&,13},
+     {"Complex Trigonometrics",ArcSin[ArcCos[ArcTan[Tan[Cos[Sin[#/10]]]]]]-#/10&,13},
      {"Real Log",Log[Exp[Re[#]]]-Re[#]&,0.12},
      {"Complex Log",Log[Exp[#]]-#&,0.26},
      {"Real Det",Det[DiagonalMatrix[Re[#]]]-Times@@Re[#]&,0},
@@ -37,16 +37,16 @@ FFS;
      },
 
    test2:={
-     {"Real LinearSolve",Re[#].LinearSolve[Re[#],Re[#2]]-Re[#2]&,8.1},
-     {"Complex LinearSolve",#.LinearSolve[#,#2]-#2&,450},
+     {"Real LinearSolve",Re[#].LinearSolve[Re[#],Re[#2]]-Re[#2]&,220},
+     {"Complex LinearSolve",#.LinearSolve[#,#2]-#2&,2300},
      {"Real SingularValues",Module[{{u,w,v}=SingularValues[Re[#],Inverse->False]},
-       Transpose[u].DiagonalMatrix[w].v-Re[#]]&,2.6},
+       Transpose[u].DiagonalMatrix[w].v-Re[#]]&,3.0},
      {"Complex SingularValues",Module[{{u,w,v}=SingularValues[#,Inverse->False]},
-       Conjugate[Transpose[u]].DiagonalMatrix[w].v-#]&,3.6},
+       Conjugate[Transpose[u]].DiagonalMatrix[w].v-#]&,4.6},
      {"Real Eigensystem",Module[{{e,v}=Eigensystem[Re[#]]},
-       Re[#].Transpose[v]-Transpose[e*v]]&,33},
+       Re[#].Transpose[v]-Transpose[e*v]]&,125},
      {"Complex Eigensystem",Module[{{e,v}=Eigensystem[#]},
-       #.Transpose[v]-Transpose[e*v]]&,15},
+       #.Transpose[v]-Transpose[e*v]]&,84},
      {"SetPart",Module[{x=Table[0,{Length[#]}]},Do[x[[i]]=i,{i,Length[x]}];x-Range[Length[x]]]&,0},
      {"RotateRight",Module[{x=#},Do[x=RotateRight[x],{Length[x]}];x-#]&,0},
      {"RotateRight-1",Module[{x=#},Do[x=RotateRight[x,-1],{Length[x]}];x-#]&,0},
@@ -77,7 +77,7 @@ FFS;
        d0[[1]]=d0[[1]]+d0[[2]]/(1+d0[[6]])*l;
        d0[[3]]=d0[[3]]+d0[[4]]/(1+d0[[6]])*l;
        d0[[5]]=d0[[5]]-((d0[[2]]/(1+d0[[6]]))^2+(d0[[4]]/(1+d0[[6]]))^2)*l/2;
-       d1-d0]&,9e5},
+       d1-d0]&,9.2e5},
      Null[]
      }
 

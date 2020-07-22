@@ -5,7 +5,7 @@
       use tffitcode
       use iso_c_binding
       use tfcsi, only:icslfno
-      use temw, only:tfinitemip,nparams,tfetwiss,iptwiss
+      use temw, only:tfinitemip,nparams,tfetwiss,iptwiss,tfinibeam
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: kl,klx
@@ -17,7 +17,7 @@
       real*8 param(nparams),trans(6,12),cod(6),beam(42),btr(441),sx,
      $     srot(3,9)
       real*8 dummy(6,6),ris(6,6)
-      logical*4 stab,rt
+      logical*4 stab,rt,bi
       call tfinitemip
       narg=isp-isp1
       codin=0.d0
@@ -39,8 +39,10 @@
         else
           ie=int(klr%rbody(2))
         endif
+c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
       endif
       nel=ie-is+1
+      bi=.false.
       if(narg .ge. 3)then
         if(tflistq(ktastk(isp1+3),kl))then
           if(tfreallistq(kl%dbody(1),kl1))then
@@ -55,8 +57,12 @@
           endif
           if(tfreallistq(kl%dbody(2),kl2))then
             beamin=kl2%rbody(1:21)
+            bi=.true.
           endif
         endif
+      endif
+      if(.not. bi .and. trpt)then
+        beamin=tfinibeam(is)
       endif
       if(ktfnonrealq(ktastk(isp1+1),mode))then
         irtc=itfmessage(9,'General::wrongtype','"Real for #1"')
@@ -94,10 +100,11 @@
         updatesize=.false.
 c        ilist(2,iwakepold+6)=ifsize
       endif
+c      write(*,*)'tfemit-4 ',codplt,ifsize,nel
       if(nel .eq. nlat)then
         call temit(trans,cod,beam,btr,
-     $       mode .ge. 0,iatr,iacod,iabmi,iamat,
-     $       .true.,param,stab,lno)
+     $       .not. trpt .and. mode .ge. 0,iatr,iacod,iabmi,iamat,
+     $       codplt,param,stab,lno)
       else
         call tffsbound1(is,ie-1,fbound)
         cod=codin

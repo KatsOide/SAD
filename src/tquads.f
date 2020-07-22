@@ -4,7 +4,7 @@
       use tfstk
       use ffs_flag
       use tmacro
-      use photontable,only:tsetphotongeo
+      use photontable,only:tsetpcvt,pcvt
       use tspin
       use sol,only:tsolrot
       use mathfun, only:akang
@@ -62,7 +62,8 @@ c          p=(1.d0+g(i))**2
       endif
       if(krad)then
         if(photons)then
-          call tsetphotongeo(0.d0,0.d0,theta2,.true.)
+          call tsetpcvt(l_track,dx,dy,theta2,0.d0,0.d0,al)
+          pcvt%fr0=-0.5d0*f1in/al
         endif
         if(f1in .ne. 0.d0)then
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,f1in,0.d0)
@@ -95,9 +96,7 @@ c          p=(1.d0+g(i))**2
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,bz)
       endif
       if(krad .and. f1out .ne. 0.d0)then
-        if(photons)then
-          call tsetphotongeo(0.d0,0.d0,0.d0,.false.)
-        endif
+        pcvt%fr0=1.d0-.5d0*f1out/al
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,f1out,0.d0)
       endif
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,

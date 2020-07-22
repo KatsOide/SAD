@@ -968,11 +968,17 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         implicit none
         integer*4 ,intent(in):: i
         if(trpt)then
-          ielma=min(max(i,1),nlat)
-        elseif(i .gt. 0)then
-          ielma=mod(i-1,nlat)+1
+          if(i .gt. 0)then
+            ielma=min(nlat,i)
+          else
+            ielma=max(1,nlat+i+1)
+          endif
         else
-          ielma=min(nlat-mod(-i,nlat)+1,nlat)
+          if(i .gt. 0)then
+            ielma=mod(i-1,nlat)+1
+          else
+            ielma=max(nlat-mod(-i,nlat)+1,1)
+          endif
         endif
         return
         end function
@@ -1290,255 +1296,6 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
      $     'DEX     ','DEPX    ','DEY     ','DEPY    ',
      $     'DDX     ','DDPX    ','DDY     ','DDPY    ',
      $     'PDEX    ','PDEPX   ','PDEY    ','PDEPY   '/)
-      end module
-
-      module photontable
-      implicit none
-      type photonp
-        sequence
-        real*8 al,phi,theta,rho,cost,sint,chi,geo1(3,4)        
-        integer*4 l
-      end type
-      integer*4 ntable,ltable
-      parameter (ntable=256,ltable=100000)
-      integer*8 kphtable(ntable)
-      integer*4 nt,itp,ilp,lt
-      type (photonp) pp
-
-      contains
-      subroutine tphotoninit()
-      use tfstk
-      use tmacro
-      implicit none
-      nt=ntable
-      lt=ltable
-      itp=0
-      ilp=0
-      kphtable(1)=0
-      return
-      end subroutine
-
-      subroutine tsetphotongeo(al0,phi0,theta0,ini)
-      use tmacro, only:l_track
-      use ffs_pointer, only:geo
-      implicit none
-      real*8, intent(in):: al0,phi0,theta0
-      logical*4 , intent(in)::ini
-      real*8 gv(3,4),cp0,sp0,cost,sint,r1,r2
-      associate(l=>pp%l,al=>pp%al,phi=>pp%phi,theta=>pp%theta,
-     $     x1=>pp%geo1(1,1),x2=>pp%geo1(2,1),x3=>pp%geo1(3,1),
-     $     y1=>pp%geo1(1,2),y2=>pp%geo1(2,2),y3=>pp%geo1(3,2),
-     $     z1=>pp%geo1(1,3),z2=>pp%geo1(2,3),z3=>pp%geo1(3,3),
-     $     gx0=>pp%geo1(1,4),gy0=>pp%geo1(2,4),gz0=>pp%geo1(3,4),
-     $     rho=>pp%rho,chi=>pp%chi,geo1=>pp%geo1)
-      l=l_track
-      if(ini)then
-        gv=geo(:,:,l)
-c        call tggeol(l,gv)
-      else
-        gv=geo1
-      endif
-      al=al0
-      theta=theta0
-      phi=phi0
-      cost=cos(theta)
-      sint=sin(theta)
-      x1= cost*gv(1,1)-sint*gv(1,2)
-      x2= cost*gv(2,1)-sint*gv(2,2)
-      x3= cost*gv(3,1)-sint*gv(3,2)
-      y1= sint*gv(1,1)+cost*gv(1,2)
-      y2= sint*gv(2,1)+cost*gv(2,2)
-      y3= sint*gv(3,1)+cost*gv(3,2)
-      z1=gv(1,3)
-      z2=gv(2,3)
-      z3=gv(3,3)
-      if(phi .eq. 0.d0)then
-        rho=0.d0
-        gx0=gv(1,4)+z1*al
-        gy0=gv(2,4)+z2*al
-        gz0=gv(3,4)+z3*al
-      else
-        rho=al/phi
-        sp0=sin(phi)
-        cp0=cos(phi)
-        r1=rho*sp0
-        if(cp0 .ge. 0.d0)then
-          r2=rho*sp0**2/(1.d0+cp0)
-        else
-          r2=rho*(1.d0-cp0)
-        endif
-        gx0=gv(1,4)+(r1*z1-r2*x1)
-        gy0=gv(2,4)+(r1*z2-r2*x2)
-        gz0=gv(3,4)+(r1*z3-r2*x3)
-        z1=-sp0*x1+cp0*gv(1,3)
-        x1= cp0*x1+sp0*gv(1,3)
-        z2=-sp0*x2+cp0*gv(2,3)
-        x2= cp0*x2+sp0*gv(2,3)
-        z3=-sp0*x3+cp0*gv(3,3)
-        x3= cp0*x3+sp0*gv(3,3)
-c        write(*,'(a,1p12g10.2)')'tsetphgv ',gx0,gy0,gz0,
-c     $       x1,x2,x3,y1,y2,y3,z1,z2,z3
-      endif
-      if(x3 .eq. 0.d0)then
-        chi=0.d0
-      else
-        chi=2.d0*atan2(x3,-y3)
-      endif
-      return
-      end associate
-      end subroutine
-
-      subroutine tphotonconv(xi,pxi,yi,pyi,dp,dpr,p1,h1,ds,k)
-      use tfstk
-      use tmacro, only:p0
-      use mathfun, only:pxy2dpz
-      implicit none
-      integer*4 , intent(in)::k
-      integer*8 kp
-      real*8 xi,pxi,yi,pyi,dp,p1,h1,xi3a,gx,gy,gz,dpr,
-     $     dpgx,dpgy,dpgz,ds,xir,pxir,zir,pzi,pyir,
-     $     phi1,cp,sp,thu,thv,xi30,xi1,xi2,xi3,pxia
-      associate(l=>pp%l,al=>pp%al,phi=>pp%phi,theta=>pp%theta,
-     $     x1=>pp%geo1(1,1),x2=>pp%geo1(2,1),x3=>pp%geo1(3,1),
-     $     y1=>pp%geo1(1,2),y2=>pp%geo1(2,2),y3=>pp%geo1(3,2),
-     $     z1=>pp%geo1(1,3),z2=>pp%geo1(2,3),z3=>pp%geo1(3,3),
-     $     gx0=>pp%geo1(1,4),gy0=>pp%geo1(2,4),gz0=>pp%geo1(3,4),
-     $     rho=>pp%rho,chi=>pp%chi,geo1=>pp%geo1)
-      call radangle(h1,rho*p1/p0,dpr,thu,thv,xi30,xi2)
-      pxir=pxi+thu
-      pyir=pyi+thv
-      pzi=1.d0+pxy2dpz(pxir,pyir)
-      if(phi .ne. 0.d0)then
-        phi1=ds/rho
-        cp=cos(phi1)
-        sp=sin(phi1)
-        xir=xi*cp
-        zir=rho*sp
-        xi3=(cp-sp)*(cp+sp)*xi30
-        xi1=-2.d0*cp*sp*xi30
-        pxia=pxir
-        pxir=pxia*cp-pzi*sp
-        pzi=pxia*sp+pzi*cp
-      else
-        xir=xi
-        zir=ds
-        xi3=xi30
-        xi1=0.d0
-      endif
-      gx=gx0+xir*x1+yi*y1+zir*z1
-      gy=gy0+xir*x2+yi*y2+zir*z2
-      gz=gz0+xir*x3+yi*y3+zir*z3
-      dpgx=dp*(pzi*z1+pxir*x1+pyir*y1)
-      dpgy=dp*(pzi*z2+pxir*x2+pyir*y2)
-      dpgz=dp*(pzi*z3+pxir*x3+pyir*y3)
-c      write(*,'(a,2i5,1p5g12.4)')'phconv ',k,l,
-c     $     pxia,pxir*x2,pyir*y2,pzi*z2,dpgy/dp
-      xi3a=cos(chi)*xi3+sin(chi)*xi1
-      xi1=-sin(chi)*xi3+cos(chi)*xi1
-      xi3=xi3a
-      if(ilp .eq. 0)then
-        itp=itp+1
-        kphtable(itp)=ktaloc(10*lt)
-        ilp=1
-      endif
-c      write(*,*)'phconv ',itp,ilp
-      kp=kphtable(itp)+(ilp-1)*10
-      ilist(1,kp)=k
-      ilist(2,kp)=l
-      rlist(kp+1)=gx
-      rlist(kp+2)=gy
-      rlist(kp+3)=gz
-      rlist(kp+4)=dpgx
-      rlist(kp+5)=dpgy
-      rlist(kp+6)=dpgz
-      rlist(kp+7)=xi1
-      rlist(kp+8)=xi2
-      rlist(kp+9)=xi3
-      ilp=ilp+1
-      if(ilp .gt. lt)then
-        ilp=0
-      endif
-      end associate
-      end subroutine
-
-      subroutine tgswap(l)
-      use ffs_pointer, only:geo
-      implicit none
-      integer*4 , intent(in)::l
-      real*8 v(3)
-      v=geo(:,1,l)
-      geo(:,1,l)=geo(:,2,l)
-      geo(:,2,l)=v
-      return
-      end subroutine
-
-      subroutine tphotonlist()
-      use tfstk
-      use ffs_pointer,only:gammab
-      use tmacro
-      use mathfun, only:hypot3
-      implicit none
-      type (sad_dlist), pointer ::klx
-      type (sad_rlist), pointer ::klri
-      integer*4 nitem
-      parameter (nitem=12)
-      integer*8 kax, kp,kt
-      integer*4 nph,i
-      real*8 dp
-      integer*8 ,save ::kphlist=0
-      if(kphlist .eq. 0)then
-        kphlist=ktfsymbolz('`PhotonList',11)-4
-      endif
-      call tflocal(klist(kphlist))
-      if(itp .le. 0)then
-        dlist(kphlist)=dxnulll
-      else
-        nph=(itp-1)*lt+max(ilp-1,0)
-c        write(*,*)'phlist ',itp,nph
-        kax=ktadaloc(-1,nph,klx)
-        klx%attr=ior(klx%attr,lconstlist)
-        itp=1
-        ilp=0
-        kt=kphtable(1)
-        do i=1,nph
-          ilp=ilp+1
-          if(ilp .gt. lt)then
-            ilp=1
-            itp=itp+1
-            kt=kphtable(itp)
-          endif
-          kp=kt+(ilp-1)*10
-          klx%dbody(i)%k=ktflist+ktavaloc(0,nitem,klri)
-          klri%attr=lconstlist
-          dp=hypot3(rlist(kp+4),rlist(kp+5),rlist(kp+6))
-c          dp=hypot(rlist(kp+4),hypot(rlist(kp+5),rlist(kp+6)))
-c          dp=sqrt(rlist(kp+4)**2+rlist(kp+5)**2
-c     $         +rlist(kp+6)**2)
-          klri%rbody(1)=dp*amass*gammab(ilist(2,kp))
-          klri%rbody(2)=rlist(kp+1)
-          klri%rbody(3)=rlist(kp+2)
-          klri%rbody(4)=rlist(kp+3)
-          klri%rbody(5)=rlist(kp+4)/dp
-          klri%rbody(6)=rlist(kp+5)/dp
-          klri%rbody(7)=rlist(kp+6)/dp
-          klri%rbody(8)=rlist(kp+7)
-          klri%rbody(9)=rlist(kp+8)
-          klri%rbody(10)=rlist(kp+9)
-          klri%rbody(11)=ilist(1,kp)
-          klri%rbody(12)=ilist(2,kp)
-        enddo
-        do i=1,itp
-          if(kphtable(i) .ne. 0)then
-            call tfree(kphtable(i))
-          endif
-        enddo
-        klist(kphlist)=ktflist+ktfcopy1(kax)
-      endif
-c      call tfdebugprint(klist(kphlist),'phlist',1)
-c      write(*,*)'with ',itp,ilp
-      return
-      end subroutine
-
       end module
 
       module ffs_wake
@@ -2037,9 +1794,9 @@ c        enddo
         use tfstk
         use sad_main
         implicit none
-        type (sad_comp) :: cmps
+        type (sad_comp) ,intent(in):: cmps
         type (sad_rlist), pointer :: las
-        integer*4 j,k
+        integer*4 ,intent(in):: k
         if(ktfnonrealq(cmps%dvalue(k),v))then
           if(tfreallistq(cmps%dvalue(k),las))then
             v=sum(las%rbody(1:las%nl))
@@ -2058,7 +1815,7 @@ c            enddo
         implicit none
         type (sad_comp) :: cmpd
         type (sad_rlist), pointer :: lad
-        integer*4 i,k
+        integer*4 ,intent(in):: i
         real*8 r0,v
         if(ktfrealq(cmpd%dvalue(i)))then
           cmpd%value(i)=v
@@ -2102,6 +1859,7 @@ c            enddo
      $     ipnup=ipequpol6+1,iprevf=ipnup+1,
      $     nparams=iprevf
 
+c     inverse normal ccordinate at the origin
       real(8), public :: r(6, 6) = RESHAPE((/
      $     1.d0, 0.d0, 0.d0, 0.d0, 0.d0, 0.d0,
      $     0.d0, 1.d0, 0.d0, 0.d0, 0.d0, 0.d0,
@@ -2111,7 +1869,7 @@ c            enddo
      $     0.d0, 0.d0, 0.d0, 0.d0, 0.d0, 1.d0/),
      $     (/6, 6/))
 
-c     Inverse matrix of r
+c     Inverse matrix of r: NormalCoordinate
       real(8), public :: ri(6, 6) = RESHAPE((/
      $     1.d0, 0.d0, 0.d0, 0.d0, 0.d0, 0.d0,
      $     0.d0, 1.d0, 0.d0, 0.d0, 0.d0, 0.d0,
@@ -2139,7 +1897,7 @@ c     Inverse matrix of r
 
       public :: tfetwiss,etwiss2ri,tfnormalcoord,toln,
      $     tfinitemip,tsetr0,tinv6,tsymp,tmultr45,
-     $     label1,label2
+     $     label1,label2,tfinibeam
 
       contains
 
@@ -2682,6 +2440,36 @@ c      crz=sqrt(uz12**2+uz22**2)
       return
       end subroutine
 
+      real*8 function tfinibeam(is) result(beam)
+      use sad_main, only:iaidx
+      use ffs
+      use ffs_pointer,only:twiss
+      use tffitcode,only:ntwissfun
+      implicit none
+      dimension beam(21)
+      integer*4 ,intent(in):: is
+      integer*4 ir
+      real*8 ris(6,6)
+      logical*4 normal
+      ris=etwiss2ri(twiss(is,0,1:ntwissfun),normal)
+      beam=0.d0
+      beam(iaidx(1,1))=emx
+      beam(iaidx(2,2))=emx
+      beam(iaidx(3,3))=emy
+      beam(iaidx(4,4))=emy
+      beam(iaidx(5,5))=emz
+      beam(iaidx(6,6))=emz
+      ir=irad
+      irad=12
+      call tmulbs(beam,ris,.false.)
+      irad=ir
+      if(is .eq. 1)then
+        ri=ris
+        r=tinv6(ri)
+      endif
+      return
+      end function
+
       end module temw
 
       module tspin
@@ -3066,7 +2854,7 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
      $     px00,py0,zr00,bsi,al,k)
         use ffs_flag
         use tmacro
-        use photontable, only:tphotonconv
+        use photontable, only:tphrec
         use mathfun, only:pxy2dpz,p2h,hypot3
         implicit none
         integer*4 ,parameter :: npmax=10000
@@ -3076,7 +2864,7 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         real*8 , intent(in)::px00,py0,zr00,bsi,al
         real*8 dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
      $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,sx,sy,sz,
-     $       ppa,an,a,dph,r1,r2,px0,xr,yr
+     $       ppa,an,a,dph,r1,r2,px0,xr,yr,rho
         real*8 dpr(npmax),rph(npmax)
         dpz0=pxy2dpz(px00,py0)
         px0= cphi0*px00+sphi0*(1.d0+dpz0)
@@ -3096,20 +2884,23 @@ c        ppa=hypot(ppx,hypot(ppy,ppz))
         h1=p2h(p)
         anp=anrad*h1*theta
         al1=al-z+zr00
+        rho=al1/theta
         if(photons)then
           call tdusrnpl(anp,dph,r1,r2,an,dpr,rph)
         else
           call tdusrn(anp,dph,r1,r2,an)
         endif
         if(an .ne. 0.d0)then
-          uc=cuc*h1**3/p0*theta/al1
+          uc=cuc*h1**3/p0/rho
           if(photons)then
             do i=1,int(an)
               dg=dpr(i)*uc
               xr=x-rph(i)*(px-.5d0*dpx*rph(i))*al
               yr=y-rph(i)*(py-.5d0*dpy*rph(i))*al
-              call tphotonconv(xr,px,yr,py,dg,
-     $             dpr(i),p,h1,-rph(i)*al,k)
+              call tphrec(xr,px,yr,py,dg,dpr(i),
+     $             ppx,ppy,p,h1,rho,al-rph(i)*al,k)
+c              call tphotonconv(xr,px,yr,py,dg,
+c     $             dpr(i),p,h1,-rph(i)*al,k)
             enddo
           endif
           dg=-dph*uc
@@ -3155,7 +2946,7 @@ c        ppa=hypot(ppx,hypot(ppy,ppz))
         subroutine tradkfn(np,xn,pxn,yn,pyn,zn,gn,dvn,sxn,syn,szn,al)
         use ffs_flag
         use tmacro
-        use photontable, only:tphotonconv
+        use photontable, only:tphrec
         use mathfun, only:pxy2dpz,p2h,hypot3
         implicit none
         integer*4 ,parameter :: npmax=10000
@@ -3167,7 +2958,7 @@ c        ppa=hypot(ppx,hypot(ppy,ppz))
         real*8 , intent(in)::al
         real*8 dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
      $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,
-     $       ppa,an,a,dph,r1,r2,px0,xr,yr
+     $       ppa,an,a,dph,r1,r2,px0,xr,yr,rho
         real*8 dpr(npmax),rph(npmax)
         do k=1,np
           dpz0=pxy2dpz(pxr0(k),pyr0(k))
@@ -3188,21 +2979,23 @@ c          ppa=hypot(ppx,hypot(ppy,ppz))
           h1=p2h(p)
           anp=anrad*h1*theta
           al1=al-zn(k)+zr0(k)
+          rho=al1/theta
           if(photons)then
             call tdusrnpl(anp,dph,r1,r2,an,dpr,rph)
           else
             call tdusrn(anp,dph,r1,r2,an)
           endif
           if(an .ne. 0.d0)then
-            uc=cuc*h1**3/p0*theta/al1
+            uc=cuc*h1**3/p0/rho
             if(photons)then
               do i=1,int(an)
                 dg=dpr(i)*uc
                 xr=xn(k)-rph(i)*(pxn(k)-.5d0*dpx*rph(i))*al
                 yr=yn(k)-rph(i)*(pyn(k)-.5d0*dpy*rph(i))*al
-c              write(*,'(a,1p4g12.4)')'tradkf1 ',k,i,px,pxr,dpx,rph(i)
-                call tphotonconv(xr,pxn(k),yr,pyn(k),dg,
-     $               dpr(i),p,h1,-rph(i)*al,k)
+                call tphrec(xr,pxn(k),yr,pyn(k),dg,dpr(i),
+     $               ppx,ppy,p,h1,rho,al-rph(i)*al,k)
+c                call tphotonconv(xr,pxn(k),yr,pyn(k),dg,
+c     $               dpr(i),p,h1,-rph(i)*al,k)
               enddo
             endif
             dg=-dph*uc

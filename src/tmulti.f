@@ -11,7 +11,7 @@
       use tmacro
       use tspin
       use sol,only:tsolrot
-      use photontable,only:tsetphotongeo
+      use photontable,only:tsetpcvt,pcvt
       use mathfun
       use multa, only:fact,an
 c      use ffs_pointer, only:inext,iprev
@@ -62,6 +62,7 @@ c      theta2=theta+dtheta+akang(ak(1),al,cr1)
      $     al,bz,dx,dy,dz,
      $     chi1,chi2,theta2,bxs,bys,bzs,.true.)
       akr(0)=(ak(0)*cr1+dcmplx(bys*al,bxs*al))*rtaper
+      nmmax=0
       do n=nmult,0,-1
         if(ak(n) .ne. (0.d0,0.d0))then
           nmmax=n
@@ -69,8 +70,6 @@ c      theta2=theta+dtheta+akang(ak(1),al,cr1)
         endif
       enddo
       if(vc .ne. 0.d0 .or. spac)then
-        nmmax=0
-      else
         call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,bzs,dble(akr(0)),imag(akr(0)),krad)
         go to 1000
@@ -107,6 +106,9 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
           pyr0=py
           zr0=z
           ndiv=max(ndiv,ndivrad(abs(akr(0)),akr1,bz,eps0))
+          if(photons)then
+            call tsetpcvt(l_track,dx,dy,theta2,0.d0,0.d0,al)
+          endif
         endif
         ndiv=min(ndivmax,ndiv)
       endif
@@ -234,34 +236,23 @@ c        enddo
       endif
       sv=0.d0
       ibsi=1
-c      if(l_track .gt. 7300 .and. l_track .lt. 7310)then
-c        write(*,'(a,2i5,1p4g15.7)')'tmulti-2 ',
-c     $       l_track,ndiv,al1,ak1,x(1),px(1)
-c      endif
       do m=1,ndiv
         if(nzleng)then
           call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         al1,ak1,bzs,dble(ak01),imag(ak01),ibsi,eps0)
           if(krad)then
-            if(m .eq. 1)then
+            if(m .eq. 1 .and. calpol)then
               do concurrent (i=1:np)
                 cx1=dcmplx(x(i),y(i))
                 cx=0.d0
                 do n=nmmax,2,-1
                   cx=(cx+akr(n))*cx1*an(n+1)
                 enddo
-                cx=.5d0*cx*cx1**2
-                bsi(i)=bsi(i)+imag(cx)/al
+                bsi(i)=bsi(i)+imag(.5d0*cx*cx1**2)/al
               enddo
             endif
-            if(photons)then
-              if(m .eq. 1)then
-                call tsetphotongeo(al1,0.d0,theta2,.true.)
-              else
-                call tsetphotongeo(al1,0.d0,0.d0,.false.)
-              endif
-            endif
             call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al1,0.d0)
+            pcvt%fr0=pcvt%fr0+al1/al
           endif
           ibsi=0
         endif
@@ -275,17 +266,19 @@ c      endif
         ak1=akr1*wm
         ak01=akr(0)*wm
         if(nzleng)then
-          do concurrent (i=1:np)
-            cx1=dcmplx(x(i),y(i))
-            cx=(0.d0,0.d0)
-            do n=nmmax,2,-1
-              cx=(cx+(akr(n)*wsm))*cx1*an(n)
+          if(nmmax .ge. 2)then
+            do concurrent (i=1:np)
+              cx1=dcmplx(x(i),y(i))
+              cx=(0.d0,0.d0)
+              do n=nmmax,2,-1
+                cx=(cx+(akr(n)*wsm))*cx1*an(n)
+              enddo
+              cx=cx*cx1/(1.d0+g(i))
+              px(i)=px(i)-dble(cx)
+              py(i)=py(i)+imag(cx)
             enddo
-            cx=cx*cx1/(1.d0+g(i))
-            px(i)=px(i)-dble(cx)
-            py(i)=py(i)+imag(cx)
-          enddo
-        else
+          endif
+        elseif(nmmax .ge. 1)then
           do concurrent (i=1:np)
             cx1=dcmplx(x(i),y(i))
             cx=(0.d0,0.d0)
@@ -351,10 +344,6 @@ c            dpr=ah/(1.d0+sqrt(1.d0+ah))
         call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al1,ak1,bzs,dble(ak01),imag(ak01),2,eps0)
       endif
-c      if(l_track .gt. 7300 .and. l_track .lt. 7310)then
-c        write(*,'(a,2i5,1p4g15.7)')'tmulti-2 ',
-c     $       l_track,ndiv,al1,ak1,x(1),px(1)
-c      endif
       if(spac1)then
         call tapert(l_track,latt,x,px,y,py,z,g,dv,sx,sy,sz,
      $       kptbl,np,kturn,
@@ -396,19 +385,18 @@ c      endif
           endif
         endif
         if(krad)then
-          do concurrent (i=1:np)
-            cx1=dcmplx(x(i),y(i))
-            cx=0.d0
-            do n=nmmax,2,-1
-              cx=(cx+akr(n))*cx1*an(n+1)
+          if(calpol .and. nmmax .ge. 2)then
+            do concurrent (i=1:np)
+              cx1=dcmplx(x(i),y(i))
+              cx=0.d0
+              do n=nmmax,2,-1
+                cx=(cx+akr(n))*cx1*an(n+1)
+              enddo
+              bsi(i)=bsi(i)-imag(.5d0*cx*cx1**2)/al
             enddo
-            cx=.5d0*cx*cx1**2
-            bsi(i)=bsi(i)-imag(cx)/al
-          enddo
-          if(photons)then
-            call tsetphotongeo(al1,0.d0,0.d0,.false.)
           endif
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al1,0.d0)
+          pcvt%fr0=pcvt%fr0+al1/al
         endif
       endif
  1000 continue

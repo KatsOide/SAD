@@ -409,7 +409,7 @@ c                enddo
       return
       end
 
-      subroutine  qcell61(fbound,idp,optstat,lfno)
+      subroutine qcell61(fbound,idp,optstat,lfno)
       use ffs
       use ffs_fit ,only:ffs_stat
       use ffs_pointer
@@ -461,14 +461,11 @@ c       write(*,'(1p6g15.7)')(ri(i,1:6),i=1,6)
       else
         ri=etwiss2ri(twiss(fbound%lb,idp,1:ntwissfun),normali)
         r=tinv6(ri)
-c        call tinv6(ri,r)
       endif
-      codplt=.true.
+      codplt=.false.
       call tinitr(trans)
       call tturne0(trans,cod,beam,srot,fbound,
-     $     i00,i00,i00,idp,.true.,rt,.true.)
-c      write(*,*)'qcell61-1 ',twiss(fbound%lb,idp,mfitnx),
-c     $     twiss(fbound%lb,idp,mfitny)
+     $     i00,i00,i00,idp,.false.,rt,.true.)
       calint=ci0
       codplt=codplt0
       cell=cell0

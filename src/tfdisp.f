@@ -414,8 +414,9 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
      $           tfvl(cmp,id))
           case (modeb)
             call ffs_init_sizep
-            if(.not. updatesize .or. sizedp .ne. dpmax)then
+            if(.not. updatesize)then
               call tfsize
+              write(*,*)' disp b ',beamsize(1,l)
             endif
             sigpp=beamsize(21,l)
             etaxp=beamsize(16,l)/sigpp

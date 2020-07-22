@@ -134,6 +134,7 @@ c      write(*,*)'tftrack ',nt,nend,mt
         go to 8900
       endif
       if(photons)then
+        npara=1
         if(rad .and. rfluct)then
           call tphotoninit()
         else
@@ -260,8 +261,6 @@ c      call tclrparaall
         np0=np00
         outfl=outfl0
         dapert=dapert0
-c        rlist(kzf:kzf+npa-1)=1.d0
-c        rlist(kzf+npa:kzf+npp-1)=0.d0
       endif
       trf0=trf00
       vcalpha=vcalpha0

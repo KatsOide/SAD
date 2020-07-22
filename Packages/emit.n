@@ -14,7 +14,7 @@ SetAttributes[{OneTurnInformation,Orbit,Matrix,ExpandElementValues,
   NominalSpinTune,PolarizationTime,
   TransferMatrices,IntrabeamExcitation,SaveEMIT,AzimuthalModes,SpinTune,
   Polarization,Polarizations,
-  PolarizationVector},
+  PolarizationVector,Region},
   Constant];
 
 BeginPackage[emit$`,tws$`,`];

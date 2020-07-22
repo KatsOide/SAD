@@ -1,4 +1,3 @@
-
       module touschek_table
       implicit none
       private
@@ -96,22 +95,19 @@ c     Table of loss-rate
       integer*4 lfno,it,i,j,k,k1,k2,k3,m,n,iret,l
       real*8 trans(6,12),cod(6),beam(42),srot(3,9),srot1(3,3),
      $     emx0,emy0,emz0,dl,equpol(3),sdamp,
-     $     phirf,omegaz,so,s,
-     $     sr,sqr2,bb,bbv(21),sige,
-     $     emxr,emyr,emzr,xxs,yys,btilt,
-     $     sig1,sig2,sigx,sigy,tune,sigz,
+     $     phirf,omegaz,sr,sqr2,bb,bbv(21),sige,
+     $     emxr,emyr,emzr,tune,sigz,gr(6),
      $     emxmin,emymin,emzmin,emxmax,emymax,emzmax,
-     $     emxe,emye,emze,dc,smu,
+     $     emxe,emye,emze,dc,smu,rirx(6,6),
      $     transs(6,12),beams(21),rsav(6,6),risav(6,6)
       complex*16 cc(6),cd(6),ceig(6),ceig0(6),dceig(6)
       real*8 btr(21,21),emit(21),emit1(42),beam1(42),
      1     beam2(21),params(nparams),codold(6),ab(6),
-     $     sps(3,3),spm(3,3)
+     $     sps(3,3),spm(3,3),rx(6,6),rd(6,6),rdb(6,12),
+     $     tw(ntwissfun)
       real*8 demin,rgetgl1
-      character*11 autofg,vout(nparams)
-      character*9 vout9(nparams)
       logical*4 plot,pri,fndcod,synchm,intend,stab,calem,
-     $     epi,calcodr,rt,radpol0
+     $     epi,calcodr,rt,radpol0,intpri,econv
 c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       it=0
       trf0=0.d0
@@ -120,6 +116,7 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       calint=.false.
       intend=.false.
       epi=.false.
+      econv=.false.
       radpol0=radpol
       cod=codin
       beam(1:21)=beamin
@@ -131,16 +128,20 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       emye=rgetgl1('EMITYE')
       emze=rgetgl1('EMITZE')
       call tsetdvfs
+      gr=1.d0
+      gr(2)=gammab(nlat)/gammab(1)
+      gr(4:6:2)=gr(2)
       emx0=0.d0
       emy0=0.d0
       emz0=0.d0
-      emxmin=1.d-100
-      emymin=1.d-100
-      emzmin=1.d-100
-      emxmax=1.d100
-      emymax=1.d100
-      emzmax=1.d100
+      emxmin=1.d-200
+      emymin=1.d-200
+      emzmin=1.d-200
+      emxmax=1.d200
+      emymax=1.d200
+      emzmax=1.d200
       irad=6
+      intpri=.true.
       caltouck=.false.
       calcodr=.not. trpt .and. calcod
       pri=lfno .gt. 0
@@ -150,230 +151,119 @@ c
 c zero clear initial cod (comment out by Y.O, 2010/10/28)
 c
 c        call tclr(cod,6)
-c        write(*,*)'temit-cod-0'
         call tcod(trans,cod,beam,fndcod)
-c        write(*,*)'temit-cod-1 ',fndcod
         if(.not. fndcod)then
           write(lfno,*)'???-Emittance[]-closed orbit not found.'
         endif
         codin=cod
-c        write(*,*)'temit-tcod ',trf0
-        if(pri)then
-          write(lfno,*)
-          write(lfno,*)'   Closed orbit:'
-          write(lfno,'(10X,6A)')label2
-          call tput(cod,label2,' Entrance ','9.6',1,lfno)
-        endif
-      elseif(calem)then
-        if(pri)then
-          write(lfno,*)
-          write(lfno,*)'   Closed orbit:'
-          write(lfno,'(10X,6A)')label2
-          call tput(codin,label2,' Entrance ','9.6',1,lfno)
-        endif
-      else
-        if(pri)then
-          write(lfno,*)
-          write(lfno,*)'   Closed orbit:'
-          write(lfno,'(10X,6A)')label2
-          call tput(cod,label2,' Entrance ','9.6',1,lfno)
-        endif
+      elseif(.not. calem)then
+        fndcod=.true.
+        irad=12
         call tinitr12(trans)
         call tturne(trans,cod,beam,srot,i00,i00,i00,
      $       .false.,.false.,rt)
       endif
       irad=12
- 4001 if(calem)then
-        cod=codin
-        beam(1:21)=beamin
-        call tinitr12(trans)
-        srot=0.d0
-        srot(1,1)=1.d0
-        srot(2,2)=1.d0
-        srot(3,3)=1.d0
-        gintd=0.d0
-        call tsetr0(trans,cod,0.d0,0.d0)
-        call tturne(trans,cod,beam,srot,i00,i00,i00,
-     1       .false.,.false.,rt)
-      endif
-      call limitnan(cod,-1.d10,1.d10)
+      do while(.not. econv)
+        if(calem .or. calint)then
+          cod=codin
+          beam(1:21)=beamin
+          call tinitr12(trans)
+          srot=0.d0
+          srot(1,1)=1.d0
+          srot(2,2)=1.d0
+          srot(3,3)=1.d0
+          gintd=0.d0
+          call tsetr0(trans,cod,0.d0,0.d0)
+          call tturne(trans,cod,beam,srot,i00,i00,i00,
+     1         .false.,.false.,rt)
+        endif
+        call limitnan(cod,-1.d10,1.d10)
 c     call tsymp(trans)
-      if(pri)then
-        call tput(cod,label2,'     Exit ','9.6',1,lfno)
-        write(lfno,*)
-      endif
-      transs=trans
-      if(trpt)then
-        beams=beamin(1:21)
-      else
-        beams=beam(1:21)
-      endif
- 3101 r=trans(:,1:6)
-c      write(*,'(a/,6(1p6g15.7/))')'trans: ',(trans(i,1:6),i=1,6)
-      if(pri .and. emiout)then
-        write(lfno,*)'   Symplectic part of the transfer matrix:'
-        call tput(trans,label2,label2,'9.6',6,lfno)
-        ri=matmul(trans(:,1:6),tinv6(r))
-c        call tinv6(r,ri)
-c        call tmultr(ri,trans,6)
-        call tput(ri,label2,label2,'9.6',6,lfno)
-      endif
-      if(.not. rfsw)then
-        r(6,1)=0.d0
-        r(6,2)=0.d0
-        r(6,3)=0.d0
-        r(6,4)=0.d0
-        r(6,5)=0.d0
-        r(6,6)=1.d0
-      endif
-      call teigenc(r,ri,ceig,6,6)
-c      write(*,'(a,1p12g10.3)')'ceig: ',ceig
-      call tnorm(r,ceig,lfno)
-      call tsub(ceig,ceig0,dceig,12)
-      ceig0=ceig
-      r=tsymp(r)
-      ri=tinv6(r)
-c      call tinv6(r,ri)
-      trans(:,1:6)=matmul(ri,trans(:,1:6))
-c      call tmultr(trans,ri,6)
-      call tmov(r,btr,36)
-      call tmultr(btr,trans,6)
-      if(pri .and. emiout)then
-        call tput(btr,label1,label1,'9.6',6,lfno)
-      endif
-      dl=btr(14,2)
-      do i=1,3
-        cc(i*2-1)=ceig(i*2-1)
-        cc(i*2  )=conjg(cc(i*2-1))
-        cd(i+3)=log(cc(i*2-1))
-      enddo
-      if(vceff .ne. 0.d0)then
-        phirf=asin(u0*pgev/vceff)
-        heff=wrfeff*cveloc/omega0
-      else
-        phirf=0.d0
-        heff=0.d0
-      endif
-      synchm=rfsw .and. imag(cd(6)) .ne. 0.d0
-      if(synchm)then
-        if(wrfeff .ne. 0.d0)then
-          alphap=-imag(cd(6))*abs(imag(cd(6)))/(c*pi2/omega0)
-     $         /(dvcacc/pgev)
+        if(trpt)then
+          do i=1,12
+            trans(:,i)=gr*trans(:,i)
+          enddo
+          beams=beamin(1:21)
         else
-          alphap=0.d0
+          beams=beam(1:21)
         endif
-        omegaz=abs(imag(cd(6)))*omega0/pi2
-      else
-        alphap=-dl/pi2/cveloc/p0*h0*omega0
-        omegaz=sqrt(abs(alphap*pi2*heff*vceff/pgev*cos(phirf)))
-     $       *omega0/pi2
-      endif
-c      write(*,'(a,1p5g15.7)')'temit ',omegaz,heff,alphap,vceff,phirf
-      if(vceff .ne. 0.d0)then
-        bh=sqrt(abs(vceff/pi/abs(alphap)/heff/pgev*
-     1        (2.d0*cos(phirf)-(pi-2.d0*phirf)*u0*pgev/vceff)))
-      else
-        bh=0.d0
-      endif
-      call setparams(params,cod)
-      stab=(abs(dble(cd(4))) .lt. 1.d-6
-     $     .and. abs(dble(cd(5))) .lt. 1.d-6
-     1     .and. abs(dble(cd(6))) .lt. 1.d-6) .and. fndcod
-      params(ipnx:ipnz)=imag(cd(4:6))/pi2
-      params(iptwiss:iptwiss+ntwissfun-1)=tfetwiss(ri,cod,.true.)
-      if(pri)then
-        if(lfno .gt. 0)then
-          do i=1,ntwissfun
-            vout9(i)=autofg(params(iptws0+i),'9.6')
-          enddo
-          write(lfno,9001)
-     $         vout9(mfitax),vout9(mfitbx),vout9(mfitzx),vout9(mfitex),
-     $         vout9(mfitnx),vout9(mfitzpx),vout9(mfitey),
-     $         vout9(mfitr1),vout9(mfitr2),vout9(mfitay),vout9(mfitby),
-     $         vout9(mfitzy),vout9(mfitey),
-     $         vout9(mfitr3),vout9(mfitr4),vout9(mfitny),
-     $         vout9(mfitzpy),vout9(mfitepy),
-     $         vout9(mfitaz),vout9(mfitbz),vout9(mfitnz)
- 9001     format('    Extended Twiss Parameters:',/,
-     $         'AX:',a,' BX:',a,              26x,'  ZX:',a,'  EX:',a,/
-     $         11x,'PSIX:',a,              26x,' ZPX:',a,' EPX:',a,/
-     $         'R1:',a,' R2:',a,' AY:',a,' BY:',a,'  ZY:',a,'  EY:',a,/
-     $         'R3:',a,' R4:',a,    12x,'PSIY:',a,' ZPY:',a,' EPY:',a,/
-     $         51x,'  AZ:',a,'  BZ:',a,/
-     $         65x,'PSIZ:',a,/
-     $         '    Units: B(X,Y,Z), E(X,Y), R2: m ',
-     $         '| PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m',/)
+        transs=trans
+ 3101   rx=trans(:,1:6)
+        if(.not. rfsw)then
+          rx(6,1)=0.d0
+          rx(6,2)=0.d0
+          rx(6,3)=0.d0
+          rx(6,4)=0.d0
+          rx(6,5)=0.d0
+          rx(6,6)=1.d0
         endif
-        vout(1) =autofg(pgev/1.d9       ,'10.7')
-        vout(2) =autofg(omega0/pi2      ,'10.7')
-        vout(3) =autofg(u0*pgev/1.d6    ,'10.7')
-        vout(4) =autofg(vceff/1.d6      ,'10.7')
-        vout(5) =autofg(trf0*1.d3       ,'10.7')
-        vout(6) =autofg(alphap          ,'10.7')
-        vout(7) =autofg(-dleng*1.d3     ,'10.7')
-        vout(8) =autofg(heff            ,'10.7')
-        vout(9) =autofg(bh              ,'10.7')
-        vout(10)=autofg(omegaz/pi2      ,'10.7')
-        write(lfno,9101)vout(1:10)(1:10)
-9101    format(   'Design momentum      P0 =',a,' GeV',
-     1         1x,'Revolution freq.     f0 =',a,' Hz '/
-     1            'Energy loss per turn U0 =',a,' MV ',
-     1         1x,'Effective voltage    Vc =',a,' MV '/
-     1            'Equilibrium position dz =',a,' mm ',
-     1         1x,'Momentum compact. alpha =',a/
-     1            'Orbit dilation       dl =',a,' mm ',
-     1         1x,'Effective harmonic #  h =',a,/
-     1            'Bucket height     dV/P0 =',a,'    ',
-     $         1x,'Synchrotron frequency   =',a,' Hz '/)
-        if(emiout)then
-          write(lfno,*)'   Eigen values and eigen vectors:'
-          write(lfno,*)
-          write(lfno,9011)'     Real:',(dble(ceig(j)),j=1,6)
-          write(lfno,9011)'Imaginary:',(imag(ceig(j)),j=1,6)
+c     write(*,'(a/,6(1p6g15.7/))')'trans: ',(trans(i,1:6),i=1,6)
+        if(trpt)then
+          params(iptwiss:iptwiss+ntwissfun-1)=tfetwiss(ri,codin,.true.)
+          rirx=matmul(ri,tinv6(rx))
+          tw=tfetwiss(rirx,cod,.true.)
+c     write(*,'(a,1p6g15.7)')'temit-etwiss ',
+c     $       tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
+          ceig(1)=exp(dcmplx(0.d0,tw(mfitnx)))
+          ceig(3)=exp(dcmplx(0.d0,tw(mfitny)))
+          ceig(5)=exp(dcmplx(0.d0,tw(mfitnz)))
+          ceig(2:6:2)=conjg(ceig(1:5:2))
+          dl=0.d0
+        else
+          r=rx
+          call teigenc(r,ri,ceig,6,6)
+          call tnorm(r,ceig,lfno)
+          r=tsymp(r)
+          ri=tinv6(r)
+          dl=btr(14,2)
         endif
-        write(lfno,9012)'Imag.tune:',(dble(cd(j))/pi2,j=4,6)
-        write(lfno,9012)'Real tune:',(imag(cd(j))/pi2,j=4,6)
-        write(lfno,*)
-9011    format(2x,a,6f10.7)
-9012    format(2x,a,3(f10.7,10x))
-        so=0.d0
-        do i=1,6
-          do j=1,6
-c            s=0.d0
-c            do k=1,6
-c              s=s+ri(j,k)*r(k,i)
-c            enddo
-            s=dot_product(ri(j,1:6),r(1:6,i))
-            trans(j,i)=s
-            if(i .eq. j)then
-              so=so+abs(s-1.d0)
-            else
-              so=so+abs(s)
-            endif
-          enddo
+        cc(1:5:2)=ceig(1:5:2)
+        cc(2:6:2)=conjg(cc(1:5:2))
+        call tsub(ceig,ceig0,dceig,12)
+        ceig0=ceig
+        cd(4:6)=log(cc(1:5:2))
+        if(vceff .ne. 0.d0)then
+          phirf=asin(u0*pgev/vceff)
+          heff=wrfeff*cveloc/omega0
+        else
+          phirf=0.d0
+          heff=0.d0
+        endif
+        synchm=rfsw .and. imag(cd(6)) .ne. 0.d0
+        if(synchm)then
+          if(wrfeff .ne. 0.d0)then
+            alphap=-imag(cd(6))*abs(imag(cd(6)))/(c*pi2/omega0)
+     $           /(dvcacc/pgev)
+          else
+            alphap=0.d0
+          endif
+          omegaz=abs(imag(cd(6)))*omega0/pi2
+        else
+          alphap=-dl/pi2/cveloc/p0*h0*omega0
+          omegaz=sqrt(abs(alphap*pi2*heff*vceff/pgev*cos(phirf)))
+     $         *omega0/pi2
+        endif
+        if(vceff .ne. 0.d0)then
+          bh=sqrt(abs(vceff/pi/abs(alphap)/heff/pgev*
+     1         (2.d0*cos(phirf)-(pi-2.d0*phirf)*u0*pgev/vceff)))
+        else
+          bh=0.d0
+        endif
+        call setparams(params,cod)
+        stab=(abs(dble(cd(4))) .lt. 1.d-6
+     $       .and. abs(dble(cd(5))) .lt. 1.d-6
+     1       .and. abs(dble(cd(6))) .lt. 1.d-6) .and. fndcod
+        params(ipnx:ipnz)=imag(cd(4:6))/pi2
+        params(iptwiss:iptwiss+ntwissfun-1)=tfetwiss(ri,cod,.true.)
+        if(.not. calem .and. .not. trpt)then
+          return
+        endif
+        rd=matmul(ri,matmul(trans(:,7:12),r))
+        do i=1,5,2
+          cd(int(i/2)+1)=dcmplx((rd(i,i)+rd(i+1,i+1))*.5d0,
+     1         (rd(i,i+1)-rd(i+1,i))*.5d0)/cc(i)
         enddo
-        if(so .gt. 1.d-8)then
-          write(lfno,*)' *** Deviation from symplectic matrix = ',so
-        endif
-        if(emiout)then
-          call tput(r ,label1,label2,'9.6',6,lfno)
-          call tput(ri,label2,label1,'9.6',6,lfno)
-          call tput(trans,label2,label2,'9.6',6,lfno)
-        endif
-      endif
-      if(.not. calem)then
-        return
-      endif
-      trans(:,1:6)=matmul(ri,matmul(trans(:,7:12),r))
-      do i=1,5,2
-        cd(int(i/2)+1)=dcmplx((trans(i,i)+trans(i+1,i+1))*.5d0,
-     1                   (trans(i,i+1)-trans(i+1,i))*.5d0)/cc(i)
-      enddo
-      if(trpt)then
-        taurdx=1.d3
-        taurdy=1.d3
-        taurdz=1.d3
-      else
         if(dble(cd(1)) .ne. 0.d0)then
           taurdx=-pi2/omega0/dble(cd(1))
         else
@@ -389,332 +279,240 @@ c            enddo
         else
           taurdz=0.d0
         endif
-      endif
-      params(ipdampx:ipdampz)=dble(cd(1:3))
-      params(ipdnux:ipdnuz)=imag(cd(1:3))
-      sr=params(ipdampx)+params(ipdampy)+params(ipdampz)
-      if(sr .ne. 0.d0)then
-        sr=4.d0/sr
-        params(ipjx:ipjz)=params(ipdampx:ipdampz)*sr
-      else
-        sr=0.d0
-        params(ipjx:ipjz)=0.d0
-      endif
-      if(pri)then
-        if(emiout)then
-          write(lfno,*)'   Radiation part of the transfer matrix:'
-          call tput(trans(1,7),label2,label2,'9.6',6,lfno)
-          call tput(trans     ,label1,label1,'9.6',6,lfno)
+        params(ipdampx:ipdampz)=dble(cd(1:3))
+        params(ipdnux:ipdnuz)=imag(cd(1:3))
+        sr=params(ipdampx)+params(ipdampy)+params(ipdampz)
+        if(sr .ne. 0.d0)then
+          sr=4.d0/sr
+          params(ipjx:ipjz)=params(ipdampx:ipdampz)*sr
+        else
+          sr=0.d0
+          params(ipjx:ipjz)=0.d0
         endif
-        write(lfno,*)'   Damping per one revolution:'
-        write(lfno,9013)
-     1        'X :',dble(cd(1)),'Y :',dble(cd(2)),'Z :',dble(cd(3))
-        write(lfno,*)'   Damping time (sec):'
-        write(lfno,9013)
-     1       'X :',-pi2/omega0/dble(cd(1)),
-     $       'Y :',-pi2/omega0/dble(cd(2)),
-     $       'Z :',-pi2/omega0/dble(cd(3))
-        write(lfno,*)'   Tune shift due to radiation:'
-        write(lfno,9013)
-     1        'X :',imag(cd(1))/pi2,
-     $       'Y :',imag(cd(2))/pi2,'Z :',imag(cd(3))/pi2
-9013    format(10x,3(a,1p,g14.6,3x))
-        write(lfno,*)'   Damping partition number:'
-        write(lfno,9014)
-     1  'X :',dble(cd(1))*sr,'Y :',dble(cd(2))*sr,'Z :',dble(cd(3))*sr
-9014    format(10x,3(a,f10.4,7x))
-        write(lfno,*)
-      endif
-      beam1(1:21)=beam(1:21)
-      call tmulbs(beam,ri,.false.)
-      beam2(1:21)=beam(1:21)
-      if(.not. synchm)then
-        do i=1,6
-          beam(iaidx(5,i))=0.d0
-          trans(i,5)=0.d0
-          trans(5,i)=0.d0
-        enddo
-      endif
-      btr=0.d0
-      trans(:,7:12)=0.d0
-      do i=1,5,2
-        tune=imag(cd(int(i/2)+4))
-        trans(i  ,i+6)= cos(tune)
-        trans(i  ,i+7)= sin(tune)
-        trans(i+1,i+6)=-sin(tune)
-        trans(i+1,i+7)= cos(tune)
-      enddo
-      do i=1,6
-        do j=1,i
-          k=iaidx(i  ,j  )
-          do m=1,6
-            do n=1,6
-              l=iaidx(m,n)
-              btr(k,l)=btr(k,l)-(trans(i,m)+trans(i,m+6))*
-     1                          (trans(j,n)+trans(j,n+6))
+        beam2(1:21)=beam(1:21)
+        call tmulbs(beam,ri,.false.)
+        beam1(1:21)=beam(1:21)
+        if(trpt)then
+          emit=beam(1:21)
+        else
+          rdb(:,1:6)=rd
+          if(.not. synchm)then
+            do i=1,6
+              beam(iaidx(5,i))=0.d0
+              rdb(i,5)=0.d0
+              rdb(5,i)=0.d0
+            enddo
+          endif
+          btr=0.d0
+          rdb(:,7:12)=0.d0
+          do i=1,5,2
+            tune=imag(cd(int(i/2)+4))
+            rdb(i  ,i+6)= cos(tune)
+            rdb(i  ,i+7)= sin(tune)
+            rdb(i+1,i+6)=-sin(tune)
+            rdb(i+1,i+7)= cos(tune)
+          enddo
+          do i=1,6
+            do j=1,i
+              k=iaidx(i  ,j  )
+              do m=1,6
+                do n=1,6
+                  l=iaidx(m,n)
+                  btr(k,l)=btr(k,l)-(rdb(i,m)+rdb(i,m+6))*
+     1                 (rdb(j,n)+rdb(j,n+6))
+                enddo
+              enddo
             enddo
           enddo
-        enddo
-      enddo
-      sqr2=sqrt(.5d0)
-      do i=1,5,2
-        k1=iaidx(i  ,i  )
-        k2=iaidx(i+1,i+1)
-        k3=iaidx(i  ,i+1)
-c        do j=1,21
-          bbv=btr(k1,1:21)
-          btr(k1,1:21)=( bbv+btr(k2,1:21))*sqr2
-          btr(k2,1:21)=(-bbv+btr(k2,1:21))*sqr2
-          btr(k3,1:21)=btr(k3,1:21)/sqr2
-c        enddo
-        bb=beam(k1)
-        beam(k1)=( bb+beam(k2))*sqr2
-        beam(k2)=(-bb+beam(k2))*sqr2
-        beam(k3)=beam(k3)/sqr2
-c        do j=1,21
-          bbv=btr(1:21,k1)
-          btr(1:21,k1)=( bbv+btr(1:21,k2))*sqr2
-          btr(1:21,k2)=(-bbv+btr(1:21,k2))*sqr2
-          btr(1:21,k3)=btr(1:21,k3)*sqr2
-c        enddo
-      enddo
-      do i=1,21
-        btr(i,i)=btr(i,i)+1.d0
-        emit(i)=0.d0
-      enddo
-      do i=1,5,2
-        k=iaidx(i,i)
-        btr(k,k)=-(trans(i  ,i)**2+trans(i  ,i+1)**2+
-     1             trans(i+1,i)**2+trans(i+1,i+1)**2)*.5d0-
-     1            trans(i,i+6)*(trans(i,i)+trans(i+1,i+1))-
-     1            trans(i,i+7)*(trans(i,i+1)-trans(i+1,i))
-      enddo
-      if(.not. synchm)then
-        btr(15,21)=0.d0
-        btr(15,15)=btr(15,15)*2.d0
-        btr(21,15)=-btr(21,21)
-        beam(21)=0.d0
-      endif
-      do i=1,5,2
-        k1=iaidx(i,i)
-        k2=iaidx(i+1,i+1)
-        if(btr(k2,k2) .ne. 0.d0 .and. btr(k1,k1) .ne. 0.d0)then
-          ab(i)=sqrt(abs(btr(k1,k1)/btr(k2,k2)))
-c          do j=1,21
-            btr(k1,1:21)=btr(k1,1:21)/ab(i)
-            btr(k2,1:21)=btr(k2,1:21)*ab(i)
-c          enddo
-          beam(k1)=beam(k1)/ab(i)
-          beam(k2)=beam(k2)*ab(i)
-        else
-          ab(i)=1.d0
-        endif
-      enddo
-      call tsolva(btr,beam,emit,21,21,21,1d-8)
-      do i=1,5,2
-        k1=iaidx(i,i)
-        k2=iaidx(i+1,i+1)
-        bb=emit(k1)
-        emit(k1          )=(bb-emit(k2))*sqr2
-        emit(k2          )=(bb+emit(k2))*sqr2
-        emit(iaidx(i  ,i+1))=emit(iaidx(i  ,i+1))*sqr2
-      enddo
-      emit(iaidx(1,1))=sign(max(abs(emit(iaidx(1,1))),emxe),
-     $     emit(iaidx(1,1)))
-      emit(iaidx(2,2))=sign(max(abs(emit(iaidx(2,2))),emxe),
-     $     emit(iaidx(2,2)))
-      emit(iaidx(3,3))=sign(max(abs(emit(iaidx(3,3))),emye),
-     $     emit(iaidx(3,3)))
-      emit(iaidx(4,4))=sign(max(abs(emit(iaidx(4,4))),emye),
-     $     emit(iaidx(4,4)))
-      emit(iaidx(5,5))=sign(max(abs(emit(iaidx(5,5))),emze),
-     $     emit(iaidx(5,5)))
-      emit(iaidx(6,6))=sign(max(abs(emit(iaidx(6,6))),emze),
-     $     emit(iaidx(6,6)))
-      if(.not. epi)then
-        eemx= sign(sqrt(abs(emit(iaidx(1,1))*emit(iaidx(2,2))
-     $       -emit(iaidx(1,2))**2)),emit(iaidx(2,2))*charge)
-        eemy= sign(sqrt(abs(emit(iaidx(3,3))*emit(iaidx(4,4))
-     $       -emit(iaidx(3,4))**2)),emit(iaidx(4,4))*charge)
-        eemz= sign(sqrt(abs(emit(iaidx(5,5))*emit(iaidx(6,6))
-     $       -emit(iaidx(5,6))**2)),emit(iaidx(6,6))*charge)
-      endif
-      emit1(1:21)=emit
-      call tmulbs(emit1,r,.false.)
-      sige=sqrt(abs(emit1(21)))
-      if(synchm)then
-        sigz=sqrt(abs(emit1(15)))
-      else
-        if(omegaz .ne. 0.d0)then
-          sigz=abs(alphap)*sige*cveloc*p0/h0/omegaz
-        else
-          sigz=0.d0
-        endif
-        eemz=sigz*sige
-      endif
-      params(ipemx:ipemz)=(/eemx,eemy,eemz/)
-      params(ipsige)=sige
-      params(ipsigz)=sigz
-      params(ipnnup)=h0*gspin
-      if(calpol)then
-        call spnorm(srot,sps,smu,sdamp)
-        params(iptaup)=1.d0/sdamp/params(iprevf)
-        srot1=srot(:,1:3)
-        params(ipnup)=smu/m_2pi
-        call sremit(srot,sps,params,beam2,sdamp,spm,equpol)
-        params(ipequpol)=equpol(3)
-        params(ipequpol2:ipequpol6)=equpol
-        params(ippolx:ippolz)=sps(:,1)
-      endif
-      call rsetgl1('EMITX',eemx)
-      call rsetgl1('EMITY',eemy)
-      call rsetgl1('EMITZ',eemz)
-      call rsetgl1('SIGE',sige)
-      call rsetgl1('SIGZ',sigz)
- 3001 if(pri)then
-        if(emiout)then
-          if(calint)then
-            if(intra)then
-              write(lfno,*)
-     1             '   Beam matrix by radiation+intrabeam fluctuation:'
+          sqr2=sqrt(.5d0)
+          do i=1,5,2
+            k1=iaidx(i  ,i  )
+            k2=iaidx(i+1,i+1)
+            k3=iaidx(i  ,i+1)
+c     do j=1,21
+            bbv=btr(k1,1:21)
+            btr(k1,1:21)=( bbv+btr(k2,1:21))*sqr2
+            btr(k2,1:21)=(-bbv+btr(k2,1:21))*sqr2
+            btr(k3,1:21)=btr(k3,1:21)/sqr2
+c     enddo
+            bb=beam(k1)
+            beam(k1)=( bb+beam(k2))*sqr2
+            beam(k2)=(-bb+beam(k2))*sqr2
+            beam(k3)=beam(k3)/sqr2
+c     do j=1,21
+            bbv=btr(1:21,k1)
+            btr(1:21,k1)=( bbv+btr(1:21,k2))*sqr2
+            btr(1:21,k2)=(-bbv+btr(1:21,k2))*sqr2
+            btr(1:21,k3)=btr(1:21,k3)*sqr2
+c     enddo
+          enddo
+          do i=1,21
+            btr(i,i)=btr(i,i)+1.d0
+            emit(i)=0.d0
+          enddo
+          do i=1,5,2
+            k=iaidx(i,i)
+            btr(k,k)=-(rdb(i  ,i)**2+rdb(i  ,i+1)**2+
+     1           rdb(i+1,i)**2+rdb(i+1,i+1)**2)*.5d0-
+     1           rdb(i,i+6)*(rdb(i,i)+rdb(i+1,i+1))-
+     1           rdb(i,i+7)*(rdb(i,i+1)-rdb(i+1,i))
+          enddo
+          if(.not. synchm)then
+            btr(15,21)=0.d0
+            btr(15,15)=btr(15,15)*2.d0
+            btr(21,15)=-btr(21,21)
+            beam(21)=0.d0
+          endif
+          do i=1,5,2
+            k1=iaidx(i,i)
+            k2=iaidx(i+1,i+1)
+            if(btr(k2,k2) .ne. 0.d0 .and. btr(k1,k1) .ne. 0.d0)then
+              ab(i)=sqrt(abs(btr(k1,k1)/btr(k2,k2)))
+c     do j=1,21
+              btr(k1,1:21)=btr(k1,1:21)/ab(i)
+              btr(k2,1:21)=btr(k2,1:21)*ab(i)
+c     enddo
+              beam(k1)=beam(k1)/ab(i)
+              beam(k2)=beam(k2)*ab(i)
+            else
+              ab(i)=1.d0
             endif
-            if(wspac)then
-              write(lfno,*)
-     1             '   Beam matrix with space charge:'
-            endif
+          enddo
+          call tsolva(btr,beam,emit,21,21,21,1d-8)
+          do i=1,5,2
+            k1=iaidx(i,i)
+            k2=iaidx(i+1,i+1)
+            bb=emit(k1)
+            emit(k1          )=(bb-emit(k2))*sqr2
+            emit(k2          )=(bb+emit(k2))*sqr2
+            emit(iaidx(i  ,i+1))=emit(iaidx(i  ,i+1))*sqr2
+          enddo
+          emit(iaidx(1,1))=sign(max(abs(emit(iaidx(1,1))),emxe),
+     $         emit(iaidx(1,1)))
+          emit(iaidx(2,2))=sign(max(abs(emit(iaidx(2,2))),emxe),
+     $         emit(iaidx(2,2)))
+          emit(iaidx(3,3))=sign(max(abs(emit(iaidx(3,3))),emye),
+     $         emit(iaidx(3,3)))
+          emit(iaidx(4,4))=sign(max(abs(emit(iaidx(4,4))),emye),
+     $         emit(iaidx(4,4)))
+          emit(iaidx(5,5))=sign(max(abs(emit(iaidx(5,5))),emze),
+     $         emit(iaidx(5,5)))
+          emit(iaidx(6,6))=sign(max(abs(emit(iaidx(6,6))),emze),
+     $         emit(iaidx(6,6)))
+        endif
+        if(.not. epi)then
+          eemx= sign(sqrt(abs(emit(iaidx(1,1))*emit(iaidx(2,2))
+     $         -emit(iaidx(1,2))**2)),emit(iaidx(2,2))*charge)
+          eemy= sign(sqrt(abs(emit(iaidx(3,3))*emit(iaidx(4,4))
+     $         -emit(iaidx(3,4))**2)),emit(iaidx(4,4))*charge)
+          eemz= sign(sqrt(abs(emit(iaidx(5,5))*emit(iaidx(6,6))
+     $         -emit(iaidx(5,6))**2)),emit(iaidx(6,6))*charge)
+        endif
+        emit1(1:21)=emit
+        call tmulbs(emit1,r,.false.)
+        sige=sqrt(abs(emit1(21)))
+        if(synchm .or. trpt)then
+          sigz=sqrt(abs(emit1(15)))
+        else
+          if(omegaz .ne. 0.d0)then
+            sigz=abs(alphap)*sige*cveloc*p0/h0/omegaz
           else
-            write(lfno,*)'   Beam matrix by radiation fluctuation:'
+            sigz=0.d0
           endif
-          call tputbs(beam1,label2,lfno)
-          call tputbs(beam2,label1,lfno)
-          write(lfno,*)'   Equiliblium beam matrix:'
-          call tputbs(emit,label1,lfno)
-          call tputbs(emit1,label2,lfno)
+          eemz=sigz*sige
         endif
-        vout(1)=autofg(eemx             ,'11.8')
-        vout(2)=autofg(eemy             ,'11.8')
-        vout(3)=autofg(eemz             ,'11.8')
-        vout(4)=autofg(sige            ,'11.8')
-        vout(5)=autofg(sigz*1.d3       ,'11.8')
-        vout(9)=autofg(params(ipnnup)   ,'11.7')
-        vout(10)=autofg(params(iptaup)/60.d0,'11.7')
-ckiku <------------------
-        xxs=emit1(1)-emit1(6)
-        yys=-2.d0*emit1(4)
-        if(xxs .ne. 0.d0 .and. yys .ne. 0.d0)then
-          btilt= atan2(yys,xxs) /2d0
-        else
-          btilt=0.d0
-        endif
-        sig1 = abs(emit1(1)+emit1(6))/2d0
-c        sig2 = 0.5d0* sqrt(abs((emit1(1)-emit1(6))**2+4d0*emit1(4)**2))
-        sig2=0.5d0*hypot(emit1(1)-emit1(6),2.d0*emit1(4))
-        sigx = max(sqrt(sig1+sig2),sqrt(abs(sig1-sig2)))
-        sigy = min(sqrt(sig1+sig2),sqrt(abs(sig1-sig2)))
-        vout(6)=autofg(btilt,'11.8')
-        vout(7)=autofg(sigx*1.d3  ,'11.8')
-        vout(8)=autofg(sigy*1.d3  ,'11.8')
-        write(lfno,9102)vout(1:10)
-9102    format(   'Emittance X            =',a,' m  ',
-     1         1x,'Emittance Y            =',a,' m'/
-     1            'Emittance Z            =',a,' m  ',
-     1         1x,'Energy spread          =',a,/
-     1            'Bunch Length           =',a,' mm ',
-     1         1X,'Beam tilt              =',a,' rad'/
-     1            'Beam size xi           =',a,' mm ',
-     1         1X,'Beam size eta          =',a,' mm'/
-     $           ,'Nominal spin tune      =',a,'    ',
-     $         1x,'Polarization time      =',a,' min'/)
-c9103   format(3X,'Beam dimension along principal axis:'/
-ccc        call putsti(eemx,eemy,eemz,sige,sigz,btilt,sigx,sigy,
-ccc     1              calint,fndcod)
-ckiku ------------------>
+        params(ipemx:ipemz)=(/eemx,eemy,eemz/)
+        params(ipsige)=sige
+        params(ipsigz)=sigz
+        params(ipnnup)=h0*gspin
         if(calpol)then
-          write(lfno,*)'  Polarization vector at entrance:'
-          write(lfno,9013)
-     1         'x :',sps(1,1),'y :',sps(2,1),'z :',sps(3,1)
-          if(emiout)then
-            write(lfno,*)'\n'//'   Spin precession matrix:'
-            write(lfno,*)'                sx             sy'//
-     $           '             sz'
-            write(*,'(a,1p3g15.7)')'        sx',srot1(1,:)
-            write(*,'(a,1p3g15.7)')'        sy',srot1(2,:)
-            write(*,'(a,1p3g15.7)')'        sz',srot1(3,:)
-            write(lfno,*)'\n'//'   One-turn depolarization vectors:'
-            write(lfno,*)'                x              px'//
-     $           '             y              py'//
-     $           '             z              pz'
-            write(*,'(a,1p6g15.7)')'        sx',srot(1,4:9)
-            write(*,'(a,1p6g15.7)')'        sy',srot(2,4:9)
-            write(*,'(a,1p6g15.7)')'        sz',srot(3,4:9)
-            write(lfno,*)'\n'//'   Spin depolarization matrix:'
-            write(lfno,*)'                s1             s2'//
-     $           '             s3'
-            write(*,'(a,1p6g15.7)')'        s1',spm(1,:)
-            write(*,'(a,1p6g15.7)')'        s2',spm(2,:)
-            write(*,'(a,1p6g15.7)')'        s3',spm(3,:)
-          endif
-          vout(1)=autofg(smu/m_2pi,'11.8')
-          vout(2)=autofg(equpol(3)*100.d0,'11.8')
-          write(lfno,9103)vout(1:2)
- 9103     format(/'Spin tune              =',a,'    ',
-     1         1x,'Equil. polarization    =',a,' %'/)
+          call spnorm(srot,sps,smu,sdamp)
+          params(iptaup)=1.d0/sdamp/params(iprevf)
+          srot1=srot(:,1:3)
+          params(ipnup)=smu/m_2pi
+          call sremit(srot,sps,params,beam1,sdamp,spm,equpol)
+          params(ipequpol)=equpol(3)
+          params(ipequpol2:ipequpol6)=equpol
+          params(ippolx:ippolz)=sps(:,1)
         endif
-      endif
-      if(calcodr .and. .not. stab .and. intra)then
-        write(lfno,*)'Skip intrabeam because of unstable.'
-        intend=.true.
-      endif
-      if(intend)then
-        go to 7010
-      endif
-      if(intra .or. wspac)then
-        dc=0.d0
-        do i=1,6
-          dc=dc+abs(dceig(i))
-        enddo
-        call tintraconv(lfno,it,emit,transs,trans,r,
-     $     beams,beam,
-     $     emxr,emyr,emzr,
-     $     eemx,eemy,eemz,
-     $     emxmax,emymax,emzmax,
-     $     emxmin,emymin,emzmin,
-     $     emx0,emy0,emz0,demin,sigz,sige,dc,
-     $     vout,pri,intend,epi,synchm,iret)
-c        write(*,*)'temit-intraconv ',iret,beam(27)
-        go to (7010,4001,3101,3001),iret
-      else
-        beam(22:42)=emit1(1:21)
-      endif
-7010  if(plot .and. calem)then
+        if(calem)then
+          call rsetgl1('EMITX',eemx)
+          call rsetgl1('EMITY',eemy)
+          call rsetgl1('EMITZ',eemz)
+          call rsetgl1('SIGE',sige)
+          call rsetgl1('SIGZ',sigz)
+        endif
+ 3001   if(pri)then
+          call temitprint(lfno,intpri,
+     $         rx,trans(:,7:12),cod,rd,beam1,beam2,emit,emit1,
+     $         srot,srot1,spm,sps,
+     $         equpol,ceig,cd,params,omegaz,sigz,sige,sr,smu)
+          intpri=.false.
+        endif
+        if(.not. trpt .and. calcodr .and. .not. stab .and. intra)then
+          write(lfno,*)'Skip intrabeam because of unstable.'
+          intend=.true.
+        endif
+        if(intend)then
+          exit
+        endif
+        if(intra .or. wspac)then
+          dc=sum(abs(dceig))
+          call tintraconv(lfno,it,emit,transs,trans,r,
+     $         beams,beam,
+     $         emxr,emyr,emzr,
+     $         eemx,eemy,eemz,
+     $         emxmax,emymax,emzmax,
+     $         emxmin,emymin,emzmin,
+     $         emx0,emy0,emz0,demin,sigz,sige,dc,
+     $         pri,intend,epi,synchm,iret)
+c          if(plot)then
+c            write(*,*)'temit-intraconv-end ',iret,dc,beamsize(1,3)
+c          endif
+          select case (iret)
+          case (1)
+            exit
+          case (2)
+            cycle
+          case (3)
+            go to 3101
+          case (4)
+            go to 3001
+          case default
+            exit
+          end select
+c          go to (7010,4001,3101,3001),iret
+        else
+          beam(22:42)=emit1(1:21)
+          econv=.true.
+        endif
+      enddo
+      if(plot .and. (calem .or. wspac .or. intra))then
         call tinitr12(trans)
-c        call tclr(trans(1,7),36)
         cod=codin
         rsav=r
         risav=ri
-c        call tmov(r,btr,78)
         if(trpt)then
           emit1(1:21)=beamin
         else
           emit1(1:21)=beam(22:42)
         endif
         emit1(22:42)=beam(22:42)
-c        call tfmemcheckprint('temit-3',0,.true.,iret)
+c      call tfmemcheckprint('temit-3',0,.true.,iret)
         srot=0.d0
         srot(1,1)=1.d0
         srot(2,2)=1.d0
         call tturne(trans,cod,emit1,srot,
      $       iatr,iacod,iabmi,.true.,.false.,rt)
-c        call tfmemcheckprint('temit-4',0,.true.,iret)
+c      call tfmemcheckprint('temit-4',0,.true.,iret)
         r=rsav
         ri=risav
-c        call tmov(btr,r,78)
         if(iamat .eq. 0)then
           if(charge .lt. 0.d0)then
             beamsize=-beamsize
           endif
         else
-          call setiamat(iamat,ri,codin,beam1,emit1,trans)
+          call setiamat(iamat,ri,codin,beam2,emit1,trans)
         endif
       endif
       return
@@ -727,7 +525,7 @@ c        call tmov(btr,r,78)
      $     emxmax,emymax,emzmax,
      $     emxmin,emymin,emzmin,
      $     emx0,emy0,emz0,demin,sigz,sige,dc,
-     $     vout,pri,intend,epi,synchm,iret)
+     $     pri,intend,epi,synchm,iret)
       use tfstk
       use ffs_flag
       use touschek_table
@@ -738,7 +536,7 @@ c        call tmov(btr,r,78)
       type (sad_dlist), pointer :: klx2,klx
       type (sad_rlist), pointer :: klx1d,klx1l
       integer*4 ,parameter ::itmax=100
-      real*8 ,parameter ::resib=3.d-6,dcmin=0.06d0
+      real*8 ,parameter ::resib=3.d-6,dcmin=0.006d0
       integer*8 kax,kax1,kax1d,kax1l,kax2
       integer*4 lfno,it,i,iii,k,iret,j,m
       real*8 emit(21),beams(21),beam(42),transs(6,12),
@@ -750,7 +548,7 @@ c        call tmov(btr,r,78)
      $     de,emx0,emy0,emz0,demin,tf,tt,eintrb,
      $     rr,sigz,sige,dc
       logical*4 pri,intend,epi,synchm
-      character*11 autofg,vout(*)
+      character*11 autofg,vout(5)
 c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       emx1=eemx
       emy1=eemy
@@ -786,6 +584,7 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       endif
  7301 if(it .gt. 1 .and. dc .lt. dcmin
      $     .and. de .lt. resib .or. it .gt. itmax)then
+        pri=lfno .gt. 0
         if(.not. trpt)then
           if(de .ge. resib .or. dc .ge. dcmin)then
             write(*,*)' Intrabeam/space charge convergence failed.'
@@ -839,7 +638,6 @@ c            if(tfcheckelement(ktflist+kax,.true.))then
 c              write(*,*)'itoul: ',itoul
 c            endif
           endif
-          pri=lfno .gt. 0
           if(pri)then
             if(caltouck)then
               write(lfno,*)
@@ -892,19 +690,7 @@ c            endif
         else
           intend=.true.
         endif
-        if(intra)then
-          write(lfno,*)'   Parameters with intrabeam scattering:'
-        endif
         if(wspac)then
-          write(lfno,*)'   Parameters with space charge:'
-        endif
-        vout(1)=autofg(pbunch ,'11.8')
-        vout(2)=autofg(coumin*1.d2,'11.8')
-        write(lfno,9103)(vout(i)(1:11),i=1,2)
- 9103   format(  'Particles/bunch        =',a,'    ',
-     $       1x,'Minimum coupling       =',a,' %  ')
-        if(wspac)then
-          write(lfno,*)
           trans=transs
           beam(1:21)=beams
           epi=.true.
@@ -998,8 +784,6 @@ c        endif
           trans1(4,4)=ry
           trans1(5,5)=rz
           trans1(6,6)=rz
-c     write(*,*)'temit ',rx,ry,rx
-c     write(*,*)'temit ',eemy,emy1
           call tmulbs(emit,trans1,.false.)
           if(.not. synchm)then
             emit(iaidx(5,1))=0.d0
@@ -1115,3 +899,272 @@ c     write(*,*)'temit ',eemy,emy1
       params(ipheff)=heff
       return
       end
+
+      subroutine temitprint(lfno,intpri,
+     $     rx,rxd,cod,rd,beam1,beam2,emit,emit1,srot,srot1,spm,sps,
+     $     equpol,ceig,cd,params,omegaz,sigz,sige,sr,smu)
+      use tfstk
+      use temw
+      use ffs_flag
+      use ffs_pointer
+      use tmacro
+      use tffitcode
+      implicit none
+      integer*4 ,intent(in):: lfno
+      logical*4 ,intent(in):: intpri
+      real*8 ,intent(in):: cod(6),rx(6,6),rxd(6,6),params(nparams),
+     $     srot(3,9),srot1(3,3),spm(3,3),rd(6,6),sps(3,3),equpol(3),
+     $     beam1(21),beam2(21),emit(21),emit1(42),omegaz,sigz,sige,
+     $     smu,sr
+      complex*16 ,intent(in):: ceig(6),cd(6)
+      integer*4 i,j
+      real*8 rxrxi(6,6),so,btilt,xxs,yys,sig1,sig2,sigx,sigy
+      character*11 autofg,vout(nparams)
+      character*13 at
+      character*9 vout9(nparams)
+      real*8 ,parameter :: somin=1.d-8
+      if(intpri)then
+        write(lfno,*)
+        write(lfno,*)'   Closed orbit:'
+        write(lfno,'(10X,6A)')label2
+        call tput(codin,label2,' Entrance ','9.6',1,lfno)
+        call tput(cod,label2,'     Exit ','9.6',1,lfno)
+        write(lfno,*)
+      endif
+      if(intpri .or. wspac)then
+        if(.not. intpri)then
+          if(intra)then
+            write(lfno,*)'   Parameters with intrabeam scattering ',
+     $           '+ space charge:'
+          else
+            write(lfno,*)'   Parameters with space charge:'
+          endif
+          write(lfno,*)
+        endif
+        rxrxi=matmul(rx,tinv6(rx))
+        if(emiout)then
+          write(lfno,*)'   Symplectic part of the transfer matrix:'
+          call tput(rx,label2,label2,'9.6',6,lfno)
+          call tput(matmul(r,matmul(rx,ri)),
+     $         label1,label1,'9.6',6,lfno)
+          call tput(rxrxi,label2,label2,'9.6',6,lfno)
+        endif
+        do i=1,6
+          rxrxi(i,i)=rxrxi(i,i)-1.d0
+        enddo
+        so=sum(abs(rxrxi))
+        if(so .gt. somin)then
+          write(lfno,*)' *** Deviation from symplectic matrix = ',so
+        endif
+        do i=1,ntwissfun
+          vout9(i)=autofg(params(iptws0+i),'9.6')
+        enddo
+        if(trpt)then
+          at=' at entrance:'
+        else
+          at=':'
+        endif
+        write(lfno,9001)at(1:len_trim(at)),
+     $         vout9(mfitax),vout9(mfitbx),vout9(mfitzx),vout9(mfitex),
+     $         vout9(mfitnx),vout9(mfitzpx),vout9(mfitey),
+     $         vout9(mfitr1),vout9(mfitr2),vout9(mfitay),vout9(mfitby),
+     $         vout9(mfitzy),vout9(mfitey),
+     $         vout9(mfitr3),vout9(mfitr4),vout9(mfitny),
+     $         vout9(mfitzpy),vout9(mfitepy),
+     $         vout9(mfitaz),vout9(mfitbz),vout9(mfitnz)
+ 9001     format('    Extended Twiss Parameters',a,/,
+     $         'AX:',a,' BX:',a,              26x,'  ZX:',a,'  EX:',a,/
+     $         11x,'PSIX:',a,              26x,' ZPX:',a,' EPX:',a,/
+     $         'R1:',a,' R2:',a,' AY:',a,' BY:',a,'  ZY:',a,'  EY:',a,/
+     $         'R3:',a,' R4:',a,    12x,'PSIY:',a,' ZPY:',a,' EPY:',a,/
+     $         51x,'  AZ:',a,'  BZ:',a,/
+     $         65x,'PSIZ:',a,/
+     $         '    Units: B(X,Y,Z), E(X,Y), R2: m ',
+     $         '| PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m',/)
+          vout(1) =autofg(pgev/1.d9       ,'10.7')
+          vout(2) =autofg(omega0/pi2      ,'10.7')
+          vout(3) =autofg(u0*pgev/1.d6    ,'10.7')
+          vout(4) =autofg(vceff/1.d6      ,'10.7')
+          vout(5) =autofg(trf0*1.d3       ,'10.7')
+          vout(6) =autofg(alphap          ,'10.7')
+          vout(7) =autofg(-dleng*1.d3     ,'10.7')
+          vout(8) =autofg(heff            ,'10.7')
+          vout(9) =autofg(bh              ,'10.7')
+          vout(10)=autofg(omegaz/pi2      ,'10.7')
+          write(lfno,9101)vout(1:10)(1:10)
+ 9101     format(   'Design momentum      P0 =',a,' GeV',
+     1         1x,'Revolution freq.     f0 =',a,' Hz '/
+     1         'Energy loss per turn U0 =',a,' MV ',
+     1         1x,'Effective voltage    Vc =',a,' MV '/
+     1         'Equilibrium position dz =',a,' mm ',
+     1         1x,'Momentum compact. alpha =',a/
+     1         'Orbit dilation       dl =',a,' mm ',
+     1         1x,'Effective harmonic #  h =',a,/
+     1         'Bucket height     dV/P0 =',a,'    ',
+     $         1x,'Synchrotron frequency   =',a,' Hz '/)
+          if(emiout)then
+            if(trpt)then
+              write(lfno,*)
+     $    '   Phase rotations and normal coordinates at entrance:'
+            else
+              write(lfno,*)'   Eigen values and eigen vectors:'
+            endif
+            write(lfno,*)
+            write(lfno,9011)'     Real:',(dble(ceig(j)),j=1,6)
+            write(lfno,9011)'Imaginary:',(imag(ceig(j)),j=1,6)
+          endif
+          write(lfno,9012)'Imag.tune:',(dble(cd(j))/pi2,j=4,6)
+          write(lfno,9012)'Real tune:',(imag(cd(j))/pi2,j=4,6)
+          write(lfno,*)
+ 9011     format(2x,a,6f10.7)
+ 9012     format(2x,a,3(f10.7,10x))
+          if(emiout)then
+            call tput(r ,label1,label2,'9.6',6,lfno)
+            call tput(ri,label2,label1,'9.6',6,lfno)
+            if(.not. trpt)then
+              call tput(matmul(r,matmul(rx,ri)),
+     $             label1,label1,'9.6',6,lfno)
+            endif
+            write(lfno,*)'   Radiation part of the transfer matrix:'
+            call tput(rxd,label2,label2,'9.6',6,lfno)
+            call tput(rd ,label1,label1,'9.6',6,lfno)
+          endif
+          if(trpt)then
+            write(lfno,*)'   Damping through the beam line:'
+          else
+            write(lfno,*)'   Damping per one revolution:'
+          endif
+          write(lfno,9013)
+     1         'X :',dble(cd(1)),'Y :',dble(cd(2)),'Z :',dble(cd(3))
+ 9013     format(10x,3(a,1p,g14.6,3x))
+          if(.not. trpt)then
+            write(lfno,*)'   Damping time (sec):'
+            write(lfno,9013)
+     1           'X :',-pi2/omega0/dble(cd(1)),
+     $           'Y :',-pi2/omega0/dble(cd(2)),
+     $           'Z :',-pi2/omega0/dble(cd(3))
+            write(lfno,*)'   Tune shift due to radiation:'
+            write(lfno,9013)
+     1           'X :',imag(cd(1))/pi2,
+     $           'Y :',imag(cd(2))/pi2,'Z :',imag(cd(3))/pi2
+          endif
+          write(lfno,*)'   Damping partition number:'
+          write(lfno,9014)
+     1         'X :',dble(cd(1))*sr,'Y :',dble(cd(2))*sr,
+     $         'Z :',dble(cd(3))*sr
+ 9014     format(10x,3(a,f10.4,7x))
+          write(lfno,*)
+        endif
+        if(.not. intpri .and. intra .and. .not. wspac)then
+          write(lfno,*)'   Parameters with intrabeam scattering:'
+          write(lfno,*)
+        endif
+        if(emiout)then
+          if(calint)then
+            if(intra)then
+              if(wspac)then
+                write(lfno,*)
+     1      '   Beam matrix by radiation+intrabeam fluctuation ',
+     $      'with space charge:'
+              else
+                write(lfno,*)
+     1      '   Beam matrix by radiation+intrabeam fluctuation:'
+              endif
+            elseif(wspac)then
+              write(lfno,*)
+     1             '   Beam matrix with space charge:'
+            endif
+          else
+            write(lfno,*)'   Beam matrix by radiation fluctuation:'
+          endif
+          call tputbs(beam2,label2,lfno)
+          call tputbs(beam1,label1,lfno)
+          if(trpt)then
+            write(lfno,*)'   Beam matrix at exit:'
+          else
+            write(lfno,*)'   Equiliblium beam matrix:'
+          endif
+          call tputbs(emit1,label2,lfno)
+          call tputbs(emit,label1,lfno)
+        endif
+        if(trpt)then
+          write(lfno,*)'   Parameters at exit:'
+        endif
+        if(.not. intpri .and. (intra .or. wspac))then
+          vout(1)=autofg(pbunch/1.d10 ,'11.8')
+          vout(2)=autofg(coumin*1.d2,'11.8')
+          write(lfno,9103)(vout(i)(1:11),i=1,2)
+ 9103     format( 'Particles/bunch/1e10   =',a,'    ',
+     $         1x,'Minimum coupling       =',a,' %  ')
+        endif
+        vout(1)=autofg(eemx             ,'11.8')
+        vout(2)=autofg(eemy             ,'11.8')
+        vout(3)=autofg(eemz             ,'11.8')
+        vout(4)=autofg(sige            ,'11.8')
+        vout(5)=autofg(sigz*1.d3       ,'11.8')
+        vout(9)=autofg(params(ipnnup)   ,'11.7')
+        vout(10)=autofg(params(iptaup)/60.d0,'11.7')
+c     kiku <------------------
+        xxs=emit1(1)-emit1(6)
+        yys=-2.d0*emit1(4)
+        if(xxs .ne. 0.d0 .and. yys .ne. 0.d0)then
+          btilt= atan2(yys,xxs) /2d0
+        else
+          btilt=0.d0
+        endif
+        sig1 = abs(emit1(1)+emit1(6))/2d0
+c     sig2 = 0.5d0* sqrt(abs((emit1(1)-emit1(6))**2+4d0*emit1(4)**2))
+        sig2=0.5d0*hypot(emit1(1)-emit1(6),2.d0*emit1(4))
+        sigx = max(sqrt(sig1+sig2),sqrt(abs(sig1-sig2)))
+        sigy = min(sqrt(sig1+sig2),sqrt(abs(sig1-sig2)))
+        vout(6)=autofg(btilt,'11.8')
+        vout(7)=autofg(sigx*1.d3  ,'11.8')
+        vout(8)=autofg(sigy*1.d3  ,'11.8')
+        write(lfno,9102)vout(1:10)
+ 9102   format( 'Emittance X            =',a,' m  ',
+     1       1x,'Emittance Y            =',a,' m'/
+     1       'Emittance Z            =',a,' m  ',
+     1       1x,'Energy spread          =',a,/
+     1       'Bunch Length           =',a,' mm ',
+     1       1X,'Beam tilt              =',a,' rad'/
+     1       'Beam size xi           =',a,' mm ',
+     1       1X,'Beam size eta          =',a,' mm'/
+     $       ,'Nominal spin tune      =',a,'    ',
+     $       1x,'Polarization time      =',a,' min'/)
+c     9103   format(3X,'Beam dimension along principal axis:'/
+ccc   call putsti(eemx,eemy,eemz,sige,sigz,btilt,sigx,sigy,
+ccc   1              calint,fndcod)
+c     kiku ------------------>
+        if(calpol)then
+          write(lfno,*)'  Polarization vector at entrance:'
+          write(lfno,9013)
+     1         'x :',sps(1,1),'y :',sps(2,1),'z :',sps(3,1)
+          if(emiout)then
+            write(lfno,*)'\n'//'   Spin precession matrix:'
+            write(lfno,*)'                sx             sy'//
+     $           '             sz'
+            write(*,'(a,1p3g15.7)')'        sx',srot1(1,:)
+            write(*,'(a,1p3g15.7)')'        sy',srot1(2,:)
+            write(*,'(a,1p3g15.7)')'        sz',srot1(3,:)
+            write(lfno,*)'\n'//'   One-turn depolarization vectors:'
+            write(lfno,*)'                x              px'//
+     $           '             y              py'//
+     $           '             z              pz'
+            write(*,'(a,1p6g15.7)')'        sx',srot(1,4:9)
+            write(*,'(a,1p6g15.7)')'        sy',srot(2,4:9)
+            write(*,'(a,1p6g15.7)')'        sz',srot(3,4:9)
+            write(lfno,*)'\n'//'   Spin depolarization matrix:'
+            write(lfno,*)'                s1             s2'//
+     $           '             s3'
+            write(*,'(a,1p6g15.7)')'        s1',spm(1,:)
+            write(*,'(a,1p6g15.7)')'        s2',spm(2,:)
+            write(*,'(a,1p6g15.7)')'        s3',spm(3,:)
+          endif
+          vout(1)=autofg(smu/m_2pi,'11.8')
+          vout(2)=autofg(equpol(3)*100.d0,'11.8')
+          write(lfno,9110)vout(1:2)
+ 9110     format(/'Spin tune              =',a,'    ',
+     1         1x,'Equil. polarization    =',a,' %'/)
+        endif
+        return
+        end

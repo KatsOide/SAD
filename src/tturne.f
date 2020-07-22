@@ -223,10 +223,8 @@ c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
         endif
       endif
       if(plot)then
-        if(codplt)then
-          call tfadjustn(idp,mfitnx)
-          call tfadjustn(idp,mfitny)
-        endif
+        call tfadjustn(idp,mfitnx)
+        call tfadjustn(idp,mfitny)
         xb=fbound%lb+fbound%fb
         xe=fbound%le+fbound%fe
         do l=1,nlat-1
@@ -249,7 +247,7 @@ c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
                   klist(iacod+l)=ktfcopy(klist(iacod+lx))
                 endif
               endif
-              if(codplt)then
+              if(plot)then
                 twiss(l,idp,mfitdx:mfitddp)=twiss(lx,idp,mfitdx:mfitddp)
                 if(irad .ge. 12)then
                   beamsize(:,l)=beamsize(:,lx)
@@ -298,7 +296,7 @@ c     below is incorrect for fra <> 0
                   call tinitr(trans1)
                 endif
                 trans1(:,7:12)=0.d0
-                if(codplt)then
+                if(plot)then
                   cod1=twiss(lx,idp,mfitdx:mfitddp)
                   if(irad .ge. 12)then
                     beam1(1:21)=beamsize(:,lx)
@@ -416,17 +414,15 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
      $             dtfcopy1(kxm2l(cod,0,6,1,.false.))
             endif
           endif
-          if(codplt)then
 c            if(l .eq. 1)then
 c              r=1.d0
 c            else
 c              r=gammab(l-1)/gammab(l)
 c            endif
-            call tsetetwiss(trans,cod,beam,ibegin,l,idp)
+          call tsetetwiss(trans,cod,beam,ibegin,l,idp)
 c            write(*,'(a,i5,1p6g15.7)')'tturne1 ',l,twiss(l,idp,1:6)
 c            et=twiss(l,0,1:mfitzpy)
 c            call checketwiss(trans,et)
-          endif
         elseif(radtaper .and. radcod)then
           if(l .eq. 1)then
             r=1.d0

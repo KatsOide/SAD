@@ -61,9 +61,8 @@ c        call tadd(bmi,beam,bmi,21)
         call twspace(transsp,cod,al,bmi)
 c        call tmov(trans1,trans2,36)
 c        call tmultr(trans2,transsp,6)
-        trans(:,1:irad)=matmul(
-     $       matmul(tinv6(trans1),matmul(transsp,trans1)),
-     $       trans(:,1:irad))
+        trans2=matmul(tinv6(trans1),matmul(transsp,trans1))
+        trans(:,1:irad)=matmul(trans2,trans(:,1:irad))
 c        call tinv6(trans1,transa)
 c        call tmultr(trans2,transa,6)
 c        call tmultr(trans,trans2,irad)
@@ -766,14 +765,14 @@ c      write(*,*)'twspfu ',x,y,sigx,sigy
       return
       end
 
-      subroutine wspaccheck
+      logical*4 function wspaccheck() result(v)
       use tfstk
       use ffs
       implicit none
-      if(wspac .and. ifsize .eq. 0)then
+      v=wspac .and. ifsize .eq. 0
+      if(v)then
         write(*,*)'WSPAC without beam matrix. ',
      $       'You need EMIT with CODPLOT.'
-        call abort
       endif
       return
       end

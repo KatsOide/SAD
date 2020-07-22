@@ -442,6 +442,9 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       f2r=0.d0
       if(krad)then
         if(ini)then
+          if(photons .and. iniph .eq. 0)then
+            call tsetpcvt(l_track,dx,dy,theta,dtheta,phi0,al)
+          endif
           pxr0=px
           pyr0=py
           zr0=z
@@ -456,16 +459,16 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
         endif
         phir=phib*(al-f1r-f2r)/al
         ndiv=min(ndivmax,ndivrad(phir,0.d0,0.d0,eps))
-        if(photons)then
-          select case (iniph)
-            case (0)
-              call tsetphotongeo(al/ndiv,phi0/ndiv,theta,.true.)
-            case (1)
-              call tsetphotongeo(al/ndiv,phi0/ndiv,pp%theta,.true.)
-            case default
-              call tsetphotongeo(al/ndiv,phi0/ndiv,0.d0,.false.)
-          end select
-        endif
+c        if(photons)then
+c          select case (iniph)
+c            case (0)
+c              call tsetphotongeo(al/ndiv,phi0/ndiv,theta,.true.)
+c            case (1)
+c              call tsetphotongeo(al/ndiv,phi0/ndiv,pp%theta,.true.)
+c            case default
+c              call tsetphotongeo(al/ndiv,phi0/ndiv,0.d0,.false.)
+c          end select
+c        endif
       endif
       n2=ndiv+n2
       if(n1 .eq. n2)then
@@ -593,6 +596,7 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
         sinp2n=0.d0
         bsi1=0.d0
         bsi2=0.d0
+        call tbendal(n,ndiv,f1r,f2r,aln,alx,alr)
         if(n .eq. n1)then
           if(mfring .gt. 0 .or. mfring .eq. -1)then
             mfr1=-1
@@ -610,7 +614,6 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
           sinp2n=sinp2
           bsi2=1.d0
         endif
-        call tbendal(n,ndiv,f1r,f2r,aln,alx,alr)
         phi0n=alx/al*phi0
         phibn=alx/al*phib
         if(n .le. 2 .or. n .ge. ndiv)then
@@ -625,16 +628,13 @@ c            sqwhn=1.d0-coswn
 c          endif
           sinwpn=sin(phi0n-psi2n)
         endif
-c        write(*,*)'tbendr ',n,ndiv,phi0n,alx,alr
         call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       alx,phi0n,
      1       cosp1n,sinp1n,cosp2n,sinp2n,
      1       mfr1,fringe,
      $       coswn,sinwn,-sqwhn,sinwpn,
      1       .true.,alr,bsi1,bsi2)
-        if(photons)then
-          call tsetphotongeo(alx,phi0n,0.d0,.false.)
-        endif
+        pcvt%fr0=pcvt%fr0+alx/pcvt%al
       enddo
       return
       end
@@ -652,6 +652,7 @@ c        write(*,*)'tbendr ',n,ndiv,phi0n,alx,alr
       use tbendcom
       use tspin
       use mathfun
+      use photontable,only:pcvt
       implicit none
       integer*4 np,mfring,i
       real*8 al,phi0,cosp1,sinp1,cosp2,sinp2,

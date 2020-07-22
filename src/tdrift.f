@@ -34,6 +34,7 @@ c     drift in the parallel solenoid
       use photontable
       use tspin
       use mathfun, only: sqrtl,pxy2dpz,xsincos
+      use tmacro, only:l_track
       implicit none
       integer*4 np
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
@@ -50,6 +51,9 @@ c     drift in the parallel solenoid
         endif
         cphi0=1.d0
         sphi0=0.d0
+        if(rfluct .and. photons)then
+          call tsetpcvt(l_track,0.d0,0.d0,0.d0,0.d0,0.d0,al)
+        endif
       endif
       do i=1,np
          pr=(1.d0+g(i))
@@ -96,10 +100,6 @@ c         endif
          if(enarad)then
            bsi(i)=bz
            if(rfluct)then
-             if(photons)then
-               call tsetphotongeo(al,0.d0,0.d0,.true.)
-c               write(*,'(a,1p12g10.2)')'drift_sol ',pp%geo1(:,:)
-             endif
              call tradkf1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $            sx(i),sy(i),sz(i),
      $            pxi,pyi,zi,bsi(i),al,i)
@@ -112,7 +112,7 @@ c               write(*,'(a,1p12g10.2)')'drift_sol ',pp%geo1(:,:)
          px(i)=px1-bzp*y(i)*.5d0
          py(i)=py1+bzp*x(i)*.5d0
       enddo
-      write(*,'(a,106g15.7)')'td_sol ',x(1),px(1),y(1),py(1),z(1),g(1)
+c      write(*,'(a,106g15.7)')'td_sol ',x(1),px(1),y(1),py(1),z(1),g(1)
       return
       end
 
@@ -123,6 +123,7 @@ c               write(*,'(a,1p12g10.2)')'drift_sol ',pp%geo1(:,:)
       use ffs_flag, only:rfluct,photons,calpol
       use photontable
       use mathfun
+      use tmacro, only:l_track
       implicit none
       integer*4 np,i,j,itmax,ndiag
       real*8 conv
@@ -151,6 +152,9 @@ c               write(*,'(a,1p12g10.2)')'drift_sol ',pp%geo1(:,:)
           sphi0=0.d0
           if(calpol)then
             bsi=0.d0
+          endif
+          if(rfluct .and. photons)then
+            call tsetpcvt(l_track,0.d0,0.d0,0.d0,0.d0,0.d0,al)
           endif
         endif
 c        b=hypot(hypot(ak0x,ak0y),bz*al)
@@ -221,9 +225,6 @@ c            xsinphi=xsin(phi)
           if(enarad)then
             bsi(i)=bsi(i)+bsi0-ak0x*y(i)-ak0y*x(i)
             if(rfluct)then
-              if(photons)then
-                call tsetphotongeo(al,0.d0,0.d0,.true.)
-              endif
               call tradkf1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $         sx(i),sy(i),sz(i),
      $         px0,py0,z0,bsi(i),al,i)

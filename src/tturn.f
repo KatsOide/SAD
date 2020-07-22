@@ -201,16 +201,16 @@ c      isb=ilist(2,iwakepold+6)
       sspac0=rlist(ifpos+lbegin-1)
       call tsetdvfs
       if(rad)then
-        allocate(pxr0(np))
-        allocate(pyr0(np))
-        allocate(zr0(np))
+        allocate(pxr0(np0))
+        allocate(pyr0(np0))
+        allocate(zr0(np0))
       endif
-      allocate(bsi(np))
+      allocate(bsi(np0))
       bsi=0.d0
       do l=lbegin,lend
         l_track=l
 c        if(l .gt. 3300)then
-c          write(*,*)'tturn1-l ',l
+c          write(*,*)'tturn1-l ',l,lend,np
 c        endif
 c        call tfmemcheckprint('tturn',l,.false.,irtc)
         if(trpt .and. codplt)then
@@ -241,7 +241,7 @@ c        call tfmemcheckprint('tturn',l,.false.,irtc)
      $           ke,sol,kptbl,la,n,nwak,nextwake,out)
           endif
           if(np .le. 0)then
-            return
+            go to 9000
           endif
           sol=l .lt. ke
           go to 1020
@@ -666,7 +666,7 @@ c     $             +lend-1),
         deallocate(pyr0)
         deallocate(pxr0)
       endif
-
+c      write(*,*)'tturn1-end '
       return
       end
 

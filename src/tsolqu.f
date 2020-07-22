@@ -210,7 +210,7 @@ c          endif
       use tsolz
       use tspin
       use ffs_flag, only:ndivrad,photons
-      use photontable,only:tgswap,tsetphotongeo
+      use photontable,only:tgswap,pcvt
       use mathfun
       implicit none
       type (tzparam) tz
@@ -308,10 +308,8 @@ c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
             endif
           enddo
           alr=aln
-          if(photons)then
-            call tsetphotongeo(alr,0.d0,0.d0,.false.)
-          endif
           call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,alr,0.d0)
+          pcvt%fr0=pcvt%fr0+alr/al
         enddo
         do i=1,np
           ap=px(i)**2+py(i)**2
@@ -396,10 +394,8 @@ c            endif
             endif
           enddo
           alr=aln
-          if(photons)then
-            call tsetphotongeo(alr,0.d0,0.d0,.false.)
-          endif
           call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,alr,0.d0)
+          pcvt%fr0=pcvt%fr0+alr/al
         enddo
         do i=1,np
           ap=px(i)**2+py(i)**2

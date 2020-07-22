@@ -4,7 +4,7 @@
       use ffs_flag
       use tmacro
 c      use ffs_pointer, only:inext,iprev
-      use photontable,only:tsetphotongeo
+      use photontable,only:tsetpcvt,pcvt
       use sol,only:tsolrot
       use mathfun, only:pxy2dpz,sqrt1,akang
       use tspin
@@ -60,7 +60,8 @@ c          p=(1.d0+g(i))**2
       endif
       if(krad)then
         if(photons)then
-          call tsetphotongeo(0.d0,0.d0,theta2,.true.)
+          call tsetpcvt(l_track,dx,dy,theta2,0.d0,0.d0,al)
+          pcvt%fr0=-0.5d0*f1in/al
         endif
         if(f1in .ne. 0.d0)then
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,f1in,0.d0)
@@ -96,7 +97,8 @@ c          p=(1.d0+g(i))**2
       endif
       if(krad .and. f1out .ne. 0.d0)then
         if(photons)then
-          call tsetphotongeo(0.d0,0.d0,0.d0,.false.)
+          pcvt%fr0=1.d0-.5d0*f1out/al
+c          call tsetphotongeo(0.d0,0.d0,0.d0,.false.)
         endif
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,f1out,0.d0)
       endif
@@ -114,6 +116,7 @@ c
       use tspin
       use mathfun
       use multa,only:fact
+      use photontable
       implicit none
 c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
       integer*4 , parameter::nmult=21
@@ -144,6 +147,9 @@ c     end   initialize for preventing compiler warning
         zr0=z
         if(calpol)then
           bsi=0.d0
+        endif
+        if(photons)then
+          call tsetpcvt(l_track,dx,dy,theta,0.d0,0.d0,al)
         endif
       endif
       if(fringe)then
