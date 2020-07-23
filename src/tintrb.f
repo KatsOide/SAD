@@ -55,17 +55,10 @@ c      hi=sqrt(1.d0+(pr*p0)**2)
       trans1(5,6)=h0/hi**3*alx+s*alz
       if(wspac)then
         bmi=beam(22:42)+beam(1:21)
-c        call tmov(beam(22),bmi,21)
-c        call tadd(bmi,beam,bmi,21)
         call tmulbs(bmi,trans1,.false.)
-        call twspace(transsp,cod,al,bmi)
-c        call tmov(trans1,trans2,36)
-c        call tmultr(trans2,transsp,6)
+        call twspace(transsp,cod,al,bmi,ll)
         trans2=matmul(tinv6(trans1),matmul(transsp,trans1))
         trans(:,1:irad)=matmul(trans2,trans(:,1:irad))
-c        call tinv6(trans1,transa)
-c        call tmultr(trans2,transa,6)
-c        call tmultr(trans,trans2,irad)
         call tmulbs(beam,trans2,.false.)
       endif
       if(intra)then
@@ -269,14 +262,17 @@ c      parameter (eeuler=7.98221278918726d0,a=5.5077d0,b=1.1274d0)
       return
       end
 
-      subroutine twspace(trans,cod,al,beam)
+      subroutine twspace(trans,cod,al,beam,l)
       use tfstk
       use tmacro
       use mathfun
       use sad_main, ia=>iaidx
+      use ffs_pointer,only:gammab
       implicit none
-      real*8 trans(6,6),cod(6),al,beam(21),
-     $     xx1,yy1,xy1,u,v,a,c2,s2,sx,sy,p1,h1,f,akx,aky,
+      integer*4 ,intent(in):: l
+      real*8 ,intent(in):: al
+      real*8 ,intent(inout):: trans(6,6),cod(6),beam(21)
+      real*8 xx1,yy1,xy1,u,v,a,c2,s2,sx,sy,p1,h1,f,akx,aky,
      $     aks,akd,sigzsq
       sigzsq=beam(ia(5,5))
       xx1=beam(ia(1,1))-beam(ia(5,1))**2/sigzsq
@@ -292,7 +288,7 @@ c      a=sqrt(u**2+v**2)
       sy=sqrt(sx-a*.5d0)
       sx=sqrt(sx+a*.5d0)
 c      write(*,*)sy,a,u,v,xx1,yy1
-      p1=(1.d0+cod(6))*p0
+      p1=(1.d0+cod(6))*(gammab(l)+gammab(l+1))*.5d0
       h1=p2h(p1)
 c      h1=p1*sqrt(1.d0+1.d0/p1**2)
 c      h1=sqrt(1.d0+p1**2)
@@ -310,16 +306,19 @@ c      h1=sqrt(1.d0+p1**2)
       return
       end
 
-      subroutine qwspac(trans,cod,al,beam,coup)
+      subroutine qwspac(trans,cod,al,beam,coup,l)
       use tfstk
       use tmacro
       implicit none
-      real*8 trans(4,5),cod(6),al,beam(42),trs(6,6)
-      logical*4 coup
+      integer*4 ,intent(in):: l
+      real*8 ,intent(in):: al
+      real*8 ,intent(inout)::  trans(4,5),cod(6),beam(42)
+      real*8 trs(6,6)
+      logical*4 ,intent(in):: coup
       if(al .eq. 0.d0)then
         return
       endif
-      call twspace(trs,cod,al,beam)
+      call twspace(trs,cod,al,beam,l)
       if(coup)then
         trans(1,1)=trans(1,1)+trans(1,2)*trs(2,1)+trans(1,4)*trs(4,1)
         trans(2,1)=trans(2,1)+trans(2,2)*trs(2,1)+trans(2,4)*trs(4,1)
@@ -347,18 +346,20 @@ c      h1=sqrt(1.d0+p1**2)
       end
 
       subroutine twspac(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     al,cod,beam)
+     $     al,cod,beam,l)
       use tfstk
       use ffs_flag
       use tmacro
       use mathfun
       use sad_main, ia=>iaidx
+      use ffs_pointer,only:gammab
       implicit none
+      integer*4 ,intent(in):: l
       integer*4 np,i
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
-     $     sx(np),sy(np),sz(np),
-     $     al,cod(6),beam(42),
-     $     xx1,yy1,xy1,a,c1,s1,sigx,sigy,p1,h1,f,dx,dy,
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),
+     $     z(np),g(np),dv(np),sx(np),sy(np),sz(np)
+      real*8 ,intent(in):: al,cod(6),beam(42)
+      real*8 xx1,yy1,xy1,a,c1,s1,sigx,sigy,p1,h1,f,dx,dy,
      $     dx1,dy1,dpx,dpy,pr,u,v,theta,sigzsq,
      $     az,dg,dpr,pr1,fx,fy,fu,xc,yc,zc,fxx,fyy,fxy
       sigzsq=beam(ia(5,5))
@@ -392,7 +393,7 @@ c      a=sqrt(u**2+v**2)
         yc=cod(3)
         zc=cod(5)
       endif
-      p1=(1.d0+cod(6))*p0
+      p1=(1.d0+cod(6))*(gammab(l)+gammab(l+1))*.5d0
       h1=p2h(p1)
 c      h1=p1*sqrt(1.d0+1.d0/p1**2)
       f=pbunch*rclassic*al/(p1**2*h1*sqrt(2.d0*pi*sigzsq))

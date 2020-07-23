@@ -417,7 +417,7 @@ c     $             kxx,irtc)
  20       if(wspac)then
             sspc=(rlist(ifpos+l1)+rlist(ifpos+l1-1))*.5d0
             call qwspac(trans,cod,sspc-sspc0,
-     $           rlist(ifsize+(l1-1)*21),coup)
+     $           rlist(ifsize+(l1-1)*21),coup,l1)
 c            write(*,*)'qtwiss-qwsapc ',l1,ifsize,rlist(ifsize+(l1-1)*21)
             sspc0=sspc
             coup=.true.
