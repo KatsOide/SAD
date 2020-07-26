@@ -97,8 +97,7 @@ c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
       if(ifsize .eq. 0 .and. codplt)then
         ifsize=ktaloc(nel*21)
         call c_f_pointer(c_loc(rlist(ifsize)),beamsize,[21,nel])
-        updatesize=.false.
-c        ilist(2,iwakepold+6)=ifsize
+        modesize=0
       endif
 c      write(*,*)'tfemit-4 ',codplt,ifsize,nel
       if(nel .eq. nlat)then
@@ -115,7 +114,7 @@ c      write(*,*)'tfemit-4 ',codplt,ifsize,nel
         beam(22:42)=0.d0
         call tinitr12(trans)
         call tturneg(trans,cod,beam,srot,fbound,
-     $     iatr,iacod,iabmi,.true.,rt)
+     $     iatr,iacod,iabmi,.true.,rt,.false.)
         call setparams(param,cod)
         call rotri(is,ris)
         dummy=dnotanumber
@@ -203,7 +202,7 @@ c        ilist(2,iwakepold+6)=ifsize
       subroutine rotri(is,ris)
       use ffs_pointer
       use tffitcode
-      use temw
+      use temw,only:r,ri,tinv6
       implicit none
       integer*4 ,intent(in)::is
       real*8 , intent(out)::ris(6,6)

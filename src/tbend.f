@@ -366,7 +366,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       use ffs_pointer, only:inext,iprev
       use multa, only:nmult
       use tbendcom
-      use tspin
+      use kradlib
       use photontable
       use mathfun, only:akang
       implicit none
@@ -650,9 +650,8 @@ c          endif
       use tmacro
       use multa, only:nmult
       use tbendcom
-      use tspin
+      use kradlib
       use mathfun
-      use photontable,only:pcvt
       implicit none
       integer*4 np,mfring,i
       real*8 al,phi0,cosp1,sinp1,cosp2,sinp2,

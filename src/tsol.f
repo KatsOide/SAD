@@ -265,6 +265,7 @@ c              endif
       use tmacro, only:irad
       use ffs_flag, only:calpol
       use mathfun, only: sqrtl,xsincos
+      use temw,only:tmulbs
       implicit none
       real*8 trans(6,12),cod(6),beam(21),trans1(6,6),
      $     trans2(6,6),tb(6),srot(3,9)
@@ -703,7 +704,7 @@ c            xsinphi=xsin(phi)
       end subroutine
 
       subroutine tradks(np,x,px,y,py,z,g,dv,sx,sy,sz,bzs,al,bzph)
-      use tspin, only:tradk
+      use kradlib, only:tradk
       implicit none
       integer*4 , intent(in)::np
       real*8 , intent(in)::bzs,al
@@ -736,7 +737,7 @@ c            xsinphi=xsin(phi)
       use sad_main
       use tparastat
       use ffs_seg
-      use tspin
+      use kradlib
       use sol
       implicit none
       real*8 conv

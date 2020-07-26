@@ -1,11 +1,11 @@
       module bendeb
       use tfstk
       use bendib
-      use temw
+      use temw,only:bsir0,tmulbs
       use tspin
       implicit none
       logical*4 tbinit
-      real*8 al,b1,b,aind,trans1(6,13),cx,cy,
+      real*8 al,b1,b,aind,trans1(6,6),cx,cy,
      $     drhopp,akxsqp,dcxp,sxkxp,dcyp,sykyp,phixp,phiyp,
      $     akysqp,dcxkxp,aksxp,aksyp,xsxkxp
 
@@ -141,6 +141,8 @@
       subroutine tbendebody(trans,cod,beam,srot,al,phin,
      $     ak1,alr,bsi1,bsi2,enarad)
       use tmacro
+      use kradlib, only:tradke
+      use temw,only:tmulbs
       implicit none
       real*8, intent(in):: ak1,al,bsi1,bsi2,alr
       real*8 trans(6,12),cod(6),beam(42),srot(3,9)
@@ -225,7 +227,8 @@ c     $     sxkxp,dcxkxp
      $     phi0n,snphi0,sinsq0,csphi0,alr,
      $     bsi1,bsi2,enarad)
       use tmacro
-      use temw
+      use kradlib, only:tradke
+      use temw,only:tmulbs
       use mathfun
       implicit none
       real*8, intent(in):: phi0n,snphi0,sinsq0,csphi0,aln,bsi1,bsi2,alr
@@ -379,7 +382,8 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
       use ffs_flag
       use tmacro
       use multa, only:nmult
-      use temw
+      use kradlib, only:tradke
+      use temw,only:tsetr0
       implicit none
       integer*4 mfring,ndiv,nrad,n,l,n1,n2
       real*8 al0,phib,phi0,psi1,psi2,ak,dx,dy,theta,dtheta,
@@ -622,6 +626,7 @@ c     $     rb1,rb2,al0,alc,aln,phin,ak
 
       subroutine tbdrifte(trans,cod,beam,srot,al,phi0,
      $     h0,h1emit,dvemit,irad)
+      use temw,only:tmulbs
       use mathfun
       implicit none
       real*8 trans(6,12),cod(6),beam(42),srot(3,9),
@@ -714,8 +719,9 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       use tfstk
       use ffs_flag
       use tmacro
+      use temw,only:tmulbs
       implicit none
-      real*8 trans(6,12),cod(6),beam(42),trans1(6,13),
+      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),
      $     dxfr,dyfr,pr,dyfra,ysq,dyfraysq
       pr=1.d0+cod(6)
       ysq=cod(3)**2
@@ -742,6 +748,7 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       use tfstk
       use ffs_flag
       use tmacro
+      use temw,only:tmulbs
       implicit none
       real*8 trans(6,12),cod(6),beam(42),phib,phi0,dx,dy,theta,
      $     trans1(6,6),dtheta,srot(3,9)

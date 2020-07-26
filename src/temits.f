@@ -62,7 +62,7 @@
      $     lfno,irtc,ndp,i,k,kk,ns,it,j,nz
       real*8 amus0,amus1,amusstep, emix,emiy,res0,
      $     amus,damp,dj,dpndim,emix0,emiy0,
-     $     fz,phi0s,res,sige,sigea,vx,vy,w,
+     $     fz,phi0s,res,sigea,vx,vy,w,
      $     emixp,emiyp,cod0(6)
       real*8 beam(42),trans(6,12),cod(6),srot(3,9),
      $     beams(10,-ndims:ndims),
@@ -83,7 +83,7 @@ c     $     dhc(4,mphi2,ndp),dhs(4,mphi2,ndp),
       real*8 params(nparams),btr(21,21),rm(6,6),
      $     rx(6,6),rxi(6,6),cmu(mphi2),smu(mphi2),disppi(6),
      $     beamr(42),fj(256),conv,tw0(ntwissfun),dispp(6)
-      logical*4 plot,stab,fndcod,calpol0
+      logical*4 plot,calpol0,stab
       calpol0=calpol
       calpol=.false.
       codin=0.d0
@@ -125,7 +125,7 @@ c     $     dhc(4,mphi2,ndp),dhs(4,mphi2,ndp),
         endif
         cod(5)=0.d0
         cod0=cod
-        call tcod(trans,cod,beam,fndcod)
+        call tcod(trans,cod,beam,.false.,fndcod)
         if(.not. fndcod .and. (i .gt. 1 .or. i .lt. -1))then
           if(i .gt. 1)then
             cod(1:4)=
@@ -135,7 +135,7 @@ c     $     dhc(4,mphi2,ndp),dhs(4,mphi2,ndp),
      $           2.d0*tws(mfitdx:mfitdpy,i+1)-tws(mfitdx:mfitdpy,i+2)
           endif
           cod(5)=0.d0
-          call tcod(trans,cod,beam,fndcod)
+          call tcod(trans,cod,beam,.false.,fndcod)
           if(.not. fndcod)then
             cod=cod0
           endif
@@ -145,7 +145,7 @@ c     $     dhc(4,mphi2,ndp),dhs(4,mphi2,ndp),
         trans(:,7:12)=0.d0
         beam(1:21)=0.d0
         call tturne(trans,cod,beam,srot,i00,i00,i00,
-     $       .false.,.false.,.false.)
+     $       .false.,.false.,.false.,.false.)
         if(fndcod)then
           cod(1:4)=cod(1:4)-codin(1:4)
         else

@@ -1,6 +1,7 @@
       subroutine temap(np,np0,x,px,y,py,z,g,dv,l,nt,kptbl)
       use tfstk
       use efun
+      use temw, only:tmulbs
       implicit none
       type alist
         type (sad_rlist), pointer :: p
@@ -190,13 +191,16 @@ c        call tfdebugprint(kx,'temap',1)
       use tfstk
       use tmacro
       use sad_main, only:iaidx
+      use temw,only:tmulbs
       use efun
+      use iso_c_binding
       implicit none
       type (sad_descriptor) kx
       integer*8 k1,k2,k3,k4,kax,
      $     ktfmalocp,ka1,kat1,kbm,krt
       integer*4 l,isp0,itfdownlevel,n,m,irtc,i,j
-      real*8 trans(6,12),cod(6),beam(42)
+      real*8 trans(6,6),cod(6),beam(42)
+      real*8 ,pointer::trat1(:,:)
       character*2 ord
       integer*8 , save :: ifv=0,iem=0
 c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
@@ -252,6 +256,7 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
         call tfree(kat1)
         go to 9100
       endif
+      call c_f_pointer(c_loc(rlist(kat1)),trat1,[6,6])
       kbm=0
       krt=0
       if(ilist(2,kax-1) .ne. 2)then
@@ -277,12 +282,12 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
           go to 9100
         endif
       endif
-      call tmultr(trans,rlist(kat1),irad)
+      call tmultr(trans,trat1,irad)
       if(kbm .ne. 0)then
         do i=0,35
           rlist(kat1+i)=rlist(kat1+i)+rlist(krt+i)
         enddo
-        call tmulbs(beam,rlist(kat1),.true.)
+        call tmulbs(beam,trat1,.true.)
         do i=1,6
           do j=i,6
             beam(iaidx(i,j))=beam(iaidx(i,j))+rlist(kbm+(j-1)*6+i-1)
@@ -292,7 +297,7 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
         call tfree(kbm)
         call tfree(krt)
       else
-        call tmulbs(beam,rlist(kat1),.true.)
+        call tmulbs(beam,trat1,.true.)
       endif
       call tfree(kat1)
  9000 levele=itfdownlevel()

@@ -1,4 +1,4 @@
-      recursive subroutine tcod(trans,cod,beam,fndcod)
+      recursive subroutine tcod(trans,cod,beam,optics,fndcod)
       use tfstk
       use ffs_flag
       use ffs_pointer
@@ -7,7 +7,8 @@
       use tmacro
       implicit none
       integer*4 im
-      logical fndcod
+      logical*4 ,intent(out):: fndcod
+      logical*4 ,intent(in):: optics
       integer*4 , parameter :: lmax=100
       real*8, parameter :: 
      $     conv0=1.d-10,epsr0=1.d-6,ddpmax=3.e-5,
@@ -24,7 +25,7 @@
 c      write(*,*)'tcod-i ',rfsw
       if(rfsw)then
         rfsw=.false.
-        call tcod(trans,cod,beam,fndcod)
+        call tcod(trans,cod,beam,optics,fndcod)
         rfsw=.true.
         if(fndcod .and. vceff .ne. 0.d0)then
           cod(5)=asin(min(1.d0,max(-1.d0,(u0*pgev-vcacc)/vceff)))
@@ -77,7 +78,7 @@ c      write(*,*)'tcod-dp0 ',dp0
       codf=codi
       trf00=trf0
       call tturne(trans,codf,beam,srot,
-     $     i00,i00,i00,.false.,.true.,rt)
+     $     i00,i00,i00,.false.,.true.,rt,optics)
       dz=(codi(5)+codf(5))*0.5d0
       rt=radtaper
       dcod1=codi-codf

@@ -9,6 +9,8 @@
       use ffs_flag
       use tmacro
       use ffs_seg
+      use temw, only:calint,tmulbs
+      use kradlib, only:tradke
       implicit none
       real*8 conv
       parameter (conv=3.d-16)
@@ -93,7 +95,8 @@ c            endif
       use tmacro
       use sad_main
       use ffs_seg
-      use temw, only:tsetr0
+      use temw, only:tsetr0,tmulbs
+      use kradlib, only:tradke
       use tspin
       implicit none
       integer*4 l,ld,lt,mfr,kb,irtc

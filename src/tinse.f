@@ -1,13 +1,13 @@
       subroutine tinse(trans,cod,beam,trx)
       use ffs_flag
       use tmacro
+      use temw,only:tmulbs
       implicit none
-      real*8 trans(6,12),cod(6),beam(42),trx(6,7),trans1(6,13),
+      real*8 trans(6,12),cod(6),beam(42),trx(6,7),trans1(6,7),
      $     x1,px1,y1,py1
-      trans1(:,7:12)=0.d0
       trans1(:,1:6)=trx(:,1:6)
-      call tmultr(trans,trans1,irad)
-      call tmulbs(beam ,trans1,.true.)
+      call tmultr(trans,trans1(:,1:6),irad)
+      call tmulbs(beam ,trans1(:,1:6),.true.)
        x1=trans1(1,1)*cod(1)+trans1(1,2)*cod(2)+
      $    trans1(1,3)*cod(3)+trans1(1,4)*cod(4)+trans1(1,6)*cod(6)+
      $    trans1(1,7)

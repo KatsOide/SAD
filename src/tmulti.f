@@ -10,6 +10,7 @@
       use ffs_flag
       use tmacro
       use tspin
+      use kradlib
       use sol,only:tsolrot
       use photontable,only:tsetpcvt,pcvt
       use mathfun

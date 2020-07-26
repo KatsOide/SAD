@@ -5,7 +5,7 @@
       use ffs_flag
       use tmacro
       use photontable,only:tsetpcvt,pcvt
-      use tspin
+      use kradlib
       use sol,only:tsolrot
       use mathfun, only:akang
 c      use ffs_pointer, only:inext,iprev

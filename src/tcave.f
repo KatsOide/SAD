@@ -5,6 +5,7 @@
       use ffs_flag
       use tmacro
       use ffs_pointer, only: gammab
+      use temw,only:tmulbs
       use mathfun
       implicit none
       real*8 eps,oneev
@@ -213,6 +214,7 @@ c     $     trans(5,5),trans(5,6),trans(6,5),trans(6,6)
 
       subroutine tcavfrie(trans,cod,beam,al,v,w,phic,dphis,s0,p0,
      $     irad,calb,autophi)
+      use temw,only:tmulbs
       use mathfun, only:p2h
       implicit none
       real*8 trans(6,12),cod(6),trans1(6,6),beam(42),

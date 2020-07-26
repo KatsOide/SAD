@@ -2,9 +2,10 @@
      $     dvon,enarad,irad)
       use element_drift_common
       use tmacro, only:bradprev
-      use temw, only:tsetr0
+      use temw, only:tsetr0,tmulbs
       use sol, only:tsoldz
       use tspin
+      use kradlib, only:tradke
       use mathfun, only: sqrtl
       implicit none
       integer*4 ,intent(in):: irad

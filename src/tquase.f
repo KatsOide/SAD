@@ -7,7 +7,7 @@
       use tmacro
       use temw, only:tsetr0
       use sol,only:tsolrote
-      use tspin, only:tradke      
+      use kradlib, only:tradke      
       implicit none
       real*8 , intent(in)::ak,al,bz,dx,dy,theta,
      $     f1in,f2in,f1out,f2out,eps0,radlvl

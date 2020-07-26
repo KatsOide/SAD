@@ -1,9 +1,14 @@
-      subroutine tmulbs(beam,trans1,beamr)
+c Obsolete 7/17/2020
+c
+      subroutine tmulbs(beam,trans,beamr)
       use tfstk
       use ffs_flag
       use tmacro
+      use temw, only:calint
       implicit none
-       real*8 beam(42),trans1(6,12),s(6,6)
+      real*8 ,intent(inout):: beam(42)
+      real*8 ,intent(in):: trans(:,:)
+      real*8 trans1(6,6),s(6,6)
       logical*4 beamr
 c     ia(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
 c     data ia/ 1, 2, 4, 7,11,16,
@@ -14,6 +19,11 @@ c    1        11,12,13,14,15,20,
 c    1        16,17,18,19,20,21/
       if(irad .lt. 12)then
         return
+      endif
+      if(size(trans,2) .eq. 6)then
+        trans1=trans(1:6,1:6)
+      else
+        trans1=trans(1:6,1:6)+trans(1:6,7:12)
       endif
 c      do j=1,6
         s(1,1:6)=trans1(1:6,1)*beam(1) +trans1(1:6,2)*beam(2)

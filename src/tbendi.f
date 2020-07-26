@@ -8,7 +8,8 @@
       use ffs_flag
       use tmacro
       use ffs_pointer, only:inext,iprev
-      use tspin
+      use kradlib
+      use tspin, only:cphi0,sphi0
       use photontable
       implicit none
       integer*4 , parameter :: ndivmax=1000

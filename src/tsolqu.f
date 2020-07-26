@@ -1,7 +1,7 @@
       subroutine tsolqu(np,x,px,y,py,z,gp,dv,sx,sy,sz,
      $     al,ak,bz0,ak0x,ak0y,ibsi,eps0)
       use tsolz
-      use tspin, only:bsi
+      use kradlib, only:bsi
       use mathfun
       implicit none
       type (tzparam) tz
@@ -208,8 +208,8 @@ c          endif
       subroutine tsolqur(np,x,px,y,py,z,gp,dv,sx,sy,sz,al,ak,
      $     bz0,ak0x,ak0y,eps0,alr)
       use tsolz
-      use tspin
-      use ffs_flag, only:ndivrad,photons
+      use kradlib, only:bsi,tradk
+      use ffs_flag, only:ndivrad
       use photontable,only:tgswap,pcvt
       use mathfun
       implicit none

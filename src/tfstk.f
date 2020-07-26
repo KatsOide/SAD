@@ -3154,7 +3154,6 @@ c                  kcbk(3,j)=kcbk(2,k)
         end function ktfcopy1
 
         integer*8 function ktfcopyd(k,d)
-        use tfmem,only:kfirstalloc
         implicit none
         integer*8 , intent(in)::k
         integer*8 ka

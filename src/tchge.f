@@ -3,6 +3,7 @@
       use tfstk
       use ffs_flag
       use tmacro
+      use temw,only:tmulbs
       use bendeb, only:tbrote
       use mathfun, only:pxy2dpz
       implicit none

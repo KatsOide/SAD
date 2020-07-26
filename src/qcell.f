@@ -413,26 +413,32 @@ c                enddo
       use ffs
       use ffs_fit ,only:ffs_stat
       use ffs_pointer
-      use temw
+      use temw,only:r,ri,calint,normali,tinv6,etwiss2ri,tsymp,nparams,
+     $     tfinibeam
       use maccbk, only:i00
       implicit none
-      type (ffs_bound) fbound
-      type (ffs_stat) optstat
-      integer*4 lfno,idp
-      real*8 trans(6,12),cod(6),beam(21),srot(3,9)
-      complex*16 ceig(6)
-      logical*4 codfnd,cell0,codplt0,ci0,rt
+      type (ffs_bound) ,intent(in):: fbound
+      type (ffs_stat) ,intent(out):: optstat
+      integer*4 ,intent(in):: lfno,idp
+      integer*4 ir0
+      real*8 trans(6,12),cod(6),beam(42),srot(3,9),
+     $     btr(21,21)
+      logical*4 stab,cell0,codplt0,ci0,rt,wspaccheck,calint1
+      real*8 params(nparams)
+      ir0=irad
       cell0=cell
+      cell=cell0 .and. .not. trpt
       codplt0=codplt
       ci0=calint
+      calint1=wspac .or. intra
       rt=radtaper
-      calint=.false.
-      irad=6
+      codplt=.false.
  1    cod=twiss(1,idp,mfitdx:mfitddp)
       if(cell)then
-        codfnd=.false.
-        call tcod(trans,cod,beam,codfnd)
-        if(.not. codfnd)then
+        call temit(trans,cod,beam,btr,
+     $     calint1,i00,i00,i00,i00,
+     $     .true.,params,stab,0)
+        if(.not. stab)then
           write(lfno,*)
      $         '*****tcod---> Closed orbit not found'
           optstat%stabx=.false.
@@ -440,34 +446,25 @@ c                enddo
           cell=.false.
           go to 1
         endif
-        r=trans(:,1:6)
-        if(.not. rfsw)then
-          r(6,1)=0.d0
-          r(6,2)=0.d0
-          r(6,3)=0.d0
-          r(6,4)=0.d0
-          r(6,5)=0.d0
-          r(6,6)=1.d0
-        endif
-c        write(*,'(1p6g15.7)')(r(i,1:6),i=1,6)
-        call teigen(r,ri,ceig,6,6)
-        call tnorm(r,ceig,0)
-        r=tsymp(r)
-        ri=tinv6(r)
-c        call tsymp(r)
-c        call tinv6(r,ri)
-c       write(*,'(1p6g15.7)')(ri(i,1:6),i=1,6)
-       normali=.true.
+        normali=.true.
       else
+        if(.not. cell .and. wspaccheck())then
+          optstat%stabx=.false.
+          optstat%staby=.false.
+          return
+        endif
+        beam(1:21)=tfinibeam(fbound%lb)
+        beam(22:42)=0.d0
         ri=etwiss2ri(twiss(fbound%lb,idp,1:ntwissfun),normali)
         r=tinv6(ri)
+c        codplt=.true.
+        call tinitr(trans)
+        call tturne0(trans,cod,beam,srot,fbound,
+     $       i00,i00,i00,idp,.true.,rt,.true.)
       endif
-      codplt=.false.
-      call tinitr(trans)
-      call tturne0(trans,cod,beam,srot,fbound,
-     $     i00,i00,i00,idp,.false.,rt,.true.)
       calint=ci0
       codplt=codplt0
       cell=cell0
+      irad=ir0
       return
       end

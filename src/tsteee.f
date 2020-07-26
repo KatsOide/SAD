@@ -3,8 +3,8 @@
       use ffs_flag
       use tmacro
       use bendib, only:rbh,rbl,tbendal
-      use temw, only:tsetr0
-      use tspin, only:tradke      
+      use temw, only:tsetr0,tmulbs
+      use kradlib, only:tradke      
       use mathfun
       implicit none
       real*8 epslon,a3,a5,a7,a9,a11,a13,a15

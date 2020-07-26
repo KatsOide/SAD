@@ -7,7 +7,7 @@ c      use ffs_pointer, only:inext,iprev
       use photontable,only:tsetpcvt,pcvt
       use sol,only:tsolrot
       use mathfun, only:pxy2dpz,sqrt1,akang
-      use tspin
+      use kradlib
       implicit none
       logical*4 , intent(in)::krad,chro,fringe,kin
       integer*4 np,i,mfring
@@ -113,7 +113,7 @@ c
      1     dx,dy,theta,krad,fringe)
       use ffs_flag
       use tmacro
-      use tspin
+      use kradlib
       use mathfun
       use multa,only:fact
       use photontable

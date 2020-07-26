@@ -9,9 +9,10 @@
       use ffs_pointer , only:gammab
       use tmacro
       use multa, only:nmult
-      use temw
+      use temw,only:bsir0,tsetr0,tmulbs
       use sol, only:tsolrote
       use tspin
+      use kradlib, only:tradke
       use mathfun
       use multa, only:fact,an
       implicit none
@@ -19,8 +20,7 @@
       real*8 ampmax,oneev,pmax
       parameter (ampmax=0.05d0,ndivmax=300,pmax=0.9999d0)
       parameter (oneev=1.d0+3.83d-12)
-      integer*4 mfring,l,n,ndiv,m,kord,i,nmmax,nmmin,
-     $     itgetqraddiv
+      integer*4 mfring,l,n,ndiv,m,kord,nmmax,nmmin,itgetqraddiv
       real*8 f1in,f2in,f1out,f2out,
      $     al,vc,harm,phi,freq,bz,dx,dy,dz,chi1,chi2,theta,
      $     eps0,bxs,bys,bzs,al1,p1,h1,v1,t,phii,a,dh,dtheta,

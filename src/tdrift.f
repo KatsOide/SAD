@@ -32,7 +32,8 @@ c     drift in the parallel solenoid
       use element_drift_common
       use ffs_flag, only:rfluct,photons,calpol
       use photontable
-      use tspin
+      use kradlib
+      use tspin, only:cphi0,sphi0
       use mathfun, only: sqrtl,pxy2dpz,xsincos
       use tmacro, only:l_track
       implicit none
@@ -119,7 +120,8 @@ c      write(*,'(a,106g15.7)')'td_sol ',x(1),px(1),y(1),py(1),z(1),g(1)
       subroutine tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     al,bz,ak0x,ak0y,enarad)
       use element_drift_common
-      use tspin
+      use kradlib
+      use tspin, only:cphi0,sphi0
       use ffs_flag, only:rfluct,photons,calpol
       use photontable
       use mathfun

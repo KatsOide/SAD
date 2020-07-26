@@ -222,7 +222,7 @@ c        call tfdebugprint(kr,':= ',3)
       type (sad_dlist), pointer :: klx
       type (sad_deftbl), pointer :: dtbl
       integer*8 kb0,kn0,kan,kan0,ktalocr,kb,kn
-      integer*4 npat,isp0,i
+      integer*4 npat,isp0
       logical*4 tbl,rep,sym
       isp0=isp
       if(tbl)then

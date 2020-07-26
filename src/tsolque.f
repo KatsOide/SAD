@@ -239,7 +239,8 @@
      $     bz0,ak0x,ak0y,eps0,enarad,irad)
       use tsolz
       use tmacro, only:bradprev
-      use tspin, only:tradke
+      use kradlib, only:tradke
+      use temw,only:tmulbs
       implicit none
       type(tzparam) tz
       integer*4 n,ndiv,irad

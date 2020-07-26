@@ -703,18 +703,17 @@ c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
       elseif(keyword .eq. 'GAMMA')then
         kx=dfromr(sqrt(1.d0+(rlist(ifgamm+ia-1)*(1.d0-v)+
      $       rlist(ifgamm+min(nlat-1,ia))*v)**2))
-      elseif(keyword(1:3) .eq. 'SIG' .and. keyword(1:5) .ne. 'SIGMA'
-     $       .or. keyword(1:4) .eq. 'SIZE')then
+      elseif(keyword(1:3) .eq. 'SIG' .and.
+     $       keyword(1:5) .ne. 'SIGMA')then
         if(keyword(1:3) .eq. 'SIG')then
-          call tfbeamfrac(ia,v,0.d0,beam)
           call tfbeamkey(keyword(4:),i,j,irtc)
         else
-          call tfsizefrac(ia,v,beam)
-          call tfbeamkey(keyword(5:),i,j,irtc)
+          call tfbeamkey(keyword(6:),i,j,irtc)
         endif
         if(irtc .ne. 0)then
           return
         endif
+        call tfbeamfrac(ia,v,0.d0,beam)
         if(i .eq. 0)then
           if(j .eq. 0)then
             kax=ktadaloc(-1,6)
@@ -1081,7 +1080,6 @@ c              enddo
           itastk(1,isp)=ilist(i+ioff,ifele1)
           itastk(2,isp)=i+ioff
           vstk2(isp)=fr
-c     write(*,*)'linestk ',name(1:nc),r
           irtc=0
         else
           irtc=0

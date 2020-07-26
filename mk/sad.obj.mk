@@ -98,7 +98,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      tftrack.o   tftrak.o    tftrb.o \
      tftype.o    tfvars.o    tgauss_.o \
      tgetfv.o    tins.o     tinse.o \
-     tlum.o      tmov.o       tmulbs.o   tmulte.o \
+     tlum.o      tmov.o      tmulte.o \
      tmulti.o    tmulta.o    tdrift.o     trackd.o \
      tmultr.o    tnorm.o     \
      tquade.o    tquads.o     tquase.o   track.o \

@@ -4,7 +4,7 @@
      $     fb1,fb2,fringe,eps,krad)
       use ffs_flag
       use tmacro
-      use tspin
+      use kradlib
       use bendib, only:tbendal
       use photontable, only:tsetpcvt
       use mathfun, only:pxy2dpz

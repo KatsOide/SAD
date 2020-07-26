@@ -151,6 +151,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       use tfcsi, only:icslfno
       use ffs_seg
       use tspin
+      use kradlib
       use mathfun
       use tracklim
       implicit none
@@ -168,11 +169,13 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       integer*4 l,lele,i,ke,lwl,lwt,lwlc,lwtc,irtc,
      $     nextwake,nwak,itab(np),izs(np)
       integer*8 iwpl,iwpt,iwplc,iwptc
-      logical*4 sol,out,autophi,seg,krad
+      logical*4 sol,out,autophi,seg,krad,wspaccheck
       if(np .le. 0)then
         return
       endif
-      call wspaccheck
+      if(wspaccheck())then
+        return
+      endif
       out=.true.
       nextwake=0
       iwpt=0

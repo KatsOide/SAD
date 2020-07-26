@@ -3,12 +3,14 @@
       real*8 a1,a2
       end module
 
-      subroutine tintrb(trans,cod,beam,bmi,al,al1,ll)
+      subroutine tintrb(trans,cod,beam,bmi,al,al1,optics,ll)
       use intrb
-      use temw, diagr=>r, diagri=>ri
+      use temw, only:diagr=>r, diagri=>ri,tinv6,eemx,eemy,eemz,caltouck,
+     $     tmulbs
       use touschek_table
       use tfstk
       use ffs_flag
+      use ffs_pointer ,only:beamsize
       use tmacro
       use mathfun
       use sad_main, ia=>iaidx
@@ -25,6 +27,7 @@
      $     aez0,aexz,aeyz,f1,f2,f3,bn,bmax,bmin,ci,pvol,vol1,
      $     transsp(6,6)
       real*8 trans1(6,6),trans2(6,6)
+      logical*4 ,intent(in):: optics
 c     real*8  vmin/0.d0/
       if(al .eq. 0.d0)then
         bmi=0.d0
@@ -54,11 +57,18 @@ c      hi=p0*pr*sqrt(1.d0+1.d0/(p0*pr)**2)
 c      hi=sqrt(1.d0+(pr*p0)**2)
       trans1(5,6)=h0/hi**3*alx+s*alz
       if(wspac)then
-        bmi=beam(22:42)+beam(1:21)
+        if(optics)then
+          bmi=beamsize(:,ll)
+        else
+          bmi=beam(22:42)+beam(1:21)
+        endif
         call tmulbs(bmi,trans1,.false.)
         call twspace(transsp,cod,al,bmi,ll)
         trans2=matmul(tinv6(trans1),matmul(transsp,trans1))
         trans(:,1:irad)=matmul(trans2,trans(:,1:irad))
+        if(optics)then
+          return
+        endif
         call tmulbs(beam,trans2,.false.)
       endif
       if(intra)then
@@ -103,7 +113,6 @@ c          call tmultr(transw,trans,6)
           trans2(i,6)=pr/pzi*trans2(i,6)
  3010   continue
         trans1=matmul(trans2,trans1)
-c        call tmultr(trans1,trans2,6)
         call tmulbs(bmi,trans1,.false.)
         xx(1,1)=bmi(ia(1,1))
         xx(2,1)=bmi(ia(3,1))
@@ -770,9 +779,9 @@ c      write(*,*)'twspfu ',x,y,sigx,sigy
       use tfstk
       use ffs
       implicit none
-      v=wspac .and. ifsize .eq. 0
+      v=wspac .and. (ifsize .eq. 0 .or. modesize .ne. 6)
       if(v)then
-        write(*,*)'WSPAC without beam matrix. ',
+        write(*,*)'WSPAC without beam matrix!  ',
      $       'You need EMIT with CODPLOT.'
       endif
       return
