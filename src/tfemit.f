@@ -5,13 +5,15 @@
       use tffitcode
       use iso_c_binding
       use tfcsi, only:icslfno
-      use temw, only:tfinitemip,nparams,tfetwiss,iptwiss,tfinibeam
+      use temw, only:tfinitemip,nparams,tfetwiss,iptwiss,tfinibeam,
+     $     iaemit,iaez
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: kl,klx
       type (sad_rlist), pointer :: kl1,kl2,klr
       type (ffs_bound) fbound
-      integer*8 iatr,iacod,iamat,kaparam,iabmi
+      type (iaemit) iae
+      integer*8 kaparam
       integer*4 isp1,irtc,narg,mode,itgetfpe,itfmessage,lno,
      $     is,ie,nel
       real*8 param(nparams),trans(6,12),cod(6),beam(42),btr(441),sx,
@@ -77,18 +79,15 @@ c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
         lno=icslfno()
       endif
       irtc=0
-      iatr=-1
-      iacod=-1
-      iamat=-1
-      iabmi=0
+      iae=iaez
       if(mode .ge. 1)then
-        iamat=ktadalocnull(-1,6)
+        iae%iamat=ktadalocnull(-1,6)
         if(mode .ge. 2)then
-          iacod=ktadalocnull(-1,nel)
+          iae%iacod=ktadalocnull(-1,nel)
           if(mode .eq. 3)then
-            iatr=ktadalocnull(-1,nel)
+            iae%iatr=ktadalocnull(-1,nel)
             if(intra)then
-              iabmi=ktadalocnull(-1,nel)
+              iae%iabmi=ktadalocnull(-1,nel)
             endif
           endif
         endif
@@ -102,8 +101,7 @@ c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
 c      write(*,*)'tfemit-4 ',codplt,ifsize,nel
       if(nel .eq. nlat)then
         call temit(trans,cod,beam,btr,
-     $       .not. trpt .and. mode .ge. 0,iatr,iacod,iabmi,iamat,
-     $       codplt,param,stab,lno)
+     $       .not. trpt .and. mode .ge. 0,iae,codplt,param,stab,lno)
       else
         call tffsbound1(is,ie-1,fbound)
         cod=codin
@@ -114,11 +112,11 @@ c      write(*,*)'tfemit-4 ',codplt,ifsize,nel
         beam(22:42)=0.d0
         call tinitr12(trans)
         call tturneg(trans,cod,beam,srot,fbound,
-     $     iatr,iacod,iabmi,.true.,rt,.false.)
+     $     iae,.true.,rt,.false.)
         call setparams(param,cod)
         call rotri(is,ris)
         dummy=dnotanumber
-        call setiamat(iamat,ris,codin,beam,dummy,trans)
+        call setiamat(iae%iamat,ris,codin,beam,dummy,trans)
         param(iptwiss:iptwiss+ntwissfun-1)=tfetwiss(ris,codin,
      $       twiss(is,0,mfitdetr) .lt. 1.d0)
       endif
@@ -141,13 +139,13 @@ c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparams
       klx%rbody(1)=sx
       klx%dbody(2)%k=ktflist+ktfcopy1(kaparam)
       if(mode .ge. 1)then
-        klx%dbody(3)%k=ktflist+ktfcopy1(iamat)
+        klx%dbody(3)%k=ktflist+ktfcopy1(iae%iamat)
         if(mode .ge. 2)then
-          klx%dbody(4)%k=ktflist+ktfcopy1(iacod)
+          klx%dbody(4)%k=ktflist+ktfcopy1(iae%iacod)
           if(mode .eq. 3)then
-            klx%dbody(5)%k=ktflist+ktfcopy1(iatr)
+            klx%dbody(5)%k=ktflist+ktfcopy1(iae%iatr)
             if(intra)then
-              klx%dbody(6)%k=ktflist+ktfcopy1(iabmi)
+              klx%dbody(6)%k=ktflist+ktfcopy1(iae%iabmi)
             endif
           endif
         endif

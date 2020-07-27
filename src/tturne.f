@@ -1,5 +1,4 @@
-      subroutine tturne(trans,cod,beam,srot,
-     $     iatr,iacod,iabmi,plot,update,rt,optics)
+      subroutine tturne(trans,cod,beam,srot,iae,plot,update,rt,optics)
       use touschek_table
       use tfstk
       use tffitcode
@@ -8,13 +7,13 @@
       use ffs_flag
       use tmacro
       use sad_main
-      use temw, only:normali,calint
+      use temw, only:normali,calint,iaemit
       use tfcsi, only:icslfno
       implicit none
+      type (iaemit),intent(in):: iae
       type (ffs_bound) fbound
       real*8 codmax,demax
       parameter (codmax=1.d4,demax=.5d0)
-      integer*8 ,intent(in):: iatr,iacod,iabmi
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 z0,pgev00,alambdarf,dzmax,phis,vcacc1
       logical*4 ,intent(in):: plot,update,rt,optics
@@ -34,8 +33,7 @@
       endif
       normali=.true.
       call tffsbound(fbound)
-      call tturneg(trans,cod,beam,srot,fbound,
-     $     iatr,iacod,iabmi,plot,rt,optics)
+      call tturneg(trans,cod,beam,srot,fbound,iae,plot,rt,optics)
       if(update)then
         if(wrfeff .ne. 0.d0)then
           alambdarf=pi2/wrfeff
@@ -83,7 +81,7 @@ c     trf0=-(cod(5)+z0)*0.5d0
       end
 
       subroutine tturneg(trans,cod,beam,srot,fbound,
-     $     iatr,iacod,iabmi,plot,rt,optics)
+     $     iae,plot,rt,optics)
       use touschek_table
       use tfstk
       use tffitcode
@@ -92,13 +90,12 @@ c     trf0=-(cod(5)+z0)*0.5d0
       use ffs_flag
       use tmacro
       use sad_main
-      use temw, only:normali
+      use temw, only:normali,iaemit
       use tfcsi, only:icslfno
       implicit none
+      type (iaemit) ,intent(in):: iae
       type (ffs_bound) fbound
-      real*8 codmax,demax
-      parameter (codmax=1.d4,demax=.5d0)
-      integer*8 iatr,iacod,iabmi
+      real*8 ,parameter::codmax=1.d4,demax=.5d0
       real*8 trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 z0,vcacc1
       logical*4 ,intent(in):: plot,rt,optics
@@ -110,8 +107,7 @@ c     trf0=-(cod(5)+z0)*0.5d0
       dvcacc=0.d0
       ddvcacc=0.d0
       normali=.true.
-      call tturne0(trans,cod,beam,srot,fbound,
-     $     iatr,iacod,iabmi,0,plot,rt,optics)
+      call tturne0(trans,cod,beam,srot,fbound,iae,0,plot,rt,optics)
       if(vcacc .ne. 0.d0)then
         wrfeff=sqrt(abs(ddvcacc/vcacc))
       elseif(vc0 .ne. 0.d0)then
@@ -148,7 +144,7 @@ c     trf0=-(cod(5)+z0)*0.5d0
       end
 
       subroutine tturne0(trans,cod,beam,srot,fbound,
-     $     iatr,iacod,iabmi,idp,plot,rt,optics)
+     $     iae,idp,plot,rt,optics)
       use touschek_table
       use tfstk
       use tffitcode
@@ -157,13 +153,13 @@ c     trf0=-(cod(5)+z0)*0.5d0
       use ffs_flag
       use tmacro
       use sad_main
-      use temw, only:calint
+      use temw, only:calint,iaemit,iaez
       implicit none
+      type (iaemit) ,intent(in):: iae
       type (ffs_bound) fbound
       type (sad_dlist), pointer :: kli
       type (sad_rlist), pointer :: klir
       type (sad_comp) , pointer :: cmp
-      integer*8 iatr,iacod,iabmi
       integer*4 ls,l,nvar,lx,idp,le1,lv,itfdownlevel,irtc
       real*8 trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 trans1(6,12),cod1(6),beam1(42)
@@ -182,7 +178,7 @@ c      write(*,*)'tturne1-1 ',fbound%lb,fbound%fb,fbound%le,fbound%fe
         else
 c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
           call tturne1(trans,cod,beam,srot,
-     $         iatr,iacod,iabmi,idp,plot,sol,rt,optics,
+     $         iae,idp,plot,sol,rt,optics,
      $         fbound%lb,fbound%lb)
         endif
         if(chg)then
@@ -195,16 +191,16 @@ c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
       if(fbound%fe .eq. 0.d0)then
         le1=min(nlat-1,fbound%le)
         call tturne1(trans,cod,beam,srot,
-     $       iatr,iacod,iabmi,idp,plot,sol,rt,optics,
+     $       iae,idp,plot,sol,rt,optics,
      $       ls,le1)
         if(plot)then
           call tfsetplot(trans,cod,beam,fbound%lb,
-     $         le1+1,iatr,iacod,.false.,idp)
+     $         le1+1,iae%iatr,iae%iacod,.false.,idp)
         endif
       else
         if(ls .lt. fbound%le)then
           call tturne1(trans,cod,beam,srot,
-     $         iatr,iacod,iabmi,idp,plot,sol,rt,optics,
+     $         iae,idp,plot,sol,rt,optics,
      $         ls,fbound%le-1)
         endif
         call compelc(fbound%le,cmp)
@@ -214,7 +210,7 @@ c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
           call tffserrorhandle(fbound%le,irtc)
         else
           call tturne1(trans,cod,beam,srot,
-     $         iatr,iacod,iabmi,idp,plot,sol,rt,optics,
+     $         iae,idp,plot,sol,rt,optics,
      $         fbound%le,min(nlat-1,fbound%le))
         endif
         if(chg)then
@@ -222,7 +218,7 @@ c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
         endif
         if(plot)then
           call tfsetplot(trans,cod,beam,0,
-     $         nlat,iatr,iacod,.false.,idp)
+     $         nlat,iae%iatr,iae%iacod,.false.,idp)
         endif
       endif
       if(plot)then
@@ -236,18 +232,18 @@ c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
             lx=int(xp)
             fr=xp-lx
  8101       if(fr .eq. 0.d0)then
-              if(iatr .ne. 0)then
-                if(iatr .gt. 0)then
+              if(iae%iatr .ne. 0)then
+                if(iae%iatr .gt. 0)then
                   if(l .ge. fbound%lb .and. l .le. fbound%le)then
-                    call tflocal(klist(iatr+l))
+                    call tflocal(klist(iae%iatr+l))
                   endif
-                  klist(iatr+l)=ktfcopy1(klist(iatr+lx))
+                  klist(iae%iatr+l)=ktfcopy1(klist(iae%iatr+lx))
                 endif
-                if(iacod .gt. 0)then
+                if(iae%iacod .gt. 0)then
                   if(l .ge. fbound%lb .and. l .le. fbound%le)then
-                    call tflocal(klist(iacod+l))
+                    call tflocal(klist(iae%iacod+l))
                   endif
-                  klist(iacod+l)=ktfcopy(klist(iacod+lx))
+                  klist(iae%iacod+l)=ktfcopy(klist(iae%iacod+lx))
                 endif
               endif
               if(plot)then
@@ -285,14 +281,15 @@ c     below is incorrect for fra <> 0
                   go to 8101
                 endif
                 cod1=0.d0
-                if(iatr .ne. 0)then
-                  if(iatr .gt. 0 .and. ktflistq(dlist(iatr+lx),kli))then
+                if(iae%iatr .ne. 0)then
+                  if(iae%iatr .gt. 0 .and.
+     $                 ktflistq(dlist(iae%iatr+lx),kli))then
                     call tfl2m(kli,trans1,6,6,.false.)
                   else
                     call tinitr(trans1)
                   endif
-                  if(iacod .gt. 0 .and.
-     $                 tfreallistq(dlist(iacod+lx),klir))then
+                  if(iae%iacod .gt. 0 .and.
+     $                 tfreallistq(dlist(iae%iacod+lx),klir))then
                     cod1=klir%rbody(1:6)
                   endif
                 else
@@ -312,7 +309,7 @@ c     below is incorrect for fra <> 0
                 int0=calint
                 calint=.false.
                 call tturne1(trans1,cod1,beam1,srot,
-     $               i00,i00,i00,idp,.false.,sol1,rt,
+     $               iaez,idp,.false.,sol1,rt,
      $               optics,
      $               lx,lx)
                 codplt=cp0
@@ -322,7 +319,7 @@ c     below is incorrect for fra <> 0
 c              write(*,*)'tturne0 ',lx,l,fbound%lb,fbound%le,idp,
 c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
               call tfsetplot(trans1,cod1,beam1,lx,
-     $             l,iatr,iacod,
+     $             l,iae%iatr,iae%iacod,
      $             l .ge. fbound%lb .and. l .le. fbound%le,idp)
             endif
           endif
@@ -340,7 +337,7 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       end
 
       subroutine tturne1(trans,cod,beam,srot,
-     $     iatr,iacod,iabmi,idp,plot,sol,rt,optics,
+     $     iae,idp,plot,sol,rt,optics,
      $     ibegin,iend)
       use kyparam
       use tfstk
@@ -352,23 +349,24 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       use sad_main
       use tfcsi, only:icslfno
       use ffs_seg
-      use temw,only:tsetr0,calint
+      use temw,only:tsetr0,calint,iaemit
       implicit none
       real*8 , parameter:: demax=.5d0,tapmax=0.3d0
+      type (iaemit) ,intent(in):: iae
       type (sad_comp), pointer :: cmp
       type (sad_dlist), pointer :: lsegp
-      integer*8 iatr,iacod,iabmi,kbmz,kbmzi,lp
-      integer*4 idp,i,l1
-      real*8 trans(6,12),cod(6),beam(42),bmir(6,6),srot(3,9),
-     $     bmi(21),bmh(21),trans1(6,6)
+      integer*8 kbmzi,lp
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 bmir(6,6),bmi(21),bmh(21),trans1(6,6)
       real*8 psi1,psi2,apsi1,apsi2,alid,
      $     r,dir,al,alib,dtheta,theta0,ftable(4),
      $     fb1,fb2,ak0,ak1,rtaper,als
-      integer*4 l,ld,lele,mfr,ibegin,iend,ke,irtc
-      logical*4 sol,plot,bmaccum,plotib,rt,next,seg,
-     $     optics,coup,err,inin
-      save kbmz
-      data kbmz /0/
+      integer*4 ,intent(in):: idp,ibegin,iend
+      integer*4 l,ld,lele,mfr,ke,irtc,i,l1
+      logical*4 ,intent(in):: plot,rt,optics
+      logical*4 ,intent(inout):: sol
+      logical*4 bmaccum,plotib,next,seg,coup,err,inin
+      integer*8 ,save:: kbmz=0
       if(kbmz .eq. 0)then
         kbmz=ktadaloc(0,6)
         kbmzi=ktraaloc(-1,6)
@@ -377,7 +375,7 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
         enddo
       endif
       bmaccum=.false.
-      plotib=plot .and. iabmi .ne. 0
+      plotib=plot .and. iae%iabmi .ne. 0
       alid=0.d0
       call tsetdvfs
       call tesetdv(cod(6))
@@ -405,13 +403,13 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
           go to 1010
         endif
         if(plot)then
-          if(iatr .ne. 0)then
-            if(iatr .gt. 0)then
-              dlist(iatr+l)=
+          if(iae%iatr .ne. 0)then
+            if(iae%iatr .gt. 0)then
+              dlist(iae%iatr+l)=
      $             dtfcopy1(kxm2l(trans,6,6,6,.false.))
             endif
-            if(iacod .gt. 0)then
-              dlist(iacod+l)=
+            if(iae%iacod .gt. 0)then
+              dlist(iae%iacod+l)=
      $             dtfcopy1(kxm2l(cod,0,6,1,.false.))
             endif
           endif
@@ -470,13 +468,13 @@ c            call checketwiss(trans,et)
                   bmi=bmi+bmh
                 endif
                 call tconvbm(bmi,bmir)
-                dlist(iabmi+l)=
+                dlist(iae%iabmi+l)=
      $               dtfcopy1(kxm2l(bmir,6,6,6,.false.))
                 bmaccum=.false.
               endif
             endif
           elseif(plotib)then
-            klist(iabmi+l)=ktflist+ktfcopy1(kbmz)
+            klist(iae%iabmi+l)=ktflist+ktfcopy1(kbmz)
           endif
         endif
 c        WRITE(*,*)lele,' ',PNAME(ILIST(2,LATT(L)))(1:16)
@@ -502,7 +500,7 @@ c        go to 5000
                 bmh=bmh+bmi
                 call tconvbm(bmh,bmir)
                 bmh=bmi
-                dlist(iabmi+l)=
+                dlist(iae%iabmi+l)=
      $               dtfcopy1(kxm2l(bmir,6,6,6,.false.))
               endif
             endif
@@ -609,7 +607,7 @@ c          endif
 
         case(icSOL)
           call tsole(trans,cod,beam,srot,l,ke,sol,
-     1         iatr,iacod,iabmi,idp,plot,rt)
+     1         iae,idp,plot,rt)
           alid=0.d0
 
         case (icST)
@@ -705,7 +703,7 @@ c      call tfmemcheckprint('tturne-end0',0,.true.,irtc)
 c            call tadd(bmh,bmi,bmi,21)
           endif
           call tconvbm(bmi,bmir)
-          dlist(iabmi+iend+1)=
+          dlist(iae%iabmi+iend+1)=
      $         dtfcopy1(kxm2l(bmir,6,6,6,.false.))
         endif
       endif

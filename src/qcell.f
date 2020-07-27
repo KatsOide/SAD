@@ -414,7 +414,7 @@ c                enddo
       use ffs_fit ,only:ffs_stat
       use ffs_pointer
       use temw,only:r,ri,calint,normali,tinv6,etwiss2ri,tsymp,nparams,
-     $     tfinibeam
+     $     tfinibeam,iaez
       use maccbk, only:i00
       implicit none
       type (ffs_bound) ,intent(in):: fbound
@@ -436,7 +436,7 @@ c                enddo
  1    cod=twiss(1,idp,mfitdx:mfitddp)
       if(cell)then
         call temit(trans,cod,beam,btr,
-     $     calint1,i00,i00,i00,i00,
+     $     calint1,iaez,
      $     .true.,params,stab,0)
         if(.not. stab)then
           write(lfno,*)
@@ -460,7 +460,7 @@ c                enddo
 c        codplt=.true.
         call tinitr(trans)
         call tturne0(trans,cod,beam,srot,fbound,
-     $       i00,i00,i00,idp,.true.,rt,.true.)
+     $       iaez,idp,.true.,rt,.true.)
       endif
       calint=ci0
       codplt=codplt0

@@ -1,5 +1,4 @@
-      subroutine tsole(trans,cod,beam,srot,k,ke,sol,
-     1     iatr,iacod,iabmi,idp,plot,rt)
+      subroutine tsole(trans,cod,beam,srot,k,ke,sol,iae,idp,plot,rt)
       use kyparam
       use tfstk
       use tffitcode
@@ -9,12 +8,13 @@
       use ffs_flag
       use tmacro
       use ffs_seg
-      use temw, only:calint,tmulbs
+      use temw, only:calint,tmulbs,iaemit
       use kradlib, only:tradke
       implicit none
       real*8 conv
       parameter (conv=3.d-16)
-      integer*8 iatr,iacod,iabmi,iatrl,iacodl,iabmilz
+      type (iaemit) ,intent(in):: iae
+      integer*8 iatrl,iacodl,iabmilz
       integer*4 k,ke,i,l,idp
       real*8 trans(6,12),cod(6),beam(42),bmir(6,6),srot(3,9),rtaper
       real*8 r
@@ -43,16 +43,16 @@
         endif
         call tsole1(trans,cod,beam,srot,l,rtaper,.true.,.false.)
         if(plot)then
-          if(iatr .ne. 0)then
-            if(iatr .gt. 0)then
-              call tflocal(klist(iatr+l+1))
+          if(iae%iatr .ne. 0)then
+            if(iae%iatr .gt. 0)then
+              call tflocal(klist(iae%iatr+l+1))
               iatrl=ktfaddr(kxm2l(trans,6,6,6,.false.))
-              klist(iatr+l+1)=ktflist+ktfcopy1(iatrl)
+              klist(iae%iatr+l+1)=ktflist+ktfcopy1(iatrl)
             endif
-            if(iacod .gt. 0)then
-              call tflocal(klist(iacod+l+1))
+            if(iae%iacod .gt. 0)then
+              call tflocal(klist(iae%iacod+l+1))
               iacodl=ktfaddr(kxm2l(cod,0,6,1,.false.))
-              klist(iacod+l+1)=ktflist+ktfcopy1(iacodl)
+              klist(iae%iacod+l+1)=ktflist+ktfcopy1(iacodl)
             endif
           endif
           if(codplt)then
@@ -66,13 +66,13 @@ c            endif
               beamsize(:,l+1)=beam
             endif
           endif
-          if(calint .and. iabmi .ne. 0)then
+          if(calint .and. iae%iabmi .ne. 0)then
             if(iabmilz .eq. 0)then
               bmir=0.d0
               iabmilz=ktfaddr(kxm2l(bmir,6,6,6,.false.))
             endif
-            call tflocal(klist(iabmi+l))
-            klist(iabmi+l)=ktflist+ktfcopy1(iabmilz)
+            call tflocal(klist(iae%iabmi+l))
+            klist(iae%iabmi+l)=ktflist+ktfcopy1(iabmilz)
           endif
         elseif(radtaper .and. radcod)then
           if(l .eq. 1)then

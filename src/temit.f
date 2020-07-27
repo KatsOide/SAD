@@ -24,9 +24,7 @@ c     Table of loss-rate
 
       subroutine initialize_tampl()
       implicit none
-      integer :: i
-
-      tampl(:,:) = 0.d0
+      tampl = 0.d0
 
       tampl( 1,1)=1.d0
       tampl( 2,1)=2.d0
@@ -58,9 +56,9 @@ c     Table of loss-rate
       tampl(17+5+4,1)=77.d0
       tampl(18+5+4,1)=88.d0
 
-      do i = 28, ntouckx
-        tampl(i, 1) = tampl(i-18, 1) * 10.d0
-      enddo
+c      do i = 28, ntouckx
+        tampl(28:ntouckx, 1) = tampl(10:ntouckx-18, 1) * 10.d0
+c      enddo
 
       tampl(1:ntouckx,2) = tampl(1:ntouckx,1)
 
@@ -78,8 +76,7 @@ c     Table of loss-rate
       end module touschek_table
 
       subroutine temit(trans,cod,beam,btr,
-     $     calem0,iatr,iacod,iabmi,iamat,
-     $     plot,params,stab,lfno)
+     $     calem0,iae,plot,params,stab,lfno)
       use tfstk
       use temw
       use ffs_flag
@@ -90,9 +87,8 @@ c     Table of loss-rate
       use eigen
       use macmath
       implicit none
-      real*8 conv
-      parameter (conv=1.d-12)
-      integer*8 ,intent(in):: iatr,iacod,iamat,iabmi
+      type (iaemit),intent(in):: iae
+      real*8 ,parameter ::conv=1.d-12
       integer*4 ,intent(in):: lfno
       integer*4 it,i,iret
       real*8 ,intent(out):: trans(6,12),cod(6),beam(42),
@@ -165,11 +161,11 @@ c     $     tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
           call srotinit(srot)
           call tsetr0(trans,cod,0.d0,0.d0)
           if(econv)then
-            call tturne(trans,cod,beam,srot,iatr,iacod,iabmi,
+            call tturne(trans,cod,beam,srot,iae,
      1           plot,.false.,rt,.false.)
             postcal=.false.
           else
-            call tturne(trans,cod,beam,srot,i00,i00,i00,
+            call tturne(trans,cod,beam,srot,iaez,
      1           .false.,.false.,rt,.false.)
           endif
           if(trpt)then
@@ -224,15 +220,15 @@ c          endif
         endif
         beam(22:42)=0.d0
         call srotinit(srot)
-        call tturne(trans,cod,beam,srot,iatr,iacod,iabmi,
+        call tturne(trans,cod,beam,srot,iae,
      $       .true.,.false.,rt,.false.)
       endif
-      if(iamat .eq. 0)then
+      if(iae%iamat .eq. 0)then
         if(plot .and. charge .lt. 0.d0)then
           beamsize=-beamsize
         endif
       else
-        call setiamat(iamat,ri,codin,beamp,beam,trans)
+        call setiamat(iae%iamat,ri,codin,beamp,beam,trans)
       endif
       return
       end
@@ -250,8 +246,7 @@ c          endif
       use eigen
       use macmath
       implicit none
-      real*8 conv
-      parameter (conv=1.d-12)
+      real*8 ,parameter:: conv=1.d-12
       integer*4 lfno,i,j,k,k1,k2,k3,m,l,n
       real*8 ,intent(inout):: beam(42),srot1(3,3),srot(3,9)
       real*8 ,intent(in):: trans(6,12),cod(6)
@@ -259,8 +254,7 @@ c          endif
       real*8 sdamp,sqr2,bb,bbv(21),sr,rgetgl1,
      $     tune,ab(6),emxe,emye,emze,rirx(6,6)
       complex*16 ,intent(out):: cd(6)
-      complex*16 dceig(6)
-      complex*16 cc(6),ceig(6)
+      complex*16 dceig(6),cc(6),ceig(6)
       real*8 ,intent(out):: btr(21,21),emitn(21),emitp(21),beamn(21),
      1     beamp(21),params(nparams),rx(6,6),rd(6,6)
       real*8 tw(ntwissfun),sps(3,3),spm(3,3),rdb(6,12)
@@ -383,11 +377,11 @@ c     $       tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
       else
         rdb(:,1:6)=rd
         if(.not. synchm)then
-          do i=1,6
-            beam(iaidx(5,i))=0.d0
-            rdb(i,5)=0.d0
-            rdb(5,i)=0.d0
-          enddo
+c          do i=1,6
+          beam(iaidx(5,1:6))=0.d0
+          rdb(1:6,5)=0.d0
+          rdb(5,1:6)=0.d0
+c          enddo
         endif
         btr=0.d0
         rdb(:,7:12)=0.d0
@@ -630,10 +624,10 @@ c factor: tf for toucke(#dp/p0,#element)
             klx2%dbody(1)=
      $           dtfcopy1(kxm2l(tampl,ntouckx,3,ntouckx,.true.))
             do i=1,ntouckx
-              do j=1,ntouckz
-                touckm(j,i,1)=touckm(j,i,1)*tf
-                touckm(j,i,2)=touckm(j,i,2)*tf
-              enddo
+c              do 1:ntouckz=1,ntouckz
+              touckm(1:ntouckz,i,1)=touckm(1:ntouckz,i,1)*tf
+              touckm(1:ntouckz,i,2)=touckm(1:ntouckz,i,2)*tf
+c              enddo
             enddo
             klx2%dbody(2)=dtfcopy1(kxm2l(touckm(1,1,1),
      $           ntouckz,ntouckx,ntouckz,.true.))
@@ -819,29 +813,24 @@ c
 
       real*8 function eintrb(em0,y,emr)
       implicit none
-      real*8 em0,y,emr,eps
-
-      integer itmax
-      parameter (eps=1.d-10,itmax=30)
+      real*8 ,intent(in):: em0,y,emr
+      real*8 ,parameter::eps=1.d-10
+      integer*4 ,parameter ::itmax=30
       real*8 em,a,y1
-      integer it
-
+      integer*4 it
       em=em0
       a=(y-emr)*em0**2
       y1=y
-      it=0
-1     em=em+(y1-em)/(em**3+2.d0*a)*em**3
-      y1=emr+a/em**2
-      if(abs(y1-em) .lt. eps*em)then
-        eintrb=min(100.d0*em0,max(emr,y1,0.01d0*em0))
-        return
-      endif
-      it=it+1
-      if(it .gt. itmax)then
-        eintrb=min(100.d0*em0,max(0.01d0*em0,em))
-        return
-      endif
-      go to 1
+      do it=1,itmax
+        em=em+(y1-em)/(em**3+2.d0*a)*em**3
+        y1=emr+a/em**2
+        if(abs(y1-em) .lt. eps*em)then
+          eintrb=min(100.d0*em0,max(emr,y1,0.01d0*em0))
+          return
+        endif
+      enddo
+      eintrb=min(100.d0*em0,max(0.01d0*em0,em))
+      return
       end
 
       subroutine tinv(r,ri,n,ndimr)

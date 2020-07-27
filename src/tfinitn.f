@@ -1008,7 +1008,7 @@ c      i=itfunaloc('BidirectionalPipe',136,1,map,ieval,0)
       ilist(1,klist(ifunbase+i)-3)=ilist(1,klist(ifunbase+i)-3)
      $     +iattrorderless
       i=itfunaloc('Short',162,2,map,ieval,0)
-c      i=itfunaloc('Fork',163,0,map,ieval,0)
+      i=itfunaloc('$SetOMPNumThreads',163,1,map,ieval,0)
 c      i=itfunaloc('Directory',164,0,map,ieval,0)
 c      i=itfunaloc('SetDirectory',165,1,map,ieval,0)
 c      i=itfunaloc('Wait',166,0,map,ieval,0)

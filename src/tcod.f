@@ -5,6 +5,7 @@
       use ffs_fit
       use ffs, only:mfitddp
       use tmacro
+      use temw, only:iaez
       implicit none
       integer*4 im
       logical*4 ,intent(out):: fndcod
@@ -78,7 +79,7 @@ c      write(*,*)'tcod-dp0 ',dp0
       codf=codi
       trf00=trf0
       call tturne(trans,codf,beam,srot,
-     $     i00,i00,i00,.false.,.true.,rt,optics)
+     $     iaez,.false.,.true.,rt,optics)
       dz=(codi(5)+codf(5))*0.5d0
       rt=radtaper
       dcod1=codi-codf

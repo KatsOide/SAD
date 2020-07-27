@@ -367,7 +367,7 @@ c      h1=sqrt(1.d0+p1**2)
       integer*4 np,i
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),
      $     z(np),g(np),dv(np),sx(np),sy(np),sz(np)
-      real*8 ,intent(in):: al,cod(6),beam(42)
+      real*8 ,intent(in):: al,cod(6),beam(21)
       real*8 xx1,yy1,xy1,a,c1,s1,sigx,sigy,p1,h1,f,dx,dy,
      $     dx1,dy1,dpx,dpy,pr,u,v,theta,sigzsq,
      $     az,dg,dpr,pr1,fx,fy,fu,xc,yc,zc,fxx,fyy,fxy
@@ -378,7 +378,6 @@ c      h1=sqrt(1.d0+p1**2)
       u=xx1-yy1
       v=2.d0*xy1
       a=hypot(u,v)
-c      a=sqrt(u**2+v**2)
       theta=atan2(v,u)*.5d0
       c1=cos(theta)
       s1=sin(theta)

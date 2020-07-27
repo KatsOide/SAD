@@ -151,13 +151,17 @@ c     pz2=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
           bys=0.d0
           fx= bzs*dy*.5d0
           fy=-bzs*dx*.5d0
-          do i=1,np
-            pr=(1.d0+g(i))
-            x(i)=x(i)-dx
-            y(i)=y(i)-dy
-            px(i)=px(i)+fx/pr
-            py(i)=py(i)+fy/pr
-          enddo
+          x=x-dx
+          y=y-dy
+          px=px+fx/(1.d0+g)
+          py=py+fy/(1.d0+g)
+c          do concurrent (i=1:np)
+c            pr=(1.d0+g(i))
+c            x(i)=x(i)-dx
+c            y(i)=y(i)-dy
+c            px(i)=px(i)+fx/pr
+c            py(i)=py(i)+fy/pr
+c          enddo
         endif
         if(chi3 .ne. 0.d0)then
           cchi3=cos(chi3)

@@ -90,7 +90,7 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
         endif
         if(fbound%le .gt. ls+1 .or.
      $       fbound%le .eq. ls+1 .and. fbound%fe .eq. 0.d0)then
-          call tturn1(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
+         call tturn1(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
      $         sol,la,ls,fbound%le-1)
         endif
         if(fbound%fe .ne. 0.d0)then
@@ -107,9 +107,9 @@ c          call qfraccomp(fbound%le,0.d0,fbound%fe,ideal,chg)
       endif
       lv=itfdownlevel()
       if(trpt .and. codplt)then
-        call ttstat(np,x,px,y,py,z,g,dv,0.d0,
-     1       ' ',sa,ss,0.d0,
-     1       .false.,.false.,0)
+c        call ttstat(np,x,px,y,py,z,g,dv,0.d0,
+c     1       ' ',sa,ss,0.d0,
+c     1       .false.,.false.,0)
 c        call ttstat(np,x,px,y,py,z,g,dv,rlist(ilist(2,iwakepold+4)),
 c     1       ' ',sa,ss,0.d0,
 c     1       .false.,.false.,0)
@@ -146,7 +146,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       use tffitcode
       use ffs_wake
       use sad_main
-      use ffs_pointer, only: direlc,compelc
+      use ffs_pointer, only: direlc,compelc,twiss
       use tparastat
       use tfcsi, only:icslfno
       use ffs_seg
@@ -212,15 +212,16 @@ c      isb=ilist(2,iwakepold+6)
       bsi=0.d0
       do l=lbegin,lend
         l_track=l
-c        if(l .gt. 3300)then
-c          write(*,*)'tturn1-l ',l,lend,np
+c        if(l .ge. 19 .and. l .lt. 22)then
+c          write(*,*)'tturn1-l ',l,np,x(1),y(1),g(1)
+c          write(*,*)'tturn1 ',l,np,kptbl(1,1:6)
 c        endif
 c        call tfmemcheckprint('tturn',l,.false.,irtc)
-        if(trpt .and. codplt)then
-          call ttstat(np,x,px,y,py,z,g,dv,0.d0,
-     1         ' ',sa,ss,0.d0,
-     1         .false.,.false.,0)
-        endif
+c        if(trpt .and. codplt)then
+c          call ttstat(np,x,px,y,py,z,g,dv,0.d0,
+c     1         ' ',sa,ss,0.d0,
+c     1         .false.,.false.,0)
+c        endif
         if(la .le. 0)then
           call limitnan(x(1:np),-xlimit,xlimit,xlimit)
           call limitnan(px(1:np),-plimit,plimit,plimit)
@@ -290,14 +291,10 @@ c        call tfmemcheckprint('tturn',l,.false.,irtc)
         endif
         if(wspac .or. pspac)then
           sspac=(rlist(ifpos+l-1)+rlist(ifpos+l))*.5d0
-          if(sspac .ne. sspac0)then
-             if(wspac) then
-               call twspac(np,x,px,y,py,z,g,dv,sx,sy,sz,sspac-sspac0,
-     $              gettwiss(mfitdx,l),
-c     $              rlist(iftwis+((mfitdx-1)*(2*ndim+1)+ndim)*nlat
-c     $              +l-1),
-     $              rlist(ifsize+(l-1)*21))
-             endif
+          if(sspac .ne. sspac0 .and. wspac) then
+            call twspac(np,x,px,y,py,z,g,dv,sx,sy,sz,sspac-sspac0,
+     $           twiss(l,0,mfitdx:mfitddp),
+     $           rlist(ifsize+(l-1)*21),l)
           endif
           sspac0=sspac
        endif
@@ -649,10 +646,10 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
         if(sspac .ne. sspac0)then
            if(wspac)then
               call twspac(np,x,px,y,py,z,g,dv,sx,sy,sz,sspac-sspac0,
-     $            gettwiss(mfitdx,lend),
+     $            twiss(lend,0,mfitdx:mfitddp),
 c     $             rlist(iftwis+((mfitdx-1)*(2*ndim+1)+ndim)*nlat
 c     $             +lend-1),
-     $             rlist(ifsize+(lend-1)*21))
+     $             rlist(ifsize+(lend-1)*21),lend)
            endif
            if(pspac) then
               call tpspac(np,x,px,y,py,z,g,dv,sx,sy,sz,

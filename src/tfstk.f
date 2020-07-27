@@ -4539,4 +4539,26 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         return
         end subroutine
 
+        subroutine setompnumthreads(isp1,kx,irtc)
+        implicit none
+        integer*4 ,intent(in):: isp1
+        integer*4 ,intent(out):: irtc
+        integer*4 itfmessage,iv
+        type (sad_descriptor),intent(out):: kx
+        if(isp .ne. isp1+1)then
+          irtc=itfmessage(9,'General::narg','"1"')
+          return
+        elseif(ktfnonrealq(dtastk(isp),iv))then
+          irtc=itfmessage(9,'General::wrongtype','"Real"')
+          return
+        elseif(iv .le. 0)then
+          irtc=itfmessage(9,'General::wrongval','">= 1"')
+          return
+        endif
+        call omp_set_num_threads(iv)
+        kx=dfromr(dble(iv))
+        irtc=0
+        return
+        end
+
       end module

@@ -453,10 +453,10 @@ c$$$susp;
         return
         end subroutine
 
-        real*8 function gettwiss(key,lp)
+        real*8 pure elemental function gettwiss(key,lp)
         use tfstk
         implicit none
-        integer*4 key,lp
+        integer*4 ,intent(in):: key,lp
         gettwiss=rlist(iftwis+((key-1)*(2*ndim+1)+ndim)*nlat+lp-1)
         return
         end function
@@ -1879,6 +1879,16 @@ c     Inverse matrix of r: NormalCoordinate
      $     0.d0, 0.d0, 0.d0, 0.d0, 0.d0, 1.d0/),
      $     (/6, 6/))
 
+      type iaemit
+      sequence
+      integer*8 iatr,iacod,iamat,iabmi
+      end type
+
+      type (iaemit) ,public,parameter::
+     $     iaez=iaemit(int8(0),int8(0),int8(0),int8(0))
+c     $     iaez%iatr=int8(0),iaez%iacod=int8(0),
+c     $     iaez%iamat=int8(0),iaez%iabmi=int8(0)
+
       real*8 , public :: transr(6,6),codr0(6),bzhr0,bsir0
       real*8 , public :: gintd(3)
       real(8), public :: eemx,eemy,eemz,
@@ -1887,7 +1897,6 @@ c     Inverse matrix of r: NormalCoordinate
      $     equpol(3),spinmu
       real(8), public :: bh,heff,phirf,omegaz,sige,sigz
       complex*16 , public :: ceig0(6)
-
       logical*4, public :: normali, initemip=.true.,
      $     initr,calint,caltouck,fndcod,synchm,epi
       real*8 , parameter :: toln=0.1d0
@@ -1900,7 +1909,7 @@ c     Inverse matrix of r: NormalCoordinate
 
       public :: tfetwiss,etwiss2ri,tfnormalcoord,toln,
      $     tfinitemip,tsetr0,tinv6,tsymp,tmultr45,
-     $     label1,label2,tfinibeam,tmulbs
+     $     label1,label2,tfinibeam,tmulbs,iaemit
 
       contains
 
@@ -2442,26 +2451,27 @@ c      crz=sqrt(uz12**2+uz22**2)
       return
       end subroutine
 
-      subroutine tmulbs(beam,trans,beamr)
+      subroutine tmulbs(beam,trans1,beamr)
       use tfstk
       use ffs_flag
       use tmacro
       implicit none
       real*8 ,intent(inout):: beam(:)
-      real*8 ,intent(in),target:: trans(:,:)
-      real*8 , pointer:: trans1(:,:)
-      real*8 ,target::transs(6,6)
+      real*8 ,intent(in):: trans1(6,6)
+c      real*8 ,intent(in),target:: trans(:,:)
+c      real*8 , pointer:: trans1(:,:)
+c      real*8 ,target::transs(6,6)
       real*8 s(6,6)
       logical*4 beamr
       if(irad .lt. 12)then
         return
       endif
-      if(size(trans,2) .eq. 6)then
-        trans1=>trans
-      else
-        transs=trans(1:6,1:6)+trans(1:6,7:12)
-        trans1=>transs
-      endif
+c      if(size(trans,2) .eq. 6)then
+c        trans1=>trans
+c      else
+c        transs=trans(1:6,1:6)+trans(1:6,7:12)
+c        trans1=>transs
+c      endif
 c      do j=1,6
         s(1,1:6)=trans1(1:6,1)*beam(1) +trans1(1:6,2)*beam(2)
      1          +trans1(1:6,3)*beam(4) +trans1(1:6,4)*beam(7)
@@ -2482,69 +2492,27 @@ c      do j=1,6
      1          +trans1(1:6,3)*beam(18)+trans1(1:6,4)*beam(19)
      1          +trans1(1:6,5)*beam(20)+trans1(1:6,6)*beam(21)
 c      enddo
-        beam(1)=s(1,1)*trans1(1,1)+s(2,1)*trans1(1,2)
-     1         +s(3,1)*trans1(1,3)+s(4,1)*trans1(1,4)
-     1         +s(5,1)*trans1(1,5)+s(6,1)*trans1(1,6)
-        beam(2)=s(1,1)*trans1(2,1)+s(2,1)*trans1(2,2)
-     1         +s(3,1)*trans1(2,3)+s(4,1)*trans1(2,4)
-     1         +s(5,1)*trans1(2,5)+s(6,1)*trans1(2,6)
-        beam(3)=s(1,2)*trans1(2,1)+s(2,2)*trans1(2,2)
-     1         +s(3,2)*trans1(2,3)+s(4,2)*trans1(2,4)
-     1         +s(5,2)*trans1(2,5)+s(6,2)*trans1(2,6)
-        beam(4)=s(1,1)*trans1(3,1)+s(2,1)*trans1(3,2)
-     1         +s(3,1)*trans1(3,3)+s(4,1)*trans1(3,4)
-     1         +s(5,1)*trans1(3,5)+s(6,1)*trans1(3,6)
-        beam(5)=s(1,2)*trans1(3,1)+s(2,2)*trans1(3,2)
-     1         +s(3,2)*trans1(3,3)+s(4,2)*trans1(3,4)
-     1         +s(5,2)*trans1(3,5)+s(6,2)*trans1(3,6)
-        beam(6)=s(1,3)*trans1(3,1)+s(2,3)*trans1(3,2)
-     1         +s(3,3)*trans1(3,3)+s(4,3)*trans1(3,4)
-     1         +s(5,3)*trans1(3,5)+s(6,3)*trans1(3,6)
-        beam(7)=s(1,1)*trans1(4,1)+s(2,1)*trans1(4,2)
-     1         +s(3,1)*trans1(4,3)+s(4,1)*trans1(4,4)
-     1         +s(5,1)*trans1(4,5)+s(6,1)*trans1(4,6)
-        beam(8)=s(1,2)*trans1(4,1)+s(2,2)*trans1(4,2)
-     1         +s(3,2)*trans1(4,3)+s(4,2)*trans1(4,4)
-     1         +s(5,2)*trans1(4,5)+s(6,2)*trans1(4,6)
-        beam(9)=s(1,3)*trans1(4,1)+s(2,3)*trans1(4,2)
-     1         +s(3,3)*trans1(4,3)+s(4,3)*trans1(4,4)
-     1         +s(5,3)*trans1(4,5)+s(6,3)*trans1(4,6)
-       beam(10)=s(1,4)*trans1(4,1)+s(2,4)*trans1(4,2)
-     1         +s(3,4)*trans1(4,3)+s(4,4)*trans1(4,4)
-     1         +s(5,4)*trans1(4,5)+s(6,4)*trans1(4,6)
-       beam(11)=s(1,1)*trans1(5,1)+s(2,1)*trans1(5,2)
-     1         +s(3,1)*trans1(5,3)+s(4,1)*trans1(5,4)
-     1         +s(5,1)*trans1(5,5)+s(6,1)*trans1(5,6)
-       beam(12)=s(1,2)*trans1(5,1)+s(2,2)*trans1(5,2)
-     1         +s(3,2)*trans1(5,3)+s(4,2)*trans1(5,4)
-     1         +s(5,2)*trans1(5,5)+s(6,2)*trans1(5,6)
-       beam(13)=s(1,3)*trans1(5,1)+s(2,3)*trans1(5,2)
-     1         +s(3,3)*trans1(5,3)+s(4,3)*trans1(5,4)
-     1         +s(5,3)*trans1(5,5)+s(6,3)*trans1(5,6)
-       beam(14)=s(1,4)*trans1(5,1)+s(2,4)*trans1(5,2)
-     1         +s(3,4)*trans1(5,3)+s(4,4)*trans1(5,4)
-     1         +s(5,4)*trans1(5,5)+s(6,4)*trans1(5,6)
-       beam(15)=s(1,5)*trans1(5,1)+s(2,5)*trans1(5,2)
-     1         +s(3,5)*trans1(5,3)+s(4,5)*trans1(5,4)
-     1         +s(5,5)*trans1(5,5)+s(6,5)*trans1(5,6)
-       beam(16)=s(1,1)*trans1(6,1)+s(2,1)*trans1(6,2)
-     1         +s(3,1)*trans1(6,3)+s(4,1)*trans1(6,4)
-     1         +s(5,1)*trans1(6,5)+s(6,1)*trans1(6,6)
-       beam(17)=s(1,2)*trans1(6,1)+s(2,2)*trans1(6,2)
-     1         +s(3,2)*trans1(6,3)+s(4,2)*trans1(6,4)
-     1         +s(5,2)*trans1(6,5)+s(6,2)*trans1(6,6)
-       beam(18)=s(1,3)*trans1(6,1)+s(2,3)*trans1(6,2)
-     1         +s(3,3)*trans1(6,3)+s(4,3)*trans1(6,4)
-     1         +s(5,3)*trans1(6,5)+s(6,3)*trans1(6,6)
-       beam(19)=s(1,4)*trans1(6,1)+s(2,4)*trans1(6,2)
-     1         +s(3,4)*trans1(6,3)+s(4,4)*trans1(6,4)
-     1         +s(5,4)*trans1(6,5)+s(6,4)*trans1(6,6)
-       beam(20)=s(1,5)*trans1(6,1)+s(2,5)*trans1(6,2)
-     1         +s(3,5)*trans1(6,3)+s(4,5)*trans1(6,4)
-     1         +s(5,5)*trans1(6,5)+s(6,5)*trans1(6,6)
-       beam(21)=s(1,6)*trans1(6,1)+s(2,6)*trans1(6,2)
-     1         +s(3,6)*trans1(6,3)+s(4,6)*trans1(6,4)
-     1         +s(5,6)*trans1(6,5)+s(6,6)*trans1(6,6)
+        beam(1) =dot_product(s(:,1),trans1(1,:))
+        beam(2) =dot_product(s(:,1),trans1(2,:))
+        beam(3) =dot_product(s(:,2),trans1(2,:))
+        beam(4) =dot_product(s(:,1),trans1(3,:))
+        beam(5) =dot_product(s(:,2),trans1(3,:))
+        beam(6) =dot_product(s(:,3),trans1(3,:))
+        beam(7) =dot_product(s(:,1),trans1(4,:))
+        beam(8) =dot_product(s(:,2),trans1(4,:))
+        beam(9) =dot_product(s(:,3),trans1(4,:))
+        beam(10)=dot_product(s(:,4),trans1(4,:))
+        beam(11)=dot_product(s(:,1),trans1(5,:))
+        beam(12)=dot_product(s(:,2),trans1(5,:))
+        beam(13)=dot_product(s(:,3),trans1(5,:))
+        beam(14)=dot_product(s(:,4),trans1(5,:))
+        beam(15)=dot_product(s(:,5),trans1(5,:))
+        beam(16)=dot_product(s(:,1),trans1(6,:))
+        beam(17)=dot_product(s(:,2),trans1(6,:))
+        beam(18)=dot_product(s(:,3),trans1(6,:))
+        beam(19)=dot_product(s(:,4),trans1(6,:))
+        beam(20)=dot_product(s(:,5),trans1(6,:))
+        beam(21)=dot_product(s(:,6),trans1(6,:))
        if(calint .and. beamr)then
 c         do j=1,6
            s(1,1:6)=trans1(1:6,1)*beam(21+1) +trans1(1:6,2)*beam(21+2)
@@ -2566,69 +2534,27 @@ c         do j=1,6
      1          +trans1(1:6,3)*beam(21+18)+trans1(1:6,4)*beam(21+19)
      1          +trans1(1:6,5)*beam(21+20)+trans1(1:6,6)*beam(21+21)
 c         enddo
-         beam(21+1)=s(1,1)*trans1(1,1)+s(2,1)*trans1(1,2)
-     1        +s(3,1)*trans1(1,3)+s(4,1)*trans1(1,4)
-     1        +s(5,1)*trans1(1,5)+s(6,1)*trans1(1,6)
-         beam(21+2)=s(1,1)*trans1(2,1)+s(2,1)*trans1(2,2)
-     1        +s(3,1)*trans1(2,3)+s(4,1)*trans1(2,4)
-     1        +s(5,1)*trans1(2,5)+s(6,1)*trans1(2,6)
-         beam(21+3)=s(1,2)*trans1(2,1)+s(2,2)*trans1(2,2)
-     1        +s(3,2)*trans1(2,3)+s(4,2)*trans1(2,4)
-     1        +s(5,2)*trans1(2,5)+s(6,2)*trans1(2,6)
-         beam(21+4)=s(1,1)*trans1(3,1)+s(2,1)*trans1(3,2)
-     1        +s(3,1)*trans1(3,3)+s(4,1)*trans1(3,4)
-     1        +s(5,1)*trans1(3,5)+s(6,1)*trans1(3,6)
-         beam(21+5)=s(1,2)*trans1(3,1)+s(2,2)*trans1(3,2)
-     1        +s(3,2)*trans1(3,3)+s(4,2)*trans1(3,4)
-     1        +s(5,2)*trans1(3,5)+s(6,2)*trans1(3,6)
-         beam(21+6)=s(1,3)*trans1(3,1)+s(2,3)*trans1(3,2)
-     1        +s(3,3)*trans1(3,3)+s(4,3)*trans1(3,4)
-     1        +s(5,3)*trans1(3,5)+s(6,3)*trans1(3,6)
-         beam(21+7)=s(1,1)*trans1(4,1)+s(2,1)*trans1(4,2)
-     1        +s(3,1)*trans1(4,3)+s(4,1)*trans1(4,4)
-     1        +s(5,1)*trans1(4,5)+s(6,1)*trans1(4,6)
-         beam(21+8)=s(1,2)*trans1(4,1)+s(2,2)*trans1(4,2)
-     1        +s(3,2)*trans1(4,3)+s(4,2)*trans1(4,4)
-     1        +s(5,2)*trans1(4,5)+s(6,2)*trans1(4,6)
-         beam(21+9)=s(1,3)*trans1(4,1)+s(2,3)*trans1(4,2)
-     1        +s(3,3)*trans1(4,3)+s(4,3)*trans1(4,4)
-     1        +s(5,3)*trans1(4,5)+s(6,3)*trans1(4,6)
-         beam(21+10)=s(1,4)*trans1(4,1)+s(2,4)*trans1(4,2)
-     1        +s(3,4)*trans1(4,3)+s(4,4)*trans1(4,4)
-     1        +s(5,4)*trans1(4,5)+s(6,4)*trans1(4,6)
-         beam(21+11)=s(1,1)*trans1(5,1)+s(2,1)*trans1(5,2)
-     1        +s(3,1)*trans1(5,3)+s(4,1)*trans1(5,4)
-     1        +s(5,1)*trans1(5,5)+s(6,1)*trans1(5,6)
-         beam(21+12)=s(1,2)*trans1(5,1)+s(2,2)*trans1(5,2)
-     1        +s(3,2)*trans1(5,3)+s(4,2)*trans1(5,4)
-     1        +s(5,2)*trans1(5,5)+s(6,2)*trans1(5,6)
-         beam(21+13)=s(1,3)*trans1(5,1)+s(2,3)*trans1(5,2)
-     1        +s(3,3)*trans1(5,3)+s(4,3)*trans1(5,4)
-     1        +s(5,3)*trans1(5,5)+s(6,3)*trans1(5,6)
-         beam(21+14)=s(1,4)*trans1(5,1)+s(2,4)*trans1(5,2)
-     1        +s(3,4)*trans1(5,3)+s(4,4)*trans1(5,4)
-     1        +s(5,4)*trans1(5,5)+s(6,4)*trans1(5,6)
-         beam(21+15)=s(1,5)*trans1(5,1)+s(2,5)*trans1(5,2)
-     1        +s(3,5)*trans1(5,3)+s(4,5)*trans1(5,4)
-     1        +s(5,5)*trans1(5,5)+s(6,5)*trans1(5,6)
-         beam(21+16)=s(1,1)*trans1(6,1)+s(2,1)*trans1(6,2)
-     1        +s(3,1)*trans1(6,3)+s(4,1)*trans1(6,4)
-     1        +s(5,1)*trans1(6,5)+s(6,1)*trans1(6,6)
-         beam(21+17)=s(1,2)*trans1(6,1)+s(2,2)*trans1(6,2)
-     1        +s(3,2)*trans1(6,3)+s(4,2)*trans1(6,4)
-     1        +s(5,2)*trans1(6,5)+s(6,2)*trans1(6,6)
-         beam(21+18)=s(1,3)*trans1(6,1)+s(2,3)*trans1(6,2)
-     1        +s(3,3)*trans1(6,3)+s(4,3)*trans1(6,4)
-     1        +s(5,3)*trans1(6,5)+s(6,3)*trans1(6,6)
-         beam(21+19)=s(1,4)*trans1(6,1)+s(2,4)*trans1(6,2)
-     1        +s(3,4)*trans1(6,3)+s(4,4)*trans1(6,4)
-     1        +s(5,4)*trans1(6,5)+s(6,4)*trans1(6,6)
-         beam(21+20)=s(1,5)*trans1(6,1)+s(2,5)*trans1(6,2)
-     1        +s(3,5)*trans1(6,3)+s(4,5)*trans1(6,4)
-     1        +s(5,5)*trans1(6,5)+s(6,5)*trans1(6,6)
-         beam(21+21)=s(1,6)*trans1(6,1)+s(2,6)*trans1(6,2)
-     1        +s(3,6)*trans1(6,3)+s(4,6)*trans1(6,4)
-     1        +s(5,6)*trans1(6,5)+s(6,6)*trans1(6,6)
+        beam(21+1) =dot_product(s(:,1),trans1(1,:))
+        beam(21+2) =dot_product(s(:,1),trans1(2,:))
+        beam(21+3) =dot_product(s(:,2),trans1(2,:))
+        beam(21+4) =dot_product(s(:,1),trans1(3,:))
+        beam(21+5) =dot_product(s(:,2),trans1(3,:))
+        beam(21+6) =dot_product(s(:,3),trans1(3,:))
+        beam(21+7) =dot_product(s(:,1),trans1(4,:))
+        beam(21+8) =dot_product(s(:,2),trans1(4,:))
+        beam(21+9) =dot_product(s(:,3),trans1(4,:))
+        beam(21+10)=dot_product(s(:,4),trans1(4,:))
+        beam(21+11)=dot_product(s(:,1),trans1(5,:))
+        beam(21+12)=dot_product(s(:,2),trans1(5,:))
+        beam(21+13)=dot_product(s(:,3),trans1(5,:))
+        beam(21+14)=dot_product(s(:,4),trans1(5,:))
+        beam(21+15)=dot_product(s(:,5),trans1(5,:))
+        beam(21+16)=dot_product(s(:,1),trans1(6,:))
+        beam(21+17)=dot_product(s(:,2),trans1(6,:))
+        beam(21+18)=dot_product(s(:,3),trans1(6,:))
+        beam(21+19)=dot_product(s(:,4),trans1(6,:))
+        beam(21+20)=dot_product(s(:,5),trans1(6,:))
+        beam(21+21)=dot_product(s(:,6),trans1(6,:))
        endif
        return
        end subroutine

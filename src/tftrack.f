@@ -22,7 +22,7 @@
       integer*8 ikptblw,ikptblm
       real*8 trf00,p00,vcalpha0
       real*8 , pointer::zx(:,:)
-      integer*4 , pointer::iptbl(:,:)
+      integer*4 , pointer::iptbl(:,:),jptbl(:,:)
       logical*4 dapert0,normal
       narg=isp-isp1
       if(narg .gt. 4)then
@@ -53,7 +53,6 @@
           endif
         endif
       endif
-c      write(*,*)'tftrack ',nt,nend,mt
 
       ld=nlat
       if(narg .ge. 2)then
@@ -147,6 +146,7 @@ c      write(*,*)'tftrack ',nt,nend,mt
         trpt=.true.
         call tlinit(npz,h0,rlist(ifgeo+12*(ls-1)))
       endif
+c      call omp_set_num_threads(1)
       if(npara .gt. 1)then
         kseed=0
 c        write(*,*)'tftrack ',nparallel,npz,npparamin,
@@ -170,7 +170,8 @@ c     $       ne,npnlatmin
             if(iprid .eq. 0)then
               call tfaddseed(kseed,irtc)
               if(irtc .ne. 0)then
-                return
+                write(*,*)'addseed-error ',irtc
+                call exit_without_hooks(0)
               endif
               npr=-1
               npp=np1
@@ -208,7 +209,8 @@ c      call tclrparaall
       call tphyzp
       call tsetdvfs
       call c_f_pointer(c_loc(rlist(kzp)),zx,[npz,mc])
-      call c_f_pointer(c_loc(ilist(1,ikptblw)),iptbl,[npp,6])
+      call c_f_pointer(c_loc(ilist(1,ikptblw)),iptbl,[npp,nkptbl])
+      call c_f_pointer(c_loc(ilist(1,ikptblm)),jptbl,[npz,nkptbl])
       call tfsetparticles(zx,rlist(kdv:kdv+npp-1),
      $     iptbl,npp,npa,npz,mc,nlat,nt,mcf)
       if(npa .gt. 0)then
@@ -223,7 +225,7 @@ c      call tclrparaall
      $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
      $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
      $         rlist(kdv),rlist(kpsx),rlist(kpsy),rlist(kpsz),
-     $         ilist(1,ikptblw),nt,normal)
+     $         iptbl,nt,normal)
           nt=nt+1
           mt=mt-1
           ls=1
@@ -243,7 +245,7 @@ c      call tclrparaall
      $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
      $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
      $         rlist(kdv),rlist(kpsx),rlist(kpsy),rlist(kpsz),
-     $         ilist(1,ikptblw),nt,normal)
+     $         iptbl,nt,normal)
           nt=nt+1
           mt=mt-1
         enddo
@@ -254,7 +256,7 @@ c      call tclrparaall
      $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
      $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
      $         rlist(kdv),rlist(kpsx),rlist(kpsy),rlist(kpsz),
-     $         ilist(1,ikptblw),nt,normal)
+     $         iptbl,nt,normal)
         else
           normal=.true.
         endif
@@ -267,21 +269,23 @@ c      call tclrparaall
       irtc=0
       if(npr .ne. 0)then
 c       - Copy particle ID to array index map[kptbl(#,1)] with ipn offset
-        ilist(ipn+1:ipn+npp,ikptblm)=ilist(1:npp,ikptblw)+ipn
+        jptbl(ipn+1:ipn+npp,1)=iptbl(1:npp,1)
+c        ilist(ipn+1:ipn+npp,ikptblm)=ilist(1:npp,ikptblw)+ipn
 c       - Don't copy kptbl(#,2) becuase reversed map is not used at post process
 c       - Copy iptbl(*,3:nkptbl)
-        do j=3,nkptbl
-          ilist( ipn+(j-1)*npz+1:ipn+(j-1)*npz+npp,ikptblm)=
-     $         ilist((j-1)*npp+1:    (j-1)*npp+npp,ikptblw)
-        enddo
+        jptbl(ipn+1:ipn+npp,3:nkptbl)=iptbl(1:npp,3:nkptbl)
+c        do j=3,nkptbl
+c          ilist( ipn+(j-1)*npz+1:ipn+(j-1)*npz+npp,ikptblm)=
+c     $         ilist((j-1)*npp+1:    (j-1)*npp+npp,ikptblw)
+c        enddo
         call tffswait(iprid,npr+1,ipr,i00,'tftrack',irtc)
-        kaxl=ktfresetparticles(zx,iptbl,npz,nlat,nend,mc)
+        kaxl=ktfresetparticles(zx,jptbl,npz,nlat,nend,mc)
         call tfreeshared(ikptblm)
 c        if(mapfree(iptbl(ikptblm+1)) .ne. 0)then
 c          write(*,*)'???tftrack-munmap error.'
 c        endif
       else
-        kaxl=ktfresetparticles(zx,iptbl,npz,nlat,nend,mc)
+        kaxl=ktfresetparticles(zx,jptbl,npz,nlat,nend,mc)
       endif
       call tmunmapp(kz)
       if(photons)then
@@ -436,7 +440,6 @@ c      return
         kaj(j)=ktavaloc(0,np)
         klist(ka+j)=ktflist+kaj(j)
       enddo
-
       do i=1,np
         k=iptbl(i,1)
         rlist(kaj(1)+i)=zx(k,1)

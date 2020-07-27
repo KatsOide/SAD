@@ -69,6 +69,7 @@ c     $     beam(1)
       use ffs
       use ffs_pointer
       use tffitcode
+      use temw,only:iaez
       implicit none
       type (ffs_bound) fbound
       integer*4 k,kf
@@ -96,7 +97,7 @@ c     $     beam(1)
           cod=twiss(k,0,mfitdx:mfitddp)
           irad=12
           call tturne0(trans,cod,beam1,srot,fbound,
-     $     i00,i00,i00,.false.,.false.,.false.)
+     $     iaez,.false.,.false.,.false.)
           beam=beam1(1:21)
         else
           twisss=twiss(kf+1,0,1:ntwissfun)
@@ -118,7 +119,7 @@ c     $     beam(1)
       use ffs_pointer
       use ffs_flag
       use tmacro
-      use temw, only:nparams,tfinibeam
+      use temw, only:nparams,tfinibeam,iaez
       use tffitcode
       implicit none
       integer*4 i
@@ -133,8 +134,7 @@ c     $     beam(1)
             beamin=tfinibeam(1)
           endif
           call temit(trans,cod,beam,btr,
-     $         .true.,i00,i00,i00,i00,
-     $         .true.,params,stab,0)
+     $         .true.,iaez,.true.,params,stab,0)
         endif
         modesize=6
       else

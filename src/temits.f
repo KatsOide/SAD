@@ -89,7 +89,7 @@ c     $     dhc(4,mphi2,ndp),dhs(4,mphi2,ndp),
       codin=0.d0
       beamin(1:21)=0.d0
       call temit(trans,cod,beamr,btr,
-     $     .true.,i00,i00,i00,i00,
+     $     .true.,iaez,
      $     plot,params,stab,lfno)
       dispp=r(:,6)
       call tinitr(rx)
@@ -144,7 +144,7 @@ c     $     dhc(4,mphi2,ndp),dhs(4,mphi2,ndp),
         call tinitr(trans)
         trans(:,7:12)=0.d0
         beam(1:21)=0.d0
-        call tturne(trans,cod,beam,srot,i00,i00,i00,
+        call tturne(trans,cod,beam,srot,iaez,
      $       .false.,.false.,.false.,.false.)
         if(fndcod)then
           cod(1:4)=cod(1:4)-codin(1:4)

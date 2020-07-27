@@ -1,3 +1,5 @@
+c  Obsolete 2020
+c
       subroutine tlinit(np,h0,geo)
       use tfmem, only:ktaloc
       implicit none

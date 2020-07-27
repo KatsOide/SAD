@@ -979,7 +979,7 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
       use ffs
       use ffs_pointer
       use tffitcode
-      use temw, only:etwiss2ri,tfetwiss,tinv6
+      use temw, only:etwiss2ri,tfetwiss,tinv6,iaez
       use geolib
       implicit none
       type (sad_descriptor) dsave(kwMAX)
@@ -1010,7 +1010,7 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
           cod=tw1(mfitdx:mfitddp)
           trans=tinv6(etwiss2ri(tw1,normal))
           call tturne1(trans,cod,beam,srot,
-     $         i00,i00,i00,0,
+     $         iaez,0,
      $         .false.,sol,rt,.true.,l,l)
         endif
         if(cgeo)then

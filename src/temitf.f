@@ -3,7 +3,7 @@
       use tmacro
       use tffitcode
       use ffs_flag, only:trpt
-      use temw, only:tfinibeam,tfetwiss,ri
+      use temw, only:tfinibeam,tfetwiss,iaez
       use maccbk, only:i00
       implicit none
       integer*4 nparam,ntitle
@@ -60,8 +60,7 @@ c     $       tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
         beamin=tfinibeam(1)
       endif
       call temit(trans,cod,beam,ctrb,
-     1     .not. trpt,i00,i00,i00,i00,
-     1     plot,param(1,0),stab,lfno)
+     1     .not. trpt,iaez,plot,param(1,0),stab,lfno)
       dps=rgetgl1('PSPAN')
       dpsa=dps*.5d0
       if(dps .gt. 0.d0)then
@@ -76,8 +75,7 @@ c     $       tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
             call rsetgl1('FSHIFT',-dleng/circ)
             call tsetdvfs
             call temit(trans,cod,beam,ctrb,
-     1           .true.,i00,i00,i00,i00,
-     1           plot,param(1,i),stab,lfno)
+     1           .true.,iaez,plot,param(1,i),stab,lfno)
             if(.not. stab .and. lfnos .ne. 0)then
               write(lfnos,9101)'Unstable at "dp/p0" =',i*dps*.5d0
 9101          format(1x,a,f10.6)
