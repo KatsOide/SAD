@@ -18,7 +18,7 @@
      $     kpsx,kpsy,kpsz
       integer*4 isp1,irtc,narg,itfloc,outfl0,ld,ls,mc,npz,npa,np00,
      $     ipr(100),npr,np1,fork_worker,iprid, ne,nend,npara,
-     $     npp,ipn,m,itfmessage,nt,mt,kseed,j,mcf
+     $     npp,ipn,m,itfmessage,nt,mt,kseed,mcf
       integer*8 ikptblw,ikptblm
       real*8 trf00,p00,vcalpha0
       real*8 , pointer::zx(:,:)
@@ -269,7 +269,7 @@ c      call tclrparaall
       irtc=0
       if(npr .ne. 0)then
 c       - Copy particle ID to array index map[kptbl(#,1)] with ipn offset
-        jptbl(ipn+1:ipn+npp,1)=iptbl(1:npp,1)
+        jptbl(ipn+1:ipn+npp,1)=iptbl(1:npp,1)+ipn
 c        ilist(ipn+1:ipn+npp,ikptblm)=ilist(1:npp,ikptblw)+ipn
 c       - Don't copy kptbl(#,2) becuase reversed map is not used at post process
 c       - Copy iptbl(*,3:nkptbl)
@@ -285,7 +285,7 @@ c        if(mapfree(iptbl(ikptblm+1)) .ne. 0)then
 c          write(*,*)'???tftrack-munmap error.'
 c        endif
       else
-        kaxl=ktfresetparticles(zx,jptbl,npz,nlat,nend,mc)
+        kaxl=ktfresetparticles(zx,iptbl,npz,nlat,nend,mc)
       endif
       call tmunmapp(kz)
       if(photons)then
