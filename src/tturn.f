@@ -146,7 +146,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       use tffitcode
       use ffs_wake
       use sad_main
-      use ffs_pointer, only: direlc,compelc,twiss
+      use ffs_pointer, only: direlc,compelc,twiss,pos,beamsize
       use tparastat
       use tfcsi, only:icslfno
       use ffs_seg
@@ -165,7 +165,8 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
      $     g(np0),dv(np0),dpz,al1
       real*8 sx(np0),sy(np0),sz(np0)
       real*8 sa(6),ss(6,6),bz,al,ak0,ak1,tgauss,ph,harmf,
-     $     sspac0,sspac,fw,dx,dy,rot,sspac1,sspac2,ak,rtaper
+     $     sspac0,sspac,fw,dx,dy,rot,sspac1,sspac2,ak,rtaper,
+     $     cod(6)
       integer*4 l,lele,i,ke,lwl,lwt,lwlc,lwtc,irtc,
      $     nextwake,nwak,itab(np),izs(np)
       integer*8 iwpl,iwpt,iwplc,iwptc
@@ -201,7 +202,7 @@ c      itwb3=itwb+ntw*16-1
 c      itwb4=itwb+ntw*17-1
 c      isb=ilist(2,iwakepold+6)
       xlimit=alost*3.d0
-      sspac0=rlist(ifpos+lbegin-1)
+      sspac0=pos(lbegin-1)
       call tsetdvfs
       if(rad)then
         allocate(pxr0(np0))
@@ -212,8 +213,8 @@ c      isb=ilist(2,iwakepold+6)
       bsi=0.d0
       do l=lbegin,lend
         l_track=l
-c        if(l .ge. 19 .and. l .lt. 22)then
-c          write(*,*)'tturn1-l ',l,np,x(1),y(1),g(1)
+c        if(abs(x(1))+abs(y(1)) .gt. 0.01d0)then
+c        write(*,*)'tturn1-l ',l,np,x(np),y(np),g(np)
 c          write(*,*)'tturn1 ',l,np,kptbl(1,1:6)
 c        endif
 c        call tfmemcheckprint('tturn',l,.false.,irtc)
@@ -290,11 +291,18 @@ c        endif
           endif
         endif
         if(wspac .or. pspac)then
-          sspac=(rlist(ifpos+l-1)+rlist(ifpos+l))*.5d0
-          if(sspac .ne. sspac0 .and. wspac) then
+          sspac=(pos(l)+pos(l+1))*.5d0
+          if(sspac .ne. sspac0 .and. wspac)then
+c            if(abs(px(1))+abs(py(1)) .gt. 0.01d0)then
+c              write(*,*)'tturn1-wspac ',l,np,px(1),py(1),g(1)
+c            endif
+            cod=twiss(l,0,mfitdx:mfitddp)
             call twspac(np,x,px,y,py,z,g,dv,sx,sy,sz,sspac-sspac0,
-     $           twiss(l,0,mfitdx:mfitddp),
-     $           rlist(ifsize+(l-1)*21),l)
+     $           cod,beamsize(:,l),l)
+c            if(abs(px(1))+abs(py(1)) .gt. 0.01d0)then
+c              write(*,*)'tturn1-wspac ',l,np,px(1),py(1),g(1)
+c            endif
+c            write(*,*)'twspac-end'
           endif
           sspac0=sspac
        endif
@@ -642,14 +650,12 @@ c     print *,'tturn l sspac2',l,sspac2
       la=la1
 c      call tfmemcheckprint('tturn',1,.false.,irtc)
       if(wspac.or.pspac)then
-        sspac=rlist(ifpos+lend-1)
+        sspac=pos(lend)
         if(sspac .ne. sspac0)then
            if(wspac)then
-              call twspac(np,x,px,y,py,z,g,dv,sx,sy,sz,sspac-sspac0,
-     $            twiss(lend,0,mfitdx:mfitddp),
-c     $             rlist(iftwis+((mfitdx-1)*(2*ndim+1)+ndim)*nlat
-c     $             +lend-1),
-     $             rlist(ifsize+(lend-1)*21),lend)
+             cod=twiss(lend,0,mfitdx:mfitddp)
+             call twspac(np,x,px,y,py,z,g,dv,sx,sy,sz,sspac-sspac0,
+     $            cod,beamsize(:,lend),lend)
            endif
            if(pspac) then
               call tpspac(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -666,7 +672,6 @@ c     $             +lend-1),
         deallocate(pyr0)
         deallocate(pxr0)
       endif
-c      write(*,*)'tturn1-end '
       return
       end
 

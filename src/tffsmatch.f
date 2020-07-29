@@ -564,12 +564,12 @@ c            call tfmemcheckprint('ffsmatch',.true.,irtc)
         call tfresetsharedmap()
         call exit_without_hooks(0)
       elseif(ipr .gt. 0)then
+        irtc=0
         do i=1,npa-1
           dowait: do while(.true.)
             ipr=wait(ist)
             do j=1,npa-1
               if(npr(j) .eq. ipr)then
-                irtc=0
                 npr(j)=0
                 exit dowait
               endif

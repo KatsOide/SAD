@@ -1,5 +1,6 @@
       module tsolz
       type tzparam
+      sequence
       real*8 w1,w2,ws,w12,wd,phi1,phi2,
      $     wss,bzp,akkp,aln,csw1,csws,ca1,dcw1,dcw2,cr2,cr3,
      $     c1,s1,dc1,xs1,ch2,sh2,dch2,xsh2,pr,
@@ -9,6 +10,12 @@
      $     wssip, ca1p, dcw1p, dcw2p, csw1p,cswsp,
      $     cr2p, cr3p,dxs,dxsp,
      $     aw1,aw2,aw1p,aw2p,cxs1,cxs2,cxs1p,cxs2p
+      end type
+
+      type tzparam0
+      sequence
+      real*8 aln,bzp,pr,akkp,w1,phi1,
+     $     s1,xs1,c1,dc1,sh2,xsh2,ch2,dch2
       end type
 
       contains
@@ -85,8 +92,9 @@
         subroutine tzsetparam(tz,dp,akk,bz)
         use mathfun
         implicit none
-        type (tzparam) tz
-        real*8 dp,bz,akk,wa
+        type (tzparam) ,intent(inout):: tz
+        real*8 ,intent(in):: dp,bz,akk
+        real*8 wa
         associate (
      $       w1=>tz%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
      $       phi1=>tz%phi1,phi2=>tz%phi2,
@@ -150,7 +158,7 @@
         subroutine tzsetparam0(tz,dp,akk)
         use mathfun, only:xsincos,xsincosh
         implicit none
-        type (tzparam) tz
+        type (tzparam) ,intent(inout):: tz
         real*8 , intent(in):: dp,akk
         associate (
      $       w1=>tz%w1,phi1=>tz%phi1,aln=>tz%aln,

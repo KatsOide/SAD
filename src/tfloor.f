@@ -129,19 +129,18 @@
       end
 
       complex*16 pure function tcatan2(z1,z)
+      use macmath
       implicit none
-      real*8 pih
-      parameter (pih=3.1415926535897932385d0*0.5d0)
       complex*16 ,intent(in)::z,z1
       if(z .eq. (0.d0,0.d0))then
         if(dble(z1) .eq. 0.d0)then
           if(imag(z1) .eq. 0.d0)then
             tcatan2=(0.d0,0.d0)
           else
-            tcatan2=sign(pih,imag(z1))
+            tcatan2=sign(m_pi_2,imag(z1))
           endif
         else
-          tcatan2=sign(pih,dble(z1))
+          tcatan2=sign(m_pi_2,dble(z1))
         endif
       else
         tcatan2=tcatan(z1/z)
@@ -236,7 +235,7 @@
       return
       end
 
-      subroutine xsincos(x,s,xs,c,dc)
+      pure elemental subroutine xsincos(x,s,xs,c,dc)
       implicit none
       real*8 ,intent(in)::x
       real*8 ,intent(out)::s,xs,c,dc
@@ -285,7 +284,7 @@
       return
       end
 
-      subroutine sxsinh(x,sh,xsh)
+      pure elemental subroutine sxsinh(x,sh,xsh)
       implicit none
       real*8 ,intent(in)::x
       real*8 ,intent(out)::sh,xsh
@@ -306,7 +305,7 @@
       return
       end
 
-      subroutine xsincosh(x,sh,xsh,ch,dch)
+      pure elemental subroutine xsincosh(x,sh,xsh,ch,dch)
       implicit none
       real*8 ,intent(in)::x
       real*8 ,intent(out)::sh,xsh,ch,dch
@@ -438,25 +437,23 @@
       return
       end
 
-      complex*16 function tfdummy(c)
+      complex*16 pure function tfdummy(c)
       use cfunc
       implicit none
       complex*16 ,intent(in)::c
-      icrtc=-1
       tfdummy=(0.d0,0.d0)
       return
       end
 
-      real*8 function sqrtl(x)
+      real*8 pure elemental function sqrtl(x)
       implicit none
-      real*8 x
+      real*8 ,intent(in)::  x
       real*8 ,parameter :: am=1.d-100
       sqrtl=sqrt(max(x,am))
       return
       end function
 
-
-      real*8 pure function p2h(p)
+      real*8 pure elemental function p2h(p)
       implicit none
       real*8, intent(in) :: p
       real*8 p2
@@ -470,7 +467,7 @@
       return
       end function
 
-      real*8 pure function h2p(h)
+      real*8 pure elemental function h2p(h)
       implicit none
       real*8, intent(in) :: h
       real*8 h2

@@ -316,8 +316,6 @@ c     below is incorrect for fra <> 0
                 calint=int0
               endif
               call qfracsave(lx,dsave,nvar,.false.)
-c              write(*,*)'tturne0 ',lx,l,fbound%lb,fbound%le,idp,
-c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
               call tfsetplot(trans1,cod1,beam1,lx,
      $             l,iae%iatr,iae%iacod,
      $             l .ge. fbound%lb .and. l .le. fbound%le,idp)
@@ -358,7 +356,7 @@ c     $             gammab(lx)/(gammab(lx)*(1.d0-frb)+gammab(lx+1)*frb)
       integer*8 kbmzi,lp
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 bmir(6,6),bmi(21),bmh(21),trans1(6,6)
-      real*8 psi1,psi2,apsi1,apsi2,alid,
+      real*8 psi1,psi2,apsi1,apsi2,alid,alid1,
      $     r,dir,al,alib,dtheta,theta0,ftable(4),
      $     fb1,fb2,ak0,ak1,rtaper,als
       integer*4 ,intent(in):: idp,ibegin,iend
@@ -449,12 +447,13 @@ c            call checketwiss(trans,et)
           if(als .ne. 0.d0)then
             if(lele .eq. icDRFT)then
               alib=als*.25d0+alid
-              alid=als*.25d0
+              alid1=als*.25d0
             else
               alib=als*.5d0+alid
-              alid=als*.5d0
+              alid1=als*.5d0
             endif
             call tintrb(trans,cod,beam,bmi,alib,alid,optics,l)
+            alid=alid1
             if(plotib)then
               if(lele .eq. icDRFT)then
                 if(bmaccum)then
@@ -692,7 +691,7 @@ c            call tmultr(trans,trans1,6)
 c      call tfmemcheckprint('tturne-end0',0,.true.,irtc)
       if(calint)then
         if(alid .ne. 0.d0)then
-          call tintrb(trans,cod,beam,bmi,alid,alid,optics,l)
+          call tintrb(trans,cod,beam,bmi,alid,alid,optics,iend+1)
           alid=0.d0
         else
           bmi=0.d0
@@ -775,8 +774,6 @@ c      call tfmemcheckprint('tturne-end1',0,.true.,irtc)
       endif
       if(codplt)then
         call tsetetwiss(trans,cod,beam,lorg,l,idp)
-c        write(*,'(a,2i5,1p6g15.7)')'tsetplot  ',lorg,l,
-c     $       twiss(l,idp,mfitzx:mfitzpy)
       elseif(radcod .and. radtaper)then
         twiss(l,idp,mfitddp)=cod(6)
       endif
@@ -835,7 +832,6 @@ c        endif
 c      twi(mfitdpx)=twi(mfitdpx)*rgb
 c      twi(mfitdpy)=twi(mfitdpy)*rgb
 c      twi(mfitddp)=twi(mfitddp)*rgb
-c      write(*,*)'setetwiss ',twi(mfitddp),rgb
       twiss(l,idp,1:ntwissfun)=twi
       if(irad .ge. 12)then
         beamsize(:,l)=beam(1:21)+beam(22:42)

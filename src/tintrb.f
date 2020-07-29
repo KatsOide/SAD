@@ -17,16 +17,19 @@
       implicit none
       real*8 fintrb
       external fintrb
-      integer*4 i,j,ll
-      real*8 trans(6,12),cod(6),beam(42),bmi(21)
+      integer*4 ,intent(in):: ll
+      integer*4 i,j
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42)
+      real*8 ,intent(out):: bmi(21)
+      real*8 ,intent(in):: al,al1
       real*8 pl(3,3),r(3,3),eig(3),xx(3,3),xxs(3,3),
      $     touckf,bint,e1,e2,e3
       real*8 xp(3,3),transw(6,6),
-     $     al,al1,pxi,pyi,s,pr,pzi,alx,ale,alz,hi,a,b,d,vol,
+     $     pxi,pyi,s,pr,pzi,alx,ale,alz,hi,a,b,d,vol,
      $     bm,ptrans,extrans,eytrans,eztrans,tf,aez,aex0,aey0,
      $     aez0,aexz,aeyz,f1,f2,f3,bn,bmax,bmin,ci,pvol,vol1,
      $     transsp(6,6)
-      real*8 trans1(6,6),trans2(6,6)
+      real*8 trans1(6,6),trans1i(6,6),trans2(6,6)
       logical*4 ,intent(in):: optics
 c     real*8  vmin/0.d0/
       if(al .eq. 0.d0)then
@@ -38,10 +41,8 @@ c     real*8  vmin/0.d0/
       s=pxi**2+pyi**2
       pr=1.d0+cod(6)
       pzi=pr*(1.d0+sqrt1(-s/pr**2))
-c      pzi=pr*sqrt(1.d0-s/pr**2)
-c      pzi=pr-s/(pr+sqrt(pr**2-s))
       call tinitr(trans1)
-      alx=(.5d0*al-al1)
+      alx=.5d0*al-al1
       ale=alx/pzi
       alz=ale/pzi**2
       trans1(1,2)=ale+pxi**2*alz
@@ -53,9 +54,8 @@ c      pzi=pr-s/(pr+sqrt(pr**2-s))
       trans1(5,2)=trans1(1,6)
       trans1(5,4)=trans1(3,6)
       hi=p2h(p0*pr)
-c      hi=p0*pr*sqrt(1.d0+1.d0/(p0*pr)**2)
-c      hi=sqrt(1.d0+(pr*p0)**2)
       trans1(5,6)=h0/hi**3*alx+s*alz
+      trans1i=tinv6(trans1)
       if(wspac)then
         if(optics)then
           bmi=beamsize(:,ll)
@@ -64,7 +64,9 @@ c      hi=sqrt(1.d0+(pr*p0)**2)
         endif
         call tmulbs(bmi,trans1,.false.)
         call twspace(transsp,cod,al,bmi,ll)
-        trans2=matmul(tinv6(trans1),matmul(transsp,trans1))
+c        write(*,*)'tintrab-wspac-twspace-end '
+c        write(*,'(1p6g16.7)')(transsp(i,:),i=1,6)
+        trans2=matmul(trans1i,matmul(transsp,trans1))
         trans(:,1:irad)=matmul(trans2,trans(:,1:irad))
         if(optics)then
           return
@@ -160,8 +162,6 @@ c        call tmov(xx,xxs,9)
         if(vol .ne. 0.d0 .and. caltouck)then
           if(ptrans .ne. 0.d0)then
             trans2=tinv6(matmul(trans1,transw))
-c            call tmultr(transw,trans1,6)
-c            call tinv6(transw,trans2)
             extrans=(trans2(1,6)**2+trans2(2,6)**2)*ptrans**2
             eytrans=(trans2(3,6)**2+trans2(4,6)**2)*ptrans**2
             eztrans=(trans2(5,6)**2+trans2(6,6)**2)*ptrans**2
@@ -231,8 +231,7 @@ c     endif
         bmi(ia(4,4))=ci*pl(2,2)
         bmi(ia(6,4))=ci*pl(3,2)
         bmi(ia(6,6))=ci*pl(3,3)
-c        call tinv6(trans1,trans2)
-        call tmulbs(bmi,tinv6(trans1),.false.)
+        call tmulbs(bmi,trans1i,.false.)
         beam(1:21)=bmi+beam(1:21)
 c        call tadd(beam,bmi,beam,21)
 c        call tinv6(trans,transa)
@@ -280,9 +279,11 @@ c      parameter (eeuler=7.98221278918726d0,a=5.5077d0,b=1.1274d0)
       implicit none
       integer*4 ,intent(in):: l
       real*8 ,intent(in):: al
-      real*8 ,intent(inout):: trans(6,6),cod(6),beam(21)
+      real*8 ,intent(out):: trans(6,6)
+      real*8 ,intent(in):: cod(6),beam(21)
       real*8 xx1,yy1,xy1,u,v,a,c2,s2,sx,sy,p1,h1,f,akx,aky,
      $     aks,akd,sigzsq
+c      real*8 fx,fy,fu,fxx,fyy,fxy
       sigzsq=beam(ia(5,5))
       xx1=beam(ia(1,1))-beam(ia(5,1))**2/sigzsq
       yy1=beam(ia(3,3))-beam(ia(5,3))**2/sigzsq
@@ -290,21 +291,29 @@ c      parameter (eeuler=7.98221278918726d0,a=5.5077d0,b=1.1274d0)
       u=xx1-yy1
       v=2.d0*xy1
       a=hypot(u,v)
-c      a=sqrt(u**2+v**2)
-      c2=u/a
-      s2=v/a
+      if(a .eq. 0.d0)then
+        c2=1.d0
+        s2=0.d0
+      else
+        c2=u/a
+        s2=v/a
+      endif
       sx=(xx1+yy1)*.5d0
       sy=sqrt(sx-a*.5d0)
       sx=sqrt(sx+a*.5d0)
-c      write(*,*)sy,a,u,v,xx1,yy1
       p1=(1.d0+cod(6))*(gammab(l)+gammab(l+1))*.5d0
       h1=p2h(p1)
-c      h1=p1*sqrt(1.d0+1.d0/p1**2)
-c      h1=sqrt(1.d0+p1**2)
+c      call twspfu(0.d0,0.d0,sx,sy,fx,fy,fu,fxx,fyy,fxy)
+c      f1=pbunch*rclassic*al/(p1**2*h1*sqrt(2.d0*pi*sigzsq))
+c      akx=-f*fxx
+c      aky=-f*fyy
       f=2.d0*pbunch*rclassic*al/(p1**2*h1*(sx+sy)
      $     *sqrt(2.d0*pi*sigzsq))
+c      write(*,'(a,1p8g15.7)')'twspace ',f,sy,a,u,v,xx1,yy1
       akx=f/sx
       aky=f/sy
+c      write(*,'(a,i5,1p6g15.7)')'twspace ',
+c     $     l,akx,aky,-.5d0*fxx*f*(sx+sy),-.5d0*fyy*f*(sx+sy)
       aks=(akx+aky)*.5d0
       akd=(akx-aky)*.5d0
       call tinitr(trans)
@@ -312,6 +321,9 @@ c      h1=sqrt(1.d0+p1**2)
       trans(2,3)=akd*s2
       trans(4,1)=trans(2,3)
       trans(4,3)=aks-akd*c2
+c      if(l .lt. 10)then
+c        write(*,*)'tspace ',l,gammab(l),gammab(l+1)
+c      endif
       return
       end
 
@@ -385,17 +397,9 @@ c      h1=sqrt(1.d0+p1**2)
       sigy=sqrt(sigx-a*.5d0)
       sigx=sqrt(sigx+a*.5d0)
       if(selfcod)then
-        xc=0.d0
-        yc=0.d0
-        zc=0.d0
-        do i=1,np
-          xc=xc+x(i)
-          yc=yc+y(i)
-          zc=zc+z(i)
-        enddo
-        xc=xc/np
-        yc=yc/np
-        zc=zc/np
+        xc=sum(x)/np
+        yc=sum(y)/np
+        zc=sum(z)/np
       else
         xc=cod(1)
         yc=cod(3)
@@ -419,23 +423,22 @@ c        fx=az*dble(bb)
 c        fy=az*dimag(bb)
 c        dg=-(z(i)-zc)/sigzsq*az*
 c     $       twspu(dx1,dy1,sigx,sigy,4.d-2,1.d-4)
+c        if(l .lt. 10 .and. i .eq. 1)then
+c          write(*,*)l,fx,fxx*dx1,fy,fyy*dy1
+c        endif
         fx=-az*fx
         fy=-az*fy
         dg=-(z(i)-zc)/sigzsq*az*fu
         dpx= fx*c1-fy*s1
         dpy= fx*s1+fy*c1
-c        dpr=g(i)*(2.d0+g(i))
         dpr=g(i)
         pr=1.d0+dpr
         dpr=dpr+dg
         pr1=1.d0+dpr
         px(i)=(px(i)*pr+dpx)/pr1
         py(i)=(py(i)*pr+dpy)/pr1
-c        g(i)=dpr/(1.d0+sqrt(pr1))
         g(i)=dpr
         h1=p2h(p0*pr1)
-c        h1=p0*pr1*sqrt(1.d0+1.d0/(p0*pr1)**2)
-c        h1=sqrt(1.d0+(p0*pr1)**2)
         dv(i)=-dpr*(1.d0+pr1)/h1/(h1+pr1*h0)+dvfs
       enddo
       return
@@ -513,10 +516,11 @@ c     $       epslon,epsabs,8)+rlog
       return
       end
 
-      real*8 function twspf1(v)
+      real*8 pure elemental function twspf1(v)
       use wspf
       implicit none
-      real*8 f,t,v,x,w,tsq
+      real*8 ,intent(in):: v
+      real*8 f,t,x,w,tsq
       t=(1.d0-r)*(1.d0-v)+r
       tsq=t**2
       f=a+b/tsq
@@ -535,13 +539,14 @@ c     $       epslon,epsabs,8)+rlog
       subroutine twspfu(x,y,sigx,sigy,fx,fy,fu,fxx,fyy,fxy)
       use tfstk
       use iso_c_binding
+      use tmacro, only:l_track
       implicit none
-      integer*8 iu
+      integer*8 ,save:: iu=0
       integer*4 ,parameter::nr=20,nx=60,ny=60,m=(nr+1)*(nx+1)*(ny+1)
-      real*8 x,y,sigy,sigx,fx,fy,fu,fxx,fyy,fxy
+      real*8 ,intent(in):: x,y,sigy,sigx
+      real*8 ,intent(out):: fx,fy,fu,fxx,fyy,fxy
       real*8 ,pointer,save::u(:,:,:),uxx(:,:,:),uyy(:,:,:),uxxyy(:,:,:),
      $     urr(:,:,:),uxxrr(:,:,:),uyyrr(:,:,:),uxxyyrr(:,:,:)     
-      data iu /0/
       if(iu .eq. 0)then
         iu=ktaloc(8*m)
         call c_f_pointer(c_loc(rlist(iu)),u,[nx+1,ny+1,nr+1])
@@ -567,15 +572,17 @@ c     $       epslon,epsabs,8)+rlog
 
       subroutine twspfu0(x,y,sigx,sigy,fx,fy,fu,fxx,fyy,fxy,
      $     u,uxx,uyy,uxxyy,urr,uxxrr,uyyrr,uxxyyrr)
+      use tmacro, only:l_track
       implicit none
       integer*4 nr,nx,i,j,n,ny
-      real*8 xm,xstep,x,y,r,sigy,sigx,fx,fy,fu,fxx,fyy,fxy,
-     $     rstep,rm,ym,ystep
+      real*8 ,intent(in):: x,y,sigx,sigy
+      real*8 ,intent(out):: fx,fy,fu,fxx,fyy,fxy
+      real*8 xm,xstep,r,rstep,rm,ym,ystep
       parameter (nr=20,nx=60,ny=60,xm=15.d0,ym=30.d0,rm=5.d0)
       parameter (xstep=xm/nx,rstep=rm/nr**2,ystep=ym/ny)
-      real*8 u(0:nx,0:ny,0:nr),uxx(0:nx,0:ny,0:nr),
+      real*8 ,intent(in)::u(0:nx,0:ny,0:nr),uxx(0:nx,0:ny,0:nr),
      $     uyy(0:nx,0:ny,0:nr),uxxyy(0:nx,0:ny,0:nr)
-      real*8 urr(0:nx,0:ny,0:nr),uxxrr(0:nx,0:ny,0:nr),
+      real*8 ,intent(in):: urr(0:nx,0:ny,0:nr),uxxrr(0:nx,0:ny,0:nr),
      $     uyyrr(0:nx,0:ny,0:nr),uxxyyrr(0:nx,0:ny,0:nr)
       real*8 rl,ax,ay,aax,aay,ar,bax,bay,aax2,aay2,ar2,
      $     br,br2,bax2,bay2,u0,u1,u2,u3,twspu,dxs,dys,
@@ -593,12 +600,12 @@ c     $       epslon,epsabs,8)+rlog
       endif
       dxs=xstep*sigx
       dys=ystep*sigy
-      ax=abs(x)/dxs
+      ax=min(abs(x)/dxs,xm*100.d0)
       i=int(ax)
       if(i .ge. nx)then
         go to 9000
       endif
-      ay=abs(y)/dys
+      ay=min(abs(y)/dys,ym*100.d0)
       j=int(ay)
       if(j .ge. ny)then
         go to 9000

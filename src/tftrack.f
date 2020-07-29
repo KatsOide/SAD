@@ -222,8 +222,8 @@ c      call tclrparaall
         np0=npp
         if(mt .gt. 1)then
           call tturn0(npa,latt,ls,nlat,
-     $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
-     $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
+     $         zx(1:npa,1),zx(1:npa,2),zx(1:npa,3),zx(1:npa,4),
+     $         zx(1:npa,5),zx(1:npa,6),
      $         rlist(kdv),rlist(kpsx),rlist(kpsy),rlist(kpsz),
      $         iptbl,nt,normal)
           nt=nt+1
@@ -242,23 +242,24 @@ c      call tclrparaall
             exit
           endif
           call tturn0(npa,latt,1,nlat,
-     $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
-     $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
+     $         zx(1:npa,1),zx(1:npa,2),zx(1:npa,3),zx(1:npa,4),
+     $         zx(1:npa,5),zx(1:npa,6),
      $         rlist(kdv),rlist(kpsx),rlist(kpsy),rlist(kpsz),
      $         iptbl,nt,normal)
           nt=nt+1
           mt=mt-1
         enddo
+        normal=.true.
         if(ld .le. ls)then
           normal=.false.
         elseif(mt .ge. 1 .and. npa .gt. 0)then
           call tturn0(npa,latt,ls,ld,
-     $         rlist(kzp),      rlist(kzp+npz),  rlist(kzp+npz*2),
-     $         rlist(kzp+npz*3),rlist(kzp+npz*4),rlist(kzp+npz*5),
+     $         zx(1:npa,1),zx(1:npa,2),zx(1:npa,3),zx(1:npa,4),
+     $         zx(1:npa,5),zx(1:npa,6),
      $         rlist(kdv),rlist(kpsx),rlist(kpsy),rlist(kpsz),
      $         iptbl,nt,normal)
-        else
-          normal=.true.
+c          write(*,'(a,4i5,1p6g15.7)')'tftrack-5 ',npa,np0,npz,ipn,
+c     $         zx(npa,3)
         endif
         np0=np00
         outfl=outfl0
@@ -278,12 +279,12 @@ c        do j=3,nkptbl
 c          ilist( ipn+(j-1)*npz+1:ipn+(j-1)*npz+npp,ikptblm)=
 c     $         ilist((j-1)*npp+1:    (j-1)*npp+npp,ikptblw)
 c        enddo
+c        write(*,*)'tftrack-wait ',npz,npa,ipn,zx(npa,3)
         call tffswait(iprid,npr+1,ipr,i00,'tftrack',irtc)
+        call c_f_pointer(c_loc(rlist(kz)),zx,[npz,mc])
+c        write(*,*)'tftrack-afterwait ',npz,npa,ipn,zx(npz,3),zx(npa,3)
         kaxl=ktfresetparticles(zx,jptbl,npz,nlat,nend,mc)
         call tfreeshared(ikptblm)
-c        if(mapfree(iptbl(ikptblm+1)) .ne. 0)then
-c          write(*,*)'???tftrack-munmap error.'
-c        endif
       else
         kaxl=ktfresetparticles(zx,iptbl,npz,nlat,nend,mc)
       endif
@@ -442,22 +443,20 @@ c      return
       enddo
       do i=1,np
         k=iptbl(i,1)
-        rlist(kaj(1)+i)=zx(k,1)
-        rlist(kaj(2)+i)=zx(k,2)
-        rlist(kaj(3)+i)=zx(k,3)
-        rlist(kaj(4)+i)=zx(k,4)
-        rlist(kaj(5)+i)=zx(k,5)
-        rlist(kaj(6)+i)=zx(k,6)
-        if(calpol)then
-          rlist(kaj(8)+i)=zx(k,8)
-          rlist(kaj(7)+i)=atan(zx(k,9),zx(k,7))
-        endif
+        rlist(kaj(1:6)+i)=zx(k,1:6)
         if(iptbl(k,4) .eq. 0)then
           rlist(kaj(mcf)+i)=1.d0
         else
           rlist(kaj(mcf)+i)=0.d0
         endif
       enddo
+      if(calpol)then
+        do i=1,np
+          k=iptbl(i,1)
+          rlist(kaj(8)+i)=zx(k,8)
+          rlist(kaj(7)+i)=atan(zx(k,9),zx(k,7))
+        enddo
+      endif
       if(lossmap)then
         do i=1,np
           k=iptbl(iptbl(i,1),4)

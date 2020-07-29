@@ -108,6 +108,8 @@ c     $     ,tw(ntwissfun)
       demin=1.d100
       cod=codin
       beam(1:21)=beamin
+      write(*,*)'temit ',beamin(iaidx(3,3)),
+     $     beamin(iaidx(3,4)),beamin(iaidx(4,4))
       beam(22:42)=0.d0
       params=0.d0
       ceig0=(0.d0,0.d0)
