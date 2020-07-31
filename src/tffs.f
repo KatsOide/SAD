@@ -3284,7 +3284,7 @@ c        write(*,'(1p3g13.5)')epol
       else
         call rsetgl1('EMITY',emy)
       endif
-      emz=rlist(j+ky_EMIY_MARK)
+      emz=rlist(j+ky_EMIZ_MARK)
       if(emz .le. 0.d0)then
         emz=rgetgl1('EMITZ')
       else
