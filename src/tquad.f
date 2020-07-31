@@ -42,7 +42,7 @@ c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
         call ttfrin(np,x,px,y,py,z,g,4,ak,al,0.d0)
       endif
       if(mfring .eq. 1 .or. mfring .eq. 3)then
-        do 2110 i=1,np
+        do concurrent (i=1:np)
 c          p=(1.d0+g(i))**2
           p=1.d0+g(i)
           a=f1in/p
@@ -56,7 +56,7 @@ c          p=(1.d0+g(i))**2
           y(i)=y(i)/ea-b*py(i)
           px(i)=pxf
           py(i)=pyf
-2110    continue
+        enddo
       endif
       if(krad)then
         if(photons)then
@@ -76,8 +76,8 @@ c          p=(1.d0+g(i))**2
      $       al,ak,0.d0,0.d0,0.d0,0,eps0)
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
-        do 2120 i=1,np
-c          p=(1.d0+g(i))**2
+        do concurrent (i=1:np)
+          p=(1.d0+g(i))**2
           p=1.d0+g(i)
           a=-f1out/p
           ea=exp(a)
@@ -90,7 +90,7 @@ c          p=(1.d0+g(i))**2
           y(i)=y(i)/ea-b*py(i)
           px(i)=pxf
           py(i)=pyf
-2120    continue
+        enddo
       endif
       if(fringe .and. mfring .gt. -4 .and. mfring .ne. 1)then
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
@@ -160,7 +160,7 @@ c     end   initialize for preventing compiler warning
       if(al .ne. 0.d0)then
         ala=al*alpha1
         alb=al*alpha
-        do 10 i=1,np
+        do concurrent (i=1:np)
 c          a=px(i)**2+py(i)**2
           dpz=pxy2dpz(px(i),py(i))
 c          dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
@@ -170,29 +170,29 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
           x(i)=x(i)+px(i)*al1
           y(i)=y(i)+py(i)*al1
           z(i)=z(i)+dpz  *al1-dv(i)*ala
-10      continue
+        enddo
         akf=akf*.5d0
       endif
       if(kord .eq. 2)then
-        do 1210 i=1,np
+        do concurrent (i=1:np)
 c     aki=akf/(1.d0+g(i))**2
           aki=akf/(1.d0+g(i))
           px(i)=px(i)-aki*(x(i)-y(i))*(x(i)+y(i))
           py(i)=py(i)+2.d0*aki*x(i)*y(i)
- 1210   continue
+        enddo
       else
-        do 1020 i=1,np
+        do concurrent (i=1:np)
 c     pr=(1.d0+g(i))**2
           pr=1.d0+g(i)
           aki=akf/pr
           cx=dcmplx(x(i),-y(i))**kord
           px(i)=px(i)-aki*dble(cx)
           py(i)=py(i)-aki*imag(cx)
- 1020   continue
+        enddo
       endif
       if(al .ne. 0.d0)then
         if(kord .le. 0)then
-          do 1030 i=1,np
+          do concurrent (i=1:np)
 c            a=px(i)**2+py(i)**2
             dpz=pxy2dpz(px(i),py(i))
 c            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
@@ -202,14 +202,14 @@ c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             x(i)=x(i)+px(i)*al1
             y(i)=y(i)+py(i)*al1
             z(i)=z(i)+dpz  *al1-dv(i)*alb*2.d0
-1030      continue
+          enddo
         elseif(kord .eq. 2)then
           f1=beta*2.d0*al
           f2=4.d0*gamma*al**2
           f3=gamma*6.d0*al**2
           f4=.5d0*beta*al
           f5=f2
-          do 1031 i=1,np
+          do concurrent (i=1:np)
 c            a=px(i)**2+py(i)**2
             dpz=pxy2dpz(px(i),py(i))
 c            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
@@ -241,18 +241,14 @@ c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             x(i)=xi  +px(i)*al1
             y(i)=yi  +py(i)*al1
             z(i)=zi  +dpz  *al1-dv(i)*alb
-1031      continue
+          enddo
         elseif(kord .eq. 1)then
           f1=beta*al
           f3=gamma*2.d0*al**2
           f4=.5d0*f1
           f5=f3
-          do i=1,np
-c            a=px(i)**2+py(i)**2
+          do concurrent (i=1:np)
             dpz=pxy2dpz(px(i),py(i))
-c            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             al1=alb/(1.d0+dpz)
             xi  =x(i)+px(i)*al1
             yi  =y(i)+py(i)*al1
@@ -278,12 +274,8 @@ c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
           f3=gamma*kord*(kord+1)*al**2
           f4=.5d0*beta*al
           f5=2.d0*gamma*kord*al**2
-          do 1032 i=1,np
-c            a=px(i)**2+py(i)**2
+          do concurrent (i=1:np)
             dpz=pxy2dpz(px(i),py(i))
-c            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             al1=alb/(1.d0+dpz)
             xi  =x(i)+px(i)*al1
             yi  =y(i)+py(i)*al1
@@ -303,44 +295,34 @@ c            pr=(1.d0+g(i))**2
      1        -aki*(f2*rk1*yi  *rcx1
      1             +f3*rk*imag(cx)) )
             zi  =zi  +aki**2*rk*(f4*r-f5*aki*rcx1)
-c            a=px(i)**2+py(i)**2
             dpz=pxy2dpz(px(i),py(i))
-c            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             al1=alb/(1.d0+dpz)
             x(i)=xi  +px(i)*al1
             y(i)=yi  +py(i)*al1
             z(i)=zi  +dpz  *al1-dv(i)*alb
-1032      continue
+          enddo
         endif
         if(kord .eq. 2)then
-          do 1220 i=1,np
-c            aki=akf/(1.d0+g(i))**2
+          do concurrent (i=1:np)
             aki=akf/(1.d0+g(i))
             px(i)=px(i)-aki*(x(i)-y(i))*(x(i)+y(i))
             py(i)=py(i)+2.d0*aki*x(i)*y(i)
-1220      continue
+          enddo
         else
-          do 1040 i=1,np
-c            aki=akf/(1.d0+g(i))**2
+          do concurrent (i=1:np)
             aki=akf/(1.d0+g(i))
             cx=dcmplx(x(i),-y(i))**kord
             px(i)=px(i)-aki*dble(cx)
             py(i)=py(i)-aki*imag(cx)
-1040      continue
+          enddo
         endif
-        do 1050 i=1,np
-c          a=px(i)**2+py(i)**2
+        do concurrent (i=1:np)
           dpz=pxy2dpz(px(i),py(i))
-c          dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
           al1=ala/(1.d0+dpz)
           x(i)=x(i)+px(i)*al1
           y(i)=y(i)+py(i)*al1
           z(i)=z(i)+dpz  *al1-dv(i)*ala
-1050    continue
+        enddo
       endif
       if(fringe)then
         call ttfrin(np,x,px,y,py,z,g,nord,-ak,al,0.d0)
@@ -371,7 +353,7 @@ c
       if(nord .eq. 4)then
         akk=ak/al/4.d0
         if(bz .eq. 0.d0)then
-          do i=1,np
+          do concurrent (i=1:np)
             aki=akk/(1.d0+g(i))
             xi=x(i)
             yi=y(i)
@@ -395,7 +377,7 @@ c
             py(i)=py1
           enddo
         else
-          do i=1,np
+          do concurrent (i=1:np)
 c            pr=(1.d0+g(i))**2
             pr=(1.d0+g(i))
             aki=akk/pr
@@ -424,7 +406,7 @@ c            pr=(1.d0+g(i))**2
         endif
       elseif(nord .eq. 2)then
         akk=ak/al
-        do i=1,np
+        do concurrent (i=1:np)
           aki=akk/(1.d0+g(i))
           x(i)=x(i)+.5d0*aki*y(i)**2
           py(i)=py(i)-aki*px(i)*y(i)
@@ -433,7 +415,7 @@ c            pr=(1.d0+g(i))**2
       elseif(nord .eq. 6)then
 c        akk=ak/al/12.d0
         akk=ak/al/24.d0
-        do i=1,np
+        do concurrent (i=1:np)
           aki=akk/(1.d0+g(i))
           cx=dcmplx(x(i),y(i))
           cp=dcmplx(px(i),-py(i))
@@ -457,7 +439,7 @@ c          cp1=(dcmplx(1.d0,a)*cp-(aki*4.d0)*cz1*conjg(cx*cp))/d
         kord=nord/2
 c        akk=ak/al/fact(kord)/2.d0
         akk=ak/al/fact(kord)/4.d0
-        do i=1,np
+        do concurrent (i=1:np)
 c          aki=akk/(1.d0+g(i))**2
           aki=akk/(1.d0+g(i))
           cx=dcmplx(x(i),y(i))
@@ -505,7 +487,7 @@ c          aka=sqrt(ak(1)**2+ak(2)**2)
         if(theta .ne. 0.d0)then
           cost=cos(theta)
           sint=sin(theta)
-          do i=1,np
+          do concurrent (i=1:np)
             x0   =x(i)
             x(i) = cost*x0 -sint*y(i)
             y(i) = sint*x0 +cost*y(i)
@@ -514,7 +496,7 @@ c          aka=sqrt(ak(1)**2+ak(2)**2)
             py(i)= sint*px0+cost*py(i)
           enddo
           call ttfrin(np,x,px,y,py,z,g,nord,aka,al,bz)
-          do i=1,np
+          do concurrent (i=1:np)
             x0   =x(i)
             x(i) = cost*x0 +sint*y(i)
             y(i) =-sint*x0 +cost*y(i)
@@ -534,7 +516,7 @@ c          aka=sqrt(ak(1)**2+ak(2)**2)
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),g(np)
       real*8 bz,f1,f2,xf,yf,pxf,pyf,a,b,bb,bzph,ea,f,p
-      do i=1,np
+      do concurrent (i=1:np)
 c        p=(1.d0+g(i))**2
         p=(1.d0+g(i))
         bzph=.5d0*bz/p

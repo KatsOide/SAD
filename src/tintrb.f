@@ -167,23 +167,23 @@ c        call tmov(xx,xxs,9)
             eztrans=(trans2(5,6)**2+trans2(6,6)**2)*ptrans**2
             tf=al/vol/(ptrans*p0)**3
             if(eztrans .ne. 0.d0)then
-              do 4010 i=1,ntouckl
+              do i=1,ntouckl
                 aez=(.002d0+i*.002d0)**2
      $               *(diagri(5,6)**2+diagri(6,6)**2)
                 touckl(i)=touckl(i)+touckf(aez/eztrans)*tf
                 toucke(i,ll)=toucke(i,ll)+touckf(aez/eztrans)*tf
- 4010         continue
-              do 4020 i=1,ntouckx
+              enddo
+              do i=1,ntouckx
                 aex0=(tampl(i,1)**2)*(abs(eemx)+abs(eemy))
                 aey0=(tampl(i,2)**2)*(abs(eemx)+abs(eemy))
-                do 4030 j=1,ntouckz
+                do  j=1,ntouckz
                   aez0=(tampl(j,3)**2)*abs(eemz)
                   aexz=1.d0/(extrans/aex0+eztrans/aez0)
                   touckm(j,i,1)=touckm(j,i,1)+touckf(aexz)*tf
                   aeyz=1.d0/(eytrans/aey0+eztrans/aez0)
                   touckm(j,i,2)=touckm(j,i,2)+touckf(aeyz)*tf
- 4030           continue
- 4020         continue
+                enddo
+              enddo
             endif
           endif
         else

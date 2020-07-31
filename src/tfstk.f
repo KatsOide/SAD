@@ -4555,7 +4555,7 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
           irtc=itfmessage(9,'General::wrongval','">= 1"')
           return
         endif
-        call omp_set_num_threads(iv)
+c        call omp_set_num_threads(iv)
         kx=dfromr(dble(iv))
         irtc=0
         return

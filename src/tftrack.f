@@ -21,7 +21,7 @@
      $     npp,ipn,m,itfmessage,nt,mt,kseed,mcf
       integer*8 ikptblw,ikptblm
       real*8 trf00,p00,vcalpha0
-      real*8 , pointer::zx(:,:)
+      real*8 , pointer::zx(:,:),zx0(:,:)
       integer*4 , pointer::iptbl(:,:),jptbl(:,:)
       logical*4 dapert0,normal
       narg=isp-isp1
@@ -132,6 +132,7 @@
       if(irtc .ne. 0)then
         go to 8900
       endif
+      call c_f_pointer(c_loc(rlist(kz)),zx0,[npz,mc])
       if(photons)then
         npara=1
         if(rad .and. rfluct)then
@@ -281,12 +282,11 @@ c     $         ilist((j-1)*npp+1:    (j-1)*npp+npp,ikptblw)
 c        enddo
 c        write(*,*)'tftrack-wait ',npz,npa,ipn,zx(npa,3)
         call tffswait(iprid,npr+1,ipr,i00,'tftrack',irtc)
-        call c_f_pointer(c_loc(rlist(kz)),zx,[npz,mc])
 c        write(*,*)'tftrack-afterwait ',npz,npa,ipn,zx(npz,3),zx(npa,3)
-        kaxl=ktfresetparticles(zx,jptbl,npz,nlat,nend,mc)
+        kaxl=ktfresetparticles(zx0,jptbl,npz,nlat,nend,mc)
         call tfreeshared(ikptblm)
       else
-        kaxl=ktfresetparticles(zx,iptbl,npz,nlat,nend,mc)
+        kaxl=ktfresetparticles(zx0,iptbl,npz,nlat,nend,mc)
       endif
       call tmunmapp(kz)
       if(photons)then

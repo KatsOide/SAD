@@ -15,26 +15,28 @@
      $     dx0,dy0,xi,yi,a12,a14,a22,a24,ra,phi,pxi,pyi,
      $     awu,dwu,dz1,dz2
         associate (
-     $       w1=>tz%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
-     $       phi1=>tz%phi1,phi2=>tz%phi2,
-     $     wss=>tz%wss,bzp=>tz%bzp,akkp=>tz%akkp,aln=>tz%aln,
+     $       w1=>tz%tz0%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
+     $       phi1=>tz%tz0%phi1,phi2=>tz%phi2,wss=>tz%wss,
+     $       bzp=>tz%tz0%bzp,akkp=>tz%tz0%akkp,aln=>tz%tz0%aln,
      $       csw1=>tz%csw1,csws=>tz%csws,ca1=>tz%ca1,dcw1=>tz%dcw1,
-     $       dcw2=>tz%dcw2,cr2=>tz%cr2,cr3=>tz%cr3,
-     $     c1=>tz%c1,s1=>tz%s1,dc1=>tz%dc1,xs1=>tz%xs1,ch2=>tz%ch2,
-     $       sh2=>tz%sh2,dch2=>tz%dch2,xsh2=>tz%xsh2,pr=>tz%pr,
-     $     c1p=>tz%c1p,s1p=>tz%s1p,xs1p=>tz%xs1p,ch2p=>tz%ch2p,
-     $       sh2p=>tz%sh2p,xsh2p=>tz%xsh2p,
-     $     w1p=>tz%w1p,w2p=>tz%w2p,wsp=>tz%wsp,w12p=>tz%w12p,
-     $       wdp=>tz%wdp,phi1p=>tz%phi1p,phi2p=>tz%phi2p,
-     $       g1=>tz%g1,g2=>tz%g2,g1p=>tz%g1p,g2p=>tz%g2p,
-     $       wr1=>tz%wr1,wr2=>tz%wr2,wr1p=>tz%wr1p,wr2p=>tz%wr2p,
-     $     wssip=>tz%wssip, ca1p=>tz%ca1p,
-     $       dcw1p=>tz%dcw1p, dcw2p=>tz%dcw2p, 
-     $       csw1p=>tz%csw1p,cswsp=>tz%cswsp,
-     $     cr2p=>tz%cr2p, cr3p=>tz%cr3p,dxs=>tz%dxs,dxsp=>tz%dxsp,
-     $     aw1=>tz%aw1,aw2=>tz%aw2,aw1p=>tz%aw1p,aw2p=>tz%aw2p,
-     $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
-     $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
+     $       dcw2=>tz%dcw2,cr2=>tz%cr2,cr3=>tz%cr3,g1=>tz%g1,g2=>tz%g2,
+     $       wr1=>tz%wr1,wr2=>tz%wr2,
+     $     c1=>tz%tz0%c1,s1=>tz%tz0%s1,dc1=>tz%tz0%dc1,xs1=>tz%tz0%xs1,
+     $       ch2=>tz%tz0%ch2,sh2=>tz%tz0%sh2,dch2=>tz%tz0%dch2,
+     $       xsh2=>tz%tz0%xsh2,pr=>tz%tz0%pr,
+     $     c1p=>tz%tzp%c1p,s1p=>tz%tzp%s1p,xs1p=>tz%tzp%xs1p,
+     $       ch2p=>tz%tzp%ch2p,sh2p=>tz%tzp%sh2p,xsh2p=>tz%tzp%xsh2p,
+     $     w1p=>tz%tzp%w1p,w2p=>tz%tzp%w2p,wsp=>tz%tzp%wsp,
+     $       w12p=>tz%tzp%w12p,wdp=>tz%tzp%wdp,phi1p=>tz%tzp%phi1p,
+     $       phi2p=>tz%tzp%phi2p,g1p=>tz%tzp%g1p,g2p=>tz%tzp%g2p,
+     $       wr1p=>tz%tzp%wr1p,wr2p=>tz%tzp%wr2p,
+     $     wssip=>tz%tzp%wssip, ca1p=>tz%tzp%ca1p,
+     $       dcw1p=>tz%tzp%dcw1p, dcw2p=>tz%tzp%dcw2p,
+     $       csw1p=>tz%tzp%csw1p,cswsp=>tz%tzp%cswsp,
+     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,dxs=>tz%tzp%dxs,
+     $       dxsp=>tz%tzp%dxsp,aw1=>tz%tzp%aw1,aw2=>tz%tzp%aw2,
+     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,cxs1=>tz%tzp%cxs1,
+     $       cxs2=>tz%tzp%cxs2,cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
       if(ak*al .lt. 0.d0)then
         write(*,*)'tsolqu-implementation error ',al,ak,bz0
         stop
@@ -56,8 +58,8 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
       dy0=ak0y/ak
       akk=ak/al
       if(bz .eq. 0.d0)then
-        do i=1,np
-          call tzsetparam0(tz,gp(i),akk)
+        do concurrent (i=1:np)
+          tz%tz0=tzsetparam0(gp(i),aln,akk)
           ra=aln*0.5d0
           if(ibsi .eq. 1)then
             bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)
@@ -104,8 +106,8 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           endif
         enddo
       else
-        do i=1,np
-          call tzsetparam(tz,gp(i),akk,bz)
+        do concurrent (i=1:np)
+          tz=tzsetparam(gp(i),aln,akk,bz)
           if(ibsi .eq. 1)then
             bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)+bzp*al
           elseif(ibsi .ge. 0)then
@@ -225,26 +227,28 @@ c          endif
      $     awu,dwu,dz1,dz2
       real*8 , parameter ::phieps=1.d-7,arad=0.01d0
         associate (
-     $       w1=>tz%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
-     $       phi1=>tz%phi1,phi2=>tz%phi2,
-     $     wss=>tz%wss,bzp=>tz%bzp,akkp=>tz%akkp,aln=>tz%aln,
+     $       w1=>tz%tz0%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
+     $       phi1=>tz%tz0%phi1,phi2=>tz%phi2,wss=>tz%wss,
+     $       bzp=>tz%tz0%bzp,akkp=>tz%tz0%akkp,aln=>tz%tz0%aln,
      $       csw1=>tz%csw1,csws=>tz%csws,ca1=>tz%ca1,dcw1=>tz%dcw1,
-     $       dcw2=>tz%dcw2,cr2=>tz%cr2,cr3=>tz%cr3,
-     $     c1=>tz%c1,s1=>tz%s1,dc1=>tz%dc1,xs1=>tz%xs1,ch2=>tz%ch2,
-     $       sh2=>tz%sh2,dch2=>tz%dch2,xsh2=>tz%xsh2,pr=>tz%pr,
-     $     c1p=>tz%c1p,s1p=>tz%s1p,xs1p=>tz%xs1p,ch2p=>tz%ch2p,
-     $       sh2p=>tz%sh2p,xsh2p=>tz%xsh2p,
-     $     w1p=>tz%w1p,w2p=>tz%w2p,wsp=>tz%wsp,w12p=>tz%w12p,
-     $       wdp=>tz%wdp,phi1p=>tz%phi1p,phi2p=>tz%phi2p,
-     $       g1=>tz%g1,g2=>tz%g2,g1p=>tz%g1p,g2p=>tz%g2p,
-     $       wr1=>tz%wr1,wr2=>tz%wr2,wr1p=>tz%wr1p,wr2p=>tz%wr2p,
-     $     wssip=>tz%wssip, ca1p=>tz%ca1p,
-     $       dcw1p=>tz%dcw1p, dcw2p=>tz%dcw2p, 
-     $       csw1p=>tz%csw1p,cswsp=>tz%cswsp,
-     $     cr2p=>tz%cr2p, cr3p=>tz%cr3p,dxs=>tz%dxs,dxsp=>tz%dxsp,
-     $     aw1=>tz%aw1,aw2=>tz%aw2,aw1p=>tz%aw1p,aw2p=>tz%aw2p,
-     $       cxs1=>tz%cxs1,cxs2=>tz%cxs2,
-     $       cxs1p=>tz%cxs1p,cxs2p=>tz%cxs2p)
+     $       dcw2=>tz%dcw2,cr2=>tz%cr2,cr3=>tz%cr3,g1=>tz%g1,g2=>tz%g2,
+     $       wr1=>tz%wr1,wr2=>tz%wr2,
+     $     c1=>tz%tz0%c1,s1=>tz%tz0%s1,dc1=>tz%tz0%dc1,xs1=>tz%tz0%xs1,
+     $       ch2=>tz%tz0%ch2,sh2=>tz%tz0%sh2,dch2=>tz%tz0%dch2,
+     $       xsh2=>tz%tz0%xsh2,pr=>tz%tz0%pr,
+     $     c1p=>tz%tzp%c1p,s1p=>tz%tzp%s1p,xs1p=>tz%tzp%xs1p,
+     $       ch2p=>tz%tzp%ch2p,sh2p=>tz%tzp%sh2p,xsh2p=>tz%tzp%xsh2p,
+     $     w1p=>tz%tzp%w1p,w2p=>tz%tzp%w2p,wsp=>tz%tzp%wsp,
+     $       w12p=>tz%tzp%w12p,wdp=>tz%tzp%wdp,phi1p=>tz%tzp%phi1p,
+     $       phi2p=>tz%tzp%phi2p,g1p=>tz%tzp%g1p,g2p=>tz%tzp%g2p,
+     $       wr1p=>tz%tzp%wr1p,wr2p=>tz%tzp%wr2p,
+     $     wssip=>tz%tzp%wssip, ca1p=>tz%tzp%ca1p,
+     $       dcw1p=>tz%tzp%dcw1p, dcw2p=>tz%tzp%dcw2p,
+     $       csw1p=>tz%tzp%csw1p,cswsp=>tz%tzp%cswsp,
+     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,dxs=>tz%tzp%dxs,
+     $       dxsp=>tz%tzp%dxsp,aw1=>tz%tzp%aw1,aw2=>tz%tzp%aw2,
+     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,cxs1=>tz%tzp%cxs1,
+     $       cxs2=>tz%tzp%cxs2,cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
       if(ak*al .lt. 0.d0)then
         write(*,*)'tsolqur-implementation error ',al,ak,bz0
         stop
@@ -271,8 +275,10 @@ c          endif
       if(bz .eq. 0.d0)then
         alr=aln*0.5d0
         do n=1,ndiv
-          do i=1,np
-            call tzsetparam0(tz,gp(i),akk)
+c!$OMP PARALLEL
+c!$OMP DO
+          do concurrent (i=1:np)
+            tz%tz0=tzsetparam0(gp(i),aln,akk)
             if(n .eq. 1)then
               bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)
             else
@@ -280,7 +286,6 @@ c          endif
             endif
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
-c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
             r=-dpz/(1.d0+dpz)*alr
             x(i)=x(i)+px(i)*r
             y(i)=y(i)+py(i)*r
@@ -307,11 +312,13 @@ c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
               bsi(i)=-akk*(x(i)+dx0)*(y(i)+dy0)
             endif
           enddo
+c!$OMP END DO
+c!$OMP END PARALLEL
           alr=aln
           call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,alr,0.d0)
           pcvt%fr0=pcvt%fr0+alr/al
         enddo
-        do i=1,np
+        do concurrent (i=1:np)
           ap=px(i)**2+py(i)**2
           dpz=sqrt1(-ap)
 c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
@@ -321,15 +328,15 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
         enddo
       else
-        do i=1,np
+        do concurrent (i=1:np)
           bzp=bz/(1.d0+gp(i))
           px(i)=px(i)+bzp*y(i)*.5d0
           py(i)=py(i)-bzp*x(i)*.5d0
         enddo
         alr=aln*0.5d0
         do n=1,ndiv
-          do i=1,np
-            call tzsetparam(tz,gp(i),akk,bz)
+          do concurrent (i=1:np)
+            tz=tzsetparam(gp(i),aln,akk,bz)
             if(n .eq. 1)then
               bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)+bzp*alr
             else
@@ -397,7 +404,7 @@ c            endif
           call tradk(np,x,px,y,py,z,gp,dv,sx,sy,sz,alr,0.d0)
           pcvt%fr0=pcvt%fr0+alr/al
         enddo
-        do i=1,np
+        do concurrent (i=1:np)
           ap=px(i)**2+py(i)**2
           dpz=sqrt1(-ap)
 c     dpz=-ap/(1.d0+sqrt(1.d0-ap))

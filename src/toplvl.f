@@ -515,8 +515,8 @@ c
       real*8  jrval,rval
       character*(MAXSTR) jtoken,token
 c
-      call omp_set_dynamic(.true.)
-      call omp_set_num_threads(4)
+c      call omp_set_dynamic(.true.)
+c      call omp_set_num_threads(1)
       call aginit
  1000 continue
       if (IgetGL('$CTIME$') .eq. FLAGON) call cputix
