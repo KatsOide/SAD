@@ -62,7 +62,7 @@
      $     (trans(4,1),tm41),(trans(4,2),tm42),(trans(4,3),tm43),
      $     (trans(4,4),tm44),(trans(4,5),tm45)
       if(calc6d)then
-        call qcell61(fbound,idp,optstat,lfno)
+        call qcell6d(fbound,idp,optstat,lfno)
         return
       endif
       pri=.false.
@@ -409,20 +409,20 @@ c                enddo
       return
       end
 
-      subroutine qcell61(fbound,idp,optstat,lfno)
+      subroutine qcell6d(fbound,idp,optstat,lfno)
       use ffs
       use ffs_fit ,only:ffs_stat
       use ffs_pointer
       use temw,only:r,ri,calint,normali,tinv6,etwiss2ri,tsymp,nparams,
-     $     tfinibeam,iaez
+     $     tfinibeam,iaez,tfetwiss
       use maccbk, only:i00
       implicit none
       type (ffs_bound) ,intent(in):: fbound
       type (ffs_stat) ,intent(out):: optstat
       integer*4 ,intent(in):: lfno,idp
       integer*4 ir0
-      real*8 trans(6,12),cod(6),beam(42),srot(3,9),
-     $     btr(21,21)
+      real*8 trans(6,12),cod(6),cod0(6),beam(42),srot(3,9),
+     $     btr(21,21),ri0(6,6)
       logical*4 stab,cell0,codplt0,ci0,rt,wspaccheck,calint1
       real*8 params(nparams)
       ir0=irad
@@ -432,15 +432,15 @@ c                enddo
       ci0=calint
       calint1=wspac .or. intra
       rt=radtaper
-      codplt=.false.
- 1    cod=twiss(1,idp,mfitdx:mfitddp)
-      if(cell)then
+      codplt=.true.
+      ri0=etwiss2ri(twiss(fbound%lb,idp,1:ntwissfun),normali)
+      cod0=twiss(1,idp,mfitdx:mfitddp)
+      cod=cod0
+ 1    if(cell)then
         call temit(trans,cod,beam,btr,
-     $     calint1,iaez,
-     $     .true.,params,stab,0)
+     $     calint1,iaez,.true.,params,stab,0)
         if(.not. stab)then
-          write(lfno,*)
-     $         '*****tcod---> Closed orbit not found'
+          write(lfno,*)'*****qcell6d---> Unstable optics'
           optstat%stabx=.false.
           optstat%staby=.false.
           cell=.false.
@@ -448,16 +448,15 @@ c                enddo
         endif
         normali=.true.
       else
-        if(.not. cell .and. wspaccheck())then
+        if(wspaccheck())then
           optstat%stabx=.false.
           optstat%staby=.false.
           return
         endif
+        cod=cod0
+        twiss(fbound%lb,idp,1:ntwissfun)=tfetwiss(ri0,cod,.true.)
         beam(1:21)=tfinibeam(fbound%lb)
         beam(22:42)=0.d0
-        ri=etwiss2ri(twiss(fbound%lb,idp,1:ntwissfun),normali)
-        r=tinv6(ri)
-c        codplt=.true.
         call tinitr(trans)
         call tturne0(trans,cod,beam,srot,fbound,
      $       iaez,idp,.true.,rt,.true.)

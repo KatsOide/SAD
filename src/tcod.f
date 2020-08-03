@@ -14,8 +14,9 @@
       real*8, parameter :: 
      $     conv0=1.d-10,epsr0=1.d-6,ddpmax=3.e-5,
      1     epsrr=1.d-4,rmax=1.d200,fmin=1.d-4,a=0.25d0, dpthre=3.e-4
-      real*8 trans(6,12),cod(6),codi(6),codf(6),dcod(6),beam(42),
-     1     r0,fact,trf00,dtrf0,r,dcod1(6),codw(6),conv,trs(6,6),
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42)
+      real*8 codi(6),codf(6),dcod(6),r0,fact,trf00,dtrf0,r,
+     $     dcod1(6),codw(6),conv,trs(6,6),
      $     dcod0(6),s,trw,dz,alambdarf,trf0s,v0,red,ddp,srot(3,9)
       integer*4 loop,i
       logical*4 rt,rtr
@@ -23,7 +24,6 @@
      $     [1.d-6,1.d-5,1.d-6,1.d-5,1.d-5,1.d-6]
       vcalpha=1.d0
       trf0=0.d0
-c      write(*,*)'tcod-i ',rfsw
       if(rfsw)then
         rfsw=.false.
         call tcod(trans,cod,beam,optics,fndcod)
@@ -32,8 +32,8 @@ c      write(*,*)'tcod-i ',rfsw
           cod(5)=asin(min(1.d0,max(-1.d0,(u0*pgev-vcacc)/vceff)))
      $         /wrfeff-trf0
         endif
-c        write(*,'(a,l2,1p5g15.7)')'tcod-0 ',
-c     $       fndcod,vceff,trf0,vcacc,u0*pgev,cod(5)
+c        write(*,'(a,l2,1p7g15.7)')'tcod-0 ',
+c     $       fndcod,vceff,wrfeff,trf0,vcacc,u0*pgev,cod(5)
         im=6
       else
         im=5
@@ -41,7 +41,6 @@ c     $       fndcod,vceff,trf0,vcacc,u0*pgev,cod(5)
       rtr=radcod .and. radtaper
       trf0s=trf0
       v0=p0/h0
-c      write(*,*)'tcod-dp0 ',dp0
       rt=.false.
  10   dcod=0.d0
       dcod0=0.d0
@@ -85,7 +84,6 @@ c      write(*,*)'tcod-dp0 ',dp0
       dcod1=codi-codf
       if(rfsw)then
         if(radtaper)then
-c     write(*,*)'tcod-dleng ',dcod1(5),dleng
           if(.not. ktfenanq(dcod1(5)))then
             dleng=dleng+dcod1(5)
             call rsetgl1('FSHIFT',-dleng/circ)
@@ -104,7 +102,7 @@ c     write(*,*)'tcod-dleng ',dcod1(5),dleng
         r=r+(dtrf0/trw)**2
       endif
 c      write(6,'(a,1p7g12.5)')' tcod ',r,r0,fact,trf0,dtrf0,dleng
-c      write(6,'(1p6g12.5)')codi,codf,dcod
+c      write(6,'(1p6g12.5)')codi,codf,dcod1
       if(r .lt. conv)then
         cod=codi
         return

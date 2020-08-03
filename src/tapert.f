@@ -81,6 +81,8 @@ c
         yl1 = yl
         yh1 = yh
       endif
+c      write(*,'(a,i5,1p8g14.7)')'tapert-a ',l,
+c     $     xl,xh,yl,yh,xl1,xh1,yl1,yh1
 
       ax1 = 0.d0
       ay1 = 0.d0
@@ -127,6 +129,8 @@ c     Case: eli && !(theta != 0.0)
      $           (      xl1 .lt. xa .and. xa .lt. xh1
      $           .and.  yl1 .lt. ya .and. ya .lt. yh1) .and.
      $           abs(z(i)) .le. zlost))then
+c              write(*,'(a,i5,1p8g14.7)')'tapert ',i,
+c     $             xa,ya,ax1,ay1,xl1,xh1,yl1,yh1
               dodrop = .true.
               kptbl(i,4) = l
               kptbl(i,5) = kturn
@@ -157,6 +161,8 @@ c     Case: !eli && !(theta != 0.0)
      $           (      xl1 .lt. xa .and. xa .lt. xh1
      $           .and.  yl1 .lt. ya .and. ya .lt. yh1) .and.
      $           abs(z(i)) .le. zlost))then
+c              write(*,'(a,i5,1p8g14.7)')'tapert ',i,
+c     $             xa,ya,ax1,ay1,xl1,xh1,yl1,yh1
               dodrop = .true.
               kptbl(i,4) = l
               kptbl(i,5) = kturn

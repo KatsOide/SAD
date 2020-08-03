@@ -393,7 +393,7 @@ tmov.o: tmov.f
 tmulbs.o: tmulbs.f tffs.o tfstk.o
 tmuld.o: tmuld.f
 tmulta.o: tmulta.f
-tmulte.o: tmulte.f photons.o tbend.o tffs.o tfloor.o tsol.o
+tmulte.o: tmulte.f photons.o tbend.o tffs.o tfloor.o tfstk.o tsol.o
 tmulti.o: tmulti.f photons.o tbend.o tffs.o tfloor.o tfstk.o tsol.o
 tmultr.o: tmultr.f
 tnorm.o: tnorm.f
@@ -403,7 +403,7 @@ tphplt.o: tphplt.f
 tprmpt.o: tprmpt.f tfestk.o tffs.o tfstk.o
 tput.o: tput.f tfstk.o
 tputbs.o: tputbs.f
-tqente.o: tqente.f tfloor.o tsol.o
+tqente.o: tqente.f tffs.o tfloor.o tsol.o
 tqfrie.o: tqfrie.f tffs.o tfstk.o
 tqlfre.o: tqlfre.f tffs.o
 tqr.o: tqr.f tfstk.o

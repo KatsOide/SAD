@@ -88,6 +88,7 @@ c     $     dhc(4,mphi2,ndp),dhs(4,mphi2,ndp),
       calpol=.false.
       codin=0.d0
       beamin(1:21)=0.d0
+      cod=0
       call temit(trans,cod,beamr,btr,
      $     .true.,iaez,
      $     plot,params,stab,lfno)

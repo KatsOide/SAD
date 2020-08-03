@@ -69,7 +69,7 @@ c     $     beam(1)
       use ffs
       use ffs_pointer
       use tffitcode
-      use temw,only:iaez
+      use temw,only:iaez,beamplt
       implicit none
       type (ffs_bound) fbound
       integer*4 k,kf
@@ -119,13 +119,13 @@ c     $     beam(1)
       use ffs_pointer
       use ffs_flag
       use tmacro
-      use temw, only:nparams,tfinibeam,iaez
+      use temw, only:nparams,tfinibeam,iaez,beamplt
       use tffitcode
       implicit none
       integer*4 i
       real*8 params(nparams),trans(6,12),cod(6),beam(42),btr(21,21)
       logical*4 ,intent(in):: force
-      logical*4 stab
+      logical*4 stab,bpl
       call ffs_init_sizep
       if(calc6d)then
         if(force .or. modesize .ne. 6)then
@@ -133,8 +133,12 @@ c     $     beam(1)
           if(trpt)then
             beamin=tfinibeam(1)
           endif
+          bpl=beamplt
+          beamplt=.true.
+          cod=twiss(1,0,mfitdx:mfitddp)
           call temit(trans,cod,beam,btr,
      $         .true.,iaez,.true.,params,stab,0)
+          beamplt=bpl
         endif
         modesize=6
       else

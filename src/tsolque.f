@@ -10,8 +10,7 @@
       real*8 wr1p,wr2p,g1p,g2p,c1p,s1p,xs1p,ch2p,sh2p,xsh2p,
      $     w1p,w2p,wsp,w12p,wdp,phi1p,phi2p,
      $     wssip, ca1p, dcw1p, dcw2p, csw1p,cswsp,
-     $     cr2p, cr3p,dxs,dxsp,
-     $     aw1,aw2,aw1p,aw2p,cxs1,cxs2,cxs1p,cxs2p
+     $     cr2p, cr3p,dxsp,aw1p,aw2p,cxs1p,cxs2p
       end type
 
       type tzparam
@@ -19,7 +18,7 @@
       type (tzparam0) tz0
       real*8 w2,ws,w12,wd,phi2,
      $     wss,csw1,csws,ca1,dcw1,dcw2,cr2,cr3,
-     $     g1,g2,wr1,wr2
+     $     g1,g2,wr1,wr2,dxs,aw1,aw2,cxs1,cxs2
       type (tzparamp) tzp
       end type
 
@@ -56,10 +55,10 @@
      $     wssip=>tz%tzp%wssip, ca1p=>tz%tzp%ca1p,
      $       dcw1p=>tz%tzp%dcw1p, dcw2p=>tz%tzp%dcw2p,
      $       csw1p=>tz%tzp%csw1p,cswsp=>tz%tzp%cswsp,
-     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,dxs=>tz%tzp%dxs,
-     $       dxsp=>tz%tzp%dxsp,aw1=>tz%tzp%aw1,aw2=>tz%tzp%aw2,
-     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,cxs1=>tz%tzp%cxs1,
-     $       cxs2=>tz%tzp%cxs2,cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
+     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,dxs=>tz%dxs,
+     $       dxsp=>tz%tzp%dxsp,aw1=>tz%aw1,aw2=>tz%aw2,
+     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,cxs1=>tz%cxs1,
+     $       cxs2=>tz%cxs2,cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
           w12xsh = w12t*xsh2
           wsxs = wst*xs1
           cwsd = c1*w12xsh - ch2*wsxs
@@ -108,7 +107,7 @@
      $       bzp=>tz%tz0%bzp,akkp=>tz%tz0%akkp,aln=>tz%tz0%aln,
      $       csw1=>tz%csw1,csws=>tz%csws,ca1=>tz%ca1,dcw1=>tz%dcw1,
      $       dcw2=>tz%dcw2,cr2=>tz%cr2,cr3=>tz%cr3,g1=>tz%g1,g2=>tz%g2,
-     $       wr1=>tz%wr1,wr2=>tz%wr2,
+     $       wr1=>tz%wr1,wr2=>tz%wr2,aw1=>tz%aw1,aw2=>tz%aw2,
      $     c1=>tz%tz0%c1,s1=>tz%tz0%s1,dc1=>tz%tz0%dc1,xs1=>tz%tz0%xs1,
      $       ch2=>tz%tz0%ch2,sh2=>tz%tz0%sh2,dch2=>tz%tz0%dch2,
      $       xsh2=>tz%tz0%xsh2,pr=>tz%tz0%pr,
@@ -120,11 +119,11 @@
      $       wr1p=>tz%tzp%wr1p,wr2p=>tz%tzp%wr2p,
      $     wssip=>tz%tzp%wssip, ca1p=>tz%tzp%ca1p,
      $       dcw1p=>tz%tzp%dcw1p, dcw2p=>tz%tzp%dcw2p,
-     $       csw1p=>tz%tzp%csw1p,cswsp=>tz%tzp%cswsp,
-     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,dxs=>tz%tzp%dxs,
-     $       dxsp=>tz%tzp%dxsp,aw1=>tz%tzp%aw1,aw2=>tz%tzp%aw2,
-     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,cxs1=>tz%tzp%cxs1,
-     $       cxs2=>tz%tzp%cxs2,cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
+     $       csw1p=>tz%tzp%csw1p,cswsp=>tz%tzp%cswsp,dxs=>tz%dxs,
+     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,
+     $       dxsp=>tz%tzp%dxsp,
+     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,cxs1=>tz%cxs1,
+     $       cxs2=>tz%cxs2,cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
 
         if(bz .eq. 0.d0)then
           tz%tz0=tzsetparam0(dp,aln0,akk)
@@ -198,7 +197,7 @@
      $       bzp=>tz%tz0%bzp,akkp=>tz%tz0%akkp,aln=>tz%tz0%aln,
      $       csw1=>tz%csw1,csws=>tz%csws,ca1=>tz%ca1,dcw1=>tz%dcw1,
      $       dcw2=>tz%dcw2,cr2=>tz%cr2,cr3=>tz%cr3,g1=>tz%g1,g2=>tz%g2,
-     $       wr1=>tz%wr1,wr2=>tz%wr2,
+     $       wr1=>tz%wr1,wr2=>tz%wr2,dxs=>tz%dxs,
      $     c1=>tz%tz0%c1,s1=>tz%tz0%s1,dc1=>tz%tz0%dc1,xs1=>tz%tz0%xs1,
      $       ch2=>tz%tz0%ch2,sh2=>tz%tz0%sh2,dch2=>tz%tz0%dch2,
      $       xsh2=>tz%tz0%xsh2,pr=>tz%tz0%pr,
@@ -211,10 +210,10 @@
      $     wssip=>tzp%wssip, ca1p=>tzp%ca1p,
      $       dcw1p=>tzp%dcw1p, dcw2p=>tzp%dcw2p,
      $       csw1p=>tzp%csw1p,cswsp=>tzp%cswsp,
-     $     cr2p=>tzp%cr2p, cr3p=>tzp%cr3p,dxs=>tzp%dxs,
-     $       dxsp=>tzp%dxsp,aw1=>tzp%aw1,aw2=>tzp%aw2,
-     $       aw1p=>tzp%aw1p,aw2p=>tzp%aw2p,cxs1=>tzp%cxs1,
-     $       cxs2=>tzp%cxs2,cxs1p=>tzp%cxs1p,cxs2p=>tzp%cxs2p)
+     $     cr2p=>tzp%cr2p, cr3p=>tzp%cr3p,
+     $       dxsp=>tzp%dxsp,aw1=>tz%aw1,aw2=>tz%aw2,
+     $       aw1p=>tzp%aw1p,aw2p=>tzp%aw2p,cxs1=>tz%cxs1,
+     $       cxs2=>tz%cxs2,cxs1p=>tzp%cxs1p,cxs2p=>tzp%cxs2p)
 
         if(bzp .eq. 0.d0)then
           w1p=-.5d0*w1/pr
@@ -263,14 +262,16 @@
       use tsolz
       use tmacro, only:bradprev
       use kradlib, only:tradke
-      use temw,only:tmulbs
+      use temw,only:tmulbs,code
       implicit none
       type(tzparam) tz
-      integer*4 n,ndiv,irad
-      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,9)
-      real*8 al,ak,eps0,bz,a,b,c,d,akk,eps,bzh,
-     $     bw,dw,ak0x,ak0y,dx0,dy0,
-     $     xi0,yi0,dy,dpy,
+      integer*4 n,ndiv
+      integer*4 ,intent(in):: irad
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 trans1(6,6)
+      real*8 ,intent(in):: al,ak,eps0,ak0x,ak0y,bz0
+      real*8 bw,dw,dx0,dy0,
+     $     xi0,yi0,dy,dpy,bz,a,b,c,d,akk,eps,bzh,
      $     adx,adpy,adp,bdy,bdpx,bdp,bwdy,bwdpx,bwdp,
      $     cdx,cdpy,cdp,ddy,ddpx,ddp,dwdy,dwdpx,dwdp,cwdp,
      $     u1wx,u1wpx,u1wy,u1wpy,
@@ -280,9 +281,9 @@
      $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
      $     u1p,u1wp,u2p,u2wp,v1p,v1wp,v2p,v2wp,
      $     dv,dvdp,xi,yi,pxi,pyi,xf,yf,pxf,pyf,
-     $     tbrhoz,b1,br,bz0,cw,phieps,al1,
+     $     tbrhoz,b1,br,cw,phieps,al1,
      $     awu,dwu,awup,dwup,dz1,dz2,dz1p,dz2p
-      logical*4 enarad
+      logical*4 ,intent(in):: enarad
       external tbrhoz
       parameter (phieps=1.d-2)
         associate (
@@ -304,10 +305,10 @@
      $     wssip=>tz%tzp%wssip, ca1p=>tz%tzp%ca1p,
      $       dcw1p=>tz%tzp%dcw1p, dcw2p=>tz%tzp%dcw2p,
      $       csw1p=>tz%tzp%csw1p,cswsp=>tz%tzp%cswsp,
-     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,dxs=>tz%tzp%dxs,
-     $       dxsp=>tz%tzp%dxsp,aw1=>tz%tzp%aw1,aw2=>tz%tzp%aw2,
-     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,cxs1=>tz%tzp%cxs1,
-     $       cxs2=>tz%tzp%cxs2,cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
+     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,dxs=>tz%dxs,
+     $       dxsp=>tz%tzp%dxsp,aw1=>tz%aw1,aw2=>tz%aw2,
+     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,cxs1=>tz%cxs1,
+     $       cxs2=>tz%cxs2,cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
 
       if(ak .eq. 0.d0)then
         call tdrife(trans,cod,beam,srot,al,
@@ -333,14 +334,13 @@ c        stop
       call tinitr(trans1)
 c     end   initialize for preventing compiler warning
       tz=tzsetparam(cod(6),aln,akk,bz)
-      call tgetdv(cod(6),dv,dvdp)
       tz%tzp=tzsetparamp(tz)
+      call tgetdv(cod(6),dv,dvdp)
       al1=aln*.5d0
       do n=1,ndiv
         call tqente(trans,cod,beam,al1,bz,irad)
-c      write(*,'(a/,6(1p6g11.4/))')
-c     $     'tsolque-1 ',(trans(i,1:6),i=1,6)
-c      write(*,*)'with: ',al1,bz,irad
+c        write(*,'(a,i5,1p8g13.4)')'tsolque-n ',n,
+c     $       al,ak,trans(5,1:6)
         xi0=cod(1)
         yi0=cod(3)
         xi=xi0+dx0
@@ -488,8 +488,8 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
      $         awup,aw1p,wsp,w12p,g1p,dz1p)
           call tztaf(tz,-dwu,-pyi,pxi,aw2,-w12,ws,-wss,g2,dz2,
      $         -dwup,aw2p,-w12p,wsp,g2p,dz2p)
-          cod(5)=cod(5)+
-     $         bzp*(-((awu*dwu*dxs**2)/akkp) +
+          cod(5)=cod(5)
+     $         +bzp*(-((awu*dwu*dxs**2)/akkp) +
      $         ca1*pxi*pyi*wss)
      $         +dz1+dz2-aln*dv
           trans1(5,6)=
@@ -520,8 +520,6 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
      $       +trans1(4,1:4)*trans1(3,6)
         trans1(5,6)=trans1(5,6)
      $       -(pxi*trans1(5,2)+pyi*trans1(5,4))
-c        write(*,'(a,1p6g15.7)')'tsolque-trans  ',trans(1,1:6)
-c        write(*,'(a,1p6g15.7)')'tsolque-trans1 ',trans1(1,1:6)
         call tmultr5(trans,trans1,irad)
         if(irad .gt. 6)then
           call tmulbs(beam ,trans1,.true.)
@@ -553,16 +551,18 @@ c        write(*,'(a,1p6g15.7)')'tsolque-trans1 ',trans1(1,1:6)
       implicit none
       integer*4 nrad
       real*8, intent(in):: cod(6),ak,al,bzh
-      real*8 xd,xpd,a,b
+      real*8 xpd,a,b,xk
       real*8 ,parameter :: xmin=1.d-6,pmin=1.d-6,amax=1.d-2
-      xd=max(xmin,abs(cod(1))+abs(cod(3)))
+      xk=abs(ak)*max(xmin,abs(cod(1))+abs(cod(3)))
       xpd=max(pmin,abs(cod(2))+abs(cod(4)))
-      a=min(amax,abs(ak)*xd+xpd)
-      b=brhoz*(a*abs(bzh)+a/abs(al))
+      a=min(amax,xk+xpd)
+      b=brhoz*(a*abs(bzh)+xk/abs(al))
       nrad=int(abs(al*crad/epsrad*(h0*b)**2))
       itgetqraddiv=max(int(emidiv*emidiq*nrad),
      1       int(abs(h0*b/brhoz*anrad)/epsrad/1.d6*emidiv*emidib))
 c     1     int(abs(a)/epsrad/1.d3*emidiv*emidiq))
+c      write(*,'(a,i5,1p7g15.7)')'itgetqraddiv ',
+c     $     itgetqraddiv,al,ak,bzh,cod(1:4)
       return
       end
 

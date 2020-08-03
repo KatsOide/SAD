@@ -20,7 +20,7 @@
      $       bzp=>tz%tz0%bzp,akkp=>tz%tz0%akkp,aln=>tz%tz0%aln,
      $       csw1=>tz%csw1,csws=>tz%csws,ca1=>tz%ca1,dcw1=>tz%dcw1,
      $       dcw2=>tz%dcw2,cr2=>tz%cr2,cr3=>tz%cr3,g1=>tz%g1,g2=>tz%g2,
-     $       wr1=>tz%wr1,wr2=>tz%wr2,
+     $       wr1=>tz%wr1,wr2=>tz%wr2,aw1=>tz%aw1,aw2=>tz%aw2,
      $     c1=>tz%tz0%c1,s1=>tz%tz0%s1,dc1=>tz%tz0%dc1,xs1=>tz%tz0%xs1,
      $       ch2=>tz%tz0%ch2,sh2=>tz%tz0%sh2,dch2=>tz%tz0%dch2,
      $       xsh2=>tz%tz0%xsh2,pr=>tz%tz0%pr,
@@ -32,11 +32,11 @@
      $       wr1p=>tz%tzp%wr1p,wr2p=>tz%tzp%wr2p,
      $     wssip=>tz%tzp%wssip, ca1p=>tz%tzp%ca1p,
      $       dcw1p=>tz%tzp%dcw1p, dcw2p=>tz%tzp%dcw2p,
-     $       csw1p=>tz%tzp%csw1p,cswsp=>tz%tzp%cswsp,
-     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,dxs=>tz%tzp%dxs,
-     $       dxsp=>tz%tzp%dxsp,aw1=>tz%tzp%aw1,aw2=>tz%tzp%aw2,
-     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,cxs1=>tz%tzp%cxs1,
-     $       cxs2=>tz%tzp%cxs2,cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
+     $       csw1p=>tz%tzp%csw1p,cswsp=>tz%tzp%cswsp,dxs=>tz%dxs,
+     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,
+     $       dxsp=>tz%tzp%dxsp,
+     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,cxs1=>tz%cxs1,
+     $       cxs2=>tz%cxs2,cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
       if(ak*al .lt. 0.d0)then
         write(*,*)'tsolqu-implementation error ',al,ak,bz0
         stop
@@ -106,7 +106,7 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           endif
         enddo
       else
-        do concurrent (i=1:np)
+        do i=1,np
           tz=tzsetparam(gp(i),aln,akk,bz)
           if(ibsi .eq. 1)then
             bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)+bzp*al
@@ -232,7 +232,7 @@ c          endif
      $       bzp=>tz%tz0%bzp,akkp=>tz%tz0%akkp,aln=>tz%tz0%aln,
      $       csw1=>tz%csw1,csws=>tz%csws,ca1=>tz%ca1,dcw1=>tz%dcw1,
      $       dcw2=>tz%dcw2,cr2=>tz%cr2,cr3=>tz%cr3,g1=>tz%g1,g2=>tz%g2,
-     $       wr1=>tz%wr1,wr2=>tz%wr2,
+     $       wr1=>tz%wr1,wr2=>tz%wr2,dxs=>tz%dxs,
      $     c1=>tz%tz0%c1,s1=>tz%tz0%s1,dc1=>tz%tz0%dc1,xs1=>tz%tz0%xs1,
      $       ch2=>tz%tz0%ch2,sh2=>tz%tz0%sh2,dch2=>tz%tz0%dch2,
      $       xsh2=>tz%tz0%xsh2,pr=>tz%tz0%pr,
@@ -245,10 +245,10 @@ c          endif
      $     wssip=>tz%tzp%wssip, ca1p=>tz%tzp%ca1p,
      $       dcw1p=>tz%tzp%dcw1p, dcw2p=>tz%tzp%dcw2p,
      $       csw1p=>tz%tzp%csw1p,cswsp=>tz%tzp%cswsp,
-     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,dxs=>tz%tzp%dxs,
-     $       dxsp=>tz%tzp%dxsp,aw1=>tz%tzp%aw1,aw2=>tz%tzp%aw2,
-     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,cxs1=>tz%tzp%cxs1,
-     $       cxs2=>tz%tzp%cxs2,cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
+     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,
+     $       dxsp=>tz%tzp%dxsp,aw1=>tz%aw1,aw2=>tz%aw2,
+     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,cxs1=>tz%cxs1,
+     $       cxs2=>tz%cxs2,cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
       if(ak*al .lt. 0.d0)then
         write(*,*)'tsolqur-implementation error ',al,ak,bz0
         stop

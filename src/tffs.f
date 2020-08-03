@@ -1894,11 +1894,11 @@ c     $     iaez%iamat=int8(0),iaez%iabmi=int8(0)
       real(8), public :: eemx,eemy,eemz,
      $     emxmin,emymin,emzmin,emxmax,emymax,emzmax,
      $     emxr,emyr,emzr,emx0,emy0,emz0,demin,
-     $     equpol(3),spinmu
+     $     equpol(3),spinmu,code(6)
       real(8), public :: bh,heff,phirf,omegaz,sige,sigz
       complex*16 , public :: ceig0(6)
       logical*4, public :: normali, initemip=.true.,
-     $     initr,calint,caltouck,fndcod,synchm,epi
+     $     initr,calint,caltouck,fndcod,synchm,epi,beamplt
       real*8 , parameter :: toln=0.1d0
 
       character*10, parameter ::

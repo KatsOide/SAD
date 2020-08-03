@@ -106,9 +106,7 @@ c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
       if(wake)then
         call tffswake(ibound,beg)
       else
-c        call tfevals('Print["PROF-1: ",LINE["PROFILE","Q1"]]',kxx,irtc)
         call qcell1(ibound,0,optstat(0),.false.,chgini,lout)
-c        call tfevals('Print["PROF-2: ",LINE["PROFILE","Q1"]]',kxx,irtc)
         call tffssetutwiss(0,nlat,fbound,beg,.true.,.true.)
         if(cell)then
           anux0=aint(twiss(nlat,0,mfitnx)/pi2)

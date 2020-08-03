@@ -4,8 +4,8 @@
       use tmacro
       implicit none
       integer*8 ,intent(in):: l1
-      real*8, intent(inout):: trans1(6,6),cod(6)
-      real*8 , intent(out)::rr(3,3)
+      real*8, intent(inout):: cod(6)
+      real*8 , intent(out)::trans1(6,6),rr(3,3)
       real*8 ds
       logical*4 ,intent(in):: ent
 c     begin initialize for preventing compiler warning
@@ -31,9 +31,10 @@ c     end   initialize for preventing compiler warning
       subroutine tsrote(trans,cod,rr,chi1,chi2,chi3)
       use mathfun, only:sqrt1
       implicit none
-      real*8 ,intent(inout):: trans(6,6),cod(6)
+      real*8 ,intent(inout):: cod(6)
       real*8 ,intent(in):: chi1,chi2,chi3
-      real*8 rr(3,3),pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf,
+      real*8 ,intent(out):: trans(6,6),rr(3,3)
+      real*8 pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf,
      $     cchi1,schi1,cchi2,schi2,cchi3,schi3,
      $     dpzfdpx,dpzfdpy,dpzfdp,p
       cchi1=cos(chi1)

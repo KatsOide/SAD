@@ -100,6 +100,7 @@ c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
       endif
 c      write(*,*)'tfemit-4 ',codplt,ifsize,nel
       if(nel .eq. nlat)then
+        cod=codin
         call temit(trans,cod,beam,btr,
      $       .not. trpt .and. mode .ge. 0,iae,codplt,param,stab,lno)
       else

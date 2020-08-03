@@ -29,7 +29,7 @@
      $     bm,ptrans,extrans,eytrans,eztrans,tf,aez,aex0,aey0,
      $     aez0,aexz,aeyz,f1,f2,f3,bn,bmax,bmin,ci,pvol,vol1,
      $     transsp(6,6)
-      real*8 trans1(6,6),trans1i(6,6),trans2(6,6)
+      real*8 trans1(6,6),trans2(6,6)
       logical*4 ,intent(in):: optics
 c     real*8  vmin/0.d0/
       if(al .eq. 0.d0)then
@@ -55,7 +55,6 @@ c     real*8  vmin/0.d0/
       trans1(5,4)=trans1(3,6)
       hi=p2h(p0*pr)
       trans1(5,6)=h0/hi**3*alx+s*alz
-      trans1i=tinv6(trans1)
       if(wspac)then
         if(optics)then
           bmi=beamsize(:,ll)
@@ -66,7 +65,7 @@ c     real*8  vmin/0.d0/
         call twspace(transsp,cod,al,bmi,ll)
 c        write(*,*)'tintrab-wspac-twspace-end '
 c        write(*,'(1p6g16.7)')(transsp(i,:),i=1,6)
-        trans2=matmul(trans1i,matmul(transsp,trans1))
+        trans2=matmul(tinv6(trans1),matmul(transsp,trans1))
         trans(:,1:irad)=matmul(trans2,trans(:,1:irad))
         if(optics)then
           return
@@ -218,7 +217,7 @@ c        call tmov(xx,xxs,9)
 c     write(*,*)'bmin,bmax,vol ',bmin,bmax,vol
 c     bmin=rclassic
         ci=cintrb*al*log(2.d0*bmax/bmin)/vol1/pvol/h0**4
-c        write(*,*)'tintrb ',vol1*pvol,ci,pl
+c        write(*,*)'tintrb ',ll,vol1*pvol,ci,pl
 c     write(*,*)log(2.d0*bmax/bmin)
 c     if(ci .gt. vmin)then
 c     vmin=ci
@@ -231,8 +230,12 @@ c     endif
         bmi(ia(4,4))=ci*pl(2,2)
         bmi(ia(6,4))=ci*pl(3,2)
         bmi(ia(6,6))=ci*pl(3,3)
-        call tmulbs(bmi,trans1i,.false.)
+        call tmulbs(bmi,tinv6(trans1),.false.)
         beam(1:21)=bmi+beam(1:21)
+c        if(mod(ll,10) .eq. 0)then
+c          write(*,'(a,i5,1p8g14.6)')'tintrb ',ll,ci,al,
+c     $         beam(3),beam(10),beam(21),bmi(3),bmi(10),bmi(21)
+c        endif
 c        call tadd(beam,bmi,beam,21)
 c        call tinv6(trans,transa)
         call tmulbs(bmi,tinv6(trans(:,1:6)),.false.)
@@ -539,7 +542,7 @@ c     $       epslon,epsabs,8)+rlog
       subroutine twspfu(x,y,sigx,sigy,fx,fy,fu,fxx,fyy,fxy)
       use tfstk
       use iso_c_binding
-      use tmacro, only:l_track
+c      use tmacro, only:l_track
       implicit none
       integer*8 ,save:: iu=0
       integer*4 ,parameter::nr=20,nx=60,ny=60,m=(nr+1)*(nx+1)*(ny+1)
@@ -572,7 +575,7 @@ c     $       epslon,epsabs,8)+rlog
 
       subroutine twspfu0(x,y,sigx,sigy,fx,fy,fu,fxx,fyy,fxy,
      $     u,uxx,uyy,uxxyy,urr,uxxrr,uyyrr,uxxyyrr)
-      use tmacro, only:l_track
+c      use tmacro, only:l_track
       implicit none
       integer*4 nr,nx,i,j,n,ny
       real*8 ,intent(in):: x,y,sigx,sigy

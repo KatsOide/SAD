@@ -106,7 +106,6 @@ c     $     ,tw(ntwissfun)
       trf0=0.d0
       vcalpha=1.d0
       demin=1.d100
-      cod=codin
       beam(1:21)=beamin
 c      write(*,*)'temit ',beamin(iaidx(3,3)),
 c     $     beamin(iaidx(3,4)),beamin(iaidx(4,4))
@@ -162,6 +161,7 @@ c     $     tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
           call tinitr12(trans)
           call srotinit(srot)
           call tsetr0(trans,cod,0.d0,0.d0)
+c          write(*,*)'temit-inical ',calint,intra,econv
           if(econv)then
             call tturne(trans,cod,beam,srot,iae,
      1           plot,.false.,rt,.false.)
@@ -195,7 +195,7 @@ c     $     tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
           call tintraconv(lfno,it,emitn,beam,dc,pri,iret)
 c          if(plot)then
 c            write(*,'(a,i5,1p6g15.7)')'temit-intraconv-end ',
-c     $           iret,dc,emx0,emy0
+c     $           iret,dc,emx0,emy0,eemx,eemy
 c          endif
           select case (iret)
           case (2)
@@ -226,7 +226,7 @@ c          endif
      $       .true.,.false.,rt,.false.)
       endif
       if(iae%iamat .eq. 0)then
-        if(plot .and. charge .lt. 0.d0)then
+        if(beamplt .and. plot .and. charge .lt. 0.d0)then
           beamsize=-beamsize
         endif
       else
@@ -546,8 +546,8 @@ c     enddo
       integer*4 ,intent(out):: iret
       integer*4 i,iii,k,j,m
       real*8 ,intent(in):: dc
-      real*8 emitn(21),beam(42),trans1(6,6),
-     $     rx,ry,rz,emx1,emy1,emz1,emmin,
+      real*8 ,intent(inout):: emitn(21),beam(42)
+      real*8 trans1(6,6),rx,ry,rz,emx1,emy1,emz1,emmin,
      $     de,tf,tt,eintrb,rr
       logical*4 ,intent(out):: pri
       character*11 autofg,vout(5)
@@ -800,6 +800,10 @@ c
           endif
           call tmulbs(emitn,r,.false.)
           beam(22:42)=emitn
+c          write(*,*)'intraconv ',
+c     $         sqrt(emitn(1)*emitn(3)-emitn(2)**2),
+c     $         sqrt(emitn(6)*emitn(10)-emitn(9)**2),
+c     $         sqrt(emitn(15)*emitn(21)-emitn(20)**2)
           it=it+1
         else
           beam(22:42)=0.d0

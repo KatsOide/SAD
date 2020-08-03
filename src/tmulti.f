@@ -58,19 +58,19 @@ c      parameter (oneev=1.d0+3.83d-12)
       b0=0.d0
       nzleng=al .ne. 0.d0
       spac1=.false.
-c      theta2=theta+dtheta+akang(ak(1),al,cr1)
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,bz,dx,dy,dz,
      $     chi1,chi2,theta2,bxs,bys,bzs,.true.)
       akr(0)=(ak(0)*cr1+dcmplx(bys*al,bxs*al))*rtaper
-      nmmax=0
-      do n=nmult,0,-1
+      do n=nmult,1,-1
         if(ak(n) .ne. (0.d0,0.d0))then
           nmmax=n
           go to 1
         endif
       enddo
       if(vc .ne. 0.d0 .or. spac)then
+        nmmax=0
+      else
         call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,bzs,dble(akr(0)),imag(akr(0)),krad)
         go to 1000
@@ -185,7 +185,7 @@ c     end   initialize for preventing compiler warning
 c        vnominal=0.d0
         wsn=1.d0/ndiv
 c        do i=1,ndiv
-          ws(1:ndiv)=wsn
+        ws(1:ndiv)=wsn
 c        enddo
       endif
       ak1=akr1*ws(1)*.5d0
@@ -296,7 +296,6 @@ c        enddo
             sv=sv+vnominal*wsm
             h2=h0+sv
             p2=h2p(h2)
-c            p2=sqrt((h2-1.d0)*(h2+1.d0))
             dp2=sv*(h2+h0)/(p2+p0)/p0
             pr2=1.d0+dp2
             dvn=-dp2*(1.d0+pr2)/h2/(h2+pr2*h0)
@@ -310,7 +309,6 @@ c            p2=sqrt((h2-1.d0)*(h2+1.d0))
             p1=p0*p1r
             if(dv(i) .gt. 0.1d0)then
               h1=p2h(p1)
-c              h1=sqrt(p1**2+1.d0)
             else
               h1=p1r*h0/(1.d0-dv(i)+dvfs)
             endif
@@ -323,7 +321,6 @@ c              h1=sqrt(p1**2+1.d0)
             h2=h1+dh
             ah=max(dh*(h1+h2)/p1**2,-1.d0+pmin)
             dpr=sqrt1(ah)
-c            dpr=ah/(1.d0+sqrt(1.d0+ah))
             dp2r=max(dp1r+p1r*dpr,pmin-1.d0)
             p2r=1.d0+dp2r
             g(i)=dp2r

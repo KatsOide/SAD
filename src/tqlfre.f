@@ -5,7 +5,7 @@
       implicit none
       real*8 ,intent(in):: al,ak,f1,f2,bz
       real*8 af1,af2,p,a,b,ea,bzph,bp,xf,yf,pxf,pyf,f,fdp,bb
-      real*8 ,intent(inout):: trans(6,12),cod(6),beam(21)
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42)
       real*8 trans1(6,6)
 c      write(*,*)'tflfre ',f1,f2
       af1=-ak/al*f1*abs(f1)/24.d0
@@ -137,13 +137,11 @@ c        enddo
      $       +(a/ea*cod(3)+bp/ea*(2.d0-a)*pyf)*trans1(4,6))/p
         call tmultr5(trans,trans1,irad)
       endif
-      trans1(6,1)=0.d0
-      trans1(6,2)=0.d0
-      trans1(6,3)=0.d0
-      trans1(6,4)=0.d0
-      trans1(6,5)=0.d0
-      trans1(6,6)=1.d0
-      call tmulbs(beam ,trans1,.true.)
+      if(irad .gt. 6)then
+        trans1(6,1:5)=0.d0
+        trans1(6,6)=1.d0
+        call tmulbs(beam ,trans1,.true.)
+      endif
       cod(5)=cod(5)-((a*ea*cod(1)+bp*ea*(1.d0+.5d0*a)*pxf)*pxf
      $     -(a*cod(3)/ea+bp/ea*(1.d0-.5d0*a)*pyf)*pyf)/p
       cod(2)=pxf-bzph*cod(3)

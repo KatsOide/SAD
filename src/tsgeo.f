@@ -6,6 +6,7 @@
       use ffs_pointer
       use tffitcode
       use ffs_seg
+      use temw, only:code
       use geolib
       implicit none
       real*8, parameter:: conv=3.d-16
@@ -124,7 +125,7 @@
         a=tgrot(geo(:,:,k),geo(:,:,ke1))
         geot=matmul(tfderotgeo(geos,(/0.d0,0.d0,a(3)/)),
      $       transpose(geo(:,1:3,k)))
-        pos(k:ke1)=pos0+pos(k:ke1)-pos(k)
+        pos(k:ke1)=pos(k:ke1)+pos0-pos(k)
         dg4=geos(:,4)-matmul(geot,geo(:,4,k))
         do i=k+1,ke1
           geo(:,:,i)=matmul(geot,geo(:,:,i))
@@ -142,10 +143,12 @@
       use tfstk
       use ffs
       use sad_main
-      use ffs_pointer
+      use ffs_pointer,only:pos,geo,idtypec,direlc,compelc,setdirelc,
+     $     tsetfringep
       use tffitcode
       use ffs_seg
       use mathfun, only:akang
+      use temw,only:code
       use geolib
       implicit none
       type (sad_comp), pointer :: cmp
@@ -153,10 +156,10 @@
       integer*4 , intent(in):: i,idir
       integer*4 i0,i1,lt,irtc,mfr,kbz
       real*8 , intent(in)::dir
-      real*8 , intent(inout):: xi,yi,pxi,pyi,ds,gi
+      real*8 , intent(inout):: xi,yi,pxi,pyi,ds,gi,bzs
       real*8 phi,ak,sinphi,a14,a12,a22,al,pzi,
      $     a24,dx,pxf,dy,pyf,dl,theta,phix,phiy,f,xf,
-     $     zf,gf,dvf,bzs,ak1,ftable(4),bzs0,tfbzs,db,yf,
+     $     zf,gf,dvf,ak1,ftable(4),bzs0,tfbzs,db,yf,
      $     sxf,syf,szf,theta2,
      $     trans(6,12),cod(6),beam(42),srot(3,9)
       logical*4 seg,dirf
@@ -264,15 +267,13 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         yi=yf
       case (icMULT)
         f=bzs*.5d0
-        cod(1)=xi
-        cod(2)=(pxi-f*yi)*dir
-        cod(3)=yi
-        cod(4)=(pyi+f*xi)*dir
-        cod(5:6)=0.d0
+        cod=[xi,(pxi-f*yi)*dir,yi,(pyi+f*xi)*dir,0.d0,0.d0]
         call setdirelc(i,direlc(i)*dir)
         dirf=direlc(i) .gt. 0.d0
+        call tinitr12(trans)
         if(seg)then
-c     call tmulteseg(trans,cod,beam,i,cmp,bzs*dir,lal,1.d0,i)
+          call tmulteseg(trans,cod,beam,srot,i,cmp,bzs*dir,
+     $         lsegp,.false.,1.d0)
         else
           call tmulte1(trans,cod,beam,srot,i,cmp,bzs*dir,.false.,1.d0)
         endif
@@ -295,6 +296,7 @@ c     call tmulteseg(trans,cod,beam,i,cmp,bzs*dir,lal,1.d0,i)
         cod(5:6)=0.d0
         call setdirelc(i,direlc(i)*dir)
         dirf=direlc(i) .gt. 0.d0
+        call tinitr12(trans)
         call tmulte(trans,cod,beam,srot,i,al,
      $       dummy,
      $       bzs*dir,

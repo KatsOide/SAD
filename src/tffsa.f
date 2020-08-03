@@ -988,6 +988,7 @@ c     $         ilist(1,iwakepold)*8
           call ffs_init_sizep
 c          ilist(2,iwakepold+6)=int(ifsize)
         endif
+        codin=twiss(1,0,mfitdx:mfitddp)
         call temitf(codplt,lfno)
         if(codplt)then
           modesize=6
