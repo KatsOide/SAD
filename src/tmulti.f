@@ -5,7 +5,7 @@
      $     mfring,fb1,fb2,
      $     vc,w,phirf,dphirf,vnominal,
      $     radius,rtaper,autophi,
-     $     kturn,latt,kptbl)
+     $     kturn,kptbl)
       use tfstk
       use ffs_flag
       use tmacro
@@ -21,30 +21,28 @@ c      use ffs_pointer, only:inext,iprev
       real*8 ,parameter :: conv=3.d-16,oneev=1.d0+1.d-6,
      $     ampmax=0.05d0,alstep=0.05d0,eps00=0.005d0,pmin=1.d-10,
      $     arad=0.01d0
-c      parameter (oneev=1.d0+3.83d-12)
-      integer*4 np
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np)
-      real*8 sx(np),sy(np),sz(np)
-      real*8 al,f1in,f2in,f1out,f2out
-      complex*16 ak(0:nmult)
-      real*8 bz,phia,psi1,psi2,dx,dy,dz,chi1,chi2,theta,dtheta,eps0
-      logical*4 fringe,autophi
-      integer*4 mfring
-      real*8 fb1,fb2,vc,phirf,dphirf,radius
-      integer*8 latt(nlat)
-      integer*4 kturn,kptbl(np0,6)
-      logical*4 acc,spac1,dofr(0:nmult),krad,nzleng
+      integer*4 ,intent(inout):: np
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),
+     $     dv(np),sx(np),sy(np),sz(np)
+      real*8 ,intent(in):: al,phia,psi1,psi2,
+     $     dx,dy,dz,chi1,chi2,theta,dtheta,theta2,
+     $     eps0,f1in,f2in,f1out,f2out,fb1,fb2,w,
+     $     vc,phirf,dphirf,vnominal,radius,rtaper
+      real*8 ,intent(inout):: bz
+      complex*16 ,intent(in):: ak(0:nmult),cr1
+      integer*4 ,intent(in):: mfring,kturn
+      integer*4 ,intent(inout):: kptbl(np0,6)
+      logical*4 ,intent(in):: fringe,autophi,krad
+      logical*4 acc,spac1,dofr(0:nmult),nzleng
       integer*4 i,m,n,ndiv,nmmax,ibsi
-      real*8 , intent(in)::theta2
-      real*8 bxs,bys,bzs,vnominal,b,a,eps,w,wi,v,phis,r,wl,
+      real*8 bxs,bys,bzs,b,a,eps,wi,v,phis,r,wl,
      $     r1,we,wsn,phic,dphis,offset,offset1,
-     $     tlim,akr1,ak1,al1,p,ea,pxf,pyf,sv,wsm,asinh,ws1,wm,
+     $     tlim,akr1,ak1,al1,p,ea,pxf,pyf,sv,asinh,ws1,wm,
      $     h2,p2,dp2,pr2,dvn,dzn,dp1r,p1r,p1,h1,t,ph,dh,dpr,dp2r,p2r,
-     $     alx,dp2p2,dp,dp1,pr1,rtaper,
+     $     alx,dp2p2,dp,dp1,pr1,
      $     he,vcorr,v20a,v02a,v1a,v11a,av,dpx,dpy,pe,ah
-      real*8 ws(ndivmax)
-      complex*16 , intent(in)::cr1
-      complex*16 akr(0:nmult),cr,cx,cx1,ak01,b0
+      real*8 ws(ndivmax+1)
+      complex*16 akr(0:nmult),akrm(0:nmult),cr,cx,cx1,ak01,b0
       if(phia .ne. 0.d0)then
         call tmulta(
      $       np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -149,7 +147,7 @@ c        pe=sqrt((he-1.d0)*(he+1.d0))
 c          do i=1,ndiv
             ws(1:ndiv)=wsn
 c          enddo
-        endif            
+        endif
         phic=(phirf+dphirf)*charge
         if(trpt)then
 c          vnominal=v*sin(-phirf*charge)
@@ -173,7 +171,6 @@ c          vnominal=0.d0
         tlim=1.d4
       else
 c     begin initialize for preventing compiler warning
-        w=0.d0
         wi=0.d0
         v=0.d0
         v20a=0.d0
@@ -188,6 +185,7 @@ c        do i=1,ndiv
         ws(1:ndiv)=wsn
 c        enddo
       endif
+      ws(ndiv+1)=0.d0
       ak1=akr1*ws(1)*.5d0
       al1=al*ws(1)*.5d0
       ak01=akr(0)*ws(1)*.5d0
@@ -238,6 +236,7 @@ c        enddo
       sv=0.d0
       ibsi=1
       do m=1,ndiv
+        akrm(0:nmmax)=akr(0:nmmax)*ws(m)
         if(nzleng)then
           call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         al1,ak1,bzs,dble(ak01),imag(ak01),ibsi,eps0)
@@ -256,50 +255,47 @@ c        enddo
             pcvt%fr0=pcvt%fr0+al1/al
           endif
           ibsi=0
-        endif
-        wsm=ws(m)
-        if(m .eq. ndiv)then
-          wm=wsm*.5d0
-        else
-          wm=(wsm+ws(m+1))*.5d0
-        endif
-        al1=al*wm
-        ak1=akr1*wm
-        ak01=akr(0)*wm
-        if(nzleng)then
+          wm=.5d0*(ws(m)+ws(m+1))
+          al1=al*wm
+          ak1=akr1*wm
+          ak01=akr(0)*wm
           if(nmmax .ge. 2)then
             do concurrent (i=1:np)
               cx1=dcmplx(x(i),y(i))
-              cx=(0.d0,0.d0)
-              do n=nmmax,2,-1
-                cx=(cx+(akr(n)*wsm))*cx1*an(n)
+              cx=akrm(nmmax)*cx1*an(nmmax)
+              do n=nmmax-1,2,-1
+                cx=(cx+akrm(n))*cx1*an(n)
               enddo
               cx=cx*cx1/(1.d0+g(i))
               px(i)=px(i)-dble(cx)
               py(i)=py(i)+imag(cx)
             enddo
           endif
+          if(spac1)then
+            call spkick(np,x,px,y,py,z,g,dv,sx,sy,sz,al*ws(m),radius,
+     $           alx,kturn,kptbl)
+          endif
         elseif(nmmax .ge. 1)then
           do concurrent (i=1:np)
             cx1=dcmplx(x(i),y(i))
-            cx=(0.d0,0.d0)
-            do n=nmmax,1,-1
-              cx=(cx+(akr(n)*wsm))*cx1*an(n)
+            cx=akrm(nmmax)*cx1*an(nmmax)
+            do n=nmmax-1,1,-1
+              cx=(cx+akrm(n))*cx1*an(n)
             enddo
-            cx=(cx+akr(0)*wsm)/(1.d0+g(i))
+            cx=(cx+akrm(0))/(1.d0+g(i))
             px(i)=px(i)-dble(cx)
             py(i)=py(i)+imag(cx)
           enddo
         endif
         if(acc)then
           if(vnominal .ne. 0.d0)then
-            sv=sv+vnominal*wsm
+            sv=sv+vnominal*ws(m)
             h2=h0+sv
             p2=h2p(h2)
             dp2=sv*(h2+h0)/(p2+p0)/p0
             pr2=1.d0+dp2
             dvn=-dp2*(1.d0+pr2)/h2/(h2+pr2*h0)
-            dzn=-dvn*al*wsm*.5d0
+            dzn=-dvn*al*ws(m)*.5d0
           else
             dzn=0.d0
           endif
@@ -317,7 +313,7 @@ c        enddo
             ph=.5d0*w*t
             dh=max(oneev-h1,
      $           (v+(v1a+v20a*x(i)+v11a*y(i))*x(i)+v02a*y(i)**2)
-     $           *(-2.d0*sin(ph)*cos(ph-dphis)+offset)*wsm)
+     $           *(-2.d0*sin(ph)*cos(ph-dphis)+offset)*ws(m))
             h2=h1+dh
             ah=max(dh*(h1+h2)/p1**2,-1.d0+pmin)
             dpr=sqrt1(ah)
@@ -326,29 +322,17 @@ c        enddo
             g(i)=dp2r
             dv(i)=-(1.d0+p2r)/h2/(h2+p2r*h0)*dp2r+dvfs
             z(i)=-t*p2r*p0/h2-dzn
-            av=-(cos(2.d0*ph-dphis)*wi-offset1*t)*wsm/p0
+            av=-(cos(2.d0*ph-dphis)*wi-offset1*t)*ws(m)/p0
             dpx=(v1a+2.d0*v20a*x(i)+v11a*y(i))*av
             dpy=(v11a*x(i)+2.d0*v02a*y(i))*av
             px(i)=(px(i)*p1r+dpx)/p2r
             py(i)=(py(i)*p1r+dpy)/p2r
           enddo
         endif
-        if(spac1)then
-          call spkick(np,x,px,y,py,z,g,dv,sx,sy,sz,al*wsm,radius,alx,
-     $          kturn,l_track,latt,kptbl)
-        endif
       enddo
       if(nzleng)then
         call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al1,ak1,bzs,dble(ak01),imag(ak01),2,eps0)
-      endif
-      if(spac1)then
-        call tapert(l_track,latt,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       kptbl,np,kturn,
-     $       radius,radius,
-     $       0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
-      endif
-      if(nzleng)then
         if(mfring .eq. 2 .or. mfring .eq. 3)then
           if(f1out .ne. 0.d0 .or. f2out .ne. 0.d0)then
             do concurrent (i=1:np)
@@ -386,8 +370,8 @@ c        enddo
           if(calpol .and. nmmax .ge. 2)then
             do concurrent (i=1:np)
               cx1=dcmplx(x(i),y(i))
-              cx=0.d0
-              do n=nmmax,2,-1
+              cx=akr(nmmax)*cx1*an(nmmax+1)
+              do n=nmmax-1,2,-1
                 cx=(cx+akr(n))*cx1*an(n+1)
               enddo
               bsi(i)=bsi(i)-imag(.5d0*cx*cx1**2)/al
@@ -396,6 +380,12 @@ c        enddo
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al1,0.d0)
           pcvt%fr0=pcvt%fr0+al1/al
         endif
+      endif
+      if(spac1)then
+        call tapert(x,px,y,py,z,g,dv,sx,sy,sz,
+     $       kptbl,np,kturn,
+     $       radius,radius,
+     $       0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
       endif
  1000 continue
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
@@ -424,12 +414,13 @@ c          h1=sqrt(1.d0+(p2*pr1)**2)
 
       subroutine tblfri(np,x,px,y,py,z,g,al,ck0,fb1)
       implicit none
-      integer*4 np,i
-      complex*16 ck0
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),
-     $     dxfrx,dyfrx,dyfrax,
-     $     dxfry,dyfry,dxfray,
-     $     p,al,fb1,rhob
+      integer*4 ,intent(in):: np
+      integer*4 i
+      complex*16 ,intent(in):: ck0
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np)
+      real*8 ,intent(in):: al,fb1
+      real*8 dxfrx,dyfrx,dyfrax,
+     $     dxfry,dyfry,dxfray,p,rhob
       if(dble(ck0) .ne. 0.d0)then
         rhob=al/dble(ck0)
         dxfrx=fb1**2/rhob/24.d0

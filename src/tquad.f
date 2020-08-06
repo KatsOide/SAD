@@ -9,13 +9,14 @@ c      use ffs_pointer, only:inext,iprev
       use mathfun, only:pxy2dpz,sqrt1,akang
       use kradlib
       implicit none
+      integer*4 ,intent(in):: np,mfring
       logical*4 , intent(in)::krad,chro,fringe,kin
-      integer*4 np,i,mfring
-      real*8 , intent(in) ::theta2
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     al,ak0,ak,dx,dy,theta,eps0,alr,
-     $     f1in,f1out,f2in,f2out,p,a,ea,b,pxf,pyf,bxs,bys,bzs
-      real*8 sx(np),sy(np),sz(np)
+      integer*4 i
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
+     $     dv(np),g(np),sx(np),sy(np),sz(np)
+      real*8 ,intent(in):: al,ak0,dx,dy,theta,theta2,
+     $     f1in,f1out,f2in,f2out,eps0
+      real*8 ak,alr,p,a,ea,b,pxf,pyf,bxs,bys,bzs
       real*8, parameter :: ampmax=0.9999d0
       if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,4,0.d0,ak0,
@@ -124,13 +125,15 @@ c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
      1           beta =2.23290993692602255d-2,
      1           gamma=9.43738783765593145d-4,
      1           alpha1=.5d0-alpha
-      integer*4 nord,np,kord,i
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np)
-      real*8 sx(np),sy(np),sz(np)
-      real*8 theta,sint,cost,dx,dy,al,ak,ala,alb,aki,akf,dpz,al1,
+      integer*4 ,intent(in):: nord,np
+      integer*4 i,kord
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),
+     $     dv(np),sx(np),sy(np),sz(np)
+      real*8 ,intent(in):: al,ak,dx,dy,theta
+      logical*4, intent(in)::krad,fringe
+      real*8 sint,cost,ala,alb,aki,akf,dpz,al1,
      $     f1,f2,f3,f4,f5,xi,yi,zi,pr,r,rcx1,pxi,rk1,rk
       complex*16 cx
-      logical*4, intent(in)::krad,fringe
 c     begin initialize for preventing compiler warning
       ala=0.d0
       alb=0.d0
@@ -337,10 +340,12 @@ c
       subroutine ttfrin(np,x,px,y,py,z,g,nord,ak,al,bz)
       use multa,only:fact,nmult
       implicit none
-      integer*4 np,nord,i,kord
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np)
-      real*8 ak,al,akk,aki,a,b,ab,t,dx1,dy1,d,xx,yy,
-     $     h,f,px1,py1,xi,yi,bz,bzph,pr,pxa,pya
+      integer*4 ,intent(in):: np,nord
+      integer*4 i,kord
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np)
+      real*8 ,intent(in):: ak,al,bz
+      real*8 akk,aki,a,b,ab,t,dx1,dy1,d,xx,yy,
+     $     h,f,px1,py1,xi,yi,bzph,pr,pxa,pya
       complex*16 cx,cp,cz,cz1,cx1,cp1,ca
       real*8 ,parameter ::
      $     an(nmult+2)=[
@@ -466,11 +471,11 @@ c          write(*,*)'ttfrin ',kord,ca,an(kord+1),cz
       subroutine ttfrins(np,x,px,y,py,z,g,nord,ak,al,bz)
       use macmath
       implicit none
-      integer*4 np
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np)
-      real*8 bz,aka
-      integer*4 nord,i
-      real*8 ak(2),al,x0,px0,theta,cost,sint
+      integer*4 ,intent(in):: np,nord
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np)
+      real*8 ,intent(in):: ak(2),al,bz
+      integer*4 i
+      real*8 x0,px0,theta,cost,sint,aka
       if((ak(1) .ne. 0.d0 .or. ak(2) .ne. 0.d0) .and. al .ne. 0.d0)then
 c        theta=pi/nord
         if(ak(1) .eq. 0.d0)then
@@ -513,9 +518,11 @@ c          aka=sqrt(ak(1)**2+ak(2)**2)
 
       subroutine tqlfri(np,x,px,y,py,z,g,f1,f2,bz)
       implicit none
-      integer*4 np,i
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np)
-      real*8 bz,f1,f2,xf,yf,pxf,pyf,a,b,bb,bzph,ea,f,p
+      integer*4 ,intent(in):: np
+      integer*4 i
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np)
+      real*8 ,intent(in):: bz,f1,f2
+      real*8 xf,yf,pxf,pyf,a,b,bb,bzph,ea,f,p
       do concurrent (i=1:np)
 c        p=(1.d0+g(i))**2
         p=(1.d0+g(i))

@@ -301,7 +301,7 @@ c     - Overwrite slot[np1] to slot[ip](Drop particle[k] information)
  101  continue
 c      write(*,'(a,2i5,14(i5,1pg12.5))')
 c     $     'trackd-tturn-1 ',n,np,(kptbl(i,1),y(i),i=1,14)
-      call tturn(np,latt,x,px,y,py,z,g,dv,spx,spy,spz,kptbl,n)
+      call tturn(np,x,px,y,py,z,g,dv,spx,spy,spz,kptbl,n)
 c      write(*,'(a,2i5,14(i5,1pg12.5))')
 c     $     'trackd-tturn-2 ',n,np,(kptbl(i,1),y(i),i=1,14)
       if(damp .or. dampenough .ne. 0.d0)then

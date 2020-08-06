@@ -20,8 +20,8 @@ c
      $     chi1,chi2,chi3
       logical*4 ,intent(in)::ent
       integer*4 i,j
-      real*8 b,phix,phiy,phiz,a,a12,a14,a22,a24,
-     $     dphizsq,pr,ds1,ds2,pz0,pz1,bzp,alb,s,pl,
+      real*8 b,phix,phiy,phiz,a,a12,a14,a22,a24,cosphi,
+     $     dphizsq,pr,ds1,ds2,pz0,pz1,bzp,alb,s,pl,ps2,
      $     dpz0,dpl,plx,ply,plz,ptx,pty,ptz,pbx,pby,pbz,
      $     phi,sinphi,dcosphi,xsinphi,dphi,phi0,bxs0,xs,
      $     px0,pxi,pyi,pz2,x0,x1,y1,sv(3),rr(3,3)
@@ -88,18 +88,18 @@ c     dpz0=-s/(1.d0+sqrt(1.d0-s))
               pby=ptz*phix-ptx*phiz
               pbz=ptx*phiy-pty*phix
               if(ds2 .ne. 0.d0)then
-                phi=ds2/alb/pz0
+                ps2=ds2/alb
+                phi=asin(ps2/pz0)
                 do j=1,itmax
-                  call sxsin(phi,sinphi,xsinphi)
-c                  sinphi=sin(phi)
-                  dcosphi=2.d0*sin(.5d0*phi)**2
-c                  xsinphi=xsin(phi)
-                  s=(plz*xsinphi+pz0*sinphi+pbz*dcosphi)*alb
-                  dphi=(ds2-s)/alb/(pz0-ptz*dcosphi+pbz*sinphi)
+                  call xsincos(phi,sinphi,xsinphi,cosphi,dcosphi)
+c                  call sxsin(phi,sinphi,xsinphi)
+c                  dcosphi=2.d0*sin(.5d0*phi)**2
+                  s=plz*xsinphi+pz0*sinphi-pbz*dcosphi
+                  dphi=(ps2-s)/(pz0+ptz*dcosphi+pbz*sinphi)
                   phi0=phi
                   phi=phi+dphi
                   if(phi0 .eq. phi .or. abs(dphi/phi) .lt. conv)then
-                    go to 100
+                    exit
                   endif
                 enddo
               else
@@ -107,7 +107,7 @@ c                  xsinphi=xsin(phi)
                 sinphi=0.d0
                 dcosphi=0.d0
               endif
- 100          x(i)=x(i)+(plx*phi+ptx*sinphi+pbx*dcosphi)*alb
+              x(i)=x(i)+(plx*phi+ptx*sinphi+pbx*dcosphi)*alb
               y(i)=y(i)+(ply*phi+pty*sinphi+pby*dcosphi)*alb
               z(i)=z(i)-phi*alb
               px(i)=px(i)-ptx*dcosphi+pbx*sinphi-bzp*y(i)*.5d0
@@ -721,14 +721,14 @@ c            xsinphi=xsin(phi)
       end module
 
       subroutine tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     latt,k,kstop,ke,insol,kptbl,la,n,
+     $     k,kstop,ke,insol,kptbl,la,n,
      $     nwak,nextwake,out)
       use kyparam
       use tfstk
       use ffs
       use ffs_wake
       use ffs_pointer,
-     $     only:idelc,direlc,elatt,idtypec,idvalc,pnamec,lpnamec
+     $     only:idelc,direlc,idtypec,idvalc,pnamec,lpnamec,compelc
       use sad_main
       use tparastat
       use ffs_seg
@@ -748,7 +748,6 @@ c            xsinphi=xsin(phi)
      $     sx(np),sy(np),sz(np)
       real*8 tfbzs,fw,bzs,al,theta,phi,phix,phiy,
      $     bz1,dx,dy,rot,rtaper,ph,bzph(np)
-      integer*8 latt(nlat),l1,lp
       integer*4 kptbl(np0,6),nwak,nextwake,n,
      $     i,ke,l,lt,itab(np),izs(np),
      $     kdx,kdy,krot,kstop,kb,lwl,lwt,irtc
@@ -756,7 +755,6 @@ c            xsinphi=xsin(phi)
       logical*4 , intent(inout) :: insol
       logical*4 out,seg,autophi,krad
       real*8 ,save::dummy(256)=0.d0
-      l1=latt(k)
       if(insol)then
         kb=k
       else
@@ -776,7 +774,7 @@ c            xsinphi=xsin(phi)
       ke=nlat
  20   bzs=tfbzs(k,kbz)
       if(.not. insol)then
-        call loc_comp(l1,cmp)
+        call compelc(k,cmp)
         if(.not. cmp%update)then
           call tpara(cmp)
         endif
@@ -817,7 +815,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
       do l=kb,min(ke,kstop)
         l_track=l
         if(la .le. 0)then
-          call tapert(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+          call tapert(x,px,y,py,z,g,dv,sx,sy,sz,
      $         kptbl,np,n,
      $         0.d0,0.d0,0.d0,0.d0,
      $         -alost,-alost,alost,alost,0.d0,0.d0,0.d0,0.d0)
@@ -829,8 +827,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           la=la-1
         endif
         lt=idtypec(l)
-        lp=elatt%comp(l)
-        call loc_comp(lp,cmp)
+        call compelc(l,cmp)
         seg=tcheckseg(cmp,lt,al,lsegp,irtc)
         if(irtc .ne. 0)then
           call tffserrorhandle(l,irtc)
@@ -880,10 +877,10 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           if(spac)then
             if(bzs .ne. 0.d0)then
               call spdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,al,bzs,
-     $             cmp%value(ky_RADI_DRFT),n,latt,kptbl)
+     $             cmp%value(ky_RADI_DRFT),n,kptbl)
             else
               call spdrift_free(np,x,px,y,py,z,g,dv,sx,sy,sz,al,
-     $             cmp%value(ky_RADI_DRFT),n,latt,kptbl)
+     $             cmp%value(ky_RADI_DRFT),n,kptbl)
             endif
           elseif(bzs .ne. 0.d0)then
             call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -932,10 +929,10 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           endif
           if(seg)then
             call tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           cmp,lsegp,bzs,rtaper,n,latt,kptbl)
+     $           cmp,lsegp,bzs,rtaper,n,kptbl)
           else
             call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           cmp,bzs,rtaper,n,latt,kptbl)
+     $           cmp,bzs,rtaper,n,kptbl)
           endif
         case(icCAVI)
           if(.not. cmp%update)then
@@ -962,7 +959,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
      $         cmp%value(p_W_CAVI),
      $         cmp%value(ky_PHI_CAVI),ph,cmp%value(p_VNOMINAL_CAVI),
      $         0.d0,1.d0,autophi,
-     $         n,latt,kptbl)
+     $         n,kptbl)
         case (icSOL)
           if(l .eq. ke)then
             bz1=0.d0
@@ -1012,7 +1009,7 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
         case(icMAP)
           call temap(np,np0,x,px,y,py,z,g,dv,l,n,kptbl)
         case(icAprt)
-          call tapert1(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+          call tapert1(x,px,y,py,z,g,dv,sx,sy,sz,
      1         kptbl,np,n)
           if(np .le. 0)then
             return

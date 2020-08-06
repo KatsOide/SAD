@@ -222,7 +222,7 @@ c      call tclrparaall
         np00=np0
         np0=npp
         if(mt .gt. 1)then
-          call tturn0(npa,latt,ls,nlat,
+          call tturn0(npa,ls,nlat,
      $         zx(1:npa,1),zx(1:npa,2),zx(1:npa,3),zx(1:npa,4),
      $         zx(1:npa,5),zx(1:npa,6),
      $         rlist(kdv),rlist(kpsx),rlist(kpsy),rlist(kpsz),
@@ -242,7 +242,7 @@ c      call tclrparaall
             mt=0
             exit
           endif
-          call tturn0(npa,latt,1,nlat,
+          call tturn0(npa,1,nlat,
      $         zx(1:npa,1),zx(1:npa,2),zx(1:npa,3),zx(1:npa,4),
      $         zx(1:npa,5),zx(1:npa,6),
      $         rlist(kdv),rlist(kpsx),rlist(kpsy),rlist(kpsz),
@@ -254,7 +254,7 @@ c      call tclrparaall
         if(ld .le. ls)then
           normal=.false.
         elseif(mt .ge. 1 .and. npa .gt. 0)then
-          call tturn0(npa,latt,ls,ld,
+          call tturn0(npa,ls,ld,
      $         zx(1:npa,1),zx(1:npa,2),zx(1:npa,3),zx(1:npa,4),
      $         zx(1:npa,5),zx(1:npa,6),
      $         rlist(kdv),rlist(kpsx),rlist(kpsy),rlist(kpsz),

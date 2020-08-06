@@ -413,7 +413,7 @@ c                enddo
       use ffs
       use ffs_fit ,only:ffs_stat
       use ffs_pointer
-      use temw,only:r,ri,calint,normali,tinv6,etwiss2ri,tsymp,nparams,
+      use temw,only:calint,normali,tinv6,etwiss2ri,tsymp,nparams,
      $     tfinibeam,iaez,tfetwiss
       use maccbk, only:i00
       implicit none

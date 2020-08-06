@@ -568,16 +568,15 @@ c     enddo
         eemy=max(emmin,eemy)
         eemz=max(emz0*0.1d0,eemz)
         if(eemx .le. 0.d0 .or. eemy .le. 0.d0 .or. eemz .le. 0.d0)then
-          write(lfno,*)
+          write(lfno,'(2a,/,a,1p3g15.7/)')
      $         ' Negative emittance, ',
-     $         'No intrabeam/space charge calculation. eemx,y,z =',
-     $         eemx,eemy,eemz
+     $         'No intrabeam/space charge calculation:',
+     $         'eem(x,y,z) =',eemx,eemy,eemz
           it=itmax+1
-          if(it .ge. 20)then
-            eemx=min(emxmax,max(emxmin,eemx))
-            eemy=min(emymax,max(emymin,eemy))
-            eemz=min(emzmax,max(emzmin,eemz))
-          endif
+        else
+          eemx=min(emxmax,max(emxmin,eemx))
+          eemy=min(emymax,max(emymin,eemy))
+          eemz=min(emzmax,max(emzmin,eemz))
           de=(1.d0-emx0/eemx)**2+
      1         (1.d0-emy0/eemy)**2+(1.d0-emz0/eemz)**2
           demin=min(de,demin)
@@ -585,9 +584,9 @@ c     enddo
             if(it .eq. 20)then
               write(*,*)' Poor convergence... '
               write(*,*)
-     $      '     EMITX          EMITY          EMITZ           conv'
+     $     '     EMITX          EMITY          EMITZ           conv'
             endif
-            write(*,'(1P,4G15.7)')eemx,eemy,eemz,de
+            write(*,'(1p4G15.7)')eemx,eemy,eemz,de
           endif
         endif
       endif
@@ -598,6 +597,7 @@ c        write(*,*)'tintraconv ',it,dc,de
         if(.not. trpt)then
           if(de .ge. resib .or. dc .ge. dcmin)then
             write(*,*)' Intrabeam/space charge convergence failed.'
+            write(*,*)
           elseif(intra .and. .not. caltouck)then
             de=resib*1.01d0
             go to 7301

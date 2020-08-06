@@ -5,12 +5,13 @@
       use mathfun
       implicit none
       type (tzparam) tz
-      integer*4 np,i,n,ndiv,ibsi
-      real*8, parameter::phieps=1.d-7
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np),
-     $     sx(np),sy(np),sz(np)
-      real*8 al,ak,eps0,bz,a,c,akk,eps,
-     $     bw,dw,r,ap,dpz,ak0x,ak0y,bz0,
+      integer*4 ,intent(in):: np,ibsi
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),dv(np),
+     $     gp(np),sx(np),sy(np),sz(np)
+      real*8 ,intent(in):: al,ak,eps0,bz0,ak0x,ak0y
+      real*8, parameter::phieps=1.d-7,epsdef=0.2d0
+      integer*4 i,n,ndiv
+      real*8 bz,a,c,akk,eps,bw,dw,r,ap,dpz,
      $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
      $     dx0,dy0,xi,yi,a12,a14,a22,a24,ra,phi,pxi,pyi,
      $     awu,dwu,dz1,dz2
@@ -47,9 +48,9 @@
       endif
       bz=bz0
       if(eps0 .eq. 0.d0)then
-        eps=0.2d0
+        eps=epsdef
       else
-        eps=0.2d0*eps0
+        eps=epsdef*eps0
       endif
       ndiv=1+int(abs(al*hypot(ak,bz)/eps))
 c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
@@ -216,16 +217,18 @@ c          endif
       use mathfun
       implicit none
       type (tzparam) tz
-      integer*4 np,i,n,ndiv
-      integer*4 , parameter :: ndivmax=1000
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),gp(np)
-      real*8 sx(np),sy(np),sz(np)
-      real*8 al,ak,eps0,bz,a,b,c,d,akk,eps,alr,aka,
-     $     bw,dw,r,ap,dpz,ak0x,ak0y,bz0,
+      integer*4 ,intent(in):: np
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),dv(np),
+     $     gp(np),sx(np),sy(np),sz(np)
+      real*8 ,intent(in):: al,ak,eps0,bz0,ak0x,ak0y
+      real*8 ,intent(out):: alr
+      real*8, parameter::phieps=1.d-7,epsdef=0.2d0,arad=0.01d0
+      integer*4 ,parameter ::ndivmax=1000
+      integer*4 i,n,ndiv
+      real*8 bz,a,c,akk,eps,bw,dw,r,ap,dpz,aka,b,d,
      $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
      $     dx0,dy0,xi,yi,a12,a14,a22,a24,phi,pxi,pyi,
      $     awu,dwu,dz1,dz2
-      real*8 , parameter ::phieps=1.d-7,arad=0.01d0
         associate (
      $       w1=>tz%tz0%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
      $       phi1=>tz%tz0%phi1,phi2=>tz%phi2,wss=>tz%wss,
@@ -260,9 +263,9 @@ c          endif
       endif
       bz=bz0
       if(eps0 .eq. 0.d0)then
-        eps=0.2d0
+        eps=epsdef
       else
-        eps=0.2d0*eps0
+        eps=epsdef*eps0
       endif
       aka=hypot(ak,bz)
       ndiv=1+int(abs(al)*aka/eps)

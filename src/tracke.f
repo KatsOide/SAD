@@ -80,7 +80,7 @@ c     Store current random seed into NISTACK$FIXSEED stack
         nl0=nlat
         l2s=l2
         if(l2 .gt. l1)then
-          call tturn0(np,latt,l1,l2s,
+          call tturn0(np,l1,l2s,
      1          rlist(ix      ),rlist(ix+np0  ),
      1          rlist(ix+np0*2),rlist(ix+np0*3),
      1          rlist(ix+np0*4),rlist(ix+np0*5),

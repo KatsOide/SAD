@@ -6,7 +6,6 @@
       use ffs_pointer
       use tffitcode
       use ffs_seg
-      use temw, only:code
       use geolib
       implicit none
       real*8, parameter:: conv=3.d-16
@@ -148,7 +147,6 @@
       use tffitcode
       use ffs_seg
       use mathfun, only:akang
-      use temw,only:code
       use geolib
       implicit none
       type (sad_comp), pointer :: cmp

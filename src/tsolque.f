@@ -262,7 +262,7 @@
       use tsolz
       use tmacro, only:bradprev
       use kradlib, only:tradke
-      use temw,only:tmulbs,code
+      use temw,only:tmulbs
       implicit none
       type(tzparam) tz
       integer*4 n,ndiv

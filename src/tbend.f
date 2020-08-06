@@ -53,17 +53,19 @@
         real*8 rho0,rhob,f1r,f2r,fb1,fb2
 
         contains
-        subroutine tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
+        pure subroutine tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
         use tfstk
         use ffs_flag, only:calpol
         use mathfun
         implicit none
-        integer*4 np,i
-        real*8 phi0,dtheta,
-     $       r11,r12,r13,r21,r22,r23,r31,r32,r33,
+        integer*4 ,intent(in):: np
+        integer*4 i
+        real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
+     $       sx(np),sy(np),sz(np)
+        real*8 ,intent(in):: phi0,dtheta
+        real*8 r11,r12,r13,r21,r22,r23,r31,r32,r33,
      $       pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf,
      $       cphi0,sphi0,cdt,sdt,sdth2,sxf,syf
-        real*8 x(np),px(np),y(np),py(np),z(np),sx(np),sy(np),sz(np)
         cphi0=cos(phi0*.5d0)
         sphi0=sin(phi0*.5d0)
         sdth2=sin(dtheta*.5d0)**2
@@ -125,11 +127,12 @@
         return
         end subroutine
 
-        subroutine tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,ent)
+        pure subroutine tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,ent)
         use tfstk
         use mathfun
         implicit none
-        integer*4 np,i
+        integer*4 ,intent(in):: np
+        integer*4 i
         real*8 , intent(in)::dx,dy,phi0,cost,sint
         real*8 , intent (inout)::x(np),px(np),y(np),py(np),z(np)
         real*8 phih,dcph,sph,ds,dx1,dy1,dxa,st1,x1,px1,al,y1
@@ -149,7 +152,7 @@
           ds=dxa*sph
           dxa=dxa*(1.d0+dcph)
           if(ent)then
-            do i=1,np
+            do concurrent (i=1:np)
               al=ds/(1.d0+pxy2dpz(px(i),py(i)))
               x1  =x(i)+px(i)*al-dx1
               y(i)=y(i)+py(i)*al-dy1
@@ -161,7 +164,7 @@
               py(i)=px1*sint+py(i)*cost
             enddo
           else
-            do i=1,np
+            do concurrent (i=1:np)
               x1  =x(i)*cost-y(i)*sint
               y(i)=x(i)*sint+y(i)*cost
               px1=px(i)
@@ -174,7 +177,7 @@
             enddo
           endif
         elseif(sint .ne. 0.d0 .or. cost .ne. 1.d0)then
-          do i=1,np
+          do concurrent (i=1:np)
             y1=y(i)
             y(i)=x(i)*sint+y1*cost
             x(i)=x(i)*cost-y1*sint
@@ -370,8 +373,9 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       use photontable
       use mathfun, only:akang
       implicit none
-      integer*4 np,mfring,ndiv,ndivmax,iniph,n1,n2
-      parameter (ndivmax=1024)
+      integer*4 ,intent(in):: np,mfring
+      integer*4 ndiv,iniph,n1,n2
+      integer*4 ,parameter::ndivmax=1024
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,ak,dx,dy,theta,
      $     cost,sint,cosw,sinw,sqwh,sinwp1,eps,
      $     psi1,psi2,fb10,fb20,dtheta,phir
@@ -408,8 +412,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      $         0.d0,0.d0,0.d0,0.d0,
      $         mfring,fb10,fb20,
      $         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,
-     $         .false.,.false.,
-     $         0,i00,i00)
+     $         .false.,.false.,0,i00)
         endif
         return
       elseif(ak .ne. 0.d0)then

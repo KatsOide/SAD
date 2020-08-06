@@ -4,22 +4,21 @@
       real*8 xlimit
       end module
 
-      subroutine tturn(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n)
+      subroutine tturn(np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n)
       use tfstk
       use tmacro
       use tspin
       implicit none
       integer*4 np,n,kptbl(np0,6)
-      integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
       real*8 sx(np),sy(np),sz(np)
       logical*4 normal
-      call tturn0(np,latt,1,nlat,x,px,y,py,z,g,dv,sx,sy,sz,
+      call tturn0(np,1,nlat,x,px,y,py,z,g,dv,sx,sy,sz,
      $     kptbl,n,normal)
       return
       end
 
-      subroutine tturn0(np,latt,lb,le,x,px,y,py,z,g,dv,sx,sy,sz,
+      subroutine tturn0(np,lb,le,x,px,y,py,z,g,dv,sx,sy,sz,
      $     kptbl,n,normal)
       use tfstk
       use ffs_flag
@@ -37,10 +36,8 @@
 c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
       real*8 pgev00
       integer*4 kptbl(np0,6),lv,itfdownlevel,irtc
-      integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
       real*8 sx(np0),sy(np0),sz(np0)
-      real*8 sa(6),ss(6,6)
       logical*4 sol,chg,tfinsol,normal
       pgev00=pgev
       sol=tfinsol(lb)
@@ -64,7 +61,7 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
         if(irtc .ne. 0)then
           call tffserrorhandle(fbound%lb,irtc)
         else
-          call tturn1(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
+          call tturn1(np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
      $         sol,la,fbound%lb,fbound%lb)
         endif
         if(chg)then
@@ -78,7 +75,7 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
           if(irtc .ne. 0)then
             call tffserrorhandle(fbound%lb,irtc)
           else
-            call tturn1(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
+            call tturn1(np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
      $           sol,la,fbound%lb,fbound%lb)
           endif
           if(chg)then
@@ -90,7 +87,7 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
         endif
         if(fbound%le .gt. ls+1 .or.
      $       fbound%le .eq. ls+1 .and. fbound%fe .eq. 0.d0)then
-         call tturn1(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
+         call tturn1(np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
      $         sol,la,ls,fbound%le-1)
         endif
         if(fbound%fe .ne. 0.d0)then
@@ -98,7 +95,7 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
           call compelc(fbound%le,cmp)
           call qfracseg(cmp,cmp,0.d0,fbound%fe,chg,irtc)
 c          call qfraccomp(fbound%le,0.d0,fbound%fe,ideal,chg)
-          call tturn1(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
+          call tturn1(np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
      $         sol,la,fbound%le,fbound%le)
           if(chg)then
             call qfracsave(fbound%le,dsave,nvar,.false.)
@@ -138,7 +135,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       return
       end
 
-      subroutine tturn1(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
+      subroutine tturn1(np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
      $     sol,la,lbegin,lend)
       use kyparam
       use tfstk
@@ -158,13 +155,14 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       integer*4,parameter :: la1=15
       type (sad_comp), pointer:: cmp
       type (sad_dlist) , pointer ::lsegp
-      integer*4 np,n,la,lbegin,lend,kdx,kdy,krot
+      integer*4 ,intent(inout):: np,la
+      integer*4 ,intent(in):: n,lbegin,lend
+      integer*4 kdx,kdy,krot
       integer*4 kptbl(np0,6)
-      integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),
      $     g(np0),dv(np0),dpz,al1
       real*8 sx(np0),sy(np0),sz(np0)
-      real*8 sa(6),ss(6,6),bz,al,ak0,ak1,tgauss,ph,harmf,
+      real*8 bz,al,ak0,ak1,tgauss,ph,harmf,
      $     sspac0,sspac,fw,dx,dy,rot,sspac1,sspac2,ak,rtaper,
      $     cod(6)
       integer*4 l,lele,i,ke,lwl,lwt,lwlc,lwtc,irtc,
@@ -229,7 +227,7 @@ c        endif
           call limitnan(y(1:np),-xlimit,xlimit,xlimit)
           call limitnan(py(1:np),-plimit,plimit,plimit)
           call limitnan(z(1:np),-zlimit,zlimit,zlimit)
-          call tapert(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+          call tapert(x,px,y,py,z,g,dv,sx,sy,sz,
      1         kptbl,np,n,
      $         0.d0,0.d0,0.d0,0.d0,
      $         -alost,-alost,alost,alost,0.d0,0.d0,0.d0,0.d0)
@@ -242,7 +240,7 @@ c        endif
         lele=idtype(cmp%id)
         if(sol)then
           if(l .eq. lbegin)then
-            call tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,latt,l,lend,
+            call tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,l,lend,
      $           ke,sol,kptbl,la,n,nwak,nextwake,out)
           endif
           if(np .le. 0)then
@@ -316,7 +314,7 @@ c            write(*,*)'twspac-end'
          if(spac)then
            call spdrift_free(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $          cmp%value(ky_L_DRFT),
-     $          cmp%value(ky_RADI_DRFT),n,latt,kptbl)
+     $          cmp%value(ky_RADI_DRFT),n,kptbl)
          else
            if(cmp%value(ky_KIN_DRFT) .eq. 0.d0)then
              do concurrent (i=1:np)
@@ -438,7 +436,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
 
        case (icSOL)
          call tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $        latt,l,lend,
+     $        l,lend,
      $        ke,sol,kptbl,la,n,nwak,nextwake,out)
          if(np .le. 0)then
            go to 9000
@@ -457,10 +455,10 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
          bz=0.d0
          if(seg)then
            call tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $          cmp,lsegp,bz,rtaper,n,latt,kptbl)
+     $          cmp,lsegp,bz,rtaper,n,kptbl)
          else
            call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $          cmp,bz,rtaper,n,latt,kptbl)
+     $          cmp,bz,rtaper,n,kptbl)
          endif
 
        case (icCAVI)
@@ -598,8 +596,7 @@ c     print *,'tturn l sspac2',l,sspac2
          go to 1010
 
        case (icAPRT)
-         call tapert1(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
-     1        kptbl,np,n)
+         call tapert1(x,px,y,py,z,g,dv,sx,sy,sz,kptbl,np,n)
          if(np .le. 0)then
            go to 9000
          endif
@@ -640,7 +637,7 @@ c     print *,'tturn l sspac2',l,sspac2
       call limitnan(y(1:np),-xlimit,xlimit,xlimit)
       call limitnan(py(1:np),-plimit,plimit,plimit)
       call limitnan(z(1:np),-zlimit,zlimit,zlimit)
-      call tapert(lend,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+      call tapert(x,px,y,py,z,g,dv,sx,sy,sz,
      1     kptbl,np,n,
      $     0.d0,0.d0,0.d0,0.d0,
      $     -alost,-alost,alost,alost,0.d0,0.d0,0.d0,0.d0)
@@ -703,7 +700,7 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
       end
 
       subroutine tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     cmp,lsegp,bz,rtaper,n,latt,kptbl)
+     $     cmp,lsegp,bz,rtaper,n,kptbl)
       use kyparam
       use tfstk
       use ffs
@@ -714,7 +711,6 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
       implicit none
       type (sad_comp) :: cmp
       integer*4 np,n
-      integer*8 latt(nlat)
       integer*4 kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),
      $     g(np0),dv(np0)
@@ -760,14 +756,14 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
         enddo
         cmp%update=.false.
         call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       cmp,bz,rtaper,n,latt,kptbl)
+     $       cmp,bz,rtaper,n,kptbl)
       enddo
       cmp%value(1:nc)=rsave(1:nc)
       return
       end
 
       subroutine tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     cmp,bz,rtaper,n,latt,kptbl)
+     $     cmp,bz,rtaper,n,kptbl)
       use kyparam
       use tfstk
       use ffs
@@ -778,7 +774,6 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
       implicit none
       type (sad_comp) :: cmp
       integer*4 np,n
-      integer*8 latt(nlat)
       integer*4 kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
       real*8 sx(np0),sy(np0),sz(np0)
@@ -817,6 +812,6 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
      $     cmp%value(p_W_MULT),
      $     cmp%value(ky_PHI_MULT),ph,cmp%value(p_VNOMINAL_MULT),
      $     cmp%value(ky_RADI_MULT),rtaper,autophi,
-     $     n,latt,kptbl)
+     $     n,kptbl)
       return
       end

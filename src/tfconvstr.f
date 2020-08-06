@@ -766,8 +766,8 @@ c      include 'DEBUG.inc'
       implicit none
       integer*4 l,lenw,mode
       real*8 x
-      character*22 str1,autos
-      str1=autos(x)
+      character*22 str1,autos1
+      str1=autos1(x)
       l=lenw(str1)
       ktrsaloc=ktsalocb(mode,str1,l)
       return

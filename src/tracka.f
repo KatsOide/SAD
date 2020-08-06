@@ -196,7 +196,7 @@ c         write(*,*)jp,k,kptbl(jp,3),rlist(kp),rlist(kp+1)
         if(n .gt. nturn)then
           go to 1010
         endif
-        call tturn(np,latt,x,px,y,py,z,g,dv,pz,kptbl,n)
+        call tturn(np,x,px,y,py,z,g,dv,pz,kptbl,n)
         if(np .le. 0)then
           go to 1010
         endif
