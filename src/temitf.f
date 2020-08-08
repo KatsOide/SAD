@@ -2,6 +2,8 @@
       use ffs_pointer
       use tmacro
       use tffitcode
+      use ffs_flag, only:trpt,wspac,intra
+      use temw, only:tfinibeam,tfetwiss,iaez,beamplt
       use maccbk, only:i00
       implicit none
       integer*4 nparam,ntitle
@@ -50,10 +52,17 @@
         read(title(i)(in+1:),*)scale(i)
 10    continue
       codin=twiss(1,0,mfitdx:mfitddp)
+c      tw=tfetwiss(ri,codin,normali)
+c      write(*,'(a,1p6g15.7)')'temitf-etwiss ',
+c     $       tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
       beamin=0.d0
+      if(trpt)then
+        beamin=tfinibeam(1)
+      endif
+      beamplt=wspac .or. intra
+      cod=codin
       call temit(trans,cod,beam,ctrb,
-     1     .true.,i00,i00,i00,i00,
-     1     plot,param(1,0),stab,lfno)
+     1     .not. trpt,iaez,plot,param(1,0),stab,lfno)
       dps=rgetgl1('PSPAN')
       dpsa=dps*.5d0
       if(dps .gt. 0.d0)then
@@ -67,9 +76,9 @@
             dleng=param(14,0)+i*ddl
             call rsetgl1('FSHIFT',-dleng/circ)
             call tsetdvfs
+            cod=codin
             call temit(trans,cod,beam,ctrb,
-     1           .true.,i00,i00,i00,i00,
-     1           plot,param(1,i),stab,lfno)
+     1           .true.,iaez,.false.,param(1,i),stab,lfno)
             if(.not. stab .and. lfnos .ne. 0)then
               write(lfnos,9101)'Unstable at "dp/p0" =',i*dps*.5d0
 9101          format(1x,a,f10.6)

@@ -3,7 +3,7 @@
       use tmacro
       use ffs_flag, only:calpol
       use mathfun
-      use tspin
+      use kradlib
       implicit none
       integer*4 np,i
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),

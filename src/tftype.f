@@ -107,7 +107,7 @@ c      endif
       integer*8 lp
       integer*4 ioff,kx,l,kp,lt,lfno,lenw,lpw,irtc,nc,j,j1
       real*8 v,coeff
-      character*32 autos
+      character*32 autos1
       character*132 vout
       character*(MAXPNAME) kw,tfkwrd
       character*8 unit
@@ -181,7 +181,7 @@ c      endif
         endif
         if(real)then
           v=v*coeff
-          vout=kw(1:lenw(kw))//' ='//autos(v)
+          vout=kw(1:lenw(kw))//' ='//autos1(v)
           call trim(vout)
           if(v .ne. 0.d0 .or. ioff .eq. nelvx(kx)%ival)then
 c            if(abs(v) .gt. 1.d10 .and. index(vout,'.') .le. 0

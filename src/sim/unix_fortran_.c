@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <omp.h>
 
 /* Fortran extensions for unix */
 
@@ -53,6 +54,7 @@ integer fork_worker_(void) {
   const int id = fork();
   if(id == 0){
     setpriority(PRIO_PROCESS, 0, 19);
+    /* omp_set_num_threads(1); */
     tfsavesharedmap_();}
   return id;
 }

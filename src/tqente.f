@@ -1,6 +1,7 @@
       subroutine tqente(trans,cod,beam,al,bz,irad)
       use mathfun, only: sqrtl
       use sol, only:tsoldz
+      use temw,only:tmulbs
       implicit none
       integer*4 irad,i
       real*8 trans(6,12),cod(6),beam(42),trans1(6,6),trans2(6,6),

@@ -20,8 +20,8 @@ c
      $     chi1,chi2,chi3
       logical*4 ,intent(in)::ent
       integer*4 i,j
-      real*8 b,phix,phiy,phiz,a,a12,a14,a22,a24,
-     $     dphizsq,pr,ds1,ds2,pz0,pz1,bzp,alb,s,pl,
+      real*8 b,phix,phiy,phiz,a,a12,a14,a22,a24,cosphi,
+     $     dphizsq,pr,ds1,ds2,pz0,pz1,bzp,alb,s,pl,ps2,
      $     dpz0,dpl,plx,ply,plz,ptx,pty,ptz,pbx,pby,pbz,
      $     phi,sinphi,dcosphi,xsinphi,dphi,phi0,bxs0,xs,
      $     px0,pxi,pyi,pz2,x0,x1,y1,sv(3),rr(3,3)
@@ -88,18 +88,18 @@ c     dpz0=-s/(1.d0+sqrt(1.d0-s))
               pby=ptz*phix-ptx*phiz
               pbz=ptx*phiy-pty*phix
               if(ds2 .ne. 0.d0)then
-                phi=ds2/alb/pz0
+                ps2=ds2/alb
+                phi=asin(ps2/pz0)
                 do j=1,itmax
-                  call sxsin(phi,sinphi,xsinphi)
-c                  sinphi=sin(phi)
-                  dcosphi=2.d0*sin(.5d0*phi)**2
-c                  xsinphi=xsin(phi)
-                  s=(plz*xsinphi+pz0*sinphi+pbz*dcosphi)*alb
-                  dphi=(ds2-s)/alb/(pz0-ptz*dcosphi+pbz*sinphi)
+                  call xsincos(phi,sinphi,xsinphi,cosphi,dcosphi)
+c                  call sxsin(phi,sinphi,xsinphi)
+c                  dcosphi=2.d0*sin(.5d0*phi)**2
+                  s=plz*xsinphi+pz0*sinphi-pbz*dcosphi
+                  dphi=(ps2-s)/(pz0+ptz*dcosphi+pbz*sinphi)
                   phi0=phi
                   phi=phi+dphi
                   if(phi0 .eq. phi .or. abs(dphi/phi) .lt. conv)then
-                    go to 100
+                    exit
                   endif
                 enddo
               else
@@ -107,7 +107,7 @@ c                  xsinphi=xsin(phi)
                 sinphi=0.d0
                 dcosphi=0.d0
               endif
- 100          x(i)=x(i)+(plx*phi+ptx*sinphi+pbx*dcosphi)*alb
+              x(i)=x(i)+(plx*phi+ptx*sinphi+pbx*dcosphi)*alb
               y(i)=y(i)+(ply*phi+pty*sinphi+pby*dcosphi)*alb
               z(i)=z(i)-phi*alb
               px(i)=px(i)-ptx*dcosphi+pbx*sinphi-bzp*y(i)*.5d0
@@ -151,13 +151,10 @@ c     pz2=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
           bys=0.d0
           fx= bzs*dy*.5d0
           fy=-bzs*dx*.5d0
-          do i=1,np
-            pr=(1.d0+g(i))
-            x(i)=x(i)-dx
-            y(i)=y(i)-dy
-            px(i)=px(i)+fx/pr
-            py(i)=py(i)+fy/pr
-          enddo
+          x=x-dx
+          y=y-dy
+          px=px+fx/(1.d0+g)
+          py=py+fy/(1.d0+g)
         endif
         if(chi3 .ne. 0.d0)then
           cchi3=cos(chi3)
@@ -239,13 +236,10 @@ c              endif
             enddo
           endif
         else
-          do i=1,np
-            pr=(1.d0+g(i))
-            px(i)=px(i)-fx/pr
-            py(i)=py(i)-fy/pr
-            x(i)=x(i)+dx
-            y(i)=y(i)+dy
-          enddo
+          px=px-fx/(1.d0+g)
+          py=py-fy/(1.d0+g)
+          x=x+dx
+          y=y+dy
         endif
       endif
       if(rad .and. calpol)then
@@ -265,39 +259,30 @@ c              endif
       use tmacro, only:irad
       use ffs_flag, only:calpol
       use mathfun, only: sqrtl,xsincos
+      use temw,only:tmulbs
       implicit none
-      real*8 trans(6,12),cod(6),beam(21),trans1(6,6),
-     $     trans2(6,6),tb(6),srot(3,9)
-      real*8 bz,dx,dy,chi3,x0,px0,bzh,dz,chi1,chi2,
-     $     al,s0,rr(3,3),xs,
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 trans1(6,6),trans2(6,6),tb(6)
+      real*8 ,intent(in):: bz,dx,dy,chi3,dz,chi1,chi2,al
+      real*8 ,intent(out):: bxs,bys,bzs
+      real*8 s0,rr(3,3),xs,x0,px0,bzh,
      $     ds1,pr,pz0,dpz0dpx,dpz0dpy,dpz0dp,
-     $     pz1,ds2,bxs,bys,bzs,bxs0,bzh1,pzmin,a,ptmax
-      logical*4 ent
+     $     pz1,ds2,bxs0,bzh1,pzmin,a,ptmax
+      logical*4 ,intent(in):: ent
+      logical*4 mul
       parameter (pzmin=1.d-10,ptmax=0.9999d0)
-      call tinitr(trans1)
+      mul=.false.
       if(ent)then
         if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or.
      $       chi2 .ne. 0.d0)then
+          call tinitr(trans1)
+          mul=.true.
           bzh1=bz*.5d0
           cod(2)=cod(2)+bzh1*cod(3)
           cod(4)=cod(4)-bzh1*cod(1)
           s0=-.5d0*al
           call xsincos(chi1,schi1,xs,cchi1,dcchi1)
           call xsincos(chi2,schi2,xs,cchi2,dcchi2)
-c$$$          cchi1=cos(chi1)
-c$$$          schi1=sin(chi1)
-c$$$          if(cchi1 .ge. 0.d0)then
-c$$$            dcchi1=schi1**2/(1.d0+cchi1)
-c$$$          else
-c$$$            dcchi1=(1.d0-cchi1)
-c$$$          endif
-c$$$          cchi2=cos(chi2)
-c$$$          schi2=sin(chi2)
-c$$$          if(cchi2 .ge. 0.d0)then
-c$$$            dcchi2=schi2**2/(1.d0+cchi2)
-c$$$          else
-c$$$            dcchi2=(1.d0-cchi2)
-c$$$          endif
           bzs=cchi2*cchi1*bz
           bxs=-schi1*bz
           bys=-schi2*cchi1*bz
@@ -306,7 +291,6 @@ c$$$          endif
           pr=1.d0+cod(6)
           a=cod(2)**2+cod(4)**2
           pz0=pr*sqrtl(1.d0-a/pr**2)
-c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
           dpz0dpx=-cod(2)/pz0
           dpz0dpy=-cod(4)/pz0
           dpz0dp = pr/pz0
@@ -331,7 +315,6 @@ c          pz0=sqrt(max(pzmin,(pr-cod(2))*(pr+cod(2))-cod(4)**2))
           trans1(5,5)=0.d0
           call tsoldz(trans2,cod,-ds2,bxs,bys,bzs,.false.)
           trans1=matmul(trans2,trans1)
-c          call tmultr(trans1,trans2,6)
           trans1(5,5)=1.d0
           bzh=bzs*.5d0
           cod(2)=cod(2)-bzh*cod(3)
@@ -341,22 +324,26 @@ c          call tmultr(trans1,trans2,6)
           trans1(2,:)=trans1(2,:)-bzh*trans1(3,:)
           trans1(4,:)=trans1(4,:)+bzh*trans1(1,:)
         else
+          bzh=bz*.5d0
+          cod(1)=cod(1)-dx
+          cod(3)=cod(3)-dy
+          cod(2)=cod(2)+bzh*dy
+          cod(4)=cod(4)-bzh*dx
           cchi1=1.d0
           schi1=0.d0
           cchi2=1.d0
           schi2=0.d0
           dcchi1=0.d0
           dcchi2=0.d0
-          bzh=bz*.5d0
-          cod(1)=cod(1)-dx
-          cod(3)=cod(3)-dy
-          cod(2)=cod(2)+bzh*dy
-          cod(4)=cod(4)-bzh*dx
           bxs=0.d0
           bys=0.d0
           bzs=bz
         endif
         if(chi3 .ne. 0.d0)then
+          if(.not. mul)then
+            call tinitr(trans1)
+          endif
+          mul=.true.
           cchi3=cos(chi3)
           schi3=sin(chi3)
           x0=cod(1)
@@ -380,6 +367,8 @@ c          call tmultr(trans1,trans2,6)
         endif
       else
         if(chi3 .ne. 0.d0)then
+          call tinitr(trans1)
+          mul=.true.
           x0=cod(1)
           cod(1)= cchi3*x0+schi3*cod(3)
           cod(3)=-schi3*x0+cchi3*cod(3)
@@ -398,6 +387,10 @@ c          call tmultr(trans1,trans2,6)
         endif
         if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or.
      $       chi2 .ne. 0.d0)then
+          if(.not. mul)then
+            call tinitr(trans1)
+          endif
+          mul=.true.
           s0=-.5d0*al
           call tinitr(trans2)
           pr=1.d0+cod(6)
@@ -453,12 +446,14 @@ c          call tmultr(trans1,trans2,6)
           cod(3)=cod(3)+dy
         endif
       endif
-      call tmultr5(trans,trans1,irad)
-      if(irad .gt. 6)then
-        call tmulbs(beam,trans1,.true.)
-        if(calpol)then
-          call trot33(rr,ent)
-          srot=matmul(rr,srot)
+      if(mul)then
+        call tmultr5(trans,trans1,irad)
+        if(irad .gt. 6)then
+          call tmulbs(beam,trans1,.true.)
+          if(calpol)then
+            call trot33(rr,ent)
+            srot=matmul(rr,srot)
+          endif
         endif
       endif
       return
@@ -467,20 +462,21 @@ c          call tmultr(trans1,trans2,6)
       subroutine tsoldz(trans,cod,al,bxs0,bys0,bzs0,drift)
       use mathfun
       implicit none
-      integer*4 j,itmax,ndiag
-      parameter (itmax=15)
-      real*8 trans(6,6),cod(6),al,bxs,bys,bzs,pxi,pyi,pz0,
+      integer*4 j
+      integer*4 ,save::ndiag=15
+      integer*4 ,parameter ::itmax=15
+      real*8 ,intent(inout):: trans(6,6),cod(6)
+      real*8 ,intent(in):: al,bxs0,bys0,bzs0
+      real*8 bxs,bys,bzs,pxi,pyi,pz0,
      $     dpz0dpx,dpz0dpy,dpz0dp,phi,
      $     dphidz,dphidpx,dphidpy,dphidp,a24,a12,a22,a14,
      $     da12,da14,pr,dpz0,dv,dvdp,s,r,phix,phiy,phiz,babs,
      $     alb,pbx,pby,pbz,pl,dpl,dphizsq,a,
      $     dpldpx,dpldpy,dpldp,dplz,plx,ply,plz,ptx,pty,ptz,
      $     cosphi,sinphi,dcosphi,phi0,dphi,
-     $     xsinphi,ax,ay,az,cx,cy,conv,albabs,u,
-     $     bxs0,bys0,bzs0,bzthre,ptmax
-      parameter (conv=1.d-15,bzthre=1.d-20,ptmax=0.9999d0)
-      logical*4 drift
-      data ndiag/15/
+     $     xsinphi,ax,ay,az,cx,cy,albabs,u
+      real*8 ,parameter ::conv=1.d-15,bzthre=1.d-20,ptmax=0.9999d0
+      logical*4 ,intent(in):: drift
       bxs=bxs0
       bys=bys0
       bzs=bzs0
@@ -703,7 +699,7 @@ c            xsinphi=xsin(phi)
       end subroutine
 
       subroutine tradks(np,x,px,y,py,z,g,dv,sx,sy,sz,bzs,al,bzph)
-      use tspin, only:tradk
+      use kradlib, only:tradk
       implicit none
       integer*4 , intent(in)::np
       real*8 , intent(in)::bzs,al
@@ -725,18 +721,18 @@ c            xsinphi=xsin(phi)
       end module
 
       subroutine tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     latt,k,kstop,ke,insol,kptbl,la,n,
+     $     k,kstop,ke,insol,kptbl,la,n,
      $     nwak,nextwake,out)
       use kyparam
       use tfstk
       use ffs
       use ffs_wake
       use ffs_pointer,
-     $     only:idelc,direlc,elatt,idtypec,idvalc,pnamec,lpnamec
+     $     only:idelc,direlc,idtypec,idvalc,pnamec,lpnamec,compelc
       use sad_main
       use tparastat
       use ffs_seg
-      use tspin
+      use kradlib
       use sol
       implicit none
       real*8 conv
@@ -752,7 +748,6 @@ c            xsinphi=xsin(phi)
      $     sx(np),sy(np),sz(np)
       real*8 tfbzs,fw,bzs,al,theta,phi,phix,phiy,
      $     bz1,dx,dy,rot,rtaper,ph,bzph(np)
-      integer*8 latt(nlat),l1,lp
       integer*4 kptbl(np0,6),nwak,nextwake,n,
      $     i,ke,l,lt,itab(np),izs(np),
      $     kdx,kdy,krot,kstop,kb,lwl,lwt,irtc
@@ -760,7 +755,6 @@ c            xsinphi=xsin(phi)
       logical*4 , intent(inout) :: insol
       logical*4 out,seg,autophi,krad
       real*8 ,save::dummy(256)=0.d0
-      l1=latt(k)
       if(insol)then
         kb=k
       else
@@ -780,7 +774,7 @@ c            xsinphi=xsin(phi)
       ke=nlat
  20   bzs=tfbzs(k,kbz)
       if(.not. insol)then
-        call loc_comp(l1,cmp)
+        call compelc(k,cmp)
         if(.not. cmp%update)then
           call tpara(cmp)
         endif
@@ -821,7 +815,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
       do l=kb,min(ke,kstop)
         l_track=l
         if(la .le. 0)then
-          call tapert(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+          call tapert(x,px,y,py,z,g,dv,sx,sy,sz,
      $         kptbl,np,n,
      $         0.d0,0.d0,0.d0,0.d0,
      $         -alost,-alost,alost,alost,0.d0,0.d0,0.d0,0.d0)
@@ -833,8 +827,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           la=la-1
         endif
         lt=idtypec(l)
-        lp=elatt%comp(l)
-        call loc_comp(lp,cmp)
+        call compelc(l,cmp)
         seg=tcheckseg(cmp,lt,al,lsegp,irtc)
         if(irtc .ne. 0)then
           call tffserrorhandle(l,irtc)
@@ -884,10 +877,10 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           if(spac)then
             if(bzs .ne. 0.d0)then
               call spdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,al,bzs,
-     $             cmp%value(ky_RADI_DRFT),n,latt,kptbl)
+     $             cmp%value(ky_RADI_DRFT),n,kptbl)
             else
               call spdrift_free(np,x,px,y,py,z,g,dv,sx,sy,sz,al,
-     $             cmp%value(ky_RADI_DRFT),n,latt,kptbl)
+     $             cmp%value(ky_RADI_DRFT),n,kptbl)
             endif
           elseif(bzs .ne. 0.d0)then
             call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -936,10 +929,10 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           endif
           if(seg)then
             call tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           cmp,lsegp,bzs,rtaper,n,latt,kptbl)
+     $           cmp,lsegp,bzs,rtaper,n,kptbl)
           else
             call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           cmp,bzs,rtaper,n,latt,kptbl)
+     $           cmp,bzs,rtaper,n,kptbl)
           endif
         case(icCAVI)
           if(.not. cmp%update)then
@@ -966,7 +959,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
      $         cmp%value(p_W_CAVI),
      $         cmp%value(ky_PHI_CAVI),ph,cmp%value(p_VNOMINAL_CAVI),
      $         0.d0,1.d0,autophi,
-     $         n,latt,kptbl)
+     $         n,kptbl)
         case (icSOL)
           if(l .eq. ke)then
             bz1=0.d0
@@ -1016,7 +1009,7 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
         case(icMAP)
           call temap(np,np0,x,px,y,py,z,g,dv,l,n,kptbl)
         case(icAprt)
-          call tapert1(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+          call tapert1(x,px,y,py,z,g,dv,sx,sy,sz,
      1         kptbl,np,n)
           if(np .le. 0)then
             return
@@ -1029,7 +1022,7 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
             write(*,*)
      $'Only DRIFT, BEND, QUAD, SOL, MULT, '//
      $'CAVI, MAP, APERT, MARK, MON '//
-     $'are supported in SOL: ',
+     $'are supported within SOL: ',
      $           lt
           endif
         end select

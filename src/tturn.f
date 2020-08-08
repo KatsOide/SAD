@@ -4,22 +4,21 @@
       real*8 xlimit
       end module
 
-      subroutine tturn(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n)
+      subroutine tturn(np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n)
       use tfstk
       use tmacro
       use tspin
       implicit none
       integer*4 np,n,kptbl(np0,6)
-      integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
       real*8 sx(np),sy(np),sz(np)
       logical*4 normal
-      call tturn0(np,latt,1,nlat,x,px,y,py,z,g,dv,sx,sy,sz,
+      call tturn0(np,1,nlat,x,px,y,py,z,g,dv,sx,sy,sz,
      $     kptbl,n,normal)
       return
       end
 
-      subroutine tturn0(np,latt,lb,le,x,px,y,py,z,g,dv,sx,sy,sz,
+      subroutine tturn0(np,lb,le,x,px,y,py,z,g,dv,sx,sy,sz,
      $     kptbl,n,normal)
       use tfstk
       use ffs_flag
@@ -37,10 +36,8 @@
 c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
       real*8 pgev00
       integer*4 kptbl(np0,6),lv,itfdownlevel,irtc
-      integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
       real*8 sx(np0),sy(np0),sz(np0)
-      real*8 sa(6),ss(6,6)
       logical*4 sol,chg,tfinsol,normal
       pgev00=pgev
       sol=tfinsol(lb)
@@ -64,7 +61,7 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
         if(irtc .ne. 0)then
           call tffserrorhandle(fbound%lb,irtc)
         else
-          call tturn1(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
+          call tturn1(np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
      $         sol,la,fbound%lb,fbound%lb)
         endif
         if(chg)then
@@ -78,7 +75,7 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
           if(irtc .ne. 0)then
             call tffserrorhandle(fbound%lb,irtc)
           else
-            call tturn1(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
+            call tturn1(np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
      $           sol,la,fbound%lb,fbound%lb)
           endif
           if(chg)then
@@ -90,7 +87,7 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
         endif
         if(fbound%le .gt. ls+1 .or.
      $       fbound%le .eq. ls+1 .and. fbound%fe .eq. 0.d0)then
-          call tturn1(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
+         call tturn1(np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
      $         sol,la,ls,fbound%le-1)
         endif
         if(fbound%fe .ne. 0.d0)then
@@ -98,7 +95,7 @@ c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
           call compelc(fbound%le,cmp)
           call qfracseg(cmp,cmp,0.d0,fbound%fe,chg,irtc)
 c          call qfraccomp(fbound%le,0.d0,fbound%fe,ideal,chg)
-          call tturn1(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
+          call tturn1(np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
      $         sol,la,fbound%le,fbound%le)
           if(chg)then
             call qfracsave(fbound%le,dsave,nvar,.false.)
@@ -107,9 +104,9 @@ c          call qfraccomp(fbound%le,0.d0,fbound%fe,ideal,chg)
       endif
       lv=itfdownlevel()
       if(trpt .and. codplt)then
-        call ttstat(np,x,px,y,py,z,g,dv,0.d0,
-     1       ' ',sa,ss,0.d0,
-     1       .false.,.false.,0)
+c        call ttstat(np,x,px,y,py,z,g,dv,0.d0,
+c     1       ' ',sa,ss,0.d0,
+c     1       .false.,.false.,0)
 c        call ttstat(np,x,px,y,py,z,g,dv,rlist(ilist(2,iwakepold+4)),
 c     1       ' ',sa,ss,0.d0,
 c     1       .false.,.false.,0)
@@ -138,7 +135,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       return
       end
 
-      subroutine tturn1(np,latt,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
+      subroutine tturn1(np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n,
      $     sol,la,lbegin,lend)
       use kyparam
       use tfstk
@@ -146,33 +143,38 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       use tffitcode
       use ffs_wake
       use sad_main
-      use ffs_pointer, only: direlc,compelc
+      use ffs_pointer, only: direlc,compelc,twiss,pos,beamsize
       use tparastat
       use tfcsi, only:icslfno
       use ffs_seg
       use tspin
+      use kradlib
       use mathfun
       use tracklim
       implicit none
       integer*4,parameter :: la1=15
       type (sad_comp), pointer:: cmp
       type (sad_dlist) , pointer ::lsegp
-      integer*4 np,n,la,lbegin,lend,kdx,kdy,krot
+      integer*4 ,intent(inout):: np,la
+      integer*4 ,intent(in):: n,lbegin,lend
+      integer*4 kdx,kdy,krot
       integer*4 kptbl(np0,6)
-      integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),
      $     g(np0),dv(np0),dpz,al1
       real*8 sx(np0),sy(np0),sz(np0)
-      real*8 sa(6),ss(6,6),bz,al,ak0,ak1,tgauss,ph,harmf,
-     $     sspac0,sspac,fw,dx,dy,rot,sspac1,sspac2,ak,rtaper
+      real*8 bz,al,ak0,ak1,tgauss,ph,harmf,
+     $     sspac0,sspac,fw,dx,dy,rot,sspac1,sspac2,ak,rtaper,
+     $     cod(6)
       integer*4 l,lele,i,ke,lwl,lwt,lwlc,lwtc,irtc,
      $     nextwake,nwak,itab(np),izs(np)
       integer*8 iwpl,iwpt,iwplc,iwptc
-      logical*4 sol,out,autophi,seg,krad
+      logical*4 sol,out,autophi,seg,krad,wspaccheck
       if(np .le. 0)then
         return
       endif
-      call wspaccheck
+      if(wspaccheck())then
+        return
+      endif
       out=.true.
       nextwake=0
       iwpt=0
@@ -198,33 +200,34 @@ c      itwb3=itwb+ntw*16-1
 c      itwb4=itwb+ntw*17-1
 c      isb=ilist(2,iwakepold+6)
       xlimit=alost*3.d0
-      sspac0=rlist(ifpos+lbegin-1)
+      sspac0=pos(lbegin-1)
       call tsetdvfs
       if(rad)then
-        allocate(pxr0(np))
-        allocate(pyr0(np))
-        allocate(zr0(np))
+        allocate(pxr0(np0))
+        allocate(pyr0(np0))
+        allocate(zr0(np0))
       endif
-      allocate(bsi(np))
+      allocate(bsi(np0))
       bsi=0.d0
       do l=lbegin,lend
         l_track=l
-c        if(l .gt. 3300)then
-c          write(*,*)'tturn1-l ',l
+c        if(abs(x(1))+abs(y(1)) .gt. 0.01d0)then
+c        write(*,*)'tturn1-l ',l,np,x(np),y(np),g(np)
+c          write(*,*)'tturn1 ',l,np,kptbl(1,1:6)
 c        endif
 c        call tfmemcheckprint('tturn',l,.false.,irtc)
-        if(trpt .and. codplt)then
-          call ttstat(np,x,px,y,py,z,g,dv,0.d0,
-     1         ' ',sa,ss,0.d0,
-     1         .false.,.false.,0)
-        endif
+c        if(trpt .and. codplt)then
+c          call ttstat(np,x,px,y,py,z,g,dv,0.d0,
+c     1         ' ',sa,ss,0.d0,
+c     1         .false.,.false.,0)
+c        endif
         if(la .le. 0)then
           call limitnan(x(1:np),-xlimit,xlimit,xlimit)
           call limitnan(px(1:np),-plimit,plimit,plimit)
           call limitnan(y(1:np),-xlimit,xlimit,xlimit)
           call limitnan(py(1:np),-plimit,plimit,plimit)
           call limitnan(z(1:np),-zlimit,zlimit,zlimit)
-          call tapert(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+          call tapert(x,px,y,py,z,g,dv,sx,sy,sz,
      1         kptbl,np,n,
      $         0.d0,0.d0,0.d0,0.d0,
      $         -alost,-alost,alost,alost,0.d0,0.d0,0.d0,0.d0)
@@ -237,11 +240,11 @@ c        call tfmemcheckprint('tturn',l,.false.,irtc)
         lele=idtype(cmp%id)
         if(sol)then
           if(l .eq. lbegin)then
-            call tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,latt,l,lend,
+            call tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,l,lend,
      $           ke,sol,kptbl,la,n,nwak,nextwake,out)
           endif
           if(np .le. 0)then
-            return
+            go to 9000
           endif
           sol=l .lt. ke
           go to 1020
@@ -286,15 +289,18 @@ c        call tfmemcheckprint('tturn',l,.false.,irtc)
           endif
         endif
         if(wspac .or. pspac)then
-          sspac=(rlist(ifpos+l-1)+rlist(ifpos+l))*.5d0
-          if(sspac .ne. sspac0)then
-             if(wspac) then
-               call twspac(np,x,px,y,py,z,g,dv,sx,sy,sz,sspac-sspac0,
-     $              gettwiss(mfitdx,l),
-c     $              rlist(iftwis+((mfitdx-1)*(2*ndim+1)+ndim)*nlat
-c     $              +l-1),
-     $              rlist(ifsize+(l-1)*21))
-             endif
+          sspac=(pos(l)+pos(l+1))*.5d0
+          if(sspac .ne. sspac0 .and. wspac)then
+c            if(abs(px(1))+abs(py(1)) .gt. 0.01d0)then
+c              write(*,*)'tturn1-wspac ',l,np,px(1),py(1),g(1)
+c            endif
+            cod=twiss(l,0,mfitdx:mfitddp)
+            call twspac(np,x,px,y,py,z,g,dv,sx,sy,sz,sspac-sspac0,
+     $           cod,beamsize(:,l),l)
+c            if(abs(px(1))+abs(py(1)) .gt. 0.01d0)then
+c              write(*,*)'tturn1-wspac ',l,np,px(1),py(1),g(1)
+c            endif
+c            write(*,*)'twspac-end'
           endif
           sspac0=sspac
        endif
@@ -308,7 +314,7 @@ c     $              +l-1),
          if(spac)then
            call spdrift_free(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $          cmp%value(ky_L_DRFT),
-     $          cmp%value(ky_RADI_DRFT),n,latt,kptbl)
+     $          cmp%value(ky_RADI_DRFT),n,kptbl)
          else
            if(cmp%value(ky_KIN_DRFT) .eq. 0.d0)then
              do concurrent (i=1:np)
@@ -430,7 +436,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
 
        case (icSOL)
          call tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $        latt,l,lend,
+     $        l,lend,
      $        ke,sol,kptbl,la,n,nwak,nextwake,out)
          if(np .le. 0)then
            go to 9000
@@ -449,10 +455,10 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
          bz=0.d0
          if(seg)then
            call tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $          cmp,lsegp,bz,rtaper,n,latt,kptbl)
+     $          cmp,lsegp,bz,rtaper,n,kptbl)
          else
            call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $          cmp,bz,rtaper,n,latt,kptbl)
+     $          cmp,bz,rtaper,n,kptbl)
          endif
 
        case (icCAVI)
@@ -590,8 +596,7 @@ c     print *,'tturn l sspac2',l,sspac2
          go to 1010
 
        case (icAPRT)
-         call tapert1(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
-     1        kptbl,np,n)
+         call tapert1(x,px,y,py,z,g,dv,sx,sy,sz,kptbl,np,n)
          if(np .le. 0)then
            go to 9000
          endif
@@ -632,7 +637,7 @@ c     print *,'tturn l sspac2',l,sspac2
       call limitnan(y(1:np),-xlimit,xlimit,xlimit)
       call limitnan(py(1:np),-plimit,plimit,plimit)
       call limitnan(z(1:np),-zlimit,zlimit,zlimit)
-      call tapert(lend,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+      call tapert(x,px,y,py,z,g,dv,sx,sy,sz,
      1     kptbl,np,n,
      $     0.d0,0.d0,0.d0,0.d0,
      $     -alost,-alost,alost,alost,0.d0,0.d0,0.d0,0.d0)
@@ -642,14 +647,12 @@ c     print *,'tturn l sspac2',l,sspac2
       la=la1
 c      call tfmemcheckprint('tturn',1,.false.,irtc)
       if(wspac.or.pspac)then
-        sspac=rlist(ifpos+lend-1)
+        sspac=pos(lend)
         if(sspac .ne. sspac0)then
            if(wspac)then
-              call twspac(np,x,px,y,py,z,g,dv,sx,sy,sz,sspac-sspac0,
-     $            gettwiss(mfitdx,lend),
-c     $             rlist(iftwis+((mfitdx-1)*(2*ndim+1)+ndim)*nlat
-c     $             +lend-1),
-     $             rlist(ifsize+(lend-1)*21))
+             cod=twiss(lend,0,mfitdx:mfitddp)
+             call twspac(np,x,px,y,py,z,g,dv,sx,sy,sz,sspac-sspac0,
+     $            cod,beamsize(:,lend),lend)
            endif
            if(pspac) then
               call tpspac(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -666,7 +669,6 @@ c     $             +lend-1),
         deallocate(pyr0)
         deallocate(pxr0)
       endif
-
       return
       end
 
@@ -698,7 +700,7 @@ c     $             +lend-1),
       end
 
       subroutine tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     cmp,lsegp,bz,rtaper,n,latt,kptbl)
+     $     cmp,lsegp,bz,rtaper,n,kptbl)
       use kyparam
       use tfstk
       use ffs
@@ -709,7 +711,6 @@ c     $             +lend-1),
       implicit none
       type (sad_comp) :: cmp
       integer*4 np,n
-      integer*8 latt(nlat)
       integer*4 kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),
      $     g(np0),dv(np0)
@@ -755,14 +756,14 @@ c     $             +lend-1),
         enddo
         cmp%update=.false.
         call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       cmp,bz,rtaper,n,latt,kptbl)
+     $       cmp,bz,rtaper,n,kptbl)
       enddo
       cmp%value(1:nc)=rsave(1:nc)
       return
       end
 
       subroutine tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     cmp,bz,rtaper,n,latt,kptbl)
+     $     cmp,bz,rtaper,n,kptbl)
       use kyparam
       use tfstk
       use ffs
@@ -773,7 +774,6 @@ c     $             +lend-1),
       implicit none
       type (sad_comp) :: cmp
       integer*4 np,n
-      integer*8 latt(nlat)
       integer*4 kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
       real*8 sx(np0),sy(np0),sz(np0)
@@ -812,6 +812,6 @@ c     $             +lend-1),
      $     cmp%value(p_W_MULT),
      $     cmp%value(ky_PHI_MULT),ph,cmp%value(p_VNOMINAL_MULT),
      $     cmp%value(ky_RADI_MULT),rtaper,autophi,
-     $     n,latt,kptbl)
+     $     n,kptbl)
       return
       end

@@ -8,8 +8,10 @@
 
       subroutine tsolva(a,b,x,n,m,ndim,epslon)
       implicit none
-      integer*4 n,m,ndim
-      real*8 a(ndim,m),b(n),x(m),epslon
+      integer*4 ,intent(in):: n,m,ndim
+      real*8 ,intent(inout):: a(ndim,m),b(n)
+      real*8 ,intent(out):: x(m)
+      real*8 ,intent(in):: epslon
       call tsvd(a,b,x,n,m,ndim,epslon,.false.)
       return
       end
@@ -29,9 +31,11 @@ c               when .false. a quicker routine is used to obtain x.
 c                 a and b do not return meaningful things.
 c
       implicit none
-      integer*4 nmax,itmax,n,m,ndim
-      parameter (nmax=100000,itmax=256)
-      real*8 a(ndim,m),b(n),x(m),epslon
+      integer*4 ,intent(in):: n,m,ndim
+      integer*4 , parameter ::nmax=100000,itmax=256
+      real*8 ,intent(inout):: a(ndim,m),b(n)
+      real*8 ,intent(out):: x(m)
+      real*8 ,intent(in):: epslon
       real*8 v(0:nmax),anorm,enorm
       real*8 aa,f,g,s,r,w,u,h,xmin,z,vv,d,c,p,bb,y,an
       real*8 q,h1,h2,t,r1,r2,ra,aam(m),bbm(n)

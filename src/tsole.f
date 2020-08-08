@@ -1,5 +1,4 @@
-      subroutine tsole(trans,cod,beam,srot,k,ke,sol,
-     1     iatr,iacod,iabmi,idp,plot,rt)
+      subroutine tsole(trans,cod,beam,srot,k,ke,sol,iae,idp,plot,rt)
       use kyparam
       use tfstk
       use tffitcode
@@ -9,14 +8,20 @@
       use ffs_flag
       use tmacro
       use ffs_seg
+      use temw, only:calint,tmulbs,iaemit,beamplt
+      use kradlib, only:tradke
       implicit none
       real*8 conv
       parameter (conv=3.d-16)
-      integer*8 iatr,iacod,iabmi,iatrl,iacodl,iabmilz
-      integer*4 k,ke,i,l,idp
-      real*8 trans(6,12),cod(6),beam(42),bmir(6,6),srot(3,9),rtaper
-      real*8 r
-      logical*4 sol,plot,rt
+      type (iaemit) ,intent(in):: iae
+      integer*8 iatrl,iacodl,iabmilz
+      integer*4 ,intent(in):: k,idp
+      integer*4 ,intent(out):: ke
+      integer*4 i,l
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 rtaper, bmir(6,6),r
+      logical*4 ,intent(out):: sol
+      logical*4 ,intent(in):: plot,rt
       save iabmilz
       data iabmilz /0/
       sol=.true.
@@ -30,7 +35,7 @@
       enddo
       sol=.false.
       return
- 20   do 130 l=k,ke
+ 20   do l=k,ke
         rtaper=1.d0
         if(radtaper)then
           if(rt)then
@@ -40,37 +45,34 @@
           endif
         endif
         call tsole1(trans,cod,beam,srot,l,rtaper,.true.,.false.)
+c          write(*,*)'tsole-l ',l,sol,rtaper
+c          write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6),cod
         if(plot)then
-          if(iatr .ne. 0)then
-            if(iatr .gt. 0)then
-              call tflocal(klist(iatr+l+1))
+          if(iae%iatr .ne. 0)then
+            if(iae%iatr .gt. 0)then
+              call tflocal(klist(iae%iatr+l+1))
               iatrl=ktfaddr(kxm2l(trans,6,6,6,.false.))
-              klist(iatr+l+1)=ktflist+ktfcopy1(iatrl)
+              klist(iae%iatr+l+1)=ktflist+ktfcopy1(iatrl)
             endif
-            if(iacod .gt. 0)then
-              call tflocal(klist(iacod+l+1))
+            if(iae%iacod .gt. 0)then
+              call tflocal(klist(iae%iacod+l+1))
               iacodl=ktfaddr(kxm2l(cod,0,6,1,.false.))
-              klist(iacod+l+1)=ktflist+ktfcopy1(iacodl)
+              klist(iae%iacod+l+1)=ktflist+ktfcopy1(iacodl)
             endif
           endif
           if(codplt)then
-c            if(l .eq. 1)then
-c              r=1.d0
-c            else
-c              r=gammab(l)/gammab(l+1)
-c            endif
             call tsetetwiss(trans,cod,beam,0,l+1,idp)
-            if(irad .gt. 6)then
+            if(irad .gt. 6 .and. beamplt)then
               beamsize(:,l+1)=beam
             endif
           endif
-          if(calint .and. iabmi .ne. 0)then
+          if(calint .and. iae%iabmi .ne. 0)then
             if(iabmilz .eq. 0)then
               bmir=0.d0
               iabmilz=ktfaddr(kxm2l(bmir,6,6,6,.false.))
             endif
-            call tflocal(klist(iabmi+l))
-            klist(iabmi+l)=ktflist+ktfcopy1(iabmilz)
+            call tflocal(klist(iae%iabmi+l))
+            klist(iae%iabmi+l)=ktflist+ktfcopy1(iabmilz)
           endif
         elseif(radtaper .and. radcod)then
           if(l .eq. 1)then
@@ -80,7 +82,7 @@ c            endif
           endif
           twiss(l+1,idp,mfitddp)=cod(6)*r
         endif
-130   continue
+      enddo
       return
       end
 
@@ -93,19 +95,22 @@ c            endif
       use tmacro
       use sad_main
       use ffs_seg
-      use temw, only:tsetr0
+      use temw, only:tsetr0,tmulbs
+      use kradlib, only:tradke
       use tspin
       implicit none
-      integer*4 l,ld,lt,mfr,kb,irtc
+      integer*4 ,intent(in):: l
+      integer*4 ld,lt,mfr,kb,irtc
       integer*8 lp
       type (sad_comp), pointer ::cmp
       type (sad_dlist), pointer :: lsegp
-      real*8 trans(6,12),cod(6),beam(42),srot(3,9),
-     $     rr(3,3),al,theta,
+      real*8 ,intent(inout)::  trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 ,intent(in):: rtaper
+      real*8 rr(3,3),al,theta,
      $     phi,phix,phiy,bzs,trans1(6,6),trans2(6,6),
-     $     tfbzs,radlvl,bzs0,
-     $     f1,rtaper,ftable(4),ak1
-      logical*4 enarad,dir,ent,qsol,coup,err,krad,seg
+     $     tfbzs,radlvl,bzs0,f1,ftable(4),ak1
+      logical*4 ,intent(in):: enarad,qsol
+      logical*4 dir,ent,coup,err,krad,seg
       real*8,save::dummy(256)=0.d0
       ld=idelc(l)
       lt=idtype(ld)
@@ -199,7 +204,7 @@ c            endif
               if(calpol)then
                 srot=matmul(rr,srot)
               endif
-              call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
+              call tsetr0(trans(:,1:6),cod,0.d0,0.d0)
               if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
                 call tsfrie(trans1,cod,bzs)
                 call tmultr5(trans,trans1,irad)
@@ -264,6 +269,7 @@ c          call tmultr(trans,trans1,6)
           call temape(trans,cod,beam,l)
         endif
       end select
+c      write(*,'(a,i5,1p6g15.7/16x,1p6g15.7)')'tsole1-end ',l,code,cod
       return
       end
 

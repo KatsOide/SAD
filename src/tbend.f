@@ -53,17 +53,19 @@
         real*8 rho0,rhob,f1r,f2r,fb1,fb2
 
         contains
-        subroutine tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
+        pure subroutine tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
         use tfstk
         use ffs_flag, only:calpol
         use mathfun
         implicit none
-        integer*4 np,i
-        real*8 phi0,dtheta,
-     $       r11,r12,r13,r21,r22,r23,r31,r32,r33,
+        integer*4 ,intent(in):: np
+        integer*4 i
+        real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
+     $       sx(np),sy(np),sz(np)
+        real*8 ,intent(in):: phi0,dtheta
+        real*8 r11,r12,r13,r21,r22,r23,r31,r32,r33,
      $       pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf,
      $       cphi0,sphi0,cdt,sdt,sdth2,sxf,syf
-        real*8 x(np),px(np),y(np),py(np),z(np),sx(np),sy(np),sz(np)
         cphi0=cos(phi0*.5d0)
         sphi0=sin(phi0*.5d0)
         sdth2=sin(dtheta*.5d0)**2
@@ -79,7 +81,7 @@
         r32=-r23
         r33=cdt*sphi0**2+cphi0**2
         if(calpol)then
-          do i=1,np
+          do concurrent (i=1:np)
             xi=x(i)
             yi=y(i)
             pxi=px(i)
@@ -103,7 +105,7 @@
             sy(i)=syf
           enddo
         else
-          do i=1,np
+          do concurrent (i=1:np)
             xi=x(i)
             yi=y(i)
             pxi=px(i)
@@ -125,11 +127,12 @@
         return
         end subroutine
 
-        subroutine tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,ent)
+        pure subroutine tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,ent)
         use tfstk
         use mathfun
         implicit none
-        integer*4 np,i
+        integer*4 ,intent(in):: np
+        integer*4 i
         real*8 , intent(in)::dx,dy,phi0,cost,sint
         real*8 , intent (inout)::x(np),px(np),y(np),py(np),z(np)
         real*8 phih,dcph,sph,ds,dx1,dy1,dxa,st1,x1,px1,al,y1
@@ -149,7 +152,7 @@
           ds=dxa*sph
           dxa=dxa*(1.d0+dcph)
           if(ent)then
-            do i=1,np
+            do concurrent (i=1:np)
               al=ds/(1.d0+pxy2dpz(px(i),py(i)))
               x1  =x(i)+px(i)*al-dx1
               y(i)=y(i)+py(i)*al-dy1
@@ -161,7 +164,7 @@
               py(i)=px1*sint+py(i)*cost
             enddo
           else
-            do i=1,np
+            do concurrent (i=1:np)
               x1  =x(i)*cost-y(i)*sint
               y(i)=x(i)*sint+y(i)*cost
               px1=px(i)
@@ -174,7 +177,7 @@
             enddo
           endif
         elseif(sint .ne. 0.d0 .or. cost .ne. 1.d0)then
-          do i=1,np
+          do concurrent (i=1:np)
             y1=y(i)
             y(i)=x(i)*sint+y1*cost
             x(i)=x(i)*cost-y1*sint
@@ -366,12 +369,13 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       use ffs_pointer, only:inext,iprev
       use multa, only:nmult
       use tbendcom
-      use tspin
+      use kradlib
       use photontable
       use mathfun, only:akang
       implicit none
-      integer*4 np,mfring,ndiv,ndivmax,iniph,n1,n2
-      parameter (ndivmax=1024)
+      integer*4 ,intent(in):: np,mfring
+      integer*4 ndiv,iniph,n1,n2
+      integer*4 ,parameter::ndivmax=1024
       real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,ak,dx,dy,theta,
      $     cost,sint,cosw,sinw,sqwh,sinwp1,eps,
      $     psi1,psi2,fb10,fb20,dtheta,phir
@@ -408,8 +412,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      $         0.d0,0.d0,0.d0,0.d0,
      $         mfring,fb10,fb20,
      $         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,
-     $         .false.,.false.,
-     $         0,i00,i00)
+     $         .false.,.false.,0,i00)
         endif
         return
       elseif(ak .ne. 0.d0)then
@@ -442,6 +445,9 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       f2r=0.d0
       if(krad)then
         if(ini)then
+          if(photons .and. iniph .eq. 0)then
+            call tsetpcvt(l_track,dx,dy,theta,dtheta,phi0,al)
+          endif
           pxr0=px
           pyr0=py
           zr0=z
@@ -456,16 +462,16 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
         endif
         phir=phib*(al-f1r-f2r)/al
         ndiv=min(ndivmax,ndivrad(phir,0.d0,0.d0,eps))
-        if(photons)then
-          select case (iniph)
-            case (0)
-              call tsetphotongeo(al/ndiv,phi0/ndiv,theta,.true.)
-            case (1)
-              call tsetphotongeo(al/ndiv,phi0/ndiv,pp%theta,.true.)
-            case default
-              call tsetphotongeo(al/ndiv,phi0/ndiv,0.d0,.false.)
-          end select
-        endif
+c        if(photons)then
+c          select case (iniph)
+c            case (0)
+c              call tsetphotongeo(al/ndiv,phi0/ndiv,theta,.true.)
+c            case (1)
+c              call tsetphotongeo(al/ndiv,phi0/ndiv,pp%theta,.true.)
+c            case default
+c              call tsetphotongeo(al/ndiv,phi0/ndiv,0.d0,.false.)
+c          end select
+c        endif
       endif
       n2=ndiv+n2
       if(n1 .eq. n2)then
@@ -514,7 +520,7 @@ c      endif
       dx=-rho0*dcp
       dl=rho0*xsp
       if(calpol)then
-        do i=1,np
+        do concurrent (i=1:np)
           xi=x(i)+dx
           pzi=1.d0+pxy2dpz(px(i),py(i))
           pzf=pzi*cp-px(i)*sp
@@ -526,7 +532,7 @@ c      endif
           sz(i)=(sz(i)-sp*sx(i))/cp
         enddo
       else
-        do i=1,np
+        do concurrent (i=1:np)
           xi=x(i)+dx
           pzi=1.d0+pxy2dpz(px(i),py(i))
           pzf=pzi*cp-px(i)*sp
@@ -550,11 +556,10 @@ c      endif
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
       endif
-      do 10 i=1,np
-c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
+      do concurrent (i=1:np)
         px(i)=px(i)+phi0-phib/(1.d0+g(i))
         z(i)=z(i)-x(i)*phi0
-10    continue
+      enddo
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
       endif
@@ -593,6 +598,7 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
         sinp2n=0.d0
         bsi1=0.d0
         bsi2=0.d0
+        call tbendal(n,ndiv,f1r,f2r,aln,alx,alr)
         if(n .eq. n1)then
           if(mfring .gt. 0 .or. mfring .eq. -1)then
             mfr1=-1
@@ -610,7 +616,6 @@ c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
           sinp2n=sinp2
           bsi2=1.d0
         endif
-        call tbendal(n,ndiv,f1r,f2r,aln,alx,alr)
         phi0n=alx/al*phi0
         phibn=alx/al*phib
         if(n .le. 2 .or. n .ge. ndiv)then
@@ -625,16 +630,13 @@ c            sqwhn=1.d0-coswn
 c          endif
           sinwpn=sin(phi0n-psi2n)
         endif
-c        write(*,*)'tbendr ',n,ndiv,phi0n,alx,alr
         call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       alx,phi0n,
      1       cosp1n,sinp1n,cosp2n,sinp2n,
      1       mfr1,fringe,
      $       coswn,sinwn,-sqwhn,sinwpn,
      1       .true.,alr,bsi1,bsi2)
-        if(photons)then
-          call tsetphotongeo(alx,phi0n,0.d0,.false.)
-        endif
+        pcvt%fr0=pcvt%fr0+alx/pcvt%al
       enddo
       return
       end
@@ -650,7 +652,7 @@ c        write(*,*)'tbendr ',n,ndiv,phi0n,alx,alr
       use tmacro
       use multa, only:nmult
       use tbendcom
-      use tspin
+      use kradlib
       use mathfun
       implicit none
       integer*4 np,mfring,i
@@ -702,7 +704,7 @@ c        write(*,*)'tbendr ',n,ndiv,phi0n,alx,alr
         dcosp=cosp1-cosp2
       endif
       drhob=rhob-rho0
-      do 100 i=1,np
+      do concurrent (i=1:np)
         bsi(i)=bsi(i)+bsi1*y(i)/rhob
         dp=g(i)
         p=1.d0+dp
@@ -747,7 +749,6 @@ c        write(*,*)'tbendr ',n,ndiv,phi0n,alx,alr
      $       +ph2*sinp1/(pz2+ph2*cosp1)
      $       +px1*(dpz32-ph2*dcosp)
      $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
-c        write(*,*)t2,t3,t2+t3,t2t3,px1+px3,px1px3
         t4=(cosp2+t3*sinp2)*(pz2*cosp1+px1*sinp1)
         x3=x2*(cosw-rho0/rhoe*t3*sinw/ph2)
      1       +(rho0*(cosw*t2t3+sinw*(1.d0-t2*t3))*dpx2-
@@ -781,7 +782,7 @@ c        write(*,*)t2,t3,t2+t3,t2t3,px1+px3,px1px3
         y(i)=y3+py4*dz4
         z(i)=z4-dz4
         bsi(i)=bsi(i)-bsi2*y(i)/rhob
-100   continue
+      enddo
       if(krad)then
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,alr,phi0)
       endif

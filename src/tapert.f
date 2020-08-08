@@ -1,5 +1,4 @@
-      subroutine tapert
-     1  (l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+      subroutine tapert(x,px,y,py,z,g,dv,sx,sy,sz,
      $     kptbl,np,kturn,
      $     ax,ay,dx,dy,
      $     xl,yl,xh,yh,pxj,pyj,dpj,theta)
@@ -7,16 +6,15 @@
       use tfstk
       use ffs_flag
       use tmacro
-      use ffs_pointer, only:idelc,idtypec
+      use ffs_pointer, only:idelc,idtypec,latt
       use tracklim
       implicit none
       integer, parameter :: nkptbl = 6
-      integer*4 l
-      integer*8 latt(nlat)
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
-      real*8 sx(np0),sy(np0),sz(np0)
-      integer*4 kptbl(np0,nkptbl),np,kturn
-      real*8 ax,ay,dx,dy,xl,yl,xh,yh,pxj,pyj,dpj,theta
+      real*8 ,intent(inout):: x(np0),px(np0),y(np0),py(np0),z(np0),
+     $     g(np0),dv(np0),sx(np0),sy(np0),sz(np0)
+      integer*4 ,intent(inout):: kptbl(np0,nkptbl),np
+      integer*4 ,intent(in):: kturn
+      real*8 ,intent(in):: ax,ay,dx,dy,xl,yl,xh,yh,pxj,pyj,dpj,theta
       real*8 xh1,xl1,yh1,yl1,ax1,ay1,xa,ya,cost,sint,
      $     x1,px1,y1,py1,z1,g1,dv1,phi(2),sx1,sy1,sz1
       integer*4 i,j,k,kptmp(nkptbl)
@@ -81,6 +79,8 @@ c
         yl1 = yl
         yh1 = yh
       endif
+c      write(*,'(a,i5,1p8g14.7)')'tapert-a ',l,
+c     $     xl,xh,yl,yh,xl1,xh1,yl1,yh1
 
       ax1 = 0.d0
       ay1 = 0.d0
@@ -113,7 +113,7 @@ c     Case: eli && theta != 0.0
      $           .and.  yl1 .lt. ya .and. ya .lt. yh1) .and.
      $           abs(z(i)) .le. zlost))then
               dodrop = .true.
-              kptbl(i,4) = l
+              kptbl(i,4) = l_track
               kptbl(i,5) = kturn
             endif
           enddo
@@ -127,8 +127,10 @@ c     Case: eli && !(theta != 0.0)
      $           (      xl1 .lt. xa .and. xa .lt. xh1
      $           .and.  yl1 .lt. ya .and. ya .lt. yh1) .and.
      $           abs(z(i)) .le. zlost))then
+c              write(*,'(a,i5,1p8g14.7)')'tapert ',i,
+c     $             xa,ya,ax1,ay1,xl1,xh1,yl1,yh1
               dodrop = .true.
-              kptbl(i,4) = l
+              kptbl(i,4) = l_track
               kptbl(i,5) = kturn
             endif
           enddo
@@ -144,7 +146,7 @@ c     Case: !eli && (theta != 0.0)
      $           .and.  yl1 .lt. ya .and. ya .lt. yh1) .and.
      $           abs(z(i)) .le. zlost))then
               dodrop = .true.
-              kptbl(i,4) = l
+              kptbl(i,4) = l_track
               kptbl(i,5) = kturn
             endif
           enddo
@@ -157,8 +159,10 @@ c     Case: !eli && !(theta != 0.0)
      $           (      xl1 .lt. xa .and. xa .lt. xh1
      $           .and.  yl1 .lt. ya .and. ya .lt. yh1) .and.
      $           abs(z(i)) .le. zlost))then
+c              write(*,'(a,i5,1p8g14.7)')'tapert ',i,
+c     $             xa,ya,ax1,ay1,xl1,xh1,yl1,yh1
               dodrop = .true.
-              kptbl(i,4) = l
+              kptbl(i,4) = l_track
               kptbl(i,5) = kturn
             endif
           enddo
@@ -172,9 +176,9 @@ c     Shortcut case: Lossless
 
 c     Reporting drop particles
       if( (.not. dapert)
-     $     .and. (.not. trpt .or. idtypec(l) .eq. icAprt)
+     $     .and. (.not. trpt .or. idtypec(l_track) .eq. icAprt)
      $     .and. (outfl .ne. 0))then
-        call tapert_report_dropped(outfl,kturn,l,
+        call tapert_report_dropped(outfl,kturn,l_track,
      $       latt,np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl)
       endif
 
@@ -244,20 +248,19 @@ c            endif
       return
       end
 
-      subroutine tapert1(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+      subroutine tapert1(x,px,y,py,z,g,dv,sx,sy,sz,
      $     kptbl,np,kturn)
       use kyparam
       use tfstk
       use tmacro
+      use ffs_pointer, only:latt
       implicit none
-      integer*4 l
-      integer*8 latt(nlat)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
       real*8 sx(np0),sy(np0),sz(np0)
       integer*4 kptbl(np0,6),np,kturn
       integer*8 lp
       real*8 dpxj,dpyj,ddp,dx1,dy1,dx2,dy2
-      lp=latt(l)
+      lp=latt(l_track)
       dpxj=rlist(lp+ky_JDPX_Aprt)
       dpyj=rlist(lp+ky_JDPY_Aprt)
       ddp=rlist(lp+ky_DP_Aprt)
@@ -274,7 +277,7 @@ c     $     rlist(lp+ky_AX_Aprt),
 c     $     rlist(lp+ky_AY_Aprt),
 c     $     rlist(lp+ky_DX_Aprt),
 c     $     rlist(lp+ky_DY_Aprt)
-      call tapert(l,latt,x,px,y,py,z,g,dv,sx,sy,sz,
+      call tapert(x,px,y,py,z,g,dv,sx,sy,sz,
      1     kptbl,np,kturn,
      $     rlist(lp+ky_AX_Aprt),
      $     rlist(lp+ky_AY_Aprt),

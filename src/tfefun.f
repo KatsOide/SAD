@@ -1263,7 +1263,7 @@ c              ToLo Unev Case DelC Vect BDPi Nams GbCl LgGm Fact
 c              With WhiC Ovrr AppT PreT FndR GamR GmRP Erf  Erfc
 c
 c              Fit  Symb SyNm Extr Read Skip TmpN Exit StrF Rstr
-c              MM   Shrt Fork Dir  SDir Wait BesJ BesY BesI BesK
+c              MM   Shrt $SOT Dir  SDir Wait BesJ BesY BesI BesK
 c              BasF StrT S2S  Even OddQ DatS Inst Delt FlAt Repl
 c              SetE Spl$ FInd SCnt SCnP ToCt Ctxt BAnd BOr  BXor
 c              RepM MSca StdF Abrt ChkA RelH NaNQ MapT ScaT Last
@@ -1953,7 +1953,7 @@ c        go to 6900
         go to 6900
  1720   call tfshort(isp1,kx,irtc)
         go to 6900
- 1730   irtc=itfmessage(999,'General::unregister',' ')
+ 1730   call setompnumthreads(isp1,kx,irtc)
         go to 6900
  1740   irtc=itfmessage(999,'General::unregister',' ')
         go to 6900
@@ -2438,7 +2438,7 @@ c            msgn TagS (*   *)   Hold z
         irtc=0
       endif
  7000 isp=isp1+narg
-      kx=kxcrelistm(narg,ktastk(isp1+1:isp1+narg),dtastk(isp1))
+      kx=kxcrelistm(narg,ktastk(isp1+1:isp),dtastk(isp1))
       if(irtc .gt. 0)then
         if(ierrorprint .ne. 0)then
           call tferrorhandle(kx,irtc)
@@ -3169,7 +3169,6 @@ c     DOUBLE COMPLEX proxy of ZTAN vendor extension
       tctan=ztan(z)
       return
       end
-
 
       subroutine tfefundummy
       use mackw

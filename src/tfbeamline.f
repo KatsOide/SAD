@@ -435,7 +435,7 @@ c        write(*,*)'extractbeamline ',i,n,el%comp(i)
       type (sad_descriptor) kx,kx1
       type (sad_dlist), pointer :: kl,kll,klx,klx1
       integer*8 kal
-      integer*4 isp1,irtc,i,j,k,isp0,m,n,isp2
+      integer*4 isp1,irtc,i,j,isp0,m,n,isp2
       integer*8 ifbeamline
       data ifbeamline/0/
       if(ifbeamline .eq. 0)then

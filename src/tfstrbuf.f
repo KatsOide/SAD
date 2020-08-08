@@ -229,7 +229,7 @@ c'\
         integer*4 nc,lenw,lfno,irtc,nc0,nc1,kpat
         real*8 rfromk,v
         character*27 buff
-        character*26 form1,tfgetform,autos,autofg
+        character*26 form1,tfgetform,autos1,autofg
         character*(*) form
         character*3 patstr
         data patstr/'___'/
@@ -275,7 +275,7 @@ c'\
           if(.not. gens)then
             if(sym%gen .gt. 0 .and.
      $           sym%gen .ne. maxgeneration)then
-              buff='$'//autos(dble(sym%gen))
+              buff='$'//autos1(dble(sym%gen))
               nc1=lenw(buff)
               call putstringbufpb(strb,buff,nc1,.true.,lfno,irtc)
               nc=nc+nc1
@@ -659,7 +659,7 @@ c
         type (sad_strbuf), pointer :: strb
         integer*4 l,lenw,ich
         real*8 x
-        character*22 str1,autos
+        character*22 str1,autos1
         logical*4 full
         if(strb%nch .ne. 0)then
           ich=strb%istr(strb%nch)
@@ -667,7 +667,7 @@ c
             call putstringbufb1(strb,' ')
           endif
         endif
-        str1=autos(x)
+        str1=autos1(x)
         l=lenw(str1)
         call putstringbufb(strb,str1,l,full)
         return

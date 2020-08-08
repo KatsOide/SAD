@@ -5,19 +5,21 @@
       use tffitcode
       use iso_c_binding
       use tfcsi, only:icslfno
-      use temw, only:tfinitemip,nparams,tfetwiss,iptwiss
+      use temw, only:tfinitemip,nparams,tfetwiss,iptwiss,tfinibeam,
+     $     iaemit,iaez
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: kl,klx
       type (sad_rlist), pointer :: kl1,kl2,klr
       type (ffs_bound) fbound
-      integer*8 iatr,iacod,iamat,kaparam,iabmi
+      type (iaemit) iae
+      integer*8 kaparam
       integer*4 isp1,irtc,narg,mode,itgetfpe,itfmessage,lno,
      $     is,ie,nel
       real*8 param(nparams),trans(6,12),cod(6),beam(42),btr(441),sx,
      $     srot(3,9)
       real*8 dummy(6,6),ris(6,6)
-      logical*4 stab,rt
+      logical*4 stab,rt,bi
       call tfinitemip
       narg=isp-isp1
       codin=0.d0
@@ -39,8 +41,10 @@
         else
           ie=int(klr%rbody(2))
         endif
+c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
       endif
       nel=ie-is+1
+      bi=.false.
       if(narg .ge. 3)then
         if(tflistq(ktastk(isp1+3),kl))then
           if(tfreallistq(kl%dbody(1),kl1))then
@@ -55,8 +59,12 @@
           endif
           if(tfreallistq(kl%dbody(2),kl2))then
             beamin=kl2%rbody(1:21)
+            bi=.true.
           endif
         endif
+      endif
+      if(.not. bi .and. trpt)then
+        beamin=tfinibeam(is)
       endif
       if(ktfnonrealq(ktastk(isp1+1),mode))then
         irtc=itfmessage(9,'General::wrongtype','"Real for #1"')
@@ -71,18 +79,15 @@
         lno=icslfno()
       endif
       irtc=0
-      iatr=-1
-      iacod=-1
-      iamat=-1
-      iabmi=0
+      iae=iaez
       if(mode .ge. 1)then
-        iamat=ktadalocnull(-1,6)
+        iae%iamat=ktadalocnull(-1,6)
         if(mode .ge. 2)then
-          iacod=ktadalocnull(-1,nel)
+          iae%iacod=ktadalocnull(-1,nel)
           if(mode .eq. 3)then
-            iatr=ktadalocnull(-1,nel)
+            iae%iatr=ktadalocnull(-1,nel)
             if(intra)then
-              iabmi=ktadalocnull(-1,nel)
+              iae%iabmi=ktadalocnull(-1,nel)
             endif
           endif
         endif
@@ -91,13 +96,13 @@
       if(ifsize .eq. 0 .and. codplt)then
         ifsize=ktaloc(nel*21)
         call c_f_pointer(c_loc(rlist(ifsize)),beamsize,[21,nel])
-        updatesize=.false.
-c        ilist(2,iwakepold+6)=ifsize
+        modesize=0
       endif
+c      write(*,*)'tfemit-4 ',codplt,ifsize,nel
       if(nel .eq. nlat)then
+        cod=codin
         call temit(trans,cod,beam,btr,
-     $       mode .ge. 0,iatr,iacod,iabmi,iamat,
-     $       .true.,param,stab,lno)
+     $       .not. trpt .and. mode .ge. 0,iae,codplt,param,stab,lno)
       else
         call tffsbound1(is,ie-1,fbound)
         cod=codin
@@ -108,11 +113,11 @@ c        ilist(2,iwakepold+6)=ifsize
         beam(22:42)=0.d0
         call tinitr12(trans)
         call tturneg(trans,cod,beam,srot,fbound,
-     $     iatr,iacod,iabmi,.true.,rt)
+     $     iae,.true.,rt,.false.)
         call setparams(param,cod)
         call rotri(is,ris)
         dummy=dnotanumber
-        call setiamat(iamat,ris,codin,beam,dummy,trans)
+        call setiamat(iae%iamat,ris,codin,beam,dummy,trans)
         param(iptwiss:iptwiss+ntwissfun-1)=tfetwiss(ris,codin,
      $       twiss(is,0,mfitdetr) .lt. 1.d0)
       endif
@@ -135,13 +140,13 @@ c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparams
       klx%rbody(1)=sx
       klx%dbody(2)%k=ktflist+ktfcopy1(kaparam)
       if(mode .ge. 1)then
-        klx%dbody(3)%k=ktflist+ktfcopy1(iamat)
+        klx%dbody(3)%k=ktflist+ktfcopy1(iae%iamat)
         if(mode .ge. 2)then
-          klx%dbody(4)%k=ktflist+ktfcopy1(iacod)
+          klx%dbody(4)%k=ktflist+ktfcopy1(iae%iacod)
           if(mode .eq. 3)then
-            klx%dbody(5)%k=ktflist+ktfcopy1(iatr)
+            klx%dbody(5)%k=ktflist+ktfcopy1(iae%iatr)
             if(intra)then
-              klx%dbody(6)%k=ktflist+ktfcopy1(iabmi)
+              klx%dbody(6)%k=ktflist+ktfcopy1(iae%iabmi)
             endif
           endif
         endif
@@ -196,7 +201,7 @@ c        ilist(2,iwakepold+6)=ifsize
       subroutine rotri(is,ris)
       use ffs_pointer
       use tffitcode
-      use temw
+      use temw,only:r,ri,tinv6
       implicit none
       integer*4 ,intent(in)::is
       real*8 , intent(out)::ris(6,6)

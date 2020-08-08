@@ -285,4 +285,3 @@ C          TH*COS(PHI) can be x-angle
       XI3=(1-R**2)/(1+R**2)
       RETURN
       END
-

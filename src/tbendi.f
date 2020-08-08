@@ -8,7 +8,8 @@
       use ffs_flag
       use tmacro
       use ffs_pointer, only:inext,iprev
-      use tspin
+      use kradlib
+      use tspin, only:cphi0,sphi0
       use photontable
       implicit none
       integer*4 , parameter :: ndivmax=1000
@@ -112,10 +113,10 @@ c     dp=g(i)*(2.d0+g(i))
         akx0=0.d0
         alx0=0.d0
         phix0=0.d0
+        if(photons .and. krad)then
+          call tsetpcvt(l_track,dx,dy,theta,dtheta,phi0,al)
+        endif
         do n=n1,n2
-          if(n .eq. n1 .and. krad .and. photons)then
-            call tsetphotongeo(alx(n),phixn(n),theta,.true.)
-          endif
           call tbendiinit(akxn(n),alx(n),n .eq. n1)
           call tbendicorr((akxn(n)+akx0)*.5d0,(alx(n)+alx0)*.5d0,
      $         (phixn(n)+phix0)*.5d0)
@@ -142,7 +143,8 @@ c     dp=g(i)*(2.d0+g(i))
               zr0(i)=zi
               bsi(i)=0.d0
               if(photons)then
-                call tsetphotongeo(alx(n),phixn(n),theta,.false.)
+                pcvt%fr0=pcvt%fr0+alx(n)/al
+c                call tsetphotongeo(alx(n),phixn(n),theta,.false.)
               endif
             endif
           endif
@@ -160,9 +162,6 @@ c     dp=g(i)*(2.d0+g(i))
         g(i)=dp
 c        write(*,'(a,1p6g15.7)')'tbendi-2 ',zi,z(i),xi,x(i),ff,fpx
       enddo
-      if(photons)then
-        call tsetphotongeo(alx(n2),phixn(n2),theta,.false.)
-      endif
       if(fb2 .ne. 0.d0)then
         dxfr2=fb2**2/rhob/24.d0
         dyfr2=fb2/rhob**2/6.d0
@@ -180,6 +179,10 @@ c        write(*,'(a,1p6g15.7)')'tbendi-2 ',zi,z(i),xi,x(i),ff,fpx
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
       endif
       if(krad)then
+        if(photons)then
+          call tsetpcvt(l_track,dx,dy,theta,dtheta,phi0,al)
+          pcvt%fr0=1.d0-alr(n2)/al
+        endif
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,alr(n2),phixn(n2))
       endif
       if(dtheta .ne. 0.d0)then

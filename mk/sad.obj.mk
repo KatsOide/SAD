@@ -19,7 +19,7 @@ OBJRC= 	tfefun1.o	tfsort.o	tfmodule.o	itfmaloc.o \
 	tfearray.o	tfeexpr.o	tfsetlist.o	tfeeval.o	tfmap.o	tftable.o \
 	itfdepth.o	tfdset.o	tfsameq.o	itfpmat.o	tmatch.o \
 	gamma.o		tfbessel.o	 spkick.o	tsolqu.o	tsolque.o \
-	tfshared.o	tfinitn.o	tffsa.o
+	tfshared.o	tfinitn.o	tffsa.o photons.o
 
 OBJ0= 	italoc.o qcav.o	JNLPRM.o msolv1.o \
 	msortn.o tdplt.o bbstrhl.o bbtool.o \
@@ -98,7 +98,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      tftrack.o   tftrak.o    tftrb.o \
      tftype.o    tfvars.o    tgauss_.o \
      tgetfv.o    tins.o     tinse.o \
-     tlum.o      tmov.o       tmulbs.o   tmulte.o \
+     tlum.o      tmov.o      tmulte.o \
      tmulti.o    tmulta.o    tdrift.o     trackd.o \
      tmultr.o    tnorm.o     \
      tquade.o    tquads.o     tquase.o   track.o \

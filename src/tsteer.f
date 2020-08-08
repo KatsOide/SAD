@@ -4,9 +4,9 @@
      $     fb1,fb2,fringe,eps,krad)
       use ffs_flag
       use tmacro
-      use tspin
+      use kradlib
       use bendib, only:tbendal
-      use photontable, only:tsetphotongeo
+      use photontable, only:tsetpcvt
       use mathfun, only:pxy2dpz
       implicit none
       real*8 , parameter :: a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
@@ -68,6 +68,9 @@
         pyr0=py
         zr0=z
         ndiv=min(ndivmax,max(1,ndivrad(phic,0.d0,0.d0,eps)))
+        if(photons)then
+          call tsetpcvt(l_track,dx,dy,theta,0.d0,0.d0,al)
+        endif
       else
         ndiv=1
       endif
@@ -152,13 +155,6 @@
      $         (.5d0*dyfr2-.25d0*dyfra2*y(i)**2)*y(i)**2/p)/p
         enddo
         if(krad)then
-          if(photons)then
-            if(n .eq. 1)then
-              call tsetphotongeo(alx,0.d0,theta,.true.)
-            else
-              call tsetphotongeo(alx,0.d0,theta,.false.)
-            endif
-          endif
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,alr,0.d0)
         endif
       enddo

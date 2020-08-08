@@ -68,7 +68,7 @@
       subroutine tftmat6(trans,l1,l2)
       use ffs
       use ffs_pointer, only:twiss
-      use temw
+      use temw,only:etwiss2ri,tinv6
       implicit none
       integer*4 l1,l2
       real*8 trans(6,6),tw1(ntwissfun),tw2(ntwissfun),

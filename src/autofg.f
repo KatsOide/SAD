@@ -5,7 +5,7 @@
       character*(*) form1
       character*16 form
       character*5 expstr
-      character*32 buff,buf1,autos
+      character*32 buff,buf1,autos1
       character*32 zero
       parameter (zero='0000000000000000000000000000000')
       character*32 ovfl
@@ -16,7 +16,7 @@
       real*8 x,ax
       logical*4 shift
       if(form1 .eq. ' ' .or. form1 .eq. 'S')then
-        autofg=autos(x)
+        autofg=autos1(x)
         return
       elseif(form1(1:1) .eq. 'F' .or. form1(1:1) .eq. 'G')then
         form='('//form1(:lenw(form1))//')'
@@ -506,5 +506,41 @@ c      parameter (icharzero=ichar('0'))
         endif
       enddo
       ifromstrb=is*n
+      return
+      end
+
+c
+c A wrapper to amend a bug? of gdtoa, up to the version 20180730
+c https://github.com/10110111/gdtoa-desktop
+c
+      character*(*) function autos1(x) result(s1)
+      implicit none
+      real*8 ,intent(in):: x
+      integer*4 ic,i,l
+      character*32 autos
+      s1=autos(x)
+      l=len_trim(s1)
+      ic=index(s1(1:l),':')
+      if(ic .le. 0)then
+        return
+      endif
+c      write(*,*)'autos1 ',s1(1:l)
+      s1(ic:l)=s1(ic+1:l)
+      l=l-1
+      do i=ic-1,1,-1
+        if(s1(i:i) .eq. '.')then
+          cycle
+        elseif(s1(i:i) .eq. '-')then
+          s1='-1'//s1(i+1:l)
+          return
+        elseif(ichar(s1(i:i)) .le. ichar('8'))then
+          s1(i:i)=char(ichar(s1(i:i))+1)
+          return
+        else
+          s1(i:i)='0'
+          cycle
+        endif
+      enddo
+      s1='1'//s1(1:l)
       return
       end

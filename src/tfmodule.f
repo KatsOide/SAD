@@ -449,6 +449,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       integer*4 isp1,isp2,i,isp0
       logical*4 rep,rep1
       rep=.false.
+      kx=dxnull
       if(ktflistq(k,list))then
         isp=isp+1
         isp0=isp

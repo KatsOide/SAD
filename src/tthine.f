@@ -2,7 +2,7 @@
      1                 dx,dy,theta,enarad)
       use ffs_flag
       use tmacro
-      use temw
+      use temw,only:bsir0,tsetr0,tmulbs
       use multa, only:fact
       implicit none
       integer*4 kord,nord

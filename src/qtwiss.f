@@ -36,7 +36,7 @@
      $     pr,a,dpz,trf00,dtheta,
      $     apsi1,apsi2,sspc0,sspc,vcalpha0,fb1,fb2,
      $     ak1,ftable(4),dir
-      logical*4 over,coup,normal,mat,calpol0,insmat,err,seg
+      logical*4 over,coup,normal,mat,calpol0,insmat,err,seg,wspaccheck
       real*8 a11,a12,a13,a14,a21,a22,a23,a24,a31,a32,a33,
      $     a34,a41,a42,a43,a44,a15,a25,a35,a45
       real*8 u11,u12,u13,u14,u21,u22,u23,u24,u31,u32,u33,
@@ -69,7 +69,10 @@ c     begin initialize for preventing compiler warning
       by0=0.d0
       rr=0.d0
 c     end   initialize for preventing compiler warning
-      call wspaccheck
+      if(wspaccheck())then
+        over=.true.
+        return
+      endif
       call tclrfpe
       irad=6
       trf00=trf0
@@ -114,6 +117,10 @@ c     end   initialize for preventing compiler warning
         ntfun=mfitdetr
       endif
       do l=la+1,lb
+c        call tfmemcheckprint1('qtwiss',l,.false.)
+c        if(mod(l,1000) .eq. 0)then
+c          write(*,*)'qtwiss1 ',l,la,lb
+c        endif
         l1=l-1
         ip1=ip0+l1
         ip=ip1+1
@@ -414,7 +421,8 @@ c     $             kxx,irtc)
  20       if(wspac)then
             sspc=(rlist(ifpos+l1)+rlist(ifpos+l1-1))*.5d0
             call qwspac(trans,cod,sspc-sspc0,
-     $           rlist(ifsize+(l1-1)*21),coup)
+     $           rlist(ifsize+(l1-1)*21),coup,l1)
+c            write(*,*)'qtwiss-qwsapc ',l1,ifsize,rlist(ifsize+(l1-1)*21)
             sspc0=sspc
             coup=.true.
           endif
@@ -489,9 +497,6 @@ c     $             kxx,irtc)
             endif
           else
             call qmat2twiss(trans,ip,l,twiss,dpsix,dpsiy,coup,normal)
-c        if(ktfenanq(twiss(ip,mfitbx)))then
-c          write(*,*)'qtwiss-qmat ',l,ip,ltyp,trans(1,2)
-c        endif
           endif
           if(.not. mat)then
             if(orbitcal)then
@@ -975,7 +980,7 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
       use ffs
       use ffs_pointer
       use tffitcode
-      use temw, only:etwiss2ri,tfetwiss,tinv6
+      use temw, only:etwiss2ri,tfetwiss,tinv6,iaez
       use geolib
       implicit none
       type (sad_descriptor) dsave(kwMAX)
@@ -1005,9 +1010,8 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
           tw1=twiss(l,0,1:ntwissfun)
           cod=tw1(mfitdx:mfitddp)
           trans=tinv6(etwiss2ri(tw1,normal))
-c          call tinv6(ri,trans)
           call tturne1(trans,cod,beam,srot,
-     $         i00,i00,i00,0,
+     $         iaez,0,
      $         .false.,sol,rt,.true.,l,l)
         endif
         if(cgeo)then

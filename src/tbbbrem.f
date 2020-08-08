@@ -347,13 +347,13 @@ c   use SAD's tran()
       end function
 
       real*8 function rando2(r)
+      use macmath, nprime=>smallprime
       implicit none
       save
       integer*4 , parameter::n = 3
-      integer*4  nprime(10),init,k,j
+      integer*4  init,k,j
       real*8 s(10),ss,r
       data init/0/
-      data nprime/2,3,5,7,11,13,17,19,23,29/
       if(init.eq.0) then
         init = 1
         do 1 k = 1,n

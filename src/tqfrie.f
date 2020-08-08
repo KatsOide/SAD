@@ -2,6 +2,7 @@
       use tfstk
       use ffs_flag
       use tmacro
+      use temw,only:tmulbs
       implicit none
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42)
       real*8 ,intent(in):: ak,al,bz

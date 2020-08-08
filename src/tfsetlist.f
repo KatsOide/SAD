@@ -17,7 +17,7 @@
       implicit none
       type (sad_descriptor) kx
       type (sad_rlist), pointer :: klr
-      integer*4 isp1,irtc,isp0,i,m,itfmessage
+      integer*4 isp1,irtc,isp0,m,itfmessage
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return

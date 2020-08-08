@@ -47,7 +47,7 @@
      $     irptp(maxrpt),df(maxcond)
       real*8 chi0(3),trdtbl(3,6),rfromk
       logical*4 err,new,cmd,open98,abbrev,ftest,
-     $     frefix,exist,init,trpt0,expnd,chguse,visit,
+     $     frefix,exist,init,expnd,chguse,visit,
      $     byeall,tfvcomp,tffsinitialcond,
      $     geocal0,busy
       save open98,exist,init
@@ -983,17 +983,15 @@ c     $         ilist(1,iwakepold)*8
           ia=0
           call rsetgl('PSPAN',pspan,ia)
         endif
-        trpt0=trpt
-        trpt=.false.
         call tfgeo(.true.)
         if(codplt)then
           call ffs_init_sizep
 c          ilist(2,iwakepold+6)=int(ifsize)
         endif
+        codin=twiss(1,0,mfitdx:mfitddp)
         call temitf(codplt,lfno)
-        trpt=trpt0
         if(codplt)then
-          updatesize=.true.
+          modesize=6
         else
           call tfgeo(.true.)
         endif
@@ -1027,7 +1025,7 @@ c          ilist(2,iwakepold+6)=int(ifsize)
      $     lfno,i00,irtc)
         call tfree(iparams)
         if(codplt)then
-          updatesize=.true.
+          modesize=6
         else
           call tfgeo(.true.)
         endif
@@ -1040,7 +1038,7 @@ c        rlist(itlookup('DP',ivtype))=dpmax
         go to 2
       elseif(abbrev(word,'BEAM_SIZE','_'))then
         call tfsetparam
-        call tfsize
+        call tfsize(.true.)
         go to 10
       elseif(abbrev(word,'ALI_GN','_'))then
         call talign(latt,word,wordp,pos,lfno,exist)
@@ -1206,7 +1204,6 @@ c        dpm2=rlist(ktlookup('DPM'))
       if(.not. setref)then
         call tfsetref
       endif
-      updatesize=.false.
       call tclrfpe
       if(wake)then
         call tffsclearwake

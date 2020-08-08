@@ -5,8 +5,8 @@
       use tfstk
       use ffs_flag
       use tmacro
-      use temw
-      use tspin, only:tradke
+      use temw,only:bsir0,tsetr0,tmulbs
+      use kradlib, only:tradke
       use mathfun
       implicit none
       integer*4 ,intent(in):: mfring

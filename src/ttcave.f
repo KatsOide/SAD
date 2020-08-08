@@ -2,9 +2,9 @@
      $     dx,dy,theta,krad)
       use ffs_flag
       use tmacro
-      use temw
+      use temw,only:tsetr0,tmulbs
       implicit none
-      real*8 trans(6,12),cod(6),beam(42),trans1(6,13),srot(3,9),
+      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,9),
      $     al,ak,harm,phi,freq,dx,dy,theta,w,v,p1,h1,dh1,phic,v1,t,
      $     phii,cosp,sinp,dh,dh2,h2,p2,pf,v2,a
       logical*4 ,intent(in):: krad

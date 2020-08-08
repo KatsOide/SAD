@@ -3,6 +3,7 @@
       use tfstk
       use ffs_flag
       use tmacro
+      use temw,only:tmulbs
       use bendeb, only:tbrote
       use mathfun, only:pxy2dpz
       implicit none
@@ -12,7 +13,8 @@
       real*8 sx(ms),dx,dy,theta,cost,sint,dtheta,phi0,th,dth,
      $     pr,dcph,sph,ds,dx1,al,phih,xi,pxi,pz,dy1,dxa,st1
       real*8 ,pointer :: transa(:,:)
-      logical ent,mat
+      logical ent,mat,mcal
+      mcal=irad .ge. 6
       if(phi0 .eq. 0.d0)then
         th=theta+dtheta
         cost=cos(th)
@@ -54,7 +56,7 @@ c        write(*,'(a,1p6g15.7)')'tchge ',dx,dy,dx1,dy1,ds
         cod(3)=cod(3)+cod(4)*al-dy1
         cod(5)=cod(5)-al
         if(mat)then
-          if(al .ne. 0.d0)then
+          if(al .ne. 0.d0 .and. mcal)then
             call tinitr(trans2)
             trans2(1,2)=al
             trans2(1,6)=-al*cod(2)*pr/pz**2
@@ -66,15 +68,17 @@ c        write(*,'(a,1p6g15.7)')'tchge ',dx,dy,dx1,dy1,ds
             transa=>trans2
           endif
           if(th .ne. 0.d0)then
-            call tinitr(trans1)
-            trans1(1,1)= cost
-            trans1(1,3)=-sint
-            trans1(3,1)= sint
-            trans1(3,3)= cost
-            trans1(2,2)= cost
-            trans1(2,4)=-sint
-            trans1(4,2)= sint
-            trans1(4,4)= cost
+            if(mcal)then
+              call tinitr(trans1)
+              trans1(1,1)= cost
+              trans1(1,3)=-sint
+              trans1(3,1)= sint
+              trans1(3,3)= cost
+              trans1(2,2)= cost
+              trans1(2,4)=-sint
+              trans1(4,2)= sint
+              trans1(4,4)= cost
+            endif
             xi=cod(1)
             cod(1)= cost*xi-sint*cod(3)
             cod(3)= sint*xi+cost*cod(3)
@@ -92,23 +96,21 @@ c        write(*,'(a,1p6g15.7)')'tchge ',dx,dy,dx1,dy1,ds
               transa=>trans1
             endif
           endif
-          if(dth .ne. 0.d0)then
-            call tbrote(trans3,cod,srot,phi0,dth)
-            if(associated(transa))then
-              call tmultr5(transa,trans3,6)
-            else
-              transa=>trans3
+          if(mcal)then
+            if(dth .ne. 0.d0)then
+              call tbrote(trans3,cod,srot,phi0,dth)
+              if(associated(transa))then
+                call tmultr5(transa,trans3,6)
+              else
+                transa=>trans3
+              endif
             endif
-          endif
-c          if(mat)then
-c            write(*,*)'tchge ',ent,associated(transa),
-c     $           calpol,irad,al,th,dth
-c          endif
-          if(associated(transa))then
-            trans(:,1:irad)=matmul(transa,trans(:,1:irad))
-c            call tmultr(trans,transa,irad)
-            if(irad .gt. 6)then
-              call tmulbs(beam,transa,.true.)
+            if(associated(transa))then
+              trans(:,1:irad)=matmul(transa,trans(:,1:irad))
+c     call tmultr(trans,transa,irad)
+              if(irad .gt. 6)then
+                call tmulbs(beam,transa,.true.)
+              endif
             endif
           endif
         endif
@@ -119,52 +121,58 @@ c            call tmultr(trans,transa,irad)
             transa=>trans2
           endif
           if(th .ne. 0.d0)then
-            call tinitr(trans1)
-            trans1(1,1)= cost
-            trans1(1,3)=-sint
-            trans1(3,1)= sint
-            trans1(3,3)= cost
-            trans1(2,2)= cost
-            trans1(2,4)=-sint
-            trans1(4,2)= sint
-            trans1(4,4)= cost
+            if(mcal)then
+              call tinitr(trans1)
+              trans1(1,1)= cost
+              trans1(1,3)=-sint
+              trans1(3,1)= sint
+              trans1(3,3)= cost
+              trans1(2,2)= cost
+              trans1(2,4)=-sint
+              trans1(4,2)= sint
+              trans1(4,4)= cost
+            endif
             xi=cod(1)
             cod(1)= cost*xi-sint*cod(3)
             cod(3)= sint*xi+cost*cod(3)
             pxi=cod(2)
             cod(2)= cost*pxi-sint*cod(4)
             cod(4)= sint*pxi+cost*cod(4)
-            if(calpol .and. irad .gt. 6)then
-              sx=srot(1,:)
-              srot(1,:)= cost*sx-sint*srot(2,:)
-              srot(2,:)= sint*sx+cost*srot(2,:)
-            endif
-            if(associated(transa))then
-              call tmultr5(transa,trans1,6)
-            else
-              transa=>trans1
-            endif
-          endif
-          if(al .ne. 0.d0)then
-            call tinitr(trans3)
-            trans3(1,2)=al
-            trans3(1,6)=-al*cod(2)*pr/pz**2
-            trans3(3,4)=al
-            trans3(3,6)=-al*cod(4)*pr/pz**2
-            trans3(5,2)=trans3(1,6)
-            trans3(5,4)=trans3(3,6)
-            trans3(5,6)=al*pr/pz**2
-            if(associated(transa))then
-              call tmultr5(transa,trans3,6)
-            else
-              transa=>trans3
+            if(mcal)then
+              if(calpol .and. irad .gt. 6)then
+                sx=srot(1,:)
+                srot(1,:)= cost*sx-sint*srot(2,:)
+                srot(2,:)= sint*sx+cost*srot(2,:)
+              endif
+              if(associated(transa))then
+                call tmultr5(transa,trans1,6)
+              else
+                transa=>trans1
+              endif
             endif
           endif
-          if(associated(transa))then
-            trans(:,1:irad)=matmul(transa,trans(:,1:irad))
+          if(mcal)then
+            if(al .ne. 0.d0)then
+              call tinitr(trans3)
+              trans3(1,2)=al
+              trans3(1,6)=-al*cod(2)*pr/pz**2
+              trans3(3,4)=al
+              trans3(3,6)=-al*cod(4)*pr/pz**2
+              trans3(5,2)=trans3(1,6)
+              trans3(5,4)=trans3(3,6)
+              trans3(5,6)=al*pr/pz**2
+              if(associated(transa))then
+                call tmultr5(transa,trans3,6)
+              else
+                transa=>trans3
+              endif
+            endif
+            if(associated(transa))then
+              trans(:,1:irad)=matmul(transa,trans(:,1:irad))
 c            call tmultr(trans,transa,irad)
-            if(irad .gt. 6)then
-              call tmulbs(beam,transa,.true.)
+              if(irad .gt. 6)then
+                call tmulbs(beam,transa,.true.)
+              endif
             endif
           endif
         endif

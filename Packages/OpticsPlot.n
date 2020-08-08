@@ -1,4 +1,4 @@
-(* OpticsPlot 8/11/2019 *)
+(* OpticsPlot 7/25/2020 *)
 
 PkgConfig$DefaultList["OpticsPlot"->{
   "PlotDivision"->80,
@@ -228,7 +228,7 @@ With[{def={PlotRange->Automatic,
       v=v/ru;
       v=MapAt[#*ru&,v,{,,1}];
       If[pra<=>Automatic,pra=If[RealQ[#],#/ru,#]&/@pra]];
-    If[pra===Automatic && And@@(Twiss$Positive/@f1),pra={0,am*1.1}];
+    If[pra===Automatic && And@@(Twiss$Positive/@f1),pra={0,am/ru*1.1}];
     If[Depth[pra]<=2,pra={l[[1,1,5]]*ss,pra}];
     {del,del1}={"",""};
     If[leg===Automatic,
@@ -291,7 +291,7 @@ OpticsList1$[{pr1_,pr2_},f_,opt___]:=Module[
           OpticsList[f,1,pr2,dl,0,lc,tags,pj<=>False]}],
       {Join[OpticsList[f,pr1,nlat,dl,LINE["S","^^^"]-LINE["S",nlat],lc,tags,pj<=>False][[1]],
         OpticsList[f,1,pr2,dl,0,lc,tags,pj<=>False][[1]]],tags}],
-    ndiv=Min[2048,Max[ndiv,pr2-pr1]];      
+    ndiv=Min[2560,Max[ndiv,pr2-pr1]];      
       leng=LINE["S",pr2]-LINE["S",pr1];
     dl=Max[1e-6,leng/ndiv];
     x0=LINE["S",pr1];
@@ -358,6 +358,7 @@ OpticsList[f_,i1_,i2_,dl_,off_,_,tags_,_]:=Module[{fun,ndiv,div=True},
     div=False;
     fun:=Twiss[f,#]&,
     LINE$FunctionsQ[f],
+    div=True;
     fun:=LINE[f,#]&,
     True,
     If[RealQ[f],
@@ -371,7 +372,6 @@ OpticsList[f_,i1_,i2_,dl_,off_,_,tags_,_]:=Module[{fun,ndiv,div=True},
       0,
       True,
       Floor[(LINE["L",i])/dl]+1];
-!    Print[{fun,ndiv}];
     Null@@Table[{LINE["S",i]+(LINE["L",i])*j/ndiv+off,fun[i+j/ndiv]},{j,0,ndiv-1}],
     {i,i1,i2}],tags}];
 
