@@ -181,11 +181,12 @@ save all;
 dr;
 
 (* This is another form of writing a comment in FFS *)
-(*
+
 MapThread[SetElement[#2,"QUAD",K1->Element["K1",#]]&,
   {{"QSA1","QSA2","QSA3","QSA4","QSA5"},
     {"QSB1","QSB2","QSB3","QSB4","QSB5"}}];
-*)
+SetElement["LLA","DRIFT","L"->Element["L","LLA"]];
+SetElement["LSB","DRIFT","L"->Element["L","LSA"]];
 
 CPU[];
 susp;

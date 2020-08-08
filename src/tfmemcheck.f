@@ -497,6 +497,16 @@ c          endif
       return
       end
 
+      subroutine tfmemcheckprint1(tag,k,pri)
+      use tfstk
+      implicit none
+      integer*4 irtc,k
+      character*(*) tag
+      logical*4 pri
+      call tfmemcheckprint(tag,k,pri,irtc)
+      return
+      end
+
       subroutine tfmemcheckprint(tag,k,pri,irtc)
       use tfstk
       implicit none

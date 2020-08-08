@@ -1,5 +1,5 @@
       subroutine tput(a,label,label1,form,lcol,lfno)
-      use tfstk, only:ktfenanq
+c      use tfstk, only:ktfenanq
       implicit none
       integer*4 lfno,i,j,lcol,ll,ll1
       real*8 a(lcol,6)

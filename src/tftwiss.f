@@ -411,6 +411,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
         endif
         call tfelementstk(dtastk(isp1+2),isp0,narg,irtc)
         if(irtc .ne. 0)then
+          isp=isp0
           return
         endif
         if(isp .eq. isp0+1)then

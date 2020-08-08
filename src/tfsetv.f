@@ -186,15 +186,16 @@
       use tfstk
       use tfcsi, only:icslfno
       implicit none
-      integer*4 ia,irtc,itfdownlevel,irtc1
+      integer*4 ,intent(out):: irtc
+      integer*4 ia,itfdownlevel,irtc1
       type (sad_dlist), pointer :: kl
       type (sad_descriptor) ifcoupv,ifsetcoup,k,kx
       type (sad_symdef), pointer, save :: symdcoupv
       data ifcoupv%k,ifsetcoup%k /0,0/
       if(ifcoupv%k .eq. 0)then
-        ifcoupv  =kxsymbolz('`EVList',7)
+        ifcoupv  =dtfcopy1(kxsymbolz('`EVList',7))
         call descr_sad(ifcoupv,symdcoupv)
-        ifsetcoup=kxsymbolz('SetCoupledElements',18)
+        ifsetcoup=dtfcopy1(kxsymbolz('SetCoupledElements',18))
       endif
       irtc=0
       k=symdcoupv%value
@@ -202,10 +203,11 @@
         if(kl%nl .eq. 0)then
           return
         endif
+      else
+        return
       endif
       levele=levele+1
       call tfsyeval(ifsetcoup,kx,irtc)
-      ia=itfdownlevel()
       if(irtc .ne. 0)then
         if(irtc .gt. 0)then
           if(ierrorprint .ne. 0)then
@@ -215,8 +217,8 @@
      $           'SetCoupledElements',18,icslfno())
           endif
         endif
-        return
       endif
+      ia=itfdownlevel()
       return
       end
 

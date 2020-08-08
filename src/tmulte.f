@@ -5,7 +5,6 @@
      $     f1in,f2in,f1out,f2out,mfring,
      $     fb1,fb2,bfrm,vc,harm,phi,freq,wakew1,
      $     rtaper,autophi)
-      use tfstk, only:ktfenanq
       use ffs_flag, only:calpol,radcod,rfsw,trpt
       use ffs_pointer , only:gammab
       use tmacro, only:amass,c,charge,ddvcacc,dvcacc,e,h0,hvc0,

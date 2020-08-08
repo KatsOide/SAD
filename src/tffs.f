@@ -1514,10 +1514,6 @@ c     begin initialize for preventing compiler warning
         endif
       endif
       if(plus .and. tfreallistq(tfkeyv,klr))then
-c        s=klr%rbody(1)
-c        do i=2,klr%nl
-c          s=s+klr%rbody(i)
-c        enddo
         s=sum(klr%rbody(1:klr%nl))
         tfkeyv=dfromr(s)
       endif
@@ -1800,9 +1796,6 @@ c        enddo
         if(ktfnonrealq(cmps%dvalue(k),v))then
           if(tfreallistq(cmps%dvalue(k),las))then
             v=sum(las%rbody(1:las%nl))
-c            do j=2,las%nl
-c              v=v+las%rbody(j)
-c            enddo
           endif
         endif
         return
@@ -1821,15 +1814,10 @@ c            enddo
           cmpd%value(i)=v
         elseif(tfreallistq(cmpd%dvalue(i),lad))then
           r0=sum(lad%rbody(1:lad%nl))
-c          do k=2,lad%nl
-c            r0=r0+lad%rbody(k)
-c          enddo
           if(r0 .ne. 0.d0)then
             lad%rbody(1:lad%nl)=v/r0*lad%rbody(1:lad%nl)
           else
-c            do k=1,lad%nl
-              lad%rbody(1:lad%nl)=v/lad%nl
-c            enddo
+            lad%rbody(1:lad%nl)=v/lad%nl
           endif
         endif
         return
@@ -2978,7 +2966,6 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         end subroutine
         subroutine sprot(sx,sy,sz,pxm,pym,bx0,by0,bz0,bsi,a,h,
      $     gbrhoi,anph)
-        use tfstk,only:ktfenanq
         use tmacro
         use ffs_flag, only:radpol
         use mathfun,only:pxy2dpz,sqrt1

@@ -310,7 +310,6 @@ c            endif
           endif
         endif
       endif
-c      call tfevals('Print["PROF-3: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       call tdfun(iqcol,lfp,nqcola,nqcola1,kdp,df,error)
       if(error)then
         call termes(lfno,

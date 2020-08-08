@@ -81,7 +81,7 @@
         r32=-r23
         r33=cdt*sphi0**2+cphi0**2
         if(calpol)then
-          do i=1,np
+          do concurrent (i=1:np)
             xi=x(i)
             yi=y(i)
             pxi=px(i)
@@ -105,7 +105,7 @@
             sy(i)=syf
           enddo
         else
-          do i=1,np
+          do concurrent (i=1:np)
             xi=x(i)
             yi=y(i)
             pxi=px(i)
@@ -520,7 +520,7 @@ c      endif
       dx=-rho0*dcp
       dl=rho0*xsp
       if(calpol)then
-        do i=1,np
+        do concurrent (i=1:np)
           xi=x(i)+dx
           pzi=1.d0+pxy2dpz(px(i),py(i))
           pzf=pzi*cp-px(i)*sp
@@ -532,7 +532,7 @@ c      endif
           sz(i)=(sz(i)-sp*sx(i))/cp
         enddo
       else
-        do i=1,np
+        do concurrent (i=1:np)
           xi=x(i)+dx
           pzi=1.d0+pxy2dpz(px(i),py(i))
           pzf=pzi*cp-px(i)*sp
@@ -556,11 +556,10 @@ c      endif
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
       endif
-      do 10 i=1,np
-c        px(i)=px(i)+phi0-phib/(1.d0+g(i))**2
+      do concurrent (i=1:np)
         px(i)=px(i)+phi0-phib/(1.d0+g(i))
         z(i)=z(i)-x(i)*phi0
-10    continue
+      enddo
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
       endif
@@ -705,7 +704,7 @@ c          endif
         dcosp=cosp1-cosp2
       endif
       drhob=rhob-rho0
-      do 100 i=1,np
+      do concurrent (i=1:np)
         bsi(i)=bsi(i)+bsi1*y(i)/rhob
         dp=g(i)
         p=1.d0+dp
@@ -750,7 +749,6 @@ c          endif
      $       +ph2*sinp1/(pz2+ph2*cosp1)
      $       +px1*(dpz32-ph2*dcosp)
      $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
-c        write(*,*)t2,t3,t2+t3,t2t3,px1+px3,px1px3
         t4=(cosp2+t3*sinp2)*(pz2*cosp1+px1*sinp1)
         x3=x2*(cosw-rho0/rhoe*t3*sinw/ph2)
      1       +(rho0*(cosw*t2t3+sinw*(1.d0-t2*t3))*dpx2-
@@ -784,7 +782,7 @@ c        write(*,*)t2,t3,t2+t3,t2t3,px1+px3,px1px3
         y(i)=y3+py4*dz4
         z(i)=z4-dz4
         bsi(i)=bsi(i)-bsi2*y(i)/rhob
-100   continue
+      enddo
       if(krad)then
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,alr,phi0)
       endif

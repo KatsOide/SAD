@@ -418,7 +418,8 @@ c      endif
       use tfstk
       use efun
       implicit none
-      integer*8 karray(nc),kx
+      type (sad_descriptor) kx
+      integer*8 karray(nc)
       real*8 chid
       integer*4 stat,sev,type,nc
       real*8 t

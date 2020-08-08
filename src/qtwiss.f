@@ -117,6 +117,10 @@ c     end   initialize for preventing compiler warning
         ntfun=mfitdetr
       endif
       do l=la+1,lb
+c        call tfmemcheckprint1('qtwiss',l,.false.)
+c        if(mod(l,1000) .eq. 0)then
+c          write(*,*)'qtwiss1 ',l,la,lb
+c        endif
         l1=l-1
         ip1=ip0+l1
         ip=ip1+1
@@ -493,9 +497,6 @@ c            write(*,*)'qtwiss-qwsapc ',l1,ifsize,rlist(ifsize+(l1-1)*21)
             endif
           else
             call qmat2twiss(trans,ip,l,twiss,dpsix,dpsiy,coup,normal)
-c        if(ktfenanq(twiss(ip,mfitbx)))then
-c          write(*,*)'qtwiss-qmat ',l,ip,ltyp,trans(1,2)
-c        endif
           endif
           if(.not. mat)then
             if(orbitcal)then

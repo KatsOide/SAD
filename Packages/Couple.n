@@ -3,7 +3,8 @@
 With[{r=Rule|RuleDelayed},
   SetCoupledElements:=If[Length[EVCompile[]]>0,
     ScanThread[#[#2]&,{EVSetFun,EVCompiled[[1]]}],
-    EVList={}];
+    EVList={},
+    Null];
   
   CouplingMatrix:=If[~IgnoreCouplingMatrix && Length[EVList]>0,
     Module[{var=Apply[#2[#1]&,FFS["VAR"][[,{1,2}]],{1}],m},
@@ -42,7 +43,7 @@ EVCompile[]:=If[ElementValues===EVActive,
         k_String[e_String]:>{k,Flatten[{LINE["POSITION",e]}]}}];
     EVSetFun=
       With[{k=#[[0]],e=#[[1]],fun=EVFun[#[[1]]]},
-        f=With[{p=#},Hold[fun[k,p]=#]]&/@Flatten[{fun["POSITION",e]}];
+        f=oWith[{p=#},Hold[fun[k,p]=#]]&/@Flatten[{fun["POSITION",e]}];
         With[{f},f&]/.Hold->Null]&/@x;
     EVList={x,y};
     EVVariables=Null;
