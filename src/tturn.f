@@ -728,7 +728,7 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
       call descr_sad(lsegp%dbody(1),lal)
       call descr_sad(lal%dbody(2),lak)
       nseg=lak%nl
-      if(cmp%orient .gt. 0.d0)then
+      if(cmp%ori)then
         i1=1
         i2=nseg
         istep=1

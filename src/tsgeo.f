@@ -243,7 +243,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         gf=0.d0
         dvf=0.d0
         if(al .ne. 0.d0)then
-          call tsetfringep(cmp,icQUAD,direlc(i),ak1/al,ftable)
+          call tsetfringep(cmp,icQUAD,ak1/al,ftable)
         else
           ftable=0.d0
         endif

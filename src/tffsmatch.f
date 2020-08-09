@@ -101,9 +101,7 @@ c     end   initialize for preventing compiler warning
         chgmod=.true.
         bestval(1:nvar)=nvevx(1:nvar)%valvar
         free=.false.
-c        do i=1,nvar
         free(nvevx(1:nvar)%ivarele)=.true.
-c        enddo
         aitm1=flv%itmax*alit
         aitm2=flv%itmax
         nvara=nvar
@@ -269,9 +267,6 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                     a=fact/f1
                     nvevx(1:nvar)%valvar=nvevx(1:nvar)%valvar*a
      $                   +bestval(1:nvar)*(1.d0-a)
-c                    do i=1,nvar
-c                      valvar(i)=valvar(i)*a+bestval(i)*(1.d0-a)
-c                    enddo
                     exit do200
                   else
                     nqcol=nqcol0
@@ -279,9 +274,6 @@ c                    enddo
                     df(1:nqcol)=df0(1:nqcol)
                     nvara=nvar
                     wlimit(1:nvar)=max(wlmin,wlimit(1:nvar))
-c                    do i=1,nvar
-c                      wlimit(i)=max(wlmin,wlimit(i))
-c                    enddo
                     exit do1082
                   endif
                 endif
@@ -371,7 +363,6 @@ c                    enddo
                   exit do9000
                 endif
                 do concurrent (kc=1:nvar)
-c                  do concurrent (j=1:nqcol1)
                   kqu=(kc-1)*nqcol+ifqu
                   rlist(kqu:kqu+nqcol1-1)=rlist(kqu:kqu+nqcol1-1)
      $                 *wiq(1:nqcol1)/wvar(kc)
@@ -408,10 +399,8 @@ c     enddo
                       endif
                       over=.false.
                       if(ibegin .ne. 1)then
-c                        do j=1,ntwissfun
-                          twiss(ibegin,0,1:ntwissfun)=
+                        twiss(ibegin,0,1:ntwissfun)=
      $                       utwiss(1:ntwissfun,0,itwissp(ibegin))
-c                        enddo
                       else
                         twiss(1,0,3)=0.d0
                         twiss(1,0,6)=0.d0
@@ -1244,10 +1233,6 @@ c
       again=.false.
       dg=0.d0
       do i=1,nqcol
-c        s=0.d0
-c        do j=1,nvar
-c          s=s+qu(i,j)*wlimit(j)*dval(j)
-c        enddo
         s=sum(qu(i,:)*wlimit*dval)
         if(df(i) .ne. 0.d0)then
           if(wexponent .eq. 2.d0)then

@@ -9,6 +9,7 @@
       integer*4 i,l,j,ikx,lele,ib,ibz,ibznext,ibzb,k,ibg,ibb
       integer*8 idv
       real*8 v
+      evarini=.true.
       nelvx(1:nele)%klp=mult(1:nele)
       nelvx(1:nele)%ival=0
       do l=1,nlat-1
@@ -203,6 +204,7 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       if(exist)then
         ipoint=next
         call tfinimult(i0)
+        evarini=.true.
       else
         call termes(lfno,
      $       'Missing origin component for RENUM_BER',' ')

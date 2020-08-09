@@ -278,11 +278,8 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
                 jb=iutm+(i+nfam)*4
                 optstat(i)%stabx=ilist(1,jb+1)
                 optstat(i)%staby=ilist(1,jb+2)
-c                call tmovi(rlist(jb+1),optstat(i)%stabx,1)
-c                call tmovi(rlist(jb+2),optstat(i)%staby,1)
                 optstat(i)%tracex=rlist(jb+3)
                 optstat(i)%tracey=rlist(jb+4)
-c                write(*,*)'tffscalc1 ',i,jb,tracex(i),rlist(jb+3)
               endif
             enddo
           elseif(ipr .eq. 0)then
@@ -292,21 +289,14 @@ c                write(*,*)'tffscalc1 ',i,jb,tracex(i),rlist(jb+3)
                 jb=iutm+(i+nfam)*4
                 ilist(1,jb+1)=optstat(i)%stabx
                 ilist(1,jb+2)=optstat(i)%staby
-c                call tmovi(optstat(i)%stabx,rlist(jb+1),1)
-c                call tmovi(optstat(i)%staby,rlist(jb+2),1)
                 rlist(jb+3)=optstat(i)%tracex
                 rlist(jb+4)=optstat(i)%tracey
-c                write(*,*)'tffscalc2 ',i,jb,tracex(i),rlist(jb+3)
               endif
             enddo
             stop
           endif
           if(ipr .gt. 0)then
             call tfreeshared(iutm)
-c            if(mapfree(rlist(iutm+1)) .ne. 0)then
-c              call termes(lfno,
-c     1             '?tffscalc-error in unmap.',' ')
-c            endif
           endif
         endif
       endif
@@ -736,18 +726,14 @@ c            write(*,*)'twfit ',nlist(k),rfromk(kx),wfit(i)
       do concurrent (j=fbound%lb:fbound%le)
         jp=itwissp(j)
         if(jp .gt. 0)then
-c          do k=1,ntwissfun
-            utwiss(:,idp,jp)=twiss(j,jdp,:)
-c          enddo
+          utwiss(:,idp,jp)=twiss(j,jdp,:)
         endif
       enddo
       jp=itwissp(1)
       if(begin)then
         if(jp .gt. 0 .and. .not. beg)then
-c          do k=1,ntwissfun
-            twiss(1,jdp,:)=twiss(fbound%lb,jdp,:)
-            utwiss(:,idp,jp)=twiss(fbound%lb,jdp,:)
-c          enddo
+          twiss(1,jdp,:)=twiss(fbound%lb,jdp,:)
+          utwiss(:,idp,jp)=twiss(fbound%lb,jdp,:)
         endif
       endif
       if(end)then
@@ -757,21 +743,15 @@ c          enddo
           else
             le1=fbound%le+1
           endif
-c          do k=1,ntwissfun
-            twiss(nlat-1,jdp,:)=twiss(le1,jdp,:)
-            twiss(nlat,jdp,:)=twiss(le1,jdp,:)
-c          enddo
+          twiss(nlat-1,jdp,:)=twiss(le1,jdp,:)
+          twiss(nlat,jdp,:)=twiss(le1,jdp,:)
           jp=itwissp(nlat-1)
           if(jp .gt. 0)then
-c            do k=1,ntwissfun
             utwiss(:,idp,jp)=twiss(le1,jdp,:)
-c            enddo
           endif
           jp=itwissp(nlat)
           if(jp .gt. 0)then
-c            do k=1,ntwissfun
             utwiss(:,idp,jp)=twiss(le1,jdp,:)
-c            enddo
           endif
         endif
       endif

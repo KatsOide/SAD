@@ -322,14 +322,11 @@ c     (Note) Disperdion is defined in 2*2 world
         if(idtypec(l) .eq. icMARK)then
           xp=tffselmoffset(l)
           if(xp .ne. dble(l))then
-c            write(*,*)'qcell ',l,fbound%fe,nlat,xp,xe
             if(xp .ge. xb .and. xp .lt. xe)then
               lx=int(xp)
               fr=xp-lx
  8101         if(fr .eq. 0.d0)then
-c                do k=1,ntwissfun
-                  twiss(l,idp,:)=twiss(lx,idp,:)
-c                enddo
+                twiss(l,idp,:)=twiss(lx,idp,:)
               else
                 if(lx .eq. fbound%lb)then
                   fra=fbound%fb

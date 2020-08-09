@@ -154,7 +154,7 @@ c          write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6),cod
           radlvl=1.d0
         endif
         ak1=cmp%value(ky_K1_QUAD)
-        call tsetfringepe(cmp,icQUAD,direlc(l),ftable)
+        call tsetfringepe(cmp,icQUAD,ftable)
         call tquase(trans,cod,beam,srot,
      $       al,ak1,bzs,
      $       cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),

@@ -43,6 +43,7 @@
      $       'Different keywords of element to COUP_LE.',' ')
         go to 9000
       endif
+      evarini=.true.
       if(icomp(kk2) .ne. kk2)then
         if(kk2 .eq. nelvx(k2)%klp)then
           call elnameK(kk2,name)
@@ -153,6 +154,7 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
         endif
       enddo
       if(mat)then
+        evarini=.true.
         go to 1
       endif
       return
@@ -183,6 +185,7 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
         endif
       enddo
       if(mat)then
+        evarini=.true.
         go to 1
       endif
       return

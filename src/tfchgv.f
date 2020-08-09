@@ -5,7 +5,8 @@
       use tffitcode
       use tfcsi,only:ipoint
       implicit none
-      integer*4 lfno,i,k,j,next1
+      integer*4 ,intent(in):: lfno
+      integer*4 i,k,j,next1
       character*(MAXPNAME) word
       character*8 key,ki,tfkwrd,tfkwrd1
       logical*4 tmatch,apply,exist
@@ -43,7 +44,9 @@
       if(exist)then
         go to 1
       endif
-      if(.not. apply)then
+      if(apply)then
+        evarini=.true.
+      else
         call termes(lfno,
      $       'No element for VAR_Y with keyword: ',key)
         ipoint=next1

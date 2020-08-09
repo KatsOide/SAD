@@ -20,8 +20,8 @@ c        type (sad_descriptor) elmv
         sequence
         integer*4 ncomp2,id
         integer*4 nparam
-        logical*1 ldummy1,update,updateseg,ldummy2
-        real*8 orient
+        logical*1 ori,update,updateseg,ldummy2
+        integer*4 ievar1,ievar2
         type (sad_descriptor) dvalue(1:0)
         integer*8 kvalue(1:0)
         integer*4 ivalue(2,1:0)
@@ -91,7 +91,11 @@ c        el%elmv%k=0
         type (sad_el),intent(in) :: el
         type (sad_comp), pointer :: cmp
         call loc_comp(el%comp(i),cmp)
-        dircomp=cmp%orient
+        if(cmp%ori)then
+          dircomp=1.d0
+        else
+          dircomp=-1.d0
+        endif
         return
         end function
 
@@ -263,7 +267,7 @@ c        el%elmv%k=0
      $       blname(lblname),pading,mcommon
         integer*4 ndim,ndima,nele,nfit,marki,iorgx,iorgy,iorgr,
      $       mfpnt,mfpnt1,id1,id2,nve,modesize
-        logical*4 setref
+        logical*4 setref,evarini
       end type
 
       type (ffsv), target, save:: ffv
@@ -390,7 +394,7 @@ c$$$susp;
       real*8, pointer, dimension(:,:) :: geo0
       integer*4, pointer :: ndim,ndima,nele,nfit,marki,iorgx,iorgy,
      $     iorgr,mfpnt,mfpnt1,id1,id2,nve,ntouch,modesize
-      logical*4 , pointer :: setref
+      logical*4 , pointer :: setref,evarini
       type (nvev), pointer,dimension(:)::nvevx
       type (nelv), pointer,dimension(:)::nelvx
 
@@ -449,6 +453,7 @@ c$$$susp;
         modesize=>ffv%modesize
         ntouch=>ffv%ntouch
         setref=>ffv%setref
+        evarini=>ffv%evarini
         flv=>ffv
         return
         end subroutine
@@ -849,7 +854,11 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         integer*4,intent(in)::i
         type (sad_comp), pointer :: cmp
         call loc_comp(elatt%comp(i),cmp)
-        direlc=cmp%orient
+        if(cmp%ori)then
+          direlc=1.d0
+        else
+          direlc=-1.d0
+        endif
         return
         end function
 
@@ -859,7 +868,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         real*8 ,intent(in)::v
         type (sad_comp), pointer :: cmp
         call loc_comp(elatt%comp(i),cmp)
-        cmp%orient=v
+        cmp%ori=v .gt. 0.d0
         return
         end subroutine
 
@@ -896,7 +905,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         return
         end function
 
-        subroutine tsetfringep(cmp,ic,dir,akk,table)
+        subroutine tsetfringep(cmp,ic,akk,table)
         use mackw
         implicit none
         type (sad_comp) cmp
@@ -910,7 +919,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
      $       +cmp%value(kytbl(kwF2K1F,ic))
         f2out=cmp%value(kytbl(kwF2,ic))
      $       +cmp%value(kytbl(kwF2K1B,ic))
-        if(dir .ge. 0.d0)then
+        if(cmp%ori)then
           table(1)=-abs(akk*f1in*f1in)/24.d0
           table(2)= abs(akk)*f2in
           table(3)=-abs(akk*f1out*f1out)/24.d0
@@ -924,7 +933,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         return
         end subroutine
 
-        subroutine tsetfringepe(cmp,ic,dir,table)
+        subroutine tsetfringepe(cmp,ic,table)
         use mackw
         implicit none
         type (sad_comp) cmp
@@ -942,7 +951,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
      $           +cmp%value(kytbl(kwF2K1F,ic))
             f2out=cmp%value(kytbl(kwF2,ic))
      $           +cmp%value(kytbl(kwF2K1B,ic))
-            if(dir .ge. 0.d0)then
+            if(cmp%ori)then
               table(1)=f1in
               table(2)=f2in
               table(3)=f1out
@@ -1041,7 +1050,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         case (icBEND)
           al=cmp%value(ky_L_BEND)
           phi=cmp%value(ky_ANGL_BEND)
-          if(cmp%orient .gt. 0.d0)then
+          if(cmp%ori)then
             psi1=cmp%value(ky_E1_BEND)*phi+cmp%value(ky_AE1_BEND)
             psi2=cmp%value(ky_E2_BEND)*phi+cmp%value(ky_AE2_BEND)
             fb1=cmp%value(ky_F1_BEND)+cmp%value(ky_FB1_BEND)
@@ -1099,13 +1108,13 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
      $         +akang(dcmplx(cmp%value(ky_K1_QUAD),0.d0),al,cr1)
           if(al .ne. 0.d0)then
             akk=cmp%value(ky_K1_QUAD)/al
-            call tsetfringep(cmp,icQUAD,cmp%orient,akk,
+            call tsetfringep(cmp,icQUAD,akk,
      $           cmp%value(p_AKF1F_QUAD:p_AKF2B_QUAD))
           else
             cmp%value(p_AKF1F_QUAD:p_AKF2B_QUAD)=0.d0
           endif
           frmd=cmp%value(ky_FRMD_QUAD)
-          if(cmp%orient .lt. 0.d0)then
+          if(.not. cmp%ori)then
             frmd=frmd*(11.d0+frmd*(2.d0*frmd-9.d0))/2.d0
           endif
           cmp%value(p_FRMD_QUAD)=frmd
@@ -1125,7 +1134,7 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
         case (icMULT)
           al=cmp%value(ky_L_MULT)
           phi=cmp%value(ky_ANGL_MULT)
-          if(cmp%orient .gt. 0.d0)then
+          if(cmp%ori)then
             psi1=cmp%value(ky_E1_MULT)*phi+cmp%value(ky_AE1_MULT)
             psi2=cmp%value(ky_E2_MULT)*phi+cmp%value(ky_AE2_MULT)
             fb1=cmp%value(ky_FB1_MULT)
@@ -1137,7 +1146,7 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
             fb1=cmp%value(ky_FB2_MULT)
           endif
           frmd=cmp%value(ky_FRMD_MULT)
-          if(cmp%orient .lt. 0.d0)then
+          if(.not. cmp%ori)then
             frmd=frmd*(11.d0+frmd*(2.d0*frmd-9.d0))/2.d0
           endif
           cmp%value(p_FRMD_MULT)=frmd
@@ -1167,7 +1176,7 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
               akk=hypot(cmp%value(ky_K1_MULT),sk1)/al
 c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
             endif
-            call tsetfringep(cmp,icMULT,cmp%orient,akk,
+            call tsetfringep(cmp,icMULT,akk,
      $           cmp%value(p_AKF1F_MULT:p_AKF2B_MULT))
           else
             cmp%value(p_AKF1F_MULT:p_AKF2B_MULT)=0.d0
@@ -1195,7 +1204,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
 
         case (icCAVI)
           frmd=cmp%value(ky_FRMD_CAVI)
-          if(cmp%orient .lt. 0.d0)then
+          if(.not. cmp%ori)then
             frmd=frmd*(11.d0+frmd*(2.d0*frmd-9.d0))/2.d0
           endif
           cmp%value(p_FRMD_CAVI)=frmd
