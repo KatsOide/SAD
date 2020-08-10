@@ -18,14 +18,15 @@ c      include 'DEBUG.inc'
      $     amedc2=-1.3d0,alit=0.75d0,wlmin=0.009d0,eps=1.d-5,
      $     eps1=1.d-8,rtol=1.05d0,rtol1=1.05d0
       real*8, parameter :: aloadmax=2.d4
-      integer*4 ibegin,lfno,irtc,nqumax,
-     $     nqcol0,nparallel,nqcol00,
+      integer*4 ,intent(in):: nparallel,lfno
+      integer*4 ,intent(out):: irtc
+      integer*4 ibegin,nqumax,nqcol0,nqcol00,
      $     nqcola1,nqcol1a1,nqcola2,nqcol1a2,lout
       integer*4 kdpa1(maxcond),kdpa2(maxcond),iqcol0(maxcond),
      $     iqcola1(maxcond),iqcola2(maxcond),nretry,nstab,nstaba1
-      real*8 dval(flv%nvar),
-     $     df(maxcond),df0(maxcond),df1(maxcond),df2(maxcond),
-     $     ddf1(maxcond),ddf2(maxcond),r,dp0,
+      real*8 ,intent(out):: df(maxcond),r,dp0
+      real*8 dval(flv%nvar),df0(maxcond),df1(maxcond),df2(maxcond),
+     $     ddf1(maxcond),ddf2(maxcond),
      $     residuala1(-ndimmax:ndimmax),v00
       logical*4 free(nele),zcal,error,error2,
      $     limited1,wcal1,zcal1
@@ -101,9 +102,7 @@ c     end   initialize for preventing compiler warning
         chgmod=.true.
         bestval(1:nvar)=nvevx(1:nvar)%valvar
         free=.false.
-c        do i=1,nvar
         free(nvevx(1:nvar)%ivarele)=.true.
-c        enddo
         aitm1=flv%itmax*alit
         aitm2=flv%itmax
         nvara=nvar
@@ -269,9 +268,6 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                     a=fact/f1
                     nvevx(1:nvar)%valvar=nvevx(1:nvar)%valvar*a
      $                   +bestval(1:nvar)*(1.d0-a)
-c                    do i=1,nvar
-c                      valvar(i)=valvar(i)*a+bestval(i)*(1.d0-a)
-c                    enddo
                     exit do200
                   else
                     nqcol=nqcol0
@@ -279,9 +275,6 @@ c                    enddo
                     df(1:nqcol)=df0(1:nqcol)
                     nvara=nvar
                     wlimit(1:nvar)=max(wlmin,wlimit(1:nvar))
-c                    do i=1,nvar
-c                      wlimit(i)=max(wlmin,wlimit(i))
-c                    enddo
                     exit do1082
                   endif
                 endif
@@ -371,7 +364,6 @@ c                    enddo
                   exit do9000
                 endif
                 do concurrent (kc=1:nvar)
-c                  do concurrent (j=1:nqcol1)
                   kqu=(kc-1)*nqcol+ifqu
                   rlist(kqu:kqu+nqcol1-1)=rlist(kqu:kqu+nqcol1-1)
      $                 *wiq(1:nqcol1)/wvar(kc)
@@ -408,10 +400,8 @@ c     enddo
                       endif
                       over=.false.
                       if(ibegin .ne. 1)then
-c                        do j=1,ntwissfun
-                          twiss(ibegin,0,1:ntwissfun)=
+                        twiss(ibegin,0,1:ntwissfun)=
      $                       utwiss(1:ntwissfun,0,itwissp(ibegin))
-c                        enddo
                       else
                         twiss(1,0,3)=0.d0
                         twiss(1,0,6)=0.d0
@@ -510,10 +500,12 @@ c                        enddo
       subroutine tffsddf(ddf,df,df1,iqcol,iqcola1,lfp,lfpa1,
      $                 kdp,kdpa1,nqcol,nqcola1)
       implicit none
-      integer*4 nqcol,nqcola1,iqcol(nqcol),iqcola1(nqcola1),
-     $     lfp(2,nqcol),lfpa1(2,nqcola1),kdp(nqcol),kdpa1(nqcola1),
-     $     i,j,j1
-      real*8 ddf(nqcol),df(nqcol),df1(nqcola1)
+      integer*4 ,intent(in):: nqcol,nqcola1,iqcol(nqcol),
+     $     iqcola1(nqcola1),lfp(2,nqcol),lfpa1(2,nqcola1),kdp(nqcol),
+     $     kdpa1(nqcola1)
+      integer*4 i,j,j1
+      real*8 ,intent(out):: ddf(nqcol)
+      real*8 ,intent(in):: df(nqcol),df1(nqcola1)
       j=1
       do i=1,nqcol
         if(j .gt. nqcola1)then
@@ -551,9 +543,12 @@ c                        enddo
       subroutine tffswait(ipr,npa,npr,kash,tag,irtc)
       use tfshare
       implicit none
-      integer*4 ipr,npa,npr(npa),irtc,wait,ist, i,j
-      integer*8 kash
-      character*(*) tag
+      integer*4 ,intent(out):: irtc,ipr
+      integer*4 ,intent(in):: npa
+      integer*4 ,intent(inout):: npr(npa)
+      integer*4 ist,i,j,wait
+      integer*8 ,intent(in):: kash
+      character*(*) ,intent(in):: tag
       if(ipr .eq. 0)then
         if(kash .ne. 0)then
           call tfreeshared(kash,-1)
@@ -586,8 +581,11 @@ c                        enddo
       subroutine tffssetupqu(ifqu,ifquw,nqumax,nqcol,nvar,lfno)
       use tfmem, only:ktaloc,tfree
       implicit none
-      integer*8 ifqu,ifquw,itmmapp
-      integer*4 nqumax,nqu,nqcol,nvar,lfno
+      integer*8 ,intent(out):: ifqu,ifquw
+      integer*8 itmmapp
+      integer*4 ,intent(inout):: nqumax
+      integer*4 ,intent(in):: nqcol,nvar,lfno
+      integer*4 nqu
       integer*4 , parameter :: minnqu=512
       nqu=max(minnqu,nqcol*nvar)
       if(nqu .gt. nqumax)then
@@ -649,9 +647,13 @@ c                        enddo
       implicit none
       type (sad_rlist), pointer :: klr
       type (sad_descriptor) kx
-      integer*4 i,ld,ivv,ltyp,irtc
-      real*8 val,val0,vl,vl1,vl0,vl2
-      logical*4 limited,dlim
+      integer*4 ,intent(in):: i,ld
+      integer*4 ,intent(out):: ivv
+      integer*4 ltyp,irtc
+      real*8 ,intent(in):: val,val0
+      real*8 ,intent(out):: vl,vl1,vl2
+      real*8 vl0
+      logical*4 ,intent(out):: limited,dlim
       limited=.false.
       ltyp=idtype(ld)
       vl=val
@@ -727,8 +729,9 @@ c                        enddo
       data ifvr%k/0/
       type (sad_descriptor) ,intent(out):: kx
       type (sad_symdef) ,pointer:: symd
-      integer*4 id,ld,irtc,isp1,level,itfuplevel,ltyp,
-     $     itfdownlevel,k
+      integer*4 ,intent(in):: id,ld,k
+      integer*4 ,intent(out):: irtc
+      integer*4 isp1,level,itfuplevel,ltyp,itfdownlevel
       real*8 ,intent(in):: x
       character*(MAXPNAME) vn,tfkwrd
       integer*8, save :: ifvvarn,ifvkey
@@ -807,14 +810,15 @@ c     $       vn(1:skey%nch)
       use mackw
       implicit none
       type (ffs_bound) fbound
-      integer*8 itmmapp,ifqu,ifquw,kcm,kkqu,kqu,ic,iec
-      integer*4 nqcol,nqcol1,nvar,nqumax,nlat,nele,
-     $     irtc,lfno,nut,nfam,nfam1
+      integer*8 ,intent(inout):: ifquw,ifqu
+      integer*8 itmmapp,kcm,kkqu,kqu,ic,iec
+      integer*4 ,intent(in):: nqcol,nqcol1,nvar,nlat,nele,
+     $     lfno,nut,nfam,nfam1,nparallel
+      integer*4 ,intent(out):: irtc,nqumax
       integer*4 npp
-      logical*4 free(nele),cell
+      logical*4 ,intent(in):: free(nele),cell
       integer*4 nqu,k,kk,i,kq,j,kf,lp,kp,iv,kkf,kkq,kkk,
-     $     ii,ltyp,jj,kc,ik1,nparallel,
-     $     iclast(-nfam:nfam),ik,nk,kk1,
+     $     ii,ltyp,jj,kc,ik1,iclast(-nfam:nfam),ik,nk,kk1,
      $     ip,ipr,istep,npr(nparallel),fork_worker
       real*8 s,dtwiss(mfittry),coup,posk,wk,ctrans(4,7,-nfam:nfam)
       logical*4 col(2,nqcol),disp,nzcod
@@ -1015,9 +1019,10 @@ c     $       vn(1:skey%nch)
       return
       end
 
-      real*8 function tffsfmin(f1,f2,g1,g2,g0,dg)
+      real*8 pure function tffsfmin(f1,f2,g1,g2,g0,dg)
       implicit none
-      real*8 f1,f2,g1,g2,g0,dg,a,b
+      real*8 ,intent(in):: f1,f2,g1,g2,g0,dg
+      real*8 a,b
       if(f2 .eq. 0.d0)then
         tffsfmin=-.5d0*f1*dg/((g1-g0)/f1-dg)
       else
@@ -1244,10 +1249,6 @@ c
       again=.false.
       dg=0.d0
       do i=1,nqcol
-c        s=0.d0
-c        do j=1,nvar
-c          s=s+qu(i,j)*wlimit(j)*dval(j)
-c        enddo
         s=sum(qu(i,:)*wlimit*dval)
         if(df(i) .ne. 0.d0)then
           if(wexponent .eq. 2.d0)then

@@ -56,18 +56,8 @@ c     $       +trans1(5,4)*trans(4,1:irad)+trans1(5,6)*trans(6,1:irad)
         cod(5)=cod(5)-(a/(pr+pzi)/pzi+dv)*al
         bzh=0.d0
       else
-c        if(enarad)then
-c          br=tbrhoz()
-c          bx=ak0y/al*br
-c          by=ak0x/al*br
-cc   dl/dx is temporarily set to zero, of course it is wrong...
-c          call trade(trans,beam,cod,bx,by,bz*br,bz,
-c     $         0.d0,0.d0,0.d0,0.d0,
-c     $         al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
-c        else
-c          br=0.d0
-c        endif
         bzh=bz*.5d0
+c cod has canonical momenta!
         cod(2)=cod(2)+bzh*cod(3)
         cod(4)=cod(4)-bzh*cod(1)
         call tsoldz(trans1,cod,al,ak0y/al,ak0x/al,bz,.true.)
@@ -78,14 +68,6 @@ c        endif
         trans1(2,1:6)=trans1(2,1:6)-bzh*trans1(3,1:6)
         trans1(4,1:6)=trans1(4,1:6)+bzh*trans1(1,1:6)
         call tmultr5(trans,trans1,irad)
-c        if(enarad)then
-c          call trade(trans,beam,cod,bx,by,bz*br,bz,
-c     $         0.d0,0.d0,0.d0,0.d0,
-c     $         al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
-c        endif
-c        if(irad .gt. 6)then
-c          call tmulbs(beam ,trans1,.true.)
-c        endif
       endif
       if(irad .gt. 6)then
         call tmulbs(beam ,trans1,.true.)

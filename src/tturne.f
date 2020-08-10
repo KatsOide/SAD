@@ -582,17 +582,16 @@ c          endif
             endif
             ak1=ak1*min(1.d0+tapmax,max(1.d0-tapmax,rtaper))
           endif
-          call tsetfringepe(cmp,icQUAD,dir,ftable)
-          call tquade(trans,cod,beam,srot,al,ak1,
+          call tsetfringepe(cmp,icQUAD,ftable)
+          call tquade(trans,cod,beam,srot,al,ak1,0.d0,
      $         cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1         cmp%value(ky_ROT_QUAD),
-     $         cmp%value(ky_RAD_QUAD) .eq. 0.d0,
+     $         cmp%value(ky_RAD_QUAD) .eq. 0.d0 .and. al .ne. 0.d0,
      1         cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $         ftable(1),ftable(2),ftable(3),ftable(4),
      $         mfr,cmp%value(ky_EPS_QUAD),
      $         cmp%value(ky_KIN_QUAD) .eq. 0.d0,
-     $         cmp%value(ky_CHRO_QUAD) .ne. 0.d0,
-     $         next)
+     $         cmp%value(ky_CHRO_QUAD) .ne. 0.d0)
 
         case (icSEXT,icOCTU,icDECA,icDODECA)
           ak1=cmp%value(ky_K_THIN)
@@ -941,7 +940,7 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
       call descr_sad(lsegp%dbody(1),lal)
       call descr_sad(lal%dbody(2),lak)
       nseg=lak%nl
-      if(cmp%orient .gt. 0.d0)then
+      if(cmp%ori)then
         i1=1
         i2=nseg
         istep=1
@@ -996,7 +995,7 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
       al=cmp%value(ky_L_MULT)
       phi=cmp%value(ky_ANGL_MULT)
       mfr=nint(cmp%value(ky_FRMD_MULT))
-      if(cmp%orient .gt. 0.d0)then
+      if(cmp%ori)then
         psi1=cmp%value(ky_E1_MULT)
         psi2=cmp%value(ky_E2_MULT)
         apsi1=cmp%value(ky_AE1_MULT)
@@ -1016,7 +1015,7 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
         chi1=-cmp%value(ky_CHI1_MULT)
         chi2=-cmp%value(ky_CHI2_MULT)
       endif
-      call tsetfringepe(cmp,icMULT,cmp%orient,ftable)
+      call tsetfringepe(cmp,icMULT,ftable)
       call tmulte(trans,cod,beam,srot,l,al,
      $     cmp%value(ky_K0_MULT),
      $     bzs,

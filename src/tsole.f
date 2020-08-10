@@ -104,7 +104,7 @@ c          write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6),cod
       integer*8 lp
       type (sad_comp), pointer ::cmp
       type (sad_dlist), pointer :: lsegp
-      real*8 ,intent(inout)::  trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 ,intent(in):: rtaper
       real*8 rr(3,3),al,theta,
      $     phi,phix,phiy,bzs,trans1(6,6),trans2(6,6),
@@ -148,20 +148,19 @@ c          write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6),cod
           mfr=nint(cmp%value(ky_FRMD_QUAD))
           mfr=mfr*(11+mfr*(2*mfr-9))/2
         endif
-        if(enarad)then
-          radlvl=cmp%value(ky_RAD_QUAD)
-        else
-          radlvl=1.d0
-        endif
+        krad=enarad .and. cmp%value(ky_RAD_QUAD) .eq. 0.d0
+     $       .and. al .ne. 0.d0
         ak1=cmp%value(ky_K1_QUAD)
-        call tsetfringepe(cmp,icQUAD,direlc(l),ftable)
-        call tquase(trans,cod,beam,srot,
+        call tsetfringepe(cmp,icQUAD,ftable)
+        call tquade(trans,cod,beam,srot,
      $       al,ak1,bzs,
      $       cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      $       cmp%value(ky_ROT_QUAD),
-     1       radlvl,cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
+     1       krad,cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $       ftable(1),ftable(2),ftable(3),ftable(4),
-     $       mfr,cmp%value(ky_EPS_QUAD))
+     $       mfr,cmp%value(ky_EPS_QUAD),
+     $       cmp%value(ky_KIN_QUAD) .eq. 0.d0,
+     $       cmp%value(ky_CHRO_QUAD) .ne. 0.d0)
       case(icMULT)
         if(seg)then
           call tmulteseg(trans,cod,beam,srot,l,cmp,bzs,lsegp,
@@ -278,10 +277,11 @@ c      write(*,'(a,i5,1p6g15.7/16x,1p6g15.7)')'tsole1-end ',l,code,cod
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 k
-      real*8 trans(4,5),cod(6),transe(6,12),beam(42),
-     $     srot(3,9)
-      logical*4 coup,radtaper0,calpol0
+      integer*4 ,intent(in):: k
+      real*8 ,intent(inout):: trans(4,5),cod(6),beam(42),srot(3,9)
+      real*8 transe(6,12)
+      logical*4 ,intent(out):: coup
+      logical*4 radtaper0,calpol0
       radtaper0=radtaper
       radtaper=.false.
       calpol0=calpol

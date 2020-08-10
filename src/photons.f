@@ -755,8 +755,7 @@ c          ppa=hypot(ppx,hypot(ppy,ppz))
         th=tan(.5d0*phir0)
         sp=2.d0*th/(1.d0+th**2)
         cp=1.d0-th*sp
-c        cp=cos(phir0)
-c        sp=sin(phir0)
+c     codr0 has canonical momenta!
         pxi=codr0(2)+bzhr0*codr0(3)
         pyi=codr0(4)-bzhr0*codr0(1)
         pz00=pr*(1.d0+pxy2dpz(pxi/pr,pyi/pr))

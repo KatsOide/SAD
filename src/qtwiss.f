@@ -300,7 +300,7 @@ c          endif
               mfr=mfr*(11+mfr*(2*mfr-9))/2
             endif
             ak1=cmp%value(ky_K1_QUAD)
-            call tsetfringepe(cmp,icQUAD,dir,ftable)
+            call tsetfringepe(cmp,icQUAD,ftable)
             call qquad(trans,cod,al,
      1           ak1,cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1           cmp%value(ky_ROT_QUAD),
@@ -1197,7 +1197,8 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
         endif
         cmp%value(ky_FRMD_BEND)=-f1-2.d0*f2
         if(r .ne. 0.d0)then
-          if(cmp%orient .gt. 0.d0)then
+c          if(cmp%orient .gt. 0.d0)then
+          if(cmp%ori)then
             cmp%value(ky_E1_BEND)=
      $           cmp%value(ky_E1_BEND)*f1/r
             cmp%value(ky_E2_BEND)=
@@ -1246,7 +1247,7 @@ c     $     cmp%value(ky_K0_BEND)
             cmp%value(ky_FB2_MULT)=0.d0
           endif
           cmp%value(ky_FRMD_BEND)=-f1-2.d0*f2
-          if(cmp%orient .gt. 0.d0)then
+          if(cmp%ori)then
             cmp%value(ky_E1_MULT)=
      $           cmp%value(ky_E1_MULT)*f1/r
             cmp%value(ky_E2_MULT)=
@@ -1292,7 +1293,7 @@ c     $     cmp%value(ky_K0_BEND)
       endif
       cmp%value(kytbl(kwFRMD,lt))=0.d0
       if(f1 .ne. 0.d0)then
-        if(cmp%orient .gt. 0.d0)then
+        if(cmp%ori)then
           if(fr0 .eq. 3.d0 .or. fr0 .eq. 1.d0)then
             cmp%value(kytbl(kwFRMD,lt))=1.d0
           endif
@@ -1303,7 +1304,7 @@ c     $     cmp%value(ky_K0_BEND)
         endif
       endif
       if(f2 .ne. 0.d0)then
-        if(cmp%orient .gt. 0.d0)then
+        if(cmp%ori)then
           if(fr0 .eq. 3.d0 .or. fr0 .eq. 2.d0)then
             cmp%value(kytbl(kwFRMD,lt))=cmp%value(kytbl(kwFRMD,lt))+2.d0
           endif
@@ -1372,15 +1373,11 @@ c     $     cmp%value(ky_K0_BEND)
         i2=1
         go to 100
       endif
-      al=sum(kl%rbody(1:n))
-c      do i=2,n
-c        al=al+kl%rbody(i)
-c      enddo
-      al=al*al0
+      al=sum(kl%rbody(1:n))*al0
       al1=al*fr1
       al2=al*fr2
       s=0.d0
-      if(cmp%orient .gt. 0.d0)then
+      if(cmp%ori)then
         j1=1
         j2=n
         js=1
@@ -1542,7 +1539,7 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
       call descr_sad(lsegp%dbody(1),lal)
       call descr_sad(lal%dbody(2),lak)
       nseg=lak%nl
-      if(cmp%orient .gt. 0.d0)then
+      if(cmp%ori)then
         i1=1
         i2=nseg
         istep=1
@@ -1593,7 +1590,7 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
       al=cmp%value(ky_L_MULT)
       phi=cmp%value(ky_ANGL_MULT)
       mfr=nint(cmp%value(ky_FRMD_MULT))
-      if(cmp%orient .ge. 0.d0)then
+      if(cmp%ori)then
         psi1=cmp%value(ky_E1_MULT)
         psi2=cmp%value(ky_E2_MULT)
         apsi1=cmp%value(ky_AE1_MULT)
@@ -1613,7 +1610,7 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
         chi1m=-cmp%value(ky_CHI1_MULT)
         chi2m=-cmp%value(ky_CHI2_MULT)
       endif
-      call tsetfringepe(cmp,icMULT,cmp%orient,ftable)
+      call tsetfringepe(cmp,icMULT,ftable)
       call qmult(trans,cod,l1,al,
      $     cmp%value(ky_K0_MULT),bz,
      $     phi,psi1,psi2,apsi1,apsi2,
@@ -1660,9 +1657,9 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
      $     dx,dy,theta,ak,eps0,al,f1in,f2in,f1out,f2out
       logical*4 fringe,coup,kin,achro
       call tinitr(transe)
-      call tquade(transe,cod,beam,srot,al,ak,
+      call tquade(transe,cod,beam,srot,al,ak,0.d0,
      1     dx,dy,theta,.false.,fringe,f1in,f2in,f1out,f2out,mfring,eps0,
-     $     kin,achro,.false.,1)
+     $     kin,achro,.false.)
       call qcopymat(trans,transe,.false.)
       coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
      $     trans(2,3) .ne. 0.d0 .or. trans(2,4) .ne. 0.d0

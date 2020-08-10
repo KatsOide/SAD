@@ -411,9 +411,9 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
      $         apsi1,apsi2,
      $         fb1,fb2,mfring,fringe,next)
         elseif(phib .eq. phi0)then
-          call tquade(trans,cod,beam,srot,al0,ak,
+          call tquade(trans,cod,beam,srot,al0,ak,0.d0,
      1     dx,dy,theta,enarad,fringe,0.d0,0.d0,0.d0,0.d0,0,eps0,
-     $     .true.,.false.,next)
+     $     .true.,.false.)
         else
           akm=(0.d0,0.d0)
           akm(0)=phib-phi0

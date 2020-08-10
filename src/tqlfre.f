@@ -87,6 +87,7 @@ c        enddo
         fdp=2.d0*f*bb**2/p
         xf=(ea*cod(1)+bp*(cod(2)+bzph*cod(3)/ea-bb*cod(4)))*f
         yf=(cod(3)/ea-bp*(cod(4)-bzph*cod(1)*ea-bb*cod(2)))*f
+c cod has canonical momenta!
         pxf=(cod(2)+bzph*yf)/ea
         pyf=(cod(4)-bzph*xf)*ea
         trans1(1,1)= ea*f
@@ -146,6 +147,7 @@ c        enddo
      $     -(a*cod(3)/ea+bp/ea*(1.d0-.5d0*a)*pyf)*pyf)/p
       cod(2)=pxf-bzph*cod(3)
       cod(4)=pyf+bzph*cod(1)
+c cod has canonical momenta!
       cod(1)=xf
       cod(3)=yf
       return

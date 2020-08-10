@@ -44,6 +44,7 @@
         return
       endif
       bzh=.5d0*bz
+c cod has canonical momenta!
       pxi=cod(2)+bzh*cod(3)
       pyi=cod(4)-bzh*cod(1)
       px1=(pxi*yy+pyi*h)/f

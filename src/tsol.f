@@ -9,7 +9,7 @@ c
       subroutine tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,bz,dx,dy,dz,
      $     chi1,chi2,chi3,bxs,bys,bzs,ent)
-      use mathfun, only:sqrt1,sxsin,xsincos
+      use mathfun, only:sqrt1,xsincos,pxy2dpz
       use ffs_flag, only:calpol,rad
       implicit none
       integer*4 ,intent(in):: np
@@ -31,21 +31,7 @@ c
         if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or. chi2 .ne. 0.d0)then
           s0s=-al*.5d0
           call xsincos(chi1,schi1,xs,cchi1,dcchi1)
-c          cchi1=cos(chi1)
-c          schi1=sin(chi1)
-c          if(cchi1 .ge. 0.d0)then
-c            dcchi1=schi1**2/(1.d0+cchi1)
-c          else
-c            dcchi1=(1.d0-cchi1)
-c          endif
           call xsincos(chi2,schi2,xs,cchi2,dcchi2)
-c          cchi2=cos(chi2)
-c          schi2=sin(chi2)
-c          if(cchi1 .ge. 0.d0)then
-c            dcchi2=schi2**2/(1.d0+cchi2)
-c          else
-c            dcchi2=(1.d0-cchi2)
-c          endif
           if(bz .ne. 0.d0)then
             b=abs(bz)
             phix=(-schi1)         *sign(1.d0,bz)
@@ -65,8 +51,8 @@ c          endif
               x(i) = cchi1*x(i)-schi1*(s0s-dz)
               ds2  =-(schi2*y(i)+cchi2*ds1+dcchi2*s0s)
               y(i) = cchi2*y(i)-schi2*(ds1+s0s)
-              pz0=1.d0+sqrt1(-px(i)**2-py(i)**2)
-c     pz0=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
+c              pz0=1.d0+sqrt1(-px(i)**2-py(i)**2)
+              pz0=1.d0+pxy2dpz(px(i),py(i))
               pz1  = schi1*px(i)+cchi1*pz0
               px(i)= cchi1*px(i)-schi1*pz0
               py(i)= cchi2*py(i)-schi2*pz1
@@ -272,6 +258,7 @@ c              endif
       logical*4 mul
       parameter (pzmin=1.d-10,ptmax=0.9999d0)
       mul=.false.
+c     cod in/outs canonical momenta!
       if(ent)then
         if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or.
      $       chi2 .ne. 0.d0)then
@@ -462,7 +449,6 @@ c          call tmultr(trans1,trans2,6)
       subroutine tsoldz(trans,cod,al,bxs0,bys0,bzs0,drift)
       use mathfun
       implicit none
-      integer*4 j
       integer*4 ,save::ndiag=15
       integer*4 ,parameter ::itmax=15
       real*8 ,intent(inout):: trans(6,6),cod(6)
@@ -470,19 +456,17 @@ c          call tmultr(trans1,trans2,6)
       real*8 bxs,bys,bzs,pxi,pyi,pz0,
      $     dpz0dpx,dpz0dpy,dpz0dp,phi,
      $     dphidz,dphidpx,dphidpy,dphidp,a24,a12,a22,a14,
-     $     da12,da14,pr,dpz0,dv,dvdp,s,r,phix,phiy,phiz,babs,
-     $     alb,pbx,pby,pbz,pl,dpl,dphizsq,a,
+     $     da12,da14,pr,dpz0,dv,dvdp,phix,phiy,phiz,babs,
+     $     alb,pbx,pby,pbz,pl,dpl,dphizsq,a,r,
      $     dpldpx,dpldpy,dpldp,dplz,plx,ply,plz,ptx,pty,ptz,
-     $     cosphi,sinphi,dcosphi,phi0,dphi,
-     $     xsinphi,ax,ay,az,cx,cy,albabs,u
+     $     cosphi,sinphi,dcosphi,dphi,
+     $     xsinphi,ax,ay,az,cx,cy,albabs,ap,bpr,db
       real*8 ,parameter ::conv=1.d-15,bzthre=1.d-20,ptmax=0.9999d0
       logical*4 ,intent(in):: drift
       bxs=bxs0
       bys=bys0
       bzs=bzs0
       babs=hypot3(bzs,bxs,bys)
-c      babs=hypot(bzs,hypot(bxs,bys))
-c      babs=sqrt(bzs**2+bxs**2+bys**2)
       if(abs(babs) .lt. bzthre)then
         bxs=0.d0
         bys=0.d0
@@ -491,6 +475,7 @@ c      babs=sqrt(bzs**2+bxs**2+bys**2)
       endif
       call tinitr(trans)
       pr=1.d0+cod(6)
+c cod does NOT have canonical momenta!
       pxi=cod(2)
       pyi=cod(4)
       a=pxi**2+pyi**2
@@ -577,88 +562,72 @@ c      babs=sqrt(bzs**2+bxs**2+bys**2)
         pbx=pty*phiz-ptz*phiy
         pby=ptz*phix-ptx*phiz
         pbz=ptx*phiy-pty*phix
+        bpr=albabs/pr
+        db=bpr-pbz
+        ap=hypot(pz0,pbz)
+        dphi=-atan(pbz,pz0)
+        phi=asin(min(1.d0,max(-1.d0,db/ap)))-dphi
         if(al .ne. 0.d0)then
-          phi=asin(min(1.d0,max(-1.d0,albabs/pz0)))
-          dphi=0.d0
-          do j=1,itmax
-            call sxsin(phi,sinphi,xsinphi)
-c            sinphi=sin(phi)
-            dcosphi=2.d0*sin(.5d0*phi)**2
-c            xsinphi=xsin(phi)
-            s=plz*xsinphi+pz0*sinphi+pbz*dcosphi
-            u=pz0-ptz*dcosphi+pbz*sinphi
-            if(u .ne. 0.d0)then
-              dphi=(albabs-s)/u
-            else
-              dphi=0.d0
-            endif
-            phi0=phi
-            phi=phi+dphi
-            if(phi0 .eq. phi .or. abs(dphi) .le. conv*abs(phi))then
-              go to 100
-            endif
-          enddo
-          if(ndiag .ge. 0)then
-            ndiag=ndiag-1
-            write(*,*)'tsoldz convergence error',phi,dphi,u,babs
-            if(ndiag .eq. -1)then
-              write(*,*)
-     $             'Further tsoldz message will be suppressed.'
-            endif
+          if(plz .eq. 0.d0)then
+            call xsincos(phi,sinphi,xsinphi,cosphi,dcosphi)
+          else
+            call tsolconv(pz0,plz,pbz,bpr,
+     $           phi,sinphi,xsinphi,cosphi,dcosphi,ndiag)
           endif
         else
           phi=0.d0
           xsinphi=0.d0
           sinphi=0.d0
           dcosphi=0.d0
+          cosphi=1.d0
         endif
- 100    dplz=-pr*dphizsq+dpl*phiz
-        cosphi=cos(phi)
-        ax=pxi-ptx*dcosphi+pbx*sinphi
-        ay=pyi-pty*dcosphi+pby*sinphi
-        az=pz0-ptz*dcosphi+pbz*sinphi
+        dplz=-pr*dphizsq+dpl*phiz
+        ax=pxi+ptx*dcosphi+pbx*sinphi
+        ay=pyi+pty*dcosphi+pby*sinphi
+        az=pz0+ptz*dcosphi+pbz*sinphi
         dphidpx=-(dpldpx*phiz*xsinphi+dpz0dpx*sinphi
-     $       +phiy*dcosphi)/az
+     $       -phiy*dcosphi)/az
         dphidpy=-(dpldpy*phiz*xsinphi+dpz0dpy*sinphi
-     $       -phix*dcosphi)/az
+     $       +phix*dcosphi)/az
         dphidp =-(dpldp *phiz*xsinphi+dpz0dp*sinphi)/az
         dphidz =babs/az
-        cod(1)=cod(1)+(plx*phi+ptx*sinphi+pbx*dcosphi)*alb
-        cod(3)=cod(3)+(ply*phi+pty*sinphi+pby*dcosphi)*alb
-        cod(2)=pxi-ptx*dcosphi+pbx*sinphi
-        cod(4)=pyi-pty*dcosphi+pby*sinphi
+        cod(1)=cod(1)+(plx*phi+ptx*sinphi-pbx*dcosphi)*alb
+        cod(3)=cod(3)+(ply*phi+pty*sinphi-pby*dcosphi)*alb
+        cod(2)=pxi+ptx*dcosphi+pbx*sinphi
+        cod(4)=pyi+pty*dcosphi+pby*sinphi
+c cod does NOT have canonical momenta!
         trans(1,2)=alb*(dpldpx*phix*xsinphi+sinphi
-     $       -dpz0dpx*phiy       *dcosphi+ax*dphidpx)
+     $       +dpz0dpx*phiy       *dcosphi+ax*dphidpx)
         trans(1,4)=alb*(dpldpy*phix*xsinphi
-     $       +(phiz-dpz0dpy*phiy)*dcosphi+ax*dphidpy)
+     $       -(phiz-dpz0dpy*phiy)*dcosphi+ax*dphidpy)
         trans(1,6)=alb*(dpldp *phix*xsinphi
-     $       -dpz0dp *phiy       *dcosphi+ax*dphidp )
+     $       +dpz0dp *phiy       *dcosphi+ax*dphidp )
         trans(3,2)=alb*(dpldpx*phiy*xsinphi
-     $       +(dpz0dpx*phix-phiz)*dcosphi+ay*dphidpx)
+     $       -(dpz0dpx*phix-phiz)*dcosphi+ay*dphidpx)
         trans(3,4)=alb*(dpldpy*phiy*xsinphi+sinphi
-     $       +dpz0dpy*phix       *dcosphi+ay*dphidpy)
+     $       -dpz0dpy*phix       *dcosphi+ay*dphidpy)
         trans(3,6)=alb*(dpldp *phiy*xsinphi
-     $       +dpz0dp *phix       *dcosphi+ay*dphidp )
+     $       -dpz0dp *phix       *dcosphi+ay*dphidp )
         cx=-ptx*sinphi+pbx*cosphi
         cy=-pty*sinphi+pby*cosphi
-        trans(2,2)=cosphi+dpldpx*phix*dcosphi
+        trans(2,2)=cosphi-dpldpx*phix*dcosphi
      $       -dpz0dpx*phiy*sinphi+cx*dphidpx
-        trans(2,4)=       dpldpy*phix*dcosphi
+        trans(2,4)=      -dpldpy*phix*dcosphi
      $       +(phiz-dpz0dpy*phiy)*sinphi+cx*dphidpy
-        trans(2,6)=       dpldp *phix*dcosphi
+        trans(2,6)=      -dpldp *phix*dcosphi
      $       -dpz0dp *phiy*sinphi+cx*dphidp
-        trans(4,2)=       dpldpx*phiy*dcosphi
+        trans(4,2)=      -dpldpx*phiy*dcosphi
      $       +(dpz0dpx*phix-phiz)*sinphi+cy*dphidpx
-        trans(4,4)=cosphi+dpldpy*phiy*dcosphi
+        trans(4,4)=cosphi-dpldpy*phiy*dcosphi
      $       +dpz0dpy*phix*sinphi+cy*dphidpy
-        trans(4,6)=       dpldp *phiy*dcosphi
+        trans(4,6)=      -dpldp *phiy*dcosphi
      $       +dpz0dp *phix*sinphi+cy*dphidp
         trans(5,2)= -pr*alb*dphidpx
         trans(5,4)= -pr*alb*dphidpy
         if(drift)then
           call tgetdv(cod(6),dv,dvdp)
           cod(5)=cod(5)+((dpl*phiz-dphizsq*pr)*xsinphi
-     $         +dpz0*sinphi+pbz*dcosphi)*alb-dv*al
+     $         +dpz0*sinphi-pbz*dcosphi)*alb-dv*al
           trans(5,6)= -alb*(phi+pr*dphidp)+al*dvdp
         else
           trans(1,5)= alb*ax*dphidz
@@ -697,6 +666,50 @@ c            xsinphi=xsin(phi)
       endif
       return
       end subroutine
+
+      subroutine tsolconv(pz0,plz,pbz,bpr,
+     $     phi,sinphi,xsinphi,cosphi,dcosphi,ndiag)
+      use mathfun
+      implicit none
+      integer*4 ,parameter :: itmax=20
+      real*8 ,parameter :: conv=1.d-15
+      real*8 ,intent(in):: pz0,plz,pbz,bpr
+      real*8 ,intent(out):: phi,sinphi,xsinphi,cosphi,dcosphi
+      real*8 dphi,s,u,phi0
+      integer*4 ,intent(inout):: ndiag
+      integer*4 j
+      phi=asin(min(1.d0,max(-1.d0,(bpr-pbz)/hypot(pz0,pbz))))
+     $     +atan(pbz,pz0)
+      if(plz .eq. 0.d0)then
+        call xsincos(phi,sinphi,xsinphi,cosphi,dcosphi)
+      else
+        do j=1,itmax
+          call xsincos(phi,sinphi,xsinphi,cosphi,dcosphi)
+          s=plz*xsinphi+pz0*sinphi-pbz*dcosphi
+          u=-plz*dcosphi+pz0*cosphi+pbz*sinphi
+          if(u .ne. 0.d0)then
+            dphi=(bpr-s)/u
+          else
+            dphi=(bpr-s)/pz0
+          endif
+          phi0=phi
+          phi=phi+dphi
+          if(phi0 .eq. phi .or. abs(dphi) .le. conv*abs(phi))then
+            return
+          endif
+        enddo
+        if(ndiag .ge. 0)then
+          ndiag=ndiag-1
+          write(*,'(a,1p8g13.5)')'tsolconv convergence error: ',
+     $         phi,dphi,bpr,s,u,plz,pz0,pbz
+          if(ndiag .eq. -1)then
+            write(*,*)
+     $           'Further tsolconv messages will be suppressed.'
+          endif
+        endif
+      endif
+      return
+      end
 
       subroutine tradks(np,x,px,y,py,z,g,dv,sx,sy,sz,bzs,al,bzph)
       use kradlib, only:tradk
@@ -906,21 +919,27 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           endif
           al=cmp%value(ky_L_QUAD)
           rtaper=1.d0
-          if(rad .and. radcod .and. radtaper)then
-            rtaper=1.d0-dp0
-     $           +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+          krad=rad
+          if(rad)then
+            if(radcod .and. radtaper)then
+              rtaper=1.d0-dp0
+     $             +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+            endif
+            krad=cmp%value(ky_RAD_QUAD) .eq. 0.d0 .and. al .ne. 0.d0
           endif
-          call tquads(np,x,px,y,py,z,g,dv,sx,sy,sz,al,
+          call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,
      $         cmp%value(ky_K1_QUAD)*rtaper,bzs,
      $         cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1         cmp%value(ky_ROT_QUAD),
      1         cmp%value(p_THETA2_QUAD),
-     1         cmp%value(ky_RAD_QUAD),cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
+     1         krad,.true.,cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $         cmp%value(p_AKF1F_QUAD)*rtaper,
      $         cmp%value(p_AKF2F_QUAD)*rtaper,
      $         cmp%value(p_AKF1B_QUAD)*rtaper,
      $         cmp%value(p_AKF2B_QUAD)*rtaper,
-     $         int(cmp%value(p_FRMD_QUAD)),0,cmp%value(ky_EPS_QUAD))
+     $         int(cmp%value(p_FRMD_QUAD)),cmp%value(ky_EPS_QUAD),
+     $         cmp%value(ky_KIN_QUAD) .eq. 0.d0)
+
         case (icMULT)
           rtaper=1.d0
           if(rad .and. radcod .and. radtaper)then

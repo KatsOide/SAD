@@ -81,6 +81,7 @@
         enddo
       else
         bzh=bz*.5d0
+c cod are canonical!
         pxi=cod(2)+bzh*cod(3)
         pyi=cod(4)-bzh*cod(1)
         a=pxi**2+pyi**2

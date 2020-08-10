@@ -1,6 +1,6 @@
       subroutine tffsfreefix(frefix,nvar,lfno)
       use tfstk
-      use ffs, only:nele,nlat,nvevx,nelvx
+      use ffs, only:nele,nlat,nvevx,nelvx,ffv
       use ffs_pointer
       use ffs_fit
       use tffitcode
@@ -147,6 +147,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
           enddo LOOP_I_2
           i=nvar+1
  11       nvar=nvar+1
+          ffv%evarini=.true.
           nvevx(i)%ivarele=kk
           if(iv .eq. 0)then
             ivi=nelvx(kk)%ival
@@ -273,6 +274,7 @@ c     where klp(iele1(k)) == k
               nvevx(j)%valvar2=nvevx(j+1)%valvar2
             enddo
             nvar=nvar-1
+            ffv%evarini=.true.
             if(i .gt. nvar .or.
      $           .not. wild .and. iv .ne. 0)then
               go to 1

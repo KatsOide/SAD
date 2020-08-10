@@ -43,7 +43,7 @@ EVCompile[]:=If[ElementValues===EVActive,
         k_String[e_String]:>{k,Flatten[{LINE["POSITION",e]}]}}];
     EVSetFun=
       With[{k=#[[0]],e=#[[1]],fun=EVFun[#[[1]]]},
-        f=oWith[{p=#},Hold[fun[k,p]=#]]&/@Flatten[{fun["POSITION",e]}];
+        f=With[{p=#},Hold[fun[k,p]=#]]&/@Flatten[{fun["POSITION",e]}];
         With[{f},f&]/.Hold->Null]&/@x;
     EVList={x,y};
     EVVariables=Null;

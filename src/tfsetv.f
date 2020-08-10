@@ -1,40 +1,59 @@
       subroutine tfsetv(nvar)
       use tfstk
-      use ffs, only:nlat,nvevx,nelvx
+      use ffs, only:nlat,nvevx,nelvx,ffv
       use ffs_pointer
-      use mackw
-      use ffs_seg
       implicit none
       type (sad_comp), pointer :: cmp
-      integer*4 nvar
-      integer*4 i,ie,iv,j,ii,ie1
+      integer*4 ,intent(in):: nvar
+      integer*4 i,ie,iv,j,ii,ie1,nv,is
       if(nvar .gt. 0)then
         do i=1,nlat-1
           call compelc(i,cmp)
-          ii=icomp(i)
-          ie=iele1(ii)
-          ie1=iele1(i)
-          do j=1,nvar
-            iv=nvevx(j)%ivvar
-            if(iv .eq. nelvx(ie)%ival .and. nvevx(j)%ivarele .eq. ie
-     $           .and. (nvevx(j)%ivcomp .eq. 0 .or.
-     $           nvevx(j)%ivcomp .eq. ii))then
-              cmp%value(iv)=nvevx(j)%valvar*errk(1,i)*couple(i)
-              cmp%update=cmp%nparam .le. 0
-            elseif(iv .ne. 0 .and. iv .ne. nelvx(ie)%ival .and.
-     $             nvevx(j)%ivarele .eq. ie1
-     $             .and. (nvevx(j)%ivcomp .eq. 0 .or.
-     $             nvevx(j)%ivcomp .eq. i))then
-              cmp%value(iv)=nvevx(j)%valvar
-              cmp%update=cmp%nparam .le. 0
-            endif
-            if(nvevx(j)%ivarele .gt. ie)then
-              exit
-            endif
-          enddo
+          if(ffv%evarini)then
+            cmp%ievar1=0
+            cmp%ievar2=0
+            ii=icomp(i)
+            ie=iele1(ii)
+            ie1=iele1(i)
+            is=0
+            do j=1,nvar
+              iv=nvevx(j)%ivvar
+              if(iv .eq. nelvx(ie)%ival)then
+                if(nvevx(j)%ivarele .eq. ie
+     $               .and. (nvevx(j)%ivcomp .eq. 0 .or.
+     $               nvevx(j)%ivcomp .eq. ii))then
+c                  cmp%value(iv)=nvevx(j)%valvar*errk(1,i)*couple(i)
+c                  cmp%update=cmp%nparam .le. 0
+                  cmp%ievar1=j
+                  is=is+1
+                endif
+              elseif(iv .ne. 0 .and. nvevx(j)%ivarele .eq. ie1
+     $               .and. (nvevx(j)%ivcomp .eq. 0 .or.
+     $               nvevx(j)%ivcomp .eq. i))then
+c                cmp%value(iv)=nvevx(j)%valvar
+c                cmp%update=cmp%nparam .le. 0
+                cmp%ievar2=j
+                is=is+1
+              endif
+              if(is .ge. 2 .or. nvevx(j)%ivarele .gt. ie)then
+                exit
+              endif
+            enddo
+          endif
+          if(cmp%ievar1 .ne. 0)then
+            cmp%value(nvevx(cmp%ievar1)%ivvar)=
+     $           nvevx(cmp%ievar1)%valvar*errk(1,i)*couple(i)
+            cmp%update=cmp%nparam .le. 0
+          endif
+          if(cmp%ievar2 .ne. 0)then
+            cmp%value(nvevx(cmp%ievar2)%ivvar)=
+     $           nvevx(cmp%ievar2)%valvar
+            cmp%update=cmp%nparam .le. 0
+          endif
         enddo
         call tfinitvar
       endif
+      ffv%evarini=.false.
       return
       end
 

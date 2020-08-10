@@ -47,7 +47,8 @@ c
         el%comp(j)=kp
         cmp%id=id
         cmp%nparam=kytbl(kwNPARAM,iti)
-        cmp%orient=dble(sign(1,itastk(2,i)))
+c        cmp%orient=dble(sign(1,itastk(2,i)))
+        cmp%ori=dble(sign(1,itastk(2,i))) .gt. 0.d0
         call loc_comp(kdi,cmps)
 c     set Nominal values
         call tfvcopycmpall(cmps,cmp,plen)

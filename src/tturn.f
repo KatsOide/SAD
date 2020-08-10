@@ -388,7 +388,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $          -dp0
          endif
          call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,
-     1        cmp%value(ky_K1_QUAD)*rtaper,
+     1        cmp%value(ky_K1_QUAD)*rtaper,0.d0,
      $        cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1        cmp%value(ky_ROT_QUAD),
      1        cmp%value(p_THETA2_QUAD),
@@ -728,7 +728,7 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
       call descr_sad(lsegp%dbody(1),lal)
       call descr_sad(lal%dbody(2),lak)
       nseg=lak%nl
-      if(cmp%orient .gt. 0.d0)then
+      if(cmp%ori)then
         i1=1
         i2=nseg
         istep=1

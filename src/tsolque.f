@@ -390,6 +390,7 @@ c     $       al,ak,trans(5,1:6)
           trans1(2,1:6)=trans1(2,1:6)*pr
           trans1(4,1:6)=trans1(4,1:6)*pr
         else
+c cod has canonical momenta!
           pxi=(cod(2)+yi0*bzh)/pr
           pyi=(cod(4)-xi0*bzh)/pr
           a = (w2*ws*xi-bzp*pyi)*wss
@@ -502,6 +503,7 @@ c     $       cdp*dch2*bzp,c*ch2p*bzp,dwdp*sh2*bzp,dw*sh2p*bzp
           cod(2)=pxf*pr-bzh*yf
           cod(3)=yf
           cod(4)=pyf*pr+bzh*xf
+c cod has canonical momenta!
           trans1(1:4,2)=trans1(1:4,2)/pr
           trans1(1:4,4)=trans1(1:4,4)/pr
           trans1(1:4,1)=trans1(1:4,1)-bzh*trans1(1:4,4)

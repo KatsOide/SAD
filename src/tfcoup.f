@@ -6,10 +6,12 @@
       use ffs_seg
       implicit none
       type (sad_comp), pointer :: cmp
-      integer*4 lfno,kk1,k1,i,kk2,k2,ielm,lenw
+      integer*4 ,intent(in):: lfno
+      integer*4 kk1,k1,i,kk2,k2,ielm,lenw
       real*8 co,v,getva
       character*(MAXPNAME+16) ele1,ele2,name
-      logical*4 exist,comp
+      logical*4 ,intent(out):: exist
+      logical*4 comp
       call getwdlp(ele1)
       call getwdlp(ele2)
       co=getva(exist)
@@ -43,6 +45,7 @@
      $       'Different keywords of element to COUP_LE.',' ')
         go to 9000
       endif
+      evarini=.true.
       if(icomp(kk2) .ne. kk2)then
         if(kk2 .eq. nelvx(k2)%klp)then
           call elnameK(kk2,name)
@@ -126,7 +129,8 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
       use tffitcode
       use tfcsi,only:ipoint
       implicit none
-      integer*4 lfno,next,i,j
+      integer*4 ,intent(in):: lfno
+      integer*4 next,i,j
       character*(MAXPNAME+16) ele,name
       logical*4 mat,temat
  1    call peekwdp(ele,next)
@@ -153,6 +157,7 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
         endif
       enddo
       if(mat)then
+        evarini=.true.
         go to 1
       endif
       return
@@ -183,6 +188,7 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
         endif
       enddo
       if(mat)then
+        evarini=.true.
         go to 1
       endif
       return

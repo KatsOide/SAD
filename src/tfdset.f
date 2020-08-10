@@ -2,11 +2,14 @@
       use tfstk
       use tfcode
       implicit none
-      type (sad_descriptor) k,kx,kr,karg,kargr
+      type (sad_descriptor) ,intent(in):: k,karg
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) :: kr,kargr
       type (sad_dlist), pointer :: larg,largl,largd,largr
       type (sad_deftbl), pointer :: dtbl
       type (sad_defhash), pointer :: dhash
-      integer*8 ktdaloc,kap,kadi,
+      integer*8 ,intent(in):: kadi
+      integer*8 ktdaloc,kap,
      $     ktdhtaloc,kad,kad1,kad0,kad10,kan,kih
       integer*4 m,ihash,itfhasharg,isp0,
      $     mstk0,iop0,itflistmat,irtc,minhash,maxhash
@@ -155,7 +158,7 @@ c        call tfdebugprint(kr,':= ',3)
       use tfcode
       implicit none
       type (sad_deftbl), pointer :: dtbl
-      integer*8 kad
+      integer*8 ,intent(in):: kad
       call loc_deftbl(kad,dtbl)
       call tflocal1d(dtbl%arg)
       call tflocal1d(dtbl%argc)
@@ -167,9 +170,12 @@ c        call tfdebugprint(kr,':= ',3)
       subroutine tfreplacedef(k,karg,kr,kargr,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kr,kx1,karg,kargr
+      type (sad_descriptor) ,intent(in):: k,karg
+      type (sad_descriptor) ,intent(inout):: kr,kargr
+      type (sad_descriptor) kx1
       type (sad_descriptor) tfreplacesymbolstk1
-      integer*4 irtc,isp0,ispr,i,ipsbase,nrule
+      integer*4 ,intent(out):: irtc
+      integer*4 isp0,ispr,i,ipsbase,nrule
       logical*4 rep,same
       isp0=isp
       call tfinitpat(isp0,karg)

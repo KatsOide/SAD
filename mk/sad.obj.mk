@@ -101,7 +101,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      tlum.o      tmov.o      tmulte.o \
      tmulti.o    tmulta.o    tdrift.o     trackd.o \
      tmultr.o    tnorm.o     \
-     tquade.o    tquads.o     tquase.o   track.o \
+     tquade.o    track.o \
      tracka.o    trade.o     tsconv.o     tsgeo.o \
      tshow.o     tsol.o      tsole.o      tsolvg.o \
      tsolvm.o    tspac.o     tspini.o     tsteee.o   tsteer.o     tsvdm.o \
