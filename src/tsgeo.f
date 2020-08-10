@@ -247,14 +247,14 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         else
           ftable=0.d0
         endif
-        call tquads(1,xf,pxf,yf,pyf,zf,gf,dvf,
+        call tquad(1,xf,pxf,yf,pyf,zf,gf,dvf,
      $       sxf,syf,szf,
      $       al,ak1,bzs*dir,
      $       cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),theta,
      $       theta2,
-     1       1.d0,cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
+     1       .false.,.true.,cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $       ftable(1),ftable(2),ftable(3),ftable(4),
-     $       mfr,-1,cmp%value(ky_EPS_QUAD))
+     $       mfr,cmp%value(ky_EPS_QUAD),.true.)
         call setdirelc(i,direlc(i)*dir)
         pxf=pxf*dir+f*yf
         pyf=pyf*dir-f*xf

@@ -17,16 +17,16 @@
 c      include 'DEBUG.inc'
       type (ffs_bound) fbound,ibound
       integer*8 kx
-      integer*4 ibegin,nqcola,irtc
+      integer*4 ,intent(in):: nqcola,nqcola1,
+     $     kdp(maxcond),iqcol(maxcond),lfp(2,maxcond)
+      integer*4 ,intent(out):: ibegin
       integer*4 i1,i2,i3,i,ii,j,iter,kt,iq,l,maxf,
-     $     nqcola1,ie,ie1,iv,nstab,lout
-      integer*4 kdp(maxcond),iqcol(maxcond),lfp(2,maxcond)
-      real*8 df(maxcond),r,rp,wi,
-     $     residual1(-ndimmax:ndimmax)
-      logical*4 zcal,wcal,error,parallel
+     $     ie,ie1,iv,nstab,lout,irtc
+      real*8 ,intent(out):: df(maxcond),r,rp,residual1(-ndimmax:ndimmax)
+      logical*4 ,intent(in):: parallel
+      logical*4 ,intent(out):: error,zcal,wcal
       real*8 anux0,anuy0,anux0h,anuy0h,anuxi,anuyi,anuxih,anuyih,
-     $     rw,drw,rstab,
-     $     anusumi,anusum0,anudiffi,anudiff0
+     $     rw,drw,rstab,wi,anusumi,anusum0,anudiffi,anudiff0
       logical*4 fam,beg,zerores
       integer*4 irw,isw,ipr,ifb,ife,idir,
      $     jjfam(-nfam:nfam),ifpe,ntfun
@@ -474,12 +474,13 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       use tffitcode
       implicit none
       integer*8 kx
-      integer*4 maxf,i,j,k,nqcola,iq
-      integer*4 kfit(*),ifitp(*),kfitp(*),kdp(*),idp,iqcol(nqcola)
+      integer*4 ,intent(in):: nqcola,maxf,
+     $     kfit(*),ifitp(*),kfitp(*),kdp(*),iqcol(nqcola)
+      integer*4 i,j,k,iq
       real*8 coum,emxx,emyy,dpm,coup,em,rfromk
-      integer*4 itfuplevel, level,irtc
+      integer*4 itfuplevel, level,irtc,idp
       character*16 name
-      logical*4 wcal
+      logical*4 ,intent(in):: wcal
       integer*8 , save:: ifv=0,ifvh,ifvloc,ifvfun,ifid
       real*8 , parameter :: almin=1.d0
       if(ifv .eq. 0)then
@@ -604,7 +605,7 @@ c            write(*,*)'twfit ',nlist(k),rfromk(kx),wfit(i)
       use ffs_pointer
       use mackw
       implicit none
-      type (ffs_bound) fbound
+      type (ffs_bound) ,intent(out):: fbound
       call tffsbound1(1,nlat,fbound)
       return
       end
@@ -615,8 +616,9 @@ c            write(*,*)'twfit ',nlist(k),rfromk(kx),wfit(i)
       use ffs_pointer
       use mackw
       implicit none
-      type (ffs_bound) fbound
-      integer*4 lb,le,le1
+      type (ffs_bound) ,intent(out):: fbound
+      integer*4 ,intent(in):: lb,le
+      integer*4 le1
       real*8 xnlat,offset,tffsmarkoffset
       xnlat=nlat
       offset=tffsmarkoffset(lb)
@@ -657,7 +659,8 @@ c            write(*,*)'twfit ',nlist(k),rfromk(kx),wfit(i)
       use tmacro, only:nlat
       implicit none
       type (sad_comp), pointer :: cmp
-      integer*4 lp,k
+      integer*4 ,intent(in):: lp
+      integer*4 k
       if(lp .ge. nlat)then
         tffsmarkoffset=0.d0
         return
@@ -682,7 +685,8 @@ c            write(*,*)'twfit ',nlist(k),rfromk(kx),wfit(i)
       use mackw
       use tfcsi, only:icslfno
       implicit none
-      integer*4 l,lm,nm,lx,nmmax
+      integer*4 ,intent(in):: l
+      integer*4 lm,nm,lx,nmmax
       parameter (nmmax=256)
       real*8 offset,xp,xe,tffsmarkoffset
       nm=0
@@ -719,9 +723,10 @@ c            write(*,*)'twfit ',nlist(k),rfromk(kx),wfit(i)
       use tffitcode
       use mackw
       implicit none
-      type (ffs_bound) fbound
-      integer*4 nlat,idp,jdp,j,jp,le1
-      logical*4 beg,begin,end
+      type (ffs_bound) ,intent(in):: fbound
+      integer*4 ,intent(in):: nlat,idp
+      integer*4 jdp,j,jp,le1
+      logical*4 ,intent(in):: beg,begin,end
       jdp=min(1,abs(idp))
       do concurrent (j=fbound%lb:fbound%le)
         jp=itwissp(j)

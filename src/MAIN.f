@@ -1,8 +1,8 @@
       module version
         character*19, parameter ::
 c                     /'1234567890123456789'/
-     $     versionid  ='1.1.8.8k64         ',
-     $     versiondate='8/31/2019 18:00:00 '
+     $     versionid  ='1.1.8.7.2k64       ',
+     $     versiondate='8/10/2019 18:00:00 '
 
         character*25 builtdate
         character*30 startdat
@@ -11,11 +11,9 @@ c                     /'1234567890123456789'/
       program MAIN
       use version
       use maccbk
-c      use tfmem, only:talocinit
       use tfmem
       use tftok
       implicit none
-c
 c
       call fdate1(startdat)
       call buildinfo_get_string('Built:Date', builtdate)

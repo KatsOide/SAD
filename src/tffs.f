@@ -2023,6 +2023,7 @@ c$$$      c(4,5)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4+b(4,5)
       subroutine tsetr0(trans,cod,bzh,bsi0)
       implicit none
       real*8 ,intent(in)::trans(6,6),cod(6),bzh,bsi0
+c     cod are canonical momenta!
       codr0=cod
       transr=trans
       bzhr0=bzh

@@ -3,6 +3,7 @@
       use tsolz
       use kradlib, only:bsi
       use mathfun
+      use tmacro, only:l_track
       implicit none
       type (tzparam) tz
       integer*4 ,intent(in):: np,ibsi
@@ -13,7 +14,7 @@
       integer*4 i,n,ndiv
       real*8 bz,a,c,akk,eps,bw,dw,r,ap,dpz,
      $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
-     $     dx0,dy0,xi,yi,a12,a14,a22,a24,ra,phi,pxi,pyi,
+     $     dx0,dy0,xi,yi,a12,a14,a22,a24,ra,pxi,pyi,
      $     awu,dwu,dz1,dz2
         associate (
      $       w1=>tz%tz0%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
@@ -72,12 +73,10 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
             pyi=py(i)
             ap=pxi**2+pyi**2
             dpz=sqrt1(-ap)
-c             dpz=-ap/(1.d0+sqrt(1.d0-ap))
             r=-dpz/(1.d0+dpz)*ra
             ra=aln
             x(i)=x(i)+pxi*r
             y(i)=y(i)+pyi*r
-c            z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
             xi=x(i)+dx0
             yi=y(i)+dy0
             u1 =   xi*dc1 +pxi*s1/w1
@@ -97,7 +96,6 @@ c            z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
           enddo
           ap=px(i)**2+py(i)**2
           dpz=sqrt1(-ap)
-c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           r=-dpz/(1.d0+dpz)*aln*.5d0
           x(i)=x(i)+px(i)*r
           y(i)=y(i)+py(i)*r
@@ -107,7 +105,7 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           endif
         enddo
       else
-        do i=1,np
+        do concurrent (i=1:np)
           tz=tzsetparam(gp(i),aln,akk,bz)
           if(ibsi .eq. 1)then
             bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)+bzp*al
@@ -120,24 +118,9 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           do n=1,ndiv
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
-c            dpz=-ap/(1.d0+sqrt(1.d0-ap))
             r=-dpz/(1.d0+dpz)*ra
             ra=aln
-            phi=r*bzp
-c            tph=tan(.5d0*phi)
-c            a24=2.d0*tph/(1.d0+tph**2)
-            call xsincos(phi,a24,a12,a22,a14)
-c            a14=-a14/bzp
-c            a24=sin(phi)
-c            a12=a24/bzp
-c            a22=cos(phi)
-c            a22=1.d0-tph*a24
-c            a14=tph*a12
-c            if(a22 .ge. 0.d0)then
-c              a14=a12*a24/(1.d0+a22)
-c            else
-c              a14=(1.d0-a22)/bzp
-c            endif
+            call xsincos(r*bzp,a24,a12,a22,a14)
             pxi=px(i)
             x(i) =x(i)+(a24*pxi-a14*py(i))/bzp
             y(i) =y(i)+(a14*pxi+a24*py(i))/bzp
@@ -173,29 +156,13 @@ c            endif
           enddo
           ap=px(i)**2+py(i)**2
           dpz=sqrt1(-ap)
-c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           r=-dpz/(1.d0+dpz)*aln*.5d0
-          phi=r*bzp
-c          tph=tan(.5d0*phi)
-c          a24=2.d0*tph/(1.d0+tph**2)
-          call xsincos(phi,a24,a12,a22,a14)
-c          a14=-a14/bzp
-c          a12=a24/bzp
-c          a24=sin(phi)
-c          a22=cos(phi)
-c          a12=a24/bzp
-c          a22=1.d0-tph*a24
-c          a14=tph*a12
-c          if(a22 .ge. 0.d0)then
-c            a14=a12*a24/(1.d0+a22)
-c          else
-c            a14=(1.d0-a22)/bzp
-c          endif
+          call xsincos(r*bzp,a24,a12,a22,a14)
           pxi=px(i)
           x(i) =x(i)+(a24*pxi-a14*py(i))/bzp
           y(i) =y(i)+(a14*pxi+a24*py(i))/bzp
-          px(i)=     a22*pxi+a24*py(i)
-          py(i)=    -a24*pxi+a22*py(i)
+          px(i)=      a22*pxi+a24*py(i)
+          py(i)=     -a24*pxi+a22*py(i)
           z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
           px(i)=px(i)-bzp*y(i)*.5d0
           py(i)=py(i)+bzp*x(i)*.5d0
@@ -227,7 +194,7 @@ c          endif
       integer*4 i,n,ndiv
       real*8 bz,a,c,akk,eps,bw,dw,r,ap,dpz,aka,b,d,
      $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
-     $     dx0,dy0,xi,yi,a12,a14,a22,a24,phi,pxi,pyi,
+     $     dx0,dy0,xi,yi,a12,a14,a22,a24,pxi,pyi,
      $     awu,dwu,dz1,dz2
         associate (
      $       w1=>tz%tz0%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
@@ -324,7 +291,6 @@ c!$OMP END PARALLEL
         do concurrent (i=1:np)
           ap=px(i)**2+py(i)**2
           dpz=sqrt1(-ap)
-c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
           r=-dpz/(1.d0+dpz)*aln*0.5d0
           x(i)=x(i)+px(i)*r
           y(i)=y(i)+py(i)*r
@@ -347,24 +313,8 @@ c          dpz=-ap/(1.d0+sqrt(1.d0-ap))
             endif
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
-c            dpz=-ap/(1.d0+sqrt(1.d0-ap))
             r=-dpz/(1.d0+dpz)*alr
-            phi=r*bzp
-c            tph=tan(.5d0*phi)
-c            a24=2.d0*tph/(1.d0+tph**2)
-            call xsincos(phi,a24,a12,a22,a14)
-c            a14=-a14/bzp
-c            a12=a24/bzp
-c            a24=sin(phi)
-c            a22=cos(phi)
-c            a12=a24/bzp
-c            a22=1.d0-tph*a24
-c            a14=tph*a12
-c            if(a22 .ge. 0.d0)then
-c              a14=a12*a24/(1.d0+a22)
-c            else
-c              a14=(1.d0-a22)/bzp
-c            endif
+            call xsincos(r*bzp,a24,a12,a22,a14)
             pxi=px(i)
             x(i) =x(i)+(a24*pxi-a14*py(i))/bzp
             y(i) =y(i)+(a14*pxi+a24*py(i))/bzp
@@ -410,34 +360,8 @@ c            endif
         do concurrent (i=1:np)
           ap=px(i)**2+py(i)**2
           dpz=sqrt1(-ap)
-c     dpz=-ap/(1.d0+sqrt(1.d0-ap))
           r=-dpz/(1.d0+dpz)*aln*.5d0
-          phi=r*bzp
-c          tph=tan(.5d0*phi)
-c          a24=2.d0*tph/(1.d0+tph**2)
-c          a24=sin(phi)
-c          a22=cos(phi)
-c          a22=1.d0-tph*a24
-c          a12=a24/bzp
-c          a14=tph*a12
-c          if(a22 .ge. 0.d0)then
-c            a14=a12*a24/(1.d0+a22)
-c          else
-c            a14=(1.d0-a22)/bzp
-c          endif
-          call xsincos(phi,a24,a12,a22,a14)
-c     a14=-a14/bzp
-c     a12=a24/bzp
-c     a24=sin(phi)
-c     a22=cos(phi)
-c     a12=a24/bzp
-c     a22=1.d0-tph*a24
-c     a14=tph*a12
-c     if(a22 .ge. 0.d0)then
-c     a14=a12*a24/(1.d0+a22)
-c     else
-c     a14=(1.d0-a22)/bzp
-c     endif
+          call xsincos(r*bzp,a24,a12,a22,a14)
           pxi=px(i)
           x(i) =x(i)+(a24*pxi-a14*py(i))/bzp
           y(i) =y(i)+(a14*pxi+a24*py(i))/bzp

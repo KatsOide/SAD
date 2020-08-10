@@ -1,3 +1,5 @@
+c Obsolete Aug. 10, 2020
+c
       subroutine tquase(trans,cod,beam,srot,al,ak,bz,
      1     dx,dy,theta,radlvl,
      1     fringe,f1in,f2in,f1out,f2out,

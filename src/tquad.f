@@ -1,4 +1,4 @@
-      subroutine tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak0,
+      subroutine tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak0,bz,
      1                 dx,dy,theta,theta2,krad,chro,
      1                 fringe,f1in,f2in,f1out,f2out,mfring,eps0,kin)
       use ffs_flag
@@ -15,21 +15,26 @@ c      use ffs_pointer, only:inext,iprev
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
      $     dv(np),g(np),sx(np),sy(np),sz(np)
       real*8 ,intent(in):: al,ak0,dx,dy,theta,theta2,
-     $     f1in,f1out,f2in,f2out,eps0
+     $     f1in,f1out,f2in,f2out,eps0,bz
       real*8 ak,alr,p,a,ea,b,pxf,pyf,bxs,bys,bzs
       real*8, parameter :: ampmax=0.9999d0
       if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,4,0.d0,ak0,
-     $             dx,dy,theta,.false.,.false.)
+     $       dx,dy,theta,.false.,.false.)
         return
       elseif(ak0 .eq. 0.d0)then
-        call tdrift_free(np,x,px,y,py,z,dv,al)
+        if(bz .eq. 0.d0)then
+          call tdrift_free(np,x,px,y,py,z,dv,al)
+        else
+          call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $     al,bz,krad)
+        endif
         return
       endif
 c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
       ak=sign(ak0,al)
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
-     $     al,0.d0,dx,dy,0.d0,
+     $     al,bz,dx,dy,0.d0,
      $     0.d0,0.d0,theta2,bxs,bys,bzs,.true.)
       if(krad)then
         pxr0=px
@@ -40,7 +45,7 @@ c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
         endif
       endif
       if(fringe .and. mfring .gt. -4 .and. mfring .ne. 2)then
-        call ttfrin(np,x,px,y,py,z,g,4,ak,al,0.d0)
+        call ttfrin(np,x,px,y,py,z,g,4,ak,al,bzs)
       endif
       if(mfring .eq. 1 .or. mfring .eq. 3)then
         do concurrent (i=1:np)
@@ -71,10 +76,10 @@ c          p=(1.d0+g(i))**2
         pyr0=py
         zr0=z
         call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
-     $       0.d0,0.d0,0.d0,eps0,alr)
+     $       bzs,0.d0,0.d0,eps0,alr)
       else
         call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       al,ak,0.d0,0.d0,0.d0,0,eps0)
+     $       al,ak,bzs,0.d0,0.d0,0,eps0)
       endif
       if(mfring .eq. 2 .or. mfring .eq. 3)then
         do concurrent (i=1:np)
@@ -94,17 +99,16 @@ c          p=(1.d0+g(i))**2
         enddo
       endif
       if(fringe .and. mfring .gt. -4 .and. mfring .ne. 1)then
-        call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
+        call ttfrin(np,x,px,y,py,z,g,4,-ak,al,bzs)
       endif
       if(krad .and. f1out .ne. 0.d0)then
         if(photons)then
           pcvt%fr0=1.d0-.5d0*f1out/al
-c          call tsetphotongeo(0.d0,0.d0,0.d0,.false.)
         endif
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,f1out,0.d0)
       endif
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
-     $     al,0.d0,dx,dy,0.d0,
+     $     al,bz,dx,dy,0.d0,
      $     0.d0,0.d0,theta2,bxs,bys,bzs,.false.)
       return
       end
@@ -164,11 +168,7 @@ c     end   initialize for preventing compiler warning
         ala=al*alpha1
         alb=al*alpha
         do concurrent (i=1:np)
-c          a=px(i)**2+py(i)**2
           dpz=pxy2dpz(px(i),py(i))
-c          dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
           al1=ala/(1.d0+dpz)
           x(i)=x(i)+px(i)*al1
           y(i)=y(i)+py(i)*al1
@@ -178,14 +178,12 @@ c          dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
       endif
       if(kord .eq. 2)then
         do concurrent (i=1:np)
-c     aki=akf/(1.d0+g(i))**2
           aki=akf/(1.d0+g(i))
           px(i)=px(i)-aki*(x(i)-y(i))*(x(i)+y(i))
           py(i)=py(i)+2.d0*aki*x(i)*y(i)
         enddo
       else
         do concurrent (i=1:np)
-c     pr=(1.d0+g(i))**2
           pr=1.d0+g(i)
           aki=akf/pr
           cx=dcmplx(x(i),-y(i))**kord
@@ -196,11 +194,7 @@ c     pr=(1.d0+g(i))**2
       if(al .ne. 0.d0)then
         if(kord .le. 0)then
           do concurrent (i=1:np)
-c            a=px(i)**2+py(i)**2
             dpz=pxy2dpz(px(i),py(i))
-c            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             al1=alb/(1.d0+dpz)*2.d0
             x(i)=x(i)+px(i)*al1
             y(i)=y(i)+py(i)*al1
@@ -213,16 +207,11 @@ c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
           f4=.5d0*beta*al
           f5=f2
           do concurrent (i=1:np)
-c            a=px(i)**2+py(i)**2
             dpz=pxy2dpz(px(i),py(i))
-c            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             al1=alb/(1.d0+dpz)
             xi  =x(i)+px(i)*al1
             yi  =y(i)+py(i)*al1
             zi  =z(i)+dpz  *al1-dv(i)*alb
-c            pr=(1.d0+g(i))**2
             pr=1.d0+g(i)
             aki=akf/pr*2.d0
             r=xi  **2+yi  **2
@@ -235,11 +224,7 @@ c            pr=(1.d0+g(i))**2
      1        -aki*(f2*yi  *rcx1
      1             +f3*r*imag(cx)) )
             zi  =zi  +aki**2*r*(f4*r-f5*aki*rcx1)
-c            a=px(i)**2+py(i)**2
             dpz=pxy2dpz(px(i),py(i))
-c            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             al1=alb/(1.d0+dpz)
             x(i)=xi  +px(i)*al1
             y(i)=yi  +py(i)*al1
@@ -261,11 +246,7 @@ c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             px(i)=px(i)+aki**2*(f1-aki*f3)*xi
             py(i)=py(i)+aki**2*(f1+aki*f3)*yi
             zi  =zi  +aki**2*(f4*r-f5*aki*rcx1)
-c            a=px(i)**2+py(i)**2
             dpz=pxy2dpz(px(i),py(i))
-c            dpz=a*(-.5d0-a*(.125d0+a*.0625d0))
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
-c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             al1=alb/(1.d0+dpz)
             x(i)=xi  +px(i)*al1
             y(i)=yi  +py(i)*al1
@@ -283,7 +264,6 @@ c            dpz=(dpz**2-a)/(2.d0+2.d0*dpz)
             xi  =x(i)+px(i)*al1
             yi  =y(i)+py(i)*al1
             zi  =z(i)+dpz  *al1-dv(i)*alb
-c            pr=(1.d0+g(i))**2
             pr=1.d0+g(i)
             aki=akf/pr*2.d0
             r=xi  **2+yi  **2
@@ -383,7 +363,6 @@ c
           enddo
         else
           do concurrent (i=1:np)
-c            pr=(1.d0+g(i))**2
             pr=(1.d0+g(i))
             aki=akk/pr
             bzph=.5d0*bz/pr
@@ -418,7 +397,6 @@ c            pr=(1.d0+g(i))**2
           z(i)=z(i)-.5d0*aki*px(i)*y(i)**2
         enddo
       elseif(nord .eq. 6)then
-c        akk=ak/al/12.d0
         akk=ak/al/24.d0
         do concurrent (i=1:np)
           aki=akk/(1.d0+g(i))
@@ -442,10 +420,8 @@ c          cp1=(dcmplx(1.d0,a)*cp-(aki*4.d0)*cz1*conjg(cx*cp))/d
         enddo
       else
         kord=nord/2
-c        akk=ak/al/fact(kord)/2.d0
         akk=ak/al/fact(kord)/4.d0
         do concurrent (i=1:np)
-c          aki=akk/(1.d0+g(i))**2
           aki=akk/(1.d0+g(i))
           cx=dcmplx(x(i),y(i))
           cp=dcmplx(px(i),-py(i))
@@ -453,7 +429,6 @@ c          aki=akk/(1.d0+g(i))**2
           cz=cz1*cx
           a=aki*imag(cz)*2.d0
           ca=-aki*cx*(cz/an(kord+1)-conjg(cz))
-c          write(*,*)'ttfrin ',kord,ca,an(kord+1),cz
           cx1=cx+ca
           d=1.d0+a**2-(aki*an(kord))**2*
      1         (dble(cz)**2+imag(cz)**2)
@@ -487,7 +462,6 @@ c        theta=pi/nord
         else
           theta=atan2(ak(2),ak(1))*2.d0/nord
           aka=hypot(ak(1),ak(2))
-c          aka=sqrt(ak(1)**2+ak(2)**2)
         endif
         if(theta .ne. 0.d0)then
           cost=cos(theta)
@@ -524,7 +498,6 @@ c          aka=sqrt(ak(1)**2+ak(2)**2)
       real*8 ,intent(in):: bz,f1,f2
       real*8 xf,yf,pxf,pyf,a,b,bb,bzph,ea,f,p
       do concurrent (i=1:np)
-c        p=(1.d0+g(i))**2
         p=(1.d0+g(i))
         bzph=.5d0*bz/p
         a=f1/p

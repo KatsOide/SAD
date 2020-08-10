@@ -1,3 +1,5 @@
+c  Obsolete Aug. 10, 2020
+c
       subroutine tquads(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak0,bz,
      1     dx,dy,theta,theta2,radlvl,fringe,f1in,f2in,f1out,f2out,
      $     mfring,ibsi,eps0)

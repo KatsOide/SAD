@@ -373,22 +373,21 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       use photontable
       use mathfun, only:akang
       implicit none
-      integer*4 ,intent(in):: np,mfring
-      integer*4 ndiv,iniph,n1,n2
       integer*4 ,parameter::ndivmax=1024
-      real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,ak,dx,dy,theta,
-     $     cost,sint,cosw,sinw,sqwh,sinwp1,eps,
-     $     psi1,psi2,fb10,fb20,dtheta,phir
-      real*8 a3,a5,a7,a9,a11,a13,a15
-      parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
+      real*8 ,parameter:: a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
      1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
-     1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
+     1           a13=231.d0/13312.d0,a15=143.d0/10240.d0
       real*8 ,parameter::smax=0.99d0,smin=0.01d0,rphidiv=3e-3
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
-      real*8 sx(np),sy(np),sz(np)
-      real*8 theta2
+      integer*4 ,intent(in):: np,mfring
+      real*8 ,intent(in):: al,phib,phi0,cosp1,sinp1,cosp2,sinp2,ak,
+     $     dx,dy,theta,cost,sint,cosw,sinw,sqwh,sinwp1,eps,
+     $     psi1,psi2,fb10,fb20,dtheta
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
+     $     dv(np),g(np),sx(np),sy(np),sz(np)
+      integer*4 ndiv,iniph,n1,n2
+      real*8 theta2,phir
       complex*16 akm(0:nmult),cr1
-      logical*4 fringe,ini,krad
+      logical*4 ,intent(in):: fringe,ini,krad
       if(phi0 .eq. 0.d0)then
         if(ak .eq. 0.d0)then
           call tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,al,-phib,
@@ -396,7 +395,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      1         cosp1,sinp1,cosp2,sinp2,
      $         fb10,fb20,fringe,eps,krad)
         elseif(phib .eq. 0.d0)then
-          call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
+          call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,0.d0,
      1         dx,dy,theta+dtheta,theta+dtheta,krad,.true.,
      1         fringe,0.d0,0.d0,0,eps,.true.)
         else
@@ -500,9 +499,10 @@ c        endif
       use mathfun
       implicit none
       integer*4 np,i
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),
-     $     sx(np),sz(np),
-     $     al,phi0,cp,sp,rho0,dx,xi,pzi,pzf,dl,dcp,xsp
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
+     $     dv(np),sx(np),sz(np)
+      real*8 ,intent(in):: al,phi0
+      real*8 cp,sp,rho0,dx,xi,pzi,pzf,dl,dcp,xsp
 c      th=tan(.5d0*phi0)
 c      sp=2.d0*th/(1.d0+th**2)
 c      dcp=th*sp
@@ -549,9 +549,11 @@ c      endif
      1                 dtheta,cost,sint)
       use tbendcom, only:tbrot,tbshift
       implicit none
-      integer*4 np,i
-      real*8 phib,phi0,dx,dy,cost,sint,dtheta
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),sx(np),sy(np),sz(np)
+      integer*4 ,intent(in):: np
+      integer*4 i
+      real*8 ,intent(in):: phib,phi0,dx,dy,cost,sint,dtheta
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
+     $     g(np),sx(np),sy(np),sz(np)
       call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,.true.)
       if(dtheta .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
@@ -579,14 +581,16 @@ c      endif
       use bendib, only:rbh,rbl,tbendal
       use mathfun, only:xsincos
       implicit none
-      integer*4 np,mfring,ndiv,mfr1,n1,n2,n
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
-      real*8 sx(np),sy(np),sz(np)
-      real*8 al,phib,phi0,cosp1,sinp1,cosp2,sinp2,
-     $     psi1,psi2,wn,aln,phibn,phi0n,alr,f1r,f2r,
+      integer*4 ,intent(in):: np,mfring,ndiv,n1,n2
+      integer*4 mfr1,n
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
+     $     dv(np),g(np),sx(np),sy(np),sz(np)
+      real*8 ,intent(in):: al,phib,phi0,cosp1,sinp1,cosp2,sinp2,
+     $     psi1,psi2,f1r,f2r
+      real*8 wn,aln,phibn,phi0n,alr,
      $     coswn,sinwn,sqwhn,sinwpn,bsi1,bsi2,alx,xsinwn,
      $     cosp1n,sinp1n,cosp2n,sinp2n,psi1n,psi2n
-      logical*4 fringe
+      logical*4 ,intent(in):: fringe
       aln=(al-f1r-f2r)/ndiv
       do n=n1,n2
         mfr1=0
@@ -621,13 +625,6 @@ c      endif
         if(n .le. 2 .or. n .ge. ndiv)then
           wn=phi0n-psi1n-psi2n
           call xsincos(wn,sinwn,xsinwn,coswn,sqwhn)
-c          coswn=cos(wn)
-c          sinwn=sin(wn)
-c          if(coswn .gt. 0.d0)then
-c            sqwhn=sinwn**2/(1.d0+coswn)
-c          else
-c            sqwhn=1.d0-coswn
-c          endif
           sinwpn=sin(phi0n-psi2n)
         endif
         call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -655,19 +652,21 @@ c          endif
       use kradlib
       use mathfun
       implicit none
-      integer*4 np,mfring,i
-      real*8 al,phi0,cosp1,sinp1,cosp2,sinp2,
-     $     cosw,sinw,sqwh,sinwp1,drhob,dp,p,
+      integer*4 ,intent(in):: np,mfring
+      integer*4 i
+      real*8 ,intent(in):: al,phi0,cosp1,sinp1,cosp2,sinp2,
+     $     cosw,sinw,sqwh,sinwp1,alr
+      real*8 drhob,dp,p,
      $     pinv,rhoe,pxi,pyi,dpzi,pzi,sp1,x1,dz1,y1,z1,px1,
      $     py1,pv1sqi,f,ff,x2,py2,z2,dph2,ph2,dpx2,pz2,drho,
      $     t2,dpx3,px3,dpz3,pz3,t3,x3,da,y3,z3,pv2sqi,x4,py4,z4,dpz4,
      $     dz4,dxfr1,dyfr1,dzfr1,dxfr2,dyfr2,dzfr2,dpz32,
      $     dyfra1,dyfra2,fa,t4,dpx3a,t2t3,dcosp,px1px3,
-     $     phi0a,bsi1,bsi2,alr
+     $     phi0a,bsi1,bsi2
       real*8, parameter :: smin=1.d-4
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
-      real*8 sx(np),sy(np),sz(np)
-      logical*4 krad,fringe
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
+     $     dv(np),g(np),sx(np),sy(np),sz(np)
+      logical*4 ,intent(in):: krad,fringe
       if((mfring .gt. 0 .or. mfring .eq. -1) .and. fb1 .ne. 0.d0)then
         dxfr1=fb1**2/rhob/24.d0
         dyfr1=fb1/rhob**2/6.d0

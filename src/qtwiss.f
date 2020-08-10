@@ -1657,9 +1657,9 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
      $     dx,dy,theta,ak,eps0,al,f1in,f2in,f1out,f2out
       logical*4 fringe,coup,kin,achro
       call tinitr(transe)
-      call tquade(transe,cod,beam,srot,al,ak,
+      call tquade(transe,cod,beam,srot,al,ak,0.d0,
      1     dx,dy,theta,.false.,fringe,f1in,f2in,f1out,f2out,mfring,eps0,
-     $     kin,achro,.false.,1)
+     $     kin,achro,.false.)
       call qcopymat(trans,transe,.false.)
       coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
      $     trans(2,3) .ne. 0.d0 .or. trans(2,4) .ne. 0.d0

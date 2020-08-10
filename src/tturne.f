@@ -583,16 +583,15 @@ c          endif
             ak1=ak1*min(1.d0+tapmax,max(1.d0-tapmax,rtaper))
           endif
           call tsetfringepe(cmp,icQUAD,ftable)
-          call tquade(trans,cod,beam,srot,al,ak1,
+          call tquade(trans,cod,beam,srot,al,ak1,0.d0,
      $         cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1         cmp%value(ky_ROT_QUAD),
-     $         cmp%value(ky_RAD_QUAD) .eq. 0.d0,
+     $         cmp%value(ky_RAD_QUAD) .eq. 0.d0 .and. al .ne. 0.d0,
      1         cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
      $         ftable(1),ftable(2),ftable(3),ftable(4),
      $         mfr,cmp%value(ky_EPS_QUAD),
      $         cmp%value(ky_KIN_QUAD) .eq. 0.d0,
-     $         cmp%value(ky_CHRO_QUAD) .ne. 0.d0,
-     $         next)
+     $         cmp%value(ky_CHRO_QUAD) .ne. 0.d0)
 
         case (icSEXT,icOCTU,icDECA,icDODECA)
           ak1=cmp%value(ky_K_THIN)

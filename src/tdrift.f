@@ -122,21 +122,22 @@ c      write(*,'(a,106g15.7)')'td_sol ',x(1),px(1),y(1),py(1),z(1),g(1)
       use element_drift_common
       use kradlib
       use tspin, only:cphi0,sphi0
+      use sol, only:tsolconv
       use ffs_flag, only:rfluct,photons,calpol
       use photontable
       use mathfun
       use tmacro, only:l_track
       implicit none
-      integer*4 np,i,j,itmax,ndiag
+      integer*4 np,i,itmax,ndiag
       real*8 conv
       parameter (itmax=15,conv=1.d-15)
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     sx(np),sy(np),sz(np)
-      real*8 al,bz,pr,bzp,s,phi,px1,py1,px0,py0,z0,
-     $     sinphi,ak0x,ak0y,b,phix,phiy,phiz,
+      real*8 al,bz,pr,bzp,phi,px1,py1,px0,py0,z0,
+     $     sinphi,cosphi,ak0x,ak0y,b,phix,phiy,phiz,
      $     dphizsq,dpz0,pz0,plx,ply,plz,ptx,pty,ptz,
-     $     pbx,pby,pbz,phi0,dphi,dcosphi,pl,dpl,alb,
-     $     xsinphi,r,bpr,bsi0
+     $     pbx,pby,pbz,dphi,dcosphi,pl,dpl,alb,
+     $     xsinphi,bpr,bsi0,ap,db
       logical*4 enarad
       data ndiag/15/
       if(ak0x .eq. 0.d0 .and. ak0y .eq. 0.d0)then
@@ -191,39 +192,18 @@ c          dpz0=-s/(1.d0+sqrtl(1.d0-s))
           pby=ptz*phix-ptx*phiz
           pbz=ptx*phiy-pty*phix
           bpr=b/pr
-          phi=asin(min(1.d0,max(-1.d0,bpr/pz0)))
-          dphi=0.d0
-          do j=1,itmax
-c            sinphi=sin(phi)
-            dcosphi=2.d0*sin(.5d0*phi)**2
-c            xsinphi=xsin(phi)
-            call sxsin(phi,sinphi,xsinphi)
-            s=plz*xsinphi+pz0*sinphi+pbz*dcosphi
-            r=pz0-ptz*dcosphi+pbz*sinphi
-            if(r .ne. 0.d0)then
-              dphi=(bpr-s)/r
-            endif
-            phi0=phi
-            phi=phi+dphi
-            if(phi0 .eq. phi .or. abs(dphi) .le. conv*abs(phi))then
-              go to 100
-            endif
-          enddo
-          if(ndiag .ge. 0)then
-            ndiag=ndiag-1
-            write(*,'(a,1p6g15.7)')'tdrift convergence error',
-     $           phi,dphi,bpr,b,bz,pr
-            if(ndiag .eq. -1)then
-              write(*,*)
-     $             'Further tdrift messages will be suppressed.'
-            endif
-          endif
- 100      x(i)=x(i)+(plx*phi+ptx*sinphi+pbx*dcosphi)*alb
-          y(i)=y(i)+(ply*phi+pty*sinphi+pby*dcosphi)*alb
+          db=bpr-pbz
+          ap=hypot(pz0,pbz)
+          dphi=-atan(pbz,pz0)
+          phi=asin(min(1.d0,max(-1.d0,db/ap)))-dphi
+          call tsolconv(pz0,plz,pbz,bpr,
+     $     phi,sinphi,xsinphi,cosphi,dcosphi,ndiag)
+          x(i)=x(i)+(plx*phi+ptx*sinphi-pbx*dcosphi)*alb
+          y(i)=y(i)+(ply*phi+pty*sinphi-pby*dcosphi)*alb
           z(i)=z(i)+((dpl*phiz-dphizsq)*xsinphi
-     $         +dpz0*sinphi+pbz*dcosphi)*alb-dv(i)*al
-          px1=px0-ptx*dcosphi+pbx*sinphi
-          py1=py0-pty*dcosphi+pby*sinphi
+     $         +dpz0*sinphi-pbz*dcosphi)*alb-dv(i)*al
+          px1=px0+ptx*dcosphi+pbx*sinphi
+          py1=py0+pty*dcosphi+pby*sinphi
           if(enarad)then
             bsi(i)=bsi(i)+bsi0-ak0x*y(i)-ak0y*x(i)
             if(rfluct)then

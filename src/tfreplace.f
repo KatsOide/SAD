@@ -96,7 +96,8 @@
       subroutine tfresetrule(ispr,nrule)
       use tfstk
       implicit none
-      integer*4 ispr,nrule,i
+      integer*4 ,intent(in):: ispr,nrule
+      integer*4 i
       do i=ispr+1,ispr+nrule*2,2
         if(ktfpatq(dtastk(i)) .or. ktflistq(dtastk(i)))then
           call tfresetpat(dtastk(i))
@@ -118,8 +119,9 @@
       type (sad_rlist), pointer :: klr
       type (sad_pat), pointer :: pat
       integer*8 kair
+      integer*4 ,intent(in):: ispr,nrule
       integer*4 ,intent(out):: irtc
-      integer*4 i,m,isp1,ispr,nrule,isp0,isp2,
+      integer*4 i,m,isp1,isp0,isp2,
      $     itfmessageexp,mstk0,itfpmat,iop
       logical*4 ,intent(out):: rep
       logical*4 ,intent(in):: all
@@ -267,8 +269,11 @@
       type (sad_descriptor) ,intent(in):: k
       type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) tfreplacesymbolstk1
-      integer*4 ispr,nrule,irtc,nrule1
-      logical*4 scope,rep
+      integer*4 ,intent(in):: ispr,nrule
+      integer*4 ,intent(out):: irtc
+      integer*4 nrule1
+      logical*4 ,intent(in):: scope
+      logical*4 ,intent(out):: rep
       call tfsortsymbolstk(ispr,nrule,nrule1)
       kx=tfreplacesymbolstk1(k,ispr,nrule1,scope,rep,irtc)
       return
@@ -290,7 +295,8 @@
       integer*4 i,m,isp1,j,itfmessageexp, id
       integer*4 ,intent(in):: ispr,nrule
       logical*4 ,intent(out):: rep
-      logical*4 rep1,scope,tfmatchsymstk,tfsymbollistqo
+      logical*4 ,intent(in):: scope
+      logical*4 rep1,tfmatchsymstk,tfsymbollistqo
       irtc=0
       rep=.false.
       kx=k
@@ -418,8 +424,9 @@ c          endif
       use tfstk
       implicit none
       type (sad_symbol), pointer :: sym
-      integer*8 ka
-      integer*4 ispr,nrule,j
+      integer*8 ,intent(in):: ka
+      integer*4 ,intent(in):: ispr,nrule
+      integer*4 ,intent(out):: j
       logical*4 tfmatchsymstk1
       call loc_sym(ka,sym)
       tfmatchsymstk=tfmatchsymstk1(sym%loc,max(0,sym%gen),ispr,nrule,j)
@@ -429,8 +436,10 @@ c          endif
       logical*4 function tfmatchsymstk1(loc,iag,ispr,nrule,j)
       use tfstk
       implicit none
-      integer*8 loc
-      integer*4 ispr,nrule,jm,jl,jh,iag,j
+      integer*8 ,intent(in):: loc
+      integer*4 ,intent(in):: ispr,nrule
+      integer*4 ,intent(out):: j
+      integer*4 jm,jl,jh,iag
       jl=1
       jh=nrule
       do while (jh .ge. jl)
@@ -458,7 +467,9 @@ c          endif
       subroutine tfsortsymbolstk(ispr,n,n1)
       use tfstk
       implicit none
-      integer*4 ispr,n,i,isp1,j,n1,ig0,ig1
+      integer*4 ,intent(in):: ispr,n
+      integer*4 ,intent(out):: n1
+      integer*4 i,isp1,j,ig0,ig1
       integer*8 kai,kz0
       integer*8, parameter:: k32=2**32
       integer*8, allocatable :: kz(:),kg(:)
@@ -502,8 +513,10 @@ c          endif
 
       recursive subroutine tfsorti(itab,iz,kg,n)
       implicit none
-      integer*8 iz(n),kg(n)
-      integer*4 n,itab(n),m,i1,i2,is,im,ip1,ip2
+      integer*8 ,intent(in):: iz(n),kg(n)
+      integer*4 ,intent(in):: n
+      integer*4 ,intent(out):: itab(n)
+      integer*4 m,i1,i2,is,im,ip1,ip2
       if(n .le. 1)then
         return
       endif
@@ -579,7 +592,8 @@ c          endif
       implicit none
       type (sad_pat), pointer :: pat
       integer*8 kp,kap,kx
-      integer*4 i,isp1,isp2,ispb,ispe
+      integer*4 ,intent(in):: isp1,isp2
+      integer*4 i,ispb,ispe
       logical*4 rep
       do i=isp1+1,isp2-1,2
         kp=ktastk(i)
@@ -606,10 +620,14 @@ c          endif
       implicit none
       type (sad_descriptor) kx,ki,kr
       type (sad_descriptor) tfreplacesymbolstk1
-      type (sad_dlist) list
+      type (sad_dlist) ,intent(in):: list
       type (sad_dlist), pointer :: klx
-      integer*4 ispr,nrule,irtc,i,isp1,j
-      logical*4 rep,rep1,rep2,scope
+      integer*4 ,intent(in):: ispr,nrule
+      integer*4 ,intent(out):: irtc
+      integer*4 i,isp1,j
+      logical*4 ,intent(out):: rep
+      logical*4 ,intent(in):: scope
+      logical*4 rep1,rep2
       irtc=0
       isp1=isp
       if(list%nl .eq. 0)then
@@ -700,13 +718,17 @@ c          endif
       subroutine tfreplacewithstk(list,ispr,nrule,kx,rep,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k1,k2,ki,ki2
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) k1,k2,ki,ki2
       type (sad_descriptor) tfreplacesymbolstk1
-      type (sad_dlist) list
+      type (sad_dlist) ,intent(inout):: list
       type (sad_dlist), pointer :: kl1,kli,klx,klx1
       integer*8 kai,ki1,ka1,kai1,ksave
-      integer*4 ispr,nrule,irtc,i, ispj,ispa,ispb
-      logical*4 rep,rep1,tfmatchsymstk
+      integer*4 ,intent(in):: ispr,nrule
+      integer*4 ,intent(out):: irtc
+      integer*4 i,ispj,ispa,ispb
+      logical*4 ,intent(out):: rep
+      logical*4 rep1,tfmatchsymstk
       irtc=0
       ispa=isp
       k1=list%dbody(1)
@@ -801,11 +823,14 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       implicit none
       type (sad_descriptor) kx,k1,ki
       type (sad_descriptor) tfreplacesymbolstk1
-      type (sad_dlist) list
+      type (sad_dlist) ,intent(inout):: list
       type (sad_dlist), pointer :: kl1,klx
       integer*8 kai,ka1,ksave
-      integer*4 ispr,nrule,irtc,i,isp1,j,ispi
-      logical*4 rep,rep1,rej,tfmatchsymstk1
+      integer*4 ,intent(in):: ispr,nrule
+      integer*4 ,intent(out):: irtc
+      integer*4 i,isp1,j,ispi
+      logical*4 ,intent(out):: rep
+      logical*4 rep1,rej,tfmatchsymstk1
       irtc=0
       isp1=isp
       k1=list%dbody(1)
@@ -857,9 +882,11 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       subroutine tfreplacerepeated(k,kr,kx,all,eval,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kr,kx,k1
-      integer*4 irtc
-      logical*4 all,eval
+      type (sad_descriptor) ,intent(in):: k,kr
+      type (sad_descriptor) ,intent(out)::kx
+      type (sad_descriptor) k1
+      integer*4 ,intent(out):: irtc
+      logical*4 ,intent(in):: all,eval
       kx=k
       k1%k=ktfref
       irtc=0
