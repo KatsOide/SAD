@@ -1,9 +1,9 @@
       integer*4 function ielm(word,exist)
       implicit none
       integer*4 ielmf
-      character*(*) word
+      character*(*) ,intent(in):: word
       real*8 frac
-      logical*4 exist
+      logical*4 ,intent(out):: exist
       ielm=ielmf(word,frac,exist,0)
       return
       end
@@ -12,11 +12,12 @@
       use tfstk
       use tmacro, only:nlat
       implicit none
-      integer*4 ielme,lfn,irtc,lw
+      integer*4 ,intent(in):: lfn
+      integer*4 ielme,irtc,lw
       integer*8 iep
-      character*(*) word
+      character*(*) ,intent(in):: word
       real*8 v
-      logical*4 exist
+      logical*4 ,intent(out):: exist
       type (sad_descriptor) kx
       exist=.false.
       iv=0
@@ -49,10 +50,11 @@
 
       integer*4 function ielme(word,exist,lfn)
       implicit none
-      integer*4 ielmf,lfn
-      character*(*) word
+      integer*4 ,intent(in):: lfn
+      integer*4 ielmf
+      character*(*) ,intent(in):: word
       real*8 frac
-      logical*4 exist
+      logical*4 ,intent(out):: exist
       ielme=ielmf(word,frac,exist,lfn)
       return
       end
@@ -64,13 +66,14 @@
       use ffs_pointer,only:ielma
       implicit none
       type (sad_descriptor) kx
-      integer*4 lw,iord,ln,i,ip,im,lfn
-      character*(*) word
+      integer*4 ,intent(in):: lfn
+      integer*4 lw,iord,ln,i,ip,im
+      character*(*) ,intent(in):: word
       character*64 ordw
       character*(MAXPNAME) name
-      real*8 frac
+      real*8 ,intent(out):: frac
       integer*4 ioff,m,ipm, irtc,idot,ielmh
-      logical*4 exist
+      logical*4 ,intent(out):: exist
       lw=len_trim(word)
       idot=index(word(1:lw),'.')
       if(idot .gt. 0)then
@@ -171,9 +174,9 @@
       use tffitcode
       implicit none
       integer*4 ielm
-      character*(*) word
+      character*(*) ,intent(in):: word
       character*256 wordp
-      logical exist
+      logical*4 ,intent(out):: exist
       call getwdl2(word,wordp)
       igelm=ielm(wordp,exist)
       return
@@ -185,10 +188,11 @@
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 ielme,lfn
-      character*(*) word
+      integer*4 ,intent(in):: lfn
+      integer*4 ielme
+      character*(*) ,intent(in):: word
       character*256 wordp
-      logical exist
+      logical*4 ,intent(out):: exist
       call getwdl2(word,wordp)
       igelme=ielme(wordp,exist,lfn)
       return
@@ -207,9 +211,9 @@ c     *        >0: found
       use tffitcode
       use ffs_pointer, only:idelc,pnamec
       implicit none
-      character*(*) name
+      character*(*) ,intent(in):: name
       integer*8 j,i
-      integer*4 iord
+      integer*4 ,intent(in):: iord
       integer*4 itehash,k
       character*(MAXPNAME) name1
       name1=name
@@ -269,9 +273,10 @@ c     *     by tfinit(), tfinimult() initialization
       use ffs
       use tffitcode
       implicit none
-      integer*4 nc,i,ih,nh
+      integer*4 ,intent(in):: nc
+      integer*4 i,ih,nh
       parameter (nh=nelmhash)
-      character name(nc)
+      character ,intent(in):: name(nc)
       ih=0
       do i=1,nc
         if(name(i) .eq. ' ')then

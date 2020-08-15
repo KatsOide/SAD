@@ -48,7 +48,7 @@
       dxnulll=kxaaloc(0,0)
       kxnulll=dxnulll%k
       dxnull=kxaaloc(0,0,klx)
-      klx%head%k=ktfoper+mtfnull
+      klx%head=dxnullo
       kxnull=dxnull%k
       dxnulls=kxsalocb(0,'  ',2,str)
       str%str(1:2)=char(0)//char(0)
@@ -185,10 +185,10 @@ c      write(*,*)'tfinitn 1 '
       klist(itfcontextpath)=itfcontroot
       klist(itfcontextpath+1)=itfcontext
       itfcontext=itfcontroot
-c      write(*,*)'tfinitn 1.1 ',itfcontroot
       write(*,*) '*** Run time Environment:     '//
      $     pkg(1:lpkg)//'init.'//env(1:lenv)//'.n ***'
       call tfgetf(pkg(1:lpkg)//'init.'//env(1:lenv)//'.n')
+c      write(*,*)'tfinitn-9 ',itfcontroot
       return
       end
 
@@ -196,8 +196,9 @@ c      write(*,*)'tfinitn 1.1 ',itfcontroot
       use tfstk
       implicit none
       type (sad_symdef), pointer :: contd
-      integer*8 kp,ka,ktsydefc
-      character*(*) name
+      integer*8 ,intent(in):: kp
+      integer*8 ka,ktsydefc
+      character*(*) ,intent(in):: name
       ka=ktsydefc(name,len(name),itfcontroot,.true.)
       call loc_symdef(ka,contd)
       call tflocald(contd%value)
@@ -382,17 +383,21 @@ c        write(*,*)'tftocontext ',str%str(1:nc)
       subroutine tfsetcontextpath(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,ki
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) ki
       type (sad_dlist), pointer :: kl
       type (sad_symdef), pointer :: symd
       integer*8 ka1
-      integer*4 isp1,irtc,itfmessage,m,i,isp0
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,m,i,isp0
       logical*4 tfcontextqk
       if(isp1+1 .ne. isp)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
       kx=dtastk(isp)
+c      call tfdebugprint(kx,'setcpath',1)
       if(.not. tflistq(kx,kl) .or. ktfreallistq(kl))then
         go to 9000
       endif
@@ -440,7 +445,7 @@ c      call tfdebugprint(kx,'setcontextpath',1)
           call exit(0)
         endif
       endif
-      kx=dxnull
+      kx%k=ktfoper+mtfnull
       irtc=itfmessage(9,'General::wrongtype','"Null"')
       return
       end

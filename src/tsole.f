@@ -278,8 +278,8 @@ c      write(*,'(a,i5,1p6g15.7/16x,1p6g15.7)')'tsole1-end ',l,code,cod
       use tffitcode
       implicit none
       integer*4 ,intent(in):: k
-      real*8 ,intent(inout):: trans(4,5),cod(6),beam(42),srot(3,9)
-      real*8 transe(6,12)
+      real*8 ,intent(inout):: trans(4,5),cod(6)
+      real*8 transe(6,12),beam(42),srot(3,9)
       logical*4 ,intent(out):: coup
       logical*4 radtaper0,calpol0
       radtaper0=radtaper

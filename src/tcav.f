@@ -7,15 +7,15 @@
       use tmacro
       use mathfun
       implicit none
-      integer*4 ndivmax
-      real*8 eps,oneev
-      parameter (eps=1.d-3,ndivmax=1000,oneev=1.d0+3.83d-12)
-      integer*4 np,ndiv,i,n,mfring,itab(np),lwl,lwt,izs(np)
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
-     $     sx(np),sy(np),sz(np)
-      real*8 wakel(2,lwl),waket(2,lwt),ws(ndivmax)
-      real*8 phi,dphi,vnominal,he,al,vc,
-     1     dx,dy,theta,v1,v20,v11,v02,w,wi,cost,sint,v,v1a,
+      integer*4, parameter ::ndivmax=1000
+      real*8, parameter::eps=1.d-3,oneev=1.d0+3.83d-12
+      integer*4 ,intent(in):: np,mfring,lwl,lwt
+      integer*4 ndiv,i,n,itab(np),izs(np)
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
+     $     g(np),dv(np),sx(np),sy(np),sz(np)
+      real*8 ,intent(in):: wakel(2,lwl),waket(2,lwt),
+     $     al,vc,w,phi,dphi,vnominal,dx,dy,theta,v1,v20,v11,v02
+      real*8 he,wi,cost,sint,v,v1a,ws(ndivmax),
      $     v20a,v11a,v02a,phis,r,wl,r1,ws1,we,wsn,phic,
      $     dphis,offset,offset1,tlim,sv,a,dpz,al1,h2,p2,
      $     dp2,pr2,dvn,dzn,dp1r,p1r,p1,h1,dp2r,p2r,av,dpx,fw,

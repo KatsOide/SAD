@@ -4,8 +4,8 @@
       use tfcsi
       use iso_c_binding
       implicit none
-      integer*4 lfn0,iconv1
-      character*(*) cmnt1
+      integer*4 ,intent(in):: lfn0,iconv1
+      character*(*) ,intent(in):: cmnt1
 c      allocate(buffer0)
       buffer=>buffer0
       ibcloc=transfer(c_loc(buffer0(1:1)),ibcloc)/8
@@ -35,22 +35,22 @@ c      write(*,*)'csinit ',lfni,ipoint,lrecl,ibcloc,buffer(1:1)
 
       integer*4 function lene(string)
       implicit none
-      character*(*) string
+      character*(*) ,intent(in):: string
       lene=len_trim(string)
       return
       end
 
       integer*4 function lene1(string,l)
       implicit none
-      integer*4 l
-      character*(*) string
+      integer*4 ,intent(in):: l
+      character*(*) ,intent(in):: string
       lene1=len_trim(string(:l))
       return
       end
 
       integer*4 function lenw(string)
       implicit none
-      character*(*) string
+      character*(*) ,intent(in):: string
       lenw=index(string,' ')-1
       if(lenw .lt. 0)then
         lenw=len(string)
@@ -60,8 +60,9 @@ c      write(*,*)'csinit ',lfni,ipoint,lrecl,ibcloc,buffer(1:1)
 
       integer*4 function ifany(string,pat,istart)
       implicit none
-      character*(*) string,pat
-      integer*4 istart,ifany1
+      character*(*) ,intent(in):: string,pat
+      integer*4 ,intent(in):: istart
+      integer*4 ifany1
       ifany=ifany1(string,len_trim(string),
      $     pat(:len_trim(pat)),istart)
       return
@@ -69,9 +70,10 @@ c      write(*,*)'csinit ',lfni,ipoint,lrecl,ibcloc,buffer(1:1)
 
       integer*4 function ifany1(string,l,pat,istart)
       implicit none
-      integer*4 istart,i,l
-      character*(*) pat
-      character string(l)
+      integer*4 ,intent(in):: istart,l
+      integer*4 i
+      character*(*) ,intent(in):: pat
+      character ,intent(in):: string(l)
       if(istart .gt. 0)then
         do i=istart,l
           if(index(pat,string(i)) .gt. 0)then
@@ -86,8 +88,9 @@ c      write(*,*)'csinit ',lfni,ipoint,lrecl,ibcloc,buffer(1:1)
 
       integer*4 function notany(string,pat,istart)
       implicit none
-      integer*4 istart,notany1
-      character*(*) string,pat
+      integer*4 ,intent(in):: istart
+      integer*4 notany1
+      character*(*) ,intent(in):: string,pat
       notany=notany1(string,len_trim(string),
      $     pat(:len_trim(pat)),istart)
       return
@@ -95,8 +98,9 @@ c      write(*,*)'csinit ',lfni,ipoint,lrecl,ibcloc,buffer(1:1)
 
       integer*4 function notany1(string,l,pat,istart)
       implicit none
-      integer*4 i,l,istart
-      character*(*) string,pat
+      integer*4 ,intent(in):: l,istart
+      integer*4 i
+      character*(*),intent(in):: string,pat
       if(istart .gt. 0)then
         do i=istart,l
           if(index(pat,string(i:i)) .le. 0)then
@@ -111,8 +115,9 @@ c      write(*,*)'csinit ',lfni,ipoint,lrecl,ibcloc,buffer(1:1)
 
       integer*4 function indexs(string,pat,istart)
       implicit none
-      character*(*) string,pat
-      integer*4 istart,l,m
+      character*(*) ,intent(in):: string,pat
+      integer*4 ,intent(in):: istart
+      integer*4 l,m
       l=len_trim(string)
       m=len_trim(pat)
       indexs=0
@@ -127,8 +132,8 @@ c      write(*,*)'csinit ',lfni,ipoint,lrecl,ibcloc,buffer(1:1)
 
       integer*4 function indexb(string,ns,pat,np,istart)
       implicit none
-      integer*1 string(*),pat(*)
-      integer*4 ns,np,istart
+      integer*1 ,intent(in):: string(*),pat(*)
+      integer*4 ,intent(in):: ns,np,istart
       integer*4 i,j
 
       do indexb=istart,ns-np+1
@@ -148,7 +153,7 @@ c      write(*,*)'csinit ',lfni,ipoint,lrecl,ibcloc,buffer(1:1)
 
       subroutine trim(string)
       implicit none
-      character*(*) string
+      character*(*) ,intent(inout):: string
       logical tr
       integer*4 l,len,j,i
       l=len(string)
@@ -173,7 +178,7 @@ c      write(*,*)'csinit ',lfni,ipoint,lrecl,ibcloc,buffer(1:1)
 
       subroutine capita(string)
       implicit none
-      character*(*) string
+      character*(*) ,intent(inout):: string
       integer*4 i,ic,ioff
 c      parameter (ioff=ichar('A')-ichar('a'))
       parameter (ioff=-32)
@@ -188,7 +193,7 @@ c      parameter (ioff=ichar('A')-ichar('a'))
 
       subroutine small(string)
       implicit none
-      character*(*) string
+      character*(*) ,intent(inout):: string
       integer*4 i,ic,ioff
 c      parameter (ioff=ichar('A')-ichar('a'))
       parameter (ioff=-32)
@@ -203,18 +208,20 @@ c      parameter (ioff=ichar('A')-ichar('a'))
 
       integer*4 function notchar(string,ch,istart)
       implicit none
-      character*(*) string
-      character ch
-      integer*4 istart,notchar1
+      character*(*) ,intent(in):: string
+      character ,intent(in):: ch
+      integer*4 ,intent(in):: istart
+      integer*4 notchar1
       notchar=notchar1(string,len_trim(string),ch,istart)
       return
       end
 
       integer*4 function notchar1(string,l,ch,istart)
       implicit none
-      character*(*) string
-      character ch
-      integer*4 istart,i,l
+      character*(*) ,intent(in):: string
+      character ,intent(in):: ch
+      integer*4 ,intent(in):: istart,l
+      integer*4 i
       if(istart .gt. 0)then
         do i=istart,l
           if(string(i:i) .ne. ch)then
@@ -229,8 +236,9 @@ c      parameter (ioff=ichar('A')-ichar('a'))
 
       integer*4 function notspace(string,istart)
       implicit none
-      character*(*) string
-      integer*4 istart,i
+      character*(*) ,intent(in):: string
+      integer*4 ,intent(in):: istart
+      integer*4 i
       if(istart .gt. 0)then
         do i=istart,len(string)
           if(string(i:i) .ne. ' ')then
@@ -245,9 +253,10 @@ c      parameter (ioff=ichar('A')-ichar('a'))
 
       integer*4 function ifchar(string,ch,istart)
       implicit none
-      character*(*) string
-      character ch
-      integer*4 istart,l
+      character*(*) ,intent(in):: string
+      character ,intent(in):: ch
+      integer*4 ,intent(in):: istart
+      integer*4 l
       if(istart .gt. 0)then
         l=len_trim(string)
         ifchar=index(string(istart:l),ch)
@@ -261,7 +270,7 @@ c      parameter (ioff=ichar('A')-ichar('a'))
       end
 
       subroutine capita1(string)
-      character*(*) string
+      character*(*) ,intent(inout):: string
       character c,qc
       logical quote
       l=len(string)

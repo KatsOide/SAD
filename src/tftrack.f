@@ -72,16 +72,9 @@
       if(irtc .ne. 0)then
         return
       endif
-      if(ls .gt. 0)then
-        ls=mod(ls-1,nlat-1)+1
-      else
-        ls=nlat-mod(1-ls,nlat-1)
-      endif
-      if(ld .gt. 1)then
-        ld=mod(ld-2,nlat-1)+2
-      else
-        ld=nlat+1-mod(2-ld,nlat-1)
-      endif
+      ls=merge(mod(ls-1,nlat-1)+1,nlat-mod(1-ls,nlat-1),ls .gt. 0)
+      ld=merge(mod(ld-2,nlat-1)+2,nlat+1-mod(2-ld,nlat-1),
+     $     ld .gt. 1)
       if(ld .le. ls)then
         mt=mt+1
       endif
@@ -302,11 +295,7 @@ c        write(*,*)'tftrack-afterwait ',npz,npa,ipn,zx(npz,3),zx(npa,3)
         call tfree(kpsz)
       endif
       kx=kxadaloc(-1,2,klx)
-      if(normal)then
-        klx%rbody(1)=dble(ld)
-      else
-        klx%rbody(1)=dble(ls)
-      endif
+      klx%rbody(1)=merge(dble(ld),dble(ls),normal)
       klx%dbody(2)%k=ktflist+ktfcopy1(kaxl)
       if(radlight)then
         kx1=kx
@@ -425,16 +414,8 @@ c      return
       integer*8 ka,kaj(9)
       integer*4 np,iptbl(np,6),i,j,k,nlati,tend,mc,mcf,nv
       real*8 zx(np,mc)
-      if(calpol)then
-        mcf=9
-      else
-        mcf=7
-      endif
-      if(lossmap)then
-        nv=mcf+2
-      else
-        nv=mcf
-      endif
+      mcf=merge(9,7,calpol)
+      nv=merge(mcf+2,mcf,lossmap)
       call tconvm(np,zx(:,2),zx(:,4),zx(:,6),(/0.d0/),1)
       ka=ktadaloc(-1,nv)
       do j=1,nv
@@ -444,11 +425,7 @@ c      return
       do i=1,np
         k=iptbl(i,1)
         rlist(kaj(1:6)+i)=zx(k,1:6)
-        if(iptbl(k,4) .eq. 0)then
-          rlist(kaj(mcf)+i)=1.d0
-        else
-          rlist(kaj(mcf)+i)=0.d0
-        endif
+        rlist(kaj(mcf)+i)=merge(1.d0,0.d0,iptbl(k,4) .eq. 0)
       enddo
       if(calpol)then
         do i=1,np
@@ -460,16 +437,10 @@ c      return
       if(lossmap)then
         do i=1,np
           k=iptbl(iptbl(i,1),4)
-          if((-nlati .le. k) .and. (k .le. nlati))then
-            rlist(kaj(mcf+1)+i)=dble(k)
-          else
-            rlist(kaj(mcf+1)+i)=0.d0
-          endif
-          if(k .ne. 0)then
-            rlist(kaj(mcf+2)+i)=dble(iptbl(iptbl(i,1),5))
-          else
-            rlist(kaj(mcf+2)+i)=dble(tend+1)
-          endif
+          rlist(kaj(mcf+1)+i)=merge(dble(k),0.d0,
+     $         (-nlati .le. k) .and. (k .le. nlati))
+          rlist(kaj(mcf+2)+i)=merge(dble(iptbl(iptbl(i,1),5)),
+     $         dble(tend+1),k .ne. 0)
         enddo
       endif
       ktfresetparticles=ka
@@ -635,7 +606,7 @@ c              - Swap particle coordinates
       real*8 vn
       isp1=isp
       isp=isp1+1
-      dtastk(isp)=dxnull
+      ktastk(isp)=ktfoper+mtfnull
       call SeedRandom(isp1,kx,irtc)
       if(irtc .ne. 0)then
         return

@@ -355,11 +355,8 @@ c$$$      integer*8 , pointer, dimension(:) :: pidval(:)
      &         , 0,16)
         else
           idtype(idx)=type
-          if(type .eq. icRSVD) then
-            idval(idx)=transfer(c_loc(ival),i00)/8
-          else
-            idval(idx)=ival
-          endif
+          idval(idx)=merge(transfer(c_loc(ival),i00)/8,
+     $         ival,type .eq. icRSVD)
           sethtb8=idx
         endif
         return
@@ -584,11 +581,7 @@ c     kcpklist0=0
                 call tsetindexhash(i+m,m1-m)
                 ilist(1,i-1)=m
                 nnet=nnet+m
-                if(klist(ic) .eq. ic)then
-                  maxic=ic-2
-                else
-                  maxic=ic
-                endif
+                maxic=merge(ic-2,ic,klist(ic) .eq. ic)
                 ktaloc=i
                 return
               endif
@@ -812,10 +805,7 @@ c     endif
       parameter (rtfnull=0.d0)
       integer*4, parameter :: irtcret=-4,irtcthrow=-5,
      $     irtcgoto=-6,irtcabort=-7
-      integer*8 ktfoper,ktflist,ktfstring,ktfsymbol,ktfpat,ktfobj,
-     $     ktfmask,ktamask,ktrmask,ktfnull,ktfnr,ktfref,ktfother,
-     $     ktomask,ktftrue,ktfnan,ktfenan,ktfenanb
-      parameter (
+      integer*8 , parameter ::
      $     ktfnull  =int8(z'fff0000000000000'),
      $     ktfother =int8(z'fff2000000000000'),
      $     ktfnr    =int8(z'7ff2000000000000'),
@@ -831,10 +821,13 @@ c     endif
      $     ktfmask  =int8(z'fffe000000000000'),
      $     ktamask  =int8(z'0001ffffffffffff'),
      $     ktftrue  =int8(z'3ff0000000000000'),
+     $     ktffalse =int8(z'0000000000000000'),
      $     ktfnan   =int8(z'fff8000000000000'),
      $     ktfenan  =int8(z'7ff0000000000000'),
      $     ktfenanb =int8(z'000fffffffffffff')
-     $     )
+      type (sad_descriptor) ,parameter ::
+     $     dxzero=sad_descriptor(1,int8(0)),
+     $     dxnullo=sad_descriptor(1,ktfoper+mtfnull)
       integer*4 , parameter :: mbody = 2**8
       integer*4 , parameter :: mbody1 = 2**8
 
@@ -1380,11 +1373,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         integer*8, intent(in):: k
         integer*4 i
         i=itfcbk(k)
-        if(i .ne. 0)then
-          tfchecklastp=k .le. kcbk(3,i)
-        else
-          tfchecklastp=.false.
-        endif
+        tfchecklastp=merge(k .le. kcbk(3,i),.false.,i .ne. 0)
         if(.not. tfchecklastp)then
           if(i .ne. 0)then
             write(*,*)'tfcklastp ',k,i,kcbk(3,i),kcbk(2,i)
@@ -1773,11 +1762,8 @@ c                  kcbk(3,j)=kcbk(2,k)
         use tfmem,only:kfirstalloc
         implicit none
         integer*8 , intent(in)::k
-        if(iand(ktomask,k) .eq. ktfobj)then
-          ka=iand(ktamask,k)
-        else
-          ka=kfirstalloc+1
-        endif
+        ka=merge(iand(ktamask,k),kfirstalloc+1,
+     $     iand(ktomask,k) .eq. ktfobj)
         return
         end function ktaobjk
 
@@ -1785,11 +1771,8 @@ c                  kcbk(3,j)=kcbk(2,k)
         use tfmem,only:kfirstalloc
         implicit none
         type (sad_descriptor) , intent(in)::k
-        if(iand(ktomask,k%k) .eq. ktfobj)then
-          ka=iand(ktamask,k%k)
-        else
-          ka=kfirstalloc+1
-        endif
+        ka=merge(iand(ktamask,k%k),kfirstalloc+1,
+     $       iand(ktomask,k%k) .eq. ktfobj)
         return
         end function ktaobjd
 
@@ -4051,23 +4034,16 @@ c        type (sad_symbol), pointer, intent(out) :: symx
         l=lenw(string)
         ip=index(string(1:l),'_')
         if(ip .gt. 0)then
-          if(string(ip:min(l,ip+2)) .eq. '___')then
-            k=3
-          elseif(string(ip:min(l,ip+1)) .eq. '__')then
-            k=2
-          else
-            k=1
-          endif
+          k=merge(3,merge(2,1,string(ip:min(l,ip+1)) .eq. '__'),
+     $         string(ip:min(l,ip+2)) .eq. '___')
         else
           k=0
           ip=l+1
         endif
         ipk=ip+k
-        if(ipk .gt. l)then
-          kh%k=ktfref
-        else
-          kh%k=ktfsymbol+ktfsymbolz(string(ipk:l),int(l-ipk+1))
-        endif
+        kh%k=merge(ktfref,
+     $       ktfsymbol+ktfsymbolz(string(ipk:l),int(l-ipk+1)),
+     $       ipk .gt. l)
         kxpaloc=kxpalocb(string(1:ip-1),ip-1,transfer(ktfref+k,kh),kh)
         return
         end function
@@ -4075,15 +4051,11 @@ c        type (sad_symbol), pointer, intent(out) :: symx
         type (sad_descriptor) function kxpalocb(symb,ls,kp,kh)
         implicit none
         type (sad_descriptor) , intent(in)::kp,kh
-        type (sad_descriptor) ks
         integer*4 , intent(in)::ls
         character , intent(in)::symb(ls)
-        if(ls .gt. 0)then
-          ks=kxsymbolz(symb,ls)
-        else
-          ks%k=0
-        endif
-        kxpalocb=kxpcopyss(kp,kh,ks,transfer(ktfref,kp))
+        kxpalocb=kxpcopyss(kp,kh,
+     $       merge(kxsymbolz(symb,ls),dfromk(i00),ls .gt. 0),
+     $       transfer(ktfref,kp))
         return
         end function
 
@@ -4466,7 +4438,6 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         type (sad_descriptor), save :: ksym(nsym)
         integer*4 , intent(in)::n0
         integer*4 n,l,n1,ls,ifrac
-        character ch
         character*32 name,buf
         data ksym%k /nsym*0/
         data name /'`Class`s                        '/
@@ -4479,14 +4450,10 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         do while(n .ne. 0)
           n1=n/62
           ifrac=n-n1*62
-          if(ifrac .lt. 10)then
-            ch=char(ichar('0')+ifrac)
-          elseif(ifrac .lt. 36)then
-            ch=char(ichar('a')+ifrac-10)
-          else
-            ch=char(ichar('A')+ifrac-36)
-          endif
-          buf(l:l)=ch
+          buf(l:l)=merge(char(ichar('0')+ifrac),
+     $         merge(char(ichar('a')+ifrac-10),
+     $         char(ichar('A')+ifrac-36),ifrac .lt. 36),
+     $         ifrac .lt. 10)
           l=l-1
           n=n1
         enddo
@@ -4504,11 +4471,7 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         real*8, intent(inout) ::a(:)
         real*8 x
         integer*4 i
-        if(present(xl))then
-          x=xl
-        else
-          x=0.d0
-        endif
+        x=merge(xl,0.d0,present(xl))
         do i=1,size(a)
           if(ktfenanq(a(i)))then
             a(i)=x
@@ -4524,11 +4487,7 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         real*8 , intent(inout)::a(:)
         real*8 x
         integer*4 i
-        if(present(xn))then
-          x=xn
-        else
-          x=xh
-        endif
+        x=merge(xn,xh,present(xn))
         do i=1,size(a)
           if(ktfenanq(a(i)))then
             a(i)=x

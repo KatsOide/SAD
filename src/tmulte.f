@@ -7,14 +7,14 @@
      $     rtaper,autophi)
       use ffs_flag, only:calpol,radcod,rfsw,trpt
       use ffs_pointer , only:gammab
+      use kyparam, only:nmult
       use tmacro, only:amass,c,charge,ddvcacc,dvcacc,e,h0,hvc0,
-     $     irad,omega0,p0,pbunch,pgev,trf0,vc0,vcacc
-      use multa, only:nmult
+     $     irad,omega0,p0,pbunch,pgev,trf0,vc0,vcacc,eps00m
       use temw,only:bsir0,tsetr0,tmulbs,code
       use sol, only:tsolrote
       use kradlib, only:tradke
       use mathfun
-      use multa, only:fact,an
+      use multa, only:fact,aninv
       use macmath
       implicit none
       integer*4 ,parameter ::ndivmax=300
@@ -68,11 +68,7 @@
         dhg=0.d0
         go to 1000
       endif
- 1    if(eps0 .eq. 0.d0)then
-        eps=5.d-3
-      else
-        eps=5.d-3*eps0
-      endif
+ 1    eps=merge(eps00m,eps00m*eps0,eps0 .eq. 0.d0)
       ndiv=1
       do n=2,nmmax
         ndiv=max(ndiv,
@@ -209,8 +205,8 @@
         cx=(0.d0,0.d0)
         cx2=(0.d0,0.d0)
         do kord=nmmax,nmmin,-1
-          cx=(cx+akn(kord))*cx0*an(kord)
-          cx2=cx2*cx0*an(kord)+akn(kord)
+          cx=(cx+akn(kord))*cx0*aninv(kord)
+          cx2=cx2*cx0*aninv(kord)+akn(kord)
         enddo
         if(nmmin .eq. 2)then
           cx=cx*cx0

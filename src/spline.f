@@ -171,10 +171,6 @@ c      real*8 s
       call spline1(np,y,ddy,work,mode1,mode2)
       splint1=(y(1)+y(np)-.5d0*(ddy(1)+ddy(np)))*.5d0
      $     +sum(y(2:np-1)-ddy(2:np-1)*.5d0)
-c      do i=2,np-1
-c        s=s+y(i)-ddy(i)*.5d0
-c      enddo
-c      splint1=s
       deallocate (work,ddy)
       return
       end

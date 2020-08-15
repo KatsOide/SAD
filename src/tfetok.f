@@ -22,11 +22,14 @@
         implicit none
         type (sad_strbuf), pointer :: strb
         logical*4 full
-        integer*4 l,i,j,jmax,ii
+        integer*4 ,intent(in):: l
+        integer*4 ,intent(out):: ii
+        integer*4 i,j,jmax
         integer :: ucode
         character(len=8) :: ubuf
-        character*(*) string
-        character ch,del
+        character*(*) ,intent(in):: string
+        character ,intent(in):: del
+        character ch
         integer(4), external :: Unicode2UTF8
         call getstringbuf(strb,l,.true.)
         i=1
@@ -131,7 +134,7 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
 
         logical*4 function notabspace(ch)
         implicit none
-        character ch
+        character ,intent(in):: ch
         notabspace=ch .ne. ' ' .and. ch .ne. char(9)
         return
         end function
@@ -251,15 +254,17 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
       use strbuf
       use iso_c_binding
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: klr
       type (sad_symdef), pointer :: symd
       type (sad_namtbl), pointer ::loc
       type (sad_strbuf), pointer :: strb
-      integer*4 istop,nc,is2,isp0,lm,ich,irt,nnl
-      integer*8 kax,ka,icont
-      character*(*) string
+      integer*4 ,intent(out):: istop,irt
+      integer*8 ,intent(in):: icont
+      integer*4 nc,is2,isp0,lm,ich,nnl
+      integer*8 kax,ka
+      character*(*) ,intent(in):: string
       real*8 vx
       integer*4 l,i1,is1,notspace,ifromstr,
      $     i,jc,itfopcode,it1,it2,notany1
@@ -509,7 +514,7 @@ c          write(*,*)'kax ',kax
       use ophash
       implicit none
       integer*4 iop1,ih,j
-      character*(*) oper
+      character*(*) ,intent(in):: oper
       character*4 oper1
       if(opini)then
         call tfopcodehash
@@ -562,8 +567,9 @@ c          write(*,*)'kax ',kax
       real*8 function fflogi(name,exist)
       use tfstk
       implicit none
-      character*(*) name
-      logical*4 exist,v,tflogi
+      character*(*) ,intent(inout):: name
+      logical*4 ,intent(out):: exist
+      logical*4 v,tflogi
       call capita(name)
       v=tflogi(name,exist)
       if(exist)then
@@ -583,10 +589,12 @@ c          write(*,*)'kax ',kax
       use ffs, only:fff,nflag,fname
       use tmacro
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: klx,klxi
       type (sad_string), pointer :: str
-      integer*4 irtc,i,lenw,isp1,itfmessage
+      integer*4 ,intent(out):: irtc
+      integer*4 ,intent(in):: isp1
+      integer*4 i,lenw,itfmessage
       if(isp .gt. isp1+1)then
         irtc=itfmessage(9,'General::narg','"0"')
         return
@@ -611,9 +619,9 @@ c          write(*,*)'kax ',kax
       use ffs
       use ffs_pointer, only:errk,tfvalvar,pnamec
       implicit none
-      logical*4 exist
+      logical*4 ,intent(out):: exist
       integer*4 i,lenw
-      character*(*) name
+      character*(*) ,intent(in):: name
       character*(MAXPNAME) name1
       ffval=0.d0
       if(name(1:1) .ne. '#')then
@@ -636,9 +644,11 @@ c          write(*,*)'kax ',kax
       subroutine tfsymbol(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_string), pointer :: str
-      integer*4 isp1,irtc,itfmessage
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return

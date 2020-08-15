@@ -1,7 +1,7 @@
       integer*8 function ktfmaloc(k,n,m,vec,trans,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       integer*8 ktfmalocp
       integer*4 ,intent(inout):: n,m,irtc
       logical*4 ,intent(in):: vec,trans

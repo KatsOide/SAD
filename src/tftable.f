@@ -3,19 +3,19 @@
       use tfstk
       use efun
       implicit none
-      integer*4 maxint
-      parameter (maxint=2**31-1)
+      integer*4 ,parameter ::maxint=huge(0)
       type (sad_descriptor) kx,kj,kxlistcopied,ke,ki,k1,kl
       type (sad_dlist), pointer :: listi,kle,klj
       type (sad_rlist), pointer :: klr
       type (sad_symbol), pointer :: name
       type (sad_symdef), pointer :: symd
+      integer*4 ,intent(in):: isp1,isp2,ispa,mode
+      integer*4 ,intent(out):: irtc
       integer*8 ls
-      integer*4 isp1,isp2,irtc,mode,ispa,narg,ns,
-     $     itfmessage,itfdownlevel,lv,m,j,isp0,ispb,i
+      integer*4 narg,ns,itfmessage,itfdownlevel,lv,m,j,isp0,ispb,i
       real*8 x0,x1,xstep,xns,xi,ve
       logical*4 var
-      kx=dxnull
+      kx%k=ktfoper+mtfnull
       narg=ispa-isp1
       if(narg .lt. 2)then
         irtc=itfmessage(9,'General::narg','"2 or more"')
@@ -101,17 +101,9 @@
         var=.false.
       endif
       if(x1 .eq. dinfinity .or. x0 .eq. -dinfinity)then
-        if(xstep .gt. 0.d0)then
-          ls=maxint
-        else
-          ls=0
-        endif
+        ls=merge(maxint,0,xstep .gt. 0.d0)
       elseif(x1 .eq. -dinfinity .or. x0 .eq. dinfinity)then
-        if(xstep .gt. 0.d0)then
-          ls=0
-        else
-          ls=maxint
-        endif
+        ls=merge(0,maxint,xstep .gt. 0.d0)
       else
         xns=(x1-x0)/xstep*(1.d0+1.d-11)
         ls=max(-1,min(int8(xns),maxint-1))+1
@@ -400,11 +392,7 @@ c                      enddo
         do i=ispb+1,isp
           call tflocal(ktastk(i))
         enddo
-        if(mode .eq. 2)then
-          ktastk(ispb)=ktfoper+mtfplus
-        else
-          ktastk(ispb)=ktfoper+mtfmult
-        endif
+        ktastk(ispb)=ktfoper+merge(mtfplus,mtfmult,mode .eq. 2)
         kx=tfefunref(ispb,.true.,irtc)
       endif
  9000 isp=ispb-1
@@ -437,7 +425,8 @@ c        call tfcatchreturn(0,kx,irtc)
       implicit none
       type (sad_dlist), pointer ::klx
       type (sad_rlist), pointer ::klr
-      integer*4 isp1,i,n
+      integer*4 ,intent(in):: isp1
+      integer*4 i,n
       logical*4 nr,re
       if(isp1 .ge. isp)then
         kxlistcopied=dxnulll
@@ -472,10 +461,12 @@ c        call tfcatchreturn(0,kx,irtc)
       subroutine tfrange(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
       type (sad_rlist), pointer :: kl
       integer*8 n
-      integer*4 isp1,irtc,narg,i,itfmessage
+      integer*4 narg,i,itfmessage
       real*8 x0,x1,xs,xi
       narg=isp-isp1
       if(narg .gt. 3)then
@@ -506,7 +497,7 @@ c        call tfcatchreturn(0,kx,irtc)
         return
       endif
       n=max(int8((x1-x0)/xs*(1.d0+1.d-11)+1.d0),0)
-      if(n .gt. 2**31-1)then
+      if(n .gt. HUGE(0))then
         irtc=itfmessage(9,'General::wrongval',
      $       '"# of elements","less than 2^31"')
         return

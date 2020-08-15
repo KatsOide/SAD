@@ -114,7 +114,7 @@ c     end   initialize for preventing compiler warning
         nretry=0
       endif
       lout=lfno
-      do 9000: do while(.true.)
+      do 9000: do
         do 200: do kkk=1,1
           call tftclupdate(int(rlist(intffs)))
           dp0=rlist(latt(1)+mfitddp)
@@ -558,7 +558,7 @@ c     enddo
       elseif(ipr .gt. 0)then
         irtc=0
         do i=1,npa-1
-          dowait: do while(.true.)
+          dowait: do
             ipr=wait(ist)
             do j=1,npa-1
               if(npr(j) .eq. ipr)then
@@ -757,7 +757,7 @@ c        dtastk(isp1)=ifvw
         if(.not. ktfsymbolqdef(ktastk(isp1),symd) .or.
      $       symd%sym%override .eq. 0 .or. symd%downval .eq. 0)then
           isp=isp1-1
-          kx=dxnull
+          kx%k=ktfoper+mtfnull
           irtc=-1
           level=itfdownlevel()
           return
@@ -780,7 +780,7 @@ c     $       vn(1:skey%nch)
         kx=tfefunref(isp1,.false.,irtc)
       endif
       if(irtc .ne. 0)then
-        kx=dxnull
+        kx%k=ktfoper+mtfnull
         level=itfdownlevel()
         if(ierrorprint .ne. 0)then
           call tfaddmessage(' ',2,6)
@@ -867,11 +867,7 @@ c     $       vn(1:skey%nch)
           kk=iele1(kc)
           kk1=iele1(k)
           iec=kele2(k)
-          if(iec .eq. 0)then
-            nk=0
-          else
-            nk=ilist(1,iec)
-          endif
+          nk=merge(0,ilist(1,iec),iec .eq. 0)
           if(kk .gt. 0 .and. free(kk) .or. iec .ne. 0)then
             posk=pos(k)
             wk=1.d0
@@ -1028,11 +1024,9 @@ c     $       vn(1:skey%nch)
       else
         a=((g1-g0)/f1**2-(g2-g0)/f2**2)/(f1-f2)+dg/f1/f2
         b=(-f2*(g1-g0)/f1**2+f1*(g2-g0)/f2**2)-dg*(f1+f2)/f1/f2
-        if(b .gt. 0.d0)then
-          tffsfmin=-dg/(sqrt(max(0.d0,b**2-3.d0*a*dg))+b)
-        else
-          tffsfmin=(sqrt(max(0.d0,b**2-3.d0*a*dg))-b)/3.d0/a
-        endif
+        tffsfmin=merge(-dg/(sqrt(max(0.d0,b**2-3.d0*a*dg))+b),
+     $       (sqrt(max(0.d0,b**2-3.d0*a*dg))-b)/3.d0/a,
+     $       b .gt. 0.d0)
       endif
       tffsfmin=min(.577d0*f1,max(f1/16.d0,tffsfmin))
       return
@@ -1052,11 +1046,8 @@ c     $       vn(1:skey%nch)
 c
       call compelc(l,cmp)
       if(right)then
-        if(orbitcal .or. calc6d)then
-          ntfun=ntwissfun
-        else
-          ntfun=mfitdetr
-        endif
+        ntfun=merge(ntwissfun,mfitdetr,
+     $       orbitcal .or. calc6d)
         twiss(1,0,1:ntfun)=cmp%value(1:ntfun)
         if(direlc(l) .lt. 0.d0)then
           twiss(1,0,mfitax)=-cmp%value(mfitax)
@@ -1251,11 +1242,8 @@ c
       do i=1,nqcol
         s=sum(qu(i,:)*wlimit*dval)
         if(df(i) .ne. 0.d0)then
-          if(wexponent .eq. 2.d0)then
-            dg=dg-df(i)*s
-          else
-            dg=dg-abs(df(i))**wexponent/df(i)*s
-          endif
+          dg=merge(dg-df(i)*s,dg-abs(df(i))**wexponent/df(i)*s,
+     $         wexponent .eq. 2.d0)
         endif
         if(.not. fit(i))then
           if((s-df(i))*df(i) .lt. 0.d0)then

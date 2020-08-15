@@ -1,5 +1,5 @@
 c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
-      subroutine trackd(latt,kptbl,x,px,y,py,z,g,dv,pz,
+      subroutine trackd(kptbl,x,px,y,py,z,g,dv,pz,
      $     kzx,mturn,trval,phi,damp,dampenough,ivar1,ivar2,lfno)
       use iso_c_binding
       use tfstk
@@ -10,14 +10,16 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       integer*4 n1p0,nxp
       parameter (n1p0=256,nxp=51)
       integer*4, contiguous, pointer, dimension(:,:) :: ntloss
-      integer*4 kptbl(np0,6),mturn(np0),kzx(2,np0)
-      integer*8 intlm,latt(nlat)
-      integer*4 ivar1,ivar2,lfno
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
-      real*8 trval,phi(3),damp,dampenough
+      integer*4 ,intent(inout):: kptbl(np0,6),mturn(np0)
+      integer*4 ,intent(out):: kzx(2,np0)
+      integer*8 intlm
+      integer*4 ,intent(in):: ivar1,ivar2,lfno
+      real*8 ,intent(inout):: x(np0),px(np0),y(np0),py(np0),z(np0),
+     $     g(np0),dv(np0),pz(np0)
+      real*8 ,intent(in):: trval,phi(3),dampenough,damp
       intlm=ktfallocshared((n1p0*nxp+2)/2)
       call c_f_pointer(c_loc(klist(intlm)),ntloss,[n1p0,nxp])
-      call trackd0(latt,kptbl,x,px,y,py,z,g,dv,pz,
+      call trackd0(kptbl,x,px,y,py,z,g,dv,pz,
      1     mturn,kzx,trval,phi,
      $     damp .ne. 0.d0,dampenough,ntloss,ivar1,ivar2,lfno)
       call tfreeshared(intlm)
@@ -27,7 +29,7 @@ c      endif
       return
       end
 
-      subroutine trackd0(latt,kptbl,x,px,y,py,z,g,dv,pz,
+      subroutine trackd0(kptbl,x,px,y,py,z,g,dv,pz,
      1     mturn,kzx,trval,phi,
      $     damp,dampenough,ntloss,ivar1,ivar2,lfno)
       use tfstk
@@ -35,17 +37,20 @@ c      endif
       use tmacro
       use ffs_pointer, only:idelc
       implicit none
-      integer*4 n1p0,n2p,maxturn,maxpara,nw,lfno,ncons,nscore,
-     $     ivar1,ivar2,ivar3
+      integer*4 n1p0,n2p,maxturn,maxpara,nw,ncons,nscore,ivar3
       parameter (n1p0=200,n2p=51,maxturn=2**29,maxpara=256,nw=16)
       integer*4, parameter :: nkptbl = 6, minnp=16
       integer*8 kv,kax,kax11,kax12,kax13,kax2,
-     $     kaxi,kaxi3,kax1,latt(nlat)
-      integer*4 kptbl(np0,nkptbl),n1p,npr1,
-     $     ipr,j,n,jzout,np1,k,np,kp,kz,kx,irw,nsc,iw,
+     $     kaxi,kaxi3,kax1
+      integer*4 ,intent(out):: ntloss(n1p0,n2p),kzx(2,np0)
+      integer*4 ,intent(in):: ivar1,ivar2,lfno
+      integer*4 ,intent(inout):: kptbl(np0,nkptbl),mturn(np0)
+      integer*4 n1p,npr1,ipr,j,n,jzout,np1,k,np,kp,kz,kx,irw,nsc,iw,
      $     jj,ip,isw,kseed,npmax,npara,nxm(n1p0)
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
-     1     pz(np0),dampenough,aenox(np0),aenoy(np0),aenoz(np0),
+      real*8 ,intent(inout):: x(np0),px(np0),y(np0),py(np0),z(np0),
+     $     g(np0),dv(np0)
+      real*8 ,intent(in):: dampenough
+      real*8 pz(np0),aenox(np0),aenoy(np0),aenoz(np0),
      $     spx(np0),spy(np0),spz(np0)
       real*8 a2min,a2max,a3min,a3max,a1min,a1max,a2step,a3step,a1step,
      $     emx,emz,rgetgl1,cx,cy,cz,sx,sy,sz,
@@ -55,10 +60,10 @@ c      endif
       real*8, parameter :: big=1.d300
       character*14 vname
       data vname /'ResultOfDAPERT'/
-      integer*4 ntloss(n1p0,n2p)
-      integer*4 mturn(np0),kzx(2,np0),muls,irtc
+      integer*4 muls,irtc
       integer*4 i,fork_worker,wait,ichpid(maxpara)
-      logical*4 ini,remain,damp,pol0
+      logical*4 ,intent(in):: damp
+      logical*4 ini,remain,pol0
       character label(3)
       data label /'X','Y','Z'/
       character rad62a
@@ -83,11 +88,7 @@ c      write(*,*)'trackd0 ',damp,dampx,t0,omega0,taurdx
       call tsetdvfs
       trval=0.d0
       nscore=0
-      if(nturn .gt. 600)then
-        muls=(nturn/6200+1)*100
-      else
-        muls=10
-      endif
+      muls=merge((nturn/6200+1)*100,10,nturn .gt. 600)
       a2min=x(1)
       a2max=x(2)
       a3min=y(1)
@@ -150,11 +151,7 @@ c      write(*,*)'trackd0 ',damp,dampx,t0,omega0,taurdx
       klist(kax+2)=ktflist+kax2
 c      lp0=latt(1)+kytbl(kwmax,idtype(idelc(1)))+1
       emx=sqrt(abs(rgetgl1('EMITX'))+abs(rgetgl1('EMITY')))
-      if(rfsw)then
-        emz=sqrt(abs(rgetgl1('EMITZ')))
-      else
-        emz=abs(rgetgl1('SIGE'))
-      endif
+      emz=merge(sqrt(abs(rgetgl1('EMITZ'))),abs(rgetgl1('SIGE')),rfsw)
       ntloss(1:n1p,1:n2p)=maxturn
       nxm(1:n1p)=n2p+1
       npara=min(nparallel,maxpara,np0/minnp)

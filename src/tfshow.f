@@ -405,7 +405,7 @@ c            endif
       logical*4 function tftype1fit(k)
       use tffitcode
       implicit none
-      integer*4 k
+      integer*4 ,intent(in):: k
       tftype1fit=k .eq. mfitnx .or. k .eq. mfitny .or.
      $     (k .ge. mfitleng .and. k .le. mfitgz)
       return
@@ -413,7 +413,7 @@ c            endif
 
       character*3 function famlabel(k)
       implicit none
-      integer*4 k
+      integer*4 ,intent(in):: k
       if(k .eq. 0)then
         famlabel='   '
       elseif(k .gt. 9)then

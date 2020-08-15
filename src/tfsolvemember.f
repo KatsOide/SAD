@@ -29,10 +29,11 @@
       implicit none
       type (sad_descriptor) kx
       type (sad_descriptor) k1
-      type (sad_dlist) list
+      type (sad_dlist) ,intent(in):: list
       type (sad_dlist), pointer :: listx
-      integer*4 irtc
-      logical*4 eval,reps
+      integer*4 ,intent(out):: irtc
+      logical*4 eval
+      logical*4 ,intent(out):: reps
       irtc=-1
       kx=sad_descr(list)
       reps=.false.
@@ -73,9 +74,12 @@ c        call tfstk2l(listx,listx)
       subroutine tfatt(isp1,kx,eval,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k1
-      integer*4 isp1,irtc,isp0,i
-      logical*4 eval
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) k1
+      integer*4 isp0,i
+      logical*4 ,intent(in):: eval
       if(isp .eq. isp1+2)then
         call tfclassmember(dtastk(isp1+1),dtastk(isp),kx,eval,irtc)
         return
@@ -111,13 +115,17 @@ c        write(*,*)'with: ',irtc,i
       use tfstk
       use tfcx
       implicit none
-      type (sad_descriptor) k10,k20,kx,k1,k2,ks
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) ,intent(in):: k10,k20
+      type (sad_descriptor) k1,k2,ks
       type (sad_symdef), pointer :: symd
       type (sad_symbol), pointer :: symh
       type (sad_dlist), pointer :: kl1,klx
       integer*8 ka2,k11,kv
-      integer*4 irtc,isp1,l,itfdownlevel
-      logical*4 ev,eval
+      integer*4 isp1,l,itfdownlevel
+      logical*4 ev
+      logical*4 ,intent(in):: eval
       k1=k10
       k2=k20
       if(ktfoperq(k2,ka2))then
@@ -219,11 +227,14 @@ c      write(*,*)'with: ',irtc,ev,eval
       subroutine tfreplacemember(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,ka,ki
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) ka,ki,tfreplacememberstk
       type (sad_dlist), pointer :: klm
       type (sad_symbol), pointer :: sym
       type (sad_string), pointer :: str
-      integer*4 isp1,irtc,itfmessage,ispa,ispb,i,ispc,nrule1,nrule2
+      integer*4 itfmessage,ispa,ispb,i,ispc,nrule1,nrule2
       logical*4 rep
       if(isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
@@ -263,7 +274,7 @@ c      enddo
 c      write(*,*)'repmember ',ispa,ispc,ispb,klm%nl
       call tfsortsymbolstk(ispa,(ispb-ispa)/2,nrule1)
       call tfsortsymbolstk(ispb,(ispc-ispb)/2,nrule2)
-      call tfreplacememberstk(ispa,ispb,ispc,nrule1,nrule2,ka,kx,0,rep)
+      kx=tfreplacememberstk(ispa,ispb,ispc,nrule1,nrule2,ka,0,rep)
 c      call tfdebugprint(ka,'repmember-9',3)
 c      call tfdebugprint(kx,'==>',3)
       irtc=0
@@ -275,19 +286,23 @@ c      call tfdebugprint(kx,'==>',3)
       return
       end
 
-      recursive subroutine tfreplacememberstk(isp1,isp2,isp3,
-     $     nrule1,nrule2,k,kx,m0,rep)
+      recursive function tfreplacememberstk(isp1,isp2,isp3,
+     $     nrule1,nrule2,k,m0,rep) result(kx)
       use tfstk
       use tfcode
       use tfcx
       implicit none
-      type (sad_descriptor) k,kx,k1,ki,kd
+      type (sad_descriptor) kx
+      integer*4 ,intent(in):: isp1,isp2,isp3,nrule1,nrule2,m0
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) k1,ki,kd
       type (sad_pat), pointer :: pat
       type (sad_dlist), pointer :: kl,klx,kli
       type (sad_symbol), pointer :: sym
       integer*8 ka
-      integer*4 isp1,isp2,isp3,i,m,isp0,n,m0,m01,nrule1,nrule2
-      logical*4 rep,rep1,tfclassq,rule,tfrepsymstk
+      integer*4 i,m,isp0,n,m01
+      logical*4 ,intent(out):: rep
+      logical*4 rep1,tfclassq,rule,tfrepsymstk
       if(icx .eq. 0)then
         call tfcxinit
       endif
@@ -315,8 +330,8 @@ c      call tfdebugprint(kx,'==>',3)
             endif
             isp=isp+1
             if(.not. ktfstringq(k1))then
-              call tfreplacememberstk(isp1,isp2,isp3,
-     $             nrule1,nrule2,k1,dtastk(isp),0,rep)
+              dtastk(isp)=tfreplacememberstk(isp1,isp2,isp3,
+     $             nrule1,nrule2,k1,0,rep)
             else
               dtastk(isp)=kl%head
             endif
@@ -346,8 +361,8 @@ c      call tfdebugprint(kx,'==>',3)
               endif
             endif
             if(.not. ktfstringq(ki) .and. ktfnonrealq(ki))then
-              call tfreplacememberstk(isp1,isp2,isp3,nrule1,nrule2,
-     $             ki,dtastk(isp),m01,rep1)
+              dtastk(isp)=tfreplacememberstk(isp1,isp2,isp3,
+     $             nrule1,nrule2,ki,m01,rep1)
               rep=rep .or. rep1
             endif
           endif
@@ -361,13 +376,13 @@ c      call tfdebugprint(kx,'==>',3)
         rep=.false.
         k1=pat%expr
         if(ktfobjq(k1))then
-          call tfreplacememberstk(isp1,isp2,isp3,
-     $         nrule1,nrule2,k1,k1,0,rep)
+          k1=tfreplacememberstk(isp1,isp2,isp3,
+     $         nrule1,nrule2,k1,0,rep)
         endif
         kd=pat%default
         if(ktfobjq(kd))then
-          call tfreplacememberstk(isp1,isp2,isp3,
-     $         nrule1,nrule2,kd,kd,0,rep1)
+          kd=tfreplacememberstk(isp1,isp2,isp3,
+     $         nrule1,nrule2,kd,0,rep1)
           rep=rep .or. rep1
         endif
         if(rep)then
@@ -393,12 +408,13 @@ c      call tfdebugprint(kx,'==>',3)
       use tfstk
       use tfcx
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1,isp2,nrule1,nrule2
       type (sad_symbol) sym
       type (sad_dlist), pointer :: klx
       type (sad_namtbl), pointer :: loc
       integer*8 kaj,ka
-      integer*4 isp1,isp2,j,nrule1,nrule2
+      integer*4 j
       logical*4 tfmatchsymstk
       call loc_namtbl(sym%loc,loc)
       ka=sad_loc(sym%loc)
@@ -420,9 +436,12 @@ c      call tfdebugprint(kx,'==>',3)
       subroutine tfreplacedefarg(k,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kx,kx1
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx1
       type (sad_dlist), pointer :: kl,klx
-      integer*4 itfmessage,irtc
+      integer*4 itfmessage
+      integer*4 ,intent(out):: irtc
       if(ktfnonlistq(k,kl) .or. kl%head%k .ne. ktfoper+mtfhold
      $     .or. kl%nl .ne. 1)then
         go to 9000
@@ -443,10 +462,13 @@ c      call tfdebugprint(kx,'==>',3)
       recursive subroutine tfreplacedefarg1(k1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k1,kx,kx1,kargr,kr
+      type (sad_descriptor) ,intent(in):: k1
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx1,kargr,kr
+      integer*4 ,intent(out):: irtc
       type (sad_dlist), pointer :: kl1,klx1
       integer*8 ka
-      integer*4 itfmessage,irtc,id
+      integer*4 itfmessage,id
       if(ktfnonlistq(k1,kl1) .or. ktfnonoperq(kl1%head,ka))then
         go to 9100
       endif
@@ -497,7 +519,8 @@ c      call tfdebugprint(kx,'==>',3)
       recursive logical*4 function tfclassq(k) result(lx)
       use tfstk
       implicit none
-      type (sad_descriptor) k,k1
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) k1
       type (sad_dlist), pointer ::list
       type (sad_symdef), pointer ::symd
       lx=.false.
@@ -525,10 +548,12 @@ c      call tfdebugprint(kx,'==>',3)
       use tfstk
       use tfcx
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
       type (sad_dlist), pointer :: listpc
       integer*8 kcv,kam,kc
-      integer*4 isp1,irtc,l,itfmessage,n,isp0,i,itfdownlevel
+      integer*4 l,itfmessage,n,isp0,i,itfdownlevel
       logical*4 ev
       if(kxmemberobject%k .eq. 0)then
         call tfcxinit
@@ -626,11 +651,13 @@ c      call tfdebugprint(kx,'==>',3)
       use tfstk
       use tfcode
       implicit none
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
       type (sad_symbol), pointer :: sym
       type (sad_symdef), pointer :: symd
       type (sad_namtbl), pointer :: loc
-      type (sad_descriptor) kx
-      integer*4 isp1,irtc,itfmessage,ls,l,n,n1,ifrac,id,n0
+      integer*4 itfmessage,ls,l,n,n1,ifrac,id,n0
       character*1024 name
       character*32 buf
       character ch
@@ -687,11 +714,13 @@ c      call tfdebugprint(kx,'==>',3)
       use tfcode
       use tfcx
       implicit none
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
       type (sad_symbol), pointer :: sym
       type (sad_symdef), pointer :: symd
       type (sad_namtbl), pointer :: loc
-      type (sad_descriptor) kx
-      integer*4 isp1,irtc,itfmessage
+      integer*4 itfmessage
       if(kxmemberobject%k .eq. 0)then
         call tfcxinit
       endif

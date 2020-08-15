@@ -1,9 +1,10 @@
       subroutine tfsetlist(k,kl,i)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kl
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) ,intent(out):: kl
       type (sad_dlist), pointer :: kll
-      integer*4 i
+      integer*4 ,intent(in):: i
       call descr_sad(kl,kll)
       kll%dbody(i)=k
       if(ktfnonrealq(k))then
@@ -15,9 +16,11 @@
       subroutine tfdimensions(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out)::kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
       type (sad_rlist), pointer :: klr
-      integer*4 isp1,irtc,isp0,m,itfmessage
+      integer*4 isp0,m,itfmessage
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -40,7 +43,7 @@ c        enddo
       recursive subroutine tfdimensionsstk(k,ka0)
       use tfstk
       implicit none
-      type (sad_descriptor) k,ka0
+      type (sad_descriptor) ,intent(in):: k,ka0
       type (sad_dlist), pointer :: list
       integer*4 isp1,isp2,i,j,m,n1
       if(ktfnonlistq(k,list))then
@@ -80,7 +83,7 @@ c        enddo
 
       integer*8 function ktfmakelist(isp0)
       use tfstk, kf=>ktfmakelist
-      integer*4 isp0
+      integer*4 ,intent(in):: isp0
       ktfmakelist=kf(isp0)
       return
       end

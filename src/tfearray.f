@@ -2,9 +2,12 @@
       use tfstk
       use eexpr
       implicit none
-      type (sad_descriptor) k,k1,kx,ky,tfdot
+      type (sad_descriptor) ,intent(in):: k,k1
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) ky,tfdot
       type (sad_dlist), pointer :: kl,kl1
-      integer*4 irtc,ne,ne1,i,iopc1,isp0
+      integer*4 ,intent(out):: irtc
+      integer*4 ne,ne1,i,iopc1,isp0
       logical*4 list1,list
 c     begin initialize for preventing compiler warning
 c     end   initialize for preventing compiler warning
@@ -165,19 +168,19 @@ c$$$      endif
       subroutine tfcmplxmath(c1,c2,kx,iopc1,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
-      integer*4 iopc1,irtc
-      complex*16 c1,c2,cx,tfcmplxmathv
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: iopc1
+      integer*4 ,intent(out):: irtc
+      complex*16 ,intent(in):: c1,c2
+      complex*16 cx,tfcmplxmathv
       if(iopc1 .gt. mtfunequal .and. iopc1 .ne. mtfcomplex)then
         irtc=-1
       else
         cx=tfcmplxmathv(c1,c2,iopc1)
+        kx=merge(dfromr(dble(cx)),
+     $       kxcalocv(-1,dble(cx),imag(cx)),
+     $       imag(cx) .eq. 0.d0)
         irtc=0
-        if(imag(cx) .eq. 0.d0)then
-          kx=dfromr(dble(cx))
-        else
-          kx=kxcalocv(-1,dble(cx),imag(cx))
-        endif
       endif
       return
       end
@@ -185,9 +188,9 @@ c$$$      endif
       complex*16 function tfcmplxmathv(c1,c2,iopc1)
       use tfstk
       implicit none
-      integer*4 iopc1
+      integer*4 ,intent(in):: iopc1
       integer*8 i1,i2
-      complex*16 c1,c2
+      complex*16 ,intent(in):: c1,c2
       select case(iopc1)
       case (mtfneg)
         tfcmplxmathv=-c2
@@ -200,47 +203,24 @@ c$$$      endif
       case (mtfrevpower)
         if(imag(c1) .eq. 0.d0)then
           i1=int8(c1)
-          if(i1 .eq. dble(c1))then
-            if(i1 .eq. -1)then
-              tfcmplxmathv=1.d0/c2
-            else
-              tfcmplxmathv=c2**i1
-            endif
-          else
-            tfcmplxmathv=c2**dble(c1)
-          endif
+          tfcmplxmathv=merge(merge(1.d0/c2,c2**i1,i1 .eq. -1),
+     $         c2**dble(c1),i1 .eq. dble(c1))
         else
           tfcmplxmathv=c2**c1
         endif
       case(mtfpower)
         if(imag(c2) .eq. 0.d0)then
           i2=int8(c2)
-          if(i2 .eq. dble(c2))then
-            if(i2 .eq. -1)then
-              tfcmplxmathv=1.d0/c1
-            elseif(i2 .eq. 0 .and. redmath%value%k .ne. 0)then
-              tfcmplxmathv=1.d0
-            else
-              tfcmplxmathv=c1**i2
-            endif
-          else
-            tfcmplxmathv=c1**dble(c2)
-          endif
+          tfcmplxmathv=merge(merge(1.d0/c1,merge((1.d0,0.d0),c1**i2,
+     $         i2 .eq. 0 .and. redmath%value%k .ne. 0),
+     $         i2 .eq. -1),c1**dble(c2),i2 .eq. dble(c2))
         else
           tfcmplxmathv=c1**c2
         endif
       case (mtfequal)
-        if(c1 .eq. c2)then
-          tfcmplxmathv=1.d0
-        else
-          tfcmplxmathv=0.d0
-        endif
+        tfcmplxmathv=merge(1.d0,0.d0,c1 .eq. c2)
       case (mtfunequal)
-        if(c1 .ne. c2)then
-          tfcmplxmathv=1.d0
-        else
-          tfcmplxmathv=0.d0
-        endif
+        tfcmplxmathv=merge(1.d0,0.d0,c1 .ne. c2)
       case (mtfcomplex)
         tfcmplxmathv=c1+dcmplx(-imag(c2),dble(c2))
       case default

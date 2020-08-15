@@ -48,11 +48,7 @@
         return
       endif
       bz=bz0
-      if(eps0 .eq. 0.d0)then
-        eps=epsdef
-      else
-        eps=epsdef*eps0
-      endif
+      eps=merge(epsdef,epsdef*eps0,eps0 .eq. 0.d0)
       ndiv=1+int(abs(al*hypot(ak,bz)/eps))
 c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
       aln=al/ndiv
@@ -229,11 +225,7 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
         return
       endif
       bz=bz0
-      if(eps0 .eq. 0.d0)then
-        eps=epsdef
-      else
-        eps=epsdef*eps0
-      endif
+      eps=merge(epsdef,epsdef*eps0,eps0 .eq. 0.d0)
       aka=hypot(ak,bz)
       ndiv=1+int(abs(al)*aka/eps)
       ndiv=min(ndivmax,

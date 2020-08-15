@@ -23,11 +23,7 @@
           if(tfruleq(ki%k,lri))then
             j=i+i-isp1
             dtastk(j-1:j)=lri%dbody(1:2)
-            if(.not. tfconstpatternq(ktastk(j-1)))then
-              ivstk2(2,j-1)=1
-            else
-              ivstk2(2,j-1)=0
-            endif
+            ivstk2(2,j-1)=merge(1,0,.not. tfconstpatternq(ktastk(j-1)))
             symbol=symbol .and.
      $           iand(ktfmask,ktastk(j-1)) .eq. ktfsymbol
           elseif(ki%k .eq. ktfoper+mtfnull)then
@@ -42,11 +38,7 @@
         isp=isp+nrule
       elseif(tfruleq(kr%k,lr))then
         call tfgetllstkall(lr)
-        if(.not. tfconstpatternq(ktastk(isp-1)))then
-          ivstk2(2,isp-1)=1
-        else
-          ivstk2(2,isp-1)=0
-        endif
+        ivstk2(2,isp-1)=merge(1,0,.not. tfconstpatternq(ktastk(isp-1)))
         symbol=iand(ktfmask,ktastk(isp-1)) .eq. ktfsymbol
         nrule=1
       else
@@ -114,7 +106,7 @@
       implicit none
       type (sad_descriptor) kx
       type (sad_descriptor) ,intent(in):: k
-      type (sad_descriptor) kp,ki,k1,kir,ks,kd
+      type (sad_descriptor) kp,ki,k1,kir,ks,kd,tfcompose
       type (sad_dlist), pointer :: klir,kl
       type (sad_rlist), pointer :: klr
       type (sad_pat), pointer :: pat
@@ -210,11 +202,7 @@
               endif
             endif
           enddo
-          if(rep)then
-            call tfcompose(isp1+1,ktastk(isp1+1),kx,irtc)
-          else
-            kx=k
-          endif
+          kx=merge(tfcompose(isp1+1,ktastk(isp1+1),irtc),k,rep)
           isp=isp1
         endif
       elseif(ktfpatq(k,pat))then
@@ -252,11 +240,7 @@
           endif
           rep=rep .or. rep1
         endif
-        if(rep)then
-          kx=kxpcopyss(k1,pat%head,ks,kd)
-        else
-          kx=k
-        endif
+        kx=merge(kxpcopyss(k1,pat%head,ks,kd),k,rep)
       else
         kx=k
       endif
@@ -286,7 +270,7 @@
       implicit none
       type (sad_descriptor) kx
       type (sad_descriptor) ,intent(in):: k
-      type (sad_descriptor) kd,k1,ki,ks
+      type (sad_descriptor) kd,k1,ki,ks,tfcompose
       type (sad_pat), pointer :: pat
       type (sad_dlist), pointer :: kl,kli
       type (sad_rlist), pointer :: klr
@@ -365,7 +349,7 @@ c            call tfdebugprint(ki,'==> ',1)
             endif
           enddo
           if(rep)then
-            call tfcompose(isp1+1,ktastk(isp1+1),kx,irtc)
+            kx=tfcompose(isp1+1,ktastk(isp1+1),irtc)
           endif
           isp=isp1
         endif
@@ -590,8 +574,9 @@ c          endif
       use tfstk
       use tfcode
       implicit none
+      type (sad_descriptor) kx,tfsequence
       type (sad_pat), pointer :: pat
-      integer*8 kp,kap,kx
+      integer*8 kp,kap
       integer*4 ,intent(in):: isp1,isp2
       integer*4 i,ispb,ispe
       logical*4 rep
@@ -605,11 +590,11 @@ c          endif
         ispb=isp
         call tfgetstkstk(pat%value,rep)
         ispe=isp
-        call tfsequence(ispb,ispe,kx)
+        kx=tfsequence(ispb,ispe)
         isp=ispb+1
         dtastk(isp)=pat%sym%alloc
         isp=isp+1
-        ktastk(isp)=kx
+        dtastk(isp)=kx
       enddo
       return
       end
@@ -619,7 +604,7 @@ c          endif
       use tfstk
       implicit none
       type (sad_descriptor) kx,ki,kr
-      type (sad_descriptor) tfreplacesymbolstk1
+      type (sad_descriptor) tfreplacesymbolstk1,tfcompose
       type (sad_dlist) ,intent(in):: list
       type (sad_dlist), pointer :: klx
       integer*4 ,intent(in):: ispr,nrule
@@ -653,15 +638,8 @@ c          endif
         rep=rep .or. rep2 .or. rep1
       endif
       if(isp .eq. isp1+1)then
-        if(ktfrealq(ktastk(isp1+1)))then
-          if(ktastk(isp1+1) .ne. 0)then
-            i=2
-          else
-            i=3
-          endif
-        else
-          i=0
-        endif
+        i=merge(merge(2,3,ktastk(isp1+1) .ne. 0),0,
+     $       ktfrealq(ktastk(isp1+1)))
       else
         rep=.true.
         i=0
@@ -681,11 +659,7 @@ c          endif
             endif
             call tfgetstkstk(kr,rep2) 
             rep=rep .or. rep1 .or. rep2
-            if(j .le. isp)then
-              kx=dtastk(j)
-            else
-              kx%k=ktfoper+mtfnull
-            endif
+            kx=merge(dtastk(j),dxnullo,j .le. isp)
           endif
         else
           kx%k=ktfoper+mtfnull
@@ -707,11 +681,7 @@ c          endif
           rep=rep2 .or. rep .or. rep1
         endif
       enddo
-      if(rep)then
-        call tfcompose(isp1,ktastk(isp1),kx,irtc)
-      else
-        kx=sad_descr(list)
-      endif
+      kx=merge(tfcompose(isp1,ktastk(isp1),irtc),sad_descr(list),rep)
       return
       end
 
@@ -890,7 +860,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       kx=k
       k1%k=ktfref
       irtc=0
-      do while(.true.)
+      do
         if(tfsameq(k1,kx))then
           return
         endif
@@ -1031,11 +1001,8 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       isp2=isp
       do i=isp0+1,isp2
         isp=isp+1
-        if(ktflistq(ktastk(i),kli))then
-          dtastk(isp)=kli%dbody(1)
-        else
-          dtastk(isp)=dtastk(i)
-        endif
+        dtastk(isp)=merge(kli%dbody(1),dtastk(i),
+     $       ktflistq(ktastk(i),kli))
       enddo
       n=isp-isp2
       isp3=isp

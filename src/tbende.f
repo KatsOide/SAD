@@ -68,7 +68,7 @@
       use mathfun
       implicit none
       real*8 , intent(in) :: ak1,al
-      real*8 trans(6,12),cod(6),beam(42)
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42)
       real*8 pzi,dpzi,xr,s,a,trans2(6,6),dk,pxf,xf,yf,zf,phi
       phi=al/rho0
       p  =1.d0+cod(6)
@@ -145,11 +145,11 @@
       use temw,only:tmulbs
       implicit none
       real*8, intent(in):: ak1,al,bsi1,bsi2,alr
-      real*8 trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 pxf,xf,phin,dxpx,
      $     dxf,dpxf,dyf,dpyf,hi,hip,pyf,yf,zf,
      $     xiksq
-      logical*4 enarad
+      logical*4 ,intent(in):: enarad
       dp=cod(6)
       p=1.d0+dp
       xi=cod(1)
@@ -232,7 +232,7 @@ c     $     sxkxp,dcxkxp
       use mathfun
       implicit none
       real*8, intent(in):: phi0n,snphi0,sinsq0,csphi0,aln,bsi1,bsi2,alr
-      real*8 trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 xi,pxi,yi,pyi,dp,pr,rhoe,
      $     dpzinv,phsq,dtn,s,dpz1,pz1,drho,dpx,pxf,
      $     pz2,d,sinda,da,dpz2,xf
@@ -310,8 +310,9 @@ c     $     sxkxp,dcxkxp
       use tmacro, only:irad
       use ffs_flag,only:calpol
       implicit none
-      real*8 trans1(6,6),cod(6),phi0,dtheta,chi1,chi2,chi3,sphi0,
-     $     coschi2,sdt,cphi0,rr(3,3),srot(3,9)
+      real*8 ,intent(inout):: trans1(6,6),cod(6),srot(3,9)
+      real*8 ,intent(in):: phi0,dtheta
+      real*8 chi1,chi2,chi3,sphi0,coschi2,sdt,cphi0,rr(3,3)
       integer*4 i
       cphi0=cos(phi0*.5d0)
       sphi0=sin(phi0*.5d0)
@@ -320,7 +321,6 @@ c     $     sxkxp,dcxkxp
       coschi2=cos(chi2)
       chi1=asin(sin(dtheta*.5d0)**2*2.d0*sphi0*cphi0/coschi2)
       chi3=asin(sdt*cphi0/coschi2)
-c      write(*,*)'tbrote ',chi1,chi2,chi3
       call tsrote(trans1,cod,rr,chi1,chi2,chi3)
       if(calpol .and. irad .gt. 6)then
         do concurrent (i=1:9)
@@ -385,17 +385,20 @@ c      write(*,*)'tbrote ',chi1,chi2,chi3
       use kradlib, only:tradke
       use temw,only:tsetr0
       implicit none
-      integer*4 mfring,ndiv,nrad,n,l,n1,n2
-      real*8 al0,phib,phi0,psi1,psi2,ak,dx,dy,theta,dtheta,
-     $     fb1,fb2,eps0,phibl,bsi1,bsi2,alx,alr,
+      integer*4 ,intent(in)::  mfring,l
+      integer*4 ndiv,nrad,n,n1,n2
+      real*8 ,intent(in):: al0,phib,phi0,apsi1,apsi2,ak,dx,dy,
+     $     theta,dtheta,fb1,fb2,eps0
+      real*8 phibl,bsi1,bsi2,alx,alr,
      $     dxfr1,dyfr1,dxfr2,dyfr2,phi1,
      $     eps,akn,tanp1,tanp2,f,
-     $     dyfra1,dyfra2,apsi1,apsi2,cod11,
+     $     dyfra1,dyfra2,psi1,psi2,cod11,
      $     csphin,snphin,sinsqn,phin,aln,alx0,akx0,
      $     rbc,akc,alc,phic,f1r,f2r
-      real*8 trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       complex*16 akm(0:nmult)
-      logical*4 enarad,alcorr,fringe,next,prev
+      logical*4 ,intent(in):: enarad,alcorr,fringe,next
+      logical*4 prev
       if(alcorr .and.
      $     mfring .ne. 0 .and. al0 .ne. 0.d0
      $     .and. phi0 .ne. 0.d0)then
@@ -475,11 +478,7 @@ c      endif
       endif
       rbc=1.d0-(f1r+f2r)/al0
       phic=phi0*rbc
-      if(eps0 .eq. 0.d0)then
-        eps=epsbend
-      else
-        eps=epsbend*eps0
-      endif
+      eps=merge(epsbend,epsbend*eps0,eps0 .eq. 0.d0)
       drhob=rhob-rho0
       aind=rho0/phi0*ak
       b=brhoz/rhob
@@ -629,21 +628,14 @@ c     $     rb1,rb2,al0,alc,aln,phin,ak
       use temw,only:tmulbs
       use mathfun
       implicit none
-      real*8 trans(6,12),cod(6),beam(42),srot(3,9),
-     $     phi0,al,cp,sp,pr,pxi,pzf,
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 ,intent(in):: phi0,al,h0,h1emit,dvemit
+      real*8 cp,sp,pr,pxi,pzf,
      $     trans1(6,6),xi,pyi,pzi,pxf,xf,dpzipxi,dpzipyi,dpzip,
-     $     dpzfpxi,dpzfpyi,dpzfp,rho0,h0,dl,dcp,xs,
-     $     h1emit,dvemit,a,psqmax
-      integer*4 irad
-      parameter (psqmax=0.9999d0)
+     $     dpzfpxi,dpzfpyi,dpzfp,rho0,dl,dcp,xs,a
+      integer*4 ,intent(in):: irad
+      real*8 ,parameter ::psqmax=0.9999d0
       call xsincos(phi0,sp,xs,cp,dcp)
-c      cp=cos(phi0)
-c      sp=sin(phi0)
-c      if(cp .ge. 0.d0)then
-c        dcp=sp**2/(1.d0+cp)
-c      else
-c        dcp=1.d0-cp
-c      endif
       rho0=al/phi0
       call tdrife(trans,cod,beam,srot,rho0*sp,0.d0,0.d0,0.d0,0.d0,
      $     .true.,.false.,irad)
@@ -698,11 +690,13 @@ c      pzi=sqrt(max(1.d-4,(pr-pxi)*(pr+pxi)-pyi**2))
      1     al0,phib,phi0,psi1,psi2,apsi1,apsi2,ak,
      1     dx,dy,theta,dtheta,fb1,fb2,mfring,fringe,eps0,coup)
       implicit none
-      integer*4 mfring
-      real*8 trans(4,5),cod(6),transe(6,12),beam(42),srot(3,9),
-     $     dx,dy,theta,fb1,fb2,al0,phib,phi0,
+      integer*4 ,intent(in):: mfring
+      real*8 ,intent(inout):: trans(4,5),cod(6)
+      real*8 transe(6,12),beam(42),srot(3,9)
+      real*8 ,intent(in):: dx,dy,theta,fb1,fb2,al0,phib,phi0,
      $     psi1,psi2,ak,dtheta,eps0,apsi1,apsi2
-      logical*4 coup,fringe
+      logical*4 ,intent(out):: coup
+      logical*4 ,intent(in):: fringe
       call tinitr(transe)
       call tbende(transe,cod,beam,srot,al0,phib,phi0,
      $     psi1,psi2,apsi1,apsi2,ak,
@@ -721,8 +715,9 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       use tmacro
       use temw,only:tmulbs
       implicit none
-      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),
-     $     dxfr,dyfr,pr,dyfra,ysq,dyfraysq
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42)
+      real*8 ,intent(in):: dxfr,dyfr,dyfra
+      real*8 trans1(6,6),pr,ysq,dyfraysq
       pr=1.d0+cod(6)
       ysq=cod(3)**2
       dyfraysq=ysq*dyfra
@@ -750,15 +745,15 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       use tmacro
       use temw,only:tmulbs
       implicit none
-      real*8 trans(6,12),cod(6),beam(42),phib,phi0,dx,dy,theta,
-     $     trans1(6,6),dtheta,srot(3,9)
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 ,intent(in):: phib,phi0,dx,dy,theta,dtheta
+      real*8 trans1(6,6)
       call tchge(trans,cod,beam,srot,
      $     dx,dy,theta,dtheta,phi0,.true.)
       call tinitr(trans1)
       trans1(2,6)=phi0
       trans1(5,1)=-phi0
       trans(:,1:irad)=matmul(trans1,trans(:,1:irad))
-c      call tmultr(trans,trans1,irad)
       call tmulbs(beam ,trans1,.true.)
       cod(2)=cod(2)+(phi0-phib)+cod(6)*phi0
       cod(5)=cod(5)-phi0*cod(1)

@@ -2,7 +2,8 @@
       implicit none
       integer itmax,n,iter,i
       parameter (itmax=30)
-      real*8 a,b,epslon,epsabs,ba,s0,s20,s,xstep,x,s1,s2
+      real*8 ,intent(in):: a,b,epslon,epsabs
+      real*8 ba,s0,s20,s,xstep,x,s1,s2
       real*8 f
       external f
 

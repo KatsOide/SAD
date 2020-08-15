@@ -141,9 +141,10 @@ c          msgn /:   (*   *)   Hold z
       implicit none
       type (sad_descriptor) kx,kh,tfeval1
       type (sad_dlist), pointer :: klx
-      integer*4 isp0,iprior(0:mtfnopc),irtc
+      integer*4 ,intent(in):: isp0,iprior(0:mtfnopc)
+      integer*4 ,intent(out):: irtc
       integer*4 iop,iop1,isp1,i,itgetfpe,itfmessage
-      logical*4 lastfirst(0:mtfnopc)
+      logical*4 ,intent(in):: lastfirst(0:mtfnopc)
       irtc=0
       do while(isp .gt. isp0)
         iop=itastk2(1,isp)
@@ -284,11 +285,14 @@ c          msgn /:   (*   *)   Hold z
       subroutine tfeinequal(k1,k2,kx,iop1,nextrel)
       use tfstk
       implicit none
-      type (sad_descriptor) k1,k2,kx
+      type (sad_descriptor) ,intent(in):: k1,k2
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: kl1,kl2
       type (sad_dlist), pointer :: klx
-      integer*4 iop1,i,m1,m2,irtc
-      logical*4 nextrel,tfconstlistqo
+      integer*4 ,intent(in):: iop1
+      integer*4 i,m1,m2,irtc
+      logical*4 ,intent(in):: nextrel
+      logical*4 tfconstlistqo
       if(tfinequalityq(k1))then
         call loc_sad(ktfaddrd(k1),kl1)
         m1=kl1%nl
@@ -350,9 +354,12 @@ c          msgn /:   (*   *)   Hold z
       subroutine tfinequality(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,tfeval1
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) tfeval1
       integer*8 ka
-      integer*4 isp1,irtc,i,narg,itfmessage
+      integer*4 i,narg,itfmessage
       narg=isp-isp1
       if(narg .lt. 3 .or. narg .ne. (narg/2)*2+1)then
         irtc=itfmessage(9,'General::narg','"3 or more"')
@@ -385,21 +392,23 @@ c          msgn /:   (*   *)   Hold z
       return
       end
 
-      subroutine tfcompose(isp1,kh,kx,irtc)
+      function tfcompose(isp1,kh,irtc) result (kx)
       use tfstk
       implicit none
 c      include 'DEBUG.inc'
-      type (sad_descriptor) kx,kh,tfcomposefun
+      type (sad_descriptor) kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) ,intent(in):: kh
+      type (sad_descriptor) tfcomposefun,tfcomposeoper
       integer*8 kah
-      integer*4 isp1,irtc,iah,isp0
+      integer*4 iah,isp0
       if(rlist(iaximmediate) .ne. 0.d0)then
         if(ktfoperq(kh,kah))then
           iah=int(kah)
-          if(iah .gt. mtfend)then
-            kx=tfcomposefun(isp1,iah,.false.,irtc)
-          else
-            call tfcomposeoper(isp1,iah,kx,.true.,isp0,irtc)
-          endif
+          kx=merge(tfcomposefun(isp1,iah,.false.,irtc),
+     $         tfcomposeoper(isp1,iah,.true.,isp0,irtc),
+     $         iah .gt. mtfend)    
           if(irtc .eq. 0)then
             return
           endif
@@ -423,9 +432,13 @@ c      include 'DEBUG.inc'
       use tfstk
       use efun
       implicit none
-      type (sad_descriptor) kh,kx,tfcomposefun
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) ,intent(in):: kh
+      type (sad_descriptor) tfcomposefun,tfcomposeoper
       integer*8 kah
-      integer*4 isp1,i,irtc,isp0,iah
+      integer*4 i,isp0,iah
       if(isp .ne. isp1 .and. rlist(iaximmediate) .ne. 0.d0)then
         if(ktfoperq(kh,kah))then
           iah=int(kah)
@@ -440,7 +453,7 @@ c      include 'DEBUG.inc'
               go to 10
             endif
           else
-            call tfcomposeoper(isp1,iah,kx,.true.,isp0,irtc)
+            kx=tfcomposeoper(isp1,iah,.true.,isp0,irtc)
             if(irtc .eq. 0)then
               return
             elseif(irtc .gt. 0)then
@@ -490,17 +503,20 @@ c      include 'DEBUG.inc'
       return
       end
 
-      subroutine tfcomposeoper(isp1,iah,kx,comp,isp0,irtc)
+      function  tfcomposeoper(isp1,iah,comp,isp0,irtc) result(kx)
       use tfstk
       use ophash
       implicit none
       type (sad_descriptor) kx
+      integer*4 ,intent(in):: isp1,iah
+      integer*4 ,intent(out):: irtc,isp0
       type (sad_dlist), pointer :: klx
       integer*8 iee0
-      integer*4 isp1,iah,irtc,isp0,i,iy,isp00,iv
-      logical*4 comp
+      integer*4 i,iy,isp00,iv
+      logical*4 ,intent(in):: comp
       real*8 vx,x,y
       irtc=1
+      kx=dxnullo
       if(constop(iah))then
         return
       elseif(isp1+2 .eq. isp)then
@@ -555,104 +571,72 @@ c      include 'DEBUG.inc'
         case (mtfequal)
           if(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr .and.
      $         iand(ktrmask,ktastk(isp)) .ne. ktfnr )then
-            if(rtastk(isp1+1) .eq. rtastk(isp))then
-              kx%k=ktftrue
-            else
-              kx%k=0
-            endif
+            kx%k=merge(ktftrue,ktffalse,rtastk(isp1+1) .eq. rtastk(isp))
             irtc=0
             return
           elseif(ktftype(ktastk(isp1+1)) .eq. ktfstring .and.
      $           ktftype(ktastk(isp)) .eq. ktfstring)then
-            if(tfsamestringq(ktastk(isp1+1),ktastk(isp)))then
-              kx%k=ktftrue
-            else
-              kx%k=0
-            endif
+            kx%k=merge(ktftrue,ktffalse,
+     $           tfsamestringq(ktastk(isp1+1),ktastk(isp)))
             irtc=0
             return
           endif
         case (mtfunequal)
           if(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr .and.
      $         iand(ktrmask,ktastk(isp)) .ne. ktfnr )then
-            if(rtastk(isp1+1) .eq. rtastk(isp))then
-              kx%k=0
-            else
-              kx%k=ktftrue
-            endif
+            kx%k=merge(ktffalse,ktftrue,rtastk(isp1+1) .eq. rtastk(isp))
             irtc=0
             return
           elseif(ktftype(ktastk(isp1+1)) .eq. ktfstring .and.
      $           ktftype(ktastk(isp)) .eq. ktfstring)then
-            if(tfsamestringq(ktastk(isp1+1),ktastk(isp)))then
-              kx%k=0
-            else
-              kx%k=ktftrue
-            endif
+            kx%k=merge(ktffalse,ktftrue,
+     $           tfsamestringq(ktastk(isp1+1),ktastk(isp)))
             irtc=0
             return
           endif
         case (mtfsame)
           if(tfconstq(ktastk(isp1+1)) .and. tfconstq(ktastk(isp)))then
-            if(tfsameq(ktastk(isp1+1),ktastk(isp)))then
-              kx%k=ktftrue
-            else
-              kx%k=0
-            endif
+            kx%k=merge(ktftrue,ktffalse,
+     $           tfsameq(ktastk(isp1+1),ktastk(isp)))
             irtc=0
             return
           endif
         case (mtfunsame)
           if(tfconstq(ktastk(isp1+1)) .and. tfconstq(ktastk(isp)))then
-            if(tfsameq(ktastk(isp1+1),ktastk(isp)))then
-              kx%k=0
-            else
-              kx%k=ktftrue
-            endif
+            kx%k=merge(ktffalse,ktftrue,
+     $           tfsameq(ktastk(isp1+1),ktastk(isp)))
             irtc=0
             return
           endif
         case (mtfgreater)
           if(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr .and.
      $         iand(ktrmask,ktastk(isp)) .ne. ktfnr )then
-            if(rtastk(isp1+1) .gt. rtastk(isp))then
-              kx%k=ktftrue
-            else
-              kx%k=0
-            endif
+            kx%k=merge(ktftrue,ktffalse,
+     $           rtastk(isp1+1) .gt. rtastk(isp))
             irtc=0
             return
           endif
         case (mtfgeq)
           if(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr .and.
      $         iand(ktrmask,ktastk(isp)) .ne. ktfnr )then
-            if(rtastk(isp1+1) .ge. rtastk(isp))then
-              kx%k=ktftrue
-            else
-              kx%k=0
-            endif
+            kx%k=merge(ktftrue,ktffalse,
+     $           rtastk(isp1+1) .ge. rtastk(isp))
             irtc=0
             return
           endif
         case(mtfless)
           if(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr .and.
      $         iand(ktrmask,ktastk(isp)) .ne. ktfnr )then
-            if(rtastk(isp1+1) .lt. rtastk(isp))then
-              kx%k=ktftrue
-            else
-              kx%k=0
-            endif
+            kx%k=merge(ktftrue,ktffalse,
+     $           rtastk(isp1+1) .lt. rtastk(isp))
             irtc=0
             return
           endif
         case (mtfleq)
           if(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr .and.
      $         iand(ktrmask,ktastk(isp)) .ne. ktfnr )then
-            if(rtastk(isp1+1) .le. rtastk(isp))then
-              kx%k=ktftrue
-            else
-              kx%k=0
-            endif
+            kx%k=merge(ktftrue,ktffalse,
+     $           rtastk(isp1+1) .le. rtastk(isp))
             irtc=0
             return
           endif
@@ -670,10 +654,6 @@ c      include 'DEBUG.inc'
           endif
         case (mtfatt)
           call tfclassmember(dtastk(isp1+1),dtastk(isp),kx,.false.,irtc)
-c     call tfdebugprint(dtastk(isp1+1),'estk',1)
-c     call tfdebugprint(dtastk(isp),'@',1)
-c     call tfdebugprint(kx,'==>',1)
-c     write(*,*)'with ',irtc
           return
         case (mtffun)
           if(ktastk(isp) .eq. ktfoper+mtfnull)then
@@ -847,7 +827,7 @@ c     write(*,*)'with ',irtc
       use tfstk
       use efun
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) kx,tfmodule
       type (sad_descriptor) dh
       integer*8 ka,kti,kai,i
       integer*4 ,intent(in):: isp1,iah
@@ -857,21 +837,18 @@ c     write(*,*)'with ',irtc
       logical*4 ,intent(in):: full
       logical*4 re
       irtc=1
+      kx=dxnullo
       id=iget_fun_id(int8(iah))
       select case (id)
       case (nfunif)
         narg=isp-isp1
         if(narg .ge. 2 .and. narg .le. 4)then
           if(ktastk(isp1+1) .eq. 0)then
-            if(narg .ge. 3)then
-              kx=dtastk(isp1+3)
-            else
-              kx%k=ktfoper+mtfnull
-            endif
+            kx=merge(dtastk(isp1+3),dxnullo,narg .ge. 3)
           elseif(ktfrealq(ktastk(isp1+1)))then
             kx=dtastk(isp1+2)
           else
-            kx=dxnull
+            kx%k=ktfoper+mtfnull
             return
           endif
           irtc=0
@@ -935,7 +912,7 @@ c     write(*,*)'with ',irtc
       case (nfunmodule)
         if(full)then
  11       if(isp .eq. isp1+2)then
-            call tfmodule(isp1,kx,.true.,.false.,irtc)
+            kx=tfmodule(isp1,.true.,.false.,irtc)
             if(irtc .ne. 0)then
               if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
                 call tfreseterror
@@ -1013,7 +990,7 @@ c     write(*,*)'with ',irtc
         return
       end select
       irtc=-1
-      kx=dxnull
+      kx%k=ktfoper+mtfnull
       if(ktfnumericq(klist(ifunbase+iah)))then
         rimmediate0=rlist(iaximmediate)
         rlist(iaximmediate)=-1.d0
@@ -1056,8 +1033,9 @@ c          call tfdebugprint(kx,'==>',1)
       subroutine tfevalb(string,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
-      integer*4 irtc,istop
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(out):: irtc
+      integer*4 istop
       character*(*) string
       levele=levele+1
       call tfeval(string,1,istop,kx,.false.,irtc)
@@ -1070,7 +1048,7 @@ c          call tfdebugprint(kx,'==>',1)
       implicit none
       type (sad_descriptor) kx
       integer*4 irtc,istop,l,itfdownlevel
-      character*(*) string
+      character*(*) ,intent(in):: string
       levele=levele+1
 c      write(*,*)'tfevalc ',len(string),ls,'''',string(1:5),''''
       call tfeval(string,1,istop,kx,.false.,irtc)
@@ -1084,9 +1062,10 @@ c      write(*,*)'tfevalc ',len(string),ls,'''',string(1:5),''''
       subroutine tfevals(string,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
-      integer*4 irtc,istop
-      character*(*) string
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(out):: irtc
+      integer*4 istop
+      character*(*) ,intent(in):: string
       levele=levele+1
       call tfeval(string,1,istop,kx,.false.,irtc)
       call tfconnect(kx,irtc)
@@ -1119,7 +1098,7 @@ c      write(*,*)'tfevalc ',len(string),ls,'''',string(1:5),''''
       character*(*) function tfkname(k)
       use tfstk
       implicit none
-      integer*8 k
+      integer*8 ,intent(in):: k
       if(ktfrealq(k))then
         tfkname='Real'
       else

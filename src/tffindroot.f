@@ -9,12 +9,12 @@
         subroutine tfassignrules(sav0,v0,nvar,klx)
         implicit none
         type (sad_descriptor) kx
-        type (sad_dlist), pointer ::klx
+        type (sad_dlist), pointer ,intent(out) ::klx
         type (sad_dlist), pointer ::kli
         integer*4 ,intent(in)::nvar
         integer*4 i
         type (symv),intent(in):: sav0(nvar)
-        real*8 v0(nvar)
+        real*8 ,intent(in):: v0(nvar)
         kx=kxadaloc(-1,nvar,klx)
         do i=1,nvar
           klx%dbody(i)=kxadaloc(0,2,kli)
@@ -38,7 +38,9 @@
       type (symv) , allocatable::sav(:),sav0(:)
       type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: klo
-      integer*4 isp1,irtc,neq,nvar,itfmessage,isp2,i,maxi,ispv
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 neq,nvar,itfmessage,isp2,i,maxi,ispv
       real*8 eps,d0,frac
       real*8 , allocatable :: v0(:),vmin(:),vmax(:)
       logical*4 trace,used
@@ -130,14 +132,14 @@ c        call tfdebugprint(ke,'tffindroot-deriv',1)
       type (sad_descriptor) kdl(nvar),kx
       integer*8 ,intent(in):: ke
       integer*4 ,intent(in)::  nvar,neq,maxi
-      integer*4 ,intent(inout):: irtc
+      integer*4 ,intent(out):: irtc
       integer*4 i,j,iter
-      real*8 v0(nvar),f(neq),f0(neq),eps,dv(nvar),
-     $     v(nvar),fact,fact1,fact2,d0,d,d1,d2,
-     $     dg,am,sv,goal,tffsfmin,svi,vmin(nvar),vmax(nvar)
+      real*8 ,intent(inout):: v0(nvar),d0
+      real*8 ,intent(in):: vmin(nvar),vmax(nvar),eps,frac
+      real*8 f(neq),f0(neq),dv(nvar),v(nvar),fact,fact1,fact2,d,d1,d2,
+     $     dg,am,sv,goal,tffsfmin,svi
       real*8 , allocatable :: a(:,:),a0(:,:)
-      logical*4 trace
-      real*8 frac
+      logical*4 ,intent(in):: trace
       real*8 , parameter :: factmin=1.d-4,svmin=1.d-7
       iter=0
       call tfevalresidual(sav,v0,ke,f0,am,d0,nvar,neq,trace,irtc)
@@ -251,11 +253,16 @@ c      enddo
       use tfstk
       use findr
       implicit none
-      integer*4 nvar,i,neq,l,itfuplevel,itfdownlevel,irtc,itfmessage
-      type (symv) sav(nvar)
+      integer*4 ,intent(in):: nvar,neq
+      integer*4 ,intent(out):: irtc
+      integer*4 i,l,itfuplevel,itfdownlevel,itfmessage
+      type (symv) ,intent(in):: sav(nvar)
       integer*8 ke,kx,kax
-      real*8 v(nvar),f(neq),am,a,b,d
-      logical*4 tfcomplexlistqk,trace
+      real*8 ,intent(out):: f(neq),am,d
+      real*8 ,intent(in):: v(nvar)
+      real*8 a,b
+      logical*4 ,intent(in):: trace
+      logical*4 tfcomplexlistqk
       do i=1,nvar
         if(trace)then
           write(*,*)'FindRoot Vars: ',i,v(i)
@@ -323,9 +330,11 @@ c      call tfdebugprint(kx,'evalres-2',1)
       type (sad_descriptor) k1,ki,kv,k3
       type (sad_symbol), pointer :: sym1
       type (sad_dlist), pointer :: kli,kl3
-      integer*4 isp1,nvar,nvmax,i,j,isp0,isp2,irtc,ig,itfmessage
-      type (symv) sav(nvmax),sav0(nvmax)
-      real*8 v0(nvmax),vmin(nvmax),vmax(nvmax)
+      integer*4 ,intent(in):: isp1,isp2,nvmax
+      integer*4 ,intent(out):: nvar,irtc
+      integer*4 i,j,isp0,ig,itfmessage
+      type (symv) ,intent(inout):: sav(nvmax),sav0(nvmax)
+      real*8 ,intent(out):: v0(nvmax),vmin(nvmax),vmax(nvmax)
       nvar=isp2-isp1+1
       if(nvar .gt. nvmax)then
         irtc=itfmessage(9,'General::toomany','"variables"')
@@ -401,8 +410,11 @@ c      endif
       implicit none
       type (sad_dlist), pointer :: list,listi,liste
       type (sad_descriptor) kei
-      integer*8 kl,kae,ke
-      integer*4 irtc,neq,i,itfmessage
+      integer*8 ,intent(in):: kl
+      integer*8 ,intent(out):: ke
+      integer*8 kae
+      integer*4 ,intent(out):: neq,irtc
+      integer*4 i,itfmessage
       logical*4 eval
       if(ktfnonlistq(kl,list))then
         go to 9000
@@ -445,14 +457,16 @@ c      endif
       use iso_c_binding
       use gammaf
       implicit none
-      type (sad_descriptor) kx,ke
+      type (sad_descriptor) ,intent(out)::kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) ke
       type (sad_symbol), pointer :: sym
       type (sad_symdef), pointer :: symdv
       type (sad_dlist), pointer :: klr
-      integer*4 nvmax,maxi0,irtc
-      real*8 eps0
-      parameter (nvmax=1024,maxi0=40,eps0=1.d-9)
-      integer*4 isp1,nvar,i,maxi,ispv,isp2,n,m,iu,ig,itfmessage
+      integer*4 ,parameter ::nvmax=1024,maxi0=40
+      real*8 ,parameter:: eps0=1.d-9
+      integer*4 nvar,i,maxi,ispv,isp2,n,m,iu,ig,itfmessage
       type (symv) , allocatable::sav(:),sav0(:)
       integer*8 kdp,ktfmaloc
       type (sad_descriptor) kdl(nvmax),kdm,kcv,kci
@@ -601,8 +615,11 @@ c      endif
       subroutine tfcovmat(c,ca,m,n,ndim)
       use tfstk, only:ktfenanq,ktfnan
       implicit none
-      integer*4 n,ndim,i,j,m
-      real*8 c(ndim,n),ca(n,n),s,rfromk
+      integer*4 ,intent(in):: n,ndim,m
+      integer*4 i,j
+      real*8 ,intent(in):: c(ndim,n)
+      real*8 ,intent(out):: ca(n,n)
+      real*8 s,rfromk
       real*8, save:: rnan=0.d0
 c      write(*,*)'covmat ',n,m,ndim
       if(rnan .eq. 0.d0)then
@@ -628,21 +645,27 @@ c      write(*,*)'covmat ',n,m,ndim
       use findr
       use gammaf
       implicit none
-      type (sad_symdef) symdv
-      integer*4 n,m,nvar,irtc,maxi,iter,i,j
-      type (symv) sav(nvar)
-      type (sad_descriptor) kdm,kcv,kci,ke,kdl(nvar)
+      type (sad_symdef) ,intent(inout):: symdv
+      integer*4 ,intent(in):: n,m,nvar,maxi
+      integer*4 ,intent(out):: irtc
+      integer*4 iter,i,j
+      type (symv) ,intent(in):: sav(nvar)
+      type (sad_descriptor) ,intent(out):: kdm,kcv,kci
+      type (sad_descriptor) ,intent(in):: ke,kdl(nvar)
       type (sad_rlist) , pointer :: klci
       integer*8 kaxvec,kfromr
-      real*8 data(n,m),v0(nvar)
+      real*8 ,intent(in):: data(n,m)
+      real*8 ,intent(inout):: v0(nvar)
       real*8 , allocatable :: a0(:,:),a(:,:),abest(:,:),
      $     df(:),df0(:),v00(:),w(:),cv(:,:),vbest(:),dv(:),df2(:)
-      real*8 d00,d2,eps,svi,db,dbest,
-     $     fact,d0,d1,fact1,v(nvar),dg,d,fact2,tffsfmin,
+      real*8 ,intent(in):: eps,cut
+      real*8 ,intent(out):: d0
+      real*8 d00,d2,svi,db,dbest,
+     $     fact,d1,fact1,v(nvar),dg,d,fact2,tffsfmin,
      $     good,ajump,vmin(nvar),vmax(nvar),sigma
-      real*8 frac,factmin,svmin,factmin1,svdeps,cut,tinvgr,chin,x
-      parameter (frac=1.d-7,factmin=1.d-4,factmin1=1.d-4,
-     $     svmin=1.d-7,svdeps=1.d-4)
+      real*8 tinvgr,chin,x
+      real*8 ,parameter ::frac=1.d-7,factmin=1.d-4,factmin1=1.d-4,
+     $     svmin=1.d-7,svdeps=1.d-4
       logical*4 newton,acalc
       allocate (a0(m,nvar),a(m,nvar),abest(m,nvar),df(m),
      $     df0(m),v00(nvar),w(nvar),cv(nvar,nvar),
@@ -871,14 +894,17 @@ c          enddo
       use tfstk
       use findr
       implicit none
-      type (sad_symdef) symdv
+      type (sad_symdef) ,intent(inout):: symdv
       type (sad_dlist), pointer :: klx,kl1
       type (sad_descriptor) k1,ke,kx
-      integer*4 n,m,nvar,irtc,i,itfuplevel,itfdownlevel,l,
-     $     itfmessage
+      integer*4 ,intent(out):: irtc
+      integer*4 ,intent(in):: n,m,nvar
+      integer*4 i,itfuplevel,itfdownlevel,l,itfmessage
       type (symv) sav(nvar)
       integer*8 kavvec,kaxvec
-      real*8 a(n,m),v(nvar),df(m),cutoff,r,vx,rfromk
+      real*8 ,intent(out):: df(m),r
+      real*8 ,intent(in):: a(n,m),v(nvar),cutoff
+      real*8 vx,rfromk
       logical*4 deriv
       l=itfuplevel()
       do i=1,nvar
@@ -1031,9 +1057,13 @@ c          enddo
       use tfstk
       use findr
       implicit none
-      type (sad_descriptor) ke,kd,kr,kdl(nvar)
-      integer*4 nvar,irtc,i,isp0
-      type (symv) sav(nvar)
+      type (sad_descriptor) ,intent(in):: ke
+      type (sad_descriptor) ,intent(out):: kdl(nvar)
+      type (sad_descriptor) kd,kr
+      integer*4 ,intent(in):: nvar
+      integer*4 ,intent(out):: irtc
+      integer*4 i,isp0
+      type (symv) ,intent(in):: sav(nvar)
       integer*8 ks,ierr0
       logical*4 euv
       integer*8 iads,iader
@@ -1096,7 +1126,7 @@ c        call tfdebugprint(kd,'==>',2)
       return
       end
 
-      real*8 function tinvgr(an)
+      real*8 pure function tinvgr(an)
       use gammaf
       implicit none
       real*8 ,intent(in)::an

@@ -34,7 +34,7 @@ c
             dhash%attr=ior(dhash%attr,1)
             kx=k
           else
-            kx%k=ktfoper+mtfnull
+            kx=dxnullo
           endif
           return
         else
@@ -67,7 +67,7 @@ c
      $           kad1,kad,sad_descr(ktfref),karg,k,karg,.false.)
             kx=k
           else
-            kx%k=ktfoper+mtfnull
+            kx=dxnullo
           endif
           return
         endif
@@ -140,7 +140,7 @@ c        call tfdebugprint(kr,':= ',3)
         kan=ktdaloc(i00,kad1,kad,k,karg,kr,kargr,.true.)
         kx=k
       else
-        kx%k=ktfoper+mtfnull
+        kx=dxnullo
       endif
       return
  8000 klist(kad1)=klist(kad)
@@ -223,11 +223,14 @@ c        call tfdebugprint(kr,':= ',3)
       use tfstk
       use tfcode
       implicit none
-      type (sad_descriptor) kr,kx,karg,kargr,karg1,k
+      type (sad_descriptor) ,intent(in):: karg,k
+      type (sad_descriptor) ,intent(in):: kr,kargr
+      type (sad_descriptor) kx,karg1
       type (sad_descriptor) tfdefsymbol
       type (sad_dlist), pointer :: klx
       type (sad_deftbl), pointer :: dtbl
-      integer*8 kb0,kn0,kan,kan0,ktalocr,kb,kn
+      integer*8 ,intent(in):: kan0,kb0,kn0
+      integer*8 kan,ktalocr,kb,kn
       integer*4 npat,isp0
       logical*4 tbl,rep,sym
       isp0=isp
@@ -289,12 +292,13 @@ c      enddo
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer :: list
       type (sad_rlist), pointer :: klr
       type (sad_symbol), pointer :: ks,ks1
       integer*4 i,isp0,m
-      logical*4 rep,rep1,sym
+      logical*4 ,intent(out):: rep,sym
+      logical*4 rep1
       rep=.false.
       sym=.false.
       kx=k
@@ -347,8 +351,9 @@ c      enddo
       use tfcode
       implicit none
       type (sad_defhash), pointer :: dhash
-      integer*8 kan,kad1,kad0,kad,ktalocr
-      integer*4 nhash
+      integer*8 ,intent(in):: kad1,kad0
+      integer*8 kan,kad,ktalocr
+      integer*4 ,intent(in):: nhash
       kad=kad0
       kan=ktalocr(nhash+5)
       call loc_defhash(kan,dhash)
@@ -375,7 +380,9 @@ c      enddo
       type (sad_deftbl), pointer :: dtbl
       type (sad_defhash), pointer :: dhash
       integer*8 kad0,kad,kadv,kadv0,kap,ktfrehash,khash
-      integer*4 isp1,iup,irtc,is,itfhasharg,
+      integer*4 ,intent(in):: isp1,iup
+      integer*4 ,intent(out):: irtc
+      integer*4 is,itfhasharg,
      $     m,mstk0,im,i,itfseqmatstk,isp0,ns,nh,iord0
       logical*4 ,intent(in):: def
       logical*4 ,intent(out):: ev
@@ -506,10 +513,11 @@ c      enddo
       integer*4 function itfhasharg(k,nh)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer :: kl
       integer*8 ka
-      integer*4 ih,m,itfhash,nh,ix(2),ih1
+      integer*4 ,intent(in):: nh
+      integer*4 ih,m,itfhash,ix(2),ih1
       integer*2 h(2),h1(2)
       real*8 x,ha
       parameter (ha=7.d0**5+1.d0/7.d0**5)
@@ -517,28 +525,22 @@ c      enddo
       ih=0
       if(ktflistq(k,kl))then
         m=kl%nl
-        if(m .eq. 0)then
-          ih=0
-        elseif(m .eq. 1)then
-          ih=itfhash(kl%dbody(1),nh)
-        else
-          ih=itfhash(kl%dbody(1),nh)+itfhash(kl%dbody(m),nh)
-        endif
-        ih=ih+m
+        ih=merge(0,
+     $       merge(itfhash(kl%dbody(1),nh),
+     $       itfhash(kl%dbody(1),nh)+itfhash(kl%dbody(m),nh),
+     $       m .eq. 1),
+     $       m .eq. 0)+m
       elseif(ktfrefq(k,ka))then
         if(ka .eq. 0)then
           ih=0
         else
           ka=ka-ispbase
           m=itastk2(1,ka)-int(ka)
-          if(m .eq. 0)then
-            ih=0
-          elseif(m .eq. 1)then
-            ih=itfhash(dtastk(ka+1),nh)
-          else
-            ih=itfhash(dtastk(ka+1),nh)+itfhash(dtastk(ka+m),nh)
-          endif
-          ih=ih+m
+          ih=merge(0,
+     $         merge(itfhash(dtastk(ka+1),nh),
+     $         itfhash(dtastk(ka+1),nh)+itfhash(dtastk(ka+m),nh),
+     $         m .eq. 1),
+     $         m .eq. 0)+m
         endif
       else
         call tfdebugprint(k,
@@ -553,11 +555,12 @@ c      enddo
       recursive integer*4 function itfhash(k,nh) result(ih)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer :: kl
       type (sad_symbol), pointer :: sym
       integer*8 ka
-      integer*4 m,itfhash1,nh,ix(2),ih1
+      integer*4 ,intent(in):: nh
+      integer*4 m,itfhash1,ix(2),ih1
       integer*2 h(2)
       real*8 x,ha,v
       parameter (ha=7.d0**5+1.d0/7.d0**5)
@@ -568,36 +571,28 @@ c      enddo
         ih=int(ka)
       elseif(ktflistq(k,kl))then
         m=kl%nl
-        if(m .eq. 0)then
-          ih=0
-        elseif(m .eq. 1)then
-          ih=itfhash1(kl%dbody(1))
-        else
-          ih=itfhash1(kl%dbody(1))+itfhash1(kl%dbody(m))
-        endif
-        ih=ih+itfhash(kl%head,nh)+m
+        ih=merge(0,
+     $       merge(itfhash1(kl%dbody(1)),
+     $       itfhash1(kl%dbody(1))+itfhash1(kl%dbody(m)),
+     $       m .eq. 1),
+     $       m .eq. 0)+itfhash(kl%head,nh)+m
       elseif(ktfrefq(k,ka))then
         if(ka .eq. 0)then
           ih=0
         else
           ka=ka-ispbase
           m=itastk2(1,ka)-int(ka)
-          if(m .eq. 0)then
-            ih=0
-          elseif(m .eq. 1)then
-            ih=itfhash1(dtastk(ka+1))
-          else
-            ih=itfhash1(dtastk(ka+1))+itfhash1(dtastk(ka+m))
-          endif
-          ih=ih+itfhash(dtastk(ka),nh)+m
+          ih=merge(0,
+     $         merge(itfhash1(dtastk(ka+1)),
+     $         itfhash1(dtastk(ka+1))+itfhash1(dtastk(ka+m)),
+     $         m .eq. 1),
+     $         m .eq. 0)+itfhash(dtastk(ka),nh)+m
         endif
-      elseif(ktfsymbolq(k,sym))then
-        ih=int(sym%loc)
       elseif(ktfstringq(k))then
         ka=ktfaddrd(k)
         ih=ilist(1,ka)+ilist(1,ka+1)+ilist(2,ka+1)
       else
-        ih=0
+        ih=merge(int(sym%loc),0,ktfsymbolq(k,sym))
       endif
       ih1=ih
       ih=(h(1)+h(2))
@@ -608,13 +603,13 @@ c      enddo
       recursive integer*4 function itfhash1(k) result(ih)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer :: kl
       type (sad_symbol), pointer :: sym
       integer*8 ka
       integer*4 ix(2)
-      real*8 x,ha,v
-      parameter (ha=7.d0**5+1.d0/7.d0**5)
+      real*8 x,v
+      real*8 ,parameter ::ha=7.d0**5+1.d0/7.d0**5
       equivalence (x,ix)
       if(ktfrealq(k,v))then
         ih=int(v*ha)
@@ -629,13 +624,11 @@ c      enddo
           ka=ka-ispbase
           ih=itfhash1(dtastk(ka))+itastk2(1,ka)-int(ka)
         endif
-      elseif(ktfsymbolq(k,sym))then
-        ih=int(sym%loc)
       elseif(ktfstringq(k))then
         ka=ktfaddrd(k)
         ih=ilist(1,ka)+ilist(1,ka+1)+ilist(2,ka+1)
       else
-        ih=0
+        ih=merge(int(sym%loc),0,ktfsymbolq(k,sym))
       endif
       return
       end
@@ -644,13 +637,18 @@ c      enddo
       use tfstk
       use tfcode
       implicit none
-      type (sad_descriptor) kx,kh,kal
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kh,kal,tfevalwitharg
       type (sad_dlist), pointer :: larg
       type (sad_deftbl), pointer :: dtbl
-      integer*8 kad0,kad,kap,kpp
-      integer*4 isp1,irtc,mstk0,mat,im,itfpmat,itfseqmatstk,isp0,
-     $     iop0,itfseqmatstk1,ns
-      logical*4 ev,ordless
+      integer*8 ,intent(in):: kad0
+      integer*8 kad,kap
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc,ns
+      integer*4 mstk0,mat,im,itfpmat,itfseqmatstk,isp0,
+     $     iop0,itfseqmatstk1
+      logical*4 ,intent(out):: ev
+      logical*4 ,intent(in):: ordless
       isp0=isp
       mstk0=mstk
       iop0=iordless
@@ -671,13 +669,8 @@ c      enddo
               go to 30
             endif
           else
-            if(ordless)then
-              kpp=kap
-            else
-              kpp=0
-            endif
             if(itfseqmatstk(im,isp0,larg%dbody(1),
-     $           larg%nl,1,ktfreallistq(larg),kpp)
+     $           larg%nl,1,ktfreallistq(larg),merge(kap,i00,ordless))
      $           .lt. 0)then
               go to 30
             endif
@@ -697,7 +690,7 @@ c      enddo
           mstk=mstk0
           if(dtbl%npat .ne. 0)then
             kal=dtfcopy1(dtbl%argc)
-            call tfevalwitharg(dtbl,dtbl%bodyc,kx,irtc)
+            kx=tfevalwitharg(dtbl,dtbl%bodyc,irtc)
             call tflocal1d(kal)
           else
             call tfeevalref(dtbl%bodyc,kx,irtc)
@@ -719,16 +712,19 @@ c      enddo
       return
       end
 
-      subroutine tfevalwitharg(dtbl,k,kx,irtc)
+      function tfevalwitharg(dtbl,k,irtc) result(kx)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k,kh
-      type (sad_deftbl) dtbl
+      type (sad_descriptor) kx,tfevalwitharg1
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) kh
+      type (sad_deftbl) ,intent(in):: dtbl
       integer*8 ks
-      integer*4 irtc,isp0,m
+      integer*4 ,intent(out):: irtc
+      integer*4 isp0,m
       logical*4 av
       isp0=isp
-      call tfevalwitharg1(k,ks,m,kh,kx,av,irtc)
+      kx=tfevalwitharg1(k,ks,m,kh,av,irtc)
       call tfunsetpattbl(dtbl)
       if(irtc .ne. 0)then
         return
@@ -747,18 +743,24 @@ c      endif
       return
       end
 
-      subroutine tfevalwitharg1(k,ks,m,kh,kx,av,irtc)
+      function tfevalwitharg1(k,ks,m,kh,av,irtc) result(kx)
       use tfstk
       use tfcode
       use iso_c_binding
       implicit none
-      type (sad_descriptor) kx,k,kh,kp(0:2),ksy,tfcomposefun
+      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kh
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) :: kp(0:2),ksy,tfcomposefun,tfcomposeoper
       type (sad_dlist), pointer :: list,klh
       type (sad_pat), pointer :: pat
       type (sad_symdef), pointer :: symdef
-      integer*8 i,kts,kah,ks1,ks
-      integer*4 irtc,m,isp1,itfmessageexp,isp0
-      logical*4 rep,rep1,tfreplacearg,tfreplaceargstk, av
+      integer*8 ,intent(out):: ks
+      integer*8 i,kts,kah,ks1
+      integer*4 ,intent(out):: irtc,m
+      integer*4 isp1,itfmessageexp,isp0
+      logical*4 rep,rep1,tfreplacearg,tfreplaceargstk
+      logical*4 ,intent(out):: av
       irtc=0
       kx=k
       if(ktflistq(k,list))then
@@ -824,7 +826,7 @@ c            call tfdebugprint(list%body(i),'==> ',3)
                 ks1=isp+ispbase
                 kx=tfcomposefun(isp1+1,kah,.false.,irtc)
               else
-                call tfcomposeoper(isp1+1,kah,kx,.false.,isp0,irtc)
+                kx=tfcomposeoper(isp1+1,kah,.false.,isp0,irtc)
                 ks1=isp0+ispbase
               endif
               if(irtc .eq. 0)then
@@ -898,8 +900,11 @@ c          call tfdebugprint(kx,'evalwarg-symdef',1)
       logical*4 function tfreplacearg(k,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kx
-      integer*4 irtc,isp0
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) tfsequence
+      integer*4 ,intent(out):: irtc
+      integer*4 isp0
       logical*4 tfreplaceargstk
       isp0=isp
 c      call tfdebugprint(k,'tfreparg-in',1)
@@ -908,14 +913,9 @@ c      call tfdebugprint(k,'tfreparg-in',1)
         isp=isp0
         return
       endif
-      if(isp .eq. isp0)then
-        kx=dxnull
-      elseif(isp .eq. isp0+1)then
-        kx=dtastk(isp)
-      else
-        call tfsequence(isp0,isp,kx)
-      endif
-c      call tfdebugprint(kx,'tfreparg-out',1)
+      kx=merge(dxnull,
+     $     merge(dtastk(isp),tfsequence(isp0,isp,kx),isp .eq. isp0+1),
+     $     isp .eq. isp0)
       isp=isp0
       return
       end
@@ -926,13 +926,15 @@ c      call tfdebugprint(kx,'tfreparg-out',1)
       use tfcode
       use iso_c_binding
       implicit none
-      type (sad_descriptor) k,ks,kx,kh,kp(0:2),tfcomposefun
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) ks,kx,kh,kp(0:2),tfcomposefun,tfcomposeoper
       type (sad_dlist), pointer :: list,klx,klh
       type (sad_rlist), pointer :: klr
       type (sad_pat), pointer :: pat
       type (sad_symdef), pointer :: symd
       integer*8 kah
-      integer*4 irtc,i,m,isp1,itfmessageexp,isp0
+      integer*4 ,intent(out):: irtc
+      integer*4 i,m,isp1,itfmessageexp,isp0
       logical*4 rep,rep1,tfreplacearg
       irtc=0
       rep=.false.
@@ -1019,7 +1021,7 @@ c              call tfdebugprint(list%dbody(i),'==>',3)
               if(kah .gt. mtfend)then
                 kx=tfcomposefun(isp1+1,kah,.false.,irtc)
               else
-                call tfcomposeoper(isp1+1,kah,kx,.true.,isp0,irtc)
+                kx=tfcomposeoper(isp1+1,kah,.true.,isp0,irtc)
               endif
               if(irtc .eq. 0)then
                 lx=.true.
@@ -1127,10 +1129,12 @@ c          write(*,*)'with ',symd%sym%override
       recursive subroutine tfgetstkstk(ks,rep)
       use tfstk
       implicit none
-      type (sad_descriptor) ks,ki
+      type (sad_descriptor) ,intent(in):: ks
+      type (sad_descriptor) ki
       type (sad_dlist), pointer :: kl,kli
       integer*8 i,ka
-      logical*4 rep,rep1
+      logical*4 ,intent(out):: rep
+      logical*4 rep1
       if(ktfrefq(ks,ka))then
         rep=.true.
         if(ka .gt. 3)then
@@ -1172,7 +1176,7 @@ c          write(*,*)'with ',symd%sym%override
       subroutine tfreplaceifarg(list,kx,rep,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,ki
+      type (sad_descriptor) kx,ki,tfcompose
       type (sad_dlist) list
       type (sad_dlist), pointer :: klx
       integer*4 irtc,i,isp1,j
@@ -1238,11 +1242,7 @@ c          write(*,*)'with ',symd%sym%override
                 isp=isp1
                 return
               endif
-              if(j .le. isp)then
-                kx=dtastk(j)
-              else
-                kx%k=ktfoper+mtfnull
-              endif
+              kx=merge(dtastk(j),dxnullo,j .le. isp)
             else
               kx=ki
             endif
@@ -1252,16 +1252,12 @@ c          write(*,*)'with ',symd%sym%override
               isp=isp1
               return
             endif
-            if(j .le. isp)then
-              kx=dtastk(j)
-            else
-              kx%k=ktfoper+mtfnull
-            endif
+            kx=merge(dtastk(j),dxnullo,j .le. isp)
           case default
             kx=ki
           end select
         else
-          kx%k=ktfoper+mtfnull
+          kx=dxnullo
         endif
         return
       endif
@@ -1292,11 +1288,7 @@ c          write(*,*)'with ',symd%sym%override
           dtastk(isp)=ki
         end select
       enddo
-      if(rep)then
-        call tfcompose(isp1,list%head%k,kx,irtc)
-      else
-        kx=sad_descr(list)
-      endif
+      kx=merge(tfcompose(isp1,list%head%k,irtc),sad_descr(list),rep)
       return
       end
 
@@ -1437,11 +1429,8 @@ c            call tflinkedpat(pat0,pat)
           klr%rbody(1:m)=list%rbody(1:m)
           klr%attr=ior(larglist,list%attr)
           klr%head=dtfcopy(k1)
-          if(member)then
-            klr%attr=ior(lmemberlist,klr%attr)
-          else
-            klr%attr=iand(-lmemberlist-1,klr%attr)
-          endif
+          klr%attr=merge(ior(lmemberlist,klr%attr),
+     $         iand(-lmemberlist-1,klr%attr),member)
           return
         endif
         isp1=isp
@@ -1477,11 +1466,8 @@ c            call tflinkedpat(pat0,pat)
             endif
           endif
         endif
-        if(member)then
-          klx%attr=ior(lmemberlist,klx%attr)
-        else
-          klx%attr=iand(-lmemberlist-1,klx%attr)
-        endif
+        klx%attr=merge(ior(lmemberlist,klx%attr),
+     $       iand(-lmemberlist-1,klx%attr),member)
         isp=isp1
       elseif(ktfpatq(k,pat))then
         rep=.false.
@@ -1669,11 +1655,8 @@ c                call tfdebugprint(kx,'==>',3)
       logical*4 function tfmaxgenerationq(kad)
       use tfstk
       implicit none
-      integer*8 kad
-      if(kad .ne. 0)then
-        tfmaxgenerationq=ilist(1,kad+2) .eq. maxgeneration
-      else
-        tfmaxgenerationq=.false.
-      endif
+      integer*8 ,intent(in):: kad
+      tfmaxgenerationq=merge(ilist(1,kad+2) .eq. maxgeneration,
+     $     .false.,kad .ne. 0)
       return
       end

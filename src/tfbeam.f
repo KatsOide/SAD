@@ -12,6 +12,9 @@
       real*8 ,intent(in):: theta
       real*8 trans(4,5),trans1(6,6),cod(6)
       real*8 r,pfi,emxi,emyi,emmin,rgetgl1
+      if(ifsize .eq. 0)then
+        call tfsize(.true.)
+      endif
       if(calc6d)then
         call tfsize(.false.)
         beam=beamsize(:,k)
@@ -139,6 +142,8 @@ c     $     beam(1)
           call temit(trans,cod,beam,btr,
      $         .true.,iaez,.true.,params,stab,0)
           beamplt=bpl
+c          write(*,*)'tfsize-6d ',beamsize(1,nlat),beamsize(6,nlat),
+c     $         beamsize(21,nlat)
         endif
         modesize=6
       else

@@ -9,11 +9,13 @@
       implicit none
       integer*4 , parameter :: ms=9
       real*8, intent(inout):: trans(6,12),cod(6),beam(42),srot(3,ms)
+      real*8 ,intent(in):: dx,dy,theta,dtheta
       real*8 , target ::trans1(6,6),trans2(6,6),trans3(6,6)
-      real*8 sx(ms),dx,dy,theta,cost,sint,dtheta,phi0,th,dth,
+      real*8 sx(ms),cost,sint,phi0,th,dth,
      $     pr,dcph,sph,ds,dx1,al,phih,xi,pxi,pz,dy1,dxa,st1
       real*8 ,pointer :: transa(:,:)
-      logical ent,mat,mcal
+      logical*4 ,intent(in):: ent
+      logical*4 mat,mcal
       mcal=irad .ge. 6
       if(phi0 .eq. 0.d0)then
         th=theta+dtheta

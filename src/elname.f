@@ -1,15 +1,15 @@
       subroutine elname(i,name)
       implicit none
-      integer*4 i
-      character*(*) name
+      integer*4 ,intent(in):: i
+      character*(*) ,intent(out):: name
       call elname1(i,name,.false.)
       return
       end
 
       subroutine elnameK(i,name)
       implicit none
-      integer*4 i
-      character*(*) name
+      integer*4 ,intent(in):: i
+      character*(*) ,intent(out):: name
       call elname1(i,name,.true.)
       return
       end
@@ -21,9 +21,9 @@
       use tffitcode
       use sad_main
       implicit none 
-      integer*4 i
-      character*(*) name
-      logical*4 comp
+      integer*4 ,intent(in):: i
+      character*(*) ,intent(out):: name
+      logical*4 ,intent(in):: comp
 c
       integer*4 lenw
 c

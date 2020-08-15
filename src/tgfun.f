@@ -6,7 +6,7 @@
       use tffitcode
       use geolib
       implicit none
-      integer*4 kf,kp,idp
+      integer*4 ,intent(in):: kf,kp,idp
       real*8 tphysdisp
       if(kf .le. mfitzpy)then
         tgfun=utwiss(kf,idp,itwissp(kp))
@@ -144,7 +144,7 @@ c        write(*,*)'tphysdisp ',kf
       subroutine tgetphysdisp(l,pe)
       implicit none
       integer*4 l
-      real*8 pe(4)
+      real*8 ,intent(out):: pe(4)
       call tgetphysdispi(l,0,pe)
       return
       end
@@ -155,8 +155,8 @@ c        write(*,*)'tphysdisp ',kf
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 l,icol
-      real*8 pe(4)
+      integer*4 ,intent(in):: l,icol
+      real*8 ,intent(out):: pe(4)
       real*8 cc,r1,r2,r3,r4,detr
       r1=twiss(l,icol,mfitr1)
       r2=twiss(l,icol,mfitr2)
@@ -188,8 +188,8 @@ c        write(*,*)'tphysdisp ',kf
 
       subroutine tgetphysdispz(l,pe)
       implicit none
-      integer*4 l
-      real*8 pe(4)
+      integer*4 ,intent(in):: l
+      real*8 ,intent(out):: pe(4)
       call tgetphysdispzi(l,0,pe)
       return
       end
@@ -200,8 +200,8 @@ c        write(*,*)'tphysdisp ',kf
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 l,icol
-      real*8 pe(4)
+      integer*4 ,intent(in):: l,icol
+      real*8 ,intent(out):: pe(4)
       real*8 cc,r1,r2,r3,r4,detr
       r1=twiss(l,icol,mfitr1)
       r2=twiss(l,icol,mfitr2)
@@ -236,7 +236,8 @@ c        write(*,*)'tphysdisp ',kf
       use ffs
       use tffitcode
       implicit none
-      real*8 utwiss1(ntwissfun),pe(4)
+      real*8 ,intent(in):: utwiss1(ntwissfun)
+      real*8 ,intent(out):: pe(4)
       real*8 cc,r1,r2,r3,r4,detr
       r1=utwiss1(mfitr1)
       r2=utwiss1(mfitr2)

@@ -4,11 +4,12 @@
       use opdata
       use tfcsi
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: kla,klx
       logical*4 , intent(in) ::re
       integer*4 , intent(in) :: ist1
-      integer*4 istart,istop,irtc,isp0,ist10,iop1,
+      integer*4 ,intent(out):: istop,irtc
+      integer*4 istart,isp0,ist10,iop1,
      $     i,ishash,l,ifchar,mopc,itgetfpe,m1,iste,
      $     itfmessage,itfmessagestr,level1,ist2,irt,l0
       character*(*) , intent(in) :: string
@@ -83,11 +84,8 @@ c
             end select
             select case (mopc)
             case (mtfminus)
-              if(m1 .eq. mtfpower .or. m1 .eq. mtfrevpower)then
-                mopc=mtfneg
-              else
-                mopc=mtftimes
-              endif
+              mopc=merge(mtfneg,mtftimes,
+     $             m1 .eq. mtfpower .or. m1 .eq. mtfrevpower)
               rtastk(isp)=-1.d0
             case (mtfplus)
               go to 1010

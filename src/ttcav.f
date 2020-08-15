@@ -5,12 +5,14 @@
       use mathfun
       use kradlib
       implicit none
-      integer*4 np,i
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
-     $     sx(np),sy(np),sz(np)
-      real*8 al,ak,harm,phi,freq,dx,dy,theta,cost,sint,w,phic,
-     $     dp1r,p1r,p1,h1,t,ph,dh,h2,a,dpr,dp2r,p2r,xi,pxi,v
-      logical*4 krad
+      integer*4 ,intent(in):: np
+      integer*4 i
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
+     $     g(np),dv(np),sx(np),sy(np),sz(np)
+      real*8 ,intent(in):: al,ak,harm,phi,freq,dx,dy,theta
+      real*8 dp1r,p1r,p1,h1,t,ph,dh,h2,a,dpr,dp2r,p2r,w,
+     $     xi,pxi,v,cost,sint,phic
+      logical*4 ,intent(in):: krad
       include 'inc/TENT.inc'
       if(al .ne. 0.d0)then
         call tdrift_free(np,x,px,y,py,z,dv,al*.5d0)

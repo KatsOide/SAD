@@ -535,7 +535,7 @@ c     Merge
 
           im=im+1
           itab(im)=p2-p0+1
-          do while(.true.)
+          do
             j1=itastk(p1+i1,isp0)
             j2=itastk(p1+i2,isp0)
 
@@ -723,7 +723,7 @@ c     Merge
 
           im=im+1
           itab(im)=p2-p0+1
-          do while(.true.)
+          do
             j1=itastk(p1+i1,isp0)
             j2=itastk(p1+i2,isp0)
             v1=kl%rbody(j1)

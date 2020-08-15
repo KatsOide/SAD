@@ -229,7 +229,7 @@ c      use tfcsi, only:ipoint,lrecl,lfni
         trval=0.d0
         rlist(ipz)=0.d0
         phi=0.d0
-        call trackd(ilist(1,ilattp+1),ilist(1,ikptbl),
+        call trackd(ilist(1,ikptbl),
      1        rlist(ilist(2,iparam+16)),rlist(ilist(2,iparam+17)),
      1        rlist(ilist(2,iparam+18)),rlist(ilist(2,iparam+19)),
      1        rlist(ilist(2,iparam+20)),rlist(ilist(2,iparam+21)),

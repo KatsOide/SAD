@@ -2,7 +2,8 @@
       use tfstk
       use mackw
       implicit none
-      integer*4 lt,ioff,i
+      integer*4 ,intent(in):: lt,ioff
+      integer*4 i
       if(ioff .eq. 0)then
         tfkwrd=pname(kytbl(0,lt))(2:)
       else
@@ -24,7 +25,8 @@
       use tfstk
       use mackw
       implicit none
-      integer*4 lt,ioff,i
+      integer*4 ,intent(in):: lt,ioff
+      integer*4 i
       if(ioff .eq. 0)then
         tfkwrd1=pname(kytbl(0,lt))(2:)
       else

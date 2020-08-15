@@ -223,7 +223,7 @@ c      enddo
           endif
         enddo
       endif
-      do3001: do while(.true.)
+      do3001: do
  1001   if(ibegin .ge. iend)then
           isep=isep-1
           if(isep .le. 0)then
@@ -268,11 +268,8 @@ c            an=max(abs(x(i)),abs(x(i+1)))
           else
             g=h*y
             y=f+sign(abs(dcmplx(f,g)),f)
-            if(y .ne. 0.d0)then
-              f=((w-z)*(w+z)-h**2+g**2/y)/w
-            else
-              f=((w-z)*(w+z)-h**2)/w
-            endif
+            f=merge(((w-z)*(w+z)-h**2+g**2/y)/w,
+     $           ((w-z)*(w+z)-h**2)/w,y .ne. 0.d0)
           endif
           g=v(ibegin)
           h=g

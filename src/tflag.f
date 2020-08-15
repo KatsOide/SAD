@@ -5,8 +5,8 @@
       use ffs_pointer
       implicit none
       integer*4 i
-      logical exist
-      character*(*) word
+      logical ,intent(out):: exist
+      character*(*) ,intent(in):: word
       do i=1,nflag
         if(fname(i) .eq. ' ')then
           cycle

@@ -7,9 +7,9 @@
       use tfstk
       use ffs
       use tffitcode
+      use kyparam, only:nmult
       implicit none
       integer*4 ,intent(in):: mfring,k
-      integer*4 ,parameter :: nmult=21
       real*8 ,intent(inout):: trans(4,5),cod(6)
       real*8 ,intent(in)::dx,dy,theta,f1in,f2in,f1out,f2out,
      $     al,bz,eps0,chi1,chi2,dz,vc,harm,phi,freq,wakew1,

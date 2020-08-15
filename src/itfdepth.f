@@ -1,7 +1,7 @@
       recursive integer*4 function itfdepth(k) result(id)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer ::kl
       integer*4 i
       if(ktflistq(k,kl))then
@@ -181,11 +181,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
           endif
           do i=1,m
             ki=kl%dbody(i)
-            if(ktflistq(ki))then
-              idi=itfdepth(ki)
-            else
-              idi=1
-            endif
+            idi=merge(itfdepth(ki),1,ktflistq(ki))
             if(indf)then
               rind(ind1)=i
             endif
@@ -211,11 +207,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
       endif
       if(n1 .eq. 0)then
         map=.true.
-        if(n2 .lt. 0)then
-          id=itfdepth(k)
-        else
-          id=0
-        endif
+        id=merge(itfdepth(k),0,n2 .lt. 0)
       elseif(n1 .lt. 0)then
         id=itfdepth(k)
         map=id+n1 .le. 0
@@ -229,11 +221,8 @@ c      write(*,*)mode,n1,n2,ihead,indf
           if(match(mode))then
             if(itfpmatc(kx%k,kf) .ge. 0)then
               if(mode .eq. 5)then
-                if(ind .eq. 0)then
-                  dtastk(isp)=dxnulll
-                else
-                  dtastk(isp)=kxm2l(rind,0,ind,1,.false.)
-                endif
+                dtastk(isp)=merge(dxnulll,kxm2l(rind,0,ind,1,.false.),
+     $               ind .eq. 0)
                 return
               elseif(mode .eq. 6)then
                 return
@@ -257,11 +246,8 @@ c      write(*,*)mode,n1,n2,ihead,indf
           elseif(mode .eq. 4)then
             dtastk(ispf)=kf
             isp=isp+1
-            if(ind .eq. 0)then
-              dtastk(isp)=dxnulll
-            else
-              dtastk(isp)=kxm2l(rind,0,ind,1,.false.)
-            endif
+            dtastk(isp)=merge(dxnulll,kxm2l(rind,0,ind,1,.false.),
+     $           ind .eq. 0)
             call tfefunrefc(ispf,kx,irtc)
           elseif(mode .eq. 1)then
             dtastk(ispf)=kf
@@ -294,9 +280,11 @@ c      write(*,*)mode,n1,n2,ihead,indf
       subroutine tflevel(k,kl,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kl,kx
+      type (sad_descriptor) ,intent(in):: k,kl
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) tflevelstk
-      integer*4 n1,n2,irtc,isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 n1,n2,isp1
       real*8 rind(1)
       call tflevelspec(kl,n1,n2,irtc)
       if(irtc .ne. 0)then
@@ -311,11 +299,7 @@ c      write(*,*)'tflevel ',n1,n2
       isp1=isp
       kx=tflevelstk(k,sad_descr(ktfoper+mtfnull),n1,n2,
      $     0,0,rind,1,mstk,irtc)
-      if(isp .le. isp1)then
-        kx=dxnulll
-      else
-        kx=kxmakelist(isp1)
-      endif
+      kx=merge(dxnulll,kxmakelist(isp1),isp .le. isp1)
       isp=isp1
       irtc=0
       return
@@ -325,8 +309,9 @@ c      write(*,*)'tflevel ',n1,n2
       use tfstk
       implicit none
       type (sad_rlist), pointer :: kl
-      type (sad_descriptor) k
-      integer*4 n1,n2,irtc,ivl,maxlevel,m,itfmessage
+      type (sad_descriptor) ,intent(in):: k
+      integer*4 ,intent(out):: n1,n2,irtc
+      integer*4 ivl,maxlevel,m,itfmessage
       parameter (maxlevel=2**30)
       real*8 vlmax,v
       parameter (vlmax=1.d8)

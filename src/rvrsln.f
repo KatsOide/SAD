@@ -5,7 +5,7 @@
       use macfile
       use macmisc
       implicit none
-      integer*4 idxl
+      integer*4 ,intent(in):: idxl
 c
       integer*4 llen
       integer*8 oldpt,ioldpt

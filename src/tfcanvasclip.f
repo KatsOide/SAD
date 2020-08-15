@@ -702,7 +702,7 @@ c            s=sqrt(dx**2+dy**2)
       do j=1,nc
         u0(j)=slight(1,1,j)**2+slight(2,1,j)**2+slight(3,1,j)**2
       enddo
-      do9000: do while(.true.)
+      do9000: do
         do i=1,nt
           rgb(1,i)=0.d0
           rgb(2,i)=0.d0

@@ -1,10 +1,10 @@
       subroutine tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     al,ak,bz,phia,psi1,psi2,
-     $     dx,dy,dz,chi1,chi2,theta,dtheta,theta2,cr1,
+     $     al,ak,akr0,bz,phia,psi1,psi2,
+     $     dx,dy,dz,chi1,chi2,theta,dtheta,theta2,
      $     eps0,krad,fringe,f1in,f2in,f1out,f2out,
-     $     mfring,fb1,fb2,
+     $     mfring,fb1,fb2,dofr,
      $     vc,w,phirf,dphirf,vnominal,
-     $     radius,rtaper,autophi,
+     $     radius,rtaper,autophi,ndiv0,nmmax,
      $     kturn,kptbl)
       use tfstk
       use ffs_flag
@@ -14,13 +14,13 @@
       use sol,only:tsolrot
       use photontable,only:tsetpcvt,pcvt
       use mathfun
-      use multa, only:fact,an
+      use multa, only:fact,aninv
+      use kyparam, only:nmult
 c      use ffs_pointer, only:inext,iprev
       implicit none
-      integer*4 , parameter ::nmult=21,itmax=10,ndivmax=1000
+      integer*4 , parameter ::itmax=10,ndivmax=1000
       real*8 ,parameter :: conv=3.d-16,oneev=1.d0+1.d-6,
-     $     ampmax=0.05d0,alstep=0.05d0,eps00=0.005d0,pmin=1.d-10,
-     $     arad=0.01d0
+     $     alstep=0.05d0,pmin=1.d-10,arad=0.01d0
       integer*4 ,intent(inout):: np
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),
      $     dv(np),sx(np),sy(np),sz(np)
@@ -29,20 +29,21 @@ c      use ffs_pointer, only:inext,iprev
      $     eps0,f1in,f2in,f1out,f2out,fb1,fb2,w,
      $     vc,phirf,dphirf,vnominal,radius,rtaper
       real*8 ,intent(inout):: bz
-      complex*16 ,intent(in):: ak(0:nmult),cr1
-      integer*4 ,intent(in):: mfring,kturn
+      complex*16 ,intent(in):: ak(0:nmult),akr0(0:nmult)
+      integer*4 ,intent(in):: mfring,kturn,nmmax,ndiv0
       integer*4 ,intent(inout):: kptbl(np0,6)
       logical*4 ,intent(in):: fringe,autophi,krad
-      logical*4 acc,spac1,dofr(0:nmult),nzleng
-      integer*4 i,m,n,ndiv,nmmax,ibsi
-      real*8 bxs,bys,bzs,b,a,eps,wi,v,phis,r,wl,
-     $     r1,we,wsn,phic,dphis,offset,offset1,
+      logical*1 ,intent(in):: dofr(0:nmult)
+      logical*4 acc,spac1,nzleng
+      integer*4 i,m,n,ndiv,ibsi
+      real*8 bxs,bys,bzs,b,a,epsr,wi,v,phis,r,wl,
+     $     r1,we,phic,dphis,offset,offset1,
      $     tlim,akr1,ak1,al1,p,ea,pxf,pyf,sv,asinh,ws1,wm,
      $     h2,p2,dp2,pr2,dvn,dzn,dp1r,p1r,p1,h1,t,ph,dh,dpr,dp2r,p2r,
      $     alx,dp2p2,dp,dp1,pr1,
      $     he,vcorr,v20a,v02a,v1a,v11a,av,dpx,dpy,pe,ah
       real*8 ws(ndivmax+1)
-      complex*16 akr(0:nmult),akrm(0:nmult),cr,cx,cx1,ak01,b0
+      complex*16 akr(0:nmult),akrm(0:nmult),cx,cx1,ak01,b0
       if(phia .ne. 0.d0)then
         call tmulta(
      $       np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -59,46 +60,26 @@ c      use ffs_pointer, only:inext,iprev
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,bz,dx,dy,dz,
      $     chi1,chi2,theta2,bxs,bys,bzs,.true.)
-      akr(0)=(ak(0)*cr1+dcmplx(bys*al,bxs*al))*rtaper
-      do n=nmult,1,-1
-        if(ak(n) .ne. (0.d0,0.d0))then
-          nmmax=n
-          go to 1
-        endif
-      enddo
-      if(vc .ne. 0.d0 .or. spac)then
-        nmmax=0
-      else
+      akr(0)=(akr0(0)+dcmplx(bys*al,bxs*al))*rtaper
+      if(nmmax .eq. 0 .and. vc .eq. 0.d0 .and. .not. spac)then
         call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,bzs,dble(akr(0)),imag(akr(0)),krad)
         go to 1000
       endif
- 1    cr=cr1*rtaper
 c     Zero-clear akr(1) for case: nmmax .eq. 0
       akr(1)=0.d0
-      do n=1,nmmax
-        cr=cr*cr1
-        akr(n)=ak(n)*cr
-      enddo
-c     Im[ark(1)] MIGHT be 0, because akr(1) := ak(1)*cr1*cr1,
+      akr(1:nmmax)=akr0(1:nmmax)*rtaper
+c     Im[ark(1)] should be 0, because akr(1) := ak(1)*cr1*cr1,
 c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       akr1=dble(akr(1))
       akr(1)=akr1
-      if(eps0 .eq. 0.d0)then
-        eps=eps00
-      else
-        eps=eps00*eps0
-      endif
-      ndiv=1
+      ndiv=ndiv0
+      epsr=merge(1.d0,eps0,eps0 .eq. 0.d0)
       if(nzleng)then
-        do n=2,nmmax
-          ndiv=max(ndiv,int(
-     $         sqrt(ampmax**(n-1)/6.d0/fact(n-1)/eps*abs(akr(n)*al)))+1)
-        enddo
         if(spac)then
           spac1 = radius .ne. 0.d0
-          ndiv=max(ndiv,nint(abs(al)/(alstep*eps/eps00)),
-     $         nint(eps00/eps*abs(bzs*al)/1.5d0))
+          ndiv=max(ndiv,nint(abs(al)/(alstep*epsr)),
+     $         nint(abs(bzs*al)/1.5d0/epsr))
         endif
         if(krad)then
           pxr0=px
@@ -113,15 +94,10 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       endif
       acc=(trpt .or. rfsw) .and. vc .ne. 0.d0
       if(acc)then
-        if(w .eq. 0.d0)then
-          wi=0.d0
-        else
-          wi=1.d0/w
-        endif
+        wi=merge(0.d0,1.d0/w,w .eq. 0.d0)
         v=vc*abs(charge)/amass
         he=h0+vnominal
         pe=h2p(he)
-c        pe=sqrt((he-1.d0)*(he+1.d0))
         vcorr=v*(w*(.5d0/p0+.5d0/pe))**2/4.d0
         v20a=vcorr
         v02a=vcorr
@@ -130,11 +106,10 @@ c        pe=sqrt((he-1.d0)*(he+1.d0))
         r=abs(vnominal*(1.d0/h0+1.d0/he))
         ndiv=min(ndivmax,max(ndiv,
      $       1+int(min(abs(w*al),
-     $       sqrt(r**2/3.d0/(eps/eps00*1.d-3))))))
+     $       sqrt(r**2/3.d0/(epsr*1.d-3))))))
         if(abs(r) .gt. 1.d-6)then
           wl=asinh(r*(2.d0+r)/2.d0/(1.d0+r))
-          ndiv=min(ndivmax,max(ndiv,
-     $         nint(wl*10.d0*eps00/eps)))
+          ndiv=min(ndivmax,max(ndiv,nint(wl*10.d0/epsr)))
           r1=wl/ndiv/2.d0
           ws1=2.d0*exp(r1)*sinh(r1)
           we=1.d0+ws1
@@ -143,22 +118,13 @@ c        pe=sqrt((he-1.d0)*(he+1.d0))
             ws(i)=ws(i-1)*we
           enddo
         else
-          wsn=1.d0/ndiv
-c          do i=1,ndiv
-            ws(1:ndiv)=wsn
-c          enddo
+          ws(1:ndiv)=1.d0/ndiv
         endif
         phic=(phirf+dphirf)*charge
         if(trpt)then
-c          vnominal=v*sin(-phirf*charge)
           phis=0.d0
         else
-c          vnominal=0.d0
-          if(autophi)then
-            phis=phic
-          else
-            phis=w*trf0
-          endif
+          phis=merge(phic,w*trf0,autophi)
         endif
         dphis=phis-phic
         if(rad .or. trpt .or. autophi)then
@@ -179,11 +145,7 @@ c     begin initialize for preventing compiler warning
         offset=0.d0
         offset1=0.d0
 c     end   initialize for preventing compiler warning
-c        vnominal=0.d0
-        wsn=1.d0/ndiv
-c        do i=1,ndiv
-        ws(1:ndiv)=wsn
-c        enddo
+        ws(1:ndiv)=1.d0/ndiv
       endif
       ws(ndiv+1)=0.d0
       ak1=akr1*ws(1)*.5d0
@@ -191,25 +153,18 @@ c        enddo
       ak01=akr(0)*ws(1)*.5d0
       if(nzleng)then
         if(fringe)then
-          if(mfring .ne. 2 .and. acc)then
-            call tcavfrin(np,x,px,y,py,z,g,dv,al,v,w,p0,h0,
-     $           dphis,dvfs,offset)
-          endif
-          do n=0,nmmax
-            if(akr(n) .ne. (0.d0,0.d0))then
-              if(n .le. 2)then
-                dofr(n)=.true.
-              else
-                dofr(n)=abs(akr(n))/al*ampmax**(n+1)*an(n+1) .gt. eps
-              endif
-              if(dofr(n) .and. mfring .ne. 2)then
+          if(mfring .ne. 2)then
+            if(acc)then
+              call tcavfrin(np,x,px,y,py,z,g,dv,al,v,w,p0,h0,
+     $             dphis,dvfs,offset)
+            endif
+            do n=0,nmmax
+              if(dofr(n))then
                 call ttfrins(np,x,px,y,py,z,g,n*2+2,akr(n),
      $               al,bzs)
               endif
-            else
-              dofr(n)=.false.
-            endif
-          enddo
+            enddo
+          endif
         endif
         if(mfring .eq. 1 .or. mfring .eq. 3)then
           if(akr(0) .ne. (0.d0,0.d0) .and. fb1 .ne. 0.d0)then
@@ -246,7 +201,7 @@ c        enddo
                 cx1=dcmplx(x(i),y(i))
                 cx=0.d0
                 do n=nmmax,2,-1
-                  cx=(cx+akr(n))*cx1*an(n+1)
+                  cx=(cx+akr(n))*cx1*aninv(n+1)
                 enddo
                 bsi(i)=bsi(i)+imag(.5d0*cx*cx1**2)/al
               enddo
@@ -262,9 +217,9 @@ c        enddo
           if(nmmax .ge. 2)then
             do concurrent (i=1:np)
               cx1=dcmplx(x(i),y(i))
-              cx=akrm(nmmax)*cx1*an(nmmax)
+              cx=akrm(nmmax)*cx1*aninv(nmmax)
               do n=nmmax-1,2,-1
-                cx=(cx+akrm(n))*cx1*an(n)
+                cx=(cx+akrm(n))*cx1*aninv(n)
               enddo
               cx=cx*cx1/(1.d0+g(i))
               px(i)=px(i)-dble(cx)
@@ -278,9 +233,9 @@ c        enddo
         elseif(nmmax .ge. 1)then
           do concurrent (i=1:np)
             cx1=dcmplx(x(i),y(i))
-            cx=akrm(nmmax)*cx1*an(nmmax)
+            cx=akrm(nmmax)*cx1*aninv(nmmax)
             do n=nmmax-1,1,-1
-              cx=(cx+akrm(n))*cx1*an(n)
+              cx=(cx+akrm(n))*cx1*aninv(n)
             enddo
             cx=(cx+akrm(0))/(1.d0+g(i))
             px(i)=px(i)-dble(cx)
@@ -370,9 +325,9 @@ c        enddo
           if(calpol .and. nmmax .ge. 2)then
             do concurrent (i=1:np)
               cx1=dcmplx(x(i),y(i))
-              cx=akr(nmmax)*cx1*an(nmmax+1)
+              cx=akr(nmmax)*cx1*aninv(nmmax+1)
               do n=nmmax-1,2,-1
-                cx=(cx+akr(n))*cx1*an(n+1)
+                cx=(cx+akr(n))*cx1*aninv(n+1)
               enddo
               bsi(i)=bsi(i)-imag(.5d0*cx*cx1**2)/al
             enddo
@@ -394,7 +349,6 @@ c        enddo
       if(vnominal .ne. 0.d0)then
         h2=h0+vnominal
         p2=h2p(h2)
-c        p2=sqrt((h2-1.d0)*(h2+1.d0))
         dp2p2=vnominal*(h2+h0)/(p2+p0)/p2
         do concurrent (i=1:np)
           dp=max(g(i),pmin-1.d0)
@@ -402,7 +356,6 @@ c        p2=sqrt((h2-1.d0)*(h2+1.d0))
           pr1=1.d0+dp1
           g(i)=dp1
           h1=p2h(p2*pr1)
-c          h1=sqrt(1.d0+(p2*pr1)**2)
           dv(i)=-dp1*(1.d0+pr1)/h1/(h1+pr1*h2)+dvfs
         enddo
         bz=bz*p0/p2

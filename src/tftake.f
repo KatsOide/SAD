@@ -9,7 +9,7 @@
       integer*4 m,iv,n1,n2,mn,mx,itfmessage,i
       logical*4 ,intent(in):: take0,eval
       logical*4 take,list,d
-      kx=dxnull
+      kx%k=ktfoper+mtfnull
       if(ktfnonlistq(k,kl))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List or composition for #1"')
@@ -175,9 +175,11 @@
       subroutine tfreverse(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
       type (sad_dlist), pointer :: list,listx
-      integer*4 isp1,irtc,m,itfmessage
+      integer*4 m,itfmessage
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -213,10 +215,12 @@ c        enddo
       subroutine tfrotateright1(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
       type (sad_dlist), pointer :: kl,klx
       type (sad_rlist), pointer :: klr
-      integer*4 isp1,irtc,i,m,itfmessage,n
+      integer*4 i,m,itfmessage,n
       if(isp .ne. isp1+1 .and. isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"1 or 2"')
         return
@@ -274,11 +278,14 @@ c        enddo
       use eexpr
       use iso_c_binding
       implicit none
-      type (sad_descriptor) kx,k0,k1,ks,krv
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) k0,k1,ks,krv
       type (sad_dlist), pointer :: klx
       type (sad_dlist), pointer :: kl
       type (sad_rlist), pointer :: klr
-      integer*4 isp1,irtc,i,m,itfmessage,isp0
+      integer*4 i,m,itfmessage,isp0
       krv%x(1)=-1.d0
       if(isp .eq. isp1+2)then
         if(.not. ktfrealq(dtastk(isp),krv%x(1)))then
@@ -335,8 +342,10 @@ c        enddo
       use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
       type (sad_descriptor) tftake
-      integer*4 isp1,irtc,itfmessage
+      integer*4 itfmessage
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -388,7 +397,7 @@ c        enddo
       use iso_c_binding
       implicit none
       type (sad_descriptor) kh,kx,tfset
-      type (sad_dlist) kl
+      type (sad_dlist) ,intent(inout):: kl
       type (sad_dlist), pointer :: klh
       type (sad_symbol), pointer :: symh
       type (sad_symdef), pointer :: def
@@ -396,7 +405,8 @@ c        enddo
       type (sad_defhash), pointer :: dhash
 c      include 'DEBUG.inc'
       integer*8 kad,kad1,kadi,kadi1
-      integer*4 irtc,isp0,ik,i
+      integer*4 ,intent(out):: irtc
+      integer*4 isp0,ik,i
       logical*4 tfdefheadq,discard,discard1
       isp0=isp
       isp=isp+1
@@ -481,8 +491,8 @@ c      include 'DEBUG.inc'
       logical function tfdefheadq(k,listp)
       use tfstk
       implicit none
-      type (sad_descriptor) k
-      type (sad_dlist) listp
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_dlist) ,intent(out):: listp
       type (sad_dlist), pointer :: kli,kla1,kla
       integer*4 i
       tfdefheadq=.true.
@@ -515,11 +525,14 @@ c      include 'DEBUG.inc'
       subroutine tfprotect(isp1,kx,protect,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) k
       type (sad_symbol), pointer :: sym
       integer*8 ka
-      integer*4 isp1,irtc,i,itfmessageexp
-      logical*4 protect
+      integer*4 i,itfmessageexp
+      logical*4 ,intent(in):: protect
       kx%k=ktfoper+mtfnull
       irtc=0
       LOOP_I: do i=isp1+1,isp
@@ -577,10 +590,13 @@ c      include 'DEBUG.inc'
       use attrib
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) k
       type (sad_symbol), pointer :: sym
       integer*8 ka
-      integer*4 isp1,iat,isp0,irtc,itfmessage
+      integer*4 iat,isp0,itfmessage
       if(iaxnone%k .eq. 0)then
         call tfattrinit
       endif
@@ -605,17 +621,12 @@ c      include 'DEBUG.inc'
       else
         if(iand(iat,iattrholdfirst) .ne. 0)then
           isp=isp+1
-          if(iand(iat,iattrholdrest) .ne. 0)then
-            dtastk(isp)=iaxholdall
-          else
-            dtastk(isp)=iaxholdfirst
-          endif
-        elseif(iand(iat,iattrholdrest) .ne. 0)then
-          isp=isp+1
-          dtastk(isp)=iaxholdrest
+          dtastk(isp)=merge(iaxholdall,iaxholdfirst,
+     $         iand(iat,iattrholdrest) .ne. 0)
         else
           isp=isp+1
-          dtastk(isp)=iaxholdnone
+          dtastk(isp)=merge(iaxholdrest,iaxholdnone,
+     $         iand(iat,iattrholdrest) .ne. 0)
         endif
         if(iand(iat,iattrconstant) .ne. 0)then
           isp=isp+1
@@ -648,11 +659,14 @@ c      include 'DEBUG.inc'
       use tfstk
       use tfcode
       implicit none
-      type (sad_descriptor) kx,k,kv
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) k,kv
       type (sad_dlist), pointer :: kl
       type (sad_symbol), pointer :: sym
       integer*8 ka
-      integer*4 isp1,irtc,narg,iattrib,i,itfmessage,isp0,
+      integer*4 narg,iattrib,i,itfmessage,isp0,
      $     itfmessageexp
       logical*4 prot
       if(iaxnone%k .eq. 0)then
@@ -759,9 +773,11 @@ c      include 'DEBUG.inc'
       subroutine tfreleasehold(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
       type (sad_dlist), pointer ::klx
-      integer*4 isp1,irtc,isp0
+      integer*4 isp0
       irtc=-1
       if(isp .le. isp1)then
         return

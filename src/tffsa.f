@@ -174,11 +174,7 @@ c
         if(lfni .ne. 5)then
           lfn1=lfno
         else
-          if(igetgl('$LOG$') .eq. 0)then
-            lfn1=0
-          else
-            lfn1=lfno
-          endif
+          lfn1=merge(0,lfno,igetgl('$LOG$') .eq. 0)
         endif
       else
         lfn1=0
@@ -201,11 +197,7 @@ c
         if(lfni .ne. 5)then
           lfn1=lfno
         else
-          if(igetgl('$LOG$') .eq. 0)then
-            lfn1=0
-          else
-            lfn1=lfno
-          endif
+          lfn1=merge(0,lfno,igetgl('$LOG$') .eq. 0)
         endif
       elseif(ios .lt. 0)then
         ios=0

@@ -9,9 +9,10 @@
       use tmacro
       use tspin
       implicit none
-      integer*4 np,n,kptbl(np0,6)
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
-      real*8 sx(np),sy(np),sz(np)
+      integer*4 ,intent(inout):: np,kptbl(np0,6)
+      integer*4 ,intent(in):: n
+      real*8 ,intent(inout):: x(np0),px(np0),y(np0),py(np0),z(np0),
+     $     g(np0),dv(np0),sx(np),sy(np),sz(np)
       logical*4 normal
       call tturn0(np,1,nlat,x,px,y,py,z,g,dv,sx,sy,sz,
      $     kptbl,n,normal)
@@ -32,13 +33,15 @@
       type (ffs_bound) fbound
       type (sad_comp), pointer ::cmp
       type (sad_descriptor) :: dsave(kwMAX)
-      integer*4 np,n,la,ls,nvar,lb,le
-c      integer*4 isb,itwb,itwb1,itwb2,itwb3,itwb4,ntw
+      integer*4 ,intent(inout):: np,kptbl(np0,6)
+      integer*4 ,intent(in):: n,lb,le
+      real*8 ,intent(inout):: x(np0),px(np0),y(np0),py(np0),z(np0),
+     $     g(np0),dv(np0),sx(np),sy(np),sz(np)
+      logical*4 ,intent(out):: normal
+      integer*4 la,ls,nvar
       real*8 pgev00
-      integer*4 kptbl(np0,6),lv,itfdownlevel,irtc
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
-      real*8 sx(np0),sy(np0),sz(np0)
-      logical*4 sol,chg,tfinsol,normal
+      integer*4 lv,itfdownlevel,irtc
+      logical*4 sol,chg,tfinsol
       pgev00=pgev
       sol=tfinsol(lb)
       novfl=0
@@ -158,11 +161,10 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       integer*4 ,intent(inout):: np,la
       integer*4 ,intent(in):: n,lbegin,lend
       integer*4 kdx,kdy,krot
-      integer*4 kptbl(np0,6)
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),
-     $     g(np0),dv(np0),dpz,al1
-      real*8 sx(np0),sy(np0),sz(np0)
-      real*8 bz,al,ak0,ak1,tgauss,ph,harmf,
+      integer*4 ,intent(inout):: kptbl(np0,6)
+      real*8 ,intent(inout):: x(np0),px(np0),y(np0),py(np0),z(np0),
+     $     g(np0),dv(np0), sx(np0),sy(np0),sz(np0)
+      real*8 bz,al,ak0,ak1,tgauss,ph,harmf,dpz,al1,
      $     sspac0,sspac,fw,dx,dy,rot,sspac1,sspac2,ak,rtaper,
      $     cod(6)
       integer*4 l,lele,i,ke,lwl,lwt,lwlc,lwtc,irtc,
@@ -251,37 +253,17 @@ c        endif
         endif
         if(l .eq. nextwake)then
           iwpl=abs(kwaketbl(1,nwak))
-          if(iwpl .ne. 0)then
-            lwl=(ilist(1,iwpl-1)-2)/2
-          else
-            lwl=0
-          endif
+          lwl=merge((ilist(1,iwpl-1)-2)/2,0,iwpl .ne. 0)
           iwpt=abs(kwaketbl(2,nwak))
-          if(iwpt .ne. 0)then
-            lwt=(ilist(1,iwpt-1)-2)/2
-          else
-            lwt=0
-          endif
+          lwt=merge((ilist(1,iwpt-1)-2)/2,0,iwpt .ne. 0)
           if(lele .ne. icCAVI)then
             fw=(abs(charge)*e*pbunch*anbunch/amass)/np0*.5d0
             kdx=kytbl(kwDX,lele)
-            if(kdx .ne. 0)then
-              dx=cmp%value(kdx)
-            else
-              dx=0.d0
-            endif
+            dx=merge(cmp%value(kdx),0.d0,kdx .ne. 0)
             kdy=kytbl(kwDY,lele)
-            if(kdy .ne. 0)then
-              dy=cmp%value(kdy)
-            else
-              dy=0.d0
-            endif
+            dy=merge(cmp%value(kdy),0.d0,kdy .ne. 0)
             krot=kytbl(kwROT,lele)
-            if(krot .ne. 0)then
-              rot=cmp%value(krot)
-            else
-              rot=0.d0
-            endif
+            dy=merge(cmp%value(krot),0.d0,krot .ne. 0)
             call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           dx,dy,rot,int(anbunch),
      $           fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
@@ -337,14 +319,11 @@ c            write(*,*)'twspac-end'
          if(.not. cmp%update)then
            call tpara(cmp)
          endif
-         if(cmp%value(ky_RANK_BEND) .ne. 0.d0)then
-           ak0=cmp%value(ky_ANGL_BEND)
-     $          +cmp%value(ky_K0_BEND)
-     $          +cmp%value(ky_RANK_BEND)*tgauss()
-         else
-           ak0=cmp%value(ky_ANGL_BEND)
-     $          +cmp%value(ky_K0_BEND)
-         endif
+         ak0=merge(cmp%value(ky_ANGL_BEND)
+     $        +cmp%value(ky_K0_BEND)
+     $        +cmp%value(ky_RANK_BEND)*tgauss(),
+     $        cmp%value(ky_ANGL_BEND)+cmp%value(ky_K0_BEND),
+     $        cmp%value(ky_RANK_BEND) .ne. 0.d0)
          ak1=cmp%value(ky_K1_BEND)
          krad=rad .and. cmp%value(ky_RAD_BEND) .eq. 0.d0 .and.
      $        cmp%value(p_L_BEND) .ne. 0.d0
@@ -372,7 +351,7 @@ c            write(*,*)'twspac-end'
 c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      1        cmp%value(p_COSTHETA_BEND),cmp%value(p_SINTHETA_BEND),
      $        cmp%value(p_FB1_BEND),cmp%value(p_FB2_BEND),
-     $        int(cmp%value(ky_FRMD_BEND)),
+     $        cmp%ivalue(1,p_FRMD_BEND),
      $        cmp%value(ky_FRIN_BEND) .eq. 0.d0,
      1        cmp%value(p_COSW_BEND),cmp%value(p_SINW_BEND),
      $        cmp%value(p_SQWH_BEND),cmp%value(p_SINWP1_BEND),
@@ -400,7 +379,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $        cmp%value(p_AKF2F_QUAD)*rtaper,
      $        cmp%value(p_AKF1B_QUAD)*rtaper,
      $        cmp%value(p_AKF2B_QUAD)*rtaper,
-     1        int(cmp%value(p_FRMD_QUAD)),cmp%value(ky_EPS_QUAD),
+     1        cmp%ivalue(1,p_FRMD_QUAD),cmp%value(ky_EPS_QUAD),
      $        cmp%value(ky_KIN_QUAD) .eq. 0.d0)
 
        case (icSEXT,icOCTU,icDECA,icDODECA)
@@ -469,12 +448,10 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
          if(cmp%value(ky_RANV_CAVI) .ne. 0.d0)then
            ak=ak+cmp%value(ky_RANV_CAVI)*tgauss()
          endif
-         if(cmp%value(ky_RANP_CAVI) .eq. 0.d0)then
-           ph=cmp%value(ky_DPHI_CAVI)
-         else
-           ph=cmp%value(ky_DPHI_CAVI)+
-     $          cmp%value(ky_RANP_CAVI)*tgauss()
-         endif
+         ph=merge(cmp%value(ky_DPHI_CAVI),
+     $        cmp%value(ky_DPHI_CAVI)+
+     $        cmp%value(ky_RANP_CAVI)*tgauss(),
+     $        cmp%value(ky_RANP_CAVI) .eq. 0.d0)
          autophi=cmp%value(ky_APHI_CAVI) .ne. 0.d0
          if(autophi)then
            ph=ph+gettwiss(mfitdz,l)*cmp%value(p_W_CAVI)
@@ -508,7 +485,7 @@ c     endif
      $          cmp%value(ky_V1_CAVI),cmp%value(ky_V20_CAVI),
      $          cmp%value(ky_V11_CAVI),cmp%value(ky_V02_CAVI),
      $          cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
-     $          int(cmp%value(p_FRMD_CAVI)),autophi)
+     $          cmp%ivalue(1,p_FRMD_CAVI),autophi)
          else
 c           write(*,*)'tturn-tcav-0 ',cmp%value(p_W_CAVI),
 c     $          cmp%value(p_VNOMINAL_CAVI)
@@ -521,21 +498,17 @@ c     $          cmp%value(p_VNOMINAL_CAVI)
      $          cmp%value(ky_V1_CAVI),cmp%value(ky_V20_CAVI),
      $          cmp%value(ky_V11_CAVI),cmp%value(ky_V02_CAVI),
      $          cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
-     $          int(cmp%value(p_FRMD_CAVI)),autophi)
+     $          cmp%ivalue(1,p_FRMD_CAVI),autophi)
          endif
 
        case (icTCAV)
          if(rfsw)then
-           if(cmp%value(ky_RANK_TCAV) .eq. 0.d0)then
-             ak=cmp%value(ky_K0_TCAV)
-           else
-             ak=cmp%value(ky_K0_TCAV)+cmp%value(ky_RANK_TCAV)*tgauss()
-           endif
-           if(cmp%value(ky_RANP_TCAV) .eq. 0.d0)then
-             ph=cmp%value(ky_PHI_TCAV)
-           else
-             ph=cmp%value(ky_PHI_TCAV)+cmp%value(ky_RANP_TCAV)*tgauss()
-           endif
+           ak=merge(cmp%value(ky_K0_TCAV),
+     $          cmp%value(ky_K0_TCAV)+cmp%value(ky_RANK_TCAV)*tgauss(),
+     $          cmp%value(ky_RANK_TCAV) .eq. 0.d0)
+           ph=merge(cmp%value(ky_PHI_TCAV),
+     $          cmp%value(ky_PHI_TCAV)+cmp%value(ky_RANP_TCAV)*tgauss(),
+     $          cmp%value(ky_RANP_TCAV) .eq. 0.d0)
            harmf=cmp%value(ky_HARM_TCAV)-int(cmp%value(ky_HARM_TCAV))
            ph=ph+harmf*(n-1)*pi2
            call ttcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
@@ -625,11 +598,7 @@ c     print *,'tturn l sspac2',l,sspac2
      $           p0,h0,itab,izs,.false.)
           endif
           nwak=nwak+1
-          if(nwak .gt. nwakep)then
-            nextwake=0
-          else
-            nextwake=iwakeelm(nwak)
-          endif
+          nextwake=merge(0,iwakeelm(nwak),nwak .gt. nwakep)
         endif
       enddo
       call limitnan(x(1:np),-xlimit,xlimit,xlimit)
@@ -789,6 +758,7 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
       endif
       call tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     cmp%value(p_L_MULT),cmp%value(ky_K0_MULT),
+     $     cmp%value(p_K0R_MULT),
      $     bz,cmp%value(p_ANGL_MULT),
      $     cmp%value(p_PSI1_MULT),cmp%value(p_PSI2_MULT),
      1     cmp%value(ky_DX_MULT),cmp%value(ky_DY_MULT),
@@ -797,7 +767,6 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
      $     cmp%value(ky_ROT_MULT),
      $     cmp%value(ky_DROT_MULT),
      $     cmp%value(p_THETA2_MULT),
-     $     cmp%value(p_CR1_MULT),
      $     cmp%value(ky_EPS_MULT),
      $     rad .and. cmp%value(ky_RAD_MULT) .eq. 0.d0 .and.
      $     cmp%value(p_L_MULT) .ne. 0.d0,
@@ -806,12 +775,14 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
      $     cmp%value(p_AKF2F_MULT)*rtaper,
      $     cmp%value(p_AKF1B_MULT)*rtaper,
      $     cmp%value(p_AKF2B_MULT)*rtaper,
-     $     int(cmp%value(p_FRMD_MULT)),
+     $     cmp%ivalue(1,p_FRMD_MULT),
      $     cmp%value(p_FB1_MULT),cmp%value(p_FB2_MULT),
+     $     cmp%lvalue(1,p_DOFR_MULT),
      $     cmp%value(ky_VOLT_MULT)+cmp%value(ky_DVOLT_MULT),
      $     cmp%value(p_W_MULT),
      $     cmp%value(ky_PHI_MULT),ph,cmp%value(p_VNOMINAL_MULT),
      $     cmp%value(ky_RADI_MULT),rtaper,autophi,
+     $     cmp%ivalue(1,p_NM_MULT),cmp%ivalue(2,p_NM_MULT),
      $     n,kptbl)
       return
       end

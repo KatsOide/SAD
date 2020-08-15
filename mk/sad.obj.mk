@@ -111,7 +111,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      tspch_.o     ft.o        psn.o       spch.o \
      csrtest.o csrtrack.o csroy.o txwake.o tbbbrem.o
 
-OBJF=tfeval.o    itfcopy.o tfefun.o  tfmap.o     tfprinta.o  tfestk.o
+OBJF=tfeval.o    itfcopy.o tfefun.o  tffuns.o tfmap.o     tfprinta.o  tfestk.o
 
 OBJUTIL=utils.o
 

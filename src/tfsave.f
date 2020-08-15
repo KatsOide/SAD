@@ -10,9 +10,10 @@
       type (sad_comp), pointer ::cmp,cmpd
       integer*8 j
       integer*4 i,l,lt,next,itfdownlevel
-      integer*4 ntou
-      character*(*) word
-      logical*4 cmd,cmd0,exist,tmatch,exist1,all
+      integer*4 ,intent(in):: ntou
+      character*(*) ,intent(in):: word
+      logical*4 ,intent(in):: cmd0
+      logical*4 cmd,exist,tmatch,exist1,all
       call tfsetparam
       cmd=cmd0
       exist=.false.
@@ -108,8 +109,9 @@
       type (sad_comp), pointer :: cmp,cmps
       integer*8 j
       integer*4 l,i,lt,k,next,itfdownlevel
-      character*(*) word
-      logical*4 cmd,cmd0,exist,tmatch,exist1,all
+      character*(*) ,intent(in):: word
+      logical*4 ,intent(in):: cmd0
+      logical*4 cmd,exist,tmatch,exist1,all
       call tfsetparam
       cmd=cmd0
       all=.false.

@@ -13,7 +13,7 @@
       real*8 rgetgl1
       logical*4 ref
       irtc=-1
-      kx=dxnull
+      kx%k=ktfoper+mtfnull
       id=id0-1000
       narg=isp-isp1
       ka=klist(ifunbase+ktfaddr(ktastk(isp1)))+1

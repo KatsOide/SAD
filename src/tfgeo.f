@@ -11,7 +11,8 @@
       integer*4 i,lxp,lt,nv,j,it
       real*8 geo1(3,4),geo2(3,3),vsave(256),dpos,offset,xp,fr,pos0,
      $     dgo(3),tffsmarkoffset,rgetgl1,poso,posi
-      logical*4 calgeo,calgeo0,calpol0,chg
+      logical*4 calgeo,calpol0,chg
+      logical*4 ,intent(in):: calgeo0
       call tfsetparam
       if(.not. geocal)then
         if(gammab(1) .ne. p0)then
@@ -94,7 +95,7 @@
         else
           j=i+1
           posi=pos(j)
-          do while(.true.)
+          do
             if(pos(j) .ne. posi)then
               exit
             elseif(j .eq. nlat)then
@@ -156,7 +157,8 @@
       use geolib
       implicit none
       type (sad_comp), pointer :: cmp
-      integer*4 istart,istop,ke,ke1,i,k,i1,istart0
+      integer*4 ,intent(in):: istart0,istop
+      integer*4 istart,ke,ke1,i,k,i1
       integer*8 id
       real*8 p1,h1,ali,v,dchi3,
      $     rho0,sp0,cp0,r1,r2,cchi1,schi1,
@@ -164,7 +166,8 @@
      $     r31,r32,r33,oneev,phi,fb1,fb2,x(3),y(3),
      $     theta,cost,sint,r21,r22,r23,ald,tfacc
       parameter (oneev=1.d0+3.83d-12)
-      logical*4 sol,calgeo,dir,acconly
+      logical*4 ,intent(in):: calgeo,acconly
+      logical*4 sol,dir
 c     begin initialize for preventing compiler warning
       cost=1.d0
       sint=0.d0

@@ -1,10 +1,13 @@
       subroutine tfpart(isp1,kx,err,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,tfpart1
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) tfpart1
       type (sad_dlist), pointer ::kl
-      integer*4 isp1,irtc,isp2
-      logical*4 err
+      integer*4 isp2
+      logical*4 ,intent(in):: err
       if(isp .le. isp1)then
         kx=dtastk(isp1)
         irtc=0
@@ -21,17 +24,19 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx
+      integer*4 ,intent(in):: isp1,isp2
+      integer*4 ,intent(out):: irtc
       type (sad_descriptor) kl,ki
-      type (sad_dlist) list
+      type (sad_dlist) ,intent(in):: list
       type (sad_dlist), pointer :: listi,listl
-      integer*4 isp1,irtc,narg,ivi,iv,ma,m,i,
-     $     isp0,itfmessage,itfmessageexp,isp2
-      logical*4 err
+      integer*4 narg,ivi,iv,ma,m,i,isp0,itfmessage,itfmessageexp
+      logical*4 ,intent(in):: err
       narg=isp2-isp1
       ma=list%nl
       kl=dtastk(isp1+1)
       isp0=isp
       irtc=0
+      kx%k=ktfoper+mtfnull
       if(ktfrealq(kl,iv))then
         if(iv .lt. 0)then
           iv=ma+iv+1
@@ -55,12 +60,8 @@
       endif
       if(tflistq(kl,listl))then
         if(ktfnonreallistqo(listl))then
-          if(err)then
-            irtc=itfmessage(9,'General::wrongtype',
-     $           '"List of reals as index"')
-          else
-            irtc=-1
-          endif
+          irtc=merge(itfmessage(9,'General::wrongtype',
+     $         '"List of reals as index"'),-1,err)
           return
         endif
         m=listl%nl
@@ -80,7 +81,6 @@
               isp=isp+1
               dtastk(isp)=tfpart1(listi,isp1+1,isp2,err,irtc)
               if(irtc .ne. 0)then
-                kx=dxnull
                 isp=isp0
                 return
               endif
@@ -115,7 +115,6 @@
                 isp=isp+1
                 dtastk(isp)=tfpart1(listi,isp1+1,isp2,err,irtc)
                 if(irtc .ne. 0)then
-                  kx=dxnull
                   isp=isp0
                   return
                 endif
@@ -129,26 +128,19 @@
         endif
       elseif(ierrorexp .gt. 0)then
         irtc=-1
-      elseif(err)then
-        irtc=itfmessage(9,'General::wrongtype',
-     $       '"Real, List of Reals, or Null as index"')
       else
-        irtc=-1
+        irtc=merge(itfmessage(9,'General::wrongtype',
+     $       '"Real, List of Reals, or Null as index"'),
+     $       -1,err)
       endif
       return
- 9030 if(err)then
-        irtc=itfmessageexp(9,'General::index',sad_descr(dble(ivi)))
-      else
-        irtc=-1
-      endif
-      kx=dxnull
+ 9030 irtc=merge(
+     $     itfmessageexp(9,'General::index',sad_descr(dble(ivi))),
+     $     -1,err)
       isp=isp0
       return
- 9040 if(err)then
-        irtc=itfmessage(9,'General::toomany','"indices"')
-      else
-        irtc=-1
-      endif
+ 9040 irtc=merge(itfmessage(9,'General::toomany','"indices"'),
+     $       -1,err)
       isp=isp0
       return
       end
@@ -157,13 +149,17 @@
      $     list,last,write,eval,err,irtc)
       use tfstk
       implicit none
+      integer*4 ,intent(in):: isp1,isp2
+      integer*4 ,intent(out):: irtc
       type (sad_descriptor) ki,kl,k1
-      type (sad_dlist) lar
+      type (sad_dlist) ,intent(inout):: lar
       type (sad_dlist),pointer :: lari,listl
       integer*8 ka
-      integer*4 isp1,irtc,narg,ivi,iv,ma,m,i,isp0,itfmessage,
-     $     itfmessageexp,isp2
-      logical*4 err,list,list1,last,write,eval,eval1
+      integer*4 narg,ivi,iv,ma,m,i,isp0,itfmessage,
+     $     itfmessageexp
+      logical*4 ,intent(out):: eval,list
+      logical*4 ,intent(in):: err,last,write
+      logical*4 list1,eval1
       irtc=0
       eval=.false.
       narg=isp2-isp1
@@ -325,65 +321,51 @@ c              enddo
               endif
             enddo
           endif
-        elseif(err)then
-          irtc=itfmessage(9,'General::wrongtype',
-     $         '"Real, List of Reals, or Null as index"')
         else
-          irtc=-1
+          irtc=merge(itfmessage(9,'General::wrongtype',
+     $         '"Real, List of Reals, or Null as index"'),
+     $         -1,err)
         endif
       endif
       return
- 9030 if(err)then
-        irtc=itfmessageexp(9,'General::index',sad_descr(dble(ivi)))
-      else
-        irtc=-1
-      endif
+ 9030 irtc=merge(itfmessageexp(9,'General::index',sad_descr(dble(ivi))),
+     $     -1,err)
       return
- 9040 if(err)then
-        irtc=itfmessage(9,'General::toomany','"indices"')
-      else
-        irtc=-1
-      endif
+ 9040 irtc=merge(itfmessage(9,'General::toomany','"indices"'),
+     $     -1,err)
       return
       end
 
       subroutine tffirst(isp1,kx,mode,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1,mode
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) k
       type (sad_dlist), pointer :: kl
-      integer*4 isp1,irtc,itfmessage,mode,m
+      integer*4 itfmessage,m
       if(isp .ne. isp1+1)then
-        if(rlist(iaximmediate) .lt. 0.d0)then
-          irtc=-1
-        else
-          irtc=itfmessage(9,'General::narg','"1"')
-        endif
+        irtc=merge(-1,
+     $       itfmessage(9,'General::narg','"1"'),
+     $       rlist(iaximmediate) .lt. 0.d0)
         return
       endif
       k=dtastk(isp)
       if(ktfnonlistq(k,kl))then
-        if(rlist(iaximmediate) .lt. 0.d0)then
-          irtc=-1
-        else
-          irtc=itfmessage(9,'General::wrongtype','"List"')
-        endif
+        irtc=merge(-1,
+     $       itfmessage(9,'General::wrongtype','"List"'),
+     $       rlist(iaximmediate) .lt. 0.d0)
         return
       endif
       m=kl%nl
       if(m .le. max(0,mode))then
-        if(rlist(iaximmediate) .lt. 0.d0)then
-          irtc=-1
-        else
-          irtc=itfmessage(9,'General::index','""')
-        endif
+        irtc=merge(-1,
+     $       itfmessage(9,'General::index','""'),
+     $       rlist(iaximmediate) .lt. 0.d0)
         return
       endif
-      if(mode .lt. 0)then
-        kx=kl%dbody(m)
-      else
-        kx=kl%dbody(mode+1)
-      endif
+      kx=merge(kl%dbody(m),kl%dbody(mode+1),mode .lt. 0)
       irtc=0
       call tfeevalref(kx,kx,irtc)
       return
@@ -393,10 +375,13 @@ c              enddo
       use tfstk
       use efun
       implicit none
-      type (sad_descriptor) kx,kh,k,kind
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) kh,k,kind
       type (sad_dlist), pointer :: klind,kli
       type (sad_dlist), pointer :: kl
-      integer*4 irtc,isp1,narg,i,isp0,itfmessage,m
+      integer*4 narg,i,isp0,itfmessage,m
       narg=isp-isp1
       if(narg .eq. 2)then
         kh%k=ktfref
@@ -460,10 +445,11 @@ c              enddo
       use tfstk
       use efun
       implicit none
-      type (sad_descriptor) kh
-      type (sad_dlist) kl
-      type (sad_dlist) kll
-      integer*4 irtc,i,isp0,isp1,isp2,isp3
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) ,intent(in):: kh
+      type (sad_dlist) ,intent(inout):: kl
+      type (sad_dlist) ,intent(inout):: kll
+      integer*4 i,isp0,isp1,isp2,isp3
       logical*4 list,eval
       isp1=isp
       call tfgetllstkall(kll)
@@ -509,9 +495,12 @@ c        enddo
       subroutine tfreplacepart(isp1,kx,mode,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k,kn,kf
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1,mode
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) k,kn,kf
       type (sad_dlist), pointer :: klx,list
-      integer*4 irtc,isp1,narg,i,mode,itfmessage,isp0
+      integer*4 narg,i,itfmessage,isp0
       logical*4 seq,rep,rule
       narg=isp-isp1
       if(narg .eq. 1 .and. (mode .eq. 0 .or. mode .eq. 3)
@@ -603,11 +592,15 @@ c          call tfdebugprint(dtastk2(i),' -> ',1)
       subroutine tfreplacepart0(mode,list,kn,kf,seq,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kn,k1,kf
-      type (sad_dlist) :: list
+      type (sad_descriptor) ,intent(in):: kn,kf
+      type (sad_descriptor) k1
+      type (sad_dlist) ,intent(inout):: list
       type (sad_dlist), pointer :: kln
-      integer*4 itfmessage,i,mode,irtc
-      logical*4 single,seq
+      integer*4 ,intent(in):: mode
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,i
+      logical*4 ,intent(out):: seq
+      logical*4 single
       if(ktfrealq(kn))then
         single=.true.
       elseif(tflistq(kn,kln))then
@@ -635,11 +628,15 @@ c          call tfdebugprint(dtastk2(i),' -> ',1)
       use tfstk
       use efun
       implicit none
-      type (sad_descriptor) ki,kn,kf,kxi
-      type (sad_dlist) kln
+      type (sad_descriptor) ,intent(in):: kn,kf
+      type (sad_descriptor) ki,kxi
+      type (sad_dlist) ,intent(inout):: kln
       type (sad_dlist), pointer :: kl,kli,klxi
-      integer*4 mode,irtc,isp0,ivi,itfmessage,isp2,isp3,i
-      logical*4 list,seq,seq1
+      integer*4 ,intent(in):: mode
+      integer*4 ,intent(out):: irtc
+      integer*4 isp0,ivi,itfmessage,isp2,isp3,i
+      logical*4 ,intent(out):: seq
+      logical*4 list,seq1
       isp0=isp
       if(ktfrealq(kn))then
         isp=isp+1
@@ -745,9 +742,10 @@ c              call tfdebugprint(kxi,'reppart1-kxi',1)
       recursive subroutine tfreprulestk(kn,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kn
+      type (sad_descriptor) ,intent(in):: kn
       type (sad_dlist) , pointer :: knl
-      integer*4 irtc,itfmessage,i
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,i
       if(ktfnonlistq(kn,knl))then
         go to 9000
       endif
@@ -779,9 +777,12 @@ c              call tfdebugprint(kxi,'reppart1-kxi',1)
       subroutine tfpartition(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,kp,k,ks,tfpartitionstk
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) kp,k,ks,tfpartitionstk
       type (sad_dlist), pointer :: klp,kl,kls
-      integer*4 isp1,irtc,narg,m,id,itfmessage
+      integer*4 narg,m,id,itfmessage
       real*8 vp,vs
       narg=isp-isp1
       k=dtastk(isp1+1)
@@ -863,17 +864,19 @@ c            enddo
       use tfstk
       use efun
       implicit none
-      type (sad_descriptor) kx,kk,kxthread
-      type (sad_dlist) kl
+      integer*4 ,intent(in):: isp10,isp20
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) kx,kk
+      type (sad_descriptor) ,save::kxthread
+      type (sad_dlist) ,intent(out):: kl
       type (sad_dlist), pointer :: klj
       integer*8 kai
-      integer*4 isp1,ma,ne,no,i,mp,isp10,isp20,isp2,isp3,isp0,irtc,j,
-     $     itfmessage
+      integer*4 isp1,ma,ne,no,i,mp,isp2,isp3,isp0,j,itfmessage
       data kxthread%k /0/
       if(kxthread%k .eq. 0)then
         kxthread=kxsymbolz('`System`Thread',14)
       endif
-      kx=dxnull
+      kx%k=ktfoper+mtfnull
       isp1=isp10
       isp2=isp20
       ma=kl%nl
@@ -947,12 +950,14 @@ c            enddo
       use tfstk
       use efun
       implicit none
-      type (sad_descriptor) kx,k,kh,kf,ki,kj
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1,mode
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) k,kh,kf,ki,kj
       type (sad_dlist), pointer :: list,klx,kli
       type (sad_rlist), pointer :: klj
       integer*8 kai
-      integer*4 isp1,irtc,narg,mode,
-     $     i,j,n,m,itfmessage,isp0,isp2,isp3
+      integer*4 narg,i,j,n,m,itfmessage,isp0,isp2,isp3
       logical*4 tfconstheadqk,allv,ch
       narg=isp-isp1
       if(mode .eq. 0)then
@@ -1114,11 +1119,15 @@ c              enddo
       subroutine tfsetpart(kln,k2,kx,mode,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k2,kr,k1
-      type (sad_dlist) kln
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) ,intent(in):: k2
+      integer*4 ,intent(in):: mode
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) kr,k1
+      type (sad_dlist) ,intent(in):: kln
       type (sad_dlist), pointer :: listl,list2,kli
       integer*8 kap
-      integer*4 irtc,i,isp1,isp2,n,itfmessageexp,mode
+      integer*4 i,isp1,isp2,n,itfmessageexp
       logical*4 list,def,eval,eval1,tfgetstoredp,app
       if(tfgetstoredp(kln%dbody(1),kap,def,irtc))then
         k1=dlist(kap)
@@ -1229,10 +1238,12 @@ c              enddo
       subroutine tfreplist(list,iv,k,eval)
       use tfstk
       implicit none
-      type (sad_descriptor) k
-      type (sad_dlist) list
-      integer*4 iv,i,lattr
-      logical*4 eval,tfconstlistqo
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_dlist) ,intent(inout):: list
+      integer*4 ,intent(in):: iv
+      integer*4 i,lattr
+      logical*4 ,intent(out):: eval
+      logical*4 tfconstlistqo
       eval=.false.
       if(iv .eq. 0)then
         call tflocald(list%head)
@@ -1245,11 +1256,8 @@ c              enddo
         else
           list%dbody(iv)=dtfcopy(k)
           eval=ktfsequenceq(k%k)
-          if(eval)then
-            list%attr=ktoberebuilt+lnonreallist
-          else
-            list%attr=lnonreallist
-          endif
+          list%attr=merge(ktoberebuilt+lnonreallist,
+     $         lnonreallist,eval)
         endif
       else
         call tflocal(list%dbody(iv))
@@ -1277,3 +1285,4 @@ c              enddo
       endif
       return
       end
+

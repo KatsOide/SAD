@@ -35,11 +35,7 @@
       rhob=al/phib
       rho0=al/phi0
       aind=rho0/phi0*ak
-      if(eps0 .le. 0.d0)then
-        eps=epsbend
-      else
-        eps=epsbend*eps0
-      endif
+      eps=merge(epsbend,epsbend*eps0,eps0 .eq. 0.d0)
       ndiv=1+int(abs(phi0/eps))
       krad=rad .and. enarad .and. al .ne. 0.d0
       f1r=0.d0

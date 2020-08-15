@@ -161,7 +161,7 @@ c      write(*,'(a,106g15.7)')'td_sol ',x(1),px(1),y(1),py(1),z(1),g(1)
           endif
         endif
 c        b=hypot(hypot(ak0x,ak0y),bz*al)
-        b=hypot3(ak0x,ak0y,bz*al)
+        b=norm2([ak0x,ak0y,bz*al])
         phix=ak0y/b
         phiy=ak0x/b
         phiz=bz*al/b
