@@ -9,7 +9,8 @@
       use iso_c_binding
       implicit none
       integer*4, save :: lps=0
-      integer*4 irtc,n,getpagesize,nsh1,i,na
+      integer*4 ,intent(in):: n
+      integer*4 irtc,getpagesize,nsh1,i,na
       integer*8 k,kpb,kcp
       if(lps .eq. 0)then
         lps=getpagesize()/8
@@ -75,9 +76,9 @@ c     $     transfer(c_loc(klist(kpb)),k)/8
       subroutine tfreeshared(kpb,ist)
       use tfstk
       implicit none
-      integer*4, optional :: ist
+      integer*4, optional ,intent(in):: ist
       integer*4 i,is
-      integer*8 kpb
+      integer*8 ,intent(in):: kpb
       is=0
       if(present(ist))then
         is=ist
@@ -98,7 +99,8 @@ c     $     transfer(c_loc(klist(kpb)),k)/8
       subroutine tfreleaseshared(kpb)
       use tfstk
       implicit none
-      integer*8 kpb,k
+      integer*8 ,intent(in):: kpb
+      integer*8 k
       integer*4 irtc
       k=klist(kpb-2)
       call mapallocfixed8(klist(kpb-2),klist(kpb-1),8,irtc)
@@ -154,11 +156,15 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       recursive subroutine tfrecallshared(isp0,k,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k,k0,ki
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) k0,ki
       type (sad_string), pointer :: str
       type (sad_dlist), pointer :: kl
       integer*8 kax
-      integer*4 isp0,m,irtc,itfmessage,i
+      integer*4 ,intent(in):: isp0
+      integer*4 ,intent(out):: irtc
+      integer*4 m,itfmessage,i
       logical*4 tfcheckelement
       do i=isp0+1,isp
         if(ktastk(i) .eq. k%k)then
@@ -219,8 +225,10 @@ c        call tfdebugprint(k,'recallshared',3)
       subroutine tfstoreshared(isp0,k,kap)
       use tfstk
       implicit none
-      integer*8 k,ka,kap,kh,ki,kt
-      integer*4 isp0,i,j,m
+      integer*8 ,intent(in):: k,kap
+      integer*8 ka,kh,ki,kt
+      integer*4 ,intent(in):: isp0
+      integer*4 i,j,m
       ka=ktfaddr(k)
       kt=k-ka
       if(kt .eq. ktfstring)then
@@ -275,8 +283,11 @@ c          enddo
       recursive subroutine tfsharedsize(isp0,k,n,irtc)
       use tfstk
       implicit none
-      integer*8 k,ka,kt,ki,kh
-      integer*4 isp0,i,irtc,itfmessage,ni,n
+      integer*8 ,intent(in):: k
+      integer*8 ka,kt,ki,kh
+      integer*4 ,intent(in):: isp0
+      integer*4 ,intent(out):: irtc,n
+      integer*4 i,itfmessage,ni
       irtc=0
       if(ktfnonobjq(k) .or. ktfsymbolq(k))then
         n=1

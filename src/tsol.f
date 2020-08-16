@@ -502,11 +502,7 @@ c cod does NOT have canonical momenta!
           a24=sin(phi)
           a12=a24/bzs
           a22=cos(phi)
-          if(a22 .ge. 0.d0)then
-            a14=a24**2/(1.d0+a22)/bzs
-          else
-            a14=(1.d0-a22)/bzs
-          endif
+          a14=merge(a24**2/(1.d0+a22),1.d0-a22,a22 .eq. 0.d0)/bzs
           da12=a22
           da14=a24
         endif
@@ -952,11 +948,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
      $         0.d0,1.d0,autophi,1,0,
      $         n,kptbl)
         case (icSOL)
-          if(l .eq. ke)then
-            bz1=0.d0
-          else
-            bz1=tfbzs(l,kbz)
-          endif
+          bz1=merge(0.d0,tfbzs(l,kbz),l .eq. ke)
           krad=rad .and. cmp%value(ky_RAD_SOL) .eq. 0.d0
      $         .and. cmp%value(ky_F1_SOL) .ne. 0.d0 .and. bzs .ne. bz1          
           if(krad)then

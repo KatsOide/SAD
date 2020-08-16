@@ -19,11 +19,7 @@
         kx=dtastk(isp1+1)
         return
       endif
-      if(narg .eq. 2)then
-        kf=dtastk(isp)
-      else
-        kf%k=ktfref
-      endif
+      kf%k=merge(ktastk(isp),ktfref,narg .eq. 2)
       isp0=isp
       call tfsortl(kl,ktfreallistq(kl),m,mode,kf,.false.,irtc)
       if(irtc .ne. 0)then
@@ -50,9 +46,9 @@
       if(iafsort .eq. 0)then
         iafsort=ktfsymbolf('$SortMethodID',13,.false.)-4
       endif
-      do i=1,n
-        itab(i)=i
-      enddo
+c      do i=1,n
+      itab(1:n)=[(i,i=1,n)]
+c      enddo
       isort=int(rlist(iafsort))
       if(isort .eq. 1)then
         call tfsortml(itab,kl,av,n,mode,kf,irtc)
@@ -61,20 +57,13 @@
       endif
       isp0=isp
       if(mode .eq. 0)then
-        do i=1,n
-          j=itab(i)
-          dtastk(isp0+i)=kl%dbody(j)
-        enddo
+        dtastk(isp0+1:isp0+n)=kl%dbody(itab(1:n))
         isp=isp0+n
       elseif(ins)then
         do i=1,n
           j=itab(i)
           isp=isp+1
-          if(j .ge. 0)then
-            ktastk(isp)=j
-          else
-            ktastk(isp)=0
-          endif
+          ktastk(isp)=merge(j,0,j .ge. 0)
         enddo
       else
         do i=1,n
@@ -106,13 +95,7 @@
       if(av .and. kf%k .eq. ktfref)then
         v1=kl%rbody(i1)
         v2=kl%rbody(i2)
-        if(v1 .gt. v2)then
-          l=1
-        elseif(v1 .eq. v2)then
-          l=0
-        else
-          l=-1
-        endif
+        l=merge(1,merge(0,-1,v1 .eq. v2),v1 .gt. v2)
         if(mode .eq. 0 .or. l .ne. 0)then
           if(l .gt. 0)then
             is=i1
@@ -134,24 +117,12 @@
         im=itab(m)
         v1=kl%rbody(i1)
         v2=kl%rbody(im)
-        if(v1 .gt. v2)then
-          l=1
-        elseif(v1 .eq. v2)then
-          l=0
-        else
-          l=-1
-        endif
+        l=merge(1,merge(0,-1,v1 .eq. v2),v1 .gt. v2)
         if(mode .eq. 0 .or. l .ne. 0)then
           if(l .lt. 0)then
             v1=kl%rbody(im)
             v2=kl%rbody(i2)
-            if(v1 .gt. v2)then
-              l=1
-            elseif(v1 .eq. v2)then
-              l=0
-            else
-              l=-1
-            endif
+            l=merge(1,merge(0,-1,v1 .eq. v2),v1 .gt. v2)
             if(mode .eq. 0 .or. l .ne. 0)then
               if(l .gt. 0)then
                 is=im
@@ -217,13 +188,7 @@
             do while(l1 .le. 0 .and. ip1 .le. ip2)
               v1=kl%rbody(itab(ip1))
               v2=kl%rbody(im)
-              if(v1 .gt. v2)then
-                l1=1
-              elseif(v1 .eq. v2)then
-                l1=0
-              else
-                l1=-1
-              endif
+              l=merge(1,merge(0,-1,v1 .eq. v2),v1 .gt. v2)
               if(l1 .ne. 0)then
                 if(l1 .le. 0)then
                   ip1=ip1+1
@@ -239,13 +204,7 @@
             do while(l2 .le. 0 .and. ip1 .le. ip2)
               v1=kl%rbody(im)
               v2=kl%rbody(itab(ip2))
-              if(v1 .gt. v2)then
-                l2=1
-              elseif(v1 .eq. v2)then
-                l2=0
-              else
-                l2=-1
-              endif
+              l2=merge(1,merge(0,-1,v1 .eq. v2),v1 .gt. v2)
               if(l2 .ne. 0)then
                 if(l2 .le. 0)then
                   ip2=ip2-1
@@ -611,21 +570,21 @@ c     Merge
 
 c     Copy index table to return area
       l1=itab(2)
-      do i1=1,l1-1
-         itab(i1)=itastk(p1+i1,isp0)
-      enddo
+c      do i1=1,l1-1
+      itab(1:l1-1)=itastk(p1+1:p1+l1-1,isp0)
+c      enddo
       if(mode .ne. 2)then
         itab(l1:n)=-1
 c        do i1=l1,n
 c          itab(i1)=-1
 c        enddo
       else
-        do im=1,n
-          itastk(im,isp0+1)=-im
-        enddo
-        do i1=1,l1-1
-          itastk(itab(i1),isp0+1)=0
-        enddo
+c        do im=1,n
+        itastk(1:n,isp0+1)=-[(im,im=1,n)]
+c        enddo
+c        do i1=1,l1-1
+        itastk(itab(1:l1-1),isp0+1)=0
+c        enddo
         i1=l1
         do im=1,n
           i2=itastk(im,isp0+1)
@@ -795,21 +754,21 @@ c     Merge
 
 c     Copy index table to return area
       l1=itab(2)
-      do i1=1,l1-1
-        itab(i1)=itastk(p1+i1,isp0)
-      enddo
+c      do i1=1,l1-1
+      itab(1:l1-1)=itastk(p1+1:p1+l1-1,isp0)
+c      enddo
       if(mode .ne. 2)then
         itab(l1:n)=-1
 c        do i1=l1,n
 c          itab(i1)=-1
 c        enddo
       else
-        do im=1,n
-          itastk(im,isp0+1)=-im
-        enddo
-        do i1=1,l1-1
-          itastk(itab(i1),isp0+1)=0
-        enddo
+c        do im=1,n
+        itastk(1:n,isp0+1)=-[(im,im=1,n)]
+c        enddo
+c        do i1=1,l1-1
+        itastk(itab(1:l1-1),isp0+1)=0
+c        enddo
         i1=l1
         do im=1,n
           i2=itastk(im,isp0+1)
@@ -1051,13 +1010,7 @@ c        enddo
         if(kf%k .eq. ktfref)then
           v1=kl%rbody(i1)
           v2=kl%rbody(i2)
-          if(v1 .gt. v2)then
-            itforderl=1
-          elseif(v1 .eq. v2)then
-            itforderl=0
-          else
-            itforderl=-1
-          endif
+          itforderl=merge(1,merge(0,-1,v1 .eq. v2),v1 .gt. v2)
           return
         endif
       endif
@@ -1104,13 +1057,7 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
           itforderl=-1
           return
         endif
-        if(kx%k .eq. kx1%k)then
-          itforderl=0
-        elseif(kx%k .eq. 0)then
-          itforderl=1
-        else
-          itforderl=-1
-        endif
+        itforderl=merge(0,merge(1,-1,kx%k .eq. 0),kx%k .eq. kx1%k)
       endif
       return
       end
@@ -1273,11 +1220,7 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
       elseif(ktfpatq(k2c))then
         ix=1
       else
-        if(ktftype(k1c%k) .gt. ktftype(k2c%k))then
-          ix=1
-        else
-          ix=-1
-        endif
+        ix=merge(1,-1,ktftype(k1c%k) .gt. ktftype(k2c%k))
       endif
       return
       end
@@ -1285,14 +1228,10 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
       subroutine tfcanonicalconv(k,kx)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kx
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) ,intent(out):: kx
       integer*8 ka
-      if(ktfoperq(k,ka))then
-c        write(*,*)'canonicalconv ',ktfaddr(k)
-        kx%k=ktfsymbol+klist(ifunbase+ka)
-      else
-        kx=k
-      endif
+      kx%k=merge(ktfsymbol+klist(ifunbase+ka),k%k,ktfoperq(k,ka))
       return
       end
 
@@ -1308,11 +1247,7 @@ c        write(*,*)'canonicalconv ',ktfaddr(k)
         ic1=ichar(str1%str(i:i))
         ic2=ichar(str2%str(i:i))
         if(ic1 .ne. ic2)then
-          if(ichorder(ic1) .gt. ichorder(ic2))then
-            itfstringorder=1
-          else
-            itfstringorder=-1
-          endif
+          itfstringorder=merge(1,-1,ichorder(ic1) .gt. ichorder(ic2))
           return
         endif
       enddo

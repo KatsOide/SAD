@@ -121,11 +121,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
           ws(1:ndiv)=1.d0/ndiv
         endif
         phic=(phirf+dphirf)*charge
-        if(trpt)then
-          phis=0.d0
-        else
-          phis=merge(phic,w*trf0,autophi)
-        endif
+        phis=merge(0.d0,merge(phic,w*trf0,autophi),trpt)
         dphis=phis-phic
         if(rad .or. trpt .or. autophi)then
           offset=sin(dphis)
@@ -258,11 +254,8 @@ c     end   initialize for preventing compiler warning
             dp1r=g(i)
             p1r=1.d0+dp1r
             p1=p0*p1r
-            if(dv(i) .gt. 0.1d0)then
-              h1=p2h(p1)
-            else
-              h1=p1r*h0/(1.d0-dv(i)+dvfs)
-            endif
+            h1=merge(p2h(p1),p1r*h0/(1.d0-dv(i)+dvfs),
+     $           dv(i) .gt. 0.1d0)
             z(i)=z(i)-dzn
             t=min(tlim,max(-tlim,-z(i)*h1/p1))
             ph=.5d0*w*t

@@ -483,11 +483,13 @@ c      call tfdebugprint(kx,'setcontextpath',1)
       return
       end
 
-      subroutine tfgetcommandline(isp1,kx,irtc)
+      function tfgetcommandline(isp1,irtc) result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*4 isp1,irtc,narg,iargc,i,l,isp0,itfmessage
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 narg,iargc,i,l,isp0,itfmessage
       character*256 arg
       if(isp .gt. isp1+1)then
         go to 9000
@@ -523,11 +525,12 @@ c      call tfdebugprint(kx,'setcontextpath',1)
       implicit none
       type (sad_funtbl), pointer :: fun
       integer*8 k,ktalocr,loc,ktlookupc
-      integer*4 id,narg,immed,maxnfun,i
+      integer*4 ,intent(in):: id,narg,immed
+      integer*4 maxnfun,i,nfun
       parameter (maxnfun=2048)
-      character*(*) name
+      character*(*) ,intent(in):: name
       logical*4 ev,nev
-      integer*4 map(narg+1),ieval(narg+1),nfun
+      integer*4 ,intent(in):: map(narg+1),ieval(narg+1)
       data nfun/0/
       if(nfun .eq. 0)then
         ifunbase=ktalocr(maxnfun)

@@ -69,11 +69,7 @@
         endif          
       endif
       if(.not. used)then
-        if(klo%rbody(4) .gt. 0.d0)then
-          frac=klo%rbody(4)
-        else
-          frac=frac0
-        endif
+        frac=merge(klo%rbody(4),frac0,klo%rbody(4) .gt. 0.d0)
       endif
       if(ispv .lt. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2 or more"')
@@ -288,12 +284,9 @@ c      call tfdebugprint(kx,'evalres-2',1)
       if(ktfnonreallistq(kax))then
         if(tfcomplexlistqk(kx))then
           do i=1,neq
-            if(ktfrealq(klist(kax+i*2-1)) .and.
-     $           ktfrealq(klist(kax+i*2)))then
-              f(i)=rlist(kax+i*2-1)-rlist(kax+i*2)
-            else
-              f(i)=1.d200
-            endif
+            f(i)=merge(rlist(kax+i*2-1)-rlist(kax+i*2),1.d200,
+     $           ktfrealq(klist(kax+i*2-1)) .and.
+     $           ktfrealq(klist(kax+i*2)))
           enddo
           am=1.d300
           d=1.d300
@@ -628,11 +621,7 @@ c      write(*,*)'covmat ',n,m,ndim
       do i=1,n
         do j=1,i
           s=sum(c(1:m,i)*c(1:m,j))
-          if(ktfenanq(s))then
-            ca(i,j)=rnan
-          else
-            ca(i,j)=s
-          endif
+          ca(i,j)=merge(rnan,s,ktfenanq(s))
           ca(j,i)=ca(i,j)
         enddo
       enddo
@@ -753,10 +742,6 @@ c            enddo
           call tsolva(a,df,dv,m,nvar,m,1.d-6)
         else
           do i=1,nvar
-c            s=0.d0
-c            do j=1,m
-c              s=s+df0(j)*a0(j,i)
-c            enddo
             dv(i)=-sum(df0(1:m)*a0(1:m,i))
           enddo
         endif
@@ -929,11 +914,7 @@ c     call tfdebugprint(ke,'ke',1)
             if(deriv)then
               if(ktfnonreallistqo(kl1))then
                 do i=1,m
-                  if(ktfrealq(kl1%dbody(i)))then
-                    df(i)=kl1%rbody(i)
-                  else
-                    df(i)=0.d0
-                  endif
+                  df(i)=merge(kl1%rbody(i),0.d0,ktfrealq(kl1%dbody(i)))
                 enddo
               else
                 do i=1,m
@@ -943,11 +924,8 @@ c     call tfdebugprint(ke,'ke',1)
             else
               if(ktfnonreallistqo(kl1))then
                 do i=1,m
-                  if(ktfrealq(kl1%dbody(i)))then
-                    df(i)=kl1%rbody(i)-a(2,i)
-                  else
-                    df(i)=1.d300
-                  endif
+                  df(i)=merge(kl1%rbody(i)-a(2,i),1.d300,
+     $                 ktfrealq(kl1%dbody(i)))
                 enddo
               else
                 do i=1,m
@@ -959,14 +937,7 @@ c     call tfdebugprint(ke,'ke',1)
           endif
         endif
       elseif(ktfrealq(kx,vx))then
-        if(deriv)then
-          df=vx
-        else
-          df=vx-a(2,:)
-c          do i=1,m
-c            df(i)=vx-a(2,i)
-c          enddo
-        endif
+        df=merge(vx,vx-a(2,:),deriv)
         go to 1000
       endif
       do i=1,m
@@ -977,11 +948,7 @@ c          enddo
         endif
         if(ktfnonrealq(kx))then
           if(tfcomplexq(kx))then
-            if(deriv)then
-              df(i)=0.d0
-            else
-              df(i)=1.d300
-            endif
+            df(i)=merge(0.d0,1.d300,deriv)
           else
             if(deriv)then
               irtc=-1
@@ -994,25 +961,15 @@ c          enddo
           endif
         else
           vx=rfromk(kx%k)
-          if(deriv)then
-            df(i)=vx
-          else
-            df(i)=vx-a(2,i)
-          endif
+          df(i)=merge(vx,vx-a(2,i),deriv)
         endif
       enddo
  1000 r=0.d0
       if(deriv)then
         if(n .eq. 3)then
           df=df/a(3,:)
-c          do i=1,m
-c            df(i)=df(i)/a(3,i)
-c          enddo
         elseif(n .eq. 4)then
           df=df/a(4,:)
-c          do i=1,m
-c            df(i)=df(i)/a(4,i)
-c          enddo
         endif
       else
         if(cutoff .ne. 0.d0)then

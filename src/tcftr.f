@@ -72,11 +72,7 @@
  20   continue
       do 110 i=1,ln
         cw=(1.d0,0.d0)
-        if(conj)then
-          cw1=conjg(cex(i))
-        else
-          cw1=cex(i)
-        endif
+        cw1=merge(conjg(cex(i)),cex(i),conj)
         do 120 j=1,m(i)
 *     VOPTION NOFVAL
           do 130 k=0,n-1,m(i+1)
@@ -104,11 +100,7 @@
       complex*16 , pointer ::ca(:)
       call c_f_pointer(c_loc(a),ca,[m/2])
       call tcftr(ca,m/2,conj)
-      if(conj)then
-        w=-2.d0*pi/m
-      else
-        w= 2.d0*pi/m
-      endif
+      w=merge(-2.d0,2.d0,conj)*pi/m
       do i=1,m/4
         ci=cos(w*i)
         si=sin(w*i)
@@ -142,11 +134,7 @@ c
       parameter (pi=3.14159265358979324d0)
       logical*4 conj
       complex*16 ,pointer :: ca(:)
-      if(conj)then
-        w= 2.d0*pi/m
-      else
-        w=-2.d0*pi/m
-      endif
+      w= merge(2.d0,-2.d0,conj)*pi/m
       do i=1,m/4
         ci=cos(w*i)
         si=sin(w*i)

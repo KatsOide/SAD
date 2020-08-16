@@ -91,10 +91,8 @@ c
             kv=itftypekey(id,word1,lw1,kx)
             if(kv .eq. 0)then
               go to 912
-            elseif(tfreallistq(kx,kl))then
-              iv=-1
             else
-              iv=kv
+              iv=merge(-1,kv,tfreallistq(kx,kl))
             endif
           endif
           next=next1
@@ -120,10 +118,8 @@ c
           kv=itftypekey(id,word1,lw1,kx)
           if(kv .gt. 0)then
             ivi=kv
-          elseif(tfreallistq(kx,kl))then
-            ivi=-1
           else
-            ivi=nelvx(i)%ival
+            ivi=merge(-1,nelvx(i)%ival,tfreallistq(kx,kl))
           endif
           if(ivi .eq. 0)then
             cycle LOOP_II

@@ -81,11 +81,7 @@ c     dp=g(i)*(2.d0+g(i))
      $         (.5d0*dyfr1-.25d0*dyfra1*y(i)**2)*y(i)**2/pr)/pr
         enddo
       endif
-      if(fringe)then
-        af=1.d0
-      else
-        af=0.d0
-      endif
+      af=merge(1.d0,0.d0,fringe)
       aln=alc/ndiv
       do n=n1,n2
         call tbendal(n,ndiv,f1r,f2r,aln,alx(n),alr(n))

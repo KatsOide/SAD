@@ -252,11 +252,7 @@
         s=sin(x)
         xs=x-s
         c=cos(x)
-        if(c .gt. 0.d0)then
-          dc=-s**2/(1.d0+c)
-        else
-          dc=c-1.d0
-        endif
+        dc=merge(-s**2/(1.d0+c),c-1.d0,c .gt. 0.d0)
       endif
       return
       end

@@ -4,7 +4,8 @@
       use tflinepcom
       use temw, only:tfnormalcoord,tfinitemip
       implicit none
-      type (sad_descriptor) kx,kxj,kispi
+      type (sad_descriptor) kx,kxj,kispi,tfextractbeamline,
+     $     tfsetelement
       type (sad_dlist), pointer :: kli
       type (sad_rlist), pointer :: klx
       integer*8 ka
@@ -95,11 +96,11 @@ c-------Kikuchi addition end-----
       return
  5180 call tfflags(isp1,kx,irtc)
       return
- 5190 call tfextractbeamline(isp1,kx,irtc)
+ 5190 kx=tfextractbeamline(isp1,irtc)
       return
  5200 call tfbeamlinename(isp1,kx,irtc)
       return
- 5210 call tfsetelement(isp1,kx,irtc)
+ 5210 kx=tfsetelement(isp1,irtc)
       return
  5220 call tftypekey(isp1,kx,irtc)
       return

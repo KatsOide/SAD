@@ -22,11 +22,7 @@ c      endif
       if(irtc .eq. 0)then
         itfgeto=0
       elseif(irtc .gt. 0 .and. kerror .ne. 0)then
-       if(rlist(ktfaddr(kerror)+1) .ge. 1000.d0)then
-          itfgeto=-3
-        else
-          itfgeto=-2
-        endif
+        itfgeto=merge(-3,-2,rlist(ktfaddr(kerror)+1) .ge. 1000.d0)
         call tfreseterror
       else
         itfgeto=max(-3,min(-1,irtc+3))

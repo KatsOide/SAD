@@ -142,12 +142,9 @@ c                        write(*,*)kf,vb,ve,vf1
                         cycle
                       endif
                       if(.not. maxfit)then
-                        if(kf .eq. mfitbx .or. kf .eq. mfitby
-     $                       .or. kf .eq. mfitbz)then
-                          df1(i)=log(vf)+df1(i)
-                        else
-                          df1(i)=vf+df1(i)
-                        endif
+                        df1(i)=df1(i)+merge(log(vf),vf,
+     $                       kf .eq. mfitbx .or. kf .eq. mfitby
+     $                       .or. kf .eq. mfitbz)
                       endif
                       iqcol(i)=j
                       lfp(1,i)=kpe
@@ -239,11 +236,7 @@ c
       irtc=0
       call tfpadstr(funname,ifvfun+1,len_trim(funname))
       ilist(1,ifvfun)=len_trim(funname)
-      if(inicond)then
-        rlist(ifid+1)=dble(iuid)
-      else
-        rlist(ifid+1)=dble(kfam)
-      endif
+      rlist(ifid+1)=dble(merge(iuid,kfam,inicond))
       rlist(ifid+2)=dp
       call elname(kp,name)
       ln=lenw(name)
@@ -431,18 +424,12 @@ c      call tfmemcheckprint('FitFunction-end',.true.,irtc)
           vfa=abs(vf)
           if(v .gt. vfa)then
             tdfun1=vfa-v
-          elseif(v .lt. -vfa)then
-            tdfun1=-vfa-v
           else
-            tdfun1=0.d0
+            tdfun1=max(-vfa-v,0.d0)
           endif
           return
         else
-          if(kdp .lt. 0)then
-            tdfun1=-vf-v
-          else
-            tdfun1=vf-v
-          endif
+          tdfun1=merge(-vf,vf,kdp .lt. 0)-v
         endif
         return
 
@@ -451,10 +438,8 @@ c      call tfmemcheckprint('FitFunction-end',.true.,irtc)
           vfa=abs(vf)
           if(v .gt. vfa)then
             tdfun1=vfa-v
-          elseif(v .lt. -vfa)then
-            tdfun1=-vfa-v
           else
-            tdfun1=0.d0
+            tdfun1=max(-vfa-v,0.d0)
           endif
           return
         else
@@ -472,11 +457,7 @@ c      call tfmemcheckprint('FitFunction-end',.true.,irtc)
 c     vf1=pi2*(anint(vf/pi2)+sign(.5d0*sin(.5d0*vf)**2,sin(vf)))
 c     v1=pi2*(anint(v/pi2)+sign(.5d0*sin(.5d0*v)**2,sin(v)))
         if(maxfit)then
-          if(v .gt. vf)then
-            tdfun1=vf-v
-          else
-            tdfun1=0.d0
-          endif
+          tdfun1=min(0.d0,vf-v)
         else
           tdfun1=vf-v
         endif
@@ -490,10 +471,8 @@ c     v1=pi2*(anint(v/pi2)+sign(.5d0*sin(.5d0*v)**2,sin(v)))
           vfa=abs(vf)
           if(v .gt. vfa)then
             tdfun1=vfa-v
-          elseif(v .lt. -vfa)then
-            tdfun1=-vfa-v
           else
-            tdfun1=0.d0
+            tdfun1=max(-vfa-v,0.d0)
           endif
           return
         else

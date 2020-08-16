@@ -254,29 +254,20 @@ c     $     sxkxp,dcxkxp
       dpz2=sqrt1(-s)
       pz2=1.d0+dpz2
       d=pxf*pz1+pxi*pz2
-      if(d .eq. 0.d0)then
-        sinda=min(1.d0,max(-1.d0,2.d0*pxf*pz2/(pxf**2+pz2**2)))
-      else
-        sinda=min(1.d0,max(-1.d0,dpx*(pxf+pxi)/d))
-      endif
+      sinda=min(1.d0,max(-1.d0,merge(2.d0*pxf*pz2/(pxf**2+pz2**2),
+     $     dpx*(pxf+pxi)/d,d .eq. 0.d0)))
       s=sinda**2
-      if(s .gt. 2.d-4)then
-        da=sinda
-     1       *(1.d0+s*(a3+s*(a5+s*(a7+s*(a9+s*(a11+s*(a13+s*a15)))))))
-      else
-        da=sinda*(1.d0+s*(a3+s*(a5+a7*s)))
-      endif
+      da=sinda*(1.d0+s*merge(
+     $     a3+s*(a5+s*(a7+s*(a9+s*(a11+s*(a13+s*a15))))),
+     $     a3+s*(a5+a7*s),
+     $     s .gt. 2.d-4))
       trans1(2,1)=-snphi0/rhob
       trans1(2,2)=csphi0-snphi0*pxi/pz1
       trans1(2,6)=snphi0/pz1
       trans1(2,4)=-pyi*trans1(2,6)
       dpzinv=dpx/pz1/pz2*(pxi+pxf)/(pz1+pz2)
       phsq=(1.d0-pyi)*(1.d0+pyi)
-      if(d .eq. 0.d0)then
-        dtn=-2.d0*pxi/pz1
-      else
-        dtn= phsq*sinda/pz1/pz2
-      endif
+      dtn=merge(-2.d0*pxi/pz1,phsq*sinda/pz1/pz2,d .eq. 0.d0)
       trans1(1,1)=csphi0+snphi0*pxf/pz2
       trans1(1,2)=rhob*(snphi0-dtn*csphi0+pxi*pxf/pz1/pz2*snphi0)
       trans1(1,6)=rhob*(dpzinv+sinsq0/pz1-pxf/pz2*trans1(2,6))
@@ -342,22 +333,15 @@ c     $     sxkxp,dcxkxp
       logical*4 en
       rb=rb0
       bsi2=0.d0
-      if(rb .lt. .5d0)then
-        bsi1=1.d0
-      else
-        bsi1=0.d0
-      endif
+      bsi1=merge(1.d0,0.d0,rb .lt. .5d0)
       en=enarad
       do i=1,2
         fl=0.5d0*fb*rb
         phib1=phi0*fl/al0
         csphib1=cos(phib1)
         snphib1=sin(phib1)
-        if(csphib1 .ge. 0.d0)then
-          sinsq1=snphib1**2/(1.d0+csphib1)
-        else
-          sinsq1=1.d0-csphib1
-        endif
+        sinsq1=merge(snphib1**2/(1.d0+csphib1),1.d0-csphib1,
+     $       csphib1 .ge. 0.d0)
         call tbendebody0(trans,cod,beam,srot,fl,
      $     phib1,snphib1,sinsq1,csphib1,.5d0*fb,bsi1,bsi2,
      $     en)
@@ -463,11 +447,7 @@ c      endif
         if(mfring .gt. 0 .or. mfring .eq. -1)then
           dxfr1=fb1**2*phibl/24.d0
           dyfr1=fb1*phibl**2/6.d0
-          if(fringe)then
-            dyfra1=4.d0*dyfr1/fb1**2
-          else
-            dyfra1=0.d0
-          endif
+          dyfra1=merge(4.d0*dyfr1/fb1**2,0.d0,fringe)
           call tblfre(trans,cod,beam,dxfr1,dyfr1,dyfra1)
           f1r=0.5d0*fb1
         endif
@@ -483,11 +463,7 @@ c      endif
       aind=rho0/phi0*ak
       b=brhoz/rhob
       b1=b*aind/rhob
-      if(ak .eq. 0.d0)then
-        ndiv=1
-      else
-        ndiv=1+int(abs(phic/eps))
-      endif
+      ndiv=merge(1,1+int(abs(phic/eps)),ak .eq. 0.d0)
       if(enarad)then
         nrad=int(abs(al0*rbc/epsrad*crad*(h0*b)**2))
         ndiv=max(ndiv,int(nrad*emidiv*emidib),
@@ -532,11 +508,8 @@ c     $     rb1,rb2,al0,alc,aln,phin,ak
         trans1(5,3)=0.d0        
         csphin=cos(phin)
         snphin=sin(phin)
-        if(csphin .ge. 0.d0)then
-          sinsqn=snphin**2/(1.d0+csphin)
-        else
-          sinsqn=1.d0-csphin
-        endif
+        sinsqn=merge(snphin**2/(1.d0+csphin),1.d0-csphin,
+     $       csphin .ge. 0.d0)
         bsi1=1.d0
         bsi2=0.d0
         n1=1
@@ -608,11 +581,7 @@ c     $     rb1,rb2,al0,alc,aln,phin,ak
       if(f2r .ne. 0.d0)then
         dxfr2=-fb2**2/rhob/24.d0
         dyfr2=fb2/rhob**2/6.d0
-        if(fringe)then
-          dyfra2=4.d0*dyfr2/fb2**2
-        else
-          dyfra2=0.d0
-        endif
+        dyfra2=merge(4.d0*dyfr2/fb2**2,0.d0,fringe)
         call tblfre(trans,cod,beam,dxfr2,dyfr2,dyfra2)
       endif
       if(enarad)then

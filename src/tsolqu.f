@@ -241,11 +241,7 @@ c!$OMP PARALLEL
 c!$OMP DO
           do concurrent (i=1:np)
             tz%tz0=tzsetparam0(gp(i),aln,akk)
-            if(n .eq. 1)then
-              bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)
-            else
-              bsi(i)=0.d0
-            endif
+            bsi(i)=merge(akk*(x(i)+dx0)*(y(i)+dy0),0.d0,n .eq. 1)
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
             r=-dpz/(1.d0+dpz)*alr
@@ -298,11 +294,8 @@ c!$OMP END PARALLEL
         do n=1,ndiv
           do concurrent (i=1:np)
             tz=tzsetparam(gp(i),aln,akk,bz)
-            if(n .eq. 1)then
-              bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)+bzp*alr
-            else
-              bsi(i)=bzp*alr
-            endif
+            bsi(i)=merge(akk*(x(i)+dx0)*(y(i)+dy0)+bzp*alr,bzp*alr,
+     $           n .eq. 1)
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
             r=-dpz/(1.d0+dpz)*alr

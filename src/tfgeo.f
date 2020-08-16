@@ -56,11 +56,8 @@
             else
               lt=idtypec(lxp)
               nv=kytbl(kwmax,lt)-1
-              if(ideal)then
-                call tmov(rlist(idvalc(lxp)+1:idvalc(lxp)+nv),vsave,nv)
-              else
-                call tmov(rlist(latt(lxp)+1:latt(lxp)+nv),vsave,nv)
-              endif
+              vsave(1:nv)=merge(rlist(idvalc(lxp)+1:idvalc(lxp)+nv),
+     $             rlist(latt(lxp)+1:latt(lxp)+nv),ideal)
               call compelc(lxp,cmp)
               call qfraccomp(cmp,0.d0,fr,ideal,chg)
               if(chg)then
@@ -78,9 +75,9 @@
                 pos(i)=pos(lxp+1)
               endif
               if(ideal)then
-                call tmov(vsave,rlist(idvalc(lxp)+1:idvalc(lxp)+nv),nv)
+                rlist(idvalc(lxp)+1:idvalc(lxp)+nv)=vsave(1:nv)
               else
-                call tmov(vsave,rlist(latt(lxp)+1:latt(lxp)+nv),nv)
+                rlist(latt(lxp)+1:latt(lxp)+nv)=vsave(1:nv)
               endif
               if(i .eq. 1)then
                 dpos=pos(1)
@@ -199,21 +196,13 @@ c      h1=sqrt(1.d0+p1**2)
           cycle
         endif
         k=idtypec(i)
-        if(ideal)then
-          id=idvalc(i)
-        else
-          id=elatt%comp(i)
-        endif
+        id=merge(idvalc(i),elatt%comp(i),ideal)
         if(k .eq. icSOL)then
           call tsgeo(i,ke,ke1,sol)
           cycle
         endif
         call compelc(i,cmp)
-        if(kytbl(kwL,k) .gt. 0)then
-          ali=cmp%value(kytbl(kwL,k))
-        else
-          ali=0.d0
-        endif
+        ali=merge(cmp%value(kytbl(kwL,k)),0.d0,kytbl(kwL,k) .gt. 0)
         if(kytbl(kwANGL,k) .ne. 0)then
           phi=cmp%value(kytbl(kwANGL,k))
           if(cmp%value(kytbl(kwFRMD,k)) .ne. 0.d0)then
@@ -265,11 +254,8 @@ c      h1=sqrt(1.d0+p1**2)
               geo(:,4,i1)=geo(:,3,i)*ald+geo(:,4,i)
               geo(:,1:3,i1)=geo(:,1:3,i)
             else
-              if(kytbl(kwROT,k) .ne. 0)then
-                theta=cmp%value(kytbl(kwROT,k))
-              else
-                theta=0.d0
-              endif
+              theta=merge(cmp%value(kytbl(kwROT,k)),0.d0,
+     $             kytbl(kwROT,k) .ne. 0)
               if(theta .ne. 0.d0)then
                 cost=cos(theta)
                 sint=sin(theta)
@@ -283,11 +269,8 @@ c      h1=sqrt(1.d0+p1**2)
               sp0=sin(v)
               cp0=cos(v)
               r1=rho0*sp0
-              if(cp0 .ge. 0.d0)then
-                r2=rho0*sp0**2/(1.d0+cp0)
-              else
-                r2=rho0*(1.d0-cp0)
-              endif
+              r2=merge(rho0*sp0**2/(1.d0+cp0),rho0*(1.d0-cp0),
+     $             cp0 .ge. 0.d0)
 c              r2=2.d0*rho0*sin(v*.5d0)**2
               geo(:,4,i1)=geo(:,4,i)+(r1*geo(:,3,i)-r2*x)
               geo(:,1,i1)= cp0*x+sp0*geo(:,3,i)
@@ -393,24 +376,14 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
       real*8 harm,w,v,phic,dh,h2,p2
       logical*4 ,intent(in):: dir
       real*8 , parameter :: oneev=1.d0+3.83d-12
-      if(ideal)then
-        ip=idvalc(i)
-      else
-        ip=latt(i)
-      endif
+      ip=merge(idvalc(i),latt(i),ideal)
       id=idtypec(i)
-      if(dir)then
-        v=abs(charge)*rlist(ip+kytbl(kwVOLT,id))/amass
-      else
-        v=-abs(charge)*rlist(ip+kytbl(kwVOLT,id))/amass
-      endif
+      v=merge(1.d0,-1.d0,dir)*
+     $       abs(charge)*rlist(ip+kytbl(kwVOLT,id))/amass
       if(v .ne. 0.d0)then
         harm=rlist(ip+kytbl(kwHARM,id))
-        if(harm .eq. 0.d0)then
-          w=pi2*rlist(ip+kytbl(kwFREQ,id))/c
-        else
-          w=omega0*harm/c
-        endif
+        w=merge(pi2*rlist(ip+kytbl(kwFREQ,id)),omega0*harm,
+     $       harm .eq. 0.d0)/c
         phic=rlist(ip+kytbl(kwPHI,id))*sign(1.d0,charge)
         dh=max(oneev-h1,-v*sin(phic))
         h2=h1+dh

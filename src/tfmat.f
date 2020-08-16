@@ -35,11 +35,7 @@
           l2=nlat
         endif
       endif
-      if(symp)then
-        r=1.d0
-      else
-        r=sqrt(gammab(l1)/gammab(l2))
-      endif
+      r=merge(1.d0,sqrt(gammab(l1)/gammab(l2)),symp)
       call elname(l1,name1)
       call elname(l2,name2)
       write(lfno,*)title(1:lene(title))//' transfer matrix from '//

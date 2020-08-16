@@ -28,11 +28,7 @@
       enddo
       call tprmpt(lfni,lfno,lfn1)
       if(unmapped)then
-        if(rep)then
-          lrecl0=lrecl+1
-        else
-          lrecl0=1
-        endif
+        lrecl0=merge(lrecl+1,1,rep)
         ipoint=lrecl0
         lrecl0=max(lrecl0,1)
         lrecl1=lrecl0

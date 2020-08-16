@@ -507,7 +507,7 @@ c      include 'DEBUG.inc'
       use tfstk
       use ophash
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) kx,tfpart
       integer*4 ,intent(in):: isp1,iah
       integer*4 ,intent(out):: irtc,isp0
       type (sad_dlist), pointer :: klx
@@ -677,7 +677,7 @@ c      include 'DEBUG.inc'
             isp0=isp
             iee0=ierrorexp
             ierrorexp=1
-            call tfpart(isp1+1,kx,.false.,irtc)
+            kx=tfpart(isp1+1,.false.,irtc)
             ierrorexp=iee0
             isp=isp0
             if(irtc .ne. 0)then

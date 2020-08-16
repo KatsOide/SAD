@@ -7,16 +7,18 @@
       implicit none
 c   radix is the machine radix of floating.
       real*8 , parameter ::radix=2.d0,sqrdx=radix**2,rth=0.95d0
-      integer*4 n,ndim,i,j
-      real*8 a(n,n),w(ndim,n)
+      integer*4 ,intent(in):: n,ndim
+      integer*4 i,j
+      real*8 ,intent(inout):: w(ndim,n)
+      real*8 ,intent(out):: a(n,n)
       real*8 c,r,g,f,s,u
       logical*4 last
       a=w(1:n,:)
       w(1:n,:)=0.d0
       vx=1.d0
-      do 1 i=1,n
+      do i=1,n
         w(i,i)=1.d0
-1     continue
+      enddo
       last=.true.
       do while(last)
         last=.false.
@@ -633,9 +635,10 @@ c                correct.
 c
       use eigen
       implicit none
-      integer*4 n,ndim,nmax
-      parameter (nmax=32768)
-      real*8 a(ndim,n),w(n,n),eig(2,n)
+      integer*4 ,intent(in):: n,ndim
+      integer*4 ,parameter ::nmax=32768
+      real*8 ,intent(inout):: a(ndim,n)
+      real*8 ,intent(out):: w(n,n),eig(2,n)
       if(n .gt. nmax)then
         write(*,*)'TEIGEN-Too large matrix.',n
       else

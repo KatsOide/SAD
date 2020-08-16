@@ -56,11 +56,8 @@ c     real*8  vmin/0.d0/
       hi=p2h(p0*pr)
       trans1(5,6)=h0/hi**3*alx+s*alz
       if(wspac)then
-        if(optics)then
-          bmi=beamsize(:,ll)
-        else
-          bmi=beam(22:42)+beam(1:21)
-        endif
+        bmi=merge(beamsize(:,ll),beam(22:42)+beam(1:21),
+     $       optics)
         call tmulbs(bmi,trans1,.false.)
         call twspace(transsp,cod,al,bmi,ll)
 c        write(*,*)'tintrab-wspac-twspace-end '
@@ -106,13 +103,11 @@ c          call tmultr(transw,trans,6)
         trans2(6,2)=trans2(2,6)
         trans2(6,4)=trans2(4,6)
         trans2(6,6)=d+b*s
-        do 3010 i=1,6
-          trans2(i,2)=trans2(i,2)-pxi/pzi*trans2(i,6)
-          trans2(i,4)=trans2(i,4)-pyi/pzi*trans2(i,6)
-          trans2(i,5)=(pxi*trans2(i,1)+pyi*trans2(i,3)
-     $         +pzi*trans2(i,5))/pr
-          trans2(i,6)=pr/pzi*trans2(i,6)
- 3010   continue
+        trans2(1:6,2)=trans2(1:6,2)-pxi/pzi*trans2(1:6,6)
+        trans2(1:6,4)=trans2(1:6,4)-pyi/pzi*trans2(1:6,6)
+        trans2(1:6,5)=(pxi*trans2(1:6,1)+pyi*trans2(1:6,3)
+     $       +pzi*trans2(1:6,5))/pr
+        trans2(1:6,6)=pr/pzi*trans2(1:6,6)
         trans1=matmul(trans2,trans1)
         call tmulbs(bmi,trans1,.false.)
         xx(1,1)=bmi(ia(1,1))
@@ -264,12 +259,10 @@ c
       real*8 x,eeuler,a,b
 c      parameter (eeuler=7.98221278918726d0,a=5.5077d0,b=1.1274d0)
       parameter (eeuler=7.982212789187259d0,a=5.62966d0,b=0.75159d0)
-      if(x .eq. 0.d0)then
-        touckf=1.d200
-      else
-        touckf=(log(1.d0/x/eeuler+1.d0)*exp(-x)
-     1          *(b+eeuler*x)/(b+x*(a+2.d0*x)))/x
-      endif
+      touckf=merge(1.d200,
+     $     (log(1.d0/x/eeuler+1.d0)*exp(-x)
+     1     *(b+eeuler*x)/(b+x*(a+2.d0*x)))/x,
+     $     x .eq. 0.d0)
       return
       end
 
@@ -473,11 +466,7 @@ c        endif
       r=sigy/sigx
       if(r .eq. 1.d0)then
         u=2.d0*(a+b)
-        if(u .eq. 0.d0)then
-          twspu=0.d0
-        else
-          twspu=gamma0log(u)
-        endif
+        twspu=merge(0.d0,gamma0log(u),u .eq. 0.d0)
         return
       endif
       twspu=2.d0*(a+b/r)
@@ -529,13 +518,9 @@ c     $       epslon,epsabs,8)+rlog
       f=a+b/tsq
       w=v*(1.d0+t)
       x=w*f
-      if(x .lt. 0.001d0)then
-        twspf1=f*(1.d0-x/2.d0*(1.d0-x/3.d0*
-     $       (1.d0-x/4.d0*(1.d0-x/5.d0*
-     $       (1.d0-x/6.d0)))))
-      else
-        twspf1=(1.d0-exp(-x))/w
-      endif
+      twspf1=merge(f*(1.d0-x/2.d0*(1.d0-x/3.d0*
+     $     (1.d0-x/4.d0*(1.d0-x/5.d0*
+     $     (1.d0-x/6.d0))))),(1.d0-exp(-x))/w,x .lt. 0.001d0)
       return
       end
 
@@ -735,9 +720,7 @@ c      write(*,*)'twspfu ',x,y,sigx,sigy
           dds(0)=0.d0
           dds(ny)=-dimag(bbkick1(x,ny*ystepr,1.d0,r))*ystepr
           call spline1(ny+1,s,dds,work,1,1)
-          do j=0,ny
-            uyy(i,j,n)=dds(j)
-          enddo
+          uyy(i,0:ny,n)=dds(0:ny)
         enddo
         do j=0,ny
           dds(0)=0.d0
@@ -747,10 +730,8 @@ c      write(*,*)'twspfu ',x,y,sigx,sigy
         enddo
         dds(0)=0.d0
         call spline1(ny+1,s,dds,work,1,0)
-        do j=0,ny
-          uxxyy(0,j,n)=dds(j)
-          s(j)=uxx(nx,j,n)
-        enddo
+        uxxyy(0,0:ny,n)=dds(0:ny)
+        s(0:ny)=uxx(nx,0:ny,n)
         call spline1(ny+1,s,dds,work,0,0)
         do j=0,ny
           uxxyy(nx,j,n)=dds(j)
@@ -759,12 +740,10 @@ c      write(*,*)'twspfu ',x,y,sigx,sigy
       enddo
       do i=0,nx
         do j=0,ny
-          do n=0,nr
-            s(n)=u(i,j,n)
-            sxx(n)=uxx(i,j,n)
-            syy(n)=uyy(i,j,n)
-            sxxyy(n)=uxxyy(i,j,n)
-          enddo
+          s(0:nr)=u(i,j,0:nr)
+          sxx(0:nr)=uxx(i,j,0:nr)
+          syy(0:nr)=uyy(i,j,0:nr)
+          sxxyy(0:nr)=uxxyy(i,j,0:nr)
           dds(0)=0.d0
           ddsxx(0)=0.d0
           ddsyy(0)=0.d0
@@ -773,12 +752,10 @@ c      write(*,*)'twspfu ',x,y,sigx,sigy
           call spline1(nr+1,sxx,ddsxx,work,1,0)
           call spline1(nr+1,syy,ddsyy,work,1,0)
           call spline1(nr+1,sxxyy,ddsxxyy,work,1,0)
-          do n=0,nr
-            urr(i,j,n)=dds(n)
-            uxxrr(i,j,n)=ddsxx(n)
-            uyyrr(i,j,n)=ddsyy(n)
-            uxxyyrr(i,j,n)=ddsxxyy(n)
-          enddo
+          urr(i,j,0:nr)=dds(0:nr)
+          uxxrr(i,j,0:nr)=ddsxx(0:nr)
+          uyyrr(i,j,0:nr)=ddsyy(0:nr)
+          uxxyyrr(i,j,0:nr)=ddsxxyy(0:nr)
         enddo
       enddo
       return

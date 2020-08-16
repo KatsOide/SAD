@@ -52,11 +52,7 @@
         return
       endif
       irtc=0
-      if(ktfrealq(ktastk(isp)))then
-        kx%k=ktftrue
-      else
-        kx%k=0
-      endif
+      kx%k=merge(ktftrue,ktffalse,ktfrealq(ktastk(isp)))
       return
       end
 
@@ -72,11 +68,8 @@
         return
       endif
       irtc=0
-      if(ktfrealq(ktastk(isp)) .and. ktfenanq(rtastk(isp)))then
-        kx%k=ktftrue
-      else
-        kx%k=0
-      endif
+      kx%k=merge(ktftrue,ktffalse,
+     $     ktfrealq(ktastk(isp)) .and. ktfenanq(rtastk(isp)))
       return
       end
 
@@ -116,13 +109,8 @@
           list%attr=ior(list%attr,kconstarg)
         endif
       endif
-      if(tfconstlistqo)then
-c        call tfdebugprint(ktflist+ka,'constlist',3)
-        list%attr=ior(lconstlist+kconstarg,list%attr)
-      else
-c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
-        list%attr=ior(lnoconstlist,list%attr)
-      endif
+      list%attr=ior(merge(lconstlist+kconstarg,lnoconstlist,
+     $     tfconstlistqo),list%attr)
       return
       end
 
@@ -138,11 +126,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       logical*4 tfconstlistqo
       tfconstheadqk=.true.
       if(ktfoperq(k,ka))then
-        if(ka .le. mtfend)then
-          tfconstheadqk=constop(ka)
-        else
-          tfconstheadqk=.false.
-        endif
+        tfconstheadqk=merge(constop(ka),.false.,ka .le. mtfend)
       elseif(ktfstringq(k))then
         tfconstheadqk=.false.
       elseif(ktfsymbolqdef(k%k,symd))then
@@ -216,11 +200,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
-      if(tfcomplexlistqk(dtastk(isp)))then
-        vx=1.d0
-      else
-        vx=0.d0
-      endif
+      vx=merge(1.d0,0.d0,tfcomplexlistqk(dtastk(isp)))
       irtc=0
       return
       end
@@ -373,11 +353,8 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
         return
       endif
       irtc=0
-      if(itfpmatc(ktastk(isp-1),ktastk(isp)) .ge. 0)then
-        kx%k=ktftrue
-      else
-        kx%k=0
-      endif
+      kx%k=merge(ktftrue,ktffalse,
+     $     itfpmatc(ktastk(isp-1),ktastk(isp)) .ge. 0)
       return
       end
 

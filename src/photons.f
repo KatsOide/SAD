@@ -71,12 +71,7 @@
      $     gx0=>pp%geo1(1,4),gy0=>pp%geo1(2,4),gz0=>pp%geo1(3,4),
      $     rho=>pp%rho,chi=>pp%chi,geo1=>pp%geo1)
       l=l_track
-      if(ini)then
-        gv=geo(:,:,l)
-c        call tggeol(l,gv)
-      else
-        gv=geo1
-      endif
+      gv=merge(geo(:,:,l),geo1,ini)
       al=al0
       theta=theta0
       phi=phi0
@@ -101,11 +96,7 @@ c        call tggeol(l,gv)
         sp0=sin(phi)
         cp0=cos(phi)
         r1=rho*sp0
-        if(cp0 .ge. 0.d0)then
-          r2=rho*sp0**2/(1.d0+cp0)
-        else
-          r2=rho*(1.d0-cp0)
-        endif
+        r2=rho*merge(sp0**2/(1.d0+cp0),1.d0-cp0,cp0 .ge. 0.d0)
         gx0=gv(1,4)+(r1*z1-r2*x1)
         gy0=gv(2,4)+(r1*z2-r2*x2)
         gz0=gv(3,4)+(r1*z3-r2*x3)
@@ -118,11 +109,7 @@ c        call tggeol(l,gv)
 c        write(*,'(a,1p12g10.2)')'tsetphgv ',gx0,gy0,gz0,
 c     $       x1,x2,x3,y1,y2,y3,z1,z2,z3
       endif
-      if(x3 .eq. 0.d0)then
-        chi=0.d0
-      else
-        chi=2.d0*atan2(x3,-y3)
-      endif
+      chi=merge(0.d0,2.d0*atan2(x3,-y3),x3 .eq. 0.d0)
       return
       end associate
       end subroutine
@@ -142,11 +129,7 @@ c     $       x1,x2,x3,y1,y2,y3,z1,z2,z3
       real*8 ,parameter :: frmin=1.d-12
       associate(l=>pcvt%l,cost=>pcvt%cost,sint=>pcvt%sint,al=>pcvt%al,
      $     fr0=>pcvt%fr0)
-      if(al .eq. 0.d0)then
-        fr=fr0
-      else
-        fr=fr0+ds/al
-      endif
+      fr=merge(fr0,fr0+ds/al,al .eq. 0.d0)
       gv=tfgeofrac(l,fr,irtc)
       if(irtc .ne. 0)then
         return

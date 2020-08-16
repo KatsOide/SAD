@@ -438,11 +438,8 @@ c      endif
                 nnl=nnl+2
                 cycle
               elseif(string(i-1:i) .eq. '\\\r')then
-                if(i .lt. l .and. string(i+1:i+1) .eq. '\n')then
-                  nnl=nnl+3
-                else
-                  nnl=nnl+2
-                endif
+                nnl=nnl+merge(3,2,
+     $               i .lt. l .and. string(i+1:i+1) .eq. '\n')
                 cycle
               endif
               nc=i-is1
@@ -459,11 +456,8 @@ c      endif
           endif
           if(index(string(it1:it2),'_') .ne. 0)then
             irt=0
-            if(nnl .eq. 0)then
-              kx=kxpaloc(string(it1:it2))
-            else
-              kx=kxpaloc(buf(1:nc-nnl))
-            endif
+            kx=merge(kxpaloc(string(it1:it2)),
+     $           kxpaloc(buf(1:nc-nnl)),nnl .eq. 0)
             return
           elseif(string(it1:it1) .eq. '%')then
             if(nc .eq. 1)then
@@ -478,19 +472,13 @@ c      endif
               kx=kxavaloc(-1,1,klr)
               call descr_sad(kx,klx)
               klx%head%k=ktfsymbol+ktfcopy1(iaxout)
-              if(nnl .eq. 0)then
-                klr%rbody(1)=ifromstr(string(it1+1:it2))
-              else
-                klr%rbody(1)=ifromstr(buf(1:nc-nnl))
-              endif
+              klr%rbody(1)=merge(ifromstr(string(it1+1:it2)),
+     $             ifromstr(buf(1:nc-nnl)),nnl .eq. 0)
               go to 9000
             endif
           endif
-          if(nnl .eq. 0)then
-            kx=kxsymbolz(string(it1:it2),nc,symd)
-          else
-            kx=kxsymbolz(buf,nc-nnl,symd)
-          endif
+          kx=merge(kxsymbolz(string(it1:it2),nc,symd),
+     $         kxsymbolz(buf,nc-nnl,symd),nnl .eq. 0)
 c          write(*,*)'tfetok ',string(it1:it2),kax,klist(kax)
 c          call tfdebugprint(kx,'etok',1)
           if(rlist(iaximmediate) .ne. 0.d0)then
@@ -569,18 +557,9 @@ c          write(*,*)'kax ',kax
       implicit none
       character*(*) ,intent(inout):: name
       logical*4 ,intent(out):: exist
-      logical*4 v,tflogi
+      logical*4 tflogi
       call capita(name)
-      v=tflogi(name,exist)
-      if(exist)then
-        if(v)then
-          fflogi=1.d0
-        else
-          fflogi=0.d0
-        endif
-      else
-        fflogi=0.d0
-      endif
+      fflogi=merge(merge(1.d0,0.d0,tflogi(name,exist)),0.d0,exist)
       return
       end
 
@@ -603,11 +582,7 @@ c          write(*,*)'kax ',kax
       do i=1,nflag
         klx%dbody(i)=kxadaloc(0,2,klxi)
         klxi%dbody(1)=kxsalocb(0,fname(i),lenw(fname(i)),str)
-        if(fff%flags(i))then
-          klxi%dbody(2)%k=ktftrue
-        else
-          klxi%rbody(2)=0.d0
-        endif
+        klxi%dbody(2)%k=merge(ktftrue,ktffalse,fff%flags(i))
       enddo
       irtc=0
       return

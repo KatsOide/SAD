@@ -165,17 +165,11 @@
           kres=ktsydefc(name,l,icont,.true.)
         endif
       elseif(i .eq. 1)then
-        if(l .eq. 1)then
-          kres=ktsydefc('`',1,itfcontroot,.true.)
-        else
-          kres=ktfsymbolc(name(2:l),l-1,itfcontroot)
-        endif
+        kres=merge(ktsydefc('`',1,itfcontroot,.true.),
+     $       ktfsymbolc(name(2:l),l-1,itfcontroot),l .eq. 1)
       else
-        if(icont .eq. 0)then
-          ic=ktsydefc(name(1:i),i,itfcontroot,.true.)
-        else
-          ic=ktsydefc(name(1:i),i,icont,.true.)
-        endif
+        ic=ktsydefc(name(1:i),i,
+     $       merge(itfcontroot,icont,icont .eq. 0),.true.)
         call loc_sad(ic,contd)
         ic1=contd%value%k
         if(contd%sym%gen .ne. -3)then
@@ -184,11 +178,7 @@
         else
           ic1=ktfaddr(ic1)
         endif
-        if(i .eq. l)then
-          kres=ic
-        else
-          kres=ktfsymbolc(name(i+1:l),l-i,ic1)
-        endif
+        kres=merge(ic,ktfsymbolc(name(i+1:l),l-i,ic1),i .eq. l)
       endif
       return
       end

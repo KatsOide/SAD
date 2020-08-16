@@ -36,11 +36,8 @@
           return
         endif
         is=int(klr%rbody(1))
-        if(klr%rbody(2) .lt. 0.d0)then
-          ie=nlat-int(abs(klr%rbody(2)))+1
-        else
-          ie=int(klr%rbody(2))
-        endif
+        ie=merge(nlat-int(abs(klr%rbody(2)))+1,int(klr%rbody(2)),
+     $       klr%rbody(2) .lt. 0.d0)
 c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
       endif
       nel=ie-is+1
@@ -121,21 +118,14 @@ c      write(*,*)'tfemit-4 ',codplt,ifsize,nel
         param(iptwiss:iptwiss+ntwissfun-1)=tfetwiss(ris,codin,
      $       twiss(is,0,mfitdetr) .lt. 1.d0)
       endif
-      if(mode .eq. 3 .and. intra)then
-        kx=kxadaloc(-1,6,klx)
-      else
-        kx=kxadaloc(-1,2+max(0,mode),klx)
-      endif
+      kx=kxadaloc(-1,merge(6,2+max(0,mode),mode .eq. 3 .and. intra),
+     $     klx)
       kaparam=ktfaddr(kxm2l(param,0,nparams,1,.false.))
       if(itgetfpe() .gt. 0)then
         stab=.false.
         call tclrfpe
       endif
-      if(stab)then
-        sx=1.d0
-      else
-        sx=0.d0
-      endif
+      sx=merge(1.d0,0.d0,stab)
 c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparams
       klx%rbody(1)=sx
       klx%dbody(2)%k=ktflist+ktfcopy1(kaparam)

@@ -193,8 +193,11 @@ c          write(*,*)'tfeexpr-slot ',vy,ks
                 k2=merge(list1%dbody(2),
      $               tftake(k1,dfromr(dble(-m+1)),.true.,.false.,irtc),
      $               m .eq. 2)
-                kx=merge(dfromr(v2*vy),tfeexpr(k2,ky,mtftimes),
-     $               ktfrealq(k2,v2) .and. ktfrealq(ky,vy))
+                if(ktfrealq(k2,v2) .and. ktfrealq(ky,vy))then
+                  kx=dfromr(v2*vy)
+                else
+                  kx=tfeexpr(k2,ky,mtftimes)
+                endif
               endif
               ky=list1%dbody(1)
               ke=tfeexpr(ky,kx,mtfpower)
@@ -1067,7 +1070,8 @@ c                  m    i    +    -    *    /    v    ^
       implicit none
       type (sad_descriptor) kx,k1,k,kh,tfmodule,tfsequence,
      $     tfsolvemember,tftable,tfefun1,tfeval1,tfeintf,
-     $     tfeintf2,tfget,tftake,tfset,tfeval1to,tfmap
+     $     tfeintf2,tfget,tftake,tfset,tfeval1to,tfmap,
+     $     tfgetcommandline,tfreplacepart,tfpart,tfwrite
       type (sad_dlist), pointer :: kl,kl1,klx,klh
       type (sad_symbol), pointer :: sym1
       type (sad_symdef), pointer :: symd
@@ -1375,7 +1379,7 @@ c            write(*,*)'irtc: ',irtc
         go to 8000
  310    call tfdimensions(isp1,kx,irtc)
         go to 6900
- 320    call tfreplacepart(isp1,kx,0,irtc)
+ 320    kx=tfreplacepart(isp1,0,irtc)
         go to 6900
  330    if(narg .eq. 1)then
           kx=tfeintf(dasin,tcasin,k,.true.,-1.d0,1.d0,irtc)
@@ -1488,7 +1492,7 @@ c            write(*,*)'irtc: ',irtc
           kx=tftake(dtastk(isp-1),k,.false.,.true.,irtc)
         endif
         go to 6900
- 600    call tfreplacepart(isp1,kx,1,irtc)
+ 600    kx=tfreplacepart(isp1,1,irtc)
         go to 6900
  610    if(narg .ne. 4)then
           irtc=itfmessage(9,'General::wrongnum','"4"')
@@ -1576,7 +1580,7 @@ c            write(*,*)'irtc: ',irtc
           go to 6812
         endif
         go to 6900
- 790    call tfwrite(isp1,kx,irtc)
+ 790    kx=tfwrite(isp1,irtc)
         go to 6900
  800    if(narg .ne. 1)then
           go to 6810
@@ -1917,7 +1921,7 @@ c        go to 6900
         go to 6900
  1860   irtc=itfmessage(999,'General::unregister',' ')
         go to 6900
- 1870   call tfreplacepart(isp1,kx,id-175,irtc)
+ 1870   kx=tfreplacepart(isp1,id-175,irtc)
         go to 6900
  1900   if(narg .ne. 2)then
           go to 6812
@@ -1988,7 +1992,7 @@ c        go to 6900
         else
           go to 6810
         endif
- 2200   call tfgetcommandline(isp1,kx,irtc)
+ 2200   kx=tfgetcommandline(isp1,irtc)
         go to 6900
  2210   call tfseek(isp1,kx,irtc)
         go to 6900
@@ -2178,7 +2182,7 @@ c            msgn TagS (*   *)   Hold z
         endif
         go to 6900
  6590   if(ktflistq(ktastk(isp1+1)))then
-          call tfpart(isp1+1,kx,.true.,irtc)
+          kx=tfpart(isp1+1,.true.,irtc)
           if(irtc .eq. 0)then
             call tfeevalref(kx,kx,irtc)
           endif
@@ -2270,7 +2274,7 @@ c            msgn TagS (*   *)   Hold z
               return
             endif
           case (-mtflist)
-            call tfpart(isp1,kx,.true.,irtc)
+            kx=tfpart(isp1,.true.,irtc)
             if(irtc .eq. 0)then
               if(ktflistq(kx,klx))then
                 call tfleval(klx,kx,.true.,irtc)

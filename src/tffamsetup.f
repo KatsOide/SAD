@@ -90,36 +90,22 @@ c      parameter (sqrt3=sqrt(3.d0))
           y=kli%rbody(3)
           if(x .ne. 0.d0)then
             do j=1,nfp
-              if(dpw .eq. 0.d0)then
-                jfam(nfa)=0
-              else
-                jfam(nfa)=nint(2*nfr*(dpi-dp(-nfr))/dpw-nfr)
-              endif
+              jfam(nfa)=merge(0,nint(2*nfr*(dpi-dp(-nfr))/dpw-nfr),
+     $             dpw .eq. 0.d0)
               dfam(1:4,nfa)=dxp(1:4,j)*x
               dp(nfa)=dp(jfam(nfa))
               kfam(nfa)=j
-              if(nfa .ge. 0)then
-                nfa=-nfa
-              else
-                nfa=-nfa+1
-              endif
+              nfa=merge(-nfa,-nfa+1,nfa .ge. 0)
             enddo
           endif
           if(y .ne. 0.d0)then
             do j=nfp+1,nfp*2
-              if(dpw .eq. 0.d0)then
-                jfam(nfa)=0
-              else
-                jfam(nfa)=nint(2*nfr*(dpi-dp(-nfr))/dpw-nfr)
-              endif
+              jfam(nfa)=merge(0,nint(2*nfr*(dpi-dp(-nfr))/dpw-nfr),
+     $             dpw .eq. 0.d0)
               dfam(1:4,nfa)=dxp(1:4,j)*y
               dp(nfa)=dp(jfam(nfa))
               kfam(nfa)=nfp-j
-              if(nfa .ge. 0)then
-                nfa=-nfa
-              else
-                nfa=-nfa+1
-              endif
+              nfa=merge(-nfa,-nfa+1,nfa .ge. 0)
             enddo
           endif
         endif

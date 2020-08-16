@@ -1,7 +1,7 @@
-      subroutine tfpart(isp1,kx,err,irtc)
+      function  tfpart(isp1,err,irtc) result(kx)
       use tfstk
       implicit none
-      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       type (sad_descriptor) tfpart1
@@ -492,16 +492,17 @@ c        enddo
       return
       end
 
-      subroutine tfreplacepart(isp1,kx,mode,irtc)
+      function tfreplacepart(isp1,mode,irtc) result(kx)
       use tfstk
       implicit none
-      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx
       integer*4 ,intent(in):: isp1,mode
       integer*4 ,intent(out):: irtc
       type (sad_descriptor) k,kn,kf
       type (sad_dlist), pointer :: klx,list
       integer*4 narg,i,itfmessage,isp0
       logical*4 seq,rep,rule
+      kx=dxnullo
       narg=isp-isp1
       if(narg .eq. 1 .and. (mode .eq. 0 .or. mode .eq. 3)
      $     .or. narg .eq. 2 .and. mode .eq. 2)then
@@ -1046,11 +1047,8 @@ c              enddo
               dtastk(isp0)=kf
               do concurrent (i=1:m)
                 kai=ktastk(isp3+i)
-                if(kai .eq. ktfref)then
-                  dtastk(isp0+i)=list%dbody(i)
-                else
-                  ktastk(isp0+i)=klist(kai+j)
-                endif
+                dtastk(isp0+i)=merge(list%dbody(i),dlist(kai+j),
+     $               kai .eq. ktfref)
               enddo
               isp=isp0+m
               dtastk(isp0)=kxcompose(isp0)
@@ -1066,11 +1064,8 @@ c              enddo
           do i=1,m
             isp=isp+1
             kai=ktastk(isp3+i)
-            if(kai .eq. ktfref)then
-              dtastk(isp)=list%dbody(i)
-            else
-              ktastk(isp)=klist(kai+j)
-            endif
+            dtastk(isp)=merge(list%dbody(i),dlist(kai+j),
+     $           kai .eq. ktfref)
           enddo
           call tfefunrefstk(isp0,isp0,irtc)
           if(irtc .ne. 0)then
@@ -1085,11 +1080,8 @@ c              enddo
           dtastk(isp0)=kf
           do concurrent (i=1:m)
             kai=ktastk(isp3+i)
-            if(kai .eq. ktfref)then
-              dtastk(isp0+i)=list%dbody(i)
-            else
-              ktastk(isp0+i)=klist(kai+j)
-            endif
+            dtastk(isp0+i)=merge(list%dbody(i),dlist(kai+j),
+     $           kai .eq. ktfref)
           enddo
           isp=isp0+m
           kj=tfefunref(isp0,.true.,irtc)

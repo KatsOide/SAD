@@ -104,11 +104,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
           endif
           LOOP_I_1: do i=1,nvar
             if(nvevx(i)%ivarele .eq. kk)then
-              if(iv .eq. 0)then
-                ivi=nelvx(kk)%ival
-              else
-                ivi=iv
-              endif
+              ivi=merge(nelvx(kk)%ival,iv,iv .eq. 0)
               if(nvevx(i)%ivvar .eq. ivi)then
                 if(comp)then
                   if(nvevx(i)%ivcomp .eq. 0)then
@@ -149,11 +145,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
  11       nvar=nvar+1
           ffv%evarini=.true.
           nvevx(i)%ivarele=kk
-          if(iv .eq. 0)then
-            ivi=nelvx(kk)%ival
-          else
-            ivi=iv
-          endif
+          ivi=merge(nelvx(kk)%ival,iv,iv .eq. 0)
           nvevx(i)%ivvar=ivi
           nvevx(i)%valvar=tfvalvar(k,ivi)
           nvevx(i)%ivcomp=ivck

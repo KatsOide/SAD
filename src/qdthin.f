@@ -28,25 +28,15 @@ c     end   initialize for preventing compiler warning
           alb=al/1.5d0
           cod(1)=cod(1)+cod(2)*ala
           cod(3)=cod(3)+cod(4)*ala
-c          do 1110 i=1,5
-            trans1(1,:)=trans1(1,:)+trans1(2,:)*ala
-            trans1(3,:)=trans1(3,:)+trans1(4,:)*ala
-c 1110     continue
+          trans1(1,:)=trans1(1,:)+trans1(2,:)*ala
+          trans1(3,:)=trans1(3,:)+trans1(4,:)*ala
         endif
         pr=1.d0+cod(6)
         kord=nord/2-1
-        if(al .eq. 0.d0)then
-          daki=1.d0/fact(kord)/pr
-        else
-          daki=1.d0/fact(kord)/pr*.5d0
-        endif
+        daki=merge(1.d0,0.5d0,al .eq. 0.d0)/fact(kord)/pr
         aki=ak*daki
         cx0=dcmplx(cod(1),-cod(3))
-        if(kord .le. 0)then
-          cx=(1.d0,0.d0)
-        else
-          cx=cx0**kord
-        endif
+        cx=merge((1.d0,0.d0),cx0**kord,kord .le. 0)
         cod(2)=cod(2)-aki*dble(cx)
         cod(4)=cod(4)-aki*imag(cx)
         dcod(1)=0.d0
@@ -54,11 +44,8 @@ c 1110     continue
         dcod(3)=0.d0
         dcod(4)=-daki*imag(cx)
         if(kord .gt. 0)then
-          if(kord .gt. 1)then
-            cx1=kord*cx0**(kord-1)
-          else
-            cx1=(1.d0,0.d0)
-          endif
+          cx1=merge(kord*cx0**(kord-1),(1.d0,0.d0),
+     $         kord .gt. 1)
           a21=-aki*dble(cx1)
           a23=-aki*imag(cx1)
           a41=-aki*imag(cx1)
@@ -71,14 +58,12 @@ c 1110     continue
           da43= daki*dble(cx1)
           da26=daki/pr*dble(cx)
           da46=daki/pr*imag(cx)
-c          do 10 i=1,5
-            dtrans(1,:)=0.d0
-            dtrans(2,:)=da21*trans1(1,:)+da23*trans1(3,:)
-            dtrans(3,:)=0.d0
-            dtrans(4,:)=da41*trans1(1,:)+da43*trans1(3,:)
-            trans1(2,:)=trans1(2,:)+ a21*trans1(1,:)+ a23*trans1(3,:)
-            trans1(4,:)=trans1(4,:)+ a41*trans1(1,:)+ a43*trans1(3,:)
-c 10       continue
+          dtrans(1,:)=0.d0
+          dtrans(2,:)=da21*trans1(1,:)+da23*trans1(3,:)
+          dtrans(3,:)=0.d0
+          dtrans(4,:)=da41*trans1(1,:)+da43*trans1(3,:)
+          trans1(2,:)=trans1(2,:)+ a21*trans1(1,:)+ a23*trans1(3,:)
+          trans1(4,:)=trans1(4,:)+ a41*trans1(1,:)+ a43*trans1(3,:)
           dtrans(2,5)=dtrans(2,5)+da26
           dtrans(4,5)=dtrans(4,5)+da46
           trans1(2,5)=trans1(2,5)+a26
@@ -91,26 +76,17 @@ c 10       continue
         cod(3)=cod(3)+cod(4)*alb
         dcod(1)=dcod(1)+dcod(2)*alb
         dcod(3)=dcod(3)+dcod(4)*alb
-c        do 1120 i=1,5
-          trans1(1,:)=trans1(1,:)+trans1(2,:)*alb
-          trans1(3,:)=trans1(3,:)+trans1(4,:)*alb
-          dtrans(1,:)=dtrans(1,:)+dtrans(2,:)*alb
-          dtrans(3,:)=dtrans(3,:)+dtrans(4,:)*alb
-c 1120   continue
+        trans1(1,:)=trans1(1,:)+trans1(2,:)*alb
+        trans1(3,:)=trans1(3,:)+trans1(4,:)*alb
+        dtrans(1,:)=dtrans(1,:)+dtrans(2,:)*alb
+        dtrans(3,:)=dtrans(3,:)+dtrans(4,:)*alb
         cx0=dcmplx(cod(1),-cod(3))
-        if(kord .le. 0)then
-          cx=(1.d0,0.d0)
-        else
-          cx=cx0**kord
-        endif
+        cx=merge((1.d0,0.d0),cx0**kord,kord .le. 0)
         dcod(2)=dcod(2)-daki*dble(cx)
         dcod(4)=dcod(4)-daki*imag(cx)
         if(kord .gt. 0)then
-          if(kord .gt. 1)then
-            cx1=kord*cx0**(kord-1)
-          else
-            cx1=(1.d0,0.d0)
-          endif
+          cx1=merge(kord*cx0**(kord-1),(1.d0,0.d0),
+     $         kord .gt. 1)
           a21=-aki*dble(cx1)
           a23=-aki*imag(cx1)
           a41=-aki*imag(cx1)
@@ -121,12 +97,10 @@ c 1120   continue
           da43= daki*dble(cx1)
           da26=daki/pr*dble(cx)
           da46=daki/pr*imag(cx)
-c          do 20 i=1,5
-            dtrans(2,:)=dtrans(2,:)+ a21*dtrans(1,:)+ a23*dtrans(3,:)
-     1           +da21*trans1(1,:)+da23*trans1(3,:)
-            dtrans(4,:)=dtrans(4,:)+ a41*dtrans(1,:)+ a43*dtrans(3,:)
-     1           +da41*trans1(1,:)+da43*trans1(3,:)
-c 20       continue
+          dtrans(2,:)=dtrans(2,:)+ a21*dtrans(1,:)+ a23*dtrans(3,:)
+     1         +da21*trans1(1,:)+da23*trans1(3,:)
+          dtrans(4,:)=dtrans(4,:)+ a41*dtrans(1,:)+ a43*dtrans(3,:)
+     1         +da41*trans1(1,:)+da43*trans1(3,:)
           dtrans(2,5)=dtrans(2,5)+da26
           dtrans(4,5)=dtrans(4,5)+da46
           dcod(2)=dcod(2)+a21*dcod(1)+a23*dcod(3)
@@ -134,10 +108,8 @@ c 20       continue
         endif
         dcod(1)=dcod(1)+dcod(2)*ala
         dcod(3)=dcod(3)+dcod(4)*ala
-c        do 1130 i=1,5
-          dtrans(1,:)=dtrans(1,:)+dtrans(2,:)*ala
-          dtrans(3,:)=dtrans(3,:)+dtrans(4,:)*ala
-c 1130   continue
+        dtrans(1,:)=dtrans(1,:)+dtrans(2,:)*ala
+        dtrans(3,:)=dtrans(3,:)+dtrans(4,:)*ala
  3000   continue
         call qchg(dtrans,dcod,0.d0,0.d0,-theta,.false.)
       endif

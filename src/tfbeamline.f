@@ -9,17 +9,17 @@
       use mackw
       use maccbk, only:MAXPNAME
       implicit none
-      type (sad_descriptor) k,ki,k1
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) ki,k1
       type (sad_dlist), pointer :: kl,kli
       integer*8 kfromr,kdx1
-      integer*4 irtc,hsrchz,lid,idx,n,lenw,idxi,
+      integer*4 ,intent(out):: idx,irtc
+      integer*4 hsrchz,n,lenw,idxi,
      $     i,idir,idti,nc,itfmessage,itfmessagestr
-      character*(MAXPNAME) tfgetstrs,ename
-      type (sad_descriptor) kxbl
-      save kxbl
-      data kxbl%k /0/
-      save lid
-      data lid /0/
+      character*(MAXPNAME) tfgetstrs
+      character*(MAXPNAME) ,intent(out):: ename
+      type (sad_descriptor) , save:: kxbl=sad_descriptor(1,i00)
+      integer*4 ,save :: lid=0
       if(kxbl%k .eq. 0)then
         kxbl=kxsymbolz('BeamLine',8)
       endif
@@ -145,17 +145,20 @@
       return
       end
 
-      subroutine tfsetelement(isp1,kx,irtc)
+      function tfsetelement(isp1,irtc) result(kx)
       use tfstk
       use mackw
       implicit none
       type (sad_descriptor) kx,kr
       type (sad_dlist), pointer :: klxi,klx
       integer*8 ka1,kas,kdx1,ktcaloc
-      integer*4 isp1,irtc,nc,lenw,narg,idx,itype,
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 nc,lenw,narg,idx,itype,
      $     idt,n,i,nce,m,hsrchz,isp0, itfmessage,
      $     itfdownlevel,l,itfmessagestr
       character*(MAXPNAME) ename,type,tfgetstrs,key,tfkwrd
+      kx=dxnullo
       ename=tfgetstrs(ktastk(isp1+1),nce)
       if(nce .lt. 0)then
         irtc=itfmessage(9,'General::wrongleng',
@@ -213,13 +216,8 @@
         endif
       endif
       ka1=ktfaddr(ktastk(isp1+1))
-      if(ktfstringq(ktastk(isp1+1)))then
-        kas=ka1
-      elseif(ktfoperq(ktastk(isp1+1)))then
-        kas=klist(klist(ifunbase+ka1))
-      else
-        kas=klist(ka1)
-      endif
+      kas=merge(ka1,merge(klist(klist(ifunbase+ka1)),klist(ka1),
+     $     ktfoperq(ktastk(isp1+1))),ktfstringq(ktastk(isp1+1)))
       if(itype .eq. icNULL)then
         if(narg .gt. 2)then
           irtc=itfmessage(9,'General::narg','"1 or 2"')
@@ -363,7 +361,7 @@
       return
       end
 
-      subroutine tfextractbeamline(isp1,kx,irtc)
+      function tfextractbeamline(isp1,irtc) result(kx)
       use tfstk
       use sad_main
       use mackw
@@ -372,11 +370,13 @@
       type (sad_dlist), pointer :: klx,kli
       type (sad_el), pointer ::el
       integer*8 itfilattp,idx
-      integer*4 isp1,irtc,
-     $     lenw,i,n,hsrchz,idl,nc,itfmessage,itfmessagestr
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 lenw,i,n,hsrchz,idl,nc,itfmessage,itfmessagestr
       character*(MAXPNAME) ename,tfgetstrs
       logical*4 eval
       data eval /.true./
+      kx=dxnullo
       if(eval)then
         call tfsyeval(ktfsymbolz('BeamLine',8),kx,irtc)
         if(irtc .ne. 0)then
@@ -435,7 +435,9 @@ c        write(*,*)'extractbeamline ',i,n,el%comp(i)
       type (sad_descriptor) kx,kx1
       type (sad_dlist), pointer :: kl,kll,klx,klx1
       integer*8 kal
-      integer*4 isp1,irtc,i,j,isp0,m,n,isp2
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 i,j,isp0,m,n,isp2
       integer*8 ifbeamline
       data ifbeamline/0/
       if(ifbeamline .eq. 0)then

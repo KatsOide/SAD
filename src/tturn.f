@@ -164,9 +164,8 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       integer*4 ,intent(inout):: kptbl(np0,6)
       real*8 ,intent(inout):: x(np0),px(np0),y(np0),py(np0),z(np0),
      $     g(np0),dv(np0), sx(np0),sy(np0),sz(np0)
-      real*8 bz,al,ak0,ak1,tgauss,ph,harmf,dpz,al1,
-     $     sspac0,sspac,fw,dx,dy,rot,sspac1,sspac2,ak,rtaper,
-     $     cod(6)
+      real*8 bz,al,ak0,ak1,tgauss,ph,harmf,sspac0,sspac,fw,
+     $     dx,dy,rot,sspac1,sspac2,ak,rtaper,cod(6)
       integer*4 l,lele,i,ke,lwl,lwt,lwlc,lwtc,irtc,
      $     nextwake,nwak,itab(np),izs(np)
       integer*8 iwpl,iwpt,iwplc,iwptc
@@ -299,13 +298,7 @@ c            write(*,*)'twspac-end'
      $          cmp%value(ky_RADI_DRFT),n,kptbl)
          else
            if(cmp%value(ky_KIN_DRFT) .eq. 0.d0)then
-             do concurrent (i=1:np)
-               dpz=pxy2dpz(px(i),py(i))
-               al1=al/(1.d0+dpz)
-               x(i)=x(i)+px(i)*al1
-               y(i)=y(i)+py(i)*al1
-               z(i)=z(i)+dpz  *al1-dv(i)*al
-             enddo
+             call tdrift_free(np,x,px,y,py,z,dv,al)
            else
              x(1:np)=x(1:np)+px(1:np)*al
              y(1:np)=y(1:np)+py(1:np)*al
@@ -742,11 +735,13 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
       use tspin
       implicit none
       type (sad_comp) :: cmp
-      integer*4 np,n
-      integer*4 kptbl(np0,6)
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
-      real*8 sx(np0),sy(np0),sz(np0)
-      real*8 ph,bz,rtaper
+      integer*4 ,intent(inout):: np
+      integer*4 ,intent(in):: n
+      integer*4 ,intent(inout):: kptbl(np0,6)
+      real*8 ,intent(inout):: x(np0),px(np0),y(np0),py(np0),z(np0),
+     $     g(np0),dv(np0),sx(np0),sy(np0),sz(np0)
+      real*8 ,intent(in):: bz,rtaper
+      real*8 ph
       logical*4 autophi
       if(tparacheck(icMULT,cmp))then
         call tpara(cmp)

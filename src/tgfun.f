@@ -21,11 +21,8 @@
         case (mfitleng)
           tgfun=pos(kp)
         case default
-          if(kf .le. mfitgz)then
-            tgfun=geo(kf-mfitgx+1,4,kp)
-          else
-            tgfun=tfchi(geo(:,:,kp),kf-mfitchi1+1)
-          endif
+          tgfun=merge(geo(kf-mfitgx+1,4,kp),
+     $         tfchi(geo(:,:,kp),kf-mfitchi1+1),kf .le. mfitgz)
         end select
       endif
       return

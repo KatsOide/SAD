@@ -30,11 +30,7 @@
           call tfevalb(word,kx,irtc)
           ierrorprint=iep
           if(irtc .eq. 0 .and. ktfrealq(kx,v))then
-            if(v .ge. 0.d0)then
-              iv=int(v+0.499)
-            else
-              iv=int(nlat+1+v+0.5d0)
-            endif
+            iv=int(merge(v+0.499,nlat+1+v+0.5d0,v .ge. 0.d0))
             iv=max(1,min(nlat,iv))
             exist=.true.
             return
@@ -122,11 +118,7 @@
             ipm=min(ip,im)
           endif
         endif
-        if(ipm .gt. 0)then
-          ln=ipm-1
-        else
-          ln=lw
-        endif
+        ln=merge(ipm-1,lw,ipm .gt. 0)
       endif
       name=word(1:ln)
       ielmf=0
@@ -253,11 +245,7 @@ c     *     by tfinit(), tfinimult() initialization
       do j=0,nelmhash
         n=nelm(j)
         ilist(1,k+j*2+1)=0
-        if(n .gt. 0)then
-          klist(k+j*2+2)=ktaloc(n)
-        else
-          klist(k+j*2+2)=0
-        endif
+        klist(k+j*2+2)=merge(ktaloc(n),i00,n .gt. 0)
       enddo
       do i=1,nlat-1
         j=itehash(pnamec(i),MAXPNAME)*2

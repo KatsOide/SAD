@@ -7,17 +7,18 @@
         end type
       end module
 
-      subroutine tfwrite(isp1,kx,irtc)
+      function tfwrite(isp1,irtc) result(kx)
       use tfstk
       use strbuf
       implicit none
-      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx
       type (sad_strbuf), pointer :: strb
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 itfgetrecl,narg,lfn,isp11,
      $     j,i,nc,lpw,itfmessage,isp2,itfgetlfn
       logical*4 exist
+      kx=dxnullo
       narg=isp-isp1
       if(narg .le. 1)then
         irtc=itfmessage(9,'General::narg','"2 or more"')
@@ -77,11 +78,7 @@
       if(ktfrealq(ktastk(isp1+1),iv))then
         go to 100
       elseif(tflistq(dtastk(isp1+1),kl))then
-        if(read)then
-          k=kl%dbody(1)
-        else
-          k=kl%dbody(2)
-        endif
+        k=kl%dbody(merge(1,2,read))
         if(ktfrealq(k,iv))then
           go to 100
         endif
@@ -92,11 +89,7 @@
  100  irtc=0
       select case (iv)
       case (-1)
-        if(read)then
-          iv=lfni
-        else
-          iv=lfno
-        endif
+        iv=merge(lfni,lfno,read)
       case (0)
       case default
         if(iv .lt. 0)then
@@ -157,6 +150,7 @@
       use tfcsi
       implicit none
       type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) tfwrite
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 isp0
@@ -169,7 +163,7 @@ c      do i=1,isp0-isp1
 c        isp=isp+1
 c        ktastk(isp)=ktastk(isp1+i)
 c      enddo
-      call tfwrite(isp0,kx,irtc)
+      kx=tfwrite(isp0,irtc)
       isp=isp0
       return
       end
@@ -326,11 +320,7 @@ c      enddo
           klh%dbody(1)%k=ktfsymbol+ktfcopy1(ka0+6)
           klh%dbody(2)=dtfcopy(k)
           do kk=1,0,-1
-            if(kk .eq. 1)then
-              iop=mtfsetdelayed
-            else
-              iop=mtfupsetdelayed
-            endif
+            iop=merge(mtfsetdelayed,mtfupsetdelayed, kk .eq. 1)
             kad=klist(ka0+kk)
             do while(kad .ne. 0)
               if(ilist(1,kad+2) .eq. maxgeneration)then
@@ -433,11 +423,7 @@ c      call tfdebugprint(k,'tfget',1)
       call trbclose(lfn)
       savep=sav
       call trbassign(lfni)
-      if(itf .eq. -3)then
-        irtc=irtcabort
-      else
-        irtc=0
-      endif
+      irtc=merge(irtcabort,0,itf .eq. -3)
       return
       end
 
@@ -676,11 +662,7 @@ c          enddo
       do kk=1,m
         isp0=isp
         isp=isp0+2
-        if(mult)then
-          dtastk(isp)=list%dbody(2)
-        else
-          dtastk(isp)=list%dbody(kk)
-        endif
+        dtastk(isp)=list%dbody(merge(2,kk,mult))
         call tfreadfs(isp0,lfn,opts,kxi,irtc)
         if(irtc .ne. 0)then
           isp=isp2
