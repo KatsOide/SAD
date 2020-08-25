@@ -1111,6 +1111,9 @@ c        write(*,*)'tinvgr ',x0,dfdx,df
       use tfstk, only:mrs=>tfmakerulestk_dd,sad_descriptor
       implicit none
       type (sad_descriptor) ,intent(in)::k1,k2
+c      call tfdebugprint(k1,'mkrs',1)
+c      write(*,*)k2%k
+c      call tfdebugprint(k2,'mkrs_f',1)
       call mrs(k1,k2)
       return
       end

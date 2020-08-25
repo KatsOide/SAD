@@ -749,10 +749,10 @@ c     endif
       integer*4, parameter ::
      $     mtfnull=0,
      $     mtfneg=1,mtfinv=2,mtfplus=3,mtfminus=4,mtfmult=5,mtfdiv=6,
-     $     mtfrevpower=7,mtfpower=8,mtfequal=9,mtfunequal=10,
-     $     mtfgreater=11,
-     $     mtfless=12,mtfgeq=13,mtfleq=14,mtfsame=15,mtfunsame=16,
-     $     mtfnot=17,mtfand=18,mtfor=19,mtfconcat=20,mtfleftbra=21,
+     $     mtfrevpower=7,mtfpower=8,
+     $     mtfgreater=9,mtfgeq=10,mtfleq=11,mtfless=12,
+     $     mtfequal=13,mtfunequal=14,mtfand=15,mtfor=16,
+     $     mtfnot=17,mtfsame=18,mtfunsame=19,mtfconcat=20,mtfleftbra=21,
      $     mtfrightbra=22,mtfleftbrace=23,mtfrightbrace=24,
      $     mtfsetdelayed=25,mtfset=26,mtfcomplex=27,mtfleftparen=28,
      $     mtfrightparen=29,mtfcomma=30,mtfcomp=31,mtffun=32,
@@ -1070,7 +1070,8 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
       end interface
 
       interface ktfrealq
-        module procedure ktfrealq_k,ktfrealq_d,ktfrealq_ki,ktfrealq_di
+        module procedure ktfrealq_k,ktfrealq_d,ktfrealq_ki,ktfrealq_di,
+     $     ktfrealq_dk
       end interface
 
       interface ktfnonrealq
@@ -1826,10 +1827,9 @@ c                  kcbk(3,j)=kcbk(2,k)
         implicit none
         type (sad_descriptor) , intent(in)::k
         real*8, optional, intent(out) :: v
-        real*8 rfromk
         ktfrealq_d=iand(ktrmask,k%k) .ne. ktfnr
         if(ktfrealq_d .and. present(v))then
-          v=rfromk(k%k)
+          v=k%x(1)
         endif
         return
         end function ktfrealq_d
@@ -1850,13 +1850,23 @@ c                  kcbk(3,j)=kcbk(2,k)
         implicit none
         type (sad_descriptor) , intent(in)::k
         integer*4 , intent(out) :: iv
-        real*8 rfromk
         ktfrealq_di=iand(ktrmask,k%k) .ne. ktfnr
         if(ktfrealq_di)then
-          iv=int(rfromk(k%k))
+          iv=int(k%x(1))
         endif
         return
         end function ktfrealq_di
+
+        logical*4 function ktfrealq_dk(k,iv)
+        implicit none
+        type (sad_descriptor) , intent(in)::k
+        integer*8 , intent(out) :: iv
+        ktfrealq_dk=iand(ktrmask,k%k) .ne. ktfnr
+        if(ktfrealq_dk)then
+          iv=int8(k%x(1))
+        endif
+        return
+        end function ktfrealq_dk
 
         logical*4 function ktfnonrealq_k(k,v)
         implicit none
@@ -1874,10 +1884,9 @@ c                  kcbk(3,j)=kcbk(2,k)
         implicit none
         type (sad_descriptor) , intent(in)::k
         real*8, optional, intent(out) :: v
-        real*8 rfromk
         ktfnonrealq_d=iand(ktrmask,k%k) .eq. ktfnr
         if(.not. ktfnonrealq_d .and. present(v))then
-          v=rfromk(k%k)
+          v=k%x(1)
         endif
         return
         end function ktfnonrealq_d
@@ -4276,6 +4285,7 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         isp=isp+1
         ktastk(isp)=ktflist+ktadaloc(-1,2,kl1)
         kl1%head%k=ktfoper+mtfrule
+        write(*,*)'mkrlstk_dr ',x
         kl1%dbody(1)=dtfcopy1(ks)
         kl1%rbody(2)=x
         return

@@ -142,7 +142,7 @@ OBJSIM_DYNL=sim/dynl.o $(OBJDYNL)
 
 OBJSIM= sim/unix_pointer_.o sim/unix_memory_.o sim/unix_memory8_.o \
 	sim/sad_api.o sim/sad_functbl.o sim/sad_signal.o \
-	sim/sad_xlib.o sim/sad_tcltk.o \
+	sim/sad_xlib.o sim/sad_tcltk.o sim/maprwfile.o\
 	$(OBJ_FORTRAN) \
 	$(OBJSIM_DYNL) \
 	$(FRAMEWORK_OBJS) \

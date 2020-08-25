@@ -18,9 +18,9 @@
      $       mtfalt,mtfrepeated,mtfrepeatednull)
         kx=tfeexpr(k1,k2,iopc1)
         irtc=0
-      case (mtfnull:mtfdiv,mtfpower,mtfgreater:mtfleq,mtfnot:mtfor,
-     $       mtfleftbra:mtfrightbrace,mtfcomplex:mtfcomma,
-     $       mtfdot,mtfend)
+      case (mtfnull:mtfdiv,mtfpower,mtfgreater:mtfless,mtfand:mtfnot,
+     $       mtfleftbra:mtfrightbrace,
+     $       mtfcomplex:mtfcomma,mtfdot,mtfend)
         if(tfnumberq(k2) .and.
      $     (tfnumberq(k1) .or. iopc1 .eq. mtfnot))then
           call tfcmplx(k1,k2,kx,iopc1,irtc)
@@ -67,6 +67,7 @@
         name(1:nc)=str%str(1:nc)
         call capita(name(1:nc))
         vx=fflogi(name(1:nc),exist)
+c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
         if(exist)then
           kx=dfromr(vx)
           irtc=0

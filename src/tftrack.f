@@ -1,3 +1,8 @@
+      module tftr
+      integer*4 ,parameter :: nprmax=256;
+      integer*4 :: npz=0,ipn=0,npr=0,npri=0,iprid=0,ipr(nprmax)
+      end module
+
       subroutine tftrack(isp1,kx,irtc)
       use tfstk
       use ffs
@@ -8,6 +13,7 @@
       use tparastat
       use photontable,only:tphotoninit,tphotonlist
       use tfcsi
+      use tftr
       use iso_c_binding
       implicit none
       type (sad_descriptor) kx,kx1,kx2,ks,kp
@@ -16,14 +22,15 @@
       integer*4, parameter :: npparamin=9,npnlatmin=3000
       integer*8 kz,kzp,kzf,kaxl,ktfmalocp,ktfresetparticles,kdv,
      $     kpsx,kpsy,kpsz
-      integer*4 isp1,irtc,narg,itfloc,outfl0,ld,ls,mc,npz,npa,np00,
-     $     ipr(100),npr,np1,fork_worker,iprid, ne,nend,npara,
-     $     npp,ipn,m,itfmessage,nt,mt,kseed,mcf
+      integer*4 isp1,irtc,narg,itfloc,outfl0,ld,ls,mc,npa,np00,
+     $     np1,fork_worker,ne,nend,npara,
+     $     npp,m,itfmessage,nt,mt,kseed,mcf
       integer*8 ikptblw,ikptblm
       real*8 trf00,p00,vcalpha0
       real*8 , pointer::zx(:,:),zx0(:,:)
       integer*4 , pointer::iptbl(:,:),jptbl(:,:)
       logical*4 dapert0,normal
+      character*32 autos
       narg=isp-isp1
       if(narg .gt. 4)then
         irtc=itfmessage(9,'General::narg','"1, 2, 3, or 4"')
@@ -106,7 +113,7 @@
       kwakep=0
       kwakeelm=0
       nwakep=0
-      npara=max(nparallel,1)
+      npara=min(nprmax,max(nparallel,1))
       if(wake)then
         call tffssetupwake(icslfno(),irtc)
         if(irtc .ne. 0)then
@@ -140,6 +147,7 @@
         trpt=.true.
         call tlinit(npz,h0,rlist(ifgeo+12*(ls-1)))
       endif
+      call tfevals('`ExtMap$@InitMap['//autos(dble(npz))//']',kx,irtc)
 c      call omp_set_num_threads(1)
       if(npara .gt. 1)then
         kseed=0
@@ -159,6 +167,7 @@ c     $       ne,npnlatmin
           npr=0
           do while(ipn+np1 .lt. npz)
             kseed=kseed+2
+            npri=npr
             npr=npr+1
             iprid=fork_worker()
             if(iprid .eq. 0)then
@@ -174,6 +183,7 @@ c     $       ne,npnlatmin
             ipr(npr)=iprid
             ipn=ipn+np1
           enddo
+          npri=npr
           npp=npz-ipn
         endif
       endif
@@ -282,6 +292,7 @@ c        write(*,*)'tftrack-afterwait ',npz,npa,ipn,zx(npz,3),zx(npa,3)
         kaxl=ktfresetparticles(zx0,iptbl,npz,nlat,nend,mc)
       endif
       call tmunmapp(kz)
+      call tfevals('`ExtMap$@ResetMap[]',kx,irtc)
       if(photons)then
         call tphotonlist()
       endif

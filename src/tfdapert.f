@@ -90,8 +90,8 @@
       np00=np0
       np0=max(2000,n1,n1*min(51,nint(rgetgl1('DAPWIDTH'))))
       call rsetgl1('NP',dble(np0))
-      call tfdapert1(range,klc1%rbody(1),
-     $     n1,kx%x(1),phi,damp,dampenough,iv(1),iv(2),lfno)
+      call tfdapert1(range,klc1%rbody(1),n1,
+     $     kx%x(1),phi,damp,dampenough,iv(1),iv(2),lfno)
       np0=np00
       call rsetgl1('NP',dble(np0))
       irtc=0
@@ -107,24 +107,21 @@
       use tmacro
       use tparastat
       implicit none
-      integer*4 n1,itgetfpe,ivar1,ivar2,lfno
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
-      real*8 trval,phi(3),range(3,3),r1(n1),damp,dampenough
+      integer*4 ,intent(in):: n1,ivar1,ivar2,lfno
+      integer*4 itgetfpe
+      real*8 ,intent(in)::trval,phi(3),range(3,3),r1(n1),damp,dampenough
       integer*4 kzx(2,np0)
-      integer*4 kptbl(np0,6)
-      integer*4 mturn(np0)
       logical*4 dapert0
 c      write(*,*)'tfda1 ',phix,phiy,phiz,ivar1,ivar2
       call tfsetparam
       call tclrpara
       dapert0=dapert
       dapert=.true.
-      x(1:2)=range(1:2,1)
-      y(1:2)=range(1:2,2)
-      g(1:n1)=r1
-      pz(1)=dble(n1)
-      call trackd(kptbl,x,px,y,py,z,g,dv,pz,
-     1     kzx,mturn,trval,phi,damp,dampenough,ivar1,ivar2,lfno)
+c      x(1:2)=range(1:2,1)
+c      y(1:2)=range(1:2,2)
+c      g(1:n1)=r1
+      call trackd(range,r1,n1,
+     1     kzx,trval,phi,damp,dampenough,ivar1,ivar2,lfno)
       dapert=dapert0
       if(itgetfpe() .ne. 0)then
         write(*,*)'DynamicApertureSurvey-FPE ',itgetfpe()

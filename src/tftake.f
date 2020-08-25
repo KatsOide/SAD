@@ -275,13 +275,12 @@ c        enddo
 
       subroutine tfdifference(isp1,kx,irtc)
       use tfstk
-      use eexpr
       use iso_c_binding
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
-      type (sad_descriptor) k0,k1,ks,krv
+      type (sad_descriptor) k0,k1,ks,krv,tfecmplxl
       type (sad_dlist), pointer :: klx
       type (sad_dlist), pointer :: kl
       type (sad_rlist), pointer :: klr

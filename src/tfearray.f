@@ -4,7 +4,7 @@
       implicit none
       type (sad_descriptor) ,intent(in):: k,k1
       type (sad_descriptor) ,intent(out):: kx
-      type (sad_descriptor) ky,tfdot
+      type (sad_descriptor) ky,tfdot,tfecmplxl
       type (sad_dlist), pointer :: kl,kl1
       integer*4 ,intent(out):: irtc
       integer*4 ne,ne1,i,iopc1,isp0
@@ -28,16 +28,17 @@ c$$$          go to 101
 c$$$        endif
 c$$$        return
 c$$$      endif
-      if(iopc1 .ge. mtfplus .and. iopc1 .le. mtfpower
-     $     .or. iopc1 .eq. mtfcomplex)then
-        kx=tfecmplxl(k1,k,iopc1)
-        irtc=0
-        return
-      endif
+c      call tfdebugprint(k1,'earray',1)
+c      call tfdebugprint(k,'and',1)
+c      write(*,*)'with ',iopc1
       irtc=0
-      if(iopc1 .ge. mtfgreater .and. iopc1 .le. mtfnot)then
+      select case(iopc1)
+      case (mtfplus:mtfunequal,mtfand,mtfor,mtfcomplex)
+        kx=tfecmplxl(k1,k,iopc1)
+        return
+      case (mtfnot:mtfsame)
         go to 101
-      endif
+      end select
       if(ktflistq(k1,kl1))then
         if(tfcomplexq(k1))then
           ne1=0
@@ -173,7 +174,7 @@ c$$$      endif
       integer*4 ,intent(out):: irtc
       complex*16 ,intent(in):: c1,c2
       complex*16 cx,tfcmplxmathv
-      if(iopc1 .gt. mtfunequal .and. iopc1 .ne. mtfcomplex)then
+      if(iopc1 .gt. mtfnot .and. iopc1 .ne. mtfcomplex)then
         irtc=-1
       else
         cx=tfcmplxmathv(c1,c2,iopc1)

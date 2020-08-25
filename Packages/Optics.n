@@ -47,7 +47,7 @@ NormalCoordinatesPrimitive[param_]:=If[?CALC6D,
   {bmatrix.hmatrix.rmatrix,Take[param,{mfdx,mfddp}]}]];
 
 BeamMatrix[i_]:=Module[
-  {r=SymplecticInverse[NormalCoordinates[i][1]],
+  {r=SymplecticInverse[NormalCoordinates[i][[1]]],
     d=LINE["GAMMABETA",1]/LINE["GAMMABETA",i]},
   r.DiagonalMatrix[
     {EMITX,EMITX,EMITY,EMITY,0,d*If[?GAUSS,DP,DP/Sqrt[3]]^2}*d].

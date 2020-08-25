@@ -2,6 +2,8 @@
       integer*4, parameter:: nshmax=1024
       integer*8, save:: kashare(nshmax)=0,lshare(nshmax)=0
       integer*4, save :: ishared(nshmax)=0,kstshare(0:nshmax)=0
+      integer*4 ,parameter :: sem_init=0,sem_destroy=1,
+     $     sem_post=2, sem_wait=3, sem_trywait=4
       
       contains
       integer*8 function ktfallocshared(n)
@@ -115,6 +117,15 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       call tfree(k)
       return
       end subroutine
+
+      function tfsemctrl(isp1,irtc) result(kx)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      return
+      end
 
       end module
 

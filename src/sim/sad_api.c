@@ -179,13 +179,13 @@ void tfsetlist(integer8 kx, integer8 iax, integer4 i) {
 }
 
 void tfmakerulestk(integer8 ias, integer8 kx) {
-  tfmakerulestk_(&ias, &kx);
+  /*  fprintf(stderr,"mkrs_c: %d %f\n",kx); */
+  tfmakerulestk_(&ias,&kx);
 }
 
 void tfevals(const char *buf,
 	     integer8 *kx, integer4 *irtc) {
   integer4 length = strlen(buf);
-
   tfevalb_(buf, length, kx, irtc);
 }
 

@@ -2,9 +2,9 @@
       use ffs
       implicit none
       integer*4 i
-      character*(*) word
+      character*(*) ,intent(in):: word
       character*32 fname1
-      logical*4 exist
+      logical*4 ,intent(out):: exist
       tflogi=.false.
       exist=.true.
       if(word .eq. ' ')then

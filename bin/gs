@@ -8,6 +8,7 @@ cd $JOB_DIR
 
 SAD_PACKAGES="$SAD_ROOTPATH/Packages"; export SAD_PACKAGES
 SAD_ARCH=`$SAD_ROOTPATH/bin/HostArch`
+export SAD_ARCH
 SAD_EXE="$SAD_ROOTPATH/obj/${SAD_ARCH}/sad1.exe";export SAD_EXE
 
 # Set stack limit

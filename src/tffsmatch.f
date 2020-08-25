@@ -546,7 +546,7 @@ c     enddo
       integer*4 ,intent(out):: irtc,ipr
       integer*4 ,intent(in):: npa
       integer*4 ,intent(inout):: npr(npa)
-      integer*4 ist,i,j,wait
+      integer*4 ist,i,j,waitpid
       integer*8 ,intent(in):: kash
       character*(*) ,intent(in):: tag
       if(ipr .eq. 0)then
@@ -559,7 +559,7 @@ c     enddo
         irtc=0
         do i=1,npa-1
           dowait: do
-            ipr=wait(ist)
+            ipr=waitpid(-1,ist)
             do j=1,npa-1
               if(npr(j) .eq. ipr)then
                 npr(j)=0

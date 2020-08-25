@@ -59,6 +59,82 @@
       return
       end
 
+      function tfmapfile(isp1,irtc) result(kx)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_string), pointer :: fname
+      type (sad_rlist), pointer :: kl
+      integer*8 map,ksize,maprwfile
+      integer*4 ifd,itfmessage
+      kx=dxnullo;
+      if(isp .ne. isp1+2)then
+        irtc=itfmessage(9,'General::narg','"2"')
+        return
+      endif
+c      call tfdebugprint(dtastk(isp1+1),'mapfile',1)
+      if(.not. ktfstringq(dtastk(isp1+1),fname))then
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"Filename for #1"')
+        return
+      endif
+      if(.not. ktfrealq(dtastk(isp),ksize))then
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"Bytes/8 for #2"')
+        return
+      endif
+      ksize=ksize*8
+c      write(*,*)'tfmapfile ',ksize
+      map=maprwfile(fname%str,ifd,ksize,irtc)
+      if(irtc .ne. 0)then
+        irtc=itfmessage(9,'General::mmap','""')        
+        return
+      endif
+      kx=kxraaloc(-1,2,kl)
+      kl%rbody(1)=dble(map)
+      kl%rbody(2)=dble(ifd)
+      return
+      end
+
+      function tfunmapfile(isp1,irtc) result(kx)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*8 map,ksize
+      integer*4 ifd,itfmessage,unmap
+      kx=dxnullo;
+      if(isp .ne. isp1+3)then
+        irtc=itfmessage(9,'General::narg','"3"')
+        return
+      endif
+      if(.not. ktfrealq(dtastk(isp1+1),map))then
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"Address for #1"')
+        return
+      endif
+      if(.not. ktfrealq(dtastk(isp1+2),ksize))then
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"Bytes/8 for #2"')
+        return
+      endif
+      if(.not. ktfrealq(dtastk(isp1+1),ifd))then
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"File descriptor for #3"')
+        return
+      endif
+      ksize=ksize*8
+      irtc=unmap(map,ksize,ifd)
+      if(irtc .ne. 0)then
+        irtc=itfmessage(9,'General::mmap','"(Unmap)"')
+        return
+      endif
+      return
+      end
+
       integer*4 function itfgetlfn(isp1,read,irtc) result(iv)
       use tfstk
       use tfrbuf
@@ -1170,6 +1246,7 @@ c     $     nc+15,itx,iax,vx,irtc)
       use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) tftemporaryname
       integer*4 ,intent(in):: nc
       integer*4 ,intent(out):: irtc
       character*(*) ,intent(in):: cmd
@@ -1180,7 +1257,7 @@ c     $     nc+15,itx,iax,vx,irtc)
       character*(llbuf) buff,tfgetstr
       l=nextfn(moderead)
       if(ntable(l)%k .eq. 0)then
-        call tftemporaryname(isp,kx,irtc)
+        kx=tftemporaryname(isp,irtc)
         ntable(l)=dtfcopy(kx)
       else
         kx=ntable(l)
@@ -1258,10 +1335,10 @@ c      endif
       return
       end
 
-      subroutine tftemporaryname(isp1,kx,irtc)
+      function tftemporaryname(isp1,irtc) result(kx)
       use tfstk
       implicit none
-      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       type (sad_symdef), pointer :: symd
@@ -1273,6 +1350,7 @@ c      endif
       save machine
       type (sad_descriptor) ixmachine
       data ixmachine%k /0/
+      kx=dxnullo
       if(isp .eq. isp1+1)then
         if(ktastk(isp) .ne. ktfoper+mtfnull)then
           irtc=itfmessage(9,'General::wrongval','Null')
@@ -1303,6 +1381,7 @@ c      endif
       buff(19+lm:25+lm)='.XXXXXX'
       buff(26+lm:26+lm)=char(0)
       lw=tftmpnam(buff)
+c      write(*,*)'temporaryName ',buff(:lw)
       kx=kxsalocb(-1,buff,lw)
       irtc=0
       return

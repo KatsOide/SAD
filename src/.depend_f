@@ -269,7 +269,7 @@ tdrift.o: tdrift.f photons.o tffs.o tfloor.o tsol.o
 tdrwdt.o: tdrwdt.f inc/common.inc tffs.o tfloor.o tfstk.o
 tedrawf.o: tedrawf.f
 teigen.o: teigen.f tfstk.o
-temap.o: temap.f tfefun.o tffs.o tfstk.o tgrot.o
+temap.o: temap.f tfefun.o tffs.o tfstk.o tftrack.o tgrot.o
 temat.o: temat.f tffs.o tfstk.o
 temit.o: temit.f teigen.o tffs.o tfstk.o
 temitf.o: temitf.f tffs.o tfstk.o

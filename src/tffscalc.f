@@ -30,8 +30,8 @@ c      include 'DEBUG.inc'
       logical*4 fam,beg,zerores
       integer*4 irw,isw,ipr,ifb,ife,idir,
      $     jjfam(-nfam:nfam),ifpe,ntfun
-      integer*4, external :: fork_worker,wait,itfdownlevel,itfuplevel,
-     $     itgetfpe
+      integer*4, external :: fork_worker,waitpid,
+     $     itfdownlevel,itfuplevel,itgetfpe
       integer*8 iutm,jb
       integer*4 , parameter:: ivoid=9999
       integer*8 ,save :: iprolog=0,iepilog=0,imr=0,inr=0,isl=0
@@ -262,7 +262,7 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
           if(ipr .gt. 0)then
             irw=0
             do while(irw .ne. ipr)
-              irw=wait(isw)
+              irw=waitpid(-1,isw)
             enddo
             if(isw .ne. 0)then
               call termes(lfno,

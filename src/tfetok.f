@@ -559,7 +559,7 @@ c          write(*,*)'kax ',kax
       logical*4 ,intent(out):: exist
       logical*4 tflogi
       call capita(name)
-      fflogi=merge(merge(1.d0,0.d0,tflogi(name,exist)),0.d0,exist)
+      fflogi=merge(1.d0,0.d0,tflogi(name,exist))
       return
       end
 

@@ -11,9 +11,9 @@
       character(len=1024) :: pkg
       character(len=64) :: env
       integer :: lpkg, lenv
-      integer*8 ktfsymbolc,ktrvaloc,ktcontaloc,
-     $     iaxsys,loc,ktcvaloc,kax,k1,k2,i,kfromr
-      integer*4 lpw,lenw,ifromstr
+      integer*8 ktfsymbolc,ktrvaloc,ktcontaloc,shm_map,
+     $     iaxsys,loc,ktcvaloc,kax,k1,k2,i,kfromr,kshm
+      integer*4 lpw,lenw,ifromstr,iunit,irtc,shm_unlink
       call tfinfinit
       kinfinity=kfromr(dinfinity)
       kminfinity=kfromr(-dinfinity)
@@ -139,6 +139,12 @@ c     Physical constant
 
       ierrorth=0
       ierrorexp=0
+
+c      write(*,*)'unlink ',shm_unlink('/bar'//char(0))
+c      kshm=shm_map('/bar'//char(0),iunit,irtc)
+c      write(*,*)'shm: ',iunit,irtc,kshm,rlist(kshm/8)
+c      rlist(kshm/8)=m_pi/2
+c      write(*,*)'shm: ',rlist(kshm/8)
 
       call get_environment_variable('COLUMNS',env)
       if(env .eq. ' ')then
@@ -296,7 +302,7 @@ c      write(*,*)'tfinitn-9 ',itfcontroot
           call loc_symstr(klist(klist(ifunbase+kai)),str)
         elseif(ktflistq(ki,kl))then
           if(kl%head%k .eq. ktfoper+mtfslot)then
-            call tfslot(int8(mtfslot),kl,k,.false.,irtc)
+            call tfslot(mtfslot,kl,k,.false.,irtc)
             if(irtc .ne. 0)then
               return
             endif
@@ -491,6 +497,7 @@ c      call tfdebugprint(kx,'setcontextpath',1)
       integer*4 ,intent(out):: irtc
       integer*4 narg,iargc,i,l,isp0,itfmessage
       character*256 arg
+      kx=dxnullo
       if(isp .gt. isp1+1)then
         go to 9000
       elseif(isp .eq. isp1+1)then
@@ -578,10 +585,8 @@ c      call tfdebugprint(kx,'setcontextpath',1)
       implicit none
       integer*4 i,itfunaloc,map(32),ieval(32)
 c     Initialize map/ieval array
-      do i=1,32
-         map(i)=0
-         ieval(i)=0
-      enddo
+      map=0
+      ieval=0
       i=itfunaloc('Null',-mtfnull,1,map,ieval,2)
       ilist(1,klist(ifunbase+i)-3)=ilist(1,klist(ifunbase+i)-3)
      $     -iattrconstant
@@ -597,18 +602,18 @@ c     Initialize map/ieval array
       i=itfunaloc('$f6$',-6,-1,map,ieval,0)
       i=itfunaloc('InversePower',-mtfrevpower,1,map,ieval,2)
       i=itfunaloc('Power',-mtfpower,1,map,ieval,2)
-      i=itfunaloc('Equal',-mtfequal,1,map,ieval,2)
-
-      i=itfunaloc('Unequal',-mtfunequal,1,map,ieval,2)
       i=itfunaloc('Greater',-mtfgreater,1,map,ieval,2)
-      i=itfunaloc('Less',-mtfless,1,map,ieval,2)
+
       i=itfunaloc('GreaterEqual',-mtfgeq,1,map,ieval,2)
       i=itfunaloc('LessEqual',-mtfleq,1,map,ieval,2)
-      i=itfunaloc('SameQ',-mtfsame,1,map,ieval,2)
-      i=itfunaloc('UnsameQ',-mtfunsame,1,map,ieval,2)
-      i=itfunaloc('Not',-mtfnot,1,map,ieval,2)
+      i=itfunaloc('Less',-mtfless,1,map,ieval,2)
+      i=itfunaloc('Equal',-mtfequal,1,map,ieval,2)
+      i=itfunaloc('Unequal',-mtfunequal,1,map,ieval,2)
       i=itfunaloc('And',-mtfand,-1,map,ieval,2)
       i=itfunaloc('Or',-mtfor,-1,map,ieval,2)
+      i=itfunaloc('Not',-mtfnot,1,map,ieval,2)
+      i=itfunaloc('SameQ',-mtfsame,1,map,ieval,2)
+      i=itfunaloc('UnsameQ',-mtfunsame,1,map,ieval,2)
 
       i=itfunaloc('StringJoin',-mtfconcat,1,map,ieval,2)
       i=itfunaloc('$f21$',-mtfleftbra,-1,map,ieval,0)
@@ -924,7 +929,7 @@ c-----Noboru addition end -----
       i=itfunaloc('Round',109,1,map,ieval,2)
       map(1)=0
       i=itfunaloc('InverseErf',110,1,map,ieval,2)
-c      i=itfunaloc('Date',110,1,map,ieval,0)
+      i=itfunaloc('SemCtrl',111,3,map,ieval,0)
 c      i=itfunaloc('FromDate',111,1,map,ieval,1)
 c      i=itfunaloc('ToDate',112,1,map,ieval,1)
       i=itfunaloc('ToInputString',113,1,map,ieval,0)
@@ -947,8 +952,8 @@ c      i=itfunaloc('ToDate',112,1,map,ieval,1)
       i=itfunaloc('Which',nfunwhich,2,map,ieval,0)
       ieval(1)=0
       ieval(2)=0
-c      i=itfunaloc('System',127,1,map,ieval,0)
-c      i=itfunaloc('GetPID',128,1,map,ieval,0)
+      i=itfunaloc('MapFile',127,2,map,ieval,0)
+      i=itfunaloc('UnmapFile',128,1,map,ieval,0)
 c      i=itfunaloc('GetUID',129,1,map,ieval,0)
 c      i=itfunaloc('GetGID',130,1,map,ieval,0)
       i=itfunaloc('ToLowerCase',131,1,map,ieval,2)
@@ -1193,5 +1198,7 @@ c      i=itfunaloc('TclSetResult',1036,1,map,ieval,0)
       i=itfunaloc('CSROYMatrix',1045,1,map,ieval,0)
       i=itfunaloc('SurvivedParticles',1046,1,map,ieval,0)
       i=itfunaloc('BBBrem1',1047,2,map,ieval,0)
+      i=itfunaloc('MapParticles',1048,3,map,ieval,0)
+      i=itfunaloc('UnmapParticles',1049,2,map,ieval,0)
       return
       end

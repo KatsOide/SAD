@@ -45,9 +45,6 @@ c     end   initialize for preventing compiler warning
  1    continue
       call tfetok(string(istart:l),istop,kx,itfcontext,irt)
       istop=min(l+1,istop+istart-1)
-c      if(l .gt. l0)then
-c        write(*,*)'tfeval ',irt,istop,l,buffer(max(l-16,1):l)
-c      endif
       if(irt .ge. 0)then
         go to 2400
       endif
@@ -357,6 +354,7 @@ c
           sav=savep
           ipoint=istop
         endif
+c        call tfdebugprint(dtastk(isp),'tfeval-8',3)
         call tfeevalref(ktastk(isp),kx%k,irtc)
         if(re)then
           savep=sav

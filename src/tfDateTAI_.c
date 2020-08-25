@@ -481,6 +481,7 @@ static int FormatDate(integer8 *kx,
 
   switch(opt->format) {
   case DATEFMT_SAD_EPOCH:
+    /*    fprintf(stderr, "format-SAD offset: %d",opt->offset);*/
     vx   = tai_sub_approx(t, &tai_sad_epoch) + frac;
     *kx = kfromr(vx);
     *irtc = 0;
@@ -488,6 +489,7 @@ static int FormatDate(integer8 *kx,
     break;
 
   default:
+    /*    fprintf(stderr, "format-default offset: %d ",opt->offset); */
     /* TAI -> UTC -> Local Time */
     caltime_utc(&lt, t, NULL, NULL);
     caltime_shift_offset(&lt, opt->offset, &weekday, NULL);
@@ -926,25 +928,31 @@ static int SetTimeZone(integer4 *isp1,
   integer8 ka;
   sad_date_option_t opt;
 
+  if(itfTimeZoneOffset == 0)
+    itfTimeZoneOffset = ktfsymbolz("TimeZoneOffset") - 4;
+
   if(isp != *isp1 + 1) {
+    if(isp == *isp1) {
+      *kx   = klist(itfTimeZoneOffset);
+      *irtc=0;
+      return 0;}
     *irtc = itfmessage(9, "General::narg", "\"1\"");
     return -1;
   }
 
-  if(itfTimeZoneOffset == 0)
-    itfTimeZoneOffset = ktfsymbolz("TimeZoneOffset") - 4;
-
+  if(ktastk(*isp1 + 1) == ktfoper){
+    *kx   = klist(itfTimeZoneOffset);
+    *irtc=0;
+    return 0;}
   if((ktrmask & ktastk(*isp1 + 1)) != ktfnr) {
     rlist(itfTimeZoneOffset) = rtastk( *isp1 + 1);}
-  else {
-    if((ktfmask & ktastk(*isp1 + 1)) == ktfstring){
+  else if((ktfmask & ktastk(*isp1 + 1)) == ktfstring){
       ka = (ktamask & ktastk(*isp1 + 1));
 #if SAD_REQUIRE_STRING_TERMINATION
       jlist(ilist(1, ka) + 1, ka + 1) = '\0';
 #endif
       if(DecodeTimeZone(&opt, &jlist(1, ka + 1))) {
         rlist(itfTimeZoneOffset) = opt.offset;
-      }
       }
     else {
       *irtc = itfmessage(9, "General::wrongtype",

@@ -101,7 +101,7 @@ c          write(*,*)irtc
       use tfstk
       use eexpr
       implicit none
-      type (sad_descriptor) kx,k1,k,ki
+      type (sad_descriptor) kx,k1,k,ki,tfecmplxl
       type (sad_dlist), pointer :: klx
       integer*4 isp1,irtc,i,iopc,narg
       real*8 v,v1,vx,vi
@@ -167,7 +167,7 @@ c          write(*,*)irtc
       use tfstk
       use eexpr
       implicit none
-      type (sad_descriptor) kx,k1,ki
+      type (sad_descriptor) kx,k1,ki,tfecmplxl
       integer*4 isp1,irtc,i,itfmessage
       if(isp1 .eq. isp)then
         irtc=itfmessage(9,'General::narg','"1 or more"')
@@ -200,7 +200,7 @@ c          write(*,*)irtc
       use tfstk
       use eexpr
       implicit none
-      type (sad_descriptor) kx,k1,ki
+      type (sad_descriptor) kx,k1,ki,tfecmplxl
       integer*4 isp1,irtc,i,itfmessage
       if(isp1 .eq. isp)then
         irtc=itfmessage(9,'General::narg','"1 or more"')
@@ -361,6 +361,9 @@ c          write(*,*)irtc
         return
       endif
       if(isp .eq. isp1+2)then
+c        call tfdebugprint(dtastk(isp1+1),'tfrelation',1)
+c        call tfdebugprint(dtastk(isp),'and',1)
+c        write(*,*)'with: ',iopc
         if(tfnumberq(dtastk(isp1+1)) .and.
      $       tfnumberq(dtastk(isp)))then
           call tfcmplx(dtastk(isp1+1),dtastk(isp),kx,iopc,irtc)

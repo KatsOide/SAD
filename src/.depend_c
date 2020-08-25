@@ -46,6 +46,8 @@ sim/fortran_math_atanh_.o: sim/fortran_math_atanh_.c sim/sad_f2c.h
 sim/fortran_math_hypot_.o: sim/fortran_math_hypot_.c sim/sad_f2c.h
 sim/fseek_Dummy_.o: sim/fseek_Dummy_.c sim/sad_f2c.h
 sim/fseek_subroutine_.o: sim/fseek_subroutine_.c sim/sad_f2c.h
+sim/mapallocfile.o: sim/mapallocfile.c
+sim/maprwfile.o: sim/maprwfile.c
 sim/sad_api.o: sim/sad_api.c sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
 sim/sad_functbl.o: sim/sad_functbl.c sim/TFSTK.h sim/dynl.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
 sim/sad_signal.o: sim/sad_signal.c sim/sad_f2c.h sim/sad_signal.h

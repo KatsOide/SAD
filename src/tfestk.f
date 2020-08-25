@@ -8,10 +8,10 @@
       integer*8 ktfcode(0:ntfarg)
       character*4, save :: opcode(0:mtfnopc) =(/
      $     '    ','    ','    ','+   ','-   ',
-     $     '*   ','/   ','    ','^   ','==  ',
+     $     '*   ','/   ','    ','^   ','>   ',
 
-     $     '<>  ','>   ','<   ','>=  ','<=  ',
-     $     '=== ','<=> ','~   ','&&  ','||  ',
+     $     '>=  ','<=  ','<   ','==  ','<>  ',
+     $     '&&  ','||  ','~   ','=== ','<=> ',
 
      $     '//  ','[   ',']   ','{   ','}   ',
      $     ':=  ','=   ','    ','(   ',')   ',
@@ -42,7 +42,7 @@
 
      $     .false.,.true. ,.false.,.false.,.false.,
      $     .false.,.false. ,.false.,.false.,.false.,
-c Alternatives is temporarily set .false. due to possible reducution.
+c Alternatives is temporarily set .false. due to possible reduction.
 
      $     .true. ,.true. ,.false.,.false.,.false.,
      $     .false.,.false.,.false.,.false.,.false.,
@@ -84,15 +84,15 @@ c Alternatives is temporarily set .false. due to possible reducution.
       integer*4 :: iprior(0:mtfnopc) = (/
      $     9999,
      $     10,  20,  50,  50,  40,  40,  15,  15,  100, 100,
-     $     100, 100, 100, 100, 120, 120, 150, 160, 170, 80,
+     $     100, 100, 100, 100, 160, 170, 150, 120, 120, 80,
      $     6,   3000,9999,3000,250, 250, 7000,9999,8000,9000,
      $     1000,220, 180, 190, 190, 200, 200, 250, 250, 900,
      $     4,   3,   3,   3,   10,  175, 9,   9,   9,   172,
      $     172, 130, 210, 210, 210, 210, 7,   7,   6,   5,
      $     2,   240, 9999,9999,1,   9999/)
 c          null
-c          m    i    +    -    *    /    v    ^    ==   <>
-c          >    <    >=   <=   ===  <=>  ~    &&   ||   //
+c          m    i    +    -    *    /    v    ^    >    >=
+c          <=   <    ==   <>   &&   ||   ~    ===  <=>  //
 c          [    ]    {    }    :=   =    C    (    )    ,
 c          ;    &    :    ->   :>   /.   //.  ^=   ^:=  =.
 c          ?    flg  #    ##   .    |    /@   //@  @@   ..
@@ -145,9 +145,14 @@ c          msgn /:   (*   *)   Hold z
       integer*4 ,intent(out):: irtc
       integer*4 iop,iop1,isp1,i,itgetfpe,itfmessage
       logical*4 ,intent(in):: lastfirst(0:mtfnopc)
+      logical*4 ineq
+      ineq(iop1)=iop1 .ge. mtfgreater .and. iop1 .le. mtfunequal .or.
+     $     iop1 .eq. mtfsame .or. iop1 .eq. mtfunsame
       irtc=0
       do while(isp .gt. isp0)
         iop=itastk2(1,isp)
+c        call tfdebugprint(dtastk(isp),'estk',1)
+c        write(*,*)'with ',isp,isp0,iop
         if(iop .eq. mtfnull .or.
      $       iop .eq. mtfleftparen .or. iop .eq. mtflist)then
           return
@@ -240,9 +245,9 @@ c          msgn /:   (*   *)   Hold z
         elseif(iop1 .eq. mtfleftbra .or. iop1 .eq. mtfpart)then
           return
         endif
-        if(iop1 .ge. mtfequal .and. iop1 .le. mtfunsame)then
+        if(ineq(iop1))then
           call tfeinequal(dtastk(isp1),dtastk(isp),kx,iop1,
-     $         iop .ge. mtfequal .and. iop .le. mtfunsame)
+     $         ineq(iop))
         else
           if(iop1 .eq. mtfneg)then
             iop1=mtftimes
@@ -271,6 +276,8 @@ c          msgn /:   (*   *)   Hold z
  1010   isp=isp1
         itastk2(1,isp)=iop
         dtastk(isp)=kx
+c        call tfdebugprint(kx,'tfestk-enddo',1)
+c        write(*,*)'isp, iop: ',isp,iop
       enddo
       return
  9010 irtc=itfmessage(9999,'General::mismatch',
@@ -293,6 +300,9 @@ c          msgn /:   (*   *)   Hold z
       integer*4 i,m1,m2,irtc
       logical*4 ,intent(in):: nextrel
       logical*4 tfconstlistqo
+c      call tfdebugprint(k1,'einequal',1)
+c      call tfdebugprint(k2,'and',1)
+c      write(*,*)'with ',iop1,nextrel
       if(tfinequalityq(k1))then
         call loc_sad(ktfaddrd(k1),kl1)
         m1=kl1%nl
@@ -348,6 +358,7 @@ c          msgn /:   (*   *)   Hold z
           call tfleval(klx,kx%k,.true.,irtc)
         endif
       endif
+c      call tfdebugprint(kx,'resulting:',1)
       return
       end
 
@@ -357,35 +368,49 @@ c          msgn /:   (*   *)   Hold z
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
-      type (sad_descriptor) tfeval1
+      type (sad_descriptor) tfeval1,kxi
       integer*8 ka
-      integer*4 i,narg,itfmessage
+      integer*4 i,narg,itfmessage,iop1
+      logical*4 ineq
+      ineq(iop1)=iop1 .ge. mtfgreater .and. iop1 .le. mtfunequal .or.
+     $     iop1 .eq. mtfsame .or. iop1 .eq. mtfunsame
       narg=isp-isp1
       if(narg .lt. 3 .or. narg .ne. (narg/2)*2+1)then
         irtc=itfmessage(9,'General::narg','"3 or more"')
         return
       endif
+      kx%k=ktftrue
       do i=isp1+1,isp,2
         call tfeevalref(dtastk(i),dtastk(i),irtc)
         if(irtc .ne. 0)then
           return
         endif
         if(i .gt. isp1+1)then
-          if(ktfnonoperq(dtastk(i-1),ka) .or.
-     $         ka .lt. mtfequal .or. ka .gt. mtfunsame)then
+          if(ktfoperq(dtastk(i-1)) .and.
+     $         ineq(int(ktfaddr(ktastk(i-1)))))then
+            ka=ktfaddr(ktastk(i-1))
+          else
+c$$$            call tfdebugprint(dtastk(i-1),'ineq',1)
+c$$$            write(*,*)ka,mtfunsame,.not. ineq(int(ka)),
+c$$$     $           ktfnonoperq(dtastk(i-1))
             irtc=itfmessage(9,'General::wrongtype',
      $           '"==, <>, <, >, <=, >=, ===, <=>"')
             return
           endif
-          kx=tfeval1(dtastk(i-2),dtastk(i),int(ka),irtc)
+          kxi=tfeval1(dtastk(i-2),dtastk(i),int(ka),irtc)
           if(irtc .ne. 0)then
             return
           endif
-          if(kx%k .eq. 0)then
+          if(kxi%k .eq. 0)then
+            kx=kxi
             return
-          elseif(ktfnonrealq(kx))then
-            irtc=-1
-            return
+          elseif(ktfnonrealq(kxi))then
+            kx=tfeval1(kx,kxi,mtfand,irtc)
+c            call tfdebugprint(kxi,'eineq-kxi',1)
+c            call tfdebugprint(kx,'eineq-kx',1)
+            if(irtc .ne. 0)then
+              return
+            endif
           endif
         endif
       enddo
@@ -1050,7 +1075,6 @@ c          call tfdebugprint(kx,'==>',1)
       integer*4 irtc,istop,l,itfdownlevel
       character*(*) ,intent(in):: string
       levele=levele+1
-c      write(*,*)'tfevalc ',len(string),ls,'''',string(1:5),''''
       call tfeval(string,1,istop,kx,.false.,irtc)
       if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
         call tfreseterror

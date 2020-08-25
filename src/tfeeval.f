@@ -78,9 +78,10 @@
       integer*4 maxlevel
       parameter (maxlevel=2**12)
       integer*8 ks,iaat,kaf
-      integer*4 irtc,ns
-      integer*4 isp1,isp10,isp11,level,itfgetrecl,
-     $     j,isp0,mf,i1,level1,i,itfmessage,lpw,l,itfdownlevel
+      integer*4 irtc,ns,iaf,isp10,isp11,j
+      integer*4 isp1,level,itfgetrecl,
+     $     isp0,mf,i1,level1,i,itfmessage,lpw,l,itfdownlevel
+      real*8 v
       logical*4 ref,ev,evalh,rep,stk,tfconstlistqo,tfgetseqstk,av
       data level/0/
       level=level+1
@@ -99,6 +100,7 @@
       select case(kf%k-kaf)
       case (ktfoper)
         call c_f_pointer(c_loc(klist(klist(ifunbase+kaf)-9)),fun)
+        iaf=-fun%id
         if(fun%narg .lt. 0)then
           go to 100
         endif
@@ -139,6 +141,7 @@
           iaat=klist(ifunbase+kaf)+1
           mf=fun%narg
           if(mf .lt. 0)then
+            iaf=-fun%id
             evalh=.true.
             exit
           endif
@@ -178,25 +181,7 @@
 
  100  isp=isp0+1
       isp1=isp
-      select case(kaf)
-c      go to (
-c     $     1000,
-c     $     1900,1900,1900,1900,1900,1900,1900,1900,1900,1900,
-c     $     1900,1900,1900,1900,1900,1900,1900,1100,1110,1900,
-c     $     1900,1900,1000,1900,1900,1200,1900,1900,1900,1900,
-c     $     1300,1010,1900,1000,1900,1900,1900,1900,1900,1900,
-c     $     1010,1900,1400,1400,1900,1900,1900,1900,1900,1000,
-c     $     1000,1900,1900,1900,1900,1900,1900,1900,1500,1900,
-c     $     1900,1010,1900,1900,1010,1900),
-c     $     kaf+1
-c          null
-c          m    i    +    -    *    /    v    ^    e    n    
-c          >    <    g    l    E    N    ~    &&    o    c
-c          [    ]    {    }    s    =    C    (    )    ,
-c          ;    &    :    r    d    RepA RepR u    U    S    
-c          ?    f    #    ##   .    |    M    MA   A    rept 
-c          repn ineq AT   SF   TB   DB   Inc  Dec  Part @
-c          msgn TagS (*   *)   Hold z
+      select case(iaf)
       case(mtfnull,mtflist,mtfrule,mtfrepeated,mtfrepeatednull)
         if(stk)then
           ev=.true.
@@ -207,7 +192,7 @@ c          msgn TagS (*   *)   Hold z
             kls1=>tfduplist(kls)
             kls=>kls1
           endif
-          kls%head%k=ktfoper+kaf
+          kls%head%k=ktfoper+iaf
 c          call tfloadlstk(lista,lista)
 c          lista%head=ktfoper+kaf
 c          call tfstk2l(lista,lista)
@@ -236,6 +221,64 @@ c          call tfstk2l(lista,lista)
         endif
         levele=levele+1
         go to 6000
+      case (mtfand)
+        do i=1,ns
+          isp10=isp
+          call tfseqevalstk(kls%dbody(1),ns,i,av,irtc)
+          if(irtc .ne. 0)then
+            go to 8000
+          endif
+          isp11=isp
+          isp=isp10
+          do j=isp10+1,isp11
+            if(ktfrealq(ktastk(j),v))then
+              if(v==0.d0)then
+                kx%k=0
+                go to 8000
+              endif
+            else
+              isp=isp+1
+              ktastk(isp)=ktastk(j)
+            endif
+          enddo
+        enddo
+        if(isp .eq. isp1)then
+          kx%k=ktftrue
+        elseif(isp .eq. isp1+1)then
+          kx=dtastk(isp)
+        else
+          levele=levele+1
+          go to 6000
+        endif
+      case (mtfor)
+        do i=1,ns
+          isp10=isp
+          call tfseqevalstk(kls%dbody(1),ns,i,av,irtc)
+          if(irtc .ne. 0)then
+            go to 8000
+          endif
+          isp11=isp
+          isp=isp10
+          do j=isp10+1,isp11
+            if(ktfrealq(ktastk(j),v))then
+              if(v/=0.d0)then
+                kx%k=ktftrue
+                go to 8000
+              endif
+            else
+              isp=isp+1
+              ktastk(isp)=ktastk(j)
+            endif
+          enddo
+        enddo
+        if(isp .eq. isp1)then
+          kx%k=ktffalse
+        elseif(isp .eq. isp1+1)then
+          kx=dtastk(isp)
+        else
+          levele=levele+1
+          go to 6000
+        endif
       case (mtfpart)
         if(ref .or. ns .eq. 0)then
           ev=.true.
@@ -252,7 +295,7 @@ c          call tfstk2l(lista,lista)
           go to 6000
         endif
       case (mtfslot,mtfslotseq)
-        call tfslot(kaf,kls,kx,ref,irtc)
+        call tfslot(iaf,kls,kx,ref,irtc)
       case (mtfcomp)
         if(ns .eq. 0)then
           kx%k=ktfoper+mtfnull
@@ -304,64 +347,6 @@ c          call tfstk2l(lista,lista)
           endif
           i1=i1+1
         enddo
-      case (mtfand)
-        do i=1,ns
-          isp10=isp
-          call tfseqevalstk(kls%dbody(1),ns,i,av,irtc)
-          if(irtc .ne. 0)then
-            go to 8000
-          endif
-          isp11=isp
-          isp=isp10
-          do j=isp10+1,isp11
-            if(ktfrealq(ktastk(j)))then
-              if(ktastk(j) .eq. 0)then
-                kx%k=0
-                go to 8000
-              endif
-            else
-              isp=isp+1
-              ktastk(isp)=ktastk(j)
-            endif
-          enddo
-        enddo
-        if(isp .eq. isp1)then
-          kx%k=ktftrue
-        elseif(isp .eq. isp1+1)then
-          kx=dtastk(isp)
-        else
-          levele=levele+1
-          go to 6000
-        endif
-      case (mtfor)
-        do i=1,ns
-          isp10=isp
-          call tfseqevalstk(kls%dbody(1),ns,i,av,irtc)
-          if(irtc .ne. 0)then
-            go to 8000
-          endif
-          isp11=isp
-          isp=isp10
-          do j=isp10+1,isp11
-            if(ktfrealq(ktastk(j)))then
-              if(ktastk(j) .ne. 0)then
-                kx%k=ktftrue
-                go to 8000
-              endif
-            else
-              isp=isp+1
-              ktastk(isp)=ktastk(j)
-            endif
-          enddo
-        enddo
-        if(isp .eq. isp1)then
-          kx%k=0
-        elseif(isp .eq. isp1+1)then
-          kx=dtastk(isp)
-        else
-          levele=levele+1
-          go to 6000
-        endif
       case (mtffun,mtfpattest,mtftagset,mtfhold)
         rep=tfgetseqstk(ks,ns)
         if(rep .or. stk .or. evalh)then
@@ -370,7 +355,7 @@ c          call tfstk2l(lista,lista)
         endif
         kx%k=ktflist+ks
       case default
-        write(*,*)'tfleval-implementation error: ',kaf
+        write(*,*)'tfleval-implementation error: ',kaf,iaf
         call abort
       end select
       go to 8000
@@ -1022,7 +1007,7 @@ c                endif
       return
       end
 
-      subroutine tfslot(kopc,kls,kx,ref,irtc)
+      subroutine tfslot(iopc,kls,kx,ref,irtc)
       use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
@@ -1030,7 +1015,8 @@ c                endif
       type (sad_dlist) ,intent(in):: kls
       type (sad_symbol), pointer :: sym
       type (sad_namtbl), pointer :: nam
-      integer*8 kaa,kopc
+      integer*8 kaa
+      integer*4 ,intent(in):: iopc
       integer*4 ,intent(out):: irtc
       integer*4 ind,nc,isp1,isps,
      $     itfmessage,ns,ipf0,naf0,ls,isp2,itfmessagestr
@@ -1056,7 +1042,7 @@ c                endif
             return
           endif
         elseif(ktfrealq(ka,ind))then
-        elseif(ktfsymbolq(ka,sym) .and. kopc .eq. mtfslot)then
+        elseif(ktfsymbolq(ka,sym) .and. iopc .eq. mtfslot)then
           call sym_namtbl(sym,nam)
           nc=nam%str%nch+1
           name(2:nc)=nam%str%str(1:nc-1)
@@ -1079,7 +1065,7 @@ c                endif
         endif
       endif
       isps=ipurefp+ind
-      if(kopc .eq. mtfslot)then
+      if(iopc .eq. mtfslot)then
         if(ipurefp .eq. 0 .or. ind .le. 0 .or. ind .gt. napuref)then
           call strfromil(ind,inds,ls)
           irtc=itfmessagestr(999,'General::slot',
@@ -1128,8 +1114,6 @@ c      call tfdebugprint(kx,'puref',1)
       kae=ktfaddr(ke)
       kte=ke%k-kae
       if(kte .ne. ktfref)then
-c        call tfdebugprint(ke,'pateval',1)
-c        write(*,*)'at ',kae
         call tfeevalref(ke,ke,irtc)
         if(irtc .ne. 0)then
           return

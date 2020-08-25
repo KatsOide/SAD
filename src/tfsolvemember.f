@@ -44,7 +44,7 @@
         endif
         return
       elseif(list%head%k .eq. ktfoper+mtfslot)then
-        call tfslot(int8(mtfslot),list,kx,.false.,irtc)
+        call tfslot(mtfslot,list,kx,.false.,irtc)
         if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
           call tfreseterror
           irtc=-1
