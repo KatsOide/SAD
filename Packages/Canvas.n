@@ -1177,7 +1177,7 @@ CanvasGraphics=Class[{},
       ftrx=MatchQ[ftr,True|Ticks|Both|{Ticks,___}];
       If[ftrx && ~ftlx,
         Do[
-          If[WindowList[[i]]===WindowList[[n]],
+          If[TickListY[[i]]<=>{} && WindowList[[i]]===WindowList[[n]],
             pw=i;
             Break[]],
           {i,n-1}]];

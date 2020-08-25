@@ -514,7 +514,7 @@ c     $          cmp%value(p_VNOMINAL_CAVI)
          endif
 
        case (icMAP)
-         call temap(np,np0,x,px,y,py,z,g,dv,l,n,kptbl)
+         call temap(np,np0,x,px,y,py,z,g,dv,sx,sy,sz,l,n,kptbl)
          go to 1010
 
        case (icINS)

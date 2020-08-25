@@ -3,7 +3,6 @@
       use tsolz
       use kradlib, only:bsi
       use mathfun
-      use tmacro, only:l_track
       implicit none
       type (tzparam) tz
       integer*4 ,intent(in):: np,ibsi

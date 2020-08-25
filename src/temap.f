@@ -1,24 +1,27 @@
-      subroutine temap(np,np0,x,px,y,py,z,g,dv,l,nt,kptbl)
+      subroutine temap(np,np0,x,px,y,py,z,g,dv,sx,sy,sz,l,nt,kptbl)
       use tfstk
       use efun
       use temw, only:tmulbs
+      use ffs_flag, only:calpol
+      use mathfun
       implicit none
       type alist
         type (sad_rlist), pointer :: p
       end type
-      type (alist), dimension(7) :: kav
+      type (alist) kav(9)
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: klx,kl
       type (sad_rlist), pointer :: klrk
       integer, parameter :: nkptbl = 6
-      integer*4 l,nt,np,np0,kptbl(np0,nkptbl),itfdownlevel
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
+      integer*4 ,intent(in):: np0,l,nt
+      integer*4 ,intent(inout):: kptbl(np0,nkptbl),np
+      integer*4 itfdownlevel,i,j,k,isp0,irtc,m,kptmp(nkptbl),nc
+      real*8 ,intent(inout):: x(np0),px(np0),y(np0),py(np0),
+     $     z(np0),g(np0),dv(np0),sx(np0),sy(np0),sz(np0)
       character*2 ord
-      real*8 xa(7), pr
-      integer*4 i,j,k,isp0,irtc,m
+      real*8 xa(9),pr,sr,phir
       integer*8,save:: iem=0,ifv
       logical*4 dodrop,doinject
-      integer*4 kptmp(nkptbl)
       if(itfcontext .le. 0)then
         return
       endif
@@ -26,6 +29,7 @@
         iem=ktfsymbolz('ExternalMap',11)
         ifv=ktsalocb(0,'TRACK',5)
       endif
+      nc=merge(9,7,calpol)
       call tclrfpe
       levele=levele+1
       isp0=isp
@@ -38,20 +42,16 @@
       isp=isp+1
       rtastk(isp)=nt
       isp=isp+1
-      dtastk(isp)=kxadaloc(-1,7,kl)
-      do k=1,7
+      dtastk(isp)=kxadaloc(-1,nc,kl)
+      do k=1,nc
         kl%dbody(k)=kxavaloc(0,np0,kav(k)%p)
       enddo
       do i=1,np0
         j=kptbl(i,1)
         if((j .gt. np) .or. (kptbl(j,4) .ne. 0))then
-          kav(1)%p%rbody(i)=0.d0
-          kav(2)%p%rbody(i)=0.d0
-          kav(3)%p%rbody(i)=0.d0
-          kav(4)%p%rbody(i)=0.d0
-          kav(5)%p%rbody(i)=0.d0
-          kav(6)%p%rbody(i)=0.d0
-          kav(7)%p%rbody(i)=0.d0
+          do concurrent (k=1:nc)
+            kav(k)%p%rbody(i)=0.d0
+          enddo
         else
           pr=g(j)
           kav(1)%p%rbody(i)=x(j)
@@ -60,7 +60,11 @@
           kav(4)%p%rbody(i)=py(j)*(1.d0+pr)
           kav(5)%p%rbody(i)=z(j)
           kav(6)%p%rbody(i)=pr
-          kav(7)%p%rbody(i)=1.d0
+          kav(nc)%p%rbody(i)=1.d0
+          if(calpol)then
+            kav(7)%p%rbody(i)=sy(j)
+            kav(8)%p%rbody(i)=atan(sz(j),sx(j))
+          endif            
         endif
       enddo
       kx=tfefunref(isp0+1,.false.,irtc)
@@ -76,7 +80,7 @@
       elseif(.not. tflistq(kx,klx) .or. klx%nl .ne. 7)then
         go to 9000
       endif
-      do k=1,7
+      do k=1,nc
         if(.not. tfreallistq(klx%dbody(k),klrk))then
           go to 9000
         endif
@@ -89,7 +93,7 @@
       doinject=.false.
       do i=1,np0
         j=kptbl(i,1)
-        if(kav(7)%p%rbody(i) .ne. 0.d0)then
+        if(kav(nc)%p%rbody(i) .ne. 0.d0)then
           if(.not. (j .le. np)) then
 c     Case: dropped before MAP element
             doinject=.true.
@@ -113,6 +117,13 @@ c     Copy-in ExternalMap[] result for alive/reinject case
           z (j)=xa(5)
           g (j)=xa(6)
           dv(j)=xa(7)
+          if(calpol)then
+            sy(j)=kav(7)%p%rbody(i)
+            sr=1.d0+sqrt1(-sy(j)**2)
+            phir=kav(8)%p%rbody(i)
+            sx(i)=sr*cos(phir)
+            sz(i)=sr*sin(phir)
+          endif
         elseif((j .le. np) .and. (kptbl(j,4) .eq. 0))then
 c     Lose particle slot[j] at current MAP element[l]
           dodrop=.true.
@@ -167,6 +178,20 @@ c     - Swap particle coordinates
               z (m)=xa(5)
               g (m)=xa(6)
               dv(m)=xa(7)
+
+              if(calpol)then
+                xa(1)=sx(i)
+                xa(2)=sy(i)
+                xa(3)=sz(i)
+                
+                sx(i)=sx(m)
+                sy(i)=sy(m)
+                sz(i)=sz(m)
+
+                sx(m)=xa(1)
+                sy(m)=xa(2)
+                sz(m)=xa(3)
+              endif
             endif
             m=m-1
           endif

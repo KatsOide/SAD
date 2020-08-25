@@ -79,7 +79,7 @@ rlist(shm+npz*6:shm+npz*6+np-1),rlist(shm+npz*7:shm+npz*7+np-1),&\n\
 rlist(shm+npz*8:shm+npz*8+np-1),&\n\
 nprm,rlist(shm0+npz*9+npr*nprm+2:shm0+npz*9+(npr+1)*nprm+1),nt,n);end;\n\
 subroutine emap1(np,x,px,y,py,z,dp,sy,sarg,flag,nprm,prm,nt,n);\n\
-implicit none;;integer,intent(in)::np,nprm,nt,n;\n\
+implicit none;integer,intent(in)::np,nprm,nt,n;\n\
 real(kind=8),intent(inout)::x(np),px(np),y(np),py(np),z(np),dp(np),&\n\
 sy(np),sarg(np),flag(np),prm(nprm);\n"];
 

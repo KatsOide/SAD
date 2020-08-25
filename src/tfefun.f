@@ -1520,22 +1520,22 @@ c        go to 6001
           kx=tfset(isp1,.true.,irtc)
           go to 6900
         case (mtfplus,mtftimes)
- 6600     call tfplus(isp1,kx,iaf,irtc)
+          call tfplus(isp1,kx,iaf,irtc)
           go to 6900
         case (mtfrevpower)
- 6620     call tfrevpower(isp1,kx,irtc)
+          call tfrevpower(isp1,kx,irtc)
           go to 6900
         case (mtfpower)
- 6630     call tfpower(isp1,kx,irtc)
+          call tfpower(isp1,kx,irtc)
           go to 6900
         case (mtfgreater,mtfless,mtfgeq,mtfleq)
- 6680     call tfrelation(isp1,kx,iaf,irtc)
+          call tfrelation(isp1,kx,iaf,irtc)
           go to 6900
         case (mtfinequality)
- 6550     call tfinequality(isp1,kx,irtc)
+          call tfinequality(isp1,kx,irtc)
           go to 6900
         case (mtfpart)
- 6590     if(ktflistq(ktastk(isp1+1)))then
+          if(ktflistq(ktastk(isp1+1)))then
             kx=tfpart(isp1+1,.true.,irtc)
             if(irtc .eq. 0)then
               call tfeevalref(kx,kx,irtc)
@@ -1548,16 +1548,16 @@ c        go to 6001
           endif
           go to 6900
         case (mtfnot)
- 6610     call tfnot(isp1,kx,iaf,irtc)
+          call tfnot(isp1,kx,iaf,irtc)
           go to 6900
         case (mtfupset,mtfupsetdelayed)
- 6560     if(narg .ne. 2)then
+          if(narg .ne. 2)then
             go to 6812
           endif
           call tfupset(dtastk(isp1+1),dtastk(isp),i00,kx,irtc)
           go to 6900
         case (mtffun)
- 6002     if(isp .eq. isp1+2)then
+          if(isp .eq. isp1+2)then
             if(ktastk(isp) .eq. ktfoper+mtfnull)then
               kx=kxpfaloc(dtastk(isp-1))
               irtc=0
@@ -1565,11 +1565,11 @@ c        go to 6001
             endif
           endif
         case (mtfalt,mtfand,mtfor)
- 6090     if(narg .lt. 2 .and. iaf .eq. mtfalt)then
+          if(narg .lt. 2 .and. iaf .eq. mtfalt)then
             irtc=-1
             go to 6900
           endif
- 6100     if(narg .eq. 2)then
+          if(narg .eq. 2)then
             kx=tfeval1(dtastk(isp1+1),dtastk(isp),iaf,irtc)
             go to 6900
           endif
@@ -1592,7 +1592,7 @@ c        go to 6001
           enddo
           return
         case (mtfdot)
- 6200     if(narg .eq. 2)then
+          if(narg .eq. 2)then
             kx=tfeval1(dtastk(isp1+1),dtastk(isp),iaf,irtc)
             go to 6900
           endif
@@ -1614,25 +1614,25 @@ c        go to 6001
           enddo
           return
         case (mtfconcat)
- 6510     call tfstringjoin(isp1,kx,irtc)
+          call tfstringjoin(isp1,kx,irtc)
           go to 6900
         case (mtfmap)
- 6520     kx=tfmap(isp1,3,1,irtc)
+          kx=tfmap(isp1,3,1,irtc)
           go to 6900
         case (mtfmapall)
- 6530     call tfmapall(isp1,kx,irtc)
+          call tfmapall(isp1,kx,irtc)
           go to 6900
         case (mtfapply)
- 6540     call tfapply(isp1,kx,irtc)
+          call tfapply(isp1,kx,irtc)
           go to 6900
         case (mtfaddto,mtfsubtractfrom,mtftimesby,mtfdivideby)
- 6570     if(narg .ne. 2)then
+          if(narg .ne. 2)then
             go to 6812
           endif
           kx=tfeval1to(dtastk(isp1+1),dtastk(isp),iaf,.false.,irtc)
           go to 6900
         case (mtfincrement,mtfdecrement)
- 6580     v1=merge(1.d0,-1.d0,iaf .eq. mtfincrement)
+          v1=merge(1.d0,-1.d0,iaf .eq. mtfincrement)
           if(narg .eq. 1)then
             kx=tfeval1to(dtastk(isp1+1),dfromr(v1),mtfaddto,.true.,irtc)
           elseif(narg .eq. 2 .and.
@@ -1643,25 +1643,25 @@ c        go to 6001
           endif
           go to 6900
         case (mtfsetdelayed)
- 6640     if(narg .ne. 2)then
+          if(narg .ne. 2)then
             go to 6812
           endif
- 6650     kx=tfset(isp1,.true.,irtc)
+          kx=tfset(isp1,.true.,irtc)
           go to 6900
         case (mtfreplace)
- 6660     call tfreplace1(isp1,kx,irtc)
+          call tfreplace1(isp1,kx,irtc)
           go to 6900
         case (mtfreplacerepeated)
- 6670     call tfreplacerepeated1(isp1,kx,irtc)
+          call tfreplacerepeated1(isp1,kx,irtc)
           go to 6900
         case (mtfequal,mtfunequal)
- 6690     call tfequal(isp1,kx,iaf,irtc)
+          call tfequal(isp1,kx,iaf,irtc)
           go to 6900
         case (mtfsame,mtfunsame)
- 6700     call tfsameq1(isp1,kx,iaf,irtc)
+          call tfsameq1(isp1,kx,iaf,irtc)
           go to 6900
         case (mtfunset)
- 6710     if(narg .ne. 1)then
+          if(narg .ne. 1)then
             go to 6810
           endif
           isp=isp1+2
@@ -1671,18 +1671,18 @@ c        go to 6001
           kx%k=ktfoper+mtfnull
           go to 6900
         case (mtfatt)
- 6720     call tfatt(isp1,kx,.true.,irtc)
+          call tfatt(isp1,kx,.true.,irtc)
           go to 6900
         case (mtfmessagename)
- 6730     km=klist(ifunbase+mtfmessagename)
+          km=klist(ifunbase+mtfmessagename)
           call tfdeval(isp1,km,kx,1,.false.,euv,irtc)
           go to 6900
         case (mtfflag)
 c          write(*,*)'tfefun-mtfflag'
- 6740     call tfflagordef(isp1,kx,irtc)
+          call tfflagordef(isp1,kx,irtc)
           go to 6900
         case (mtfcomplex)
- 6750     if(narg .ne. 2)then
+          if(narg .ne. 2)then
             go to 6812
           endif
           kx=tfeval1(dtastk(isp1+1),dtastk(isp),mtfcomplex,irtc)
@@ -1691,7 +1691,7 @@ c          write(*,*)'tfefun-mtfflag'
           if(iaf .le. mtfend)then
             go to 7000
           endif
- 6001     irtc=itfmessage(999,'General::invop',' ')
+          irtc=itfmessage(999,'General::invop',' ')
           return
         end select
       elseif(ktfsymbolqdef(k1%k,symd))then

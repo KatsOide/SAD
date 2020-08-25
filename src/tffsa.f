@@ -294,10 +294,10 @@ c
       if(exist)then
         go to 10
       endif
-      call tftrak(word,trdtbl,trval,lfno,exist)
-      if(exist)then
-        go to 10
-      endif
+c      call tftrak(word,trdtbl,trval,lfno,exist)
+c      if(exist)then
+c        go to 10
+c      endif
       call tfgetlineps(word,lenw(word),nl,kax,1,irtc)
       if(irtc .eq. 0)then
         if(nl .gt. 0)then

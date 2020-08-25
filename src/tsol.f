@@ -990,7 +990,7 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
           endif
           bzs=bz1
         case(icMAP)
-          call temap(np,np0,x,px,y,py,z,g,dv,l,n,kptbl)
+          call temap(np,np0,x,px,y,py,z,g,dv,sx,sy,sz,l,n,kptbl)
         case(icAprt)
           call tapert1(x,px,y,py,z,g,dv,sx,sy,sz,
      1         kptbl,np,n)

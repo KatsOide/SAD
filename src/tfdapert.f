@@ -8,7 +8,9 @@
       type (sad_descriptor) :: kmode,kc,kx
       type (sad_dlist), pointer :: klc
       type (sad_rlist), pointer :: klar,klc1,klp,kml,klcx
-      integer*4 isp1,irtc,narg,i,lfno,n1,itfmessage,np00,iv(3)
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 narg,i,lfno,n1,itfmessage,np00,iv(3)
       real*8 range(3,3),damp,rgetgl1,phi(3),codsave(6),dampenough
       narg=isp-isp1
       if(narg .ne. 7)then
@@ -104,13 +106,12 @@
       use tfstk
       use ffs_pointer
       use ffs_flag
-      use tmacro
+      use tmacro,only:nturn
       use tparastat
       implicit none
       integer*4 ,intent(in):: n1,ivar1,ivar2,lfno
-      integer*4 itgetfpe
       real*8 ,intent(in)::trval,phi(3),range(3,3),r1(n1),damp,dampenough
-      integer*4 kzx(2,np0)
+      integer*4 itgetfpe
       logical*4 dapert0
 c      write(*,*)'tfda1 ',phix,phiy,phiz,ivar1,ivar2
       call tfsetparam
@@ -120,8 +121,8 @@ c      write(*,*)'tfda1 ',phix,phiy,phiz,ivar1,ivar2
 c      x(1:2)=range(1:2,1)
 c      y(1:2)=range(1:2,2)
 c      g(1:n1)=r1
-      call trackd(range,r1,n1,
-     1     kzx,trval,phi,damp,dampenough,ivar1,ivar2,lfno)
+      call trackd(range,r1,n1,nturn,
+     1     trval,phi,damp,dampenough,ivar1,ivar2,lfno)
       dapert=dapert0
       if(itgetfpe() .ne. 0)then
         write(*,*)'DynamicApertureSurvey-FPE ',itgetfpe()

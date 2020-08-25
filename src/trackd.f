@@ -1,27 +1,30 @@
 c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
-      subroutine trackd(range,r1,n1,kzx,
+      subroutine trackd(range,r1,n1,nturn,
      $     trval,phi,dampr,dampenough,ivar1,ivar2,lfno)
       use tfstk
       use ffs_flag
-      use tmacro
+      use tmacro,only:np0,codin,dvfs,omega0,taurdx,taurdy,taurdz,
+     $     nparallel
       use ffs_pointer, only:idelc
       use tftr
       use tfshare
+      use macmath
       use iso_c_binding
       implicit none
       integer*4 ,parameter ::n1p0=256,n2p=51,maxturn=2**29,
      $     maxpara=256,nw=16,nkptbl = 6, minnp=16
       real*8, parameter :: big=1.d300
+      character*15 ,parameter ::vname='`ResultOfDAPERT'
+      character ,parameter ::label(3)=['X','Y','Z']
+      integer*4 ,intent(in):: ivar1,ivar2,lfno,n1,nturn
       real*8 ,intent(in):: dampr,dampenough,range(3,3),r1(n1)
-      type (sad_descriptor) kv
+      type (sad_descriptor) kv,kxm
       type (sad_symdef),pointer::symd
       type (sad_dlist),pointer::kal,kal1,kal2,kal2i
       type (sad_rlist),pointer::kal11,kal12,kal13,kal2iv
-      integer*4 ,intent(out):: kzx(2,np0)
-      integer*4 ,intent(in):: ivar1,ivar2,lfno,n1
-      integer*4 ,pointer ::ntloss(:,:)
+      integer*4 ,pointer ::ntloss(:,:),kzx(:,:)
       integer*4 ,allocatable::kptbl(:,:),mturn(:)
-      integer*4 n1p,j,n,jzout,np1,k,np,kp,kz,kx,irw,nsc,iw,
+      integer*4 n1p,j,n,jzout,np1,k,np,kp,kx,kz,irw,nsc,iw,
      $     jj,ip,isw,kseed,npmax,npara,nxm(n1p0),np00,
      $     muls,irtc,i,fork_worker,waitpid,ncons,nscore,ivar3
       integer*8 intlm
@@ -30,10 +33,8 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       real*8 a2min,a2max,a3min,a3max,a1min,a1max,a2step,a3step,a1step,
      $     emx,emz,rgetgl1,cx,cy,cz,sx,sy,sz,dampx,dampy,dampz,t0
       real*8 trval,phi(3),a1i(n1p0)
-      character*15 ,parameter ::vname='`ResultOfDAPERT'
       character*12 autos
       logical*4 damp,ini,remain,pol0
-      character ,parameter ::label(3)=['X','Y','Z']
       character rad62a
 c     begin initialize for preventing compiler warning
       ipr=0
@@ -41,7 +42,7 @@ c     end   initialize for preventing compiler warning
       damp=dampr .ne. 0.d0
 c      write(*,*)'trackd ',damp
       if(damp)then
-        t0=pi2/omega0
+        t0=m_2_pi/omega0
         dampx=exp(-t0/taurdx)
         dampy=exp(-t0/taurdy)
         dampz=exp(-t0/taurdz)
@@ -59,6 +60,7 @@ c      write(*,*)'trackd0 ',damp,dampx,t0,omega0,taurdx
       trval=0.d0
       nscore=0
       muls=merge((nturn/6200+1)*100,10,nturn .gt. 600)
+c      write(*,*)'trackd-muls: ',nturn,muls,nturn/6200
       a2min=range(1,1)
       a2max=range(2,1)
       a3min=range(1,2)
@@ -140,7 +142,7 @@ c      write(*,*)'trackd-npara ',npara,np0
           endif
           npr=npr+1
           ipr(npr)=iprid
-c          write(*,*)'trackd-ipr ',npara,npr,iprid
+c          write(*,*)'trackd-ipr ',npara,npr,iprid,muls
         enddo
         npr=npr+1
         npri=npr
@@ -167,15 +169,22 @@ c          write(*,*)'trackd-ipr ',npara,npr,iprid
       allocate (aenoy(npz))
       allocate (aenoz(npz))
       call tfevals('`ExtMap$@InitMap['//autos(dble(npz))//',1]',
-     $     kx,irtc)
+     $     kxm,irtc)
       allocate(kptbl(npmax,6))
       allocate(mturn(npmax))
+      allocate(kzx(2,npmax))
+c      if(muls .ne. 10)then
+c        write(*,*)'trackd-5 ',npri,muls
+c      endif
       do i=1,npmax
         kptbl(i,1)=i
         kptbl(i,2)=i
       enddo
       kzx(1,1:npmax)=0
       kzx(2,1:npmax)=0
+c      if(muls .ne. 10)then
+c        write(*,*)'trackd-6 ',npri,muls
+c      endif
       n=1
       jzout=1
  1    np1=npmax
@@ -296,6 +305,9 @@ c     - Overwrite slot[np1] to slot[ip](Drop particle[k] information)
 c      write(*,'(a,2i5,14(i5,1pg12.5))')
 c     $     'trackd-tturn-1 ',n,np,(kptbl(i,1),y(i),i=1,14)
       call tturn(np,x,px,y,py,z,g,dv,spx,spy,spz,kptbl,n)
+c      if(muls .ne. 10)then
+c        write(*,*)'trackd-tturn ',npri,muls
+c      endif
 c      write(*,'(a,2i5,14(i5,1pg12.5))')
 c     $     'trackd-tturn-2 ',n,np,(kptbl(i,1),y(i),i=1,14)
       if(damp .or. dampenough .ne. 0.d0)then
@@ -340,7 +352,7 @@ c          endif
       endif
       go to 101
  3000 continue
-      call tfevals('`ExtMap$@ResetMap[]',kx,irtc)
+      call tfevals('`ExtMap$@ResetMap[]',kxm,irtc)
       if(iprid .eq. 0)then
 c        write(*,*)'trackd-stop ',npr1
 c        stop
@@ -372,6 +384,8 @@ c            write(*,*)'trackd-wait-k ',k
         enddo
         nsc=n2p
  431    nscore=nscore+nsc
+c        write(*,*)'trackd: ',lfno,i,muls,
+c     $       rad62a(ntloss(i,1)/muls,1)
         write(lfno,'(1x,f8.2,i3,1x,51a1)')a1i(i),nsc,
      $       (rad62a(ntloss(i,jj)/muls,jj),jj=1,n2p)
         kal2%dbody(i)=kxadaloc(0,3,kal2i)
@@ -394,7 +408,7 @@ c      call tfevals('Print['//vname//']',kx,irtc)
 
       character function rad62a(m,j)
       implicit none
-      integer*4 m,j
+      integer*4 ,intent(in):: m,j
       character rad62
       if(m .eq. 0)then
         rad62a=' '

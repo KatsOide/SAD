@@ -10,13 +10,13 @@
 c      use tfcsi, only:ipoint,lrecl,lfni
       implicit none
       type (sad_descriptor) kx
-      integer*8 ikptbl,ig,ipz,ix,ixx,iy,iyy,iz,izz,ifz,imt,kzx,
+      integer*8 ikptbl,ig,ipz,ix,ixx,iy,iyy,iz,izz,ifz,
      $     latt,iparam,lscal
       integer*4 irtc,l,isp1,
      $     nts,itfdownlevel,naz,ltpara,IgetGL
       character*20 title
       logical*4, save :: trackinit=.false.
-      real*8 ol,trval,dt1,df,rgetgl1,dt0,phi(3)
+      real*8 ol,dt1,df,rgetgl1,dt0
       if(bypasstrack)then
         write(*,*)
      $       '??? FFS, EMIT, TRACK in GetMAIN are bypassed. ???'

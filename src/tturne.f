@@ -79,7 +79,7 @@ c     trf0=-(cod(5)+z0)*0.5d0
       use touschek_table
       use tfstk
       use tffitcode
-      use ffs, only: gettwiss,ffs_bound,ifsize
+      use ffs, only: gettwiss,ffs_bound
       use ffs_pointer
       use ffs_flag
       use tmacro
@@ -139,7 +139,7 @@ c      endif
       use touschek_table
       use tfstk
       use tffitcode
-      use ffs, only: gettwiss,ffs_bound,ifsize
+      use ffs, only: gettwiss,ffs_bound
       use ffs_pointer
       use ffs_flag
       use tmacro
@@ -156,7 +156,7 @@ c      endif
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 trans1(6,12),cod1(6),beam1(42)
       type (sad_descriptor) dsave(kwMAX)
-      real*8 r,xp,xb,xe,fr,fra,frb,tffselmoffset
+      real*8 xp,xb,xe,fr,fra,frb,tffselmoffset
       logical*4 ,intent(in):: plot,rt,optics
       logical*4 sol,chg,sol1,cp0,int0
       sol=.false.
@@ -353,7 +353,7 @@ c     below is incorrect for fra <> 0
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 bmir(6,6),bmi(21),bmh(21),trans1(6,6)
       real*8 psi1,psi2,apsi1,apsi2,alid,alid1,
-     $     r,dir,al,alib,dtheta,theta0,ftable(4),
+     $     dir,al,alib,dtheta,theta0,ftable(4),
      $     fb1,fb2,ak0,ak1,rtaper,als
       integer*4 ,intent(in):: idp,ibegin,iend
       integer*4 l,ld,lele,mfr,ke,irtc,i,l1

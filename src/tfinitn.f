@@ -13,7 +13,7 @@
       integer :: lpkg, lenv
       integer*8 ktfsymbolc,ktrvaloc,ktcontaloc,shm_map,
      $     iaxsys,loc,ktcvaloc,kax,k1,k2,i,kfromr,kshm
-      integer*4 lpw,lenw,ifromstr,iunit,irtc,shm_unlink
+      integer*4 lpw,lenw,ifromstr
       call tfinfinit
       kinfinity=kfromr(dinfinity)
       kminfinity=kfromr(-dinfinity)
