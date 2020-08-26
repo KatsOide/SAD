@@ -1207,15 +1207,16 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
           cmp%value(p_CR1_MULT)=dble(cr1)
           cmp%value(p_CR1I_MULT)=imag(cr1)
 
-          nmmax=0
-          do n=nmult,1,-1
+          nmmax=-1
+          do n=nmult,0,-1
             if(cmp%value(ky_K0_MULT+n*2) .ne. 0.d0
      $           .or. cmp%value(ky_SK0_MULT+n*2) .ne. 0.d0)then
               nmmax=n
               exit
             endif
           enddo
-          cmp%ivalue(2,p_NM_MULT)=nmmax
+          cmp%ivalue(2,p_NM_MULT)=merge(nmmax,max(nmmax,0),al .eq. 0.d0
+     $         .and. cmp%value(ky_VOLT_MULT) .eq. 0.d0)
           cr=cr1
           do n=0,nmmax
             ck=dcmplx(cmp%value(ky_K0_MULT+n*2),
@@ -3468,7 +3469,8 @@ c      endif
       nve=max(nv,nve0+128)
       ifnvev1=ktaloc(nve*lnvev)
       if(nve0 .ne. 0)then
-        klist(ifnvev1:ifnvev1+nve-1)=klist(ifnvev:ifnvev+nve-1)
+        klist(ifnvev1:ifnvev1+nve0*lnvev-1)=
+     $       klist(ifnvev:ifnvev+nve0*lnvev-1)
         call tfree(ifnvev)
       endif
       ifnvev=ifnvev1

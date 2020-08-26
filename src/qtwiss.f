@@ -114,7 +114,7 @@ c     end   initialize for preventing compiler warning
       ntfun=merge(ntwissfun,mfitdetr,orbitcal)
       do l=la+1,lb
 c        call tfmemcheckprint1('qtwiss',l,.false.)
-c        if(mod(l,1000) .eq. 0)then
+c        if(mod(l,1) .eq. 0)then
 c          write(*,*)'qtwiss1 ',l,la,lb
 c        endif
         l1=l-1

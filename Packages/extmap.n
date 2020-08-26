@@ -8,7 +8,8 @@ Begin[ExtMap`];
 
 ExtMap=Class[{},{map=0,npz=0,size=0,fd=0,fort,
   sadobjdir=GetEnv["SAD_ROOTPATH"]//"/obj/"//GetEnv["SAD_ARCH"]//"/",
-  sadmod={"sim/maprwfile.o"}},{LANG="Fortran",temp=Null,lopt="",Loadm},
+  sadmod={"sim/maprwfile.o"}},{LANG="Fortran",temp=Null,lopt="",Loadm,
+    Debug->False},
 
   Constructor[]:=(
     lopt=StringJoin@@((sadobjdir//#//" ")&/@sadmod);
@@ -29,7 +30,7 @@ ExtMap=Class[{},{map=0,npz=0,size=0,fd=0,fort,
         size=np*9+Length[prm]+2;
         {map,fd}=MapFile[temp,size*8]];
       {ipn,npr,pr}=MapParticles[map,x,prm];
-!      Print["CM$: ",{ipn,npr,pr}];
+      If[Debug,Print["CM$: ",{ipn,npr,pr}]];
       StandardForm[System[mod//" "//temp//" "//np//" "//nt//
         " "//n//" "//ipn//" "//npr]];
       UnmapParticles[map,np]]];
@@ -95,11 +96,11 @@ sy(np),sarg(np),flag(np),prm(nprm);\n"];
     npz=npz1;
     size=npz*9+128+3;
     {map,fd}=MapFile[temp,size];
-    Print["InitMap ",{temp,map,fd,npz,size}];
+    If[Debug,Print["InitMap ",{temp,map,fd,npz,size}]];
     {map,fd});
  
   ResetMap[]:=If[temp<=>Null,
-    Print["ResetMap ",{temp,npz,map,fd,size}];
+    If[Debug,Print["ResetMap ",{temp,npz,map,fd,size}]];
     System["rm -f "//temp];
     UnmapFile[map,size,fd];
     map=size=fd=0;

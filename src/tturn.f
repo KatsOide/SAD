@@ -746,6 +746,10 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
       if(tparacheck(icMULT,cmp))then
         call tpara(cmp)
       endif
+      if(cmp%ivalue(2,p_NM_MULT) .lt. 0)then
+c        write(*,*)'tmult-skip ',n
+        return
+      endif
       autophi=cmp%value(ky_APHI_MULT) .ne. 0.d0
       ph=cmp%value(ky_DPHI_MULT)
       if(autophi)then
