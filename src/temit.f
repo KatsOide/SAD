@@ -144,7 +144,7 @@ c      write(*,'(a,1p6g15.7)')'temit-etwiss-ent0 ',
 c     $     tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
       if(calcodr)then
         call tcod(trans,cod,beam,.false.,fndcod)
-        call limitnan(cod,-1.d10,1.d10)
+        call limitnan(cod,1.d10)
         if(.not. fndcod)then
           write(lfno,*)'???-Emittance[]-closed orbit not found.'
         endif
@@ -174,7 +174,7 @@ c          write(*,*)'temit-inical ',calint,intra,econv,postcal,plot
               trans(:,i)=gr*trans(:,i)
             enddo
           endif
-          call limitnan(cod,-1.d10,1.d10)
+          call limitnan(cod,1.d10)
           irad=12
           call tecalc(trans,cod,beam,beamn,beamp,
      $         emitn,emitp,btr,srot,srot1,

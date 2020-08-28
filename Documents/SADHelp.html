@@ -13,7 +13,7 @@ eqs img{
 <body>
 <center><h2>Welcome to SAD/FFS & SADScript
 </h2></center>
-<center> SAD/FFS SADScript Version: 1.1.8.6.1k64,      Updated: 07/18/2020</center>
+<center> SAD/FFS SADScript Version: 1.1.9k64,      Updated: 08/29/2020</center>
 
 <pre> Please use browser's search to find an item.
 
@@ -420,6 +420,7 @@ SAD/FFS Examples</h4></a>
             <a href=#Lkey-strings:Element>key-strings:Element</a>
          <a href=#LEmittance>Emittance</a>
          <a href=#LExternalMap>ExternalMap</a>
+            <a href=#LCompiledMap>CompiledMap</a>
          <a href=#LFFS>FFS</a>
          <a href=#LFFS$SHOW>FFS$SHOW</a>
          <a href=#LFitValue>FitValue</a>
@@ -1238,7 +1239,7 @@ angle at the entrance corresponds to a surface with dx/ds > 0.</pre>
  <a href=#LE1>E1</a> <a href=#LAE2>AE2</a> <a href=#LANGLE>ANGLE</a></pre>
 <li><h3><a name=LAE2>AE2</a></h3>
 <pre>The absolute face-angle at the exit to the bending angle. The effective face angle is E2 * ANGLE
-+ AE2, and a positive angle at the exit corresponds to a surface with dx/ds < 0.</pre>
++ AE2, and a positive angle at the exit corresponds to a surface with dx/ds &lt 0.</pre>
 <pre>See also:
  <a href=#LE2>E2</a> <a href=#LAE1>AE1</a> <a href=#LANGLE>ANGLE</a></pre>
 <li><h3><a name=LANGLE>ANGLE</a></h3>
@@ -1275,8 +1276,8 @@ example, a symmetrically-placed rectangular magnet has
  <a href=#LAE1>AE1</a> <a href=#LE2>E2</a> <a href=#LANGLE>ANGLE</a></pre>
 <li><h3><a name=LE2>E2</a></h3>
 <pre>The ratio of the face-angle at the exit to the bending angle. The effective face angle is E2 * ANGLE
-+ AE2, and a positive angle at the exit corresponds to a surface with dx/ds < 0. For example, a symmetrically-placed
-rectangular magnet has E1 = 0.5 and E2 = 0.5.</pre>
++ AE2, and a positive angle at the exit corresponds to a surface with dx/ds &lt 0. For example, a
+symmetrically-placed rectangular magnet has E1 = 0.5 and E2 = 0.5.</pre>
 <pre>See also:
  <a href=#LAE2>AE2</a> <a href=#LE1>E1</a> <a href=#LANGLE>ANGLE</a></pre>
 <li><h3><a name=LF1>F1</a></h3>
@@ -2087,7 +2088,7 @@ angle at the entrance corresponds to a surface with dx/ds > 0.</pre>
  <a href=#LE1>E1</a> <a href=#LAE2>AE2</a> <a href=#LANGLE>ANGLE</a></pre>
 <li><h3><a name=LAE2>AE2</a></h3>
 <pre>The absolute face-angle at the exit to the bending angle. The effective face angle is E2 * ANGLE
-+ AE2, and a positive angle at the exit corresponds to a surface with dx/ds < 0.</pre>
++ AE2, and a positive angle at the exit corresponds to a surface with dx/ds &lt 0.</pre>
 <pre>See also:
  <a href=#LE2>E2</a> <a href=#LAE1>AE1</a> <a href=#LANGLE>ANGLE</a></pre>
 <li><h3><a name=LANGLE>ANGLE</a></h3>
@@ -2136,8 +2137,8 @@ example, a symmetrically-placed rectangular magnet has
  <a href=#LAE1>AE1</a> <a href=#LE2>E2</a> <a href=#LANGLE>ANGLE</a></pre>
 <li><h3><a name=LE2>E2</a></h3>
 <pre>The ratio of the face-angle at the exit to the bending angle. The effective face angle is E2 * ANGLE
-+ AE2, and a positive angle at the exit corresponds to a surface with dx/ds < 0. For example, a symmetrically-placed
-rectangular magnet has E1 = 0.5 and E2 = 0.5.</pre>
++ AE2, and a positive angle at the exit corresponds to a surface with dx/ds &lt 0. For example, a
+symmetrically-placed rectangular magnet has E1 = 0.5 and E2 = 0.5.</pre>
 <pre>See also:
  <a href=#LAE2>AE2</a> <a href=#LE1>E1</a> <a href=#LANGLE>ANGLE</a></pre>
 <li><h3><a name=LF1>F1</a></h3>
@@ -2503,29 +2504,28 @@ of a.</pre>
 <li><h3><a name=LDot(.)>Dot(.)</a></h3>
 <pre>a . b returns the inner product of a and b.</pre>
 <li><h3><a name=LEqual(==)>Equal(==)</a></h3>
-<pre>a == b returns True(==1) if a and b have the same type and the same value. It returns False(==0)
-if a and b have the same type but the different values. Otherwise returns the expression a == b.</pre>
+<pre>a == b returns True(==1) if a and b are both Real with the same value or a String with same length
+and value. If one of a or b is a list, or both are lists with same size, returns a list of element-wise
+results.</pre>
 <li><h3><a name=LFunction(&)>Function(&)</a></h3>
 <pre> a & is a pure-function whose argument is specified #, #n, ##, ##n.</pre>
 <pre>See also:
  Slot(#) SlotSequence(##) <a href=#Lfunctions>functions</a> <a href=#LFunction(&)>Function(&)</a></pre>
 <li><h3><a name=LGreater(>)>Greater(>)</a></h3>
-<pre>
-If both a and b are real, a > b returns True if a is greater than b, False otherwise. It causes an
-error when a or b is not real.</pre>
+<pre>If both a and b are real, a > b returns True if a is greater than b, False otherwise. If one of a
+or b is a list, or both are lists with same size, returns a list of element-wise results.</pre>
 <li><h3><a name=LGreaterEqual(>= or =>)>GreaterEqual(>= or =>)</a></h3>
 <pre>If both a and b are real, a => b returns True if a is greater than or equal to b, False otherwise.
-It causes an error when a or b is not real.</pre>
+If one of a or b is a list, or both are lists with same size, returns a list of element-wise results.</pre>
 <li><h3><a name=LIncrement(++)>Increment(++)</a></h3>
 <pre>a++ increments a by 1, returning the old value of a. ++a increments a by 1, returning the new value
 of a.</pre>
 <li><h3><a name=LLess(<)>Less(<)</a></h3>
-<pre>
-If both a and b are real, a < b returns True if a is less than b, False otherwise. It causes an error
-when a or b is not real.</pre>
+<pre>If both a and b are real, a < b returns True if a is less than b, False otherwise. If one of a or
+b is a list, or both are lists with same size, returns a list of element-wise results.</pre>
 <li><h3><a name=LLessEqual(<= or =<)>LessEqual(<= or =<)</a></h3>
-<pre>If both a and b are real, a <= b returns True if a is less than or equal to b, False otherwise. It
-causes an error when a or b is not real.</pre>
+<pre>If both a and b are real, a <= b returns True if a is less than or equal to b, False otherwise. If
+one of a or b is a list, or both are lists with same size, returns a list of element-wise results.</pre>
 <li><h3><a name=LList({})>List({})</a></h3>
 <pre>{a,b,c...} is a list structure.</pre>
 <li><h3><a name=LMap (/@)>Map (/@)</a></h3>
@@ -2557,9 +2557,11 @@ index takes the entire range. For instance,
 <li><h3><a name=LPatternTest(?)>PatternTest(?)</a></h3>
 <pre>pattern?test matches to an object which matches pattern then test[object] gives True.</pre>
 <li><h3><a name=LPlus(+)>Plus(+)</a></h3>
-<pre>a + b returns the sum of a and b.</pre>
+<pre>a + b returns the sum of a and b. If one of a or b is a list, or both are lists with same size, returns
+a list of element-wise results.</pre>
 <li><h3><a name=LPower(^)>Power(^)</a></h3>
-<pre>a ^ b returns the power of a to b.</pre>
+<pre>a ^ b returns the power of a to b. If one of a or b is a list, or both are lists with same size,
+returns a list of element-wise results.</pre>
 <li><h3><a name=LRepeated(..)>Repeated(..)</a></h3>
 <pre>p.. matches sequence of one ore more expressions, each matching p.</pre>
 <li><h3><a name=LRepeatedNull(...)>RepeatedNull(...)</a></h3>
@@ -2599,12 +2601,14 @@ a is not a list.</pre>
 <pre>symb/:lhs = rhs sets rhs to lhs, associated with symbol symb. symb/:lhs := rhs sets rhs to lhs unevaluated,
 associated with symbol symb. symb/:lhs =. unsets lhs, associated with symbol symb.</pre>
 <li><h3><a name=LTimes(*)>Times(*)</a></h3>
-<pre>a * b returns the product of a and b.</pre>
+<pre>a * b returns the product of a and b. If one of a or b is a list, or both are lists with same size,
+returns a list of element-wise results.</pre>
 <li><h3><a name=LTimesBy(*=)>TimesBy(*=)</a></h3>
 <pre>a*=b is equivalent to a=a*b .</pre>
 <li><h3><a name=LUnequal(<>)>Unequal(<>)</a></h3>
-<pre>a <> b returns True(==1) if a and b have the same type but the different values. It returns False(==0)
-if a and b have the same type but the same value. Otherwise returns the expression a <> b.</pre>
+<pre>a <> b returns True(==1) if a and b are both Real with different values or a String with different
+length or values. If one of a or b is a list, or both are lists with same size, returns a list of
+element-wise results.</pre>
 <li><h3><a name=LUnsameQ(<=>)>UnsameQ(<=>)</a></h3>
 <pre>a <=> b returns True(==1) if a and b have the different types or different values. False(==0) otherwise.</pre>
 <li><h3><a name=LUnset(=.)>Unset(=.)</a></h3>
@@ -3604,8 +3608,7 @@ Usage: First define a MAP element at MAIN level:
 
      MAP    name=(L=leng);
 
-Right now L is the only keyword. Insert it at the location(s) 
-where you want to use it.
+Currently L is the only keyword. Insert it at the location(s) where you want to use it.
 
 1) Tracking
 In FFS, define the function ExternalMap as
@@ -3615,9 +3618,10 @@ In FFS, define the function ExternalMap as
 The second argument n is the position of MAP counting from the beginning, which can be obtained using
 LINE["POSITION","name.m"]. The third argument nt_ is used to receive the number of turns which is
 incremented by the tracking. The last argument x_ is used to receive the coordinates of particles.
-It is a (7, np) list of real numbers. The elements  (1..6, i) are (x, px ,y ,py ,z ,dp/p0) of the
-i-th particle. The (7, i)  element is True(==1) if the i-th particle has been survived, and False(==0)
-if it has been lost.
+It is a (7 or 9, np) list of real numbers. The elements  (1..8, i) are (x, px ,y ,py ,z ,dp/p0, sy,
+sarg) of the i-th particle. The (-1, i)  element is True(==1) if the i-th particle has been survived,
+and False(==0) if it has been lost. The spin coordinates sy and sarg are only valid with the POL
+flag.
 
  You can define ExternalMap to change the coordinates of each particle as you like by returning a
 new x in the same format as above. If you do not return it or you return in a different format, the
@@ -3634,70 +3638,110 @@ Example:
    ....
    FFS USE=A;
      ExternalMap["TRACK",LINE["POSITION","P1.2"],nt_,x_]:=
-(Print[x];x(Print[x];x*2);
-....       ....
-           
-TRACK      USE=A ....;
-           
-This       example defines ExternalMap to print out the coordinates of all
-particles  at the second P1 in the line A. It also makes all coordinates
-of         all particles twice in every turn.
-           
-2)         Emittance
-In         FFS, define the function ExternalMap as
-           
-ExternalMapExternalMap["EMIT",n,cod_]:=body;
-           
-The        second argument n is the position of MAP counting from the beginning, which can be obtained
-           using LINE["POSITION","name.m"]. The last argument cod_ is used to receive the orbit at
-           the entrance of the element, as a list of 6 real numbers. ExternalMap must return a list,
-           either {cod1, trans} or  {cod1, trans, dtrans, dbeam}, where cod1 is the orbit at the
-           exit, trans is the 6 by 6 transfer matrix of this element, dtrans is the radiation damping
-           part of the transfer matrix (6 by 6), and dbeam is the radiation excitation of the beam
-           matrix (6 by 6). Only j >= i parts of dbeam[[i, j]] are taken into account.
-           
-Example:   Example:
-           
-ExternalMapExternalMap["EMIT",LINE["POSITION","P1"],cod_]:=(
-Print[cod];Print[cod];
-{cod+{0,0.0{cod+{0,0.001,0,0,0,0},IdentityMatrix[6]});
-           
-3)         Optics
-In         FFS, define the function ExternalMap as
-           
-ExternalMapExternalMap["OPTICS",n,cod_]:=body;
-           
-The        second argument n is the position of MAP counting from the beginning, which can be obtained
-           using LINE["POSITION","name.m"]. The last argument cod_ is used to receive the orbit at
-           the entrance of the element, as a list of 6 real numbers. ExternalMap must return a list
-           {cod1, trans}, where cod1 is the orbit at the exit and trans is the 6 by 6 transfer matrix
-           of this element. In the case of CACL4D (== ~CALC6D), only the 4 by 5 transfer matrix is
-           effective.
-           
-Example:   Example:
-           
-ExternalMapExternalMap["OPTICS",LINE["POSITION","P1"],cod_]:=(
-Print[cod];Print[cod];
-{cod+{0,0.0{cod+{0,0.001,0,0,0,0},IdentityMatrix[6]});
-           
-4)         Geometry
-In         FFS, define the function ExternalMap as
-           
-ExternalMapExternalMap["GEO",n,geo_,pos_]:=body;
-           
-The        second argument n is the position of MAP counting from the beginning, which can be obtained
-           using LINE["POSITION","name.m"]. The argument geo_ receives the geometry of the beam line
-           at the MAP element, in the same format as LINE["GEO",n], i.e., {{GX,GY,GZ},{CHI1,CHI2,CHI3}}.
-           The last argument pos_ receives the orbit length S at the element. ExternalMap must return
-           an updated list {geo1, pos1}, as { {{GX,GY,GZ},{CHI1,CHI2,CHI3}}, S} as the values at
-           the exit of the element.
-Example:   Example:
-           
-ExternalMapExternalMap["GEO",LINE["POSITION","P1"],geo_,pos_]:=(
-Print[cod];Print[cod];
-{          {geo[[1]]+{1,0,0}, geo[[2]]}, pos+0.1})</pre>
+(Print[x];x*(Print[x];x*2);
+....        ....
+            
+TRACK       USE=A ....;
+            
+This        example defines ExternalMap to print out the coordinates of all particles at the second
+            P1 in the line A. It also makes all coordinates of all particles twice in every turn.
+            
+Optionally  a compiled module CompiledMap can be used for ExternalMap["TRACK"] (see below).
+            
+2)          Emittance
+In          FFS, define the function ExternalMap as
+            
+ExternalMap[ExternalMap["EMIT",n,cod_]:=body;
+            
+The         second argument n is the position of MAP counting from the beginning, which can be obtained
+            using LINE["POSITION","name.m"]. The last argument cod_ is used to receive the orbit
+            at the entrance of the element, as a list of 6 real numbers. ExternalMap must return
+            a list, either {cod1, trans} or  {cod1, trans, dtrans, dbeam}, where cod1 is the orbit
+            at the exit, trans is the 6 by 6 transfer matrix of this element, dtrans is the radiation
+            damping part of the transfer matrix (6 by 6), and dbeam is the radiation excitation of
+            the beam matrix (6 by 6). Only j >= i parts of dbeam[[i, j]] are taken into account.
+            
+Example:    Example:
+            
+ExternalMap[ExternalMap["EMIT",LINE["POSITION","P1"],cod_]:=(
+Print[cod]; Print[cod];
+{cod+{0,0.00{cod+{0,0.001,0,0,0,0},IdentityMatrix[6]});
+            
+3)          Optics
+In          FFS, define the function ExternalMap as
+            
+ExternalMap[ExternalMap["OPTICS",n,cod_]:=body;
+            
+The         second argument n is the position of MAP counting from the beginning, which can be obtained
+            using LINE["POSITION","name.m"]. The last argument cod_ is used to receive the orbit
+            at the entrance of the element, as a list of 6 real numbers. ExternalMap must return
+            a list {cod1, trans}, where cod1 is the orbit at the exit and trans is the 6 by 6 transfer
+            matrix of this element. In the case of CACL4D (== ~CALC6D), only the 4 by 5 transfer
+            matrix is effective.
+            
+Example:    Example:
+            
+ExternalMap[ExternalMap["OPTICS",LINE["POSITION","P1"],cod_]:=(
+Print[cod]; Print[cod];
+{cod+{0,0.00{cod+{0,0.001,0,0,0,0},IdentityMatrix[6]});
+            
+4)          Geometry
+In          FFS, define the function ExternalMap as
+            
+ExternalMap[ExternalMap["GEO",n,geo_,pos_]:=body;
+            
+The         second argument n is the position of MAP counting from the beginning, which can be obtained
+            using LINE["POSITION","name.m"]. The argument geo_ receives the geometry of the beam
+            line at the MAP element, in the same format as LINE["GEO",n], i.e., {{GX,GY,GZ},{CHI1,CHI2,CHI3}}.
+            The last argument pos_ receives the orbit length S at the element. ExternalMap must return
+            an updated list {geo1, pos1}, as { {{GX,GY,GZ},{CHI1,CHI2,CHI3}}, S} as the values at
+            the exit of the element.
+Example:    Example:
+            
+ExternalMap[ExternalMap["GEO",LINE["POSITION","P1"],geo_,pos_]:=(
+Print[cod]; Print[cod];
+{           {geo[[1]]+{1,0,0}, geo[[2]]}, pos+0.1})</pre>
 <pre>See also:
- MAP <a href=#LCALC4D>CALC4D</a></pre>
+ MAP <a href=#LCALC4D>CALC4D</a> <a href=#LPOL>POL</a> <a href=#LCompiledMap>CompiledMap</a></pre>
+<ul>
+<li><h3><a name=LCompiledMap>CompiledMap</a></h3>
+<pre>Usage:
+
+ExternapMa["TRACK", n, nt_, x_]:=CompiledMap[nt, x, src, prm, opt___];
+
+where n is the location number, nt the number of turns, x the particle coordinates with the alive
+flag, as described for ExternalMap. It takes options of Rules as shown below. A charachter string
+src is the source code for the map, which completes a subroutine having a header:
+
+implicit none;
+integer,intent(in):: np,nprm,nt,n;
+real(kind=8),intent(inout):: x(np),px(np),y(np),py(np),z(np),dp(np),&
+                             sy(np),sarg(np),flag(np),prm(nprm);
+
+where np is the number of particles, and prm is a list of reals of any length. The spin coordinates
+sy and sarg are meaningless without the flag POL. The src must ends with "return;end" to complete
+the subroutine, and more routines can be inserted if needed. Currently gfortran in free format is
+available for the compiler, and gcc will be supported in future.
+
+Example:
+
+src = "flag = flag * merge(1.d0, 0.d0, x&ltprm(1) .or. x&gtprm(2) .or. (y&gtprm(3) .and. y&ltprm(4)));return;end";
+prm
+= {-0.001, 0.001, -3e-4, 3e-4};
+ExternalMap["TRACK", LINE["POSITION","M1.2"], nt_, x_]:=CompiledMap[nt, x, src, prm];
+
+works as a special colimation at a MAP element M1.2, resulting:
+
+<img src="SADHelp_img/Collimate.png" align="middle" width=540>
+
+Options      Defaul     Description
+-------------------------------------------------------------
+Single       False      If True, the map is called once for the entrire particles even for NPARA
+> 1.
+Completion   Null       A completion SADScript to be called after the map with the arg {x, prm}.</pre>
+<pre>See also:
+ <a href=#LExternalMap>ExternalMap</a> MAP <a href=#LPOL>POL</a></pre>
+</ul>
 <li><h3><a name=LFFS>FFS</a></h3>
 <pre>FFS[command-string] executes command-string as FFS commands. Any commands can be used. Some commands
 CALCULATE(CAL), GO, VARIABLES(VAR), SHOW returns their result, otherwise Null is returned. All outputs
@@ -4099,16 +4143,16 @@ The argument nend is the last turn number. The default is nbegin.
 
 where location is the position-number of the starting point. If location is same as or in the downstream
 of destination, the tracking is done by folding across the beginning of the beam line. The coordinates
-are in a list of {7, np} form, where np is the number of particles. The first 6 elements of coordinates
-specifies
+are in a list of {7 or 9, np} form, where np is the number of particles. The first 6 or 8 elements
+of coordinates specifies either
 
-   {x, px/p0, y, py/p0, z, dp/p0}
-
-in this order. The {7, i} is the flag which is True(==1) when the particle is alive, and False(==0)
+   {x, px/p0, y, py/p0, z, dp/p0} (NOPOL)
+   {x, px/p0, y, py/p0, z, dp/p0 sy, sarg} (NOPOL)
+bin this order. The {-1, i} is the flag which is True(==1) when the particle is alive, and False(==0)
 when lost.
 
    If the flag POL is on, TrackParticles performs spin tracking. Then the coordinates has two more
-components sy and phis, which correspond to the y-component of the classical spin vector and the
+components sy and sarg, which correspond to the y-component of the classical spin vector and the
 angle ArcTan[sx, sz], respectively. If POL is on, another flag RADPOL turns on the Sokolov-Ternov
 effect.
 
@@ -5028,7 +5072,7 @@ is on-momentum only, it is not affected.</pre>
 removes elements which match element-pattern from the matching variables. The optional keyword specifies
 the non-default variables. If the keyword is omitted, all keywords are removed.
    For the MARK element at the beginning of the beam line, a special form can be used for the FIX
-command. That is a form <matching-function>I (appending "I" to a matching-function name).
+command. That is a form &lt matching-function>&gt I (appending "I" to a matching-function name).
 
 Example: FIX AXI BXI AYI BYI
 
@@ -5045,8 +5089,8 @@ sets the standard optics for the orbit correction commands.</pre>
 specifies elements which match element-pattern as the matching variables. The optional keyword specifies
 the non-default variables. See default-keyword. 
    For the MARK element at the beginning of the beam line, a special form can be used for the FREE
-command. That is a form <matching-function>I  (appending "I" to a matching-function name) which means
-the incoming condition of the matching-function is varied in the matching.
+command. That is a form &lt matching-function &gt I  (appending "I" to a matching-function name)
+which means the incoming condition of the matching-function is varied in the matching.
 
 Example: FREE AXI BXI AYI BYI
 
@@ -5220,16 +5264,17 @@ GX GY GZ CHI1 CHI2 CHI3</pre>
  <a href=#Loff-momentum-matching>off-momentum-matching</a> <a href=#Lx-y-coupling>x-y-coupling</a> <a href=#LREJECT(REJ)>REJECT(REJ)</a> <a href=#Lspecial-variables>special-variables</a>
  <a href=#LDP>DP</a> <a href=#Lfunctions>functions</a> <a href=#LFitValue>FitValue</a> <a href=#LMatchingAmplitude>MatchingAmplitude</a></pre>
 <h3><a name=Lmulti-turn-tracking>multi-turn-tracking</a></h3>
-<pre>The multi-turn tracking can be done by the TRACK command of the MAIN level, the TRACK command in
-FFS, or the DynamicApertureSurvey[] function in FFS. The latter only perform the DAPERT mode.
+<pre>The multi-turn tracking can be done by TrackParticles or DynamicApertureSurvey[] function in FFS.
 
-   The multi-turn tracking uses the closed orbit, normal coordinate, and the equilibrium emittances.
-Therefore One of EMITTANCE(EMIT), the Emittance[] function, or the EMIT command in the MAIN level
-are necessary to be done once in prior to the multi-turn-tracking. The values of EMITX, EMITY, EMITZ,
-SIGE can be changed between EMITs and the multi-turn-tracking.</pre>
+The
+multi-turn tracking uses the closed orbit, normal coordinate, and the equilibrium emittances. Therefore
+One of EMITTANCE(EMIT), the Emittance[] function, or the EMIT command in the MAIN level are necessary
+to be done once in prior to the multi-turn-tracking. The values of EMITX, EMITY, EMITZ, SIGE can
+be changed between EMITs and the multi-turn-tracking.</pre>
 <pre>See also:
- <a href=#LEMITTANCE(EMIT)>EMITTANCE(EMIT)</a> <a href=#LRFSW>RFSW</a> <a href=#LRAD>RAD</a> <a href=#LFLUC>FLUC</a> <a href=#LRADCOD>RADCOD</a> <a href=#LSPAC>SPAC</a> <a href=#LWSPAC>WSPAC</a> <a href=#Lspecial-variables>special-variables</a>
- <a href=#Lequilibrium-beam-envelope>equilibrium-beam-envelope</a></pre>
+ <a href=#LTrackParticles>TrackParticles</a> <a href=#LDynamicApertureSurvey>DynamicApertureSurvey</a> <a href=#LEMITTANCE(EMIT)>EMITTANCE(EMIT)</a>
+ <a href=#LRFSW>RFSW</a> <a href=#LRAD>RAD</a> <a href=#LFLUC>FLUC</a> <a href=#LRADCOD>RADCOD</a> <a href=#LSPAC>SPAC</a> <a href=#LWSPAC>WSPAC</a> <a href=#Lspecial-variables>special-variables</a> <a href=#Lequilibrium-beam-envelope>equilibrium-beam-envelope</a>
+</pre>
 <h3><a name=LMATRIX(MAT)>MATRIX(MAT)</a></h3>
 <pre>Usage: MATRIX [{SYMPLECTIC(S) | PHYSICAL(P)}] [from to]
 

@@ -223,11 +223,6 @@ c     1         ' ',sa,ss,0.d0,
 c     1         .false.,.false.,0)
 c        endif
         if(la .le. 0)then
-          call limitnan(x(1:np),-xlimit,xlimit,xlimit)
-          call limitnan(px(1:np),-plimit,plimit,plimit)
-          call limitnan(y(1:np),-xlimit,xlimit,xlimit)
-          call limitnan(py(1:np),-plimit,plimit,plimit)
-          call limitnan(z(1:np),-zlimit,zlimit,zlimit)
           call tapert(x,px,y,py,z,g,dv,sx,sy,sz,
      1         kptbl,np,n,
      $         0.d0,0.d0,0.d0,0.d0,
@@ -393,31 +388,6 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $        al .ne. 0.d0,
      1        cmp%value(ky_FRIN_THIN) .eq. 0.d0)
 
-       case (icUND)
-         if(.not. cmp%update)then
-           call tpara(cmp)
-         endif
-         call undulator(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $        cmp%value(p_PARAM_UND))
-         
-       case (icWIG)
-         call twig(np,x,px,y,py,z,g,dv,al,cmp%value(ky_BMAX_WIG),
-     1        int(cmp%value(ky_PRD_WIG)),
-     $        cmp%value(ky_DX_WIG),cmp%value(ky_DY_WIG),
-     1        cmp%value(ky_ROT_WIG),cmp%value(p_PARAM_WIG))
-
-       case (icSOL)
-         call tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $        l,lend,
-     $        ke,sol,kptbl,la,n,nwak,nextwake,out)
-         if(np .le. 0)then
-           go to 9000
-         endif
-
-       case (icST)
-         write(*,*)'Use BEND with ANGLE=0 for STEER.'
-         call abort
-         
        case (icMULT)
          rtaper=1.d0
          if(rad .and. radcod .and. radtaper)then
@@ -431,6 +401,17 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
          else
            call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $          cmp,bz,rtaper,n,kptbl)
+         endif
+
+       case (icMARK)
+         go to 1010
+
+       case (icSOL)
+         call tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $        l,lend,
+     $        ke,sol,kptbl,la,n,nwak,nextwake,out)
+         if(np .le. 0)then
+           go to 9000
          endif
 
        case (icCAVI)
@@ -517,6 +498,14 @@ c     $          cmp%value(p_VNOMINAL_CAVI)
          call temap(np,np0,x,px,y,py,z,g,dv,sx,sy,sz,l,n,kptbl)
          go to 1010
 
+       case (icBEAM)
+         if(.not. cmp%update)then
+           call tpara(cmp)
+         endif
+         call beambeam(np,x,px,y,py,z,g,dv,sx,sy,sz,cmp%value(1),
+     $        cmp%value(p_PARAM_BEAM),n)
+         go to 1020
+
        case (icINS)
          call tins(np,x,px,y,py,z,g,cmp%value(ky_DIR_INS+1))
          go to 1010
@@ -528,14 +517,6 @@ c     $          cmp%value(p_VNOMINAL_CAVI)
      $        cmp%value(ky_CHI2_COORD),cmp%value(ky_CHI3_COORD),
      1        cmp%value(ky_DIR_COORD) .eq. 0.d0)
          go to 1010
-
-       case (icBEAM)
-         if(.not. cmp%update)then
-           call tpara(cmp)
-         endif
-         call beambeam(np,x,px,y,py,z,g,dv,sx,sy,sz,cmp%value(1),
-     $        cmp%value(p_PARAM_BEAM),n)
-         go to 1020
 
        case (icProt)
          if(.not. cmp%update)then
@@ -558,9 +539,6 @@ c     print *,'tturn l sspac2',l,sspac2
          endif
          go to 1020
 
-       case (icMARK)
-         go to 1010
-
        case (icAPRT)
          call tapert1(x,px,y,py,z,g,dv,sx,sy,sz,kptbl,np,n)
          if(np .le. 0)then
@@ -569,6 +547,23 @@ c     print *,'tturn l sspac2',l,sspac2
          la=la1
          go to 1010
 
+       case (icUND)
+         if(.not. cmp%update)then
+           call tpara(cmp)
+         endif
+         call undulator(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $        cmp%value(p_PARAM_UND))
+         
+       case (icWIG)
+         call twig(np,x,px,y,py,z,g,dv,al,cmp%value(ky_BMAX_WIG),
+     1        int(cmp%value(ky_PRD_WIG)),
+     $        cmp%value(ky_DX_WIG),cmp%value(ky_DY_WIG),
+     1        cmp%value(ky_ROT_WIG),cmp%value(p_PARAM_WIG))
+
+       case (icST)
+         write(*,*)'Use BEND with ANGLE=0 for STEER.'
+         call abort
+         
        case default
          go to 1010
        end select
@@ -594,11 +589,6 @@ c     print *,'tturn l sspac2',l,sspac2
           nextwake=merge(0,iwakeelm(nwak),nwak .gt. nwakep)
         endif
       enddo
-      call limitnan(x(1:np),-xlimit,xlimit,xlimit)
-      call limitnan(px(1:np),-plimit,plimit,plimit)
-      call limitnan(y(1:np),-xlimit,xlimit,xlimit)
-      call limitnan(py(1:np),-plimit,plimit,plimit)
-      call limitnan(z(1:np),-zlimit,zlimit,zlimit)
       call tapert(x,px,y,py,z,g,dv,sx,sy,sz,
      1     kptbl,np,n,
      $     0.d0,0.d0,0.d0,0.d0,
@@ -625,12 +615,12 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
            endif
         endif
       endif
- 9000 deallocate(bsi)
-      if(rad)then
+ 9000 if(rad)then
         deallocate(zr0)
         deallocate(pyr0)
         deallocate(pxr0)
       endif
+      deallocate(bsi)
       return
       end
 

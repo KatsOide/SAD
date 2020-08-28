@@ -170,15 +170,8 @@ c
         call trbassign(lfni)
       endif
       lfno=outfl
- 2    if(lfnb .eq. 1)then
-        if(lfni .ne. 5)then
-          lfn1=lfno
-        else
-          lfn1=merge(0,lfno,igetgl('$LOG$') .eq. 0)
-        endif
-      else
-        lfn1=0
-      endif
+ 2    lfn1=merge(merge(lfno,merge(0,lfno,igetgl('$LOG$') .eq. 0),
+     $     lfni .ne. 5),0,lfnb==1)
       call csrst(lfn1)
  10   continue
       if(iffserr .ne. 0)then
@@ -194,11 +187,8 @@ c
         if(lfnp .lt. lfnb)then
           go to 9000
         endif
-        if(lfni .ne. 5)then
-          lfn1=lfno
-        else
-          lfn1=merge(0,lfno,igetgl('$LOG$') .eq. 0)
-        endif
+        lfn1=merge(lfno,merge(0,lfno,igetgl('$LOG$') .eq. 0),
+     $       lfni .ne. 5)
       elseif(ios .lt. 0)then
         ios=0
       endif
@@ -1121,11 +1111,7 @@ c        rlist(itlookup('DP',ivtype))=dpmax
       if(tffsinitialcond(lfno,err))then
         inicond=.true.
         nfam=nfr
-        if(iuid(-nfam) .lt. 0)then
-          nfam1=1-nfam
-        else
-          nfam1=-nfam
-        endif
+        nfam1=merge(1-nfam,-nfam,iuid(-nfam) .lt. 0)
         uini(mfitddp,0)=0.d0
 c        do i=nfam1,nfr
           kfam(nfam1:nfr)=0
@@ -1165,11 +1151,8 @@ c        dpm2=rlist(ktlookup('DPM'))
         enddo
         em=abs(emx)+abs(emy)
         call tffamsetup(1,em)
-        if(nfam .gt. nfr .and. kfam(-nfam) .eq. 0)then
-          nfam1=1-nfam
-        else
-          nfam1=-nfam
-        endif
+        nfam1=merge(1-nfam,-nfam,
+     $       nfam .gt. nfr .and. kfam(-nfam) .eq. 0)
       endif
       wake=(twake .or. lwake) .and. trpt
       kwakep=0
@@ -1221,11 +1204,9 @@ c        dpm2=rlist(ktlookup('DPM'))
         enddo
         do i=nfam1,nfam
           if(.not. optstat(i)%staby)then
-            if(str(1:1) .ne. ' ')then
-              str='Horizontal/Vertical'
-            else
-              str='Vertical'
-            endif
+            str=merge('Horizontal/Vertical',
+     $                'Vertical           ',
+     $           str(1:1) .ne. ' ')    
             exit
           endif
         enddo
@@ -1645,11 +1626,7 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
         l=l+1
         kw=tfkwrd(it,l)
       enddo
-      if(kw .eq. ' ')then
-        ia=0
-      else
-        ia=sign(l,i)
-      endif
+      ia=merge(0,sign(l,i),kw .eq. ' ')
       return
       end
 

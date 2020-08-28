@@ -131,7 +131,8 @@
           if(imag(z1) .eq. 0.d0)then
             tcatan2=(0.d0,0.d0)
           else
-            tcatan2=sign(m_pi_2,imag(z1))
+            tcatan2=dcmplx(merge(0.d0,sign(m_pi_2,imag(z1)),
+     $           imag(z1) .eq. 0.d0),0.d0)
           endif
         else
           tcatan2=sign(m_pi_2,dble(z1))
@@ -197,11 +198,11 @@
       real*8 x2
       if(abs(x) .lt. 1.d-3)then
         x2=x**2
-        xs=x*x2/6.d0*(1.d0-x2/20.d0*(1.d0-x2/42.d0))
+        xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2/5040.d0))
       elseif(abs(x) .lt. 0.1d0)then
         x2=x**2
-        xs=x*x2/6.d0*(1.d0-x2/20.d0*(1.d0-x2/42.d0*(
-     1       1.d0-x2/72.d0*(1.d0-x2/110.d0))))
+        xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2*(
+     1       1.d0/5040.d0-x2*(1.d0/362880.d0-x2/39916800.d0))))
       else
         xs=x-sin(x)
       endif
@@ -215,12 +216,12 @@
       real*8 x2
       if(abs(x) .lt. 1.d-3)then
         x2=x**2
-        xs=x*x2/6.d0*(1.d0-x2/20.d0*(1.d0-x2/42.d0))
+        xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2/5040.d0))
         s=x-xs
       elseif(abs(x) .lt. .1d0)then
         x2=x**2
-        xs=x*x2/6.d0*(1.d0-x2/20.d0*(1.d0-x2/42.d0*(
-     1       1.d0-x2/72.d0*(1.d0-x2/110.d0))))
+        xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2*(
+     1       1.d0/5040.d0-x2*(1.d0/362880.d0-x2/39916800.d0))))
         s=x-xs
       else
         s=sin(x)
@@ -236,17 +237,17 @@
       real*8 x2
       if(abs(x) .lt. 1.d-3)then
         x2=x**2
-        xs=x*x2/6.d0*(1.d0-x2/20.d0*(1.d0-x2/42.d0))
+        xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2/5040.d0))
         s=x-xs
-        dc=-x2/2.d0*(1.d0-x2/12.d0*(1.d0-x2/30.d0))
+        dc=-x2*(.5d0-x2*(1.d0/24.d0-x2/720.d0))
         c=1.d0+dc
       elseif(abs(x) .lt. .1d0)then
         x2=x**2
-        xs=x*x2/6.d0*(1.d0-x2/20.d0*(1.d0-x2/42.d0*(
-     1       1.d0-x2/72.d0*(1.d0-x2/110.d0))))
+        xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2*(
+     1       1.d0/5040.d0-x2*(1.d0/362880.d0-x2/39916800.d0))))
         s=x-xs
-        dc=-x2/2.d0*(1.d0-x2/12.d0*(1.d0-x2/30.d0*
-     $       (1.d0-x2/56.d0*(1.d0-x2/90.d0))))
+        dc=-x2*(.5d0-x2*(1.d0/24.d0-x2*
+     $       (1.d0/720.d0-x2*(1.d0/40320.d0-x2/479001600.d0))))
         c=1.d0+dc
       else
         s=sin(x)
@@ -263,11 +264,11 @@
       real*8 x2
       if(abs(x) .lt. 1.d-3)then
         x2=x**2
-        xsinh=-x*x2/6.d0*(1.d0+x2/20.d0*(1.d0+x2/42.d0))
+        xsinh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2/5040.d0))
       elseif(abs(x) .lt. 0.1d0)then
         x2=x**2
-        xsinh=-x*x2/6.d0*(1.d0+x2/20.d0*(1.d0+x2/42.d0*(
-     1       1.d0+x2/72.d0*(1.d0+x2/110.d0))))
+        xsinh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2*(
+     1       1.d0/5040.d0+x2*(1.d0/362880.d0+x2/39916800.d0))))
       else
         xsinh=x-sinh(x)
       endif
@@ -281,12 +282,12 @@
       real*8 x2
       if(abs(x) .lt. 1.d-3)then
         x2=x**2
-        xsh=-x*x2/6.d0*(1.d0+x2/20.d0*(1.d0+x2/42.d0))
+        xsh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2/5040.d0))
         sh=x-xsh
       elseif(abs(x) .lt. 0.1d0)then
         x2=x**2
-        xsh=-x*x2/6.d0*(1.d0+x2/20.d0*(1.d0+x2/42.d0*(
-     1       1.d0+x2/72.d0*(1.d0+x2/110.d0))))
+        xsh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2*(
+     1       1.d0/5040.d0+x2*(1.d0/362880.d0+x2/39916800.d0))))
         sh=x-xsh
       else
         sh=sinh(x)
@@ -302,17 +303,17 @@
       real*8 x2
       if(abs(x) .lt. 1.d-3)then
         x2=x**2
-        xsh=-x*x2/6.d0*(1.d0+x2/20.d0*(1.d0+x2/42.d0))
+        xsh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2/5040.d0))
         sh=x-xsh
-        dch=x2/2.d0*(1.d0+x2/12.d0*(1.d0+x2/30.d0))
+        dch= x2*(.5d0+x2*(1.d0/24.d0+x2/720.d0))
         ch=1.d0+dch
       elseif(abs(x) .lt. 0.1d0)then
         x2=x**2
-        xsh=-x*x2/6.d0*(1.d0+x2/20.d0*(1.d0+x2/42.d0*(
-     1       1.d0+x2/72.d0*(1.d0+x2/110.d0))))
+        xsh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2*(
+     1       1.d0/5040.d0+x2*(1.d0/362880.d0+x2/39916800.d0))))
         sh=x-xsh
-        dch=x2/2.d0*(1.d0+x2/12.d0*(1.d0+x2/30.d0*
-     $       (1.d0+x2/56.d0*(1.d0+x2/90.d0))))
+        dch= x2*(.5d0+x2*(1.d0/24.d0+x2*
+     $       (1.d0/720.d0+x2*(1.d0/40320.d0+x2/479001600.d0))))
         ch=1.d0+dch
       else
         sh=sinh(x)
@@ -341,9 +342,9 @@
       if(abs(x) .gt. .1d0)then
         sinc=x*cos(x)-sin(x)
       else
-        x2=x**2
-        sinc=-x*x2/6.d0*(2.d0-x2/20.d0*(4.d0-x2/42.d0*(
-     1       6.d0-x2/72.d0*(8.d0-x2/11.d0))))
+        x2=-x**2
+        sinc=x*x2*(1.d0/3.d0+x2*(1.d0/30.d0+x2*(
+     1       1.d0/840.d0+x2*(1.d0/45360.d0+x2/3991680.d0))))
       endif
       return
       end
@@ -356,8 +357,8 @@
         sinhc=x*cosh(x)-sinh(x)
       else
         x2=x**2
-        sinhc=x*x2/6.d0*(2.d0+x2/20.d0*(4.d0+x2/42.d0*(
-     1       6.d0+x2/72.d0*(8.d0+x2/11.d0))))
+        sinhc=x*x2*(1.d0/3.d0+x2*(1.d0/30.d0+x2*(
+     1       1.d0/840.d0+x2*(1.d0/45360.d0+x2/3991680.d0))))
       endif
       return
       end
@@ -534,8 +535,11 @@
       subroutine tfmod(isp1,kx,mode,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,tfmodf
-      integer*4 isp1,irtc,itfmessage,mode,i
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) tfmodf
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,mode,i
       if(isp .le. isp1+1)then
         irtc=itfmessage(9,'General::narg','"2"')
       elseif(isp .ne. isp1+2)then
@@ -562,11 +566,14 @@
       use tfstk
       use mathfun
       implicit none
-      type (sad_descriptor) k1,k2,kx
+      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(in):: k1,k2
       type (sad_dlist), pointer :: klx,kl1,kl2
       type (sad_rlist), pointer :: klr
+      integer*4 ,intent(in):: mode
+      integer*4 ,intent(out):: irtc
       integer*8 ka1,ka2
-      integer*4 irtc,i,n1,n2,itfmessage,isp0,isp2,mode
+      integer*4 i,n1,n2,itfmessage,isp0,isp2
       real*8 v1,v2,vx
       complex*16 c1,c2,cx
 c     begin initialize for preventing compiler warning
@@ -783,14 +790,16 @@ c              enddo
       return
       end
 
-      subroutine tfminmax(isp1,kx,mode,irtc)
+      function tfminmax(isp1,mode,irtc) result(kx)
       use tfstk
       use iso_c_binding
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: kli,klx
       type (sad_rlist), pointer :: klr,klir
-      integer*4 isp1,irtc,mode,i
+      integer*4 ,intent(in):: isp1,mode
+      integer*4 ,intent(out):: irtc
+      integer*4 i
       real*8 xmin,xmax,ymin,ymax
       logical*4 cpx
       xmin=dinfinity

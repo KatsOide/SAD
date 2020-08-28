@@ -476,7 +476,7 @@ c      write(*,*)isp
       implicit none
       type (sad_descriptor) kx,k1,k,kh,tfmodule,tfsequence,
      $     tfsolvemember,tftable,tfefun1,tfeval1,tfeintf,
-     $     tfeintf2,tfget,tftake,tfset,tfeval1to,tfmap,
+     $     tfeintf2,tfget,tftake,tfset,tfeval1to,tfmap,tfminmax,
      $     tfgetcommandline,tfreplacepart,tfpart,tfwrite,
      $     tftemporaryname,tfmapfile,tfunmapfile,tfcmplxf
       type (sad_dlist), pointer :: kl,kl1,klx,klh
@@ -752,7 +752,7 @@ c            write(*,*)'irtc: ',irtc
           go to 6810
         endif
         go to 6900
- 240    call tfminmax(isp1,kx,id-13,irtc)
+ 240    kx=tfminmax(isp1,id-13,irtc)
         go to 6900
  260    call tfmod(isp1,kx,0,irtc)
         go to 6900
@@ -1302,7 +1302,7 @@ c        go to 6900
         go to 6900
  1700   call tfrestrict(isp1,kx,irtc)
         go to 6900
- 1710   call tfminmax(isp1,kx,0,irtc)
+ 1710   kx=tfminmax(isp1,0,irtc)
         go to 6900
  1720   call tfshort(isp1,kx,irtc)
         go to 6900

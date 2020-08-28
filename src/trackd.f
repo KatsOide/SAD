@@ -375,15 +375,14 @@ c            write(*,*)'trackd-wait-k ',k
         write(*,*)'???trackd-Strange child: ',irw,isw
       enddo loop_j
       do i=1,n1p
-        nsc=0
+        nsc=n2p
         do k=1,n2p
           if(ntloss(i,k) .lt. nturn)then
             nsc=k-1
-            go to 431
+            exit
           endif
         enddo
-        nsc=n2p
- 431    nscore=nscore+nsc
+        nscore=nscore+nsc
 c        write(*,*)'trackd: ',lfno,i,muls,
 c     $       rad62a(ntloss(i,1)/muls,1)
         write(lfno,'(1x,f8.2,i3,1x,51a1)')a1i(i),nsc,
@@ -485,8 +484,7 @@ c      write(*,'(a,1p6g15.7)')'tinip ',xa(6),emx,emz
         xa(6)=g(i)-codin(6)
         call tmap(xa,xa,1)
         j=kptbl(i)
-        if(
-     $       xa(1)**2+xa(2)**2 .lt. aenox(j) .and.
+        if(  xa(1)**2+xa(2)**2 .lt. aenox(j) .and.
      $       xa(3)**2+xa(4)**2 .lt. aenoy(j) .and.
      $       xa(5)**2+xa(6)**2 .lt. aenoz(j))then
 c          write(*,'(a,2i5,1p6g15.7)')'tpdamp ',j,i,

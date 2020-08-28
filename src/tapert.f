@@ -20,6 +20,11 @@
       integer*4 i,j,k,kptmp(nkptbl)
       logical eli, dodrop
 
+      call limitnan(x(1:np),xlimit)
+      call limitnan(px(1:np),plimit)
+      call limitnan(y(1:np),xlimit)
+      call limitnan(py(1:np),plimit)
+      call limitnan(z(1:np),zlimit)
 c     Shortcut case: pxj != 0.0 || pyj != 0.0
       if(pxj .ne. 0.d0 .or. pyj .ne. 0.d0)then
         xa=min(abs(xh),abs(xl))

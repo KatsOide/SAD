@@ -23,12 +23,11 @@ c      use ffs_pointer, only:inext,iprev
      $     alstep=0.05d0,pmin=1.d-10,arad=0.01d0
       integer*4 ,intent(inout):: np
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),
-     $     dv(np),sx(np),sy(np),sz(np)
+     $     dv(np),sx(np),sy(np),sz(np),bz
       real*8 ,intent(in):: al,phia,psi1,psi2,
      $     dx,dy,dz,chi1,chi2,theta,dtheta,theta2,
      $     eps0,f1in,f2in,f1out,f2out,fb1,fb2,w,
      $     vc,phirf,dphirf,vnominal,radius,rtaper
-      real*8 ,intent(inout):: bz
       complex*16 ,intent(in):: ak(0:nmult),akr0(0:nmult)
       integer*4 ,intent(in):: mfring,kturn,nmmax,ndiv0
       integer*4 ,intent(inout):: kptbl(np0,6)
