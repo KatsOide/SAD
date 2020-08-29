@@ -435,7 +435,7 @@ sets the two-point fitting between QF and QD, then set the difference of NX betw
    {"FREE",
     "Usage: FREE element-pattern [keyword] [element-pattern1 [keyword1]..]\n\n\
 specifies elements which match element-pattern as the matching variables. The optional keyword specifies the non-default variables. See default-keyword. \n\
-   For the MARK element at the beginning of the beam line, a special form can be used for the FREE command. That is a form <matching-function>I  (appending \"I\" to a matching-function name) which means the incoming condition of the matching-function is varied in the matching.\n\n\
+   For the MARK element at the beginning of the beam line, a special form can be used for the FREE command. That is a form &lt matching-function &gt I  (appending \"I\" to a matching-function name) which means the incoming condition of the matching-function is varied in the matching.\n\n\
 Example: FREE AXI BXI AYI BYI\n\n\
 changes incoming AX, BX, AY, and BY to find the solution.",
     "FIX FIT SHOW GO CAL wildcards elements",
@@ -462,7 +462,7 @@ MARK    -                AX,BX,EX,EPX,AY,BY,EY,EPY,R1,R2,R3,R4,DETR,\n\
    {"FIX",
     "Usage: (1) FIX element-pattern [keyword] [element-pattern1 [keyword1]..]\n\n\
 removes elements which match element-pattern from the matching variables. The optional keyword specifies the non-default variables. If the keyword is omitted, all keywords are removed.\n\
-   For the MARK element at the beginning of the beam line, a special form can be used for the FIX command. That is a form <matching-function>I (appending \"I\" to a matching-function name).\n\n\
+   For the MARK element at the beginning of the beam line, a special form can be used for the FIX command. That is a form &lt matching-function>&gt I (appending \"I\" to a matching-function name).\n\n\
 Example: FIX AXI BXI AYI BYI\n\n\
 removes incoming AX, BX, AY, and BY from the matching variables.\n\n\
 Usage: (2) FIX\n\n\
@@ -555,9 +555,9 @@ then prints out a table of the dependences of various quantities on the frequenc
 
    {"multi-turn-tracking",
     "\
-The multi-turn tracking can be done by the TRACK command of the MAIN level, the TRACK command in FFS, or the DynamicApertureSurvey[] function in FFS. The latter only perform the DAPERT mode.\n\n\
-   The multi-turn tracking uses the closed orbit, normal coordinate, and the equilibrium emittances. Therefore One of EMITTANCE(EMIT), the Emittance[] function, or the EMIT command in the MAIN level are necessary to be done once in prior to the multi-turn-tracking. The values of EMITX, EMITY, EMITZ, SIGE can be changed between EMITs and the multi-turn-tracking.",
-    "EMITTANCE(EMIT) RFSW RAD FLUC RADCOD SPAC WSPAC special-variables equilibrium-beam-envelope",
+The multi-turn tracking can be done by TrackParticles or DynamicApertureSurvey[] function in FFS.\n\n\
+The multi-turn tracking uses the closed orbit, normal coordinate, and the equilibrium emittances. Therefore One of EMITTANCE(EMIT), the Emittance[] function, or the EMIT command in the MAIN level are necessary to be done once in prior to the multi-turn-tracking. The values of EMITX, EMITY, EMITZ, SIGE can be changed between EMITs and the multi-turn-tracking.",
+    "TrackParticles DynamicApertureSurvey EMITTANCE(EMIT) RFSW RAD FLUC RADCOD SPAC WSPAC special-variables equilibrium-beam-envelope",
     {}},
 
    {"machine-error-commands",
@@ -711,7 +711,7 @@ The ratio of the face-angle at the entrance to the bending angle. The effective 
 
          E2$Message={"E2",
           "\
-The ratio of the face-angle at the exit to the bending angle. The effective face angle is E2 * ANGLE + AE2, and a positive angle at the exit corresponds to a surface with dx/ds < 0. For example, a symmetrically-placed rectangular magnet has E1 = 0.5 and E2 = 0.5.",
+The ratio of the face-angle at the exit to the bending angle. The effective face angle is E2 * ANGLE + AE2, and a positive angle at the exit corresponds to a surface with dx/ds &lt 0. For example, a symmetrically-placed rectangular magnet has E1 = 0.5 and E2 = 0.5.",
           "AE2 E1 ANGLE",
           {}},
 
@@ -723,7 +723,7 @@ The absolute face angle at the entrance. The effective face angle is E1 * ANGLE 
 
          AE2$Message={"AE2",
           "\
-The absolute face-angle at the exit to the bending angle. The effective face angle is E2 * ANGLE + AE2, and a positive angle at the exit corresponds to a surface with dx/ds < 0.",
+The absolute face-angle at the exit to the bending angle. The effective face angle is E2 * ANGLE + AE2, and a positive angle at the exit corresponds to a surface with dx/ds &lt 0.",
           "E2 AE1 ANGLE",
           {}},
 
@@ -2548,8 +2548,9 @@ An operator with higher priority is operated first. An expression enclosed in ()
    Each operators can be used as a function using its name. For example, Plus[x,y] gives the same result as x + y.",
      "constants functions command-syntax character-string",
      Sort[
+       List$Message="If one of a or b is a list, or both are lists with same size, returns a list of element-wise results.";
      {{"Plus(+)",
-       "a + b returns the sum of a and b.",
+       "a + b returns the sum of a and b. "//List$Message,
        "",
        {}},
 
@@ -2559,7 +2560,7 @@ An operator with higher priority is operated first. An expression enclosed in ()
        {}},
 
       {"Times(*)",
-       "a * b returns the product of a and b.",
+       "a * b returns the product of a and b. "//List$Message,
        "",
        {}},
 
@@ -2574,38 +2575,37 @@ An operator with higher priority is operated first. An expression enclosed in ()
        {}},
 
       {"Power(^)",
-       "a ^ b returns the power of a to b.",
+       "a ^ b returns the power of a to b. "//List$Message,
        "",
        {}},
 
       {"Equal(==)",
-       "a == b returns True(==1) if a and b have the same type and the same value. It returns False(==0) if a and b have the same type but the different values. Otherwise returns the expression a == b.",
+       "a == b returns True(==1) if a and b are both Real with the same value or a String with same length and value. "//List$Message,
        "",
        {}},
 
       {"Unequal(<>)",
-       "\
-a <> b returns True(==1) if a and b have the same type but the different values. It returns False(==0) if a and b have the same type but the same value. Otherwise returns the expression a <> b.",
+       "a <> b returns True(==1) if a and b are both Real with different values or a String with different length or values. "//List$Message,
        "",
        {}},
 
       {"Greater(>)",
-       "If both a and b are real, a > b returns True if a is greater than b, False otherwise. It causes an error when a or b is not real.",
+       "If both a and b are real, a > b returns True if a is greater than b, False otherwise. "//List$Message,
        "",
        {}},
 
       {"Less(<)",
-       "If both a and b are real, a < b returns True if a is less than b, False otherwise. It causes an error when a or b is not real.",
+       "If both a and b are real, a < b returns True if a is less than b, False otherwise. "//List$Message,
        "",
        {}},
 
       {"GreaterEqual(>= or =>)",
-       "If both a and b are real, a => b returns True if a is greater than or equal to b, False otherwise. It causes an error when a or b is not real.",
+       "If both a and b are real, a => b returns True if a is greater than or equal to b, False otherwise. "//List$Message,
        "",
        {}},
 
       {"LessEqual(<= or =<)",
-       "If both a and b are real, a <= b returns True if a is less than or equal to b, False otherwise. It causes an error when a or b is not real.",
+       "If both a and b are real, a <= b returns True if a is less than or equal to b, False otherwise. "//List$Message,
        "",
        {}},
 
@@ -4150,12 +4150,11 @@ FFS[command-string] executes command-string as FFS commands. Any commands can be
 With MAP elements, ExternalMap defines a user-defined map of particles. It also allows a user to do anything (doing statistics, etc.) at any point of a beam line during a tracking. \n\n\
 Usage: First define a MAP element at MAIN level:\n\n\
      MAP    name=(L=leng);\n\n\
-Right now L is the only keyword. Insert it at the location(s) \n\
-where you want to use it.\n\n\
+Currently L is the only keyword. Insert it at the location(s) where you want to use it.\n\n\
 1) Tracking\n\
 In FFS, define the function ExternalMap as\n\n\
     ExternalMap[\"TRACK\",n,nt_,x_]:=body;\n\n\
-The second argument n is the position of MAP counting from the beginning, which can be obtained using LINE[\"POSITION\",\"name.m\"]. The third argument nt_ is used to receive the number of turns which is incremented by the tracking. The last argument x_ is used to receive the coordinates of particles. It is a (7, np) list of real numbers. The elements  (1..6, i) are (x, px ,y ,py ,z ,dp/p0) of the i-th particle. The (7, i)  element is True(==1) if the i-th particle has been survived, and False(==0) if it has been lost.\n\n\
+The second argument n is the position of MAP counting from the beginning, which can be obtained using LINE[\"POSITION\",\"name.m\"]. The third argument nt_ is used to receive the number of turns which is incremented by the tracking. The last argument x_ is used to receive the coordinates of particles. It is a (7 or 9, np) list of real numbers. The elements  (1..8, i) are (x, px ,y ,py ,z ,dp/p0, sy, sarg) of the i-th particle. The (-1, i)  element is True(==1) if the i-th particle has been survived, and False(==0) if it has been lost. The spin coordinates sy and sarg are only valid with the POL flag.\n\n\
  You can define ExternalMap to change the coordinates of each particle as you like by returning a new x in the same format as above. If you do not return it or you return in a different format, the tracking routine does not change the particle coordinates. You can neither rebirth a lost particle nor kill a surviving particle.\n\n\
 After defined ExternalMap, tracking calls it in every turn.\n\n\
 Example:\n\n\
@@ -4168,9 +4167,8 @@ Example:\n\n\
 	(Print[x];x*2);\n\
    ....\n\n\
    TRACK USE=A ....;\n\n\
-This example defines ExternalMap to print out the coordinates of all\n\
-particles at the second P1 in the line A. It also makes all coordinates\n\
-of all particles twice in every turn.\n\n\
+This example defines ExternalMap to print out the coordinates of all particles at the second P1 in the line A. It also makes all coordinates of all particles twice in every turn.\n\n\
+Optionally a compiled module CompiledMap can be used for ExternalMap[\"TRACK\"] (see below).\n\n\
 2) Emittance\n\
 In FFS, define the function ExternalMap as\n\n\
     ExternalMap[\"EMIT\",n,cod_]:=body;\n\n\
@@ -4195,8 +4193,30 @@ Example:\n\n\
     ExternalMap[\"GEO\",LINE[\"POSITION\",\"P1\"],geo_,pos_]:=(\n\
       Print[cod];\n\
       { {geo[[1]]+{1,0,0}, geo[[2]]}, pos+0.1})",
-        "MAP CALC4D",
-        {}},
+        "MAP CALC4D POL CompiledMap",
+        {
+          {"CompiledMap",
+            "Usage:\n\n\
+ExternapMa[\"TRACK\", n, nt_, x_]:=CompiledMap[nt, x, src, prm, opt___];\n\n\
+where n is the location number, nt the number of turns, x the particle coordinates with the alive flag, as described for ExternalMap. It takes options of Rules as shown below. A charachter string src is the source code for the map, which completes a subroutine having a header:\n\n\
+implicit none;\n\
+integer,intent(in):: np,nprm,nt,n;\n\
+real(kind=8),intent(inout):: x(np),px(np),y(np),py(np),z(np),dp(np),&\n\
+                             sy(np),sarg(np),flag(np),prm(nprm);\n\n\
+where np is the number of particles, and prm is a list of reals of any length. The spin coordinates sy and sarg are meaningless without the flag POL. The src must ends with \"return;end\" to complete the subroutine, and more routines can be inserted if needed. Currently gfortran in free format is available for the compiler, and gcc will be supported in future.\n\n\
+Example:\n\n\
+src = \"flag = flag * merge(1.d0, 0.d0, x&ltprm(1) .or. x&gtprm(2) .or. (y&gtprm(3) .and. y&ltprm(4)));return;end\";\n\
+prm = {-0.001, 0.001, -3e-4, 3e-4};\n\
+ExternalMap[\"TRACK\", LINE[\"POSITION\",\"M1.2\"], nt_, x_]:=CompiledMap[nt, x, src, prm];\n\n\
+works as a special colimation at a MAP element M1.2, resulting:\n\n\
+<Collimate.png\n\n\
+Options      Defaul     Description\n\
+-------------------------------------------------------------\n\
+Single       False      If True, the map is called once for the entrire particles even for NPARA > 1.\n\
+Completion   Null       A completion SADScript to be called after the map with the arg {x, prm}.",
+            "ExternalMap MAP POL",
+            {}}
+          }},
 
        {"Element",
         "\
@@ -4399,10 +4419,11 @@ The argument nbegin is the initial turn number to be passed to tracking to indic
 The argument nend is the last turn number. The default is nbegin.\n\n\
    The variable beam and also the result of TrackParticles are lists of the form \n\n\
    {location, coordinates}\n\n\
-where location is the position-number of the starting point. If location is same as or in the downstream of destination, the tracking is done by folding across the beginning of the beam line. The coordinates are in a list of {7, np} form, where np is the number of particles. The first 6 elements of coordinates specifies\n\n\
-   {x, px/p0, y, py/p0, z, dp/p0}\n\n\
-in this order. The {7, i} is the flag which is True(==1) when the particle is alive, and False(==0) when lost.\n\n\
-   If the flag POL is on, TrackParticles performs spin tracking. Then the coordinates has two more components sy and phis, which correspond to the y-component of the classical spin vector and the angle ArcTan[sx, sz], respectively. If POL is on, another flag RADPOL turns on the Sokolov-Ternov effect.\n\n\
+where location is the position-number of the starting point. If location is same as or in the downstream of destination, the tracking is done by folding across the beginning of the beam line. The coordinates are in a list of {7 or 9, np} form, where np is the number of particles. The first 6 or 8 elements of coordinates specifies either\n\n\
+   {x, px/p0, y, py/p0, z, dp/p0} (NOPOL)\n\
+   {x, px/p0, y, py/p0, z, dp/p0 sy, sarg} (NOPOL)\n\b\
+in this order. The {-1, i} is the flag which is True(==1) when the particle is alive, and False(==0) when lost.\n\n\
+   If the flag POL is on, TrackParticles performs spin tracking. Then the coordinates has two more components sy and sarg, which correspond to the y-component of the classical spin vector and the angle ArcTan[sx, sz], respectively. If POL is on, another flag RADPOL turns on the Sokolov-Ternov effect.\n\n\
    When a flag RADLIGHT is on, TrackParticles returns the trajectories of particles which are used to calculate the radiation fields. See RadiationField and RadiationSpectrum.\n\n\
 When PHOTONS is ON (default is OFF), TrackParticles generates a list of all photons radiated through the tracking. The list is assigned to a symbol PhotonList.\n\n\
 When LOSSMAP is ON (default is OFF), TrackParticles returns the component and the turn where the loss of each particle is detected.",

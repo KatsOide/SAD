@@ -2,7 +2,7 @@
       use touschek_table
       use tfstk
       use tffitcode
-      use ffs, only: gettwiss,ffs_bound
+      use ffs, only: gettwiss,ffs_bound,ifsize
       use ffs_pointer
       use ffs_flag
       use tmacro
@@ -34,6 +34,10 @@
       normali=.true.
       call tffsbound(fbound)
       call tturneg(trans,cod,beam,srot,fbound,iae,plot,rt,optics)
+c      if(ifsize .ne. 0)then
+c        write(*,*)'tturneg-end ',beamsize(1,nlat),beamsize(6,nlat),
+c     $       beamsize(21,nlat)
+c      endif
       if(update)then
         if(wrfeff .ne. 0.d0)then
           alambdarf=pi2/wrfeff
@@ -48,25 +52,13 @@
           if(radcod)then
 c     trf0=-(cod(5)+z0)*0.5d0
           else
-            if(vceff .gt. u0*pgev)then
-              if(trans(5,6) .lt. 0.d0)then
-                trf0=(asin(u0*pgev/vceff))/wrfeff
-              else
-                trf0=(pi-asin(u0*pgev/vceff))/wrfeff
-              endif
-c         write(*,'(a,1p6g15.7)')'ttrune ',u0*pgev,vceff,wrfeff,
-c     $             trans(5,6),trf0
-c         write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6),cod
-            else
-              trf0=(.5*pi)/wrfeff
-            endif
-            if(trf0 .lt. 0.d0)then
-              trf0=-mod(-trf0+0.5d0*alambdarf,alambdarf)
-     $             +alambdarf*0.5d0
-            else
-              trf0= mod(trf0-0.5d0*alambdarf,alambdarf)
-     $             +alambdarf*0.5d0
-            endif
+            trf0=merge(merge((asin(u0*pgev/vceff))/wrfeff,
+     $           (pi-asin(u0*pgev/vceff))/wrfeff,
+     $           trans(5,6) .lt. 0.d0),(.5*pi)/wrfeff,
+     $           vceff .gt. u0*pgev)
+            trf0=merge(-mod(-trf0+0.5d0*alambdarf,alambdarf),
+     $           mod(trf0-0.5d0*alambdarf,alambdarf),
+     $           trf0 .lt. 0.d0)+alambdarf*0.5d0
           endif
         endif
         call RsetGL1('DTSYNCH',trf0)
@@ -110,6 +102,10 @@ c         write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6),cod
       ddvcacc=0.d0
       normali=.true.
       call tturne0(trans,cod,beam,srot,fbound,iae,0,plot,rt,optics)
+c      if(ifsize .ne. 0)then
+c        write(*,*)'tturne0-end ',beamsize(1,nlat),beamsize(6,nlat),
+c     $       beamsize(21,nlat)
+c      endif
       if(vcacc .ne. 0.d0)then
         wrfeff=sqrt(abs(ddvcacc/vcacc))
       elseif(vc0 .ne. 0.d0)then
@@ -120,11 +116,8 @@ c         write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6),cod
       if(wrfeff .eq. 0.d0 .and. vc0 .ne. 0.d0)then
         wrfeff=hvc0/vc0*omega0/c
       endif
-      if(wrfeff .ne. 0.d0)then
-        vceff=abs(dcmplx(vcacc,dvcacc/wrfeff))
-      else
-        vceff=0.d0
-      endif
+      vceff=merge(abs(dcmplx(vcacc,dvcacc/wrfeff)),0.d0,
+     $     wrfeff .ne. 0.d0)
       if(vceff .eq. 0.d0)then
         vceff=vc0
       endif
@@ -136,11 +129,7 @@ c         write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6),cod
         trf0=0.d0
         vcalpha=1.d0
       else
-        if(vc0 .ne. 0.d0)then
-          vcalpha=vceff/vc0
-        else
-          vcalpha=0.d0
-        endif
+        vcalpha=merge(vceff/vc0,0.d0,vc0 .ne. 0.d0)
       endif
       return
       end
@@ -167,7 +156,7 @@ c         write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6),cod
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 trans1(6,12),cod1(6),beam1(42)
       type (sad_descriptor) dsave(kwMAX)
-      real*8 r,xp,xb,xe,fr,fra,frb,tffselmoffset
+      real*8 xp,xb,xe,fr,fra,frb,tffselmoffset
       logical*4 ,intent(in):: plot,rt,optics
       logical*4 sol,chg,sol1,cp0,int0
       sol=.false.
@@ -198,10 +187,14 @@ c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
      $       iae,idp,plot,sol,rt,optics,
      $       ls,le1)
         if(plot)then
+c          write(*,*)'tturne0-le1+1 ',le1+1,nlat,beam(1),beam(6),beam(21)
           call tfsetplot(trans,cod,beam,fbound%lb,
      $         le1+1,iae%iatr,iae%iacod,.false.,idp)
-c          write(*,'(a,l2,i5,1p6g15.7)')'tturne0-le1 ',codplt,le1+1,
-c     $       twiss(le1+1,idp,mfitnx)/m_2pi
+c          if(ifsize .ne. 0)then
+c            write(*,*)'tturne0-setplot ',codplt,
+c     $           beamsize(1,nlat),beamsize(6,nlat),
+c     $           beamsize(21,nlat)
+c          endif
         endif
       else
         if(ls .lt. fbound%le)then
@@ -329,12 +322,9 @@ c     below is incorrect for fra <> 0
           endif
         enddo
       elseif(radtaper .and. radcod)then
-        if(fbound%le .eq. 1)then
-          r=1.d0
-        else
-          r=gammab(fbound%le-1)/gammab(fbound%le)
-        endif
-        twiss(fbound%le,idp,mfitddp)=cod(6)*r
+        twiss(fbound%le,idp,mfitddp)=cod(6)*
+     $       merge(1.d0,gammab(fbound%le-1)/gammab(fbound%le),
+     $       fbound%le .eq. 1)
       endif
       lv=itfdownlevel()
       return
@@ -363,7 +353,7 @@ c     below is incorrect for fra <> 0
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 bmir(6,6),bmi(21),bmh(21),trans1(6,6)
       real*8 psi1,psi2,apsi1,apsi2,alid,alid1,
-     $     r,dir,al,alib,dtheta,theta0,ftable(4),
+     $     dir,al,alib,dtheta,theta0,ftable(4),
      $     fb1,fb2,ak0,ak1,rtaper,als
       integer*4 ,intent(in):: idp,ibegin,iend
       integer*4 l,ld,lele,mfr,ke,irtc,i,l1
@@ -426,20 +416,12 @@ c          write(*,*)'tturne1-setetwiss ',l,beamplt,idp,cod(5)
           call tsetetwiss(trans,cod,beam,ibegin,l,idp)
 c          write(*,*)'tturne1-setetwiss-end ',l,plot,cod(5)
         elseif(radtaper .and. radcod)then
-          if(l .eq. 1)then
-            r=1.d0
-          else
-            r=gammab(l-1)/gammab(l)
-          endif
-          twiss(l,idp,mfitddp)=cod(6)*r
+          twiss(l,idp,mfitddp)=cod(6)*
+     $         merge(1.d0,gammab(l-1)/gammab(l),l .eq. 1)
         endif
         ld=idelc(l)
         lele=idtype(ld)
-        if(ideal)then
-          lp=idval(ld)
-        else
-          lp=elatt%comp(l)
-        endif
+        lp=merge(idval(ld),elatt%comp(l),ideal)
         call loc_comp(lp,cmp)
         seg=tcheckseg(cmp,lele,al,lsegp,irtc)
         if(irtc .ne. 0)then
@@ -461,11 +443,7 @@ c          write(*,*)'tturne1-setetwiss-end ',l,plot,cod(5)
             alid=alid1
             if(plotib)then
               if(lele .eq. icDRFT)then
-                if(bmaccum)then
-                  bmh=bmh+bmi
-                else
-                  bmh=bmi
-                endif
+                bmh=merge(bmh+bmi,bmi,bmaccum)
                 bmaccum=.true.
               else
                 if(bmaccum)then
@@ -645,7 +623,6 @@ c     $       kxx,irtc)
           else
             mfr=mfr*(11+mfr*(2*mfr-9))/2
           endif
-c     write(*,*)'tturne-tcave',cod
           call tcave(trans,cod,beam,srot,l,al,
      1         cmp%value(ky_VOLT_CAVI)+cmp%value(ky_DVOLT_CAVI),
      $         cmp%value(ky_HARM_CAVI),
@@ -657,7 +634,6 @@ c     write(*,*)'tturne-tcave',cod
      $         cmp%value(ky_FRIN_CAVI) .eq. 0.d0,mfr,
      $         cmp%value(ky_APHI_CAVI) .ne. 0.d0,
      $         ld)
-c     write(*,*)'tturne-tcave-1',cod
 
         case (icTCAV)
           call ttcave(trans,cod,beam,srot,al,
@@ -691,7 +667,7 @@ c            call tmultr(trans,trans1,6)
  1010   continue
         call limitcod(cod)
       enddo
-      call limitnan(cod,-1.d10,1.d10)
+      call limitnan(cod,1.d10)
 c      call tfmemcheckprint('tturne-end0',0,.true.,irtc)
       if(calint)then
         if(alid .ne. 0.d0)then
@@ -755,6 +731,7 @@ c      call tfmemcheckprint('tturne-end1',0,.true.,irtc)
       use ffs_flag
       use tffitcode
       use tmacro
+      use temw, only:beamplt
       implicit none
       integer*8 iatr,iacod
       integer*4 l,idp,lorg
@@ -776,7 +753,7 @@ c      call tfmemcheckprint('tturne-end1',0,.true.,irtc)
      $         dtfcopy1(kxm2l(cod,0,6,1,.false.))
         endif
       endif
-      if(codplt)then
+      if(codplt .or. beamplt)then
         call tsetetwiss(trans,cod,beam,lorg,l,idp)
       elseif(radcod .and. radtaper)then
         twiss(l,idp,mfitddp)=cod(6)
@@ -787,6 +764,7 @@ c      call tfmemcheckprint('tturne-end1',0,.true.,irtc)
       subroutine tsetetwiss(trans,cod,beam,lorg,l,idp)
       use ffs
       use ffs_pointer
+      use ffs_flag, only:codplt
       use tffitcode
       use tmacro
       use temw, only:tfetwiss,etwiss2ri,normali,ri,toln,tinv6,
@@ -796,40 +774,38 @@ c      call tfmemcheckprint('tturne-end1',0,.true.,irtc)
       integer*4 l,idp,lorg,l0
       real*8 trans(6,6),ti(6,6),twi(ntwissfun),cod(6),beam(42),gr
       logical*4 norm
-      if(trpt)then
-        gr=gammab(l)/gammab(max(1,lorg-1))
-        ti=tinv6(trans*sqrt(gr))
-      else
-        ti=tinv6(trans)
-      endif
-      if(lorg .le. 1)then
-        ti=matmul(ri,ti)
-        norm=normali
-        l0=1
-      else
-        l0=lorg
-        twi=twiss(lorg,idp,1:ntwissfun)
-        ti=matmul(etwiss2ri(twi,norm),ti)
-      endif
-      twi=tfetwiss(ti,cod,norm)
-      if(l .eq. 1)then
-        twi(mfitnx)=0.d0
-        twi(mfitny)=0.d0
-        twi(mfitnz)=0.d0
-      else
-        if(twi(mfitnx) .lt. -toln)then
-          twi(mfitnx)=twiss(l0,idp,mfitnx)+twi(mfitnx)+pi2
+      if(codplt)then
+        if(trpt)then
+          gr=gammab(l)/gammab(max(1,lorg-1))
+          ti=tinv6(trans*sqrt(gr))
         else
-          twi(mfitnx)=twiss(l0,idp,mfitnx)+twi(mfitnx)
+          ti=tinv6(trans)
         endif
-        if(twi(mfitny) .lt. -toln)then
-          twi(mfitny)=twiss(l0,idp,mfitny)+twi(mfitny)+pi2
+        if(lorg .le. 1)then
+          ti=matmul(ri,ti)
+          norm=normali
+          l0=1
         else
-          twi(mfitny)=twiss(l0,idp,mfitny)+twi(mfitny)
+          l0=lorg
+          twi=twiss(lorg,idp,1:ntwissfun)
+          ti=matmul(etwiss2ri(twi,norm),ti)
         endif
-        twi(mfitnz)=twiss(l0,idp,mfitnz)+twi(mfitnz)
+        twi=tfetwiss(ti,cod,norm)
+        if(l .eq. 1)then
+          twi(mfitnx)=0.d0
+          twi(mfitny)=0.d0
+          twi(mfitnz)=0.d0
+        else
+          twi(mfitnx)=merge(twiss(l0,idp,mfitnx)+twi(mfitnx)+pi2,
+     $         twiss(l0,idp,mfitnx)+twi(mfitnx),
+     $         twi(mfitnx) .lt. -toln)
+          twi(mfitny)=merge(twiss(l0,idp,mfitny)+twi(mfitny)+pi2,
+     $         twiss(l0,idp,mfitny)+twi(mfitny),
+     $         twi(mfitny) .lt. -toln)
+          twi(mfitnz)=twiss(l0,idp,mfitnz)+twi(mfitnz)
+        endif
+        twiss(l,idp,1:ntwissfun)=twi
       endif
-      twiss(l,idp,1:ntwissfun)=twi
 c      write(*,'(a,2i5,1p6g15.7)')'setetwiss-end ',l,l0,
 c     $     twi(mfitnx)/m_2pi,toln
       if(irad .ge. 12 .and. beamplt)then
@@ -876,11 +852,7 @@ c      call tmultr(ti,ra,6)
       use tmacro
       implicit none
       real*8 rgetgl1
-      if(rfsw)then
-        dvfs=rgetgl1('FSHIFT')
-      else
-        dvfs=0.d0
-      endif
+      dvfs=merge(rgetgl1('FSHIFT'),0.d0,rfsw)
       return
       end
 
@@ -951,11 +923,8 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
       endif
       do i=i1,i2,istep
         do k=1,nc
-          if(integv(k,icMULT))then
-            cmp%value(k)=rsave(k)*lak%rbody(i)
-          else
-            cmp%value(k)=rsave(k)
-          endif
+          cmp%value(k)=merge(rsave(k)*lak%rbody(i),rsave(k),
+     $         integv(k,icMULT))
         enddo
         do k=1,nk
           call descr_sad(lsegp%dbody(k),lk)

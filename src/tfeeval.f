@@ -1,8 +1,9 @@
       subroutine tfeeval(k,kx,ref,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kx
-      integer*4 irtc
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(out):: irtc
       logical*4 ref
       if(ref)then
         call tfeevalref(k,kx,irtc)
@@ -16,10 +17,11 @@
       use tfstk
       use mackw
       implicit none
-      type (sad_descriptor) k,kx
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: list
       integer*8 ka
-      integer*4 irtc
+      integer*4 ,intent(out):: irtc
       kx=k
       irtc=0
       if(ktflistq(k,list))then
@@ -39,11 +41,12 @@
       subroutine tfleval(list,kx,ref,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
-      type (sad_dlist) list
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_dlist) ,intent(inout):: list
       integer*8 kaa
-      integer*4 irtc
-      logical*4 ref,tfconstlistqo
+      integer*4 ,intent(out):: irtc
+      logical*4 ,intent(in):: ref
+      logical*4 tfconstlistqo
       kaa=ksad_loc(list%head%k)
       kx%k=ktflist+kaa
       irtc=0
@@ -75,9 +78,10 @@
       integer*4 maxlevel
       parameter (maxlevel=2**12)
       integer*8 ks,iaat,kaf
-      integer*4 irtc,ns
-      integer*4 isp1,isp10,isp11,level,itfgetrecl,
-     $     j,isp0,mf,i1,level1,i,itfmessage,lpw,l,itfdownlevel
+      integer*4 irtc,ns,iaf,isp10,isp11,j
+      integer*4 isp1,level,itfgetrecl,
+     $     isp0,mf,i1,level1,i,itfmessage,lpw,l,itfdownlevel
+      real*8 v
       logical*4 ref,ev,evalh,rep,stk,tfconstlistqo,tfgetseqstk,av
       data level/0/
       level=level+1
@@ -96,6 +100,7 @@
       select case(kf%k-kaf)
       case (ktfoper)
         call c_f_pointer(c_loc(klist(klist(ifunbase+kaf)-9)),fun)
+        iaf=-fun%id
         if(fun%narg .lt. 0)then
           go to 100
         endif
@@ -129,13 +134,14 @@
       ev=.true.
       iaat=0
 
-      do while(.true.)
+      do
         if(ktfoperq(kf%k))then
           kaf=ktfaddr(kf)
           call c_f_pointer(c_loc(klist(klist(ifunbase+kaf)-9)),fun)
           iaat=klist(ifunbase+kaf)+1
           mf=fun%narg
           if(mf .lt. 0)then
+            iaf=-fun%id
             evalh=.true.
             exit
           endif
@@ -148,11 +154,7 @@
             iaat=iand(iattrholdall,sym%attr)
             if(iaat .ne. 0)then
               ev=.false.
-              if(iaat .eq. iattrholdall)then
-                iaat=0
-              else
-                iaat=-iaat
-              endif
+              iaat=merge(i00,-iaat,iaat .eq. iattrholdall)
             endif
           endif
         elseif(ktflistq(kf,klf))then
@@ -179,25 +181,7 @@
 
  100  isp=isp0+1
       isp1=isp
-      select case(kaf)
-c      go to (
-c     $     1000,
-c     $     1900,1900,1900,1900,1900,1900,1900,1900,1900,1900,
-c     $     1900,1900,1900,1900,1900,1900,1900,1100,1110,1900,
-c     $     1900,1900,1000,1900,1900,1200,1900,1900,1900,1900,
-c     $     1300,1010,1900,1000,1900,1900,1900,1900,1900,1900,
-c     $     1010,1900,1400,1400,1900,1900,1900,1900,1900,1000,
-c     $     1000,1900,1900,1900,1900,1900,1900,1900,1500,1900,
-c     $     1900,1010,1900,1900,1010,1900),
-c     $     kaf+1
-c          null
-c          m    i    +    -    *    /    v    ^    e    n    
-c          >    <    g    l    E    N    ~    &&    o    c
-c          [    ]    {    }    s    =    C    (    )    ,
-c          ;    &    :    r    d    RepA RepR u    U    S    
-c          ?    f    #    ##   .    |    M    MA   A    rept 
-c          repn ineq AT   SF   TB   DB   Inc  Dec  Part @
-c          msgn TagS (*   *)   Hold z
+      select case(iaf)
       case(mtfnull,mtflist,mtfrule,mtfrepeated,mtfrepeatednull)
         if(stk)then
           ev=.true.
@@ -208,7 +192,7 @@ c          msgn TagS (*   *)   Hold z
             kls1=>tfduplist(kls)
             kls=>kls1
           endif
-          kls%head%k=ktfoper+kaf
+          kls%head%k=ktfoper+iaf
 c          call tfloadlstk(lista,lista)
 c          lista%head=ktfoper+kaf
 c          call tfstk2l(lista,lista)
@@ -237,6 +221,64 @@ c          call tfstk2l(lista,lista)
         endif
         levele=levele+1
         go to 6000
+      case (mtfand)
+        do i=1,ns
+          isp10=isp
+          call tfseqevalstk(kls%dbody(1),ns,i,av,irtc)
+          if(irtc .ne. 0)then
+            go to 8000
+          endif
+          isp11=isp
+          isp=isp10
+          do j=isp10+1,isp11
+            if(ktfrealq(ktastk(j),v))then
+              if(v==0.d0)then
+                kx%k=0
+                go to 8000
+              endif
+            else
+              isp=isp+1
+              ktastk(isp)=ktastk(j)
+            endif
+          enddo
+        enddo
+        if(isp .eq. isp1)then
+          kx%k=ktftrue
+        elseif(isp .eq. isp1+1)then
+          kx=dtastk(isp)
+        else
+          levele=levele+1
+          go to 6000
+        endif
+      case (mtfor)
+        do i=1,ns
+          isp10=isp
+          call tfseqevalstk(kls%dbody(1),ns,i,av,irtc)
+          if(irtc .ne. 0)then
+            go to 8000
+          endif
+          isp11=isp
+          isp=isp10
+          do j=isp10+1,isp11
+            if(ktfrealq(ktastk(j),v))then
+              if(v/=0.d0)then
+                kx%k=ktftrue
+                go to 8000
+              endif
+            else
+              isp=isp+1
+              ktastk(isp)=ktastk(j)
+            endif
+          enddo
+        enddo
+        if(isp .eq. isp1)then
+          kx%k=ktffalse
+        elseif(isp .eq. isp1+1)then
+          kx=dtastk(isp)
+        else
+          levele=levele+1
+          go to 6000
+        endif
       case (mtfpart)
         if(ref .or. ns .eq. 0)then
           ev=.true.
@@ -253,14 +295,14 @@ c          call tfstk2l(lista,lista)
           go to 6000
         endif
       case (mtfslot,mtfslotseq)
-        call tfslot(kaf,kls,kx,ref,irtc)
+        call tfslot(iaf,kls,kx,ref,irtc)
       case (mtfcomp)
         if(ns .eq. 0)then
           kx%k=ktfoper+mtfnull
           go to 8000
         endif
         i1=1
-        do while(.true.)
+        do
           if(ltrace .gt. 0)then
             levele=levele+1
             lpw=min(131,itfgetrecl())
@@ -305,64 +347,6 @@ c          call tfstk2l(lista,lista)
           endif
           i1=i1+1
         enddo
-      case (mtfand)
-        do i=1,ns
-          isp10=isp
-          call tfseqevalstk(kls%dbody(1),ns,i,av,irtc)
-          if(irtc .ne. 0)then
-            go to 8000
-          endif
-          isp11=isp
-          isp=isp10
-          do j=isp10+1,isp11
-            if(ktfrealq(ktastk(j)))then
-              if(ktastk(j) .eq. 0)then
-                kx%k=0
-                go to 8000
-              endif
-            else
-              isp=isp+1
-              ktastk(isp)=ktastk(j)
-            endif
-          enddo
-        enddo
-        if(isp .eq. isp1)then
-          kx%k=ktftrue
-        elseif(isp .eq. isp1+1)then
-          kx=dtastk(isp)
-        else
-          levele=levele+1
-          go to 6000
-        endif
-      case (mtfor)
-        do i=1,ns
-          isp10=isp
-          call tfseqevalstk(kls%dbody(1),ns,i,av,irtc)
-          if(irtc .ne. 0)then
-            go to 8000
-          endif
-          isp11=isp
-          isp=isp10
-          do j=isp10+1,isp11
-            if(ktfrealq(ktastk(j)))then
-              if(ktastk(j) .ne. 0)then
-                kx%k=ktftrue
-                go to 8000
-              endif
-            else
-              isp=isp+1
-              ktastk(isp)=ktastk(j)
-            endif
-          enddo
-        enddo
-        if(isp .eq. isp1)then
-          kx%k=0
-        elseif(isp .eq. isp1+1)then
-          kx=dtastk(isp)
-        else
-          levele=levele+1
-          go to 6000
-        endif
       case (mtffun,mtfpattest,mtftagset,mtfhold)
         rep=tfgetseqstk(ks,ns)
         if(rep .or. stk .or. evalh)then
@@ -371,7 +355,7 @@ c          call tfstk2l(lista,lista)
         endif
         kx%k=ktflist+ks
       case default
-        write(*,*)'tfleval-implementation error: ',kaf
+        write(*,*)'tfleval-implementation error: ',kaf,iaf
         call abort
       end select
       go to 8000
@@ -421,8 +405,10 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
       use tfstk
       implicit none
       type (sad_dlist), pointer :: kl
-      integer*8 ks,ki
-      integer*4 ns,i
+      integer*8 ,intent(in):: ks
+      integer*8 ki
+      integer*4 ,intent(in):: ns
+      integer*4 i
       tfgetseqstk=.false.
       if(ns .gt. 0)then
         do i=1,ns
@@ -497,9 +483,9 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
       subroutine tflocalrel(k,kan)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_object), pointer :: obj
-      integer*8 kan
+      integer*8 ,intent(out):: kan
       if(ktfobjq(k,obj))then
         obj%ref=obj%ref-1
         if(obj%ref .le. 0)then
@@ -516,7 +502,8 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
       subroutine tfreel(ip,last)
       use tfstk
       implicit none
-      integer*8 ip,last
+      integer*8 ,intent(in):: ip
+      integer*8 ,intent(inout):: last
       if(ip .eq. 0)then
         if(last .ne. 0)then
           call tfree(last)
@@ -545,7 +532,8 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
       use tfstk
       implicit none
       type (sad_object), pointer :: obj
-      integer*8 k,ka,itfroot
+      integer*8 ,intent(in):: k
+      integer*8 ka,itfroot
       if(ktfobjq(k))then
         ka=ktfaddr(k)
         call loc_obj(ka,obj)
@@ -566,7 +554,8 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
       use tfstk
       implicit none
       type (sad_object), pointer :: obj
-      integer*8 ka,k,itfroot
+      integer*8 ,intent(in):: k
+      integer*8 ka,itfroot
       ka=ktfaddr(k)
       call loc_obj(ka,obj)
       obj%ref=obj%ref-1
@@ -593,10 +582,10 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
       subroutine tflevalstk(list,ref,irtc)
       use tfstk
       implicit none
-      type (sad_dlist) list
+      type (sad_dlist) ,intent(inout):: list
       type (sad_dlist) , pointer :: kl
-      integer*4 irtc
-      logical*4 ref
+      integer*4 ,intent(out):: irtc
+      logical*4 ,intent(in):: ref
       if(list%head%k .eq. ktfoper+mtfnull)then
         call tfevallstkall(list,ref,ref,irtc)
       else
@@ -621,12 +610,14 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
       recursive subroutine tfargevalstk(isp0,list,m,iaat,mf,av,irtc)
       use tfstk
       implicit none
-      type (sad_dlist) :: list
+      type (sad_dlist) ,intent(inout):: list
       type (sad_dlist), pointer :: kli
       type (sad_descriptor) ki
-      integer*8 iaat
-      integer*4 isp0,mf,irtc,i,m
-      logical*4 av
+      integer*8 ,intent(in):: iaat
+      integer*4 ,intent(in):: m,isp0
+      integer*4 ,intent(out):: irtc
+      integer*4 mf,i
+      logical*4 ,intent(in):: av
       irtc=0
       if(m .le. 0)then
         return
@@ -720,9 +711,11 @@ c                endif
       subroutine tfseqevalstkall(ks,m,av,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) ks(m)
-      integer*4 irtc,i,isp0,m
-      logical*4 av
+      type (sad_descriptor) ,intent(in):: ks(m)
+      integer*4 ,intent(in):: m
+      integer*4 ,intent(out):: irtc
+      integer*4 i,isp0
+      logical*4 ,intent(in):: av
       irtc=0
       if(m .le. 0)then
         return
@@ -746,9 +739,10 @@ c                endif
       use tfstk
       implicit none
       type (sad_dlist), pointer :: kli
-      type (sad_descriptor) ks(m)
-      integer*4 irtc,m,i
-      logical*4 av
+      type (sad_descriptor) ,intent(in):: ks(m)
+      integer*4 ,intent(out):: irtc
+      integer*4 ,intent(in):: m,i
+      logical*4 ,intent(in):: av
       irtc=0
       if(i .le. m)then
         if(av)then
@@ -771,11 +765,13 @@ c                endif
       subroutine tfevallev(list,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,ki0,ki
-      type (sad_dlist) list
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) ki0,ki
+      type (sad_dlist) ,intent(in):: list
       type (sad_dlist), pointer :: listi
       integer*8 kai
-      integer*4 irtc,i,isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 i,isp1
       logical*4 ev
       if(ktfreallistq(list) .or. iand(list%attr,kconstarg) .ne. 0)then
         kx=sad_descr(list)
@@ -823,11 +819,7 @@ c                endif
           call tfgetllstkall(listi)
         endif
       enddo
-      if(ev)then
-        kx=kxcompose(isp1)
-      else
-        kx=sad_descr(list)
-      endif
+      kx=merge(kxcompose(isp1),sad_descr(list),ev)
       irtc=0
  9000 isp=isp1-1
       return
@@ -836,10 +828,10 @@ c                endif
       subroutine tfevalstk(k,ref,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer :: kl
-      integer*4 irtc
-      logical*4 ref
+      integer*4 ,intent(out):: irtc
+      logical*4 ,intent(in):: ref
       if(ktfsequenceq(k,kl))then
         call tfevallstkall(kl,ref,ref,irtc)
       else
@@ -859,10 +851,11 @@ c                endif
       subroutine tfevallstkall(list,ref1,ref,irtc)
       use tfstk
       implicit none
-      type (sad_dlist) list
+      type (sad_dlist) ,intent(in):: list
       type (sad_descriptor) ki
-      integer*4 irtc,i,isp0,m
-      logical*4 ref,ref1
+      integer*4 ,intent(out):: irtc
+      integer*4 i,isp0,m
+      logical*4 ,intent(in):: ref,ref1
       m=list%nl
       if(ktfreallistq(list))then
         isp0=isp
@@ -899,9 +892,10 @@ c                endif
       subroutine tfgetllstk(list,i1,i2)
       use tfstk
       implicit none
-      type (sad_dlist) list
+      type (sad_dlist) ,intent(in):: list
       type (sad_dlist), pointer :: kl
-      integer*4 i,m,i1,i2
+      integer*4 i,m
+      integer*4 ,intent(in):: i1,i2
       if(i2 .ge. 0)then
         m=min(i2,list%nl)
       else
@@ -927,7 +921,8 @@ c                endif
       use iso_c_binding
       use mackw
       implicit none
-      type (sad_descriptor) ka,kx
+      type (sad_descriptor) ,intent(in):: ka
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_symbol), pointer :: sym
       type (sad_symdef), pointer :: symd
       type (sad_namtbl), pointer :: loc
@@ -935,7 +930,8 @@ c                endif
       integer*4 maxlevel
       parameter (maxlevel=4096)
       integer*8 kas,j
-      integer*4 irtc,itfmessage,level1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,level1
       integer*4 level,ig,ig1
       data level/0/
       kas=ktfaddrd(ka)
@@ -990,10 +986,11 @@ c                endif
       subroutine tfeevaldef(k,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kx
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: list
       type (sad_symbol), pointer :: sym
-      integer*4 irtc
+      integer*4 ,intent(out):: irtc
       if(ktflistq(k,list))then
         if(iand(lconstlist,list%attr) .eq. 0)then
           call tfleval(list,kx,.false.,irtc)
@@ -1010,20 +1007,24 @@ c                endif
       return
       end
 
-      subroutine tfslot(kopc,kls,kx,ref,irtc)
+      subroutine tfslot(iopc,kls,kx,ref,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,ka
-      type (sad_dlist) kls
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) ka,tfsequence
+      type (sad_dlist) ,intent(in):: kls
       type (sad_symbol), pointer :: sym
       type (sad_namtbl), pointer :: nam
-      integer*8 kaa,kopc
-      integer*4 ind,irtc,nc,isp1,isps,
+      integer*8 kaa
+      integer*4 ,intent(in):: iopc
+      integer*4 ,intent(out):: irtc
+      integer*4 ind,nc,isp1,isps,
      $     itfmessage,ns,ipf0,naf0,ls,isp2,itfmessagestr
       real*8 ffval,vx
       character*256 name
       character*12 inds
-      logical*4 exist,ref
+      logical*4 ,intent(in):: ref
+      logical*4 exist
       ns=kls%nl
       if(ns .gt. 1)then
         irtc=itfmessage(9,'General::narg','"0 or 1"')
@@ -1041,7 +1042,7 @@ c                endif
             return
           endif
         elseif(ktfrealq(ka,ind))then
-        elseif(ktfsymbolq(ka,sym) .and. kopc .eq. mtfslot)then
+        elseif(ktfsymbolq(ka,sym) .and. iopc .eq. mtfslot)then
           call sym_namtbl(sym,nam)
           nc=nam%str%nch+1
           name(2:nc)=nam%str%str(1:nc-1)
@@ -1064,7 +1065,7 @@ c                endif
         endif
       endif
       isps=ipurefp+ind
-      if(kopc .eq. mtfslot)then
+      if(iopc .eq. mtfslot)then
         if(ipurefp .eq. 0 .or. ind .le. 0 .or. ind .gt. napuref)then
           call strfromil(ind,inds,ls)
           irtc=itfmessagestr(999,'General::slot',
@@ -1081,7 +1082,7 @@ c                endif
         endif
         isp1=isp
         isp2=ipurefp+napuref
-        call tfsequence(isps-1,isp2,kx)
+        kx=tfsequence(isps-1,isp2)
       endif
       ipf0=ipurefp
       naf0=napuref
@@ -1099,10 +1100,12 @@ c      call tfdebugprint(kx,'puref',1)
       use tfstk
       use tfcode
       implicit none
-      type (sad_descriptor) k,kx,ke
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) ke
       type (sad_pat), pointer :: pat
       integer*8 ka,kae,kte
-      integer*4 irtc
+      integer*4 ,intent(out):: irtc
       ka=ktfaddrd(k)
       call loc_pat(ka,pat)
       kx%k=ktfpat+ka
@@ -1111,8 +1114,6 @@ c      call tfdebugprint(kx,'puref',1)
       kae=ktfaddr(ke)
       kte=ke%k-kae
       if(kte .ne. ktfref)then
-c        call tfdebugprint(ke,'pateval',1)
-c        write(*,*)'at ',kae
         call tfeevalref(ke,ke,irtc)
         if(irtc .ne. 0)then
           return
@@ -1131,9 +1132,11 @@ c        write(*,*)'at ',kae
       use tfstk
       implicit none
       type (sad_descriptor) kr
-      type (sad_dlist) list
+      type (sad_dlist) ,intent(in):: list
       type (sad_dlist), pointer :: listj
-      integer*4 i,j,m
+      integer*4 ,intent(out):: i
+      integer*4 ,intent(in):: m
+      integer*4 j
       type (sad_descriptor), save :: kxlabel
       data kxlabel%k /0/
       if(kxlabel%k .eq. 0)then

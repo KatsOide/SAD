@@ -2,10 +2,11 @@
      $     result(lx)
       use tfstk
       implicit none
-      type (sad_descriptor) k1,k2
+      type (sad_descriptor) ,intent(in):: k1,k2
       type (sad_dlist), pointer :: kl1,kl2
       integer*4 i,n1
-      real*8 re,ae,s,d
+      real*8 ,intent(in):: re,ae
+      real*8 s,d
       complex*16 cx1,cx2
       lx=.false.
       if(tfnumberq(k1,cx1))then
@@ -43,17 +44,15 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*4 isp1,irtc,itfmessage
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
       irtc=0
-      if(ktfrealq(ktastk(isp)))then
-        kx%k=ktftrue
-      else
-        kx%k=0
-      endif
+      kx%k=merge(ktftrue,ktffalse,ktfrealq(ktastk(isp)))
       return
       end
 
@@ -61,24 +60,23 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*4 isp1,irtc,itfmessage
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
       irtc=0
-      if(ktfrealq(ktastk(isp)) .and. ktfenanq(rtastk(isp)))then
-        kx%k=ktftrue
-      else
-        kx%k=0
-      endif
+      kx%k=merge(ktftrue,ktffalse,
+     $     ktfrealq(ktastk(isp)) .and. ktfenanq(rtastk(isp)))
       return
       end
 
       logical*4 function tfconstlistqo(list)
       use tfstk
       implicit none
-      type (sad_dlist) list
+      type (sad_dlist) ,intent(inout):: list
       type (sad_descriptor) kh
       integer*4 i
       logical*4 tfconstheadqk,tfseqqo,nr
@@ -111,13 +109,8 @@
           list%attr=ior(list%attr,kconstarg)
         endif
       endif
-      if(tfconstlistqo)then
-c        call tfdebugprint(ktflist+ka,'constlist',3)
-        list%attr=ior(lconstlist+kconstarg,list%attr)
-      else
-c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
-        list%attr=ior(lnoconstlist,list%attr)
-      endif
+      list%attr=ior(merge(lconstlist+kconstarg,lnoconstlist,
+     $     tfconstlistqo),list%attr)
       return
       end
 
@@ -125,7 +118,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       use ophash
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer :: list
       type (sad_pat), pointer :: pat
       type (sad_symdef), pointer :: symd
@@ -133,11 +126,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       logical*4 tfconstlistqo
       tfconstheadqk=.true.
       if(ktfoperq(k,ka))then
-        if(ka .le. mtfend)then
-          tfconstheadqk=constop(ka)
-        else
-          tfconstheadqk=.false.
-        endif
+        tfconstheadqk=merge(constop(ka),.false.,ka .le. mtfend)
       elseif(ktfstringq(k))then
         tfconstheadqk=.false.
       elseif(ktfsymbolqdef(k%k,symd))then
@@ -165,7 +154,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       use tfstk
       use tfcode
       implicit none
-      type (sad_dlist) list
+      type (sad_dlist) ,intent(inout):: list
       type (sad_dlist), pointer :: kli
       integer*4 iadv,i
       logical*4 tfconstlistqo
@@ -202,18 +191,16 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       subroutine tfcomplexlistqkf(isp1,vx,irtc)
       use tfstk
       implicit none
-      integer*4 irtc,isp1,itfmessage
-      real*8 vx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage
+      real*8 ,intent(out):: vx
       logical*4 tfcomplexlistqk
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
-      if(tfcomplexlistqk(dtastk(isp)))then
-        vx=1.d0
-      else
-        vx=0.d0
-      endif
+      vx=merge(1.d0,0.d0,tfcomplexlistqk(dtastk(isp)))
       irtc=0
       return
       end
@@ -222,7 +209,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
      $     result(lx)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer :: kl
       integer*8 kh
       integer*4 i
@@ -249,7 +236,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       recursive logical*4 function tfsymbollistqo(kl) result(lx)
       use tfstk
       implicit none
-      type (sad_dlist) kl
+      type (sad_dlist) ,intent(inout):: kl
       type (sad_dlist), pointer :: kli
       type (sad_pat), pointer :: kpi
       integer*4 i
@@ -292,9 +279,12 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       use tfstk
       use efun
       implicit none
-      type (sad_descriptor) kx,kxi
+      type (sad_descriptor) kxi
       type (sad_dlist), pointer ::kl
-      integer*4 isp1,irtc,m,i,ispf,narg,itfmessage
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 m,i,ispf,narg,itfmessage
       narg=isp-isp1
       if(narg .eq. 1)then
         kx%k=ktftrue
@@ -354,27 +344,26 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       subroutine tfmatchqf(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
-      integer*4 isp1,irtc,itfpmatc,itfmessage
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfpmatc,itfmessage
       if(isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
       irtc=0
-      if(itfpmatc(ktastk(isp-1),ktastk(isp)) .ge. 0)then
-        kx%k=ktftrue
-      else
-        kx%k=0
-      endif
+      kx%k=merge(ktftrue,ktffalse,
+     $     itfpmatc(ktastk(isp-1),ktastk(isp)) .ge. 0)
       return
       end
 
       logical function tfrepeatedqk(k,null)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_dlist) , pointer :: kl
-      logical*4 null
+      logical*4 ,intent(out):: null
       tfrepeatedqk=.false.
       if(ktflistq(k,kl))then
         if(kl%head%k .eq. ktfoper+mtfrepeated)then
@@ -400,7 +389,7 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
       recursive logical*4 function tfrefq(k) result(l)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer ::kl
       integer*4 i
       if(ktfrefq(k))then
@@ -421,14 +410,14 @@ c        call tfdebugprint(ktflist+ka,'nonconstlist',3)
 
       logical*4 function tfsamesymbolqk(k1,k2)
       use tfstk, tf => tfsamesymbolqk
-      integer*8 k1,k2
+      integer*8 ,intent(in):: k1,k2
       tfsamesymbolqk=tf(k1,k2)
       return
       end
 
       logical*4 function tfruleqk(k)
       use tfstk, tf => tfruleqk_dlist
-      integer*8 k
+      integer*8 ,intent(in):: k
       tfruleqk=tf(k)
       return
       end

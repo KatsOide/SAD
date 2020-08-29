@@ -49,7 +49,6 @@ c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
       endif
       if(mfring .eq. 1 .or. mfring .eq. 3)then
         do concurrent (i=1:np)
-c          p=(1.d0+g(i))**2
           p=1.d0+g(i)
           a=f1in/p
           ea=exp(a)
@@ -122,9 +121,9 @@ c
       use mathfun
       use multa,only:fact
       use photontable
+      use kyparam, only:nmult
       implicit none
 c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
-      integer*4 , parameter::nmult=21
       real*8,parameter::alpha=2.88675134594812882d-1,
      1           beta =2.23290993692602255d-2,
      1           gamma=9.43738783765593145d-4,

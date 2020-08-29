@@ -213,7 +213,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
       logical*4 null
       l=len_trim(str)
       i1=1
-      do while(.true.)
+      do
         if(i1+lrecl .gt. l)then
           if(l .lt. i1)then
             if(null)then

@@ -105,6 +105,7 @@ c     tfstringliststk destroy `string' to decode backslash escape
       character*(*) string
       integer*4 l,is,is1,in
       l=len_trim(string)
+c      write(*,*)'tfstringliststk ',l,' ',string(1:l)
       is=1
       do while(is .le. l)
 c     Search '"' from string(is:l) with backslash escape

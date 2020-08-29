@@ -6,7 +6,8 @@
       implicit none
       character*80 pr
       character*10 n,autofg
-      integer*4 lfni,lfno,lfn1,l,nc
+      integer*4 ,intent(in):: lfni,lfno,lfn1
+      integer*4 l,nc
       integer*4 , save:: ipr=0
       if(lfni .eq. 5 .and. lfno .eq. 6 .and. lfn1 .eq. 0)then
         if(ipr .eq. 0)then

@@ -4,7 +4,8 @@
       use tflinepcom
       use temw, only:tfnormalcoord,tfinitemip
       implicit none
-      type (sad_descriptor) kx,kxj,kispi
+      type (sad_descriptor) kx,kxj,kispi,tfextractbeamline,
+     $     tfsetelement,teunmapp
       type (sad_dlist), pointer :: kli
       type (sad_rlist), pointer :: klx
       integer*8 ka
@@ -13,7 +14,7 @@
       real*8 rgetgl1
       logical*4 ref
       irtc=-1
-      kx=dxnull
+      kx%k=ktfoper+mtfnull
       id=id0-1000
       narg=isp-isp1
       ka=klist(ifunbase+ktfaddr(ktastk(isp1)))+1
@@ -47,13 +48,13 @@ c-------next 4 lines were modified by Kikuchi---------------
      $       5110,5120,5130,5140,5150,5160,5170,5180,5190,5200,
      $       5210,5220,5230,5240,5250,5260,5270,5280,5290,5300,
      $       5310,5320,5330,5340,5350,5360,5370,5380,5390,5400,
-     $       5410,5420,5430,5440,5450,5460,5470
+     $       5410,5420,5430,5440,5450,5460,5470,5480,5490
      $     ),id
 c            ELEM TWIS LINE CalE TraP CalO DyAp RspM Mast FLAG
 c            Mcad exDA InDA MAP  FFS  RadF RadS Flag ExBL BLNm
 c            SetE TKey NCD6 Tcl  FFSH ExpB GetM ClTr LiTr RGBC
 c            CPro TcA1 CaSy TkOA CaSD TcSR LifT SyBE CSRI CSRM
-c            CSRC CSRT CSRH CSOS CSOM AliP BBBR
+c            CSRC CSRT CSRH CSOS CSOM AliP BBBR MapP UnMP
       write(*,*)
      $'Wrong implementation of function (tfefun1).  ID = ',id0
       return
@@ -95,11 +96,11 @@ c-------Kikuchi addition end-----
       return
  5180 call tfflags(isp1,kx,irtc)
       return
- 5190 call tfextractbeamline(isp1,kx,irtc)
+ 5190 kx=tfextractbeamline(isp1,irtc)
       return
  5200 call tfbeamlinename(isp1,kx,irtc)
       return
- 5210 call tfsetelement(isp1,kx,irtc)
+ 5210 kx=tfsetelement(isp1,irtc)
       return
  5220 call tftypekey(isp1,kx,irtc)
       return
@@ -157,5 +158,9 @@ c-------Kikuchi addition end-----
  5460 call tfsurvivedparticles(isp1,kx,irtc)
       return
  5470 call tbcube1(isp1,kx,irtc)
+      return
+ 5480 call temapp(isp1,kx,irtc)
+      return
+ 5490 kx=teunmapp(isp1,irtc)
       return
       end

@@ -7,14 +7,15 @@
       use tffitcode
       use iso_c_binding
       implicit none
-      type (ffs_bound) fbound,ibound,ibound1
+      type (ffs_bound) ,intent(in):: fbound
+      type (ffs_bound) ibound,ibound1
       integer*8 iwbufxy,iwbufxyl,iwl,iwt,iwsl,iwst
       integer*4 itp1,i,j,ii,iutp,iwp,iutp1,np,npf,idx,idy,
      $     nlw,ntw
       real*8 rgetgl1,utwiss1(ntwissfun,-nfam:nfam),sigz,
      $     wbuf(nfam1:nfam),wzl(nfam1:nfam),wzt(nfam1:nfam),dx,dy
       real*8 , pointer::wakel(:,:),waket(:,:),wbufxy(:,:),wbufxyl(:,:)
-      logical*4 beg
+      logical*4 ,intent(in):: beg
       sigz=rgetgl1('SIGZ')
       ibound1%fb=0.d0
       ibound1%fe=0.d0

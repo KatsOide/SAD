@@ -25,6 +25,7 @@ c        type (sad_descriptor) elmv
         type (sad_descriptor) dvalue(1:0)
         integer*8 kvalue(1:0)
         integer*4 ivalue(2,1:0)
+        logical*1 lvalue(8,1:0)
         real*8 value(1:mbody)
         end type
 
@@ -91,11 +92,7 @@ c        el%elmv%k=0
         type (sad_el),intent(in) :: el
         type (sad_comp), pointer :: cmp
         call loc_comp(el%comp(i),cmp)
-        if(cmp%ori)then
-          dircomp=1.d0
-        else
-          dircomp=-1.d0
-        endif
+        dircomp=merge(1.d0,-1.d0,cmp%ori)
         return
         end function
 
@@ -106,7 +103,8 @@ c        el%elmv%k=0
         use macphys
         use macfile
         real*8, parameter :: c=cveloc,hp=plankr,e=elemch,epsrad=1.d-6,
-     $       emminv=1.d-15
+     $       emminv=1.d-15,eps00m=0.005d0,ampmaxm=0.05d0
+        integer*4 ,parameter :: ndivmaxm=1000
         real*8 amass,charge,h0,p0,omega0,trf0,crad,erad,
      $       codin(6),dleng,anrad,urad,u0,vc0,wrfeff,dp0,brho,
      $       ccintr,cintrb,pbunch,coumin,re0,pgev,emidiv,
@@ -474,11 +472,9 @@ c$$$susp;
         detr=r1*r4-r2*r3
         trr=r1+r4
         detr1=2.d0*(1.d0-detr)
-        if(trr .ge. 0.d0)then
-          alambda=detr1/(trr+sqrt(trr**2+2.d0*detr1))
-        else
-          alambda=detr1/(trr-sqrt(trr**2+2.d0*detr1))
-        endif
+        alambda=merge(detr1/(trr+sqrt(trr**2+2.d0*detr1)),
+     $       detr1/(trr-sqrt(trr**2+2.d0*detr1)),
+     $       trr .ge. 0.d0)
         sqrdet1=sqrt(1.d0+xyth-detr)
         rt1=(r1+alambda)*sqrdet1
         rt2=r2*sqrdet1
@@ -509,11 +505,7 @@ c$$$susp;
         dtrr=dr1+dr4
         detr1=2.d0*(1.d0-detr)
         ddetr1=-2.d0*ddetr
-        if(trr .ge. 0.d0)then
-          d=sqrt(trr**2+2.d0*detr1)
-        else
-          d=-sqrt(trr**2+2.d0*detr1)
-        endif
+        d=sign(sqrt(trr**2+2.d0*detr1),trr)
         dd=(dtrr*trr+ddetr1)/d
         e=1.d0/(trr+d)
         alambda=detr1*e
@@ -536,13 +528,8 @@ c$$$susp;
         sqrdet1=sqrt(detr)
         trr1=(rt1+rt4)/sqrdet1
         detr1=2.d0*(detr-xyth)
-        if(trr1 .ge. 0.d0)then
-          alambda=detr1/
-     $         (trr1+sqrt(max(0.d0,trr1**2-2.d0*detr1)))
-        else
-          alambda=detr1/
-     $         (trr1-sqrt(max(0.d0,trr1**2-2.d0*detr1)))
-        endif
+        alambda=detr1/
+     $       (trr1+sign(sqrt(max(0.d0,trr1**2-2.d0*detr1)),trr1))
         r1=rt1/sqrdet1-alambda
         r2=rt2/sqrdet1
         r3=rt3/sqrdet1
@@ -567,11 +554,7 @@ c$$$susp;
         ddetr1=2.d0*ddetr
         trr1=(rt1+rt4)/sqrdet1
         dtrr1=((drt1+drt4)-trr1*dsqrdet1)/sqrdet1
-        if(trr1 .ge. 0.d0)then
-          d=sqrt(max(0.d0,trr1**2-2.d0*detr1))
-        else
-          d=-sqrt(max(0.d0,trr1**2-2.d0*detr1))
-        endif
+        d=sign(sqrt(max(0.d0,trr1**2-2.d0*detr1)),trr1)
         dd=(trr1*dtrr1-ddetr1)/d
         e=1.d0/(trr1+d)
         alambda=detr1*e
@@ -681,16 +664,10 @@ c$$$susp;
         real*8 , parameter :: arad=0.02d0
         real*8 , intent(in)::ak,bz,phi,eps
         real*8 aka,eps1
-        eps1=eps
-        if(eps1 .le. 0.d0)then
-          eps1=1.d0
-        endif
+        eps1=merge(1.d0,eps,eps .le. 0.d0)
         aka=(abs(phi)+abs(dcmplx(ak,bz))*arad)/eps1
-        if(trpt)then
-          ndivrad=int(1.d0+h0/100.d0*aka*10.d0)
-        else
-          ndivrad=int(1.d0+h0/100.d0*aka)
-        endif
+        ndivrad=merge(int(1.d0+h0/100.d0*aka*10.d0),
+     $       int(1.d0+h0/100.d0*aka),trpt)
         return
         end function 
 
@@ -808,11 +785,8 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         use tmacro, only:nlat
         implicit none
         integer*4 i
-        if(i .le. 0 .or. i .ge. nlat)then
-          idtypecx=icNull
-        else
-          idtypecx=idtype(idcomp(elatt,i))
-        endif
+        idtypecx=merge(icNull,idtype(idcomp(elatt,i)),
+     $       i .le. 0 .or. i .ge. nlat)
         return
         end function
 
@@ -854,11 +828,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         integer*4,intent(in)::i
         type (sad_comp), pointer :: cmp
         call loc_comp(elatt%comp(i),cmp)
-        if(cmp%ori)then
-          direlc=1.d0
-        else
-          direlc=-1.d0
-        endif
+        direlc=merge(1.d0,-1.d0,cmp%ori)
         return
         end function
 
@@ -910,7 +880,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         implicit none
         type (sad_comp) cmp
         integer*4 ic
-        real*8 dir,akk,table(4),f1in,f1out,f2in,f2out
+        real*8 akk,table(4),f1in,f1out,f2in,f2out
         f1in =cmp%value(kytbl(kwF1,ic))
      $       +cmp%value(kytbl(kwF1K1F,ic))
         f1out=cmp%value(kytbl(kwF1,ic))
@@ -938,7 +908,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         implicit none
         type (sad_comp) cmp
         integer*4 ic
-        real*8 dir,table(4),f1in,f1out,f2in,f2out
+        real*8 table(4),f1in,f1out,f2in,f2out
         if(cmp%value(kytbl(kwL,ic)) .ne. 0.d0)then
           if(cmp%value(kytbl(kwK1,ic)) .ne. 0.d0 .or.
      $         kytbl(kwSK1,ic) .ne. 0 .and.
@@ -976,22 +946,63 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         use tmacro, only:nlat
         implicit none
         integer*4 ,intent(in):: i
-        if(trpt)then
-          if(i .gt. 0)then
-            ielma=min(nlat,i)
-          else
-            ielma=max(1,nlat+i+1)
-          endif
-        else
-          if(i .gt. 0)then
-            ielma=mod(i-1,nlat)+1
-          else
-            ielma=max(nlat-mod(-i,nlat)+1,1)
-          endif
-        endif
+        ielma=merge(merge(min(nlat,i),max(1,nlat+i+1),i .gt. 0),
+     $       merge(mod(i-1,nlat)+1,max(nlat-mod(-i,nlat)+1,1),
+     $       i .gt. 0),trpt)
         return
         end function
 
+      end module
+
+      module multa
+        use kyparam, only:nmult
+        real*8 ,parameter :: fact(0:nmult+1)=[
+     $       1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
+     1       720.d0,     5040.d0,     40320.d0,362880.d0,3628800.d0,
+     $       39916800.d0,479001600.d0,6227020800.d0,87178291200.d0,
+     $       1307674368000.d0,20922789888000.d0,355687428096000.d0,
+     $       6402373705728000.d0,121645100408832000.d0,
+     $       2432902008176640000.d0,51090942171709440000.d0,
+     $       1124000727777607680000.d0],
+     $       aninv(0:nmult+1)=[1.d0,1.d0,
+     $       0.5d0,
+     $       0.33333333333333333333d0,
+     $       0.25d0,
+     $       0.2d0,
+     $       0.166666666666666666667d0,
+     $       0.142857142857142857143d0,
+     $       0.125d0,
+     $       0.111111111111111111111d0,
+     $       0.1d0,
+     $       0.090909090909090909091d0,
+     $       0.083333333333333333333d0,
+     $       0.076923076923076923077d0,
+     $       0.071428571428571428571d0,
+     $       0.066666666666666666667d0,
+     $       0.0625d0,
+     $       0.058823529411764705882d0,
+     $       0.055555555555555555556d0,
+     $       0.052631578947368421053d0,
+     $       0.05d0,
+     $       0.047619047619047619048d0,
+     $       0.045454545454545454545d0]
+        logical*4 :: gknini=.true.
+        real*8 :: gkn(0:nmult,0:nmult)=0.d0
+
+        contains
+        subroutine gkninit
+        implicit none
+        integer*4 n,k
+        do n=0,nmult
+          gkn(n,0)=1.d0
+          do k=1,nmult-n
+            gkn(n,k)=gkn(n,k-1)
+     $           *dble((2*k-3)*(2*k+1))/8.d0/dble(k*(k+n+1))
+          enddo
+        enddo
+        gknini=.false.
+        return
+        end subroutine
       end module
 
       module tparastat
@@ -1033,14 +1044,15 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         use tfstk
         use ffs_pointer, only:idelc,idvalc,compelc,tsetfringep
         use ffs_flag, only:trpt
+        use multa, only:fact,aninv
         use mathfun, only:akang
         implicit none
         type (sad_comp) , intent(inout):: cmp
-        integer*4 ltyp
+        integer*4 ltyp,n,ndiv,nmmax
         real*8 phi,al,psi1,psi2,theta,dtheta,w,akk,sk1,
-     $       fb1,fb2,harm,vnominal,frmd,
+     $       fb1,fb2,harm,vnominal,frmd,eps,
      $       cchi1,cchi2,cchi3,schi1,schi2,schi3
-        complex*16 cr1
+        complex*16 cr1,cr,ck
         cmp%update=.true.
         ltyp=idtype(cmp%id)
         if(kytbl(kwNPARAM,ltyp) .eq. 0)then
@@ -1088,18 +1100,17 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
           cmp%value(p_SINTHETA_BEND)=sin(theta)
           cmp%value(p_COSW_BEND)=cos(w)
           cmp%value(p_SINW_BEND)=sin(w)
-          if(cmp%value(p_COSW_BEND) .ge. 0.d0)then
-            cmp%value(p_SQWH_BEND)=cmp%value(p_SINW_BEND)**2
-     $           /(1.d0+cmp%value(p_COSW_BEND))
-          else
-            cmp%value(p_SQWH_BEND)=1.d0-cmp%value(p_COSW_BEND)
-          endif
+          cmp%value(p_SQWH_BEND)=merge(cmp%value(p_SINW_BEND)**2
+     $         /(1.d0+cmp%value(p_COSW_BEND)),
+     $         1.d0-cmp%value(p_COSW_BEND),
+     $         cmp%value(p_COSW_BEND) .ge. 0.d0)
           cmp%value(p_SINWP1_BEND)=sin(phi-psi2)
 c          cmp%value(p_DPHIX_BEND)=phi*sin(.5d0*dtheta)**2
 c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
           cmp%value(p_THETA_BEND)=theta
           cmp%value(p_FB1_BEND)=fb1
           cmp%value(p_FB2_BEND)=fb2
+          cmp%ivalue(1,p_FRMD_BEND)=int(cmp%value(ky_FRMD_BEND))
 
         case (icQUAD)
           al=cmp%value(ky_L_QUAD)
@@ -1117,7 +1128,7 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
           if(.not. cmp%ori)then
             frmd=frmd*(11.d0+frmd*(2.d0*frmd-9.d0))/2.d0
           endif
-          cmp%value(p_FRMD_QUAD)=frmd
+          cmp%ivalue(1,p_FRMD_QUAD)=int(frmd)
 
         case (icSEXT,icOCTU,icDECA,icDODECA)
           theta=cmp%value(ky_ROT_THIN)
@@ -1149,7 +1160,7 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
           if(.not. cmp%ori)then
             frmd=frmd*(11.d0+frmd*(2.d0*frmd-9.d0))/2.d0
           endif
-          cmp%value(p_FRMD_MULT)=frmd
+          cmp%ivalue(1,p_FRMD_MULT)=int(frmd)
           if(frmd .ne. 3.d0 .and. frmd .ne. 1.d0)then
             fb1=0.d0
           endif
@@ -1182,17 +1193,11 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
             cmp%value(p_AKF1F_MULT:p_AKF2B_MULT)=0.d0
           endif
           harm=cmp%value(ky_HARM_MULT)
-          if(harm .eq. 0.d0)then
-            w=pi2*cmp%value(ky_FREQ_MULT)/c
-          else
-            w=omega0*harm/c
-          endif
-          if(trpt)then
-            vnominal=cmp%value(ky_VOLT_MULT)/amass*abs(charge)
-     $           *sin(-cmp%value(ky_PHI_MULT)*sign(1.d0,charge))
-          else
-            vnominal=0.d0
-          endif
+          w=merge(pi2*cmp%value(ky_FREQ_MULT)/c,
+     $         omega0*harm/c,harm .eq. 0.d0)
+          vnominal=merge(cmp%value(ky_VOLT_MULT)/amass*abs(charge)
+     $         *sin(-cmp%value(ky_PHI_MULT)*sign(1.d0,charge)),
+     $         0.d0,trpt)
           cmp%value(p_W_MULT)=w
           cmp%value(p_VNOMINAL_MULT)=vnominal
           cmp%value(p_THETA2_MULT)=cmp%value(ky_ROT_MULt)+
@@ -1202,24 +1207,59 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
           cmp%value(p_CR1_MULT)=dble(cr1)
           cmp%value(p_CR1I_MULT)=imag(cr1)
 
+          nmmax=-1
+          do n=nmult,0,-1
+            if(cmp%value(ky_K0_MULT+n*2) .ne. 0.d0
+     $           .or. cmp%value(ky_SK0_MULT+n*2) .ne. 0.d0)then
+              nmmax=n
+              exit
+            endif
+          enddo
+          cmp%ivalue(2,p_NM_MULT)=merge(nmmax,max(nmmax,0),al .eq. 0.d0
+     $         .and. cmp%value(ky_VOLT_MULT) .eq. 0.d0)
+          cr=cr1
+          do n=0,nmmax
+            ck=dcmplx(cmp%value(ky_K0_MULT+n*2),
+     $           cmp%value(ky_SK0_MULT+n*2))*cr
+            cmp%value(p_K0R_MULT+n*2)=dble(ck)
+            cmp%value(p_K0R_MULT+n*2+1)=imag(ck)
+            cr=cr*cr1
+          enddo
+          eps=eps00m*merge(1.d0,cmp%value(ky_EPS_MULT),
+     $         cmp%value(ky_EPS_MULT) .eq. 0.d0)
+          ndiv=1
+          if(al .ne. 0.d0)then
+            do n=2,nmmax
+              ndiv=max(ndiv,int(
+     $             sqrt(ampmaxm**(n-1)/6.d0/fact(n-1)/eps*
+     $             abs(dcmplx(cmp%value(ky_K0_MULT+n*2),
+     $             cmp%value(ky_SK0_MULT+n*2))*al)))+1)
+            enddo
+          endif
+          cmp%ivalue(1,p_NM_MULT)=min(ndiv,ndivmaxm)
+
+          do n=0,nmmax
+            cmp%lvalue(n+1,p_DOFR_MULT)=
+     $           merge(merge(.true.,
+     $           hypot(cmp%value(ky_K0_MULT+n*2),
+     $           cmp%value(ky_K0_MULT+n*2))/al*ampmaxm**(n+1)*aninv(n+1)
+     $           .gt. eps,n .le. 2),.false.,
+     $           cmp%value(ky_K0_MULT+n*2) .ne. 0.d0
+     $           .or. cmp%value(ky_SK0_MULT+n*2) .ne. 0.d0)
+          enddo
+
         case (icCAVI)
           frmd=cmp%value(ky_FRMD_CAVI)
           if(.not. cmp%ori)then
             frmd=frmd*(11.d0+frmd*(2.d0*frmd-9.d0))/2.d0
           endif
-          cmp%value(p_FRMD_CAVI)=frmd
+          cmp%ivalue(1,p_FRMD_CAVI)=int(frmd)
           harm=cmp%value(ky_HARM_CAVI)
-          if(harm .eq. 0.d0)then
-            w=pi2*cmp%value(ky_FREQ_CAVI)/c
-          else
-            w=omega0*harm/c
-          endif
-          if(trpt)then
-            vnominal=cmp%value(ky_VOLT_CAVI)/amass*abs(charge)
-     $           *sin(-cmp%value(ky_PHI_CAVI)*sign(1.d0,charge))
-          else
-            vnominal=0.d0
-          endif
+          w=merge(pi2*cmp%value(ky_FREQ_CAVI)/c,omega0*harm/c,
+     $         harm .eq. 0.d0)
+          vnominal=merge(cmp%value(ky_VOLT_CAVI)/amass*abs(charge)
+     $         *sin(-cmp%value(ky_PHI_CAVI)*sign(1.d0,charge)),
+     $         0.d0,trpt)
           cmp%value(p_W_CAVI)=w
           cmp%value(p_VNOMINAL_CAVI)=vnominal
 
@@ -1350,10 +1390,8 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
         if(present(kx))then
           kx=ka
         endif
-      elseif(ktfrealq(ka))then
-        itftypekey=ifromd(ka)
       else
-        itftypekey=0
+        itftypekey=merge(ifromd(ka),0,ktfrealq(ka))
       endif        
       return
       end function
@@ -1378,10 +1416,8 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       if(irtc .ne. 0)then
         call tfreseterror
         itfelementkey=0
-      elseif(.not. ktfrealq(kx))then
-        itfelementkey=0
       else
-        itfelementkey=ifromd(kx)
+        itfelementkey=merge(ifromd(kx),0,ktfrealq(kx))
       endif        
       return
       end function
@@ -1465,11 +1501,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       real*8 s
       type (sad_comp), pointer :: cmp
 c     begin initialize for preventing compiler warning
-      if(i .gt. 0)then
-        kl=i
-      else
-        kl=nelvx(-i)%klp
-      endif
+      kl=merge(i,nelvx(-i)%klp,i .gt. 0)
       call compelc(kl,cmp)
       plus=.false.
       lk=lenw(keyword)
@@ -1823,11 +1855,8 @@ c     begin initialize for preventing compiler warning
           cmpd%value(i)=v
         elseif(tfreallistq(cmpd%dvalue(i),lad))then
           r0=sum(lad%rbody(1:lad%nl))
-          if(r0 .ne. 0.d0)then
-            lad%rbody(1:lad%nl)=v/r0*lad%rbody(1:lad%nl)
-          else
-            lad%rbody(1:lad%nl)=v/lad%nl
-          endif
+          lad%rbody(1:lad%nl)=merge(v/r0*lad%rbody(1:lad%nl),
+     $         v/lad%nl,r0 .ne. 0.d0)
         endif
         return
         end subroutine
@@ -3440,7 +3469,8 @@ c      endif
       nve=max(nv,nve0+128)
       ifnvev1=ktaloc(nve*lnvev)
       if(nve0 .ne. 0)then
-        klist(ifnvev1:ifnvev1+nve-1)=klist(ifnvev:ifnvev+nve-1)
+        klist(ifnvev1:ifnvev1+nve0*lnvev-1)=
+     $       klist(ifnvev:ifnvev+nve0*lnvev-1)
         call tfree(ifnvev)
       endif
       ifnvev=ifnvev1
@@ -3533,7 +3563,7 @@ c      call tfree(ifibzl)
      $     int8(modestring),str%nch)
       if(lfn .le. 0)then
         irtc=itfmessagestr(9,'FFS::lfn',str%str(1:str%nch))
-        kx=dxnull
+        kx%k=ktfoper+mtfnull
       else
         call trbassign(lfn)
         ipoint=1

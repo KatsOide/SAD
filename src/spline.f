@@ -171,10 +171,6 @@ c      real*8 s
       call spline1(np,y,ddy,work,mode1,mode2)
       splint1=(y(1)+y(np)-.5d0*(ddy(1)+ddy(np)))*.5d0
      $     +sum(y(2:np-1)-ddy(2:np-1)*.5d0)
-c      do i=2,np-1
-c        s=s+y(i)-ddy(i)*.5d0
-c      enddo
-c      splint1=s
       deallocate (work,ddy)
       return
       end
@@ -212,11 +208,8 @@ c      splint1=s
         dx=x(i+1,k)-x(i,k)
         dx2=.5d0*dx**2
         s=s+(y(i+1,k)+y(i,k)-(ddy(i+1)+ddy(i))*dx2)*dx
-        if(i .gt. 1)then
-          ddyi=-(ddy(i)-ddy(i-1))/(x(i,k)-x(i-1,k))
-        else
-          ddyi=0.d0
-        endif
+        ddyi=merge(-(ddy(i)-ddy(i-1))/(x(i,k)-x(i-1,k)),0.d0,
+     $       i .gt. 1)
         if(i .lt. n-1)then
           ddyi=ddyi+(ddy(i+2)-ddy(i+1))/(x(i+2,k)-x(i+1,k))
         endif
@@ -224,11 +217,7 @@ c      splint1=s
         sddy=sddy+work(i)
       enddo
       s=s*.5d0
-      if(first)then
-        s2=s
-      else
-        s2=(4.d0*s-s0)/3.d0
-      endif
+      s2=merge(s,(4.d0*s-s0)/3.d0,first)
 c      write(*,*)n,s2,s
       if(abs(s2-s20) .le. max(eps*s20,epsabs))then
         splint=s2

@@ -319,11 +319,7 @@ c        write(*,*)'tsolque-implementation error ',ak
 c        stop
       endif
       bz=bz0
-      if(eps0 .eq. 0.d0)then
-        eps=0.1d0
-      else
-        eps=0.1d0*eps0
-      endif
+      eps=merge(0.1d0,0.1d0*eps0,eps0 .eq. 0.d0)
       ndiv=1+int(abs(al*hypot(ak,bz))/eps)
       aln=al/ndiv
       dx0=ak0x/ak

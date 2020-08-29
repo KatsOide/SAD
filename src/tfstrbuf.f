@@ -289,15 +289,8 @@ c'\
           kv=pat%expr%k
           kav=ktfaddr(kv)
           ktv=kv-kav
-          if(ktv .eq. ktfref)then
-            if(kav .le. 3)then
-              kpat=int(kav)
-            else
-              kpat=0
-            endif
-          else
-            kpat=-1
-          endif
+          kpat=merge(merge(int(kav),0,kav .le. 3),-1,
+     $         ktv .eq. ktfref)
           if(pat%default%k .ne. ktfref)then
             if(kpat .lt. 0)then
               call putstringbufp(strb,'((',lfno,irtc)
@@ -729,7 +722,8 @@ c
           return
         else
           lv=strb%llevel
-          if(ichar(string(1:1)) .ge. ichar('0') .and.
+          iext=merge(3,1,
+     $         ichar(string(1:1)) .ge. ichar('0') .and.
      $         ichar(string(1:1)) .le. ichar('9')
      $         .or.
      $         ichar(string(1:1)) .ge. ichar('A') .and.
@@ -737,11 +731,7 @@ c
      $         .or.
      $         ichar(string(1:1)) .ge. ichar('a') .and.
      $         ichar(string(1:1)) .le. ichar('z')
-     $         )then
-            iext=3
-          else
-            iext=1
-          endif
+     $         )
           indent=strb%lexp .ge. 0
           i1=1
           do10: do while(i1 .le. l)

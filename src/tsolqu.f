@@ -3,7 +3,6 @@
       use tsolz
       use kradlib, only:bsi
       use mathfun
-      use tmacro, only:l_track
       implicit none
       type (tzparam) tz
       integer*4 ,intent(in):: np,ibsi
@@ -48,11 +47,7 @@
         return
       endif
       bz=bz0
-      if(eps0 .eq. 0.d0)then
-        eps=epsdef
-      else
-        eps=epsdef*eps0
-      endif
+      eps=merge(epsdef,epsdef*eps0,eps0 .eq. 0.d0)
       ndiv=1+int(abs(al*hypot(ak,bz)/eps))
 c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
       aln=al/ndiv
@@ -229,11 +224,7 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
         return
       endif
       bz=bz0
-      if(eps0 .eq. 0.d0)then
-        eps=epsdef
-      else
-        eps=epsdef*eps0
-      endif
+      eps=merge(epsdef,epsdef*eps0,eps0 .eq. 0.d0)
       aka=hypot(ak,bz)
       ndiv=1+int(abs(al)*aka/eps)
       ndiv=min(ndivmax,
@@ -249,11 +240,7 @@ c!$OMP PARALLEL
 c!$OMP DO
           do concurrent (i=1:np)
             tz%tz0=tzsetparam0(gp(i),aln,akk)
-            if(n .eq. 1)then
-              bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)
-            else
-              bsi(i)=0.d0
-            endif
+            bsi(i)=merge(akk*(x(i)+dx0)*(y(i)+dy0),0.d0,n .eq. 1)
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
             r=-dpz/(1.d0+dpz)*alr
@@ -306,11 +293,8 @@ c!$OMP END PARALLEL
         do n=1,ndiv
           do concurrent (i=1:np)
             tz=tzsetparam(gp(i),aln,akk,bz)
-            if(n .eq. 1)then
-              bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)+bzp*alr
-            else
-              bsi(i)=bzp*alr
-            endif
+            bsi(i)=merge(akk*(x(i)+dx0)*(y(i)+dy0)+bzp*alr,bzp*alr,
+     $           n .eq. 1)
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
             r=-dpz/(1.d0+dpz)*alr

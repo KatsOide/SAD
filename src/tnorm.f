@@ -1,8 +1,11 @@
       subroutine tnorm(r,ceig,lfno)
       implicit none
-      integer*4 i,j,lfno
-      real*8 r(6,6),sa,sb,a,s,cost,sint,s1,s2,s3,b,v(6,2)
-      complex*16 ceig(6),cc
+      integer*4 i,j
+      integer*4 ,intent(in):: lfno
+      real*8 ,intent(inout):: r(6,6)
+      real*8 sa,sb,a,s,cost,sint,s1,s2,s3,b,v(6,2)
+      complex*16 ,intent(out):: ceig(6)
+      complex*16 cc
       do i=1,5,2
         if(imag(ceig(i)) .eq. 0.d0)then
           sa=sum(r(:,i)**2)

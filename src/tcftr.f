@@ -2,17 +2,19 @@
       implicit none
       integer*4 idim
       parameter (idim=30)
-      integer*4 n,m(idim),i,ln,j,l,ka,kb,k
-      complex*16 ca(n),cex(idim),ch,cw,cw1
-      logical*4 conj
-      data m/
+      integer*4 ,intent(in):: n
+      integer*4 i,ln,j,l,ka,kb,k
+      complex*16 ,intent(inout):: ca(n)
+      complex*16 ch,cw,cw1
+      logical*4 ,intent(in):: conj
+      integer*4 ,parameter ::m(1:idim)=[
      $     1,2,4,8,16,
      $     32,64,128,256,512,
      $     1024,2048,4096,8192,16384,
      $     32768,65536,131072,262144,524288,
      $     1048576,2097152,4194304,8388608,16777216,
-     $     33554432,67108864,134217728,268435456,536870912/
-      data cex/
+     $     33554432,67108864,134217728,268435456,536870912]
+      complex*16,parameter :: cex(1:idim)=[
      $     (-1.d0                 ,0.d0),
      $     (0.d0                  ,1.d0),
      $     (0.707106781186547524d0,0.707106781186547524d0),
@@ -43,14 +45,13 @@
      $     (0.999999999999999726d0,2.34066892682745528d-8),
      $     (0.999999999999999932d0,1.170334463413727718d-8),
      $     (0.999999999999999983d0,5.85167231706863869d-9)
-     $     /
+     $     ]
       do 10 i=1,idim-1
         if(n .eq. m(i+1))then
           ln=i
           go to 1
         endif
  10   continue
-      n=0
       return
  1    j=1
       do 20 i=1,n-1
@@ -71,11 +72,7 @@
  20   continue
       do 110 i=1,ln
         cw=(1.d0,0.d0)
-        if(conj)then
-          cw1=conjg(cex(i))
-        else
-          cw1=cex(i)
-        endif
+        cw1=merge(conjg(cex(i)),cex(i),conj)
         do 120 j=1,m(i)
 *     VOPTION NOFVAL
           do 130 k=0,n-1,m(i+1)
@@ -94,19 +91,16 @@
       subroutine trftr(a,m,conj)
       use iso_c_binding
       implicit none
-      integer*4 m,i,i2,j2
+      integer*4 ,intent(in):: m
+      integer*4 i,i2,j2
       real*8 , target::a(0:m-1)
       real*8 pi,w,ci,si,ai2,ai21,aj2,aj21,a1
       parameter (pi=3.14159265358979324d0)
-      logical*4 conj
+      logical*4 ,intent(in):: conj
       complex*16 , pointer ::ca(:)
       call c_f_pointer(c_loc(a),ca,[m/2])
       call tcftr(ca,m/2,conj)
-      if(conj)then
-        w=-2.d0*pi/m
-      else
-        w= 2.d0*pi/m
-      endif
+      w=merge(-2.d0,2.d0,conj)*pi/m
       do i=1,m/4
         ci=cos(w*i)
         si=sin(w*i)
@@ -140,11 +134,7 @@ c
       parameter (pi=3.14159265358979324d0)
       logical*4 conj
       complex*16 ,pointer :: ca(:)
-      if(conj)then
-        w= 2.d0*pi/m
-      else
-        w=-2.d0*pi/m
-      endif
+      w= merge(2.d0,-2.d0,conj)*pi/m
       do i=1,m/4
         ci=cos(w*i)
         si=sin(w*i)

@@ -61,19 +61,11 @@ c     end   initialize for preventing compiler warning
           if(it .gt. 1 .and. it .le. 6)then
             v=rlist(latt(i)+2)
             al=rlist(latt(i)+1)
-            if(al .ne. 0.d0)then
-              ak=abs(v/al)
-            else
-              ak=0.d0
-            endif
+            ak=merge(abs(v/al),0.d0,al .ne. 0.d0)
           elseif(it .eq. icmult)then
             v=rlist(latt(i)+13)
             al=rlist(latt(i)+1)
-            if(al .ne. 0.d0)then
-              ak=abs(v/al)
-            else
-              ak=0.d0
-            endif
+            ak=merge(abs(v/al),0.d0,al .ne. 0.d0)
           endif
           if(it .eq. 2)then
             theta=rlist(latt(i)+5)
@@ -114,19 +106,11 @@ c     end   initialize for preventing compiler warning
             endif
             sigx=sqrt(sigx)
             sigy=sqrt(sigy)
-            if(ak .ne. 0.d0)then
-              a=bpole/ak/brho1
-            else
-              a=bpole
-            endif
+            a=merge(bpole/ak/brho1,bpole,ak .ne. 0.d0)
             aout=autofg(a*1.d3,'6.3')
           elseif(it .eq. 6)then
 c           b=ak*max(sigx0,sigy0,sigx1,sigy1)**2*.5d0*brho1
-            if(ak .ne. 0.d0)then
-              a=sqrt(2.d0*bpole/ak/brho1)
-            else
-              a=1.d0
-            endif
+            a=merge(sqrt(2.d0*bpole/ak/brho1),1.d0,ak .ne. 0.d0)
             aout=autofg(a*1.d3,'6.3')
           else
             aout=' '

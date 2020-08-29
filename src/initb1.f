@@ -22,7 +22,7 @@ c      real*8, parameter:: re=2.81794092d-15, am_e=510999.06
 
       module kyparam
       use wsbb, only:nblist
-      integer*4, parameter ::
+      integer*4, parameter :: nmult=21,
      $ky_L_DRFT=1,
      $ky_KIN_DRFT=2,
      $ky_COUPLE_DRFT=3,
@@ -82,7 +82,8 @@ c
      $     p_THETA_BEND=p_SINWP1_BEND+1,
      $     p_FB1_BEND=p_THETA_BEND+1,
      $     p_FB2_BEND=p_FB1_BEND+1,
-     $     p_NPARAM_BEND=p_FB2_BEND-ky_MAX_BEND,
+     $     p_FRMD_BEND=p_FB2_BEND+1,
+     $     p_NPARAM_BEND=p_FRMD_BEND-ky_MAX_BEND,
 c  for quad
      $ky_L_QUAD=1,
      $ky_K1_QUAD=2,
@@ -250,7 +251,11 @@ c
      $     p_THETA2_MULT=p_FRMD_MULT+1,
      $     p_CR1_MULT=p_THETA2_MULT+1,
      $     p_CR1I_MULT=p_CR1_MULT+1,
-     $     p_PROF_MULT=p_CR1I_MULT+1,
+     $     p_NM_MULT=p_CR1I_MULT+1,
+     $     p_K0R_MULT=p_NM_MULT+1,
+     $     p_SK0R_MULT=p_K0R_MULT+1,
+     $     p_DOFR_MULT=p_K0R_MULT+nmult*2+2,
+     $     p_PROF_MULT=p_DOFR_MULT+1+nmult/8,
      $     p_NPARAM_MULT=p_PROF_MULT-ky_MAX_MULT,
 c  for UNDULATOR
      $ky_L_UND=1,

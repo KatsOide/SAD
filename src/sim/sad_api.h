@@ -26,8 +26,12 @@ extern int asprintf(char**, const char*, ...);
  */
 #define SAD_EPOCH_OFFSET	2209021200.0
 
+static real8 r_true = 1.0L;
+/*
+static real8 r_false = 0.0L;
+*/
 /* Return real8 object as True/False */
-#define SAD_BOOLEAN(cond)	((cond) ? 1. : 0.)
+#define SAD_BOOLEAN(cond) ((cond) ? ktftrue : ktffalse)
 
 /* Typedef for SADScript function pointer */
 typedef int (*sad_func_t)(integer4*, integer4*, integer4*, real8*, integer4*);
@@ -71,8 +75,6 @@ typedef unsigned int	bit_field_t;
 #define ktfnonreallistq(k) ((lnonreallist & ilist(2,(k)-3)) != 0)
 #define kfromr(x) (*((integer8 *) &x))
 #define rfromk(k) (*((real8 *) &k))
-
-static real8 r_true = 1.0;
 
 /* Proxy functions between module and global scope */
 

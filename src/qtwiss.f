@@ -111,14 +111,10 @@ c     end   initialize for preventing compiler warning
       dvfs=0.d0
       call tesetdv(cod(6))
       sspc0=rlist(ifpos+la-1)
-      if(orbitcal)then
-        ntfun=ntwissfun
-      else
-        ntfun=mfitdetr
-      endif
+      ntfun=merge(ntwissfun,mfitdetr,orbitcal)
       do l=la+1,lb
 c        call tfmemcheckprint1('qtwiss',l,.false.)
-c        if(mod(l,1000) .eq. 0)then
+c        if(mod(l,1) .eq. 0)then
 c          write(*,*)'qtwiss1 ',l,la,lb
 c        endif
         l1=l-1
@@ -188,11 +184,7 @@ c        endif
           endif
           le=elatt%comp(l1)
           ld=idvalc(l1)
-          if(ideal)then
-            lp=ld
-          else
-            lp=le
-          endif
+          lp=merge(ld,le,ideal)
           call loc_comp(lp,cmp)
           seg=tcheckseg(cmp,ltyp,al,lsegp,irtc)
 c          write(*,*)'qtwiss ',seg,ltyp,al,irtc
@@ -1138,11 +1130,7 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
       integer*4 nvar,l,lt
       integer*8 i
       logical*4 save
-      if(ideal)then
-        i=idvalc(l)
-      else
-        i=elatt%comp(l)
-      endif
+      i=merge(idvalc(l),elatt%comp(l),ideal)
       lt=idtypec(l)
       if(save)then
         nvar=kytbl(kwMAX,lt)-1
@@ -1175,16 +1163,8 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
       if(r .eq. 1.d0)then
         return
       endif
-      if(rx1 .eq. 0.d0)then
-        f1=1.d0
-      else
-        f1=0.d0
-      endif
-      if(rx2 .eq. 1.d0)then
-        f2=1.d0
-      else
-        f2=0.d0
-      endif
+      f1=merge(1.d0,0.d0,rx1 .eq. 0.d0)
+      f2=merge(1.d0,0.d0,rx2 .eq. 0.d0)
       lt=idtype(cmp%id)
       select case (lt)
 
@@ -1439,50 +1419,26 @@ c     $     cmp%value(ky_K0_BEND)
         lk%dbody(1)=lk0%dbody(1)
         lk%dbody(2)=kxavaloc(0,nseg)
       enddo
-      if(i2 .ge. i1)then
-        is=1
-      else
-        is=-1
-      endif
+      is=merge(1,-1,i2 .ge. i1)
       do i=i1,i2,is
         if(i1 .eq. i2)then
-          if(rx1 .eq. 0.d0)then
-            f1=1.d0
-          else
-            f1=0.d0
-          endif
-          if(rx2 .eq. 1.d0)then
-            f2=1.d0
-          else
-            f2=0.d0
-          endif
+          f1=merge(1.d0,0.d0,rx1 .eq. 0.d0)
+          f2=merge(1.d0,0.d0,rx2 .eq. 0.d0)
           r1=rx1
           r2=rx2
         elseif(i .eq. i1)then
-          r1=rx1
-          if(r1 .eq. 0.d0)then
-            f1=1.d0
-          else
-            f1=0.d0
-          endif
+          r1=rx2
+          f1=merge(1.d0,0.d0,rx1 .eq. 0.d0)
           r2=1.d0
         elseif(i .eq. i2)then
           r1=0.d0
           r2=rx2
-          if(r2 .eq. 1.d0)then
-            f2=1.d0
-          else
-            f2=0.d0
-          endif
+          f2=merge(1.d0,0.d0,rx2 .eq. 0.d0)
         else
           r1=0.d0
           r2=1.d0
         endif
-        if(is .gt. 0)then
-          j=i-i1+1
-        else
-          j=i-i2+1
-        endif
+        j=i+1-merge(i1,i2,is .gt. 0)
         call qputfracseg(lsegp1,j,r2-r1,lsegp,i)
 c fringes are not taken into account yet...
       enddo

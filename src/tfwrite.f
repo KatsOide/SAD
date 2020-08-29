@@ -7,15 +7,18 @@
         end type
       end module
 
-      subroutine tfwrite(isp1,kx,irtc)
+      function tfwrite(isp1,irtc) result(kx)
       use tfstk
       use strbuf
       implicit none
       type (sad_descriptor) kx
       type (sad_strbuf), pointer :: strb
-      integer*4 isp1,irtc,itfgetrecl,narg,lfn,isp11,
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfgetrecl,narg,lfn,isp11,
      $     j,i,nc,lpw,itfmessage,isp2,itfgetlfn
       logical*4 exist
+      kx=dxnullo
       narg=isp-isp1
       if(narg .le. 1)then
         irtc=itfmessage(9,'General::narg','"2 or more"')
@@ -56,6 +59,82 @@
       return
       end
 
+      function tfmapfile(isp1,irtc) result(kx)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_string), pointer :: fname
+      type (sad_rlist), pointer :: kl
+      integer*8 map,ksize,maprwfile
+      integer*4 ifd,itfmessage
+      kx=dxnullo;
+      if(isp .ne. isp1+2)then
+        irtc=itfmessage(9,'General::narg','"2"')
+        return
+      endif
+c      call tfdebugprint(dtastk(isp1+1),'mapfile',1)
+      if(.not. ktfstringq(dtastk(isp1+1),fname))then
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"Filename for #1"')
+        return
+      endif
+      if(.not. ktfrealq(dtastk(isp),ksize))then
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"Bytes/8 for #2"')
+        return
+      endif
+      ksize=ksize*8
+c      write(*,*)'tfmapfile ',ksize
+      map=maprwfile(fname%str,ifd,ksize,irtc)
+      if(irtc .ne. 0)then
+        irtc=itfmessage(9,'General::mmap','""')        
+        return
+      endif
+      kx=kxraaloc(-1,2,kl)
+      kl%rbody(1)=dble(map)
+      kl%rbody(2)=dble(ifd)
+      return
+      end
+
+      function tfunmapfile(isp1,irtc) result(kx)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*8 map,ksize
+      integer*4 ifd,itfmessage,unmap
+      kx=dxnullo;
+      if(isp .ne. isp1+3)then
+        irtc=itfmessage(9,'General::narg','"3"')
+        return
+      endif
+      if(.not. ktfrealq(dtastk(isp1+1),map))then
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"Address for #1"')
+        return
+      endif
+      if(.not. ktfrealq(dtastk(isp1+2),ksize))then
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"Bytes/8 for #2"')
+        return
+      endif
+      if(.not. ktfrealq(dtastk(isp1+1),ifd))then
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"File descriptor for #3"')
+        return
+      endif
+      ksize=ksize*8
+      irtc=unmap(map,ksize,ifd)
+      if(irtc .ne. 0)then
+        irtc=itfmessage(9,'General::mmap','"(Unmap)"')
+        return
+      endif
+      return
+      end
+
       integer*4 function itfgetlfn(isp1,read,irtc) result(iv)
       use tfstk
       use tfrbuf
@@ -63,8 +142,10 @@
       implicit none
       type (sad_descriptor) k
       type (sad_dlist), pointer :: kl
-      integer*4 isp1,irtc,itfmessage
-      logical*4 read
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage
+      logical*4 ,intent(in):: read
       iv=0
       if(isp .le. isp1)then
         irtc=itfmessage(9,'General::narg','"1 or more"')
@@ -73,11 +154,7 @@
       if(ktfrealq(ktastk(isp1+1),iv))then
         go to 100
       elseif(tflistq(dtastk(isp1+1),kl))then
-        if(read)then
-          k=kl%dbody(1)
-        else
-          k=kl%dbody(2)
-        endif
+        k=kl%dbody(merge(1,2,read))
         if(ktfrealq(k,iv))then
           go to 100
         endif
@@ -88,11 +165,7 @@
  100  irtc=0
       select case (iv)
       case (-1)
-        if(read)then
-          iv=lfni
-        else
-          iv=lfno
-        endif
+        iv=merge(lfni,lfno,read)
       case (0)
       case default
         if(iv .lt. 0)then
@@ -106,12 +179,12 @@
       use tfstk
       use strbuf
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_strbuf), pointer :: strb
-      integer*4 mmax
-      parameter (mmax=1000000)
-      integer*4 isp1,irtc,narg,lfn,isp11,j,i,itfgetlfn,
-     $             nc,itfmessage,isp2
+      integer*4 ,parameter ::mmax=1000000
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 narg,lfn,isp11,j,i,itfgetlfn,nc,itfmessage,isp2
       narg=isp-isp1
       if(narg .le. 1)then
         irtc=itfmessage(9,'General::narg','"2 or more"')
@@ -152,8 +225,11 @@
       use tfstk
       use tfcsi
       implicit none
-      type (sad_descriptor) kx
-      integer*4 isp1,irtc,isp0
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) tfwrite
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 isp0
       isp0=isp
       isp=isp+1
       rtastk(isp)=lfno
@@ -163,7 +239,7 @@ c      do i=1,isp0-isp1
 c        isp=isp+1
 c        ktastk(isp)=ktastk(isp1+i)
 c      enddo
-      call tfwrite(isp0,kx,irtc)
+      kx=tfwrite(isp0,irtc)
       isp=isp0
       return
       end
@@ -172,9 +248,10 @@ c      enddo
       use tfstk
       use tfrbuf
       implicit none
-      type (sad_descriptor) k
-      integer*4 irtc,nline,l,itfdownlevel
-      character*(*) pr1
+      type (sad_descriptor) ,intent(in):: k
+      integer*4 ,intent(in):: nline
+      integer*4 l,itfdownlevel,irtc
+      character*(*) ,intent(in):: pr1
       prolog=pr1
       ncprolog=min(len_trim(pr1)+1,len(prolog))
       prolog(ncprolog:ncprolog)=' '
@@ -192,8 +269,10 @@ c      enddo
       use tfrbuf
       use tfcsi
       implicit none
-      type (sad_descriptor) kx
-      integer*4 isp1,irtc,itfgetrecl,nret,itfmessage
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfgetrecl,nret,itfmessage
       if(isp .eq. isp1+1)then
         call tfprint1(dtastk(isp),
      $       lfno,-itfgetrecl(),1,.true.,.true.,irtc)
@@ -218,10 +297,13 @@ c      enddo
       use tfrbuf
       use strbuf
       implicit none
-      type (sad_descriptor) k,kxlongstr,ks,kr
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) kxlongstr,ks,kr
       type (sad_strbuf), pointer :: strb
-      integer*4 lfno,irtc,nc,lrec,nret,irtc1,isp0
-      logical*4 cr,str
+      integer*4 ,intent(in):: lfno,nret
+      integer*4 ,intent(out):: irtc
+      integer*4 nc,lrec,irtc1,isp0
+      logical*4 ,intent(in):: cr,str
       save kxlongstr
       data kxlongstr%k /0/
       isp0=isp
@@ -264,12 +346,15 @@ c      enddo
       subroutine tfdefinition(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,ki,k
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) ki,k
       type (sad_symbol), pointer ::sym,sym1
       type (sad_symdef), pointer ::symd
       type (sad_dlist), pointer :: klh,kli,klx
       integer*8 ii,ka0,kadi,kad,ka
-      integer*4 isp1,irtc,i,isp00,isp0,kk,iop,ispv,icmpl
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 i,isp00,isp0,kk,iop,ispv,icmpl
       icmpl=0
       call tfgetoption('Compiled',ktastk(isp),kx,irtc)
       if(irtc .eq. -1)then
@@ -311,11 +396,7 @@ c      enddo
           klh%dbody(1)%k=ktfsymbol+ktfcopy1(ka0+6)
           klh%dbody(2)=dtfcopy(k)
           do kk=1,0,-1
-            if(kk .eq. 1)then
-              iop=mtfsetdelayed
-            else
-              iop=mtfupsetdelayed
-            endif
+            iop=merge(mtfsetdelayed,mtfupsetdelayed, kk .eq. 1)
             kad=klist(ka0+kk)
             do while(kad .ne. 0)
               if(ilist(1,kad+2) .eq. maxgeneration)then
@@ -364,7 +445,7 @@ c      enddo
       use tfstk
       use tfcode
       implicit none
-      character*(*) fname
+      character*(*) ,intent(in):: fname
       type (sad_descriptor) kx,k,tfget
       integer*4 irtc
       k=kxsalocb(-1,fname,len_trim(fname))
@@ -377,9 +458,11 @@ c      enddo
       use tfrbuf
       use tfcsi
       implicit none
-      type (sad_descriptor) k,kx,kf,kfn
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) kx,kf,kfn
       type (csiparam) sav
-      integer*4 irtc,itfgeto,lfn,isp0,itf
+      integer*4 ,intent(out):: irtc
+      integer*4 itfgeto,lfn,isp0,itf
       isp0=isp
       isp=isp+1
       dtastk(isp)=k
@@ -387,7 +470,7 @@ c      call tfdebugprint(k,'tfget',1)
       call tfopenread(isp0,kfn,irtc)
       isp=isp0
       if(irtc .ne. 0)then
-        kx=dxnull
+        kx%k=ktfoper+mtfnull
         return
       endif
       lfn=int(rfromd(kfn))
@@ -416,11 +499,7 @@ c      call tfdebugprint(k,'tfget',1)
       call trbclose(lfn)
       savep=sav
       call trbassign(lfni)
-      if(itf .eq. -3)then
-        irtc=irtcabort
-      else
-        irtc=0
-      endif
+      irtc=merge(irtcabort,0,itf .eq. -3)
       return
       end
 
@@ -474,8 +553,10 @@ c      call tfdebugprint(k,'tfget',1)
       recursive subroutine tfskip(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
-      integer*4 isp1,irtc,i,narg,isp0,nrpt
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 i,narg,isp0,nrpt
       narg=isp-isp1
       if(narg .ge. 3 .and.
      $     ktfrealq(dtastk(isp1+3),nrpt))then
@@ -506,8 +587,10 @@ c          enddo
       subroutine tfread(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
-      integer*4 isp1,lfn,itfgetlfn,irtc
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 lfn,itfgetlfn
       lfn=itfgetlfn(isp1,.true.,irtc)
       if(irtc .eq. 0)then
         call tfreadf(isp1,lfn,kx,irtc)
@@ -519,8 +602,9 @@ c          enddo
       use tfstk
       use readopt
       implicit none
-      type (sad_descriptor) kx
-      integer*4 isp1,irtc,lfn
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1,lfn
+      integer*4 ,intent(out):: irtc
       type(ropt) opts
       call tfreadoptions(isp1,opts,.true.,irtc)
       if(irtc .eq. 0)then
@@ -534,9 +618,12 @@ c          enddo
       use tfstk
       use readopt
       implicit none
-      type (sad_descriptor) kx,k1,k2
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) k1,k2
       type (sad_dlist), pointer :: list
-      integer*4 isp1,irtc,isp0,n1,narg,itfmessage,lfn,i1
+      integer*4 ,intent(in):: isp1,lfn
+      integer*4 ,intent(out):: irtc
+      integer*4 isp0,n1,narg,itfmessage,i1
       type(ropt) opts
       type (sad_descriptor)
      $     itfexprs,itfstrs,itfwords,itfreals,itfchars,
@@ -638,21 +725,20 @@ c          enddo
       use tfstk
       use readopt
       implicit none
-      type (sad_descriptor) kx,kxi
-      type (sad_dlist) list
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kxi
+      type (sad_dlist) ,intent(in):: list
       type (sad_dlist), pointer ::kl,klx
-      integer*4 lfn,irtc,isp0,isp2,kk,m
-      logical*4 mult
-      type(ropt) opts
+      integer*4 ,intent(in):: lfn,m
+      integer*4 ,intent(out):: irtc
+      integer*4 isp0,isp2,kk
+      logical*4 ,intent(in):: mult
+      type(ropt) ,intent(in):: opts
       isp2=isp
       do kk=1,m
         isp0=isp
         isp=isp0+2
-        if(mult)then
-          dtastk(isp)=list%dbody(2)
-        else
-          dtastk(isp)=list%dbody(kk)
-        endif
+        dtastk(isp)=list%dbody(merge(2,kk,mult))
         call tfreadfs(isp0,lfn,opts,kxi,irtc)
         if(irtc .ne. 0)then
           isp=isp2
@@ -679,9 +765,11 @@ c          enddo
       use tfrbuf
       use readopt
       implicit none
-      type (sad_descriptor) kx
-      integer*4 isp1,irtc,itfgetlfn,lfn
-      logical*4 char1,del
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfgetlfn,lfn
+      logical*4 ,intent(in):: char1,del
       type(ropt)  opts
       lfn=itfgetlfn(isp1,.true.,irtc)
       call tfreadoptions(isp1,opts,del,irtc)
@@ -696,8 +784,10 @@ c          enddo
       use tfrbuf
       use readopt
       implicit none
-      integer*4 isp1,irtc,isp0,ispopt,itfmessage
-      logical*4 del
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 isp0,ispopt,itfmessage
+      logical*4 ,intent(in):: del
       character*64 tfgetstr
       integer*4 nopt
       parameter (nopt=3)
@@ -708,7 +798,7 @@ c          enddo
      $     'WordSeparators',
      $     'ReadNewRecord ',
      $     'NullWords     '/
-      type(ropt)  opts
+      type(ropt)  ,intent(out):: opts
       opts%null=.false.
       opts%new=.true.
       if(del)then
@@ -766,11 +856,14 @@ c          enddo
       use tfcsi
       use readopt
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (csiparam) sav
+      integer*4 ,intent(in):: lfn
+      integer*4 ,intent(out):: irtc
       integer*4 ie,is
-      integer*4 irtc,lfn,isw,next,nc1,nc
-      logical*4 char1,fb
+      integer*4 isw,next,nc1,nc
+      logical*4 ,intent(in):: char1
+      logical*4 fb
       type (ropt) opts
       irtc=0
       if(lfn .le. 0 .or. ibuf(lfn) .eq. 0)then
@@ -864,9 +957,11 @@ c          enddo
       subroutine tfreadbyte(isp1,lfn,kx,mode,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
-      integer*4 isp1,irtc,lfn,itfmessage,fgetc,mode,narg,
-     $     isp0,ibuf(2),jbuf(4),i,nb,          ispopt
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1,lfn,mode
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,fgetc,narg,
+     $     isp0,ibuf(2),jbuf(4),i,nb,ispopt
       real*8 rbuf,vx
       real*4 sbuf(2)
       character bbuf(8)
@@ -966,9 +1061,10 @@ c          enddo
 
       subroutine tfword(str,del,is,nw,next,null)
       implicit none
-      integer*4 nw,is,nc,i,next
-      character*(*) str,del
-      logical*4 null
+      integer*4 ,intent(out):: is,nw,next
+      integer*4 nc,i
+      character*(*) ,intent(in):: str,del
+      logical*4 ,intent(in):: null
       nc=len(str)
       if(null)then
         is=1
@@ -1004,9 +1100,11 @@ c          enddo
       subroutine tftoexpression(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_string), pointer :: str
-      integer*4 isp1,irtc,nc,itfmessage
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 nc,itfmessage
       if(isp .le. isp1)then
         kx%k=ktfoper+mtfnull
         irtc=0
@@ -1033,9 +1131,11 @@ c          enddo
       use tfcsi
       use tfrbuf
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_string), pointer :: str
-      integer*4 irtc,isp1,itfmessage,nc,itfmessagestr
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,nc,itfmessagestr
       logical*4 disp
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
@@ -1106,9 +1206,10 @@ c          endif
       subroutine tfuncompress(cmd,nc,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
-      integer*4 irtc,nc
-      character*(*) cmd
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: nc
+      integer*4 ,intent(out):: irtc
+      character*(*) ,intent(in):: cmd
 c      call tfsystemcommand('!uncompress -c '//cmd(:nc),
 c     $     nc+15,itx,iax,vx,irtc)
       call tfsystemcommand('!cat '//cmd(:nc)//'|uncompress -c',
@@ -1119,9 +1220,10 @@ c     $     nc+15,itx,iax,vx,irtc)
       subroutine tfungzip(cmd,nc,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
-      integer*4 irtc,nc
-      character*(*) cmd
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: nc
+      integer*4 ,intent(out):: irtc
+      character*(*) ,intent(in):: cmd
       call tfsystemcommand('!gzip -dc '//cmd(:nc),
      $     nc+10,kx,irtc)
       return
@@ -1130,9 +1232,10 @@ c     $     nc+15,itx,iax,vx,irtc)
       subroutine tfunbzip2(cmd,nc,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
-      integer*4 irtc,nc
-      character*(*) cmd
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: nc
+      integer*4 ,intent(out):: irtc
+      character*(*) ,intent(in):: cmd
       call tfsystemcommand('!bzip2 -dc '//cmd(:nc),
      $     nc+11,kx,irtc)
       return
@@ -1142,16 +1245,19 @@ c     $     nc+15,itx,iax,vx,irtc)
       use tfrbuf
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) tftemporaryname
+      integer*4 ,intent(in):: nc
+      integer*4 ,intent(out):: irtc
+      character*(*) ,intent(in):: cmd
       integer*4 , parameter :: llbuf=1024
-      integer*4 irtc,nc,system,itfsyserr,lw,ir,i,m
+      integer*4 system,itfsyserr,lw,ir,i,m
       integer*4 l
       character post
-      character*(*) cmd
       character*(llbuf) buff,tfgetstr
       l=nextfn(moderead)
       if(ntable(l)%k .eq. 0)then
-        call tftemporaryname(isp,kx,irtc)
+        kx=tftemporaryname(isp,irtc)
         ntable(l)=dtfcopy(kx)
       else
         kx=ntable(l)
@@ -1191,8 +1297,10 @@ c      endif
       use tfstk
       use tfrbuf
       implicit none
-      type (sad_descriptor) kx
-      integer*4 isp1,irtc,itfmessage,iu,nc
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,iu,nc
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -1227,19 +1335,22 @@ c      endif
       return
       end
 
-      subroutine tftemporaryname(isp1,kx,irtc)
+      function tftemporaryname(isp1,irtc) result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
       type (sad_symdef), pointer :: symd
       type (sad_string), pointer :: str
-      integer*4 isp1,irtc,lw,i,tftmpnam,getpid,lm,itfmessage
+      integer*4 lw,i,tftmpnam,getpid,lm,itfmessage
       character*1024 buff
       character*256 machine
       data lm /0/
       save machine
       type (sad_descriptor) ixmachine
       data ixmachine%k /0/
+      kx=dxnullo
       if(isp .eq. isp1+1)then
         if(ktastk(isp) .ne. ktfoper+mtfnull)then
           irtc=itfmessage(9,'General::wrongval','Null')
@@ -1270,6 +1381,7 @@ c      endif
       buff(19+lm:25+lm)='.XXXXXX'
       buff(26+lm:26+lm)=char(0)
       lw=tftmpnam(buff)
+c      write(*,*)'temporaryName ',buff(:lw)
       kx=kxsalocb(-1,buff,lw)
       irtc=0
       return
@@ -1278,8 +1390,11 @@ c      endif
       subroutine tfseek(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k1
-      integer*4 isp1,irtc,lfn,ioff,ls,   ierr
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) k1
+      integer*4 lfn,ioff,ls,   ierr
       integer*4 fseek,itfmessage,itfsyserr
       external fseek
       type (sad_descriptor), save :: iabof,iacp
@@ -1328,8 +1443,10 @@ c      endif
       subroutine tfflush(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
-      integer*4 isp1,irtc,narg,lfn,itfmessage,itfgetlfn
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 narg,lfn,itfmessage,itfgetlfn
       narg=isp-isp1
       if(narg .ne. 1)then
         irtc=itfmessage(9,'General::narg','"1"')

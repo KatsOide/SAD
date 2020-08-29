@@ -4,11 +4,12 @@
       use opdata
       use tfcsi
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: kla,klx
       logical*4 , intent(in) ::re
       integer*4 , intent(in) :: ist1
-      integer*4 istart,istop,irtc,isp0,ist10,iop1,
+      integer*4 ,intent(out):: istop,irtc
+      integer*4 istart,isp0,ist10,iop1,
      $     i,ishash,l,ifchar,mopc,itgetfpe,m1,iste,
      $     itfmessage,itfmessagestr,level1,ist2,irt,l0
       character*(*) , intent(in) :: string
@@ -44,9 +45,6 @@ c     end   initialize for preventing compiler warning
  1    continue
       call tfetok(string(istart:l),istop,kx,itfcontext,irt)
       istop=min(l+1,istop+istart-1)
-c      if(l .gt. l0)then
-c        write(*,*)'tfeval ',irt,istop,l,buffer(max(l-16,1):l)
-c      endif
       if(irt .ge. 0)then
         go to 2400
       endif
@@ -83,11 +81,8 @@ c
             end select
             select case (mopc)
             case (mtfminus)
-              if(m1 .eq. mtfpower .or. m1 .eq. mtfrevpower)then
-                mopc=mtfneg
-              else
-                mopc=mtftimes
-              endif
+              mopc=merge(mtfneg,mtftimes,
+     $             m1 .eq. mtfpower .or. m1 .eq. mtfrevpower)
               rtastk(isp)=-1.d0
             case (mtfplus)
               go to 1010
@@ -359,6 +354,7 @@ c
           sav=savep
           ipoint=istop
         endif
+c        call tfdebugprint(dtastk(isp),'tfeval-8',3)
         call tfeevalref(ktastk(isp),kx%k,irtc)
         if(re)then
           savep=sav

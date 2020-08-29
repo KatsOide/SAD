@@ -1,7 +1,7 @@
       integer*8 function ktfmaloc(k,n,m,vec,trans,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       integer*8 ktfmalocp
       integer*4 ,intent(inout):: n,m,irtc
       logical*4 ,intent(in):: vec,trans
@@ -60,11 +60,8 @@ c          call tmov(rlist(ka+1),rlist(kap),n)
           go to 9000
         endif
         if(ktfnonreallistqo(kli))then
-          if(err)then
-            irtc=itfmessage(9,'General::wrongtype','"Real matrix"')
-          else
-            irtc=-1
-          endif
+          irtc=merge(itfmessage(9,'General::wrongtype','"Real matrix"'),
+     $           -1,err)
           return
         endif
       enddo
@@ -98,18 +95,11 @@ c          enddo
       irtc=0
       ktfmalocp=kap
       return
- 9000 if(err)then
-        irtc=itfmessage(9,'General::wrongtype','"Matrix"')
-      else
-        irtc=-1
-      endif
+ 9000 irtc=merge(itfmessage(9,'General::wrongtype','"Matrix"'),
+     $     -1,err)
       return
- 9100 if(err)then
-        irtc=itfmessage(9,'General::wrongtype',
-     $       '"Numerical List or Matrix"')
-      else
-        irtc=-1
-      endif
+ 9100 irtc=merge(itfmessage(9,'General::wrongtype',
+     $     '"Numerical List or Matrix"'),-1,err)
       return
       end
 
@@ -371,17 +361,11 @@ c            enddo
         irtc=-1
       endif
       return
- 9000 if(err)then
-        irtc=itfmessage(9,'General::wrongtype','"Matrix"')
-      else
-        irtc=-1
-      endif
+ 9000 irtc=merge(itfmessage(9,'General::wrongtype','"Matrix"'),
+     $     -1,err)
       return
- 9100 if(err)then
-        irtc=itfmessage(9,'General::wrongtype','"List"')
-      else
-        irtc=-1
-      endif
+ 9100 irtc=merge(itfmessage(9,'General::wrongtype','"List"'),
+     $     -1,err)
       return
       end
 
@@ -424,11 +408,7 @@ c            enddo
       logical*4 c
       real*8 imag_sign
       complex*16, intent(in):: a(nd,m)
-      if(conj)then
-        imag_sign=-1.d0
-      else
-        imag_sign=1.d0
-      endif
+      imag_sign=merge(-1.d0,1.d0,conj)
       kc=0
       if(n .eq. 0)then
         kax=ktaaloc(-1,m,klx)
@@ -454,11 +434,7 @@ c     $           imag_sign*imag(a(1,i)))
             c=.true.
           endif
         enddo
-        if(c)then
-          klx%attr=lconstlist+lnonreallist
-        else
-          klx%attr=lconstlist
-        endif
+        klx%attr=merge(lconstlist+lnonreallist,lconstlist,c)
       else
         if(trans)then
           kax=ktadaloc(-1,m,klx)
@@ -485,11 +461,7 @@ c     $           imag_sign*imag(a(1,i)))
                 c=.true.
               endif
             enddo
-            if(c)then
-              klxi%attr=lconstlist+lnonreallist
-            else
-              klxi%attr=lconstlist
-            endif
+            klxi%attr=merge(lconstlist+lnonreallist,lconstlist,c)
             klx%dbody(i)%k=ktflist+kaxi
           enddo
           klxi%attr=ior(klxi%attr,lconstlist)
@@ -518,11 +490,7 @@ c     $           imag_sign*imag(a(1,i)))
                 c=.true.
               endif
             enddo
-            if(c)then
-              klxi%attr=lconstlist+lnonreallist
-            else
-              klxi%attr=lconstlist
-            endif
+            klxi%attr=merge(lconstlist+lnonreallist,lconstlist,c)
             klx%dbody(i)%k=ktflist+kaxi
           enddo
           klxi%attr=ior(klxi%attr,lconstlist)

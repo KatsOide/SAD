@@ -261,7 +261,7 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
       integer*8 kx,k1,k2,kac,kas,kal,kack,kad
       integer*4 isp1,irtc,m,na,i,k,
      $     na1,nastep,nparallel,ipr,fork_worker,getpid,j,
-     $     wait,irw,naa,isw,ipid,itfmessage
+     $     waitpid,irw,naa,isw,ipid,itfmessage
       real*8 al0,al1,dal,w,c,s,a0,a1,x,ak,ak0,ak1,dak
       integer*4 ichpid(100)
       character*64 fn
@@ -379,7 +379,7 @@ c     end   initialize for preventing compiler warning
         else
           kad=ktaloc(((na-1)/nastep+1)*3)
           do j=1,nparallel-1
- 3001       irw=wait(isw)
+ 3001       irw=waitpid(-1,isw)
             do k=1,nparallel-1
               if(irw .eq. ichpid(k))then
                 na1=k

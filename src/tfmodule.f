@@ -1,11 +1,14 @@
-      subroutine tfmodule(isp1,kx,module,eval,irtc)
+      function tfmodule(isp1,module,eval,irtc) result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) kx,ke,kxl1,tfredefslist
       type (sad_dlist), pointer :: lvlist,kle
       type (sad_symdef), pointer :: symdi
-      integer*4 irtc,i, isp0,isp1,isp2, itfmessage
-      logical*4 module,rep,eval
+      integer*4 ,intent(out):: irtc
+      integer*4 ,intent(in):: isp1
+      integer*4 i,isp0,isp2,itfmessage
+      logical*4 ,intent(in):: module,eval
+      logical*4 rep
       if(isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
@@ -449,7 +452,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       integer*4 isp1,isp2,i,isp0
       logical*4 rep,rep1
       rep=.false.
-      kx=dxnull
+      kx%k=ktfoper+mtfnull
       if(ktflistq(k,list))then
         isp=isp+1
         isp0=isp

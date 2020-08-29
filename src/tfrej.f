@@ -6,7 +6,7 @@
       implicit none
       integer*4 i,nfc,mfpnta,mfpnta1,l,lene,j
       character*8 nlist(mfit1),name1
-      character*(*) word
+      character*(*) ,intent(out):: word
       integer*4 kfit(*),ndp(*),ifitp(*),ifitp1(*)
       logical*4 exist,tmatch
       exist=.true.

@@ -1,12 +1,14 @@
       subroutine tfif(word,iflevel,lfno,exist)
       implicit none
-      integer*4 iflevel,lfno
-      character*(*) word
+      integer*4 ,intent(inout):: iflevel
+      integer*4 ,intent(in):: lfno
+      character*(*) ,intent(inout):: word
       character ch
       character*13 delim
       integer*4 next,ifl
       real*8 getva
-      logical*4 f,exist
+      logical*4 f
+      logical*4 ,intent(out):: exist
       data delim/'[*/)}]><=.&^|'/
       exist=.false.
  2    if(word .eq. 'IF')then

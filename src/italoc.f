@@ -86,7 +86,7 @@ c$$$
       integer*8 function ktcaloc(n)
       use tfstk
       implicit none
-      integer*4 n
+      integer*4 ,intent(in):: n
       integer*8 k
       k=ktaloc(n)
       klist(k:k+n-1)=0
@@ -98,8 +98,10 @@ c$$$
       use tfstk
       use tfmem
       implicit none
-      integer*4 np,m
-      integer*8 ip1,j,j1,ics,na
+      integer*4 ,intent(in):: m
+      integer*4 np
+      integer*8 ,intent(out):: ip1
+      integer*8 j,j1,ics,na
       np=int(1+(m+3)/mpsize)
       na=mpsize*np
       ip1=ktfsadalloc(na)+1
@@ -156,7 +158,8 @@ c$$$      end
       use tfstk
       use tfmem
       implicit none
-      integer*4 n,n1
+      integer*4 ,intent(in):: n
+      integer*4 n1
       n1=max(n,3)
       if(n1 .lt. nindex)then
         tfaloc=klist(icp+n1*2) .ne. icp+n1*2
@@ -169,9 +172,11 @@ c$$$      end
       subroutine tfmalloc(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       integer*8 k
-      integer*4 isp1,irtc,i,itfmessage,m,ir
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 i,itfmessage,m,ir
       kx%k=ktfoper+mtfnull
       do i=isp1+1,isp
         if(ktfnonrealq(dtastk(i),ir))then
@@ -194,7 +199,7 @@ c$$$      end
       use tfstk
       use tfmem
       implicit none
-      character*(*) tag
+      character*(*) ,intent(in):: tag
       write(*,*)'aloc-',tag,nnet,nmem
       return
       end
@@ -202,8 +207,8 @@ c$$$      end
       subroutine tfreem(ip,n)
       use tfstk
       implicit none
-      integer*8 ip
-      integer*4 n
+      integer*8 ,intent(in):: ip
+      integer*4 ,intent(in):: n
       ilist(1,ip)=max(n,4)
       call tfree(ip+1)
       return

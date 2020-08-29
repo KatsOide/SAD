@@ -23,7 +23,7 @@ c     Reset LINE$P table.  -- 2012/1/8 By KO
       call tfclearlinep()
 c
 c
-      BODY: do while(.true.)
+      BODY: do
 c     Checking number of arguments
 
          index = 0

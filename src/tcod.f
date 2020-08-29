@@ -93,10 +93,7 @@ c     $       fndcod,vceff,wrfeff,trf0,vcacc,u0*pgev,cod(5)
       else
         dcod1(5)=0.d0
       endif
-      r=0.d0
-      do i=1,im
-        r=r+(dcod1(i)/codw(i))**2
-      enddo
+      r=sum((dcod1(1:im)/codw(1:im))**2)
       dtrf0=trf0-trf00
       if(.not. radcod)then
         r=r+(dtrf0/trw)**2
@@ -124,10 +121,6 @@ c      write(6,'(1p6g12.5)')codi,codf,dcod1
       red=r/r0
       trf0s=trf0
       r0=r
-c      s=0.d0
-c      do i=1,6
-c        s=s+dcod(i)*dcod0(i)/codw(i)**2
-c      enddo
       s=sum(dcod*dcod0/codw**2)
       if(red .lt. 1.0d0)then
         fact=min(fact*(2.d0-max(red-0.7d0,0.d0)/0.3d0),1.d0)
@@ -154,11 +147,9 @@ c      enddo
         codi(5)=codi(5)-dz-dtrf0*v0
         alambdarf=pi2/wrfeff
         trf0=trf0+dz/v0
-        if(trf0 .lt. 0.d0)then
-          trf0=-mod(-trf0+0.5d0*alambdarf,alambdarf)+alambdarf*0.5d0
-        else
-          trf0= mod(trf0-0.5d0*alambdarf,alambdarf)+alambdarf*0.5d0
-        endif
+        trf0=sign(1.d0,trf0)*mod(
+     $       sign(1.d0,trf0)*(trf0-0.5d0*alambdarf),alambdarf)
+     $       +alambdarf*0.5d0
 c        write(*,*)'tcod-dz ',dz,dvcacc,dz*dvcacc/pgev,ddp
         if(abs((dz-dtrf0*v0)*dvcacc/pgev)+abs(ddp) .gt. dpthre)then
           dcod(1:4)=0.d0

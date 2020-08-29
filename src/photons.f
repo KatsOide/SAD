@@ -71,12 +71,7 @@
      $     gx0=>pp%geo1(1,4),gy0=>pp%geo1(2,4),gz0=>pp%geo1(3,4),
      $     rho=>pp%rho,chi=>pp%chi,geo1=>pp%geo1)
       l=l_track
-      if(ini)then
-        gv=geo(:,:,l)
-c        call tggeol(l,gv)
-      else
-        gv=geo1
-      endif
+      gv=merge(geo(:,:,l),geo1,ini)
       al=al0
       theta=theta0
       phi=phi0
@@ -101,11 +96,7 @@ c        call tggeol(l,gv)
         sp0=sin(phi)
         cp0=cos(phi)
         r1=rho*sp0
-        if(cp0 .ge. 0.d0)then
-          r2=rho*sp0**2/(1.d0+cp0)
-        else
-          r2=rho*(1.d0-cp0)
-        endif
+        r2=rho*merge(sp0**2/(1.d0+cp0),1.d0-cp0,cp0 .ge. 0.d0)
         gx0=gv(1,4)+(r1*z1-r2*x1)
         gy0=gv(2,4)+(r1*z2-r2*x2)
         gz0=gv(3,4)+(r1*z3-r2*x3)
@@ -118,11 +109,7 @@ c        call tggeol(l,gv)
 c        write(*,'(a,1p12g10.2)')'tsetphgv ',gx0,gy0,gz0,
 c     $       x1,x2,x3,y1,y2,y3,z1,z2,z3
       endif
-      if(x3 .eq. 0.d0)then
-        chi=0.d0
-      else
-        chi=2.d0*atan2(x3,-y3)
-      endif
+      chi=merge(0.d0,2.d0*atan2(x3,-y3),x3 .eq. 0.d0)
       return
       end associate
       end subroutine
@@ -142,11 +129,7 @@ c     $       x1,x2,x3,y1,y2,y3,z1,z2,z3
       real*8 ,parameter :: frmin=1.d-12
       associate(l=>pcvt%l,cost=>pcvt%cost,sint=>pcvt%sint,al=>pcvt%al,
      $     fr0=>pcvt%fr0)
-      if(al .eq. 0.d0)then
-        fr=fr0
-      else
-        fr=fr0+ds/al
-      endif
+      fr=merge(fr0,fr0+ds/al,al .eq. 0.d0)
       gv=tfgeofrac(l,fr,irtc)
       if(irtc .ne. 0)then
         return
@@ -277,7 +260,6 @@ c      write(*,*)'phconv ',itp,ilp
       use tfstk
       use ffs_pointer,only:gammab
       use tmacro
-      use mathfun, only:hypot3
       implicit none
       type (sad_dlist), pointer ::klx
       type (sad_rlist), pointer ::klri
@@ -311,7 +293,7 @@ c        write(*,*)'phlist ',itp,nph
           kp=kt+(ilp-1)*10
           klx%dbody(i)%k=ktflist+ktavaloc(0,nitem,klri)
           klri%attr=lconstlist
-          dp=hypot3(rlist(kp+4),rlist(kp+5),rlist(kp+6))
+          dp=norm2([rlist(kp+4),rlist(kp+5),rlist(kp+6)])
 c          dp=hypot(rlist(kp+4),hypot(rlist(kp+5),rlist(kp+6)))
 c          dp=sqrt(rlist(kp+4)**2+rlist(kp+5)**2
 c     $         +rlist(kp+6)**2)
@@ -390,7 +372,7 @@ c      write(*,*)'with ',itp,ilp
         use ffs_flag
         use tmacro
         use photontable, only:tphrec
-        use mathfun, only:pxy2dpz,p2h,hypot3
+        use mathfun, only:pxy2dpz,p2h
         use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0,sprot
         implicit none
         integer*4 ,parameter :: npmax=10000
@@ -400,7 +382,7 @@ c      write(*,*)'with ',itp,ilp
         real*8 , intent(in)::px00,py0,zr00,bsi,al
         real*8 dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
      $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,sx,sy,sz,
-     $       ppa,an,a,dph,r1,r2,px0,xr,yr,rho
+     $       ppa,an,dph,r1,r2,px0,xr,yr,rho
         real*8 dpr(npmax),rph(npmax)
         dpz0=pxy2dpz(px00,py0)
         px0= cphi0*px00+sphi0*(1.d0+dpz0)
@@ -413,7 +395,7 @@ c      write(*,*)'with ',itp,ilp
         ppy=dpz*px0-px*dpz0-dpx
         ppz=px*py0-py*px0
 c        ppa=hypot(ppx,hypot(ppy,ppz))
-        ppa=hypot3(ppx,ppy,ppz)
+        ppa=norm2([ppx,ppy,ppz])
         theta=asin(min(1.d0,max(-1.d0,ppa)))
         pr=1.d0+g
         p=p0*pr
@@ -454,26 +436,17 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
           dv=-g*(1.d0+pr)/h2/(h2+p2)+dvfs
           z=z*p2/h2*h1/p
           if(calpol)then
-            if(ppa .ne. 0.d0)then
-              a=theta/ppa*pr
-            else
-              a=0.d0
-            endif
             pxm=px0+dpx*.5d0
             pym=py0+dpy*.5d0
             call sprot(sx,sy,sz,pxm,pym,
-     $           ppx,ppy,ppz,bsi,a,h1,
-     $           p2*h2/al1,an)
+     $           ppx,ppy,ppz,bsi,merge(theta/ppa*pr,0.d0,ppa .ne. 0.d0),
+     $           h1,p2*h2/al1,an)
           endif
         elseif(calpol)then
-          if(ppa .ne. 0.d0)then
-            a=theta/ppa*pr
-          else
-            a=0.d0
-          endif
           pxm=px0+dpx*.5d0
           pym=py0+dpy*.5d0
-          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,a,h1,
+          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,
+     $         merge(theta/ppa*pr,0.d0,ppa .ne. 0.d0),h1,
      $         p*h1/al1,-1.d0)
         endif
         return
@@ -483,7 +456,7 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
         use ffs_flag
         use tmacro
         use photontable, only:tphrec
-        use mathfun, only:pxy2dpz,p2h,hypot3
+        use mathfun, only:pxy2dpz,p2h
         use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0,sprot
         implicit none
         integer*4 ,parameter :: npmax=10000
@@ -495,7 +468,7 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
         real*8 , intent(in)::al
         real*8 dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
      $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,
-     $       ppa,an,a,dph,r1,r2,px0,xr,yr,rho
+     $       ppa,an,dph,r1,r2,px0,xr,yr,rho
         real*8 dpr(npmax),rph(npmax)
         do k=1,np
           dpz0=pxy2dpz(pxr0(k),pyr0(k))
@@ -508,8 +481,7 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
           ppx=pyn(k)*dpz0-dpz*pyr0(k)+dpy
           ppy=dpz*px0-pxn(k)*dpz0-dpx
           ppz=pxn(k)*pyr0(k)-pyn(k)*px0
-          ppa=hypot3(ppx,ppy,ppz)
-c          ppa=hypot(ppx,hypot(ppy,ppz))
+          ppa=norm2([ppx,ppy,ppz])
           theta=asin(min(1.d0,max(-1.d0,ppa)))
           pr=1.d0+gn(k)
           p=p0*pr
@@ -550,28 +522,19 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
             dvn(k)=-gn(k)*(1.d0+pr)/h2/(h2+p2)+dvfs
             zn(k)=zn(k)*p2/h2*h1/p
             if(calpol)then
-              if(ppa .ne. 0.d0)then
-                a=theta/ppa*pr
-              else
-                a=0.d0
-              endif
               pxm=px0    +dpx*.5d0
               pym=pyr0(k)+dpy*.5d0
               call sprot(sxn(k),syn(k),szn(k),pxm,pym,
-     $             ppx,ppy,ppz,bsi(k),a,h1,
+     $             ppx,ppy,ppz,bsi(k),
+     $             merge(theta/ppa*pr,0.d0,ppa .ne. 0.d0),h1,
      $             p2*h2/al1,an)
             endif
           elseif(calpol)then
-            if(ppa .ne. 0.d0)then
-              a=theta/ppa*pr
-            else
-              a=0.d0
-            endif
             pxm=px0    +dpx*.5d0
             pym=pyr0(k)+dpy*.5d0
             call sprot(sxn(k),syn(k),szn(k),pxm,pym,ppx,ppy,ppz,
-     $           bsi(k),a,h1,
-     $           p*h1/al1,-1.d0)
+     $           bsi(k),merge(theta/ppa*pr,0.d0,ppa .ne. 0.d0),
+     $           h1,p*h1/al1,-1.d0)
           endif
         enddo
         return
@@ -581,12 +544,12 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
      $     px00,py0,zr00,bsi0,al)
         use ffs_flag
         use tmacro
-        use mathfun, only:pxy2dpz,p2h,hypot3
+        use mathfun, only:pxy2dpz,p2h
         use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0,sprot
         implicit none
         real*8 , intent(inout)::x,px,y,py,z,g,dv
         real*8 , intent(in)::px00,py0,zr00,bsi0,al
-        real*8 a,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
+        real*8 dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
      $       px0,pxm,pym,al1,uc,ddpx,ddpy,h2,h1,sx,sy,sz,ppa,p2
         dpz0=pxy2dpz(px00,py0)
         px0= cphi0*px00+sphi0*(1.d0+dpz0)
@@ -597,8 +560,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
         ppx=py*dpz0-dpz*py0+dpy
         ppy=dpz*px0-px*dpz0-dpx
         ppz=px*py0-py*px0
-        ppa=hypot3(ppx,ppy,ppz)
-c        ppa=hypot(ppx,hypot(ppy,ppz))
+        ppa=norm2([ppx,ppy,ppz])
         theta=asin(min(1.d0,max(-1.d0,ppa)))
         pr=1.d0+g
         p=p0*pr
@@ -608,7 +570,6 @@ c        ppa=hypot(ppx,hypot(ppy,ppz))
         uc=cuc*h1**3/p0*theta/al1
         dg=-cave*anp*uc
         dg=dg/(1.d0-2.d0*dg)
-c        write(*,*)'tradk1 ',dg,anp,uc
         g=max(gmin,g+dg)
         ddpx=-.5d0*dpx*dg
         ddpy=-.5d0*dpy*dg
@@ -622,15 +583,11 @@ c        write(*,*)'tradk1 ',dg,anp,uc
         dv=-g*(1.d0+pr)/h2/(h2+p2)+dvfs
         z=z*p2/h2*h1/p
         if(calpol)then
-          if(ppa .ne. 0.d0)then
-            a=theta/ppa*pr
-          else
-            a=0.d0
-          endif
           pxm=px0+dpx*.5d0
           pym=py0+dpy*.5d0
-          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi0,a,h2,
-     $         p2*h2/al1,anp)
+          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi0,
+     $         merge(theta/ppa*pr,0.d0,ppa .ne. 0.d0),
+     $         h2,p2*h2/al1,anp)
         endif
         return
         end subroutine
@@ -638,7 +595,7 @@ c        write(*,*)'tradk1 ',dg,anp,uc
         subroutine tradkn(np,xn,pxn,yn,pyn,zn,gn,dvn,sxn,syn,szn,al)
         use ffs_flag
         use tmacro
-        use mathfun, only:pxy2dpz,p2h,hypot3
+        use mathfun, only:pxy2dpz,p2h
         use tspin
         implicit none
         integer*4 , intent(in)::np
@@ -646,7 +603,7 @@ c        write(*,*)'tradk1 ',dg,anp,uc
      $       xn(np),pxn(np),yn(np),pyn(np),zn(np),gn(np),dvn(np),
      $       sxn(np),syn(np),szn(np)
         real*8 , intent(in)::al
-        real*8 a,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
+        real*8 dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
      $       px0,pxm,pym,al1,uc,ddpx,ddpy,h2,h1,ppa,p2
         integer*4 i
         do i=1,np
@@ -659,8 +616,7 @@ c        write(*,*)'tradk1 ',dg,anp,uc
           ppx=pyn(i)*dpz0-dpz*pyr0(i)+dpy
           ppy=dpz*px0-pxn(i)*dpz0-dpx
           ppz=pxn(i)*pyr0(i)-pyn(i)*px0
-          ppa=hypot3(ppx,ppy,ppz)
-c          ppa=hypot(ppx,hypot(ppy,ppz))
+          ppa=norm2([ppx,ppy,ppz])
           theta=asin(min(1.d0,max(-1.d0,ppa)))
           pr=1.d0+gn(i)
           p=p0*pr
@@ -683,16 +639,11 @@ c          ppa=hypot(ppx,hypot(ppy,ppz))
           dvn(i)=-gn(i)*(1.d0+pr)/h2/(h2+p2)+dvfs
           zn(i)=zn(i)*p2/h2*h1/p
           if(calpol)then
-            if(ppa .ne. 0.d0)then
-              a=theta/ppa*pr
-            else
-              a=0.d0
-            endif
             pxm=px0    +dpx*.5d0
             pym=pyr0(i)+dpy*.5d0
             call sprot(sxn(i),syn(i),szn(i),pxm,pym,ppx,ppy,ppz,
-     $           bsi(i),a,h2,
-     $           p2*h2/al1,anp)
+     $           bsi(i),merge(theta/ppa*pr,0.d0,ppa .ne. 0.d0)
+     $           ,h2,p2*h2/al1,anp)
           endif
         enddo
         return
@@ -940,7 +891,7 @@ c     enddo
      $           +dgz(1)*transr(1,:)+dgz(2)*transr(2,:)
      $           +dgz(3)*transr(3,:)+dgz(4)*transr(4,:)
      $           +dgz(5)*transr(5,:)+dgz(6)*transr(6,:)
-            g=abs(dcmplx(gx,abs(dcmplx(gy,gz))))
+            g=norm2([gx,gy,gz])
             if(g .ne. 0.d0)then
               bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
               th=tan(.5d0*g)

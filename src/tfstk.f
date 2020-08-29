@@ -355,11 +355,8 @@ c$$$      integer*8 , pointer, dimension(:) :: pidval(:)
      &         , 0,16)
         else
           idtype(idx)=type
-          if(type .eq. icRSVD) then
-            idval(idx)=transfer(c_loc(ival),i00)/8
-          else
-            idval(idx)=ival
-          endif
+          idval(idx)=merge(transfer(c_loc(ival),i00)/8,
+     $         ival,type .eq. icRSVD)
           sethtb8=idx
         endif
         return
@@ -584,11 +581,7 @@ c     kcpklist0=0
                 call tsetindexhash(i+m,m1-m)
                 ilist(1,i-1)=m
                 nnet=nnet+m
-                if(klist(ic) .eq. ic)then
-                  maxic=ic-2
-                else
-                  maxic=ic
-                endif
+                maxic=merge(ic-2,ic,klist(ic) .eq. ic)
                 ktaloc=i
                 return
               endif
@@ -756,10 +749,10 @@ c     endif
       integer*4, parameter ::
      $     mtfnull=0,
      $     mtfneg=1,mtfinv=2,mtfplus=3,mtfminus=4,mtfmult=5,mtfdiv=6,
-     $     mtfrevpower=7,mtfpower=8,mtfequal=9,mtfunequal=10,
-     $     mtfgreater=11,
-     $     mtfless=12,mtfgeq=13,mtfleq=14,mtfsame=15,mtfunsame=16,
-     $     mtfnot=17,mtfand=18,mtfor=19,mtfconcat=20,mtfleftbra=21,
+     $     mtfrevpower=7,mtfpower=8,
+     $     mtfgreater=9,mtfgeq=10,mtfleq=11,mtfless=12,
+     $     mtfequal=13,mtfunequal=14,mtfand=15,mtfor=16,
+     $     mtfnot=17,mtfsame=18,mtfunsame=19,mtfconcat=20,mtfleftbra=21,
      $     mtfrightbra=22,mtfleftbrace=23,mtfrightbrace=24,
      $     mtfsetdelayed=25,mtfset=26,mtfcomplex=27,mtfleftparen=28,
      $     mtfrightparen=29,mtfcomma=30,mtfcomp=31,mtffun=32,
@@ -812,10 +805,7 @@ c     endif
       parameter (rtfnull=0.d0)
       integer*4, parameter :: irtcret=-4,irtcthrow=-5,
      $     irtcgoto=-6,irtcabort=-7
-      integer*8 ktfoper,ktflist,ktfstring,ktfsymbol,ktfpat,ktfobj,
-     $     ktfmask,ktamask,ktrmask,ktfnull,ktfnr,ktfref,ktfother,
-     $     ktomask,ktftrue,ktfnan,ktfenan,ktfenanb
-      parameter (
+      integer*8 , parameter ::
      $     ktfnull  =int8(z'fff0000000000000'),
      $     ktfother =int8(z'fff2000000000000'),
      $     ktfnr    =int8(z'7ff2000000000000'),
@@ -831,10 +821,13 @@ c     endif
      $     ktfmask  =int8(z'fffe000000000000'),
      $     ktamask  =int8(z'0001ffffffffffff'),
      $     ktftrue  =int8(z'3ff0000000000000'),
+     $     ktffalse =int8(z'0000000000000000'),
      $     ktfnan   =int8(z'fff8000000000000'),
      $     ktfenan  =int8(z'7ff0000000000000'),
      $     ktfenanb =int8(z'000fffffffffffff')
-     $     )
+      type (sad_descriptor) ,parameter ::
+     $     dxzero=sad_descriptor(1,int8(0)),
+     $     dxnullo=sad_descriptor(1,ktfoper+mtfnull)
       integer*4 , parameter :: mbody = 2**8
       integer*4 , parameter :: mbody1 = 2**8
 
@@ -1077,7 +1070,8 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
       end interface
 
       interface ktfrealq
-        module procedure ktfrealq_k,ktfrealq_d,ktfrealq_ki,ktfrealq_di
+        module procedure ktfrealq_k,ktfrealq_d,ktfrealq_ki,ktfrealq_di,
+     $     ktfrealq_dk
       end interface
 
       interface ktfnonrealq
@@ -1347,7 +1341,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         return
         end subroutine
 
-        integer*4 function itfcbk(k)
+        integer*4 pure function itfcbk(k)
         use tfmem
         implicit none
         integer*8 , intent(in) ::k
@@ -1380,11 +1374,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         integer*8, intent(in):: k
         integer*4 i
         i=itfcbk(k)
-        if(i .ne. 0)then
-          tfchecklastp=k .le. kcbk(3,i)
-        else
-          tfchecklastp=.false.
-        endif
+        tfchecklastp=merge(k .le. kcbk(3,i),.false.,i .ne. 0)
         if(.not. tfchecklastp)then
           if(i .ne. 0)then
             write(*,*)'tfcklastp ',k,i,kcbk(3,i),kcbk(2,i)
@@ -1718,21 +1708,21 @@ c                  kcbk(3,j)=kcbk(2,k)
         return
         end
 
-        integer*8 function ktfaddrk(k)
+        integer*8 pure elemental function ktfaddrk(k)
         implicit none
         integer*8 , intent(in)::k
         ktfaddrk=iand(ktamask,k)
         return
         end function ktfaddrk
 
-        integer*8 pure function ktfaddrd(k)
+        integer*8 pure elemental function ktfaddrd(k)
         implicit none
         type (sad_descriptor) , intent(in)::k
         ktfaddrd=iand(ktamask,k%k)
         return
         end function ktfaddrd
 
-        integer*8 function ktftype(k)
+        integer*8 pure elemental function ktftype(k)
         implicit none
         integer*8 , intent(in)::k
         ktftype=iand(ktfmask,k)
@@ -1773,11 +1763,8 @@ c                  kcbk(3,j)=kcbk(2,k)
         use tfmem,only:kfirstalloc
         implicit none
         integer*8 , intent(in)::k
-        if(iand(ktomask,k) .eq. ktfobj)then
-          ka=iand(ktamask,k)
-        else
-          ka=kfirstalloc+1
-        endif
+        ka=merge(iand(ktamask,k),kfirstalloc+1,
+     $     iand(ktomask,k) .eq. ktfobj)
         return
         end function ktaobjk
 
@@ -1785,15 +1772,12 @@ c                  kcbk(3,j)=kcbk(2,k)
         use tfmem,only:kfirstalloc
         implicit none
         type (sad_descriptor) , intent(in)::k
-        if(iand(ktomask,k%k) .eq. ktfobj)then
-          ka=iand(ktamask,k%k)
-        else
-          ka=kfirstalloc+1
-        endif
+        ka=merge(iand(ktamask,k%k),kfirstalloc+1,
+     $       iand(ktomask,k%k) .eq. ktfobj)
         return
         end function ktaobjd
 
-        logical*4 function ktfnonobjq(ka)
+        logical*4 pure elemental function ktfnonobjq(ka)
         implicit none
         integer*8 , intent(in)::ka
         ktfnonobjq=iand(ktomask,ka) .ne. ktfobj
@@ -1808,11 +1792,13 @@ c                  kcbk(3,j)=kcbk(2,k)
         return
         end
 
-        logical*4 function ktfenanq(x)
+        logical*4 pure elemental function ktfenanq(x)
+        use iso_c_binding
         implicit none
         real*8 , intent(in)::x
-        integer*8 kfromr,k
-        k=kfromr(x)
+        integer*8 k
+c        k=kfromr(x)
+        k=transfer(x,i00)
         ktfenanq=k .eq. knotanumber .or.
      $       iand(k,ktfenan) .eq. ktfenan .and.
      $       iand(k,ktfenanb) .ne. 0 .and. k .ne. kinfinity .and.
@@ -1820,7 +1806,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         return
         end function 
 
-        logical*4 function ktfenanzeroq(x)
+        logical*4 pure elemental function ktfenanzeroq(x)
         implicit none
         real*8 , intent(in)::x
         ktfenanzeroq=x .eq. 0.d0 .and. ktfenanq(x)
@@ -1843,10 +1829,9 @@ c                  kcbk(3,j)=kcbk(2,k)
         implicit none
         type (sad_descriptor) , intent(in)::k
         real*8, optional, intent(out) :: v
-        real*8 rfromk
         ktfrealq_d=iand(ktrmask,k%k) .ne. ktfnr
         if(ktfrealq_d .and. present(v))then
-          v=rfromk(k%k)
+          v=k%x(1)
         endif
         return
         end function ktfrealq_d
@@ -1867,13 +1852,23 @@ c                  kcbk(3,j)=kcbk(2,k)
         implicit none
         type (sad_descriptor) , intent(in)::k
         integer*4 , intent(out) :: iv
-        real*8 rfromk
         ktfrealq_di=iand(ktrmask,k%k) .ne. ktfnr
         if(ktfrealq_di)then
-          iv=int(rfromk(k%k))
+          iv=int(k%x(1))
         endif
         return
         end function ktfrealq_di
+
+        logical*4 function ktfrealq_dk(k,iv)
+        implicit none
+        type (sad_descriptor) , intent(in)::k
+        integer*8 , intent(out) :: iv
+        ktfrealq_dk=iand(ktrmask,k%k) .ne. ktfnr
+        if(ktfrealq_dk)then
+          iv=int8(k%x(1))
+        endif
+        return
+        end function ktfrealq_dk
 
         logical*4 function ktfnonrealq_k(k,v)
         implicit none
@@ -1891,10 +1886,9 @@ c                  kcbk(3,j)=kcbk(2,k)
         implicit none
         type (sad_descriptor) , intent(in)::k
         real*8, optional, intent(out) :: v
-        real*8 rfromk
         ktfnonrealq_d=iand(ktrmask,k%k) .eq. ktfnr
         if(.not. ktfnonrealq_d .and. present(v))then
-          v=rfromk(k%k)
+          v=k%x(1)
         endif
         return
         end function ktfnonrealq_d
@@ -1945,12 +1939,12 @@ c                  kcbk(3,j)=kcbk(2,k)
         return
         end function ktfnonoperqk
 
-        logical*4 function ktfoperqd(k,ka)
+        logical*4 function ktfoperqd(k,ka) result(v)
         implicit none
         type (sad_descriptor) , intent(in)::k
         integer*8, optional, intent(out) :: ka
-        ktfoperqd=iand(ktfmask,k%k) .eq. ktfoper
-        if(ktfoperqd .and. present(ka))then
+        v=iand(ktfmask,k%k) .eq. ktfoper
+        if(v .and. present(ka))then
           ka=ktfaddr(k)
         endif
         return
@@ -2582,14 +2576,14 @@ c                  kcbk(3,j)=kcbk(2,k)
         return
         end function ktfrefqd
 
-        logical*4 function ktfnonrefq(k)
+        logical*4 pure elemental function ktfnonrefq(k)
         implicit none
         integer*8 , intent(in)::k
         ktfnonrefq=iand(ktfmask,k) .ne. ktfref
         return
         end function ktfnonrefq
 
-        logical*4 function ktfreallistqk(ka)
+        logical*4 pure elemental function ktfreallistqk(ka)
         implicit none
         integer*8 , intent(in)::ka
         ktfreallistqk=iand(ilist(2,ka-3),lnonreallist) .eq. 0
@@ -2607,7 +2601,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         return
         end function ktfreallistqk_rlist
 
-        logical*4 function ktfreallistqd(ka)
+        logical*4 pure elemental function ktfreallistqd(ka)
         implicit none
         type (sad_descriptor) , intent(in)::ka
         ktfreallistqd=iand(ilist(2,ktfaddrd(ka)-3),lnonreallist) .eq. 0
@@ -2626,42 +2620,42 @@ c                  kcbk(3,j)=kcbk(2,k)
         return
         end function ktfreallistqd_rlist
 
-        logical*4 function ktfnonreallistq(ka)
+        logical*4 pure elemental function ktfnonreallistq(ka)
         implicit none
         integer*8 , intent(in)::ka
         ktfnonreallistq=iand(ilist(2,ka-3),lnonreallist) .ne. 0
         return
         end function ktfnonreallistq
 
-        logical*4 function ktfreallistqo_rlist(list)
+        logical*4 pure elemental function ktfreallistqo_rlist(list)
         implicit none
         type (sad_rlist) , intent(in)::list
         ktfreallistqo_rlist=iand(list%attr,lnonreallist) .eq. 0
         return
         end function ktfreallistqo_rlist
 
-        logical*4 function ktfreallistqo_dlist(list)
+        logical*4 pure elemental function ktfreallistqo_dlist(list)
         implicit none
         type (sad_dlist) , intent(in)::list
         ktfreallistqo_dlist=iand(list%attr,lnonreallist) .eq. 0
         return
         end function ktfreallistqo_dlist
 
-        logical*4 function ktfnonreallistqo_rlist(list)
+        logical*4 pure elemental function ktfnonreallistqo_rlist(list)
         implicit none
         type (sad_rlist) , intent(in)::list
         ktfnonreallistqo_rlist=iand(list%attr,lnonreallist) .ne. 0
         return
         end function ktfnonreallistqo_rlist
 
-        logical*4 function ktfnonreallistqo_dlist(list)
+        logical*4 pure elemental function ktfnonreallistqo_dlist(list)
         implicit none
         type (sad_dlist) , intent(in)::list
         ktfnonreallistqo_dlist=iand(list%attr,lnonreallist) .ne. 0
         return
         end function ktfnonreallistqo_dlist
 
-        logical*4 function ktftrueq(ka)
+        logical*4 pure elemental function ktftrueq(ka)
         implicit none
         integer*8 , intent(in)::ka
         ktftrueq=ka .ne. 0 .and. iand(ktrmask,ka) .ne. ktfnr
@@ -2716,49 +2710,49 @@ c                  kcbk(3,j)=kcbk(2,k)
         return
         end function ktfsequenceqd_dlist
 
-        logical*4 function ktfprotectedq(ka)
+        logical*4 pure elemental function ktfprotectedq(ka)
         implicit none
         integer*8 , intent(in)::ka
         ktfprotectedq=iand(ilist(1,ka-3),iattrprotected) .ne. 0
         return
         end function ktfprotectedq
 
-        logical*4 function ktfprotectedqo(sym)
+        logical*4 pure elemental function ktfprotectedqo(sym)
         implicit none
         type (sad_symbol) , intent(in)::sym
         ktfprotectedqo=iand(sym%attr,iattrprotected) .ne. 0
         return
         end function ktfprotectedqo
 
-        logical*4 function ktfconstantq(ka)
+        logical*4 pure elemental function ktfconstantq(ka)
         implicit none
         integer*8 , intent(in)::ka
         ktfconstantq=iand(ilist(1,ka-3),iattrconstant) .ne. 0
         return
         end function ktfconstantq
 
-        logical*4 function ktfconstantsymq(sym)
+        logical*4 pure elemental function ktfconstantsymq(sym)
         implicit none
         type (sad_symbol) , intent(in)::sym
         ktfconstantsymq=iand(sym%attr,iattrconstant) .ne. 0
         return
         end function ktfconstantsymq
 
-        logical*4 function ktfimmediateq(ka)
+        logical*4 pure elemental function ktfimmediateq(ka)
         implicit none
         integer*8 , intent(in)::ka
         ktfimmediateq=iand(ilist(1,ka-3),iattrimmediate) .ne. 0
         return
         end function ktfimmediateq
 
-        logical*4 function ktfnumericq(ka)
+        logical*4 pure elemental function ktfnumericq(ka)
         implicit none
         integer*8 , intent(in)::ka
         ktfnumericq=iand(ilist(1,ka-3),iattrnumeric) .ne. 0
         return
         end function ktfnumericq
 
-        logical*4 function ktfovrwrtq(kl)
+        logical*4 pure elemental function ktfovrwrtq(kl)
         implicit none
         type (sad_dlist) , intent(in)::kl
         ktfovrwrtq=kl%ref .le. 0 .or.
@@ -2919,7 +2913,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         return
         end
 
-        logical*4 function tfsamesymbolqo(sa,sp)
+        logical*4 pure elemental function tfsamesymbolqo(sa,sp)
         use tfcode
         implicit none
         type(sad_symbol) , intent(in)::sa,sp
@@ -3129,7 +3123,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         return
         end function
 
-        complex*16 function cfromr(r)
+        complex*16 pure function cfromr(r)
         implicit none
         real*8 , intent(in)::r(2)
         cfromr=dcmplx(r(1),r(2))
@@ -3138,7 +3132,7 @@ c                  kcbk(3,j)=kcbk(2,k)
 
         subroutine incr1i(ia)
         implicit none
-        integer*4 ia(:)
+        integer*4 ,intent(inout):: ia(:)
         ia=ia+1
         return
         end
@@ -3485,7 +3479,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end subroutine
 
-        type (sad_descriptor) function k_descr(k)
+        type (sad_descriptor) pure elemental function k_descr(k)
         implicit none
         integer*8 , intent(in)::k
         k_descr%k=k
@@ -3613,7 +3607,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end function
 
-        type (sad_descriptor) pure function dfromk(k)
+        type (sad_descriptor) pure elemental function dfromk(k)
         implicit none
         integer*8 , intent(in)::k
         dfromk%k=k
@@ -4051,23 +4045,16 @@ c        type (sad_symbol), pointer, intent(out) :: symx
         l=lenw(string)
         ip=index(string(1:l),'_')
         if(ip .gt. 0)then
-          if(string(ip:min(l,ip+2)) .eq. '___')then
-            k=3
-          elseif(string(ip:min(l,ip+1)) .eq. '__')then
-            k=2
-          else
-            k=1
-          endif
+          k=merge(3,merge(2,1,string(ip:min(l,ip+1)) .eq. '__'),
+     $         string(ip:min(l,ip+2)) .eq. '___')
         else
           k=0
           ip=l+1
         endif
         ipk=ip+k
-        if(ipk .gt. l)then
-          kh%k=ktfref
-        else
-          kh%k=ktfsymbol+ktfsymbolz(string(ipk:l),int(l-ipk+1))
-        endif
+        kh%k=merge(ktfref,
+     $       ktfsymbol+ktfsymbolz(string(ipk:l),int(l-ipk+1)),
+     $       ipk .gt. l)
         kxpaloc=kxpalocb(string(1:ip-1),ip-1,transfer(ktfref+k,kh),kh)
         return
         end function
@@ -4075,15 +4062,11 @@ c        type (sad_symbol), pointer, intent(out) :: symx
         type (sad_descriptor) function kxpalocb(symb,ls,kp,kh)
         implicit none
         type (sad_descriptor) , intent(in)::kp,kh
-        type (sad_descriptor) ks
         integer*4 , intent(in)::ls
         character , intent(in)::symb(ls)
-        if(ls .gt. 0)then
-          ks=kxsymbolz(symb,ls)
-        else
-          ks%k=0
-        endif
-        kxpalocb=kxpcopyss(kp,kh,ks,transfer(ktfref,kp))
+        kxpalocb=kxpcopyss(kp,kh,
+     $       merge(kxsymbolz(symb,ls),dfromk(i00),ls .gt. 0),
+     $       transfer(ktfref,kp))
         return
         end function
 
@@ -4257,7 +4240,7 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         return
         end subroutine
 
-        logical*4 function tfonstackq(ka)
+        logical*4 pure elemental function tfonstackq(ka)
         implicit none
         integer*8 , intent(in)::ka
         tfonstackq=ka .ge. isporg+ispbase
@@ -4304,6 +4287,7 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         isp=isp+1
         ktastk(isp)=ktflist+ktadaloc(-1,2,kl1)
         kl1%head%k=ktfoper+mtfrule
+        write(*,*)'mkrlstk_dr ',x
         kl1%dbody(1)=dtfcopy1(ks)
         kl1%rbody(2)=x
         return
@@ -4466,7 +4450,6 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         type (sad_descriptor), save :: ksym(nsym)
         integer*4 , intent(in)::n0
         integer*4 n,l,n1,ls,ifrac
-        character ch
         character*32 name,buf
         data ksym%k /nsym*0/
         data name /'`Class`s                        '/
@@ -4479,14 +4462,10 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         do while(n .ne. 0)
           n1=n/62
           ifrac=n-n1*62
-          if(ifrac .lt. 10)then
-            ch=char(ichar('0')+ifrac)
-          elseif(ifrac .lt. 36)then
-            ch=char(ichar('a')+ifrac-10)
-          else
-            ch=char(ichar('A')+ifrac-36)
-          endif
-          buf(l:l)=ch
+          buf(l:l)=merge(char(ichar('0')+ifrac),
+     $         merge(char(ichar('a')+ifrac-10),
+     $         char(ichar('A')+ifrac-36),ifrac .lt. 36),
+     $         ifrac .lt. 10)
           l=l-1
           n=n1
         enddo
@@ -4498,44 +4477,21 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         return
         end function
 
-        subroutine resetnan(a,xl)
+        pure subroutine resetnan(a,xl)
         implicit none
         real*8, intent(in), optional:: xl
         real*8, intent(inout) ::a(:)
         real*8 x
-        integer*4 i
-        if(present(xl))then
-          x=xl
-        else
-          x=0.d0
-        endif
-        do i=1,size(a)
-          if(ktfenanq(a(i)))then
-            a(i)=x
-          endif
-        enddo
+        x=merge(xl,0.d0,present(xl))
+        a=merge(x,a,ktfenanq(a))
         return
         end subroutine
 
-        subroutine limitnan(a,xl,xh,xn)
+        pure subroutine limitnan(a,x)
         implicit none
-        real*8, intent(in), optional :: xn
-        real*8, intent(in) :: xl,xh
+        real*8, intent(in) :: x
         real*8 , intent(inout)::a(:)
-        real*8 x
-        integer*4 i
-        if(present(xn))then
-          x=xn
-        else
-          x=xh
-        endif
-        do i=1,size(a)
-          if(ktfenanq(a(i)))then
-            a(i)=x
-          else
-            a(i)=max(xl,min(xh,a(i)))
-          endif
-        enddo
+        a=sign(merge(x,merge(x,a,abs(a)>x),ktfenanq(a)),a)
         return
         end subroutine
 

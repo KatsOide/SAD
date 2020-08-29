@@ -166,11 +166,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
           elseif(mfitp(kp) .eq. 0)then
             mfitp(kp)=2
           endif
-          if(maxfit)then
-            mfitp(kp)=-abs(mfitp(kp))
-          else
-            mfitp(kp)=abs(mfitp(kp))
-          endif
+          mfitp(kp)=merge(-abs(mfitp(kp)),abs(mfitp(kp)),maxfit)
           if(mfitp(kp) .eq. 0 .and. mfpnt .ne. mfpnt1)then
             call txcalc(icalc,ncalc,mfpnt,mfpnt1,i,.false.,err1)
           elseif(mfitp(kp) .ne. 0 .and. i .le. mfit .and.

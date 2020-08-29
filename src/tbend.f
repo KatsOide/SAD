@@ -1,54 +1,3 @@
-      module multa
-        integer*4, parameter :: nmult=21
-        real*8 ,parameter :: fact(0:nmult+1)=[
-     $       1.d0,  1.d0,   2.d0,   6.d0,   24.d0,   120.d0,
-     1       720.d0,     5040.d0,     40320.d0,362880.d0,3628800.d0,
-     $       39916800.d0,479001600.d0,6227020800.d0,87178291200.d0,
-     $       1307674368000.d0,20922789888000.d0,355687428096000.d0,
-     $       6402373705728000.d0,121645100408832000.d0,
-     $       2432902008176640000.d0,51090942171709440000.d0,
-     $       1124000727777607680000.d0],
-     $       an(0:nmult+1)=[1.d0,1.d0,
-     $       0.5d0,
-     $       0.33333333333333333333d0,
-     $       0.25d0,
-     $       0.2d0,
-     $       0.166666666666666666667d0,
-     $       0.142857142857142857143d0,
-     $       0.125d0,
-     $       0.111111111111111111111d0,
-     $       0.1d0,
-     $       0.090909090909090909091d0,
-     $       0.083333333333333333333d0,
-     $       0.076923076923076923077d0,
-     $       0.071428571428571428571d0,
-     $       0.066666666666666666667d0,
-     $       0.0625d0,
-     $       0.058823529411764705882d0,
-     $       0.055555555555555555556d0,
-     $       0.052631578947368421053d0,
-     $       0.05d0,
-     $       0.047619047619047619048d0,
-     $       0.045454545454545454545d0]
-        logical*4 :: gknini=.true.
-        real*8 :: gkn(0:nmult,0:nmult)=0.d0
-
-        contains
-        subroutine gkninit
-        implicit none
-        integer*4 n,k
-        do n=0,nmult
-          gkn(n,0)=1.d0
-          do k=1,nmult-n
-            gkn(n,k)=gkn(n,k-1)
-     $           *dble((2*k-3)*(2*k+1))/8.d0/dble(k*(k+n+1))
-          enddo
-        enddo
-        gknini=.false.
-        return
-        end subroutine
-      end module
-
       module tbendcom
         real*8 rho0,rhob,f1r,f2r,fb1,fb2
 
@@ -141,11 +90,7 @@
           phih=phi0*.5d0
           sph=sin(phih)
           dcph=-2.d0*sin(phih*.5d0)**2
-          if(ent)then
-            st1=sint
-          else
-            st1=-sint
-          endif
+          st1=merge(sint,-sint,ent)
           dxa=dx*cost-dy*st1
           dx1=dx+dcph*cost*dxa
           dy1=dy-dcph*st1 *dxa
@@ -384,10 +329,11 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      $     psi1,psi2,fb10,fb20,dtheta
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
      $     dv(np),g(np),sx(np),sy(np),sz(np)
-      integer*4 ndiv,iniph,n1,n2
+      integer*4 ndiv,iniph,n1,n2,nmmax
       real*8 theta2,phir
-      complex*16 akm(0:nmult),cr1
+      complex*16 akm(0:1),akr0(0:1),cr1
       logical*4 ,intent(in):: fringe,ini,krad
+      logical*1 ,save::dofr(0:1)=[.true.,.true.]
       if(phi0 .eq. 0.d0)then
         if(ak .eq. 0.d0)then
           call tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,al,-phib,
@@ -402,16 +348,19 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
           akm=0.d0
           akm(0)=phib-phi0
           akm(1)=ak
+          nmmax=merge(1,0,ak .eq. 0.d0)
           theta2=theta+dtheta+akang(dcmplx(ak,0.d0),al,cr1)
+          akr0(0)=akm(0)*cr1
+          akr0(1)=akm(1)*cr1*cr1
           call tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         al,akm,0.d0,0.d0,0.d0,0.d0,
+     $         al,akm,akr0,0.d0,0.d0,0.d0,0.d0,
      $         dx,dy,0.d0,0.d0,0.d0,theta+dtheta,0.d0,
-     $         theta2,cr1,
+     $         theta2,
      $         eps,krad,fringe,
      $         0.d0,0.d0,0.d0,0.d0,
-     $         mfring,fb10,fb20,
+     $         mfring,fb10,fb20,dofr,
      $         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,
-     $         .false.,.false.,0,i00)
+     $         .false.,.false.,1,nmmax,0,i00)
         endif
         return
       elseif(ak .ne. 0.d0)then
@@ -686,22 +635,15 @@ c      endif
         dxfr2=fb2**2/rhob/24.d0
         dyfr2=fb2/rhob**2/6.d0
         dzfr2=dxfr2*sinp2
-        if(fringe)then
-          dyfra2=4.d0*dyfr2/fb2**2
-        else
-          dyfra2=0.d0
-        endif
+        dyfra2=merge(4.d0*dyfr2/fb2**2,0.d0,fringe)
       else
         dxfr2=0.d0
         dyfr2=0.d0
         dyfra2=0.d0
         dzfr2=0.d0
       endif
-      if(cosp1*cosp2 .gt. 0.d0)then
-        dcosp=(sinp2-sinp1)*(sinp2+sinp1)/(cosp1+cosp2)
-      else
-        dcosp=cosp1-cosp2
-      endif
+      dcosp=merge((sinp2-sinp1)*(sinp2+sinp1)/(cosp1+cosp2),
+     $     cosp1-cosp2,cosp1*cosp2 .gt. 0.d0)
       drhob=rhob-rho0
       do concurrent (i=1:np)
         bsi(i)=bsi(i)+bsi1*y(i)/rhob

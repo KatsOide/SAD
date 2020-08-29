@@ -177,7 +177,6 @@ c         eig(2)=.5d0*(x11+x22-sign(d,u))
 
       real*8 function eigr33(r,u,ndim)
       use macmath
-      use mathfun, only:hypot3
       implicit none
       integer*4 ndim
       real*8 r(ndim,3),u(3),a,b,s2,u1,u2,u3,w,x1,x2,x3,c,s
@@ -205,7 +204,8 @@ c         eig(2)=.5d0*(x11+x22-sign(d,u))
         u2=b*r(2,3)-a*r(1,3)
         u3=b*(1.d0+r(3,3))
 c        w=sign(hypot(u1,hypot(u2,u3)),u3*r(3,3))
-        w=sign(hypot3(u1,u2,u3),u3*r(3,3))
+c        w=sign(hypot3(u1,u2,u3),u3*r(3,3))
+        w=sign(norm2([u1,u2,u3]),u3*r(3,3))
         u1=u1/w
         u2=u2/w
         u3=u3/w
@@ -223,12 +223,11 @@ c        w=sign(hypot(u1,hypot(u2,u3)),u3*r(3,3))
       end
 
       subroutine rot33(r,u,phi,ndim)
-      use mathfun, only:hypot3
       implicit none
       integer*4 ndim
       real*8 r(ndim,3),u(3),phi,w,u1,u2,u3,c,s,q,th
 c      w=hypot(u(1),hypot(u(2),u(3)))
-      w=hypot3(u(1),u(2),u(3))
+      w=norm2([u(1),u(2),u(3)])
       u1=u(1)/w
       u2=u(2)/w
       u3=u(3)/w

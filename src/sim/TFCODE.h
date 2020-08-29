@@ -25,11 +25,12 @@ typedef enum {
 typedef enum {
   mtfnull  = 0, mtfneg   = 1, mtfplus  = 3, mtfminus = 4,
   mtfmult  = 5, mtfdiv   = 6, mtftimes = 5,
-  mtfrevpower = 7, mtfpower    = 8,
-  mtfequal    = 9,  mtfunequal  = 10, mtfgreater  = 11,
-  mtfless     = 12, mtfgeq      = 13, mtfleq      = 14,
-  mtfsame     = 15, mtfunsame   = 16,
-  mtfnot = 17, mtfand = 18, mtfor  = 19,
+  mtfrevpower = 7, mtfpower    = 8, 
+mtfgreater  = 9,
+  mtfless     = 10, mtfgeq      = 11, mtfleq      = 12,
+  mtfequal    = 13,  mtfunequal  = 14, 
+  mtfand = 15, mtfor  = 16, mtfnot = 17, 
+  mtfsame     = 18, mtfunsame   = 19,
   mtfconcat = 20,
   mtfleftbra    = 21, mtfrightbra   = 22,
   mtfleftbrace  = 23, mtfrightbrace = 24, mtflist = 23,
@@ -91,6 +92,7 @@ static const integer8 ktrmask  =0x7ff2000000000000;
 static const integer8 ktfmask  =0xfffe000000000000;
 static const integer8 ktamask  =0x0001ffffffffffff;
 static const integer8 ktftrue  =0x3ff0000000000000;
+static const integer8 ktffalse =0x0000000000000000;
 static const integer8 ktfnan   =0xfff8000000000000;
 
 static const real8 rtfnull = 0.0e0;

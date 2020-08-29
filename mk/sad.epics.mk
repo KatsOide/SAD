@@ -67,7 +67,8 @@ endif
 
 _EPICS_LIBS=$(EPICS_LIBS_$(CPU_ARCH)_$(OS_NAME))
 ifeq ($(_EPICS_LIBS),)
-_EPICS_LIBS=-lca -ldbStaticHost -lCom
+#_EPICS_LIBS=-lca -ldbStaticHost -lCom
+_EPICS_LIBS=-lca -ldbCore -lCom
 endif
 
 EPICS_IOPT=-I$(EPICS_INCDIR) -I$(EPICS_INCDIR)/os/$(EPICS_OS_CLASS)

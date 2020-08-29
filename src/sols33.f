@@ -1,7 +1,9 @@
       subroutine sols33(a,b)
       implicit none
-      real*8 a(3,3),b(3,3),r,c,s,a11,a12,a32,a13,a33,a22,a23,rr
-      r=abs(dcmplx(a(1,1),a(3,1)))
+      real*8 ,intent(in):: a(3,3)
+      real*8 ,intent(out):: b(3,3)
+      real*8 r,c,s,a11,a12,a32,a13,a33,a22,a23,rr
+      r=hypot(a(1,1),a(3,1))
       c=a(1,1)/r
       s=a(3,1)/r
       a11=r
@@ -18,7 +20,7 @@
       rr=b(1,3)
       b(1,3)= rr*c+b(3,3)*s
       b(3,3)=-rr*s+b(3,3)*c
-      r=abs(dcmplx(a11,a(2,1)))
+      r=hypot(a11,a(2,1))
       c=a11/r
       s=a(2,1)/r
       a11=r
@@ -37,7 +39,7 @@
       rr=b(1,3)
       b(1,3)= rr*c+b(2,3)*s
       b(2,3)=-rr*s+b(2,3)*c
-      r=abs(dcmplx(a22,a32))
+      r=hypot(a22,a32)
       c=a22/r
       s=a32/r
       a22=r

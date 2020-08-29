@@ -7,14 +7,14 @@
      $     rtaper,autophi)
       use ffs_flag, only:calpol,radcod,rfsw,trpt
       use ffs_pointer , only:gammab
+      use kyparam, only:nmult
       use tmacro, only:amass,c,charge,ddvcacc,dvcacc,e,h0,hvc0,
-     $     irad,omega0,p0,pbunch,pgev,trf0,vc0,vcacc
-      use multa, only:nmult
+     $     irad,omega0,p0,pbunch,pgev,trf0,vc0,vcacc,eps00m
       use temw,only:bsir0,tsetr0,tmulbs,code
       use sol, only:tsolrote
       use kradlib, only:tradke
       use mathfun
-      use multa, only:fact,an
+      use multa, only:fact,aninv
       use macmath
       implicit none
       integer*4 ,parameter ::ndivmax=300
@@ -68,11 +68,7 @@
         dhg=0.d0
         go to 1000
       endif
- 1    if(eps0 .eq. 0.d0)then
-        eps=5.d-3
-      else
-        eps=5.d-3*eps0
-      endif
+ 1    eps=merge(eps00m,eps00m*eps0,eps0 .eq. 0.d0)
       ndiv=1
       do n=2,nmmax
         ndiv=max(ndiv,
@@ -101,16 +97,8 @@
       wi=0.d0
       v02a=0.d0
       if(acc)then
-        if(harm .eq. 0.d0)then
-          w=m_2pi*freq/c
-        else
-          w=omega0*harm/c
-        endif
-        if(w .eq. 0.d0)then
-          wi=0.d0
-        else
-          wi=1.d0/w
-        endif
+        w=merge(m_2pi*freq/c,omega0*harm/c,harm .eq. 0.d0)
+        wi=merge(0.d0,1.d0/w,w .eq. 0.d0)
         vc0=vc0+vc
         if(omega0 .ne. 0.d0)then
           hvc0=hvc0+(c*w)/omega0*vc
@@ -144,11 +132,7 @@
           vcacc=vcacc-vc*sp
         endif
       endif
-      if(p1 .ne. p0)then
-        dhg=(p1-p0)*(p1+p0)/(h1+h0)/ndiv
-      else
-        dhg=0.d0
-      endif
+      dhg=merge((p1-p0)*(p1+p0)/(h1+h0)/ndiv,0.d0,p1 .ne. 0.d0)
       cr=cr1*rtaper
       akn(0)=akn0/ndiv
       do n=1,max(nmmax,1)
@@ -209,8 +193,8 @@
         cx=(0.d0,0.d0)
         cx2=(0.d0,0.d0)
         do kord=nmmax,nmmin,-1
-          cx=(cx+akn(kord))*cx0*an(kord)
-          cx2=cx2*cx0*an(kord)+akn(kord)
+          cx=(cx+akn(kord))*cx0*aninv(kord)
+          cx2=cx2*cx0*aninv(kord)+akn(kord)
         enddo
         if(nmmin .eq. 2)then
           cx=cx*cx0
@@ -226,11 +210,7 @@
         trans1(4,3)= dble(cx2)+w1n
         cod(2)=cod(2)-dble(cx)+w1n*cod(1)
         cod(4)=cod(4)+imag(cx)+w1n*cod(3)
-        if(m .eq. 1)then
-          bsir0=bsir0+imag(cx)/al1
-        else
-          bsir0=0.d0
-        endif
+        bsir0=merge(bsir0+imag(cx)/al1,0.d0,m .eq. 1)
         if(m .eq. ndiv)then
           bsir0=bsir0-imag(cx)/al1
         endif

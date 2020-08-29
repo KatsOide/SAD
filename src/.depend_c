@@ -3,15 +3,19 @@ CaSearch_.o: CaSearch_.c sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h si
 DbStatic.o: DbStatic.c sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
 PyConfig.o: PyConfig.c
 PySad.o: PySad.c sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+PySad1.o: PySad1.c
+Tcl_GetFile.o: Tcl_GetFile.c
 autos_.o: autos_.c gdtoa/gdtoa.h gdtoa/gdtoaimp.h sim/TFCBK.h sim/sad_f2c.h
 buildinfo.o: buildinfo.c buildinfo.h feature.h
 buildinfo_.o: buildinfo_.c buildinfo.h sim/sad_f2c.h
 calc.o: calc.c sim/sad_f2c.h
+cxfontlist.o: cxfontlist.c
 eval1_.o: eval1_.c sim/sad_f2c.h
 feature.o: feature.c feature.h
 ft.o: ft.c ft.h
 initda.o: initda.c sim/sad_f2c.h
 itfgetbuf_.o: itfgetbuf_.c sim/sad_f2c.h
+itfrexec_.o: itfrexec_.c
 netSemaphore.o: netSemaphore.c netSemaphore.h
 nfgetm.o: nfgetm.c sim/sad_f2c.h
 psn.o: psn.c ft.h psn.h
@@ -32,7 +36,11 @@ tfRandom_.o: tfRandom_.c feature.h random_driver.h sim/TFCBK.h sim/TFCODE.h sim/
 tfRenumberElement_.o: tfRenumberElement_.c feature.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
 tfTkInter_.o: tfTkInter_.c sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/sad_tcltk.h sim/sad_xlib.h
 tfXlib_.o: tfXlib_.c sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/sad_xlib.h
+tfgetbuf_.o: tfgetbuf_.c
 tgauss_.o: tgauss_.c random_driver.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
+tkSend.o: tkSend.c
+tregexp.o: tregexp.c
+tregexp_.o: tregexp_.c
 tspch_.o: tspch_.c
 utils.o: utils.c sim/TFCBK.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
 yylex_.o: yylex_.c calc.h sim/MACCBK.h sim/MACCODE.h sim/MACTTYP.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
@@ -46,6 +54,7 @@ sim/fortran_math_atanh_.o: sim/fortran_math_atanh_.c sim/sad_f2c.h
 sim/fortran_math_hypot_.o: sim/fortran_math_hypot_.c sim/sad_f2c.h
 sim/fseek_Dummy_.o: sim/fseek_Dummy_.c sim/sad_f2c.h
 sim/fseek_subroutine_.o: sim/fseek_subroutine_.c sim/sad_f2c.h
+sim/maprwfile.o: sim/maprwfile.c
 sim/sad_api.o: sim/sad_api.c sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
 sim/sad_functbl.o: sim/sad_functbl.c sim/TFSTK.h sim/dynl.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h
 sim/sad_signal.o: sim/sad_signal.c sim/sad_f2c.h sim/sad_signal.h

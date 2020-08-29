@@ -1,72 +1,48 @@
 c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
-      subroutine trackd(latt,kptbl,x,px,y,py,z,g,dv,pz,
-     $     kzx,mturn,trval,phi,damp,dampenough,ivar1,ivar2,lfno)
-      use iso_c_binding
+      subroutine trackd(range,r1,n1,nturn,
+     $     trval,phi,dampr,dampenough,ivar1,ivar2,lfno)
       use tfstk
       use ffs_flag
-      use tfshare
-      use tmacro
-      implicit none
-      integer*4 n1p0,nxp
-      parameter (n1p0=256,nxp=51)
-      integer*4, contiguous, pointer, dimension(:,:) :: ntloss
-      integer*4 kptbl(np0,6),mturn(np0),kzx(2,np0)
-      integer*8 intlm,latt(nlat)
-      integer*4 ivar1,ivar2,lfno
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
-      real*8 trval,phi(3),damp,dampenough
-      intlm=ktfallocshared((n1p0*nxp+2)/2)
-      call c_f_pointer(c_loc(klist(intlm)),ntloss,[n1p0,nxp])
-      call trackd0(latt,kptbl,x,px,y,py,z,g,dv,pz,
-     1     mturn,kzx,trval,phi,
-     $     damp .ne. 0.d0,dampenough,ntloss,ivar1,ivar2,lfno)
-      call tfreeshared(intlm)
-c      if(mapfree(ntloss(intlm+1)) .ne. 0)then
-c        write(*,*)'???trackd-error in munmap.'
-c      endif
-      return
-      end
-
-      subroutine trackd0(latt,kptbl,x,px,y,py,z,g,dv,pz,
-     1     mturn,kzx,trval,phi,
-     $     damp,dampenough,ntloss,ivar1,ivar2,lfno)
-      use tfstk
-      use ffs_flag
-      use tmacro
+      use tmacro,only:np0,codin,dvfs,omega0,taurdx,taurdy,taurdz,
+     $     nparallel
       use ffs_pointer, only:idelc
+      use tftr
+      use tfshare
+      use macmath
+      use iso_c_binding
       implicit none
-      integer*4 n1p0,n2p,maxturn,maxpara,nw,lfno,ncons,nscore,
-     $     ivar1,ivar2,ivar3
-      parameter (n1p0=200,n2p=51,maxturn=2**29,maxpara=256,nw=16)
-      integer*4, parameter :: nkptbl = 6, minnp=16
-      integer*8 kv,kax,kax11,kax12,kax13,kax2,
-     $     kaxi,kaxi3,kax1,latt(nlat)
-      integer*4 kptbl(np0,nkptbl),n1p,npr1,
-     $     ipr,j,n,jzout,np1,k,np,kp,kz,kx,irw,nsc,iw,
-     $     jj,ip,isw,kseed,npmax,npara,nxm(n1p0)
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
-     1     pz(np0),dampenough,aenox(np0),aenoy(np0),aenoz(np0),
-     $     spx(np0),spy(np0),spz(np0)
-      real*8 a2min,a2max,a3min,a3max,a1min,a1max,a2step,a3step,a1step,
-     $     emx,emz,rgetgl1,cx,cy,cz,sx,sy,sz,
-     $     dampx,dampy,dampz,t0
-      real*8 trval,phi(3)
-      real*8 a1i(n1p0)
+      integer*4 ,parameter ::n1p0=256,n2p=51,maxturn=2**29,
+     $     maxpara=256,nw=16,nkptbl = 6, minnp=16
       real*8, parameter :: big=1.d300
-      character*14 vname
-      data vname /'ResultOfDAPERT'/
-      integer*4 ntloss(n1p0,n2p)
-      integer*4 mturn(np0),kzx(2,np0),muls,irtc
-      integer*4 i,fork_worker,wait,ichpid(maxpara)
-      logical*4 ini,remain,damp,pol0
-      character label(3)
-      data label /'X','Y','Z'/
+      character*15 ,parameter ::vname='`ResultOfDAPERT'
+      character ,parameter ::label(3)=['X','Y','Z']
+      integer*4 ,intent(in):: ivar1,ivar2,lfno,n1,nturn
+      real*8 ,intent(in):: dampr,dampenough,range(3,3),r1(n1)
+      type (sad_descriptor) kv,kxm
+      type (sad_symdef),pointer::symd
+      type (sad_dlist),pointer::kal,kal1,kal2,kal2i
+      type (sad_rlist),pointer::kal11,kal12,kal13,kal2iv
+      integer*4 ,pointer ::ntloss(:,:),kzx(:,:)
+      integer*4 ,allocatable::kptbl(:,:),mturn(:)
+      integer*4 n1p,j,n,jzout,np1,k,np,kp,kx,kz,irw,nsc,iw,
+     $     jj,ip,isw,kseed,npmax,npara,nxm(n1p0),np00,
+     $     muls,irtc,i,fork_worker,waitpid,ncons,nscore,ivar3
+      integer*8 intlm
+      real*8 ,allocatable ::x(:),px(:),y(:),py(:),z(:),g(:),dv(:),
+     $     spx(:),spy(:),spz(:),aenox(:),aenoy(:),aenoz(:)
+      real*8 a2min,a2max,a3min,a3max,a1min,a1max,a2step,a3step,a1step,
+     $     emx,emz,rgetgl1,cx,cy,cz,sx,sy,sz,dampx,dampy,dampz,t0
+      real*8 trval,phi(3),a1i(n1p0)
+      character*12 autos
+      logical*4 damp,ini,remain,pol0
       character rad62a
 c     begin initialize for preventing compiler warning
       ipr=0
 c     end   initialize for preventing compiler warning
+      damp=dampr .ne. 0.d0
+c      write(*,*)'trackd ',damp
       if(damp)then
-        t0=pi2/omega0
+        t0=m_2_pi/omega0
         dampx=exp(-t0/taurdx)
         dampy=exp(-t0/taurdy)
         dampz=exp(-t0/taurdz)
@@ -83,24 +59,21 @@ c      write(*,*)'trackd0 ',damp,dampx,t0,omega0,taurdx
       call tsetdvfs
       trval=0.d0
       nscore=0
-      if(nturn .gt. 600)then
-        muls=(nturn/6200+1)*100
-      else
-        muls=10
-      endif
-      a2min=x(1)
-      a2max=x(2)
-      a3min=y(1)
-      a3max=y(2)
-      a1min=min(g(1),g(2))
-      a1max=max(g(1),g(2))
+      muls=merge((nturn/6200+1)*100,10,nturn .gt. 600)
+c      write(*,*)'trackd-muls: ',nturn,muls,nturn/6200
+      a2min=range(1,1)
+      a2max=range(2,1)
+      a3min=range(1,2)
+      a3max=range(2,2)
+      a1min=minval(r1(1:2))
+      a1max=maxval(r1(1:2))
       if(a1max .eq. a1min)then
         a1min=0.d0
       endif
       a2step=(a2max-a2min)/(n2p-1)
       a3step=(a3max-a3min)/(n2p-1)
-      if(pz(1) .eq. 0.d0)then
-        a1step=abs(g(3))
+      if(n1 .eq. 0)then
+        a1step=abs(r1(3))
         if(a1step .eq. 0.d0 .or. a1min .eq. a1max)then
           n1p=1
         else
@@ -111,11 +84,13 @@ c      write(*,*)'trackd0 ',damp,dampx,t0,omega0,taurdx
           a1i(i)=a1min+a1step*(i-1)
         enddo
       else
-        n1p=min(n1p0,int(pz(1)))
-        a1i(1:n1p)=g(1:n1p)
+        n1p=min(n1p0,n1)
+        a1i(1:n1p)=r1(1:n1p)
         a1min=minval(a1i(1:n1p))
         a1max=maxval(a1i(1:n1p))
       endif
+      intlm=ktfallocshared((n1p*n2p+2)/2)
+      call c_f_pointer(c_loc(klist(intlm)),ntloss,[n1p,n2p])
       ivar3=6-ivar1-ivar2
       write(lfno,'(
      $   '' Range    '',a,''min:'',f8.3,'' '',a,''max:'',f8.3,/
@@ -128,64 +103,88 @@ c      write(*,*)'trackd0 ',damp,dampx,t0,omega0,taurdx
       write(lfno,*)
      $'     N'//label(ivar1)//
      $     '     0----|----1----|----2----|----3----|----4----|----5'
-      kv=ktfsymbolz(vname,len(vname))-4
-      call tflocal(klist(kv))
-      kax=ktadaloc(0,2)
-      klist(kv)=ktflist+kax
-      kax1=ktadaloc(0,3)
-      klist(kax+1)=ktflist+kax1
-      kax11=ktavaloc(0,2)
-      klist(kax1+1)=ktflist+kax11
-      rlist(kax11+1)=a2min
-      rlist(kax11+2)=a2max
-      kax12=ktavaloc(0,2)
-      klist(kax1+2)=ktflist+kax12
-      rlist(kax12+1)=a3min
-      rlist(kax12+2)=a3max
-      kax13=ktavaloc(0,2)
-      klist(kax1+3)=ktflist+kax13
-      rlist(kax13+1)=a1min
-      rlist(kax13+2)=a1max
-      kax2=ktadalocnull(0,n1p)
-      klist(kax+2)=ktflist+kax2
+      kv=kxsymbolv(vname,len(vname),symd)
+c      kv=ktfsymbolz(vname,len(vname))-4
+      call tflocald(symd%value)
+      symd%value=kxadaloc(0,2,kal)
+      kal%dbody(1)=kxadaloc(0,3,kal1)
+      kal1%dbody(1)=kxavaloc(0,2,kal11)
+      kal11%rbody(1)=a2min
+      kal11%rbody(2)=a2max
+      kal1%dbody(2)=kxavaloc(0,2,kal12)
+      kal12%rbody(1)=a3min
+      kal12%rbody(2)=a3max
+      kal1%dbody(3)=kxavaloc(0,2,kal13)
+      kal13%rbody(1)=a1min
+      kal13%rbody(2)=a1max
+      kal%dbody(2)=kxadalocnull(0,n1p,kal2)
 c      lp0=latt(1)+kytbl(kwmax,idtype(idelc(1)))+1
       emx=sqrt(abs(rgetgl1('EMITX'))+abs(rgetgl1('EMITY')))
-      if(rfsw)then
-        emz=sqrt(abs(rgetgl1('EMITZ')))
-      else
-        emz=abs(rgetgl1('SIGE'))
-      endif
+      emz=merge(sqrt(abs(rgetgl1('EMITZ'))),abs(rgetgl1('SIGE')),rfsw)
       ntloss(1:n1p,1:n2p)=maxturn
       nxm(1:n1p)=n2p+1
-      npara=min(nparallel,maxpara,np0/minnp)
-      ipr=1
+      npara=min(nparallel,nprmax,np0/minnp)
+      npr=0
+      ipn=0
+c      write(*,*)'trackd-npara ',npara,np0
       if(npara .gt. 1)then
         kseed=0
-        npr1=1
-        do while(npr1 .lt. npara .and. ipr .gt. 0)
-          kseed=kseed+2
-          ipr=fork_worker()
-          if(ipr .gt. 0)then
-            ichpid(npr1)=ipr
-            npr1=npr1+1
+        do while(npr .lt. npara-1)
+          npri=npr
+          iprid=fork_worker()
+          if(iprid .eq. 0)then
             call tfaddseed(kseed,irtc)
             if(irtc .ne. 0)then
-              go to 3000
+              write(*,*)'addseed-error ',irtc
+              call exit_without_hooks(0)
             endif
+            exit
           endif
+          npr=npr+1
+          ipr(npr)=iprid
+c          write(*,*)'trackd-ipr ',npara,npr,iprid,muls
         enddo
+        npr=npr+1
+        npri=npr
         npmax=max(1,min(n1p*ncons/npara,np0))
       else
-        npr1=1
-        npmax=np0
+        iprid=getpid()
+        npri=0
+        npmax=max(1,min(n1p*ncons,np0))
       endif
-      kptbl=0
+      npz=npmax
+      np00=np0
+      np0=npz
+      allocate (x(npz))
+      allocate (px(npz))
+      allocate (y(npz))
+      allocate (py(npz))
+      allocate (z(npz))
+      allocate (g(npz))
+      allocate (dv(npz))
+      allocate (spx(npz))
+      allocate (spy(npz))
+      allocate (spz(npz))
+      allocate (aenox(npz))
+      allocate (aenoy(npz))
+      allocate (aenoz(npz))
+      call tfevals('`ExtMap$@InitMap['//autos(dble(npz))//',1]',
+     $     kxm,irtc)
+      allocate(kptbl(npmax,6))
+      allocate(mturn(npmax))
+      allocate(kzx(2,npmax))
+c      if(muls .ne. 10)then
+c        write(*,*)'trackd-5 ',npri,muls
+c      endif
       do i=1,npmax
         kptbl(i,1)=i
         kptbl(i,2)=i
       enddo
       kzx(1,1:npmax)=0
       kzx(2,1:npmax)=0
+c      if(muls .ne. 10)then
+c        write(*,*)'trackd-6 ',npri,muls
+c      endif
       n=1
       jzout=1
  1    np1=npmax
@@ -213,57 +212,61 @@ c      lp0=latt(1)+kytbl(kwmax,idtype(idelc(1)))+1
                     kzx(1,k)=i
                     kzx(2,k)=j
                     mturn(k)=0
-                    if(ivar1 .eq. 1)then
+                    select case(ivar1)
+                    case (1)
                       x(ip)=a1i(i)
                       px(ip)=0.d0
-                    elseif(ivar1 .eq. 2)then
+                    case (2)
                       y(ip)=a1i(i)
                       py(ip)=0.d0
-                    else
+                    case default
                       z(ip)=0.d0
                       g(ip)=a1i(i)
-                    endif
-                    if(ivar2 .eq. 1)then
+                    end select
+                    select case(ivar2)
+                    case (1)
                       x(ip)=a2step*(j-1)+a2min
                       px(ip)=-x(ip)*sx
                       x(ip)=x(ip)*cx
-                    elseif(ivar2 .eq. 2)then
+                    case (2)
                       y(ip)=a2step*(j-1)+a2min
                       py(ip)=-y(ip)*sy
                       y(ip)=y(ip)*cy
-                    else
+                    case default
                       z(ip)=a2step*(j-1)+a2min
                       g(ip)=-z(ip)*sz
                       z(ip)=z(ip)*cz
-                    endif
-                    if(ivar3 .eq. 1)then
+                    end select
+                    select case(ivar3)
+                    case (1)
                       x(ip)=a3step*(j-1)+a3min
                       px(ip)=-x(ip)*sx
                       x(ip)=cx*x(ip)
-                    elseif(ivar3 .eq. 2)then
+                    case (2)
                       y(ip)=a3step*(j-1)+a3min
                       py(ip)=-y(ip)*sy
                       y(ip)=cy*y(ip)
-                    else
+                    case default
                       z(ip)=a3step*(j-1)+a3min
                       g(ip)=-z(ip)*sz
                       z(ip)=cz*z(ip)
-                    endif
+                    end select
                     aenox(k)=(x(ip)**2+px(ip)**2)*emx**2*dampenough
                     aenoy(k)=(y(ip)**2+py(ip)**2)*emx**2*dampenough
                     aenoz(k)=(z(ip)**2+ g(ip)**2)*emz**2*dampenough
-                    if(ivar3 .eq. 1)then
+                    select case (ivar3)
+                    case (1)
                       aenox(k)=big
-                    elseif(ivar3 .eq. 2)then
+                    case (2)
                       aenoy(k)=big
-                    else
+                    case default
                       aenoz(k)=big
-                    endif
+                    end select
 c     Reinit kptbl(ip,4) to reuse particle array slot `ip'
                     kptbl(ip,4)=0
                     call tinip(1,
-     $                   x(ip),px(ip),y(ip),py(ip),
-     $                   z(ip),g(ip),dv(ip),
+     $                   x(ip:ip),px(ip:ip),y(ip:ip),py(ip:ip),
+     $                   z(ip:ip),g(ip:ip),dv(ip:ip),
      $                   emx,emz,codin,dvfs,.false.)
 c                    write(*,'(a,7i5,1p3g15.7)')
 c     $                   ' trackd-Launch ',npr1,i,j,ivar1,ivar2,ivar3,
@@ -302,6 +305,9 @@ c     - Overwrite slot[np1] to slot[ip](Drop particle[k] information)
 c      write(*,'(a,2i5,14(i5,1pg12.5))')
 c     $     'trackd-tturn-1 ',n,np,(kptbl(i,1),y(i),i=1,14)
       call tturn(np,x,px,y,py,z,g,dv,spx,spy,spz,kptbl,n)
+c      if(muls .ne. 10)then
+c        write(*,*)'trackd-tturn ',npri,muls
+c      endif
 c      write(*,'(a,2i5,14(i5,1pg12.5))')
 c     $     'trackd-tturn-2 ',n,np,(kptbl(i,1),y(i),i=1,14)
       if(damp .or. dampenough .ne. 0.d0)then
@@ -327,8 +333,10 @@ c     $     'trackd-tturn-2 ',n,np,(kptbl(i,1),y(i),i=1,14)
         else
           kz=kzx(1,i)
           kx=kzx(2,i)
-c          write(*,'(a,1x,7i10)')'trackd-Lost ',
-c     $         kz,kx,mturn(i),i,np,np1,kp
+c          if(kz .eq. 1)then
+c            write(*,'(a,1x,8i10)')'trackd-Lost: ',
+c     $           kz,kx,mturn(i),i,np,np1,kp,npri
+c          endif
           ntloss(kz,kx)=mturn(i)
           kzx(1,i)=0
           ini=.true.
@@ -344,61 +352,62 @@ c     $         kz,kx,mturn(i),i,np,np1,kp
       endif
       go to 101
  3000 continue
-      if(ipr .eq. 0)then
+      call tfevals('`ExtMap$@ResetMap[]',kxm,irtc)
+      if(iprid .eq. 0)then
 c        write(*,*)'trackd-stop ',npr1
 c        stop
         call tfresetsharedmap()
         call exit_without_hooks(0)
       endif
-      do j=1,npr1-1
- 3010   irw=wait(isw)
-        do k=1,npr1-1
-          if(irw .eq. ichpid(k))then
+      np0=np00
+c      write(*,*)'trackd-wait ',npr,n1p,n2p,np0
+      loop_j: do j=1,npr-1
+        irw=waitpid(-1,isw)
+c        write(*,*)'trackd-wait-j ',j,irw
+        do k=1,npr-1
+          if(irw .eq. ipr(k))then
+c            write(*,*)'trackd-wait-k ',k
             n=k
-            ichpid(k)=0
-            go to 3020
+            ipr(k)=0
+            cycle loop_j
           endif
         enddo
         write(*,*)'???trackd-Strange child: ',irw,isw
-        go to 3010
- 3020   continue
-      enddo
+      enddo loop_j
       do i=1,n1p
-        nsc=0
+        nsc=n2p
         do k=1,n2p
           if(ntloss(i,k) .lt. nturn)then
             nsc=k-1
-            go to 431
+            exit
           endif
         enddo
-        nsc=n2p
- 431    nscore=nscore+nsc
+        nscore=nscore+nsc
+c        write(*,*)'trackd: ',lfno,i,muls,
+c     $       rad62a(ntloss(i,1)/muls,1)
         write(lfno,'(1x,f8.2,i3,1x,51a1)')a1i(i),nsc,
      $       (rad62a(ntloss(i,jj)/muls,jj),jj=1,n2p)
-        kaxi=ktadaloc(0,3)
-        klist(kax2+i)=ktflist+kaxi
-        rlist(kaxi+1)=a1i(i)
-        rlist(kaxi+2)=dble(nsc)
-        kaxi3=ktraaloc(0,n2p)
-        klist(kaxi+3)=ktflist+kaxi3
-        rlist(kaxi3+1:kaxi3+n2p)=ntloss(i,1:n2p)
-c        do jj=1,n2p
-c          rlist(kaxi3+jj)=ntloss(i,jj)
-c        enddo
+        kal2%dbody(i)=kxadaloc(0,3,kal2i)
+        kal2i%rbody(1)=a1i(i)
+        kal2i%rbody(2)=dble(nsc)
+        kal2i%dbody(3)=kxavaloc(0,n2p,kal2iv)
+        kal2iv%rbody(1:n2p)=dble(ntloss(i,1:n2p))
       enddo
+      call tfreeshared(intlm)
       write(lfno,*)
      $'     N'//label(ivar1)//
      $     '     0----|----1----|----2----|----3----|----4----|----5'
       write(lfno,'(a,i5)')'    Score: ',nscore
+c      call tfdebugprint(symd%value,'res of DA',10)
+c      call tfevals('Print['//vname//']',kx,irtc)
       trval=nscore
-      call tltrm(kptbl)
       calpol=pol0
       return
       end
 
       character function rad62a(m,j)
       implicit none
-      integer*4 m,j
+      integer*4 ,intent(in):: m,j
       character rad62
       if(m .eq. 0)then
         rad62a=' '
@@ -456,10 +465,14 @@ c      write(*,'(a,1p6g15.7)')'tinip ',xa(6),emx,emz
       use tfstk
       use tmacro
       implicit none
-      integer*4 np,i
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     xa(7),dampx,dampy,dampz,aenox(np0),aenoy(np0),aenoz(np0)
-      integer*4 kptbl(np),mturn(np0),j
+      integer*4 ,intent(in):: np,kptbl(np)
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
+     $     dv(np),g(np)
+      real*8 xa(7)
+      real*8 ,intent(in):: dampx,dampy,dampz,
+     $     aenox(np),aenoy(np),aenoz(np)
+      integer*4 ,intent(inout):: mturn(np)
+      integer*4 i,j
       logical*4 damp
       call tconvm(np,px,py,g,dv,1)
       do i=1,np
@@ -471,8 +484,7 @@ c      write(*,'(a,1p6g15.7)')'tinip ',xa(6),emx,emz
         xa(6)=g(i)-codin(6)
         call tmap(xa,xa,1)
         j=kptbl(i)
-        if(
-     $       xa(1)**2+xa(2)**2 .lt. aenox(j) .and.
+        if(  xa(1)**2+xa(2)**2 .lt. aenox(j) .and.
      $       xa(3)**2+xa(4)**2 .lt. aenoy(j) .and.
      $       xa(5)**2+xa(6)**2 .lt. aenoz(j))then
 c          write(*,'(a,2i5,1p6g15.7)')'tpdamp ',j,i,

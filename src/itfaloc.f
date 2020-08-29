@@ -1,8 +1,9 @@
       integer*8 function ktfaloc(mode,ktype,nw)
       use tfstk
       implicit none
-      integer*4 nw,mode
-      integer*8 ktype,k1,itfroot
+      integer*4 ,intent(in):: nw,mode
+      integer*8 ,intent(in):: ktype
+      integer*8 k1,itfroot
       k1=ktaloc(nw+2)
       ilist(2,k1-1)=0
       if(mode .eq. 0)then
@@ -20,8 +21,9 @@
       integer*8 function ktfalocr(mode,ktype,nw)
       use tfstk
       implicit none
-      integer*4 nw,mode
-      integer*8 ktype,ktalocr,k1,itfroot
+      integer*4 ,intent(in):: nw,mode
+      integer*8 ,intent(in):: ktype
+      integer*8 ktalocr,k1,itfroot
       k1=ktalocr(nw+2)
       ilist(2,k1-1)=0
       if(mode .eq. 0)then
@@ -42,10 +44,11 @@
       use iso_c_binding
       implicit none
       type (sad_namtbl), pointer :: loc
-      integer*4 nc
-      logical*4 cre
-      character*(nc) name
-      integer*8 i,i1,i0,itfroot,ktalocr,icont
+      integer*4 ,intent(in):: nc
+      logical*4 ,intent(in):: cre
+      character*(nc),intent(in):: name
+      integer*8 ,intent(in):: icont
+      integer*8 i,i1,i0,itfroot,ktalocr
       integer*4 ithash,nw
       itfroot=icont+ithash(name,nc)+1
       i=klist(itfroot)
@@ -93,7 +96,8 @@
       use tfstk
       implicit none
       integer*8 kresv
-      integer*4 nresv,n,nsize
+      integer*4 ,intent(in):: n
+      integer*4 nresv,nsize
       parameter (nsize=2**18-1)
       save kresv
       data kresv,nresv /0,0/
@@ -121,9 +125,9 @@
       integer*8 function ktfsymbolf(name,l,const)
       use tfstk
       implicit none
-      integer*4 l
-      character name(l)
-      logical*4 const
+      integer*4 ,intent(in):: l
+      character ,intent(in):: name(l)
+      logical*4 ,intent(in):: const
       ktfsymbolf=ktfaddr(kxsymbolf(name,l,const))
       return
       end
@@ -133,9 +137,10 @@
       use tfstk
       implicit none
       type (sad_symdef), pointer :: contd
-      character*(*) name
+      character*(*) ,intent(in):: name
       integer*8 ktsydefc,k1,ktcontaloc,icont,ic,ic1,j
-      integer*4 l,i
+      integer*4 ,intent(in):: l
+      integer*4 i
       i=index(name(1:l), '`')
       if(i .le. 0)then
         if(icont .eq. 0)then
@@ -160,17 +165,11 @@
           kres=ktsydefc(name,l,icont,.true.)
         endif
       elseif(i .eq. 1)then
-        if(l .eq. 1)then
-          kres=ktsydefc('`',1,itfcontroot,.true.)
-        else
-          kres=ktfsymbolc(name(2:l),l-1,itfcontroot)
-        endif
+        kres=merge(ktsydefc('`',1,itfcontroot,.true.),
+     $       ktfsymbolc(name(2:l),l-1,itfcontroot),l .eq. 1)
       else
-        if(icont .eq. 0)then
-          ic=ktsydefc(name(1:i),i,itfcontroot,.true.)
-        else
-          ic=ktsydefc(name(1:i),i,icont,.true.)
-        endif
+        ic=ktsydefc(name(1:i),i,
+     $       merge(itfcontroot,icont,icont .eq. 0),.true.)
         call loc_sad(ic,contd)
         ic1=contd%value%k
         if(contd%sym%gen .ne. -3)then
@@ -179,11 +178,7 @@
         else
           ic1=ktfaddr(ic1)
         endif
-        if(i .eq. l)then
-          kres=ic
-        else
-          kres=ktfsymbolc(name(i+1:l),l-i,ic1)
-        endif
+        kres=merge(ic,ktfsymbolc(name(i+1:l),l-i,ic1),i .eq. l)
       endif
       return
       end
@@ -192,7 +187,8 @@
       use tfstk
       implicit none
       type (sad_symdef), pointer :: contd
-      integer*8 itf,ic,i,ktavalocr
+      integer*8 ,intent(in):: ic
+      integer*8 itf,i,ktavalocr
       ktcontaloc=ktavalocr(0,nsymhash+1)
       if(ic .ne. 0)then
         call loc_symdef(ic,contd)
@@ -214,10 +210,11 @@
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      character*(*) string
-      integer*8 icont,loc,ktlookupc
-      integer*4 leng
-      logical*4 cre
+      character*(*) ,intent(in):: string
+      integer*8 ,intent(in):: icont
+      integer*8 loc,ktlookupc
+      integer*4 ,intent(in):: leng
+      logical*4 ,intent(in):: cre
       integer*4 lg,ls,i,j,is
       lg=0
       ls=leng
@@ -253,13 +250,15 @@
       use tfcode
       use mackw
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_symdef), pointer :: symd
       type (sad_namtbl), pointer :: loc
-      integer*8 kas1,locp
+      integer*8 ,intent(in):: locp
+      integer*8 kas1
       integer*4 nc,idx
       character*(MAXPNAME) name
-      integer*4 ig,ig1,ig0
+      integer*4 ,intent(in):: ig0
+      integer*4 ig,ig1
       integer*4 hsrchz1
       call loc_namtbl(locp,loc)
       kas1=loc%symdef
@@ -307,8 +306,9 @@ c            write(*,*)' : ',idx
       integer*4 function ithash(name,nc)
       use tfstk
       implicit none
-      integer*4 nc,i,ih
-      character name(nc)
+      integer*4 ,intent(in):: nc
+      integer*4 i,ih
+      character ,intent(in):: name(nc)
       ih=ichar(name(1))
       if(nc .eq. 2)then
         ih=ih+ichar(name(2))
@@ -334,7 +334,7 @@ c            write(*,*)' : ',idx
       integer*8 function ktavalocr(mode,nd)
       use tfstk
       implicit none
-      integer*4 mode,nd
+      integer*4 ,intent(in):: mode,nd
       integer*8 k1,ktalocr,itfroot
       k1=ktalocr(nd+3)
       ilist(1,k1-1)=0
@@ -357,7 +357,8 @@ c            write(*,*)' : ',idx
       use tfstk
       implicit none
       type(sad_dlist), pointer :: kl
-      integer*4 n,i
+      integer*4 ,intent(in):: n
+      integer*4 i
       integer*8 k
       k=ktaloc(n*6-1)+2
       do i=1,n
@@ -390,8 +391,8 @@ c            write(*,*)' : ',idx
       use tfstk
       implicit none
       integer*4 lenw
-      real*8 x,y
-      character*(*) name
+      real*8 ,intent(in):: x,y
+      character*(*) ,intent(in):: name
       ktcvaloc=ktfsymbolz(name,lenw(name))-4
       call tflocal(klist(ktcvaloc))
       dlist(ktcvaloc)=kxcalocv(0,x,y)
@@ -403,7 +404,7 @@ c            write(*,*)' : ',idx
       implicit none
       integer*8 kax,kas
       integer*4 lenw,loc
-      character*(*) name,str
+      character*(*) ,intent(in):: name,str
       loc=-1
       kax=ktfsymbolz(name,lenw(name))-4
       call tflocal(klist(kax))
@@ -415,8 +416,8 @@ c            write(*,*)' : ',idx
       integer*8 function ktsalocbi(mode,string,i,leng)
       use tfstk
       implicit none
-      integer*4 mode,i,leng
-      character string(i+leng-1)
+      integer*4 ,intent(in):: mode,i,leng
+      character ,intent(in):: string(i+leng-1)
       ktsalocbi=ktsalocb(mode,string(i),leng)
       return
       end
@@ -424,9 +425,9 @@ c            write(*,*)' : ',idx
       subroutine tfpadstr(string,kp,leng)
       use tfstk
       implicit none
-      integer*8 kp
-      integer*4 leng
-      character string(leng)
+      integer*8 ,intent(in):: kp
+      integer*4 ,intent(in):: leng
+      character ,intent(in):: string(leng)
       klist(leng/8+kp)=0
 c     Terminate string buffer by NULL character
       call tmovb(string,jlist(1,kp),leng)
@@ -436,7 +437,7 @@ c     Terminate string buffer by NULL character
       integer*8 function ktaaloc(mode,n)
       use tfstk, kf => ktaaloc
       implicit none
-      integer*4 mode,n
+      integer*4 ,intent(in):: mode,n
       ktaaloc=kf(mode,n)
       return
       end
@@ -444,7 +445,7 @@ c     Terminate string buffer by NULL character
       integer*8 function ktadaloc(mode,n)
       use tfstk, kf => ktadaloc
       implicit none
-      integer*4 mode,n
+      integer*4 ,intent(in):: mode,n
       ktadaloc=kf(mode,n)
       return
       end
@@ -452,7 +453,7 @@ c     Terminate string buffer by NULL character
       integer*8 function ktavaloc(mode,n)
       use tfstk, kf => ktavaloc
       implicit none
-      integer*4 mode,n
+      integer*4 ,intent(in):: mode,n
       ktavaloc=kf(mode,n)
       return
       end
@@ -460,8 +461,8 @@ c     Terminate string buffer by NULL character
       integer*8 function ktfsymbolz(name,l)
       use tfstk, kf => ktfsymbolz
       implicit none
-      integer*4 l
-      character name(l)
+      integer*4 ,intent(in):: l
+      character ,intent(in):: name(l)
       ktfsymbolz=kf(name,l)
       return
       end
@@ -469,8 +470,8 @@ c     Terminate string buffer by NULL character
       integer*8 function ktsalocb(mode,str,leng)
       use tfstk, kf => ktsalocb
       implicit none
-      integer*4 mode,leng
-      character str(leng)
+      integer*4 ,intent(in):: mode,leng
+      character ,intent(in):: str(leng)
       ktsalocb=kf(mode,str,leng)
       return
       end

@@ -30,8 +30,8 @@ c      include 'DEBUG.inc'
       logical*4 fam,beg,zerores
       integer*4 irw,isw,ipr,ifb,ife,idir,
      $     jjfam(-nfam:nfam),ifpe,ntfun
-      integer*4, external :: fork_worker,wait,itfdownlevel,itfuplevel,
-     $     itgetfpe
+      integer*4, external :: fork_worker,waitpid,
+     $     itfdownlevel,itfuplevel,itgetfpe
       integer*8 iutm,jb
       integer*4 , parameter:: ivoid=9999
       integer*8 ,save :: iprolog=0,iepilog=0,imr=0,inr=0,isl=0
@@ -79,11 +79,7 @@ c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
       optstat(nfam1:nfam)%staby=.true.
       optstat(nfam1:nfam)%stabz=.true.
       jjfam(nfam1:nfam)=ivoid
-      if(orbitcal .or. calc6d)then
-        ntfun=ntwissfun
-      else
-        ntfun=mfitdetr
-      endif
+      ntfun=merge(ntwissfun,mfitdetr,orbitcal .or. calc6d)
       beg=ibegin .gt. fbound%lb
       if(beg)then
         twiss(ibegin,0,1:ntfun)
@@ -266,7 +262,7 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
           if(ipr .gt. 0)then
             irw=0
             do while(irw .ne. ipr)
-              irw=wait(isw)
+              irw=waitpid(-1,isw)
             enddo
             if(isw .ne. 0)then
               call termes(lfno,
@@ -393,11 +389,8 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
           residual1(kdp(i))=residual1(kdp(i))+drw
         endif
       enddo
-      if(rw .gt. 0.d0)then
-        r=wsum*(max(rw,1.d-50)/wsum)**(2.d0/wexponent)
-      else
-        r=0.d0
-      endif
+      r=merge(wsum*(max(rw,1.d-50)/wsum)**(2.d0/wexponent),
+     $     0.d0,rw .gt. 0.d0)
       rp=r
       nstab=0
       if(cell)then
@@ -571,11 +564,8 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
           ilist(1,ifvloc)=len_trim(name)
           call tfpadstr(nlist(k),ifvfun+1,len_trim(nlist(k)))
           ilist(1,ifvfun)=len_trim(nlist(k))
-          if(inicond)then
-            rlist(ifid+1)=dble(iuid(idp))
-          else
-            rlist(ifid+1)=dble(kfam(idp))
-          endif
+          rlist(ifid+1)=merge(dble(iuid(idp)),dble(kfam(idp)),
+     $         inicond)
           rlist(ifid+2)=dp(idp)
           rlist(ifv+4)=wfit(i)
           call tclrfpe
@@ -743,11 +733,7 @@ c            write(*,*)'twfit ',nlist(k),rfromk(kx),wfit(i)
       endif
       if(end)then
         if(idtypec(nlat-1) .eq. icMARK)then
-          if(fbound%fe .eq. 0.d0)then
-            le1=fbound%le
-          else
-            le1=fbound%le+1
-          endif
+          le1=merge(fbound%le,fbound%le+1,fbound%fe .eq. 0.d0)
           twiss(nlat-1,jdp,:)=twiss(le1,jdp,:)
           twiss(nlat,jdp,:)=twiss(le1,jdp,:)
           jp=itwissp(nlat-1)

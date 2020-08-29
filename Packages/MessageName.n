@@ -32,8 +32,8 @@
   General::parallel="Error in parallel processing";
   General::protect="Protected symbol `1`";
   General::reppat="Replacing name of pattern `1` by non-symbol argument";
-  General::samehead="Same head is expected";
-  General::samesymbol="Same symbol is expected";
+  General::samehead="Same heads are expected";
+  General::samesymbol="Same symbols are expected";
   General::slot="Undefined Slot `1`";
   General::stack="Stack overflow `1`";
   General::strind="Index of String must be [n1] or [n1, n2]";
@@ -50,7 +50,7 @@
   General::unprotconst="Unprotect a Constant `1`";
   General::localconst="Making a local symbol Constant `1`";
   Shared::toolarge="Shared Memory Shortage by `1` bytes";
-  Shared::notopen="Shared Memory not opend";
+  Shared::notopen="Shared Memory not opened";
 
   Memory::alloc="Memory allocation error";
 

@@ -466,7 +466,7 @@ c          call tmultr(trans1,trans2,6)
       bxs=bxs0
       bys=bys0
       bzs=bzs0
-      babs=hypot3(bzs,bxs,bys)
+      babs=norm2([bzs,bxs,bys])
       if(abs(babs) .lt. bzthre)then
         bxs=0.d0
         bys=0.d0
@@ -502,11 +502,7 @@ c cod does NOT have canonical momenta!
           a24=sin(phi)
           a12=a24/bzs
           a22=cos(phi)
-          if(a22 .ge. 0.d0)then
-            a14=a24**2/(1.d0+a22)/bzs
-          else
-            a14=(1.d0-a22)/bzs
-          endif
+          a14=merge(a24**2/(1.d0+a22),1.d0-a22,a22 .eq. 0.d0)/bzs
           da12=a22
           da14=a24
         endif
@@ -687,11 +683,7 @@ c cod does NOT have canonical momenta!
           call xsincos(phi,sinphi,xsinphi,cosphi,dcosphi)
           s=plz*xsinphi+pz0*sinphi-pbz*dcosphi
           u=-plz*dcosphi+pz0*cosphi+pbz*sinphi
-          if(u .ne. 0.d0)then
-            dphi=(bpr-s)/u
-          else
-            dphi=(bpr-s)/pz0
-          endif
+          dphi=merge((bpr-s)/u,(bpr-s)/pz0,u .ne. 0.d0)
           phi0=phi
           phi=phi+dphi
           if(phi0 .eq. phi .or. abs(dphi) .le. conv*abs(phi))then
@@ -767,12 +759,9 @@ c cod does NOT have canonical momenta!
       integer*8 iwpl,iwpt
       logical*4 , intent(inout) :: insol
       logical*4 out,seg,autophi,krad
+      logical*1,save::dofr(0:1)=[.false.,.false.]
       real*8 ,save::dummy(256)=0.d0
-      if(insol)then
-        kb=k
-      else
-        kb=k+1
-      endif
+      kb=merge(k,k+1,insol)
       do i=kb,nlat
         if(idtypec(i) .eq. icSOL)then
           if(rlist(idvalc(i)+ky_BND_SOL)
@@ -848,36 +837,16 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
         endif
         if(l .eq. nextwake)then
           iwpl=abs(kwaketbl(1,nwak))
-          if(iwpl .ne. 0)then
-            lwl=(ilist(1,iwpl-1)-2)/2
-          else
-            lwl=0
-          endif
+          lwl=merge((ilist(1,iwpl-1)-2)/2,0,iwpl .ne. 0)
           iwpt=abs(kwaketbl(2,nwak))
-          if(iwpt .ne. 0)then
-            lwt=(ilist(1,iwpt-1)-2)/2
-          else
-            lwt=0
-          endif
+          lwt=merge((ilist(1,iwpt-1)-2)/2,0,iwpt .ne. 0)
           fw=(abs(charge)*e*pbunch*anbunch/amass)/np0*.5d0
           kdx=kytbl(kwDX,lt)
-          if(kdx .ne. 0)then
-            dx=cmp%value(kdx)
-          else
-            dx=0.d0
-          endif
+          dx=merge(cmp%value(kdx),0.d0,kdx .ne. 0)
           kdy=kytbl(kwDY,lt)
-          if(kdy .ne. 0)then
-            dy=cmp%value(kdy)
-          else
-            dy=0.d0
-          endif
+          dy=merge(cmp%value(kdy),0.d0,kdy .ne. 0)
           krot=kytbl(kwROT,lt)
-          if(krot .ne. 0)then
-            rot=cmp%value(krot)
-          else
-            rot=0.d0
-          endif
+          rot=merge(cmp%value(krot),0.d0,krot .ne. 0)
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         dx,dy,rot,
      $         int(anbunch),
@@ -937,7 +906,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
      $         cmp%value(p_AKF2F_QUAD)*rtaper,
      $         cmp%value(p_AKF1B_QUAD)*rtaper,
      $         cmp%value(p_AKF2B_QUAD)*rtaper,
-     $         int(cmp%value(p_FRMD_QUAD)),cmp%value(ky_EPS_QUAD),
+     $         cmp%ivalue(1,p_FRMD_QUAD),cmp%value(ky_EPS_QUAD),
      $         cmp%value(ky_KIN_QUAD) .eq. 0.d0)
 
         case (icMULT)
@@ -963,28 +932,23 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
             ph=ph+gettwiss(mfitdz,l_track)*cmp%value(p_W_CAVI)
           endif
           call tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         cmp%value(ky_L_CAVI),dummy,
+     $         cmp%value(ky_L_CAVI),dummy,dummy,
      $         bzs,0.d0,0.d0,0.d0,
      1         cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
      $         0.d0,0.d0,0.d0,
      $         cmp%value(ky_ROT_CAVI),0.d0,cmp%value(ky_ROT_CAVI),
-     $         (1.d0,0.d0),
      $         0.d0,.false.,
      $         cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
      $         0.d0,0.d0,0.d0,0.d0,
-     $         int(cmp%value(p_FRMD_CAVI)),
-     $         0.d0,0.d0,
+     $         cmp%ivalue(1,p_FRMD_CAVI),
+     $         0.d0,0.d0,dofr,
      $         cmp%value(ky_VOLT_CAVI)+cmp%value(ky_DVOLT_CAVI),
      $         cmp%value(p_W_CAVI),
      $         cmp%value(ky_PHI_CAVI),ph,cmp%value(p_VNOMINAL_CAVI),
-     $         0.d0,1.d0,autophi,
+     $         0.d0,1.d0,autophi,1,0,
      $         n,kptbl)
         case (icSOL)
-          if(l .eq. ke)then
-            bz1=0.d0
-          else
-            bz1=tfbzs(l,kbz)
-          endif
+          bz1=merge(0.d0,tfbzs(l,kbz),l .eq. ke)
           krad=rad .and. cmp%value(ky_RAD_SOL) .eq. 0.d0
      $         .and. cmp%value(ky_F1_SOL) .ne. 0.d0 .and. bzs .ne. bz1          
           if(krad)then
@@ -1026,7 +990,7 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
           endif
           bzs=bz1
         case(icMAP)
-          call temap(np,np0,x,px,y,py,z,g,dv,l,n,kptbl)
+          call temap(np,np0,x,px,y,py,z,g,dv,sx,sy,sz,l,n,kptbl)
         case(icAprt)
           call tapert1(x,px,y,py,z,g,dv,sx,sy,sz,
      1         kptbl,np,n)
@@ -1053,11 +1017,7 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
      $         fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
      $         p0,h0,itab,izs,.false.)
           nwak=nwak+1
-          if(nwak .gt. nwakep)then
-            nextwake=0
-          else
-            nextwake=iwakeelm(nwak)
-          endif
+          nextwake=merge(0,iwakeelm(nwak),nwak .gt. nwakep)
         endif
       enddo
       return
@@ -1074,13 +1034,10 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
       real*8 pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf
       logical*4,intent(in):: ent
       if(ent)then
-        do i=1,np
+        do concurrent (i=1:np)
           pxi=px(i)
           pyi=py(i)
           pzi=1.d0+pxy2dpz(pxi,pyi)
-c          a=min(.9999d0,pxi**2+pyi**2)
-c          pzi=1.d0+sqrt1(-a)
-c          pzi=1.d0-a/(sqrt(1.d0-a)+1.d0)
           xi=x(i)
           yi=y(i)
           xf =r11*xi +r12*yi
@@ -1096,13 +1053,10 @@ c          pzi=1.d0-a/(sqrt(1.d0-a)+1.d0)
           z(i)=z(i)+zf/pzf+dz
         enddo
       else
-        do i=1,np
+        do concurrent (i=1:np)
           pxi=px(i)
           pyi=py(i)
           pzi=1.d0+pxy2dpz(pxi,pyi)
-c          a=min(.9999d0,pxi**2+pyi**2)
-c          pzi=1.d0+sqrt1(-a)
-c          pzi=1.d0-a/(sqrt(1.d0-a)+1.d0)
           xi=x(i)-dx
           yi=y(i)-dy
           xf =r11*xi +r12*yi
@@ -1123,8 +1077,9 @@ c          pzi=1.d0-a/(sqrt(1.d0-a)+1.d0)
 
       subroutine tsfrin(np,x,px,y,py,z,g,dbz)
       implicit none
-      integer*4 np
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dbz
+      integer*4 ,intent(in):: np
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np)
+      real*8 ,intent(in):: dbz
       integer*4 i
       real*8 x0,y0,px0,py0,z0,p,bq,bp,pr,pphi,phi0,w,c,s
 c     Apply identity map if dbz == 0
@@ -1215,7 +1170,8 @@ c       bp    =  .50d0 * b
 
       subroutine tsfrie(trans,cod,dbz)
       implicit none
-      real*8 trans(6,6),cod(6),dbz
+      real*8 ,intent(out):: trans(6,6),cod(6)
+      real*8 ,intent(in):: dbz
       real*8 x0,px0,y0,py0,z0,p,bq,bp,pr,pphi,phi0,w,c,s,
      $     x1,px1,y1,py1,z1
 

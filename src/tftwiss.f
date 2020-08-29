@@ -111,7 +111,7 @@
         kx%k=ktflist+kax
       elseif(keyword .eq. 'FUNCTIONS')then
       else
-        findkey: do while(.true.)
+        findkey: do
           do i=1,nkey
             if(keyword .eq. nlist(i))then
               kt=i
@@ -389,7 +389,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
           go to 9010
         endif
         call tffsadjust
-        kx%k=ktfoper+mtfnull
+        kx=dxnullo
       else
         if(narg .gt. 2)then
           if(narg .eq. 3)then
@@ -462,11 +462,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
         if(iv .gt. 0)then
           if(saved)then
             iax=idvalc(ia)+iv
-            if(ref)then
-              kx%k=klist(iax)
-            else
-              kx%k=ktfref+iax
-            endif
+            kx%k=merge(klist(iax),ktfref+iax,ref)
           else
             iax=latt(ia)+iv
             if(ref)then
@@ -482,11 +478,8 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
         endif
       elseif(keyword .eq. 'DEFAULT')then
         iv=nelvx(it)%ival
-        if(iv .eq. 0)then
-          key=' '
-        else
-          key=tfkwrd(idtypec(ia),iv)
-        endif
+        key=merge('                                ',
+     $       tfkwrd(idtypec(ia),iv),iv .eq. 0)
         Kx=kxsalocb(-1,key,lenw(key))
       elseif(keyword .eq. 'DEFAULT$SUM')then
         iv=nelvx(it)%ival
@@ -705,7 +698,9 @@ c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
         kx=dfromr(sqrt(1.d0+(rlist(ifgamm+ia-1)*(1.d0-v)+
      $       rlist(ifgamm+min(nlat-1,ia))*v)**2))
       elseif(keyword(1:3) .eq. 'SIG' .and.
+     $       keyword(4:4) .ne. 'E' .and.
      $       keyword(1:5) .ne. 'SIGMA')then
+c        write(*,*)'tfline1-beamkey ',keyword(1:len_trim(keyword))
         if(keyword(1:3) .eq. 'SIG')then
           call tfbeamkey(keyword(4:),i,j,irtc)
         else
@@ -713,6 +708,9 @@ c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
         endif
         if(irtc .ne. 0)then
           return
+        endif
+        if(ifsize .eq. 0)then
+          call tfsize(.true.)
         endif
         call tfbeamfrac(ia,v,0.d0,beam)
         if(i .eq. 0)then
@@ -730,20 +728,13 @@ c              enddo
             kx=dfromr(sqrt(beam(iaidx(j,j))))
           endif
         else
-          if(j .eq. 0)then
-            kx=dfromr(sqrt(beam(iaidx(i,i))))
-          else
-            kx=dfromr(beam(iaidx(i,j)))
-          endif
+          kx=dfromr(merge(sqrt(beam(iaidx(i,i))),beam(iaidx(i,j)),
+     $         j .eq. 0))
         endif
       elseif(keyword .eq. 'MULT')then
         kx=dfromr(dble(ilist(ia,ifmult)))
       elseif(keyword .eq. 'TYPE')then
-        if(ia .eq. nlat)then
-          kx%k=0
-        else
-          kx=dfromr(dble(idtypec(ia)))
-        endif
+        kx=merge(dxzero,dfromr(dble(idtypec(ia))),ia .eq. nlat)
       elseif(keyword .eq. 'TYPENAME')then
         if(ia .eq. nlat)then
           kx=dxnulls
@@ -846,19 +837,11 @@ c              enddo
           kx%k=ktftrue
         endif
       elseif(keyword .eq. 'BZS')then
-        if(ref)then
-          kx=dfromr(tfbzs(ia,ibz))
-        else
-          kx%k=0
-        endif
+        kx=merge(dfromr(tfbzs(ia,ibz)),dxzero,ref)
       elseif(keyword .eq. 'UPDATE')then
         if(ia .lt. nlat)then
           call compelc(ia,cmp)
-          if(cmp%update)then
-            kx%k=ktftrue
-          else
-            kx%x(1)=0.d0
-          endif
+          kx%k=merge(ktftrue,ktffalse,cmp%update)
         else
           kx%k=ktftrue
         endif
@@ -946,7 +929,7 @@ c              enddo
  100  irtc=0
       return
  9000 irtc=itfmessage(9,'General::wrongval',
-     $     '"coordinae","X, PX, Y, PY, Z, DP"')
+     $     '"coordinate","X, PX, Y, PY, Z, DP"')
       return
       end
 
@@ -1144,11 +1127,7 @@ c              enddo
       endif
       isp0=isp
       isp=isp+1
-      if(mode .eq. 0)then
-        ktastk(isp)=iflinep
-      else
-        ktastk(isp)=ifelementp
-      endif
+      ktastk(isp)=merge(iflinep,ifelementp,mode .eq. 0)
       isp=isp+1
       dtastk(isp)=ks
       kx=tfefunref(isp0+1,.false.,irtc)

@@ -502,12 +502,12 @@ c      call tfmemcheckprint('beambeam',5,.false.,irtc)
 
 !   pn=|p|/p0=1+delta
 c      call tfmemcheckprint('beambeam',7,.false.,irtc)
-      call limitnan(x,-1.d4,1.d4)
-      call limitnan(px,-1.d4,1.d4)
-      call limitnan(y,-1.d4,1.d4)
-      call limitnan(py,-1.d4,1.d4)
-      call limitnan(z,-1.d10,1.d10)
-      call limitnan(g,-1.d0,1.d4)
+      call limitnan(x,1.d4)
+      call limitnan(px,1.d4)
+      call limitnan(y,1.d4)
+      call limitnan(py,1.d4)
+      call limitnan(z,1.d10)
+      call limitnan(g,1.d4)
       do  i=1,np
          pn=1.d0+g(i)
          px(i)=px(i)/pn

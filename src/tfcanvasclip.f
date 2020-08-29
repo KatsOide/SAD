@@ -1,10 +1,12 @@
       subroutine tfcanvasclip(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_rlist), pointer :: klr
       integer*8 ka,ka1,ka2,kal,kadash,kaxi
-      integer*4 isp1,irtc,i,j,na,np,isp0,n,
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 i,j,na,np,isp0,n,
      $     itfmessage,narg,ispa,ndash,k,isp2,isp3,ignore
       real*8 xmin,xmax,ymin,ymax,x0,x1,y0,y1,xa,ya,xb,yb,
      $     ux,uy,t(4),tc,dx,dy,dmax,dash,s,s1,v,xm,ym,eps,t1,
@@ -213,11 +215,9 @@
                     xb=x0+t(j)*ux
                     yb=y0+t(j)*uy
                     isp=isp+4
-                    if(t(i) .lt. t(j))then
-                      rtastk(isp-3:isp)=anint((/xa,ya,xb,yb/))
-                    else
-                      rtastk(isp-3:isp)=anint((/xb,yb,xa,ya/))
-                    endif
+                    rtastk(isp-3:isp)=anint(
+     $                   merge([xa,ya,xb,yb],[xb,yb,xa,ya],
+     $                   t(i) .lt. t(j)))
                     go to 1
                   endif
                 enddo
@@ -702,7 +702,7 @@ c            s=sqrt(dx**2+dy**2)
       do j=1,nc
         u0(j)=slight(1,1,j)**2+slight(2,1,j)**2+slight(3,1,j)**2
       enddo
-      do9000: do while(.true.)
+      do9000: do
         do i=1,nt
           rgb(1,i)=0.d0
           rgb(2,i)=0.d0

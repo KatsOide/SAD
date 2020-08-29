@@ -20,10 +20,9 @@ c    1        16,17,18,19,20,21/
       if(irad .lt. 12)then
         return
       endif
-      if(size(trans,2) .eq. 6)then
-        trans1=trans(1:6,1:6)
-      else
-        trans1=trans(1:6,1:6)+trans(1:6,7:12)
+      trans1=merge(trans(1:6,1:6),
+     $     trans(1:6,1:6)+trans(1:6,7:12),
+     $     size(trans,2) .eq. 6)
       endif
 c      do j=1,6
         s(1,1:6)=trans1(1:6,1)*beam(1) +trans1(1:6,2)*beam(2)

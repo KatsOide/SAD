@@ -86,11 +86,8 @@ c      iwakepold=ifwakep
       cuc=1.5d0*rclassic/rcratio
       anrad =5.d0/2.d0/sqrt(3.d0)*rcratio
       ccintr=(rclassic/h0**2)**2/8.d0/pi
-      if(rlist(klist(ilattp)+1) .ne. 0.d0)then
-        omega0=pi2*cveloc*p0/h0/rlist(klist(ilattp)+1)
-      else
-        omega0=0.d0
-      endif
+      omega0=merge(pi2*cveloc*p0/h0/rlist(klist(ilattp)+1),
+     $     0.d0,rlist(klist(ilattp)+1) .ne. 0.d0)
       call rsetgl1('OMEGA0',omega0)
       return
       end

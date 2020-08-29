@@ -49,12 +49,9 @@ c      iy=iarray(3)
 
       character function rad62(i)
       implicit none
-      integer*4 i
-      character*62 c62
-      save c62
-      data c62
-c    1/'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'/
-     1/'0123456789AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz'/
+      integer*4 ,intent(in):: i
+      character*62 ,parameter ::c62=
+     1'0123456789AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz'
       if(i .ge. 0 .and. i .le. 61)then
         rad62=c62(i+1:i+1)
       else

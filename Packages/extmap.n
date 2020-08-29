@@ -1,0 +1,115 @@
+System`Fortran;
+`LOPT;
+`ExternalMap;
+
+BeginPackage[ExtMap`];
+
+Begin[ExtMap`];
+
+ExtMap=Class[{},{map=0,npz=0,size=0,fd=0,fort,
+  sadobjdir=GetEnv["SAD_ROOTPATH"]//"/obj/"//GetEnv["SAD_ARCH"]//"/",
+  sadmod={"sim/maprwfile.o"}},{LANG="Fortran",temp=Null,lopt="",Loadm,
+    Debug->False},
+
+  Constructor[]:=(
+    lopt=StringJoin@@((sadobjdir//#//" ")&/@sadmod);
+    fort=Fortran[`LOPT->lopt];
+    InitLoadm[];
+    ResetMap[];
+    map=1;
+    );
+
+  CompiledMap$[n_,nt_,x_,mod_,prm_,False]:=With[{np=Min[Length[x[[1]]],npz]},
+    Module[{ipn,npr,pr},
+      If[temp===Null,
+        temp=TemporaryName[];
+        size=np*9+Length[prm]+2;
+        {map,fd}=MapFile[temp,size*8]];
+      If[size<np*9+Length[prm]+2,
+        UnmapFile[fd];
+        size=np*9+Length[prm]+2;
+        {map,fd}=MapFile[temp,size*8]];
+      {ipn,npr,pr}=MapParticles[map,x,prm];
+      If[Debug,Print["CM$: ",{ipn,npr,pr}]];
+      StandardForm[System[mod//" "//temp//" "//np//" "//nt//
+        " "//n//" "//ipn//" "//npr]];
+      UnmapParticles[map,np]]];
+
+  CompiledMap$[n_,nt_,x_,mod_,prm_,True]:=If[da,
+    CompiledMap$[n,nt,x,mod,prm,False],
+    With[{np=Min[Length[x[[1]]],npz]},
+    Module[{ipn,npr,pr},
+      If[temp===Null,
+        temp=TemporaryName[];
+        size=np*9+Length[prm]+2;
+        {map,fd}=MapFile[temp,size*8]];
+      If[size<np*9+Length[prm]+2,
+        UnmapFile[fd];
+        size=np*9+Length[prm]+2;
+        {map,fd}=MapFile[temp,size*8]];
+      {ipn,npr,pr}=MapParticles[map,x,prm];
+      If[RealQ[pr],
+        Kill[pr,SIGSTOP],
+        Wait4[#,6]&/@pr;
+        StandardForm[System[mod//" "//temp//" "//npz//" "//nt//
+          " "//n//" 0 0 "]];
+        Kill[#,SIGCONT]&/@pr];
+      UnmapParticles[map,np]]]];
+
+  preamble["Fortran"]:=StandardForm["\
+program emap;use iso_c_binding;implicit none;\n\
+real(kind=8),pointer,dimension(:):: rlist;type (c_ptr) cp;\n\
+integer(kind=8),pointer,dimension(:):: klist;\n\
+integer(kind=8)shm,shm0,ksize,maprwfile;\n\
+integer ifd,irtc,np,nprm,n,nt,ipn,npz,npr;\n\
+character*32 str,temp;call getarg(1,temp);\n\
+call c_f_pointer(transfer(int8(8),cp),rlist,[15]);\n\
+call c_f_pointer(transfer(int8(8),cp),klist,[15]);\n\
+ksize=0;shm0=maprwfile(temp(1:len_trim(temp))//char(0),ifd,ksize,irtc)/8;\n\
+call getarg(2,str);read(str,*)np;\n\
+call getarg(3,str);read(str,*)nt;\n\
+call getarg(4,str);read(str,*)n;\n\
+call getarg(5,str);read(str,*)ipn;\n\
+call getarg(6,str);read(str,*)npr;\n\
+npz=klist(shm0);nprm=klist(shm0+1);shm=shm0+ipn+2;\n\
+!write(*,*)': ',np,npz,nprm,nt,n;\n\
+call emap1(np,rlist(shm:shm+np-1),rlist(shm+npz:shm+npz+np-1),&\n\
+rlist(shm+npz*2:shm+npz*2+np-1),rlist(shm+npz*3:shm+npz*3+np-1),&\n\
+rlist(shm+npz*4:shm+npz*4+np-1),rlist(shm+npz*5:shm+npz*5+np-1),&\n\
+rlist(shm+npz*6:shm+npz*6+np-1),rlist(shm+npz*7:shm+npz*7+np-1),&\n\
+rlist(shm+npz*8:shm+npz*8+np-1),&\n\
+nprm,rlist(shm0+npz*9+npr*nprm+2:shm0+npz*9+(npr+1)*nprm+1),nt,n);end;\n\
+subroutine emap1(np,x,px,y,py,z,dp,sy,sarg,flag,nprm,prm,nt,n);\n\
+implicit none;integer,intent(in)::np,nprm,nt,n;\n\
+real(kind=8),intent(inout)::x(np),px(np),y(np),py(np),z(np),dp(np),&\n\
+sy(np),sarg(np),flag(np),prm(nprm);\n"];
+
+  InitLoadm[]:=(
+    Clear[Loadm];
+    Loadm[__]=Null;
+    Loadm[src_String,opt___]:=(Loadm[src]=Loadm[src,___]=
+        fort@Compile[preamble[LANG]//src,opt]));
+
+  InitMap[npz1_,da1_:0]:=(
+    da=da1;
+    temp=TemporaryName[];
+    npz=npz1;
+    size=npz*9+128+3;
+    {map,fd}=MapFile[temp,size];
+    If[Debug,Print["InitMap ",{temp,map,fd,npz,size}]];
+    {map,fd});
+ 
+  ResetMap[]:=If[temp<=>Null,
+    If[Debug,Print["ResetMap ",{temp,npz,map,fd,size}]];
+    System["rm -f "//temp];
+    UnmapFile[map,size,fd];
+    map=size=fd=0;
+    temp=Null];
+
+  ];
+
+End[];
+
+EndPackage[];
+
+`ExtMap$=ExtMap[];

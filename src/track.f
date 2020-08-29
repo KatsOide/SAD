@@ -10,13 +10,13 @@
 c      use tfcsi, only:ipoint,lrecl,lfni
       implicit none
       type (sad_descriptor) kx
-      integer*8 ikptbl,ig,ipz,ix,ixx,iy,iyy,iz,izz,ifz,imt,kzx,
+      integer*8 ikptbl,ig,ipz,ix,ixx,iy,iyy,iz,izz,ifz,
      $     latt,iparam,lscal
       integer*4 irtc,l,isp1,
      $     nts,itfdownlevel,naz,ltpara,IgetGL
       character*20 title
       logical*4, save :: trackinit=.false.
-      real*8 ol,trval,dt1,df,rgetgl1,dt0,phi(3)
+      real*8 ol,dt1,df,rgetgl1,dt0
       if(bypasstrack)then
         write(*,*)
      $       '??? FFS, EMIT, TRACK in GetMAIN are bypassed. ???'
@@ -224,19 +224,20 @@ c      use tfcsi, only:ipoint,lrecl,lfni
           call tfree(ix)
         endif
       else
-        imt=ktaloc(np0/2+1)
-        kzx=ktaloc(np0)
-        trval=0.d0
-        rlist(ipz)=0.d0
-        phi=0.d0
-        call trackd(ilist(1,ilattp+1),ilist(1,ikptbl),
-     1        rlist(ilist(2,iparam+16)),rlist(ilist(2,iparam+17)),
-     1        rlist(ilist(2,iparam+18)),rlist(ilist(2,iparam+19)),
-     1        rlist(ilist(2,iparam+20)),rlist(ilist(2,iparam+21)),
-     1        rlist(ig),rlist(ipz),
-     1        ilist(1,kzx),ilist(1,imt),trval,phi,0.d0,0.d0,3,1,outfl)
-        call tfree(kzx)
-        call tfree(imt)
+        write(*,*)'Obsolete -- use DynamicApertureSurvey in FFS.'
+c$$$        imt=ktaloc(np0/2+1)
+c$$$        kzx=ktaloc(np0)
+c$$$        trval=0.d0
+c$$$        rlist(ipz)=0.d0
+c$$$        phi=0.d0
+c$$$        call trackd(ilist(1,ikptbl),
+c$$$     1        rlist(ilist(2,iparam+16)),rlist(ilist(2,iparam+17)),
+c$$$     1        rlist(ilist(2,iparam+18)),rlist(ilist(2,iparam+19)),
+c$$$     1        rlist(ilist(2,iparam+20)),rlist(ilist(2,iparam+21)),
+c$$$     1        rlist(ig),rlist(ipz),
+c$$$     1        ilist(1,kzx),ilist(1,imt),trval,phi,0.d0,0.d0,3,1,outfl)
+c$$$        call tfree(kzx)
+c$$$        call tfree(imt)
       endif
       call tsptrm
       call tfree(ig)

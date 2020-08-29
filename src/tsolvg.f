@@ -314,7 +314,7 @@ c 1510 continue
           endif
  1110   continue
       endif
-      do3001: do while(.true.)
+      do3001: do
         if(ibegin .ge. iend)then
           isep=isep-1
           if(isep .le. 0)then

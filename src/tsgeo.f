@@ -185,11 +185,8 @@
           a14=0.d0
         else
           a12= sinphi/ak
-          if(a22 .ge. 0.d0)then
-            a14=a12*sinphi/(1.d0+a22)
-          else
-            a14=(1.d0-a22)/ak
-          endif
+          a14=merge(a12*sinphi/(1.d0+a22),(1.d0-a22)/ak,
+     $         a22 .ge. 0.d0)
 c     a14= 2.d0*sin(phi*.5d0)**2/ak
         endif
         a24= sinphi
@@ -330,11 +327,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         dl=0.d0
         if(cmp%value(ky_BND_SOL) .eq. 0.d0)then
           bzs0=bzs
-          if(idir .lt. 0)then
-            bzs=tfbzs(i-1,kbz)
-          else
-            bzs=tfbzs(i,kbz)
-          endif
+          bzs=tfbzs(merge(i-1,i,idir .lt. 0),kbz)
           db=bzs-bzs0
           if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
             pxf=pxi-yi*bzs0*.5d0

@@ -413,8 +413,9 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             buff(33:40)=tdispv(mfitgmx,l,icolm,dref,'8.5',
      $           tfvl(cmp,id))
           case (modeb)
-            call ffs_init_sizep
-            call tfsize(.false.)
+            if(ifsize .eq. 0)then
+              call tfsize(.true.)
+            endif
             sigpp=beamsize(21,l)
             etaxp=beamsize(16,l)/sigpp
             etapxp=beamsize(17,l)/sigpp

@@ -438,11 +438,7 @@ c      write(*,*)'spphi2 ',it,sdphi,sphi
 c        alpha=-sqrt(drtheta(0)**2+(zc(m)-zf(m))**2)/64.d0
         alpha=fact*(zc(m)-zf(m))
         do i=1,ntheta
-          if(i .eq. 1)then
-            i1=ntheta
-          else
-            i1=i-1
-          endif
+          i1=merge(ntheta,i-1,i .eq. 1)
           q1=alpha*(phis(i,m)+phis(i1,m))
           dqa=dqa+abs(q1)
           dq(i)=q1

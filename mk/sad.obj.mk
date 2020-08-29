@@ -111,7 +111,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      tspch_.o     ft.o        psn.o       spch.o \
      csrtest.o csrtrack.o csroy.o txwake.o tbbbrem.o
 
-OBJF=tfeval.o    itfcopy.o tfefun.o  tfmap.o     tfprinta.o  tfestk.o
+OBJF=tfeval.o    itfcopy.o tfefun.o  tffuns.o tfmap.o     tfprinta.o  tfestk.o
 
 OBJUTIL=utils.o
 
@@ -142,7 +142,7 @@ OBJSIM_DYNL=sim/dynl.o $(OBJDYNL)
 
 OBJSIM= sim/unix_pointer_.o sim/unix_memory_.o sim/unix_memory8_.o \
 	sim/sad_api.o sim/sad_functbl.o sim/sad_signal.o \
-	sim/sad_xlib.o sim/sad_tcltk.o \
+	sim/sad_xlib.o sim/sad_tcltk.o sim/maprwfile.o\
 	$(OBJ_FORTRAN) \
 	$(OBJSIM_DYNL) \
 	$(FRAMEWORK_OBJS) \

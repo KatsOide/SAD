@@ -19,7 +19,7 @@
       integer*4 ,intent(out):: ke
       integer*4 i,l
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
-      real*8 rtaper, bmir(6,6),r
+      real*8 rtaper, bmir(6,6)
       logical*4 ,intent(out):: sol
       logical*4 ,intent(in):: plot,rt
       save iabmilz
@@ -38,11 +38,9 @@
  20   do l=k,ke
         rtaper=1.d0
         if(radtaper)then
-          if(rt)then
-            rtaper=(2.d0+cod(6)+gettwiss(mfitddp,nextl(l)))*.5d0-dp0
-          else
-            rtaper=(1.d0-dp0+cod(6))
-          endif
+          rtaper=merge((
+     $         2.d0+cod(6)+gettwiss(mfitddp,nextl(l)))*.5d0-dp0,
+     $         1.d0-dp0+cod(6),rt)
         endif
         call tsole1(trans,cod,beam,srot,l,rtaper,.true.,.false.)
 c          write(*,*)'tsole-l ',l,sol,rtaper
@@ -75,12 +73,8 @@ c          write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6),cod
             klist(iae%iabmi+l)=ktflist+ktfcopy1(iabmilz)
           endif
         elseif(radtaper .and. radcod)then
-          if(l .eq. 1)then
-            r=1.d0
-          else
-            r=gammab(l)/gammab(l+1)
-          endif
-          twiss(l+1,idp,mfitddp)=cod(6)*r
+          twiss(l+1,idp,mfitddp)=cod(6)*
+     $         merge(1.d0,gammab(l)/gammab(l+1), l .eq. 1)
         endif
       enddo
       return
@@ -108,7 +102,7 @@ c          write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6),cod
       real*8 ,intent(in):: rtaper
       real*8 rr(3,3),al,theta,
      $     phi,phix,phiy,bzs,trans1(6,6),trans2(6,6),
-     $     tfbzs,radlvl,bzs0,f1,ftable(4),ak1
+     $     tfbzs,bzs0,f1,ftable(4),ak1
       logical*4 ,intent(in):: enarad,qsol
       logical*4 dir,ent,coup,err,krad,seg
       real*8,save::dummy(256)=0.d0
@@ -278,8 +272,8 @@ c      write(*,'(a,i5,1p6g15.7/16x,1p6g15.7)')'tsole1-end ',l,code,cod
       use tffitcode
       implicit none
       integer*4 ,intent(in):: k
-      real*8 ,intent(inout):: trans(4,5),cod(6),beam(42),srot(3,9)
-      real*8 transe(6,12)
+      real*8 ,intent(inout):: trans(4,5),cod(6)
+      real*8 transe(6,12),beam(42),srot(3,9)
       logical*4 ,intent(out):: coup
       logical*4 radtaper0,calpol0
       radtaper0=radtaper

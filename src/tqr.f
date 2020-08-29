@@ -44,7 +44,7 @@ c     end   initialize for preventing compiler warning
         enddo
       enddo
       anorm=anorm*2/n**2
-      do1:do while(.true.)
+      do1:do
         if(ie .le. ib+1)then
           if(ib .eq. 1)then
             exit
@@ -58,7 +58,7 @@ c     end   initialize for preventing compiler warning
         ie1=ie-1
         iter=0
         itm=min(itmax,10*max(ie-ib+1,2))
-        do2:do while(.true.)
+        do2:do
 c     write(*,'(1P4G15.7)')((vx(i)/vx(j)*a(i,j),j=1,4),i=1,4)
           do i=ie-1,ib,-1
             i1=i+1

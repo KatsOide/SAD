@@ -144,7 +144,7 @@ c      write(*,'(a,1p6g15.7)')'temit-etwiss-ent0 ',
 c     $     tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
       if(calcodr)then
         call tcod(trans,cod,beam,.false.,fndcod)
-        call limitnan(cod,-1.d10,1.d10)
+        call limitnan(cod,1.d10)
         if(.not. fndcod)then
           write(lfno,*)'???-Emittance[]-closed orbit not found.'
         endif
@@ -154,18 +154,17 @@ c     $     tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
       if(.not. calem .and. econv)then
         irad=6
       endif
-      converge: do while(.true.)
+      converge: do
         if(inical)then
           cod=codin
           beam(1:21)=beamin
           call tinitr12(trans)
           call srotinit(srot)
           call tsetr0(trans,cod,0.d0,0.d0)
-c          write(*,*)'temit-inical ',calint,intra,econv
+c          write(*,*)'temit-inical ',calint,intra,econv,postcal,plot
           if(econv)then
             call tturne(trans,cod,beam,srot,iae,
-     1           plot,.false.,rt,.false.)
-            postcal=.false.
+     1           plot .and. .not. postcal,.false.,rt,.false.)
           else
             call tturne(trans,cod,beam,srot,iaez,
      1           .false.,.false.,rt,.false.)
@@ -175,7 +174,7 @@ c          write(*,*)'temit-inical ',calint,intra,econv
               trans(:,i)=gr*trans(:,i)
             enddo
           endif
-          call limitnan(cod,-1.d10,1.d10)
+          call limitnan(cod,1.d10)
           irad=12
           call tecalc(trans,cod,beam,beamn,beamp,
      $         emitn,emitp,btr,srot,srot1,
@@ -204,22 +203,22 @@ c          endif
           case (3)
             econv=.true.
             inical=.true.
+            postcal=.false.
             cycle converge
           case (4)
             econv=.true.
+            postcal=.true.
             cycle converge
           end select
         endif
         exit converge
       enddo converge
       if(plot .and. postcal)then
+c        write(*,*)'temit-postcal ',calint,intra,beamplt,
+c     $       beamp(1),beamp(6),beamp(21)
         call tinitr12(trans)
         cod=codin
-        if(trpt)then
-          beam(1:21)=beamin
-        else
-          beam(1:21)=beam(22:42)
-        endif
+        beam(1:21)=merge(beamin,emitp,trpt)
         beam(22:42)=0.d0
         call srotinit(srot)
         call tturne(trans,cod,beam,srot,iae,
@@ -310,28 +309,18 @@ c     $       tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
       endif
       synchm=.not. trpt .and. rfsw .and. imag(cd(6)) .ne. 0.d0
       if(synchm)then
-        if(wrfeff .ne. 0.d0)then
-          alphap=-imag(cd(6))*abs(imag(cd(6)))/(c*m_2pi/omega0)
-     $         /(dvcacc/pgev)
-        else
-          alphap=0.d0
-        endif
+        alphap=merge(-imag(cd(6))*abs(imag(cd(6)))/(c*m_2pi/omega0)
+     $       /(dvcacc/pgev),0.d0,wrfeff .ne. 0.d0)
         omegaz=abs(imag(cd(6)))*omega0/m_2pi
       else
         alphap=-rx(5,6)/m_2pi/cveloc/p0*h0*omega0
-        if(trpt)then
-          omegaz=0.d0
-        else
-          omegaz=sqrt(abs(alphap*m_2pi*heff*vceff/pgev*cos(phirf)))
-     $         *omega0/m_2pi
-        endif
+        omegaz=merge(0.d0,sqrt(
+     $       abs(alphap*m_2pi*heff*vceff/pgev*cos(phirf)))
+     $       *omega0/m_2pi,trpt)
       endif
-      if(vceff .ne. 0.d0)then
-        bh=sqrt(abs(vceff/pi/abs(alphap)/heff/pgev*
-     1       (2.d0*cos(phirf)-(pi-2.d0*phirf)*u0*pgev/vceff)))
-      else
-        bh=0.d0
-      endif
+      bh=merge(sqrt(abs(vceff/pi/abs(alphap)/heff/pgev*
+     1     (2.d0*cos(phirf)-(pi-2.d0*phirf)*u0*pgev/vceff))),
+     $     0.d0,vceff .ne. 0.d0)
       call setparams(params,cod)
       stab=(abs(dble(cd(4))) .lt. 1.d-6
      $     .and. abs(dble(cd(5))) .lt. 1.d-6
@@ -346,21 +335,12 @@ c     $       tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
         cd(int(i/2)+1)=dcmplx((rd(i,i)+rd(i+1,i+1))*.5d0,
      1       (rd(i,i+1)-rd(i+1,i))*.5d0)/cc(i)
       enddo
-      if(dble(cd(1)) .ne. 0.d0)then
-        taurdx=-m_2pi/omega0/dble(cd(1))
-      else
-        taurdx=0.d0
-      endif
-      if(dble(cd(2)) .ne. 0.d0)then
-        taurdy=-m_2pi/omega0/dble(cd(2))
-      else
-        taurdy=0.d0
-      endif
-      if(dble(cd(3)) .ne. 0.d0)then
-        taurdz=-m_2pi/omega0/dble(cd(3))
-      else
-        taurdz=0.d0
-      endif
+      taurdx=merge(-m_2pi/omega0/dble(cd(1)),0.d0,
+     $     dble(cd(1)) .ne. 0.d0)
+      taurdy=merge(-m_2pi/omega0/dble(cd(2)),0.d0,
+     $     dble(cd(2)) .ne. 0.d0)
+      taurdz=merge(-m_2pi/omega0/dble(cd(3)),0.d0,
+     $     dble(cd(3)) .ne. 0.d0)
       params(ipdampx:ipdampz)=dble(cd(1:3))
       params(ipdnux:ipdnuz)=imag(cd(1:3))
       sr=params(ipdampx)+params(ipdampy)+params(ipdampz)
@@ -496,11 +476,8 @@ c     enddo
       if(synchm .or. trpt)then
         sigz=sqrt(abs(emitp(15)))
       else
-        if(omegaz .ne. 0.d0)then
-          sigz=abs(alphap)*sige*cveloc*p0/h0/omegaz
-        else
-          sigz=0.d0
-        endif
+        sigz=merge(abs(alphap)*sige*cveloc*p0/h0/omegaz,
+     $       0.d0,omegaz .ne. 0.d0)
         eemz=sigz*sige
       endif
       params(ipemx:ipemz)=(/eemx,eemy,eemz/)
@@ -655,11 +632,7 @@ c            endif
  9104           format(
      1               ' Momentum acceptance:  ',5(f8.1,2x),'  %')
                 do i=1,5
-                  if(5*iii+i .le. ntouckl)then
-                    tt=touckl(5*iii+i)*tf
-                  else
-                    tt=0.d0
-                  endif
+                  tt=merge(touckl(5*iii+i)*tf,0.d0,5*iii+i .le. ntouckl)
                   if(tt .ne. 0.d0)then
                     vout(i)=autofg(1.d0/tt,'9.6')
                   else
@@ -954,11 +927,10 @@ c     $         sqrt(emitn(15)*emitn(21)-emitn(20)**2)
         do i=1,ntwissfun
           vout9(i)=autofg(params(iptws0+i),'9.6')
         enddo
-        if(trpt)then
-          at=' at entrance:'
-        else
-          at=':'
-        endif
+        at=merge(
+     $       ' at entrance:',
+     $       '             ',
+     $       trpt)
         write(lfno,9001)at(1:len_trim(at)),
      $         vout9(mfitax),vout9(mfitbx),vout9(mfitzx),vout9(mfitex),
      $         vout9(mfitnx),vout9(mfitzpx),vout9(mfitey),
@@ -1106,11 +1078,8 @@ c     $         'Z :',dble(cd(3))*sr
 c     kiku <------------------
         xxs=emitp(1)-emitp(6)
         yys=-2.d0*emitp(4)
-        if(xxs .ne. 0.d0 .and. yys .ne. 0.d0)then
-          btilt= atan2(yys,xxs) /2d0
-        else
-          btilt=0.d0
-        endif
+        btilt=merge(atan2(yys,xxs) /2d0,0.d0,
+     $       xxs .ne. 0.d0 .and. yys .ne. 0.d0)
         sig1 = abs(emitp(1)+emitp(6))/2d0
 c     sig2 = 0.5d0* sqrt(abs((emitp(1)-emitp(6))**2+4d0*emitp(4)**2))
         sig2=0.5d0*hypot(emitp(1)-emitp(6),2.d0*emitp(4))
@@ -1142,22 +1111,22 @@ c     kiku ------------------>
             write(lfno,*)'\n'//'   Spin precession matrix:'
             write(lfno,*)'                sx             sy'//
      $           '             sz'
-            write(*,'(a,1p3g15.7)')'        sx',srot1(1,:)
-            write(*,'(a,1p3g15.7)')'        sy',srot1(2,:)
-            write(*,'(a,1p3g15.7)')'        sz',srot1(3,:)
+            write(lfno,'(a,1p3g15.7)')'        sx',srot1(1,:)
+            write(lfno,'(a,1p3g15.7)')'        sy',srot1(2,:)
+            write(lfno,'(a,1p3g15.7)')'        sz',srot1(3,:)
             write(lfno,*)'\n'//'   One-turn depolarization vectors:'
             write(lfno,*)'                x              px'//
      $           '             y              py'//
      $           '             z              pz'
-            write(*,'(a,1p6g15.7)')'        sx',srot(1,4:9)
-            write(*,'(a,1p6g15.7)')'        sy',srot(2,4:9)
-            write(*,'(a,1p6g15.7)')'        sz',srot(3,4:9)
+            write(lfno,'(a,1p6g15.7)')'        sx',srot(1,4:9)
+            write(lfno,'(a,1p6g15.7)')'        sy',srot(2,4:9)
+            write(lfno,'(a,1p6g15.7)')'        sz',srot(3,4:9)
             write(lfno,*)'\n'//'   Spin depolarization matrix:'
             write(lfno,*)'                s1             s2'//
      $           '             s3'
-            write(*,'(a,1p6g15.7)')'        s1',spm(1,:)
-            write(*,'(a,1p6g15.7)')'        s2',spm(2,:)
-            write(*,'(a,1p6g15.7)')'        s3',spm(3,:)
+            write(lfno,'(a,1p6g15.7)')'        s1',spm(1,:)
+            write(lfno,'(a,1p6g15.7)')'        s2',spm(2,:)
+            write(lfno,'(a,1p6g15.7)')'        s3',spm(3,:)
           endif
           vout(1)=autofg(spinmu/m_2pi,'11.8')
           vout(2)=autofg(equpol(3)*100.d0,'11.8')

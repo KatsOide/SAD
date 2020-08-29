@@ -1,3 +1,8 @@
+      module tftr
+      integer*4 ,parameter :: nprmax=256;
+      integer*4 :: npz=0,ipn=0,npr=0,npri=0,iprid=0,ipr(nprmax)
+      end module
+
       subroutine tftrack(isp1,kx,irtc)
       use tfstk
       use ffs
@@ -8,6 +13,7 @@
       use tparastat
       use photontable,only:tphotoninit,tphotonlist
       use tfcsi
+      use tftr
       use iso_c_binding
       implicit none
       type (sad_descriptor) kx,kx1,kx2,ks,kp
@@ -16,14 +22,15 @@
       integer*4, parameter :: npparamin=9,npnlatmin=3000
       integer*8 kz,kzp,kzf,kaxl,ktfmalocp,ktfresetparticles,kdv,
      $     kpsx,kpsy,kpsz
-      integer*4 isp1,irtc,narg,itfloc,outfl0,ld,ls,mc,npz,npa,np00,
-     $     ipr(100),npr,np1,fork_worker,iprid, ne,nend,npara,
-     $     npp,ipn,m,itfmessage,nt,mt,kseed,mcf
+      integer*4 isp1,irtc,narg,itfloc,outfl0,ld,ls,mc,npa,np00,
+     $     np1,fork_worker,ne,nend,npara,
+     $     npp,m,itfmessage,nt,mt,kseed,mcf
       integer*8 ikptblw,ikptblm
       real*8 trf00,p00,vcalpha0
       real*8 , pointer::zx(:,:),zx0(:,:)
       integer*4 , pointer::iptbl(:,:),jptbl(:,:)
       logical*4 dapert0,normal
+      character*32 autos
       narg=isp-isp1
       if(narg .gt. 4)then
         irtc=itfmessage(9,'General::narg','"1, 2, 3, or 4"')
@@ -72,16 +79,9 @@
       if(irtc .ne. 0)then
         return
       endif
-      if(ls .gt. 0)then
-        ls=mod(ls-1,nlat-1)+1
-      else
-        ls=nlat-mod(1-ls,nlat-1)
-      endif
-      if(ld .gt. 1)then
-        ld=mod(ld-2,nlat-1)+2
-      else
-        ld=nlat+1-mod(2-ld,nlat-1)
-      endif
+      ls=merge(mod(ls-1,nlat-1)+1,nlat-mod(1-ls,nlat-1),ls .gt. 0)
+      ld=merge(mod(ld-2,nlat-1)+2,nlat+1-mod(2-ld,nlat-1),
+     $     ld .gt. 1)
       if(ld .le. ls)then
         mt=mt+1
       endif
@@ -113,7 +113,7 @@
       kwakep=0
       kwakeelm=0
       nwakep=0
-      npara=max(nparallel,1)
+      npara=min(nprmax,max(nparallel,1))
       if(wake)then
         call tffssetupwake(icslfno(),irtc)
         if(irtc .ne. 0)then
@@ -147,6 +147,7 @@
         trpt=.true.
         call tlinit(npz,h0,rlist(ifgeo+12*(ls-1)))
       endif
+      call tfevals('`ExtMap$@InitMap['//autos(dble(npz))//']',kx,irtc)
 c      call omp_set_num_threads(1)
       if(npara .gt. 1)then
         kseed=0
@@ -166,6 +167,7 @@ c     $       ne,npnlatmin
           npr=0
           do while(ipn+np1 .lt. npz)
             kseed=kseed+2
+            npri=npr
             npr=npr+1
             iprid=fork_worker()
             if(iprid .eq. 0)then
@@ -181,6 +183,7 @@ c     $       ne,npnlatmin
             ipr(npr)=iprid
             ipn=ipn+np1
           enddo
+          npri=npr
           npp=npz-ipn
         endif
       endif
@@ -289,6 +292,7 @@ c        write(*,*)'tftrack-afterwait ',npz,npa,ipn,zx(npz,3),zx(npa,3)
         kaxl=ktfresetparticles(zx0,iptbl,npz,nlat,nend,mc)
       endif
       call tmunmapp(kz)
+      call tfevals('`ExtMap$@ResetMap[]',kx,irtc)
       if(photons)then
         call tphotonlist()
       endif
@@ -302,11 +306,7 @@ c        write(*,*)'tftrack-afterwait ',npz,npa,ipn,zx(npz,3),zx(npa,3)
         call tfree(kpsz)
       endif
       kx=kxadaloc(-1,2,klx)
-      if(normal)then
-        klx%rbody(1)=dble(ld)
-      else
-        klx%rbody(1)=dble(ls)
-      endif
+      klx%rbody(1)=merge(dble(ld),dble(ls),normal)
       klx%dbody(2)%k=ktflist+ktfcopy1(kaxl)
       if(radlight)then
         kx1=kx
@@ -425,16 +425,8 @@ c      return
       integer*8 ka,kaj(9)
       integer*4 np,iptbl(np,6),i,j,k,nlati,tend,mc,mcf,nv
       real*8 zx(np,mc)
-      if(calpol)then
-        mcf=9
-      else
-        mcf=7
-      endif
-      if(lossmap)then
-        nv=mcf+2
-      else
-        nv=mcf
-      endif
+      mcf=merge(9,7,calpol)
+      nv=merge(mcf+2,mcf,lossmap)
       call tconvm(np,zx(:,2),zx(:,4),zx(:,6),(/0.d0/),1)
       ka=ktadaloc(-1,nv)
       do j=1,nv
@@ -444,11 +436,7 @@ c      return
       do i=1,np
         k=iptbl(i,1)
         rlist(kaj(1:6)+i)=zx(k,1:6)
-        if(iptbl(k,4) .eq. 0)then
-          rlist(kaj(mcf)+i)=1.d0
-        else
-          rlist(kaj(mcf)+i)=0.d0
-        endif
+        rlist(kaj(mcf)+i)=merge(1.d0,0.d0,iptbl(k,4) .eq. 0)
       enddo
       if(calpol)then
         do i=1,np
@@ -460,16 +448,10 @@ c      return
       if(lossmap)then
         do i=1,np
           k=iptbl(iptbl(i,1),4)
-          if((-nlati .le. k) .and. (k .le. nlati))then
-            rlist(kaj(mcf+1)+i)=dble(k)
-          else
-            rlist(kaj(mcf+1)+i)=0.d0
-          endif
-          if(k .ne. 0)then
-            rlist(kaj(mcf+2)+i)=dble(iptbl(iptbl(i,1),5))
-          else
-            rlist(kaj(mcf+2)+i)=dble(tend+1)
-          endif
+          rlist(kaj(mcf+1)+i)=merge(dble(k),0.d0,
+     $         (-nlati .le. k) .and. (k .le. nlati))
+          rlist(kaj(mcf+2)+i)=merge(dble(iptbl(iptbl(i,1),5)),
+     $         dble(tend+1),k .ne. 0)
         enddo
       endif
       ktfresetparticles=ka
@@ -635,7 +617,7 @@ c              - Swap particle coordinates
       real*8 vn
       isp1=isp
       isp=isp1+1
-      dtastk(isp)=dxnull
+      ktastk(isp)=ktfoper+mtfnull
       call SeedRandom(isp1,kx,irtc)
       if(irtc .ne. 0)then
         return

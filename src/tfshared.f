@@ -2,6 +2,8 @@
       integer*4, parameter:: nshmax=1024
       integer*8, save:: kashare(nshmax)=0,lshare(nshmax)=0
       integer*4, save :: ishared(nshmax)=0,kstshare(0:nshmax)=0
+      integer*4 ,parameter :: sem_init=0,sem_destroy=1,
+     $     sem_post=2, sem_wait=3, sem_trywait=4
       
       contains
       integer*8 function ktfallocshared(n)
@@ -9,7 +11,8 @@
       use iso_c_binding
       implicit none
       integer*4, save :: lps=0
-      integer*4 irtc,n,getpagesize,nsh1,i,na
+      integer*4 ,intent(in):: n
+      integer*4 irtc,getpagesize,nsh1,i,na
       integer*8 k,kpb,kcp
       if(lps .eq. 0)then
         lps=getpagesize()/8
@@ -75,9 +78,9 @@ c     $     transfer(c_loc(klist(kpb)),k)/8
       subroutine tfreeshared(kpb,ist)
       use tfstk
       implicit none
-      integer*4, optional :: ist
+      integer*4, optional ,intent(in):: ist
       integer*4 i,is
-      integer*8 kpb
+      integer*8 ,intent(in):: kpb
       is=0
       if(present(ist))then
         is=ist
@@ -98,7 +101,8 @@ c     $     transfer(c_loc(klist(kpb)),k)/8
       subroutine tfreleaseshared(kpb)
       use tfstk
       implicit none
-      integer*8 kpb,k
+      integer*8 ,intent(in):: kpb
+      integer*8 k
       integer*4 irtc
       k=klist(kpb-2)
       call mapallocfixed8(klist(kpb-2),klist(kpb-1),8,irtc)
@@ -113,6 +117,15 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       call tfree(k)
       return
       end subroutine
+
+      function tfsemctrl(isp1,irtc) result(kx)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      return
+      end
 
       end module
 
@@ -154,11 +167,15 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       recursive subroutine tfrecallshared(isp0,k,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k,k0,ki
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) k0,ki
       type (sad_string), pointer :: str
       type (sad_dlist), pointer :: kl
       integer*8 kax
-      integer*4 isp0,m,irtc,itfmessage,i
+      integer*4 ,intent(in):: isp0
+      integer*4 ,intent(out):: irtc
+      integer*4 m,itfmessage,i
       logical*4 tfcheckelement
       do i=isp0+1,isp
         if(ktastk(i) .eq. k%k)then
@@ -219,8 +236,10 @@ c        call tfdebugprint(k,'recallshared',3)
       subroutine tfstoreshared(isp0,k,kap)
       use tfstk
       implicit none
-      integer*8 k,ka,kap,kh,ki,kt
-      integer*4 isp0,i,j,m
+      integer*8 ,intent(in):: k,kap
+      integer*8 ka,kh,ki,kt
+      integer*4 ,intent(in):: isp0
+      integer*4 i,j,m
       ka=ktfaddr(k)
       kt=k-ka
       if(kt .eq. ktfstring)then
@@ -232,15 +251,10 @@ c        call tfdebugprint(k,'recallshared',3)
         kh=klist(ka)
         klist(kap+1)=kh
         if(ktfobjq(kh) .and. ktfnonsymbolq(kh))then
-c          call tfdebugprint(kh,'storeshared-head',1)
           do j=isp0,isp
             if(ktastk(j) .eq. kh)then
-              if(ktfstringq(kh))then
-                klist(kap+1)=ktfstring+ktastk2(j)
-              else
-                klist(kap+1)=ktflist+ktastk2(j)+1
-              endif
-c              klist(kap+1)=iand(ktfmask,kh)+ktastk2(j)
+              klist(kap+1)=merge(ktfstring+ktastk2(j),
+     $             ktflist+ktastk2(j)+1,ktfstringq(kh))
               exit
             endif
           enddo
@@ -280,8 +294,11 @@ c          enddo
       recursive subroutine tfsharedsize(isp0,k,n,irtc)
       use tfstk
       implicit none
-      integer*8 k,ka,kt,ki,kh
-      integer*4 isp0,i,irtc,itfmessage,ni,n
+      integer*8 ,intent(in):: k
+      integer*8 ka,kt,ki,kh
+      integer*4 ,intent(in):: isp0
+      integer*4 ,intent(out):: irtc,n
+      integer*4 i,itfmessage,ni
       irtc=0
       if(ktfnonobjq(k) .or. ktfsymbolq(k))then
         n=1

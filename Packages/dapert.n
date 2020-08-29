@@ -1,4 +1,5 @@
-(* dapert 4/6/2016 *)
+(* dapert 8/24/2020 *)
+`ResultOfDAPERT;
 
 DALib=Class[{},{},{},
 

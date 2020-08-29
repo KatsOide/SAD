@@ -4,8 +4,8 @@
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 i
-      character*(*) name,word
+      integer*4 ,intent(in):: i
+      character*(*) ,intent(in):: name,word
       integer*4 lenw,ifany1
       logical*4 tmatchl
       character*(MAXPNAME+8) name1

@@ -22,11 +22,7 @@ c      endif
       if(irtc .eq. 0)then
         itfgeto=0
       elseif(irtc .gt. 0 .and. kerror .ne. 0)then
-       if(rlist(ktfaddr(kerror)+1) .ge. 1000.d0)then
-          itfgeto=-3
-        else
-          itfgeto=-2
-        endif
+        itfgeto=merge(-3,-2,rlist(ktfaddr(kerror)+1) .ge. 1000.d0)
         call tfreseterror
       else
         itfgeto=max(-3,min(-1,irtc+3))
@@ -77,12 +73,12 @@ c      endif
       subroutine tfgetstrns(k,str,nc)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_string), pointer :: ks
       type (sad_symbol), pointer :: sym
       type (sad_namtbl), pointer :: nam
-      integer*4 nc
-      character*(*) str
+      integer*4 ,intent(out):: nc
+      character*(*) ,intent(out):: str
       if(ktfstringq(k,ks))then
       elseif(ktfsymbolq(k,sym))then
         call loc_namtbl(sym%loc,nam)
@@ -99,9 +95,9 @@ c      endif
       character*(*) function tfgetstr(k,nc)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_string), pointer :: str
-      integer*4 nc
+      integer*4 ,intent(out):: nc
       if(ktfaddr(k) .eq. 0)then
         tfgetstr=' '
         nc=0
@@ -123,7 +119,7 @@ c      endif
       implicit none
       type (sad_descriptor) k
       type (sad_string), pointer :: str
-      character*(*) name
+      character*(*) ,intent(in):: name
       k=kxsymbolv(name,len_trim(name))
       if(ktfstringq(k,str))then
         tfgetstrv(1:str%nch)=str%str(1:str%nch)
@@ -141,7 +137,7 @@ c      endif
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
       integer*4 notspace,istop,nc,irt,i
-      character*(*) word
+      character*(*) ,intent(out):: word
  1    if(ipoint .ge. lrecl)then
         call getbuf
         if(ios .ne. 0)then

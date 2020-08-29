@@ -502,14 +502,9 @@ Range[`n_Real]:=(Range[n]=Range[1,n,1]);
 Range[`n1_Real,`n2_Real]:=(Range[n1,n2]=Range[n1,n2,1]);
 Range[x__Real]:=(Range[x]=Range$[x]);
 
-
 TimeZoneOffset = +540; (* SAD Default TimeZone: Asia/Tokyo[JST] *)
 (TimeZoneOffset = tz_) ^:= SetTimeZone[tz];
-TimeZoneOffset = 
-  Module[{f=OpenRead["!date +\\\"%z\\\""],s},
-    s=ReadString[f];
-    Close[f];
-    ToExpression[s]];
+TimeZoneOffset = SetTimeZone[];
 Protect[TimeZoneOffset];
 	(* Switch to Local TimeZone *)
 MkSecureTemp[template_String:Null, op___Rule]:=Module[{prefix, suffix, dir},
@@ -706,4 +701,23 @@ AutoLoad[CSR,CSRStability,PackagesDirectory//"CSR.n"];
 AutoLoad[WAKECOMMAND,PackagesDirectory//"WAKECOMMAND.n"];
 AutoLoad[LaTeX,PackagesDirectory//"latex.n"];
 AutoLoad[BBBrem,PackagesDirectory//"bbbrem.n"];
+AutoLoad[Fortran,PackagesDirectory//"fortran.n"];
+AutoLoad[ExtMap,PackagesDirectory//"extmap.n"];
+
+CompiledMap/:(`ExternalMap["TRACK",`n_,_,_]:=
+  CompiledMap[_,_,`src_,`prm_:{},opt:((_Rule|opt_RuleDelayed)...)]):=
+  (ExtMap;
+    With[{mod=`ExtMap$@`Loadm[src],n1=`n,def={`Completion->Null,`Single->False}},
+      Module[{{cmpl,single}={`Completion,`Single}/.{opt}/.def},
+!        Print["CompiledMap: ",{mod,cmpl,single}];
+        With[{single,cmpl},
+          If[cmpl<=>Null,
+            `ExternalMap["TRACK",n1,`nt_,`x_]:=
+              With[{r=`ExtMap$@`CompiledMap$[n1,`nt,`x,mod,`prm,single]},
+                cmpl[r];
+                r[[1]]],
+            `ExternalMap["TRACK",n1,`nt_,`x_]:=
+              `ExtMap$@`CompiledMap$[n1,`nt,`x,mod,`prm,single][[1]]]];
+          ]]);
+
 ! End of File

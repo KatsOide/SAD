@@ -305,6 +305,7 @@ static int Wait4(integer4 *isp1, integer8 *kx,
   integer4 isp0;
   pid_t pid, wpid;
   int status, options, options0, i;
+  real8 dt,w;
   struct rusage resource_usage;
 
   if(itfContinued == 0) {
@@ -396,7 +397,8 @@ static int Wait4(integer4 *isp1, integer8 *kx,
 
     if(WIFSIGNALED(status)) { /* if signaled */
 #if defined(WTERMSIG)
-      tfmakerulestk(ktfsymbol+itfSignal,  WTERMSIG(status));
+      w=(real8) WTERMSIG(status);
+      tfmakerulestk(ktfsymbol+itfSignal,  kfromr(w));
 #endif
 #if defined(WCOREDUMP)
       tfmakerulestk(ktfsymbol+itfCore,    SAD_BOOLEAN(WCOREDUMP(status)));
@@ -405,15 +407,15 @@ static int Wait4(integer4 *isp1, integer8 *kx,
 
     if(WIFSTOPPED(status)) { /* if stopped */
 #if defined(WSTOPSIG)
-      tfmakerulestk(ktfsymbol+itfSignal,  WSTOPSIG(status));
+      w=(real8) WSTOPSIG(status);
+      tfmakerulestk(ktfsymbol+itfSignal,  kfromr(w));
 #endif
     }
 
     /* Process resource usage summary...(see getrusage(2)) */
-    tfmakerulestk(ktfsymbol+itfUserTime,  resource_usage.ru_utime.tv_sec
-		  + resource_usage.ru_utime.tv_usec * 1e-6);
-    tfmakerulestk(ktfsymbol+itfSysTime,   resource_usage.ru_stime.tv_sec
-		  + resource_usage.ru_stime.tv_usec * 1e-6);
+    dt=resource_usage.ru_utime.tv_sec + resource_usage.ru_utime.tv_usec * 1e-6;
+    tfmakerulestk(ktfsymbol+itfUserTime,  kfromr(dt));
+    tfmakerulestk(ktfsymbol+itfSysTime,   kfromr(dt));
 
   }
 
@@ -1541,7 +1543,7 @@ static int System(integer4 *isp1, integer8 *kx,
     return 1;
   }
 
-  *kx = kfromr(r_true);
+  *kx = ktftrue;
   *irtc = 0;
   return 0;
 }

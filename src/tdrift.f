@@ -13,16 +13,15 @@ c     drift in the free space
       use element_drift_common
       use mathfun, only:pxy2dpz
       implicit none
-      integer*4 np,i
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np)
-      real*8 al,al1,dpz
-      do i=1,np
-        dpz=pxy2dpz(px(i),py(i))
-        al1=al/(1.d0+dpz)
-        x(i)=x(i)+px(i)*al1
-        y(i)=y(i)+py(i)*al1
-        z(i)=z(i)+dpz  *al1-dv(i)*al
-      enddo
+      integer*4 ,intent(in):: np
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),dv(np)
+      real*8 ,intent(in):: al
+      real*8 al1(np),dpz(np)
+      dpz=pxy2dpz(px,py)
+      al1=al/(1.d0+dpz)
+      x=x+px*al1
+      y=y+py*al1
+      z=z+dpz  *al1-dv*al
       return
       end
 
@@ -161,7 +160,7 @@ c      write(*,'(a,106g15.7)')'td_sol ',x(1),px(1),y(1),py(1),z(1),g(1)
           endif
         endif
 c        b=hypot(hypot(ak0x,ak0y),bz*al)
-        b=hypot3(ak0x,ak0y,bz*al)
+        b=norm2([ak0x,ak0y,bz*al])
         phix=ak0y/b
         phiy=ak0x/b
         phiz=bz*al/b

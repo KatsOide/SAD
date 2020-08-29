@@ -1,0 +1,31 @@
+BeginPackage[Fortran`];
+
+Begin[Fortran`];
+
+Fortran=Class[{},{},{Compiler="gfortran",
+  FOPT="-Ofast -ffree-form -fcheck=no-all -m64 -fno-range-check",
+  LOPT="",fort,out},
+
+  Constructor[___]:={Compiler,FOPT,LOPT};
+
+  With[{def={Delete->True}},
+    Compile[src_,opt___]:=StandardForm[
+      Module[{dir=Directory[],f,fn=TemporaryName[],cmd},
+        del=Delete/.{opt}/.def;
+        Print[{del,opt}];
+        SetDirectory["/tmp"];
+        fort=fn//".f";
+        out=fn//".o";
+        f=OpenWrite[fort];
+        Write[f,src];
+        Close[f];
+        Print[cmd=Compiler//" "//FOPT//" "//LOPT//" "//fort//" -o "//out//"; rm -f "//fn];
+        System[cmd];
+        If[del,System[" rm -f "//fort]];
+        SetDirectory[dir];
+        out]]]
+  ];
+
+End[];
+
+EndPackage[];

@@ -1,12 +1,14 @@
       recursive function tfdot(k1,k2,irtc) result(kx)
       use tfstk
       implicit none
-      type (sad_descriptor) k1,k2,kx
+      type (sad_descriptor) kx
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) ,intent(in):: k1,k2
       type (sad_dlist), pointer :: kl1,kl2,kl2i
-      integer*4 irtc,i,itfmessage,isp0,m,n
+      integer*4 i,itfmessage,isp0,m,n
       real*8 xr,xi
       complex*16 cx,cx1,cx2
-      kx=dxnull
+      kx%k=ktfoper+mtfnull
       if(.not. tflistq(k1,kl1) .or. .not. tflistq(k2,kl2))then
         irtc=itfmessage(9,'General::wrongtype','"List"')
         return
@@ -172,9 +174,11 @@ c          enddo
       subroutine tfloadrcstk(isp0,kl,x,irtc)
       use tfstk
       implicit none
-      type (sad_dlist) kl
-      integer*4 irtc,isp0,i
-      real*8 x
+      type (sad_dlist) ,intent(in):: kl
+      integer*4 ,intent(in):: isp0
+      integer*4 ,intent(out):: irtc
+      integer*4 i
+      real*8 ,intent(in):: x
       complex*16 c
       logical*4 tfcomplexq
       if(ktfreallistq(kl))then
@@ -201,9 +205,11 @@ c          enddo
       subroutine tfaddrcstk(isp0,kl,x,irtc)
       use tfstk
       implicit none
-      type (sad_dlist) kl
-      integer*4 irtc,isp0,i
-      real*8 x
+      type (sad_dlist) ,intent(in):: kl
+      integer*4 ,intent(in):: isp0
+      integer*4 ,intent(out):: irtc
+      integer*4 i
+      real*8 ,intent(in):: x
       complex*16 c
       logical*4 tfcomplexq
       if(ktfreallistq(kl))then
@@ -229,9 +235,12 @@ c          enddo
       subroutine tfaddccstk(isp0,kl,cx,irtc)
       use tfstk
       implicit none
-      type (sad_dlist) kl
-      integer*4 irtc,isp0,i
-      complex*16 c,cx,cx1
+      type (sad_dlist) ,intent(in):: kl
+      integer*4 ,intent(in):: isp0
+      integer*4 ,intent(out):: irtc
+      integer*4 i
+      complex*16 ,intent(in):: cx
+      complex*16 c,cx1
       logical*4 tfcomplexq
       if(ktfreallistq(kl))then
         rtastk(isp0+1:isp0+kl%nl)=
@@ -261,9 +270,12 @@ c          enddo
       use tfstk
       use efun
       implicit none
-      type (sad_descriptor) k1,k2,kx,ki,ks,kp,k1i
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) ,intent(in):: k1,k2,ks,kp
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) k1i,ki
       type (sad_dlist), pointer :: kl1,kl2,klx
-      integer*4 irtc,m1,i,m2,isp0,itfmessage
+      integer*4 m1,i,m2,isp0,itfmessage
       if(ktfnonlistq(k1,kl1) .or. ktfnonlistq(k2,kl2))then
         irtc=itfmessage(9,'General::wrongtype','"List"')
         return
@@ -275,11 +287,8 @@ c          enddo
           k1i=kl1%dbody(i)
           call tfinner(k1i,k2,ki,ks,kp,irtc)
           if(irtc .ne. 0)then
-            if(ktfnonreallistqo(klx))then
-              klx%dbody(1:m1)%k=ktfoper+mtfnull
-            else
-              klx%dbody(i:m1)%k=0
-            endif
+            klx%dbody(1:m1)%k=merge(ktfoper+mtfnull,i00,
+     $           ktfnonreallistqo(klx))
             return
           endif
           if(ktfnonrealq(ki))then
@@ -329,9 +338,11 @@ c          enddo
       subroutine tfouter(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
       integer*8 kh,kai
-      integer*4 isp1,irtc,narg,i,mi,ispi,isp0,j,mn,itfmessage
+      integer*4 narg,i,mi,ispi,isp0,j,mn,itfmessage
       narg=isp-isp1
       if(narg .lt. 3)then
         irtc=itfmessage(9,'General::narg','"3 or more"')
@@ -394,9 +405,12 @@ c          enddo
       subroutine tftranspose(k,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kx,kij
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) ,intent(in):: k
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) kij
       type (sad_dlist), pointer :: kl,kl1,kli,klj,klx,klxi
-      integer*4 irtc,m,n,i,j,itfmessage
+      integer*4 m,n,i,j,itfmessage
       logical*4 d
       if(.not. tflistq(k,kl))then
         go to 9000
@@ -429,11 +443,7 @@ c          enddo
             klxi%dbody(j)=dtfcopy(kij)
           endif
         enddo
-        if(d)then
-          klxi%attr=ior(klxi%attr,lnonreallist)
-        else
-          klxi%attr=lconstlist
-        endif
+        klxi%attr=merge(ior(klxi%attr,lnonreallist),lconstlist,d)
       enddo
       irtc=0
       return
@@ -445,9 +455,11 @@ c          enddo
       use tfstk
       use efun
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
       type (sad_dlist), pointer :: kl,kli
-      integer*4 isp1,irtc,n,m,narg,itfmessage,i,isp0,nm
+      integer*4 n,m,narg,itfmessage,i,isp0,nm
       real*8 s
       logical*4 cmplm,realm,vec
       narg=isp-isp1
@@ -513,9 +525,11 @@ c          enddo
       subroutine tfdet(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
       type (sad_dlist), pointer :: kl
-      integer*4 isp1,irtc,n,m,narg,itfmessage
+      integer*4 n,m,narg,itfmessage
       logical*4 cmplm,realm,vec
       narg=isp-isp1
       if(narg .ne. 1)then
@@ -564,7 +578,8 @@ c          enddo
       implicit none
       type (sad_descriptor) ,intent(out)::kx
       type (sad_dlist) ,intent(in)::kl
-      integer*4 n,irtc
+      integer*4 ,intent(in):: n
+      integer*4 ,intent(out):: irtc
       complex*16 , allocatable ::c(:,:)
       complex*16 cx,tcdet
       allocate (c(n,n))
@@ -574,11 +589,8 @@ c          enddo
         return
       endif
       cx=tcdet(c,n,n)
-      if(imag(cx) .eq. 0.d0)then
-        kx=dfromr(dble(cx))
-      else
-        kx=kxcalocv(-1,dble(cx),imag(cx))
-      endif
+      kx=merge(dfromr(dble(cx)),kxcalocv(-1,dble(cx),imag(cx)),
+     $     imag(cx) .eq. 0.d0)
       deallocate(c)
       return
       end
@@ -586,10 +598,13 @@ c          enddo
       subroutine tfsingularvalues(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,k
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) k
       type (sad_dlist), pointer :: kl,klx
       integer*8 kux,kvx,kwx
-      integer*4 isp1,irtc,n,m,narg,itfmessage
+      integer*4 n,m,narg,itfmessage
       real*8 eps
       logical*4 inv
       logical*4 realm,cmplm,vec
@@ -758,11 +773,8 @@ c          enddo
         call tfl2m(klb,b,n,mb,.true.)
       endif
       call tsolvm(a,b,x,n,m,mx,n,n,m,eps,.true.)
-      if(mb .eq. 0)then
-        kx=kxm2l(x,0,m,1,.false.)
-      else
-        kx=kxm2l(x,m,mb,m,.true.)
-      endif
+      kx=merge(kxm2l(x,0,m,1,.false.),
+     $     kxm2l(x,m,mb,m,.true.),mb .eq. 0)
       deallocate (a,b,x)
       return
       end
@@ -770,10 +782,13 @@ c          enddo
       subroutine tfdiagonalmatrix(k,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kx,ki
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) ki
       type (sad_dlist), pointer :: kl,klx
       type (sad_rlist), pointer :: klri
-      integer*4 irtc,m,i,itfmessage
+      integer*4 m,i,itfmessage
       real*8 x
       if(.not. tflistq(k,kl))then
         irtc=itfmessage(9,'General::wrongtype','"List"')
@@ -798,10 +813,12 @@ c          enddo
       subroutine tfidentitymatrix(k,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kx
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: klri
-      integer*4 irtc,m,i,itfmessage
+      integer*4 ,intent(out):: irtc
+      integer*4 m,i,itfmessage
       if(ktfnonrealq(k,m))then
         irtc=itfmessage(9,'General::wrongtype','"Real number"')
         return
@@ -822,10 +839,12 @@ c          enddo
       subroutine tfeigensystem(k,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) k,kx
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(out):: irtc
       type (sad_dlist), pointer :: kl,klx
       integer*8 kex,kvx
-      integer*4 irtc,n,m,itfmessage
+      integer*4 n,m,itfmessage
       logical*4 realm,cmplm,vec
       call tfmatrixmaybeq(k,cmplm,realm,vec,n,m,kl)
       if(n .ne. m)then
@@ -854,10 +873,12 @@ c          enddo
       subroutine tfceigen(kl,m,kvx,kex,irtc)
       use tfstk
       implicit none
-      type (sad_dlist) kl
-      integer*8 kvx,kex,ktfcm2l,ktfc2l
+      type (sad_dlist) ,intent(in):: kl
+      integer*8 ,intent(out):: kvx,kex
+      integer*8 ktfcm2l,ktfc2l
       complex*16 , allocatable ::c(:,:),cw(:,:),ce(:)
-      integer*4 irtc,m
+      integer*4 ,intent(out):: irtc
+      integer*4 ,intent(in):: m
       allocate (c(m,m),cw(m,m),ce(m))
       call tfl2cm(kl,c,m,m,.false.,irtc)
       if(irtc .ne. 0)then
@@ -877,10 +898,11 @@ c          enddo
       subroutine tfreigen(kl,m,kvx,kex)
       use tfstk
       implicit none
-      type (sad_dlist) kl
-      integer*8 kvx,kex,kvxkvr,kvxkvi,
-     $     kzi1,kzi2,ktfc2l
-      integer*4 m,i,j
+      type (sad_dlist) ,intent(in):: kl
+      integer*8 ,intent(out):: kvx,kex
+      integer*8 kvxkvr,kvxkvi,kzi1,kzi2,ktfc2l
+      integer*4 ,intent(in):: m
+      integer*4 i,j
       real*8 , allocatable :: a(:,:),w(:,:)
       complex*16 ce(m)
       logical*4 d,con
@@ -940,10 +962,12 @@ c          enddo
       use tfstk
       use macmath
       implicit none
-      type (sad_descriptor) k,kx
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: kl
-      integer*4 irtc, m, itfmessage
-      logical*4 inv
+      integer*4 ,intent(out):: irtc
+      integer*4 m,itfmessage
+      logical*4 ,intent(in):: inv
       if(.not. tflistq(k,kl))then
         irtc=itfmessage(9,'General::wrongtype','"List"')
         return
@@ -972,17 +996,20 @@ c          enddo
       use macmath
       use iso_c_binding
       implicit none
-      type (sad_descriptor) kx
-      type (sad_dlist) :: kl
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_dlist),intent(in):: kl
       type (sad_complex), pointer :: klic
       integer*8 ktfc2l
-      integer*4 m,n,irtc,i
+      integer*4 ,intent(in):: m
+      integer*4 ,intent(out):: irtc
+      integer*4 n,i
       complex*16 cx(m),cy(m)
       complex*16 , pointer ::ca(:)
       real*8 c,s,f,w
       complex*16 ay(m)
       real*8 , target::a(m*2)
-      logical*4 inv,power2,even
+      logical*4 ,intent(in):: inv
+      logical*4 power2,even
       irtc=-1
       n=2
       do while(n .lt. m)
@@ -1043,11 +1070,7 @@ c            enddo
           endif
         endif
         f=.5d0/sqrt(dble(m))
-        if(inv)then
-          w=-2.d0*pi/m
-        else
-          w= 2.d0*pi/m
-        endif
+        w=merge(-2.d0*pi/m,2.d0*pi/m,inv)
         do concurrent (i=1:m/2-1)
           c=cos(w*i)
           s=sin(w*i)

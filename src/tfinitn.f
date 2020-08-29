@@ -11,8 +11,8 @@
       character(len=1024) :: pkg
       character(len=64) :: env
       integer :: lpkg, lenv
-      integer*8 ktfsymbolc,ktrvaloc,ktcontaloc,
-     $     iaxsys,loc,ktcvaloc,kax,k1,k2,i,kfromr
+      integer*8 ktfsymbolc,ktrvaloc,ktcontaloc,shm_map,
+     $     iaxsys,loc,ktcvaloc,kax,k1,k2,i,kfromr,kshm
       integer*4 lpw,lenw,ifromstr
       call tfinfinit
       kinfinity=kfromr(dinfinity)
@@ -48,7 +48,7 @@
       dxnulll=kxaaloc(0,0)
       kxnulll=dxnulll%k
       dxnull=kxaaloc(0,0,klx)
-      klx%head%k=ktfoper+mtfnull
+      klx%head=dxnullo
       kxnull=dxnull%k
       dxnulls=kxsalocb(0,'  ',2,str)
       str%str(1:2)=char(0)//char(0)
@@ -140,6 +140,12 @@ c     Physical constant
       ierrorth=0
       ierrorexp=0
 
+c      write(*,*)'unlink ',shm_unlink('/bar'//char(0))
+c      kshm=shm_map('/bar'//char(0),iunit,irtc)
+c      write(*,*)'shm: ',iunit,irtc,kshm,rlist(kshm/8)
+c      rlist(kshm/8)=m_pi/2
+c      write(*,*)'shm: ',rlist(kshm/8)
+
       call get_environment_variable('COLUMNS',env)
       if(env .eq. ' ')then
         env='132'
@@ -185,10 +191,10 @@ c      write(*,*)'tfinitn 1 '
       klist(itfcontextpath)=itfcontroot
       klist(itfcontextpath+1)=itfcontext
       itfcontext=itfcontroot
-c      write(*,*)'tfinitn 1.1 ',itfcontroot
       write(*,*) '*** Run time Environment:     '//
      $     pkg(1:lpkg)//'init.'//env(1:lenv)//'.n ***'
       call tfgetf(pkg(1:lpkg)//'init.'//env(1:lenv)//'.n')
+c      write(*,*)'tfinitn-9 ',itfcontroot
       return
       end
 
@@ -196,8 +202,9 @@ c      write(*,*)'tfinitn 1.1 ',itfcontroot
       use tfstk
       implicit none
       type (sad_symdef), pointer :: contd
-      integer*8 kp,ka,ktsydefc
-      character*(*) name
+      integer*8 ,intent(in):: kp
+      integer*8 ka,ktsydefc
+      character*(*) ,intent(in):: name
       ka=ktsydefc(name,len(name),itfcontroot,.true.)
       call loc_symdef(ka,contd)
       call tflocald(contd%value)
@@ -295,7 +302,7 @@ c      write(*,*)'tfinitn 1.1 ',itfcontroot
           call loc_symstr(klist(klist(ifunbase+kai)),str)
         elseif(ktflistq(ki,kl))then
           if(kl%head%k .eq. ktfoper+mtfslot)then
-            call tfslot(int8(mtfslot),kl,k,.false.,irtc)
+            call tfslot(mtfslot,kl,k,.false.,irtc)
             if(irtc .ne. 0)then
               return
             endif
@@ -382,17 +389,21 @@ c        write(*,*)'tftocontext ',str%str(1:nc)
       subroutine tfsetcontextpath(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,ki
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) ki
       type (sad_dlist), pointer :: kl
       type (sad_symdef), pointer :: symd
       integer*8 ka1
-      integer*4 isp1,irtc,itfmessage,m,i,isp0
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,m,i,isp0
       logical*4 tfcontextqk
       if(isp1+1 .ne. isp)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
       kx=dtastk(isp)
+c      call tfdebugprint(kx,'setcpath',1)
       if(.not. tflistq(kx,kl) .or. ktfreallistq(kl))then
         go to 9000
       endif
@@ -440,7 +451,7 @@ c      call tfdebugprint(kx,'setcontextpath',1)
           call exit(0)
         endif
       endif
-      kx=dxnull
+      kx%k=ktfoper+mtfnull
       irtc=itfmessage(9,'General::wrongtype','"Null"')
       return
       end
@@ -478,12 +489,15 @@ c      call tfdebugprint(kx,'setcontextpath',1)
       return
       end
 
-      subroutine tfgetcommandline(isp1,kx,irtc)
+      function tfgetcommandline(isp1,irtc) result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*4 isp1,irtc,narg,iargc,i,l,isp0,itfmessage
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 narg,iargc,i,l,isp0,itfmessage
       character*256 arg
+      kx=dxnullo
       if(isp .gt. isp1+1)then
         go to 9000
       elseif(isp .eq. isp1+1)then
@@ -518,11 +532,12 @@ c      call tfdebugprint(kx,'setcontextpath',1)
       implicit none
       type (sad_funtbl), pointer :: fun
       integer*8 k,ktalocr,loc,ktlookupc
-      integer*4 id,narg,immed,maxnfun,i
+      integer*4 ,intent(in):: id,narg,immed
+      integer*4 maxnfun,i,nfun
       parameter (maxnfun=2048)
-      character*(*) name
+      character*(*) ,intent(in):: name
       logical*4 ev,nev
-      integer*4 map(narg+1),ieval(narg+1),nfun
+      integer*4 ,intent(in):: map(narg+1),ieval(narg+1)
       data nfun/0/
       if(nfun .eq. 0)then
         ifunbase=ktalocr(maxnfun)
@@ -570,10 +585,8 @@ c      call tfdebugprint(kx,'setcontextpath',1)
       implicit none
       integer*4 i,itfunaloc,map(32),ieval(32)
 c     Initialize map/ieval array
-      do i=1,32
-         map(i)=0
-         ieval(i)=0
-      enddo
+      map=0
+      ieval=0
       i=itfunaloc('Null',-mtfnull,1,map,ieval,2)
       ilist(1,klist(ifunbase+i)-3)=ilist(1,klist(ifunbase+i)-3)
      $     -iattrconstant
@@ -589,18 +602,18 @@ c     Initialize map/ieval array
       i=itfunaloc('$f6$',-6,-1,map,ieval,0)
       i=itfunaloc('InversePower',-mtfrevpower,1,map,ieval,2)
       i=itfunaloc('Power',-mtfpower,1,map,ieval,2)
-      i=itfunaloc('Equal',-mtfequal,1,map,ieval,2)
-
-      i=itfunaloc('Unequal',-mtfunequal,1,map,ieval,2)
       i=itfunaloc('Greater',-mtfgreater,1,map,ieval,2)
-      i=itfunaloc('Less',-mtfless,1,map,ieval,2)
+
       i=itfunaloc('GreaterEqual',-mtfgeq,1,map,ieval,2)
       i=itfunaloc('LessEqual',-mtfleq,1,map,ieval,2)
-      i=itfunaloc('SameQ',-mtfsame,1,map,ieval,2)
-      i=itfunaloc('UnsameQ',-mtfunsame,1,map,ieval,2)
-      i=itfunaloc('Not',-mtfnot,1,map,ieval,2)
+      i=itfunaloc('Less',-mtfless,1,map,ieval,2)
+      i=itfunaloc('Equal',-mtfequal,1,map,ieval,2)
+      i=itfunaloc('Unequal',-mtfunequal,1,map,ieval,2)
       i=itfunaloc('And',-mtfand,-1,map,ieval,2)
       i=itfunaloc('Or',-mtfor,-1,map,ieval,2)
+      i=itfunaloc('Not',-mtfnot,1,map,ieval,2)
+      i=itfunaloc('SameQ',-mtfsame,1,map,ieval,2)
+      i=itfunaloc('UnsameQ',-mtfunsame,1,map,ieval,2)
 
       i=itfunaloc('StringJoin',-mtfconcat,1,map,ieval,2)
       i=itfunaloc('$f21$',-mtfleftbra,-1,map,ieval,0)
@@ -916,7 +929,7 @@ c-----Noboru addition end -----
       i=itfunaloc('Round',109,1,map,ieval,2)
       map(1)=0
       i=itfunaloc('InverseErf',110,1,map,ieval,2)
-c      i=itfunaloc('Date',110,1,map,ieval,0)
+      i=itfunaloc('SemCtrl',111,3,map,ieval,0)
 c      i=itfunaloc('FromDate',111,1,map,ieval,1)
 c      i=itfunaloc('ToDate',112,1,map,ieval,1)
       i=itfunaloc('ToInputString',113,1,map,ieval,0)
@@ -939,8 +952,8 @@ c      i=itfunaloc('ToDate',112,1,map,ieval,1)
       i=itfunaloc('Which',nfunwhich,2,map,ieval,0)
       ieval(1)=0
       ieval(2)=0
-c      i=itfunaloc('System',127,1,map,ieval,0)
-c      i=itfunaloc('GetPID',128,1,map,ieval,0)
+      i=itfunaloc('MapFile',127,2,map,ieval,0)
+      i=itfunaloc('UnmapFile',128,1,map,ieval,0)
 c      i=itfunaloc('GetUID',129,1,map,ieval,0)
 c      i=itfunaloc('GetGID',130,1,map,ieval,0)
       i=itfunaloc('ToLowerCase',131,1,map,ieval,2)
@@ -1185,5 +1198,7 @@ c      i=itfunaloc('TclSetResult',1036,1,map,ieval,0)
       i=itfunaloc('CSROYMatrix',1045,1,map,ieval,0)
       i=itfunaloc('SurvivedParticles',1046,1,map,ieval,0)
       i=itfunaloc('BBBrem1',1047,2,map,ieval,0)
+      i=itfunaloc('MapParticles',1048,3,map,ieval,0)
+      i=itfunaloc('UnmapParticles',1049,2,map,ieval,0)
       return
       end

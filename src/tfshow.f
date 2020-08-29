@@ -193,24 +193,12 @@
         kax4=ktadaloc(0,ncc)
         do i=mf,nfam
           rlist(kax1+i-mf+1)=dp(i)+dp0
-          if(inicond)then
-            rlist(kax2+i-mf+1)=dble(iuid(i))
-          else
-            rlist(kax2+i-mf+1)=dble(kfam(i))
-          endif
+          rlist(kax2+i-mf+1)=dble(merge(iuid(i),kfam(i),inicond))
           kax3i=ktavaloc(0,3)
           klist(kax3+i-mf+1)=ktflist+kax3i
           rlist(kax3i+1)=residual(i)
-          if(optstat(i)%stabx)then
-            rlist(kax3i+2)=1.d0
-          else
-            rlist(kax3i+2)=0.d0
-          endif
-          if(optstat(i)%staby)then
-            rlist(kax3i+3)=1.d0
-          else
-            rlist(kax3i+3)=0.d0
-          endif
+          rlist(kax3i+2)=merge(1.d0,0.d0,optstat(i)%stabx)
+          rlist(kax3i+3)=merge(1.d0,0.d0,optstat(i)%staby)
         enddo
         klist(kax+1)=ktflist+kax1
         klist(kax+2)=ktflist+kax2
@@ -405,7 +393,7 @@ c            endif
       logical*4 function tftype1fit(k)
       use tffitcode
       implicit none
-      integer*4 k
+      integer*4 ,intent(in):: k
       tftype1fit=k .eq. mfitnx .or. k .eq. mfitny .or.
      $     (k .ge. mfitleng .and. k .le. mfitgz)
       return
@@ -413,7 +401,7 @@ c            endif
 
       character*3 function famlabel(k)
       implicit none
-      integer*4 k
+      integer*4 ,intent(in):: k
       if(k .eq. 0)then
         famlabel='   '
       elseif(k .gt. 9)then
