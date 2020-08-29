@@ -15,14 +15,15 @@ Fortran=Class[{},{},{Compiler="gfortran",
         Print[{del,opt}];
         SetDirectory["/tmp"];
         fort=fn//".f";
+        out=fn//".o";
         f=OpenWrite[fort];
         Write[f,src];
         Close[f];
-        Print[cmd=Compiler//" "//FOPT//" "//LOPT//" "//fort//" -o "//fn];
+        Print[cmd=Compiler//" "//FOPT//" "//LOPT//" "//fort//" -o "//out//"; rm -f "//fn];
         System[cmd];
         If[del,System[" rm -f "//fort]];
         SetDirectory[dir];
-        fn]]]
+        out]]]
   ];
 
 End[];

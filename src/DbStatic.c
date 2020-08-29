@@ -2,7 +2,6 @@
 #include <sim/TFCODE.h>
 
 #include <stdio.h>
-
 #include <dbStaticLib.h>
 
 static DBBASE *pdbbase = NULL;
@@ -214,7 +213,7 @@ void cdbintstr2str_(integer8 *kx, integer4 *nfunc, integer4 *iarg, char *str)
 
   switch(*nfunc) {
   case 42: /* dbVerify */
-    rstr = dbVerify((DBENTRY *)*iarg, str);
+    /*    rstr = dbVerify((DBENTRY *)*iarg, str); */
     break;
   }
   if(rstr) {
