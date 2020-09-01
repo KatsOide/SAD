@@ -68,343 +68,6 @@
       return
       end
 
-      subroutine tfseval(ks,ns,kh,kx,stk,av,ref,irtc)
-      use tfstk
-      use tfcode
-      use iso_c_binding
-      use efun
-      use funs
-      implicit none
-      type (sad_descriptor) kx,kf,kh,kl
-      type (sad_funtbl), pointer :: fun
-      type (sad_symbol), pointer :: sym
-      type (sad_dlist), pointer :: list,klf,kls,kls1
-      integer*4 maxlevel
-      parameter (maxlevel=2**12)
-      integer*8 ks,iaat,kaf
-      integer*4 irtc,ns,iaf,isp10,isp11,j
-      integer*4 isp1,level,itfgetrecl,
-     $     isp0,mf,i1,level1,i,itfmessage,lpw,l,itfdownlevel
-      real*8 v
-      logical*4 ref,ev,evalh,rep,stk,tfconstlistqo,tfgetseqstk,av
-      data level/0/
-      level=level+1
-      if(level .ge. maxlevel-64)then
-        level1=level
-        level=0
-        irtc=itfmessage(999,'General::deep','""')
-        level=level1
-        go to 9000
-      endif
-      call loc_sad(ks,kls)
-      isp0=isp
-      kf=kh
-      evalh=.false.
-      kaf=ktfaddr(kf%k)
-      select case(kf%k-kaf)
-      case (ktfoper)
-        call c_f_pointer(c_loc(klist(klist(ifunbase+kaf)-9)),fun)
-        iaf=-fun%id
-        if(fun%narg .lt. 0)then
-          go to 100
-        endif
-      case (ktfsymbol)
-        if(ref)then
-          call tfsyeval(kf,kf,irtc)
-          if(irtc .ne. 0)then
-            go to 8000
-          endif
-        else
-          call loc_sym(kaf,sym)
-          sym=>tfsydef(sym)
-          kf=sad_descr(sym)
-        endif
-      case (ktflist)
-        call loc_dlist(kaf,list)
-        if(iand(lconstlist,list%attr) .eq. 0)then
-          call tfleval(list,kf,ref,irtc)
-          if(irtc .ne. 0)then
-            go to 8000
-          endif
-        endif
-      case (ktfpat)
-        if(ref)then
-          call tfpateval(kf,kf,irtc)
-          if(irtc .ne. 0)then
-            go to 8000
-          endif
-        endif
-      end select
-      ev=.true.
-      iaat=0
-
-      do
-        if(ktfoperq(kf%k))then
-          kaf=ktfaddr(kf)
-          call c_f_pointer(c_loc(klist(klist(ifunbase+kaf)-9)),fun)
-          iaat=klist(ifunbase+kaf)+1
-          mf=fun%narg
-          if(mf .lt. 0)then
-            iaf=-fun%id
-            evalh=.true.
-            exit
-          endif
-          ev=fun%mapeval(2,1) .eq. -2
-          if(fun%mapeval(2,1) .eq. -1)then
-            iaat=0
-          endif
-        elseif(ktfsymbolq(kf%k,sym))then
-          if(sym%override .ne. 0)then
-            iaat=iand(iattrholdall,sym%attr)
-            if(iaat .ne. 0)then
-              ev=.false.
-              iaat=merge(i00,-iaat,iaat .eq. iattrholdall)
-            endif
-          endif
-        elseif(ktflistq(kf,klf))then
-          if(klf%head%k .eq. ktfoper+mtfnull)then
-            if(klf%nl .eq. 1)then
-              kf=klf%dbody(1)
-              cycle
-            elseif(klf%nl .eq. 0)then
-              kf%k=ktfoper+mtfnull
-              evalh=.true.
-              exit
-            endif
-          elseif(ktfsymbolq(klf%head,sym) .and. .not. ref)then
-            if(sym%gen .eq. -3 .and. ktfreallistq(klf))then
-              ev=.false.
-              iaat=0
-            endif
-          endif
-        endif
-        isp=isp0+1
-        isp1=isp
-        go to 3000
-      enddo
-
- 100  isp=isp0+1
-      isp1=isp
-      select case(iaf)
-      case(mtfnull,mtflist,mtfrule,mtfrepeated,mtfrepeatednull)
-        if(stk)then
-          ev=.true.
-          go to 3000
-        endif
-        if(evalh .or. .not. ref)then
-          if(tfonstackq(ks) .or. kls%ref .gt. 0)then
-            kls1=>tfduplist(kls)
-            kls=>kls1
-          endif
-          kls%head%k=ktfoper+iaf
-c          call tfloadlstk(lista,lista)
-c          lista%head=ktfoper+kaf
-c          call tfstk2l(lista,lista)
-          if(ref .and. tfconstlistqo(kls))then
-            kx=sad_descr(kls)
-            irtc=0
-            go to 8000
-          endif
-        endif
-        if(ref)then
-          call tfevallev(kls,kx,irtc)
-        else
-          call tfevallstkall(kls,.false.,.false.,irtc)
-          if(irtc .eq. 0)then
-            levele=levele+1
-            go to 6000
-          endif
-        endif
-      case(mtfset)
-        rep=tfgetseqstk(ks,ns)
-        if(isp .gt. isp1)then
-          dtastk(isp)=tfeevalref(dtastk(isp),irtc)
-          if(irtc .ne. 0)then
-            go to 8000
-          endif
-        endif
-        levele=levele+1
-        go to 6000
-      case (mtfand)
-        do i=1,ns
-          isp10=isp
-          call tfseqevalstk(kls%dbody(1),ns,i,av,irtc)
-          if(irtc .ne. 0)then
-            go to 8000
-          endif
-          isp11=isp
-          isp=isp10
-          do j=isp10+1,isp11
-            if(ktfrealq(ktastk(j),v))then
-              if(v==0.d0)then
-                kx%k=0
-                go to 8000
-              endif
-            else
-              isp=isp+1
-              ktastk(isp)=ktastk(j)
-            endif
-          enddo
-        enddo
-        if(isp .eq. isp1)then
-          kx%k=ktftrue
-        elseif(isp .eq. isp1+1)then
-          kx=dtastk(isp)
-        else
-          levele=levele+1
-          go to 6000
-        endif
-      case (mtfor)
-        do i=1,ns
-          isp10=isp
-          call tfseqevalstk(kls%dbody(1),ns,i,av,irtc)
-          if(irtc .ne. 0)then
-            go to 8000
-          endif
-          isp11=isp
-          isp=isp10
-          do j=isp10+1,isp11
-            if(ktfrealq(ktastk(j),v))then
-              if(v/=0.d0)then
-                kx%k=ktftrue
-                go to 8000
-              endif
-            else
-              isp=isp+1
-              ktastk(isp)=ktastk(j)
-            endif
-          enddo
-        enddo
-        if(isp .eq. isp1)then
-          kx%k=ktffalse
-        elseif(isp .eq. isp1+1)then
-          kx=dtastk(isp)
-        else
-          levele=levele+1
-          go to 6000
-        endif
-      case (mtfpart)
-        if(ref .or. ns .eq. 0)then
-          ev=.true.
-          go to 3000
-        endif
-        isp=isp+1
-        call tfeevaldef(kls%dbody(1),dtastk(isp),irtc)
-        if(irtc .ne. 0)then
-          go to 8000
-        endif
-        call tfseqevalstkall(kls%dbody(2),ns-1,av,irtc)
-        if(irtc .eq. 0)then
-          levele=levele+1
-          go to 6000
-        endif
-      case (mtfslot,mtfslotseq)
-        kx=tfslot(iaf,kls,ref,irtc)
-      case (mtfcomp)
-        if(ns .eq. 0)then
-          kx%k=ktfoper+mtfnull
-          go to 8000
-        endif
-        i1=1
-        do
-          if(ltrace .gt. 0)then
-            levele=levele+1
-            lpw=min(131,itfgetrecl())
-            do i=i1,ns
-              call tfprint1(kls%dbody(i),6,-lpw,4,.true.,
-     $             .true.,irtc)
-              kx=tfeevalref(kls%dbody(i),irtc)
-              if(irtc .ne. 0)then
-                go to 1320
-              endif
-            enddo
-          else
-            levele=levele+1
-            irtc=0
-            do i=i1,ns
-              kx=kls%dbody(i)
-              if(ktflistq(kx,list))then
-                call tfleval(list,kx,.true.,irtc)
-              elseif(ktfsymbolq(kx))then
-                call tfsyeval(kx,kx,irtc)
-              elseif(ktfpatq(kx))then
-                call tfpateval(kx,kx,irtc)
-              endif
-              if(irtc .ne. 0)then
-                go to 1320
-              endif
-            enddo
-          endif
-          go to 7000
- 1320     if(irtc .gt. irtcret)then
-            go to 7000
-          endif
-          call tfcatchreturn(irtcgoto,kl,irtc)
-          l=itfdownlevel()
-          if(irtc .ne. 0)then
-            exit
-          endif
-          call tffindlabel(kls,ns,i1,kl)
-          if(i1 .le. 0)then
-            call tfthrow(irtcgoto,kl,irtc)
-            exit
-          endif
-          i1=i1+1
-        enddo
-      case (mtffun,mtfpattest,mtftagset,mtfhold)
-        rep=tfgetseqstk(ks,ns)
-        if(rep .or. stk .or. evalh)then
-          levele=levele+1
-          go to 6000
-        endif
-        kx%k=ktflist+ks
-      case default
-        write(*,*)'tfleval-implementation error: ',kaf,iaf
-        call abort
-      end select
-      go to 8000
-
- 3000 if(levele .ge. maxlevele-32)then
-        irtc=itfmessage(999,'General::deep','""')
-        go to 8000
-      endif
-      levele=levele+1
-      if(ev)then
-        call tfseqevalstkall(kls%dbody(1),ns,av,irtc)
-        if(irtc .ne. 0)then
-          go to 7000
-        endif
-      elseif(iaat .eq. 0 .or. av)then
-        rep=tfgetseqstk(ks,ns)
-      else
-        call tfargevalstk(isp1,kls,ns,iaat,mf,.false.,irtc)
-        if(irtc .ne. 0)then
-          go to 7000
-        endif
-      endif
- 6000 dtastk(isp1)=kf
-c      call tfmemcheckprint('seval-efun',.false.,irtc)
-c      if(irtc .ne. 0)then
-c        call tfdebugprint(kf,'tfseval-efunref-in',3)
-c        call tfdebugprint(ktastk(isp1+1),' ',3)
-c        call tfdebugprint(ktastk(isp),' ',3)
-c      endif
-      if(ref)then
-        kx=tfefunref(isp1,.true.,irtc)
-c          call tfdebugprint(kf,'tfseval-efunref-out',3)
-c          call tfdebugprint(ktastk(isp1+1),' ',3)
-c          call tfdebugprint(ktastk(isp),' ',3)
-      else
-        call tfefundef(isp1,kx,irtc)
-      endif
- 7000 continue
-c      call tfdebugprint(kx,'tfseval-connect',3)
-      call tfconnect(kx,irtc)
- 8000 isp=isp0
- 9000 level=max(0,level-1)
-      return
-      end
-
       subroutine tflevalstk(list,ref,irtc)
       use tfstk
       implicit none
@@ -839,6 +502,269 @@ c                endif
       return
       end
 
+      function tfpuref(isp1,kf,irtc) result(kx)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx,ki,ka
+      type (sad_dlist) ,intent(in):: kf
+      type (sad_dlist), pointer :: kla
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,narg,m,j,i,ipf0,nap0,isp0
+      logical*4 rep
+      if(kf%nl .eq. 1)then
+        isp0=isp
+        do i=isp1+1,isp
+          dtastk(i)=dtfcopy(dtastk(i))
+        enddo
+        ipf0=ipurefp
+        nap0=napuref
+        ipurefp=isp1
+        napuref=isp-isp1
+        isp=isp+1
+        itastk(1,isp)=ipf0
+        itastk(2,isp)=nap0
+        kx=tfeevalref(kf%dbody(1),irtc)
+        ipurefp=ipf0
+        napuref=nap0
+        do i=isp1+1,isp0
+          call tflocald(dtastk(i))
+        enddo
+        isp=isp0
+      elseif(kf%nl .eq. 2)then
+        narg=isp-isp1
+        ka=kf%dbody(1)
+        if(ktfsymbolq(ka))then
+          if(narg .ne. 1)then
+            irtc=itfmessage(9,'General::narg',
+     $           '"equal to actual number of args"')
+            return
+          endif
+          dtastk(isp+1)=ka
+          isp=isp+2
+          dtastk(isp)=dtastk(isp1+1)
+        elseif(tflistq(ka,kla))then
+          m=kla%nl
+          if(m .ne. narg)then
+            irtc=itfmessage(9,'General::narg',
+     $           '"equal to actual number of args"')
+            return
+          endif
+          if(m .ne. 0)then
+            if(ktfreallistq(kla))then
+              irtc=itfmessage(9,'General::wrongtype',
+     $             '"List of symbols"')
+              return
+            endif
+            do i=1,m
+              ki=kla%dbody(i)
+              if(.not. ktfsymbolq(ki))then
+                irtc=itfmessage(9,'General::wrongtype',
+     $               '"List of symbols"')
+                return
+              endif
+              j=isp+i*2
+              dtastk(j-1)=ki
+              ktastk(j)=ktastk(isp1+i)
+            enddo
+            isp=isp+2*m
+          endif
+        else
+          irtc=itfmessage(9,'General::wrongtype','"List of symbols"')
+          return
+        endif
+        kx=kf%dbody(2)
+        if(narg .ne. 0)then
+          call tfreplacesymbolstk(kx,isp1+narg,narg,kx,.true.,rep,irtc)
+c          call tfdebugprint(kx,'puref-2',3)
+c          write(*,*)irtc
+          if(irtc .ne. 0)then
+            isp=isp1+narg
+            return
+          endif
+        endif
+        kx=tfeevalref(kx,irtc)
+        isp=isp1+narg
+      else
+        irtc=itfmessage(9,'General::narg','"1 or 2"')
+      endif
+      return
+      end
+
+      recursive function tfset(isp1,upvalue,irtc) result(kx)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx,k1,k2,k110,k11,tfset1
+      type (sad_symbol), pointer :: sym
+      type (sad_symdef), pointer :: symd
+      type (sad_dlist), pointer :: kl11
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 i,itfmessage,isp11,isp0
+      logical*4 ,intent(in):: upvalue
+      logical*4 euv
+      if(isp1+1 .ge. isp)then
+        kx=dxnull
+        irtc=itfmessage(9,'General::narg','"2 or more"')
+        return
+      endif
+      k2=dtastk(isp)
+      if(isp1+2 .eq. isp)then
+        k1=dtastk(isp1+1)
+        if(ktfsymbolq(k1,sym))then
+          if(sym%override .eq. 0)then
+            sym=>tfsydef(sym)
+            k1=sad_descr(sym)
+          endif
+        elseif(ktflistq(k1))then
+          call tfeevaldef(k1,k1,irtc)
+          if(irtc .ne. 0)then
+            return
+          endif
+        endif
+        if(k1%k .ne. ktastk(isp1+1) .and. upvalue)then
+          k11=k1
+          k110=k1
+          if(ktflistq(k11,kl11))then
+            k11=kl11%head
+            if(ktflistq(k11))then
+              k110=k11
+              do while(ktflistq(k11,kl11))
+                k11=kl11%head
+              enddo
+            endif
+          endif
+          if(ktfsymbolq(k11,sym))then
+            if(sym%override .eq. 0)then
+              sym=>tfsydef(sym)
+            endif
+            call sym_symdef(sym,symd)
+            if(symd%upval .ne. 0)then
+              isp=isp+1
+              isp11=isp
+              dtastk(isp11)=dtastk(isp1)
+              isp=isp+1
+              dtastk(isp)=k1
+              isp=isp+1
+              dtastk(isp)=k2
+              call tfdeval(isp11,ksad_loc(sym%loc),kx,0,
+     $             .false.,euv,irtc)
+              isp=isp11-1
+              if(euv)then
+                return
+              endif
+            endif
+          endif
+        endif
+        kx=tfset1(k1,k2,ktfaddr(ktastk(isp1)),irtc)
+      else
+        isp0=isp
+        kx=dtastk(isp)
+        do i=isp-1,isp1+1,-1
+          isp=isp0+3
+          dtastk(isp-2)=dtastk(isp1)
+          dtastk(isp-1)=dtastk(i)
+          dtastk(isp  )=kx
+          kx=tfset(isp0+1,upvalue,irtc)
+          if(irtc .ne. 0)then
+            return
+          endif
+        enddo
+        isp=isp0
+      endif
+      return
+      end
+
+      function tfslot(iopc,kls,ref,irtc) result(kx)
+      use tfstk
+      use funs
+      implicit none
+      type (sad_descriptor) kx,ka
+      type (sad_dlist) ,intent(in):: kls
+      type (sad_symbol), pointer :: sym
+      type (sad_namtbl), pointer :: nam
+      integer*8 kaa
+      integer*4 ,intent(in):: iopc
+      integer*4 ,intent(out):: irtc
+      integer*4 ind,nc,isp1,isps,
+     $     itfmessage,ns,ipf0,naf0,ls,isp2,itfmessagestr
+      real*8 ffval,vx
+      character*256 name
+      character*12 inds
+      logical*4 ,intent(in):: ref
+      logical*4 exist
+      kx=dxnullo
+      ns=kls%nl
+      if(ns .gt. 1)then
+        irtc=itfmessage(9,'General::narg','"0 or 1"')
+        return
+      endif
+      if(ns .eq. 0)then
+        ind=1
+      else
+        ka=kls%dbody(1)
+        if(ktfoperq(ka,kaa))then
+          if(kaa .eq. mtfnull)then
+            ind=1
+          else
+            irtc=itfmessage(999,'General::invop',' ')
+            return
+          endif
+        elseif(ktfrealq(ka,ind))then
+        elseif(ktfsymbolq(ka,sym) .and. iopc .eq. mtfslot)then
+          call sym_namtbl(sym,nam)
+          nc=nam%str%nch+1
+          name(2:nc)=nam%str%str(1:nc-1)
+          name(1:1)='#'
+          call capita(name(1:nc))
+          vx=ffval(name(1:nc),exist)
+          if(exist)then
+            kx=dfromr(vx)
+            irtc=0
+          else
+            irtc=itfmessage(999,'FFS::undef','"element"')
+          endif
+          return
+        else
+          irtc=itfmessage(999,'General::wrongtype','"Number or symbol"')
+          return
+        endif
+        if(ind .lt. 0)then
+          ind=napuref+ind+1
+        endif
+      endif
+      isps=ipurefp+ind
+      if(iopc .eq. mtfslot)then
+        if(ipurefp .eq. 0 .or. ind .le. 0 .or. ind .gt. napuref)then
+          call strfromil(ind,inds,ls)
+          irtc=itfmessagestr(999,'General::slot',
+     $         '#'//inds(:ls))
+          return
+        endif
+        kx=dtastk(isps)
+      else
+        if(ipurefp .eq. 0 .or. ind .le. 0)then
+          call strfromil(ind,inds,ls)
+          irtc=itfmessagestr(999,'General::slot',
+     $         '##'//inds(:ls))
+          return
+        endif
+        isp1=isp
+        isp2=ipurefp+napuref
+        kx=tfsequence(isps-1,isp2)
+      endif
+      ipf0=ipurefp
+      naf0=napuref
+      ipurefp=itastk(1,ipf0+naf0+1)
+      napuref=itastk(2,ipf0+naf0+1)
+c      write(*,*)'tfslot ',ipf0,naf0,ipurefp,napuref
+c      call tfdebugprint(kx,'puref',1)
+      kx=tfeeval(kx,ref,irtc)
+      ipurefp=ipf0
+      napuref=naf0
+      return
+      end
+
       end module
 
       subroutine tfgetllstk(list,i1,i2)
@@ -896,7 +822,6 @@ c                endif
       i=0
       return
       end
-
 
       logical*4 function tfgetseqstk(ks,ns)
       use tfstk

@@ -294,9 +294,9 @@ tfdapert.o: tfdapert.f tffs.o tfstk.o toplvl.o
 tfdbun.o: tfdbun.f tffs.o
 tfdisp.o: tfdisp.f initb1.o tffs.o tfstk.o tgrot.o toplvl.o
 tfdot.o: tfdot.f tfefun.o tfstk.o
-tfdset.o: tfdset.f itfpmat.o tfeeval.o tffuns.o tfstk.o
+tfdset.o: tfdset.f itfpmat.o tfeeval.o tfefun.o tffuns.o tfstk.o
 tfearray.o: tfearray.f tfefun.o tfstk.o
-tfeeval.o: tfeeval.f tfefun.o tffuns.o tfstk.o toplvl.o
+tfeeval.o: tfeeval.f tffuns.o tfstk.o toplvl.o
 tfeexpr.o: tfeexpr.f tfefun.o tfstk.o
 tfefun.o: tfefun.f gamma.o tfeeval.o tffuns.o tfloor.o tfshared.o tfstk.o toplvl.o
 tfefun1.o: tfefun1.f tffs.o tfstk.o
@@ -318,7 +318,7 @@ tffscalc.o: tffscalc.f tfeeval.o tffs.o tfloor.o tfshared.o tfstk.o toplvl.o
 tffsfreefix.o: tffsfreefix.f tffs.o tfstk.o toplvl.o
 tffsmatch.o: tffsmatch.f initb1.o tfeeval.o tfefun.o tffs.o tfshared.o tfstk.o toplvl.o
 tffswake.o: tffswake.f tfeeval.o tffs.o tfstk.o
-tffuns.o: tffuns.f tfeeval.o tfstk.o
+tffuns.o: tffuns.f tfstk.o
 tfgeo.o: tfgeo.f initb1.o tffs.o tfloor.o tfstk.o tgrot.o toplvl.o
 tfgeti.o: tfgeti.f
 tfgetm.o: tfgetm.f tffs.o tfstk.o

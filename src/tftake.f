@@ -398,6 +398,7 @@ c        enddo
       use tfstk
       use tfcode
       use funs
+      use eeval
       use iso_c_binding
       implicit none
       type (sad_descriptor) kh,kx

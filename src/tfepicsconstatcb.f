@@ -8,15 +8,16 @@
       contains
         subroutine tfepicssyminit(irtc)
         use tfstk
+        use eeval
         implicit none
           integer*4 irtc
-        integer*8 kax,kx
-        kax=ktfsymbolz('CaMonitor',9)
+        type (sad_descriptor) kax,kx
+        kax=kxsymbolz('CaMonitor',9)
         call tfsyeval(kax,kx,irtc)
         if(irtc .ne. 0 .or. ktfnonlistq(kx))then
           go to 9000
         endif
-        kxcamonitor=ktfcopy(kx)
+        kxcamonitor=ktfcopy(kx%k)
         irl=ktfsymbolz('rl',2)
         call tfclassmember(kxcamonitor,ktfsymbol+irl,kx,.false.,irtc)
         if(irtc .ne. 0 .or. ktfnonsymbolq(kx))then

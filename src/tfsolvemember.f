@@ -27,6 +27,7 @@
      $     result(kx)
       use tfstk
       use funs
+      use eeval
       implicit none
       type (sad_descriptor) kx
       type (sad_descriptor) k1
