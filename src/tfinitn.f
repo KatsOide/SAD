@@ -11,13 +11,13 @@
       character(len=1024) :: pkg
       character(len=64) :: env
       integer :: lpkg, lenv
-      integer*8 ktfsymbolc,ktrvaloc,ktcontaloc,shm_map,
-     $     iaxsys,loc,ktcvaloc,kax,k1,k2,i,kfromr,kshm
+      integer*8 ktfsymbolc,ktrvaloc,ktcontaloc,
+     $     iaxsys,loc,ktcvaloc,kax,k1,k2,i
       integer*4 lpw,lenw,ifromstr
       call tfinfinit
-      kinfinity=kfromr(dinfinity)
-      kminfinity=kfromr(-dinfinity)
-      knotanumber=kfromr(dnotanumber)
+      kinfinity=transfer(dinfinity,i00)
+      kminfinity=transfer(-dinfinity,i00)
+      knotanumber=transfer(dnotanumber,i00)
       call tfsinglechar
       levele=1
       itflocal=ktaloc(maxlevele+1)
@@ -270,13 +270,15 @@ c      write(*,*)'tfinitn-9 ',itfcontroot
       subroutine tftocontext(isp1,kx,irtc)
       use tfstk
       use efun
+      use funs
+      use eeval
       implicit none
-      type (sad_descriptor) kx,k,kc,ki
+      type (sad_descriptor) kx,k,kc,ki,ks,ic
       type (sad_symbol), pointer :: sym
       type (sad_symdef), pointer :: symd
       type (sad_string), pointer :: str
       type (sad_dlist), pointer :: kl
-      integer*8 kai,ktsydefc,ks,ktfsymbolc,ktcontaloc,ic,kaopt(1)
+      integer*8 kai,ktsydefc,ktfsymbolc,ktcontaloc,kaopt(1)
       integer*4 isp1,irtc,itfmessage,i,isp0,nc,ispopt,isp2
       character*4 optname(1)
       save kaopt,optname
@@ -284,8 +286,8 @@ c      write(*,*)'tfinitn-9 ',itfcontroot
       data optname /'Wrap'/
       isp0=isp
       call tfgetoptionstk(isp1,kaopt,optname,1,ispopt,irtc)
-      ic=itfcontroot
-      ks=klist(itfcontroot)
+      ic%k=itfcontroot
+      ks=dlist(itfcontroot)
       isp2=ispopt-1
       LOOP_I: do i=isp1+1,isp2
         ki=dtastk(i)
@@ -295,14 +297,14 @@ c      write(*,*)'tfinitn-9 ',itfcontroot
         elseif(ktfoperq(ki,kai))then
           if(kai .eq. mtfnull)then
             if(i .eq. isp1+1)then
-              ic=0
+              ic%k=0
             endif
             cycle LOOP_I
           endif
           call loc_symstr(klist(klist(ifunbase+kai)),str)
         elseif(ktflistq(ki,kl))then
           if(kl%head%k .eq. ktfoper+mtfslot)then
-            call tfslot(mtfslot,kl,k,.false.,irtc)
+            k=tfslot(mtfslot,kl,.false.,irtc)
             if(irtc .ne. 0)then
               return
             endif
@@ -311,7 +313,7 @@ c      write(*,*)'tfinitn-9 ',itfcontroot
             elseif(ktfoperq(ki,kai))then
               if(kai .eq. mtfnull)then
                 if(i .eq. isp1+1)then
-                  ic=0
+                  ic%k=0
                 endif
                 cycle LOOP_I
               endif
@@ -327,25 +329,25 @@ c      write(*,*)'tfinitn-9 ',itfcontroot
         endif
         nc=str%nch
 c        write(*,*)'tftocontext ',str%str(1:nc)
-        if(i .ne. isp2 .and. ic .ne. 0)then
+        if(i .ne. isp2 .and. ic%k .ne. 0)then
           if(str%str(nc:nc) .ne. '`')then
             str%str(nc+1:nc+1)='`'
-            ks=ktsydefc(str%str,nc+1,ic,.true.)
+            ks%k=ktfsymbol+ktsydefc(str%str,nc+1,ic%k,.true.)
             str%str(nc+1:nc+1)=char(0)
           else
-            ks=ktsydefc(str%str,nc,ic,.true.)
+            ks%k=ktfsymbol+ktsydefc(str%str,nc,ic%k,.true.)
           endif
-          call loc_sad(ks,symd)
+          call descr_sad(ks,symd)
           symd%sym%gen=-3
           kc=symd%value
           if(ktfnonlistq(kc))then
             call tflocald(kc)
-            ic=ktcontaloc(ks)
+            ic%k=ktcontaloc(ktfaddrd(ks))
           else
-            ic=ktfaddrd(kc)
+            ic%k=ktfaddrd(kc)
           endif
         else
-          ks=ktfsymbolc(str%str,nc,ic)
+          ks%k=ktfsymbol+ktfsymbolc(str%str,nc,ic%k)
         endif
       enddo LOOP_I
       if(ispopt .gt. isp0)then
@@ -353,7 +355,7 @@ c        write(*,*)'tftocontext ',str%str(1:nc)
         call tfsyeval(ks,kx,irtc)
       else
         isp=isp+1
-        ktastk(isp)=ktfsymbol+ks
+        dtastk(isp)=ks
         kx=tfefunref(isp0+1,.true.,irtc)
         isp=isp0
       endif

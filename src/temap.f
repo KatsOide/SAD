@@ -525,7 +525,6 @@ c      itastk(2,isp)=iat
       type (sad_descriptor) kx
       integer*8 ktfgeol,kax,k1,k2,k11,k12,ka1,ka11,ka12,kdb
       integer*4 l,isp0,irtc,itfdownlevel
-      real*8 rfromk
       character*2 ord
       logical*4 err
       integer*8 ifv,iem
@@ -597,12 +596,11 @@ c      ktastk(isp)=ktflist+ktfgeol(geo(1,1,l))
         go to 9100
       endif
       k2=klist(kax+2)
-      if(ktfnonrealq(k2))then
+      if(ktfnonrealq(k2,pos(l+1)))then
         go to 9100
       endif
       call tmov(rlist(ka11+1),geo(1,4,l+1),3)
       geo(:,:,l+1)=tfchitogeo(rlist(ka12+1:ka12+3))
-      pos(l+1)=rfromk(k2)
       levele=itfdownlevel()
       isp=isp0
       return

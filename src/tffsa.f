@@ -45,7 +45,7 @@
       character*20 str
       integer*4 irtcffs,irtc,nc,nrpt(maxrpt),
      $     irptp(maxrpt),df(maxcond)
-      real*8 chi0(3),trdtbl(3,6),rfromk
+      real*8 chi0(3),trdtbl(3,6)
       logical*4 err,new,cmd,open98,abbrev,ftest,
      $     frefix,exist,init,expnd,chguse,visit,
      $     byeall,tfvcomp,tffsinitialcond,
@@ -1188,7 +1188,7 @@ c        dpm2=rlist(ktlookup('DPM'))
         go to 8810
       endif
       call tfevalb('Reset$FF[]',kx,irtc)
-      nqcol=nqcol-int(rfromk(kx))
+      nqcol=nqcol-int(kx%x(1))
       flv%nfc=nfc0
       call tfshow(cellstab,df,mfpnt,mfpnt1,
      $     kffs,irtcffs,lfnb .gt. 1,lfno)
@@ -1423,6 +1423,7 @@ c          call tmov(rlist(iffssave+2),ffv,nxh)
       use tfstk
       use ffs_fit
       use tffitcode
+      use eeval
       implicit none
       type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: klj
@@ -1508,6 +1509,7 @@ c            call tclr(uini(1,0),28)
       use ffs
       use ffs_pointer, only: kele2
       use tffitcode
+      use eeval
       implicit none
       type (sad_dlist), pointer :: klx,kli
       type (sad_rlist), pointer :: kle

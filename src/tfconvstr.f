@@ -14,6 +14,7 @@
       subroutine tfconvstrs(buff,k,nc,str,form)
       use tfstk
       use strbuf
+      use eeval
       implicit none
       type (sad_descriptor) k
       type (sad_strbuf), pointer :: strb
@@ -45,6 +46,7 @@
       subroutine tfstringreplace(isp1,kx,irtc)
       use tfstk
       use strbuf
+      use eeval
       implicit none
       type (sad_descriptor) kx,kr
       type (sad_strbuf), pointer :: strb
@@ -103,7 +105,7 @@
           call putstringbufb(strb,str%str(ir:imin-1),imin-ir,full)
         endif
         if(.not. ktfstringq(dtastk(j+1)))then
-          call tfeevalref(dtastk(j+1),kr,irtc)
+          kr=tfeevalref(dtastk(j+1),irtc)
           if(irtc .ne. 0)then
             go to 9000
           endif
@@ -344,6 +346,7 @@
       use tfstk
       use tfcode
       use strbuf
+      use eeval
       use iso_c_binding
       implicit none
       type (sad_descriptor) k,kx,k1
@@ -400,7 +403,7 @@ c      include 'DEBUG.inc'
         k=dtastk(isp1+1)
         irtc=0
       else
-        call tfeevalref(dtastk(isp1+1),k,irtc)
+        k=tfeevalref(dtastk(isp1+1),irtc)
         if(irtc .ne. 0)then
           return
         endif

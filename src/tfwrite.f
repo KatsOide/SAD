@@ -10,6 +10,7 @@
       function tfwrite(isp1,irtc) result(kx)
       use tfstk
       use strbuf
+      use eeval
       implicit none
       type (sad_descriptor) kx
       type (sad_strbuf), pointer :: strb
@@ -178,6 +179,7 @@ c      write(*,*)'tfmapfile ',ksize
       subroutine tfwritestring(isp1,kx,irtc)
       use tfstk
       use strbuf
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_strbuf), pointer :: strb

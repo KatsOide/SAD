@@ -723,6 +723,7 @@ c     enddo
       use tffitcode
       use iso_c_binding
       use efun
+      use eeval
       implicit none
       type (sad_string), pointer, save :: svarn, skey
       type (sad_descriptor) , save ::ifvr,ifvw
@@ -1297,13 +1298,13 @@ c
       use ffs
       use tffitcode
       use ffs_pointer,only:kele2
+      use eeval
       implicit none
       type (sad_descriptor) km
       integer*8 k1,kam,kcm,ktfmaloc,k2
       integer*4 lfno,irtc,n,m
-      real*8 rfromk
-      integer*8 itfcoupm
-      data itfcoupm /0/
+      integer*8 ,save::itfcoupm=0
+      real*8 v
       if(kele2(nlat) .eq. 0)then
         kcm=0
         return
@@ -1322,7 +1323,7 @@ c
       endif
       kam=ktfaddr(km)
       k1=klist(kam+1)
-      if(ktfnonrealq(k1) .or. rfromk(k1) .le. 0.d0)then
+      if(ktfnonrealq(k1,v) .or. v .le. 0.d0)then
         go to 9100
       endif
       k2=klist(kam+2)

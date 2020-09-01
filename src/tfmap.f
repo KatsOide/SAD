@@ -264,6 +264,7 @@
 
       subroutine tfposition(isp1,kx,icases,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1,icases
@@ -428,7 +429,7 @@
         return
       endif
       if(icases .eq. 2)then
-        call tfeevalref(kx,kx,irtc)
+        kx=tfeevalref(kx,irtc)
       else
         kx=kxmakelist(isp0)
       endif
@@ -541,6 +542,7 @@
 
       subroutine tfiff(isp1,kx,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -569,12 +571,13 @@
           j=isp1+3
         endif
       endif
-      call tfeevalref(dtastk(j),kx,irtc)
+      kx=tfeevalref(dtastk(j),irtc)
       return
       end
 
       subroutine tfswitch(isp1,kx,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -586,12 +589,12 @@
         return
       endif
       do i=isp1+2,isp-1,2
-        call tfeevalref(dtastk(i),kxi,irtc)
+        kxi=tfeevalref(dtastk(i),irtc)
         if(irtc .ne. 0)then
           return
         endif
         if(itfpmatc(dtastk(isp1+1),kxi) .ge. 0)then
-          call tfeevalref(dtastk(i+1),kx,irtc)
+          kx=tfeevalref(dtastk(i+1),irtc)
           return
         endif
       enddo
@@ -601,6 +604,7 @@
 
       subroutine tfwhich(isp1,kx,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -612,12 +616,12 @@
         return
       endif
       do i=isp1+1,isp-1,2
-        call tfeevalref(dtastk(i),kxi,irtc)
+        kxi=tfeevalref(dtastk(i),irtc)
         if(irtc .ne. 0)then
           return
         endif
         if(ktftrueq(kxi%k))then
-          call tfeevalref(dtastk(i+1),kx,irtc)
+          kx=tfeevalref(dtastk(i+1),irtc)
           return
         endif
       enddo
@@ -627,6 +631,7 @@
 
       subroutine tfwhile(isp1,kx,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -643,13 +648,13 @@
       ke=dtfcopy(dtastk(isp))
       do while(f)
         levele=levele+1
-        call tfeevalref(kc,kr,irtc)
+        kr=tfeevalref(kc,irtc)
         if(irtc .ne. 0)then
           go to 9000
         endif
         f=ktftrueq(kr%k)
         if(f)then
-          call tfeevalref(ke,kx,irtc)
+          kx=tfeevalref(ke,irtc)
           if(irtc .ne. 0)then
             if(irtc .eq. -3)then
               irtc=0
@@ -719,6 +724,7 @@
 
       subroutine tfcatch(isp1,kx,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -728,7 +734,7 @@
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
-      call tfeevalref(dtastk(isp),kx,irtc)
+      kx=tfeevalref(dtastk(isp),irtc)
       call tfcatchreturn(irtcthrow,kx,irtc)
       return
       end

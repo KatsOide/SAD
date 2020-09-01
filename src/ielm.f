@@ -79,11 +79,7 @@
         if(ip .le. 0)then
           ipm=im
         else
-          if(im .le. 0)then
-            ipm=ip
-          else
-            ipm=min(ip,im)
-          endif
+          ipm=merge(ip,min(ip,im),im .le. 0)
         endif
         if(ipm .gt. 0 .and. ipm .lt. idot)then
           ln=ipm-1
@@ -95,7 +91,7 @@
             ordw=word(idot+1:lw)
           endif
           call tfeval(ordw,1,m,kx,.false.,irtc)
-          iord=int(rfromd(kx))
+          iord=int(kx%x(1))
           if(irtc .ne. 0 .or. ktfnonrealq(kx))then
             if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
               call tfreseterror
@@ -112,11 +108,7 @@
         if(ip .le. 0)then
           ipm=im
         else
-          if(im .le. 0)then
-            ipm=ip
-          else
-            ipm=min(ip,im)
-          endif
+          ipm=merge(ip,min(ip,im),im .le. 0)
         endif
         ln=merge(ipm-1,lw,ipm .gt. 0)
       endif
@@ -132,8 +124,8 @@
           exist=.false.
           return
         endif
-        ioff=int(rfromd(kx))
-        frac=rfromd(kx)-ioff
+        ioff=int(kx%x(1))
+        frac=kx%x(1)-ioff
       else
         ioff=0
         frac=0.d0
@@ -146,8 +138,7 @@
         i=ielmh(name,iord)
         if(i .eq. 0)then
           if(lfn .ne. 0 .and. idot .gt. 0)then
-            call termes(lfn,'?Undefined location ',
-     $           word(1:lw))
+            call termes(lfn,'?Undefined location ',word(1:lw))
           endif
           ielmf=nlat
           exist=.false.

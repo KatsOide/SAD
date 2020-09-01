@@ -392,6 +392,7 @@ c      write(*,*)isp
 
       function tfappend(kl,k,eval,mode,irtc) result(kx)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) kx
       type (sad_descriptor) ,intent(in):: kl,k
@@ -472,13 +473,17 @@ c      write(*,*)isp
       use tfcsi,only:lfno
       use mathfun
       use eexpr
+      use funs
+      use eeval
       use gammaf
       implicit none
-      type (sad_descriptor) kx,k1,k,kh,tfmodule,tfsequence,
+      type (sad_descriptor) kx,k1,k,kh,tfmodule,
      $     tfsolvemember,tftable,tfefun1,tfeval1,tfeintf,
-     $     tfeintf2,tfget,tftake,tfset,tfeval1to,tfmap,tfminmax,
+     $     tfeintf2,tfget,tftake,tfeval1to,tfmap,tfminmax,
      $     tfgetcommandline,tfreplacepart,tfpart,tfwrite,
-     $     tftemporaryname,tfmapfile,tfunmapfile,tfcmplxf
+     $     tftemporaryname,tfmapfile,tfunmapfile,tfcmplxf,
+     $     tfgaussiancoulomb,tfgaussiancoulombu,tfplus,
+     $     tfrelation,tfpower,tfrevpower
       type (sad_dlist), pointer :: kl,kl1,klx,klh
       type (sad_symbol), pointer :: sym1
       type (sad_symdef), pointer :: symd
@@ -582,56 +587,53 @@ c        write(*,*)'tfefunref-1 ',id
      $         310, 320, 330, 340, 350, 360, 370, 380, 380, 400,
      $         410, 420, 430, 440, 440, 460, 470, 480, 490, 500,
      $         510, 520, 530, 540, 550, 560, 570, 580, 590, 600,
-c
-     $         610, 620, 630, 640, 650, 660, 670, 680, 690, 700,
-     $         700, 720, 730, 730, 730, 760, 770, 780, 790, 800,
-     $         810, 820, 830, 840, 850, 860, 870, 880, 890, 900,
-     $         910, 920, 930, 940, 950, 960, 970, 980, 990,1000,
-     $        1010,1020,1030,1040,1050,1060,1070,1080,1090,1100,
-c
-     $        1110,1120,1130,1140,1150,1160,1170,1180,1190,1200,
-     $        1210,1220,1230,1240,1250,1260,1270,1280,1290,1300,
-     $        1310,1320,1330,1340,1350,1360,1370,1380,1390,1390,
-     $        1290,1420,1430,1440,1450,1460,1470,1480,1490,1500,
-     $        1510,1520,1530,1540,1540,1560,1570,1580,1590,1600,
-c
-     $        1610,1620, 760,1640,1650,1660,1670,1680,1690,1700,
-     $        1710,1720,1730,1740,1750,1760,1770,1770,1770,1770,
-     $        1810,1820,1830,1840,1850,1860,1870,1870,1870,1900,
-     $        1910,1920,1930,1940,1950,1960,1970,1980,1980,1980,
-     $        2010,2020,2030,2040,2050,2060,2070,2080,2080,2100,
-c
-     $        2100,2100,2100,2140,2150,2160,2170,2180,2190,2200,
-     $        2210,2220,2230,2240,2250,2260,2270,2280,2290,2300,
-     $        2310,2320,2330,2340,2350,2360,2370,2380
-     $       ),id
 c              Sin  Cos  Tan  Sinh Cosh Tanh Exp  Log  Atan Det
 c              Sqrt Flor Ceil Min  Max  Mod  StrL Arg  Sign Leng
 c              Dims RplP ASin ACos ASh  ACh  ATh  Tabl Do   Attr
 c              Peek Abs  Revs Modl Blck StrR SwiC Fltn If   Take
 c              Selc Whil Join Apnd Ppnd Clr  Prot Unpr Drop MpAt
 c
+     $         610, 620, 630, 640, 650, 660, 670, 680, 690, 700,
+     $         700, 720, 730, 730, 730, 760, 770, 780, 790, 800,
+     $         810, 820, 830, 840, 850, 860, 870, 880, 890, 900,
+     $         910, 920, 930, 940, 950, 960, 970, 980, 990,1000,
+     $        1010,1020,1030,1040,1050,1060,1070,1080,1090,1100,
 c              Innr Trps SglV DiaM LinS IdtN Eigs Oper Posi Sum
 c              Prod Rang Re   Im   Conj ToSt Dpth Levl Writ Get
 c              OpnW OpnA Clos Flsh Prnt WStr Retn Head RLiQ Pttn
 c              Thrw Ctch Thrd SetA MpId FrCh ToCh CmpQ Tr   SvSM
 c              Stch Sort Uni1 Ordr MChk Scan Iden TimU NumQ VecQ
 c
+     $        1110,1120,1130,1140,1150,1160,1170,1180,1190,1200,
+     $        1210,1220,1230,1240,1250,1260,1270,1280,1290,1300,
+     $        1310,1320,1330,1340,1350,1360,1370,1380,1390,1390,
+     $        1290,1420,1430,1440,1450,1460,1470,1480,1490,1500,
+     $        1510,1520,1530,1540,1540,1560,1570,1580,1590,1600,
 c              AtmQ Outr MatQ TrcP Defi READ Ints Cmpl Roun IErf
 c              FrDt ToDt ToIS ReaS OpnR ToEx StrM StrP ToUp Brek
 c              Cont Goto Four IFou Chek Whic MapF UnmF GetU GetG
 c              ToLo Unev Case DelC Vect BDPi Nams GbCl LgGm Fact
 c              With WhiC Ovrr AppT PreT FndR GamR GmRP Erf  Erfc
 c
+     $        1610,1620, 760,1640,1650,1660,1670,1680,1690,1700,
+     $        1710,1720,1730,1740,1750,1760,1770,1770,1770,1770,
+     $        1810,1820,1830,1840,1850,1860,1870,1870,1870,1900,
+     $        1910,1920,1930,1940,1950,1960,1970,1980,1980,1980,
+     $        2010,2020,2030,2040,2050,2060,2070,2080,2080,2100,
 c              Fit  Symb SyNm Extr Read Skip TmpN Exit StrF Rstr
 c              MM   Shrt $SOT Dir  SDir Wait BesJ BesY BesI BesK
 c              BasF StrT S2S  Even OddQ DatS Inst Delt FlAt Repl
 c              SetE Spl$ FInd SCnt SCnP ToCt Ctxt BAnd BOr  BXor
 c              RepM MSca StdF Abrt ChkA RelH NaNQ MapT ScaT Last
 c
+     $        2100,2100,2100,2140,2150,2160,2170,2180,2190,2200,
+     $        2210,2220,2230,2240,2250,2260,2270,2280,2290,2300,
+     $        2310,2320,2330,2340,2350,2360,2370,2380
 c              Frst Scnd Thrd ObjS PrdL GauC ClMO MAll Dupl GCLn
 c              Seek DigQ LetQ ReaQ NSmQ OpSh RdSh WrSh ShSz FBuQ
 c              GaCU GaCF Rest RRt1 Diff Gam0 **** XSin
+     $       ),id
+c
         if(id .gt. 0)then
           if(id .le. 2000)then
             kx=tfefun1(isp1,id,.true.,irtc)
@@ -1145,7 +1147,7 @@ c        go to 6900
           endif
           ltr0=ltrace
           ltrace=6
-          call tfeevalref(k,kx,irtc)
+          kx=tfeevalref(k,irtc)
           ltrace=ltr0
         else
           go to 6810
@@ -1211,7 +1213,7 @@ c        go to 6900
           go to 6810
         endif
         go to 6900
- 1350   call tfcheck(isp1,kx,irtc)
+ 1350   kx=tfcheck(isp1,irtc)
         go to 6900
  1360   call tfwhich(isp1,kx,irtc)
         go to 6900
@@ -1254,7 +1256,7 @@ c        go to 6900
         go to 6900
  1520   call tfswitchcases(isp1,kx,1,irtc)
         go to 6900
- 1530   call tfoverride(isp1,kx,irtc)
+ 1530   kx=tfoverride(isp1,irtc)
         go to 6900
  1540   call tfappendto(isp1,kx,id-143,irtc)
         go to 6900
@@ -1393,7 +1395,7 @@ c        go to 6900
           go to 6810
         endif
         go to 6900
- 2160   call tfgaussiancoulomb(isp1,kx,irtc)
+ 2160   kx=tfgaussiancoulomb(isp1,irtc)
         go to 6900
  2170   call tfclearmemberobject(isp1,kx,irtc)
         go to 6900
@@ -1458,7 +1460,7 @@ c        go to 6900
         irtc=0
         kx%k=merge(ktftrue,ktffalse,ktfoperq(k))
         go to 6900
- 2310   call tfgaussiancoulombu(isp1,kx,irtc)
+ 2310   kx=tfgaussiancoulombu(isp1,irtc)
         go to 6900
  2320   call tfgaussiancoulombfitted(isp1,kx,irtc)
         go to 6900
@@ -1520,16 +1522,16 @@ c        go to 6001
           kx=tfset(isp1,.true.,irtc)
           go to 6900
         case (mtfplus,mtftimes)
-          call tfplus(isp1,kx,iaf,irtc)
+          kx=tfplus(isp1,iaf,irtc)
           go to 6900
         case (mtfrevpower)
-          call tfrevpower(isp1,kx,irtc)
+          kx=tfrevpower(isp1,irtc)
           go to 6900
         case (mtfpower)
-          call tfpower(isp1,kx,irtc)
+          kx=tfpower(isp1,irtc)
           go to 6900
         case (mtfgreater,mtfless,mtfgeq,mtfleq)
-          call tfrelation(isp1,kx,iaf,irtc)
+          kx=tfrelation(isp1,iaf,irtc)
           go to 6900
         case (mtfinequality)
           call tfinequality(isp1,kx,irtc)
@@ -1538,7 +1540,7 @@ c        go to 6001
           if(ktflistq(ktastk(isp1+1)))then
             kx=tfpart(isp1+1,.true.,irtc)
             if(irtc .eq. 0)then
-              call tfeevalref(kx,kx,irtc)
+              kx=tfeevalref(kx,irtc)
             endif
           elseif(ktfsymbolq(ktastk(isp1+1)))then
             irtc=-1
@@ -1554,7 +1556,7 @@ c        go to 6001
           if(narg .ne. 2)then
             go to 6812
           endif
-          call tfupset(dtastk(isp1+1),dtastk(isp),i00,kx,irtc)
+          kx=tfupset(dtastk(isp1+1),dtastk(isp),i00,irtc)
           go to 6900
         case (mtffun)
           if(isp .eq. isp1+2)then
@@ -1649,16 +1651,16 @@ c        go to 6001
           kx=tfset(isp1,.true.,irtc)
           go to 6900
         case (mtfreplace)
-          call tfreplace1(isp1,kx,irtc)
+          kx=tfreplace1(isp1,irtc)
           go to 6900
         case (mtfreplacerepeated)
-          call tfreplacerepeated1(isp1,kx,irtc)
+          kx=tfreplacerepeated1(isp1,irtc)
           go to 6900
         case (mtfequal,mtfunequal)
-          call tfequal(isp1,kx,iaf,irtc)
+          kx=tfequal(isp1,iaf,irtc)
           go to 6900
         case (mtfsame,mtfunsame)
-          call tfsameq1(isp1,kx,iaf,irtc)
+          kx=tfsameq1(isp1,iaf,irtc)
           go to 6900
         case (mtfunset)
           if(narg .ne. 1)then
@@ -1711,7 +1713,7 @@ c          write(*,*)'tfefun-mtfflag'
           id=iget_fun_id(kop)
           select case (id)
           case (-mtffun)
-            call tfpuref(isp1,kl1,kx,irtc)
+            kx=tfpuref(isp1,kl1,irtc)
             go to 6900
           case (-mtfnull)
             if(kl1%nl .eq. 0)then
@@ -1719,7 +1721,7 @@ c          write(*,*)'tfefun-mtfflag'
               if(ktflistq(kx,klx))then
                 call tfleval(klx,kx,.true.,irtc)
               elseif(ktfsymbolq(kx) .or. ktfpatq(kx))then
-                call tfeevalref(kx,kx,irtc)
+                kx=tfeevalref(kx,irtc)
               endif
               go to 6900
             elseif(kl1%nl .eq. 1 .and.
@@ -1736,7 +1738,7 @@ c          write(*,*)'tfefun-mtfflag'
               if(ktflistq(kx,klx))then
                 call tfleval(klx,kx,.true.,irtc)
               elseif(ktfsymbolq(kx) .or. ktfpatq(kx))then
-                call tfeevalref(kx,kx,irtc)
+                kx=tfeevalref(kx,irtc)
               endif
             endif
             go to 6900
@@ -1833,6 +1835,71 @@ c          write(*,*)'tfefun-mtfflag'
       return
       end
 
+      function tfcheck(isp1,irtc) result(kx)
+      use tfstk
+      use eeval
+      use tfcsi
+      implicit none
+      type (sad_descriptor) kx,kf,kxcheckmessage,kxmessagelist
+      type (sad_symdef), pointer,save :: symd
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 isp0,itgetfpe,itfmessage,narg,irtc1
+      data kxmessagelist%k,kxcheckmessage%k /0,0/
+      narg=isp-isp1
+      if(narg .lt. 2)then
+        kx=dxnullo
+        irtc=itfmessage(9,'General::narg','"2 or more"')
+        return
+      endif
+      isp0=isp
+      rlist(ierrorgen)=0.d0
+      kx=tfeevalref(dtastk(isp1+1),irtc)
+      isp=isp0
+      if(irtc .eq. 0)then
+        if(itgetfpe() .ne. 0)then
+          call tclrfpe
+          irtc=itfmessage(9,'General::fpe','""')
+        endif
+      endif
+      if(irtc .gt. 0)then
+        if(ierrorprint .ne. 0)then
+          call tfaddmessage(' ',0,icslfno())
+        endif
+      elseif(irtc .eq. irtcabort .and. rlist(ierrorgen) .eq. 0.d0)then
+        irtc=itfmessage(999,'General::abort',' ')
+      elseif(irtc .le. irtcret)then
+        rlist(ierrorgen)=1.d0
+      endif
+      if(rlist(ierrorgen) .ne. 0.d0)then
+        if(irtc .le. irtcret)then
+          call tfcatchreturn(modethrow,kx,irtc)
+c          write(*,*)'tfcheck-1 ',modethrow,irtc
+        endif
+        if(narg .gt. 2)then
+          if(kxcheckmessage%k .eq. 0)then
+            kxcheckmessage=kxsymbolz('Check$Message',13)
+          endif
+          dtastk(isp1+1)=kxcheckmessage
+          kf=tfefunref(isp1+1,.false.,irtc1)
+          if(irtc1 .eq. 0 .and. ktfrealq(kf) .and. kf%k .ne. 0)then
+            rlist(ierrorgen)=0.d0
+            kx=tfeevalref(dtastk(isp1+2),irtc)
+          endif
+        else
+          if(kxmessagelist%k .eq. 0)then
+            kxmessagelist=kxsymbolz('$MessageList',12)
+            call descr_sad(kxmessagelist,symd)
+          endif
+          call tflocald(symd%value)
+          symd%value=dtfcopy1(dxnulll)
+          rlist(ierrorgen)=0.d0
+          kx=tfeevalref(dtastk(isp1+2),irtc)
+        endif
+      endif
+      return
+      end
+
       end module efun
 
       subroutine tfefun(isp1,kx,ref,upvalue,irtc)
@@ -1887,9 +1954,10 @@ c          write(*,*)'tfefun-mtfflag'
 
       subroutine tfefundef(isp1,kx,irtc)
       use tfstk
+      use funs
+      use eeval
       implicit none
-      type (sad_descriptor) kx,k1,tfsolvemember,tfefun1,
-     $     tfsequence
+      type (sad_descriptor) kx,k1,tfsolvemember,tfefun1
       type (sad_dlist), pointer :: kl,kli,klx
       type (sad_symbol), pointer :: sym
       type (sad_symdef), pointer :: symd
@@ -1927,7 +1995,7 @@ c          write(*,*)'tfefun-mtfflag'
       elseif(ktflistq(k1,kl))then
         kx=k1
         if(kl%head%k .eq. ktfoper+mtffun)then
-          call tfpuref(isp1,kl,kx,irtc)
+          kx=tfpuref(isp1,kl,irtc)
           go to 6900
         elseif(kl%head%k .eq. ktfoper+mtfnull)then
           if(kl%nl .eq. 0)then
@@ -2011,5 +2079,219 @@ c     DOUBLE COMPLEX proxy of ZTAN vendor extension
 
       subroutine tfefundummy
       use mackw
+      return
+      end
+
+
+      subroutine tfnot(isp1,kx,iopc,irtc)
+      use tfstk
+      use eexpr
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 isp1,irtc,iopc,itfmessage
+      if(isp .ne. isp1+1)then
+        irtc=itfmessage(9,'General::narg','"1"')
+        return
+      endif
+      if(tfnumberq(dtastk(isp)))then
+        call tfcmplx(dfromr(0.d0),dtastk(isp),kx,iopc,irtc)
+      elseif(tflistq(dtastk(isp)))then
+        call tfearray(dfromr(0.d0),dtastk(isp),kx,iopc,irtc)
+      else
+        kx=tfeexpr(dfromr(0.d0),dtastk(isp),iopc)
+        irtc=0
+      endif
+      return
+      end
+
+      function tfplus(isp1,iopc,irtc) result(kx)
+      use tfstk
+      use eexpr
+      implicit none
+      type (sad_descriptor) kx,k1,k,ki,tfecmplxl
+      type (sad_dlist), pointer :: klx
+      integer*4 ,intent(in):: isp1,iopc
+      integer*4 ,intent(out):: irtc
+      integer*4 i,narg
+      real*8 v,v1,vx,vi
+      kx=dxnullo
+      narg=isp-isp1
+      if(narg .eq. 2)then
+        k1=dtastk(isp1+1)
+        k =dtastk(isp)
+        if(ktfrealq(k1,v1) .and. ktfrealq(k,v))then
+          kx=merge(dfromr(v1+v),dfromr(v1*v),
+     $         iopc .eq. mtfplus)    
+          irtc=0
+        else
+          if(tfnumberq(k) .and. tfnumberq(k1))then
+            call tfcmplx(k1,k,kx,iopc,irtc)
+          else
+            kx=merge(tfecmplxl(k1,k,iopc),tfeexpr(k1,k,iopc),
+     $           tflistq(k1) .or. tflistq(k))
+            irtc=0
+          endif
+        endif
+        return
+      elseif(narg .eq. 0)then
+        kx%k=merge(ktffalse,ktftrue,iopc .eq. mtfplus)
+      elseif(narg .eq. 1)then
+        if(ktfsymbolq(dtastk(isp)) .or.
+     $       ktfpatq(dtastk(isp)))then
+          kx=kxmakelist(isp1,klx)
+          klx%head%k=ktfoper+iopc
+        else
+          kx=dtastk(isp1+1)
+        endif          
+        irtc=0
+      else
+        kx=dtastk(isp1+1)
+        irtc=0
+        do i=isp1+2,isp
+          ki=dtastk(i)
+          if(ktfrealq(ki,vi) .and. ktfrealq(kx,vx))then
+            kx=merge(dfromr(vx+vi),dfromr(vx*vi),
+     $           iopc .eq. mtfplus)    
+          else
+            k1=kx
+            if(tfnumberq(k1) .and. tfnumberq(ki))then
+              call tfcmplx(k1,ki,kx,iopc,irtc)
+              if(irtc .ne. 0)then
+                return
+              endif
+            elseif(tflistq(k1) .or. tflistq(ki))then
+              kx=tfecmplxl(k1,ki,iopc)
+              if(irtc .ne. 0)then
+                return
+              endif
+            else
+              kx=tfeexpr(k1,ki,iopc)
+            endif
+          endif
+        enddo
+      endif
+      return
+      end
+
+      function tfpower(isp1,irtc) result(kx)
+      use tfstk
+      use eexpr
+      implicit none
+      type (sad_descriptor) kx,k1,ki,tfecmplxl
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 i,itfmessage
+      if(isp1 .eq. isp)then
+        kx=dxnullo
+        irtc=itfmessage(9,'General::narg','"1 or more"')
+        return
+      endif
+      kx=dtastk(isp)
+      irtc=0
+      if(isp .eq. isp1+1)then
+        return
+      endif
+      do i=isp-1,isp1+1,-1
+        ki=dtastk(i)
+        k1=kx
+        if(tfnumberq(k1) .and. tfnumberq(ki))then
+          call tfcmplx(ki,k1,kx,mtfpower,irtc)
+          if(irtc .ne. 0)then
+            return
+          endif
+        elseif(tflistq(k1) .or. tflistq(ki))then
+          kx=tfecmplxl(ki,k1,mtfpower)
+          irtc=0
+        else
+          kx=tfeexpr(ki,k1,mtfpower)
+        endif
+      enddo
+      return
+      end
+
+      function tfrevpower(isp1,irtc) result(kx)
+      use tfstk
+      use eexpr
+      implicit none
+      type (sad_descriptor) kx,k1,ki,tfecmplxl
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 i,itfmessage
+      if(isp1 .eq. isp)then
+        kx=dxnullo
+        irtc=itfmessage(9,'General::narg','"1 or more"')
+        return
+      endif
+      kx=dtastk(isp1+1)
+      irtc=0
+      if(isp .eq. isp1+1)then
+        return
+      endif
+      do i=isp1+2,isp
+        ki=dtastk(i)
+        k1=kx
+        if(tfnumberq(k1) .and. tfnumberq(ki))then
+          call tfcmplx(ki,k1,kx,mtfpower,irtc)
+          if(irtc .ne. 0)then
+            return
+          endif
+        elseif(tflistq(k1) .or. tflistq(ki))then
+          kx=tfecmplxl(ki,k1,mtfpower)
+          irtc=0
+        else
+          kx=tfeexpr(ki,k1,mtfpower)
+        endif
+      enddo
+      return
+      end
+
+      recursive function tfrelation(isp1,iopc,irtc) result(kx)
+      use tfstk
+      use eexpr
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 ,intent(in):: isp1,iopc
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,isp0,k
+      kx=dxnullo
+      if(isp .lt. isp1+2)then
+        irtc=itfmessage(9,'General::narg','"2 or more"')
+        return
+      endif
+      if(isp .eq. isp1+2)then
+c        call tfdebugprint(dtastk(isp1+1),'tfrelation',1)
+c        call tfdebugprint(dtastk(isp),'and',1)
+c        write(*,*)'with: ',iopc
+        if(tfnumberq(dtastk(isp1+1)) .and.
+     $       tfnumberq(dtastk(isp)))then
+          call tfcmplx(dtastk(isp1+1),dtastk(isp),kx,iopc,irtc)
+        elseif(tflistq(dtastk(isp1+1))
+     $         .or. tflistq(dtastk(isp)))then
+          call tfearray(dtastk(isp1+1),dtastk(isp),kx,iopc,irtc)
+        else
+          kx=tfeexpr(dtastk(isp1+1),dtastk(isp),iopc)
+          irtc=0
+        endif
+      else
+        isp0=isp
+        do k=1,isp0-isp1-1
+          ktastk(isp0+1)=ktastk(isp1+k)
+          ktastk(isp0+2)=ktastk(isp1+k+1)
+          isp=isp0+2
+          kx=tfrelation(isp0,iopc,irtc)
+          if(irtc .ne. 0)then
+            isp=isp0
+            return
+          elseif(ktfnonrealq(kx))then
+            irtc=-1
+            return
+          endif
+          if(kx%k .eq. 0)then
+            isp=isp0
+            return
+          endif
+        enddo
+        isp=isp0
+      endif
       return
       end

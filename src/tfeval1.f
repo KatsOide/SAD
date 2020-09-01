@@ -82,6 +82,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
 
       function tfeval1to(k1,k2,iopc,old,irtc) result(kx)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(in):: k1,k2
       type (sad_descriptor) kx,kv,kr,ku,ks,tfeval1,tfset1
@@ -142,6 +143,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
       use tfstk
       use efun
       use eexpr
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) k10,kr,k1
@@ -180,7 +182,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
             return
           endif
         endif
-        call tfeevalref(k10,k1,irtc)
+        k1=tfeevalref(k10,irtc)
         if(irtc .ne. 0)then
           return
         endif
@@ -207,6 +209,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
 
       subroutine tfappendto1(kp,k2,kr,mode,eval,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(in):: k2
       type (sad_descriptor) ,intent(out):: kr
@@ -447,6 +450,7 @@ c        if(ka1 .gt. 0 .and. ktfrealq(k2))then
 
       subroutine tftagset(list,k2,kx,mopc,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(in):: k2
       type (sad_descriptor) ,intent(out):: kx

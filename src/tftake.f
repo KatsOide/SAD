@@ -1,5 +1,6 @@
       function tftake(k,kn,take0,eval,irtc) result(kx)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) kx
       type (sad_descriptor) ,intent(in):: k,kn
@@ -174,6 +175,7 @@
 
       subroutine tfreverse(isp1,kx,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -214,6 +216,7 @@ c        enddo
 
       subroutine tfrotateright1(isp1,kx,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -275,6 +278,7 @@ c        enddo
 
       subroutine tfdifference(isp1,kx,irtc)
       use tfstk
+      use eeval
       use iso_c_binding
       implicit none
       type (sad_descriptor) ,intent(out):: kx
@@ -393,9 +397,10 @@ c        enddo
       subroutine tfcleardef(kl,irtc)
       use tfstk
       use tfcode
+      use funs
       use iso_c_binding
       implicit none
-      type (sad_descriptor) kh,kx,tfset
+      type (sad_descriptor) kh,kx
       type (sad_dlist) ,intent(inout):: kl
       type (sad_dlist), pointer :: klh
       type (sad_symbol), pointer :: symh
@@ -797,6 +802,7 @@ c      include 'DEBUG.inc'
 
       recursive subroutine tfreleaseholdstk(isp1,isp2,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_dlist), pointer :: kli
       integer*4 isp1,irtc,i,isp0,isp2,isp3,j,isp4

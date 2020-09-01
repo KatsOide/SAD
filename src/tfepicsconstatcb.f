@@ -58,11 +58,12 @@
       subroutine tfepicsconstatcb(chid,istat)
       use tfstk
       use casym
+      use eeval
       implicit none
-      type (sad_descriptor) stat,kn,krnn
+      type (sad_descriptor) stat,kn,krnn,ki
       real*8 chid
       integer*8 kx, iastart,icarlch,kaa,
-     $     ka,iacscomm,iarn, ki
+     $     ka,iacscomm,iarn
       integer*4 isp0,irtc,n,l,itfdownlevel,istat
       real*8 vn
       logical*4 ev
@@ -134,7 +135,7 @@
       iacscomm=ktfaddr(kx)
       if(ktflistq(kx))then
         if(klist(iacscomm) .eq. ktfoper+mtfhold)then
-          call tfeevalref(klist(iacscomm+1),ki,irtc)
+          ki=tfeevalref(dlist(iacscomm+1),irtc)
           if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
             call tfreseterror
           endif
@@ -171,13 +172,13 @@
      $     nc,karray)
       use tfstk
       use casym
+      use eeval
       implicit none
-      type (sad_descriptor) k,krnn
+      type (sad_descriptor) k,krnn,ka,kn,ki
       real*8 chid
-      integer*8 karray(nc),kx, ka,kn,iarn,
-     $     iavalcomm,kaa,ki, icarlch
+      integer*8 karray(nc),kx,iarn,iavalcomm,kaa,icarlch
       integer*4 istat,jsev,itype,nc
-      real*8 t,rfromk,vn,stat
+      real*8 t,vn,stat
       integer*4 isp0,isp2,irtc,n,l,i,itfdownlevel
       logical*4 ev
       levele=levele+1
@@ -200,12 +201,12 @@
       if(ilist(2,icarlch-1) .lt. 2)then
         go to 9000
       endif
-      ka=klist(icarlch+1)
-      kn=klist(icarlch+2)
+      ka=dlist(icarlch+1)
+      kn=dlist(icarlch+2)
       if(ktfnonlistq(ka) .or. ktfnonrealq(kn))then
         go to 9000
       endif
-      n=int(rfromk(kn))
+      n=int(kn%x(1))
       stat=istat
       if(itype .eq. 0)then
         if(nc .eq. 1)then
@@ -226,7 +227,7 @@
           k=kxm2l(rlist(ksad_loc(karray(1)):),0,nc,nc,.false.)
         endif
       endif
-      kaa=ktfaddr(ka)
+      kaa=ktfaddr(ka%k)
       if(n .lt. 1)then
         call tfcbsetsymbol(kaa,iv,k,irtc)
         if(irtc .ne. 0)then
@@ -290,7 +291,7 @@
       iavalcomm=ktfaddr(kx)
       if(ktflistq(kx))then
         if(klist(iavalcomm) .eq. ktfoper+mtfhold)then
-          call tfeevalref(klist(iavalcomm+1),ki,irtc)
+          ki=tfeevalref(dlist(iavalcomm+1),irtc)
         endif
       endif
  9000 call tfresetpendio

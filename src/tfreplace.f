@@ -1,5 +1,6 @@
       subroutine tfreplace(k,kr,kx,all,eval,rule,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(in):: k,kr
       type (sad_descriptor) ,intent(out):: kx
@@ -61,7 +62,7 @@
         endif
       endif
       if(eval .and. rep .and. irtc .eq. 0)then
-        call tfeevalref(kx,kx,irtc)
+        kx=tfeevalref(kx,irtc)
       endif
  9000 isp=isp1
       return
@@ -573,8 +574,9 @@ c          endif
       subroutine tfpvrulestk(isp1,isp2)
       use tfstk
       use tfcode
+      use funs
       implicit none
-      type (sad_descriptor) kx,tfsequence
+      type (sad_descriptor) kx
       type (sad_pat), pointer :: pat
       integer*8 kp,kap
       integer*4 ,intent(in):: isp1,isp2
@@ -958,74 +960,5 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
         enddo
         ktastk(isp0+j)=ktfref
       enddo LOOP_J
-      return
-      end
-
-      subroutine tfoverride(isp1,kx,irtc)
-      use tfstk
-      implicit none
-      type (sad_dlist), pointer :: kli
-      integer*8 kx,ki,k1
-      integer*4 isp1,irtc,isp0,isp2,n,itfmessage,isp3,isp4,i,j
-      if(isp1 .eq. isp)then
-        kx=kxnulll
-        irtc=0
-        return
-      elseif(isp1+1 .eq. isp)then
-        if(ktastk(isp) .eq. ktfoper+mtfnull)then
-          kx=kxnulll
-          irtc=0
-          return
-        endif
-      endif
-      isp=isp+1
-      isp0=isp
-      do i=isp1+1,isp0-1
-        ki=ktastk(i)
-        if(ktflistq(ki,kli))then
-          k1=kli%head%k
-          if(k1 .eq. ktfoper+mtflist)then
-            call tfgetllstkall(kli)
-          elseif(k1 .eq. ktfoper+mtfrule .or.
-     $           k1 .eq. ktfoper+mtfruledelayed)then
-            isp=isp+1
-            ktastk(isp)=ki
-          else
-            go to 9000
-          endif
-        else
-          isp=isp+1
-          ktastk(isp)=ki
-        endif
-      enddo
-      isp2=isp
-      do i=isp0+1,isp2
-        isp=isp+1
-        dtastk(isp)=merge(kli%dbody(1),dtastk(i),
-     $       ktflistq(ktastk(i),kli))
-      enddo
-      n=isp-isp2
-      isp3=isp
-      call tfsortl(ktastk(isp2-3),.false.,n,2,ktfref,.true.,irtc)
-      if(irtc .ne. 0)then
-        isp=isp0-1
-        return
-      endif
-      isp4=isp
-      do i=1,n
-        j=int(ktastk(isp3+i))
-        if(j .ne. 0 .and.
-     $       ktastk(isp0+j) .ne. ktfoper+mtfnull)then
-          isp=isp+1
-          ktastk(isp)=ktastk(isp0+j)
-        endif
-      enddo
-      kx=ktflist+ktfmakelist(isp4)
-      isp=isp0-1
-      irtc=0
-      return
- 9000 irtc=itfmessage(9,'General::wrongtype',
-     $     '"List, Rule, Symbol, String, Real"')
-      isp=isp0-1
       return
       end

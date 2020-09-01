@@ -137,6 +137,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
       use tfrbuf
       use ffs_flag
       use efun
+      use eeval
       implicit none
       type (sad_dlist), pointer :: kl
       type (sad_symbol), pointer :: sym
@@ -145,16 +146,16 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
       integer*4 irtc,l,lenw,itfhasharg,isp0
       real*8 al,amaxline
       character*10 n,autofg
-      integer*8 iaxshort
-      data iaxshort/0/
+      type (sad_descriptor),save:: iaxshort
+      data iaxshort%k /0/
       al=rlist(iaxline)
       if(al .gt. 0.d0)then
-        if(iaxshort .eq. 0)then
+        if(iaxshort%k .eq. 0)then
           call tfsyeval(kxsymbolf('System`Short',12,.true.),
      $         iaxshort,irtc)
         endif
         isp=isp+1
-        ktastk(isp)=iaxshort
+        dtastk(isp)=iaxshort
         ivstk2(1,isp)=isp+1
         isp=isp+1
         rtastk(isp)=al
@@ -189,7 +190,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
             endif
  10         isp=isp+1
             isp0=isp
-            ktastk(isp)=iaxshort
+            dtastk(isp)=iaxshort
             isp=isp+1
             ktastk(isp)=k
             isp=isp+1

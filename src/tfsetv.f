@@ -201,6 +201,7 @@ c                cmp%update=cmp%nparam .le. 0
       subroutine tffscoupledvar(irtc)
       use tfstk
       use tfcsi, only:icslfno
+      use eeval
       implicit none
       integer*4 ,intent(out):: irtc
       integer*4 ia,itfdownlevel,irtc1

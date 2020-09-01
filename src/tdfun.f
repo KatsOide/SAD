@@ -198,8 +198,10 @@ c                  write(*,*)'tdfun ',vf1,v,df(i)
       use ffs_pointer, only:mult
       use ffs_fit, only:inicond
       use tffitcode
+      use eeval
       implicit none
       type (sad_descriptor) kx
+      type (sad_dlist),pointer::kl
       character*8 funname
       integer*4 kp,kp1
       real*8 dp
@@ -262,12 +264,14 @@ c
       call tclrfpe
       levele=itfuplevel()
       if(kp1 .eq. 0)then
-c        call tfdebugprint(ktflist+ifv,'FitValue-1',3)
-        call tfleval(klist(ifv-3),kx,.true.,irtc)
+c        call tfdebugprint(dfromk(ktflist+ifv),'FitValue-1',3)
+        call descr_sad(dlist(ifv),kl)
+        call tfleval(kl,kx,.true.,irtc)
       else
-c        call tfdebugprint(ktflist+ifv1,'FitValue-2',3)
+c        call tfdebugprint(dfromk(ktflist+ifv1),'FitValue-2',3)
 c        write(*,*)'tfgetfitval ',ifv1
-        call tfleval(klist(ifv1-3),kx,.true.,irtc)
+        call descr_sad(dlist(ifv1),kl)
+        call tfleval(kl,kx,.true.,irtc)
       endif
 c      call tfdebugprint(kx,'==> ',3)
 c      write(*,*)'kp: ',kp,'kp1: ',kp1
@@ -328,16 +332,18 @@ c     Note: index(name1,'.') > 0 if kp1 != 0
       subroutine tffsfitfun(nqcol,df,iqcol,kdp,maxcond,error)
       use tfstk
       use tfcsi, only:icslfno
+      use eeval
       implicit none
       type (sad_rlist), pointer :: klx
       type (sad_descriptor) kx
-      integer*8 ,save :: kff=0
+      type (sad_descriptor) ,save :: kff
+      data kff%k /0/
       integer*4 maxcond,nqcol,iqcol(maxcond),kdp(maxcond)
       real*8 df(maxcond)
       integer*4 itfuplevel,itfdownlevel,i,m,level,irtc
       logical*4 error
-      if(kff .eq. 0)then
-        kff=ktfsymbolz('`FitFunction',12)
+      if(kff%k .eq. 0)then
+        kff=kxsymbolz('`FitFunction',12)
       endif
       level=itfuplevel()
       kx%k=0

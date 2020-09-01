@@ -4210,6 +4210,10 @@ prm = {-0.001, 0.001, -3e-4, 3e-4};\n\
 ExternalMap[\"TRACK\", LINE[\"POSITION\",\"M1.2\"], nt_, x_]:=CompiledMap[nt, x, src, prm];\n\n\
 works as a special colimation at a MAP element M1.2, resulting:\n\n\
 <Collimate.png\n\n\
+(Actually the example above can be performed also by SADScript:\n\n\
+ExternalMap[\"TRACK\", LINE[\"POSITION\",\"M1.2\"], nt_, x_]:=Append[Drop[x, -1],\n\
+       x[[1]] < prm[[1]] || x[[1]] > prm[[2]] || (prm[[3]] < x[[3]] < prm[[4]])];\n\n\
+which runs even FASTER than the compiled one!!)\n\n\
 Options      Defaul     Description\n\
 -------------------------------------------------------------\n\
 Single       False      If True, the map is called once for the entrire particles even for NPARA > 1.\n\

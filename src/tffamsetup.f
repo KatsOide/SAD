@@ -4,6 +4,7 @@
       use ffs, only:pi2
       use ffs_fit
       use ffs_pointer, only:elatt
+      use eeval
       implicit none
       real*8 sqrt3
 c      parameter (sqrt3=sqrt(3.d0))
@@ -32,7 +33,7 @@ c      parameter (sqrt3=sqrt(3.d0))
       endif
       call tclrfpe
       levele=levele+1
-      call tfeeval(kxmamp,kx,.true.,irtc)
+      kx=tfeeval(kxmamp,.true.,irtc)
       if(irtc .ne. 0)then
         write(*,*)'Error in MatchingAmplitude, code =',irtc
         go to 9000
@@ -44,7 +45,7 @@ c      parameter (sqrt3=sqrt(3.d0))
       if(m .le. 0)then
         go to 9100
       endif
-      call tfeeval(kxnfamp,kxnfam,.true.,irtc)
+      kxnfam=tfeeval(kxnfamp,.true.,irtc)
       if(ktfnonrealq(kxnfam,nfp) .or. nfp .le. 0)then
         call tfdebugprint(kxnfam,
      $       'Non-positive NFAMP - FAM is skipped:',1)

@@ -12,7 +12,7 @@
       type (sad_descriptor) ,intent(in):: k
       type (sad_descriptor) ki,k1
       type (sad_dlist), pointer :: kl,kli
-      integer*8 kfromr,kdx1
+      integer*8 kdx1
       integer*4 ,intent(out):: idx,irtc
       integer*4 hsrchz,n,lenw,idxi,
      $     i,idir,idti,nc,itfmessage,itfmessagestr
@@ -45,7 +45,7 @@
           if(kli%head%k .eq. ktfoper+mtfmult)then
             k1=kli%dbody(1)
             if(ktfrealq(k1))then
-              if(k1%k .eq. kfromr(-1.d0))then
+              if(k1%x(1) .eq. -1.d0)then
                 idir=-idir
                 ki=kli%dbody(2)
                 go to 1
@@ -148,6 +148,7 @@
       function tfsetelement(isp1,irtc) result(kx)
       use tfstk
       use mackw
+      use funs
       implicit none
       type (sad_descriptor) kx,kr
       type (sad_dlist), pointer :: klxi,klx
@@ -228,7 +229,7 @@
         klx%dbody(2)=dtfcopy1(dxnulls)
       else
         if(isp .gt. isp1+2)then
-          call tfoverride(isp1+2,kr,irtc)
+          kr=tfoverride(isp1+2,irtc)
           if(irtc .ne. 0)then
             return
           endif
@@ -266,6 +267,7 @@
       recursive subroutine tfsetelementkey(idx,k,irtc)
       use tfstk
       use mackw
+      use eeval
       implicit none
       type (sad_dlist), pointer :: kr
       type (sad_dlist), pointer :: kl
@@ -305,7 +307,7 @@
         return
  10     kv=kr%dbody(2)
         if(kr%head%k .eq. ktfoper+mtfruledelayed)then
-          call tfeevalref(kv,kv,irtc)
+          kv=tfeevalref(kv,irtc)
           if(irtc .ne. 0)then
             return
           endif
@@ -365,6 +367,7 @@
       use tfstk
       use sad_main
       use mackw
+      use eeval
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: klx,kli
@@ -378,7 +381,7 @@
       data eval /.true./
       kx=dxnullo
       if(eval)then
-        call tfsyeval(ktfsymbolz('BeamLine',8),kx,irtc)
+        call tfsyeval(kxsymbolz('BeamLine',8),kx,irtc)
         if(irtc .ne. 0)then
           return
         endif

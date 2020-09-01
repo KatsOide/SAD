@@ -338,6 +338,7 @@ c              enddo
 
       subroutine tffirst(isp1,kx,mode,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1,mode
@@ -367,13 +368,14 @@ c              enddo
       endif
       kx=merge(kl%dbody(m),kl%dbody(mode+1),mode .lt. 0)
       irtc=0
-      call tfeevalref(kx,kx,irtc)
+      kx=tfeevalref(kx,irtc)
       return
       end
 
       subroutine tfextract(isp1,kx,irtc)
       use tfstk
       use efun
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -444,6 +446,7 @@ c              enddo
       subroutine tfextract1(kl,kll,kh,irtc)
       use tfstk
       use efun
+      use eeval
       implicit none
       integer*4 ,intent(out):: irtc
       type (sad_descriptor) ,intent(in):: kh
@@ -463,7 +466,7 @@ c              enddo
       isp3=isp1+isp-isp2
       if(kh%k .eq. ktfref)then
         do i=1,isp-isp2
-          call tfeevalref(dtastk(isp2+i),dtastk(isp1+i),irtc)
+          dtastk(isp1+i)=tfeevalref(dtastk(isp2+i),irtc)
           if(irtc .ne. 0)then
             isp=isp1
             return
@@ -494,6 +497,7 @@ c        enddo
 
       function tfreplacepart(isp1,mode,irtc) result(kx)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) kx
       integer*4 ,intent(in):: isp1,mode
@@ -1110,6 +1114,7 @@ c              enddo
 
       subroutine tfsetpart(kln,k2,kx,mode,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) ,intent(in):: k2

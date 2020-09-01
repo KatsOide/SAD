@@ -2,6 +2,7 @@
      $     result(kx)
       use tfstk
       use efun
+      use eeval
       implicit none
       integer*4 ,parameter ::maxint=huge(0)
       type (sad_descriptor) kx,kj,kxlistcopied,ke,ki,k1,kl
@@ -30,7 +31,7 @@
         if(listi%head%k .eq. ktfoper+mtflist)then
           m=listi%nl
           if(m .eq. 1)then
-            call tfeevalref(listi%dbody(1),kl,irtc)
+            kl=tfeevalref(listi%dbody(1),irtc)
             if(.not. ktfrealq(kl,x1))then
               irtc=itfmessage(9,'General::wrongtype','"Real number"')
               return
@@ -48,7 +49,7 @@
             if(.not. ktfsymbolq(k1,name))then
               go to 9500
             endif
-            call tfeevalref(listi%dbody(2),k1,irtc)
+            k1=tfeevalref(listi%dbody(2),irtc)
             if(irtc .ne. 0)then
               return
             endif
@@ -60,7 +61,7 @@
               xstep=1.d0
             else
               x0=x1
-              call tfeevalref(listi%dbody(3),k1,irtc)
+              k1=tfeevalref(listi%dbody(3),irtc)
               if(irtc .ne. 0)then
                 return
               endif
@@ -70,7 +71,7 @@
               if(m .eq. 3)then
                 xstep=1.d0
               else
-                call tfeevalref(listi%dbody(4),k1,irtc)
+                k1=tfeevalref(listi%dbody(4),irtc)
                 if(irtc .ne. 0)then
                   return
                 endif
@@ -155,7 +156,7 @@
             else
               do j=1,ns
                 levele=levele+1
-                call tfeevalref(ke,kj,irtc)
+                kj=tfeevalref(ke,irtc)
                 lv=itfdownlevel()
                 if(irtc .ne. 0)then
                   if(irtc .eq. -2)then
@@ -226,7 +227,7 @@ c                      enddo
               else
                 do j=1,ns
                   levele=levele+1
-                  call tfeevalref(ke,kj,irtc)
+                  kj=tfeevalref(ke,irtc)
                   if(irtc .ne. 0)then
                     if(irtc .eq. -2)then
                       irtc=0
@@ -281,7 +282,7 @@ c                      enddo
             else
               do j=1,ns
                 levele=levele+1
-                call tfeevalref(ke,kj,irtc)
+                kj=tfeevalref(ke,irtc)
                 lv=itfdownlevel()
                 if(irtc .ne. 0)then
                   if(irtc .eq. -2)then
@@ -344,7 +345,7 @@ c                      enddo
               else
                 do j=1,ns
                   levele=levele+1
-                  call tfeevalref(ke,kj,irtc)
+                  kj=tfeevalref(ke,irtc)
                   if(irtc .ne. 0)then
                     if(irtc .eq. -2)then
                       irtc=0
