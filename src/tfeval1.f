@@ -91,7 +91,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
       integer*4 ,intent(out):: irtc
       logical*4 ,intent(in):: old
       if(ktflistq(k1,kl1))then
-        call tfleval(kl1,kv,.true.,irtc)
+        kv=tfleval(kl1,.true.,irtc)
         if(irtc .ne. 0)then
           return
         endif
@@ -128,7 +128,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
       if(irtc .ne. 0)then
         return
       endif
-      call tfeevaldef(k1,ks,irtc)
+      ks=tfeevaldef(k1,irtc)
       if(irtc .ne. 0)then
         return
       endif
@@ -173,7 +173,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
         endif
         if(ktflistq(k10,kl))then
           if(kl%head%k .eq. ktfoper+mtfpart)then
-            call tfleval(kl,kx,.false.,irtc)
+            kx=tfleval(kl,.false.,irtc)
             if(irtc .ne. 0)then
               return
             endif
@@ -277,7 +277,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
         call tfreplist(klr,1,k2,eval)
       endif
       if(eval)then
-        call tfleval(klr,kr,.true.,irtc)
+        kr=tfleval(klr,.true.,irtc)
         if(irtc .ne. 0)then
           return
         endif
@@ -462,7 +462,7 @@ c        if(ka1 .gt. 0 .and. ktfrealq(k2))then
       integer*4 ,intent(out):: irtc
       integer*4 ,intent(in):: mopc
       integer*4 itfmessage,itfmessageexp
-      call tfeevaldef(list%dbody(1),ks,irtc)
+      ks=tfeevaldef(list%dbody(1),irtc)
       if(irtc .ne. 0)then
         return
       endif
@@ -473,7 +473,7 @@ c        if(ka1 .gt. 0 .and. ktfrealq(k2))then
         irtc=itfmessage(9,'General::wrongtype','"Symbol"')
         return
       endif
-      call tfeevaldef(list%dbody(2),kl,irtc)
+      kl=tfeevaldef(list%dbody(2),irtc)
       if(irtc .ne. 0)then
         return
       endif

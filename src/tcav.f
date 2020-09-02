@@ -34,17 +34,7 @@
       v20a=.5d0*v20/amass*abs(charge)
       v11a=v11/amass*abs(charge)
       v02a=.5d0*v02/amass*abs(charge)
-      if(trpt)then
-c        vnominal=v*sin(-phi*sign(1.d0,charge))
-        phis=0.d0
-      else
-c        vnominal=0.d0
-        if(autophi)then
-          phis=phic
-        else
-          phis=w*trf0
-        endif
-      endif
+      phis=merge(0.d0,merge(phic,w*trf0,autophi),trpt)
       he=h0+vnominal
       pe=h2p(he)
 c      pe=he*sqrt(1.d0-1.d0/he**2)

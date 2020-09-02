@@ -357,7 +357,7 @@ c      write(*,*)'with ',iop1,nextrel
       endif
       if(.not. nextrel)then
         if(tfconstlistqo(klx))then
-          call tfleval(klx,kx,.true.,irtc)
+          kx=tfleval(klx,.true.,irtc)
         endif
       endif
 c      call tfdebugprint(kx,'resulting:',1)

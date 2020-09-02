@@ -573,7 +573,7 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
           call tclrfpe
           level=itfuplevel()
           call descr_sad(dlist(ifv),ifvl)
-          call tfleval(ifvl,kx,.true.,irtc)
+          kx=tfleval(ifvl,.true.,irtc)
           call tfconnect(kx,irtc)
           if(irtc .ne. 0)then
             if(ierrorprint .ne. 0)then

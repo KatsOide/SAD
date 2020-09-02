@@ -143,7 +143,7 @@
           if(kv .gt. 0)then
             rlist(kal+1)=dble(n-1)
             call descr_sad(dlist(kal),kall)
-            call tfleval(kall,ke,.true.,irtc)
+            ke=tfleval(kall,.true.,irtc)
             level= itfdownlevel()
             if(irtc .ne. 0)then
               write(outfl,*)

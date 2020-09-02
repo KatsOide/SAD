@@ -931,7 +931,7 @@ c-----Noboru addition end -----
       i=itfunaloc('Round',109,1,map,ieval,2)
       map(1)=0
       i=itfunaloc('InverseErf',110,1,map,ieval,2)
-      i=itfunaloc('SemCtrl',111,3,map,ieval,0)
+c      i=itfunaloc('SemCtrl',111,3,map,ieval,0)
 c      i=itfunaloc('FromDate',111,1,map,ieval,1)
 c      i=itfunaloc('ToDate',112,1,map,ieval,1)
       i=itfunaloc('ToInputString',113,1,map,ieval,0)

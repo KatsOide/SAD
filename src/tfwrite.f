@@ -87,7 +87,6 @@ c      call tfdebugprint(dtastk(isp1+1),'mapfile',1)
         return
       endif
       ksize=ksize*8
-c      write(*,*)'tfmapfile ',ksize
       map=maprwfile(fname%str,ifd,ksize,irtc)
       if(irtc .ne. 0)then
         irtc=itfmessage(9,'General::mmap','""')        
@@ -535,7 +534,7 @@ c      call tfdebugprint(k,'tfget',1)
         endif
       enddo
       if(itf .lt. 0)then
-        kx%k=ktfoper+mtfnull
+        kx=dxnullo
       endif
       if(ios .ne. 0)then
         ios=0
@@ -944,7 +943,7 @@ c          enddo
       nc=nc1
       ie=is+isw-2+nc
       if(buffer(ie:ie) .eq. char(10))then
-        nc=nc-1
+        nc=max(nc-1,0)
       endif
  1    kx=kxsalocb(-1,buffer(is+isw-1:),nc)
       go to 1000

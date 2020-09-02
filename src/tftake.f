@@ -168,7 +168,7 @@
       endif
  1    klx%head=dtfcopy(kl%head)
       if(eval)then
-        call tfleval(klx,kx,.true.,irtc)
+        kx=tfleval(klx,.true.,irtc)
       endif      
       return
       end
@@ -210,7 +210,7 @@ c        enddo
       listx%head=dtfcopy(list%head)
       listx%attr=list%attr
       irtc=0
-      call tfleval(listx,kx,.true.,irtc)
+      kx=tfleval(listx,.true.,irtc)
       return
       end
 
@@ -269,7 +269,7 @@ c        enddo
       endif
       klx%head=dtfcopy(kl%head)
       klx%attr=kl%attr
-      call tfleval(klx,kx,.true.,irtc)
+      kx=tfleval(klx,.true.,irtc)
       return
  8000 kx=dtastk(isp1+1)
       irtc=0
@@ -335,7 +335,7 @@ c        enddo
         isp=isp0
       endif
       klx%head=dtfcopy(kl%head)
-      call tfleval(klx,kx,.true.,irtc)
+      kx=tfleval(klx,.true.,irtc)
       return
       isp=isp0
       return

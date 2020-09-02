@@ -344,7 +344,7 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
         call tfpadstr(name,ifname+1,ilist(1,ifname))
         levele=levele+1
         call descr_sad(dlist(ifwfunl),kwll)
-        call tfleval(kwll,kx,.true.,irtc)
+        kx=tfleval(kwll,.true.,irtc)
         if(irtc .ne. 0)then
           if(ierrorprint .ne. 0)then
             call tfaddmessage('WakeFunction Longitudinal',0,lfno)
@@ -376,7 +376,7 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
         endif
  20     isp2=isp
         call descr_sad(dlist(ifwfunt),kwtl)
-        call tfleval(kwtl,kx,.true.,irtc)
+        kx=tfleval(kwtl,.true.,irtc)
         isp=isp2
         if(irtc .ne. 0)then
           if(ierrorprint .ne. 0)then

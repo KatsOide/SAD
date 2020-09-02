@@ -271,7 +271,7 @@ c      enddo
       enddo
       l=itfuplevel()
       call loc_sad(ktfaddr(ke),kl)
-      call tfleval(kl,kx,.true.,irtc)
+      kx=tfleval(kl,.true.,irtc)
 c      call tfdebugprint(kx,'evalres-2',1)
       if(irtc .ne. 0)then
         go to 9000

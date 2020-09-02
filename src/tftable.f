@@ -141,7 +141,7 @@
             if(ktflistq(ke,kle))then
               do j=1,ns
                 levele=levele+1
-                call tfleval(kle,kj,.true.,irtc)
+                kj=tfleval(kle,.true.,irtc)
                 lv=itfdownlevel()
                 if(irtc .ne. 0)then
                   if(irtc .eq. -2)then
@@ -187,7 +187,7 @@
               if(ktflistq(ke,kle))then
                 do j=1,ns
                   levele=levele+1
-                  call tfleval(kle,kj,.true.,irtc)
+                  kj=tfleval(kle,.true.,irtc)
                   if(irtc .ne. 0)then
                     if(irtc .eq. -2)then
                       irtc=0
@@ -269,7 +269,7 @@ c                      enddo
             if(ktflistq(ke,kle))then
               do j=1,ns
                 levele=levele+1
-                call tfleval(kle,kj,.true.,irtc)
+                kj=tfleval(kle,.true.,irtc)
                 lv=itfdownlevel()
                 if(irtc .ne. 0)then
                   if(irtc .eq. -2)then
@@ -310,7 +310,7 @@ c                      enddo
               if(ktflistq(ke,kle))then
                 do j=1,ns
                   levele=levele+1
-                  call tfleval(kle,kj,.true.,irtc)
+                  kj=tfleval(kle,.true.,irtc)
                   if(irtc .ne. 0)then
                     if(irtc .eq. -2)then
                       irtc=0

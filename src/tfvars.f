@@ -84,7 +84,7 @@ c          x3=rlist(idval(k)+ivvar(i))
           call tclrfpe
           level=itfuplevel()
           call descr_sad(dlist(ifv),fvl)
-          call tfleval(fvl,kxr,.true.,irtc)
+          kxr=tfleval(fvl,.true.,irtc)
           if(irtc .ne. 0)then
             level=itfdownlevel()
             if(ierrorprint .ne. 0)then

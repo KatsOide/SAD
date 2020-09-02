@@ -773,7 +773,6 @@ c        go to 31
           endif
         enddo
         geo0(:,1:3)=tfchitogeo(chi0*scale(mfitchi1:mfitchi3))
-c        write(*,'(1p4g15.7)')(geo0(i,:),i=1,3)
         if(.not. exist)then
           go to 12
         endif

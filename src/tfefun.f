@@ -452,7 +452,7 @@ c      write(*,*)isp
         endif
       endif
       if(ev)then
-        call tfleval(listx,kx,.true.,irtc)
+        kx=tfleval(listx,.true.,irtc)
       else
         kx=sad_descr(listx)
         irtc=0
@@ -1178,7 +1178,7 @@ c        go to 6900
           go to 6810
         endif
         go to 6900
- 1210   kx=tfsemctrl(isp1,irtc)
+ 1210   irtc=itfmessage(999,'General::unregister',' ')
         go to 6900
  1220   irtc=itfmessage(999,'General::unregister',' ')
         go to 6900
@@ -1719,7 +1719,7 @@ c          write(*,*)'tfefun-mtfflag'
             if(kl1%nl .eq. 0)then
               kx=tfsequence(isp1,isp)
               if(ktflistq(kx,klx))then
-                call tfleval(klx,kx,.true.,irtc)
+                kx=tfleval(klx,.true.,irtc)
               elseif(ktfsymbolq(kx) .or. ktfpatq(kx))then
                 kx=tfeevalref(kx,irtc)
               endif
@@ -1736,7 +1736,7 @@ c          write(*,*)'tfefun-mtfflag'
             kx=tfpart(isp1,.true.,irtc)
             if(irtc .eq. 0)then
               if(ktflistq(kx,klx))then
-                call tfleval(klx,kx,.true.,irtc)
+                kx=tfleval(klx,.true.,irtc)
               elseif(ktfsymbolq(kx) .or. ktfpatq(kx))then
                 kx=tfeevalref(kx,irtc)
               endif
@@ -2001,7 +2001,7 @@ c          write(*,*)'tfcheck-1 ',modethrow,irtc
           if(kl%nl .eq. 0)then
             kx=tfsequence(isp1,isp)
             if(ktflistq(kx,klx))then
-              call tfleval(klx,kx,.false.,irtc)
+              kx=tfleval(klx,.false.,irtc)
             elseif(ktfsymbolq(kx,sym))then
               if(sym%override .eq. 0)then
                 sym=>tfsydef(sym)
@@ -2351,7 +2351,7 @@ c        write(*,*)'with: ',iopc
       case (ktflist)
         call loc_dlist(kaf,list)
         if(iand(lconstlist,list%attr) .eq. 0)then
-          call tfleval(list,kf,ref,irtc)
+          kf=tfleval(list,ref,irtc)
           if(irtc .ne. 0)then
             go to 8000
           endif
@@ -2518,7 +2518,7 @@ c          call tfstk2l(lista,lista)
           go to 3000
         endif
         isp=isp+1
-        call tfeevaldef(kls%dbody(1),dtastk(isp),irtc)
+        dtastk(isp)=tfeevaldef(kls%dbody(1),irtc)
         if(irtc .ne. 0)then
           go to 8000
         endif
@@ -2553,7 +2553,7 @@ c          call tfstk2l(lista,lista)
             do i=i1,ns
               kx=kls%dbody(i)
               if(ktflistq(kx,list))then
-                call tfleval(list,kx,.true.,irtc)
+                kx=tfleval(list,.true.,irtc)
               elseif(ktfsymbolq(kx))then
                 call tfsyeval(kx,kx,irtc)
               elseif(ktfpatq(kx))then

@@ -9,7 +9,6 @@ FFSCanvasDraw=Class[{},{},{},
     1,
     Module[{w,r1=1,r2=LINE["LENGTH"],list,w1,opt,w1u},
       w=Read[-1,Word,ReadNewRecord->False];
-!      System`Print["CD: ",w];
       If[ToUpperCase[w]==="DRAW",
         w=Read[-1,Word,ReadNewRecord->False]];
       If[w<=>"",
@@ -27,7 +26,6 @@ FFSCanvasDraw=Class[{},{},{},
         If[w1<=>"&",Break[]];
         Table[
           {w1,w}=SeparateAmpsnd[w];
-!      System`Print["CANVDR: ",{w1,w}];
           Switch[w1,
             "",
             If[w=="",w=ToUpperCase[Read[-1,Word,ReadNewRecord->False]];
@@ -44,8 +42,7 @@ FFSCanvasDraw=Class[{},{},{},
               w1u]],
           {Infinity}],
         {Infinity}];
-!      Print[{w,w1}];
-      opt=If[w1<=>";",
+      opt=If[w1<=>";" && w<=>"",
         Which[w==="LAT"||w==="LATTICE",
           w1=";";Lattice->True,
           LINE["POSITION",ToUpperCase[w]]<=>{},
@@ -56,7 +53,6 @@ FFSCanvasDraw=Class[{},{},{},
       opt=Override[Draw$Option,{Region->{r1,r2},opt,GridLines->{None,Automatic},InfoLabel->True}];
       OpticsPlot[list,Null@@opt,PlotLabel->TITLE];
       Update[];
-!      Print[{w,w1}];
       If[w1==";","",w]]];      
 
   SeparateAmpsnd[w_]:=Module[{p=StringPosition[w,"&"]/.{}->{{Infinity,Infinity}},

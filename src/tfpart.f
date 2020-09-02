@@ -432,7 +432,7 @@ c              enddo
           dtastk(isp)=k
           kx=tfefunref(isp-1,.true.,irtc)
         else
-          call tfleval(kl,kx,.true.,irtc)
+          kx=tfleval(kl,.true.,irtc)
         endif
       else
         call tfextract1(kl,klind,kh,irtc)
@@ -587,7 +587,7 @@ c          call tfdebugprint(dtastk2(i),' -> ',1)
         list%attr=ior(list%attr,ktoberebuilt)-ktoberebuilt
         klx=>list
       endif
-      call tfleval(klx,kx,.true.,irtc)
+      kx=tfleval(klx,.true.,irtc)
  9000 if(mode .eq. 1)then
         call tflocald(kf)
       endif
@@ -1218,7 +1218,7 @@ c              enddo
         endif
       endif
  100  if(eval)then
-        call tfleval(listl,kx,.true.,irtc)
+        kx=tfleval(listl,.true.,irtc)
         if(irtc .ne. 0)then
           go to 1000
         endif

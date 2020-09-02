@@ -93,6 +93,7 @@
       integer*4 ,intent(out):: irtc
       integer*4 itfmessage
       if(isp .lt. isp1+2)then
+        kx=dxnullo
         irtc=itfmessage(9,'General::narg','"2 or more"')
         return
       endif

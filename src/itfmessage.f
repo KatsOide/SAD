@@ -62,7 +62,7 @@
       arg=arg0(:la)
       dm=dtfcopy1(kxmessagename(mess(:l)))
       call descr_sad(dm,klm)
-      call tfleval(klm,ks,.true.,irtc)
+      ks=tfleval(klm,.true.,irtc)
       if(irtc .ne. 0)then
         if(irtc .gt. 0)then
           call tfaddmessage(' ',0,icslfno())

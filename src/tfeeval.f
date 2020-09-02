@@ -8,11 +8,7 @@
       type (sad_descriptor) ,intent(in):: k
       logical*4 ,intent(in):: ref
       integer*4 ,intent(out):: irtc
-      if(ref)then
-        kx=tfeevalref(k,irtc)
-      else
-        call tfeevaldef(k,kx,irtc)
-      endif
+      kx=merge(tfeevalref(k,irtc),tfeevaldef(k,irtc),ref)
       return
       end
 
@@ -29,7 +25,7 @@
       irtc=0
       if(ktflistq(k,list))then
         if(iand(lconstlist,list%attr) .eq. 0)then
-          call tfleval(list,kx,.true.,irtc)
+          kx=tfleval(list,.true.,irtc)
         endif
       elseif(ktfsymbolq(k))then
         call tfsyeval(k,kx,irtc)
@@ -41,10 +37,10 @@
       return
       end
 
-      subroutine tfleval(list,kx,ref,irtc)
+      function tfleval(list,ref,irtc) result(kx)
       use tfstk
       implicit none
-      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx
       type (sad_dlist) ,intent(inout):: list
       integer*8 kaa
       integer*4 ,intent(out):: irtc
@@ -83,7 +79,7 @@
           dtastk(isp)=sad_descr(list)
           irtc=0
         else
-          call tfleval(list,dtastk(isp),ref,irtc)     
+          dtastk(isp)=tfleval(list,ref,irtc)
           if(irtc .ne. 0)then
             return
           endif
@@ -279,7 +275,7 @@ c                endif
           call loc_dlist(kai,listi)
           if(iand(lconstlist,listi%attr) .eq. 0)then
             ki0=ki
-            call tfleval(listi,ki,.true.,irtc)
+            ki=tfleval(listi,.true.,irtc)
             if(irtc .ne. 0)then
               go to 9000
             endif
@@ -378,17 +374,17 @@ c                endif
       return
       end
 
-      subroutine tfeevaldef(k,kx,irtc)
+      function tfeevaldef(k,irtc) result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) ,intent(in):: k
-      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx
       type (sad_dlist), pointer :: list
       type (sad_symbol), pointer :: sym
       integer*4 ,intent(out):: irtc
       if(ktflistq(k,list))then
         if(iand(lconstlist,list%attr) .eq. 0)then
-          call tfleval(list,kx,.false.,irtc)
+          kx=tfleval(list,.false.,irtc)
           return
         endif
       elseif(ktfsymbolq(k,sym) .and. sym%override .eq. 0)then
@@ -512,6 +508,7 @@ c                endif
       integer*4 ,intent(out):: irtc
       integer*4 itfmessage,narg,m,j,i,ipf0,nap0,isp0
       logical*4 rep
+      kx=dxnullo
       if(kf%nl .eq. 1)then
         isp0=isp
         do i=isp1+1,isp
@@ -617,7 +614,7 @@ c          write(*,*)irtc
             k1=sad_descr(sym)
           endif
         elseif(ktflistq(k1))then
-          call tfeevaldef(k1,k1,irtc)
+          k1=tfeevaldef(k1,irtc)
           if(irtc .ne. 0)then
             return
           endif

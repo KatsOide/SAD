@@ -481,7 +481,7 @@ c      enddo
               kx=dtbl%bodyc
               if(dtbl%pat .ne. -1)then
                 if(ktflistq(kx,klx))then
-                  call tfleval(klx,kx,.true.,irtc)
+                  kx=tfleval(klx,.true.,irtc)
                 elseif(ktfsymbolq(kx))then
                   call tfsyeval(kx,kx,irtc)
                 elseif(ktfpatq(kx))then

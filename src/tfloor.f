@@ -831,6 +831,7 @@ c              enddo
             call tfminandmaxl(ksad_loc(kli%head%k),
      $           xmin,xmax,ymin,ymax,cpx,irtc)
             if(irtc .ne. 0)then
+              kx=dxnullo
               return
             endif
           else
@@ -860,6 +861,7 @@ c              enddo
       irtc=0
       return
  9000 irtc=-1
+      kx=dxnullo
       return
       end
 

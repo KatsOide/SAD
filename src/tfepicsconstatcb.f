@@ -1,7 +1,10 @@
       module casym
+      use tfstk
       implicit none
+      type (sad_descriptor) ,save :: kxcamonitor
+      data kxcamonitor%k /0/
       integer*8, save::
-     $     kxcamonitor=0,irl,icsconn,icarl,icacsconn,
+     $     irl,icsconn,icarl,icacsconn,
      $     ics,ipos,icsl,irn,irnl,icscomm,iauto,istart,
      $     iv,isev,its,ivl,isevl,itsl,ivalcomm
 
@@ -17,19 +20,19 @@
         if(irtc .ne. 0 .or. ktfnonlistq(kx))then
           go to 9000
         endif
-        kxcamonitor=ktfcopy(kx%k)
+        kxcamonitor=dtfcopy(kx)
         irl=ktfsymbolz('rl',2)
-        call tfclassmember(kxcamonitor,ktfsymbol+irl,kx,.false.,irtc)
+        call tfclassmember(kxcamonitor,ktfsymbol+irl,kx%k,.false.,irtc)
         if(irtc .ne. 0 .or. ktfnonsymbolq(kx))then
-          kxcamonitor=0
+          kxcamonitor%k=0
           go to 9000
         endif
         icarl=ktfaddr(kx)
         icsconn=ktfsymbolz('CS$Conn',7)
         call tfclassmember(kxcamonitor,ktfsymbol+icsconn,
-     $       kx,.false.,irtc)
+     $       kx%k,.false.,irtc)
         if(irtc .ne. 0 .or. ktfnonsymbolq(kx))then
-          kxcamonitor=0
+          kxcamonitor%k=0
           go to 9000
         endif
         icacsconn=ktfaddr(kx)
@@ -70,7 +73,7 @@
       logical*4 ev
       levele=levele+1
       isp0=isp
-      if(kxcamonitor .eq. 0)then
+      if(kxcamonitor%k .eq. 0)then
         call tfepicssyminit(irtc)
         if(irtc .ne. 0)then
           go to 9000
@@ -111,7 +114,8 @@
         if(irtc .ne. 0)then
           go to 9000
         endif
-        call tfclassmember(ktflist+kaa,ktfsymbol+irn,kx,.true.,irtc)
+        call tfclassmember(dfromk(ktflist+kaa),ktfsymbol+irn,
+     $       kx,.true.,irtc)
         if(irtc .ne. 0)then
           go to 9000
         endif
@@ -129,7 +133,8 @@
           go to 9000
         endif
       endif
-      call tfclassmember(ktflist+kaa,ktfsymbol+icscomm,kx,.true.,irtc)
+      call tfclassmember(dfromk(ktflist+kaa),ktfsymbol+icscomm,
+     $     kx,.true.,irtc)
       if(irtc .ne. 0)then
         go to 9000
       endif
@@ -142,13 +147,14 @@
           endif
         endif
       endif
-      call tfclassmember(ktflist+kaa,ktfsymbol+iauto,kx,.true.,irtc)
+      call tfclassmember(dfromk(ktflist+kaa),ktfsymbol+iauto,
+     $     kx,.true.,irtc)
       if(irtc .ne. 0)then
         go to 9000
       endif
       if(ktfrealq(kx) .and. kx .ne. 0)then
         if(rlist(icacsconn-4) .eq. stat%x(1))then
-          call tfclassmember(ktflist+kaa,ktfsymbol+istart,
+          call tfclassmember(dfromk(ktflist+kaa),ktfsymbol+istart,
      $         kx,.true.,irtc)
           if(irtc .ne. 0 .or. ktfnonsymbolq(kx))then
             go to 9000
@@ -184,7 +190,7 @@
       logical*4 ev
       levele=levele+1
       isp0=isp
-      if(kxcamonitor .eq. 0)then
+      if(kxcamonitor%k .eq. 0)then
         call tfepicssyminit(irtc)
         if(irtc .ne. 0)then
           go to 9000
@@ -259,7 +265,8 @@
         if(irtc .ne. 0)then
           go to 9000
         endif
-        call tfclassmember(ktflist+kaa,ktfsymbol+irn,kx,.true.,irtc)
+        call tfclassmember(dfromk(ktflist+kaa),ktfsymbol+irn,
+     $       kx,.true.,irtc)
         if(irtc .ne. 0)then
           go to 9000
         endif
@@ -285,7 +292,8 @@
           go to 9000
         endif
       endif
-      call tfclassmember(ktflist+kaa,ktfsymbol+ivalcomm,kx,.true.,irtc)
+      call tfclassmember(dfromk(ktflist+kaa),ktfsymbol+ivalcomm,
+     $     kx,.true.,irtc)
       if(irtc .ne. 0)then
         go to 9000
       endif
@@ -307,7 +315,8 @@
       type (sad_descriptor) k1
       integer*8 ka,kv,kax,kx
       integer*4 irtc
-      call tfclassmember(ktflist+ka,ktfsymbol+kv,kx,.false.,irtc)
+      call tfclassmember(dfromk(ktflist+ka),ktfsymbol+kv,
+     $     kx,.false.,irtc)
       if(irtc .ne. 0)then
         return
       elseif(ktfnonsymbolq(kx))then
@@ -326,7 +335,8 @@
       type (sad_descriptor) k1
       integer*8 ka,kv,kal,kax,kx
       integer*4 n,irtc,i
-      call tfclassmember(ktflist+ka,ktfsymbol+kv,kx,.false.,irtc)
+      call tfclassmember(dfromk(ktflist+ka),ktfsymbol+kv,
+     $     kx,.false.,irtc)
       if(irtc .ne. 0)then
         return
       elseif(ktfnonsymbolq(kx))then

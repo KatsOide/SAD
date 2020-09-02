@@ -266,12 +266,12 @@ c
       if(kp1 .eq. 0)then
 c        call tfdebugprint(dfromk(ktflist+ifv),'FitValue-1',3)
         call descr_sad(dlist(ifv),kl)
-        call tfleval(kl,kx,.true.,irtc)
+        kx=tfleval(kl,.true.,irtc)
       else
 c        call tfdebugprint(dfromk(ktflist+ifv1),'FitValue-2',3)
 c        write(*,*)'tfgetfitval ',ifv1
         call descr_sad(dlist(ifv1),kl)
-        call tfleval(kl,kx,.true.,irtc)
+        kx=tfleval(kl,.true.,irtc)
       endif
 c      call tfdebugprint(kx,'==> ',3)
 c      write(*,*)'kp: ',kp,'kp1: ',kp1

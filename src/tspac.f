@@ -103,6 +103,7 @@ c     $     vstk(ivstkoffset+isp1+2)),f,1,tr)
       irtc=0
       return
  9000 irtc=itfmessage(9,'General::wrongtype','"x, y, sigx, sigy"')
+      kx=dxnullo
       return
       end
 
@@ -127,6 +128,7 @@ c     $     vstk(ivstkoffset+isp1+2)),f,1,tr)
       irtc=0
       return
  9000 irtc=itfmessage(9,'General::wrongtype','"x, y, sigx, sigy"')
+      kx=dxnullo
       return
       end
 

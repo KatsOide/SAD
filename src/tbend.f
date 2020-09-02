@@ -620,11 +620,7 @@ c      endif
         dxfr1=fb1**2/rhob/24.d0
         dyfr1=fb1/rhob**2/6.d0
         dzfr1=dxfr1*sinp1
-        if(fringe)then
-          dyfra1=4.d0*dyfr1/fb1**2
-        else
-          dyfra1=0.d0
-        endif
+        dyfra1=merge(4.d0*dyfr1/fb1**2,0.d0,fringe)
       else
         dxfr1=0.d0
         dyfr1=0.d0
@@ -672,7 +668,7 @@ c      endif
         x2=x1+ff
         py2=py1-px1*f
         z2=z1-px1*ff
-        dph2=pxy2dpz(0.d0,py2)
+        dph2=sqrt1(-py2**2)
         ph2=1.d0+dph2
         dpx2=pxi*cosp1+(dpzi-dph2)*sinp1
         pz2=1.d0+pxy2dpz(px1,py2)
@@ -725,7 +721,9 @@ c      endif
         bsi(i)=bsi(i)-bsi2*y(i)/rhob
       enddo
       if(krad)then
+c        write(*,*)'tbend-tradk-1 ',g(1),phi0,alr
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,alr,phi0)
+c        write(*,*)'tbend-tradk-2 ',g(1)
       endif
       return
       end
