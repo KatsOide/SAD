@@ -208,6 +208,10 @@ c      isb=ilist(2,iwakepold+6)
         allocate(pyr0(np0))
         allocate(zr0(np0))
       endif
+      if(allocated(bsi))then
+        write(*,*)'tturn-bsi-alread allocated? ',sizeof(bsi)
+        deallocate(bsi)
+      endif
       allocate(bsi(np0))
       bsi=0.d0
       do l=lbegin,lend

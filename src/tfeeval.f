@@ -247,10 +247,10 @@ c                endif
       return
       end
 
-      subroutine tfevallev(list,kx,irtc)
+      function tfevallev(list,irtc) result(kx)
       use tfstk
       implicit none
-      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx
       type (sad_descriptor) ki0,ki
       type (sad_dlist) ,intent(in):: list
       type (sad_dlist), pointer :: listi

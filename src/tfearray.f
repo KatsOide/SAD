@@ -88,7 +88,7 @@ c      write(*,*)'with ',iopc1
           if(iopc1 .eq. mtfequal)then
             kx%k=ktftrue
             do i=1,ne
-              call tfcmplx(kl1%dbody(i),kl%dbody(i),ky,iopc1,irtc)
+              ky=tfcmplx(kl1%dbody(i),kl%dbody(i),iopc1,irtc)
               if(irtc .ne. 0)then
                 return
               endif
@@ -103,7 +103,7 @@ c      write(*,*)'with ',iopc1
           elseif(iopc1 .eq. mtfunequal)then
             kx%k=0
             do i=1,ne
-              call tfcmplx(kl1%dbody(i),kl%dbody(i),ky,iopc1,irtc)
+              ky=tfcmplx(kl1%dbody(i),kl%dbody(i),iopc1,irtc)
               if(irtc .ne. 0)then
                 return
               endif
@@ -119,8 +119,7 @@ c      write(*,*)'with ',iopc1
             isp0=isp
             do i=1,ne
               isp=isp+1
-              call tfcmplx(kl1%dbody(i),kl%dbody(i),dtastk(isp),
-     $             iopc1,irtc)
+              dtastk(isp)=tfcmplx(kl1%dbody(i),kl%dbody(i),iopc1,irtc)
               if(irtc .ne. 0)then
                 isp=isp0
                 return
@@ -136,7 +135,7 @@ c      write(*,*)'with ',iopc1
           isp0=isp
           do i=1,ne
             isp=isp+1
-            call tfcmplx(kl1%dbody(i),k,dtastk(isp),iopc1,irtc)
+            dtastk(isp)=tfcmplx(kl1%dbody(i),k,iopc1,irtc)
             if(irtc .ne. 0)then
               isp=isp0
               return
@@ -152,7 +151,7 @@ c      write(*,*)'with ',iopc1
         isp0=isp
         do i=1,ne
           isp=isp+1
-          call tfcmplx(k1,kl%dbody(i),dtastk(isp),iopc1,irtc)
+          dtastk(isp)=tfcmplx(k1,kl%dbody(i),iopc1,irtc)
           if(irtc .ne. 0)then
             isp=isp0
             return

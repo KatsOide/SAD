@@ -5,7 +5,8 @@
       use tfstk
       implicit none
       type (sad_descriptor) ,intent(in):: k1,k
-      type (sad_descriptor) ke,kx,ky,ky1,k2,kx2,tftake,tfcompose
+      type (sad_descriptor) ke,kx,ky,ky1,k2,kx2,tftake,tfcompose,
+     $     tfjoine,tfjoin2
       type (sad_dlist), pointer :: listy,list1,listi,klx,kl1
       type (sad_rlist), pointer :: kle
       type (sad_symbol), pointer :: sym
@@ -29,7 +30,7 @@
         endif
         if(ktflistq(ky,listy))then
           if(listy%head%k .eq. ktfoper+iopc)then
-            call tfjoine(kx,ky,ke,irtc)
+            ke=tfjoine(kx,ky,irtc)
             if(irtc .ne. -1)then
               return
             endif
@@ -37,7 +38,7 @@
             m=listy%nl
             if(tfnumberq(listy%dbody(1)))then
               if(tfnumberq(kx))then
-                call tfcmplx(listy%dbody(1),kx,ky1,iopc,irtc)
+                ky1=tfcmplx(listy%dbody(1),kx,iopc,irtc)
                 if(irtc .ne. 0)then
                   ke%k=ktfoper+mtfnull
                   return
@@ -153,7 +154,7 @@ c          write(*,*)'tfeexpr-slot ',vy,ks
           if(list1%head%k .eq. ktfoper+iopc)then
             if(ktflistq(ky,listy))then
               if(listy%head%k .eq. ktfoper+iopc)then
-                call tfjoin2(k1,ky,ke,.false.,irtc)
+                ke=tfjoin2(k1,ky,.false.,irtc)
                 return
               endif
             endif
@@ -244,7 +245,7 @@ c          write(*,*)'tfeexpr-slot ',vy,ks
                   k2=tfeexpr(kx2,ke,mtftimes)
                 endif
                 if(vx1 .ne. 1.d0)then
-                  call tfcmplx(sad_descr(vx1),ky,kx,mtfpower,irtc)
+                  kx=tfcmplx(sad_descr(vx1),ky,mtfpower,irtc)
                   ke=tfeexpr(kx,ke,mtftimes)
                 endif
                 return
@@ -355,6 +356,7 @@ c      write(*,*)isp
       kle%head%k=ktfoper+iopc
       return
       end function
+
       function tfinsertsort(kl,ki) result(kx)
       use tfstk
       implicit none
@@ -471,7 +473,7 @@ c      write(*,*)isp
         return
       endif
       if(tfnumberq(dtastk(isp)))then
-        call tfcmplx(dfromr(0.d0),dtastk(isp),kx,iopc,irtc)
+        kx=tfcmplx(dfromr(0.d0),dtastk(isp),iopc,irtc)
       elseif(tflistq(dtastk(isp)))then
         call tfearray(dfromr(0.d0),dtastk(isp),kx,iopc,irtc)
       else
@@ -501,7 +503,7 @@ c      write(*,*)isp
           irtc=0
         else
           if(tfnumberq(k) .and. tfnumberq(k1))then
-            call tfcmplx(k1,k,kx,iopc,irtc)
+            kx=tfcmplx(k1,k,iopc,irtc)
           else
             kx=merge(tfecmplxl(k1,k,iopc),tfeexpr(k1,k,iopc),
      $           tflistq(k1) .or. tflistq(k))
@@ -531,7 +533,7 @@ c      write(*,*)isp
           else
             k1=kx
             if(tfnumberq(k1) .and. tfnumberq(ki))then
-              call tfcmplx(k1,ki,kx,iopc,irtc)
+              kx=tfcmplx(k1,ki,iopc,irtc)
               if(irtc .ne. 0)then
                 return
               endif
@@ -570,7 +572,7 @@ c      write(*,*)isp
         ki=dtastk(i)
         k1=kx
         if(tfnumberq(k1) .and. tfnumberq(ki))then
-          call tfcmplx(ki,k1,kx,mtfpower,irtc)
+          kx=tfcmplx(ki,k1,mtfpower,irtc)
           if(irtc .ne. 0)then
             return
           endif
@@ -605,7 +607,7 @@ c      write(*,*)isp
         ki=dtastk(i)
         k1=kx
         if(tfnumberq(k1) .and. tfnumberq(ki))then
-          call tfcmplx(ki,k1,kx,mtfpower,irtc)
+          kx=tfcmplx(ki,k1,mtfpower,irtc)
           if(irtc .ne. 0)then
             return
           endif
@@ -663,7 +665,7 @@ c        call tfdebugprint(dtastk(isp),'and',1)
 c        write(*,*)'with: ',iopc
         if(tfnumberq(dtastk(isp1+1)) .and.
      $       tfnumberq(dtastk(isp)))then
-          call tfcmplx(dtastk(isp1+1),dtastk(isp),kx,iopc,irtc)
+          kx=tfcmplx(dtastk(isp1+1),dtastk(isp),iopc,irtc)
         elseif(tflistq(dtastk(isp1+1))
      $         .or. tflistq(dtastk(isp)))then
           call tfearray(dtastk(isp1+1),dtastk(isp),kx,iopc,irtc)
@@ -695,6 +697,95 @@ c        write(*,*)'with: ',iopc
       return
       end
 
+      function tfcmplx(k1,k2,iopc,irtc) result(kx)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(in):: k1,k2
+      type (sad_descriptor) tfenum,tfeval1
+      type (sad_complex), pointer :: cx1,cx2
+      integer*8 ki1,ki2
+      integer*4 ,intent(out):: irtc
+      integer*4 ,intent(in):: iopc
+      real*8 v1,v2
+      complex*16 c1
+      irtc=0
+      if(iopc .eq. mtfnot)then
+        if(ktfrealq(k2))then
+          if(k2%k .eq. 0)then
+            kx%k=ktftrue
+          else
+            kx%k=0
+          endif
+        else
+          go to 8000
+        endif
+        return
+      endif
+      if(ktfrealq(k1,v1))then
+        if(ktfrealq(k2,v2))then
+          if(iopc .eq. mtfcomplex)then
+            if(k2%k .ne. 0)then
+              kx=kxcalocv(-1,v1,v2)
+            else
+              kx=k1
+            endif
+          elseif(iopc .eq. mtfpower)then
+            if(k1%k .lt. 0)then
+              ki2=int(v2)
+              if(ki2 .ne. v2)then 
+                c1=dcmplx(v1,0.d0)**v2
+                if(imag(c1) .eq. 0.d0)then
+                  kx=sad_descr(dble(c1))
+                else
+                  kx=kxcalocv(-1,dble(c1),imag(c1))
+                endif
+              else
+                kx=dfromr(v1**ki2)
+              endif
+              return
+            endif
+            kx=tfenum(k1%x(1),k2%x(1),mtfpower,irtc)
+          elseif(iopc .eq. mtfrevpower)then
+            if(k2%k .lt. 0)then
+              ki1=int(v1)
+              if(ki1 .ne. v1)then 
+                c1=dcmplx(v2,0.d0)**v1
+                if(imag(c1) .eq. 0.d0)then
+                  kx=sad_descr(dble(c1))
+                else
+                  kx=kxcalocv(-1,dble(c1),imag(c1))
+                endif
+              else
+                kx=sad_descr(v2**ki1)
+              endif
+              return
+            endif
+            kx=tfenum(v2,v1,mtfpower,irtc)
+          else
+            kx=tfenum(k1%x(1),k2%x(1),iopc,irtc)
+          endif
+          return
+         elseif(tfcomplexq(k2,cx2))then
+          call tfcmplxmath(dcmplx(v1,0.d0),cx2%cx(1),kx,iopc,irtc)
+          return
+        else
+          go to 8000
+        endif
+      elseif(tfcomplexq(k1,cx1))then
+        if(ktfrealq(k2,v2))then
+          call tfcmplxmath(cx1%cx(1),dcmplx(v2,0.d0),
+     $         kx,iopc,irtc)
+          return
+        elseif(tfcomplexq(k2,cx2))then
+          call tfcmplxmath(cx1%cx(1),cx2%cx(1),kx,iopc,irtc)
+          return
+        endif
+      endif
+ 8000 kx=tfeval1(k1,k2,iopc,irtc)
+      return
+      end
+
       end module eexpr
 
       module efun
@@ -712,7 +803,7 @@ c        write(*,*)'with: ',iopc
       use eeval
       use gammaf
       implicit none
-      type (sad_descriptor) kx,k1,k,kh,tfmodule,
+      type (sad_descriptor) kx,k1,k,kh,tfmodule,tfjoin2,tfjoine,
      $     tfsolvemember,tftable,tfefun1,tfeval1,tfeintf,
      $     tfeintf2,tfget,tftake,tfeval1to,tfmap,tfminmax,
      $     tfgetcommandline,tfreplacepart,tfpart,tfwrite,
@@ -1117,7 +1208,7 @@ c            write(*,*)'irtc: ',irtc
         go to 6900
  520    call tfwhile(isp1,kx,irtc)
         go to 6900
- 530    call tfjoin(isp1,kx,.true.,irtc)
+ 530    kx=tfjoin(isp1,.true.,irtc)
         go to 6900
  540    if(narg .eq. 2)then
           kx=tfappend(dtastk(isp1+1),k,.true.,0,irtc)
@@ -2134,6 +2225,80 @@ c          write(*,*)'tfcheck-1 ',modethrow,irtc
       return
       end
 
+      function tfjoin(isp1,eval,irtc) result(kx)
+      use tfstk
+      implicit none
+      type (sad_descriptor) kx
+      type (sad_descriptor) kf
+      type (sad_dlist), pointer :: kl1,kli
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,i,narg,isp0
+      logical*4 ,intent(in):: eval
+      logical*4 ev
+      narg=isp-isp1
+      if(ktfnonlistq(ktastk(isp1+1),kl1))then
+        go to 9010
+      endif
+      if(narg .le. 1)then
+        if(narg .eq. 1)then
+          kx=dtastk(isp1+1)
+          irtc=0
+        else
+          irtc=itfmessage(9,'General::narg','"1 or more"')
+        endif
+        return
+      endif
+      kf=kl1%head
+      isp=isp+1
+      isp0=isp
+      call tfgetllstkall(kl1)
+      if(isp .ge. mstk)then
+        kx=dxnullo
+        irtc=itfmessage(9999,'General::stack','"Join"')
+        return
+      endif
+      do i=isp1+2,isp0-1
+        if(ktfnonlistq(ktastk(i),kli))then
+          isp=isp0-1
+          go to 9000
+        endif
+        if(.not. tfsameq(kli%head,kf))then
+          go to 9100
+        endif
+        call tfgetllstkall(kli)
+        if(isp .ge. mstk)then
+          kx=dxnullo
+          irtc=itfmessage(9999,'General::stack','"Join"')
+          return
+        endif
+      enddo
+      dtastk(isp0)=kf
+      ev=eval
+      if(ev .and. (kf%k .eq. ktfoper+mtflist .or.
+     $     kf%k .eq. ktfoper+mtfalt .or.
+     $     kf%k .eq. ktfoper+mtfnull))then
+          ev=.false.
+      endif
+      if(ev)then
+        kx=tfefunref(isp0,.true.,irtc)
+      else
+        kx=kxcompose(isp0)
+        irtc=0
+      endif
+      isp=isp0-1
+      return
+ 9000 isp=isp0-1
+ 9010 irtc=itfmessage(9,'General::wrongtype',
+     $     '"List or composition for all args"')
+      kx=dxnullo
+      return
+ 9100 irtc=itfmessage(9,'General::samehead',' ')
+      kx=dxnullo
+      isp=isp0-1
+      return
+      end
+
       end module efun
 
       subroutine tfefun(isp1,kx,ref,upvalue,irtc)
@@ -2456,7 +2621,7 @@ c          call tfstk2l(lista,lista)
           endif
         endif
         if(ref)then
-          call tfevallev(kls,kx,irtc)
+          kx=tfevallev(kls,irtc)
         else
           call tfevallstkall(kls,.false.,.false.,irtc)
           if(irtc .eq. 0)then
@@ -2653,3 +2818,100 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
  9000 level=max(0,level-1)
       return
       end
+
+      function tfjoine(k1,k2,irtc) result(kx)
+      use tfstk
+      use eexpr
+      implicit none
+      type (sad_descriptor) kx,tfjoin2
+      type (sad_descriptor) ,intent(in):: k1,k2
+      type (sad_descriptor) k10,k20,ky1
+      type (sad_dlist), pointer ::kl1,kl2
+      integer*4 ,intent(out):: irtc
+      integer*4 ma1,ma2,m,iopc,isp1
+      if(ktfnonlistq(k1,kl1) .or. ktfnonlistq(k2,kl2)
+     $     .or. .not. tfsameheadq(k1,k2))then
+        kx=dxnullo
+        irtc=-1
+        return
+      endif
+      irtc=0
+      iopc=int(ktfaddr(kl1%head%k))
+      if(iopc .eq. mtfplus .or. iopc .eq. mtftimes)then
+        if(.not. tfnumberq(kl1%dbody(1)))then
+          kx=tfjoin2(k2,k1,.false.,irtc)
+          go to 1000
+        endif
+        if(.not. tfnumberq(kl2%dbody(1)))then
+          kx=tfjoin2(k1,k2,.false.,irtc)
+          go to 1000
+        endif
+        ma1=kl1%nl
+        ma2=kl2%nl
+        m=ma1+ma2-1
+        k10=kl1%dbody(1)
+        k20=kl2%dbody(1)
+        ky1=tfcmplx(k10,k20,iopc,irtc)
+        if(irtc .ne. 0)then
+          kx=dxnullo
+          return
+        endif
+        if(ktfrealq(ky1))then
+          if(iopc .eq. mtfplus)then
+            if(ky1%k .eq. 0)then
+              m=m-1
+            endif
+          else
+            if(ky1%k .eq. 0)then
+              kx%k=0
+              return
+            elseif(ky1%k .eq. ktftrue)then
+              m=m-1
+            endif
+          endif
+        endif
+        if(m .eq. 1)then
+          kx=kl2%dbody(2)
+          return
+        endif
+        isp1=isp
+        if(m .eq. ma1+ma2-2)then
+          call tfgetllstk(kl1,2,-1)
+          call tfgetllstk(kl2,2,-1)
+        else
+          isp=isp+1
+          dtastk(isp)=ky1
+          call tfgetllstk(kl1,2,-1)
+          call tfgetllstk(kl2,2,-1)
+        endif
+        kx=kxcrelistm(isp-isp1,ktastk(isp1+1:isp),k_descr(ktfoper+iopc))
+        isp=isp1
+      else
+        kx=tfjoin2(k1,k2,.false.,irtc)
+        return
+      endif
+ 1000 isp=isp+1
+      dtastk(isp)=kx
+      call tfsort(isp-1,kx,0,irtc)
+      isp=isp-1
+      return
+      end
+
+      function tfjoin2(k1,k2,eval,irtc) result(kx)
+      use tfstk
+      use efun
+      implicit none
+      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(in):: k1,k2
+      integer*4 ,intent(out):: irtc
+      integer*4 isp1
+      logical*4 ,intent(in):: eval
+      isp1=isp
+      isp=isp+1
+      dtastk(isp)=k1
+      isp=isp+1
+      dtastk(isp)=k2
+      kx=tfjoin(isp1,eval,irtc)
+      isp=isp1
+      return
+      end function

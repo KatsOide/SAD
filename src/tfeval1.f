@@ -23,7 +23,7 @@
      $       mtfcomplex:mtfcomma,mtfdot,mtfend)
         if(tfnumberq(k2) .and.
      $     (tfnumberq(k1) .or. iopc1 .eq. mtfnot))then
-          call tfcmplx(k1,k2,kx,iopc1,irtc)
+          kx=tfcmplx(k1,k2,iopc1,irtc)
           return
         endif
         if(tflistq(k2) .or. tflistq(k1))then

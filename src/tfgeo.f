@@ -6,21 +6,31 @@
       use ffs_pointer
       use tffitcode
       use geolib
+      use kradlib, only:bsi
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 i,lxp,lt,nv,j,it
       real*8 geo1(3,4),geo2(3,3),vsave(256),dpos,offset,xp,fr,pos0,
      $     dgo(3),tffsmarkoffset,rgetgl1,poso,posi
-      logical*4 calgeo,calpol0,chg
+      logical*4 calgeo,calpol0,chg,allocbsi
       logical*4 ,intent(in):: calgeo0
       call tfsetparam
+      allocbsi=.not. allocated(bsi)
       if(.not. geocal)then
         if(gammab(1) .ne. p0)then
+          if(allocbsi)then
+c            write(*,*)'tfgeo-alloc-1 bsi'
+            allocate(bsi(1))
+          endif
           gammab(1)=p0
           call tfgeo1(1,nlat,calgeo,.true.)
           go to 9000
         endif
         return
+      endif
+      if(allocbsi)then
+c        write(*,*)'tfgeo-alloc-2 bsi'
+        allocate(bsi(1))
       endif
       irad=6
       calpol0=calpol
@@ -139,6 +149,10 @@
         endif
         call rsetgl1('OMEGA0',omega0)
       endif
+      if(allocbsi)then
+c        write(*,*)'tfgeo-9-dealloc bsi'
+        deallocate(bsi)
+      endif
       return
       end
 
@@ -152,7 +166,6 @@
       use tfcsi, only:icslfno
       use mathfun
       use geolib
-      use kradlib, only:bsi
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 ,intent(in):: istart0,istop
@@ -165,7 +178,7 @@
      $     theta,cost,sint,r21,r22,r23,ald,tfacc
       parameter (oneev=1.d0+3.83d-12)
       logical*4 ,intent(in):: calgeo,acconly
-      logical*4 sol,dir,allocbsi
+      logical*4 sol,dir
 c     begin initialize for preventing compiler warning
       cost=1.d0
       sint=0.d0
@@ -187,10 +200,6 @@ c      h1=sqrt(1.d0+p1**2)
       enddo
       if(acconly)then
         return
-      endif
-      allocbsi=.not. allocated(bsi)
-      if(allocbsi)then
-        allocate(bsi(1))
       endif
       dvfs=0.d0
       call tesetdv(0.d0)
@@ -343,9 +352,6 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
           endif
         endif
       enddo
-      if(allocbsi)then
-        deallocate(bsi)
-      endif
       call tsetdvfs
       call tesetdv(0.d0)
       return
