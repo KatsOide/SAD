@@ -374,6 +374,7 @@ c      enddo
       subroutine tfdeval(isp1,kad00,kx,iup,def,ev,irtc)
       use tfstk
       use tfcode
+      use eeval
       implicit none
       type (sad_descriptor) kx,kad00
       type (sad_dlist), pointer :: larg,klx
@@ -480,11 +481,11 @@ c      enddo
               kx=dtbl%bodyc
               if(dtbl%pat .ne. -1)then
                 if(ktflistq(kx,klx))then
-                  call tfleval(klx,kx,.true.,irtc)
+                  kx=tfleval(klx,.true.,irtc)
                 elseif(ktfsymbolq(kx))then
-                  call tfsyeval(kx,kx,irtc)
+                  kx=tfsyeval(kx,irtc)
                 elseif(ktfpatq(kx))then
-                  call tfpateval(kx,kx,irtc)
+                  kx=tfpateval(kx,irtc)
                 endif
                 if(irtc .ne. 0)then
                   call tfcatchreturn(irtcret,kx,irtc)
@@ -636,6 +637,7 @@ c      enddo
       subroutine tfdeval1(isp1,kad0,kx,ev,ordless,ns,irtc)
       use tfstk
       use tfcode
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) kh,kal,tfevalwitharg
@@ -693,7 +695,7 @@ c      enddo
             kx=tfevalwitharg(dtbl,dtbl%bodyc,irtc)
             call tflocal1d(kal)
           else
-            call tfeevalref(dtbl%bodyc,kx,irtc)
+            kx=tfeevalref(dtbl%bodyc,irtc)
           endif
           if(irtc .ne. 0)then
             call tfcatchreturn(irtcret,kx,irtc)
@@ -714,6 +716,7 @@ c      enddo
 
       function tfevalwitharg(dtbl,k,irtc) result(kx)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) kx,tfevalwitharg1
       type (sad_descriptor) ,intent(in):: k
@@ -736,7 +739,7 @@ c      endif
       if(kx%k .eq. ktfref)then
         call tfseval(ks,m,kh,kx,.true.,av,.true.,irtc)
       else
-        call tfeevalref(kx,kx,irtc)
+        kx=tfeevalref(kx,irtc)
       endif
       call tfcatchreturn(irtcret,kx,irtc)
       isp=isp0
@@ -899,10 +902,10 @@ c          call tfdebugprint(kx,'evalwarg-symdef',1)
 
       logical*4 function tfreplacearg(k,kx,irtc)
       use tfstk
+      use funs
       implicit none
       type (sad_descriptor) ,intent(in):: k
       type (sad_descriptor) ,intent(out):: kx
-      type (sad_descriptor) tfsequence
       integer*4 ,intent(out):: irtc
       integer*4 isp0
       logical*4 tfreplaceargstk
@@ -914,7 +917,7 @@ c      call tfdebugprint(k,'tfreparg-in',1)
         return
       endif
       kx=merge(dxnull,
-     $     merge(dtastk(isp),tfsequence(isp0,isp,kx),isp .eq. isp0+1),
+     $     merge(dtastk(isp),tfsequence(isp0,isp),isp .eq. isp0+1),
      $     isp .eq. isp0)
       isp=isp0
       return

@@ -309,10 +309,13 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
       use ffs_pointer
       use tffitcode
       use ffs_wake
+      use eeval
       use iso_c_binding
       implicit none
+      type (sad_dlist) ,pointer :: kwll,kwtl
+      type (sad_descriptor) kx
       type (ffs_bound) fbound
-      integer*8 kx,kal,kalj,ktfmalocp,kat,katj
+      integer*8 kal,kalj,ktfmalocp,kat,katj
       integer*4 irtc,isp0,isp1,lfno,n,m,lenw,l,itfdownlevel,isp2,
      $     i,j,k
       character*(MAXPNAME+10) name
@@ -340,7 +343,8 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
         ilist(1,ifname)=lenw(name)
         call tfpadstr(name,ifname+1,ilist(1,ifname))
         levele=levele+1
-        call tfleval(klist(ifwfunl-3),kx,.true.,irtc)
+        call descr_sad(dlist(ifwfunl),kwll)
+        kx=tfleval(kwll,.true.,irtc)
         if(irtc .ne. 0)then
           if(ierrorprint .ne. 0)then
             call tfaddmessage('WakeFunction Longitudinal',0,lfno)
@@ -371,7 +375,8 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
           endif
         endif
  20     isp2=isp
-        call tfleval(klist(ifwfunt-3),kx,.true.,irtc)
+        call descr_sad(dlist(ifwfunt),kwtl)
+        kx=tfleval(kwtl,.true.,irtc)
         isp=isp2
         if(irtc .ne. 0)then
           if(ierrorprint .ne. 0)then

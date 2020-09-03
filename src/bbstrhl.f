@@ -558,7 +558,7 @@ c      call tfmemcheckprint('rlum_col',1,.true.,irtc)
       real*8 m_tmp(36),m_Crs(36),eig5(10)
       real*8 m_B(36),m_R(36),m_H(36),m_HRB(36),m_Emit(36)
       real*8 p_in(70),rne,blist(nblist)
-      real*8 rgetgl,gauinv,rfromk
+      real*8 rgetgl,gauinv
       real*8 cnbs,cpbs,cubs,gamp
 c      type (sad_descriptor) kv
       type (sad_symdef), pointer :: vsymd

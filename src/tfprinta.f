@@ -2,6 +2,7 @@
       use tfstk
       use tfform
       use tfcsi
+      use eeval
       implicit none
       type (sad_descriptor) kx
       type (sad_symbol), pointer :: symf,symp
@@ -12,7 +13,7 @@
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
-      if(iaxform .eq. 0)then
+      if(iaxform%k .eq. 0)then
         call tfforminit
       endif
       symf=>tfsydef(symform)
@@ -24,7 +25,7 @@
       symfd%value=dtfcopy1(dxnulls)
       sympd%value=dfromr(dble(nbmax-256))
 c      call tfdebugprint(sympd%value,'standardform',1)
-      call tfeeval(ktastk(isp),kx,.true.,irtc)
+      kx=tfeeval(dtastk(isp),.true.,irtc)
       call tflocald(symfd%value)
       symfd%value%k=kf1
       call tflocald(sympd%value)
@@ -35,14 +36,15 @@ c      call tfdebugprint(sympd%value,'standardform',1)
       character*(*) function tfgetform()
       use tfstk
       use tfform
+      use eeval
       implicit none
       type (sad_descriptor) ks
       type (sad_string) , pointer :: str
       integer*4 nc,irtc
-      if(iaxform .eq. 0)then
+      if(iaxform%k .eq. 0)then
         call tfforminit
       endif
-      call tfsyeval(iaxform,ks,irtc)
+      ks=tfsyeval(iaxform,irtc)
       if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
         call tfreseterror
         tfgetform=' '
@@ -65,13 +67,14 @@ c      call tfdebugprint(sympd%value,'standardform',1)
       integer*4 function itfgetrecl()
       use tfstk
       use tfform
+      use eeval
       implicit none
       type (sad_descriptor) ks
       integer*4 irtc
-      if(iaxform .eq. 0)then
+      if(iaxform%k .eq. 0)then
         call tfforminit
       endif
-      call tfsyeval(iaxpagewidth,ks,irtc)
+      ks=tfsyeval(iaxpagewidth,irtc)
       if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
         call tfreseterror
         itfgetrecl=131

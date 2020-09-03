@@ -3,6 +3,7 @@
       use ophash
       use opdata
       use tfcsi
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: kla,klx
@@ -355,7 +356,7 @@ c
           ipoint=istop
         endif
 c        call tfdebugprint(dtastk(isp),'tfeval-8',3)
-        call tfeevalref(ktastk(isp),kx%k,irtc)
+        kx=tfeevalref(dtastk(isp),irtc)
         if(re)then
           savep=sav
         endif

@@ -122,15 +122,16 @@ c          msgn /:   (*   *)   Hold z
 
       module tfform
       use tfstk
-      integer*8, save :: iaxform=0,iaxpagewidth=0
+      type (sad_descriptor) ,save::iaxform,iaxpagewidth
+      data iaxform%k,iaxpagewidth%k /0,0/
       type (sad_symbol), pointer, save :: symform,sympw
       contains
         subroutine tfforminit
         implicit none
-        iaxform=ktfsymbolz('System`$FORM',12)
-        iaxpagewidth=ktfsymbolz('System`PageWidth',16)
-        call loc_sym(iaxform,symform)
-        call loc_sym(iaxpagewidth,sympw)
+        iaxform=kxsymbolz('System`$FORM',12)
+        iaxpagewidth=kxsymbolz('System`PageWidth',16)
+        call descr_sym(iaxform,symform)
+        call descr_sym(iaxpagewidth,sympw)
         end subroutine
       end module
 
@@ -291,6 +292,7 @@ c        write(*,*)'isp, iop: ',isp,iop
 
       subroutine tfeinequal(k1,k2,kx,iop1,nextrel)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(in):: k1,k2
       type (sad_descriptor) ,intent(out):: kx
@@ -355,7 +357,7 @@ c      write(*,*)'with ',iop1,nextrel
       endif
       if(.not. nextrel)then
         if(tfconstlistqo(klx))then
-          call tfleval(klx,kx%k,.true.,irtc)
+          kx=tfleval(klx,.true.,irtc)
         endif
       endif
 c      call tfdebugprint(kx,'resulting:',1)
@@ -364,6 +366,7 @@ c      call tfdebugprint(kx,'resulting:',1)
 
       subroutine tfinequality(isp1,kx,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -381,7 +384,7 @@ c      call tfdebugprint(kx,'resulting:',1)
       endif
       kx%k=ktftrue
       do i=isp1+1,isp,2
-        call tfeevalref(dtastk(i),dtastk(i),irtc)
+        dtastk(i)=tfeevalref(dtastk(i),irtc)
         if(irtc .ne. 0)then
           return
         endif
@@ -531,6 +534,7 @@ c      include 'DEBUG.inc'
       function  tfcomposeoper(isp1,iah,comp,isp0,irtc) result(kx)
       use tfstk
       use ophash
+      use eexpr
       implicit none
       type (sad_descriptor) kx,tfpart
       integer*4 ,intent(in):: isp1,iah
@@ -552,7 +556,7 @@ c      include 'DEBUG.inc'
         case (mtfplus,mtftimes)
           if(tfconstq(ktastk(isp1+1)))then
             if(tfconstq(ktastk(isp)))then
-              call tfplus(isp1,kx,iah,irtc)
+              kx=tfplus(isp1,iah,irtc)
               return
             endif
           endif

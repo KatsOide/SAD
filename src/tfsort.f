@@ -1066,13 +1066,12 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*8 kfromr
       integer*4 isp1,irtc,itfcanonicalorder,itfmessage
       if(isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
-      kx%k=kfromr(dble(itfcanonicalorder(dtastk(isp),dtastk(isp1+1))))
+      kx%x(1)=dble(itfcanonicalorder(dtastk(isp),dtastk(isp1+1)))
       irtc=0
       return
       end

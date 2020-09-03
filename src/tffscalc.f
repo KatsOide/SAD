@@ -11,12 +11,13 @@
       use tffitcode
       use tfshare
       use tfcsi,only:lfno
+      use eeval
       use macmath
       use mathfun
       implicit none
 c      include 'DEBUG.inc'
+      type (sad_descriptor) kx
       type (ffs_bound) fbound,ibound
-      integer*8 kx
       integer*4 ,intent(in):: nqcola,nqcola1,
      $     kdp(maxcond),iqcol(maxcond),lfp(2,maxcond)
       integer*4 ,intent(out):: ibegin
@@ -56,7 +57,7 @@ c     end   initialize for preventing compiler warning
       call tclrfpe
 c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
       l=itfuplevel()
-      call tfeeval(ktfsymbol+iprolog,kx,.true.,irtc)
+      kx=tfeeval(dfromk(ktfsymbol+iprolog),.true.,irtc)
       l=itfdownlevel()
       if(irtc .ne. 0)then
         if(irtc .gt. 0)then
@@ -315,7 +316,6 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
         enddo
         if(fitflg)then
           if(nvar .le. 0)then
-            write(*,*)'tffscalc ',nvar
             call termes(lfno,'?No variable.',' ')
             error=.true.
           endif
@@ -439,7 +439,7 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
       ifpe=itgetfpe()
       call tclrfpe
       l=itfuplevel()
-      call tfeeval(ktfsymbol+iepilog,kx,.true.,irtc)
+      kx=tfeeval(dfromk(ktfsymbol+iepilog),.true.,irtc)
       l=itfdownlevel()
       if(irtc .ne. 0)then
         if(irtc .gt. 0)then
@@ -465,12 +465,14 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       use ffs_fit
       use ffs_flag, only:cell
       use tffitcode
+      use eeval
       implicit none
-      integer*8 kx
+      type (sad_descriptor) kx
+      type (sad_dlist),pointer ::ifvl
       integer*4 ,intent(in):: nqcola,maxf,
      $     kfit(*),ifitp(*),kfitp(*),kdp(*),iqcol(nqcola)
       integer*4 i,j,k,iq
-      real*8 coum,emxx,emyy,dpm,coup,em,rfromk
+      real*8 coum,emxx,emyy,dpm,coup,em
       integer*4 itfuplevel, level,irtc,idp
       character*16 name
       logical*4 ,intent(in):: wcal
@@ -570,17 +572,16 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
           rlist(ifv+4)=wfit(i)
           call tclrfpe
           level=itfuplevel()
-          call tfleval(klist(ifv-3),kx,.true.,irtc)
-          call tfconnectk(kx,irtc)
+          call descr_sad(dlist(ifv),ifvl)
+          kx=tfleval(ifvl,.true.,irtc)
+          call tfconnect(kx,irtc)
           if(irtc .ne. 0)then
             if(ierrorprint .ne. 0)then
               call tfaddmessage(' ',2,6)
             endif
             call termes(6,'Error in FitWeight '//
      $           nlist(k)//' at '//name,' ')
-          elseif(ktfrealq(kx))then
-c            write(*,*)'twfit ',nlist(k),rfromk(kx),wfit(i)
-            wiq(iq)=rfromk(kx)
+          elseif(ktfrealq(kx,wiq(iq)))then
           endif
         else
           wiq(iq)=1.d0

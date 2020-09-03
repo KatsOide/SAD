@@ -1,34 +1,38 @@
       module casym
+      use tfstk
       implicit none
+      type (sad_descriptor) ,save :: kxcamonitor
+      data kxcamonitor%k /0/
       integer*8, save::
-     $     kxcamonitor=0,irl,icsconn,icarl,icacsconn,
+     $     irl,icsconn,icarl,icacsconn,
      $     ics,ipos,icsl,irn,irnl,icscomm,iauto,istart,
      $     iv,isev,its,ivl,isevl,itsl,ivalcomm
 
       contains
         subroutine tfepicssyminit(irtc)
         use tfstk
+        use eeval
         implicit none
           integer*4 irtc
-        integer*8 kax,kx
-        kax=ktfsymbolz('CaMonitor',9)
-        call tfsyeval(kax,kx,irtc)
+        type (sad_descriptor) kax,kx
+        kax=kxsymbolz('CaMonitor',9)
+        kx=tfsyeval(kax,irtc)
         if(irtc .ne. 0 .or. ktfnonlistq(kx))then
           go to 9000
         endif
-        kxcamonitor=ktfcopy(kx)
+        kxcamonitor=dtfcopy(kx)
         irl=ktfsymbolz('rl',2)
-        call tfclassmember(kxcamonitor,ktfsymbol+irl,kx,.false.,irtc)
+        call tfclassmember(kxcamonitor,ktfsymbol+irl,kx%k,.false.,irtc)
         if(irtc .ne. 0 .or. ktfnonsymbolq(kx))then
-          kxcamonitor=0
+          kxcamonitor%k=0
           go to 9000
         endif
         icarl=ktfaddr(kx)
         icsconn=ktfsymbolz('CS$Conn',7)
         call tfclassmember(kxcamonitor,ktfsymbol+icsconn,
-     $       kx,.false.,irtc)
+     $       kx%k,.false.,irtc)
         if(irtc .ne. 0 .or. ktfnonsymbolq(kx))then
-          kxcamonitor=0
+          kxcamonitor%k=0
           go to 9000
         endif
         icacsconn=ktfaddr(kx)
@@ -58,17 +62,18 @@
       subroutine tfepicsconstatcb(chid,istat)
       use tfstk
       use casym
+      use eeval
       implicit none
-      type (sad_descriptor) stat,kn,krnn
+      type (sad_descriptor) stat,kn,krnn,ki
       real*8 chid
       integer*8 kx, iastart,icarlch,kaa,
-     $     ka,iacscomm,iarn, ki
+     $     ka,iacscomm,iarn
       integer*4 isp0,irtc,n,l,itfdownlevel,istat
       real*8 vn
       logical*4 ev
       levele=levele+1
       isp0=isp
-      if(kxcamonitor .eq. 0)then
+      if(kxcamonitor%k .eq. 0)then
         call tfepicssyminit(irtc)
         if(irtc .ne. 0)then
           go to 9000
@@ -109,7 +114,8 @@
         if(irtc .ne. 0)then
           go to 9000
         endif
-        call tfclassmember(ktflist+kaa,ktfsymbol+irn,kx,.true.,irtc)
+        call tfclassmember(dfromk(ktflist+kaa),ktfsymbol+irn,
+     $       kx,.true.,irtc)
         if(irtc .ne. 0)then
           go to 9000
         endif
@@ -127,26 +133,28 @@
           go to 9000
         endif
       endif
-      call tfclassmember(ktflist+kaa,ktfsymbol+icscomm,kx,.true.,irtc)
+      call tfclassmember(dfromk(ktflist+kaa),ktfsymbol+icscomm,
+     $     kx,.true.,irtc)
       if(irtc .ne. 0)then
         go to 9000
       endif
       iacscomm=ktfaddr(kx)
       if(ktflistq(kx))then
         if(klist(iacscomm) .eq. ktfoper+mtfhold)then
-          call tfeevalref(klist(iacscomm+1),ki,irtc)
+          ki=tfeevalref(dlist(iacscomm+1),irtc)
           if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
             call tfreseterror
           endif
         endif
       endif
-      call tfclassmember(ktflist+kaa,ktfsymbol+iauto,kx,.true.,irtc)
+      call tfclassmember(dfromk(ktflist+kaa),ktfsymbol+iauto,
+     $     kx,.true.,irtc)
       if(irtc .ne. 0)then
         go to 9000
       endif
       if(ktfrealq(kx) .and. kx .ne. 0)then
         if(rlist(icacsconn-4) .eq. stat%x(1))then
-          call tfclassmember(ktflist+kaa,ktfsymbol+istart,
+          call tfclassmember(dfromk(ktflist+kaa),ktfsymbol+istart,
      $         kx,.true.,irtc)
           if(irtc .ne. 0 .or. ktfnonsymbolq(kx))then
             go to 9000
@@ -171,18 +179,18 @@
      $     nc,karray)
       use tfstk
       use casym
+      use eeval
       implicit none
-      type (sad_descriptor) k,krnn
+      type (sad_descriptor) k,krnn,ka,kn,ki
       real*8 chid
-      integer*8 karray(nc),kx, ka,kn,iarn,
-     $     iavalcomm,kaa,ki, icarlch
+      integer*8 karray(nc),kx,iarn,iavalcomm,kaa,icarlch
       integer*4 istat,jsev,itype,nc
-      real*8 t,rfromk,vn,stat
+      real*8 t,vn,stat
       integer*4 isp0,isp2,irtc,n,l,i,itfdownlevel
       logical*4 ev
       levele=levele+1
       isp0=isp
-      if(kxcamonitor .eq. 0)then
+      if(kxcamonitor%k .eq. 0)then
         call tfepicssyminit(irtc)
         if(irtc .ne. 0)then
           go to 9000
@@ -200,12 +208,12 @@
       if(ilist(2,icarlch-1) .lt. 2)then
         go to 9000
       endif
-      ka=klist(icarlch+1)
-      kn=klist(icarlch+2)
+      ka=dlist(icarlch+1)
+      kn=dlist(icarlch+2)
       if(ktfnonlistq(ka) .or. ktfnonrealq(kn))then
         go to 9000
       endif
-      n=int(rfromk(kn))
+      n=int(kn%x(1))
       stat=istat
       if(itype .eq. 0)then
         if(nc .eq. 1)then
@@ -226,7 +234,7 @@
           k=kxm2l(rlist(ksad_loc(karray(1)):),0,nc,nc,.false.)
         endif
       endif
-      kaa=ktfaddr(ka)
+      kaa=ktfaddr(ka%k)
       if(n .lt. 1)then
         call tfcbsetsymbol(kaa,iv,k,irtc)
         if(irtc .ne. 0)then
@@ -257,7 +265,8 @@
         if(irtc .ne. 0)then
           go to 9000
         endif
-        call tfclassmember(ktflist+kaa,ktfsymbol+irn,kx,.true.,irtc)
+        call tfclassmember(dfromk(ktflist+kaa),ktfsymbol+irn,
+     $       kx,.true.,irtc)
         if(irtc .ne. 0)then
           go to 9000
         endif
@@ -283,14 +292,15 @@
           go to 9000
         endif
       endif
-      call tfclassmember(ktflist+kaa,ktfsymbol+ivalcomm,kx,.true.,irtc)
+      call tfclassmember(dfromk(ktflist+kaa),ktfsymbol+ivalcomm,
+     $     kx,.true.,irtc)
       if(irtc .ne. 0)then
         go to 9000
       endif
       iavalcomm=ktfaddr(kx)
       if(ktflistq(kx))then
         if(klist(iavalcomm) .eq. ktfoper+mtfhold)then
-          call tfeevalref(klist(iavalcomm+1),ki,irtc)
+          ki=tfeevalref(dlist(iavalcomm+1),irtc)
         endif
       endif
  9000 call tfresetpendio
@@ -305,7 +315,8 @@
       type (sad_descriptor) k1
       integer*8 ka,kv,kax,kx
       integer*4 irtc
-      call tfclassmember(ktflist+ka,ktfsymbol+kv,kx,.false.,irtc)
+      call tfclassmember(dfromk(ktflist+ka),ktfsymbol+kv,
+     $     kx,.false.,irtc)
       if(irtc .ne. 0)then
         return
       elseif(ktfnonsymbolq(kx))then
@@ -324,7 +335,8 @@
       type (sad_descriptor) k1
       integer*8 ka,kv,kal,kax,kx
       integer*4 n,irtc,i
-      call tfclassmember(ktflist+ka,ktfsymbol+kv,kx,.false.,irtc)
+      call tfclassmember(dfromk(ktflist+ka),ktfsymbol+kv,
+     $     kx,.false.,irtc)
       if(irtc .ne. 0)then
         return
       elseif(ktfnonsymbolq(kx))then

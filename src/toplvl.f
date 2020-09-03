@@ -470,14 +470,14 @@ c
       character*(*) , intent(in)::str
       integer*4 , intent(out)::irtc
       type (sad_descriptor) , intent(out)::kx
-      integer*8 kfile,ksize,mapallocfile,kfromr
+      integer*8 kfile,ksize,mapallocfile
       integer*4 lfn,ifd
       kfile=mapallocfile(str,ifd,ksize,irtc)
       if(irtc .eq. 0)then
         call trbopen(lfn,kfile/8,ksize+modemapped,ifd)
-        kx%k=kfromr(dble(lfn))
+        kx%x(1)=dble(lfn)
       else
-        kx%k=kfromr(-1.d0)
+        kx%x(1)=-1.d0
       endif
       return
       end subroutine

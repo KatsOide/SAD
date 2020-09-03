@@ -7,7 +7,7 @@
       use kradlib
       use bendib, only:tbendal
       use photontable, only:tsetpcvt
-      use mathfun, only:pxy2dpz
+      use mathfun, only:sqrt1,pxy2dpz
       implicit none
       real*8 , parameter :: a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
      1     a9=35.d0/1152.d0,a11=63.d0/2816.d0,
@@ -102,7 +102,7 @@
           py(i)=py(i)+((dyfr1-dyfra1*y(i)**2)/p**2+tanp1/rhoe)*y(i)
           z(i)=z(i)+(dxfr1*pxi+
      $         (.5d0*dyfr1-.25d0*dyfra1*y(i)**2)*y(i)**2/p)/p
-          dpv1=pxy2dpz(pxi,0.d0)
+          dpv1=sqrt1(-pxi**2)
           pv1=1.d0+dpv1
           fa=y(i)/rhoe/pv1
           f=(1.d0-(y(i)/rhob)**2/6.d0)*fa
@@ -140,7 +140,7 @@
           dyi=pyi*(alx+dl)
           bsi(i)=-dyi/rhob
           y(i)=y(i)+dyi
-          dpv2=pxy2dpz(pxf,0.d0)
+          dpv2=sqrt1(-pxf**2)
           pv2=1.d0+dpv2
           fa=y(i)/rhoe/pv2
           f=(1.d0-(y(i)/rhob)**2/6.d0)*fa

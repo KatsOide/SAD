@@ -1,5 +1,6 @@
       function tftake(k,kn,take0,eval,irtc) result(kx)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) kx
       type (sad_descriptor) ,intent(in):: k,kn
@@ -167,13 +168,14 @@
       endif
  1    klx%head=dtfcopy(kl%head)
       if(eval)then
-        call tfleval(klx,kx,.true.,irtc)
+        kx=tfleval(klx,.true.,irtc)
       endif      
       return
       end
 
       subroutine tfreverse(isp1,kx,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -208,12 +210,13 @@ c        enddo
       listx%head=dtfcopy(list%head)
       listx%attr=list%attr
       irtc=0
-      call tfleval(listx,kx,.true.,irtc)
+      kx=tfleval(listx,.true.,irtc)
       return
       end
 
       subroutine tfrotateright1(isp1,kx,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -266,7 +269,7 @@ c        enddo
       endif
       klx%head=dtfcopy(kl%head)
       klx%attr=kl%attr
-      call tfleval(klx,kx,.true.,irtc)
+      kx=tfleval(klx,.true.,irtc)
       return
  8000 kx=dtastk(isp1+1)
       irtc=0
@@ -275,6 +278,7 @@ c        enddo
 
       subroutine tfdifference(isp1,kx,irtc)
       use tfstk
+      use eeval
       use iso_c_binding
       implicit none
       type (sad_descriptor) ,intent(out):: kx
@@ -331,7 +335,7 @@ c        enddo
         isp=isp0
       endif
       klx%head=dtfcopy(kl%head)
-      call tfleval(klx,kx,.true.,irtc)
+      kx=tfleval(klx,.true.,irtc)
       return
       isp=isp0
       return
@@ -393,9 +397,11 @@ c        enddo
       subroutine tfcleardef(kl,irtc)
       use tfstk
       use tfcode
+      use funs
+      use eeval
       use iso_c_binding
       implicit none
-      type (sad_descriptor) kh,kx,tfset
+      type (sad_descriptor) kh,kx
       type (sad_dlist) ,intent(inout):: kl
       type (sad_dlist), pointer :: klh
       type (sad_symbol), pointer :: symh
@@ -797,6 +803,7 @@ c      include 'DEBUG.inc'
 
       recursive subroutine tfreleaseholdstk(isp1,isp2,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_dlist), pointer :: kli
       integer*4 isp1,irtc,i,isp0,isp2,isp3,j,isp4

@@ -31,8 +31,8 @@ c
       endif
       v(1:n)=1.d0
       x(1:m)=1.d0
+      b(1:n1,1:n1)=0.d0
       do j=1,n1
-        b(1:n1,j)=0.d0
         b(j,j)=1.d0
       enddo
       do i=1,mn
@@ -256,11 +256,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
           w=x(ibegin)
           z=x(iend)
           y=x(iend-1)
-          if(ibegin .lt. iend-1)then
-            g=v(iend-2)
-          else
-            g=0.d0
-          endif
+          g=merge(v(iend-2),0.d0,ibegin .lt. iend-1)
           h=v(iend-1)
           f=((y-z)*(y+z)+(g-h)*(g+h))*.5d0
           if(w .eq. 0.d0)then

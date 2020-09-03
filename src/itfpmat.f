@@ -65,6 +65,7 @@ c      endif
       integer*4 function itflistmat(k,listp)
       use tfstk
       use efun
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(in):: k
       type (sad_descriptor) kph,ki,kc,kh,kf,k1,kp1
@@ -224,7 +225,7 @@ c      endif
               if(itflistmat .ge. 0)then
                 isp3=isp
                 isp=isp+1
-                call tfeevalref(listp%dbody(2),dtastk(isp),irtc)
+                dtastk(isp)=tfeevalref(listp%dbody(2),irtc)
                 if(irtc .ne. 0)then
                   if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
                     call tfreseterror
@@ -688,6 +689,7 @@ c     write(*,*)'at ',ispp,' with ',mop,np
       use tfcode
       use tfpmat
       use efun
+      use eeval
       use iso_c_binding
       implicit none
       type (sad_descriptor) ,intent(in):: kp0
@@ -876,6 +878,7 @@ c          write(*,*)'==> ',ix
       integer*4 function itfsinglepat(k,pat)
       use tfstk
       use tfcode
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(in):: k
       type (sad_descriptor) kx,ke,k1,kv,kh
@@ -888,7 +891,7 @@ c          write(*,*)'==> ',ix
       if(ktfrefq(kx,kax))then
         if(pat%head%k .ne. ktfref)then
           isp3=isp
-          call tfeevalref(pat%head,kv,irtc)
+          kv=tfeevalref(pat%head,irtc)
           isp=isp3
           if(irtc .ne. 0)then
             if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
@@ -926,7 +929,7 @@ c          write(*,*)'==> ',ix
         endif
       else
         isp3=isp
-        call tfeevalref(kx,ke,irtc)
+        ke=tfeevalref(kx,irtc)
         isp=isp3
         if(irtc .ne. 0)then
           if(irtc .gt. 0 .and. ierrorprint .ne. 0)then

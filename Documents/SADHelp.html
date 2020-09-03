@@ -13,22 +13,16 @@ eqs img{
 <body>
 <center><h2>Welcome to SAD/FFS & SADScript
 </h2></center>
-<center> SAD/FFS SADScript Version: 1.1.9k64,      Updated: 08/29/2020</center>
+<center> SAD/FFS SADScript Version: 1.1.9.0.1k64,      Updated: 08/31/2020</center>
 
 <pre> Please use browser's search to find an item.
 
  The FFS commands are shown in uppercases. The minimum abbreviated form of each command is enclosed
 in (). Each command can be shorten down to that. The optional arguments for the commands are usually
-shown in [].
- The notation ===> reads "equivalent to" below.</pre>
-<a href="http://acc-physics.kek.jp/SAD/">
-<h4>
-<img src="SADHelp_img/SAD.jpg" align="middle" alt="SAD" width=90></a>
-Back to SAD Home Page</H4>
-<a href="example/design_example.html">
-<h4>
-SAD/FFS Examples</h4></a>
-<hr>
+shown in []. The notation ===> reads "equivalent to" below.</pre><a href="/SAD/"><h4><img src="SADHelp_img/SAD.jpg" align="middle" 
+alt="SAD" width=90>Back to SAD Home Page</h4></a>
+<a href="/SAD/how-to-use-sad/sad-ffs-examples/">
+<h4>SAD/FFS Examples</h4></a><hr>
 <pre>
 <a href=#L > </a>
    <a href=#LABORT>ABORT</a>
@@ -3733,6 +3727,13 @@ ExternalMap["TRACK", LINE["POSITION","M1.2"], nt_, x_]:=CompiledMap[nt, x, src, 
 works as a special colimation at a MAP element M1.2, resulting:
 
 <img src="SADHelp_img/Collimate.png" align="middle" width=540>
+
+(Actually the example above can be performed also by SADScript:
+
+ExternalMap["TRACK", LINE["POSITION","M1.2"], nt_, x_]:=Append[Drop[x, -1],
+       x[[1]] < prm[[1]] || x[[1]] > prm[[2]] || (prm[[3]] < x[[3]] < prm[[4]])];
+
+which runs even FASTER than the compiled one!!)
 
 Options      Defaul     Description
 -------------------------------------------------------------

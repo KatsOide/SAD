@@ -118,15 +118,6 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       return
       end subroutine
 
-      function tfsemctrl(isp1,irtc) result(kx)
-      use tfstk
-      implicit none
-      type (sad_descriptor) kx
-      integer*4 ,intent(in):: isp1
-      integer*4 ,intent(out):: irtc
-      return
-      end
-
       end module
 
       subroutine tfsavesharedmap()

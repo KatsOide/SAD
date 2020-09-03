@@ -26,6 +26,8 @@
       recursive function tfsolvemember(list,reps,irtc)
      $     result(kx)
       use tfstk
+      use funs
+      use eeval
       implicit none
       type (sad_descriptor) kx
       type (sad_descriptor) k1
@@ -44,7 +46,7 @@
         endif
         return
       elseif(list%head%k .eq. ktfoper+mtfslot)then
-        call tfslot(mtfslot,list,kx,.false.,irtc)
+        kx=tfslot(mtfslot,list,.false.,irtc)
         if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
           call tfreseterror
           irtc=-1
@@ -114,6 +116,7 @@ c        write(*,*)'with: ',irtc,i
       recursive subroutine tfclassmember(k10,k20,kx,eval,irtc)
       use tfstk
       use tfcx
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(out):: irtc
@@ -209,7 +212,7 @@ c      write(*,*)'with: ',irtc,ev,eval
         endif
         if(eval)then
           if(ktfsymbolq(kx))then
-            call tfsyeval(kx,kx,irtc)
+            kx=tfsyeval(kx,irtc)
             if(irtc .ne. 0)then
               l=itfdownlevel()
               return

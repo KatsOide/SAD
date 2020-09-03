@@ -227,7 +227,7 @@ c'\
         type (sad_symbol), pointer :: sym
         integer*8 kv,ktv,kav,ic,i,ip
         integer*4 nc,lenw,lfno,irtc,nc0,nc1,kpat
-        real*8 rfromk,v
+        real*8 v
         character*27 buff
         character*26 form1,tfgetform,autos1,autofg
         character*(*) form
@@ -355,7 +355,7 @@ c'\
           nc=strb%nch-nc0
         elseif(ktfrefq(k))then
           nc=0
-        elseif(ktfenanq(rfromk(k%k)))then
+        elseif(ktfenanq(k%x(1)))then
           nc=3
           call putstringbufpb(strb,'NaN',nc,.true.,lfno,irtc)        
         elseif(ktfrealq(k,v))then

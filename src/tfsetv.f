@@ -201,6 +201,7 @@ c                cmp%update=cmp%nparam .le. 0
       subroutine tffscoupledvar(irtc)
       use tfstk
       use tfcsi, only:icslfno
+      use eeval
       implicit none
       integer*4 ,intent(out):: irtc
       integer*4 ia,itfdownlevel,irtc1
@@ -223,7 +224,7 @@ c                cmp%update=cmp%nparam .le. 0
         return
       endif
       levele=levele+1
-      call tfsyeval(ifsetcoup,kx,irtc)
+      kx=tfsyeval(ifsetcoup,irtc)
       if(irtc .ne. 0)then
         if(irtc .gt. 0)then
           if(ierrorprint .ne. 0)then

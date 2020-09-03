@@ -830,6 +830,7 @@ c     endif
      $     dxnullo=sad_descriptor(1,ktfoper+mtfnull)
       integer*4 , parameter :: mbody = 2**8
       integer*4 , parameter :: mbody1 = 2**8
+      real*8 ,parameter :: rtfnan=transfer(ktfnan,1.d0)
 
       type sad_object
       sequence
@@ -837,6 +838,7 @@ c     endif
       type (sad_descriptor) alloc
       integer*4 ref,nl
       integer*8 body(1:0)
+      real*8 rbody(1:0)
       type (sad_descriptor) dbody(0:mbody1)
       end type
 
@@ -1787,8 +1789,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         logical*4 function ktfnanq(x)
         implicit none
         real*8 , intent(in)::x
-        integer*8 kfromr
-        ktfnanq=kfromr(x) .eq. ktfnan
+        ktfnanq=transfer(x,i00) .eq. ktfnan
         return
         end
 
@@ -1817,10 +1818,9 @@ c        k=kfromr(x)
         implicit none
         integer*8 , intent(in)::k
         real*8, optional, intent(out) :: v
-        real*8 rfromk
         ktfrealq_k=iand(ktrmask,k) .ne. ktfnr
         if(ktfrealq_k .and. present(v))then
-          v=rfromk(k)
+          v=transfer(k,0.d0)
         endif
         return
         end function ktfrealq_k
@@ -1840,10 +1840,9 @@ c        k=kfromr(x)
         implicit none
         integer*8 , intent(in)::k
         integer*4 , intent(out) :: iv
-        real*8 rfromk
         ktfrealq_ki=iand(ktrmask,k) .ne. ktfnr
         if(ktfrealq_ki)then
-          iv=int(rfromk(k))
+          iv=int(transfer(k,0.d0))
         endif
         return
         end function ktfrealq_ki
@@ -1874,10 +1873,9 @@ c        k=kfromr(x)
         implicit none
         integer*8 , intent(in)::k
         real*8, optional, intent(out) :: v
-        real*8 rfromk
         ktfnonrealq_k=iand(ktrmask,k) .eq. ktfnr
         if(.not. ktfnonrealq_k .and. present(v))then
-          v=rfromk(k)
+          v=transfer(k,0.d0)
         endif
         return
         end function ktfnonrealq_k
@@ -1897,10 +1895,9 @@ c        k=kfromr(x)
         implicit none
         integer*8 , intent(in)::k
         integer*4 , intent(out) :: iv
-        real*8 rfromk
         ktfnonrealq_ki=iand(ktrmask,k) .eq. ktfnr
         if(.not. ktfnonrealq_ki)then
-          iv=int(rfromk(k))
+          iv=int(transfer(k,0.d0))
         endif
         return
         end function ktfnonrealq_ki
@@ -1909,10 +1906,9 @@ c        k=kfromr(x)
         implicit none
         type (sad_descriptor) , intent(in)::k
         integer*4 , intent(out) :: iv
-        real*8 rfromk
         ktfnonrealq_di=iand(ktrmask,k%k) .eq. ktfnr
         if(.not. ktfnonrealq_di)then
-          iv=int(rfromk(k%k))
+          iv=int(k%x(1))
         endif
         return
         end function ktfnonrealq_di
@@ -3586,24 +3582,21 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         real*8 function rfromd(d)
         implicit none
         type (sad_descriptor) , intent(in)::d
-        real*8 rfromk
-        rfromd=rfromk(d%k)
+        rfromd=d%x(1)
         return
         end function
 
         integer*4 function ifromd(d)
         implicit none
         type (sad_descriptor) , intent(in)::d
-        real*8 rfromk
-        ifromd=int(rfromk(d%k))
+        ifromd=int(d%x(1))
         return
         end function
 
         type (sad_descriptor) function dfromr(x)
         implicit none
-        integer*8 kfromr
         real*8 , intent(in)::x
-        dfromr%k=kfromr(x)
+        dfromr%x(1)=x
         return
         end function
 
@@ -4287,7 +4280,6 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         isp=isp+1
         ktastk(isp)=ktflist+ktadaloc(-1,2,kl1)
         kl1%head%k=ktfoper+mtfrule
-        write(*,*)'mkrlstk_dr ',x
         kl1%dbody(1)=dtfcopy1(ks)
         kl1%rbody(2)=x
         return

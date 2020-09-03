@@ -45,7 +45,7 @@
       character*20 str
       integer*4 irtcffs,irtc,nc,nrpt(maxrpt),
      $     irptp(maxrpt),df(maxcond)
-      real*8 chi0(3),trdtbl(3,6),rfromk
+      real*8 chi0(3),trdtbl(3,6)
       logical*4 err,new,cmd,open98,abbrev,ftest,
      $     frefix,exist,init,expnd,chguse,visit,
      $     byeall,tfvcomp,tffsinitialcond,
@@ -773,7 +773,6 @@ c        go to 31
           endif
         enddo
         geo0(:,1:3)=tfchitogeo(chi0*scale(mfitchi1:mfitchi3))
-c        write(*,'(1p4g15.7)')(geo0(i,:),i=1,3)
         if(.not. exist)then
           go to 12
         endif
@@ -1188,7 +1187,7 @@ c        dpm2=rlist(ktlookup('DPM'))
         go to 8810
       endif
       call tfevalb('Reset$FF[]',kx,irtc)
-      nqcol=nqcol-int(rfromk(kx))
+      nqcol=nqcol-int(kx%x(1))
       flv%nfc=nfc0
       call tfshow(cellstab,df,mfpnt,mfpnt1,
      $     kffs,irtcffs,lfnb .gt. 1,lfno)
@@ -1423,6 +1422,7 @@ c          call tmov(rlist(iffssave+2),ffv,nxh)
       use tfstk
       use ffs_fit
       use tffitcode
+      use eeval
       implicit none
       type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: klj
@@ -1435,7 +1435,7 @@ c          call tmov(rlist(iffssave+2),ffv,nxh)
       if(iaini%k .eq. 0)then
         iaini%k=ktfsymbolz('InitialOrbits',13)
       endif
-      call tfsyeval(iaini,kx,irtc)
+      kx=tfsyeval(iaini,irtc)
       if(irtc .ne. 0)then
         call tfemes(irtc,'InitialOrbits',1,lfno)
         return
@@ -1508,6 +1508,7 @@ c            call tclr(uini(1,0),28)
       use ffs
       use ffs_pointer, only: kele2
       use tffitcode
+      use eeval
       implicit none
       type (sad_dlist), pointer :: klx,kli
       type (sad_rlist), pointer :: kle
@@ -1528,7 +1529,7 @@ c            call tclr(uini(1,0),28)
 c      if(lfni .gt. 100)then
 c        write(*,*)'setupcoup-syeval-0 ',lfni,ipoint,lrecl,ios
 c      endif
-      call tfsyeval(itfcoupk,kx,irtc)
+      kx=tfsyeval(itfcoupk,irtc)
 c      if(lfni .gt. 100)then
 c        write(*,*)'setupcoup-syeval ',lfni,ipoint,lrecl,ios
 c      endif

@@ -4,8 +4,11 @@
       use ffs_flag
       use tmacro
       use ffs_pointer, only:idelc,idtypec
+      use eeval
       implicit none
       type (sad_symdef), pointer :: symd
+      type (sad_dlist), pointer::kall
+      type (sad_descriptor) ke
       integer*8 latt(nlat)
       integer*4 kptbl(np0,6)
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
@@ -16,7 +19,7 @@
 
       logical cmplot1,fourie1
       integer*8 kal,kaf,
-     $     kv,kaj,ke,kax,ix0pl,iy0pl,ixjpl,ixnpl,ixppl,
+     $     kv,kaj,kax,ix0pl,iy0pl,ixjpl,ixnpl,ixppl,
      $     izwrk,izexp,iajx,iaord,ib,iaexp,iiord,izwork,lp0
       integer*4 np,jpcm,level,nsmear,
      $     n,j,i,ip,jp,irtc,nsm,lpa,k,
@@ -139,7 +142,8 @@
 7020      continue
           if(kv .gt. 0)then
             rlist(kal+1)=dble(n-1)
-            call tfleval(klist(kal-3),ke,.true.,irtc)
+            call descr_sad(dlist(kal),kall)
+            ke=tfleval(kall,.true.,irtc)
             level= itfdownlevel()
             if(irtc .ne. 0)then
               write(outfl,*)

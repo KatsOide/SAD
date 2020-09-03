@@ -7,7 +7,7 @@
       type (sad_descriptor) k1
       type (sad_symdef), pointer :: symd
       integer*4 i,l,isp1
-      character*(*) mess
+      character*(*) ,intent(in):: mess
       i=index(mess,'::')
       if(i .le. 0)then
         write(*,*)'itfmessagename implementation error: ',mess
@@ -35,14 +35,15 @@
       use tfstk
       use tfmessage
       use tfcsi
+      use eeval
       implicit none
       type (sad_descriptor) dm,ks,mn
       type (sad_dlist), pointer :: klx,klm,klhm,klhms
-      integer*4 level,irtc,ltr0,l,la,isp0
-      character*(*) mess0,arg0
+      integer*4 ,intent(in):: level
+      integer*4 irtc,ltr0,l,la,isp0
+      character*(*) ,intent(in):: mess0,arg0
       character*256 mess,arg
-      logical*4 iter
-      data iter /.false./
+      logical*4 ,save::iter=.false.
       data mn%k /0/
       if(iter .or. level .lt. ierrorth .or.
      $     rlist(iaximmediate) .lt. 0.d0)then
@@ -61,7 +62,7 @@
       arg=arg0(:la)
       dm=dtfcopy1(kxmessagename(mess(:l)))
       call descr_sad(dm,klm)
-      call tfleval(klm,ks,.true.,irtc)
+      ks=tfleval(klm,.true.,irtc)
       if(irtc .ne. 0)then
         if(irtc .gt. 0)then
           call tfaddmessage(' ',0,icslfno())
@@ -102,7 +103,7 @@ c     tfstringliststk destroy `string' to decode backslash escape
       subroutine tfstringliststk(string)
       use tfstk
       implicit none
-      character*(*) string
+      character*(*) ,intent(inout):: string
       integer*4 l,is,is1,in
       l=len_trim(string)
 c      write(*,*)'tfstringliststk ',l,' ',string(1:l)
@@ -154,9 +155,10 @@ c     Search '"' from string(is+1:l) with backslash escape
       integer*4 function itfmessageexp(level,mess,k)
       use tfstk
       implicit none
-      type (sad_descriptor) k
-      integer*4 level,nc,itfmessage
-      character*(*) mess
+      type (sad_descriptor) ,intent(in):: k
+      integer*4 ,intent(in):: level
+      integer*4 nc,itfmessage
+      character*(*) ,intent(in):: mess
       character*256 buf
       call tfconvstrs(buf(2:),k,nc,.true.,' ')
       nc=max(0,min(254,nc))
@@ -172,10 +174,10 @@ c     Search '"' from string(is+1:l) with backslash escape
       implicit none
       integer*4 ,parameter :: lbuf=128
       type (sad_strbuf) , pointer :: strb
-      character*(*) str
-      integer*4 level,itfmessage
-      character*(*) mess
-      integer*4 irtc,isp0
+      character*(*) ,intent(in):: str
+      integer*4 ,intent(in):: level
+      character*(*) ,intent(in):: mess
+      integer*4 irtc,isp0,itfmessage
       isp0=isp
       call getstringbuf(strb,lbuf*2,.true.)
       call tfquotestring(strb,str,min(lbuf-1,len(str)),0,irtc)
@@ -188,8 +190,8 @@ c     Search '"' from string(is+1:l) with backslash escape
       use tfstk
       use tfcsi
       implicit none
-      type (sad_descriptor) kx
-      integer*4 irtc
+      type (sad_descriptor) ,intent(in):: kx
+      integer*4 ,intent(in):: irtc
       if(ierrorprint .ne. 0)then
         ierrorf=kx%k
         if(irtc .gt. 0)then
@@ -206,9 +208,9 @@ c     Search '"' from string(is+1:l) with backslash escape
       use tfstk
       use tfcsi
       implicit none
-      type (sad_descriptor) kx
-      character*(*) str
-      integer*4 irtc
+      type (sad_descriptor) ,intent(in):: kx
+      character*(*) ,intent(in):: str
+      integer*4 ,intent(in):: irtc
       if(ierrorprint .ne. 0)then
         ierrorf=kx%k
         if(irtc .gt. 0)then
@@ -228,8 +230,9 @@ c     Search '"' from string(is+1:l) with backslash escape
       implicit none
       type (sad_descriptor) kx,kxaddmess
       type (sad_dlist), pointer :: kle
-      integer*4 irtc,isp1,ip,lfno,ltr0
-      character*(*) str
+      integer*4 ,intent(in):: ip,lfno
+      integer*4 irtc,isp1,ltr0
+      character*(*) ,intent(in):: str
       logical*4 iter
       data kxaddmess%k,iter /0,.false./
       if(iter)then
@@ -272,10 +275,11 @@ c      call tfdebugprint(kx,'addmessage',1)
       subroutine tfemes(k,string,ip,lfno)
       use tfstk
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer :: kl
-      character*(*) string
-      integer*4 ip,lfno,ls,ifchar,is,i,lb,nc,itfgetrecl,nc1
+      character*(*) ,intent(in):: string
+      integer*4 ,intent(in):: ip,lfno
+      integer*4 ls,ifchar,is,i,lb,nc,itfgetrecl,nc1
       character*10 autofg
       character*512 buff,tfconvstr,tfgetstr
       if(ktfaddr(k) .eq. 0 .or. ierrorprint .eq. 0)then
@@ -343,69 +347,6 @@ c      call tfdebugprint(kx,'addmessage',1)
       call tflocal(kerror)
       kerror=0
       call tclrfpe
-      return
-      end
-
-      subroutine tfcheck(isp1,kx,irtc)
-      use tfstk
-      use tfcsi
-      use efun
-      implicit none
-      type (sad_descriptor) kx,kf,kxcheckmessage,kxmessagelist
-      type (sad_symdef), pointer,save :: symd
-      integer*4 isp1,irtc,isp0,
-     $     itgetfpe,itfmessage,narg,irtc1
-      data kxmessagelist%k,kxcheckmessage%k /0,0/
-      narg=isp-isp1
-      if(narg .lt. 2)then
-        irtc=itfmessage(9,'General::narg','"2 or more"')
-        return
-      endif
-      isp0=isp
-      rlist(ierrorgen)=0.d0
-      call tfeevalref(ktastk(isp1+1),kx,irtc)
-      isp=isp0
-      if(irtc .eq. 0)then
-        if(itgetfpe() .ne. 0)then
-          call tclrfpe
-          irtc=itfmessage(9,'General::fpe','""')
-        endif
-      endif
-      if(irtc .gt. 0)then
-        if(ierrorprint .ne. 0)then
-          call tfaddmessage(' ',0,icslfno())
-        endif
-      elseif(irtc .eq. irtcabort .and. rlist(ierrorgen) .eq. 0.d0)then
-        irtc=itfmessage(999,'General::abort',' ')
-      elseif(irtc .le. irtcret)then
-        rlist(ierrorgen)=1.d0
-      endif
-      if(rlist(ierrorgen) .ne. 0.d0)then
-        if(irtc .le. irtcret)then
-          call tfcatchreturn(modethrow,kx,irtc)
-c          write(*,*)'tfcheck-1 ',modethrow,irtc
-        endif
-        if(narg .gt. 2)then
-          if(kxcheckmessage%k .eq. 0)then
-            kxcheckmessage=kxsymbolz('Check$Message',13)
-          endif
-          dtastk(isp1+1)=kxcheckmessage
-          kf=tfefunref(isp1+1,.false.,irtc1)
-          if(irtc1 .eq. 0 .and. ktfrealq(kf) .and. kf%k .ne. 0)then
-            rlist(ierrorgen)=0.d0
-            call tfeevalref(ktastk(isp1+2),kx,irtc)
-          endif
-        else
-          if(kxmessagelist%k .eq. 0)then
-            kxmessagelist=kxsymbolz('$MessageList',12)
-            call descr_sad(kxmessagelist,symd)
-          endif
-          call tflocald(symd%value)
-          symd%value=dtfcopy1(dxnulll)
-          rlist(ierrorgen)=0.d0
-          call tfeevalref(ktastk(isp1+2),kx,irtc)
-        endif
-      endif
       return
       end
 

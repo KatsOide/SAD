@@ -1,5 +1,6 @@
       function tfmodule(isp1,module,eval,irtc) result(kx)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) kx,ke,kxl1,tfredefslist
       type (sad_dlist), pointer :: lvlist,kle
@@ -11,10 +12,12 @@
       logical*4 rep
       if(isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
+        kx=dxnullo
         return
       endif
       if(ktfnonlistq(dtastk(isp1+1),lvlist))then
         irtc=itfmessage(9,'General::wrongtype','"List"')
+        kx=dxnullo
         return
       endif
       if(module .and. eval)then
@@ -26,6 +29,7 @@
         if(eval)then
           go to 9200
         else
+          kx=dxnullo
           isp=isp0
           return
         endif
@@ -49,10 +53,10 @@
       if(eval)then
         if(ktflistq(ke,kle))then
 c          call tfdebugprint(ke,'tfmodule',1)
-          call tfleval(kle,kx,.true.,irtc)
+          kx=tfleval(kle,.true.,irtc)
 c          call tfdebugprint(kx,'tfmodule-1',1)
         else
-          call tfeevalref(ke,kx,irtc)
+          kx=tfeevalref(ke,irtc)
         endif
         isp=isp2
       elseif(rep)then
@@ -88,6 +92,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
 
       subroutine tfmlocalv(list,module,eval,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ki,ki1i,ki1,ki2
       type (sad_dlist) list
@@ -134,13 +139,13 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
             if(kli%head%k .eq. ktfoper+mtfset)then
               if(ktflistq(ki2,kli2))then
                 isps=isp
-                call tfleval(kli2,ki2,.true.,irtc)
+                ki2=tfleval(kli2,.true.,irtc)
                 if(irtc .ne. 0)then
                   go to 200
                 endif
               elseif(ktfsymbolq(ki2) .or. ktfpatq(ki2))then
                 isps=isp
-                call tfeevalref(ki2,ki2,irtc)
+                ki2=tfeevalref(ki2,irtc)
                 if(irtc .ne. 0)then
                   go to 200
                 endif
@@ -311,6 +316,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
 
       subroutine tfwith(isp1,kx,eval,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) kx,ki,k1,kxi
       type (sad_descriptor) tfreplacestk
@@ -376,9 +382,9 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
           endif
  30       if(eval)then
             if(ktflistq(ki,listi))then
-              call tfleval(listi,kxi,.true.,irtc)
+              kxi=tfleval(listi,.true.,irtc)
             else
-              call tfeevalref(ki,kxi,irtc)
+              kxi=tfeevalref(ki,irtc)
             endif
             if(irtc .ne. 0)then
               isp=isp2
@@ -429,9 +435,9 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       endif
       if(eval)then
         if(ktflistq(kx,klx))then
-          call tfleval(klx,kx,.true.,irtc)
+          kx=tfleval(klx,.true.,irtc)
         elseif(ktfsymbolq(kx) .or. ktfpatq(kx))then
-          call tfeevalref(kx,kx,irtc)
+          kx=tfeevalref(kx,irtc)
         endif
       endif
       isp=isp2

@@ -1,7 +1,7 @@
       subroutine tsolvg(a,b,x,n,m,ndim)
       implicit none
-      integer*4 n,m,ndim
-      real*8 a(ndim,m),b(n),x(m)
+      integer*4 ,intent(in):: n,m,ndim
+      real*8 ,intent(inout):: a(ndim,m),b(n),x(m)
       call tsvd(a,b,x,n,m,ndim,1.d-8,.false.)
       return
       end
@@ -64,10 +64,8 @@ c     end   initialize for preventing compiler warning
               q=v(j)*p/h1
               v(j)=v(i)*v(j)/h1
               v(i)=h1
-c              do 5120 k=i1,m
-                a(j,i1:m)=a(j,i1:m)-p*a(i,i1:m)
-                a(i,i1:m)=a(i,i1:m)+q*a(j,i1:m)
-c 5120         continue
+              a(j,i1:m)=a(j,i1:m)-p*a(i,i1:m)
+              a(i,i1:m)=a(i,i1:m)+q*a(j,i1:m)
               a(j,i)=0.d0
               b(j)=b(j)-p*b(i)
               b(i)=b(i)+q*b(j)
@@ -77,11 +75,9 @@ c 5120         continue
               q=v(i)*p/h1
               v(j)=v(i)*v(j)/h1
               v(i)=h1
-c              do 5130 k=i1,m
-                aam(i1:m)=a(j,i1:m)
-                a(j,i1:m)=p*aam(i1:m)-a(i,i1:m)
-                a(i,i1:m)=aam(i1:m)-q*a(j,i1:m)
-c 5130         continue
+              aam(i1:m)=a(j,i1:m)
+              a(j,i1:m)=p*aam(i1:m)-a(i,i1:m)
+              a(i,i1:m)=aam(i1:m)-q*a(j,i1:m)
               a(i,i)=a(j,i)
               a(j,i)=0.d0
               bb=b(j)
@@ -106,10 +102,8 @@ c 5130         continue
                 q=s*x(j )/h1
                 x(i1)=h1
                 x(j )=h2
-c                do 5220 k=i1,n
-                  a(i1:n,j )=a(i1:n,j )-p*a(i1:n,i1)
-                  a(i1:n,i1)=a(i1:n,i1)+q*a(i1:n,j )
-c 5220           continue
+                a(i1:n,j )=a(i1:n,j )-p*a(i1:n,i1)
+                a(i1:n,i1)=a(i1:n,i1)+q*a(i1:n,j )
               else
                 a(i,i1)=a(i,j)
                 a(i,j)=0.d0
@@ -119,18 +113,15 @@ c 5220           continue
                 q=c*x(i1)/h1
                 x(i1)=h1
                 x(j )=h2
-c                do 5221 k=i1,n
-                  bbm(i1:n)=a(i1:n,j)
-                  a(i1:n,j )=p*bbm(i1:n)-a(i1:n,i1)
-                  a(i1:n,i1)=bbm(i1:n)-q*a(i1:n,j )
-c 5221           continue
+                bbm(i1:n)=a(i1:n,j)
+                a(i1:n,j )=p*bbm(i1:n)-a(i1:n,i1)
+                a(i1:n,i1)=bbm(i1:n)-q*a(i1:n,j )
               endif
             else
               c=1.d0
               s=0.d0
             endif
             a(i,j)=s
-C     if(j .lt. ndim+2)then
             if(j .lt. n+2)then
               a(j-1,i)=c
             else
@@ -197,10 +188,6 @@ C     if(j .lt. ndim+2)then
               v(i+1:min(mn,ma-1))=u*v(i+1:min(mn,ma-1))
               x(i+2:min(mn+1,ma))=x(i+2:min(mn+1,ma))
      $             +b(i)*v(i+1:min(mn,ma-1))
-c              do 4030 k=i+1,min(mn,ma-1)
-c                v(k)=u*v(k)
-c                x(k+1)=x(k+1)+b(i)*v(k)
-c 4030         continue
               v(i)=(v(i)-p*d)*w
               x(i+1)=x(i+1)+b(i)*v(i)
               d=x(i)*w
@@ -216,7 +203,6 @@ c 4030         continue
           do 4040 i=min(mn,m-2),1,-1
             do 4050 j=m,i+2,-1
               s=a(i,j)
-C     if(j .lt. ndim+2)then
               if(j .lt. n+2)then
                 c=a(j-1,i)
               else
@@ -236,15 +222,11 @@ C     if(j .lt. ndim+2)then
         endif
       endif
       v(mn*2+1:mn+m)=x(mn+1:m)
-c      do 5301 i=mn+1,m
-c        v(i+mn)=x(i)
-c 5301 continue
       do 5310 i=min(mn,m-2),1,-1
         i1=i+1
         i1mn=i1+mn
         do 5320 j=m,i+2,-1
           s=a(i,j)
-C     if(j .lt. ndim+2)then
           if(j .lt. n+2)then
             c=a(j-1,i)
             a(j-1,i)=0.d0
@@ -266,10 +248,6 @@ C     if(j .lt. ndim+2)then
             a(i,j)=q*a(i,i1)
             a(i1:mn,i1)=a(i1:mn,i1)-p*a(i1:mn,j )
             a(i1:mn,j )=a(i1:mn,j )+q*a(i1:mn,i1)
-c            do 5330 k=i1,mn
-c              a(k,i1)=a(k,i1)-p*a(k,j )
-c              a(k,j )=a(k,j )+q*a(k,i1)
-c 5330       continue
           else
             h1=v(j +mn)/s
             h2=v(i1mn)*s
@@ -295,9 +273,6 @@ c9710 format(1x,:1p11g11.3)
       ibegin=1
       iend=mn
       v(mn+1:mn*2)=1.d0
-c      do 1510 i=1,mn
-c        v(mn+i)=1.d0
-c 1510 continue
       v(0)=0.d0
  1002 if(v(iend) .ne. 0.d0)then
         f=v(iend)
@@ -365,11 +340,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
           w=x(ibegin)
           z=x(iend)
           y=x(iend-1)
-          if(ibegin .lt. iend-1)then
-            g=v(iend-2)
-          else
-            g=0.d0
-          endif
+          g=merge(v(iend-2),0.d0,ibegin .lt. iend-1)
           h=v(iend-1)
           f=((y-z)*(y+z)+(g-h)*(g+h))*.5d0
           if(w .eq. 0.d0)then
@@ -377,11 +348,8 @@ c            an=max(abs(x(i)),abs(x(i+1)))
           else
             g=h*y
             y=f+sign(abs(dcmplx(f,g)),f)
-            if(y .ne. 0.d0)then
-              f=((w-z)*(w+z)-h**2+g**2/y)/w
-            else
-              f=((w-z)*(w+z)-h**2)/w
-            endif
+            f=merge(((w-z)*(w+z)-h**2+g**2/y)/w,
+     $           ((w-z)*(w+z)-h**2)/w,y .ne. 0.d0)
           endif
           g=v(ibegin)
           h=g
@@ -423,10 +391,8 @@ c            an=max(abs(x(i)),abs(x(i+1)))
                 t=s*v(i1+mn)/h1
                 v(i+mn)=h1
                 v(i1+mn)=h2
-c                do 1150 k=1,m
-                  a(i1,1:m)=a(i1,1:m)-r*a(i ,1:m)
-                  a(i ,1:m)=a(i ,1:m)+t*a(i1,1:m)
-c 1150           continue
+                a(i1,1:m)=a(i1,1:m)-r*a(i ,1:m)
+                a(i ,1:m)=a(i ,1:m)+t*a(i1,1:m)
                 b(i1)=b(i1)-r*b(i)
                 b(i )=b(i )+t*b(i1)
               else
@@ -436,11 +402,9 @@ c 1150           continue
                 t=c*v(i+mn)/h1
                 v(i+mn)=h1
                 v(i1+mn)=h2
-c                do 1151 k=1,m
-                  aam(1:m)=a(i1,1:m)
-                  a(i1,1:m)=r*aam(1:m)-a(i ,1:m)
-                  a(i ,1:m)=aam(1:m)-t*a(i1,1:m)
-c 1151           continue
+                aam(1:m)=a(i1,1:m)
+                a(i1,1:m)=r*aam(1:m)-a(i ,1:m)
+                a(i ,1:m)=aam(1:m)-t*a(i1,1:m)
                 bb=b(i1)
                 b(i1)=r*bb-b(i)
                 b(i )=bb-t*b(i1)
@@ -462,54 +426,30 @@ c 1151           continue
         iend=iend-1
         v(iend)=0.d0
       enddo do3001
-      anorm=maxval(abs(x(1:mn)))
-c      anorm=abs(x(1))
-c      do 3010 i=2,mn
-c        anorm=max(anorm,abs(x(i)))
-c 3010 continue
-      anorm=anorm*epslon
+      anorm=maxval(abs(x(1:mn)))*epslon
       if(svd)then
         do concurrent (i=1:mn)
           s=x(i)
-          if(abs(s) .gt. anorm)then
-            w=v(i+mn)/s
-          else
-            w=s*v(i+mn)/anorm**2
-          endif
+          w=merge(v(i+mn)/s,s*v(i+mn)/anorm**2,
+     $         abs(s) .gt. anorm)
           v(i)=w/v(i+mn)
           b(i)=b(i)*w
-c          do j=1,m
-            a(i,1:m)=a(i,1:m)*w
-c          enddo
+          a(i,1:m)=a(i,1:m)*w
         enddo
         do concurrent (i=1:m)
-          s=sum(a(1:mn,i)*b(1:mn))
-c          s=a(1,i)*b(1)
-c          do j=2,mn
-c            s=s+a(j,i)*b(j)
-c          enddo
-          x(i)=s
+          x(i)=sum(a(1:mn,i)*b(1:mn))
         enddo
         b(1:mn)=v(1:mn)
         b(mn+1:m)=0.d0
-c        do i=1,m
         a(mn+1:n,1:m)=0.d0
-c        enddo
       else
         do concurrent (i=1:mn)
           s=x(i)
-          if(abs(s) .gt. anorm)then
-            w=(v(i+mn)/s)**2
-          else
-            w=(s*v(i+mn)/anorm**2)**2
-          endif
+          w=merge((v(i+mn)/s)**2,(s*v(i+mn)/anorm**2)**2,
+     $         abs(s) .gt. anorm)
           b(i)=b(i)*w
         enddo
         do concurrent (i=1:m)
-c          s=a(1,i)*b(1)
-c          do 3040 j=2,mn
-c            s=s+a(j,i)*b(j)
-c 3040     continue
           x(i)=sum(a(1:mn,i)*b(1:mn))
         enddo
       endif

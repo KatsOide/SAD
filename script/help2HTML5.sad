@@ -175,6 +175,9 @@ FFS;
 
  HH=Help2HTML[];
 
+<a href="/SAD/"><h4><img src="/SAD/SADHelp_img/SAD.jpg" align="middle" alt="SAD" width=90>Back to SAD Home Page</h4></a>
+<a href="/SAD/how-to-use-sad/sad-ffs-examples/"><h4>SAD/FFS Examples</h4></a>
+
  f=OpenWrite["SADHelp.html"];
  Write[f,"\
 <head>\n<title>\n\
@@ -191,15 +194,10 @@ eqs img{\n\
 <center><h2>Welcome to SAD/FFS & SADScript\n</h2></center>\n\
 <center> SAD/FFS SADScript Version: ",Help$Version,",      Updated: ",Help$Update,"</center>\n\n",
 "<pre>"//HH@WrapLine[" Please use browser's search to find an item.\n\n\
- The FFS commands are shown in uppercases. The minimum abbreviated form of each command is enclosed in (). Each command can be shorten down to that. The optional arguments for the commands are usually shown in [].\n\
- The notation ===> reads \"equivalent to\" below.",HH@col]//"\
-</pre>\n\
-<a href=\"http://acc-physics.kek.jp/SAD/\">\n<h4>\n\
-<img src=\"SADHelp_img/SAD.jpg\" align=\"middle\" alt=\"SAD\" width=90></a>\n\
-Back to SAD Home Page</H4>\n\
-<a href=\"example/design_example.html\">\n<h4>\n\
-SAD/FFS Examples</h4></a>\n\
-<hr>\n"];
+ The FFS commands are shown in uppercases. The minimum abbreviated form of each command is enclosed in (). Each command can be shorten down to that. The optional arguments for the commands are usually shown in []. The notation ===> reads \"equivalent to\" below.",HH@col]//"\
+</pre><a href=\"/SAD/\"><h4><img src=\"SADHelp_img/SAD.jpg\" align=\"middle\" alt=\"SAD\" width=90>Back to SAD Home Page</h4></a>\n\
+<a href=\"/SAD/how-to-use-sad/sad-ffs-examples/\">\n\
+<h4>SAD/FFS Examples</h4></a><hr>\n"];
  Write[f,"<pre>"];
  HH@WriteHTMLIndex[f,HH@help[[1]],""];
  Write[f,"</pre><hr>"];

@@ -23,7 +23,7 @@
      $       mtfcomplex:mtfcomma,mtfdot,mtfend)
         if(tfnumberq(k2) .and.
      $     (tfnumberq(k1) .or. iopc1 .eq. mtfnot))then
-          call tfcmplx(k1,k2,kx,iopc1,irtc)
+          kx=tfcmplx(k1,k2,iopc1,irtc)
           return
         endif
         if(tflistq(k2) .or. tflistq(k1))then
@@ -82,6 +82,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
 
       function tfeval1to(k1,k2,iopc,old,irtc) result(kx)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(in):: k1,k2
       type (sad_descriptor) kx,kv,kr,ku,ks,tfeval1,tfset1
@@ -90,17 +91,17 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
       integer*4 ,intent(out):: irtc
       logical*4 ,intent(in):: old
       if(ktflistq(k1,kl1))then
-        call tfleval(kl1,kv,.true.,irtc)
+        kv=tfleval(kl1,.true.,irtc)
         if(irtc .ne. 0)then
           return
         endif
       elseif(ktfsymbolq(k1))then
-        call tfsyeval(k1,kv,irtc)
+        kv=tfsyeval(k1,irtc)
         if(irtc .ne. 0)then
           return
         endif
       elseif(ktfpatq(k1))then
-        call tfpateval(k1,kv,irtc)
+        kv=tfpateval(k1,irtc)
         if(irtc .ne. 0)then
           return
         endif
@@ -127,7 +128,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
       if(irtc .ne. 0)then
         return
       endif
-      call tfeevaldef(k1,ks,irtc)
+      ks=tfeevaldef(k1,irtc)
       if(irtc .ne. 0)then
         return
       endif
@@ -142,6 +143,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
       use tfstk
       use efun
       use eexpr
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) k10,kr,k1
@@ -171,7 +173,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
         endif
         if(ktflistq(k10,kl))then
           if(kl%head%k .eq. ktfoper+mtfpart)then
-            call tfleval(kl,kx,.false.,irtc)
+            kx=tfleval(kl,.false.,irtc)
             if(irtc .ne. 0)then
               return
             endif
@@ -180,7 +182,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
             return
           endif
         endif
-        call tfeevalref(k10,k1,irtc)
+        k1=tfeevalref(k10,irtc)
         if(irtc .ne. 0)then
           return
         endif
@@ -207,6 +209,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
 
       subroutine tfappendto1(kp,k2,kr,mode,eval,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(in):: k2
       type (sad_descriptor) ,intent(out):: kr
@@ -274,7 +277,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
         call tfreplist(klr,1,k2,eval)
       endif
       if(eval)then
-        call tfleval(klr,kr,.true.,irtc)
+        kr=tfleval(klr,.true.,irtc)
         if(irtc .ne. 0)then
           return
         endif
@@ -447,6 +450,7 @@ c        if(ka1 .gt. 0 .and. ktfrealq(k2))then
 
       subroutine tftagset(list,k2,kx,mopc,irtc)
       use tfstk
+      use eeval
       implicit none
       type (sad_descriptor) ,intent(in):: k2
       type (sad_descriptor) ,intent(out):: kx
@@ -458,7 +462,7 @@ c        if(ka1 .gt. 0 .and. ktfrealq(k2))then
       integer*4 ,intent(out):: irtc
       integer*4 ,intent(in):: mopc
       integer*4 itfmessage,itfmessageexp
-      call tfeevaldef(list%dbody(1),ks,irtc)
+      ks=tfeevaldef(list%dbody(1),irtc)
       if(irtc .ne. 0)then
         return
       endif
@@ -469,7 +473,7 @@ c        if(ka1 .gt. 0 .and. ktfrealq(k2))then
         irtc=itfmessage(9,'General::wrongtype','"Symbol"')
         return
       endif
-      call tfeevaldef(list%dbody(2),kl,irtc)
+      kl=tfeevaldef(list%dbody(2),irtc)
       if(irtc .ne. 0)then
         return
       endif

@@ -340,7 +340,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       implicit none
       integer*4 ,intent(in):: kt
       real*8 ,intent(in):: ftwiss(ntwissfun)
-      real*8 rfromk,tphysdisp
+      real*8 tphysdisp
       tfgettwiss=0.d0
       if(kt .le. ntwissfun)then
         tfgettwiss=ftwiss(kt)
@@ -349,7 +349,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
         tfgettwiss=tphysdisp(kt,ftwiss)
       endif
       if(ktfenanq(tfgettwiss))then
-        tfgettwiss=rfromk(ktfnan)
+        tfgettwiss=rtfnan
       endif
       return
       end

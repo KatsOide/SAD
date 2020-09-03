@@ -5,12 +5,12 @@
       use tffitcode
       use tfcsi,only:ipoint
       use ffs_seg
+      use eeval
       implicit none
-      type (sad_descriptor) kx
-      type (sad_dlist), pointer :: kli
+      type (sad_descriptor) kx,kxr
+      type (sad_dlist), pointer :: kli,fvl
       type (sad_rlist), pointer :: kla
       type (sad_comp), pointer :: cmps
-      integer*8 kxr
       integer*4 lfno,i,iv,kk,level, itfuplevel,itfdownlevel,
      $     isp1,next,ifany
       integer*4 nvar,irtc,lenw
@@ -83,7 +83,8 @@ c          x3=rlist(idval(k)+ivvar(i))
           rlist(ifv+3)=nvevx(i)%valvar
           call tclrfpe
           level=itfuplevel()
-          call tfleval(klist(ifv-3),kxr,.true.,irtc)
+          call descr_sad(dlist(ifv),fvl)
+          kxr=tfleval(fvl,.true.,irtc)
           if(irtc .ne. 0)then
             level=itfdownlevel()
             if(ierrorprint .ne. 0)then

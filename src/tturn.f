@@ -208,6 +208,10 @@ c      isb=ilist(2,iwakepold+6)
         allocate(pyr0(np0))
         allocate(zr0(np0))
       endif
+      if(allocated(bsi))then
+        write(*,*)'tturn-bsi-alread allocated? ',sizeof(bsi)
+        deallocate(bsi)
+      endif
       allocate(bsi(np0))
       bsi=0.d0
       do l=lbegin,lend
@@ -307,10 +311,9 @@ c            write(*,*)'twspac-end'
          if(.not. cmp%update)then
            call tpara(cmp)
          endif
-         ak0=merge(cmp%value(ky_ANGL_BEND)
-     $        +cmp%value(ky_K0_BEND)
+         ak0=cmp%value(ky_ANGL_BEND)+merge(cmp%value(ky_K0_BEND)
      $        +cmp%value(ky_RANK_BEND)*tgauss(),
-     $        cmp%value(ky_ANGL_BEND)+cmp%value(ky_K0_BEND),
+     $        cmp%value(ky_K0_BEND),
      $        cmp%value(ky_RANK_BEND) .ne. 0.d0)
          ak1=cmp%value(ky_K1_BEND)
          krad=rad .and. cmp%value(ky_RAD_BEND) .eq. 0.d0 .and.
@@ -461,8 +464,6 @@ c     endif
      $          cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
      $          cmp%ivalue(1,p_FRMD_CAVI),autophi)
          else
-c           write(*,*)'tturn-tcav-0 ',cmp%value(p_W_CAVI),
-c     $          cmp%value(p_VNOMINAL_CAVI)
            call tcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      1          cmp%value(p_W_CAVI),cmp%value(ky_PHI_CAVI),ph,
      $          cmp%value(p_VNOMINAL_CAVI),
@@ -737,7 +738,6 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
         call tpara(cmp)
       endif
       if(cmp%ivalue(2,p_NM_MULT) .lt. 0)then
-c        write(*,*)'tmult-skip ',n
         return
       endif
       autophi=cmp%value(ky_APHI_MULT) .ne. 0.d0

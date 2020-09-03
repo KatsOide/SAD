@@ -417,6 +417,7 @@ c      endif
       subroutine tfcavaluecb(chid,stat,sev,t,type,nc,karray)
       use tfstk
       use efun
+      use eeval
       implicit none
       type (sad_descriptor) kx
       integer*8 karray(nc)
@@ -425,15 +426,15 @@ c      endif
       real*8 t
       integer*4 isp0,isp2,irtc,i,l,itfdownlevel
       
-      integer*8 iaepicsvaluecb
-      data iaepicsvaluecb /0/
+      type (sad_descriptor) iaepicsvaluecb
+      data iaepicsvaluecb%k /0/
       isp=isp+1
       isp0=isp
-      if(iaepicsvaluecb .eq. 0)then
-        iaepicsvaluecb=ktfsymbolz('EPICS$ValueCB',13)
+      if(iaepicsvaluecb%k .eq. 0)then
+        iaepicsvaluecb%k=ktfsymbolz('EPICS$ValueCB',13)
       endif
       levele=levele+1
-      call tfsyeval(iaepicsvaluecb,ktastk(isp),irtc)
+      dtastk(isp)=tfsyeval(iaepicsvaluecb,irtc)
       if(irtc .ne. 0)then
         go to 9000
       endif

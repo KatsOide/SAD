@@ -69,11 +69,13 @@ c      write(*,*)u,v,dpx,dpy
       return
       end
 
-      subroutine tfgaussiancoulomb(isp1,kx,irtc)
+      function tfgaussiancoulomb(isp1,irtc) result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*4 isp1,irtc,i,itfmessage
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 i,itfmessage
       complex*16 f
 c      real*8 tr(4,4)
 c      complex*16 fxygau
@@ -101,15 +103,17 @@ c     $     vstk(ivstkoffset+isp1+2)),f,1,tr)
       irtc=0
       return
  9000 irtc=itfmessage(9,'General::wrongtype','"x, y, sigx, sigy"')
+      kx=dxnullo
       return
       end
 
-      subroutine tfgaussiancoulombu(isp1,kx,irtc)
+      function tfgaussiancoulombu(isp1,irtc) result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) kx
-      integer*8 kfromr
-      integer*4 isp1,irtc,i,itfmessage
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 i,itfmessage
       real*8 twspu
       if(isp .ne. isp1+4)then
         go to 9000
@@ -119,11 +123,12 @@ c     $     vstk(ivstkoffset+isp1+2)),f,1,tr)
           go to 9000
         endif
       enddo
-      kx%k=kfromr(twspu(rtastk(isp1+1),rtastk(isp1+2),
-     $     rtastk(isp-1),rtastk(isp),1.d-10,1.d-13))
+      kx%x(1)=twspu(rtastk(isp1+1),rtastk(isp1+2),
+     $     rtastk(isp-1),rtastk(isp),1.d-10,1.d-13)
       irtc=0
       return
  9000 irtc=itfmessage(9,'General::wrongtype','"x, y, sigx, sigy"')
+      kx=dxnullo
       return
       end
 
