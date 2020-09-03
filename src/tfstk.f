@@ -838,6 +838,7 @@ c     endif
       type (sad_descriptor) alloc
       integer*4 ref,nl
       integer*8 body(1:0)
+      real*8 rbody(1:0)
       type (sad_descriptor) dbody(0:mbody1)
       end type
 

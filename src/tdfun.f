@@ -347,7 +347,7 @@ c     Note: index(name1,'.') > 0 if kp1 != 0
       endif
       level=itfuplevel()
       kx%k=0
-      call tfsyeval(kff,kx,irtc)
+      kx=tfsyeval(kff,irtc)
 c      call tfdebugprint(kx,'fitfun',3)
       if(irtc .ne. 0)then
         level=itfdownlevel()

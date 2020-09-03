@@ -85,32 +85,6 @@
       return
       end
 
-      function tfequal(isp1,iopc,irtc) result(kx)
-      use tfstk
-      implicit none
-      type (sad_descriptor) kx,tfrelation
-      integer*4 ,intent(in):: isp1,iopc
-      integer*4 ,intent(out):: irtc
-      integer*4 itfmessage
-      if(isp .lt. isp1+2)then
-        kx=dxnullo
-        irtc=itfmessage(9,'General::narg','"2 or more"')
-        return
-      endif
-      if(isp .eq. isp1+2 .and.
-     $     ktfstringq(dtastk(isp)) .and. ktfstringq(dtastk(isp1+1)))then
-        kx%k=merge(ktftrue,ktffalse,
-     $       tfsamestringq(dtastk(isp),dtastk(isp1+1)))
-        if(iopc .eq. mtfunequal)then
-          kx%k=ktftrue-kx%k
-        endif
-        irtc=0
-      else
-        kx=tfrelation(isp1,iopc,irtc)
-      endif
-      return
-      end
-
       function tfupset(k1,k2,kas,irtc) result(kx)
       use tfstk
       implicit none

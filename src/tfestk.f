@@ -534,8 +534,9 @@ c      include 'DEBUG.inc'
       function  tfcomposeoper(isp1,iah,comp,isp0,irtc) result(kx)
       use tfstk
       use ophash
+      use eexpr
       implicit none
-      type (sad_descriptor) kx,tfpart,tfplus
+      type (sad_descriptor) kx,tfpart
       integer*4 ,intent(in):: isp1,iah
       integer*4 ,intent(out):: irtc,isp0
       type (sad_dlist), pointer :: klx

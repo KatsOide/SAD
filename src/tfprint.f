@@ -151,8 +151,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
       al=rlist(iaxline)
       if(al .gt. 0.d0)then
         if(iaxshort%k .eq. 0)then
-          call tfsyeval(kxsymbolf('System`Short',12,.true.),
-     $         iaxshort,irtc)
+          iaxshort=tfsyeval(kxsymbolf('System`Short',12,.true.),irtc)
         endif
         isp=isp+1
         dtastk(isp)=iaxshort

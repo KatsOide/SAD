@@ -1435,7 +1435,7 @@ c          call tmov(rlist(iffssave+2),ffv,nxh)
       if(iaini%k .eq. 0)then
         iaini%k=ktfsymbolz('InitialOrbits',13)
       endif
-      call tfsyeval(iaini,kx,irtc)
+      kx=tfsyeval(iaini,irtc)
       if(irtc .ne. 0)then
         call tfemes(irtc,'InitialOrbits',1,lfno)
         return
@@ -1529,7 +1529,7 @@ c            call tclr(uini(1,0),28)
 c      if(lfni .gt. 100)then
 c        write(*,*)'setupcoup-syeval-0 ',lfni,ipoint,lrecl,ios
 c      endif
-      call tfsyeval(itfcoupk,kx,irtc)
+      kx=tfsyeval(itfcoupk,irtc)
 c      if(lfni .gt. 100)then
 c        write(*,*)'setupcoup-syeval ',lfni,ipoint,lrecl,ios
 c      endif

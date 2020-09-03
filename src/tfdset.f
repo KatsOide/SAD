@@ -483,9 +483,9 @@ c      enddo
                 if(ktflistq(kx,klx))then
                   kx=tfleval(klx,.true.,irtc)
                 elseif(ktfsymbolq(kx))then
-                  call tfsyeval(kx,kx,irtc)
+                  kx=tfsyeval(kx,irtc)
                 elseif(ktfpatq(kx))then
-                  call tfpateval(kx,kx,irtc)
+                  kx=tfpateval(kx,irtc)
                 endif
                 if(irtc .ne. 0)then
                   call tfcatchreturn(irtcret,kx,irtc)

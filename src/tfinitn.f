@@ -352,7 +352,7 @@ c        write(*,*)'tftocontext ',str%str(1:nc)
       enddo LOOP_I
       if(ispopt .gt. isp0)then
         isp=isp0
-        call tfsyeval(ks,kx,irtc)
+        kx=tfsyeval(ks,irtc)
       else
         isp=isp+1
         dtastk(isp)=ks

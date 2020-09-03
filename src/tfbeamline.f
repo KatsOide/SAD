@@ -381,7 +381,7 @@
       data eval /.true./
       kx=dxnullo
       if(eval)then
-        call tfsyeval(kxsymbolz('BeamLine',8),kx,irtc)
+        kx=tfsyeval(kxsymbolz('BeamLine',8),irtc)
         if(irtc .ne. 0)then
           return
         endif

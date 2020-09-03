@@ -16,7 +16,7 @@
           integer*4 irtc
         type (sad_descriptor) kax,kx
         kax=kxsymbolz('CaMonitor',9)
-        call tfsyeval(kax,kx,irtc)
+        kx=tfsyeval(kax,irtc)
         if(irtc .ne. 0 .or. ktfnonlistq(kx))then
           go to 9000
         endif

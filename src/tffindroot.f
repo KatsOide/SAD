@@ -1030,7 +1030,7 @@ c     call tfdebugprint(ke,'ke',1)
       data iads%k /0/
       if(iads%k .eq. 0)then
         iads=kxsymbolz('System`D',8)
-        call tfsyeval(iads,ks,irtc)
+        ks=tfsyeval(iads,irtc)
         if(irtc .ne. 0)then
           return
         endif

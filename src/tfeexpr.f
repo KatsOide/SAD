@@ -41,12 +41,24 @@
       integer*8 ir,ix1,ix2
       integer*4 ,intent(in):: iopc1
       integer*4 irtc,m1,m2,i,iopc2
-      real*8 v1,v1i,v2i
+      real*8 v1,v2,v1i,v2i
       complex*16 c1,cx,cx1,cx2,tfcmplxmathv
       logical*4 d,c
 c      call tfdebugprint(k1,'cmplxl',1)
-c      call tfdebugprint(k2,'and',1)
+c      call tfdebugprint(k2,'and:',1)
 c      write(*,*)'with ',iopc1
+      if(iopc1 .eq. mtfnot)then
+        if(ktfrealq(k2,v2))then
+          kx%k=merge(ktftrue,ktffalse,v2 .ne. 0.d0)
+        elseif(tfreallistq(k2,klr2) .and. klr2%nl .gt. 0)then
+          kx=kxavaloc(-1,klr2%nl,klr)
+          klr%rbody(1:klr2%nl)=merge(1.d0,0.d0,
+     $             klr2%rbody(1:klr2%nl) .eq. 0.d0)
+        else
+          kx=tfeexpr(k1,k2,iopc1)
+        endif
+        return
+      endif
       if(ktfrealq(k1,v1))then
         if(tflistq(k2,kl2))then
           m2=kl2%nl

@@ -224,7 +224,7 @@ c                cmp%update=cmp%nparam .le. 0
         return
       endif
       levele=levele+1
-      call tfsyeval(ifsetcoup,kx,irtc)
+      kx=tfsyeval(ifsetcoup,irtc)
       if(irtc .ne. 0)then
         if(irtc .gt. 0)then
           if(ierrorprint .ne. 0)then

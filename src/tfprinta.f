@@ -44,7 +44,7 @@ c      call tfdebugprint(sympd%value,'standardform',1)
       if(iaxform%k .eq. 0)then
         call tfforminit
       endif
-      call tfsyeval(iaxform,ks,irtc)
+      ks=tfsyeval(iaxform,irtc)
       if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
         call tfreseterror
         tfgetform=' '
@@ -74,7 +74,7 @@ c      call tfdebugprint(sympd%value,'standardform',1)
       if(iaxform%k .eq. 0)then
         call tfforminit
       endif
-      call tfsyeval(iaxpagewidth,ks,irtc)
+      ks=tfsyeval(iaxpagewidth,irtc)
       if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
         call tfreseterror
         itfgetrecl=131

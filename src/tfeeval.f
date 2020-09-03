@@ -28,9 +28,9 @@
           kx=tfleval(list,.true.,irtc)
         endif
       elseif(ktfsymbolq(k))then
-        call tfsyeval(k,kx,irtc)
+        kx=tfsyeval(k,irtc)
       elseif(ktfpatq(k))then
-        call tfpateval(k,kx,irtc)
+        kx=tfpateval(k,irtc)
       elseif(ktfrefq(k,ka))then
         kx=dlist(ka)
       endif
@@ -283,14 +283,14 @@ c                endif
           endif
         case (ktfsymbol)
           ki0=ki
-          call tfsyeval(ki0,ki,irtc)
+          ki=tfsyeval(ki0,irtc)
           if(irtc .ne. 0)then
             go to 9000
           endif
           ev=ev .or. ki%k .ne. ki0%k
         case (ktfpat)
           ki0=ki
-          call tfpateval(ki0,ki,irtc)
+          ki=tfpateval(ki0,irtc)
           if(irtc .ne. 0)then
             go to 9000
           endif
@@ -398,12 +398,12 @@ c                endif
       return
       end
 
-      subroutine tfpateval(k,kx,irtc)
+      function tfpateval(k,irtc) result(kx)
       use tfstk
       use tfcode
       implicit none
+      type (sad_descriptor) kx
       type (sad_descriptor) ,intent(in):: k
-      type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) ke
       type (sad_pat), pointer :: pat
       integer*8 ka,kae,kte
@@ -430,14 +430,14 @@ c                endif
       return
       end
 
-      subroutine tfsyeval(ka,kx,irtc)
+      function tfsyeval(ka,irtc) result(kx)
       use tfstk
       use tfcode
       use iso_c_binding
       use mackw
       implicit none
+      type (sad_descriptor) kx
       type (sad_descriptor) ,intent(in):: ka
-      type (sad_descriptor) ,intent(out):: kx
       type (sad_symbol), pointer :: sym
       type (sad_symdef), pointer :: symd
       type (sad_namtbl), pointer :: loc

@@ -434,7 +434,7 @@ c      endif
         iaepicsvaluecb%k=ktfsymbolz('EPICS$ValueCB',13)
       endif
       levele=levele+1
-      call tfsyeval(iaepicsvaluecb,dtastk(isp),irtc)
+      dtastk(isp)=tfsyeval(iaepicsvaluecb,irtc)
       if(irtc .ne. 0)then
         go to 9000
       endif

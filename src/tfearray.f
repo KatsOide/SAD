@@ -33,10 +33,10 @@ c      call tfdebugprint(k,'and',1)
 c      write(*,*)'with ',iopc1
       irtc=0
       select case(iopc1)
-      case (mtfplus:mtfunequal,mtfand,mtfor,mtfcomplex)
+      case (mtfplus:mtfnot,mtfcomplex)
         kx=tfecmplxl(k1,k,iopc1)
         return
-      case (mtfnot:mtfsame)
+      case (mtfsame:mtfunsame)
         go to 101
       end select
       if(ktflistq(k1,kl1))then
@@ -174,7 +174,7 @@ c      write(*,*)'with ',iopc1
       integer*4 ,intent(out):: irtc
       complex*16 ,intent(in):: c1,c2
       complex*16 cx,tfcmplxmathv
-      if(iopc1 .gt. mtfnot .and. iopc1 .ne. mtfcomplex)then
+      if(iopc1 .gt. mtfunequal .and. iopc1 .ne. mtfcomplex)then
         irtc=-1
       else
         cx=tfcmplxmathv(c1,c2,iopc1)

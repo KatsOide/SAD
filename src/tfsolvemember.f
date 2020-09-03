@@ -212,7 +212,7 @@ c      write(*,*)'with: ',irtc,ev,eval
         endif
         if(eval)then
           if(ktfsymbolq(kx))then
-            call tfsyeval(kx,kx,irtc)
+            kx=tfsyeval(kx,irtc)
             if(irtc .ne. 0)then
               l=itfdownlevel()
               return

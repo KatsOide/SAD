@@ -96,12 +96,12 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
           return
         endif
       elseif(ktfsymbolq(k1))then
-        call tfsyeval(k1,kv,irtc)
+        kv=tfsyeval(k1,irtc)
         if(irtc .ne. 0)then
           return
         endif
       elseif(ktfpatq(k1))then
-        call tfpateval(k1,kv,irtc)
+        kv=tfpateval(k1,irtc)
         if(irtc .ne. 0)then
           return
         endif

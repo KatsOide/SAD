@@ -749,10 +749,10 @@ c     enddo
       level=itfuplevel()
       if(id .eq. 1)then
 c        dtastk(isp1)=ifvr
-        call tfsyeval(ifvr,dtastk(isp1),irtc)
+        dtastk(isp1)=tfsyeval(ifvr,irtc)
       elseif(id .eq. 2)then
 c        dtastk(isp1)=ifvw
-        call tfsyeval(ifvw,dtastk(isp1),irtc)
+        dtastk(isp1)=tfsyeval(ifvw,irtc)
       endif
       if(irtc .eq. 0)then
         if(.not. ktfsymbolqdef(ktastk(isp1),symd) .or.
@@ -1313,7 +1313,7 @@ c
         itfcoupm=ktfsymbolz('CouplingMatrix',14)
       endif
       levele=levele+1
-      call tfsyeval(dfromk(itfcoupm),km,irtc)
+      km=tfsyeval(dfromk(itfcoupm),irtc)
       call tfconnect(km,irtc)
       if(irtc .ne. 0)then
         go to 9010
