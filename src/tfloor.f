@@ -474,9 +474,12 @@
       real*8 pure elemental function sqrt1(x)
       implicit none
       real*8, intent(in) :: x
-      real*8, parameter:: xth=1.d-6,xmin=1.d-100
+      real*8, parameter:: xth=1.d-6,xth1=1.d-3,xmin=1.d-100
       if(abs(x) .lt. xth)then
-        sqrt1=x*(0.5d0-x*(0.125d0-x*0.0625d0))
+        sqrt1=x*(0.5d0+x*(-0.125d0+x*0.0625d0))
+      elseif(abs(x) .lt. xth1)then
+        sqrt1=x*(0.5d0+x*(-0.125d0+x*(0.0625d0+
+     $       x*(-.0390625d0+x*(.02734375d0-.0205078125*x)))))
       else
         sqrt1=x/(1.d0+sqrt(max(xmin,1.d0+x)))
       endif

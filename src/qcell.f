@@ -7,8 +7,9 @@
       implicit none
       type (ffs_bound) fb
       type (ffs_stat) optstat
-      integer*4 idp,lfno
-      logical*4 fam
+      integer*4 ,intent(in):: idp
+      logical*4 ,intent(in):: fam
+      integer*4 lfno
       fb%lb=1
       fb%le=nlat
       fb%fb=0.d0
@@ -27,12 +28,13 @@
       implicit none
       type (ffs_bound) , intent(in)::fbound
       type (ffs_stat) , intent(out)::optstat
-      real*8 bmin,bmax,amax
-      integer*4 itmax
-      parameter (bmin=1.d-16,bmax=1.d16,amax=1.d16)
-      parameter (itmax=63)
-      real*8 ftwiss(ntwissfun),
-     $     tffselmoffset,r1,r2,r3,r4,c1,
+      real*8 ,parameter:: bmin=1.d-16,bmax=1.d16,amax=1.d16
+      integer*4 ,parameter :: itmax=63
+      integer*4 , intent(in) :: idp
+      integer*4 , intent(inout) :: lfno
+      logical*4 , intent(in)::fam,chgini
+      real*8 ftwiss(ntwissfun),tffselmoffset,
+     $     r1,r2,r3,r4,c1,
      $     s11,s12,s13,s14,s21,s22,s23,s24,
      $     s31,s32,s33,s34,s41,s42,s43,s44,
      $     a11,a12,a21,a22,b11,b12,b21,b22,
@@ -42,10 +44,7 @@
      $     xb,xe,xp,fr,fra,frb,tr(4,5),
      $     dpsix,dpsiy,cosx,sinx,cosy,siny,
      $     x11,x22,y11,y22
-      integer*4 , intent(in) :: idp
-      integer*4 , intent(inout) :: lfno
       integer*4 ie1,l,nm,lx
-      logical*4 , intent(in)::fam,chgini
       logical*4 stab,codfnd,pri,nanq
       real*8 trans(4,5),cod(6),
      $     tm11,tm12,tm13,tm14,tm15,

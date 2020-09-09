@@ -16,7 +16,7 @@ OBJMOD= tfstk.o		tfstrbuf.o	tfreadbuf.o	toplvl.o	tintrb.o \
 OBJRC= 	tfefun1.o	tfsort.o	tfmodule.o	itfmaloc.o \
 	tfwrite.o	itfaloc.o	tfmemcheck.o	tfdot.o		tfematrix.o \
 	tfconvstr.o	tfpart.o	tfreplace.o	tftake.o	tfeval1.o \
-	tfearray.o	tfeexpr.o	tfsetlist.o	tfeeval.o	tfmap.o	tftable.o \
+	tfeexpr.o	tfsetlist.o	tfeeval.o	tfmap.o	tftable.o \
 	itfdepth.o	tfdset.o	tfsameq.o	itfpmat.o	tmatch.o \
 	gamma.o		tfbessel.o	 spkick.o	tsolqu.o	tsolque.o \
 	tfshared.o	tfinitn.o	tffsa.o photons.o
@@ -124,7 +124,7 @@ OBJOBS = mbmp.o temp.o pstati3.o palgn.o pvbump.o pwrtmon.o pwrtstr.o \
 	mrmb.o mhogal.o mstat.o mstatp.o pmovi.o mhogan.o monel.o \
 	mfnst.o mstat2.o metaer.o trotg.o nlfit.o gaus3.o corinit.o \
 	pvbump2.o pmeas.o pmbdata.o pvbump3.o ptrim.o pundo.o \
-	pmbdrw.o pmbump.o pvbump1.o preabuf.o pmbdata1.o 
+	pmbdrw.o pmbump.o pvbump1.o preabuf.o pmbdata1.o tfearray.o
 
 # from sad.builtin.mk
 OBJFUNC=tfDefFuncs_.o $(_SAD_FUNC_OBJS)

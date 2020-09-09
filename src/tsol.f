@@ -931,7 +931,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           if(autophi)then
             ph=ph+gettwiss(mfitdz,l_track)*cmp%value(p_W_CAVI)
           endif
-          call tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
+          call tmultiacc(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         cmp%value(ky_L_CAVI),dummy,dummy,
      $         bzs,0.d0,0.d0,0.d0,
      1         cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),

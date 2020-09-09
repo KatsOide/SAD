@@ -850,6 +850,7 @@ z_2&=z_1  - p_{x1} y_1^2 (1-\\frac{y_1^2}{12\\rho_b^2}) \\frac{p_1}{2 \\rho_b (p
    (body of bend)\n"//EquAlign["\
 p_{x2}=&-\\frac{\\rho_0}{\\rho_b} (\\sin\\psi_2 + \\sin(\\omega + \\psi_1))\\\\\n\
             &+ p_{z1}\\sin\\omega  +  p_{x1}\\cos\\omega - \\frac{x_1}{\\rho_b \\sin\\omega}\\ ,\\\\\n\
+p_{z2}=&\\sqrt{p_{x1}^2+p_{z1}^2-p_{x2}^2}\\ ,\\\\\n\
 x_2 =& x_1 \\cos\\omega + \\rho_b (p_{z2} - p_{z1}\\cos\\omega + p_{x1}\\sin\\omega)\\\\\n\
             &+\\rho_0 (\\cos(\\omega+\\psi_1) - \\cos\\psi_2)\\ ,\\\\\n\
 y_2  =& y_1 + s \\frac{p_{y1}}{\\sqrt{p_1^2 - p_{y1}^2}}\\ ,\\\\\n\

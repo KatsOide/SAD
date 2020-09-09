@@ -53,11 +53,9 @@
       pspac_nturn =max(1,int(rgetgl1('PSPACNTURN')))
       pspac_nturncalc =max(0,int(rgetgl1('PSPACNTURNCALC')))
       call tphyzp
-c      write(*,*)'tfsetparam ',gammab(1),p0
-      if(gammab(1) .ne. p0 .and.  geocal)then
+      if(gammab(1) .ne. p0 .and. geocal)then
         gammab(1)=p0
         call tfgeo1(1,nlat,calgeo,.true.)
-c        write(*,*)'gammab(1): ',gammab(1)
       endif
       call tsetgcut
       xixf  =rfromd(kxsymbolv('XIX',3))*pi2

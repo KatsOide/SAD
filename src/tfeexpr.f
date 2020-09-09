@@ -1,36 +1,6 @@
-      module earray
-
-      contains
-      function tfecmplx1(k1,k2i,iopc1,c,d) result(kxi)
-      use tfstk
-      use eexpr
-      implicit none
-      type (sad_descriptor) kxi,tfecmplxl
-      type (sad_descriptor) ,intent(in):: k1,k2i
-      integer*4 ,intent(in):: iopc1
-      logical*4 ,intent(inout):: c,d
-      if(tflistq(k2i))then
-        kxi=dtfcopy(tfecmplxl(k1,k2i,iopc1))
-        d=.true.
-        c=c .and. tfconstq(kxi%k)
-        kxi=dtfcopy(kxi)
-      else
-        kxi=tfeexpr(k1,k2i,iopc1)
-        if(ktfnonrealq(kxi))then
-          c=c .and. tfconstq(kxi%k)
-          d=.true.
-          kxi=dtfcopy(kxi)                  
-        endif
-      endif
-      return
-      end function
-
-      end module
-
       recursive function tfecmplxl(k1,k2,iopc1) result(kx)
       use tfstk
       use eexpr
-      use earray
       implicit none
       type (sad_descriptor) kx
       type (sad_descriptor) ,intent(in):: k1,k2
@@ -42,7 +12,7 @@
       integer*4 ,intent(in):: iopc1
       integer*4 irtc,m1,m2,i,iopc2
       real*8 v1,v2,v1i,v2i
-      complex*16 c1,cx,cx1,cx2,tfcmplxmathv
+      complex*16 c1,cx,cx1,cx2
       logical*4 d,c
 c      call tfdebugprint(k1,'cmplxl',1)
 c      call tfdebugprint(k2,'and:',1)
@@ -748,13 +718,7 @@ c              write(*,*)'tfecmplx-rl*2 '
       integer*4 m,i,isp0
       if(tfnumberq(k))then
         if(ktfrealq(k))then
-          if(mode .eq. 1)then
-            kx=k
-          elseif(mode .eq. 2)then
-            kx%k=0
-          else
-            kx=k
-          endif
+          kx%k=merge(i00,k%k,mode .eq. 2)
         else
           call loc_sad(ktfaddrd(k),kl)
           if(mode .eq. 1)then
@@ -767,11 +731,8 @@ c              write(*,*)'tfecmplx-rl*2 '
         endif
         return
       elseif(tfreallistq(k,klr))then
-        if(mode .eq. 1 .or. mode .eq. 3)then
-          kx=k
-        else
-          kx%k=ktflist+ktraaloc(-1,klr%nl)
-        endif
+        kx=merge(k,kxraaloc(-1,klr%nl),
+     $       mode .eq. 1 .or. mode .eq. 3)    
         return
       elseif(ktflistq(k,kl))then
         m=kl%nl

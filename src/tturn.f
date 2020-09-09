@@ -154,6 +154,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       use kradlib
       use mathfun
       use tracklim
+      use kradlib, only:tallocrad
       implicit none
       integer*4,parameter :: la1=15
       type (sad_comp), pointer:: cmp
@@ -203,16 +204,7 @@ c      isb=ilist(2,iwakepold+6)
       xlimit=alost*3.d0
       sspac0=pos(lbegin-1)
       call tsetdvfs
-      if(rad)then
-        allocate(pxr0(np0))
-        allocate(pyr0(np0))
-        allocate(zr0(np0))
-      endif
-      if(allocated(bsi))then
-        write(*,*)'tturn-bsi-alread allocated? ',sizeof(bsi)
-        deallocate(bsi)
-      endif
-      allocate(bsi(np0))
+      call tallocrad(np0)
       bsi=0.d0
       do l=lbegin,lend
         l_track=l
@@ -232,7 +224,7 @@ c        endif
      $         0.d0,0.d0,0.d0,0.d0,
      $         -alost,-alost,alost,alost,0.d0,0.d0,0.d0,0.d0)
           if(np .le. 0)then
-            go to 9000
+            return
           endif
           la=la1
         endif
@@ -244,7 +236,7 @@ c        endif
      $           ke,sol,kptbl,la,n,nwak,nextwake,out)
           endif
           if(np .le. 0)then
-            go to 9000
+            return
           endif
           sol=l .lt. ke
           go to 1020
@@ -414,7 +406,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $        l,lend,
      $        ke,sol,kptbl,la,n,nwak,nextwake,out)
          if(np .le. 0)then
-           go to 9000
+           return
          endif
 
        case (icCAVI)
@@ -543,7 +535,7 @@ c     print *,'tturn l sspac2',l,sspac2
        case (icAPRT)
          call tapert1(x,px,y,py,z,g,dv,sx,sy,sz,kptbl,np,n)
          if(np .le. 0)then
-           go to 9000
+           return
          endif
          la=la1
          go to 1010
@@ -595,7 +587,7 @@ c     print *,'tturn l sspac2',l,sspac2
      $     0.d0,0.d0,0.d0,0.d0,
      $     -alost,-alost,alost,alost,0.d0,0.d0,0.d0,0.d0)
       if(np .le. 0)then
-        go to 9000
+        return
       endif
       la=la1
 c      call tfmemcheckprint('tturn',1,.false.,irtc)
@@ -616,12 +608,6 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
            endif
         endif
       endif
- 9000 if(rad)then
-        deallocate(zr0)
-        deallocate(pyr0)
-        deallocate(pxr0)
-      endif
-      deallocate(bsi)
       return
       end
 
@@ -663,13 +649,13 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
       use tspin
       implicit none
       type (sad_comp) :: cmp
-      integer*4 np,n
-      integer*4 kptbl(np0,6)
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),
-     $     g(np0),dv(np0)
-      real*8 sx(np0),sy(np0),sz(np0)
-      real*8 bz,rtaper
-      type (sad_dlist) :: lsegp
+      integer*4 ,intent(inout):: np
+      integer*4 ,intent(in):: n
+      integer*4 ,intent(inout):: kptbl(np0,6)
+      real*8 ,intent(inout):: x(np0),px(np0),y(np0),py(np0),z(np0),
+     $     g(np0),dv(np0),sx(np0),sy(np0),sz(np0)
+      real*8 ,intent(in):: bz,rtaper
+      type (sad_dlist),intent(in) :: lsegp
       type (sad_dlist), pointer :: lal,lk
       type (sad_rlist), pointer :: lak,lkv
       real*8 :: rsave(cmp%ncomp2)
@@ -745,33 +731,62 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
       if(autophi)then
         ph=ph+gettwiss(mfitdz,l_track)*cmp%value(p_W_MULT)
       endif
-      call tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     cmp%value(p_L_MULT),cmp%value(ky_K0_MULT),
-     $     cmp%value(p_K0R_MULT),
-     $     bz,cmp%value(p_ANGL_MULT),
-     $     cmp%value(p_PSI1_MULT),cmp%value(p_PSI2_MULT),
-     1     cmp%value(ky_DX_MULT),cmp%value(ky_DY_MULT),
-     $     cmp%value(ky_DZ_MULT),
-     $     cmp%value(p_CHI1_MULT),cmp%value(p_CHI2_MULT),
-     $     cmp%value(ky_ROT_MULT),
-     $     cmp%value(ky_DROT_MULT),
-     $     cmp%value(p_THETA2_MULT),
-     $     cmp%value(ky_EPS_MULT),
-     $     rad .and. cmp%value(ky_RAD_MULT) .eq. 0.d0 .and.
-     $     cmp%value(p_L_MULT) .ne. 0.d0,
-     $     cmp%value(ky_FRIN_MULT) .eq. 0.d0,
-     $     cmp%value(p_AKF1F_MULT)*rtaper,
-     $     cmp%value(p_AKF2F_MULT)*rtaper,
-     $     cmp%value(p_AKF1B_MULT)*rtaper,
-     $     cmp%value(p_AKF2B_MULT)*rtaper,
-     $     cmp%ivalue(1,p_FRMD_MULT),
-     $     cmp%value(p_FB1_MULT),cmp%value(p_FB2_MULT),
-     $     cmp%lvalue(1,p_DOFR_MULT),
-     $     cmp%value(ky_VOLT_MULT)+cmp%value(ky_DVOLT_MULT),
-     $     cmp%value(p_W_MULT),
-     $     cmp%value(ky_PHI_MULT),ph,cmp%value(p_VNOMINAL_MULT),
-     $     cmp%value(ky_RADI_MULT),rtaper,autophi,
-     $     cmp%ivalue(1,p_NM_MULT),cmp%ivalue(2,p_NM_MULT),
-     $     n,kptbl)
+      if((trpt .or. rfsw) .and.
+     $     cmp%value(ky_VOLT_MULT)+cmp%value(ky_DVOLT_MULT)
+     $     .ne. 0.d0)then
+        call tmultiacc(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       cmp%value(p_L_MULT),cmp%value(ky_K0_MULT),
+     $       cmp%value(p_K0R_MULT),
+     $       bz,cmp%value(p_ANGL_MULT),
+     $       cmp%value(p_PSI1_MULT),cmp%value(p_PSI2_MULT),
+     1       cmp%value(ky_DX_MULT),cmp%value(ky_DY_MULT),
+     $       cmp%value(ky_DZ_MULT),
+     $       cmp%value(p_CHI1_MULT),cmp%value(p_CHI2_MULT),
+     $       cmp%value(ky_ROT_MULT),
+     $       cmp%value(ky_DROT_MULT),
+     $       cmp%value(p_THETA2_MULT),
+     $       cmp%value(ky_EPS_MULT),
+     $       rad .and. cmp%value(ky_RAD_MULT) .eq. 0.d0 .and.
+     $       cmp%value(p_L_MULT) .ne. 0.d0,
+     $       cmp%value(ky_FRIN_MULT) .eq. 0.d0,
+     $       cmp%value(p_AKF1F_MULT)*rtaper,
+     $       cmp%value(p_AKF2F_MULT)*rtaper,
+     $       cmp%value(p_AKF1B_MULT)*rtaper,
+     $       cmp%value(p_AKF2B_MULT)*rtaper,
+     $       cmp%ivalue(1,p_FRMD_MULT),
+     $       cmp%value(p_FB1_MULT),cmp%value(p_FB2_MULT),
+     $       cmp%lvalue(1,p_DOFR_MULT),
+     $       cmp%value(ky_VOLT_MULT)+cmp%value(ky_DVOLT_MULT),
+     $       cmp%value(p_W_MULT),
+     $       cmp%value(ky_PHI_MULT),ph,cmp%value(p_VNOMINAL_MULT),
+     $       cmp%value(ky_RADI_MULT),rtaper,autophi,
+     $       cmp%ivalue(1,p_NM_MULT),cmp%ivalue(2,p_NM_MULT),
+     $       n,kptbl)
+      else
+        call tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       cmp%value(p_L_MULT),cmp%value(ky_K0_MULT),
+     $       cmp%value(p_K0R_MULT),
+     $       bz,cmp%value(p_ANGL_MULT),
+     $       cmp%value(p_PSI1_MULT),cmp%value(p_PSI2_MULT),
+     1       cmp%value(ky_DX_MULT),cmp%value(ky_DY_MULT),
+     $       cmp%value(ky_DZ_MULT),
+     $       cmp%value(p_CHI1_MULT),cmp%value(p_CHI2_MULT),
+     $       cmp%value(ky_ROT_MULT),
+     $       cmp%value(ky_DROT_MULT),
+     $       cmp%value(p_THETA2_MULT),
+     $       cmp%value(ky_EPS_MULT),
+     $       rad .and. cmp%value(ky_RAD_MULT) .eq. 0.d0 .and.
+     $       cmp%value(p_L_MULT) .ne. 0.d0,
+     $       cmp%value(ky_FRIN_MULT) .eq. 0.d0,
+     $       cmp%value(p_AKF1F_MULT)*rtaper,
+     $       cmp%value(p_AKF2F_MULT)*rtaper,
+     $       cmp%value(p_AKF1B_MULT)*rtaper,
+     $       cmp%value(p_AKF2B_MULT)*rtaper,
+     $       cmp%ivalue(1,p_FRMD_MULT),
+     $       cmp%value(p_FB1_MULT),cmp%value(p_FB2_MULT),
+     $       cmp%lvalue(1,p_DOFR_MULT),cmp%value(ky_RADI_MULT),rtaper,
+     $       cmp%ivalue(1,p_NM_MULT),cmp%ivalue(2,p_NM_MULT),
+     $       n,kptbl)
+      endif
       return
       end
