@@ -121,18 +121,18 @@ c      enddo
       use kyparam
       use tfstk
       use ffs
-      use tffitcode
-      use ffs_pointer, only:latt,direlc
+      use sad_main, only:sad_comp
+      use ffs_pointer, only:direlc,compelc
       implicit none
-      integer*4 i,ibz
-      integer*8 lp
-      real*8 bzthre
-      parameter (bzthre=1.d-20)
+      integer*4 ,intent(in):: i
+      integer*4 ,intent(out):: ibz
+      type (sad_comp), pointer ::cmp
+      real*8 ,parameter ::bzthre=1.d-20
       ibz=ilist(i*3-2,ifibzl)
       if(ibz .gt. 0)then
-        lp=latt(ibz)
-        tfbzs=charge*(rlist(lp+ky_BZ_SOL)
-     $       +rlist(lp+ky_DBZ_SOL))
+        call compelc(ibz,cmp)
+        tfbzs=charge*(cmp%value(ky_BZ_SOL)
+     $       +cmp%value(ky_DBZ_SOL))
      $       *direlc(ibz)
      $       /(amass*rlist(ifgamm+i-1)/c)
         if(abs(tfbzs) .lt. bzthre)then
@@ -147,12 +147,10 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       end
 
       subroutine tfbndsol(i,ibg,ibb)
-      use tfstk
-      use ffs
       use ffs_pointer
-      use tffitcode
       implicit none
-      integer*4 i,ibg,ibb
+      integer*4 ,intent(in):: i
+      integer*4 ,intent(out):: ibg,ibb
       ibg=ibzl(2,i)
       ibb=ibzl(3,i)
       return
@@ -165,7 +163,8 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       use tffitcode
       use ffs_pointer, only:direlc,idelc
       implicit none
-      integer*4 i,ibz,ld
+      integer*4 ,intent(in):: i
+      integer*4 ibz,ld
       ibz=ilist(i*3-2,ifibzl)
       tfinsol=.false.
       if(ibz .ne. 0)then
@@ -196,7 +195,8 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       use tffitcode
       use tfcsi,only:ipoint
       implicit none
-      integer*4 next,ielm,lfno,i0
+      integer*4 ,intent(in):: lfno
+      integer*4 next,ielm,i0
       character*(MAXPNAME+16) name
       logical*4 exist
       call peekwdp(name,next)
@@ -218,15 +218,11 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 i0,im(nele),i,ii,iie,k,ltyp,idx
-c      do i=1,nlat
-        mult(1:nlat)=0
-c      enddo
-c      do i=1,nele
-        nelvx(1:nele)%klp=0
-        im=0
-c        ilist(i-1,im)=0
-c      enddo
+      integer*4 ,intent(in):: i0
+      integer*4 im(nele),i,ii,iie,k,ltyp,idx
+      mult(1:nlat)=0
+      nelvx(1:nele)%klp=0
+      im=0
       do i=1,nlat-1
         ii=mod(i+nlat+i0-3,nlat-1)+1
         iie=iele1(ii)

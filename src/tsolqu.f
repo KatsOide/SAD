@@ -129,17 +129,13 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
             c=  (w1*wd*xi+pyi  )*wss
             dw= ( -wd*pxi+w1*yi)*wss
             u1w= a*dc1 +bw*s1
-            u1 =u1w*w1
             u2w=-a*s1  +bw*dc1
-            u2 =u2w*w1
             v1w= c*dch2+dw*sh2
-            v1 =v1w*w2
             v2w= c*sh2 +dw*dch2
-            v2=v2w*w2
-            x(i) =x(i)+u1w   +v1w*bzp
-            px(i)=pxi +u2    + v2*bzp
-            y(i) =y(i)+wd*u2w+ws*v2w
-            py(i)=pyi -wd*u1 +ws*v1
+            x(i) =x(i)+u1w      +v1w*bzp
+            px(i)=pxi +u2w*w1   +v2w*w2*bzp
+            y(i) =y(i)+wd*u2w   +ws*v2w
+            py(i)=pyi -wd*u1w*w1+ws*v1w*w2
             awu=a/ws*w1
             dwu=dw*w2
             call tztaf(tz, awu, pxi,pyi,aw1, ws, w12,wss, g1, dz1)
@@ -293,8 +289,8 @@ c!$OMP END PARALLEL
         do n=1,ndiv
           do concurrent (i=1:np)
             tz=tzsetparam(gp(i),aln,akk,bz)
-            bsi(i)=merge(akk*(x(i)+dx0)*(y(i)+dy0)+bzp*alr,bzp*alr,
-     $           n .eq. 1)
+            bsi(i)=merge(akk*(x(i)+dx0)*(y(i)+dy0)+bzp*alr,
+     $           bzp*alr,n .eq. 1)
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
             r=-dpz/(1.d0+dpz)*alr
@@ -321,10 +317,10 @@ c!$OMP END PARALLEL
             v1=v1w*w2
             v2w= c*sh2 +dw*dch2
             v2=v2w*w2
-            x(i) =x(i) +u1w+v1w*bzp
-            px(i)=pxi+u2 + v2*bzp
-            y(i) =y(i) +wd*u2w+ws*v2w
-            py(i)=pyi-wd*u1 +ws*v1
+            x(i) =x(i)+u1w+v1w*bzp
+            px(i)=pxi +u2 + v2*bzp
+            y(i) =y(i)+wd*u2w+ws*v2w
+            py(i)=pyi -wd*u1 +ws*v1
             awu=a/ws*w1
             dwu=d
             call tztaf(tz,awu,  pxi,pyi,aw1,  ws,w12, wss,g1,dz1)
@@ -349,8 +345,8 @@ c!$OMP END PARALLEL
           pxi=px(i)
           x(i) =x(i)+(a24*pxi-a14*py(i))/bzp
           y(i) =y(i)+(a14*pxi+a24*py(i))/bzp
-          px(i)=     a22*pxi+a24*py(i)
-          py(i)=    -a24*pxi+a22*py(i)
+          px(i)=      a22*pxi+a24*py(i)
+          py(i)=     -a24*pxi+a22*py(i)
           z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
           px(i)=px(i)-bzp*y(i)*.5d0
           py(i)=py(i)+bzp*x(i)*.5d0

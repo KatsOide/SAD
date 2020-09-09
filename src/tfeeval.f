@@ -48,6 +48,7 @@
       logical*4 tfconstlistqo
       kaa=ksad_loc(list%head%k)
       kx%k=ktflist+kaa
+c      call tfdebugprint(kx,'tfleval',1)
       irtc=0
       if(iand(lconstlist,list%attr) .ne. 0)then
         return

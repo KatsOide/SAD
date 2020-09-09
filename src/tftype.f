@@ -10,10 +10,10 @@
       integer*4 ntyp
       parameter (ntyp=18)
       integer*8 kavl
-      integer*4 lfno,k1,ltyp(ntyp)
+      integer*4 ,intent(in):: lfno
       integer*4 j,kx,lt,kp,notchar,ifany,lpw,itfgetrecl,
-     $     nl,kkk,irtc
-      character*(*) word
+     $     nl,kkk,irtc,k1,ltyp(ntyp)
+      character*(*) ,intent(out):: word
       character*(MAXPNAME) name1,tfkwrd
       character*80 patt
       logical*4 exist,exist1,tmatch,start,mulc

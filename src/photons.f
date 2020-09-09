@@ -928,4 +928,30 @@ c              dcosu=2.d0*sin(g*.5d0)**2
         return
         end subroutine
 
+        subroutine tallocvar(var,np)
+        implicit none
+        integer*4 ,intent(in):: np
+        real*8 ,allocatable :: var(:)
+        if(.not. allocated(var))then
+          allocate(var(np))
+        elseif(sizeof(var) .lt. np*8)then
+          deallocate(var)
+          allocate(var(np))
+        endif
+        return
+        end
+
+        subroutine tallocrad(np)
+        use ffs_flag, only:rad
+        implicit none
+        integer*4 ,intent(in):: np
+        call tallocvar(bsi,np)
+        if(rad)then
+          call tallocvar(pxr0,np)
+          call tallocvar(pyr0,np)
+          call tallocvar(zr0,np)
+        endif
+       return
+       end
+
       end module

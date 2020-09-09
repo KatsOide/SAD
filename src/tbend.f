@@ -359,8 +359,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      $         eps,krad,fringe,
      $         0.d0,0.d0,0.d0,0.d0,
      $         mfring,fb10,fb20,dofr,
-     $         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,
-     $         .false.,.false.,1,nmmax,0,i00)
+     $         0.d0,0.d0,1,nmmax,0,i00)
         endif
         return
       elseif(ak .ne. 0.d0)then
@@ -655,11 +654,10 @@ c      endif
         x1=x(i)/(cosp1-pxi*sp1)
         dz1=x1*sp1
         y1=y(i)+pyi*dz1
-        z1=z(i)-dz1
         px1= pxi*cosp1+pzi*sinp1
         x1=x1+dxfr1*dp*pinv
         py1=pyi+(dyfr1-dyfra1*y1**2)*y1*pinv**2
-        z1=z1+(dxfr1*px1+
+        z1=z(i)-dz1+(dxfr1*px1+
      $       (.5d0*dyfr1-.25d0*dyfra1*y1**2)*y1**2*pinv)*pinv-dzfr1
         pv1sqi=1.d0/max(smin,1.d0-px1**2)
         fa=y1/rhoe*sqrt(pv1sqi)

@@ -175,9 +175,6 @@ FFS;
 
  HH=Help2HTML[];
 
-<a href="/SAD/"><h4><img src="/SAD/SADHelp_img/SAD.jpg" align="middle" alt="SAD" width=90>Back to SAD Home Page</h4></a>
-<a href="/SAD/how-to-use-sad/sad-ffs-examples/"><h4>SAD/FFS Examples</h4></a>
-
  f=OpenWrite["SADHelp.html"];
  Write[f,"\
 <head>\n<title>\n\
@@ -204,7 +201,7 @@ eqs img{\n\
  HH@nlabel=0;
  HH@WriteHTML[f,HH@help[[1]],1];
  Write[f,"<hr>\n</body>"];
- Close[f]
+ Close[f];
 
 (*
 !

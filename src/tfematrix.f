@@ -1,14 +1,14 @@
       subroutine tfematrix(kl1,kl2,kx,iopc1,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,kx1
+      type (sad_descriptor) kx,kx1,tfearray
       type (sad_dlist) kl1,kl2
       type (sad_dlist), pointer :: kind1,kind2,kb1,klx,klx1
       integer*4 iopc1,irtc
       call descr_sad(kl1%dbody(1),kind1)
       call descr_sad(kl2%dbody(1),kind2)
       if(tfsamelistqo(kind1,kind2))then
-        call tfearray(kl1%dbody(2),kl2%dbody(2),kx1,iopc1,irtc)
+        kx1=tfearray(kl1%dbody(2),kl2%dbody(2),iopc1,irtc)
         if(irtc .ne. 0)then
           return
         endif

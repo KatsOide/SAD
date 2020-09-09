@@ -27,7 +27,7 @@
           return
         endif
         if(tflistq(k2) .or. tflistq(k1))then
-          call tfearray(k1,k2,kx,iopc1,irtc)
+          kx=tfearray(k1,k2,iopc1,irtc)
         else
           kx=tfeexpr(k1,k2,iopc1)
           irtc=0
@@ -335,6 +335,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
 
       function  tfset1(k10,k20,mopc,irtc) result(kx)
       use tfstk
+      use eexpr
       use mackw
       implicit none
       type (sad_descriptor) k1,k2,kx,ks,ka
@@ -355,7 +356,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
         if(ktfoperq(ka,kaa))then
           select case (kaa)
           case (mtflist)
-            call tfearray(k1,k2,kx,mtfset,irtc)
+            kx=tfearray(k1,k2,mtfset,irtc)
             return
           case (mtfpart)
             call tfsetpart(list,k2,kx,0,irtc)

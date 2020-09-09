@@ -31,8 +31,8 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       real*8 ,allocatable ::x(:),px(:),y(:),py(:),z(:),g(:),dv(:),
      $     spx(:),spy(:),spz(:),aenox(:),aenoy(:),aenoz(:)
       real*8 a2min,a2max,a3min,a3max,a1min,a1max,a2step,a3step,a1step,
-     $     emx,emz,rgetgl1,cx,cy,cz,sx,sy,sz,dampx,dampy,dampz,t0
-      real*8 trval,phi(3),a1i(n1p0)
+     $     emx,emz,rgetgl1,cx,cy,cz,sx,sy,sz,dampx,dampy,dampz,t0,
+     $     trval,phi(3),a1i(n1p0)
       character*12 autos
       logical*4 damp,ini,remain,pol0
       character rad62a
@@ -187,171 +187,172 @@ c        write(*,*)'trackd-6 ',npri,muls
 c      endif
       n=1
       jzout=1
- 1    np1=npmax
-      iw=nw
-      remain=.true.
-      cx=cos(phi(1))
-      sx=sin(phi(1))
-      cy=cos(phi(2))
-      sy=sin(phi(2))
-      cz=cos(phi(3))
-      sz=sin(phi(3))
-      LOOP_K: do k=1,npmax
-        if(kzx(1,k) .eq. 0)then
-          ip=kptbl(k,1)
-          if(ip .le. np1)then
-            if(remain)then
-              do i=1,n1p
-                do j=nxm(i)-1,1,-1
-                  if(j .lt. nxm(i)-ncons)then
-                    exit
-                  elseif(ntloss(i,j) .lt. nturn)then
-                    nxm(i)=j
-                  elseif(ntloss(i,j) .eq. maxturn)then
-                    ntloss(i,j)=nturn
-                    kzx(1,k)=i
-                    kzx(2,k)=j
-                    mturn(k)=0
-                    select case(ivar1)
-                    case (1)
-                      x(ip)=a1i(i)
-                      px(ip)=0.d0
-                    case (2)
-                      y(ip)=a1i(i)
-                      py(ip)=0.d0
-                    case default
-                      z(ip)=0.d0
-                      g(ip)=a1i(i)
-                    end select
-                    select case(ivar2)
-                    case (1)
-                      x(ip)=a2step*(j-1)+a2min
-                      px(ip)=-x(ip)*sx
-                      x(ip)=x(ip)*cx
-                    case (2)
-                      y(ip)=a2step*(j-1)+a2min
-                      py(ip)=-y(ip)*sy
-                      y(ip)=y(ip)*cy
-                    case default
-                      z(ip)=a2step*(j-1)+a2min
-                      g(ip)=-z(ip)*sz
-                      z(ip)=z(ip)*cz
-                    end select
-                    select case(ivar3)
-                    case (1)
-                      x(ip)=a3step*(j-1)+a3min
-                      px(ip)=-x(ip)*sx
-                      x(ip)=cx*x(ip)
-                    case (2)
-                      y(ip)=a3step*(j-1)+a3min
-                      py(ip)=-y(ip)*sy
-                      y(ip)=cy*y(ip)
-                    case default
-                      z(ip)=a3step*(j-1)+a3min
-                      g(ip)=-z(ip)*sz
-                      z(ip)=cz*z(ip)
-                    end select
-                    aenox(k)=(x(ip)**2+px(ip)**2)*emx**2*dampenough
-                    aenoy(k)=(y(ip)**2+py(ip)**2)*emx**2*dampenough
-                    aenoz(k)=(z(ip)**2+ g(ip)**2)*emz**2*dampenough
-                    select case (ivar3)
-                    case (1)
-                      aenox(k)=big
-                    case (2)
-                      aenoy(k)=big
-                    case default
-                      aenoz(k)=big
-                    end select
+      loop_1: do
+        np1=npmax
+        iw=nw
+        remain=.true.
+        cx=cos(phi(1))
+        sx=sin(phi(1))
+        cy=cos(phi(2))
+        sy=sin(phi(2))
+        cz=cos(phi(3))
+        sz=sin(phi(3))
+        LOOP_K: do k=1,npmax
+          if(kzx(1,k) .eq. 0)then
+            ip=kptbl(k,1)
+            if(ip .le. np1)then
+              if(remain)then
+                do i=1,n1p
+                  do j=nxm(i)-1,1,-1
+                    if(j .lt. nxm(i)-ncons)then
+                      exit
+                    elseif(ntloss(i,j) .lt. nturn)then
+                      nxm(i)=j
+                    elseif(ntloss(i,j) .eq. maxturn)then
+                      ntloss(i,j)=nturn
+                      kzx(1,k)=i
+                      kzx(2,k)=j
+                      mturn(k)=0
+                      select case(ivar1)
+                      case (1)
+                        x(ip)=a1i(i)
+                        px(ip)=0.d0
+                      case (2)
+                        y(ip)=a1i(i)
+                        py(ip)=0.d0
+                      case default
+                        z(ip)=0.d0
+                        g(ip)=a1i(i)
+                      end select
+                      select case(ivar2)
+                      case (1)
+                        x(ip)=a2step*(j-1)+a2min
+                        px(ip)=-x(ip)*sx
+                        x(ip)=x(ip)*cx
+                      case (2)
+                        y(ip)=a2step*(j-1)+a2min
+                        py(ip)=-y(ip)*sy
+                        y(ip)=y(ip)*cy
+                      case default
+                        z(ip)=a2step*(j-1)+a2min
+                        g(ip)=-z(ip)*sz
+                        z(ip)=z(ip)*cz
+                      end select
+                      select case(ivar3)
+                      case (1)
+                        x(ip)=a3step*(j-1)+a3min
+                        px(ip)=-x(ip)*sx
+                        x(ip)=cx*x(ip)
+                      case (2)
+                        y(ip)=a3step*(j-1)+a3min
+                        py(ip)=-y(ip)*sy
+                        y(ip)=cy*y(ip)
+                      case default
+                        z(ip)=a3step*(j-1)+a3min
+                        g(ip)=-z(ip)*sz
+                        z(ip)=cz*z(ip)
+                      end select
+                      aenox(k)=(x(ip)**2+px(ip)**2)*emx**2*dampenough
+                      aenoy(k)=(y(ip)**2+py(ip)**2)*emx**2*dampenough
+                      aenoz(k)=(z(ip)**2+ g(ip)**2)*emz**2*dampenough
+                      select case (ivar3)
+                      case (1)
+                        aenox(k)=big
+                      case (2)
+                        aenoy(k)=big
+                      case default
+                        aenoz(k)=big
+                      end select
 c     Reinit kptbl(ip,4) to reuse particle array slot `ip'
-                    kptbl(ip,4)=0
-                    call tinip(1,
-     $                   x(ip:ip),px(ip:ip),y(ip:ip),py(ip:ip),
-     $                   z(ip:ip),g(ip:ip),dv(ip:ip),
-     $                   emx,emz,codin,dvfs,.false.)
-c                    write(*,'(a,7i5,1p3g15.7)')
+                      kptbl(ip,4)=0
+                      call tinip1(x(ip),px(ip),y(ip),py(ip),
+     $                     z(ip),g(ip),dv(ip),
+     $                     emx,emz,codin,dvfs)
+c     write(*,'(a,7i5,1p3g15.7)')
 c     $                   ' trackd-Launch ',npr1,i,j,ivar1,ivar2,ivar3,
 c     $                     nxm(i),x(ip),y(ip),py(ip)
-                    cycle LOOP_K
-                  endif
+                      cycle LOOP_K
+                    endif
+                  enddo
                 enddo
-              enddo
-            endif
-            remain=.false.
+              endif
+              remain=.false.
 c     Swap particle k <-> j[array index ip <-> np1]
-            j=kptbl(np1,2)
+              j=kptbl(np1,2)
 c     - Update maps between partice ID and array index
-            kptbl(j,  1)=ip
-            kptbl(k,  1)=np1
-            kptbl(ip, 2)=j
-            kptbl(np1,2)=k
+              kptbl(j,  1)=ip
+              kptbl(k,  1)=np1
+              kptbl(ip, 2)=j
+              kptbl(np1,2)=k
 c     - Overwrite slot[np1] to slot[ip](Drop particle[k] information)
-            kptbl(ip,3:nkptbl) = kptbl(np1,3:nkptbl)
-            x(ip)=x(np1)
-            px(ip)=px(np1)
-            y(ip)=y(np1)
-            py(ip)=py(np1)
-            z(ip)=z(np1)
-            g(ip)=g(np1)
-            dv(ip)=dv(np1)
-            np1=np1-1
-            if(np1 .le. 0)then
-              go to 3000
+              kptbl(ip,3:nkptbl) = kptbl(np1,3:nkptbl)
+              x(ip)=x(np1)
+              px(ip)=px(np1)
+              y(ip)=y(np1)
+              py(ip)=py(np1)
+              z(ip)=z(np1)
+              g(ip)=g(np1)
+              dv(ip)=dv(np1)
+              np1=np1-1
+              if(np1 .le. 0)then
+                exit LOOP_K
+              endif
             endif
           endif
-        endif
-      enddo LOOP_K
-      np=np1
- 101  continue
-c      write(*,'(a,2i5,14(i5,1pg12.5))')
+        enddo LOOP_K
+        np=np1
+        do while(np .gt. 0)
+c     write(*,'(a,2i5,14(i5,1pg12.5))')
 c     $     'trackd-tturn-1 ',n,np,(kptbl(i,1),y(i),i=1,14)
-      call tturn(np,x,px,y,py,z,g,dv,spx,spy,spz,kptbl,n)
-c      if(muls .ne. 10)then
-c        write(*,*)'trackd-tturn ',npri,muls
-c      endif
-c      write(*,'(a,2i5,14(i5,1pg12.5))')
+          call tturn(np,x,px,y,py,z,g,dv,spx,spy,spz,kptbl,n)
+c     if(muls .ne. 10)then
+c     write(*,*)'trackd-tturn ',npri,muls
+c     endif
+c     write(*,'(a,2i5,14(i5,1pg12.5))')
 c     $     'trackd-tturn-2 ',n,np,(kptbl(i,1),y(i),i=1,14)
-      if(damp .or. dampenough .ne. 0.d0)then
-        call tpdamp(np,x,px,y,py,z,g,dv,dampx,dampy,dampz,damp,
-     $       aenox,aenoy,aenoz,kptbl(1,2),mturn)
-      endif
-      n=n+1
-      ini=.false.
-      do i=1,npmax
-        if(kzx(1,i) .le. 0)then
-          cycle
-        endif
-        kp=kptbl(i,1)
-        if(kp .le. np)then
-          mturn(i)=mturn(i)+1
-          if(mturn(i) .ge. nturn)then
-            kz=kzx(1,i)
-            kx=kzx(2,i)
-            ntloss(kz,kx)=nturn
-            kzx(1,i)=0
-            ini=.true.
+          if(damp .or. dampenough .ne. 0.d0)then
+            call tpdamp(np,x,px,y,py,z,g,dv,dampx,dampy,dampz,damp,
+     $           aenox,aenoy,aenoz,kptbl(1,2),mturn)
           endif
-        else
-          kz=kzx(1,i)
-          kx=kzx(2,i)
-c          if(kz .eq. 1)then
-c            write(*,'(a,1x,8i10)')'trackd-Lost: ',
+          n=n+1
+          ini=.false.
+          do i=1,npmax
+            if(kzx(1,i) .le. 0)then
+              cycle
+            endif
+            kp=kptbl(i,1)
+            if(kp .le. np)then
+              mturn(i)=mturn(i)+1
+              if(mturn(i) .ge. nturn)then
+                kz=kzx(1,i)
+                kx=kzx(2,i)
+                ntloss(kz,kx)=nturn
+                kzx(1,i)=0
+                ini=.true.
+              endif
+            else
+              kz=kzx(1,i)
+              kx=kzx(2,i)
+c     if(kz .eq. 1)then
+c     write(*,'(a,1x,8i10)')'trackd-Lost: ',
 c     $           kz,kx,mturn(i),i,np,np1,kp,npri
-c          endif
-          ntloss(kz,kx)=mturn(i)
-          kzx(1,i)=0
-          ini=.true.
-        endif
-      enddo
-      if(ini)then
-        go to 1
-      elseif(np1 .lt. npmax)then
-        iw=iw-1
-        if(iw .le. 0)then
-          go to 1
-        endif
-      endif
-      go to 101
- 3000 continue
+c     endif
+              ntloss(kz,kx)=mturn(i)
+              kzx(1,i)=0
+              ini=.true.
+            endif
+          enddo
+          if(ini)then
+            cycle loop_1
+          elseif(np1 .lt. npmax)then
+            iw=iw-1
+            if(iw .le. 0)then
+              cycle loop_1
+            endif
+          endif
+        enddo
+        exit
+      enddo loop_1
       call tfevals('`ExtMap$@ResetMap[]',kxm,irtc)
       if(iprid .eq. 0)then
 c        write(*,*)'trackd-stop ',npr1
@@ -417,6 +418,30 @@ c      call tfevals('Print['//vname//']',kx,irtc)
       else
         rad62a=rad62(m)
       endif
+      return
+      end
+
+      subroutine tinip1(x,px,y,py,z,g,dv,emx,emz,codin,dvfs)
+      implicit none
+      real*8 ,intent(inout):: x,px,y,py,z,dv,g
+      real*8 ,intent(in):: codin(6),dvfs,emx,emz
+      real*8 xa(8)
+      xa(1)=x *emx
+      xa(2)=px*emx
+      xa(3)=y *emx
+      xa(4)=py*emx
+      xa(5)=z *emz
+      xa(6)=g *emz
+      call tmap(xa,xa,-1)
+      xa(1:6)=xa(1:6)+codin
+      call tconv(xa,xa,-1)
+      x =xa(1)
+      px=xa(2)
+      y =xa(3)
+      py=xa(4)
+      z =xa(5)
+      g =xa(6)
+      dv=xa(7)+dvfs
       return
       end
 
