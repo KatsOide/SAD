@@ -357,24 +357,6 @@ c
       return
       end subroutine
 
-      subroutine trbopen(lfn,ib,is,ifd)
-      use readbuf
-      implicit none
-      integer*8, intent(in) :: ib,is
-      integer*4, intent(in) :: ifd
-      integer*4, intent(out):: lfn
-      integer*4 j
-      do j=nbuf,11,-1
-        if(itbuf(j) .eq. modeclose)then
-          lfn=j
-          call irbopen1(lfn,ib,is,ifd)
-          return
-        endif
-      enddo
-      lfn=0
-      return
-      end subroutine
-
       subroutine trbclose(lfn)
       use tfstk
       use tfshare
@@ -464,24 +446,6 @@ c
       mbuf(lfn)=1
       return
       end
-
-      subroutine trbopenmap(str,kx,irtc)
-      use tfstk
-      implicit none
-      character*(*) , intent(in)::str
-      integer*4 , intent(out)::irtc
-      type (sad_descriptor) , intent(out)::kx
-      integer*8 kfile,ksize,mapallocfile
-      integer*4 lfn,ifd
-      kfile=mapallocfile(str,ifd,ksize,irtc)
-      if(irtc .eq. 0)then
-        call trbopen(lfn,kfile/8,ksize+modemapped,ifd)
-        kx%x(1)=dble(lfn)
-      else
-        kx%x(1)=-1.d0
-      endif
-      return
-      end subroutine
 
       end module
 
@@ -838,6 +802,43 @@ c          write(*,*)'writeshared-string ',kas,klist(kas+1)
       irtc=0
       return
       end
+
+      subroutine trbopen(lfn,ib,is,ifd)
+      use tfrbuf,only:itbuf,modeclose,nbuf
+      implicit none
+      integer*8, intent(in) :: ib,is
+      integer*4, intent(in) :: ifd
+      integer*4, intent(out):: lfn
+      integer*4 j
+      do j=nbuf,11,-1
+        if(itbuf(j) .eq. modeclose)then
+          lfn=j
+          call irbopen1(lfn,ib,is,ifd)
+          return
+        endif
+      enddo
+      lfn=0
+      return
+      end subroutine
+
+      subroutine trbopenmap(str,kx,irtc)
+      use tfstk
+      use tfrbuf,only:modemapped
+      implicit none
+      character*(*) , intent(in)::str
+      integer*4 , intent(out)::irtc
+      type (sad_descriptor) , intent(out)::kx
+      integer*8 kfile,ksize,mapallocfile
+      integer*4 lfn,ifd
+      kfile=mapallocfile(str,ifd,ksize,irtc)
+      if(irtc .eq. 0)then
+        call trbopen(lfn,kfile/8,ksize+modemapped,ifd)
+        kx%x(1)=dble(lfn)
+      else
+        kx%x(1)=-1.d0
+      endif
+      return
+      end subroutine
 
       end module readbuf
 

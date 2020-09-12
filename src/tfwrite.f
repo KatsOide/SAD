@@ -1131,6 +1131,7 @@ c          enddo
       subroutine tfopenread(isp1,kx,irtc)
       use tfstk
       use tfcsi
+      use readbuf, only:trbopenmap
       use tfrbuf
       implicit none
       type (sad_descriptor) ,intent(out):: kx
@@ -1297,7 +1298,8 @@ c      endif
 
       subroutine tfstringtostream(isp1,kx,irtc)
       use tfstk
-      use tfrbuf
+      use readbuf, only:trbopen
+      use tfrbuf, only:modestring
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
