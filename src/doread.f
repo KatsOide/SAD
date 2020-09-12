@@ -5,6 +5,7 @@
       use macttyp
       use macfile
       use macmisc
+      use readbuf, only:trbopenmap
       use tfcsi, only:ipoint,lrecl
       use ffsfile
       implicit none

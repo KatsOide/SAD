@@ -1,11 +1,11 @@
-      subroutine tfeval(string,ist1,istop,kx,re,irtc)
+      function tfeval(string,ist1,istop,re,irtc) result(kx)
       use tfstk
       use ophash
       use opdata
       use tfcsi
       use eeval
       implicit none
-      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx
       type (sad_dlist), pointer :: kla,klx
       logical*4 , intent(in) ::re
       integer*4 , intent(in) :: ist1

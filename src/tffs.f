@@ -3524,7 +3524,8 @@ c      call tfree(ifibzl)
       use ffs
       use tffitcode
       use tfcsi
-      use tfrbuf
+      use readbuf, only:trbopen,trbopenmap
+      use tfrbuf, only:modestring,trbassign,trbclose
       use iso_c_binding
       use ffsfile, only:lfnp
       implicit none

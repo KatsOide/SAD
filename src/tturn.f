@@ -303,7 +303,7 @@ c            write(*,*)'twspac-end'
          if(.not. cmp%update)then
            call tpara(cmp)
          endif
-         ak0=cmp%value(ky_ANGL_BEND)+merge(cmp%value(ky_K0_BEND)
+         ak0=merge(cmp%value(ky_K0_BEND)
      $        +cmp%value(ky_RANK_BEND)*tgauss(),
      $        cmp%value(ky_K0_BEND),
      $        cmp%value(ky_RANK_BEND) .ne. 0.d0)
@@ -312,10 +312,10 @@ c            write(*,*)'twspac-end'
      $        cmp%value(p_L_BEND) .ne. 0.d0
          if(rad)then
            if(radcod .and. radtaper)then
-             rtaper=1.d0-dp0
+             rtaper=-dp0
      $            +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
-             ak0=ak0*rtaper
-             ak1=ak1*rtaper
+             ak0=cmp%value(ky_ANGL_BEND)*rtaper+ak0*(1.d0+rtaper)
+             ak1=ak1*(1.d0+rtaper)
            endif
            if(krad .and. calpol)then
              bsi=0.d0

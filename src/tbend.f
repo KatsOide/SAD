@@ -1,146 +1,9 @@
-      module tbendcom
-        real*8 rho0,rhob,f1r,f2r,fb1,fb2
-
-        contains
-        pure subroutine tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
-        use tfstk
-        use ffs_flag, only:calpol
-        use mathfun
-        implicit none
-        integer*4 ,intent(in):: np
-        integer*4 i
-        real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
-     $       sx(np),sy(np),sz(np)
-        real*8 ,intent(in):: phi0,dtheta
-        real*8 r11,r12,r13,r21,r22,r23,r31,r32,r33,
-     $       pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf,
-     $       cphi0,sphi0,cdt,sdt,sdth2,sxf,syf
-        cphi0=cos(phi0*.5d0)
-        sphi0=sin(phi0*.5d0)
-        sdth2=sin(dtheta*.5d0)**2
-        cdt=1.d0-2.d0*sdth2
-        sdt=sin(dtheta)
-        r11=cdt*cphi0**2+sphi0**2
-        r12=-cphi0*sdt
-        r13=-2.d0*sdth2*sphi0*cphi0
-        r21=-r12
-        r22=cdt
-        r23=sphi0*sdt
-        r31=r13
-        r32=-r23
-        r33=cdt*sphi0**2+cphi0**2
-        if(calpol)then
-          do concurrent (i=1:np)
-            xi=x(i)
-            yi=y(i)
-            pxi=px(i)
-            pyi=py(i)
-            pzi=1.d0+pxy2dpz(pxi,pyi)
-            xf =r11*xi +r12*yi
-            yf =r21*xi +r22*yi
-            zf =r31*xi +r32*yi
-            pxf=r11*pxi+r12*pyi+r13*pzi
-            pyf=r21*pxi+r22*pyi+r23*pzi
-            pzf=r31*pxi+r32*pyi+r33*pzi
-            px(i)=pxf
-            py(i)=pyf
-            x(i)=xf-pxf/pzf*zf
-            y(i)=yf-pyf/pzf*zf
-            z(i)=z(i)+zf/pzf
-            sxf  =r11*sx(i)+r12*sy(i)+r13*sz(i)
-            syf  =r21*sx(i)+r22*sy(i)+r23*sz(i)
-            sz(i)=r31*sx(i)+r32*sy(i)+r33*sz(i)
-            sx(i)=sxf
-            sy(i)=syf
-          enddo
-        else
-          do concurrent (i=1:np)
-            xi=x(i)
-            yi=y(i)
-            pxi=px(i)
-            pyi=py(i)
-            pzi=1.d0+pxy2dpz(pxi,pyi)
-            xf =r11*xi +r12*yi
-            yf =r21*xi +r22*yi
-            zf =r31*xi +r32*yi
-            pxf=r11*pxi+r12*pyi+r13*pzi
-            pyf=r21*pxi+r22*pyi+r23*pzi
-            pzf=r31*pxi+r32*pyi+r33*pzi
-            px(i)=pxf
-            py(i)=pyf
-            x(i)=xf-pxf/pzf*zf
-            y(i)=yf-pyf/pzf*zf
-            z(i)=z(i)+zf/pzf
-          enddo
-        endif
-        return
-        end subroutine
-
-        pure subroutine tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,ent)
-        use tfstk
-        use mathfun
-        implicit none
-        integer*4 ,intent(in):: np
-        integer*4 i
-        real*8 , intent(in)::dx,dy,phi0,cost,sint
-        real*8 , intent (inout)::x(np),px(np),y(np),py(np),z(np)
-        real*8 phih,dcph,sph,ds,dx1,dy1,dxa,st1,x1,px1,al,y1
-        logical*4 , intent(in)::ent
-        if(dx .ne. 0.d0 .or. dy .ne. 0.d0)then
-          phih=phi0*.5d0
-          sph=sin(phih)
-          dcph=-2.d0*sin(phih*.5d0)**2
-          st1=merge(sint,-sint,ent)
-          dxa=dx*cost-dy*st1
-          dx1=dx+dcph*cost*dxa
-          dy1=dy-dcph*st1 *dxa
-          ds=dxa*sph
-          dxa=dxa*(1.d0+dcph)
-          if(ent)then
-            do concurrent (i=1:np)
-              al=ds/(1.d0+pxy2dpz(px(i),py(i)))
-              x1  =x(i)+px(i)*al-dx1
-              y(i)=y(i)+py(i)*al-dy1
-              z(i)=z(i)-al
-              x(i)=x1*cost-y(i)*sint
-              y(i)=x1*sint+y(i)*cost
-              px1=px(i)
-              px(i)=px1*cost-py(i)*sint
-              py(i)=px1*sint+py(i)*cost
-            enddo
-          else
-            do concurrent (i=1:np)
-              x1  =x(i)*cost-y(i)*sint
-              y(i)=x(i)*sint+y(i)*cost
-              px1=px(i)
-              px(i)=px1*cost-py(i)*sint
-              py(i)=px1*sint+py(i)*cost
-              al=ds/(1.d0+pxy2dpz(px(i),py(i)))
-              x(i)=x1  +px(i)*al-dx1
-              y(i)=y(i)+py(i)*al-dy1
-              z(i)=z(i)-al
-            enddo
-          endif
-        elseif(sint .ne. 0.d0 .or. cost .ne. 1.d0)then
-          do concurrent (i=1:np)
-            y1=y(i)
-            y(i)=x(i)*sint+y1*cost
-            x(i)=x(i)*cost-y1*sint
-            px1=px(i)
-            px(i)=px1*cost-py(i)*sint
-            py(i)=px1*sint+py(i)*cost
-          enddo
-        endif
-        return
-        end subroutine 
-
-      end module
 
       module bendib
       use tfstk
       implicit none
-      real*8 xi,pxi,yi,pyi,zi,p,dp,rhoe,rho0,rhob,drhob,drhop,
-     $     rhosq,
+      real*8 xi,pxi,yi,pyi,zi,p,dp,rhoe,rho0,rhob,drhop,
+     $     rhosq,drhob,dphib,
      $     akk,akxsq,akysq,akx,aky,dcx,aksx,dcy,aksy,phix,phiy,
      $     spx,spy,sxkx,syky,dcxkx,xsxkx
       real*8 , save :: akxi=0.d0,alxi=0.d0,dpxi=0.d0
@@ -301,8 +164,363 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
 
       end module
 
+      module tbendcom
+        real*8 rho0,rhob,f1r,f2r,fb1,fb2,drhob,phib
+
+        contains
+        pure subroutine tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
+        use tfstk
+        use ffs_flag, only:calpol
+        use mathfun
+        implicit none
+        integer*4 ,intent(in):: np
+        integer*4 i
+        real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
+     $       sx(np),sy(np),sz(np)
+        real*8 ,intent(in):: phi0,dtheta
+        real*8 r11,r12,r13,r21,r22,r23,r31,r32,r33,
+     $       pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf,
+     $       cphi0,sphi0,cdt,sdt,sdth2,sxf,syf
+        cphi0=cos(phi0*.5d0)
+        sphi0=sin(phi0*.5d0)
+        sdth2=sin(dtheta*.5d0)**2
+        cdt=1.d0-2.d0*sdth2
+        sdt=sin(dtheta)
+        r11=cdt*cphi0**2+sphi0**2
+        r12=-cphi0*sdt
+        r13=-2.d0*sdth2*sphi0*cphi0
+        r21=-r12
+        r22=cdt
+        r23=sphi0*sdt
+        r31=r13
+        r32=-r23
+        r33=cdt*sphi0**2+cphi0**2
+        if(calpol)then
+          do concurrent (i=1:np)
+            xi=x(i)
+            yi=y(i)
+            pxi=px(i)
+            pyi=py(i)
+            pzi=1.d0+pxy2dpz(pxi,pyi)
+            xf =r11*xi +r12*yi
+            yf =r21*xi +r22*yi
+            zf =r31*xi +r32*yi
+            pxf=r11*pxi+r12*pyi+r13*pzi
+            pyf=r21*pxi+r22*pyi+r23*pzi
+            pzf=r31*pxi+r32*pyi+r33*pzi
+            px(i)=pxf
+            py(i)=pyf
+            x(i)=xf-pxf/pzf*zf
+            y(i)=yf-pyf/pzf*zf
+            z(i)=z(i)+zf/pzf
+            sxf  =r11*sx(i)+r12*sy(i)+r13*sz(i)
+            syf  =r21*sx(i)+r22*sy(i)+r23*sz(i)
+            sz(i)=r31*sx(i)+r32*sy(i)+r33*sz(i)
+            sx(i)=sxf
+            sy(i)=syf
+          enddo
+        else
+          do concurrent (i=1:np)
+            xi=x(i)
+            yi=y(i)
+            pxi=px(i)
+            pyi=py(i)
+            pzi=1.d0+pxy2dpz(pxi,pyi)
+            xf =r11*xi +r12*yi
+            yf =r21*xi +r22*yi
+            zf =r31*xi +r32*yi
+            pxf=r11*pxi+r12*pyi+r13*pzi
+            pyf=r21*pxi+r22*pyi+r23*pzi
+            pzf=r31*pxi+r32*pyi+r33*pzi
+            px(i)=pxf
+            py(i)=pyf
+            x(i)=xf-pxf/pzf*zf
+            y(i)=yf-pyf/pzf*zf
+            z(i)=z(i)+zf/pzf
+          enddo
+        endif
+        return
+        end subroutine
+
+        pure subroutine tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,ent)
+        use tfstk
+        use mathfun
+        implicit none
+        integer*4 ,intent(in):: np
+        integer*4 i
+        real*8 , intent(in)::dx,dy,phi0,cost,sint
+        real*8 , intent (inout)::x(np),px(np),y(np),py(np),z(np)
+        real*8 phih,dcph,sph,ds,dx1,dy1,dxa,st1,x1,px1,al,y1
+        logical*4 , intent(in)::ent
+        if(dx .ne. 0.d0 .or. dy .ne. 0.d0)then
+          phih=phi0*.5d0
+          sph=sin(phih)
+          dcph=-2.d0*sin(phih*.5d0)**2
+          st1=merge(sint,-sint,ent)
+          dxa=dx*cost-dy*st1
+          dx1=dx+dcph*cost*dxa
+          dy1=dy-dcph*st1 *dxa
+          ds=dxa*sph
+          dxa=dxa*(1.d0+dcph)
+          if(ent)then
+            do concurrent (i=1:np)
+              al=ds/(1.d0+pxy2dpz(px(i),py(i)))
+              x1  =x(i)+px(i)*al-dx1
+              y(i)=y(i)+py(i)*al-dy1
+              z(i)=z(i)-al
+              x(i)=x1*cost-y(i)*sint
+              y(i)=x1*sint+y(i)*cost
+              px1=px(i)
+              px(i)=px1*cost-py(i)*sint
+              py(i)=px1*sint+py(i)*cost
+            enddo
+          else
+            do concurrent (i=1:np)
+              x1  =x(i)*cost-y(i)*sint
+              y(i)=x(i)*sint+y(i)*cost
+              px1=px(i)
+              px(i)=px1*cost-py(i)*sint
+              py(i)=px1*sint+py(i)*cost
+              al=ds/(1.d0+pxy2dpz(px(i),py(i)))
+              x(i)=x1  +px(i)*al-dx1
+              y(i)=y(i)+py(i)*al-dy1
+              z(i)=z(i)-al
+            enddo
+          endif
+        elseif(sint .ne. 0.d0 .or. cost .ne. 1.d0)then
+          do concurrent (i=1:np)
+            y1=y(i)
+            y(i)=x(i)*sint+y1*cost
+            x(i)=x(i)*cost-y1*sint
+            px1=px(i)
+            px(i)=px1*cost-py(i)*sint
+            py(i)=px1*sint+py(i)*cost
+          enddo
+        endif
+        return
+        end subroutine 
+
+        subroutine tbendr(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $     al,phi0,psi1,psi2,
+     1     cosp1,sinp1,cosp2,sinp2,
+     1     mfring,fringe,n1,n2,ndiv)
+        use tfstk
+        use ffs_flag
+        use tmacro
+        use tspin
+        use photontable
+        use bendib, only:rbh,rbl,tbendal
+        use mathfun, only:xsincos
+        implicit none
+        integer*4 ,intent(in):: np,mfring,ndiv,n1,n2
+        integer*4 mfr1,n
+        real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
+     $       dv(np),g(np),sx(np),sy(np),sz(np)
+        real*8 ,intent(in):: al,phi0,cosp1,sinp1,cosp2,sinp2,
+     $       psi1,psi2
+        real*8 wn,aln,phi0n,alr,
+     $       coswn,sinwn,sqwhn,sinwpn,bsi1,bsi2,alx,xsinwn,
+     $       cosp1n,sinp1n,cosp2n,sinp2n,psi1n,psi2n
+        logical*4 ,intent(in):: fringe
+        aln=(al-f1r-f2r)/ndiv
+        do n=n1,n2
+          mfr1=0
+          psi1n=0.d0
+          psi2n=0.d0
+          cosp1n=1.d0
+          sinp1n=0.d0
+          cosp2n=1.d0
+          sinp2n=0.d0
+          bsi1=0.d0
+          bsi2=0.d0
+          call tbendal(n,ndiv,f1r,f2r,aln,alx,alr)
+          if(n .eq. n1)then
+            if(mfring .gt. 0 .or. mfring .eq. -1)then
+              mfr1=-1
+            endif
+            psi1n=psi1
+            cosp1n=cosp1
+            sinp1n=sinp1
+            bsi1=1.d0
+          elseif(n .eq. n2)then
+            if(mfring .gt. 0 .or. mfring .eq. -2)then
+              mfr1=-2
+            endif
+            psi2n=psi2
+            cosp2n=cosp2
+            sinp2n=sinp2
+            bsi2=1.d0
+          endif
+          phi0n=alx/al*phi0
+          if(n .le. 2 .or. n .ge. ndiv)then
+            wn=phi0n-psi1n-psi2n
+            call xsincos(wn,sinwn,xsinwn,coswn,sqwhn)
+            sinwpn=sin(phi0n-psi2n)
+          endif
+          call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         alx,phi0n,
+     1         cosp1n,sinp1n,cosp2n,sinp2n,
+     1         mfr1,fringe,
+     $         coswn,sinwn,-sqwhn,sinwpn,
+     1         .true.,alr,bsi1,bsi2)
+          pcvt%fr0=pcvt%fr0+alx/pcvt%al
+        enddo
+        return
+        end
+
+        subroutine tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $     al,phi0,
+     1     cosp1,sinp1,cosp2,sinp2,
+     1     mfring,fringe,
+     $     cosw,sinw,sqwh,sinwp1,
+     1     krad,alr,bsi1,bsi2)
+        use tfstk
+        use ffs_flag
+        use tmacro
+        use multa, only:nmult
+        use kradlib
+        use mathfun
+        implicit none
+        integer*4 ,intent(in):: np,mfring
+        integer*4 i
+        real*8 ,intent(in):: al,phi0,cosp1,sinp1,cosp2,sinp2,
+     $       cosw,sinw,sqwh,sinwp1,alr
+        real*8 dp,p,
+     $       pinv,rhoe,pxi,pyi,dpzi,pzi,sp1,x1,dz1,y1,z1,px1,
+     $       py1,pv1sqi,f,ff,x2,py2,z2,dph2,ph2,dpx2,pz2,drho,
+     $       t2,dpx3,px3,dpz3,pz3,t3,x3,da,y3,z3,pv2sqi,x4,py4,z4,dpz4,
+     $       dz4,dxfr1,dyfr1,dzfr1,dxfr2,dyfr2,dzfr2,dpz32,
+     $       dyfra1,dyfra2,fa,t4,dpx3a,t2t3,dcosp,px1px3,
+     $       phi0a,bsi1,bsi2,drho1,sinp2wp1,sinp2p1,cosp1p2,
+     $       pz3ph2,pz2px1,sqwht2
+        real*8, parameter :: smin=1.d-4
+        real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
+     $       dv(np),g(np),sx(np),sy(np),sz(np)
+        logical*4 ,intent(in):: krad,fringe
+        if((mfring .gt. 0 .or. mfring .eq. -1) .and. fb1 .ne. 0.d0)then
+          dxfr1=fb1**2/rhob/24.d0
+          dyfr1=fb1/rhob**2/6.d0
+          dzfr1=dxfr1*sinp1
+          dyfra1=merge(4.d0*dyfr1/fb1**2,0.d0,fringe)
+        else
+          dxfr1=0.d0
+          dyfr1=0.d0
+          dyfra1=0.d0
+          dzfr1=0.d0
+        endif
+        if((mfring .gt. 0 .or. mfring .eq. -2) .and. fb2 .ne. 0.d0)then
+          dxfr2=fb2**2/rhob/24.d0
+          dyfr2=fb2/rhob**2/6.d0
+          dzfr2=dxfr2*sinp2
+          dyfra2=merge(4.d0*dyfr2/fb2**2,0.d0,fringe)
+        else
+          dxfr2=0.d0
+          dyfr2=0.d0
+          dyfra2=0.d0
+          dzfr2=0.d0
+        endif
+        dcosp=merge((sinp2-sinp1)*(sinp2+sinp1)/(cosp1+cosp2),
+     $       cosp1-cosp2,cosp1*cosp2 .gt. 0.d0)
+        sinp2wp1=sinp2+sinwp1
+        sinp2p1=sinp2+sinp1
+        cosp1p2=cosp1*cosp2
+c     drhob=rhob-rho0
+        do concurrent (i=1:np)
+          bsi(i)=bsi(i)+bsi1*y(i)/rhob
+          dp=g(i)
+          p=1.d0+dp
+          pinv=1.d0/p
+          rhoe=rhob*p
+          pxi=px(i)
+          pyi=py(i)
+          dpzi=pxy2dpz(pxi,pyi)
+          pzi=1.d0+dpzi
+          sp1=sinp1/pzi
+          x1=x(i)/(cosp1-pxi*sp1)
+          dz1=x1*sp1
+          y1=y(i)+pyi*dz1
+          px1= pxi*cosp1+pzi*sinp1
+          x1=x1+dxfr1*dp*pinv
+          py1=pyi+(dyfr1-dyfra1*y1**2)*y1*pinv**2
+          z1=z(i)-dz1+(dxfr1*px1+
+     $         (.5d0*dyfr1-.25d0*dyfra1*y1**2)*y1**2*pinv)*pinv-dzfr1
+          pv1sqi=1.d0/max(smin,1.d0-px1**2)
+          fa=y1/rhoe*sqrt(pv1sqi)
+          f=(1.d0-(y1/rhob)**2/6.d0)*fa
+          ff=.25d0*(f+fa)*y1*pv1sqi
+          x2=x1+ff
+          py2=py1-px1*f
+          z2=z1-px1*ff
+          dph2=sqrt1(-py2**2)
+          ph2=1.d0+dph2
+          dpx2=pxi*cosp1+(dpzi-dph2)*sinp1
+          pz2=1.d0+pxy2dpz(px1,py2)
+          drho1=drhob+rhob*dp
+          drho=drho1+rhoe*dph2
+          t2=(px1+ph2*sinp1)/(pz2+ph2*cosp1)
+          dpx3a=(x2*sinw-drho*sinp2wp1)/rhoe
+          dpx3=dpx3a-dpx2*(cosw-sinw*t2)
+          px3=ph2*sinp2+dpx3
+          sqwht2=sqwh+sinw*t2
+          px1px3=ph2*sinp2p1+dpx3a+dpx2*sqwht2
+          dpz3=pxy2dpz(px3,py2)
+          pz3=1.d0+dpz3
+          dpz32=px1px3*(px1-px3)/(pz2+pz3)
+          pz3ph2=pz3+ph2*cosp2
+          pz2px1=pz2*cosp1+px1*sinp1
+          t3=(px3+ph2*sinp2)/pz3ph2
+          t2t3=(ph2*sinp2+px1px3)/pz3ph2
+     $       +(ph2*sinp1+px1*(dpz32-ph2*dcosp)/pz3ph2)/(pz2+ph2*cosp1)
+c          t2t3=(ph2*sinp2+px1px3)/(pz3+ph2*cosp2)
+c     $       +ph2*sinp1/(pz2+ph2*cosp1)
+c     $       +px1*(dpz32-ph2*dcosp)
+c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
+          t4=(cosp2+t3*sinp2)*pz2px1
+          x3=x2*(cosw-rho0/rhoe*t3*sinw/ph2)
+     1         +(rho0*(cosw*t2t3+sinw*(1.d0-t2*t3))*dpx2-
+     1         drho*(-sinp2wp1*rho0/rhoe*t3
+     $         -dpz32-sqwh*pz2-sinw*px1))/ph2
+          da=asin(min(1.d0,max(-1.d0,
+     $         (dpx2*(
+     $         sinp1*(t2*(pz3*cosp2+px3*sinp2)-px1*cosp2)
+     $         -sinp2*(t3*pz2px1-px3*cosp1)
+     $         +cosp1p2*dpz32
+     $         +t4*sqwht2)
+     1         +dpx3a*t4)/ph2**2)))
+          phi0a=phi0+da
+          y3=y1+py2*rhoe*phi0a
+          z3=z2-phi0*drho1-da*rhoe-dv(i)*al
+          pv2sqi=1.d0/max(smin,1.d0-px3**2)
+          fa=y3/rhoe*sqrt(pv2sqi)
+          f=(1.d0-(y3/rhob)**2/6.d0)*fa
+          ff=.25d0*(f+fa)*y3*pv2sqi
+          py4=py2-px3*f
+          z4=z3-px3*ff
+          x4=x3-ff-dxfr2*dp*pinv
+          py4=py4+(dyfr2-dyfra2*y3**2)*y3*pinv**2
+          z4=z4+(dxfr2*px3+
+     $         (.5d0*dyfr2-.25d0*dyfra2*y3**2)*y3**2*pinv)*pinv-dzfr2
+          dpz4=pxy2dpz(px3,py4)
+          px(i)=-cosp2*dpx3+sinp2*(dpz4-dpz3-dpx3*t3)
+          dz4=x4*sinp2/(cosp2*(1.d0+dpz4)+sinp2*px3)
+          x(i)=x4*cosp2+px(i)*dz4
+          py(i)=py4
+          y(i)=y3+py4*dz4
+          z(i)=z4-dz4
+          bsi(i)=bsi(i)-bsi2*y(i)/rhob
+        enddo
+        if(krad)then
+c     write(*,*)'tbend-tradk-1 ',g(1),phi0,alr
+          call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,alr,phi0)
+c     write(*,*)'tbend-tradk-2 ',g(1)
+        endif
+        return
+        end subroutine
+
+      end module
+
       subroutine tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     al,phib,phi0,psi1,psi2,
+     $     al,ak0,phi0,psi1,psi2,
      1     cosp1,sinp1,cosp2,sinp2,
      1     ak,dx,dy,theta,dtheta,cost,sint,
      1     fb10,fb20,mfring,fringe,
@@ -324,7 +542,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      1           a13=231.d0/13312.d0,a15=143.d0/10240.d0
       real*8 ,parameter::smax=0.99d0,smin=0.01d0,rphidiv=3e-3
       integer*4 ,intent(in):: np,mfring
-      real*8 ,intent(in):: al,phib,phi0,cosp1,sinp1,cosp2,sinp2,ak,
+      real*8 ,intent(in):: al,ak0,phi0,cosp1,sinp1,cosp2,sinp2,ak,
      $     dx,dy,theta,cost,sint,cosw,sinw,sqwh,sinwp1,eps,
      $     psi1,psi2,fb10,fb20,dtheta
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
@@ -334,9 +552,10 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       complex*16 akm(0:1),akr0(0:1),cr1
       logical*4 ,intent(in):: fringe,ini,krad
       logical*1 ,save::dofr(0:1)=[.true.,.true.]
+      phib=phi0+ak0
       if(phi0 .eq. 0.d0)then
         if(ak .eq. 0.d0)then
-          call tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,al,-phib,
+          call tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,al,-ak0,
      1         dx,dy,theta+dtheta,
      1         cosp1,sinp1,cosp2,sinp2,
      $         fb10,fb20,fringe,eps,krad)
@@ -346,7 +565,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
      1         fringe,0.d0,0.d0,0,eps,.true.)
         else
           akm=0.d0
-          akm(0)=phib-phi0
+          akm(0)=ak0
           akm(1)=ak
           nmmax=merge(1,0,ak .eq. 0.d0)
           theta2=theta+dtheta+akang(dcmplx(ak,0.d0),al,cr1)
@@ -363,7 +582,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
         endif
         return
       elseif(ak .ne. 0.d0)then
-        call tbendi(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phib,phi0,
+        call tbendi(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phi0+ak0,phi0,
      1       cosp1,sinp1,cosp2,sinp2,
      1       ak,dx,dy,theta,dtheta,cost,sint,
      1       fb10,fb20,mfring,krad,fringe,eps)
@@ -383,6 +602,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
       endif
       rhob=al/phib
       rho0=al/phi0
+      drhob=-rho0*ak0/phib
       fb1=fb10
       fb2=fb20
       n1=1
@@ -430,8 +650,8 @@ c        endif
      1       krad,al,1.d0,1.d0)
       else
         call tbendr(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       al,phib,phi0,psi1,psi2,
-     1       cosp1,sinp1,cosp2,sinp2,f1r,f2r,
+     $       al,phi0,psi1,psi2,
+     1       cosp1,sinp1,cosp2,sinp2,
      1       mfring,fringe,n1,n2,ndiv)
       endif
  9000 if(dtheta .ne. 0.d0)then
@@ -514,214 +734,5 @@ c      endif
         call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
       endif
       call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint,.false.)
-      return
-      end
-
-      subroutine tbendr(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     al,phib,phi0,psi1,psi2,
-     1     cosp1,sinp1,cosp2,sinp2,f1r,f2r,
-     1     mfring,fringe,n1,n2,ndiv)
-      use tfstk
-      use ffs_flag
-      use tmacro
-      use tspin
-      use photontable
-      use bendib, only:rbh,rbl,tbendal
-      use mathfun, only:xsincos
-      implicit none
-      integer*4 ,intent(in):: np,mfring,ndiv,n1,n2
-      integer*4 mfr1,n
-      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
-     $     dv(np),g(np),sx(np),sy(np),sz(np)
-      real*8 ,intent(in):: al,phib,phi0,cosp1,sinp1,cosp2,sinp2,
-     $     psi1,psi2,f1r,f2r
-      real*8 wn,aln,phibn,phi0n,alr,
-     $     coswn,sinwn,sqwhn,sinwpn,bsi1,bsi2,alx,xsinwn,
-     $     cosp1n,sinp1n,cosp2n,sinp2n,psi1n,psi2n
-      logical*4 ,intent(in):: fringe
-      aln=(al-f1r-f2r)/ndiv
-      do n=n1,n2
-        mfr1=0
-        psi1n=0.d0
-        psi2n=0.d0
-        cosp1n=1.d0
-        sinp1n=0.d0
-        cosp2n=1.d0
-        sinp2n=0.d0
-        bsi1=0.d0
-        bsi2=0.d0
-        call tbendal(n,ndiv,f1r,f2r,aln,alx,alr)
-        if(n .eq. n1)then
-          if(mfring .gt. 0 .or. mfring .eq. -1)then
-            mfr1=-1
-          endif
-          psi1n=psi1
-          cosp1n=cosp1
-          sinp1n=sinp1
-          bsi1=1.d0
-        elseif(n .eq. n2)then
-          if(mfring .gt. 0 .or. mfring .eq. -2)then
-            mfr1=-2
-          endif
-          psi2n=psi2
-          cosp2n=cosp2
-          sinp2n=sinp2
-          bsi2=1.d0
-        endif
-        phi0n=alx/al*phi0
-        phibn=alx/al*phib
-        if(n .le. 2 .or. n .ge. ndiv)then
-          wn=phi0n-psi1n-psi2n
-          call xsincos(wn,sinwn,xsinwn,coswn,sqwhn)
-          sinwpn=sin(phi0n-psi2n)
-        endif
-        call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       alx,phi0n,
-     1       cosp1n,sinp1n,cosp2n,sinp2n,
-     1       mfr1,fringe,
-     $       coswn,sinwn,-sqwhn,sinwpn,
-     1       .true.,alr,bsi1,bsi2)
-        pcvt%fr0=pcvt%fr0+alx/pcvt%al
-      enddo
-      return
-      end
-
-      subroutine tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     al,phi0,
-     1     cosp1,sinp1,cosp2,sinp2,
-     1     mfring,fringe,
-     $     cosw,sinw,sqwh,sinwp1,
-     1     krad,alr,bsi1,bsi2)
-      use tfstk
-      use ffs_flag
-      use tmacro
-      use multa, only:nmult
-      use tbendcom
-      use kradlib
-      use mathfun
-      implicit none
-      integer*4 ,intent(in):: np,mfring
-      integer*4 i
-      real*8 ,intent(in):: al,phi0,cosp1,sinp1,cosp2,sinp2,
-     $     cosw,sinw,sqwh,sinwp1,alr
-      real*8 drhob,dp,p,
-     $     pinv,rhoe,pxi,pyi,dpzi,pzi,sp1,x1,dz1,y1,z1,px1,
-     $     py1,pv1sqi,f,ff,x2,py2,z2,dph2,ph2,dpx2,pz2,drho,
-     $     t2,dpx3,px3,dpz3,pz3,t3,x3,da,y3,z3,pv2sqi,x4,py4,z4,dpz4,
-     $     dz4,dxfr1,dyfr1,dzfr1,dxfr2,dyfr2,dzfr2,dpz32,
-     $     dyfra1,dyfra2,fa,t4,dpx3a,t2t3,dcosp,px1px3,
-     $     phi0a,bsi1,bsi2
-      real*8, parameter :: smin=1.d-4
-      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
-     $     dv(np),g(np),sx(np),sy(np),sz(np)
-      logical*4 ,intent(in):: krad,fringe
-      if((mfring .gt. 0 .or. mfring .eq. -1) .and. fb1 .ne. 0.d0)then
-        dxfr1=fb1**2/rhob/24.d0
-        dyfr1=fb1/rhob**2/6.d0
-        dzfr1=dxfr1*sinp1
-        dyfra1=merge(4.d0*dyfr1/fb1**2,0.d0,fringe)
-      else
-        dxfr1=0.d0
-        dyfr1=0.d0
-        dyfra1=0.d0
-        dzfr1=0.d0
-      endif
-      if((mfring .gt. 0 .or. mfring .eq. -2) .and. fb2 .ne. 0.d0)then
-        dxfr2=fb2**2/rhob/24.d0
-        dyfr2=fb2/rhob**2/6.d0
-        dzfr2=dxfr2*sinp2
-        dyfra2=merge(4.d0*dyfr2/fb2**2,0.d0,fringe)
-      else
-        dxfr2=0.d0
-        dyfr2=0.d0
-        dyfra2=0.d0
-        dzfr2=0.d0
-      endif
-      dcosp=merge((sinp2-sinp1)*(sinp2+sinp1)/(cosp1+cosp2),
-     $     cosp1-cosp2,cosp1*cosp2 .gt. 0.d0)
-      drhob=rhob-rho0
-      do concurrent (i=1:np)
-        bsi(i)=bsi(i)+bsi1*y(i)/rhob
-        dp=g(i)
-        p=1.d0+dp
-        pinv=1.d0/p
-        rhoe=rhob*p
-        pxi=px(i)
-        pyi=py(i)
-        dpzi=pxy2dpz(pxi,pyi)
-        pzi=1.d0+dpzi
-        sp1=sinp1/pzi
-        x1=x(i)/(cosp1-pxi*sp1)
-        dz1=x1*sp1
-        y1=y(i)+pyi*dz1
-        px1= pxi*cosp1+pzi*sinp1
-        x1=x1+dxfr1*dp*pinv
-        py1=pyi+(dyfr1-dyfra1*y1**2)*y1*pinv**2
-        z1=z(i)-dz1+(dxfr1*px1+
-     $       (.5d0*dyfr1-.25d0*dyfra1*y1**2)*y1**2*pinv)*pinv-dzfr1
-        pv1sqi=1.d0/max(smin,1.d0-px1**2)
-        fa=y1/rhoe*sqrt(pv1sqi)
-        f=(1.d0-(y1/rhob)**2/6.d0)*fa
-        ff=.25d0*(f+fa)*y1*pv1sqi
-        x2=x1+ff
-        py2=py1-px1*f
-        z2=z1-px1*ff
-        dph2=sqrt1(-py2**2)
-        ph2=1.d0+dph2
-        dpx2=pxi*cosp1+(dpzi-dph2)*sinp1
-        pz2=1.d0+pxy2dpz(px1,py2)
-        drho=drhob+rhoe*dph2+rhob*dp
-        t2=(px1+ph2*sinp1)/(pz2+ph2*cosp1)
-        dpx3a=(x2*sinw-drho*(sinp2+sinwp1))/rhoe
-        dpx3=dpx3a-dpx2*(cosw-sinw*t2)
-        px3=ph2*sinp2+dpx3
-        px1px3=ph2*(sinp2+sinp1)+dpx3a+dpx2*(sqwh+sinw*t2)
-        dpz3=pxy2dpz(px3,py2)
-        pz3=1.d0+dpz3
-        dpz32=px1px3*(px1-px3)/(pz2+pz3)
-        t3=(px3+ph2*sinp2)/(pz3+ph2*cosp2)
-        t2t3=(ph2*sinp2+px1px3)/(pz3+ph2*cosp2)
-     $       +ph2*sinp1/(pz2+ph2*cosp1)
-     $       +px1*(dpz32-ph2*dcosp)
-     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
-        t4=(cosp2+t3*sinp2)*(pz2*cosp1+px1*sinp1)
-        x3=x2*(cosw-rho0/rhoe*t3*sinw/ph2)
-     1       +(rho0*(cosw*t2t3+sinw*(1.d0-t2*t3))*dpx2-
-     1       drho*(-(sinp2+sinwp1)*rho0/rhoe*t3
-     $       -dpz32-sqwh*pz2-sinw*px1))/ph2
-        da=asin(min(1.d0,max(-1.d0,
-     $       (dpx2*(
-     $       sinp1*(t2*(pz3*cosp2+px3*sinp2)-px1*cosp2)
-     $       -sinp2*(t3*(pz2*cosp1+px1*sinp1)-px3*cosp1)
-     $       +cosp1*cosp2*dpz32
-     $       +t4*(sqwh+sinw*t2))
-     1       +dpx3a*t4)/ph2**2)))
-        phi0a=phi0+da
-        y3=y1+py2*rhoe*phi0a
-        z3=z2-phi0*(dp*rhob+drhob)-da*rhoe-dv(i)*al
-        pv2sqi=1.d0/max(smin,1.d0-px3**2)
-        fa=y3/rhoe*sqrt(pv2sqi)
-        f=(1.d0-(y3/rhob)**2/6.d0)*fa
-        ff=.25d0*(f+fa)*y3*pv2sqi
-        py4=py2-px3*f
-        z4=z3-px3*ff
-        x4=x3-ff-dxfr2*dp*pinv
-        py4=py4+(dyfr2-dyfra2*y3**2)*y3*pinv**2
-        z4=z4+(dxfr2*px3+
-     $       (.5d0*dyfr2-.25d0*dyfra2*y3**2)*y3**2*pinv)*pinv-dzfr2
-        dpz4=pxy2dpz(px3,py4)
-        px(i)=-cosp2*dpx3+sinp2*(dpz4-dpz3-dpx3*t3)
-        dz4=x4*sinp2/(cosp2*(1.d0+dpz4)+sinp2*px3)
-        x(i)=x4*cosp2+px(i)*dz4
-        py(i)=py4
-        y(i)=y3+py4*dz4
-        z(i)=z4-dz4
-        bsi(i)=bsi(i)-bsi2*y(i)/rhob
-      enddo
-      if(krad)then
-c        write(*,*)'tbend-tradk-1 ',g(1),phi0,alr
-        call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,alr,phi0)
-c        write(*,*)'tbend-tradk-2 ',g(1)
-      endif
       return
       end

@@ -2,6 +2,7 @@
       use tfrbuf, only:modemapped,trbassign
       use tfcsi
       use macfile, only:MAXLLEN
+      use readbuf
 c
 c     JNLPRM is a HITAC library funcion to get command argumen.
 c     n:not used

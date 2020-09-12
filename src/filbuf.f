@@ -5,6 +5,7 @@
       use macfile
       use macmisc
       use ffsfile
+      use readbuf
       implicit none
 c
 cccccc K. Oide 8/30/1999

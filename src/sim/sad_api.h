@@ -86,6 +86,7 @@ extern integer4 igetgl_(const_character, ftnlen);
 extern real8    rgetgl1_(const_character, ftnlen);
 extern void capita_(character, ftnlen);
 extern void tfreadbuf_(integer4*, integer4*, integer4*);
+extern void __readbuf_MOD_tfreadbuf(integer4*, integer4*, integer4*);
 extern void __tfrbuf_MOD_trbinit(integer4*, integer4*);
 extern void gettok_(character, integer4*, integer4*, real8*, integer4*, ftnlen);
 extern void __tfmem_MOD_tfree(integer8*);

@@ -11,10 +11,11 @@
       subroutine getbuf0(trim)
       use tfrbuf
       use tfcsi
+      use readbuf
       use iso_c_binding
       implicit none
-      integer*4 lrecl0,lrecl1,nc
       logical*4 ,intent(in):: trim
+      integer*4 lrecl0,lrecl1,nc
       logical*4 unmapped
       if(lfni .le. 0)then
         ios=99999
@@ -113,9 +114,9 @@
       use tffitcode
       use prmpt
       implicit none
+      integer*4, intent(in):: lfni,lfno,lfn1
       character*80 pr
       character*10 n,autofg
-      integer*4, intent(in):: lfni,lfno,lfn1
       integer*4 l,nc
       if(lfni .eq. 5 .and. lfno .eq. 6 .and. lfn1 .eq. 0)then
         if(ipr .eq. 0)then

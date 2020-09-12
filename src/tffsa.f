@@ -24,7 +24,7 @@
       implicit none
       integer*4 maxrpt,hsrchz
       type (sad_descriptor) kx
-      integer*8 kffs,itwisso,iparams,kax,iutwiss
+      integer*8 kffs,itwisso,iparams,kax,iutwiss,ildummy
       integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,k,
      $     irtc0,it,itt,lfn,
      $     iuse,l,itfuplevel,
@@ -405,7 +405,7 @@ c          call tmovb(ename,flv%blname,MAXPNAME)
         else
           byeall=.false.
         endif
-        call tffssaveparams(4,i00,err)
+        call tffssaveparams(4,ildummy,err)
         if(err)then
           if(byeall)then
             go to 10
@@ -417,7 +417,7 @@ c          call tmovb(ename,flv%blname,MAXPNAME)
         call tclrpara
         call tffsfree
         if(byeall)then
-          call tffssaveparams(-2,i00,err)
+          call tffssaveparams(-2,ildummy,err)
         endif
         call tffssaveparams(1,ilattp,err)
         call loc_el(ilattp,elatt)
@@ -1225,7 +1225,7 @@ c        dpm2=rlist(ktlookup('DPM'))
 
       subroutine mcmess(lfno)
       implicit none
-      integer*4 lfno
+      integer*4 ,intent(in):: lfno
       write(lfno,*)
      $     'Orbit Correction commands will be removed soon.',
      $     'Use orbit correction functions instead.',
@@ -1244,11 +1244,12 @@ c        dpm2=rlist(ktlookup('DPM'))
       use sad_main
       use mackw
       implicit none
-      integer*4 nlat,nvar,nfcol,nfam,nut,i2
-      integer*4 i,j,id,k
+      integer*4 ,intent(in):: nlat,nvar,nfcol,nfam
+      integer*4 ,intent(out):: nut
+      integer*4 i2,i,j,id,k
       integer*8 itmmapp
       real*8 tffsmarkoffset
-      logical*4 nonl
+      logical*4 ,intent(in):: nonl
       itwissp(3:nlat-1)=0
       if(idtypec(nlat-1) .eq. icMARK)then
         itwissp(nlat-1)=1
@@ -1339,21 +1340,24 @@ c        dpm2=rlist(ktlookup('DPM'))
       use iso_c_binding
       implicit none
 c nlocal = mcommon in TFFSLOCAL.inc
-      integer*8 isave,ilattp
+      integer*8 ,intent(inout):: ilattp
+      integer*8 isave
       integer*8 , pointer ::kffv(:)
-      integer*4 icmd,nxh
-      logical*4 err
+      integer*4 ,intent(in):: icmd
+      integer*4 nxh
+      logical*4 ,intent(out):: err
       nxh=int((sizeof(ffv)+7)/8)
       call c_f_pointer(c_loc(ffv),kffv,[nxh])
       err=.false.
-      if(icmd .eq. 0)then
+      select case (icmd)
+      case(0)
         isave=ktaloc(nxh+2)
         klist(isave)=ilattp
         klist(isave+1)=iffssave
         klist(isave+2:isave+nxh+1)=kffv
 c        call tmov(ffv,rlist(isave+2),nxh)
         iffssave=isave
-      elseif(icmd .eq. 1)then
+      case(1)
         if(iffssave .gt. 0)then
           isave=iffssave
           ilattp=klist(isave)
@@ -1364,7 +1368,7 @@ c          call tmov(rlist(isave+2),ffv,nxh)
         else
           err=.true.
         endif
-      elseif(icmd .eq. 2)then
+      case(2)
         err=.false.
         isave=iffssave
         do while(isave .gt. 0)
@@ -1374,11 +1378,11 @@ c          call tmov(rlist(isave+2),ffv,nxh)
           endif
           isave=klist(isave+1)
         enddo
-      elseif(icmd .eq. 3)then
+      case(3)
         err=.false.
-      elseif(icmd .eq. 4)then
+      case(4)
         err=iffssave .eq. 0
-      elseif(icmd .eq. -1)then
+      case(-1)
         do while(iffssave .gt. 0)
           isave=iffssave
           ilattp=klist(isave)
@@ -1388,7 +1392,7 @@ c          call tmov(rlist(isave+2),ffv,nxh)
           call tfree(isave)
         enddo
         err=.false.
-      elseif(icmd .eq. -2)then
+      case(-2)
         isave=klist(iffssave+1)
         do while(isave .gt. 0)
           ilattp=klist(iffssave)
@@ -1398,7 +1402,7 @@ c          call tmov(rlist(iffssave+2),ffv,nxh)
           iffssave=isave
           isave=klist(iffssave+1)
         enddo
-      endif
+      end select
       return
       end
 
@@ -1427,8 +1431,9 @@ c          call tmov(rlist(iffssave+2),ffv,nxh)
       type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: klj
       type (sad_descriptor) kx,iaini
-      integer*4 irtc,lfno,n,i,j,nfr1
-      logical*4 err
+      integer*4 ,intent(in):: lfno
+      integer*4 irtc,n,i,j,nfr1
+      logical*4 ,intent(out):: err
       data iaini%k/0/
       tffsinitialcond=.false.
       err=.true.
@@ -1612,8 +1617,10 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
       use ffs_pointer, only:idelc,idtypec
       use sad_main
       implicit none
-      integer*4 i,ia,it,kl,l
-      character*(*) keyword
+      integer*4 ,intent(in):: i
+      integer*4 ,intent(out):: ia
+      integer*4 it,kl,l
+      character*(*) ,intent(in):: keyword
       character*8 tfkwrd,kw
       if(i .gt. 0)then
         it=idtypec(i)
@@ -1635,7 +1642,8 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
       use ffs, only:flv
       use tffitcode
       implicit none
-      integer*4 maxcond,nlat,mfc
+      integer*4 ,intent(in):: maxcond,nlat
+      integer*4 mfc
       integer*4 k
       if(flv%nfc .gt. maxcond-4)then
         return
@@ -1678,8 +1686,9 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
       use ffs
       use tffitcode
       implicit none
-      integer*4 lfno,i
-      character*(*) nlist(mfit)
+      integer*4 ,intent(in):: lfno
+      integer*4 i
+      character*(*) ,intent(in):: nlist(mfit)
       real*8 scale(mfit)
       write(lfno,9001)(nlist(i),scale(i),i=1,mfit)
 9001  format(:3(a,1pg15.7,1x))
@@ -1691,7 +1700,7 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
       use maccode
       implicit none
       integer*4 i,n,idx
-      integer*8 line
+      integer*8 ,intent(in):: line
       do i=1,ilist(1,line)
         idx=ilist(2,line+i)
         if(idx .gt. 0 .and. idx .le. HTMAX)then
@@ -1710,8 +1719,8 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
       subroutine tfblocksym(str,nch)
       use tfstk
       implicit none
-      character*(*) str
-      integer*4 nch
+      character*(*) ,intent(in):: str
+      integer*4 ,intent(in):: nch
       type (sad_descriptor) ks,kx
       type (sad_symbol), pointer :: sym
       ks=kxsymbolf(str,nch,.false.)
@@ -1723,9 +1732,9 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
       subroutine tfunblocksym(str,nch,del)
       use tfstk
       implicit none
-      character*(*) str
-      integer*4 nch
-      logical*4 del
+      character*(*) ,intent(in):: str
+      integer*4 ,intent(in):: nch
+      logical*4 ,intent(in):: del
       type (sad_descriptor) ks
       type (sad_symdef), pointer :: symd
       ks=kxsymbolf(str,nch,.false.)

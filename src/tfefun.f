@@ -1136,6 +1136,7 @@ c      write(*,*)'with ',iopc1
       use eexpr
       use funs
       use eeval
+      use readbuf
       use gammaf
       implicit none
       type (sad_descriptor) kx,k1,k,kh,tfmodule,tfjoin2,
@@ -2095,11 +2096,11 @@ c        go to 6900
      $       tfnearlysameqf(dtastk(isp1+1),dtastk(isp1+2),
      $       rtastk(isp1+3),rtastk(isp)))
         go to 6900
- 2260   call tfopenshared(isp1,kx,irtc)
+ 2260   kx=tfopenshared(isp1,irtc)
         go to 6900
- 2270   call tfreadshared(isp1,kx,irtc)
+ 2270   kx=tfreadshared(isp1,irtc)
         go to 6900
- 2280   call tfwriteshared(isp1,kx,irtc)
+ 2280   kx=tfwriteshared(isp1,irtc)
         go to 6900
  2290   if(narg .ne. 1)then
           irtc=itfmessage(9,'General::narg','"1"')

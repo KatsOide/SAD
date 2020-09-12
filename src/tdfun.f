@@ -6,17 +6,15 @@
       use tffitcode
       implicit none
       real*8 ,parameter :: abmax=1.d-8
-      real*8 factor,dmax
-      integer*4 npeak
-      parameter (factor=0.97d0,dmax=1.d10)
-      parameter (npeak=10)
-      integer*4 j,i,ka,kf,kp,kp1,mp,idp,kpb,kpe,k,ip,irtc,m
+      real*8 ,parameter::factor=0.97d0,dmax=1.d10
+      integer*4 ,parameter::npeak=10
       integer*4 ,intent(out):: nqcola,nqcola1,
      $     iqcol(*),lfp(2,maxcond),kdp(*)
-      integer*4 ipeak(npeak)
       real*8 ,intent(out):: df1(*)
       real*8 vpeak(npeak),vf,tdfun1,tgfun,vb,ve,v,vf1
       logical*4 ,intent(out):: error
+      integer*4 ipeak(npeak),j,i,ka,kf,kp,kp1,mp,idp,kpb,kpe,
+     $     k,ip,irtc,m
       logical*4 maxfit,ttrans(-nfam:nfam),tftype1fit
 c      do j=1,nfcol
 c        if(flv%kfit(flv%kfitp(j)) .eq. mfitnx .or.
@@ -52,7 +50,7 @@ c        endif
       enddo
       error=.false.
       i=1
-      do 10 j=1,nfcol
+      do j=1,nfcol
         ka=flv%kfitp(j)
         kf=flv%kfit(ka)
 c        write(*,*)'TDFUN ',j,ka,kf,mfitgx
@@ -85,19 +83,16 @@ c     $             .or. inicond .and. idp .ne. 0))then
                     endif
                   endif
                 endif
-                maxfit=flv%mfitp(ka) .lt. 0
+                maxfit=flv%mfitp(ka) .lt. 0 .and. .not. tftype1fit(kf)
                 if(kp .ne. kp1)then
                   kpb=min(kp,kp1)
                   kpe=max(kp,kp1)
- 3010             if(maxfit)then
-                    if(tftype1fit(kf))then
-                      maxfit=.false.
-                      goto 3010
-                    elseif(kf .le. mfitdpy
-     $                     .or. kf .ge. mfitpex .and.
-     $                     kf .le. mfitgmz)then
+                  if(maxfit)then
+                    if(kf .le. mfitdpy
+     $                   .or. kf .ge. mfitpex .and.
+     $                   kf .le. mfitgmz)then
                       call tfpeak(idp,kf,kpb,kpe,ipeak,vpeak,npeak)
-                      do 110 k=1,npeak
+                      do k=1,npeak
                         ip=ipeak(k)
                         if(ip .le. 0)then
                           cycle do20
@@ -115,7 +110,7 @@ c     $             .or. inicond .and. idp .ne. 0))then
                             return
                           endif
                         endif
- 110                  continue
+                      enddo
                     endif
                   else
                     if(kf .le. mfitgmz .or.
@@ -182,7 +177,7 @@ c     $             .or. inicond .and. idp .ne. 0))then
             endif
           enddo do20
         endif
- 10   continue
+      enddo
       nqcola=i-1
       nqcola1=nqcola
       call tffsfitfun(nqcola,df1,iqcol,kdp,maxcond,error)
@@ -198,17 +193,15 @@ c     $             .or. inicond .and. idp .ne. 0))then
       use tffitcode
       use eeval
       implicit none
+      integer*4 ,intent(in):: kp,kp1,iuid,kfam
+      integer*4 ,intent(out):: irtc
+      real*8 ,intent(in):: dp,vf,v,vf0
+      character*8 ,intent(in):: funname
       type (sad_descriptor) kx
       type (sad_dlist),pointer,save::klv,klv1
       type (sad_rlist),pointer,save::klid
-      character*8 ,intent(in):: funname
-      integer*4 ,intent(in):: kp,kp1,iuid,kfam
-      real*8 ,intent(in):: dp,vf,v,vf0
-      real*8 vf1
-      integer*4 ,intent(out):: irtc
-c     
       integer*4 lenw,itfuplevel,itfdownlevel
-c
+      real*8 vf1
       logical retry,retry1
       character*(MAXPNAME+8) name,name1
       integer*4 level,ln,ln1
@@ -330,16 +323,16 @@ c     Note: index(name1,'.') > 0 if kp1 != 0
       use tfcsi, only:icslfno
       use eeval
       implicit none
-      type (sad_rlist), pointer :: klx
-      type (sad_descriptor) kx
-      type (sad_descriptor) ,save :: kff
-      data kff%k /0/
       integer*4 ,intent(in):: maxcond
       integer*4 ,intent(inout):: nqcol
       integer*4 ,intent(out):: iqcol(maxcond),kdp(maxcond)
       real*8 ,intent(out):: df(maxcond)
-      integer*4 itfuplevel,itfdownlevel,i,m,level,irtc
       logical*4 ,intent(out):: error
+      type (sad_rlist), pointer :: klx
+      type (sad_descriptor) kx
+      type (sad_descriptor) ,save :: kff
+      data kff%k /0/
+      integer*4 itfuplevel,itfdownlevel,i,m,level,irtc
       if(kff%k .eq. 0)then
         kff=kxsymbolz('`FitFunction',12)
       endif
@@ -388,11 +381,11 @@ c      call tfmemcheckprint('FitFunction-end',.true.,irtc)
       use macmath
       use tffitcode
       implicit none
-      real*8 factor
-      parameter (factor=1.d0)
-      integer*4 kf,kdp
-      real*8 vf,v,vfa
-      logical*4 maxfit,ttrans
+      real*8 ,parameter::factor=1.d0
+      integer*4 ,intent(in):: kf,kdp
+      real*8 ,intent(in):: vf,v
+      logical*4 ,intent(in):: maxfit,ttrans
+      real*8 vfa
       select case (kf)
       case (mfitbx,mfitby,mfitbz,mfitgmx,mfitgmy,mfitgmz)
         if(maxfit)then

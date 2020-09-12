@@ -619,9 +619,11 @@ c     enddo
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 ii,i,nvar
+      integer*4 ,intent(in):: nvar
+      logical*4 ,intent(out):: dlim
+      integer*4 ii,i
       real*8 vl,vl1,vl2
-      logical*4 dlim,limited,limited1
+      logical*4 limited,limited1
       limited=.false.
       do ii=1,nvar
         i=nvevx(ii)%ivarele
@@ -1041,9 +1043,10 @@ c     $       vn(1:skey%nch)
       use ffs_pointer,only:direlc,compelc
       implicit none
       type (sad_comp), pointer::cmp
-      integer*4 n1,n2,ntfun,l
-      real*8 twiss(n1,-n2:n2,1:ntwissfun)
-      logical*4 right
+      integer*4 ,intent(in):: n1,n2,l
+      integer*4 ntfun
+      real*8 ,intent(out):: twiss(n1,-n2:n2,1:ntwissfun)
+      logical*4 ,intent(in):: right
 c
       call compelc(l,cmp)
       if(right)then
@@ -1123,9 +1126,11 @@ c
       use cbkmac
       implicit none
       type (sad_descriptor) kx
-      integer*4 i,ltyp,iv,irtc
-      real*8 val0,gw,vmin,vk
-      logical*4 absweit
+      integer*4 ,intent(in):: i,ltyp,iv
+      integer*4 irtc
+      real*8 ,intent(in):: val0,vk
+      real*8 gw,vmin
+      logical*4 ,intent(in):: absweit
       gw=1.d0
       if(iv .eq. kytbl(kwK1,ltyp))then
       elseif(iv .eq. kytbl(kwL,ltyp))then
@@ -1213,11 +1218,12 @@ c
       subroutine tfsolv(qu,quw,df,dval,wlimit,nqcol,nvar,
      $     iqcol,kfitp,mfitp,dg,wexponent,eps)
       implicit none
-      integer*4 nqcol,nvar
-      real*8 qu(nqcol,nvar),quw(nqcol,nvar)
-      real*8 df(nqcol),dval(nvar)
-      integer*4 iqcol(*),kfitp(*),mfitp(*)
-      real*8 b(nqcol),s,eps,dg,wexponent,wlimit(nvar)
+      integer*4 ,intent(in):: nqcol,nvar
+      real*8 ,intent(in):: qu(nqcol,nvar),df(nqcol),
+     $     wexponent,wlimit(nvar),eps
+      real*8 ,intent(out):: quw(nqcol,nvar),dval(nvar),dg
+      integer*4 ,intent(in):: iqcol(*),kfitp(*),mfitp(*)
+      real*8 b(nqcol),s
       logical*4 fit(nqcol),again,allneg
       integer*4 nagain,i,nj
       allneg=.true.
@@ -1269,7 +1275,8 @@ c
       use tfshare
       use tmacro
       implicit none
-      integer*4 n,irtc
+      integer*4 ,intent(in):: n
+      integer*4 irtc
       if(nparallel .gt. 1)then
         irtc=1
         itmmapp=ktfallocshared(n)
@@ -1284,7 +1291,7 @@ c
       use tfshare
       use tmacro
       implicit none
-      integer*8 i
+      integer*8 ,intent(in):: i
       if(nparallel .gt. 1)then
         call tfreeshared(i)
       else
@@ -1301,33 +1308,35 @@ c
       use eeval
       implicit none
       type (sad_descriptor) km
-      integer*8 k1,kam,kcm,ktfmaloc,k2
-      integer*4 lfno,irtc,n,m
-      integer*8 ,save::itfcoupm=0
+      type (sad_dlist),pointer ::klm
+      integer*8 ,intent(out):: kcm
+      integer*8 ktfmaloc
+      integer*4 ,intent(in):: lfno
+      integer*4 irtc,n,m
       real*8 v
+      type (sad_descriptor) ,save::ktfcoupm
+      data ktfcoupm%k /0/
       if(kele2(nlat) .eq. 0)then
         kcm=0
         return
       endif
-      if(itfcoupm .eq. 0)then
-        itfcoupm=ktfsymbolz('CouplingMatrix',14)
+      if(ktfcoupm%k .eq. 0)then
+        ktfcoupm=dtfcopy1(kxsymbolz('CouplingMatrix',14))
       endif
       levele=levele+1
-      km=tfsyeval(dfromk(itfcoupm),irtc)
+      km=tfsyeval(ktfcoupm,irtc)
       call tfconnect(km,irtc)
       if(irtc .ne. 0)then
         go to 9010
       endif
-      if(.not. tflistq(km))then
+c      call tfdebugprint(km,'coupmatrix',1)
+      if(.not. tflistq(km,klm))then
         go to 9000
       endif
-      kam=ktfaddr(km)
-      k1=klist(kam+1)
-      if(ktfnonrealq(k1,v) .or. v .le. 0.d0)then
+      if(ktfnonrealq(klm%dbody(1),v) .or. v .le. 0.d0)then
         go to 9100
       endif
-      k2=klist(kam+2)
-      kcm=ktfmaloc(k2,n,m,.false.,.true.,irtc)
+      kcm=ktfmaloc(klm%dbody(2),n,m,.false.,.true.,irtc)
       if(irtc .ne. 0)then
         go to 9010
       endif

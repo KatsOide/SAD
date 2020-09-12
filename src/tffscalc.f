@@ -467,8 +467,6 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       use tffitcode
       use eeval
       implicit none
-      type (sad_descriptor) kx
-      type (sad_dlist),pointer ::ifvl
       integer*4 ,intent(in):: nqcola,maxf,
      $     kfit(*),ifitp(*),kfitp(*),kdp(*),iqcol(nqcola)
       integer*4 i,j,k,iq
@@ -476,19 +474,22 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       integer*4 itfuplevel, level,irtc,idp
       character*16 name
       logical*4 ,intent(in):: wcal
-      integer*8 , save:: ifv=0,ifvh,ifvloc,ifvfun,ifid
+      type (sad_descriptor) kx
+      type (sad_descriptor) ,save::kfv
+      data kfv%k /0/
+      type (sad_dlist), pointer , save::klv
+      type (sad_rlist), pointer , save::klid
+      integer*8 , save:: ifvloc,ifvfun
       real*8 , parameter :: almin=1.d0
-      if(ifv .eq. 0)then
-        ifv=ktadaloc(0,4)
-        ifvh=ktfsymbolz('FitWeight',9)
+      if(kfv%k .eq. 0)then
+        kfv=kxadaloc(0,4,klv)
+        klv%head=dtfcopy(kxsymbolz('`FitWeight',10))
         ifvloc=ktsalocb(0,'                ',MAXPNAME+8)
         ifvfun=ktsalocb(0,'        ',MAXPNAME)
-        ifid=ktraaloc(0,2)
-        klist(ifv)=ktfsymbol+ktfcopy1(ifvh)
-        klist(ifv+1)=ktfstring+ifvloc
-        klist(ifv+2)=ktfstring+ifvfun
-        klist(ifv+3)=ktflist+ifid
-        klist(ifv+4)=0
+        klv%body(1)=ktfstring+ifvloc
+        klv%body(2)=ktfstring+ifvfun
+        klv%dbody(3)=kxraaloc(0,2,klid)
+        klv%body(4)=0
       endif
       em=max(emminv,abs(emx)+abs(emy))
       coum=min(1.d0,
@@ -566,14 +567,13 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
           ilist(1,ifvloc)=len_trim(name)
           call tfpadstr(nlist(k),ifvfun+1,len_trim(nlist(k)))
           ilist(1,ifvfun)=len_trim(nlist(k))
-          rlist(ifid+1)=merge(dble(iuid(idp)),dble(kfam(idp)),
+          klid%rbody(1)=merge(dble(iuid(idp)),dble(kfam(idp)),
      $         inicond)
-          rlist(ifid+2)=dp(idp)
-          rlist(ifv+4)=wfit(i)
+          klid%rbody(2)=dp(idp)
+          klv%rbody(4)=wfit(i)
           call tclrfpe
           level=itfuplevel()
-          call descr_sad(dlist(ifv),ifvl)
-          kx=tfleval(ifvl,.true.,irtc)
+          kx=tfleval(klv,.true.,irtc)
           call tfconnect(kx,irtc)
           if(irtc .ne. 0)then
             if(ierrorprint .ne. 0)then
@@ -685,23 +685,26 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       if(l .ne. nlat .and. kytbl(kwOFFSET,idtypec(l)) .ne. 0)then
         xe=nlat
         lm=l
- 8111   offset=tffsmarkoffset(lm)
-        if(offset .ne. 0.d0)then
-          xp=offset+lm
-          if(xp .ge. 1.d0 .and. xp .le. xe)then
-            lx=int(xp)
-            if(idtypec(lx) .eq. icMARK)then
-              nm=nm+1
-              if(nm .lt. nmmax)then
-                lm=lx
-                go to 8111
-              else
-                call termes(icslfno(),
-     $               '?Recursive OFFSET in',pnamec(l))
+        do
+          offset=tffsmarkoffset(lm)
+          if(offset .ne. 0.d0)then
+            xp=offset+lm
+            if(xp .ge. 1.d0 .and. xp .le. xe)then
+              lx=int(xp)
+              if(idtypec(lx) .eq. icMARK)then
+                nm=nm+1
+                if(nm .lt. nmmax)then
+                  lm=lx
+                  cycle
+                else
+                  call termes(icslfno(),
+     $                 '?Recursive OFFSET in',pnamec(l))
+                endif
               endif
             endif
           endif
-        endif
+          exit
+        enddo
       endif
       tffselmoffset=xp
       return
