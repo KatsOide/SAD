@@ -95,7 +95,7 @@ integer8 ktsalocbcstrs_(integer4 *mode, const char **str, integer4 *index) {
 
 /* Wrapper function for SAD internal API */
 void tfreadbuf(integer4 lfn, integer4 *ib, integer4 *nc) {
-   tfreadbuf_(&lfn, ib, nc);
+   __readbuf_MOD_tfreadbuf(&lfn, ib, nc);
   }
 
 void trbinit(integer4 lfn, integer4 *ib) {

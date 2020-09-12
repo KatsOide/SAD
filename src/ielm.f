@@ -61,7 +61,7 @@
       use tffitcode
       use ffs_pointer,only:ielma
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) kx,tfeval
       integer*4 ,intent(in):: lfn
       integer*4 lw,iord,ln,i,ip,im
       character*(*) ,intent(in):: word
@@ -90,7 +90,7 @@
           else
             ordw=word(idot+1:lw)
           endif
-          call tfeval(ordw,1,m,kx,.false.,irtc)
+          kx=tfeval(ordw,1,m,.false.,irtc)
           iord=int(kx%x(1))
           if(irtc .ne. 0 .or. ktfnonrealq(kx))then
             if(irtc .gt. 0 .and. ierrorprint .ne. 0)then

@@ -1063,11 +1063,12 @@ c          call tfdebugprint(kx,'==>',1)
       use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) tfeval
       integer*4 ,intent(out):: irtc
       integer*4 istop
       character*(*) string
       levele=levele+1
-      call tfeval(string,1,istop,kx,.false.,irtc)
+      kx=tfeval(string,1,istop,.false.,irtc)
       call tfconnect(kx,irtc)
       return
       end
@@ -1075,11 +1076,11 @@ c          call tfdebugprint(kx,'==>',1)
       subroutine tfevalc(string)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) kx,tfeval
       integer*4 irtc,istop,l,itfdownlevel
       character*(*) ,intent(in):: string
       levele=levele+1
-      call tfeval(string,1,istop,kx,.false.,irtc)
+      kx=tfeval(string,1,istop,.false.,irtc)
       if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
         call tfreseterror
       endif
@@ -1091,11 +1092,12 @@ c          call tfdebugprint(kx,'==>',1)
       use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) tfeval
       integer*4 ,intent(out):: irtc
       integer*4 istop
       character*(*) ,intent(in):: string
       levele=levele+1
-      call tfeval(string,1,istop,kx,.false.,irtc)
+      kx=tfeval(string,1,istop,.false.,irtc)
       call tfconnect(kx,irtc)
       return
       end

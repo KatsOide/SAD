@@ -358,6 +358,7 @@ c
       end subroutine
 
       subroutine trbopen(lfn,ib,is,ifd)
+      use readbuf
       implicit none
       integer*8, intent(in) :: ib,is
       integer*4, intent(in) :: ifd
@@ -609,4 +610,3 @@ c
       ival=jival
       go to 1100
       end
-

@@ -7,7 +7,7 @@ FMUL2.o: FMUL2.f
 INTGRL.o: INTGRL.f initb1.o tffs.o tfstk.o
 IPAK.o: IPAK.f toplvl.o
 IgetGL.o: IgetGL.f tfstk.o
-JNLPRM.o: JNLPRM.f toplvl.o
+JNLPRM.o: JNLPRM.f tfreadbuf.o toplvl.o
 LgetGL.o: LgetGL.f tfstk.o
 Lrdnum.o: Lrdnum.f tfstk.o toplvl.o
 MAIN.o: MAIN.f tfetok.o tfstk.o
@@ -64,14 +64,14 @@ errmsg.o: errmsg.f toplvl.o
 expln.o: expln.f tffs.o tfstk.o toplvl.o
 fdate1.o: fdate1.f
 filaux.o: filaux.f tfstk.o toplvl.o
-filbuf.o: filbuf.f tfstk.o toplvl.o
+filbuf.o: filbuf.f tfreadbuf.o tfstk.o toplvl.o
 flmgr.o: flmgr.f tfstk.o toplvl.o
 frand.o: frand.f tfstk.o
 gamma.o: gamma.f tfloor.o tfstk.o
 gaus3.o: gaus3.f
 gaussn.o: gaussn.f
 geodrw.o: geodrw.f tffs.o tfstk.o toplvl.o
-getbuf.o: getbuf.f tfestk.o tffs.o tfstk.o toplvl.o
+getbuf.o: getbuf.f tfestk.o tffs.o tfreadbuf.o tfstk.o toplvl.o
 gettok.o: gettok.f toplvl.o
 getvad.o: getvad.f tfstk.o toplvl.o
 getwrd.o: getwrd.f tffs.o toplvl.o
@@ -294,14 +294,14 @@ tfdapert.o: tfdapert.f tffs.o tfstk.o toplvl.o
 tfdbun.o: tfdbun.f tffs.o
 tfdisp.o: tfdisp.f initb1.o tffs.o tfstk.o tgrot.o toplvl.o
 tfdot.o: tfdot.f tfefun.o tfstk.o
-tfdset.o: tfdset.f itfpmat.o tfeeval.o tfefun.o tffuns.o tfstk.o
-tfearray.o: tfearray.f tfefun.o tfstk.o
+tfdset.o: tfdset.f itfpmat.o tfeeval.o tffuns.o tfstk.o
+tfearray.o: tfearray.f
 tfeeval.o: tfeeval.f tffuns.o tfstk.o toplvl.o
 tfeexpr.o: tfeexpr.f tfefun.o tfstk.o
-tfefun.o: tfefun.f gamma.o tfeeval.o tffuns.o tfloor.o tfshared.o tfstk.o toplvl.o
+tfefun.o: tfefun.f gamma.o tfeeval.o tffuns.o tfloor.o tfreadbuf.o tfshared.o tfstk.o toplvl.o
 tfefun1.o: tfefun1.f tffs.o tfstk.o
 tfefun2.o: tfefun2.f tfstk.o
-tfefun3ep.o: tfefun3ep.f tfefun.o tfstk.o
+tfefun3ep.o: tfefun3ep.f tfeeval.o tfefun.o tfstk.o
 tfematrix.o: tfematrix.f tfstk.o
 tfemit.o: tfemit.f tffs.o tfstk.o toplvl.o
 tfepicsconstatcb.o: tfepicsconstatcb.f tfeeval.o tfstk.o
@@ -319,7 +319,7 @@ tffsfreefix.o: tffsfreefix.f tffs.o tfstk.o toplvl.o
 tffsmatch.o: tffsmatch.f initb1.o tfeeval.o tfefun.o tffs.o tfshared.o tfstk.o toplvl.o
 tffswake.o: tffswake.f tfeeval.o tffs.o tfstk.o
 tffuns.o: tffuns.f tfstk.o
-tfgeo.o: tfgeo.f initb1.o tffs.o tfloor.o tfstk.o tgrot.o toplvl.o
+tfgeo.o: tfgeo.f initb1.o photons.o tffs.o tfloor.o tfstk.o tgrot.o toplvl.o
 tfgeti.o: tfgeti.f
 tfgetm.o: tfgetm.f tffs.o tfstk.o
 tfgetr.o: tfgetr.f
@@ -372,7 +372,7 @@ tftype.o: tftype.f initb1.o tffs.o tfstk.o tfstrbuf.o toplvl.o
 tfvars.o: tfvars.f tfeeval.o tffs.o tfstk.o toplvl.o
 tfvectorize.o: tfvectorize.f tfefun.o tfstk.o
 tfwake.o: tfwake.f initb1.o tffs.o tfstk.o
-tfwrite.o: tfwrite.f tfeeval.o tfstk.o tfstrbuf.o toplvl.o
+tfwrite.o: tfwrite.f tfeeval.o tfreadbuf.o tfstk.o tfstrbuf.o toplvl.o
 tfzap.o: tfzap.f tffs.o
 tgetfv.o: tgetfv.f tffs.o tfstk.o toplvl.o
 tgfun.o: tgfun.f tffs.o tfstk.o tgrot.o

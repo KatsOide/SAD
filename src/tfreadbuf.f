@@ -1,3 +1,6 @@
+      module readbuf
+
+      contains
       subroutine tfreadbuf(lfn,ib,nc)
       use tfstk
       use tfshare
@@ -6,7 +9,9 @@
 c      use iso_c_binding
       implicit none
       integer*8 ls1,mapresizefile,lenfile,ib1
-      integer*4 lfn,itfgetbuf,irtc,ls,ie,i,nc,ib
+      integer*4 ,intent(in):: lfn,ib
+      integer*4 nc
+      integer*4 itfgetbuf,irtc,ls,ie,i
       if(lfn .le. 0 .or. ibuf(lfn) .eq. 0)then
         go to 9000
       endif
@@ -69,12 +74,12 @@ c        endif
       return
       end subroutine
 
-      subroutine irbopen1(j,ib,is,nc)
+      subroutine irbopen1(j,ib,is,jfd)
       use tfrbuf
       use tfstk
       implicit none
-      integer*4 j,nc
-      integer*8 ib,is
+      integer*4 ,intent(in):: j,jfd
+      integer*8 ,intent(in):: ib,is
       if(itbuf(j) .eq. 0)then
         itbuf(j)=int(is)
         lenbuf(j)=0
@@ -90,7 +95,7 @@ c        endif
         case default
           ibuf(j)=ib
           lenbuf(j)=int(is-modemapped)
-          ifd(j)=nc
+          ifd(j)=jfd
         end select
         lbuf(j)=0
         mbuf(j)=1
@@ -104,7 +109,9 @@ c        write(*,*)'irbopen1 ',j,ibuf(j)
       use tfrbuf
       use tfcsi, only:buffer
       implicit none
-      integer*4 in,irtc,nc
+      integer*4 ,intent(in):: in
+      integer*4 ,intent(out):: irtc
+      integer*4 nc
       character*(*) str
 c      write(*,*)'reststr ',in
       call tfreadbuf(in,lbuf(in)+1,nc)
@@ -127,18 +134,22 @@ c      write(*,*)': ',nc,'''',buffer(mbuf(in):mbuf(in)+nc-1),''''
       return
       end
 
-      subroutine tfopenshared(isp1,kx,irtc)
+      function tfopenshared(isp1,irtc) result(kx)
       use tfstk
       use tfrbuf
       use tfshare
       implicit none
       type (sad_descriptor) kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
       integer*8 ia
-      integer*4 isp1,irtc,itfmessage,n,m,iu,nc
+      integer*4 itfmessage,n,m,iu,nc
       if(isp .ne. isp1+1)then
+        kx=dxnullo
         irtc=itfmessage(9,'General::narg','"1"')
         return
       elseif(ktfnonrealq(ktastk(isp)))then
+        kx=dxnullo
         irtc=itfmessage(9,'General::wrongtype','"Real"')
         return
       endif
@@ -161,6 +172,7 @@ c      ia=mapallocfixed8(rlist(0), m+1, 8, irtc)
       endif
       call trbopen(iu,ia,int8(modeshared),nc)
       if(iu .le. 0)then
+        kx%k=kxfailed
         call tfreeshared(ia)
         irtc=itfmessage(9,'General::fileopen','"(Shared)"')
         return
@@ -172,19 +184,23 @@ c      ia=mapallocfixed8(rlist(0), m+1, 8, irtc)
       return
       end
 
-      subroutine tfreadshared(isp1,kx,irtc)
+      function tfreadshared(isp1,irtc) result(kx)
       use tfstk
       use tfrbuf
       implicit none
       type (sad_descriptor) kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
       type (sad_string), pointer :: str
       integer*8 ia
-      integer*4 isp1,irtc,itfmessage,isp0,iu,ist
+      integer*4 itfmessage,isp0,iu,ist
       logical*4 tfcheckelement
       if(isp .ne. isp1+1)then
+        kx=dxnullo
         irtc=itfmessage(9,'General::narg','"1"')
         return
       elseif(ktfnonrealq(ktastk(isp),iu))then
+        kx=dxnullo
         irtc=itfmessage(9,'General::wrongtype','"Real"')
         return
       endif
@@ -237,20 +253,23 @@ c          write(*,*)'readshared-other '
       return
       end
 
-      subroutine tfwriteshared(isp1,kx,irtc)
+      function tfwriteshared(isp1,irtc) result(kx)
       use tfstk
       use tfrbuf
       implicit none
-      integer*8 kx,kas,ka,kt,kap,k
-      integer*4 isp1,irtc,itfmessage,itfmessageexp,isp0,n,i,iu,ist
+      type (sad_descriptor) kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*8 kas,ka,kt,kap,k
+      integer*4 itfmessage,itfmessageexp,isp0,n,i,iu,ist
+      kx=dxnullo
       if(isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
-      elseif(ktfnonrealq(ktastk(isp1+1)))then
+      elseif(ktfnonrealq(ktastk(isp1+1),iu))then
         irtc=itfmessage(9,'General::wrongtype','"Real"')
         return
       endif
-      iu=int(rtastk(isp1+1))
       kas=itrbibuf(iu,modeshared)
       if(kas .eq. 0)then
         irtc=itfmessage(99,'Shared::notopen','""')
@@ -318,6 +337,7 @@ c          write(*,*)'writeshared-string ',kas,klist(kas+1)
       endif
       ilist(2,kas)=0
       irtc=0
-      kx=ktfoper+mtfnull
       return
       end
+
+      end module readbuf

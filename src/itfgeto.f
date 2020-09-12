@@ -4,6 +4,7 @@
       use tfrbuf
       implicit none
       type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) tfeval
       integer*4 irtc, m
       if(ipoint .gt. lrecl .or. ipoint .le. 0)then
         itfgeto=-1
@@ -12,7 +13,7 @@
       endif
       m=0
 c      write(*,*)'itfgeto ',lrecl,ipoint,buffer(max(ipoint-16,1):ipoint)
-      call tfeval(buffer(1:lrecl),ipoint,m,kx,.true.,irtc)
+      kx=tfeval(buffer(1:lrecl),ipoint,m,.true.,irtc)
 c      if(lfni .lt. 100)then
 c        call tfdebugprint(kx,'itfgeto',3)
 c        write(*,'(a,10i12)')'with ',lfni,irtc,ipoint,lrecl,m,

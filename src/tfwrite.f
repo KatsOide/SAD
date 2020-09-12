@@ -856,6 +856,7 @@ c          enddo
       use tfrbuf
       use tfcsi
       use readopt
+      use readbuf
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (csiparam) sav
