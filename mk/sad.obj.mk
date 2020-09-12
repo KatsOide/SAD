@@ -9,7 +9,7 @@ OBJ_LIBSAD=$(OBJMOD) $(OBJ0) $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ4) $(OBJ5) $(OBJ6) \
 	$(OBJFUNC) \
 	$(OBJUTIL) $(OBJOSDEP)
 
-OBJMOD= tfstk.o		tfstrbuf.o	tfreadbuf.o	toplvl.o	tintrb.o \
+OBJMOD= tfstk.o		tfstrbuf.o	toplvl.o	tintrb.o \
 	tftwiss.o	tftake.o	tfsolvemember.o	tfetok.o	tfbeamline.o\
 	temit.o		tfloor.o	 tffs.o tdjin.o 
 
