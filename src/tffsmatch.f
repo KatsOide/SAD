@@ -1321,7 +1321,7 @@ c
         return
       endif
       if(ktfcoupm%k .eq. 0)then
-        ktfcoupm=dtfcopy1(kxsymbolz('`CouplingMatrix',15))
+        ktfcoupm=dtfcopy1(kxsymbolz('CouplingMatrix',14))
       endif
       levele=levele+1
       km=tfsyeval(ktfcoupm,irtc)
@@ -1329,6 +1329,7 @@ c
       if(irtc .ne. 0)then
         go to 9010
       endif
+c      call tfdebugprint(km,'coupmatrix',1)
       if(.not. tflistq(km,klm))then
         go to 9000
       endif
