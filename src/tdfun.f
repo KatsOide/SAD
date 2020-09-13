@@ -83,8 +83,9 @@ c     $             .or. inicond .and. idp .ne. 0))then
                     endif
                   endif
                 endif
-                maxfit=flv%mfitp(ka) .lt. 0 .and. .not. tftype1fit(kf)
+                maxfit=flv%mfitp(ka) .lt. 0
                 if(kp .ne. kp1)then
+                  maxfit=maxfit .and. .not. tftype1fit(kf)
                   kpb=min(kp,kp1)
                   kpe=max(kp,kp1)
                   if(maxfit)then
@@ -475,6 +476,7 @@ c     v1=pi2*(anint(v/pi2)+sign(.5d0*sin(.5d0*v)**2,sin(v)))
         else
           tdfun1=vf-v
         endif
+c        write(*,*)'tdfun1 ',kf,maxfit,vf,v,tdfun1
         return
       end select
       return

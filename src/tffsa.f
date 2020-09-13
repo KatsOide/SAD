@@ -79,7 +79,7 @@ c     end   initialize for preventing compiler warning
         id2=nlat
         iorgr=1
         geo0(:,:)=geoini
-        chi0(1:3)=0.d0
+        chi0=0.d0
         if(geocal .or. chguse)then
           geocal0=geocal
           geocal=.true.
@@ -772,7 +772,8 @@ c        go to 31
             exit
           endif
         enddo
-        geo0(:,1:3)=tfchitogeo(chi0*scale(mfitchi1:mfitchi3))
+        geo0(:,1:3)=tfrotgeo(geo0(:,1:3),-chi0*scale(mfitchi1:mfitchi3))
+c        geo0(:,1:3)=tfchitogeo(-chi0*scale(mfitchi1:mfitchi3))
         if(.not. exist)then
           go to 12
         endif
