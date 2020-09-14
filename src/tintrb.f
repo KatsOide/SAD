@@ -238,7 +238,7 @@ c        call tinv6(trans,transa)
       return
       end
 
-      real*8 pure function fintrb(t)
+      real*8 pure elemental function fintrb(t)
       use intrb
       implicit none
       real*8 , intent(in)::t

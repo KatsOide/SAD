@@ -95,10 +95,10 @@
         end associate
         end subroutine
 
-        pure elemental function tzsetparam(dp,aln0,akk,bz) result(tz)
+        pure subroutine tzsetparam(tz,dp,aln0,akk,bz)
         use mathfun
         implicit none
-        type (tzparam) tz
+        type (tzparam) ,intent(out):: tz
         real*8 ,intent(in):: dp,bz,aln0,akk
         real*8 wa
         associate (
@@ -126,7 +126,7 @@
      $       cxs2=>tz%cxs2,cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
 
         if(bz .eq. 0.d0)then
-          tz%tz0=tzsetparam0(dp,aln0,akk)
+          call tzsetparam0(tz%tz0,dp,aln0,akk)
         else
           aln=aln0
           pr=1.d0+dp
@@ -162,12 +162,12 @@
         endif
         return
         end associate
-        end function
+        end subroutine
 
-        pure elemental function tzsetparam0(dp,aln0,akk) result(tz0)
+        pure subroutine tzsetparam0(tz0,dp,aln0,akk)
         use mathfun, only:xsincos,xsincosh
         implicit none
-        type (tzparam0) tz0
+        type (tzparam0) ,intent(out):: tz0
         real*8 , intent(in):: dp,aln0,akk
         associate (
      $       w1=>tz0%w1,phi1=>tz0%phi1,aln=>tz0%aln,
@@ -185,11 +185,11 @@
         call xsincosh(phi1,sh2,xsh2,ch2,dch2)
         return
         end associate
-        end function
+        end subroutine
 
-        pure elemental function tzsetparamp(tz) result(tzp)
+        pure subroutine tzsetparamp(tzp,tz)
         implicit none
-        type (tzparamp) tzp
+        type (tzparamp) ,intent(out):: tzp
         type (tzparam) ,intent(in):: tz
         associate (
      $       w1=>tz%tz0%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
@@ -253,7 +253,7 @@
         endif
         return
         end associate
-        end function
+        end subroutine
       
       end module
 
@@ -329,8 +329,8 @@ c        stop
       b1=br*akk
       call tinitr(trans1)
 c     end   initialize for preventing compiler warning
-      tz=tzsetparam(cod(6),aln,akk,bz)
-      tz%tzp=tzsetparamp(tz)
+      call tzsetparam(tz,cod(6),aln,akk,bz)
+      call tzsetparamp(tz%tzp,tz)
       call tgetdv(cod(6),dv,dvdp)
       al1=aln*.5d0
       do n=1,ndiv

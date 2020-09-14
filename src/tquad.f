@@ -450,6 +450,7 @@ c          cp1=(dcmplx(1.d0,a)*cp-(aki*4.d0)*cz1*conjg(cx*cp))/d
       real*8 ,intent(in):: ak(2),al,bz
       integer*4 i
       real*8 x0,px0,theta,cost,sint,aka
+      intrinsic hypot
       if((ak(1) .ne. 0.d0 .or. ak(2) .ne. 0.d0) .and. al .ne. 0.d0)then
 c        theta=pi/nord
         if(ak(1) .eq. 0.d0)then
@@ -520,8 +521,8 @@ c        theta=pi/nord
 
       subroutine zcheck(x,tag)
       implicit none
-      real*8 x
-      character*(*) tag
+      real*8 ,intent(in):: x
+      character*(*) ,intent(in):: tag
       write(*,*)'zcheck-0 ',tag
       if(x .ne. 0.d0)then
         write(*,*)'zcheck-x ',x

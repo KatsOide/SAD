@@ -56,7 +56,7 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
       akk=ak/al
       if(bz .eq. 0.d0)then
         do concurrent (i=1:np)
-          tz%tz0=tzsetparam0(gp(i),aln,akk)
+          call tzsetparam0(tz%tz0,gp(i),aln,akk)
           ra=aln*0.5d0
           if(ibsi .eq. 1)then
             bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)
@@ -101,7 +101,7 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
         enddo
       else
         do concurrent (i=1:np)
-          tz=tzsetparam(gp(i),aln,akk,bz)
+          call tzsetparam(tz,gp(i),aln,akk,bz)
           if(ibsi .eq. 1)then
             bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)+bzp*al
           elseif(ibsi .ge. 0)then
@@ -235,7 +235,7 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
 c!$OMP PARALLEL
 c!$OMP DO
           do concurrent (i=1:np)
-            tz%tz0=tzsetparam0(gp(i),aln,akk)
+            call tzsetparam0(tz%tz0,gp(i),aln,akk)
             bsi(i)=merge(akk*(x(i)+dx0)*(y(i)+dy0),0.d0,n .eq. 1)
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
@@ -288,7 +288,7 @@ c!$OMP END PARALLEL
         alr=aln*0.5d0
         do n=1,ndiv
           do concurrent (i=1:np)
-            tz=tzsetparam(gp(i),aln,akk,bz)
+            call tzsetparam(tz,gp(i),aln,akk,bz)
             bsi(i)=merge(akk*(x(i)+dx0)*(y(i)+dy0)+bzp*alr,
      $           bzp*alr,n .eq. 1)
             ap=px(i)**2+py(i)**2

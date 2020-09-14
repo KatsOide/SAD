@@ -1075,18 +1075,18 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
       return
       end
 
-      subroutine tsfrin(np,x,px,y,py,z,g,dbz)
+      pure subroutine tsfrin(np,x,px,y,py,z,g,dbz)
       implicit none
       integer*4 ,intent(in):: np
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np)
       real*8 ,intent(in):: dbz
       integer*4 i
-      real*8 x0,y0,px0,py0,z0,p,bq,bp,pr,pphi,phi0,w,c,s
+      real*8 x0,y0,px0,py0,bq,bp,pr,pphi,phi0,w,c,s
 c     Apply identity map if dbz == 0
       if(dbz .eq. 0.d0) then
         return
       endif
-      do i=1,np
+      do concurrent (i=1:np)
 c       Map definition
 c         [position @ enter]
 c          x0  :=  x(i)
@@ -1144,13 +1144,11 @@ c       Optimized map code
         y0  = y(i)
         px0 = px(i)
         py0 = py(i)
-        z0  = z(i)
-        p   = 1.d0 + g(i)
 
 c       b     = .5d0 * dbz / p
 c       bq    = -.25d0 * b
 c       bp    =  .50d0 * b
-        bq    = -.125d0 * dbz / p
+        bq    = -.125d0 * dbz / (1.d0 + g(i))
         bp    = -2.d0 * bq
         pr    = x0 * px0 + y0 * py0
         pphi  = x0 * py0 - y0 * px0
@@ -1163,7 +1161,7 @@ c       bp    =  .50d0 * b
         y(i)  = (c *  y0 + s *  x0) * w
         px(i) = (c * px0 - s * py0) / w
         py(i) = (c * py0 + s * px0) / w
-        z(i)  = z0 + bp * pr * pphi
+        z(i)  = z(i) + bp * pr * pphi
       enddo
       return
       end

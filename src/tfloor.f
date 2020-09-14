@@ -533,6 +533,19 @@
       return
       end function
 
+      real*8 pure elemental function asinz(x)
+      implicit none
+      real*8 ,intent(in):: x
+      real*8 x2
+      if(abs(x) .lt. 1.d-3)then
+        x2=x**2
+        asinz=x+x*x2*(1.d0/6.d0+x2*3.d0/40.d0)
+      else
+        asinz=asin(min(1.d0,max(-1.d0,x)))
+      endif
+      return
+      end function
+
       end module
 
       subroutine tfmod(isp1,kx,mode,irtc)

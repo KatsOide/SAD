@@ -16,12 +16,21 @@ c     drift in the free space
       integer*4 ,intent(in):: np
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),dv(np)
       real*8 ,intent(in):: al
-      real*8 al1(np),dpz(np)
-      dpz=pxy2dpz(px,py)
-      al1=al/(1.d0+dpz)
-      x=x+px*al1
-      y=y+py*al1
-      z=z+dpz  *al1-dv*al
+      real*8 al1,dpz
+      integer*4 i
+      do concurrent (i=1:np)
+        dpz=pxy2dpz(px(i),py(i))
+        al1=al/(1.d0+dpz)
+        x(i)=x(i)+px(i)*al1
+        y(i)=y(i)+py(i)*al1
+        z(i)=z(i)+dpz*al1-dv(i)*al
+      enddo
+c      real*8 al1(np),dpz(np)
+c      dpz=pxy2dpz(px,py)
+c      al1=al/(1.d0+dpz)
+c      x=x+px*al1
+c      y=y+py*al1
+c      z=z+dpz  *al1-dv*al
       return
       end
 
