@@ -1076,12 +1076,13 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
       end
 
       pure subroutine tsfrin(np,x,px,y,py,z,g,dbz)
+      use mathfun
       implicit none
       integer*4 ,intent(in):: np
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np)
       real*8 ,intent(in):: dbz
       integer*4 i
-      real*8 x0,y0,px0,py0,bq,bp,pr,pphi,phi0,w,c,s
+      real*8 x0,y0,px0,py0,bq,bp,pr,pphi,phi0,w,c,s,xs,dc
 c     Apply identity map if dbz == 0
       if(dbz .eq. 0.d0) then
         return
@@ -1154,8 +1155,9 @@ c       bp    =  .50d0 * b
         pphi  = x0 * py0 - y0 * px0
         phi0  = bq * pr
         w     = exp(bq * pphi)
-        c     = cos(phi0)
-        s     = sin(phi0)
+        call xsincos(phi0,s,xs,c,dc)
+c        c     = cos(phi0)
+c        s     = sin(phi0)
 
         x(i)  = (c *  x0 - s *  y0) * w
         y(i)  = (c *  y0 + s *  x0) * w

@@ -1,6 +1,24 @@
       module intrb
       implicit none
       real*8 a1,a2
+
+      contains
+      real*8 pure elemental function touckf(x)
+c
+c Approximation of C[x]/x \propto 1/tau .
+c
+      implicit none
+      real*8 ,intent(in):: x
+c      parameter (eeuler=7.98221278918726d0,a=5.5077d0,b=1.1274d0)
+      real*8 ,parameter ::eeuler=7.982212789187259d0,
+     $     a=5.62966d0,b=0.75159d0
+      touckf=merge(1.d200,
+     $     (log(1.d0/x/eeuler+1.d0)*exp(-x)
+     1     *(b+eeuler*x)/(b+x*(a+2.d0*x)))/x,
+     $     x .eq. 0.d0)
+      return
+      end
+
       end module
 
       subroutine tintrb(trans,cod,beam,bmi,al,al1,optics,ll)
@@ -12,18 +30,18 @@
       use ffs_flag
       use ffs_pointer ,only:beamsize
       use tmacro
+      use intrb
       use mathfun
+      use macmath
       use sad_main, ia=>iaidx
       implicit none
-      real*8 fintrb
-      external fintrb
       integer*4 ,intent(in):: ll
       integer*4 i,j
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42)
       real*8 ,intent(out):: bmi(21)
       real*8 ,intent(in):: al,al1
       real*8 pl(3,3),r(3,3),eig(3),xx(3,3),xxs(3,3),
-     $     touckf,bint,e1,e2,e3
+     $     bint,e1,e2,e3
       real*8 xp(3,3),transw(6,6),
      $     pxi,pyi,s,pr,pzi,alx,ale,alz,hi,a,b,d,vol,
      $     bm,ptrans,extrans,eytrans,eztrans,tf,aez,aex0,aey0,
@@ -31,6 +49,7 @@
      $     transsp(6,6)
       real*8 trans1(6,6),trans2(6,6)
       logical*4 ,intent(in):: optics
+      real*8 ,external::fintrbu
 c     real*8  vmin/0.d0/
       if(al .eq. 0.d0)then
         bmi=0.d0
@@ -186,13 +205,13 @@ c        call tmov(xx,xxs,9)
         endif
         a1=eig(1)/eig(2)
         a2=eig(1)/eig(3)
-        f1=2.d0*bint(fintrb,0.d0,hpi,1.d-3,1.d-19)*eig(1)
+        f1=2.d0*bint(fintrbu,0.d0,1.d0,1.d-3,1.d-19)*eig(1)
         a1=eig(2)/eig(3)
         a2=eig(2)/eig(1)
-        f2=2.d0*bint(fintrb,0.d0,hpi,1.d-3,1.d-19)*eig(2)
+        f2=2.d0*bint(fintrbu,0.d0,1.d0,1.d-3,1.d-19)*eig(2)
         a1=eig(3)/eig(1)
         a2=eig(3)/eig(2)
-        f3=2.d0*bint(fintrb,0.d0,hpi,1.d-3,1.d-19)*eig(3)
+        f3=2.d0*bint(fintrbu,0.d0,1.d0,1.d-3,1.d-19)*eig(3)
         e1=f2+f3-2.d0*f1
         e2=f3+f1-2.d0*f2
         e3=f1+f2-2.d0*f3
@@ -251,18 +270,21 @@ c     fintrb=t/sqrt(((1.d0-a1)*t+a1)*((1.d0-a2)*t+a2))
       return
       end
 
-      real*8 function touckf(x)
-c
-c Approximation of C[x]/x \propto 1/tau .
-c
+      real*8 pure elemental function fintrbu(u)
+      use intrb
       implicit none
-      real*8 x,eeuler,a,b
-c      parameter (eeuler=7.98221278918726d0,a=5.5077d0,b=1.1274d0)
-      parameter (eeuler=7.982212789187259d0,a=5.62966d0,b=0.75159d0)
-      touckf=merge(1.d200,
-     $     (log(1.d0/x/eeuler+1.d0)*exp(-x)
-     1     *(b+eeuler*x)/(b+x*(a+2.d0*x)))/x,
-     $     x .eq. 0.d0)
+      real*8 , intent(in)::u
+      real*8 u21,u214,u2141
+      u21=1.d0-u**2
+      u214=u21**4
+      u2141=1.d0-u214
+      fintrbu=4.d0*u*u21*sqrt(u214*u2141/
+     $     ((u2141+a1*u214)*(u2141+a2*u214)))
+c      real*8 u2,u212
+c      u2=u**2
+c      u212=(1.d0-u2)**2
+c      fintrbu=2.d0*u2*sqrt((2.d0-u2)*u212/
+c     $     ((1.d0+(a1-1.d0)*u212)*(1.d0+(a2-1.d0)*u212)))
       return
       end
 

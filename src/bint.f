@@ -1,20 +1,18 @@
-      real*8 function bint(f,a,b,epslon,epsabs)
+      real*8 function bint(f,a,b,epslon,epsabs) result(s)
       implicit none
       integer n,iter,i
       integer*4 ,parameter ::itmax=30
       real*8 ,intent(in):: a,b,epslon,epsabs
-      real*8 ba,s0,s20,s,xstep,x,s1
-      real*8 f
-      external f
-
+      real*8 ba,s0,s20,xstep,x,s1
+      real*8 ,external::f
       ba=b-a
       s0=ba*(f(a)+f(b))*.5d0
 c      write(*,*)'bint ',a,b,f(a),f(b)
+      xstep=ba
       s20=s0
       n=1
       do iter=1,itmax
         s=0.d0
-        xstep=ba/n
         x=a-xstep*.5d0
         do i=1,n
           x=x+xstep
@@ -22,15 +20,17 @@ c      write(*,*)'bint ',a,b,f(a),f(b)
         enddo
         s=s*xstep
         s1=(s+s0)*.5d0
-        bint=(2.d0*s+s0)/3.d0
-        if(abs(bint-s20) .lt. max(epslon*abs(bint),epsabs))then
+        s=(2.d0*s+s0)/3.d0
+        if(abs(s-s20) .lt. max(epslon*abs(s),epsabs))then
+c          write(*,*)'bint ',iter,itmax,s,s20
           return
         endif
         n=n*2
+        xstep=xstep*.5d0
         s0=s1
-        s20=bint
+        s20=s
       enddo
-      write(*,*)'BINT Convergence failed. ',bint,s20
+      write(*,*)'BINT Convergence failed. ',s,s20
       return
       end
 

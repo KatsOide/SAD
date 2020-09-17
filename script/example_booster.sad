@@ -332,8 +332,6 @@ oc@Plot[];      ! call an instance function oc@Plot
 CPU[];
 susp;
 
-
-
 !
 !   Dynamic aperture
 !
