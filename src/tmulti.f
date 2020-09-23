@@ -11,6 +11,7 @@
       use tspin
       use kradlib
       use sol,only:tsolrot
+      use tsolz, only:tzparams
       use photontable,only:tsetpcvt,pcvt
       use mathfun
       use multa, only:fact,aninv
@@ -20,22 +21,22 @@ c      use ffs_pointer, only:inext,iprev
       integer*4 , parameter ::itmax=10,ndivmax=1000
       real*8 ,parameter :: conv=3.d-16,oneev=1.d0+1.d-6,
      $     alstep=0.05d0,pmin=1.d-10,arad=0.01d0
-      integer*4 ,intent(inout):: np
+      integer*4 ,intent(inout):: np,kptbl(np0,6)
+      integer*4 ,intent(in):: mfring,kturn,nmmax,ndiv0
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),
      $     dv(np),sx(np),sy(np),sz(np),bz
       real*8 ,intent(in):: al,phia,psi1,psi2,
      $     dx,dy,dz,chi1,chi2,theta,dtheta,theta2,
      $     eps0,f1in,f2in,f1out,f2out,fb1,fb2,radius,rtaper
       complex*16 ,intent(in):: ak(0:nmult),akr0(0:nmult)
-      integer*4 ,intent(in):: mfring,kturn,nmmax,ndiv0
-      integer*4 ,intent(inout):: kptbl(np0,6)
       logical*4 ,intent(in):: fringe,krad
       logical*1 ,intent(in):: dofr(0:nmult)
-      logical*4 spac1,nzleng
+      type (tzparams) tzs(np),tzs1(np)
       integer*4 i,m,n,ndiv,ibsi
       real*8 bxs,bys,bzs,b,a,epsr,wi,
      $     akr1,ak1,al1,p,ea,pxf,pyf,sv,wm,alx
       complex*16 akr(0:nmult),akrm(0:nmult),cx,cx1,ak01,b0
+      logical*4 spac1,nzleng
       if(phia .ne. 0.d0)then
         call tmulta(
      $       np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -119,12 +120,12 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
         ak01=akr(0)*wi*.5d0
         sv=0.d0
         ibsi=1
+        akrm(0:nmmax)=akr(0:nmmax)*wi
         do m=1,ndiv
-          akrm(0:nmmax)=akr(0:nmmax)*wi
           if(nzleng)then
-            call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           al1,ak1,bzs,dble(ak01),imag(ak01),ibsi,eps0)
             if(krad)then
+              call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $             al1,ak1,bzs,dble(ak01),imag(ak01),ibsi,eps0)
               if(m .eq. 1 .and. calpol)then
                 do concurrent (i=1:np)
                   cx1=dcmplx(x(i),y(i))
@@ -137,12 +138,17 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
               endif
               call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al1,0.d0)
               pcvt%fr0=pcvt%fr0+al1/al
+            elseif(m .eq. 1)then
+              call tsolqum(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $             al1,ak1,bzs,dble(ak01),imag(ak01),-1,eps0,
+     $             tzs1,.true.)
+            else
+              call tsolqum(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $             al1,ak1,bzs,dble(ak01),imag(ak01),-1,eps0,
+     $             tzs,m .eq. 2)
             endif
             ibsi=0
-            wm=wi
-            if(m .eq. ndiv)then
-              wm=wi*.5d0
-            endif
+            wm=merge(wi*.5d0,wi,m .eq. ndiv)
             al1=al*wm
             ak1=akr1*wm
             ak01=akr(0)*wm
@@ -176,8 +182,14 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
           endif
         enddo
         if(nzleng)then
-          call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         al1,ak1,bzs,dble(ak01),imag(ak01),2,eps0)
+          if(krad)then
+            call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $           al1,ak1,bzs,dble(ak01),imag(ak01),2,eps0)
+          else
+            call tsolqum(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $            al1,ak1,bzs,dble(ak01),imag(ak01),-1,eps0,
+     $           tzs1,.false.)
+          endif
           if(mfring .eq. 2 .or. mfring .eq. 3)then
             if(f1out .ne. 0.d0 .or. f2out .ne. 0.d0)then
               do concurrent (i=1:np)

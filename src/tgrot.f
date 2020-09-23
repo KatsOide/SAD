@@ -8,11 +8,12 @@
 
       contains
       real*8 function tfchi(geo,i)
+      use mathfun
       implicit none
       real*8 , intent(in)::geo(3,3)
       integer*4 ,intent(in):: i
       if(i .eq. 2)then
-        tfchi=asin(geo(3,3))
+        tfchi=asinz(geo(3,3))
       elseif(i .eq. 1)then
         if(geo(2,3) .eq. 0.d0)then
           tfchi=0.d0

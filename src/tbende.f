@@ -297,9 +297,10 @@ c     $     sxkxp,dcxkxp
       return
       end subroutine
 
-      subroutine tbrote(trans1,cod,srot,phi0,dtheta)
+      subroutine tbrote(trans1,cod,srot,phi0,dtheta)      
       use tmacro, only:irad
       use ffs_flag,only:calpol
+      use mathfun, only:asinz
       implicit none
       real*8 ,intent(inout):: trans1(6,6),cod(6),srot(3,9)
       real*8 ,intent(in):: phi0,dtheta
@@ -308,10 +309,10 @@ c     $     sxkxp,dcxkxp
       cphi0=cos(phi0*.5d0)
       sphi0=sin(phi0*.5d0)
       sdt=sin(dtheta)
-      chi2=asin(sdt*sphi0)
+      chi2=asinz(sdt*sphi0)
       coschi2=cos(chi2)
-      chi1=asin(sin(dtheta*.5d0)**2*2.d0*sphi0*cphi0/coschi2)
-      chi3=asin(sdt*cphi0/coschi2)
+      chi1=asinz(sin(dtheta*.5d0)**2*2.d0*sphi0*cphi0/coschi2)
+      chi3=asinz(sdt*cphi0/coschi2)
       call tsrote(trans1,cod,rr,chi1,chi2,chi3)
       if(calpol .and. irad .gt. 6)then
         do concurrent (i=1:9)

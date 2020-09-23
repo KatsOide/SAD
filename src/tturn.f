@@ -152,6 +152,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       use ffs_seg
       use tspin
       use kradlib
+      use element_drift_common
       use mathfun
       use tracklim
       use kradlib, only:tallocrad

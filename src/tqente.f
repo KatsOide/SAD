@@ -1,6 +1,6 @@
       subroutine tqente(trans,cod,beam,al,bz,irad)
       use mathfun, only: sqrtl
-      use sol, only:tsoldz
+      use element_drift_common, only:tsoldz
       use temw,only:tmulbs
       implicit none
       integer*4 ,intent(in):: irad

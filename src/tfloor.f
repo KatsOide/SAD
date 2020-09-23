@@ -5,6 +5,14 @@
 
       module mathfun
       use cfunc
+      real*8 ,parameter :: epsieee=5.d-17,
+     $     xths1=(epsieee*362880.d0/6.d0)**(1.d0/6.d0),
+     $     xths2=(epsieee*6227020800.d0/6.d9)**(1.d0/10.d0),
+     $     xthc1=(epsieee*40320.d0/2.d0)**(1.d0/6.d0),
+     $     xthc2=(epsieee*479001600.d0/2.d0)**(1.d0/10.d0),
+     $     xthcs1=min(xths1,xthc1),
+     $     xthcs2=min(xths2,xthc2),
+     $     xthasx=(epsieee*13312.d0/231.d0/6.d0)**(1.d0/10.d0)
 
       contains
       real*8 pure function tfloor(x)
@@ -128,12 +136,8 @@
       complex*16 ,intent(in)::z,z1
       if(z .eq. (0.d0,0.d0))then
         if(dble(z1) .eq. 0.d0)then
-          if(imag(z1) .eq. 0.d0)then
-            tcatan2=(0.d0,0.d0)
-          else
-            tcatan2=dcmplx(merge(0.d0,sign(m_pi_2,imag(z1)),
-     $           imag(z1) .eq. 0.d0),0.d0)
-          endif
+          tcatan2=dcmplx(merge(0.d0,sign(m_pi_2,imag(z1)),
+     $         imag(z1) .eq. 0.d0),0.d0)
         else
           tcatan2=sign(m_pi_2,dble(z1))
         endif
@@ -196,10 +200,10 @@
       implicit none
       real*8 ,intent(in)::x
       real*8 x2
-      if(abs(x) .lt. 1.d-3)then
+      if(abs(x) .lt. xths1)then
         x2=x**2
         xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2/5040.d0))
-      elseif(abs(x) .lt. 0.1d0)then
+      elseif(abs(x) .lt. xths2)then
         x2=x**2
         xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2*(
      1       1.d0/5040.d0-x2*(1.d0/362880.d0-x2/39916800.d0))))
@@ -214,11 +218,11 @@
       real*8 ,intent(in)::x
       real*8 ,intent(out)::s,xs
       real*8 x2
-      if(abs(x) .lt. 1.d-3)then
+      if(abs(x) .lt. xths1)then
         x2=x**2
         xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2/5040.d0))
         s=x-xs
-      elseif(abs(x) .lt. .1d0)then
+      elseif(abs(x) .lt. xths2)then
         x2=x**2
         xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2*(
      1       1.d0/5040.d0-x2*(1.d0/362880.d0-x2/39916800.d0))))
@@ -235,19 +239,19 @@
       real*8 ,intent(in)::x
       real*8 ,intent(out)::s,xs,c,dc
       real*8 x2
-      if(abs(x) .lt. 1.d-3)then
+      if(abs(x) .lt. xthcs1)then
         x2=x**2
         xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2/5040.d0))
         s=x-xs
         dc=-x2*(.5d0-x2*(1.d0/24.d0-x2/720.d0))
         c=1.d0+dc
-      elseif(abs(x) .lt. .1d0)then
+      elseif(abs(x) .lt. xthcs2)then
         x2=x**2
         xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2*(
      1       1.d0/5040.d0-x2*(1.d0/362880.d0-x2/39916800.d0))))
         s=x-xs
         dc=-x2*(.5d0-x2*(1.d0/24.d0-x2*
-     $       (1.d0/720.d0-x2*(1.d0/40320.d0-x2/479001600.d0))))
+     $       (1.d0/720.d0-x2*(1.d0/40320.d0-x2/3628800.d0))))
         c=1.d0+dc
       else
         s=sin(x)
@@ -262,10 +266,10 @@
       implicit none
       real*8 ,intent(in)::x
       real*8 x2
-      if(abs(x) .lt. 1.d-3)then
+      if(abs(x) .lt. xths1)then
         x2=x**2
         xsinh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2/5040.d0))
-      elseif(abs(x) .lt. 0.1d0)then
+      elseif(abs(x) .lt. xths2)then
         x2=x**2
         xsinh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2*(
      1       1.d0/5040.d0+x2*(1.d0/362880.d0+x2/39916800.d0))))
@@ -280,11 +284,11 @@
       real*8 ,intent(in)::x
       real*8 ,intent(out)::sh,xsh
       real*8 x2
-      if(abs(x) .lt. 1.d-3)then
+      if(abs(x) .lt. xths1)then
         x2=x**2
         xsh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2/5040.d0))
         sh=x-xsh
-      elseif(abs(x) .lt. 0.1d0)then
+      elseif(abs(x) .lt. xths2)then
         x2=x**2
         xsh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2*(
      1       1.d0/5040.d0+x2*(1.d0/362880.d0+x2/39916800.d0))))
@@ -301,19 +305,19 @@
       real*8 ,intent(in)::x
       real*8 ,intent(out)::sh,xsh,ch,dch
       real*8 x2
-      if(abs(x) .lt. 1.d-3)then
+      if(abs(x) .lt. xthcs1)then
         x2=x**2
         xsh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2/5040.d0))
         sh=x-xsh
         dch= x2*(.5d0+x2*(1.d0/24.d0+x2/720.d0))
         ch=1.d0+dch
-      elseif(abs(x) .lt. 0.1d0)then
+      elseif(abs(x) .lt. xthcs2)then
         x2=x**2
         xsh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2*(
      1       1.d0/5040.d0+x2*(1.d0/362880.d0+x2/39916800.d0))))
         sh=x-xsh
         dch= x2*(.5d0+x2*(1.d0/24.d0+x2*
-     $       (1.d0/720.d0+x2*(1.d0/40320.d0+x2/479001600.d0))))
+     $       (1.d0/720.d0+x2*(1.d0/40320.d0+x2/3628800.d0))))
         ch=1.d0+dch
       else
         sh=sinh(x)
@@ -461,7 +465,7 @@
       implicit none
       real*8, intent(in) :: px,py
       real*8 x
-      real*8, parameter:: xth=1.d-6,xmin=1.d-100
+      real*8, parameter:: xth=8.d-6,xmin=1.d-200
       x=px**2+py**2
       if(x .lt. xth)then
         pxy2dpz=-x*(0.5d0+x*(0.125d0+x*0.0625d0))
@@ -474,7 +478,7 @@
       real*8 pure elemental function sqrt1(x)
       implicit none
       real*8, intent(in) :: x
-      real*8, parameter:: xth=1.d-6,xth1=1.d-3,xmin=1.d-100
+      real*8, parameter:: xth=8.d-6,xth1=3.4d-3,xmin=1.d-200
       if(abs(x) .lt. xth)then
         sqrt1=x*(0.5d0+x*(-0.125d0+x*0.0625d0))
       elseif(abs(x) .lt. xth1)then
@@ -537,11 +541,25 @@
       implicit none
       real*8 ,intent(in):: x
       real*8 x2
-      if(abs(x) .lt. 1.d-3)then
+      if(abs(x) .lt. 0.0032d0)then
         x2=x**2
         asinz=x+x*x2*(1.d0/6.d0+x2*3.d0/40.d0)
       else
         asinz=asin(min(1.d0,max(-1.d0,x)))
+      endif
+      return
+      end function
+
+      real*8 pure elemental function asinx(x)
+      implicit none
+      real*8 ,intent(in):: x
+      real*8 x2
+      if(abs(x) .lt. xthasx)then
+        x2=x**2
+        asinx=x*x2*(1.d0/6.d0+x2*(3.d0/40.d0+x2*(5.d0/112.d0
+     $       +x2*(35.d0/1152.d0+x2*63.d0/2816.d0))))
+      else
+        asinx=asin(min(1.d0,max(-1.d0,x)))-x
       endif
       return
       end function

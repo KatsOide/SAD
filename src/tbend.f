@@ -664,6 +664,7 @@ c        endif
       subroutine tbdrift(np,x,px,y,py,z,dv,sx,sz,al,phi0)
       use tfstk
       use ffs_flag, only:calpol
+      use element_drift_common
       use mathfun
       implicit none
       integer*4 np,i
