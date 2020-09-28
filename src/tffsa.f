@@ -23,8 +23,9 @@
       use iso_c_binding
       implicit none
       integer*4 maxrpt,hsrchz
-      type (sad_descriptor) kx
-      integer*8 kffs,itwisso,iparams,kax,iutwiss,ildummy
+      type (sad_descriptor) ,intent(out):: kffs
+      type (sad_descriptor) kx,tfvars
+      integer*8 itwisso,iparams,kax,iutwiss,ildummy
       integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,k,
      $     irtc0,it,itt,lfn,
      $     iuse,l,itfuplevel,
@@ -55,7 +56,7 @@
       data busy /.false./
       itwisso(kk,i,j)=iftwis+kk+nlat*(i+ndim+(j-1)*ndima)-1
       flv%mcommon=int((sizeof(flv)+7)/8)
-      kffs=ktfoper+mtfnull
+      kffs=dxnullo
       irtcffs=0
       l=itfuplevel()
       chguse=.false.
@@ -847,7 +848,7 @@ c        geo0(:,1:3)=tfchitogeo(-chi0*scale(mfitchi1:mfitchi3))
         go to 10
       elseif(abbrev(word,'VAR_IABLES','_') .or. word .eq. 'VARS')then
         call tfinitvar
-        call tfvars(flv%nvar,kffs,irtcffs,lfnb .gt. 1,lfno)
+        kffs=tfvars(flv%nvar,irtcffs,lfnb .gt. 1,lfno)
         go to 10
       elseif(abbrev(word,'RENUM_BER','_'))then
         call tffsrenumber(lfno)
@@ -1220,7 +1221,7 @@ c        dpm2=rlist(ktlookup('DPM'))
       flv%nfc=nfc0
       go to 10
  8900 call tffsfree
- 9000 call tfconnectk(kffs,irtcffs)
+ 9000 call tfconnect(kffs,irtcffs)
       return
       end
 

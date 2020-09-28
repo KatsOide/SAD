@@ -459,10 +459,10 @@ c        call tfcatchreturn(0,kx,irtc)
       return
       end
 
-      subroutine tfrange(isp1,kx,irtc)
+      function tfrange(isp1,irtc) result(kx)
       use tfstk
       implicit none
-      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       type (sad_rlist), pointer :: kl
@@ -471,11 +471,13 @@ c        call tfcatchreturn(0,kx,irtc)
       real*8 x0,x1,xs,xi
       narg=isp-isp1
       if(narg .gt. 3)then
+        kx=dxnullo
         irtc=itfmessage(9,'General::narg','"1, 2, or 3"')
         return
       endif
       do i=isp1+1,isp
         if(ktfnonrealq(ktastk(i)))then
+          kx=dxnullo
           irtc=itfmessage(9,'General::wrongtype','"Real number"')
           return
         endif
@@ -494,11 +496,13 @@ c        call tfcatchreturn(0,kx,irtc)
         xs=rtastk(isp)
       endif
       if(xs .eq. 0.d0)then
+        kx=dxnullo
         irtc=itfmessage(9,'General::wrongnum','"non-zero"')
         return
       endif
       n=max(int8((x1-x0)/xs*(1.d0+1.d-11)+1.d0),0)
       if(n .gt. HUGE(0))then
+        kx=dxnullo
         irtc=itfmessage(9,'General::wrongval',
      $       '"# of elements","less than 2^31"')
         return

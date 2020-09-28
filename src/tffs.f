@@ -766,7 +766,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
 
         integer*4 function idelc(i)
         implicit none
-        integer*4 i
+        integer*4 ,intent(in):: i
         idelc=idcomp(elatt,i)
         return
         end function
@@ -784,7 +784,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         use maccode
         use tmacro, only:nlat
         implicit none
-        integer*4 i
+        integer*4 ,intent(in):: i
         idtypecx=merge(icNull,idtype(idcomp(elatt,i)),
      $       i .le. 0 .or. i .ge. nlat)
         return
@@ -793,7 +793,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         integer*8 function idvalc(i)
         use maccbk, only:idval
         implicit none
-        integer*4 i
+        integer*4 ,intent(in):: i
         idvalc=idval(idcomp(elatt,i))
         return
         end function
@@ -801,7 +801,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         integer*4 function lpnamec(i)
         use maccbk
         implicit none
-        integer*4 i
+        integer*4 ,intent(in):: i
         lpnamec=lpname(idcomp(elatt,i))
         return
         end function
@@ -846,7 +846,8 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         use tmacro, only:nlat
         use mackw
         implicit none
-        integer*4 i,it,i1,k
+        integer*4 ,intent(in):: i
+        integer*4 it,i1,k
         type (sad_comp), pointer :: cmp
         i1=i+1
  1      if(i1 .ge. nlat)then
@@ -869,7 +870,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         real*8 function tfvalvar(i,k) result(v)
         implicit none
         type (sad_comp), pointer :: cmps
-        integer*4 i,k
+        integer*4 ,intent(in):: i,k
         call compelc(i,cmps)
         v=cmps%value(k)
         return
@@ -878,9 +879,11 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         subroutine tsetfringep(cmp,ic,akk,table)
         use mackw
         implicit none
-        type (sad_comp) cmp
-        integer*4 ic
-        real*8 akk,table(4),f1in,f1out,f2in,f2out
+        type (sad_comp) ,intent(in):: cmp
+        integer*4 ,intent(in):: ic
+        real*8 ,intent(in):: akk
+        real*8 ,intent(out):: table(4)
+        real*8 f1in,f1out,f2in,f2out
         f1in =cmp%value(kytbl(kwF1,ic))
      $       +cmp%value(kytbl(kwF1K1F,ic))
         f1out=cmp%value(kytbl(kwF1,ic))
@@ -906,9 +909,10 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         subroutine tsetfringepe(cmp,ic,table)
         use mackw
         implicit none
-        type (sad_comp) cmp
-        integer*4 ic
-        real*8 table(4),f1in,f1out,f2in,f2out
+        type (sad_comp) ,intent(in):: cmp
+        integer*4 ,intent(in):: ic
+        real*8 ,intent(out):: table(4)
+        real*8 f1in,f1out,f2in,f2out
         if(cmp%value(kytbl(kwL,ic)) .ne. 0.d0)then
           if(cmp%value(kytbl(kwK1,ic)) .ne. 0.d0 .or.
      $         kytbl(kwSK1,ic) .ne. 0 .and.
@@ -1016,8 +1020,8 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         logical*4 function tparacheck(l,cmp)
         use ffs_flag
         implicit none
-        type (sad_comp) :: cmp
-        integer*4 l
+        type (sad_comp),intent(in):: cmp
+        integer*4 ,intent(in):: l
 
         select case (l)
         case (icMULT,icCAVI)
@@ -1370,8 +1374,9 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       implicit none
       type (sad_descriptor) , optional,intent(out)::kx
       type (sad_descriptor) ks,ka
-      integer*4 i,isp0,lw1,irtc
-      character*(lw1) word1
+      integer*4 ,intent(in):: i,lw1
+      integer*4 isp0,irtc
+      character*(lw1) ,intent(in):: word1
       isp0=isp
       ktastk(isp0+1)=iftypekeyp
       rtastk(isp0+2)=dble(i)
@@ -1401,8 +1406,9 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       use efun
       implicit none
       type (sad_descriptor) kx,ks
-      integer*4 i,isp0,lw1,irtc
-      character*(lw1) word1
+      integer*4 ,intent(in):: i,lw1
+      integer*4 irtc,isp0
+      character*(lw1) ,intent(in):: word1
       isp0=isp
       ktastk(isp0+1)=ifelementkeyp
       rtastk(isp0+2)=dble(i)
@@ -1422,7 +1428,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       return
       end function
 
-      subroutine tftypekey(isp1,kx,irtc)
+      function tftypekey(isp1,irtc) result(kx)
       use tfstk
       use maccbk
       use maccode
@@ -1430,18 +1436,23 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       implicit none
       type (sad_descriptor) kx
       real*8 c
-      integer*4 ic,isp0,isp1,irtc,itfmessage
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 ic,isp0,itfmessage
       if(isp .ne. isp1+1)then
+        kx=dxnullo
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
       if(.not. ktfrealq(dtastk(isp),c))then
+        kx=dxnullo
         irtc=itfmessage(9,'General::wrongtype',
      $       '"Typecode for #1"')
         return
       endif
       ic=int(c)
       if(ic .lt. 0 .or. ic .gt. icMXEL)then
+        kx=dxnullo
         irtc=itfmessage(9,'General::wrongval',
      $       '"Typecode out of range"')
         return
@@ -1452,15 +1463,16 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       isp=isp0
       irtc=0
       return
-      end subroutine
+      end function
 
       subroutine tftypekeystk(ic,all)
       use tfstk
       use mackw
       implicit none
       type (sad_descriptor) kx
-      integer*4 ic,i,isp0
-      logical*4 all
+      integer*4 ,intent(in):: ic
+      integer*4 i,isp0
+      logical*4 ,intent(in):: all
       character*(MAXPNAME) key,tfkwrd,tfkwrd1
       do i=1,kytbl(kwMAX,ic)-1
         key=tfkwrd(ic,i)
@@ -1493,13 +1505,15 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
      $     compelc,iele1
       implicit none
       type (sad_rlist), pointer :: kld,klr
-      integer*4 i,it,kl,l,j,lk,lenw
-      integer*8 ia
+      integer*4 ,intent(in):: i
+      integer*4 it,kl,l,j,lk,lenw
+      integer*8 ,intent(out):: ia
       character*(*) keyword
       character*128 key
-      logical*4 saved,plus,ref
+      logical*4 plus
+      logical*4 ,intent(in):: ref,saved
       real*8 s
-      type (sad_comp), pointer :: cmp
+      type (sad_comp), pointer ,intent(out):: cmp
 c     begin initialize for preventing compiler warning
       kl=merge(i,nelvx(-i)%klp,i .gt. 0)
       call compelc(kl,cmp)
@@ -1565,7 +1579,8 @@ c     begin initialize for preventing compiler warning
       use ffs
       use ffs_pointer
       implicit none
-      integer*4 iv,j,i
+      integer*4 ,intent(in):: iv,i
+      integer*4 j
       do j=1,flv%ntouch
         if(nvevx(j)%itouchele .eq. i .and. nvevx(j)%itouchv .eq. iv)then
           return
@@ -1612,8 +1627,9 @@ c     begin initialize for preventing compiler warning
         use sad_main
         use kyparam
         implicit none
-        type (sad_comp) ,intent(in)::cmp
-        type (sad_dlist) , pointer :: lprof,lsegp
+        type (sad_comp) ,intent(inout)::cmp
+        type (sad_dlist) , pointer :: lprof
+        type (sad_dlist) , pointer ,intent(inout):: lsegp
         real*8 , intent(out)::al
         integer*4 ,intent(out)::irtc
         integer*4 ,intent(in)::ltyp
@@ -1650,9 +1666,11 @@ c     begin initialize for preventing compiler warning
         use tflinepcom
         use sad_main
         implicit none
-        type (sad_comp) ::cmp
+        type (sad_comp) ,intent(inout):: cmp
         type (sad_rlist) , pointer :: lvl
-        type (sad_dlist) , pointer :: lsegp,lpi,lprof,lpi1,lk1
+        type (sad_dlist) , pointer ,intent(in):: lprof
+        type (sad_dlist) , pointer ,intent(out):: lsegp
+        type (sad_dlist) , pointer :: lpi,lpi1,lk1
         type (sad_string), pointer :: stri1,stri2
         integer*4 ltyp,lls,i,nseg,irtc,itfmessage,l,itfdownlevel,
      $       isp0,i1,nk
@@ -1770,9 +1788,10 @@ c     begin initialize for preventing compiler warning
         use kyparam
         use sad_main
         implicit none
-        type (sad_comp) :: cmps,cmpd
-        real*8 coeff
-        integer*4 k
+        type (sad_comp),intent(in):: cmps
+        type (sad_comp),intent(out):: cmpd
+        real*8 ,intent(in):: coeff
+        integer*4 ,intent(in):: k
         if(ktfrealq(cmps%dvalue(k)))then
           if(ktfnonrealq(cmpd%dvalue(k)))then
             call tflocald(cmpd%dvalue(k))
@@ -1800,8 +1819,8 @@ c     begin initialize for preventing compiler warning
         use ffs_pointer
         implicit none
         type (sad_comp), pointer :: cmps,cmpd
-        real*8 coeff
-        integer*4 is,id,k
+        real*8 ,intent(in):: coeff
+        integer*4 ,intent(in):: is,id,k
         call compelc(id,cmpd)
         call compelc(is,cmps)
         call tfvcopycmp(cmps,cmpd,k,coeff)
@@ -1818,8 +1837,10 @@ c     begin initialize for preventing compiler warning
         use mackw
         use sad_main
         implicit none
-        type (sad_comp) :: cmps,cmpd
-        integer*4 k,n
+        type (sad_comp),intent(in):: cmps
+        type (sad_comp),intent(out):: cmpd
+        integer*4 ,intent(in):: n
+        integer*4 k
         do k=1,n
           call tfvcopycmp(cmps,cmpd,k,1.d0)
         enddo
@@ -2299,7 +2320,7 @@ c      crz=sqrt(uz12**2+uz22**2)
      $     ex,epx,ey,epy,zx,zpx,zy,zpy,
      $     r1,r2,r3,r4,amu,detr,sqrbx,sqrby,sqrbz,aa,
      $     ax,ay,az,dethx,dethy,amux,amuy,azz
-      logical*4 normal
+      logical*4 ,intent(out):: normal
       r1=twiss1(mfitr1)
       r2=twiss1(mfitr2)
       r3=twiss1(mfitr3)
@@ -2460,8 +2481,10 @@ c      crz=sqrt(uz12**2+uz22**2)
       use tfstk
       use ffs
       implicit none
-      type (sad_descriptor) kx
-      integer*4 isp1,irtc,itfmessage
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage
       logical*4 normal
       type (sad_rlist), pointer :: kl
       if(isp .ne. isp1+1)then
@@ -2489,7 +2512,7 @@ c      real*8 ,intent(in),target:: trans(:,:)
 c      real*8 , pointer:: trans1(:,:)
 c      real*8 ,target::transs(6,6)
       real*8 s(6,6)
-      logical*4 beamr
+      logical*4 ,intent(in):: beamr
       if(irad .lt. 12)then
         return
       endif
@@ -2768,7 +2791,8 @@ c         enddo
 
         subroutine spaddrm(rma,rmb,rmc)
         implicit none
-        type (scmat) rma,rmb,rmc
+        type (scmat) ,intent(in):: rma,rmb
+        type (scmat) ,intent(out):: rmc
         integer*4 ind(lind),i,ic
         do i=1,rma%nind
           ind=rma%ind(:,i)
@@ -3003,6 +3027,7 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         enddo
         return
         end subroutine
+
         subroutine sprot(sx,sy,sz,pxm,pym,bx0,by0,bz0,bsi,a,h,
      $     gbrhoi,anph)
         use tmacro

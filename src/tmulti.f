@@ -19,8 +19,7 @@
 c      use ffs_pointer, only:inext,iprev
       implicit none
       integer*4 , parameter ::itmax=10,ndivmax=1000
-      real*8 ,parameter :: conv=3.d-16,oneev=1.d0+1.d-6,
-     $     alstep=0.05d0,pmin=1.d-10,arad=0.01d0
+      real*8 ,parameter :: alstep=0.05d0,pmin=1.d-10
       integer*4 ,intent(inout):: np,kptbl(np0,6)
       integer*4 ,intent(in):: mfring,kturn,nmmax,ndiv0
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),

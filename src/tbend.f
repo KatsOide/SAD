@@ -510,9 +510,7 @@ c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
           bsi(i)=bsi(i)-bsi2*y(i)/rhob
         enddo
         if(krad)then
-c     write(*,*)'tbend-tradk-1 ',g(1),phi0,alr
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,alr,phi0)
-c     write(*,*)'tbend-tradk-2 ',g(1)
         endif
         return
         end subroutine

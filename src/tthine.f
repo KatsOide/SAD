@@ -6,10 +6,12 @@
       use multa, only:fact
       implicit none
       integer*4 kord,nord
-      real*8 al,ak,dx,dy,theta,b1,aki,ala,alb
-      real*8 trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 ,intent(in):: al,ak,dx,dy,theta
+      real*8 b1,aki,ala,alb
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       complex*16 cx,cx1
-      logical*4 enarad,krad
+      logical*4 ,intent(in):: enarad
+      logical*4 krad
       real*8 trans1(6,13)
       if(ak .eq. 0.d0)then
         call tdrife(trans,cod,beam,srot,al,

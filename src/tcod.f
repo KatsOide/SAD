@@ -6,6 +6,7 @@
       use ffs, only:mfitddp
       use tmacro
       use temw, only:iaez
+      use mathfun,only:asinz
       implicit none
       integer*4 im
       logical*4 ,intent(out):: fndcod
@@ -29,8 +30,7 @@
         call tcod(trans,cod,beam,optics,fndcod)
         rfsw=.true.
         if(fndcod .and. vceff .ne. 0.d0)then
-          cod(5)=asin(min(1.d0,max(-1.d0,(u0*pgev-vcacc)/vceff)))
-     $         /wrfeff-trf0
+          cod(5)=asinz((u0*pgev-vcacc)/vceff)/wrfeff-trf0
         endif
 c        write(*,'(a,l2,1p7g15.7)')'tcod-0 ',
 c     $       fndcod,vceff,wrfeff,trf0,vcacc,u0*pgev,cod(5)

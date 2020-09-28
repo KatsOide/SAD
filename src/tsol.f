@@ -9,7 +9,7 @@ c
       subroutine tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     al,bz,dx,dy,dz,
      $     chi1,chi2,chi3,bxs,bys,bzs,ent)
-      use mathfun, only:sqrt1,xsincos,pxy2dpz
+      use mathfun, only:sqrt1,xsincos,pxy2dpz,asinz
       use ffs_flag, only:calpol,rad
       implicit none
       integer*4 ,intent(in):: np
@@ -75,7 +75,7 @@ c     dpz0=-s/(1.d0+sqrt(1.d0-s))
               pbz=ptx*phiy-pty*phix
               if(ds2 .ne. 0.d0)then
                 ps2=ds2/alb
-                phi=asin(ps2/pz0)
+                phi=asinz(ps2/pz0)
                 do j=1,itmax
                   call xsincos(phi,sinphi,xsinphi,cosphi,dcosphi)
 c                  call sxsin(phi,sinphi,xsinphi)

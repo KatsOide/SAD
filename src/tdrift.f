@@ -397,7 +397,6 @@ c cod does NOT have canonical momenta!
             call tsetpcvt(l_track,0.d0,0.d0,0.d0,0.d0,0.d0,al)
           endif
         endif
-c        b=hypot(hypot(ak0x,ak0y),bz*al)
         b=norm2([ak0x,ak0y,bz*al])
         phix=ak0y/b
         phiy=ak0x/b
@@ -432,7 +431,7 @@ c          dpz0=-s/(1.d0+sqrtl(1.d0-s))
           db=bpr-pbz
           ap=hypot(pz0,pbz)
           dphi=-atan(pbz,pz0)
-          phi=asin(min(1.d0,max(-1.d0,db/ap)))-dphi
+          phi=asinz(db/ap)-dphi
           call tsolconv(pz0,plz,pbz,bpr,
      $     phi,sinphi,xsinphi,cosphi,dcosphi,ndiag)
           x(i)=x(i)+(plx*phi+ptx*sinphi-pbx*dcosphi)*alb

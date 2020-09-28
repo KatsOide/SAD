@@ -102,7 +102,7 @@ c-------Kikuchi addition end-----
       return
  5210 kx=tfsetelement(isp1,irtc)
       return
- 5220 call tftypekey(isp1,kx,irtc)
+ 5220 kx=tftypekey(isp1,irtc)
       return
  5230 call tfnormalcoord(isp1,kx,irtc)
       return

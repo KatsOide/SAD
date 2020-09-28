@@ -469,11 +469,11 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       implicit none
       integer*4 ,intent(in):: nqcola,maxf,
      $     kfit(*),ifitp(*),kfitp(*),kdp(*),iqcol(nqcola)
+      logical*4 ,intent(in):: wcal
       integer*4 i,j,k,iq
       real*8 coum,emxx,emyy,dpm,coup,em
       integer*4 itfuplevel, level,irtc,idp
       character*16 name
-      logical*4 ,intent(in):: wcal
       type (sad_descriptor) kx
       type (sad_descriptor) ,save::kfv
       data kfv%k /0/

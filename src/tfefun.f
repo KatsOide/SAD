@@ -1144,7 +1144,7 @@ c      write(*,*)'with ',iopc1
      $     tfeintf2,tfget,tftake,tfeval1to,tfmap,tfminmax,
      $     tfgetcommandline,tfreplacepart,tfpart,tfwrite,
      $     tftemporaryname,tfmapfile,tfunmapfile,tfcmplxf,
-     $     tfgaussiancoulomb,tfgaussiancoulombu
+     $     tfgaussiancoulomb,tfgaussiancoulombu,tfrange
       type (sad_dlist), pointer :: kl,kl1,klx,klh
       type (sad_symbol), pointer :: sym1
       type (sad_symdef), pointer :: symd
@@ -1634,7 +1634,7 @@ c            write(*,*)'irtc: ',irtc
  700    isp2=isp
         kx=tftable(isp1,isp1+2,isp2,id-58,irtc)
         go to 6900
- 720    call tfrange(isp1,kx,irtc)
+ 720    kx=tfrange(isp1,irtc)
         go to 6900
  730    if(narg .eq. 1)then
           kx=tfcmplxf(k,id-62,int(ka1))

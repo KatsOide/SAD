@@ -447,10 +447,12 @@ c      call tfevals('Print['//vname//']',kx,irtc)
 
       subroutine tinip(np,x,px,y,py,z,g,dv,emx,emz,codin,dvfs,cmplot)
       implicit none
-      integer*4 np,i
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
-      real*8 xa(8),tgauss,dxi,dyi,dzi,emx,emz,codin(6),dvfs,rgetgl1
-      logical*4 cmplot
+      integer*4 ,intent(in):: np
+      integer*4 i
+      real*8 ,intent(out):: x(np),px(np),y(np),py(np),z(np),dv(np),g(np)
+      real*8 ,intent(in):: emx,emz,codin(6),dvfs
+      real*8 xa(8),tgauss,dxi,dyi,dzi,rgetgl1
+      logical*4 ,intent(in):: cmplot
       dxi=rgetgl1('TDXI')
       dyi=rgetgl1('TDYI')
       dzi=rgetgl1('TDZI')

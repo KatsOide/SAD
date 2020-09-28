@@ -100,6 +100,7 @@ c      endif
       use sad_main
       use mackw
       use strbuf
+      use macmath,only:m_pi
       implicit none
       type (sad_comp) , pointer ::cmp
       type (sad_dlist), pointer :: klv
@@ -174,7 +175,7 @@ c      endif
           endif
         endif
         if(kw .eq. 'ROTATE')then
-          coeff=coeff*90.d0/asin(1.d0)
+          coeff=coeff*180.d0/m_pi
           unit=' DEG'
         else
           unit=' '
