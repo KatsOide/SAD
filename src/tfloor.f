@@ -391,7 +391,7 @@
       real*8 pure function tfsign(x)
       implicit none
       real*8 ,intent(in)::x
-      tfsign=merge(1.d0,merge(0.d0,1.d0,x .eq. 0.d0),
+      tfsign=merge(1.d0,merge(0.d0,-1.d0,x .eq. 0.d0),
      $     x .gt. 0.d0)
       return
       end
