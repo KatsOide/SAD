@@ -197,6 +197,7 @@ PlotInterpolate[fin_,{y_,xmin_,xmax_},min0_,maxdiv_,maxb_]:=Module[
     Check[ReleaseVector[fin], ReleaseVector[fs[Vector[#]]]]]&;
   dx=(xmax-xmin)/min;
   yl=Re[f[xl=Range[0,min]*dx+xmin]];
+  If[~RealListQ[yl],Return[{}]];
   s=True;
   While[s && Length[xl]<maxdiv,
     yw=Max[yl]-Min[yl];

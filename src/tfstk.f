@@ -3159,6 +3159,23 @@ c        k=kfromr(x)
         return
         end function ktfcopyd
 
+        function dtfcopyd(k,d) result(kx)
+        implicit none
+        type (sad_descriptor) kx
+        type (sad_descriptor) , intent(in)::k
+        integer*8 ka
+        logical*4 , intent(inout)::d
+        if(ktfobjq(k))then
+          d=.true.
+          ka=iand(ktamask,k%k)
+          ilist(1,ka-1)=ilist(1,ka-1)+1
+        else
+          d=d .or. ktfnonrealq(k)
+        endif
+        kx=k
+        return
+        end function dtfcopyd
+
         integer*8 function ktfcopy(k)
         implicit none
         integer*8 , intent(in)::k

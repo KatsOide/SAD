@@ -75,6 +75,7 @@ getbuf.o: getbuf.f tfestk.o tffs.o tfstk.o toplvl.o
 gettok.o: gettok.f toplvl.o
 getvad.o: getvad.f tfstk.o toplvl.o
 getwrd.o: getwrd.f tffs.o toplvl.o
+hg.o: hg.f gamma.o tfloor.o tfstk.o
 hsrch.o: hsrch.f tfstk.o toplvl.o
 icsmrk.o: icsmrk.f
 ielm.o: ielm.f tffs.o tfstk.o
@@ -248,7 +249,7 @@ tcave.o: tcave.f tffs.o tfloor.o tfstk.o
 tceigen.o: tceigen.f
 tcftr.o: tcftr.f
 tchge.o: tchge.f tbende.o tffs.o tfloor.o tfstk.o
-tcod.o: tcod.f tffs.o tfstk.o
+tcod.o: tcod.f tffs.o tfloor.o tfstk.o
 tconv.o: tconv.f tffs.o tfloor.o
 tconvm.o: tconvm.f tffs.o tfloor.o
 tcoord.o: tcoord.f tffs.o tfloor.o
@@ -271,7 +272,7 @@ tedrawf.o: tedrawf.f
 teigen.o: teigen.f tfstk.o
 temap.o: temap.f tfefun.o tffs.o tfloor.o tfstk.o tftrack.o tgrot.o
 temat.o: temat.f tffs.o tfstk.o
-temit.o: temit.f teigen.o tffs.o tfstk.o
+temit.o: temit.f teigen.o tffs.o tfloor.o tfstk.o
 temitf.o: temitf.f tffs.o tfstk.o
 temits.o: temits.f tffs.o tfstk.o
 temp.o: temp.f tfstk.o toplvl.o
@@ -298,7 +299,7 @@ tfdset.o: tfdset.f itfpmat.o tfeeval.o tffuns.o tfstk.o
 tfearray.o: tfearray.f
 tfeeval.o: tfeeval.f tffuns.o tfstk.o toplvl.o
 tfeexpr.o: tfeexpr.f tfefun.o tfstk.o
-tfefun.o: tfefun.f gamma.o tfeeval.o tffuns.o tfloor.o tfshared.o tfstk.o toplvl.o
+tfefun.o: tfefun.f gamma.o hg.o tfeeval.o tffuns.o tfloor.o tfshared.o tfstk.o toplvl.o
 tfefun1.o: tfefun1.f tffs.o tfstk.o
 tfefun2.o: tfefun2.f tfstk.o
 tfefun3ep.o: tfefun3ep.f tfeeval.o tfefun.o tfstk.o

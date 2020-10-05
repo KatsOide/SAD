@@ -1138,8 +1138,9 @@ c      write(*,*)'with ',iopc1
       use eeval
       use readbuf
       use gammaf
+      use hg
       implicit none
-      type (sad_descriptor) kx,k1,k,kh,tfmodule,tfjoin2,
+      type (sad_descriptor) kx,k1,k,kh,tfmodule,
      $     tfsolvemember,tftable,tfefun1,tfeval1,tfeintf,
      $     tfeintf2,tfget,tftake,tfeval1to,tfmap,tfminmax,
      $     tfgetcommandline,tfreplacepart,tfpart,tfwrite,
@@ -1271,7 +1272,7 @@ c
      $        1290,1420,1430,1440,1450,1460,1470,1480,1490,1500,
      $        1510,1520,1530,1540,1540,1560,1570,1580,1590,1600,
 c              AtmQ Outr MatQ TrcP Defi READ Ints Cmpl Roun IErf
-c              FrDt ToDt ToIS ReaS OpnR ToEx StrM StrP ToUp Brek
+c              FrDt PolG ToIS ReaS OpnR ToEx StrM StrP ToUp Brek
 c              Cont Goto Four IFou Chek Whic MapF UnmF GetU GetG
 c              ToLo Unev Case DelC Vect BDPi Nams GbCl LgGm Fact
 c              With WhiC Ovrr AppT PreT FndR GamR GmRP Erf  Erfc
@@ -1292,7 +1293,7 @@ c
      $        2310,2320,2330,2340,2350,2360,2370,2380
 c              Frst Scnd Thrd ObjS PrdL GauC ClMO MAll Dupl GCLn
 c              Seek DigQ LetQ ReaQ NSmQ OpSh RdSh WrSh ShSz FBuQ
-c              GaCU GaCF Rest RRt1 Diff Gam0 **** XSin
+c              GaCU GaCF Rest RRt1 Diff Gam0 Hg21 XSin
      $       ),id
 c
         if(id .gt. 0)then
@@ -1841,7 +1842,12 @@ c        go to 6900
         go to 6900
  1210   irtc=itfmessage(999,'General::unregister',' ')
         go to 6900
- 1220   irtc=itfmessage(999,'General::unregister',' ')
+ 1220   if(narg .eq. 1)then
+          kx=tfeintf(polygamma,polygamma,k,.true.,
+     $         -dinfinity,dinfinity,irtc)
+        else
+          go to 6810
+        endif
         go to 6900
  1230   call tftoinputstring(isp1,kx,irtc)
         go to 6900
@@ -2137,7 +2143,8 @@ c        go to 6900
           go to 6810
         endif
         go to 6900
- 2370   go to 6900
+ 2370   kx=tfhg(isp1,irtc)
+        go to 6900
  2380   if(narg .eq. 1)then
           kx=tfeintf(xsin,tcxsin,k,.true.,-dinfinity,dinfinity,irtc)
         else

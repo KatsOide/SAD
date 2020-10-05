@@ -728,10 +728,8 @@ c
       implicit none
       integer*4 i,itfunaloc,map(32),ieval(32)
 c     Initialize map/ieval array
-      do i=1,32
-         map(i)=0
-         ieval(i)=0
-      enddo
+      map=0
+      ieval=0
       map(1)=1
       i=itfunaloc('Sin',1,1,map,ieval,2)
       i=itfunaloc('Cos',2,1,map,ieval,2)
@@ -891,9 +889,7 @@ c     Initialize map/ieval array
       i=itfunaloc('ComplexQ',88,1,map,ieval,2)
       ieval(2)=0
       i=itfunaloc('Tr',89,1,map,ieval,2)
-c      i=itfunaloc('SeedRandom',89,1,map,ieval,0)
       i=itfunaloc('SaveSharedMap',90,0,map,ieval,0)
-c      i=itfunaloc('GaussRandom',90,1,map,ieval,0)
       ieval(2)=1
       i=itfunaloc('Switch',nfunswitch,1,map,ieval,1)
       ieval(2)=0
@@ -933,7 +929,7 @@ c-----Noboru addition end -----
       i=itfunaloc('InverseErf',110,1,map,ieval,2)
 c      i=itfunaloc('SemCtrl',111,3,map,ieval,0)
 c      i=itfunaloc('FromDate',111,1,map,ieval,1)
-c      i=itfunaloc('ToDate',112,1,map,ieval,1)
+      i=itfunaloc('PolyGamma',112,1,map,ieval,1)
       i=itfunaloc('ToInputString',113,1,map,ieval,0)
       ieval(3)=0
       i=itfunaloc('ReadString',114,3,map,ieval,0)
@@ -947,9 +943,7 @@ c      i=itfunaloc('ToDate',112,1,map,ieval,1)
       i=itfunaloc('Goto',122,1,map,ieval,0)
       i=itfunaloc('Fourier',123,1,map,ieval,1)
       i=itfunaloc('InverseFourier',124,1,map,ieval,1)
-      ieval(1)=1
-      ieval(2)=1
-      ieval(3)=1
+      ieval(1:3)=1
       i=itfunaloc('Check',125,2,map,ieval,0)
       i=itfunaloc('Which',nfunwhich,2,map,ieval,0)
       ieval(1)=0
@@ -962,11 +956,7 @@ c      i=itfunaloc('GetGID',130,1,map,ieval,0)
       ieval(1)=1
       ieval(2)=1
       i=itfunaloc('Unevaluated$',nfununeval,1,map,ieval,1)      
-      ieval(1)=0
-      ieval(2)=0
-      ieval(3)=0
-      ieval(4)=0
-      ieval(5)=0
+      ieval(1:5)=0
       i=itfunaloc('Cases',nfuncases,2,map,ieval,0)      
       i=itfunaloc('DeleteCases',nfundelcases,2,map,ieval,0)
       ieval(1)=1
@@ -1001,13 +991,9 @@ c      i=itfunaloc('BidirectionalPipe',136,1,map,ieval,0)
       i=itfunaloc('Erf',149,1,map,ieval,2)
       i=itfunaloc('Erfc',150,1,map,ieval,2)
       map(1)=0
-      ieval(2)=1
-      ieval(3)=1
-      ieval(4)=1
+      ieval(2:4)=1
       i=itfunaloc('Fit$',151,4,map,ieval,0)
-      ieval(2)=0
-      ieval(3)=0
-      ieval(4)=0
+      ieval(2:4)=0
       i=itfunaloc('Symbol',152,1,map,ieval,1)
       ieval(1)=1
       i=itfunaloc('SymbolName',153,1,map,ieval,1)
@@ -1104,7 +1090,10 @@ c      i=itfunaloc('SetEnv',181,2,map,ieval,0)
       map(1)=1
       i=itfunaloc('Gamma0',226,1,map,ieval,2)
       map(1)=0
-c      i=itfunaloc('CloseShared',227,1,map,ieval,0)
+      map(4)=1
+      i=itfunaloc('Hypergeometric2F1',227,4,map,ieval,2)
+      map(4)=0
+      map(1)=1
       i=itfunaloc('XSin',228,1,map,ieval,2)
       return
       end

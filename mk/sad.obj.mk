@@ -19,7 +19,7 @@ OBJRC= 	tfefun1.o	tfsort.o	tfmodule.o	itfmaloc.o \
 	tfeexpr.o	tfsetlist.o	tfeeval.o	tfmap.o	tftable.o \
 	itfdepth.o	tfdset.o	tfsameq.o	itfpmat.o	tmatch.o \
 	gamma.o		tfbessel.o	 spkick.o	tsolqu.o	tsolque.o \
-	tfshared.o	tfinitn.o	tffsa.o photons.o
+	tfshared.o	tfinitn.o	tffsa.o photons.o hg.o
 
 OBJ0= 	italoc.o qcav.o	JNLPRM.o msolv1.o \
 	msortn.o tdplt.o bbstrhl.o bbtool.o \

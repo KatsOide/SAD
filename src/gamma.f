@@ -59,7 +59,7 @@ c     Including pi = m_pi
      $1124000727777607680000d0,
      $25852016738884976640000d0]
       if(x .lt. 0.d0)then
-        factorial=exp(-aloggamma1(-x))*pi*x/sin(pi*x)
+        factorial=exp(-aloggamma1(-x))*pi*x/sin(m_pi*x)
       else
         ix=int(x)
         if(ix .le. lt .and. x-ix .eq. 0.d0)then
@@ -105,6 +105,45 @@ c     Including pi = m_pi
       endif
       return
       end
+
+      real*8 pure function polygamma(x1) result(f1)
+      use tfstk, only:ktfenanq
+      use macmath
+      implicit none
+      real*8 ,intent(in):: x1
+      real*8 x
+      real*8 ,parameter ::gamma=5.d0,
+     $     c0=0.999999999999997524d0,
+     $      c1=76.1800917309326077d0,
+     $      c2=-86.5053204008552d0,
+     $      c3=24.01409906379226027d0,
+     $      c4=-1.231743354454618365d0,
+     $      c5=0.001216872118636531519d0,
+     $      c6=-0.00001408915744128554778d0,
+     $      c7=4.00491935010387864d-6,
+     $      c8=-4.93961492826482964d-7
+      x=x1-1.d0
+      if(x .lt. -1.d0)then
+        f1=-1.d0+1.d0/x+(.5d0-x)/(0.5d0+gamma-x)
+     $       +log(0.5d0+gamma-x)-(
+     $       c1/(1.d0-x)**2+c2/(2.d0-x)**2+c3/(3.d0-x)**2+
+     $       c4/(4.d0-x)**2+c5/(5.d0-x)**2+c6/(6.d0-x)**2+
+     $       c7/(7.d0-x)**2+c8/(8.d0-x)**2)/(
+     $       c0+c1/(1.d0-x)+c2/(2.d0-x)+c3/(3.d0-x)+
+     $       c4/(4.d0-x)+c5/(5.d0-x)+c6/(6.d0-x)+
+     $       c7/(7.d0-x)+c8/(8.d0-x))-m_pi/tan(m_pi*x)
+        f1=merge(1.d0/0.d0,f1,ktfenanq(f1))
+      else
+        f1=-1.d0+(.5d0+x)/(0.5d0+gamma+x)-(
+     $       c1/(1.d0+x)**2+c2/(2.d0+x)**2+c3/(3.d0+x)**2+
+     $       c4/(4.d0+x)**2+c5/(5.d0+x)**2+c6/(6.d0+x)**2+
+     $       c7/(7.d0+x)**2+c8/(8.d0+x)**2)/(
+     $       c0+c1/(1.d0+x)+c2/(2.d0+x)+c3/(3.d0+x)+
+     $       c4/(4.d0+x)+c5/(5.d0+x)+c6/(6.d0+x)+
+     $       c7/(7.d0+x)+c8/(8.d0+x))+log(0.5d0+gamma+x)
+      endif
+      return
+      end function
 
       complex*16 pure function cgamma(x)
       implicit none
