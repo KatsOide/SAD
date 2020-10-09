@@ -1290,10 +1290,12 @@ c              RepM MSca StdF Abrt ChkA RelH NaNQ MapT ScaT Last
 c
      $        2100,2100,2100,2140,2150,2160,2170,2180,2190,2200,
      $        2210,2220,2230,2240,2250,2260,2270,2280,2290,2300,
-     $        2310,2320,2330,2340,2350,2360,2370,2380
+     $        2310,2320,2330,2340,2350,2360,2370,2380,2390,2400,
+     $        2410,2420
 c              Frst Scnd Thrd ObjS PrdL GauC ClMO MAll Dupl GCLn
 c              Seek DigQ LetQ ReaQ NSmQ OpSh RdSh WrSh ShSz FBuQ
-c              GaCU GaCF Rest RRt1 Diff Gam0 Hg21 XSin
+c              GaCU GaCF Rest RRt1 Diff Gam0 XSIn Hg21 H21R HG11
+c              H11R Poch
      $       ),id
 c
         if(id .gt. 0)then
@@ -1388,7 +1390,7 @@ c            write(*,*)'irtc: ',irtc
           kx=tfeintf(datan,tcatan,k,
      $         .true.,-dinfinity,dinfinity,irtc)
         elseif(narg .eq. 2)then
-          dtastk(isp-1)=tfeintf2(datan2,tcatan2,k,k1,.true.,irtc)
+          kx=tfeintf2(datan2,tcatan2,dtastk(isp-1),k,.true.,irtc)
         else
           go to 6812
         endif
@@ -1900,7 +1902,7 @@ c        go to 6900
  1450   call tfvectorize(isp1,kx,irtc)
         go to 6900
  1460   irtc=itfmessage(999,'General::unregister',' ')
-        goto 6900
+        go to 6900
  1470   call tfnames(isp1,kx,irtc)
         go to 6900
  1480   call tfgarbagecollect(isp1,kx,irtc)
@@ -1930,13 +1932,13 @@ c        go to 6900
  1560   call tffindroot(isp1,kx,irtc)
         go to 6900
  1570   if(narg .eq. 2)then
-          k=tfeintf2(gammaq,tfdummy,dtastk(isp-1),k1,.false.,irtc)
+          kx=tfeintf2(gammaq,tfdummy,dtastk(isp-1),k,.false.,irtc)
         else
           go to 6812
         endif
         go to 6900
  1580   if(narg .eq. 2)then
-          k=tfeintf2(gammap,tfdummy,dtastk(isp-1),k1,.false.,irtc)
+          kx=tfeintf2(gammap,tfdummy,dtastk(isp-1),k,.false.,irtc)
         else
           go to 6812
         endif
@@ -2143,12 +2145,43 @@ c        go to 6900
           go to 6810
         endif
         go to 6900
- 2370   kx=tfhg(isp1,irtc)
-        go to 6900
- 2380   if(narg .eq. 1)then
+ 2370   if(narg .eq. 1)then
           kx=tfeintf(xsin,tcxsin,k,.true.,-dinfinity,dinfinity,irtc)
         else
           go to 6810
+        endif
+        go to 6900
+ 2380   if(narg .eq. 4)then
+          kx=tfhg(isp1,irtc)
+        else
+          go to 6810
+        endif
+        go to 6900
+ 2390   if(narg .eq. 4)then
+          isp=isp+1
+          kx=tfhg(isp1,irtc)
+        else
+          go to 6810
+        endif
+        go to 6900
+ 2400   if(narg .eq. 3)then
+          kx=tfhg(isp1,irtc)
+        else
+          go to 6810
+        endif
+        go to 6900
+ 2410   if(narg .eq. 3)then
+          dtastk(isp+1)=dxnullo
+          isp=isp+2
+          kx=tfhg(isp1,irtc)
+        else
+          go to 6810
+        endif
+        go to 6900
+ 2420   if(narg .eq. 2)then
+          kx=tfeintf2(pochh,tfdummy,dtastk(isp-1),k,.false.,irtc)
+        else
+          go to 6812
         endif
         go to 6900
  8000   continue

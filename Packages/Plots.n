@@ -44,7 +44,7 @@ With[{CP$def={Scale->{Linear,Linear},
 
   ColumnPlot[ll_,opt___]:=Module[
     {n=Length[ll],d=Dimensions[ll],nc,ns,
-      coff,cm,cw,x,y,cx,g,ref,of,pc,ms,pcx,msx,pr,or,sc,gopt,ld,
+      coff,cm,cw,x,y,cx,g,ref,of,pc,ms,pcx,msx,pr,or,sc,gopt,ld,dr,
       cla,cl,ft,ts,tis,tx,t,tag,txs,pn,
       op=Override[opt,CP$def]
       },

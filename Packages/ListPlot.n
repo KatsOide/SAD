@@ -154,7 +154,7 @@ PR$$[{x_,y_}]:={{Automatic,Automatic},{x,y}};
 PR$$[Default]=Default;
 PR$$[x_]:={{x,x},{x,x}};
 
-With[{def={MaxBend->0.1,PlotPoints->32,PlotDivision->1024,
+With[{def={MaxBend->0.01,PlotPoints->32,PlotDivision->1024,
   PlotJoined->True,StepRatio->1,Plot->False,GridLines->{Automatic,Automatic}}},
 
   Plot[f_,{x_,xmin_,xmax_},opt___]:=Block[{x},Module[

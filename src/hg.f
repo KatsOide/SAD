@@ -1,9 +1,12 @@
       module hg
+      real*8 ,parameter ::sconf=2.d0**55
 
       contains
       real*8 recursive function hgrr(a,b,c,x) result(f)
+      use gammaf
       implicit none
       real*8 ,intent(in):: a,b,c,x
+      real*8 ,parameter ::bth=2.d0**32
       if(b .lt. a)then
         f=hgrr(b,a,c,x)
         return
@@ -13,9 +16,13 @@
       elseif(x .le. -1.d0)then
         f=hgrr1(a,b,c,x)
       elseif(x .lt. 0.d0)then
-        f=(1.d0-x)**(-a)*hgrr(a,c-b,c,x/(x-1.d0))
+        if(b .lt. bth .or. x .le. -0.5d0)then
+          f=(1.d0-x)**(-a)*hgrr(a,c-b,c,x/(x-1.d0))
+        else
+          f=hgrr3(a,b,c,x)
+        endif
       elseif(x .eq. 0.d0)then
-        f=1.d0/gamma(c)
+        f=1.d0*gammai(c)
       elseif(x .le. 0.5d0)then
         f=hgrr3(a,b,c,x)
       elseif(x .le. 1.d0)then
@@ -34,7 +41,7 @@
       integer*4 i
       logical*4 ,intent(in):: reg
       if(reg)then
-        u=1.d0/gamma(c)
+        u=1.d0*gammai(c)
       else
         u=1.d0
       endif
@@ -65,8 +72,8 @@
       if(ba .ne. m)then
         sab=sin(m_pi*(ba))
         if(sab .ne. 0.d0)then
-          f1=(x1**a*hgrr(a,c-b,1.d0-ba,x1)/gamma(b)/gamma(c-a)
-     $         -x1**b*hgrr(b,c-a,ba+1.d0,x1)/gamma(a)/gamma(c-b)
+          f1=(x1**a*hgrr(a,c-b,1.d0-ba,x1)*gammai(b)*gammai(c-a)
+     $         -x1**b*hgrr(b,c-a,ba+1.d0,x1)*gammai(a)*gammai(c-b)
      $         )/sab*m_pi
           return
         endif
@@ -78,12 +85,12 @@
           u=-u*(a+(i-1))*(c-b+(i-1))/i/(m-i)*x1
           f=f+u
         enddo
-        f=f/gamma(b)/gamma(c-a)
+        f=f*gammai(b)*gammai(c-a)
       else
         f=0.d0
       endif
       lx=-log(x1)
-      u=(-x1)**m/gamma(m+1.d0)/gamma(a)/gamma(c-b)
+      u=(-x1)**m*gammai(m+1.d0)*gammai(a)*gammai(c-b)
       f=f+u*(lx+polygamma(1.d0)+polygamma(m+1.d0)
      $     -polygamma(b)-polygamma(c-a))
       k=1.d0
@@ -134,29 +141,49 @@
       end function
 
       real*8 function hgrr3(a,b,c,x) result(f1)
+      use gammaf
       use macmath
       implicit none
       real*8 ,intent(in):: a,b,c,x
-      real*8 f,s,s1,u
+      real*8 f,s,s1,u,x1
+      x1=x*b
       if(anint(c) .eq. c .and. c .le. 0.d0)then
         s=-c+1.d0
-        u=gamma(a+s)/gamma(a)*gamma(b+s)/gamma(b)
-     $       /gamma(s+1.d0)*x**s
+        if(b .ge. sconf)then
+          u=pochh(a,s)*gammai(s+1.d0)*x1**s
+        else
+          u=pochh(a,s)*pochh(b,s)*gammai(s+1.d0)*x**s
+        endif
+c        write(*,'(a,1p8g15.7)')'hgrr3 ',a,b,c,x,s,u,pochh(a,s),
+c     $       gammai(s+1.d0)
       else
-        u=1.d0/gamma(c)
+        u=1.d0*gammai(c)
         s=0.d0
       endif
       f=u
-      do
-        s1=s+1.d0
-        u=u*(a+s)*(b+s)/(c+s)/s1*x
-        f1=f+u
-        if(f .eq. f1)then
-          return
-        endif
-        f=f1
-        s=s1
-      enddo
+      if(b .ge. sconf)then
+        do
+          s1=s+1.d0
+          u=u*(a+s)/(c+s)/s1*x1
+          f1=f+u
+          if(f .eq. f1)then
+            return
+          endif
+          f=f1
+          s=s1
+        enddo
+      else
+        do
+          s1=s+1.d0
+          u=u*(a+s)*(b+s)/(c+s)/s1*x
+          f1=f+u
+          if(f .eq. f1)then
+            return
+          endif
+          f=f1
+          s=s1
+        enddo
+      endif
       end function
 
       real*8 recursive function hgrr4(a,b,c,x) result(f1)
@@ -173,9 +200,9 @@
         sabc=sin(m_pi*(cab))
         if(sabc .ne. 0.d0)then
           f1=(hgrr(a,b,1.d0-cab,x1)
-     $         /gamma(c-a)/gamma(c-b)
+     $         *gammai(c-a)*gammai(c-b)
      $         -hgrr(c-a,c-b,cab+1.d0,x1)*x1**cab
-     $         /gamma(a)/gamma(b))/sabc*m_pi
+     $         *gammai(a)*gammai(b))/sabc*m_pi
           return
         endif
       endif
@@ -190,12 +217,12 @@
           u=-u*(a+(i-1))*(b+(i-1))/i/(m-i)*x1
           f=f+u
         enddo
-        f=f/gamma(a+m)/gamma(b+m)
+        f=f*gammai(a+m)*gammai(b+m)
       else
         f=0.d0
       endif
       lx=log(x1)
-      u=-(-x1)**m/gamma(a)/gamma(b)/gamma(m+1.d0)
+      u=-(-x1)**m*gammai(a)*gammai(b)*gammai(m+1.d0)
       f=f+u*(lx-polygamma(1.d0)-polygamma(m+1.d0)
      $     +polygamma(a+m)+polygamma(b+m))
       k=0.d0
@@ -228,26 +255,27 @@
         sabc=sin(m_pi*(cab))
         if(sabc .ne. 0.d0)then
           cf1=(hgrr(a,a-c+1.d0,1.d0-cab,x1)
-     $         /gamma(c-a)/gamma(c-b)*x**(-a)
+     $         *gammai(c-a)*gammai(c-b)*x**(-a)
      $         -hgrr(c-a,1.d0-a,cab+1.d0,x1)
      $         *dcmplx(1.d0-x,0.d0)**(cab)*x**(a-c)
-     $         /gamma(a)/gamma(b))/sabc*m_pi
+     $         *gammai(a)*gammai(b))/sabc*m_pi
           return
         endif
       endif
       if(m .ne. 0.d0)then
-        u=gamma(m)/gamma(b+m)
+        u=pochh(b+m,-b)
+c        u=gamma(m)*gammai(b+m)
         f=u
         do i=1,int(m)-1
           u=u*(a+(i-1))*(b+m-(i-1))/i/(m-i)*x1
           f=f+u
         enddo
-        f=f/gamma(a+m)
+        f=f*gammai(a+m)
       else
         f=0.d0
       endif
       clx=log(dcmplx(-x1,0.d0))
-      u=-(x1)**m/gamma(m+1.d0)/gamma(b)/gamma(a)
+      u=-(x1)**m*gammai(m+1.d0)*gammai(b)*gammai(a)
       cf=f+u*(clx-polygamma(1.d0)-polygamma(m+1.d0)
      $     +polygamma(a+m)+polygamma(b))
       k=0.d0
@@ -256,7 +284,7 @@
         u=-u*(a+m+k)/k1/(k1+m)*x1
         if(b .gt. k1 .or. b-k1 .ne. anint(b-k1))then
           cf1=cf+u*(clx-polygamma(k1+1.d0)-polygamma(m+k1+1.d0)
-     $         +polygamma(a+m+k1)+polygamma(b-k1))/gamma(b-k1)
+     $         +polygamma(a+m+k1)+polygamma(b-k1))*gammai(b-k1)
         else
           cf1=cf+u*(-1.d0)**(k-b)*gamma(k1-b+1.d0)
         endif
@@ -287,31 +315,31 @@
           x1=1.d0/x
           cx=dcmplx(-x,0.d0)
           cf1=(cx**(-a)*hgrr(a,a-c+1.d0,1.d0-ba,x1)
-     $         /gamma(b)/gamma(c-a)-
+     $         *gammai(b)*gammai(c-a)-
      $         cx**(-b)*hgrr(b,b-c+1.d0,ba+1.d0,x1)
-     $         /gamma(a)/gamma(c-b))/sab*m_pi
+     $         *gammai(a)*gammai(c-b))/sab*m_pi
           return
         endif
       endif
       if(m .ne. 0.d0)then
-        u=gamma(m)/gamma(c-a)
+        u=gamma(m)*gammai(c-a)
         f=u
         do i=1,int(m)-1
           u=u*(a+(i-1))*(c-a-(i-1))/i/(m-i)*x1
           f=f+u
         enddo
-        f=f/gamma(b)
+        f=f*gammai(b)
       else
         f=0.d0
       endif
       clx=log(dcmplx(-x,0.d0))
-      u=x1**(m)/gamma(a)/gamma(m+1.d0)
+      u=x1**(m)*gammai(a)*gammai(m+1.d0)
       d=c-b
       if(anint(d) .eq. d .and. d .le. 0.d0)then
         cf=f+u*(-1.d0)**(d)*gamma(1.d0-d)
       else
         cf=f+u*(clx+polygamma(1.d0)+polygamma(m+1.d0)
-     $       -polygamma(b)-polygamma(d))/gamma(d)
+     $       -polygamma(b)-polygamma(d))*gammai(d)
       endif
       k=0.d0
       do
@@ -322,7 +350,7 @@
           cf1=cf+u*(-1.d0)**d*gamma(1.d0-d)
         else
           cf1=cf+u*(clx+polygamma(k1+1.d0)+polygamma(m+k1+1.d0)
-     $         -polygamma(b+k1)-polygamma(d))/gamma(d)
+     $         -polygamma(b+k1)-polygamma(d))*gammai(d)
         endif
         if(cf1 .eq. cf)then
           cf1=cf1*(-x)**(-a)
@@ -341,7 +369,17 @@
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       real*8 a,b,c
-      if(isp .ne. isp1+4)then
+      logical*4 reg,conf
+      reg=.false.
+      conf=.false.
+      if(isp .eq. isp1+5)then
+        reg=.true.
+        if(ktastk(isp1+4) .eq. dxnullo%k)then
+          conf=.true.
+        endif
+      elseif(isp .eq. isp1+3)then
+        conf=.true.
+      elseif(isp .ne. isp1+4)then
         go to 9000
       endif
       if(ktfnonrealq(dtastk(isp1+1),a))then
@@ -350,17 +388,21 @@
       if(ktfnonrealq(dtastk(isp1+2),b))then
         go to 9000
       endif
-      if(ktfnonrealq(dtastk(isp1+3),c))then
+      if(.not. conf .and. ktfnonrealq(dtastk(isp1+3),c))then
         go to 9000
       endif
-      kx=kxhg(a,b,c,dtastk(isp),irtc)
+      if(conf)then
+        kx=kxhg(a,sconf,b,dtastk(isp1+3),reg,.true.,irtc)
+      else
+        kx=kxhg(a,b,c,dtastk(isp1+4),reg,.false.,irtc)
+      endif
       return
  9000 irtc=-1
       kx=dxnullo
       return
       end function
 
-      recursive function kxhg(a,b,c,k,irtc) result(kx)
+      recursive function kxhg(a,b,c,k,reg,conf,irtc) result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) kx
@@ -371,16 +413,27 @@
       real*8 ,intent(in):: a,b,c
       real*8 x
       integer*4 i
+      logical*4 ,intent(in):: reg,conf
       logical*4 d
       if(ktfrealq(k,x))then
-        kx=kxhgr(a,b,c,x)
+        if(conf)then
+          kx=kxhgr(a,b,c,x/b,reg)
+        else
+          kx=kxhgr(a,b,c,x,reg)
+        endif
         irtc=0
       elseif(tfreallistq(k,klv))then
         kx=kxadaloc(-1,klv%nl,kxl)
         d=.false.
-        do i=1,klv%nl
-          kxl%dbody(i)=dtfcopyd(kxhgr(a,b,c,klv%rbody(i)),d)
-        enddo
+        if(conf)then
+          do i=1,klv%nl
+            kxl%dbody(i)=dtfcopyd(kxhgr(a,b,c,klv%rbody(i)/b,reg),d)
+          enddo
+        else
+          do i=1,klv%nl
+            kxl%dbody(i)=dtfcopyd(kxhgr(a,b,c,klv%rbody(i),reg),d)
+          enddo
+        endif
         if(.not. d)then
           kxl%attr=ior(kxl%attr,lnonreallist)-lnonreallist
         endif
@@ -389,7 +442,7 @@
         kx=kxadaloc(-1,kl%nl,kxl)
         d=.false.
         do i=1,kl%nl
-          kxl%dbody(i)=dtfcopyd(kxhg(a,b,c,kl%dbody(i),irtc),d)
+          kxl%dbody(i)=dtfcopyd(kxhg(a,b,c,kl%dbody(i),reg,conf,irtc),d)
           if(irtc .ne. 0)then
             kxl%dbody(i:kl%nl)=dxnullo
             exit
@@ -404,29 +457,34 @@
       return
       end
 
-      function kxhgr(a,b,c,x) result(kx)
+      function kxhgr(a,b,c,x,reg) result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) kx
       real*8 ,intent(in):: a,b,c,x
       complex*16 cx
-      if(x .eq. 0.d0)then
-        kx%x(1)=1.d0
-      elseif(c .eq. 0.d0)then
+      logical*4 ,intent(in):: reg
+      real*8 gc
+      if(reg)then
+        gc=1.d0
+      else
+        gc=gamma(c)
+      endif
+      if(c .eq. 0.d0 .and. .not. reg)then
         kx%x(1)=1.d0/0.d0
       elseif(a .le. 0.d0 .and. anint(a) .eq. a)then
-        kx%x(1)=hgrp(a,b,c,x,.false.)
+        kx%x(1)=hgrp(a,b,c,x,reg)
       elseif(x .le. 1.d0)then
-        kx%x(1)=hgrr(a,b,c,x)*gamma(c)
+        kx%x(1)=hgrr(a,b,c,x)*gc
       elseif(x .le. 2.d0)then
-        cx=chgrr5(a,b,c,x)*gamma(c)
+        cx=chgrr5(a,b,c,x)*gc
         if(imag(cx) .ne. 0.d0)then
           kx=kxcalocv(-1,dble(cx),imag(cx))
         else
           kx%x(1)=dble(cx)
         endif
       else
-        cx=chgrr6(a,b,c,x)*gamma(c)
+        cx=chgrr6(a,b,c,x)*gc
         if(imag(cx) .ne. 0.d0)then
           kx=kxcalocv(-1,dble(cx),imag(cx))
         else

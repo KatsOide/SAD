@@ -75,7 +75,7 @@ getbuf.o: getbuf.f tfestk.o tffs.o tfstk.o toplvl.o
 gettok.o: gettok.f toplvl.o
 getvad.o: getvad.f tfstk.o toplvl.o
 getwrd.o: getwrd.f tffs.o toplvl.o
-hg.o: hg.f gamma.o tfloor.o tfstk.o
+hg.o: hg.f gamma.o tfstk.o
 hsrch.o: hsrch.f tfstk.o toplvl.o
 icsmrk.o: icsmrk.f
 ielm.o: ielm.f tffs.o tfstk.o

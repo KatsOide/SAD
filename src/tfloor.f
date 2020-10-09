@@ -1160,11 +1160,13 @@ c      use tmacro
       use cfunc
 c      use tmacro
       implicit none
-      type (sad_descriptor) kx,k,k1,ki,k1i
+      type (sad_descriptor) kx,ki,k1i
+      type (sad_descriptor),intent(in):: k,k1
       type (sad_dlist), pointer ::klx,kl,kl1
       type (sad_rlist), pointer ::klr
-      integer*4 ir,i,m,m1,isp0
-      logical*4 cmpl
+      integer*4 ,intent(out):: ir
+      integer*4 i,m,m1,isp0
+      logical*4 ,intent(in):: cmpl
       external fun,cfun
       real*8 fun,v,v1
       complex*16 cv,cv1,cfun

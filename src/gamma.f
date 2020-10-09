@@ -61,7 +61,7 @@ c     Including pi = m_pi
       if(x .lt. 0.d0)then
         factorial=exp(-aloggamma1(-x))*pi*x/sin(m_pi*x)
       else
-        ix=int(x)
+        ix=nint(x)
         if(ix .le. lt .and. x-ix .eq. 0.d0)then
           factorial=fac(ix)
         else
@@ -666,5 +666,53 @@ c      endif
       inverseerf=y
       return
       end
+
+      real*8 pure function gammai(x)
+      implicit none
+      real*8 ,intent(in):: x
+      if(anint(x) .eq. x .and. x .le. 0.d0)then
+        gammai=0.d0
+      else
+        gammai=1.d0/gamma(x)
+      endif
+      return
+      end function
+
+      real*8 pure function pochh(a,n)
+      implicit none
+      real*8 ,intent(in):: a,n
+      integer*4 i
+      real*8 ,parameter ::xth=100.d0
+      if(n .eq. 0.d0)then
+        pochh=1.d0
+      elseif(n .eq. 1.d0)then
+        pochh=a
+      elseif(a .eq. 0.d0)then
+        if(n .gt. 0.d0)then
+          pochh=gamma(n)
+        else
+          pochh=gammai(1.d0-n)
+        endif
+      elseif((a .gt. 0.d0 .and. n .gt. 0.d0) .or.
+     $       (a .lt. 0.d0 .and. n .lt. 0.d0)
+     $       .or. anint(a) .ne. a .or. anint(n) .ne. n)then
+        if(a+n .lt. xth .and. a .lt. xth)then
+          pochh=gamma(a+n)*gammai(a)
+        else
+          pochh=exp(aloggamma1(a+n)-aloggamma1(a)-log(1+n/a))
+        endif
+      elseif(n .gt. 0.d0)then
+        pochh=1.d0
+        do i=0,nint(n)-1
+          pochh=pochh*(a+i)
+        enddo
+      else
+        pochh=1.d0
+        do i=1,-nint(n)
+          pochh=pochh/(a-i)
+        enddo
+      endif
+      return
+      end function
 
       end module

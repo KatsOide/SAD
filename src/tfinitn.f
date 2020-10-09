@@ -1089,12 +1089,17 @@ c      i=itfunaloc('SetEnv',181,2,map,ieval,0)
       i=itfunaloc('Difference',225,1,map,ieval,1)
       map(1)=1
       i=itfunaloc('Gamma0',226,1,map,ieval,2)
+      i=itfunaloc('XSin',227,1,map,ieval,2)
       map(1)=0
       map(4)=1
-      i=itfunaloc('Hypergeometric2F1',227,4,map,ieval,2)
+      i=itfunaloc('Hypergeometric2F1',228,4,map,ieval,2)
+      i=itfunaloc('Hypergeometric2F1Regularized',229,4,map,ieval,2)
+      map(3)=1
       map(4)=0
-      map(1)=1
-      i=itfunaloc('XSin',228,1,map,ieval,2)
+      i=itfunaloc('Hypergeometric1F1',230,3,map,ieval,2)
+      i=itfunaloc('Hypergeometric1F1Regularized',231,3,map,ieval,2)
+      map(3)=0
+      i=itfunaloc('Pochhammer',232,2,map,ieval,2)
       return
       end
 c
