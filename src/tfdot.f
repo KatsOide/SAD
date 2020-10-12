@@ -589,8 +589,7 @@ c          enddo
         return
       endif
       cx=tcdet(c,n,n)
-      kx=merge(dfromr(dble(cx)),kxcalocv(-1,dble(cx),imag(cx)),
-     $     imag(cx) .eq. 0.d0)
+      kx=kxcalocv(-1,dble(cx),imag(cx))
       deallocate(c)
       return
       end

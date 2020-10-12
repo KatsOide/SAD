@@ -818,8 +818,7 @@ c              enddo
       endif
       irtc=0
       return
- 10   kx=merge(kxcalocv(-1,dble(cx),imag(cx)),dfromr(dble(cx)),
-     $     imag(cx) .ne. 0.d0)
+ 10   kx=kxcalocv(-1,dble(cx),imag(cx))
       irtc=0
       return
       end
@@ -1052,22 +1051,14 @@ c      use tmacro
       if(ktfrealq(k,v))then
         if(v .lt. rmin .or. v .gt. rmax)then
           cv=cfun(dcmplx(v,0.d0))
-          if(imag(cv) .ne. 0.d0)then
-            kx=kxcalocv(-1,dble(cv),imag(cv))
-          else
-            kx=dfromr(dble(cv))
-          endif
+          kx=kxcalocv(-1,dble(cv),imag(cv))
         else
           kx=dfromr(fun(v))
         endif
       elseif(tfnumberq(k,cv))then
         if(cmpl)then
           cv=cfun(cv)
-          if(imag(cv) .ne. 0.d0)then
-            kx=kxcalocv(-1,dble(cv),imag(cv))
-          else
-            kx=dfromr(dble(cv))
-          endif
+          kx=kxcalocv(-1,dble(cv),imag(cv))
           return
         else
           icrtc=0
@@ -1084,11 +1075,7 @@ c      use tmacro
                 isp=isp+1
                 if(kl%rbody(i) .lt. rmin .or. kl%rbody(i) .gt. rmax)then
                   cv=cfun(dcmplx(kl%rbody(i),0.d0))
-                  if(imag(cv) .eq. 0.d0)then
-                    rtastk(isp)=dble(cv)
-                  else
-                    dtastk(isp)=kxcalocv(-1,dble(cv),imag(cv))
-                  endif
+                  dtastk(isp)=kxcalocv(-1,dble(cv),imag(cv))
                 else
                   rtastk(isp)=fun(kl%rbody(i))
                 endif
@@ -1110,22 +1097,14 @@ c      use tmacro
               if(ktfrealq(kl%dbody(i)))then
                 if(kl%rbody(i) .lt. rmin .or. kl%rbody(i) .gt. rmax)then
                   cv=cfun(dcmplx(kl%rbody(i),0.d0))
-                  if(imag(cv) .eq. 0.d0)then
-                    rtastk(isp)=dble(cv)
-                  else
-                    dtastk(isp)=kxcalocv(-1,dble(cv),imag(cv))
-                  endif
+                  dtastk(isp)=kxcalocv(-1,dble(cv),imag(cv))
                 else
                   rtastk(isp)=fun(kl%rbody(i))
                 endif
               elseif(tfnumberq(kl%dbody(i),cv))then
                 if(cmpl)then
                   cv=cfun(cv)
-                  if(imag(cv) .ne. 0.d0)then
-                    dtastk(isp)=kxcalocv(-1,dble(cv),imag(cv))
-                  else
-                    rtastk(isp)=dble(cv)
-                  endif
+                  dtastk(isp)=kxcalocv(-1,dble(cv),imag(cv))
                 else
                   rtastk(isp)=dble(cfun(cv))
                 endif
@@ -1177,8 +1156,7 @@ c      use tmacro
       elseif(tfnumberq(k,cv) .and. tfnumberq(k1,cv1))then
         if(cmpl)then
           cv=cfun(cv,cv1)
-          kx=merge(kxcalocv(-1,dble(cv),imag(cv)),dfromr(dble(cv)),
-     $         imag(cv) .ne. 0.d0)
+          kx=kxcalocv(-1,dble(cv),imag(cv))
           return
         else
           icrtc=0

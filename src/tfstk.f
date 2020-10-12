@@ -3412,7 +3412,11 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         implicit none
         integer*4 , intent(in)::mode
         real*8 , intent(in)::x,y
-        kxcalocv%k=ktflist+ktcalocv(mode,x,y)
+        if(y .ne. 0.d0)then
+          kxcalocv%k=ktflist+ktcalocv(mode,x,y)
+        else
+          kxcalocv%x(1)=x
+        endif
         return
         end function
 

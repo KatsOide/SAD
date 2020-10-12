@@ -748,21 +748,13 @@ c        write(*,*)'with: ',iopc
       if(ktfrealq(k1,v1))then
         if(ktfrealq(k2,v2))then
           if(iopc .eq. mtfcomplex)then
-            if(k2%k .ne. 0)then
-              kx=kxcalocv(-1,v1,v2)
-            else
-              kx=k1
-            endif
+            kx=kxcalocv(-1,v1,v2)
           elseif(iopc .eq. mtfpower)then
             if(k1%k .lt. 0)then
               ki2=int(v2)
               if(ki2 .ne. v2)then 
                 c1=dcmplx(v1,0.d0)**v2
-                if(imag(c1) .eq. 0.d0)then
-                  kx=sad_descr(dble(c1))
-                else
-                  kx=kxcalocv(-1,dble(c1),imag(c1))
-                endif
+                kx=kxcalocv(-1,dble(c1),imag(c1))
               else
                 kx=dfromr(v1**ki2)
               endif
@@ -774,11 +766,7 @@ c        write(*,*)'with: ',iopc
               ki1=int(v1)
               if(ki1 .ne. v1)then 
                 c1=dcmplx(v2,0.d0)**v1
-                if(imag(c1) .eq. 0.d0)then
-                  kx=sad_descr(dble(c1))
-                else
-                  kx=kxcalocv(-1,dble(c1),imag(c1))
-                endif
+                kx=kxcalocv(-1,dble(c1),imag(c1))
               else
                 kx=sad_descr(v2**ki1)
               endif
@@ -821,9 +809,7 @@ c        write(*,*)'with: ',iopc
         irtc=-1
       else
         cx=tfcmplxmathv(c1,c2,iopc1)
-        kx=merge(dfromr(dble(cx)),
-     $       kxcalocv(-1,dble(cx),imag(cx)),
-     $       imag(cx) .eq. 0.d0)
+        kx=kxcalocv(-1,dble(cx),imag(cx))
         irtc=0
       endif
       return
@@ -1291,11 +1277,11 @@ c
      $        2100,2100,2100,2140,2150,2160,2170,2180,2190,2200,
      $        2210,2220,2230,2240,2250,2260,2270,2280,2290,2300,
      $        2310,2320,2330,2340,2350,2360,2370,2380,2390,2400,
-     $        2410,2420
+     $        2410,2420,2430,2440
 c              Frst Scnd Thrd ObjS PrdL GauC ClMO MAll Dupl GCLn
 c              Seek DigQ LetQ ReaQ NSmQ OpSh RdSh WrSh ShSz FBuQ
-c              GaCU GaCF Rest RRt1 Diff Gam0 XSIn Hg21 H21R HG11
-c              H11R Poch
+c              GaCU GaCF Rest RRt1 Diff Gam0 XSIn Poch Hg21 H21R 
+c              HG11 H11R HG01 H01R
      $       ),id
 c
         if(id .gt. 0)then
@@ -1326,49 +1312,49 @@ c            write(*,*)'irtc: ',irtc
           kx=tfeintf(dsin,cdsin,k,
      $         .true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  120    if(narg .eq. 1)then
           kx=tfeintf(dcos,cdcos,k,
      $         .true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  130    if(narg .eq. 1)then
           kx=tfeintf(dtan,tctan,k,
      $         .true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  140    if(narg .eq. 1)then
           kx=tfeintf(dsinh,tcsinh,k,
      $         .true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  150    if(narg .eq. 1)then
           kx=tfeintf(dcosh,tccosh,k,
      $         .true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  160    if(narg .eq. 1)then
           kx=tfeintf(dtanh,tctanh,k,
      $         .true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  170    if(narg .eq. 1)then
           kx=tfeintf(dexp,cdexp,k,
      $         .true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  180    if(narg .eq. 1)then
@@ -1401,21 +1387,21 @@ c            write(*,*)'irtc: ',irtc
           kx=tfeintf(dsqrt,cdsqrt,k,
      $         .true.,0.d0,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  220    if(narg .eq. 1)then
           kx=tfeintf(tfloor,tcfloor,k,
      $         .true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  230    if(narg .eq. 1)then
           kx=tfeintf(tceiling,tcceiling,k,
      $         .true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  240    kx=tfminmax(isp1,id-13,irtc)
@@ -1430,23 +1416,23 @@ c            write(*,*)'irtc: ',irtc
             irtc=itfmessage(9,'General::wrongtype','"Character-string"')
           endif
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  280    if(narg .eq. 1)then
           kx=tfeintf(tfarg,tfcarg,k,.false.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  290    if(narg .eq. 1)then
           kx=tfeintf(tfsign,tfcsign,k,.true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  300    if(narg .ne. 1)then
-          go to 6810
+          go to 6811
         endif
         kx%x(1)=merge(dble(kl%nl),0.d0,ktflistq(k,kl))
         go to 8000
@@ -1457,33 +1443,33 @@ c            write(*,*)'irtc: ',irtc
  330    if(narg .eq. 1)then
           kx=tfeintf(dasin,tcasin,k,.true.,-1.d0,1.d0,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  340    if(narg .eq. 1)then
           kx=tfeintf(dacos,tcacos,k,.true.,-1.d0,1.d0,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  350    if(narg .eq. 1)then
           kx=tfeintf(tasinh,tcasinh,k,.true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  360    if(narg .eq. 1)then
           kx=tfeintf(tacosh,tcacosh,k,.true.,1.d0,dinfinity,
      $         irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  370    if(narg .eq. 1)then
           kx=tfeintf(tatanh,tcatanh,k,.true.,-1.d0,1.d0,
      $         irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  380    isp2=isp
@@ -1493,10 +1479,10 @@ c            write(*,*)'irtc: ',irtc
         go to 6900
  410    if(narg .eq. 2)then
           if(ktfnonrealq(dtastk(isp),f))then
-            go to 6810
+            go to 6812
           endif
         elseif(narg .ne. 1)then
-          go to 6810
+          go to 6811
         else
           f=0.d0
         endif
@@ -1522,7 +1508,7 @@ c            write(*,*)'irtc: ',irtc
           kx=tfeintf(dabs,ccdabs,k,
      $         .false.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  430    call tfreverse(isp1,kx,irtc)
@@ -1583,7 +1569,7 @@ c            write(*,*)'irtc: ',irtc
         endif
         go to 6900
  620    if(narg .ne. 1)then
-          go to 6810
+          go to 6811
         else
           call tftranspose(k,kx,irtc)
         endif
@@ -1591,7 +1577,7 @@ c            write(*,*)'irtc: ',irtc
  630    call tfsingularvalues(isp1,kx,irtc)
         go to 6900
  640    if(narg .ne. 1)then
-          go to 6810
+          go to 6811
         else
           call tfdiagonalmatrix(k,kx,irtc)
         endif
@@ -1599,19 +1585,19 @@ c            write(*,*)'irtc: ',irtc
  650    call tflinearsolve(isp1,kx,irtc)
         go to 6900
  660    if(narg .ne. 1)then
-          go to 6810
+          go to 6811
         else
           call tfidentitymatrix(k,kx,irtc)
         endif
         go to 6900
  670    if(narg .ne. 1)then
-          go to 6810
+          go to 6811
         else
           call tfeigensystem(k,kx,irtc)
         endif
         go to 6900
  680    if(narg .ne. 1)then
-          go to 6810
+          go to 6811
         elseif(.not. ktfstringq(k))then
           irtc=itfmessage(9,'General::wrongtype','"Character-string"')
         else
@@ -1644,7 +1630,7 @@ c            write(*,*)'irtc: ',irtc
           irtc=0
           return
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  760    call tftostring(isp1,kx,id .eq. 153,irtc)
@@ -1653,7 +1639,7 @@ c            write(*,*)'irtc: ',irtc
           kx=dfromr(dble(itfdepth(k)))
           go to 8000
         else
-          go to 6810
+          go to 6811
         endif
  780    if(narg .eq. 2)then
           call tflevel(ktastk(isp1+1),k,kx,irtc)
@@ -1664,19 +1650,19 @@ c            write(*,*)'irtc: ',irtc
  790    kx=tfwrite(isp1,irtc)
         go to 6900
  800    if(narg .ne. 1)then
-          go to 6810
+          go to 6811
         else
           kx=tfget(k,irtc)
         endif
         go to 6900
  810    if(narg .ne. 1)then
-          go to 6810
+          go to 6811
         else
           vx=itfopenwrite(k,irtc)
         endif
         go to 829
  820    if(narg .ne. 1)then
-          go to 6810
+          go to 6811
         else
           vx=itfopenappend(k,irtc)
         endif
@@ -1692,7 +1678,7 @@ c            write(*,*)'irtc: ',irtc
         kx=dfromr(vx)
         go to 8000
  830    if(narg .ne. 1)then
-          go to 6810
+          go to 6811
         else
           call tfclosef(k,irtc)
         endif
@@ -1707,7 +1693,7 @@ c            write(*,*)'irtc: ',irtc
           call tfthrow(irtcret,k,irtc)
           return
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  880    call tfhead(k,kx)
@@ -1725,7 +1711,7 @@ c            write(*,*)'irtc: ',irtc
           call tfthrow(irtcthrow,k,irtc)
           return
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  920    call tfcatch(isp1,kx,irtc)
@@ -1768,21 +1754,21 @@ c        go to 6900
           irtc=0
           return
         else
-          go to 6810
+          go to 6811
         endif
  1080   if(narg .eq. 1)then
           call cputime(vx,irtc)
           kx=dfromr(vx*1.d-6)
           go to 8000
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  1090   if(narg .eq. 1)then
           kx%k=merge(ktftrue,ktffalse,tfnumberq(k))
           go to 8000
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  1100   call tfvectorqf(isp1,kx,irtc)
@@ -1793,7 +1779,7 @@ c        go to 6900
      $         ktftrue,ktflistq(k,kl))
           go to 8000
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  1120   call tfouter(isp1,kx,irtc)
@@ -1814,13 +1800,13 @@ c        go to 6900
           kx=tfeevalref(k,irtc)
           ltrace=ltr0
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  1150   call tfdefinition(isp1,kx,irtc)
         go to 6900
  1160   if(narg .ne. 1)then
-          go to 6810
+          go to 6811
         else
           call nfread(k,kx,irtc)
         endif
@@ -1832,14 +1818,14 @@ c        go to 6900
  1190   if(narg .eq. 1)then
           kx=tfeintf(tround,tcround,k,.true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  1200   if(narg .eq. 1)then
           kx=tfeintf(inverseerf,inverseerf,k,.true.,
      $         -dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  1210   irtc=itfmessage(999,'General::unregister',' ')
@@ -1848,7 +1834,7 @@ c        go to 6900
           kx=tfeintf(polygamma,polygamma,k,.true.,
      $         -dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  1230   call tftoinputstring(isp1,kx,irtc)
@@ -1872,14 +1858,14 @@ c        go to 6900
           call tfthrow(irtcgoto,k,irtc)
           return
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  1330   continue
  1340   if(narg .eq. 1)then
           call tffourier(id .eq. 124,k,kx,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  1350   kx=tfcheck(isp1,irtc)
@@ -1911,14 +1897,14 @@ c        go to 6900
           kx=tfeintf(aloggamma1,cloggamma1,k,
      $         .true.,0.d0,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  1500   if(narg .eq. 1)then
           kx=tfeintf(factorial,cfactorial,k,
      $         .true.,-1.d0+5.56d-17,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  1510   call tfwith(isp1,kx,.true.,irtc)
@@ -1946,13 +1932,13 @@ c        go to 6900
  1590   if(narg .eq. 1)then
           kx=tfeintf(ferf,cerf,k,.true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  1600   if(narg .eq. 1)then
           kx=tfeintf(ferfc,cerfc,k,.true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  1610   call tffit(isp1,kx,irtc)
@@ -1997,14 +1983,14 @@ c        go to 6900
           kx=tfeintf(tfevenq,tfcevenq,k,
      $         .true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  1850   if(narg .eq. 1)then
           kx=tfeintf(tfoddq,tfcoddq,k,
      $         .true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  1860   irtc=itfmessage(999,'General::unregister',' ')
@@ -2061,7 +2047,7 @@ c        go to 6900
           kx=tfeintf(productlog,cproductlog,k,
      $         .true.,-exp(-1.d0),dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  2160   kx=tfgaussiancoulomb(isp1,irtc)
@@ -2078,7 +2064,7 @@ c        go to 6900
           irtc=0
           return
         else
-          go to 6810
+          go to 6811
         endif
  2200   kx=tfgetcommandline(isp1,irtc)
         go to 6900
@@ -2142,44 +2128,58 @@ c        go to 6900
  2360   if(narg .eq. 1)then
           kx=tfeintf(gamma0,tfdummy,k,.false.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
  2370   if(narg .eq. 1)then
           kx=tfeintf(xsin,tcxsin,k,.true.,-dinfinity,dinfinity,irtc)
         else
-          go to 6810
+          go to 6811
         endif
         go to 6900
- 2380   if(narg .eq. 4)then
-          kx=tfhg(isp1,irtc)
+ 2380   if(narg .eq. 2)then
+          kx=tfeintf2(pochh,tfdummy,dtastk(isp-1),k,.false.,irtc)
         else
-          go to 6810
+          go to 6812
         endif
         go to 6900
  2390   if(narg .eq. 4)then
+          kx=tfhg(isp1,irtc)
+        else
+          go to 6814
+        endif
+        go to 6900
+ 2400   if(narg .eq. 4)then
           isp=isp+1
           kx=tfhg(isp1,irtc)
         else
-          go to 6810
-        endif
-        go to 6900
- 2400   if(narg .eq. 3)then
-          kx=tfhg(isp1,irtc)
-        else
-          go to 6810
+          go to 6814
         endif
         go to 6900
  2410   if(narg .eq. 3)then
+          kx=tfhg(isp1,irtc)
+        else
+          go to 6813
+        endif
+        go to 6900
+ 2420   if(narg .eq. 3)then
           dtastk(isp+1)=dxnullo
           isp=isp+2
           kx=tfhg(isp1,irtc)
         else
-          go to 6810
+          go to 6813
         endif
         go to 6900
- 2420   if(narg .eq. 2)then
-          kx=tfeintf2(pochh,tfdummy,dtastk(isp-1),k,.false.,irtc)
+ 2430   if(narg .eq. 2)then
+          kx=tfhg(isp1,irtc)
+        else
+          go to 6812
+        endif
+        go to 6900
+ 2440   if(narg .eq. 2)then
+          dtastk(isp+1)=dxnullo
+          isp=isp+3
+          kx=tfhg(isp1,irtc)
         else
           go to 6812
         endif
@@ -2342,7 +2342,7 @@ c        go to 6001
      $           ktastk(isp1+1) .eq. ktfoper+mtfnull)then
             kx=tfeval1to(dtastk(isp),dfromr(v1),mtfaddto,.false.,irtc)
           else
-            go to 6810
+            go to 6811
           endif
           go to 6900
         case (mtfsetdelayed)
@@ -2365,7 +2365,7 @@ c        go to 6001
           go to 6900
         case (mtfunset)
           if(narg .ne. 1)then
-            go to 6810
+            go to 6811
           endif
           isp=isp1+2
           ktastk(isp)=ktfref
@@ -2511,9 +2511,11 @@ c          write(*,*)'tfefun-mtfflag'
       go to 6900
  6800 irtc=0
       go to 7000
- 6810 irtc=itfmessage(9,'General::narg','"1"')
+ 6811 irtc=itfmessage(9,'General::narg','"1"')
       go to 7000
  6812 irtc=itfmessage(9,'General::narg','"2"')
+      go to 7000
+ 6813 irtc=itfmessage(9,'General::narg','"3"')
       go to 7000
  6814 irtc=itfmessage(9,'General::narg','"4"')
       go to 7000

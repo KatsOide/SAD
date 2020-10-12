@@ -140,16 +140,82 @@
       enddo
       end function
 
+      real*8 recursive function confhgrr0(c,x) result(f1)
+      use gammaf
+      use macmath
+      implicit none
+      real*8 ,intent(in):: c,x
+      real*8 f,s,s1,u,sqrx,rrbesselj
+      if(x .ge. 0.d0)then
+        if(anint(c) .eq. c .and. c .le. 0.d0)then
+          s=-c+1.d0
+          u=gammai(s+1.d0)*x**s
+        else
+          u=gammai(c)
+          s=0.d0
+        endif
+        f=u
+        do
+          s1=s+1.d0
+          u=u/(c+s)/s1*x
+          f1=f+u
+          if(f .eq. f1)then
+            return
+          endif
+          f=f1
+          s=s1
+        enddo
+      else
+        sqrx=sqrt(-x)
+        f1=rrbesselj(c-1.d0,2.d0*sqrx)*sqrx**(1.d0-c)
+      endif
+      return
+      end function
+
+      real*8 recursive function confhgrr1(a,c,x) result(f1)
+      use gammaf
+      use macmath
+      implicit none
+      real*8 ,intent(in):: a,c,x
+      real*8 f,s,s1,u
+      if(x .ge. 0.d0)then
+        if(anint(c) .eq. c .and. c .le. 0.d0)then
+          s=-c+1.d0
+          u=pochh(a,s)*gammai(s+1.d0)*x**s
+        else
+          u=gammai(c)
+          s=0.d0
+        endif
+        f=u
+        do
+          s1=s+1.d0
+          u=u*(a+s)/(c+s)/s1*x
+          f1=f+u
+          if(f .eq. f1)then
+            return
+          endif
+          f=f1
+          s=s1
+        enddo
+      else
+        f1=exp(x)*confhgrr1(c-a,c,-x)
+      endif
+      return
+      end function
+
       real*8 function hgrr3(a,b,c,x) result(f1)
       use gammaf
       use macmath
       implicit none
       real*8 ,intent(in):: a,b,c,x
       real*8 f,s,s1,u,x1
+      real*8 ,parameter ::xthb=-20.d0
       x1=x*b
       if(anint(c) .eq. c .and. c .le. 0.d0)then
         s=-c+1.d0
-        if(b .ge. sconf)then
+        if(a .ge. sconf)then
+          u=gammai(s+1.d0)*x1**s
+        elseif(b .ge. sconf)then
           u=pochh(a,s)*gammai(s+1.d0)*x1**s
         else
           u=pochh(a,s)*pochh(b,s)*gammai(s+1.d0)*x**s
@@ -161,17 +227,8 @@ c     $       gammai(s+1.d0)
         s=0.d0
       endif
       f=u
-      if(b .ge. sconf)then
-        do
-          s1=s+1.d0
-          u=u*(a+s)/(c+s)/s1*x1
-          f1=f+u
-          if(f .eq. f1)then
-            return
-          endif
-          f=f1
-          s=s1
-        enddo
+      if(a .ge. sconf)then
+      elseif(b .ge. sconf)then
       else
         do
           s1=s+1.d0
@@ -369,40 +426,41 @@ c        u=gamma(m)*gammai(b+m)
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       real*8 a,b,c
-      logical*4 reg,conf
+      integer*4 iconf
+      logical*4 reg
       reg=.false.
-      conf=.false.
+      iconf=0
       if(isp .eq. isp1+5)then
         reg=.true.
-        if(ktastk(isp1+4) .eq. dxnullo%k)then
-          conf=.true.
+        if(ktastk(isp1+3) .eq. dxnullo%k)then
+          iconf=2
+        elseif(ktastk(isp1+4) .eq. dxnullo%k)then
+          iconf=1
         endif
+      elseif(isp .eq. isp1+2)then
+        iconf=2
       elseif(isp .eq. isp1+3)then
-        conf=.true.
+        iconf=1
       elseif(isp .ne. isp1+4)then
         go to 9000
       endif
       if(ktfnonrealq(dtastk(isp1+1),a))then
         go to 9000
       endif
-      if(ktfnonrealq(dtastk(isp1+2),b))then
+      if(iconf .lt. 2  .and. ktfnonrealq(dtastk(isp1+2),b))then
         go to 9000
       endif
-      if(.not. conf .and. ktfnonrealq(dtastk(isp1+3),c))then
+      if(ktfnonrealq(dtastk(isp1+3-iconf),c))then
         go to 9000
       endif
-      if(conf)then
-        kx=kxhg(a,sconf,b,dtastk(isp1+3),reg,.true.,irtc)
-      else
-        kx=kxhg(a,b,c,dtastk(isp1+4),reg,.false.,irtc)
-      endif
+      kx=kxhg(a,b,c,dtastk(isp1+4-iconf),reg,iconf,irtc)
       return
  9000 irtc=-1
       kx=dxnullo
       return
       end function
 
-      recursive function kxhg(a,b,c,k,reg,conf,irtc) result(kx)
+      recursive function kxhg(a,b,c,k,reg,iconf,irtc) result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) kx
@@ -411,29 +469,20 @@ c        u=gamma(m)*gammai(b+m)
       type (sad_rlist),pointer::klv
       integer*4 ,intent(out):: irtc
       real*8 ,intent(in):: a,b,c
+      integer*4 ,intent(in):: iconf
       real*8 x
       integer*4 i
-      logical*4 ,intent(in):: reg,conf
+      logical*4 ,intent(in):: reg
       logical*4 d
       if(ktfrealq(k,x))then
-        if(conf)then
-          kx=kxhgr(a,b,c,x/b,reg)
-        else
-          kx=kxhgr(a,b,c,x,reg)
-        endif
+        kx=kxhgr(a,b,c,x,iconf,reg)
         irtc=0
       elseif(tfreallistq(k,klv))then
         kx=kxadaloc(-1,klv%nl,kxl)
         d=.false.
-        if(conf)then
-          do i=1,klv%nl
-            kxl%dbody(i)=dtfcopyd(kxhgr(a,b,c,klv%rbody(i)/b,reg),d)
-          enddo
-        else
-          do i=1,klv%nl
-            kxl%dbody(i)=dtfcopyd(kxhgr(a,b,c,klv%rbody(i),reg),d)
-          enddo
-        endif
+        do i=1,klv%nl
+          kxl%dbody(i)=dtfcopyd(kxhgr(a,b,c,klv%rbody(i),iconf,reg),d)
+        enddo
         if(.not. d)then
           kxl%attr=ior(kxl%attr,lnonreallist)-lnonreallist
         endif
@@ -442,7 +491,8 @@ c        u=gamma(m)*gammai(b+m)
         kx=kxadaloc(-1,kl%nl,kxl)
         d=.false.
         do i=1,kl%nl
-          kxl%dbody(i)=dtfcopyd(kxhg(a,b,c,kl%dbody(i),reg,conf,irtc),d)
+          kxl%dbody(i)=dtfcopyd(kxhg(a,b,c,kl%dbody(i),reg,iconf,irtc),
+     $         d)
           if(irtc .ne. 0)then
             kxl%dbody(i:kl%nl)=dxnullo
             exit
@@ -457,11 +507,12 @@ c        u=gamma(m)*gammai(b+m)
       return
       end
 
-      function kxhgr(a,b,c,x,reg) result(kx)
+      recursive function kxhgr(a,b,c,x,iconf,reg) result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) kx
       real*8 ,intent(in):: a,b,c,x
+      integer*4 ,intent(in):: iconf
       complex*16 cx
       logical*4 ,intent(in):: reg
       real*8 gc
@@ -470,27 +521,35 @@ c        u=gamma(m)*gammai(b+m)
       else
         gc=gamma(c)
       endif
-      if(c .eq. 0.d0 .and. .not. reg)then
-        kx%x(1)=1.d0/0.d0
-      elseif(a .le. 0.d0 .and. anint(a) .eq. a)then
-        kx%x(1)=hgrp(a,b,c,x,reg)
-      elseif(x .le. 1.d0)then
-        kx%x(1)=hgrr(a,b,c,x)*gc
-      elseif(x .le. 2.d0)then
-        cx=chgrr5(a,b,c,x)*gc
-        if(imag(cx) .ne. 0.d0)then
+      select case (iconf)
+      case (0)
+        if(b .lt. a)then
+          kx=kxhgr(b,a,c,x,iconf,reg)
+        elseif(c .eq. 0.d0 .and. .not. reg)then
+          kx%x(1)=1.d0/0.d0
+        elseif(c .eq. b)then
+          if(x .le. 1.d0)then
+            kx%x(1)=(1.d0-x)**(-a)
+          else
+            cx=dcmplx(1.d0-x,0.d0)**(-a)
+            kx=kxcalocv(-1,dble(cx),imag(cx))
+          endif
+        elseif(a .le. 0.d0 .and. anint(a) .eq. a)then
+          kx%x(1)=hgrp(a,b,c,x,reg)
+        elseif(x .le. 1.d0)then
+          kx%x(1)=hgrr(a,b,c,x)*gc
+        elseif(x .le. 2.d0)then
+          cx=chgrr5(a,b,c,x)*gc
           kx=kxcalocv(-1,dble(cx),imag(cx))
         else
-          kx%x(1)=dble(cx)
-        endif
-      else
-        cx=chgrr6(a,b,c,x)*gc
-        if(imag(cx) .ne. 0.d0)then
+          cx=chgrr6(a,b,c,x)*gc
           kx=kxcalocv(-1,dble(cx),imag(cx))
-        else
-          kx%x(1)=dble(cx)
         endif
-      endif
+      case (1)
+        kx%x(1)=confhgrr1(a,c,x)*gc
+      case (2)
+        kx%x(1)=confhgrr0(c,x)*gc
+      end select
       return
       end function
 
