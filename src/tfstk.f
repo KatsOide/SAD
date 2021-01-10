@@ -3408,14 +3408,34 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end function
 
-        type (sad_descriptor) function kxcalocv(mode,x,y)
+        type (sad_descriptor) function kxcalocv(mode,x,y,d)
         implicit none
         integer*4 , intent(in)::mode
         real*8 , intent(in)::x,y
+        logical*4 ,optional,intent(inout):: d
         if(y .ne. 0.d0)then
           kxcalocv%k=ktflist+ktcalocv(mode,x,y)
+          if(present(d))then
+            d=.true.
+          endif
         else
           kxcalocv%x(1)=x
+        endif
+        return
+        end function
+
+        type (sad_descriptor) function kxcalocc(mode,c,d)
+        implicit none
+        integer*4 , intent(in)::mode
+        complex*16,intent(in):: c
+        logical*4 ,optional,intent(inout):: d
+        if(imag(c) .ne. 0.d0)then
+          kxcalocc%k=ktflist+ktcalocv(mode,dble(c),imag(c))
+          if(present(d))then
+            d=.true.
+          endif
+        else
+          kxcalocc%x(1)=dble(c)
         endif
         return
         end function

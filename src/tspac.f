@@ -99,7 +99,7 @@ c     $     dcmplx(vstk(ivstkoffset+isp1+1),
 c     $     vstk(ivstkoffset+isp1+2)),f,1,tr)
       f=bbkick1(rtastk(isp1+1),rtastk(isp1+2),
      $     rtastk(isp-1),rtastk(isp))
-      kx=kxcalocv(-1,dble(f),imag(f))
+      kx=kxcalocc(-1,f)
       irtc=0
       return
  9000 irtc=itfmessage(9,'General::wrongtype','"x, y, sigx, sigy"')

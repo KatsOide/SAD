@@ -122,7 +122,7 @@ Steer[str_,options___]:=
     ];
     istr=Union[istr];
     nstr=Length[istr];
-    If[istr=={},
+    If[istr==={},
       {{},{},{},{}}
     , 
 !      mast=Master[];
@@ -228,7 +228,7 @@ str=Steer/.op;
 If[~SameQ[str,{}],
   u=Table[
       hv=Select[Range[Length[str[1]]],str[3,#]==i&];
-      If[hv=={}
+      If[hv==={}
       , {0,0,0,0}
       , m=RmsReport[ LINE["K0",str[1][hv]] ][4];
         ReplacePart[RmsReport[ LINE["K0",str[1][hv]] ],str[1,hv[m]],4]
@@ -358,7 +358,7 @@ StringStatSte[vx_]:=
 
 Spaces[w_]:=Nest[StringJoin[#," "]&,"",Max[0,w]];
 
-NameSuffixed[a_]:=If[StringPosition[a,"."]=={},a//".1",a];
+NameSuffixed[a_]:=If[StringPosition[a,"."]==={},a//".1",a];
 
 HorizontalQ[ele_]:=Module[{angle,qp1=Pi/4,qp3=3*Pi/4},
   angle=If[VectorQ[ele],Abs[MapThread[Mod,{LINE["rotate",ele],Pi}]],Abs[Mod[LINE["rotate",ele],Pi]]];

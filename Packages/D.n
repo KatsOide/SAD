@@ -248,6 +248,10 @@ NIntegrate::conv="Poor Convergence `1`";
 
 SetAttributes[{Integrate,NIntegrate},HoldAll];
 
+LegendreP[n_,z_]:=Hypergeometric2F1Regularized[-n,n+1,1,(1-z)/2];
+LegendreP[n_, m_, z_] := (((1 + z)^(m/2)/(1 - z)^(m/2)) Hypergeometric2F1Regularized[-n, n + 1, 1 - m, (1 - z)/2]);
+LegendreP[n_, m_, 2, z_] := (((1 + z)^(m/2)/(1 - z)^(m/2)) Hypergeometric2F1Regularized[-n, n + 1, 1 - m, (1 - z)/2]);
+(*
 LegendreP[0, _] = 1;
 LegendreP[1, x_] := x;
 LegendreP[n_?(# < -1/2 &), x_] := LegendreP[-1 - n, x];
@@ -279,6 +283,7 @@ LegendreP[n_, m_?(IntegerQ[#*2] &), x_] := ((-(n + m - 1)LegendreP[n - 1, m - 1,
     Sqrt[1 - x^2]); 
 LegendreP[n_?IntegerQ, m_, x_] := (
   LegendreP[n - 2, m, x] - (2n - 1)Sqrt[1 - x^2]LegendreP[n - 1, m - 1, x]);
+*)
 
 BesselJZero[0,0]=NaN;
 BesselJZero[n_,0]=0;
@@ -286,8 +291,39 @@ BesselJZero[n_,k_]:=Module[{x=(k+n/2-0.25)*Pi,y},
   BesselJZero[n,k]=
     y/.FindRoot$[BesselJ[n,y]==0,{y,x-(2n+1)(2n-1)/x*(0.125+(28n^2-31)/384/x^2)}]];
 
+InverseErfc[z_]:=InverseErf[1-z];
+
+Binomial[n_,k_]:=Pochhammer[k + 1, n - k]/Gamma[n - k + 1];
+Multinomial[n__]:=Gamma[Plus[n]+1]/(Times@@(Gamma/@({n}+1)));
+
+HarmonicNumber[z_]:=EulerGamma+PolyGamma[z+1];
+HarmonicNumber[z_,r_]:=Zeta[r]-HurwitzZeta[r,z+1];
+
+Factorial2[n_]:=((2/Pi)^(Sin[n Pi/2]^2/2)2^(n/2)Gamma[1+n/2]);
+
+ExpIntegralE[n_,z_]:=(z^(n-1)Exp[-z]HypergeometricU[n,n,z]);
+ExpIntegralEi[z_]:=(-Exp[-z] HypergeometricU[1, 1, -z] + (1/2) (-Log[1/z] + Log[z]) - Log[-z]);
+LogIntegral[z_] := With[{l=Log[z]},l HypergeometricPFQ[{1, 1}, {2, 2}, l] + (1/2) (Log[l] - Log[1/l]) + EulerGamma];
+SinIntegral[z_] := (z HypergeometricPFQ[{1/2}, {3/2, 3/2}, -(z^2/4)]);
+CosIntegral[z_] := ((-(z^2/4)) HypergeometricPFQ[{1, 1}, {2, 2, 3/2}, -(z^2/4)] + Log[z] + EulerGamma);
+SinhIntegral[z_] := (z HypergeometricPFQ[{1/2}, {3/2, 3/2}, z^2/4]);
+CoshIntegral[z_] := ((z^2/4) HypergeometricPFQ[{1, 1}, {2, 2, 3/2}, z^2/4] + Log[z] + EulerGamma);
+
+WhittakerM[n_,m_,z_]:=((z^(m + 1/2) Hypergeometric1F1[m - n + 1/2, 2 m + 1, z])/ Exp[z/2]);
+WhittakerW[n_,m_,z_]:=((z^(m + 1/2)   HypergeometricU[m - n + 1/2, 2 m + 1, z])/ Exp[z/2]);
+
+HermiteH[n_, z_] := With[{z2=z^2},
+  (2^n/(Sqrt[z2] Gamma[(1 - n)/2])) (Sqrt[Pi] (Sqrt[z2] - z) Hypergeometric1F1[-(n/2), 1/2, z2] 
+    + z Gamma[(1 - n)/2] HypergeometricU[-(n/2), 1/2, z2])];
+
+FresnelS[z_]:=( ((Pi z^3)/6) HypergeometricPFQ[{3/4}, {3/2, 7/4}, -((Pi^2 z^4)/16)] );
+FresnelC[z_]:=(  z HypergeometricPFQ[{1/4}, {1/2, 5/4}, -((Pi^2 z^4)/16)] );
+
 Protect[ReduceExpression,D$,XSCheckDerivative,LegendreP,
   Integrate,Integrate$a,Spline,SplineData,SplineIntegrate,
-  SplineIntegrate1,SplineIntegrate2,SplineIntegrateAll,NIntegrate
+  SplineIntegrate1,SplineIntegrate2,SplineIntegrateAll,NIntegrate,
+  Binomial,Multinomial,
+  InverseErfc,HarmonicNumber,Factorial2,ExpIntegralE,ExpIntegarlEi,
+  LogIntegral,SinIntegral,CosIntegral,SinhIntegral,CoshIntegral,
+  WhittakerM,WhittakerW,HermiteH,FresnelS,FresnelC
   ];
-

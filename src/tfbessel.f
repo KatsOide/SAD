@@ -1,159 +1,25 @@
-      subroutine tfbessel(isp1,kx,mode,irtc)
-      use tfstk
-      implicit none
-      type (sad_descriptor) kx
-      integer*4 ,intent(in):: isp1,mode
-      integer*4 ,intent(out):: irtc
-      integer*4 itfmessage
-      complex*16 cbesselj,cbessely,cbesseli,cbesselk
-      external cbesselj,cbessely,cbesseli,cbesselk
-      if(isp .ne. isp1+2)then
-        irtc=itfmessage(9,'General::narg','"2"')
-        return
-      endif
-      if(mode .eq. 0)then
-        call tfbesself(dtastk(isp1+1),dtastk(isp),kx,cbesselj,irtc)
-      elseif(mode .eq. 1)then
-        call tfbesself(dtastk(isp1+1),dtastk(isp),kx,cbessely,irtc)
-      elseif(mode .eq. 2)then
-        call tfbesself(dtastk(isp1+1),dtastk(isp),kx,cbesseli,irtc)
-      elseif(mode .eq. 3)then
-        call tfbesself(dtastk(isp1+1),dtastk(isp),kx,cbesselk,irtc)
-      endif
-      return
-      end
+      module bes
 
-      recursive subroutine tfbesself(k1,k2,kx,cfun,irtc)
-      use tfstk
-      implicit none
-      type (sad_descriptor) ,intent(in):: k1,k2
-      type (sad_descriptor) ,intent(out):: kx
-      type (sad_dlist), pointer :: kl1,kl2
-      integer*4 ,intent(out):: irtc
-      integer*4 itfmessage,n1,n2,isp0,isp2,i
-      real*8 x1,x2
-      complex*16 cx,c1,c2
-      complex*16 ,external:: cfun
-      if(tfcomplexnumlistqk(k1%k,kl1))then
-        n1=kl1%nl
-        if(tfcomplexnumlistqk(k2%k,kl2))then
-          if(n1 .ne. kl2%nl)then
-            irtc=itfmessage(9,'General::equalleng','"#1 and #2"')
-            return
-          endif
-          isp0=isp
-          call tfgetllstkall(kl1)
-          call tfgetllstkall(kl2)
-          isp2=isp
-          do i=1,n1
-            isp=isp+1
-            call tfbesself(dtastk(isp0+i),dtastk(isp0+n1+i),
-     $           dtastk(isp),cfun,irtc)
-            if(irtc .ne. 0)then
-              isp=isp0
-              return
-            endif
-          enddo
-          kx=kxmakelist(isp2)
-          isp=isp0
-        elseif(tfnumberq(k2))then
-          isp0=isp
-          call tfgetllstkall(kl1)
-          isp2=isp
-          do i=1,n1
-            isp=isp+1
-            call tfbesself(dtastk(isp0+i),k2,dtastk(isp),cfun,irtc)
-            if(irtc .ne. 0)then
-              isp=isp0
-              return
-            endif
-          enddo
-          kx=kxmakelist(isp2)
-          isp=isp0
-        else
-          irtc=-1
-          return
-        endif
-      elseif(tfcomplexnumlistqk(k2%k,kl2))then
-        n2=kl2%nl
-        isp0=isp
-        call tfgetllstkall(kl2)
-        isp2=isp
-        do i=1,n2
-          isp=isp+1
-          call tfbesself(k1,dtastk(isp0+i),dtastk(isp),cfun,irtc)
-          if(irtc .ne. 0)then
-            isp=isp0
-            return
-          endif
-        enddo
-        kx=kxmakelist(isp2)
-        isp=isp0
-      elseif(ktfrealq(k1,x1))then
-        if(ktfrealq(k2,x2))then
-          cx=cfun(dcmplx(x1,0.d0),dcmplx(x2,0.d0))
-        elseif(tfcomplexq(k2,c2))then
-          cx=cfun(dcmplx(x1,0.d0),c2)
-        else
-          irtc=-1
-          return
-        endif
-        go to 10
-      elseif(tfcomplexq(k1,c1))then
-        if(ktfrealq(k2,x2))then
-          cx=cfun(c1,dcmplx(x2,0.d0))
-        elseif(tfcomplexq(k2,c2))then
-          cx=cfun(c1,c2)
-        else
-          irtc=-1
-          return
-        endif
-        go to 10
-      else
-        irtc=-1
-        return
-      endif
-      irtc=0
-      return
- 10   kx=kxcalocv(-1,dble(cx),imag(cx))
-      irtc=0
-      return
-      end
-
-      complex*16 function cbesseli(cn,z)
+      contains
+      complex*16 pure function cbesseli(cn,z)
       implicit none
       complex*16 ,intent(in):: cn,z
-      complex*16 ,external:: cbesselj
-      if(imag(z) .eq. 0.d0 .and.
-     $     imag(cn) .eq. 0.d0)then
-        cbesseli=dble((0.d0,-1.d0)**cn*
-     $       cbesselj(cn,dcmplx(0.d0,dble(z))))
-      else
-        cbesseli=(0.d0,-1.d0)**cn*
-     $       cbesselj(cn,dcmplx(-imag(z),dble(z)))
-      endif
+      cbesseli=(0.d0,1.d0)**cn*cbesselj(cn,dcmplx(imag(z),-dble(z)))
       return
       end
 
-      complex*16 function cbesselk(cn,z)
+      complex*16 pure function cbesselk(cn,z)
       use macmath
       implicit none
 c     Including euler(Euler-Mascheroni constant)/pi symbol
-      complex*16 cn,z,cbessely,cbesselj
-      if(imag(z) .eq. 0.d0 .and.
-     $     imag(cn) .eq. 0.d0)then
-        cbesselk=m_pi_2*dble((0.d0,1.d0)**(cn+1.d0)*(
-     $       cbesselj(cn,dcmplx(0.d0,dble(z)))+
-     $       (0.d0,1.d0)*cbessely(cn,dcmplx(0.d0,dble(z)))))
-      else
-        cbesselk=m_pi_2*(0.d0,1.d0)**(cn+1.d0)*(
-     $       cbesselj(cn,dcmplx(-imag(z),dble(z)))+
-     $       (0.d0,1.d0)*cbessely(cn,dcmplx(-imag(z),dble(z))))
-      endif
+      complex*16 ,intent(in):: cn,z
+      cbesselk=-m_pi_2*(0.d0,1.d0)**(1.d0-cn)*(
+     $     cbesselj(cn,dcmplx(imag(z),-dble(z)))-
+     $     (0.d0,1.d0)*cbessely(cn,dcmplx(imag(z),-dble(z))))
       return
       end
 
-      recursive complex*16 function cbessely(cn,z)
+      recursive complex*16 pure function cbessely(cn,z)
      $     result(cb)
       use macmath
       use mathfun
@@ -162,30 +28,32 @@ c     Including euler(Euler-Mascheroni constant)/pi symbol
 c     Including m_pi_2 symbol
       integer*4 i,itmax,m
       parameter (itmax=26)
-      complex*16 cn,z,cbesselj,cj,cg1,cg2,cgamm1,cgamm2,ca3,
+      complex*16 ,intent(in):: cn,z
+      complex*16 cg1,cg2,cgamm1,cgamm2,ca3,
      $     cnf,cp,cq,cr,cs0,cs1,zp,cx,cxp,csigma,
-     $     ca1,ca2,cf,cg,cf1,cf2,clogz,zhi,cnfpi,cs
-      real*8 az,xcn,an0,anf,acnf,ak,rrbessely,rrbesselj,by,c,s,bj
+     $     ca1,ca2,cf,cg,cf1,cf2,clogz,zhi,cnfpi,cs,cb2(2)
+      real*8 az,xcn,an0,anf,acnf,ak,by,c,s,bj
       if(imag(cn) .eq. 0.d0 .and. imag(z) .eq. 0.d0)then
         if(dble(z) .ge. 0.d0)then
           cb=dcmplx(rrbessely(dble(cn),dble(z)),0.d0)
         else
           by=rrbessely(dble(cn),-dble(z))
           bj=rrbesselj(dble(cn),-dble(z))
-          c=cos(pi*dble(cn))
-          s=sin(pi*dble(cn))
+          c=cos(m_pi*dble(cn))
+          s=sin(m_pi*dble(cn))
           cb=dcmplx(c*by,2.d0*c*bj-s*by)
         endif
         return
       endif
       az=abs(z)
       if(az .gt. 12.2d0)then
-        call cbesasym(cn,z,cj,cb)
+        cb2=cbesasym(cn,z)
+        cb=cb2(2)
       else
         xcn=dble(cn)
         if(xcn .lt. 0.d0)then
-          cb=-sin(pi*cn)*cbesselj(-cn,z)+
-     $         cos(pi*cn)*cbessely(-cn,z)
+          cb=-sin(m_pi*cn)*cbesselj(-cn,z)+
+     $         cos(m_pi*cn)*cbessely(-cn,z)
         else
           an0=aint(xcn)
           anf=xcn-an0
@@ -199,8 +67,8 @@ c     Including m_pi_2 symbol
           clogz=log(zhi)
           if(acnf .eq. 0.d0)then
             zp=1.d0
-            cp=1.d0/pi
-            cq=1.d0/pi
+            cp=1.d0/m_pi
+            cq=1.d0/m_pi
             cg1=-euler
             cg2=1.d0
             ca1=1.d0
@@ -211,9 +79,9 @@ c     Including m_pi_2 symbol
             zp=exp(cnf*clogz)
             cgamm1=cgamma(1.d0+cnf)
             cgamm2=cgamma(1.d0-cnf)
-            cp=cgamm1*zp/pi
-            cq=cgamm2/zp/pi
-            cnfpi=cnf*pi
+            cp=cgamm1*zp/m_pi
+            cq=cgamm2/zp/m_pi
+            cnfpi=cnf*m_pi
             cr=2.d0/cnf*sin(cnfpi*.5d0)**2
             if(acnf .lt. 1.d-3)then
               cg1=(-euler+cnf**2*(0.042002635034095236d0+
@@ -231,7 +99,7 @@ c     Including m_pi_2 symbol
             ca3=tccosh(csigma)
             cg2=.5d0*(1.d0/cgamm2+1.d0/cgamm1)
           endif
-          cf=2.d0/pi*ca1*(ca3*cg1+ca2*clogz*cg2)
+          cf=2.d0/m_pi*ca1*(ca3*cg1+ca2*clogz*cg2)
           cs0=cf+cr*cq
           cs1=cp
           ak=0.d0
@@ -270,7 +138,7 @@ c     Including m_pi_2 symbol
       return
       end
 
-      recursive real*8 function rrbessely(cn,z)
+      recursive real*8 pure function rrbessely(cn,z)
      $     result(cb)
       use macmath
       use mathfun
@@ -278,17 +146,19 @@ c     Including m_pi_2 symbol
 c     Including m_pi_2 symbol
       integer*4 i,itmax,m
       parameter (itmax=26)
-      real*8  cn,z,cj,cg1,cg2,cgamm1,cgamm2,ca3,
-     $     cp,cq,cr,cs0,cs1,zp,cx,cxp,csigma,
+      real*8 ,intent(in):: cn,z
+      real*8 cg1,cg2,cgamm1,cgamm2,ca3,
+     $     cp,cq,cr,cs0,cs1,zp,cx,cxp,csigma,cx2(2),
      $     ca1,ca2,cf,cg,cf1,cf2,clogz,zhi,anfpi,cs
-      real*8 az,an0,anf,aanf,ak,rrbesselj
+      real*8 az,an0,anf,aanf,ak
       az=abs(z)
       if(az .gt. 12.2d0)then
-        call rrbesasym(cn,z,cj,cb)
+        cx2=rrbesasym(cn,z)
+        cb=cx2(2)
       else
         if(cn .lt. 0.d0)then
-          cb=-sin(pi*cn)*rrbesselj(-cn,z)+
-     $         cos(pi*cn)*rrbessely(-cn,z)
+          cb=-sin(m_pi*cn)*rrbesselj(-cn,z)+
+     $         cos(m_pi*cn)*rrbessely(-cn,z)
         else
           an0=aint(cn)
           anf=cn-an0
@@ -301,8 +171,8 @@ c     Including m_pi_2 symbol
           clogz=log(zhi)
           if(aanf .eq. 0.d0)then
             zp=1.d0
-            cp=1.d0/pi
-            cq=1.d0/pi
+            cp=1.d0/m_pi
+            cq=1.d0/m_pi
             cg1=-euler
             cg2=1.d0
             ca1=1.d0
@@ -313,9 +183,9 @@ c     Including m_pi_2 symbol
             zp=exp(anf*clogz)
             cgamm1=gamma(1.d0+anf)
             cgamm2=gamma(1.d0-anf)
-            cp=cgamm1*zp/pi
-            cq=cgamm2/zp/pi
-            anfpi=anf*pi
+            cp=cgamm1*zp/m_pi
+            cq=cgamm2/zp/m_pi
+            anfpi=anf*m_pi
             cr=2.d0/anf*sin(anfpi*.5d0)**2
             if(aanf .lt. 1.d-3)then
               cg1=(-euler+anf**2*(0.042002635034095236d0+
@@ -333,7 +203,7 @@ c     Including m_pi_2 symbol
             ca3=cosh(csigma)
             cg2=.5d0*(1.d0/cgamm2+1.d0/cgamm1)
           endif
-          cf=2.d0/pi*ca1*(ca3*cg1+ca2*clogz*cg2)
+          cf=2.d0/m_pi*ca1*(ca3*cg1+ca2*clogz*cg2)
           cs0=cf+cr*cq
           cs1=cp
           ak=0.d0
@@ -372,14 +242,14 @@ c     Including m_pi_2 symbol
       return
       end
 
-      recursive complex*16  function cbesselj(cn,z)
+      recursive complex*16 pure function cbesselj(cn,z)
      $     result(cb)
       use gammaf
       implicit none
       integer*4 nmax,i
       complex*16 ,intent(in):: cn,z
-      complex*16 cbessely,cj,cj1,cj2,cs,zi,cnk,cn2k,cg
-      real*8 az,acn,an,ak,xcn,rrbesselj
+      complex*16 cj,cj1,cj2,cs,zi,cnk,cn2k,cg,cb2(2)
+      real*8 az,acn,an,ak,xcn
       if(imag(cn) .eq. 0.d0 .and. imag(z) .eq. 0.d0)then
         if(dble(z) .ge. 0.d0)then
           cb=dcmplx(rrbesselj(dble(cn),dble(z)),0.d0)
@@ -394,7 +264,8 @@ c
       az=abs(z)
       acn=abs(cn)
       if(az .gt. acn*.25d0+20.d0)then
-        call cbesasym(cn,z,cb,cbessely)
+        cb2=cbesasym(cn,z)
+        cb=cb2(1)
       else
         if(az .ne. 0.d0)then
           nmax=int(max(1.d0,20.d0/max(log10(2.d0/az),1.d0),
@@ -454,12 +325,13 @@ c            cg=cgamma(cnk)/factorial(ak)
       return
       end
 
-      subroutine cbesasym(cn,z,cbesj,cbesy)
+      complex*16 pure function cbesasym(cn,z) result(cx)
       use macmath
       implicit none
 c     Including m_pi_2/m_pi_4/m_2_pi symbol
-      complex*16 cn,z,cp,cq,cmu,cbesj,cbesy,z1,chi,csqrtz,
-     $     ccoschi,csinchi
+      dimension cx(2)
+      complex*16 ,intent(in):: cn,z
+      complex*16 cp,cq,cmu,z1,chi,csqrtz,ccoschi,csinchi
       cmu=4.d0*cn**2
       z1=1.d0/64.d0/z**2
       cp=1.d0-(cmu-1.d0)*(cmu-9.d0)*z1/2.d0*
@@ -492,25 +364,25 @@ c     Including m_pi_2/m_pi_4/m_2_pi symbol
       ccoschi=cos(chi)
       csinchi=sin(chi)
       csqrtz=sqrt(m_2_pi/z)
-      cbesj=csqrtz*(cp*ccoschi-cq*csinchi)
-      cbesy=csqrtz*(cp*csinchi+cq*ccoschi)
+      cx=csqrtz*[cp*ccoschi-cq*csinchi,cp*csinchi+cq*ccoschi]
       return
       end
 
-      recursive real*8 function rrbesselj(cn,z)
+      recursive real*8 pure function rrbesselj(cn,z)
      $     result(cb)
       use gammaf
       implicit none
       integer*4 nmax,i
       real*8 ,intent(in):: cn,z
-      real*8 cj,cj1,cj2,cs,zi,cnk,cn2k,cg,az,acn,an,ak,dummy
+      real*8 cj,cj1,cj2,cs,zi,cnk,cn2k,cg,az,acn,an,ak,cx(2)
 c     Initialization to avoid compiler warning
       nmax=0
 c     
       az=abs(z)
       acn=abs(cn)
       if(az .gt. acn*.25d0+20.d0)then
-        call rrbesasym(cn,z,cb,dummy)
+        cx=rrbesasym(cn,z)
+        cb=cx(1)
       else
         if(az .ne. 0.d0)then
           nmax=int(max(1.d0,20.d0/max(log10(2.d0/az),1.d0),
@@ -569,12 +441,12 @@ c            cg=cgamma(cnk)/factorial(ak)
       return
       end
 
-      subroutine rrbesasym(cn,z,cbesj,cbesy)
+      real*8 pure function rrbesasym(cn,z) result(cx)
       use macmath
       implicit none
 c     Including m_pi_2/m_pi_4/m_2_pi symbol
+      dimension cx(2)
       real*8 ,intent(in):: cn,z
-      real*8 ,intent(out):: cbesj,cbesy
       real*8 cp,cq,z1,chi,csqrtz,ccoschi,csinchi,cmu
       cmu=4.d0*cn**2
       z1=1.d0/64.d0/z**2
@@ -608,7 +480,8 @@ c     Including m_pi_2/m_pi_4/m_2_pi symbol
       ccoschi=cos(chi)
       csinchi=sin(chi)
       csqrtz=sqrt(m_2_pi/z)
-      cbesj=csqrtz*(cp*ccoschi-cq*csinchi)
-      cbesy=csqrtz*(cp*csinchi+cq*ccoschi)
+      cx=csqrtz*[cp*ccoschi-cq*csinchi,cp*csinchi+cq*ccoschi]
       return
       end
+
+      end module

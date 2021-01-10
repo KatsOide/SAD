@@ -35,7 +35,7 @@ corfree.o: corfree.f inc/common.inc inc/coroper.inc tffs.o tfstk.o
 corinit.o: corinit.f inc/common.inc inc/coroper.inc tffs.o
 cputix.o: cputix.f toplvl.o
 csinit.o: csinit.f tfstk.o toplvl.o
-csroy.o: csroy.f tfstk.o
+csroy.o: csroy.f tfloor.o tfstk.o
 csrtest.o: csrtest.f tfstk.o
 csrtrack.o: csrtrack.f tfstk.o
 cssetp.o: cssetp.f
@@ -67,6 +67,7 @@ filaux.o: filaux.f tfstk.o toplvl.o
 filbuf.o: filbuf.f tfstk.o toplvl.o
 flmgr.o: flmgr.f tfstk.o toplvl.o
 frand.o: frand.f tfstk.o
+gamma (original).o: gamma (original).f (original).f gamma tfloor.o tfstk.o
 gamma.o: gamma.f tfloor.o tfstk.o
 gaus3.o: gaus3.f
 gaussn.o: gaussn.f
@@ -75,7 +76,7 @@ getbuf.o: getbuf.f tfestk.o tffs.o tfstk.o toplvl.o
 gettok.o: gettok.f toplvl.o
 getvad.o: getvad.f tfstk.o toplvl.o
 getwrd.o: getwrd.f tffs.o toplvl.o
-hg.o: hg.f gamma.o tfstk.o
+hg.o: hg.f gamma.o tfloor.o tfstk.o
 hsrch.o: hsrch.f tfstk.o toplvl.o
 icsmrk.o: icsmrk.f
 ielm.o: ielm.f tffs.o tfstk.o
@@ -299,7 +300,7 @@ tfdset.o: tfdset.f itfpmat.o tfeeval.o tffuns.o tfstk.o
 tfearray.o: tfearray.f
 tfeeval.o: tfeeval.f tffuns.o tfstk.o toplvl.o
 tfeexpr.o: tfeexpr.f tfefun.o tfstk.o
-tfefun.o: tfefun.f gamma.o hg.o tfeeval.o tffuns.o tfloor.o tfshared.o tfstk.o toplvl.o
+tfefun.o: tfefun.f gamma.o tfeeval.o tffuns.o tfloor.o tfshared.o tfstk.o toplvl.o
 tfefun1.o: tfefun1.f tffs.o tfstk.o
 tfefun2.o: tfefun2.f tfstk.o
 tfefun3ep.o: tfefun3ep.f tfeeval.o tfefun.o tfstk.o

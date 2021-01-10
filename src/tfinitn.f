@@ -739,8 +739,8 @@ c     Initialize map/ieval array
       i=itfunaloc('Tanh',6,1,map,ieval,2)
       i=itfunaloc('Exp',7,1,map,ieval,2)
       i=itfunaloc('Log',8,1,map,ieval,2)
-      map(1)=0
       i=itfunaloc('ArcTan',9,1,map,ieval,2)
+      map(1)=0
       i=itfunaloc('Det',10,1,map,ieval,2)
       map(1)=1
       i=itfunaloc('Sqrt',11,1,map,ieval,2)
@@ -929,7 +929,7 @@ c-----Noboru addition end -----
       i=itfunaloc('InverseErf',110,1,map,ieval,2)
 c      i=itfunaloc('SemCtrl',111,3,map,ieval,0)
 c      i=itfunaloc('FromDate',111,1,map,ieval,1)
-      i=itfunaloc('PolyGamma',112,1,map,ieval,1)
+      i=itfunaloc('PolyGammaGeneralized',112,2,map,ieval,2)
       i=itfunaloc('ToInputString',113,1,map,ieval,0)
       ieval(3)=0
       i=itfunaloc('ReadString',114,3,map,ieval,0)
@@ -964,7 +964,7 @@ c      i=itfunaloc('GetGID',130,1,map,ieval,0)
       i=itfunaloc('Vectorize',135,1,map,ieval,0)
       ieval(1)=0
       ieval(2)=0
-c      i=itfunaloc('BDPipe',136,1,map,ieval,0)
+      i=itfunaloc('LogGamma',136,1,map,ieval,2)
 c      i=itfunaloc('BidirectionalPipe',136,1,map,ieval,0)
       i=itfunaloc('Names$',137,1,map,ieval,0)      
       i=itfunaloc('GarbageCollect',138,0,map,ieval,0)      
@@ -1103,6 +1103,29 @@ c      i=itfunaloc('SetEnv',181,2,map,ieval,0)
       map(3)=0
       i=itfunaloc('Hypergeometric0F1',233,2,map,ieval,2)
       i=itfunaloc('Hypergeometric0F1Regularized',234,2,map,ieval,2)
+      map(2)=0
+      map(1)=1
+      i=itfunaloc('Zeta',235,1,map,ieval,2)
+      i=itfunaloc('PolyGamma',236,2,map,ieval,2)
+      i=itfunaloc('DZeta',237,1,map,ieval,2)
+      i=itfunaloc('HurwitzZeta',238,1,map,ieval,2)
+      i=itfunaloc('DHurwitzZeta',239,1,map,ieval,2)
+      i=itfunaloc('PolyGammaGeneralizedHurwitz',240,2,map,ieval,2)
+      i=itfunaloc('Gamma',241,1,map,ieval,2)
+      map(1)=0
+      map(3)=1
+      i=itfunaloc('HypergeometricU',242,3,map,ieval,2)
+      i=itfunaloc('HypergeometricPFQ',243,3,map,ieval,2)
+      i=itfunaloc('HypergeometricPFQRegularized',244,3,map,ieval,2)
+      map(3)=0
+      map(2)=1
+      i=itfunaloc('PolyLog',245,2,map,ieval,2)
+      i=itfunaloc('Beta',246,2,map,ieval,2)
+      map(1)=1
+      map(3)=0
+      i=itfunaloc('HurwitzLerchPhi',247,3,map,ieval,2)
+      i=itfunaloc('LerchPhi',248,3,map,ieval,2)
+      i=itfunaloc('BernoulliB',249,2,map,ieval,2)
       return
       end
 c

@@ -65,9 +65,10 @@ With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
         Message[ListPlot::wrongsize];
         Return[]],
       {ld,dr}={{},{{0,1},{0,1}}}];
-    {sc,pg,eg,pj,of,in,pr,pl}={Scale,Prolog,Epilog,PlotJoined,DisplayFunction,
-      Initialize,PlotRegion,Plot}/.op;
-    sc=Flatten[{Linear,sc}][[{-2,-1}]];
+    opt00=({sc,pg,eg,pj,of,in,pr,pl}={Scale,Prolog,Epilog,PlotJoined,DisplayFunction,
+      Initialize,PlotRegion,Plot}/.(op00=op));
+    sc00=sc;
+    sc01=sc=Flatten[{Linear,sc}][[{-2,-1}]];
     gopt=Override[Scale->sc,
       Cases[op,r,1],DataRange->dr];
     body=Flatten[
@@ -154,28 +155,34 @@ PR$$[{x_,y_}]:={{Automatic,Automatic},{x,y}};
 PR$$[Default]=Default;
 PR$$[x_]:={{x,x},{x,x}};
 
-With[{def={MaxBend->0.01,PlotPoints->32,PlotDivision->1024,
-  PlotJoined->True,StepRatio->1,Plot->False,GridLines->{Automatic,Automatic}}},
+With[{def={MaxBend->0.01,PlotPoints->32,PlotDivision->1024,PlotRange->Automatic,
+  PlotJoined->True,StepRatio->1,Plot->False,GridLines->{Automatic,Automatic},
+  PlotColor->"dodger blue",Thickness->2}},
 
   Plot[f_,{x_,xmin_,xmax_},opt___]:=Block[{x},Module[
-    {{maxb,minp,minx,pj,sr,pt,gr}=
-      {MaxBend,PlotPoints,PlotDivision,PlotJoined,StepRatio,Plot,GridLines}/.{opt}/.def},
-    ListPlot[PlotInterpolate[f,{x,xmin,xmax},minp,Max[minp*3,minx],maxb],
-      PlotJoined->pj,StepRatio->sr,Plot->pt,GridLines->gr,opt]]]];
+    {d,{maxb,minp,minx,pj,sr,pt,gr,pr,pc,th}=
+      {MaxBend,PlotPoints,PlotDivision,PlotJoined,StepRatio,Plot,
+        GridLines,PlotRange,PlotColor,Thickness}/.{opt}/.def},
+    ListPlot[(d=PlotInterpolate[f,{x,xmin,xmax},minp,Max[minp*3,minx],maxb])[[1]],
+      PlotJoined->pj,StepRatio->sr,Plot->pt,GridLines->gr,
+      PlotColor->pc,Thickness->th,
+      PlotRange->PR$Auto[pr,PlotRange->d[[2]]],opt]
+    ]]];
 
 With[{def={Dashing->{{1},{0.75,0.25},{0.4, 0.15},{0.2,0.1},{0.1,0.08},
   {0.8,0.08, 0.08, 0.08},{0.4,0.08,0.08,0.08}},
-  PlotColor:>If[$DisplayFunction===TopDrawer,
-    {"black","red","blue","green","gray","magenta","cyan","yellow"},
-    {"black","red3","dark slate blue","forest green","gray",
-      "magenta","cyan","yellow"}],
+  PlotColor:>
+    {"dodger blue","tomato","dark goldenrod","forest green",
+      "blue violet","royal blue","orange3"},
+  Thickness->2,
   Legend->{False},
+  PlotRange->Automatic,
   DisplayFunction->Default}},
 
   Plot[f_List,{x_,xmin_,xmax_},opt___]:=Block[{x},Module[
-    {da,pc,leg,n,g,h=Map[Hold,Unevaluated[f]]},
+    {a,b,c,d,da,pc,leg,pr,th,n,g,h=Map[Hold,Unevaluated[f]]},
     x=xmin;
-    {da,pc,leg}={Dashing,PlotColor,Legend}/.{opt}/.def;
+    {da,pc,leg,pr,th}={Dashing,PlotColor,Legend,PlotRange,Thickness}/.{opt}/.def;
     n=Length[h];
     da=(Dashing->#)&/@Take[Flatten[Table[da,
       {Ceiling[n/Max[Length[da],1]]}],1],n];
@@ -183,13 +190,25 @@ With[{def={Dashing->{{1},{0.75,0.25},{0.4, 0.15},{0.2,0.1},{0.1,0.08},
       {Ceiling[n/Max[Length[pc],1]]}]],n];
     leg=(Legend->#)&/@Take[Flatten[{{leg},Table[False,{n}]}], n];
     g=MapThread[Function[{a,b,c,d},Plot[ReleaseHold[a],{x,xmin,xmax},
-      DisplayFunction->Null,b,c,d,opt]],{h,da,pc,leg}];
-    If[(DisplayFunction/.{opt}/.def)===Default,Show[g]];
+      DisplayFunction->Null,b,c,d,opt,Thickness->th]],{h,da,pc,leg}];
+    pr00=pr=PR$Auto[pr,g];
+    If[(DisplayFunction/.{opt}/.def)===Default,
+      g=Show[g,PlotRange->pr,opt]];
     g]]];
+
+PR$Auto[x_,g_]:=x;
+PR$Auto[{min_Real,Automatic},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
+  {min,Max[pr1[[,2,2]]]}];
+PR$Auto[{Automatic,max_Real},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
+  {Min[pr1[[,2,1]]],max}];
+PR$Auto[Automatic|{Automatic,Automatic},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
+  {Min[pr1[[,2,1]]],Max[pr1[[,2,2]]]}];
+PR$Auto[{x_List,y_},g_]:={x,PR$Auto[y,g]};
+PR$Auto[{x_,y_List},g_]:={x,PR$Auto[y,g]};
 
 PlotInterpolate[fin_,{y_,xmin_,xmax_},min0_,maxdiv_,maxb_]:=Module[
   {f,fs,s,dl,dl0,dl1,la,cos,a,yw,ar,dx,xl,yl,x0,x1,x2,cosm,cosm1=-1,la0=0,
-    costh=1-maxb^2/2,min=min0,fh=Extract[Hold[fin],{1},Head]},
+    costh=1-maxb^2/2,min=min0,fh=Extract[Hold[fin],{1},Head],ny,ys,ymin,ymax,ya},
   If[Head[fh]===SplineData,
     min=Max[min,Length[fh[[1,1]]]]];
   fs = With[{y = #}, {#, Check[fin, 0]}]&;
@@ -197,6 +216,7 @@ PlotInterpolate[fin_,{y_,xmin_,xmax_},min0_,maxdiv_,maxb_]:=Module[
     Check[ReleaseVector[fin], ReleaseVector[fs[Vector[#]]]]]&;
   dx=(xmax-xmin)/min;
   yl=Re[f[xl=Range[0,min]*dx+xmin]];
+  {xl,yl}=Thread[Thread[{xl,yl}]/.{_,INF|-INF|_?NaNQ}:>Null[]];
   If[~RealListQ[yl],Return[{}]];
   s=True;
   While[s && Length[xl]<maxdiv,
@@ -221,9 +241,14 @@ PlotInterpolate[fin_,{y_,xmin_,xmax_},min0_,maxdiv_,maxb_]:=Module[
       s=Length[a]>0;
       If[s,
         {xl,yl}=Thread[
-          Union[Thread[{Join[xl,a],Join[yl,f[a]]}]]]],
+          Union[Thread[{Join[xl,a],Join[yl,Re[f[a]]]}]]]],
       s=False]];
-  Thread[{xl,yl}]];
+  ny=Length[yl];
+  ys=Sort[yl];
+  {ymin,ymax}=ys[[{1+(ny-1)*0.05,ny*0.95}]];
+  ya=ys[[ny/2]];
+  {Thread[{xl,yl}],{ya+Max[(ymin-ya)*1.3,(ys[[1]]-ya)*1.5],
+    ya+Min[(ymax-ya)*1.3,(ys[[-1]]-ya)*1.05]}}];
 
 SetAttributes[Plot,HoldAll];
 SetAttributes[PlotInterpolate,HoldFirst];

@@ -564,6 +564,101 @@
       return
       end function
 
+      complex*16 pure elemental function zeroim(x) result(f)
+      implicit none
+      complex*16 ,intent(in):: x
+      if(imag(x) .eq. 0.d0)then
+        f=dcmplx(dble(x),0.d0)
+      else
+        f=x
+      endif
+      if(dble(f) .eq. 0.d0)then
+        f=dcmplx(0.d0,imag(f))
+      endif
+      return
+      end function
+
+      complex*16 pure elemental function conjz(x) result(f)
+      implicit none
+      complex*16 ,intent(in):: x
+      f=conjg(x)
+      if(imag(x) .eq. 0.d0)then
+        f=dcmplx(dble(x),0.d0)
+      endif
+      if(dble(f) .eq. 0.d0)then
+        f=dcmplx(0.d0,imag(f))
+      endif
+      return
+      end function
+
+      real*8 pure elemental function moduloc(x,a) result(f)
+      implicit none
+      real*8 ,intent(in):: x,a
+      if(x .ge. 0.d0)then
+        f=modulo(x,a)
+      else
+        f=-modulo(-x,a)
+      endif
+      return
+      end function
+
+      real*8 pure elemental function moduloc2(x) result(f)
+      implicit none
+      real*8 ,intent(in):: x
+      if(x .ge. 0.d0)then
+        f=modulo(x,2.d0)
+        if(f .gt. 1.d0)then
+          f=f-2.d0
+        endif
+      else
+        f=-modulo(-x,2.d0)
+        if(f .lt. -1.d0)then
+          f=f+2.d0
+        endif
+      endif
+      return
+      end function
+
+      complex*16 pure elemental function csinp(z) result(f)
+      use macmath
+      implicit none
+      complex*16 ,intent(in):: z
+      f=sin(m_pi*dcmplx(moduloc2(dble(z)),imag(z)))
+      return
+      end function
+
+      real*8 pure elemental function sinp(x) result(f)
+      use macmath
+      implicit none
+      real*8 ,intent(in):: x
+      f=sin(moduloc2(x)*m_pi)
+      return
+      end function
+
+      complex*16 pure elemental function ccosp(z) result(f)
+      use macmath
+      implicit none
+      complex*16 ,intent(in):: z
+      f=cos(m_pi*dcmplx(moduloc(dble(z),2.d0),imag(z)))
+      return
+      end function
+
+      real*8 pure elemental function cosp(x) result(f)
+      use macmath
+      implicit none
+      real*8 ,intent(in):: x
+      f=cos(moduloc(x,2.d0)*m_pi)
+      return
+      end function
+
+      complex*16 pure elemental function cexpp(z) result(f)
+      use macmath
+      implicit none
+      complex*16 ,intent(in):: z
+      f=exp(m_pi*dble(z))*dcmplx(cosp(imag(z)),sinp(imag(z)))
+      return
+      end function
+
       end module
 
       subroutine tfmod(isp1,kx,mode,irtc)
@@ -818,7 +913,7 @@ c              enddo
       endif
       irtc=0
       return
- 10   kx=kxcalocv(-1,dble(cx),imag(cx))
+ 10   kx=kxcalocc(-1,cx)
       irtc=0
       return
       end
@@ -1051,14 +1146,14 @@ c      use tmacro
       if(ktfrealq(k,v))then
         if(v .lt. rmin .or. v .gt. rmax)then
           cv=cfun(dcmplx(v,0.d0))
-          kx=kxcalocv(-1,dble(cv),imag(cv))
+          kx=kxcalocc(-1,cv)
         else
           kx=dfromr(fun(v))
         endif
       elseif(tfnumberq(k,cv))then
         if(cmpl)then
           cv=cfun(cv)
-          kx=kxcalocv(-1,dble(cv),imag(cv))
+          kx=kxcalocc(-1,cv)
           return
         else
           icrtc=0
@@ -1075,7 +1170,7 @@ c      use tmacro
                 isp=isp+1
                 if(kl%rbody(i) .lt. rmin .or. kl%rbody(i) .gt. rmax)then
                   cv=cfun(dcmplx(kl%rbody(i),0.d0))
-                  dtastk(isp)=kxcalocv(-1,dble(cv),imag(cv))
+                  dtastk(isp)=kxcalocc(-1,cv)
                 else
                   rtastk(isp)=fun(kl%rbody(i))
                 endif
@@ -1097,14 +1192,14 @@ c      use tmacro
               if(ktfrealq(kl%dbody(i)))then
                 if(kl%rbody(i) .lt. rmin .or. kl%rbody(i) .gt. rmax)then
                   cv=cfun(dcmplx(kl%rbody(i),0.d0))
-                  dtastk(isp)=kxcalocv(-1,dble(cv),imag(cv))
+                  dtastk(isp)=kxcalocc(-1,cv)
                 else
                   rtastk(isp)=fun(kl%rbody(i))
                 endif
               elseif(tfnumberq(kl%dbody(i),cv))then
                 if(cmpl)then
                   cv=cfun(cv)
-                  dtastk(isp)=kxcalocv(-1,dble(cv),imag(cv))
+                  dtastk(isp)=kxcalocc(-1,cv)
                 else
                   rtastk(isp)=dble(cfun(cv))
                 endif
@@ -1156,7 +1251,7 @@ c      use tmacro
       elseif(tfnumberq(k,cv) .and. tfnumberq(k1,cv1))then
         if(cmpl)then
           cv=cfun(cv,cv1)
-          kx=kxcalocv(-1,dble(cv),imag(cv))
+          kx=kxcalocc(-1,cv)
           return
         else
           icrtc=0

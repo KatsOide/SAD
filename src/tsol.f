@@ -125,8 +125,8 @@ c     pz2=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
             enddo
           endif
         else
-          cchi1=0.d0
-          cchi2=0.d0
+          cchi1=1.d0
+          cchi2=1.d0
           schi1=0.d0
           schi2=0.d0
           dcchi1=0.d0
@@ -156,6 +156,9 @@ c     pz2=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
           bxs0=bxs
           bxs=cchi3*bxs0-schi3*bys
           bys=schi3*bxs0+cchi3*bys
+        else
+          cchi3=1.d0
+          schi3=0.d0
         endif
       else
         if(chi3 .ne. 0.d0)then

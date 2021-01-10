@@ -210,7 +210,7 @@ c      isb=ilist(2,iwakepold+6)
       do l=lbegin,lend
         l_track=l
 c        if(abs(x(1))+abs(y(1)) .gt. 0.01d0)then
-c        write(*,*)'tturn1-l ',l,np,x(np),y(np),g(np)
+c        write(*,'(a,2i5,1p10g12.4)')'tturn1-l ',l,np,sx(1),sy(1),sz(1)
 c          write(*,*)'tturn1 ',l,np,kptbl(1,1:6)
 c        endif
 c        call tfmemcheckprint('tturn',l,.false.,irtc)

@@ -82,8 +82,7 @@ c              write(*,*)'tfecmplx-rl*2 '
             case (mtfcomplex)
               d=.false.
               do i=1,m2
-                klr%dbody(i)=kxcalocv(0,v1,klr2%rbody(i))
-                d=d .or. klr2%dbody(i)%k .ne. 0
+                klr%dbody(i)=kxcalocv(0,v1,klr2%rbody(i),d)
               enddo
               if(d)then
                 klr%attr=ior(klr%attr,lnonreallist)
@@ -103,8 +102,7 @@ c              write(*,*)'tfecmplx-rl*2 '
                 k2i=kl2%dbody(i)
                 if(tfnumberq(k2i,cx2))then
                   cx=c1+cx2
-                  klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
-                  d=d .or. imag(cx) .ne. 0.d0
+                  klx%dbody(i)=kxcalocc(0,cx,d)
                 else
                   klx%dbody(i)=tfecmplx1(k1,k2i,iopc1,c,d)
                 endif
@@ -115,8 +113,7 @@ c              write(*,*)'tfecmplx-rl*2 '
                 k2i=kl2%dbody(i)
                 if(tfnumberq(k2i,cx2))then
                   cx=c1*cx2
-                  klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
-                  d=d .or. imag(cx) .ne. 0.d0
+                  klx%dbody(i)=kxcalocc(0,cx,d)
                 else
                   klx%dbody(i)=tfecmplx1(k1,k2i,iopc1,c,d)
                 endif
@@ -130,8 +127,7 @@ c              write(*,*)'tfecmplx-rl*2 '
                     k2i=kl2%dbody(i)
                     if(tfnumberq(k2i,cx2))then
                       cx=1.d0/cx2
-                      klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
-                      d=d .or. imag(cx) .ne. 0.d0
+                      klx%dbody(i)=kxcalocc(0,cx,d)
                     else
                       klx%dbody(i)=tfecmplx1(k1,k2i,iopc1,c,d)
                     endif
@@ -142,8 +138,7 @@ c              write(*,*)'tfecmplx-rl*2 '
                     k2i=kl2%dbody(i)
                     if(tfnumberq(k2i,cx2))then
                       cx=cx2**ix1
-                      klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
-                      d=d .or. imag(cx) .ne. 0.d0
+                      klx%dbody(i)=kxcalocc(0,cx,d)
                     else
                       klx%dbody(i)=tfecmplx1(k1,k2i,iopc1,c,d)
                     endif
@@ -155,8 +150,7 @@ c              write(*,*)'tfecmplx-rl*2 '
                   k2i=kl2%dbody(i)
                   if(tfnumberq(k2i,cx2))then
                     cx=cx2**cx1
-                    klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
-                    d=d .or. imag(cx) .ne. 0.d0
+                    klx%dbody(i)=kxcalocc(0,cx,d)
                   else
                     klx%dbody(i)=tfecmplx1(k1,k2i,iopc1,c,d)
                   endif
@@ -174,8 +168,7 @@ c              write(*,*)'tfecmplx-rl*2 '
                   else
                     cx=v1**cx2
                   endif
-                  klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
-                  d=d .or. imag(cx) .ne. 0.d0
+                  klx%dbody(i)=kxcalocc(0,cx,d)
                 else
                   klx%dbody(i)=tfecmplx1(k1,k2i,iopc1,c,d)
                 endif
@@ -186,8 +179,7 @@ c              write(*,*)'tfecmplx-rl*2 '
                 k2i=kl2%dbody(i)
                 if(tfnumberq(k2i,cx2))then
                   cx=dcmplx(v1-imag(cx2),dble(cx2))
-                  klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
-                  d=d .or. imag(cx) .ne. 0.d0
+                  klx%dbody(i)=kxcalocc(0,cx,d)
                 else
                   klx%dbody(i)=tfecmplx1(k1,k2i,iopc1,c,d)
                 endif
@@ -298,16 +290,14 @@ c              write(*,*)'tfecmplx-rl*2 '
             do i=1,m2
               v2i=klr2%rbody(i)
               cx=tfcmplxmathv(c1,dcmplx(v2i,0.d0),iopc1)
-              klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
-              d=d .or. imag(cx) .ne. 0.d0
+              klx%dbody(i)=kxcalocc(0,cx,d)
             enddo
           else
             do i=1,m2
               k2i=kl2%dbody(i)
               if(tfnumberq(k2i,cx2))then
                 cx=tfcmplxmathv(c1,cx2,iopc1)
-                klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
-                d=d .or. imag(cx) .ne. 0.d0
+                klx%dbody(i)=kxcalocc(0,cx,d)
               elseif(tflistq(k2i))then
                 kxi=tfecmplxl(k1,k2i,iopc1)
                 d=.true.
@@ -380,8 +370,7 @@ c              write(*,*)'tfecmplx-rl*2 '
           case (mtfcomplex)
             d=.false.
             do i=1,m1
-              klr%dbody(i)=kxcalocv(0,klr1%rbody(i),klr2%rbody(i))
-              d=d .or. klr2%rbody(i) .ne. 0.d0
+              klr%dbody(i)=kxcalocv(0,klr1%rbody(i),klr2%rbody(i),d)
             enddo
             if(d)then
               klr%attr=ior(klr%attr,lnonreallist+lconstlist)
@@ -426,8 +415,7 @@ c              write(*,*)'tfecmplx-rl*2 '
               k2i=kl2%dbody(i)
               if(tfnumberq(k1i,cx1) .and. tfnumberq(k2i,cx2))then
                 cx=cx1+cx2
-                klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
-                d=d .or. imag(cx) .ne. 0.d0
+                klx%dbody(i)=kxcalocc(0,cx,d)
                 cycle
               else
                 kxi=merge(tfecmplxl(k1i,k2i,mtfplus),
@@ -450,8 +438,7 @@ c              write(*,*)'tfecmplx-rl*2 '
               k2i=kl2%dbody(i)
               if(tfnumberq(k1i,cx1) .and. tfnumberq(k2i,cx2))then
                 cx=cx1*cx2
-                klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
-                d=d .or. imag(cx) .ne. 0.d0
+                klx%dbody(i)=kxcalocc(0,cx,d)
                 cycle
               else
                 kxi=merge(tfecmplxl(k1i,k2i,mtftimes),
@@ -480,8 +467,7 @@ c              write(*,*)'tfecmplx-rl*2 '
                 else
                   cx=cx2**cx1
                 endif
-                klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
-                d=d .or. imag(cx) .ne. 0.d0
+                klx%dbody(i)=kxcalocc(0,cx,d)
                 cycle
               else
                 kxi=merge(tfecmplxl(k1i,k2i,mtfrevpower),
@@ -510,8 +496,7 @@ c              write(*,*)'tfecmplx-rl*2 '
               k2i=kl2%dbody(i)
               if(tfnumberq(k1i,cx1) .and. tfnumberq(k2i,cx2))then
                 cx=cx1+dcmplx(-imag(cx2),dble(cx2))
-                klx%dbody(i)=kxcalocv(0,dble(cx),imag(cx))
-                d=d .or. imag(cx) .ne. 0.d0
+                klx%dbody(i)=kxcalocc(0,cx,d)
                 cycle
               else
                 kxi=merge(tfecmplxl(k1i,k2i,mtfcomplex),

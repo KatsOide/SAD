@@ -162,6 +162,7 @@ c
       subroutine csroymat(kax,wi0,omega,zjn,rhoj,bw,
      $     dz,nj,nphi,nr)
       use tfstk
+      use mathfun
       implicit none
       integer*8 kax
       integer*4 nj,nphi,nr,mphi,nrh,m,j,j1,m1,n,n1,
@@ -179,7 +180,7 @@ c
       call spline1(nr,wi,ddwi,work,0,0)
       do n=1,nphi
         do m=1,mphi
-          cosmn(m,n)=-n*cos(n*pi*(m-0.5)/mphi)
+          cosmn(m,n)=-n*cosp(n*(m-0.5d0)/mphi)
         enddo
       enddo
       bm=0.d0
