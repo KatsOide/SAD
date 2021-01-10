@@ -2,18 +2,18 @@
       use touschek_table
       use tfstk
       use tffitcode
-      use ffs, only: gettwiss,ffs_bound,ifsize
+      use ffs, only: gettwiss,ffs_bound
       use ffs_pointer
       use ffs_flag
       use tmacro
       use sad_main
       use temw, only:normali,calint,iaemit
       use tfcsi, only:icslfno
+      use mathfun, only:asinz
       implicit none
       type (iaemit),intent(in):: iae
       type (ffs_bound) fbound
-      real*8 codmax,demax
-      parameter (codmax=1.d4,demax=.5d0)
+      real*8 ,parameter ::codmax=1.d4,demax=.5d0
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 z0,pgev00,alambdarf,dzmax,phis,vcacc1
       logical*4 ,intent(in):: plot,update,rt,optics
@@ -48,12 +48,12 @@ c      endif
         endif
         if(vceff .ne. 0.d0)then
           dzmax=alambdarf*.24d0
-          phis=asin(abs(vcacc1/vceff))
+          phis=asinz(abs(vcacc1/vceff))
           if(radcod)then
 c     trf0=-(cod(5)+z0)*0.5d0
           else
-            trf0=merge(merge((asin(u0*pgev/vceff))/wrfeff,
-     $           (pi-asin(u0*pgev/vceff))/wrfeff,
+            trf0=merge(merge((asinz(u0*pgev/vceff))/wrfeff,
+     $           (pi-asinz(u0*pgev/vceff))/wrfeff,
      $           trans(5,6) .lt. 0.d0),(.5*pi)/wrfeff,
      $           vceff .gt. u0*pgev)
             trf0=merge(-mod(-trf0+0.5d0*alambdarf,alambdarf),

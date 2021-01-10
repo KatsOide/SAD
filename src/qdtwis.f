@@ -449,13 +449,15 @@ c      return
       type (ffs_bound) fbound,fbound1
       real*8 eps
       parameter (eps=1.d-4)
-      integer*4 k,l,idp,itwk,itwl,
-     $     iclast,k1,itwk1,ibg,ibe,itwe,ibe1,itwbe
-      real*8 dtrans(4,5),dcod(6),trans(4,5),
-     $     trans2(4,5),trans3(4,5),trans1(4,5),transe(4,5),
-     $     transe2(4,5),cod2(6),code(6),dcode(6),
-     $     w,ctrans(4,7)
-      logical*4 over,trpt
+      integer*4 ,intent(in):: k,k1,l,idp
+      integer*4 ,intent(inout):: iclast
+      integer*4 itwk,itwl,itwk1,ibg,ibe,itwe,ibe1,itwbe
+      real*8 ,intent(inout):: ctrans(4,7)
+      real*8 ,intent(out):: trans(4,5),dtrans(4,5),dcod(6)
+      real*8 trans2(4,5),trans3(4,5),trans1(4,5),transe(4,5),
+     $     transe2(4,5),cod2(6),code(6),dcode(6),w
+      logical*4 over
+      logical*4 ,intent(in):: trpt
 c      equivalence (trans2,trans2s)
       itwk=itwissp(k)
       itwk1=itwissp(k1)
@@ -571,21 +573,15 @@ c      call tadd(transe,dtrans,dtrans,20)
       use temw, only:tmultr45
       implicit none
       type (sad_comp), pointer :: cmp
-      real*8 eps,vmin
-      parameter (eps=1.d-6,vmin=1.d-6)
-      integer*4 ke,iv,idp,j,kk1,je
-      real*8 dtrans(4,5),dcod(6),v0,wv,dv,trans2(4,5),
+      real*8 ,parameter  ::eps=1.d-6,vmin=1.d-6
+      integer*4 ,intent(in):: ke,iv,idp,j,kk1,je
+      real*8 ,intent(out):: dtrans(4,5),dcod(6)
+      real*8 v0,wv,dv,trans2(4,5),
      $     cod2(20),trans1(4,5),cod1(20),trans(4,5)
       logical*4 over
       call compelc(j,cmp)
       v0=tfvalvar(j,iv)
       wv=1.d0
-c      go to (
-c     $     4900, 200,4900, 400,4900, 600,4900, 600,4900, 600,
-c     $      600,4900,4900,4900,4900,4900,4900,4900,4900,6000,
-c     $     4900,2200,4900,4900,4900,4900,4900,4900,4900,4900,
-c     $     4900,4900,4900,4900,4900,4900,4900,4900,4900,4900,
-c     $     4900),ke
       select case (ke)
       case (icBEND)
         wv=1.d0

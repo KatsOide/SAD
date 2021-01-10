@@ -1,4 +1,4 @@
-      subroutine tfvars(nvar,kx,irtc,ret,lfno)
+      function tfvars(nvar,irtc,ret,lfno) result(kx)
       use tfstk
       use ffs
       use ffs_pointer
@@ -11,18 +11,18 @@
       type (sad_dlist), pointer :: kli,fvl
       type (sad_rlist), pointer :: kla
       type (sad_comp), pointer :: cmps
-      integer*4 lfno,i,iv,kk,level, itfuplevel,itfdownlevel,
+      integer*4 ,intent(in):: nvar,lfno
+      integer*4 ,intent(out)::  irtc
+      integer*4 i,iv,kk,level, itfuplevel,itfdownlevel,
      $     isp1,next,ifany
-      integer*4 nvar,irtc,lenw
+      integer*4 lenw
       real*8 x3,vmin,vmax,coup
       integer*4 k
       logical*4 ret,exist,tmatch
       character*15 autofg,v1,v2,v3,v4,v5,v6
       character*(MAXPNAME) key,tfkwrd
       character*(MAXPNAME+16) name,ncoup,ele
-      integer*8  ifv,ifvh,ifnvar,ifvkey
-      save ifv,ifvh,ifnvar,ifvkey
-      data ifv /0/
+      integer*8 ,save::ifv=0,ifvh,ifnvar,ifvkey
       if(ifv .eq. 0)then
         ifv=ktadaloc(0,3)
         ifvh=ktfsymbolz('VariableRange',13)
@@ -142,6 +142,8 @@ c     * icomp(kk) != 0 for 1 =< kk =< nlat
         kx=kxmakelist(isp1)
         isp=isp1
         irtc=0
+      else
+        kx=dxnullo
       endif
       return
       end

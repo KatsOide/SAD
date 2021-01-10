@@ -3,6 +3,7 @@
       use tmacro
       use ffs_flag, only:calpol
       use mathfun
+      use element_drift_common
       use kradlib
       implicit none
       integer*4 ,intent(in):: np

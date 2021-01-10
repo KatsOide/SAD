@@ -1,50 +1,82 @@
-      real*8 function bint(f,a,b,epslon,epsabs)
+      real*8 function bint(f,a,b,epslon,epsabs) result(s)
       implicit none
-      integer itmax,n,iter,i
-      parameter (itmax=30)
+      integer n,iter,i
+      integer*4 ,parameter ::itmax=30
       real*8 ,intent(in):: a,b,epslon,epsabs
-      real*8 ba,s0,s20,s,xstep,x,s1,s2
-      real*8 f
-      external f
-
+      real*8 ba,s0,s20,xstep,x,s1
+      real*8 ,external::f
       ba=b-a
       s0=ba*(f(a)+f(b))*.5d0
 c      write(*,*)'bint ',a,b,f(a),f(b)
+      xstep=ba
       s20=s0
       n=1
-      iter=0
-1     s=0.d0
-      xstep=ba/n
-      x=a-xstep*.5d0
-      do 10 i=1,n
-        x=x+xstep
-        s=s+f(x)
-10    continue
-      s=s*xstep
-      s1=(s+s0)*.5d0
-      s2=(2.d0*s+s0)/3.d0
-c     write(*,*)s2
-      if(abs(s2-s20) .lt. max(epslon*abs(s2),epsabs)
-     1   .or. iter .gt. itmax)then
-        bint=s2
-        if(iter .gt. itmax)then
-          write(*,*)'BINT Convergence failed. ',s2,s20
+      do iter=1,itmax
+        s=0.d0
+        x=a-xstep*.5d0
+        do i=1,n
+          x=x+xstep
+          s=s+f(x)
+        enddo
+        s=s*xstep
+        s1=(s+s0)*.5d0
+        s=(2.d0*s+s0)/3.d0
+        if(abs(s-s20) .lt. max(epslon*abs(s),epsabs))then
+c          write(*,*)'bint ',iter,itmax,s,s20
+          return
         endif
-        return
-      endif
-      n=n*2
-      s0=s1
-      s20=s2
-      iter=iter+1
-      go to 1
+        n=n*2
+        xstep=xstep*.5d0
+        s0=s1
+        s20=s
+      enddo
+      write(*,*)'BINT Convergence failed. ',s,s20
+      return
+      end
+
+      complex*16 function cbint(f,a,b,epslon,epsabs) result(s)
+      implicit none
+      integer n,iter,i
+      integer*4 ,parameter ::itmax=30
+      real*8 ,intent(in):: a,b,epslon,epsabs
+      complex*16 s0,s20,s1
+      real*8 ba,xstep,x
+      complex*16 ,external::f
+      ba=b-a
+      s0=ba*(f(a)+f(b))*.5d0
+c      write(*,*)'bint ',a,b,f(a),f(b)
+      xstep=ba
+      s20=s0
+      n=1
+      do iter=1,itmax
+        s=0.d0
+        x=a-xstep*.5d0
+        do i=1,n
+          x=x+xstep
+          s=s+f(x)
+        enddo
+        s=s*xstep
+        s1=(s+s0)*.5d0
+        s=(2.d0*s+s0)/3.d0
+        if(abs(s-s20) .lt. max(epslon*abs(s),epsabs))then
+c          write(*,*)'bint ',iter,itmax,s,s20
+          return
+        endif
+        n=n*2
+        xstep=xstep*.5d0
+        s0=s1
+        s20=s
+      enddo
+      write(*,*)'CBINT Convergence failed. ',s,s20
+      return
       end
 
       real*8 function rombint(f,a,b,epslon,epsabs)
       implicit none
       integer*4 itmax,n,iter,i,k
       parameter (itmax=30,k=5)
-      real*8 a,b,epslon,epsabs,ba,s0,s20,s,xstep,x,s1,s2,
-     $     h(itmax),y(itmax),ds2
+      real*8 ,intent(in):: a,b,epslon,epsabs
+      real*8 ba,s0,s20,s,xstep,x,s1,s2,h(itmax),y(itmax),ds2
       real*8 f
       external f
       ba=b-a

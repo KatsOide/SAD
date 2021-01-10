@@ -660,7 +660,7 @@ AutoLoad[Speak,PackagesDirectory//"Speak.n"];
 AutoLoad[Fit,PolynomialFit,FindRoot,FitGaussian,FitEmit,CreateBin,
   PackagesDirectory//"Fit.n"];
 AutoLoad[Rational,Nemerator,Denominator,FromRational,
-  ContinuedFractioin,FromContinuedFraction,PackagesDirectory//"rational.n"];
+  ContinuedFraction,FromContinuedFraction,PackagesDirectory//"rational.n"];
 AutoLoad[help,HELP,Help,PackagesDirectory//"help.n"];
 AutoLoad[Help$Messages,PackagesDirectory//"HelpMessages.n"];
 AutoLoad[TableForm,PackagesDirectory//"tableform.n"];
@@ -689,6 +689,10 @@ AutoLoad[SetCoupledElements,CouplingMatrix,`CoupledKeys,
   PackagesDirectory//"Couple.n"];
 AutoLoad[D,Derivative,ReduceExpression,ReductionRule,
   Spline,SplineData,Integrate,NIntegrate,LegendreP,BesselJZero,
+  Binomial,Multinomial,
+  InverseErfc,HarmonicNumber,Factorial2,ExpIntegralE,ExpIntegralEi,
+  LogIntegral,SinIntegral,CosIntegral,SinhIntegral,CoshIntegral,
+  WhittakerM,WhittakerW,HermiteH,FresnelS,FresnelC,
   PackagesDirectory//"D.n"];
 AutoLoad[LDSolve,PackagesDirectory//"LDSolve.n"];
 AutoLoad[TextTerminal,KBF$MakeSADTerminal,KBF$CloseSADTerminal,KBFSADTerminal,PackagesDirectory//"SADTerminal.n"];

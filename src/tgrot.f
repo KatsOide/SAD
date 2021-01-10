@@ -8,11 +8,12 @@
 
       contains
       real*8 function tfchi(geo,i)
+      use mathfun
       implicit none
       real*8 , intent(in)::geo(3,3)
       integer*4 ,intent(in):: i
       if(i .eq. 2)then
-        tfchi=asin(geo(3,3))
+        tfchi=asinz(geo(3,3))
       elseif(i .eq. 1)then
         if(geo(2,3) .eq. 0.d0)then
           tfchi=0.d0
@@ -117,11 +118,12 @@
       end function
 
       real*8 function tgrot(geo0,geo1) result(a)
+      use mathfun, only:asinz
       implicit none
       real*8 ,intent(in)::geo0(3,3),geo1(3,3)
       dimension a(3)
       real*8 a13,a21
-      a(2)=asin(
+      a(2)=asinz(
      1     -geo0(1,2)*geo1(1,3)-geo0(2,2)*geo1(2,3)-geo0(3,2)*geo1(3,3))
       a13= geo0(1,1)*geo1(1,3)+geo0(2,1)*geo1(2,3)+geo0(3,1)*geo1(3,3)
       if(a13 .eq. 0.d0)then
@@ -160,14 +162,15 @@
       end function
 
       real*8 function  tforbitgeo(geo,cod) result(og)
+      use mathfun,only:asinz
       implicit none
       dimension og(3,4)
       real*8 , intent(in):: geo(3,4),cod(4)
       real*8 chi2i,cchi2i,schi2i,chi1i,cchi1i,schi1i,g1(3)
-      chi2i =-asin(min(1.d0,max(-1.d0,cod(4))))
+      chi2i =-asinz(cod(4))
       cchi2i=cos(chi2i)
       schi2i=sin(chi2i)
-      chi1i =-asin(min(1.d0,max(-1.d0,cod(2)/cchi2i)))
+      chi1i =-asinz(cod(2)/cchi2i)
       cchi1i=cos(chi1i)
       schi1i=sin(chi1i)
       og(:,4)=geo(:,4)+geo(:,1)*cod(1)+geo(:,2)*cod(3)

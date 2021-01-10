@@ -674,7 +674,7 @@ KBF$ArrangeComponents[w_,np_,i_,add_,opt___] := Module[{lv={},icf=np,icft1,icgf=
     btv = TemporaryVariable/.tv;
   ];
   w[i] = Frame[w[np],Side->"left",Fill->"x",Expand->True,Anchor->"n"];icgf=i;i++;
-  If[add=={}, Return[If[btv, {i,lv}, i]]];
+  If[add==={}, Return[If[btv, {i,lv}, i]]];
   Scan[(
     {t,v,o,c,n,wv,us,cn,co,nf,ew,bd,cl,ot,dbd,rem} = SwitchCases[Level[#,1],{Rule[Text,_],RuleDelayed[Variable,_],Rule[Items,_],RuleDelayed[Command,_],Rule[NextColumn,_],RuleDelayed[WidgetVariable,_],Rule[UnitString,_],RuleDelayed[WidgetName|ComponentName,_],Rule[ComponentOption|WidgetOption,_],Rule[NumberForm,_],Rule[DefaultEntryWidth,_],RuleDelayed[Bind,_],Rule[Columns,_],Rule[OverrapText,_],Rule[DefaultBD,_],_}];
     If [ew<=>{}, vdew = ew[[1,2]]];

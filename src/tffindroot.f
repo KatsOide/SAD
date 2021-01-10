@@ -1086,7 +1086,7 @@ c        call tfdebugprint(kd,'==>',2)
       return
       end
 
-      real*8 pure function tinvgr(an)
+      real*8 function tinvgr(an)
       use gammaf
       implicit none
       real*8 ,intent(in)::an

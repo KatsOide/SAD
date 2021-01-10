@@ -50,11 +50,11 @@
         if(calpol)then
           bsi=0.d0
         endif
-        if(iprev(l_track) .eq. 0)then
+        if(iprev(l_track) .eq. 0 .and. fb1 .ne. 0.d0)then
           f1r=.5d0*fb1
           n1=-1
         endif
-        if(inext(l_track) .eq. 0)then
+        if(inext(l_track) .eq. 0 .and. fb2 .ne. 0.d0)then
           f2r=.5d0*fb2
           n2=2
         endif
@@ -115,7 +115,7 @@ c     dp=g(i)*(2.d0+g(i))
           akx0=akxn(n)
           alx0=alx(n)
           phix0=phixn(n)
-          call tbendibody(alx(n))
+          call tbendibody(alx0)
           if(krad)then
             bsi(i)=bsi(i)+akxn(n)/alx(n)*xi*yi
             if(n .ne. n2)then
@@ -152,7 +152,6 @@ c                call tsetphotongeo(alx(n),phixn(n),theta,.false.)
         x(i)=xi-ff
         z(i)=zi+ff*fpx
         g(i)=dp
-c        write(*,'(a,1p6g15.7)')'tbendi-2 ',zi,z(i),xi,x(i),ff,fpx
       enddo
       if(fb2 .ne. 0.d0)then
         dxfr2=fb2**2/rhob/24.d0

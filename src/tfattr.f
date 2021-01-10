@@ -4,16 +4,18 @@
       use ffs_pointer
       use tffitcode
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: klxi
-      integer*4 lfno,i,j
-      integer*4 irtc,isp1,lenw
+      integer*4 ,intent(in):: lfno
+      integer*4 ,intent(out):: irtc
+      integer*4 isp1,lenw,i,j
       real*8 v
-      character*(*) word
+      character*(*) ,intent(inout):: word
       character*(MAXPNAME+16) namc,name
       character*10 autofg
       character*8 tfkwrd,key
-      logical*4 exist,exist1,all,temat,ret
+      logical*4 exist,exist1,all,temat
+      logical*4 ,intent(in):: ret
       write(lfno,'(a)')
      $     'Element     Keyword    Value     Mimimum  Maximum'
      1           //'  Couple         Coefficient'

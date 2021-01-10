@@ -158,6 +158,7 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       end
 
       subroutine tbedgebody(trans,cod,rhob,psi)
+      use mathfun, only:asinz
       implicit none
       real*8 trans(6,6),rhob,cod(6),pr,psi,cosp,sinp,
      $     sinsq,pxi,pyi,s,dpzi,pzi,phsq,px0,dpz0,pz0,
@@ -191,7 +192,7 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       aa=a*cosp-(px0*pxf+pz0*pzf)*sinp
       c=(aa/phsq+sinp)/pzi/pzf
       b=dpzi+pr*sinsq-dpzf*cosp+pxf*sinp
-      theta=asin(min(ampmax,max(-ampmax,a/phsq)))
+      theta=asinz(min(ampmax,max(-ampmax,a/phsq)))
       cod(3)=cod(3)-rhob*theta*pyi
       cod(5)=cod(5)+rhob*theta*pr
       trans(1,1)=cosp-pxf/pzf*sinp

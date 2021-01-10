@@ -69,9 +69,6 @@
         codfnd=fam
         cod=twiss(fbound%lb,idp,mfitdx:mfitddp)
         call qcod(idp,fbound,trans,cod,codfnd,optstat%over)
-        if(orbitcal)then
-          twiss(fbound%lb,idp,mfitdx:mfitddp)=cod
-        endif
         if(optstat%over)then
           if(lfno .gt. 0)then
             if(.not. codfnd)then
@@ -80,11 +77,15 @@
             else
               write(lfno,*)'*****qcod---> Overflow'
             endif
-            pri=.true.
           endif
           optstat%stabx=.false.
           optstat%staby=.false.
-        elseif(.not. codfnd .and. lfno .gt. 0)then
+          return
+        elseif(codfnd)then
+          if(orbitcal)then
+            twiss(fbound%lb,idp,mfitdx:mfitddp)=cod
+          endif
+        elseif(lfno .gt. 0)then
           write(lfno,*)'*****qcod---> Closed orbit not found'
           pri=.true.
         endif
@@ -304,13 +305,19 @@ c     (Note) Disperdion is defined in 2*2 world
         endif
         optstat%stabx=.false.
         optstat%staby=.false.
+        return
       endif
       if(fbound%fe .gt. 0.d0)then
         call qtwissfrac1(ftwiss,trans,cod,idp,fbound%le,0.d0,fbound%fe,
      $       .false.,.true.,optstat%over)
         if(optstat%over)then
+          if(lfno .gt. 0)then
+            write(lfno,*)'***qtwiss---> Overflow'
+            pri=.true.
+          endif
           optstat%stabx=.false.
           optstat%staby=.false.
+          return
         endif
         ie1=fbound%le+1
       endif

@@ -4,10 +4,11 @@
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 l1,l2,idp,i
-      real*8 trans(4,5)
+      integer*4 ,intent(in):: l1,l2,idp
+      integer*4 i
+      real*8 ,intent(out):: trans(4,5)
       real*8 utwiss1(ntwissfun),utwiss2(ntwissfun)
-      logical*4 fold
+      logical*4 ,intent(in):: fold
       do i=1,mfitdetr
         utwiss1(i)=twiss(l1,idp,i)
         utwiss2(i)=twiss(l2,idp,i)
@@ -24,10 +25,11 @@
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 l1,l2
-      real*8 utwiss1(*),utwiss2(*)
-      real*8 trans(4,5),amux,amuy
-      logical*4 fold,trpt1
+      integer*4 ,intent(in):: l1,l2
+      real*8 ,intent(in):: utwiss1(*),utwiss2(*)
+      real*8 ,intent(out):: trans(4,5),amux,amuy
+      logical*4 ,intent(in):: fold
+      logical*4 ,intent(out):: trpt1
       integer*4 i
       real*8 detr,cc,x,px,y,py,r1,r2,r3,r4
       call qgettru(utwiss1,utwiss2,amux,amuy,

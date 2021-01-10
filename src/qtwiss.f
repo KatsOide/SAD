@@ -3,10 +3,10 @@
       use ffs
       use tffitcode
       implicit none
-      integer*4 idp,la,lb
-      real*8 twiss(nlat*(2*ndim+1),ntwissfun)
+      integer*4 ,intent(in):: idp,la,lb
+      real*8 ,intent(inout):: twiss(nlat*(2*ndim+1),ntwissfun)
       real*8 trans(4,5),cod(6)
-      logical*4 over
+      logical*4 ,intent(out):: over
       call qtwiss1(twiss,idp,la,lb,trans,cod,.false.,over)
       return
       end
@@ -24,19 +24,24 @@
       implicit none
       type (sad_comp), pointer :: cmp
       type (sad_dlist), pointer :: lsegp
-      integer*4 idp,la,lb,ip0,l1,i,l,ip1,ip,ltyp,
+      integer*4 ,intent(in):: idp,la,lb
+      integer*4 ip0,l1,i,l,ip1,ip,ltyp,
      $     j,mfr,itgetfpe,k,ibb,ibg,ntfun,ipa,irtc
       integer*8 le,lp,ld
-      real*8 twiss(nlat*(2*ndim+1),ntwissfun),epschop
-      parameter (epschop=1.d-30)
-      real*8 trans(4,5),cod(6),tr(4,5),rxy(4,5),trans6(6,6),
+      real*8 ,intent(inout):: twiss(nlat*(2*ndim+1),ntwissfun),
+     $     cod(6)
+      real*8 ,parameter ::epschop=1.d-30
+      real*8 ,intent(out):: tr(4,5)
+      real*8 trans(4,5),rxy(4,5),trans6(6,6),
      $     r1,r2,r3,r4,detr,rr,sqrdet,trtr,bx0,by0,
      $     ax0,ay0,al,pxi,pyi,pxisq,pyisq,pzi,ale,alz,psi1,psi2,
      $     theta0,x,px,y,dpsix,dpsiy,bz,
      $     pr,a,dpz,trf00,dtheta,
      $     apsi1,apsi2,sspc0,sspc,vcalpha0,fb1,fb2,
      $     ak1,ftable(4),dir
-      logical*4 over,coup,normal,mat,calpol0,insmat,err,seg,wspaccheck
+      logical*4 ,intent(out):: over
+      logical*4 ,intent(in):: mat
+      logical*4 coup,normal,calpol0,insmat,err,seg,wspaccheck
       real*8 a11,a12,a13,a14,a21,a22,a23,a24,a31,a32,a33,
      $     a34,a41,a42,a43,a44,a15,a25,a35,a45
       real*8 u11,u12,u13,u14,u21,u22,u23,u24,u31,u32,u33,
@@ -141,9 +146,7 @@ c        endif
               go to 9000
             endif
             trtr=tr(1,1)+tr(2,2)+tr(3,3)+tr(4,4)
-            if(trtr .gt. 0.d0)then
-            elseif(trtr .le. 0.d0)then
-            else
+            if(ktfenanq(trtr))then
               over=.true.
               go to 9000
             endif
@@ -788,13 +791,14 @@ c     $               'qtwiss-coup-n  ',r1,r2,r3,r4,r1*r4-r2*r3,detp
       use tffitcode
       implicit none
       type (ffs_bound) fbound
-      integer*4 la,lb
-      real*8 trans(4,5),cod(6)
-      logical*4 over
+      integer*4 ,intent(in):: la,lb
+      real*8 ,intent(inout):: trans(4,5),cod(6)
+      logical*4 ,intent(out):: over
+      logical*4 codfnd
       call tffsbound1(la,lb,fbound)
 c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       cod(5)=0.d0
-      call qcod(1,fbound,trans,cod,.true.,over)
+      call qcod(1,fbound,trans,cod,codfnd,over)
       return
       end
 
@@ -809,19 +813,25 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       real*8 conv,cx,sx,ax,bx,cy,sy,ay,by,r0,dcod(6)
       integer*4 , parameter :: itmax=30
       real*8 , parameter :: conv0=1.d-19,conv1=1.d-10,
-     $     factmin=1.d-3
-      integer*4 idp,it
+     $     factmin=1.d-3,orbmax=1.d10,trmax=1.d10
+      integer*4 ,intent(in)::  idp
+      integer*4 it
       real*8 r,fact
-      real*8 , pointer :: ptwiss(:,:)
-      real*8 trans(4,5),cod(6),cod0(6),trans1(4,5),transb(4,5),
+      real*8 ,intent(inout):: cod0(6)
+      real*8 ,intent(out) :: trans(4,5)
+      real*8 , target :: tr1(4,5)
+      real*8 , pointer :: ptwiss(:,:),tr1v(:)
+      real*8 cod(6),trans1(4,5),transb(4,5),
      $     transe(4,5),ftwiss(ntwissfun),trans2(4,5),cod00(6)
-      logical*4 over,codfnd,stab
+      logical*4 ,intent(out):: over,codfnd
+      logical*4 stab
       it=0
       r0=1.d100
       cod00=cod0
       fact=.5d0
       conv=min(conv1,conv0*(1.d0+(cod0(6)/0.001d0)**2))
       stab=.false.
+      call c_f_pointer(c_loc(tr1),tr1v,[20])
       call c_f_pointer(c_loc(rlist(iftwis)),
      $     ptwiss,[nlat*(2*ndim+1),ntwissfun])
       do while(it .le. itmax)
@@ -853,25 +863,25 @@ c          enddo
         if(fbound%fe .gt. 0.d0)then
           call qtwissfrac1(ftwiss,transe,cod,idp,
      $         fbound%le,0.d0,fbound%fe,.true.,.true.,over)
-c          do i=1,5
-            trans(1,1:5)=
-     $           transe(1,1)*trans2(1,1:5)+transe(1,2)*trans2(2,1:5)
-     $          +transe(1,3)*trans2(3,1:5)+transe(1,4)*trans2(4,1:5)
-            trans(2,1:5)=
-     $           transe(2,1)*trans2(1,1:5)+transe(2,2)*trans2(2,1:5)
-     $          +transe(2,3)*trans2(3,1:5)+transe(2,4)*trans2(4,1:5)
-            trans(3,1:5)=
-     $           transe(3,1)*trans2(1,1:5)+transe(3,2)*trans2(2,1:5)
-     $          +transe(3,3)*trans2(3,1:5)+transe(3,4)*trans2(4,1:5)
-            trans(4,1:5)=
-     $           transe(4,1)*trans2(1,1:5)+transe(4,2)*trans2(2,1:5)
-     $          +transe(4,3)*trans2(3,1:5)+transe(4,4)*trans2(4,1:5)
-c          enddo
-          trans(:,5)=trans(:,5)+transe(:,5)
+          tr1(1,1:5)=
+     $         transe(1,1)*trans2(1,1:5)+transe(1,2)*trans2(2,1:5)
+     $         +transe(1,3)*trans2(3,1:5)+transe(1,4)*trans2(4,1:5)
+          tr1(2,1:5)=
+     $         transe(2,1)*trans2(1,1:5)+transe(2,2)*trans2(2,1:5)
+     $         +transe(2,3)*trans2(3,1:5)+transe(2,4)*trans2(4,1:5)
+          tr1(3,1:5)=
+     $         transe(3,1)*trans2(1,1:5)+transe(3,2)*trans2(2,1:5)
+     $         +transe(3,3)*trans2(3,1:5)+transe(3,4)*trans2(4,1:5)
+          tr1(4,1:5)=
+     $         transe(4,1)*trans2(1,1:5)+transe(4,2)*trans2(2,1:5)
+     $         +transe(4,3)*trans2(3,1:5)+transe(4,4)*trans2(4,1:5)
+          tr1(:,5)=tr1(:,5)+transe(:,5)
         else
-          trans=trans2
+          tr1=trans2
         endif
-        call resetnan(cod,1.d300)
+        call resetnan(cod,orbmax)
+        call resetnan(tr1v,trmax)
+        trans=tr1
         if(.not. orbitcal)then
           codfnd=.true.
         endif

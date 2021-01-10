@@ -253,10 +253,10 @@ static int MkSecureTemp(integer4 *isp1,
   }
 
   ka1 = ktamask & ktastk(*isp1 + 1);
+  nc = ilist(1, ka1);
 #if SAD_REQUIRE_STRING_TERMINATION
-  jlist(ilist(1, ka1) + 1, ka1 + 1) = '\0';
+  jlist(nc + 1, ka1 + 1) = '\0';
 #endif
-  nc = itastk(1, ka1);
   slen = 0;
   if(nc < 1) {
     *kx = kxfailed;
@@ -273,7 +273,7 @@ static int MkSecureTemp(integer4 *isp1,
 #if SAD_REQUIRE_STRING_TERMINATION
     jlist(ilist(1, ka2) + 1, ka2 + 1) = '\0';
 #endif
-    slen = ktastk(ka2);
+    slen = ilist(1,ka2);
   }
 
   template = malloc(nc + slen + 1);

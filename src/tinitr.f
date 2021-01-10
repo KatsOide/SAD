@@ -1,6 +1,6 @@
       subroutine tinitr(trans)
       implicit none
-      real*8 trans(36)
+      real*8 ,intent(out):: trans(36)
       trans(1 )=1.d0
       trans(2 )=0.d0
       trans(3 )=0.d0
@@ -42,7 +42,7 @@
 
       subroutine tinitr12(trans)
       implicit none
-      real*8 trans(72)
+      real*8 ,intent(out):: trans(72)
       trans=0.d0
       trans(1 )=1.d0
       trans(8 )=1.d0

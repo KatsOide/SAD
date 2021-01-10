@@ -14,7 +14,7 @@ If[~SameQ[c,{}],
       c=MakeConditionMatrix[If[NumberQ[c[[-1]]],{c},c],str[[1]]]
     ]
   ];
-x=If[c=={},
+x=If[c==={},
     LinearSolve[a,b,Threshold->Epsilon/.op],
     LinearSolveConditioned[a,b,Epsilon/.op,0,True,c[[1]],c[[2]]]
   ];
@@ -64,7 +64,7 @@ If[Calc/.op,
   If[UnsameQ[n,Null],
     If[UnsameQ[center,Null],
       d=Map[ClosedBumpCondition[center,#,n,str]&,Characters[hv]/.{"H"->"X","V"->"Y"}];
-      If[Flatten[d[[,2]]]=={},  index=Range[Length[str[[1]]]] ];
+      If[Flatten[d[[,2]]]==={},  index=Range[Length[str[[1]]]] ];
       c=Join[c,Flatten[d[[,1,2]],1]];
       index=Union[Join[index,Flatten[d[[,2]]]]]
     ]
@@ -244,7 +244,7 @@ CorrectOrbitBump[orbitkind_,bumpset_,bpm_,str_,opt_,options___]:=
     If[UnsameQ[weigh,{}],ww=ww*weigh];
     w=Append[w,ww];
     b=Append[b,
-       If[orb=={}
+       If[orb==={}
        , If[p==1 || p==3
          , If[bpm[3,(1+p)/2]==0
            , Twiss[pt,bpm[[1]]]-LINE[pt,bpm[[4]]]-bpm[[2,(1+p)/2]]
@@ -280,7 +280,7 @@ CorrectOrbitBump[orbitkind_,bumpset_,bpm_,str_,opt_,options___]:=
 
   solv=Solver/.op;
   nx=If[solv==="LeastSquare",0,If[VectorQ[solv] && solv[[1]]=="Micado",solv[[2]],Length[str[[1]]] ]];
-  If[c=={},
+  If[c==={},
     x=LinearSolveConditioned[a,b,Epsilon/.op,nx,True],
     x=LinearSolveConditioned[a,b,Epsilon/.op,nx,True,c1,c[[2]]] ];
 

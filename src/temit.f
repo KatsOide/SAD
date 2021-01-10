@@ -246,6 +246,7 @@ c     $       beamp(1),beamp(6),beamp(21)
       use tspin, only:spnorm,sremit
       use eigen
       use macmath
+      use mathfun
       implicit none
       real*8 ,parameter:: conv=1.d-12
       integer*4 lfno,i,j,k,k1,k2,k3,m,l,n
@@ -301,7 +302,7 @@ c     $       tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
       ceig0=ceig
       cd(4:6)=log(cc(1:5:2))
       if(vceff .ne. 0.d0)then
-        phirf=asin(u0*pgev/vceff)
+        phirf=asinz(u0*pgev/vceff)
         heff=wrfeff*cveloc/omega0
       else
         phirf=0.d0

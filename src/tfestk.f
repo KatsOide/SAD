@@ -536,14 +536,14 @@ c      include 'DEBUG.inc'
       use ophash
       use eexpr
       implicit none
-      type (sad_descriptor) kx,tfpart
+      type (sad_descriptor) kx,tfpart,tfecmplxl
       integer*4 ,intent(in):: isp1,iah
       integer*4 ,intent(out):: irtc,isp0
       type (sad_dlist), pointer :: klx
       integer*8 iee0
-      integer*4 i,iy,isp00,iv
+      integer*4 i,isp00,iv
       logical*4 ,intent(in):: comp
-      real*8 vx,x,y
+      real*8 vx
       irtc=1
       kx=dxnullo
       if(constop(iah))then
@@ -560,40 +560,10 @@ c      include 'DEBUG.inc'
               return
             endif
           endif
-        case (mtfpower)
-          if(ktfrealq(ktastk(isp)))then
-            y=rtastk(isp)
-            if(y .eq. 1.d0)then
-              kx=dtastk(isp1+1)
-              irtc=0
-              return
-            elseif(y .eq. 0.d0 .and.
-     $             redmath%value%k .ne. 0)then
-              kx%k=ktftrue
-              irtc=0
-              return
-            elseif(iand(ktrmask,ktastk(isp1+1)) .ne. ktfnr)then
-              x=rtastk(isp1+1)
-              if(y .eq. -1.d0)then
-                if(x .eq. 0.d0)then
-                  return
-                else
-                  vx=1.d0/x
-                endif
-              elseif(y .eq. 2.d0)then
-                vx=x**2
-              elseif(y .eq. .5d0)then
-                vx=sqrt(x)
-              else
-                iy=int(y)
-                if(y-iy .eq. 0.d0)then
-                  vx=x**iy
-                else
-                  vx=x**y
-                endif
-              endif
-              kx=dfromr(vx)
-              irtc=0
+        case (mtfpower,mtfrevpower)
+          if(tfconstq(ktastk(isp1+1)))then
+            if(tfconstq(ktastk(isp)))then
+              kx=tfecmplxl(dtastk(isp1+1),dtastk(isp),mtfpower)
               return
             endif
           endif

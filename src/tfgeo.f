@@ -8,11 +8,11 @@
       use geolib
       implicit none
       type (sad_comp), pointer :: cmp
+      logical*4 ,intent(in):: calgeo0
       integer*4 i,lxp,lt,nv,j,it
       real*8 geo1(3,4),geo2(3,3),vsave(256),dpos,offset,xp,fr,pos0,
      $     dgo(3),tffsmarkoffset,rgetgl1,poso,posi
       logical*4 calgeo,calpol0,chg
-      logical*4 ,intent(in):: calgeo0
       call tfsetparam
       if(.not. geocal)then
         if(gammab(1) .ne. p0)then
@@ -156,15 +156,14 @@
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 ,intent(in):: istart0,istop
+      logical*4 ,intent(in):: calgeo,acconly
       integer*4 istart,ke,ke1,i,k,i1
       integer*8 id
-      real*8 p1,h1,ali,v,dchi3,
-     $     rho0,sp0,cp0,r1,r2,cchi1,schi1,
+      real*8 p1,h1,ali,v,dchi3,rho0,sp0,cp0,r1,r2,cchi1,schi1,
      $     cchi2,schi2,cchi3,schi3,dx,dy,dz,r11,r12,r13,
      $     r31,r32,r33,oneev,phi,fb1,fb2,x(3),y(3),
      $     theta,cost,sint,r21,r22,r23,ald,tfacc
       parameter (oneev=1.d0+3.83d-12)
-      logical*4 ,intent(in):: calgeo,acconly
       logical*4 sol,dir
       call tallocvar(bsi,1)
 c     begin initialize for preventing compiler warning
@@ -372,11 +371,11 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
       use mathfun ,only:h2p
       implicit none
       integer*4 ,intent(in):: i
+      real*8 ,intent(inout):: h1,p1
+      logical*4 ,intent(in):: dir
       integer*4 id
       integer*8 ip
-      real*8 ,intent(inout):: h1,p1
       real*8 harm,w,v,phic,dh,h2,p2
-      logical*4 ,intent(in):: dir
       real*8 , parameter :: oneev=1.d0+3.83d-12
       ip=merge(idvalc(i),latt(i),ideal)
       id=idtypec(i)

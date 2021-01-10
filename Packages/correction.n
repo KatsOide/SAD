@@ -37,7 +37,7 @@ CorrectOrbit[orbitkind_,mon_,str_,opt_,options___]:=
 
     nx=If[solv==="LeastSquare",0,If[VectorQ[solv] && solv[[1]]=="Micado",solv[[2]],Length[istr] ]];
     Switch[(SVDmode/.op),
-      0, If[c=={},
+      0, If[c==={},
         x=LinearSolveConditioned[a,b,Epsilon/.op,nx,True],
         x=LinearSolveConditioned[a,b,Epsilon/.op,nx,True,c[[1]],c[[2]]]
         ],
@@ -46,7 +46,7 @@ CorrectOrbit[orbitkind_,mon_,str_,opt_,options___]:=
       (*Print[{etre,mid,sid,midfile,sidfile}];*)
       If[ etre ,
         $CorSV["use",kind,mid,sid]=$CorSV["use",kind,mid,sid]+10;
-        x0=If[c=={},Table[0,{Length[a[[1]]]}],LinearSolve[ c[[1]],c[[2]] ]];
+        x0=If[c==={},Table[0,{Length[a[[1]]]}],LinearSolve[ c[[1]],c[[2]] ]];
         (*x=Dot[$CorSV[kind,mid,sid],b-a.x0]+x0*)
         {u,wi,v}=$CorSV[kind,mid,sid];
         wm=Max[wi]*Threshold;
@@ -95,7 +95,7 @@ CorrectOrbit[orbitkind_,mon_,str_,opt_,options___]:=
         , (*Print["  -CorrectOrbit:new matrix: Explicit SVD"];*)
         $CorSV["use",kind,mid,sid]=100;
         $CorSV[kind,"Matrices"]=If[Head[$CorSV[kind,"Matrices"]]===$CorSV,1,$CorSV[kind,"Matrices"]+1];
-        If[c=={},
+        If[c==={},
           $CorSV[kind,mid,sid]=LinearSolveConditionedS[a,b,Epsilon/.op,nx,True,c,c,op],
           $CorSV[kind,mid,sid]=LinearSolveConditionedS[a,b,Epsilon/.op,nx,True,c[[1]],c[[2]],op]
           ];
@@ -143,7 +143,7 @@ CorrectSingleKick[kind_,mon_,str_,cw_,opt_,op_]:=Module[
         If[VectorQ[weigh,NumberQ],weigh,Map[weigh,imon]]];
       aa*=ww;
       aa=(#*cw)&/@aa;
-      bb=If[orb=={},
+      bb=If[orb==={},
            If[pp==1 || pp==3,
              If[mon[[3,(1+pp)/2]]==0||FLAG["OPERATE"],
                Twiss[t[[pp]],imon]-LINE[t[[pp]],mon[[4]]]-mon[[2,(1+pp)/2]],
@@ -181,17 +181,17 @@ SteerConditions[str_,opt_,op_]:=Module[{istr,c,tt},
     ];
   If[(ZeroSum/.op)||UnsameQ[TotalKick/.op,{Null,Null}],
     tt=If[(ZeroSum/.op),{0,0},TotalKick/.op];
-    If[c=={},c={{},{}}];
+    If[c==={},c={{},{}}];
     If[ NumberQ[tt[[1]]], c=MapThread[ Append,{c,{str[[3]],tt[[1]]}} ] ];
     If[ NumberQ[tt[[2]]], c=MapThread[ Append,{c,{1-str[[3]],tt[[2]]}} ] ];
     ];
   If[NumberQ[TotalDZ/.op],
     tt=(TotalDZ/.op);
-    If[c=={},c={{},{}}];
+    If[c==={},c={{},{}}];
     c=MapThread[ Append,{c,{Table[Optik[opt,1,istr[[i]],If[str[[3,i]],7,9]],{i,Length[istr]}],tt}} ]
     ];
   If[UnsameQ[DN/.op,{Null,Null}],
-    If[c=={},c={{},{}}];
+    If[c==={},c={{},{}}];
     c=MapThread[ Join,{c,TuneConstraint[DN/.op,str,opt,op]} ]
     ];
   c]
@@ -199,7 +199,7 @@ SteerConditions[str_,opt_,op_]:=Module[{istr,c,tt},
 !TuneConstraint[{dnx_,dny_},str_,opt_,op_]:=Module[{sext,r,b,c={{},{}}},
 !  sext=Select[LINE["position","*"],LINE["type",#]==6||LINE["type",#]==22&];  ! type=22 for MULT
 !  sext=Select[sext,LINE["K2",#]<>0&];
-!  If[sext=={},Return[c]];
+!  If[sext==={},Return[c]];
 !  r=ResponseMatrixG[sext,str,opt,FLAG["CELL"],"X",Tune/.op];
 !  If[NumberQ[dnx],
 !    b=Plus@@((LINE["K2",sext]*Optik[opt,1,sext,2])*r)/(4*Pi);
@@ -215,7 +215,7 @@ SteerConditions[str_,opt_,op_]:=Module[{istr,c,tt},
 TuneConstraint[{dnx_,dny_},str_,opt_,op_]:=Module[{sext,ls,k2,x,p,ax,bx,gx,ay,by,gy,a1,a2,b,c={{},{}}},
   sext=Select[LINE["position","*"],LINE["type",#]==6||LINE["type",#]==22&];  ! type=22 for MULT
   sext=Select[sext,LINE["K2",#]<>0&];
-  If[sext=={},Return[c]];
+  If[sext==={},Return[c]];
   ls=LINE["L",sext];
   k2=LINE["K2",sext];
   x=ResponseMatrixG[sext,str,opt,FLAG["CELL"],"X",Tune/.op];
@@ -271,11 +271,11 @@ CorrectLocal[kind_,region_,mon_,str_,opt_,options___]:=Module[
   ind=Sort[Table[indA[[i]],{i,1+n1,Length[indA]-n2}]];
   monSelected=MapAt[Part[#,ind]&,mon,{{1},{2,1},{2,2},{4}}];
   wc=WhatClosed/.op;
-  kindClose=If[wc=={},kind,wc];
+  kindClose=If[wc==={},kind,wc];
   kindClose=If[VectorQ[kindClose],kindClose,{kindClose}];
-  If[wc=={},kindClose=Union[kindClose,CanonicalPartner/@kindClose]];
+  If[wc==={},kindClose=Union[kindClose,CanonicalPartner/@kindClose]];
 ! Do[
-!   If[wc=={}
+!   If[wc==={}
 !   , c=Append[c,ResponseMatrixG[to,strSelected,opt,FLAG["CELL"],kindClose[i],Tune/.op]];
 !     If[~FLAG["CELL"],c=Append[c,ResponseMatrixG[from,strSelected,opt,FLAG["CELL"],kindClose[i],Tune/.op]]]
 !   , c=Append[c,ResponseMatrixG[to,strSelected,opt,FLAG["CELL"],kindClose[i],Tune/.op]];
@@ -455,7 +455,7 @@ WriteMatrixOnFile[ kind_,midfile_,sidfile_,bpm_,st_,ainv_]:=Module[
 ];
 
 LinearSolveConditionedS[a_,b_,Threshold_,nx_,normalize_,c_,d_,op_]:=Module[{u,wi,v,c1,x0,a1},
-  If[c=={},
+  If[c==={},
     SingularValues[a,Tolerance->1e-15,Inverse->False]
   , 
     {u,wi,v}=SingularValues[Transpose[c],Inverse->False];

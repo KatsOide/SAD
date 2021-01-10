@@ -1,6 +1,7 @@
       subroutine eigs33(a,r,eig)
       implicit none
-      real*8 a(3,3),r(3,3),eig(3)
+      real*8 ,intent(in):: a(3,3)
+      real*8 ,intent(out):: r(3,3),eig(3)
 
 c     Use extended double precision real for internal variables if possible
       integer ex_real_kind
@@ -18,7 +19,7 @@ c     Use extended double precision real for internal variables if possible
      $     fact,dd,u,g,y33,y22,y11
       parameter (one=1.)
 
-      d=abs(complex(a(2,1),a(3,1)))
+      d=hypot(a(2,1),a(3,1))
       if(d .ne. 0.d0)then
         c=a(2,1)/d
         s=a(3,1)/d
@@ -50,7 +51,7 @@ c     write(*,'(1x6f12.6)')x11,x21,x31,x22,x32,x33
       if(abs(x21)/fact+dd .eq. dd)then
         eig(1)=dble(x11)
         u=x22-x33
-        d=abs(complex(u,2.d0*x32))
+        d=hypot(u,2.d0*x32)
         if(d .eq. 0.d0)then
           eig(2)=dble(x22)
           eig(3)=dble(x33)
@@ -85,7 +86,7 @@ c         eig(3)=.5d0*(x22+x33-sign(d,u))
       if(abs(x32)/fact+dd .eq. dd)then
         eig(3)=dble(x33)
         u=x11-x22
-        d=abs(complex(u,2.d0*x21))
+        d=hypot(u,2.d0*x21)
         if(d .eq. 0.d0)then
           eig(1)=dble(x11)
           eig(2)=dble(x22)
@@ -117,9 +118,9 @@ c         eig(2)=.5d0*(x11+x22-sign(d,u))
         go to 1000
       endif
       u=x22-x11
-      d=abs(complex(u,2.d0*x21))
+      d=hypot(u,2.d0*x21)
       g=x11-2.d0*x21**2/(u+sign(d,u))
-      d=abs(complex(x32,x33-g))
+      d=hypot(x32,x33-g)
       c=(x33-g)/d
       s=-x32/d
       y22=x22
@@ -139,7 +140,7 @@ c         eig(2)=.5d0*(x11+x22-sign(d,u))
       r32= c*rr+s*r33
       r33=-s*rr+c*r33
       if(abs(x31)/fact+abs(x32) .ne. abs(x32))then
-        d=abs(complex(x32,x31))
+        d=hypot(x32,x31)
         c=x32/d
         s=-x31/d
         y11=x11
@@ -178,8 +179,10 @@ c         eig(2)=.5d0*(x11+x22-sign(d,u))
       real*8 function eigr33(r,u,ndim)
       use macmath
       implicit none
-      integer*4 ndim
-      real*8 r(ndim,3),u(3),a,b,s2,u1,u2,u3,w,x1,x2,x3,c,s
+      integer*4 ,intent(in):: ndim
+      real*8 ,intent(in):: r(ndim,3)
+      real*8 ,intent(out):: u(3)
+      real*8 a,b,s2,u1,u2,u3,w,x1,x2,x3,c,s
       s2=r(1,3)**2+r(2,3)**2
       if(s2 .eq. 0.d0)then
         if(r(3,3) .gt. 0.d0)then
@@ -224,8 +227,10 @@ c        w=sign(hypot3(u1,u2,u3),u3*r(3,3))
 
       subroutine rot33(r,u,phi,ndim)
       implicit none
-      integer*4 ndim
-      real*8 r(ndim,3),u(3),phi,w,u1,u2,u3,c,s,q,th
+      integer*4 ,intent(in):: ndim
+      real*8 ,intent(out):: r(ndim,3)
+      real*8 ,intent(in):: u(3)
+      real*8 phi,w,u1,u2,u3,c,s,q,th
 c      w=hypot(u(1),hypot(u(2),u(3)))
       w=norm2([u(1),u(2),u(3)])
       u1=u(1)/w

@@ -48,3 +48,4 @@ contrib/BBBrem_dir/*
 Library/lib/*
 Library/lib/App/*
 Library/lib/App/LogBrowser/*
+src/*.f_*

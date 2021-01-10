@@ -11,7 +11,7 @@
       integer*8 kax
       integer*4 itx,nc,lfno,itfpeeko,next,next1,ip0
       logical*4 exist,force
-      character*(*) word
+      character*(*) ,intent(inout):: word
       character peekch
       integer*4 l,itfdownlevel,lenw,irtc
       real*8 , parameter :: amaxline=8
@@ -103,12 +103,14 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
       subroutine tfsetout(kx,lfno,amaxline)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(in):: kx
       type (sad_rlist), pointer ::klarg
       type (sad_symdef), pointer :: sdout
       integer*8 karg,kh,ktdhtaloc,kad,kan,ktdaloc
-      integer*4 lfno,irtc,itfhasharg
-      real*8 al,amaxline
+      integer*4 ,intent(in):: lfno
+      integer*4 irtc,itfhasharg
+      real*8 al
+      real*8 ,intent(in):: amaxline
       al=rlist(iaxline)+1.d0
       rlist(iaxline)=al
       karg=ktavaloc(-1,1,klarg)

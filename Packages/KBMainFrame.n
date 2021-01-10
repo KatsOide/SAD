@@ -1124,7 +1124,7 @@ KBF$ArrangeComponents[w_,np_,i0_,add_,opt___] := Module[
     );
   w[i] = Frame[w[np],Side->"left",Fill->"x",Expand->True,Anchor->"n",
     Null@@trbg[np]];icgf=i++;
-  If[add=={}, Return[If[btv, {i,lv}, i]]];
+  If[add==={}, Return[If[btv, {i,lv}, i]]];
   Scan[(
     {acomp,t,v,o,c,n,wv,twv,us,cn,to,co,nf,ew,cp,rg,bd,cl,ot,dnf,dew,dcp,drg,dbd,dp,fx,lo,spb,rem} =
       SwitchCases[If[#<=>Null,#,{}],{Rule[Add,_],Rule[Text,_],RuleDelayed[Variable,_],Rule[Items,_],RuleDelayed[Command,_],

@@ -5,6 +5,13 @@
      $     s1,xs1,c1,dc1,sh2,xsh2,ch2,dch2
       end type
 
+      type tzparam1
+      sequence
+      real*8 w2,ws,w12,wd,phi2,
+     $     wss,csw1,csws,ca1,dcw1,dcw2,cr2,cr3,
+     $     g1,g2,wr1,wr2,dxs,aw1,aw2,cxs1,cxs2      
+      end type
+
       type tzparamp
       sequence
       real*8 wr1p,wr2p,g1p,g2p,c1p,s1p,xs1p,ch2p,sh2p,xsh2p,
@@ -13,16 +20,57 @@
      $     cr2p, cr3p,dxsp,aw1p,aw2p,cxs1p,cxs2p
       end type
 
+      type tzparams
+      sequence
+      type (tzparam0) tz0
+      type (tzparam1) tz1
+      end type
+
       type tzparam
       sequence
       type (tzparam0) tz0
-      real*8 w2,ws,w12,wd,phi2,
-     $     wss,csw1,csws,ca1,dcw1,dcw2,cr2,cr3,
-     $     g1,g2,wr1,wr2,dxs,aw1,aw2,cxs1,cxs2
+      type (tzparam1) tz1
       type (tzparamp) tzp
       end type
 
       contains
+        pure subroutine tztafs(tz,
+     $     zwu, pxt, pyt, zw1, wst, w12t, swss, g1t, dz)
+        implicit none
+        type (tzparams) , intent(in)::tz
+        real*8 , intent(in)::zwu, pxt, pyt, zw1, wst, w12t, swss, g1t
+        real*8 , intent(out)::dz
+        real*8 f1,f2,f3,w12xsh,wsxs,wsm,ws1,ws2,cr1,cwsd,cswa
+        associate (
+     $       c1=>tz%tz0%c1,s1=>tz%tz0%s1,dc1=>tz%tz0%dc1,
+     $       xs1=>tz%tz0%xs1,ch2=>tz%tz0%ch2,sh2=>tz%tz0%sh2,
+     $       dch2=>tz%tz0%dch2,xsh2=>tz%tz0%xsh2,pr=>tz%tz0%pr,
+     $       akkp=>tz%tz0%akkp,aln=>tz%tz0%aln,bzp=>tz%tz0%bzp,
+     $       w1=>tz%tz0%w1,phi1=>tz%tz0%phi1,
+     $       w2=>tz%tz1%w2,ws=>tz%tz1%ws,w12=>tz%tz1%w12,wd=>tz%tz1%wd,
+     $       phi2=>tz%tz1%phi2,wss=>tz%tz1%wss,csw1=>tz%tz1%csw1,
+     $       csws=>tz%tz1%csws,ca1=>tz%tz1%ca1,dcw1=>tz%tz1%dcw1,
+     $       dcw2=>tz%tz1%dcw2,cr2=>tz%tz1%cr2,cr3=>tz%tz1%cr3,
+     $       g1=>tz%tz1%g1,g2=>tz%tz1%g2,cxs1=>tz%tz1%cxs1,
+     $       cxs2=>tz%tz1%cxs2,aw1=>tz%tz1%aw1,aw2=>tz%tz1%aw2,
+     $       wr1=>tz%tz1%wr1,wr2=>tz%tz1%wr2,dxs=>tz%tz1%dxs)
+        w12xsh = w12t*xsh2
+        wsxs = wst*xs1
+        cwsd = c1*w12xsh - ch2*wsxs
+        cswa = (csw1 + cwsd)*swss
+        wsm = 4.d0*swss*akkp
+        ws1 = (-1.d0 + wsm)*wst
+        ws2 = w12t*(1.d0 + wsm)
+        cr1 = bzp**2*swss
+        f1 = cswa + csws - zw1
+        f2 = ca1*cr1 + g1t
+        f3 = 2.d0*cr1*cwsd + cr3*w12xsh
+     $       +dcw1*ws1 + dcw2*ws2 - cr2*wsxs
+        dz=zwu*(zwu*f3/2.d0 + f2*pxt + bzp*f1*pyt) - (zw1*pyt**2)/2.d0
+        return
+        end associate
+        end subroutine
+
         pure subroutine tztaf(tz,
      $     zwu, pxt, pyt, zw1, wst, w12t, swss, g1t, dz,
      $     zwup, zw1p, wstp, w12tp, g1tp, dzp)
@@ -37,15 +85,18 @@
      $       w12xshp,wsxsp,wsmp,ws1p,ws2p,cr1p,cwsdp,
      $       cswa,cswap
         associate (
-     $       w1=>tz%tz0%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
-     $       phi1=>tz%tz0%phi1,phi2=>tz%phi2,wss=>tz%wss,
-     $       bzp=>tz%tz0%bzp,akkp=>tz%tz0%akkp,aln=>tz%tz0%aln,
-     $       csw1=>tz%csw1,csws=>tz%csws,ca1=>tz%ca1,dcw1=>tz%dcw1,
-     $       dcw2=>tz%dcw2,cr2=>tz%cr2,cr3=>tz%cr3,g1=>tz%g1,g2=>tz%g2,
-     $       wr1=>tz%wr1,wr2=>tz%wr2,
-     $     c1=>tz%tz0%c1,s1=>tz%tz0%s1,dc1=>tz%tz0%dc1,xs1=>tz%tz0%xs1,
-     $       ch2=>tz%tz0%ch2,sh2=>tz%tz0%sh2,dch2=>tz%tz0%dch2,
-     $       xsh2=>tz%tz0%xsh2,pr=>tz%tz0%pr,
+     $       c1=>tz%tz0%c1,s1=>tz%tz0%s1,dc1=>tz%tz0%dc1,
+     $       xs1=>tz%tz0%xs1,ch2=>tz%tz0%ch2,sh2=>tz%tz0%sh2,
+     $       dch2=>tz%tz0%dch2,xsh2=>tz%tz0%xsh2,pr=>tz%tz0%pr,
+     $       akkp=>tz%tz0%akkp,aln=>tz%tz0%aln,bzp=>tz%tz0%bzp,
+     $       w1=>tz%tz0%w1,phi1=>tz%tz0%phi1,
+     $       w2=>tz%tz1%w2,ws=>tz%tz1%ws,w12=>tz%tz1%w12,wd=>tz%tz1%wd,
+     $       phi2=>tz%tz1%phi2,wss=>tz%tz1%wss,csw1=>tz%tz1%csw1,
+     $       csws=>tz%tz1%csws,ca1=>tz%tz1%ca1,dcw1=>tz%tz1%dcw1,
+     $       dcw2=>tz%tz1%dcw2,cr2=>tz%tz1%cr2,cr3=>tz%tz1%cr3,
+     $       g1=>tz%tz1%g1,g2=>tz%tz1%g2,cxs1=>tz%tz1%cxs1,
+     $       cxs2=>tz%tz1%cxs2,aw1=>tz%tz1%aw1,aw2=>tz%tz1%aw2,
+     $       wr1=>tz%tz1%wr1,wr2=>tz%tz1%wr2,dxs=>tz%tz1%dxs,
      $     c1p=>tz%tzp%c1p,s1p=>tz%tzp%s1p,xs1p=>tz%tzp%xs1p,
      $       ch2p=>tz%tzp%ch2p,sh2p=>tz%tzp%sh2p,xsh2p=>tz%tzp%xsh2p,
      $     w1p=>tz%tzp%w1p,w2p=>tz%tzp%w2p,wsp=>tz%tzp%wsp,
@@ -55,10 +106,9 @@
      $     wssip=>tz%tzp%wssip, ca1p=>tz%tzp%ca1p,
      $       dcw1p=>tz%tzp%dcw1p, dcw2p=>tz%tzp%dcw2p,
      $       csw1p=>tz%tzp%csw1p,cswsp=>tz%tzp%cswsp,
-     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,dxs=>tz%dxs,
-     $       dxsp=>tz%tzp%dxsp,aw1=>tz%aw1,aw2=>tz%aw2,
-     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,cxs1=>tz%cxs1,
-     $       cxs2=>tz%cxs2,cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
+     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,dxsp=>tz%tzp%dxsp,
+     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,
+     $       cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
           w12xsh = w12t*xsh2
           wsxs = wst*xs1
           cwsd = c1*w12xsh - ch2*wsxs
@@ -69,9 +119,9 @@
           cr1 = bzp**2*swss
           f1 = cswa + csws - zw1
           f2 = ca1*cr1 + g1t
-          f3 = 2.d0*cr1*cwsd + cr3*w12xsh +
-     $         dcw1*ws1 + dcw2*ws2 - cr2*wsxs
-          dz=zwu*(zwu*f3/2.d0+(f2*pxt + bzp*f1*pyt)) - (zw1*pyt**2)/2.d0
+          f3 = 2.d0*cr1*cwsd + cr3*w12xsh
+     $         +dcw1*ws1 + dcw2*ws2 - cr2*wsxs
+          dz=zwu*(zwu*f3/2.d0 + f2*pxt + bzp*f1*pyt) - (zw1*pyt**2)/2.d0
           if(present(dzp))then
             w12xshp = w12tp*xsh2 + w12t*xsh2p
             wsxsp = wstp*xs1 + wst*xs1p
@@ -95,45 +145,43 @@
         end associate
         end subroutine
 
-        pure elemental function tzsetparam(dp,aln0,akk,bz) result(tz)
+        subroutine tzsetparam(tz,dp,aln0,akk,bz)
+        use iso_c_binding
+        implicit none
+        real*8 ,intent(in):: dp,bz,aln0,akk
+        type (tzparam) ,intent(inout),target:: tz
+        type (tzparams) ,pointer:: tzs
+        call c_f_pointer(c_loc(tz),tzs)
+        call tzsetparams(tzs,dp,aln0,akk,bz)
+        return
+        end subroutine
+
+        pure subroutine tzsetparams(tz,dp,aln0,akk,bz)
         use mathfun
         implicit none
-        type (tzparam) tz
+        type (tzparams) ,intent(out):: tz
         real*8 ,intent(in):: dp,bz,aln0,akk
-        real*8 wa
         associate (
-     $       w1=>tz%tz0%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
-     $       phi1=>tz%tz0%phi1,phi2=>tz%phi2,wss=>tz%wss,
-     $       bzp=>tz%tz0%bzp,akkp=>tz%tz0%akkp,aln=>tz%tz0%aln,
-     $       csw1=>tz%csw1,csws=>tz%csws,ca1=>tz%ca1,dcw1=>tz%dcw1,
-     $       dcw2=>tz%dcw2,cr2=>tz%cr2,cr3=>tz%cr3,g1=>tz%g1,g2=>tz%g2,
-     $       wr1=>tz%wr1,wr2=>tz%wr2,aw1=>tz%aw1,aw2=>tz%aw2,
-     $     c1=>tz%tz0%c1,s1=>tz%tz0%s1,dc1=>tz%tz0%dc1,xs1=>tz%tz0%xs1,
-     $       ch2=>tz%tz0%ch2,sh2=>tz%tz0%sh2,dch2=>tz%tz0%dch2,
-     $       xsh2=>tz%tz0%xsh2,pr=>tz%tz0%pr,
-     $     c1p=>tz%tzp%c1p,s1p=>tz%tzp%s1p,xs1p=>tz%tzp%xs1p,
-     $       ch2p=>tz%tzp%ch2p,sh2p=>tz%tzp%sh2p,xsh2p=>tz%tzp%xsh2p,
-     $     w1p=>tz%tzp%w1p,w2p=>tz%tzp%w2p,wsp=>tz%tzp%wsp,
-     $       w12p=>tz%tzp%w12p,wdp=>tz%tzp%wdp,phi1p=>tz%tzp%phi1p,
-     $       phi2p=>tz%tzp%phi2p,g1p=>tz%tzp%g1p,g2p=>tz%tzp%g2p,
-     $       wr1p=>tz%tzp%wr1p,wr2p=>tz%tzp%wr2p,
-     $     wssip=>tz%tzp%wssip, ca1p=>tz%tzp%ca1p,
-     $       dcw1p=>tz%tzp%dcw1p, dcw2p=>tz%tzp%dcw2p,
-     $       csw1p=>tz%tzp%csw1p,cswsp=>tz%tzp%cswsp,dxs=>tz%dxs,
-     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,
-     $       dxsp=>tz%tzp%dxsp,
-     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,cxs1=>tz%cxs1,
-     $       cxs2=>tz%cxs2,cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
-
+     $       c1=>tz%tz0%c1,s1=>tz%tz0%s1,dc1=>tz%tz0%dc1,
+     $       xs1=>tz%tz0%xs1,ch2=>tz%tz0%ch2,sh2=>tz%tz0%sh2,
+     $       dch2=>tz%tz0%dch2,xsh2=>tz%tz0%xsh2,pr=>tz%tz0%pr,
+     $       akkp=>tz%tz0%akkp,aln=>tz%tz0%aln,bzp=>tz%tz0%bzp,
+     $       w1=>tz%tz0%w1,phi1=>tz%tz0%phi1,
+     $       w2=>tz%tz1%w2,ws=>tz%tz1%ws,w12=>tz%tz1%w12,wd=>tz%tz1%wd,
+     $       phi2=>tz%tz1%phi2,wss=>tz%tz1%wss,csw1=>tz%tz1%csw1,
+     $       csws=>tz%tz1%csws,ca1=>tz%tz1%ca1,dcw1=>tz%tz1%dcw1,
+     $       dcw2=>tz%tz1%dcw2,cr2=>tz%tz1%cr2,cr3=>tz%tz1%cr3,
+     $       g1=>tz%tz1%g1,g2=>tz%tz1%g2,cxs1=>tz%tz1%cxs1,
+     $       cxs2=>tz%tz1%cxs2,aw1=>tz%tz1%aw1,aw2=>tz%tz1%aw2,
+     $       wr1=>tz%tz1%wr1,wr2=>tz%tz1%wr2,dxs=>tz%tz1%dxs)
         if(bz .eq. 0.d0)then
-          tz%tz0=tzsetparam0(dp,aln0,akk)
+          call tzsetparam0(tz%tz0,dp,aln0,akk)
         else
           aln=aln0
           pr=1.d0+dp
           bzp=bz/pr
           akkp=akk/pr
-          wa=hypot(bzp**2,2.d0*akkp)
-          w1=sqrt((bzp**2+wa)*.5d0)
+          w1=sqrt((bzp**2+hypot(bzp**2,2.d0*akkp))*.5d0)
           w2=akkp/w1
           wss=1.d0/(w1**2+w2**2)
           ws=w1+w2
@@ -143,8 +191,8 @@
           phi2=aln*w2
           call xsincos(phi1,s1,xs1,c1,dc1)
           call xsincosh(phi2,sh2,xsh2,ch2,dch2)
-          g1 = (s1**2*w2**2)/akkp
-          g2 = -((sh2**2*w1**2)/akkp)
+          g1 = (s1*w2)**2/akkp
+          g2 = -(sh2*w1)**2/akkp
           wr1 = w1/w2
           wr2 = w2/w1
           cxs1 = dc1*s1   - xs1
@@ -162,12 +210,12 @@
         endif
         return
         end associate
-        end function
+        end subroutine
 
-        pure elemental function tzsetparam0(dp,aln0,akk) result(tz0)
+        pure subroutine tzsetparam0(tz0,dp,aln0,akk)
         use mathfun, only:xsincos,xsincosh
         implicit none
-        type (tzparam0) tz0
+        type (tzparam0) ,intent(out):: tz0
         real*8 , intent(in):: dp,aln0,akk
         associate (
      $       w1=>tz0%w1,phi1=>tz0%phi1,aln=>tz0%aln,
@@ -185,22 +233,25 @@
         call xsincosh(phi1,sh2,xsh2,ch2,dch2)
         return
         end associate
-        end function
+        end subroutine
 
-        pure elemental function tzsetparamp(tz) result(tzp)
+        pure subroutine tzsetparamp(tzp,tz)
         implicit none
-        type (tzparamp) tzp
+        type (tzparamp) ,intent(out):: tzp
         type (tzparam) ,intent(in):: tz
         associate (
-     $       w1=>tz%tz0%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
-     $       phi1=>tz%tz0%phi1,phi2=>tz%phi2,wss=>tz%wss,
-     $       bzp=>tz%tz0%bzp,akkp=>tz%tz0%akkp,aln=>tz%tz0%aln,
-     $       csw1=>tz%csw1,csws=>tz%csws,ca1=>tz%ca1,dcw1=>tz%dcw1,
-     $       dcw2=>tz%dcw2,cr2=>tz%cr2,cr3=>tz%cr3,g1=>tz%g1,g2=>tz%g2,
-     $       wr1=>tz%wr1,wr2=>tz%wr2,dxs=>tz%dxs,
-     $     c1=>tz%tz0%c1,s1=>tz%tz0%s1,dc1=>tz%tz0%dc1,xs1=>tz%tz0%xs1,
-     $       ch2=>tz%tz0%ch2,sh2=>tz%tz0%sh2,dch2=>tz%tz0%dch2,
-     $       xsh2=>tz%tz0%xsh2,pr=>tz%tz0%pr,
+     $       c1=>tz%tz0%c1,s1=>tz%tz0%s1,dc1=>tz%tz0%dc1,
+     $       xs1=>tz%tz0%xs1,ch2=>tz%tz0%ch2,sh2=>tz%tz0%sh2,
+     $       dch2=>tz%tz0%dch2,xsh2=>tz%tz0%xsh2,pr=>tz%tz0%pr,
+     $       akkp=>tz%tz0%akkp,aln=>tz%tz0%aln,bzp=>tz%tz0%bzp,
+     $       w1=>tz%tz0%w1,phi1=>tz%tz0%phi1,
+     $       w2=>tz%tz1%w2,ws=>tz%tz1%ws,w12=>tz%tz1%w12,wd=>tz%tz1%wd,
+     $       phi2=>tz%tz1%phi2,wss=>tz%tz1%wss,csw1=>tz%tz1%csw1,
+     $       csws=>tz%tz1%csws,ca1=>tz%tz1%ca1,dcw1=>tz%tz1%dcw1,
+     $       dcw2=>tz%tz1%dcw2,cr2=>tz%tz1%cr2,cr3=>tz%tz1%cr3,
+     $       g1=>tz%tz1%g1,g2=>tz%tz1%g2,cxs1=>tz%tz1%cxs1,
+     $       cxs2=>tz%tz1%cxs2,aw1=>tz%tz1%aw1,aw2=>tz%tz1%aw2,
+     $       wr1=>tz%tz1%wr1,wr2=>tz%tz1%wr2,dxs=>tz%tz1%dxs,
      $     c1p=>tzp%c1p,s1p=>tzp%s1p,xs1p=>tzp%xs1p,
      $       ch2p=>tzp%ch2p,sh2p=>tzp%sh2p,xsh2p=>tzp%xsh2p,
      $     w1p=>tzp%w1p,w2p=>tzp%w2p,wsp=>tzp%wsp,
@@ -210,10 +261,9 @@
      $     wssip=>tzp%wssip, ca1p=>tzp%ca1p,
      $       dcw1p=>tzp%dcw1p, dcw2p=>tzp%dcw2p,
      $       csw1p=>tzp%csw1p,cswsp=>tzp%cswsp,
-     $     cr2p=>tzp%cr2p, cr3p=>tzp%cr3p,
-     $       dxsp=>tzp%dxsp,aw1=>tz%aw1,aw2=>tz%aw2,
-     $       aw1p=>tzp%aw1p,aw2p=>tzp%aw2p,cxs1=>tz%cxs1,
-     $       cxs2=>tz%cxs2,cxs1p=>tzp%cxs1p,cxs2p=>tzp%cxs2p)
+     $     cr2p=>tzp%cr2p, cr3p=>tzp%cr3p,dxsp=>tzp%dxsp,
+     $       aw1p=>tzp%aw1p,aw2p=>tzp%aw2p,
+     $       cxs1p=>tzp%cxs1p,cxs2p=>tzp%cxs2p)
 
         if(bzp .eq. 0.d0)then
           w1p=-.5d0*w1/pr
@@ -253,7 +303,7 @@
         endif
         return
         end associate
-        end function
+        end subroutine
       
       end module
 
@@ -287,15 +337,18 @@
       external tbrhoz
       parameter (phieps=1.d-2)
         associate (
-     $       w1=>tz%tz0%w1,w2=>tz%w2,ws=>tz%ws,w12=>tz%w12,wd=>tz%wd,
-     $       phi1=>tz%tz0%phi1,phi2=>tz%phi2,wss=>tz%wss,
-     $       bzp=>tz%tz0%bzp,akkp=>tz%tz0%akkp,aln=>tz%tz0%aln,
-     $       csw1=>tz%csw1,csws=>tz%csws,ca1=>tz%ca1,dcw1=>tz%dcw1,
-     $       dcw2=>tz%dcw2,cr2=>tz%cr2,cr3=>tz%cr3,g1=>tz%g1,g2=>tz%g2,
-     $       wr1=>tz%wr1,wr2=>tz%wr2,
-     $     c1=>tz%tz0%c1,s1=>tz%tz0%s1,dc1=>tz%tz0%dc1,xs1=>tz%tz0%xs1,
-     $       ch2=>tz%tz0%ch2,sh2=>tz%tz0%sh2,dch2=>tz%tz0%dch2,
-     $       xsh2=>tz%tz0%xsh2,pr=>tz%tz0%pr,
+     $       c1=>tz%tz0%c1,s1=>tz%tz0%s1,dc1=>tz%tz0%dc1,
+     $       xs1=>tz%tz0%xs1,ch2=>tz%tz0%ch2,sh2=>tz%tz0%sh2,
+     $       dch2=>tz%tz0%dch2,xsh2=>tz%tz0%xsh2,pr=>tz%tz0%pr,
+     $       akkp=>tz%tz0%akkp,aln=>tz%tz0%aln,bzp=>tz%tz0%bzp,
+     $       w1=>tz%tz0%w1,phi1=>tz%tz0%phi1,
+     $       w2=>tz%tz1%w2,ws=>tz%tz1%ws,w12=>tz%tz1%w12,wd=>tz%tz1%wd,
+     $       phi2=>tz%tz1%phi2,wss=>tz%tz1%wss,csw1=>tz%tz1%csw1,
+     $       csws=>tz%tz1%csws,ca1=>tz%tz1%ca1,dcw1=>tz%tz1%dcw1,
+     $       dcw2=>tz%tz1%dcw2,cr2=>tz%tz1%cr2,cr3=>tz%tz1%cr3,
+     $       g1=>tz%tz1%g1,g2=>tz%tz1%g2,cxs1=>tz%tz1%cxs1,
+     $       cxs2=>tz%tz1%cxs2,aw1=>tz%tz1%aw1,aw2=>tz%tz1%aw2,
+     $       wr1=>tz%tz1%wr1,wr2=>tz%tz1%wr2,dxs=>tz%tz1%dxs,
      $     c1p=>tz%tzp%c1p,s1p=>tz%tzp%s1p,xs1p=>tz%tzp%xs1p,
      $       ch2p=>tz%tzp%ch2p,sh2p=>tz%tzp%sh2p,xsh2p=>tz%tzp%xsh2p,
      $     w1p=>tz%tzp%w1p,w2p=>tz%tzp%w2p,wsp=>tz%tzp%wsp,
@@ -305,11 +358,9 @@
      $     wssip=>tz%tzp%wssip, ca1p=>tz%tzp%ca1p,
      $       dcw1p=>tz%tzp%dcw1p, dcw2p=>tz%tzp%dcw2p,
      $       csw1p=>tz%tzp%csw1p,cswsp=>tz%tzp%cswsp,
-     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,dxs=>tz%dxs,
-     $       dxsp=>tz%tzp%dxsp,aw1=>tz%aw1,aw2=>tz%aw2,
-     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,cxs1=>tz%cxs1,
-     $       cxs2=>tz%cxs2,cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
-
+     $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,dxsp=>tz%tzp%dxsp,
+     $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,
+     $       cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
       if(ak .eq. 0.d0)then
         call tdrife(trans,cod,beam,srot,al,
      $       bz0,ak0x,ak0y,al,.true.,enarad,irad)
@@ -329,8 +380,8 @@ c        stop
       b1=br*akk
       call tinitr(trans1)
 c     end   initialize for preventing compiler warning
-      tz=tzsetparam(cod(6),aln,akk,bz)
-      tz%tzp=tzsetparamp(tz)
+      call tzsetparam(tz,cod(6),aln,akk,bz)
+      call tzsetparamp(tz%tzp,tz)
       call tgetdv(cod(6),dv,dvdp)
       al1=aln*.5d0
       do n=1,ndiv

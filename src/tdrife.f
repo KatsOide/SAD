@@ -3,7 +3,6 @@
       use element_drift_common
       use tmacro, only:bradprev
       use temw, only:tsetr0,tmulbs
-      use sol, only:tsoldz
       use tspin
       use kradlib, only:tradke
       use mathfun, only: sqrtl

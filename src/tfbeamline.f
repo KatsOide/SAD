@@ -377,8 +377,7 @@
       integer*4 ,intent(out):: irtc
       integer*4 lenw,i,n,hsrchz,idl,nc,itfmessage,itfmessagestr
       character*(MAXPNAME) ename,tfgetstrs
-      logical*4 eval
-      data eval /.true./
+      logical*4 ,save:: eval=.true.
       kx=dxnullo
       if(eval)then
         kx=tfsyeval(kxsymbolz('BeamLine',8),irtc)
@@ -435,7 +434,8 @@ c        write(*,*)'extractbeamline ',i,n,el%comp(i)
       recursive subroutine tfexpandbeamline(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,kx1
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx1
       type (sad_dlist), pointer :: kl,kll,klx,klx1
       integer*8 kal
       integer*4 ,intent(in):: isp1

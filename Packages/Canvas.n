@@ -91,6 +91,8 @@ CanvasGraphics=Class[{},
     ToWindowCoord,
     Canvas$Range,
     RawWindowAspectRatio=GoldenRatio,
+    WindowAspectRatio=GoldenRatio,
+    XTRth=0.25,
     CanvasAspectRatio=13/10,
     Canvas$Frame,
     Canvas$FrameCallBack,
@@ -301,6 +303,7 @@ CanvasGraphics=Class[{},
     {wxc,wyc,
       {wx1,wx2}=Canvas$RawWindow[[1]],
       {wy1,wy2}=Canvas$RawWindow[[2]],ar0=ar},
+    WindowAspectRatio=ar;
     {wx1,wx2}=Restrict[First[Canvas$PlotRegion]*(wx2-wx1)+wx1,XMax*Margin[[1,1]],XMax*Margin[[1,2]]];
     {wy1,wy2}=Restrict[Second[Canvas$PlotRegion]*(wy2-wy1)+wy1,YOrg*Margin[[2,1]],YOrg*Margin[[2,2]]];
     {wxc,wyc}={wx1+wx2,wy1+wy2}/2;
@@ -1309,6 +1312,7 @@ CanvasGraphics=Class[{},
       (CanvasWidget[Create$Text] = {
         {Canvas$Coord1[{#,0}][[1]],yy},
         Null@@Override[Null@@(FtOption/@Flatten[{##2}]),
+          If[WindowAspectRatio<XTRth,Rotation->270,Null[],Null[]],
           Anchor->anc,Tags->{fltag,FrameTag},
           Font->font]})&@@[fun,{1}],
       Log,
@@ -1355,6 +1359,7 @@ CanvasGraphics=Class[{},
             CanvasWidget[Create$Text] = {
               {Canvas$Coord1[{#,0}][[1]],yy},
               Null@@Override[Null@@fun[#,exp,s],
+                If[WindowAspectRatio<XTRth,Rotation->270,Null[],Null[]],
                 Anchor->anc,Text->s,Tags->{fltag,FrameTag},
                 Font->font]})&,Mt];
           If[exp<>1,

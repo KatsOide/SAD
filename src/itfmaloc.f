@@ -136,15 +136,28 @@ c          enddo
       integer*4 ,intent(in)::n,m
       integer*4 ,intent(out)::irtc
       integer*4 i,j
-      complex*16, intent(out):: c(n,m)
+      complex*16, intent(out):: c(n,max(m,1))
+      real*8 x
       logical*4 trans
-      if(trans)then
+      if(m .eq. 0)then
+        do j=1,n
+          kij=kl%body(j)
+          if(ktfrealq(kij,x))then
+            c(j,1)=dcmplx(x,0.d0)
+          elseif(tfcomplexq(kij,cx))then
+            c(j,1)=cx%cx(1)
+          else
+            irtc=-1
+            return
+          endif
+        enddo
+      elseif(trans)then
         do i=1,m
           call loc_sad(ktfaddr(kl%dbody(i)%k),kli)
           do j=1,n
             kij=kli%dbody(j)%k
-            if(ktfrealq(kij))then
-              c(j,i)=kli%rbody(j)
+            if(ktfrealq(kij,x))then
+              c(j,i)=x
             elseif(tfcomplexq(kij,cx))then
               c(j,i)=cx%cx(1)
             else
@@ -158,8 +171,8 @@ c          enddo
           call loc_sad(ktfaddr(kl%dbody(i)%k),kli)
           do j=1,m
             kij=kli%dbody(j)%k
-            if(ktfrealq(kij))then
-              c(i,j)=kli%rbody(j)
+            if(ktfrealq(kij,x))then
+              c(i,j)=x
             elseif(tfcomplexq(kij,cx))then
               c(i,j)=cx%cx(1)
             else

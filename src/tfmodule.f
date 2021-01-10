@@ -10,14 +10,13 @@
       integer*4 i,isp0,isp2,itfmessage
       logical*4 ,intent(in):: module,eval
       logical*4 rep
+      kx=dxnullo
       if(isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
-        kx=dxnullo
         return
       endif
       if(ktfnonlistq(dtastk(isp1+1),lvlist))then
         irtc=itfmessage(9,'General::wrongtype','"List"')
-        kx=dxnullo
         return
       endif
       if(module .and. eval)then
@@ -29,7 +28,6 @@
         if(eval)then
           go to 9200
         else
-          kx=dxnullo
           isp=isp0
           return
         endif
@@ -95,12 +93,13 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       use eeval
       implicit none
       type (sad_descriptor) ki,ki1i,ki1,ki2
-      type (sad_dlist) list
+      type (sad_dlist) ,intent(in):: list
       type (sad_dlist), pointer :: kli1,kli2,kli
       type (sad_symbol), pointer :: symi1i,symi,symi1
       type (sad_symdef), pointer :: symdi1,symdv
-      integer*4 m,mi,lgi,ii,i,irtc,itfmessage,lg,isps
-      logical*4 module,eval
+      integer*4 m,mi,lgi,ii,i,itfmessage,lg,isps
+      integer*4 ,intent(out):: irtc
+      logical*4 ,intent(in):: module,eval
       if(list%head%k .ne. ktfoper+mtflist)then
         irtc=itfmessage(9,'General::wrongtype','"List"')
         return
@@ -265,9 +264,10 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       use tfstk
       implicit none
       type (sad_descriptor) kx,k11,kj,k1
-      type (sad_dlist) lvlist
+      type (sad_dlist) ,intent(in):: lvlist
       type (sad_dlist), pointer :: kl1,klj
-      integer*4 isp1,isp2,i,isp0,m,j
+      integer*4 ,intent(in):: isp1,isp2
+      integer*4 i,isp0,m,j
       m=lvlist%nl
       if(m .eq. 0)then
         kx=sad_descr(lvlist)
@@ -318,13 +318,17 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       use tfstk
       use eeval
       implicit none
-      type (sad_descriptor) kx,ki,k1,kxi
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) ki,k1,kxi
       type (sad_descriptor) tfreplacestk
       type (sad_descriptor) tfreplacesymbolstk1
       type (sad_dlist), pointer :: list,listi,klx
       type (sad_symbol), pointer :: symi
-      integer*4 isp1,irtc,isp2,i,itfmessage,lg0,n
-      logical*4 rep,symbol,eval
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 isp2,i,itfmessage,lg0,n
+      logical*4 rep,symbol
+      logical*4 ,intent(in):: eval
       if(isp .ne. isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
@@ -449,16 +453,19 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       use tfstk
       use tfcode
       implicit none
-      type (sad_descriptor) kx,k,k1,k2,kd,ks
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) kx,k1,k2,kd,ks
       type (sad_dlist), pointer :: list
       type (sad_rlist), pointer :: klr
       type (sad_symbol), pointer :: sym
       type (sad_pat), pointer :: pat
       integer*8 kas
-      integer*4 isp1,isp2,i,isp0
-      logical*4 rep,rep1
+      integer*4 ,intent(in):: isp1,isp2
+      integer*4 i,isp0
+      logical*4 ,intent(inout):: rep
+      logical*4 rep1
       rep=.false.
-      kx%k=ktfoper+mtfnull
+      kx=dxnullo
       if(ktflistq(k,list))then
         isp=isp+1
         isp0=isp

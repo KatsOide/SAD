@@ -179,8 +179,9 @@ c      cod=[xi,pxir,yi,pyir,0.d0,0.d0]
       implicit none
       integer*4 , intent(in)::k
       integer*8 kp
-      real*8 xi,pxi,yi,pyi,dp,p1,h1,xi3a,gx,gy,gz,dpr,
-     $     dpgx,dpgy,dpgz,ds,xir,pxir,zir,pzi,pyir,
+      real*8 ,intent(in):: xi,pxi,yi,pyi,dp,p1,h1,ds
+      real*8 xi3a,gx,gy,gz,dpr,
+     $     dpgx,dpgy,dpgz,xir,pxir,zir,pzi,pyir,
      $     phi1,cp,sp,thu,thv,xi30,xi1,xi2,xi3,pxia
       associate(l=>pp%l,al=>pp%al,phi=>pp%phi,theta=>pp%theta,
      $     x1=>pp%geo1(1,1),x2=>pp%geo1(2,1),x3=>pp%geo1(3,1),
@@ -372,7 +373,7 @@ c      write(*,*)'with ',itp,ilp
         use ffs_flag
         use tmacro
         use photontable, only:tphrec
-        use mathfun, only:pxy2dpz,p2h
+        use mathfun, only:pxy2dpz,p2h,asinz
         use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0,sprot
         implicit none
         integer*4 ,parameter :: npmax=10000
@@ -396,7 +397,7 @@ c      write(*,*)'with ',itp,ilp
         ppz=px*py0-py*px0
 c        ppa=hypot(ppx,hypot(ppy,ppz))
         ppa=norm2([ppx,ppy,ppz])
-        theta=asin(min(1.d0,max(-1.d0,ppa)))
+        theta=asinz(ppa)
         pr=1.d0+g
         p=p0*pr
         h1=p2h(p)
@@ -456,16 +457,16 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
         use ffs_flag
         use tmacro
         use photontable, only:tphrec
-        use mathfun, only:pxy2dpz,p2h
+        use mathfun, only:pxy2dpz,p2h,asinz
         use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0,sprot
         implicit none
         integer*4 ,parameter :: npmax=10000
         integer*4 , intent(in)::np
-        integer*4 i,k
         real*8 , intent(inout)::
      $       xn(np),pxn(np),yn(np),pyn(np),zn(np),gn(np),dvn(np),
      $       sxn(np),syn(np),szn(np)
         real*8 , intent(in)::al
+        integer*4 i,k
         real*8 dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
      $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,
      $       ppa,an,dph,r1,r2,px0,xr,yr,rho
@@ -482,7 +483,7 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
           ppy=dpz*px0-pxn(k)*dpz0-dpx
           ppz=pxn(k)*pyr0(k)-pyn(k)*px0
           ppa=norm2([ppx,ppy,ppz])
-          theta=asin(min(1.d0,max(-1.d0,ppa)))
+          theta=asinz(ppa)
           pr=1.d0+gn(k)
           p=p0*pr
           h1=p2h(p)
@@ -544,7 +545,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
      $     px00,py0,zr00,bsi0,al)
         use ffs_flag
         use tmacro
-        use mathfun, only:pxy2dpz,p2h
+        use mathfun, only:pxy2dpz,p2h,asinz
         use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0,sprot
         implicit none
         real*8 , intent(inout)::x,px,y,py,z,g,dv
@@ -561,7 +562,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
         ppy=dpz*px0-px*dpz0-dpx
         ppz=px*py0-py*px0
         ppa=norm2([ppx,ppy,ppz])
-        theta=asin(min(1.d0,max(-1.d0,ppa)))
+        theta=asinz(ppa)
         pr=1.d0+g
         p=p0*pr
         h1=p2h(p)
@@ -595,7 +596,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
         subroutine tradkn(np,xn,pxn,yn,pyn,zn,gn,dvn,sxn,syn,szn,al)
         use ffs_flag
         use tmacro
-        use mathfun, only:pxy2dpz,p2h
+        use mathfun, only:pxy2dpz,p2h,asinz
         use tspin
         implicit none
         integer*4 , intent(in)::np
@@ -617,7 +618,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
           ppy=dpz*px0-pxn(i)*dpz0-dpx
           ppz=pxn(i)*pyr0(i)-pyn(i)*px0
           ppa=norm2([ppx,ppy,ppz])
-          theta=asin(min(1.d0,max(-1.d0,ppa)))
+          theta=asinz(ppa)
           pr=1.d0+gn(i)
           p=p0*pr
           h1=p2h(p)
@@ -682,7 +683,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
         use temw,only:codr0,bzhr0,bsir0,calint,tinv6,gintd,transr,
      $       tmulbs
         use ffs_flag,only:radcod,calpol
-        use mathfun, only:pxy2dpz,p2h
+        use mathfun, only:pxy2dpz,p2h,asinz
         use tspin, only:cave,cl,cuu,gmin,sflc
         implicit none
         real*8 , intent(inout)::trans(6,12),cod(6),beam(42),
@@ -721,7 +722,7 @@ c     codr0 has canonical momenta!
         xpy=(pz*pxr0-px*pz0)
         xpz=(px*pyi-py*pxr0)
         xpa=abs(dcmplx(xpx,abs(dcmplx(xpy,xpz))))/pr**2
-        theta=asin(min(1.d0,xpa))
+        theta=asinz(xpa)
         p=p0*pr
         h1=p2h(p)
         al1=al-cod(5)+codr0(5)

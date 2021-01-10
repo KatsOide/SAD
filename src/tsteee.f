@@ -113,17 +113,18 @@ c        call tbfrie(trans,cod,beam,-rhob,0.d0,.true.)
           u=dpx*(pxf+pxi)/d
           w=-dpx*(pxf*dpz1+pxi*dpz2)/d
         endif
-        s=u**2
-        if(s .gt. 2.d-2)then
-          dl=rhoe*((asin(u)/u-1.d0)*u+w)
-        else
-          if(s .gt. 2.d-4)then
-            dl=rhoe*(s*(a3+s*(a5+s*(a7+s*(a9+s*(a11+s*(a13+s*a15))))))
-     $           *u+w)
-          else
-            dl=rhoe*(s*(a3+s*(a5+s*(a7+s*a9)))*u+w)
-          endif
-        endif
+        dl=rhoe*(asinx(u)+w)
+c$$$        s=u**2
+c$$$        if(s .gt. 2.d-2)then
+c$$$          dl=rhoe*((asin(u)/u-1.d0)*u+w)
+c$$$        else
+c$$$          if(s .gt. 2.d-4)then
+c$$$            dl=rhoe*(s*(a3+s*(a5+s*(a7+s*(a9+s*(a11+s*(a13+s*a15))))))
+c$$$     $           *u+w)
+c$$$          else
+c$$$            dl=rhoe*(s*(a3+s*(a5+s*(a7+s*a9)))*u+w)
+c$$$          endif
+c$$$        endif
         spz=pz2+pz1
         spx=pxf+pxi
         phsq=(1.d0-pyi)*(1.d0+pyi)

@@ -1,12 +1,14 @@
       subroutine tqente(trans,cod,beam,al,bz,irad)
       use mathfun, only: sqrtl
-      use sol, only:tsoldz
+      use element_drift_common, only:tsoldz
       use temw,only:tmulbs
       implicit none
-      integer*4 irad,i
-      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),trans2(6,6),
-     $     al,bz,pr,a,pz,r,pxi,pyi,bzh,z0,f,g,fx,fy,dpz,rpz,ptmin
-      parameter (ptmin=0.9999d0)
+      integer*4 ,intent(in):: irad
+      real*8 ,intent(in):: al,bz
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42)
+      real*8 trans1(6,6),trans2(6,6),pr,a,pz,r,pxi,pyi,bzh,
+     $     z0,f,g,fx,fy,dpz,rpz
+      real*8, parameter ::ptmin=0.999999d0
       pr=1.d0+cod(6)
       if(bz .eq. 0.d0)then
         pxi=cod(2)
@@ -35,50 +37,8 @@
         trans2(5,2)=trans2(1,6)
         trans2(5,4)=trans2(3,6)
         trans2(5,6)=-a*g/pr*f
-        trans(1,1)=trans(1,1)+trans2(1,2)*trans(2,1)
-     $       +trans2(1,4)*trans(4,1)+trans2(1,6)*trans(6,1)
-        trans(3,1)=trans(3,1)+trans2(3,2)*trans(2,1)
-     $       +trans2(3,4)*trans(4,1)+trans2(3,6)*trans(6,1)
-        trans(5,1)=trans(5,1)+trans2(5,2)*trans(2,1)
-     $       +trans2(5,4)*trans(4,1)+trans2(5,6)*trans(6,1)
-        trans(1,2)=trans(1,2)+trans2(1,2)*trans(2,2)
-     $       +trans2(1,4)*trans(4,2)+trans2(1,6)*trans(6,2)
-        trans(3,2)=trans(3,2)+trans2(3,2)*trans(2,2)
-     $       +trans2(3,4)*trans(4,2)+trans2(3,6)*trans(6,2)
-        trans(5,2)=trans(5,2)+trans2(5,2)*trans(2,2)
-     $       +trans2(5,4)*trans(4,2)+trans2(5,6)*trans(6,2)
-        trans(1,3)=trans(1,3)+trans2(1,2)*trans(2,3)
-     $       +trans2(1,4)*trans(4,3)+trans2(1,6)*trans(6,3)
-        trans(3,3)=trans(3,3)+trans2(3,2)*trans(2,3)
-     $       +trans2(3,4)*trans(4,3)+trans2(3,6)*trans(6,3)
-        trans(5,3)=trans(5,3)+trans2(5,2)*trans(2,3)
-     $       +trans2(5,4)*trans(4,3)+trans2(5,6)*trans(6,3)
-        trans(1,4)=trans(1,4)+trans2(1,2)*trans(2,4)
-     $       +trans2(1,4)*trans(4,4)+trans2(1,6)*trans(6,4)
-        trans(3,4)=trans(3,4)+trans2(3,2)*trans(2,4)
-     $       +trans2(3,4)*trans(4,4)+trans2(3,6)*trans(6,4)
-        trans(5,4)=trans(5,4)+trans2(5,2)*trans(2,4)
-     $       +trans2(5,4)*trans(4,4)+trans2(5,6)*trans(6,4)
-        trans(1,5)=trans(1,5)+trans2(1,2)*trans(2,5)
-     $       +trans2(1,4)*trans(4,5)+trans2(1,6)*trans(6,5)
-        trans(3,5)=trans(3,5)+trans2(3,2)*trans(2,5)
-     $       +trans2(3,4)*trans(4,5)+trans2(3,6)*trans(6,5)
-        trans(5,5)=trans(5,5)+trans2(5,2)*trans(2,5)
-     $       +trans2(5,4)*trans(4,5)+trans2(5,6)*trans(6,5)
-        trans(1,6)=trans(1,6)+trans2(1,2)*trans(2,6)
-     $       +trans2(1,4)*trans(4,6)+trans2(1,6)*trans(6,6)
-        trans(3,6)=trans(3,6)+trans2(3,2)*trans(2,6)
-     $       +trans2(3,4)*trans(4,6)+trans2(3,6)*trans(6,6)
-        trans(5,6)=trans(5,6)+trans2(5,2)*trans(2,6)
-     $       +trans2(5,4)*trans(4,6)+trans2(5,6)*trans(6,6)
-        do i=7,irad
-          trans(1,i)=trans(1,i)+trans2(1,2)*trans(2,i)
-     $         +trans2(1,4)*trans(4,i)+trans2(1,6)*trans(6,i)
-          trans(3,i)=trans(3,i)+trans2(3,2)*trans(2,i)
-     $         +trans2(3,4)*trans(4,i)+trans2(3,6)*trans(6,i)
-          trans(5,i)=trans(5,i)+trans2(5,2)*trans(2,i)
-     $         +trans2(5,4)*trans(4,i)+trans2(5,6)*trans(6,i)
-        enddo
+        trans(1:5:2,:)=trans(1:5:2,:)+
+     $       matmul(trans2(1:5:2,2:6:2),trans(2:6:2,:))
       else
         bzh=bz*.5d0
 c cod are canonical!

@@ -7,6 +7,7 @@ c      use ffs_pointer, only:inext,iprev
       use photontable,only:tsetpcvt,pcvt
       use sol,only:tsolrot
       use mathfun, only:pxy2dpz,sqrt1,akang
+      use element_drift_common
       use kradlib
       implicit none
       integer*4 ,intent(in):: np,mfring
@@ -17,7 +18,6 @@ c      use ffs_pointer, only:inext,iprev
       real*8 ,intent(in):: al,ak0,dx,dy,theta,theta2,
      $     f1in,f1out,f2in,f2out,eps0,bz
       real*8 ak,alr,p,a,ea,b,pxf,pyf,bxs,bys,bzs
-      real*8, parameter :: ampmax=0.9999d0
       if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,4,0.d0,ak0,
      $       dx,dy,theta,.false.,.false.)
@@ -122,6 +122,7 @@ c
       use multa,only:fact
       use photontable
       use kyparam, only:nmult
+      use element_drift_common
       implicit none
 c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
       real*8,parameter::alpha=2.88675134594812882d-1,
@@ -316,13 +317,13 @@ c     end   initialize for preventing compiler warning
       return
       end
 c
-      subroutine ttfrin(np,x,px,y,py,z,g,nord,ak,al,bz)
+      pure subroutine ttfrin(np,x,px,y,py,z,g,nord,ak,al,bz)
       use multa,only:fact,nmult
       implicit none
       integer*4 ,intent(in):: np,nord
-      integer*4 i,kord
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np)
       real*8 ,intent(in):: ak,al,bz
+      integer*4 i,kord
       real*8 akk,aki,a,b,ab,t,dx1,dy1,d,xx,yy,
      $     h,f,px1,py1,xi,yi,bzph,pr,pxa,pya
       complex*16 cx,cp,cz,cz1,cx1,cp1,ca
@@ -343,7 +344,8 @@ c
             yi=y(i)
             a=aki*xi**2
             b=aki*yi**2
-            ab=aki*(xi-yi)*(xi+yi)
+            ab=a-b
+c            ab=aki*(xi-yi)*(xi+yi)
             t=ab**2/6.d0
             dx1= xi*(a/3.d0+b+t)
             dy1=-yi*(a+b/3.d0-t)
@@ -369,7 +371,8 @@ c
             yi=y(i)
             a=aki*xi**2
             b=aki*yi**2
-            ab=aki*(xi-yi)*(xi+yi)
+            ab=a-b
+c            ab=aki*(xi-yi)*(xi+yi)
             t=ab**2/6.d0
             dx1= xi*(a/3.d0+b+t)
             dy1=-yi*(a+b/3.d0-t)
@@ -450,6 +453,7 @@ c          cp1=(dcmplx(1.d0,a)*cp-(aki*4.d0)*cz1*conjg(cx*cp))/d
       real*8 ,intent(in):: ak(2),al,bz
       integer*4 i
       real*8 x0,px0,theta,cost,sint,aka
+      intrinsic hypot
       if((ak(1) .ne. 0.d0 .or. ak(2) .ne. 0.d0) .and. al .ne. 0.d0)then
 c        theta=pi/nord
         if(ak(1) .eq. 0.d0)then
@@ -520,8 +524,8 @@ c        theta=pi/nord
 
       subroutine zcheck(x,tag)
       implicit none
-      real*8 x
-      character*(*) tag
+      real*8 ,intent(in):: x
+      character*(*) ,intent(in):: tag
       write(*,*)'zcheck-0 ',tag
       if(x .ne. 0.d0)then
         write(*,*)'zcheck-x ',x

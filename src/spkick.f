@@ -4,6 +4,7 @@
       use ffs
       use tffitcode
       use tmacro, only:l_track
+      use element_drift_common
       use iso_c_binding
       implicit none
       integer*4 nzmax,ntheta
@@ -702,6 +703,7 @@ c     drift in the free space
       use ffs
       use tffitcode
       use tmacro,only:l_track
+      use element_drift_common
       implicit none
       integer*4 nzmax
       real*8 alstep
@@ -743,6 +745,7 @@ c     drift in the parallel solenoid
       use tfstk
       use ffs
       use tffitcode
+      use element_drift_common
       use tmacro,only:l_track
       implicit none
       integer*4 nzmax

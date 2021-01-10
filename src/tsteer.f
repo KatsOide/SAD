@@ -7,24 +7,22 @@
       use kradlib
       use bendib, only:tbendal
       use photontable, only:tsetpcvt
-      use mathfun, only:sqrt1,pxy2dpz
+      use element_drift_common
+      use mathfun, only:sqrt1,pxy2dpz,asinx
       implicit none
-      real*8 , parameter :: a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
-     1     a9=35.d0/1152.d0,a11=63.d0/2816.d0,
-     1     a13=231.d0/13312.d0,a15=143.d0/10240.d0
       integer*4 , parameter :: ndivmax=1000
       integer*4 ,intent(in)::  np
-      integer*4 i,ndiv,n,n1,n2
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
      $     dv(np),g(np),sx(np),sy(np),sz(np)
       real*8 ,intent(in):: al,phib,dx,dy,theta,eps,
      $     cosp1,sinp1,cosp2,sinp2,fb1,fb2
+      logical*4 ,intent(in):: fringe,krad
+      integer*4 i,ndiv,n,n1,n2
       real*8 rhob,aln,dxfr1,dyfr1,dyfra1,dyi,alc,alx,alr,
      $     dxfr2,dyfr2,dyfra2,f1r,f2r,phic,
-     $     dp,p,rhoe,pxi,s,dpv1,pv1,dpv2,pv2,fa,f,ff,
+     $     dp,p,rhoe,pxi,dpv1,pv1,dpv2,pv2,fa,f,ff,
      $     dpz1,pz1,dpz2,pz2,phsq,u,w,dl,dpx,pyi,xi,pxf,d,
      $     tanp1,tanp2,cost,sint
-      logical*4 ,intent(in):: fringe,krad
       if(al .eq. 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,2,al,-phib,
      1             dx,dy,theta,.false.,.false.)
@@ -93,7 +91,7 @@
           endif
           tanp2=sinp2/cosp2
         endif
-        do i=1,np
+        do concurrent (i=1:np)
           dp=g(i)
           p=1.d0+dp
           rhoe=rhob*p
@@ -125,17 +123,18 @@
             u=dpx*(pxf+pxi)/d
             w=-dpx*(pxf*dpz1+pxi*dpz2)/d
           endif
-          s=u**2
-          if(s .gt. 2.d-2)then
-            dl=rhoe*((asin(u)/u-1.d0)*u+w)
-          else
-            if(s .gt. 2.d-4)then
-              dl=rhoe*(s*(a3+s*(a5+s*(a7+s*(a9+s*(a11+s*(a13+s*a15))))))
-     $             *u+w)
-            else
-              dl=rhoe*(s*(a3+s*(a5+s*(a7+s*a9)))*u+w)
-            endif
-          endif
+          dl=rhoe*(asinx(u)+w)
+c          s=u**2
+c          if(s .gt. 2.d-2)then
+c            dl=rhoe*((asin(u)/u-1.d0)*u+w)
+c          else
+c            if(s .gt. 2.d-4)then
+c              dl=rhoe*(s*(a3+s*(a5+s*(a7+s*(a9+s*(a11+s*(a13+s*a15))))))
+c     $             *u+w)
+c            else
+c              dl=rhoe*(s*(a3+s*(a5+s*(a7+s*a9)))*u+w)
+c            endif
+c          endif
           x(i)=xi+alx*(pxf+pxi)/(pz2+pz1)
           dyi=pyi*(alx+dl)
           bsi(i)=-dyi/rhob

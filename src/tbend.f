@@ -480,13 +480,13 @@ c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
      1         +(rho0*(cosw*t2t3+sinw*(1.d0-t2*t3))*dpx2-
      1         drho*(-sinp2wp1*rho0/rhoe*t3
      $         -dpz32-sqwh*pz2-sinw*px1))/ph2
-          da=asin(min(1.d0,max(-1.d0,
+          da=asinz(
      $         (dpx2*(
      $         sinp1*(t2*(pz3*cosp2+px3*sinp2)-px1*cosp2)
      $         -sinp2*(t3*pz2px1-px3*cosp1)
      $         +cosp1p2*dpz32
      $         +t4*sqwht2)
-     1         +dpx3a*t4)/ph2**2)))
+     1         +dpx3a*t4)/ph2**2)
           phi0a=phi0+da
           y3=y1+py2*rhoe*phi0a
           z3=z2-phi0*drho1-da*rhoe-dv(i)*al
@@ -510,9 +510,7 @@ c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
           bsi(i)=bsi(i)-bsi2*y(i)/rhob
         enddo
         if(krad)then
-c     write(*,*)'tbend-tradk-1 ',g(1),phi0,alr
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,alr,phi0)
-c     write(*,*)'tbend-tradk-2 ',g(1)
         endif
         return
         end subroutine
@@ -664,6 +662,7 @@ c        endif
       subroutine tbdrift(np,x,px,y,py,z,dv,sx,sz,al,phi0)
       use tfstk
       use ffs_flag, only:calpol
+      use element_drift_common
       use mathfun
       implicit none
       integer*4 np,i

@@ -734,7 +734,11 @@ c              enddo
       elseif(keyword .eq. 'MULT')then
         kx=dfromr(dble(ilist(ia,ifmult)))
       elseif(keyword .eq. 'TYPE')then
-        kx=merge(dxzero,dfromr(dble(idtypec(ia))),ia .eq. nlat)
+        if(ia .eq. nlat)then
+          kx=dxzero
+        else
+          kx=dfromr(dble(idtypec(ia)))
+        endif
       elseif(keyword .eq. 'TYPENAME')then
         if(ia .eq. nlat)then
           kx=dxnulls
