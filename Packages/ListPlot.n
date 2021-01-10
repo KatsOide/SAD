@@ -1,0 +1,260 @@
+(* ListPlot V1.1.1k64 7/31/2017 *)
+
+Off[General::unprotconst];
+Unprotect[Scale,Tags,Text,Above,Below,Right,Left];
+On[General::unprotconst];
+SetAttributes[{Graphics,AspectRatio,PlotRange,
+  PlotRegion,PlotLabel,TickSize,Tags,Anchor,TickColor,
+  PlotJoined,StepRatio,PointSize,PointSymbol,PlotColor,Dashing,
+  ErrorBarTickSize,ErrorBarThickness,PointColor,PointBorderColor,PointTags,
+  LineTags,Thickness,FrameTicks,Initialize,FrameLabel,DisplayFunction,
+  DataRange,Reference,FillColor,Arrow,Clip,FrameUnitLabel,
+  Orientation,Line,Point,Rectangle,Circle,Polygon,Hook,Linear,Bar,Text,
+  TextSize,TextRotate,TextAlign,Scaled,GridLines,WindowScaled,CanvasScaled,
+  RectScaled,AboveTags,BelowTags,Right,Left,Above,Below,
+  TextCases,TextPosition,Prolog,Epilog,Vertical,Alignment,Legend,
+  LegendRaise,LegendBG,
+  Scale,Weight,FrameClick,InfoBind,TickFont,RemoveOverlap,FrameColor,
+  FontScale,TickFontScale,FrameFontScale,LegendFontScale,TitleFontScale,
+  Major,Minor,Both,Ticks,BelowFrame},Constant];
+
+Graphics$Options=AspectRatio|FrameLabel|PlotRange|GridLines|Alignment|DataRange|
+  PlotRegion|PlotLabel|FrameTicks|TickSize|TickFont|Tags|Background|Frame|FrameClick|
+    InfoBind|FrameUnitLabel|FontScale|TickFontScale|FrameFontScale|LegendFontScale|
+      TitleFontScale|FrameColor|TickColor|LegendBG|LegendRaise|BelowFrame;
+
+With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
+  AspectRatio->Automatic,PlotJoined->False,StepRatio->1,
+  PointSize->1,PointSymbol->"1O",Plot->True,Frame->True,
+  PlotColor->"Black",Dashing->{1},Tags->False,TickFont->Default,
+  TickSize->Automatic,TickFont->Default,PlotRegion->{{0,1},{0,1}},
+  ErrorBarTickSize->1,ErrorBarThickness->1,PointColor->"forest green",
+  PointBorderColor->Automatic,GridLines->{Automatic,Automatic},
+  PointTags->Null,LineTags->Null,Thickness->1,
+  FrameTicks->{True,True,Ticks,Ticks},Initialize->True,
+  FrameLabel->{"","","",""},FrameUnitLabel->{},FrameColor->"black",
+  TickColor->Null,
+  LegendRaise->False,LegendBG->Null,BelowFrame->False,
+  FontScale->1,TickFontScale->1,FrameFontScale->1,LegendFontScale->1,
+  TitleFontScale->1,
+  DisplayFunction:>$DisplayFunction,RemoveOverlap->"",
+  PlotLabel->"",Prolog->{},Epilog->{},Legend->False,
+  Background->"#ffffff"},
+  r=(Rule|RuleDelayed)[Graphics$Options,_]},
+
+  ListPlot[ll_List,opt___]:=Module[
+    {ld,d,op=Override[{opt},LP$def],sc,pg,eg,pj,of,in,pr,pl,body,gopt,dr,g,la},
+    If[Length[ll]>0,
+      d=Length[First[ll]];
+      {ld,dr}=Switch[d,
+        0,
+        {Thread[{Range[Length[ll]],ll}],{{1,Length[ll]},MinMax[ll]}},
+        2,
+        {ll,MapThread[MinMax,ll]},
+        3,
+        la=MapAt[Abs,Thread[ll],{3}];
+        {Thread[{First[la],Second[la],Table[0,{Length[ll]}],Third[la]}],
+          {MinMax[First[la]],
+            {Min[Second[la]-Third[la]],Max[Second[la]+Third[la]]}}},
+        4,
+        la=MapAt[Abs,Thread[ll],{{3},{4}}];
+        {ll,
+          {{Min[First[la]-Third[la]],Max[First[la]+Third[la]]},
+            {Min[Second[la]-la[[4]]],Max[Second[la]+la[[4]]]}}},
+        _,
+        Message[ListPlot::wrongsize];
+        Return[]],
+      {ld,dr}={{},{{0,1},{0,1}}}];
+    opt00=({sc,pg,eg,pj,of,in,pr,pl}={Scale,Prolog,Epilog,PlotJoined,DisplayFunction,
+      Initialize,PlotRegion,Plot}/.(op00=op));
+    sc00=sc;
+    sc01=sc=Flatten[{Linear,sc}][[{-2,-1}]];
+    gopt=Override[Scale->sc,
+      Cases[op,r,1],DataRange->dr];
+    body=Flatten[
+      {pg,
+      Switch[pj,
+        False,
+        Point[ld,SetOption[{PointSize,PointColor,PointSymbol,PlotColor,
+          PointBorderColor,
+          ErrorBarTickSize,ErrorBarThickness,PointTags,Legend},op]],
+
+        Step|True,
+        Line[ld,SetOption[
+          {Plot,PointSize,PointColor,PointBorderColor,PointSymbol,PointTags,
+	    PlotJoined,StepRatio,Thickness,PlotColor,Dashing,LineTags,
+            ErrorBarTickSize,ErrorBarThickness,Legend},op]],
+
+	_, (* Unsupported *)],
+      eg}];
+    g=Graphics[body,gopt];
+    If[of<=>Identity && None<=>of<=>Null,
+      Show[g,
+        Initialize->in,
+        PlotRegion->pr
+        ]];
+    g]];
+
+SetOption[opts_,r_]:=Thread[opts->(opts/.r)];
+!SetOption[opts_,r_]:=Cases[r,p:((Alternatives@@opts)->_),1];
+
+ListPlot::highD="List in 1, 2, or 3D is required";
+ListPlot::wrongsize="List of less than 5 reals is required";
+
+WindowBackground=Background;
+
+Show[g__]:=Show1$[True,Automatic,g];
+
+With[{
+  def={PlotRange->Automatic,
+    PlotRegion->{{0,1},{0,1}},
+    DataRange->{{1E100,-1E100},{1E100,-1E100}}},
+  def0={PlotRange->Default,
+    PlotRegion->{{0,1},{0,1}},
+    DataRange->{{1E100,-1E100},{1E100,-1E100}}}},
+
+  Show1$[ini_,rect_,g__]:=Module[
+    {{gl,df,init,opt,rem}=SwitchCases[Flatten[{g}],
+      {_Graphics,(Rule|RuleDelayed)[DisplayFunction,_],
+        (Rule|RuleDelayed)[Initialize,_],
+	(_Rule|_RuleDelayed),
+	_}],
+      pr,dr,prl,drl,pr0,prg},
+    gl=Replace[#,{Graphics[x_,y___]:>Graphics[x,Flatten[{y}]]}]&/@gl;
+    df=DisplayFunction/.df/.DisplayFunction:>$DisplayFunction/.Default:>$DisplayFunction;
+    opt=Override[opt,gl[[1,2]],def0];
+    If[df<=>Identity && None<=>df<=>Null,
+      If[ini && df===CanvasDrawer,
+        The$CanvasObject@AllGraphics={gl,opt}];
+      {pr0,prg}={PlotRange,PlotRegion}/.opt;
+      prl=Prepend[(PlotRange/.Second[#]/.def0)&/@gl,pr0]/.Default:>Null[];
+      pr=If[prl==={},
+        {{Automatic,Automatic},{Automatic,Automatic}},
+        PR$$[First[prl]]];
+      drl=Thread[Partition[Flatten[(DataRange/.Second[#]/.def0)&/@gl],4]];
+      dr={{Min[drl[[1]]],Max[drl[[2]]]},{Min[drl[[3]]],Max[drl[[4]]]}};
+      opt=Override[{PlotRange->pr,DataRange->dr,PlotRegion->prg},
+        opt];
+      init=Initialize/.init/.Initialize->True;
+      StandardForm[
+        df[opt,gl[[1,1]],init,True,rect,Length[gl]==1,ini];
+        Do[
+          df[Override[opt,gl[[i,2]]],gl[[i,1]],init,False,
+            rect,i==Length[gl],ini],
+          {i,2,Length[gl]}]];
+      If[df===CanvasDrawer,
+        After[0,The$CanvasObject@AdjustLegend[]]]
+      ];
+    Append[gl,opt]
+    ]];
+
+PR$$[{x_List,y_List}]:={x,y};
+PR$$[{x_,y_List}]:={{x,x},y};
+PR$$[{x_List,y_}]:={x,{y,y}};
+PR$$[{x_,y_}]:={{Automatic,Automatic},{x,y}};
+PR$$[Default]=Default;
+PR$$[x_]:={{x,x},{x,x}};
+
+With[{def={MaxBend->0.01,PlotPoints->32,PlotDivision->1024,PlotRange->Automatic,
+  PlotJoined->True,StepRatio->1,Plot->False,GridLines->{Automatic,Automatic},
+  PlotColor->"dodger blue",Thickness->2}},
+
+  Plot[f_,{x_,xmin_,xmax_},opt___]:=Block[{x},Module[
+    {d,{maxb,minp,minx,pj,sr,pt,gr,pr,pc,th}=
+      {MaxBend,PlotPoints,PlotDivision,PlotJoined,StepRatio,Plot,
+        GridLines,PlotRange,PlotColor,Thickness}/.{opt}/.def},
+    ListPlot[(d=PlotInterpolate[f,{x,xmin,xmax},minp,Max[minp*3,minx],maxb])[[1]],
+      PlotJoined->pj,StepRatio->sr,Plot->pt,GridLines->gr,
+      PlotColor->pc,Thickness->th,
+      PlotRange->PR$Auto[pr,PlotRange->d[[2]]],opt]
+    ]]];
+
+With[{def={Dashing->{{1},{0.75,0.25},{0.4, 0.15},{0.2,0.1},{0.1,0.08},
+  {0.8,0.08, 0.08, 0.08},{0.4,0.08,0.08,0.08}},
+  PlotColor:>
+    {"dodger blue","tomato","dark goldenrod","forest green",
+      "blue violet","royal blue","orange3"},
+  Thickness->2,
+  Legend->{False},
+  PlotRange->Automatic,
+  DisplayFunction->Default}},
+
+  Plot[f_List,{x_,xmin_,xmax_},opt___]:=Block[{x},Module[
+    {a,b,c,d,da,pc,leg,pr,th,n,g,h=Map[Hold,Unevaluated[f]]},
+    x=xmin;
+    {da,pc,leg,pr,th}={Dashing,PlotColor,Legend,PlotRange,Thickness}/.{opt}/.def;
+    n=Length[h];
+    da=(Dashing->#)&/@Take[Flatten[Table[da,
+      {Ceiling[n/Max[Length[da],1]]}],1],n];
+    pc=(PlotColor->#)&/@Take[Flatten[Table[pc,
+      {Ceiling[n/Max[Length[pc],1]]}]],n];
+    leg=(Legend->#)&/@Take[Flatten[{{leg},Table[False,{n}]}], n];
+    g=MapThread[Function[{a,b,c,d},Plot[ReleaseHold[a],{x,xmin,xmax},
+      DisplayFunction->Null,b,c,d,opt,Thickness->th]],{h,da,pc,leg}];
+    pr00=pr=PR$Auto[pr,g];
+    If[(DisplayFunction/.{opt}/.def)===Default,
+      g=Show[g,PlotRange->pr,opt]];
+    g]]];
+
+PR$Auto[x_,g_]:=x;
+PR$Auto[{min_Real,Automatic},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
+  {min,Max[pr1[[,2,2]]]}];
+PR$Auto[{Automatic,max_Real},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
+  {Min[pr1[[,2,1]]],max}];
+PR$Auto[Automatic|{Automatic,Automatic},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
+  {Min[pr1[[,2,1]]],Max[pr1[[,2,2]]]}];
+PR$Auto[{x_List,y_},g_]:={x,PR$Auto[y,g]};
+PR$Auto[{x_,y_List},g_]:={x,PR$Auto[y,g]};
+
+PlotInterpolate[fin_,{y_,xmin_,xmax_},min0_,maxdiv_,maxb_]:=Module[
+  {f,fs,s,dl,dl0,dl1,la,cos,a,yw,ar,dx,xl,yl,x0,x1,x2,cosm,cosm1=-1,la0=0,
+    costh=1-maxb^2/2,min=min0,fh=Extract[Hold[fin],{1},Head],ny,ys,ymin,ymax,ya},
+  If[Head[fh]===SplineData,
+    min=Max[min,Length[fh[[1,1]]]]];
+  fs = With[{y = #}, {#, Check[fin, 0]}]&;
+  f  = With[{y = Vector[#]},
+    Check[ReleaseVector[fin], ReleaseVector[fs[Vector[#]]]]]&;
+  dx=(xmax-xmin)/min;
+  yl=Re[f[xl=Range[0,min]*dx+xmin]];
+  {xl,yl}=Thread[Thread[{xl,yl}]/.{_,INF|-INF|_?NaNQ}:>Null[]];
+  If[~RealListQ[yl],Return[{}]];
+  s=True;
+  While[s && Length[xl]<maxdiv,
+    yw=Max[yl]-Min[yl];
+    ar=Abs[yw/(xmax-xmin)];
+    la=Thread[{ar*xl,yl}];
+    dl=Difference[la];
+    dl0=Drop[dl,-1];
+    dl1=Rest[dl];
+    cos=MapThread[(#.#2)/Max[Abs[Complex@@#]*Abs[Complex@@#2],1e-100]&,{dl1,dl0}];
+    cosm=Min[cos];
+    If[cosm<cosm1-maxb/10 || cosm>cosm1+maxb/10,
+      cosm1=cosm;
+      x0=Take[xl,{2,-2}];
+      x1=(Drop[xl,-2]+2*x0)/3;
+      x2=(Drop[xl,2]+2*x0)/3;
+      a=MapThread[
+        If[#<costh,
+          Null[#2,#3],
+          Null[]]&,
+        {cos,x1,x2}];
+      s=Length[a]>0;
+      If[s,
+        {xl,yl}=Thread[
+          Union[Thread[{Join[xl,a],Join[yl,Re[f[a]]]}]]]],
+      s=False]];
+  ny=Length[yl];
+  ys=Sort[yl];
+  {ymin,ymax}=ys[[{1+(ny-1)*0.05,ny*0.95}]];
+  ya=ys[[ny/2]];
+  {Thread[{xl,yl}],{ya+Max[(ymin-ya)*1.3,(ys[[1]]-ya)*1.5],
+    ya+Min[(ymax-ya)*1.3,(ys[[-1]]-ya)*1.05]}}];
+
+SetAttributes[Plot,HoldAll];
+SetAttributes[PlotInterpolate,HoldFirst];
+
+SetAttributes[
+  {ListPlot,SetOption,PR$$,
+    ListPlotMessage,Show,
+    Show1$,Graphics$Options,
+    WindowBackground},Constant];
