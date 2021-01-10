@@ -67,7 +67,6 @@ filaux.o: filaux.f tfstk.o toplvl.o
 filbuf.o: filbuf.f tfstk.o toplvl.o
 flmgr.o: flmgr.f tfstk.o toplvl.o
 frand.o: frand.f tfstk.o
-gamma (original).o: gamma (original).f (original).f gamma tfloor.o tfstk.o
 gamma.o: gamma.f tfloor.o tfstk.o
 gaus3.o: gaus3.f
 gaussn.o: gaussn.f

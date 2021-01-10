@@ -678,7 +678,7 @@ c     $       +gc9/(9.d0+z)+gc10/(10.d0+z))
       return
       end function
 
-      real*8 pure function dzeta(x) result(f1)
+      real*8 pure recursive function dzeta(x) result(f1)
       implicit none
       real*8 ,intent(in):: x
       real*8 u,df,x1,x2,d,xd
@@ -790,7 +790,7 @@ c        f1=m_2pi**(-x1)*cgamma(x1)*
       return
       end function
 
-      complex*16 pure function czeta(x) result(f1)
+      complex*16 pure recursive function czeta(x) result(f1)
       implicit none
       complex*16 ,intent(in):: x
       complex*16 u,x1,df
@@ -1423,7 +1423,7 @@ c        write(*,'(a,i5,1p8g15.7)')'zetabk ',k,z1,berbf(k),u,f1
       f1=f1/a**z1
       end function
 
-      real*8 pure function polygamma(x1) result(f1)
+      real*8 pure recursive function polygamma(x1) result(f1)
       use tfstk, only:ktfenanq
       implicit none
       real*8 ,intent(in):: x1
@@ -1450,7 +1450,7 @@ c     $       +gc9/(9.d0+x)+gc10/(10.d0+x))
       return
       end function
 
-      complex*16 pure function cpolygamma(x1) result(f1)
+      complex*16 pure recursive function cpolygamma(x1) result(f1)
       use tfstk, only:ktfenanq
       implicit none
       complex*16 ,intent(in):: x1
@@ -2835,7 +2835,7 @@ c        u=-zeroim(-x1)**m*cgammai(a)*cgammai(b)*gammai(m+1.d0)
       return
       end function
 
-      complex*16 function chg5(a,b,c,x,reg) result(f1)
+      complex*16 recursive function chg5(a,b,c,x,reg) result(f1)
       implicit none
       complex*16 ,intent(in):: a,b,c,x
       logical*4 ,intent(in):: reg
