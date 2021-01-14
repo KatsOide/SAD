@@ -136,7 +136,7 @@ c$$$     $      c7=4.00491935010387864d-6,
 c$$$     $      c8=-4.93961492826482964d-7
       integer*4 ,parameter,private :: nolog=8,
      $     nogam=30,nocgam=3000,
-     $     nopg=48,nozt=16,nozt2=30,nogam2=3000,nopl=6000
+     $     nopg=48,nozt=16,nozt2=30,nogam2=3000,nopl=2000
       real*8 ,parameter,private ::sconf=2.d0**55,xmp=30.d0,xmth=0.96d0,
      $     xmth1=1.1d0,xmeps=1.d-6,
      $     dpmg1=-1.4132139976024971836d0,
@@ -153,7 +153,8 @@ c$$$     $      c8=-4.93961492826482964d-7
       integer*4 ,parameter,private :: itmaxg=67
       real*8 ,parameter,private :: zimth=0.8d0,aimth=0.4d0,
      $     lztha=2.d0*m_pi*aimth,lzthg=exp(lztha),g2th=1.d0,
-     $     chgth=4.d0
+     $     chgth=4.d0,ath=10.d0,veryl=2.d100,arth=0.8d0,
+     $     lzth1=0.8d0,lzth=1.4d0,vlim=1.d30,lzpth=4.d0
       integer*4 ,parameter,private ::kg2max=12
       complex*16 ,private::cpgn,cpgz
       real*8 ,private::pgnc,pgn,pgz,ag(itmaxg)
@@ -980,7 +981,7 @@ c     $     sqrt(m_4pi)*lm**(-sh2)/(s-1.d0)*cgi
      $     /a2**sh+sqrt(m_4pi)*lm**(-sh2)/(s-1.d0)*cgi
       n=1.d0
       no=nogam2*2
-      adf0=1.d100
+      adf0=veryl
       do
 c        write(*,'(a,1p10g12.4)')'czc-a0 ',n,f1
         an=a+n
@@ -1014,7 +1015,7 @@ c        write(*,'(a,1p10g12.4)')'czc   ',n,f1,df,adf,adf0
       sh3=1.d0-sh
       n=1.d0
       c=m_pi**(s-0.5d0)
-      adf0=1.d100
+      adf0=veryl
       do
 c        write(*,'(a,1p10g12.4)')'czc-10 ',n,sh2,sh3,lm1*n**2
         df=c*(cgamma2(sh2,dcmplx(lm1*n**2,0.d0))*cgi*ccosp(2.d0*n*a)
@@ -1053,7 +1054,7 @@ c        write(*,'(a,1p10g12.4)')'czc1 ',n,f1,df
      $     /a2**sh+sqrt(m_4pi)*lm**(-sh2)/(s-1.d0)*cgi
       n=1.d0
       no=nogam2
-      adf0=1.d100
+      adf0=veryl
       do
         an=a+n
         an2=an**2
@@ -1080,7 +1081,7 @@ c        write(*,'(a,1p10g12.4)')'zc ',n,f1,df
       sh3=1.d0-sh
       n=1.d0
       c=m_pi**(s-0.5d0)
-      adf0=1.d100
+      adf0=veryl
       do
         df=c*(gamma2(sh2,lm1*n**2)*cgi*cosp(2.d0*n*a)
      $       +gamma2(sh3,lm1*n**2)*cgi1*sinp(2.d0*n*a))
@@ -1654,7 +1655,8 @@ c     Including m_e(Napier's constant: Exp[1])
       complex*16 df,es,lz,u,v
       real*8 rs,k,ke
       integer*4 no,m,i
-      real*8 ,parameter :: lm=m_pi,lm1=m_pi**2/lm,plzth=0.5d0
+      real*8 ,parameter :: lm=m_pi,lm1=m_pi**2/lm,plzth=0.5d0,
+     $     plzath=50.d0
       if(z == czero)then
         f=czero
       elseif(z == cone)then
@@ -1737,6 +1739,10 @@ c              write(*,'(a,1p10g12.4)')'pl ',k,z,v,f,df
         endif
       elseif(imag(z) < 0.d0)then
         f=conjz(cpolylog(conjz(s),conjz(z)))
+c      elseif(.false. .and. abs(z) > plzath)then
+c        f=(0,m_2pi)**s*cgammai(s)
+c     $       *czeta2(1.d0-s,log(zeroim(-z))/(0.d0,m_2pi)+0.5d0)
+c     $       -(-1.d0)**s*cpolylog(s,1.d0/z)
       else
         es=cexpp((0.d0,-0.5d0)*s)
         if(imag(z)==0.d0 .and. dble(z)>0.d0 .and. dble(z)<1.d0)then
@@ -1748,7 +1754,7 @@ c        write(*,'(a,1p10g12.4)')'pl ',lz,es
 c        write(*,'(a,1p10g12.4)')':  ',1.d0-s,czeta2(1.d0-s,lz)
 c        write(*,'(a,1p10g12.4)')':  ',1.d0-lz,-czeta2(1.d0-s,1.d0-lz)
         f=m_2pi**(s-1.d0)*(0.d0,1.d0)*cgamma(1.d0-s)*
-     $       (es*czeta2(1.d0-s,lz)-czeta2(1.d0-s,1.d0-lz)/es)
+     $       (es*chzeta2(1.d0-s,lz)-chzeta2(1.d0-s,1.d0-lz)/es)
       endif
       return
       end function
@@ -1800,14 +1806,83 @@ c        write(*,'(a,1p10g12.4)')':  ',1.d0-lz,-czeta2(1.d0-s,1.d0-lz)
       return
       end function
 
+      complex*16 recursive function chlerchp(z,s,a) result(f1)
+      implicit none
+      complex*16 ,intent(in):: z,s,a
+      complex*16 df,u,z1,ak
+      real*8 m,m1,n,n1,az
+      integer*4 no,nt,i,j,nj
+      if(abs(a) > arth)then
+        n=anint(dble(a)+0.1d0)
+        nt=int(n)
+        n1=dble(nt)
+        if(nt > 0)then
+          if(a /= dcmplx(n1,0.d0))then
+            f1=chlerchp(z,s,a-n1)-zeroim(a-n1)**(-s)
+          endif
+          u=1.d0
+          ak=zeroim(a-n1+1.d0)
+          do i=1,nt-1
+            u=u*z
+            if(ak /= czero)then
+              f1=f1-u*ak**(-s)
+            endif
+            ak=ak+1.d0
+          enddo
+          f1=f1*z**(-nt)
+        elseif(nt < 0)then
+          f1=z**(-nt)*chlerchp(z,s,a-n1)+a**(-s)
+          u=1.d0
+          ak=zeroim(a+1.d0)
+          do i=1,-nt-1
+            u=u*z
+            if(ak /= czero)then
+              f1=f1+u*ak**(-s)
+            endif
+            ak=ak+1.d0
+          enddo
+        else
+          z1=zeroim(z**2)
+          f1=(chlerchp(z1,s,.5d0*a)+z*chlerchp(z1,s,.5d0*a+.5d0))
+     $         *2.d0**(-s)
+        endif
+      else
+        az=abs(imag(log(a)))/m_2pi
+        do nj=1,4
+          if(abs(nj*2.d0*az-anint(nj*2.d0*az)) <= 0.25d0)then
+            exit
+          endif
+        enddo
+        nj=min(4,nj)
+        u=1.d0
+        f1=a**(-s)+u*cpolylog(s,z)
+        m=0.d0
+        no=nopl
+        do
+          df=0.d0
+          do j=1,nj
+            m1=m+1.d0
+            u=-u*(m+s)*a/m1
+            df=df+u*cpolylog(s+m1,z)
+            m=m1
+          enddo
+          f1=f1+df
+          no=no+(nopl+14)*nj+1
+          if(abs(df)**2 <= no*abs(f1)**2*epso .or.
+     $         m > 60.d0)then
+            exit
+          endif
+        enddo
+      endif
+      return
+      end function
+
       complex*16 recursive function chlerch(z,s,a) result(f1)
       implicit none
       integer*4 ,parameter :: nmax=1000
       complex*16 ,intent(in):: z,s,a
       complex*16 z1,u,ak,lz,df,v
       real*8 k,n,n1,ke
-      real*8 , parameter :: lzth1=0.8d0,lzth=2.d0,vlim=1.d30,
-     $     ath=16.d0
       integer*4 no,i,nt,ns1
       if(z == czero)then
         f1=a**(-s)
@@ -1831,7 +1906,7 @@ c        write(*,'(a,1p10g12.4)')':  ',1.d0-lz,-czeta2(1.d0-s,1.d0-lz)
           if(ak /= czero)then
             df=u/ak**s
             f1=f1+df
-            no=no+nolog*2+2
+            no=no+nolog*2+4
             if(abs(df)**2 <=no*abs(f1)**2*epso)then
               exit
             endif
@@ -1839,163 +1914,245 @@ c        write(*,'(a,1p10g12.4)')':  ',1.d0-lz,-czeta2(1.d0-s,1.d0-lz)
           ak=ak+1.d0
         enddo
         return
-c$$$      elseif(dble(z) < 0.5d0)then
-c$$$        nt=ceiling(sqrt(max(ath**2-imag(a)**2,0.d0))-dble(a))
-c$$$        if(nt > 0)then
-c$$$          n1=dble(nt)
-c$$$          f1=z**nt*chlconva(z,s,a+n1)+a**(-s)
-c$$$          u=1.d0
-c$$$          ak=zeroim(a+1.d0)
-c$$$          do i=1,nt-1
-c$$$            u=u*z
-c$$$            if(ak /= czero)then
-c$$$              f1=f1+u*ak**(-s)
-c$$$            endif
-c$$$            ak=ak+1.d0
-c$$$          enddo
-c$$$c          write(*,'(a,1p10g12.4)')'chl-t ',z,s,a,a+n1,f1
-c$$$        else
-c$$$          f1=chlconva(z,s,a)
-c$$$        endif
-c$$$        return
+      elseif(abs(dble(z)) < sqrt(lzpth**2+imag(z)**2/3.d0)
+     $       .and. abs(z-1.d0) > 0.1d0)then
+        f1=chlerchp(z,s,a)
+        return
+c$$$  elseif(dble(z-s) > zsth .and. dble(z) < min(1.d0,dble(s))
+c$$$  $       .and. imag(z) < 1.1d0)then
+c$$$  f1=chlconva(z,s,a)
+c$$$  if(dble(f1) < veryl)then
+c$$$  return
+c$$$  endif
+c$$$  endif
+c$$$  if(dble(z) < 0.d0 .and.
+c$$$  $       dble(z) > zsqrth .and. imag(z) <= 1.1d0)then
+c$$$  f1=chlconv(z,s,a)
+c$$$  if(dble(f1) < veryl)then
+c$$$  c          write(*,'(a,1p10g12.4)')'chlp-cv1 ',z,s,a,f1
+c$$$  return
+c$$$  c        else
+c$$$  c          write(*,'(a,1p10g12.4)')'chlp-nc1 ',z,s,a,f1
+c$$$  endif
       endif
-      n=floor(dble(a))
+      n=anint(dble(a))
       nt=int(n)
       n1=dble(nt)
-c      write(*,'(a,1p10g12.4)')'chlp-t ',z,s,a,n,n1
-      if(nt > 0)then
-        if(a /= dcmplx(n1,0.d0))then
-          f1=chlerch(z,s,a-n1)-zeroim(a-n1)**(-s)
-        else
-          f1=chlerchn(z,s,0)
-        endif
-        u=1.d0
-        ak=zeroim(a-n1+1.d0)
-        do i=1,nt-1
-          u=u*z
-          if(ak /= czero)then
-            f1=f1-u*ak**(-s)
+c     write(*,'(a,1p10g12.4)')'chlp-t ',z,s,a,n,n1
+      if(abs(dble(a)) > arth)then
+        if(nt > 0)then
+          if(a /= dcmplx(n1,0.d0))then
+            f1=chlerch(z,s,a-n1)-zeroim(a-n1)**(-s)
+          else
+            f1=chlerchn(z,s,0)
           endif
-          ak=ak+1.d0
+          u=1.d0
+          ak=zeroim(a-n1+1.d0)
+          do i=1,nt-1
+            u=u*z
+            if(ak /= czero)then
+              f1=f1-u*ak**(-s)
+            endif
+            ak=ak+1.d0
+          enddo
+          f1=f1*z**(-nt)
+          return
+        elseif(nt < 0)then
+          f1=z**(-nt)*chlerch(z,s,a-n1)+a**(-s)
+          u=1.d0
+          ak=zeroim(a+1.d0)
+          do i=1,-nt-1
+            u=u*z
+            if(ak /= czero)then
+              f1=f1+u*ak**(-s)
+            endif
+            ak=ak+1.d0
+          enddo
+          return
+        endif
+      endif
+      lz=zeroim(log(zeroim(z)))
+      if(abs(lz) < lzth)then
+        if(imag(s) == 0.d0 .and. anint(dble(s)) == dble(s)
+     $       .and. dble(s) > 0.d0)then
+          ns1=nint(dble(s)-1.d0)
+          ke=dble(ns1)
+          if(ns1 == 0)then
+            f1=-cpolygamma(a)-m_euler-log(zeroim(-lz))
+            no=nopg*2+nolog
+          else
+            f1=lz**ns1*gammai(dble(s))*(
+     $           -log(zeroim(-lz))
+     $           +polygamma(dble(s))-cpolygamma(a))
+     $           +chzeta2(s,a)
+            no=nocgam*4+nolog*2+nopg*3+nozt2
+          endif
+        else
+          ke=0.d0
+          f1=exp(cloggamma1(-s)+(s-1.d0)*log(zeroim(-lz)))
+     $         +chzeta2(s,a)
+          no=nocgam+nolog*2+nozt2
+        endif
+        u=exp(-a*lz)
+        f1=f1*u
+        k=1.d0
+        do
+          u=u*lz/k
+          if(k /= ke)then
+            v=chzeta2(zeroim(s-k),a)
+            df=v*u
+            f1=f1+df
+            no=no+nozt2+6
+            if(abs(v) .gt. vlim .or.
+     $           abs(df)**2 <= no*abs(f1)**2*epso)then
+c     write(*,'(a,1p10g12.4)')'chl-s>0 ',u,s-k,v,f1,df
+              exit
+            endif
+          endif
+          k=k+1.d0
         enddo
-        f1=f1*z**(-nt)
-      elseif(nt < 0)then
-        f1=z**(-nt)*chlerch(z,s,a-n1)+a**(-s)
+      else      
+        z1=sqrt(z)
+        f1=2.d0**(s-1.d0)*(chlerch(zeroim(-z1),s,a*2.d0)
+     $       +chlerch(zeroim(z1),s,a*2.d0))
+      endif
+      return
+      end function
+
+      complex*16 function chlconva(z,s,a) result(f1)
+      implicit none
+      complex*16 ,intent(in):: z,s,a
+      complex*16 u,s1,df,as,ak
+      real*8 n,adf,adf0,n1
+      integer*4 j,no,nt,i
+      real*8 ,parameter :: nf=1.d5
+      as=a**(-s)
+c      nt=ceiling(max(abs(imag(z)),sqrt(max(ath**2-imag(a)**2,0.d0)))
+      nt=ceiling(sqrt(max(ath**2-imag(a)**2,0.d0))
+     $     -dble(a))
+      if(nt > 0)then
+c        f1=z**(-nt)*chlerch(z,s,a-n1)+a**(-s)
+        n1=dble(nt)
+        f1=as
         u=1.d0
         ak=zeroim(a+1.d0)
-        do i=1,-nt-1
+        do i=1,nt-1
           u=u*z
           if(ak /= czero)then
             f1=f1+u*ak**(-s)
           endif
           ak=ak+1.d0
         enddo
-c$$$      elseif(.false. .and. abs(z) < lzthg .and. abs(imag(a)) <= aimth
-c$$$     $       .and. dble(z) >=0.d0)then
-c$$$        if(imag(z) == 0.d0)then
-c$$$          f1=conjz(chlconvg(dcmplx(dble(z),0.d0),conjz(s),conjz(a)))
-c$$$        else
-c$$$          f1=chlconvg(z,s,a)
-c$$$        endif
-c$$$        write(*,'(a,1p10g12.4)')'chl-cg ',z,s,a,f1
-c$$$        if(imag(z) /= 0.d0 .or. .true.)then
-c$$$c        if(dble(z) <= 0.d0)then
-c$$$c          write(*,'(a,1p10g12.4)')'chl-cg ',z,s,a,f1
-c$$$          return
-c$$$        elseif((dble(a) >= 0.25d0 .and. dble(a) <= 0.75d0 .or. .true.)
-c$$$     $         .and.
-c$$$     $         (imag(s) /= 0.d0 .or. dble(s) /= anint(dble(s)) .or.
-c$$$     $         dble(s) <= 0.d0))then
-c$$$          if(imag(a) >= 0.d0)then
-c$$$            s1=1.d0-s
-c$$$            z1=log(zeroim(z))/(0.d0,m_2pi)
-c$$$            es=cexpp((0.d0,0.5d0)*s1)
-c$$$            ea=cexpp((0.d0,2.d0)*a)
-c$$$            f1=(es*chlerch(1.d0/ea,s1,z1)+ea/es*chlerch(ea,s1,1.d0-z1))
-c$$$     $           *cgamma(s1)*m_2pi**(-s1)/z**a
-c$$$          else
-c$$$            s1=conjz(1.d0-s)
-c$$$            z1=conjz(log(zeroim(z))/(0.d0,m_2pi))
-c$$$            es=cexpp((0.d0,-0.5d0)*s1)
-c$$$            ea=conjz(cexpp((0.d0,2.d0)*a))
-c$$$            f1=conjz((chlerch(ea,s1,z1)+ea/es*chlerch(ea,s1,1.d0-z1))
-c$$$     $           *cgamma(s1)*m_2pi**(-s1)/conjz(z**a))
-c$$$          endif
-c$$$          write(*,'(a,1p10g12.4)')'chl-cge ',a,es,ea,z1,f1
-c$$$          return
-c$$$        else
-c$$$          write(*,'(a,1p10g12.4)')'chl-cg-else ',z,s,a
-c$$$        endif
-      elseif(dble(z) >= 0.5d0)then
-c$$$        nsq=floor(log(m_2pi*aimth/log(abs(z)))/log(2.d0))
-c$$$        if(nsq >= 1.d0 .and. abs(imag(a))*(0.5d0**nsq) < aimth
-c$$$     $      .and. .false. )then
-c$$$          z1=zeroim(z**2)
-c$$$          f1=(chlerch(z1,s,.5d0*a)+z*chlerch(z1,s,.5d0*a+.5d0))
-c$$$     $         *2.d0**(-s)
-c$$$        else
-        lz=zeroim(log(zeroim(z)))
-        if(abs(lz) < lzth)then
-          if(imag(s) == 0.d0 .and. anint(dble(s)) == dble(s)
-     $         .and. dble(s) > 0.d0)then
-            ns1=nint(dble(s)-1.d0)
-            ke=dble(ns1)
-            if(ns1 == 0)then
-              f1=-cpolygamma(a)-m_euler-log(zeroim(-lz))
-              no=nocgam*2+nolog*3
-            else
-              f1=lz**ns1*gammai(dble(s))*(
-     $             -log(zeroim(-lz))
-     $             +polygamma(dble(s))-cpolygamma(a))
-     $             +chzeta2(s,a)
-              no=nocgam*4+nolog*4+nozt2
-            endif
-          else
-            ke=0.d0
-            f1=exp(cloggamma1(-s)+(s-1.d0)*log(zeroim(-lz)))
-     $           +chzeta2(s,a)
-            no=nocgam+nolog*3+nozt2
-          endif
-          u=exp(-a*lz)
-          f1=f1*u
-          k=1.d0
-          do
-            u=u*lz/k
-            if(k /= ke)then
-              v=chzeta2(zeroim(s-k),a)
-              df=v*u
-              f1=f1+df
-              no=no+nozt2+6
-              if(abs(v) .gt. vlim .or.
-     $             abs(df)**2 <= no*abs(f1)**2*epso)then
-c     write(*,'(a,1p10g12.4)')'chl-s>0 ',u,s-k,v,f1,df
-                exit
-              endif
-            endif
-            k=k+1.d0
-          enddo
-        else
-          z1=sqrt(z)
-c          write(*,'(a,1p10g12.4)')'chlp-s ',z,s,a,z1
-          f1=2.d0**(s-1.d0)*(chlerch(zeroim(-z1),s,a*2.d0)
-     $         +chlerch(zeroim(z1),s,a*2.d0))
-        endif
-c$$$        endif
-      elseif(imag(z) > max(0.5d0,sqrt(3.d0)*abs(dble(z)))
-     $       .or. dble(z) < -1.4d0)then
-          z1=sqrt(z)
-          f1=2.d0**(s-1.d0)*(chlerch(zeroim(-z1),s,a*2.d0)
-     $         +chlerch(zeroim(z1),s,a*2.d0))
-c          write(*,'(a,1p10g12.4)')'chl-a ',z,z1,s,a,f1
-c        else
-c          z1=zeroim(z**2)
-c          f1=(chlerch(z1,s,.5d0*a)+z*chlerch(z1,s,.5d0*a+.5d0))
-c     $         *2.d0**(-s)
-c          write(*,'(a,1p10g12.4)')'chl-b ',z,z1,s,a,f1
-c        endif
+        u=ak**(-s)*z**nt
       else
-        f1=chlconv(z,s,a)
+        ak=a
+        u=as
+        f1=0.d0
       endif
+      f1=f1+u/zeroim(1.d0-z)
+      n=1.d0
+      s1=s-1.d0
+      adf0=veryl
+      no=2
+      do
+        df=czero
+        do j=1,2
+          u=-u*(s1+n)/n/ak
+          df=df+u*cpolylog(dcmplx(-n,0.d0),z)
+          n=n+1.d0
+        enddo
+        adf=abs(df)**2
+        no=no+nopl*2
+        if(adf > adf0 .or. n .gt. 16.d0)then
+          if(adf > no*nf*abs(f1)**2*epso)then
+            f1=(veryl,0.d0)
+c          else
+c            write(*,'(a,1p10g12.4)')'chlca-cv1 ',z,s,a,f1,adf/abs(f1)
+          endif
+          exit
+        endif
+        adf0=adf
+        f1=f1+df
+        if(adf <= no*abs(f1)**2*epso)then
+c          write(*,'(a,1p10g12.4)')'chlca-cv2 ',z,s,a,f1,adf/abs(f1)
+          exit
+        endif
+      enddo
+      return
+      end function 
+
+      complex*16 function chlconv(z,s,a) result(f1)
+      implicit none
+      complex*16 ,intent(in):: z,s,a
+      integer*4 ,parameter :: nmax=1000
+      real*8 ,parameter ::nf=1.d5
+      complex*16 u,z1,vn(0:nmax),df,df1,df0
+      real*8 n,adf,adf0,v,v1,k,k1,n1,az
+      integer*4 nv,no,i,j,nj
+      u=1.d0/zeroim(1.d0-z)
+      z1=-z*u
+      az=abs(imag(log(z1**2)))/m_2_pi
+      do nj=1,4
+        if(abs(nj*az-anint(nj*az)) <= 0.25d0)then
+          exit
+        endif
+      enddo
+      nj=min(4,nj)
+      vn(0)=zeroim(a)**(-s)
+      nv=0
+      f1=u*vn(0)
+      no=nolog+8
+      n=1.d0
+      adf0=veryl
+c      write(*,'(a,1p10g12.4)')'chlconv-0 ',z,s,a,u,f1
+      do
+        df=czero
+        do j=1,nj
+          n1=n+1.d0
+          v=1.d0
+          v1=1.d0
+          k=0.d0
+          df0=vn(0)
+          df1=vn(0)
+          do i=1,min(nint(n1),nmax)
+            k1=k+1.d0
+            v=-v*(n-k)/k1
+            v1=-v1*(n1-k)/k1
+            if(i > nv)then
+              if(a+k1 /= czero)then
+                vn(i)=zeroim(a+k1)**(-s)
+              else
+                vn(i)=czero
+              endif
+              nv=i
+            endif
+            df0=df0+v*vn(i)
+            df1=df1+v1*vn(i)
+            k=k1
+          enddo
+          u=u*z1
+          df=df+u*(df0+z1*df1)
+          u=u*z1
+          n=n1+1.d0
+        enddo
+        no=no+nint(n)*(nolog*2+16)*nj+12
+        adf=abs(df)
+        if(adf > adf0)then
+          if(adf**2 > no*nf*abs(f1)**2*epso)then
+c            write(*,'(a,i5,1p10g12.4)')'hlp-nc ',nj,z,s,a,f1,adf/abs(f1)
+            f1=(veryl,0.d0)
+c          else
+c            write(*,'(a,i5,1p10g12.4)')'hlp-cv ',nj,z,s,a,f1,adf/abs(f1)
+          endif
+          exit
+        endif
+        adf0=adf
+         f1=f1+df
+c        write(*,'(a,1p10g12.4)')'hlp-n ',n,z,a,f1,df
+        if(adf**2 <= no*abs(f1)**2*epso)then
+          exit
+        endif
+      enddo
       return
       end function
 
@@ -2027,7 +2184,7 @@ c        endif
       f1=(cgamma2(sh,lm*a2)*cgi+cgamma2(sh1,lm*a2)*cgi1)/a2**sh
       n=1.d0
       no=nogam2*2
-      adf0=1.d100
+      adf0=veryl
       u=1.d0
       do
         u=u*z
@@ -2069,7 +2226,7 @@ c      endif
       sh3=zeroim(1.d0-sh)
       n=1.d0
       eu=1.d0
-      adf0=1.d100
+      adf0=veryl
       c=.5d0*m_pi**(s-0.5d0)/z**a
 c      if(imag(z) == 0.d0 .and. dble(z) < 0.d0)then
 c        un=log(abs(z))/(0.d0,m_2pi)+0.5d0
@@ -2118,114 +2275,6 @@ c     $     .and. abs(imag(a)) > 0.39d0)then
 c        write(*,'(a,1p10g12.4)')'chlcg-22  ',z,a,un1,f1,df
 c      endif
         no=no+(nocgam+nolog)*4
-        if(adf**2 <= no*abs(f1)**2*epso)then
-          exit
-        endif
-      enddo
-      return
-      end function
-
-      complex*16 function chlconva(z,s,a) result(f1)
-      implicit none
-      complex*16 ,intent(in):: z,s,a
-      complex*16 u,s1,df
-      real*8 n,adf,adf0
-      integer*4 j,no
-      f1=1.d0/zeroim(1.d0-z)
-      u=cone
-      n=1.d0
-      s1=s-1.d0
-      adf0=1.d100
-      no=2
-      do
-        df=czero
-        do j=1,2
-          u=-u*(s1+n)/n/a
-          df=df+u*cpolylog(dcmplx(-n,0.d0),z)
-c          write(*,'(a,1p10g12.4)')'chlp-pl ',u,df
-          n=n+1.d0
-        enddo
-        adf=abs(df)
-        if(adf > adf0 .or. n .gt. 16.d0)then
-c          write(*,'(a,1p10g12.4)')'chlca-a ',z,s,a,f1,adf,adf0
-          f1=f1/a**s
-          exit
-        endif
-        adf0=adf
-        no=no+nopl*2
-        f1=f1+df
-        if(adf**2 <= no*abs(f1)**2*epso)then
-          f1=f1/a**s
-          exit
-        endif
-      enddo
-      return
-      end function 
-
-      complex*16 function chlconv(z,s,a) result(f1)
-      implicit none
-      complex*16 ,intent(in):: z,s,a
-      integer*4 ,parameter :: nmax=1000
-      complex*16 u,z1,vn(0:nmax),df,df1,df0
-      real*8 n,adf,adf0,v,v1,k,k1,n1,az
-      integer*4 nv,no,i,j,nj
-      u=1.d0/zeroim(1.d0-z)
-      z1=-z*u
-      az=abs(imag(log(z1**2)))/m_2_pi
-      do nj=1,4
-        if(abs(nj*az-anint(nj*az)) <= 0.25d0)then
-          exit
-        endif
-      enddo
-      nj=min(4,nj)
-      vn(0)=zeroim(a)**(-s)
-      nv=0
-      f1=u*vn(0)
-      no=nolog+8
-      n=1.d0
-      adf0=1.d100
-c      write(*,'(a,1p10g12.4)')'chlconv-0 ',z,s,a,u,f1
-      do
-        df=czero
-        do j=1,nj
-          n1=n+1.d0
-          v=1.d0
-          v1=1.d0
-          k=0.d0
-          df0=vn(0)
-          df1=vn(0)
-          do i=1,min(nint(n1),nmax)
-            k1=k+1.d0
-            v=-v*(n-k)/k1
-            v1=-v1*(n1-k)/k1
-            if(i > nv)then
-              if(a+k1 /= czero)then
-                vn(i)=zeroim(a+k1)**(-s)
-              else
-                vn(i)=czero
-              endif
-              nv=i
-            endif
-            df0=df0+v*vn(i)
-            df1=df1+v1*vn(i)
-            k=k1
-          enddo
-          u=u*z1
-          df=df+u*(df0+z1*df1)
-          u=u*z1
-          n=n1+1.d0
-        enddo
-        adf=abs(df)
-        if(adf > adf0)then
-          if(adf > 1.d-6*abs(f1))then
-            write(*,'(a,i5,1p10g12.4)')'hlp-c ',nj,az,n,z,a,f1,adf,adf0
-          endif
-          exit
-        endif
-        adf0=adf
-        no=no+nint(n)*(nolog*2+16)*nj+12
-        f1=f1+df
-c        write(*,'(a,1p10g12.4)')'hlp-n ',n,z,a,f1,df
         if(adf**2 <= no*abs(f1)**2*epso)then
           exit
         endif
@@ -3450,6 +3499,8 @@ c          write(*,'(a,1p10g12.4)')'hg1-2 ',a,c,xac,f1
         cx=chlerch(x,a,c)
       case (5)
         cx=clerch(x,a,c)
+      case (6)
+        cx=chlconva(x,a,c)
       case default
         kx=dxnullo
         return
@@ -3575,7 +3626,7 @@ c      write(*,'(a,2i5,1p10g12.4)')'chgpq ',na,nb,b(1)
       f=u
       k=0.d0
       no=0
-      au0=1.d100
+      au0=veryl
       main: do
         do i=1,na
           u=u*(a(i)+k)
@@ -3723,7 +3774,7 @@ c        write(*,'(a,3i5,1p10g12.4)')'hgpq-0 ',i,na,nb,z,u,f
       integer*4 i
       integer*4 ,parameter :: nmax=1000
       complex*16 xk,xn,xk1,sabcp,cab,f10,xkk,xkk1,j1n,sabc
-      complex*16 ,save :: ns=(-1.d100,0.d0),cgi(-2:nmax),
+      complex*16 ,save :: ns=dcmplx(-veryl,0.d0),cgi(-2:nmax),
      $     chk1(0:nmax),chk3(0:nmax),chk2(0:nmax),
      $     chk4(0:nmax),chk5(0:nmax),chk6(0:nmax)
       real*8 j,j1,axk,m,k,dfa
@@ -4140,7 +4191,7 @@ c$$$     $       -(log(x)-cpolygamma(-n)-m_euler)/x)/x**n*cgammai(-n)
       integer*4 ,parameter :: nmax=1000
       real*8 ,parameter ::eps=1.d-9
       real*8 f,xk,xn,u,xk1,lx,f10,xkk,xkk1,df
-      real*8 ,save :: ns=(-1.d100,0.d0),cgi(-2:nmax),
+      real*8 ,save :: ns=dcmplx(-veryl,0.d0),cgi(-2:nmax),
      $     chk1(0:nmax),chk2(0:nmax)
       real*8 k,j,j1,axk,dfa
       integer*4 ,save :: im1,im2
@@ -4353,7 +4404,7 @@ c     u=zeroim(z)**s*exp(-z)
         f1=u/lg0/lg1
         n=1.d0
         no=nolog
-        adf0=1.d100
+        adf0=veryl
         do k=1,kg2max
           df=0.d0
           do j=1,4
@@ -4411,7 +4462,7 @@ c      write(*,'(a,1p10g12.4)')'cgm2 ',s,z,f1
         f1=u/lg0/lg1
         n=1.d0
         no=nolog*2
-        adf0=1.d100
+        adf0=veryl
         do k=1,kg2max
           df=0.d0
           do j=1,4
@@ -4828,7 +4879,7 @@ c        write(*,'(a,1p10g12.4)')'cierf-2 ',x,f1
         no=nolog+10
       endif
       f=f1
-      adf0=1.d100
+      adf0=veryl
       fact=1.d0
       do i=1,imax
         df=(x-cerf(f))*c*exp(f**2)

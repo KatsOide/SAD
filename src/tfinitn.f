@@ -1126,6 +1126,7 @@ c      i=itfunaloc('SetEnv',181,2,map,ieval,0)
       i=itfunaloc('HurwitzLerchPhi',247,3,map,ieval,2)
       i=itfunaloc('LerchPhi',248,3,map,ieval,2)
       i=itfunaloc('BernoulliB',249,2,map,ieval,2)
+      i=itfunaloc('HLPA',250,3,map,ieval,2)
       return
       end
 c
