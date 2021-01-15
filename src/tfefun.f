@@ -225,6 +225,7 @@ c          write(*,*)'tfeexpr-slot ',vy,ks
                     else
                       kx2=tfeexpr(kx2,kx,mtftimes)
                     endif
+c                    call tfdebugprint(kx2,'eexpr-kx2',1)
                     isp=isp-1
                   endif
                 endif
@@ -242,8 +243,9 @@ c          write(*,*)'tfeexpr-slot ',vy,ks
                 if(ktfrealq(kx2,v2))then
                   vx1=vx1*v2
                 else
-                  k2=tfeexpr(kx2,ke,mtftimes)
+                  ke=tfeexpr(kx2,ke,mtftimes)
                 endif
+c                call tfdebugprint(ke,'eexpr-ke',1)
                 if(vx1 .ne. 1.d0)then
                   kx=tfcmplx(sad_descr(vx1),ky,mtfpower,irtc)
                   ke=tfeexpr(kx,ke,mtftimes)
@@ -344,6 +346,7 @@ c      call tfdebugprint(ky,'tfeexpr',1)
 c      write(*,*)isp
       ke=kxcompose(isp-2)
       isp=isp-3
+c      call tfdebugprint(ke,'eexpr-4900',1)
       return
  5000 if(ktfrealq(ky))then
         ke=kxavaloc(-1,1,kle)

@@ -1656,7 +1656,7 @@ c     Including m_e(Napier's constant: Exp[1])
       real*8 rs,k,ke
       integer*4 no,m,i
       real*8 ,parameter :: lm=m_pi,lm1=m_pi**2/lm,plzth=0.5d0,
-     $     plzath=50.d0
+     $     plzath=50.d0,epspl=log(epso**2*nopl)/2.d0
       if(z == czero)then
         f=czero
       elseif(z == cone)then
@@ -1667,6 +1667,8 @@ c     Including m_e(Napier's constant: Exp[1])
         else
           f=1.d0/0.d0
         endif
+      elseif(max(0.d0,log(abs(z))) < epspl+abs(s)*log(2.d0))then
+        f=z+z**2/2.d0**s
       elseif(imag(s) == 0.d0 .and.
      $       dble(s) == anint(dble(s)))then
         if(dble(s) <= 1.d0)then
@@ -1812,10 +1814,12 @@ c        write(*,'(a,1p10g12.4)')':  ',1.d0-lz,-czeta2(1.d0-s,1.d0-lz)
       complex*16 df,u,z1,ak
       real*8 m,m1,n,n1,az
       integer*4 no,nt,i,j,nj
+      real*8 ,parameter ::mmax=50.d0
       if(abs(a) > arth)then
         n=anint(dble(a)+0.1d0)
         nt=int(n)
         n1=dble(nt)
+        f1=czero
         if(nt > 0)then
           if(a /= dcmplx(n1,0.d0))then
             f1=chlerchp(z,s,a-n1)-zeroim(a-n1)**(-s)
@@ -1855,21 +1859,20 @@ c        write(*,'(a,1p10g12.4)')':  ',1.d0-lz,-czeta2(1.d0-s,1.d0-lz)
         enddo
         nj=min(4,nj)
         u=1.d0
-        f1=a**(-s)+u*cpolylog(s,z)
+        f1=a**(-s)+z*(1.d0+a)**(1.d0-s)+cpolylog(s,z)
         m=0.d0
-        no=nopl
+        no=nopl+nolog*2
         do
           df=0.d0
           do j=1,nj
             m1=m+1.d0
             u=-u*(m+s)*a/m1
-            df=df+u*cpolylog(s+m1,z)
+            df=df+u*(cpolylog(s+m1,z)-z)
             m=m1
           enddo
           f1=f1+df
           no=no+(nopl+14)*nj+1
-          if(abs(df)**2 <= no*abs(f1)**2*epso .or.
-     $         m > 60.d0)then
+          if(abs(df)**2 <= no*abs(f1)**2*epso)then
             exit
           endif
         enddo
