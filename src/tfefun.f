@@ -225,6 +225,7 @@ c          write(*,*)'tfeexpr-slot ',vy,ks
                     else
                       kx2=tfeexpr(kx2,kx,mtftimes)
                     endif
+c                    call tfdebugprint(kx2,'eexpr-kx2',1)
                     isp=isp-1
                   endif
                 endif
@@ -242,8 +243,9 @@ c          write(*,*)'tfeexpr-slot ',vy,ks
                 if(ktfrealq(kx2,v2))then
                   vx1=vx1*v2
                 else
-                  k2=tfeexpr(kx2,ke,mtftimes)
+                  ke=tfeexpr(kx2,ke,mtftimes)
                 endif
+c                call tfdebugprint(ke,'eexpr-ke',1)
                 if(vx1 .ne. 1.d0)then
                   kx=tfcmplx(sad_descr(vx1),ky,mtfpower,irtc)
                   ke=tfeexpr(kx,ke,mtftimes)
@@ -344,6 +346,7 @@ c      call tfdebugprint(ky,'tfeexpr',1)
 c      write(*,*)isp
       ke=kxcompose(isp-2)
       isp=isp-3
+c      call tfdebugprint(ke,'eexpr-4900',1)
       return
  5000 if(ktfrealq(ky))then
         ke=kxavaloc(-1,1,kle)
@@ -1291,12 +1294,12 @@ c
      $        2210,2220,2230,2240,2250,2260,2270,2280,2290,2300,
      $        2310,2320,2330,2340,2350,2360,2370,2380,2390,2400,
      $        2410,2420,2430,2440,2450,2460,2470,2480,2490,2500,
-     $        2510,2520,2530,2540,2550,2560,2570,2580,2590
+     $        2510,2520,2530,2540,2550,2560,2570,2580,2590,2600
 c              Frst Scnd Thrd ObjS PrdL GauC ClMO MAll Dupl GCLn
 c              Seek DigQ LetQ ReaQ NSmQ OpSh RdSh WrSh ShSz FBuQ
 c              GaCU GaCF Rest RRt1 Diff Gam0 XSIn Poch Hg21 H21R 
 c              Hg11 H11R Hg01 H01R Zeta PGmM DZet HZet DHZt PGmH
-c              Gamm HgU  HgPQ HPQR PLog Beta HLcP LchP BerB
+c              Gamm HgU  HgPQ HPQR PLog Beta HLcP LchP BerB HLPA
      $       ),id
 c
         if(id .gt. 0)then
@@ -2307,6 +2310,13 @@ c          write(*,*)'with ',irtc
             kx%x(1)=bernbf(nint(v))*factorial(v)
             irtc=0
           endif
+        else
+          go to 6812
+        endif
+        go to 6900
+ 2600   if(narg == 3)then
+          kx=kxhg(dtastk(isp1+2),dtastk(isp),dtastk(isp),dtastk(isp1+1),
+     $         .false.,6,irtc)
         else
           go to 6812
         endif
