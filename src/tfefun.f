@@ -1158,6 +1158,7 @@ c      call tfdebugprint(kx,': ',1)
      $     itfgetrecl,ltr0,iaf,itfopenwrite,itfmessage,
      $     itfopenappend,itfopcode,isp0,nsize
       real*8 vx,v1,v,f
+      complex*16 c1
       character*3 opcx
       character*8 char8
       logical*4 ,intent(in):: upvalue
@@ -1294,12 +1295,12 @@ c
      $        2210,2220,2230,2240,2250,2260,2270,2280,2290,2300,
      $        2310,2320,2330,2340,2350,2360,2370,2380,2390,2400,
      $        2410,2420,2430,2440,2450,2460,2470,2480,2490,2500,
-     $        2510,2520,2530,2540,2550,2560,2570,2580,2590,2600
+     $        2510,2520,2530,2540,2550,2560,2570,2580,2590
 c              Frst Scnd Thrd ObjS PrdL GauC ClMO MAll Dupl GCLn
 c              Seek DigQ LetQ ReaQ NSmQ OpSh RdSh WrSh ShSz FBuQ
 c              GaCU GaCF Rest RRt1 Diff Gam0 XSIn Poch Hg21 H21R 
 c              Hg11 H11R Hg01 H01R Zeta PGmM DZet HZet DHZt PGmH
-c              Gamm HgU  HgPQ HPQR PLog Beta HLcP LchP BerB HLPA
+c              Gamm HgU  HgPQ HPQR PLog Beta HLcP LchP BerB
      $       ),id
 c
         if(id .gt. 0)then
@@ -2305,18 +2306,17 @@ c          write(*,*)'with ',irtc
         endif
         go to 6900
  2590   if(narg == 1)then
-          irtc=-1
           if(ktfrealq(dtastk(isp),v) .and. anint(v) == v)then
             kx%x(1)=bernbf(nint(v))*factorial(v)
             irtc=0
           endif
-        else
-          go to 6812
-        endif
-        go to 6900
- 2600   if(narg == 3)then
-          kx=kxhg(dtastk(isp1+2),dtastk(isp),dtastk(isp),dtastk(isp1+1),
-     $         .false.,6,irtc)
+        elseif(narg == 2)then
+          irtc=-1
+          if(ktfrealq(dtastk(isp1+1),v) .and. anint(v) == v .and.
+     $         tfnumberq(dtastk(isp),c1))then
+            kx=kxcalocc(-1,berpol(nint(v),c1))
+            irtc=0
+          endif
         else
           go to 6812
         endif

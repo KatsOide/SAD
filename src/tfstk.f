@@ -48,6 +48,9 @@ c     4 / Pi
 c         Sqrt[Pi]
       real*8, parameter :: m_sqrtpi   = 1.77245385090551602730d0
 
+c     Sqrt[2 Pi]
+      real*8, parameter :: m_sqrt2pi  = 2.50662827463100050242d0
+
 c     2 / Sqrt[Pi]
       real*8, parameter :: m_2_sqrtpi = 1.12837916709551257390d0
 
