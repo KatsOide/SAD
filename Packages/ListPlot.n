@@ -169,11 +169,11 @@ With[{def={MaxBend->0.01,PlotPoints->32,PlotDivision->1024,PlotRange->Automatic,
       PlotRange->PR$Auto[pr,PlotRange->d[[2]]],opt]
     ]]];
 
-With[{def={Dashing->{{1},{0.75,0.25},{0.4, 0.15},{0.2,0.1},{0.1,0.08},
-  {0.8,0.08, 0.08, 0.08},{0.4,0.08,0.08,0.08}},
+With[{def={Dashing->{{1},{0.8,0.2},{0.4, 0.15},{0.2,0.1},{0.1,0.07},
+  {0.8,0.07, 0.07, 0.07},{0.4,0.07,0.07,0.07}},
   PlotColor:>
-    {"dodger blue","tomato","dark goldenrod","forest green",
-      "blue violet","royal blue","orange3"},
+    {"dodger blue","tomato3","forest green","dark goldenrod",
+      "royal blue","orange3","blue violet"},
   Thickness->2,
   Legend->{False},
   PlotRange->Automatic,
