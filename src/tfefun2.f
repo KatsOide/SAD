@@ -76,7 +76,8 @@ c 12/9/1998 K. Oide
         do i=1,narg
           if(ktfstringq(ktastk(isp1+i))) then
             kav=ktfaddr(ktastk(isp1+i))
-            call CaSearch(klist(kav+1),ilist(1,kav),rtastk(isp0+i),irtc)
+            call CaSearch(ilist(1,kav+1),
+     $           ilist(1,kav),rtastk(isp0+i),irtc)
             if(irtc .ne. 0)then
               go to 3007
             endif
@@ -195,8 +196,7 @@ c     CaWrite2[{ch,val},....]
 c 
       do i=1,narg
          if (ktflistq(ktastk(isp1+1))) then
-            kv=ktastk(isp1+i)
-            call nfCaWriteNoWait(kv,irtc)
+            call nfCaWriteNoWait(dtastk(isp1+i),irtc)
          endif
       end do
 c

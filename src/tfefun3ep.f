@@ -345,18 +345,18 @@ c      endif
       if(ktfrealq(ktastk(isp)))then
          call ecaput(chid,.false.,1,0,rtastk(isp),nret)
       elseif(ktfstringq(ktastk(isp)))then
-         call ecaput(chid,.false.,0,0,ktfaddr(ktastk(isp)),nret)
+         call ecaput(chid,.false.,0,0,rlist(ktfaddr(ktastk(isp))),nret)
       elseif(ktflistq(ktastk(isp)))then
          ka=ktfaddr(ktastk(isp))
          if(ilist(2,ka-1) .eq. 0)then
             nret=0
          else
            if(ktfreallistq(ka))then
-             call ecaput(chid,.false.,1,ilist(2,ka-1),ka,nret)
+             call ecaput(chid,.false.,1,ilist(2,ka-1),rlist(ka),nret)
            elseif(ktfrealq(klist(ka+1)))then
-             call ecaput(chid,.false.,1,ilist(2,ka-1),ka,nret)
+             call ecaput(chid,.false.,1,ilist(2,ka-1),rlist(ka),nret)
            else
-             call ecaput(chid,.false.,0,ilist(2,ka-1),ka,nret)
+             call ecaput(chid,.false.,0,ilist(2,ka-1),rlist(ka),nret)
            endif
          endif
       endif
@@ -388,18 +388,18 @@ c      endif
       if(ktfrealq(ktastk(isp)))then
          call ecaput(chid,.true.,1,0,rtastk(isp),nret)
       elseif(ktfstringq(ktastk(isp)))then
-         call ecaput(chid,.true.,0,0,ktfaddr(ktastk(isp)),nret)
+         call ecaput(chid,.true.,0,0,rlist(ktfaddr(ktastk(isp))),nret)
       elseif(ktflistq(ktastk(isp)))then
          ka=ktfaddr(ktastk(isp))
          if(ilist(2,ka-1) .eq. 0)then
             nret=0
          else
             if(ktfreallistq(ka))then
-               call ecaput(chid,.true.,1,ilist(2,ka-1),ka,nret)
+               call ecaput(chid,.true.,1,ilist(2,ka-1),rlist(ka),nret)
             elseif(ktfrealq(klist(ka+1)))then
-               call ecaput(chid,.true.,1,ilist(2,ka-1),ka,nret)
+               call ecaput(chid,.true.,1,ilist(2,ka-1),rlist(ka),nret)
             else
-               call ecaput(chid,.true.,0,ilist(2,ka-1),ka,nret)
+               call ecaput(chid,.true.,0,ilist(2,ka-1),rlist(ka),nret)
             endif
          endif
       endif

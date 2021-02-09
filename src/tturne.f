@@ -41,7 +41,7 @@ c      endif
       if(update)then
         if(wrfeff .ne. 0.d0)then
           alambdarf=pi2/wrfeff
-          vceff=abs(dcmplx(vcacc,dvcacc/wrfeff))
+          vceff=hypot(vcacc,dvcacc/wrfeff)
         else
           alambdarf=circ
           vceff=0.d0
@@ -116,7 +116,7 @@ c      endif
       if(wrfeff .eq. 0.d0 .and. vc0 .ne. 0.d0)then
         wrfeff=hvc0/vc0*omega0/c
       endif
-      vceff=merge(abs(dcmplx(vcacc,dvcacc/wrfeff)),0.d0,
+      vceff=merge(hypot(vcacc,dvcacc/wrfeff),0.d0,
      $     wrfeff .ne. 0.d0)
       if(vceff .eq. 0.d0)then
         vceff=vc0

@@ -123,6 +123,9 @@ ON ECHO;OFF CTIME;
     FrameLabel->{{"`fD`np/p`d0`n","F   X X"},{"`fn`n`dx`n, `fn`n`dy`n","GX X  GX X"}}];
                     ! draw chromaticity
   If[$DisplayFunction === CanvasDrawer, Update[]];
+
+susp;
+
   TYPE;             ! print out all elements
   PrintBeamLine[ExtractBeamLine[]];   ! print out all beam line
   Print[TimeUsed[]];! CPU Time used so far.

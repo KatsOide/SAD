@@ -28,7 +28,7 @@
         endif
         xp=a
         do j=i+2,n
-          a=abs(dcmplx(xp,abs(ca(j,i))))
+          a=hypot(xp,abs(ca(j,i)))
           if(a .ne. 0.d0)then
             xc=xp/a
             cs=ca(j,i)/a
@@ -86,7 +86,7 @@
         cr=cdet/c2
       endif
       cp=ca(i1,i1)-cr
-      a=abs(dcmplx(abs(cp),dble(ca(i1+1,i1))))
+      a=hypot(abs(cp),dble(ca(i1+1,i1)))
       cc=cp/a
       xs=dble(ca(i1+1,i1))/a
       ccc=conjg(cc)
@@ -111,7 +111,7 @@
       enddo
       do i=i1,i2-2
         cp=ca(i+1,i)
-        a=abs(dcmplx(abs(cp),dble(ca(i+2,i))))
+        a=hypot(abs(cp),dble(ca(i+2,i)))
         if(a .ne. 0.d0)then
           cc=cp/a
           xs=dble(ca(i+2,i))/a

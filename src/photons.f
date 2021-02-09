@@ -721,8 +721,10 @@ c     codr0 has canonical momenta!
         xpx=(py*pz0 -pz*pyi)
         xpy=(pz*pxr0-px*pz0)
         xpz=(px*pyi-py*pxr0)
-        xpa=abs(dcmplx(xpx,abs(dcmplx(xpy,xpz))))/pr**2
+        xpa=norm2([xpx,xpy,xpz])/pr**2
+c        xpa=abs(dcmplx(xpx,abs(dcmplx(xpy,xpz))))/pr**2
         theta=asinz(xpa)
+c        write(*,'(a,1p10g12.4)')'tradke ',pxi,pyi,px,py,theta,bzhr0,bzh
         p=p0*pr
         h1=p2h(p)
         al1=al-cod(5)+codr0(5)
@@ -894,7 +896,8 @@ c     enddo
      $           +dgz(5)*transr(5,:)+dgz(6)*transr(6,:)
             g=norm2([gx,gy,gz])
             if(g .ne. 0.d0)then
-              bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
+c              bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
+              bt=norm2([btx,bty,btz])
               th=tan(.5d0*g)
               sinu=2.d0*th/(1.d0+th**2)
               dcosu=th*sinu

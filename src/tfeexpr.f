@@ -633,7 +633,7 @@ c              write(*,*)'tfecmplx-rl*2 '
       return
       end function
 
-      recursive function tfcmplxf(k,mode,iaf) result(kx)
+      recursive function tfcmplxf(k,mode,iaf,irtc) result(kx)
       use tfstk
       implicit none
       type (sad_descriptor) kx
@@ -641,6 +641,7 @@ c              write(*,*)'tfecmplx-rl*2 '
       type (sad_dlist), pointer :: kl,klx
       type (sad_rlist), pointer :: klr
       integer*4 ,intent(in):: mode,iaf
+      integer*4 ,intent(out):: irtc
       integer*4 m,i,isp0
       if(tfnumberq(k))then
         if(ktfrealq(k))then
@@ -655,27 +656,30 @@ c              write(*,*)'tfecmplx-rl*2 '
             kx=kxcalocv(-1,kl%rbody(1),-kl%rbody(2))
           endif
         endif
+        irtc=0
         return
       elseif(tfreallistq(k,klr))then
         kx=merge(k,kxraaloc(-1,klr%nl),
      $       mode .eq. 1 .or. mode .eq. 3)    
+        irtc=0
         return
-      elseif(ktflistq(k,kl))then
+      elseif(tflistq(k,kl))then
         m=kl%nl
-        if(mode .eq. 3 .or. kl%head%k .eq. ktfoper+mtflist)then
-          isp0=isp
-          do i=1,m
-            isp=isp+1
-            dtastk(isp)=tfcmplxf(kl%dbody(i),mode,iaf)
-          enddo
-          kx=kxmakelist(isp0)
-          isp=isp0
-          return
-        endif
+        isp0=isp
+        do i=1,m
+          isp=isp+1
+          dtastk(isp)=tfcmplxf(kl%dbody(i),mode,iaf,irtc)
+          if(irtc .ne. 0)then
+            dtastK(isp)=kl%dbody(i)
+            irtc=0
+          endif
+        enddo
+        kx=kxmakelist(isp0)
+        isp=isp0
+        irtc=0
+        return
       endif
-      kx=kxadaloc(-1,1,klx)
-      klx%head%k=ktfoper+iaf
-      klx%dbody(1)=dtfcopy(k)
+      irtc=-1
       return
       end function
 
