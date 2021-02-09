@@ -118,13 +118,13 @@ c          write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6),cod
       bzs=tfbzs(l,kb)
       select case(lt)
       case (icDRFT)
-        call tsetr0(trans,cod,bzs,0.d0)
+        call tsetr0(trans,cod,bzs*.5d0,0.d0)
         call tdrife(trans,cod,beam,srot,al,
      $       bzs,0.d0,0.d0,al,.true.,
      $       enarad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0,
      $       irad)
       case (icBEND)
-        call tsetr0(trans,cod,bzs,0.d0)
+        call tsetr0(trans,cod,bzs*.5d0,0.d0)
         theta=cmp%value(ky_ROT_BEND)
      $       +cmp%value(ky_DROT_BEND)
         phi=cmp%value(ky_ANGL_BEND)+cmp%value(ky_K0_BEND)

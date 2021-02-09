@@ -1645,9 +1645,7 @@ c            write(*,*)'irtc: ',irtc
  720    kx=tfrange(isp1,irtc)
         go to 6900
  730    if(narg == 1)then
-          kx=tfcmplxf(k,id-62,int(ka1))
-          irtc=0
-          return
+          kx=tfcmplxf(k,id-62,int(ka1),irtc)
         else
           go to 6811
         endif

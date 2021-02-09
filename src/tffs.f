@@ -665,7 +665,7 @@ c$$$susp;
         real*8 , intent(in)::ak,bz,phi,eps
         real*8 aka,eps1
         eps1=merge(1.d0,eps,eps .le. 0.d0)
-        aka=(abs(phi)+abs(dcmplx(ak,bz))*arad)/eps1
+        aka=(abs(phi)+hypot(ak,bz)*arad)/eps1
         ndivrad=merge(int(1.d0+h0/100.d0*aka*10.d0),
      $       int(1.d0+h0/100.d0*aka),trpt)
         return
@@ -1236,8 +1236,8 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
             do n=2,nmmax
               ndiv=max(ndiv,int(
      $             sqrt(ampmaxm**(n-1)/6.d0/fact(n-1)/eps*
-     $             abs(dcmplx(cmp%value(ky_K0_MULT+n*2),
-     $             cmp%value(ky_SK0_MULT+n*2))*al)))+1)
+     $             hypot(cmp%value(ky_K0_MULT+n*2),
+     $             cmp%value(ky_SK0_MULT+n*2))*al))+1)
             enddo
           endif
           cmp%ivalue(1,p_NM_MULT)=min(ndiv,ndivmaxm)
@@ -3056,7 +3056,8 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         gy=ct*bty+cl*bly
         gz=ct*btz+cl*blz
         if(anph .gt. 0.d0 .and. radpol)then
-          bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
+c          bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
+          bt=norm2([btx,bty,btz])
           if(bt .ne. 0.d0)then
             st=(sx*btx+sy*bty+sz*btz)/bt
             dst=(st-pst)*sflc*anph*(bt*gbrhoi)**2
@@ -3077,7 +3078,8 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
             endif
           endif
         endif
-        g=abs(dcmplx(gx,abs(dcmplx(gy,gz))))
+c        g=abs(dcmplx(gx,abs(dcmplx(gy,gz))))
+        g=norm2([gx,gy,gz])
         if(g .ne. 0.d0)then
 c          write(*,'(a,1p9g14.6)')'sprot ',g,ct,h,
 c     $         btx,bty,btz,cphi0,sphi0
@@ -3118,7 +3120,8 @@ c     $         btx,bty,btz,cphi0,sphi0
      $       cm,sm,spsa1(3)
         real*8 , parameter :: smin=1.d-4
         integer*4 i
-        s=abs(dcmplx(srot(1,2),abs(dcmplx(srot(2,2),srot(3,2)))))
+c        s=abs(dcmplx(srot(1,2),abs(dcmplx(srot(2,2),srot(3,2)))))
+        s=norm2(srot(:,2))
         srot(:,2)=srot(:,2)/s
         s=srot(1,1)*srot(1,2)+srot(2,1)*srot(2,2)+srot(3,1)*srot(3,2)
         srot(:,1)=srot(:,1)-s*srot(:,2)
@@ -3149,7 +3152,8 @@ c     $         btx,bty,btz,cphi0,sphi0
         a(3,3)=a(3,3)-1.d0
         call tsolvg(a,dr,dsps,3,3,3)
         sps(:,1)=sps(:,1)+dsps
-        s=abs(dcmplx(sps(1,1),abs(dcmplx(sps(2,1),sps(3,1)))))
+c        s=abs(dcmplx(sps(1,1),abs(dcmplx(sps(2,1),sps(3,1)))))
+        s=norm2(sps(:,1))
         sps(:,1)=sps(:,1)/s
         if(abs(min(sps(1,1),sps(2,1),sps(3,1)))
      $       .gt. abs(max(sps(1,1),sps(2,1),sps(3,1))))then
@@ -3166,7 +3170,8 @@ c     $         btx,bty,btz,cphi0,sphi0
           s=sps(1,1)
         endif
         sps(:,2)=sps(:,2)-s*sps(:,1)
-        s=abs(dcmplx(sps(1,2),abs(dcmplx(sps(2,2),sps(3,2)))))
+c        s=abs(dcmplx(sps(1,2),abs(dcmplx(sps(2,2),sps(3,2)))))
+        s=norm2(sps(:,2))
         sps(:,2)=sps(:,2)/s
         sps(:,3)=outer(sps(:,1),sps(:,2))
         spsa1=srot(:,1)*sps(1,2)+srot(:,2)*sps(2,2)+srot(:,3)*sps(3,2)

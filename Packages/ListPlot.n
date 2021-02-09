@@ -65,10 +65,9 @@ With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
         Message[ListPlot::wrongsize];
         Return[]],
       {ld,dr}={{},{{0,1},{0,1}}}];
-    opt00=({sc,pg,eg,pj,of,in,pr,pl}={Scale,Prolog,Epilog,PlotJoined,DisplayFunction,
+    ({sc,pg,eg,pj,of,in,pr,pl}={Scale,Prolog,Epilog,PlotJoined,DisplayFunction,
       Initialize,PlotRegion,Plot}/.(op00=op));
-    sc00=sc;
-    sc01=sc=Flatten[{Linear,sc}][[{-2,-1}]];
+    sc=Flatten[{Linear,sc}][[{-2,-1}]];
     gopt=Override[Scale->sc,
       Cases[op,r,1],DataRange->dr];
     body=Flatten[
@@ -191,7 +190,7 @@ With[{def={Dashing->{{1},{0.8,0.2},{0.4, 0.15},{0.2,0.1},{0.1,0.07},
     leg=(Legend->#)&/@Take[Flatten[{{leg},Table[False,{n}]}], n];
     g=MapThread[Function[{a,b,c,d},Plot[ReleaseHold[a],{x,xmin,xmax},
       DisplayFunction->Null,b,c,d,opt,Thickness->th]],{h,da,pc,leg}];
-    pr00=pr=PR$Auto[pr,g];
+    pr=PR$Auto[pr,g];
     If[(DisplayFunction/.{opt}/.def)===Default,
       g=Show[g,PlotRange->pr,opt]];
     g]]];
