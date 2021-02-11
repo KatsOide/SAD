@@ -2884,7 +2884,6 @@ c        k=kfromr(x)
         end function
 
         logical*4 function tfsamelistqo(lista,listp)
-        use tfpmat
         implicit none
         type (sad_dlist) , intent(inout)::lista,listp
         type (sad_descriptor) kai,kpi
