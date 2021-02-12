@@ -172,7 +172,7 @@ c$$$     $      c8=-4.93961492826482964d-7,
      $     algg=m_sqrt2pi/exp(ggamma)
       integer*4 ,parameter,private :: nolog=8,
      $     nogam=800,nocgam=2000,
-     $     nopg=48,nozt=16,nozt2=30,nogam2=3000,nopl=500
+     $     nopg=48,nozt=400,nozt2=32,nogam2=3000,nopl=20000
       real*8 ,parameter,private ::sconf=2.d0**55,xmp=30.d0,xmth=0.96d0,
      $     xmth1=1.1d0,xmeps=1.d-6,
      $     dpmg1=-1.4132139976024971836d0,
@@ -1865,7 +1865,7 @@ c      write(*,'(a,1p10g12.4)')'cpls ',dble(i),s,z,v,df,f
       complex*16 recursive function cpolylog(s,z) result(f)
       implicit none
       complex*16 ,intent(in):: s,z
-      complex*16 lz,s1,es
+      complex*16 lz,s1
       real*8 la
       real*8 ,parameter :: lm=m_pi,plzth=0.5d0,epspl=log(epso*nopl)/2.d0
       if(z == czero)then
@@ -1895,7 +1895,7 @@ c     $       -(-1.d0)**s*cpolylog(s,1.d0/z)
       elseif(abs(imag(s)) > plith)then
         f=cpolylogl(s,z)
       else
-        es=cexpp(dcmplx(imag(s),-dble(s)))
+c        es=cexpp(dcmplx(imag(s),-dble(s)))
         s1=1.d0-s
         if(imag(z) > 0.d0 .or. dble(z) <= -1.d0
      $       .or. imag(z) == 0.d0 .and.  abs(z) < 1.d0)then
@@ -1903,10 +1903,10 @@ c     $       -(-1.d0)**s*cpolylog(s,1.d0/z)
         else
           lz=0.5d0+log(zeroim(-z))/(0.d0,m_2pi)
         endif
-        f=exp((0.d0,m_pi_2)*(s+1.d0)-s1*log(m_2pi)+cloggamma(s1))
-     $       *(es*chzeta2(s1,lz)-chzeta2(s1,1.d0-lz))
 c        f=exp((0.d0,m_pi_2)*(s+1.d0)-s1*log(m_2pi)+cloggamma(s1))
-c     $       *cplzconv(s1,lz)
+c     $       *(es*chzeta2(s1,lz)-chzeta2(s1,1.d0-lz))
+        f=exp((0.d0,m_pi_2)*(s+1.d0)-s1*log(m_2pi)+cloggamma(s1))
+     $       *cplzconv(s1,lz)
       endif
       return
       end function
@@ -1924,7 +1924,7 @@ c     es=cexpp(dcmplx(imag(s),-dble(s)))
       if(imag(a) > zimth .or.
      $     dble(a) <= 0.d0 .or. dble(a) >= 1.d0)then
         f1=es*chzeta2(s,a)-chzeta2(s,1.d0-a)
-        write(*,'(a,1p10g12.4)')'cplz-a ',s,a,es,f1
+c        write(*,'(a,1p10g12.4)')'cplz-a ',s,a,es,f1
       else          
         a1=1.d0-a
         a2=a**2

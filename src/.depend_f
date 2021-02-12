@@ -75,7 +75,7 @@ getbuf.o: getbuf.f tfestk.o tffs.o tfstk.o toplvl.o
 gettok.o: gettok.f toplvl.o
 getvad.o: getvad.f tfstk.o toplvl.o
 getwrd.o: getwrd.f tffs.o toplvl.o
-hg.o: hg.f gamma.o tfloor.o tfstk.o
+hg.o: hg.f  tfloor.o tfstk.o
 hsrch.o: hsrch.f tfstk.o toplvl.o
 icsmrk.o: icsmrk.f
 ielm.o: ielm.f tffs.o tfstk.o
@@ -284,7 +284,7 @@ tfaprt.o: tfaprt.f tffs.o tfstk.o
 tfattr.o: tfattr.f tffs.o tfstk.o
 tfbeam.o: tfbeam.f tffs.o tfstk.o
 tfbeamline.o: tfbeamline.f initb1.o tfeeval.o tffs.o tffuns.o tfstk.o toplvl.o
-tfbessel.o: tfbessel.f gamma.o tfloor.o tfstk.o
+tfbessel.o: tfbessel.f  tfloor.o tfstk.o
 tfcalc.o: tfcalc.f tffs.o tfstk.o
 tfcanvasclip.o: tfcanvasclip.f tfstk.o tfstrbuf.o
 tfchgv.o: tfchgv.f tffs.o tfstk.o toplvl.o
@@ -299,7 +299,7 @@ tfdset.o: tfdset.f itfpmat.o tfeeval.o tffuns.o tfstk.o
 tfearray.o: tfearray.f
 tfeeval.o: tfeeval.f tffuns.o tfstk.o toplvl.o
 tfeexpr.o: tfeexpr.f tfefun.o tfstk.o
-tfefun.o: tfefun.f gamma.o tfeeval.o tffuns.o tfloor.o tfshared.o tfstk.o toplvl.o
+tfefun.o: tfefun.f  tfeeval.o tffuns.o tfloor.o tfshared.o tfstk.o toplvl.o
 tfefun1.o: tfefun1.f tffs.o tfstk.o
 tfefun2.o: tfefun2.f tfstk.o
 tfefun3ep.o: tfefun3ep.f tfeeval.o tfefun.o tfstk.o
@@ -312,7 +312,7 @@ tfeval.o: tfeval.f tfeeval.o tfestk.o tfstk.o toplvl.o
 tfeval1.o: tfeval1.f tfeeval.o tfefun.o tfstk.o toplvl.o
 tffamsetup.o: tffamsetup.f tfeeval.o tffs.o tfstk.o
 tffile.o: tffile.f tffs.o tfstk.o toplvl.o
-tffindroot.o: tffindroot.f gamma.o tfeeval.o tfstk.o
+tffindroot.o: tffindroot.f  tfeeval.o tfstk.o
 tffs.o: tffs.f initb1.o tfefun.o tfloor.o tfstk.o toplvl.o
 tffsa.o: tffsa.f INTGRL.o tfeeval.o tffs.o tfstk.o tgrot.o toplvl.o
 tffscalc.o: tffscalc.f tfeeval.o tffs.o tfloor.o tfshared.o tfstk.o toplvl.o
@@ -382,7 +382,7 @@ thess.o: thess.f
 tinitr.o: tinitr.f
 tins.o: tins.f tffs.o
 tinse.o: tinse.f tffs.o
-tintrb.o: tintrb.f gamma.o temit.o tffs.o tfloor.o tfstk.o
+tintrb.o: tintrb.f  temit.o tffs.o tfloor.o tfstk.o
 title.o: title.f toplvl.o
 tlinit.o: tlinit.f tffs.o tfstk.o
 tltrm.o: tltrm.f tffs.o tfstk.o
@@ -399,7 +399,7 @@ tmulte.o: tmulte.f initb1.o photons.o tffs.o tfloor.o tfstk.o tsol.o
 tmulti.o: tmulti.f initb1.o photons.o tffs.o tfloor.o tfstk.o tsol.o tsolque.o
 tmultr.o: tmultr.f
 tnorm.o: tnorm.f
-toplvl.o: toplvl.f gamma.o tfshared.o tfstk.o
+toplvl.o: toplvl.f  tfshared.o tfstk.o
 tpara.o: tpara.f
 tphplt.o: tphplt.f
 tprmpt.o: tprmpt.f tfestk.o tffs.o tfstk.o
