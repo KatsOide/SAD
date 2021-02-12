@@ -88,6 +88,7 @@ c
         iop0=iordless
         iordless=0
         do while(kad .gt. 0)
+c          write(*,*)'tfdset ',kad
           call loc_deftbl(kad,dtbl)
           call descr_sad(dtbl%argc,largl)
           m=itflistmat(kargr,largl)
@@ -95,8 +96,6 @@ c
           if(m .ge. 0)then
             call tfunsetpattbl(dtbl)
           endif
-c          call tfdebugprint(ktflist+kargr,'tfdset',1)
-c          call tfdebugprint(ktflist+kal  ,'=?=   ',1)
  1        if(m .eq. 1)then
             if(k%k .eq. ktfref)then
               mstk=mstk0
@@ -126,6 +125,16 @@ c          call tfdebugprint(ktflist+kal  ,'=?=   ',1)
             kad1=kad
             kad=dtbl%next
           endif
+c$$$          npat=dtbl%npat
+c$$$          do i=1,npat
+c$$$            kpa=dtbl%pattbl(i)
+c$$$            call descr_sad(kpa,pat)
+c$$$            call tfdebugprint(kpa,'tfdset-tbl-1',1)
+c$$$            write(*,*)': ',i,m,ktfaddr(kpa),pat%ref
+c$$$            if(associated(pat%equiv))then
+c$$$              call tfdebugprint(sad_descr(pat%equiv),'ktdaloc-equiv',1)
+c$$$            endif
+c$$$          enddo
         enddo
         mstk=mstk0
         iordless=iop0
@@ -135,7 +144,7 @@ c          call tfdebugprint(ktflist+kal  ,'=?=   ',1)
           kad1=kad10
           kad=kad0
         endif
-c        call tfdebugprint(ktflist+kargr,'tfdset-7',3)
+c        call tfdebugprint(kargr,'tfdset-7',3)
 c        call tfdebugprint(kr,':= ',3)
         kan=ktdaloc(i00,kad1,kad,k,karg,kr,kargr,.true.)
         kx=k
@@ -197,7 +206,7 @@ c        call tfdebugprint(kr,':= ',3)
         same=same .and.
      $       ktastk(i+1) .eq. klist(ktfaddr(ktastk(isp)))
       enddo
-      call tfresetpat(karg)
+c      call tfresetpat(karg)
       if(same)then
         isp=isp0
         kr=k
@@ -215,6 +224,8 @@ c        call tfdebugprint(kr,':= ',3)
       kargr=kx1
       kr=tfreplacesymbolstk1(k,ispr,nrule,.false.,rep,irtc)
       isp=isp0
+c      call tfinitpat(isp0,kargr)
+c      isp=isp0
       return
       end
 
@@ -232,7 +243,8 @@ c        call tfdebugprint(kr,':= ',3)
       integer*8 ,intent(in):: kan0,kb0,kn0
       integer*8 kan,ktalocr,kb,kn
       integer*4 npat,isp0
-      logical*4 tbl,rep,sym
+      logical*4 ,intent(in):: tbl
+      logical*4 rep,sym
       isp0=isp
       if(tbl)then
         kx=tfdefsymbol(kargr,rep,sym)
@@ -280,7 +292,7 @@ c        call tfdebugprint(kr,':= ',3)
       endif
       dtbl%compile=0.d0   ! compile level
 c      do i=1,npat
-        dtbl%pattbl(1:npat)=dtastk(isp0+1:isp0+npat*2-1:2)
+      dtbl%pattbl(1:npat)=dtastk(isp0+1:isp0+npat*2-1:2)
 c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
 c      enddo
       isp=isp0
@@ -479,6 +491,7 @@ c      enddo
                 return
               endif
               kx=dtbl%bodyc
+c              call tfdebugprint(kx,'tfdeval-1',1)
               if(dtbl%pat .ne. -1)then
                 if(ktflistq(kx,klx))then
                   kx=tfleval(klx,.true.,irtc)
@@ -504,7 +517,18 @@ c      enddo
         kad=dhash%next
       endif
       if(kad .ne. 0 .and. .not. def)then
+c$$$        call loc_deftbl(kad,dtbl)
+c$$$        do i=1,dtbl%npat
+c$$$          kpa=dtbl%pattbl(i)
+c$$$          call descr_sad(kpa,pat)
+c$$$          call tfdebugprint(kpa,'deval-dtbl',1)
+c$$$          write(*,*)': ',i,ktfaddr(kpa),pat%ref
+c$$$          if(associated(pat%equiv))then
+c$$$            call tfdebugprint(sad_descr(pat%equiv),'ktdaloc-equiv',1)
+c$$$          endif
+c$$$        enddo
         call tfdeval1(isp1,kad,kx,ev,ordless,ns,irtc)
+c        call tfdebugprint(kx,'deval',1)
       else
         irtc=-1
       endif
@@ -648,7 +672,7 @@ c      enddo
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc,ns
       integer*4 mstk0,mat,im,itfpmat,itfseqmatstk,isp0,
-     $     iop0,itfseqmatstk1
+     $     iop0,itfseqmatstk1,irs
       logical*4 ,intent(out):: ev
       logical*4 ,intent(in):: ordless
       isp0=isp
@@ -659,27 +683,38 @@ c      enddo
       ns=0
       kad=kad0
       do while(kad .ne. 0)
-        call loc_deftbl(kad,dtbl)
         mat=-1
+        call loc_deftbl(kad,dtbl)
         kap=ktfaddr(dtbl%argc)
         call loc_sad(kap,larg)
+c        call tfdebugprint(sad_descr(larg),'tfdeval1-kap',1)
         kh=larg%head
         mat=itfpmat(ktastk(isp1),kh)
+c        call tfdebugprint(dtastk(isp1),'tfdeval1-kh ',1)
         if(mat .ge. 0)then
+c          write(*,*)'mat, nl: ',mat,larg%nl
           if(larg%nl .eq. 1)then
             if(itfseqmatstk1(im,isp0,larg%dbody(1)) .lt. 0)then
               go to 30
             endif
           else
-            if(itfseqmatstk(im,isp0,larg%dbody(1),
+c            call tfdebugprint(larg%dbody(1),'teval1-sqmlarg',1)
+c            write(*,*)'tfdeval1-seqm00 ',im,isp0,ordless
+            irs=itfseqmatstk(im,isp0,larg%dbody(1),
      $           larg%nl,1,ktfreallistq(larg),merge(kap,i00,ordless))
-     $           .lt. 0)then
+c            write(*,*)'tfdeval1-seqm01',irs
+            if(irs < 0)then
+c              write(*,*)'tfdeval1-seqm0-false '
               go to 30
             endif
           endif
+c          write(*,*)'tfdeval1-seqm1 ',levelcompile
+c          write(*,*)': ',dtbl%compile,rlist(levelcompile)
           ev=.true.
           if(dtbl%compile .lt. rlist(levelcompile))then
+c            write(*,*)'deval1-setarg-0 '
             call tfsetarg(dtbl,irtc)
+c            write(*,*)'deval1-setarg ',irtc
             if(irtc .ne. 0)then
               call tfunsetpattbl(dtbl)
               isp=isp0
@@ -690,12 +725,17 @@ c      enddo
           endif
           iordless=iop0
           mstk=mstk0
+c          write(*,*)'tfdeval1-npat ',dtbl%npat
           if(dtbl%npat .ne. 0)then
             kal=dtfcopy1(dtbl%argc)
+c            write(*,*)'tfdeval1-a0'
             kx=tfevalwitharg(dtbl,dtbl%bodyc,irtc)
             call tflocal1d(kal)
+c            call tfdebugprint(kx,'tfdeval1-a',1)
           else
+c            write(*,*)'tfdeval1-b0'
             kx=tfeevalref(dtbl%bodyc,irtc)
+c            call tfdebugprint(kx,'tfdeval1-b',1)
           endif
           if(irtc .ne. 0)then
             call tfcatchreturn(irtcret,kx,irtc)
@@ -1305,6 +1345,7 @@ c          write(*,*)'with ',symd%sym%override
       np=dtbl%npat
       if(np .ne. maxgeneration)then
         do i=1,np
+c          call tfdebugprint(dtbl%pattbl(i),'unsetptbl',1)
           call descr_sad(dtbl%pattbl(i),pat)
           pat%mat=0
           pat%value%k=ktfref
@@ -1340,10 +1381,13 @@ c        call tfdebugprint(kx,'setarg-const',3)
         if(dtbl%npat .ne. 0)then
           isp0=isp
           do i=1,dtbl%npat
+c            write(*,*)'setarg-b ',i,dtbl%npat
             call descr_pat(dtbl%pattbl(i),pat)
-c            do while(associated(pat%equiv))
-c              pat=>pat%equiv
-c            enddo
+c            call tfdebugprint(sad_descr(pat),'setarg-0',1)
+            do while(associated(pat%equiv))
+              pat=>pat%equiv
+            enddo
+c            call tfdebugprint(sad_descr(pat),'setarg-1',1)
 c            call tflinkedpat(pat0,pat)
             isp=isp+2
             ktastk(isp-1)=ktfaddr(pat%sym%alloc%k)

@@ -1734,6 +1734,13 @@ c                  kcbk(3,j)=kcbk(2,k)
         return
         end function ktftype
 
+        integer*8 pure elemental function ktftyped(k)
+        implicit none
+        type (sad_descriptor) , intent(in)::k
+        ktftyped=iand(ktfmask,k%k)
+        return
+        end function ktftyped
+
         logical*4 function ktfobjqk(k,obj)
         implicit none
         type (sad_object), pointer, optional, intent(out) :: obj
@@ -2891,8 +2898,8 @@ c        k=kfromr(x)
           kai=lista%dbody(i)
           kpi=listp%dbody(i)
           if(kai%k .ne. kpi%k)then
-            if(ktfobjq(kai))then
-              if(tfsameq(kai,kpi))then
+            if(ktfobjq(kai) .and. tfsameq(kai,kpi))then
+              if(tfnopatqd(kai))then
                 kaai=ktfaddr(kai%k)
                 kapi=ktfaddr(kpi%k)
                 if(ilist(1,kapi-1) .ge. ilist(1,kaai-1))then
@@ -2902,8 +2909,8 @@ c        k=kfromr(x)
                   call tflocal1(kpi%k)
                   listp%dbody(i)=dtfcopy1(kai)
                 endif
-                cycle
               endif
+              cycle
             endif
             return
           endif
@@ -2911,6 +2918,28 @@ c        k=kfromr(x)
         tfsamelistqo=.true.
         return
         end
+
+        logical*4 recursive function tfnopatqd(k) result(f1)
+        implicit none
+        type (sad_descriptor) , intent(in)::k
+        type (sad_dlist), pointer :: kl
+        integer*4 i
+        f1=.true.
+        if(ktfpatq(k))then
+          f1=.false.
+        elseif(ktflistq(k,kl))then
+          if(iand(kl%attr,lnopatlist) .eq. 0)then
+            do i=0,kl%nl
+              if(.not. tfnopatqd(kl%dbody(i)))then
+                f1=.false.
+                return
+              endif
+            enddo
+            kl%attr=ior(kl%attr,lnopatlist)
+          endif
+        endif
+        return
+        end function
 
         logical*4 pure elemental function tfsamesymbolqo(sa,sp)
         use tfcode

@@ -448,7 +448,9 @@ c$$$      end
       iop0=iordless
       ispm0=ispm
       do
+c        write(*,*)'itfsqms1-1 ',isp10,isp20,ispm,isps,isp20
         i=itfseqm(isp10,isp20,kp,ispm,isps,isp20)
+c        write(*,*)'itfsqms1-2 ',i
         if(i .ge. 0)then
           if(isp20 .lt. isps)then
             itfseqmatstk1=min(1,i)
@@ -511,6 +513,7 @@ c$$$      end
       kp%k=merge(i00,kp0(mp1)%k,realp)
       mstk0=mstk
       ispf=isp20
+c      write(*,*)'itfsqmsk-1 ',isp10,isp20,map,mp1
       if(kpp .eq. 0)then
         isp1a=isp10
         isp2a=isp20
@@ -703,12 +706,18 @@ c     write(*,*)'at ',ispp,' with ',mop,np
      $     itfseqmatseq,itflistmat,itfsinglepat,ireppat
       integer*4 np,i
       ix=-1
+      isps=0
       kp=kp0
       if(ktfpatq(kp,pat0))then
         pat=>pat0
+c        call tfdebugprint(sad_descr(pat),'itfseqm-0',1)
         do while(associated(pat%equiv))
+c          write(*,*)': ',ktfaddr(sad_descr(pat%equiv)),
+c     $         ktftyped(sad_descr(pat%equiv))-ktfpat
+c          call tfdebugprint(sad_descr(pat%equiv),'itfseqm-e',1)
           pat=>pat%equiv
         enddo
+c        call tfdebugprint(sad_descr(pat),'itfseqm-1',1)
 c        call tflinkedpat(pat0,pat)
         k2=pat%value
 c        call tfdebugprint(sad_descr(pat),'seqm-pat',1)
@@ -1037,18 +1046,18 @@ c          write(*,*)'at ',sad_loc(pat%value)
       use tfcode
       use iso_c_binding
       implicit none
-      type (sad_descriptor) ,intent(inout):: k
+      type (sad_descriptor) ,intent(in):: k
       type (sad_pat), pointer :: pat
       type (sad_dlist), pointer :: klp
       if(ktflistq(k,klp))then
         call tfunsetpatlist(klp)
       elseif(ktfpatq(k,pat))then
-        do while(associated(pat%equiv))
-          pat%mat=0
-          pat%value%k=ktfref
-          call tfunsetpat(pat%expr)
-          pat=>pat%equiv
-        enddo
+c        do while(associated(pat%equiv))
+c          pat=>pat%equiv
+c          pat%mat=0
+c          pat%value%k=ktfref
+c          call tfunsetpat(sad_descr(pat%equiv))
+c        enddo
         pat%mat=0
         pat%value%k=ktfref
         call tfunsetpat(pat%expr)
@@ -1056,7 +1065,7 @@ c          write(*,*)'at ',sad_loc(pat%value)
       return
       end
 
-      subroutine tfunsetpatlist(klp)
+      recursive subroutine tfunsetpatlist(klp)
       use tfstk
       implicit none
       type (sad_dlist) ,intent(inout):: klp
@@ -1075,7 +1084,7 @@ c          write(*,*)'at ',sad_loc(pat%value)
       return
       end
 
-      subroutine tfresetpat(kp)
+      recursive subroutine tfresetpat(kp)
       use tfstk
       implicit none
       type (sad_descriptor) ,intent(inout):: kp
@@ -1089,22 +1098,23 @@ c          write(*,*)'at ',sad_loc(pat%value)
       return
       end
 
-      subroutine tfresetpatpat(pat)
+      recursive subroutine tfresetpatpat(pat)
       use tfstk
       use tfcode
       use iso_c_binding
       implicit none
       type (sad_pat) ,intent(inout):: pat
-      if(pat%value%k .ne. ktfref)then
-        pat%mat=0
-        pat%value%k=ktfref
-        nullify(pat%equiv)
-        call tfresetpat(pat%expr)
+      call tfresetpat(pat%expr)
+      pat%mat=0
+      pat%value%k=ktfref
+      if(associated(pat%equiv))then
+c        pat=pat%equiv
+c        nullify(pat%equiv)
       endif
       return
       end
 
-      subroutine tfresetpatlist(list)
+      recursive subroutine tfresetpatlist(list)
       use tfstk
       implicit none
       type (sad_dlist) ,intent(inout):: list
@@ -1138,13 +1148,15 @@ c          write(*,*)'at ',sad_loc(pat%value)
         call tfinitpatlist(isp0,kl)
       elseif(ktfpatq(k,pat))then
         loop10: do
-          if(associated(pat%equiv))then
-          endif
+          nullify(pat%equiv)
           if(pat%sym%loc .ne. 0)then
             kas=ktfaddr(pat%sym%alloc)
             do i=isp0+1,isp-1,2
-              if(kas .eq. ktastk(i+1))then
+              if(kas .eq. ktastk(i+1) .and.
+     $             ktastk(i) .ne. k%k)then
                 call loc_pat(ktfaddr(ktastk(i)),pat%equiv)
+c                call tfdebugprint(sad_descr(pat%equiv),'initpat-e',1)
+c                write(*,*)':',ktfaddr(ktastk(i))
                 exit loop10
               endif
             enddo
@@ -1161,7 +1173,7 @@ c          write(*,*)'at ',sad_loc(pat%value)
       return
       end
 
-      subroutine tfinitpatlist(isp0,kl)
+      recursive subroutine tfinitpatlist(isp0,kl)
       use tfstk
       implicit none
       type (sad_dlist) ,intent(inout):: kl
