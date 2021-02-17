@@ -8,7 +8,8 @@
       use eeval
       implicit none
       type (sad_descriptor) kx,kxr
-      type (sad_dlist), pointer :: kli,fvl
+      type (sad_dlist), pointer :: kli
+      type (sad_dlist), pointer, save :: fvl
       type (sad_rlist), pointer :: kla
       type (sad_comp), pointer :: cmps
       integer*4 ,intent(in):: nvar,lfno
@@ -24,8 +25,8 @@
       character*(MAXPNAME+16) name,ncoup,ele
       integer*8 ,save::ifv=0,ifvh,ifnvar,ifvkey
       if(ifv .eq. 0)then
-        ifv=ktadaloc(0,3)
-        ifvh=ktfsymbolz('VariableRange',13)
+        ifv=ktadaloc(0,3,fvl)
+        ifvh=ktfsymbolz('`VariableRange',14)
         ifnvar=ktsalocb(0,'        ',MAXPNAME+16)
         ifvkey=ktsalocb(0,'        ',MAXPNAME)
         klist(ifv)=ktfsymbol+ktfcopy1(ifvh)
@@ -83,8 +84,10 @@ c          x3=rlist(idval(k)+ivvar(i))
           rlist(ifv+3)=nvevx(i)%valvar
           call tclrfpe
           level=itfuplevel()
-          call descr_sad(dlist(ifv),fvl)
+c          call tfdebugprint(sad_descr(fvl),'tfvars-kxr-in ',1)
           kxr=tfleval(fvl,.true.,irtc)
+c          call tfdebugprint(kxr,'tfvars-kxr-out',1)
+c          write(*,*)': ',irtc
           if(irtc .ne. 0)then
             level=itfdownlevel()
             if(ierrorprint .ne. 0)then

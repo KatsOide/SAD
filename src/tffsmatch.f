@@ -457,6 +457,7 @@ c     enddo
               call tgrad(qu,quw,df,dval,wlimit,wexponent,nqcol,nvar)
             endif
             limited=.false.
+c            write(*,*)'tffsmatch ',nvar
             do ii=1,nvar
               i=nvevx(ii)%ivarele
               dv=dval(ii)*fact/wvar(ii)*wlimit(ii)
@@ -627,6 +628,7 @@ c     enddo
       limited=.false.
       do ii=1,nvar
         i=nvevx(ii)%ivarele
+c        write(*,*)'tffssetlimit ',ii,nvar
         call tffsvlimit(i,idelc(nelvx(i)%klp),
      $       nvevx(ii)%valvar,nvevx(ii)%valvar,
      $       vl,vl1,vl2,nvevx(ii)%ivvar,limited1,dlim)
@@ -704,6 +706,7 @@ c     enddo
           dlim=.true.
           vl1=max(vl1,klr%rbody(1))
           vl2=min(vl2,klr%rbody(2))
+c          write(*,*)'tffsvlimit ',vl,vl1,vl2
           if(vl .lt. vl1)then
             vl=vl1
             go to 2009
@@ -778,9 +781,10 @@ c        dtastk(isp1)=ifvw
         isp=isp+1
         rtastk(isp)=x
         call tclrfpe
-c        write(*,'(a,1x,a,1x,a)')'vlimit:',svarn%str(1:svarn%nch),
-c     $       vn(1:skey%nch)
         kx=tfefunref(isp1,.false.,irtc)
+c        write(*,'(a,1x,a,1x,a,i5)')'vlimit:',svarn%str(1:svarn%nch),
+c     $       vn(1:skey%nch),irtc
+c        call tfdebugprint(kx,':',1)
       endif
       if(irtc .ne. 0)then
         kx%k=ktfoper+mtfnull
@@ -797,6 +801,7 @@ c     $       vn(1:skey%nch)
         endif
       else
         call tfconnect(kx,irtc)
+c        call tfdebugprint(kx,'varfun:',1)
       endif
       isp=isp1-1
       return
