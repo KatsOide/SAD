@@ -1,14 +1,16 @@
 (* Please localize this file as you like. *)
 
-Environment@@[{
-  {"UNIX95",""},
-  {"TCL_LIBRARY",""},
-  {"TK_LIBRARY",""},
-  {"KBFRAMEDIR","/Users/oide/SAD/oldsad/KBFrame"},
-  {"PYTHONPATH","/Users/oide/SAD/oldsad/Packages/"}
-  },{1}];
+With[{root=Environment["SAD_ROOTPATH"]},
+  Environment@@[{
+    {"UNIX95",""},
+    {"TCL_LIBRARY",""},
+    {"TK_LIBRARY",""},
+    {"KBFRAMEDIR",root//"/KBFrame"},
+    {"PYTHONPATH",root//"/Packages/"}
+    },{1}];
 
-DocumentsDirectory="/Users/oide/SAD/oldsad/Documents/";
-ExamplesDirectory="/Users/oide/SAD/oldsad/script/";
+  DocumentsDirectory=root//"/Documents/";
+  ExamplesDirectory=root//"/script/"
 
-! End of File
+    ];
+

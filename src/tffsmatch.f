@@ -16,7 +16,7 @@ c      include 'DEBUG.inc'
       real*8 , parameter :: flim1=-4.d0,flim2=-3.d0,aimp1=-1.8d0,
      $     aimp2=-.8d0,badc1=-3.5d0,badc2=-2.5d0,amedc1=-2.3d0,
      $     amedc2=-1.3d0,alit=0.75d0,wlmin=0.009d0,eps=1.d-5,
-     $     eps1=1.d-8,rtol=1.05d0,rtol1=1.05d0
+     $     eps1=1.d-8,rtol=1.05d0,rtol1=1.05d0,tstol=1.d-6
       real*8, parameter :: aloadmax=2.d4
       integer*4 ,intent(in):: nparallel,lfno
       integer*4 ,intent(out):: irtc
@@ -440,7 +440,7 @@ c     enddo
               call c_f_pointer(c_loc(rlist(ifquw)),quw,[nqcol,nvar])
               call tfsolv(qu,quw,
      $             df,dval,wlimit,nqcol,nvar,flv%iqcol,
-     $             flv%kfitp,flv%mfitp,dg,wexponent,1.d-8/fact)
+     $             flv%kfitp,flv%mfitp,dg,wexponent,tstol/fact)
               if(wexponent .ne. 2.d0)then
                 dg=dg*(rp0/wsum)**(1.d0-wexponent/2.d0)
               endif
@@ -457,7 +457,6 @@ c     enddo
               call tgrad(qu,quw,df,dval,wlimit,wexponent,nqcol,nvar)
             endif
             limited=.false.
-c            write(*,*)'tffsmatch ',nvar
             do ii=1,nvar
               i=nvevx(ii)%ivarele
               dv=dval(ii)*fact/wvar(ii)*wlimit(ii)
@@ -1222,6 +1221,7 @@ c
 
       subroutine tfsolv(qu,quw,df,dval,wlimit,nqcol,nvar,
      $     iqcol,kfitp,mfitp,dg,wexponent,eps)
+      use tfstk
       implicit none
       integer*4 ,intent(in):: nqcol,nvar
       real*8 ,intent(in):: qu(nqcol,nvar),df(nqcol),
@@ -1249,6 +1249,7 @@ c
         endif
       enddo
       call tsolva(quw,b,dval,nj,nvar,nqcol,eps)
+      call resetnan(dval)
       again=.false.
       dg=0.d0
       do i=1,nqcol

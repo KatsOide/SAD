@@ -62,7 +62,7 @@
      1            (u43,rxy(4,3)),(u44,rxy(4,4)),
      1            (u15,rxy(1,5)),(u25,rxy(2,5)),(u35,rxy(3,5)),
      1            (u45,rxy(4,5))
-      real*8, parameter :: almostone=1.d0-1.d-16
+      real*8, parameter :: almostone=1.d0-1.d-16,twissnan=1.d200
 c     begin initialize for preventing compiler warning
       normal=.true.
       sqrdet=0.d0
@@ -119,9 +119,6 @@ c     end   initialize for preventing compiler warning
       ntfun=merge(ntwissfun,mfitdetr,orbitcal)
       do l=la+1,lb
 c        call tfmemcheckprint1('qtwiss',l,.false.)
-c        if(mod(l,1) .eq. 0)then
-c          write(*,*)'qtwiss1 ',l,la,lb
-c        endif
         l1=l-1
         ip1=ip0+l1
         ip=ip1+1
@@ -499,6 +496,7 @@ c            write(*,*)'qtwiss-qwsapc ',l1,ifsize,rlist(ifsize+(l1-1)*21)
             endif
             twiss(ip,mfitnx)=twiss(ip1,mfitnx)+dpsix
             twiss(ip,mfitny)=twiss(ip1,mfitny)+dpsiy
+            call limitnan(twiss(ip,:),twissnan)
           endif
         endif
  10     continue
@@ -879,8 +877,8 @@ c          enddo
         else
           tr1=trans2
         endif
-        call resetnan(cod,orbmax)
-        call resetnan(tr1v,trmax)
+        call limitcod(cod)
+        call limitnan(tr1v,trmax)
         trans=tr1
         if(.not. orbitcal)then
           codfnd=.true.

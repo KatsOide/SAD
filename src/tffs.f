@@ -676,13 +676,15 @@ c$$$susp;
       module ffs
         use ffs0
         use ffs_flag
+        use tfstk, only:resetnan
 
         contains
         subroutine limitcod(cod)
         real*8 , intent(inout)::cod(6)
         real*8 , parameter :: omax=1.d5,dpmin=-1.d0+1.d-5,
-     $       pmax=1.d5,zmax=1.d100
+     $       pmax=1.d5,zmax=1.d100,codnan=1.d100
         real*8 ptmax
+        call resetnan(cod,codnan)
         cod(6)=max(dpmin,min(pmax,cod(6)))
         ptmax=1.d0+cod(6)
         cod(1)=max(-omax,min(omax,cod(1)))

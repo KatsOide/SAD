@@ -667,7 +667,6 @@ c            call tmultr(trans,trans1,6)
  1010   continue
         call limitcod(cod)
       enddo
-      call limitnan(cod,1.d10)
 c      call tfmemcheckprint('tturne-end0',0,.true.,irtc)
       if(calint)then
         if(alid .ne. 0.d0)then
