@@ -16,7 +16,7 @@ c      include 'DEBUG.inc'
       real*8 , parameter :: flim1=-4.d0,flim2=-3.d0,aimp1=-1.8d0,
      $     aimp2=-.8d0,badc1=-3.5d0,badc2=-2.5d0,amedc1=-2.3d0,
      $     amedc2=-1.3d0,alit=0.75d0,wlmin=0.009d0,eps=1.d-5,
-     $     eps1=1.d-8,rtol=1.05d0,rtol1=1.05d0
+     $     eps1=1.d-8,rtol=1.05d0,rtol1=1.05d0,tstol=1.d-6
       real*8, parameter :: aloadmax=2.d4
       integer*4 ,intent(in):: nparallel,lfno
       integer*4 ,intent(out):: irtc
@@ -440,7 +440,7 @@ c     enddo
               call c_f_pointer(c_loc(rlist(ifquw)),quw,[nqcol,nvar])
               call tfsolv(qu,quw,
      $             df,dval,wlimit,nqcol,nvar,flv%iqcol,
-     $             flv%kfitp,flv%mfitp,dg,wexponent,1.d-8/fact)
+     $             flv%kfitp,flv%mfitp,dg,wexponent,tstol/fact)
               if(wexponent .ne. 2.d0)then
                 dg=dg*(rp0/wsum)**(1.d0-wexponent/2.d0)
               endif
@@ -627,6 +627,7 @@ c     enddo
       limited=.false.
       do ii=1,nvar
         i=nvevx(ii)%ivarele
+c        write(*,*)'tffssetlimit ',ii,nvar
         call tffsvlimit(i,idelc(nelvx(i)%klp),
      $       nvevx(ii)%valvar,nvevx(ii)%valvar,
      $       vl,vl1,vl2,nvevx(ii)%ivvar,limited1,dlim)
@@ -704,6 +705,7 @@ c     enddo
           dlim=.true.
           vl1=max(vl1,klr%rbody(1))
           vl2=min(vl2,klr%rbody(2))
+c          write(*,*)'tffsvlimit ',vl,vl1,vl2
           if(vl .lt. vl1)then
             vl=vl1
             go to 2009
@@ -778,9 +780,10 @@ c        dtastk(isp1)=ifvw
         isp=isp+1
         rtastk(isp)=x
         call tclrfpe
-c        write(*,'(a,1x,a,1x,a)')'vlimit:',svarn%str(1:svarn%nch),
-c     $       vn(1:skey%nch)
         kx=tfefunref(isp1,.false.,irtc)
+c        write(*,'(a,1x,a,1x,a,i5)')'vlimit:',svarn%str(1:svarn%nch),
+c     $       vn(1:skey%nch),irtc
+c        call tfdebugprint(kx,':',1)
       endif
       if(irtc .ne. 0)then
         kx%k=ktfoper+mtfnull
@@ -797,6 +800,7 @@ c     $       vn(1:skey%nch)
         endif
       else
         call tfconnect(kx,irtc)
+c        call tfdebugprint(kx,'varfun:',1)
       endif
       isp=isp1-1
       return
@@ -1217,6 +1221,7 @@ c
 
       subroutine tfsolv(qu,quw,df,dval,wlimit,nqcol,nvar,
      $     iqcol,kfitp,mfitp,dg,wexponent,eps)
+      use tfstk
       implicit none
       integer*4 ,intent(in):: nqcol,nvar
       real*8 ,intent(in):: qu(nqcol,nvar),df(nqcol),
@@ -1244,6 +1249,7 @@ c
         endif
       enddo
       call tsolva(quw,b,dval,nj,nvar,nqcol,eps)
+      call resetnan(dval)
       again=.false.
       dg=0.d0
       do i=1,nqcol

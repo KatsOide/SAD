@@ -12,7 +12,6 @@ contrib/BBBrem_dir/*
 \#*
 *.a
 *.so
-*.enc
 *.exe
 src/sim/CVS/Entries
 Packages/CVS/Entries

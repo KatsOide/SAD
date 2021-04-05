@@ -1,4 +1,6 @@
       module tsolz
+      real*8 ,parameter :: phimax=100.d0
+
       type tzparam0
       sequence
       real*8 aln,bzp,pr,akkp,w1,phi1,
@@ -188,7 +190,7 @@
           w12=w1-w2
           wd=bzp/ws
           phi1=aln*w1
-          phi2=aln*w2
+          phi2=min(phimax,max(-phimax,aln*w2))
           call xsincos(phi1,s1,xs1,c1,dc1)
           call xsincosh(phi2,sh2,xsh2,ch2,dch2)
           g1 = (s1*w2)**2/akkp
@@ -228,7 +230,8 @@
         pr=1.d0+dp
         akkp=akk/pr
         w1=sqrt(akkp)
-        phi1=aln*w1
+c        phi1=aln*w1
+        phi1=min(phimax,max(-phimax,aln*w1))
         call xsincos(phi1,s1,xs1,c1,dc1)
         call xsincosh(phi1,sh2,xsh2,ch2,dch2)
         return
@@ -331,11 +334,12 @@
      $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
      $     u1p,u1wp,u2p,u2wp,v1p,v1wp,v2p,v2wp,
      $     dv,dvdp,xi,yi,pxi,pyi,xf,yf,pxf,pyf,
-     $     tbrhoz,b1,br,cw,phieps,al1,
+     $     tbrhoz,b1,br,cw,al1,
      $     awu,dwu,awup,dwup,dz1,dz2,dz1p,dz2p
       logical*4 ,intent(in):: enarad
       external tbrhoz
-      parameter (phieps=1.d-2)
+      real*8 ,parameter ::phieps=1.d-2
+      integer*4 ,parameter :: ndivmax=1000
         associate (
      $       c1=>tz%tz0%c1,s1=>tz%tz0%s1,dc1=>tz%tz0%dc1,
      $       xs1=>tz%tz0%xs1,ch2=>tz%tz0%ch2,sh2=>tz%tz0%sh2,
@@ -371,7 +375,7 @@ c        stop
       endif
       bz=bz0
       eps=merge(0.1d0,0.1d0*eps0,eps0 .eq. 0.d0)
-      ndiv=1+int(abs(al*hypot(ak,bz))/eps)
+      ndiv=min(ndivmax,1+int(abs(al*hypot(ak,bz))/eps))
       aln=al/ndiv
       dx0=ak0x/ak
       dy0=ak0y/ak

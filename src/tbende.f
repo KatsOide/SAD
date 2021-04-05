@@ -469,6 +469,7 @@ c      endif
         nrad=int(abs(al0*rbc/epsrad*crad*(h0*b)**2))
         ndiv=max(ndiv,int(nrad*emidiv*emidib),
      1       int(abs(phib*h0*anrad)/epsrad/1.d6*emidiv*emidib))
+c        write(*,'(a,3i5,1p10g12.4)')'tbende ',l,nrad,ndiv,rbc,al0,b
       endif
       trans1(1,3)=0.d0
       trans1(1,4)=0.d0
