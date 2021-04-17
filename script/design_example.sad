@@ -15,12 +15,12 @@ ON ECHO;OFF CTIME;
  ;
  BEND   B      = (L = 2)
  ;
- QUAD   QF     = (L = 1 K1 =  0.1 )
-        QD     = (L = 1 K1 = -0.1 )
-        QSF    = (L = 1 K1 =  0.1 )
-        QSD    = (L = 1 K1 = -0.1 )
-        QRF    = (L = 1 K1 =  0.1 )
-        QRD    = (L = 1 K1 = -0.1 )
+ QUAD   QF     = (L = 1 K1 =  0.15 )
+        QD     = (L = 1 K1 = -0.15 )
+        QSF    = (L = 1 K1 =  0.15 )
+        QSD    = (L = 1 K1 = -0.15 )
+        QRF    = (L = 1 K1 =  0.15 )
+        QRD    = (L = 1 K1 = -0.15 )
  ; 
  SEXT   SF     =(L = 1 K2 = 0.1)
         SD     =(L = 1 K2 = -0.2)
