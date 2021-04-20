@@ -939,7 +939,8 @@ KBFMakePDF[s$_,l$_:Null] := Module[{l,ld,s,n,fn,fns,lid,tn,
   convert,convhost=Environment["CONVHOST"],cmd},
   convert = If[convhost === "", KBF$convert, KBF$Remote$convert[convhost]];
   tn=TemporaryName[];
-  s = If [StringMatchQ[s$[-4,-1],".PDF|.pdf"], s$[1,-5], s$];
+  s=If[StringPosition[s$,"."]==={},s=s$//".pdf",s$];
+!    s = If [StringMatchQ[s$[-4,-1],".PDF|.pdf"], s$[1,-5], s$];
   l = If [l$===Null, KBF$FrameList, l$];
   n = Length[l];
   lid = Map[(If[Head[#]===Widget,WidgetInfo[#,ID],#[$Frame$WindowID]])&,l];
@@ -952,8 +953,9 @@ KBFMakePDF[s$_,l$_:Null] := Module[{l,ld,s,n,fn,fns,lid,tn,
     " "//fn,
     {i,n}];
   fns = StringJoin@@ld;
-  cmd = StringJoin[convert,(*" -density 80x80 -page 842x595+30+30 ", *)
-    fns," ",s,".pdf; rm",fns," ",tn];
+  cmd = StringJoin[convert,
+    (*" -density 80x80 -page 842x595+30+30 ", *)
+    fns," ",s,"; rm ",fns," ",tn];
   If[convhost=="",
     System[cmd],
     System["rsh "//convhost//" 'setenv DISPLAY "
