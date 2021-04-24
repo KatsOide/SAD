@@ -95,7 +95,6 @@ c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
         call c_f_pointer(c_loc(rlist(ifsize)),beamsize,[21,nel])
         modesize=0
       endif
-c      write(*,*)'tfemit-4 ',codplt,ifsize,nel
       if(nel .eq. nlat)then
         cod=codin
         call temit(trans,cod,beam,btr,
@@ -126,15 +125,17 @@ c      write(*,*)'tfemit-4 ',codplt,ifsize,nel
         call tclrfpe
       endif
       sx=merge(1.d0,0.d0,stab)
-c      write(*,*)mode,iax,iabmi,iamat,iaparam,nparams
+c      write(*,'(a,i5,5i12)')'tfemit ',mode,nparams
       klx%rbody(1)=sx
       klx%dbody(2)%k=ktflist+ktfcopy1(kaparam)
       if(mode .ge. 1)then
         klx%dbody(3)%k=ktflist+ktfcopy1(iae%iamat)
         if(mode .ge. 2)then
           klx%dbody(4)%k=ktflist+ktfcopy1(iae%iacod)
+c          call tfdebugprint(klx%dbody(4),'tfemit-cod',10)
           if(mode .eq. 3)then
             klx%dbody(5)%k=ktflist+ktfcopy1(iae%iatr)
+c            call tfdebugprint(klx%dbody(5),'tfemit-trmat',10)
             if(intra)then
               klx%dbody(6)%k=ktflist+ktfcopy1(iae%iabmi)
             endif
