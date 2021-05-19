@@ -14,6 +14,7 @@
 #include <string.h>
 #include <regex.h>
 #include <fcntl.h>
+#include <signal.h>
 
 /* for regerror(3) buffer */
 #define REGEXP_ERRBUF_SIZE 80
@@ -50,6 +51,10 @@ real8 second_() {
 
 integer4 tpause_(integer4 *microsec) {
   return (*microsec > 0) ? usleep(*microsec) : 0;
+}
+
+integer4 tkill_(integer4 *pr) {
+  return kill((pid_t) pr, SIGTERM);
 }
 
 integer4 unixclose_(integer4 *fd) {

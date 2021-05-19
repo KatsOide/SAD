@@ -353,7 +353,7 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                   rlist((kc-1)*nqcol+ifqu:kc*nqcol+ifqu-1)=
      $                 (ddf1(1:nqcol)-ddf2(1:nqcol))/2.d0/dvkc/wvar(kc)
                 enddo
-                call tffswait(ipr,npa,npr,iuta1,
+                call tffswait(ipr,npa,npr,iuta1,0,
      $               'tffsmatch-NumDerv',irtc)
               else
                 call tffsqu(nqcol,nqcol1,nvar,nqumax,ifquw,ifqu,
@@ -422,7 +422,7 @@ c     enddo
                       enddo
                     endif
                   enddo
-                  call tffswait(ipr,npa,npr,i00,
+                  call tffswait(ipr,npa,npr,i00,0,
      $                 'tffsmatch-EVDeriv',irtc)
                 endif
               endif
@@ -540,13 +540,13 @@ c     enddo
       return
       end
 
-      subroutine tffswait(ipr,npa,npr,kash,tag,irtc)
+      subroutine tffswait(ipr,npa,npr,kash,nwait,tag,irtc)
       use tfshare
       implicit none
       integer*4 ,intent(out):: irtc,ipr
-      integer*4 ,intent(in):: npa
+      integer*4 ,intent(in):: npa,nwait
       integer*4 ,intent(inout):: npr(npa)
-      integer*4 ist,i,j,waitpid
+      integer*4 ist,i,j,waitpid,waitpid_nohang,iwait,lw
       integer*8 ,intent(in):: kash
       character*(*) ,intent(in):: tag
       if(ipr .eq. 0)then
@@ -556,12 +556,38 @@ c     enddo
         call tfresetsharedmap()
         call exit_without_hooks(0)
       elseif(ipr .gt. 0)then
+        iwait=-1
+        if(nwait /= 0)then
+          lw=600*(1000000/nwait)
+        endif
         irtc=0
         do i=1,npa-1
           dowait: do
-            ipr=waitpid(-1,ist)
+            if(nwait == 0)then
+              ipr=waitpid(-1,ist)
+            else
+              ipr=waitpid_nohang(-1,ist)
+              if(ipr .eq. 0)then
+                call tpause(nwait)
+                if(iwait >= 0)then
+                  iwait=iwait+1
+                  if(iwait > lw)then
+                    do j=1,npa-1
+                      if(npr(j) .ne. 0)then
+                        call tkill(npr(j))
+                        write(*,*)'???-'//tag//' timeout :',j
+                      endif
+                    enddo
+                    irtc=20004
+                    return
+                  endif
+                endif
+                cycle dowait
+              endif
+            endif
             do j=1,npa-1
               if(npr(j) .eq. ipr)then
+                iwait=0
                 npr(j)=0
                 exit dowait
               endif
@@ -573,7 +599,7 @@ c     enddo
           if(ist .ne. 0)then
             irtc=20003
           endif
-        enddo
+        enddo 
       endif
       return
       end
@@ -1004,7 +1030,7 @@ c        call tfdebugprint(kx,'varfun:',1)
             enddo
           endif
         enddo
-        call tffswait(ipr,npp,npr,i00,'tffsqu',irtc)
+        call tffswait(ipr,npp,npr,i00,0,'tffsqu',irtc)
         if(kcm .ne. 0)then
           call tfree(kcm)
         endif
