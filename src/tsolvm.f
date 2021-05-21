@@ -65,7 +65,7 @@ c              enddo
           do 5210 j=i1+1,m
             r1=x(i1,1)*a(i,i1)
             r2=x(j ,1)*a(i,j )
-            r=sign(abs(dcmplx(r1,r2)),r1)
+            r=sign(hypot(r1,r2),r1)
             if(r .ne. 0.d0)then
               c=r1/r
               s=r2/r
@@ -141,7 +141,7 @@ c          do k=1,l
             x(i,1:l)=0.d0
 c          enddo
 4010    continue
-        r=abs(dcmplx(x(mn,1),v(mn)))
+        r=hypot(x(mn,1),v(mn))
         if(r .ne. 0.d0)then
           w=1.d0/r
           d=x(mn,1)*w
@@ -283,7 +283,7 @@ c1510  continue
         v(iend)=0.d0
         do 1110 i=iend,ibegin,-1
           if(abs(f)+abs(x(i,1)) .ne. abs(x(i,1)))then
-            p=abs(dcmplx(x(i,1),f))
+            p=hypot(x(i,1),f)
             vv=v(i-1)/p
             v(i-1)=vv*x(i,1)
             x(i  ,1)=p
@@ -368,7 +368,7 @@ c                  enddo
             f=0.d0
           else
             g=h*y
-            y=f+sign(abs(dcmplx(f,g)),f)
+            y=f+sign(hypot(f,g),f)
             if(y .ne. 0.d0)then
               f=((w-z)*(w+z)-h**2+g**2/y)/w
             else
@@ -380,7 +380,7 @@ c                  enddo
           do1221: do kkk=1,1
             do 1140 i=ibegin,iend-1
               i1=i+1
-              z=abs(dcmplx(f,g))
+              z=hypot(f,g)
               v(i-1)=z
               if(z .ne. 0.d0)then
                 c=f/z
@@ -394,7 +394,7 @@ c                  enddo
               g=-w*s+h*c
               h= x(i1,1)*s
               y= x(i1,1)*c
-              z=abs(dcmplx(f,h))
+              z=hypot(f,h)
               x(i,1)=z
               if(z .ne. 0.d0)then
                 c=f/z

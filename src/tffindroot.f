@@ -137,7 +137,7 @@ c        call tfdebugprint(ke,'tffindroot-deriv',1)
      $     dg,am,sv,goal,tffsfmin,svi
       real*8 , allocatable :: a(:,:),a0(:,:)
       logical*4 ,intent(in):: trace
-      real*8 , parameter :: factmin=1.d-4,svmin=1.d-7
+      real*8 , parameter :: factmin=1.d-4,svmin=1.d-7,svdtol=1.d-5
       iter=0
       call tfevalresidual(sav,v0,ke,f0,am,d0,nvar,neq,trace,irtc)
       goal=am*eps
@@ -200,7 +200,7 @@ c      enddo
       enddo
       a0=a
       f=-f0
-      call tsolva(a,f,dv,neq,nvar,neq,1.d-8)
+      call tsolva(a,f,dv,neq,nvar,neq,svdtol)
       dg=0.d0
       do i=1,neq
 c        s=0.d0
@@ -599,6 +599,7 @@ c      endif
       call tfmakerulestk(itfcov,kcv)
       call tfmakerulestk(itfdm,kdm)
       kx=kxmakelist(isp2)
+      call tfdebugprint(kx,'tffit-8',3)
       isp=isp2-1
  9200 call tfree(kdp)
  9100 do i=1,nvar
@@ -744,7 +745,7 @@ c            enddo
         endif
         if(newton)then
           df=-df0
-          call tsolva(a,df,dv,m,nvar,m,1.d-6)
+          call tsolva(a,df,dv,m,nvar,m,svdeps)
         else
           do i=1,nvar
             dv(i)=-sum(df0(1:m)*a0(1:m,i))
@@ -1049,10 +1050,10 @@ c     call tfdebugprint(ke,'ke',1)
         dtastk(isp)=sad_descr(sav(i)%p%sym)
         ierr0=ierrorexp
         ierrorexp=1
-c        call tfdebugprint(ke,'tfderiv D',2)
-c        call tfdebugprint(ktastk(isp),'by ',2)
+        call tfdebugprint(ke,'tfderiv D',2)
+        call tfdebugprint(dtastk(isp),'by ',2)
         call tfdeval(isp0+1,iads,kd,1,.false.,euv,irtc)
-c        call tfdebugprint(kd,'==>',2)
+        call tfdebugprint(kd,'==>',2)
         ierrorexp=ierr0
         if(irtc .ne. 0)then
           if(irtc .gt. 0. and. ierrorprint .ne. 0)then
@@ -1083,6 +1084,7 @@ c        call tfdebugprint(kd,'==>',2)
       enddo
       irtc=0
       isp=isp0
+      write(*,*)'tfderiv-end'
       return
       end
 

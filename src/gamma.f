@@ -4834,13 +4834,17 @@ c        f1=confhg1(a,a+1.d0,-x)*zeroim(x)**a
       complex*16 lg0,lg1,lg2,u,df
       real*8 n,n1,adf0,adf
       integer*4 no,j,k
-      real*8 ,parameter ::czlim=1.d-50
+      real*8 ,parameter ::czlim=1.d-50,zlarge=300.d0
       if(abs(z) < czlim)then
         if(dble(s) > 0.d0)then
           f1=cgamma(s)
         else
           f1=1.d0/czero
         endif
+        return
+      elseif(abs(z) > zlarge .and.
+     $       (dble(z) > 0.d0 .or. abs(imag(z)) > abs(dble(z))))then
+        f1=z**(s-1.d0)*exp(-z)
         return
       endif
       lg0=1.d0
@@ -4901,13 +4905,16 @@ c      write(*,'(a,1p10g12.4)')'cgm2-h ',s,z,f1
       complex*16 lg0,lg1,lg2,u,df
       real*8 n,n1,adf0,adf
       integer*4 no,j,k
-      real*8 ,parameter ::czlim=1.d-50
+      real*8 ,parameter ::czlim=1.d-50,zlarge=300.d0
       if(abs(z) < czlim)then
         if(dble(s) > 0.d0)then
           f1=cgamma(s)
         else
           f1=1.d0/czero
         endif
+        return
+      elseif(z .gt. zlarge)then
+        f1=z**(s-1.d0)*exp(-z)
         return
       endif
       lg0=1.d0
@@ -4965,12 +4972,16 @@ c      write(*,'(a,1p10g12.4)')'cgm2-h ',s,z,f1
       real*8 ,intent(in):: s,z
       real*8 lg0,lg1,lg2,u,df,n,n1,adf0,adf
       integer*4 no,j,k
+      real*8 ,parameter :: zlarge=300.d0
       if(z == 0.d0)then
         if(s > 0.d0)then
           f1=gamma(s)
         else
           f1=1.d0/0.d0
         endif
+        return
+      elseif(z > zlarge)then
+        f1=z**(s-1.d0)*exp(-z)
         return
       endif
       lg0=1.d0
