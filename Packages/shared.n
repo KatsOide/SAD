@@ -1,0 +1,76 @@
+Clear[Shared,CloseShared,Parallelize];
+
+Shared[`n_Real]:=ReadShared[`n];
+(Shared[n_]=`v_)^:=WriteShared[n,v];
+(Shared[n_]:=v_)^:=WriteShared[n,Unevaluated$[v]];
+(Shared[n_]+=v_)^:=With[{x=ReadShared[n]+Unevaluated$[v]},
+  WriteShared[n,x];x];
+(Shared[n_]-=v_)^:=With[{x=ReadShared[n]-Unevaluated$[v]},
+  WriteShared[n,x];x];
+(Shared[n_]*=v_)^:=With[{x=ReadShared[n]*Unevaluated$[v]},
+  WriteShared[n,x];x];
+(Shared[n_]/=v_)^:=With[{x=ReadShared[n]/Unevaluated$[v]},
+  WriteShared[n,x];x];
+(Shared[n_]++)^:=With[{x=ReadShared[n]},
+  WriteShared[n,x+1];x];
+(Shared[n_]--)^:=With[{x=ReadShared[n]},
+  WriteShared[n,x-1];x];
+(++Shared[n_])^:=With[{x=ReadShared[n]+1},
+  WriteShared[n,x];x];
+(--Shared[n_])^:=With[{x=ReadShared[n]-1},
+  WriteShared[n,x];x];
+CloseShared=Close;
+With[{nwmax=600},
+  Parallelize[`f_,`n_,`lshare_,`npara_,`fcomp_:Identity]:=
+    Module[{`shared,`sharedpid,`l={},`fk,`r,`k,`i,`np,`w,`nw},
+      np=OpenShared[16];
+      Shared[np]=0;
+      Do[
+        While[Shared[np]>=npara,Sleep[1]];
+        Shared[np]++;
+        shared[k]=OpenShared[lshare];
+        Shared[shared[k]]=Undefined;
+        If[fk=Fork[],
+          sharedpid[k]=fk;
+          Sleep[0.01],
+          FFS$InterruptMask=-1;
+          Shared[shared[k]]=Check[f[k],$Failed];
+          Shared[np]--;
+          Exit[]],
+        {k,n}];
+      wp=True;
+      nw=-1;
+      While[wp,
+        wp=False;
+        kw=0;
+        Do[
+!          Print["Parallelize-Wait4: ",{k,sharedpid[k],Shared[shared[k]]}];
+          If[(Shared[shared[k]]<=>Undefined),
+            If[sharedpid[k],
+              Do[If[w=Wait4[sharedpid[k],WNOHANG][[1]],
+                Break[]];
+                Sleep[0.1],
+                {100}];
+              If[w==0,
+                Kill[sharedpid[k]];
+                Print["Parallelize-Killed (Shared updated)",{k,sharedpid[k]}]
+                ];
+              sharedpid[k]=0;
+              nw=Max[nw,0]],
+            wp=True],
+          {k,n}];
+!        Print["Parallelize-Wait4-end ",{kw,w,wp,nw}];
+        If[wp,
+          If[nw>=0,nw++];
+          If[nm>=nwmax,
+            Do[If[sharedpid[k],
+              Print["Parallelize Killed (Shared timeout): ",{k,sharedpid[k]}];
+              Kill[sharedpid[k]]],{k,n}];
+            Break[]];
+          Sleep[1]]];
+      l=Table[{Shared[shared[k]],
+        Close[shared[k]]}[[1]],{k,n}];
+      fcomp[l];
+      Close[np];
+      l]];
+SetAttributes[{Parallelize,CloseShared},{HoldFirst,Constant}];
